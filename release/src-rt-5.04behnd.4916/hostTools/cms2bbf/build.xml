@@ -1,0 +1,58 @@
+<project name="cms2bbf" basedir="." default="help">
+
+    <property name="src.dir"     value="src"/>
+    <property name="build.dir"   value="build"/>
+    <property name="classes.dir" value="${build.dir}/classes"/>
+    <property name="dist.dir"    value="${build.dir}/dist"/>
+    <property name="main-class"  value="${ant.project.name}"/>
+
+    <target name="help">
+        <echo>The following targets can be used:</echo>
+        <echo> </echo>
+        <echo>   help    : (default) prints this message</echo>
+        <echo>   clean   : delete build directories</echo>
+        <echo>   compile : compile application into class files</echo>
+        <echo>   dist    : packages class files into jar file</echo>
+        <echo>   run -Darg0=cms.xml -Darg1=bbf.xml : convert cms.xml to bbf.xml</echo>
+        <echo>   all -Darg0=cms.xml -Darg1=bbf.xml : cleans, compiles, packages, and convert cms.xml to bbf.xml</echo>
+        <echo> </echo>
+        <echo>For example, to clean, compile, dist, and convert cms.xml file to bbf.xml file all at once, execute:</echo>
+        <echo>   ant all -Darg0=cms.xml -Darg1=bbf.xml</echo>
+    </target>
+
+    <target name="all" depends="clean,compile,dist,run"/>
+
+    <target name="clean">
+        <echo>The clean target is the same as: rm -rf build</echo>
+        <delete dir="${build.dir}"/>
+    </target>
+
+    <target name="compile">
+        <echo>The compile target is the same as:</echo>
+        <echo>   mkdir build/classes</echo>
+        <echo>   javac src/cms2bbf.java -sourcepath src -d build/classes</echo>
+        <mkdir dir="${classes.dir}"/>
+        <javac srcdir="${src.dir}" destdir="${classes.dir}" includeantruntime="false"/>
+    </target>
+
+    <target name="dist" depends="compile">
+        <echo>The dist target is the same as:</echo>
+        <echo>   mkdir build/dist</echo>
+        <echo>   jar cfe build/dist/cms2bbf.jar cms2bbf build/classes</echo>
+        <mkdir dir="${dist.dir}"/>
+        <jar destfile="${dist.dir}/${ant.project.name}.jar" basedir="${classes.dir}">
+            <manifest>
+                <attribute name="Main-Class" value="${main-class}"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="run">
+        <echo>The run target is the same as: java -jar build/dist/cms2bbf.jar arg0 arg1</echo>
+        <java jar="${dist.dir}/${ant.project.name}.jar" fork="true">
+            <arg value="${arg0}"/>
+            <arg value="${arg1}"/>
+        </java>
+    </target>
+
+</project>

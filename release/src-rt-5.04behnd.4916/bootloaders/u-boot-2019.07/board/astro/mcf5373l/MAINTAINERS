@@ -1,0 +1,6 @@
+MCF5373L BOARD
+M:	Wolfgang Wegner <w.wegner@astro-kom.de>
+S:	Maintained
+F:	board/astro/mcf5373l/
+F:	include/configs/astro_mcf5373l.h
+F:	configs/astro_mcf5373l_defconfig

@@ -26,6 +26,7 @@
 #include <sys/sysinfo.h>
 #include <sys/stat.h>
 #include <stdint.h>
+#include <inttypes.h>
 #include <syslog.h>
 #include <ctype.h>
 
@@ -106,6 +107,10 @@
 enum if_id {
 	IFID_INTERNET = 0,	/* INTERNET */
 	IFID_INTERNET1,		/* INTERNET1 */
+	IFID_INTERNET50,	/* INTERNET50 */
+	IFID_INTERNET51,	/* INTERNET51 */
+	IFID_INTERNET52,	/* INTERNET52 */
+	IFID_INTERNET53,	/* INTERNET53 */
 	IFID_WIRED,		/* WIRED */
 	IFID_BRIDGE,		/* BRIDGE */
 	IFID_WIRELESS0,		/* WIRELESS0 */
@@ -672,7 +677,7 @@ static void save_speedjs(long next)
 			fprintf(f, "],\n");
 
 			c = j ? 't' : 'r';
-			fprintf(f, " %cx_avg: %llu,\n %cx_max: %llu,\n %cx_total: %llu",
+			fprintf(f, " %cx_avg: %" PRIu64 ",\n %cx_max: %" PRIu64 ",\n %cx_total: %" PRIu64 "",
 				c, total / MAX_NSPEED, c, tmax, c, total);
 		}
 	}
@@ -709,7 +714,7 @@ static void save_datajs(FILE *f, int mode)
 	for (k = max; k > 0; --k) {
 		p = (p + 1) % max;
 		if (data[p].xtime == 0) continue;
-		fprintf(f, "%s[0x%lx,0x%llx,0x%llx]", kn ? "," : "",
+		fprintf(f, "%s[0x%lx,0x% " PRIx64 ",0x%" PRIx64 "]", kn ? "," : "",
 			(unsigned long)data[p].xtime, data[p].counter[0] / K, data[p].counter[1] / K);
 		++kn;
 //_dprintf("%d:: [0x%lx,0x%llx,0x%llx]\n", p, 
@@ -774,6 +779,14 @@ static enum if_id desc_to_id(char *desc)
 		id = IFID_INTERNET;
 	else if (!strcmp(desc, "INTERNET1"))
 		id = IFID_INTERNET1;
+	else if (!strcmp(desc, "INTERNET50"))
+		id = IFID_INTERNET50;
+	else if (!strcmp(desc, "INTERNET51"))
+		id = IFID_INTERNET51;
+	else if (!strcmp(desc, "INTERNET52"))
+		id = IFID_INTERNET52;
+	else if (!strcmp(desc, "INTERNET53"))
+		id = IFID_INTERNET53;
 	else if (!strcmp(desc, "WIRED"))
 		id = IFID_WIRED;
 	else if (!strcmp(desc, "BRIDGE"))

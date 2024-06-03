@@ -1,0 +1,23 @@
+(Placeholder note while we locate the kernel Tegra20 bindings)
+
+Added in U-Boot:
+
+Required properties:
+ - clocks : Two clocks must be given, each as a phandle to the Tegra's
+	    CAR node and the clock number as a parameter:
+     - the I2C clock to use for the peripheral
+     - the pll_p_out3 clock, which can be used for fast operation. This
+	  does not change and is the same for all I2C nodes.
+
+Example:
+(TODO: merge with existing example):
+
+	i2c@7000c400 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "nvidia,tegra20-i2c";
+		reg = <0x7000C400 0x100>;
+		interrupts = < 116 >;
+		/* PERIPH_ID_I2C2, PLL_P_OUT3 */
+		clocks = <&tegra_car 54>, <&tegra_car 124>;
+	};

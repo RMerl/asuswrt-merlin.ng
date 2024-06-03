@@ -2765,12 +2765,20 @@ double get_wifi_5GH_maxpower()
 
 double get_wifi_6G_maxpower()
 {
-#if defined(RTCONFIG_WIFI6E)
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7)
 	return get_wifi_maxpower(WL_6G_BAND);
 #else
 	return 0;
 #endif
 }
-
-
+#ifdef RTCONFIG_HAS_6G_2
+double get_wifi_6GH_maxpower()
+{
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7)
+	return get_wifi_maxpower(WL_6G_2_BAND);
+#else
+	return 0;
+#endif
+}
+#endif
 #endif

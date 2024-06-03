@@ -1,0 +1,53 @@
+<div id="eula_pp_main">
+	<div id="asus_pp_header" style="display: none">
+		<div id="asus_pp_title">ASUS PRIVACY NOTICE</div>
+		<div id="asus_pp_title_sub"></div>
+		<div id="asus_pp_desc">For Firmware/Security Upgrades, it is important to read this Notice before utilizing an ASUS router. By clicking at "Agree" button, you agree to be bound by this Notice.</div>
+	</div>
+	<div id="asus_pp_eula_content">
+		<div id="asus_pp_eula_scroll" style="overflow-y: auto;padding:15px 12px 0 12px; border: 1px solid #ddd; border-radius: 5px; height: 50vh;">
+			<div style="height:40px;border-top-left-radius: 4px;border-top-right-radius: 4px;">
+				<div><b>ASUS PRIVACY NOTICE (for firmware/security upgrades)</b></div>
+			</div>
+			<div id="asus_eula_desc">Welcome to use ASUS router (“this router”)! Please read this Notice carefully:</div>
+			<div>
+				<ol style="margin-left: -15px;">
+					<li>In order to provide you with firmware and security upgrades on this router and to analyze user experience for the purpose of development and evaluation of new products and services of ASUS, by clicking <b>“Agree”</b> below, you agree to share your following data related to this router, including IP address, hashed MAC address, the country of manufacture, model name, firmware and software module version, manufacture date and version of hardware, firmware update data (such as execution method, time and numbers of firmware update), system status (such as usage status of fan, CPU, RAM, flash memory and voltage), numbers and time of boot-ups, the time and network you use to connect to this router, crash history, product name and code, login status of ASUS router app and the number of times of security events with ASUS.</li>
+					<li>Please kindly note: If you click “Disagree” below or disable the sharing of the above data with ASUS through “Administration” page, <span class="eula_child_text" style="display: none">or if you are a child thus preventing the collection of the above data by ASUS,</span> it may result in the inability to update to the latest firmware version and unable to receive the most up-to-date security protection on this router; However, to protect the security of your router and ensure the compliance with laws, for upgrades addressing important security issues or meeting legal/regulatory requirements, those upgrades will still be downloaded and installed automatically. In this case, ASUS will collect your IP address, hashed MAC address, the country of manufacture, model name, firmware and software module version, which is necessary data for ASUS to deliver these important upgrades to your router.</li>
+					<li>ASUS is committed to protecting and respecting your privacy; you may visit “Administration->Firmware Upgrade/ Privacy” page to enable/disable the sharing of your above data with ASUS at all times. To know more about how ASUS protects your privacy, please visit <a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">ASUS’ Privacy Policy</a>.</li>
+				</ol>
+			</div>
+		</div>
+		<div style="display: flex; justify-content: center; align-items: center; margin: 5px 0;">
+			<div style="font-weight: bold; color: #FFC107; background: #fcf8ec; padding: 5px 10px; border-radius: 5px;">Please scroll to the bottom </div>
+		</div>
+
+		<div id="eulaConfirmContainer">
+			<div><input type="checkbox" id="ASUS_EULA_enable" value="0"><label for="ASUS_EULA_enable">I am above the age of <span class="eula_age">16</span> years.</label></div>
+			<div id="eulaConfirmInfo" style="font-size: 14px; border: 1px solid #ddd; padding: 10px; border-radius: 5px;">To protect your privacy, please proceed with the age check. If you are a child under the age of <span class="eula_age">16</span>, to protect your privacy, generally we will not collect the above data in paragraph 1 through this router except when providing you with upgrades addressing important security issues or meeting legal/regulatory requirements as mentioned above in paragraph 2.</div>
+		</div>
+	</div>
+	<div id="eulaButtonContainer">
+		<button id="cancelBtn" class="button_gen disabled" style="display: flex; justify-content: center; align-items: center;">Disagree</button>
+		<button id="applyBtn" class="button_gen disabled" style="display: flex; justify-content: center; align-items: center;">Agree</button>
+	</div>
+</div>
+
+<div id="eula_pp_popup_main" style="display: none">
+	<div id="asus_pp_popup_eula_content" >Please be advised that disagreeing with ASUS PRIVACY NOTICE (for firmware/security upgrades) may result in the inability to update to the latest firmware version and unable to receive the most up-to-date protection on your ASUS Router;  However, to protect the security of your router and ensure the compliance with laws, for upgrades addressing important security issues or meeting legal/regulatory requirements, those upgrades will still be downloaded and installed automatically.</div>
+	<div id="eulaPopupButtonContainer" style="display: flex; align-items: center; justify-content: space-around; margin-top: 15px;">
+		<button id="readAgainBtn" class="button_gen" style="display: flex; justify-content: center; align-items: center;">Read Again</button>
+		<button id="knowRiskBtn" class="button_gen" style="display: flex; justify-content: center; align-items: center;">I understood the risk</button>
+	</div>
+</div>
+
+<script>
+	$("#asus_pp_eula_content").html($("#asus_pp_eula_content").html().replace(/\\'/g, "'"))
+
+	let agreementTextElement = document.getElementById("asus_pp_eula_scroll");
+	agreementTextElement.addEventListener("click", autoScroll, false);
+	function autoScroll() {
+		agreementTextElement.scrollTop += agreementTextElement.offsetHeight;
+	}
+
+</script>

@@ -1,0 +1,11 @@
+config BCM_DQM_DRV
+	bool "Broadcom BCA DQM driver"
+        depends on BCM_FPM_DRV
+	default n
+	help
+	  Add the BCM BCA DQM support.
+
+config BCM_DQM_DRV_IMPL
+	int "Implementation index for BCA DQM module"
+	depends on BCM_DQM_DRV
+	default 1

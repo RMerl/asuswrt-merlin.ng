@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="84" height="84" viewBox="0 0 84 84">
+  <defs>
+    <linearGradient id="topology_circle_normal-a" x1="2.113%" x2="100%" y1="17.429%" y2="92.498%">
+      <stop offset="0%" stop-color="#6487BE"/>
+      <stop offset="100%" stop-color="#74C8BE"/>
+    </linearGradient>
+    <linearGradient id="topology_circle_normal-b" x1="2.113%" x2="100%" y1="17.429%" y2="79.215%">
+      <stop offset="0%" stop-color="#6487BE"/>
+      <stop offset="49.259%" stop-color="#59FFEA"/>
+      <stop offset="100%" stop-color="#6792BE"/>
+    </linearGradient>
+  </defs>
+  <g fill="none" fill-rule="evenodd" transform="translate(6 6)">
+    <circle cx="36" cy="36" r="36" fill="#2F2C2C" stroke="url(#topology_circle_normal-a)" stroke-width=".786"/>
+    <g stroke-linejoin="square" stroke-width=".857">
+      <circle cx="36" cy="36" r="29.026" fill="#292929" stroke="url(#topology_circle_normal-a)"/>
+      <circle cx="36" cy="36" r="29.026" stroke="url(#topology_circle_normal-b)"/>
+    </g>
+  </g>
+</svg>

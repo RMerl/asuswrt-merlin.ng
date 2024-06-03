@@ -1,0 +1,17 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (C) 2018 Vasily Khoruzhick <anarsoul@gmail.com>
+ *
+ */
+
+#include "sunxi-u-boot.dtsi"
+
+/* The ANX6345 eDP-bridge is on r_i2c */
+&r_i2c {
+	anx6345: edp-bridge@38 {
+		compatible = "analogix,anx6345";
+		reg = <0x38>;
+		reset-gpios = <&pio 3 24 GPIO_ACTIVE_LOW>; /* PD24 */
+		status = "okay";
+	};
+};

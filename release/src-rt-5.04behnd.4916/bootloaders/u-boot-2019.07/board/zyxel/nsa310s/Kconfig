@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright (C) 2015
+# Gerald Kerma <dreagle@doukki.net>
+# Tony Dinh <mibodhi@gmail.com>
+
+if TARGET_NSA310S
+
+config SYS_BOARD
+	default "nsa310s"
+
+config SYS_VENDOR
+	default "zyxel"
+
+config SYS_CONFIG_NAME
+	default "nsa310s"
+
+endif

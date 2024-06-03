@@ -1,0 +1,84 @@
+.TH KWBOOT 1 "2012-05-19"
+
+.SH NAME
+kwboot \- Boot Marvell Kirkwood SoCs over a serial link.
+.SH SYNOPSIS
+.B kwboot
+.RB [ "-b \fIimage\fP" ]
+.RB [ "-p" ]
+.RB [ "-t" ]
+.RB [ "-B \fIbaudrate\fP" ]
+.RB \fITTY\fP
+.SH "DESCRIPTION"
+
+The \fBmkimage\fP program boots boards based on Marvell's Kirkwood
+platform over their integrated UART. Boot image files will typically
+contain a second stage boot loader, such as U-Boot. The image file
+must conform to Marvell's BootROM firmware image format
+(\fIkwbimage\fP), created using a tool such as \fBmkimage\fP.
+
+Following power-up or a system reset, system BootROM code polls the
+UART for a brief period of time, sensing a handshake message which
+initiates an image upload. This program sends this boot message until
+it receives a positive acknowledgement. The image is transferred using
+Xmodem.
+
+Additionally, this program implements a minimal terminal mode, which
+can be used either standalone, or entered immediately following boot
+image transfer completion. This is often useful to catch early boot
+messages, or to manually interrupt a default boot procedure performed
+by the second-stage loader.
+
+.SH "OPTIONS"
+
+.TP
+.BI "\-b \fIimage\fP"
+Handshake; then upload file \fIimage\fP over \fITTY\fP.
+
+Note that for the encapsulated boot code to be executed, \fIimage\fP
+must be of type "UART boot" (0x69). Boot images of different types,
+such as backup images of vendor firmware downloaded from flash memory
+(type 0x8B), will not work (or not as expected). See \fB-p\fP for a
+workaround.
+
+This mode writes handshake status and upload progress indication to
+stdout.
+
+.TP
+.BI "\-p"
+In combination with \fB-b\fP, patches the header in \fIimage\fP prior
+to upload, to "UART boot" type.
+
+This option attempts on-the-fly conversion of some none-UART image
+types, such as images which were originally formatted to be stored in
+flash memory.
+
+Conversion is performed in memory. The contents of \fIimage\fP will
+not be altered.
+
+.TP
+.BI "\-t"
+Run a terminal program, connecting standard input and output to
+.RB \fITTY\fP.
+
+If used in combination with \fB-b\fP, terminal mode is entered
+immediately following a successful image upload.
+
+If standard I/O streams connect to a console, this mode will terminate
+after receiving 'ctrl-\\' followed by 'c' from console input.
+
+.TP
+.BI "\-B \fIbaudrate\fP"
+Adjust the baud rate on \fITTY\fP. Default rate is 115200.
+
+.SH "SEE ALSO"
+.PP
+\fBmkimage\fP(1)
+
+.SH "AUTHORS"
+
+Daniel Stodden <daniel.stodden@gmail.com>
+.br
+Luka Perkov <luka@openwrt.org>
+.br
+David Purdy <david.c.purdy@gmail.com>

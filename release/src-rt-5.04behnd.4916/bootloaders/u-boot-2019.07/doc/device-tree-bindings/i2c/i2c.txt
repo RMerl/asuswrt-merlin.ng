@@ -1,0 +1,46 @@
+U-Boot I2C
+----------
+
+U-Boot's I2C model has the concept of an offset within a chip (I2C target
+device). The offset can be up to 4 bytes long, but is normally 1 byte,
+meaning that offsets from 0 to 255 are supported by the chip. This often
+corresponds to register numbers.
+
+Apart from the controller-specific I2C bindings, U-Boot supports a special
+property which allows the chip offset length to be selected.
+
+Optional properties:
+- u-boot,i2c-offset-len - length of chip offset in bytes. If omitted the
+    default value of 1 is used.
+- u-boot,i2c-transaction-bytes - the length of single I2C transaction on
+    the bus. Some devices require more than single byte transmission
+    (e.g. mc34708 mfd). This information is necessary to correctly
+     initialize (put into idle state) I2C bus after soft reset.
+- gpios = <sda ...>, <scl ...>;
+  pinctrl-names = "default", "gpio";
+  pinctrl-0 = <&i2c_xfer>;
+  pinctrl-1 = <&i2c_gpio>;
+    Pin description for I2C bus software deblocking.
+
+
+Example
+-------
+
+i2c4: i2c@12ca0000 {
+	cros-ec@1e {
+		reg = <0x1e>;
+		compatible = "google,cros-ec";
+		i2c-max-frequency = <100000>;
+		u-boot,i2c-offset-len = <0>;
+		u-boot,i2c-transaction-bytes = <3>;
+		ec-interrupt = <&gpx1 6 GPIO_ACTIVE_LOW>;
+	};
+};
+
+&i2c1 {
+	pinctrl-names = "default", "gpio";
+	pinctrl-0 = <&i2c1_xfer>;
+	pinctrl-1 = <&i2c1_gpio>;
+	gpios = <&gpio1 26 GPIO_ACTIVE_LOW>, /* SDA */
+		<&gpio1 27 GPIO_ACTIVE_LOW>; /* SCL */
+};

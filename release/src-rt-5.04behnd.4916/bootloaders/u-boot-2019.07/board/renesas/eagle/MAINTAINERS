@@ -1,0 +1,6 @@
+EAGLE BOARD
+M:	Marek Vasut <marek.vasut+renesas@gmail.com>
+S:	Maintained
+F:	board/renesas/eagle/
+F:	include/configs/eagle.h
+F:	configs/r8a77970_eagle_defconfig

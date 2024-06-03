@@ -1,0 +1,22 @@
+/*
+ * (c) 2015 Purna Chandra Mandal <purna.mandal@microchip.com>
+ */
+
+PIC32MZ[DA] Starter Kit
+----------------------------------------
+PIC32MZ[DA] Starter Kit is based on PIC32MZ[DA] family of micro-controller.
+This family is powered by MIPS M14KEC 32bit general purpose core and has
+advanced microcontroller features and peripherals.
+
+This processor boots with proprietary stage1 bootloader running from internal
+boot-flash. Stage1 bootloader inturns locates and jumps to U-Boot programmed
+on internal program-flash. Finally U-Boot loads OS image (along with other
+required files for booting) from either uSD card, or ethernet, or from USB
+storage.
+
+To boot Linux following three files are mandatory - uEnv.txt (custom U-Boot
+environment file), uImage, *.dtb (platform device-tree-blob file).
+
+U-Boot jumps to Linux using UHI specification.
+
+Visit http://microchip.com for details.

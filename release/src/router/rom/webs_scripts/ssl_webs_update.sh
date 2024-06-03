@@ -191,9 +191,6 @@ logger -t WEBS_UPDATE "---- REQproductid : $REQfirmver $REQbuildno $REQlextendno
 update_webs_state_info=`nvram get webs_state_info`
 last_webs_state_info=`nvram get webs_last_info` 
 if [ "$firmver" == "" ] || [ "$buildno" == "" ] || [ "$lextendno" == "" ]; then
-	if [ "$forsq" == "8" ]; then
-		echo `date "+%Y-%m-%d %H:%M:%S"`"---- parsing ctrl info failure ----" >> /jffs/KEEP_UPGRADE_DEBUG.log
-	fi
 	nvram set webs_state_error=1	# exist no Info
 else
 	if [ -n "$IS_FUPGRADE" ]; then
@@ -283,10 +280,6 @@ else
 		fi
 	fi
 
-fi
-
-if [ "$forsq" == "8" ]; then
-	echo `date "+%Y-%m-%d %H:%M:%S"`"---- webs_state_flag=`nvram get webs_state_flag` ----" >> /jffs/KEEP_UPGRADE_DEBUG.log
 fi
 
 # download releasee note

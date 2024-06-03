@@ -1,0 +1,4 @@
+To generate binary.0 from Marvell's bin_hdr.elf use the following command
+
+    arm-softfloat-linux-gnueabi-objcopy -S -O binary bin_hdr.elf \
+       board/Marvell/db-xc3-24g4xg/binary.0

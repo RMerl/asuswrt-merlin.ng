@@ -1,0 +1,100 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2018 Microsemi Corporation
+ */
+
+/dts-v1/;
+#include "mscc,serval.dtsi"
+#include <dt-bindings/mscc/serval_data.h>
+
+/ {
+	model = "Serval PCB105 Reference Board";
+	compatible = "mscc,serval-pcb105", "mscc,serval";
+
+	aliases {
+		spi0 = &spi0;
+		serial0 = &uart0;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	gpio-leds {
+		compatible = "gpio-leds";
+
+		status_green {
+			label = "pcb105:green:status";
+			gpios = <&sgpio 43 1>; /* p11.1 */
+			default-state = "on";
+		};
+
+		status_red {
+			label = "pcb105:red:status";
+			gpios = <&sgpio 11 1>; /* p11.0 */
+			default-state = "off";
+		};
+	};
+};
+
+&uart0 {
+	status = "okay";
+};
+
+&spi0 {
+	status = "okay";
+	spi-flash@0 {
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <18000000>; /* input clock */
+		reg = <0>; /* CS0 */
+		spi-cs-high;
+	};
+};
+
+&sgpio {
+	status = "okay";
+	sgpio-ports = <0x00FFFFFF>;
+};
+
+&mdio1 {
+	status = "okay";
+
+	phy16: ethernet-phy@16 {
+		reg = <16>;
+	};
+	phy17: ethernet-phy@17 {
+		reg = <17>;
+	};
+	phy18: ethernet-phy@18 {
+		reg = <18>;
+	};
+	phy19: ethernet-phy@19 {
+		reg = <19>;
+	};
+};
+
+&switch {
+	ethernet-ports {
+
+		port0: port@0 {
+			reg = <7>;
+			phy-handle = <&phy16>;
+			phys = <&serdes_hsio 7 SERDES1G(7) PHY_MODE_SGMII>;
+		};
+		port1: port@1 {
+			reg = <6>;
+			phy-handle = <&phy17>;
+			phys = <&serdes_hsio 6 SERDES1G(6) PHY_MODE_SGMII>;
+		};
+		port2: port@2 {
+			reg = <5>;
+			phy-handle = <&phy18>;
+			phys = <&serdes_hsio 5 SERDES1G(5) PHY_MODE_SGMII>;
+		};
+		port3: port@3 {
+			reg = <4>;
+			phy-handle = <&phy19>;
+			phys = <&serdes_hsio 4 SERDES1G(4) PHY_MODE_SGMII>;
+		};
+	};
+};

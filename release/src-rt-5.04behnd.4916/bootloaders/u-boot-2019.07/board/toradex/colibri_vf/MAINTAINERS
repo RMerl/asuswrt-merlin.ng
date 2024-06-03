@@ -1,0 +1,12 @@
+Colibri VFxx
+M:	Stefan Agner <stefan.agner@toradex.com>
+W:	http://developer.toradex.com/software/linux/linux-software
+W:	https://www.toradex.com/community
+S:	Maintained
+F:	board/toradex/colibri_vf/
+F:	include/configs/colibri_vf.h
+F:	configs/colibri_vf_defconfig
+F:	arch/arm/dts/vf-colibri.dtsi
+F:	arch/arm/dts/vf-colibri-u-boot.dtsi
+F:	arch/arm/dts/vf500-colibri.dts
+F:	arch/arm/dts/vf610-colibri.dts

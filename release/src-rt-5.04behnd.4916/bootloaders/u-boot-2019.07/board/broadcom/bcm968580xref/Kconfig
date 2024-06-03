@@ -1,0 +1,17 @@
+if ARCH_BCM6858
+
+config SYS_VENDOR
+	default "broadcom"
+
+config SYS_BOARD
+	default "bcm968580xref"
+
+config SYS_CONFIG_NAME
+	default "broadcom_bcm968580xref"
+
+endif
+
+config TARGET_BCM968580XREF
+	bool "Support Broadcom bcm968580xref"
+	depends on ARCH_BCM6858
+	select ARM64

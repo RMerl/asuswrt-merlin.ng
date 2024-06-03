@@ -616,7 +616,7 @@ static pj_status_t init_openssl(pj_pool_t *pool)
 		pj_assert(meth);
 
 		ctx=SSL_CTX_new(meth);
-		SSL_CTX_set_cipher_list(ctx, "ALL");
+		SSL_CTX_set_cipher_list(ctx, "HIGH:!MEDIUM:!LOW:!aNULL:!eNULL:!kECDH:!aDH:!RC4:!3DES:!CAMELLIA:!MD5:!PSK:!SRP:!KRB5:@STRENGTH");
 
 		ssl = SSL_new(ctx);
 		sk_cipher = SSL_get_ciphers(ssl);
@@ -1787,10 +1787,11 @@ static pj_bool_t on_handshake_complete(transport_dtls *dtls,
     }
 
     /* Update certificates info on successful handshake */
-    if (status == PJ_SUCCESS)
+    if (status == PJ_SUCCESS) {
 	update_certs_info(dtls);
 
 	dtls->ssl_state = SSL_STATE_ESTABLISHED;
+	}
 	pj_sem_post(dtls->handshake_sem);
 
     /* Accepting */
@@ -2654,7 +2655,9 @@ static void dtls_rtp_cb( void *user_data, void *pkt, pj_ssize_t size)
 	return;
 	}
 
-    if (!pkt || size <= 0 || dtls->ssl_state == SSL_STATE_INITIALIZED) {
+    if (!pkt || size <= 0 
+		|| dtls->ssl_state == SSL_STATE_NULL 
+		|| dtls->ssl_state == SSL_STATE_INITIALIZED) {
 	return;
 	}
 #ifdef USE_GLOBAL_LOCK
@@ -2706,12 +2709,12 @@ static void dtls_rtp_cb( void *user_data, void *pkt, pj_ssize_t size)
 #endif
 		status = do_handshake(dtls);
 		PJ_LOG(4, (THIS_FILE, "@#@#@#@#@# do_handshake. status=%d", status));
-		/* Not pending is either success or failed */
-		if (status != PJ_EPENDING)
-			ret = on_handshake_complete(dtls, status);
 #ifdef USE_GLOBAL_LOCK
 		MUTEX_UNLOCK(global_mutex);
 #endif
+		/* Not pending is either success or failed */
+		if (status != PJ_EPENDING)
+			ret = on_handshake_complete(dtls, status);
 		return;
 	}
 

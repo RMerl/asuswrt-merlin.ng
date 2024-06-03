@@ -1,0 +1,26 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link href="/form_style.css" rel="stylesheet" type="text/css"/>
+    <link href="/device-map/device-map.css" rel="stylesheet" type="text/css"/>
+    <link href="/device-map/clientlist.css" rel="stylesheet" type="text/css"/>
+    <script type="text/javascript" src="/js/jquery.js"></script>
+    <script type="text/javascript" src="/js/httpApi.js"></script>
+    <script type="text/javascript" src="/help.js"></script>
+    <script type="text/javascript" src="/validator.js"></script>
+    <script type="text/javascript" src="/client_function.js"></script>
+</head>
+<body>
+<iframe name="hidden_frame" id="hidden_frame" src="" width="0" height="0" frameborder="0"></iframe>
+</body>
+<script>
+    window.addEventListener('message', function (event) {
+        const receivedData = event.data;
+        if (typeof receivedData === 'object' && receivedData !== null && receivedData.hasOwnProperty('theme')) {
+            const theme = receivedData.theme;
+            pop_clientlist_listview(theme);
+        }
+    });
+</script>
+</html>

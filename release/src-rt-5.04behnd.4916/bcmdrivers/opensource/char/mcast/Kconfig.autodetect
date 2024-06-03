@@ -1,0 +1,21 @@
+config BCM_MCAST
+	tristate "Support for Broadcom Multicast features"
+	depends on BRIDGE
+	depends on INET
+	default n
+
+config BCM_MCAST_IMPL
+	int "Implementation index for Broadcom Multicast features"
+	depends on BCM_MCAST
+	default 1
+
+config BR_IGMP_SNOOP
+	bool "IGMP Snooping"
+	depends on BCM_MCAST
+	default n
+
+config BR_MLD_SNOOP
+	bool "MLD Snooping"
+	depends on BCM_MCAST
+	default n
+

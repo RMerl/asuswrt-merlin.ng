@@ -1,0 +1,8 @@
+VYASA RK3288
+M:	Jagan Teki <jagan@amarulasolutions.com>
+S:	Maintained
+F:	board/amarula/vyasa-rk3288
+F:	include/configs/vyasa-rk3288.h
+F:	configs/vyasa-rk3288_defconfig
+F:	arch/arm/dts/rk3288-vyasa.dts
+F:	arch/arm/dts/rk3288-vyasa-u-boot.dtsi

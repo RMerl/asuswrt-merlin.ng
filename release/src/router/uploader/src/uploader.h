@@ -1,5 +1,3 @@
 
 
-
-int update_userticket();
  

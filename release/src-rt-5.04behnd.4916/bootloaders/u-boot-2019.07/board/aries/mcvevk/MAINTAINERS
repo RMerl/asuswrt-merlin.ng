@@ -1,0 +1,9 @@
+Aries MCVEVK BOARD
+M:	Wolfgang Grandegger <wg@aries-embedded.de>
+S:	Maintained
+F:	board/aries/mcvevk/
+F:	include/configs/socfpga_mcvevk.h
+F:	configs/socfpga_mcvevk_defconfig
+F:	arch/arm/dts/socfpga_cyclone5_mcv.dtsi
+F:	arch/arm/dts/socfpga_cyclone5_mcvevk.dts
+F:	arch/arm/dts/socfpga_cyclone5_mcvevk-u-boot.dtsi

@@ -1,0 +1,33 @@
+Intel x86 PINCTRL/GPIO controller
+
+Pin-muxing on x86 can be described with a node for the PINCTRL master
+node and a set of child nodes for each pin on the SoC.
+
+The PINCTRL master node requires the following properties:
+- compatible : "intel,x86-pinctrl"
+
+Pin nodes must be children of the pinctrl master node and can
+contain the following properties:
+- pad-offset	- (required) offset in the IOBASE for the pin to configure
+- gpio-offset	- (required only when 'mode-gpio' is set) 2 cells
+			- offset in the GPIOBASE for the pin to configure
+			- the bit shift in this register (4 = bit 4)
+- mode-gpio	- (optional) standalone property to force the pin into GPIO mode
+- mode-func	- (optional) function number to assign to the pin. If
+			'mode-gpio' is set, this property will be ignored.
+in case of 'mode-gpio' property set:
+- output-value	- (optional) this set the default output value of the GPIO
+- direction	- (optional) this set the direction of the gpio
+- pull-strength	- (optional) this set the pull strength of the pin
+- pull-assign	- (optional) this set the pull assignement (up/down) of the pin
+- invert	- (optional) this input pin is inverted
+
+Example:
+
+pin_usb_host_en0@0 {
+	gpio-offset = <0x80 8>;
+	pad-offset = <0x260>;
+	mode-gpio;
+	output-value = <1>;
+	direction = <PIN_OUTPUT>;
+};

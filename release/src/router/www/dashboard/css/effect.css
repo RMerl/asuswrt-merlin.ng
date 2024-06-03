@@ -1,0 +1,20 @@
+/* TEXT LOADING ANIMATION */
+.text-loading {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--text-loading-color);
+}
+.text-loading:before {
+    content: attr(data-text);
+    position: absolute;
+    overflow: hidden;
+    max-width: 100%;
+    white-space: nowrap;
+    color: var(--text-loading-active-color);
+    animation: loading 8s infinite;
+}
+@keyframes loading {
+    0% {
+        max-width: 0;
+    }
+}

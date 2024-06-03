@@ -1,0 +1,21 @@
+How to use U-Boot on Solid-run mx6 Hummingboard and Cubox-i
+-----------------------------------------------------------
+
+- Build U-Boot for Hummingboard/Cubox-i:
+
+$ make mrproper
+$ make mx6cuboxi_defconfig
+$ make
+
+This will generate the SPL image called SPL and the u-boot.img.
+
+- Flash the SPL image into the SD card:
+
+sudo dd if=SPL of=/dev/mmcblk0 bs=1k seek=1; sync
+
+- Flash the u-boot.img image into the SD card:
+
+sudo dd if=u-boot.img of=/dev/mmcblk0 bs=1k seek=69; sync
+
+- Insert the SD card in the board, power it up and U-Boot messages should
+come up.

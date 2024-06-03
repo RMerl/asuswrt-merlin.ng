@@ -139,6 +139,7 @@ struct pj_turn_session
     pj_uint16_t		 srv_addr_cnt;
     pj_sockaddr		*srv_addr_list;
     pj_sockaddr		*srv_addr;
+    char 			 srv_name[128];
 
     pj_bool_t		 pending_alloc;
     pj_turn_alloc_param	 alloc_param;
@@ -503,6 +504,7 @@ PJ_DEF(pj_status_t) pj_turn_session_get_info( pj_turn_session *sess,
     info->conn_type = sess->conn_type;
     info->lifetime = sess->expiry.sec - now.sec;
     info->last_status = sess->last_status;
+	snprintf(info->srv_name, sizeof(info->srv_name), "%s", sess->srv_name);
 
     if (sess->srv_addr)
 	pj_memcpy(&info->server, sess->srv_addr, sizeof(info->server));
@@ -597,6 +599,7 @@ PJ_DEF(pj_status_t) pj_turn_session_set_server( pj_turn_session *sess,
     status = pj_inet_pton(sess->af, domain, 
 			  pj_sockaddr_get_addr(&tmp_addr));
     is_ip_addr = (status == PJ_SUCCESS);
+	snprintf(sess->srv_name, sizeof(sess->srv_name), "%.*s", domain->slen, domain->ptr);
 
     if (!is_ip_addr && resolver) {
 	/* Resolve with DNS SRV resolution, and fallback to DNS A resolution

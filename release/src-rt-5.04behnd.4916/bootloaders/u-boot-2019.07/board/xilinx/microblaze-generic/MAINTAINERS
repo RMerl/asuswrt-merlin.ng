@@ -1,0 +1,6 @@
+MICROBLAZE-GENERIC BOARD
+M:	Michal Simek <monstr@monstr.eu>
+S:	Maintained
+F:	board/xilinx/microblaze-generic/
+F:	include/configs/microblaze-generic.h
+F:	configs/microblaze-generic_defconfig

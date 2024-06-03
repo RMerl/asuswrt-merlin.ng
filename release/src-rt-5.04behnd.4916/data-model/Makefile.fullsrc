@@ -1,0 +1,486 @@
+default: all
+
+
+ifeq ($(BCM_MODULAR_BUILD),)
+# Old way: infer location of make.common based on pwd.
+CURR_DIR := $(shell pwd)
+BUILD_DIR:=$(subst /data-model, /data-model,$(CURR_DIR))
+BUILD_DIR:=$(word 1, $(BUILD_DIR))
+include $(BUILD_DIR)/make.common
+else
+# New Modular Build way: EXT_BUILD_DIR must be set.
+# Also point BUILD_DIR to EXT_BUILD_DIR
+BUILD_DIR := $(EXT_BUILD_DIR)
+include $(EXT_BUILD_DIR)/make.common
+endif
+
+
+#
+# Local defines for the data-model directory.
+#
+GENERATE     := ./generate_from_dm.pl
+PERL_MODULES := GenObjectNode.pm GenParamNode.pm Utils.pm
+
+
+#
+# DMFILE is the hybrid data model (TR98 + some TR181 parts)
+#
+DMFILE        := cms-data-model-merged.xml
+BBF_DMFILE    := bbf-data-model-1.xml
+MERGE_IGD_DIR := merge-igd.d
+
+#
+# DMFILE2 is the Pure TR181 data model.
+# Retail Wifi routers use a smaller version of TR181.
+#
+ifneq ($(strip $(BUILD_DM_WLAN_RETAIL)),)
+DMFILE2        := cms-data-model-retail-merged2.xml
+BBF_DMFILE2    := bbf-data-model-retail-2.xml
+MERGE_DEV2_DIR := merge-retail2.d
+else
+DMFILE2        := cms-data-model-merged2.xml
+BBF_DMFILE2    := bbf-data-model-2.xml
+MERGE_DEV2_DIR := merge-dev2.d
+endif
+
+# DMFILE2_DEVINFO is just the TR181 DeviceInfo subtree (for distributed MDM)
+DMFILE2_DEVINFO        := cms-data-model-merged2-devinfo.xml
+MERGE_DEV2_DEVINFO_DIR := merge-dev2-devinfo.d
+
+# DMFILE2_DSL is just the TR181 DSL subtree (for distributed MDM)
+DMFILE2_DSL        := cms-data-model-merged2-dsl.xml
+MERGE_DEV2_DSL_DIR := merge-dev2-dsl.d
+
+# DMFILE2_GPON is the GPON subtree (for distributed MDM)
+DMFILE2_GPON        := cms-data-model-merged2-gpon.xml
+MERGE_DEV2_GPON_DIR := merge-dev2-gpon.d
+
+# DMFILE2_EPON is the EPON subtree (for distributed MDM)
+DMFILE2_EPON        := cms-data-model-merged2-epon.xml
+MERGE_DEV2_EPON_DIR := merge-dev2-epon.d
+
+# DMFILE2_VOICE is just the TR181 Voice subtree (for distributed MDM)
+DMFILE2_VOICE        := cms-data-model-merged2-voice.xml
+MERGE_DEV2_VOICE_DIR := merge-dev2-voice.d
+
+# DMFILE2_DIAG contains diag related objects (for distributed MDM)
+DMFILE2_DIAG        := cms-data-model-merged2-diag.xml
+MERGE_DEV2_DIAG_DIR := merge-dev2-diag.d
+
+# DMFILE2_SYSMGMT is the TR181 data model that has not been moved to a 
+# separate distributed MDM.
+DMFILE2_SYSMGMT        := cms-data-model-merged2-sysmgmt.xml
+MERGE_DEV2_SYSMGMT_DIR := merge-dev2-sysmgmt.d
+
+# DMFILE2_OPENPLAT is the TR181 SoftwareModules subtree (for distributed MDM)
+DMFILE2_OPENPLAT        := cms-data-model-merged2-softwaremodules.xml
+MERGE_DEV2_OPENPLAT_DIR := merge-dev2-openplat.d
+
+# DMFILE2_TR69 is the TR181 ManagementServer subtree (for distributed MDM)
+DMFILE2_TR69        := cms-data-model-merged2-tr69.xml
+MERGE_DEV2_TR69_DIR := merge-dev2-tr69.d
+
+# DMFILE2_USP is the TR181 LocalAgent subtree (for distributed MDM)
+DMFILE2_USP        := cms-data-model-merged2-localagent.xml
+MERGE_DEV2_USP_DIR := merge-dev2-usp.d
+
+# DMFILE2_WIFI is just the TR181 WIFI subtree (for distributed MDM)
+DMFILE2_WIFI        := cms-data-model-merged2-wifi.xml
+MERGE_DEV2_WIFI_DIR := merge-dev2-wifi.d
+
+#
+# There are 2 versions of TR104: v1 and v2.  Copy the right version
+# to the file that will be used.
+#
+DMFILE_TR104 := cms-dm-tr104-voice.xml
+$(DMFILE_TR104): cms-dm-tr104v$(if $(BUILD_DM_TR104_V2),2,1)-voice.xml
+	cp -f $< $@
+#
+# We need TR181 version of TR104 profile seperated 
+# because Baseline:1 defined in TR104 would be changed to
+# Device2_Baseline:1 in TR181 merged file
+#
+DMFILE_TR104_TR181 := cms-dm-tr104-voice-tr181.xml
+$(DMFILE_TR104_TR181): cms-dm-tr104v$(if $(BUILD_DM_TR104_V2),2,1)-voice.xml
+	cat $< | sed 's/Baseline:1/Device2_Baseline:1/g' > $(DMFILE_TR104_TR181)
+
+
+# Packet cable (voice) stuff
+MERGEFILE_SNMPPKTCBL_IGD  := $(MERGE_IGD_DIR)/8000-bcm-snmppktcbl.txt
+MERGEFILE_SNMPPKTCBL_DEV2 := $(MERGE_DEV2_DIR)/8000-bcm-snmppktcbl.txt
+MERGEFILE_SNMPPKTCBL_DEV2_VOICE := $(MERGE_DEV2_VOICE_DIR)/8000-bcm-snmppktcbl.txt
+ifeq ($(strip $(BRCM_PKTCBL_SUPPORT)),y)
+    $(shell cp -f $(MERGEFILE_SNMPPKTCBL_IGD).tmp $(MERGEFILE_SNMPPKTCBL_IGD))
+    $(shell cp -f $(MERGEFILE_SNMPPKTCBL_DEV2).tmp $(MERGEFILE_SNMPPKTCBL_DEV2))
+    $(shell cp -f $(MERGEFILE_SNMPPKTCBL_DEV2_VOICE).tmp $(MERGEFILE_SNMPPKTCBL_DEV2_VOICE))
+endif
+
+# Dual TR69 support.
+MERGEFILE_BCM_E2E_DEV2 := $(MERGE_DEV2_DIR)/50000-bcm-e2e.txt
+MERGEFILE_BCM_E2E_DEV2_SYSMGMT := $(MERGE_DEV2_SYSMGMT_DIR)/50000-bcm-e2e.txt
+ifeq ($(strip $(BRCM_MULTIPLE_TR69C_SUPPORT)),2)
+    $(shell cp -f $(MERGEFILE_BCM_E2E_DEV2).tmp $(MERGEFILE_BCM_E2E_DEV2))
+    $(shell cp -f $(MERGEFILE_BCM_E2E_DEV2_SYSMGMT).tmp $(MERGEFILE_BCM_E2E_DEV2_SYSMGMT))
+endif
+
+# Support Customer customizations
+ifeq ($(strip $(BUILD_CUSTOMER)),y)
+
+MERGEFILE_CUSTOMER := 8100-$(BUILD_CUSTOMER_NAME)-features.txt
+$(shell cp -f customers/$(BUILD_CUSTOMER_NAME)/$(MERGEFILE_CUSTOMER) $(MERGE_IGD_DIR))
+
+clean_customer_files:
+	rm -f $(MERGE_IGD_DIR)/$(MERGEFILE_CUSTOMER)
+
+else
+# nothing to clean.
+clean_customer_files:
+
+endif
+
+
+# Choose the right TR181 wifi file to use.
+DMFILE_TR181_WIFI := cms-dm-tr181-wifi.xml
+$(shell cp -pf cms-dm-tr181-wifi-unfwlcfg.xml $(DMFILE_TR181_WIFI))
+
+
+# The DMFILE must be regenerated anytime one of the data model files changes.
+# For this detection mechanism to work correctly, all data model files
+# must match the pattern of cms-dm*.xml
+# $(DMFILE_TR104) $(DMFILE_TR104_TR181) must be added in order for the corresponding
+# rule to be triggered.  Not sure why the shell function did not have the same effect.
+DM_FILES := $(shell ls -w 5000 -x cms-dm*.xml) $(DMFILE_TR104) $(DMFILE_TR104_TR181)
+
+#
+# Generate all the files from the data model file.
+#
+all: $(DMFILE) $(DMFILE2) $(DMFILE2_DEVINFO) $(DMFILE2_DSL) \
+     $(DMFILE2_GPON) $(DMFILE2_EPON) $(DMFILE2_VOICE) \
+	  $(DMFILE2_WIFI) \
+     $(DMFILE2_DIAG) \
+     $(DMFILE2_SYSMGMT) \
+     $(DMFILE2_OPENPLAT) \
+     $(DMFILE2_TR69) $(DMFILE2_USP)\
+     $(BBF_DMFILE) $(BBF_DMFILE2) \
+     mdm_objectid.h \
+     mdm_object.h \
+     mdm_validstrings.h \
+     mdm_params.h \
+     $(BUILD_DIR)/router-sysdep/mdm/Baseline_1.c \
+     $(BUILD_DIR)/router-sysdep/mdm2/Device2_Baseline_1.c \
+     $(BUILD_DIR)/router-sysdep/mdm2_devinfo/Device2_Baseline_1.c \
+     $(BUILD_DIR)/router-sysdep/mdm2_dsl/Device2_Baseline_1.c \
+     $(BUILD_DIR)/router-sysdep/mdm2_gpon/Device2_Baseline_1.c \
+     $(BUILD_DIR)/router-sysdep/mdm2_epon/Device2_Baseline_1.c \
+     $(BUILD_DIR)/router-sysdep/mdm2_voice/Device2_Baseline_1.c \
+     $(BUILD_DIR)/router-sysdep/mdm2_diag/Device2_Baseline_1.c \
+     $(BUILD_DIR)/router-sysdep/mdm2_sysmgmt/Device2_Baseline_1.c \
+     $(BUILD_DIR)/router-sysdep/mdm2_openplat/Device2_Baseline_1.c \
+     $(BUILD_DIR)/router-sysdep/mdm2_tr69/Device2_Baseline_1.c \
+     $(BUILD_DIR)/router-sysdep/mdm2_usp/Device2_Baseline_1.c \
+     $(BUILD_DIR)/router-sysdep/mdm2_wifi/Device2_Baseline_1.c \
+     $(BUILD_DIR)/router-sysdep/cms_core/mdm_oidInfoArray.c \
+     $(BUILD_DIR)/userspace/private/libs/mdm_cbk_core/mdm2_oidInfoArray.c \
+     $(BUILD_DIR)/router-sysdep/mdm_cbk_devinfo/mdm2_oidInfoArray.c \
+     $(BUILD_DIR)/router-sysdep/mdm_cbk_dsl/mdm2_oidInfoArray.c \
+     $(BUILD_DIR)/router-sysdep/mdm_cbk_gpon/mdm2_oidInfoArray.c \
+     $(BUILD_DIR)/router-sysdep/mdm_cbk_epon/mdm2_oidInfoArray.c \
+     $(BUILD_DIR)/router-sysdep/mdm_cbk_voice/mdm2_oidInfoArray.c \
+     $(BUILD_DIR)/router-sysdep/mdm_cbk_diag/mdm2_oidInfoArray.c \
+     $(BUILD_DIR)/router-sysdep/mdm_cbk_sysmgmt/mdm2_oidInfoArray.c \
+     $(BUILD_DIR)/router-sysdep/mdm_cbk_openplat/mdm2_oidInfoArray.c \
+     $(BUILD_DIR)/router-sysdep/mdm_cbk_tr69/mdm2_oidInfoArray.c \
+     $(BUILD_DIR)/router-sysdep/mdm_cbk_usp/mdm2_oidInfoArray.c \
+     $(BUILD_DIR)/router-sysdep/mdm_cbk_wifi/mdm2_oidInfoArray.c \
+     $(BUILD_DIR)/router-sysdep/cms_core/rcl.h \
+     $(BUILD_DIR)/router-sysdep/cms_core/stl.h  \
+     $(BUILD_DIR)/router-sysdep/obuspa/obuspa/src/vendor/vendor_registerdm.c
+
+
+$(DMFILE): $(GENERATE) $(PERL_MODULES) $(MERGE_IGD_DIR) $(DM_FILES)
+	$(GENERATE) merge $(BUILD_DIR) $(MERGE_IGD_DIR) $(DMFILE)
+
+$(DMFILE2): $(GENERATE) $(PERL_MODULES) $(MERGE_DEV2_DIR) $(DM_FILES)
+	$(GENERATE) merge2 $(BUILD_DIR) $(MERGE_DEV2_DIR) $(DMFILE2)
+
+$(DMFILE2_DEVINFO): $(GENERATE) $(PERL_MODULES) $(MERGE_DEV2_DEVINFO_DIR) $(DM_FILES)
+	$(GENERATE) merge2 $(BUILD_DIR) $(MERGE_DEV2_DEVINFO_DIR) $(DMFILE2_DEVINFO)
+
+$(DMFILE2_DSL): $(GENERATE) $(PERL_MODULES) $(MERGE_DEV2_DSL_DIR) $(DM_FILES)
+	$(GENERATE) merge2 $(BUILD_DIR) $(MERGE_DEV2_DSL_DIR) $(DMFILE2_DSL)
+
+$(DMFILE2_GPON): $(GENERATE) $(PERL_MODULES) $(MERGE_DEV2_GPON_DIR) $(DM_FILES)
+	$(GENERATE) merge2 $(BUILD_DIR) $(MERGE_DEV2_GPON_DIR) $(DMFILE2_GPON)
+
+$(DMFILE2_EPON): $(GENERATE) $(PERL_MODULES) $(MERGE_DEV2_EPON_DIR) $(DM_FILES)
+	$(GENERATE) merge2 $(BUILD_DIR) $(MERGE_DEV2_EPON_DIR) $(DMFILE2_EPON)
+
+$(DMFILE2_VOICE): $(GENERATE) $(PERL_MODULES) $(MERGE_DEV2_VOICE_DIR) $(DM_FILES)
+	$(GENERATE) merge2 $(BUILD_DIR) $(MERGE_DEV2_VOICE_DIR) $(DMFILE2_VOICE)
+
+$(DMFILE2_DIAG): $(GENERATE) $(PERL_MODULES) $(MERGE_DEV2_DIAG_DIR) $(DM_FILES)
+	$(GENERATE) merge2 $(BUILD_DIR) $(MERGE_DEV2_DIAG_DIR) $(DMFILE2_DIAG)
+
+$(DMFILE2_SYSMGMT): $(GENERATE) $(PERL_MODULES) $(MERGE_DEV2_SYSMGMT_DIR) $(DM_FILES)
+	$(GENERATE) merge2 $(BUILD_DIR) $(MERGE_DEV2_SYSMGMT_DIR) $(DMFILE2_SYSMGMT)
+
+$(DMFILE2_OPENPLAT): $(GENERATE) $(PERL_MODULES) $(MERGE_DEV2_OPENPLAT_DIR) $(DM_FILES)
+	$(GENERATE) merge2 $(BUILD_DIR) $(MERGE_DEV2_OPENPLAT_DIR) $(DMFILE2_OPENPLAT)
+
+$(DMFILE2_TR69): $(GENERATE) $(PERL_MODULES) $(MERGE_DEV2_TR69_DIR) $(DM_FILES)
+	$(GENERATE) merge2 $(BUILD_DIR) $(MERGE_DEV2_TR69_DIR) $(DMFILE2_TR69)
+
+$(DMFILE2_USP): $(GENERATE) $(PERL_MODULES) $(MERGE_DEV2_USP_DIR) $(DM_FILES)
+	$(GENERATE) merge2 $(BUILD_DIR) $(MERGE_DEV2_USP_DIR) $(DMFILE2_USP)
+
+$(DMFILE2_WIFI): $(GENERATE) $(PERL_MODULES) $(MERGE_DEV2_WIFI_DIR) $(DM_FILES)
+	$(GENERATE) merge2 $(BUILD_DIR) $(MERGE_DEV2_WIFI_DIR) $(DMFILE2_WIFI)
+
+$(BUILD_DIR)/router-sysdep/mdm/Baseline_1.c: $(DMFILE)
+	$(GENERATE) mdm $(BUILD_DIR) $(DMFILE) mdm
+
+$(BUILD_DIR)/router-sysdep/mdm2/Device2_Baseline_1.c: $(DMFILE2)
+	$(GENERATE) mdm2 $(BUILD_DIR) $(DMFILE2) mdm2
+
+$(BUILD_DIR)/router-sysdep/mdm2_devinfo/Device2_Baseline_1.c: $(DMFILE2_DEVINFO)
+	$(GENERATE) mdm2 $(BUILD_DIR) $(DMFILE2_DEVINFO) mdm2_devinfo
+
+$(BUILD_DIR)/router-sysdep/mdm2_dsl/Device2_Baseline_1.c: $(DMFILE2_DSL)
+	$(GENERATE) mdm2 $(BUILD_DIR) $(DMFILE2_DSL) mdm2_dsl
+
+$(BUILD_DIR)/router-sysdep/mdm2_gpon/Device2_Baseline_1.c: $(DMFILE2_GPON)
+	$(GENERATE) mdm2 $(BUILD_DIR) $(DMFILE2_GPON) mdm2_gpon
+
+$(BUILD_DIR)/router-sysdep/mdm2_epon/Device2_Baseline_1.c: $(DMFILE2_EPON)
+	$(GENERATE) mdm2 $(BUILD_DIR) $(DMFILE2_EPON) mdm2_epon
+
+$(BUILD_DIR)/router-sysdep/mdm2_voice/Device2_Baseline_1.c: $(DMFILE2_VOICE)
+	$(GENERATE) mdm2 $(BUILD_DIR) $(DMFILE2_VOICE) mdm2_voice
+
+$(BUILD_DIR)/router-sysdep/mdm2_diag/Device2_Baseline_1.c: $(DMFILE2_DIAG)
+	$(GENERATE) mdm2 $(BUILD_DIR) $(DMFILE2_DIAG) mdm2_diag
+
+$(BUILD_DIR)/router-sysdep/mdm2_sysmgmt/Device2_Baseline_1.c: $(DMFILE2_SYSMGMT)
+	$(GENERATE) mdm2 $(BUILD_DIR) $(DMFILE2_SYSMGMT) mdm2_sysmgmt
+
+$(BUILD_DIR)/router-sysdep/mdm2_openplat/Device2_Baseline_1.c: $(DMFILE2_OPENPLAT)
+	$(GENERATE) mdm2 $(BUILD_DIR) $(DMFILE2_OPENPLAT) mdm2_openplat
+
+$(BUILD_DIR)/router-sysdep/mdm2_tr69/Device2_Baseline_1.c: $(DMFILE2_TR69)
+	$(GENERATE) mdm2 $(BUILD_DIR) $(DMFILE2_TR69) mdm2_tr69
+
+$(BUILD_DIR)/router-sysdep/mdm2_usp/Device2_Baseline_1.c: $(DMFILE2_USP)
+	$(GENERATE) mdm2 $(BUILD_DIR) $(DMFILE2_USP) mdm2_usp
+
+$(BUILD_DIR)/router-sysdep/mdm2_wifi/Device2_Baseline_1.c: $(DMFILE2_WIFI)
+	$(GENERATE) mdm2 $(BUILD_DIR) $(DMFILE2_WIFI) mdm2_wifi
+
+mdm_params.h: $(DMFILE) $(DMFILE2)
+	$(GENERATE) mdmparams $(BUILD_DIR) $(DMFILE) $(DMFILE2)
+	mkdir -p $(BCM_FSBUILD_DIR)/public/include
+	$(INSTALL_HEADERS_WITH_CP) $@ $(BCM_FSBUILD_DIR)/public/include
+
+mdm_objectid.h: $(DMFILE) $(DMFILE2)
+	$(GENERATE) objectid $(BUILD_DIR) $(DMFILE) $(DMFILE2)
+	mkdir -p $(BCM_FSBUILD_DIR)/public/include
+	$(INSTALL_HEADERS_WITH_CP) $@ $(BCM_FSBUILD_DIR)/public/include
+
+mdm_object.h: $(DMFILE) $(DMFILE2)
+	$(GENERATE) object $(BUILD_DIR) $(DMFILE) $(DMFILE2)
+	mkdir -p $(BCM_FSBUILD_DIR)/public/include
+	$(INSTALL_HEADERS_WITH_CP) $@ $(BCM_FSBUILD_DIR)/public/include
+
+mdm_validstrings.h: $(DMFILE) $(DMFILE2)
+	$(GENERATE) validstrings $(BUILD_DIR) $(DMFILE) $(DMFILE2)
+	mkdir -p $(BCM_FSBUILD_DIR)/public/include
+	$(INSTALL_HEADERS_WITH_CP) $@ $(BCM_FSBUILD_DIR)/public/include
+
+$(BUILD_DIR)/router-sysdep/cms_core/rcl.h $(BUILD_DIR)/router-sysdep/cms_core/stl.h: $(DMFILE) $(DMFILE2)
+	$(GENERATE) prototypes $(BUILD_DIR) $(DMFILE) $(DMFILE2)
+
+$(BUILD_DIR)/router-sysdep/cms_core/mdm_oidInfoArray.c: $(DMFILE)
+	$(GENERATE) oidinfo $(BUILD_DIR) $(DMFILE) cms_core
+	
+$(BUILD_DIR)/userspace/private/libs/mdm_cbk_core/mdm2_oidInfoArray.c: $(DMFILE2)
+	$(GENERATE) oidinfo2 $(BUILD_DIR) $(DMFILE2) mdm_cbk_core
+
+$(BUILD_DIR)/router-sysdep/mdm_cbk_devinfo/mdm2_oidInfoArray.c: $(DMFILE2_DEVINFO)
+	$(GENERATE) oidinfo2 $(BUILD_DIR) $(DMFILE2_DEVINFO) mdm_cbk_devinfo
+
+$(BUILD_DIR)/router-sysdep/mdm_cbk_dsl/mdm2_oidInfoArray.c: $(DMFILE2_DSL)
+	$(GENERATE) oidinfo2 $(BUILD_DIR) $(DMFILE2_DSL) mdm_cbk_dsl
+
+$(BUILD_DIR)/router-sysdep/mdm_cbk_gpon/mdm2_oidInfoArray.c: $(DMFILE2_GPON)
+	$(GENERATE) oidinfo2 $(BUILD_DIR) $(DMFILE2_GPON) mdm_cbk_gpon
+
+$(BUILD_DIR)/router-sysdep/mdm_cbk_epon/mdm2_oidInfoArray.c: $(DMFILE2_EPON)
+	$(GENERATE) oidinfo2 $(BUILD_DIR) $(DMFILE2_EPON) mdm_cbk_epon
+
+$(BUILD_DIR)/router-sysdep/mdm_cbk_voice/mdm2_oidInfoArray.c: $(DMFILE2_VOICE)
+	$(GENERATE) oidinfo2 $(BUILD_DIR) $(DMFILE2_VOICE) mdm_cbk_voice
+
+$(BUILD_DIR)/router-sysdep/mdm_cbk_diag/mdm2_oidInfoArray.c: $(DMFILE2_DIAG)
+	$(GENERATE) oidinfo2 $(BUILD_DIR) $(DMFILE2_DIAG) mdm_cbk_diag
+
+$(BUILD_DIR)/router-sysdep/mdm_cbk_sysmgmt/mdm2_oidInfoArray.c: $(DMFILE2_SYSMGMT)
+	$(GENERATE) oidinfo2 $(BUILD_DIR) $(DMFILE2_SYSMGMT) mdm_cbk_sysmgmt
+
+$(BUILD_DIR)/router-sysdep/mdm_cbk_openplat/mdm2_oidInfoArray.c: $(DMFILE2_OPENPLAT)
+	$(GENERATE) oidinfo2 $(BUILD_DIR) $(DMFILE2_OPENPLAT) mdm_cbk_openplat
+
+$(BUILD_DIR)/router-sysdep/mdm_cbk_tr69/mdm2_oidInfoArray.c: $(DMFILE2_TR69)
+	$(GENERATE) oidinfo2 $(BUILD_DIR) $(DMFILE2_TR69) mdm_cbk_tr69
+
+$(BUILD_DIR)/router-sysdep/mdm_cbk_usp/mdm2_oidInfoArray.c: $(DMFILE2_USP)
+	$(GENERATE) oidinfo2 $(BUILD_DIR) $(DMFILE2_USP) mdm_cbk_usp
+
+$(BUILD_DIR)/router-sysdep/mdm_cbk_wifi/mdm2_oidInfoArray.c: $(DMFILE2_WIFI)
+	$(GENERATE) oidinfo2 $(BUILD_DIR) $(DMFILE2_WIFI) mdm_cbk_wifi
+
+$(BUILD_DIR)/router-sysdep/obuspa/obuspa/src/vendor/vendor_registerdm.c: $(DMFILE2_DEVINFO) $(DMFILE2_DSL) \
+	$(DMFILE2_GPON) $(DMFILE2_EPON) $(DMFILE2_VOICE) $(DMFILE2_SYSMGMT) $(DMFILE2_DIAG) $(DMFILE2_OPENPLAT) \
+	$(DMFILE2_TR69) $(DMFILE2_USP) $(DMFILE2_WIFI)
+	# rm -f $(BUILD_DIR)/router-sysdep/obuspa/obuspa/src/vendor/vendor_registerdm.c 2>/dev/null
+	rm -f $(BUILD_DIR)/router-sysdep/obuspa/obuspa/src/vendor/vendor_registerdm.h 2>/dev/null
+	rm -f $(BUILD_DIR)/router-sysdep/obuspa/obuspa/src/vendor/vendor_registerdm_obj.h 2>/dev/null
+	# rm -f $(BUILD_DIR)/router-sysdep/obuspa/obuspa/src/vendor/vendor.am 2>/dev/null
+	$(GENERATE) registerdm $(BUILD_DIR) $(DMFILE2_DEVINFO) devinfo
+	$(GENERATE) registerdm $(BUILD_DIR) $(DMFILE2_DSL) dsl
+	$(GENERATE) registerdm $(BUILD_DIR) $(DMFILE2_GPON) gpon
+	$(GENERATE) registerdm $(BUILD_DIR) $(DMFILE2_EPON) epon
+	$(GENERATE) registerdm $(BUILD_DIR) $(DMFILE2_VOICE) voice
+	$(GENERATE) registerdm $(BUILD_DIR) $(DMFILE2_SYSMGMT) sysmgmt
+	$(GENERATE) registerdm $(BUILD_DIR) $(DMFILE2_DIAG) diag
+	$(GENERATE) registerdm $(BUILD_DIR) $(DMFILE2_OPENPLAT) openplat
+	$(GENERATE) registerdm $(BUILD_DIR) $(DMFILE2_TR69) tr69c
+	$(GENERATE) registerdm $(BUILD_DIR) $(DMFILE2_USP) usp
+	$(GENERATE) registerdm $(BUILD_DIR) $(DMFILE2_WIFI) wifi
+
+
+#
+# This is for TR69 reporting of supported data model.
+#
+ifneq ($(strip $(BUILD_PROFILE_SUPPORTED_DATA_MODEL)),)
+
+WEBS_DATA_MODEL_DIR := $(INSTALL_DIR)/webs/data-model
+BBF_BUILD           := $(BUILD_DIR)/hostTools/cms2bbf/build.xml
+
+$(BBF_DMFILE): $(DMFILE) bbf_dmfile_build bbf_dmfile_install
+	@echo "Done building $(BBF_DMFILE)"
+
+.NOTPARALLEL:
+
+bbf_dmfile_build:
+	ant -f $(BBF_BUILD) run -Darg0=$(CURR_DIR)/$(DMFILE) -Darg1=$(CURR_DIR)/$(BBF_DMFILE)
+
+ifeq ($(strip $(BUILD_PURE181_PROFILES)),)
+bbf_dmfile_install:
+	-mkdir -p $(WEBS_DATA_MODEL_DIR)
+	cp -d $(BBF_DMFILE) $(WEBS_DATA_MODEL_DIR)/$(BBF_DMFILE)
+else
+bbf_dmfile_install:
+endif
+
+$(BBF_DMFILE2): $(DMFILE2) bbf_dmfile2_build bbf_dmfile2_install
+	@echo "Done building $(BBF_DMFILE2)"
+
+bbf_dmfile2_build:
+	ant -f $(BBF_BUILD) run -Darg0=$(CURR_DIR)/$(DMFILE2) -Darg1=$(CURR_DIR)/$(BBF_DMFILE2)
+
+ifneq ($(strip $(BUILD_PURE181_PROFILES)),)
+bbf_dmfile2_install:
+	-mkdir -p $(WEBS_DATA_MODEL_DIR)
+	cp -d $(BBF_DMFILE2) $(WEBS_DATA_MODEL_DIR)/$(BBF_DMFILE2)
+else
+bbf_dmfile2_install:
+endif
+
+clean_bbf_files:
+	rm -f $(BBF_DMFILE) $(BBF_DMFILE2)
+	rm -rf $(WEBS_DATA_MODEL_DIR)
+
+else
+
+$(BBF_DMFILE):
+	@echo "skipping $(BBF_DMFILE) (not configured)"
+
+$(BBF_DMFILE2):
+	@echo "skipping $(BBF_DMFILE2) (not configured)"
+
+clean_bbf_files:
+	@echo "skipping clean BBF data model files (not configured)"
+
+endif
+
+
+report: $(DMFILE) $(DMFILE2)
+	$(GENERATE) report $(BUILD_DIR) $(DMFILE)
+	$(GENERATE) report2 $(BUILD_DIR) $(DMFILE2)
+
+
+clean: clean_bbf_files clean_customer_files
+	rm -f $(DMFILE) $(DMFILE2)
+	rm -f $(DMFILE2_DEVINFO) $(DMFILE2_DSL) $(DMFILE2_GPON) $(DMFILE2_EPON)
+	rm -f $(DMFILE_TR104) $(DMFILE_TR104_TR181) $(DMFILE2_VOICE)
+	rm -f $(DMFILE2_DIAG)
+	rm -f $(DMFILE2_SYSMGMT)
+	rm -f $(DMFILE2_OPENPLAT)
+	rm -f $(DMFILE2_TR69) $(DMFILE2_USP)
+	rm -f $(DMFILE2_WIFI)
+	rm -f $(MERGEFILE_SNMPPKTCBL_IGD) $(MERGEFILE_SNMPPKTCBL_DEV2) $(MERGEFILE_SNMPPKTCBL_DEV2_VOICE)
+	rm -f $(MERGEFILE_BCM_E2E_DEV2) $(MERGEFILE_BCM_E2E_DEV2_SYSMGMT)
+	rm -f $(DMFILE_TR181_WIFI)
+	rm -f mdm_objectid.h mdm_object.h mdm_params.h mdm_validstrings.h
+	rm -f $(BCM_FSBUILD_DIR)/public/include/mdm_objectid.h
+	rm -f $(BCM_FSBUILD_DIR)/public/include/mdm_object.h
+	rm -f $(BCM_FSBUILD_DIR)/public/include/mdm_params.h
+	rm -f $(BCM_FSBUILD_DIR)/public/include/mdm_validstrings.h
+	rm -f $(BUILD_DIR)/router-sysdep/cms_core/mdm_oidInfoArray.c
+	rm -f $(BUILD_DIR)/userspace/private/libs/mdm_cbk_core/mdm2_oidInfoArray.c
+	rm -f $(BUILD_DIR)/router-sysdep/mdm_cbk_devinfo/mdm2_oidInfoArray.c
+	rm -f $(BUILD_DIR)/router-sysdep/mdm_cbk_dsl/mdm2_oidInfoArray.c
+	rm -f $(BUILD_DIR)/router-sysdep/mdm_cbk_gpon/mdm2_oidInfoArray.c
+	rm -f $(BUILD_DIR)/router-sysdep/mdm_cbk_epon/mdm2_oidInfoArray.c
+	rm -f $(BUILD_DIR)/router-sysdep/mdm_cbk_voice/mdm2_oidInfoArray.c
+	rm -f $(BUILD_DIR)/router-sysdep/mdm_cbk_diag/mdm2_oidInfoArray.c
+	rm -f $(BUILD_DIR)/router-sysdep/mdm_cbk_sysmgmt/mdm2_oidInfoArray.c
+	rm -f $(BUILD_DIR)/router-sysdep/mdm_cbk_openplat/mdm2_oidInfoArray.c
+	rm -f $(BUILD_DIR)/router-sysdep/mdm_cbk_tr69/mdm2_oidInfoArray.c
+	rm -f $(BUILD_DIR)/router-sysdep/mdm_cbk_usp/mdm2_oidInfoArray.c
+	rm -f $(BUILD_DIR)/router-sysdep/mdm_cbk_wifi/mdm2_oidInfoArray.c
+	rm -f $(BUILD_DIR)/router-sysdep/cms_core/rcl.h
+	rm -f $(BUILD_DIR)/router-sysdep/cms_core/stl.h
+	rm -f $(BUILD_DIR)/router-sysdep/mdm/*.c
+	rm -f $(BUILD_DIR)/router-sysdep/mdm2/*.c
+	rm -f $(BUILD_DIR)/userspace/private/libs/mdm2_devinfo/*.c
+	rm -f $(BUILD_DIR)/userspace/private/libs/mdm2_dsl/*.c
+	rm -f $(BUILD_DIR)/userspace/private/libs/mdm2_gpon/*.c
+	rm -f $(BUILD_DIR)/userspace/private/libs/mdm2_epon/*.c
+	rm -f $(BUILD_DIR)/userspace/private/libs/mdm2_voice/*.c
+	rm -f $(BUILD_DIR)/router-sysdep/mdm2_diag/*.c
+	rm -f $(BUILD_DIR)/userspace/private/libs/mdm2_sysmgmt/*.c
+	rm -f $(BUILD_DIR)/userspace/private/libs/mdm2_openplat/*.c
+	rm -f $(BUILD_DIR)/router-sysdep/mdm2_tr69/*.c
+	rm -f $(BUILD_DIR)/userspace/private/libs/mdm2_usp/*.c
+	rm -f $(BUILD_DIR)/userspace/private/libs/mdm2_wifi/*.c
+	# obuspa application needs to be cleaned here because its Makefle was
+	# generated with autogenerated vendor.am, and clean rule of this application
+	# needs to be executed before the autogenerated sources are being deleted here
+	cd  $(BUILD_DIR)/userspace/public/apps/obuspa/; make -f Bcmbuild.mk clean;
+	# the autogenerated Makefile from vendor.am also needs to be removed.
+	rm -f $(BUILD_DIR)/userspace/public/apps/obuspa/obuspa/Makefile 2> /dev/null
+	rm -rf $(BUILD_DIR)/userspace/public/apps/obuspa/obuspa/src/vendor/devinfo
+	rm -rf $(BUILD_DIR)/userspace/public/apps/obuspa/obuspa/src/vendor/dsl
+	rm -rf $(BUILD_DIR)/userspace/public/apps/obuspa/obuspa/src/vendor/gpon
+	rm -rf $(BUILD_DIR)/userspace/public/apps/obuspa/obuspa/src/vendor/epon
+	rm -rf $(BUILD_DIR)/userspace/public/apps/obuspa/obuspa/src/vendor/voice
+	rm -rf $(BUILD_DIR)/userspace/public/apps/obuspa/obuspa/src/vendor/diag
+	rm -rf $(BUILD_DIR)/userspace/public/apps/obuspa/obuspa/src/vendor/sysmgmt
+	rm -rf $(BUILD_DIR)/userspace/public/apps/obuspa/obuspa/src/vendor/openplat
+	rm -rf $(BUILD_DIR)/userspace/public/apps/obuspa/obuspa/src/vendor/tr69c
+	rm -rf $(BUILD_DIR)/userspace/public/apps/obuspa/obuspa/src/vendor/usp
+	rm -rf $(BUILD_DIR)/userspace/public/apps/obuspa/obuspa/src/vendor/wifi
+	rm -f $(BUILD_DIR)/userspace/public/apps/obuspa/obuspa/src/vendor/vendor_registerdm.c 2 >/dev/null
+	rm -f $(BUILD_DIR)/userspace/public/apps/obuspa/obuspa/src/vendor/vendor_registerdm.h 2 >/dev/null
+	rm -f $(BUILD_DIR)/userspace/public/apps/obuspa/obuspa/src/vendor/vendor_registerdm_obj.h 2>/dev/null
+	rm -f $(BUILD_DIR)/userspace/public/apps/obuspa/obuspa/src/vendor/vendor.am 2> /dev/null

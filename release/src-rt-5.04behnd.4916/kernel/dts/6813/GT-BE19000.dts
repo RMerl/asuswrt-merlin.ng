@@ -1,0 +1,363 @@
+#include "6813.dtsi"
+
+/ {
+	memory_controller {
+		memcfg = <(BP_DDR_TYPE_DDR4       | \
+			BP_DDR_SPEED_1600_22_22_22    | \
+			BP_DDR_TOTAL_SIZE_2048MB      | \
+			BP_DDR_DEVICE_WIDTH_16        | \
+			BP_DDR_TOTAL_WIDTH_32BIT      | \
+			BP_DDR_TEMP_EXTENDED_ASR      | \
+			BP_DDR_SSC_CONFIG_1)>;
+	};
+
+//	bcmgps: bcmgps {
+//		compatible = "brcm, bcmgps";
+//		ext_irq = <&bca_extintr 50 GPIO_ACTIVE_HIGH (BCA_EXTINTR_TYPE_HIGH_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;   /* host_req */
+//		reset-gpio = <&gpioc 48 GPIO_ACTIVE_HIGH>;  /* nStandby */
+//		spi-bus = <&bcmgps_spi>;
+//		status = "okay";
+//	};
+};
+
+&nand {
+	pinctrl-0 = <&nand_data_pins &nand_ctrl_pins &nand_wp_b_pin_25>;
+	write-protect = <1>;
+	status = "okay";
+};
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+#if defined(CONFIG_REGULATOR) && defined(CONFIG_REGULATOR_FIXED_VOLTAGE)
+/**********************************************************************/
+/* GPIO: Add one define per GPIO (individual or shared) regulator     */
+/*       - Skip if no GPIO regulators in use                          */
+/**********************************************************************/
+#define PCIE0_REG_GPIO    78    /* SLEEP_0 for vreg_pcie0 node */
+#define PCIE1_REG_GPIO    75    /* SLEEP_1 for vreg_pcie1 node */
+#define PCIE2_REG_GPIO    76    /* SLEEP_2 for vreg_pcie2 node */
+#define PCIE3_REG_GPIO    19    /* SLEEP_3 for vreg_pcie3 node */
+
+#include "../bcm_wlan_regulator.dtsi"
+
+/delete-node/ &pcie0;
+/delete-node/ &pcie1;
+
+/ {
+    /* pcie core 1 */
+    pcie1_reorder: reorder_pcie@1 {
+        #define PCIE_ID				1
+        #define PCIE_SPI			69
+        #define PCIE_ADDR			0x80090000
+        #define PCIE_SIZE			0x0000B000
+        #define PCIE_RANGE_ADDR			0xD0000000
+        #define PCIE_RANGE_SIZE			0x10000000
+        #include "../ip/bcm_pcie_core.dtsi"
+    };
+    /* pcie core 0 */
+    pcie0_reorder: reorder_pcie@0 {
+        #define PCIE_ID				0
+        #define PCIE_SPI			68
+        #define PCIE_ADDR			0x80080000
+        #define PCIE_SIZE			0x0000A000
+        #define PCIE_RANGE_ADDR			0xC0000000
+        #define PCIE_RANGE_SIZE			0x10000000
+        #include "../ip/bcm_pcie_core.dtsi"
+    };
+};
+
+&pcie0_reorder {
+	brcm,supply-names = "vreg-pcie0";
+	status = "disabled";
+};
+&pcie1_reorder {
+	brcm,supply-names = "vreg-pcie1";
+	status = "okay";
+};
+&pcie2 {
+	status = "okay";
+};
+&pcie3 {
+	status = "okay";
+};
+#else
+&pcie0 {
+	status = "okay";
+};
+&pcie1_reorder {
+	status = "okay";
+};
+&pcie2_reorder {
+	status = "okay";
+};
+&pcie3 {
+	status = "okay";
+};
+#endif
+#endif //#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+
+/*
+&legacy_leds {
+    wl-sess-led = <&led27>;
+};
+*/
+
+&led_ctrl {
+	status="okay";
+
+	/* GPIO LED */
+	/* LAN LED */
+	led1:led_gpio_1 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <1>;
+		active_low;
+		init_high;
+	};
+	/* WAN WHITE LED */
+	led17:led_gpio_17 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <17>;
+		active_low;
+		init_high;
+	};
+	/* WAN RED LED */
+	led43:led_gpio_43 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <43>;
+		active_low;
+		init_high;
+	};
+	/* 10G LAN LED */
+	led47:led_gpio_47 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <47>;
+		active_low;
+		init_high;
+	};
+	/* POWER LED */
+	led50:led_gpio_50 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <50>;
+		active_low;
+		init_low;
+	};
+        /* AFC LED */
+	led48:led_gpio_48 {
+                compatible = "brcm,gpio-led";
+                software_led;
+                pin = <48>;
+                active_low;
+                init_high;
+        };
+
+	/* WPS LED */                                                                                                                                                                                       
+	led53:led_gpio_53 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <53>;
+		active_high;
+		init_low;
+        };
+
+	/* CLED */
+	/* LED_1A_R */
+	led2: sw_parallel_led_2 {
+		pinctrl-0 = <&a_per_led_02_pin_2>;
+		active_high;
+		status="okay";
+		brightness = <0>;
+	};
+	/* LED_1A_B */
+	led3: sw_parallel_led_3 {
+		pinctrl-0 = <&a_per_led_03_pin_3>;
+		active_high;
+		status="okay";
+		brightness = <0>;
+	};
+	/* LED_1A_G */
+	led4: sw_parallel_led_4 {
+		pinctrl-0 = <&a_per_led_04_pin_4>;
+		active_high;
+		status="okay";
+		brightness = <0>;
+	};
+
+	/* LED_1B_R */
+	led5: sw_parallel_led_5 {
+		pinctrl-0 = <&a_per_led_05_pin_5>;
+		active_high;
+		status="okay";
+		brightness = <0>;
+	};
+	/* LED_1B_B */
+	led7: sw_parallel_led_7 {
+		pinctrl-0 = <&a_per_led_07_pin_7>;
+		active_high;
+		status="okay";
+		brightness = <0>;
+	};
+	/* LED_1B_G */
+	led8: sw_parallel_led_8 {
+		pinctrl-0 = <&a_per_led_08_pin_8>;
+		active_high;
+		status="okay";
+		brightness = <0>;
+	};
+	/* LED_1C_R */
+	led14: sw_parallel_led_14 {
+		pinctrl-0 = <&b_per_led_14_pin_40>;
+		active_high;
+		status="okay";
+		brightness = <0>;
+	};
+	/* LED_1C_B */
+	led15: sw_parallel_led_15 {
+		pinctrl-0 = <&b_per_led_15_pin_41>;
+		active_high;
+		status="okay";
+		brightness = <0>;
+	};
+	/* LED_1C_G */
+	led16: sw_parallel_led_16 {
+		pinctrl-0 = <&b_per_led_16_pin_42>;
+		active_high;
+		status="okay";
+		brightness = <0>;
+	};
+	/* LED_1D_R */
+	led18: sw_parallel_led_18 {
+		pinctrl-0 = <&b_per_led_18_pin_44>;
+		active_high;
+		status="okay";
+		brightness = <0>;
+	};
+	/* LED_1D_B */
+	led20: sw_parallel_led_20 {
+		pinctrl-0 = <&b_per_led_20_pin_46>;
+		active_high;
+		status="okay";
+		brightness = <0>;
+	};
+	/* LED_1D_G */
+	led19: sw_parallel_led_19 {
+		pinctrl-0 = <&b_per_led_19_pin_45>;
+		active_high;
+		status="okay";
+		brightness = <0>;
+	};
+	led80:led_gpio_14 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <14>;
+		active_low;
+	};
+
+	led81:led_gpio_62 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <62>;
+		active_low;
+	};
+};
+
+// For ICP-20100 pressure sensor
+&i2c1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c1_sclk_pin_14 &i2c1_sdata_pin_15>;
+	status = "okay";
+
+	icp201xx@63{
+		compatible = "invensense,icp201xx";
+		reg = <0x63>;
+	};
+};
+
+&mdio {
+    /* Port PHY mapping:
+        port_gphy1 <----> phy_gphy1
+        port_xphy <-----> phy_xphy      - Internal 10G PHY
+        port_sgmii1 <---> phy_serdes0   - RTL8372
+        port_sgmii2 <---> phy_serdes1   - BCM84891L
+     */
+
+	phy_gphy1 {
+		status = "okay";
+	};
+
+	phy_xphy {
+		status = "okay";
+	};
+
+	/* Enable SerDes0 for RTL8372 */
+	phy_serdes0 {
+		phy-fixed;
+		phy-reset = <&gpioc 14 GPIO_ACTIVE_HIGH>;
+		config-xfi = "10GBase-R";	/* RTL8372: 10G/4x2.5G switch */
+		status = "okay";
+	};
+
+	phy_cascade1 {
+		reg = <21>;
+		status = "okay";
+	};
+
+	phy_serdes1 {
+		phy-handle = <&phy_cascade1>;
+		status = "okay";
+	};
+};
+
+&ethphytop {
+    xphy0-enabled;
+    status = "okay";
+};
+
+&switch0 {
+	ports {
+		port_gphy1 {
+			status = "okay";
+			label = "eth2";
+		};
+
+		port_xphy {
+			status = "okay";
+			label = "eth0";
+		};
+
+		port_sgmii1 {
+			status = "okay";
+			label = "eth1";
+		};
+
+		port_sgmii2 {
+			status = "okay";
+			label = "eth3";
+		};
+	};
+};
+
+&usb_ctrl {
+	pinctrl-names = "default";
+	pinctrl-0 = <&usb0_pwr_pins &usb1_pwr_pins>;
+	status = "okay";
+	xhci-enable;
+};
+&usb0_xhci {
+	status = "okay";
+};
+
+&hsspi {
+	status = "okay";
+	bcmgps_spi: bcmgps_spi {
+		pinctrl-names = "default"; 
+		pinctrl-0 = <&hs_spim_ss_2_b_pin_52>;
+		status = "okay";
+		compatible = "rohm,dh2228fv";
+		reg = <2>;
+		spi-max-frequency = <25000000>;
+	};
+};

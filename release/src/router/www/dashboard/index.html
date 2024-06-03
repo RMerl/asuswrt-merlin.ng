@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+        <link rel="shortcut icon" href="images/favicon.png" />
+        <title><#Web_Title#></title>
+
+        <script src="./js/jquery.js"></script>
+        <script src="./js/httpApi.js"></script>
+        <script src="./js/bootstrap.bundle.min.js"></script>
+
+        <script src="./js/asus.js"></script>
+        <script src="./js/basic.js"></script>
+        <script src="./js/wireless.js"></script>
+
+        <link rel="stylesheet" href="./css/bootstrap.min.css" />
+        <link rel="stylesheet" href="./css/bootstrap-customize.css" />
+        <link rel="stylesheet" href="./css/architecture.css" />
+    </head>
+    <script>
+        postMessageToApp({ web_ready: "1" });
+
+        const checkAuthInterval = setInterval(function () {
+            let loadingFlag = false;
+            const settingsWindow = document.querySelector('#settingsWindow');
+            const loadingDivDom = settingsWindow?.contentDocument?.querySelector('#Loading');
+            const loadingBarDivDom = settingsWindow?.contentDocument?.querySelector('#LoadingBar');
+            const loadingText = document.querySelector('#loading_text');
+
+            if ((loadingDivDom && loadingDivDom.style.visibility === 'visible') ||
+                (loadingBarDivDom && loadingBarDivDom.style.visibility === 'visible') ||
+                loadingText) {
+                loadingFlag = true;
+            }
+            if (loadingFlag) {
+                clearInterval(checkAuthInterval);
+            } else {
+                fetch("/check_Auth.cgi", {method: 'POST'})
+                    .then(response => response.json())
+                    .catch(e => {
+                        window.location.href = '/';
+                    })
+            }
+        }, 3000);
+
+        document.addEventListener("DOMContentLoaded", function () {
+            let urlPath = urlParameter.get("url") ? urlParameter.get("url") : "dashboard";
+            for (let item of menuList) {
+                if (item.url === urlPath) {
+                    item.clicked = true;
+                    break;
+                }
+            }
+
+            genArchitecture();
+            fetch(`./pages/${urlPath}.html`)
+                .then((response) => response.text())
+                .then((data) => {
+                    let target = document.querySelector("main");
+                    target.innerHTML = data;
+
+                    let arrayScript = target.querySelectorAll("script");
+                    let arrayLink = target.querySelectorAll("link");
+
+                    // set script tag
+                    for (let item of arrayScript) {
+                        let scriptElement = document.createElement("script");
+                        let src = item.getAttribute("src");
+
+                        if (src) {
+                            scriptElement.src = src;
+                        } else {
+                            scriptElement.textContent = item.innerText;
+                        }
+
+                        target.removeChild(item); // remove previous script tag
+                        target.appendChild(scriptElement);
+
+                        // scriptElement.onload = () => {
+                        //     console.log(scriptElement);
+                        // };
+                    }
+
+                    // set link tag
+                    for (let item of arrayLink) {
+                        let linkElement = document.createElement("link");
+                        linkElement.rel = "stylesheet";
+                        linkElement.href = item.getAttribute("href");
+                        target.removeChild(item);
+                        target.appendChild(linkElement);
+                    }
+                });
+
+            // hide HEADER/NAV while page launched by APP
+            if (
+                window.appInterface || // from Android app
+                (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.appInterface) // for iOS app
+            ) {
+                document.querySelector("header").classList.add("d-none");
+                document.querySelector("nav").classList.add("d-none");
+            } else {
+                if (httpApi.privateEula.get("SIGNED").ASUS_PP_EULA == "0") top.location.href = "/QIS_wizard.htm?flag=eulaPP";
+            }
+
+            if(urlParameter.get("mapp")==="true"){ // for Multisite App
+                document.querySelector("header").classList.add("d-none");
+            }
+
+        });
+    </script>
+    <script src="js/chart.min.js"></script>
+    <body class="d-flex flex-row">
+        <!-- MENU -->
+        <nav class="notInApp nav-menu-hide"></nav>
+        <article class="container-fluid d-flex flex-column p-0">
+            <header class="notInApp container-fluid d-flex align-items-center p-2"></header>
+            <section>
+                <!-- UPPER SIDE STATUS FIELD -->
+                <div role="info-banner" class="d-flex align-items-center flex-grow"></div>
+                <!-- MAIN PAGE CONTENT -->
+                <main class="container-fluid"></main>
+            </section>
+            <!-- NOTIFICATION -->
+            <aside></aside>
+        </article>
+        <footer></footer>
+    </body>
+</html>

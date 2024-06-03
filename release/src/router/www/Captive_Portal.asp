@@ -1692,7 +1692,7 @@ function GetTree(layer_order, v){
 		document.getElementById('e'+layer_order).style.visibility = "";
 	}
 	else
-		alert("Error when show the folder-tree!");
+		alert(stringSafeGet("<#ALERT_OF_ERROR_show#>"));
 }
 function cancel_folderTree(){
 	this.FromObject = "0";

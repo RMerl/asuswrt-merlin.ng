@@ -6,6 +6,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdarg.h>
+#include <shared.h>
 
 #define NFCM_TIME_PERIOD (5)
 
@@ -39,11 +40,10 @@ void alt_start_nfcm()
     int enb = nvram_get_int("nfcm_enable");
     if (!enb) 
         return;
-
 #ifdef RTCONFIG_AMAS
     if(aimesh_re_node())
-	return; 
-#endif    
+        return;
+#endif
 #if 0
 	if(getpid() != 1) { //not rc init process
 		notify_rc("start_nfcm");

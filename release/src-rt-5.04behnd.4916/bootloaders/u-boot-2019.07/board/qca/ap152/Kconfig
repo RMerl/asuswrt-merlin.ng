@@ -1,0 +1,15 @@
+if TARGET_AP152
+
+config SYS_VENDOR
+	default "qca"
+
+config SYS_BOARD
+	default "ap152"
+
+config SYS_CONFIG_NAME
+	default "ap152"
+
+config SYS_TEXT_BASE
+	default 0x9f000000
+
+endif

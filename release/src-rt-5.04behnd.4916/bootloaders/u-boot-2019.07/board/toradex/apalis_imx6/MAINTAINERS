@@ -1,0 +1,9 @@
+Apalis iMX6
+M:	Max Krummenacher <max.krummenacher@toradex.com>
+W:	http://developer.toradex.com/software/linux/linux-software
+W:      https://www.toradex.com/community
+S:	Maintained
+F:	board/toradex/apalis_imx6/
+F:	include/configs/apalis_imx6.h
+F:	configs/apalis_imx6_defconfig
+F:	arch/arm/dts/imx6-apalis.dts

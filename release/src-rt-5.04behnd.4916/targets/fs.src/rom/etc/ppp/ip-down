@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# This file should not be modified -- make local changes to
+# /etc/ppp/ip-down.local instead
+
+LOGDEVICE=$6
+REALDEVICE=$1
+
+export PATH=/sbin:/usr/sbin:/bin:/usr/bin
+
+[ -x /etc/ppp/ip-down.local ] && /etc/ppp/ip-down.local "$@"
+
+/etc/sysconfig/network-scripts/ifdown-post ifcfg-${LOGDEVICE}
+
+exit 0

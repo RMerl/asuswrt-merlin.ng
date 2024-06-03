@@ -1,0 +1,20 @@
+BRCM_CHIP := 4912
+UBOOT_CONFIG = bcm94912_defconfig
+STANDALONE_CONFIGS = DDR3 DDR4
+STANDALONE_TYPE = dpfe
+ARCH = aarch64
+SEC_ARCH = GEN3
+
+UBOOT_CROSS_COMPILE = /opt/toolchains/crosstools-aarch64-gcc-9.2-linux-4.19-glibc-2.30-binutils-2.32/usr/bin/aarch64-linux-
+
+bcm_uboot_envsize = 16384
+bcm_uboot_env = env_NAND_2M_GT-AXE16000.conf
+bcm_uboot_layout = loader_2M_saddr34_dpfe_basic.conf
+bcm_uboot_image_offset = 2M
+bcm_uboot_spl_arch = dpfe nand
+bcm_uboot_spl_prefix = nand_
+bcm_image_compatstr = "rev=a0+;ip=ipv6,ipv4;ddr=ddr3,ddr4"
+bcm_uboot_kernel_compression = lzo
+bcm_cred_dir = targets/keys/demo/GEN3
+bcm_uboot_fit_sign = targets/keys/demo/GEN3/Krot-fld.pem
+bcm_uboot_fit_signer = sign_openssl_simple.sh

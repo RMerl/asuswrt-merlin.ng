@@ -1,0 +1,5 @@
+compatible = "brcm,dgasp-pmc";
+reg-names = "dg-irq-mask-reg", "uart-dr";
+reg = <DG_IRQ_MASK_REG_OFFSET DG_IRQ_MASK_REG_SIZE>,
+      <DG_UART_DR_OFFSET DG_UART_DR_SIZE>;
+status = "okay";

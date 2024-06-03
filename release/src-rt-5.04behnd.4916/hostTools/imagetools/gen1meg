@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [ -z "$1" ]
+then
+  echo "argument required" >&2
+  exit 1
+fi
+dd status=none if=/dev/zero bs=1024 count=1024 | tr '\000' '\377' > $1
+

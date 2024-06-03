@@ -32,7 +32,7 @@
 #include <linux/leds.h>
 
 extern struct list_head leds_list;
-#elif defined(CONFIG_ETJ)
+#elif defined(CONFIG_ETJ) || defined(RTCONFIG_MT798X)
 #include <linux/pwm.h>
 struct pwm_device *pwmget_sysfsdev(unsigned int hwid);
 #endif
@@ -58,7 +58,23 @@ static void gpio_set(int gpio_nr, int value)
 	struct pwm_device *pwm = pwmget_sysfsdev(gpio_nr);
 	if (pwm)
 		value? pwm_enable(pwm):pwm_disable(pwm);
+#elif defined(RTCONFIG_MT798X)
+	if (gpio_nr >= 200) { // pwm
+		struct pwm_device *pwm = pwmget_sysfsdev(gpio_nr-200);
+		if (pwm)
+			value? pwm_enable(pwm):pwm_disable(pwm);
+	} else {
+		__gpio_set_value(gpio_nr, value);
+	}
 #else
+#if defined(RTCONFIG_RALINK_MT7622)
+	if((gpio_nr == LED_2G_GPIO) || (gpio_nr == LED_5G_GPIO))
+		gpio_nr += 409;
+#endif
+#if defined(RTCONFIG_RALINK_MT7629)
+	gpio_nr += 433;
+#endif
+	/* printk("gpio_set gpio_nr=%d, value=%x\n", gpio_nr, value);*/
 	__gpio_set_value(gpio_nr, value);
 #endif
 }
@@ -89,7 +105,17 @@ static int gpio_get(int gpio_nr)
 		else
 			return 0;
 	}
+#elif defined(RTCONFIG_MT798X)
+	if (gpio_nr >= 200) { // pwm
+		struct pwm_device *pwm = pwmget_sysfsdev(gpio_nr-200);
+		if (pwm && pwm->state.enabled)
+			return 1;
+		return 0;
+	} else {
+		return __gpio_get_value(gpio_nr);
+	}
 #else
+	/*printk("gpio_get gpio_nr=%d\n", gpio_nr);*/
 	return __gpio_get_value(gpio_nr);
 #endif
 }

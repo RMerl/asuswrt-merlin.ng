@@ -1,0 +1,118 @@
+#include "inc/968370SV.dtsi"
+
+/ {
+    model = "968572SV_PVT1";
+};
+
+&ethphytop {
+    phy-mpd = <&bca_extintr 82 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+    phy-link = <&bca_extintr 83 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+};
+
+&wdt {
+	status = "okay";
+};
+&uart0 {
+	status = "okay";
+};
+
+&mdio_bus {
+    egphy0 {
+        status = "okay";
+    };
+    egphy1 {
+        status = "okay";
+    };
+    egphy2 {
+        status = "okay";
+    };
+    egphy3 {
+        status = "okay";
+    };
+    serdes10_xphy {
+        caps-no-10000;
+        caps-no-5000;
+        enet-phy-lane-swap;
+        USXGMII-S;
+        status = "okay";
+    };
+    serdes11_xphy {
+        caps-no-10000;
+        caps-no-5000;
+        enet-phy-lane-swap;
+        USXGMII-S;
+        status = "okay";
+    };
+    serdes12_xphy {
+        caps-no-10000;
+        caps-no-5000;
+        enet-phy-lane-swap;
+        USXGMII-S;
+        status = "okay";
+    };
+    serdes13_xphy {
+        caps-no-10000;
+        caps-no-5000;
+        enet-phy-lane-swap;
+        USXGMII-S;
+        status = "okay";
+    };
+    serdes10 {
+        phy-handle = <&serdes10_xphy>;
+        status = "okay";
+    };
+    serdes11 {
+        phy-handle = <&serdes11_xphy>;
+        status = "okay";
+    };
+    serdes12 {
+        phy-handle = <&serdes12_xphy>;
+        status = "okay";
+    };
+    serdes13 {
+        phy-handle = <&serdes13_xphy>;
+        status = "okay";
+    };
+};
+
+&switch0 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&a_eth_mdc_pin_59 &a_eth_mdio_pin_60>;
+
+    ports {
+        port_gphy0 {
+            status = "okay";
+        };
+        port_gphy1 {
+            status = "okay";
+        };
+        port_gphy2 {
+            status = "okay";
+        };
+        port_gphy3 {
+            status = "okay";
+        };
+        port_wan@ae {
+            status = "okay";
+        };
+        port_qlan0 {
+            status = "okay";
+        };
+        port_qlan1 {
+            status = "okay";
+        };
+        port_qlan2 {
+            status = "okay";
+        };
+        port_qlan3 {
+            status = "okay";
+        };
+        port_wan@fiber {
+            status = "okay";
+        };
+    };
+};
+
+&cpufreq {
+    op-mode = "dvfs";
+};

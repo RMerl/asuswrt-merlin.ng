@@ -1,0 +1,11 @@
+config BCM_SMCLOG_DRV
+	bool "Broadcom BCA SMC LOG driver"
+	depends on BCM_RPC_SERVICES_DRV	
+	default n
+	help
+	  Add the BCM BCA SMC LOG support.
+
+config BCM_SMCLOG_DRV_IMPL
+	int "Implementation index for BCA SMC LOG module"
+	depends on BCM_SMCLOG_DRV 
+	default 1

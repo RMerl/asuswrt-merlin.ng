@@ -1,0 +1,9 @@
+config BCM_STRAP
+	bool "Broadcom 63xx Strap driver"
+	default n
+
+config BCM_STRAP_IMPL
+	int "Implementation index for Strap driver"
+	depends on BCM_STRAP
+	default 1
+

@@ -1,0 +1,6 @@
+XPEDITE537X BOARD
+M:	Peter Tyser <ptyser@xes-inc.com>
+S:	Maintained
+F:	board/xes/xpedite537x/
+F:	include/configs/xpedite537x.h
+F:	configs/xpedite537x_defconfig

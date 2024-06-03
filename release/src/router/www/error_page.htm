@@ -280,6 +280,9 @@ var header_info = [<% get_header_info(); %>];
 var location_org = header_info[0].protocol + "://" + header_info[0].host + ":" + header_info[0].port;
 
 function initial(){
+	if(isSupport("ROG_UI") || isSupport("TS_UI") || isSupport("TUF_UI")){
+		$(".wrapper").css({"background-size":"cover"});
+	}
 	var is_logined = [<% is_logined_hook(); %>][0];
 	var html_code = '';
 	var url_flag = "";

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0,  user-scalable=no" />
+        <link rel="stylesheet" href="css/clients.css" />
+    </head>
+    <body>
+        <div class="d-flex align-items-center">
+            <div class="page-title py-3"><#Traffic_Analyzer#></div>
+            <div role="icon" class="icon-size-24 icon-add-chart ms-3" onclick="addCard()"></div>
+        </div>
+        <div class="row">
+            <div class="col-12 mb-3">
+                <div class="card pt-2 h-100">
+                    <h5 class="card-header"><#Adaptive_History#></h5>
+                    <div class="card-body">
+                        <div class="pe-2 mb-3 feature-desc"><#Adaptive_History_desc#></div>
+
+                        <div class="d-flex align-items-center justify-content-around mb-3">
+                            <span class="card-data-title"><#Adaptive_History#></span>
+                            <div class="form-check form-switch ms-auto">
+                                <input class="form-check-input form-switch-large" type="checkbox" id="web_history_switch" />
+                            </div>
+                        </div>
+
+                        <!-- <div class="table-responsive detail-table-height">
+                            <div class="d-flex align-items-center">
+                                <h5 class="my-2">CLIENTS</h5>
+                            </div>
+
+                            <table class="table table-sm align-middle caption-top">
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            <div class="form-check">
+                                                <input
+                                                    class="form-check-input form-check-large"
+                                                    type="checkbox"
+                                                    value=""
+                                                    id="wh_client_all"
+                                                />
+                                            </div>
+                                        </th>
+                                        <th class="col-12">NAME</th>
+
+                                        <th class="">ONLINE</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <div class="form-check">
+                                                <input
+                                                    class="form-check-input form-check-large"
+                                                    type="checkbox"
+                                                    value=""
+                                                    id=""
+                                                />
+                                            </div>
+                                        </td>
+                                        <td>ASUS GT-AXE16000</td>
+                                        <td>ONLINE</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div> -->
+
+                        <div class="d-sm-flex align-items-center justify-content-between mb-3">
+                            <div class="card-data-title">CLIENTS</div>
+                            <div class="input-group w-auto">
+                                <select class="form-select" id="history_client" onchange="genHistoryTable(webHsArray, this.value, true)">
+                                    <option value="all"><#All_Client#></option>
+                                    <option value="1E:E9:22:6E:6F:55">android-dhcp-13</option>
+                                    <option value="AE:21:68:29:F2:8D">SM-R870</option>
+                                    <option value="FC:34:97:DD:42:61">DESKTOP-VF6H7C1</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card-data-title mb-2">History</div>
+                        <div class="table-responsive detail-table-height mb-3">
+                            <table class="table table-sm align-middle caption-top" id="history_table">
+                                <!-- <caption>
+                                    History
+                                </caption> -->
+                                <thead>
+                                    <tr>
+                                        <th class="col-2">Access Time</th>
+                                        <th class="col-5">NAME</th>
+                                        <th class="col-5">Domain Name</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- <tr>
+                                        <td>2023-1-11 14:17:51</td>
+                                        <td>DESKTOP-VF6H7C1 googooe bid ere ck9oepqc</td>
+                                        <td>trouter2-azsc-ince-3-b.trouter.teams.microsoft.com</td>
+                                    </tr> -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex justify-content-end align-items-center">
+                        <div role="icon" class="icon-size-24 icon-refresh me-3" onclick="renewHistory()"></div>
+                        <div role="icon" class="icon-size-24 icon-delete me-3" id=""></div>
+                        <div
+                            role="icon"
+                            class="icon-size-24 icon-export-file me-3"
+                            title="Export"
+                            id="db_export"
+                            onclick="exportDatabase();"
+                        ></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            let webHsArray = [];
+            let pageCount = 1;
+
+            let _time = 0;
+            (function init() {
+                getHistoryData();
+            })();
+
+            let time = new Date().getTime();
+            function getHistoryData() {
+                const MAX_QUERY_LIMIT = 200;
+                $.ajax({
+                    url: `/appGet.cgi?hook=bwdpi_history()client=all&page=${pageCount}&num=${MAX_QUERY_LIMIT}`,
+                    dataType: "json",
+                    error: function (xhr) {},
+                    success: function (response) {
+                        let data = response.bwdpi_history;
+                        webHsArray = webHsArray.concat(data);
+                        genHistoryTable(data);
+                        if (response.bwdpi_history.length === MAX_QUERY_LIMIT) {
+                            getHistoryData("all", ++pageCount);
+                        } else {
+                            pageCount = 1;
+                        }
+                    },
+                });
+            }
+            function genHistoryTable(data, mac = "all", clean = false) {
+                let target = document.querySelector("#history_table > tbody");
+                if (clean) {
+                    target.innerHTML = "";
+                }
+
+                mac = document.querySelector("#history_client").value;
+
+                let code = "";
+                for (let item of data) {
+                    if (mac !== "all") {
+                        if (mac !== item[0]) {
+                            continue;
+                        }
+                    }
+
+                    let dateString = new Date(item[1] * 1000).toLocaleString();
+                    let name = (function () {
+                        let mac = item[0];
+                        let client = system.client.detail;
+                        return client[mac] ? client[mac].name : mac;
+                    })();
+                    code += `
+                        <tr>
+                            <td>${dateString}</td>
+                            <td>${name}</td>
+                            <td>${item[2]}</td>
+                        </tr>
+                    `;
+                }
+
+                target.insertAdjacentHTML("beforeend", code);
+            }
+
+            function renewHistory() {
+                webHsArray = [];
+                let target = document.querySelector("#history_table > tbody");
+                target.innerHTML = "";
+                getHistoryData();
+            }
+
+            function exportDatabase() {
+                let aTag = document.createElement("a");
+                let client = document.querySelector("#history_client").value;
+                let content = (function () {
+                    let data = "<#Access_Time#>,<#MAC_Address#>,<#Client_Name#>,<#Domain_Name#>\n";
+                    for (let item of webHsArray) {
+                        if (client !== "all") {
+                            if (client !== item[0]) {
+                                continue;
+                            }
+                        }
+
+                        let dateString = new Date(item[1] * 1000).toLocaleString();
+                        let name = (function () {
+                            let mac = item[0];
+                            let client = system.client.detail;
+                            return client[mac] ? client[mac].name : mac;
+                        })();
+
+                        //data += item.join(",");
+                        data += `${dateString},${item[0]},${name},${item[2]}`;
+                        data += "\n";
+                    }
+
+                    return data;
+                })();
+
+                let fileName = "MaliciousSitesBlocking.csv";
+                let mimeType = "data:text/csv;charset=utf-8";
+                if (navigator.msSaveBlob) {
+                    // IE10
+                    return navigator.msSaveBlob(new Blob([content], { type: mimeType }), fileName);
+                } else if ("download" in aTag) {
+                    //html5 A[download]
+                    aTag.href = "data:" + mimeType + "," + encodeURIComponent(content);
+                    aTag.setAttribute("download", fileName);
+                    document.getElementById("db_export").appendChild(aTag);
+                    setTimeout(function () {
+                        document.getElementById("db_export").removeChild(aTag);
+                        aTag.click();
+                    }, 66);
+                    return true;
+                } else {
+                    //do iframe dataURL download (old ch+FF):
+                    let f = document.createElement("iframe");
+                    document.getElementById("db_export").appendChild(f);
+                    f.src = "data:" + mimeType + "," + encodeURIComponent(content);
+                    setTimeout(function () {
+                        document.getElementById("db_export").removeChild(f);
+                    }, 333);
+                    return true;
+                }
+            }
+        </script>
+    </body>
+</html>

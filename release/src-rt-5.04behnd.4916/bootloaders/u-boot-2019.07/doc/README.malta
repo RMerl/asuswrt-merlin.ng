@@ -1,0 +1,16 @@
+MIPS Malta board
+
+How to flash using a MIPS Navigator Probe:
+
+  - Ensure that your Malta has jumper JP1 fitted. Without this jumper you will
+    be unable to flash your Malta using a Navigator Probe.
+
+  - Connect Navigator Console to your probe and Malta as usual.
+
+  - Within Navigator Console run the following commands:
+
+      source /path/to/u-boot/board/imgtec/malta/flash-malta-boot.tcl
+      reset
+      flash-boot /path/to/u-boot/u-boot.bin
+
+  - You should now be able to reboot your Malta to a U-Boot shell.

@@ -1,0 +1,7 @@
+CLEARFOG BOARD
+M:	Stefan Roese <sr@denx.de>
+S:	Maintained
+F:	board/soldrun/clearfog/
+F:	include/configs/clearfog.h
+F:	configs/clearfog_defconfig
+F:	configs/clearfog_gt_8k_defconfig

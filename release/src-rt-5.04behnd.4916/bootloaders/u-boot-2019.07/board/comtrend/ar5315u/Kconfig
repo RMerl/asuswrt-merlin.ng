@@ -1,0 +1,12 @@
+if BOARD_COMTREND_AR5315U
+
+config SYS_BOARD
+	default "ar5315u"
+
+config SYS_VENDOR
+	default "comtrend"
+
+config SYS_CONFIG_NAME
+	default "comtrend_ar5315u"
+
+endif

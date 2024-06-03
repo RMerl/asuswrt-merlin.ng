@@ -1138,6 +1138,8 @@ static void boost_priority(void)
 
 #if PJ_ANDROID==1 || !(defined(__GLIBC__) || defined(__UCLIBC__))
 	tp.sched_priority = max_prio;
+#elif defined(MUSL_LIBC)
+	tp.sched_priority = max_prio;
 #else
     tp.__sched_priority = max_prio;
 #endif
@@ -1151,6 +1153,9 @@ static void boost_priority(void)
 #if !defined(PJ_ANDROID) && (defined(__GLIBC__) || defined(__UCLIBC__))
     PJ_LOG(4, (THIS_FILE, "New process policy=%d, priority=%d",
 	      policy, tp.__sched_priority));
+#else
+    PJ_LOG(4, (THIS_FILE, "New process policy=%d, priority=%d",
+              policy, tp.sched_priority));	
 #endif
     /*
      * Adjust thread scheduling algorithm and priority
@@ -1165,12 +1170,16 @@ static void boost_priority(void)
 #if !defined(PJ_ANDROID) && (defined(__GLIBC__) || defined(__UCLIBC__))
     PJ_LOG(4, (THIS_FILE, "Old thread policy=%d, priority=%d",
 	      policy, tp.__sched_priority));
-
+#else
+    PJ_LOG(4, (THIS_FILE, "Old thread policy=%d, priority=%d",
+              policy, tp.sched_priority));
 #endif
 
     policy = POLICY;
 
 #if PJ_ANDROID==1 || !(defined(__GLIBC__) || defined(__UCLIBC__))
+    tp.sched_priority = max_prio;
+#elif defined(MUSL_LIBC)
     tp.sched_priority = max_prio;
 #else
     tp.__sched_priority = max_prio;
@@ -1186,6 +1195,9 @@ static void boost_priority(void)
 #if !defined(PJ_ANDROID) && (defined(__GLIBC__) || defined(__UCLIBC__))
     PJ_LOG(4, (THIS_FILE, "New thread policy=%d, priority=%d",
 	      policy, tp.__sched_priority));
+#else
+    PJ_LOG(4, (THIS_FILE, "New thread policy=%d, priority=%d",
+              policy, tp.sched_priority));
 #endif
 
 }

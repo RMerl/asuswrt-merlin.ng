@@ -1,0 +1,132 @@
+#include "inc/968880DV.dtsi"
+#include "inc/968880DV_SFP.dtsi"
+
+/ {
+        memory_controller {
+                memcfg = <(BP1_DDR_MCBSEL_FORMAT_VER1   | \
+                           BP1_DDR_TYPE_LPDDR4         | \
+                           BP1_DDR_SPEED_2133_36_39_39 | \
+                           BP1_DDR_WIDTH_32BIT         | \
+                           BP1_DDR_TOTAL_SIZE_8Gb      | \
+                           BP1_DDR_SSC_CONFIG_1        | \
+                           BP1_DDR_CONFIG_DEBUG)>;
+        };
+};
+
+/ {
+    model = "968880DV_DPU";
+
+    dsldsp0: dsldsp {
+        /* Defined below */
+    };
+};
+
+&hsspi {
+    status = "okay";
+};
+
+&ethphytop {
+};
+
+&mdio_bus {
+    egphy0 {
+        status = "okay";
+    };
+    egphy1 {
+        status = "okay";
+    };
+    egphy2 {
+        status = "okay";
+    };
+    serdes00 {
+        pinctrl-names = "default";
+        pinctrl-0 = <&a_slan_sd_rx_los_pin_3 &a_slan_sd_mod_abs_pin_4>;
+        tx-disable = <&gpioc 6 GPIO_ACTIVE_HIGH>;
+        10000-Base-R;
+        status = "nokay";
+    };
+};
+
+&switch0 {
+    ports {
+        port_gphy0 {
+            label = "sysport";
+            status = "okay";
+            management;
+        };
+        port_gphy1 {
+            label = "waneth0";
+            status = "okay";
+            is-wan;
+        };
+        port_gphy2 {
+            status = "okay";
+            link = <&switchdsp0port0>;
+        };
+        port_slan0 {
+            status = "nokay";
+            link = <&switchdsp0port0>;
+        };
+        port_wan@fiber {
+            status = "okay";
+        };
+        port_wan@ae {
+            status = "okay";
+        };
+    };
+};
+
+&dsldsp0 {
+        switchdsp0port0:0 {
+                sw-type = "G9991_SW";
+
+                ports {
+                        #address-cells = <1>;
+                        #size-cells = <0>;
+
+                        port0@0 {
+                                reg = <0>;
+                        };
+
+                        port1@1 {
+                                reg = <1>;
+                        };
+
+                        port2@2 {
+                                reg = <2>;
+                        };
+
+                        port3@3 {
+                                reg = <3>;
+                        };
+
+                        port4@4 {
+                                reg = <4>;
+                        };
+
+                        port5@5 {
+                                reg = <5>;
+                        };
+
+                        port6@6 {
+                                reg = <6>;
+                        };
+
+                        port7@7 {
+                                reg = <7>;
+                        };
+
+                        port16@16 {
+                                reg = <16>;
+                                management;
+                                label = "dsp0";
+                        };
+
+                        port17@17 {
+                                reg = <17>;
+                                management;
+                                label = "dsp1";
+                        };
+                };
+        };
+};

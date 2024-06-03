@@ -1,0 +1,25 @@
+#include "94912REF1D_P200.dts"
+#include "../bcm_voice.dtsi"
+
+// voice daughtercard shared i2c signal for sfp0 on this board.
+// Disable it just for the voice board id
+&sfp0 {
+	status = "disabled";
+};
+
+&hsspi {
+	status = "okay";
+	voice0 {
+		pinctrl-0 = <&hs_spim_ss_1_b_pin_20>;
+		pinctrl-names = "default";
+		compatible = "bcm-spi-voice";
+		reg = <1>; /* chip select 1 */
+		spi-max-frequency = <1024000>;
+		reset-gpio = <&gpioc 13 GPIO_ACTIVE_LOW>;
+		spi-index = <0>;/* voice header index */
+	};	
+};
+
+&bcm_voice{
+	sliclist = SLICSLAC_LIST_COMMON_NOFXO;
+ };

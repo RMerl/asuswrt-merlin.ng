@@ -1,0 +1,15 @@
+if TARGET_M5329EVB
+
+config SYS_CPU
+	default "mcf532x"
+
+config SYS_BOARD
+	default "m5329evb"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_CONFIG_NAME
+	default "M5329EVB"
+
+endif

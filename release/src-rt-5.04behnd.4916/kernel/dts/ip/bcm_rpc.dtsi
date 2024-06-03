@@ -1,0 +1,32 @@
+compatible = "simple-bus";
+#address-cells = <0x1>;
+#size-cells = <0x0>;
+rpc-version = <0x204>;
+
+rpcrgsmc: rpcrgsmc {
+    reg = <0x0>;
+    compatible = "brcm,itc-rpc";
+    dev-name = "rg-smc";
+    fifo-dev = "smc";
+    tx-fifo = <0>;
+    rx-fifo = <1>;
+};
+
+rpcvflashsmc: rpcvflashsmc {
+    reg = <0x1>;
+    compatible = "brcm,itc-rpc";
+    dev-name = "vflash-smc";
+    fifo-dev = "smc";
+    tx-fifo = <2>;
+    rx-fifo = <3>;
+};
+
+rpcavssmc: rpcavssmc {
+    reg = <0x2>;
+    compatible = "brcm,itc-rpc";
+    dev-name = "avs-smc";
+    fifo-dev = "smc";
+    tx-fifo = <4>;
+    rx-fifo = <5>;
+};
+

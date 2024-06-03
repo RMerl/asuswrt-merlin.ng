@@ -39,7 +39,7 @@ function check_wl_auth_support(_obj, _wl_unit) {
 	var support_flag = false;
 	var support_auth = ["psk2", "pskpsk2"];
 
-	if(isSupport("wifi6e")){
+	if(isSupport("wifi6e") || isSupport("wifi7")){
 		var wl_band = httpApi.nvramGet(["wl" + _wl_unit + "_nband"])["wl" + _wl_unit + "_nband"];//1:5G, 2:2.4G, 4:6G
 		if(wl_band == 4)
 			support_auth = ["sae"];
@@ -47,7 +47,7 @@ function check_wl_auth_support(_obj, _wl_unit) {
 			support_auth = ["psk2", "pskpsk2", "psk2sae"];
 	}
 	else{
-		var re_count = httpApi.hookGet("get_cfg_clientlist", true).length;
+		var re_count = httpApi.hookGet("get_cfg_clientlist").length;
 		if(re_count > 1)// have re node
 			support_auth = ["psk2", "pskpsk2", "psk2sae"];
 		else
@@ -62,17 +62,12 @@ function check_wl_auth_support(_obj, _wl_unit) {
 			}
 		}
 	}
-
 	if(!support_flag) {
-		if(based_modelid === 'GT-AXE16000' 
-		&& auth_text === 'WPA2/WPA3-Personal'
-		&& (_smart_connect_enable && _smart_connect_enable === '1')
-		&& smart_connect_mode[0] === '1'){
+		if((based_modelid === 'GT-AXE16000' || based_modelid === 'GT-BE98' || based_modelid === 'GT-BE98_PRO')
+		&& (typeof _smart_connect_enable !== undefined && _smart_connect_enable === '1')
+		&& smart_connect_mode[0] === '1'
+		&& auth_text === 'WPA2/WPA3-Personal'){
 			return support_flag;
-		}
-
-		if(based_modelid === 'GT-AXE16000' && auth_text === 'WPA2-Personal'){
-			return true;
 		}
 
 		var confirm_msg = "<#AiMesh_confirm_msg9#>".replace("#AUTHMODE", auth_text);

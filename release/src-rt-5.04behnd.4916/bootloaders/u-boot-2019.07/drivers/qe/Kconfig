@@ -1,0 +1,45 @@
+#
+# QUICC Engine Drivers
+#
+config QE
+	bool "Enable support for QUICC Engine"
+	depends on PPC
+	default y if ARCH_T1040 || ARCH_T1042 || ARCH_T1024 || ARCH_P1021 \
+		|| ARCH_P1025
+	help
+	  Chose this option to add support for the QUICC Engine.
+
+config U_QE
+	bool "Enable support for U QUICC Engine"
+	default y if (ARCH_LS1021A && !SD_BOOT && !NAND_BOOT && !QSPI_BOOT) \
+		|| (TARGET_T1024QDS) \
+		|| (TARGET_T1024RDB) \
+		|| (TARGET_T1040QDS && !NOBQFMAN) \
+		|| (TARGET_LS1043ARDB && !SPL_NO_QE && !NAND_BOOT && !QSPI_BOOT)
+	help
+	  Choose this option to add support for U QUICC Engine.
+
+choice
+	prompt "QUICC Engine FMan ethernet firmware location"
+	depends on FMAN_ENET || QE
+	default SYS_QE_FMAN_FW_IN_ROM
+
+config SYS_QE_FMAN_FW_IN_NOR
+	bool "NOR flash"
+
+config SYS_QE_FMAN_FW_IN_NAND
+	bool "NAND flash"
+
+config SYS_QE_FMAN_FW_IN_SPIFLASH
+	bool "SPI flash"
+
+config SYS_QE_FMAN_FW_IN_MMC
+	bool "MMC"
+
+config SYS_QE_FMAN_FW_IN_REMOTE
+	bool "Remote memory location (PCI)"
+
+config SYS_QE_FMAN_FW_IN_ROM
+	bool "Firmware is already in ROM"
+
+endchoice

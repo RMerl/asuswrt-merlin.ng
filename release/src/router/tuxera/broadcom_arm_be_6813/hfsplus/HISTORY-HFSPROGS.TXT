@@ -1,0 +1,14 @@
+HISTORY OF TUXERA HFSPLUS
+
+HFSPROGS 3021.1.17
+
+- Changes now provided in HISTORY-HFSPROGS.TXT.
+- Add support for AArch64-Android system.
+- Add support for musl based toolchains.
+- Fix an issue when partition size is not a multiple of 4K.
+- Sync the metadata written to disk after format.
+- Added -P(Progress information) option.
+
+This file contains the history since HFSPROGS 3014.7.28
+
+Copyright (c) 2008-2023 Tuxera Inc. All Rights Reserved.

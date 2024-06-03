@@ -1,0 +1,6 @@
+PANDORA BOARD
+M:	Grazvydas Ignotas <notasas@gmail.com>
+S:	Maintained
+F:	board/pandora/
+F:	include/configs/omap3_pandora.h
+F:	configs/omap3_pandora_defconfig

@@ -1,0 +1,213 @@
+#include "47622.dtsi"
+
+/ {
+	compat_chip_id = <0x6755 0x47622>;
+    memory_controller {
+        memcfg = <(BP_DDR_SPEED_933_13_13_13  | \
+                   BP_DDR_TOTAL_SIZE_512MB    | \
+                   BP_DDR_DEVICE_WIDTH_16     | \
+                   BP_DDR_TOTAL_WIDTH_16BIT   | \
+                   BP_DDR_SSC_CONFIG_1)>;
+    };
+
+	buttons {
+		compatible = "brcm,buttons";
+		reset_button {
+			ext_irq = <&bca_extintr 39 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			press {
+				print = "Button Press -- Hold for 5s to do restore to default";
+			};
+			hold {
+				rst_to_dflt = <5>;
+			};
+			release {
+				reset = <0>;
+			};	
+		};
+		ses_button {
+			ext_irq = <&bca_extintr 38 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			release {
+				ses_short_period = <0>;
+				ses_long_period = <3>;
+			};
+		};
+	};
+};
+
+&i2c {
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c_sda_pin_16 &i2c_scl_pin_17>;
+
+	codec_playback:codec_palyback@18{
+		compatible = "ti,tlv320dac3203";
+		reg = <0x18>;
+	};
+	codec_capture:codec_capture@19{
+		compatible = "ti,tlv320adc3101";
+		reg = <0x19>;
+	};
+};
+
+&mdio {
+    /* Port PHY mapping:
+            port_sysp0 <---> phy_gphy
+     */
+	phy_gphy {
+		status = "okay";
+	};
+};
+
+
+&switch0 {
+	ports {
+		port_sysp0 {
+			phy-handle = <&phy_gphy>;
+			status = "okay";
+		};
+	};
+};
+
+&led_ctrl {
+	pinctrl-names = "default";
+	pinctrl-0 = <&ser_led_clk_pin_1 &ser_led_data_pin_0 &ser_led_mask_pin_2>;
+	serial-shifters-installed = <4>;
+
+	led0: sw_led-bit_0 {
+                active_low;
+                status = "okay";
+        };
+	led1: sw_led-bit_1 {
+                active_low;
+                status = "okay";
+        };
+	led2: sw_led-bit_2 {
+                active_low;
+                status = "okay";
+        };
+	led3: sw_led-bit_3 {
+                active_low;
+                status = "okay";
+        };
+	led4: sw_led-bit_4 {
+                active_low;
+                status = "okay";
+        };
+	led5: sw_led-bit_5 {
+                active_low;
+                status = "okay";
+        };
+	led6: sw_led-bit_6 {
+                active_low;
+                status = "okay";
+        };
+	led7: sw_led-bit_7 {
+                active_low;
+                status = "okay";
+        };
+	led8: sw_led-bit_8 {
+                active_low;
+                status = "okay";
+        };
+	led9: sw_led-bit_9 {
+                active_low;
+                status = "okay";
+        };
+	led10: sw_led-bit_10 {
+                active_low;
+                status = "okay";
+        };
+	led11: sw_led-bit_11 {
+                active_low;
+                status = "okay";
+        };
+	led12: sw_led-bit_12 {
+                active_low;
+                status = "okay";
+        };
+	led13: sw_led-bit_13 {
+                active_low;
+                status = "okay";
+        };
+	led14: sw_led-bit_14 {
+                active_low;
+                status = "okay";
+        };
+	led15: sw_led-bit_15 {
+                active_low;
+                status = "okay";
+        };
+	led16: sw_led-bit_16 {
+                active_low;
+                status = "okay";
+        };
+	led17: sw_led-bit_17 {
+                active_low;
+                status = "okay";
+        };
+	led18: sw_led-bit_18 {
+                active_low;
+                status = "okay";
+        };
+	led19: sw_led-bit_19 {
+                active_low;
+                status = "okay";
+        };
+	led20: sw_led-bit_20 {
+                active_low;
+                status = "okay";
+        };
+	led21: sw_led-bit_21 {
+                active_low;
+                status = "okay";
+        };
+	led22: sw_led-bit_22 {
+                active_low;
+                status = "okay";
+        };
+	led23: sw_led-bit_23 {
+                active_low;
+                status = "okay";
+        };
+	led24: sw_led-bit_24 {
+                active_low;
+                status = "okay";
+        };
+
+};
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined (CONFIG_BCM_PCIE_HCD_MODULE)
+&pcie0 {
+	status = "okay";
+};
+#endif
+
+&usb_ctrl {
+	status = "okay";
+	xhci-enable;
+	pinctrl-names = "default";
+	pinctrl-0 = <&usb0_pwr_pins &usb1_pwr_pins>;
+};
+
+&usb0_xhci {
+	status = "okay";
+};
+
+&usb0_ehci {
+	status = "okay";
+};
+
+&usb0_ohci {
+	status = "okay";
+};
+
+&usb1_ehci {
+	status = "okay";
+};
+
+&usb1_ohci {
+	status = "okay";
+};
+

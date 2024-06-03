@@ -1,0 +1,73 @@
+ARCH
+  cpu architecture of device.  arm or aarch64
+
+bcm_cred_dir
+  directory where secure boot signing keys are stored
+
+bcm_emmc_raw_linux_bootfs_part_size
+
+bcm_emmc_raw_linux_rootfs_part_size
+
+bcm_image_compatstr
+bcm_image_rev
+bcm_spinor_squashfs_offset
+
+bcm_uboot_arch
+  The basename of a script (with an .arch extension) that modifies the
+  chip's default uboot defconfig options before building the full uboot
+
+bcm_uboot_delg_aes_base
+bcm_uboot_delg_fit_sign
+bcm_uboot_delg_sec_pol
+bcm_uboot_delg_sec_pol_sig
+bcm_uboot_delg_sec_sdr
+bcm_uboot_delg_sec_sdr_sig
+bcm_uboot_encode_keys
+
+bcm_uboot_env
+  The name of the file containing environment variables to be compiled
+  into flash images
+
+bcm_uboot_envsize
+bcm_uboot_fit_security
+bcm_uboot_fit_sign
+bcm_uboot_fit_signer
+bcm_uboot_image_offset
+bcm_uboot_kernel_compression
+bcm_uboot_layout
+bcm_uboot_mfg_sec_opt
+bcm_uboot_mk_include
+bcm_uboot_pkgtb_sign
+bcm_uboot_pkgtb_signer
+bcm_uboot_pmcfw_code_addr
+bcm_uboot_pmcfw_data_addr
+bcm_uboot_reimage_blocksize
+bcm_uboot_reimage_btrm
+bcm_uboot_reimage_format
+bcm_uboot_reimage_payload
+bcm_uboot_rootfs_encrypt
+bcm_uboot_rootfs_hash
+bcm_uboot_spl_arch
+bcm_uboot_spl_encrypt
+bcm_uboot_spl_encryptor
+bcm_uboot_spl_prefix
+bcm_uboot_spl_secmode
+bcm_uboot_spl_sign
+bcm_uboot_spl_signer
+bcm_uboot_tkmfg_aes
+bcm_uboot_tkmfg_args
+bcm_uboot_tkmfg_fld_hmid
+bcm_uboot_tkmfg_fld_roe
+bcm_uboot_tkmfg_keystore
+bcm_uboot_tkmfg_mid
+bcm_uboot_tkmfg_sign
+bcm_uboot_tpl_encrypt
+bcm_uboot_uboot_prefix
+BOOTLOADER_EXTRA
+BRCM_CHIP
+prebuilt_bin
+SEC_ARCH
+STANDALONE_CONFIGS
+STANDALONE_TYPE
+UBOOT_CONFIG
+UBOOT_CROSS_COMPILE

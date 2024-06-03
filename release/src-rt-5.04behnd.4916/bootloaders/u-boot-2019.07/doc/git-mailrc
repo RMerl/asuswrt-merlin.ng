@@ -1,0 +1,127 @@
+# To use this file, run in your u-boot tree:
+#	git config sendemail.aliasesfile doc/git-mailrc
+#	git config sendemail.aliasfiletype mutt
+#
+# Then when sending patches, you can use:
+#	git send-email --to u-boot --cc i2c ...
+
+alias uboot  u-boot@lists.denx.de
+alias u-boot uboot
+
+# Maintainer aliases.  Use the same alias here as patchwork to keep
+# things simple and easy to look up/coordinate.
+alias aaribaud       Albert Aribaud <albert.u.boot@aribaud.net>
+alias abiessmann     Andreas Bießmann <andreas@biessmann.org>
+alias abrodkin       Alexey Brodkin <alexey.brodkin@synopsys.com>
+alias afleming       Andy Fleming <afleming@gmail.com>
+alias ag             Anatolij Gustschin <agust@denx.de>
+alias agraf          Alexander Graf <agraf@csgraf.de>
+alias alisonwang     Alison Wang <alison.wang@nxp.com>
+alias angelo_ts      Angelo Dureghello <angelo@sysam.it>
+alias bmeng          Bin Meng <bmeng.cn@gmail.com>
+alias danielschwierzeck Daniel Schwierzeck <daniel.schwierzeck@gmail.com>
+alias dinh           Dinh Nguyen <dinguyen@kernel.org>
+alias hs             Heiko Schocher <hs@denx.de>
+alias freenix        Peng Fan <peng.fan@nxp.com>
+alias iwamatsu       Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+alias jaehoon        Jaehoon Chung <jh80.chung@samsung.com>
+alias jagan          Jagan Teki <jagan@amarulasolutions.com>
+alias jhersh         Joe Hershberger <joe.hershberger@ni.com>
+alias kevery         Kever Yang <kever.yang@rock-chips.com>
+alias lukma          Lukasz Majewski <lukma@denx.de>
+alias macpaul        Macpaul Lin <macpaul@andestech.com>
+alias marex          Marek Vasut <marex@denx.de>
+alias mariosix       Mario Six <mario.six@gdsys.cc>
+alias masahiro       Masahiro Yamada <yamada.masahiro@socionext.com>
+alias mateusz        Mateusz Kulikowski <mateusz.kulikowski@gmail.com>
+alias maxime         Maxime Ripard <maxime.ripard@free-electrons.com>
+alias monstr         Michal Simek <monstr@monstr.eu>
+alias prom           Minkyu Kang <mk7.kang@samsung.com>
+alias ptomsich       Philipp Tomsich <philipp.tomsich@theobroma-systems.com>
+alias sbabic         Stefano Babic <sbabic@denx.de>
+alias simongoldschmidt Simon Goldschmidt <simon.k.r.goldschmidt@gmail.com>
+alias sjg            Simon Glass <sjg@chromium.org>
+alias smcnutt        Scott McNutt <smcnutt@psyent.com>
+alias stroese        Stefan Roese <sr@denx.de>
+alias trini          Tom Rini <trini@konsulko.com>
+alias wd             Wolfgang Denk <wd@denx.de>
+alias prabhu_kush    Prabhakar Kushwaha <prabhakar.kushwaha@nxp.com>
+
+# Architecture aliases
+alias arch           arc, arm, m68k, microblaze, mips, nds32, nios2, powerpc, sandbox, superh, x86
+alias arches         arch
+
+alias arc            uboot, abrodkin
+
+alias arm            uboot, aaribaud, trini
+alias at91           uboot, abiessmann
+alias davinci        ti
+alias imx            uboot, sbabic
+alias kirkwood       uboot, stroese
+alias omap           ti
+alias pxa            uboot, marex
+alias rmobile        uboot, iwamatsu
+alias s3c            samsung
+alias s5pc           samsung
+alias samsung        uboot, prom
+alias snapdragon     uboot, mateusz
+alias socfpga        uboot, marex, dinh, simongoldschmidt
+alias sunxi          uboot, jagan, maxime
+alias tegra          uboot, sjg, Tom Warren <twarren@nvidia.com>, Stephen Warren <swarren@nvidia.com>
+alias tegra2         tegra
+alias ti             uboot, trini
+alias uniphier       uboot, masahiro
+alias zynq           uboot, monstr
+alias rockchip       uboot, sjg, kevery, ptomsich
+
+alias m68k           uboot, alisonwang, angelo_ts
+alias coldfire       m68k
+
+alias microblaze     uboot, monstr
+alias mb             microblaze
+
+alias mips           uboot, danielschwierzeck
+
+alias nds32          uboot, macpaul
+
+alias nios           uboot, Thomas Chou <thomas@wytron.com.tw>, smcnutt
+alias nios2          nios
+
+alias powerpc        uboot, afleming, stroese, wd, prabhu_kush, mariosix
+alias ppc            powerpc
+alias mpc8xx         uboot, wd, Christophe Leroy <christophe.leroy@c-s.fr>
+alias mpc83xx        uboot, mariosix
+alias mpc85xx        uboot, afleming, prabhu_kush
+alias mpc86xx        uboot, afleming, prabhu_kush
+
+alias sandbox        sjg
+alias sb             sandbox
+
+alias superh         uboot, iwamatsu, marex
+alias sh             superh
+
+alias x86            uboot, sjg, bmeng
+
+# Subsystem aliases
+alias dm             uboot, sjg
+alias cfi            uboot, stroese
+alias dfu            uboot, lukma
+alias efi            uboot, agraf
+alias eth            uboot, jhersh
+alias kerneldoc      uboot, marex
+alias fdt            uboot, sjg
+alias i2c            uboot, hs
+alias kconfig        uboot, masahiro
+alias mmc            uboot, freenix
+alias nand           uboot
+alias net            uboot, jhersh
+alias phy            uboot, jhersh
+alias spi            uboot, jagan
+alias spmi           uboot, mateusz
+alias ubi            uboot, hs
+alias usb            uboot, marex
+alias xhci           uboot, bmeng
+alias video          uboot, ag
+alias patman         uboot, sjg
+alias buildman       uboot, sjg
+alias pmic           uboot, jaehoon

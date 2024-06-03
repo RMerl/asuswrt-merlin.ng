@@ -49,6 +49,9 @@
 .dropdown_select option{
 	background: rgb(38, 38, 38);
 }
+.popup_bg{
+	background-color: rgba(38, 38, 38, 0.9);
+}
 .hidden_mask{
 	background: rgba(38, 38, 38, 0.1);
 }

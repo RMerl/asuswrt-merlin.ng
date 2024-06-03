@@ -1,0 +1,6 @@
+PX5 EVB
+M:	Andy Yan <andy.yan@rock-chips.com>
+S:	Maintained
+F:	board/rockchip/evb_px5
+F:	include/configs/evb_px5.h
+F:	configs/evb-px5_defconfig

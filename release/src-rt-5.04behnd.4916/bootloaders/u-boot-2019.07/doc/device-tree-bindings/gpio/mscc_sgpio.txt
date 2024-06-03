@@ -1,0 +1,45 @@
+Microsemi Corporation (MSCC) Serial GPIO driver
+
+The MSCC serial GPIO extends the number or GPIO's on the system by
+means of 4 dedicated pins: one input, one output, one clock and one
+strobe pin. By attaching a number of (external) shift registers, the
+effective GPIO count can be extended by up to 128 GPIO's per
+controller.
+
+Required properties:
+- compatible : "mscc,luton-sgpio" or "mscc,ocelot-sgpio"
+- clock: Reference clock used to generate clock divider setting. See
+  mscc,sgpio-frequency property.
+- reg : Physical base address and length of the controller's registers.
+- #gpio-cells : Should be two. The first cell is the pin number and the
+  second cell is used to specify optional parameters:
+  - bit 0 specifies polarity (0 for normal, 1 for inverted)
+- gpio-controller : Marks the device node as a GPIO controller.
+- gpio-ranges: Standard gpio range(s): phandle, gpio base, pinctrl base
+  and count.
+
+Optional properties:
+- ngpios: See gpio.txt
+- mscc,sgpio-frequency: The frequency at which the serial bitstream is
+  generated and sampled. Default: 12500000 (Hz).
+- mscc,sgpio-ports: A bitmask (32 bits) of which ports are enabled in
+  the serialized gpio stream. One 'port' will transport from 1 to 4
+  gpio bits. Default: 0xFFFFFFFF.
+
+Typically the pinctrl-0 and pinctrl-names properties will also be
+present to enable the use of the SIO CLK, LD, DI and DO for some
+regular GPIO pins.
+
+Example:
+
+sgpio: gpio@10700f8 {
+       compatible = "mscc,ocelot-sgpio";
+       pinctrl-0 = <&sgpio_pins>;
+       pinctrl-names = "default";
+       reg = <0x10700f8 0x100>;
+       gpio-controller;
+       #gpio-cells = <2>;
+       gpio-ranges = <&sgpio 0 0 64>;
+       mscc,sgpio-frequency = <12500>;
+       mscc,sgpio-ports = <0x000FFFFF>;
+};

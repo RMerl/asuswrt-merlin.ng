@@ -1,0 +1,6 @@
+PLUTUX BOARD
+M:	Alban Bedel <alban.bedel@avionic-design.de>
+S:	Maintained
+F:	board/avionic-design/plutux/
+F:	include/configs/plutux.h
+F:	configs/plutux_defconfig

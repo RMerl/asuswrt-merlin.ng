@@ -1,0 +1,23 @@
+if TARGET_COLIBRI_PXA270
+
+config SYS_BOARD
+	default "colibri_pxa270"
+
+config SYS_VENDOR
+	default "toradex"
+
+config SYS_CONFIG_NAME
+	default "colibri_pxa270"
+
+config TDX_CFG_BLOCK
+	default y
+
+config TDX_HAVE_NOR
+	default y
+
+config TDX_CFG_BLOCK_OFFSET
+	default "262144"
+
+source "board/toradex/common/Kconfig"
+
+endif

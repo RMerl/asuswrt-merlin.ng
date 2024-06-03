@@ -1,0 +1,16 @@
+#include "96765SV1_SFP.dts"
+
+/ {
+
+	memory_controller {
+		memcfg = <(BP1_DDR_MCBSEL_FORMAT_VER1 | \
+			BP1_DDR_TYPE_LPDDR4               | \
+			BP1_DDR_SPEED_2133_36_39_39       | \
+			BP1_DDR_TOTAL_SIZE_8Gb            | \
+			BP1_DDR_WIDTH_16BIT               | \
+			BP1_DDR_6765_DEFAULT              | \
+			BP1_DDR_CONFIG_DEBUG)>;
+	};
+};
+
+

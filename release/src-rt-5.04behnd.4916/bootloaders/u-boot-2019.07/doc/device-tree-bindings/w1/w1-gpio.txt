@@ -1,0 +1,40 @@
+W1 gpio device binding - one wire protocol over bitbanged gpio
+=======================
+
+
+Child nodes are required in device tree. The driver will detect
+the devices serial number and then search in the child nodes in the device tree
+for the proper node and try to match it with the device.
+
+Also check doc/device-tree-bindings/w1-eeprom for possible child nodes drivers
+
+Driver:
+- drivers/w1/w1-gpio.c
+
+Software w1 device-tree node properties:
+Required:
+* compatible = "w1-gpio";
+* gpios = <...>;
+	This is the gpio used for one wire protocol, using bitbanging
+
+Optional:
+* none
+
+Example:
+
+onewire_tm: onewire {
+		compatible = "w1-gpio";
+		gpios = <&pioA 32 0>;
+};
+
+Example with child:
+
+onewire_tm: onewire {
+		compatible = "w1-gpio";
+		gpios = <&pioA 32 0>;
+
+		eeprom1: eeprom@0 {
+			compatible = "maxim,ds24xxx";
+		}
+};
+

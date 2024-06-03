@@ -59,7 +59,7 @@ typedef enum
 #define MISC_INFO_FILE_PATH		"/tmp/misc.json"
 
 /* for RC_SUPPORT */
-#define AMAS_UTILS_WPA3                    (1 << 0)	/* cfg_capability.h has a WPA3 definition with different value. */
+#define WPA3                    (1 << 0)
 ////////////////////////////////////////////////////////////////////////////////
 //
 //	Define for misc info
@@ -203,5 +203,8 @@ AMAS_FUNC AMAS_RESULT AMAS_API amas_set_eth_role(char *input_eth_role);
 AMAS_FUNC AMAS_RESULT AMAS_API amas_get_dest_eth_role(char *ifname, int *eth_role);
 AMAS_FUNC AMAS_RESULT AMAS_API amas_set_misc_info(int index, char *value);
 AMAS_FUNC AMAS_RESULT AMAS_API amas_get_misc_info(unsigned char *misc_info, int *misc_info_len);
+AMAS_FUNC AMAS_RESULT AMAS_API amas_set_lldpd_bind_ifnames_retry(char *ifnames, int fail_retry);
+AMAS_FUNC AMAS_RESULT AMAS_API amas_set_lldpd_bind_ifnames(char *ifnames);
 extern char *get_rcSupport_count(char *count, int countBufSize);
+
 #endif /* !__AMASUTILSH__ */

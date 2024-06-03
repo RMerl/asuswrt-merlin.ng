@@ -1,0 +1,605 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# (C) Copyright 2019 Broadcom Ltd
+#
+
+if ARCH_BCMBCA
+
+config BCM63158
+	bool "Broadcom BCM63158 family"
+	select SUPPORT_SPL
+	select SUPPORT_TPL
+	select ARM64
+	select BCM63XX_HSSPI
+
+config BCM4908
+	bool "Broadcom BCM4908 family"
+	select SUPPORT_SPL
+	select SUPPORT_TPL
+	select ARM64
+	select BCM63XX_HSSPI
+
+config BCM4912
+	bool "Broadcom BCM4912 family"
+	select SUPPORT_SPL
+	select SUPPORT_TPL
+	select ARM64
+	select BCMBCA_HSSPI
+
+config BCM6813
+	bool "Broadcom BCM6813 family"
+	select SUPPORT_SPL
+	select SUPPORT_TPL
+	select ARM64
+	select BCMBCA_HSSPI
+
+config BCM6858
+	bool "Broadcom BCM6858 family"
+	select SUPPORT_SPL
+	select SUPPORT_TPL
+	select ARM64
+	select BCM63XX_HSSPI
+
+config BCM6856
+	bool "Broadcom BCM6856 family"
+	select SUPPORT_SPL
+	select SUPPORT_TPL
+	select ARM64
+	select BCM63XX_HSSPI
+
+config BCM6837
+	bool "Broadcom BCM6837 SoC"
+	select SUPPORT_SPL
+	select SUPPORT_TPL
+	select ARM64
+
+config BCM68880
+	bool "Broadcom BCM68880 SoC"
+	select SUPPORT_SPL
+	select SUPPORT_TPL
+	select ARM64
+
+config BCM63178
+	bool "Broadcom BCM63178 family"
+	select SUPPORT_SPL
+	select SUPPORT_TPL
+	select SYS_ARCH_TIMER
+	select CPU_V7A
+	select BCM63XX_HSSPI
+
+config BCM47622
+	bool "Broadcom BCM47622 family"
+	select SUPPORT_SPL
+	select SUPPORT_TPL
+	select SYS_ARCH_TIMER
+	select CPU_V7A
+	select BCM63XX_HSSPI
+
+config BCM6756
+	bool "Broadcom BCM6756 family"
+	select SUPPORT_SPL
+	select SUPPORT_TPL
+	select SYS_ARCH_TIMER
+	select CPU_V7A
+	select BCMBCA_HSSPI
+
+config BCM6766
+	bool "Broadcom BCM6766 family"
+	select SUPPORT_SPL
+	select SUPPORT_TPL
+	select SYS_ARCH_TIMER
+	select CPU_V7A
+	select BCM63XX_HSSPI
+
+config BCM6765
+	bool "Broadcom BCM6765 family"
+	select SUPPORT_SPL
+	select SUPPORT_TPL
+	select ARM64
+	select BCMBCA_HSSPI
+
+config BCM63138
+	bool "Broadcom BCM63138 family"
+	select SUPPORT_SPL
+	select SUPPORT_TPL
+	select CPU_V7A
+	select ENABLE_ARM_SOC_BOOT0_HOOK if SPL
+	select TIMER
+	select BCM6XXX_TIMER
+	select BCM63XX_HSSPI
+	imply SPL_TIMER
+	imply TPL_TIMER
+
+config BCM63148
+	bool "Broadcom BCM63148 family"
+	select SUPPORT_SPL
+	select SUPPORT_TPL
+	select CPU_V7A
+	select ENABLE_ARM_SOC_BOOT0_HOOK if SPL
+	select SYS_ARCH_TIMER
+	select BCM63XX_HSSPI
+	select ARM_CORTEX_A15_CVE_2017_5715
+
+config BCM63146
+	bool "Broadcom BCM63146 family"
+	select SUPPORT_SPL
+	select SUPPORT_TPL
+	select ARM64
+	select BCM63XX_HSSPI
+
+config BCM6846
+	bool "Broadcom BCM6846 family"
+	select SUPPORT_SPL
+	select SUPPORT_TPL
+	select SYS_ARCH_TIMER
+	select CPU_V7A
+	select BCM63XX_HSSPI
+
+config BCM6878
+	bool "Broadcom BCM6878 family"
+	select SUPPORT_SPL
+	select SUPPORT_TPL
+	select SYS_ARCH_TIMER
+	select CPU_V7A
+	select BCM63XX_HSSPI
+
+config BCM6855
+	bool "Broadcom BCM6855 family"
+	select SUPPORT_SPL
+	select SUPPORT_TPL
+	select SYS_ARCH_TIMER
+	select CPU_V7A
+	select BCMBCA_HSSPI
+
+config BCM6888
+	bool "Broadcom BCM6888 family"
+	select SUPPORT_SPL
+	select SUPPORT_TPL
+	select ARM64
+	select BCM63XX_HSSPI
+
+config SECURE_BOOT
+	default y
+
+config HAVE_SPI_CS_CTRL
+	bool "SoC supports SPI chip select control"
+	default y if BCM4912
+	default y if BCM6756
+	default y if BCM6765
+	default y if BCM6766
+	default y if BCM6855
+	default y if BCM6813
+	default n
+
+config BCMBCA_OTP
+	bool "Broadcom BCA OTP controller"
+	depends on !BCMBCA_IKOS && !BCMBCA_NO_SMC_BOOT
+	default y
+
+config OTP_V1
+	bool "OTP Version 1 controller (40nm SoC)"
+	depends on BCMBCA_OTP
+	default y if BCM63138
+	default y if BCM63148
+	default y if BCM6858
+	default y if BCM4908
+	default n
+
+config OTP_V2
+	bool "OTP Version 2 controller(28nm SoC)"
+	depends on BCMBCA_OTP
+	default y if BCM63158
+	default y if BCM63178
+	default y if BCM47622
+	default y if BCM6756
+	default y if BCM6846
+	default y if BCM6878
+	default y if BCM6855
+	default y if BCM6856
+	default n
+
+config OTP_V3
+	bool "OTP Version 3 controller(16nm SoC)"
+	depends on BCMBCA_OTP
+	default y if BCM4912
+	default y if BCM6813
+	default y if BCM63146
+	default y if BCM6888
+	default y if BCM6765
+	default y if BCM6766
+	default n
+
+config OTP_LOCK
+	bool "OTP HW CPU locking"
+	depends on BCMBCA_OTP
+	default y if BCM63178
+	default y if BCM4912
+	default y if BCM6813
+	default y if BCM47622
+	default y if BCM6756
+	default y if BCM6765
+	default y if BCM6766
+	default y if BCM63146
+	default y if BCM6878
+	default y if BCM6855
+	default y if BCM6888
+	default n
+
+config OTP_SOTP
+	bool "Secure OTP support"
+	depends on BCMBCA_OTP
+	default y if BCM63158
+	default y if BCM63178
+	default y if BCM47622
+	default y if BCM6756
+	default y if BCM6846
+	default y if BCM6856
+	default y if BCM6858
+	default y if BCM4908
+	default n
+
+config OTP_SKP
+	bool "Secure OTP via Secure Key Portal (SKP) support"
+	depends on BCMBCA_OTP
+	default y if BCM4912
+	default y if BCM6813
+	default y if BCM63146
+	default y if BCM6888
+	default y if BCM6765
+	default y if BCM6766
+	default n
+
+config OTP_SKO
+	bool "Secure OTP via Secure Key Object (SKO) support"
+	depends on BCMBCA_OTP
+	default y if BCM6878
+	default y if BCM6855
+	default n
+
+config BCMBCA_RDP
+	bool "Broadcom BCA RDP Support"
+	default n
+
+config BCMBCA_UBUS4
+	bool "Broadcom BCA UBUS4 Support"
+	default y if BCM6858
+	default y if BCM6856
+	default y if BCM6855
+	default y if BCM6846
+	default y if BCM6765	
+	default y if BCM6766
+	default y if BCM47622
+	default y if BCM63158
+	default y if BCM63178
+	default n
+
+config SPL_BCMBCA_UBUS4
+	bool "Broadcom BCA UBUS4 Support"
+	depends on BCMBCA_UBUS4
+	default y if BCM47622 && SPL
+	default y if BCM63178 && SPL
+	default n
+
+config TPL_BCMBCA_UBUS4
+	bool "Broadcom BCA UBUS4 Support"
+	depends on BCMBCA_UBUS4
+	default y if BCM6856 && TPL
+	default y if BCM6855 && TPL
+	default y if BCM6846 && TPL
+	default y if BCM6765 && TPL
+	default y if BCM6766 && TPL
+	default n
+
+config BCMBCA_UBUS4_DCM
+	bool "Broadcom BCA UBUS4 Support"
+	depends on BCMBCA_UBUS4
+	default y if BCM6856
+	default y if BCM6855
+	default y if BCM6846
+	default y if BCM6765
+	default y if BCM6766
+	default n
+
+config TPL_BCMBCA_UBUS4_DCM
+	bool "Broadcom BCA UBUS4 Support"
+	depends on BCMBCA_UBUS4_DCM
+	default y if BCM6856 && TPL
+	default y if BCM6855 && TPL
+	default y if BCM6846 && TPL
+	default y if BCM6765 && TPL
+	default y if BCM6766 && TPL
+	default n
+
+config BCMBCA_PMC
+	bool "Broadcom BCA PMC Support"
+	default y
+
+config BCMBCA_PMC_USB
+	bool "Broadcom BCA PMC USB Support"
+	depends on BCMBCA_PMC
+	depends on !BCMBCA_NO_SMC_BOOT
+	depends on !BCMBCA_IKOS
+	default y
+
+config SWREG_ADJUSTMENT
+	bool "Broadcom Internal SWReg Support"
+	default y if BCM6846
+	default y if BCM6856
+	default y if BCM6858
+	default y if BCM6878
+	default y if BCM6855
+	default n
+
+config BCMBCA_PMC_SWITCH
+	bool "Broadcom BCA PMC SWITCH Support"
+	default y if BCM63138 || BCM63148 || BCM63158 || BCM4908 || BCM63178 || BCM6756 || BCM6765 || BCM6766
+	default n
+
+config BCMBCA_PMC_RDP
+	bool "Broadcom BCA PMC RDP Support"
+	default y if BCM63138
+	default y if BCM63148
+	default n
+
+config BCMBCA_PMC_XRDP
+	bool "Broadcom BCA PMC XRDP Support"
+	default y if BCM63146
+	default y if BCM6846
+	default y if BCM6856
+	default y if BCM6858
+	default y if BCM6878
+	default y if BCM6855
+	default y if BCM4912
+	default y if BCM6813
+	default y if BCM6888
+	default y if BCM68880
+	default y if BCM6837
+	default n
+
+config BCMBCA_PMC_ETHTOP
+	bool "Broadcom BCA PMC ETHTOP Support"
+	default y if BCM68880
+	default y if BCM6837
+	default n
+
+config BCMBCA_PMC_LPORT
+	bool "Broadcom BCA PMC LPORT Support"
+	default y if BCM6858
+	default n
+
+config BCMBCA_PMC_XPORT
+	bool "Broadcom BCA PMC XPORT Support"
+	default y if BCM4912
+	default y if BCM6813
+	default y if BCM6888
+	default y if BCM6837
+	default y if BCM68880
+	default n
+
+config BCMBCA_PMC_SYSPORT
+	bool "Broadcom BCA PMC SystemPort Support"
+	default y if BCM47622
+	default n
+
+config BCMBCA_PMC_A9_CORE
+	bool "Broadcom BCA PMC A9 CORE"
+	depends on !TPL_ATF
+	default y if BCM63138
+	default n
+
+config BCMBCA_DDRC
+	bool "Broadcom BCA DDR Support"
+	depends on SPL
+	default n
+
+config BCMBCA_DPFE
+	bool "Broadcom BCA DPFE Engine based DDR init"
+	depends on SPL
+	depends on !BCMBCA_IKOS
+	default n
+
+config BCMBCA_DDR_REGINIT
+	bool "Broadcom BCA registers based DDR init"
+	depends on SPL
+	default n
+	default y if BCMBCA_IKOS
+
+config BCMBCA_DDR_SIMINIT
+	bool "Broadcom BCA DDR init through sim bench code"
+	depends on SPL
+	depends on BCMBCA_IKOS
+	depends on BCMBCA_DDR_REGINIT
+	default n
+
+config BRCM_SPL_MEMC_SRAM
+	bool "Set SPL pagetables in MEMC SRAM"
+	depends on SPL
+	default y if BCM6858
+	default y if BCM4908
+	default y if BCM6856
+	default y if BCM6846
+	default y if BCM63178
+	default y if BCM47622
+	default y if BCM6756
+	default n
+
+config BCMBCA_RNG
+	bool "Broadcom BCA RNG driver"
+	default y
+
+config B15_MEGA_BARRIER
+	bool "B15 Mega Barrier workaround"
+	default y if BCM63148
+	default n
+
+config BCMBCA_STRAP
+	bool "Broadcom BCA Boot Strap driver"
+	default y
+
+config STACKPROTECTOR
+	bool "Stack Protector buffer overflow detection"
+	default y
+	help
+	  Enable stack smash detection through gcc built-in stack-protector
+	  canary logic
+
+config SPL_STACKPROTECTOR
+	bool "Stack Protector buffer overflow detection for SPL"
+	default y
+
+config TPL_STACKPROTECTOR
+	bool "Stack Protector buffer overflow detection for SPL"
+	default y
+
+if BCMBCA_DDRC
+
+config BCMBCA_DDR_LOADADDR
+	hex "DDR binary load address"
+
+config BCMBCA_DDR4
+	bool "DDR4 Chip Support"
+	default n
+
+config BCMBCA_LPDDR4
+	bool "LPDDR4 Chip Support"
+	default n
+
+config BCMBCA_LPDDR5
+	bool "LPDDR5 Chip Support"
+	default n
+
+config BCMBCA_DDRC_SCRAMBLER
+	bool "DDR Scrambler support"
+	select SPL_HASH_SUPPORT
+	default y if BCM63158
+	default y if BCM63146
+	default y if BCM4912
+	default y if BCM6813
+	default y if BCM6858
+	default y if BCM4908
+	default y if BCM6855
+	default y if BCM6888
+	default y if BCM6765
+	default n
+
+config BCMBCA_DDRC_UNSCRAMBLING_ADDR
+	hex "DDR unscrambling region start address"
+	depends on BCMBCA_DDRC_SCRAMBLER
+	default 0x0
+	help
+	  Define the start address of the unscrambling region. This is the SoC
+	  system address. For example in 63158, if the unscrambling region starts
+	  from DDR address 2GB, we should use system address 0x100000000 here.
+	  This address must be at least 8 bytes aligned.
+	  In the chips with only one scrambling region i.e. 6855, this value must
+	  be either 0x0 or ddr_size minus unscramling_size.
+
+config BCMBCA_DDRC_UNSCRAMBLING_SIZE
+	hex "DDR unscrambling region size"
+	depends on BCMBCA_DDRC_SCRAMBLER
+	default 0x0
+	help
+	  Define the size the unscrambling region. The size must be at least 8 bytes
+	  aligned.
+
+config BCMBCA_DDRC_EARLY_VREF_DQ
+	bool "Early VREF_DQ support"
+	default y if BCM63158
+	default y if BCM4908
+	default y if BCM63178
+	default y if BCM47622
+	default y if BCM6756
+	default y if BCM6858
+	default y if BCM6856
+	default n
+	help
+	  Enable or disable early VREF_DQ voltage turn on
+
+config BCMBCA_DDRC_WBF_EARLY_INIT
+	bool "DDR controller WBF early init"
+	default y if BCM4912
+	default y if BCM6813
+	default n
+	help
+	  Enable or disable DDR controller WBF early init
+
+config BCMBCA_DDRC_DBGPRINT
+	bool "DDR Debug Print"
+	default y if BCM6858
+	default y if BCM6846
+	default y if BCM6878
+	default y if BCM6856
+	default y if BCM47622
+	default y if BCM6756
+	default y if BCM6765
+	default y if BCM6766
+	default y if BCM63146
+	default y if BCM4912
+	default y if BCM6813
+	default y if BCM6855
+	default y if BCM6888
+	default y if BCM68880
+	default y if BCM6837
+	default n
+	help
+	  Enable or disable DDR MEMC and PHY debug print through MCB selector
+	  debug bit at run time. Select n to compile out this feature and
+	  reduce ddr standalone size.
+
+config BCMBCA_DDR_MCBSEL_OVERRIDE
+	bool "MCB selector override"
+	default n
+	help
+	  Enable or disable mcb seletor override from environment variable
+
+config BCMBCA_DDR_MCBSEL_OVERRIDE_VALUE
+	hex "MCB selector override value"
+	depends on BCMBCA_DDR_MCBSEL_OVERRIDE
+	default 0x0
+	help
+	  mcb seletor override value
+
+config BOOT_BLOB_JTAG_LOAD_MAX_DDR_SIZE
+	hex "Max size of DDR binary for JTAG"
+	default 0x10000
+endif
+
+if BCMBCA_DPFE
+source "arch/arm/mach-bcmbca/bcmbca_dpfe/Kconfig"
+endif
+source "arch/arm/mach-bcmbca/bcm63158/Kconfig"
+source "arch/arm/mach-bcmbca/bcm4908/Kconfig"
+source "arch/arm/mach-bcmbca/bcm4912/Kconfig"
+source "arch/arm/mach-bcmbca/bcm6813/Kconfig"
+source "arch/arm/mach-bcmbca/bcm6858/Kconfig"
+source "arch/arm/mach-bcmbca/bcm6856/Kconfig"
+source "arch/arm/mach-bcmbca/bcm63178/Kconfig"
+source "arch/arm/mach-bcmbca/bcm47622/Kconfig"
+source "arch/arm/mach-bcmbca/bcm6756/Kconfig"
+source "arch/arm/mach-bcmbca/bcm6765/Kconfig"
+source "arch/arm/mach-bcmbca/bcm6766/Kconfig"
+source "arch/arm/mach-bcmbca/bcm63138/Kconfig"
+source "arch/arm/mach-bcmbca/bcm63148/Kconfig"
+source "arch/arm/mach-bcmbca/bcm63146/Kconfig"
+source "arch/arm/mach-bcmbca/bcm6846/Kconfig"
+source "arch/arm/mach-bcmbca/bcm6878/Kconfig"
+source "arch/arm/mach-bcmbca/bcm6855/Kconfig"
+source "arch/arm/mach-bcmbca/bcm6888/Kconfig"
+source "arch/arm/mach-bcmbca/bcm6837/Kconfig"
+source "arch/arm/mach-bcmbca/bcm68880/Kconfig"
+
+endif
+
+config BCMBCA_ITC_RPC
+	bool "ITC RPC support"
+	depends on DM && !BCMBCA_NO_SMC_BOOT
+	default y if SMC_BASED
+	default n
+
+source "drivers/block/Kconfig"
+config BCMBCA_VFBIO
+	bool "VFlash Block device"
+	select BLK
+	depends on !BCMBCA_IKOS && !BCMBCA_NO_SMC_BOOT
+	default y if SMC_BASED
+	default n

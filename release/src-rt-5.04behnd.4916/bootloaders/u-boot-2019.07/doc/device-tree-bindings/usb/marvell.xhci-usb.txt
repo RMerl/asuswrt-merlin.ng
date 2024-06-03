@@ -1,0 +1,28 @@
+Marvell SOC USB controllers
+
+This controller is integrated in Armada 3700/8K.
+It uses the same properties as a generic XHCI host controller
+
+Required properties :
+ - compatible: should be one or more of:
+   - "marvell,armada3700-xhci", "generic-xhci" for Armada 37xx SoCs
+   - "marvell,armada-8k-xhci", "generic-xhci" for Armada A8K SoCs
+ - reg: should contain address and length of the standard XHCI
+   register set for the device.
+ - interrupts: one XHCI interrupt should be described here.
+
+Optional properties:
+ - clocks: phandle to system controller clock driving this unit
+ - vbus-supply : If present, specifies the fixed regulator to be turned on
+   for providing power to the USB VBUS rail.
+
+Example:
+	cpm_usb3_0: usb3@500000 {
+		compatible = "marvell,armada-8k-xhci",
+			     "generic-xhci";
+		reg = <0x500000 0x4000>;
+		interrupts = <GIC_SPI 62 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&cpm_syscon0 1 22>;
+		vbus-supply = <&reg_usb3h0_vbus>;
+		status = "disabled";
+	};

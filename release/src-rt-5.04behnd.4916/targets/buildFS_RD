@@ -1,0 +1,54 @@
+#!/bin/bash
+
+source $KERNEL_DIR/.config
+
+# make root file system image
+if [ "$BRCM_IKOS" = "y" ]; then
+# ikos need a simple init to just run the busybox shell
+   rm -f $TARGET_FS/etc/inittab
+   sed -e 's/^::respawn.*sh.*/::respawn:-\/bin\/sh/' -e 's/^::sysinit.*sh.*/::sysinit:\/bin\/sh -l -c \/etc\/init.sh/' $BUILD_DIR/userspace/public/apps/scripts/consoled/inittab > $TARGET_FS/etc/inittab
+   echo ${LINUX_VER_STR} ----- ${LINUX_VER_STR} ---- ${LINUX_VER_STR}
+   echo -e "\x23\x21bin/sh\nmount -t proc /proc /proc\nmount -t sysfs none /sys\n" > $TARGET_FS/etc/init.sh
+   echo -e "mount -t debugfs none /sys/kernel/debug/\n" >> $TARGET_FS/etc/init.sh
+   echo -e "ln -s /sys/kernel/debug /debug\n" >> $TARGET_FS/etc/init.sh
+   echo LINUX_VER_STR=${LINUX_VER_STR} >> $TARGET_FS/etc/init.sh
+   if [ "$CONFIG_BRCM_QEMU" = "y" ]; then   
+        if [ "$BCM_DSL_XRDP" = "y" ]; then
+            cat $BRCMDRIVERS_DIR/opensource/char/plat-bcm/impl1/qemu/qemu_init_dsl.sh |sed -e 's/LINUX_VER_STR/${LINUX_VER_STR}/' >> $TARGET_FS/etc/init.sh
+        else
+            cat $BRCMDRIVERS_DIR/opensource/char/plat-bcm/impl1/qemu/qemu_init.sh |sed -e 's/4\.1\.52/${LINUX_VER_STR}/' >> $TARGET_FS/etc/init.sh
+            cp $BRCMDRIVERS_DIR/opensource/char/plat-bcm/impl1/qemu/passwd $TARGET_FS/data/
+        fi
+   fi
+   echo -e "\n/etc/init.d/wdtd.sh start\n" >> $TARGET_FS/etc/init.sh
+   
+   chmod +x $TARGET_FS/etc/init.sh
+
+   rm $TARGET_FS/webs/* -rf
+# minimze the ikos ramdisk size. it only needs busybox and memaccess for dw/sw cmds
+# and the essential start up scripts
+   if [ "$CONFIG_BRCM_IKOS" = "y" ]; then
+      find $TARGET_FS/bin -type f -not \( -name "busybox" -or -name "memaccess" \) -delete
+      find $TARGET_FS/etc -type f -not \( -name "init.sh" -or -name "fstab" -or -name "inittab" \) -delete
+      find $TARGET_FS/sbin -type f -delete
+      rm -rf $TARGET_FS/lib/*
+      rm -rf $TARGET_FS/lib64/*
+   fi
+# ikos is too slow for using compressed SquashFS, so we are disabling the compression. Make sure kernel creates large enough ramdisk for the uncompressed fs image
+   $HOSTTOOLS_DIR/mksquashfs $TARGET_FS $PROFILE_DIR/ramdisk -noappend -all-root -noI -noD -noF
+else
+   (ulimit -t 900 ; $HOSTTOOLS_DIR/mksquashfs $TARGET_FS $PROFILE_DIR/ramdisk -noappend -all-root -comp xz) 
+   if [ $? -ne 0 ]; then
+        echo "mksquashfs failed once"
+        (ulimit -t 900 ; $HOSTTOOLS_DIR/mksquashfs $TARGET_FS $PROFILE_DIR/ramdisk -noappend -all-root -comp xz) 
+        if [ $? -ne 0 ]; then
+            echo "mksquashfs failed twice"
+            exit 2
+        fi
+   fi
+
+   if [ ! -e "$PROFILE_DIR/vmlinux_rd_boot" ]; then
+        echo "error: $PROFILE_DIR/vmlinux_rd_boot not found! Check buildFS output"
+        exit 2
+   fi 
+fi

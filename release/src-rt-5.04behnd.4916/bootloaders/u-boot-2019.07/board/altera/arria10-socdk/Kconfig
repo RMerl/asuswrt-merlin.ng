@@ -1,0 +1,18 @@
+if TARGET_SOCFPGA_ARRIA10_SOCDK
+
+config SYS_CPU
+	default "armv7"
+
+config SYS_BOARD
+	default "socfpga_arria10"
+
+config SYS_VENDOR
+	default "altera"
+
+config SYS_SOC
+	default "socfpga_arria10"
+
+config SYS_CONFIG_NAME
+	default "socfpga_arria10"
+
+endif

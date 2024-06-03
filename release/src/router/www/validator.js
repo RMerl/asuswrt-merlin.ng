@@ -1657,7 +1657,7 @@ var validator = {
 		}
 
 		if(psk_length != psk_length_trim){
-			alert("<#JS_PSK64Hex_whiteSpace#>");
+			alert(stringSafeGet("<#JS_PSK64Hex_whiteSpace#>"));
 			psk_obj.focus();
 			psk_obj.select();				
 			return false;
@@ -1693,7 +1693,7 @@ var validator = {
 		}
 
 		if(psk_length != psk_length_trim){
-			alert("<#JS_PSK64Hex_whiteSpace#>");
+			alert(stringSafeGet("<#JS_PSK64Hex_whiteSpace#>"));
 			psk_obj.focus();
 			psk_obj.select();
 			return false;
@@ -2418,5 +2418,13 @@ var validator = {
 			}
 		}
 		return status;
+	},
+	isMobileNumber: function(_value){
+		var re = /^(\+?[1-9]{1}[0-9]{7,14}|[0-9]{7,14})$/g;
+		if(re.test(_value))
+			return true;
+		else{
+			return false;
+		}
         }
 };

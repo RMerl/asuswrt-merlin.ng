@@ -1,0 +1,296 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+#  Copyright (C) 2012 Samsung Electronics
+#
+#  Lukasz Majewski <l.majewski@samsung.com>
+
+Glossary:
+========
+- UUID -(Universally Unique Identifier)
+- GUID - (Globally Unique ID)
+- EFI - (Extensible Firmware Interface)
+- UEFI - (Unified EFI) - EFI evolution
+- GPT (GUID Partition Table) - it is the EFI standard part
+- partitions - lists of available partitions (defined at u-boot):
+  ./include/configs/{target}.h
+
+Introduction:
+=============
+This document describes the GPT partition table format and usage of
+the gpt command in u-boot.
+
+UUID introduction:
+====================
+
+GPT for marking disks/partitions is using the UUID. It is supposed to be a
+globally unique value. A UUID is a 16-byte (128-bit) number. The number of
+theoretically possible UUIDs is therefore about 3 x 10^38.
+More often UUID is displayed as 32 hexadecimal digits, in 5 groups,
+separated by hyphens, in the form 8-4-4-4-12 for a total of 36 characters
+(32 digits and 4 hyphens)
+
+For instance, GUID of Basic data partition: EBD0A0A2-B9E5-4433-87C0-68B6B72699C7
+and GUID of Linux filesystem data: 0FC63DAF-8483-4772-8E79-3D69D8477DE4
+
+Historically there are 5 methods to generate this number. The oldest one is
+combining machine's MAC address and timer (epoch) value.
+
+Successive versions are using MD5 hash, random numbers and SHA-1 hash. All major
+OSes and programming languages are providing libraries to compute UUID (e.g.
+uuid command line tool).
+
+GPT brief explanation:
+======================
+
+	Layout:
+	-------
+
+	--------------------------------------------------
+	LBA 0          |Protective MBR                   |
+	----------------------------------------------------------
+	LBA 1          |Primary GPT Header               | Primary
+	-------------------------------------------------- GPT
+	LBA 2          |Entry 1|Entry 2| Entry 3| Entry 4|
+	--------------------------------------------------
+	LBA 3          |Entries 5 - 128                  |
+		       |                                 |
+		       |                                 |
+	----------------------------------------------------------
+	LBA 34         |Partition 1                      |
+		       |                                 |
+		       -----------------------------------
+		       |Partition 2                      |
+		       |                                 |
+		       -----------------------------------
+		       |Partition n                      |
+		       |                                 |
+	----------------------------------------------------------
+	LBA -34        |Entry 1|Entry 2| Entry 3| Entry 4| Backup
+	-------------------------------------------------- GPT
+	LBA -33        |Entries 5 - 128                  |
+		       |                                 |
+		       |                                 |
+	LBA -2         |                                 |
+	--------------------------------------------------
+	LBA -1         |Backup GPT Header                |
+	----------------------------------------------------------
+
+For a legacy reasons, GPT's LBA 0 sector has a MBR structure. It is called
+"protective MBR".
+Its first partition entry ID has 0xEE value, and disk software, which is not
+handling the GPT sees it as a storage device without free space.
+
+It is possible to define 128 linearly placed partition entries.
+
+"LBA -1" means the last addressable block (in the mmc subsystem:
+"dev_desc->lba - 1")
+
+Primary/Backup GPT header:
+----------------------------
+Offset  Size    Description
+
+0       8 B     Signature ("EFI PART", 45 46 49 20 50 41 52 54)
+8       4 B     Revision (For version 1.0, the value is 00 00 01 00)
+12      4 B     Header size (in bytes, usually 5C 00 00 00 meaning 92 bytes)
+16      4 B     CRC32 of header (0 to header size), with this field zeroed
+		during calculation
+20      4 B     Reserved (ZERO);
+24      8 B     Current LBA (location of this header copy)
+32      8 B     Backup LBA (location of the other header copy)
+40      8 B     First usable LBA for partitions (primary partition table last
+		LBA + 1)
+48      8 B     Last usable LBA (secondary partition table first LBA - 1)
+56      16 B    Disk GUID (also referred as UUID on UNIXes)
+72      8 B     Partition entries starting LBA (always 2 in primary copy)
+80      4 B     Number of partition entries
+84      4 B     Size of a partition entry (usually 128)
+88      4 B     CRC32 of partition array
+92      *       Reserved; must be ZERO (420 bytes for a 512-byte LBA)
+
+TOTAL: 512 B
+
+
+IMPORTANT:
+
+GPT headers and partition entries are protected by CRC32 (the POSIX CRC32).
+
+Primary GPT header and Backup GPT header have swapped values of "Current LBA"
+and "Backup LBA" and therefore different CRC32 check-sum.
+
+CRC32 for GPT headers (field "CRC of header") are calculated up till
+"Header size" (92), NOT 512 bytes.
+
+CRC32 for partition entries (field "CRC32 of partition array") is calculated for
+the whole array entry ( Number_of_partition_entries *
+sizeof(partition_entry_size (usually 128)))
+
+Observe, how Backup GPT is placed in the memory. It is NOT a mirror reflect
+of the Primary.
+
+	   Partition Entry Format:
+	   ----------------------
+	   Offset  Size    Description
+
+	   0       16 B    Partition type GUID (Big Endian)
+	   16      16 B    Unique partition GUID in (Big Endian)
+	   32      8  B    First LBA (Little Endian)
+	   40      8  B    Last LBA (inclusive)
+	   48      8  B    Attribute flags [+]
+	   56      72 B    Partition name (text)
+
+	   Attribute flags:
+	   Bit 0  - System partition
+	   Bit 1  - Hide from EFI
+	   Bit 2  - Legacy BIOS bootable
+	   Bit 48-63 - Defined and used by the individual partition type
+	   For Basic data partition :
+	   Bit 60 - Read-only
+	   Bit 62 - Hidden
+	   Bit 63 - Not mount
+
+Creating GPT partitions in U-Boot:
+==============
+
+To restore GUID partition table one needs to:
+1. Define partition layout in the environment.
+   Format of partitions layout:
+     "uuid_disk=...;name=u-boot,size=60MiB,uuid=...;
+	name=kernel,size=60MiB,uuid=...;"
+     or
+     "uuid_disk=${uuid_gpt_disk};name=${uboot_name},
+	size=${uboot_size},uuid=${uboot_uuid};"
+
+   The fields 'name' and 'size' are mandatory for every partition.
+   The field 'start' is optional.
+
+   If field 'size' of the last partition is 0, the partition is extended
+   up to the end of the device.
+
+   The fields 'uuid' and 'uuid_disk' are optional if CONFIG_RANDOM_UUID is
+   enabled. A random uuid will be used if omitted or they point to an empty/
+   non-existent environment variable. The environment variable will be set to
+   the generated UUID.  The 'gpt guid' command reads the current value of the
+   uuid_disk from the GPT.
+
+   The field 'bootable' is optional, it is used to mark the GPT partition
+   bootable (set attribute flags "Legacy BIOS bootable").
+     "name=u-boot,size=60MiB;name=boot,size=60Mib,bootable;name=rootfs,size=0"
+   It can be used to locate bootable disks with command
+   "part list <interface> <dev> -bootable <varname>",
+   please check out doc/README.distro for use.
+
+2. Define 'CONFIG_EFI_PARTITION' and 'CONFIG_CMD_GPT'
+
+3. From u-boot prompt type:
+   gpt write mmc 0 $partitions
+
+Checking (validating) GPT partitions in U-Boot:
+===============================================
+
+Procedure is the same as above. The only change is at point 3.
+
+At u-boot prompt one needs to write:
+   gpt verify mmc 0 [$partitions]
+
+where [$partitions] is an optional parameter.
+
+When it is not provided, only basic checks based on CRC32 calculation for GPT
+header and PTEs are performed.
+When provided, additionally partition data - name, size and starting
+offset (last two in LBA) - are compared with data defined in '$partitions'
+environment variable.
+
+After running this command, return code is set to 0 if no errors found in
+on non-volatile medium stored GPT.
+
+Following line can be used to assess if GPT verification has succeed:
+
+U-BOOT> gpt verify mmc 0 $partitions
+U-BOOT> if test $? = 0; then echo "GPT OK"; else echo "GPT ERR"; fi
+
+Renaming GPT partitions from U-Boot:
+====================================
+
+GPT partition names are a mechanism via which userspace and U-Boot can
+communicate about software updates and boot failure.  The 'gpt guid',
+'gpt read', 'gpt rename' and 'gpt swap' commands facilitate
+programmatic renaming of partitions from bootscripts by generating and
+modifying the partitions layout string.  Here is an illustration of
+employing 'swap' to exchange 'primary' and 'backup' partition names:
+
+U-BOOT> gpt swap mmc 0 primary backup
+
+Afterwards, all partitions previously named 'primary' will be named
+'backup', and vice-versa.  Alternatively, single partitions may be
+renamed.  In this example, mmc0's first partition will be renamed
+'primary':
+
+U-BOOT> gpt rename mmc 0 1 primary
+
+The GPT functionality may be tested with the 'sandbox' board by
+creating a disk image as described under 'Block Device Emulation' in
+board/sandbox/README.sandbox:
+
+=>host bind 0 ./disk.raw
+=> gpt read host 0
+[ . . . ]
+=> gpt swap host 0 name othername
+[ . . . ]
+
+Partition type GUID:
+====================
+
+For created partition, the used partition type GUID is
+PARTITION_BASIC_DATA_GUID (EBD0A0A2-B9E5-4433-87C0-68B6B72699C7).
+
+If you define 'CONFIG_PARTITION_TYPE_GUID', a optionnal parameter 'type'
+can specify a other partition type guid:
+
+     "uuid_disk=...;name=u-boot,size=60MiB,uuid=...;
+	name=kernel,size=60MiB,uuid=...,
+	type=0FC63DAF-8483-4772-8E79-3D69D8477DE4;"
+
+Some strings can be also used at the place of known GUID :
+	"system" = PARTITION_SYSTEM_GUID
+	           (C12A7328-F81F-11D2-BA4B-00A0C93EC93B)
+	"mbr"    = LEGACY_MBR_PARTITION_GUID
+	           (024DEE41-33E7-11D3-9D69-0008C781F39F)
+	"msft"   = PARTITION_MSFT_RESERVED_GUID
+	           (E3C9E316-0B5C-4DB8-817D-F92DF00215AE)
+	"data"   = PARTITION_BASIC_DATA_GUID
+	            (EBD0A0A2-B9E5-4433-87C0-68B6B72699C7)
+	"linux"  = PARTITION_LINUX_FILE_SYSTEM_DATA_GUID
+	           (0FC63DAF-8483-4772-8E79-3D69D8477DE4)
+	"raid"   = PARTITION_LINUX_RAID_GUID
+	           (A19D880F-05FC-4D3B-A006-743F0F84911E)
+	"swap"   = PARTITION_LINUX_SWAP_GUID
+	           (0657FD6D-A4AB-43C4-84E5-0933C84B4F4F)
+	"lvm"    = PARTITION_LINUX_LVM_GUID
+	           (E6D6D379-F507-44C2-A23C-238F2A3DF928)
+
+    "uuid_disk=...;name=u-boot,size=60MiB,uuid=...;
+	name=kernel,size=60MiB,uuid=...,type=linux;"
+
+They are also used to display the type of partition in "part list" command.
+
+
+Useful info:
+============
+
+Two programs, namely: 'gdisk' and 'parted' are recommended to work with GPT
+recovery. Both are able to handle GUID partitions.
+Please, pay attention at -l switch for parted.
+
+"uuid" program is recommended to generate UUID string. Moreover it can decode
+(-d switch) passed in UUID string. It can be used to generate partitions UUID
+passed to u-boot environment variables.
+If optional CONFIG_RANDOM_UUID is defined then for any partition which environment
+uuid is unset, uuid is randomly generated and stored in correspond environment
+variable.
+
+note:
+Each string block of UUID generated by program "uuid" is in big endian and it is
+also stored in big endian in disk GPT.
+Partitions layout can be printed by typing "mmc part". Note that each partition
+GUID has different byte order than UUID generated before, this is because first
+three blocks of GUID string are in Little Endian.

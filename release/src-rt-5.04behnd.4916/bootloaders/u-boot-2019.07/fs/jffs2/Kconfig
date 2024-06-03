@@ -1,0 +1,7 @@
+config FS_JFFS2
+	bool "Enable JFFS2 filesystem support"
+	help
+	  This provides support for reading images from JFFS2 (Journalling
+	  Flash File System version 2). JFFS2 is a log-structured file system
+	  for use with flash memory devices. It supports raw NAND devices,
+	  hard links and compression.

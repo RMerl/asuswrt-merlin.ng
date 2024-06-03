@@ -1,0 +1,7 @@
+MPC8569MDS BOARD
+M:	Prabhakar Kushwaha <prabhakar.kushwaha@nxp.com>
+S:	Maintained
+F:	board/freescale/mpc8569mds/
+F:	include/configs/MPC8569MDS.h
+F:	configs/MPC8569MDS_defconfig
+F:	configs/MPC8569MDS_ATM_defconfig

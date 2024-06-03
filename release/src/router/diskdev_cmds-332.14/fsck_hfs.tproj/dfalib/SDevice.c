@@ -2,7 +2,7 @@
  * Copyright (c) 1999 Apple Computer, Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
+ *
  * "Portions Copyright (c) 1999 Apple Computer, Inc.  All Rights
  * Reserved.  This file contains Original Code and/or Modifications of
  * Original Code as defined in and that are subject to the Apple Public
@@ -10,7 +10,7 @@
  * except in compliance with the License.  Please obtain a copy of the
  * License at http://www.apple.com/publicsource and read it before using
  * this file.
- * 
+ *
  * The Original Code and all software distributed under the License are
  * distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
  * EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
@@ -18,7 +18,7 @@
  * FITNESS FOR A PARTICULAR PURPOSE OR NON-INFRINGEMENT.  Please see the
  * License for the specific language governing rights and limitations
  * under the License."
- * 
+ *
  * @APPLE_LICENSE_HEADER_END@
  */
 #include "SRuntime.h"
@@ -39,7 +39,7 @@
 #include <Device.h>
 #include <Disks.h>
 
-#endif 
+#endif
 
 OSErr GetDeviceSize(int driveRefNum, UInt64 *numBlocks, UInt32 *blockSize)
 {
@@ -61,10 +61,10 @@ OSErr GetDeviceSize(int driveRefNum, UInt64 *numBlocks, UInt32 *blockSize)
 		printf("Error: %s\n", strerror(errno));
 		return(-1);
 	}
-        
+
         if (S_ISREG(stbuf.st_mode)) {
                 devBlockCount = stbuf.st_size / 512;
-        } 
+        }
         else if (S_ISBLK(stbuf.st_mode)) {
                 unsigned long size;
                 u_int64_t size64;
@@ -76,7 +76,7 @@ OSErr GetDeviceSize(int driveRefNum, UInt64 *numBlocks, UInt32 *blockSize)
                         printf("Error: %s\n", strerror(errno));
 			return(-1);
 		}
-			
+
         }
         else{
                 printf("Device is not a block device");
@@ -87,7 +87,7 @@ OSErr GetDeviceSize(int driveRefNum, UInt64 *numBlocks, UInt32 *blockSize)
 		printf("ioctl(DKIOCGETBLOCKCOUNT) for fd %d: %s\n", driveRefNum, strerror(errno));
 		return (-1);
 	}
-	
+
 	if (ioctl(driveRefNum, DKIOCGETBLOCKSIZE, &devBlockSize) < 0) {
 		printf("ioctl(DKIOCGETBLOCKSIZE) for fd %d: %s\n", driveRefNum, strerror(errno));
 		return (-1);
@@ -108,24 +108,24 @@ OSErr GetDeviceSize(int driveRefNum, UInt64 *numBlocks, UInt32 *blockSize)
 	{
 		/* return format list status code */
 		kFmtLstCode = 6,
-		
+
 		/* reference number of .SONY driver */
 		kSonyRefNum = 0xfffb,
-		
+
 		/* values returned by DriveStatus in DrvSts.twoSideFmt */
 		kSingleSided = 0,
 		kDoubleSided = -1,
 		kSingleSidedSize = 800,		/* 400K */
 		kDoubleSidedSize = 1600,	/* 800K */
-		
+
 		/* values in DrvQEl.qType */
 		kWordDrvSiz = 0,
 		kLongDrvSiz = 1,
-		
+
 		/* more than enough formatListRecords */
 		kMaxFormatListRecs = 16
 	};
-	
+
 	ParamBlockRec	pb;
 	FormatListRec	formatListRecords[kMaxFormatListRecs];
 	DrvSts			status;
@@ -133,22 +133,22 @@ OSErr GetDeviceSize(int driveRefNum, UInt64 *numBlocks, UInt32 *blockSize)
 	OSErr			result;
 	unsigned long	blocks			= 0;
 
-	
+
 	/* Attempt to get the drive's format list. */
 	/* (see the Technical Note "What Your Sony Drives For You") */
-	
+
 	pb.cntrlParam.ioVRefNum = driveQElementPtr->dQDrive;
 	pb.cntrlParam.ioCRefNum = driveQElementPtr->dQRefNum;
 	pb.cntrlParam.csCode = kFmtLstCode;
 	pb.cntrlParam.csParam[0] = kMaxFormatListRecs;
 	*(long *)&pb.cntrlParam.csParam[1] = (long)&formatListRecords[0];
-	
+
 	result = PBStatusSync(&pb);
-	
+
 	if ( result == noErr )
 	{
 		/* The drive supports ReturnFormatList status call. */
-		
+
 		/* Get the current disk's size. */
 		for( formatListRecIndex = 0;
 			 formatListRecIndex < pb.cntrlParam.csParam[0];
@@ -169,7 +169,7 @@ OSErr GetDeviceSize(int driveRefNum, UInt64 *numBlocks, UInt32 *blockSize)
 	else if ( driveQElementPtr->dQRefNum == (short)kSonyRefNum )
 	{
 		/* The drive is a non-SuperDrive floppy which only supports 400K and 800K disks */
-		
+
 		result = DriveStatus(driveQElementPtr->dQDrive, &status);
 		if ( result == noErr )
 		{
@@ -178,11 +178,11 @@ OSErr GetDeviceSize(int driveRefNum, UInt64 *numBlocks, UInt32 *blockSize)
 				case kSingleSided:
 					blocks = kSingleSidedSize;
 					break;
-					
+
 				case kDoubleSided:
 					blocks = kDoubleSidedSize;
 					break;
-					
+
 				default:		//	This should never happen
 					result = paramErr;
 					break;
@@ -193,20 +193,20 @@ OSErr GetDeviceSize(int driveRefNum, UInt64 *numBlocks, UInt32 *blockSize)
 	{
 		/* The drive is not a floppy and it doesn't support ReturnFormatList */
 		/* so use the dQDrvSz field(s) */
-		
+
 		result = noErr;	/* reset result */
-		
+
 		switch ( driveQElementPtr->qType )
 		{
 			case kWordDrvSiz:
 				blocks = driveQElementPtr->dQDrvSz;
 				break;
-				
+
 			case kLongDrvSiz:
 				blocks = ((unsigned long)driveQElementPtr->dQDrvSz2 << 16) +
 						 driveQElementPtr->dQDrvSz;
 				break;
-				
+
 			default:		//	This should never happen
 				result = paramErr;
 				break;
@@ -215,7 +215,7 @@ OSErr GetDeviceSize(int driveRefNum, UInt64 *numBlocks, UInt32 *blockSize)
 
 	*numBlocks = blocks;
 	*blockSize = 512;
-	
+
 	return( result );
 #endif
 }
@@ -226,7 +226,7 @@ OSErr DeviceRead(int device, int drive, void* buffer, SInt64 offset, UInt32 reqB
 #if BSD
 	off_t seek_off;
 	ssize_t	nbytes;
-	
+
 	*actBytes = 0;
 
 	seek_off = lseek(device, offset, SEEK_SET);

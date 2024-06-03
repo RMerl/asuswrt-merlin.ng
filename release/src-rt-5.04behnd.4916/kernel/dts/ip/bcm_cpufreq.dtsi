@@ -1,0 +1,7 @@
+
+compatible = "brcm,bcmsmc-cpufreq";
+#if defined OP_MODE
+op-mode = OP_MODE;
+#endif
+/* op-mode ="avs" "dvfs" "dfs"*/
+/* clock-frequency = <>(in MHz) */

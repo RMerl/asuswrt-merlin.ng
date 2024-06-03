@@ -1,6 +1,10 @@
 #ifndef IPTABLES_XSHARED_H
 #define IPTABLES_XSHARED_H 1
 
+#if defined(MUSL_LIBC)
+#include <sys/types.h>
+#endif	// MUSL_LIBC
+
 #include <limits.h>
 #include <stdint.h>
 #include <netinet/in.h>

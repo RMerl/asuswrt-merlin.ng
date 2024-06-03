@@ -150,7 +150,7 @@ void start_ubifs(void)
 	if (!nvram_get_int("ubifs_clean_fs")) {
 		/* attach ubi */
 		snprintf(dev_mtd, sizeof(dev_mtd), "/dev/mtd%d", mtd_part);
-		_dprintf("*** ubifs: attach (%s, %d)\n", dev_mtd, UBI_DEV_NUM);
+		_dprintf("*** ubifs: attach (%s, %s)\n", dev_mtd, UBI_DEV_NUM);
 		eval("ubiattach", "-p", dev_mtd, "-d", UBI_DEV_NUM);
 	}
 
@@ -177,7 +177,7 @@ void start_ubifs(void)
 
 			/* attach ubi */
 			snprintf(dev_mtd, sizeof(dev_mtd), "/dev/mtd%d", mtd_part);
-			_dprintf("*** ubifs: attach (%s, %d)\n", dev_mtd, UBI_DEV_NUM);
+			_dprintf("*** ubifs: attach (%s, %s)\n", dev_mtd, UBI_DEV_NUM);
 			eval("ubiattach", "-p", dev_mtd, "-d", UBI_DEV_NUM);
 
 			/* make ubi volume */
@@ -219,7 +219,7 @@ void start_ubifs(void)
 	    && (sf.f_type != 0x73717368 /* squashfs */ )) {
 		// already mounted
 		notice_set("ubifs", format ? "Formatted" : "Loaded");
-#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
 		goto skip_mnt;
 #endif
 		return;
@@ -252,7 +252,7 @@ void start_ubifs(void)
 	}
 
 
-#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
 skip_mnt:
 #endif
 

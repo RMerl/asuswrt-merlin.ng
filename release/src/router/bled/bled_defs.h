@@ -180,6 +180,11 @@ struct interrupt_bled {
 
 #define TFMT	"%-33s: "
 
+enum {
+	LED_5G_GPIO=2,
+	LED_2G_GPIO=98,
+};
+
 struct ndev_bled_ifstat {
 	char ifname[IFNAMSIZ];
 	unsigned long last_rx_bytes;
@@ -253,7 +258,12 @@ struct bled_priv {
 	char id[MAX_NR_BLED_PER_GPIO][BLED_ID_LEN];		/* id of each bled, ASCIIZ format. */
 	struct udef_pattern_s udef_pattern;			/* User defined pattern. */
 
+#ifdef USE_WORKQUEUE_INSTEAD_OF_TIMER
+	struct workqueue_struct *timer_wq;
+	struct delayed_work timer_work;
+#else
 	struct timer_list timer;
+#endif
 	struct delayed_work bled_work;
 	
 	void (*gpio_set) (int gpio_nr, int value);

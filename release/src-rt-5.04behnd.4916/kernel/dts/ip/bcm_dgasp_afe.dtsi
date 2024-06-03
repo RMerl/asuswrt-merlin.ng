@@ -1,0 +1,8 @@
+compatible = "brcm,dgasp-afe";
+reg-names = "dg-afe-reg", "dg-bgbias-reg", "uart-dr";
+reg = <DG_AFE_REG_OFFSET DG_AFE_REG_SIZE>,
+      <DG_BGBIAS_REG_OFFSET DG_BGBIAS_REG_SIZE>,
+      <DG_UART_DR_OFFSET DG_UART_DR_SIZE>;
+afe-reg-val = <DG_AFE_REG_VAL>;
+bgbias-reg-val = <DG_BGBIAS_REG_VAL>;
+status = "okay";

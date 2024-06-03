@@ -49,7 +49,7 @@ static BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
         case CTRL_BREAK_EVENT: 
         case CTRL_LOGOFF_EVENT: 
         case CTRL_SHUTDOWN_EVENT: 
-	    pj_thread_register("ctrlhandler", handler_desc, &thread);
+//	    pj_thread_register("ctrlhandler", handler_desc, &thread);
 	    PJ_LOG(3,(THIS_FILE, "Ctrl-C detected, quitting.."));
             app_destroy();
 	    ExitProcess(1);

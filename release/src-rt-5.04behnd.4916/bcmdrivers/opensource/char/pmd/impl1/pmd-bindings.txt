@@ -1,0 +1,25 @@
+brcm,pmd driver Device Tree Bindings
+
+Required properties:
+
+- ewake-gpio:       gpio pin, connected to ewake
+
+- rstn-gpio:        gpio pin, connected to rstn
+
+- alarm:            brcm,bca-extintr, external interrupt gpio
+
+- pinctrl state:    pinctrl-names must have state "state_ewake" which configures
+                    gpio-pin ewake function, sometimes referred to as early_txen.
+
+- i2c-bus:          phandle, I2C bus controller for the PMD
+
+
+Optional properties:
+
+- apd-reg-enabled:  bool
+
+Either:
+- apd-flyback:      bool
+- apd-boost:        bool
+
+

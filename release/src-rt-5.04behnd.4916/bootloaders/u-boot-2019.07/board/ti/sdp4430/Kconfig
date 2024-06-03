@@ -1,0 +1,15 @@
+if TARGET_OMAP4_SDP4430
+
+config SYS_BOARD
+	default "sdp4430"
+
+config SYS_VENDOR
+	default "ti"
+
+config SYS_CONFIG_NAME
+	default "omap4_sdp4430"
+
+config CMD_BAT
+	bool "Enable board-specific battery command"
+
+endif

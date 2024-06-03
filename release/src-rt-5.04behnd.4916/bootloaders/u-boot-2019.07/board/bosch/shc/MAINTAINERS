@@ -1,0 +1,11 @@
+SHC BOARD
+M:	Heiko Schocher <hs@denx.de>
+S:	Maintained
+F:	board/bosch/shc
+F:	include/configs/am335x_shc.h
+F:	configs/am335x_shc_defconfig
+F:	configs/am335x_shc_ict_defconfig
+F:	configs/am335x_shc_netboot_defconfig
+F:	configs/am335x_shc_sdboot_defconfig
+F:	arch/arm/dts/am335x-shc.dts
+F:	arch/arm/dts/am335x-shc-u-boot.dtsi

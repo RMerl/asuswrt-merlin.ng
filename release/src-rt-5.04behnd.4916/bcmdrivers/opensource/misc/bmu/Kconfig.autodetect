@@ -1,0 +1,11 @@
+config BCM_BMU
+	bool "Broadcom BCA Battery Management Unit driver"
+	default n
+	help
+	  Add the BCM BMU support.
+
+config BCM_BMU_IMPL
+	int "Implementation index for BCA BMU driver"
+	depends on BCM_BMU
+	default 1
+

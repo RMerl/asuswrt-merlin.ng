@@ -324,17 +324,17 @@ void get_fp(const char* log_path)
 {
     FILE* fp = NULL;
     if (!log_path) {
-        //  fp = stderr;
+        //	fp = stderr;
         gfp = stderr;
     } else {
-//      char path [LOG_PATH_LEN]={0};
+//		char path [LOG_PATH_LEN]={0};
         char* ts;
         alloc_time_string(LOG_PATH_EXT, 0, &ts);
         int len = strlen(log_path)+strlen(ts)+2;
         char* path = malloc(len); memset(path, 0, len);
         strcpy(path,log_path );
         strcat(path, ts);
-//      sprintf(path,"%s%s", log_path,ts);
+//		sprintf(path,"%s%s", log_path,ts);
         dealloc_time_string(ts);
         fp = fopen(path, "w+");
         if (!fp) {

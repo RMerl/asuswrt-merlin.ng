@@ -1,0 +1,6 @@
+compatible = "brcm,bca-ubus3";
+reg = <UBUS_SYSTOP_OFFSET UBUS_SYSTOP_SIZE>;
+reg-names = "ubus_systop";
+
+#undef UBUS_SYSTOP_OFFSET
+#undef UBUS_SYSTOP_SIZE

@@ -1,0 +1,1655 @@
+pincontroller-functions {
+        spim_group_pins: spim_group_pinmux {
+            pins = <22 23 24>;
+            function = <1>;
+        };
+
+        a_spim1_group_pins: a_spim1_group_pinmux {
+            pins = <22 23 24>;
+            function = <2>;
+        };
+
+        usb0_pwr_pins: usb0_pwr_pinmux {
+            pins = <63 64>;
+            function = <1>;
+        };
+
+        usb1_pwr_pins: usb1_pwr_pinmux {
+            pins = <65 66>;
+            function = <1>;
+        };
+
+        nand_data_pins: nand_data_pinmux {
+            pins = <34 35 36 37 38 39 40 41>;
+            function = <1>;
+        };
+
+        nand_ctrl_pins: nand_ctrl_pinmux {
+            pins = <31 32 33 42 43 44>;
+            function = <1>;
+        };
+
+        emmc_ctrl_pins: emmc_ctrl_pinmux {
+            pins = <45 46>;
+            function = <1>;
+        };
+
+        a_bsc_m1_scl_pin_11: a_bsc_m1_scl_pinmux {
+            pins = <11>;
+            function = <0>;
+        };
+
+        a_bsc_m1_sda_pin_12: a_bsc_m1_sda_pinmux {
+            pins = <12>;
+            function = <0>;
+        };
+
+        a_early_txen_pin_13: a_early_txen_pinmux {
+            pins = <13>;
+            function = <2>;
+        };
+
+        a_eth_mdc_pin_59: a_eth_mdc_pinmux {
+            pins = <59>;
+            function = <1>;
+        };
+
+        a_eth_mdio_pin_60: a_eth_mdio_pinmux {
+            pins = <60>;
+            function = <1>;
+        };
+
+        a_i2c_2_scl_pin_11: a_i2c_2_scl_pinmux {
+            pins = <11>;
+            function = <2>;
+        };
+
+        a_i2c_2_sda_pin_12: a_i2c_2_sda_pinmux {
+            pins = <12>;
+            function = <2>;
+        };
+
+        a_i2s_rx_lrck_pin_9: a_i2s_rx_lrck_pinmux {
+            pins = <9>;
+            function = <2>;
+        };
+
+        a_i2s_rx_mclk_pin_10: a_i2s_rx_mclk_pinmux {
+            pins = <10>;
+            function = <2>;
+        };
+
+        a_i2s_rx_sclk_pin_8: a_i2s_rx_sclk_pinmux {
+            pins = <8>;
+            function = <2>;
+        };
+
+        a_i2s_sdata_in_pin_5: a_i2s_sdata_in_pinmux {
+            pins = <5>;
+            function = <2>;
+        };
+
+        a_i2s_sdata_out_pin_6: a_i2s_sdata_out_pinmux {
+            pins = <6>;
+            function = <2>;
+        };
+
+        a_i2s_tx_lrck_pin_4: a_i2s_tx_lrck_pinmux {
+            pins = <4>;
+            function = <2>;
+        };
+
+        a_i2s_tx_mclk_pin_7: a_i2s_tx_mclk_pinmux {
+            pins = <7>;
+            function = <2>;
+        };
+
+        a_i2s_tx_sclk_pin_3: a_i2s_tx_sclk_pinmux {
+            pins = <3>;
+            function = <2>;
+        };
+
+        a_one_sec_pls_pin_10: a_one_sec_pls_pinmux {
+            pins = <10>;
+            function = <6>;
+        };
+
+        a_pcm_clk_pin_16: a_pcm_clk_pinmux {
+            pins = <16>;
+            function = <1>;
+        };
+
+        a_pcm_fs_pin_17: a_pcm_fs_pinmux {
+            pins = <17>;
+            function = <1>;
+        };
+
+        a_pcm_sdin_pin_14: a_pcm_sdin_pinmux {
+            pins = <14>;
+            function = <1>;
+        };
+
+        a_pcm_sdout_pin_15: a_pcm_sdout_pinmux {
+            pins = <15>;
+            function = <1>;
+        };
+
+        a_per_led_00_pin_0: a_per_led_00_pinmux {
+            pins = <0>;
+            function = <5>;
+            crossbar-output = <0>;
+        };
+
+        a_per_led_01_pin_1: a_per_led_01_pinmux {
+            pins = <1>;
+            function = <5>;
+            crossbar-output = <1>;
+        };
+
+        a_per_led_02_pin_2: a_per_led_02_pinmux {
+            pins = <2>;
+            function = <5>;
+            crossbar-output = <2>;
+        };
+
+        a_per_led_03_pin_3: a_per_led_03_pinmux {
+            pins = <3>;
+            function = <5>;
+            crossbar-output = <3>;
+        };
+
+        a_per_led_04_pin_4: a_per_led_04_pinmux {
+            pins = <4>;
+            function = <5>;
+            crossbar-output = <4>;
+        };
+
+        a_per_led_05_pin_5: a_per_led_05_pinmux {
+            pins = <5>;
+            function = <5>;
+            crossbar-output = <5>;
+        };
+
+        a_per_led_06_pin_6: a_per_led_06_pinmux {
+            pins = <6>;
+            function = <5>;
+            crossbar-output = <6>;
+        };
+
+        a_per_led_07_pin_7: a_per_led_07_pinmux {
+            pins = <7>;
+            function = <5>;
+            crossbar-output = <7>;
+        };
+
+        a_per_led_08_pin_8: a_per_led_08_pinmux {
+            pins = <8>;
+            function = <5>;
+            crossbar-output = <8>;
+        };
+
+        a_per_led_09_pin_9: a_per_led_09_pinmux {
+            pins = <9>;
+            function = <5>;
+            crossbar-output = <9>;
+        };
+
+        a_per_led_10_pin_10: a_per_led_10_pinmux {
+            pins = <10>;
+            function = <5>;
+            crossbar-output = <10>;
+        };
+
+        a_per_led_11_pin_11: a_per_led_11_pinmux {
+            pins = <11>;
+            function = <5>;
+            crossbar-output = <11>;
+        };
+
+        a_per_led_12_pin_12: a_per_led_12_pinmux {
+            pins = <12>;
+            function = <5>;
+            crossbar-output = <12>;
+        };
+
+        a_per_led_13_pin_13: a_per_led_13_pinmux {
+            pins = <13>;
+            function = <5>;
+            crossbar-output = <13>;
+        };
+
+        a_per_led_14_pin_14: a_per_led_14_pinmux {
+            pins = <14>;
+            function = <5>;
+            crossbar-output = <14>;
+        };
+
+        a_per_led_15_pin_15: a_per_led_15_pinmux {
+            pins = <15>;
+            function = <5>;
+            crossbar-output = <15>;
+        };
+
+        a_per_led_16_pin_16: a_per_led_16_pinmux {
+            pins = <16>;
+            function = <5>;
+            crossbar-output = <16>;
+        };
+
+        a_per_led_17_pin_17: a_per_led_17_pinmux {
+            pins = <17>;
+            function = <5>;
+            crossbar-output = <17>;
+        };
+
+        a_per_led_18_pin_18: a_per_led_18_pinmux {
+            pins = <18>;
+            function = <5>;
+            crossbar-output = <18>;
+        };
+
+        a_per_led_19_pin_19: a_per_led_19_pinmux {
+            pins = <19>;
+            function = <5>;
+            crossbar-output = <19>;
+        };
+
+        a_per_led_20_pin_77: a_per_led_20_pinmux {
+            pins = <77>;
+            function = <5>;
+            crossbar-output = <20>;
+        };
+
+        a_per_led_21_pin_21: a_per_led_21_pinmux {
+            pins = <21>;
+            function = <5>;
+            crossbar-output = <21>;
+        };
+
+        a_per_led_22_pin_20: a_per_led_22_pinmux {
+            pins = <20>;
+            function = <5>;
+            crossbar-output = <22>;
+        };
+
+        a_per_led_23_pin_49: a_per_led_23_pinmux {
+            pins = <49>;
+            function = <5>;
+            crossbar-output = <23>;
+        };
+
+        a_per_led_24_pin_50: a_per_led_24_pinmux {
+            pins = <50>;
+            function = <5>;
+            crossbar-output = <24>;
+        };
+
+        a_per_led_25_pin_51: a_per_led_25_pinmux {
+            pins = <51>;
+            function = <5>;
+            crossbar-output = <25>;
+        };
+
+        a_per_led_26_pin_52: a_per_led_26_pinmux {
+            pins = <52>;
+            function = <5>;
+            crossbar-output = <26>;
+        };
+
+        a_per_led_27_pin_54: a_per_led_27_pinmux {
+            pins = <54>;
+            function = <5>;
+            crossbar-output = <27>;
+        };
+
+        a_per_led_28_pin_55: a_per_led_28_pinmux {
+            pins = <55>;
+            function = <5>;
+            crossbar-output = <28>;
+        };
+
+        a_per_led_29_pin_56: a_per_led_29_pinmux {
+            pins = <56>;
+            function = <5>;
+            crossbar-output = <29>;
+        };
+
+        a_per_led_30_pin_57: a_per_led_30_pinmux {
+            pins = <57>;
+            function = <5>;
+            crossbar-output = <30>;
+        };
+
+        a_per_led_31_pin_58: a_per_led_31_pinmux {
+            pins = <58>;
+            function = <5>;
+            crossbar-output = <31>;
+        };
+
+        a_qlan_sd0_mod_abs_pin_4: a_qlan_sd0_mod_abs_pinmux {
+            pins = <4>;
+            function = <0>;
+        };
+
+        a_qlan_sd0_rx_los_pin_3: a_qlan_sd0_rx_los_pinmux {
+            pins = <3>;
+            function = <0>;
+        };
+
+        a_qlan_sd1_mod_abs_pin_8: a_qlan_sd1_mod_abs_pinmux {
+            pins = <8>;
+            function = <0>;
+        };
+
+        a_qlan_sd1_rx_los_pin_7: a_qlan_sd1_rx_los_pinmux {
+            pins = <7>;
+            function = <0>;
+        };
+
+        a_qlan_sd2_mod_abs_pin_93: a_qlan_sd2_mod_abs_pinmux {
+            pins = <93>;
+            function = <0>;
+        };
+
+        a_qlan_sd2_rx_los_pin_92: a_qlan_sd2_rx_los_pinmux {
+            pins = <92>;
+            function = <0>;
+        };
+
+        a_qlan_sd3_mod_abs_pin_95: a_qlan_sd3_mod_abs_pinmux {
+            pins = <95>;
+            function = <0>;
+        };
+
+        a_qlan_sd3_rx_los_pin_94: a_qlan_sd3_rx_los_pinmux {
+            pins = <94>;
+            function = <0>;
+        };
+
+        a_rg_uart1_cts_pin_18: a_rg_uart1_cts_pinmux {
+            pins = <18>;
+            function = <6>;
+        };
+
+        a_rg_uart1_rts_pin_19: a_rg_uart1_rts_pinmux {
+            pins = <19>;
+            function = <6>;
+        };
+
+        a_rg_uart1_sin_pin_20: a_rg_uart1_sin_pinmux {
+            pins = <20>;
+            function = <6>;
+        };
+
+        a_rg_uart1_sout_pin_21: a_rg_uart1_sout_pinmux {
+            pins = <21>;
+            function = <6>;
+        };
+
+        a_ser_led_clk_pin_1: a_ser_led_clk_pinmux {
+            pins = <1>;
+            function = <1>;
+        };
+
+        a_ser_led_data_pin_0: a_ser_led_data_pinmux {
+            pins = <0>;
+            function = <1>;
+        };
+
+        a_ser_led_mask_pin_2: a_ser_led_mask_pinmux {
+            pins = <2>;
+            function = <1>;
+        };
+
+        a_slan_sd_mod_abs_pin_27: a_slan_sd_mod_abs_pinmux {
+            pins = <27>;
+            function = <0>;
+        };
+
+        a_slan_sd_rx_los_pin_26: a_slan_sd_rx_los_pinmux {
+            pins = <26>;
+            function = <0>;
+        };
+
+        a_spim1_clk_pin_22: a_spim1_clk_pinmux {
+            pins = <22>;
+            function = <2>;
+        };
+
+        a_spim1_miso_pin_24: a_spim1_miso_pinmux {
+            pins = <24>;
+            function = <2>;
+        };
+
+        a_spim1_mosi_pin_23: a_spim1_mosi_pinmux {
+            pins = <23>;
+            function = <2>;
+        };
+
+        a_spim1_ss0_b_pin_25: a_spim1_ss0_b_pinmux {
+            pins = <25>;
+            function = <2>;
+        };
+
+        a_spim1_ss1_b_pin_13: a_spim1_ss1_b_pinmux {
+            pins = <13>;
+            function = <1>;
+        };
+
+        a_uart1_cts_pin_89: a_uart1_cts_pinmux {
+            pins = <89>;
+            function = <0>;
+        };
+
+        a_uart1_rts_pin_90: a_uart1_rts_pinmux {
+            pins = <90>;
+            function = <0>;
+        };
+
+        a_uart1_sin_pin_11: a_uart1_sin_pinmux {
+            pins = <11>;
+            function = <1>;
+        };
+
+        a_uart1_sout_pin_12: a_uart1_sout_pinmux {
+            pins = <12>;
+            function = <1>;
+        };
+
+        a_uart2_cts_pin_18: a_uart2_cts_pinmux {
+            pins = <18>;
+            function = <1>;
+        };
+
+        a_uart2_rts_pin_19: a_uart2_rts_pinmux {
+            pins = <19>;
+            function = <1>;
+        };
+
+        a_uart2_sin_pin_20: a_uart2_sin_pinmux {
+            pins = <20>;
+            function = <1>;
+        };
+
+        a_uart2_sout_pin_21: a_uart2_sout_pinmux {
+            pins = <21>;
+            function = <1>;
+        };
+
+        a_wan_nco_10m_clk_pin_7: a_wan_nco_10m_clk_pinmux {
+            pins = <7>;
+            function = <3>;
+        };
+
+        a_wan_nco_1pps_sig_pin_13: a_wan_nco_1pps_sig_pinmux {
+            pins = <13>;
+            function = <0>;
+        };
+
+        a_wan_nco_8k_clk_pin_7: a_wan_nco_8k_clk_pinmux {
+            pins = <7>;
+            function = <6>;
+        };
+
+        a_wan_nco_prog_clk_pin_8: a_wan_nco_prog_clk_pinmux {
+            pins = <8>;
+            function = <3>;
+        };
+
+        bsc_m0_scl_pin_28: bsc_m0_scl_pinmux {
+            pins = <28>;
+            function = <0>;
+        };
+
+        bsc_m0_sda_pin_29: bsc_m0_sda_pinmux {
+            pins = <29>;
+            function = <0>;
+        };
+
+        bsc_m2_scl_pin_87: bsc_m2_scl_pinmux {
+            pins = <87>;
+            function = <0>;
+        };
+
+        bsc_m2_sda_pin_88: bsc_m2_sda_pinmux {
+            pins = <88>;
+            function = <0>;
+        };
+
+        bsc_s_scl_0_pin_9: bsc_s_scl_0_pinmux {
+            pins = <9>;
+            function = <0>;
+        };
+
+        bsc_s_scl_1_pin_47: bsc_s_scl_1_pinmux {
+            pins = <47>;
+            function = <0>;
+        };
+
+        bsc_s_sda_0_pin_10: bsc_s_sda_0_pinmux {
+            pins = <10>;
+            function = <0>;
+        };
+
+        bsc_s_sda_1_pin_48: bsc_s_sda_1_pinmux {
+            pins = <48>;
+            function = <0>;
+        };
+
+        b_bsc_m1_scl_pin_81: b_bsc_m1_scl_pinmux {
+            pins = <81>;
+            function = <0>;
+        };
+
+        b_bsc_m1_sda_pin_82: b_bsc_m1_sda_pinmux {
+            pins = <82>;
+            function = <0>;
+        };
+
+        b_early_txen_pin_75: b_early_txen_pinmux {
+            pins = <75>;
+            function = <2>;
+        };
+
+        b_eth_mdc_pin_3: b_eth_mdc_pinmux {
+            pins = <3>;
+            function = <3>;
+        };
+
+        b_eth_mdio_pin_4: b_eth_mdio_pinmux {
+            pins = <4>;
+            function = <3>;
+        };
+
+        b_i2c_2_scl_pin_81: b_i2c_2_scl_pinmux {
+            pins = <81>;
+            function = <2>;
+        };
+
+        b_i2c_2_sda_pin_82: b_i2c_2_sda_pinmux {
+            pins = <82>;
+            function = <2>;
+        };
+
+        b_i2s_rx_lrck_pin_57: b_i2s_rx_lrck_pinmux {
+            pins = <57>;
+            function = <3>;
+        };
+
+        b_i2s_rx_mclk_pin_83: b_i2s_rx_mclk_pinmux {
+            pins = <83>;
+            function = <3>;
+        };
+
+        b_i2s_rx_sclk_pin_56: b_i2s_rx_sclk_pinmux {
+            pins = <56>;
+            function = <3>;
+        };
+
+        b_i2s_sdata_in_pin_51: b_i2s_sdata_in_pinmux {
+            pins = <51>;
+            function = <3>;
+        };
+
+        b_i2s_sdata_out_pin_52: b_i2s_sdata_out_pinmux {
+            pins = <52>;
+            function = <3>;
+        };
+
+        b_i2s_tx_lrck_pin_50: b_i2s_tx_lrck_pinmux {
+            pins = <50>;
+            function = <3>;
+        };
+
+        b_i2s_tx_mclk_pin_55: b_i2s_tx_mclk_pinmux {
+            pins = <55>;
+            function = <3>;
+        };
+
+        b_i2s_tx_sclk_pin_49: b_i2s_tx_sclk_pinmux {
+            pins = <49>;
+            function = <3>;
+        };
+
+        b_one_sec_pls_pin_13: b_one_sec_pls_pinmux {
+            pins = <13>;
+            function = <6>;
+        };
+
+        b_pcm_clk_pin_20: b_pcm_clk_pinmux {
+            pins = <20>;
+            function = <2>;
+        };
+
+        b_pcm_fs_pin_21: b_pcm_fs_pinmux {
+            pins = <21>;
+            function = <2>;
+        };
+
+        b_pcm_sdin_pin_18: b_pcm_sdin_pinmux {
+            pins = <18>;
+            function = <2>;
+        };
+
+        b_pcm_sdout_pin_19: b_pcm_sdout_pinmux {
+            pins = <19>;
+            function = <2>;
+        };
+
+        b_per_led_00_pin_23: b_per_led_00_pinmux {
+            pins = <23>;
+            function = <5>;
+            crossbar-output = <0>;
+        };
+
+        b_per_led_01_pin_24: b_per_led_01_pinmux {
+            pins = <24>;
+            function = <5>;
+            crossbar-output = <1>;
+        };
+
+        b_per_led_02_pin_25: b_per_led_02_pinmux {
+            pins = <25>;
+            function = <5>;
+            crossbar-output = <2>;
+        };
+
+        b_per_led_03_pin_26: b_per_led_03_pinmux {
+            pins = <26>;
+            function = <5>;
+            crossbar-output = <3>;
+        };
+
+        b_per_led_04_pin_27: b_per_led_04_pinmux {
+            pins = <27>;
+            function = <5>;
+            crossbar-output = <4>;
+        };
+
+        b_per_led_05_pin_28: b_per_led_05_pinmux {
+            pins = <28>;
+            function = <5>;
+            crossbar-output = <5>;
+        };
+
+        b_per_led_06_pin_29: b_per_led_06_pinmux {
+            pins = <29>;
+            function = <5>;
+            crossbar-output = <6>;
+        };
+
+        b_per_led_07_pin_31: b_per_led_07_pinmux {
+            pins = <31>;
+            function = <5>;
+            crossbar-output = <7>;
+        };
+
+        b_per_led_08_pin_32: b_per_led_08_pinmux {
+            pins = <32>;
+            function = <5>;
+            crossbar-output = <8>;
+        };
+
+        b_per_led_09_pin_33: b_per_led_09_pinmux {
+            pins = <33>;
+            function = <5>;
+            crossbar-output = <9>;
+        };
+
+        b_per_led_10_pin_22: b_per_led_10_pinmux {
+            pins = <22>;
+            function = <5>;
+            crossbar-output = <10>;
+        };
+
+        b_per_led_11_pin_86: b_per_led_11_pinmux {
+            pins = <86>;
+            function = <5>;
+            crossbar-output = <11>;
+        };
+
+        b_per_led_12_pin_92: b_per_led_12_pinmux {
+            pins = <92>;
+            function = <5>;
+            crossbar-output = <12>;
+        };
+
+        b_per_led_13_pin_93: b_per_led_13_pinmux {
+            pins = <93>;
+            function = <5>;
+            crossbar-output = <13>;
+        };
+
+        b_per_led_14_pin_94: b_per_led_14_pinmux {
+            pins = <94>;
+            function = <5>;
+            crossbar-output = <14>;
+        };
+
+        b_per_led_15_pin_95: b_per_led_15_pinmux {
+            pins = <95>;
+            function = <5>;
+            crossbar-output = <15>;
+        };
+
+        b_per_led_16_pin_96: b_per_led_16_pinmux {
+            pins = <96>;
+            function = <5>;
+            crossbar-output = <16>;
+        };
+
+        b_per_led_17_pin_97: b_per_led_17_pinmux {
+            pins = <97>;
+            function = <5>;
+            crossbar-output = <17>;
+        };
+
+        b_per_led_18_pin_42: b_per_led_18_pinmux {
+            pins = <42>;
+            function = <5>;
+            crossbar-output = <18>;
+        };
+
+        b_per_led_19_pin_43: b_per_led_19_pinmux {
+            pins = <43>;
+            function = <5>;
+            crossbar-output = <19>;
+        };
+
+        b_per_led_20_pin_44: b_per_led_20_pinmux {
+            pins = <44>;
+            function = <5>;
+            crossbar-output = <20>;
+        };
+
+        b_per_led_21_pin_45: b_per_led_21_pinmux {
+            pins = <45>;
+            function = <5>;
+            crossbar-output = <21>;
+        };
+
+        b_per_led_22_pin_46: b_per_led_22_pinmux {
+            pins = <46>;
+            function = <5>;
+            crossbar-output = <22>;
+        };
+
+        b_per_led_23_pin_75: b_per_led_23_pinmux {
+            pins = <75>;
+            function = <5>;
+            crossbar-output = <23>;
+        };
+
+        b_per_led_24_pin_74: b_per_led_24_pinmux {
+            pins = <74>;
+            function = <5>;
+            crossbar-output = <24>;
+        };
+
+        b_per_led_25_pin_73: b_per_led_25_pinmux {
+            pins = <73>;
+            function = <5>;
+            crossbar-output = <25>;
+        };
+
+        b_per_led_26_pin_72: b_per_led_26_pinmux {
+            pins = <72>;
+            function = <5>;
+            crossbar-output = <26>;
+        };
+
+        b_per_led_27_pin_71: b_per_led_27_pinmux {
+            pins = <71>;
+            function = <5>;
+            crossbar-output = <27>;
+        };
+
+        b_per_led_28_pin_70: b_per_led_28_pinmux {
+            pins = <70>;
+            function = <5>;
+            crossbar-output = <28>;
+        };
+
+        b_per_led_29_pin_69: b_per_led_29_pinmux {
+            pins = <69>;
+            function = <5>;
+            crossbar-output = <29>;
+        };
+
+        b_per_led_30_pin_68: b_per_led_30_pinmux {
+            pins = <68>;
+            function = <5>;
+            crossbar-output = <30>;
+        };
+
+        b_per_led_31_pin_67: b_per_led_31_pinmux {
+            pins = <67>;
+            function = <5>;
+            crossbar-output = <31>;
+        };
+
+        b_qlan_sd0_mod_abs_pin_4: b_qlan_sd0_mod_abs_pinmux {
+            pins = <4>;
+            function = <7>;
+        };
+
+        b_qlan_sd0_rx_los_pin_3: b_qlan_sd0_rx_los_pinmux {
+            pins = <3>;
+            function = <7>;
+        };
+
+        b_qlan_sd1_mod_abs_pin_6: b_qlan_sd1_mod_abs_pinmux {
+            pins = <6>;
+            function = <7>;
+        };
+
+        b_qlan_sd1_rx_los_pin_5: b_qlan_sd1_rx_los_pinmux {
+            pins = <5>;
+            function = <7>;
+        };
+
+        b_qlan_sd2_mod_abs_pin_8: b_qlan_sd2_mod_abs_pinmux {
+            pins = <8>;
+            function = <7>;
+        };
+
+        b_qlan_sd2_rx_los_pin_7: b_qlan_sd2_rx_los_pinmux {
+            pins = <7>;
+            function = <7>;
+        };
+
+        b_qlan_sd3_mod_abs_pin_10: b_qlan_sd3_mod_abs_pinmux {
+            pins = <10>;
+            function = <7>;
+        };
+
+        b_qlan_sd3_rx_los_pin_9: b_qlan_sd3_rx_los_pinmux {
+            pins = <9>;
+            function = <7>;
+        };
+
+        b_rg_uart1_cts_pin_14: b_rg_uart1_cts_pinmux {
+            pins = <14>;
+            function = <6>;
+        };
+
+        b_rg_uart1_rts_pin_15: b_rg_uart1_rts_pinmux {
+            pins = <15>;
+            function = <6>;
+        };
+
+        b_rg_uart1_sin_pin_16: b_rg_uart1_sin_pinmux {
+            pins = <16>;
+            function = <6>;
+        };
+
+        b_rg_uart1_sout_pin_17: b_rg_uart1_sout_pinmux {
+            pins = <17>;
+            function = <6>;
+        };
+
+        b_ser_led_clk_pin_6: b_ser_led_clk_pinmux {
+            pins = <6>;
+            function = <3>;
+        };
+
+        b_ser_led_data_pin_14: b_ser_led_data_pinmux {
+            pins = <14>;
+            function = <3>;
+        };
+
+        b_ser_led_mask_pin_15: b_ser_led_mask_pinmux {
+            pins = <15>;
+            function = <3>;
+        };
+
+        b_slan_sd_mod_abs_pin_50: b_slan_sd_mod_abs_pinmux {
+            pins = <50>;
+            function = <0>;
+        };
+
+        b_slan_sd_rx_los_pin_49: b_slan_sd_rx_los_pinmux {
+            pins = <49>;
+            function = <0>;
+        };
+
+        b_spim1_clk_pin_92: b_spim1_clk_pinmux {
+            pins = <92>;
+            function = <2>;
+        };
+
+        b_spim1_miso_pin_94: b_spim1_miso_pinmux {
+            pins = <94>;
+            function = <2>;
+        };
+
+        b_spim1_mosi_pin_93: b_spim1_mosi_pinmux {
+            pins = <93>;
+            function = <2>;
+        };
+
+        b_spim1_ss0_b_pin_95: b_spim1_ss0_b_pinmux {
+            pins = <95>;
+            function = <2>;
+        };
+
+        b_spim1_ss1_b_pin_74: b_spim1_ss1_b_pinmux {
+            pins = <74>;
+            function = <2>;
+        };
+
+        b_uart1_cts_pin_43: b_uart1_cts_pinmux {
+            pins = <43>;
+            function = <2>;
+        };
+
+        b_uart1_rts_pin_44: b_uart1_rts_pinmux {
+            pins = <44>;
+            function = <2>;
+        };
+
+        b_uart1_sin_pin_45: b_uart1_sin_pinmux {
+            pins = <45>;
+            function = <2>;
+        };
+
+        b_uart1_sout_pin_46: b_uart1_sout_pinmux {
+            pins = <46>;
+            function = <2>;
+        };
+
+        b_uart2_cts_pin_14: b_uart2_cts_pinmux {
+            pins = <14>;
+            function = <2>;
+        };
+
+        b_uart2_rts_pin_15: b_uart2_rts_pinmux {
+            pins = <15>;
+            function = <2>;
+        };
+
+        b_uart2_sin_pin_16: b_uart2_sin_pinmux {
+            pins = <16>;
+            function = <2>;
+        };
+
+        b_uart2_sout_pin_17: b_uart2_sout_pinmux {
+            pins = <17>;
+            function = <2>;
+        };
+
+        b_wan_nco_10m_clk_pin_8: b_wan_nco_10m_clk_pinmux {
+            pins = <8>;
+            function = <6>;
+        };
+
+        b_wan_nco_1pps_sig_pin_10: b_wan_nco_1pps_sig_pinmux {
+            pins = <10>;
+            function = <3>;
+        };
+
+        b_wan_nco_8k_clk_pin_9: b_wan_nco_8k_clk_pinmux {
+            pins = <9>;
+            function = <6>;
+        };
+
+        b_wan_nco_prog_clk_pin_47: b_wan_nco_prog_clk_pinmux {
+            pins = <47>;
+            function = <2>;
+        };
+
+        c_early_txen_pin_55: c_early_txen_pinmux {
+            pins = <55>;
+            function = <2>;
+        };
+
+        c_eth_mdc_pin_11: c_eth_mdc_pinmux {
+            pins = <11>;
+            function = <6>;
+        };
+
+        c_eth_mdio_pin_12: c_eth_mdio_pinmux {
+            pins = <12>;
+            function = <6>;
+        };
+
+        c_i2s_tx_mclk_pin_5: c_i2s_tx_mclk_pinmux {
+            pins = <5>;
+            function = <3>;
+        };
+
+        c_per_led_14_pin_47: c_per_led_14_pinmux {
+            pins = <47>;
+            function = <5>;
+            crossbar-output = <14>;
+        };
+
+        c_per_led_15_pin_48: c_per_led_15_pinmux {
+            pins = <48>;
+            function = <5>;
+            crossbar-output = <15>;
+        };
+
+        c_per_led_16_pin_53: c_per_led_16_pinmux {
+            pins = <53>;
+            function = <5>;
+            crossbar-output = <16>;
+        };
+
+        c_per_led_17_pin_76: c_per_led_17_pinmux {
+            pins = <76>;
+            function = <5>;
+            crossbar-output = <17>;
+        };
+
+        c_ser_led_clk_pin_56: c_ser_led_clk_pinmux {
+            pins = <56>;
+            function = <6>;
+        };
+
+        c_ser_led_data_pin_55: c_ser_led_data_pinmux {
+            pins = <55>;
+            function = <6>;
+        };
+
+        c_ser_led_mask_pin_57: c_ser_led_mask_pinmux {
+            pins = <57>;
+            function = <6>;
+        };
+
+        c_slan_sd_mod_abs_pin_77: c_slan_sd_mod_abs_pinmux {
+            pins = <77>;
+            function = <0>;
+        };
+
+        c_slan_sd_rx_los_pin_76: c_slan_sd_rx_los_pinmux {
+            pins = <76>;
+            function = <0>;
+        };
+
+        c_spim1_ss1_b_pin_84: c_spim1_ss1_b_pinmux {
+            pins = <84>;
+            function = <6>;
+        };
+
+        c_uart1_cts_pin_87: c_uart1_cts_pinmux {
+            pins = <87>;
+            function = <2>;
+        };
+
+        c_uart1_rts_pin_88: c_uart1_rts_pinmux {
+            pins = <88>;
+            function = <2>;
+        };
+
+        c_uart1_sin_pin_79: c_uart1_sin_pinmux {
+            pins = <79>;
+            function = <2>;
+        };
+
+        c_uart1_sout_pin_56: c_uart1_sout_pinmux {
+            pins = <56>;
+            function = <2>;
+        };
+
+        c_wan_nco_10m_clk_pin_53: c_wan_nco_10m_clk_pinmux {
+            pins = <53>;
+            function = <2>;
+        };
+
+        c_wan_nco_1pps_sig_pin_54: c_wan_nco_1pps_sig_pinmux {
+            pins = <54>;
+            function = <2>;
+        };
+
+        c_wan_nco_8k_clk_pin_48: c_wan_nco_8k_clk_pinmux {
+            pins = <48>;
+            function = <2>;
+        };
+
+        c_wan_nco_prog_clk_pin_80: c_wan_nco_prog_clk_pinmux {
+            pins = <80>;
+            function = <2>;
+        };
+
+        ddr_uart_rx_pin_20: ddr_uart_rx_pinmux {
+            pins = <20>;
+            function = <11>;
+        };
+
+        ddr_uart_tx_pin_21: ddr_uart_tx_pinmux {
+            pins = <21>;
+            function = <11>;
+        };
+
+        d_slan_sd_mod_abs_pin_12: d_slan_sd_mod_abs_pinmux {
+            pins = <12>;
+            function = <3>;
+        };
+
+        d_slan_sd_rx_los_pin_11: d_slan_sd_rx_los_pinmux {
+            pins = <11>;
+            function = <3>;
+        };
+
+        d_wan_nco_prog_clk_pin_7: d_wan_nco_prog_clk_pinmux {
+            pins = <7>;
+            function = <8>;
+        };
+
+        e_wan_nco_prog_clk_pin_9: e_wan_nco_prog_clk_pinmux {
+            pins = <9>;
+            function = <8>;
+        };
+
+        f_wan_nco_prog_clk_pin_48: f_wan_nco_prog_clk_pinmux {
+            pins = <48>;
+            function = <8>;
+        };
+
+        g_wan_nco_prog_clk_pin_53: g_wan_nco_prog_clk_pinmux {
+            pins = <53>;
+            function = <8>;
+        };
+
+        i2c_scl_pin_28: i2c_scl_pinmux {
+            pins = <28>;
+            function = <1>;
+        };
+
+        i2c_sda_pin_29: i2c_sda_pinmux {
+            pins = <29>;
+            function = <1>;
+        };
+
+        nand_wp_b_pin_86: nand_wp_b_pinmux {
+            pins = <86>;
+            function = <7>;
+        };
+
+        pcie0_clkreq_b_pin_68: pcie0_clkreq_b_pinmux {
+            pins = <68>;
+            function = <1>;
+        };
+
+        pcie0_rst_b_pin_69: pcie0_rst_b_pinmux {
+            pins = <69>;
+            function = <1>;
+        };
+
+        pcie1_clkreq_b_pin_70: pcie1_clkreq_b_pinmux {
+            pins = <70>;
+            function = <1>;
+        };
+
+        pcie1_rst_b_pin_71: pcie1_rst_b_pinmux {
+            pins = <71>;
+            function = <1>;
+        };
+
+        pcie2_clkreq_b_pin_72: pcie2_clkreq_b_pinmux {
+            pins = <72>;
+            function = <1>;
+        };
+
+        pcie2_rst_b_pin_73: pcie2_rst_b_pinmux {
+            pins = <73>;
+            function = <1>;
+        };
+
+        pcie3_clkreq_b_pin_74: pcie3_clkreq_b_pinmux {
+            pins = <74>;
+            function = <1>;
+        };
+
+        pcie3_rst_b_pin_75: pcie3_rst_b_pinmux {
+            pins = <75>;
+            function = <1>;
+        };
+
+        pon_lbe_n_pin_13: pon_lbe_n_pinmux {
+            pins = <13>;
+            function = <3>;
+        };
+
+        pon_lbe_p_pin_30: pon_lbe_p_pinmux {
+            pins = <30>;
+            function = <1>;
+        };
+
+        pon_mod_abs_pin_90: pon_mod_abs_pinmux {
+            pins = <90>;
+            function = <1>;
+        };
+
+        reset_out_b_pin_67: reset_out_b_pinmux {
+            pins = <67>;
+            function = <1>;
+        };
+
+        rogue_onu_in_pin_89: rogue_onu_in_pinmux {
+            pins = <89>;
+            function = <1>;
+        };
+
+        signal_detect_pin_85: signal_detect_pinmux {
+            pins = <85>;
+            function = <1>;
+        };
+
+        spim1_ss2_b_pin_6: spim1_ss2_b_pinmux {
+            pins = <6>;
+            function = <1>;
+        };
+
+        spim1_ss3_b_pin_5: spim1_ss3_b_pinmux {
+            pins = <5>;
+            function = <1>;
+        };
+
+        spim1_ss4_b_pin_4: spim1_ss4_b_pinmux {
+            pins = <4>;
+            function = <1>;
+        };
+
+        spim1_ss5_b_pin_3: spim1_ss5_b_pinmux {
+            pins = <3>;
+            function = <1>;
+        };
+
+        spim_ss0_b_pin_25: spim_ss0_b_pinmux {
+            pins = <25>;
+            function = <1>;
+        };
+
+        spis_clk_pin_47: spis_clk_pinmux {
+            pins = <47>;
+            function = <1>;
+        };
+
+        spis_miso_pin_53: spis_miso_pinmux {
+            pins = <53>;
+            function = <1>;
+        };
+
+        spis_mosi_pin_54: spis_mosi_pinmux {
+            pins = <54>;
+            function = <1>;
+        };
+
+        spis_ss_b_pin_48: spis_ss_b_pinmux {
+            pins = <48>;
+            function = <1>;
+        };
+
+        ssn_in_00_pin_27: ssn_in_00_pinmux {
+            pins = <27>;
+            function = <10>;
+        };
+
+        ssn_in_01_pin_28: ssn_in_01_pinmux {
+            pins = <28>;
+            function = <10>;
+        };
+
+        ssn_in_02_pin_29: ssn_in_02_pinmux {
+            pins = <29>;
+            function = <10>;
+        };
+
+        ssn_in_03_pin_30: ssn_in_03_pinmux {
+            pins = <30>;
+            function = <10>;
+        };
+
+        ssn_in_04_pin_31: ssn_in_04_pinmux {
+            pins = <31>;
+            function = <10>;
+        };
+
+        ssn_in_05_pin_32: ssn_in_05_pinmux {
+            pins = <32>;
+            function = <10>;
+        };
+
+        ssn_in_06_pin_33: ssn_in_06_pinmux {
+            pins = <33>;
+            function = <10>;
+        };
+
+        ssn_in_07_pin_34: ssn_in_07_pinmux {
+            pins = <34>;
+            function = <10>;
+        };
+
+        ssn_in_08_pin_35: ssn_in_08_pinmux {
+            pins = <35>;
+            function = <10>;
+        };
+
+        ssn_in_09_pin_36: ssn_in_09_pinmux {
+            pins = <36>;
+            function = <10>;
+        };
+
+        ssn_in_10_pin_37: ssn_in_10_pinmux {
+            pins = <37>;
+            function = <10>;
+        };
+
+        ssn_in_11_pin_38: ssn_in_11_pinmux {
+            pins = <38>;
+            function = <10>;
+        };
+
+        ssn_in_12_pin_39: ssn_in_12_pinmux {
+            pins = <39>;
+            function = <10>;
+        };
+
+        ssn_in_13_pin_40: ssn_in_13_pinmux {
+            pins = <40>;
+            function = <10>;
+        };
+
+        ssn_in_14_pin_41: ssn_in_14_pinmux {
+            pins = <41>;
+            function = <10>;
+        };
+
+        ssn_in_15_pin_42: ssn_in_15_pinmux {
+            pins = <42>;
+            function = <10>;
+        };
+
+        ssn_in_clk_pin_26: ssn_in_clk_pinmux {
+            pins = <26>;
+            function = <10>;
+        };
+
+        ssn_out_00_pin_43: ssn_out_00_pinmux {
+            pins = <43>;
+            function = <10>;
+        };
+
+        ssn_out_01_pin_44: ssn_out_01_pinmux {
+            pins = <44>;
+            function = <10>;
+        };
+
+        ssn_out_02_pin_45: ssn_out_02_pinmux {
+            pins = <45>;
+            function = <10>;
+        };
+
+        ssn_out_03_pin_46: ssn_out_03_pinmux {
+            pins = <46>;
+            function = <10>;
+        };
+
+        ssn_out_04_pin_47: ssn_out_04_pinmux {
+            pins = <47>;
+            function = <10>;
+        };
+
+        ssn_out_05_pin_48: ssn_out_05_pinmux {
+            pins = <48>;
+            function = <10>;
+        };
+
+        ssn_out_06_pin_49: ssn_out_06_pinmux {
+            pins = <49>;
+            function = <10>;
+        };
+
+        ssn_out_07_pin_50: ssn_out_07_pinmux {
+            pins = <50>;
+            function = <10>;
+        };
+
+        ssn_out_08_pin_51: ssn_out_08_pinmux {
+            pins = <51>;
+            function = <10>;
+        };
+
+        ssn_out_09_pin_52: ssn_out_09_pinmux {
+            pins = <52>;
+            function = <10>;
+        };
+
+        ssn_out_10_pin_53: ssn_out_10_pinmux {
+            pins = <53>;
+            function = <10>;
+        };
+
+        ssn_out_11_pin_54: ssn_out_11_pinmux {
+            pins = <54>;
+            function = <10>;
+        };
+
+        ssn_out_12_pin_55: ssn_out_12_pinmux {
+            pins = <55>;
+            function = <10>;
+        };
+
+        ssn_out_13_pin_56: ssn_out_13_pinmux {
+            pins = <56>;
+            function = <10>;
+        };
+
+        ssn_out_14_pin_57: ssn_out_14_pinmux {
+            pins = <57>;
+            function = <10>;
+        };
+
+        ssn_out_15_pin_58: ssn_out_15_pinmux {
+            pins = <58>;
+            function = <10>;
+        };
+
+        sys_irq_out_b_pin_9: sys_irq_out_b_pinmux {
+            pins = <9>;
+            function = <3>;
+        };
+
+        tpiu_clk_pin_58: tpiu_clk_pinmux {
+            pins = <58>;
+            function = <9>;
+        };
+
+        tpiu_ctl_pin_59: tpiu_ctl_pinmux {
+            pins = <59>;
+            function = <9>;
+        };
+
+        tpiu_data_00_pin_3: tpiu_data_00_pinmux {
+            pins = <3>;
+            function = <9>;
+        };
+
+        tpiu_data_01_pin_4: tpiu_data_01_pinmux {
+            pins = <4>;
+            function = <9>;
+        };
+
+        tpiu_data_02_pin_5: tpiu_data_02_pinmux {
+            pins = <5>;
+            function = <9>;
+        };
+
+        tpiu_data_03_pin_6: tpiu_data_03_pinmux {
+            pins = <6>;
+            function = <9>;
+        };
+
+        tpiu_data_04_pin_13: tpiu_data_04_pinmux {
+            pins = <13>;
+            function = <9>;
+        };
+
+        tpiu_data_05_pin_14: tpiu_data_05_pinmux {
+            pins = <14>;
+            function = <9>;
+        };
+
+        tpiu_data_06_pin_16: tpiu_data_06_pinmux {
+            pins = <16>;
+            function = <9>;
+        };
+
+        tpiu_data_07_pin_26: tpiu_data_07_pinmux {
+            pins = <26>;
+            function = <9>;
+        };
+
+        tpiu_data_08_pin_27: tpiu_data_08_pinmux {
+            pins = <27>;
+            function = <9>;
+        };
+
+        tpiu_data_09_pin_28: tpiu_data_09_pinmux {
+            pins = <28>;
+            function = <9>;
+        };
+
+        tpiu_data_10_pin_29: tpiu_data_10_pinmux {
+            pins = <29>;
+            function = <9>;
+        };
+
+        tpiu_data_11_pin_30: tpiu_data_11_pinmux {
+            pins = <30>;
+            function = <9>;
+        };
+
+        tpiu_data_12_pin_31: tpiu_data_12_pinmux {
+            pins = <31>;
+            function = <9>;
+        };
+
+        tpiu_data_13_pin_33: tpiu_data_13_pinmux {
+            pins = <33>;
+            function = <9>;
+        };
+
+        tpiu_data_14_pin_34: tpiu_data_14_pinmux {
+            pins = <34>;
+            function = <9>;
+        };
+
+        tpiu_data_15_pin_35: tpiu_data_15_pinmux {
+            pins = <35>;
+            function = <9>;
+        };
+
+        tpiu_data_16_pin_36: tpiu_data_16_pinmux {
+            pins = <36>;
+            function = <9>;
+        };
+
+        tpiu_data_17_pin_37: tpiu_data_17_pinmux {
+            pins = <37>;
+            function = <9>;
+        };
+
+        tpiu_data_18_pin_38: tpiu_data_18_pinmux {
+            pins = <38>;
+            function = <9>;
+        };
+
+        tpiu_data_19_pin_45: tpiu_data_19_pinmux {
+            pins = <45>;
+            function = <9>;
+        };
+
+        tpiu_data_20_pin_46: tpiu_data_20_pinmux {
+            pins = <46>;
+            function = <9>;
+        };
+
+        tpiu_data_21_pin_47: tpiu_data_21_pinmux {
+            pins = <47>;
+            function = <9>;
+        };
+
+        tpiu_data_22_pin_48: tpiu_data_22_pinmux {
+            pins = <48>;
+            function = <9>;
+        };
+
+        tpiu_data_23_pin_49: tpiu_data_23_pinmux {
+            pins = <49>;
+            function = <9>;
+        };
+
+        tpiu_data_24_pin_50: tpiu_data_24_pinmux {
+            pins = <50>;
+            function = <9>;
+        };
+
+        tpiu_data_25_pin_51: tpiu_data_25_pinmux {
+            pins = <51>;
+            function = <9>;
+        };
+
+        tpiu_data_26_pin_52: tpiu_data_26_pinmux {
+            pins = <52>;
+            function = <9>;
+        };
+
+        tpiu_data_27_pin_53: tpiu_data_27_pinmux {
+            pins = <53>;
+            function = <9>;
+        };
+
+        tpiu_data_28_pin_54: tpiu_data_28_pinmux {
+            pins = <54>;
+            function = <9>;
+        };
+
+        tpiu_data_29_pin_55: tpiu_data_29_pinmux {
+            pins = <55>;
+            function = <9>;
+        };
+
+        tpiu_data_30_pin_56: tpiu_data_30_pinmux {
+            pins = <56>;
+            function = <9>;
+        };
+
+        tpiu_data_31_pin_57: tpiu_data_31_pinmux {
+            pins = <57>;
+            function = <9>;
+        };
+
+        uart0_sdin_pin_61: uart0_sdin_pinmux {
+            pins = <61>;
+            function = <1>;
+        };
+
+        uart0_sdout_pin_62: uart0_sdout_pinmux {
+            pins = <62>;
+            function = <1>;
+        };
+
+        usbd_vbus_present_pin_76: usbd_vbus_present_pinmux {
+            pins = <76>;
+            function = <3>;
+        };
+
+        uui_sin_pin_61: uui_sin_pinmux {
+            pins = <61>;
+            function = <2>;
+        };
+
+        uui_sout_pin_62: uui_sout_pinmux {
+            pins = <62>;
+            function = <2>;
+        };
+
+        wan_ntr_in_pin_10: wan_ntr_in_pinmux {
+            pins = <10>;
+            function = <8>;
+        };
+
+};

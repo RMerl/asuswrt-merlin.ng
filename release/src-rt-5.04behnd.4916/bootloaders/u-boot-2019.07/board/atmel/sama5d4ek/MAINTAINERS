@@ -1,0 +1,8 @@
+SAMA5D4EK BOARD
+M:	Eugen Hristev <eugen.hristev@microchip.com>
+S:	Maintained
+F:	board/atmel/sama5d4ek/
+F:	include/configs/sama5d4ek.h
+F:	configs/sama5d4ek_mmc_defconfig
+F:	configs/sama5d4ek_nandflash_defconfig
+F:	configs/sama5d4ek_spiflash_defconfig

@@ -1,0 +1,181 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * U-Boot additions to enable a generic Exynos GPIO driver
+ *
+ * Copyright (c) 2014 Google, Inc
+ */
+
+/ {
+	pinctrl@e0300000 {
+		gpa0: gpa0 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpa1: gpa1 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpb: gpb {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpc: gpc {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpd: gpd {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpe0: gpe0 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpe1: gpe1 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpf0: gpf0 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpf1: gpf1 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpf2: gpf2 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpf3: gpf3 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpg0: gpg0 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpg1: gpg1 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpg2: gpg2 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpg3: gpg3 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpi: gpi {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpj0: gpj0 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpj1: gpj1 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpj2: gpj2 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpj3: gpj3 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpj4: gpj4 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpk0: gpk0 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpk1: gpk1 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpk2: gpk2 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpk3: gpk3 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpl0: gpl0 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpl1: gpl1 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpl2: gpl2 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpl3: gpl3 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpl4: gpl4 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gph0: gph0 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gph1: gph1 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gph2: gph2 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gph3: gph3 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+	};
+};

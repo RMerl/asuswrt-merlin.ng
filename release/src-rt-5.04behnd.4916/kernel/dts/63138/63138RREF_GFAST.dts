@@ -1,0 +1,166 @@
+#include "63138.dtsi"
+#include "../bcm_voice.dtsi"
+#include "963138RREF_leds.dtsi"
+
+/ {
+    memory_controller {
+        memcfg = <(BP_DDR_SPEED_800_11_11_11   | \
+                   BP_DDR_TOTAL_SIZE_1024MB | \
+                   BP_DDR_DEVICE_WIDTH_8)>;
+    };
+   
+	dect_reset:dect_reset {
+		compatible = "brcm,voice-dect-reset";
+		dectreset-gpio = <&gpioc 118 GPIO_ACTIVE_HIGH>;
+	};
+};
+
+&bcm_voice{
+	sliclist = SLICSLAC_LIST_COMMON_FXO;
+ };
+
+&hsspi {
+	status = "okay";
+	voice0 {
+		pinctrl-0 = <&a_spim_ss1_b_pin_127>;
+		pinctrl-names = "default";
+		compatible = "bcm-spi-voice";
+		reg = <1>; /* chip select 1 */
+		spi-max-frequency = <1024000>;
+		reset-gpio = <&gpioc 34 GPIO_ACTIVE_LOW>;
+		spi-index = <0>;/* voice header index */
+	};
+};
+
+&vreg_sync {
+		pinctrl-0 = <&vreg_clk_pin_18>;
+		pinctrl-names = "default";
+};
+
+&mdio_sf2 {
+        /* Port PHY mapping:
+            port_runner_p1  <-->  port_sf2_p8 -###- port_sf2_p0 <------------------> phy_gphy0
+                                               # #- port_sf2_p1 <------------------> phy_gphy1
+                                               # #- port_sf2_p2 <------------------> phy_gphy2
+                                               ###- port_sf2_p3 <--> xbar_grp0 -+-+- phy_gphy3
+                                                 port_runner_p0 <--> xbar_grp2 -+-+- phy_gphy4
+         */
+	/* PHYs directly connected to SF2 */
+	phy_gphy0 {
+		status = "okay";
+	};
+	phy_gphy1 {
+		status = "okay";
+	};
+	phy_gphy2 {
+		status = "okay";
+	};
+
+	/* PHYs connected to crossbar */
+	phy_gphy3 {
+		status = "okay";
+	};
+	phy_gphy4 {
+		status = "okay";
+	};
+
+	/* Crossbar groups */
+	xbar_grp0 {
+		phy-handle = <&phy_gphy3>;
+		status = "okay";
+	};
+	xbar_grp2 {
+		phy-handle = <&phy_gphy4>;
+		status = "okay";
+	};
+};
+
+&switch_sf2 {
+	ports {
+		/* ports connect directly */
+		port_sf2_p0 {
+			phy-handle = <&phy_gphy0>;
+			network-leds = <&led0 &led1 &led10>;
+			status = "okay";
+		};
+
+		port_sf2_p1 {
+			phy-handle = <&phy_gphy1>;
+			network-leds = <&led2 &led3 &led11>;
+			status = "okay";
+		};
+
+		port_sf2_p2 {
+			phy-handle = <&phy_gphy2>;
+			network-leds = <&led4 &led5 &led12>;
+			status = "okay";
+		};
+
+		/* ports connected to crossbar */
+		port_sf2_p3 {
+			phy-handle = <&xbar_grp0>;
+			network-leds = <&led6 &led7 &led13>;
+			status = "okay";
+		};
+	};
+};
+
+&switch0 {
+	ports {
+		
+		port_runner_p0 {
+			phy-handle = <&xbar_grp2>;
+			phy-mode = "gmii";
+			network-leds = <&led20 &led21 &led22>;
+			status = "okay";
+		};
+	};
+};
+
+&dsl {
+	line0@0 {
+		pinctrl-0 = <&vdsl_ctrl_0_pin_52 &vdsl_ctrl_1_pin_53 &vdsl_ctrl_2_pin_55>;
+		pinctrl-names = "default";
+
+		afeid = <(DSL_AFE_CHIP_GFAST_CH0 | DSL_AFE_LD_6303 | DSL_AFE_FE_ANNEXC | DSL_AFE_FE_REV_6303_REV_12_3_40  | DSL_AFE_FE_8dBm)>;
+		afe-pwr-ctl = <DSL_AFE_VDSLCTL_0>;
+		afe-data-ctl = <DSL_AFE_VDSLCTL_1>;
+		afe-clk-ctl = <DSL_AFE_VDSLCTL_2>;
+		relay-gpio = <&gpioc 19 GPIO_ACTIVE_LOW>;
+		status = "okay";
+	};
+
+	line1@1 {
+		afeid = <(DSL_AFE_CHIP_CH1 | DSL_AFE_LD_6303 | DSL_AFE_FE_ANNEXC | DSL_AFE_FE_REV_6303_REV_12_3_40)>;
+		status = "okay";
+	};
+};
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+&pcie0 {
+	status = "okay";
+};
+&pcie1 {
+	status = "okay";
+};
+#endif //#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+
+&usb_ctrl {
+	status = "okay";
+	xhci-enable;
+	pinctrl-names = "default";
+	pinctrl-0 = <&usb0_pwr_pins &usb1_pwr_pins>;
+};
+
+&usb0_xhci {
+	status = "okay";
+};
+
+&usb0_ehci {
+	status = "okay";
+};
+
+&usb0_ohci {
+	status = "okay";
+};
+

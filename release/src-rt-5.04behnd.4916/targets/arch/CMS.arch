@@ -1,0 +1,39 @@
+<PUBLISH>
+--- targets/96856GO/96856GO	Assumes base profile is BDK
++++ targets/96856GO_CMS/96856GO_CMS	Convert base BDK profile back to CMS Legacy98 (this is mostly used by the PON profiles, which were CMS Legacy98).
+@@ -159,15 +159,17 @@
++BUILD_BRCM_CMS=y
+-# BUILD_BRCM_CMS is not set
+-BUILD_BRCM_BDK=y
++# BUILD_BRCM_BDK is not set
++BUILD_DM_LEGACY98=y
+-# BUILD_DM_LEGACY98 is not set
+-BUILD_DM_PURE181=y
+-BUILD_UBUS=y
+-BUILD_LIBUBOX=y
+-BUILD_DBUS=y
+-BUILD_DISTRIBUTED_MDM=y
++# BUILD_DISTRIBUTED_MDM is not set
+-BUILD_ZLIB=y
+-BUILD_FFI=y
+-BUILD_GETTEXT=y
+-BUILD_GLIB=y
+-BUILD_LIBSQLITE=y
+-BUILD_MOSQUITTO=y
+@@ Original PON profiles had these 3 enabled, although it is unlikley they are used in Legacy98 config.
+-BUILD_RDK_HAL_HEADERS=y
+-BUILD_HAL_LIBS=y
+-BUILD_LIBJSONC=y
+@@ Disable all USP related vars
+-BUILD_USP=y
+-BUILD_OBUSPA=y
+-BUILD_ZLIB=y
+-BUILD_LIBCARES=y
+-BUILD_LIBJSONC=y
+-BUILD_LIBSQLITE=y
+-BUILD_LIBCURL=y
+-BUILD_LIBCURL_WITH_SSL=y
+-BUILD_LIBCURL_WITH_HTTP2=y
+-BUILD_MOSQUITTO=y
+@@ TR471 not supported in CMS
+-BUILD_TR471=y

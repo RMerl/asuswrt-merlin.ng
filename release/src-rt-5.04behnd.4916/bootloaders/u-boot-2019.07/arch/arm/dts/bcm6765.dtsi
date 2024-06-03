@@ -1,0 +1,312 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2022 Broadcom Ltd.
+ */
+
+/ {
+	compatible = "brcm,bcm6765", "brcm,bcmbca";
+	#address-cells = <0x2>;
+	#size-cells = <0x2>;
+
+	clocks: clocks {
+		u-boot,dm-pre-reloc;
+
+		periph_clk: periph-clk {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <200000000>;
+			u-boot,dm-pre-reloc;
+		};
+
+		hsspi_pll: hsspi-pll {
+			compatible = "fixed-factor-clock";
+			#clock-cells = <0>;
+			clocks = <&periph_clk>;
+			clock-mult = <1>;
+			clock-div = <1>;
+			u-boot,dm-pre-reloc;
+		};
+
+		uart_clk: uart-clk {
+			compatible = "fixed-factor-clock";
+			#clock-cells = <0>;
+			clocks = <&periph_clk>;
+			clock-div = <4>;
+			clock-mult = <1>;
+			u-boot,dm-pre-reloc;
+		};
+
+		wdt_clk: wdt-clk {
+			compatible = "fixed-factor-clock";
+			#clock-cells = <0>;
+			clocks = <&periph_clk>;
+			clock-div = <4>;
+			clock-mult = <1>;
+			u-boot,dm-pre-reloc;
+		};
+	};
+
+
+	/* UBUS */
+	bus@80000000 {
+		u-boot,dm-pre-reloc;
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges = <0x0 0x0 0x80000000 0x20000000>;
+
+		ubus_sys: ubus_sys {
+			u-boot,dm-pre-reloc;
+			#address-cells = <1>;
+			#size-cells = <1>;
+			compatible = "brcm,bca-ubus4";
+			reg = <0x3000000 0x80 0x3000200 0x80>;
+			reg-names = "ubus_systop", "ubus_registration";
+			flags = <0x0>;
+
+			ubus_mst_sys: ubus_mst {
+				u-boot,dm-pre-reloc;
+				reg-names = "BIU", "PER", "PCIE0", "PCIE1",
+					"SPU", "USB", "CNPTOP", "CNPPHY",
+					"WIFI0", "WIFI1", "MLO0", "MLO1";
+				reg = <0x3020000 0x4000>,
+					<0x3010000 0x4000>,
+					<0x3030000 0x4000>,
+					<0x3038000 0x4000>,
+					<0x3040000 0x4000>,
+					<0x3048000 0x4000>,
+					<0x3050000 0x4000>,
+					<0x3058000 0x4000>,
+					<0x3060000 0x4000>,
+					<0x3068000 0x4000>,
+					<0x3070000 0x4000>,
+					<0x3078000 0x4000>;
+			};
+		};
+
+		ubus_dcm_sys: ubus_dcm_sys {
+			u-boot,dm-pre-reloc;
+			compatible = "brcm,bca-ubus4-dcm";
+			reg = <0x3000080 0x80>;
+			reg-names = "ubus_dcm_clk";
+			flags = <0x0>;
+		};
+
+		ethphytop:ethphytop {
+			compatible = "brcm,eth-phy-top";
+			reg = <0x481000 0x1000>;
+			xphy0-addr = <0x9>;
+			xphy0-enabled;
+		};
+		sysport: systemport {
+			compatible = "brcm,bcmbca-systemport-v2.0";
+			reg-names = "systemport-rbuf-base", "systemport-rdma-base",
+					"systemport-tdma-base",
+					"systemport-topctrl-base",
+					"systemport-ipa";
+			reg =	<0x210400 0x14>,
+					<0x212000 0x1268>,
+					<0x214000 0xe60>,
+					<0x210000 0x34>,
+					<0x200b00 0x24>;
+			ethsw = <&switch0>;
+		};
+
+		swblks {
+			compatible = "brcm,swblks";
+			reg-names =	"switchcore-base",
+					"switchreg-base",
+					"switchmdio-base",
+					"switchacb-base";
+
+			reg	= <0x400000 0x72724>,
+				<0x474000 0x20>,
+				<0x486000 0x10>,
+				<0x474800 0x230>;
+		};
+
+		mdio_sf2: mdio_sf2 {
+			compatible = "simple-bus";
+			bus-type = "DSL_ETHSW";
+
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			phy_xphy:phy_xphy {
+				compatible = "brcm,bcaphy";
+				phy-type = "EXT3";
+				reg = <9>;
+
+				pinctrl-names = "default";
+				pinctrl-0 = <&a_eth_mdc_pin_62 &a_eth_mdio_pin_63>;
+			};
+		};
+
+		switch0:sf2 {
+			compatible = "brcm,enet", "brcm,bcmbca-sf2";
+			label = "bcmsw";
+			sw-type = "SF2_SW";
+
+			reg-names = "switchcore-base",
+						"switchreg-base",
+						"switchmdio-base";
+
+			reg = <0x400000 0x72724>,
+				<0x474000 0x20>,
+				<0x486000 0x10>;
+
+			ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+
+				port_xphy {
+					reg = <0>;
+					mac-type = "SF2MAC";
+					phy-handle = <&phy_xphy>;
+					phy-mode = "serdes";
+				};
+				port_imp {
+					management;
+					reg = <8>;
+					mac-type = "SF2MAC";
+					phy-mode = "gmii";
+					gmii-direct;
+				};
+			};
+		};
+
+		mdiosf2 {
+			compatible = "brcm,mdio-sf2";
+			reg = <0x486000 0x10>,
+				<0x480000 0x4>;
+		};
+	};
+
+	bus@ff800000 {
+		compatible = "simple-bus";
+		#address-cells = <0x1>;
+		#size-cells = <0x1>;
+		ranges = <0x0 0x0 0xff800000 0x800000>;
+		u-boot,dm-pre-reloc;
+
+		uart0: serial@12000 {
+			u-boot,dm-pre-reloc;
+			compatible = "arm,pl011", "arm,primecell";
+			reg = <0x12000 0x1000>;
+			clocks = <&uart_clk>;
+			clock = <50000000>;
+			status = "disabled";
+		};
+
+		wdt1: watchdog@480 {
+			compatible = "brcm,bcm6345-wdt";
+			reg = <0x480 0x14>;
+			clocks = <&wdt_clk>;
+			u-boot,dm-pre-reloc;
+		};
+
+		wdt2: watchdog@4c0 {
+			compatible = "brcm,bcm6345-wdt";
+			reg = <0x4c0 0x14>;
+			clocks = <&wdt_clk>;
+		};
+
+		wdt-reboot {
+			compatible = "wdt-reboot";
+			wdt = <&wdt1>;
+		};
+
+		pmc {
+			u-boot,dm-pre-reloc;
+			compatible = "brcm,bca-pmc-3-2";
+			reg-names = "pmc", "procmon", "maestro", "itcm", "dtcm";
+			reg = <0x301018 0x5080>,
+				<0x320000 0x240>,
+				<0x300400 0x5d0>,
+				<0x3c0000 0x4000>,
+				<0x380000 0x1000>;
+		};
+
+		strap: strap@2600 {
+			u-boot,dm-pre-reloc;
+			compatible = "brcm,strap";
+			reg = <0x2600 0x4>;
+			boot-select-0=<0 1>;
+			boot-select-1=<1 1>;
+			boot-select-2=<2 1>;
+			boot-select-3=<3 1>;
+			boot-select-4=<4 1>;
+			boot-select-5=<5 1>;
+			bootrom-boot=<12 1>;
+		};
+
+		hsspi: hsspi@1000 {
+			pinctrl-0 = <&spim_group_pins>;
+			pinctrl-names = "default";
+			#address-cells = <0x1>;
+			#size-cells = <0x0>;
+			u-boot,dm-pre-reloc;
+			compatible = "brcm,bcmbca-hsspi";
+			reg-names = "hsspi", "spim-ctrl";
+			reg = <0x1000 0x600>, <0x2610 0x4>;
+			clocks = <&hsspi_pll>, <&hsspi_pll>;
+			clock-names = "hsspi", "pll";
+			spi-max-frequency = <50000000>;
+			num-cs = <0x8>;
+			cs-gpios = <0x0 0x0>;
+			status = "disabled";
+		};
+
+		nand: nand-controller@1800 {
+			pinctrl-0 = <&nand_data_pins &nand_ctrl_pins>;
+			pinctrl-names = "default";
+			compatible = "brcm,nand-bcmbca",
+					"brcm,brcmnand-v7.1",
+					"brcm,brcmnand";
+			reg-names = "nand", "nand-int-base", "nand-cache";
+			reg = <0x1800 0x400>,
+				<0x2000 0x10>,
+				<0x1c00 0x200>;
+			parameter-page-big-endian = <0>;
+			status = "disabled";
+		};
+
+		sdhci: sdhci@20000 {
+			compatible = "brcm,bcm63xx-sdhci",
+					"brcm,sdhci-brcmbca";
+			reg-names = "sdhci-base", "sdhci-boot";
+			reg = <0x20000 0x100>,
+				<0x20500 0x40>;
+			bus-width = <8>;
+			u-boot,dm-pre-reloc;
+		};
+
+		rng: rng@b80 {
+			compatible = "brcm,iproc-rng200";
+			reg = <0xb80 0x28>;
+			u-boot,dm-pre-reloc;
+		};
+
+		trng: trng@3800 {
+			compatible = "brcm,bcmbca-trng";
+			reg = <0x3800 0x0800>;
+			u-boot,dm-pre-reloc;
+		};
+
+		boot_state@2628 {
+			u-boot,dm-pre-reloc;
+			compatible = "brcm,bcmbca-bootstate-v2";
+			reg-names = "reset_reason", "reset_status";
+			reg = <0x2628 0x04>,
+				<0x5a01c 0x04>;
+		};
+
+		pinctrl: pinctrl@554 {
+			compatible = "brcm,bcmbca-pinctrl";
+			reg = <0x554 0x14>;
+			gpio-mux = <4>;
+		};
+	};
+};
+
+#include "bcm6765-pinctrl.dtsi"

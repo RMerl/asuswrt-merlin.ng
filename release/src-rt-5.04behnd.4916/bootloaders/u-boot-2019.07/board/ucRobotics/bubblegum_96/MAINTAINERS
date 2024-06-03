@@ -1,0 +1,6 @@
+BUBBLEGUM_96 BOARD
+M:	Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+S:	Maintained
+F:	board/ucRobotics/bubblegum_96/
+F:	include/configs/bubblegum_96.h
+F:	configs/bubblegum_96_defconfig

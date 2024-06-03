@@ -2097,7 +2097,12 @@ padding-top:1px;
 #asus_eula_content{
 	line-height: 20px;
 }
-
+.sc_rule_link{
+	font-family:Lucida Console;
+	color:#FC0;
+	text-decoration:underline;
+	cursor:pointer;
+}
 #bottom_border{
 	border-bottom:5px #2A3539 solid;
 	padding:5px 10px 5px 10px;
@@ -2284,35 +2289,6 @@ padding-top:1px;
 	text-align: center;
 }
 
-div.icon-circle-mask {
-	display: inline-block;
-	border-radius: 50%;
-	padding: 0.5em;
-	background: #43525D;
-}
-
-i.icon-comments {
-	-webkit-mask: url(/images/New_ui/icon_comments.svg) no-repeat;
-	mask: url(/images/New_ui/icon_comments.svg) no-repeat;
-	height: 20px;
-	width: 20px;
-	display: inline-block;
-	background-color: #FFFFFF;
-}
-
-i.icon-copy {
-	-webkit-mask: url(/images/New_ui/icon_copy.svg) no-repeat;
-	mask: url(/images/New_ui/icon_copy.svg) no-repeat;
-	height: 20px;
-	width: 20px;
-	display: inline-block;
-	background-color: #92a0a5;
-}
-
-i.icon-copy:hover{
-	background-color: #FFFFFF;
-}
-
 i.icon-clone {
 	-webkit-mask-repeat: no-repeat;
 	mask-repeat: no-repeat;
@@ -2335,27 +2311,6 @@ i.icon_help {
 	height: 24px;
 	width: 24px;
 	display: inline-block;
-}
-
-.text-list {
-	display: flex;
-	align-items: center;
-	margin: 10px 0px;
-	gap: 5px;
-}
-
-.text-list i {
-	height: 15px;
-	width: 15px;
-}
-
-.text-list a {
-	margin-left: 5px;
-	text-decoration: underline;
-}
-
-.formfonttitle_help {
-	text-align: right;
 }
 
 .icon-group-center {

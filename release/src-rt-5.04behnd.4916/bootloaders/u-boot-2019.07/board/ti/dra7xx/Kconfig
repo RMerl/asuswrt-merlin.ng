@@ -1,0 +1,14 @@
+if TARGET_DRA7XX_EVM
+
+config SYS_BOARD
+	default "dra7xx"
+
+config SYS_VENDOR
+	default "ti"
+
+config SYS_CONFIG_NAME
+	default "dra7xx_evm"
+
+source "board/ti/common/Kconfig"
+
+endif

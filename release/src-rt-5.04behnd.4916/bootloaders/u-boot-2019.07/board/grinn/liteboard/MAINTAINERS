@@ -1,0 +1,6 @@
+LITEBOARD
+M:	Marcin Niestroj <m.niestroj@grinn-global.com>
+S:	Maintained
+F:	board/grinn/liteboard/
+F:	include/configs/liteboard.h
+F:	configs/liteboard_defconfig

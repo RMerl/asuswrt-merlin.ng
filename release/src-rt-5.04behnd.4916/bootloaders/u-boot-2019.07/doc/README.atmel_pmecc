@@ -1,0 +1,49 @@
+How to enable PMECC(Programmable Multibit ECC) for nand on Atmel SoCs
+-----------------------------------------------------------
+2012-08-22 Josh Wu <josh.wu@atmel.com>
+
+The Programmable Multibit ECC (PMECC) controller is a programmable binary
+BCH(Bose, Chaudhuri and Hocquenghem) encoder and decoder. This controller
+can be used to support both SLC and MLC NAND Flash devices. It supports to
+generate ECC to correct 2, 4, 8, 12 or 24 bits of error per sector (512 or
+1024 bytes) of data.
+
+Following Atmel AT91 products support PMECC.
+- AT91SAM9X25, X35, G25, G15, G35 (tested)
+- AT91SAM9N12 (not tested, Should work)
+
+As soon as your nand flash software ECC works, you can enable PMECC.
+
+To use PMECC in this driver, the user needs to set:
+	1. the PMECC correction error bits capability: CONFIG_PMECC_CAP.
+	   It can be 2, 4, 8, 12 or 24.
+	2. The PMECC sector size: CONFIG_PMECC_SECTOR_SIZE.
+	   It only can be 512 or 1024.
+
+Take 'configs/at91sam9x5ek_nandflash_defconfig' as an example, the board
+configuration file has the following entries:
+
+	CONFIG_PMECC_CAP=2
+	CONFIG_PMECC_SECTOR_SIZE=512
+	CONFIG_SPL_GENERATE_ATMEL_PMECC_HEADER=y
+
+How to enable PMECC header for direct programmable boot.bin
+-----------------------------------------------------------
+2014-05-19 Andreas Bießmann <andreas@biessmann.org>
+
+The usual way to program SPL into NAND flash is to use the SAM-BA Atmel tool.
+This however is often not usable when doing field updates. To be able to
+program a SPL binary into NAND flash we need to add the PMECC header to the
+binary before. Chapter '12.4.4.1 NAND Flash Boot: NAND Flash Detection' in
+sama5d3 SoC spec (as of 03. April 2014) defines how this PMECC header has to
+look like. In order to do so we have a new image type added to mkimage to
+generate this PMECC header and integrated this into the build process of SPL.
+
+To enable the generation of atmel PMECC header for SPL one needs to define
+CONFIG_SPL_GENERATE_ATMEL_PMECC_HEADER. The required parameters are taken from
+board configuration and compiled into the host tools atmel_pmecc_params. This
+tool will be called in build process to parametrize mkimage for atmelimage
+type. The mkimage tool has intentionally _not_ compiled in those parameters.
+
+The mkimage image type atmelimage also set the 6'th interrupt vector to the
+correct value. This feature can also be used to setup a boot.bin for MMC boot.

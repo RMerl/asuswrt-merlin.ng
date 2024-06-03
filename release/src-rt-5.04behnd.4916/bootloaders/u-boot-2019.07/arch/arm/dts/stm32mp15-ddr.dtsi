@@ -1,0 +1,154 @@
+// SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause
+/*
+ * Copyright : STMicroelectronics 2018
+ */
+
+/ {
+	soc {
+		ddr: ddr@0x5A003000{
+			u-boot,dm-pre-reloc;
+
+			compatible = "st,stm32mp1-ddr";
+
+			reg = <0x5A003000 0x550
+			       0x5A004000 0x234>;
+
+			clocks = <&rcc AXIDCG>,
+				 <&rcc DDRC1>,
+				 <&rcc DDRC2>,
+				 <&rcc DDRPHYC>,
+				 <&rcc DDRCAPB>,
+				 <&rcc DDRPHYCAPB>;
+
+			clock-names = "axidcg",
+				      "ddrc1",
+				      "ddrc2",
+				      "ddrphyc",
+				      "ddrcapb",
+				      "ddrphycapb";
+
+			st,mem-name = DDR_MEM_NAME;
+			st,mem-speed = <DDR_MEM_SPEED>;
+			st,mem-size = <DDR_MEM_SIZE>;
+
+			st,ctl-reg = <
+				DDR_MSTR
+				DDR_MRCTRL0
+				DDR_MRCTRL1
+				DDR_DERATEEN
+				DDR_DERATEINT
+				DDR_PWRCTL
+				DDR_PWRTMG
+				DDR_HWLPCTL
+				DDR_RFSHCTL0
+				DDR_RFSHCTL3
+				DDR_CRCPARCTL0
+				DDR_ZQCTL0
+				DDR_DFITMG0
+				DDR_DFITMG1
+				DDR_DFILPCFG0
+				DDR_DFIUPD0
+				DDR_DFIUPD1
+				DDR_DFIUPD2
+				DDR_DFIPHYMSTR
+				DDR_ODTMAP
+				DDR_DBG0
+				DDR_DBG1
+				DDR_DBGCMD
+				DDR_POISONCFG
+				DDR_PCCFG
+			>;
+
+			st,ctl-timing = <
+				DDR_RFSHTMG
+				DDR_DRAMTMG0
+				DDR_DRAMTMG1
+				DDR_DRAMTMG2
+				DDR_DRAMTMG3
+				DDR_DRAMTMG4
+				DDR_DRAMTMG5
+				DDR_DRAMTMG6
+				DDR_DRAMTMG7
+				DDR_DRAMTMG8
+				DDR_DRAMTMG14
+				DDR_ODTCFG
+			>;
+
+			st,ctl-map = <
+				DDR_ADDRMAP1
+				DDR_ADDRMAP2
+				DDR_ADDRMAP3
+				DDR_ADDRMAP4
+				DDR_ADDRMAP5
+				DDR_ADDRMAP6
+				DDR_ADDRMAP9
+				DDR_ADDRMAP10
+				DDR_ADDRMAP11
+			>;
+
+			st,ctl-perf = <
+				DDR_SCHED
+				DDR_SCHED1
+				DDR_PERFHPR1
+				DDR_PERFLPR1
+				DDR_PERFWR1
+				DDR_PCFGR_0
+				DDR_PCFGW_0
+				DDR_PCFGQOS0_0
+				DDR_PCFGQOS1_0
+				DDR_PCFGWQOS0_0
+				DDR_PCFGWQOS1_0
+				DDR_PCFGR_1
+				DDR_PCFGW_1
+				DDR_PCFGQOS0_1
+				DDR_PCFGQOS1_1
+				DDR_PCFGWQOS0_1
+				DDR_PCFGWQOS1_1
+			>;
+
+			st,phy-reg = <
+				DDR_PGCR
+				DDR_ACIOCR
+				DDR_DXCCR
+				DDR_DSGCR
+				DDR_DCR
+				DDR_ODTCR
+				DDR_ZQ0CR1
+				DDR_DX0GCR
+				DDR_DX1GCR
+				DDR_DX2GCR
+				DDR_DX3GCR
+			>;
+
+			st,phy-timing = <
+				DDR_PTR0
+				DDR_PTR1
+				DDR_PTR2
+				DDR_DTPR0
+				DDR_DTPR1
+				DDR_DTPR2
+				DDR_MR0
+				DDR_MR1
+				DDR_MR2
+				DDR_MR3
+			>;
+
+			st,phy-cal = <
+				DDR_DX0DLLCR
+				DDR_DX0DQTR
+				DDR_DX0DQSTR
+				DDR_DX1DLLCR
+				DDR_DX1DQTR
+				DDR_DX1DQSTR
+				DDR_DX2DLLCR
+				DDR_DX2DQTR
+				DDR_DX2DQSTR
+				DDR_DX3DLLCR
+				DDR_DX3DQTR
+				DDR_DX3DQSTR
+			>;
+
+			status = "okay";
+		};
+	};
+};

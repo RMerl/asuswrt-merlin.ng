@@ -1,0 +1,62 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright (C) 2018, Tuomas Tynkkynen <tuomas.tynkkynen@iki.fi>
+# Copyright (C) 2018, Bin Meng <bmeng.cn@gmail.com>
+#
+# VirtIO is a virtualization standard for network and disk device drivers
+# where just the guest's device driver "knows" it is running in a virtual
+# environment, and cooperates with the hypervisor. This enables guests to
+# get high performance network and disk operations, and gives most of the
+# performance benefits of paravirtualization. In the U-Boot case, the guest
+# is U-Boot itself, while the virtual environment are normally QEMU targets
+# like ARM, RISC-V and x86.
+#
+# See http://docs.oasis-open.org/virtio/virtio/v1.0/virtio-v1.0.pdf for
+# the VirtIO specification v1.0.
+
+menu "VirtIO Drivers"
+
+config VIRTIO
+	bool
+	help
+	  This option is selected by any driver which implements the virtio
+	  transport, such as CONFIG_VIRTIO_MMIO or CONFIG_VIRTIO_PCI.
+
+config VIRTIO_MMIO
+	bool "Platform bus driver for memory mapped virtio devices"
+	select VIRTIO
+	help
+	  This driver provides support for memory mapped virtio
+	  platform device driver.
+
+config VIRTIO_PCI
+	bool "PCI driver for virtio devices"
+	depends on DM_PCI
+	select VIRTIO
+	help
+	  This driver provides support for virtio based paravirtual device
+	  drivers over PCI.
+
+config VIRTIO_SANDBOX
+	bool "Sandbox driver for virtio devices"
+	depends on SANDBOX
+	select VIRTIO
+	help
+	  This driver provides support for Sandbox implementation of virtio
+	  transport driver which is used for testing purpose only.
+
+config VIRTIO_NET
+	bool "virtio net driver"
+	depends on VIRTIO
+	help
+	  This is the virtual net driver for virtio. It can be used with
+	  QEMU based targets.
+
+config VIRTIO_BLK
+	bool "virtio block driver"
+	depends on VIRTIO
+	help
+	  This is the virtual block driver for virtio. It can be used with
+	  QEMU based targets.
+
+endmenu

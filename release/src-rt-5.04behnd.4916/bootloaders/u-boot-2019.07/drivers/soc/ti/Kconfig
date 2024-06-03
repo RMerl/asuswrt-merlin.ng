@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+menuconfig SOC_TI
+	bool "TI SOC drivers support"
+
+if SOC_TI
+
+config TI_K3_NAVSS_RINGACC
+	bool "K3 Ring accelerator Sub System"
+	depends on ARCH_K3
+	select MISC
+	help
+	  Say y here to support the K3 AM65x Ring accelerator module.
+	  The Ring Accelerator (RINGACC or RA)  provides hardware acceleration
+	  to enable straightforward passing of work between a producer
+	  and a consumer. There is one RINGACC module per NAVSS on TI AM65x SoCs
+	  If unsure, say N.
+
+config TI_KEYSTONE_SERDES
+	bool "Keystone SerDes driver for ethernet"
+	depends on ARCH_KEYSTONE
+	help
+	 SerDes driver for Keystone SoC used for ethernet support on TI
+	 K2 platforms.
+
+endif # SOC_TI

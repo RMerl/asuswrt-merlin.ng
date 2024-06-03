@@ -5,7 +5,7 @@ freeradius-server-3.0.0: pcre-8.31 freeradius-server-3.0.0/configure
 freeradius-server-3.0.0/configure:
 	cd freeradius-server-3.0.0 && ./autogen.sh && \
 	$(CONFIGURE) CC=$(CC)  CFLAGS="$(EXTRACFLAGS) -I$(SRCBASE) -I$(SRCBASE)/include -I$(TOP)/pcrc-8.31" \
-	LDFLAGS="$(EXTRACFLAGS) -L$(TOP)/pcre-8.31/.libs -lpcre -L$(TOP)/talloc-2.1.1/bin/default -Wl,-rpath=$(TOP)/talloc-2.1.1/bin/default -lpthread -ldl" \
+	LDFLAGS="$(EXTRACFLAGS) -L$(TOP)/pcre-8.31/.libs -lpcre -L$(TOP)/talloc-2.1.1/bin/default -ltalloc -Wl,-rpath=$(TOP)/talloc-2.1.1/bin/default -lpthread -ldl" \
 	--prefix=/usr/freeradius --datarootdir=/usr/freeradius/share --with-raddbdir=/usr/freeradius/raddb \
 	--with-openssl-includes=$(TOP)/openssl/include --with-openssl-libraries=$(TOP)/openssl \
 	--with-talloc-lib-dir=$(TOP)/talloc-2.1.1/bin/default --with-talloc-include-dir=$(TOP)/talloc-2.1.1 \
@@ -34,6 +34,13 @@ freeradius-server-3.0.0-install: freeradius-server-3.0.0
 	install -D $</build/lib/.libs/libfreeradius-eap.so $(INSTALLDIR)/$</usr/freeradius/lib/libfreeradius-eap.so
 	install -D $</build/lib/.libs/libfreeradius-radius.so $(INSTALLDIR)/$</usr/freeradius/lib/libfreeradius-radius.so
 	install -D $</build/lib/.libs/libfreeradius-server.so $(INSTALLDIR)/$</usr/freeradius/lib/libfreeradius-server.so
+ifeq ($(HND_ROUTER_BE_4916),y)
+	# to avoid error Makefile:221: *** libcreduction FATAL: Missing 32-bit libraries: libfreeradius-eap.so libfreeradius-radius.so libfreeradius-server.so.  Stop.
+	mkdir -p $(INSTALLDIR)/$</usr/lib/
+	touch  $(INSTALLDIR)/$</usr/lib/libfreeradius-eap.so
+	touch $(INSTALLDIR)/$</usr/lib/libfreeradius-radius.so
+	touch $(INSTALLDIR)/$</usr/lib/libfreeradius-server.so
+endif
 	install -D $</build/lib/.libs/rlm_always.so $(INSTALLDIR)/$</usr/freeradius/lib/rlm_always.so
 	install -D $</build/lib/.libs/rlm_attr_filter.so $(INSTALLDIR)/$</usr/freeradius/lib/rlm_attr_filter.so
 	install -D $</build/lib/.libs/rlm_cache.so $(INSTALLDIR)/$</usr/freeradius/lib/rlm_cache.so

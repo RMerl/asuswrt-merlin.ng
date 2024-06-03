@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="84" height="84" viewBox="0 0 84 84">
+  <defs>
+    <linearGradient id="topology_circle_active-a" x1="2.113%" x2="100%" y1="17.429%" y2="92.498%">
+      <stop offset="0%" stop-color="#6487BE"/>
+      <stop offset="100%" stop-color="#74C8BE"/>
+    </linearGradient>
+    <linearGradient id="topology_circle_active-b" x1="-5.977%" x2="106.052%" y1="-4.866%" y2="110.864%">
+      <stop offset="0%" stop-color="#C58000" stop-opacity=".5"/>
+      <stop offset="50.203%" stop-color="#FFBF3A"/>
+      <stop offset="100%" stop-color="#804600"/>
+    </linearGradient>
+    <linearGradient id="topology_circle_active-d" x1="2.113%" x2="100%" y1="17.429%" y2="79.215%">
+      <stop offset="0%" stop-color="#6487BE"/>
+      <stop offset="49.259%" stop-color="#59FFEA"/>
+      <stop offset="100%" stop-color="#6792BE"/>
+    </linearGradient>
+    <linearGradient id="topology_circle_active-e" x1="-5.977%" x2="106.052%" y1="-4.866%" y2="110.864%">
+      <stop offset="0%" stop-color="#0E37C4"/>
+      <stop offset="50.203%" stop-color="#86DFFF"/>
+      <stop offset="100%" stop-color="#0E37C4"/>
+    </linearGradient>
+    <circle id="topology_circle_active-c" cx="36" cy="36" r="29.455"/>
+  </defs>
+  <g fill="none" fill-rule="evenodd" transform="translate(6 6)">
+    <circle cx="36" cy="36" r="36" fill="#2F2C2C" stroke="url(#topology_circle_active-a)" stroke-width=".786"/>
+    <circle cx="36" cy="36" r="29.026" fill="#292929" stroke="url(#topology_circle_active-b)" stroke-width=".857"/>
+    <use fill="#303030" xlink:href="#topology_circle_active-c"/>
+    <use fill="url(#topology_circle_active-d)" style="mix-blend-mode:hard-light" xlink:href="#topology_circle_active-c"/>
+    <circle cx="36" cy="36" r="29.026" stroke="url(#topology_circle_active-e)" stroke-linejoin="square" stroke-width=".857"/>
+  </g>
+</svg>

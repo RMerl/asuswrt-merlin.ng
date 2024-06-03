@@ -1,0 +1,224 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2006" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+<object name="InternetGatewayDevice.Device." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+<object name="InternetGatewayDevice.Device.WiFi." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+<object name="InternetGatewayDevice.Device.WiFi.X_BROADCOM_COM_AFC." shortObjectName="Dev2WifiAfcCfgObject" specSource="Broadcom" profile="Device2_WiFiRadio:1" supportLevel="Present" hideObjectFromAcs="true" oid="3400" lockZone="4" />
+  <description source="BROADCOM">Location policy config object. </description>
+
+
+<object name="InternetGatewayDevice.Device.WiFi.X_BROADCOM_COM_AFC.LocpolDaemon." shortObjectName="Dev2WifiLocpolDaemonObject" specSource="Broadcom" profile="Device2_WiFiRadio:1" supportLevel="Present" hideObjectFromAcs="true" />
+  <description source="BROADCOM">Location policy daemon cofiguration. </description>
+
+  <parameter name="OperatingMode" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="Enabled" validValuesArray="OperatingModeValues" />
+    <description source="BROADCOM">The operating mode for location policy daemon.</description>
+
+  <parameter name="IpcType" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="unix_socket" />
+    <description source="BROADCOM">IPC type for location policy daemon. </description>
+
+  <parameter name="CmdPath" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="/var/afc/locpol_daemon" />
+    <description source="BROADCOM">IPC command path for location policy daemon. </description>
+
+  <parameter name="Timeout" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="300" />
+    <description source="BROADCOM">IPC timeout for communication between location policy daemon and AfcClientDaemon. </description>
+
+  <parameter name="DebugLevel" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="Error" validValuesArray="DebugLevelValues" />
+    <description source="BROADCOM">Debug Level for location policy daemon.&#10;Enumeration of:&#10;&quot;Error&quot;&#10;&quot;Notice&quot;&#10;&quot;Debug&quot;&#10;</description>
+
+<object name="InternetGatewayDevice.Device.WiFi.X_BROADCOM_COM_AFC.LocpolDaemon.Data." shortObjectName="Dev2WifiLocpoldDataObject" specSource="Broadcom" profile="Device2_WiFiRadio:1" supportLevel="Present" hideObjectFromAcs="true" />
+  <description source="BROADCOM">Location policy daemon data. For now just use string type to store the data. </description>
+
+  <parameter name="Latitude" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" />
+    <description source="BROADCOM">Latitude stored by location policy daemon. </description>
+
+  <parameter name="Longitude" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" />
+    <description source="BROADCOM">Longitude stored by location policy daemon. </description>
+
+  <parameter name="MajorAxis" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" />
+    <description source="BROADCOM">Major axis stored by location policy daemon. </description>
+
+  <parameter name="MinorAxis" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" />
+    <description source="BROADCOM">Minor axis stored by location policy daemon. </description>
+
+  <parameter name="Orientation" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" />
+    <description source="BROADCOM">Orientation stored by location policy daemon. </description>
+
+  <parameter name="Height" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" />
+    <description source="BROADCOM">Height stored by location policy daemon. </description>
+
+  <parameter name="HeightType" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" />
+    <description source="BROADCOM">Height type stored by location policy daemon. </description>
+
+  <parameter name="VerticalUncertainty" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" />
+    <description source="BROADCOM">Vertical uncertainty stored by location policy daemon. </description>
+
+
+<object name="InternetGatewayDevice.Device.WiFi.X_BROADCOM_COM_AFC.AfcClientDaemon." shortObjectName="Dev2WifiAfcClientDaemonObject" specSource="Broadcom" profile="Device2_WiFiRadio:1" supportLevel="Present" hideObjectFromAcs="true" />
+  <description source="BROADCOM">Cofiguration for AfcClientDaemon. </description>
+
+  <parameter name="DebugLevel" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="Error" validValuesArray="DebugLevelValues" />
+    <description source="BROADCOM">Debug Level for AfcClientDaemon.&#10;Enumeration of:&#10;&quot;Error&quot;&#10;&quot;Notice&quot;&#10;&quot;Debug&quot;&#10;</description>
+
+<object name="InternetGatewayDevice.Device.WiFi.X_BROADCOM_COM_AFC.MobappDaemon." shortObjectName="Dev2WifiMobappdObject" specSource="Broadcom" profile="Device2_WiFiRadio:1" supportLevel="Present" hideObjectFromAcs="true" />
+  <description source="BROADCOM">IPC cofiguration between location policy daemon and MobileAppDaemon. </description>
+
+  <parameter name="IpcType" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="unix_socket" />
+    <description source="BROADCOM">IPC type for communication between location policy daemon and MobileAppDaemon. </description>
+
+  <parameter name="CmdPath" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="/var/afc/mobile_app_daemon" />
+    <description source="BROADCOM">IPC command path for communication between location policy daemon and MobileAppDaemon. </description>
+
+  <parameter name="MaxNumPairedApp" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="10" />
+    <description source="BROADCOM">The max number of paired apps to MobileAppDaemon. </description>
+
+  <parameter name="DB" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="/data/afc/afcmd/pairings.dat" />
+    <description source="BROADCOM">The path to the file which stores parings of MobileAppDaemon. </description>
+
+  <parameter name="Timeout" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="300" />
+    <description source="BROADCOM">IPC timeout for communication between location policy daemon and MobileAppDaemon. </description>
+
+  <parameter name="DebugLevel" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="Error" validValuesArray="DebugLevelValues" />
+    <description source="BROADCOM">Debug Level for MobileAppDaemon.&#10;Enumeration of:&#10;&quot;Error&quot;&#10;&quot;Notice&quot;&#10;&quot;Debug&quot;&#10;</description> 
+
+
+<object name="InternetGatewayDevice.Device.WiFi.X_BROADCOM_COM_AFC.MobappDaemon.Pairings.{i}." shortObjectName="Dev2WifiMobappdPairingObject" specSource="Broadcom" profile="Device2_WiFiRadio:1" supportLevel="Present" hideObjectFromAcs="true"  />
+  <description source="BROADCOM">app pairing info for MobileAppDaemon. </description>
+
+  <parameter name="Status" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="Invalid" validValuesArray="MADStatusValues" />
+    <description source="BROADCOM">Status of the MobileAppDaemon pairing.&#10;Enumeration of:&#10;&quot;Invalid&quot;&#10;&quot;Valid&quot;&#10;</description> 
+
+  <parameter name="DeviceID" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">Device ID of the paired app. </description>
+
+  <parameter name="DeviceType" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">Device Type of the paired app. </description>
+
+  <parameter name="FriendlyName" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">Friendly name of the paired app. </description>
+
+  <parameter name="PushToken" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">push token of the paired app. </description>
+
+  <parameter name="AttestationKey" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">Attestation Key of the paired app. </description>
+
+  <parameter name="DeviceModel" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">The device model of the paired app. </description>
+
+  <parameter name="OsVersion" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">The os version of the paired app. </description>
+
+  <parameter name="DateAdded" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">Date added of this pairing information. </description>
+
+
+<object name="InternetGatewayDevice.Device.WiFi.X_BROADCOM_COM_AFC.MobappDaemon.Discovery." shortObjectName="Dev2WifiMobappdDiscoveryObject" specSource="Broadcom" profile="Device2_WiFiRadio:1" supportLevel="Present" hideObjectFromAcs="true"  />
+  <description source="BROADCOM">information for apps to discover MobileAppDaemon on an AP. </description>
+
+  <parameter name="SSDPPort" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1900" />
+    <description source="BROADCOM">The SSDP server port which MobileAppDaemon will be listening on. </description>
+
+
+<object name="InternetGatewayDevice.Device.WiFi.X_BROADCOM_COM_AFC.MobappDaemon.HttpServer." shortObjectName="Dev2WifiMobappdHttpServerObject" specSource="Broadcom" profile="Device2_WiFiRadio:1" supportLevel="Present" hideObjectFromAcs="true"  />
+  <description source="BROADCOM">http server configs of MobileAppDaemon. </description>
+
+  <parameter name="Port" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="8080" />
+    <description source="BROADCOM">The TCP port which MobileAppDaemon will be listening on. </description>
+
+  <parameter name="Cert" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">The Https certificate path. </description>
+
+  <parameter name="PrivateKey" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">The Https certificate private key path. </description>
+
+
+<object name="InternetGatewayDevice.Device.WiFi.X_BROADCOM_COM_AFC.MobappDaemon.HttpClient." shortObjectName="Dev2WifiMobappdHttpClientObject" specSource="Broadcom" profile="Device2_WiFiRadio:1" supportLevel="Present" hideObjectFromAcs="true"  />
+  <description source="BROADCOM">http client configs of MobileAppDaemon. </description>
+
+  <parameter name="TrustedCA" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">The path to trusted CA of MobileAppDaemon. </description>
+
+
+<object name="InternetGatewayDevice.Device.WiFi.X_BROADCOM_COM_AFC.MobappDaemon.CloudMessaging." shortObjectName="Dev2WifiMobappdCloudMessagingObject" specSource="Broadcom" profile="Device2_WiFiRadio:1" supportLevel="Present" hideObjectFromAcs="true"  />
+  <description source="BROADCOM">cloud messaging configs for MobileAppDaemon. </description>
+
+  <parameter name="FirebaseId" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">The ID of the Firepath project. </description>
+
+  <parameter name="FirebasePrivateKey" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">The path to firebase account's private key. </description>
+
+  <parameter name="FCMServiceAddress" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">The address of FCM service. </description>
+
+
+<object name="InternetGatewayDevice.Device.WiFi.X_BROADCOM_COM_AFC.MobappDaemon.App." shortObjectName="Dev2WifiMobappdAppObject" specSource="Broadcom" profile="Device2_WiFiRadio:1" supportLevel="Present" hideObjectFromAcs="true"  />
+  <description source="BROADCOM">App configurations for MobileAppDaemon. </description>
+
+
+<object name="InternetGatewayDevice.Device.WiFi.X_BROADCOM_COM_AFC.MobappDaemon.App.Ios." shortObjectName="Dev2WifiMobappdAppIosObject" specSource="Broadcom" profile="Device2_WiFiRadio:1" supportLevel="Present" hideObjectFromAcs="true"  />
+  <description source="BROADCOM">iOS App configurations for MobileAppDaemon. </description>
+
+  <parameter name="IosAppID" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">The iOS APP ID of the location app. </description>
+
+
+<object name="InternetGatewayDevice.Device.WiFi.X_BROADCOM_COM_AFC.MobappDaemon.App.Android." shortObjectName="Dev2WifiMobappdAppAndroidObject" specSource="Broadcom" profile="Device2_WiFiRadio:1" supportLevel="Present" hideObjectFromAcs="true"  />
+  <description source="BROADCOM">Android App configurations for MobileAppDaemon. </description>
+
+  <parameter name="AndroidAppPackageName" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">The Android APP package name of the location app. </description>
+
+  <parameter name="PlayServerAddress" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">The Android Play Server address. Needed for app attestation. </description>
+
+  <parameter name="PlayAttestationSecret" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">The path to store android play attestation secret data. </description>
+
+  <parameter name="IntegrityDecryptionKey" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" isConfigPassword="true" />
+    <description source="BROADCOM">The encryption (symmetric) key used to decrypt the integrity verdict from the Play service. </description>
+
+  <parameter name="IntegrityVerificationKey" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">The verification (public) key used to verify the integrity verdict from the Play service. </description>
+
+
+<vsaInfo>
+
+<validstringarray name="DebugLevelValues" />
+  <element>Error</element>
+  <element>Warn</element>
+  <element>Info</element>
+  <element>Debug</element>
+  <element>Trace</element>
+
+<validstringarray name="OperatingModeValues" />
+  <element>Enabled</element>
+  <element>Disabled</element>
+  <element>Test</element>
+
+<validstringarray name="MADStatusValues" />
+  <element>Valid</element>
+  <element>Invalid</element>
+
+</vsaInfo>
+
+
+<profileInfo>
+<profile name="Baseline:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

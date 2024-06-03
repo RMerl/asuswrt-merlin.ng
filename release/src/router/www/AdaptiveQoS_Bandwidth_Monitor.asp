@@ -9,12 +9,14 @@
 <link rel="shortcut icon" href="images/favicon.png">
 <link rel="icon" href="images/favicon.png">
 <title><#Web_Title#> - <#Bandwidth_monitor_WANLAN#></title>
+<link rel="stylesheet" type="text/css" href="css/basic.css">
 <link rel="stylesheet" type="text/css" href="index_style.css">
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="usp_style.css">
 <link rel="stylesheet" type="text/css" href="/device-map/device-map.css" />
 <script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/calendar/jquery-ui.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/help.js"></script>
@@ -22,7 +24,6 @@
 <script type="text/javascript" src="/client_function.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/form.js"></script>
-<script type="text/javascript" src="/js/httpApi.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
 <style type="text/css">
 *{
@@ -440,7 +441,12 @@ function show_clients(priority_type){
 			else{
 				code += '<div id="icon_' + i + '" onclick="show_apps(this);" class="closed qosLevel' + clientObj.qosLevel + ' clientIcon" ';
 			}
-			code += 'style="background-image:url('+userIconBase64+');background-size:50px;">';
+            code += '>';
+            if(clientObj.isUserUplaodImg){
+                code += '<img class="clientIcon" src="' + userIconBase64 + '">';
+            }else{
+                code += '<i class="type" style="--svg:url(' + userIconBase64 + ')"></i>';
+            }
 			code += '</div>';
 		}
 		else if(clientObj.type != "0" || clientObj.vendor == "") {
@@ -448,24 +454,24 @@ function show_clients(priority_type){
 				code += '<div id="icon_' + i + '" onclick="show_apps(this);" class="closed clientIconIE8HACK' + ' qosLevel' + clientObj.qosLevel + '"></div>';
 			}
 			else{
-				code += '<div id="icon_' + i + '" onclick="show_apps(this);" class="closed clientIcon type' + clientObj.type + ' qosLevel' + clientObj.qosLevel + '"></div>';
+				code += '<div id="icon_' + i + '" onclick="show_apps(this);" class="closed clientIcon qosLevel' + clientObj.qosLevel + '"><i class="type' + clientObj.type + '"></i></div>';
 			}
 		}
 		else if(clientObj.vendor != "") {
 			var clientListCSS = "";
-			var venderIconClassName = getVenderIconClassName(clientObj.vendor.toLowerCase());
-			if(venderIconClassName != "" && !downsize_4m_support) {
-				clientListCSS = "venderIcon " + venderIconClassName;
+			var vendorIconClassName = getVendorIconClassName(clientObj.vendor.toLowerCase());
+			if(vendorIconClassName != "" && !downsize_4m_support) {
+				clientListCSS = "vendor-icon " + vendorIconClassName;
 			}
 			else {
-				clientListCSS = "clientIcon type" + clientObj.type;
+				clientListCSS = "type" + clientObj.type;
 			}
 
 			if(top.isIE8){
 				code += '<div id="icon_' + i + '" onclick="show_apps(this);" class="closed clientIconIE8HACK qosLevel' + clientObj.qosLevel + '"></div>';
 			}
 			else{
-				code += '<div id="icon_' + i + '" onclick="show_apps(this);" class="closed ' + clientListCSS + ' qosLevel' + clientObj.qosLevel + '"></div>';
+				code += '<div id="icon_' + i + '" onclick="show_apps(this);" class="closed qosLevel clientIcon' + clientObj.qosLevel + '"><i class="' + clientListCSS + '"></i></div>';
 			}
 		}
 
@@ -587,9 +593,9 @@ function show_apps(obj){
 			}
 			else if(clientObj.vendor != "") {
 				var clientListCSS = "";
-				var venderIconClassName = getVenderIconClassName(clientObj.vendor.toLowerCase());
-				if(venderIconClassName != "" && !downsize_4m_support) {
-					clientListCSS = "venderIcon " + venderIconClassName;
+				var vendorIconClassName = getVendorIconClassName(clientObj.vendor.toLowerCase());
+				if(vendorIconClassName != "" && !downsize_4m_support) {
+					clientListCSS = "vendorIcon " + vendorIconClassName;
 				}
 				else {
 					clientListCSS = "clientIcon type" + clientObj.type;
@@ -627,9 +633,9 @@ function show_apps(obj){
 			}
 			else if(clientObj.vendor != "") {
 				var clientListCSS = "";
-				var venderIconClassName = getVenderIconClassName(clientObj.vendor.toLowerCase());
-				if(venderIconClassName != "" && !downsize_4m_support) {
-					clientListCSS = "venderIcon_clicked " + venderIconClassName;
+				var vendorIconClassName = getVendorIconClassName(clientObj.vendor.toLowerCase());
+				if(vendorIconClassName != "" && !downsize_4m_support) {
+					clientListCSS = "vendorIcon_clicked " + vendorIconClassName;
 				}
 				else {
 					clientListCSS = "clientIcon_clicked type" + clientObj.type;
@@ -680,9 +686,9 @@ function cancel_previous_device_apps(obj){
 		}
 		else if(clientObj.vendor != "") {
 			var clientListCSS = "";
-			var venderIconClassName = getVenderIconClassName(clientObj.vendor.toLowerCase());
-			if(venderIconClassName != "" && !downsize_4m_support) {
-				clientListCSS = "venderIcon " + venderIconClassName;
+			var vendorIconClassName = getVendorIconClassName(clientObj.vendor.toLowerCase());
+			if(vendorIconClassName != "" && !downsize_4m_support) {
+				clientListCSS = "vendorIcon " + vendorIconClassName;
 			}
 			else {
 				clientListCSS = "clientIcon type" + clientObj.type;
@@ -1539,7 +1545,7 @@ function applyRule(){
 	if(reset_wan_to_fo.change_status)
 		reset_wan_to_fo.change_wan_mode(document.form);
 	if(dns_dpi_support)
-		document.form.action_script.value = "restart_nfcm;restart_dnsqd;restart_qos;restart_firewall";
+		document.form.action_script.value = "restart_dnsqd;restart_qos;restart_firewall";
 	document.form.qos_rulelist.value = qos_rulelist;
 	showLoading();
 	document.form.submit();
@@ -1559,21 +1565,27 @@ function cancel(){
 	$('#iphone_switch').animate({backgroundPosition: -37}, "slow", function() {});
 	document.form.action_script.value = "restart_qos;restart_firewall";
 	if(dns_dpi_support)
-		document.form.action_script.value = "restart_nfcm;restart_dnsqd;restart_qos;restart_firewall";
+		document.form.action_script.value = "restart_dnsqd;restart_qos;restart_firewall";
 	document.form.action_wait.value = "5";
 }
 function switch_control(_status){
 	if(_status) {
-		if(reset_wan_to_fo.check_status()) {
-			if(ASUS_EULA.check("tm")){
-				document.form.apps_analysis.value = 1;
-				if(dns_dpi_support)
-					document.form.dns_dpi_apps_analysis.value = 1;
-				applyRule();
-			}
-		}
-		else
-			cancel();
+        if(!dns_dpi_support){
+            if(reset_wan_to_fo.check_status()) {
+                if(ASUS_EULA.check("tm")){
+                    document.form.apps_analysis.value = 1;
+                    if(dns_dpi_support)
+                        document.form.dns_dpi_apps_analysis.value = 1;
+                    applyRule();
+                }
+            }
+            else
+                cancel();
+        }else{
+            document.form.apps_analysis.value = 1;
+            document.form.dns_dpi_apps_analysis.value = 1;
+            applyRule();
+        }
 	}
 	else {
 		document.form.apps_analysis.value = 0;

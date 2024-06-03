@@ -1,0 +1,3 @@
+-include ../version.make
+BRANCH_STR=$(BRCM_VERSION)$(BRCM_RELEASE)$(BRCM_EXTRAVERSION)
+VERSION_STR='$Change: 450432 $'

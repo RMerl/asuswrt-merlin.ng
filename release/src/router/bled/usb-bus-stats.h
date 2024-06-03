@@ -11,5 +11,4 @@ struct usb_bus_stat_s {
 };
 
 extern struct usb_bus_stat_s usb_bus_stat[USB_MAXBUS];
-
 #endif	/* !_USB_BUS_STATS_H_ */

@@ -1,0 +1,6 @@
+NOVENA BOARD
+M:	Marek Vasut <marex@denx.de>
+S:	Maintained
+F:	board/kosagi/novena/
+F:	include/configs/novena.h
+F:	configs/novena_defconfig

@@ -1,6 +1,10 @@
 /*
 	function handler for linux netlink socket!
  */
+#ifdef MUSL_LIBC
+#include <sys/select.h>
+#endif	// MUSL_LIBC
+
 #include <unistd.h>
 #include <fcntl.h>
 #include <pthread.h>

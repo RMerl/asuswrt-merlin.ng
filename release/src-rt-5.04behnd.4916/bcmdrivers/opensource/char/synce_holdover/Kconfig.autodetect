@@ -1,0 +1,9 @@
+config BCM_SYNCE_HOLDOVER
+        tristate "Support SYNCE_HOLDOVER driver"
+        depends on BCM96888 || BCM968880 || BCM96837
+        default m
+
+config BCM_SYNCE_HOLDOVER_IMPL
+        int "Implementation index for SYNCE_HOLDOVER driver"
+        depends on BCM_SYNCE_HOLDOVER
+        default 1

@@ -1,0 +1,61 @@
+.\" Copyright (c) 2014 Sougata Santra / Tuxera Inc.
+.\" Copyright (c) 2011 Erik Larsson / Tuxera Inc.
+.\"
+.TH FATLABEL 8 "March 2014" "Tuxera TFATprogs 3017.7.17.3"
+.SH NAME
+fatlabel \- display/change the label on a FAT file system
+.SH SYNOPSIS
+.B fatlabel
+[\fIoptions\fR] \fIdevice
+.SH DESCRIPTION
+.B fatlabel
+will display or change the file system label on the FAT file system located on
+.IR device .
+.PP
+If the option \fB\-l\fR  is not specified, the current volume label will be
+printed to standard output and no modifications will be made.
+.PP
+It is also possible to set the file system label using the
+.B \-l
+option of
+.BR mkfatfs (8)
+during creation of the file system.
+.SH OPTIONS
+Below is a summary of all the options that
+.B fatlabel
+accepts.  Nearly all options have two equivalent names.  The short name is
+preceded by
+.B \-
+and the long name is preceded by
+.BR \-\- .
+.TP
+\fB\--cp\fR CODEPAGE
+Use the given code page to decode or encode the volume label. The following
+code pages are supported: 437, 737, 775, 850, 852, 855, 857, 860, 861, 862,
+863, 864, 865, 866, 869, 874, 932, 936, 949, 950. The default is 437.
+.TP
+\fB\-l\fR, \fB\-\-label\fR LABEL
+Set the volume label for the filesystem. The volume label can be up to 11
+bytes long when encoded with code page specified by --cp option.
+.SH PLEASE NOTE
+.B fatlabel
+currently does not support FAT12 volumes.
+.SH BUGS
+There are no known problems with
+.BR fatlabel .
+If you find a bug please send an email describing the problem to 
+fat-support@tuxera.com.
+.hy
+.SH AUTHORS
+.B fatlabel
+was written by
+.RS 8
+Erik Larsson, Tuxera Inc.
+.br
+Sougata Santra, Tuxera Inc.
+.RE
+.SH AVAILABILITY
+.B fatlabel
+is part of the
+.B Tuxera TFATprogs
+package.

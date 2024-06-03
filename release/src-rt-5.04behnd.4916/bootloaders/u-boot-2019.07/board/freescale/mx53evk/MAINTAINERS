@@ -1,0 +1,6 @@
+MX53EVK BOARD
+M:	Jason Liu <jason.hui.liu@nxp.com>
+S:	Maintained
+F:	board/freescale/mx53evk/
+F:	include/configs/mx53evk.h
+F:	configs/mx53evk_defconfig

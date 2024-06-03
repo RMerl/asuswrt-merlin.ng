@@ -1,0 +1,107 @@
+@font-face{
+	font-family: Xolonium;
+        src: url(/fonts/xolonium.regular.woff) format("woff"),
+             url(/fonts/xolonium.regular.otf) format("opentype");
+}
+#welcomeTitle{
+	font-family: Xolonium;
+}
+#welcome_button{
+	font-family: Xolonium;
+	font-size: 2em;
+}
+.titleMain, .titleSub, .footer_desktop, .footer_mobile, .mobile_applyBtn, .mobile_abortBtn{
+	font-family: Xolonium;
+}
+body{
+	background:url('../images/New_ui/login_bg.png') no-repeat;
+	background-attachment: fixed;
+	background-size: cover;
+}
+a{
+	color: rgb(5,252,238) !important;
+}
+/*
+.nonROG{
+	display: none;
+}
+.ROG{
+	display: block;	
+}
+.productIconContainer > div{
+	background: #AE0000;
+}
+#ROGLOGO{
+	background-image: url(./logo.svg);
+	background-size: cover;
+	width: 400px;
+	height: 400px;
+}
+*/
+.footer_mobile{
+	border-top: 2px solid #92650F;
+}
+.desktop_applyBtn{
+	border: 2px solid #92650F;
+	background: rgb(255,165,35);
+	color: #000000;
+}
+.desktop_abortBtn{
+	color: #92650F;
+}
+.ui-input-text input, .ui-input-search input{
+	border-color: #92650F;
+}
+#welcome_button{
+	background-color: rgb(255,165,35);
+	border:1px solid #92650F;
+}
+#aimesh_welcome_button{
+	background-color: #92650F;
+	border:1px solid #92650F;
+}
+.advSetting{
+	color: #92650F;
+}
+.descSteps{
+	color: #92650F;
+}
+.mobileApply{
+	background: #92650F;
+}
+.ap_ssid_hover{
+	color: #92650F !important;
+}
+.selectorContainerDiv:hover, .selectBar > label:hover, .labelInput:hover{
+	color: #92650F;
+}
+.loadingBarContainer{
+	border: 2px solid #92650F!important;
+}
+.loadingBar{
+	background-color: #92650F!important;
+}
+@media screen and (min-aspect-ratio: 11/13){
+	.desktop_left_field{
+		color: #92650F;
+	}
+}
+
+.icon_logo{
+	width: 450px;
+	height: 96px;
+	margin-left: -40px;
+	background-image: url("/images/New_ui/logo_TUF.png");
+	background-repeat: no-repeat;
+}
+.cssload-circle .cssload-inner{
+	border: 5px solid rgba(255,193,7,0.7);
+	box-shadow: inset 0px 0px 10px rgb(255,193,7,0.1);
+	border-right: none;
+	border-top: none;
+}
+
+.textInput{
+	background: rgb(55,55,55);
+	border: 1px solid rgb(76,76,76);
+}

@@ -1,0 +1,16 @@
+if STM32F4
+
+config TARGET_STM32F429_DISCOVERY
+	bool "STM32F429 Discovery board"
+
+config TARGET_STM32F429_EVALUATION
+	bool "STM32F429 Evaluation board"
+
+config TARGET_STM32F469_DISCOVERY
+	bool "STM32F469 Discovery board"
+
+source "board/st/stm32f429-discovery/Kconfig"
+source "board/st/stm32f429-evaluation/Kconfig"
+source "board/st/stm32f469-discovery/Kconfig"
+
+endif

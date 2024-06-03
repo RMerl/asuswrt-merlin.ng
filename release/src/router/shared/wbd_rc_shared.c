@@ -1149,7 +1149,6 @@ wbd_disable_fbt(char *prefix)
 int
 wbd_is_fbt_possible(char *prefix)
 {
-	int fbt = 0;
 	char *nvval;
 
 	/* Check if the akm contains psk2 or not */
@@ -1159,14 +1158,7 @@ wbd_is_fbt_possible(char *prefix)
 		WBD_RC_PRINT("%s%s[%s]. Not psk2 or sae. So no FBT\n", prefix, NVRAM_AKM, nvval);
 		return 0;
 	}
-
-	/* Get the wlxy_wbd_ft NVRAM value, which tells whether FBT is enabled from WBD or not
-	 * If the NVRAM is not defined it returns not defined(-1)
-	 */
-	fbt = wbd_nvram_safe_get_int(prefix, WBD_NVRAM_FBT, WBD_FBT_NOT_DEFINED);
-
-end:
-	return fbt;
+	return 1;
 }
 
 /* If Device is Upstream AP, Initialize the FBT NVRAMs */
@@ -1197,7 +1189,12 @@ wbd_uap_init_fbt_nvram_config(char *prefix)
 	}
 
 	/* [1] If wbd_fbt NVRAM is not defined. Enable the FBT by setting the wbd_fbt */
-	fbt = wbd_is_fbt_possible(prefix);
+	if (!wbd_is_fbt_possible(prefix)) {
+		WBD_RC_PRINT("Prefix[%s] FBT is not possible\n", prefix);
+		goto end;
+	}
+
+	fbt = wbd_nvram_safe_get_int(prefix, WBD_NVRAM_FBT, WBD_FBT_NOT_DEFINED);
 	if (fbt == WBD_FBT_NOT_DEFINED) {
 		WBD_RC_PRINT("Prefix[%s]\n Enabling FBT...", prefix);
 		fbt = wbd_enable_fbt(prefix);

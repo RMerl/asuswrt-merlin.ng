@@ -1,0 +1,7 @@
+MX6SLLEVK BOARD
+M:	Peng Fan <peng.fan@nxp.com>
+S:	Maintained
+F:	board/freescale/mx6sllevk/
+F:	include/configs/mx6sllevk.h
+F:	configs/mx6sllevk_defconfig
+F:	configs/mx6sllevk_plugin_defconfig

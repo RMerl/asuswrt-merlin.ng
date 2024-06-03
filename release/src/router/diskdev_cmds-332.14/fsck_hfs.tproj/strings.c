@@ -117,9 +117,14 @@ char * err_msg[] =
 	"Orphaned indirect node %s",
 	"Invalid BSD file type",
 
-	/* 570 - 573 */
+	/* 570 - 578 */
 	"Invalid BSD User ID",
 	"Illegal name",
 	"Incorrect number of thread records",
 	"Cannot create links to all corrupt files",
+	"Incorrect number of Extended Attributes",
+	"Incorrect number of Access Control Lists",
+	"Incorrect block count for attribute %s of file %s",
+	"Incorrect size for attribute %s of file %s",
+	"Invalid attribute record",
 };

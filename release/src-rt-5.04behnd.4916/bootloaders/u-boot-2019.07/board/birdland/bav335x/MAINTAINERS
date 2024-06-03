@@ -1,0 +1,13 @@
+BAV335x BOARD
+M:	Gilles Gameiro <gilles@gigadevices.com>
+S:	Maintained
+F:	include/configs/bav335x.h
+F:	board/birdland/bav335x/Kconfig
+F:	board/birdland/bav335x/Makefile
+F:	board/birdland/bav335x/README
+F:	board/birdland/bav335x/board.c
+F:	board/birdland/bav335x/board.h
+F:	board/birdland/bav335x/mux.c
+F:	board/birdland/bav335x/u-boot.lds
+F:	configs/birdland_bav335a_defconfig
+F:	configs/birdland_bav335b_defconfig

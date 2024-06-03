@@ -80,6 +80,7 @@ function initial(){
 		document.getElementById("fb_desc0").style.display = "";
 		inputCtrl(document.form.fb_ISP, 0);
 		inputCtrl(document.form.fb_Subscribed_Info, 0);
+		document.form.gen_tarball_id.checked = false;
 		document.form.attach_syslog_id.checked = true;
 		document.form.attach_cfgfile_id.checked = true;
 		document.form.attach_iptables.checked = false;
@@ -198,6 +199,7 @@ function disbled_feedback_filed(status){
 	document.form.fb_country.disabled = true;
 	document.form.fb_email.disabled = true;
 	document.form.fb_serviceno.disabled = true;
+		document.form.gen_tarball.disabled = true;
 	document.form.attach_syslog.disabled = true;
 	document.form.attach_cfgfile.disabled = true;
 	document.form.attach_modemlog.disabled = true;
@@ -230,12 +232,14 @@ function check_wan_state(){
 			document.form.fb_availability.disabled = true;
 			
 		}
+
 	}
 	else{
 		document.getElementById("fb_desc_disconnect").style.display = "none";
 		document.form.fb_country.disabled = "";
 		document.form.fb_email.disabled = "";
 		document.form.fb_serviceno.disabled = "";
+		document.form.gen_tarball.disabled = "";
 		document.form.attach_syslog.disabled = "";
 		document.form.attach_modemlog.disabled = "";
 		document.form.attach_wlanlog.disabled = "";
@@ -311,7 +315,7 @@ function Reload_pdesc(obj, url){
 		desclist.push(["<#Traffic_Analyzer#>/<#Menu_TrafficManager#>","Traffic Analyzer/Manager"]);
 		url_group.push(["TrafficMonitor"]);
 
-		desclist.push(["<#Parental_Control#>","Parental Ctrl"]);
+		desclist.push([stringSafeGet("<#Parental_Control#>"),"Parental Ctrl"]);
 		url_group.push(["ParentalControl"]);
 
 		desclist.push(["<#Menu_usb_application#>","USB Application"]);		//10
@@ -619,6 +623,11 @@ function applyRule(){
 				alert("Feedback report daily maximum(10) send limit reached.");
 				return false;
 		}*/
+		if(document.form.gen_tarball.checked == true)
+			document.form.fb_gen_tarball.value = 1;
+		else
+			document.form.fb_gen_tarball.value = 0;
+
 		if(document.form.attach_syslog.checked == true)
 			document.form.fb_attach_syslog.value = 1;
 		else
@@ -1279,6 +1288,7 @@ function detect_fb_state(){
 <input type="hidden" name="action_mode" value="apply">
 <input type="hidden" name="action_script" value="restart_sendfeedback">
 <input type="hidden" name="action_wait" value="60">
+<input type="hidden" name="fb_gen_tarball" value="">
 <input type="hidden" name="fb_attach_syslog" value="">
 <input type="hidden" name="fb_attach_cfgfile" value="">
 <input type="hidden" name="fb_attach_iptables" value="">	
@@ -1363,6 +1373,12 @@ function detect_fb_state(){
 </td>
 </tr>
 <tr>
+<th>Special options</th>
+<td>
+	<input type="checkbox" class="input" name="gen_tarball" id="gen_tarball_id"><label for="gen_tarball_id">Generate downloadable logs as ASUS support requested<!--Untranslated--></label>&nbsp;&nbsp;&nbsp;
+</td>
+</tr>
+<tr>
 <th><#feedback_extra_info#> *</th>
 <td>
 	<input type="checkbox" class="input" name="attach_syslog" id="attach_syslog_id"><label for="attach_syslog_id"><#System_Log#></label>&nbsp;&nbsp;&nbsp;
@@ -1404,8 +1420,8 @@ function detect_fb_state(){
 		<div class="dblog_disabled_status">
 			<input type='radio' name='dblog_enable' id='dblog_status_en' value="1" onclick="diag_change_dblog_status();"><label for='dblog_status_en'><#checkbox_Yes#></label>
 			<input type='radio' name='dblog_enable' id='dblog_status_dis' value="0" onclick="diag_change_dblog_status();" checked><label for='dblog_status_dis'><#checkbox_No#></label>
-			<label class="storeUSBHint hint-color"><input type="checkbox" name="dblog_tousb_cb" value="1" onclick="diag_change_storeUSB();" checked><#feedback_debug_log_inDisk#></label>
-			<span class="noUSBHint hint-color">* <#no_usb_found#></span>
+			<label class="storeUSBHint"><input type="checkbox" name="dblog_tousb_cb" value="1" onclick="diag_change_storeUSB();" checked><#feedback_debug_log_inDisk#></label>
+			<span class="noUSBHint">* <#no_usb_found#></span>
 		</div>
 		<div class="dblog_enabled_status">
 			<span>* <#feedback_current_capturing#></span>
@@ -1517,28 +1533,31 @@ function detect_fb_state(){
 	</th>
 	<td>
 		<textarea name="fb_comment" maxlength="2000" cols="55" rows="8" class="textarea_ssh_table" style="font-family:'Courier New', Courier, mono; font-size:13px;" onKeyDown="textCounter(this,document.form.msglength,2000);" onKeyUp="textCounter(this,document.form.msglength,2000)"></textarea>
-		<span class="hint-color"><#feedback_max_counts#> : </span>
-		<input type="text" class="input_6_table" name="msglength" id="msglength" maxlength="4" value="2000" autocorrect="off" autocapitalize="off" readonly>
+		<span><#feedback_max_counts#> : </span>
+		<input type="text" class="input_6_table short_input" name="msglength" id="msglength" maxlength="4" value="2000" autocorrect="off" autocapitalize="off" readonly>
 	</td>
 </tr>
 
 <tr>
 	<td colspan="2">
-		<div>
+		<div style="display: flex; align-items: center;">
+			<div style="display: flex; flex-direction: row; padding: 16px;">
 			<div style="float: left;"><input type="checkbox" name="eula_checkbox"/></div>
 			<div id="eula_content" style="margin-left: 20px;"><#feedback_eula#></div>
 		</div>
-		<input id="apply_button" class="button_gen" style="margin-left: 305px; margin-top:5px;" name="btn_send" onclick="applyRule()" type="button" value="<#btn_send#>"/>
-		<div  id="loadingIcon" style="display:none;"><div class="loadingIcon" style="float: left; margin-left: 305px; margin-top:5px;"></div><div style="float: left; margin-left: 15px; margin-top:10px;"><span class="hint-color"><#Main_alert_processing#>...</span></div></div>
+			<input class="btn_subusage button_gen" name="btn_send" onclick="applyRule()" type="button" value="<#btn_send#>"/>
+		</div>
 	</td>
 </tr>
 
 <tr>
 	<td colspan="2">
-		<strong><#FW_note#></strong>
+		<div class="warning_desc">
+		<strong class="warning_title"><#FW_note#></strong>
 		<ul>
 			<li><#feedback_note4#><br><a id="call_link" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">https://www.asus.com/support/CallUs/</a></li>
 		</ul>
+	</div>
 	</td>
 </tr>	
 </table>

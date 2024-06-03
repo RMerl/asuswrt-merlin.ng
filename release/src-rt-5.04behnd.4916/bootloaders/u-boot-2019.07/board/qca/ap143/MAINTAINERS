@@ -1,0 +1,6 @@
+AP143 BOARD
+M:	Wills Wang <wills.wang@live.com>
+S:	Maintained
+F:	board/qca/ap143/
+F:	include/configs/ap143.h
+F:	configs/ap143_defconfig

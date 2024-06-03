@@ -1,0 +1,11 @@
+config BCM_MEMC
+	bool "Broadcom BCA memory controller driver"
+	default y
+	help
+	  Provide limited access to the memory controller.
+
+config BCM_MEMC_IMPL
+	int "Implementation index for BCA MEMC driver"
+	depends on BCM_MEMC
+	default 1
+

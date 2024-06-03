@@ -29,10 +29,6 @@ config RTCONFIG_MUSL_LIBC
 	bool "MUSL libc"
 	default n
 
-config RTCONFIG_MUSL_LIBC_1116_WAR
-	bool "Workaround for MUSL libc prior v1.1.19"
-	default n
-
 config RTCONFIG_L2TP
 	bool "L2TP"
 	default y
@@ -103,6 +99,10 @@ config RTCONFIG_HND_ROUTER_AX_6756
 	bool "Bcm hnd 11ax (6756) bsp"
 	default n
 
+config RTCONFIG_HND_ROUTER_BE_4916
+	bool "Bcm hnd 11be (4916) bsp"
+	default n
+
 config RTCONFIG_HND_ROUTER_AX_6710
 	bool "BCM6710"
 	default n
@@ -164,7 +164,11 @@ config RTCONFIG_DHDAP
 
 config RTCONFIG_BW160M
 	bool "Bandwidth 160MHz support"
-	depends on RTCONFIG_DHDAP || RTCONFIG_QCA
+	depends on RTCONFIG_DHDAP || RTCONFIG_QCA || RTCONFIG_MT798X
+	default n
+
+config RTCONFIG_BW320M
+	bool "Bandwidth 320MHz support"
 	default n
 
 config RTCONFIG_WLEXE
@@ -410,6 +414,11 @@ config RTCONFIG_CONCURRENTREPEATER
 	bool "Concurrent Repeater"
 	default n
 
+config RTCONFIG_WISP
+	bool "WISP Mode"
+	depends on RTCONFIG_WIRELESSREPEATER
+	default n
+
 config RTCONFIG_VHT80_80
 	bool "80+80MHz bandwidth support"
 	default n
@@ -428,10 +437,6 @@ config RTCONFIG_IPERF
 
 config RTCONFIG_TCPDUMP
 	bool "tcpdump"
-	default n
-
-config RTCONFIG_TCPREPLAY
-	bool "tcpreplay"
 	default n
 
 config RTCONFIG_DUMP4000
@@ -525,6 +530,10 @@ config RTCONFIG_USER_LOW_RSSI
 
 config RTCONFIG_WATCH_WLREINIT
 	bool "reboot when wlreinit cannot save wl"
+	default n
+
+config RTCONFIG_WATCH_WLRXF1OVFL
+	bool "reboot when wlrxf1ovfl overflow"
 	default n
 
 config RTCONFIG_NEW_USER_LOW_RSSI
@@ -661,6 +670,11 @@ config RTCONFIG_SAMBA36X
 	depends on RTCONFIG_SAMBASRV
 	default n
 
+config RTCONFIG_SAMBA4
+	bool "Compile with Samba 4"
+	depends on RTCONFIG_SAMBASRV
+	default n
+
 config RTCONFIG_USB_EXTRAS
 	bool "Additional modules and utilities"
 	depends on RTCONFIG_USB
@@ -713,6 +727,11 @@ config RTCONFIG_OPENPLUSPARAGON_NTFS
 
 config RTCONFIG_OPENPLUSTUXERA_NTFS
 	bool "NTFS-3G + Tuxera Support"
+	depends on RTCONFIG_OPEN_NTFS3G
+	default n
+
+config RTCONFIG_OPEN_NTFS3G_2016
+	bool "NTFS-3G 2016"
 	depends on RTCONFIG_OPEN_NTFS3G
 	default n
 
@@ -806,6 +825,10 @@ config RTCONFIG_INTERNAL_GOBI
 	depends on RTCONFIG_USB_MODEM
 	default n
 
+config RTCONFIG_QFIREHOSE
+	bool "LTE Firmware upgrade support qfirehose"
+	default n
+
 config RTCONFIG_DYN_MODEM
 	bool "Dynamic enable the USB Modem"
 	depends on RTCONFIG_USB_MODEM
@@ -860,10 +883,20 @@ config RTCONFIG_RALINK_MT7621
 	depends on RTCONFIG_RALINK
 	default n
 
+config RTCONFIG_RALINK_MT7622
+	bool "Ralink Chip - MT7622 Support"
+	depends on RTCONFIG_RALINK
+	default n
+
 config RTCONFIG_RALINK_MT7628
 	bool "Ralink Chip - MT7628 Support"
 	depends on RTCONFIG_RALINK
 	default n
+
+config RTCONFIG_RALINK_MT7629
+        bool "Ralink Chip - MT7629 Support"
+        depends on RTCONFIG_RALINK
+        default n
 
 config RTCONFIG_SPI_FAST_CLOCK
 	bool "Ralink Chip - Double SPI clock"
@@ -940,12 +973,6 @@ config RTCONFIG_SPF11_4_QSDK
 	depends on RTCONFIG_QCA
 	default n
 
-config RTCONFIG_SPF11_5_QSDK
-	bool "SPF11.5 QSDK"
-	depends on RTCONFIG_QCA
-	depends on RTCONFIG_MUSL_LIBC
-	default n
-
 config RTCONFIG_QCA_BIGRATE_WIFI
 	bool "New QSDK wifi driver - need to adjust iwconfig bitrate"
 	default n
@@ -1013,11 +1040,6 @@ config RTCONFIG_WIFI_QCA9994_QCA9994
 	depends on RTCONFIG_QCA
 	default n
 
-config RTCONFIG_NO_RELOAD_WIFI_DRV_IF_POSSIBLE
-	bool "Don't reload WiFi driver if possible"
-	depends on RTCONFIG_QCA
-	default n
-
 config RTCONFIG_CFG80211
 	bool "Qualcomm Atheros cfg80211 support"
 	depends on RTCONFIG_QCA
@@ -1025,7 +1047,7 @@ config RTCONFIG_CFG80211
 
 config RTCONFIG_GLOBAL_INI
 	bool "Qualcomm globa.ini support. (SPF9 or above)"
-	depends on RTCONFIG_QCA && (RTCONFIG_SPF10_QSDK || RTCONFIG_SPF11_QSDK || RTCONFIG_SPF11_1_QSDK || RTCONFIG_SPF11_3_QSDK || RTCONFIG_SPF11_4_QSDK || RTCONFIG_SPF11_5_QSDK || RTCONFIG_QSDK10CS || RTCONFIG_SOC_IPQ60XX)
+	depends on RTCONFIG_QCA && (RTCONFIG_SPF10_QSDK || RTCONFIG_SPF11_QSDK || RTCONFIG_SPF11_1_QSDK || RTCONFIG_SPF11_3_QSDK || RTCONFIG_SPF11_4_QSDK || RTCONFIG_QSDK10CS || RTCONFIG_SOC_IPQ60XX)
 	default n
 
 config RTCONFIG_SINGLE_HOSTAPD
@@ -1357,7 +1379,19 @@ config RTCONFIG_WLMODULE_MT7615E_AP
 config RTCONFIG_WLMODULE_MT7663E_AP
 	bool "Wireless module MT7663E ap"
 	default n
+	
+config RTCONFIG_WLMODULE_MT7629_AP
+	bool "Wireless module MT7629 ap"
+	default n
 
+config RTCONFIG_WLMODULE_MT7622_AP
+	bool "Wireless module MT7622 ap"
+	default n
+	
+config RTCONFIG_WLMODULE_MT7915D_AP
+	bool "Wireless module MT7915D ap"
+	default n
+	
 config RTCONFIG_PSISTLOG
 	bool "Persistent syslog"
 	default n
@@ -1463,6 +1497,31 @@ config RTCONFIG_WANPORT2
 config RTCONFIG_MULTIWAN_CFG
 	bool "Seperate WAN related configurations to different sets of nvram variables"
 	default n
+
+config RTCONFIG_MULTILAN_CFG
+	bool "Multiple Network Base Support"
+	default n
+
+config RTCONFIG_MULTIWAN_IF
+	bool "Independent WAN interface mechanism"
+	default n
+
+config RTCONFIG_MULTIWAN_PROFILE
+	bool "Multiple WAN backup or balance rules support"
+	default n
+
+config RTCONFIG_BUSINESS
+	bool "BUSINESS Model Support"
+	default n
+
+config RTCONFIG_SMART_HOME_MASTER_UI
+	bool "Smart Home Master UI of SDN"
+	default n
+
+config RTCONFIG_MAX_MTLAN
+    int "Support the maximum number of SDN"
+    depends on RTCONFIG_MULTILAN_CFG
+    default 16
 
 config RTCONFIG_TFTP_SERVER
 	bool "TFTP daemon"
@@ -1625,6 +1684,14 @@ config RTCONFIG_UIDEBUG
 	bool "Enable UI debug mode"
 	default n
 
+config RTCONFIG_DEMOUI
+	bool "Enable Demo UI"
+	default n
+
+config RTCONFIG_TS_UI
+    bool "TS theme support"
+    default n
+
 config RTCONFIG_ROG
 	bool "Get APP Traffic from ROG client"
 	default n
@@ -1632,6 +1699,10 @@ config RTCONFIG_ROG
 config RTCONFIG_ROG_UI
 	bool "ROG theme support"
 	default n
+
+config RTCONFIG_TUF_UI
+        bool "TUF theme support"
+        default n
 
 config RTCONFIG_GEOIP
 	bool "determine country by IP address"
@@ -1736,6 +1807,10 @@ config RTCONFIG_AICLOUD_TUNNEL
 
 config RTCONFIG_AIHOME_TUNNEL
 	bool "AiHome tunnel support"
+	default n
+
+config RTCONFIG_UAC_TUNNEL
+	bool "TUNNEL_UAC config"
 	default n
 
 config RTCONFIG_CFEZ
@@ -1990,6 +2065,10 @@ config RTCONFIG_QAM256_2G
 	bool "2.4G 256QAM Support"
 	default n
 
+config RTCONFIG_QAM1024_5G
+	bool "5G 1024QAM Support"
+	default n
+
 config RTCONFIG_MUMIMO_2G
 	bool "2.4G MU-MIMO support"
 	default n
@@ -2076,8 +2155,28 @@ config RTCONFIG_LP5523
 	bool "Have LP5523 LED controller"
 	default n
 
-config RTCONFIG_FIXED_BRIGHTNESS_RGBLED
-	bool "Have RGB LED with uncontrollable brightness"
+config RTCONFIG_ZENWIFI_RGBLED
+	bool "RGB LED behavior of ZenWiFi series"
+	default n
+
+config RTCONFIG_AURA_RGBLED
+	bool "RGB LED behavior of Aura/TUF"
+	default n
+
+config RTCONFIG_GPIOX3_RGBLED
+	bool "Have RGB LED with GPIO x 3"
+	default n
+
+config RTCONFIG_PWMX1_GPIOX3_RGBLED
+	bool "Have RGB LED with PWM x 1 and GPIO x 3"
+	default n
+
+config RTCONFIG_PWMX2_GPIOX1_RGBLED
+	bool "Have RGB LED with PWM x 2 and GPIO x 1"
+	default n
+
+config RTCONFIG_PWMX3_RGBLED
+	bool "Have RGB LED with PWM x 3"
 	default n
 
 config RTCONFIG_SINGLE_SSID
@@ -2140,6 +2239,10 @@ config RTCONFIG_ADTBW_AFTER_RADARDETECTED
 
 config RTCONFIG_BTM_11V
 	bool "enable 802.11v BTM request/report for roaming"
+	default n
+
+config RTCONFIG_FAST_ACL_SET
+	bool "enable fast acl set"
 	default n
 
 config RTCONFIG_FORCE_ROAMING
@@ -2342,6 +2445,10 @@ config RTCONFIG_CONNDIAG
 	bool "enable conn_diag in AiMesh"
 	default n
 
+config RTCONFIG_DASHBOARD
+	bool "enable Dashboard UI"
+	default n
+
 config RTCONFIG_CABLEDIAG
 	bool "enable cable diag in AiMesh"
 	default n
@@ -2366,8 +2473,20 @@ config RTCONFIG_QCA_LBD
 	bool "qca lbd support"
 	default n
 
-config RTCONFIG_AMAS_QCA_WDS
-	bool "qca amas wds support"
+config RTCONFIG_AMAS_WDS
+	bool "amas wds support"
+	default n
+
+config RTCONFIG_AMAS_MTK_EZWDS
+	bool "mtk ezmesh's wds support"
+	default n
+
+config RTCONFIG_MTK_BSD
+	bool "mtk smart-connect support"
+	default n
+
+config RTCONFIG_COBRAND
+	bool "cobrand support"
 	default n
 
 config RTCONFIG_GEFORCENOW
@@ -2468,6 +2587,10 @@ config RTCONFIG_LIVE_UPDATE_RSA
 
 config RTCONFIG_UUPLUGIN
 	bool "UU plugin support"
+	default n
+
+config RTCONFIG_GEARUPPLUGIN
+	bool "GearUP plugin support - UU international"
 	default n
 
 config RTCONFIG_TCPLUGIN
@@ -2586,6 +2709,14 @@ config RTCONFIG_MULTIFW
 	bool "Multiple Firmware"
 	default n
 
+config RTCONFIG_OVS
+	bool "OpenVSwitch"
+	default n	
+    
+config RTCONFIG_OPENSYNC
+	bool "OpenSync"
+	default n	
+
 config RTCONFIG_RE_RECONNECT
 	bool "enable re reconnect"
 	default n
@@ -2593,6 +2724,9 @@ config RTCONFIG_RE_RECONNECT
 config RTCONFIG_BH_SWITCH_ETH_FIRST
 	bool "enable wifi backhaul switch on ethernet first"
 	default n
+
+config RTCONFIG_CAPTCHA
+	bool "Web UI supprts captcha"
 
 config RTCONFIG_MULTISERVICE_WAN
 	bool "setup multiple subunit wan"
@@ -2618,16 +2752,44 @@ config RTCONFIG_WIFI6E
 	bool "WiFi 6E"
 	default n
 
+config RTCONFIG_WIFI7
+	bool "WiFi 7"
+	default n
+
+config RTCONFIG_MLO
+        bool "MLO"
+        default n
+
+config RTCONFIG_MLO_FH
+        bool "MLO FRONTHAUL"
+        default n
+
+config RTCONFIG_SYSCLASSGPIO
+	bool "enable sys class gpio"
+	default n
+
+config RTCONFIG_SAVE_WL_NVRAM_BOTH
+	bool "Combine wireless nvram"
+	default n
+
+config RTCONFIG_SWCONFIG
+	bool "using swconfig for configure switch"
+	default n
+
+config RTCONFIG_MTK_NAND_BLOCK2
+	bool "For MTK nand using 2 block"
+	default n
+
+config RTCONFIG_QCA_PLC2
+	bool "QCA PLC2"
+	default n
+
 config RTCONFIG_VAR_NVRAM
 	bool "save some nvram under /var"
 	default n
 
 config RTCONFIG_BCM_OAM
 	bool "Broadcom OAM"
-	default n
-
-config RTCONFIG_QCA_PLC2
-	bool "QCA PLC2"
 	default n
 
 config RTCONFIG_NEW_PHYMAP
@@ -2654,6 +2816,14 @@ config RTCONFIG_PREFERAP_RE_SELFOPT
 	bool "Notify RE do self optimization based on prefer ap condition"
 	default n
 
+config RTCONFIG_SYSCLASSGPIO
+	bool "enable sys class gpio"
+	default n
+
+config RTCONFIG_MTK_NAND_BLOCK2
+	bool "For MTK nand using 2 block"
+	default n
+
 config RTCONFIG_SCHED_DAEMON
 	bool "Enable scheduler daemon"
 	default n
@@ -2662,15 +2832,38 @@ config RTCONFIG_PC_REWARD
 	bool "Parental Control Reward"
 	default n
 
-config RTCONFIG_FRONTHAUL_DBG
-	bool "enable AiMesh RE fronthaul for debug purpose"
-
 config RTCONFIG_MAX_RE
 	int "Support the maximum number of RE"
 	default 9
 
+config RTCONFIG_FRONTHAUL_DBG
+	bool "enable AiMesh RE fronthaul for debug purpose"
+	default n
+
+config RTCONFIG_RALINK_BUILDIN_WIFI
+	bool "using Ralink buildin wifi"
+	default n
+
+config RTCONFIG_DLOADER
+	bool "DLOADER tool for LTE module"
+	default n
+
+config RTCONFIG_FIBOCOM_FG621
+	bool "LTE module FIBOCOM FG621"
+	default n
+
 config RTCONFIG_TIME_QUOTA
 	bool "Parental Control Time Quota"
+	default n
+
+config RTCONFIG_SPF11_3_QSDK
+	bool "SPF11.3 QSDK"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_SPF11_4_QSDK
+	bool "SPF11.4 QSDK"
+	depends on RTCONFIG_QCA
 	default n
 
 config RTCONFIG_QSDK_LM256
@@ -2754,6 +2947,10 @@ config RTCONFIG_FSMD
 	bool "Filesystem monitor support"
 	default n
 
+config RTCONFIG_3LANPORT_DEVICE
+	bool "3 LAN Port device"
+	default n
+
 config RTCONFIG_DNS_PING
 	bool "Ping DNS servers and store the result into database"
 	default n
@@ -2774,17 +2971,25 @@ config RTCONFIG_NCURSES_6_1
 	bool "ncurses 6.1"
 	default n
 
+config RTCONFIG_GRE
+	bool "Generic Routing Encapsulation tunnel"
+	default n
+
 config RTCONFIG_AMAS_CENTRAL_CONTROL
         bool "AiMesh central control"
         default n
 
-config RTCONFIG_AVOID_TZ_ENV
-	bool "Not use setenv(TZ) but use timezone in /etc/TZ"
-	default n
-
 config RTCONFIG_BANDINDEX_NEW
         bool " Bandindex version greater than 1"
         default n
+
+config RTCONFIG_AMAS_CAP_CONFIG
+	bool "Common and priviate config handle for CAP"
+	default n
+
+config RTCONFIG_AMAS_ENT_FRONTHAUL
+	bool "AiMesh enterprise fronthual support"
+	default n
 
 config RTCONFIG_DEF_AUTO_FRONTHAUL
 	bool "The default value of fronthaul ap is auto"
@@ -2806,13 +3011,50 @@ config RTCONFIG_FRONTHAUL_AP_AUTO_OPT
 	bool "Support auto option for fronthaul ap"
 	default n
 
+config RTCONFIG_MT798X
+        bool " MTK MT798X platform"
+        default n
+
+config RTCONFIG_SOC_MT7986A
+	bool "MTK SoC MT7986A"
+	depends on RTCONFIG_MT798X
+	default n
+
+config RTCONFIG_SOC_MT7986B
+	bool "MTK SoC MT7986B"
+	depends on RTCONFIG_MT798X
+	default n
+
+config RTCONFIG_SOC_MT7986C
+	bool "MTK SoC MT7986C"
+	depends on RTCONFIG_MT798X
+	default n
+
+config RTCONFIG_SOC_MT7981
+	bool "MTK SoC MT7981
+	depends on RTCONFIG_MT798X
+	default n
+
+config RTCONFIG_SWITCH_MT7986_MT7531
+	bool "MTK SoC MT7986 + MT7531"
+	depends on RTCONFIG_MT798X
+	default n
+
 config RTCONFIG_SECUREBOOT
         bool "SecureBoot fw"
         default n
 
+config RTCONFIG_TRUSTZONE
+	bool "Arm TrustZone support"
+	default n
+
 config RTCONFIG_FSCRYPTCTL
         bool "fscryptctl tool"
         default n
+
+config RTCONFIG_AVOID_TZ_ENV
+	bool "Not use setenv(TZ) but use timezone in /etc/TZ"
+	default n
 
 config RTCONFIG_BSC_SR
         bool " sync bsscolor and enable spatial-reuse"
@@ -2822,16 +3064,37 @@ config RTCONFIG_AMAS_DWB_RULE
 	bool "AiMesh new dwb rule"
 	default n
 
-config RTCONFIG_AMAS_SYNC_LEDG
-	bool "AMAS RE sync ledg"
+config RTCONFIG_AMAS_CHANNEL_PLAN
+        bool "AiMesh channel plan support"
+        default n
+
+config RTCONFIG_DUPVIF
+	bool "QCA/MTK platform support Hinet MOD Mesh"
+	depends on RTCONFIG_MULTICAST_IPTV
 	default n
+
+config RTCONFIG_NEWSITE_PROVISIONING
+        bool "new site provisioning"
+        default n
+
+config RTCONFIG_MULTISITEAPP
+        bool "multisite app support"
+        default n
 
 config RTCONFIG_AMAS_SS2
 	bool "AiMesh Site Survey strategy-2"
 	default n
 
+config RTCONFIG_AMAS_SYNC_LEDG
+	bool "AMAS RE sync ledg"
+	default n
+
 config RTCONFIG_WPA3_ENTERPRISE
 	bool "WPA3 enterprise mode/transition mode/suite-b 192 bit mode"
+	default n
+
+config RTCONFIG_MULTI_PPP
+	bool "Multiple PPP connection on single WAN port"
 	default n
 
 config RTCONFIG_AMAS_CENTRAL_OPTMZ
@@ -2862,11 +3125,55 @@ config RTCONFIG_BCM4906_504
 	bool "962118G in 504"
 	default n
 
-config RTCONFIG_AUTO_WANPORT
-	bool "Automatically detect where the WAN port is"
+config RTCONFIG_AMAS_UPLOAD_FILE
+	bool "AiMesh upload file"
+	default n
+
+config RTCONFIG_HAS_6G_2
+	bool "has 2-nd 6G band"
+	default n
+
+config RTCONFIG_CHECK_PAP_WPAPSK
+	bool "QIS check selected AP password"
+	depends on RTCONFIG_WIRELESSREPEATER
+	default n
+
+config RTCONFIG_ECC256
+	bool "Support ECC256 CA"
+	depends on RTCONFIG_HTTPS
 	default n
 
 config RTCONFIG_RTL_UMGMT
 	bool "un-management-mode rtl switch's ops "
 	default n
 
+config RTCONFIG_AUTO_WANPORT
+	bool "Automatically detect where the WAN port is"
+	default n
+
+config RTCONFIG_PASS_V2
+	bool "Use PASS V2 for encryption"
+	depends on RTCONFIG_RALINK
+	default n
+
+config RTCONFIG_WIFI7_NO_6G
+	bool "no 6G band support in WiFi7"
+	depends on RTCONFIG_WIFI7
+	default n
+
+config RTCONFIG_AMAS_OB_DISABLE_DSAP
+	bool "disable downstream ap when onboarding"
+	default n
+
+config RTCONFIG_HND_GPIO
+	bool "Bcm hnd gpio access"
+	depends on RTCONFIG_HND_ROUTER
+	default n
+
+config RTCONFIG_PRESSURE_SENSOR
+	bool "Pressure sensor"
+	default n
+
+config RTCONFIG_MLO_CONFIG_566
+        bool "MLO default config 566 in 2566 model"
+        default n

@@ -1,0 +1,7 @@
+COLIBRI_T20
+M:	Lucas Stach <dev@lynxeye.de>
+S:	Maintained
+F:	board/toradex/colibri_t20/
+F:	include/configs/colibri_t20.h
+F:	configs/colibri_t20_defconfig
+F:	arch/arm/dts/tegra20-colibri.dtb

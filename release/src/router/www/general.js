@@ -374,7 +374,7 @@ function change_common_radio(o, s, v, r){
 			inputCtrl(document.form.ddns_regular_period, 0);
 			inputCtrl(document.form.ddns_refresh_x, 0);
 			showhide("ddns_ipv6update_tr", 0);
-
+			document.getElementById("ddns_hostname_tr").style.display = "none";
 			document.getElementById("ddns_status_tr").style.display = "none";
 			document.getElementById("ddns_result_tr").style.display = "none";
 		}
@@ -404,7 +404,7 @@ function change_common_radio(o, s, v, r){
 						showhide("WPS_hideSSID_hint",0);
 			}
 	}
-	else if(v=="bond_wan" && (based_modelid == "RT-AX89U" || based_modelid == "GT-AXY16000")){
+	else if(v=="bond_wan" && wbmenu_support){
 		if(r==1){
 			document.getElementById("wanports_bond_menu").style.display = "";
 			document.form.wanports_bond.disabled = false;
@@ -488,6 +488,10 @@ function openLink(s){
 			tourl = "https://www.oray.com/";
 		else if (document.form.ddns_server_x.value == 'DOMAINS.GOOGLE.COM')
 			tourl = "https://domains.google/";
+		else if (document.form.ddns_server_x.value == 'FREEDNS.AFRAID.ORG')
+			tourl = "https://freedns.afraid.org/signup/";
+		else if (document.form.ddns_server_x.value == 'FREEMYIP.COM')
+			tourl = "https://freemyip.com";
 		else	tourl = "";
 		link = window.open(tourl, "DDNSLink","toolbar=yes,location=yes,directories=no,status=yes,menubar=yes,scrollbars=yes,resizable=yes,copyhistory=no,width=640,height=480");
 	}
@@ -1540,7 +1544,7 @@ function wl_auth_mode_change(isload){
 	}
 
 	if(mode == "sae" || mode == "owe"){
-		var get_cfg_clientlist = httpApi.hookGet("get_cfg_clientlist", true);
+		var get_cfg_clientlist = httpApi.hookGet("get_cfg_clientlist");
 		if(get_cfg_clientlist != undefined){
 			var len = get_cfg_clientlist.length;
 			for(var i = 1; i < len; i += 1){//filter CAP
@@ -1616,7 +1620,7 @@ function wl_auth_mode_change(isload){
 
 	if(document.form.current_page.value == "Advanced_Wireless_Content.asp"){
 		if(mode == "wpa" || mode == "wpa2" || mode == "wpawpa2" || mode == "radius" || mode == "wpa3" || mode == "wpa2wpa3" || mode == "suite-b"){
-			if(Bcmwifi_support){
+		        if(Bcmwifi_support){
 				inputCtrl(document.form.wl_radius_ipaddr,  1);
 				inputCtrl(document.form.wl_radius_port,  1);
 				inputCtrl(document.form.wl_radius_key,  1);
@@ -1630,28 +1634,17 @@ function wl_auth_mode_change(isload){
 
 		if((mode == 'sae' || mode == 'owe' || mode == "wpa3" || mode == "suite-b") && document.form.wl_mfp.value != '2'){			
 			$('#mbo_notice_combo').hide();
-			$('#mbo_notice_combo_legacy').hide();
 			$('#mbo_notice_wpa3').show();
 			$('#mbo_notice').hide();
 		}
 		else if((mode == 'psk2sae') && document.form.wl_mfp.value == '0'){
 			$('#mbo_notice_wpa3').hide();
 			$('#mbo_notice_combo').show();
-			$('#mbo_notice_combo_legacy').hide();
-			$('#mbo_notice').hide();
-		}
-		else if(mode == 'pskpsk2' 
-			 && document.form.wl_mfp.value == '2' 
-			 && (band5g_11ax_support || based_modelid == 'RT-AC68U_V4')){
-			$('#mbo_notice_wpa3').hide();
-			$('#mbo_notice_combo').hide();
-			$('#mbo_notice_combo_legacy').show();
 			$('#mbo_notice').hide();
 		}
 		else{
 			$('#mbo_notice_wpa3').hide();
 			$('#mbo_notice_combo').hide();
-			$('#mbo_notice_combo_legacy').hide();
 			$('#mbo_notice').hide();
 		}
 
@@ -2001,7 +1994,7 @@ function limit_auth_method(g_unit){
 	}
 
 	if(isSupport("amas") && isSupport("amasRouter") && (isSwMode("rt") || isSwMode("ap"))){
-		var re_count = httpApi.hookGet("get_cfg_clientlist", true).length;
+		var re_count = httpApi.hookGet("get_cfg_clientlist").length;
 		if(re_count > 1){
 			auth_array = auth_array.filter(function(item){
 				return (item[1] != "wpa2" && item[1] != "wpawpa2");//have re node then hide WPA2-Enterprise, WPA/WPA2-Enterprise
@@ -2048,6 +2041,8 @@ function getDDNSState(ddns_return_code, ddns_hostname, ddns_old_hostname)
 		ddnsStateHint = "Server Error";
 	else if(ddns_return_code.indexOf('401')!=-1)
 		ddnsStateHint = "<#LANHostConfig_x_DDNS_alarm_10#>";
+	else if (ddns_return_code.indexOf('402')!=-1)
+		ddnsStateHint = "<#LANHostConfig_x_DDNS_alarm_15#>";
 	else if(ddns_return_code.indexOf('407')!=-1)
 		ddnsStateHint = "<#LANHostConfig_x_DDNS_alarm_11#>";
 	else if(ddns_return_code == 'Time-out')
@@ -2218,7 +2213,7 @@ function check_is_merlin_fw(_fw) {
 }
 
 function is_unit_24g(_unit) {
-	if (based_modelid == "GT-AXE16000") {
+	if (based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" || based_modelid == "BQ16" || based_modelid == "BQ16_PRO") {
 		if (_unit == 3) return true;
 	} else {
 		if (_unit == 0) return true;
@@ -2227,7 +2222,7 @@ function is_unit_24g(_unit) {
 }
 
 function is_unit_5g(_unit) {
-	if (based_modelid == "GT-AXE16000") {
+	if (based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" || based_modelid == "BQ16" || based_modelid == "BQ16_PRO") {
 		if (_unit == 0) return true;
 	} else if (wl_info.band5g_support) {
 		if (_unit == 1) return true;
@@ -2236,7 +2231,7 @@ function is_unit_5g(_unit) {
 }
 
 function is_unit_5g_2(_unit) {
-	if (based_modelid == "GT-AXE16000") {
+	if (based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" || based_modelid == "BQ16" || based_modelid == "BQ16_PRO") {
 		if (_unit == 1) return true;
 	} else if (wl_info.band5g_2_support) {
 		if (_unit == 2) return true;
@@ -2256,4 +2251,22 @@ function is_unit_60g(_unit){
 		if (_unit == 3) return true;
 	}
 	return false;
+}
+
+function check_file_exists(file_url){
+	var isExists = false;
+
+	$.ajax({
+		url: file_url,
+		async:false,
+		type:'HEAD',
+		error: function(){
+			isExists = false;
+		},
+		success: function(response){
+			isExists = true;
+		}
+	});
+
+	return isExists;
 }

@@ -1,0 +1,24 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+
+&uart0 {
+	u-boot,dm-pre-reloc;
+};
+
+&nand_controller {
+	compatible="marvell,mvebu-pxa3xx-nand";
+	status = "okay";
+	label = "pxa3xx_nand-0";
+	nand-rb = <0>;
+	marvell,nand-keep-config;
+	nand-on-flash-bbt;
+	nand-ecc-strength = <4>;
+	nand-ecc-step-size = <512>;
+};
+
+&spi0 {
+	u-boot,dm-pre-reloc;
+
+	spi-flash@0 {
+		u-boot,dm-pre-reloc;
+	};
+};

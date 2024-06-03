@@ -1,0 +1,12 @@
+if BOARD_LINKIT_SMART_7688
+
+config SYS_BOARD
+	default "linkit-smart-7688"
+
+config SYS_VENDOR
+	default "seeed"
+
+config SYS_CONFIG_NAME
+	default "linkit-smart-7688"
+
+endif

@@ -19,6 +19,15 @@ ifeq ($(HND_ROUTER),y)
 CFLAGS := $(shell echo $(CFLAGS)| sed 's/-fno-common//g')
 LDFLAGS += -L$(TOP_PLATFORM)/wlcsm$(EXHND) -lwlcsm
 endif
+
+ifeq ($(HND_ROUTER_BE_4916), y)
+CFLAGS+= -fcommon
+endif
+
+ifeq ($(RTCONFIG_TRUSTZONE),y)
+LDFLAGS += -L$(TOP)/ateed/ -latee
+endif
+
 LIBS = -lpthread -lnvram -lneon -lxml2 -lshared -lz -lcrypto -lssl
 
 ifeq ($(RTCONFIG_QTN),y)

@@ -1,0 +1,3 @@
+admin:x:0:0:Temp admin-root account until BDK sysmgmt can fill in:/:/bin/sh
+ubus:x:81:81:for ubusd:/var/run/ubus:/bin/sh
+router:x:200:200:static non-root account for the device:/:/bin/sh

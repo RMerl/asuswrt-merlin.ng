@@ -1,0 +1,10 @@
+i8042 Keyboard
+
+The Intel i8042 is a keyboard controller used on many x86 PCs.
+
+Required properties:
+- compatible: "intel,i8042-keyboard"
+
+Optional properties:
+- intel,duplicate-por: Indicates that a keyboard reset may result in a
+  duplicate POR byte, which should be ignored.

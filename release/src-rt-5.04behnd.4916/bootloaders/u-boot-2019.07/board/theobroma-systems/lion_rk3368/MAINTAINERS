@@ -1,0 +1,10 @@
+LION-RK3368 (RK3368-uQ7 system-on-module)
+M:	Philipp Tomsich <philipp.tomsich@theobroma-systems.com>
+M:	Klaus Goger <klaus.goger@theobroma-systems.com>
+S:	Maintained
+F:	board/theobroma-systems/lion_rk3368
+F:	include/configs/lion_rk3368.h
+F:	arch/arm/dts/rk3368-lion.dts
+F:	configs/lion-rk3368_defconfig
+W:	https://www.theobroma-systems.com/rk3368-uq7/tech-specs
+T:	git git://git.theobroma-systems.com/lion-u-boot.git

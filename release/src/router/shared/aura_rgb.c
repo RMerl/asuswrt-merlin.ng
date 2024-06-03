@@ -21,7 +21,7 @@
 #include <shared.h>
 #include "i2c-dev.h"
 
-#if defined(GTAXY16000) || defined(GTAX11000) || defined(GTAC2900) || defined(GTAXE11000) || defined(GTAX11000_PRO) || defined(GTAXE16000)
+#if defined(GTAXY16000) || defined(GTAX11000) || defined(GTAC2900) || defined(GTAXE11000)
 #define	I2C_SLAVE_ADDR	0x4E
 #endif
 

@@ -1,0 +1,21 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2019 NXP
+ */
+
+#include "imx6qdl-u-boot.dtsi"
+
+/ {
+	aliases {
+		mmc0 = &usdhc3;
+	};
+};
+
+&usdhc3 {
+	no-1-8-v;
+	u-boot,dm-spl;
+};
+
+&pinctrl_usdhc3 {
+	u-boot,dm-spl;
+};

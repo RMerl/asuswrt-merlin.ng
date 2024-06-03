@@ -1,0 +1,12 @@
+if TARGET_CARDHU
+
+config SYS_BOARD
+	default "cardhu"
+
+config SYS_VENDOR
+	default "nvidia"
+
+config SYS_CONFIG_NAME
+	default "cardhu"
+
+endif

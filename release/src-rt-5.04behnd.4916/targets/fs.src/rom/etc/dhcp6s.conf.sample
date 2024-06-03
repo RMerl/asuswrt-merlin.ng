@@ -1,0 +1,14 @@
+option domain-name-servers 3ffe:ffff::100;
+
+host kame {
+        duid 02:10:18:40:88:04;
+        prefix 3ffe:ffff:100::/48 infinity;
+};
+
+#interface br0 {
+#	address-pool pool1 3600;
+#};
+
+#pool pool1 {
+#	range 3ffe:ffff:100:0::55 to 3ffe:ffff:100:0::200;
+#};

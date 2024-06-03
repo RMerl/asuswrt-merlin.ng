@@ -174,7 +174,7 @@ void restart_mastiff()
 	start_mastiff();
 }
 
-#ifdef RTCONFIG_IG_SITE2SITE
+#ifdef RTCONFIG_UAC_TUNNEL
 void start_aaeuac(int argc, char *argv[])
 {
 	char *cmd[16];

@@ -48,13 +48,13 @@
   <sim>sim_state=<% nvram_get("usb_modem_act_sim"); %></sim>
   <sim>sim_signal=<% nvram_get("usb_modem_act_signal"); %></sim>
   <sim>sim_operation=<% nvram_get("usb_modem_act_operation"); %></sim>
-  <sim>sim_isp=<% nvram_get("modem_isp"); %></sim>
+  <sim>sim_isp=<% nvram_char_to_ascii("", "modem_isp"); %></sim>
   <sim>roaming=<% nvram_get("modem_roaming"); %></sim>
   <sim>roaming_imsi=<% nvram_get("modem_roaming_imsi"); %></sim>
   <sim>sim_imsi=<% nvram_get("usb_modem_act_imsi"); %></sim>
   <sim>g3err_pin=<% nvram_get("g3err_pin"); %></sim>
   <sim>pin_remaining_count=<% nvram_get("usb_modem_act_auth_pin"); %></sim>
-  <sim>modem_act_provider=<% nvram_get("usb_modem_act_provider"); %></sim>
+  <sim>modem_act_provider=<% nvram_char_to_ascii("", "usb_modem_act_provider"); %></sim>
   <sim>rx_bytes=<% nvram_get("modem_bytes_rx"); %></sim>
   <sim>tx_bytes=<% nvram_get("modem_bytes_tx"); %></sim>
   <sim>modem_sim_order=<% nvram_get("modem_sim_order"); %></sim>

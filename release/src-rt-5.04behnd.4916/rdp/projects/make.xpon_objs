@@ -1,0 +1,8 @@
+RDPA_OBJS += rdpa_gem.o
+RDPA_OBJS += rdpa_gem_ex.o
+RDPA_OBJS += rdpa_tcont.o
+RDPA_OBJS += rdpa_tcont_ex.o
+RDPA_OBJS += rdpa_mllid.o
+RDPA_OBJS += rdpa_mllid_ex.o
+RDPA_OBJS += rdpa_llid.o
+RDPA_OBJS += rdpa_llid_ex.o

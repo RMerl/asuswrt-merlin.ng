@@ -1,0 +1,21 @@
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		multiple-images;
+		image1 {
+			filename = "test-name";
+			u-boot {
+			};
+		};
+
+		image2 {
+			filename = "test-name.xx";
+			u-boot {
+			};
+		};
+	};
+};

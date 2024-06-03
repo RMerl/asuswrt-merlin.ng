@@ -1,0 +1,28 @@
+Altera GPIO controller bindings
+
+Required properties:
+- compatible:
+  - "altr,pio-1.0"
+- reg: Physical base address and length of the controller's registers.
+
+Optional properties:
+- altr,gpio-bank-width: Width of the GPIO bank. This defines how many pins the
+  GPIO device has. Ranges between 1-32. Optional and defaults to 32 if not
+  specified.
+- gpio-bank-name: bank name attached to this device.
+
+Example:
+
+user_led_pio_8out: gpio@0x4cc0 {
+	compatible = "altr,pio-1.0";
+	reg = <0x00004cc0 0x00000010>;
+	resetvalue = <255>;
+	altr,gpio-bank-width = <8>;
+	#gpio-cells = <2>;
+	gpio-controller;
+	gpio-bank-name = "led";
+};
+
+In this example, the gpio can be accessed as led[0..7] using gpio command of
+u-boot.
+==> gpio clear led0

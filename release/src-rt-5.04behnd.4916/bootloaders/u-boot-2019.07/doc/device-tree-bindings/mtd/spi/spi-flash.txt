@@ -1,0 +1,25 @@
+* MTD SPI driver for serial flash chips
+
+Required properties:
+- #address-cells, #size-cells : Must be present if the device has sub-nodes
+  representing partitions.
+- compatible : Should be the manufacturer and the name of the chip. Bear in
+               mind that the DT binding is not U-Boot-only, but in case of
+               U-Boot, see spi_flash_params_table table in
+               drivers/mtd/spi/spi_flash_ids.c for the list of supported chips.
+- reg : Chip-Select number
+- spi-max-frequency : Maximum frequency of the SPI bus the chip can operate at
+
+Optional properties:
+ - memory-map : Address and size of the flash, if memory mapped. This may
+                apply to Intel chipsets, which tend to memory-map flash.
+
+Example:
+
+	flash: m25p80@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "spansion,m25p80";
+		reg = <0>;
+		spi-max-frequency = <40000000>;
+	};

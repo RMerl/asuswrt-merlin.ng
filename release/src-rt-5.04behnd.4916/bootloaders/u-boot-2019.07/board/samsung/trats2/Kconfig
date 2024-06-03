@@ -1,0 +1,12 @@
+if TARGET_TRATS2
+
+config SYS_BOARD
+	default "trats2"
+
+config SYS_VENDOR
+	default "samsung"
+
+config SYS_CONFIG_NAME
+	default "trats2"
+
+endif

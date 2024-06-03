@@ -2672,7 +2672,8 @@ extern int del_account(const char *const account){
 
 #ifdef RTCONFIG_PERMISSION_MANAGEMENT
 // "new_account" can be the same with "account" and only change the password!
-extern int mod_account(const char *const account, const char *const new_account, const char *const new_password){
+int mod_account(const char *const account, const char *const new_account, const char *const new_password)
+{
 	disk_info_t *disk_list, *follow_disk;
 	partition_info_t *follow_partition;
 	char *var_file, *new_var_file;
@@ -2803,7 +2804,8 @@ extern int mod_account(const char *const account, const char *const new_account,
 	return 0;
 }
 #else	/* !RTCONFIG_PERMISSION_MANAGEMENT */
-extern int mod_account(const char *const account, const char *const new_account, const char *const new_password){
+int mod_account(const char *const account, const char *const new_account, const char *const new_password)
+{
 	disk_info_t *disk_list, *follow_disk;
 	partition_info_t *follow_partition;
 	int acc_num;

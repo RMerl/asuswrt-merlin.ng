@@ -1,0 +1,293 @@
+The T2080QDS is a high-performance computing evaluation, development and
+test platform supporting the T2080 QorIQ Power Architecture processor.
+
+T2080 SoC Overview
+------------------
+The T2080 QorIQ multicore processor combines four dual-threaded e6500 Power
+Architecture processor cores with high-performance datapath acceleration
+logic and network and peripheral bus interfaces required for networking,
+telecom/datacom, wireless infrastructure, and mil/aerospace applications.
+
+T2080 includes the following functions and features:
+ - Four dual-threads 64-bit Power architecture e6500 cores, up to 1.8GHz
+ - 2MB L2 cache and 512KB CoreNet platform cache (CPC)
+ - Hierarchical interconnect fabric
+ - One 32-/64-bit DDR3/3L SDRAM memory controllers with ECC and interleaving
+ - Data Path Acceleration Architecture (DPAA) incorporating acceleration
+ - 16 SerDes lanes up to 10.3125 GHz
+ - 8 Ethernet interfaces, supporting combinations of the following:
+   - Up to four 10 Gbps Ethernet MACs
+   - Up to eight 1 Gbps Ethernet MACs
+   - Up to four 2.5 Gbps Ethernet MACs
+ - High-speed peripheral interfaces
+   - Four PCI Express controllers (two PCIe 2.0 and two PCIe 3.0 with SR-IOV)
+   - Two Serial RapidIO 2.0 controllers/ports running at up to 5 GHz
+ - Additional peripheral interfaces
+   - Two serial ATA (SATA 2.0) controllers
+   - Two high-speed USB 2.0 controllers with integrated PHY
+   - Enhanced secure digital host controller (SD/SDHC/SDXC/eMMC)
+   - Enhanced serial peripheral interface (eSPI)
+   - Four I2C controllers
+   - Four 2-pin UARTs or two 4-pin UARTs
+   - Integrated Flash Controller supporting NAND and NOR flash
+ - Three eight-channel DMA engines
+ - Support for hardware virtualization and partitioning enforcement
+ - QorIQ Platform's Trust Architecture 2.0
+
+Differences between T2080 and T2081
+-----------------------------------
+  Feature		T2080	 T2081
+  1G Ethernet numbers:  8	 6
+  10G Ethernet numbers: 4	 2
+  SerDes lanes:		16	 8
+  Serial RapidIO,RMan:  2	 no
+  SATA Controller:	2	 no
+  Aurora:		yes	 no
+  SoC Package:		896-pins 780-pins
+
+
+T2080QDS feature overview
+-------------------------
+Processor:
+ - T2080 SoC integrating four 64-bit dual-threads e6500 cores up to 1.8GHz
+Memory:
+ - Single memory controller capable of supporting DDR3 and DDR3-LV devices
+ - Two DDR3 DIMMs up to 4GB, Dual rank @ 2133MT/s and ECC support
+Ethernet interfaces:
+ - Two 1Gbps RGMII on-board ports
+ - Four 10Gbps XFI on-board cages
+ - 1Gbps/2.5Gbps SGMII Riser card
+ - 10Gbps XAUI Riser card
+Accelerator:
+ - DPAA components consist of FMan, BMan, QMan, PME, DCE and SEC
+SerDes:
+ - 16 lanes up to 10.3125GHz
+ - Supports Aurora debug, PEX, SATA, SGMII, sRIO, HiGig, XFI and XAUI
+IFC:
+ - 128MB NOR Flash, 512MB NAND Flash, PromJet debug port and FPGA
+eSPI:
+ - Three SPI flash (16MB N25Q128A + 16MB EN25S64 + 512KB SST25WF040)
+USB:
+ - Two USB2.0 ports with internal PHY (one Type-A + one micro Type-AB)
+PCIE:
+ - Four PCI Express controllers (two PCIe 2.0 and two PCIe 3.0 with SR-IOV)
+SATA:
+ - Two SATA 2.0 ports on-board
+SRIO:
+ - Two Serial RapidIO 2.0 ports up to 5 GHz
+eSDHC:
+ - Supports SD/SDHC/SDXC/eMMC Card
+I2C:
+ - Four I2C controllers.
+UART:
+ - Dual 4-pins UART serial ports
+System Logic:
+ - QIXIS-II FPGA system controll
+Debug Features:
+ - Support Legacy, COP/JTAG, Aurora, Event and EVT
+XFI:
+ - XFI is supported on T2080QDS through Lane A/B/C/D on Serdes 1 routed to
+ a on-board SFP+ cages, which to house optical module (fiber cable) or
+ direct attach cable(copper), the copper cable is used to emulate
+ 10GBASE-KR scenario.
+ So, for XFI usage, there are two scenarios, one will use fiber cable,
+ another will use copper cable. An hwconfig env "fsl_10gkr_copper" is
+ introduced to indicate a XFI port will use copper cable, and U-Boot
+ will fixup the dtb accordingly.
+ It's used as: fsl_10gkr_copper:<10g_mac_name>
+ The <10g_mac_name> can be fm1_10g1, fm1_10g2, fm1_10g3, fm1_10g4, they
+ do not have to be coexist in hwconfig. If a MAC is listed in the env
+ "fsl_10gkr_copper", it will use copper cable, otherwise, fiber cable
+ will be used by default.
+ for ex. set "fsl_10gkr_copper:fm1_10g1,fm1_10g2,fm1_10g3,fm1_10g4" in
+ hwconfig, then both four XFI ports will use copper cable.
+ set "fsl_10gkr_copper:fm1_10g1,fm1_10g2" in hwconfig, then first two
+ XFI ports will use copper cable, the other two XFI ports will use fiber
+ cable.
+1000BASE-KX(1G-KX):
+ - T2080QDS can support 1G-KX by using SGMII protocol, but serdes lane
+ runs in 1G-KX mode. By default, the lane runs in SGMII mode, to set a lane
+ in 1G-KX mode, need to set corresponding bit in SerDes Protocol Configuration
+ Register 1 (PCCR1), and U-Boot fixup the dtb for kernel to do proper
+ initialization.
+ Hwconfig "fsl_1gkx" is used to indicate a lane runs in 1G-KX mode, MAC
+ 1/2/5/6/9/10 are available for 1G-KX, MAC 3/4 run in RGMII mode. To set a
+ MAC to use 1G-KX mode, set its' corresponding env in "fsl_1gkx", 'fm1_1g1'
+ stands for MAC 1, 'fm1_1g2' stands for MAC 2, etc.
+ For ex. set "fsl_1gkx:fm1_1g1,fm1_1g2,fm1_1g5,fm1_1g6,fm1_1g9,fm1_1g10" in
+ hwconfig, MAC 1/2/5/6/9/10 will use 1G-KX mode.
+
+System Memory map
+----------------
+
+Start Address  End Address      Description			Size
+0xF_FFDF_0000  0xF_FFDF_0FFF    IFC - CPLD			4KB
+0xF_FF80_0000  0xF_FF80_FFFF    IFC - NAND Flash		64KB
+0xF_FE00_0000  0xF_FEFF_FFFF    CCSRBAR				16MB
+0xF_F803_0000  0xF_F803_FFFF    PCI Express 4 I/O Space		64KB
+0xF_F802_0000  0xF_F802_FFFF    PCI Express 3 I/O Space		64KB
+0xF_F801_0000  0xF_F801_FFFF    PCI Express 2 I/O Space		64KB
+0xF_F800_0000  0xF_F800_FFFF    PCI Express 1 I/O Space		64KB
+0xF_F600_0000  0xF_F7FF_FFFF    Queue manager software portal	32MB
+0xF_F400_0000  0xF_F5FF_FFFF    Buffer manager software portal	32MB
+0xF_E800_0000  0xF_EFFF_FFFF    IFC - NOR Flash			128MB
+0xF_0000_0000  0xF_003F_FFFF    DCSR				4MB
+0xC_4000_0000  0xC_4FFF_FFFF    PCI Express 4 Mem Space		256MB
+0xC_3000_0000  0xC_3FFF_FFFF    PCI Express 3 Mem Space		256MB
+0xC_2000_0000  0xC_2FFF_FFFF    PCI Express 2 Mem Space		256MB
+0xC_0000_0000  0xC_1FFF_FFFF    PCI Express 1 Mem Space		512MB
+0x0_0000_0000  0x0_ffff_ffff    DDR				4GB
+
+
+128M NOR Flash memory Map
+-------------------------
+Start Address   End Address	Definition			Max size
+0xEFF40000	0xEFFFFFFF	U-Boot (current bank)		768KB
+0xEFF20000	0xEFF3FFFF	U-Boot env (current bank)	128KB
+0xEFF00000	0xEFF1FFFF	FMAN Ucode (current bank)	128KB
+0xED300000	0xEFEFFFFF	rootfs (alt bank)		44MB
+0xEC800000	0xEC8FFFFF	Hardware device tree (alt bank)	1MB
+0xEC020000	0xEC7FFFFF	Linux.uImage (alt bank)		7MB + 875KB
+0xEC000000	0xEC01FFFF	RCW (alt bank)			128KB
+0xEBF40000	0xEBFFFFFF	U-Boot (alt bank)		768KB
+0xEBF20000	0xEBF3FFFF	U-Boot env (alt bank)		128KB
+0xEBF00000	0xEBF1FFFF	FMAN ucode (alt bank)		128KB
+0xE9300000	0xEBEFFFFF	rootfs (current bank)		44MB
+0xE8800000	0xE88FFFFF	Hardware device tree (cur bank)	1MB
+0xE8020000	0xE86FFFFF	Linux.uImage (current bank)	7MB + 875KB
+0xE8000000	0xE801FFFF	RCW (current bank)		128KB
+
+
+
+Software configurations and board settings
+------------------------------------------
+1. NOR boot:
+   a. build NOR boot image
+	$  make T2080QDS_config
+	$  make
+   b. program u-boot.bin image to NOR flash
+	=> tftp 1000000 u-boot.bin
+	=> pro off all;era eff40000 efffffff;cp.b 1000000 eff40000 $filesize
+	set SW1[1:8] = '00010011', SW2[1] = '1', SW6[1:4] = '0000' for NOR boot
+
+   Switching between default bank0 and alternate bank4 on NOR flash
+   To change boot source to vbank4:
+	by software:   run command 'qixis_reset altbank' in U-Boot.
+	by DIP-switch: set SW6[1:4] = '0100'
+
+   To change boot source to vbank0:
+	by software:   run command 'qixis_reset' in U-Boot.
+	by DIP-Switch: set SW6[1:4] = '0000'
+
+2. NAND Boot:
+   a. build PBL image for NAND boot
+	$ make T2080QDS_NAND_config
+	$ make
+   b. program u-boot-with-spl-pbl.bin to NAND flash
+	=> tftp 1000000 u-boot-with-spl-pbl.bin
+	=> nand erase 0 $filesize
+	=> nand write 1000000 0 $filesize
+	set SW1[1:8] = '10000010', SW2[1] = '0' and SW6[1:4] = '1001' for NAND boot
+
+3. SPI Boot:
+   a. build PBL image for SPI boot
+	$ make T2080QDS_SPIFLASH_config
+	$ make
+   b. program u-boot-with-spl-pbl.bin to SPI flash
+	=> tftp 1000000 u-boot-with-spl-pbl.bin
+	=> sf probe 0
+	=> sf erase 0 f0000
+	=> sf write 1000000 0 $filesize
+	set SW1[1:8] = '00100010', SW2[1] ='1' for SPI boot
+
+4. SD Boot:
+   a. build PBL image for SD boot
+	$ make T2080QDS_SDCARD_config
+	$ make
+   b. program u-boot-with-spl-pbl.bin to SD/MMC card
+	=> tftp 1000000 u-boot-with-spl-pbl.bin
+	=> mmc write 1000000 8 0x800
+	=> tftp 1000000 fsl_fman_ucode_T2080_xx.bin
+	=> mmc write 1000000 0x820 80
+	set SW1[1:8] = '00100000', SW2[1] = '0' for SD boot
+
+
+2-stage NAND/SPI/SD boot loader
+-------------------------------
+PBL initializes the internal CPC-SRAM and copy SPL(160K) to SRAM.
+SPL further initializes DDR using SPD and environment variables
+and copy U-Boot(768 KB) from NAND/SPI/SD device to DDR.
+Finally SPL transers control to U-Boot for futher booting.
+
+SPL has following features:
+ - Executes within 256K
+ - No relocation required
+
+Run time view of SPL framework
+-------------------------------------------------
+|Area		   | Address			|
+-------------------------------------------------
+|SecureBoot header | 0xFFFC0000 (32KB)		|
+-------------------------------------------------
+|GD, BD		   | 0xFFFC8000 (4KB)		|
+-------------------------------------------------
+|ENV		   | 0xFFFC9000 (8KB)		|
+-------------------------------------------------
+|HEAP		   | 0xFFFCB000 (50KB)		|
+-------------------------------------------------
+|STACK		   | 0xFFFD8000 (22KB)		|
+-------------------------------------------------
+|U-Boot SPL	   | 0xFFFD8000 (160KB)		|
+-------------------------------------------------
+
+NAND Flash memory Map on T2080QDS
+--------------------------------------------------------------
+Start		End		Definition	Size
+0x000000	0x0FFFFF	U-Boot img	1MB  (2 blocks)
+0x100000	0x17FFFF	U-Boot env	512KB (1 block)
+0x180000	0x1FFFFF	FMAN ucode	512KB (1 block)
+
+
+Micro SD Card memory Map on T2080QDS
+----------------------------------------------------
+Block		#blocks		Definition	Size
+0x008		2048		U-Boot img	1MB
+0x800		0016		U-Boot env	8KB
+0x820		0128		FMAN ucode	64KB
+
+
+SPI Flash memory Map on T2080QDS
+----------------------------------------------------
+Start		End		Definition	Size
+0x000000	0x0FFFFF	U-Boot img	1MB
+0x100000	0x101FFF	U-Boot env	8KB
+0x110000	0x11FFFF	FMAN ucode	64KB
+
+
+How to update the ucode of Freescale FMAN
+-----------------------------------------
+=> tftp 1000000 fsl_fman_ucode_t2080_xx.bin
+=> pro off all;erase 0xeff00000 0xeff1ffff;cp 1000000 0xeff00000 $filesize
+
+
+For more details, please refer to T2080QDS User Guide and access
+website www.freescale.com and Freescale QorIQ SDK Infocenter document.
+
+Device tree support and how to enable it for different configs
+--------------------------------------------------------------
+Device tree support is available for t2080qds for below mentioned boot,
+1. NOR Boot
+2. NAND Boot
+3. SD Boot
+4. SPIFLASH Boot
+
+To enable device tree support for other boot, below configs need to be
+enabled in relative defconfig file,
+1. CONFIG_DEFAULT_DEVICE_TREE="t2080qds" (Change default device tree name if required)
+2. CONFIG_OF_CONTROL
+3. CONFIG_MPC85XX_HAVE_RESET_VECTOR if reset vector is located at
+   CONFIG_RESET_VECTOR_ADDRESS - 0xffc
+
+If device tree support is enabled in defconfig,
+1. use 'u-boot-with-dtb.bin' for NOR boot.
+2. use 'u-boot-with-spl-pbl.bin' for other boot.

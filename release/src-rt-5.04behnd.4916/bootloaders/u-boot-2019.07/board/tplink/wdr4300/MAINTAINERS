@@ -1,0 +1,6 @@
+TPLINK_WDR4300 BOARD
+M:	Marek Vasut <marex@denx.de>
+S:	Maintained
+F:	board/tplink/wdr4300/
+F:	include/configs/tplink_wdr4300.h
+F:	configs/tplink_wdr4300_defconfig

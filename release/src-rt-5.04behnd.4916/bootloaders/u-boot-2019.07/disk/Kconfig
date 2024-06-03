@@ -1,0 +1,151 @@
+
+menu "Partition Types"
+
+config PARTITIONS
+	bool "Enable Partition Labels (disklabels) support"
+	default y
+	select SPL_SPRINTF if SPL
+	select TPL_SPRINTF if TPL
+	select SPL_STRTO if SPL
+	select TPL_STRTO if TPL
+	help
+	  Partition Labels (disklabels) Supported:
+	  Zero or more of the following:
+	  - CONFIG_MAC_PARTITION   Apple's MacOS partition table.
+	  - CONFIG_DOS_PARTITION   MS Dos partition table, traditional on the
+	                           Intel architecture, USB sticks, etc.
+	  - CONFIG_ISO_PARTITION   ISO partition table, used on CDROM etc.
+	  - CONFIG_EFI_PARTITION   GPT partition table, common when EFI is the
+	                           bootloader.  Note 2TB partition limit; see
+	                           disk/part_efi.c
+	  - CONFIG_MTD_PARTITIONS  Memory Technology Device partition table.
+	  If IDE or SCSI support is enabled (CONFIG_CMD_IDE or CONFIG_SCSI)
+	  you must configure support for at least one non-MTD partition type
+	  as well.
+
+config MAC_PARTITION
+	bool "Enable Apple's MacOS partition table"
+	depends on PARTITIONS
+	help
+	  Say Y here if you would like to use device under U-Boot which
+	  were partitioned on a Macintosh.
+
+config SPL_MAC_PARTITION
+	bool "Enable Apple's MacOS partition table for SPL"
+	depends on SPL && PARTITIONS
+	default y if MAC_PARTITION
+
+config DOS_PARTITION
+	bool "Enable MS Dos partition table"
+	depends on PARTITIONS
+	default y if DISTRO_DEFAULTS
+	default y if x86 || CMD_FAT || USB_STORAGE
+	help
+	  traditional on the Intel architecture, USB sticks, etc.
+
+config SPL_DOS_PARTITION
+	bool "Enable MS Dos partition table for SPL"
+	depends on SPL && PARTITIONS
+	default y if DOS_PARTITION
+
+config ISO_PARTITION
+	bool "Enable ISO partition table"
+	depends on PARTITIONS
+	default y if DISTRO_DEFAULTS
+	default y if MIPS || TEGRA
+
+config SPL_ISO_PARTITION
+	bool "Enable ISO partition table for SPL"
+	depends on SPL && PARTITIONS
+
+config AMIGA_PARTITION
+	bool "Enable AMIGA partition table"
+	depends on PARTITIONS
+	help
+	  Say Y here if you would like to use device under U-Boot which
+	  were partitioned under AmigaOS.
+
+config SPL_AMIGA_PARTITION
+	bool "Enable AMIGA partition table for SPL"
+	depends on SPL && PARTITIONS
+	default y if AMIGA_PARTITION
+
+config EFI_PARTITION
+	bool "Enable EFI GPT partition table"
+	depends on PARTITIONS
+	default y if DISTRO_DEFAULTS
+	default y if TEGRA
+	select LIB_UUID
+	help
+	  Say Y here if you would like to use device under U-Boot which
+	  were partitioned using EFI GPT.
+	  common when EFI is the bootloader.  Note 2TB partition limit;
+	  see disk/part_efi.c
+
+config EFI_PARTITION_ENTRIES_NUMBERS
+	int "Number of the EFI partition entries"
+	depends on EFI_PARTITION
+	default 56 if ARCH_SUNXI
+	default 128
+	help
+	  Specify the number of partition entries in the GPT. This is
+	  meant to allow less than the standard specifies for devices
+	  that might need to place their first-stage bootloader in the
+	  middle of a regular GPT.
+
+	  If unsure, leave at 128 entries, which is the standard
+	  number.
+
+config EFI_PARTITION_ENTRIES_OFF
+        int "Offset (in bytes) of the EFI partition entries"
+	depends on EFI_PARTITION
+	default 0
+	help
+	  Specify an earliest location (in bytes) where the partition
+	  entries may be located. This is meant to allow "punching a
+	  hole into a device" to create a gap for an SPL, its payload
+	  and the U-Boot environment.
+
+	  If unsure, leave at 0 (which will locate the partition
+	  entries at the first possible LBA following the GPT header).
+
+config SPL_EFI_PARTITION
+	bool "Enable EFI GPT partition table for SPL"
+	depends on  SPL && PARTITIONS
+	default y if EFI_PARTITION
+
+
+config TPL_EFI_PARTITION
+	bool "Enable EFI GPT partition table for TPL"
+	depends on  SPL && PARTITIONS
+	default y if EFI_PARTITION
+
+config PARTITION_UUIDS
+	bool "Enable support of UUID for partition"
+	depends on PARTITIONS
+	default y if DISTRO_DEFAULTS
+	default y if EFI_PARTITION
+	select LIB_UUID
+	help
+	  Activate the configuration of UUID for partition
+
+config SPL_PARTITION_UUIDS
+	bool "Enable support of UUID for partition in SPL"
+	depends on SPL && PARTITIONS
+	default y if SPL_EFI_PARTITION
+
+
+config TPL_PARTITION_UUIDS
+	bool "Enable support of UUID for partition in TPL"
+	depends on SPL && PARTITIONS
+	default y if SPL_EFI_PARTITION
+
+config PARTITION_TYPE_GUID
+	bool "Enable support of GUID for partition type"
+	depends on PARTITIONS
+	depends on EFI_PARTITION
+	help
+	  Activate the configuration of GUID type
+	  for EFI partition
+
+endmenu

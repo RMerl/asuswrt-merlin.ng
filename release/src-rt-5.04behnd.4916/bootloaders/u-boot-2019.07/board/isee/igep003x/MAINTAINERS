@@ -1,0 +1,6 @@
+IGEP003X BOARD
+M:	Javier Martínez Canillas <javier@dowhile0.org>
+S:	Maintained
+F:	board/isee/igep003x/
+F:	include/configs/am335x_igep003x.h
+F:	configs/am335x_igep003x_defconfig

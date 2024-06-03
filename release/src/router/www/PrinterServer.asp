@@ -128,9 +128,9 @@ function showMethod(flag1, flag2){
 
 <!--=====Beginning of Main Content=====-->
 <div class="printerServer_table content_bg" id="FormTitle">
-<table>
+<table class="w-100">
   <tr>
-  	<td class="formfonttitle"><#Network_Printer_Server#>
+  	<td class="formfonttitle text-start"><#Network_Printer_Server#>
 			<img onclick="go_setting('/APP_Installation.asp')" align="right" style="cursor:pointer;margin-right:10px;margin-top:-10px" title="<#Menu_usb_application#>" src="/images/backprev.png" onMouseOver="this.src='/images/backprevclick.png'" onMouseOut="this.src='/images/backprev.png'">
 		</td>
   </tr> 
@@ -138,7 +138,7 @@ function showMethod(flag1, flag2){
   	<td><div class="splitLine"></div></td>
   </tr>
   <tr>
-   	<td><div class="formfontdesc"><#Network_Printer_desc#></div></td> 
+   	<td><div class="formfontdesc text-start"><#Network_Printer_desc#></div></td> 
   </tr>
   <tr>
    	<td>
@@ -146,22 +146,22 @@ function showMethod(flag1, flag2){
 			<div class="wrapper">
 				<div class="shadow-l">
 					<div class="shadow-r">
-						<table class="" cellspacing="0" cellpadding="0">
+						<table class="w-100" cellspacing="0" cellpadding="0">
 							<tbody>
 								<tr valign="top">
 								<td class="">
 									<div class="padding">
 										<div class="">
-											<ul class="">
-												<li>
-													<a id="faq1" href="" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF"><#asus_ez_print_share#> FAQ</a>&nbsp;&nbsp;
-													<a href="http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Printer.zip" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FC0"><#Download_now#></a>
+											<ul class="text-start px-2">
+												<li class="d-flex align-items-center justify-content-space-between border-bottom py-2">
+													<a id="faq1" href="" target="_blank" class="text-decoration-none" style="text-decoration:underline;font-size:14px;font-weight:bolder;"><#asus_ez_print_share#> FAQ</a>&nbsp;&nbsp;
+													<a href="http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Printer.zip" class="text-decoration-none btn_subusage" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FC0"><#Download_now#></a>
 												</li>
-												<li style="margin-top:10px;">
-													<a id="faq2" href="" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF"><#LPR_print_share#> FAQ (Windows)</a>&nbsp;&nbsp;
+												<li class="d-flex align-items-center justify-content-space-between border-bottom py-2" style="">
+													<a id="faq2" href="" target="_blank" class="text-decoration-none" style="text-decoration:underline;font-size:14px;font-weight:bolder;"><#LPR_print_share#> FAQ (Windows)</a>&nbsp;&nbsp;
 												</li>
-												<li style="margin-top:10px;">
-													<a id="faq3" href="" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF"><#LPR_print_share#> FAQ (MAC)</a>&nbsp;&nbsp;
+												<li class="d-flex align-items-center justify-content-space-between border-bottom py-2" style="">
+													<a id="faq3" href="" target="_blank" class="text-decoration-none" style="text-decoration:underline;font-size:14px;font-weight:bolder;"><#LPR_print_share#> FAQ (MAC)</a>&nbsp;&nbsp;
 												</li>
 											</ul>	
 										</div>	

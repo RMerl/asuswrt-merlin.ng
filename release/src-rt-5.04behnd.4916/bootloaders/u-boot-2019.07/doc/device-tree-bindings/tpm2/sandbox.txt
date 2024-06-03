@@ -1,0 +1,11 @@
+Sandbox TPMv2.0 bindings
+------------------------
+
+Required properties:
+- compatible		: Should be "sandbox,tpm2"
+
+Example:
+
+	tpm {
+ 		compatible = "sandbox,tpm2";
+	};

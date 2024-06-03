@@ -205,7 +205,7 @@ function get_real_ip(){
 }
 
 function enable_remote_control(){
-	if(confirm("Are you sure you want to enable DDNS and Web Access from WAN?")){
+	if(confirm("<#Alexa_Register_confirm#>")){
 		require(['/require/modules/makeRequest.js'], function(makeRequest){
 			makeRequest.start('/enable_remote_control.cgi',hide_remote_control , function(){});
 		});

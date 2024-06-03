@@ -1,0 +1,325 @@
+#include "6813.dtsi"
+
+/ {
+	memory_controller {
+		memcfg = <(BP_DDR_TYPE_DDR4       | \
+			BP_DDR_SPEED_1600_22_22_22    | \
+			BP_DDR_TOTAL_SIZE_1024MB      | \
+			BP_DDR_DEVICE_WIDTH_16        | \
+			BP_DDR_TOTAL_WIDTH_16BIT      | \
+			BP_DDR_TEMP_EXTENDED_ASR      | \
+			BP_DDR_SSC_CONFIG_1)>;
+	};
+/*
+    buttons: buttons {
+        compatible = "brcm,buttons";
+        reset_button {
+            ext_irq = <&bca_extintr 16 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+            press {
+                print = "Button Press -- Hold for 5s to do restore to default";
+            };
+            hold {
+                rst_to_dflt = <5>;
+            };
+            release {
+                reset = <0>;
+            };
+        };
+        ses_button {
+            ext_irq = <&bca_extintr 12 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+            release {
+                ses_short_period = <0>;
+                ses_long_period = <3>;
+            };
+        };
+    };
+*/
+};
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+#if defined(CONFIG_REGULATOR) && defined(CONFIG_REGULATOR_FIXED_VOLTAGE)
+/**********************************************************************/
+/* GPIO: Add one define per GPIO (individual or shared) regulator     */
+/*       - Skip if no GPIO regulators in use                          */
+/**********************************************************************/
+#define PCIE1_REG_GPIO    44    /* 5G: SLEEP_1 for vreg_pcie1 node */
+#define PCIE3_REG_GPIO    43    /* 2G: SLEEP_3 for vreg_pcie3 node */
+
+#include "../bcm_wlan_regulator.dtsi"
+
+/delete-node/ &pcie1;
+
+/ {
+    /* pcie core 1 */
+    pcie1_reorder: reorder_pcie@1 {
+        #define PCIE_ID				1
+        #define PCIE_SPI			69
+        #define PCIE_ADDR			0x80090000
+        #define PCIE_SIZE			PCIE1_REG_SIZE
+        #define PCIE_RANGE_ADDR		0xD0000000
+        #define PCIE_RANGE_SIZE		0x10000000
+        #include "../ip/bcm_pcie_core.dtsi"
+    };
+};
+
+&pcie1_reorder {
+	brcm,supply-names = "vreg-pcie1";
+	status = "okay";
+};
+ 
+&pcie3 {
+	status = "okay";
+};
+#endif //defined(CONFIG_REGULATOR) && defined(CONFIG_REGULATOR_FIXED_VOLTAGE)
+#endif //#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+
+&nand {
+	pinctrl-0 = <&nand_data_pins &nand_ctrl_pins &nand_wp_b_pin_25>;
+	write-protect = <1>;
+	status = "okay";
+};
+
+&led_ctrl {
+	status="okay";
+
+	/* USXGMII-M port 0 LED */
+    led0: parallel-port_7-led_0 {
+        active_low;
+        link = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500)>;
+        activity = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500)>;
+        pinctrl-0=<&a_per_led_08_pin_8>;
+        crossbar-output = <24>;
+        status = "okay";
+    };
+
+	/* USXGMII-M port 0 LED GPIO mode */
+	led10:led_gpio_8 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <8>;
+		active_low;
+		init_high;
+	};
+
+	/* USXGMII-M port 1 LED */
+    led1: parallel-port_8-led_0 {
+        active_low;
+        link = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500)>;
+        activity = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500)>;
+        pinctrl-0=<&a_per_led_04_pin_4>;
+        crossbar-output = <28>;
+        status = "okay";
+    };
+
+	/* USXGMII-M port 1 LED GPIO mode */
+	led11:led_gpio_4 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <4>;
+		active_low;
+		init_high;
+	};
+
+	/* USXGMII-M port 2 LED */
+    led2: parallel-port_9-led_0 {
+        active_low;
+        link = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500)>;
+        activity = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500)>;
+        pinctrl-0=<&a_per_led_03_pin_3>;
+        crossbar-output = <32>;
+        status = "okay";
+    };
+
+	/* USXGMII-M port 2 LED GPIO mode */
+	led12:led_gpio_3 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <3>;
+		active_low;
+		init_high;
+	};
+
+	/* USXGMII-M port 3 LED */
+    led3: parallel-port_10-led_0 {
+        active_low;
+        link = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500)>;
+        activity = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500)>;
+        pinctrl-0=<&a_per_led_01_pin_1>;
+        crossbar-output = <36>;
+        status = "okay";
+    };
+
+	/* USXGMII-M port 3 LED GPIO mode */
+	led13:led_gpio_1 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <1>;
+		active_low;
+		init_high;
+	};
+
+	/* 10G ACT LED */
+    led4: parallel-port_5-led_0 {
+        active_low;
+        link = <(LED_SPEED_ALL)>;
+        activity = <(LED_SPEED_ALL)>;
+        pinctrl-0=<&a_per_led_07_pin_7>;
+        crossbar-output = <12>;
+        status = "okay";
+    };
+
+	/* WAN LED mode */
+	led14:led_gpio_19 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <19>;
+		active_low;
+		init_high;
+	};
+
+	/* GPIO LED */
+	/* WAN RED LED */
+	led5:led_gpio_5 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <5>;
+		active_low;
+		init_high;
+	};
+
+	/* POWER LED */
+	led6:led_gpio_2 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <2>;
+		active_high;
+		init_high;
+	};
+
+	/* 10G ACT LED GPIO mode */
+	led7:led_gpio_7 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <7>;
+		active_low;
+		init_high;
+	};
+
+	/* USB LED */
+	led8:led_gpio_14 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <14>;
+		active_low;
+		init_high;
+	};
+};
+
+&mdio {
+    /* Port PHY mapping:
+        port_xphy <-----> phy_xphy      - Internal 10G PHY
+        port_sgmii2 <---> phy_serdes1   - phy_cascade1
+        port_sgmii2_1 <-> phy_serdes1_1 - phy_cascade1_1
+        port_sgmii2_2 <-> phy_serdes1_2 - phy_cascade1_2
+        port_sgmii2_3 <-> phy_serdes1_3 - phy_cascade1_3
+     */
+	phy_xphy {
+		status = "okay";
+	};
+
+    phy_cascade1 {
+        reg = <24>;
+        usxgmii-m-type = "10G-QXGMII";  /* types: 10G-SXGMII 10G-DXGMII 10G-QXGMII 5G-SXGMII 5G-DXGMII 2.5G-SXGMII */
+        status = "okay";
+    };
+
+    phy_cascade1_1 {
+        reg = <25>;
+        usxgmii-m-type = "10G-QXGMII";  /* types: 10G-SXGMII 10G-DXGMII 10G-QXGMII 5G-SXGMII 5G-DXGMII 2.5G-SXGMII */
+        status = "okay";
+    };
+
+    phy_cascade1_2 {
+        reg = <26>;
+        usxgmii-m-type = "10G-QXGMII";  /* types: 10G-SXGMII 10G-DXGMII 10G-QXGMII 5G-SXGMII 5G-DXGMII 2.5G-SXGMII */
+        status = "okay";
+    };
+
+    phy_cascade1_3 {
+        reg = <27>;
+        usxgmii-m-type = "10G-QXGMII";  /* types: 10G-SXGMII 10G-DXGMII 10G-QXGMII 5G-SXGMII 5G-DXGMII 2.5G-SXGMII */
+        status = "okay";
+    };
+
+    phy_serdes1 {
+        phy-handle = <&phy_cascade1>;
+        usxgmii-m-type = "10G-QXGMII";  /* types: 10G-SXGMII 10G-DXGMII 10G-QXGMII 5G-SXGMII 5G-DXGMII 2.5G-SXGMII */
+        status = "okay";
+    };
+
+    phy_serdes1_1 {
+        phy-handle = <&phy_cascade1_1>;
+        usxgmii-m-type = "10G-QXGMII";  /* types: 10G-SXGMII 10G-DXGMII 10G-QXGMII 5G-SXGMII 5G-DXGMII 2.5G-SXGMII */
+        status = "okay";
+    };
+
+    phy_serdes1_2 {
+        phy-handle = <&phy_cascade1_2>;
+        usxgmii-m-type = "10G-QXGMII";  /* types: 10G-SXGMII 10G-DXGMII 10G-QXGMII 5G-SXGMII 5G-DXGMII 2.5G-SXGMII */
+        status = "okay";
+    };
+
+    phy_serdes1_3 {
+        phy-handle = <&phy_cascade1_3>;
+        usxgmii-m-type = "10G-QXGMII";  /* types: 10G-SXGMII 10G-DXGMII 10G-QXGMII 5G-SXGMII 5G-DXGMII 2.5G-SXGMII */
+        status = "okay";
+    };
+};
+
+&ethphytop {
+    xphy0-enabled;
+    status = "okay";
+};
+
+&switch0 {
+	ports {
+		port_xphy {
+			network-leds = <&led4>;
+            status = "okay";
+		};
+
+		port_sgmii2 {
+			network-leds = <&led0>;
+			status = "okay";
+			label = "eth4";
+		};
+
+		port_sgmii2_1 {
+			network-leds = <&led1>;
+			status = "okay";
+			label = "eth3";
+		};
+
+		port_sgmii2_2 {
+			network-leds = <&led2>;
+			status = "okay";
+			label = "eth2";
+		};
+
+		port_sgmii2_3 {
+			network-leds = <&led3>;
+			status = "okay";
+			label = "eth1";
+		};
+	};
+};
+
+&usb_ctrl {
+	pinctrl-names = "default";
+	pinctrl-0 = <&usb0_pwr_pins &usb1_pwr_pins>;
+	status = "okay";
+	xhci-enable;
+};
+&usb0_xhci {
+	status = "okay";
+};

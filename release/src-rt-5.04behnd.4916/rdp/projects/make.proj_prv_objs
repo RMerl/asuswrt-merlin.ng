@@ -1,0 +1,23 @@
+-include $(PROJECT_DIR)/$(RDP_TARGET)/rdpa/make.proj_xrdp_basic_set_objs
+-include $(PROJECT_DIR)/$(RDP_TARGET)/rdpa/make.xpon_objs
+
+RDPA_OBJS += rdpa_vlan_action.o
+RDPA_OBJS += rdpa_vlan_action_ex.o
+RDPA_OBJS += rdpa_policer.o
+RDPA_OBJS += rdpa_policer_ex.o
+RDPA_OBJS += rdpa_vlan.o
+RDPA_OBJS += rdpa_tunnel.o
+RDPA_OBJS += rdpa_vlan_ex.o
+RDPA_OBJS += rdpa_l2_common.o
+RDPA_OBJS += rdpa_mcast_common.o
+RDPA_OBJS += rdpa_mcast_pon.o
+RDPA_OBJS += rdpa_iptv.o
+RDPA_OBJS += rdpa_qos_mapper_ex.o
+RDPA_OBJS += rdpa_tc_to_queue.o
+RDPA_OBJS += rdpa_tc_to_queue_ex.o
+RDPA_OBJS += rdpa_pbit_to_queue.o
+RDPA_OBJS += rdpa_pbit_to_gem.o
+RDPA_OBJS += rdpa_dscp_to_pbit.o
+RDPA_OBJS += rdpa_bridge.o
+RDPA_OBJS += rdpa_bridge_ex.o
+RDPA_OBJS += rdpa_pbit_to_dscp.o

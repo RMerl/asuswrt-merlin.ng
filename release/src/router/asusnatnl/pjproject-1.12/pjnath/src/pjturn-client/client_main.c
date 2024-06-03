@@ -97,6 +97,7 @@ static void my_perror(const char *title, pj_status_t status)
     char errmsg[PJ_ERR_MSG_SIZE];
     pj_strerror(status, errmsg, sizeof(errmsg));
 
+	printf("%s: %s\n", title, errmsg);
     PJ_LOG(3,(THIS_FILE, "%s: %s", title, errmsg));
 }
 
@@ -497,10 +498,37 @@ static void console_main(void)
 		char input[32];
 		struct peer *peer;
 		pj_status_t status;
+    	pj_turn_session_info info;
+		char relay_addr[80];
+		//menu();
 
-		menu();
+#if 1
+		if (g.relay) {
 
+			pj_turn_sock_get_info(g.relay, &info);
 
+			if (info.state >= PJ_TURN_STATE_READY) {
+				pj_sockaddr_print(&info.relay_addr, relay_addr, sizeof(relay_addr), 3);
+				
+				printf("Result=OK. relay_addr=%s\n", relay_addr);
+				exit(0);
+			} else {
+				if (info.state <= PJ_TURN_STATE_RESOLVED && count >= 5) {
+					printf("Result=FAILED. timeout.\n");
+					exit(0);
+				}
+
+				printf("relay creating.\n");
+			}
+
+		} else {
+			if ((status = create_relay()) != PJ_SUCCESS) {
+				printf("Result=FAILED. status=%d\n", status);
+				exit(0);
+			}
+		}
+		sleep(1);
+#else
 
 		//if (g.relay == NULL) {
 		if (strstr(relay_addr_temp, "0.0.0.0:0") && 
@@ -555,9 +583,9 @@ static void console_main(void)
 			}
 			exit(0);
 		}
+#endif
 
-
-
+#if 0
 		if (fgets(input, sizeof(input), stdin) == NULL)
 		    break;
 		
@@ -643,6 +671,7 @@ static void console_main(void)
 		    g.quit = PJ_TRUE;
 		    break;
 		}
+#endif
     }
 }
 
@@ -728,8 +757,10 @@ int main(int argc, char *argv[])
 		o.srv_addr = argv[pj_optind];
     }
 
-    if ((status=init()) != 0)
+    if ((status=init()) != 0) {
+		printf("Result=FAILED.\n");
 		goto on_return;
+	}
     
     //if ((status=create_relay()) != 0)
     //	goto on_return;

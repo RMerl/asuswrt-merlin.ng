@@ -1,0 +1,193 @@
+if ARCH_OMAP2PLUS
+
+choice
+	prompt "OMAP2+ platform select"
+	default OMAP34XX
+
+config OMAP34XX
+	bool "OMAP34XX SoC"
+	select ARM_CORTEX_A8_CVE_2017_5715
+	select ARM_ERRATA_430973
+	select ARM_ERRATA_454179
+	select ARM_ERRATA_621766
+	select ARM_ERRATA_725233
+	select USE_TINY_PRINTF
+	imply NAND_OMAP_GPMC
+	imply SPL_FS_EXT4
+	imply SPL_FS_FAT
+	imply SPL_GPIO_SUPPORT
+	imply SPL_I2C_SUPPORT
+	imply SPL_LIBCOMMON_SUPPORT
+	imply SPL_LIBDISK_SUPPORT
+	imply SPL_LIBGENERIC_SUPPORT
+	imply SPL_MMC_SUPPORT
+	imply SPL_NAND_SUPPORT
+	imply SPL_OMAP3_ID_NAND
+	imply SPL_POWER_SUPPORT
+	imply SPL_SERIAL_SUPPORT
+	imply SYS_I2C_OMAP24XX
+	imply SYS_THUMB_BUILD
+	imply TWL4030_POWER
+
+config OMAP44XX
+	bool "OMAP44XX SoC"
+	select USE_TINY_PRINTF
+	imply NAND_OMAP_ELM
+	imply NAND_OMAP_GPMC
+	imply SPL_DISPLAY_PRINT
+	imply SPL_FS_EXT4
+	imply SPL_FS_FAT
+	imply SPL_GPIO_SUPPORT
+	imply SPL_I2C_SUPPORT
+	imply SPL_LIBCOMMON_SUPPORT
+	imply SPL_LIBDISK_SUPPORT
+	imply SPL_LIBGENERIC_SUPPORT
+	imply SPL_MMC_SUPPORT
+	imply SPL_NAND_SIMPLE
+	imply SPL_NAND_SUPPORT
+	imply SPL_POWER_SUPPORT
+	imply SPL_SERIAL_SUPPORT
+	imply SYS_I2C_OMAP24XX
+	imply SYS_THUMB_BUILD
+
+config OMAP54XX
+	bool "OMAP54XX SoC"
+	select ARM_CORTEX_A15_CVE_2017_5715
+	select ARM_ERRATA_798870
+	select SYS_THUMB_BUILD
+	imply NAND_OMAP_ELM
+	imply NAND_OMAP_GPMC
+	imply SPL_DISPLAY_PRINT
+	imply SPL_ENV_SUPPORT
+	imply SPL_FS_EXT4
+	imply SPL_FS_FAT
+	imply SPL_GPIO_SUPPORT
+	imply SPL_I2C_SUPPORT
+	imply SPL_LIBCOMMON_SUPPORT
+	imply SPL_LIBDISK_SUPPORT
+	imply SPL_LIBGENERIC_SUPPORT
+	imply SPL_MMC_SUPPORT
+	imply SPL_NAND_AM33XX_BCH
+	imply SPL_NAND_AM33XX_BCH
+	imply SPL_NAND_SUPPORT
+	imply SPL_POWER_SUPPORT
+	imply SPL_SERIAL_SUPPORT
+	imply SYS_I2C_OMAP24XX
+
+config TI814X
+	bool "TI814X SoC"
+	select SPECIFY_CONSOLE_INDEX
+	help
+	  Support for AM335x SOC from Texas Instruments.
+	  The AM335x high performance SOC features a Cortex-A8
+	  ARM core and more.
+
+config TI816X
+	bool "TI816X SoC"
+	select SPECIFY_CONSOLE_INDEX
+	imply NAND_OMAP_ELM
+	imply NAND_OMAP_GPMC
+	help
+	  Support for AM335x SOC from Texas Instruments.
+	  The AM335x high performance SOC features a Cortex-A8
+	  ARM core and more.
+
+config AM43XX
+	bool "AM43XX SoC"
+	select SPECIFY_CONSOLE_INDEX
+	imply NAND_OMAP_ELM
+	imply NAND_OMAP_GPMC
+	imply SPL_DM
+	imply SPL_DM_SEQ_ALIAS
+	imply SPL_NAND_AM33XX_BCH
+	imply SPL_NAND_SUPPORT
+	imply SPL_OF_CONTROL
+	imply SPL_OF_TRANSLATE
+	imply SPL_SEPARATE_BSS
+	imply SPL_SYS_MALLOC_SIMPLE
+	imply SYS_I2C_OMAP24XX
+	imply SYS_THUMB_BUILD
+	help
+	  Support for AM43xx SOC from Texas Instruments.
+	  The AM43xx high performance SOC features a Cortex-A9
+	  ARM core, a quad core PRU-ICSS for industrial Ethernet
+	  protocols, dual camera support, optional 3D graphics
+	  and an optional customer programmable secure boot.
+
+config AM33XX
+	bool "AM33XX SoC"
+	select ARM_CORTEX_A8_CVE_2017_5715
+	select SPECIFY_CONSOLE_INDEX
+	imply NAND_OMAP_ELM
+	imply NAND_OMAP_GPMC
+	imply SPL_NAND_AM33XX_BCH
+	imply SPL_NAND_SUPPORT
+	imply SYS_I2C_OMAP24XX
+	imply SYS_THUMB_BUILD
+	imply USE_TINY_PRINTF
+	help
+	  Support for AM335x SOC from Texas Instruments.
+	  The AM335x high performance SOC features a Cortex-A8
+	  ARM core, a dual core PRU-ICSS for industrial Ethernet
+	  protocols, optional 3D graphics and an optional customer
+	  programmable secure boot.
+
+endchoice
+
+config SYS_MPUCLK
+	int "MPU CLK speed"
+	depends on AM33XX
+	default 500
+	help
+	  Defines the MPU clock speed (in MHz).
+
+config TI_SECURE_EMIF_REGION_START
+	hex "Reserved EMIF region start address"
+	depends on TI_SECURE_DEVICE
+	default 0x0
+	help
+	  Reserved EMIF region start address. Set to "0" to auto-select
+	  to be at the end of the external memory region.
+
+config TI_SECURE_EMIF_TOTAL_REGION_SIZE
+	hex "Reserved EMIF region size"
+	depends on TI_SECURE_DEVICE
+	default 0x0
+	help
+	  Total reserved EMIF region size. Default is 0, which means no reserved EMIF
+	  region on secure devices.
+
+config TI_SECURE_EMIF_PROTECTED_REGION_SIZE
+	hex "Size of protected region within reserved EMIF region"
+	depends on TI_SECURE_DEVICE
+	default 0x0
+	help
+	  This config option is used to specify the size of the portion of the total
+	  reserved EMIF region set aside for secure OS needs that will  be protected
+	  using hardware memory firewalls. This value must be smaller than the
+	  TI_SECURE_EMIF_TOTAL_REGION_SIZE value.
+
+source "arch/arm/mach-omap2/omap3/Kconfig"
+
+source "arch/arm/mach-omap2/omap4/Kconfig"
+
+source "arch/arm/mach-omap2/omap5/Kconfig"
+
+source "arch/arm/mach-omap2/am33xx/Kconfig"
+
+source "board/BuR/brxre1/Kconfig"
+source "board/BuR/brppt1/Kconfig"
+source "board/siemens/draco/Kconfig"
+source "board/siemens/pxm2/Kconfig"
+source "board/siemens/rut/Kconfig"
+source "board/ti/ti814x/Kconfig"
+source "board/ti/ti816x/Kconfig"
+source "board/ti/am43xx/Kconfig"
+source "board/ti/am335x/Kconfig"
+source "board/compulab/cm_t335/Kconfig"
+source "board/compulab/cm_t43/Kconfig"
+
+config SPL_LDSCRIPT
+        default "arch/arm/mach-omap2/u-boot-spl.lds"
+
+endif

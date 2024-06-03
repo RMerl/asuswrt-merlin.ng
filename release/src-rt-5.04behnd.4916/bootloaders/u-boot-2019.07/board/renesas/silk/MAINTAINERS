@@ -1,0 +1,6 @@
+SILK BOARD
+M:	Cogent Embedded, Inc. <source@cogentembedded.com>
+S:	Maintained
+F:	board/renesas/silk/
+F:	include/configs/silk.h
+F:	configs/silk_defconfig

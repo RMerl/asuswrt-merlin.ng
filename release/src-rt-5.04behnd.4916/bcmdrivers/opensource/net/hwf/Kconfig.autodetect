@@ -1,0 +1,9 @@
+config BCM_HW_FIREWALL
+	tristate "Support for HW Firewall"
+	depends on NF_CONNTRACK
+	depends on BCM963146
+	default n
+config BCM_HW_FIREWALL_IMPL
+	int "HW Firewall Implementation Selection"
+	depends on BCM_HW_FIREWALL
+	default 1

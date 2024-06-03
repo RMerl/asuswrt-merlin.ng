@@ -1,0 +1,178 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+#include <stm32f7-u-boot.dtsi>
+/{
+	chosen {
+		bootargs = "root=/dev/ram rdinit=/linuxrc";
+	};
+
+	aliases {
+		/* Aliases for gpios so as to use sequence */
+		gpio0 = &gpioa;
+		gpio1 = &gpiob;
+		gpio2 = &gpioc;
+		gpio3 = &gpiod;
+		gpio4 = &gpioe;
+		gpio5 = &gpiof;
+		gpio6 = &gpiog;
+		gpio7 = &gpioh;
+		gpio8 = &gpioi;
+		gpio9 = &gpioj;
+		gpio10 = &gpiok;
+		mmc0 = &sdio2;
+		spi0 = &qspi;
+	};
+
+	button1 {
+		compatible = "st,button1";
+		button-gpio = <&gpioa 0 0>;
+	};
+
+	led1 {
+		compatible = "st,led1";
+		led-gpio = <&gpioj 5 0>;
+	};
+};
+
+&fmc {
+	/* Memory configuration from sdram datasheet MT48LC_4M32_B2B5-6A */
+	bank1: bank@0 {
+		u-boot,dm-pre-reloc;
+		st,sdram-control = /bits/ 8 <NO_COL_8
+					     NO_ROW_12
+					     MWIDTH_32
+					     BANKS_4
+					     CAS_3
+					     SDCLK_2
+					     RD_BURST_EN
+					     RD_PIPE_DL_0>;
+		st,sdram-timing = /bits/ 8 <TMRD_2
+					    TXSR_6
+					    TRAS_4
+					    TRC_6
+					    TWR_2
+					    TRP_2
+					    TRCD_2>;
+		/* refcount = (64msec/total_row_sdram)*freq - 20 */
+		st,sdram-refcount = < 1542 >;
+	};
+};
+
+&pinctrl {
+	ethernet_mii: mii@0 {
+		pins {
+			pinmux = <STM32_PINMUX('G',13, AF11)>, /* ETH_RMII_TXD0 */
+				 <STM32_PINMUX('G',14, AF11)>, /* ETH_RMII_TXD1 */
+				 <STM32_PINMUX('G',11, AF11)>, /* ETH_RMII_TX_EN */
+				 <STM32_PINMUX('A', 2, AF11)>, /* ETH_MDIO */
+				 <STM32_PINMUX('C', 1, AF11)>, /* ETH_MDC */
+				 <STM32_PINMUX('A', 1, AF11)>, /* ETH_RMII_REF_CLK */
+				 <STM32_PINMUX('A', 7, AF11)>, /* ETH_RMII_CRS_DV */
+				 <STM32_PINMUX('C', 4, AF11)>, /* ETH_RMII_RXD0 */
+				 <STM32_PINMUX('C', 5, AF11)>; /* ETH_RMII_RXD1 */
+			slew-rate = <2>;
+		};
+	};
+
+	fmc_pins: fmc@0 {
+		pins {
+			pinmux = <STM32_PINMUX('I',10, AF12)>, /* D31 */
+				 <STM32_PINMUX('I', 9, AF12)>, /* D30 */
+				 <STM32_PINMUX('I', 7, AF12)>, /* D29 */
+				 <STM32_PINMUX('I', 6, AF12)>, /* D28 */
+				 <STM32_PINMUX('I', 3, AF12)>, /* D27 */
+				 <STM32_PINMUX('I', 2, AF12)>, /* D26 */
+				 <STM32_PINMUX('I', 1, AF12)>, /* D25 */
+				 <STM32_PINMUX('I', 0, AF12)>, /* D24 */
+				 <STM32_PINMUX('H',15, AF12)>, /* D23 */
+				 <STM32_PINMUX('H',14, AF12)>, /* D22 */
+				 <STM32_PINMUX('H',13, AF12)>, /* D21 */
+				 <STM32_PINMUX('H',12, AF12)>, /* D20 */
+				 <STM32_PINMUX('H',11, AF12)>, /* D19 */
+				 <STM32_PINMUX('H',10, AF12)>, /* D18 */
+				 <STM32_PINMUX('H', 9, AF12)>, /* D17 */
+				 <STM32_PINMUX('H', 8, AF12)>, /* D16 */
+
+				 <STM32_PINMUX('D',10, AF12)>, /* D15 */
+				 <STM32_PINMUX('D', 9, AF12)>, /* D14 */
+				 <STM32_PINMUX('D', 8, AF12)>, /* D13 */
+				 <STM32_PINMUX('E',15, AF12)>, /* D12 */
+				 <STM32_PINMUX('E',14, AF12)>, /* D11 */
+				 <STM32_PINMUX('E',13, AF12)>, /* D10 */
+				 <STM32_PINMUX('E',12, AF12)>, /* D9 */
+				 <STM32_PINMUX('E',11, AF12)>, /* D8 */
+				 <STM32_PINMUX('E',10, AF12)>, /* D7 */
+				 <STM32_PINMUX('E', 9, AF12)>, /* D6 */
+				 <STM32_PINMUX('E', 8, AF12)>, /* D5 */
+				 <STM32_PINMUX('E', 7, AF12)>, /* D4 */
+				 <STM32_PINMUX('D', 1, AF12)>, /* D3 */
+				 <STM32_PINMUX('D', 0, AF12)>, /* D2 */
+				 <STM32_PINMUX('D',15, AF12)>, /* D1 */
+				 <STM32_PINMUX('D',14, AF12)>, /* D0 */
+
+				 <STM32_PINMUX('I', 5, AF12)>, /* NBL3 */
+				 <STM32_PINMUX('I', 4, AF12)>, /* NBL2 */
+				 <STM32_PINMUX('E', 1, AF12)>, /* NBL1 */
+				 <STM32_PINMUX('E', 0, AF12)>, /* NBL0 */
+
+				 <STM32_PINMUX('G', 5, AF12)>, /* BA1 */
+				 <STM32_PINMUX('G', 4, AF12)>, /* BA0 */
+
+				 <STM32_PINMUX('G', 1, AF12)>, /* A11 */
+				 <STM32_PINMUX('G', 0, AF12)>, /* A10 */
+				 <STM32_PINMUX('F',15, AF12)>, /* A9 */
+				 <STM32_PINMUX('F',14, AF12)>, /* A8 */
+				 <STM32_PINMUX('F',13, AF12)>, /* A7 */
+				 <STM32_PINMUX('F',12, AF12)>, /* A6 */
+				 <STM32_PINMUX('F', 5, AF12)>, /* A5 */
+				 <STM32_PINMUX('F', 4, AF12)>, /* A4 */
+				 <STM32_PINMUX('F', 3, AF12)>, /* A3 */
+				 <STM32_PINMUX('F', 2, AF12)>, /* A2 */
+				 <STM32_PINMUX('F', 1, AF12)>, /* A1 */
+				 <STM32_PINMUX('F', 0, AF12)>, /* A0 */
+
+				 <STM32_PINMUX('H', 3, AF12)>, /* SDNE0 */
+				 <STM32_PINMUX('H', 5, AF12)>, /* SDNWE */
+				 <STM32_PINMUX('F',11, AF12)>, /* SDNRAS */
+				 <STM32_PINMUX('G',15, AF12)>, /* SDNCAS */
+				 <STM32_PINMUX('H', 2, AF12)>, /* SDCKE0 */
+				 <STM32_PINMUX('G', 8, AF12)>; /* SDCLK> */
+			slew-rate = <2>;
+		};
+	};
+
+	qspi_pins: qspi@0 {
+		pins {
+			pinmux = <STM32_PINMUX('B', 2, AF9)>, /* CLK */
+				 <STM32_PINMUX('B', 6, AF10)>, /* BK1_NCS */
+				 <STM32_PINMUX('C', 9, AF9)>, /* BK1_IO0 */
+				 <STM32_PINMUX('C',10, AF9)>, /* BK1_IO1 */
+				 <STM32_PINMUX('D',13, AF9)>, /* BK1_IO3 */
+				 <STM32_PINMUX('E', 2, AF9)>; /* BK1_IO2 */
+			slew-rate = <2>;
+		};
+	};
+
+	usart1_pins_a: usart1@0	{
+		u-boot,dm-pre-reloc;
+		pins1 {
+			u-boot,dm-pre-reloc;
+		};
+		pins2 {
+			u-boot,dm-pre-reloc;
+		};
+	};
+};
+
+&qspi {
+	reg = <0xA0001000 0x1000>, <0x90000000 0x4000000>;
+	flash0: mx66l51235l {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <108000000>;
+		spi-tx-bus-width = <4>;
+		spi-rx-bus-width = <4>;
+		reg = <0>;
+	};
+};

@@ -18,7 +18,7 @@
 #include <pwd.h>
 #include <grp.h>
 #include <sys/wait.h>
-#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
 #include <sys/sysmacros.h>
 #endif
 #include <sys/types.h>
@@ -28,6 +28,10 @@
 #include "filemap_utils.h"
 #include "hotplug2.h"
 #include "rules.h"
+
+#if defined(MUSL_LIBC)
+#include <sys/sysmacros.h>
+#endif
 
 #ifdef HND_ROUTER
 #define inline  

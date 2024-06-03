@@ -22,10 +22,9 @@
 #include <arpa/inet.h>
 #include <ifaddrs.h>
 #include <sys/sysinfo.h>
-#include <limits.h>		//PATH_MAX, LONG_MIN, LONG_MAX
-#ifdef HND_ROUTER
-#include <limits.h>
 #include <time.h>
+#if defined(HND_ROUTER) || defined(RTACRH18) || defined(RT4GAC86U)
+#include <limits.h>
 #elif !defined (__GLIBC__) && !defined(__UCLIBC__)
 #include <limits.h>		//PATH_MAX, LONG_MIN, LONG_MAX
 #endif
@@ -68,6 +67,10 @@
 
 #if defined(RTCONFIG_VPN_FUSION) || defined(RTCONFIG_TPVPN) ||defined(RTCONFIG_IG_SITE2SITE) || defined(RTCONFIG_WIREGUARD)
 #include "vpn_utils.h"
+#endif
+
+#ifdef RTCONFIG_TRUSTZONE
+#include <libatee.h>
 #endif
 
 #if defined(RTCONFIG_COOVACHILLI)
@@ -187,7 +190,7 @@ extern char *get_line_from_buffer(const char *buf, char *line, const int line_si
 	return line;
 }
 
-#ifdef HND_ROUTER
+#if defined(HND_ROUTER) || defined(RT4GAC86U)
 // defined (__GLIBC__) && !defined(__UCLIBC__)
 #if 0
 size_t strlcpy(char *dst, const char *src, size_t size)
@@ -301,13 +304,6 @@ int inet_equal(const char *addr1, const char *mask1, const char *addr2, const ch
 int inet_intersect(const char *addr1, const char *mask1, const char *addr2, const char *mask2)
 {
 	in_addr_t max_netmask = inet_network(mask1) | inet_network(mask2);
-	return ((inet_network(addr1) & max_netmask) ==
-		(inet_network(addr2) & max_netmask));
-}
-
-int inet_overlap(const char *addr1, const char *mask1, const char *addr2, const char *mask2)
-{
-	in_addr_t max_netmask = inet_network(mask1) & inet_network(mask2);
 	return ((inet_network(addr1) & max_netmask) ==
 		(inet_network(addr2) & max_netmask));
 }
@@ -1687,102 +1683,6 @@ int test_and_get_free_char_network(int t_class, char *ip_cidr_str, uint32_t excl
 
 #endif /* RTCONFIG_COOVACHILLI || RTCONFIG_PORT_BASED_VLAN || RTCONFIG_TAGGED_BASED_VLAN */
 
-#if defined(RTCONFIG_SWITCH_QCA8075_QCA8337_PHY_AQR107_AR8035_QCA8033)
-/* Return minimal network, maximum CIDR value, for @ipaddr
- * Start from 30 to 1 until we got non-zero host ID.
- * @ipaddr:	IP address
- * @return:
- *  1 ~ 30:	CIDR for @ipaddr
- * 	0:	Good CIDR is not available
- */
-int min_cidr(char *ipaddr)
-{
-	in_addr_t ip, h_mask;
-	int i, d, cidr = 0;
-
-	if (!ipaddr || illegal_ipv4_address(ipaddr))
-		return 0;
-
-	/* Find maximum CIDR value that has non-zero host ID and
-	 * have network/broadcast address.
-	 */
-	ip = inet_network(ipaddr);
-	for (i = 30; !cidr && i > 0; --i) {
-		d = 32 - i;
-		h_mask = ((0xFFFFFFFF >> d) << d) ^ 0xFFFFFFFF;
-		if ((ip & h_mask) != 0 && ((ip + 1) & h_mask) != 0)
-			cidr = i;
-	}
-
-	return cidr;
-}
-
-/* Return minimal size of network mask for @ipaddr
- * @ipaddr:	IP address
- * @mask:	char array that big enough to save a network mask string.
- * 		If it's NULL, internal buffer is used instead.
- * @mask_len:	length of @mask
- * @return:	Pointer to char pointer that contain network mask string or empty string.
- */
-char *min_netmask(char *ipaddr, char *mask, size_t mask_len)
-{
-	static char mask_str[18];
-	char *buf = mask_str;
-	size_t buf_len = sizeof(mask_str);
-	int cidr, d;
-	in_addr_t m = 0xFFFFFFFF;
-
-	if (mask_len < 16)
-		mask = NULL;
-	if (mask) {
-		buf = mask;
-		buf_len = mask_len;
-	}
-	*buf = '\0';
-	cidr = min_cidr(ipaddr);
-	if (cidr <= 0 || cidr > 30)
-		return buf;
-
-	d = 32 - cidr;
-	m = htonl((0xFFFFFFFF >> d) << d);	/* to network byte order */
-	if (!inet_ntop(AF_INET, &m, buf, buf_len))
-		*buf = '\0';
-
-	return buf;
-}
-
-/* Return IP address that removed host IDs part.
- * @ipaddr:	IP address
- * @mask:	netmask
- * @nwaddr:	char array that big enough to save IP address string.
- * @nwaddr_len:	length of @nwaddr
- * @return:	IP address that doesn't have host ID or empty string if invalid parameter.
- */
-char *network_addr(char *ipaddr, char *mask, char *nwaddr, size_t nwaddr_len)
-{
-	static char nwaddr_str[18];
-	char *buf = nwaddr_str;
-	size_t buf_len = sizeof(nwaddr_str);
-	in_addr_t n_addr;
-
-	if (nwaddr_len < 16)
-		nwaddr = NULL;
-	if (nwaddr) {
-		buf = nwaddr;
-		buf_len = nwaddr_len;
-	}
-	*buf = '\0';
-	if (!ipaddr | !mask || illegal_ipv4_address(ipaddr) || illegal_ipv4_netmask(mask))
-		return buf;
-
-	n_addr = htonl(inet_network(ipaddr) & inet_network(mask));
-	if (!inet_ntop(AF_INET, &n_addr, buf, buf_len))
-		*buf = '\0';
-
-	return buf;
-}
-#endif
-
 /**
  * Return first/lowest configured and connected WAN unit.
  * @return:	WAN_UNIT_FIRST ~ WAN_UNIT_MAX
@@ -1927,6 +1827,7 @@ int is_s46_service(void)
 #ifdef RTCONFIG_IPV6
 char *ipv6_nvname_by_unit(const char *name, int unit)
 {
+#if defined(RTCONFIG_MULTIWAN_CFG) || defined(RTCONFIG_MULTIWAN_IF)
 	static char name_ipv6[128];
 
 	if (strncmp(name, "ipv6_", sizeof("ipv6_") - 1) != 0) {
@@ -1940,6 +1841,9 @@ char *ipv6_nvname_by_unit(const char *name, int unit)
 	snprintf(name_ipv6, sizeof(name_ipv6), "ipv6%d_%s", unit, name + sizeof("ipv6_") - 1);
 
 	return name_ipv6;
+#else
+	return (char *)name;
+#endif
 }
 
 char *ipv6_nvname(const char *name)
@@ -2025,7 +1929,7 @@ const char *ipv6_address(const char *ipaddr6)
 }
 
 // extract prefix from configured IPv6 address
-const char *ipv6_prefix(struct in6_addr *in6addr)
+const char *ipv6_prefix_by_unit(struct in6_addr *in6addr, int wan_unit)
 {
 	static char prefix[INET6_ADDRSTRLEN];
 	struct in6_addr addr;
@@ -2034,8 +1938,8 @@ const char *ipv6_prefix(struct in6_addr *in6addr)
 	prefix[0] = '\0';
 	memset(&addr, 0, sizeof(addr));
 
-	if (inet_pton(AF_INET6, nvram_safe_get(ipv6_nvname("ipv6_rtr_addr")), &addr) > 0) {
-		r = nvram_get_int(ipv6_nvname("ipv6_prefix_length")) ? : 64;
+	if (inet_pton(AF_INET6, nvram_safe_get(ipv6_nvname_by_unit("ipv6_rtr_addr", wan_unit)), &addr) > 0) {
+		r = nvram_get_int(ipv6_nvname_by_unit("ipv6_prefix_length", wan_unit)) ? : 64;
 		for (r = 128 - r, i = 15; r > 0; r -= 8) {
 			if (r >= 8)
 				addr.s6_addr[i--] = 0;
@@ -2049,6 +1953,11 @@ const char *ipv6_prefix(struct in6_addr *in6addr)
 		memcpy(in6addr, &addr, sizeof(addr));
 
 	return prefix;
+}
+
+const char *ipv6_prefix(struct in6_addr *in6addr)
+{
+	return ipv6_prefix_by_unit(in6addr, wan_primary_ifunit_ipv6());
 }
 
 #if 0 /* unused */
@@ -2182,6 +2091,22 @@ const char *ipv6_gateway_address(void)
 
 	return (maxprefix < 0) ? NULL : buf;
 }
+
+#ifdef RTCONFIG_MULTIWAN_IF
+int ipv6_enabled()
+{
+	int unit;
+	for (unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit) {
+		if (get_ipv6_service_by_unit(unit) != IPV6_DISABLED)
+			return 1;
+	}
+	for (unit = MULTI_WAN_START_IDX; unit < MULTI_WAN_START_IDX + MAX_MULTI_WAN_NUM; ++unit) {
+		if (get_ipv6_service_by_unit(unit) != IPV6_DISABLED)
+			return 1;
+	}
+	return 0;
+}
+#endif
 #endif
 
 int wl_client(int unit, int subunit)
@@ -2498,6 +2423,11 @@ const char *getifaddr(const char *ifname, int family, int flags)
 	return _getifaddr(ifname, family, flags, buf, sizeof(buf));
 }
 
+/**
+ *  1: interface exist and up
+ *  0: interface exist and down
+ * -1: interface not exist, NULL or empty
+ */
 int is_intf_up(const char* ifname)
 {
 	struct ifreq ifr;
@@ -2505,7 +2435,7 @@ int is_intf_up(const char* ifname)
 	int ret = 0;
 
 	if (!ifname || !strlen(ifname))
-		return 0;
+		return -1;
 
 	if (!((sfd = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) < 0))
 	{
@@ -3263,7 +3193,7 @@ unsigned int netdev_calc(char *ifname, char *ifname_desc, unsigned long long *rx
 			return 0;
 	}
 
-#if defined(RTCONFIG_QCA)
+#if defined(RTCONFIG_QCA) || defined(RTCONFIG_SWITCH_MT7986_MT7531)
 #if defined(RTCONFIG_SWITCH_RTL8370M_PHY_QCA8033_X2) || \
     defined(RTCONFIG_SWITCH_RTL8370MB_PHY_QCA8033_X2)
 	/* Handle LAN aggregation interfaces.
@@ -3304,7 +3234,8 @@ unsigned int netdev_calc(char *ifname, char *ifname_desc, unsigned long long *rx
 	if (nvram_match("lacp_enabled", "1")) {
 		int b;
 		const char *q;
-#if defined(RTCONFIG_SWITCH_QCA8075_QCA8337_PHY_AQR107_AR8035_QCA8033)
+#if defined(RTCONFIG_SWITCH_QCA8075_QCA8337_PHY_AQR107_AR8035_QCA8033) \
+ || defined(RTCONFIG_SWITCH_MT7986_MT7531)
 		uint32_t m = BS_LAN1_PORT_MASK | BS_LAN2_PORT_MASK;
 #else
 #error	FIXME
@@ -3342,7 +3273,7 @@ unsigned int netdev_calc(char *ifname, char *ifname_desc, unsigned long long *rx
 		}
 	}
 #endif
-#endif
+#endif	/* RTCONFIG_QCA || RTCONFIG_SWITCH_MT7986_MT7531 */
 
 	// find in LAN interface
 	if (find_word(nv_lan_ifnames, ifname))
@@ -4066,8 +3997,24 @@ int get_wifi_unit(char *wif)
 	char word[256], *next, *ifn, nv[20];
 	char wl_ifnames[32] = { 0 };
 
-	if (!wif || *wif == '\0')
+	if (!wif || *wif == '\0' || strchr(wif, '.'))
 		return -1;
+
+#if defined(RTCONFIG_RALINK)
+	if (guest_wlif(wif)) {
+		char vap[IFNAMSIZ];
+
+		/* Check 2G later due to raX is sub-string of raiX or raxX. */
+		for (i = MAX_NR_WL_IF - 1; i >= 0; --i) {
+			strlcpy(vap, get_wififname(i), sizeof(vap));
+			if (strncmp(wif, vap, strlen(vap) - 1))
+
+				continue;
+
+			return i;
+		}
+	}
+#endif
 
 	strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
 	foreach (word, wl_ifnames, next) {
@@ -5165,7 +5112,7 @@ char *bitmask2chlist5g(uint64_t mask, char *sep)
 	return __bitmask2chlist5g(mask, sep, ch_list, sizeof(ch_list));
 }
 
-#if defined(RTCONFIG_WIFI6E)
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7)
 /* Convert 6G @ch to a bit-number of 64-bit mask.
  * @ch:	legal 6G channel
  * @return:
@@ -5296,11 +5243,15 @@ int ch2bit(enum wl_band_id band, int ch)
 {
 	if (band < 0 || band >= WL_NR_BANDS)
 		return -1;
-#if defined(RTCONFIG_WIFI6E)
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7)
 	else if (is_6g(band))
 		return ch6g2bit(ch);
 #endif
-	else if (band == WL_5G_BAND || band == WL_5G_2_BAND)
+	else if (band == WL_5G_BAND
+#if defined(RTCONFIG_HAS_5G_2)
+		|| band == WL_5G_2_BAND
+#endif
+	)
 		return ch5g2bit(ch);
 	else
 		return ch2g2bit(ch);
@@ -5319,11 +5270,15 @@ uint64_t ch2bitmask(enum wl_band_id band, int ch)
 {
 	if (band < 0 || band >= WL_NR_BANDS)
 		return 0;
-#if defined(RTCONFIG_WIFI6E)
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7)
 	else if (is_6g(band))
 		return ch6g2bitmask(ch);
 #endif
-	else if (band == WL_5G_BAND || band == WL_5G_2_BAND)
+	else if (band == WL_5G_BAND
+#if defined(RTCONFIG_HAS_5G_2)
+		|| band == WL_5G_2_BAND
+#endif
+		)
 		return ch5g2bitmask(ch);
 	else
 		return ch2g2bitmask(ch);
@@ -5342,11 +5297,15 @@ int bit2ch(enum wl_band_id band, int bit)
 {
 	if (band < 0 || band >= WL_NR_BANDS)
 		return -1;
-#if defined(RTCONFIG_WIFI6E)
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7)
 	else if (is_6g(band))
 		return bit2ch6g(bit);
 #endif
-	else if (band == WL_5G_BAND || band == WL_5G_2_BAND)
+	else if (band == WL_5G_BAND
+#if defined(RTCONFIG_HAS_5G_2)
+		|| band == WL_5G_2_BAND
+#endif
+		)
 		return bit2ch5g(bit);
 	else
 		return bit2ch2g(bit);
@@ -5364,11 +5323,15 @@ uint64_t chlist2bitmask(enum wl_band_id band, char *ch_list, char *sep)
 {
 	if (band < 0 || band >= WL_NR_BANDS)
 		return 0;
-#if defined(RTCONFIG_WIFI6E)
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7)
 	else if (is_6g(band))
 		return chlist6g2bitmask(ch_list, sep);
 #endif
-	else if (band == WL_5G_BAND || band == WL_5G_2_BAND)
+	else if (band == WL_5G_BAND
+#if defined(RTCONFIG_HAS_5G_2)
+		|| band == WL_5G_2_BAND
+#endif
+		)
 		return chlist5g2bitmask(ch_list, sep);
 	else
 		return chlist2g2bitmask(ch_list, sep);
@@ -5384,11 +5347,15 @@ char *__bitmask2chlist(enum wl_band_id band, uint64_t mask, char *sep, char *ch_
 {
 	if (band < 0 || band >= WL_NR_BANDS)
 		return "";
-#if defined(RTCONFIG_WIFI6E)
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7)
 	else if (is_6g(band))
 		return __bitmask2chlist6g(mask, sep, ch_list, ch_list_len);
 #endif
-	else if (band == WL_5G_BAND || band == WL_5G_2_BAND)
+	else if (band == WL_5G_BAND
+#if defined(RTCONFIG_HAS_5G_2)
+		|| band == WL_5G_2_BAND
+#endif
+		)
 		return __bitmask2chlist5g(mask, sep, ch_list, ch_list_len);
 	else
 		return __bitmask2chlist2g(mask, sep, ch_list, ch_list_len);
@@ -5402,11 +5369,15 @@ char *bitmask2chlist(enum wl_band_id band, uint64_t mask, char *sep)
 {
 	if (band < 0 || band >= WL_NR_BANDS)
 		return "";
-#if defined(RTCONFIG_WIFI6E)
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7)
 	else if (is_6g(band))
 		return bitmask2chlist6g(mask, sep);
 #endif
-	else if (band == WL_5G_BAND || band == WL_5G_2_BAND)
+	else if (band == WL_5G_BAND
+#if defined(RTCONFIG_HAS_5G_2)
+		|| band == WL_5G_2_BAND
+#endif
+		)
 		return bitmask2chlist5g(mask, sep);
 	else
 		return bitmask2chlist2g(mask, sep);
@@ -5542,7 +5513,7 @@ void deauth_guest_sta(char *wlif_name, char *mac_addr)
 #if (defined(RTCONFIG_RALINK) || defined(RTCONFIG_QCA))
         char cmd[128];
 #if defined(RTCONFIG_RALINK)
-		snrintf(cmd, sizeof(cmd), "iwpriv %s set DisConnectSta="MAC_FMT, wlif_name, MAC_ARG((unsigned char *)mac_addr));
+		snprintf(cmd, sizeof(cmd), "iwpriv %s set DisConnectSta="MAC_FMT, wlif_name, MAC_ARG((unsigned char *)mac_addr));
 		system(cmd);
 		memset(cmd, 0, sizeof(cmd));
 		snprintf(cmd, sizeof(cmd), "iwpriv %s set AccessPolicy=2", wlif_name);
@@ -6203,7 +6174,7 @@ int is_valid_email_address(char *address)
 int get_discovery_ssid(char *ssid_g, int size)
 {
 #if defined(RTCONFIG_WIRELESSREPEATER) || defined(RTCONFIG_PROXYSTA)
-	char tmp[100], prefix[] = "wlXXXXXXXXXXXXXX";
+	char tmp[100] = {0}, prefix[] = "wlXXXXXXXXXXXXXX";
 #endif
 #ifdef RTCONFIG_DPSTA
 	char word[80], *next;
@@ -6223,6 +6194,13 @@ int get_discovery_ssid(char *ssid_g, int size)
 #endif
 			snprintf(prefix, sizeof(prefix), "wl%d.1_", nvram_get_int("wlc_band"));
 		strlcpy(ssid_g, nvram_safe_get(strlcat_r(prefix, "ssid", tmp, sizeof(tmp))), size);
+#ifdef RTCONFIG_RALINK
+       if (mediabridge_mode()) 
+       {
+           memset(ssid_g, 0, size);
+           strlcpy(ssid_g, get_productid(), size);
+       }
+#endif         
 	}
 	else
 #ifdef RTCONFIG_REALTEK
@@ -6253,7 +6231,7 @@ int get_discovery_ssid(char *ssid_g, int size)
 				snprintf(prefix, sizeof(prefix), "wlc%d_", unit == 0 ? 0 : 1);
 				if (nvram_get_int(strlcat_r(prefix, "state", tmp, sizeof(tmp))) == 2) {
 					snprintf(prefix, sizeof(prefix), "wl%d.1_", unit);
-					strncpy(ssid_g, nvram_safe_get(strlcat_r(prefix, "ssid", tmp, sizeof(tmp))), size);
+					strlcpy(ssid_g, nvram_safe_get(strlcat_r(prefix, "ssid", tmp, sizeof(tmp))), size);
 					break;
 				}
 			}
@@ -6263,7 +6241,7 @@ int get_discovery_ssid(char *ssid_g, int size)
 		if (is_psta(nvram_get_int("wlc_band")))
 		{
 			snprintf(prefix, sizeof(prefix), "wl%d_", nvram_get_int("wlc_band"));
-			strncpy(ssid_g, nvram_safe_get(strlcat_r(prefix, "ssid", tmp, sizeof(tmp))), size);
+			strlcpy(ssid_g, nvram_safe_get(strlcat_r(prefix, "ssid", tmp, sizeof(tmp))), size);
 		}
 		else if (is_psr(nvram_get_int("wlc_band")))
 		{
@@ -6541,6 +6519,12 @@ int is_passwd_default(){
 	pw_dec(http_passwd, dec_passwd, sizeof(dec_passwd), 1);
 	http_passwd = dec_passwd;
 #endif
+#ifdef RTCONFIG_DEMOUI
+	return 0;
+#endif
+#ifdef RTCONFIG_TRUSTZONE
+	return (atee_check_admin_user_pw_exist() ? 0 : 1);
+#endif
 	if(strcmp(nvram_default_get("http_passwd"), http_passwd) == 0)
 		return 1;
 	else
@@ -6662,7 +6646,7 @@ void gen_custom_clientlist_groupid(void) {
 	free(gvalue);
 }
 
-#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_PSR_GUEST)
+#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_PSR_GUEST) && !defined(RTCONFIG_HND_ROUTER_BE_4916)
 void update_wlx_psr_mbss(void)
 {
 	int unit = 0, subunit = 0, wlx_psr_mbss = 0;
@@ -6692,7 +6676,7 @@ void update_wlx_psr_mbss(void)
 
 	return;
 }
-#endif	// #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_PSR_GUEST)
+#endif	// #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_PSR_GUEST) && !defined(RTCONFIG_HND_ROUTER_BE_4916)
 
 /*
  * update sync profile update time to nvram
@@ -7243,7 +7227,7 @@ get_string_in_62(char *in_list, int idx, char *out, int out_len)
 	return 0;
 }
 
-#if defined(RTCONFIG_VPN_FUSION) || defined(RTCONFIG_TPVPN) || defined(RTCONFIG_IG_SITE2SITE)
+#if defined(RTCONFIG_UAC_TUNNEL)
 #if defined(RTCONFIG_WIREGUARD)
 int is_wgs_use_tunnel(const char *wgs_idx, const char *caller, const char *port) {
 	char wgs_prefix[16];
@@ -7426,24 +7410,6 @@ int asus_openssl_crypt(char *key, char *salt, char *out, int out_len)
 	return ret;
 }
 
-/**
- * @return:
- * 	0:		invalid parameter
- * 	1:		safe
- **/
-int validate_rc_service(const char *value)
-{
-	while(*value) {
-		if (isalnum(*value) != 0 || *value == ';' || *value == '_' || *value == '-' || *value == '.' || *value == '/' || isspace(*value) != 0)
-			value++;
-		else{
-			dbg("validate_rc_service: invalid(%c)\n", *value);
-			return 0;
-		}
-	}
-	return 1;
-}
-
 int adjust_62_nv_list(char *name)
 {
 	char nv[2048] = {0}, nv_tmp[2048] = {0};
@@ -7517,4 +7483,20 @@ char *get_ddns_macaddr(void)
 #endif
 
 	return mac;
+}/**
+ * @return:
+ * 	0:		invalid parameter
+ * 	1:		safe
+ **/
+int validate_rc_service(char *value)
+{
+	while(*value) {
+		if (isalnum(*value) != 0 || *value == ';' || *value == '_' || *value == '-' || *value == '.' || *value == '/' || isspace(*value) != 0)
+			value++;
+		else{
+			dbg("validate_rc_service: invalid(%c)\n", *value);
+			return 0;
+		}
+	}
+	return 1;
 }

@@ -1,0 +1,12 @@
+if TARGET_NOKIA_RX51
+
+config SYS_BOARD
+	default "rx51"
+
+config SYS_VENDOR
+	default "nokia"
+
+config SYS_CONFIG_NAME
+	default "nokia_rx51"
+
+endif

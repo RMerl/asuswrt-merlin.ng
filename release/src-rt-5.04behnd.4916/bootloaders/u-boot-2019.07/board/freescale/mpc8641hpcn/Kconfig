@@ -1,0 +1,12 @@
+if TARGET_MPC8641HPCN
+
+config SYS_BOARD
+	default "mpc8641hpcn"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_CONFIG_NAME
+	default "MPC8641HPCN"
+
+endif

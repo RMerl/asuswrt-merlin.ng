@@ -1,0 +1,53 @@
+Notes on the scheduler in sched.c:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  'sched.c' provides an very simplistic multi-threading scheduler.
+   See the example, function 'sched(...)', in the same file for its
+   API usage.
+
+   Until an exhaustive testing can be done, the implementation cannot
+   qualify as that of production quality. It works with the example
+   in 'sched.c', it may or may not work in other cases.
+
+
+Limitations:
+~~~~~~~~~~~~
+
+  - There are NO primitives for thread synchronization (locking,
+    notify etc).
+
+  - Only the GPRs and FPRs context is saved during a thread context
+    switch. Other registers on the PowerPC processor (60x, 7xx, 7xxx
+    etc) are NOT saved.
+
+  - The scheduler is NOT transparent to the user. The user
+    applications must invoke thread_yield() to allow other threads to
+    scheduler.
+
+  - There are NO priorities, and the scheduling policy is round-robin
+    based.
+
+  - There are NO capabilities to collect thread CPU usage, scheduler
+    stats, thread status etc.
+
+  - The semantics are somewhat based on those of pthreads, but NOT
+    the same.
+
+  - Only seven threads are allowed. These can be easily increased by
+    changing "#define MAX_THREADS" depending on the available memory.
+
+  - The stack size of each thread is 8KBytes. This can be easily
+    increased depending on the requirement and the available memory,
+    by increasing "#define STK_SIZE".
+
+  - Only one master/parent thread is allowed, and it cannot be
+    stopped or deleted. Any given thread is NOT allowed to stop or
+    delete itself.
+
+  - There NOT enough safety checks as are probably in the other
+    threads implementations.
+
+  - There is no parent-child relationship between threads. Only one
+    thread may thread_join, preferably the master/parent thread.
+
+(C) 2003 Arun Dharankar <ADharankar@ATTBI.Com>

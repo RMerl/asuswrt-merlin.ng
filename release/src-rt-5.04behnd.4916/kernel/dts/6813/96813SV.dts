@@ -1,0 +1,220 @@
+#include "6813.dtsi"
+
+/ {
+	memory_controller {
+		memcfg = <(BP_DDR_TYPE_DDR4       | \
+			BP_DDR_SPEED_1600_22_22_22    | \
+			BP_DDR_TOTAL_SIZE_4096MB      | \
+			BP_DDR_DEVICE_WIDTH_8        | \
+			BP_DDR_TOTAL_WIDTH_32BIT      | \
+			BP_DDR_6813_DEFAULT          | \
+			BP_DDR_CONFIG_DEBUG)>;
+	};
+
+	sfp0: sfp0 {
+		/* SV_P101 board has gpio 71 connected to sig detect
+		   Should be gpio 74. Must rework the board to make it work */
+		compatible = "brcm,sfp";
+		pinctrl-names = "default", "tx-sd";
+        pinctrl-0 = <&signal_detect_pin_74 &pon_lbe_p_pin_77 &rogue_onu_in_pin_75>;
+		pinctrl-1 = <&rogue_onu_in_pin_75>;
+		
+		i2c-bus = <&i2c2>;
+		mod-def0 = <&bca_extintr 72 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_BOTH_EDGE | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+		tx-power-gpio = <&gpioc 76 GPIO_ACTIVE_HIGH>;
+		tx-power-down-gpio = <&gpioc 71 GPIO_ACTIVE_HIGH>;
+		los-gpio = <&gpioc 74 GPIO_ACTIVE_HIGH>;
+	};
+
+	sfp1: sfp1 {
+		compatible = "brcm,sfp";
+		pinctrl-names = "default", "rx-sd";
+		pinctrl-0 = <&serdes_s_rx_los_pin_1>;
+		pinctrl-1 = <&serdes_s_rx_los_pin_1>;
+		
+		i2c-bus = <&i2c0>;
+		mod-def0 = <&bca_extintr 4 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_BOTH_EDGE | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+	};
+
+	sfp2: sfp2 {
+		compatible = "brcm,sfp";
+		pinctrl-names = "default", "rx-sd";
+		pinctrl-0 = <&serdes_m_rx_los_pin_2>;
+		pinctrl-1 = <&serdes_m_rx_los_pin_2>;
+		
+		i2c-bus = <&i2c1>;
+		mod-def0 = <&bca_extintr 5 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_BOTH_EDGE | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+	};
+
+	wan_serdes {
+		status = "okay";
+		trx = <&sfp0>;
+	};
+};
+
+&nand {
+	pinctrl-0 = <&nand_data_pins &nand_ctrl_pins &nand_wp_b_pin_25>;
+	write-protect = <1>;
+	status = "okay";
+};
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+&pcie0 {
+	status = "okay";
+};
+&pcie1 {
+	status = "okay";
+};
+&pcie2 {
+	status = "okay";
+};
+&pcie3 {
+	status = "okay";
+};
+#endif //#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+
+&led_ctrl {
+    pinctrl-names = "default";
+    pinctrl-0 = <&ser_led_clk_pin_17 &ser_led_data_pin_16 &ser_led_mask_pin_18>;
+    serial-shifters-installed = <4>;
+    serial-data-polarity-high;
+};
+
+&vreg_sync {
+		pinctrl-0 = <&a_vreg_sync_pin_19>;
+		pinctrl-names = "default";
+};
+
+&hs_uart0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&a_hs_uart_cts_n_pin_44 &a_hs_uart_rts_n_pin_43 &a_hs_uart_sdin_pin_51 &a_hs_uart_sdout_pin_42 >;
+	status = "okay";
+};
+
+&uart3 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&a_uart3_sdin_pin_20 &a_uart3_sdout_pin_52 >;
+	status = "okay";
+};
+&i2c0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c0_sclk_pin_12 &i2c0_sdata_pin_13>;
+	status = "okay";
+};
+
+&i2c1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c1_sclk_pin_14 &i2c1_sdata_pin_15>;
+	status = "okay";
+};
+
+&i2c2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c2_sclk_pin_78 &i2c2_sdata_pin_79>;
+	status = "okay";
+};
+
+&mdio {
+    /* Port PHY mapping:
+            port_gphy0 <----> phy_gphy0
+            port_gphy1 <----> phy_gphy1
+            port_gphy2 <----> phy_gphy2
+            port_gphy3 <----> phy_gphy3
+            port_xphy <-----> phy_xphy
+            port_sgmii1 <---> phy_serdes0   - sfp1
+            port_sgmii2 <---> phy_serdes1   - sfp2
+     */
+	phy_gphy0 {
+		status = "okay";
+	};
+
+	phy_gphy1 {
+		status = "okay";
+	};
+
+	phy_gphy2 {
+		status = "okay";
+	};
+
+	phy_gphy3 {
+		status = "okay";
+	};
+	phy_xphy {
+		status = "okay";
+	};
+
+	phy_serdes0 {
+		trx = <&sfp1>;
+		status = "okay";
+	};
+
+	phy_serdes1 {
+		trx = <&sfp2>;
+		status = "okay";
+	};
+};
+
+&wan_ae {
+	status = "okay";
+	trx = <&sfp0>;
+};
+
+&ethphytop {
+    xphy0-enabled;
+    status = "okay";
+};
+
+&switch0 {
+	ports {
+		port_gphy0 {
+			status = "okay";
+		};
+
+		port_gphy1 {
+			status = "okay";
+		};
+
+		port_gphy2 {
+			status = "okay";
+		};
+
+		port_gphy3 {
+			status = "okay";
+		};
+		port_xphy {
+			status = "okay";
+		};
+
+		port_sgmii1 {
+			status = "okay";
+		};
+
+		port_sgmii2 {
+			status = "okay";
+		};
+
+		port_wan@ae {
+			status = "okay";
+		};
+
+        port_wan@fiber {
+            status = "okay";
+        };
+	};
+};
+
+&phy_wan_serdes {
+    status = "okay";
+};
+
+&usb_ctrl {
+	pinctrl-names = "default";
+	pinctrl-0 = <&usb0_pwr_pins &usb1_pwr_pins>;
+	status = "okay";
+	xhci-enable;
+};
+&usb0_xhci {
+	status = "okay";
+};
+
+

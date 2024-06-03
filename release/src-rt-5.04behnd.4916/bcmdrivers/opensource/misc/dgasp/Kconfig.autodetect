@@ -1,0 +1,10 @@
+config BCM_DGASP_DRV
+	bool "Broadcom BCA Dying Gasp driver"
+	default n
+	help
+	  Add the BCM BCA Dying Gasp support.
+
+config BCM_DGASP_DRV_IMPL
+	int "Implementation index for BCA Dying Gasp module"
+	depends on BCM_DGASP_DRV
+	default 1

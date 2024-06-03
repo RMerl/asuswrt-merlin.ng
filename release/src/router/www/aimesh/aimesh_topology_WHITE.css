@@ -19,6 +19,19 @@
 .translucent_bg{
 	height: 200px;
 }
+.topology_icon .product_icon_container{
+	border: 1px solid #DCDCDC;
+}
+.jstree-clicked .product_icon_container{
+	background: linear-gradient(0deg, #ECF5FF 0%, #ECF5FF 100%), #D9D9D9;
+	border: 1px solid #248DFF !important;
+	box-shadow: 0px 0px 2px 0px rgba(0,0,0,0.6), 0px 0px 4px 4px rgba(153,202,255,0.4), 0px 0px 8px 0px rgba(0,0,0,0.2);
+}
+.product_icon_container.optimize{
+	background: linear-gradient(315deg, rgba(3, 200, 253, 0.00) -2.81%, #03C8FD 42.25%, #133ED4 67.78%, rgba(19, 62, 212, 0.00) 101.56%);
+	background-size: 200% 200%;
+	border: initial !important;
+}
 .custom_select input{
 	color: #4D4D4D;
 }
@@ -277,6 +290,7 @@
 	border-right: 1px solid rgba(127, 143, 164, 0.4);
 }
 .client_tab_bg div.clicked{
+	color: #FFFFFF !important;
 	background-image: initial;
 	background-color: rgb(36 141 255);
 	outline: 1px solid rgb(36 141 255 / 20%);
@@ -310,6 +324,11 @@
 }
 .client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon{
 	background-image: url(/images/New_ui/amesh/white_theme/client_control.svg);
+}
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.mlo{
+	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_mlo.svg);
+	background-size: 110%;
+	background-position: -1px -2px;
 }
 .client_list_bg .client_content_bg > .client_content_mac_ip{
 	color: #4D4D4D;
@@ -409,16 +428,18 @@
 	background-image: url(/images/New_ui/amesh/white_theme/topology_connect_quality_moca.svg);
 }
 .jstree-default .jstree-hovered {
-	background: #ECF5FF;
+	background: initial;
+	box-shadow: initial;
 }
 .jstree-default .jstree-clicked {
-	background: #ECF5FF;
+	background: initial;
 }
 .jstree-default .jstree-wholerow-hovered {
-	background: #ECF5FF;
+	background: initial;
+	box-shadow: initial;
 }
 .jstree-default .jstree-wholerow-clicked {
-	background: #ECF5FF;
+	background: initial;
 	box-shadow: -3px 0 0 0 #248DFF, 0 2px 0 0 rgba(0,0,0,0);
 }
 .jstree-default .jstree-node:before{

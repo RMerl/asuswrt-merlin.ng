@@ -103,9 +103,10 @@ int send_from(int fd, int nowild, char *packet, size_t len,
     {
 #ifdef HAVE_LINUX_NETWORK
       /* If interface is still in DAD, EINVAL results - ignore that. */
+      if (errno != EINVAL)
       {
-       my_syslog(LOG_ERR, _("failed to send packet: %s"), strerror(errno));
-       exit(0);
+	my_syslog(LOG_ERR, _("failed to send packet: %s"), strerror(errno));
+	exit(0);
       }
 #endif
       return 0;

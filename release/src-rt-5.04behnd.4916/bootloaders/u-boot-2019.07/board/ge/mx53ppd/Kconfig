@@ -1,0 +1,18 @@
+
+if TARGET_MX53PPD
+
+config SYS_BOARD
+	default "mx53ppd"
+
+config SYS_VENDOR
+	default "ge"
+
+config SYS_SOC
+	default "mx5"
+
+config SYS_CONFIG_NAME
+	default "mx53ppd"
+
+source "board/ge/common/Kconfig"
+
+endif

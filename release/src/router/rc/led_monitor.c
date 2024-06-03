@@ -581,7 +581,14 @@ static void detect_conn_link_zone()
 		return;
 
 	/* Stop detect conn link */
+#ifdef RPAC92
+	if((sw_mode == SW_MODE_AP) && nvram_match("re_mode", "1"))
+	{
+	  //for amesh node
+	}else if (sw_mode != SW_MODE_REPEATER
+#else
 	if (sw_mode != SW_MODE_REPEATER
+#endif
 #ifdef RTCONFIG_REALTEK
     && !mediabridge_mode()
 #ifdef RTCONFIG_AMAS
@@ -598,18 +605,41 @@ static void detect_conn_link_zone()
 	char tmp[64] = {0}, tmp2[16] = {0};
 
 	if (detect_conn_link_internet()) {
+		if((sw_mode() == SW_MODE_AP) && nvram_match("re_mode", "1")){
+			if(nvram_get_int("amas_path_stat") == 0x04 || nvram_get_int("amas_path_stat") == 0x08)
+				band = 1;
+			else if(nvram_get_int("amas_path_stat") == 0x02)
+				band = 0;
+			else if(nvram_get_int("amas_path_stat") == 0x01)
+				return;
+			else 
+				band = -1;
 
-		if (nvram_get_int("wlc_band") == 0) // 2.4G connected
-			link_quality = get_conn_link_quality(0);
-		else if (nvram_get_int("wlc_band") == 1) // 5G connected
-			link_quality = get_conn_link_quality(1);
+			if (nvram_get_int("amas_path_stat") == 0x02) // 2.4G connected
+				link_quality = get_conn_link_quality(0);
+			else if (nvram_get_int("amas_path_stat") == 0x04) // 5G connected
+				link_quality = get_conn_link_quality(1);
 #if defined(RPAC92)
-		else if (nvram_get_int("wlc_band") == 2) // 5G high connected
-			link_quality = get_conn_link_quality(2);
+			else if (nvram_get_int("amas_path_stat") == 0x08) // 5G high connected
+				link_quality = get_conn_link_quality(2);
 #endif
-		else
-			return;
-			/* Do nothing... */
+			else
+				return;
+				/* Do nothing... */
+		}
+		else {
+			if (nvram_get_int("wlc_band") == 0) // 2.4G connected
+				link_quality = get_conn_link_quality(0);
+			else if (nvram_get_int("wlc_band") == 1) // 5G connected
+				link_quality = get_conn_link_quality(1);
+#if defined(RPAC92)
+			else if (nvram_get_int("wlc_band") == 2) // 5G high connected
+				link_quality = get_conn_link_quality(2);
+#endif
+			else
+				return;
+				/* Do nothing... */
+		}
 	}
 	else {
 		if (nvram_get_int("wlc_express") == 0) { // Mediabridge mode. Repeater mode.

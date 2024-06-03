@@ -1,0 +1,6 @@
+COBRA5272 BOARD
+#M:	-
+S:	Maintained
+F:	board/cobra5272/
+F:	include/configs/cobra5272.h
+F:	configs/cobra5272_defconfig

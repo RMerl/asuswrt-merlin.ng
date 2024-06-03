@@ -1,0 +1,12 @@
+if TARGET_NET2BIG_V2
+
+config SYS_BOARD
+	default "net2big_v2"
+
+config SYS_VENDOR
+	default "LaCie"
+
+config SYS_CONFIG_NAME
+	default "lacie_kw"
+
+endif

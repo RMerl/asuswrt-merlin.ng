@@ -1,0 +1,36 @@
+Andes Technology SoC AG101P
+===========================
+
+AG101P is the mainline SoC produced by Andes Technology using N1213 CPU core
+with FPU and DDR contoller support.
+AG101P has integrated both AHB and APB bus and many periphals for application
+and product development.
+
+ADP-AG101P
+=========
+
+ADP-AG101P is the SoC with AG101 hardcore CPU.
+
+Configurations
+==============
+
+CONFIG_MEM_REMAP:
+	Doing memory remap is essential for preparing some non-OS or RTOS
+	applications.
+
+CONFIG_SKIP_LOWLEVEL_INIT:
+	If you want to boot this system from SPI ROM and bypass e-bios (the
+	other boot loader on ROM). You should undefine CONFIG_SKIP_LOWLEVEL_INIT
+	in "include/configs/adp-ag101p.h".
+
+Build and boot steps
+====================
+
+build:
+1. Prepare the toolchains and make sure the $PATH to toolchains is correct.
+2. Use `make adp-ag101p_defconfig` in u-boot root to build the image.
+
+Burn u-boot to SPI ROM:
+====================
+
+This section will be added later.

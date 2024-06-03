@@ -1,0 +1,111 @@
+------------------------------------------------------------------
+Freescale PBL(pre-boot loader) Boot Image generation using mkimage
+------------------------------------------------------------------
+
+The CoreNet SoC's can boot directly from eSPI FLASH, SD/MMC and
+NAND, etc. These SoCs use PBL to load RCW and/or pre-initialization
+instructions. For more details refer section 5 Pre-boot loader
+specifications of reference manual P3041RM/P4080RM/P5020RM at link:
+http://www.freescale.com/webapp/search/Serp.jsp?Reference+Manuals
+
+Building PBL Boot Image and boot steps
+--------------------------------------
+
+1. Building PBL Boot Image.
+   The default Image is u-boot.pbl.
+
+   For eSPI boot(available on P2041/P3041/P4080/P5020/P5040/T4240):
+	To build the eSPI boot image:
+	make <board_name>_SPIFLASH
+
+   For SD boot(available on P2041/P3041/P4080/P5020/P5040/T4240):
+	To build the SD boot image:
+	make <board_name>_SDCARD
+
+   For Nand boot(available on P2041/P3041/P5020/P5040):
+	To build the NAND boot image:
+	make <board_name>_NAND
+
+
+2. pblimage support available with mkimage utility will generate Freescale PBL
+boot image that can be flashed on the board eSPI flash, SD/MMC and NAND.
+Following steps describe it in detail.
+
+	1). Boot from eSPI flash
+	Write u-boot.pbl to eSPI flash from offset 0x0.
+	for ex in u-boot:
+	=>tftp 100000 u-boot.pbl
+	=>sf probe 0
+	=>sf erase 0 100000
+	=>sf write 100000 0 $filesize
+	Change SW1[1:5] = off off on off on.
+
+	2). Boot from SD/MMC
+	Write u-boot.pbl to SD/MMC from offset 0x1000.
+	for ex in u-boot:
+	=>tftp 100000 u-boot.pbl
+	=>mmcinfo
+	=>mmc write 100000 8 441
+	Change SW1[1:5] = off off on on off.
+
+	3). Boot from Nand
+	Write u-boot.pbl to Nand from offset 0x0.
+	for ex in u-boot:
+	=>tftp 100000 u-boot.pbl
+	=>nand info
+	=>nand erase 0 100000
+	=>nand write 100000 0 $filesize
+	Change SW1[1:5] = off on off off on
+	Change SW7[1:4] = on off off on
+
+Board specific configuration file specifications:
+------------------------------------------------
+1. Configuration files rcw.cfg and pbi.cfg must present in the
+board/freescale/corenet_ds/, rcw.cfg is for RCW, pbi.cfg is for
+PBI instructions. File name must not be changed since they are used
+in Makefile.
+2. These files can have empty lines and lines starting with "#" as first
+character to put comments
+
+Typical example of rcw.cfg file:
+-----------------------------------
+
+#PBL preamble and RCW header
+aa55aa55 010e0100
+#64 bytes RCW data
+4c580000 00000000 18185218 0000cccc
+40464000 3c3c2000 58000000 61000000
+00000000 00000000 00000000 008b6000
+00000000 00000000 00000000 00000000
+
+Typical example of pbi.cfg file:
+-----------------------------------
+
+#PBI commands
+#Initialize CPC1
+09010000 00200400
+09138000 00000000
+091380c0 00000100
+09010100 00000000
+09010104 fff0000b
+09010f00 08000000
+09010000 80000000
+#Configure LAW for CPC1
+09000d00 00000000
+09000d04 fff00000
+09000d08 81000013
+09000010 00000000
+09000014 ff000000
+09000018 81000000
+#Initialize eSPI controller
+09110000 80000403
+09110020 2d170008
+09110024 00100008
+09110028 00100008
+0911002c 00100008
+#Flush PBL data
+09138000 00000000
+091380c0 00000000
+
+------------------------------------------------
+Author: Shaohui Xie<Shaohui.Xie@freescale.com>

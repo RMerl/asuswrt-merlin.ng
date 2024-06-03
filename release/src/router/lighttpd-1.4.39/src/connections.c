@@ -1450,11 +1450,6 @@ found_header_end:
 			/* don't buffer request bodies <= 64k on disk */
 			chunkqueue_steal(dst_cq, cq, con->request.content_length - dst_cq->bytes_in);
 		}
-		else if (con->request.content_length > con->request.free_mem) {
-			con->http_status = 413;
-			con->keep_alive = 0;
-			connection_set_state(srv, con, CON_STATE_HANDLE_REQUEST);
-		}
 		else if (0 != chunkqueue_steal_with_tempfiles(srv, dst_cq, cq, con->request.content_length - dst_cq->bytes_in )) {
 			con->http_status = 413; /* Request-Entity too large */
 			con->keep_alive = 0;
@@ -1769,7 +1764,9 @@ int connection_state_machine(server *srv, connection *con) {
 				buffer_copy_string_len(tmp, ds_cookie->value->ptr, ds_cookie->value->used);		
 				buffer_urldecode_path(tmp);
 				memset(buf, 0, sizeof(buf));
-				strncpy(buf, tmp->ptr, tmp->used);
+				size_t len = tmp->used > sizeof(buf) ? sizeof(buf) - 1 : tmp->used;
+				strncpy(buf, tmp->ptr, len);
+				buf[len] = '\0';
 				buffer_free(tmp);
 				
 				// check for "<AuthName>=" entry in a cookie

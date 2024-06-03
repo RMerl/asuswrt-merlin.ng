@@ -1,0 +1,6 @@
+BCM911360_ENTPHN-NS BOARD
+M:	Steve Rae <steve.rae@raedomain.com>
+S:	Maintained
+F:	board/broadcom/bcmcygnus/
+F:	include/configs/bcm_ep_board.h
+F:	configs/bcm911360_entphn-ns_defconfig

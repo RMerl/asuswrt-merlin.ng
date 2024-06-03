@@ -1,0 +1,15 @@
+if TARGET_MCR3000
+
+config SYS_BOARD
+	default "MCR3000"
+
+config SYS_VENDOR
+	default "cssi"
+
+config SYS_CONFIG_NAME
+	default "MCR3000"
+
+config SYS_TEXT_BASE
+	default 0x04000000
+
+endif

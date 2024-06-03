@@ -46,8 +46,12 @@
 #define ETHER_ADDR_LEN 6
 #endif
 
-#ifdef RTCONFIG_AMAS_WGN
-#define WLIFU_MAX_NO_BRIDGE		8
+#if defined(RTCONFIG_BCM_502L07P2)
+#define WLIFU_MAX_NO_BRIDGE		16
+#elif defined(RTCONFIG_MULTILAN_CFG)
+#define WLIFU_MAX_NO_BRIDGE		16	
+#elif defined(RTCONFIG_AMAS_WGN)
+#define WLIFU_MAX_NO_BRIDGE     8
 #else
 #define WLIFU_MAX_NO_BRIDGE		5
 #endif
@@ -178,9 +182,7 @@ extern unsigned char *get_wlmacstr_by_unit(char *unit);
 #define WLIF_SSID_MAX_SZ		32
 #define WLIF_PSK_MAX_SZ			64
 
-#ifdef RTCONFIG_HND_ROUTER_AX
 #define WLIF_DPP_PARAMS_MAX_SIZE	512
-#endif
 
 #define DPP_AKM		"dpp"
 #define PSK_AKM		"psk"
@@ -234,6 +236,16 @@ typedef enum wlif_wps_mode {
 	WLIF_WPS_REGISTRAR	= 2
 } wlif_wps_mode_t;
 
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+enum dpp_netrole {
+        DPP_NETROLE_STA,
+        DPP_NETROLE_AP,
+        DPP_NETROLE_CONFIGURATOR,
+        DPP_NETROLE_MAPAGENT,
+        DPP_NETROLE_MAP_BH_STA,
+};
+#endif
+
 // Struct to hold the network settings received using wps.
 typedef struct wlif_wps_nw_settings {
 	char ssid[WLIF_SSID_MAX_SZ + /* '\0' */ 1];	// SSID.
@@ -244,7 +256,6 @@ typedef struct wlif_wps_nw_settings {
 	bool invalid;		// Check for the validity of credentials
 } wlif_wps_nw_creds_t;
 
-#ifdef RTCONFIG_HND_ROUTER_AX
 // Structure to hold the network settings received in DPP config response.
 typedef struct wlif_dpp_config_settings {
 	char ssid[WLIF_SSID_MAX_SZ + /* '\0' */ 1];		// SSID
@@ -255,8 +266,10 @@ typedef struct wlif_dpp_config_settings {
 	char dpp_pp_key[WLIF_DPP_PARAMS_MAX_SIZE];		// DPP PP key
 	unsigned char dpp_psk[WLIF_PSK_MAX_SZ + /* '\0' */ 1];	// PSK
 	char dpp_pass[2*WLIF_PSK_MAX_SZ + /* '\0' */ 1];	// PASS
-} wlif_dpp_creds_t;
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+	enum dpp_netrole netrole;				// DPP netrole
 #endif
+} wlif_dpp_creds_t;
 
 /* Struct to store the bss info */
 typedef struct wlif_bss {
@@ -283,7 +296,7 @@ int wl_wlif_apply_creds(wlif_bss_t *bss, wlif_wps_nw_creds_t *creds);
 /* Invokes the hostapd/wpa_supplicant wps session */
 int wl_wlif_wps_pbc_hdlr(char *wps_ifname, char *bh_ifname);
 /* Stops the hostapd/wpa_supplicant wps session */
-#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2)
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916) || defined(RTCONFIG_BCM_502L07P2)
 int wl_wlif_wps_stop_session(char *wps_ifname, bool bUpdateUI);
 #else
 int wl_wlif_wps_stop_session(char *wps_ifname);
@@ -330,7 +343,7 @@ void wl_wlif_wps_gpio_cleanup(int board_fp);
 #endif	/* BCA_HNDROUTER */
 #endif	/* CONFIG_HOSTAPD */
 
-#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2)
+#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916) || defined(RTCONFIG_BCM_502L07P2)
 #if !defined(RTCONFIG_SDK504L02_188_1303)
 /* LGI supported rate bitmap control feature */
 typedef enum _bits {

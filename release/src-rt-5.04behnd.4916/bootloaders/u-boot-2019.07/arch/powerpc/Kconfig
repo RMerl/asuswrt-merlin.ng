@@ -1,0 +1,53 @@
+menu "PowerPC architecture"
+	depends on PPC
+
+config SYS_ARCH
+	default "powerpc"
+
+choice
+	prompt "CPU select"
+	optional
+
+config MPC83xx
+	bool "MPC83xx"
+	select CREATE_ARCH_SYMLINK
+	select SYS_FSL_HAS_SEC
+	select SYS_FSL_SEC_BE
+	select SYS_FSL_SEC_COMPAT_2
+
+config MPC85xx
+	bool "MPC85xx"
+	select CREATE_ARCH_SYMLINK
+	select SYS_FSL_DDR
+	select SYS_FSL_DDR_BE
+	select BINMAN
+	imply CMD_HASH
+	imply CMD_IRQ
+	imply USB_EHCI_HCD if USB
+
+config MPC86xx
+	bool "MPC86xx"
+	select SYS_FSL_DDR
+	select SYS_FSL_DDR_BE
+	imply CMD_REGINFO
+
+config MPC8xx
+	bool "MPC8xx"
+	select BOARD_EARLY_INIT_F
+	imply CMD_REGINFO
+	imply WDT_MPC8xx
+
+endchoice
+
+config HIGH_BATS
+	bool "Enable high BAT registers"
+	help
+	  Enable BATs (block address translation registers) 4-7 on machines
+	  that support them.
+
+source "arch/powerpc/cpu/mpc83xx/Kconfig"
+source "arch/powerpc/cpu/mpc85xx/Kconfig"
+source "arch/powerpc/cpu/mpc86xx/Kconfig"
+source "arch/powerpc/cpu/mpc8xx/Kconfig"
+
+endmenu

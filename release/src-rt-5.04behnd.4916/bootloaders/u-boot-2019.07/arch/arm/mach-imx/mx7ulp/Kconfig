@@ -1,0 +1,18 @@
+if ARCH_MX7ULP
+
+config SYS_SOC
+	default "mx7ulp"
+
+choice
+	prompt "MX7ULP board select"
+	optional
+
+config TARGET_MX7ULP_EVK
+        bool "Support mx7ulp EVK board"
+	select SYS_ARCH_TIMER
+
+endchoice
+
+source "board/freescale/mx7ulp_evk/Kconfig"
+
+endif

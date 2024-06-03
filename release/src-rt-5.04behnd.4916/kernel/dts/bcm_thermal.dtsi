@@ -1,0 +1,14 @@
+/*
+ * Broadcom thermal throttling dtsi
+ */
+
+/ {
+    therm0: brcm-therm {
+        compatible = "brcm,therm";
+        threshold0 = <105>; /* celsius */
+        threshold1 = <110>; /* celsius */
+        threshold2 = <115>; /* celsius */
+        reboot-temp = <120>; /* celsius */
+        boot-temp = <110>; /* celsius */
+    };
+};

@@ -1,0 +1,27 @@
+CHROMEBOOK JERRY BOARD
+M:	Simon Glass <sjg@chromium.org>
+S:	Maintained
+F:	board/google/veyron/
+F:	include/configs/veyron.h
+F:	configs/chromebook_jerry_defconfig
+
+CHROMEBIT MICKEY BOARD
+M:	Simon Glass <sjg@chromium.org>
+S:	Maintained
+F:	board/google/veyron/
+F:	include/configs/veyron.h
+F:	configs/chromebit_mickey_defconfig
+
+CHROMEBOOK MINNIE BOARD
+M:	Simon Glass <sjg@chromium.org>
+S:	Maintained
+F:	board/google/veyron/
+F:	include/configs/veyron.h
+F:	configs/chromebook_minnie_defconfig
+
+CHROMEBOOK SPEEDY BOARD
+M:	Simon Glass <sjg@chromium.org>
+S:	Maintained
+F:	board/google/veyron/
+F:	include/configs/veyron.h
+F:	configs/chromebook_speedy_defconfig

@@ -1,0 +1,34 @@
+# RDPA
+drivers/rdpa/xrdp/rdpa_common_ex.c
+drivers/rdpa/xrdp/rdpa_cpu_ex.c
+drivers/rdpa/xrdp/rdpa_cpu_feed_ex.c
+drivers/rdpa/xrdp/rdpa_cpu_feed_ex.h
+drivers/rdpa/xrdp/rdpa_egress_tm_ex.c
+drivers/rdpa/xrdp/rdpa_filter_ex.c
+drivers/rdpa/xrdp/rdpa_ingress_class_ex.c
+drivers/rdpa/rdpa_natc_common_ex.h
+drivers/rdpa/xrdp/rdpa_natc_common_ex.c
+drivers/rdpa/xrdp/rdpa_platform.h
+drivers/rdpa/rdpa_policer.c
+drivers/rdpa/rdpa_policer_ex.h
+drivers/rdpa/xrdp/rdpa_policer_ex.c
+drivers/rdpa/xrdp/rdpa_port_ex.c
+drivers/rdpa/xrdp/rdpa_rdd_inline.h
+drivers/rdpa/xrdp/rdpa_rdd_map.c
+drivers/rdpa/xrdp/rdpa_rdd_map.h
+drivers/rdpa/xrdp/rdpa_system_ex.c
+drivers/rdpa/xrdp/rdpa_system_hw_cfg.c
+
+# RDP_DRV
+drivers/rdp_drv/rdp_drv_arch.h
+drivers/rdp_drv/rdp_drv_bkpt.h
+drivers/rdp_drv/rdp_drv_bkpt.c
+drivers/rdp_drv/rdp_drv_cntr.c
+drivers/rdp_drv/rdp_drv_cntr.h
+drivers/rdp_drv/rdp_drv_proj_cntr.h
+drivers/rdp_drv/rdp_drv_proj_cntr.c
+drivers/rdp_drv/rdp_drv_shell.c
+drivers/rdp_drv/rdp_drv_shell.h
+drivers/rdp_drv/rdp_drv_xpm.c
+drivers/rdp_drv/rdp_drv_xpm.h
+

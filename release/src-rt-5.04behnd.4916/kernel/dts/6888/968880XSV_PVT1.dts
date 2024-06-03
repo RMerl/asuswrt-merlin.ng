@@ -1,0 +1,233 @@
+#include "inc/68880.dtsi"
+#include "../bcm_voice.dtsi"
+
+/ {
+	memory_controller {
+		memcfg = <(BP1_DDR_MCBSEL_FORMAT_VER1   | \
+					BP1_DDR_TYPE_LPDDR4         | \
+					BP1_DDR_SPEED_2133_36_39_39 | \
+					BP1_DDR_WIDTH_32BIT         | \
+					BP1_DDR_TOTAL_SIZE_8Gb      | \
+					BP1_DDR_SSC_CONFIG_1        | \
+					BP1_DDR_CONFIG_DEBUG)>;
+	};
+};
+
+/ {
+	model = "968550XSV";
+
+    xfp_sfp: xfp_sfp {
+        pinctrl-names = "default", "tx-sd";
+        pinctrl-0 = <&pon_lbe_p_pin_30>;
+        pinctrl-1 = <&pon_lbe_p_pin_30 &rogue_onu_in_pin_27>;
+        compatible = "brcm,sfp";
+        i2c-bus = <&i2c0_mux1>;
+        los-gpio = <&gpioc 26 GPIO_ACTIVE_HIGH>;
+        mod-def0 = <&bca_extintr 76 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_BOTH_EDGE | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+        tx-power-gpio = <&gpioc 6 GPIO_ACTIVE_HIGH>;
+    };
+
+    wan_serdes {
+        trx = <&xfp_sfp>;
+        status = "okay";
+    };
+};
+
+&i2c0 {
+	pinctrl-0 = <&i2c_scl_pin_28 &i2c_sda_pin_29>;
+	pinctrl-names = "default";
+	status = "okay";
+
+    i2cswitch {
+        compatible = "nxp,pca9548";
+        #address-cells = <1>;
+        #size-cells = <0>;
+        reg = <0x72>;
+        i2c-mux-idle-disconnect;
+
+        i2c0_mux1: i2c@1 {
+            reg = <0x1>;
+        };
+
+        i2c0_mux2: i2c@2 {
+            reg = <0x2>;
+        };
+    };
+};
+
+&i2c1 {
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+&led_ctrl {
+	pinctrl-names = "default";
+	pinctrl-0 = <&a_ser_led_data_pin_0 &a_ser_led_clk_pin_1 &a_ser_led_mask_pin_2>;
+	serIial-shifters-installed = <3>; 
+};
+
+&nand {
+	status = "okay";
+};
+&wdt {
+	status = "okay";
+};
+&uart0 {
+	status = "okay";
+};
+
+&uart1 {
+	pinctrl-0 = <&a_uart1_sin_pin_11 &a_uart1_sout_pin_12>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+&hs_uart0 {
+	pinctrl-0 = <&a_uart2_cts_pin_18 &a_uart2_rts_pin_19 &a_uart2_sin_pin_20 &a_uart2_sout_pin_21>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+&spinand {
+	status = "okay";
+};
+
+&sdhci {
+    status = "okay";
+};
+
+&usb_ctrl {
+	pinctrl-names = "default";
+	pinctrl-0 = <&usb0_pwr_pins &usb1_pwr_pins>;
+	xhci-enable;
+	status = "okay";
+};
+
+&usb0_xhci {
+	status = "okay";
+};
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+&pcie0 {
+	status = "okay";
+};
+&pcie1 {
+	status = "okay";
+};
+&pcie2 {
+	status = "okay";
+};
+&pcie3 {
+	status = "okay";
+};
+#endif
+
+&hsspi {
+	status = "okay";
+};
+
+
+&xport {
+    status = "okay";
+};
+
+&ethphytop {
+    status = "okay";
+};
+
+&egphy {
+    status = "okay";
+};
+
+&unimac {
+    status = "okay";
+};
+
+&serdes{
+    status = "okay";
+};
+
+&mdio1 {
+    status = "okay";
+};
+
+&mdio {
+    serdes00 {
+        pinctrl-names = "default";
+        pinctrl-0 = <&a_slan_sd_rx_los_pin_3 &a_slan_sd_mod_abs_pin_4>;
+        tx-disable = <&gpioc 6 GPIO_ACTIVE_HIGH>;
+        10000-Base-R;
+        2500-Base-X;
+        1000-Base-X;
+        status = "okay";
+    };
+    serdes10 {
+        status = "okay";
+    };
+    serdes11 {
+        status = "okay";
+    };
+    serdes12 {
+        status = "okay";
+    };
+    wan_ae {
+        trx = <&xfp_sfp>;
+        status = "okay";
+    };
+};
+
+&switch0 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&a_eth_mdc_pin_59 &a_eth_mdio_pin_60>;
+
+    ports {
+        port_slan0 {
+            status = "okay";
+        };
+        port_qlan0 {
+            status = "okay";
+        };
+        port_qlan1 {
+            status = "okay";
+        };
+        port_qlan2 {
+            status = "okay";
+        };
+        port_wan@fiber {
+            status = "okay";
+        };
+        port_wan@ae {
+            status = "okay";
+        };
+    };
+};
+
+&phy_wan_serdes {
+    status = "okay";
+};
+
+&bcm_voice{
+	sliclist = SLICSLAC_LIST_COMMON_NOFXO;
+};
+
+&hsspi {
+	status = "okay";
+	voice0 {
+		pinctrl-0 = <&spim_ss0_b_pin_25>;
+		pinctrl-names = "default";
+		compatible = "bcm-spi-voice";
+		reg = <0>; /* chip select 0 */
+		spi-max-frequency = <1024000>;
+		reset-gpio = <&gpioc 12 GPIO_ACTIVE_LOW>;
+		spi-index = <0>;/* voice header index */
+	};
+	voice1 {
+		pinctrl-0 = <&spim_ss3_b_pin_5>;
+		pinctrl-names = "default";
+		compatible = "bcm-spi-voice";
+		reg = <3>; /* chip select 0 */
+		spi-max-frequency = <1024000>;
+		reset-gpio = <&gpioc 13 GPIO_ACTIVE_LOW>;
+		spi-index = <1>;/* voice header index */
+	};
+};

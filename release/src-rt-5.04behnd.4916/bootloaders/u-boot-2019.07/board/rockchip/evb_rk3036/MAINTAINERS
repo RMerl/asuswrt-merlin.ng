@@ -1,0 +1,6 @@
+EVB-RK3036
+M:      huang lin <hl@rock-chips.com>
+S:      Maintained
+F:      board/rockchip/evb_rk3036
+F:      include/configs/evb_rk3036.h
+F:      configs/evb-rk3036_defconfig

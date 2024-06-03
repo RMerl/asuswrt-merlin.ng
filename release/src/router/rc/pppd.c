@@ -40,6 +40,10 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <net/if_arp.h>
+#ifdef RTCONFIG_MULTIWAN_IF
+#include "multi_wan.h"
+#endif
+#include <rtstate.h>
 
 char *ppp_escape(char *src, char *buf, size_t size)
 {
@@ -96,6 +100,12 @@ start_pppd(int unit)
 
 	snprintf(prefix, sizeof(prefix), "wan%d_", unit);
 	sprintf(options, "/tmp/ppp/options.wan%d", unit);
+
+#ifdef RTCONFIG_MULTI_PPP
+	if (is_mtppp_unit(unit)) {
+		snprintf(prefix, sizeof(prefix), "wan%d_", get_mtppp_base_unit(unit));
+	}
+#endif
 
 	mask = umask(0000);
 
@@ -308,7 +318,11 @@ start_pppd(int unit)
 #endif
 		if (nvram_match(ipv6_nvname_by_unit("ipv6_ifdev", unit), "ppp")
 #ifdef RTCONFIG_DUALWAN
-			&& (unit == wan_primary_ifunit_ipv6())
+			&& (unit == wan_primary_ifunit_ipv6()
+#ifdef RTCONFIG_MULTIWAN_IF
+				|| is_mtwan_unit(unit)
+#endif
+			)
 #endif
 		)
 			fprintf(fp, "+ipv6\n");

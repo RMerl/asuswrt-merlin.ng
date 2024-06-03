@@ -1,0 +1,98 @@
+The most frequent cause of problems when porting U-Boot to new
+hardware, or when using a sloppy port on some board, is memory errors.
+In most cases these are not caused by failing hardware, but by
+incorrect initialization of the memory controller.  So it appears to
+be a good idea to always test if the memory is working correctly,
+before looking for any other potential causes of any problems.
+
+U-Boot implements 3 different approaches to perform memory tests:
+
+1. The get_ram_size() function (see "common/memsize.c").
+
+   This function is supposed to be used in each and every U-Boot port
+   determine the presence and actual size of each of the potential
+   memory banks on this piece of hardware.  The code is supposed to be
+   very fast, so running it for each reboot does not hurt.  It is a
+   little known and generally underrated fact that this code will also
+   catch 99% of hardware related (i. e. reliably reproducible) memory
+   errors.  It is strongly recommended to always use this function, in
+   each and every port of U-Boot.
+
+2. The "mtest" command.
+
+   This is probably the best known memory test utility in U-Boot.
+   Unfortunately, it is also the most problematic, and the most
+   useless one.
+
+   There are a number of serious problems with this command:
+
+   - It is terribly slow.  Running "mtest" on the whole system RAM
+     takes a _long_ time before there is any significance in the fact
+     that no errors have been found so far.
+
+   - It is difficult to configure, and to use.  And any errors here
+     will reliably crash or hang your system.  "mtest" is dumb and has
+     no knowledge about memory ranges that may be in use for other
+     purposes, like exception code, U-Boot code and data, stack,
+     malloc arena, video buffer, log buffer, etc.  If you let it, it
+     will happily "test" all such areas, which of course will cause
+     some problems.
+
+   - It is not easy to configure and use, and a large number of
+     systems are seriously misconfigured.  The original idea was to
+     test basically the whole system RAM, with only exempting the
+     areas used by U-Boot itself - on most systems these are the areas
+     used for the exception vectors (usually at the very lower end of
+     system memory) and for U-Boot (code, data, etc. - see above;
+     these are usually at the very upper end of system memory).  But
+     experience has shown that a very large number of ports use
+     pretty much bogus settings of CONFIG_SYS_MEMTEST_START and
+     CONFIG_SYS_MEMTEST_END; this results in useless tests (because
+     the ranges is too small and/or badly located) or in critical
+     failures (system crashes).
+
+   Because of these issues, the "mtest" command is considered depre-
+   cated.  It should not be enabled in most normal ports of U-Boot,
+   especially not in production.  If you really need a memory test,
+   then see 1. and 3. above resp. below.
+
+3. The most thorough memory test facility is available as part of the
+   POST (Power-On Self Test) sub-system, see "post/drivers/memory.c".
+
+   If you really need to perform memory tests (for example, because
+   it is mandatory part of your requirement specification), then
+   enable this test which is generic and should work on all archi-
+   tectures.
+
+WARNING:
+
+It should pointed out that _all_ these memory tests have one
+fundamental, unfixable design flaw:  they are based on the assumption
+that memory errors can be found by writing to and reading from memory.
+Unfortunately, this is only true for the relatively harmless, usually
+static errors like shorts between data or address lines, unconnected
+pins, etc.  All the really nasty errors which will first turn your
+hair gray, only to make you tear it out later, are dynamical errors,
+which usually happen not with simple read or write cycles on the bus,
+but when performing back-to-back data transfers in burst mode.  Such
+accesses usually happen only for certain DMA operations, or for heavy
+cache use (instruction fetching, cache flushing).  So far I am not
+aware of any freely available code that implements a generic, and
+efficient, memory test like that.  The best known test case to stress
+a system like that is to boot Linux with root file system mounted over
+NFS, and then build some larger software package natively (say,
+compile a Linux kernel on the system) - this will cause enough context
+switches, network traffic (and thus DMA transfers from the network
+controller), varying RAM use, etc. to trigger any weak spots in this
+area.
+
+Note: An attempt was made once to implement such a test to catch
+memory problems on a specific board.  The code is pretty much board
+specific (for example, it includes setting specific GPIO signals to
+provide triggers for an attached logic analyzer), but you can get an
+idea how it works: see "examples/standalone/test_burst*".
+
+Note 2: Ironically enough, the "test_burst" did not catch any RAM
+errors, not a single one ever.  The problems this code was supposed
+to catch did not happen when accessing the RAM, but when reading from
+NOR flash.

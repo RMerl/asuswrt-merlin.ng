@@ -40,8 +40,11 @@ function initial(){
 			}
 			return "";
 		};
-		var referer = getUrlParameter("referer").toLocaleLowerCase();
-		var vpnc_iframe_src = "/VPN/vpnc.html";
+		var referer = getUrlParameter("referer").toLowerCase();
+
+		var curTheme = (parent.webWrapper) ? "?current_theme=white" : "";
+		var vpnc_iframe_src = "/VPN/vpnc.html" + curTheme;
+
 		if(referer != "")
 			vpnc_iframe_src += "?referer=" + referer + "";
 		document.getElementById("vpnc_iframe").setAttribute("src", vpnc_iframe_src);

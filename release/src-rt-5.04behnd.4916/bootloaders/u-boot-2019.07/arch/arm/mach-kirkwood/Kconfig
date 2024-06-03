@@ -1,0 +1,97 @@
+if KIRKWOOD
+
+choice
+	prompt "Marvell Kirkwood board select"
+	optional
+
+config TARGET_OPENRD
+	bool "Marvell OpenRD Board"
+
+config TARGET_DREAMPLUG
+	bool "DreamPlug Board"
+
+config TARGET_DS109
+	bool "Synology DS109"
+
+config TARGET_GURUPLUG
+	bool "GuruPlug Board"
+
+config TARGET_SHEEVAPLUG
+	bool "SheevaPlug Board"
+
+config TARGET_LSXL
+	bool "lsxl Board"
+
+config TARGET_POGO_E02
+	bool "pogo_e02 Board"
+
+config TARGET_DNS325
+	bool "dns325 Board"
+
+config TARGET_ICONNECT
+	bool "iconnect Board"
+
+config TARGET_KM_KIRKWOOD
+	bool "KM_KIRKWOOD Board"
+	select BOARD_LATE_INIT
+	imply CMD_CRAMFS
+	imply CMD_DIAG
+	imply FS_CRAMFS
+
+config TARGET_NET2BIG_V2
+	bool "LaCie 2Big Network v2 NAS Board"
+
+config TARGET_NETSPACE_V2
+	bool "LaCie netspace_v2 Board"
+
+config TARGET_IB62X0
+	bool "ib62x0 Board"
+
+config TARGET_DOCKSTAR
+	bool "Dockstar Board"
+
+config TARGET_GOFLEXHOME
+	bool "GoFlex Home Board"
+
+config TARGET_NAS220
+	bool "BlackArmor NAS220"
+
+config TARGET_NSA310S
+	bool "Zyxel NSA310S"
+
+config TARGET_SBx81LIFKW
+	bool "Allied Telesis SBx81GS24/SBx81GT40/SBx81XS6/SBx81XS16"
+
+config TARGET_SBx81LIFXCAT
+	bool "Allied Telesis SBx81GP24/SBx81GT24"
+
+config TARGET_DB_88F6281_BP
+	bool "Marvell DB-88F6281-BP"
+
+endchoice
+
+config SYS_SOC
+	default "kirkwood"
+
+source "board/Marvell/openrd/Kconfig"
+source "board/Marvell/dreamplug/Kconfig"
+source "board/Synology/ds109/Kconfig"
+source "board/Marvell/guruplug/Kconfig"
+source "board/Marvell/sheevaplug/Kconfig"
+source "board/buffalo/lsxl/Kconfig"
+source "board/cloudengines/pogo_e02/Kconfig"
+source "board/d-link/dns325/Kconfig"
+source "board/iomega/iconnect/Kconfig"
+source "board/keymile/km_arm/Kconfig"
+source "board/LaCie/net2big_v2/Kconfig"
+source "board/LaCie/netspace_v2/Kconfig"
+source "board/raidsonic/ib62x0/Kconfig"
+source "board/Seagate/dockstar/Kconfig"
+source "board/Seagate/goflexhome/Kconfig"
+source "board/Seagate/nas220/Kconfig"
+source "board/zyxel/nsa310s/Kconfig"
+source "board/alliedtelesis/SBx81LIFKW/Kconfig"
+source "board/alliedtelesis/SBx81LIFXCAT/Kconfig"
+source "board/Marvell/db-88f6281-bp/Kconfig"
+
+endif

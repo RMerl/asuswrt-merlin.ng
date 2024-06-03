@@ -88,7 +88,7 @@ function Get_Component_Feature_Desc_OpenVPN(_type){
 
 	var $popup_title_container = $("<div>").addClass("popup_title_container");
 	$popup_title_container.appendTo($container);
-	$("<div>").addClass("title").html("About Feature").appendTo($popup_title_container);/* untranslated */
+	$("<div>").addClass("title").html("<#NewFeatureAbout#>").appendTo($popup_title_container);
 	var $close_btn = $("<div>").addClass("vpn_icon_all_collect close_btn");
 	$close_btn.appendTo($popup_title_container);
 	$close_btn.unbind("click").click(function(e){
@@ -103,7 +103,7 @@ function Get_Component_Feature_Desc_OpenVPN(_type){
 	if(_type == "Feature_Desc"){
 		var $feature_desc = $("<div>").addClass("feature_desc");
 		$feature_desc.appendTo($popup_content_container);
-		$("<div>").addClass("title").html("Feature Description").appendTo($feature_desc);/* untranslated */
+		$("<div>").addClass("title").html("<#NewFeatureDesc#>").appendTo($feature_desc);
 		var $openvpn_desc = $("#openvpn_desc");
 		if(isMobile()){
 			$openvpn_desc.find("#desc3").empty();
@@ -1850,7 +1850,7 @@ function Get_Component_Setting_Profile_OpenVPN(_type){
 	var $vpn_server_port_hint_obj = $("<div>").addClass("item_hint").html("* <#SSH_Port_Suggestion#>").appendTo($detail_general);
 	if(wan_proto == "v6plus" || wan_proto == "ocnvc"){
 		var get_s46_hgw_case = '<% nvram_get("s46_hgw_case"); %>';      //topology 2,3,6
-		var s46_ports_check_flag = (get_s46_hgw_case=='3' || get_s46_hgw_case=='6')? true:false;        //true for topology 3||6
+                var s46_ports_check_flag = (get_s46_hgw_case=='3' || get_s46_hgw_case=='6')? true:false;        //true for topology 3||6
 		var get_ipv6_s46_ports = (Softwire46_support && (wan_proto == "v6plus" || wan_proto == "ocnvc")) ? httpApi.nvramGet(["ipv6_s46_ports"]).ipv6_s46_ports : '0';
 		var array_ipv6_s46_ports = new Array("");
 		if(get_ipv6_s46_ports!="0" && get_ipv6_s46_ports!=""){

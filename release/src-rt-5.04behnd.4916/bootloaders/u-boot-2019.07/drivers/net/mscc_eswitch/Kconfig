@@ -1,0 +1,38 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright (c) 2019 Microsemi Corporation
+
+config MSCC_OCELOT_SWITCH
+	bool "Ocelot switch driver"
+	depends on DM_ETH && ARCH_MSCC
+	select PHYLIB
+	help
+	  This driver supports the Ocelot network switch device.
+
+config MSCC_LUTON_SWITCH
+	bool "Luton switch driver"
+	depends on DM_ETH && ARCH_MSCC
+	select PHYLIB
+	help
+	  This driver supports the Luton network switch device.
+
+config MSCC_JR2_SWITCH
+	bool "Jaguar2 switch driver"
+	depends on DM_ETH && ARCH_MSCC
+	select PHYLIB
+	help
+	  This driver supports the Jaguar2 network switch device.
+
+config MSCC_SERVALT_SWITCH
+	bool "Servalt switch driver"
+	depends on DM_ETH && ARCH_MSCC
+	select PHYLIB
+	help
+	  This driver supports the Servalt network switch device.
+
+config MSCC_SERVAL_SWITCH
+	bool "Serval switch driver"
+	depends on DM_ETH && ARCH_MSCC
+	select PHYLIB
+	help
+	  This driver supports the Serval network switch device.

@@ -1,0 +1,28 @@
+if TARGET_QEMU_X86 || TARGET_QEMU_X86_64
+
+config SYS_BOARD
+	default "qemu-x86"
+
+config SYS_VENDOR
+	default "emulation"
+
+config SYS_SOC
+	default "qemu"
+
+config SYS_CONFIG_NAME
+	default "qemu-x86"
+
+config SYS_TEXT_BASE
+	default 0xfff00000 if !SUPPORT_SPL
+	default 0x01110000 if SUPPORT_SPL
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select X86_RESET_VECTOR
+	select QEMU
+	select BOARD_ROMSIZE_KB_1024
+	imply VIRTIO_PCI
+	imply VIRTIO_NET
+	imply VIRTIO_BLK
+
+endif

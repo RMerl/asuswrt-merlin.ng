@@ -1,0 +1,15 @@
+if TARGET_CM_T335
+
+config SYS_BOARD
+	default "cm_t335"
+
+config SYS_VENDOR
+	default "compulab"
+
+config SYS_SOC
+	default "am33xx"
+
+config SYS_CONFIG_NAME
+	default "cm_t335"
+
+endif

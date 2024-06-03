@@ -1,0 +1,15 @@
+if TARGET_TS4800
+
+config SYS_BOARD
+	default "ts4800"
+
+config SYS_VENDOR
+	default "technologic"
+
+config SYS_SOC
+	default "mx5"
+
+config SYS_CONFIG_NAME
+	default "ts4800"
+
+endif

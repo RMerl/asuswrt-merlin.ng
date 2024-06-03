@@ -1,0 +1,12 @@
+if TARGET_SBx81LIFXCAT
+
+config SYS_BOARD
+       default "SBx81LIFXCAT"
+
+config SYS_VENDOR
+       default "alliedtelesis"
+
+config SYS_CONFIG_NAME
+       default "SBx81LIFXCAT"
+
+endif

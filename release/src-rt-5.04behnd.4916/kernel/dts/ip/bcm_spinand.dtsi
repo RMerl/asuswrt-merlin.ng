@@ -1,0 +1,10 @@
+#address-cells = <1>;
+#size-cells = <0>;
+compatible = "spi-nand";
+reg-names = "spi-nand";
+reg = <0>;
+spi-max-frequency = <SPINAND_MAX_FREQ>;
+spi-tx-bus-width = <2>;
+spi-rx-bus-width = <2>;
+u-boot,dm-pre-reloc;
+status = "disabled";

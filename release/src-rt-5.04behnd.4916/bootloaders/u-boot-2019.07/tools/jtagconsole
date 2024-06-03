@@ -1,0 +1,39 @@
+#!/bin/sh
+
+usage() {
+	(
+	echo "Usage: $0 [board IP] [board port]"
+	echo ""
+	echo "If IP is not specified, 'localhost' will be used"
+	echo "If port is not specified, '2001' will be used"
+	[ -z "$*" ] && exit 0
+	echo ""
+	echo "ERROR: $*"
+	exit 1
+	) 1>&2
+	exit $?
+}
+
+while [ -n "$1" ] ; do
+	case $1 in
+		-h|--help) usage;;
+		--)        break;;
+		-*)        usage "Invalid option $1";;
+		*)         break;;
+	esac
+	shift
+done
+
+ip=${1:-localhost}
+port=${2:-2001}
+
+if [ -z "${ip}" ] || [ -n "$3" ] ; then
+	usage "Invalid number of arguments"
+fi
+
+trap "stty icanon echo opost intr ^C" 0 2 3 5 10 13 15
+echo "NOTE: the interrupt signal (normally ^C) has been remapped to ^T"
+
+stty -icanon -echo -opost intr ^T
+nc ${ip} ${port}
+exit 0

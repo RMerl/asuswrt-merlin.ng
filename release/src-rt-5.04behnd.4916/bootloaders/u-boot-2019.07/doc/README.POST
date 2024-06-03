@@ -1,0 +1,732 @@
+Power-On-Self-Test support in U-Boot
+------------------------------------
+
+This project is to support Power-On-Self-Test (POST) in U-Boot.
+
+1. High-level requirements
+
+The key requirements for this project are as follows:
+
+1) The project shall develop a flexible framework for implementing
+   and running Power-On-Self-Test in U-Boot. This framework shall
+   possess the following features:
+
+   o) Extensibility
+
+      The framework shall allow adding/removing/replacing POST tests.
+      Also, standalone POST tests shall be supported.
+
+   o) Configurability
+
+      The framework shall allow run-time configuration of the lists
+      of tests running on normal/power-fail booting.
+
+   o) Controllability
+
+      The framework shall support manual running of the POST tests.
+
+2) The results of tests shall be saved so that it will be possible to
+   retrieve them from Linux.
+
+3) The following POST tests shall be developed for MPC823E-based
+   boards:
+
+   o) CPU test
+   o) Cache test
+   o) Memory test
+   o) Ethernet test
+   o) Serial channels test
+   o) Watchdog timer test
+   o) RTC test
+   o) I2C test
+   o) SPI test
+   o) USB test
+
+4) The LWMON board shall be used for reference.
+
+2. Design
+
+This section details the key points of the design for the project.
+The whole project can be divided into two independent tasks:
+enhancing U-Boot/Linux to provide a common framework for running POST
+tests and developing such tests for particular hardware.
+
+2.1. Hardware-independent POST layer
+
+A new optional module will be added to U-Boot, which will run POST
+tests and collect their results at boot time. Also, U-Boot will
+support running POST tests manually at any time by executing a
+special command from the system console.
+
+The list of available POST tests will be configured at U-Boot build
+time. The POST layer will allow the developer to add any custom POST
+tests. All POST tests will be divided into the following groups:
+
+  1) Tests running on power-on booting only
+
+     This group will contain those tests that run only once on
+     power-on reset (e.g. watchdog test)
+
+  2) Tests running on normal booting only
+
+     This group will contain those tests that do not take much
+     time and can be run on the regular basis (e.g. CPU test)
+
+  3) Tests running in special "slow test mode" only
+
+     This group will contain POST tests that consume much time
+     and cannot be run regularly (e.g. strong memory test, I2C test)
+
+  4) Manually executed tests
+
+     This group will contain those tests that can be run manually.
+
+If necessary, some tests may belong to several groups simultaneously.
+For example, SDRAM test may run in both normal and "slow test" mode.
+In normal mode, SDRAM test may perform a fast superficial memory test
+only, while running in slow test mode it may perform a full memory
+check-up.
+
+Also, all tests will be discriminated by the moment they run at.
+Specifically, the following groups will be singled out:
+
+  1) Tests running before relocating to RAM
+
+     These tests will run immediately after initializing RAM
+     as to enable modifying it without taking care of its
+     contents. Basically, this group will contain memory tests
+     only.
+
+  2) Tests running after relocating to RAM
+
+     These tests will run immediately before entering the main
+     loop as to guarantee full hardware initialization.
+
+The POST layer will also distinguish a special group of tests that
+may cause system rebooting (e.g. watchdog test). For such tests, the
+layer will automatically detect rebooting and will notify the test
+about it.
+
+2.1.1. POST layer interfaces
+
+This section details the interfaces between the POST layer and the
+rest of U-Boot.
+
+The following flags will be defined:
+
+#define POST_POWERON		0x01	/* test runs on power-on booting */
+#define POST_NORMAL		0x02	/* test runs on normal booting */
+#define POST_SLOWTEST		0x04	/* test is slow, enabled by key press */
+#define POST_POWERTEST		0x08	/* test runs after watchdog reset */
+#define POST_ROM		0x100	/* test runs in ROM */
+#define POST_RAM		0x200	/* test runs in RAM */
+#define POST_MANUAL		0x400	/* test can be executed manually */
+#define POST_REBOOT		0x800	/* test may cause rebooting */
+#define POST_PREREL             0x1000  /* test runs before relocation */
+
+The POST layer will export the following interface routines:
+
+  o) int post_run(bd_t *bd, char *name, int flags);
+
+     This routine will run the test (or the group of tests) specified
+     by the name and flag arguments. More specifically, if the name
+     argument is not NULL, the test with this name will be performed,
+     otherwise all tests running in ROM/RAM (depending on the flag
+     argument) will be executed. This routine will be called at least
+     twice with name set to NULL, once from board_init_f() and once
+     from board_init_r(). The flags argument will also specify the
+     mode the test is executed in (power-on, normal, power-fail,
+     manual).
+
+  o) void post_reloc(ulong offset);
+
+     This routine will be called from board_init_r() and will
+     relocate the POST test table.
+
+  o) int post_info(char *name);
+
+     This routine will print the list of all POST tests that can be
+     executed manually if name is NULL, and the description of a
+     particular test if name is not NULL.
+
+  o) int post_log(char *format, ...);
+
+     This routine will be called from POST tests to log their
+     results. Basically, this routine will print the results to
+     stderr. The format of the arguments and the return value
+     will be identical to the printf() routine.
+
+Also, the following board-specific routines will be called from the
+U-Boot common code:
+
+  o) int post_hotkeys_pressed(gd_t *gd)
+
+     This routine will scan the keyboard to detect if a magic key
+     combination has been pressed, or otherwise detect if the
+     power-on long-running tests shall be executed or not ("normal"
+     versus "slow" test mode).
+
+The list of available POST tests be kept in the post_tests array
+filled at U-Boot build time. The format of entry in this array will
+be as follows:
+
+struct post_test {
+    char *name;
+    char *cmd;
+    char *desc;
+    int flags;
+    int (*test)(bd_t *bd, int flags);
+};
+
+  o) name
+
+     This field will contain a short name of the test, which will be
+     used in logs and on listing POST tests (e.g. CPU test).
+
+  o) cmd
+
+     This field will keep a name for identifying the test on manual
+     testing (e.g. cpu). For more information, refer to section
+     "Command line interface".
+
+  o) desc
+
+     This field will contain a detailed description of the test,
+     which will be printed on user request. For more information, see
+     section "Command line interface".
+
+  o) flags
+
+     This field will contain a combination of the bit flags described
+     above, which will specify the mode the test is running in
+     (power-on, normal, power-fail or manual mode), the moment it
+     should be run at (before or after relocating to RAM), whether it
+     can cause system rebooting or not.
+
+  o) test
+
+     This field will contain a pointer to the routine that will
+     perform the test, which will take 2 arguments. The first
+     argument will be a pointer to the board info structure, while
+     the second will be a combination of bit flags specifying the
+     mode the test is running in (POST_POWERON, POST_NORMAL,
+     POST_SLOWTEST, POST_MANUAL) and whether the last execution of
+     the test caused system rebooting (POST_REBOOT). The routine will
+     return 0 on successful execution of the test, and 1 if the test
+     failed.
+
+The lists of the POST tests that should be run at power-on/normal/
+power-fail booting will be kept in the environment. Namely, the
+following environment variables will be used: post_poweron,
+powet_normal, post_slowtest.
+
+2.1.2. Test results
+
+The results of tests will be collected by the POST layer. The POST
+log will have the following format:
+
+...
+--------------------------------------------
+START <name>
+<test-specific output>
+[PASSED|FAILED]
+--------------------------------------------
+...
+
+Basically, the results of tests will be printed to stderr. This
+feature may be enhanced in future to spool the log to a serial line,
+save it in non-volatile RAM (NVRAM), transfer it to a dedicated
+storage server and etc.
+
+2.1.3. Integration issues
+
+All POST-related code will be #ifdef'ed with the CONFIG_POST macro.
+This macro will be defined in the config_<board>.h file for those
+boards that need POST. The CONFIG_POST macro will contain the list of
+POST tests for the board. The macro will have the format of array
+composed of post_test structures:
+
+#define CONFIG_POST \
+	{
+		"On-board peripherals test", "board", \
+		"  This test performs full check-up of the " \
+		"on-board hardware.", \
+		POST_RAM | POST_SLOWTEST, \
+		&board_post_test \
+	}
+
+A new file, post.h, will be created in the include/ directory. This
+file will contain common POST declarations and will define a set of
+macros that will be reused for defining CONFIG_POST. As an example,
+the following macro may be defined:
+
+#define POST_CACHE \
+	{
+		"Cache test", "cache", \
+		"  This test verifies the CPU cache operation.", \
+		POST_RAM | POST_NORMAL, \
+		&cache_post_test \
+	}
+
+A new subdirectory will be created in the U-Boot root directory. It
+will contain the source code of the POST layer and most of POST
+tests. Each POST test in this directory will be placed into a
+separate file (it will be needed for building standalone tests). Some
+POST tests (mainly those for testing peripheral devices) will be
+located in the source files of the drivers for those devices. This
+way will be used only if the test subtantially uses the driver.
+
+2.1.4. Standalone tests
+
+The POST framework will allow to develop and run standalone tests. A
+user-space library will be developed to provide the POST interface
+functions to standalone tests.
+
+2.1.5. Command line interface
+
+A new command, diag, will be added to U-Boot. This command will be
+used for listing all available hardware tests, getting detailed
+descriptions of them and running these tests.
+
+More specifically, being run without any arguments, this command will
+print the list of all available hardware tests:
+
+=> diag
+Available hardware tests:
+  cache             - cache test
+  cpu               - CPU test
+  enet              - SCC/FCC ethernet test
+Use 'diag [<test1> [<test2>]] ... ' to get more info.
+Use 'diag run [<test1> [<test2>]] ... ' to run tests.
+=>
+
+If the first argument to the diag command is not 'run', detailed
+descriptions of the specified tests will be printed:
+
+=> diag cpu cache
+cpu - CPU test
+  This test verifies the arithmetic logic unit of CPU.
+cache - cache test
+  This test verifies the CPU cache operation.
+=>
+
+If the first argument to diag is 'run', the specified tests will be
+executed. If no tests are specified, all available tests will be
+executed.
+
+It will be prohibited to execute tests running in ROM manually. The
+'diag' command will not display such tests and/or run them.
+
+2.1.6. Power failure handling
+
+The Linux kernel will be modified to detect power failures and
+automatically reboot the system in such cases. It will be assumed
+that the power failure causes a system interrupt.
+
+To perform correct system shutdown, the kernel will register a
+handler of the power-fail IRQ on booting. Being called, the handler
+will run /sbin/reboot using the call_usermodehelper() routine.
+/sbin/reboot will automatically bring the system down in a secure
+way. This feature will be configured in/out from the kernel
+configuration file.
+
+The POST layer of U-Boot will check whether the system runs in
+power-fail mode. If it does, the system will be powered off after
+executing all hardware tests.
+
+2.1.7. Hazardous tests
+
+Some tests may cause system rebooting during their execution. For
+some tests, this will indicate a failure, while for the Watchdog
+test, this means successful operation of the timer.
+
+In order to support such tests, the following scheme will be
+implemented. All the tests that may cause system rebooting will have
+the POST_REBOOT bit flag set in the flag field of the correspondent
+post_test structure. Before starting tests marked with this bit flag,
+the POST layer will store an identification number of the test in a
+location in IMMR. On booting, the POST layer will check the value of
+this variable and if it is set will skip over the tests preceding the
+failed one. On second execution of the failed test, the POST_REBOOT
+bit flag will be set in the flag argument to the test routine. This
+will allow to detect system rebooting on the previous iteration. For
+example, the watchdog timer test may have the following
+declaration/body:
+
+...
+#define POST_WATCHDOG \
+	{
+		"Watchdog timer test", "watchdog", \
+		"  This test checks the watchdog timer.", \
+		POST_RAM | POST_POWERON | POST_REBOOT, \
+		&watchdog_post_test \
+	}
+...
+
+...
+int watchdog_post_test(bd_t *bd, int flags)
+{
+	unsigned long start_time;
+
+	if (flags & POST_REBOOT) {
+		/* Test passed */
+		return 0;
+	} else {
+		/* disable interrupts */
+		disable_interrupts();
+		/* 10-second delay */
+		...
+		/* if we've reached this, the watchdog timer does not work */
+		enable_interrupts();
+		return 1;
+	}
+}
+...
+
+2.2. Hardware-specific details
+
+This project will also develop a set of POST tests for MPC8xx- based
+systems. This section provides technical details of how it will be
+done.
+
+2.2.1. Generic PPC tests
+
+The following generic POST tests will be developed:
+
+  o) CPU test
+
+     This test will check the arithmetic logic unit (ALU) of CPU. The
+     test will take several milliseconds and will run on normal
+     booting.
+
+  o) Cache test
+
+     This test will verify the CPU cache (L1 cache). The test will
+     run on normal booting.
+
+  o) Memory test
+
+     This test will examine RAM and check it for errors. The test
+     will always run on booting. On normal booting, only a limited
+     amount of RAM will be checked. On power-fail booting a fool
+     memory check-up will be performed.
+
+2.2.1.1. CPU test
+
+This test will verify the following ALU instructions:
+
+  o) Condition register istructions
+
+     This group will contain: mtcrf, mfcr, mcrxr, crand, crandc,
+     cror, crorc, crxor, crnand, crnor, creqv, mcrf.
+
+     The mtcrf/mfcr instructions will be tested by loading different
+     values into the condition register (mtcrf), moving its value to
+     a general-purpose register (mfcr) and comparing this value with
+     the expected one. The mcrxr instruction will be tested by
+     loading a fixed value into the XER register (mtspr), moving XER
+     value to the condition register (mcrxr), moving it to a
+     general-purpose register (mfcr) and comparing the value of this
+     register with the expected one. The rest of instructions will be
+     tested by loading a fixed value into the condition register
+     (mtcrf), executing each instruction several times to modify all
+     4-bit condition fields, moving the value of the conditional
+     register to a general-purpose register (mfcr) and comparing it
+     with the expected one.
+
+  o) Integer compare instructions
+
+     This group will contain: cmp, cmpi, cmpl, cmpli.
+
+     To verify these instructions the test will run them with
+     different combinations of operands, read the condition register
+     value and compare it with the expected one. More specifically,
+     the test will contain a pre-built table containing the
+     description of each test case: the instruction, the values of
+     the operands, the condition field to save the result in and the
+     expected result.
+
+  o) Arithmetic instructions
+
+     This group will contain: add, addc, adde, addme, addze, subf,
+     subfc, subfe, subme, subze, mullw, mulhw, mulhwu, divw, divwu,
+     extsb, extsh.
+
+     The test will contain a pre-built table of instructions,
+     operands, expected results and expected states of the condition
+     register. For each table entry, the test will cyclically use
+     different sets of operand registers and result registers. For
+     example, for instructions that use 3 registers on the first
+     iteration r0/r1 will be used as operands and r2 for result. On
+     the second iteration, r1/r2 will be used as operands and r3 as
+     for result and so on. This will enable to verify all
+     general-purpose registers.
+
+  o) Logic instructions
+
+     This group will contain: and, andc, andi, andis, or, orc, ori,
+     oris, xor, xori, xoris, nand, nor, neg, eqv, cntlzw.
+
+     The test scheme will be identical to that from the previous
+     point.
+
+  o) Shift instructions
+
+     This group will contain: slw, srw, sraw, srawi, rlwinm, rlwnm,
+     rlwimi
+
+     The test scheme will be identical to that from the previous
+     point.
+
+  o) Branch instructions
+
+     This group will contain: b, bl, bc.
+
+     The first 2 instructions (b, bl) will be verified by jumping to
+     a fixed address and checking whether control was transferred to
+     that very point. For the bl instruction the value of the link
+     register will be checked as well (using mfspr). To verify the bc
+     instruction various combinations of the BI/BO fields, the CTR
+     and the condition register values will be checked. The list of
+     such combinations will be pre-built and linked in U-Boot at
+     build time.
+
+  o) Load/store instructions
+
+     This group will contain: lbz(x)(u), lhz(x)(u), lha(x)(u),
+     lwz(x)(u), stb(x)(u), sth(x)(u), stw(x)(u).
+
+     All operations will be performed on a 16-byte array. The array
+     will be 4-byte aligned. The base register will point to offset
+     8. The immediate offset (index register) will range in [-8 ...
+     +7]. The test cases will be composed so that they will not cause
+     alignment exceptions. The test will contain a pre-built table
+     describing all test cases. For store instructions, the table
+     entry will contain: the instruction opcode, the value of the
+     index register and the value of the source register. After
+     executing the instruction, the test will verify the contents of
+     the array and the value of the base register (it must change for
+     "store with update" instructions). For load instructions, the
+     table entry will contain: the instruction opcode, the array
+     contents, the value of the index register and the expected value
+     of the destination register. After executing the instruction,
+     the test will verify the value of the destination register and
+     the value of the base register (it must change for "load with
+     update" instructions).
+
+  o) Load/store multiple/string instructions
+
+
+The CPU test will run in RAM in order to allow run-time modification
+of the code to reduce the memory footprint.
+
+2.2.1.2 Special-Purpose Registers Tests
+
+TBD.
+
+2.2.1.3. Cache test
+
+To verify the data cache operation the following test scenarios will
+be used:
+
+  1) Basic test #1
+
+    - turn on the data cache
+    - switch the data cache to write-back or write-through mode
+    - invalidate the data cache
+    - write the negative pattern to a cached area
+    - read the area
+
+    The negative pattern must be read at the last step
+
+  2) Basic test #2
+
+    - turn on the data cache
+    - switch the data cache to write-back or write-through mode
+    - invalidate the data cache
+    - write the zero pattern to a cached area
+    - turn off the data cache
+    - write the negative pattern to the area
+    - turn on the data cache
+    - read the area
+
+    The negative pattern must be read at the last step
+
+  3) Write-through mode test
+
+    - turn on the data cache
+    - switch the data cache to write-through mode
+    - invalidate the data cache
+    - write the zero pattern to a cached area
+    - flush the data cache
+    - write the negative pattern to the area
+    - turn off the data cache
+    - read the area
+
+    The negative pattern must be read at the last step
+
+  4) Write-back mode test
+
+    - turn on the data cache
+    - switch the data cache to write-back mode
+    - invalidate the data cache
+    - write the negative pattern to a cached area
+    - flush the data cache
+    - write the zero pattern to the area
+    - invalidate the data cache
+    - read the area
+
+    The negative pattern must be read at the last step
+
+To verify the instruction cache operation the following test
+scenarios will be used:
+
+  1) Basic test #1
+
+    - turn on the instruction cache
+    - unlock the entire instruction cache
+    - invalidate the instruction cache
+    - lock a branch instruction in the instruction cache
+    - replace the branch instruction with "nop"
+    - jump to the branch instruction
+    - check that the branch instruction was executed
+
+  2) Basic test #2
+
+    - turn on the instruction cache
+    - unlock the entire instruction cache
+    - invalidate the instruction cache
+    - jump to a branch instruction
+    - check that the branch instruction was executed
+    - replace the branch instruction with "nop"
+    - invalidate the instruction cache
+    - jump to the branch instruction
+    - check that the "nop" instruction was executed
+
+The CPU test will run in RAM in order to allow run-time modification
+of the code.
+
+2.2.1.4. Memory test
+
+The memory test will verify RAM using sequential writes and reads
+to/from RAM. Specifically, there will be several test cases that will
+use different patterns to verify RAM. Each test case will first fill
+a region of RAM with one pattern and then read the region back and
+compare its contents with the pattern. The following patterns will be
+used:
+
+ 1) zero pattern (0x00000000)
+ 2) negative pattern (0xffffffff)
+ 3) checkerboard pattern (0x55555555, 0xaaaaaaaa)
+ 4) bit-flip pattern ((1 << (offset % 32)), ~(1 << (offset % 32)))
+ 5) address pattern (offset, ~offset)
+
+Patterns #1, #2 will help to find unstable bits. Patterns #3, #4 will
+be used to detect adherent bits, i.e. bits whose state may randomly
+change if adjacent bits are modified. The last pattern will be used
+to detect far-located errors, i.e. situations when writing to one
+location modifies an area located far from it. Also, usage of the
+last pattern will help to detect memory controller misconfigurations
+when RAM represents a cyclically repeated portion of a smaller size.
+
+Being run in normal mode, the test will verify only small 4Kb regions
+of RAM around each 1Mb boundary. For example, for 64Mb RAM the
+following areas will be verified: 0x00000000-0x00000800,
+0x000ff800-0x00100800, 0x001ff800-0x00200800, ..., 0x03fff800-
+0x04000000. If the test is run in power-fail mode, it will verify the
+whole RAM.
+
+The memory test will run in ROM before relocating U-Boot to RAM in
+order to allow RAM modification without saving its contents.
+
+2.2.2. Common tests
+
+This section describes tests that are not based on any hardware
+peculiarities and use common U-Boot interfaces only. These tests do
+not need any modifications for porting them to another board/CPU.
+
+2.2.2.1. I2C test
+
+For verifying the I2C bus, a full I2C bus scanning will be performed
+using the i2c_probe() routine. If a board defines
+CONFIG_SYS_POST_I2C_ADDRS the I2C test will pass if all devices
+listed in CONFIG_SYS_POST_I2C_ADDRS are found, and no additional
+devices are detected.  If CONFIG_SYS_POST_I2C_ADDRS is not defined
+the test will pass if any I2C device is found.
+
+The CONFIG_SYS_POST_I2C_IGNORES define can be used to list I2C
+devices which may or may not be present when using
+CONFIG_SYS_POST_I2C_ADDRS.  The I2C POST test will pass regardless
+if the devices in CONFIG_SYS_POST_I2C_IGNORES are found or not.
+This is useful in cases when I2C devices are optional (eg on a
+daughtercard that may or may not be present) or not critical
+to board operation.
+
+2.2.2.2. Watchdog timer test
+
+To test the watchdog timer the scheme mentioned above (refer to
+section "Hazardous tests") will be used. Namely, this test will be
+marked with the POST_REBOOT bit flag. On the first iteration, the
+test routine will make a 10-second delay. If the system does not
+reboot during this delay, the watchdog timer is not operational and
+the test fails. If the system reboots, on the second iteration the
+POST_REBOOT bit will be set in the flag argument to the test routine.
+The test routine will check this bit and report a success if it is
+set.
+
+2.2.2.3. RTC test
+
+The RTC test will use the rtc_get()/rtc_set() routines. The following
+features will be verified:
+
+  o) Time uniformity
+
+     This will be verified by reading RTC in polling within a short
+     period of time (5-10 seconds).
+
+  o) Passing month boundaries
+
+     This will be checked by setting RTC to a second before a month
+     boundary and reading it after its passing the boundary. The test
+     will be performed for both leap- and nonleap-years.
+
+2.2.3. MPC8xx peripherals tests
+
+This project will develop a set of tests verifying the peripheral
+units of MPC8xx processors. Namely, the following controllers of the
+MPC8xx communication processor module (CPM) will be tested:
+
+  o) Serial Management Controllers (SMC)
+
+  o) Serial Communication Controllers (SCC)
+
+2.2.3.1. Ethernet tests (SCC)
+
+The internal (local) loopback mode will be used to test SCC. To do
+that the controllers will be configured accordingly and several
+packets will be transmitted. These tests may be enhanced in future to
+use external loopback for testing. That will need appropriate
+reconfiguration of the physical interface chip.
+
+The test routines for the SCC ethernet tests will be located in
+arch/powerpc/cpu/mpc8xx/scc.c.
+
+2.2.3.2. UART tests (SMC/SCC)
+
+To perform these tests the internal (local) loopback mode will be
+used. The SMC/SCC controllers will be configured to connect the
+transmitter output to the receiver input. After that, several bytes
+will be transmitted. These tests may be enhanced to make to perform
+"external" loopback test using a loopback cable. In this case, the
+test will be executed manually.
+
+The test routine for the SMC/SCC UART tests will be located in
+arch/powerpc/cpu/mpc8xx/serial.c.
+
+2.2.3.3. USB test
+
+TBD
+
+2.2.3.4. SPI test
+
+TBD

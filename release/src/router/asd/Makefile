@@ -12,6 +12,10 @@ CFLAGS += -I$(SRCBASE)/shared/bcmwifi/include
 endif
 CFLAGS += -I$(TOP)/json-c
 
+ifeq ($(HND_ROUTER_BE_4916), y)
+CFLAGS+= -fcommon
+endif
+
 LIB_CFLAGS = $(CFLAGS) -shared -DASD_LIB
 
 ifeq ($(RTCONFIG_REALTEK),y)
@@ -37,10 +41,13 @@ LDFLAGS += -L$(TOP)/curl/lib/.libs -lcurl -L$(TOP)/
 LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
 LDFLAGS += -L$(TOP)/libasc -lasc
 LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
-
 ifeq ($(RTCONFIG_TR069),y)
-CFLAGS += -I$(TOP)/libssh2-1.10.0/include -I$(TOP)/zlib/include
-LDFLAGS += -L$(TOP)/libssh2-1.10.0/src/.libs -lssh2 -L$(TOP)/zlib -lz
+LDFLAGS += -L$(TOP)/libssh2-1.10.0/src/.libs -lssh2
+LDFLAGS += -L$(TOP)/zlib -lz
+endif
+
+ifeq ($(RTCONFIG_TRUSTZONE),y)
+LDFLAGS += -L$(TOP)/ateed/ -latee
 endif
 
 TARGET = asd libasd.so

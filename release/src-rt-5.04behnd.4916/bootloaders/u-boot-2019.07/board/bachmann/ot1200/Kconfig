@@ -1,0 +1,12 @@
+if TARGET_OT1200
+
+config SYS_BOARD
+	default "ot1200"
+
+config SYS_VENDOR
+	default "bachmann"
+
+config SYS_CONFIG_NAME
+	default "ot1200"
+
+endif

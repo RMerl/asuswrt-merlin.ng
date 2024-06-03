@@ -1,0 +1,21 @@
+config BCM_ARM_CPUIDLE
+	bool "Broadcom cpuidle driver"
+	default n
+	select CPU_IDLE if !BCM963148
+	help
+	  Add Broadcom ARM and ARM64 cpuidle support
+
+config BCM_ARM_CPUIDLE_IMPL
+	int "Implementation index for Broadcom cpuidle driver"
+	depends on BCM_ARM_CPUIDLE
+	default 1
+
+config BCM_CPUIDLE_CLK_DIVIDER
+	bool "Support for CPU Clock Divider in CPUIDLE"
+	default n
+
+config BCM_B15_CPUIDLE
+	bool "Broadcom B15 CPUIDLE driver"
+	default n
+	help
+	  Add Broadcom B15 CPUIDLE support

@@ -1,0 +1,23 @@
+<PUBLISH>
+--- 962118GW.old
++++ 962118GW
+@@ -37,11 +37,11 @@
+ # Toolchain selection
+ #
+ # USER_ARCH_ARM is not set
+-USER_ARCH_ARM=y
+-USER_ARCH_ARM_SOFTFP=y
+-USER_ARCH_ARM_HARDFP=y
++# USER_ARCH_ARM is not set
++# USER_ARCH_ARM_SOFTFP is not set
++# USER_ARCH_ARM_HARDFP is not set
+-# USER_ARCH_AARCH64 is not set
++USER_ARCH_AARCH64=y
++PROFILE_ARCH=aarch64
+ PROFILE_KARCH=aarch64
+-PROFILE_ARCH=armsfp
+-PROFILE_ARCH=armhfp
+-PROFILE_ARCH=arm
+ BRCM_USE_STD_TOOLCHAIN=y
+ # BRCM_USE_ALT_TOOLCHAIN is not set
+ BRCM_GLIBC=y

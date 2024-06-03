@@ -1,0 +1,12 @@
+if TARGET_NITROGEN6X
+
+config SYS_BOARD
+	default "nitrogen6x"
+
+config SYS_VENDOR
+	default "boundary"
+
+config SYS_CONFIG_NAME
+	default "nitrogen6x"
+
+endif

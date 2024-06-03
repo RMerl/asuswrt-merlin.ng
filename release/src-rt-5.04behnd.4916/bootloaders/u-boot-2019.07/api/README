@@ -1,0 +1,55 @@
+U-Boot machine/arch independent API for external apps
+=====================================================
+
+1.  Main assumptions
+
+  - there is a single entry point (syscall) to the API
+
+  - per current design the syscall is a C-callable function in the U-Boot
+    text, which might evolve into a real syscall using machine exception trap
+    once this initial version proves functional
+
+  - the consumer app is responsible for producing appropriate context (call
+    number and arguments)
+
+  - upon entry, the syscall dispatches the call to other (existing) U-Boot
+    functional areas like networking or storage operations
+
+  - consumer application will recognize the API is available by searching
+    a specified (assumed by convention) range of address space for the
+    signature
+
+  - the U-Boot integral part of the API is meant to be thin and non-intrusive,
+    leaving as much processing as possible on the consumer application side,
+    for example it doesn't keep states, but relies on hints from the app and
+    so on
+
+  - optional (CONFIG_API)
+
+
+2. Calls
+
+  - console related (getc, putc, tstc etc.)
+  - system (reset, platform info)
+  - time (delay, current)
+  - env vars (enumerate all, get, set)
+  - devices (enumerate all, open, close, read, write); currently two classes
+    of devices are recognized and supported: network and storage (ide, scsi,
+    usb etc.)
+
+
+3. Structure overview
+
+  - core API, integral part of U-Boot, mandatory
+    - implements the single entry point (mimics UNIX syscall)
+
+  - glue
+    - entry point at the consumer side, allows to make syscall, mandatory
+      part
+
+    - helper conveniency wrappers so that consumer app does not have to use
+      the syscall directly, but in a more friendly manner (a la libc calls),
+      optional part
+
+  - consumer application
+    - calls directly, or leverages the provided glue mid-layer

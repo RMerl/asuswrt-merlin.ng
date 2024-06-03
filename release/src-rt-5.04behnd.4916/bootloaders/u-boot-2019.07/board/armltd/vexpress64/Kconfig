@@ -1,0 +1,12 @@
+if TARGET_VEXPRESS64_BASE_FVP || TARGET_VEXPRESS64_JUNO || TARGET_VEXPRESS64_BASE_FVP_DRAM
+
+config SYS_BOARD
+	default "vexpress64"
+
+config SYS_VENDOR
+	default "armltd"
+
+config SYS_CONFIG_NAME
+	default "vexpress_aemv8a"
+
+endif

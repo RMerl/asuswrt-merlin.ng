@@ -15,6 +15,10 @@ CFLAGS += -DJSONC -I$(JSONC)
 JSON_LIB := -L$(JSONC)/.libs -ljson-c
 endif
 
+ifeq ($(HND_ROUTER_BE_4916), y)
+CFLAGS += -Wno-array-bounds
+endif
+
 TARGETS = libubox.a libubox.so
 libubox_SRCS := avl.c avl-cmp.c blob.c blobmsg.c uloop.c usock.c ustream.c ustream-fd.c vlist.c utils.c safe_list.c runqueue.c md5.c kvlist.c ulog.c base64.c
 libubox_LIBS :=

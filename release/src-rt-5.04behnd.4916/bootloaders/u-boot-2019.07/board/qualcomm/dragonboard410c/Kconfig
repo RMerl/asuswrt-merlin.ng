@@ -1,0 +1,15 @@
+if TARGET_DRAGONBOARD410C
+
+config SYS_BOARD
+	default "dragonboard410c"
+
+config SYS_VENDOR
+	default "qualcomm"
+
+config SYS_SOC
+	default "apq8016"
+
+config SYS_CONFIG_NAME
+	default "dragonboard410c"
+
+endif

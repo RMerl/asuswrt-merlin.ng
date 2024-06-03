@@ -1,12 +1,16 @@
+#if defined(PJ_DARWINOS) && defined(PJMEDIA_AUDIO_DEV_HAS_COREAUDIO)
+#undef PJMEDIA_AUDIO_DEV_HAS_COREAUDIO
+#define PJMEDIA_AUDIO_DEV_HAS_COREAUDIO 0
+#endif
 
 #define PJ_DEBUG 1
 //#define ENABLE_MEMWATCH 1
 
 //#define PJ_THREAD_ALLOCATE_STACK 1
-//#ifdef HND_ROUTER
+#ifdef ROUTER
 #define PJ_THREAD_SET_STACK_SIZE 1
 #define PJ_THREAD_DEFAULT_STACK_SIZE 0xa240
-//#endif
+#endif
 
 //#define HTTP_DEBUG 1
 #define TURN_FLAG_USE_RESPECTIVE_TURN 1
@@ -27,8 +31,8 @@
 #define PJMEDIA_MAX_MTU	12000 // for no flow control session
 #define NATNL_PKT_MAX_LEN 1300
 #define NATNL_NO_CTL_PKT_MAX_LEN PJMEDIA_MAX_MTU
-#define NATNL_DTLS_MAX_RECV_LEN 4096 // For DTLS recv buffer.
-#define NATNL_DTLS_MAX_SEND_LEN 4096 // For DTLS send buffer.
+#define NATNL_DTLS_MAX_RECV_LEN 8192 // For DTLS recv buffer.
+#define NATNL_DTLS_MAX_SEND_LEN 8192 // For DTLS send buffer.
 
 #define TCP_SESS_MSG_TYPE_INDEX 28  // Discarded, for tunnel type TCP use.
 

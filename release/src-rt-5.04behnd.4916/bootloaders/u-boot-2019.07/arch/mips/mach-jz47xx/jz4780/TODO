@@ -1,0 +1,4 @@
+- dm gpio driver
+- ethernet driver for the dm9000
+- reduce the hundreds of definitions of register addresses to the ones really needed in assembly or SPL.
+- define the remaining register base addresses as physical addresses and establish a mapping with ioremap_nocache()

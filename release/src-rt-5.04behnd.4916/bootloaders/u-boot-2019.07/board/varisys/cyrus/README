@@ -1,0 +1,19 @@
+Rebuilding u-boot for Cyrus
+
+The Cyrus defconfigs are Cyrus_P5020_defconfig and Cyrus_P5040_defconfig.
+
+They currently disable size optimization in order to avoid a relocation
+bug in some versions of GCC. As the output size is a constant, the size
+optimization is not currently important.
+
+Cyrus boots off a microSD card in a slot on the motherboard. This requires
+that the u-boot is built for the Pre-Boot Loader on the P5020/P5040.
+In order to reflash u-boot, you must download u-boot.pbl, then write it
+onto the card. To do that from u-boot:
+
+> tftp 1000000 u-boot.pbl
+> mmc write 1000000 8 672
+
+If you want to do this via a card reader in linux:
+
+> dd if=u-boot.pbl of=/dev/sdX bs=512 oseek=8

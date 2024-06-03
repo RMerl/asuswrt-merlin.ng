@@ -1,0 +1,9 @@
+BSC9131RDB BOARD
+M:	Poonam Aggrwal <poonam.aggrwal@nxp.com>
+S:	Maintained
+F:	board/freescale/bsc9131rdb/
+F:	include/configs/BSC9131RDB.h
+F:	configs/BSC9131RDB_NAND_defconfig
+F:	configs/BSC9131RDB_NAND_SYSCLK100_defconfig
+F:	configs/BSC9131RDB_SPIFLASH_defconfig
+F:	configs/BSC9131RDB_SPIFLASH_SYSCLK100_defconfig

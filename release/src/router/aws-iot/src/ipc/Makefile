@@ -32,7 +32,7 @@ ifeq ($(HND_ROUTER),y)
 LDFLAGS += -L$(TOP_PLATFORM)/wlcsm$(EXHND) -lwlcsm
 endif
 
-LDFLAGS += $(if $(QCA),$(EXTRALDFLAGS))
+LDFLAGS += $(if $(or $(QCA),$(RALINK)),$(EXTRALDFLAGS))
 
 
 #remove @ for no make command prints
@@ -87,6 +87,10 @@ CFLAGS += -I$(CURL_DIR)/include
 
 ifeq ($(RTCONFIG_BCMARM),y)
 CFLAGS += -I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T
+endif
+
+ifeq ($(HND_ROUTER_BE_4916), y)
+CFLAGS+= -fcommon
 endif
 
 SRC_FILES += $(APP_SRC_FILES)

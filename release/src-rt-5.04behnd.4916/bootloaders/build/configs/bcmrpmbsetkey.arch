@@ -1,0 +1,17 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use FindBin qw($Bin);
+use lib "$Bin/../../../hostTools/PerlLib";
+use BRCM::GenConfig;
+
+my $c = new BRCM::GenConfig( shift);
+
+######   Any config changes start here #####
+
+
+$c->set('CONFIG_BCMBCA_EXTRA_BOARD_OBJECTS','"bcm_rpmb_set_key.o"');
+$c->set('CONFIG_SUPPORT_EMMC_RPMB','y');
+#####   End of config changes #####
+$c->write();
+

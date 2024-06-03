@@ -15,8 +15,10 @@
 <link rel="stylesheet" type="text/css" href="usp_style.css">
 <link rel="stylesheet" type="text/css" href="/calendar/fullcalendar.css">
 <link rel="stylesheet" type="text/css" href="/device-map/device-map.css">
+<link rel="stylesheet" type="text/css" href="/js/weekSchedule/weekSchedule.css">
 <script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/calendar/jquery-ui.js"></script> 
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/help.js"></script>
@@ -24,7 +26,8 @@
 <script type="text/javascript" src="/client_function.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
-<script type="text/javascript" src="/js/httpApi.js"></script>
+<script type="text/javascript" src="/js/weekSchedule/weekSchedule.js"></script>
+<script type="text/javascript" src="/form.js"></script>
 <style>
   #selectable .ui-selecting { background: #FECA40; }
   #selectable .ui-selected { background: #F39814; color: white; }
@@ -89,115 +92,44 @@
 </style>
 <script>
 
-
-var MULTIFILTER_ENABLE = '<% nvram_get("MULTIFILTER_ENABLE"); %>'.replace(/&#62/g, ">");
-var MULTIFILTER_MAC = '<% nvram_get("MULTIFILTER_MAC"); %>'.replace(/&#62/g, ">").toUpperCase();
-var MULTIFILTER_DEVICENAME = decodeURIComponent('<% nvram_char_to_ascii("","MULTIFILTER_DEVICENAME"); %>').replace(/&#62/g, ">");
-var MULTIFILTER_MACFILTER_DAYTIME = '<% nvram_get("MULTIFILTER_MACFILTER_DAYTIME"); %>'.replace(/&#62/g, ">").replace(/&#60/g, "<");
-
-var MULTIFILTER_ENABLE_row = MULTIFILTER_ENABLE.split('>');
-var MULTIFILTER_DEVICENAME_row = MULTIFILTER_DEVICENAME.split('>');
-var MULTIFILTER_MAC_row = MULTIFILTER_MAC.split('>');
-var MULTIFILTER_MACFILTER_DAYTIME_row = MULTIFILTER_MACFILTER_DAYTIME.split('>');
-var _client;
-var clock_type = "";
-
-function init_cookie(){
-	if(document.cookie.indexOf('clock_type') == -1)		//initialize
-		document.cookie = "clock_type=1";		
-			
-	x = document.cookie.split(';');
-	for(i=0;i<x.length;i++){
-		if(x[i].indexOf('clock_type') != -1){
-			clock_type = x[i].substring(x[i].length-1, x[i].length);			
-		}	
-	}
-}
-
-var array = new Array(7);
-function init_array(arr){
-	for(i=0;i<7;i++){
-		arr[i] = new Array(24);
-
-		for(j=0;j<24;j++){
-			arr[i][j] = 0;
-		}
-	}
-}
-
-function register_event(){
-	var array_temp = new Array(7);
-	var checked = 0
-	var unchecked = 0;
-	init_array(array_temp);
-
-  $(function() {
-    $( "#selectable" ).selectable({
-		filter:'td',
-		selecting: function(event, ui){
-					
-		},
-		unselecting: function(event, ui){
-			
-		},
-		selected: function(event, ui){	
-			id = ui.selected.getAttribute('id');
-			column = parseInt(id.substring(0,1), 10);
-			row = parseInt(id.substring(1,3), 10);	
-
-			array_temp[column][row] = 1;
-			if(array[column][row] == 1){
-				checked = 1;
-			}
-			else if(array[column][row] == 0){
-				unchecked = 1;
-			}
-		},
-		unselected: function(event, ui){
-
-		},		
-		stop: function(event, ui){
-			if((checked == 1 && unchecked == 1) || (checked == 0 && unchecked == 1)){
-				for(i=0;i<7;i++){
-					for(j=0;j<24;j++){
-						if(array_temp[i][j] == 1){
-						array[i][j] = array_temp[i][j];					
-						array_temp[i][j] = 0;		//initialize
-						if(j < 10){
-							j = "0" + j;						
-						}		
-							id = i.toString() + j.toString();					
-							document.getElementById(id).className = "checked";					
-						}
-					}
-				}									
-			}
-			else if(checked == 1 && unchecked == 0){
-				for(i=0;i<7;i++){
-					for(j=0;j<24;j++){
-						if(array_temp[i][j] == 1){
-						array[i][j] = 0;					
-						array_temp[i][j] = 0;
-						
-						if(j < 10){
-							j = "0" + j;						
-						}
-							id = i.toString() + j.toString();											
-							document.getElementById(id).className = "disabled";												
-						}
-					}
-				}			
-			}
-		
-			checked = 0;
-			unchecked = 0;
-		}		
-	});		
-  });
-
- } 
+var client_time_sche_json = [];
+var client_time_sche_attr = function(){
+	this.enable = 0;
+	this.mac = "";
+	this.devicename = "";
+	this.offtime = "";
+};
 
 function initial(){
+	var MULTIFILTER_ENABLE = '<% nvram_get("MULTIFILTER_ENABLE"); %>'.replace(/&#62/g, ">");
+	var MULTIFILTER_MAC = '<% nvram_get("MULTIFILTER_MAC"); %>'.replace(/&#62/g, ">").toUpperCase();
+	var MULTIFILTER_DEVICENAME = decodeURIComponent('<% nvram_char_to_ascii("","MULTIFILTER_DEVICENAME"); %>').replace(/&#62/g, ">");
+	var MULTIFILTER_MACFILTER_DAYTIME_V2 = '<% nvram_get("MULTIFILTER_MACFILTER_DAYTIME_V2"); %>'.replace(/&#62/g, ">").replace(/&#60/g, "<");
+	var MULTIFILTER_ENABLE_row = MULTIFILTER_ENABLE.split('>');
+	var MULTIFILTER_DEVICENAME_row = MULTIFILTER_DEVICENAME.split('>');
+	var MULTIFILTER_MAC_row = MULTIFILTER_MAC.split('>');
+	var MULTIFILTER_MACFILTER_DAYTIME_V2_row = MULTIFILTER_MACFILTER_DAYTIME_V2.split('>');
+	$.each(MULTIFILTER_ENABLE_row, function( index, value ) {
+		if(value == "")
+			return true;
+		if(MULTIFILTER_MAC_row[index] == undefined || MULTIFILTER_DEVICENAME_row[index] == undefined)
+			return true;
+		var enable = value;
+		var mac = MULTIFILTER_MAC_row[index];
+		var devicename = "";
+		if(clientList[mac])
+			devicename = (clientList[mac].nickName == "") ? clientList[mac].name : clientList[mac].nickName;
+		else if(MULTIFILTER_DEVICENAME[index] != undefined || MULTIFILTER_DEVICENAME[index] != "")
+			devicename = MULTIFILTER_DEVICENAME_row[index];
+			
+		var client_time_obj = new client_time_sche_attr();
+		client_time_obj.enable = enable;
+		client_time_obj.mac = mac;
+		client_time_obj.devicename = devicename;
+		client_time_obj.offtime = MULTIFILTER_MACFILTER_DAYTIME_V2_row[index];
+		client_time_sche_json.push(JSON.parse(JSON.stringify(client_time_obj)));
+	});
+	weekScheduleApi.data_max = (isSupport("MaxRule_PC_DAYTIME") == 0 ? 128 : isSupport("MaxRule_PC_DAYTIME"));
 	show_menu();
 	if(hnd_support || based_modelid == "RT-AC1200" || based_modelid == "RT-AC1200_V2" || based_modelid == "RT-AC1200GU" || based_modelid == "RT-N19"){
 		$("#nat_desc").hide();
@@ -212,11 +144,23 @@ function initial(){
 		//if(isSupport("webs_filter") && isSupport("apps_filter"))
 		//	document.getElementById('switch_menu').style.display = "";
 	}
+	if(isSupport("PC_SCHED_V3")){
+		$("#desc_title").html("<#PC_SCHED_Title#>");
+		var $desc_item = $("#desc_item").empty();
+		$("<li>").html("<#PC_SCHED_Desc1#>").appendTo($desc_item);
+		$("<li>").html("<#ParentalCtrl_Desc2#>").appendTo($desc_item);
+		$("<li>").html("<#PC_SCHED_Desc2#>").appendTo($desc_item);
+		$("<li>").html("<#PC_SCHED_Desc3#>").appendTo($desc_item);
+
+		$("#desc_note_item").find("li:eq(0)").remove();
+		if($("#nat_desc").css("display") == "none"){
+			$("#desc_note").hide();
+			$("#desc_note_item").hide();
+		}
+	}
 	document.getElementById('disable_NAT').href = "Advanced_SwitchCtrl_Content.asp?af=ctf_disable_force";	//this id is include in string : #ParentalCtrl_disable_NAT#
 
 	show_footer();
-	init_array(array);
-	init_cookie();	
 	if(downsize_4m_support || downsize_8m_support){
 			document.getElementById("guest_image").parentNode.style.display = "none";
 	}
@@ -230,23 +174,27 @@ function initial(){
 	gen_mainTable();
 	showDropdownClientList('setClientIP', 'mac', 'all', 'ClientList_Block_PC', 'pull_arrow', 'all');
 	if(<% nvram_get("MULTIFILTER_ALL"); %>)
-		showhide("list_table",1);
+		$(".switch_on_content").show();
 	else
-		showhide("list_table",0);
+		$(".switch_on_content").hide();
 		
 	count_time();
 
 	//When redirect page from index.asp, auto display edit time scheduling
 	var mac = cookie.get("time_scheduling_mac");
 	if(mac != "" && mac != null) {
-		var idx = MULTIFILTER_MAC_row.indexOf(mac);
-		if(idx != -1){
-			gen_lantowanTable(idx);
+		var specific_data = client_time_sche_json.filter(function(item, index, array){
+			return (item.mac == mac);
+		});
+		if(specific_data != undefined){
+			var eventObj = [];
+			eventObj["data"] = specific_data[0];
+			gen_lantowanTable(eventObj);
 			window.location.hash = "edit_time_anchor";
 		}
 		cookie.unset("time_scheduling_mac");
 	}
-	if(isSupport("PC_SCHED_V3") == "2")
+	if(parseInt(isSupport("PC_SCHED_V3")) >= 2)
 		$("#block_all_device").show();
 }
 
@@ -260,7 +208,7 @@ function pullLANIPList(obj){
 	var element = document.getElementById('ClientList_Block_PC');
 	var isMenuopen = element.offsetWidth > 0 || element.offsetHeight > 0;
 	if(isMenuopen == 0){		
-		obj.src = "/images/arrow-top.gif"
+		obj.src = "/images/unfold_less.svg"
 		element.style.display = 'block';		
 		document.form.PC_mac.focus();		
 	}
@@ -269,7 +217,7 @@ function pullLANIPList(obj){
 }
 
 function hideClients_Block(){
-	document.getElementById("pull_arrow").src = "/images/arrow-down.gif";
+	document.getElementById("pull_arrow").src = "/images/unfold_more.svg";
 	document.getElementById('ClientList_Block_PC').style.display='none';
 }
 /*----------} Mouse event of fake LAN IP select menu-----------------*/
@@ -278,7 +226,7 @@ function gen_mainTable(){
 	var code = "";
 	var clientListEventData = [];
 	code +='<table width="100%" border="1" cellspacing="0" cellpadding="4" align="center" class="FormTable_table" id="mainTable_table">';
-	code +='<thead><tr><td colspan="4"><#ConnectedClient#>&nbsp;(<#List_limit#>&nbsp;16)</td></tr></thead>';
+	code +='<thead><tr><td colspan="4"><#ConnectedClient#>&nbsp;(<#List_limit#>&nbsp;'+MaxRule_parentctrl+')</td></tr></thead>';
 	code += '<tr><th width="15%" height="30px" title="<#select_all#>">';
 	code += '<select id="selAll" class="input_option" onchange="selectAll();">';
 	code += '<option value=""><#select_all#></option>';
@@ -299,85 +247,99 @@ function gen_mainTable(){
 	code += '</select>';
 	code += '</td>';
 	code +='<td style="border-bottom:2px solid #000;"><input type="text" maxlength="17" style="margin-left:0px;width:255px;" class="input_20_table" name="PC_mac" onKeyPress="return validator.isHWAddr(this,event)" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off" placeholder="ex: <% nvram_get("lan_hwaddr"); %>">';
-	code +='<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;" onclick="pullLANIPList(this);" title="<#select_client#>">';
+	code +='<img id="pull_arrow" height="14px;" src="/images/unfold_more.svg" style="position:absolute;" onclick="pullLANIPList(this);" title="<#select_client#>">';
 	code +='<div id="ClientList_Block_PC" style="margin:0 0 0 32px" class="clientlist_dropdown"></div></td>';
 	code +='<td style="border-bottom:2px solid #000;">--</td>';
-	code +='<td style="border-bottom:2px solid #000;"><input class="add_btn" type="button" onClick="addRow_main(16)" value=""></td></tr>';
-	if(MULTIFILTER_DEVICENAME == "" && MULTIFILTER_MAC == "")
+	code +='<td style="border-bottom:2px solid #000;"><input class="add_btn" type="button" onClick="addRow_main()" value=""></td></tr>';
+	if(client_time_sche_json.length == 0)
 		code += '<tr><td style="color:#FFCC00;" colspan="4"><#IPConnection_VSList_Norule#></td></tr>';
 	else{
 		//user icon
 		var userIconBase64 = "NoIcon";
-		var clientName, deviceType, deviceVender; 
-		for(var i=0; i<MULTIFILTER_DEVICENAME_row.length; i++){
-			var clientIconID = "clientIcon_" + MULTIFILTER_MAC_row[i].replace(/\:/g, "");
-			if(clientList[MULTIFILTER_MAC_row[i]]) {
-				clientName = (clientList[MULTIFILTER_MAC_row[i]].nickName == "") ? clientList[MULTIFILTER_MAC_row[i]].name : clientList[MULTIFILTER_MAC_row[i]].nickName;
-				deviceType = clientList[MULTIFILTER_MAC_row[i]].type;
-				deviceVender = clientList[MULTIFILTER_MAC_row[i]].vendor;
+		var clientName, deviceType, deviceVendor;
+		$.each(client_time_sche_json, function( index, value ) {
+			var client_time_obj = value;
+			var container_id = client_time_obj.mac.replace(/\:/g, "-");
+			var clientIconID = "clientIcon_" + container_id;
+			var clientRowID = "clientRow_" +  container_id;
+			var clientEditID = "clientEdit_" +  container_id;
+			var client_mac = client_time_obj.mac
+			clientName = client_time_obj.devicename;
+			if(clientList[client_mac]) {
+				clientName = (clientList[client_mac].nickName == "") ? clientList[client_mac].name : clientList[client_mac].nickName;
+				deviceType = clientList[client_mac].type;
+				deviceVendor = clientList[client_mac].vendor;
 			}
 			else {
-				clientName = MULTIFILTER_DEVICENAME_row[i];
 				deviceType = 0;
-				deviceVender = "";
+				deviceVendor = "";
 			}
-			code += '<tr id="row'+i+'">';
+			code += '<tr id="'+clientRowID+'">';
 			code += '<td>';
-			code += '<select class="input_option eachrule" onchange="genEnableArray_main('+i+',this);">';
-			code += '<option value="0" ' + ((MULTIFILTER_ENABLE_row[i] == 0) ? "selected" : "") + '><#btn_disable#></option>';
-			code += '<option value="1" ' + ((MULTIFILTER_ENABLE_row[i] == 1) ? "selected" : "") + '><#diskUtility_time#></option>';
-			code += '<option value="2" ' + ((MULTIFILTER_ENABLE_row[i] == 2) ? "selected" : "") + '><#Block#></option>';
+			code += '<select class="input_option eachrule" onchange="genEnableArray_main(this);">';
+			code += '<option value="0" ' + ((client_time_obj.enable == "0") ? "selected" : "") + '><#btn_disable#></option>';
+			code += '<option value="1" ' + ((client_time_obj.enable == "1") ? "selected" : "") + '><#diskUtility_time#></option>';
+			code += '<option value="2" ' + ((client_time_obj.enable == "2")? "selected" : "") + '><#Block#></option>';
 			code += '</select>';
 			code += '</td>';
 			code += '<td title="'+clientName+'">';
-		
+
 			code += '<table width="100%"><tr><td style="width:35%;border:0;float:right;padding-right:30px;">';
-			if(clientList[MULTIFILTER_MAC_row[i]] == undefined) {
+			if(clientList[client_mac] == undefined) {
 				code += '<div id="' + clientIconID + '" class="clientIcon type0"></div>';
 			}
 			else {
 				if(usericon_support) {
-					userIconBase64 = getUploadIcon(MULTIFILTER_MAC_row[i].replace(/\:/g, ""));
+					userIconBase64 = getUploadIcon(client_mac.replace(/\:/g, ""));
 				}
 				if(userIconBase64 != "NoIcon") {
-					code += '<div id="' + clientIconID + '" style="text-align:center;"><img class="imgUserIcon_card" src="' + userIconBase64 + '"></div>';
-				}
-				else if(deviceType != "0" || deviceVender == "") {
-					code += '<div id="' + clientIconID + '" class="clientIcon type' + deviceType + '"></div>';
-				}
-				else if(deviceVender != "" ) {
-					var venderIconClassName = getVenderIconClassName(deviceVender.toLowerCase());
-					if(venderIconClassName != "" && !downsize_4m_support) {
-						code += '<div id="' + clientIconID + '" class="venderIcon ' + venderIconClassName + '"></div>';
-					}
-					else {
-						code += '<div id="' + clientIconID + '" class="clientIcon type' + deviceType + '"></div>';
-					}
-				}
+                    if(clientList[client_mac].isUserUplaodImg){
+                        code += '<div id="' + clientIconID + '" class="clientIcon"><img class="imgUserIcon_card" src="' + userIconBase64 + '"></div>';
+                    }else{
+                        code += '<div id="' + clientIconID + '" class="clientIcon"><i class="type" style="--svg:url(' + userIconBase64 + ')"></i></div>';
+                    }
+                }
+                else if(deviceType != "0" || deviceVendor == "") {
+                    code += '<div id="' + clientIconID + '" class="clientIcon"><i class="type'+deviceType+'"></i></div>';
+                }
+                else if(deviceVendor != "" ) {
+                    var vendorIconClassName = getVendorIconClassName(deviceVendor.toLowerCase());
+                    if(vendorIconClassName != "" && !downsize_4m_support) {
+                        code += '<div id="' + clientIconID + '" class="clientIcon"><i class="vendor-icon '+ vendorIconClassName +'"></i></div>';
+                    }
+                    else {
+                        code += '<div id="' + clientIconID + '" class="clientIcon"><i class="type' + deviceType + '"></i></div>';
+                    }
+                }
 			}
-			code += '</td><td id="client_info_'+i+'" style="width:65%;text-align:left;border:0;">';
+			code += '</td><td style="width:65%;text-align:left;border:0;">';
 			code += '<div>' + clientName + '</div>';
-			code += '<div>' + MULTIFILTER_MAC_row[i] + '</div>';
+			code += '<div>' + client_mac + '</div>';
 			code += '</td></tr></table>';
 			code += '</td>';
 
-			code += '<td><input class=\"edit_btn\" type=\"button\" onclick=\"gen_lantowanTable('+i+');" value=\"\"/></td>';
-			code += '<td><input class=\"remove_btn\" type=\"button\" onclick=\"deleteRow_main(this, \''+MULTIFILTER_MAC_row[i]+'\');\" value=\"\"/></td></tr>';
-			if(validator.mac_addr(MULTIFILTER_MAC_row[i]))
-				clientListEventData.push({"mac" : MULTIFILTER_MAC_row[i], "name" : clientName, "ip" : "", "callBack" : "ParentalControl"});
-		}
+			code += '<td><input id=\"' + clientEditID + '\" class=\"edit_btn\" type=\"button\" value=\"\"/></td>';
+			code += '<td><input class=\"remove_btn\" type=\"button\" onclick=\"deleteRow_main(this);\" value=\"\"/></td></tr>';
+			if(validator.mac_addr(client_mac))
+				clientListEventData.push({"mac" : client_mac, "name" : clientName, "ip" : "", "callBack" : "ParentalControl"});
+		})
 	}
 	code += '</table>';
 
 	document.getElementById("mainTable").style.display = "";
 	document.getElementById("mainTable").innerHTML = code;
 	for(var i = 0; i < clientListEventData.length; i += 1) {
-		var clientIconID = "clientIcon_" + clientListEventData[i].mac.replace(/\:/g, "");
+		var clientIconID = "clientIcon_" + clientListEventData[i].mac.replace(/\:/g, "-");
 		var clientIconObj = $("#mainTable").children("#mainTable_table").find("#" + clientIconID + "")[0];
 		var paramData = JSON.parse(JSON.stringify(clientListEventData[i]));
 		paramData["obj"] = clientIconObj;
 		$("#mainTable").children("#mainTable_table").find("#" + clientIconID + "").click(paramData, popClientListEditTable);
 	}
+	$.each(client_time_sche_json, function( index, value ) {
+		var client_time_obj = value;
+		var clientEditID = "clientEdit_" + client_time_obj.mac.replace(/\:/g, "-");
+		$("#mainTable").children("#mainTable_table").find("#" + clientEditID + "").click(client_time_obj, gen_lantowanTable);
+	});
 	$("#mainTable").fadeIn();
 	document.getElementById("ctrlBtn").innerHTML = '<input class="button_gen" type="button" onClick="applyRule(1);" value="<#CTL_apply#>">';
 
@@ -387,36 +349,36 @@ function gen_mainTable(){
 
 function selectAll(){
 	$(".eachrule").val($("#selAll").val());
-	MULTIFILTER_ENABLE = MULTIFILTER_ENABLE.replace(/[012]/g, $("#selAll").val());
+	$.each(client_time_sche_json, function( index, value ) {
+		var client_time_obj = value;
+		client_time_obj.enable = $("#selAll").val();
+	});
 	$("#selAll").val("");
 }
 
-
 function applyRule(_on){
+	var MULTIFILTER_ENABLE = "";
+	var MULTIFILTER_MAC = "";
+	var MULTIFILTER_DEVICENAME = "";
+	var MULTIFILTER_MACFILTER_DAYTIME_V2 = "";
+	$.each(client_time_sche_json, function( index, value ) {
+		var client_time_obj = value;
+		MULTIFILTER_ENABLE += ((index > 0) ? (">" + client_time_obj.enable) : client_time_obj.enable);
+		MULTIFILTER_MAC += ((index > 0) ? (">" + client_time_obj.mac) : client_time_obj.mac);
+		var clientObj = clientList[client_time_obj.mac];
+		var clientName = client_time_obj.devicename;
+		if(clientObj)
+			clientName = (clientObj.nickName == "") ? clientObj.name : clientObj.nickName;
+		MULTIFILTER_DEVICENAME += ((index > 0) ? (">" + clientName) : clientName);
+		MULTIFILTER_MACFILTER_DAYTIME_V2 += ((index > 0) ? (">" + client_time_obj.offtime) : client_time_obj.offtime);
+	});
+
 	document.form.MULTIFILTER_ENABLE.value = MULTIFILTER_ENABLE;
 	document.form.MULTIFILTER_MAC.value = MULTIFILTER_MAC;
-
-	//update MULTIFILTER_DEVICENAME from custom_clientlist
-	var MULTIFILTER_DEVICENAME_array = MULTIFILTER_DEVICENAME.split(">");
-	var MULTIFILTER_MAC_array = MULTIFILTER_MAC.split(">");
-	MULTIFILTER_DEVICENAME = "";
-	for(var i = 0; i < MULTIFILTER_MAC_array.length; i += 1) {
-		var clientName = "";
-		if(clientList[MULTIFILTER_MAC_array[i]]) {
-			clientName = (clientList[MULTIFILTER_MAC_array[i]].nickName == "") ? clientList[MULTIFILTER_MAC_array[i]].name : clientList[MULTIFILTER_MAC_row[i]].nickName;
-		}
-		else {
-			clientName = MULTIFILTER_DEVICENAME_array[i];
-		}
-		MULTIFILTER_DEVICENAME += clientName;
-		if(i != (MULTIFILTER_MAC_array.length - 1))
-			MULTIFILTER_DEVICENAME += ">";
-	}
-
 	document.form.MULTIFILTER_DEVICENAME.value = MULTIFILTER_DEVICENAME;
-	document.form.MULTIFILTER_MACFILTER_DAYTIME.value = MULTIFILTER_MACFILTER_DAYTIME;
+	document.form.MULTIFILTER_MACFILTER_DAYTIME_V2.value = MULTIFILTER_MACFILTER_DAYTIME_V2;
 
-	showLoading();	
+	showLoading();
 	document.form.submit();
 }
 
@@ -465,310 +427,66 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 	}	
 }
 
+function gen_lantowanTable(event){
+	$(".schedule_block_on").show();
+	$(".schedule_block_off").hide();
 
-function gen_lantowanTable(client){
-	_client = client;
-	var array_date = ["Select All", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-	var array_time_id = ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"];
-	if(clock_type == "1")
-		var array_time = ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24"];
-	else
-		var array_time = ["12am", "1am", "2am", "3am", "4am", "5am", "6am", "7am", "8am", "9am", "10am", "11am", "12pm", "1pm", "2pm", "3pm", "4pm", "5pm", "6pm", "7pm", "8pm", "9pm", "10pm", "11pm", "12am"];
-	
-	var code = "";
-	var MULTIFILTER_MACFILTER_DAYTIME_col = "";
-	MULTIFILTER_MACFILTER_DAYTIME_col = MULTIFILTER_MACFILTER_DAYTIME_row[_client].split('<');
+	if(parseInt(isSupport("PC_SCHED_V3")) >= 3)
+		weekScheduleApi.support_change_schedule_mode = true;
+	if(parseInt(isSupport("PC_SCHED_V3")) >= 1)
+		weekScheduleApi.alternate_days = true;
 
-	code +='<div style="margin-bottom:10px;color: #003399;font-family: Verdana;" align="left">';
-	code +='<table width="100%" border="1" cellspacing="0" cellpadding="4" align="center" class="FormTable">';
-	code +='<thead><tr><td colspan="6" id="LWFilterList"><#ParentalCtrl_Act_schedule#></td></tr></thead>';
-	code +='<tr><th style="width:40%;height:20px;" align="right"><#ParentalCtrl_username#></th>';	
-	if(MULTIFILTER_DEVICENAME_row[client] != "") {
-		var clientName = "";
-		if(clientList[MULTIFILTER_MAC_row[client]]) {
-			clientName = (clientList[MULTIFILTER_MAC_row[client]].nickName == "") ? clientList[MULTIFILTER_MAC_row[client]].name : clientList[MULTIFILTER_MAC_row[client]].nickName;
-		}
-		else {
-			clientName = MULTIFILTER_DEVICENAME_row[client];
-		}
-
-		code +='<td align="left" style="color:#FFF">'+ clientName + '</td></tr>';
-	}
-	else
-		code +='<td align="left" style="color:#FFF">'+ MULTIFILTER_MAC_row[client] + '</td></tr>';
-		
-	code +='</table><table id="main_select_table">';
-	code +='<table  id="selectable" class="table_form" >';
-	code += "<tr>";
-	for(i=0;i<8;i++){
-		if(i == 0)
-			code +="<th class='parental_th' onclick='select_all();'>"+array_date[i]+"</th>";	
-		else
-			code +="<th id=col_"+(i-1)+" class='parental_th' onclick='select_all_day(this.id);'>"+array_date[i]+"</th>";			
-	}
-	
-	code += "</tr>";
-	for(i=0;i<24;i++){
-		code += "<tr>";
-		code +="<th id="+i+" class='parental_th' onclick='select_all_time(this.id)'>"+ array_time[i] + " ~ " + array_time[i+1] +"</th>";
-		for(j=0;j<7;j++){
-			code += "<td id="+ j + array_time_id[i] +" class='disabled' ></td>";		
-		}
-		
-		code += "</tr>";			
-	}
-	
-	code +='</table></table></div>';
-	document.getElementById("mainTable").innerHTML = code;
-
-	register_event();
-	redraw_selected_time(MULTIFILTER_MACFILTER_DAYTIME_col);
-	
-	var code_temp = "";
-	code_temp = '<table><tr>';
-	code_temp += "<td><div style=\"font-family:Arial,sans-serif,Helvetica;font-size:18px;margin:0px 5px 0 10px\"><#Clock_Format#></div></td>";
-	code_temp += '<td><div>';
-	code_temp += '<select id="clock_type_select" class="input_option" onchange="change_clock_type(this.value);">';
-	code_temp += '<option value="0" >12-hour</option>';
-	code_temp += '<option value="1" >24-hour</option>';
-	code_temp += '</select>';
-	code_temp += '</div></td>';
-	code_temp += '<td><div align="left" style="font-family:Arial,sans-serif,Helvetica;font-size:18px;margin:0px 5px 0 10px"><#ParentalCtrl_allow#></div></td>';
-	code_temp += '<td><div style="width:90px;height:20px;background:#9CB2BA;"></div></td>';
-	code_temp += '<td><div align="left" style="font-family:Arial,sans-serif,Helvetica;font-size:18px;margin:0px 5px 0 10px"><#ParentalCtrl_deny#></div></td>';
-	code_temp += '<td><div style="width:90px;height:20px;border: 1px solid #000000;background:#475A5F;"></div></td>';
-	code_temp += '</tr></table>';
-	document.getElementById('hintBlock').innerHTML = code_temp;
-	document.getElementById('hintBlock').style.marginTop = "10px";
-	document.getElementById('hintBlock').style.display = "";
-	document.getElementById("ctrlBtn").innerHTML = '<input class="button_gen" type="button" onClick="cancel_lantowan('+client+');" value="<#CTL_Cancel#>" style="margin:0 10px;">';
-	document.getElementById("ctrlBtn").innerHTML += '<input class="button_gen" type="button" onClick="saveto_lantowan('+client+');applyRule();" value="<#CTL_ok#>" style="margin:0 10px;">';  
-	document.getElementById('clock_type_select')[clock_type].selected = true;		// set clock type by cookie
-	
-	document.getElementById("mainTable").style.display = "";
-	$("#mainTable").fadeIn();
+	var PC_others_rule_num = 0;
+	$.each(client_time_sche_json, function( index, value ) {
+		var client_time_obj = value;
+		if(event.data.mac != client_time_obj.mac && client_time_obj.offtime != "")
+			PC_others_rule_num += client_time_obj.offtime.split("<").length;
+	});
+	weekScheduleApi.PC_others_rule_num = PC_others_rule_num;
+	weekScheduleApi.PC_init_data(event.data.offtime);
+	weekScheduleApi.PC_init_layout("weekScheduleBg");
+	weekScheduleApi.callback_btn_cancel = cancel_lantowan;
+	weekScheduleApi.callback_btn_apply = function(){
+		event.data.offtime = weekScheduleApi.PC_transform_offtime_json_to_string();
+		saveto_lantowan()
+	};
 }
 
-//draw time slot at first time
-function redraw_selected_time(obj){
-	var start_day = 0;
-	var end_day = 0;
-	var start_time = "";
-	var end_time = "";
-	var time_temp = "";
-	var duration = "";
-	var id = "";
-
-	for(i=0;i<obj.length/2;i++){
-		time_temp = obj[(2*i)+1];
-		start_day = parseInt(time_temp.substring(0,1), 10);
-		end_day =  parseInt(time_temp.substring(1,2), 10);
-		start_time =  parseInt(time_temp.substring(2,4), 10);
-		end_time =  parseInt(time_temp.substring(4,6), 10);
-		if((start_day == end_day) && (end_time - start_time) < 0)	//for Sat 23 cross to Sun 00
-			end_day = 7;
-
-		if(start_day == end_day){			// non cross day
-			duration = end_time - start_time;
-			if(duration == 0)	//for whole selected
-				duration = 7*24;
-			
-			while(duration >0){
-				array[start_day][start_time] = 1;
-				if(start_time < 10)
-					start_time = "0" + start_time;
-								
-				id = start_day.toString() + start_time.toString();
-				document.getElementById(id).className = "checked";
-				start_time++;
-				if(start_time == 24){
-					start_time = 0;
-					start_day++;
-					if(start_day == 7)
-						start_day = 0;
-				}
-	
-				duration--;
-				id = "";		
-			}	
-		}else{			// cross day
-			var duration_day = 0;
-			if(end_day - start_day < 0)
-				duration_day = 7 - start_day;
-			else
-				duration_day = end_day - start_day;
-		
-			duration = (24 - start_time) + (duration_day - 1)*24 + end_time;
-			while(duration > 0){
-				array[start_day][start_time] = 1;
-				if(start_time < 10)
-					start_time = "0" + start_time;
-				
-				id = start_day.toString() + start_time.toString();
-				document.getElementById(id).className = "checked";
-				start_time++;
-				if(start_time == 24){
-					start_time = 0;
-					start_day++;
-					if(start_day == 7)
-						start_day = 0;		
-				}
-				
-				duration--;
-				id = "";	
-			}		
-		}	
-	}
-}
-
-function select_all(){
-	var full_flag = 1;
-	for(i=0;i<7;i++){
-		for(j=0;j<24;j++){
-			if(array[i][j] ==0){ 
-				full_flag = 0;
-				break;
-			}
-		}
-		
-		if(full_flag == 0){
-			break;
-		}
-	}
-
-	if(full_flag == 1){
-		for(i=0;i<7;i++){
-			for(j=0;j<24;j++){
-				array[i][j] = 0;
-				if(j<10){
-					j = "0"+j;
-				}
-		
-				id = i.toString() + j.toString();
-				document.getElementById(id).className = "disabled";
-			}
-		}	
-	}
-	else{
-		for(i=0;i<7;i++){
-			for(j=0;j<24;j++){
-				if(array[i][j] == 1)
-					continue;
-				else{	
-					array[i][j] = 1;
-					if(j<10){
-						j = "0"+j;
-					}
-			
-					id = i.toString() + j.toString();
-					document.getElementById(id).className = "checked";
-				}
-			}
-		}
-	}
-}
-
-function select_all_day(day){
-	var check_flag = 0
-	day = day.substring(4,5);
-	for(i=0;i<24;i++){
-		if(array[day][i] == 0){
-			check_flag = 1;			
-		}			
-	}
-	
-	if(check_flag == 1){
-		for(j=0;j<24;j++){
-			array[day][j] = 1;
-			if(j<10){
-				j = "0"+j;
-			}
-		
-			id = day + j;
-			document.getElementById(id).className = "checked";	
-		}
-	}
-	else{
-		for(j=0;j<24;j++){
-			array[day][j] = 0;
-			if(j<10){
-				j = "0"+j;
-			}
-		
-			id = day + j;
-			document.getElementById(id).className = "disabled";	
-		}
-	}
-}
-
-function select_all_time(time){
-	var check_flag = 0;
-	time_int = parseInt(time, 10);	
-	for(i=0;i<7;i++){
-		if(array[i][time] == 0){
-			check_flag = 1;			
-		}			
-	}
-	
-	if(time<10){
-		time = "0"+time;
-	}
-
-	if(check_flag == 1){
-		for(i=0;i<7;i++){
-			array[i][time_int] = 1;
-			
-		id = i + time;
-		document.getElementById(id).className = "checked";
-		}
-	}
-	else{
-		for(i=0;i<7;i++){
-			array[i][time_int] = 0;
-
-		id = i + time;
-		document.getElementById(id).className = "disabled";
-		}
-	}
-}
-
-function change_clock_type(type){
-	document.cookie = "clock_type="+type;
-	if(type == 1)
-		var array_time = ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24"];
-	else
-		var array_time = ["12", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"];
-
-	for(i=0;i<24;i++){
-		if(type == 1)
-			document.getElementById(i).innerHTML = array_time[i] +" ~ "+ array_time[i+1];
-		else{
-			if(i<11 || i == 23)
-				document.getElementById(i).innerHTML = array_time[i] +" ~ "+ array_time[i+1] + " AM";
-			else
-				document.getElementById(i).innerHTML = array_time[i] +" ~ "+ array_time[i+1] + " PM";
-		}	
-	}
-}
-
-function addRow_main(upper){
+function addRow_main(){
+	var upper = MaxRule_parentctrl;
 	var invalid_char = "";
 	if(<% nvram_get("MULTIFILTER_ALL"); %> != "1")
 		document.form.MULTIFILTER_ALL.value = 1;
-	
-	var rule_num = document.getElementById('mainTable_table').rows.length - 3; // remove tbody
-	if(rule_num >= upper){
+
+	if(client_time_sche_json.length >= upper){
 		alert("<#JS_itemlimit1#> " + upper + " <#JS_itemlimit2#>");
-		return false;	
-	}				
-	
+		return false;
+	}
+
+	var all_client_total_rule_num = 2;//add new client, default 2 rules.
+	$.each(client_time_sche_json, function( index, value ) {
+		var client_time_obj = value;
+		if(client_time_obj.offtime != "")
+			all_client_total_rule_num += client_time_obj.offtime.split("<").length;
+	});
+	if(all_client_total_rule_num > weekScheduleApi.data_max){
+		var hint = "<#weekSche_MAX_Num#>".replace("#MAXNUM", weekScheduleApi.data_max);
+		hint += "\n";
+		hint += "<#weekSche_MAX_Del_Hint#>";
+		alert(hint);
+		return false;
+	}
+
 	if(document.form.PC_mac.value == ""){
 		alert("<#JS_fieldblank#>");
 		document.form.PC_mac.focus();
 		return false;
 	}
-	
-	if(MULTIFILTER_MAC.search(document.form.PC_mac.value.toUpperCase()) > -1){
+
+	var specific_data = client_time_sche_json.filter(function(item, index, array){
+		return (item.mac == document.form.PC_mac.value.toUpperCase());
+	});
+	if(specific_data.length == 1){
 		alert("<#JS_duplicate#>");
 		document.form.PC_mac.focus();
 		return false;
@@ -777,157 +495,60 @@ function addRow_main(upper){
 	if(!check_macaddr(document.form.PC_mac, check_hwaddr_flag(document.form.PC_mac, 'inner'))){
 		document.form.PC_mac.focus();
 		document.form.PC_mac.select();
-		return false;	
-	}	
-
-	if(MULTIFILTER_DEVICENAME != "" || MULTIFILTER_MAC != ""){
-		MULTIFILTER_ENABLE += ">";
-		MULTIFILTER_DEVICENAME += ">";
-		MULTIFILTER_MAC += ">";
+		return false;
 	}
 
-	MULTIFILTER_ENABLE += $("#newrule_Enable").val();
-
+	var client_time_obj = new client_time_sche_attr();
+	client_time_obj.enable = $("#newrule_Enable").val();
+	client_time_obj.mac = document.form.PC_mac.value.toUpperCase();
 	var clientObj = clientList[document.form.PC_mac.value.toUpperCase()];
 	var clientName = "New device";
-	if(clientObj) {
+	if(clientObj)
 		clientName = (clientObj.nickName == "") ? clientObj.name : clientObj.nickName;
-	}
-	MULTIFILTER_DEVICENAME += clientName;
-	MULTIFILTER_MAC += document.form.PC_mac.value.toUpperCase();
-
-	if(MULTIFILTER_MACFILTER_DAYTIME != "")
-		MULTIFILTER_MACFILTER_DAYTIME += ">";
-
-	MULTIFILTER_MACFILTER_DAYTIME += "<";
-
-	MULTIFILTER_ENABLE_row = MULTIFILTER_ENABLE.split('>');
-	MULTIFILTER_DEVICENAME_row = MULTIFILTER_DEVICENAME.split('>');
-	MULTIFILTER_MAC_row = MULTIFILTER_MAC.split('>');
-
-	MULTIFILTER_MACFILTER_DAYTIME_row = MULTIFILTER_MACFILTER_DAYTIME.split('>');
+	client_time_obj.devicename = clientName;
+	client_time_obj.offtime = "W03E21000700<W04122000800";
+	client_time_sche_json.push(JSON.parse(JSON.stringify(client_time_obj)));
 	document.form.PC_mac.value = "";
 	gen_mainTable();
 }
 
-function deleteRow_main(r, delMac){
-	var j=r.parentNode.parentNode.rowIndex;
-	document.getElementById(r.parentNode.parentNode.parentNode.parentNode.id).deleteRow(j);
+function deleteRow_main(obj){
+	var client_row_id = $(obj).closest("tr").attr("id");
+	var client_mac = client_row_id.replace("clientRow_", "").replace(/-/g, ':').toUpperCase();
+	var remove_client_time = function(_mac, _data){
+		return _data.filter(function(item, index, array) {
+			if (item.mac == _mac)
+				return false;
+			return true;
+		});
+	};
+	client_time_sche_json = remove_client_time(client_mac, client_time_sche_json);
 
-	var MULTIFILTER_ENABLE_tmp = "";
-	var MULTIFILTER_MAC_tmp = "";
-	var MULTIFILTER_DEVICENAME_tmp = "";
-	var MULTIFILTER_ENABLE_array = MULTIFILTER_ENABLE.split(">");
-	var MULTIFILTER_MAC_array = MULTIFILTER_MAC.split(">");
-	var MULTIFILTER_DEVICENAME_array = MULTIFILTER_DEVICENAME.split(">");
-
-	for(var idx = 0; idx < MULTIFILTER_MAC_array.length; idx += 1) {
-		if(MULTIFILTER_MAC_array[idx] != delMac) {
-			if(MULTIFILTER_MAC_tmp != "") {
-				MULTIFILTER_MAC_tmp += ">";
-				MULTIFILTER_ENABLE_tmp += ">";
-				MULTIFILTER_DEVICENAME_tmp += ">";
-			}
-			MULTIFILTER_MAC_tmp += MULTIFILTER_MAC_array[idx];
-			MULTIFILTER_ENABLE_tmp += MULTIFILTER_ENABLE_array[idx];
-			MULTIFILTER_DEVICENAME_tmp += MULTIFILTER_DEVICENAME_array[idx];
-		}
-	}
-
-	MULTIFILTER_ENABLE = MULTIFILTER_ENABLE_tmp;
-	MULTIFILTER_MAC = MULTIFILTER_MAC_tmp;
-	MULTIFILTER_DEVICENAME = MULTIFILTER_DEVICENAME_tmp;
-	
-	MULTIFILTER_ENABLE_row = MULTIFILTER_ENABLE.split('>');
-	MULTIFILTER_MAC_row = MULTIFILTER_MAC.split('>');
-	MULTIFILTER_DEVICENAME_row = MULTIFILTER_DEVICENAME.split('>');
-	
-	MULTIFILTER_MACFILTER_DAYTIME_row.splice(j-3,1);
-	regen_lantowan();	
-	gen_mainTable();
+	$("#mainTable").find("#" + client_row_id + "").remove();
+	if(client_time_sche_json.length == 0)
+		gen_mainTable();
 }
 
 function saveto_lantowan(client){
-	var flag = 0;
-	var start_day = 0;
-	var end_day = 0;
-	var start_time = 0;
-	var end_time = 0;
-	var time_temp = "";
-	
-	for(i=0;i<7;i++){
-		for(j=0;j<24;j++){
-			if(array[i][j] == 1){
-				if(flag == 0){
-					flag =1;
-					start_day = i;
-					if(j<10)
-						j = "0" + j;
-						
-					start_time = j;				
-				}
-			}
-			else{
-				if(flag == 1){
-					flag =0;
-					end_day = i;
-					if(j<10)
-						j = "0" + j;
-					
-					end_time = j;		
-					if(time_temp != "")
-						time_temp += "<";
-					
-					//T< : T for editable time slot name	
-					time_temp += "T<" + start_day.toString() + end_day.toString() + start_time.toString() + end_time.toString();
-				}
-			}
-		}	
-	}
-	
-	if(flag == 1){
-		if(time_temp != "")
-			time_temp += "<";
-		
-		//T< : T for editable time slot name							
-		time_temp += "T<" + start_day.toString() + "0" + start_time.toString() + "00";	
-	}
-	
-	if(time_temp == "")
-		time_temp = "<";
-	
-	MULTIFILTER_MACFILTER_DAYTIME_row[client] = time_temp;
-	regen_lantowan();
 	gen_mainTable();
+	$(".schedule_block_on").hide();
+	$(".schedule_block_off").show();
+	applyRule();
 }
 
 function cancel_lantowan(client){
-	init_array(array);
 	gen_mainTable();
-	document.getElementById('hintBlock').style.display = "none";
+	$(".schedule_block_on").hide();
+	$(".schedule_block_off").show();
 }
 
-function regen_lantowan(){
-	MULTIFILTER_MACFILTER_DAYTIME = "";
-	for(i=0;i<MULTIFILTER_MACFILTER_DAYTIME_row.length;i++){
-		MULTIFILTER_MACFILTER_DAYTIME += MULTIFILTER_MACFILTER_DAYTIME_row[i];
-		if(i<MULTIFILTER_MACFILTER_DAYTIME_row.length-1){
-			MULTIFILTER_MACFILTER_DAYTIME += ">";
-		}
-	}
-}
-
-function genEnableArray_main(j, obj){
-	MULTIFILTER_ENABLE_row = MULTIFILTER_ENABLE.split('>');
-
-	MULTIFILTER_ENABLE_row[j] = obj.value;
-
-	MULTIFILTER_ENABLE = "";
-	for(i=0; i<MULTIFILTER_ENABLE_row.length; i++){
-		MULTIFILTER_ENABLE += MULTIFILTER_ENABLE_row[i];
-		if(i<MULTIFILTER_ENABLE_row.length-1)
-			MULTIFILTER_ENABLE += ">";
-	}
+function genEnableArray_main(obj){
+	var client_mac = $(obj).closest("tr").attr("id").replace("clientRow_", "").replace(/-/g, ':').toUpperCase();
+	var specific_data = client_time_sche_json.filter(function(item, index, array){
+		return (item.mac == client_mac);
+	})[0];
+	if(specific_data != undefined)
+		specific_data.enable = $(obj).val();
 }
 
 function show_inner_tab(){
@@ -968,7 +589,7 @@ function show_inner_tab(){
 <input type="hidden" name="MULTIFILTER_ENABLE" value="<% nvram_get("MULTIFILTER_ENABLE"); %>">
 <input type="hidden" name="MULTIFILTER_MAC" value="<% nvram_get("MULTIFILTER_MAC"); %>">
 <input type="hidden" name="MULTIFILTER_DEVICENAME" value="<% nvram_get("MULTIFILTER_DEVICENAME"); %>">
-<input type="hidden" name="MULTIFILTER_MACFILTER_DAYTIME" value="<% nvram_get("MULTIFILTER_MACFILTER_DAYTIME"); %>">
+<input type="hidden" name="MULTIFILTER_MACFILTER_DAYTIME_V2" value="<% nvram_get("MULTIFILTER_MACFILTER_DAYTIME_V2"); %>">
 
 <table class="content" align="center" cellpadding="0" cellspacing="0" >
 	<tr>
@@ -1057,15 +678,15 @@ function show_inner_tab(){
 					<td>&nbsp;&nbsp;</td>
 					<td style="font-size: 14px;">
 						<span id="desc_title"><#ParentalCtrl_Desc#></span>
-						<ol>	
+						<ol id="desc_item">
 							<li><#ParentalCtrl_Desc1#></li>
 							<li><#ParentalCtrl_Desc2#></li>
 							<li><#ParentalCtrl_Desc3#></li>
 							<li><#ParentalCtrl_Desc4#></li>
 							<li><#ParentalCtrl_Desc5#></li>							
 						</ol>
-						<span id="desc_note" style="color:#FC0;"><#ADSL_FW_note#></span>
-						<ol style="color:#FC0;margin:-5px 0px 3px -18px;*margin-left:18px;">
+						<span id="desc_note" class="hint-color"><#ADSL_FW_note#></span>
+						<ol id="desc_note_item" class="hint-color" style="margin:-5px 0px 3px -18px;*margin-left:18px;">
 							<li><#ParentalCtrl_default#></li>
 							<li id="nat_desc"><#ParentalCtrl_disable_NAT#></li>
 						</ol>	
@@ -1074,8 +695,7 @@ function show_inner_tab(){
 			</table>
 		</div>
 			<!--=====Beginning of Main Content=====-->
-			<div id="edit_time_anchor"></div>
-			<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
+			<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable schedule_block_off">
 				<tr>
 					<th id="PC_enable"><#ParentalCtrl_Enable#></th>
 					<td>
@@ -1085,47 +705,44 @@ function show_inner_tab(){
 								$('#radio_ParentControl_enable').iphoneSwitch('<% nvram_get("MULTIFILTER_ALL"); %>',
 									function(){
 											document.form.MULTIFILTER_ALL.value = 1;
-											showhide("list_table",1);	
+											$(".switch_on_content").show();
 									},
 									function(){
 										document.form.MULTIFILTER_ALL.value = 0;
-										showhide("list_table",0);
+										$(".switch_on_content").hide();
 										if(document.form.MULTIFILTER_ALL.value == '<% nvram_get("MULTIFILTER_ALL"); %>')
 											return false;
-																					
-											applyRule(1);
+
+										applyRule(1);
 									}
 								);
-							</script>			
+							</script>
 						</div>
-					</td>			
-				</tr>				
-			</table>				
-			<table id="list_table" width="100%" border="0" align="center" cellpadding="0" cellspacing="0" style="display:none">
-				<tr>
-					<td valign="top" align="center">
-						<!-- client info -->
-						<div id="VSList_Block"></div>
-						<!-- Content -->
-						<div id="SystemTime">
-							<table width="100%" border="1" cellspacing="0" cellpadding="4" class="FormTable">
-								<tr>
-									<th width="20%"><#General_x_SystemTime_itemname#></th>
-									<td align="left"><input type="text" id="system_time" name="system_time" class="devicepin" value="" readonly="1" style="font-size:12px;width:200px;" autocorrect="off" autocapitalize="off">
-										<div id="svc_hint_div" style="display:none;"><span onClick="location.href='Advanced_System_Content.asp?af=ntp_server0'" style="color:#FFCC00;text-decoration:underline;cursor:pointer;"><#General_x_SystemTime_syncNTP#></span></div>
-		  								<div id="timezone_hint_div" style="display:none;"><span id="timezone_hint" onclick="location.href='Advanced_System_Content.asp?af=time_zone_select'" style="color:#FFCC00;text-decoration:underline;cursor:pointer;"></span></div>
-									</td>
-								</tr>
-							</table>
-						</div>
-						<div id="hintBlock" style="width:650px;display:none;"></div>
-						<div id="mainTable" style="margin-top:10px;"></div>
-						<br>
-						<div id="ctrlBtn" style="text-align:center;"></div>
-						<!-- Content -->						
-					</td>	
+					</td>
+				</tr>
+				<tr class="switch_on_content">
+					<th><#General_x_SystemTime_itemname#></th>
+					<td align="left"><input type="text" id="system_time" name="system_time" class="devicepin" value="" readonly="1" style="font-size:12px;width:200px;" autocorrect="off" autocapitalize="off">
+						<div id="svc_hint_div" style="display:none;"><span onClick="location.href='Advanced_System_Content.asp?af=ntp_server0'" class="hint-color" style="text-decoration:underline;cursor:pointer;"><#General_x_SystemTime_syncNTP#></span></div>
+							<div id="timezone_hint_div" style="display:none;"><span id="timezone_hint" onclick="location.href='Advanced_System_Content.asp?af=time_zone_select'" class="hint-color" style="text-decoration:underline;cursor:pointer;"></span></div>
+					</td>
 				</tr>
 			</table>
+			<table width="100%" border="0" align="center" cellpadding="0" cellspacing="0" style="display:none" class="switch_on_content schedule_block_off">
+				<tr>
+					<td valign="top" align="center">
+						<!-- Content -->
+						<div id="mainTable" style="margin-top:10px;"></div>
+						<br>
+						<div id="ctrlBtn" class="apply_gen" style="text-align:center;"></div>
+						<!-- Content -->
+					</td>
+				</tr>
+			</table>
+			<div class="schedule_block_on" style="display:none">
+				<div id="edit_time_anchor"></div>
+				<div id="weekScheduleBg"></div>
+			</div>
 		</td>
 	</tr>
 	</tbody>	
@@ -1139,7 +756,6 @@ function show_inner_tab(){
     <td width="10" align="center" valign="top">&nbsp;</td>
 	</tr>
 </table>
-
 <div id="footer"></div>
 </form>
 </body>

@@ -1,0 +1,6 @@
+KP_IMX53_HSC BOARD
+M:	Lukasz Majewski <lukma@denx.de>
+S:	Maintained
+F:	board/k+p/kp_imx53/
+F:	include/configs/kp_imx53.h
+F:	configs/kp_imx53_defconfig

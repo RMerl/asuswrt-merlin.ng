@@ -20,6 +20,12 @@ LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
 #LDFLAGS += -L$(TOP)/nvram$(BCMEX)$(EX7) -lnvram
 LIBS = -lpthread -lgcc_s
 
+ifeq ($(RT4GAC86U),y)
+OBJS += $(LIBDIR)/libc_nonshared.a
+else
+OBJS =
+endif
+
 ifeq ($(or $(RTCONFIG_DMALLOC),$(DMALLOC)),y)
 CFLAGS += -DDMALLOC -DDMALLOC_FUNC_CHECK -I$(STAGEDIR)/usr/include
 LDFLAGS += -L$(STAGEDIR)/usr/lib -ldmalloc
@@ -32,7 +38,7 @@ else
 all: nt_actMail
 endif
 
-nt_actMail: nt_actMail.o
+nt_actMail: nt_actMail.o $(OBJS)
 
 nt_actMail:
 	@$(CC) ${CFLAGS} -o $@ $^ ${LDFLAGS} $(LIBS)

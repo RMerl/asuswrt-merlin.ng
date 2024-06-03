@@ -1,0 +1,141 @@
+# Broadcom 802.11abg Networking Device Driver Configuration file
+#
+# Copyright (C) 2023, Broadcom. All Rights Reserved.
+#
+# Permission to use, copy, modify, and/or distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+# SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+# OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+# CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+#
+#
+# <<Broadcom-WL-IPTag/Open:>>
+#
+# $Id: wlconfig_eap 831764 2023-10-25 15:24:42Z $
+#
+#ifdef WL_EAP_AP
+# EAP common config file used for Linux WL, NIC driver, and PCIE full dongle
+WL_EAP_AP=1
+#WL_EAP_PER_VAP_CONFIG=1
+WL_EAP_PER_VAP_PKTC=1
+WL_EAP_UCODE=1
+WL_EAP_UCODE_TX_DESC=0
+WL_EAP_EMSGLVL=1
+#WL_EAP_PKTTAG_EXT=1
+WL_EAP_NOISE_MEASUREMENTS=1
+WL_EAP_MONITOR=1
+#WL_EAP_80211RAW=1
+#WL_EAP_80211RAW_TEST=1
+WL_EAP_DROP_RX_MGMT_RSSI=1
+WL_EAP_SNR=1
+#WL_EAP_OBJMEM_DBG=1
+WL_MCAST_FILTER_NOSTA=1
+
+#SAMPLE_COLLECT dependent feature
+ifeq ($(SAMPLE_COLLECT),1)
+WL_EAP_SAMPLE_COLLECT=1
+endif
+
+#WL_EAP_UCODE dependent features
+ifeq ($(WL_EAP_UCODE),1)
+WL_EAP_RUNT_ON_BADFCS_FRM=0
+WL_EAP_ALLOW_MESH_FRM=1
+WL_EAP_ALLOW_MGMT_FRM=1
+WL_EAP_ALLOW_SOUND_FB=1
+WL_EAP_FFT_SAMPLE=1
+WL_EAP_ACK_RSSI=1
+WL_EAP_FIPS_LOOPBACK=1
+WL_FIPS_CMVP_TEST=1
+
+# Location/proxd/FTM feature
+WL_PROXDETECT=1
+WL_FTM=1
+# PHY timestamp method for 11mc/Location
+WL_PROXD_PHYTS=1
+
+# components/ftm (11mc and 11az)
+FTM=1
+# 11az flags
+FTM_11AZ=1
+FTM_CSI=1
+
+# CCA_MESH_STATS
+WL_CCA_STATS_MESH=0
+endif
+
+WL_MBSS_BCNROTATE=1
+WL_EAP_STATS=1
+WL_BSS_STATS=1
+
+# Support for board-specific hardware RF analog band-pass filters for
+# 5G channel isolation
+WL_EAP_BOARD_RF_5G_FILTER=0
+# Support for run-timne refreshing of Phy RF analog calibration data
+WL_PHY_REFRESH=1
+
+# Save RSSI of most recently rcvd frame
+WL_EAP_LAST_PKT_RSSI=1
+
+# EAP debug features
+WL_EAP_TPDUMP=1
+
+#AIRIQ feature -temporarily disabled
+ifneq ($(BCMMLC),1)
+WL_AIRIQ=1
+endif # BCMMLC
+
+#
+# Capability to control whether AP should change channels automatically
+# after a radar detection event.  If not set then AP will ALWAYS change
+# channels automatically and not give this as a configurable option.
+# Defining this makes it configurable one way or the other
+#
+WL_EAP_DFS_ALTMODE=1
+
+#Use Uplink PKTC only within wlan driver; unchain/clear before sending up
+WL_EAP_WLAN_ONLY_UL_PKTC=0
+
+# Packets counters at different stages in wl driver
+WL_PKTCNTR=1
+
+# 43570 support
+WL_EAP_BCM43570=1
+
+# Disable VHT proprietary rates
+WL_EAP_VHT_PROPRIETARY_RATES_DIS=1
+
+# Power save statistics
+WL_PS_STATS=1
+
+# TX Stall detection & debug
+# Note -- If WL_PS_TXFIFO_BLK is enabled, stall detection per STA for datablock-per-sta
+# (DBPS) is not currently supported.
+BCMDBG_TXSTALL=1
+
+# Servicability: snapshot status of pktq
+PKTQ_STATUS=1
+
+# packet drop counters for debuggability/servicability
+WL_PKTDROP_STATS=1
+
+# txpktpend counter sync and txfifo flush
+WL_TXPKTPEND_SYNC=1
+
+# MCLX Mode
+WL_EAP_MCLX_MODE=1
+
+# Key rotation WAR
+WL_EAP_REKEY_WAR=1
+
+# enable mac dumps on both internal & external images
+BCMDBG_WLMAC=1
+
+# traffic thresh is for acsd so disable for eap
+TRAFFIC_THRESH=
+#endif /* WL_EAP_AP */

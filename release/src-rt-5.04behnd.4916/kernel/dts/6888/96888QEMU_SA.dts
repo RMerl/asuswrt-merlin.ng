@@ -1,0 +1,195 @@
+/dts-v1/;
+
+/ {
+    model = "968880_QEMU_SA";
+
+    interrupt-parent = <0x8001>;
+    #size-cells = <0x2>;
+    #address-cells = <0x2>;
+    compatible = "linux,dummy-virt";
+
+    chosen {
+        stdout-path = "/pl011@9000000";
+        kaslr-seed = <0x46101280 0xb8074db2>;
+        bootargs = "mem=512M root=/dev/ram0 ro rng_core.default_quality=1024";
+    };
+
+    reserved-memory {
+        #address-cells = <0x2>;
+        #size-cells = <0x2>;
+        ranges;
+
+        dt_reserved_cma {
+                compatible = "shared-dma-pool";
+                reusable;
+                reg = <0x0 0x4a000000 0x0 0x6000000>;
+                phandle = <0x2>;
+        };
+    };
+
+    plat_rsvmem_cached_device {
+        compatible = "brcm,plat-rsvmem";
+        dma-coherent;
+        memory-region = <0x2>;
+
+        dt_reserved_rdp1 {
+            rsvd-size = <0x4000000>;
+        };
+    };
+
+    plat_rsvmem_uncached_device {
+        compatible = "brcm,plat-rsvmem";
+        memory-region = <0x2>;
+
+        dt_reserved_rdp2 {
+            rsvd-size = <0x2000000>;
+        };
+    };
+
+    memory@00000000 {
+        reg = <0x0 0x40000000 0x0 0x40000000>;
+        device_type = "memory";
+    };
+
+    platform@c000000 {
+        interrupt-parent = <0x8001>;
+        ranges = <0x0 0x0 0xc000000 0x2000000>;
+        #address-cells = <0x1>;
+        #size-cells = <0x1>;
+        compatible = "qemu,platform", "simple-bus";
+    };
+
+    /* UART */
+    pl011@9000000 {
+        clock-names = "uartclk", "apb_pclk";
+        clocks = <0x8000 0x8000>;
+        interrupts = <0x0 0x1 0x4>;
+        reg = <0x0 0x9000000 0x0 0x1000>;
+        compatible = "arm,pl011", "arm,primecell";
+    };
+
+
+    intc@8000000 {
+        phandle = <0x8001>;
+        reg = <0x0 0x8000000 0x0 0x10000 0x0 0x8010000 0x0 0x10000>;
+        compatible = "arm,cortex-a15-gic";
+        ranges;
+        #size-cells = <0x2>;
+        #address-cells = <0x2>;
+        interrupt-controller;
+        #interrupt-cells = <0x3>;
+
+        v2m@8020000 {
+            phandle = <0x8002>;
+            reg = <0x0 0x8020000 0x0 0x1000>;
+            msi-controller;
+            compatible = "arm,gic-v2m-frame"; /* GICv2m includes a message-based interrupt feature that is necessary to handle Message Signaled Interrupts (MSIs). */
+        };
+    };
+
+    flash@0 {
+        bank-width = <0x4>;
+        reg = <0x0 0x0 0x0 0x4000000 0x0 0x4000000 0x0 0x4000000>;
+        compatible = "cfi-flash";
+    };
+
+    cpus {
+        #size-cells = <0x0>;
+        #address-cells = <0x1>;
+
+        cpu@0 {
+            reg = <0x0>;
+            enable-method = "psci";
+            compatible = "arm,cortex-a53";
+            device_type = "cpu";
+        };
+
+        cpu@1 {
+            reg = <0x1>;
+            enable-method = "psci";
+            compatible = "arm,cortex-a53";
+            device_type = "cpu";
+        };
+
+        cpu@2 {
+            reg = <0x2>;
+            enable-method = "psci";
+            compatible = "arm,cortex-a53";
+            device_type = "cpu";
+        };
+
+        cpu@3 {
+            reg = <0x3>;
+            enable-method = "psci";
+            compatible = "arm,cortex-a53";
+            device_type = "cpu";
+        };
+    };
+
+    timer {
+        interrupts = <0x1 0xd 0x704 0x1 0xe 0x704 0x1 0xb 0x704 0x1 0xa 0x704>;
+        always-on;
+        compatible = "arm,armv8-timer", "arm,armv7-timer";
+    };
+
+    apb-pclk {
+        phandle = <0x8000>;
+        clock-output-names = "clk24mhz";
+        clock-frequency = <0x16e3600>;
+        #clock-cells = <0x0>;
+        compatible = "fixed-clock";
+    };
+
+    unimac {
+        compatible = "brcm,unimac3";
+        reg = <0x0 0x828a8000 0x0 0x4000>,
+              <0x0 0x828b0000 0x0 0x1000>;
+        conf_offset = <0x1000>;
+        mib_offset = <0x400>;
+        top_offset = <0x400>;
+        mib_step = <0x2>;
+    };
+
+    switch0: switch0 {
+        compatible = "brcm,enet";
+        label = "bcmsw";
+        sw-type = "RUNNER_SW";
+
+        ports {
+            #address-cells = <1>;
+            #size-cells = <0>;
+
+            port_gphy0 {
+                reg = <0>;
+                mac-type = "UNIMAC";
+                status = "disable";
+            };
+
+            port_gphy1 {
+                reg = <1>;
+                mac-type = "UNIMAC";
+                status = "disable";
+            };
+
+            port_gphy2 {
+                reg = <2>;
+                mac-type = "UNIMAC";
+                status = "disable";
+            };
+
+            port_gphy3 {
+                reg = <3>;
+                mac-type = "UNIMAC";
+                status = "disable";
+            };
+
+        };
+    };  
+
+   rdpa_drv {
+        compatible = "brcm,rdpa";
+        reg = <0x0 0x82000000 0x0 0xCAF004>, 
+              <0x0 0x80170000 0x0 0x122a8>;
+   };
+
+};

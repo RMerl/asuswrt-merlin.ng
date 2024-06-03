@@ -3,14 +3,13 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/time.h>
-
+#include <time.h>
 
 #define TIME_LEN	64
 #define DEFAULT_FMT "%Y-%m-%d_%H:%M:%S"
 
+char* alloc_time_string(const char* tf, int is_msec, char** time_string) {
 
-char* alloc_time_string(const char* tf, int is_msec, char** time_string)
-{
     struct timeval tv;
     struct tm* ptm;
     char*  mtf = NULL;
@@ -34,12 +33,12 @@ char* alloc_time_string(const char* tf, int is_msec, char** time_string)
         sprintf (msec, ".%03ld", milliseconds);
         strcat(*time_string, msec);
     }
-//  fprintf(stderr, "time string =%s", time_string );
+
     return *time_string; 
 }
 
-char* alloc_utctime_string(const char* tf, int is_msec, char** time_string)
-{
+char* alloc_utctime_string(const char* tf, int is_msec, char** time_string) {
+
     time_t t;
     struct timeval tv;
     struct tm *ptm;
@@ -69,7 +68,7 @@ char* alloc_utctime_string(const char* tf, int is_msec, char** time_string)
     return *time_string;
 }
 
-void dealloc_time_string(char* ts)
-{
+void dealloc_time_string(char* ts) {
+
     if (ts) free(ts);
 }

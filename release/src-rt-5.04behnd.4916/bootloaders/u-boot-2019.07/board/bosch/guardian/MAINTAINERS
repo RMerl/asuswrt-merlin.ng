@@ -1,0 +1,8 @@
+Guardian BOARD
+M:	Sjoerd Simons <sjoerd.simons@collabora.co.uk>
+M:	Govindaraji Sivanantham <Govindaraji.Sivanantham@in.bosch.com>
+M:	Moses Christopher Bollavarapu <BollavarapuMoses.Christopher@in.bosch.com>
+S:	Maintained
+F:	board/bosch/guardian/
+F:	include/configs/am335x_guardian.h
+F:	configs/am335x_guardian_defconfig

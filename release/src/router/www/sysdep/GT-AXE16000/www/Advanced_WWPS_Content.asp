@@ -16,6 +16,7 @@
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script><% wl_get_parameter(); %>
 $(function () {
@@ -64,10 +65,18 @@ function initial(){
 		document.getElementById("wps_band_tr").style.display = "none";		
 	}else{		
 		if(wl_info.band5g_2_support || wl_info.band6g_support){	//Tri-band, RT-AC3200
-			if(band6g_support){
+			if(wl_info.band6g_2_support){
+				document.getElementById("wps_opt1").innerHTML = '5 GHz';
+				// document.getElementById("wps_opt2").innerHTML = '6 GHz-1';
+				document.getElementById("wps_opt2").remove();
+				// document.getElementById("wps_opt3").innerHTML = '6 GHz-2';
+				document.getElementById("wps_opt3").remove();
+			}
+			else if(band6g_support){
 				document.getElementById("wps_opt1").innerHTML = '5 GHz-1';
 				document.getElementById("wps_opt2").innerHTML = '5 GHz-2';
-				document.getElementById("wps_opt3").innerHTML = '6 GHz';
+				// document.getElementById("wps_opt3").innerHTML = '6 GHz';
+				document.getElementById("wps_opt3").remove();
 			}
 			
 			document.getElementById("wps_switch").style.display = "none";	
@@ -77,6 +86,34 @@ function initial(){
 		document.getElementById("wps_band_tr").style.display = "";
 		if(!wps_multiband_support || document.form.wps_multiband.value == "0") {
 			document.getElementById("wps_band_word").innerHTML = get_band_str(document.form.wps_band.value);
+			var band = get_band_str(document.form.wps_band.value);
+			var band_prefix = '';
+			switch (band){
+				case "2.4 GHz":
+					band_prefix = '2g1';
+					break;
+
+				case "5 GHz-1":
+					band_prefix = '5g1';
+					break;
+					
+				case "5 GHz-2":
+					band_prefix = '5g2';
+					break;
+				
+				case "6 GHz-1": 
+					band_prefix = '6g1';
+					break;
+				
+				case "6 GHz-2": 
+					band_prefix = '6g2';
+					break;
+			}
+
+			var auth = httpApi.nvramGet([band_prefix + '_auth_mode_x'])[band_prefix + '_auth_mode_x'];	
+			if(auth == 'sae' || auth == 'wpa3' || auth == 'suite-b'){			
+				document.getElementById('wpa3_not_support_hint').style.display = "";
+			}
 		}
 
 		if((wps_multiband_support && document.form.wps_multiband.value == "1") 
@@ -91,6 +128,13 @@ function initial(){
 				band1 = "<del>" + band1 + "</del>";
 			
 			document.getElementById("wps_band_word").innerHTML = band0 + " / " + band1;
+			var auth = httpApi.nvramGet(['2g1_auth_mode_x', '5g1_auth_mode_x']);
+			var wl0_auth = auth['2g1_auth_mode_x'];
+			var wl1_auth = auth['5g1_auth_mode_x'];
+			if(wl0_auth == 'sae' || wl0_auth == 'wpa3' || wl0_auth == 'suite-b' 
+			|| wl1_auth == 'sae' || wl1_auth == 'wpa3' || wl1_auth == 'suite-b'){			
+				document.getElementById('wpa3_not_support_hint').style.display = "";
+			}
 		}
 	}
 
@@ -215,6 +259,12 @@ function enableWPS(){
 }
 
 function configCommand(){
+	var display = document.getElementById('wpa3_not_support_hint').style.display;
+	if(display != 'none'){
+		alert('WPS is not available on WPA3-Personal.');
+		return true;
+	}
+	
 	if(lantiq_support && wave_ready != 1){
 		alert("Please wait a minute for wireless ready");
 		return false;
@@ -412,41 +462,76 @@ function show_wsc_status(wps_infos){
 	if(based_modelid == "RT-AC87U" || based_modelid == "RT-AC87R"){
 		document.getElementById("switchWPSbtn").style.display = "none";
 	}
-	else if(wps_infos[12].firstChild.nodeValue == 0){
+	else if(wps_infos[12].firstChild.nodeValue == 0){		
+		if(based_modelid === 'GT-BE98_PRO' || based_modelid === 'BQ16_PRO' ){
+			document.getElementById("wps_band_word").innerHTML = "5 GHz";
+			band_string = "5 GHz";
+		}
+		else if( based_modelid === 'GT-BE98' || based_modelid === 'BQ16' || based_modelid === 'GT-AXE16000'){
+			document.getElementById("wps_band_word").innerHTML = "5 GHz-1";
+			band_string = "5 GHz-1";
+		}else{
 			document.getElementById("wps_band_word").innerHTML = "2.4 GHz";
-			band_string = "2.4 GHz";
-			currentBand = 0;
+			band_string = "2.4 GHz";			
+		}
+
+		currentBand = 0;
 	}
 	else if(wps_infos[12].firstChild.nodeValue == 1){
 		if(!wl_info.band5g_2_support && !wl_info.band6g_support){
 			document.getElementById("wps_band_word").innerHTML = "5 GHz";
 			band_string = "5 GHz";
 		}else{
-			if(band6g_support){
-				document.getElementById("wps_band_word").innerHTML = "6 GHz";
-				band_string = "6 GHz";
+			if(based_modelid === 'GT-BE98_PRO' || based_modelid === 'BQ16_PRO' ){
+				document.getElementById("wps_band_word").innerHTML = "6 GHz-1";
+				band_string = "6 GHz-1";
+			}
+			else if( based_modelid === 'GT-BE98' || based_modelid === 'BQ16' || based_modelid === 'GT-AXE16000'){
+				document.getElementById("wps_band_word").innerHTML = "5 GHz-2";
+				band_string = "5 GHz-2";
 			}
 			else{
-				document.getElementById("wps_band_word").innerHTML = "5 GHz-1";
-				band_string = "5 GHz-1";
-			}			
+				if(band6g_support){
+					document.getElementById("wps_band_word").innerHTML = "6 GHz";
+					band_string = "6 GHz";
+				}
+				else{
+					document.getElementById("wps_band_word").innerHTML = "5 GHz-1";
+					band_string = "5 GHz-1";
+				}
+			}
+						
 		}
 			
 		currentBand = 1;
 	}	
 	else if(wps_infos[12].firstChild.nodeValue == 2){
-		if(band6g_support){
+		if(based_modelid === 'GT-BE98_PRO' || based_modelid === 'BQ16_PRO' ){
+				document.getElementById("wps_band_word").innerHTML = "6 GHz-2";
+				band_string = "6 GHz-1";
+			}
+		else if( based_modelid === 'GT-BE98' || based_modelid === 'BQ16' || based_modelid === 'GT-AXE16000'){
 			document.getElementById("wps_band_word").innerHTML = "6 GHz";
 			band_string = "6 GHz";
 		}
 		else{
-			document.getElementById("wps_band_word").innerHTML = "5 GHz-2";
-			band_string = "5 GHz-2";
+			if(band6g_support){
+				document.getElementById("wps_band_word").innerHTML = "6 GHz";
+				band_string = "6 GHz";
+			}
+			else{
+				document.getElementById("wps_band_word").innerHTML = "5 GHz-2";
+				band_string = "5 GHz-2";
+			}
 		}
-
-		currentBand = 1;
+	
+		currentBand = 2;
 	}
-
+	else if(wps_infos[12].firstChild.nodeValue == 3){
+		document.getElementById("wps_band_word").innerHTML = "2.4 GHz";
+		band_string = "2.4 GHz";
+		currentBand = 3;
+	}
 	
 	var controlDisplayItem = function () {
 		document.getElementById("wps_state_tr").style.display = "none";
@@ -868,7 +953,7 @@ function checkWLReady(){
 										}					
 									}
 									
-									if( !SG_mode || (SG_mode && confirm('Enabling WPS may result in the leak of your WiFi network password. Do you still want to proceed?'))){
+									if( !SG_mode || (SG_mode && confirm(stringSafeGet("<#note_turn_on_WPS#>")))){
 										document.form.wps_enable.value = "1";
 										enableWPS();
 									}
@@ -947,13 +1032,14 @@ function checkWLReady(){
 			
 			<tr id="wpsmethod_tr">
 				<th>
-			  	<span id="wps_method"><a class="hintstyle" href="javascript:void(0);" onclick="openHint(13,2);"><#WLANConfig11b_x_WPSMode_itemname#></a></span>
-			  </th>
-			  <td>
+			  		<span id="wps_method"><a class="hintstyle" href="javascript:void(0);" onclick="openHint(13,2);"><#WLANConfig11b_x_WPSMode_itemname#></a></span>
+			  	</th>
+			  	<td>
 					<input type="radio" name="wps_method" onclick="changemethod(0);" value="0"><#WLANConfig11b_x_WPS_pushbtn#>
 					<input type="radio" name="wps_method" onclick="changemethod(1);" value="1"><#WLANConfig11b_x_WPSPIN_itemname#>
-			  	<input type="text" name="wps_sta_pin" id="wps_sta_pin" value="" size="9" maxlength="9" class="input_15_table" autocorrect="off" autocapitalize="off">
-				  <div id="starBtn" style="margin-top:10px;"><input class="button_gen" type="button" style="margin-left:5px;" onClick="configCommand();" id="addEnrolleebtn_client" name="addEnrolleebtn"  value="<#wps_start_btn#>"></div>
+			  		<input type="text" name="wps_sta_pin" id="wps_sta_pin" value="" size="9" maxlength="9" class="input_15_table" autocorrect="off" autocapitalize="off">
+				  	<div id="starBtn" style="margin-top:10px;"><input class="button_gen" type="button" style="margin-left:5px;" onClick="configCommand();" id="addEnrolleebtn_client" name="addEnrolleebtn"  value="<#wps_start_btn#>"></div>
+					<div style="color:#FC0;display:none" id="wpa3_not_support_hint">WPS is not available on WPA3-Personal. Please refer to FAQ</div>
 				</td>
 			</tr>
 

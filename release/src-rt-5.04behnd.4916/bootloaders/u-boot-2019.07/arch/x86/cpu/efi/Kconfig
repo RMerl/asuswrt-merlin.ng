@@ -1,0 +1,11 @@
+if EFI
+
+config SYS_CAR_ADDR
+	hex
+	default 0x100000
+
+config SYS_CAR_SIZE
+	hex
+	default 0x20000
+
+endif

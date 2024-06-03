@@ -9,7 +9,9 @@
 #include <linux/sched.h>
 #include <linux/vtime.h>
 #include <asm/irq.h>
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4,14,0)
 #include <asm/cputime.h>
+#endif
 
 /*
  * 'kernel_stat.h' contains the definitions needed for doing
@@ -98,10 +100,17 @@ static inline unsigned int kstat_cpu_irqs_sum(unsigned int cpu)
  */
 extern unsigned long long task_delta_exec(struct task_struct *);
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4,14,0)
 extern void account_user_time(struct task_struct *, cputime_t, cputime_t);
 extern void account_system_time(struct task_struct *, int, cputime_t, cputime_t);
 extern void account_steal_time(cputime_t);
 extern void account_idle_time(cputime_t);
+#else
+extern void account_user_time(struct task_struct *, u64);
+extern void account_system_time(struct task_struct *, int, u64);
+extern void account_steal_time(u64);
+extern void account_idle_time(u64);
+#endif
 
 #ifdef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
 static inline void account_process_tick(struct task_struct *tsk, int user)

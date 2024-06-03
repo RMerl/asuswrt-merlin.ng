@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: GPL-2.0
+
+config CLK_ANALOGBITS_WRPLL_CLN28HPC
+	bool
+
+config CLK_SIFIVE
+	bool "SiFive SoC driver support"
+	depends on CLK
+	help
+	  SoC drivers for SiFive Linux-capable SoCs.
+
+config CLK_SIFIVE_FU540_PRCI
+	bool "PRCI driver for SiFive FU540 SoCs"
+	depends on CLK_SIFIVE
+	select CLK_ANALOGBITS_WRPLL_CLN28HPC
+	help
+	  Supports the Power Reset Clock interface (PRCI) IP block found in
+	  FU540 SoCs.  If this kernel is meant to run on a SiFive FU540 SoC,
+	  enable this driver.
+
+config CLK_SIFIVE_GEMGXL_MGMT
+	bool "GEMGXL management for SiFive FU540 SoCs"
+	depends on CLK_SIFIVE
+	help
+	  Supports the GEMGXL management IP block found in FU540 SoCs to
+	  control GEM TX clock operation mode for 10/100/1000 Mbps.

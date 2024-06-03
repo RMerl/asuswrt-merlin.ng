@@ -1,0 +1,13 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2018 Angelo Dureghello <angelo@sysam.it>
+ */
+
+/dts-v1/;
+/include/ "mcf54xx.dtsi"
+
+/ {
+	model = "Freescale M5475BFE";
+	compatible = "fsl,M5475BFE";
+};
+

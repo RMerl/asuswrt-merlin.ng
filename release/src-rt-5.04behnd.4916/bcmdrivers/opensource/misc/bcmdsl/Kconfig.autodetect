@@ -1,0 +1,12 @@
+config BCM_DSL_DT
+	bool "DSL Driver Open Portion"
+	default n
+	depends on BCM963158 || BCM963178 || BCM963146 || BCM963138 || BCM963148
+	help
+	  This driver parses the DSL configuration and provide API to the core DSL
+	  driver
+
+config BCM_DSL_DT_IMPL
+	int "Implementation index for DSL driver open portion"
+	depends on BCM_DSL_DT
+	default 1

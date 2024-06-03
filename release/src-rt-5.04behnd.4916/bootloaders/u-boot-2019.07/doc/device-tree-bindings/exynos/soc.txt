@@ -1,0 +1,21 @@
+Exynos SoC model
+
+The "cpu-model" property is a non-standard extension for the device tree root
+node. Since the cpu id of some Exynos variants does not correspond to product
+name, this property fills the gap.
+
+For almost all Exynos based boards in the kernel, the product name corresponds
+to the device tree file name. The same name is generated in U-Boot, so the new
+property allows doing it automatically.
+
+Required properties:
+ - cpu-model : Exynos product name
+
+Example:
+
+/ {
+	model = "Samsung/Google Peach Pi board based on Exynos5800";
+	cpu-model = "Exynos5800";
+
+	compatible = ...
+};

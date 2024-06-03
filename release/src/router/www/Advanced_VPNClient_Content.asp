@@ -2032,8 +2032,8 @@ function save_ipsec_profile_panel() {
 
 					var subnetIP = existSubnetObj.value.split("/")[0];
 					var maskCIDR = parseInt(existSubnetObj.value.split("/")[1], 10);
-					if (isNaN(maskCIDR) || (maskCIDR != 24 && maskCIDR != 23)){
-						alert("Mask address must be 23 or 24.");/*untranslated*/
+					if (isNaN(maskCIDR) || maskCIDR < 8 || maskCIDR > 32){
+						alert("Mask address must be 8 ~ 32.");/*untranslated*/
 						existSubnetObj.focus();
 						existSubnetObj.select();
 						return false;

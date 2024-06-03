@@ -1,0 +1,6 @@
+NAS220 BOARD
+M:	Evgeni Dobrev <evgeni@studio-punkt.com>
+S:	Maintained
+F:	board/Seagate/nas220/
+F:	include/configs/nas220.h
+F:	configs/nas220_defconfig

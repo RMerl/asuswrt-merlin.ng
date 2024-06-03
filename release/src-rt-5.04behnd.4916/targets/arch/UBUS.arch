@@ -1,0 +1,22 @@
+<PUBLISH>
+--- 963178G	(assumes base profile is DBus) 2022-01-04 13:05:07.831426556 -0800
++++ 963178G_UBUS	2022-01-04 13:01:20.088210419 -0800
+@@ -144,24 +144,17 @@
+#
+# Disable DBus and its associated apps, there are some others such as
+# ZLIB, FFI, and GETTEXT which are associated with DBus, but may be used by
+# other features, so better to not modify them for now.
+-BUILD_DBUS=y
+-BUILD_DBUSREMOTE_TCP=y
+-BUILD_GLIB=y
+-BUILD_BUS_NONE=y
+#-BUILD_ZLIB=y
+#-BUILD_FFI=y
+#-BUILD_GETTEXT=y
+
+#
+# These are for UBus
+#
++BUILD_UBUS=y
++BUILD_LIBUBOX=y
+

@@ -29,7 +29,7 @@
 #include "libbb.h"
 #include <rtconfig.h>
 
-#ifdef RTCONFIG_HND_ROUTER_AX_6756
+#if (defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)) && !defined(RTCONFIG_BCM_MFG)
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -88,7 +88,7 @@ int rm_main(int argc UNUSED_PARAM, char **argv)
 			const char *base = bb_get_last_path_component_strip(*argv);
 			if (DOT_OR_DOTDOT(base)) {
 				bb_error_msg("can't remove '.' or '..'");
-#ifdef RTCONFIG_HND_ROUTER_AX_6756
+#if (defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)) && !defined(RTCONFIG_BCM_MFG)
 			} else if (!f_exists("/tmp/asusdebug") && system_file(realpath(*argv, path))) {
 				bb_error_msg("can't remove the system file");
 #endif

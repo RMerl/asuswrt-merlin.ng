@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
 	<meta charset="utf-8">
@@ -17,7 +17,6 @@
 	<script src="../state.js" type="text/javascript"></script>
 	<script src="../js/device.js" type="text/javascript"></script>
 <script>
-
 /*Initialize array*/
 var cpu_info_old = new Array();
 var core_num = '<%cpu_core_num();%>';
@@ -67,11 +66,24 @@ $(document).ready(function(){
 	genNETelement();
 	get_ethernet_ports();
 	get_plc_ports();
-	detect_CPU_RAM();
+    if(!parent.webWrapper){
+	    detect_CPU_RAM();
+    }
 	update_traffic();
 	if(isSupport("ledg")){
 		$("#light_effect_tab").show();
 	}  
+
+	if(parent.webWrapper){
+		$("body").hide().css("visibility", "visible").fadeIn();
+		$("#wireless_tab").parent().hide()
+		$("#cpu_field").hide()
+		$("#ram_field").hide()
+		$("#plc_ports").hide()
+		$("#led_field").hide()
+		$("#hw_information_field").hide()
+		$("#yadns_field").hide()
+	}
 });
 
 var model=httpApi.nvramGet(['productid']).productid;
@@ -84,6 +96,7 @@ function getVariable(){
 		_element = ['wl0_hwaddr'];
 		_array.push.apply(_array, _element);
 	}
+
 	if(system.band5gSupport){
 		_element = ['wl1_hwaddr'];
 		_array.push.apply(_array, _element);
@@ -94,7 +107,7 @@ function getVariable(){
 		_array.push.apply(_array, _element);
 	}
 
-	if(system.band60gSupport || system.modelName === 'GT-AXE16000'){
+	if(system.band60gSupport || system.modelName === 'GT-AXE16000' || system.modelName === 'GT-BE98' || system.modelName === 'GT-BE98_PRO' || system.modelName === 'BQ16' || system.modelName === 'BQ16_PRO'){
 		_element = ['wl3_hwaddr'];
 		_array.push.apply(_array, _element);
 	}
@@ -140,51 +153,24 @@ function genElement(){
 
 	// MAC Address
 	code += '<div class="info-block"><div class="info-title">LAN <#MAC_Address#></div><div class="info-content">'+ variable.lan_hwaddr +'</div></div>';
-	if(system.band2gSupport){
-		if(system.modelName === 'GT-AXE16000'){
-			code += '<div class="info-block"><div class="info-title">2.4 GHz <#MAC_Address#></div><div class="info-content">'+ variable.wl3_hwaddr +'</div></div>';
-		}
-		else if(odmpid === 'GT6'){
-			code += '<div class="info-block"><div class="info-title">2.4 GHz <#MAC_Address#></div><div class="info-content">'+ variable.wl2_hwaddr +'</div></div>';
-		}
-		else{
-			code += '<div class="info-block"><div class="info-title">2.4 GHz <#MAC_Address#></div><div class="info-content">'+ variable.wl0_hwaddr +'</div></div>';
-		}		
-	}
+	
+	var router_mac = httpApi.nvramGet([
+		"wl0_hwaddr",
+		"wl1_hwaddr",
+		"wl2_hwaddr",
+		"wl3_hwaddr",
+		"wl4_hwaddr"
+	])
 
-	if(system.triBandSupport){
-		if(system.band6gSupport){
-			code += '<div class="info-block"><div class="info-title">5 GHz <#MAC_Address#></div><div class="info-content">'+ variable.wl1_hwaddr +'</div></div>';
-			code += '<div class="info-block"><div class="info-title">6 GHz <#MAC_Address#></div><div class="info-content">'+ variable.wl2_hwaddr +'</div></div>';
+	for(var i = 0; i < bandName.length; i++){
+		if(get_wl_unit_by_band(bandName[i]) !== ""){
+			code += `
+				<div class="info-block">
+					<div class="info-title">${wl_nband_title[get_wl_unit_by_band(bandName[i])]} <#MAC_Address#></div>
+					<div class="info-content">${router_mac["wl" + get_wl_unit_by_band(bandName[i]) + "_hwaddr"]}</div>
+				</div>
+			`;
 		}
-		else{
-			if(system.modelName == 'MAP-AC2200')
-			{
-				code += '<div class="info-block"><div class="info-title">5 GHz-1 <#MAC_Address#></div><div class="info-content">'+ variable.wl2_hwaddr +'</div></div>';
-				code += '<div class="info-block"><div class="info-title">5 GHz-2 <#MAC_Address#></div><div class="info-content">'+ variable.wl1_hwaddr +'</div></div>';
-			}
-			else if(odmpid === 'GT6'){
-				code += '<div class="info-block"><div class="info-title">5 GHz-1 <#MAC_Address#></div><div class="info-content">'+ variable.wl0_hwaddr +'</div></div>';
-				code += '<div class="info-block"><div class="info-title">5 GHz-2 <#MAC_Address#></div><div class="info-content">'+ variable.wl1_hwaddr +'</div></div>';
-			}
-			else
-			{
-			code += '<div class="info-block"><div class="info-title">5 GHz-1 <#MAC_Address#></div><div class="info-content">'+ variable.wl1_hwaddr +'</div></div>';
-			code += '<div class="info-block"><div class="info-title">5 GHz-2 <#MAC_Address#></div><div class="info-content">'+ variable.wl2_hwaddr +'</div></div>';
-		}	
-	}
-	}
-	else if(system.modelName === 'GT-AXE16000'){
-		code += '<div class="info-block"><div class="info-title">5 GHz-1 <#MAC_Address#></div><div class="info-content">'+ variable.wl0_hwaddr +'</div></div>';
-		code += '<div class="info-block"><div class="info-title">5 GHz-2 <#MAC_Address#></div><div class="info-content">'+ variable.wl1_hwaddr +'</div></div>';
-		code += '<div class="info-block"><div class="info-title">6 GHz <#MAC_Address#></div><div class="info-content">'+ variable.wl2_hwaddr +'</div></div>';
-	}
-	else{
-		code += '<div class="info-block"><div class="info-title">5 GHz <#MAC_Address#></div><div class="info-content">'+ variable.wl1_hwaddr +'</div></div>';
-	}
-
-	if(system.band60gSupport){
-		code += '<div class="info-block"><div class="info-title">LAN <#MAC_Address#></div><div class="info-content">'+ variable.wl3_hwaddr +'</div></div>';
 	}
 
 	$('#hw_information_field').html(code);
@@ -632,7 +618,7 @@ function get_ethernet_ports() {
 								$port_icon.addClass("unplug");
 						}
 
-						if(port_item.cap_support.WAN){
+						if(port_item.cap_support.WAN || port_item.cap_support.WANAUTO){
 							$("<div>").addClass("wan_icon").appendTo($port_icon);
 							let port_text = "";
 							if(port_item.ui_display != undefined && port_item.ui_display != ""){
@@ -665,8 +651,17 @@ function get_ethernet_ports() {
 						}
 						else if(port_item.cap_support.USB){
 							$port_icon.addClass("USB");
-							if(port_item.special_port_name != "")
-								$("<span>").addClass("port_text").html(htmlEnDeCode.htmlEncode(port_item.special_port_name)).appendTo($port_bg);
+							let port_text = "";
+							if(port_item.ui_display != undefined && port_item.ui_display != ""){
+								port_text = port_item.ui_display;
+							}
+							else{
+								if(port_item.special_port_name != ""){
+									port_text = port_item.special_port_name;
+								}
+							}
+							if(port_text != "")
+								$("<span>").addClass("port_text").html(htmlEnDeCode.htmlEncode(port_text)).appendTo($port_bg);
 						}
 						else if(port_item.cap_support.MOCA){
 							$port_icon.addClass("MoCa");
@@ -681,18 +676,33 @@ function get_ethernet_ports() {
 					});
 				});
 
+				// hack for safari to prevent to bottom line overlaps LAN elements
+				if(!port_info.WAN || port_info.WAN.length === 0){
+					document.querySelector('.label_W_bg').style.display = 'none';
+				}
+
 				var $port_status_icon_desc = $("<div>").addClass("port_status_icon_desc").appendTo($("#phy_ports"));
+				if(top.webWrapper){
+					$port_status_icon_desc.addClass("webWrapper");
+				}
 				$("<div>").addClass("conn").html("<#Connected#>").appendTo($port_status_icon_desc);
 				$("<div>").addClass("warn").html("<#Notice#>").appendTo($port_status_icon_desc);/* untranslated */
 				$("<div>").addClass("unplug").html("<#Status_Unplugged#>").appendTo($port_status_icon_desc);
 
 				if(show_notice){
-					$("#phy_ports .port_status_notice_icon").css("display", "inline-block");
-					$("#phy_ports .port_status_notice_icon").unbind("click").click(function(e){
-						e = e || event;
-						e.stopPropagation();
-						popup_notice(error_port_list);
-					});
+					if(top.webWrapper){
+						if(typeof top.show_ethPortStatus_hint == "function"){
+							top.show_ethPortStatus_hint(error_port_list);
+						}
+					}
+					else{
+						$("#phy_ports .port_status_notice_icon").css("display", "inline-block");
+						$("#phy_ports .port_status_notice_icon").unbind("click").click(function(e){
+							e = e || event;
+							e.stopPropagation();
+							popup_notice(error_port_list);
+						});
+					}
 				}
 			}
 		});

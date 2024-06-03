@@ -11,8 +11,9 @@ SDK_PATH="${DEVELOPER}/Platforms/iPhoneSimulator.platform/Developer/SDKs/${SDK_V
 export CONFIGURE_FLAGS="--disable-sctp --disable-umem"
 export DEVPATH=${DEVELOPER}/Platforms/iPhoneSimulator.platform/Developer
 export CC="${DEVELOPER}/usr/bin/gcc -arch i386"
-export CFLAGS="-m32 -fembed-bitcode -fstack-protector -Wno-unused-label -I${OPENSSL_INC_PATH} -DPJ_CONFIG_IPHONE=1 -isysroot ${SDK_PATH} -mios-simulator-version-min=7.0"
+export CFLAGS="-m32 -fembed-bitcode -fstack-protector -Wno-unused-label -I${OPENSSL_INC_PATH} -DPJ_CONFIG_IPHONE=1 -isysroot ${SDK_PATH} -miphoneos-version-min=10.0"
 export LDFLAGS="${OPENSSL_LIB_PATH}/libssl.a ${OPENSSL_LIB_PATH}/libcrypto.a -framework UIKit -framework CFNetwork"
 export ARCH="-arch i386"
 export CROSS_TYPE=i386-apple-darwin9 
+export TARGET_OS=IOS
 ./configure-iphone ${CONFIGURE_FLAGS} CC=${CC} ARCH=${ARCH}

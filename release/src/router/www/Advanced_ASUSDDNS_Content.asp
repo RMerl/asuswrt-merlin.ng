@@ -11,321 +11,434 @@
 <title><#Web_Title#> - <#menu5_3_6#></title>
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
-<script type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" language="JavaScript" src="/help.js"></script>
 <script type="text/javascript" language="JavaScript" src="/validator.js"></script>
+<script type="text/javaScript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="/form.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
 <style type="text/css">
-.contentM_upload{
-	position:absolute;
-	-webkit-border-radius: 5px;
-	-moz-border-radius: 5px;
-	border-radius: 5px;
-	z-index:500;
-	background-color:#2B373B;
-	display:none;
-	margin-left: 30%;
-	top: 570px;
-	width:650px;
-}
+    * {
+        box-sizing: content-box;
+    }
 
-.Upload_item{
-	font-family: Arial, Helvetica, sans-serif;
-    font-size: 13px;
-    font-weight: bolder;
-    color: #FFFFFF;
-    margin-left: 15px;
-    margin-bottom: 15px;
-    margin-top: 15px;
-}
+    .contentM_upload {
+        position: absolute;
+        -webkit-border-radius: 5px;
+        -moz-border-radius: 5px;
+        border-radius: 5px;
+        z-index: 500;
+        background-color: #2B373B;
+        display: none;
+        margin-left: 30%;
+        top: 570px;
+        width: 650px;
+    }
 
-.Upload_file{
-	background-color:#2B373B;
-	color:#FC0;
-	*color:#000;
-	border:0px;
-}
+    .Upload_item {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 13px;
+        font-weight: bolder;
+        color: #FFFFFF;
+        margin-left: 15px;
+        margin-bottom: 15px;
+        margin-top: 15px;
+    }
 
-.cert_status_title{
-	width: 20%;
-}
+    .Upload_file {
+        background-color: #2B373B;
+        color: #FC0;
+        *color: #000;
+        border: 0px;
+    }
 
-.cert_status_val{
-	width: 76%;
-	padding-left: 10px;
-}
+    .cert_status_title {
+        width: 20%;
+    }
 
-.popup_container{
-    width: 70%;
-}
+    .cert_status_val {
+        width: 76%;
+        padding-left: 10px;
+    }
 
-.feature_desc_container .title{
-	font-weight: 600;
-	font-size: 16px;
-	letter-spacing: 0.2px;
-	text-transform: uppercase;
-	color: rgb(97 173 255);
-}
-.feature_desc_container .desc{
-	font-weight: 500;
-	font-size: 15px;
-	color: rgb(255, 255, 255);
-	line-height: 24px;
-	margin-top: 12px;
-}
-.blur_effect{
-	-webkit-filter: blur(4px); /* Chrome, Opera */
-	-moz-filter: blur(4px);
-	-ms-filter: blur(4px);
-	filter: blur(4px);
-}
-.popup_container{
-	font-family: Arial, Helvetica, sans-serif, "Microsoft JhengHei";
-	display: none;
-	height: auto;
-	top: 4%;
-	width: 70%;
-	max-width: 540px;
-	position: absolute;
-	margin: auto;
-	z-index: 300;
-	left: 0;
-	right: 0;
-	align-items: center;
-	line-height: 180%;
-	-webkit-tap-highlight-color: transparent;
-	-webkit-touch-callout: none;
-	-webkit-user-select: none;
-	-khtml-user-select: none;
-	-moz-user-select: none;
-	-ms-user-select: none;
-	user-select: none;
-	font-size: 14px;
-}
-.popup_container.fit_width{
-	max-width: 90%;
-	width: 90%;
-}
-.popup_container.full_width{
-	max-width: 100%;
-	width: 100%;
-}
-.popup_container.popup_element_second{
-	z-index: 500;
-}
-.popup_container.popup_customize_alert{
-	z-index: 700;
-	top: 12%;
-}
-.popup_container .setting_content_container{
-	margin-bottom: 24px;
-}
-.popup_container .popup_title_container > .close_btn,
-.popup_container .popup_title_container > .del_btn{
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	color: #FFFFFF;
-	width: 24px;
-	height: 24px;
-	cursor: pointer;
-	background: grey;
-	border-radius: 50%;
-}
-.popup_container .popup_title_container{
-	display: flex;
-	justify-content: space-between;
-    align-items: center;
-	position: relative;
-	margin-bottom: 12px;
-}
-.popup_container .popup_title_container .title{
-	min-height: 40px;
-	height: auto;
-	color: hsl(0deg 0% 100%);
-	font-size: 24px;
-	font-weight: 600;
-	letter-spacing: -0.2px;
-	line-height: 40px;
-	padding-left: 12px;
-}
-.popup_container .popup_content_container{
-	position: relative;
-	background: linear-gradient(0deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.16)), linear-gradient(0deg, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), #1067A8;
-	border: 1px solid rgba(255, 255, 255, 0.02);
-	box-shadow: 0px 2px 4px 0px rgb(0 0 0 / 20%), 0px 1px 4px 0px rgb(60 60 60 / 30%);
-	border-radius: 8px;
-	padding: 5%;
-}
-.popup_container.mobile_view .popup_content_container{
-	box-shadow: initial;
-	background: rgb(5 41 88 / 30%);
-}
-.popup_container > div{
-	width: 100%;
-}
-.popup_container .popup_content_container.profile_setting{
-	padding: initial;
-}
-.popup_container .popup_content_container .profile_setting_item,
-.popup_container .popup_content_container .profile_setting_two_item{
-	background: rgba(0, 0, 0, 0.1);
-	min-width: initial;
-	height: 88px;
-}
-.popup_container .popup_content_container .profile_setting_two_item{
-	height: auto;
-}
-.popup_container .popup_content_container .category_slide_title{
-	background: rgba(0, 0, 0, 0.1);
-}
-.popup_container .popup_content_container .category_slide_title.expand{
-	background: rgba(0, 133, 255, 0.1);
-}
-.customize_alert .action_btn_container,
-.del_profile .action_btn_container{
-	display: flex;
-	justify-content: flex-end;
-	margin-top: 30px;
-	position: relative;
-}
-.customize_alert .action_btn_container .btn,
-.del_profile .action_btn_container .btn{
-	width: 117px;
-	height: 38px;
-	line-height: 40px;
-	font-size: 14px;
-	font-weight: 500;
-	text-align: center;
-	letter-spacing: 0.1px;
-	border-radius: 8px;
-	margin-left: 16px;
-	cursor: pointer;
-}
+    .popup_container {
+        width: 70%;
+    }
 
-.icon_switch{
-	border-radius: 50px;
-	width: 40px;
-	height: 20px;
-	position: relative;
-	-webkit-transition: all 0.6s;
-	transition: all 0.6s;
-	cursor: pointer;
-}
-.icon_switch.off{
-	background: rgba(127, 143, 164, 1);
-}
-.icon_switch.on{
-	background: rgba(16, 185, 129, 1);
-}
-.icon_switch:before{
-	border-radius: 50%;
-	display: block;
-	position: absolute;
-	content: "";
-	height: 12px;
-	width: 12px;
-	left: 4px;
-	top: 4px;
-	-webkit-transition: 0.6s;
-	transition: all 0.6s;
-	-webkit-transition-delay: 0.01s;
-	transition-delay: 0.01s;
-	background: rgb(48 61 67);
-}
-.icon_switch.on:before{
-	-webkit-transform: translateX(20px);
-	-ms-transform: translateX(20px);
-	transform: translateX(20px);
-}
+    .feature_desc_container .title {
+        font-weight: 600;
+        font-size: 16px;
+        letter-spacing: 0.2px;
+        text-transform: uppercase;
+        color: rgb(97 173 255);
+    }
 
-.tooltip {
-  position: relative;
-  display: inline-block;
-}
+    .feature_desc_container .desc {
+        font-weight: 500;
+        font-size: 15px;
+        color: rgb(255, 255, 255);
+        line-height: 24px;
+        margin-top: 12px;
+    }
 
-.tooltip .tooltiptext {
-  display: none;
-  width: 60px;
-  background-color: black;
-  color: #fff;
-  text-align: center;
-  border-radius: 6px;
-  padding: 5px;
-  position: absolute;
-  z-index: 1;
-  bottom: 150%;
-  left: 50%;
-  margin-left: -40px;
-}
+    .blur_effect {
+        -webkit-filter: blur(4px); /* Chrome, Opera */
+        -moz-filter: blur(4px);
+        -ms-filter: blur(4px);
+        filter: blur(4px);
+    }
 
-.tooltip .tooltiptext::after {
-  content: "";
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  margin-left: -5px;
-  border-width: 5px;
-  border-style: solid;
-  border-color: black transparent transparent transparent;
-}
+    .popup_container {
+        font-family: Arial, Helvetica, sans-serif, "Microsoft JhengHei";
+        display: none;
+        height: auto;
+        top: 4%;
+        width: 70%;
+        max-width: 540px;
+        position: absolute;
+        margin: auto;
+        z-index: 300;
+        left: 0;
+        right: 0;
+        align-items: center;
+        line-height: 180%;
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        font-size: 14px;
+    }
 
-.tooltip .tooltiptextdown {
-  display: none;
-  width: 20vw;
-  word-break: break-all;
-  background-color: rgba(22,27,33,0.75);
-  color: #fff;
-  border-radius: 6px;
-  padding: 5px;
-  position: absolute;
-  z-index: 1;
-  top: 150%;
-  left: -19vw;
-}
+    .popup_container.fit_width {
+        max-width: 90%;
+        width: 90%;
+    }
 
-.tooltip .tooltiptextdown::after {
-  content: "";
-  position: absolute;
-  bottom: 100%;
-  left: 95%;
-  margin-left: -5px;
-  border-width: 5px;
-  border-style: solid;
-  border-color:  transparent transparent #161b21ee transparent;
-}
+    .popup_container.full_width {
+        max-width: 100%;
+        width: 100%;
+    }
 
-.tooltip:hover .tooltiptextdown {
-  display: block;
-}
+    .popup_container.popup_element_second {
+        z-index: 500;
+    }
 
-.icon_switch{
-  background: #808080;
-}
+    .popup_container.popup_customize_alert {
+        z-index: 700;
+        top: 12%;
+    }
 
-.icon_switch.on{
-  background:rgb(30, 162, 255);
-}
+    .popup_container .setting_content_container {
+        margin-bottom: 24px;
+    }
 
-.icon_switch:before {
-  background: #f7f7f7;
-}
+    .popup_container .popup_title_container > .close_btn,
+    .popup_container .popup_title_container > .del_btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #FFFFFF;
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+        background: grey;
+        border-radius: 50%;
+    }
 
-.icon_help,
-.icon-clone{
-    background: #47A2FF!important;
-}
-.icon_help:hover,
-.icon-clone:hover{
-    background: #0b5ed7!important;
-}
+    .popup_container .popup_title_container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+        margin-bottom: 12px;
+    }
 
+    .popup_container .popup_title_container .title {
+        min-height: 40px;
+        height: auto;
+        color: hsl(0deg 0% 100%);
+        font-size: 24px;
+        font-weight: 600;
+        letter-spacing: -0.2px;
+        line-height: 40px;
+        padding-left: 12px;
+    }
+
+    .popup_container .popup_content_container {
+        position: relative;
+        background: linear-gradient(0deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.16)), linear-gradient(0deg, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), #1067A8;
+        border: 1px solid rgba(255, 255, 255, 0.02);
+        box-shadow: 0px 2px 4px 0px rgb(0 0 0 / 20%), 0px 1px 4px 0px rgb(60 60 60 / 30%);
+        border-radius: 8px;
+        padding: 5%;
+    }
+
+    .popup_container.mobile_view .popup_content_container {
+        box-shadow: initial;
+        background: rgb(5 41 88 / 30%);
+    }
+
+    .popup_container > div {
+        width: 100%;
+    }
+
+    .popup_container .popup_content_container.profile_setting {
+        padding: initial;
+    }
+
+    .popup_container .popup_content_container .profile_setting_item,
+    .popup_container .popup_content_container .profile_setting_two_item {
+        background: rgba(0, 0, 0, 0.1);
+        min-width: initial;
+        height: 88px;
+    }
+
+    .popup_container .popup_content_container .profile_setting_two_item {
+        height: auto;
+    }
+
+    .popup_container .popup_content_container .category_slide_title {
+        background: rgba(0, 0, 0, 0.1);
+    }
+
+    .popup_container .popup_content_container .category_slide_title.expand {
+        background: rgba(0, 133, 255, 0.1);
+    }
+
+    .customize_alert .action_btn_container,
+    .del_profile .action_btn_container {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 30px;
+        position: relative;
+    }
+
+    .customize_alert .action_btn_container .btn,
+    .del_profile .action_btn_container .btn {
+        width: 117px;
+        height: 38px;
+        line-height: 40px;
+        font-size: 14px;
+        font-weight: 500;
+        text-align: center;
+        letter-spacing: 0.1px;
+        border-radius: 8px;
+        margin-left: 16px;
+        cursor: pointer;
+    }
+
+    .icon_switch {
+        border-radius: 50px;
+        width: 40px;
+        height: 20px;
+        position: relative;
+        -webkit-transition: all 0.6s;
+        transition: all 0.6s;
+        cursor: pointer;
+    }
+
+    .icon_switch.off {
+        background: rgba(127, 143, 164, 1);
+    }
+
+    .icon_switch.on {
+        background: rgba(16, 185, 129, 1);
+    }
+
+    .icon_switch:before {
+        border-radius: 50%;
+        display: block;
+        position: absolute;
+        content: "";
+        height: 12px;
+        width: 12px;
+        left: 4px;
+        top: 4px;
+        -webkit-transition: 0.6s;
+        transition: all 0.6s;
+        -webkit-transition-delay: 0.01s;
+        transition-delay: 0.01s;
+        background: rgb(48 61 67);
+    }
+
+    .icon_switch.on:before {
+        -webkit-transform: translateX(20px);
+        -ms-transform: translateX(20px);
+        transform: translateX(20px);
+    }
+
+    .tooltip {
+        position: relative;
+        display: inline-block;
+    }
+
+    .tooltip .tooltiptext {
+        display: none;
+        width: 60px;
+        background-color: black;
+        color: #fff;
+        text-align: center;
+        border-radius: 6px;
+        padding: 5px;
+        position: absolute;
+        z-index: 1;
+        bottom: 150%;
+        left: 50%;
+        margin-left: -40px;
+    }
+
+    .tooltip .tooltiptext::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -5px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: black transparent transparent transparent;
+    }
+
+    .tooltip .tooltiptextdown {
+        display: none;
+        width: 20vw;
+        word-break: break-all;
+        background-color: rgba(22, 27, 33, 0.75);
+        color: #fff;
+        border-radius: 6px;
+        padding: 5px;
+        position: absolute;
+        z-index: 1;
+        top: 150%;
+        left: -19vw;
+    }
+
+    .tooltip .tooltiptextdown::after {
+        content: "";
+        position: absolute;
+        bottom: 100%;
+        left: 95%;
+        margin-left: -5px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: transparent transparent #161b21ee transparent;
+    }
+
+    .tooltip:hover .tooltiptextdown {
+        display: block;
+    }
+
+    .icon_switch {
+        background: #808080;
+    }
+
+    .icon_switch.on {
+        background: rgb(30, 162, 255);
+    }
+    .icon_switch.on.rog {
+        background: #cf0a2c;
+    }
+    .icon_switch.on.tuf {
+        background: #D0982C;
+    }
+
+    .icon_switch:before {
+        background: #f7f7f7;
+    }
+
+    .text-list {
+        display: flex;
+        align-items: center;
+        margin: 10px 0px;
+        gap: 5px;
+    }
+
+    .text-list i {
+        height: 15px;
+        width: 15px;
+    }
+
+    .text-list a {
+        margin-left: 5px;
+        text-decoration: underline;
+    }
+
+    .formfonttitle_help {
+        text-align: right;
+    }
+
+    div.icon-circle-mask {
+        display: inline-block;
+        border-radius: 50%;
+        padding: 0.5em;
+        background: #43525D;
+    }
+
+    i.icon-comments {
+        -webkit-mask: url(/images/New_ui/icon_comments.svg) no-repeat;
+        mask: url(/images/New_ui/icon_comments.svg) no-repeat;
+        height: 20px;
+        width: 20px;
+        display: inline-block;
+        background-color: #FFFFFF;
+    }
+
+    i.icon-clone {
+    	-webkit-mask-repeat: no-repeat;
+    	mask-repeat: no-repeat;
+    	-webkit-mask-size: 100%;
+    	mask-size: 100%;
+    	-webkit-mask-image: url(/images/clone.svg);
+    	mask-image: url(/images/clone.svg);
+    	height: 20px;
+    	width: 20px;
+    	display: inline-block;
+    }
+
+    i.icon_help {
+    	-webkit-mask-repeat: no-repeat;
+    	mask-repeat: no-repeat;
+    	-webkit-mask-size: 100%;
+    	mask-size: 100%;
+    	-webkit-mask-image: url(/images/help.svg);
+    	mask-image: url(/images/help.svg);
+    	height: 24px;
+    	width: 24px;
+    	display: inline-block;
+    }
+
+    .icon_help,
+    .icon-clone {
+        background: #47A2FF;
+    }
+    .icon_help:hover,
+    .icon-clone:hover {
+        background: #0b5ed7;
+    }
+
+    i.icon_help.rog,
+    i.icon-clone.rog {
+        background: #91071f;
+    }
+    i.icon_help.rog:hover,
+    i.icon-clone.rog:hover {
+        background: #cf0a2c;
+    }
+
+    i.icon_help.tuf,
+    i.icon-clone.tuf {
+        background: #ffa523;
+    }
+    i.icon_help.tuf:hover,
+    i.icon-clone.tuf:hover {
+        background: #D0982C;
+    }
 
 </style>
 
@@ -395,6 +508,15 @@ function init(){
 
     $('#ddns_security_info_1').attr({'style':'text-decoration: underline','href':'https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang='+ui_lang+'&kw=&num=171'});
     $('#ddns_security_info_2').attr({'style':'text-decoration: underline','href':'https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang='+ui_lang+'&kw=&num=107'});
+
+    if(isSupport("rog")){
+        document.querySelector('#ddns_help').classList.add('rog');
+        document.querySelector('#ddns_copy').classList.add('rog');
+    }
+    else if(isSupport("tuf")){
+        document.querySelector('#ddns_help').classList.add('tuf');
+        document.querySelector('#ddns_copy').classList.add('tuf');
+    }
 }
 
 function update_ddns_wan_unit_option(){
@@ -494,7 +616,7 @@ function force_update() {
     var r = confirm("<#LANHostConfig_x_DDNS_update_confirm#>");
 	if(r == false)
 		return false
-
+		
 	submitForm();
 }
 
@@ -584,7 +706,7 @@ function ddns_load_body(){
 	} else {
         show_cert_settings(0);
 	}
-
+   
     hideLoading();
 
 	if(ddns_enable_x == "1" && !deregister_fail)
@@ -624,7 +746,7 @@ function apply_eula_check(){
 	if(document.form.ddns_enable_x.value == "1" && document.form.ddns_server_x.value.indexOf("WWW.ASUS.COM") != -1){
 		if(!ASUS_EULA.check("asus")) return false;
 	}
-
+	
 	applyRule();
 }
 
@@ -712,14 +834,14 @@ function validForm(){
 					return false;
 				}
 			}
-
+			
 			if(document.form.ddns_regular_period.value < 30){
 				alert("<#period_time_validation#> : 30");
 				document.form.ddns_regular_period.focus();
 				document.form.ddns_regular_period.select();
 				return false;
 			}
-
+		
 			return true;
 		}
 	}
@@ -730,7 +852,7 @@ function validForm(){
 function checkDDNSReturnCode(){
     $.ajax({
     	url: '/ajax_ddnscode.asp',
-    	dataType: 'script',
+    	dataType: 'script', 
     	error: function(xhr){
       		checkDDNSReturnCode();
     	},
@@ -738,7 +860,7 @@ function checkDDNSReturnCode(){
             if(ddns_return_code == 'ddns_query')
         	    setTimeout("checkDDNSReturnCode();", 500);
             else
-                refreshpage();
+                refreshpage(); 
        }
    });
 }
@@ -767,7 +889,6 @@ function checkDDNSReturnCode_noRefresh(){
 			   (ddns_return_code_chk.indexOf('200')!=-1 || ddns_return_code_chk.indexOf('220')!=-1 || ddns_return_code_chk == 'register,230')){
 				showhide("wan_ip_hide2", 0);
 				if(ddns_server_x == "WWW.ASUS.COM"){
-					showhide("wan_ip_hide3", 1);
 					document.getElementById("ddns_status").innerHTML = "<#Status_Active#>";
 					if(inadyn)
 						show_deregister_btn();
@@ -798,11 +919,11 @@ function validate_ddns_hostname(o){
 		show_alert_block("<#LANHostConfig_x_DDNS_alarm_7#>");
 		return false;
 	}
-
+	
 	if (!validator.string(o)){
 		return false;
 	}
-
+		
 	for(i=0;i<s.length;i++){
 		c = s.charCodeAt(i);
 		if (c==46){
@@ -812,7 +933,7 @@ function validate_ddns_hostname(o){
 				return false;
 			}
 		}
-
+		
 		if (!validator.hostNameChar(c)){
 			show_alert_block("<#LANHostConfig_x_DDNS_alarm_13#> '" + s.charAt(i) +"' !");
 			return false;
@@ -840,7 +961,7 @@ function onSubmitApply(s){
 			return false;
 		}
 	}
-
+	
 	document.form.action_mode.value = "Update";
 	document.form.action_script.value = s;
 	return true;
@@ -1038,7 +1159,7 @@ function change_cert_method(cert_method){
 
 			case "2":
 				document.getElementById("cert_desc").style.display = "none";
-				html_code += '<div style="display:table-cell"><input class="button_gen" onclick="open_upload_window();" type="button" value="<#CTL_upload#>"/><img id="loadingicon" style="margin-left:5px;display:none;" src="/images/InternetScan.gif"></div>';
+				html_code += '<div style="display:table-cell"><input class="btn_subusage button_gen" onclick="open_upload_window();" type="button" value="<#CTL_upload#>"/><img id="loadingicon" style="margin-left:5px;display:none;" src="/images/InternetScan.gif"></div>';
 				document.getElementById("cert_act").innerHTML = html_code;
 				document.getElementById("cert_act").style.display = "";
 				document.getElementById("CAcert_details").style.display = "";
@@ -1306,19 +1427,19 @@ function clear_cert_key(){
 <table class="content" align="center" cellpadding="0" cellspacing="0">
 	<tr>
 		<td width="17">&nbsp;</td>
-
+		
 		<td valign="top" width="202">
 		<div  id="mainMenu"></div>
 		<div  id="subMenu"></div>
 		</td>
-
+		
     <td valign="top">
 		<div id="tabMenu" class="submenuBlock"></div>
 		<!--===================================Beginning of Main Content===========================================-->
 <table width="98%" border="0" align="left" cellpadding="0" cellspacing="0">
 	<tr>
 		<td align="left" valign="top" >
-
+          
 		<table width="760px" border="0" cellpadding="5" cellspacing="0" class="FormTitle" id="FormTitle">
 		<tbody>
 			<tr>
@@ -1326,7 +1447,7 @@ function clear_cert_key(){
 		  		<div class="container">
 		  		<div class="page_title_div">
                     <div class="formfonttitle"><#menu5_3#> - <#menu5_3_6#> </div>
-                    <div class="formfonttitle_help" style="position: absolute;right: 5px;top: 5px;"><i onclick="show_feature_desc()" class="icon_help"></i></div>
+                    <div class="formfonttitle_help"><i id="ddns_help" onclick="show_feature_desc()" class="icon_help"></i></div>
 		  		</div>
 		  		<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 
@@ -1365,7 +1486,7 @@ function clear_cert_key(){
                     </script>
                     <div style="color:#FFCC00">*<#LANHostConfig_x_DDNSEnable_security_info#></div>
 				</td>
-			</tr>
+			</tr>		
 			<tr>
 				<th id="ddns_wan_unit_th"><#wan_interface#></th>
 				<td id="ddns_wan_unit_td">
@@ -1402,6 +1523,7 @@ function clear_cert_key(){
 						<option value="WWW.ORAY.COM" <% nvram_match("ddns_server_x", "WWW.ORAY.COM","selected"); %>>WWW.ORAY.COM(花生壳)</option>
 						<option value="WWW.NAMECHEAP.COM" <% nvram_match("ddns_server_x", "WWW.NAMECHEAP.COM","selected"); %>>WWW.NAMECHEAP.COM</option>
 						<option value="FREEDNS.AFRAID.ORG" <% nvram_match("ddns_server_x", "FREEDNS.AFRAID.ORG","selected"); %>>FREEDNS.AFRAID.ORG</option>
+						<option value="FREEMYIP.COM" <% nvram_match("ddns_server_x", "FREEMYIP.COM","selected"); %>>FREEMYIP.COM</option>
 						<option value="CUSTOM" <% nvram_match("ddns_server_x", "CUSTOM","selected");  %>>Custom</option>
 					</select>
 					<input id="deregister_btn" class="button_gen" style="display: none; margin-left: 5px;" type="button" value="<#CTL_Deregister#>"/>
@@ -1424,7 +1546,7 @@ function clear_cert_key(){
 								<span id="alert_str"></span>
 						</div>
 					</div>
-					<div class="tooltip"><a onClick="copyDdnsInputValue(this)" onmouseover="showDescTooltip(this)" data-toggle="tooltip" data-title="Copied!"><i class="icon-clone"></i></a></div>
+					<div class="tooltip"><a onClick="copyDdnsInputValue(this)" onmouseover="showDescTooltip(this)" data-toggle="tooltip" data-title="Copied!"><i id="ddns_copy" class="icon-clone"></i></a></div>
 					</div>
 				</td>
 			</tr>
@@ -1489,7 +1611,7 @@ function clear_cert_key(){
 					<input type="radio" value="2" name="le_enable" onClick="change_cert_method(this.value);" <% nvram_match("le_enable", "2", "checked"); %>><#DDNS_https_cert_Import#>
 					<span id="self_signed" style="color:#FFF;">
 					<input type="radio" value="0" name="le_enable" onClick="change_cert_method(this.value);" <% nvram_match("le_enable", "0", "checked"); %>><#Auto#>
-					</span>
+					</span>	
 					<div id="cert_desc" style="color:#FFCC00; margin-top: 5px;">
 						<span id="le_desc"></span>
 						<span id="le_faq">
@@ -1548,6 +1670,7 @@ function clear_cert_key(){
 				</div>
 
                 <div class="popup_container popup_element_second"></div>
+
 			  </td>
               </tr>
             </tbody>
@@ -1559,7 +1682,7 @@ function clear_cert_key(){
       </table>
 		<!--===================================Ending of Main Content===========================================-->
 	</td>
-
+		
     <td width="10" align="center" valign="top">&nbsp;</td>
 	</tr>
 </table>

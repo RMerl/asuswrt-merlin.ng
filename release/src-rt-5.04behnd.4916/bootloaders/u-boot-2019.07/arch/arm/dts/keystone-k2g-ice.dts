@@ -1,0 +1,118 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Device Tree Source for K2G Industrial Communication Engine EVM
+ *
+ * Copyright (C) 2017 Texas Instruments Incorporated - http://www.ti.com/
+ */
+/dts-v1/;
+
+#include "keystone-k2g.dtsi"
+#include <dt-bindings/net/ti-dp83867.h>
+
+/ {
+	compatible = "ti,k2g-ice", "ti,k2g", "ti,keystone";
+	model = "Texas Instruments K2G Industrial Communication EVM";
+
+	chosen {
+		stdout-path = &uart0;
+	};
+
+	memory@80000000 {
+		device_type = "memory";
+		reg = <0x80000000 0x20000000>;
+	};
+};
+
+&mmc1 {
+	status = "okay";
+};
+
+&i2c0 {
+	status = "okay";
+};
+
+&i2c1 {
+	status = "okay";
+};
+
+&qspi {
+	status = "okay";
+
+	flash0: m25p80@0 {
+		compatible = "s25fl256s1", "jedec,spi-nor";
+		reg = <0>;
+		spi-tx-bus-width = <1>;
+		spi-rx-bus-width = <4>;
+		spi-max-frequency = <96000000>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+		cdns,read-delay = <5>;
+		cdns,tshsl-ns = <500>;
+		cdns,tsd2d-ns = <500>;
+		cdns,tchsh-ns = <119>;
+		cdns,tslch-ns = <119>;
+
+		partition@0 {
+			label = "QSPI.u-boot";
+			reg = <0x00000000 0x00100000>;
+		};
+		partition@1 {
+			label = "QSPI.u-boot-env";
+			reg = <0x00100000 0x00040000>;
+		};
+		partition@2 {
+			label = "QSPI.skern";
+			reg = <0x00140000 0x0040000>;
+		};
+		partition@3 {
+			label = "QSPI.pmmc-firmware";
+			reg = <0x00180000 0x0040000>;
+		};
+		partition@4 {
+			label = "QSPI.kernel";
+			reg = <0x001c0000 0x0800000>;
+		};
+		partition@5 {
+			label = "QSPI.u-boot-spl-os";
+			reg = <0x009c0000 0x0040000>;
+		};
+		partition@6 {
+			label = "QSPI.file-system";
+			reg = <0x00a00000 0x1600000>;
+		};
+	};
+};
+
+&qmss {
+	status = "okay";
+};
+
+&knav_dmas {
+	status = "okay";
+};
+
+&netcp {
+	pinctrl-names = "default";
+	//pinctrl-0 = <&emac_pins>;
+	status = "okay";
+};
+
+&mdio {
+	pinctrl-names = "default";
+	//pinctrl-0 = <&mdio_pins>;
+	status = "okay";
+	ethphy0: ethernet-phy@0 {
+		reg = <0>;
+		ti,rx-internal-delay = <DP83867_RGMIIDCTL_2_25_NS>;
+		ti,tx-internal-delay = <DP83867_RGMIIDCTL_250_PS>;
+		ti,fifo-depth = <DP83867_PHYCR_FIFO_DEPTH_8_B_NIB>;
+		ti,min-output-impedance;
+		ti,dp83867-rxctrl-strap-quirk;
+	};
+};
+
+&gbe0 {
+	phy-handle = <&ethphy0>;
+	phy-mode = "rgmii-id";
+	status = "okay";
+};

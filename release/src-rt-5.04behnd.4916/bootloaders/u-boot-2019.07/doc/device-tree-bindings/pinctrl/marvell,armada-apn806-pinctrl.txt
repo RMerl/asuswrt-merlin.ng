@@ -1,0 +1,25 @@
+	Functions of Armada APN806 pin controller
+	Function 0x0 for any MPP ID activates GPIO pin mode
+----------------------------------------------------------------------
+MPP#	0x1			0x2		0x3		0x4
+----------------------------------------------------------------------
+0	SDIO_CLK		-		SPI0_CLK 	-
+1	SDIO_CMD		-		SPI0_MISO	-
+2	SDIO_D[0]		-		SPI0_MOSI 	-
+3	SDIO_D[1]		-		SPI0_CS0n 	-
+4	SDIO_D[2]		-		I2C0_SDA	SPI0_CS1n
+5	SDIO_D[3]		-		I2C0_SCK	-
+6	SDIO_DS			-		-		-
+7	SDIO_D[4]		-		UART1_RXD	-
+8	SDIO_D[5]		-		UART1_TXD 	-
+9	SDIO_D[6]		-		SPI0_CS1n 	-
+10	SDIO_D[7]		-		-		-
+11	-			-		UART0_TXD 	-
+12	SDIO_CARD_PW_OFF 	SDIO_HW_RST 	-		-
+13	-			-		-		-
+14	-			-		-		-
+15	-			-		-		-
+16	-			-		-		-
+17	-			-		-		-
+18	-			-		-		-
+19	-			-		UART0_RXD	-

@@ -57,7 +57,7 @@ APP_DIR = .
 APP_INCLUDE_DIRS += -I $(APP_DIR)
 
 APP_NAME = uploader
-APP_SRC_FILES = time_util.c log.c api.c uploader_ipc.c uploader_mnt.c
+APP_SRC_FILES = time_util.c log.c api.c uploader_ipc.c uploader_mnt.c upload_util.c curl_api.c
 UPLOAD_SO_FILE = upload_api.c
 # APP_SRC_FILES = api.c
 APP_SRC_FILES += $(APP_NAME).c 

@@ -1,0 +1,55 @@
+The biggest problem when trying to compile U-Boot with clang is that
+almost all archs rely on storing gd in a global register and clang user
+manual states: "clang does not support global register variables; this
+is unlikely to be implemented soon because it requires additional LLVM
+backend support."
+
+Since version 3.4 the ARM backend can be instructed to leave r9 alone.
+Global registers themselves are not supported so some inline assembly is
+used to get its value. This does lead to larger code then strictly
+necessary, but at least works.
+
+NOTE: target compilation only work for _some_ ARM boards at the moment.
+Also AArch64 is not supported currently due to a lack of private libgcc
+support.  Boards which reassign gd in c will also fail to compile, but there is
+in no strict reason to do so in the ARM world, since crt0.S takes care of this.
+These assignments can be avoided by changing the init calls but this is not in
+mainline yet.
+
+Debian (based)
+--------------
+Binary packages can be installed as usual, e.g.:
+sudo apt-get install clang
+
+Note that we still use binutils for some tools so we must continue to set
+CROSS_COMPILE. To compile U-Boot with clang on linux without IAS use e.g.:
+make HOSTCC=clang rpi_2_defconfig
+make HOSTCC=clang CROSS_COMPILE=arm-linux-gnueabi- \
+    CC="clang -target arm-linux-gnueabi" -j8
+
+It can also be used to compile sandbox:
+make HOSTCC=clang sandbox_defconfig
+make HOSTCC=clang CC=clang -j8
+
+FreeBSD 11 (Current):
+--------------------
+Since llvm 3.4 is currently in the base system, the integrated as is
+incapable of building U-Boot. Therefore gas from devel/arm-gnueabi-binutils
+is used instead. It needs a symlinks to be picked up correctly though:
+
+ln -s /usr/local/bin/arm-gnueabi-freebsd-as /usr/bin/arm-freebsd-eabi-as
+
+# The following commands compile U-Boot using the clang xdev toolchain.
+# NOTE: CROSS_COMPILE and target differ on purpose!
+export CROSS_COMPILE=arm-gnueabi-freebsd-
+gmake rpi_2_defconfig
+gmake CC="clang -target arm-freebsd-eabi --sysroot /usr/arm-freebsd" -j8
+
+Given that U-Boot will default to gcc, above commands can be
+simplified with a simple wrapper script, listed below.
+
+/usr/local/bin/arm-gnueabi-freebsd-gcc
+---
+#!/bin/sh
+
+exec clang -target arm-freebsd-eabi --sysroot /usr/arm-freebsd "$@"

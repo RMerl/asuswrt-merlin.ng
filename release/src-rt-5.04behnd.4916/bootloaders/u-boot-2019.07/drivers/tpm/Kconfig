@@ -1,0 +1,150 @@
+#
+# TPM subsystem configuration
+#
+
+menu "TPM support"
+
+config TPM_V1
+	bool "TPMv1.x support"
+	depends on TPM
+	default y
+	help
+	  Major TPM versions are not compatible at all, choose either
+	  one or the other. This option enables TPMv1.x drivers/commands.
+
+if TPM_V1
+
+config TPM_TIS_SANDBOX
+	bool "Enable sandbox TPM driver"
+	depends on TPM_V1 && SANDBOX
+	default y
+	help
+	  This driver emulates a TPMv1.x, providing access to base functions
+	  such as reading and writing TPM private data. This is enough to
+	  support Chrome OS verified boot. Extend functionality is not
+	  implemented.
+
+config TPM_ATMEL_TWI
+	bool "Enable Atmel TWI TPM device driver"
+	depends on TPM_V1
+	help
+	  This driver supports an Atmel TPM device connected on the I2C bus.
+	  The usual tpm operations and the 'tpm' command can be used to talk
+	  to the device using the standard TPM Interface Specification (TIS)
+	  protocol
+
+config TPM_TIS_INFINEON
+	bool "Enable support for Infineon SLB9635/45 TPMs on I2C"
+	depends on TPM_V1 && DM_I2C
+	help
+	  This driver supports Infineon TPM devices connected on the I2C bus.
+	  The usual tpm operations and the 'tpm' command can be used to talk
+	  to the device using the standard TPM Interface Specification (TIS)
+	  protocol
+
+config TPM_TIS_I2C_BURST_LIMITATION
+	bool "Enable I2C burst length limitation"
+	depends on TPM_TIS_INFINEON
+	help
+	  Some broken TPMs have a limitation on the number of bytes they can
+	  receive in one message. Enable this option to allow you to set this
+	  option. The can allow a broken TPM to be used by splitting messages
+	  into separate pieces.
+
+config TPM_TIS_I2C_BURST_LIMITATION_LEN
+	int "Length"
+	depends on TPM_TIS_I2C_BURST_LIMITATION
+	help
+	  Use this to set the burst limitation length
+
+config TPM_TIS_LPC
+	bool "Enable support for Infineon SLB9635/45 TPMs on LPC"
+	depends on TPM_V1 && X86
+	help
+	  This driver supports Infineon TPM devices connected on the LPC bus.
+	  The usual tpm operations and the 'tpm' command can be used to talk
+	  to the device using the standard TPM Interface Specification (TIS)
+	  protocol
+
+config TPM_AUTH_SESSIONS
+	bool "Enable TPM authentication session support"
+	depends on TPM_V1
+	help
+	  Enable support for authorised (AUTH1) commands as specified in the
+	  TCG Main Specification 1.2. OIAP-authorised versions of the commands
+	  TPM_LoadKey2 and TPM_GetPubKey are provided. Both features are
+	  available using the 'tpm' command, too.
+
+config TPM_ST33ZP24_I2C
+	bool "STMicroelectronics ST33ZP24 I2C TPM"
+	depends on TPM_V1 && DM_I2C
+	---help---
+	  This driver supports STMicroelectronics TPM devices connected on the I2C bus.
+	  The usual tpm operations and the 'tpm' command can be used to talk
+	  to the device using the standard TPM Interface Specification (TIS)
+	  protocol
+
+config TPM_ST33ZP24_SPI
+	bool "STMicroelectronics ST33ZP24 SPI TPM"
+	depends on TPM_V1 && DM_SPI
+	---help---
+	  This driver supports STMicroelectronics TPM devices connected on the SPI bus.
+	  The usual tpm operations and the 'tpm' command can be used to talk
+	  to the device using the standard TPM Interface Specification (TIS)
+	  protocol
+
+config TPM_FLUSH_RESOURCES
+	bool "Enable TPM resource flushing support"
+	depends on TPM_V1
+	help
+	  Enable support to flush specific resources (e.g. keys) from the TPM.
+	  The functionality is available via the 'tpm' command as well.
+
+config TPM_LOAD_KEY_BY_SHA1
+	bool "Enable TPM key loading by SHA1 support"
+	depends on TPM_V1
+	help
+	  Enable support to load keys into the TPM by identifying
+	  their parent via the public key's SHA1 hash.
+	  The functionality is available via the 'tpm' command as well.
+
+config TPM_LIST_RESOURCES
+	bool "Enable TPM resource listing support"
+	depends on TPM_V1
+	help
+	  Enable support to list specific resources (e.g. keys) within the TPM.
+	  The functionality is available via the 'tpm' command as well.
+
+endif # TPM_V1
+
+config TPM_V2
+	bool "TPMv2.x support"
+	depends on TPM
+	default y
+	help
+	  Major TPM versions are not compatible at all, choose either
+	  one or the other. This option enables TPMv2.x drivers/commands.
+
+if TPM_V2
+
+config TPM2_TIS_SANDBOX
+	bool "Enable sandbox TPMv2.x driver"
+	depends on TPM_V2 && SANDBOX
+	default y
+	help
+	  This driver emulates a TPMv2.x, providing access to base functions
+	  such as basic configuration, PCR extension and PCR read. Extended
+	  functionalities are not implemented.
+
+config TPM2_TIS_SPI
+	bool "Enable support for TPMv2.x SPI chips"
+	depends on TPM_V2 && DM_SPI
+	help
+	  This driver supports TPMv2.x devices connected on the SPI bus.
+	  The usual TPM operations and the 'tpm' command can be used to talk
+	  to the device using the standard TPM Interface Specification (TIS)
+	  protocol.
+
+endif # TPM_V2
+
+endmenu

@@ -1,0 +1,70 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2021 Broadcom Ltd.
+ */
+
+
+/dts-v1/;
+
+#include "bcm6766.dtsi"
+
+/ {
+	model = "Broadcom BCM96766 Reference Board";
+	compatible = "brcm,bcm96766", "brcm,bcm6766", "brcm,bcmbca";
+
+
+	aliases {
+		serial0 = &uart0;
+		spi1 = &hsspi;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0x0 0x08000000>;
+	};
+
+};
+
+&uart0 {
+	status = "okay";
+};
+
+&nand {
+	status = "okay";
+	write-protect = <0>;
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	nandcs@0 {
+		compatible = "brcm,nandcs";
+		reg = <0>;
+	};
+};
+
+&hsspi {
+	status = "okay";
+	spi-nand {
+		compatible = "spi-nand";
+		reg = <0>;
+		pinctrl-0 = <&spim_ss0_b_pin_43>;
+		pinctrl-names = "default";	
+		#address-cells = <1>;
+		#size-cells = <0>;
+		u-boot,dm-pre-reloc;
+		spi-max-frequency = <50000000>;
+	};
+	spi-nor@0 {
+		pinctrl-0 = <&spim_ss0_b_pin_43>;
+		pinctrl-names = "default";
+		compatible = "jedec,spi-nor";
+		reg = <0>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		spi-max-frequency = <50000000>;
+		u-boot,dm-pre-reloc;
+	};
+};

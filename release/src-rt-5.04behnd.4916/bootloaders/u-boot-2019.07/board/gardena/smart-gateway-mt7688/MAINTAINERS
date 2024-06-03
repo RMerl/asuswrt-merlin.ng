@@ -1,0 +1,8 @@
+GARDENA_SMART_GATEWAY_MT7688 BOARD
+M:	Stefan Roese <sr@denx.de>
+S:	Maintained
+F:	board/gardena/smart-gateway-mt7688
+F:	include/configs/gardena-smart-gateway-mt7688.h
+F:	configs/gardena-smart-gateway-mt7688_defconfig
+F:	configs/gardena-smart-gateway-mt7688-ram_defconfig
+F:	arch/mips/dts/gardena-smart-gateway-mt7688.dts

@@ -1,0 +1,12 @@
+if TARGET_COBRA5272
+
+config SYS_CPU
+	default "mcf52x2"
+
+config SYS_BOARD
+	default "cobra5272"
+
+config SYS_CONFIG_NAME
+	default "cobra5272"
+
+endif

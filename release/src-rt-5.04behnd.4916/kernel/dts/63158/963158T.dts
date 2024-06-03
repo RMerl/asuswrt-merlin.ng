@@ -1,0 +1,139 @@
+#include "63158.dtsi"
+
+/ {
+	memory_controller {
+		memcfg = <(BP_DDR_TYPE_DDR4 | \
+			BP_DDR_SPEED_1067_15_15_15 | \
+			BP_DDR_TOTAL_SIZE_4096MB   | \
+			BP_DDR_DEVICE_WIDTH_8      | \
+			BP_DDR_TOTAL_WIDTH_32BIT   | \
+			BP_DDR_SSC_CONFIG_1)>;
+	};
+
+	sfp0: sfp0 {
+		compatible = "brcm,sfp";
+		pinctrl-names = "default", "tx-sd", "rx-sd";
+		pinctrl-0 = <&a_pmd_ext_los_pin_10 &a_rogue_onu_in_pin_40>;
+		pinctrl-1 = <&a_rogue_onu_in_pin_40>;
+		pinctrl-2 = <&a_pmd_ext_los_pin_10>;
+
+		i2c-bus = <&i2c0>;
+		mod-def0 = <&bca_extintr 9 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_BOTH_EDGE | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+		tx-power-gpio = <&gpioc 3 GPIO_ACTIVE_HIGH>;
+	};
+
+	wan_serdes {
+            status = "okay";
+		trx = <&sfp0>;
+		pon-led = <&led5>;
+	};
+};
+
+&mdio_sf2 {
+
+        /* Port PHY mapping:
+            port_runner_p0  <-->  port_sf2_p8 -###- port_sf2_p4 <--> xbar_grp0 -+-+- phy_gphy4       
+            port_runner_p1  <-->  port_sf2_p5 -# #- 
+            port_runner_p2  <-->  port_sf2_p7 -###- 
+                                              port_runner_p4/P3 <------------------> phy_serdes0 - sfp0 / PON
+        */
+	/* PHYs connected to crossbar */
+	phy_gphy4 {
+		status = "okay";
+	};
+
+	/* PHY directly connected to Runner */
+	phy_serdes0 {
+		trx = <&sfp0>;
+		status = "okay";
+	};
+
+	/* Crossbar groups */
+	xbar_grp0 {
+		phy-handle = <&phy_gphy4>;
+		status = "okay";
+	};
+};
+
+&switch_sf2 {
+	ports {
+
+		port_sf2_p4 {
+			phy-handle = <&xbar_grp0>;
+			/* wrong GPHY4 LED in board design */
+			status = "okay";
+		};
+
+	};
+};
+
+&switch0 {
+	ports {
+		
+		port_runner_p4 {
+			phy-handle = <&phy_serdes0>;
+			network-leds = <&led14 &led15>;			
+			status = "okay";
+		};
+
+		port_runner_p3 {
+			status = "okay";
+		};
+
+	};
+};
+
+&i2c0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&b0_i2c_scl_0_pin_25 &b0_i2c_sda_0_pin_24>;
+	status = "okay";
+};
+
+&legacy_leds {
+	wl-sess-led = <&led0>;	
+};
+
+&led_ctrl {
+	led0:led_gpio_42 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <42>;
+		active_low;
+	};
+	led5: sw_led-bit_5 {
+		active_high;
+		status = "okay";
+	};
+	led14: rnr_port_4-led_1-pin_14 {
+		active_high;
+		link = <(LED_SPEED_100|LED_SPEED_1G)>;
+		activity = <(LED_SPEED_100|LED_SPEED_1G)>;
+		status = "okay";
+	};
+	led15: rnr_port_4-led_2-pin_15 {
+		active_high;
+		link = <(LED_SPEED_2500|LED_SPEED_10G)>;
+		activity = <(LED_SPEED_2500|LED_SPEED_10G)>;
+		status = "okay";
+	};
+};
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+&pcie0 {
+	status = "okay";
+};
+&pcie1 {
+	status = "okay";
+};
+&pcie2 {
+	status = "okay";
+};
+&pcie3 {
+	status = "okay";
+};
+#endif //#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+
+
+&phy_wan_serdes {
+    status = "okay";
+};

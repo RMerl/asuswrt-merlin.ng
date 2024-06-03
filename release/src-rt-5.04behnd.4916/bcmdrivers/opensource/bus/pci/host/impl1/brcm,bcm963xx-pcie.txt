@@ -1,0 +1,196 @@
+* Broadcom 963XX PCIe host controller for ARM/ARM64 based SoC's
+
+=======================================
+Properties of the host controller node:
+=======================================
+
+Linux PCI driver specific properties
+------------------------------------
+- compatible         : Must be "brcm,bcm963xx-pcie"
+
+- device_type        : Must be "pci".
+
+- bus-range          : Optional property (also described in IEEE Std 1275-1994)
+                       to indicate the range of bus numbers for this controller.
+                       If absent, defaults to <0 255> (i.e. all buses).
+
+- #address-cells     : Must be 3.
+
+- #size-cells        : Must be 2.
+
+- #interrupt-cells   : Must be 1
+
+- reg                : The PCIe core register base and size
+
+- ranges             : ranges for the PCI memory regions (I/O space region is not supported by hardware)
+                       <flags:1> <pci addr:2> <cpu addr:2> <size:2>
+                       Please refer to the standard PCI bus binding document for a more detailed explanation
+                       set <size:2> bit0 to 1 if size is greater than PCIe core supported size
+
+- interrupt-names    : Set to "intr" to use PCIe core interrupts
+                     : Add "msi" to use in-band (MSI) interrupts
+
+- interrupts         : Must be set to use in-band (MSI) interrupts.
+                       In-band interrupt number is same as out-band interrupt number
+                       Also need to enable MSI in the build profile
+
+- interrupt-map      : <see aforementioned specification>
+
+- interrupt-map-mask : <see aforementioned specification>
+
+- linux,pci-domain   : <see aforementioned specification>
+
+
+Broadcom 963xx specific properties
+----------------------------------
+- brcm,coreid        : Must be set to PCIe core id as defined in the SoC
+
+- brcm,speed         : Optional property. To force PCIe speed (0: auto (set by SoC), 1: 2.5Gbps, 2: 5Gbps)
+                       Default as set by SoC
+
+- brcm,apon          : Optional property. To force PCIe core powered on even if there is no link found (0: power down on no link, 1: Keep powered ON)
+                       Default disabled
+
+- brcm,phypwrmode    : Optional property. To operate PCIe PHY at different power levels (0: Full Power, 1: Reduced Power)
+                       Default "Full Power"
+
+- brcm,phyrxfilter   : Optional property. To enable/disable the Rx Signal Detection Filter. (0: disable 1: enable RC, 2: enable EP, 3 enable RC+EP)
+                         Default: Bypass Filter
+                         Entry  : brcm,phrxfilter = <3>;
+
+- brcm,num-lanes     : Optional property. To operate PCIe with single lane on a dual lane hardware to save power (0: Auto detect, 1: force to single lane)
+                       Default "Auto detect"
+
+- brcm,acc           : Optional property. To enable PCIe Ack and Credit Coalescing (0: disable 1: enable)
+                       Default: "Enable"
+                       Entry  : brcm,acc = <0>;
+
+- brcm,strap-pcie-sata : Optional property. To specify the strap register bit and its value to allow specific pcie core
+                          to be initialised. 
+                          Format: brcm,strap-pcie-sata=<(0..31) (0..1)>;
+                          Default: Skip validation.
+- brcm,strap-pcie-rc-mode : Optional property. To specify the strap register bit and its value to define the pcie core
+                            as Root Complex
+                            Format: brcm,strap-pcie-rc-mode=<(0..31) (0..1)>;
+                            Default: Root complex.
+- brcm,linkupretries: Optional property. To specify the number of retries on a link training failure before switching to single lane mode on a dual lane capable core. (0: disable, 1 ... 15: Number of retires)
+                         Default: No tretries
+
+- brcm,barmask:       Optional property. To specify the BAR numbers usage mask for DDR memory access. (bit:0 reserved, bit 1..6 for each BAR, bit 7..31 reserved)
+                       Default: BAR1, BAR3 for DDR memory access
+                       Entry  : brcm,barmask = <0xA>;
+
+- brcm,supply-names:     Optional property. To specify the list of regulator supply names used for the external connected card
+
+- brcm,vreg-supply:      Optional property. To specify the regulator instance corresponding to the supply-names above
+
+Broadcom Virtual PCIe Core (WLAN) specific properties
+-----------------------------------------------------
+- brcm,devid        : Optional property to specify the device id for the virutal PCIe core
+
+- brcm,revid        : Optional property to specify the revision id for the virutal PCIe core
+
+Common to all cores   (32bit, each nibble respresent a core (similar to nvram) in little endian format)
+-------------------------------------------------------------------------------------------------------
+- brcm,pllclkid      : To specify the pll clock id and "coreid" mapping of the port the phy clock shared with
+                       Default is coreid
+                       Entry  : brcm,pllclkid = <0x3210>;
+
+- brcm,ssc           : Optional property. Spread Spectrum Clock feature (non-zero: Enable)
+                       Default disabled.
+                       Entry  : brcm,ssc = <0x0011>;
+
+- reg                : Optional property. The PERIPH_MISC block register base and size for MISC_PCIECtrl register access if supported.
+
+                       Default - not supported
+
+
+
+How to enable device tree entries for PCIe driver (example 4912 below)
+
+===========================================================================
+SOC specific Device Tree file (<soc>.dtsi) with optional internal WiFi core
+===========================================================================
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+	/* pcie common */
+	pcie: pcie {
+		compatible = "brcm,bcm-pcie";
+		device_type = "cpci";
+		brcm,pllclkid = <0x3210>;
+	}
+
+	/* virtual pcie core 0  (internal wifi first) */
+	vpcie0: vpcie@0 {
+		compatible = "brcm,bcm963xx-vpcie";
+		device_type = "vpci";
+		reg = <0x85000000 0x01000000>,                /* WIFI0 base */
+			  <0x86000000 0x01000000>;                /* WIFI1 base */
+
+		brcm,coreid = <0>;
+		brcm,devid = <0x6756>;                        /* 6756 */
+		interrupts = <GIC_SPI 47 IRQ_TYPE_LEVEL_HIGH  /* WIFI0 d11mac */
+					 GIC_SPI 51 IRQ_TYPE_LEVEL_HIGH>; /* WIFI1 d11mac */
+	};
+
+	/* pcie core 0 */
+	pcie0: pcie@0 {
+		#define PCIE_ID				0
+		#define PCIE_SPI			68
+		#define PCIE_ADDR			0x80080000
+		#define PCIE_SIZE			0x0000A000
+		#define PCIE_RANGE_ADDR		0xC0000000
+		#define PCIE_RANGE_SIZE		0x10000000
+		#include "../ip/bcm_pcie_core.dtsi"
+	};
+	/* pcie core 1 */
+	pcie1: pcie@1 {
+		#define PCIE_ID				1
+		#define PCIE_SPI			69
+		#define PCIE_ADDR			0x80090000
+		#define PCIE_SIZE			0x0000A000
+		#define PCIE_RANGE_ADDR		0xD0000000
+		#define PCIE_RANGE_SIZE		0x10000000
+		#include "../ip/bcm_pcie_core.dtsi"
+	};
+	/* pcie core 2 */
+	pcie2: pcie@2 {
+		#define PCIE_ID				2
+		#define PCIE_SPI			70
+		#define PCIE_ADDR			0x800A0000
+		#define PCIE_SIZE			0x0000A000
+		#define PCIE_RANGE_ADDR		0xE0000000
+		#define PCIE_RANGE_SIZE		0x10000000
+		#include "../ip/bcm_pcie_core.dtsi"
+	};
+	/* pcie core 3 */
+	pcie3: pcie@3 {
+		#define PCIE_ID				3
+		#define PCIE_SPI			71
+		#define PCIE_ADDR			0x800B0000
+		#define PCIE_SIZE			0x0000B000
+		#define PCIE_RANGE_ADDR		0xA0000000
+		#define PCIE_RANGE_SIZE		0x20000000
+		#include "../ip/bcm_pcie_core.dtsi"
+	};
+#endif /* defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE) */
+
+=============================================
+Board specific Device Tree file (<board>.dts)
+=============================================
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+&pcie0 {
+	status = "okay";
+};
+&pcie1 {
+	status = "okay";
+};
+&pcie2 {
+	status = "okay";
+};
+&pcie3 {
+	status = "okay";
+};
+#endif //#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+
+

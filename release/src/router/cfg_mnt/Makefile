@@ -1,7 +1,13 @@
 include ../common.mak
 
+ifeq ($(KPATH_37_OR_ABOVE),y)
+CFLAGS += -I$(KDIR)/include
+else
+CFLAGS += -I$(LINUX_INC_DIR)/include
+endif
+
 CFLAGS += $(if $(KPATH_37_OR_ABOVE),$(if $(and $(RTCONFIG_QCA),$(RTCONFIG_MUSL_LIBC)),,-I$(KDIR)/include),-I$(LINUX_INC_DIR)/include)
-CFLAGS += -Wall $(if $(RTCONFIG_DEBUG),-g,-Os) -Wno-unused-but-set-variable $(EXTRACFLAGS) -ffunction-sections -fdata-sections
+CFLAGS += -Wall $(if $(RTCONFIG_DEBUG),-g,-Os) $(EXTRACFLAGS) -ffunction-sections -fdata-sections
 CFLAGS += -I. -I$(TOP)/shared -I$(SRCBASE) -I$(SRCBASE)/include -I./include -I$(TOP)/networkmap
 CFLAGS += -I./sysdeps
 CFLAGS += -I$(TOP)/openssl/include
@@ -17,6 +23,8 @@ LDFLAGS += -lpthread
 LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
 LDFLAGS += -lm
 LDFLAGS += -L./ -lcfgmnt
+
+LDFLAGS_LIB += -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -lnvram -L$(TOP)/shared -lshared -L$(TOP)/json-c/.libs -ljson-c
 
 ifeq ($(RTCONFIG_DMALLOC),y)
 CFLAGS += -DDMALLOC -DDMALLOC_FUNC_CHECK -I$(STAGEDIR)/usr/include
@@ -45,6 +53,10 @@ else ifeq ($(RTCONFIG_QCA),y)
 CFLAGS += -DPTHREAD_STACK_SIZE_256K -DPTHREAD_EXIT
 endif
 
+ifeq ($(HND_ROUTER_BE_4916),y)
+CFLAGS += -fcommon
+endif
+
 ifeq ($(RTCONFIG_HND_ROUTER_AX),y)
 CFLAGS +=-I$(SRCBASE)/../components/wlioctl/include -I$(SRCBASE)/../components/proto/include -I$(SRCBASE)/wl/sys
 endif
@@ -69,7 +81,8 @@ ifeq ($(RTCONFIG_BCMARM),y)
 CFLAGS += -I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T
 CFLAGS += -I$(SRCBASE)/common/include
 else ifeq ($(RTCONFIG_RALINK),y)
-CFLAGS += -I$(TOP)/shared/sysdeps/ralink -I$(TOP)/wireless_tools
+CFLAGS += -I$(TOP)/shared/sysdeps/ralink -I$(TOP)/wireless_tools$(WTOOL_SUFFIX)
+CFLAGS += -fPIC
 else ifeq ($(RTCONFIG_QCA),y)
 CFLAGS += -fPIC
 else ifeq ($(RTCONFIG_REALTEK),y)
@@ -113,12 +126,16 @@ endif
 COMMON_OBJS += encrypt.o linklist.o
 COMMON_OBJS += cfg_crc.o cfg_udp.o cfg_dencrypt.o cfg_common.o cfg_ipc.o cfg_wevent.o cfg_upgrade.o cfg_clientlist.o cfg_sched.o cfg_slavelist.o
 COMMON_OBJS += cfg_capability.o cfg_action.o cfg_eventnotify.o cfg_bandindex.o
-COMMON_OBJS += cfg_ctrllist.o
+COMMON_OBJS += cfg_ctrllist.o cfg_param.o
 ifeq ($(RTCONFIG_DWB),y)
 COMMON_OBJS += cfg_dwb.o
 endif
 COMMON_OBJS += cfg_chanspec.o
 COMMON_OBJS += cfg_parammgnt.o
+ifeq ($(RTCONFIG_MULTILAN_CFG), y)
+COMMON_OBJS += cfg_mtlan.o
+COMMON_OBJS += cfg_mlo.o
+endif
 ifeq ($(RTCONFIG_AMAS_CENTRAL_CONTROL),y)
 COMMON_OBJS += cfg_centralcontrol.o
 endif
@@ -131,6 +148,14 @@ SERVER_OBJS += cfg_ads.o
 endif
 CLIENT_OBJS += $(COMMON_OBJS) cfg_client.o
 REPORTSTATUS_OBJS += cfg_common.o cfg_reportstatus.o
+
+LIBSHARED_OBJS += cfg_lib.o
+ifeq ($(RTCONFIG_MULTILAN_CFG),y)
+LIBSHARED_OBJS += cfg_mtlan.o
+endif
+ifeq ($(RTCONFIG_AMAS_UPLOAD_FILE),y)
+CLIENT_OBJS += cfg_uploadfile.o
+endif
 
 ifeq ($(RTCONFIG_WIFI_SON),y)
 CFLAGS += -DREPORT_PAP_INFO
@@ -184,9 +209,9 @@ COMMON_OBJS += cfg_loclist.o
 endif
 endif
 
-ifeq ($(RTCONFIG_HAS_5G_2), y)
+ifeq ($(or $(RTCONFIG_HAS_5G_2),$(RTCONFIG_HAS_6G_2)), y)
 CFLAGS += -DSUPPORT_TRI_BAND
-else ifdef $(filter $(BUILD_NAME), RT-AC5300 GT-AC5300 RT-AC92U RT-AX92U GT-AX11000 RT-AX95Q XT8PRO BM68 XT8_V2 RT-AXE95Q ET8PRO ET8_V2 RP-AC92 GT-AXE11000 GT-AX11000PRO)
+else ifdef $(filter $(BUILD_NAME), RT-AC5300 GT-AC5300 RT-AC92U RT-AX92U GT-AX11000 RT-AX95Q XT8PRO BT12 BT10 BQ16 BQ16_PRO BM68 XT8_V2 RT-AXE95Q ET8PRO ET8_V2 RP-AC92 GT-AXE11000 GT-AX11000PRO)
 CFLAGS += -DSUPPORT_TRI_BAND
 endif
 
@@ -231,6 +256,10 @@ ifeq ($(RTCONFIG_QCA_PLC2),y)
 CFLAGS += -DPLC_STATUS
 endif
 
+ifeq ($(RTCONFIG_TRUSTZONE),y)
+CFLAGS += -I$(TOP)/ateed/
+LDFLAGS += -L$(TOP)/ateed/ -latee
+endif
 
 ifeq ($(wildcard $(SRCBASE)/router/cfg_mnt/*.c),)
 all:
@@ -254,9 +283,9 @@ cfg_reportstatus: $(REPORTSTATUS_OBJS)
 	echo " [cfg_mnt] CC $@"
 	$(CC) -o $@ $^ $(LDFLAGS) $(CFLAGS)
 
-libcfgmnt.so: cfg_lib.o
-	@echo " [libcfgmnt] CC $@"
-	@$(CC) -fPIC -shared $(CFLAGS) -o $@ $^
+libcfgmnt.so: $(LIBSHARED_OBJS)
+	echo " [libcfgmnt] CC $@"
+	$(CC) -fPIC -shared $(CFLAGS) -o $@ $^ $(LDFLAGS_LIB)
 
 install: all
 	@echo "[cfg_mnt] Installing..."

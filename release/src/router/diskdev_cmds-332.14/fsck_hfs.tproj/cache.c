@@ -111,14 +111,74 @@ static int LRUHit (LRU_t *lru, LRUNode_t *node, int age);
  *
  *  Chooses a buffer to release.
  *
- *  TODO: Under extreme conditions, it shoud be possible to release the buffer
+ *  TODO: Under extreme conditions, it should be possible to release the buffer
  *        of an actively referenced cache buffer, leaving the tag behind as a
  *        placeholder. This would be required for implementing 2Q-LRU
  *        replacement.
  */
 static int LRUEvict (LRU_t *lru, LRUNode_t *node);
 
+/*
+ * CalculateCacheSize
+ *
+ * Determine the cache size that should be used to initialize the cache.   
+ * If the user provided value does not validate the conditions described 
+ * below, an error is returned.
+ *
+ * If no input values are provided, use default values for cache size
+ * and cache block size.
+ *
+ * Cache size should be -
+ *		a. greater than or equal to minimum cache size
+ *		b. less than or equal to maximum cache size.  The maximum cache size
+ *		   is limited by the maximum value that can be allocated using malloc
+ *		   or mmap (maximum value for size_t)
+ *		c. multiple of cache block size (checked only if user provided cache size)
+ *
+ *	Returns: zero on success, non-zero on failure.
+ */
+int CalculateCacheSize(uint64_t cacheSize, uint32_t *calcBlockSize, uint32_t *calcTotalBlocks, char debug)
+{
+	int err = EINVAL;
+	uint32_t blockSize = DefaultCacheBlockSize;
+	size_t	max_size_t = ~0;	/* Maximum value represented by size_t */
 
+	/* Simple case - no user cache size, use default values */
+	if (!cacheSize) {
+		*calcBlockSize = DefaultCacheBlockSize;
+		*calcTotalBlocks = DefaultCacheBlocks;
+		err = 0;
+		goto out;
+	}
+
+	/* User provided cache size - check with minimum and maximum values */
+	if ((cacheSize < MinCacheSize) || 
+		(cacheSize > max_size_t)) {
+		if (debug) {
+			printf ("\tCache size should be greater than %uM and less than %luM\n", MinCacheSize/(1024*1024), max_size_t/(1024*1024));
+		}
+		goto out;
+	}
+
+	/* Cache size should be multiple of cache block size */
+	if (cacheSize % blockSize) {
+		if (debug) {
+			printf ("\tCache size should be multiple of cache block size (currently %uK)\n", blockSize/1024);
+		}
+		goto out;
+	}
+
+	*calcBlockSize = blockSize;
+	*calcTotalBlocks = cacheSize / blockSize;
+	
+	err = 0;
+	
+out:
+	if ((err == 0) && debug) {
+		printf ("\tUsing cacheBlockSize=%uK cacheTotalBlock=%u cacheSize=%uK.\n", *calcBlockSize/1024, *calcTotalBlocks, ((*calcBlockSize/1024) * (*calcTotalBlocks)));
+	}
+	return err;
+}
 
 /*
  * CacheInit
@@ -126,7 +186,7 @@ static int LRUEvict (LRU_t *lru, LRUNode_t *node);
  *  Initializes the cache for use.
  */
 int CacheInit (Cache_t *cache, int fdRead, int fdWrite, uint32_t devBlockSize,
-               uint32_t cacheBlockSize, uint32_t cacheSize, uint32_t hashSize)
+               uint32_t cacheBlockSize, uint32_t cacheTotalBlocks, uint32_t hashSize)
 {
 	void **		temp;
 	uint32_t	i;
@@ -144,21 +204,21 @@ int CacheInit (Cache_t *cache, int fdRead, int fdWrite, uint32_t devBlockSize,
 
 	/* Allocate the cache memory */
 	cache->FreeHead = mmap (NULL,
-	                        cacheSize * cacheBlockSize,
+	                        cacheTotalBlocks * cacheBlockSize,
 	                        PROT_READ | PROT_WRITE,
 	                        MAP_ANON | MAP_PRIVATE,
 	                        -1,
 	                        0);
-	if (cache->FreeHead == NULL) return (ENOMEM);
+	if (cache->FreeHead == (void *)-1) return (ENOMEM);
 
 	/* Initialize the cache memory free list */
 	temp = cache->FreeHead;
-	for (i = 0; i < cacheSize - 1; i++) {
+	for (i = 0; i < cacheTotalBlocks - 1; i++) {
 		*temp = ((char *)temp + cacheBlockSize);
 		temp  = (void **)((char *)temp + cacheBlockSize);
 	}
 	*temp = NULL;
-	cache->FreeSize = cacheSize;
+	cache->FreeSize = cacheTotalBlocks;
 
 	buf = (Buf_t *)malloc(sizeof(Buf_t) * MAXBUFS);
 	if (buf == NULL) return (ENOMEM);
@@ -170,9 +230,9 @@ int CacheInit (Cache_t *cache, int fdRead, int fdWrite, uint32_t devBlockSize,
 	cache->FreeBufs = &buf[0];
 
 #if CACHE_DEBUG
-	printf( "%s - cacheSize %d cacheBlockSize %d hashSize %d \n", 
-			__FUNCTION__, cacheSize, cacheBlockSize, hashSize );
-	printf( "%s - cache memory %d \n", __FUNCTION__, (cacheSize * cacheBlockSize) );
+	printf( "%s - cacheTotalBlocks %d cacheBlockSize %d hashSize %d \n", 
+			__FUNCTION__, cacheTotalBlocks, cacheBlockSize, hashSize );
+	printf( "%s - cache memory %d \n", __FUNCTION__, (cacheTotalBlocks * cacheBlockSize) );
 #endif  
 
 	return (LRUInit (&cache->LRU));
@@ -901,20 +961,21 @@ int CacheLookup (Cache_t *cache, uint64_t off, Tag_t **tag)
  */
 int CacheRawRead (Cache_t *cache, uint64_t off, uint32_t len, void *buf)
 {
-	uint64_t	result;
+	off_t	result1;
+	ssize_t result2;
 		
 	/* Both offset and length must be multiples of the device block size */
 	if (off % cache->DevBlockSize) return (EINVAL);
 	if (len % cache->DevBlockSize) return (EINVAL);
 	
 	/* Seek to the position */
-	result = lseek (cache->FD_R, off, SEEK_SET);
-	if (result < 0) return (errno);
-	if (result != off) return (ENXIO);
+	result1 = lseek(cache->FD_R, off, SEEK_SET);
+	if (result1 < 0) return (errno);
+	if (result1 != off) return (ENXIO);
 	/* Read into the buffer */
-	result = read (cache->FD_R, buf, len);
-	if (result < 0) return (errno);
-	if (result == 0) return (ENXIO);
+	result2 = read(cache->FD_R, buf, len);
+	if (result2 < 0) return (errno);
+	if (result2 == 0) return (ENXIO);
 
 	/* Update counters */
 	cache->DiskRead++;
@@ -929,21 +990,22 @@ int CacheRawRead (Cache_t *cache, uint64_t off, uint32_t len, void *buf)
  */
 int CacheRawWrite (Cache_t *cache, uint64_t off, uint32_t len, void *buf)
 {
-	uint64_t	result;
+	off_t	result1;
+	ssize_t result2;
 	
 	/* Both offset and length must be multiples of the device block size */
 	if (off % cache->DevBlockSize) return (EINVAL);
 	if (len % cache->DevBlockSize) return (EINVAL);
 	
 	/* Seek to the position */
-	result = lseek (cache->FD_W, off, SEEK_SET);
-	if (result < 0) return (errno);
-	if (result != off) return (ENXIO);
+	result1 = lseek (cache->FD_W, off, SEEK_SET);
+	if (result1 < 0) return (errno);
+	if (result1 != off) return (ENXIO);
 	
 	/* Write into the buffer */
-	result = write (cache->FD_W, buf, len);
-	if (result < 0) return (errno);
-	if (result == 0) return (ENXIO);
+	result2 = write (cache->FD_W, buf, len);
+	if (result2 < 0) return (errno);
+	if (result2 == 0) return (ENXIO);
 	
 	/* Update counters */
 	cache->DiskWrite++;

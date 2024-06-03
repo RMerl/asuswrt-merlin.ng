@@ -137,8 +137,14 @@ typedef struct pjsua_call
 
 	pj_sockaddr *turn_mapped_addr; // TURN tunnel mapped address.
 	int use_sctp;   
+	int use_dtls;   
 
 	int tnl_build_spent_sec;
+
+	//int inv_state;
+	char    inv_state_flow[128];
+	//int inv_tsx_state;
+	char    inv_tsx_state_flow[128];
 
 } pjsua_call;
 

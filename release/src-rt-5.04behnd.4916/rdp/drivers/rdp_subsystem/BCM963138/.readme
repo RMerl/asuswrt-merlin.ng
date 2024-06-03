@@ -1,0 +1,9 @@
+#*******************************************
+#  Copyright (c) 2014  Broadcom
+#  All Rights Reserved
+#******************************************/
+
+This directory is a placeholder for DSL projects specific DPI code. As initial version, it can contain the sources and
+header files from //depot/CommEngine/prod/PROD_416L/shared/shared/opensource/rdp/ and
+//depot/CommEngine/prod/PROD_416L/shared/shared/opensource/drv/dpi/bcm63138_data_path_init.c (as data_path_init.c).
+

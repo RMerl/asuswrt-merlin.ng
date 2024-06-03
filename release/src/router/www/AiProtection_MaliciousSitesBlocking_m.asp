@@ -2,7 +2,7 @@
 <html>
 <head>
 	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
 	<title><#Web_Title#> - <#AiProtection_sites_blocking#></title>
 	<link rel="stylesheet" href="index_style.css"> 
@@ -10,6 +10,7 @@
 	<link rel="stylesheet" href="/css/adaptive_mobile.css">
 
 	<script src="/js/jquery.js"></script>
+	<script src="/js/httpApi.js"></script>
 	<script src="/state.js"></script>
 	<script src="/popup.js"></script>
 	<script src="/general.js"></script>
@@ -18,7 +19,6 @@
 	<script src="/form.js"></script>
 	<script src="/client_function.js"></script>
 	<script src="/js/Chart.js"></script>
-	<script src="/js/httpApi.js"></script>
 	<script src="/validator.js"></script>
 
 <style>

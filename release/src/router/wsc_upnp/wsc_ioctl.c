@@ -9,7 +9,9 @@
 
 #include <linux/version.h>
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)		// for 3052 missing include file? --YY
+#ifndef MUSL_LIBC
 #include <net/if.h>
+#endif	// !MUSL_LIBC
 #include <linux/types.h>
 #endif
 

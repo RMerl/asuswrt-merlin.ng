@@ -1,0 +1,33 @@
+Watchdog driver general info
+
+CONFIG_HW_WATCHDOG
+	This enables hw_watchdog_reset to be called during various loops,
+	including waiting for a character on a serial port. But it
+	does not also call hw_watchdog_init. Boards which want this
+	enabled must call this function in their board file. This split
+	is useful because some rom's enable the watchdog when downloading
+	new code, so it must be serviced, but the board would rather it
+	was off. And, it cannot always be turned off once on.
+
+CONFIG_WATCHDOG_TIMEOUT_MSECS
+	Can be used to change the timeout for i.mx31/35/5x/6x.
+	If not given, will default to maximum timeout. This would
+	be 128000 msec for i.mx31/35/5x/6x.
+
+CONFIG_WDT_AT91
+	Available for AT91SAM9 to service the watchdog.
+
+CONFIG_FTWDT010_WATCHDOG
+	Available for FTWDT010 to service the watchdog.
+
+CONFIG_FTWDT010_HW_TIMEOUT
+	Can be used to change the timeout for FTWDT010.
+
+CONFIG_IMX_WATCHDOG
+	Available for i.mx31/35/5x/6x to service the watchdog. This is not
+	automatically set because some boards (vision2) still need to define
+	their own hw_watchdog_reset routine.
+	TODO: vision2 is removed now, so perhaps this can be changed.
+
+CONFIG_XILINX_TB_WATCHDOG
+	Available for Xilinx Axi platforms to service timebase watchdog timer.

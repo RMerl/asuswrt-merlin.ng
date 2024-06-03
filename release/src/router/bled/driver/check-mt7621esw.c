@@ -30,30 +30,50 @@
 #include "../bled_defs.h"
 #include "check.h"
 #include "ra2882ethreg.h"
+#if defined(CONFIG_NET_VENDOR_MEDIATEK)
+#include <linux/netdevice.h>
+#include "mtk_eth_soc.h"
+#endif
 
-//MT7621 platform
-#define PHY_CONTROL_0 		0x0004   
-#define MDIO_PHY_CONTROL_0	(RALINK_ETH_SW_BASE + PHY_CONTROL_0)
-#define enable_mdio(x)
 /* copy from rt_mmap.h and raether.c */
 #define REG_ESW_PORT_TGOCN_LOW_P0       0x4048
 #define REG_ESW_PORT_TGOCN_HIGH_P0      0x404C
 #define REG_ESW_PORT_RGOCN_LOW_P0       0x40A8
 #define REG_ESW_PORT_RGOCN_HIGH_P0      0x40AC
 
-extern u32 mii_mgr_read(u32 phy_addr, u32 phy_register, u32 *read_data);
+#if defined(CONFIG_MODEL_RT4GAX56) || defined(CONFIG_MODEL_RTAX54) || defined(XD4S)
+#define ETH_DEVNAME     "eth1"
+#else
+#define ETH_DEVNAME     "eth2"
+#endif
 
+#if defined(CONFIG_RAETH)
+extern u32 mii_mgr_read(u32 phy_addr, u32 phy_register, u32 *read_data);
+#elif defined(CONFIG_NET_VENDOR_MEDIATEK)
+extern void mii_mgr_read_combine(struct mtk_eth *eth, u32 phy_addr, u32 phy_register,
+			  u32 *read_data);
+extern struct net_device *__dev_get_by_name(struct net *net, const char *name);
+extern struct net init_net;
+#endif
 /**
  * Get TX/RX bytes from MT7621 embedded switch.
  * @port:
  * @rx:
  * @tx:
  */
-static inline void get_port_stats(int port, unsigned long *rx, unsigned long *tx)
+static inline void get_port_stats(int port, unsigned int *rx, unsigned int *tx)
 {
+#if defined(CONFIG_RAETH)
 	mii_mgr_read(31, (REG_ESW_PORT_RGOCN_LOW_P0 + port * 0x100), rx); //32bits
 	mii_mgr_read(31, (REG_ESW_PORT_TGOCN_LOW_P0 + port * 0x100), tx);  //32bits
-	//printk("bled tx=%x, rx=%x\n",*tx,*rx);
+#elif defined(CONFIG_NET_VENDOR_MEDIATEK)
+	struct net_device *net_dev = __dev_get_by_name(&init_net, ETH_DEVNAME);
+	struct mtk_mac *mac = netdev_priv(net_dev);
+	struct mtk_eth *eth = mac->hw;
+	mii_mgr_read_combine(eth, 31, (REG_ESW_PORT_RGOCN_LOW_P0 + port * 0x100), rx);
+	mii_mgr_read_combine(eth, 31, (REG_ESW_PORT_TGOCN_LOW_P0 + port * 0x100), tx);
+#endif
+	/*printk("port%d bled tx=%x, rx=%x\n", port, *tx, *rx);*/
 }
 
 /**
@@ -67,8 +87,8 @@ static inline void get_port_stats(int port, unsigned long *rx, unsigned long *tx
 unsigned int swports_check_traffic(struct bled_priv *bp)
 {
 	int p, c;
-	unsigned int b = 0, m;
-	unsigned long d, diff, rx_bytes, tx_bytes;
+	unsigned int b = 0, m, rx_bytes, tx_bytes;
+	unsigned long d, diff;
 	struct swport_bled_ifstat *ifs;
 	struct swport_bled_priv *sp = bp->check_priv;
 
@@ -114,7 +134,7 @@ int swports_reset_check_traffic(struct bled_priv *bp)
 {
 	int p;
 	unsigned int m;
-	unsigned long rx_bytes, tx_bytes;
+	unsigned int rx_bytes, tx_bytes;
 	struct swport_bled_ifstat *ifs;
 	struct swport_bled_priv *sp = bp->check_priv;
 

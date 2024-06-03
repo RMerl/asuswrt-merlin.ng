@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2003 Apple Computer, Inc. All rights reserved.
+ * Copyright (c) 1999-2006 Apple Computer, Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
  * 
@@ -33,6 +33,7 @@
 */
 
 #include "Scavenger.h"
+#include "../cache.h"
 
 //	internal routine prototypes
 
@@ -44,10 +45,21 @@ static	OSErr	RcdMDBEmbededVolDescriptionErr( SGlobPtr GPtr, OSErr type, HFSMaste
 
 static	OSErr	CheckNodesFirstOffset( SGlobPtr GPtr, BTreeControlBlock *btcb );
 
-static	Boolean	ExtentInfoExists( ExtentsTable **extentsTableH, ExtentInfo *extentInfo, Boolean *doesFileExist );
-
 static OSErr	ScavengeVolumeType( SGlobPtr GPtr, HFSMasterDirectoryBlock *mdb, UInt32 *volumeType );
 static OSErr	SeekVolumeHeader( SGlobPtr GPtr, UInt64 startSector, UInt32 numSectors, UInt64 *vHSector );
+
+/* overlapping extents verification functions prototype */
+static OSErr	AddExtentToOverlapList( SGlobPtr GPtr, HFSCatalogNodeID fileNumber, const char *attrName, UInt32 extentStartBlock, UInt32 extentBlockCount, UInt8 forkType );
+
+static	Boolean	ExtentInfoExists( ExtentsTable **extentsTableH, ExtentInfo *extentInfo);
+
+static void CheckHFSPlusExtentRecords(SGlobPtr GPtr, UInt32 fileID, const char *attrname, HFSPlusExtentRecord extent, UInt8 forkType); 
+
+static void CheckHFSExtentRecords(SGlobPtr GPtr, UInt32 fileID, HFSExtentRecord extent, UInt8 forkType);
+
+static Boolean DoesOverlap(SGlobPtr GPtr, UInt32 fileID, const char *attrname, UInt32 startBlock, UInt32 blockCount, UInt8 forkType); 
+
+static int CompareExtentFileID(const void *first, const void *second);
 
 /*
  * Check if a volume is journaled.  
@@ -667,7 +679,7 @@ OSErr	CreateExtentsBTreeControlBlock( SGlobPtr GPtr )
 	
 		CopyMemory(volumeHeader->extentsFile.extents, GPtr->calculatedExtentsFCB->fcbExtents32, sizeof(HFSPlusExtentRecord) );
 		
-		err = CheckFileExtents( GPtr, kHFSExtentsFileID, 0, (void *)GPtr->calculatedExtentsFCB->fcbExtents32, &numABlks );	//	check out extent info
+		err = CheckFileExtents( GPtr, kHFSExtentsFileID, kDataFork, NULL, (void *)GPtr->calculatedExtentsFCB->fcbExtents32, &numABlks);	//	check out extent info
 
 		if (err) goto exit;
 
@@ -729,7 +741,7 @@ OSErr	CreateExtentsBTreeControlBlock( SGlobPtr GPtr )
 	//	ExtDataRecToExtents(alternateMDB->drXTExtRec, GPtr->calculatedExtentsFCB->fcbExtents);
 
 		
-		err = CheckFileExtents( GPtr, kHFSExtentsFileID, 0, (void *)GPtr->calculatedExtentsFCB->fcbExtents16, &numABlks );	/* check out extent info */	
+		err = CheckFileExtents( GPtr, kHFSExtentsFileID, kDataFork, NULL, (void *)GPtr->calculatedExtentsFCB->fcbExtents16, &numABlks);	/* check out extent info */	
 		if (err) goto exit;
 	
 		if (alternateMDB->drXTFlSize != ((UInt64)numABlks * (UInt64)GPtr->calculatedVCB->vcbBlockSize))//	check out the PEOF
@@ -777,14 +789,14 @@ OSErr	CreateExtentsBTreeControlBlock( SGlobPtr GPtr )
 	//
 	//	set up our DFA extended BTCB area.  Will we have enough memory on all HFS+ volumes.
 	//
-	btcb->refCon = (UInt32) AllocateClearMemory( sizeof(BTreeExtensionsRec) );			// allocate space for our BTCB extensions
-	if ( btcb->refCon == (UInt32) nil ) {
+	btcb->refCon = AllocateClearMemory( sizeof(BTreeExtensionsRec) );			// allocate space for our BTCB extensions
+	if (btcb->refCon == NULL) {
 		err = R_NoMem;
 		goto exit;
 	}
 	size = (btcb->totalNodes + 7) / 8;											//	size of BTree bit map
 	((BTreeExtensionsRec*)btcb->refCon)->BTCBMPtr = AllocateClearMemory(size);			//	get precleared bitmap
-	if ( ((BTreeExtensionsRec*)btcb->refCon)->BTCBMPtr == nil )
+	if (((BTreeExtensionsRec*)btcb->refCon)->BTCBMPtr == NULL)
 	{
 		err = R_NoMem;
 		goto exit;
@@ -897,18 +909,29 @@ OSErr ExtBTChk( SGlobPtr GPtr )
 
 /*------------------------------------------------------------------------------
 
-Function:	ExtFlChk - (Extent File Check)
+Function:	BadBlockFileExtentCheck - (Check extents of bad block file)
 
-Function:	Verifies the extent file structure.
+Function:	
+		Verifies the extents of bad block file (kHFSBadBlockFileID) that 
+		exist in extents Btree.
+
+		Note that the extents for other file IDs < kHFSFirstUserCatalogNodeID 
+		are being taken care in the following functions:
+
+		kHFSExtentsFileID    	- CreateExtentsBTreeControlBlock 
+		kHFSCatalogFileID     	- CreateCatalogBTreeControlBlock
+		kHFSAllocationFileID	- CreateExtendedAllocationsFCB
+		kHFSStartupFileID     	- CreateExtendedAllocationsFCB
+		kHFSAttributesFileID	- CreateAttributesBTreeControlBlock
 			
 Input:		GPtr		-	pointer to scavenger global area
 
-Output:		ExtFlChk		-	function result:			
-								0	= no error
-								+n 	= error code
+Output:		BadBlockFileExtentCheck		-	function result:			
+				0	= no error
+				+n 	= error code
 ------------------------------------------------------------------------------*/
 
-OSErr ExtFlChk( SGlobPtr GPtr )
+OSErr BadBlockFileExtentCheck( SGlobPtr GPtr )
 {
 	UInt32			attributes;
 	void			*p;
@@ -938,7 +961,7 @@ OSErr ExtFlChk( SGlobPtr GPtr )
 		UInt32					numBadBlocks;
 		
 		ClearMemory ( zeroXdr, sizeof( HFSPlusExtentRecord ) );
-		result = CheckFileExtents( GPtr, kHFSBadBlockFileID, 0, (void *)zeroXdr, &numBadBlocks );	//	check and mark bitmap
+		result = CheckFileExtents( GPtr, kHFSBadBlockFileID, kDataFork, NULL, (void *)zeroXdr, &numBadBlocks);	//	check and mark bitmap
 	}
 
 ExitThisRoutine:
@@ -992,7 +1015,7 @@ OSErr	CreateCatalogBTreeControlBlock( SGlobPtr GPtr )
 
 		CopyMemory(volumeHeader->catalogFile.extents, GPtr->calculatedCatalogFCB->fcbExtents32, sizeof(HFSPlusExtentRecord) );
 
-		err = CheckFileExtents( GPtr, kHFSCatalogFileID, 0, (void *)GPtr->calculatedCatalogFCB->fcbExtents32, &numABlks );	
+		err = CheckFileExtents( GPtr, kHFSCatalogFileID, kDataFork, NULL, (void *)GPtr->calculatedCatalogFCB->fcbExtents32, &numABlks);	
 		if (err) goto exit;
 
 		if ( volumeHeader->catalogFile.totalBlocks != numABlks )
@@ -1069,7 +1092,7 @@ OSErr	CreateCatalogBTreeControlBlock( SGlobPtr GPtr )
 		CopyMemory( alternateMDB->drCTExtRec, GPtr->calculatedCatalogFCB->fcbExtents16, sizeof(HFSExtentRecord) );
 	//	ExtDataRecToExtents(alternateMDB->drCTExtRec, GPtr->calculatedCatalogFCB->fcbExtents);
 
-		err = CheckFileExtents( GPtr, kHFSCatalogFileID, 0, (void *)GPtr->calculatedCatalogFCB->fcbExtents16, &numABlks );	/* check out extent info */	
+		err = CheckFileExtents( GPtr, kHFSCatalogFileID, kDataFork, NULL, (void *)GPtr->calculatedCatalogFCB->fcbExtents16, &numABlks);	/* check out extent info */	
 		if (err) goto exit;
 
 		if (alternateMDB->drCTFlSize != ((UInt64)numABlks * (UInt64)vcb->vcbBlockSize))	//	check out the PEOF
@@ -1121,14 +1144,14 @@ OSErr	CreateCatalogBTreeControlBlock( SGlobPtr GPtr )
 	//	set up our DFA extended BTCB area.  Will we have enough memory on all HFS+ volumes.
 	//
 
-	btcb->refCon = (UInt32) AllocateClearMemory( sizeof(BTreeExtensionsRec) );			// allocate space for our BTCB extensions
-	if ( btcb->refCon == (UInt32)nil ) {
+	btcb->refCon = AllocateClearMemory( sizeof(BTreeExtensionsRec) );			// allocate space for our BTCB extensions
+	if (btcb->refCon == NULL) {
 		err = R_NoMem;
 		goto exit;
 	}
 	size = (btcb->totalNodes + 7) / 8;											//	size of BTree bit map
 	((BTreeExtensionsRec*)btcb->refCon)->BTCBMPtr = AllocateClearMemory(size);			//	get precleared bitmap
-	if ( ((BTreeExtensionsRec*)btcb->refCon)->BTCBMPtr == nil )
+	if (((BTreeExtensionsRec*)btcb->refCon)->BTCBMPtr == NULL)
 	{
 		err = R_NoMem;
 		goto exit;
@@ -1176,7 +1199,8 @@ ExitThisRoutine:
 
 Function:	CreateExtendedAllocationsFCB
 
-Function:	Create the calculated ExtentsBTree Control Block
+Function:	Create the calculated ExtentsBTree Control Block for
+			kHFSAllocationFileID and kHFSStartupFileID.
 			
 Input:		GPtr	-	pointer to scavenger global area
 
@@ -1215,22 +1239,17 @@ OSErr	CreateExtendedAllocationsFCB( SGlobPtr GPtr )
 		fcb = GPtr->calculatedAllocationsFCB;
 		CopyMemory( volumeHeader->allocationFile.extents, fcb->fcbExtents32, sizeof(HFSPlusExtentRecord) );
 
-		err = CheckFileExtents( GPtr, kHFSAllocationFileID, 0, (void *)fcb->fcbExtents32, &numABlks );
+		err = CheckFileExtents( GPtr, kHFSAllocationFileID, kDataFork, NULL, (void *)fcb->fcbExtents32, &numABlks);
 		if (err) goto exit;
 
 		//
 		// The allocation file will get processed in whole allocation blocks, or
 		// maximal-sized cache blocks, whichever is smaller.  This means the cache
 		// doesn't need to cope with buffers that are larger than a cache block.
-		//
-		// The definition of CACHE_IOSIZE below matches the definition in fsck_hfs.c.
-		// If you change it here, then change it there, too.  Or else put it in some
-		// common header file.
-		#define CACHE_IOSIZE	32768
-		if (vcb->vcbBlockSize < CACHE_IOSIZE)
+		if (vcb->vcbBlockSize < fscache.BlockSize)
 			(void) SetFileBlockSize (fcb, vcb->vcbBlockSize);
 		else
-			(void) SetFileBlockSize (fcb, CACHE_IOSIZE);
+			(void) SetFileBlockSize (fcb, fscache.BlockSize);
 	
 		if ( volumeHeader->allocationFile.totalBlocks != numABlks )
 		{
@@ -1249,7 +1268,7 @@ OSErr	CreateExtendedAllocationsFCB( SGlobPtr GPtr )
 		fcb = GPtr->calculatedStartupFCB;
 		CopyMemory( volumeHeader->startupFile.extents, fcb->fcbExtents32, sizeof(HFSPlusExtentRecord) );
 
-		err = CheckFileExtents( GPtr, kHFSStartupFileID, 0, (void *)fcb->fcbExtents32, &numABlks );
+		err = CheckFileExtents( GPtr, kHFSStartupFileID, kDataFork, NULL, (void *)fcb->fcbExtents32, &numABlks);
 		if (err) goto exit;
 
 		fcb->fcbLogicalSize  = volumeHeader->startupFile.logicalSize;
@@ -1320,7 +1339,7 @@ OSErr CatHChk( SGlobPtr GPtr )
 	
 	//ее Can we ignore this part by just taking advantage of setting the selCode = 0x8001;
 	{ 
-		BuildCatalogKey( 1, (const CatalogName *)nil, isHFSPlus, &key );
+		BuildCatalogKey(1, NULL, isHFSPlus, &key);
 		result = SearchBTreeRecord( GPtr->calculatedCatalogFCB, &key, kNoHint, &foundKey, &threadRecord, &recSize, &hint );
 	
 		GPtr->TarBlock = hint;									/* set target block */
@@ -1424,7 +1443,7 @@ OSErr CatHChk( SGlobPtr GPtr )
 				/* 
 				 * Find thread record
 				 */
-				BuildCatalogKey( dprP->directoryID, (const CatalogName *) nil, isHFSPlus, &key );
+				BuildCatalogKey(dprP->directoryID, NULL, isHFSPlus, &key);
 				result = SearchBTreeRecord( GPtr->calculatedCatalogFCB, &key, kNoHint, &foundKey, &threadRecord, &recSize, &hint );
 				if ( result != noErr ) {
 					char idStr[16];
@@ -1676,7 +1695,7 @@ OSErr	CreateAttributesBTreeControlBlock( SGlobPtr GPtr )
 
 		CopyMemory( volumeHeader->attributesFile.extents, GPtr->calculatedAttributesFCB->fcbExtents32, sizeof(HFSPlusExtentRecord) );
 
-		err = CheckFileExtents( GPtr, kHFSAttributesFileID, 0, (void *)GPtr->calculatedAttributesFCB->fcbExtents32, &numABlks );	
+		err = CheckFileExtents( GPtr, kHFSAttributesFileID, kDataFork, NULL, (void *)GPtr->calculatedAttributesFCB->fcbExtents32, &numABlks);	
 		if (err) goto exit;
 
 		if ( volumeHeader->attributesFile.totalBlocks != numABlks )					//	check out the PEOF
@@ -1760,27 +1779,27 @@ OSErr	CreateAttributesBTreeControlBlock( SGlobPtr GPtr )
 	//
 	//	set up our DFA extended BTCB area.  Will we have enough memory on all HFS+ volumes.
 	//
-	btcb->refCon = (UInt32) AllocateClearMemory( sizeof(BTreeExtensionsRec) );			// allocate space for our BTCB extensions
-	if ( btcb->refCon == (UInt32)nil ) {
+	btcb->refCon = AllocateClearMemory( sizeof(BTreeExtensionsRec) );			// allocate space for our BTCB extensions
+	if (btcb->refCon == NULL) {
 		err = R_NoMem;
 		goto exit;
 	}
 
 	if (btcb->totalNodes == 0)
 	{
-		((BTreeExtensionsRec*)btcb->refCon)->BTCBMPtr			= nil;
+		((BTreeExtensionsRec*)btcb->refCon)->BTCBMPtr			= NULL;
 		((BTreeExtensionsRec*)btcb->refCon)->BTCBMSize			= 0;
 		((BTreeExtensionsRec*)btcb->refCon)->realFreeNodeCount	= 0;
 	}
 	else
 	{
-		if ( btcb->refCon == (UInt32)nil ) {
+		if (btcb->refCon == NULL) {
 			err = R_NoMem;
 			goto exit;
 		}
 		size = (btcb->totalNodes + 7) / 8;											//	size of BTree bit map
 		((BTreeExtensionsRec*)btcb->refCon)->BTCBMPtr = AllocateClearMemory(size);			//	get precleared bitmap
-		if ( ((BTreeExtensionsRec*)btcb->refCon)->BTCBMPtr == nil )
+		if (((BTreeExtensionsRec*)btcb->refCon)->BTCBMPtr == NULL)
 		{
 			err = R_NoMem;
 			goto exit;
@@ -1797,80 +1816,391 @@ exit:
 	return (err);
 }
 
-/*------------------------------------------------------------------------------
+/* 
+ * Function: RecordLastAttrBits
+ *
+ * Description:
+ *	Updates the Chinese Remainder Theorem buckets with extended attribute 
+ *  information for the previous fileID stored in the global structure.
+ *
+ * Input:	
+ *	GPtr - pointer to scavenger global area
+ *		* GPtr->lastAttrInfo.fileID - fileID of last attribute seen
+ *	
+ * Output:	Nothing
+ */
+static void RecordLastAttrBits(SGlobPtr GPtr) 
+{
+	/* lastAttrInfo structure is initialized to zero and hence ignore 
+	 * recording information for fileID = 0.  fileIDs < 16 (except for 
+	 * fileID = 2) can have extended attributes but do not have 
+	 * corresponding entry in catalog Btree.  Ignore recording these
+	 * fileIDs for Chinese Remainder Theorem buckets.  Currently we only
+	 * set extended attributes for fileID = 1 among these fileIDs 
+     * and this can change in future (see 3984119)
+	 */
+	if ((GPtr->lastAttrInfo.fileID == 0) || 
+		((GPtr->lastAttrInfo.fileID < kHFSFirstUserCatalogNodeID) && 
+	    (GPtr->lastAttrInfo.fileID != kHFSRootFolderID))) {
+		return;
+	}
 
+	if (GPtr->lastAttrInfo.hasSecurity == true) {
+		/* fileID has both extended attribute and ACL */
+		RecordXAttrBits(GPtr, kHFSHasAttributesMask | kHFSHasSecurityMask, 
+			GPtr->lastAttrInfo.fileID, kCalculatedAttributesRefNum);
+		GPtr->lastAttrInfo.hasSecurity = false;
+	} else {
+		/* fileID only has extended attribute */
+		RecordXAttrBits(GPtr, kHFSHasAttributesMask, 
+			GPtr->lastAttrInfo.fileID, kCalculatedAttributesRefNum);
+	}
+}
+
+/* 
+ * Function: setLastAttrAllocInfo
+ *
+ * Description: 
+ *	Set the global structure of last extended attribute with
+ * 	the allocation block information.  Also set the isValid to true 
+ *	to indicate that the data is valid and should be used to verify
+ *  allocation blocks.
+ *
+ * Input:
+ *	GPtr 		- pointer to scavenger global area
+ *	totalBlocks - total blocks allocated by the attribute
+ * 	logicalSize - logical size of the attribute
+ *	calculatedBlocks - blocks accounted by the attribute in current extent
+ *
+ * Output: Nothing
+ */
+static void setLastAttrAllocInfo(SGlobPtr GPtr, u_int32_t totalBlocks, 
+				u_int64_t logicalSize, u_int32_t calculatedTotalBlocks)
+{
+	GPtr->lastAttrInfo.totalBlocks = totalBlocks;
+	GPtr->lastAttrInfo.logicalSize = logicalSize;
+	GPtr->lastAttrInfo.calculatedTotalBlocks = calculatedTotalBlocks;
+	GPtr->lastAttrInfo.isValid = true;
+}
+
+/* 
+ * Function: CheckLastAttrAllocation
+ *
+ * Description:
+ *	Checks the allocation block information stored for the last 
+ * 	extended attribute seen during extended attribute BTree traversal.
+ *  Always resets the information stored for last EA allocation.
+ *
+ * Input:	GPtr - pointer to scavenger global area
+ *
+ * Output:	int - function result:			
+ *				zero - no error
+ *				non-zero - error
+ */
+static int CheckLastAttrAllocation(SGlobPtr GPtr) 
+{
+	int result = 0;
+	u_int64_t bytes;
+
+	if (GPtr->lastAttrInfo.isValid == true) {
+		if (GPtr->lastAttrInfo.totalBlocks != 
+			GPtr->lastAttrInfo.calculatedTotalBlocks) {
+			result = RecordBadAllocation(GPtr->lastAttrInfo.fileID, 
+						GPtr->lastAttrInfo.attrname, kEAData, 
+						GPtr->lastAttrInfo.totalBlocks, 
+						GPtr->lastAttrInfo.calculatedTotalBlocks);
+		} else {
+			bytes = (u_int64_t)GPtr->lastAttrInfo.calculatedTotalBlocks * 
+					(u_int64_t)GPtr->calculatedVCB->vcbBlockSize;
+			if (GPtr->lastAttrInfo.logicalSize > bytes) {
+				result = RecordTruncation(GPtr->lastAttrInfo.fileID,
+							GPtr->lastAttrInfo.attrname, kEAData, 
+							GPtr->lastAttrInfo.logicalSize, bytes);
+			}
+		}
+
+		/* Invalidate information in the global structure */
+		GPtr->lastAttrInfo.isValid = false;
+	}
+
+	return (result);
+}
+
+/*------------------------------------------------------------------------------
 Function:	CheckAttributeRecord
 
-Function:	This is call back function called for all leaf records in 
-		Attribute BTree.  This function verifies that for every extended
-		attribute and security attribute the corresponding bits in 
-		Catalog BTree are set.  
-			
-Input:		GPtr		-	pointer to scavenger global area
+Description:
+		This is call back function called for all leaf records in 
+		Attribute BTree during the verify and repair stage.  The basic
+		functionality of the function is same during verify and repair 
+		stages except that whenever it finds corruption, the verify 
+		stage prints message and the repair stage repairs it.  In the verify 
+		stage, this function accounts for allocation blocks used
+		by extent-based extended attributes and also updates the chinese 
+		remainder theorem buckets corresponding the extended attribute 
+		and security bit.
+
+		1. Only in the verify stage, if the fileID or attribute name of current 
+		extended attribute are not same as the previous attribute, check the 
+		allocation block counts for the previous attribute.
+
+		2. Only in the verify stage, If the fileID of current attribute is not 
+		same as the previous attribute, record the previous fileID information 
+		for Chinese	Remainder Theorem.
+
+		3. For attribute type,
+			kHFSPlusAttrForkData: 
+			---------------------
+			Do all of the following during verify stage and nothing in repair
+			stage - 
+	
+			Check the start block for extended attribute from the key.  If not
+			zero, print error.
+
+			Account for blocks occupied by this extent and store the allocation 
+			information for this extent to check in future.  Also update the 
+			last attribute information in the global structure.
+
+			kHFSPlusAttrExtents:
+			--------------------
+			If the current attribute's fileID is not same as previous fileID, or
+			if the previous recordType is not a valid forkData or overflow extent
+			record, report an error in verify stage or mark it for deletion in
+			repair stage.
+
+			Do all of the following during verify stage and nothing in repair
+			stage - 
+	
+			Check the start block for extended attribute from the key.  If not
+			equal to the total blocks seen uptil last attribtue, print error.
+
+			Account for blocks occupied by this extent.  Update previous
+			attribute allocation information with blocks seen in current
+			extent.  Also update last attribute block information in the global
+			structure.
+
+			kHFSPlusAttrInlineData:
+			-----------------------
+			Only in the verify stage, check if the start block in the key is 
+			equal to zero.  If not, print error.
+
+			Unknown type: 
+			-------------
+			In verify stage, report error.  In repair stage, mark the record
+			to delete.
+
+		4. If a record is marked for deletion, delete the record. 
+		
+		5. Before exiting from the function, always do the following -  
+			a. Indicate if the extended attribute was an ACL
+			b. Update previous fileID and recordType with current information.
+			c. Update previous attribute name with current attribute name. 
+
+Input:	GPtr	-	pointer to scavenger global area
 		key		-	key for current attribute
 		rec		- 	attribute record
-		reclen		- 	length of the record
+		reclen	- 	length of the record
 
-Output:		int		-	function result:			
-								0	= no error
-								n 	= error code 
+Output:	int		-	function result:			
+			0	= no error
+			n 	= error code 
 ------------------------------------------------------------------------------*/
-
-static int 
+int 
 CheckAttributeRecord(SGlobPtr GPtr, const HFSPlusAttrKey *key, const HFSPlusAttrRecord *rec, UInt16 reclen)
 {
 	int result = 0;
-	Boolean isHFSPlus;
+	unsigned char attrname[XATTR_MAXNAMELEN+1];
+	size_t attrlen;
+	u_int32_t blocks;
+	u_int32_t fileID;
+	struct attributeInfo *prevAttr;
+	Boolean isSameAttr = true;
+	Boolean doDelete = false;
+	u_int16_t dfaStage = GetDFAStage();
 
-	/* Check if the volume is HFS Plus volume */
-	isHFSPlus = VolumeObjectIsHFSPlus();
-	if (!isHFSPlus) {
-		goto out;
+	/* Assert if volume is not HFS Plus */
+	assert(VolumeObjectIsHFSPlus() == true);
+
+	prevAttr = &(GPtr->lastAttrInfo);
+	fileID = key->fileID;
+	/* Convert unicode attribute name to UTF-8 string */
+	(void) utf_encodestr(key->attrName, key->attrNameLen * 2, attrname, &attrlen);
+	attrname[attrlen] = '\0';
+
+	/* Compare the current attribute to last attribute seen */
+	if ((fileID != prevAttr->fileID) ||
+		(strcmp((char *)attrname, (char *)prevAttr->attrname) != 0)) {
+		isSameAttr = false;
 	}
 
-#if DEBUG_XATTR
-	char attrName[XATTR_MAXNAMELEN];
-	size_t len;
-
-	/* Convert unicode attribute name to char */
-	(void) utf_encodestr(key->attrName, key->attrNameLen * 2, attrName, &len);
-	attrName[len] = '\0';
-	printf ("%s(%s,%d): fileID=%d AttributeName=%s\n", __FUNCTION__, __FILE__, __LINE__, key->fileID, attrName);
-#endif
-	
-	/* 3984119 - Do not include extended attributes for file IDs less
-	 * kHFSFirstUserCatalogNodeID but not equal to kHFSRootFolderID 
-	 * in prime modulus checksum.  These file IDs do not have 
-	 * any catalog record
+	/* We check allocation block information and record EA information for
+	 * CRT bucket in verify stage and hence no need to do it again in 
+	 * repair stage.
 	 */
-	if ((key->fileID < kHFSFirstUserCatalogNodeID) && 
-	    (key->fileID != kHFSRootFolderID)) {
-		goto out;
-	}
-	
-	if (GPtr->lastAttrFileID.fileID != key->fileID) {
-		/* fsck is seeing this fileID in Attribute BTree for first time */
-		GPtr->lastAttrFileID.fileID = key->fileID;
-		GPtr->lastAttrFileID.hasSecurity = false;
-		
-		if (!bcmp(key->attrName, GPtr->securityAttrName, GPtr->securityAttrLen)) {
-			/* file has both extended attribute and ACL */
-			RecordXAttrBits(GPtr, kHFSHasAttributesMask | kHFSHasSecurityMask, key->fileID, kCalculatedAttributesRefNum);
-			GPtr->lastAttrFileID.hasSecurity = true;
-		} else {
-			/* file only has extended attribute */
-			RecordXAttrBits(GPtr, kHFSHasAttributesMask, key->fileID, kCalculatedAttributesRefNum);
+	if (dfaStage == kVerifyStage) {
+		/* Different attribute - check allocation block information */
+		if (isSameAttr == false) {
+			result = CheckLastAttrAllocation(GPtr);
+			if (result) { 
+				goto update_out;
+			}
 		}
-	} else {
-		/* fsck has seen this fileID before */
-		if ((GPtr->lastAttrFileID.hasSecurity == false) && !bcmp(key->attrName, GPtr->securityAttrName, GPtr->securityAttrLen)) {
-			/* If GPtr->lastAttrFileID did not have security AND current xattr is ACL, 
-			 * we ONLY record ACL (as we have already recorded extended attribute
+
+		/* Different fileID - record information in CRT bucket */
+		if (fileID != prevAttr->fileID) {
+			RecordLastAttrBits(GPtr);
+		} 
+	}
+
+	switch (rec->recordType) {
+		case kHFSPlusAttrForkData: {
+			/* Check start block only in verify stage to avoid printing message
+			 * in repair stage.  Note that this corruption is not repairable 
+			 * currently.  Also check extents only in verify stage to avoid 
+			 * false overlap extents error. 
 			 */
-			RecordXAttrBits(GPtr, kHFSHasSecurityMask, key->fileID, kCalculatedAttributesRefNum);
-			GPtr->lastAttrFileID.hasSecurity = true;
+			if (dfaStage == kVerifyStage) {
+				/* Start block in the key should be zero */
+				if (key->startBlock != 0) {
+					RcdError(GPtr, E_ABlkSt);
+					result = E_ABlkSt;
+					goto err_out;
+				}
+
+				/* Check the extent information and record overlapping extents, if any */
+				result = CheckFileExtents (GPtr, fileID, kEAData, attrname, 
+							rec->forkData.theFork.extents, &blocks);
+				if (result) {
+					goto update_out;
+				}
+			
+				/* Store allocation information to check in future */
+				(void) setLastAttrAllocInfo(GPtr, rec->forkData.theFork.totalBlocks, 
+							rec->forkData.theFork.logicalSize, blocks);
+			}
+			break;
 		}
+
+		case kHFSPlusAttrExtents: {
+			/* Different attribute/fileID or incorrect previous record type */
+			if ((isSameAttr == false) || 
+				((prevAttr->recordType != kHFSPlusAttrExtents) && 
+				(prevAttr->recordType != kHFSPlusAttrForkData))) {
+				if (dfaStage == kRepairStage) {
+					/* Delete record in repair stage */
+					doDelete = true;
+				} else { 
+					/* Report error in verify stage */
+					RcdError(GPtr, E_AttrRec);
+					GPtr->ABTStat |= S_AttrRec;
+					goto err_out;
+				}
+			}
+			
+			/* Check start block only in verify stage to avoid printing message
+			 * in repair stage.  Note that this corruption is not repairable 
+			 * currently.  Also check extents only in verify stage to avoid 
+			 * false overlap extents error. 
+			 */
+			if (dfaStage == kVerifyStage) {	
+				/* startBlock in the key should be equal to total blocks 
+				 * seen uptil last attribute.
+				 */
+				if (key->startBlock != prevAttr->calculatedTotalBlocks) {
+					RcdError(GPtr, E_ABlkSt);
+					result = E_ABlkSt;
+					goto err_out;
+				}
+
+				/* Check the extent information and record overlapping extents, if any */
+				result = CheckFileExtents (GPtr, fileID, kEAData, attrname, 
+							rec->overflowExtents.extents, &blocks);
+				if (result) {
+					goto update_out;
+				}
+				
+				/* Increment the blocks seen uptil now for this attribute */
+				prevAttr->calculatedTotalBlocks += blocks;
+			}
+			break;
+		}
+
+		case kHFSPlusAttrInlineData: {
+			/* Check start block only in verify stage to avoid printing message
+			 * in repair stage.
+			 */
+			if (dfaStage == kVerifyStage) {
+				/* Start block in the key should be zero */
+				if (key->startBlock != 0) {
+					RcdError(GPtr, E_ABlkSt);
+					result = E_ABlkSt;
+					goto err_out;
+				}
+			}
+			break;
+		}
+
+		default: {
+			/* Unknown attribute record */
+			if (dfaStage == kRepairStage) {
+				/* Delete record in repair stage */
+				doDelete = true;
+			} else { 
+				/* Report error in verify stage */
+				RcdError(GPtr, E_AttrRec);
+				GPtr->ABTStat |= S_AttrRec;
+				goto err_out;
+			}
+			break;
+		}
+	};
+	
+	if (doDelete == true) {
+		result = DeleteBTreeRecord(GPtr->calculatedAttributesFCB, key);
+		dbg_printf (d_info|d_xattr, "%s: Deleting attribute %s for fileID %d, type = %d\n", __FUNCTION__, attrname, key->fileID, rec->recordType);
+		if (result) {
+			dbg_printf (d_error|d_xattr, "%s: Error in deleting record for %s for fileID %d, type = %d\n", __FUNCTION__, attrname, key->fileID, rec->recordType);
+		}
+		
+		/* Set flags to mark header and map dirty */
+		GPtr->ABTStat |= S_BTH + S_BTM;	
+		goto err_out;
 	}
+
+update_out:
+	/* Note that an ACL exists for this fileID */
+	if (strcmp((char *)attrname, KAUTH_FILESEC_XATTR) == 0) {
+		prevAttr->hasSecurity = true;
+	}
+
+	/* Always update the last recordType, fileID and attribute name before exiting */
+	prevAttr->recordType = rec->recordType;
+	prevAttr->fileID = fileID;
+	(void) strlcpy((char *)prevAttr->attrname, (char *)attrname, sizeof(prevAttr->attrname));
+
+	goto out;
+
+err_out:
+	/* If the current record is invalid/bogus, decide whether to update 
+	 * fileID stored in global structure for future comparison based on the 
+	 * previous fileID.  
+	 * If the current bogus record's fileID is different from fileID of the 
+	 * previous good record, we do not want to account for bogus fileID in 
+	 * the Chinese Remainder Theorem when we see next good record.
+	 * Hence reset the fileID in global structure to dummy value.  Example, 
+	 * if the fileIDs are 10 15 20 and record with ID=15 is bogus, we do not 
+	 * want to account for record with ID=15.
+	 * If the current bogus record's fileID is same as the fileID of the
+	 * previous good record, we want to account for this fileID in the 
+	 * next good record we see after this bogus record.  Hence do not
+	 * reset the fileID to dummy value.  Example, if the records have fileID
+	 * 10 10 30 and the second record with ID=10 is bogus, we want to 
+	 * account for ID=10 when we see record with ID=30.
+	 */ 
+	if (prevAttr->fileID != fileID) {
+		prevAttr->fileID = 0;
+	}
+
 out:
 	return(result);
 }
@@ -1911,6 +2241,13 @@ OSErr AttrBTChk( SGlobPtr GPtr )
 
 	err = BTCheck( GPtr, kCalculatedAttributesRefNum, (CheckLeafRecordProcPtr)CheckAttributeRecord);
 	ReturnIfError( err );														//	invalid attributes file BTree
+
+	//  check the allocation block information about the last attribute
+	err = CheckLastAttrAllocation(GPtr);
+	ReturnIfError(err);
+
+	//  record the last fileID for Chinese Remainder Theorem comparison
+	RecordLastAttrBits(GPtr);
 
 	//	compare the attributes prime buckets calculated from catalog btree and attribute btree 
 	err = ComparePrimeBuckets(GPtr, kHFSHasAttributesMask);
@@ -2021,7 +2358,7 @@ static	OSErr	RcdMDBEmbededVolDescriptionErr( SGlobPtr GPtr, OSErr type, HFSMaste
 	RcdError( GPtr, type );												//	first, record the error
 	
 	p = AllocMinorRepairOrder( GPtr, sizeof(EmbededVolDescription) );	//	get the node
-	if ( p == nil )	return( R_NoMem );
+	if (p == NULL)	return( R_NoMem );
 	
 	p->type							=  type;							//	save error info
 	desc							=  (EmbededVolDescription *) &(p->name);
@@ -2060,7 +2397,7 @@ static	OSErr	RcdInvalidWrapperExtents( SGlobPtr GPtr, OSErr type )
 	RcdError( GPtr, type );												//	first, record the error
 	
 	p = AllocMinorRepairOrder( GPtr, 0 );	//	get the node
-	if ( p == nil )	return( R_NoMem );
+	if (p == NULL)	return( R_NoMem );
 	
 	p->type							=  type;							//	save error info
 	
@@ -2577,16 +2914,83 @@ static int RcdNameLockedErr( SGlobPtr GPtr, SInt16 type, UInt32 incorrect )					
 	return( noErr );										/* successful return */
 }
 
+/*------------------------------------------------------------------------------
+
+Name:		RecordBadExtent
+
+Function:	Allocates a RepairOrder for repairing bad extent.
+
+Input:		GPtr		- ptr to scavenger global data
+			fileID		- fileID of the file with bad extent
+			forkType	- bad extent's fork type
+			startBlock	- start block of the bad extent record 
+			badExtentIndex - index of bad extent entry in the extent record
+
+Output:		0 			- no error
+			R_NoMem		- not enough mem to allocate record
+------------------------------------------------------------------------------*/
+
+static int RecordBadExtent(SGlobPtr GPtr, UInt32 fileID, UInt8 forkType, 
+				UInt32 startBlock, UInt32 badExtentIndex) 
+{
+	RepairOrderPtr p;
+	Boolean isHFSPlus;
+
+	isHFSPlus = VolumeObjectIsHFSPlus();
+
+	p = AllocMinorRepairOrder(GPtr, 0);
+	if (p == NULL) {
+		return(R_NoMem);
+	}
+
+	p->type = E_ExtEnt;
+	p->forkType = forkType;
+	p->correct = badExtentIndex;
+	p->hint = startBlock;
+	p->parid = fileID;
+
+	GPtr->CatStat |= S_BadExtent;
+	return (0);
+}
 
 /*------------------------------------------------------------------------------
 
 Function:	CheckFileExtents - (Check File Extents)
 
-Function:	Verifies the extent info for a file.
+Description:
+		Verifies the extent info for a file data or extented attribute data.  It 
+		checks the correctness of extent data.  If the extent information is 
+		correct/valid, it updates in-memory volume bitmap, total number of valid 
+		blocks for given file, and if overlapping extents exist, adds them to 
+		the overlap extents list.  If the extent information is not correct, it 
+		considers the file truncated beyond the bad extent entry and reports
+		only the total number of good blocks seen.  Therefore the caller detects
+		adds the extent information to repair order. It does not include the 
+		invalid extent and any extents after it for checking volume bitmap and
+		hence overlapping extents.  Note that currently the function 
+		returns error if invalid extent is found for system files or for 
+		extended attributes.
+
+		For data fork and resource fork of file - This function checks extent 
+		record present in catalog record as well as extent overflow records, if 
+		any, for given fileID.
+
+		For extended attribute data - This function only checks the extent record
+		passed as parameter.  If any extended attribute has overflow extents in
+		the attribute btree, this function does not look them up.  It is the left 
+		to the caller to check remaining extents for given file's extended attribute.
 			
-Input:		GPtr		-	pointer to scavenger global area
-			fileNumber	-	file number
-			forkType	-	fork type ($00 = data fork, $FF = resource fork)
+Input:	
+			GPtr		-	pointer to scavenger global area
+			fileNumber	-	file number for fork/extended attribute
+			forkType	-	fork type 
+								00 - kDataFork - data fork
+								01 - kEAData   - extended attribute data extent
+								ff - kRsrcFork - resource fork 
+			attrname 	-	if fork type is kEAData, attrname contains pointer to the
+							name of extended attribute whose extent is being checked; else
+							it should be NULL.  Note that the function assumes that this is
+							NULL-terminated string.
 			extents		-	ptr to 1st extent record for the file
 
 Output:
@@ -2597,9 +3001,10 @@ Output:
 ------------------------------------------------------------------------------*/
 
 OSErr	CheckFileExtents( SGlobPtr GPtr, UInt32 fileNumber, UInt8 forkType, 
-						  const void *extents, UInt32 *blocksUsed )
+						  const unsigned char *attrname, const void *extents, 
+						  UInt32 *blocksUsed)
 {
-	UInt32				blockCount;
+	UInt32				blockCount = 0;
 	UInt32				extentBlockCount;
 	UInt32				extentStartBlock;
 	UInt32				hint;
@@ -2607,23 +3012,44 @@ OSErr	CheckFileExtents( SGlobPtr GPtr, UInt32 fileNumber, UInt8 forkType,
 	HFSPlusExtentKey	extentKey;
 	HFSPlusExtentRecord	extentRecord;
 	UInt16 				recSize;
-	OSErr				err;
+	OSErr				err = noErr;
 	SInt16				i;
 	Boolean				firstRecord;
 	Boolean				isHFSPlus;
+	unsigned int		lastExtentIndex;
+	Boolean 			foundBadExtent;
+
+	/* For all extended attribute extents, the attrname should not be NULL */
+	if (forkType == kEAData) {
+		assert(attrname != NULL);
+	}
 
 	isHFSPlus = VolumeObjectIsHFSPlus( );
-	firstRecord	= true;
-	err			= noErr;
-	blockCount	= 0;
+	firstRecord = true;
+	foundBadExtent = false;
+	lastExtentIndex = GPtr->numExtents;
 	
-	while ( (extents != nil) && (err == noErr) )
-	{
-		err = ChkExtRec( GPtr, extents );			//	checkout the extent record first
-		if ( err != noErr )							//	Bad extent record, don't mark it
-			break;
+	while ((extents != NULL) && (err == noErr))
+	{	
+		//	checkout the extent record first
+		err = ChkExtRec( GPtr, extents, &lastExtentIndex );
+		if (err != noErr) {
+			dbg_printf (d_info, "%s: Bad extent for fileID %u in extent %u for startblock %u\n", __FUNCTION__, fileNumber, lastExtentIndex, blockCount);
+
+			/* Stop verification if bad extent is found for system file or EA */
+			if ((fileNumber < kHFSFirstUserCatalogNodeID) ||
+				(forkType == kEAData)) {
+				break;
+			}
+
+			/* store information about bad extent in repair order */
+			(void) RecordBadExtent(GPtr, fileNumber, forkType, blockCount, lastExtentIndex);
+			foundBadExtent = true;
+			err = noErr;
+		}
 			
-		for ( i=0 ; i<GPtr->numExtents ; i++ )		//	now checkout the extents
+		/* Check only till the last valid extent entry reported by ChkExtRec */
+		for ( i=0 ; i<lastExtentIndex ; i++ )		//	now checkout the extents
 		{
 			//	HFS+/HFS moving extent fields into local variables for evaluation
 			if ( isHFSPlus == true )
@@ -2639,9 +3065,10 @@ OSErr	CheckFileExtents( SGlobPtr GPtr, UInt32 fileNumber, UInt8 forkType,
 	
 			if ( extentBlockCount == 0 )
 				break;
+
 			err = CaptureBitmapBits(extentStartBlock, extentBlockCount);
 			if (err == E_OvlExt) {
-				err = AddExtentToOverlapList(GPtr, fileNumber, extentStartBlock, extentBlockCount, forkType);
+				err = AddExtentToOverlapList(GPtr, fileNumber, (char *)attrname, extentStartBlock, extentBlockCount, forkType);
 			}
 			
 			blockCount += extentBlockCount;
@@ -2649,7 +3076,23 @@ OSErr	CheckFileExtents( SGlobPtr GPtr, UInt32 fileNumber, UInt8 forkType,
 		
 		if ( fileNumber == kHFSExtentsFileID )		//	Extents file has no overflow extents
 			break;
-			
+
+		/* Found bad extent for this file, do not find any extents after 
+		 * current extent.  We assume that the file is truncated at the
+		 * bad extent entry
+		 */
+		if (foundBadExtent == true) {
+			break;
+		}
+			 
+		/* For extended attributes, only check the extent passed as parameter.  The
+		 * caller will take care of checking other extents, if any, for given 
+		 * extended attribute.
+		 */
+		if (forkType == kEAData) {
+			break;
+		}
+
 		if ( firstRecord == true )
 		{
 			firstRecord = false;
@@ -2662,7 +3105,7 @@ OSErr	CheckFileExtents( SGlobPtr GPtr, UInt32 fileNumber, UInt8 forkType,
 			if ( err == btNotFound )
 			{
 				err = noErr;								//	 no more extent records
-				extents = nil;
+				extents = NULL;
 				break;
 			}
 			else if ( err != noErr )
@@ -2678,7 +3121,7 @@ OSErr	CheckFileExtents( SGlobPtr GPtr, UInt32 fileNumber, UInt8 forkType,
 			if ( err == btNotFound )
 			{
 				err = noErr;								//	 no more extent records
-				extents = nil;
+				extents = NULL;
 				break;
 			}
 			else if ( err != noErr )
@@ -2737,21 +3180,32 @@ void	BuildExtentKey( Boolean isHFSPlus, UInt8 forkType, HFSCatalogNodeID fileNum
 //
 //	Adds this extent to our OverlappedExtentList for later repair.
 //
-OSErr	AddExtentToOverlapList( SGlobPtr GPtr, HFSCatalogNodeID fileNumber, UInt32 extentStartBlock, UInt32 extentBlockCount, UInt8 forkType )
+static OSErr	AddExtentToOverlapList( SGlobPtr GPtr, HFSCatalogNodeID fileNumber, const char *attrname, UInt32 extentStartBlock, UInt32 extentBlockCount, UInt8 forkType )
 {
 	UInt32			newHandleSize;
 	ExtentInfo		extentInfo;
 	ExtentsTable	**extentsTableH;
-	Boolean doesFileExist = false;
+	size_t attrlen;
 	
 	ClearMemory(&extentInfo, sizeof(extentInfo));
 	extentInfo.fileID		= fileNumber;
 	extentInfo.startBlock	= extentStartBlock;
 	extentInfo.blockCount	= extentBlockCount;
 	extentInfo.forkType		= forkType;
+	/* store the name of extended attribute */
+	if (forkType == kEAData) {
+		assert(attrname != NULL);
+
+		attrlen = strlen(attrname) + 1;
+		extentInfo.attrname = malloc(attrlen);  
+		if (extentInfo.attrname == NULL) {
+			return(memFullErr);
+		}
+		strlcpy(extentInfo.attrname, attrname, attrlen);
+	}
 	
 	//	If it's uninitialized
-	if ( GPtr->overlappedExtents == nil )
+	if (GPtr->overlappedExtents == NULL)
 	{
 		GPtr->overlappedExtents	= (ExtentsTable **) NewHandleClear( sizeof(ExtentsTable) );
 		extentsTableH	= GPtr->overlappedExtents;
@@ -2760,7 +3214,7 @@ OSErr	AddExtentToOverlapList( SGlobPtr GPtr, HFSCatalogNodeID fileNumber, UInt32
 	{
 		extentsTableH	= GPtr->overlappedExtents;
 
-		if ( ExtentInfoExists( extentsTableH, &extentInfo, &doesFileExist ) == true )
+		if ( ExtentInfoExists( extentsTableH, &extentInfo) == true )
 			return( noErr );
 
 		//	Grow the Extents table for a new entry.
@@ -2768,10 +3222,6 @@ OSErr	AddExtentToOverlapList( SGlobPtr GPtr, HFSCatalogNodeID fileNumber, UInt32
 		SetHandleSize( (Handle)extentsTableH, newHandleSize );
 	}
 
-	/* Print the list of overlapping extents after catalog BTree check to
-	 * avoid deadlocks from cache read
-	 */
-	
 	//	Copy the new extents into the end of the table
 	CopyMemory( &extentInfo, &((**extentsTableH).extentInfo[(**extentsTableH).count]), sizeof(ExtentInfo) );
 	
@@ -2785,12 +3235,12 @@ OSErr	AddExtentToOverlapList( SGlobPtr GPtr, HFSCatalogNodeID fileNumber, UInt32
 }
 
 
-static	Boolean	ExtentInfoExists( ExtentsTable **extentsTableH, ExtentInfo *extentInfo, Boolean *doesFileExist )
+/* Compare if the given extentInfo exsists in the extents table */
+static	Boolean	ExtentInfoExists( ExtentsTable **extentsTableH, ExtentInfo *extentInfo)
 {
 	UInt32		i;
 	ExtentInfo	*aryExtentInfo;
 	
-	*doesFileExist = false;
 
 	for ( i = 0 ; i < (**extentsTableH).count ; i++ )
 	{
@@ -2798,13 +3248,33 @@ static	Boolean	ExtentInfoExists( ExtentsTable **extentsTableH, ExtentInfo *exten
 		
 		if ( extentInfo->fileID == aryExtentInfo->fileID )
 		{
-			*doesFileExist = true;
-
 			if (	(extentInfo->startBlock == aryExtentInfo->startBlock)	&& 
 					(extentInfo->blockCount == aryExtentInfo->blockCount)	&&
 					(extentInfo->forkType	== aryExtentInfo->forkType)		)
 			{
-				return( true );
+				/* startBlock, blockCount, forkType are same.  
+				 * Compare the extended attribute names, if they exist.
+				 */
+
+				/* If no attribute name exists, the two extents are same */
+				if ((extentInfo->attrname == NULL) &&
+					(aryExtentInfo->attrname == NULL)) {
+					return(true);
+				}
+
+				/* If only one attribute name exists, the two extents are not same */
+				if (((extentInfo->attrname != NULL) && (aryExtentInfo->attrname == NULL)) ||
+					((extentInfo->attrname == NULL) && (aryExtentInfo->attrname != NULL))) {
+					return(false);
+				}
+
+				/* Both attribute name exist.  Compare the names */
+				if (!strcmp(extentInfo->attrname, aryExtentInfo->attrname)) {
+					return (true);
+				} else {
+					return (false);
+				}
+
 			}
 		}
 	}
@@ -2812,3 +3282,422 @@ static	Boolean	ExtentInfoExists( ExtentsTable **extentsTableH, ExtentInfo *exten
 	return( false );
 }
 
+/* Function :  DoesOverlap
+ * 
+ * Description: 
+ * This function takes a start block and the count of blocks in a 
+ * given extent and compares it against the list of overlapped 
+ * extents in the global structure.   
+ * This is useful in finding the original files that overlap with
+ * the files found in catalog btree check.  If a file is found
+ * overlapping, it is added to the overlap list. 
+ * 
+ * Input: 
+ * 1. GPtr - global scavenger pointer.
+ * 2. fileID - file ID being checked.
+ * 3. attrname - name of extended attribute being checked, should be NULL for regular files
+ * 4. startBlock - start block in extent.
+ * 5. blockCount - total number of blocks in extent.
+ * 6. forkType - type of fork being check (kDataFork, kRsrcFork, kEAData).
+ * 
+ * Output: isOverlapped - Boolean value of true or false.
+ */
+static Boolean DoesOverlap(SGlobPtr GPtr, UInt32 fileID, const char *attrname, UInt32 startBlock, UInt32 blockCount, UInt8 forkType) 
+{
+	int i;
+	Boolean isOverlapped = false;
+	ExtentInfo	*curExtentInfo;
+	ExtentsTable **extentsTableH = GPtr->overlappedExtents;
+
+	for (i = 0; i < (**extentsTableH).count; i++) {
+		curExtentInfo = &((**extentsTableH).extentInfo[i]);
+		/* Check extents */
+		if (curExtentInfo->startBlock < startBlock) {
+			if ((curExtentInfo->startBlock + curExtentInfo->blockCount) > startBlock) {
+				isOverlapped = true;
+				break;
+			}
+		} else {	/* curExtentInfo->startBlock >= startBlock */
+			if (curExtentInfo->startBlock < (startBlock + blockCount)) {
+				isOverlapped = true;
+				break;
+			}
+		}
+	} /* for loop Extents Table */	
+
+	/* Add this extent to overlap list */
+	if (isOverlapped) {
+		AddExtentToOverlapList(GPtr, fileID, attrname, startBlock, blockCount, forkType);
+	}
+
+	return isOverlapped;
+} /* DoesOverlap */
+
+/* Function : CheckHFSPlusExtentRecords
+ * 
+ * Description: 
+ * For all valid extents, this function calls DoesOverlap to find
+ * if a given extent is overlapping with another extent existing
+ * in the overlap list.
+ * 
+ * Input: 
+ * 1. GPtr - global scavenger pointer.
+ * 2. fileID - file ID being checked.
+ * 3. attrname - name of extended attribute being checked, should be NULL for regular files
+ * 4. extent - extent information to check.
+ * 5. forkType - type of fork being check (kDataFork, kRsrcFork, kEAData).
+ * 
+ * Output: None.
+ */
+static void CheckHFSPlusExtentRecords(SGlobPtr GPtr, UInt32 fileID, const char *attrname, HFSPlusExtentRecord extent, UInt8 forkType) 
+{
+	int i;
+
+	/* Check for overlapping extents for all extents in given extent data */
+	for (i = 0; i < kHFSPlusExtentDensity; i++) {
+		if (extent[i].startBlock == 0) {
+			break;
+		}
+		DoesOverlap(GPtr, fileID, attrname, extent[i].startBlock, extent[i].blockCount, forkType);
+	} 
+	return;
+} /* CheckHFSPlusExtentRecords */ 
+
+/* Function : CheckHFSExtentRecords
+ * 
+ * Description: 
+ * For all valid extents, this function calls DoesOverlap to find
+ * if a given extent is overlapping with another extent existing
+ * in the overlap list.
+ * 
+ * Input: 
+ * 1. GPtr - global scavenger pointer.
+ * 2. fileID - file ID being checked.
+ * 3. extent - extent information to check.
+ * 4. forkType - type of fork being check (kDataFork, kRsrcFork).
+ * 
+ * Output: None.
+ */
+static void CheckHFSExtentRecords(SGlobPtr GPtr, UInt32 fileID, HFSExtentRecord extent, UInt8 forkType) 
+{
+	int i;
+
+	/* Check for overlapping extents for all extents in given extents */
+	for (i = 0; i < kHFSExtentDensity; i++) {
+		if (extent[i].startBlock == 0) {
+			break;
+		}
+		DoesOverlap(GPtr, fileID, NULL, extent[i].startBlock, extent[i].blockCount, forkType);
+	}
+	return;
+} /* CheckHFSExtentRecords */ 
+
+/* Function: FindOrigOverlapFiles 
+ * 
+ * Description:
+ * This function is called only if btree check results in
+ * overlapped extents errors.  The btree checks do not find
+ * out the original files whose extents are overlapping with one
+ * being reported in its check.  This function finds out all the 
+ * original files whose that are being overlapped.  
+ * 
+ * This function relies on comparison of extents with Overlap list
+ * created in verify stage.  The list is also updated with the 
+ * overlapped extents found in this function. 
+ * 
+ * 1. Compare extents for all the files located in volume header.
+ * 2. Traverse catalog btree and compare extents of all files.
+ * 3. Traverse extents btree and compare extents for all entries.
+ * 
+ * Input: GPtr - pointer to global scanvenger area.
+ * 
+ * Output: err - function result
+ *			zero means success
+ *			non-zero means failure
+ */
+int FindOrigOverlapFiles(SGlobPtr GPtr)
+{
+	OSErr err = noErr;
+	Boolean isHFSPlus; 
+
+	UInt16 selCode;		/* select access pattern for BTree */
+	UInt16 recordSize;
+	UInt32 hint;
+
+	CatalogRecord catRecord; 
+	CatalogKey catKey;
+
+	ExtentRecord extentRecord; 
+	ExtentKey extentKey;
+
+	HFSPlusAttrRecord attrRecord;
+	HFSPlusAttrKey attrKey;
+	char attrName[XATTR_MAXNAMELEN];
+	size_t len;
+
+	SVCB *calculatedVCB = GPtr->calculatedVCB;
+
+	isHFSPlus = VolumeObjectIsHFSPlus();
+
+	/* Check file extents from volume header */
+	if (isHFSPlus) {
+		/* allocation file */
+		if (calculatedVCB->vcbAllocationFile) {
+			CheckHFSPlusExtentRecords(GPtr, calculatedVCB->vcbAllocationFile->fcbFileID, NULL,
+		                              calculatedVCB->vcbAllocationFile->fcbExtents32, kDataFork);
+		}
+
+		/* extents file */
+		if (calculatedVCB->vcbExtentsFile) {
+			CheckHFSPlusExtentRecords(GPtr, calculatedVCB->vcbExtentsFile->fcbFileID, NULL,
+		                              calculatedVCB->vcbExtentsFile->fcbExtents32, kDataFork);
+		}
+
+		/* catalog file */
+		if (calculatedVCB->vcbCatalogFile) {
+			CheckHFSPlusExtentRecords(GPtr, calculatedVCB->vcbCatalogFile->fcbFileID, NULL,  
+		                              calculatedVCB->vcbCatalogFile->fcbExtents32, kDataFork);
+		}
+
+		/* attributes file */
+		if (calculatedVCB->vcbAttributesFile) {
+			CheckHFSPlusExtentRecords(GPtr, calculatedVCB->vcbAttributesFile->fcbFileID, NULL, 
+		                              calculatedVCB->vcbAttributesFile->fcbExtents32, kDataFork);	
+	   	}
+
+		/* startup file */
+		if (calculatedVCB->vcbStartupFile) {
+			CheckHFSPlusExtentRecords(GPtr, calculatedVCB->vcbStartupFile->fcbFileID, NULL, 
+		                              calculatedVCB->vcbStartupFile->fcbExtents32, kDataFork);
+		}
+	} else {
+		/* extents file */
+		if (calculatedVCB->vcbExtentsFile) {
+			CheckHFSExtentRecords(GPtr, calculatedVCB->vcbExtentsFile->fcbFileID, 
+		                          calculatedVCB->vcbExtentsFile->fcbExtents16, kDataFork);
+		}
+
+		/* catalog file */
+		if (calculatedVCB->vcbCatalogFile) {
+			CheckHFSExtentRecords(GPtr, calculatedVCB->vcbCatalogFile->fcbFileID, 
+		                          calculatedVCB->vcbCatalogFile->fcbExtents16, kDataFork);
+		}
+	}
+
+	/* Traverse the catalog btree */ 
+	selCode = 0x8001;	/* Get first record from BTree */
+	err = GetBTreeRecord(GPtr->calculatedCatalogFCB, selCode, &catKey, &catRecord, &recordSize, &hint);
+	if (err != noErr) {
+		goto traverseExtents;
+	} 
+	selCode = 1;	/* Get next record */
+	do {
+		if ((catRecord.recordType == kHFSPlusFileRecord) ||  
+		    (catRecord.recordType == kHFSFileRecord)) {
+			
+			if (isHFSPlus) {
+				/* HFSPlus data fork */
+				CheckHFSPlusExtentRecords(GPtr, catRecord.hfsPlusFile.fileID, NULL,
+			    	                      catRecord.hfsPlusFile.dataFork.extents, kDataFork);
+
+				/* HFSPlus resource fork */
+				CheckHFSPlusExtentRecords(GPtr, catRecord.hfsPlusFile.fileID, NULL,
+			    	                      catRecord.hfsPlusFile.resourceFork.extents, kRsrcFork);
+			} else {
+				/* HFS data extent */
+				CheckHFSExtentRecords(GPtr, catRecord.hfsFile.fileID, 
+			    	                  catRecord.hfsFile.dataExtents, kDataFork);
+
+				/* HFS resource extent */
+				CheckHFSExtentRecords(GPtr, catRecord.hfsFile.fileID,
+				                      catRecord.hfsFile.rsrcExtents, kRsrcFork);
+			}
+		}
+
+		/* Access the next record */
+		err = GetBTreeRecord( GPtr->calculatedCatalogFCB, selCode, &catKey, &catRecord, &recordSize, &hint );
+	} while (err == noErr); 
+
+traverseExtents:
+	/* Traverse the extents btree */ 
+	selCode = 0x8001;	/* Get first record from BTree */
+	err = GetBTreeRecord(GPtr->calculatedExtentsFCB, selCode, &extentKey, &extentRecord, &recordSize, &hint);
+	if (err != noErr) {
+		goto traverseAttribute;
+	}
+	selCode = 1;	/* Get next record */
+	do {
+		if (isHFSPlus) {
+			CheckHFSPlusExtentRecords(GPtr, extentKey.hfsPlus.fileID, NULL, 
+			                          extentRecord.hfsPlus, extentKey.hfsPlus.forkType);
+		} else {
+			CheckHFSExtentRecords(GPtr, extentKey.hfs.fileID, extentRecord.hfs, 
+			                      extentKey.hfs.forkType);
+		}
+
+		/* Access the next record */
+		err = GetBTreeRecord(GPtr->calculatedExtentsFCB, selCode, &extentKey, &extentRecord, &recordSize, &hint);
+	} while (err == noErr); 
+
+traverseAttribute:
+	/* Extended attributes are only supported in HFS Plus */
+	if (!isHFSPlus) {
+		goto out;
+	}
+
+	/* Traverse the attribute btree */
+	selCode = 0x8001;	/* Get first record from BTree */
+	/* Warning: Attribute record of type kHFSPlusAttrInlineData may be 
+	 * truncated on read! (4425232).  This function only uses recordType 
+	 * field from inline attribute record.
+	 */
+	err = GetBTreeRecord(GPtr->calculatedAttributesFCB, selCode, &attrKey, &attrRecord, &recordSize, &hint);
+	if (err != noErr) {
+		goto out;
+	}
+	selCode = 1;	/* Get next record */
+	do {
+		if (attrRecord.recordType == kHFSPlusAttrForkData) {
+			(void) utf_encodestr(attrKey.attrName, attrKey.attrNameLen * 2, (unsigned char *)attrName, &len);
+			attrName[len] = '\0';
+
+			CheckHFSPlusExtentRecords(GPtr, attrKey.fileID, attrName, attrRecord.forkData.theFork.extents, kEAData);
+		} else if (attrRecord.recordType == kHFSPlusAttrExtents) {
+			(void) utf_encodestr(attrKey.attrName, attrKey.attrNameLen * 2, (unsigned char *)attrName, &len);
+			attrName[len] = '\0';
+
+			CheckHFSPlusExtentRecords(GPtr, attrKey.fileID, attrName, attrRecord.overflowExtents.extents, kEAData);
+		}
+
+		/* Access the next record
+		 * Warning: Attribute record of type kHFSPlusAttrInlineData may be 
+		 * truncated on read! (4425232).  This function only uses recordType 
+		 * field from inline attribute record.
+		 */
+		err = GetBTreeRecord(GPtr->calculatedAttributesFCB, selCode, &attrKey, &attrRecord, &recordSize, &hint);
+	} while (err == noErr); 
+
+out:
+	if (err == btNotFound) {
+		err = noErr;
+	}
+	return err;
+} /* FindOrigOverlapFiles */
+
+/* Function: PrintOverlapFiles
+ *
+ * Description: Print the information about all unique overlapping files.  
+ * 1. Sort the overlap extent in increasing order of fileID
+ * 2. For every unique fileID, prefix the string with fileID and find the
+ *    filename/path based on fileID.
+ *		If fileID > kHFSFirstUserCatalogNodeID, find path to file
+ *		Else, find name of the system file.
+ * 3. Print the new string.
+ * Note that the path is printed only for HFS Plus volumes and not for 
+ * plain HFS volumes.  This is done by not allocating buffer for finding
+ * file path.
+ *
+ * Input:
+ *	GPtr - Global scavenger structure pointer.
+ *
+ * Output:
+ *	nothing (void)
+ */
+void PrintOverlapFiles (SGlobPtr GPtr)
+{
+	OSErr err;
+	ExtentsTable **extentsTableH;
+	ExtentInfo *extentInfo;
+	unsigned int numOverlapExtents;
+	unsigned int buflen, filepathlen;
+	char *filepath = NULL;
+	char filenum[32];
+	UInt32 lastID = 0;
+	UInt32 bytesWritten;
+	Boolean printMsg;
+	Boolean	isHFSPlus;
+	int i;
+	
+	isHFSPlus = VolumeObjectIsHFSPlus();
+
+	extentsTableH = GPtr->overlappedExtents;
+	numOverlapExtents = (**extentsTableH).count;
+	
+	/* Sort the list according to file ID */
+	qsort((**extentsTableH).extentInfo, numOverlapExtents, sizeof(ExtentInfo), 
+		  CompareExtentFileID);
+
+	buflen = PATH_MAX * 4;
+	/* Allocate buffer to read data */
+	if (isHFSPlus) {
+		filepath = malloc (buflen);
+	}
+	
+	for (i = 0; i < numOverlapExtents; i++) {
+		extentInfo = &((**extentsTableH).extentInfo[i]);
+
+		/* Skip the same fileID */
+		if (lastID == extentInfo->fileID) {
+			continue;
+		}
+
+		lastID = extentInfo->fileID;
+		printMsg = false;
+
+		if (filepath) {
+			/* prefix with the file ID */
+			bytesWritten = sprintf (filepath, "%u ", extentInfo->fileID);
+			filepathlen = buflen - bytesWritten;
+	
+			if (extentInfo->fileID >= kHFSFirstUserCatalogNodeID) {
+				/* Lookup the file path */
+				err = GetFileNamePathByID (GPtr, extentInfo->fileID, (filepath + bytesWritten), &filepathlen, NULL, NULL, NULL);
+			} else {
+				/* Get system filename */
+			 	err = GetSystemFileName (extentInfo->fileID, (filepath + bytesWritten), &filepathlen);
+			}
+
+			if (err == noErr) {
+				/* print fileID, filepath */
+				PrintError(GPtr, E_OvlExt, 1, filepath);
+				printMsg = true;
+			}
+				
+			if (GPtr->logLevel >= kDebugLog) {
+				printf ("\textentType=0x%x, startBlock=0x%x, blockCount=0x%x, attrName=%s\n", 
+						 extentInfo->forkType, extentInfo->startBlock, extentInfo->blockCount, extentInfo->attrname);
+			}
+		}
+
+		if (printMsg == false) {
+			/* print only filenumber */
+			sprintf(filenum, "%u", extentInfo->fileID);
+			PrintError(GPtr, E_OvlExt, 1, filenum);
+		}
+	}
+
+	if (filepath) {
+		free (filepath);
+	}
+
+	return;
+} /* PrintOverlapFiles */
+
+/* Function: CompareExtentFileID
+ *
+ * Description: Compares the fileID from two ExtentInfo and return the
+ * comparison result. (since we have to arrange in ascending order)
+ *
+ * Input:
+ *	first and second - void pointers to ExtentInfo structure.
+ *
+ * Output:
+ *	>0 if first > second
+ * 	=0 if first == second
+ *	<0 if first < second
+ */
+static int CompareExtentFileID(const void *first, const void *second)
+{
+	return (((ExtentInfo *)first)->fileID - 
+			((ExtentInfo *)second)->fileID);
+} /* CompareExtentFileID */

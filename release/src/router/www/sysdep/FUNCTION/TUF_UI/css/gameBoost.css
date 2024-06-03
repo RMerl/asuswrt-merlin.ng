@@ -1,0 +1,164 @@
+/* gameBoost.css*/
+*{
+	box-sizing: content-box;
+}
+body{
+	margin: 0;
+	color:#FFF;
+}
+
+.switch{
+	position: relative;
+	width: 200px;
+	height: 70px;
+}
+
+.switch input{
+	cursor: pointer;
+	height: 100%;
+	opacity: 0;
+	position: absolute;
+	width: 100%;
+	z-index: 100;
+	left:0;
+}
+
+.container_gb{
+	background-color: #444;
+	width: 100%;
+	height: 100%;
+	display: table;
+	border-radius: 5px;
+}
+
+.container_gb::after{
+	content: '';
+	background-color:#999;
+	width:50px;
+	height:40px;
+	position:absolute;
+	left: 0;
+	top: 0;
+	border-top-left-radius:5px;
+	border-bottom-left-radius:5px;
+}
+
+@-moz-document url-prefix(){ 		/*Firefox Hack*/
+	.container_gb::after{
+		top:0;
+	}
+}
+
+@supports (-ms-accelerator:true) {		/*Edge Browser Hack, not work on Edge 38*/
+	.container_gb::after{
+		top:0;
+	}
+}
+
+.switch input:checked~.container_gb{
+	background: rgb(255,165,35);
+}
+
+.switch input:checked~.container_gb::after{
+	left: 50px;
+	border-top-right-radius:5px;
+	border-bottom-right-radius:5px;
+}
+
+@media all and (-ms-high-contrast:none)
+{
+	*::-ms-backdrop, .container_gb::after { margin-top: 0px} /* IE11 */
+}
+
+.btn{
+	background-color: rgba(0,0,0,0.6);
+	border: 1px solid rgb(255,165,35);
+	color: #EBE8E8;
+	border-radius: 12px;
+}
+
+.btn:hover{
+	background-color: #D0982C;
+	color: #FFF;
+}
+
+#gameList_block{
+	position: absolute;
+	width: 700px;
+	height: 600px;
+	background-color: #555;
+	z-index: 199;
+	padding: 12px 18px;
+	overflow-y: auto;
+	margin-top: -40px;
+	border: 1px solid #000;
+}
+
+#game_list {
+    border: 1px solid #111 !important;
+}
+
+.qr_code{
+	margin: 8px auto;
+	background-image: url('../images/New_ui/asus_router_android_qr.png');
+	width: 124px;
+	height: 124px;
+	background-size: 100%;
+}
+
+.qr_android{
+	background-image: url('../images/New_ui/asus_router_android_qr.png');
+}
+
+.qr_android_cn{
+	background-image: url('../images/New_ui/asus_router_android_qr_cn.png');
+}
+
+.FormTitle_gb{
+	background: url('../images/New_ui/mainimage_img_Game.jpg');
+	background-repeat: no-repeat;
+	margin-top: -15px;
+	border-radius: 3px;
+	background-size: cover;
+}
+
+.gBIcon{
+	display: table-cell;
+	background: url('/images/New_ui/game.svg') no-repeat;
+	width: 77px;
+	height:77px;
+	background-size: 100%;
+}
+
+.gB_SplitLine{
+	width: 100%;
+	height: 1px;
+	background-color: rgb(228,144,30);
+}
+
+.gB_title_left{
+	padding: 5px 0;
+	font-size:20px;
+}
+
+.gB_title_right{
+	padding: 5px 10px;
+	font-size:20px;
+	color:rgb(5,252,238)
+}
+
+.gB_desc{
+	font-size: 16px;
+	color: #949393;
+	padding-left: 10px;
+}
+
+.android_font{
+	width: 124px;
+	height: 36px;
+	border: 1px solid #BDBDBD;
+	border-radius: 6px;
+	text-align: center;
+	line-height: 36px;
+	font-size: 20px;
+}

@@ -1,0 +1,14 @@
+QEMU-MIPS BOARD
+M:	Vlad Lungu <vlad.lungu@windriver.com>
+S:	Maintained
+F:	board/qemu-mips/
+F:	include/configs/qemu-mips.h
+F:	configs/qemu_mips_defconfig
+
+QEMU_MIPSEL BOARD
+#M:	-
+S:	Maintained
+F:	configs/qemu_mipsel_defconfig
+F:	include/configs/qemu-mips64.h
+F:	configs/qemu_mips64_defconfig
+F:	configs/qemu_mips64el_defconfig

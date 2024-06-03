@@ -1,0 +1,34 @@
+#include "94916REF2.dts"
+
+&sfp1 {
+	mod-def0 = <&bca_extintr 45 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_BOTH_EDGE | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+};
+
+&sfp2 {
+	mod-def0 = <&bca_extintr 46 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_BOTH_EDGE | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+};
+
+/* 94916REF2  board with GPIO regulators for WLAN */
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+/**********************************************************************/
+/* GPIO: Add one define per GPIO (individual or shared) regulator     */
+/*       - Skip if no GPIO regulators in use                          */
+/**********************************************************************/
+#define PCIE0_REG_GPIO    42    /* SLEEP_0 for vreg_pcie0 node */
+#define PCIE1_REG_GPIO    43    /* SLEEP_1 for vreg_pcie1 node */
+#define PCIE2_REG_GPIO    44    /* SLEEP_2 for vreg_pcie2 node */
+#define PCIE3_REG_GPIO    47    /* SLEEP_3 for vreg_pcie3 node */
+
+#include "../bcm_wlan_regulator.dtsi"
+
+/**********************************************************************/
+/* Shared: Add brcm,supply-names = "vreg-pcieX" for shared PCIe nodes */
+/*         - Skip if not using shared GPIO regulators                 */
+/**********************************************************************/
+
+/**********************************************************************/
+/* PCIe: Add status = "okay" for each PCIe slots of this board       */
+/*       - Skip if this is a derivative board (already done in base)  */
+/**********************************************************************/
+#endif //#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)

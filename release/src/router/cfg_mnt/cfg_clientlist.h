@@ -8,6 +8,7 @@
 #define WIREDCLIENTLIST_FILE_LOCK	"wiredclientlist"
 #define WIRED_CLIENT_LIST_JSON_PATH	"/tmp/wiredclientlist.json"
 #define CURRENT_WIRED_CLIENT_LIST_JSON_PATH	"/tmp/current_wired_client_list.json"
+#define CURRENT_WIRED_CLIENT_INFO_JSON_PATH	"/tmp/current_wired_client_info.json"
 
 extern int cm_prepareClientListMsg(char *msg, int msgLen);
 extern void cm_processClientList(char *msg);

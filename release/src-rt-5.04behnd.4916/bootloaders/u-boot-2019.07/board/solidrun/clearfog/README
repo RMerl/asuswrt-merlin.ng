@@ -1,0 +1,74 @@
+Update from original Marvell U-Boot to mainline U-Boot:
+-------------------------------------------------------
+
+Generate the U-Boot image with these commands:
+
+$ make clearfog_defconfig
+$ make
+
+The resulting image including the SPL binary with the
+full DDR setup is "u-boot-spl.kwb".
+
+Now all you need to do is copy this image on a SD card.
+For example with this command:
+
+$ sudo dd if=u-boot-spl.kwb of=/dev/sdX bs=512 seek=1
+
+Please use the correct device node for your setup instead
+of "/dev/sdX" here!
+
+Install U-Boot on eMMC:
+-----------------------
+
+The ROM loads the bootloader from eMMC first boot partition at offset 0. This
+is unlike load from SD card that is at offset 512. As a result, the offset of
+the main U-Boot image on the eMMC boot partition changes. Set
+CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR to 0x140 for SPL to load U-Boot from
+the correct location.
+
+To make SPL load the main U-Boot image from the eMMC boot partition enable
+eMMC boot acknowledgement and boot partition with the following U-Boot
+command:
+
+  mmc partconf 0 1 1 0
+
+Install U-Boot on eMMC boot partition from Linux running on Clearfog:
+
+  echo 0 > /sys/block/mmcblk0boot0/force_ro
+  dd if=u-boot-spl.kwb of=/dev/mmcblk0boot0
+
+Note that the SD card is not accessible when the Clearfog SOM has eMMC.
+Consider initial boot from UART (see below).
+
+Boot selection:
+---------------
+
+Before powering up the board, boot selection should be done via the SW1 dip
+switch (0: OFF, 1: ON):
+
+ - SPI:     00010
+ - SD/eMMC: 00111
+ - M.2 SSD: 11100
+ - UART:    01001 [1]
+
+[1]: According to SolidRun's manual, 11110 should be used for UART booting on
+     the ClearFog 'Pro' variant.
+     However, this doesn't work (anymore) at least on Rev. 2.1 (but '01001' as
+     mentionend for the 'Base' variant does).
+
+Boot from UART:
+---------------
+
+Connect the on-board micro-USB (CF Pro: CON11, CF Base: CON5)
+to your host.
+
+Set the SW1 DIP switches to UART boot (see above).
+
+Run the following command to initiate U-Boot download:
+
+  ./tools/kwboot -b u-boot-spl.kwb /dev/ttyUSBX
+
+Use the correct UART device node for /dev/ttyUSBX.
+
+When download finishes start your favorite terminal emulator
+on /dev/ttyUSBX.

@@ -1,0 +1,25 @@
+if TARGET_WOODBURN
+
+config SYS_BOARD
+	default "woodburn"
+
+config SYS_SOC
+	default "mx35"
+
+config SYS_CONFIG_NAME
+	default "woodburn"
+
+endif
+
+if TARGET_WOODBURN_SD
+
+config SYS_BOARD
+	default "woodburn"
+
+config SYS_SOC
+	default "mx35"
+
+config SYS_CONFIG_NAME
+	default "woodburn_sd"
+
+endif

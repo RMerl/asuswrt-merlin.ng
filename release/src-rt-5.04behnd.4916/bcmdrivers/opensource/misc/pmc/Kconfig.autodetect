@@ -1,0 +1,21 @@
+config BCM_PMC
+	bool "Broadcom 63xx PMC driver"
+	default n
+
+config BCM_PMC_IMPL
+	int "Implementation index for PMC driver"
+	depends on BCM_PMC
+	default 2 if BRCM_SMC_BOOT
+	default 1 
+	help
+	  Broadcom PMC driver implentation index. Index 2 for System Management Controller boot
+
+config BCM_PMC_AUX
+    bool "pmc aux functionality"
+
+config PMC_PCM_V1
+	bool "pmc pcm v1"
+
+config PMC_PCM_V2
+    bool "pmc pcm v2"
+

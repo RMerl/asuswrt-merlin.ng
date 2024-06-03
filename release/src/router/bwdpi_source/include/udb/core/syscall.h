@@ -191,11 +191,11 @@ typedef void (*atomic_dec_t)(void *v);
 
 //----------------------------------------------------------------------------
 typedef unsigned long (*get_seconds_t)(void);
+typedef unsigned long (*ktime_get_seconds_t)(void);
 typedef void* (*timer_alloc_t)(void);
 typedef void* (*timer_alloc_atomic_t)(void);
 typedef void  (*timer_free_t)(void *);
-typedef void (*timer_setup_t)(void *timer_list_ptr, void (*function)(unsigned long),
-		unsigned long data);
+typedef void (*timer_setup_t)(void *timer_list_ptr, void (*function)(unsigned long), unsigned long data);
 typedef int (*timer_mod_t)(void *timer_list_ptr, unsigned long expires);
 typedef int (*timer_del_t)(void *timer_list_ptr);
 typedef int (*timer_del_sync_t)(void *timer_list_ptr);
@@ -287,14 +287,12 @@ extern int tdts_core_syscall_set_atomic(
 //----------------------------------------------------------------------------
 extern int tdts_core_syscall_set_time(
 	get_seconds_t get_seconds,
+	ktime_get_seconds_t ktime_get_seconds,
 	timer_alloc_t timer_alloc,
-	timer_alloc_atomic_t timer_alloc_atomic,
 	timer_free_t timer_free,
 	timer_setup_t timer_setup,
 	timer_mod_t timer_mod,
-	timer_del_t timer_del,
-	timer_del_sync_t timer_del_sync);
-
+	timer_del_t timer_del);
 //----------------------------------------------------------------------------
 extern int tdts_core_syscall_set_local_bh(
 		local_bh_disable_t local_bh_disable,local_bh_enable_t local_bh_enable);

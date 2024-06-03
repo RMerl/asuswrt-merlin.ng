@@ -1,0 +1,6 @@
+MPC8610HPCD BOARD
+M:	Prabhakar Kushwaha <prabhakar.kushwaha@nxp.com>
+S:	Maintained
+F:	board/freescale/mpc8610hpcd/
+F:	include/configs/MPC8610HPCD.h
+F:	configs/MPC8610HPCD_defconfig

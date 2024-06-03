@@ -1,0 +1,62 @@
+menu "DMA Support"
+
+config DMA
+	bool "Enable Driver Model for DMA drivers"
+	depends on DM
+	help
+	  Enable driver model for DMA. DMA engines can do
+	  asynchronous data transfers without involving the host
+	  CPU. Currently, this framework can be used to offload
+	  memory copies to and from devices like qspi, ethernet
+	  etc Drivers provide methods to access the DMA devices
+	  buses that is used to transfer data to and from memory.
+	  The uclass interface is defined in include/dma.h.
+
+config DMA_CHANNELS
+	bool "Enable DMA channels support"
+	depends on DMA
+	help
+	  Enable channels support for DMA. Some DMA controllers have multiple
+	  channels which can either transfer data to/from different devices.
+
+config SANDBOX_DMA
+	bool "Enable the sandbox DMA test driver"
+	depends on DMA && DMA_CHANNELS && SANDBOX
+	help
+	  Enable support for a test DMA uclass implementation. It stimulates
+	  DMA transfer by simple copying data between channels.
+
+config BCM6348_IUDMA
+	bool "BCM6348 IUDMA driver"
+	depends on ARCH_BMIPS
+	select DMA_CHANNELS
+	help
+	  Enable the BCM6348 IUDMA driver.
+	  This driver support data transfer from devices to
+	  memory and from memory to devices.
+
+config TI_EDMA3
+	bool "TI EDMA3 driver"
+	help
+	  Enable the TI EDMA3 driver for DRA7xx and AM43xx evms.
+	  This driver support data transfer between memory
+	  regions.
+
+config APBH_DMA
+	bool "Support APBH DMA"
+	depends on MX23 || MX28 || MX6 || MX7
+	help
+	  Enable APBH DMA driver.
+
+if APBH_DMA
+config APBH_DMA_BURST
+	bool "Enable DMA BURST"
+
+config APBH_DMA_BURST8
+	bool "Enable DMA BURST8"
+
+endif
+
+source "drivers/dma/ti/Kconfig"
+
+endmenu # menu "DMA Support"

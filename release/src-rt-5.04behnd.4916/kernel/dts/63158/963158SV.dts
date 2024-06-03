@@ -1,0 +1,173 @@
+#include "63158.dtsi"
+
+/ {
+    memory_controller {
+        memcfg = <(BP_DDR_SPEED_1067_14_14_14 | \
+                   BP_DDR_TOTAL_SIZE_1024MB   | \
+                   BP_DDR_DEVICE_WIDTH_16     | \
+                   BP_DDR_TOTAL_WIDTH_32BIT   | \
+                   BP_DDR_SSC_CONFIG_1)>;
+    };
+
+      wan_serdes {
+          status = "okay";
+      };
+};
+
+&usb_ctrl {
+	pinctrl-names="default";
+	pinctrl-0 = <&usb0a_pwr_pins &usb1a_pwr_pins>;
+	status = "okay";
+	xhci-enable;
+};
+
+&usb0_ehci {
+	status = "okay";
+};
+&usb1_ehci {
+	status = "okay";
+};
+
+&usb0_ohci {
+	status = "okay";
+};
+&usb1_ohci {
+	status = "okay";
+};
+
+&usb0_xhci {
+	status = "okay";
+};
+
+&vreg_sync {
+		pinctrl-0 = <&a_vreg_sync_pin_19>;
+		pinctrl-names = "default";
+};
+
+&mdio_sf2 {
+        /* Port PHY mapping:
+            port_runner_p0  <-->  port_sf2_p8 -###- port_sf2_p0 <------------------> phy_gphy0
+            port_runner_p1  <-->  port_sf2_p5 -# #- port_sf2_p1 <------------------> phy_gphy1
+            port_runner_p2  <-->  port_sf2_p7 -# #- port_sf2_p2 <------------------> phy_gphy2
+                                               ###- port_sf2_p3 <------------------> phy_gphy3
+                                                 port_runner_p5 <--> xbar_grp2 -+-+- phy_gphy4
+         */
+	/* PHYs directly connected to SF2 */
+	phy_gphy0 {
+		status = "okay";
+	};
+	phy_gphy1 {
+		status = "okay";
+	};
+	phy_gphy2 {
+		status = "okay";
+	};
+	phy_gphy3 {
+		status = "okay";
+	};
+
+	/* PHYs connected to crossbar */
+	phy_gphy4 {
+		status = "okay";
+	};
+
+	/* Crossbar groups */
+	xbar_grp2 {
+		phy-handle = <&phy_gphy4>;
+		status = "okay";
+	};
+};
+
+&switch_sf2 {
+	ports {
+		port_sf2_p0 {
+			phy-handle = <&phy_gphy0>;
+			status = "okay";
+		};
+
+		port_sf2_p1 {
+			phy-handle = <&phy_gphy1>;
+			status = "okay";
+		};
+
+		port_sf2_p2 {
+			phy-handle = <&phy_gphy2>;
+			status = "okay";
+		};
+
+		port_sf2_p3 {
+			phy-handle = <&phy_gphy3>;
+			status = "okay";
+		};
+
+	};
+};
+
+&switch0 {
+		ports {
+			
+			port_runner_p5 {
+				phy-handle = <&xbar_grp2>;
+				status = "okay";
+			};
+
+		};
+};
+
+&dsl {
+	line0@0 {
+		pinctrl-0 = <&vdsl_ctrl_0_pin_32 &vdsl_ctrl_1_pin_33 &vdsl_ctrl_2_pin_34>;
+		pinctrl-names = "default";
+
+		afeid = <(DSL_AFE_CHIP_GFAST_CH0 | DSL_AFE_FE_ANNEXA | DSL_AFE_LD_6303 |  DSL_AFE_FE_REV_6303_REV_12_3_60)>;
+		afe-pwr-ctl = <DSL_AFE_VDSLCTL_0>;
+		afe-data-ctl = <DSL_AFE_VDSLCTL_1>;
+		afe-clk-ctl = <DSL_AFE_VDSLCTL_2>;
+		status = "okay";
+	};
+
+	line1@1 {
+		pinctrl-0 = <&vdsl_ctrl_3_pin_35 &vdsl_ctrl_4_pin_36 &vdsl_ctrl_5_pin_37>;
+		pinctrl-names = "default";
+
+		afeid = <(DSL_AFE_CHIP_GFAST_CH1 | DSL_AFE_FE_ANNEXA | DSL_AFE_LD_6303 | DSL_AFE_FE_REV_6303_REV_12_3_60)>;
+		afe-pwr-ctl = <DSL_AFE_VDSLCTL_3>;
+		afe-data-ctl = <DSL_AFE_VDSLCTL_4>;
+		afe-clk-ctl = <DSL_AFE_VDSLCTL_5>;
+
+		status = "okay";
+	};
+};
+
+&uart1 {
+	pinctrl-0 = <&b_uart1_sin_pin_25 &b_uart1_sout_pin_24>;
+	pinctrl-names = "default";
+};
+
+&uart2 {
+	pinctrl-0 = <&a_uart3_sin_pin_26 &a_uart3_sout_pin_27>;
+	pinctrl-names = "default";
+};
+
+&hs_uart0 {
+	pinctrl-0 = <&a_uart2_cts_pin_3 &a_uart2_rts_pin_4 &a_uart2_sin_pin_5 &a_uart2_sout_pin_6>;
+	pinctrl-names = "default";
+};
+
+&sata0 {
+	status = "okay";
+};
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+&pcie0 {
+	brcm,dual-lane;
+	status = "okay";
+};
+&pcie2 {
+	status = "okay";
+};
+&pcie3 {
+	status = "okay";
+};
+#endif //#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+

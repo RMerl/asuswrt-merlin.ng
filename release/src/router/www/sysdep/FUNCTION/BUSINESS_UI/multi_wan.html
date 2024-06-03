@@ -1,0 +1,1805 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<link rel="stylesheet" type="text/css" href="index_style.css">
+<link rel="stylesheet" type="text/css" href="form_style.css">
+<link rel="stylesheet" type="text/css" href="/js/weekSchedule/schedule_ui.css">
+<link rel="stylesheet" type="text/css" href="/js/weekSchedule/schedule_ui_WHITE.css">
+<link rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component.css">
+<link rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component_WHITE.css">
+<script language="JavaScript" type="text/javascript" src="/state.js"></script>
+<script type="text/javascript" src="/popup.js"></script>
+<script type="text/javaScript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
+<script language="JavaScript" type="text/javascript" src="/validator.js"></script>
+<script type="text/javascript" src="/RWD_UI/rwd_component.js"></script>
+<script type="text/javascript" src="/js/weekSchedule/schedule_ui.js"></script>
+<style>
+.profile_setting_item{
+	background-color: transparent !important;
+	min-width: unset;
+}
+
+.profile_setting_item:before{
+	border-bottom: unset;
+}
+
+.profile_setting_item .title{
+	font-size: 14px;
+	color: initial;
+}
+
+.mt_wans_container{
+	display: flex;
+	justify-content: space-between;
+	flex-wrap: wrap;
+}
+
+.wan_group_container{
+	flex: 0 1 49%;
+	border: 1px solid #DCDCDC;
+	border-radius: 10px;
+}
+
+.group_port_status{
+	display: flex;
+	flex-wrap: wrap;
+	padding: 10px 10px 0 15px;
+}
+
+.port_status_container{
+	min-height: 100px;
+	display: flex;
+	align-items: center;
+	justify-content: space-evenly;
+	flex-wrap: wrap;
+}
+
+#wan_usb_container{
+	display: flex;
+	justify-content: center;
+	align-items: flex-start;
+	width: 100%;
+	min-height: 70px;
+}
+
+#lan_port_container{
+	display: flex;
+	justify-content: flex-start;
+	align-items: flex-start;
+	width: 0%;
+	min-height: 70px;
+}
+
+#network_detection_settings_div{
+	border: 1px solid #DCDCDC;
+	border-radius: 0 0 10px 10px;
+	margin: 0 10px 10px 10px;
+	background-color: #FBFBFB;
+}
+
+
+.sepeater_line{
+	width: 1px;
+	height: 70px;
+	background-color: #CCCCCC;
+}
+
+.port_container{
+	display: none;
+	flex-direction: column;
+	align-items: center;
+	width: 80px;
+	border-bottom: 4px solid #DCDCDC;
+	cursor: pointer;
+}
+
+.port_icon_container{
+	width: 60px;
+	min-height: 60px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.port_icon{
+	background-image: url(/images/New_ui/amesh/port_status.svg);
+	background-size: 100px;
+	width: 30px;
+	height: 26px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	border-radius: 2px;
+	position: relative;
+	transform: scale(1.8);
+}
+
+.port_icon.unplug{
+	background-position: 0px -86px;
+}
+
+.port_icon.conn{
+	background-position: 0px 0px;
+}
+
+.port_icon .wan_icon{
+	width: 20px;
+	height: 20px;
+	background-image: url(/images/New_ui/amesh/port_status.svg);
+	background-size: 110px;
+	background-position: 4px -136px;
+}
+
+/*
+.port_icon_checked{
+    position: absolute;
+    content: "";
+    width: 10px;
+    height: 10px;
+    background-image: url(/images/checked_24px.svg);
+    background-size: contain;
+    background-color: #0091FF;
+    right: -2px;
+    bottom: -2px;
+    border: 1px solid #ffffff;
+    border-radius: 50%;
+}
+*/
+.port_icon.usb.conn{
+	background-position: 1px -330px;
+}
+
+.port_icon.usb.unplug{
+	background-position: 1px -290px;
+}
+
+.port_name{
+	height: 20px;
+	font-size: 14px;
+}
+
+.rwd_radio_container{
+	display: flex;
+}
+
+.wan_select_container{
+	display: flex;
+	align-items: center;
+	width: 100%;
+	height: 70px;
+}
+
+.lb_ratio_container{
+	width: 25%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	margin-top: 10px;
+}
+
+.lb_ratio_title{
+	width: 40%;
+	height: 100%;
+	justify-content: center;
+	align-items: center;
+	display: flex;
+}
+
+.lb_ratio_input{
+	width: 50%;
+	height: 42px;
+	padding-left: 5px
+}
+
+.delete_btn{
+	background: transparent url(images/New_ui/delete.svg) no-repeat;
+	border:0;
+	height:32px;
+	width:32px;
+	margin-bottom: -10px;
+	cursor:pointer;
+}
+
+.mtwan_add_btn{
+	display: flex;
+	align-items: center;
+	margin-left: 3%;
+	height: 50px;
+}
+
+@media (max-width: 600px) {
+	.group_port_status{
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.port_icon_container{
+		margin-top: 5px;
+	}
+}
+
+@media (max-width: 375px) {
+	.wan_group_container.group2{
+		margin-top: 10px;
+	}
+
+	.mt_wans_container{
+		flex-direction: column;
+	}
+
+	.port_status_container{
+		flex-direction: column;
+	}
+
+	#wan_usb_container{
+		justify-content: center;
+		width: 100%;
+	}
+
+	#lan_port_container{
+		justify-content: center;
+		width: 100%;
+	}
+
+	.sepeater_line{
+		display: none;
+	}
+
+	.group_port_status{
+		flex-direction: row;
+		align-items: flex-end;
+	}
+
+}
+
+@media (max-width: 300px) {
+	.group_port_status{
+		flex-direction: column;
+		align-items: flex-start;
+	}
+}
+
+
+</style>
+<script>
+var webWrapper = true;
+if(parent.webWrapper) $('link').last().after('<link group="SDN_need_file" rel="stylesheet" type="text/css" href="./RWD_UI/rwd_component_WHITE.css">');
+
+$(document).ready(function(){
+	init();
+});
+
+<% get_mtwan_parameter(); %>;
+var MAX_MULTI_WAN_NUM = isSupport("max_multi_wan_num");
+var dut_mac = (httpApi.hookGet('get_lan_hwaddr')) ? httpApi.hookGet('get_lan_hwaddr') : '';
+var orig_dns_probe_host = httpApi.nvramGet(["dns_probe_host"]).dns_probe_host;
+var mt_wan_group_index = httpApi.nvramGet(["mtwan_unit"]).mtwan_unit;
+var orig_wans_mt_ioport =  httpApi.nvramGet(["wans_mt_ioport"], true).wans_mt_ioport;
+var wans_mt_ioport_array = orig_wans_mt_ioport.split(" ");
+var orig_mtwan_mt_group = '<% nvram_get("mtwan_mt_group"); %>';
+var orig_mtwan_mt_weight = '<% nvram_get("mtwan_mt_weight"); %>';
+var mt_wan_options = [];
+var primary_group = [];
+var secondary_group = [];
+var applyData = {"action_mode": "apply", "rc_service": "restart_mtwan_profile"};
+var selected_eth_port_number = 0;
+var primary_wan_number = 0;
+var secondary_wan_number = 0;
+var primary_wan_index = 1;
+var secondary_wan_index = 1;
+var orig_multi_wan_enable = (wans_mt_ioport_array.length > 1)? true:false;
+var per_port_settings = {};
+var cur_chosen_port = "";
+var orig_mtwan_sched = '<% nvram_get("mtwan_sched"); %>'.replace(/&#60/g, "<");
+
+var wizard_schedule = new schedule({ //set primary wan off time
+		data: schedule_handle_data.string_to_json_array(orig_mtwan_sched),
+		data_max: 8,
+		schedule_type: "W",
+		show_timeset_viewport_callback: resize_schedule_div,
+		icon_trash_callback: resize_schedule_div,
+		btn_save_callback: resize_schedule_div,
+		btn_cancel_callback: resize_schedule_div
+	});
+
+function init(){
+	mt_wan_options = get_wan_options();
+	get_port_group(mt_wan_group_index);
+	updatDNSListOnline();
+	setTimeout("generate_setting_items()", 100);
+	show_port_status();
+	setTimeout("load_profile_settings(mt_wan_group_index)", 100);
+	setTimeout("resize_schedule_div()", 100);
+}
+
+var DNSService = new Object;
+function updatDNSListOnline(){
+
+	$.getJSON("/ajax/DNS_List.json", function(local_data){
+		DNSService = Object.keys(local_data).map(function(e){
+				return local_data[e];
+		});
+
+		$.getJSON("https://nw-dlcdnet.asus.com/plugin/js/DNS_List.json",
+			function(cloud_data){
+				if(JSON.stringify(local_data) != JSON.stringify(cloud_data)){
+					if(Object.keys(cloud_data).length > 0){
+						DNSService = Object.keys(cloud_data).map(function(e){
+							return cloud_data[e];
+						});
+					}
+				}
+			}
+		);
+	});
+}
+
+function get_PingTarget_options(){
+	//count ping_target
+	var array_ping = [], array_ping_CN = [];
+	for(var i=0;i<DNSService.length;i++){
+		//"ping_target" : "Yes"|"CN"|"No"
+		switch (DNSService[i].ping_target){
+			case "Yes":
+				array_ping.push({"text": DNSService[i].DNSService + " (" + DNSService[i].ServiceIP1 + ")", "value": DNSService[i].ServiceIP1});
+				break;
+
+			case "CN":
+				array_ping_CN.push({"text": DNSService[i].DNSService + " (" + DNSService[i].ServiceIP1 + ")", "value": DNSService[i].ServiceIP1});
+				break;
+
+			default:
+				break;
+		}
+	}
+
+	if(is_CN){
+		return array_ping_CN;
+	}
+	else{
+		return array_ping;
+	}
+}
+
+
+function get_wan_options(){
+	var wan_options = [];
+
+	httpApi.get_port_status_array(dut_mac, function(port_info){
+		$.each(port_info, function(label){
+			$.each(port_info[label], function(index, port_item){
+					var option_obj = {};
+					option_obj.text = port_item.label_port_name;
+					option_obj.value = port_item.label + port_item.label_idx;
+					wan_options.push(option_obj);
+			});
+		});
+	});
+
+	return wan_options;
+}
+
+function get_port_group(wan_group_index){
+	var mt_port_details = {};
+	var mt_group_array = orig_mtwan_mt_group.split(" ");
+	var mtwan_mt_weight_array = orig_mtwan_mt_weight.split(" ");
+
+	primary_group.length = 0;
+	secondary_group.length = 0;
+
+	$.each(wans_mt_ioport_array, function(index, item){
+		mt_port_details[item] = { "group": mt_group_array[index], "lb": mtwan_mt_weight_array[index] };
+	});
+
+	$.each(mt_port_details, function(index, item){
+		if(mt_port_details[index].group == "1"){
+			primary_group.push({"id": -1, "val": index, "lb":mt_port_details[index].lb});
+		}
+		else if(mt_port_details[index].group == "2"){
+			secondary_group.push({"id": -1, "val": index, "lb":mt_port_details[index].lb});
+		}
+	});
+}
+
+function change_wan_selection_layout(multi_group_wan){//0: single wan  1: multi-group wan
+	if(multi_group_wan){
+		change_primary_first_wan_container(primary_wan_number);
+		$("#wan_selection_title").html("Group Settings");
+		$("#wan_items_div").css("justify-content", "space-between");
+		$("#primary_group_div").css("flex", "0 0 49%");
+		$("#secondary_group_div").show();
+		$("#wan_group_title").show();
+		$("#policy_setting_div").show();
+		$("#auto_usb_backup_div").parent().hide();
+	}
+	else{//single wan
+		change_primary_first_wan_container(1);
+		$("#wan_selection_title").html("WAN Settings");
+		$("#secondary_group_div").hide();
+		$("#wan_items_div").css("justify-content", "center");
+		$("#primary_group_div").css("flex", "0 0 100%");
+		$("#wan_group_title").hide();
+		$("#primary_add_div").hide();
+		$("#policy_setting_div").hide();
+		$("#auto_usb_backup_div").parent().css("display", "flex");
+	}
+}
+
+function load_profile_settings(wan_group_index){
+	var id = "";
+	var nvram_name = "";
+	var nvram_val = "";
+	var prefix = "mtwan" + wan_group_index + "_";
+
+	$.each($(".input_container"), function(){
+		if($(this).attr("id")){
+			id = $(this).attr("id");
+			nvram_name = id.replace("mtwan_", prefix);
+			nvram_val = httpApi.nvramGet([nvram_name])[nvram_name];
+			if(id == "mtwan_mode"){
+				if(nvram_val == ""){
+					nvram_val = httpApi.nvramDefaultGet(["mtwan_mode"]).mtwan_mode;
+				}
+
+				if(nvram_val == "0" || nvram_val == "1"){
+					$("#mtwan_mode").find(".rwd_radio_container").removeClass("selected").filter("[value='0']").addClass("selected");
+					$("#failover_policy").find(".rwd_radio_container").removeClass("selected").filter("[value='"+nvram_val+"']").addClass("selected");
+					$("#mtwan_fb").closest(".profile_setting_item").css("display", "flex");
+					$("#schedule_time_div").hide();
+					$("#failover_policy").parent().show();
+				}
+				else{
+					$("#mtwan_mode").find(".rwd_radio_container").removeClass("selected").filter("[value='"+nvram_val+"']").addClass("selected");
+					$("#mtwan_fb").closest(".profile_setting_item").css("display", "none");
+					$("#failover_policy").parent().hide();
+					$("#schedule_time_div").show();
+				}
+			}
+		}
+
+		$(this).find("*").each(function(){
+			if($(this).attr("id") && $(this).attr("id").indexOf("select_") == -1){
+				id = $(this).attr("id");
+				nvram_name = id.replace("mtwan_", prefix);
+				nvram_val = httpApi.nvramGet([nvram_name])[nvram_name];
+
+				if(id == "multi_wan_enable"){
+					if(orig_multi_wan_enable)
+						nvram_val = "1";
+					else
+						nvram_val = "0";
+				}
+
+				if($(this).hasClass("icon_switch")){
+					$(this).removeClass(nvram_val == "1"? "off": "on").addClass(nvram_val == "1"? "on": "off");
+					 if(id == "multi_wan_enable"){
+						if($("#multi_wan_enable").hasClass("on")){
+							change_wan_selection_layout(1);
+						}
+						else{
+							change_wan_selection_layout(0);
+						}
+					}
+				}
+				else if($(this).hasClass("textInput")){
+					if(id.indexOf("lb_ratio") == -1)
+						$(this).val(nvram_val);
+				}
+			}
+		})
+	});
+
+	$.each(wans_mt_ioport_array, function(index){
+		load_port_settings(wans_mt_ioport_array[index]);
+	});
+
+	choose_port(primary_group[0].val);
+}
+
+
+function save_applyData(wan_group_index){//wan_items_div
+	var id = "";
+	var nvram_prefix = "";
+	var nvram_name = "";
+	var mt_group_array = [];
+	var mtwan_mt_weight_array = [];
+	var mtwan_order_array = [];
+	var showLoading_time = 15;
+
+	applyData["mtwan_unit"] = wan_group_index;
+	if($("#multi_wan_enable").hasClass("on"))
+		applyData["mtwan_enable"] = "1";
+	else{
+		primary_group.splice(1);
+		secondary_group.length = 0;
+		applyData["mtwan_enable"] = "0";
+	}
+
+	wans_mt_ioport_array.length = 0;
+	if(primary_group.length > 0){
+		$.each(primary_group, function(index){
+			wans_mt_ioport_array.push(primary_group[index].val);
+			mt_group_array.push("1");
+			mtwan_mt_weight_array.push(primary_group[index].lb);
+		});
+		mtwan_order_array.push("1");
+	}
+
+	if(secondary_group.length > 0){
+		$.each(secondary_group, function(index){
+			wans_mt_ioport_array.push(secondary_group[index].val);
+			mt_group_array.push("2");
+			mtwan_mt_weight_array.push(secondary_group[index].lb);
+		});
+		mtwan_order_array.push("2");
+	}
+
+	applyData["wans_mt_ioport"] = wans_mt_ioport_array.join(" ");
+	applyData ["mtwan_mt_group"] = mt_group_array.join(" ");
+	applyData ["mtwan_order"] = mtwan_order_array.join(" ");
+
+	$.each(wans_mt_ioport_array, function(index){
+		nvram_prefix = get_port_settings_nvram_prefix(index);
+		var port_settings = per_port_settings[wans_mt_ioport_array[index]];
+		$.each(port_settings, function(key){
+			applyData[nvram_prefix + key] = port_settings[key];
+		})
+	})
+
+	if(applyData["wans_mt_ioport"] != orig_wans_mt_ioport){
+		applyData["rc_service"] = "restart_mtwan_profile;restart_net_and_phy;";
+		showLoading_time = 25;
+	}
+
+	parent.showLoading(showLoading_time);
+	applyData["mtwan_sched"] = schedule_handle_data.json_array_to_string(wizard_schedule.Get_Value());
+
+	$("#wan_items_div").find(".input_container").each(function(){
+		if($(this).is(":visible")) {
+			$(this).find("*").each(function(){
+				if($(this).attr("id")){
+					id = $(this).attr("id");
+					if($(this).hasClass("textInput")){
+						if(id.indexOf("_lb_ratio") != -1){
+							var group_name = id.substring(0, id.indexOf("_wan"));
+							var wan_id = parseInt(id.substr(id.indexOf("wan") + 3, 1));
+							var exist_index = -1;
+							if(group_name == "primary"){
+								exist_index = get_index_ingroup("primary", wan_id)
+								if(exist_index != -1){
+									primary_group[exist_index].lb =  $(this).val();
+								}
+							}
+							else if(group_name == "secondary"){
+								exist_index = get_index_ingroup("secondary", wan_id)
+								if(exist_index != -1){
+									secondary_group[exist_index].lb =  $(this).val();
+								}
+							}
+						}
+					}
+				}
+			})
+		}
+	});
+
+	$("#policy_setting_div").find(".input_container").each(function(){
+		if($(this).is(":visible")) {
+			$(this).find("*").each(function(){
+				if($(this).attr("id")){
+					id = $(this).attr("id");
+					if($(this).hasClass("icon_switch")){
+						if($(this).hasClass("on"))
+							applyData[id] = "1";
+						else
+							applyData[id] = "0";
+					}
+					else if($(this).hasClass("textInput")){
+						applyData[id] = $(this).val();
+					}
+					else if($(this).attr("type") == "checkbox"){
+						if($(this).is(":checked"))
+							applyData[id] = "1";
+						else
+							applyData[id] = "0";
+					}
+				}
+			})
+		}
+	});
+
+	mtwan_mt_weight_array.length = 0;
+	if(primary_group.length > 0){
+		$.each(primary_group, function(index){
+			mtwan_mt_weight_array.push(primary_group[index].lb);
+		});
+	}
+
+	if(secondary_group.length > 0){
+		$.each(secondary_group, function(index){
+			mtwan_mt_weight_array.push(secondary_group[index].lb);
+		});
+	}
+
+	applyData ["mtwan_mt_weight"] = mtwan_mt_weight_array.join(" ");
+	httpApi.nvramSet(applyData, function(){refreshpage();});
+}
+
+function get_index_ingroup(group, id){//group: "primary", "secondary"
+	var current_index = -1;
+	if(group == "primary"){
+		$.each(primary_group, function(index){
+			if(primary_group[index].id == id){
+				current_index = index;
+				return false;
+			}
+		})
+	}
+	else if(group == "secondary"){
+		$.each(secondary_group, function(index){
+			if(secondary_group[index].id == id) {
+				current_index = index;
+				return false;
+			}
+		})
+	}
+
+	return current_index;
+}
+
+function get_port_name(port_val){
+	var port_name = "";
+	$.each(mt_wan_options, function(index){
+			if(mt_wan_options[index].value == port_val){
+				port_name = mt_wan_options[index].text;
+				return false;
+			}
+	})
+
+	return port_name;
+}
+
+function change_port_settings(obj_id, val, chosen){ // chosen: 1 - user choose
+	var group_name = obj_id.substring(7, obj_id.indexOf("_wan"));
+	var wan_setting_id = parseInt(obj_id.substr(obj_id.indexOf("wan")+3, 1));
+	var $selected_port_icon = $('#'+val);
+	var orig_port_value = "-1";
+	var $orig_port_icon;
+	var exist_index = -1;
+	var conflict = false;
+	var conflict_msg = "";
+
+	if(chosen && $("#multi_wan_enable").hasClass("on")){
+		$.each(primary_group, function(index){
+			if(primary_group[index].val == val){
+				var port_name = get_port_name(val);
+				conflict = true;
+				conflict_msg = port_name +" is already selected in the primary group. Please select other port.";
+				return false;
+			}
+		});
+
+		$.each(secondary_group, function(index){
+			if(secondary_group[index].val == val){
+				var port_name = get_port_name(val);
+				conflict = true;
+				conflict_msg = port_name +" is already selected in the secondary group. Please select other port.";
+				return false;
+			}
+		});
+	}
+
+	if(group_name == "primary"){
+		exist_index = get_index_ingroup("primary", wan_setting_id)
+		if(exist_index != -1){
+			orig_port_value = primary_group[exist_index].val;
+		}
+	}
+	else if(group_name == "secondary"){
+		exist_index = get_index_ingroup("secondary", wan_setting_id)
+		if(exist_index != -1){
+			orig_port_value = secondary_group[exist_index].val;
+		}
+	}
+
+	if(conflict){
+		alert(conflict_msg);
+		set_value_Custom_Select($("#wan_items_div"), obj_id.substring(7), orig_port_value);
+		return -1;
+	}
+
+	/* Show/hide port icon */
+	if(orig_port_value != "-1"){
+		$orig_port_icon = $('#'+orig_port_value);
+		$orig_port_icon.parent().parent().hide();
+	}
+
+	$selected_port_icon.parent().parent().css("display", "flex");
+	if(chosen){
+		choose_port(val);
+	}
+
+	/* update group information */
+	if(group_name == "primary"){
+		if(exist_index != -1){
+			primary_group[exist_index].val = val;
+		}
+		else{
+			primary_group.push({"id":parseInt(wan_setting_id), "val": val, "lb": "1"});
+		}
+
+	}
+	else if(group_name == "secondary"){
+		if(exist_index != -1){
+			secondary_group[exist_index].val = val;
+		}
+		else{
+			secondary_group.push({"id":parseInt(wan_setting_id), "val": val, "lb": "1"});
+		}
+	}
+}
+
+function change_primary_first_wan_container(wan_number){
+	var first_select_div_id = $("#primary_select_div").find(":first-child").attr("id");
+	var wan_id = parseInt(first_select_div_id.substr(first_select_div_id.indexOf("wan")+3, 1));
+	var $first_select_div = $("#"+first_select_div_id);
+	if(wan_number > 1){
+		if($first_select_div.find(".lb_ratio_container").length == 0){
+			var lb_input_id = "primary_wan" + wan_id + "_lb_ratio";
+			var $tmp_select = $first_select_div.find(".profile_setting_item");
+			$tmp_select.css({"width":"75%", "padding-left": "2px"});
+			var $lb_container = $("<div>").addClass("input_container lb_ratio_container").appendTo($first_select_div);
+
+			$("<div>")
+				.html("LB")
+				.addClass("lb_ratio_title")
+				.appendTo($lb_container)
+
+			$("<input>")
+				.attr({"id": lb_input_id, "maxlength": "2", "type": "text"})
+				.val(primary_group[0].hasOwnProperty("lb")? primary_group[0].lb: "1") //1: default value
+				.addClass("textInput lb_ratio_input")
+				.appendTo($lb_container)
+		}
+	}
+	else{
+		if($first_select_div.find(".lb_ratio_container").length > 0){
+			$first_select_div.find(".lb_ratio_container").first().remove();
+		}
+		if($first_select_div.find(".delete_btn").length > 0){
+			$first_select_div.find(".delete_btn").first().remove();
+		}
+		$first_select_div.find(".profile_setting_item").css("width", "100%");
+	}
+}
+
+function change_secondary_first_wan_container(wan_number){
+	var first_select_div_id = $("#secondary_select_div").find(":first-child").attr("id");
+	var wan_id = parseInt(first_select_div_id.substr(first_select_div_id.indexOf("wan")+3, 1));
+	var $first_select_div = $("#"+first_select_div_id);
+	if(wan_number > 1){
+		if($first_select_div.find(".lb_ratio_container").length == 0){
+			var lb_input_id = "secondary_wan" + wan_id + "_lb_ratio";
+			var $tmp_select = $first_select_div.find(".profile_setting_item");
+			$tmp_select.css({"width":"65%", "padding-left": "2px"});
+
+			var $lb_container = $("<div>").addClass("input_container lb_ratio_container");
+			if($first_select_div.find(".delete_btn").length > 0){
+				$lb_container.insertAfter($tmp_select);
+			}
+			else
+				$lb_container.appendTo($first_select_div);
+
+			$("<div>")
+				.html("LB")
+				.addClass("lb_ratio_title")
+				.appendTo($lb_container)
+
+			$("<input>")
+				.attr({"id": lb_input_id,"maxlength": "2", "type": "text"})
+				.val((secondary_group.length > 0 && secondary_group[0].hasOwnProperty("lb"))? secondary_group[0].lb: "1") //1: default value
+				.addClass("textInput lb_ratio_input")
+				.appendTo($lb_container);
+		}
+
+		if($first_select_div.find(".delete_btn").length == 0){
+			$("<div>")
+				.addClass("delete_btn")
+				.appendTo($first_select_div)
+				.click(function(e){
+					var delete_val = $(this).parent().find(".selected").attr("value");
+					if(delete_val != "none"){
+						var parent_id =  $(this).parent().attr("id");
+						var delete_id = parseInt(parent_id.substr(parent_id.indexOf("wan")+3, 1));
+						var group_delete_index = get_index_ingroup("secondary", delete_id);
+						var $orig_port_icon = $('#'+delete_val);
+						$orig_port_icon.parent().parent().hide();
+						secondary_group.splice(group_delete_index, 1);
+					}
+					$(this).parent().remove();
+					secondary_wan_number--;
+					if(secondary_wan_number < 2){
+						var first_select_div_id = $("#secondary_select_div").find(":first-child").attr("id");
+						var $first_select_div = $("#"+first_select_div_id);
+						if($first_select_div.find(".lb_ratio_container").length > 0){
+							$first_select_div.find(".lb_ratio_container").first().remove();
+						}
+						if($first_select_div.find(".delete_btn").length > 0){
+							$first_select_div.find(".delete_btn").first().remove();
+						}
+						$first_select_div.find(".profile_setting_item").css("width", "100%");
+						$secondary_add_btn.parent().css("display", "flex");
+					}
+				});
+		}
+	}
+	else{
+		if($first_select_div.find(".lb_ratio_container").length > 0){
+			$first_select_div.find(".lb_ratio_container").first().remove();
+		}
+		$first_select_div.find(".profile_setting_item").css("width", "90%");
+	}
+}
+
+function get_usb_val(){
+	var usb_val = "";
+	$.each(mt_wan_options, function(index){
+		if(mt_wan_options[index].value.indexOf("U") != -1){
+			usb_val = mt_wan_options[index].value;
+			return false;
+		}
+	});
+
+	return usb_val;
+}
+
+var cur_wan_options = "";
+function get_default_option(multi_group_wan){//get default wan selection option 0: single wan 1: multi-group wan
+	var existed_eth_num = 0;
+	var cur_default_option = "";
+	cur_wan_options = JSON.parse(JSON.stringify(mt_wan_options));
+	var tmp_index = -1;
+
+	if(multi_group_wan){
+		$.each(primary_group, function(index){
+			if(primary_group[index].val.indexOf("U") == -1){
+				existed_eth_num++;
+			}
+
+			$.each(cur_wan_options, function(wan_option_index){
+				if(cur_wan_options[wan_option_index].value == primary_group[index].val){
+					tmp_index = wan_option_index;
+					return false;
+				}
+			});
+
+			cur_wan_options.splice(tmp_index, 1);
+		});
+
+		$.each(secondary_group, function(index){
+			if(secondary_group[index].val.indexOf("U") == -1){
+				existed_eth_num++;
+			}
+
+			$.each(cur_wan_options, function(wan_option_index){
+				if(cur_wan_options[wan_option_index].value == secondary_group[index].val){
+					tmp_index = wan_option_index;
+					return false;
+				}
+			});
+
+			cur_wan_options.splice(tmp_index, 1);
+		});
+
+		if(existed_eth_num == MAX_MULTI_WAN_NUM){
+			cur_default_option = get_usb_val();
+		}
+		else{
+			cur_default_option = cur_wan_options[0].value;
+		}
+	}
+	else{
+		$.each(cur_wan_options, function(wan_option_index){
+			if(cur_wan_options[wan_option_index].value.indexOf("W") != -1){
+				tmp_index = wan_option_index;
+				return false;
+			}
+		});
+
+		cur_default_option = cur_wan_options[tmp_index].value;
+	}
+
+	return cur_default_option;
+}
+
+function resize_schedule_div(){
+	var schedule_height = 0;
+
+	if($("[data-viewport=schedule]").css("display") == "block"){
+		schedule_height = schedule_height + parseInt($("[data-viewport=schedule]").css("height").replace("px", ""));
+	}
+	else if($("[data-viewport=schedule_main]").css("display") == "block"){
+		schedule_height = schedule_height + parseInt($("[data-viewport=schedule_main]").css("height").replace("px", ""));
+	}
+
+	if($(".warning_desc").css("display") == "block"){
+		schedule_height = schedule_height + parseInt($(".warning_desc").css("height").replace("px", ""));
+	}
+
+	schedule_height = schedule_height + 10;
+	$("#schedule_time_div").css("height", schedule_height+"px");
+}
+
+function generate_setting_items(){
+	var multi_wan_enabled_parm = {"title":"Enable Multi-WAN", "type":"switch", "id":"multi_wan_enable", "set_value": "off"};
+	var $multi_wan_enable_item = Get_Component_Switch(multi_wan_enabled_parm)
+		.closest(".profile_setting_item").css("display", "flex")
+		.closest(".profile_setting_item").css("background-color", "transparent")
+		.appendTo($("#multi_wan_enable_div"))
+		.find("#" + multi_wan_enabled_parm.id + "").click(function(e){
+				e = e || event;
+				e.stopPropagation();
+				if($(this).hasClass("on")){
+					change_wan_selection_layout(1);
+					if(primary_wan_number < 2)
+						$("#primary_add_div").show();
+					else
+						$("#primary_add_div").hide();
+					$.each($("#primary_group_div").find(".wan_select_container"), function(index, $item){
+						var tmp_id = $item.id;
+						$("#"+tmp_id).show();
+					});
+					applyData["mtwan_enable "] = "1";
+				}
+				else{
+					change_wan_selection_layout(0);
+					$.each($("#primary_group_div").find(".wan_select_container"), function(index, $item){
+						var tmp_id = $item.id;
+						if(tmp_id.substr(tmp_id.indexOf("wan")+3, 1) != "1")
+							$("#"+tmp_id).hide();
+					});
+					applyData["mtwan_enable "] = "0";
+				}
+
+				resize_schedule_div();
+			})
+
+	$.each(primary_group, function(index){
+		var $container = $("<div>").attr("id", "primary_wan" + primary_wan_index + "_div").addClass("wan_select_container").appendTo($("#primary_select_div"));
+		var primary_wan1_parm = {"title":"", "id":"primary_wan" + primary_wan_index + "_port", "options": mt_wan_options, "set_value": primary_group[index].val};
+		var $wan_select = Get_Component_Custom_Select(primary_wan1_parm);
+		$wan_select
+				.css("width", "100%")
+				.appendTo($container)
+				.find("#select_" + primary_wan1_parm.id).children("div").click(function(e){
+					var option = $(this).attr("value");
+					change_port_settings($(this).parent().attr("id"), option, 1);
+				});
+		primary_group[index].id = primary_wan_index;
+		change_port_settings("select_" + primary_wan1_parm.id, primary_group[index].val);
+		if(primary_wan_number > 0){
+			$wan_select.css({"width":"65%", "padding-left": "2px"});
+			var $lb_container = $("<div>").addClass("input_container lb_ratio_container").appendTo($container);
+			var lb_input_id = "primary_wan" + primary_wan_index + "_lb_ratio";
+
+			$("<div>")
+				.html("LB")
+				.addClass("lb_ratio_title")
+				.appendTo($lb_container)
+
+			$("<input>")
+				.attr({"id":lb_input_id, "maxlength": "2", "type": "text"})
+				.val(primary_group[index].hasOwnProperty("lb")? primary_group[index].lb: "1")
+				.addClass("textInput lb_ratio_input")
+				.appendTo($lb_container)
+
+			$("<div>")
+				.addClass("delete_btn")
+				.appendTo($container)
+				.click(function(e){
+					var delete_val = $(this).parent().find(".selected").attr("value");
+					if(delete_val != "none"){
+						var parent_id =  $(this).parent().attr("id");
+						var delete_id = parseInt(parent_id.substr(parent_id.indexOf("wan")+3, 1));
+						var group_delete_index = get_index_ingroup("primary", delete_id);
+						var $orig_port_icon = $('#'+delete_val);
+						$orig_port_icon.parent().parent().hide();
+						primary_group.splice(group_delete_index, 1);
+					}
+					$(this).parent().remove();
+					primary_wan_number--;
+					if(primary_wan_number > 0)
+						change_primary_first_wan_container(primary_wan_number);
+					if(primary_wan_number < 2){
+						$("#primary_add_div").css("display", "flex");
+						$("#primary_lb_hint_div").hide();
+					}
+				});
+		}
+
+		primary_wan_number++;
+		primary_wan_index++;
+		change_primary_first_wan_container(primary_wan_number);
+	});
+
+	//primary add button
+	var $primary_add_btn = $("<div>")
+		.addClass("mtwan_add_btn")
+		.appendTo($("#primary_add_div"))
+		.click(function(e){
+			e = e || event;
+			e.stopPropagation();
+			var $container = $("<div>").attr("id", "primary_wan" + primary_wan_index + "_div").addClass("wan_select_container").appendTo($("#primary_select_div"));
+			var set_value = get_default_option(1);
+			var primary_new_wan_parm = {"title":"", "id":"primary_wan" + primary_wan_index + "_port", "options": mt_wan_options, "set_value": set_value};
+			var $wan_select = Get_Component_Custom_Select(primary_new_wan_parm);
+			$wan_select
+				.appendTo($container)
+				.find("#select_" + primary_new_wan_parm.id).children("div").click(function(e){
+					var option = $(this).attr("value");
+					change_port_settings($(this).parent().attr("id"), option, 1);
+				});
+
+			if(set_value != ""){
+				change_port_settings("select_" + primary_new_wan_parm.id, set_value, 1);
+			}
+
+			if(primary_wan_number > 0){
+				var lb_input_id = "primary_wan" + primary_wan_index + "_lb_ratio";
+				$wan_select.css({"width":"65%", "padding-left": "2px"});
+				var $lb_container = $("<div>").addClass("input_container lb_ratio_container").appendTo($container);
+
+				$("<div>")
+					.html("LB")
+					.addClass("lb_ratio_title")
+					.appendTo($lb_container)
+
+				$("<input>")
+					.attr({"id":lb_input_id, "maxlength": "2", "type": "text"})
+					.val("1") //default value
+					.addClass("textInput lb_ratio_input")
+					.appendTo($lb_container)
+
+				$("#primary_lb_hint_div").show();
+
+				$("<div>")
+					.addClass("delete_btn")
+					.appendTo($container)
+					.click(function(e){
+						var delete_val = $(this).parent().find(".selected").attr("value");
+						if(delete_val != "none"){
+							var parent_id =  $(this).parent().attr("id");
+							var delete_id = parseInt(parent_id.substr(parent_id.indexOf("wan")+3, 1));
+							var group_delete_index = get_index_ingroup("primary", delete_id);
+							var $orig_port_icon = $('#'+delete_val);
+							$orig_port_icon.parent().parent().hide();
+							primary_group.splice(group_delete_index, 1);
+						}
+						$(this).parent().remove();
+						primary_wan_number--;
+						if(primary_wan_number > 0)
+							change_primary_first_wan_container(primary_wan_number);
+						if(primary_wan_number < 2){
+							$primary_add_btn.parent().css("display", "flex");
+							$("#primary_lb_hint_div").hide();
+						}
+					});
+			}
+
+			primary_wan_number++;
+			primary_wan_index++;
+			change_primary_first_wan_container(primary_wan_number);
+			if(primary_wan_number >= 2){
+				$primary_add_btn.parent().hide();
+			}
+		});
+
+	$("<div>")
+		.addClass("icon_add")
+		.appendTo($primary_add_btn);
+
+	$("<div>")
+		.html("Add Port")
+		.css({"font-size": "16px", "color": "#006CE1"})
+		.appendTo($primary_add_btn);
+
+	if(primary_wan_number >= 2){
+		$("#primary_add_div").hide();
+	}
+
+	$.each(secondary_group, function(index){
+		var $container = $("<div>").attr("id", "secondary_wan" + secondary_wan_index + "_div").addClass("wan_select_container").appendTo($("#secondary_select_div"));
+		var secondary_wan1_parm = {"title":"", "id":"secondary_wan" + secondary_wan_index + "_port", "options": mt_wan_options, "set_value": secondary_group[index].val};
+		var $wan_select = Get_Component_Custom_Select(secondary_wan1_parm);
+		$wan_select
+			.css("width", "90%")
+			.appendTo($container)
+			.find("#select_" + secondary_wan1_parm.id).children("div").click(function(e){
+				var option = $(this).attr("value");
+				change_port_settings($(this).parent().attr("id"), option, 1);
+			});
+		secondary_group[index].id = secondary_wan_index;
+		change_port_settings("select_" + secondary_wan1_parm.id, secondary_group[index].val);
+		if(secondary_wan_number > 0){
+			var lb_input_id = "secondary_wan" + secondary_wan_index + "_lb_ratio";
+			$wan_select.css({"width":"65%", "padding-left": "2px"});
+			var $lb_container = $("<div>").addClass("input_container lb_ratio_container").appendTo($container);
+
+			$("<div>")
+				.html("LB")
+				.addClass("lb_ratio_title")
+				.appendTo($lb_container);
+
+			$("<input>")
+				.attr({"id":lb_input_id, "maxlength": "2", "type": "text"})
+				.val(secondary_group[index].hasOwnProperty("lb")? secondary_group[index].lb: "1") //1: default value
+				.addClass("textInput lb_ratio_input")
+				.appendTo($lb_container);
+		}
+
+		$("<div>")
+			.addClass("delete_btn")
+			.appendTo($container)
+			.click(function(e){
+				var delete_val = $(this).parent().find(".selected").attr("value");
+				if(delete_val != "none"){
+					var parent_id =  $(this).parent().attr("id");
+					var delete_id = parseInt(parent_id.substr(parent_id.indexOf("wan")+3, 1));
+					var group_delete_index = get_index_ingroup("secondary", delete_id);
+					var $orig_port_icon = $('#'+delete_val);
+					$orig_port_icon.parent().parent().hide();
+					secondary_group.splice(group_delete_index, 1);
+				}
+				$(this).parent().remove();
+				secondary_wan_number--;
+				if(secondary_wan_number > 0)
+					change_secondary_first_wan_container(secondary_wan_number);
+				if(secondary_wan_number < 2){
+					$("#secondary_add_div").show();
+				}
+			});
+
+		secondary_wan_number++;
+		secondary_wan_index++;
+		change_secondary_first_wan_container(secondary_wan_number);
+	});
+
+	//secondary add button
+	var $secondary_add_btn = $("<div>")
+		.addClass("mtwan_add_btn")
+		.appendTo($("#secondary_add_div"))
+		.click(function(e){
+			e = e || event;
+			e.stopPropagation();
+			var $container = $("<div>").attr("id", "secondary_wan" + secondary_wan_index + "_div").addClass("wan_select_container").appendTo($("#secondary_select_div"));
+			var set_value = get_default_option(1);
+			var secondary_new_wan_parm = {"title":"", "id":"secondary_wan" + secondary_wan_index + "_port", "options": mt_wan_options, "set_value": set_value};
+			var $wan_select = Get_Component_Custom_Select(secondary_new_wan_parm);
+			$wan_select
+				.appendTo($container)
+				.find("#select_" + secondary_new_wan_parm.id).children("div").click(function(e){
+					var option = $(this).attr("value");
+					change_port_settings($(this).parent().attr("id"), option, 1);
+				});
+
+			if(set_value != ""){
+				change_port_settings("select_" + secondary_new_wan_parm.id, set_value, 1);
+			}
+
+			if(secondary_wan_number > 0){
+				var lb_input_id = "secondary_wan" + secondary_wan_index + "_lb_ratio";
+				$wan_select.css({"width":"65%", "padding-left": "2px"});
+				var $lb_container = $("<div>").addClass("input_container lb_ratio_container").appendTo($container);
+
+				$("<div>")
+					.html("LB")
+					.addClass("lb_ratio_title")
+					.appendTo($lb_container);
+
+				$("<input>")
+					.attr({"id":lb_input_id, "maxlength": "2", "type": "text"})
+					.val("1") //default value
+					.addClass("textInput lb_ratio_input")
+					.appendTo($lb_container);
+			}
+			else
+				$wan_select.css("width", "90%");
+
+			$("<div>")
+				.addClass("delete_btn")
+				.appendTo($container)
+				.click(function(e){
+					var delete_val = $(this).parent().find(".selected").attr("value");
+					if(delete_val != "none"){
+						var parent_id =  $(this).parent().attr("id");
+						var delete_id = parseInt(parent_id.substr(parent_id.indexOf("wan")+3, 1));
+						var group_delete_index = get_index_ingroup("secondary", delete_id);
+						var $orig_port_icon = $('#'+delete_val);
+						$orig_port_icon.parent().parent().hide();
+						secondary_group.splice(group_delete_index, 1);
+					}
+					$(this).parent().remove();
+					secondary_wan_number--;
+					if(secondary_wan_number > 0)
+						change_secondary_first_wan_container(secondary_wan_number);
+					if(secondary_wan_number < 2){
+						$secondary_add_btn.parent().css("display", "flex");
+					}
+				});
+
+			secondary_wan_number++;
+			secondary_wan_index++;
+			change_secondary_first_wan_container(secondary_wan_number);
+			if(secondary_wan_number >= 2){
+				$secondary_add_btn.parent().hide();
+			}
+		});
+
+	$("<div>")
+		.addClass("icon_add")
+		.appendTo($secondary_add_btn);
+
+	$("<div>")
+		.html("Add Port")
+		.css({"font-size": "16px", "color": "#006CE1"})
+		.appendTo($secondary_add_btn);
+
+	if(secondary_wan_number >= 2){
+		$secondary_add_btn.parent().hide();
+	}
+
+	var auto_usb_backup_parm = {"title":"<#dualwan_usb_backup#>", "type":"switch", "id":"wans_usb_bk", "set_value": "off"};
+	var $auto_usb_backup_item = Get_Component_Switch(auto_usb_backup_parm)
+		.closest(".profile_setting_item").css("display", "flex")
+		.closest(".profile_setting_item").css("background-color", "transparent")
+		.appendTo($("#auto_usb_backup_div"))
+		.find("#" + auto_usb_backup_parm.id + "").click(function(e){
+				e = e || event;
+				e.stopPropagation();
+			});
+
+	var mode_options = [ {"text": "<#dualwan_mode_fo#>", "value": "0"}, {"text": "<#diskUtility_time#>", "value": "2"}];
+	var multiwan_mode_param = {"title": "Mode", "id": "mtwan_mode", "options": mode_options, "display_type": "horizontal"};
+	RWD_Get_Component_Radio(multiwan_mode_param)
+		.appendTo($("#multiwan_policy_div"))
+		.css("padding-bottom", "5px")
+		.find("#" + multiwan_mode_param.id + " .rwd_radio_options_container").children().each(function(){
+			$(this).click(function(e){
+				e = e || event;
+				e.stopPropagation();
+				if($(this).attr("value") == "0"){
+					$("#schedule_time_div").hide();
+					$("#failover_policy").parent().show();
+					$("#mtwan_fb").closest(".profile_setting_item").css("display", "flex");
+					applyData[multiwan_mode_param.id] = "0";
+				}
+				else if($(this).attr("value") == "2"){
+					$("#failover_policy").parent().hide();
+					$("#schedule_time_div").show();
+					resize_schedule_div();
+					$("#mtwan_fb").closest(".profile_setting_item").css("display", "none");
+					applyData[multiwan_mode_param.id] = "2";
+				}
+			});
+		});
+
+	var $schedule_time_div = $("<div>")
+							.attr("id", "schedule_time_div")
+							.css("display", "none")
+							.appendTo($("#multiwan_policy_div"));
+
+	$schedule_time_div.append(wizard_schedule.Get_UI());
+	$(".schedule_header_container .title").css("margin-left", "10px");
+	$(".schedule_header_container .title").html("Time period to swap to backup WAN.");
+
+	var failover_policy_options = [
+		{"text": "Active Backup WAN when any primary WAN port failed.", "value": "0"},
+		{"text": "Active Backup WAN when all primary WAN port failed.", "value": "1"}
+	];
+
+	var failove_policy_param = {"title": "Policy", "id": "failover_policy", "options": failover_policy_options, "display_type": "vertical"};
+	var policy_div = RWD_Get_Component_Radio(failove_policy_param)
+		.appendTo($("#multiwan_policy_div"))
+		.css("border-top", "1px solid #DCDCDC")
+		.css("display", "none")
+		.find("#" + failove_policy_param.id + " .rwd_radio_options_container").children().each(function(){
+			$(this).click(function(e){
+				e = e || event;
+				e.stopPropagation();
+				applyData["mtwan_mode"] = $(this).attr("value");
+			});
+		});
+
+	var failback_allow_parm = {"title":"<#dualwan_failback_allow#>", "type":"switch", "id":"mtwan_fb", "set_value":"off"};
+	Get_Component_Switch(failback_allow_parm)
+		.closest(".profile_setting_item").css("display", "none")
+		.closest(".profile_setting_item").css("background-color", "transparent")
+		.closest(".profile_setting_item").css("border-top", "1px solid #DCDCDC")
+		.appendTo($("#multiwan_policy_div"))
+		.find("#" + failback_allow_parm.id + "").click(function(e){
+		e = e || event;
+		e.stopPropagation();
+	});
+
+	if($("#mtwan_mode").find(".selected").attr("value") == "0"){
+		$("#failover_policy").parent().show();
+		$("#schedule_time_div").hide()
+	}
+	else{
+		$("#failover_policy").parent().hide();
+		$("#schedule_time_div").show();
+		resize_schedule_div();
+	}
+
+	generate_detection_settings();
+
+/*
+	var multiwan_status_options = [	{"text": "<#Status_Active#>", "value": "1"}, {"text": "<#Status_Inactive#>", "value": "0"}];
+	var multiwan_status_param = {"title": "<#Status_Str#>", "id": "mtwan_enable", "options": multiwan_status_options, "display_type": "horizontal"};
+	RWD_Get_Component_Radio(multiwan_status_param)
+		.appendTo($("#multiwan_policy_div"))
+		.find("#" + multiwan_status_param.id + " .rwd_radio_options_container").children().each(function(){
+			$(this).click(function(e){
+				e = e || event;
+				e.stopPropagation();
+				var setting_name = "mtwan" + mt_wan_group_index +"_enable";
+				applyData[setting_name] = $(this).attr("value");
+			});
+		});
+*/
+
+	var $btn_container_apply = $("<div>").addClass("btn_container apply").attr({"id":"apply_btn"}).appendTo($("#apply_btn")).html("<#CTL_apply1#>");
+	$btn_container_apply.click(function(){
+		save_applyData(mt_wan_group_index);
+	});
+}
+
+function change_per_port_settings(obj){
+	per_port_settings[cur_chosen_port][obj.id] = obj.value;
+}
+
+function generate_detection_settings(wan_port_index){
+	var detection_settings_container = $("#network_detection_settings_div");
+	var replace_html = "";
+	var setting_string = "";
+
+	var detect_interval_div = $("<div>")
+								.attr("id", "detect_interval_div")
+								.addClass("profile_setting_item")
+								.css({"height":"auto", "border-bottom":"1px solid #DCDCDC"})
+	detect_interval_div.appendTo(detection_settings_container)
+	$("<div>")
+		.html("<#Retry_interval2#>")
+		.addClass("profile_setting_item title")
+		.css("max-width", "32%")
+		.appendTo(detect_interval_div)
+
+	replace_html = '<input type="text" id="wandog_interval" class="textInput" maxlength="2" value="<% nvram_get("wandog_maxfail"); %>" onKeyPress="return validator.isNumber(this, event);" onblur="change_per_port_settings(this)" placeholder="5" autocorrect="off" autocapitalize="off" style="width: 50px; height: 30px;">';
+	setting_string = "<#Every_N_Seconds#>".replace("$INPUT_INTERVAL", replace_html);
+	var settings_div = $("<div>")
+		.addClass("input_container")
+		.html(setting_string)
+		.css({"display": "initial", "flex-basis": "61%", "line-height": "30px", "padding": "5px 0"})
+		.appendTo(detect_interval_div)
+
+	var internet_diagnosis_div = $("<div>")
+								.attr("id", "internet_diagnosis_div")
+								.addClass("profile_setting_item")
+								.css({"height":"auto", "border-bottom":"1px solid #DCDCDC"})
+	internet_diagnosis_div.appendTo(detection_settings_container)
+	$("<div>")
+		.html("<#NetworkTools_Diagnose#>")
+		.addClass("profile_setting_item title")
+		.css({"max-width": "32%"})
+		.appendTo(internet_diagnosis_div)
+
+	replace_html = '<input type="text" id="wandog_maxfail" class="textInput" maxlength="2" value="<% nvram_get("wandog_maxfail"); %>" onKeyPress="return validator.isNumber(this, event);"  onblur="change_per_port_settings(this)" placeholder="5" autocorrect="off" autocapitalize="off" style="width: 50px; height: 30px;">';
+	var new_str = "When the current WAN fails $WANDOG_MAXFAIL continuous times, it is deemed a disconnection.";//untranslated
+	setting_string = new_str.replace("$WANDOG_MAXFAIL", replace_html);
+	settings_div = $("<div>")
+		.addClass("input_container")
+		.html(setting_string)
+		.css({"display": "initial", "flex-basis": "61%", "line-height": "30px", "padding": "5px 0"})
+		.appendTo(internet_diagnosis_div)
+
+	var failback_settings_div = $("<div>")
+								.attr("id", "failback_setting_div")
+								.addClass("profile_setting_item")
+								.css({"height":"auto", "border-bottom":"1px solid #DCDCDC"})
+	failback_settings_div.appendTo(detection_settings_container)
+	$("<div>")
+		.html("<#dualwan_failback_trigger#>")
+		.addClass("profile_setting_item title")
+		.css("max-width", "32%")
+		.appendTo(failback_settings_div)
+
+	replace_html = '<input type="text" id="wandog_fb_count" class="textInput" maxlength="2" value="<% nvram_get("wandog_fb_count"); %>" onKeyPress="return validator.isNumber(this, event);"  onblur="change_per_port_settings(this)" placeholder="5" autocorrect="off" autocapitalize="off" style="width: 50px; height: 30px;">';
+	setting_string = "<#dualwan_failback_desc2#>".replace("$WANDOG_FB_COUNT", replace_html);
+	var settings_div = $("<div>")
+		.addClass("input_container")
+		.html(setting_string)
+		.css({"display": "initial", "flex-basis": "61%", "line-height": "30px", "padding": "5px 0"})
+		.appendTo(failback_settings_div)
+
+	var network_monitoring_div = $("<div>")
+								.attr("id", "network_monitoring_div")
+								.addClass("profile_setting_item")
+								.css({"height":"auto"})
+	network_monitoring_div.appendTo(detection_settings_container)
+	$("<div>")
+		.html("<#Network_Monitoring#>")
+		.addClass("profile_setting_item title")
+		.css("max-width", "32%")
+		.appendTo(network_monitoring_div)
+
+	var settings_div = $("<div>")
+		.addClass("input_container")
+		.css({"display": "initial", "flex-basis": "61%", "line-height": "30px", "padding": "5px 0"})
+		.appendTo(network_monitoring_div)
+
+	$("<input>")
+		.attr({"id": "dns_probe",
+				"type": "checkbox",
+				"data-mini": "true",
+				"data-cacheval": "false"
+		})
+		.change(function(){
+			$(this).val($(this).is(":checked"));
+
+			if($("#dns_probe").is(":checked")){
+				per_port_settings[cur_chosen_port]["dns_probe"] = "1";
+				$("#dns_probe_host").val(orig_dns_probe_host);
+				$("#resolve_host_div").show();
+			}
+			else{
+				per_port_settings[cur_chosen_port]["dns_probe"] = "0";
+				$("#resolve_host_div").hide();
+			}
+		})
+		.appendTo(settings_div);
+
+	$("<label>")
+		.attr({"for": "dns_probe"})
+		.html("<#DNS_Query#>")
+		.appendTo(settings_div);
+
+
+	$("<input>")
+		.attr({"id": "wandog_enable",
+				"type": "checkbox",
+				"data-mini": "true",
+				"data-cacheval": "false"
+		})
+		.css("margin-left", "20px")
+		.change(function(){
+			$(this).val($(this).is(":checked"));
+
+			if($("#wandog_enable").is(":checked")){
+				per_port_settings[cur_chosen_port]["wandog_enable"] = "1";
+				$("#ping_target_selection").show();
+			}
+			else{
+				per_port_settings[cur_chosen_port]["wandog_enable"] = "0";
+				$("#ping_target_selection").hide();
+			}
+		})
+		.appendTo(settings_div);
+
+	$("<label>")
+		.attr({"for": "wandog_enable"})
+		.html("<#Ping#>")
+		.appendTo(settings_div);
+
+	var resolve_host_parm = {"title":"<#Resolved_Target#>", "type":"text", "id":"dns_probe_host", "maxlength": 255, "container_id": "resolve_host_div"};
+	Get_Component_Input(resolve_host_parm).appendTo(detection_settings_container)
+		.css({"display": "none", "border-top":"1px solid #DCDCDC"})
+		.find("#" + resolve_host_parm.id + "")
+		.unbind("keypress").keypress(function(){
+			return validator.isString(this,event);
+		})
+		.blur(function(){
+			change_per_port_settings(this);
+		})
+
+	var ping_target_options = get_PingTarget_options();
+	var ping_target_parm = {"title":"<#Ping_Target#>", "id":"wandog_target", "options": ping_target_options, "container_id": "ping_target_selection"};
+	Get_Component_Custom_Select(ping_target_parm)
+		.css({"border-top":"1px solid #DCDCDC"})
+		.appendTo(detection_settings_container)
+		.find("#select_" + ping_target_parm.id).children("div").click(function(e){
+			var option = $(this).attr("value");
+			per_port_settings[cur_chosen_port]["wandog_target"] = $(this).attr("value");
+		});
+}
+
+function get_mt_ioport_index(port_id){
+	var port_index = -1;
+	$.each(wans_mt_ioport_array, function(index){
+			if(wans_mt_ioport_array[index] == port_id){
+				port_index = index;
+				return false;
+			}
+		});
+	return port_index;
+}
+
+function get_port_settings_nvram_prefix(port_index){//get nvram prefix of per-port settings
+	var nvram_prefix = "";
+
+	if(port_index > 0){
+		var index_num = 50 + port_index;
+		nvram_prefix = "wan" + index_num + "_";
+	}
+	else
+		nvram_prefix = "wan0_";
+
+	return nvram_prefix;
+}
+
+
+function load_port_settings(port_id){
+	var nvram_prefix = "";
+	var nvram_name = "";
+	var nvram_val = "";
+	var port_index = get_mt_ioport_index(port_id);
+	var key_val_pairs = {};
+
+	if(port_index != -1)
+		nvram_prefix = get_port_settings_nvram_prefix(port_index);
+
+	if(per_port_settings.hasOwnProperty(port_id)){
+		var id = "";
+		var current_val = "";
+
+		$("#network_detection_settings_div").find(".input_container").each(function(){
+			$(this).find("*").each(function(){
+				if($(this).attr("id")){
+					id = $(this).attr("id");
+
+					if(id.indexOf("select_") != -1)
+						return;
+
+					current_val = per_port_settings[port_id][id]
+
+					if($(this).hasClass("textInput")){
+						$(this).val(current_val);
+					}
+					else if($(this).attr("type") == "checkbox"){
+						if(current_val == "1"){
+							$(this).prop( "checked", true);
+						}
+						else{
+							$(this).prop( "checked", false);
+						}
+					}
+					else if($(this).parent().hasClass("custom_select_container")){
+						set_value_Custom_Select($("#ping_target_selection"), id, current_val);
+					}
+				}
+			});
+		});
+	}
+	else{
+		var id = "";
+		var nvram_prefix = "";
+		var nvram_name = "";
+		var nvram_val = "";
+		var port_index = get_mt_ioport_index(port_id);
+
+		if(port_index != -1)
+			nvram_prefix = get_port_settings_nvram_prefix(port_index);
+
+		$("#network_detection_settings_div").find(".input_container").each(function(){
+			$(this).find("*").each(function(){
+				if($(this).attr("id")){
+					id = $(this).attr("id");
+					if(id.indexOf("select_") != -1)
+						return;
+
+					if(port_index != -1){
+						nvram_name = nvram_prefix + id;
+						nvram_val = httpApi.nvramGet([nvram_name])[nvram_name];
+					}
+					else{
+						nvram_name = id;
+						nvram_val = httpApi.nvramDefaultGet([nvram_name])[nvram_name];
+					}
+
+					key_val_pairs[id] = nvram_val;
+					if($(this).hasClass("textInput")){
+						$(this).val(nvram_val);
+					}
+					else if($(this).attr("type") == "checkbox"){
+						if(nvram_val == "1"){
+							$(this).prop( "checked", true);
+						}
+						else{
+							$(this).prop( "checked", false);
+						}
+					}
+					else if($(this).parent().hasClass("custom_select_container")){
+						set_value_Custom_Select($("#ping_target_selection"), id, nvram_val);
+					}
+				}
+			});
+		});
+
+		per_port_settings[port_id] = key_val_pairs;
+	}
+
+	if($("#dns_probe").is(":checked")){
+		$("#resolve_host_div").show();
+	}
+	else{
+		$("#resolve_host_div").hide();
+	}
+
+	if($("#wandog_enable").is(":checked")){
+		$("#ping_target_selection").show();
+	}
+	else{
+		$("#ping_target_selection").hide();
+	}
+}
+
+function choose_port(port_id){
+	cur_chosen_port = port_id;
+	$.each($(".port_container"), function(){
+		$(this).css("border-bottom", "4px solid #DCDCDC");
+	});
+	$("#"+port_id).closest(".port_container").css("border-bottom", "4px solid #006CE1");
+	load_port_settings(port_id);
+}
+
+function show_port_status(){
+	httpApi.get_port_status_array(dut_mac, function(port_info){
+		var $wan_usb_container = $("#wan_usb_container");
+		//var $lan_port_container = $("#lan_port_container");
+		var device_name = "";
+
+		$.each(port_info, function(label){
+			$.each(port_info[label], function(index, port_item){
+				if(label == "WAN"){
+					var $port_container = $("<div>")
+						.addClass("port_container")
+						.appendTo($wan_usb_container);
+
+					var $port_icon_container = $("<div>")
+						.addClass("port_icon_container")
+						.appendTo($port_container);
+
+					var $port_icon = $("<div>")
+						.attr("id", port_item.label+port_item.label_idx)
+						.addClass("port_icon")
+						.click(function(){
+							choose_port($(this).attr("id"));
+						})
+						.appendTo($port_icon_container);
+
+					$("<div>")
+						.addClass("wan_icon")
+						.appendTo($port_icon);
+
+					$("<div>")
+						.html(port_item.label_port_name)
+						.addClass("port_name")
+						.appendTo($port_container);
+				}
+				else if(label == "LAN"){
+					var $port_container = $("<div>")
+						.addClass("port_container");
+
+					//if(port_item.cap_support.USB)
+					//	$port_container.appendTo($wan_usb_container);
+					//else
+						$port_container.appendTo($wan_usb_container);
+
+					var $port_icon_container = $("<div>")
+						.addClass("port_icon_container")
+						.appendTo($port_container);
+
+					var $port_icon = $("<div>")
+						.attr("id", port_item.label+port_item.label_idx)
+						.addClass("port_icon")
+						.click(function(){
+							choose_port($(this).attr("id"));
+						})
+						.appendTo($port_icon_container);
+
+					if(!port_item.cap_support.USB){
+						$("<div>")
+							.html((port_item.label_idx > 0)? port_item.label_idx : "")
+							.appendTo($port_icon);
+					}
+
+					//if(port_item.label != "L")
+					{
+						$("<div>")
+							.html(port_item.label_port_name)
+							.addClass("port_name")
+							.appendTo($port_container);
+					}
+				}
+
+				if(port_item.cap_support.USB)
+					$port_icon.addClass("usb");
+
+				if(port_item.is_on == "1"){
+					$port_icon.addClass("conn");
+				}
+				else if(port_item.is_on == "0"){
+					if(port_item.cap_support.USB){
+						if(port_item.hasOwnProperty("devices"))
+							$port_icon.addClass("conn");
+						else
+							$port_icon.addClass("unplug");
+					}
+					else
+						$port_icon.addClass("unplug");
+				}
+			});
+		});
+	})
+}
+
+</script>
+<div id="content_container" style="min-height: 1428px;">
+	<!--div style="display: flex; justify-content: center;	align-items: center; height: 68px; font-weight: bolder;	font-size: 16px; color: #000000;">
+		<div>WAN - Multi WAN Settings</div>
+	</div-->
+	<div style="display: flex; flex-direction: row; align-items: center; padding: 8px 16px; height: 44px;	border: 1px solid #DCDCDC; border-radius: 10px; margin: 20px 10px;">
+		<div id="multi_wan_enable_div" style="width: 100%;"></div>
+	</div>
+
+	<div style="margin: 0 10px;">
+		<div style="display: flex; align-items: center; min-height: 30px; margin: 10px 0px; border-left: 6px solid #248DFF;">
+			<div id="wan_selection_title" style="font-size: 16px;  margin-left:10px;"></div>
+		</div>
+		<div id="wan_items_div" class="mt_wans_container" style="display: flex; justify-content: space-between; flex-wrap: wrap;">
+			<div id="primary_group_div" class="wan_group_container">
+				<div style="margin-left: 3%; margin-top: 20px;">
+					<div id="wan_group_title" style="font-size: 14px;">WAN Group</div>
+					<div style="font-size: 24px; margin-top: 5px;"><#dualwan_primary#></div>
+				</div>
+				<div id = "primary_select_div"></div>
+				<div id = "primary_add_div"></div>
+				<div id="primary_lb_hint_div" style="display: none; background-color: #FFF1E8; border: 1px solid #B42D18; border-radius: 4px; margin: 10px 3% 10px; padding: 10px;">
+					<div style="display: flex; justify-content: space-around;">
+						<div style="min-width: 30px;"></div>
+						<div style="font-size: 14px;"><span style="font-weight: bolder;">Load Balance</span>(LB) optimizes resource and maximizes throughput, which provides better performance for Primary and Secondary WAN with similar network speeds.</div>
+					</div>
+				</div>
+			</div>
+			<div id="secondary_group_div" class="wan_group_container group2">
+				<div style="margin-left: 15px; margin-top: 20px;">
+					<div style="font-size: 14px;">WAN Group</div>
+					<div style="font-size: 24px; margin-top: 5px;"><#dualwan_secondary#></div>
+				</div>
+				<div id = "secondary_select_div"></div>
+				<div id = "secondary_add_div"></div>
+			</div>
+		</div>
+	</div>
+	<div style="display: none; flex-direction: row; align-items: center; padding: 8px 16px; height: 44px; border: 1px solid #DCDCDC; border-radius: 10px; margin: 10px 10px;">
+		<div id="auto_usb_backup_div" style="width: 100%;"></div>
+	</div>
+	<div  id="policy_setting_div"  style="display: none; margin: 0 10px;">
+		<div style="display: flex; align-items: center; min-height: 30px; margin: 10px 0px; border-left: 6px solid #248DFF;">
+			<div style="font-size: 16px;  margin-left:10px;">Set policy  with Muti-WAN</div>
+		</div>
+		<div id="multiwan_policy_div" style="border: 1px solid #DCDCDC; border-radius: 10px; padding-bottom: 5px;"></div>
+	</div>
+	<div style="display: flex; align-items: center; min-height: 30px; margin: 10px 0px 10px 10px; border-left: 6px solid #248DFF;">
+		<div style="font-size: 16px;  margin-left:10px;">Per-Port Settings</div>
+	</div>
+	<div style="border: 1px solid #DCDCDC; border-radius: 10px; margin: 0 10px;">
+		<div class="port_status_container">
+			<div id="wan_usb_container"></div>
+			<!--div id="lan_port_container"></div-->
+		</div>
+		<div id="network_detection_settings_div"></div>
+	</div>
+	<div id="apply_btn" class="action_container">
+	</div>
+</div>

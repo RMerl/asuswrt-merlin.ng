@@ -1,0 +1,38 @@
+SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2014 Broadcom Corporation.
+ */
+
+Semihosting is ARM's way of having a real or virtual target communicate
+with a host or host debugger for basic operations such as file I/O,
+console I/O, etc. Please see
+http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0471c/Bgbjjgij.html for more information.
+
+For developing on armv8 virtual fastmodel platforms, semihosting is a
+valuable tool since it allows access to image/configuration files before
+eMMC or other NV media are available.
+
+There are two main ARM virtual Fixed Virtual Platform (FVP) models,
+Versatile Express (VE) FVP and BASE FVP (See
+http://www.arm.com/products/tools/models/fast-models/foundation-model.php)
+The initial vexpress64 u-boot board created here runs on the VE virtual
+platform using the license-free Foundation_v8 simulator. Fortunately,
+the Foundation_v8 simulator also supports the BASE_FVP model which
+companies can purchase licenses for and contain much more functionality.
+So we can, in u-boot, run either model by either using the VE FVP (default),
+or turning on CONFIG_BASE_FVP for the more full featured model.
+
+Rather than create a new armv8 board similar to armltd/vexpress64, add
+semihosting calls to the existing one, enabled with CONFIG_SEMIHOSTING
+and CONFIG_BASE_FVP both set. Also reuse the existing board config file
+vexpress_aemv8a.h but differentiate the two models by the presence or
+absence of CONFIG_BASE_FVP. This change is tested and works on both the
+Foundation and Base fastmodel simulators.
+
+The semihosting code adds a command:
+
+  smhload <image> <address> [env var]
+
+That will load an image from the host filesystem into RAM at the specified
+address and optionally store the load end address in the specified
+environment variable.

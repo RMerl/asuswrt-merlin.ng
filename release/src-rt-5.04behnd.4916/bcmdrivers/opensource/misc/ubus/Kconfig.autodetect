@@ -1,0 +1,30 @@
+config BCM_UBUS
+	bool "Broadcom BCA UBUS driver"
+	default y if !BRCM_IKOS && !BRCM_SMC_BOOT
+	default y if BRCM_IKOS && !BRCM_QEMU && !BRCM_SMC_BOOT && (BCM94912 || BCM96756 || BCM96765 || BCM96888 || BCM96813 || BCM968880 || BCM96837 || BCM96766)
+	help
+	  Broadcom BCA UBUS driver
+
+config BCM_UBUS_IMPL
+	int "Implementation index for BCA UBUS driver"
+	depends on BCM_UBUS
+	default 2 if BCM963138 || BCM963148 || BCM94908
+	default 1
+	help
+	  Broadcom BCA UBUS driver implentation index. Index 1 for UBUS 4 and
+	  Index 2 for UBUS 3
+
+config BCM_FPM_COHERENCY_EXCLUDE
+	bool "Keep FPM pool memory area non-coherent"
+	default n
+	depends on (BCM_GLB_COHERENCY && BCM96858)
+
+config BCM_UBUS_DECODE_REMAP
+	bool "Remap UBUS decode window"
+	default n
+	depends on !BCM96878 && !BRCM_QEMU && !BRCM_SMC_BOOT
+
+config BCM_UBUS4_DCM
+	bool "UBUS4 Dynamic Clock Management"
+	default n
+	depends on !BCM96878 && !BRCM_IKOS && !BRCM_SMC_BOOT

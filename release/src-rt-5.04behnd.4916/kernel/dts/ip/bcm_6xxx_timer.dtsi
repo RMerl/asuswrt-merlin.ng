@@ -1,0 +1,17 @@
+u-boot,dm-pre-reloc;
+compatible = "brcm,bcm6xxx-timer";
+reg = <PERIPH_TIMER_OFFSET PERIPH_TIMER_SIZE>;
+interrupts = <GIC_SPI PERIPH_TIMER0_IRQ IRQ_TYPE_LEVEL_HIGH>,
+	<GIC_SPI PERIPH_TIMER1_IRQ IRQ_TYPE_LEVEL_HIGH>,
+	<GIC_SPI PERIPH_TIMER2_IRQ IRQ_TYPE_LEVEL_HIGH>,
+	<GIC_SPI PERIPH_TIMER3_IRQ IRQ_TYPE_LEVEL_HIGH>;
+clocks = <&periph_osc>;
+clock-names = "perclk";
+status = "disabled";
+
+#undef PERIPH_TIMER_OFFSET
+#undef PERIPH_TIMER_SIZE
+#undef PERIPH_TIMER0_IRQ
+#undef PERIPH_TIMER1_IRQ
+#undef PERIPH_TIMER2_IRQ
+#undef PERIPH_TIMER3_IRQ

@@ -1,0 +1,87 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2018 Rosy Song <rosysong@rosinson.com>
+ */
+
+#include "skeleton.dtsi"
+
+/ {
+	compatible = "qca,qca956x";
+
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu@0 {
+			device_type = "cpu";
+			compatible = "mips,mips74Kc";
+			reg = <0>;
+		};
+	};
+
+	clocks {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		xtal: xtal {
+			#clock-cells = <0>;
+			compatible = "fixed-clock";
+			clock-output-names = "xtal";
+		};
+	};
+
+	ahb {
+		compatible = "simple-bus";
+		ranges;
+
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		apb {
+			compatible = "simple-bus";
+			ranges;
+
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			uart0: uart@18020000 {
+				compatible = "ns16550";
+				reg = <0x18020000 0x20>;
+				reg-shift = <2>;
+
+				status = "disabled";
+			};
+
+			gmac0: eth@0x19000000 {
+				compatible = "qca,ag956x-mac";
+				reg = <0x19000000 0x200>;
+				phy = <&phy0>;
+				phy-mode = "sgmii";
+
+				status = "disabled";
+
+				mdio {
+					#address-cells = <1>;
+					#size-cells = <0>;
+					phy0: ethernet-phy@0 {
+						reg = <0>;
+					};
+				};
+			};
+		};
+
+		spi0: spi@1f000000 {
+			compatible = "qca,ar7100-spi";
+			reg = <0x1f000000 0x10>;
+
+			status = "disabled";
+
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
+	};
+};

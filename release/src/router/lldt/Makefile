@@ -23,6 +23,13 @@ install: all
 	@ echo " [lld2d] Installing..."
 	install -D lld2d $(INSTALLDIR)/usr/sbin/lld2d
 	install -D lld2d.conf $(INSTALLDIR)/rom/etc/lld2d.conf
+
+	# Non-default .ico
+ifeq ($(TUFAX4200),y)
+	install -D icon.TUF-AX4200Q.ico $(INSTALLDIR)/rom/etc/icon.TUF-AX4200Q.ico
+	install -D icon.large.TUF-AX4200Q.ico $(INSTALLDIR)/rom/etc/icon.large.TUF-AX4200Q.ico
+endif
+
 ifeq ($(RTN66U), y)
 	install -D icon.RT-N66U.ico $(INSTALLDIR)/rom/etc/icon.ico
 	install -D icon.large.RT-N66U.ico $(INSTALLDIR)/rom/etc/icon.large.ico

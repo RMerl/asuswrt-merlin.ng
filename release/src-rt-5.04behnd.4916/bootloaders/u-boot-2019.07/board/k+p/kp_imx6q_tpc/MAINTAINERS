@@ -1,0 +1,6 @@
+KP_IMX6Q_TPC BOARD
+M:	Lukasz Majewski <lukma@denx.de>
+S:	Maintained
+F:	board/k+p/kp_imx6q_tpc/
+F:	include/configs/kp_imx6q_tpc.h
+F:	configs/kp_imx6q_tpc_defconfig

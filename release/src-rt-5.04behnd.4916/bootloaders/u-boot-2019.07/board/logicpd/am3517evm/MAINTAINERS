@@ -1,0 +1,6 @@
+AM3517EVM BOARD
+M:	Adam Ford <aford173@gmail.com>
+S:	Maintained
+F:	board/logicpd/am3517evm/
+F:	include/configs/am3517_evm.h
+F:	configs/am3517_evm_defconfig

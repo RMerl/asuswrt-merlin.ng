@@ -1,0 +1,71 @@
+menu "FPGA support"
+
+config FPGA
+	bool
+
+config FPGA_ALTERA
+	bool "Enable Altera FPGA drivers"
+	select FPGA
+	help
+	  Say Y here to enable the Altera FPGA driver
+
+	  This provides basic infrastructure to support Altera FPGA devices.
+	  Enable Altera FPGA specific functions which includes bitstream
+	  (in BIT format), fpga and device validation.
+
+config FPGA_SOCFPGA
+	bool "Enable Gen5 and Arria10 common FPGA drivers"
+	select FPGA_ALTERA
+	help
+	  Say Y here to enable the Gen5 and Arria10 common FPGA driver
+
+	  This provides common functionality for Gen5 and Arria10 devices.
+
+config FPGA_CYCLON2
+	bool "Enable Altera FPGA driver for Cyclone II"
+	depends on FPGA_ALTERA
+	help
+	  Say Y here to enable the Altera Cyclone II FPGA specific driver
+
+	  This provides common functionality for Altera Cyclone II devices.
+	  Enable FPGA driver for loading bitstream in BIT and BIN format
+	  on Altera Cyclone II device.
+
+config FPGA_STRATIX10
+	bool "Enable Altera FPGA driver for Stratix 10"
+	depends on TARGET_SOCFPGA_STRATIX10
+	select FPGA_ALTERA
+	help
+	  Say Y here to enable the Altera Stratix 10 FPGA specific driver
+
+	  This provides common functionality for Altera Stratix 10 devices.
+	  Enable FPGA driver for writing bitstream into Altera Stratix10
+	  device.
+
+config FPGA_XILINX
+	bool "Enable Xilinx FPGA drivers"
+	select FPGA
+	help
+	  Enable Xilinx FPGA specific functions which includes bitstream
+	  (in BIT format), fpga and device validation.
+
+config FPGA_ZYNQMPPL
+	bool "Enable Xilinx FPGA driver for ZynqMP"
+	depends on FPGA_XILINX
+	help
+	  Enable FPGA driver for loading bitstream in BIT and BIN format
+	  on Xilinx Zynq UltraScale+ (ZynqMP) device.
+
+config FPGA_SPARTAN3
+	bool "Enable Spartan3 FPGA driver"
+	help
+	  Enable Spartan3 FPGA driver for loading in BIT format.
+
+config FPGA_ZYNQPL
+	bool "Enable Xilinx FPGA for Zynq"
+	depends on ARCH_ZYNQ
+	help
+	  Enable FPGA driver for loading bitstream in BIT and BIN format
+	  on Xilinx Zynq devices.
+
+endmenu

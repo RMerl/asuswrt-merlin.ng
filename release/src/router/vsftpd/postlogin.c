@@ -462,13 +462,12 @@ process_post_login(struct vsf_session* p_sess)
 		--layer;
 
 //ftp_dbg("layer=%d.\n", layer);
-	if(layer < BASE_LAYER){
+	if(layer < BASE_LAYER
+#if defined(RTCONFIG_HND_ROUTER_AX)
+			|| (layer >= MOUNT_LAYER && !strcmp(mount_path, "/tmp/mnt/defaults"))
+#endif
+			){
 		cmd_ok = 0;
-
-		if(mount_path != NULL)
-			free(mount_path);
-		if(share_name != NULL)
-			free(share_name);
 
 		goto VSFTPD_CMD;
 	}

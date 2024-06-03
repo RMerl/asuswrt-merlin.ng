@@ -1,0 +1,12 @@
+if TARGET_DART_6UL
+
+config SYS_BOARD
+	default "dart_6ul"
+
+config SYS_VENDOR
+	default "variscite"
+
+config SYS_CONFIG_NAME
+	default "dart_6ul"
+
+endif

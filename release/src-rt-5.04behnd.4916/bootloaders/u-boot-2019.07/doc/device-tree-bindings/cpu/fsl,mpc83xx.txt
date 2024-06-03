@@ -1,0 +1,34 @@
+MPC83xx CPU devices
+
+MPC83xx SoCs contain a e300 core as their main processor.
+
+Required properties:
+- compatible: must be one of "fsl,mpc83xx",
+                             "fsl,mpc8308",
+                             "fsl,mpc8309",
+                             "fsl,mpc8313",
+                             "fsl,mpc8315",
+                             "fsl,mpc832x",
+                             "fsl,mpc8349",
+                             "fsl,mpc8360",
+                             "fsl,mpc8379"
+- clocks: has to have two entries, which must be the core clock at index 0 and
+  the CSB (Coherent System Bus) clock at index 1. Both are given by a suitable
+  "fsl,mpc83xx-clk" device
+
+Example:
+
+socclocks: clocks {
+	compatible = "fsl,mpc8315-clk";
+	#clock-cells = <1>;
+};
+
+cpus {
+	compatible = "cpu_bus";
+
+	PowerPC,8315@0 {
+		compatible = "fsl,mpc8315";
+		clocks = <&socclocks MPC83XX_CLK_CORE
+		          &socclocks MPC83XX_CLK_CSB>;
+	};
+};

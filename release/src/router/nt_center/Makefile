@@ -30,6 +30,12 @@ endif
 
 LIBS = -lpthread -lgcc_s
 
+ifeq ($(RT4GAC86U),y)
+OBJS += $(LIBDIR)/libc_nonshared.a
+else
+OBJS =
+endif
+
 ifeq ($(RTCONFIG_DMALLOC),y)
 CFLAGS += -DDMALLOC -DDMALLOC_FUNC_CHECK -I$(STAGEDIR)/usr/include
 LDFLAGS += -L$(STAGEDIR)/usr/lib -ldmalloc
@@ -63,6 +69,10 @@ CFLAGS  += -I$(TOP)/json-c -I$(TOP)/libubox -I$(TOP)/ubus
 LDFLAGS += -L$(TOP)/libubox -lubox -lblobmsg_json -L$(TOP)/ubus -lubus
 endif
 
+ifeq ($(RTCONFIG_TRUSTZONE),y)
+LDFLAGS += -L$(TOP)/ateed/ -latee
+endif
+
 MDIRS = lib actMail
 
 ifeq ($(wildcard $(SRCBASE)/router/nt_center/*.c),)
@@ -79,22 +89,22 @@ else
 all: ntdir nt_center Notify_Event2NC  nt_monitor
 endif
 
-nt_center: nt_center.o
-Notify_Event2NC: Notify_Event2NC.o
-nt_monitor: nt_monitor.o
+nt_center: nt_center.o $(OBJS)
+Notify_Event2NC: Notify_Event2NC.o $(OBJS)
+nt_monitor: nt_monitor.o $(OBJS)
 
 ntdir:
 	set -e; for d in ${MDIRS}; do $(MAKE) -C $${d}; done
 nt_center:
-	@$(CC) ${CFLAGS} $< -o $@ ${LDFLAGS} $(LIBS)
+	@$(CC) ${CFLAGS} -o $@ $^ ${LDFLAGS} $(LIBS)
 	$(if $(RTCONFIG_DEBUG),,@$(STRIP) $@)
 
 Notify_Event2NC:
-	@$(CC) ${CFLAGS} $< -o $@ ${LDFLAGS} $(LIBS)
+	@$(CC) ${CFLAGS} -o $@ $^ ${LDFLAGS} $(LIBS)
 	$(if $(RTCONFIG_DEBUG),,@$(STRIP) $@)
 
 nt_monitor:
-	@$(CC) ${CFLAGS} $< -o $@ ${LDFLAGS} $(LIBS)
+	@$(CC) ${CFLAGS} -o $@ $^ ${LDFLAGS} $(LIBS)
 	$(if $(RTCONFIG_DEBUG),,@$(STRIP) $@)
 
 else # DSL_ASUSWRT_SDK 

@@ -49,7 +49,7 @@ function QKfinish_load_body(){
 		document.getElementById("fail_to_connect").style.display = "none";
 		document.getElementById("succeed_to_connect").style.display = "";
 		document.getElementById("li_of_wireless").style.display = "";		
-		showtext(document.getElementById("title_item"), "<#QKSet_finish_desc#>");
+		showtext(document.getElementById("title_item"), `<#QKSet_finish_desc#>`);
 	}
 
 }
@@ -432,7 +432,7 @@ function addBookmarkForBrowser(sTitle) {
     	  	<#QKSet_finish_moveto8#>
 				</li>
 				<li>
-					<a href="javascript:addBookmarkForBrowser('<#Web_Title#>');"><#Browser_action_addfavorite#></a>: 
+					<a href="javascript:addBookmarkForBrowser(`<#Web_Title#>`);"><#Browser_action_addfavorite#></a>: 
 					<#Browser_action_addfavorite_hint2#>
 				</li>				
 			</ol>

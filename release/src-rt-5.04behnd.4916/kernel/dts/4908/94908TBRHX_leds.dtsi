@@ -1,0 +1,52 @@
+/* 94908TBRHX  board led definition */
+
+&legacy_leds {
+	wl-sess-led = <&led0>;
+};
+
+&led_ctrl {
+	led0: sw_led_0-pin_0 {
+        active_low;
+        status = "okay";
+    };
+	led3: sw_led_3-pin_3 {
+        active_low;
+        status = "okay";
+    };
+	led26: port_0-led_2-pin_26 {
+        active_low;
+        link = <(LED_SPEED_100|LED_SPEED_1G)>;
+        activity = <(LED_SPEED_100|LED_SPEED_1G)>;
+        status = "okay";
+    };
+	led27: port_1-led_2-pin_27 {
+        active_low;
+        link = <(LED_SPEED_100|LED_SPEED_1G)>;
+        activity = <(LED_SPEED_100|LED_SPEED_1G)>;
+        status = "okay";
+    };
+	led28: port_2-led_2-pin_28 {
+        active_low;
+        link = <(LED_SPEED_100|LED_SPEED_1G)>;
+        activity = <(LED_SPEED_100|LED_SPEED_1G)>;
+        status = "okay";
+    };
+	led29: port_3-led_2-pin_29 {
+        active_low;
+        link = <(LED_SPEED_100|LED_SPEED_1G)>;
+        activity = <(LED_SPEED_100|LED_SPEED_1G)>;
+        status = "okay";
+    };
+	led30: port_7-led_2-pin_30 {
+        active_low;
+        link = <(LED_SPEED_100|LED_SPEED_1G)>;
+        activity = <(LED_SPEED_100|LED_SPEED_1G)>;
+        status = "okay";
+    };
+	led31: rnr_port_3-led_2-pin_31 {
+        active_low;
+        link = <(LED_SPEED_100|LED_SPEED_1G)>;
+        activity = <(LED_SPEED_100|LED_SPEED_1G)>;
+        status = "okay";
+    };	
+};

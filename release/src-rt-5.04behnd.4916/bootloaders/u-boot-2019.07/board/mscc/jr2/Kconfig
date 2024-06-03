@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+
+config SYS_VENDOR
+	default "mscc"
+
+if SOC_JR2
+
+config SYS_BOARD
+	default "jr2"
+
+config SYS_CONFIG_NAME
+	default "jr2"
+
+endif
+

@@ -1325,6 +1325,7 @@ static pj_status_t create_ice_media_transports(pjsua_inst_id inst_id,
 	ice_cb.on_ice_complete = &on_ice_complete;
 	ice_cb.on_stun_binding_complete = &on_ice_stun_binding_complete;
 	ice_cb.on_tcp_server_binding_complete = &on_ice_tcp_server_binding_complete;
+	ice_cb.app_log_cb = pjsua_var[inst_id].log_cfg.app_log_cb;
 	pj_ansi_snprintf(name, sizeof(name), "icetp%02d", i);
 	pjsua_var[inst_id].calls[i].med_tp_ready = PJ_EPENDING;
 
@@ -1542,6 +1543,7 @@ static pj_status_t create_ice_media_transports2(pjsua_inst_id inst_id,
 		ice_cb.on_ice_complete = &on_ice_complete;
 		ice_cb.on_stun_binding_complete = &on_ice_stun_binding_complete;
 		ice_cb.on_tcp_server_binding_complete = &on_ice_tcp_server_binding_complete;
+		ice_cb.app_log_cb = pjsua_var[inst_id].log_cfg.app_log_cb;
 		pj_ansi_snprintf(name, sizeof(name), "icetp%02d", idx);
 		pjsua_var[inst_id].calls[idx].med_tp_ready = PJ_EPENDING;
 
@@ -1858,7 +1860,7 @@ pj_status_t pjsua_media_channel_init(pjsua_inst_id inst_id,
 		if (call->rem_dtls_use)
 			dtls_opt.use = call->rem_dtls_use;
 		else
-			dtls_opt.use = (pjsua_var[inst_id].media_cfg.enable_secure_data > 0) ?
+			dtls_opt.use =  (pjsua_var[inst_id].media_cfg.enable_secure_data > 0 || call->use_dtls)?
 							PJMEDIA_DTLS_MANDATORY : PJMEDIA_DTLS_DISABLED;
 
 		// Assign certificate and verify_server option

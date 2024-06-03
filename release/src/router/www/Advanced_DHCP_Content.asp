@@ -13,14 +13,14 @@
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="device-map/device-map.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" language="JavaScript" src="/help.js"></script>
 <script type="text/javascript" language="JavaScript" src="/validator.js"></script>
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
-<script type="text/javascript" src="/js/jquery.js"></script>
-<script type="text/javascript" src="/js/httpApi.js"></script>
 <style>
 .sort_border{
 	position: relative;
@@ -158,11 +158,11 @@ function initial(){
 
 	if(IPv6_support && ipv6_proto_orig != "disabled"){
 		document.form.ipv6_dns1_x.disabled = false;
-		document.form.ipv6_dns1_x.parentNode.parentNode.style.display = "";
+		document.form.ipv6_dns1_x.parentNode.parentNode.style.display = "";	
 	}
 	else{
 		document.form.ipv6_dns1_x.disabled = true;
-		document.form.ipv6_dns1_x.parentNode.parentNode.style.display = "none";
+		document.form.ipv6_dns1_x.parentNode.parentNode.style.display = "none";	
 	}
 
 
@@ -291,7 +291,7 @@ function del_Row(r){
 		});
 
 		if(policy_flag){
-			if(!confirm("Remove the client's IP binding will also delete the client's policy in the exception list of <#VPN_Fusion#>. Are you sure you want to delete?"))/*untranslated*/
+			if(!confirm(stringSafeGet("<#VPN_Fusion_IP_Binding_Delete_And_Exception_Policy#>")))
 				return false;
 		}
 	}
@@ -354,7 +354,7 @@ function showdhcp_staticlist(){
 	else {
 		//user icon
 		var userIconBase64 = "NoIcon";
-		var clientName, deviceType, deviceVender;
+		var clientName, deviceType, deviceVendor;
 
 		for(var i = 0; i < sorted_array.length; i++){
 			var key = sorted_array[i].ip;
@@ -368,12 +368,12 @@ function showdhcp_staticlist(){
 			if(clientList[clientMac]) {
 				clientName = (clientList[clientMac].nickName == "") ? clientList[clientMac].name : clientList[clientMac].nickName;
 				deviceType = clientList[clientMac].type;
-				deviceVender = clientList[clientMac].vendor;
+				deviceVendor = clientList[clientMac].vendor;
 			}
 			else {
 				clientName = "New device";
 				deviceType = 0;
-				deviceVender = "";
+				deviceVendor = "";
 			}
 			if (manually_dhcp_list_array[clientIP] != undefined)
 				var clientHostname = manually_dhcp_list_array[clientIP].hostname;
@@ -390,20 +390,24 @@ function showdhcp_staticlist(){
 					userIconBase64 = getUploadIcon(clientMac.replace(/\:/g, ""));
 				}
 				if(userIconBase64 != "NoIcon") {
-					code += '<div id="' + clientIconID + '" style="text-align:center;"><img class="imgUserIcon_card" src="' + userIconBase64 + '"></div>';
-				}
-				else if(deviceType != "0" || deviceVender == "") {
-					code += '<div id="' + clientIconID + '" class="clientIcon type' + deviceType + '"></div>';
-				}
-				else if(deviceVender != "" ) {
-					var venderIconClassName = getVenderIconClassName(deviceVender.toLowerCase());
-					if(venderIconClassName != "" && !downsize_4m_support) {
-						code += '<div id="' + clientIconID + '" class="venderIcon ' + venderIconClassName + '"></div>';
-					}
-					else {
-						code += '<div id="' + clientIconID + '" class="clientIcon type' + deviceType + '"></div>';
-					}
-				}
+                    if(clientList[clientMac].isUserUplaodImg){
+                        code += '<div id="' + clientIconID + '" class="clientIcon"><img class="imgUserIcon_card" src="' + userIconBase64 + '"></div>';
+                    }else{
+                        code += '<div id="' + clientIconID + '" class="clientIcon"><i class="type" style="--svg:url(' + userIconBase64 + ')"></i></div>';
+                    }
+                }
+                else if(deviceType != "0" || deviceVendor == "") {
+                    code += '<div id="' + clientIconID + '" class="clientIcon"><i class="type'+deviceType+'"></i></div>';
+                }
+                else if(deviceVendor != "" ) {
+                    var vendorIconClassName = getVendorIconClassName(deviceVendor.toLowerCase());
+                    if(vendorIconClassName != "" && !downsize_4m_support) {
+                        code += '<div id="' + clientIconID + '" class="clientIcon"><i class="vendor-icon '+ vendorIconClassName +'"></i></div>';
+                    }
+                    else {
+                        code += '<div id="' + clientIconID + '" class="clientIcon"><i class="type' + deviceType + '"></i></div>';
+                    }
+                }
 			}
 			code += '</td><td style="width:60%;border:0px;">';
 			code += '<div>' + clientName + '</div>';
@@ -575,10 +579,9 @@ function validForm(){
 	document.form.dhcp_start.value = ipFilterZero(document.form.dhcp_start.value);
         document.form.dhcp_end.value = ipFilterZero(document.form.dhcp_end.value);
 
-	if(IPv6_support && ipv6_proto_orig != "disabled"){
-		if(document.form.ipv6_dns1_x.value != ""){
+    if(IPv6_support && ipv6_proto_orig != "disabled"){
+		if(document.form.ipv6_dns1_x.value != "")
 			if(!validator.isLegal_ipv6(document.form.ipv6_dns1_x)) return false;
-		}
 	}
 
 	return true;
@@ -640,7 +643,7 @@ function setClientIP(macaddr, ipaddr){
 }
 
 function hideClients_Block(){
-	document.getElementById("pull_arrow").src = "/images/arrow-down.gif";
+	document.getElementById("pull_arrow").src = "/images/unfold_more.svg";
 	document.getElementById('ClientList_Block_PC').style.display='none';
 }
 
@@ -648,7 +651,7 @@ function pullLANIPList(obj){
 	var element = document.getElementById('ClientList_Block_PC');
 	var isMenuopen = element.offsetWidth > 0 || element.offsetHeight > 0;
 	if(isMenuopen == 0){		
-		obj.src = "/images/arrow-top.gif"
+		obj.src = "/images/unfold_less.svg"
 		element.style.display = 'block';		
 		document.form.dhcp_staticmac_x_0.focus();		
 	}
@@ -923,7 +926,7 @@ function sortClientIP(){
 			  </tr>
 			  
 			  <tr>
-            <th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,5);"><#LANHostConfig_LeaseTime_itemname#></a></th>
+            <th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,5);"><#LANHostConfig_LeaseTime_itemname#> (<#Second#>)</a></th>
             <td>
               <input type="text" maxlength="6" name="dhcp_lease" class="input_15_table" value="<% nvram_get("dhcp_lease"); %>" onKeyPress="return validator.isNumber(this,event)" autocorrect="off" autocapitalize="off">
             </td>
@@ -964,12 +967,12 @@ function sortClientIP(){
 				</td>
 			  </tr>
                           <tr>
-                                <th>Advertise router's IP in addition to user-specified DNS</th>
+				<th><#LAN_Advertise_Router_IP_DNS#></th>
                                 <td>
                                   <input type="radio" value="1" name="dhcpd_dns_router" class="content_input_fd" onClick="return change_common_radio(this, 'LANHostConfig', 'dhcpd_dns_router', '1')" <% nvram_match("dhcpd_dns_router", "1", "checked"); %>><#checkbox_Yes#>
                                   <input type="radio" value="0" name="dhcpd_dns_router" class="content_input_fd" onClick="return change_common_radio(this, 'LANHostConfig', 'dhcpd_dns_router', '0')" <% nvram_match("dhcpd_dns_router", "0", "checked"); %>><#checkbox_No#>
                                 </td>
-                          </tr>
+			<tr>
 			<tr style="display:none;">
 				<th width="200"><#ipv6_dns_serv#></th>
 				<td>
@@ -1018,7 +1021,7 @@ function sortClientIP(){
 					<!-- client info -->
 					<td width="32%">
 						<input type="text" class="input_20_table" maxlength="17" name="dhcp_staticmac_x_0" style="margin-left:-12px;width:170px;" onKeyPress="return validator.isHWAddr(this,event)" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off" placeholder="ex: <% nvram_get("lan_hwaddr"); %>">
-						<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="<#select_MAC#>">
+						<img id="pull_arrow" height="14px;" src="/images/unfold_more.svg" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="<#select_MAC#>">
 						<div id="ClientList_Block_PC" class="clientlist_dropdown" style="margin-left:9px;"></div>
 					</td>
 					<td width="19%">

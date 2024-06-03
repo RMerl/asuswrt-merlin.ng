@@ -1,0 +1,6 @@
+M5373EVB BOARD
+M:	TsiChung Liew <Tsi-Chung.Liew@nxp.com>
+S:	Maintained
+F:	board/freescale/m5373evb/
+F:	include/configs/M5373EVB.h
+F:	configs/M5373EVB_defconfig

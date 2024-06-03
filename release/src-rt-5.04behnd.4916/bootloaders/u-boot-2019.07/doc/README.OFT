@@ -1,0 +1,28 @@
+Open Firmware Flat Tree and usage.
+----------------------------------
+
+As part of the ongoing cleanup of the Linux PPC trees, the preferred
+way to pass bootloader and board setup information is the open
+firmware flat tree.
+
+Please take a look at the following email discussion for some
+background.
+
+  http://ozlabs.org/pipermail/linuxppc-dev/2005-August/019408.html
+  http://ozlabs.org/pipermail/linuxppc-dev/2005-August/019362.html
+
+The generated tree is part static and part dynamic.
+
+There is a static part which is compiled in with DTC and a dynamic
+part which is programmatically appended.
+
+You'll need a fairly recent DTC tool, which is available by git at
+
+  rsync://ozlabs.org/dtc/dtc.git
+
+The xxd binary dumper is needed too which I got from
+
+  ftp://ftp.uni-erlangen.de/pub/utilities/etc/xxd-1.10.tar.gz
+
+
+Pantelis Antoniou, 13 Oct 2005

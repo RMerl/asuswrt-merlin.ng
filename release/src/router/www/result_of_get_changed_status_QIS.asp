@@ -1,7 +1,9 @@
-﻿<% wanlink(); %>
+<% wanlink(); %>
 <% wanstate(); %>
+<% dual_wanstate(); %>
 var autodet_plc_state = "<% nvram_get("autodet_plc_state"); %>";
-var wans_dualwan = '<% nvram_get("wans_dualwan"); %>'.split(" ");
+var wans_dualwan_val = "<% nvram_get("wans_dualwan"); %>";
+var wans_dualwan = wans_dualwan_val.split(" ");
 if(wans_dualwan[0].indexOf("wan") != -1  && wans_dualwan[1].indexOf("wan") != -1)
 	var dual_ewan = true;
 else
@@ -13,7 +15,7 @@ if(dual_ewan){
 	var autodet1_auxstate = '<% nvram_get("autodet1_auxstate"); %>';
 }
 else{
-	if(wans_dualwan != ""){
+	if(wans_dualwan_val != "" && wans_dualwan.indexOf("none") == -1){
 		var ewan_index = wans_dualwan.indexOf("wan");
 		var autodet_state = (ewan_index == 0)? '<% nvram_get("autodet_state"); %>': '<% nvram_get("autodet1_state"); %>';
 		var autodet_auxstate = (ewan_index == 0)? '<% nvram_get("autodet_auxstate"); %>': '<% nvram_get("autodet1_auxstate"); %>';
@@ -24,8 +26,8 @@ else{
 	}
 }
 parent.allUsbStatusArray = <% show_usb_path(); %>;
-var link_wan_status = "<% nvram_get("link_wan"); %>";
-var link_wan1_status = "<% nvram_get("link_wan1"); %>";
+link_wan_status = "<% nvram_get("link_wan"); %>";
+link_wan1_status = "<% nvram_get("link_wan1"); %>";
 var qtn_ready_t = "<% nvram_get("qtn_ready"); %>";
 sim_state = "<% nvram_get("usb_modem_act_sim"); %>";
 g3err_pin = '<% nvram_get("g3err_pin"); %>';

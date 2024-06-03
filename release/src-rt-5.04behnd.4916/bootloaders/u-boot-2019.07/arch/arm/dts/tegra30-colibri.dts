@@ -1,0 +1,112 @@
+/dts-v1/;
+
+#include "tegra30.dtsi"
+
+/ {
+	model = "Toradex Colibri T30";
+	compatible = "toradex,colibri_t30", "nvidia,tegra30";
+
+	chosen {
+		stdout-path = &uarta;
+	};
+
+	aliases {
+		i2c0 = "/i2c@7000d000";
+		i2c1 = "/i2c@7000c000";
+		i2c2 = "/i2c@7000c700";
+		mmc0 = "/sdhci@78000600";
+		mmc1 = "/sdhci@78000200";
+		spi0 = "/spi@7000d400";
+		usb0 = "/usb@7d000000";
+		usb1 = "/usb@7d004000"; /* on module only, for ASIX */
+		usb2 = "/usb@7d008000";
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0x80000000 0x40000000>;
+	};
+
+	/*
+	 * GEN1_I2C: I2C_SDA/SCL on SODIMM pin 194/196 (e.g. RTC on carrier
+	 * board)
+	 */
+	i2c@7000c000 {
+		status = "okay";
+		clock-frequency = <400000>;
+	};
+
+	/* GEN2_I2C: unused */
+
+	/* CAM_I2C: unused */
+
+	/* DDC_CLOCK/DATA on X3 pin 15/16 (e.g. display EDID) */
+	i2c@7000c700 {
+		status = "okay";
+		clock-frequency = <10000>;
+	};
+
+	/*
+	 * PWR_I2C: power I2C to audio codec, PMIC, temperature sensor and
+	 * touch screen controller
+	 */
+	i2c@7000d000 {
+		status = "okay";
+		clock-frequency = <100000>;
+	};
+
+	/* SPI1: Colibri SSP */
+	spi@7000d400 {
+		status = "okay";
+		spi-max-frequency = <25000000>;
+	};
+
+	sdhci@78000200 {
+		status = "okay";
+		bus-width = <4>;
+		cd-gpios = <&gpio TEGRA_GPIO(C, 7) GPIO_ACTIVE_LOW>; /* MMCD */
+	};
+
+	sdhci@78000600 {
+		status = "okay";
+		bus-width = <8>;
+		non-removable;
+	};
+
+	/* EHCI instance 0: USB1_DP/N -> USBC_P/N */
+	usb@7d000000 {
+		status = "okay";
+		dr_mode = "otg";
+	};
+
+	/* EHCI instance 1: USB2_DP/N -> AX88772B */
+	usb@7d004000 {
+		status = "okay";
+		/* VBUS_LAN */
+		nvidia,vbus-gpio = <&gpio TEGRA_GPIO(DD, 2) GPIO_ACTIVE_HIGH>;
+	};
+
+	/* EHCI instance 2: USB3_DP/N -> USBH_P/N */
+	usb@7d008000 {
+		status = "okay";
+		/* USBH_PEN */
+		nvidia,vbus-gpio = <&gpio TEGRA_GPIO(W, 2) GPIO_ACTIVE_LOW>;
+	};
+
+	clocks {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		clk32k_in: clk@0 {
+			compatible = "fixed-clock";
+			reg=<0>;
+			#clock-cells = <0>;
+			clock-frequency = <32768>;
+		};
+	};
+};
+
+&uarta {
+	status = "okay";
+};

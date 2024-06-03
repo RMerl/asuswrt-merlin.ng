@@ -1,0 +1,6 @@
+<PUBLISH>
+--- 962118GW.old
++++ 962118GW
+@@ -37,11 +37,11 @@
+-# BUILD_ETHWAN is not set
++BUILD_ETHWAN=y

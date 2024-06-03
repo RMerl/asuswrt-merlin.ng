@@ -1,0 +1,9 @@
+if TARGET_VE8313
+
+config SYS_BOARD
+	default "ve8313"
+
+config SYS_CONFIG_NAME
+	default "ve8313"
+
+endif

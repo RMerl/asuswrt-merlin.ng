@@ -1,0 +1,12 @@
+if TARGET_ODROID
+
+config SYS_BOARD
+	default "odroid"
+
+config SYS_VENDOR
+	default "samsung"
+
+config SYS_CONFIG_NAME
+	default "odroid"
+
+endif

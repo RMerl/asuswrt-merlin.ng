@@ -1,0 +1,226 @@
+#include "inc/968880DV_common.dtsi"
+
+/ {
+        model = "968880DV_DPU";
+
+        xfp_sfp: xfp_sfp {
+                status = "okay";
+        };
+
+        wan_serdes {
+                trx = <&xfp_sfp>;
+        };
+
+        i2cmux {
+                status = "okay";
+
+                i2c0mux1: i2c@1 {
+                    status = "okay";
+                };
+
+                i2c0mux2: i2c@2 {
+                    status = "okay";
+                };
+        };
+
+        dsldsp0: dsldsp {
+                /* Defined below */
+        };
+};
+
+&led_ctrl {
+    led2: serial-port_gphy1-led_1 {
+        active_low;
+        crossbar-output = <1>;
+        activity = <(LED_SPEED_GBE)>;
+        status = "okay";
+    };
+
+    led3: serial-port_gphy1-led_0 {
+        active_low;
+        crossbar-output = <7>;
+        link = <(LED_SPEED_GBE)>;
+        status = "okay";
+    };
+
+    led4: serial-port_gphy2-led_1 {
+        active_low;
+        crossbar-output = <14>;
+        activity = <(LED_SPEED_GBE)>;
+        status = "okay";
+    };
+
+    led5: serial-port_gphy2-led_0 {
+        active_low;
+        crossbar-output = <0>;
+        link = <(LED_SPEED_GBE)>;
+        status = "okay";
+    };
+
+    led6: serial-port_gphy3-led_1 {
+        active_low;
+        crossbar-output = <12>;
+        activity = <(LED_SPEED_GBE)>;
+        status = "okay";
+    };
+
+    led7: serial-port_gphy3-led_0 {
+        active_low;
+        crossbar-output = <13>;
+        link = <(LED_SPEED_GBE)>;
+        status = "okay";
+    };
+
+    led8: serial-port_xgphy0-led_1 {
+        active_low;
+        crossbar-output = <11>;
+        activity = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+        status = "okay";
+    };
+
+    led9: serial-port_xgphy0-led_0 {
+        active_low;
+        crossbar-output = <15>;
+        link = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+        status = "okay";
+    };
+
+    led10: serial-port_xgphy1-led_1 {
+        active_low;
+        crossbar-output = <9>;
+        activity = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+        status = "okay";
+    };
+
+    led11: serial-port_xgphy1-led_0 {
+        active_low;
+        crossbar-output = <10>;
+        link = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+        status = "okay";
+    };
+};
+
+&phy_wan_serdes {
+    status = "okay";
+};
+
+&hsspi {
+    status = "okay";
+};
+
+&ethphytop {
+    status = "okay";
+};
+
+&mdio {
+    egphy0 {
+        status = "okay";
+    };
+    egphy1 {
+        status = "okay";
+    };
+    egphy2 {
+        status = "okay";
+    };
+    serdes00 {
+        pinctrl-names = "default";
+        pinctrl-0 = <&a_slan_sd_rx_los_pin_3 &a_slan_sd_mod_abs_pin_4>;
+        tx-disable = <&gpioc 6 GPIO_ACTIVE_HIGH>;
+        10000-Base-R;
+        status = "nokay";
+    };
+    wan_ae {
+        trx = <&xfp_sfp>;
+        status = "okay";
+    };
+};
+
+&switch0 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&a_eth_mdc_pin_59 &a_eth_mdio_pin_60>;
+
+    ports {
+        port_gphy0 {
+            network-leds = <&led0 &led1>;
+            label = "sysport";
+            status = "okay";
+            management;
+        };
+        port_gphy1 {
+            network-leds = <&led2 &led3>;
+            label = "waneth0";
+            status = "okay";
+            is-wan;
+        };
+        port_gphy2 {
+            network-leds = <&led4 &led5>;
+            status = "okay";
+            link = <&switchdsp0port0>;
+        };
+        port_slan0 {
+            status = "nokay";
+            link = <&switchdsp0port0>;
+        };
+        port_wan@fiber {
+            status = "okay";
+        };
+        port_wan@ae {
+            status = "okay";
+        };
+    };
+};
+
+&dsldsp0 {
+        switchdsp0port0:0 {
+                sw-type = "G9991_SW";
+
+                ports {
+                        #address-cells = <1>;
+                        #size-cells = <0>;
+
+                        port0@0 {
+                                reg = <0>;
+                        };
+
+                        port1@1 {
+                                reg = <1>;
+                        };
+
+                        port2@2 {
+                                reg = <2>;
+                        };
+
+                        port3@3 {
+                                reg = <3>;
+                        };
+
+                        port4@4 {
+                                reg = <4>;
+                        };
+
+                        port5@5 {
+                                reg = <5>;
+                        };
+
+                        port6@6 {
+                                reg = <6>;
+                        };
+
+                        port7@7 {
+                                reg = <7>;
+                        };
+
+                        port16@16 {
+                                reg = <16>;
+                                management;
+                                label = "dsp0";
+                        };
+
+                        port17@17 {
+                                reg = <17>;
+                                management;
+                                label = "dsp1";
+                        };
+                };
+        };
+};

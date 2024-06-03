@@ -1,0 +1,36 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * U-Boot addition to:
+ *  1) use platform data for the console
+ *  2) provide support for the generic-ehci USB driver currently not available
+ *     in the linux kernel (8/May/2017).
+ *
+ * (C) Copyright 2017 Jorge Ramirez-Ortiz <jorge.ramirez-ortiz@linaro.org>
+ */
+
+#include <dt-bindings/reset/ti-syscon.h>
+
+&soc {
+	rst: reset-controller@8a22000 {
+		compatible = "hisilicon,hi3798cv200-reset";
+		reg = <0x8a22000 0x1000>;
+		#reset-cells = <3>;
+	};
+
+	usb2: ehci@9890000 {
+		compatible = "generic-ehci";
+		reg = <0x9890000 0x100>;
+		status = "okay";
+	};
+};
+
+&gmac1 {
+	resets = <&rst 0xcc 9  ASSERT_SET>,
+		 <&rst 0xcc 11 ASSERT_SET>,
+		 <&rst 0xcc 13 DEASSERT_SET>;
+};
+
+&uart0 {
+	clock = <75000000>;
+	status = "okay";
+};

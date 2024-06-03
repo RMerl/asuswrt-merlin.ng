@@ -9,6 +9,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 <link rel="icon" href="images/favicon.png">
 <title>AiMesh router detect</title>
+<script type="text/JavaScript" src="/js/jquery.js"></script>
 <style>
 body{
 	font-family: Arial;
@@ -102,7 +103,16 @@ var isDisableUI = ('<% nvram_get("disable_ui"); %>' == '1') ? true : false;
 	}
 })();
 var chdom = function(){window.location.href = "http://" + cfg_master_ipaddr;};
+
+function isSupport(_ptn){
+	var ui_support = [<% get_ui_support(); %>][0];
+	return (ui_support[_ptn]) ? ui_support[_ptn] : 0;
+}
+
 function initial(){
+	if(isSupport("ROG_UI") || isSupport("TS_UI") || isSupport("TUF_UI")){
+		$(".wrapper").css({"background-size":"cover"});
+	}
 	if(isAMeshRE) {	
 		setTimeout(function(){
 			window.location.href = "/error_page.htm?flag=9";

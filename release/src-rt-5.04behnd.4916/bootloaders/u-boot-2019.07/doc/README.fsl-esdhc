@@ -1,0 +1,22 @@
+Freescale esdhc-specific options
+
+	- CONFIG_FSL_ESDHC_ADAPTER_IDENT
+		Support Freescale adapter card type identification. This is implemented by
+		operating Qixis FPGA relevant registers. The STAT_PRES1 register has SDHC
+		Card ID[0:2] bits showing the type of card installed in the SDHC Adapter Slot.
+
+		SDHC Card ID[0:2]	Adapter Card Type
+		0b000			reserved
+		0b001			eMMC Card Rev4.5
+		0b010			SD/MMC Legacy Card
+		0b011			eMMC Card Rev4.4
+		0b100			reserved
+		0b101			MMC Card
+		0b110			SD Card Rev2.0/3.0
+		0b111			No card is present
+	- CONFIG_SYS_FSL_ESDHC_LE
+		ESDHC IP is in little-endian mode. Accessing ESDHC registers can be
+		determined by ESDHC IP's endian mode or processor's endian mode.
+	- CONFIG_SYS_FSL_ESDHC_BE
+		ESDHC IP is in big-endian mode. Accessing ESDHC registers can be determined
+		by ESDHC IP's endian mode or processor's endian mode.

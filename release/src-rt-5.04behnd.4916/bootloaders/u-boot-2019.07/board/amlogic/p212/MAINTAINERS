@@ -1,0 +1,10 @@
+P212
+M:	Neil Armstrong <narmstrong@baylibre.com>
+S:	Maintained
+L:	u-boot-amlogic@groups.io
+F:	board/amlogic/p212/
+F:	include/configs/p212.h
+F:	configs/khadas-vim_defconfig
+F:	configs/libretech-ac_defconfig
+F:	configs/libretech-cc_defconfig
+F:	configs/p212_defconfig

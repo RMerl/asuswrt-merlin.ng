@@ -1,0 +1,12 @@
+if TARGET_JETSON_TK1
+
+config SYS_BOARD
+	default "jetson-tk1"
+
+config SYS_VENDOR
+	default "nvidia"
+
+config SYS_CONFIG_NAME
+	default "jetson-tk1"
+
+endif

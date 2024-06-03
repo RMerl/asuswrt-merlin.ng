@@ -1,0 +1,116 @@
+#include "4908.dtsi"
+
+/ {
+	compat_chip_id = <0x4908>;
+    memory_controller {
+        memcfg = <(BP_DDR_SPEED_800_11_11_11 | \
+                   BP_DDR_TOTAL_SIZE_1024MB  | \
+                   BP_DDR_DEVICE_WIDTH_16    | \
+                   BP_DDR_TOTAL_WIDTH_32BIT  | \
+                   BP_DDR_SSC_CONFIG_1)>;
+    };
+};
+
+&mdio_sf2 {
+        /* Port PHY mapping:
+            port_runner_p0  <-->  port_sf2_p8 -###- port_sf2_p0 <------------------> phy_gphy0
+            port_runner_p1  <-->  port_sf2_p5 -# #- port_sf2_p1 <------------------> phy_gphy1
+            port_runner_p2  <-->  port_sf2_p4 -# #- port_sf2_p2 <------------------> phy_gphy2
+                                               ###- port_sf2_p3 <------------------> phy_gphy3
+                                                 port_runner_p3 <--> xbar_grp1 -+-+- phy_gphy4
+         */
+	/* PHYs directly connected to SF2 */
+	phy_gphy0 {
+		status = "okay";
+	};
+	phy_gphy1 {
+		status = "okay";
+	};
+	phy_gphy2 {
+		status = "okay";
+	};
+	phy_gphy3 {
+		status = "okay";
+	};
+
+	/* PHYs connected to crossbar */
+	phy_gphy4 {
+		status = "okay";
+	};
+
+	/* Crossbar groups */
+	xbar_grp1 {
+		phy-handle = <&phy_gphy4>;
+		status = "okay";
+	};
+};
+
+&switch_sf2 {
+	ports {
+		port_sf2_p0 {
+			phy-handle = <&phy_gphy0>;
+			status = "okay";
+		};
+
+		port_sf2_p1 {
+			phy-handle = <&phy_gphy1>;
+			status = "okay";
+		};
+
+		port_sf2_p2 {
+			phy-handle = <&phy_gphy2>;
+			status = "okay";
+		};
+
+		port_sf2_p3 {
+			phy-handle = <&phy_gphy3>;
+			status = "okay";
+		};
+	};
+};
+
+&switch0 {
+	ports {
+		
+		port_runner_p3 {
+			phy-handle = <&xbar_grp1>;
+			phy-mode = "gmii";
+			status = "okay";
+		};
+	};
+};
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+&pcie0 {
+	status = "okay";
+};
+&pcie1 {
+	status = "okay";
+};
+&pcie2 {
+	status = "okay";
+};
+#endif //#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+
+&usb_ctrl {
+	status = "okay";
+	xhci-enable;
+	pinctrl-names = "default";
+	pinctrl-0 = <&usb0_pwr_pins &usb1_pwr_pins>;
+};
+
+&usb0_xhci {
+	status = "okay";
+};
+
+&usb0_ehci {
+	status = "okay";
+};
+
+&usb0_ohci {
+	status = "okay";
+};
+
+&sata0 {
+	status = "okay";
+};

@@ -1,0 +1,139 @@
+menu "LCRR - Clock Ratio Register register"
+
+if !ARCH_MPC8309 && !ARCH_MPC831X && !ARCH_MPC832X
+
+choice
+	prompt "DLL bypass"
+
+config LCRR_DBYP_UNSET
+	bool "Don't set value"
+
+config LCRR_DBYP_PLL_ENABLED
+	bool "PLL enabled"
+
+config LCRR_DBYP_PLL_BYPASSED
+	bool "PLL bypassed"
+
+endchoice
+
+endif
+
+if ARCH_MPC834X || ARCH_MPC8360
+
+choice
+	prompt "Additional delay cycles for SDRAM control signals"
+
+config LCRR_BUFCMDC_UNSET
+	bool "Don't set value"
+
+config LCRR_BUFCMDC_4
+	bool "4"
+
+config LCRR_BUFCMDC_1
+	bool "1"
+
+config LCRR_BUFCMDC_2
+	bool "2"
+
+config LCRR_BUFCMDC_3
+	bool "3"
+
+endchoice
+
+choice
+	prompt "Extended CAS latency"
+
+config LCRR_ECL_UNSET
+	bool "Don't set value"
+
+config LCRR_ECL_4
+	bool "4"
+
+config LCRR_ECL_5
+	bool "5"
+
+config LCRR_ECL_6
+	bool "6"
+
+config LCRR_ECL_7
+	bool "7"
+
+endchoice
+
+endif # ARCH_MPC834X || ARCH_MPC8360
+
+if !ARCH_MPC8308
+
+choice
+	prompt "External address delay cycles"
+
+config LCRR_EADC_UNSET
+	bool "Don't set value"
+
+config LCRR_EADC_4
+	bool "4"
+
+config LCRR_EADC_1
+	bool "1"
+
+config LCRR_EADC_2
+	bool "2"
+
+config LCRR_EADC_3
+	bool "3"
+
+endchoice
+
+endif # !ARCH_MPC8308
+
+choice
+	prompt "System clock divider"
+
+config LCRR_CLKDIV_UNSET
+	bool "Don't set value"
+
+config LCRR_CLKDIV_2
+	bool "2"
+
+config LCRR_CLKDIV_4
+	bool "4"
+
+config LCRR_CLKDIV_8
+	bool "8"
+
+endchoice
+
+config LCRR_DBYP
+	hex
+	default 0x0 if LCRR_DBYP_UNSET || LCRR_DBYP_PLL_ENABLED
+	default 0x80000000 if LCRR_DBYP_PLL_BYPASSED
+
+config LCRR_BUFCMDC
+	hex
+	default 0x0 if LCRR_BUFCMDC_4 || LCRR_BUFCMDC_UNSET
+	default 0x10000000 if LCRR_BUFCMDC_1
+	default 0x20000000 if LCRR_BUFCMDC_2
+	default 0x30000000 if LCRR_BUFCMDC_3
+
+config LCRR_ECL
+	hex
+	default 0x0 if LCRR_ECL_4 || LCRR_ECL_UNSET
+	default 0x1000000 if LCRR_ECL_5
+	default 0x2000000 if LCRR_ECL_6
+	default 0x3000000 if LCRR_ECL_7
+
+config LCRR_EADC
+	hex
+	default 0x0 if LCRR_EADC_4 || LCRR_EADC_UNSET
+	default 0x10000 if LCRR_EADC_1
+	default 0x20000 if LCRR_EADC_2
+	default 0x30000 if LCRR_EADC_3
+
+config LCRR_CLKDIV
+	hex
+	default 0x0 if LCRR_CLKDIV_UNSET
+	default 0x2 if LCRR_CLKDIV_2
+	default 0x4 if LCRR_CLKDIV_4
+	default 0x8 if LCRR_CLKDIV_8
+
+endmenu

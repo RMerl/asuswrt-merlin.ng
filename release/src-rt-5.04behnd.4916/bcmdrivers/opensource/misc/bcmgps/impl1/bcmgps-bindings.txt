@@ -1,0 +1,31 @@
+bcmgps: Broadcom BCM477x GPS driver
+===============================================================================
+
+Broadcom BCM477x GPS driver uses SPIDEV driver for spi-bus and 2 control gpios
+
+The device node name : "bcmgps" 
+
+    bcmgps: bcmgps {
+        compatible = "brcm, bcmgps";
+        ext_irq = <&bca_extintr 19 GPIO_ACTIVE_HIGH (BCA_EXTINTR_TYPE_HIGH_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+        reset-gpio = <&gpioc 10 GPIO_ACTIVE_HIGH>;
+        spi-bus = <&bcmgps_spi>;
+        status = "okay";
+    };
+
+- properties:
+    comaptible: "brcm, bcmgps"
+    ext_irq: HOST REQ GPIO pin (interrupt service - rising edge)
+    reset-gpio: NSTANDBY GPIO pin (output and active high level)
+    spi-bus: <&bcmgps_spi> - SPIDEV SPI bus controller (mapped to /dev/spidevX.X)
+
+- spi-bus:
+    bcmgps_spi: bcmgps_spi {
+        pinctrl-names = "default";
+        pinctrl-0 = <&hs_spim_ss_2_b_pin_52>;   /* pinmux for chip select   */
+        status = "okay";
+        compatible = "rohm,dh2228fv";           /* spidev compatible        */
+        reg = <2>;                              /* chip select              */
+        spi-max-frequency = <25000000>;         /* max clock speed          */
+    };
+

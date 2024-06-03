@@ -1,0 +1,6 @@
+ZMX25 BOARD
+M:	Matthias Weisser <weisserm@arcor.de>
+S:	Maintained
+F:	board/syteco/zmx25/
+F:	include/configs/zmx25.h
+F:	configs/zmx25_defconfig

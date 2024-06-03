@@ -1,0 +1,64 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2019 Broadcom Ltd.
+ */
+
+
+/dts-v1/;
+
+#include "bcm6878.dtsi"
+
+/ {
+	model = "Broadcom bcm96878";
+	compatible = "broadcom,bcm96878", "brcm,bcm96878";
+
+	aliases {
+		serial0 = &uart0;
+	};
+
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0x0 0x08000000>;
+	};
+};
+
+&nand {
+	status = "okay";
+	write-protect = <0>;
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	nandcs@0 {
+		compatible = "brcm,nandcs";
+		reg = <0>;
+	};
+};
+
+&hsspi {
+	status = "okay";
+	spi-nand {
+		compatible = "spi-nand";
+		reg = <0>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		u-boot,dm-pre-reloc;				
+		spi-max-frequency = <50000000>;
+	};
+};
+
+&usb0 {
+	status = "okay";
+	pinctrl-0 = <&usb0a_pwrflt_pins &usb0a_pwron_pins>;
+	pinctrl-names="default";
+};
+
+&usb1 {
+	status = "okay";
+	pinctrl-0 = <&usb1a_pwrflt_pins &usb1a_pwron_pins>;
+	pinctrl-names="default";
+};

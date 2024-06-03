@@ -1,0 +1,193 @@
+To make relocation on arm working, the following changes are done:
+
+At arch level: add linker flag -pie
+
+	This causes the linker to generate fixup tables .rel.dyn and .dynsym,
+	which must be applied to the relocated image before transferring
+	control to it.
+
+	These fixups are described in the ARM ELF documentation as type 23
+	(program-base-relative) and 2 (symbol-relative)
+
+At cpu level: modify linker file and add a relocation and fixup loop
+
+	the linker file must be modified to include the .rel.dyn and .dynsym
+	tables in the binary image, and to provide symbols for the relocation
+	code to access these tables
+
+	The relocation and fixup loop must be executed after executing
+	board_init_f at initial location and before executing board_init_r
+	at final location.
+
+At board level:
+
+	dram_init(): bd pointer is now at this point not accessible, so only
+	detect the real dramsize, and store it in gd->ram_size. Bst detected
+	with get_ram_size().
+
+TODO:	move also dram initialization there on boards where it is possible.
+
+	Setup of the the bd_t dram bank info is done in the new function
+	dram_init_banksize() called after bd is accessible.
+
+At lib level:
+
+	Board.c code is adapted from ppc code
+
+* WARNING ** WARNING ** WARNING ** WARNING ** WARNING ** WARNING ** WARNING *
+
+Boards which are not fixed to support relocation will be REMOVED!
+
+-----------------------------------------------------------------------------
+
+For boards which boot from spl, it is possible to save one copy
+if CONFIG_SYS_TEXT_BASE == relocation address! This prevents that uboot code
+is copied again in relocate_code().
+
+example for the tx25 board booting from NAND Flash:
+
+a) cpu starts
+b) it copies the first page in nand to internal ram
+   (spl code)
+c) end executes this code
+d) this initialize CPU, RAM, ... and copy itself to RAM
+   (this bin must fit in one page, so board_init_f()
+    don;t fit in it ... )
+e) there it copy u-boot to CONFIG_SYS_NAND_U_BOOT_DST and
+   starts this image @ CONFIG_SYS_NAND_U_BOOT_START
+f) u-boot code steps through board_init_f() and calculates
+   the relocation address and copy itself to it
+
+If CONFIG_SYS_TEXT_BASE == relocation address, the copying of u-boot
+in f) could be saved.
+
+-----------------------------------------------------------------------------
+
+TODO
+
+- fill in bd_t infos (check)
+- adapt all boards
+
+- maybe adapt CONFIG_SYS_TEXT_BASE (this must be checked from board maintainers)
+  This *must* be done for boards, which boot from NOR flash
+
+  on other boards if CONFIG_SYS_TEXT_BASE = relocation baseaddr, this saves
+  one copying from u-boot code.
+
+- new function dram_init_banksize() is actual board specific. Maybe
+  we make a weak default function in arch/arm/lib/board.c ?
+
+-----------------------------------------------------------------------------
+
+Relocation with SPL (example for the tx25 booting from NAND Flash):
+
+- cpu copies the first page from NAND to 0xbb000000 (IMX_NFC_BASE)
+  and start with code execution on this address.
+
+- The First page contains u-boot code from drivers/mtd/nand/raw/mxc_nand_spl.c
+  which inits the dram, cpu registers, reloacte itself to CONFIG_SPL_TEXT_BASE	and loads
+  the "real" u-boot to CONFIG_SYS_NAND_U_BOOT_DST and starts execution
+  @CONFIG_SYS_NAND_U_BOOT_START
+
+- This u-boot does no RAM init, nor CPU register setup. Just look
+  where it has to copy and relocate itself to this address. If
+  relocate address = CONFIG_SYS_TEXT_BASE (not the same, as the
+  CONFIG_SPL_TEXT_BASE from the spl code), then there is no need
+  to copy, just go on with bss clear and jump to board_init_r.
+
+-----------------------------------------------------------------------------
+
+How ELF relocations 23 and 2 work.
+
+TBC
+
+-------------------------------------------------------------------------------------
+
+Debugging u-boot in RAM:
+(example on the qong board)
+
+-----------------
+
+a) start debugger
+
+arm-linux-gdb u-boot
+
+[hs@pollux u-boot]$ arm-linux-gdb u-boot
+GNU gdb Red Hat Linux (6.7-2rh)
+Copyright (C) 2007 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
+and "show warranty" for details.
+This GDB was configured as "--host=i686-pc-linux-gnu --target=arm-linux".
+The target architecture is set automatically (currently arm)
+..
+(gdb)
+
+-----------------
+
+b) connect to target
+
+target remote bdi10:2001
+
+(gdb) target remote bdi10:2001
+Remote debugging using bdi10:2001
+0x8ff17f10 in ?? ()
+(gdb)
+
+-----------------
+
+c) discard symbol-file
+
+(gdb) symbol-file
+Discard symbol table from `/home/hs/celf/u-boot/u-boot'? (y or n) y
+No symbol file now.
+(gdb)
+
+-----------------
+
+d) load new symbol table:
+
+(gdb) add-symbol-file u-boot 0x8ff08000
+add symbol table from file "u-boot" at
+	.text_addr = 0x8ff08000
+(y or n) y
+Reading symbols from /home/hs/celf/u-boot/u-boot...done.
+(gdb) c
+Continuing.
+^C
+Program received signal SIGSTOP, Stopped (signal).
+0x8ff17f18 in serial_getc () at serial_mxc.c:192
+192		while (__REG(UART_PHYS + UTS) & UTS_RXEMPTY);
+(gdb)
+
+add-symbol-file u-boot 0x8ff08000
+		       ^^^^^^^^^^
+		       get this address from u-boot bdinfo command
+		       or get it from gd->relocaddr in gdb
+
+ => bdinfo
+rch_number = XXXXXXXXXX
+boot_params = XXXXXXXXXX
+DRAM bank   = XXXXXXXXXX
+-> start    = XXXXXXXXXX
+-> size     = XXXXXXXXXX
+ethaddr     = XXXXXXXXXX
+ip_addr     = XXXXXXXXXX
+baudrate    = XXXXXXXXXX
+TLB addr    = XXXXXXXXXX
+relocaddr   = 0x8ff08000
+	      ^^^^^^^^^^
+reloc off   = XXXXXXXXXX
+irq_sp	    = XXXXXXXXXX
+sp start    = XXXXXXXXXX
+FB base     = XXXXXXXXXX
+
+or interrupt execution by any means and re-load the symbols at the location
+specified by gd->relocaddr -- this is only valid after board_init_f.
+
+(gdb) set $s = gd->relocaddr
+(gdb) symbol-file
+(gdb) add-symbol-file u-boot $s
+
+Now you can use gdb as usual :-)

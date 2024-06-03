@@ -1,0 +1,105 @@
+DSP side awareness for Freescale heterogeneous multicore chips based on
+StarCore and Power Architecture
+===============================================================
+powerpc/mpc85xx code ve APIs and function to get the number,
+configuration and frequencies of all PowerPC cores and devices
+connected to them, but it didnt have the similar code ofr HEterogeneous
+SC3900/DSP cores and such devices like CPRI, MAPLE, MAPLE-ULB etc.
+
+Code for DSP side awareness provides such functionality for Freescale
+Heterogeneous SoCs which are chasis-2 compliant like B4860 and B4420
+
+As part of this feature, following changes have been made:
+==========================================================
+
+1. Changed files:
+=================
+- arch/powerpc/cpu/mpc85xx/cpu.c
+
+Code added in this file to print the DSP cores and other device's(CPRI,
+MAPLE etc) frequencies
+
+- arch/powerpc/cpu/mpc85xx/speed.c
+
+Added Defines and code to extract the frequncy information for all
+required cores and devices from RCW and System frequency
+
+- arch/powerpc/cpu/mpc8xxx/cpu.c
+
+Added API to get the number of SC cores in running system and Their BIT
+MASK, similar to the code written for PowerPC
+
+- arch/powerpc/include/asm/config_mpc85xx.h
+
+Added top level CONFIG to identify presence of HETEROGENUOUS clusters
+in the system and CONFIGS for SC3900/DSP components
+
+- arch/powerpc/include/asm/processor.h
+- include/common.h
+
+Added newly added Functions Declaration
+
+- include/e500.h
+
+Global structure updated for dsp cores and other components
+
+2. CONFIGs ADDED
+================
+
+CONFIG_HETROGENOUS_CLUSTERS	- Define for checking the presence of
+				  DSP/SC3900 core clusters
+
+CONFIG_SYS_FSL_NUM_CC_PLLS	- Define for number of PLLs
+
+Though there are only 4 PLLs in B4, but in sequence of PLLs from PLL1 -
+PLL5, PLL3 is Reserved(as mentioned in RM), so this define contains the
+value as 5 not 4, to iterate over all PLLs while coding
+
+CONFIG_SYS_MAPLE		- Define for MAPLE Baseband Accelerator
+CONFIG_SYS_CPRI			- Define for CPRI Interface
+CONFIG_PPC_CLUSTER_START	- Start index of ppc clusters
+CONFIG_DSP_CLUSTER_START	- Start index of dsp clusters
+
+Following are the defines for PLL's index that provide the Clocking to
+CPRI, ULB and ETVE components
+
+CONFIG_SYS_CPRI_CLK		- Define PLL index for CPRI clock
+CONFIG_SYS_ULB_CLK		- Define PLL index for ULB clock
+CONFIG_SYS_ETVPE_CLK		- Define PLL index for ETVPE clock
+
+3. Changes in MPC85xx_SYS_INFO Global structure
+===============================================
+
+DSP cores and other device's components have been added in this structure.
+
+freq_processor_dsp[CONFIG_MAX_DSP_CPUS]	- Array to contain the DSP core's frequencies
+freq_cpri				- To store CPRI frequency
+freq_maple				- To store MAPLE frequency
+freq_maple_ulb				- To store MAPLE-ULB frequency
+freq_maple_etvpe			- To store MAPLE-eTVPE frequency
+
+4. U-BOOT LOGS
+==============
+4.1 B4860QDS board
+    Boot from NOR flash
+
+U-Boot 2014.07-00222-g70587a8-dirty (Aug 07 2014 - 13:15:47)
+
+CPU0:  B4860E, Version: 2.0, (0x86880020)
+Core:  e6500, Version: 2.0, (0x80400020) Clock Configuration:
+       CPU0:1600 MHz, CPU1:1600 MHz, CPU2:1600 MHz, CPU3:1600 MHz,
+       DSP CPU0:1200 MHz, DSP CPU1:1200 MHz, DSP CPU2:1200 MHz, DSP CPU3:1200 MHz,
+       DSP CPU4:1200 MHz, DSP CPU5:1200 MHz,
+       CCB:666.667 MHz,
+       DDR:933.333 MHz (1866.667 MT/s data rate) (Asynchronous), IFC:166.667 MHz
+       CPRI:600  MHz
+       MAPLE:600  MHz, MAPLE-ULB:800  MHz, MAPLE-eTVPE:1000 MHz
+       FMAN1: 666.667 MHz
+       QMAN:  333.333 MHz
+
+CPUn	 -  PowerPC core
+DSP CPUn -  SC3900 core
+
+Shaveta Leekha(shaveta@freescale.com)
+Created August 7, 2014
+===========================================

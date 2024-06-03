@@ -1,0 +1,75 @@
+# SPDX-License-Identifier: GPL-2.0
+#
+# From Coreboot src/northbridge/intel/sandybridge/Kconfig
+#
+# Copyright (C) 2010 Google Inc.
+#
+
+config NORTHBRIDGE_INTEL_IVYBRIDGE
+	bool
+	select CACHE_MRC_BIN if HAVE_MRC
+	imply HAVE_INTEL_ME
+	imply ENABLE_MRC_CACHE
+	imply AHCI_PCI
+	imply ICH_SPI
+	imply INTEL_ICH6_GPIO
+	imply PINCTRL_ICH6
+	imply SCSI
+	imply SCSI_AHCI
+	imply SPI_FLASH
+	imply USB
+	imply USB_EHCI_HCD
+	imply USB_XHCI_HCD
+	imply VIDEO_VESA
+	imply SOUND_IVYBRIDGE
+
+if NORTHBRIDGE_INTEL_IVYBRIDGE
+
+config DCACHE_RAM_BASE
+	default 0xff7e0000
+
+config DCACHE_RAM_SIZE
+	default 0x20000
+
+config DCACHE_RAM_MRC_VAR_SIZE
+	default 0x4000
+
+config CPU_SPECIFIC_OPTIONS
+	def_bool y
+	select SMM_TSEG
+	select X86_RAMTEST
+
+config SMM_TSEG_SIZE
+	hex
+	default 0x800000
+
+config ENABLE_VMX
+	bool "Enable VMX for virtualization"
+	default n
+	help
+	  Virtual Machine Extensions are provided in many x86 CPUs. These
+	  provide various facilities for allowing a host OS to provide an
+	  environment where potentially several guest OSes have only
+	  limited access to the underlying hardware. This is achieved
+	  without resorting to software trapping and/or instruction set
+	  emulation (which would be very slow).
+
+	  Intel's implementation of this is called VT-x. This option enables
+	  VT-x this so that the OS that is booted by U-Boot can make use of
+	  these facilities. If this option is not enabled, then the host OS
+	  will be unable to support virtualisation, or it will run very
+	  slowly.
+
+config FSP_ADDR
+	hex
+	default 0xfff80000
+
+config FSP_USE_UPD
+	bool
+	default n
+
+config FSP_BROKEN_HOB
+	bool
+	default y
+
+endif

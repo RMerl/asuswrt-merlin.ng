@@ -1,0 +1,26 @@
+if TARGET_MICROCHIP_ICICLE
+
+config SYS_BOARD
+	default "mpfs_icicle"
+
+config SYS_VENDOR
+	default "microchip"
+
+config SYS_CPU
+	default "generic"
+
+config SYS_CONFIG_NAME
+	default "microchip_mpfs_icicle"
+
+config SYS_TEXT_BASE
+	default 0x80000000 if !RISCV_SMODE
+	default 0x80200000 if RISCV_SMODE
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select GENERIC_RISCV
+	select BOARD_EARLY_INIT_F
+	imply SMP
+	imply SYS_NS16550
+
+endif

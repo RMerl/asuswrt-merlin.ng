@@ -1,0 +1,225 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Google Veyron Jerry Rev 3+ board device tree source
+ *
+ * Copyright 2014 Google, Inc
+ */
+
+/dts-v1/;
+#include "rk3288-veyron-chromebook.dtsi"
+#include "cros-ec-sbs.dtsi"
+
+/ {
+	model = "Google Jerry";
+	compatible = "google,veyron-jerry-rev7", "google,veyron-jerry-rev6",
+		     "google,veyron-jerry-rev5", "google,veyron-jerry-rev4",
+		     "google,veyron-jerry-rev3", "google,veyron-jerry",
+		     "google,veyron", "rockchip,rk3288";
+
+        chosen {
+                stdout-path = &uart2;
+        };
+
+	panel_regulator: panel-regulator {
+		compatible = "regulator-fixed";
+		enable-active-high;
+		gpio = <&gpio7 14 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&lcd_enable_h>;
+		regulator-name = "panel_regulator";
+		vin-supply = <&vcc33_sys>;
+	};
+
+	vcc18_lcd: vcc18-lcd {
+		compatible = "regulator-fixed";
+		enable-active-high;
+		gpio = <&gpio2 13 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&avdd_1v8_disp_en>;
+		regulator-name = "vcc18_lcd";
+		regulator-always-on;
+		regulator-boot-on;
+		vin-supply = <&vcc18_wl>;
+	};
+
+	backlight_regulator: backlight-regulator {
+		compatible = "regulator-fixed";
+		enable-active-high;
+		gpio = <&gpio2 12 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&bl_pwr_en>;
+		regulator-name = "backlight_regulator";
+		vin-supply = <&vcc33_sys>;
+		startup-delay-us = <15000>;
+	};
+
+	sound {
+		compatible = "rockchip,audio-max98090-jerry";
+
+		cpu {
+			sound-dai = <&i2s 0>;
+		};
+
+		codec {
+			sound-dai = <&max98090 0>;
+		};
+	};
+};
+
+&dmc {
+	rockchip,pctl-timing = <0x29a 0xc8 0x1f4 0x42 0x4e 0x4 0xea 0xa
+		0x5 0x0 0xa 0x7 0x19 0x24 0xa 0x7
+		0x5 0xa 0x5 0x200 0x5 0x10 0x40 0x0
+		0x1 0x7 0x7 0x4 0xc 0x43 0x100 0x0
+		0x5 0x0>;
+	rockchip,phy-timing = <0x48f9aab4 0xea0910 0x1002c200
+		0xa60 0x40 0x10 0x0>;
+	rockchip,sdram-params = <0x30B25564 0x627 3 666000000 3 9 1>;
+};
+
+&gpio_keys {
+	power {
+		gpios = <&gpio0 5 GPIO_ACTIVE_LOW>;
+	};
+};
+
+&backlight {
+	power-supply = <&backlight_regulator>;
+};
+
+&panel {
+	power-supply= <&panel_regulator>;
+};
+
+&rk808 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pmic_int_l &dvs_1 &dvs_2>;
+	dvs-gpios = <&gpio7 12 GPIO_ACTIVE_HIGH>,
+		    <&gpio7 15 GPIO_ACTIVE_HIGH>;
+
+	regulators {
+		mic_vcc: LDO_REG2 {
+			regulator-always-on;
+			regulator-boot-on;
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <1800000>;
+			regulator-name = "mic_vcc";
+			regulator-suspend-mem-disabled;
+		};
+	};
+};
+
+&sdmmc {
+	pinctrl-names = "default";
+	pinctrl-0 = <&sdmmc_clk &sdmmc_cmd &sdmmc_cd_disabled &sdmmc_cd_gpio
+			&sdmmc_bus4>;
+	disable-wp;
+};
+
+&vcc_5v {
+	enable-active-high;
+	gpio = <&gpio7 21 GPIO_ACTIVE_HIGH>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&drv_5v>;
+};
+
+&vcc50_hdmi {
+	enable-active-high;
+	gpio = <&gpio5 19 GPIO_ACTIVE_HIGH>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&vcc50_hdmi_en>;
+};
+
+&edp {
+	pinctrl-names = "default";
+	pinctrl-0 = <&edp_hpd>;
+};
+
+&pinctrl {
+	backlight {
+		bl_pwr_en: bl_pwr_en {
+			rockchip,pins = <2 12 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+
+	buck-5v {
+		drv_5v: drv-5v {
+			rockchip,pins = <7 21 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+
+	edp {
+		edp_hpd: edp_hpd {
+			rockchip,pins = <7 11 RK_FUNC_2 &pcfg_pull_down>;
+		};
+	};
+
+	emmc {
+		/* Make sure eMMC is not in reset */
+		emmc_deassert_reset: emmc-deassert-reset {
+			rockchip,pins = <2 9 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+
+	hdmi {
+		vcc50_hdmi_en: vcc50-hdmi-en {
+			rockchip,pins = <5 19 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+
+	lcd {
+		lcd_enable_h: lcd-en {
+			rockchip,pins = <7 14 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+
+		avdd_1v8_disp_en: avdd-1v8-disp-en {
+			rockchip,pins = <2 13 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+
+	pmic {
+		dvs_1: dvs-1 {
+			rockchip,pins = <7 12 RK_FUNC_GPIO &pcfg_pull_down>;
+		};
+
+		dvs_2: dvs-2 {
+			rockchip,pins = <7 15 RK_FUNC_GPIO &pcfg_pull_down>;
+		};
+	};
+};
+
+&i2c4 {
+	status = "okay";
+
+	/*
+	 * Trackpad pin control is shared between Elan and Synaptics devices
+	 * so we have to pull it up to the bus level.
+	 */
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c4_xfer &trackpad_int>;
+
+	trackpad@15 {
+		compatible = "elan,i2c_touchpad";
+		interrupt-parent = <&gpio7>;
+		interrupts = <3 IRQ_TYPE_EDGE_FALLING>;
+		/*
+		 * Remove the inherited pinctrl settings to avoid clashing
+		 * with bus-wide ones.
+		 */
+		/delete-property/pinctrl-names;
+		/delete-property/pinctrl-0;
+		reg = <0x15>;
+		vcc-supply = <&vcc33_io>;
+		wakeup-source;
+	};
+
+	trackpad@2c {
+		compatible = "hid-over-i2c";
+		interrupt-parent = <&gpio7>;
+		interrupts = <3 IRQ_TYPE_EDGE_FALLING>;
+		reg = <0x2c>;
+		hid-descr-addr = <0x0020>;
+		vcc-supply = <&vcc33_io>;
+		wakeup-source;
+	};
+};

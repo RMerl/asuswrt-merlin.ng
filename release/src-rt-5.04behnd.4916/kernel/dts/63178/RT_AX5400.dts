@@ -1,0 +1,172 @@
+#include "63178.dtsi"
+
+/ {
+    memory_controller {
+        memcfg = <(BP_DDR_SPEED_800_11_11_11 | \
+                   BP_DDR_TOTAL_SIZE_512MB   | \
+                   BP_DDR_DEVICE_WIDTH_16    | \
+                   BP_DDR_TOTAL_WIDTH_16BIT  | \
+                   BP_DDR_63178_DEFAULT)>;
+    };
+#if 0
+	buttons {
+		compatible = "brcm,buttons";
+		reset_button {
+			ext_irq = <&bca_extintr 0 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			press {
+				print = "Button Press -- Hold for 5s to do restore to default";
+			};
+			hold {
+				rst_to_dflt = <5>;
+			};
+			release {
+				reset = <0>;
+			};	
+		};
+		ses_button {
+			ext_irq = <&bca_extintr 1 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			release {
+				ses_short_period = <0>;
+				ses_long_period = <3>;
+			};
+		};
+	};
+#endif
+};
+
+&switch0 {
+	ports {
+		port0@0 {
+			status = "okay";
+			network-leds = <&led0>;
+		};
+
+		port1@1 {
+			status = "okay";
+			network-leds = <&led1>;
+		};
+
+		port2@2 {
+			status = "okay";
+			network-leds = <&led2>;
+		};
+
+		port3@3 {
+			status = "okay";
+			network-leds = <&led3>;
+		};
+
+		port4@4 {
+			status = "okay";
+			network-leds = <&led4>;
+		};
+	};
+};
+
+&legacy_leds {
+	wl0-led = <&led5>;
+};
+
+&led_ctrl {
+	status = "okay";
+
+	/* LAN0 ~ LAN3 LED */
+	led0: port_0-led-3-pin_24 {
+		active_low;
+		link = <LED_SPEED_GBE>;
+		activity = <LED_SPEED_GBE>;
+		status = "okay";
+	};
+	led1: port_1-led-3-pin_25 {
+		active_low;
+		link = <LED_SPEED_GBE>;
+		activity = <LED_SPEED_GBE>;
+		status = "okay";
+	};
+	led2: port_2-led-3-pin_29 {
+		active_low;
+		link = <LED_SPEED_GBE>;
+		activity = <LED_SPEED_GBE>;
+		status = "okay";
+	};
+	led3: port_3-led-3-pin_10 {
+		active_low;
+		link = <LED_SPEED_GBE>;
+		activity = <LED_SPEED_GBE>;
+		status = "okay";
+	};
+	/* WAN LED */
+	led4: port_4-led-3-pin_21 {
+		active_low;
+		link = <LED_SPEED_GBE>;
+		activity = <LED_SPEED_GBE>;
+		status = "okay";
+	};
+
+	/* WLAN_2G_ACT */
+	led5:led_gpio_31 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <31>;
+		active_low;
+		init_low;
+	};
+
+	/* WAN LED(RED) */
+	led6:led_gpio_30 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <30>;
+		active_low;
+		init_high;
+	};
+
+	/* Power on/off LED */
+	led7:led_gpio_23 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <23>;
+		active_low;
+		init_low;
+	};
+
+	/* LAN0 LED */
+	led8:led_gpio_24 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <24>;
+		active_low;
+	};
+
+	/* LAN1 LED */
+	led9:led_gpio_25 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <25>;
+		active_low;
+	};
+
+	/* LAN2 LED */
+	led10:led_gpio_29 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <29>;
+		active_low;
+	};
+
+	/* LAN3 LED */
+	led11:led_gpio_10 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <10>;
+		active_low;
+	};
+
+	/* WAN LED */
+	led12:led_gpio_21 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <21>;
+		active_low;
+	};
+};

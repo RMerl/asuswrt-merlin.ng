@@ -1,0 +1,56 @@
+This patch rewrites the miiphybb ( Bit-banged MII bus driver ) in order to
+support an arbitrary number of mii buses. This feature is useful when your
+board uses different mii buses for different phys and all (or a part) of these
+buses are implemented via bit-banging mode.
+
+The driver requires that the following macros should be defined into the board
+configuration file:
+
+CONFIG_BITBANGMII	- Enable the miiphybb driver
+CONFIG_BITBANGMII_MULTI - Enable the multi bus support
+
+If the CONFIG_BITBANGMII_MULTI is not defined, the board's config file needs
+to define at least the following macros:
+
+MII_INIT      - Generic code to enable the MII bus (optional)
+MDIO_DECLARE  - Declaration needed to access to the MDIO pin (optional)
+MDIO_ACTIVE   - Activate the MDIO pin as out pin
+MDIO_TRISTATE - Activate the MDIO pin as input/tristate pin
+MDIO_READ     - Read the MDIO pin
+MDIO(v)       - Write v on the MDIO pin
+MDC_DECLARE   - Declaration needed to access to the MDC pin (optional)
+MDC(v)	      - Write v on the MDC pin
+
+The previous macros make the driver compatible with the previous version
+(that didn't support the multi-bus).
+
+When the CONFIG_BITBANGMII_MULTI is also defined, the board code needs to fill
+the bb_miiphy_buses[] array with a record for each required bus and declare
+the bb_miiphy_buses_num variable with the number of mii buses.
+The record (struct bb_miiphy_bus) has the following fields/callbacks (see
+miiphy.h for details):
+
+char name[]	       - The symbolic name that must be equal to the MII bus
+			 registered name
+int (*init)()	       - Initialization function called at startup time (just
+			 before the Ethernet initialization)
+int (*mdio_active)()   - Activate the MDIO pin as output
+int (*mdio_tristate)() - Activate the MDIO pin as input/tristate pin
+int (*set_mdio)()      - Write the MDIO pin
+int (*get_mdio)()      - Read the MDIO pin
+int (*set_mdc)()       - Write the MDC pin
+int (*delay)()	       - Delay function
+void *priv	       - Private data used by board specific code
+
+The board code will look like:
+
+struct bb_miiphy_bus bb_miiphy_buses[] = {
+ { .name = "miibus#1", .init = b1_init, .mdio_active = b1_mdio_active, ... },
+ { .name = "miibus#2", .init = b2_init, .mdio_active = b2_mdio_active, ... },
+ ...
+};
+int bb_miiphy_buses_num = sizeof(bb_miiphy_buses) /
+			  sizeof(bb_miiphy_buses[0]);
+
+2009 Industrie Dial Face S.p.A.
+     Luigi 'Comio' Mantellini <luigi.mantellini@idf-hit.com>

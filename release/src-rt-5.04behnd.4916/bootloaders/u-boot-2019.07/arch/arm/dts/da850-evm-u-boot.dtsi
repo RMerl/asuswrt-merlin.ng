@@ -1,0 +1,29 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * da850-evm U-Boot Additions
+ *
+ * Copyright (C) 2017 Logic PD, Inc.
+ * Copyright (C) Adam Ford
+ */
+
+/ {
+	soc@1c00000 {
+		u-boot,dm-spl;
+	};
+};
+
+&flash {
+	compatible = "m25p64", "jedec,spi-nor";
+};
+
+&mmc0 {
+	u-boot,dm-spl;
+};
+
+&serial2 {
+	u-boot,dm-spl;
+};
+
+&spi1 {
+	u-boot,dm-spl;
+};

@@ -1,0 +1,7 @@
+KMP204X BOARD
+M:	Valentin Longchamp <valentin.longchamp@ch.abb.com>
+S:	Maintained
+F:	board/keymile/kmp204x/
+F:	include/configs/kmp204x.h
+F:	configs/kmcoge4_defconfig
+F:	configs/kmlion1_defconfig

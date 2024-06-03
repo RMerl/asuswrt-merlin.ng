@@ -1,0 +1,7 @@
+Colibri T30
+M:	Stefan Agner <stefan.agner@toradex.com>
+S:	Maintained
+F:	board/toradex/colibri_t30/
+F:	include/configs/colibri_t30.h
+F:	configs/colibri_t30_defconfig
+F:	arch/arm/dts/tegra30-colibri.dtb

@@ -1,0 +1,44 @@
+Fixed Voltage regulator
+
+Binding:
+The binding is done by the property "compatible" - this is different, than for
+binding by the node prefix (doc/device-tree-bindings/regulator/regulator.txt).
+
+Required properties:
+- compatible: "regulator-fixed"
+- regulator-name: this is required by the regulator uclass
+
+Optional properties:
+- gpio: GPIO to use for enable control
+- startup-delay-us: startup time in microseconds
+- u-boot,off-on-delay-us: off delay time in microseconds
+- regulator constraints (binding info: regulator.txt)
+- enable-active-high: Polarity of GPIO is Active high. If this property
+  is missing, the default assumed is Active low.
+
+
+Other kernel-style properties, are currently not used.
+
+Note:
+For the regulator constraints, driver expects that:
+- regulator-min-microvolt is equal to regulator-max-microvolt
+- regulator-min-microamp is equal to regulator-max-microamp
+
+Example:
+fixed_regulator@0 {
+	/* Mandatory */
+	compatible = "regulator-fixed";
+	regulator-name = "LED_3.3V";
+
+	/* Optional: */
+	gpio = <&gpc1 0 GPIO_ACTIVE_LOW>;
+
+	/* Optional for regulator uclass */
+	regulator-min-microvolt = <3300000>;
+	regulator-max-microvolt = <3300000>;
+	regulator-min-microamp = <15000>;
+	regulator-max-microamp = <15000>;
+	regulator-always-on;
+	regulator-boot-on;
+	enable-active-high;
+};

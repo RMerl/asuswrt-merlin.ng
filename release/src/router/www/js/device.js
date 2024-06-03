@@ -12,7 +12,7 @@ var system = new Object();
     system.band2gSupport = isSupport('2.4G') ? true : false;
     system.band5gSupport = isSupport('5G') ? true : false;
     system.band5g2Support = isSupport('5G-2') ? true : false;
-    system.band6gSupport = (isSupport("wifi7") || isSupport('wifi6e')) ? true : false;
+    system.band6gSupport = (wl_nband_array.find((element) => element == "4") === "4")
     system.band60gSupport = isSupport('wigig') ? true : false;
     system.dualBandSupport = isSupport('dualband') ? true : false;
     system.triBandSupport = isSupport('triband') ? true : false;

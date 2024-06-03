@@ -1,0 +1,63 @@
+if TARGET_CHROMEBOOK_JERRY
+
+config SYS_BOARD
+	default "veyron"
+
+config SYS_VENDOR
+	default "google"
+
+config SYS_CONFIG_NAME
+	default "veyron"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+
+endif
+
+if TARGET_CHROMEBIT_MICKEY
+
+config SYS_BOARD
+	default "veyron"
+
+config SYS_VENDOR
+	default "google"
+
+config SYS_CONFIG_NAME
+	default "veyron"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+
+endif
+
+if TARGET_CHROMEBOOK_MINNIE
+
+config SYS_BOARD
+	default "veyron"
+
+config SYS_VENDOR
+	default "google"
+
+config SYS_CONFIG_NAME
+	default "veyron"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+
+endif
+
+if TARGET_CHROMEBOOK_SPEEDY
+
+config SYS_BOARD
+	default "veyron"
+
+config SYS_VENDOR
+	default "google"
+
+config SYS_CONFIG_NAME
+	default "veyron"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+
+endif

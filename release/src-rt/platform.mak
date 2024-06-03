@@ -1,7 +1,7 @@
 -include $(SRCBASE)/router/.config
 
 ifeq ($(HND_ROUTER),y)
-ifeq ($(HND_ROUTER_AX_6756),y)
+ifeq ($(or $(HND_ROUTER_AX_6756),$(HND_ROUTER_BE_4916)),y)
 export LINUXDIR := $(SRCBASE)/kernel/linux-4.19
 else
 export LINUXDIR := $(SRCBASE)/kernel/linux-4.1
@@ -10,6 +10,10 @@ else
 export LINUXDIR := $(SRCBASE)/linux/linux-2.6
 endif
 export BUILD := $(shell (gcc -dumpmachine))
+
+ifeq ($(HND_ROUTER_BE_4916),y)
+export HND_ROUTER_AX := y
+endif
 
 ifeq ($(ARM),y)
 
@@ -37,7 +41,14 @@ export CONFIGURE := ./configure LD=$(CROSS_COMPILE)ld --host=arm-buildroot-linux
 export CONFIGURE_64 := ./configure LD=$(CROSS_COMPILE)ld --host=aarch64-buildroot-linux-gnu
 export HOSTCONFIG_64 := linux-aarch64 -DL_ENDIAN -march=armv8-a -fomit-frame-pointer -mabi=lp64 -ffixed-r8 -D__ARM_ARCH_8A__
 endif
-else
+else ifeq ($(HND_ROUTER_BE_4916),y) # ifeq ($(HND_ROUTER_AX_6756),y), BE_4916
+export CROSS_COMPILE := /opt/toolchains/crosstools-arm_softfp-gcc-10.3-linux-4.19-glibc-2.32-binutils-2.36.1/usr/bin/arm-buildroot-linux-gnueabi-
+export CROSS_COMPILER := $(CROSS_COMPILE)
+export CONFIGURE := ./configure LD=$(CROSS_COMPILE)ld --host=arm-buildroot-linux-gnueabi
+export TOOLS := /opt/toolchains/crosstools-arm_softfp-gcc-10.3-linux-4.19-glibc-2.32-binutils-2.36.1
+export TOP_PLATFORM := $(SRCBASE)/router-sysdep
+export ARCH := arm
+else # ifeq ($(HND_ROUTER_AX_6756),y), not 6756, not 4916
 export CROSS_COMPILE := /opt/toolchains/crosstools-arm-gcc-5.5-linux-4.1-glibc-2.26-binutils-2.28.1/usr/bin/arm-buildroot-linux-gnueabi-
 export CROSS_COMPILER := $(CROSS_COMPILE)
 export CONFIGURE := ./configure LD=$(CROSS_COMPILE)ld --host=arm-buildroot-linux-gnueabi
@@ -45,7 +56,9 @@ ifeq ($(BRCM_CHIP),4908)
 export CONFIGURE_64 := ./configure LD=$(CROSS_COMPILE_64)ld --host=aarch64-buildroot-linux-gnu
 export HOSTCONFIG_64 := linux-aarch64 -DL_ENDIAN -march=armv8-a -fomit-frame-pointer -mabi=lp64 -ffixed-r8 -D__ARM_ARCH_8A__
 endif
-endif
+endif # ifeq ($(HND_ROUTER_AX_6756),y)
+ifneq ($(HND_ROUTER_BE_4916),y) # ifeq ($(HND_ROUTER_AX),y), not BE_4916
+$(info nothere-01)
 ifneq ($(findstring $(BRCM_CHIP),4908 4912),)
 export HOSTCONFIG := linux-armv4 -DL_ENDIAN -march=armv8-a -fomit-frame-pointer -mabi=aapcs-linux -marm -ffixed-r8 -msoft-float -D__ARM_ARCH_8A__
 else
@@ -64,7 +77,9 @@ export RTVER := 0.9.32.1
 export BCMSUB := brcmarm
 export KERNEL_BINARY=$(LINUXDIR)/vmlinux
 export PRBM_EXT=_preb
- else
+endif # ifeq ($(HND_ROUTER_AX),y), not BE_4916
+ else # ifeq ($(HND_ROUTER_AX),y), AC88
+$(info nothere-03)
 export PLATFORM_ARCH := arm-glibc
 export CROSS_COMPILE := /opt/toolchains/crosstools-arm-gcc-5.3-linux-4.1-glibc-2.22-binutils-2.25/usr/bin/arm-buildroot-linux-gnueabi-
 export CROSS_COMPILER := $(CROSS_COMPILE)
@@ -81,8 +96,8 @@ export RTVER := 0.9.32.1
 export BCMSUB := brcmarm
 export KERNEL_BINARY=$(LINUXDIR)/vmlinux
 export PRBM_EXT=_preb
- endif
- else
+ endif # ifeq ($(HND_ROUTER_AX),y)
+ else # ifeq ($(HND_ROUTER),y), not HND_ROUTER
 export KERNEL_BINARY=$(LINUXDIR)/arch/arm/boot/zImage
 export PLATFORM_ARCH := arm-uclibc
 export CROSS_COMPILE := arm-brcm-linux-uclibcgnueabi-
@@ -96,14 +111,14 @@ export HOST := arm-linux
 export TOOLS := $(SRCBASE)/toolchains/hndtools-arm-linux-2.6.36-uclibc-4.5.3
 export RTVER := 0.9.32.1
 export BCMSUB := brcmarm
- endif
-else ifeq ($(RTCONFIG_BCM_ARM_GCLIBC),y)
+ endif # ifeq ($(HND_ROUTER),y)
+else ifeq ($(RTCONFIG_BCM_ARM_GCLIBC),y) # ifeq ($(ARM),y), SDK7.14 ARM
 export CROSS_COMPILE ?= arm-buildroot-linux-gnueabi-
 export CONFIGURE := ./configure arm-linux --build=$(BUILD)
 export TOOLCHAIN := $(shell cd $(dir $(shell which $(CROSS_COMPILE)gcc))/../.. && pwd -P)
 export CFLAGS += -fno-strict-aliasing
 SUBMAKE_SETTINGS += ARCH=$(ARCH)
-else
+else # ifeq ($(ARM),y), mips platform
  ifeq ($(EXTRACFLAGS),)
 export EXTRACFLAGS := -DBCMWPA2 -fno-delete-null-pointer-checks -mips32 -mtune=mips32
  endif
@@ -120,7 +135,7 @@ export HOST := mipsel-linux
 export TOOLS := $(SRCBASE)/../../tools/brcm/hndtools-mipsel-linux
 export RTVER := 0.9.30.1
 export TEST := 3
-endif
+endif # ifeq ($(ARM),y)
 
 ifneq ($(HND_ROUTER),y)
 ifeq ($(PLATFORM),)

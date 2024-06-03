@@ -1,0 +1,23 @@
+[Header]
+    Version = 4.2
+    Hash Algorithm = sha256
+    Engine Configuration = 0
+    Certificate Format = X509
+    Signature Format = CMS
+    Engine = CAAM
+
+[Install SRK]
+    # Index of the key location in the SRK table to be installed
+    File = "../crts/SRK_1_2_3_4_table.bin"
+    Source index = 0
+
+[Install NOCAK]
+    File = "../crts/SRK1_sha256_2048_65537_v3_usr_crt.pem"
+
+[Authenticate CSF]
+
+[Authenticate Data]
+    # Key slot index 0 used to authenticate the image data
+    Verification index = 0
+    # Authenticate Start Address, Offset, Length and file
+    Blocks =  0x877ff400 0x00000000 0x0009ec00 "u-boot-dtb.imx"

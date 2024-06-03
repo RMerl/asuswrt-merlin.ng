@@ -1,0 +1,7 @@
+MX53PPD BOARD
+M:	Antti Mäentausta <antti.maentausta@ge.com>
+M:	Martyn Welch <martyn.welch@collabora.co.uk>
+S:	Maintained
+F:	board/freescale/mx53ppd/
+F:	include/configs/mx53ppd.h
+F:	configs/mx53ppd_defconfig

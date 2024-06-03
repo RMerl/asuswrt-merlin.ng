@@ -1,0 +1,108 @@
+
+################# The common definitions #################
+
+# Parallel jobs control functions
+
+# Init parl tokens.  $1: parl_err_trap_en
+function parl_token_init()
+{
+    PARL_ERR_TRAP_ENABLED=$1
+    SUBSHELL_RET_DIR=$TARGETS_DIR/$PROFILE/subshell_ret.$$
+    SUBSHELL_ERR_PREFIX=${SUBSHELL_RET_DIR}/subshell_err
+    local token_fifo=`mktemp -u -t fifo.tmp.$$.XXXXXXXXXX`
+
+    # ACTUAL_MAX_JOBS style: "8" or "6 --max-load=3.0" or " --max-load=3.5"
+    ACTUAL_MAX_JOBS=`echo $ACTUAL_MAX_JOBS | awk -F " " '{print $1}'`
+    if [ -z "$ACTUAL_MAX_JOBS" ] || echo $ACTUAL_MAX_JOBS | grep [^0-9] >> /dev/null; then
+        local jobs_num=`grep processor /proc/cpuinfo | wc -l`
+    else
+        local jobs_num=$ACTUAL_MAX_JOBS
+    fi
+
+    mkfifo $token_fifo || (echo "ERR: token init, mkfifo"; exit 1)
+    exec {FIFO_FD}<> $token_fifo || (echo "ERR: token init, bind fd"; rm -f $token_fifo; exit 1)
+    rm -f $token_fifo
+
+    trap "eval \"exec $FIFO_FD>&-; exec $FIFO_FD<&-; exit 0\"" SIGINT
+
+    for ((i=1; i<=$jobs_num; i++))
+    do
+        echo >& $FIFO_FD
+    done
+
+    rm -rf ${SUBSHELL_RET_DIR}; mkdir ${SUBSHELL_RET_DIR}
+}
+
+# Un-init parl tokens. Recommend to call this in trap EXIT.
+function parl_token_uninit()
+{
+    eval "exec $FIFO_FD>&-; exec $FIFO_FD<&-;"
+    rm -rf ${SUBSHELL_RET_DIR}
+}
+
+function parl_token_get()
+{
+    read -u$FIFO_FD
+}
+
+function parl_token_free()
+{
+    echo >& $FIFO_FD
+}
+
+# Register errors trap in subshell when enabled
+function parl_err_trap_reg()
+{
+    [[ "$PARL_ERR_TRAP_ENABLED" == "1" ]] && trap 'echo ERR: subshell cmd exit "$?"; \
+          parl_token_free; touch ${SUBSHELL_ERR_PREFIX}.$BASHPID; exit 1' ERR
+}
+
+# Enable/disable errors trap in subshell. 1: enable; 0: disable.
+function parl_err_trap_en()
+{
+    PARL_ERR_TRAP_ENABLED=$1
+}
+
+# Execute cmd in parallel. 'parl_wait' is required after a bunch of 'parl_cmd'.
+# $1: full cmd
+function parl_cmd()
+{
+    parl_token_get
+    (
+        parl_err_trap_reg
+        eval "$1"
+        parl_token_free
+    )&
+}
+
+function parl_wait()
+{
+    wait
+    if [ "$PARL_ERR_TRAP_ENABLED" == "1" ]; then
+        ls -l ${SUBSHELL_ERR_PREFIX}* > /dev/null 2>&1
+        if [ $? == "0" ]; then
+            rm -f ${SUBSHELL_ERR_PREFIX}*
+            exit 1
+        fi
+    fi
+}
+
+# Execute cmd on filelist in parallel.
+# $1: full cmd
+# $2: sl - skip softlink files; "" - apply to all files
+function parl_flist_cmd()
+{
+    while read filename; do
+    if [ $2 == "sl" ] && [ -h $filename ]; then
+        continue
+    fi
+
+    parl_token_get
+    (
+        parl_err_trap_reg
+        eval "$1 $filename"
+        parl_token_free
+    )&
+    done
+    parl_wait
+}

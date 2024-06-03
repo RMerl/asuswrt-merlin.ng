@@ -100,28 +100,41 @@ function getScArray(mode){
 	var smartConnectTable = {
 		"SC_2g5g": {
 			"wlArray": (function(){
-				if(isSupport("quadband"))
-					return [{"title":"2.4 GHz / 5 GHz-1 / 5 GHz-2", "ifname":get_wl_unit_by_band("2G")}, {"title":"6 GHz", "ifname":get_wl_unit_by_band("6G")}];
+				if(isSupport("quadband")){
+					if(get_wl_unit_by_band("5G2") != ""){
+						return [
+							{"title":"2.4 GHz / 5 GHz-1 / 5 GHz-2", "ifname":get_wl_unit_by_band("2G")}, 
+							{"title":"6 GHz", "ifname":get_wl_unit_by_band("6G")}
+						];
+					}
+					else{
+						return [
+							{"title":"2.4 GHz / 5 GHz", "ifname":get_wl_unit_by_band("2G")}, 
+							{"title":"6 GHz-1", "ifname":get_wl_unit_by_band("6G1")},
+							{"title":"6 GHz-2", "ifname":get_wl_unit_by_band("6G2")}
+						];
+					}
+				}
 				else
-					return [{"title":"2.4 GHz / 5 GHz", "ifname":"0"}, {"title":"6 GHz", "ifname":"2"}];
+					return [{"title":"2.4 GHz / 5 GHz", "ifname":get_wl_unit_by_band("2G")}, {"title":"6 GHz", "ifname":get_wl_unit_by_band("6G")}];
 			})(),
 			"value": (function(){
-				if(isSupport("quadband"))
+				if(isSupport("smart_connect_v2"))
 					return 1;
 				else
 					return 3;
 			})()
 		},
 		"SC_5g5g": {
-			"wlArray": [{"title":"2.4 GHz", "ifname":"0"}, {"title":"5 GHz", "ifname":"1"}],
+			"wlArray": [{"title":"2.4 GHz", "ifname":get_wl_unit_by_band("2G")}, {"title":"5 GHz", "ifname":get_wl_unit_by_band("5G")}],
 			"value": 2
 		},
 		"SC_dwb_mode": {
-			"wlArray": [{"title":"2.4 GHz / 5 GHz-1", "ifname":"0"}, {"title":"5 GHz-2", "ifname": get_wl_unit_by_band("5G2")}],
+			"wlArray": [{"title":"2.4 GHz / 5 GHz-1", "ifname":get_wl_unit_by_band("2G")}, {"title":"5 GHz-2", "ifname": get_wl_unit_by_band("5G2")}],
 			"value": 1
 		},
 		"SC_all": {
-			"wlArray": [{"title":"", "ifname":"0"}],
+			"wlArray": [{"title":"", "ifname": get_wl_unit_by_band("2G")}],
 			"value": 1
 		}
 	}
@@ -129,36 +142,58 @@ function getScArray(mode){
 	return smartConnectTable[mode] ||  smartConnectTable["SC_all"];
 }
 
+function getSelifValue(mode){
+	var val = 0;
+
+	if(get_wl_unit_by_band("2G") != "") val += 1;
+	if(get_wl_unit_by_band("5G1") != "") val += 2;
+	if(get_wl_unit_by_band("5G2") != "") val += 4;
+
+	if(mode == "SC_all"){
+		if(get_wl_unit_by_band("6G1") != "") val += 8;
+		if(get_wl_unit_by_band("6G2") != "") val += 16;
+	}
+	else if(mode == "SC_5g5g"){
+		if(get_wl_unit_by_band("2G") != "") val -= 1;
+	}
+
+	return val;
+}
+
 function getAllWlArray(){
 	if(isSupport("quadband")){
-		var wlArrayRet = [			
-			{"title":"2.4 GHz", "ifname":get_wl_unit_by_band("2G"), "suffix": ""},
-			{"title":"5 GHz-1", "ifname":get_wl_unit_by_band("5G"), "suffix": "_5G-1"},
-			{"title":"5 GHz-2", "ifname":get_wl_unit_by_band("5G2"), "suffix": "_5G-2"},
-			{"title":"6 GHz", "ifname":get_wl_unit_by_band("6G"), "suffix": "_6G"},
-		];
-		if(isSwMode('RP') || isSwMode('MB')){
-			wlArrayRet = [				
-				{ title: '2.4 GHz', ifname: get_wl_unit_by_band('2G'), suffix: '' },				
-				{ title: '5 GHz-1', ifname: get_wl_unit_by_band('5G'), suffix: '_5G-1' },
-				{ title: '5 GHz-2', ifname: get_wl_unit_by_band('5G2'), suffix: '_5G-2' },
-				{ title: '6 GHz', ifname: get_wl_unit_by_band('6G'), suffix: '_6G' },
-			];
+		var wlArrayRet = [{"title":"2.4 GHz", "ifname":get_wl_unit_by_band('2G'), "suffix": ""}];
+		let wlSeperateStr = '';
+		if(get_wl_unit_by_band("5G2") === ''){
+			// 2566
+			wlArrayRet.push({"title":"5 GHz", "ifname":get_wl_unit_by_band('5G'), "suffix": "_5G"});
+			wlArrayRet.push({"title":"6 GHz-1", "ifname":get_wl_unit_by_band('6G1'), "suffix": "_6G-1"});
+			wlArrayRet.push({"title":"6 GHz-2", "ifname":get_wl_unit_by_band('6G2'), "suffix": "_6G-2"});
+			wlSeperateStr = 'Separate 2.4 GHz, 5 GHz, 6 GHz-1 and 6 GHz-2'
 		}
-		document.querySelector('label[for="wireless_checkbox"]').innerHTML = 'Separate 2.4 GHz, 5 GHz-1, 5 GHz-2 and 6 GHz';
+		else{
+			//2556
+			wlArrayRet.push({"title":"5 GHz-1", "ifname":get_wl_unit_by_band('5G'), "suffix": "_5G-1"});
+			wlArrayRet.push({"title":"5 GHz-2", "ifname":get_wl_unit_by_band('5G2'), "suffix": "_5G-2"});
+			wlArrayRet.push({"title":"6 GHz", "ifname":get_wl_unit_by_band('6G'), "suffix": "_6G"});
+			wlSeperateStr = 'Separate 2.4 GHz, 5 GHz-1, 5 GHz-2 and 6 GHz'
+		}
+
+		document.querySelector('label[for="wireless_checkbox"]').innerHTML = wlSeperateStr;
 	}
 	else{
 		var wlArrayRet = [{"title":"2.4 GHz", "ifname":get_wl_unit_by_band('2G'), "suffix": ""}];
 
 		if(isSupport("triband")){
-			if(isSupport('wifi6e')){
+			if(get_wl_unit_by_band("5G2") != ''){
+				document.querySelector('label[for="wireless_checkbox"]').innerHTML = '<#qis_wireless_setting_separate#>';
+				wlArrayRet.push({"title":"5 GHz-1", "ifname":get_wl_unit_by_band('5G'), "suffix": "_5G-1"});
+				wlArrayRet.push({"title":"5 GHz-2", "ifname":get_wl_unit_by_band('5G2'), "suffix": "_5G-2"});
+			}
+			else{
 				document.querySelector('label[for="wireless_checkbox"]').innerHTML = '<#qis_wireless_setting_separate1#>';
 				wlArrayRet.push({"title":"5 GHz", "ifname":get_wl_unit_by_band('5G'), "suffix": "_5G"});
 				wlArrayRet.push({"title":"6 GHz", "ifname":get_wl_unit_by_band('6G'), "suffix": "_6G"});
-			}
-			else{
-				wlArrayRet.push({"title":"5 GHz-1", "ifname":get_wl_unit_by_band('5G'), "suffix": "_5G-1"});
-				wlArrayRet.push({"title":"5 GHz-2", "ifname":get_wl_unit_by_band('5G2'), "suffix": "_5G-2"});
 			}
 
 			if(isSupport("prelink") && isSupport("amas_bdl")){
@@ -187,24 +222,29 @@ function getPAPList(siteSurveyAPList, filterType, filterValue) {
 	var modelInfo = httpApi.nvramGet(["productid", "odmpid"], true);
 	var based_modelid = modelInfo.productid;
 	var papList = [];
+
 	var profile = function(_profile){
-		var getBandWidthName = function(ch){
-			if(ch >= 1 && ch <= 14){
-				return {name: "2.4GHz", unit: 0};
+		var getBandWidthName = function(band, ch){
+			if(band == "2G"){
+				return {name: "2.4GHz", unit: get_wl_unit_by_band("2G")};
 			}
-			else{
-				if(isSupport("triband"))
-				{
-					if(based_modelid == "MAP-AC2200")
-						return (ch >= 36 && ch <= 64) ? {name: "5GHz-1", unit: 2} : {name: "5GHz-2", unit: 1};
-					else
-						return (ch >= 36 && ch <= 64) ? {name: "5GHz-1", unit: 1} : {name: "5GHz-2", unit: 2};
+
+			if(band == "5G"){
+				if(get_wl_unit_by_band("5G2")){
+					return (ch >= 36 && ch <= 64) ? {name: "5GHz-1", unit: get_wl_unit_by_band("5G1")} : {name: "5GHz-2", unit: get_wl_unit_by_band("5G2")};
 				}
-				else if(based_modelid === 'GT-AXE16000'){
-					return (ch >= 36 && ch <= 64) ? {name: "5GHz-1", unit: 0} : {name: "5GHz-2", unit: 1};
+				else{
+					return {name: "5GHz", unit: get_wl_unit_by_band("5G")};
 				}
-				else
-					return {name: "5GHz", unit: 1};
+			}
+
+			if(band == "6G"){
+				if(get_wl_unit_by_band("6G2")){
+					return (ch >= 1 && ch <= 129) ? {name: "6GHz-1", unit: get_wl_unit_by_band("6G1")} : {name: "6GHz-2", unit: get_wl_unit_by_band("6G2")};
+				}
+				else{
+					return {name: "6GHz", unit: get_wl_unit_by_band("6G")};
+				}
 			}
 		}
 
@@ -212,41 +252,13 @@ function getPAPList(siteSurveyAPList, filterType, filterValue) {
 			_profile = ["", "", "", "", "", "", "", "", "", ""];
 
 		this.band = (function(){
-			if(isSupport('wifi6e') && _profile[0] === '6G'){
-				return "6GHz";
-				//return {name: "6GHz", unit: 2};
-			}
-			else if(isSupport('wifi6e') && _profile[0] === '5G'){
-				return "5GHz";
-			}
-			else{
-				return getBandWidthName(_profile[2]).name;
-			}
-			
+			return getBandWidthName(_profile[0], _profile[2]).name;
 		})();
+
 		this.unit = (function(){
-			if(based_modelid === 'GT-AXE16000'){
-				if(_profile[0] === '6G'){
-					return 2;
-				}
-				else if(_profile[0] === '2G'){
-					return 3;
-				}
-				else{	// 5 GHz-1 / 5 GHz-2
-					return getBandWidthName(_profile[2]).unit;
-				}
-			}
-			else if(isSupport('wifi6e') && _profile[0] === '6G'){
-				return 2;
-				//return {name: "6GHz", unit: 2};
-			}
-			else if(isSupport('wifi6e') && _profile[0] === '5G'){
-				return 1;
-			}
-			else{
-				return getBandWidthName(_profile[2]).unit;
-			}		
+			return getBandWidthName(_profile[0], _profile[2]).unit;
 		})();
+
 		this.ssid = htmlEnDeCode.htmlEncode(decodeURIComponent(_profile[1]));
 		this.channel = _profile[2];
 		this.authentication = _profile[3];
@@ -354,8 +366,10 @@ function get_wl_unit_by_band(_band){
 			wl_nband = "1";
 			break;
 		case "6G":
+		case "6G1":
+		case "6G2":
 			wl_nband = "4";
-			break;
+			break;			
 		case "60G":
 			wl_nband = "6";
 			break;
@@ -400,7 +414,7 @@ String.prototype.strReverse = function() {
 };
 
 function chkPass(pwd, flag, obj, id) {
-	var ttc = '<% nvram_get("territory_code"); %>';
+	var ttc = systemVariable.territoryCode;
 	var isSku = function(_ptn){
 		return (ttc.search(_ptn) == -1) ? false : true;
 	}
@@ -670,6 +684,7 @@ function check_dwb_ssid(){
 	var confilct_flag = false;
 	var dwb_band = httpApi.nvramGet(["dwb_band"]).dwb_band;
 	var $dwbObj = $("#wireless_ssid_" + dwb_band + "");
+
 	if($dwbObj.length == "1"){
 		var backhaul_ssid = $dwbObj.val();
 		if(backhaul_ssid != ""){
@@ -689,6 +704,17 @@ function check_dwb_ssid(){
 			});
 		}
 	}
+	else{
+		// if the SSID of dwb is hidden.
+		if(!systemVariable.isDefault){
+			delete qisPostData[`wl${dwb_band}_ssid`];
+			delete qisPostData[`wl${dwb_band}_auth_mode_x`];
+			delete qisPostData[`wl${dwb_band}_wpa_psk`];
+			delete qisPostData[`wl${dwb_band}_crypto`];
+			delete qisPostData[`wl${dwb_band}_mfp`];	
+		}
+	}
+	
 	return confilct_flag;
 }
 
@@ -824,6 +850,7 @@ var Get_Component_SiteSurvey_List = function(papList, filterBand) {
 			$(this).removeClass("ap_ssid_hover")
 		})
 
+		
 		var ap_band =  $("<div>").addClass("ap_band").html(AP.band);
 		apListDiv.append(ap_band);
 
@@ -899,11 +926,9 @@ var Get_Component_AiMeshOnboarding_List = function(nodeInfo) {
 }
 
 var Get_Component_btnLoading = function(){
-	return $("<img>").attr({
-		"width": "30px",
-		"src": "/images/InternetScan.gif"
-	})
+	return $(`<div class="lds-dual-ring"></div>`);
 }
+
 var Get_Component_WirelessInput = function(wlArray){
 	var container = $("<div>");
 
@@ -932,9 +957,7 @@ var Get_Component_WirelessInput = function(wlArray){
 
 			switch(parseInt(wl.ifname)){
 				
-				case 0 :
-					console.log(isSupport('wifi6e'));
-					
+				case 0 :				
 					if(isSupport('quadband')){
 						ssid_tmp = ssid_tmp.slice(0,26) + "_RPT5G";
 					}
@@ -956,7 +979,7 @@ var Get_Component_WirelessInput = function(wlArray){
 				case 2 :
 					
 					if(isSupport('quadband')
-					|| isSupport('triband') && isSupport('wifi6e')){
+					|| isSupport('triband') && (isSupport('wifi6e') || isSupport('wifi7'))){
 						ssid_tmp = ssid_tmp.slice(0,26) + "_RP6G";
 					}
 					else{
@@ -1056,6 +1079,81 @@ var Get_Component_WirelessInput = function(wlArray){
 		container.append(__container);
 	})
 
+	return container;
+}
+
+var Get_Component_WirelessInput_MLO = function(wlArray){
+	var container = $("<div>");
+	var __container = $("<div>").addClass("wirelessBand");
+
+	$("<div>")
+		.addClass("inputTitleContainer")
+		.append($("<div>").addClass("inputTitle").html(wlArray.title + " <#QIS_finish_wireless_item1#>"))
+		.appendTo(__container)
+
+	$("<div>")
+		.addClass("inputContainer")
+		.append($("<input>")
+			.attr({
+				"id": "wireless_ssid_" + wlArray.ifname,
+				"type": "text",
+				"maxlength": "33",
+				"class": "textInput wlInput",
+				"autocomplete": "off",
+				"autocorrect": "off",
+				"autocapitalize": "off",
+				"spellcheck": "false",
+				"data-role": "none",
+				"data-clear-btn": "true"
+			})
+			.keyup(function(e){
+				if(e.keyCode == 13){
+					$(".wlInput")[idx*2+1].focus();
+				}
+	
+				validator.ssidCheck($("#"+this.id));
+			})
+			.val(wlArray.ssid)
+		)
+		.appendTo(__container)
+
+	$("<div>")
+		.addClass("inputTitleContainer")
+		.append($("<div>").addClass("inputTitle").html(wlArray.title + " <#QIS_finish_wireless_item2#>"))
+		.append($("<div>").addClass("secureInput icon_eye_close").attr({"for":"wireless_key_" + wlArray.ifname}))
+		.appendTo(__container)
+
+	$("<div>")
+		.addClass("inputContainer")
+		.append($("<input>")
+			.attr({
+				"id": "wireless_key_" + wlArray.ifname,
+				"type": "password",
+				"maxlength": "64",
+				"class": "textInput wlInput",
+				"autocomplete": "new-password",
+				"autocorrect": "off",
+				"autocapitalize": "off",
+				"spellcheck": "false",
+				"data-role": "none",
+				"data-clear-btn": "true"
+			})
+			.keyup(function(e){
+				if(e.keyCode == 13){
+					try{
+						$(".wlInput")[idx*2+2].focus();
+					}
+					catch(e){
+						apply.wireless();
+					}
+				}
+				chkPass(this.value, "WiFi", "", "MLO");
+			})
+			.val(wlArray.psk)
+		)
+		.appendTo(__container);
+
+	container.append(__container);
 	return container;
 }
 
@@ -1167,7 +1265,6 @@ function is_cloud_profile(isp){
 function get_cloud_settings(isp){
 	var cloud_profile = {};
 	$.each(systemVariable.cloudIspProfiles, function(i, cloud_isp_profile) {
-		console.log("cloud_isp_profile.switch_wantag = "+cloud_isp_profile.switch_wantag);
 		if(cloud_isp_profile.switch_wantag == isp){
 			cloud_profile = cloud_isp_profile;
 			return false;
@@ -1218,11 +1315,18 @@ function handleSysDep(){
 	$(".apSupport").toggle(!isSupport("noAP"));
 	$(".defpassSupport").toggle(isSupport("defpass"));
 	$(".defpskSupport").toggle(isSupport("defpsk"));
+	$(".mloSupport").toggle(isSupport("mlo"));
 
 	if(systemVariable.forceChangePw){
 		systemVariable.forceChangePw = false;
 		systemVariable.forceChangePwInTheEnd = true;
+
+		if(isSupport("BUSINESS")){
+			systemVariable.forceChangePw = true;
+			systemVariable.forceChangePwInTheEnd = false;
+		}
 	}
+
 
 	if(!isNoWAN || !isSupport("amasNode")) $(".amasNoWAN").remove();
 	if(!isSupport("amas")) $(".amasSupport").remove();
@@ -1258,7 +1362,7 @@ function handleSysDep(){
 			$("#gdContainer").append($("<div>").attr({"class": "GD-head"}))
 		}
 		
-		$("#gdContainer").append($("<div>").attr({"class": "GD-wait"}).append($("<div>").attr({"id": "GD-status"}).html("Installing..")))
+		$("#gdContainer").append($("<div>").attr({"class": "GD-wait"}).append($("<div>").attr({"id": "GD-status"}).html("<#Excute_processing#>")))
 		$("#gdContainer").append($("<div>").attr({"class": "GD-footer-left"}))
 		$("#gdContainer").append($("<div>").attr({"class": "GD-footer-extend"}))
 		$("#gdContainer").append($("<div>").attr({"class": "GD-footer-center"}))
@@ -1291,7 +1395,17 @@ function handleSysDep(){
 				// systemVariable.imgContainer.push(tmpObj)
 			})
 		}
-		
+	}
+
+	if(isTS()){
+		$("#summary_page").append($("<div>").attr({"id": "gdContainer", "class": "gundam-footer-field"}).hide())
+		$("#gdContainer").html('');
+		$("#gdContainer").append($("<div>").attr({"class": "GD-wait"}).append($("<div>").attr({"id": "GD-status"}).html("<#Excute_processing#>")));
+	}
+
+	if(isSupport("mlo")){
+		$('#wifi6e_legacy_hint').remove();
+		$('#wifi6e_legacy_hint_summary').remove();
 	}
 }
 
@@ -1431,7 +1545,8 @@ function setupWLCNvram(apProfileID) {
 
 	var encryption = systemVariable.selectedAP.encryption;
 	var authentication = systemVariable.selectedAP.authentication;
-
+	var phyMode = systemVariable.selectedAP.wlmode;
+	var wifi7Mode = httpApi.nvramGet([ `wl${unit}_11be`]);
 	qisPostData["wlc" + unit + "_ssid"] = htmlEnDeCode.htmlDecode(systemVariable.selectedAP.ssid);
 	qisPostData["wlc" + unit + "_band"] = unit;
 	qisPostData["wlc" + unit + "_ap_mac"] = systemVariable.selectedAP.macaddr;
@@ -1473,6 +1588,9 @@ function setupWLCNvram(apProfileID) {
 			qisPostData["wlc" + unit + "_auth_mode"] = "sae";
 			qisPostData["wlc" + unit + "_crypto"] = "aes";
 			qisPostData["wlc" + unit + "_wep"] = "0";
+			if(isSupport('wifi7') && wifi7Mode == '1' && phyMode == 'be'){
+				qisPostData["wlc" + unit + "_crypto"] = "aes+gcmp256";
+			}
 		}
 		else if(authentication == "WPA-WPA2-Enterprise"){
 			qisPostData["wlc" + unit + "_auth_mode"] = "wpawpa2";
@@ -1571,6 +1689,7 @@ function sortAP(kind, sequence){
 				return 0;
 		}
 	});
+
 	systemVariable.papList = getPAPList(array_tmp);
 	genPAPList(systemVariable.papList, systemVariable.multiPAP.wlcOrder);
 	handleSortField();
@@ -1611,6 +1730,7 @@ var getRestartService = function(){
 		qisPostData.hasOwnProperty("wlc_ssid") ||
 		qisPostData.hasOwnProperty("lan_proto") ||
 		qisPostData.hasOwnProperty("wans_dualwan") ||
+		qisPostData.hasOwnProperty("wans_mode") ||
 		isSwModeChanged()
 	){
 		return "reboot";
@@ -1620,17 +1740,28 @@ var getRestartService = function(){
 		return "reboot";
 	}
 
+	if(isSupport("mlo") && qisPostData.hasOwnProperty("mld_enable")){
+		const wl_mlo_config = httpApi.nvramGet(["wl_mlo_config"]).wl_mlo_config;
+		if(wl_mlo_config == "") return "reboot";
+	}
+
 	var restart_net = 0;
 	var restart_wan_if = 0;
 	var restart_firewall = 0;
 
+	/*
 	if(qisPostData.hasOwnProperty("ipv6_service")){
 		restart_net = 1;
 		actionScript.push("restart_net");
 	}
+	*/
 
 	if(systemVariable.detwanResult.isIPConflict){
-		actionScript.push("restart_subnet");
+		actionScript.push("restart_net_and_phy");
+	}
+
+	if(qisPostData.hasOwnProperty("wans_mt_ioport")){
+		actionScript.push("restart_mtwan_profile");
 	}
 
 	if(qisPostData.hasOwnProperty("time_zone")){
@@ -1668,6 +1799,19 @@ var getRestartService = function(){
 		// do not push these if restart_wan_if has been pushed. these are included in restart_wan_if.
 		actionScript.push("restart_firewall");
 		actionScript.push("restart_wrs");
+	}
+
+	if(systemVariable.isDefault && systemVariable.sdn_idx > 0){
+		actionScript.push("restart_sdn "+systemVariable.sdn_idx+"");
+	}
+
+	if(qisPostData.hasOwnProperty("sdn_rc_service")){
+		var rcs_list = qisPostData.sdn_rc_service.split(";");
+		$.each(rcs_list , function(index, item){
+			if(!(actionScript.includes(item)))
+				actionScript.push(item);
+		});
+		delete qisPostData["sdn_rc_service"];
 	}
 
 	return actionScript.join(";")
@@ -1813,7 +1957,7 @@ var isSupport = function(_ptn){
 			matchingResult = (isSku("CN") || isSku("GD") || isSku("TC")) ? true : false;
 			break;
 		case "SMARTCONNECT":
-			matchingResult = (ui_support["smart_connect"] == "1" || ui_support["smart_connect"] == "2" || ui_support["bandstr"] == "1") ? true : false;
+			matchingResult = (ui_support["smart_connect_v2"] == "1" || ui_support["smart_connect"] == "1" || ui_support["smart_connect"] == "2" || ui_support["bandstr"] == "1") ? true : false;
 			break;
 		case "GUNDAM_UI":
 			matchingResult = ((isGundam() || isKimetsu() || isEva()) && $(".desktop_left_field").is(":visible")) ? true : false;
@@ -1835,6 +1979,28 @@ var isSupport = function(_ptn){
 			break;
 		case "defpsk":
 			matchingResult = (ui_support["defpsk"] >= 1 && (httpApi.nvram_match_x("wifi_psk","","1").wifi_psk != "1")) ? true : false;
+			break;
+		case "MaxRule_SDN":
+			matchingResult = ui_support["MaxRule_SDN"] || false;
+			break;
+		case "SDN_Scenario":
+			matchingResult = (
+				isSupport("mtlancfg") && isSupport("BUSINESS") && !isSupport("mlo") &&
+				systemVariable.isDefault && systemVariable.productid.indexOf('EBG') == -1 &&
+				isSwMode("RT")
+			) ? true : false;
+			break;
+		case "SDN_White_Theme":
+			matchingResult = false;
+			if(isSupport("mtlancfg") && isSupport("BUSINESS")){
+				matchingResult = true;
+			}
+			break;
+		case "apMode_detwan":
+			matchingResult = (systemVariable.productid == "EBA63") ? true : false;
+			break;
+		case "mloSetup":
+			matchingResult = (systemVariable.mloSetup && (isSwMode("RT") || isSwMode("AP"))) ? true : false;
 			break;
 		default:
 			matchingResult = ((ui_support[_ptn] > 0) || (systemVariable.productid.search(_ptn) !== -1)) ? true : false;
@@ -1858,6 +2024,11 @@ var isKimetsu = function(){
 var isEva = function(){
 	return (systemVariable.CoBrand == "3");
 }
+
+var isTS = function(){
+	return (systemVariable.CoBrand == "8");
+}
+
 var isSku = function(_ptn){
 	return (systemVariable.territoryCode.search(_ptn) == -1) ? false : true;
 }
@@ -1982,7 +2153,6 @@ function startLiveUpdate(){
 		var NowTime = Math.ceil(Date.now() / 1000);
 		httpApi.nvramSet({"action_mode":"apply", "webs_update_trigger":"QIS", "rc_service":"start_webs_update"}, function(){
 			setTimeout(function(){
-
 				var fwInfo = httpApi.nvramGet(["webs_state_update", "webs_state_info", "webs_state_flag", "webs_state_level", "webs_update_ts", "apps_sq"], true);
 				CheckTime = (fwInfo.webs_update_ts == "")? 0:fwInfo.webs_update_ts.split("&#62")[0];
 				TimeDiff = NowTime-CheckTime;
@@ -2190,6 +2360,7 @@ var genPAPList = function(papList, filterBand){
 			title += "&nbsp;";
 			title += "If not, click [<span class='textClick' onclick='goTo.skip_pap();'>SKIP</span>]";
 		}
+
 		return title;
 	};
 	$("#papList_page").find(".pageDesc").html(Get_Text_PAP_Title());
@@ -2355,10 +2526,206 @@ function adjust_popup_container_top(_obj, _offsetHeight){
 		$(_obj).css({top: (final_scrollTop + _offsetHeight)});
 	}
 }
-/* String replace &#39; with ' for dict */
 function stringSafeGet(str){
 	return str.replace(new RegExp("&#39;", 'g'), "'");
 }
 var str_local_login_desc = stringSafeGet("<#Local_login_desc#>");
 var str_find_st = stringSafeGet("<#HowFindST#>");
 var str_HowFindPassword = stringSafeGet("<#HowFindPassword#>");
+function initialize_SDN(){
+	$('link').last().after('<link group="SDN_need_file" rel="stylesheet" type="text/css" href="./RWD_UI/rwd_component.css">');
+	$('link').last().after('<link group="SDN_need_file" rel="stylesheet" type="text/css" href="./SDN/sdn.css">');
+	$('link').last().after('<link group="SDN_need_file" rel="stylesheet" type="text/css" href="./js/weekSchedule/schedule_ui.css">');
+	$('link').last().after('<link group="SDN_need_file" rel="stylesheet" type="text/css" href="./pwdmeter.css">');
+	if(isSupport("SDN_White_Theme")){
+		$('link').last().after('<link group="SDN_need_file" rel="stylesheet" type="text/css" href="./RWD_UI/rwd_component_WHITE.css">');
+		$('link').last().after('<link group="SDN_need_file" rel="stylesheet" type="text/css" href="./SDN/sdn_WHITE.css">');
+		$('link').last().after('<link group="SDN_need_file" rel="stylesheet" type="text/css" href="./js/weekSchedule/schedule_ui_WHITE.css">');
+	}
+	$('<script />', { type : 'text/javascript', src : "./RWD_UI/rwd_component.js", group: "SDN_need_file"}).appendTo($('head'));
+	$('<script />', { type : 'text/javascript', src : "./SDN/sdn.js", group: "SDN_need_file"}).appendTo($('head'));
+	$('<script />', { type : 'text/javascript', src : "./popup.js", group: "SDN_need_file"}).appendTo($('head'));
+	$('<script />', { type : 'text/javascript', src : "./js/weekSchedule/schedule_ui.js", group: "SDN_need_file"}).appendTo($('head'));
+	$('<script />', { type : 'text/javascript', src : "./form.js", group: "SDN_need_file"}).appendTo($('head'));
+	setTimeout(function(){
+		if(isSupport("captivePortal") && isSupport("cp_freewifi")){
+			Get_FreeWiFi_template();
+		}
+		init_sdn_all_list();
+	},500);
+}
+var interval_cfg_pause = false;
+function set_cfg_pause(){
+	clearInterval(interval_cfg_pause);
+	if(!systemVariable.isDefault)
+		return;
+
+	postData();
+	interval_cfg_pause = setInterval(function(){
+		if(qisPostData.hasOwnProperty("cfg_pause")){
+			if(qisPostData.cfg_pause == "0"){
+				clearInterval(interval_cfg_pause);
+			}
+			else{
+				postData();
+			}
+		}
+		else{
+			postData();
+		}
+	},1000*60*10);
+
+	function postData(){
+		httpApi.nvramSet({
+			"action_mode" : "apply",
+			"cfg_pause" : 120
+		});
+	}
+}
+
+function isJoinSmartConnect(wlIfIndex){
+    wlIfIndex = wlIfIndex.toLowerCase();
+
+    if(wlIfIndex == "2g") wlIfIndex = "2g1";
+    if(wlIfIndex == "5g") wlIfIndex = "5g1";
+    if(wlIfIndex == "6g") wlIfIndex = "6g1";
+
+    const referenceArray = ["", "", "", "6g2", "6g1", "5g2", "5g1", "2g1"];
+    var smart_connect_selif_x = httpApi.nvramGet(["smart_connect_selif_x"]).smart_connect_selif_x;
+
+    var v2Band = (() => {
+        const maxLength = 8;
+        let biString = parseInt(smart_connect_selif_x).toString(2);
+        let bandArray = biString.split("");
+        while (bandArray.length < maxLength) {
+            bandArray.unshift("0");
+        }
+    
+        return bandArray;
+    })();
+
+    var version = isSupport("smart_connect_v2") ? "v2" : isSupport("smart_connect") || isSupport("bandstr") ? "v1" : "";
+    var v1Type = httpApi.nvramGet(["smart_connect_x"]).smart_connect_x;
+
+    if (version === "v2") {
+        let index = referenceArray.findIndex((element) => element === wlIfIndex);
+        return v2Band[index] === "1";
+    } else {
+        if (v1Type === "1") {
+            return true;
+        } else if (v1Type === "2") {
+            if (wlIfIndex === "5g1" || wlIfIndex === "5g2") {
+                return true;
+            }
+        } else if (v1Type === "3") {
+            if (wlIfIndex === "2g1" || wlIfIndex === "5g1") {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
+
+function get_band_by_wl_unit(wl_unit){
+	var wlnband_list = httpApi.nvramGet(["wlnband_list"]).wlnband_list.split("&#60");
+	return wlnband_list[wl_unit];
+}
+
+function getMloBand(){
+	var result = "";
+	var bandCount = "3"
+
+	if(get_wl_unit_by_band("6G2")){
+		bandCount = "99";
+	}
+	else if(get_wl_unit_by_band("5G2")){
+		bandCount = (get_wl_unit_by_band("6G") != "") ? "29" : "13";
+	}
+	else{
+		bandCount = (get_wl_unit_by_band("6G") != "") ? "19" : "3";
+	}
+
+	const mlo_band_num_mapping = [
+		{"all_band":(1+4+8+16), "mlo_band":(1+8+16)}, //2556, mlo:2/5-2/6
+		{"all_band":(1+2+32+64), "mlo_band":(1+2+32)}, //2566, mlo:2/5/6-1
+		{"all_band":(1+2+16), "mlo_band":(1+2+16)}, //256, mlo:2/5/6
+		{"all_band":(1+4+8), "mlo_band":(1+4+8)}, //255
+		{"all_band":(1+2), "mlo_band":(1+2)}, //25
+	];
+
+	for(var i=0; i<mlo_band_num_mapping.length; i++){
+		if(bandCount == mlo_band_num_mapping[i].all_band){
+			result = mlo_band_num_mapping[i].mlo_band;
+			break;
+		}
+	}
+
+	return result;
+}
+
+function get_new_sdn_mlo(){
+	systemVariable.sdn_idx = 0;
+	systemVariable.apg_idx = 0;
+	const dutBand = (1+2+4);//2g,5g,5g1
+	var cap_mac = (httpApi.hookGet('get_lan_hwaddr')) ? httpApi.hookGet('get_lan_hwaddr') : '';
+	const sdn_maximum = ((isSupport("MaxRule_SDN") == "0") ? 6 : (parseInt(isSupport("MaxRule_SDN")) - 1));//default is sdn 0
+	let sdn_idx_arr = Array.from({length: sdn_maximum}, (num, i) => (i+1));
+	let apg_idx_arr = sdn_idx_arr.concat();
+	const sdn_rl = decodeURIComponent(httpApi.nvramCharToAscii(["sdn_rl"]).sdn_rl);
+	const each_sdn_rl = sdn_rl.split("<");
+	$.each(each_sdn_rl, function(index, value){
+		if(value != ""){
+			const profile_data = value.split(">");
+			const sdn_idx = profile_data[0];
+			const apg_idx = profile_data[5];
+			sdn_idx_arr = sdn_idx_arr.filter(e => e != sdn_idx);
+			apg_idx_arr = apg_idx_arr.filter(e => e != apg_idx);
+		}
+	});
+	const new_sdn_idx = sdn_idx_arr[0];
+	const new_apg_idx = apg_idx_arr[0];
+	let post_sdnObj = {}
+	if(new_sdn_idx != undefined && new_apg_idx != undefined){
+		post_sdnObj = JSON.parse(JSON.stringify(sdnObj));
+		post_sdnObj.sdn_rl = sdn_rl;
+		post_sdnObj.sdn_rl += `<${new_sdn_idx}>LEGACY>1>0>0>${new_apg_idx}>0>0>0>0>0>0>0>0>0>0>0>0>0>WEB>0>0`;
+		post_sdnObj.apg_dut_list = `<*>${dutBand}>`;
+		post_sdnObj.apg_mlo = "0";
+		Object.keys(post_sdnObj).forEach(function(key){
+			if(key.substring(0, 3) == "apg"){
+				post_sdnObj[key.replace("apg", "apg" + new_apg_idx)] = post_sdnObj[key];
+				delete post_sdnObj[key];
+			}
+		});
+		let sdn_access_rl = decodeURIComponent(httpApi.nvramCharToAscii(["sdn_access_rl"]).sdn_access_rl);
+		post_sdnObj.sdn_access_rl = `${sdn_access_rl}<0>${new_sdn_idx}`;
+		systemVariable.sdn_idx = parseInt(new_sdn_idx);
+		systemVariable.apg_idx = parseInt(new_apg_idx);
+	}
+
+	return post_sdnObj;
+}
+
+function isCompatibleNetworkFound(){
+	if(systemVariable.opMode != systemVariable.originOpMode){
+		return false;
+	}
+	const sdn_maximum = ((isSupport("MaxRule_SDN") == "0") ? 6 : (parseInt(isSupport("MaxRule_SDN")) - 1));//default is sdn 0
+	let legacy_exist = false;
+	let sdn_rl_count = 0;
+	const each_sdn_rl = decodeURIComponent(httpApi.nvramCharToAscii(["sdn_rl"]).sdn_rl).split("<");
+	$.each(each_sdn_rl, function(index, value){
+		if(value != ""){
+			let profile_data = value.split(">");
+			if(profile_data[1] == "LEGACY"){
+				legacy_exist = true;
+			}
+			if(parseInt(profile_data[0]) > 0){
+				sdn_rl_count++;
+			}
+		}
+	});
+	const sdn_rl_is_full = (sdn_rl_count >= sdn_maximum);
+	return (legacy_exist || sdn_rl_is_full);
+}

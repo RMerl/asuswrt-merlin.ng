@@ -34,7 +34,6 @@ var overlib_str = new Array();	//Viz add 2011.07 for record longer virtual srvr 
 var vts_rulelist_array = decodeURIComponent('<% nvram_char_to_ascii("","game_vts_rulelist"); %>').replace(/&#62/g, ">");
 var nvram = httpApi.nvramGet(["vts_enable_x"]);
 var gameList = new Object;
-var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=125";
 
 /*handle legacy profile*/
 (function(){
@@ -87,8 +86,6 @@ var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq
 
 function initial(){
 	show_menu();
-	$("#faq").attr('target','_blank')
-		 .attr("href", faq_href);
 	if((wan_proto == "v6plus" || wan_proto == "ocnvc") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
 
 		$("#v6plus_port_range_note").show();
@@ -565,7 +562,6 @@ function quickAddRule(id){
 
 function newProfileOK(){
 	// valid input
-	var new_rule_num=0;
 	var _platformArray = ['PC', 'XBOXSerX', 'XBOXONE', 'XBOX360', 'PS5', 'PS4', 'PS3', 'STEAM', 'SWITCH'];
 	if($("#s46_ports_content").is(':visible'))
 		$("#s46_ports_content").fadeOut();
@@ -578,16 +574,12 @@ function newProfileOK(){
 		for(i=0; i<_platformArray.length; i++){
 			if($('#platform'+ _platformArray[i]).prop('checked')){
 				_platformCheck = true;
-				new_rule_num++;
 			}
 		}
 		if(_platformCheck == false){
 			alert('Please select at least one platform.');
 			return false;
 		}
-	}
-	else{
-		new_rule_num++;
 	}
 
 	if(!Block_chars(document.getElementById("new_profile_name"), ["<" ,">" ,"%"])){
@@ -633,11 +625,6 @@ function newProfileOK(){
 	}
 
 	if(!validator.validIPForm(document.getElementById("new_profile_localIP"), 0)){
-		return false;
-	}
-
-	if(parseInt(rule_num.innerHTML)+new_rule_num > 32){
-		alert("<#JS_itemlimit1#> " + 32 + " <#JS_itemlimit2#>");
 		return false;
 	}
 
@@ -720,7 +707,6 @@ function newProfileOK(){
 				<!-- Content field -->
 				<div class="description-container"><#OpenNAT_desc#></div>
 				<div class="description-container" id="v6plus_port_range_note" style="color:#FFCC00;display:none;">* When using v6plus, the number of available assigned ports is limited. Kindly understand that this may result in an interruption of this services and functions.</div>		<!-- Untranslated -->
-				<div class="description-container" style="display:none;color:#FFCC00;position:relative;z-index:9;"><#OpenNAT_note#></div>
 				<div class="world-map">
 					<div class="map-connection-line"></div>
 					<div class="location-indicator location-US3"></div>

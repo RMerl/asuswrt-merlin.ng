@@ -19,11 +19,11 @@
 .Dt NEWFS_HFS 8
 .Os "Mac OS X"
 .Sh NAME
-.Nm newfs_hfs
+.Nm mkfs.hfs
 .Nd construct a new HFS Plus file system
 .Sh SYNOPSIS
-.Nm newfs_hfs
-.Op Fl N
+.Nm mkfs.hfs
+.Op Fl N Ar [partition-size]
 .Op Fl U Ar uid
 .Op Fl G Ar gid
 .Op Fl M Ar mask
@@ -37,23 +37,17 @@
 .Op Fl v Ar volume-name
 .Ar special
 .Sh DESCRIPTION
-.Nm Newfs_hfs
+.Nm mkfs.hfs
 builds an HFS Plus file system on the specified special device.
-Before running 
-.Nm newfs_hfs
-the disk should be partitioned using the
-.Em Disk Utility
-application or
-.Xr pdisk 8 .
 .Pp
 The file system default parameters are calculated based on
 the size of the disk partition. Typically the defaults are
 reasonable, however
-.Nm newfs_hfs
+.Nm mkfs.hfs
 has several options to allow the defaults to be selectively overridden.
 The options are as follows:
 .Bl -tag -width Fl
-.It Fl N
+.It Fl N Ar [partition-size]
 Causes the file system parameters to be printed out
 without really creating the file system.
 .It Fl U Ar uid
@@ -66,7 +60,7 @@ Set the group of the file system's root directory to
 Specify the access permissions mask for the file system's root directory.
 .It Fl h
 Creates a legacy HFS format filesystem. This option
-is not recomended for file systems that will be
+is not recommended for file systems that will be
 primarily used with Mac OS X or Darwin.
 .It Fl s
 Creates a case-sensitive HFS Plus filesystem. By
@@ -93,7 +87,7 @@ sizes are specified with the
 option followed by a comma
 separated list of the form arg=blocks.
 .Pp
-Example:  -c c=5000,e=500
+Example:  \-c c=5000,e=500
 .Bl -tag -width Fl
 .It Em a=blocks
 Set the attribute file clump size.
@@ -126,7 +120,7 @@ the form arg=bytes. The
 size must be a power of two and no larger than
 32768 bytes.
 .Pp
-Example:  -n c=8192,e=4096
+Example:  \-n c=8192,e=4096
 .Bl -tag -width Fl
 .It Em a=bytes
 Set the attribute b-tree node size.
@@ -139,8 +133,7 @@ Set the extent overflow b-tree node size.
 Volume name (file system name) in ascii or UTF-8 format.
 .El
 .Sh SEE ALSO
-.Xr mount 8 ,
-.Xr pdisk 8
+.Xr mount 8
 .Sh HISTORY
 The
 .Nm

@@ -1,0 +1,6 @@
+H2200 BOARD
+M:	Lukasz Dalek <luk0104@gmail.com>
+S:	Maintained
+F:	board/h2200/
+F:	include/configs/h2200.h
+F:	configs/h2200_defconfig

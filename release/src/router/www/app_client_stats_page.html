@@ -4,14 +4,13 @@
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="https://code.jquery.com/jquery-3.5.1.js"></script>
 <script type="text/javascript" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
-
 <script type="text/javascript" src="https://cdn.datatables.net/select/1.4.0/js/dataTables.select.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/select/1.4.0/css/select.dataTables.min.css">
 
 <style>
     #deselect_all_rows {
-		margin-left: 30px;	
+		margin-left: 30px;
 	}
 	#id_freq_label {
 		margin-left: 30px;
@@ -27,7 +26,7 @@
     width: 100px;
     height: 25px;
   }
-</style>	
+</style>
 <script>
 let filter_mac;
 let start_time;
@@ -59,21 +58,17 @@ function intToIP(int) {
 
 
 function updateUI() {
-
-	
 	$("#stat_table").DataTable().destroy();
-	
 	let statsArray = [];
-    console.log(`filter mac: ${filter_mac}`);
+    	console.log(`filter mac: ${filter_mac}`);
 	json.contents.forEach(function(e, idx) {
-      if(filter_mac == e.mac)
-	     if(e.is_v4)
+      	if(filter_mac == e.mac)
+		if(e.is_v4)
 			  statsArray.push([e.mac, intToIP(e.client_ip), e.host, e.up_bytes, e.dn_bytes]);
-		  else
+		else
 			  statsArray.push([e.mac, e.client_ip6, e.host, e.up_bytes, e.dn_bytes]);
-		  
-      if(!mac_lists.includes(e.mac))
-          mac_lists.push(e.mac);
+      	if(!mac_lists.includes(e.mac))
+          	mac_lists.push(e.mac);
 	});
 	
 	var t = $("#stat_table").DataTable(
@@ -86,13 +81,12 @@ function updateUI() {
 			{title: "host"},
 			{title: "up_bytes"},
 			{title: "dn_bytes"},
-
 		],
 	});
 
   // update avaiable ip options
   console.log(mac_lists);
-  macs = document.getElementById('id_avaiable_ip')
+  macs = document.getElementById('id_avaiable_ip');
   while (macs.options.length) {
     macs.remove(0);
   }
@@ -107,8 +101,6 @@ function updateUI() {
     mac = new Option(mac_lists[i], i, selected, selected );
     macs.options.add(mac);
   }
-
-
 }
 
 function get_app_client_stats_update(){
@@ -131,11 +123,9 @@ function selectAll(){
 	select_rows = table.rows({
 	 page: 'all'
 	}).select();
-	
 	let select_count =  select_rows.length;
 	for (i = 0; i < select_count; i++)
-    console.log(select_rows[i][2]);
-  
+    	console.log(select_rows[i][2]);
 }
 
 function deselectAll(){
@@ -153,16 +143,14 @@ function updateFreq(){
 }
 
 function updateRecord(){
-  start_time = Math.round((new Date()).getTime() / 1000);	
+  start_time = Math.round((new Date()).getTime() / 1000);
   start_time = start_time - (60); // 1 minute ago
   let freq = document.getElementById('freq_id');
-	
-  if (start_record) 
+  if (start_record)
   {
     start_record = 0;
     document.getElementById('id_record_button').value = "stop";
     clearInterval(myUpdateTimer);
- 
   }
   else
   {
@@ -172,7 +160,6 @@ function updateRecord(){
     app_name = document.getElementById('id_app_name').value;
     console.log(`app-name: ${app_name}`);
     myUpdateTimer = setInterval(get_app_client_stats_update, freq.value*1000);
-
   }
 }
 
@@ -185,41 +172,31 @@ function updateFilterIp(){
 }
 
 function download_csv(){
-  
   let table = $('#stat_table').DataTable();
   let hosts = [];
   let select_rows = table.rows('.selected').data();
   let select_count =  select_rows.length;
   for (i = 0; i < select_count; i++)
-    hosts.push({'host': select_rows[i][2]});
-  
-  //let hosts = json.contents !=null ? json.contents : [];
-  var csv = 'app_name,host\n';  
-  //merge the data with CSV  
-  hosts.forEach(function(e) {
+	hosts.push({'host': select_rows[i][2]});
+  var csv = 'app_name,host\n';
+	hosts.forEach(function(e) {
           line = app_name + ',' + e.host;
-          csv += line;  
-          csv += "\n";  
-  });  
-  document.write(csv);  
-  
-  var hiddenElement = document.createElement('a');  
-  hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);  
-  hiddenElement.target = '_blank';  
-    
-  //provide the name for the CSV file to be downloaded  
-  hiddenElement.download = `${app_name}.csv`;  
-  hiddenElement.click();  
-  
+          csv += line;
+          csv += "\n";
+  });
+  document.write(csv);
+  var hiddenElement = document.createElement('a');
+  hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
+  hiddenElement.target = '_blank';
+  hiddenElement.download = `${app_name}.csv`;
+  hiddenElement.click();
 }
 
 $(document).ready(function () {
     var table = $('#stat_table').DataTable();
- 
     $('#stat_table tbody').on('click', 'tr', function () {
         $(this).toggleClass('selected');
     });
- 
 });
 </script>
 <body onload="updateUI();">
@@ -236,23 +213,23 @@ $(document).ready(function () {
 		  <option value="60">60</option>
       <option value="9999">9999</option>
 		</select>
-	</form>	
+	</form>
 </div>
 <div id="id_record_filter">
 	<form>
     <label>record app:</label>
-    <input type="text" id="id_app_name" name="app_name" >  
+    <input type="text" id="id_app_name" name="app_name" >
     <input type="button" id="id_record_button" value="start_record" name="start_record" onclick="updateRecord()" >
 		<label id="id_for_target" for="avaiable_ip">client mac:</label>
 		<select name="avaiable_ip" id="id_avaiable_ip" onchange="updateFilterIp()">
 		</select>
-	</form>	
-</div>	
+	</form>
+</div>
 
 <table id="stat_table" class="display">
 	<thead>
 		<tr>
-		<th>mac</th>		
+		<th>mac</th>
 		<th>client_ip</th>
 		<th>host</th>
 		<th>up_bytes</th>
@@ -264,4 +241,3 @@ $(document).ready(function () {
 <button onclick="download_csv()">download</button>
 </body>
 </html>
-

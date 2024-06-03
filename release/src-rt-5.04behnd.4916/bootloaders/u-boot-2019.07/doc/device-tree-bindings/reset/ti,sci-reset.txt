@@ -1,0 +1,54 @@
+Texas Instruments TI SCI Reset Controller
+=========================================
+
+Some TI SoCs contain a system controller (like the SYSFW, etc...) that is
+responsible for controlling the state of the IPs that are present.
+Communication between the host processor running an OS and the system
+controller happens through a protocol known as TI SCI [1].
+
+[1] http://processors.wiki.ti.com/index.php/TISCI
+
+Reset Controller Node
+=====================
+The reset controller node represents the resets of various hardware modules
+present on the SoC managed by the SYSFW. Because this relies on the TI SCI
+protocol to communicate with the SYSFW it must be a child of the sysfw node.
+
+Required Properties:
+--------------------
+ - compatible: Must be "ti,sci-reset"
+ - #reset-cells: Must be 2. Please see the reset consumer node below for
+		 usage details.
+
+Example (AM65x):
+----------------
+	sysfw: sysfw {
+		compatible = "ti,am654-system-controller";
+		...
+		k3_reset: reset-controller {
+			compatible = "ti,sci-reset";
+			#reset-cells = <2>;
+		};
+	};
+
+Reset Consumers
+===============
+Each of the reset consumer nodes should have the following properties,
+in addition to their own properties.
+
+Required Properties:
+--------------------
+ - resets: A phandle and reset specifier pair, one pair for each reset signal
+	   that affects the device, or that the device manages. The phandle
+	   should point to the TI SCI reset controller node, and the reset
+	   specifier should have 2 cell-values. The first cell should contain
+	   the device ID. The second cell should contain the reset mask value
+	   used by system controller.
+
+Example (AM65x):
+----------------
+	uart2: serial@02800000 {
+		compatible = "ti,omap4-uart";
+		...
+		resets = <&k3_reset 5 1>;
+	};

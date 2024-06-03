@@ -1,0 +1,275 @@
+#include "6765.dtsi"
+#include "../bcm_voice.dtsi"
+
+/ {
+
+	memory_controller {
+		memcfg = <(BP_DDR_TYPE_DDR4       | \
+			BP_DDR_SPEED_1600_22_22_22    | \
+			BP_DDR_TOTAL_SIZE_2048MB      | \
+			BP_DDR_DEVICE_WIDTH_16        | \
+			BP_DDR_TOTAL_WIDTH_16BIT      | \
+			BP_DDR_6765_DEFAULT           | \
+			BP_DDR_CONFIG_DEBUG)>;
+	};
+};
+
+/ {
+	buttons {
+		compatible = "brcm,buttons";
+		reset_button {
+			ext_irq = <&bca_extintr 33 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			press {
+				print = "Button Press -- Hold for 5s to do restore to default";
+			};
+			hold {
+				rst_to_dflt = <5>;
+			};
+			release {
+				reset = <0>;
+			};  
+		};
+		ses_button {
+			ext_irq = <&bca_extintr 23 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			release {
+				ses_short_period = <0>;
+				ses_long_period = <3>;
+			};
+		};
+	};    
+
+	bcmgps: bcmgps {
+		compatible = "brcm, bcmgps"; 
+		ext_irq = <&bca_extintr 36 GPIO_ACTIVE_HIGH (BCA_EXTINTR_TYPE_HIGH_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;   /* host_req */
+		reset-gpio = <&gpioc 37 GPIO_ACTIVE_HIGH>;  /* nStandby */
+		spi-bus = <&bcmgps_spi>;
+		status = "okay";
+	};
+
+};
+
+&mdio_sf2 {
+       /* Port PHY mapping:
+            port_imp -8#0- port_xhy <----> phy_xphy
+                      # #
+                      ##5- port_sgmii <-> phy_serdes - phy_cascade
+         */
+	phy_xphy {
+		status = "okay";
+	};
+	phy_cascade {
+		status = "okay";
+	};
+	phy_serdes {
+		phy-handle = <&phy_cascade>;
+		status = "okay";
+	};
+};
+
+&ethphytop {
+    xphy0-enabled;
+    status = "okay";
+};
+
+&switch0 {
+
+	ports {
+		port_xphy {
+			phy-handle = <&phy_xphy>;
+			network-leds=<&led2 &led3 &led4>;
+			status = "okay";
+		};
+		port_sgmii {
+			phy-handle = <&phy_serdes>;
+			network-leds=<&led5 &led6 &led7>;
+			status = "okay";
+		};
+	};
+};
+
+&hs_uart0 {
+	pinctrl-0 = <&a_uart2_cts_pin_14 &a_uart2_rts_pin_26 &a_uart2_sin_pin_11 &a_uart2_sout_pin_13>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+&uart0 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&uart0_sdin_pin_64 &uart0_sdout_pin_65>;
+    status = "okay";
+};
+
+&uart1 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&a_uart1_sin_pin_32 &a_uart1_sout_pin_2>;
+    status = "okay";
+};
+
+&usb_ctrl {
+	pinctrl-names="default";
+	pinctrl-0 = <&usb0_pwr_pins &usb1_pwr_pins>;
+	status = "okay";
+	xhci-enable;
+	pwron-bias-pull-up;
+};
+
+&usb0_xhci {
+	status = "okay";
+};
+
+&hsspi {
+	status = "okay";
+	voice0 {
+		pinctrl-0 = <&a_spim_ss1_b_pin_15>;
+		pinctrl-names = "default";
+		compatible = "bcm-spi-voice";
+		reg = <1>; /* chip select 1 */
+		spi-max-frequency = <1024000>;
+		reset-gpio = <&gpioc 24 GPIO_ACTIVE_LOW>;
+		spi-index = <0>;/* voice header index */
+	};
+	bcmgps_spi: bcmgps_spi {
+		pinctrl-names = "default"; 
+		pinctrl-0 = <&spim_ss3_b_pin_16>;
+		status = "okay";
+		compatible = "rohm,dh2228fv";
+		reg = <2>;
+		spi-max-frequency = <25000000>;
+	};
+};
+
+
+&led_ctrl {
+
+	led0: sw_parallel_led_8 {
+		active_low; 
+		brightness = <255>;
+		flash_rate = <0>;
+		status = "okay";
+		pinctrl-0 = <&a_per_led_08_pin_8>;
+		label = "VOIP_2";
+	};
+	led1: sw_parallel_led_9 {
+		active_low; 
+		brightness = <255>;
+		flash_rate = <0>;
+		pinctrl-0 = <&a_per_led_09_pin_9>;
+		status = "okay";
+		label = "WPS";
+	};
+
+	led2: parallel-port_0-led_0 {
+		active_low;
+		pinctrl-0 = <&a_per_led_10_pin_10>;
+		crossbar-output = <0>;
+		link = <(LED_SPEED_100|LED_SPEED_2500)>;
+		activity = <(LED_SPEED_100|LED_SPEED_2500)>;
+		status="okay";
+	};
+	led3: parallel-port_0-led_1 {
+		active_low;
+		pinctrl-0 = <&b_per_led_06_pin_39>;
+		crossbar-output = <1>;
+		link = <(LED_SPEED_1G)>;
+		activity = <(LED_SPEED_1G)>;
+		status="okay";
+	};
+	led4: parallel-port_0-led_2 {
+		active_low;
+		pinctrl-0 = <&a_per_led_12_pin_12>;
+		crossbar-output = <2>;
+		link = <(LED_SPEED_2500|LED_SPEED_10G)>;
+		activity = <(LED_SPEED_2500|LED_SPEED_10G)>;
+		status="okay";
+	};
+
+	led5: parallel-port_5-led_0 {
+		active_low;
+		pinctrl-0 = <&b_per_led_11_pin_44>;
+		crossbar-output = <3>;
+		link = <(LED_SPEED_100|LED_SPEED_2500)>;
+		activity = <(LED_SPEED_100|LED_SPEED_2500)>;
+		status="okay";
+	};
+	led6: parallel-port_5-led_1 {
+		active_low;
+		pinctrl-0 = <&a_per_led_22_pin_22>;
+		crossbar-output = <4>;
+		link = <(LED_SPEED_1G)>;
+		activity = <(LED_SPEED_1G)>;
+		status="okay";
+	};
+	led7: parallel-port_5-led_2 {
+		active_low;
+		pinctrl-0 = <&a_per_led_30_pin_30>;
+		crossbar-output = <5>;
+		link = <(LED_SPEED_2500|LED_SPEED_10G)>;
+		activity = <(LED_SPEED_2500|LED_SPEED_10G)>;
+		status="okay";
+	};
+	led8: sw_parallel_led_18 {
+		active_low; 
+		pinctrl-0 = <&a_per_led_18_pin_18>;
+		brightness = <255>;
+		flash_rate = <0>;
+		status = "okay";
+		label = "WiFi_2";
+	};
+	led9: sw_parallel_led_28 {
+		active_low; 
+		pinctrl-0 = <&a_per_led_28_pin_28>;
+		brightness = <255>;
+		flash_rate = <0>;
+		status = "okay";
+		label = "VOIP_1";
+	};
+	led10: sw_parallel_led_38 {
+		active_low; 
+		brightness = <255>;
+		pinctrl-0 = <&b_per_led_05_pin_38>;
+		flash_rate = <0>;
+		status = "okay";
+		label = "WiFi_1";
+	};
+
+};
+
+&legacy_leds {
+	voip2-ok-led = <&led0>;
+	voip1-ok-led = <&led9>;
+	wl-sess-led = <&led1>;
+	wl0-led = <&led10>;
+	wl1-led = <&led8>;
+};
+
+&bcm_voice {
+        sliclist = SLICSLAC_LIST_COMMON_NOFXO;
+};
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+/**********************************************************************/
+/* GPIO: Add one define per GPIO (individual or shared) regulator     */
+/*       - Skip if no GPIO regulators in use                          */
+/**********************************************************************/
+#define PCIE0_REG_GPIO    3    /* PCIE0_PWR_CTRL for vreg_pcie0 node */
+#define PCIE1_REG_GPIO    4    /* PCIE1_PWR_CTRL for vreg_pcie1 node */
+
+#include "../bcm_wlan_regulator.dtsi"
+
+/**********************************************************************/
+/* Shared: Add brcm,supply-names = "vreg-pcieX" for shared PCIe nodes */
+/*         - Skip if not using shared GPIO regulators                 */
+/**********************************************************************/
+
+/**********************************************************************/
+/* PCIe: Add status = "okay" for each PCIe slots of this boiard       */
+/*       - Skip if this is a derivative board (already done in base)  */
+/**********************************************************************/
+&pcie0 {
+	status = "okay";
+};
+
+&pcie1 {
+	status = "okay";
+};
+#endif //#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)

@@ -1,0 +1,14 @@
+config BCM_BCA_LED
+	bool "Broadcom BCA LED Controller Driver"
+	depends on BCM_BCA_PINCTRL
+	depends on BCM_BCA_GPIO
+	select NEW_LEDS
+	select LEDS_CLASS
+	default n
+	help
+	  Add the BCM BCA LED support.
+
+config BCM_BCA_LED_IMPL
+	int "Implementation index for BCA LED module"
+	depends on BCM_BCA_LED
+	default 1

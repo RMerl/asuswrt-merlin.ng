@@ -1,0 +1,15 @@
+if TARGET_M5235EVB
+
+config SYS_CPU
+	default "mcf523x"
+
+config SYS_BOARD
+	default "m5235evb"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_CONFIG_NAME
+	default "M5235EVB"
+
+endif

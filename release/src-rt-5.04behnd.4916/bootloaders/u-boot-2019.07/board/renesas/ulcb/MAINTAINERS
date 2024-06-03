@@ -1,0 +1,8 @@
+ULCB BOARD
+M:	Marek Vasut <marek.vasut+renesas@gmail.com>
+S:	Maintained
+F:	board/renesas/ulcb/
+F:	include/configs/ulcb.h
+F:	configs/r8a7795_ulcb_defconfig
+F:	configs/r8a7796_ulcb_defconfig
+F:	configs/r8a77965_ulcb_defconfig

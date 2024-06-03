@@ -1,0 +1,106 @@
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+#define GIC_DIST_BASE			0x81001000
+#define GIC_CPUI_BASE			0x81002000
+
+#define TIMER_HYP_PPI			10
+#define TIMER_VIRT_PPI			11
+#define TIMER_PHYS_SECURE_PPI		13
+#define TIMER_PHYS_NONSECURE_PPI	14
+
+model = MODEL;
+compatible = COMPATIBLE;
+interrupt-parent = <&gic>;
+#address-cells = <1>;
+#size-cells = <1>;
+
+#if defined (CONFIG_BCM_PSCI)
+psci {
+	compatible	= "arm,psci-0.2";
+	method		= "smc";
+	cpu_off		= <1>;
+	cpu_on		= <2>;
+};
+
+#define ENABLE_METHOD "psci"
+#else
+#define ENABLE_METHOD "brcm,bca-smp"
+#endif
+
+#if defined (CONFIG_OPTEE)
+firmware {
+	optee {
+		compatible = "linaro,optee-tz";
+		method = "smc";
+	};
+};
+#endif
+
+cpus {
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	CA7_0: cpu@0 {
+		device_type = "cpu";
+		compatible = "arm,cortex-a7";
+		reg = <0x0>;
+		next-level-cache = <&L2_0>;
+	};
+
+	CA7_1: cpu@1 {
+		device_type = "cpu";
+		compatible = "arm,cortex-a7";
+		reg = <0x1>;
+		next-level-cache = <&L2_0>;
+		enable-method = ENABLE_METHOD;
+	};
+	CA7_2: cpu@2 {
+		device_type = "cpu";
+		compatible = "arm,cortex-a7";
+		reg = <0x2>;
+		next-level-cache = <&L2_0>;
+		enable-method = ENABLE_METHOD;
+	};
+	L2_0: l2-cache0 {
+		compatible = "cache";
+	};
+};
+
+
+gic: interrupt-controller@81000000 {
+	compatible = "arm,cortex-a7-gic";
+	#interrupt-cells = <3>;
+	#address-cells = <0>;
+	interrupt-controller;
+	reg = <GIC_DIST_BASE 0x1000>,
+	      <GIC_CPUI_BASE 0x2000>;
+};
+
+timer {
+	compatible = "arm,armv7-timer";
+	interrupts = <GIC_PPI TIMER_PHYS_SECURE_PPI    (GIC_CPU_MASK_SIMPLE(3) | IRQ_TYPE_LEVEL_LOW)>,
+		      <GIC_PPI TIMER_PHYS_NONSECURE_PPI (GIC_CPU_MASK_SIMPLE(3) | IRQ_TYPE_LEVEL_LOW)>,
+		      <GIC_PPI TIMER_VIRT_PPI           (GIC_CPU_MASK_SIMPLE(3) | IRQ_TYPE_LEVEL_LOW)>,
+		      <GIC_PPI TIMER_HYP_PPI            (GIC_CPU_MASK_SIMPLE(3) | IRQ_TYPE_LEVEL_LOW)>;
+	arm,cpu-registers-not-fw-configured = <1>;
+};
+
+pmu: pmu {
+	compatible = "arm,cortex-a7-pmu";
+	interrupts = <GIC_SPI PMU_CORE0_SPI IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI PMU_CORE1_SPI IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI PMU_CORE2_SPI IRQ_TYPE_LEVEL_HIGH>;
+	interrupt-affinity = <&CA7_0>,
+				<&CA7_2>,
+				<&CA7_1>;
+};
+
+brcm-legacy {
+	compatible = "brcm,brcm-legacy";
+};
+
+memory@00000000 {
+	device_type = "memory";
+	reg = <0x0 0x8000000>; 
+};
+

@@ -75,8 +75,8 @@ struct FILE_NOTIFY_INFORMATION {
 	uint32_t NextEntryOffset;
 	enum FILE_NOTIFY_ACTION Action;
 	uint32_t FileNameLength;/* [value(strlen_m(FileName1)*2)] */
-	const char *FileName1;/* [flag(LIBNDR_FLAG_STR_NOTERM),charset(UTF16)] */
-}/* [gensize,flag(LIBNDR_FLAG_ALIGN4),public] */;
+	const char *FileName1;/* [charset(UTF16),flag(LIBNDR_FLAG_STR_NOTERM)] */
+}/* [flag(LIBNDR_FLAG_ALIGN4),gensize,public] */;
 
 #endif /* _HEADER_notify */
 #endif /* _PIDL_HEADER_notify */

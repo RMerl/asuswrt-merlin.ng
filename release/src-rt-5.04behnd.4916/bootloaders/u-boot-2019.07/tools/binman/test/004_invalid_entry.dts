@@ -1,0 +1,11 @@
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		not-a-valid-type {
+		};
+	};
+};

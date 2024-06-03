@@ -1,0 +1,104 @@
+config PINCTRL_IMX
+	bool
+
+config PINCTRL_IMX_SCU
+	bool
+
+config PINCTRL_IMX5
+	bool "IMX5 pinctrl driver"
+	depends on ARCH_MX5 && PINCTRL_FULL
+	select DEVRES
+	select PINCTRL_IMX
+	help
+	  Say Y here to enable the imx5 pinctrl driver
+
+	  This provides a simple pinctrl driver for i.MX 53SoC familiy,
+	  i.MX53. This feature depends on device tree
+	  configuration. This driver is different from the linux one,
+	  this is a simple implementation, only parses the 'fsl,pins'
+	  property and configure related registers.
+
+config PINCTRL_IMX6
+	bool "IMX6 pinctrl driver"
+	depends on ARCH_MX6 && PINCTRL_FULL
+	select DEVRES
+	select PINCTRL_IMX
+	help
+	  Say Y here to enable the imx6 pinctrl driver
+
+	  This provides a simple pinctrl driver for i.MX6 SoC familiy,
+	  i.MX6DQ/SL/SX/UL/DQP. This feature depends on device tree
+	  configuration. This driver is different from the linux one,
+	  this is a simple implementation, only parses the 'fsl,pins'
+	  property and configure related registers.
+
+config PINCTRL_IMX7
+	bool "IMX7 pinctrl driver"
+	depends on ARCH_MX7 && PINCTRL_FULL
+	select DEVRES
+	select PINCTRL_IMX
+	help
+	  Say Y here to enable the imx7 pinctrl driver
+
+	  This provides a simple pinctrl driver for i.MX7 SoC familiy,
+	  i.MX7D. This feature depends on device tree
+	  configuration. This driver is different from the linux one,
+	  this is a simple implementation, only parses the 'fsl,pins'
+	  property and configure related registers.
+
+config PINCTRL_IMX7ULP
+	bool "IMX7ULP pinctrl driver"
+	depends on ARCH_MX7ULP && PINCTRL_FULL
+	select DEVRES
+	select PINCTRL_IMX
+	help
+	  Say Y here to enable the imx7ulp pinctrl driver
+
+	  This provides a simple pinctrl driver for i.MX7ULP SoC familiy.
+	  This feature depends on device tree configuration. This driver
+	  is different from the linux one, this is a simple implementation,
+	  only parses the 'fsl,pins' property and configure related
+	  registers.
+
+config PINCTRL_IMX8
+	bool "IMX8 pinctrl driver"
+	depends on ARCH_IMX8 && PINCTRL_FULL
+	select DEVRES
+	select PINCTRL_IMX
+	select PINCTRL_IMX_SCU
+	help
+	  Say Y here to enable the imx8 pinctrl driver
+
+	  This provides a simple pinctrl driver for i.MX8 SoC familiy.
+	  This feature depends on device tree configuration. This driver
+	  is different from the linux one, this is a simple implementation,
+	  only parses the 'fsl,pins' property and configures related
+	  registers.
+
+config PINCTRL_IMX8M
+	bool "IMX8M pinctrl driver"
+	depends on ARCH_IMX8M && PINCTRL_FULL
+	select DEVRES
+	select PINCTRL_IMX
+	help
+	  Say Y here to enable the imx8m pinctrl driver
+
+	  This provides a simple pinctrl driver for i.MX8M SoC familiy.
+	  This feature depends on device tree configuration. This driver
+	  is different from the linux one, this is a simple implementation,
+	  only parses the 'fsl,pins' property and configure related
+	  registers.
+
+config PINCTRL_VYBRID
+	bool "Vybrid (vf610) pinctrl driver"
+	depends on ARCH_VF610 && PINCTRL_FULL
+	select DEVRES
+	select PINCTRL_IMX
+	help
+	  Say Y here to enable the Vybrid (vf610) pinctrl driver
+
+	  This provides a simple pinctrl driver for Vybrid SoC familiy,
+	  vf610. This feature depends on device tree
+	  configuration. This driver is different from the linux one,
+	  this is a simple implementation, only parses the 'fsl,pins'
+	  property and configure related registers.

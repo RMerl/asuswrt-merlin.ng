@@ -12,7 +12,11 @@ LDFLAGS = -ffunction-sections -fdata-sections -Wl,--gc-sections
 
 #LIBS	=	`./vsf_findlibs.sh`
 #LINK	=	-Wl,-s
-LIBS	=	-lcrypt -lnsl
+ifeq ($(MUSL_LIBC),y)
+LIBS	=	-lcrypt
+else
+LIBS	= 	-lcrypt -lnsl
+endif
 LINK	=	
 
 CFLAGS	+=	-I../shared
@@ -55,6 +59,11 @@ CFLAGS += -I$(TOP)/PMS_DBapis
 LDFLAGS += -L$(TOP)/openssl -lcrypto
 LDFLAGS += -L$(TOP)/sqlCipher/.libs -lsqlcipher
 LDFLAGS += -L$(TOP)/PMS_DBapis -lpms_sql
+endif
+
+ifeq ($(RTCONFIG_TRUSTZONE),y)
+CFLAGS += -I$(TOP)/ateed/
+LDFLAGS += -L$(TOP)/ateed/ -latee
 endif
 
 OBJS	=	main.o utility.o prelogin.o ftpcmdio.o postlogin.o privsock.o \

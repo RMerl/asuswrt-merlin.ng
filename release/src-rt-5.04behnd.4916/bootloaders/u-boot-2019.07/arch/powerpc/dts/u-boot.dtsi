@@ -1,0 +1,32 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2018 NXP
+ */
+
+#include <config.h>
+
+/ {
+	binman {
+		filename = "u-boot-with-dtb.bin";
+		skip-at-start = <CONFIG_SYS_TEXT_BASE>;
+		sort-by-offset;
+		pad-byte = <0xff>;
+		size = <CONFIG_SYS_MONITOR_LEN>;
+
+		u-boot-with-ucode-ptr {
+			offset = <CONFIG_SYS_TEXT_BASE>;
+			optional-ucode;
+		};
+
+		u-boot-dtb-with-ucode {
+#ifdef CONFIG_MPC85xx
+			align = <256>;
+#endif
+		};
+#ifdef CONFIG_MPC85XX_HAVE_RESET_VECTOR
+		powerpc-mpc85xx-bootpg-resetvec {
+			offset = <(CONFIG_RESET_VECTOR_ADDRESS - 0xffc)>;
+		};
+#endif
+	};
+};

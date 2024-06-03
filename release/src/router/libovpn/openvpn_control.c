@@ -677,7 +677,7 @@ void ovpn_stop_server(int unit) {
 	// Remove routes from running ovpn clients
 	snprintf(buffer, sizeof(buffer), "vpn_server%d_if", unit);
 	if (!strcmp(nvram_safe_get(buffer), "tun")) {
-		snprintf(buffer, sizeof(buffer), "tun%d", OVPN_SERVER_BASEIF + unit);
+		snprintf(buffer, sizeof(buffer), "tun%d", OVPN_SERVER_BASE + unit);
 		update_client_routes(buffer, 0);
 	}
 

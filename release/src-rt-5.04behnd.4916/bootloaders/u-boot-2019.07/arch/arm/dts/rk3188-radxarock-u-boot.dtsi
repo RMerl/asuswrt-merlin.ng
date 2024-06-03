@@ -1,0 +1,38 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (c) 2018 Fuzhou Rockchip Electronics Co., Ltd.
+ */
+
+&cru {
+	u-boot,dm-spl;
+};
+
+&pinctrl {
+	u-boot,dm-spl;
+};
+
+&mmc0 {
+	fifo-mode;
+	max-frequency = <16000000>;
+};
+
+&mmc1 {
+	fifo-mode;
+	max-frequency = <16000000>;
+};
+
+&emmc {
+	fifo-mode;
+	max-frequency = <16000000>;
+};
+
+&uart2 {
+	status = "okay";
+	u-boot,dm-spl;
+};
+
+&timer3 {
+	compatible = "rockchip,rk3368-timer", "rockchip,rk3288-timer";
+	u-boot,dm-spl;
+	clock-frequency = <24000000>;
+};

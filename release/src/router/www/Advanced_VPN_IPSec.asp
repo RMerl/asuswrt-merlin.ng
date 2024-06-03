@@ -269,7 +269,7 @@ var external_ip_retry_cnt = MAX_RETRY_NUM;
 function show_warning_message(){
 	var set_ddns_text = '<a href="../Advanced_ASUSDDNS_Content.asp" target="_blank" style="text-decoration: underline; font-family:Lucida Console;"><#vpn_ipsec_set_DDNS#></a>';
 	var set_ip_and_ddns_text = wanlink_ipaddr() + ', ' + set_ddns_text;
-	if(realip_support && (based_modelid == "BRT-AC828" || wans_mode != "lb")){
+	if(realip_support && (based_modelid == "BRT-AC828"|| wans_mode != "lb")){
 		if(realip_state != "2" && external_ip_retry_cnt > 0){
 			if( external_ip_retry_cnt == MAX_RETRY_NUM )
 				get_real_ip();
@@ -724,9 +724,8 @@ function update_ipsec_log() {
 
 		success: function(xml) {
 			var ipsecXML = xml.getElementsByTagName("ipsec");
-			var ipsec_log = htmlEnDeCode.htmlEncode(ipsecXML[0].innerHTML);
+			var ipsec_log = ipsecXML[0].firstChild.nodeValue.trim();
 			$("textarea#textarea").html(ipsec_log);
-
 		}
 	});	
 }
@@ -751,7 +750,6 @@ function update_connect_status() {
 		var parseArray = [];
 
 		ipsec_connect_status_array[get_ipsec_conn[index][0]] = [];
-
 		if(item[0] != undefined && item[0] == get_ipsec_conn[index][0] && item[1] != undefined){
 			var itemRow = item[1].split('<');
 			for(var i = 0; i < itemRow.length; i += 1) {
@@ -774,6 +772,7 @@ function update_connect_status() {
 		}
 	});
 
+
 	if(totalcnt > 0) {
 		var code = "";
 		code +='<a class="hintstyle2" href="javascript:void(0);" onClick="showIPSecClients(conn_name_array, event);">';
@@ -787,6 +786,7 @@ function update_connect_status() {
 function close_connect_status() {
 	$("#connection_ipsec_profile_panel").fadeOut(300);
 }
+
 function showIPSecClients(ipsec_conn_name_array, e) {
 	var html = "";
 
@@ -794,7 +794,7 @@ function showIPSecClients(ipsec_conn_name_array, e) {
 	$("#connection_ipsec_profile_panel").css("position", "absolute");
 	$("#connection_ipsec_profile_panel").css("top", "440px");
 	$("#connection_ipsec_profile_panel").css("left", "225px");
-
+	
 	html += "<div class='ipsec_connect_status_title_bg'>";
 	html += "<div class='ipsec_connect_status_title' style='width:240px;'>Remote IP</div>";/*untranslated*/
 	html += "<div class='ipsec_connect_status_title'><#statusTitle_Client#></div>";

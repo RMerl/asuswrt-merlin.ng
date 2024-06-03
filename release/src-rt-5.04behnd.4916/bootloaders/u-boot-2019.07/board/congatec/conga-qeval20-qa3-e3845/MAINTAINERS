@@ -1,0 +1,11 @@
+congatec EVAL20-QA3-E3845
+M:	Stefan Roese <sr@denx.de>
+S:	Maintained
+F:	board/congatec/conga-qeval20-qa3-e3845
+F:	include/configs/conga-qeval20-qa3-e3845.h
+F:	include/configs/theadorable-x86-conga-qa3-e3845.h
+F:	configs/conga-qeval20-qa3-e3845_defconfig
+F:	configs/conga-qeval20-qa3-e3845-internal-uart_defconfig
+F:	configs/theadorable-x86-conga-qa3-e3845_defconfig
+F:	configs/theadorable-x86-conga-qa3-e3845-pcie-x4_defconfig
+F:	arch/x86/dts/conga-qeval20-qa3-e3845.dts

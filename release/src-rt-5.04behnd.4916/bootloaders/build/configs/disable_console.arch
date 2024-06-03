@@ -1,0 +1,16 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use FindBin qw($Bin);
+use lib "$Bin/../../../hostTools/PerlLib";
+use BRCM::GenConfig;
+
+my $c = new BRCM::GenConfig( shift);
+
+
+$c->set('CONFIG_SILENT_CONSOLE', 'y');
+$c->set('CONFIG_SILENT_U_BOOT_ONLY', 'y');
+$c->set('CONFIG_DISABLE_CONSOLE', 'y');
+
+$c->write();
+

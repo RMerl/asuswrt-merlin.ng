@@ -1,0 +1,9 @@
+AX25-AE350 BOARD
+M:	Rick Chen <rick@andestech.com>
+S:	Maintained
+F:	board/AndesTech/ax25-ae350/
+F:	include/configs/ax25-ae350.h
+F:	configs/ae350_rv32_defconfig
+F:	configs/ae350_rv64_defconfig
+F:	configs/ae350_rv32_xip_defconfig
+F:	configs/ae350_rv64_xip_defconfig

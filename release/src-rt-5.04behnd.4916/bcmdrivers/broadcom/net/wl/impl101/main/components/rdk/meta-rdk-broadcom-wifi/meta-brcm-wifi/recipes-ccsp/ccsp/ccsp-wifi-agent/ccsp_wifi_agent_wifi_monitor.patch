@@ -1,0 +1,29 @@
+--- a/source/TR-181/sbapi/wifi_monitor.c
++++ b/source/TR-181/sbapi/wifi_monitor.c
+@@ -660,8 +660,9 @@
+ #else
+         bool enable24detailstats = false;
+         bool enable5detailstats = false;
+-        unsigned int itr = 0;
+ #endif
++        unsigned int itr = 0;
++
+         if (strncmp(stflag, g_monitor_module.cliStatsList, MAX_VAP) != 0) {
+             strncpy(g_monitor_module.cliStatsList, stflag, MAX_VAP);
+             // check if we should enable of disable detailed client stats collection on XB3
+@@ -690,12 +691,15 @@
+                     case WIFI_FREQUENCY_2_4_BAND:
+                         wifi_dbg_print(1, "%s:%d: client detailed stats collection for 2.4GHz radio set to %s\n", __func__, __LINE__, 
+                                 radioIndex, (enableRadioDetailStats[radioIndex] == TRUE)?"enabled":"disabled");
++                        break;
+                     case WIFI_FREQUENCY_5_BAND:
+                         wifi_dbg_print(1, "%s:%d: client detailed stats collection for 5GHz radio set to %s\n", __func__, __LINE__, 
+                                 radioIndex, (enableRadioDetailStats[radioIndex] == TRUE)?"enabled":"disabled");
++                        break;
+                     case WIFI_FREQUENCY_6_BAND:
+                         wifi_dbg_print(1, "%s:%d: client detailed stats collection for 6GHz radio set to %s\n", __func__, __LINE__, 
+                                 radioIndex, (enableRadioDetailStats[radioIndex] == TRUE)?"enabled":"disabled");
++                        break;
+                     default:
+                         break;
+                 }

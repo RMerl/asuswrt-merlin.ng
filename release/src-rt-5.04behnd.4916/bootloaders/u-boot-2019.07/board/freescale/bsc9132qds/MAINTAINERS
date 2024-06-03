@@ -1,0 +1,25 @@
+BSC9132QDS BOARD
+M:	Naveen Burmi <naveen.burmi@nxp.com>
+S:	Maintained
+F:	board/freescale/bsc9132qds/
+F:	include/configs/BSC9132QDS.h
+F:	configs/BSC9132QDS_NAND_DDRCLK100_defconfig
+F:	configs/BSC9132QDS_NAND_DDRCLK133_defconfig
+F:	configs/BSC9132QDS_NOR_DDRCLK100_defconfig
+F:	configs/BSC9132QDS_NOR_DDRCLK133_defconfig
+F:	configs/BSC9132QDS_SDCARD_DDRCLK100_defconfig
+F:	configs/BSC9132QDS_SDCARD_DDRCLK133_defconfig
+F:	configs/BSC9132QDS_SPIFLASH_DDRCLK100_defconfig
+F:	configs/BSC9132QDS_SPIFLASH_DDRCLK133_defconfig
+
+BSC9132QDS_NAND_DDRCLK100_SECURE BOARD
+M:	Ruchika Gupta <ruchika.gupta@nxp.com>
+S:	Maintained
+F:	configs/BSC9132QDS_NAND_DDRCLK100_SECURE_defconfig
+F:	configs/BSC9132QDS_NAND_DDRCLK133_SECURE_defconfig
+F:	configs/BSC9132QDS_NOR_DDRCLK100_SECURE_defconfig
+F:	configs/BSC9132QDS_NOR_DDRCLK133_SECURE_defconfig
+F:	configs/BSC9132QDS_SDCARD_DDRCLK100_SECURE_defconfig
+F:	configs/BSC9132QDS_SDCARD_DDRCLK133_SECURE_defconfig
+F:	configs/BSC9132QDS_SPIFLASH_DDRCLK100_SECURE_defconfig
+F:	configs/BSC9132QDS_SPIFLASH_DDRCLK133_SECURE_defconfig

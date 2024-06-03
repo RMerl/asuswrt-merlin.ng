@@ -5,7 +5,7 @@
 #define DAY_SEC 86400
 #define HOURSEC 3600
 #define QUERY_LEN 960 // BWSQL_LOG buffer size is 1024
-#define LEN_MAX	8000
+#define LEN_MAX	32000
 
 #define BWMON_LOCK   "/var/lock/AiProtectionMonitor.lock"
 #define BWMON_PID    "/var/run/AiProtectionMonitor.pid"

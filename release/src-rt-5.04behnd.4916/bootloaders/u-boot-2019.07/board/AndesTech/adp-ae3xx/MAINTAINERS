@@ -1,0 +1,6 @@
+ADP-AG101P BOARD
+M:	Andes <uboot@andestech.com>
+S:	Maintained
+F:	board/AndesTech/adp-ae3xx/
+F:	include/configs/adp-ae3xx.h
+F:	configs/adp-ae3xx_defconfig

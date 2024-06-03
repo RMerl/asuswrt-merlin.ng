@@ -1,0 +1,515 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Limited, 2020" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.USPAgent." shortObjectName="Dev2USPAgentObject" specSource="TR181" profile="USPAgent:1" requirements="P" supportLevel="Present" oid="2700" lockZone="8" bbfProtocol="cwmp"/>
+  <description source="TRx">This object contains general information about the USP Agent itself.  For information related to the Device that hosts the Agent, please reference the DeviceInfo object.         NOTE: The Vendor Log File table (DeviceInfo.VendorLogFile) details are located on the DeviceInfo object. </description>
+
+  <parameter name="EndpointID" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" bbfProtocol="cwmp" />
+    <description source="TRx">The unique USP identifier for this USP Agent. </description>
+
+  <parameter name="SoftwareVersion" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="64" bbfProtocol="cwmp" />
+    <description source="TRx">The current USP Agent software version; not the version of the overall device firmware, which is located in DeviceInfo.SoftwareVersion. To allow version comparisons, this element SHOULD be in the form of dot-delimited integers, where each successive integer represents  a more minor category of variation.  For example, 3.0.21 where the components mean: Major.Minor.Build. </description>
+
+  <parameter name="UpTime" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" mayDenyActiveNotification="true" denyActiveNotification="true" bbfProtocol="cwmp" />
+    <description source="TRx">Time in seconds since the USP Agent was last restarted (either via a reset of the software or reboot of the underlying device). </description>
+
+  <parameter name="SupportedProtocols" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" bbfProtocol="cwmp" />
+    <description source="TRx">Comma-separated list (at least 1 items) of strings. USP Message Transfer Protocols supported by this USP Agent.  The USP Agent MUST support at least one Protocol.  Each list item is an enumeration of: WebSocket, STOMP, MQTT</description>
+
+  <parameter name="SupportedFingerprintAlgorithms" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" bbfProtocol="cwmp" />
+    <description source="TRx">Comma-separated list of strings, each entry is an algorithm for calculating firgerprints that is supported by the Agent. Each list item is an enumeration of SHA-1, SHA-224, SHA-256, SHA-384, SHA-512 </description>
+
+  <parameter name="AdvertisedDeviceSubtypes" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" bbfProtocol="cwmp" />
+    <description source="TRx">Comma-separted list of strings, each entry is a subtype component of the service type that is advertised for the device using mDNS as defined in RFC6762 </description>
+
+  <parameter name="MaxSubscriptionChangeAdoptionTime" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" minValue="5" bbfProtocol="cwmp" />
+    <description source="TRx">The acceptable amount of time in seconds between the alteration of the Agent's Subscriptions (e.g. updated subscription, new subscription, removed subscription, etc.) and the notifications related to those subscriptions being delivered. For example, if this parameter is set to 30 seconds, then once a Subscription has been updated, the Agent has 30 seconds before it needs to start delivering notifications based on the updated version of the Subscription (instead of the old version of the Subscription). </description>
+
+  <parameter name="X_BROADCOM_COM_DualStackPreference" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" alwaysWriteToConfigFile="true" defaultValue="IPv4" validValuesArray="DualStackValues" hideParameterFromAcs="true" uniqueKey="false" bbfProtocol="cwmp" />
+  <description source="BROADCOM">This parameter specifies the preference of layer 3 protocol for local agent. </description>
+
+  <parameter name="MTPNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" bbfProtocol="cwmp" />
+    <description source="TRx">The number of entries in the MTP table. </description>
+
+  <parameter name="ControllerNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" bbfProtocol="cwmp" />
+    <description source="TRx">The number of entries in the Controller table. </description>
+
+  <parameter name="CertificateNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" bbfProtocol="cwmp" />
+    <description source="TRx">The numbe of entries in the Certificate table. </description>
+
+  <parameter name="AddCertificate" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" bbfProtocol="cwmp" />
+    <description source="TRx">Provides a mechanism to allow an ACS to add a new certificate to Certificate.{i}. This does not automatically produce a trust relationship with the host identified by the Certificate. To produce a trust relationship, an entry is required to exist in Controller.{i}.Credential or ControllerTrust.Credential.{i}.Credential that references the new Certificate.{i} entry. The Agent will use the Serial Number and Issuer fields from the content provided in this parameter to populate the Certificate.{i}.SerialNumber and Certificate.{i}.Issuer parameters. If Certificate already has an instance with the same Certificate.{i}.SerialNumber and Certificate.{i}.Issuer parameters, this command will fail. To replace an instance with the same Certificate.{i}.SerialNumber and Certificate.{i}.Issuer, the existing instance must first be deleted. The value of this parameter is the X.509 certificate in Privacy-enhanced Electronic Mail (PEM) [RFC7468] format. The value of this parameter is not part of the device configuration and is always an empty string when read.</description>
+
+
+
+<object name="InternetGatewayDevice.Device.USPAgent.MTP.{i}." shortObjectName="Dev2USPAgentMtpObject" specSource="TR181" profile="Unspecified" requirements="PC" supportLevel="DynamicInstances" bbfProtocol="cwmp" />
+  <description source="TRx">Each instance of this table represents a MTP used by the local Agent. At most one entry in this table can exist with a given value for Alias. On creation of a new table entry, the Agent MUST choose an initial value for Alias such that the new entry does not conflict with any existing entries. The non-functional key parameter Alias is immutable and therfore MUST NOT change once it's been assigned. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="64" uniqueKey="true" defaultValue="cpe-agent-mtp" autoGenerateAlias="true" bbfProtocol="cwmp" />
+    <description source="TRx">A non-volatile unique key used to reference this instance. Alias provides a mechanism for a Controller to label this instance for future reference. The following mandatory constaints MUST be enforced: MUST NOT be empty. MUST start with a letter. If the value is not assigned by the Controller at creation time, the Agent MUST assign a value with an "cpe-" prefix. The value MUST NOT change once it's been assigned. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" bbfProtocol="cwmp" />
+    <description source="TRx">Enable/Disable this MTP instance. If this MTP instance is to be disabled and currently used for communication with the requesting controller, the agent has to send the request response first, before disabling it. </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" validValuesArray="uspMtpStatusValues" bbfProtocol="cwmp" />
+    <description source="TRx">The current operational state of the MTP instance. Enumeration of: Up, Down (when this MTP instance cannot establish communication), Error (when this MTP instance is misconfigured, OPTIONAL). </description>
+
+  <parameter name="Protocol" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="STOMP" bbfProtocol="cwmp" />
+    <description source="TRx">The value MUST be a member of the list reported by the Device.Local.Agent.SupportedProtocols parameter. The Message Transport Protocol (MTP) to be used for communications by a USP Endpoint. </description>
+
+  <parameter name="EnableMDNS" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="true" bbfProtocol="cwmp" />
+    <description source="TRx">This parameter, when true, enables the advertisement of DNS-SD services defined for this MTP instance using mDNS as defined in RFC6762. This parameter cannot be set to true if there are multiple MTP instances with the same value of the Protocol parameter. When true, the hostname advertised in the SRV record MUST be a Fully Qualified Domain Name (FQDN). The interfaces that advertise these DNS-SD services are restriced to the set of interfaces associated with this MTP instance and the interfaces defined by the DNS.SD.AdvertisedInterfaces parameter. </description>
+
+
+
+<object name="InternetGatewayDevice.Device.USPAgent.MTP.{i}.CoAP." shortObjectName="Dev2USPAgentMtpCoapObject" specSource="TR181" profile="Unspecified" requirements="P" supportLevel="NotSupported" bbfProtocol="cwmp" />
+  <description source="TRx">If the USP Endpoint uses the CoAP Message Transport Protocol (MTP), then this object contains CoAP specific configuration parameters. </description>
+
+  <parameter name="Interfaces" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" bbfProtocol="cwmp" />
+    <description source="TRx">Comma-separated list of strings. Each list item MUST be the Path Name of the IP.Interface object instance that this server will use as its host address to receive USP messages. If the referenced object is deleted, the corresponding item MUST be removed from the list. An empty string will bind this server to all interfaces for this device. </description>
+
+  <parameter name="Port" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="5683" maxValue="65535" minValue="1" bbfProtocol="cwmp" />
+    <description source="TRx">The port number used by the CoAP Server to receive USP messages. </description>
+
+  <parameter name="Path" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" bbfProtocol="cwmp" />
+    <description source="TRx">The path that is used by the CoAP Server in order to receive USP messages. </description>
+
+  <parameter name="IsEncrypted" type="boolean" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" bbfProtocol="cwmp" />
+    <description source="TRx">This parameter represents whether or not communications that utilize this CoAP object instance are encrypted. </description>
+
+  <parameter name="EnableEncryption" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="true" bbfProtocol="cwmp" />
+    <description source="TRx">When true, encryption is used for this MTP instance. </description>
+
+
+
+<object name="InternetGatewayDevice.Device.USPAgent.MTP.{i}.STOMP." shortObjectName="Dev2USPAgentMtpStompObject" specSource="TR181" profile="Unspecified" requirements="P" supportLevel="Present" bbfProtocol="cwmp" />
+  <description source="TRx">If the USP Endpoint uses the STOMP Message Transport Protocol (MTP), then this object contains STOMP Client specific configuration parameters related to how the Agent communicates with the STOMP Server. </description>
+
+  <parameter name="Reference" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" bbfProtocol="cwmp" />
+    <description source="TRx">The value MUST be the Path Name of a row in the STOMP.Connection table. If the referenced object is deleted, the parameter value MUST be set to an empty string. A reference to the STOMP Connection used by this Agent when communicating via the STOMP MTP. </description>
+
+  <parameter name="Destination" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" bbfProtocol="cwmp" />
+    <description source="TRx">The STOMP destination where the Agent will be listening to incoming USP messages. </description>
+
+  <parameter name="DestinationFromServer" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="" bbfProtocol="cwmp" />
+    <description source="TRx">The STOMP destination contained in the subscribe-dest header of the CONNECTED STOMP Frame. If the Agent doesn't receive a subscribe-dest header in the CONNECTED STOMP Frame, then the value of this Parameter is empty. If this parameter's value is not empty then this is the STOMP destination address for this Agent, but if the value is empty the Destination Parameter contains the STOMP destination address for this Agent. </description>
+
+
+
+<object name="InternetGatewayDevice.Device.USPAgent.MTP.{i}.WebSocket." shortObjectName="Dev2USPAgentMtpWebsocketObject" specSource="TR181" profile="Unspecified" requirements="P" supportLevel="Present" bbfProtocol="cwmp" />
+  <description source="TRx">If the USP Endpoint uses the WebSocket Message Transport Protocol (MTP) as a WebSocket server, then this object contains WebSocket specific configuration parameters. </description>
+
+  <parameter name="Interfaces" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" bbfProtocol="cwmp" />
+    <description source="TRx">Comma-separated list of strings. Each list item MUST be the Path Name of the IP.Interface object instance that this server will use as its host address to receive USP messages. An empty string will bind this server to all interfaces for this device. </description>
+
+  <parameter name="Port" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="5683" maxValue="65535" minValue="1" bbfProtocol="cwmp" />
+    <description source="TRx">The port number used by the WebSocket Server to receive USP messages. </description>
+
+  <parameter name="Path" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" bbfProtocol="cwmp" />
+    <description source="TRx">The path that is used by the WebSocket Server in order to receive USP messages. </description>
+
+  <parameter name="EnableEncryption" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="true" bbfProtocol="cwmp" />
+    <description source="TRx">When true, encryption MUST be used for all connections to this MTP instance. </description>
+
+  <parameter name="KeepAliveInterval" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" minValue="1" bbfProtocol="cwmp" />
+    <description source="TRx">The duration in seconds between when WebSocket ping control frames are transmitted by the Agent's WebSocket server to the Controller's WebSocket client.</description>
+
+
+<object name="InternetGatewayDevice.Device.USPAgent.MTP.{i}.MQTT." shortObjectName="Dev2USPAgentMtpMqttObject" specSource="TR181" profile="Unspecified" requirements="P" supportLevel="Present" bbfProtocol="cwmp" />
+  <description source="TRx">If the USP Endpoint uses the MQTT Message Transport Protocol (MTP), then this object contains MQTT Client specific configuration parameters related to how the Agent communicates with the MQTT broker. </description>
+
+  <parameter name="Reference" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" bbfProtocol="cwmp" />
+    <description source="TRx">The value MUST be the Path Name of a row in the MQTT.Client table. A reference to the MQTT Client used by this Agent when communicating via the MQTT MTP. </description>
+
+  <parameter name="ResponseTopicConfigured" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="65535" bbfProtocol="cwmp" />
+    <description source="TRx">The Agent's configured "reply to" topic. When MQTT 5.0 is being used, this value is put in the PUBLISH Response Topic property for all PUBLISH packets with a USP Record, if no Response Information (value recorded in ResponseTopicDiscovered) is included in the CONNACK. When MQTT 3.1.1 is being used, this value is put at the end of the PUBLISH Topic Name property (as specified in [Section "MQTT Binding"/TR-369]. If the value of ResponseTopicConfigured is not a subset (wildcarded or precise match) of any of the Reference MQTT.Client.{i}.Subscription.{i}.Topic values the Agent MUST subscribe to this Topic. The value MUST NOT contain any wild card characters ("+", "#"). </description>
+
+  <parameter name="ResponseTopicDiscovered" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="65535" bbfProtocol="cwmp" />
+    <description source="TRx">Duplicate of Reference MQTT.Client.{i}.ResponseInformation. This is the value of the CONNACK Response Information property supplied by a MQTT 5.0 server and is used by a MQTT 5.0 client as the basis for the PUBLISH Response Topic property for all PUBLISH packets that expect a response. If a value is received from the MQTT 5.0 server, it will be used instead of any value configured in ResponseTopicConfigured. </description>
+
+  <parameter name="PublishQoS" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxValue="2" minValue="0" bbfProtocol="cwmp" />
+    <description source="TRx">The Agent MUST use this QoS value when sending a USP Record on this MTP. If the referenced MQTT Client uses MQTT 5.0 and the MQTT server only indicates support for a QoS value in the CONNACK Maximum QoS property lower than this QoS value, the Agent MUST use the highest QoS value that is supported by the server. </description>
+
+
+
+<object name="InternetGatewayDevice.Device.USPAgent.Controller.{i}." shortObjectName="Dev2USPAgentControllerObject" specSource="TR181" profile="Unspecified" requirements="PC" supportLevel="DynamicInstances" bbfProtocol="cwmp" />
+  <description source="TRx">Each instance of this table represents a USP Controller that has access to this USP Agent. At most one entry in this table can exist with a given value for EndpointID, or with a given value for Alias. On creation of a new table entry, the Agent MUST choose an initial value for Alias sucah that the new entry does not conflict with any existing entries. The non-functional key parameter Alias is immutable and therefore MUST NOT change once it's bee assigned. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="64" uniqueKey="true" defaultValue="cpe-controller" autoGenerateAlias="true" bbfProtocol="cwmp" />
+    <description source="TRx">A non-volatile unique key used to reference this instance. Alias provides a mechanism for a Controller to label this instance for future reference. The following mandatory constaints MUST be enforced: MUST NOT be empty. MUST start with a letter. If the value is not assigned by the Controller at creation time, the Agent MUST assign a value with an "cpe-" prefix. The value MUST NOT change once it's been assigned. </description>
+
+  <parameter name="EndpointID" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" uniqueKey="true" uniqueKeyFunctional="true" bbfProtocol="cwmp" />
+    <description source="TRx">The unique USP identifier for this USP Controller. </description>
+
+  <parameter name="ControllerCode" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="128" bbfProtocol="cwmp" />
+    <description source="TRx">Information about the configuration state of an Agent as it pertains to the Controller instance. This is not information related to an operator's installation or usage of the protocol, that information is maintained in ProvisioningCode. This parameter could be used in scenarios where the Controller needs to perform some kind of initialization or periodic configuration monitoring. For example, a Controller might perform some initial configuration of an Agent on first contact (perhaps to configure the Subscriptions).  The Controller could inspect this parameter to determine the current state of the Agent's configuration, allowing the Controller to streamline the configuration process. </description>
+
+  <parameter name="ProvisioningCode" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="64" bbfProtocol="cwmp" />
+    <description source="TRx">Identifying information which MAY be used by the Controller instance to determine Controller instance specific customization and provisioning parameters. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" bbfProtocol="cwmp" />
+    <description source="TRx">Enable/Disable this Controller instance.  When false, messages (notifications) are not sent to the remote endpoint represented by this Controller instance. </description>
+
+  <parameter name="AssignedRole" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" bbfProtocol="cwmp" />
+    <description source="TRx">Eeach list item MUST be the Path Name of a row in the Device.USPAgent.ControllerTrust.Role table. If the referenced object is deleted, the corresponding item MUST be removed from the list. Comma-separated list of strings, each entry is a Role that has been assigned to this Controller instance by means other than the USPAgent.ControllerTrust.Credential.{i}.Role parameter. </description>
+
+  <parameter name="InheritedRole" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" bbfProtocol="cwmp" />
+    <description source="TRx">Each list item MUST be the Path Name of a row in the Device.USPAgent.ControllerTrust.Role table. If the referenced object is deleted, the corresponding item MUST be removed from the list. Comma-separated list of strings, each entry is a Role that has been assigned to this Controller instance from the USPAgent.ControllerTrust.Credential.{i}.Role parameter associated with the CA credential (USPAgent.ControllerTrust.Credential.{i}.Credential) used to validate the Controller certificate. </description>
+
+  <parameter name="Credential" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" bbfProtocol="cwmp" />
+    <description source="TRx">The value MUST be the Path Name of a row in the Certificate table. If the referenced object is deleted, the parameter value MUST be set to an empty string.  Comma-separated list of strings, the set of certificates from Certificate.{i} that a Controller can present for use in authenticating the identity of this Controller instance. </description>
+
+  <parameter name="PeriodicNotifInterval" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="10" minValue="1" bbfProtocol="cwmp" />
+    <description source="TRx">If a Periodic Event Notification Subscription instance is associated with this USP Controller, then this is the duration in seconds of the interval for which the USP Agent MUST attempt to issue a Periodic Notification to the USP Controller. </description>
+
+  <parameter name="PeriodicNotifTime" type="dateTime" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="0001-01-01T00:00:00Z" bbfProtocol="cwmp" />
+    <description source="TRx">If a Periodic Event Notification Subscription instance is associated with this USP Controller, then this is an absolute time reference in UTC to determine when the USP Agent will issue a Periodic Notification. Each Periodic Notification MUST occur at this reference time plus or minus an integer multiple of the PeriodicNotifInterval. PeriodicNotifTime is used only to set the phase of the Periodic Event Notifications. The actual value of PeriodicNotifTime can be arbitrarily far into the  past or future. For example, if PeriodicNotifInterval is 86400 (a day) and if PeriodicNotifTime is set to UTC midnight on some day (in the past,  present, or future) then Periodic Notifications will be sent every day at UTC midnight. These MUST begin on the very next midnight, even if PeriodicNotifTime refers to a day in the future. The Unknown Time value defined in [Section 3.2/TR-106a2] indicates that no particular time reference is specified.  That is, the USP Agent MAY locally choose the time reference, and needs only to adhere to the specified PeriodicNotifInterval.   If absolute time is not available to the USP Agent, its Periodic Notification behavior MUST be the same as if the PeriodicNotifTime parameter was set to the Unknown Time value. </description>
+
+  <parameter name="USPNotifRetryMinimumWaitInterval" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="5" maxValue="65535" minValue="1" bbfProtocol="cwmp" />
+    <description source="TRx">This parameter is related to the retry mechanism for Notifications.    Configures the first retry wait interval, in seconds, as specified in [Section "Responses to Notifications and Notification Retry"/TR-369]. A value of 5 corresponds to the default behavior. The USP Agent MUST use a random value between USPNotifRetryMinimumWaitInterval and (USPNotifRetryMinimumWaitInterval * USPNotifRetryIntervalMultiplier / 1000) as the first retry wait interval.  Other values in the retry pattern MUST be calculated using this value as a starting point. </description>
+
+  <parameter name="USPNotifRetryIntervalMultiplier" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="2000" maxValue="65535" minValue="1000" bbfProtocol="cwmp" />
+    <description source="TRx">This parameter is related to the retry mechanism for Notifications.   Configures the retry interval multiplier as specified in [Section "Responses to Notifications and Notification Retry"/TR-369].This value is expressed in units of 0.001.  Hence the values of the multiplier range between 1.000 and 65.535. A value of 2000 corresponds to the default behavior.The USP Agent MUST use a random value between USPNotifRetryMinimumWaitInterval and (USPNotifRetryMinimumWaitInterval * USPNotifRetryIntervalMultiplier / 1000) as the first retry wait interval.  Other values in the retry pattern MUST be calculated using this value as a  starting point. </description>
+
+  <parameter name="MTPNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" bbfProtocol="cwmp" />
+    <description source="TRx">The number of entries in the MTP table. </description>
+
+  <parameter name="SendOnBoardRequest" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" bbfProtocol="cwmp" />
+    <description source="TRx">When set to true, requests the Agent to send a USP OnBoardRequest notification to this Controller. The value of this parameter is not part of the device configuration and is always false when read.</description>
+
+
+
+<object name="InternetGatewayDevice.Device.USPAgent.Controller.{i}.MTP.{i}." shortObjectName="Dev2USPAgentControllerMtpObject" specSource="TR181" profile="Unspecified" requirements="PC" supportLevel="DynamicInstances" bbfProtocol="cwmp" />
+  <description source="TRx">Each instance of this table represents a MTP used by this Controller. At most one entry in this table can exist with a given value for Alias, or with a given value for Protocol. On creation of a new table entry, the Agent MUST choose an initial value for Alias such that the new entry does not conflict with any existing entries. The non-functional key parameter Alias is immutable and therefore MUST NOT change once it's been assigned.</description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="64" uniqueKey="true" bbfProtocol="cwmp" />
+    <description source="TRx">A non-volatile unique key used to reference this instance. Alias provides a mechanism for a Controller to label this instance for future reference. The following mandatory constaints MUST be enforced: MUST NOT be empty. MUST start with a letter. If the value is not assigned by the Controller at creation time, the Agent MUST assign a value with an "cpe-" prefix. The value MUST NOT change once it's been assigned. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" bbfProtocol="cwmp" />
+    <description source="TRx">Enable/Disable this MTP instance. If this MTP instance is to be disabled and currently used for communication with the requesting controller, the agent has to send the request response first, before disabling it. </description>
+
+  <parameter name="Protocol" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="STOMP" uniqueKey="true" uniqueKeyFunctional="true" bbfProtocol="cwmp" />
+    <description source="TRx">The value MUST be a member of the list reported by the Device.USPAgent.SupportedProtocols parameter. The Message Transport Protocol (MTP) to be used for communications by a USP Endpoint. </description>
+
+  <parameter name="Order" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxValue="65535" minValue="1" bbfProtocol="cwmp" />
+    <description source="TRx">The order (relative priority) to use when determining which MTP to use for communicating to the Controller. A value of 1 indicates the highest precedence. For each configured MTP, the instance with the lowest value is attempted first. When more than one MTP instance has the same value, then each instance with the same value SHOULD be attempted at the same time. The value of Order on creation of a MTP table entry MUST be one greater than the largest current value (initially assigned the lowest precedence).</description>
+
+
+
+<object name="InternetGatewayDevice.Device.USPAgent.Controller.{i}.MTP.{i}.CoAP." shortObjectName="Dev2USPAgentControllerMtpCoapObject" specSource="TR181" profile="Unspecified" requirements="P" supportLevel="NotSupported" bbfProtocol="cwmp" />
+  <description source="TRx">If the USP Endpoint uses the CoAP Message Transport Protocol (MTP), then this object contains CoAP specific configuration parameters. </description>
+
+  <parameter name="Host" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="256" bbfProtocol="cwmp" />
+    <description source="TRx">The hostname or IP Address of the Controller's CoAP server. </description>
+
+  <parameter name="Port" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxValue="65535" minValue="1" bbfProtocol="cwmp" />
+    <description source="TRx">The port number used by the Controller's CoAP Server to receive USP messages. </description>
+
+  <parameter name="Path" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" bbfProtocol="cwmp" />
+    <description source="TRx">The path that is used by the Controller's CoAP Server in order to receive USP messages. </description>
+
+  <parameter name="EnableEncryption" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="true" bbfProtocol="cwmp" />
+    <description source="TRx">When true, encryption is used as specified in [Section "MTP Message Encryption"/TR-369]. </description>
+
+
+
+<object name="InternetGatewayDevice.Device.USPAgent.Controller.{i}.MTP.{i}.STOMP." shortObjectName="Dev2USPAgentControllerMtpStompObject" specSource="TR181" profile="Unspecified" requirements="P" supportLevel="Present" bbfProtocol="cwmp" />
+  <description source="TRx">If the USP Endpoint uses the STOMP Message Transport Protocol (MTP), then this object contains STOMP Client specific configuration parameters related to how this Controller communicates with the STOMP Server. </description>
+
+  <parameter name="Reference" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" bbfProtocol="cwmp" />
+    <description source="TRx">The value MUST be the Path Name of a row in the STOMP.Connection table. If the referenced object is deleted, the parameter value MUST be set to an empty string. A reference to the STOMP Connection used by this Controller when communicating via the STOMP MTP. </description>
+
+  <parameter name="Destination" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" bbfProtocol="cwmp" />
+    <description source="TRx">The STOMP destination where the Controller will be listening to incoming USP messages. </description>
+
+
+
+<object name="InternetGatewayDevice.Device.USPAgent.Controller.{i}.MTP.{i}.WebSocket." shortObjectName="Dev2USPAgentControllerMtpWebsocketObject" specSource="TR181" profile="Unspecified" requirements="P" supportLevel="Present" bbfProtocol="cwmp" />
+  <description source="TRx">If the USP Endpoint uses the WebSocket Message Transport Protocol (MTP) as a WebSocket client, then this object contains WebSocket specific configuration parameters. </description>
+
+  <parameter name="Host" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="256" bbfProtocol="cwmp" />
+    <description source="TRx">The hostname or IP Address of the Controller's WebSocket server. </description>
+
+  <parameter name="Port" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxValue="65535" minValue="1" bbfProtocol="cwmp" />
+    <description source="TRx">The port number used by the Controller's WebSocket server to receive USP messages. </description>
+
+  <parameter name="Path" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" bbfProtocol="cwmp" />
+    <description source="TRx">The path that is used by the Controller's WebSocket server in order to receive USP messages. </description>
+
+  <parameter name="EnableEncryption" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="true" bbfProtocol="cwmp" />
+    <description source="TRx">When true, encryption MUST be used for this MTP instance. </description>
+
+  <parameter name="KeepAliveInterval" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" minValue="1" bbfProtocol="cwmp" />
+    <description source="TRx">The duration in seconds between when WebSocket ping control frames are transmitted by the Agent to the WebSocket server for the USP Controller. </description>
+
+  <parameter name="CurrentRetryCount" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" bbfProtocol="cwmp" />
+    <description source="TRx">The current retry count of the session. When zero (0), the session is not in a retry state. </description>
+
+  <parameter name="SessionRetryMinimumWaitInterval" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="5" maxValue="65535" minValue="1" bbfProtocol="cwmp" />
+    <description source="TRx">Configures the first retry wait interval, in seconds, as specified in [Section "WebSocket Session Retry"/TR-369]. The USP Agent MUST use a random value between SessionRetryMinimumWaitInterval and (SessionRetryMinimumWaitInterval * SessionRetryIntervalMultiplier / 1000) as the first retry wait interval. Other values in the retry pattern MUST be calculated using this value as a starting point. </description>
+
+  <parameter name="SessionRetryIntervalMultiplier" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="2000" maxValue="65535" minValue="1000" bbfProtocol="cwmp" />
+    <description source="TRx">Configures the retry interval multiplier as specified in [Section "WebSocket Session Retry"/TR-369]. This value is expressed in units of 0.001. Hence the values of the multiplier range between 1.000 and 65.535. The USP Agent MUST use a random value between SessionRetryMinimumWaitInterval and (SessionRetryMinimumWaitInterval * SessionRetryIntervalMultiplier / 1000) as the first retry wait interval. Other values in the retry pattern MUST be calculated using this value as a starting point. </description>
+
+
+
+<object name="InternetGatewayDevice.Device.USPAgent.Controller.{i}.MTP.{i}.MQTT." shortObjectName="Dev2USPAgentControllerMtpMqttObject" specSource="TR181" profile="Unspecified" requirements="P" supportLevel="Present" bbfProtocol="cwmp" />
+  <description source="TRx">If the USP Endpoint uses the MQTT Message Transport Protocol (MTP), then this object contains MQTT Client specific configuration parameters related to how this Controller communicates with the MQTT broker. </description>
+
+  <parameter name="Reference" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" bbfProtocol="cwmp" />
+    <description source="TRx">The value MUST be the Path Name of a row in the MQTT.Client table. A reference to the MQTT Client used by this Controller when communicating via the MQTT MTP. </description>
+
+  <parameter name="Topic" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="65535" bbfProtocol="cwmp" />
+    <description source="TRx">The topic name the USP Controller has subscribed to, to be used for Notify messages send by the USP Agent. </description>
+
+  <parameter name="PublishRetainResponse" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" bbfProtocol="cwmp" />
+    <description source="TRx">If set to true the Agent MUST set the RETAIN flag in MQTT PUBLISH messages carrying a USP Response Message to 1, unless the MQTT server sent Retain Available = 0 (MQTT 5.0) in its CONNACK (in which case, the Agent MUST set the RETAIN flag to 0). </description>
+
+  <parameter name="PublishRetainNotify" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" bbfProtocol="cwmp" />
+    <description source="TRx">If set to true the Agent MUST set the RETAIN flag in MQTT PUBLISH messages carrying a USP Notify Message to 1, unless the MQTT server sent Retain Available = 0 (MQTT 5.0) in its CONNACK (in which case, the Agent MUST set the RETAIN flag to 0). </description>
+
+
+
+<object name="InternetGatewayDevice.Device.USPAgent.Certificate.{i}." shortObjectName="Dev2USPAgentCertificateObject" specSource="TR181" profile="Unspecified" requirements="PC" supportLevel="DynamicInstances" bbfProtocol="cwmp" />
+  <description source="TRx">Each instance of this table represents information related to a X.509 certificate (see [RFC5280]) of a Controller or Certificate Authority. Instances are referenced from USPAgent.Controller.{i}.Credential and USPAgent.ControllerTrust.Credential.{i}.Credential. At most one entry in this table can exist with the same values for SerialNumber and Issuer, or with a given value for Alias. The non-functional key parameter Alias is immutable and therefore MUST NOT change once it's been assigned. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="64" uniqueKey="true" bbfProtocol="cwmp" />
+    <description source="TRx">A non-volatile unique key used to reference this instance. Alias provides a mechanism for a Controller to label this instance for future reference. The following mandatory constraints MUST be enforced: The value MUST NOT be empty. The value MUST start with a letter. If the value is not assigned by the Controller at creation time, the Agent MUST assign a value with an "cpe-" prefix. The value MUST NOT change once it's been assigned.</description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" bbfProtocol="cwmp" />
+    <description source="TRx">Enable/Disable this Certificate instance. </description>
+
+  <parameter name="SerialNumber" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="64" uniqueKey="true" uniqueKeyFunctional="true" alwaysWriteToConfigFile="true" bbfProtocol="cwmp" />
+    <description source="TRx">The Serial Number field in an X.509 certificate, see [RFC5280]. </description>
+
+  <parameter name="Issuer" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="256" uniqueKey="true" uniqueKeyFunctional="true" alwaysWriteToConfigFile="true" bbfProtocol="cwmp" />
+    <description source="TRx">The Issuer field in an X.509 certificate, see [RFC5280], i.e. the Distinguished Name (DN) of the entity who has signed the certificate. </description>
+
+  <parameter name="X_BROADCOM_COM_AltName" type="string" specSource="Broadcom" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="256" alwaysWriteToConfigFile="true" bbfProtocol="cwmp" />
+    <description source="TRx">The subjectaltName with a type uniformResourceIdentifier field in an X.509 certificate, see [RFC5280]. Its value should be matched with endpoint ID of controller that certificate authorizes. Controller uses it to look for its inherited role. </description>
+
+
+
+<object name="InternetGatewayDevice.Device.USPAgent.ControllerTrust." shortObjectName="Dev2USPAgentControllertrustObject" specSource="TR181" profile="Unspecified" requirements="P" supportLevel="Present" bbfProtocol="cwmp" />
+  <description source="TRx">This object contains information that an Agent applies when establishing a trust relationship with a Controller. </description>
+
+  <parameter name="UntrustedRole" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" bbfProtocol="cwmp" />
+    <description source="TRx">Each list item MUST be the Path Name of a row in the Role table. If the referenced object is deleted, the corresponding item MUST be removed from the list. Comma-separated list (up to 1 items) of strings, each entry is a Role that is associated with Controllers whose identity cannot be authenticated. The value of the UntrustedRole parameter is appended to the USPAgent.Controller.{i}.AssignedRole parameter. In some instances, this policy is set by the Agent and cannot be modified by Controllers. If the Agent does not allow modification of this parameter, the Agent MUST respond with an error to the request to set this parameter. </description>
+
+  <parameter name="BannedRole" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" bbfProtocol="cwmp" />
+    <description source="TRx">The value MUST be the Path Name of a row in the Role table. If the referenced object is deleted, the parameter value MUST be set to an empty string. The Role that is associated with Controllers indicate banned access. When assigned to a Controller or associated with an entry in the Credential table, this MUST be the only value of the BannedRole parameter of the USPAgent.Controller.{i}.AssignedRole parameter. The Agent SHOULD refuse to accept USP messages from, or send USP messages to, any Controller that has this Role. </description>
+
+  <parameter name="TOFUAllowed" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" bbfProtocol="cwmp" />
+    <description source="TRx">When true, Agent has active policy that allows for self-signed certificates and certificates from unknown Certificate Authorities (CAs) to be trusted on first use (TOFU). </description>
+
+  <parameter name="TOFUInactivityTimer" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" bbfProtocol="cwmp" />
+    <description source="TRx">Inactivity timer in seconds. This timer is started when trust on first use (TOFU) policy is used to accept a Controller certificate. If no USP Message is received before this timer elapses, the Agent MUST tear down the MTP connection and underlying (D)TLS session. A value of 0 means that the TOFU inactivity timer is effectively disabled. </description>
+
+  <parameter name="RoleNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" bbfProtocol="cwmp" />
+    <description source="TRx">The number of entries in the Role table. </description>
+
+  <parameter name="CredentialNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" bbfProtocol="cwmp" />
+    <description source="TRx">The number of entries in the Credential table. </description>
+
+  <parameter name="ChallengeNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" bbfProtocol="cwmp" />
+    <description source="TRx">The number of entries in the Challenge table. </description>
+
+
+
+<object name="InternetGatewayDevice.Device.USPAgent.ControllerTrust.Role.{i}." shortObjectName="Dev2USPAgentControllertrustRoleObject" specSource="TR181" profile="Unspecified" requirements="PC" supportLevel="DynamicInstances" bbfProtocol="cwmp" />
+  <description source="TRx">Each instance of this table represents a Role that can be assigned to or inherited by a Controller via the Controller Trust mechanism. The Role contains a set of permissions that determine how the Controller can interact with the data model. If multiple permission entries associated with this table contain a Target that evaluates to the same instantiated Object/Parameter for multiple Roles, then the permissions to be used are a union of the identified permissions. At most one entry in this table can exist with a given value for Alias, or with a given value for Name. On creation of a new table entry, the Agent MUST choose initial values for Alias and Name such that the new entry does not conflict with any existing entries. The non-functional key parameter Alias is immutable and therefore MUST NOT change once it's been assigned. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="64" uniqueKey="true"  defaultValue="cpe-role" autoGenerateAlias="true" bbfProtocol="cwmp" />
+    <description source="TRx">A non-volatile unique key used to reference this instance. Alias provides a mechanism for a Controller to label this instance for future reference. The following mandatory constraints MUST be enforced: The value MUST NOT be empty. The value MUST start with a letter. If the value is not assigned by the Controller at creation time, the Agent MUST assign a value with an "cpe-" prefix. The value MUST NOT change once it's been assigned. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" bbfProtocol="cwmp" />
+    <description source="TRx">Enable/Disable this Role instance. </description>
+
+  <parameter name="Name" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" uniqueKey="true" uniqueKeyFunctional="true" bbfProtocol="cwmp" />
+    <description source="TRx">The Role assigned to this Role instance. </description>
+
+  <parameter name="PermissionNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" bbfProtocol="cwmp" />
+    <description source="TRx">The number of entries in the Permission table. </description>
+
+
+
+<object name="InternetGatewayDevice.Device.USPAgent.ControllerTrust.Role.{i}.Permission.{i}." shortObjectName="Dev2USPAgentControllertrustRolePermissionObject" specSource="TR181" profile="Unspecified" requirements="PC" supportLevel="DynamicInstances" bbfProtocol="cwmp" />
+  <description source="TRx">Each instance of this table represents the permissions that are extended to a set of Targets for a specified Role. If there are multiple entries in this table for a specific Role where the Targets overlap, the permissions for the entry with the highest value takes priority over all others. At most one entry in this table can exist with a given value for Alias, or with a given value for Order. On creation of a new table entry, the Agent MUST choose an initial value for Alias such that the new entry does not conflict with any existing entries. The non-functional key parameter Alias is immutable and therefore MUST NOT change once it's been assigned. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="64" uniqueKey="true" bbfProtocol="cwmp" />
+    <description source="TRx">A non-volatile unique key used to reference this instance. Alias provides a mechanism for a Controller to label this instance for future reference. The following mandatory constraints MUST be enforced: The value MUST NOT be empty. The value MUST start with a letter. If the value is not assigned by the Controller at creation time, the Agent MUST assign a value with an "cpe-" prefix. The value MUST NOT change once it's been assigned.</description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" bbfProtocol="cwmp" />
+    <description source="TRx">Enable/Disable this Permission instance. </description>
+
+  <parameter name="Order" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="0" uniqueKey="true" uniqueKeyFunctional="true" bbfProtocol="cwmp" />
+    <description source="TRx">The order (relative priority) to use when determining the permissions for overlapping Targets that are contained within the same Role. The larger value of this parameter takes priority over a permission with a smaller value (i.e., 0 has the lowest priority). </description>
+
+  <parameter name="Targets" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" bbfProtocol="cwmp" />
+    <description source="TRx">Comma-separated list of strings, each entry is a target to which the value of the permissions parameters are assigned. When an entry is a value of a Partial Path, the permissions are associated to that Object and any child Object/Parameter. When the value of an entry is an Object instance then the permissions are associated to all Parameters of the Object instance. When an entry is a value of a Search Path as defined in [TR-369] that resolves to zero or more Parameter Paths, then all Parameter Paths that result from the evaluation of the Search Path are subject to the permissions assigned by this Permission instance. </description>
+
+  <parameter name="Param" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="----" maxLength="4" minLength="4" bbfProtocol="cwmp" />
+    <description source="TRx">The permissions of a Role for the specified Targets. A string of 4 characters where each character represents a permission ("r" for Read, "w" for Write, "x" for Execute", and "n" for Notify). The string is always in the same order (rwxn) and the lack of a permission is signified by a "-" character (e.g., r–n). The following describes the meaning of the permissions for Parameter type of Targets: Read: Grants the capability to read the value of the Parameter via Get and read the meta-information of the Parameter via GetSupportedDM. - Write: Grants the capability to update the value of the Parameter via Add or Set. - Execute: Grants no capabilities; Parameters can not be executed. - Notify: Grants the capability to use this Parameter in the ReferenceList of a ValueChange Subscription. </description>
+
+  <parameter name="Obj" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="----" maxLength="4" minLength="4" bbfProtocol="cwmp" />
+    <description source="TRx">The permissions of a Role for the specified Targets. A string of 4 characters where each character represents a permission ("r" for Read, "w" for Write, "x" for Execute", and "n" for Notify). The string is always in the same order (rwxn) and the lack of a permission is signified by a "-" character (e.g., r–n). The following describes the meaning of the permissions for Parameter type of Targets: Read: Grants the capability to read the value of the Parameter via Get and read the meta-information of the Parameter via GetSupportedDM. - Write: Grants the capability to update the value of the Parameter via Add or Set. - Execute: Grants no capabilities; Parameters can not be executed. - Notify: Grants the capability to use this Parameter in the ReferenceList of a ValueChange Subscription. </description>
+
+  <parameter name="InstantiatedObj" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="----" maxLength="4" minLength="4" bbfProtocol="cwmp" />
+    <description source="TRx">The permissions of a Role for the specified Targets. A string of 4 characters where each character represents a permission ("r" for Read, "w" for Write, "x" for Execute", and "n" for Notify). The string is always in the same order (rwxn) and the lack of a permission is signified by a "-" character (e.g., r–n). The following describes the meaning of the permissions for Parameter type of Targets: Read: Grants the capability to read the value of the Parameter via Get and read the meta-information of the Parameter via GetSupportedDM. - Write: Grants the capability to update the value of the Parameter via Add or Set. - Execute: Grants no capabilities; Parameters can not be executed. - Notify: Grants the capability to use this Parameter in the ReferenceList of a ValueChange Subscription. </description>
+
+  <parameter name="CommandEvent" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="----" maxLength="4" minLength="4" bbfProtocol="cwmp" />
+    <description source="TRx">The permissions of a Role for the specified Targets. A string of 4 characters where each character represents a permission ("r" for Read, "w" for Write, "x" for Execute", and "n" for Notify). The string is always in the same order (rwxn) and the lack of a permission is signified by a "-" character (e.g., r–n). The following describes the meaning of the permissions for Parameter type of Targets: Read: Grants the capability to read the value of the Parameter via Get and read the meta-information of the Parameter via GetSupportedDM. - Write: Grants the capability to update the value of the Parameter via Add or Set. - Execute: Grants no capabilities; Parameters can not be executed. - Notify: Grants the capability to use this Parameter in the ReferenceList of a ValueChange Subscription. </description>
+
+
+
+<object name="InternetGatewayDevice.Device.USPAgent.ControllerTrust.Credential.{i}." shortObjectName="Dev2USPAgentControllertrustCredentialObject" specSource="TR181" profile="Unspecified" requirements="PC" supportLevel="DynamicInstances" bbfProtocol="cwmp" />
+  <description source="TRx">Each instance of this table represents a trusted credential. The credential can be that of a certificate authority (CA) for a Controller whose EndpointID is unknown. When a credential is supplied to the Agent by a Controller during authentication, the credentials in this table are used to determine if any of the supplied certificates (including those in the chain of trust) are considered "trusted". If the Controller authenticated via an entry in this table is not previously known to the Agent, the associated Role entry is automatically applied to the Controller. At most one entry in this table can exist with a given value for Alias, or with a given value for Credential. On creation of a new table entry, the Agent MUST choose initial values for Alias and Credential such that the new entry does not conflict with any existing entries. The non-functional key parameter Alias is immutable and therefore MUST NOT change once it's been assigned. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="64" uniqueKey="true" bbfProtocol="cwmp" />
+    <description source="TRx">A non-volatile unique key used to reference this instance. Alias provides a mechanism for a Controller to label this instance for future reference. The following mandatory constraints MUST be enforced: The value MUST NOT be empty. The value MUST start with a letter. If the value is not assigned by the Controller at creation time, the Agent MUST assign a value with an "cpe-" prefix. The value MUST NOT change once it's been assigned.</description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" bbfProtocol="cwmp" />
+    <description source="TRx">Enable/Disable this Credential instance. </description>
+
+  <parameter name="Role" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" bbfProtocol="cwmp" />
+    <description source="TRx">Each list item MUST be the Path Name of a row in the Role table. If the referenced object is deleted, the corresponding item MUST be removed from the list. Comma-separated list of strings, the (set of) Role(s) applied to a Controller authenticated through this Credential instance. The roles are added to the Controller's current list of Roles by replacing the value of the USPAgent.Controller.{i}.InheritedRole parameter. If the Controller is already known to the Agent, with an associated Role, this parameter has no impact. </description>
+
+  <parameter name="Credential" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" uniqueKey="true" uniqueKeyFunctional="true" bbfProtocol="cwmp" />
+    <description source="TRx">The value MUST be the Path Name of a row in the Certificate table. If the referenced object is deleted, the parameter value MUST be set to an empty string. A reference to the Certificate.{i} instance for use in the authentication of certificates provided by a Controller and authorization of Controllers, and for authentication of certificates used for MTP encryption. </description>
+
+  <parameter name="AllowedUses" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" validValuesArray="uspCredentialAllowedUseValues" bbfProtocol="cwmp" />
+    <description source="TRx">Identifies what usages the Certificate Authority (CA) authenticated by the associated credential is trusted to authorize. Enumeration of: MTP-only (The CA can only authorize MTP (domain) connectivity, and cannot authenticate Controllers), MTP-and-USP (The CA can authorize MTP (domain) connectivity and authenticate Controllers), or MTP-and-broker (The CA can authorize MTP (domain) connectivity and the presenter of this certificate is trusted to have authenticated the identity of Endpoints whose Records it transmits such that the from_id can be trusted without additional authentication. See ["Authentication and Authorization"/TR-369] for additional description of the Trusted Broker function)  </description>
+
+
+
+<object name="InternetGatewayDevice.Device.USPAgent.ControllerTrust.Challenge.{i}." shortObjectName="Dev2USPAgentControllertrustChallengeObject" specSource="TR181" profile="Unspecified" requirements="PC" supportLevel="DynamicInstances" bbfProtocol="cwmp" />
+  <description source="TRx">Each instance of this table represents information that is used to challenge a Controller in order to assign a Role to the Controller or to determine the authenticity of a Certificate. The Controller requests a type of challenge from an Agent using the RequestChallenge command. The Agent returns the value of the Instruction for that type of challenge to the Controller which the Controller then provides a third-party. The third-party responds to the Instruction which the Controller then sends to the Agent using the ChallengeResponse command. The Agent verifies the response to the Challenges and executes an implementation specific Agent logic in order to establish trust with the Controller. This could include (but is not limited to): 1. Assignment of roles to the Controller is done by appending the non-duplicate roles of the Role parameter to the value of the USPAgent.Controller.{i}.AssignedRole parameter. 2. Use the Controller's certificate to which the challenge response was received in order to authenticate the identity of the Controller. At most one entry in this table can exist with a given value for Alias. On creation of a new table entry, the Agent MUST choose an initial value for Alias such that the new entry does not conflict with any existing entries. The non-functional key parameter Alias is immutable and therefore MUST NOT change once it's been assigned. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="64" uniqueKey="true"  defaultValue="cpe-challenge" autoGenerateAlias="true" bbfProtocol="cwmp" />
+    <description source="TRx">A non-volatile unique key used to reference this instance. Alias provides a mechanism for a Controller to label this instance for future reference. The following mandatory constraints MUST be enforced: The value MUST NOT be empty. The value MUST start with a letter. If the value is not assigned by the Controller at creation time, the Agent MUST assign a value with an "cpe-" prefix. The value MUST NOT change once it's been assigned.</description>
+
+  <parameter name="Description" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" bbfProtocol="cwmp" />
+    <description source="TRx">The description of this Challenge instance. </description>
+
+  <parameter name="Role" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" bbfProtocol="cwmp" />
+    <description source="TRx">Each list item MUST be the Path Name of a row in the Role table. If the referenced object is deleted, the corresponding item MUST be removed from the list. Comma-separated list of strings, the (set of) role(s) appended (non-duplicate values only) to the value of the USPAgent.Controller.{i}.AssignedRole parameter. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" bbfProtocol="cwmp" />
+    <description source="TRx">Enable/Disable this Challenge instance. </description>
+
+  <parameter name="Type" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" validValuesArray="uspChallengeTypeValues" defaultValue="Passphrase" bbfProtocol="cwmp" />
+    <description source="TRx">The type of challenge that will be verified from the challenge response provided by the third-party through the Controller. Enumeration of: Passphrase (The challenge uses a passphrase the third-party is expected to match). </description>
+
+  <parameter name="Value" type="base64" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" isTr69Password="true" isConfigPassword="true" bbfProtocol="cwmp" />
+    <description source="TRx">The value of the challenge that is specific to the type of challenge. When read, this parameter returns an empty string, regardless of the actual value. </description>
+
+  <parameter name="ValueType" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" validValuesArray="uspChallengeValueTypeValues"  bbfProtocol="cwmp" />
+    <description source="TRx">The media type with a format as defined by [RFC6838] of the content of the Value parameter. Enumeration of: text/plain, or image/jpeg. </description>
+
+  <parameter name="Instruction" type="base64" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" bbfProtocol="cwmp" />
+    <description source="TRx">The instruction that is provided to the external party by the Controller requesting the challenge. </description>
+
+  <parameter name="InstructionType" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" validValuesArray="uspChallengeInstructionTypeValues"  bbfProtocol="cwmp" />
+    <description source="TRx">The media type with a format as defined by [RFC6838] of the content of the Instruction parameter. Enumeration of: text/plain, image/jpeg, or text/html. </description>
+
+  <parameter name="Retries" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" bbfProtocol="cwmp" />
+    <description source="TRx">The number of times a challenge is retried before the challenge procedure is terminated. </description>
+
+  <parameter name="LockoutPeriod" type="int" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="30" minValue="0" bbfProtocol="cwmp" />
+    <description source="TRx">The time, in seconds that a Controller that has failed the challenge is locked out (based on the value of the Retries parameter) prior to being provided the challenge again. A value of zero means that a LockoutPeriod doesn't apply and the challenge can be provided indefinitely. </description>
+
+
+
+<vsaInfo>
+
+<validstringarray name="uspTransferDirectionValues" />
+  <element>Download</element>
+  <element>Upload</element>
+
+<validstringarray name="uspProtocolValues" />
+  <element>WebSocket</element>
+  <element>STOMP</element>
+  <element>MQTT</element>
+
+<validstringarray name="uspMtpStatusValues" />
+  <element>Up</element>
+  <element>Down</element>
+  <element>Error</element>
+
+<validstringarray name="uspTransferResultValues" />
+  <element>Success</element>
+  <element>Failure</element>
+  <element>BOTH</element>
+
+<validstringarray name="uspNotifyTypeValues" />
+  <element>ValueChange</element>
+  <element>ObjectCreation</element>
+  <element>ObjectDeletion</element>
+  <element>OperationComplete</element>
+  <element>Event</element>
+
+<validstringarray name="uspRequestStatusValues" />
+  <element>Requested</element>
+  <element>Active</element>
+  <element>Canceling</element>
+  <element>Success</element>
+  <element>Error</element>
+
+<validstringarray name="uspFingerprintAlgorithmValues" />
+  <element>SHA-1</element>
+  <element>SHA-224</element>
+  <element>SHA-256</element>
+  <element>SHA-384</element>
+  <element>SHA-512</element>
+
+<validstringarray name="uspCredentialAllowedUseValues" />
+  <element>MTP-only</element>
+  <element>MTP-and-USP</element>
+  <element>MTP-and-broker</element>
+
+<validstringarray name="uspChallengeTypeValues" />
+  <element>Passphrase</element>
+
+<validstringarray name="uspChallengeValueTypeValues" />
+  <element>text/plain</element>
+  <element>image/jpeg</element>
+
+<validstringarray name="uspChallengeInstructionTypeValues" />
+  <element>text/plain</element>
+  <element>image/jpeg</element>
+  <element>text/html</element>
+
+<validstringarray name="DualStackValues" />
+  <element>IPv4</element>
+  <element>IPv6</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="USPAgent:1"/> 
+<profile name="Device2_Firmware:1" />
+<profile name="Device2_Reboot:1" />
+<profile name="Unspecified" />
+</profileInfo>
+
+
+
+</xmlMandatorySingleRootNode>
+

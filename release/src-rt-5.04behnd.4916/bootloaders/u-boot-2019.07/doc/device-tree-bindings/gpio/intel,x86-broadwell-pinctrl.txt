@@ -1,0 +1,208 @@
+Intel x86 PINCTRL/GPIO controller
+
+Pin-muxing on broadwell devices can be described with a node for the PINCTRL
+master node and a set of child nodes for each required pin state on the SoC.
+These pin states use phandles and are referred to but a configuration section
+which lists all pins in the device.
+
+The PINCTRL master node requires the following properties:
+- compatible : "intel,x86-broadwell-pinctrl"
+
+Pin state nodes must be sub-nodes of the pinctrl master node. The must have
+a phandle. They can contain the following optional properties:
+- mode-gpio	- forces the pin into GPIO mode
+- output-value	- sets the default output value of the GPIO, 0 (low, default)
+			or 1 (high)
+- direction	- sets the direction of the gpio, either PIN_INPUT (default)
+			or PIN_OUTPUT
+- invert	- the input pin is inverted
+- trigger	- sets the trigger type, either TRIGGER_EDGE (default) or
+			TRIGGER_LEVEL
+- sense-disable - the input state sense is disabled
+- owner		0 sets the owner of the pin, either OWNER_ACPI (default) or
+			ONWER_GPIO
+- route		- sets whether the pin is routed, either PIRQ_APIC_MASK or
+			PIRQ_APIC_ROUTE
+- irq-enable	- the interrupt is enabled
+- reset-rsmrst	- the pin will only be reset by RSMRST
+- pirq-apic	- the pin will be routed to the IOxAPIC
+
+The first pin state will be the default, so pins without a configuration will
+use that.
+
+The pin configuration node is also a sub-node of the pinctrl master node, but
+does not have a phandle. It has a single property:
+
+- config	- configuration to use for each pin. Each entry has of 3 cells:
+			- GPIO number (0..94)
+			- phandle of configuration (above)
+			- interrupt number (0..15)
+
+		  There should be one entry for each pin (i.e. 95 entries).
+		  But missing pins will receive the default configuration.
+
+Example:
+
+pch_pinctrl {
+	compatible = "intel,x86-broadwell-pinctrl";
+
+	/* Put this first: it is the default */
+	gpio_unused: gpio-unused {
+		mode-gpio;
+		direction = <PIN_INPUT>;
+		owner = <OWNER_GPIO>;
+		sense-disable;
+	};
+
+	gpio_acpi_sci: acpi-sci {
+		mode-gpio;
+		direction = <PIN_INPUT>;
+		invert;
+		route = <ROUTE_SCI>;
+	};
+
+	gpio_acpi_smi: acpi-smi {
+		mode-gpio;
+		direction = <PIN_INPUT>;
+		invert;
+		route = <ROUTE_SMI>;
+	};
+
+	gpio_input: gpio-input {
+		mode-gpio;
+		direction = <PIN_INPUT>;
+		owner = <OWNER_GPIO>;
+	};
+
+	gpio_input_invert: gpio-input-invert {
+		mode-gpio;
+		direction = <PIN_INPUT>;
+		owner = <OWNER_GPIO>;
+		invert;
+	};
+
+	gpio_native: gpio-native {
+	};
+
+	gpio_out_high: gpio-out-high {
+		mode-gpio;
+		direction = <PIN_OUTPUT>;
+		output-value = <1>;
+		owner = <OWNER_GPIO>;
+		sense-disable;
+	};
+
+	gpio_out_low: gpio-out-low {
+		mode-gpio;
+		direction = <PIN_OUTPUT>;
+		output-value = <0>;
+		owner = <OWNER_GPIO>;
+		sense-disable;
+	};
+
+	gpio_pirq: gpio-pirq {
+		mode-gpio;
+		direction = <PIN_INPUT>;
+		owner = <OWNER_GPIO>;
+		pirq-apic = <PIRQ_APIC_ROUTE>;
+	};
+
+	soc_gpio@0 {
+		config =
+			<0 &gpio_unused 0>,	/* unused */
+			<1 &gpio_unused 0>,	/* unused */
+			<2 &gpio_unused 0>,	/* unused */
+			<3 &gpio_unused 0>,	/* unused */
+			<4 &gpio_native 0>,	/* native: i2c0_sda_gpio4 */
+			<5 &gpio_native 0>,	/* native: i2c0_scl_gpio5 */
+			<6 &gpio_native 0>,	/* native: i2c1_sda_gpio6 */
+			<7 &gpio_native 0>,	/* native: i2c1_scl_gpio7 */
+			<8 &gpio_acpi_sci 0>,	/* pch_lte_wake_l */
+			<9 &gpio_input_invert 0>,/* trackpad_int_l (wake) */
+			<10 &gpio_acpi_sci 0>,	/* pch_wlan_wake_l */
+			<11 &gpio_unused 0>,	/* unused */
+			<12 &gpio_unused 0>,	/* unused */
+			<13 &gpio_pirq 3>,	/* trackpad_int_l (pirql) */
+			<14 &gpio_pirq 4>,	/* touch_int_l (pirqm) */
+			<15 &gpio_unused 0>,	/* unused (strap) */
+			<16 &gpio_input 0>,	/* pch_wp */
+			<17 &gpio_unused 0>,	/* unused */
+			<18 &gpio_unused 0>,	/* unused */
+			<19 &gpio_unused 0>,	/* unused */
+			<20 &gpio_native 0>,	/* pcie_wlan_clkreq_l */
+			<21 &gpio_out_high 0>,	/* pp3300_ssd_en */
+			<22 &gpio_unused 0>,	/* unused */
+			<23 &gpio_out_low 0>,	/* pp3300_autobahn_en */
+			<24 &gpio_unused 0>,	/* unused */
+			<25 &gpio_input 0>,	/* ec_in_rw */
+			<26 &gpio_unused 0>,	/* unused */
+			<27 &gpio_acpi_sci 0>,	/* pch_wake_l */
+			<28 &gpio_unused 0>,	/* unused */
+			<29 &gpio_unused 0>,	/* unused */
+			<30 &gpio_native 0>,	/* native: pch_suswarn_l */
+			<31 &gpio_native 0>,	/* native: acok_buf */
+			<32 &gpio_native 0>,	/* native: lpc_clkrun_l */
+			<33 &gpio_native 0>,	/* native: ssd_devslp */
+			<34 &gpio_acpi_smi 0>,	/* ec_smi_l */
+			<35 &gpio_acpi_smi 0>,	/* pch_nmi_dbg_l (route in nmi_en) */
+			<36 &gpio_acpi_sci 0>,	/* ec_sci_l */
+			<37 &gpio_unused 0>,	/* unused */
+			<38 &gpio_unused 0>,	/* unused */
+			<39 &gpio_unused 0>,	/* unused */
+			<40 &gpio_native 0>,	/* native: pch_usb1_oc_l */
+			<41 &gpio_native 0>,	/* native: pch_usb2_oc_l */
+			<42 &gpio_unused 0>,	/* wlan_disable_l */
+			<43 &gpio_out_high 0>,	/* pp1800_codec_en */
+			<44 &gpio_unused 0>,	/* unused */
+			<45 &gpio_acpi_sci 0>,	/* dsp_int - codec wake */
+			<46 &gpio_pirq 6>,	/* hotword_det_l_3v3 (pirqo) - codec irq */
+			<47 &gpio_out_low 0>,	/* ssd_reset_l */
+			<48 &gpio_unused 0>,	/* unused */
+			<49 &gpio_unused 0>,	/* unused */
+			<50 &gpio_unused 0>,	/* unused */
+			<51 &gpio_unused 0>,	/* unused */
+			<52 &gpio_input 0>,	/* sim_det */
+			<53 &gpio_unused 0>,	/* unused */
+			<54 &gpio_unused 0>,	/* unused */
+			<55 &gpio_unused 0>,	/* unused */
+			<56 &gpio_unused 0>,	/* unused */
+			<57 &gpio_out_high 0>,	/* codec_reset_l */
+			<58 &gpio_unused 0>,	/* unused */
+			<59 &gpio_out_high 0>,	/* lte_disable_l */
+			<60 &gpio_unused 0>,	/* unused */
+			<61 &gpio_native 0>,	/* native: pch_sus_stat */
+			<62 &gpio_native 0>,	/* native: pch_susclk */
+			<63 &gpio_native 0>,	/* native: pch_slp_s5_l */
+			<64 &gpio_unused 0>,	/* unused */
+			<65 &gpio_input 0>,	/* ram_id3 */
+			<66 &gpio_input 0>,	/* ram_id3_old (strap) */
+			<67 &gpio_input 0>,	/* ram_id0 */
+			<68 &gpio_input 0>,	/* ram_id1 */
+			<69 &gpio_input 0>,	/* ram_id2 */
+			<70 &gpio_unused 0>,	/* unused */
+			<71 &gpio_native 0>,	/* native: modphy_en */
+			<72 &gpio_unused 0>,	/* unused */
+			<73 &gpio_unused 0>,	/* unused */
+			<74 &gpio_unused 0>,	/* unused */
+			<75 &gpio_unused 0>,	/* unused */
+			<76 &gpio_unused 0>,	/* unused */
+			<77 &gpio_unused 0>,	/* unused */
+			<78 &gpio_unused 0>,	/* unused */
+			<79 &gpio_unused 0>,	/* unused */
+			<80 &gpio_unused 0>,	/* unused */
+			<81 &gpio_unused 0>,	/* unused */
+			<82 &gpio_native 0>,	/* native: ec_rcin_l */
+			<83 &gpio_native 0>,	/* gspi0_cs */
+			<84 &gpio_native 0>,	/* gspi0_clk */
+			<85 &gpio_native 0>,	/* gspi0_miso */
+			<86 &gpio_native 0>,	/* gspi0_mosi (strap) */
+			<87 &gpio_unused 0>,	/* unused */
+			<88 &gpio_unused 0>,	/* unused */
+			<89 &gpio_out_high 0>,	/* pp3300_sd_en */
+			<90 &gpio_unused 0>,	/* unused */
+			<91 &gpio_unused 0>,	/* unused */
+			<92 &gpio_unused 0>,	/* unused */
+			<93 &gpio_unused 0>,	/* unused */
+			<94 &gpio_unused 0 >;	/* unused */
+	};
+};

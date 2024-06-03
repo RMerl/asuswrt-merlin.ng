@@ -1,0 +1,28 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * Copyright 2015 Hans de Goede <hdegoede@redhat.com>
+ *
+ * Minimal dts file for the Ainol AW1 for u-boot only
+ */
+
+/dts-v1/;
+#include "sun7i-a20.dtsi"
+
+/ {
+	model = "Ainol AW1";
+	compatible = "ainol,aw1", "allwinner,sun7i-a20";
+
+	aliases {
+		serial0 = &uart0;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+};
+
+&uart0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart0_pb_pins>;
+	status = "okay";
+};

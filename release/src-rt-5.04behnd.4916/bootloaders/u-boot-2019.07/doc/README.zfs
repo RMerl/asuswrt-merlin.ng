@@ -1,0 +1,29 @@
+This patch series adds support for ZFS listing and load to u-boot.
+
+To Enable zfs ls and load commands, modify the board specific config file with
+#define CONFIG_CMD_ZFS
+
+Steps to test:
+
+1. After applying the patch, zfs specific commands can be seen
+   in the boot loader prompt using
+	UBOOT #help
+
+	zfsload- load binary file from a ZFS file system
+	zfsls  - list files in a directory (default /)
+
+2. To list the files in zfs pool, device or partition, execute
+	zfsls <interface> <dev[:part]> [POOL/@/dir/file]
+	For example:
+	UBOOT #zfsls mmc 0:5 /rpool/@/usr/bin/
+
+3. To read and load a file from an ZFS formatted partition to RAM, execute
+	zfsload <interface> <dev[:part]> [addr] [filename] [bytes]
+	For example:
+	UBOOT #zfsload mmc 2:2 0x30007fc0 /rpool/@/boot/uImage
+
+References :
+	-- ZFS GRUB sources from Solaris GRUB-0.97
+	-- GRUB Bazaar repository
+
+Jorgen Lundman <lundman at lundman.net> 2012.

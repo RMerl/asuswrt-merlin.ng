@@ -1,0 +1,15 @@
+#
+# Automatic dependency generation when it can't find
+# the .d file.  See Section 4.14 of GNU make.
+#
+# (The -M to gcc does this.  Also, dump error messages about not being
+# able to find a header file to /dev/null.  Let the user figure it out 
+# when he tries to compile.)
+#
+ifneq ($(MAKECMDGOALS),clean)
+%.d: %.c
+	@set -e; rm -f $@; \
+	$(CC) -M $(CPPFLAGS) $(CFLAGS) $< > $@.$$$$ 2>/dev/null; \
+	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
+	rm -f $@.$$$$
+endif

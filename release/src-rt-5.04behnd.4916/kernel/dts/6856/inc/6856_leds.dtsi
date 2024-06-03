@@ -1,0 +1,121 @@
+// Hardware Serial LED options
+
+HW_SERIAL_PORT_LED_BIT(port_0-led_0-bit_3 , 0, 0,  3);
+HW_SERIAL_PORT_LED_BIT(port_0-led_1-bit_4 , 0, 1,  4);
+HW_SERIAL_PORT_LED_BIT(port_1-led_0-bit_5 , 1, 0,  5);
+HW_SERIAL_PORT_LED_BIT(port_1-led_1-bit_6 , 1, 1,  6);
+HW_SERIAL_PORT_LED_BIT(port_2-led_0-bit_7 , 2, 0,  7);
+HW_SERIAL_PORT_LED_BIT(port_2-led_1-bit_8 , 2, 1,  8);
+HW_SERIAL_PORT_LED_BIT(port_3-led_0-bit_9 , 3, 0,  9);
+HW_SERIAL_PORT_LED_BIT(port_3-led_1-bit_10, 3, 1, 10);
+HW_SERIAL_PORT_LED_BIT(port_5-led_0-bit_11, 5, 0, 11);
+HW_SERIAL_PORT_LED_BIT(port_5-led_1-bit_12, 5, 1, 12);
+HW_SERIAL_PORT_LED_BIT(port_5-led_3-bit_13, 5, 0, 13);
+HW_SERIAL_PORT_LED_BIT(port_5-led_4-bit_14, 5, 1, 14);
+
+// Software Serial LED options
+SW_SERIAL_BIT(sw_led-bit_0 ,  0);
+SW_SERIAL_BIT(sw_led-bit_1 ,  1);
+SW_SERIAL_BIT(sw_led-bit_2 ,  2);
+SW_SERIAL_BIT(sw_led-bit_3 ,  3);
+SW_SERIAL_BIT(sw_led-bit_4 ,  4);
+SW_SERIAL_BIT(sw_led-bit_5 ,  5);
+SW_SERIAL_BIT(sw_led-bit_6 ,  6);
+SW_SERIAL_BIT(sw_led-bit_7 ,  7);
+SW_SERIAL_BIT(sw_led-bit_8 ,  8);
+SW_SERIAL_BIT(sw_led-bit_9 ,  9);
+SW_SERIAL_BIT(sw_led-bit_10, 10);
+SW_SERIAL_BIT(sw_led-bit_11, 11);
+SW_SERIAL_BIT(sw_led-bit_12, 12);
+SW_SERIAL_BIT(sw_led-bit_13, 13);
+SW_SERIAL_BIT(sw_led-bit_14, 14);
+SW_SERIAL_BIT(sw_led-bit_15, 15);
+SW_SERIAL_BIT(sw_led-bit_16, 16);
+SW_SERIAL_BIT(sw_led-bit_17, 17);
+SW_SERIAL_BIT(sw_led-bit_18, 18);
+SW_SERIAL_BIT(sw_led-bit_19, 19);
+SW_SERIAL_BIT(sw_led-bit_20, 20);
+SW_SERIAL_BIT(sw_led-bit_21, 21);
+SW_SERIAL_BIT(sw_led-bit_22, 22);
+SW_SERIAL_BIT(sw_led-bit_23, 23);
+SW_SERIAL_BIT(sw_led-bit_24, 24);
+SW_SERIAL_BIT(sw_led-bit_25, 25);
+SW_SERIAL_BIT(sw_led-bit_26, 26);
+SW_SERIAL_BIT(sw_led-bit_27, 27);
+SW_SERIAL_BIT(sw_led-bit_28, 28);
+SW_SERIAL_BIT(sw_led-bit_29, 29);
+SW_SERIAL_BIT(sw_led-bit_30, 30);
+SW_SERIAL_BIT(sw_led-bit_31, 31);
+
+
+// Hardware Parallel LED options:
+// Option A
+HW_PARALLEL_PORT_LED_BIT_PIN_NAME(port_0-led_0-pin_48, 0, 0,  3, a_per_led_03_pin_48);
+HW_PARALLEL_PORT_LED_BIT_PIN_NAME(port_0-led_1-pin_49, 0, 1,  4, a_per_led_04_pin_49);
+HW_PARALLEL_PORT_LED_BIT_PIN_NAME(port_1-led_0-pin_50, 1, 0,  5, a_per_led_05_pin_50);
+HW_PARALLEL_PORT_LED_BIT_PIN_NAME(port_1-led_1-pin_51, 1, 1,  6, a_per_led_06_pin_51);
+HW_PARALLEL_PORT_LED_BIT_PIN_NAME(port_2-led_0-pin_52, 2, 0,  7, a_per_led_07_pin_52);
+HW_PARALLEL_PORT_LED_BIT_PIN_NAME(port_2-led_1-pin_53, 2, 1,  8, a_per_led_08_pin_53);
+HW_PARALLEL_PORT_LED_BIT_PIN_NAME(port_3-led_0-pin_54, 3, 0,  9, a_per_led_09_pin_54);
+HW_PARALLEL_PORT_LED_BIT_PIN_NAME(port_3-led_1-pin_55, 3, 1, 10, a_per_led_10_pin_55);
+HW_PARALLEL_PORT_LED_BIT_PIN_NAME(port_5-led_0-pin_56, 5, 0, 11, a_per_led_11_pin_56);
+HW_PARALLEL_PORT_LED_BIT_PIN_NAME(port_5-led_1-pin_57, 5, 1, 12, a_per_led_12_pin_57);
+HW_PARALLEL_PORT_LED_BIT_PIN_NAME(port_5-led_2-pin_58, 5, 0, 13, a_per_led_13_pin_58);
+HW_PARALLEL_PORT_LED_BIT_PIN_NAME(port_5-led_3-pin_59, 5, 1, 14, a_per_led_14_pin_59);
+
+// Hardware Parallel LED options:
+// Option B
+HW_PARALLEL_PORT_LED_BIT_PIN_NAME(port_0-led_0-pin_11, 0, 0,  3, b_per_led_03_pin_11);
+HW_PARALLEL_PORT_LED_BIT_PIN_NAME(port_0-led_1-pin_12, 0, 1,  4, b_per_led_04_pin_12);
+HW_PARALLEL_PORT_LED_BIT_PIN_NAME(port_1-led_0-pin_13, 1, 0,  5, b_per_led_05_pin_13);
+HW_PARALLEL_PORT_LED_BIT_PIN_NAME(port_1-led_1-pin_14, 1, 1,  6, b_per_led_06_pin_14);
+HW_PARALLEL_PORT_LED_BIT_PIN_NAME(port_2-led_0-pin_15, 2, 0,  7, b_per_led_07_pin_15);
+HW_PARALLEL_PORT_LED_BIT_PIN_NAME(port_2-led_1-pin_16, 2, 1,  8, b_per_led_08_pin_16);
+HW_PARALLEL_PORT_LED_BIT_PIN_NAME(port_3-led_0-pin_17, 3, 0,  9, b_per_led_09_pin_17);
+HW_PARALLEL_PORT_LED_BIT_PIN_NAME(port_3-led_1-pin_18, 3, 1, 10, b_per_led_10_pin_18);
+HW_PARALLEL_PORT_LED_BIT_PIN_NAME(port_5-led_0-pin_0 , 5, 0, 11, b_per_led_11_pin_0);
+HW_PARALLEL_PORT_LED_BIT_PIN_NAME(port_5-led_1-pin_1 , 5, 1, 12, b_per_led_12_pin_1);
+HW_PARALLEL_PORT_LED_BIT_PIN_NAME(port_5-led_2-pin_2 , 5, 0, 13, b_per_led_13_pin_2);
+HW_PARALLEL_PORT_LED_BIT_PIN_NAME(port_5-led_3-pin_56, 5, 1, 14, b_per_led_14_pin_56);
+
+// Software Parallel LED options:
+// Option A
+SW_PARALLEL_BIT_PIN_NAME(sw_led_0-pin_26 ,  0, a_per_led_00_pin_26);
+SW_PARALLEL_BIT_PIN_NAME(sw_led_1-pin_27 ,  1, a_per_led_01_pin_27);
+SW_PARALLEL_BIT_PIN_NAME(sw_led_2-pin_28 ,  2, a_per_led_02_pin_28);
+SW_PARALLEL_BIT_PIN_NAME(sw_led_3-pin_48 ,  3, a_per_led_03_pin_48);
+SW_PARALLEL_BIT_PIN_NAME(sw_led_4-pin_49 ,  4, a_per_led_04_pin_49);
+SW_PARALLEL_BIT_PIN_NAME(sw_led_5-pin_50 ,  5, a_per_led_05_pin_50);
+SW_PARALLEL_BIT_PIN_NAME(sw_led_6-pin_51 ,  6, a_per_led_06_pin_51);
+SW_PARALLEL_BIT_PIN_NAME(sw_led_7-pin_52 ,  7, a_per_led_07_pin_52);
+SW_PARALLEL_BIT_PIN_NAME(sw_led_8-pin_53 ,  8, a_per_led_08_pin_53);
+SW_PARALLEL_BIT_PIN_NAME(sw_led_9-pin_54 ,  9, a_per_led_09_pin_54);
+SW_PARALLEL_BIT_PIN_NAME(sw_led_10-pin_55, 10, a_per_led_10_pin_55);
+SW_PARALLEL_BIT_PIN_NAME(sw_led_11-pin_56, 11, a_per_led_11_pin_56);
+SW_PARALLEL_BIT_PIN_NAME(sw_led_12-pin_57, 12, a_per_led_12_pin_57);
+SW_PARALLEL_BIT_PIN_NAME(sw_led_13-pin_58, 13, a_per_led_13_pin_58);
+SW_PARALLEL_BIT_PIN_NAME(sw_led_14-pin_59, 14, a_per_led_14_pin_59);
+SW_PARALLEL_BIT_PIN_NAME(sw_led_15-pin_9 , 15, a_per_led_15_pin_9);
+SW_PARALLEL_BIT_PIN_NAME(sw_led_16-pin_82, 16, a_per_led_16_pin_82);
+SW_PARALLEL_BIT_PIN_NAME(sw_led_17-pin_83, 17, a_per_led_17_pin_83);
+
+// Software Parallel LED options:
+// Option B
+SW_PARALLEL_BIT_PIN_NAME(sw_led_0-pin_50 ,  0, b_per_led_00_pin_50);
+SW_PARALLEL_BIT_PIN_NAME(sw_led_1-pin_51 ,  1, b_per_led_01_pin_51);
+SW_PARALLEL_BIT_PIN_NAME(sw_led_2-pin_52 ,  2, b_per_led_02_pin_52);
+SW_PARALLEL_BIT_PIN_NAME(sw_led_3-pin_11 ,  3, b_per_led_03_pin_11);
+SW_PARALLEL_BIT_PIN_NAME(sw_led_4-pin_12 ,  4, b_per_led_04_pin_12);
+SW_PARALLEL_BIT_PIN_NAME(sw_led_5-pin_13 ,  5, b_per_led_05_pin_13);
+SW_PARALLEL_BIT_PIN_NAME(sw_led_6-pin_14 ,  6, b_per_led_06_pin_14);
+SW_PARALLEL_BIT_PIN_NAME(sw_led_7-pin_15 ,  7, b_per_led_07_pin_15);
+SW_PARALLEL_BIT_PIN_NAME(sw_led_8-pin_16 ,  8, b_per_led_08_pin_16);
+SW_PARALLEL_BIT_PIN_NAME(sw_led_9-pin_17 ,  9, b_per_led_09_pin_17);
+SW_PARALLEL_BIT_PIN_NAME(sw_led_10-pin_18, 10, b_per_led_10_pin_18);
+SW_PARALLEL_BIT_PIN_NAME(sw_led_11-pin_0 , 11, b_per_led_11_pin_0);
+SW_PARALLEL_BIT_PIN_NAME(sw_led_12-pin_1 , 12, b_per_led_12_pin_1);
+SW_PARALLEL_BIT_PIN_NAME(sw_led_13-pin_2 , 13, b_per_led_13_pin_2);
+SW_PARALLEL_BIT_PIN_NAME(sw_led_14-pin_56, 14, b_per_led_14_pin_56);
+SW_PARALLEL_BIT_PIN_NAME(sw_led_15-pin_57, 15, b_per_led_15_pin_57);
+SW_PARALLEL_BIT_PIN_NAME(sw_led_16-pin_58, 16, b_per_led_16_pin_58);
+SW_PARALLEL_BIT_PIN_NAME(sw_led_17-pin_59, 17, b_per_led_17_pin_59);

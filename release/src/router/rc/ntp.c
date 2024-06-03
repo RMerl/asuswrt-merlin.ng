@@ -69,6 +69,7 @@ static void ntp_service()
 
 		nvram_set("reload_svc_radio", "1");
 		nvram_set("svc_ready", "1");
+		nvram_set("reload_cert", "1"); // the date of certificate is wrong, need to reload
 #ifndef RTCONFIG_QCA
 		timecheck();
 #endif
@@ -285,11 +286,6 @@ int ntp_main(int argc, char *argv[])
 			args[2] = server;
 		}
 			sleep(SECONDS_TO_WAIT);
-			/* Restart DDNS when reconnected */
-			if(nvram_get_int("ntp_ready") == 1) {
-				stop_ddns();
-				start_ddns(NULL);
-			}
 			set_alarm();
 		}
 

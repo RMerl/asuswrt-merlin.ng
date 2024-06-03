@@ -1,0 +1,16 @@
+NOP PHY driver
+
+This driver is used to stub PHY operations in a driver (USB, SATA).
+This is useful when the 'client' driver (USB, SATA, ...) uses the PHY framework
+and there is no actual PHY harwdare to drive.
+
+Required properties:
+- compatible     : must contain "nop-phy"
+- #phy-cells     : must contain <0>
+
+Example:
+
+nop_phy {
+	compatible = "nop-phy";
+	#phy-cells = <0>;
+};

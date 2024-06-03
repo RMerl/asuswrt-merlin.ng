@@ -1,0 +1,17 @@
+config BCM_VFBIO_DRV
+	bool "Broadcom BCA VFBIO driver"
+	default n
+	help
+	  Add the BCM BCA VFBIO support.
+
+config BCM_VFBIO_DRV_IMPL
+	int "Implementation index for BCA VFBIO module"
+	depends on BCM_VFBIO_DRV
+	default 1
+
+config BCM_VFBIO_MQ
+	bool "Enable block device MQ support for VFBIO"
+	depends on BCM_VFBIO_DRV
+	default y
+	help
+	  Enable block device MQ support for VFBIO.

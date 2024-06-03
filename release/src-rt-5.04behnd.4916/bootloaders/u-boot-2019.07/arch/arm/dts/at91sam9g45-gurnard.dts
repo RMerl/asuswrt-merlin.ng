@@ -1,0 +1,157 @@
+/*
+ * at91sam9g20ek.dts - Device Tree file for Atmel at91sam9g20ek board
+ *
+ * Copyright (C) 2012 Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+ *
+ * Licensed under GPLv2.
+ */
+/dts-v1/;
+#include "at91sam9g45.dtsi"
+
+/ {
+	model = "Bluewater Systems Gurnard";
+	compatible = "atmel,at91sam9g45", "atmel,at91sam9";
+
+	chosen {
+		bootargs = "mem=64M root=/dev/mtdblock5 rw rootfstype=ubifs";
+		stdout-path = "serial0:115200n8";
+	};
+
+	memory {
+		reg = <0x20000000 0x8000000>;
+	};
+
+	clocks {
+		slow_xtal {
+			clock-frequency = <32768>;
+		};
+
+		main_xtal {
+			clock-frequency = <18432000>;
+		};
+	};
+
+	ahb {
+		u-boot,dm-pre-reloc;
+
+		fb@0x00500000 {
+			u-boot,dm-pre-reloc;
+			status = "okay";
+			display-timings {
+				rev1 {
+					clock-frequency = <4166666>;
+					hactive = <480>;
+					vactive = <272>;
+					hfront-porch = <1>;
+					hback-porch = <1>;
+					hsync-len = <1>;
+					vback-porch = <4>;
+					vfront-porch = <2>;
+					vsync-len = <1>;
+					hsync-active = <0>;
+					vsync-active = <0>;
+				};
+
+				rev2 {
+					clock-frequency = <4166666>;
+					hactive = <480>;
+					vactive = <272>;
+					hfront-porch = <2>;
+					hback-porch = <2>;
+					hsync-len = <10>;
+					vback-porch = <2>;
+					vfront-porch = <2>;
+					vsync-len = <10>;
+					hsync-active = <0>;
+					vsync-active = <0>;
+				};
+			};
+		};
+
+		apb {
+			pinctrl@fffff400 {
+				board {
+					pinctrl_pck0_as_mck: pck0_as_mck {
+						atmel,pins =
+							<AT91_PIOC 1 AT91_PERIPH_B AT91_PINCTRL_NONE>;	/* PC1 periph B */
+					};
+
+				};
+
+				mmc0_slot1 {
+					pinctrl_board_mmc0_slot1: mmc0_slot1-board {
+						atmel,pins =
+							<AT91_PIOC 9 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP_DEGLITCH>;	/* PC9 gpio CD pin pull up and deglitch */
+					};
+				};
+			};
+
+			dbgu: serial@ffffee00 {
+				status = "okay";
+			};
+
+			macb0: ethernet@fffbc000 {
+				phy-mode = "rmii";
+				status = "okay";
+			};
+
+			mmc0: mmc@fff80000 {
+				pinctrl-0 = <
+					&pinctrl_board_mmc0_slot1
+					&pinctrl_mmc0_slot0_clk_cmd_dat0
+					&pinctrl_mmc0_slot0_dat1_3>;
+				status = "okay";
+				slot@1 {
+					reg = <1>;
+					bus-width = <4>;
+					cd-gpios = <&pioC 9 GPIO_ACTIVE_HIGH>;
+				};
+			};
+
+			ssc0: ssc@fff9c000 {
+				status = "okay";
+				pinctrl-0 = <&pinctrl_ssc0_tx>;
+			};
+
+			spi0: spi@fffa4000 {
+				cs-gpios = <0>, <&pioC 11 0>, <0>, <0>;
+				mtd_dataflash@0 {
+					compatible = "atmel,at45", "atmel,dataflash";
+					spi-max-frequency = <50000000>;
+					reg = <1>;
+				};
+			};
+
+			shdwc@fffffd10 {
+				atmel,wakeup-counter = <10>;
+				atmel,wakeup-rtt-timer;
+			};
+
+			rtc@fffffd20 {
+				atmel,rtt-rtc-time-reg = <&gpbr 0x0>;
+				status = "okay";
+			};
+
+			watchdog@fffffd40 {
+				status = "okay";
+			};
+
+			gpbr: syscon@fffffd60 {
+				status = "okay";
+			};
+		};
+
+		nand0: nand@40000000 {
+			nand-bus-width = <8>;
+			nand-ecc-mode = "hardware";
+			nand-on-flash-bbt;
+			status = "okay";
+		};
+
+		usb1: ehci@00800000 {
+			atmel,vbus-gpio = <&pioC 5 GPIO_ACTIVE_HIGH>;
+			status = "okay";
+		};
+	};
+
+};

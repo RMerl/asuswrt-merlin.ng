@@ -1,0 +1,34 @@
+#include "963146REF1D.dts"
+
+&mdio {
+    /* Port PHY mapping:
+            port_gphy0 <----> phy_gphy0
+            port_gphy1 <----> phy_gphy1
+            port_gphy2 <----> phy_gphy2
+            port_gphy3 <----> phy_gphy3
+            port_gphy4 <----> phy_gphy4
+            port_rgmii <----> phy_rgmii
+            port_sgmii0 <---> phy_serdes0 - sfp0
+            port_sgmii1 <---> phy_serdes1 - sfp1
+     */
+		phy_rgmii {
+				reg = <25>;
+				status = "okay";
+		};
+};
+
+&switch0 {
+		pinctrl-names = "default", "rgmii"; 
+		pinctrl-0 = <&a_rgmii_mdc_pin_65 &a_rgmii_mdio_pin_66 &rgmii_pins>; 
+		pinctrl-1 = <&rgmii_pins>; 
+
+		ports {
+				port_rgmii {
+					mii-pinctrl-state = "rgmii";
+					rgmii-1p8v;
+					gmii-direct;
+					status = "okay";
+				};
+		};
+};
+

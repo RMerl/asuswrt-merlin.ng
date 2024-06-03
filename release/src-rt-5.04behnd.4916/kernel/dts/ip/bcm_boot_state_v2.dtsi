@@ -1,0 +1,5 @@
+u-boot,dm-pre-reloc;
+compatible = "brcm,bcmbca-bootstate-v2";
+reg = <RESET_REASON_OFFSET RESET_REASON_SIZE>, <RESET_STATUS_OFFSET RESET_STATUS_SIZE>;
+reg-names = "reset_reason", "reset_status";
+

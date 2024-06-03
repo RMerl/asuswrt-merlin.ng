@@ -18,11 +18,11 @@
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/md5.js"></script>
-<script type="text/javascript" src="/js/httpApi.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
 <style>
 .cancel{
@@ -161,10 +161,10 @@ var host_name = header_info[0].host;
 if(tmo_support)
 	var theUrl = "cellspot.router";	
 else
-	var theUrl = htmlEnDeCode.htmlEncode(host_name);
+	var theUrl = host_name;
 
 if(sw_mode == 3 || (sw_mode == 4))
-	theUrl = htmlEnDeCode.htmlEncode(location.hostname);
+	theUrl = location.hostname;
 
 var ddns_enable_x = '<% nvram_get("ddns_enable_x"); %>';
 var ddns_hostname_x_t = '<% nvram_get("ddns_hostname_x"); %>';
@@ -503,6 +503,16 @@ function initial(){
 	document.getElementById("http_passwd_new").maxLength = max_pwd_length + 1;
 	document.getElementById("http_passwd_re").maxLength = max_pwd_length + 1;
 
+	var sysInfo = httpApi.nvramGet(["serial_no", "secret_code"]);
+	if(sysInfo.serial_no){
+		$("#serialnumber").html(sysInfo.serial_no);
+		$("#serialnumber").parent().parent().show();
+	}
+	if(sysInfo.secret_code){
+		$("#pincode").html(sysInfo.secret_code);
+		$("#pincode").parent().parent().show();
+	}
+
 	if (boostKey_support) {
 		document.getElementById("boostkey_tr").style.display = "";
 
@@ -735,7 +745,7 @@ function applyRule(){
 
 			if (('<% nvram_get("enable_ftp"); %>' == "1")
 				&& ('<% nvram_get("ftp_tls"); %>' == "1")) {
-					action_script_tmp += "restart_ftpd;";
+					action_script_tmp += ";restart_ftpd";
 			}
 		}
 
@@ -789,6 +799,12 @@ function validForm(){
 		else {
 			$('input[name="usb_idle_timeout"]').prop("disabled", true);
 		}
+	}
+
+	if(document.form.time_zone_select.value == "select"){
+		alert(`<#JS_fieldblank#>`);
+		document.form.time_zone_select.focus();
+		return false;
 	}
 	
 	if((document.form.time_zone_select.value.search("DST") >= 0 || document.form.time_zone_select.value.search("TDT") >= 0)			// DST area
@@ -977,6 +993,7 @@ function corrected_timezone(){
 }
 
 var timezones = [
+	["select",	"<#Select_menu_default#>"],
 	["UTC12",	"(GMT-12:00) <#TZ01#>"],
 	["UTC11",	"(GMT-11:00) <#TZ02#>"],
 	["UTC10",	"(GMT-10:00) <#TZ03#>"],
@@ -1201,6 +1218,9 @@ function hide_https_lanport(_value){
 				$("#download_cert_btn").css("display", "");
 				$("#clear_server_cert_btn").css("display", "");
 				$("#clear_cert_btn").css("display", "");
+				if(top.webWrapper){
+					$("#clear_server_cert_btn").css({"margin-left":"8px","margin-right":"10px"});
+				}
 				$("#download_cert_desc").css("display", "");
 			} else {
 				$("#download_cert_btn").css("display", "none");
@@ -1370,7 +1390,7 @@ function setClientIP(ipaddr){
 }
 
 function hideClients_Block(){
-	document.getElementById("pull_arrow").src = "/images/arrow-down.gif";
+	document.getElementById("pull_arrow").src = "/images/unfold_more.svg";
 	document.getElementById('ClientList_Block_PC').style.display='none';
 }
 
@@ -1378,7 +1398,7 @@ function pullLANIPList(obj){
 	var element = document.getElementById('ClientList_Block_PC');
 	var isMenuopen = element.offsetWidth > 0 || element.offsetHeight > 0;
 	if(isMenuopen == 0){
-		obj.src = "/images/arrow-top.gif"
+		obj.src = "/images/unfold_less.svg"
 		element.style.display = 'block';
 		document.form.http_client_ip_x_0.focus();
 	}
@@ -1454,7 +1474,7 @@ function change_url(num, flag){
 	if(flag == 'https_lan'){
 		var https_lanport_num_new = num;
 		document.getElementById("https_access_page").innerHTML = "<#https_access_url#> ";
-		document.getElementById("https_access_page").innerHTML += "<a href=\"https://"+theUrl+":"+https_lanport_num_new+"\" target=\"_blank\" style=\"color:#FC0;text-decoration: underline; font-family:Lucida Console;\">http<span>s</span>://"+theUrl+"<span>:"+https_lanport_num_new+"</span></a>";
+		document.getElementById("https_access_page").innerHTML += "<a href=\"https://"+htmlEnDeCode.htmlEncode(theUrl)+":"+https_lanport_num_new+"\" target=\"_blank\" style=\"color:#FC0;text-decoration: underline; font-family:Lucida Console;\">http<span>s</span>://"+htmlEnDeCode.htmlEncode(theUrl)+"<span>:"+https_lanport_num_new+"</span></a>";
 	}
 	else if(flag == 'https_wan'){
 		var https_wanport = num;
@@ -1782,14 +1802,14 @@ function setPingTarget(ipaddr){
 }
 
 function hidePingTargetList(){
-	document.getElementById("ping_pull_arrow").src = "/images/arrow-down.gif";
+	document.getElementById("ping_pull_arrow").src = "/images/unfold_more.svg";
 	document.getElementById('TargetList_Block_PC').style.display='none';
 	isPingListOpen = 0;
 }
 
 function pullPingTargetList(obj){
 	if(isPingListOpen == 0){
-		obj.src = "/images/arrow-top.gif"
+		obj.src = "/images/unfold_less.svg"
 		document.getElementById("TargetList_Block_PC").style.display = 'block';
 		document.form.wandog_target.focus();
 		isPingListOpen = 1;
@@ -1916,14 +1936,14 @@ function setNTP(ntp_url){
 var over_var = 0;
 var isMenuopen = 0;
 function hideNTP_Block(){
-	document.getElementById("ntp_pull_arrow").src = "/images/arrow-down.gif";
+	document.getElementById("ntp_pull_arrow").src = "/images/unfold_more.svg";
 	document.getElementById('NTPList_Block_PC').style.display='none';
 	isMenuopen = 0;
 }
 
 function pullNTPList(obj){
 	if(isMenuopen == 0){
-		obj.src = "/images/arrow-top.gif"
+		obj.src = "/images/unfold_less.svg"
 		document.getElementById("NTPList_Block_PC").style.display = 'block';		
 		document.form.ntp_server0.focus();
 		isMenuopen = 1;
@@ -1990,7 +2010,12 @@ function check_httpd(){
 			setTimeout("check_httpd();", 1000);
 		},
 		success: function(response){
-			setTimeout("location.href='Main_Login.asp'", 500);
+			if(top.webWrapper){
+				setTimeout("top.location.href='Main_Login.asp'", 500);
+			}
+			else{
+				setTimeout("location.href='Main_Login.asp'", 500);
+			}
 		}
 	});
 }
@@ -2273,8 +2298,8 @@ function build_boostkey_options() {
 	<tr id="pwd_input" style="display: none;">
 		<td>
 			<input type="password" autocomplete="off" id="http_passwd_new" tabindex="2" onkeydown="" onKeyPress="return validator.isString(this, event);" onkeyup="chkPass(this.value, 'http_passwd'); check_password_length(this);" onblur="check_password_length(this);" onpaste="setTimeout('paste_password();', 10)" class="input_18_table" style="width:200px;" maxlength="33" onBlur="clean_scorebar(this);" autocorrect="off" autocapitalize="off"/>
-			<div id="scorebarBorder" style="margin-left:224px; margin-top:-25px; display:none;" title="<#LANHostConfig_x_Password_itemSecur#>">
-				<div id="score" style="margin-top: 5px;"></div>
+			<div id="scorebarBorder" class="busiess_scorebarBorder" style="margin-left:224px; margin-top:-25px; display:none;" title="<#LANHostConfig_x_Password_itemSecur#>">
+				<div id="score" class="business_score" style="margin-top: 5px;"></div>
 				<div id="scorebar">&nbsp;</div>
 			</div>
 		</td>
@@ -2304,7 +2329,7 @@ function build_boostkey_options() {
 		</td>
 	</tr>
 </table>
-<div style="padding-bottom:10px;width:100%;text-align:center;">
+<div style="padding-bottom:10px;width:100%;text-align:center;" class="change_pass_business">
 	<input class="button_gen" type="button" onclick="close_chpass();" value="<#CTL_Cancel#>">
 	<input id="apply_chpass" class="button_gen" type="button" onclick="" value="<#CTL_ok#>">
 	<img id="loadingIcon_sim" style="margin-left:10px; display:none;" src="/images/InternetScan.gif">
@@ -2492,6 +2517,16 @@ function build_boostkey_options() {
 					  <td colspan="2"><#t2BC#></td>
 					</tr>
 				</thead>
+
+				<tr style="display:none">
+					<th><#Serial_Number#></th>
+					<td><div id="serialnumber"></div></td>
+				</tr>
+				<tr style="display:none">
+					<th><#PIN_code#></th>
+					<td><div id="pincode"></div></td>
+				</tr>
+
 				<tr id="ntpd_server_tr">
 					<th>Enable local NTP server</th>
 					<td>
@@ -2505,6 +2540,7 @@ function build_boostkey_options() {
 						<input type="radio" name="ntpd_server_redir" value="1" <% nvram_match_x("","ntpd_server_redir","1", "checked"); %> ><#checkbox_Yes#>
 						<input type="radio" name="ntpd_server_redir" value="0" <% nvram_match_x("","ntpd_server_redir","0", "checked"); %> ><#checkbox_No#>
 					</td>
+				</tr>
 				<tr>
 					<th><a class="hintstyle"  href="javascript:void(0);" onClick="openHint(11,2)"><#LANHostConfig_x_TimeZone_itemname#></a></th>
 					<td>
@@ -2572,7 +2608,7 @@ function build_boostkey_options() {
 					<th><a class="hintstyle"  href="javascript:void(0);" onClick="openHint(11,3)"><#LANHostConfig_x_NTPServer_itemname#></a></th>
 					<td>
 						<input type="text" maxlength="255" class="input_32_table" name="ntp_server0" value="<% nvram_get("ntp_server0"); %>" onKeyPress="return validator.isString(this, event);" autocorrect="off" autocapitalize="off">
-						<img id="ntp_pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;display:none;" onclick="pullNTPList(this);" title="<#LANHostConfig_x_NTPServer_itemname#>" onmouseover="over_var=1;" onmouseout="over_var=0;">
+						<img id="ntp_pull_arrow" height="14px;" src="/images/unfold_more.svg" style="position:absolute;*margin-left:-3px;*margin-top:1px;display:none;" onclick="pullNTPList(this);" title="<#LANHostConfig_x_NTPServer_itemname#>" onmouseover="over_var=1;" onmouseout="over_var=0;">
 						<div id="NTPList_Block_PC" class="NTPList_Block_PC"></div>
 						<br>
 
@@ -2612,7 +2648,7 @@ function build_boostkey_options() {
 					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(26,2);"><#Ping_Target#></a></th>
 					<td>
 							<input type="text" class="input_25_table" name="wandog_target" maxlength="15" value="<% nvram_get("wandog_target"); %>" placeholder="ex: www.google.com (8.8.8.8)" autocorrect="off" autocapitalize="off">
-							<img id="ping_pull_arrow" class="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullPingTargetList(this);" title="<#select_network_host#>">
+							<img id="ping_pull_arrow" class="pull_arrow" height="14px;" src="/images/unfold_more.svg" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullPingTargetList(this);" title="<#select_network_host#>">
 							<div id="TargetList_Block_PC" name="TargetList_Block_PC" class="clientlist_dropdown" style="margin-left: 2px; width: 348px;display: none;"></div>
 					</td>
 				</tr>
@@ -2861,9 +2897,11 @@ function build_boostkey_options() {
 				<tr id="https_download_cert" style="display: none;">
 					<th><#Local_access_certificate_download#></th>
 					<td>
-						<input id="download_cert_btn" class="button_gen" style="margin-left:10px;margin-bottom:10px;" onclick="save_cert_key();" type="button" value="<#btn_Export#>" /><br>
-						<input id="clear_server_cert_btn" class="button_gen" style="margin-left:10px" onclick="clear_server_cert_key();" type="button" value="<#CTL_renew#> <#vpn_openvpn_KC_SA#>" /><!-- untranslated -->
-						<input id="clear_cert_btn" class="button_gen" style="margin-left:10px" onclick="clear_cert_key();" type="button" value="<#CTL_renew#> Root Certificate" /><!-- untranslated --><br>
+					    <div style="display: flex;">
+                            <input id="download_cert_btn" class="button_gen buttonInTable" onclick="save_cert_key();" type="button" value="<#btn_Export#>" />
+                            <input id="clear_server_cert_btn" class="button_gen buttonInTable" style="margin-left:10px" onclick="clear_server_cert_key();" type="button" value="<#CTL_renew#> <#vpn_openvpn_KC_SA#>" />
+                            <input id="clear_cert_btn" class="button_gen buttonInTable" style="margin-left:10px" onclick="clear_cert_key();" type="button" value="<#CTL_renew#>" />
+                        </div>
 						<span id="download_cert_desc"><#Local_access_certificate_desc#></span><a id="creat_cert_link" href="" style="font-family:Lucida Console;text-decoration:underline;color:#FFCC00; margin-left: 5px;" target="_blank">FAQ</a>
 					</td>
 				</tr>
@@ -2894,7 +2932,7 @@ function build_boostkey_options() {
 					<td>
 						<span style="margin-left:5px; display:none;" id="http_port"><input type="text" maxlength="5" name="misc_httpport_x" class="input_6_table" value="<% nvram_get("misc_httpport_x"); %>" onKeyPress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off" disabled/>&nbsp;&nbsp;</span>
 						<span style="margin-left:5px; display:none;" id="https_port"><input type="text" maxlength="5" id="misc_httpsport_x" name="misc_httpsport_x" class="input_6_table" value="<% nvram_get("misc_httpsport_x"); %>" onKeyPress="return validator.isNumber(this,event);" onBlur="change_url(this.value, 'https_wan');" autocorrect="off" autocapitalize="off" disabled/></span>
-						<span id="wan_access_url"></span>
+						<span id="wan_access_url" class="explain_desc2"></span>
 					</td>
 				</tr>
 				<tr>
@@ -2925,7 +2963,7 @@ function build_boostkey_options() {
 					<td width="10%">-</td>
 					<td width="40%">
 						<input type="text" class="input_25_table" maxlength="18" name="http_client_ip_x_0"  onKeyPress="" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off">
-						<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="<#select_client#>">	
+						<img id="pull_arrow" height="14px;" src="/images/unfold_more.svg" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="<#select_client#>">	
 						<div id="ClientList_Block_PC" class="clientlist_dropdown" style="margin-left:27px;width:235px;"></div>	
 					</td>
 					<td width="40%">

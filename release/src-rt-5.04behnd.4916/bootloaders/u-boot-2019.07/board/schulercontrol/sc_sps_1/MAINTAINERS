@@ -1,0 +1,6 @@
+SC_SPS_1 BOARD
+M:	Marek Vasut <marek.vasut@gmail.com>
+S:	Maintained
+F:	board/schulercontrol/sc_sps_1/
+F:	include/configs/sc_sps_1.h
+F:	configs/sc_sps_1_defconfig

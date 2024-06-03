@@ -55,9 +55,14 @@ wl_channel_list_2g = <% channel_list_2g(); %>;
 wl_channel_list_5g = <% channel_list_5g(); %>;
 wl_channel_list_5g_2 = JSON.parse('<% channel_list_5g_2(); %>');
 wl_channel_list_6g = JSON.parse('<% channel_list_6g(); %>');
+wl_channel_list_6g = wl_channel_list_6g.filter((ch)=>{
+	if(parseInt(ch) <= 221){
+		return ch
+	}
+})
 
 var meshBackhaulAutoSupport = false;
-if(based_modelid == 'XT8PRO' || based_modelid == 'BM68'){
+if(based_modelid == 'XT8PRO' || based_modelid == 'BT12' || based_modelid == 'BT10' || based_modelid == 'BQ16' || based_modelid == 'BQ16_PRO' || based_modelid == 'BM68'){
 	meshBackhaulAutoSupport = true;
 }
 
@@ -81,7 +86,7 @@ var unii4Support = (function(){
 	return false;
 })();
 var current_control_channel = [<% wl_control_channel(); %>][0];
-if(based_modelid === 'GT-AXE16000'){
+if(based_modelid == 'GT-AXE16000' || based_modelid == 'GT-BE98' || based_modelid == 'GT-BE98_PRO' || based_modelid == 'BQ16' || based_modelid == 'BQ16_PRO'){
 	var _t = current_control_channel[3];
 	current_control_channel[3] = current_control_channel[2];
 	current_control_channel[2] = current_control_channel[1];
@@ -106,6 +111,10 @@ var smart_connect_mode = parseInt(smart_connect_selif_x).toString(2);
 while(smart_connect_mode.length < 4){
 	smart_connect_mode = '0' + smart_connect_mode;
 }
+
+var wl_nband_info_ui = ["1", "2", "3", "0"];
+var dwb_band_ui_index = wl_nband_info_ui[dwb_info.band];
+
 function initial(){
 	show_menu();
 	if(smart_connect_mode[0] == '1'){
@@ -143,35 +152,27 @@ function initial(){
 
 	handle_smart_connect('<% nvram_get("smart_connect_x"); %>', 'init');
 
-	var showFronthaulAp = ($("#smart_connect_check_2").is(":visible") && $("#smart_connect_check_2").is(":checked")) ? 1 : 0;
+	var showFronthaulAp = ($("#smart_connect_check_" + dwb_band_ui_index).is(":visible") && $("#smart_connect_check_" + dwb_band_ui_index).is(":checked")) ? 1 : 0;
 	gen_fronthaul_ap(showFronthaulAp);
 
 	document.form.band0_ssid.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl3_ssid"); %>');
-	document.form.band0_wpa_psk.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl3_wpa_psk"); %>');
 	if(smart_connect_mode[3] == '1'){
 		document.form.band01_ssid.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl3_ssid"); %>');
-		document.form.band01_wpa_psk.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl3_wpa_psk"); %>');
 	}
 	else if(smart_connect_mode[2] == '1'){
 		document.form.band01_ssid.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl0_ssid"); %>');
-		document.form.band01_wpa_psk.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl0_wpa_psk"); %>');
 	}
 	else if(smart_connect_mode[1] == '1'){
 		document.form.band01_ssid.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl1_ssid"); %>');
-		document.form.band01_wpa_psk.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl1_wpa_psk"); %>');
 	}
 	else if(smart_connect_mode[0] == '1'){
 		document.form.band01_ssid.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl2_ssid"); %>');
-		document.form.band01_wpa_psk.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl2_wpa_psk"); %>');
 	}
 	
 	// document.form.band012_ssid.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl3_ssid"); %>');
 	document.form.band1_ssid.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl0_ssid"); %>');
-	document.form.band1_wpa_psk.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl0_wpa_psk"); %>');
 	document.form.band2_ssid.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl1_ssid"); %>');
-	document.form.band2_wpa_psk.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl1_wpa_psk"); %>');
 	document.form.band3_ssid.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl2_ssid"); %>');
-	document.form.band3_wpa_psk.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl2_wpa_psk"); %>');
 
 	if(band6g_support){
 		$("#psc_faq_link")  //for string tag: PSC_Faq
@@ -188,7 +189,7 @@ function initial(){
 
 	ajax_wl_channel();
 
-	if(meshBackhaulAutoSupport){
+	if(meshBackhaulAutoSupport && document.querySelector('#fh_ap_enabled')){
 		if(document.form.fh_ap_enabled.value === '1'){
 			document.form.fh_ap_enabled.value = '0';
 			document.querySelector('#fh_connection_hint').style.display = '';
@@ -419,7 +420,7 @@ function genBWTable(_unit){
 				based_modelid == "RT-AC66U" || 
 				based_modelid == "RT-AC3200" || 
 				based_modelid == "RT-AC3100" || based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900" ||
-				based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "BM68" || based_modelid == "XT8_V2" || based_modelid == "RT-AX56_XD4" || based_modelid == "XD4PRO" || based_modelid == "CT-AX56_XD4" || based_modelid == "RT-AX58U" || based_modelid == "RT-AX58U_V2" || based_modelid == "BR63" || based_modelid == "RT-AX3000N" || based_modelid == "TUF-AX3000" || based_modelid == "TUF-AX3000_V2" || based_modelid == "TUF-AX5400" || based_modelid == "TUF-AX5400_V2" || based_modelid == "DSL-AX82U" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX82U_V2"  || based_modelid == "RT-AX56U" || based_modelid == "GT-AXE11000" || based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" || based_modelid == "GT-AX6000" || based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || based_modelid == "GT-AXE16000" || based_modelid == "RT-AXE7800" || based_modelid == "GT10" || based_modelid == "RT-AX9000" || based_modelid == "RT-AC53U" || based_modelid == "XC5") && document.form.wl_nmode_x.value == 1){		//N only
+				based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "BT12" || based_modelid == "BT10" || based_modelid == "BQ16" || based_modelid == "BQ16_PRO" || based_modelid == "BM68" || based_modelid == "XT8_V2" || based_modelid == "RT-AX56_XD4" || based_modelid == "XD4PRO" || based_modelid == "CT-AX56_XD4" || based_modelid == "RT-AX58U" || based_modelid == "RT-AX58U_V2" || based_modelid == "BR63" || based_modelid == "RT-AX3000N" || based_modelid == "TUF-AX3000" || based_modelid == "TUF-AX3000_V2" || based_modelid == "TUF-AX5400" || based_modelid == "TUF-AX5400_V2" || based_modelid == "DSL-AX82U" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX82U_V2"  || based_modelid == "RT-AX56U" || based_modelid == "GT-AXE11000" || based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" || based_modelid == "GT-AX6000" || based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == 'GT-BE98_PRO' || based_modelid == "RT-AXE7800" || based_modelid == "GT10" || based_modelid == "RT-AX9000" || based_modelid == "RT-AC53U" || based_modelid == "RT-BE96U" || based_modelid == "XC5" || based_modelid == "GT-BE96" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" || based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U") && document.form.wl_nmode_x.value == 1){		//N only
 				bws = [0, 1, 2];
 				bwsDesc = ["20/40 MHz", "20 MHz", "40 MHz"];
 				
@@ -651,13 +652,18 @@ function applyRule(){var postObj = new Object();
 
 		variable = {}
 		if(_smart_connect_enable == 1 && smart_connect_mode[0] == '1'){		// 6 GHz
-			variable['wl2_ssid'] = document.form.band01_ssid.value;
+			if(dwb_info.mode == '1' && dwb_info.band == '2'){
+				variable['wl2_ssid'] = document.form.band3_ssid.value;
+				variable['wl2_closed'] = document.form.wl3_closed.value;
+			}
+			else{
+				variable['wl2_ssid'] = document.form.band01_ssid.value;
+				variable['wl2_closed'] = document.form.wl25_closed.value;
+			}
+			
 			variable['wl2_bw'] = document.form.band3_bw.value;
 			variable['wl2_chanspec'] = document.form.band3_channel.value;
-			variable['wl2_auth_mode_x'] = document.form.band3_auth_mode_x.value;
-			variable['wl2_closed'] = document.form.wl25_closed.value;
-			
-
+			variable['wl2_auth_mode_x'] = document.form.band3_auth_mode_x.value;			
 			if(document.form.band3_auth_mode_x.value == 'sae'){
 				variable['wl2_crypto'] = document.form.band3_crypto.value;
 				variable['wl2_wpa_psk'] = document.form.band3_wpa_psk.value;
@@ -703,34 +709,67 @@ function applyRule(){var postObj = new Object();
 		}
 
 		if(_smart_connect_enable == 1 && smart_connect_mode[1] == '1'){		// 5 GHz-2
-			variable['wl1_ssid'] = document.form.band01_ssid.value;
+			if(dwb_info.mode == '1' && dwb_info.band == '1'){
+				if(document.form.band2_ssid.value == document.form.band01_ssid.value){
+					alert("The fronthaul SSID is the same as the backhaul SSID.");
+					return false;
+				}
+
+				variable['wl1_ssid'] = document.form.band2_ssid.value;
+				variable['wl1_auth_mode_x'] = document.form.band2_auth_mode_x.value;
+				variable['wl1_closed'] = document.form.wl2_closed.value;
+				if(document.form.band2_auth_mode_x.value == 'psk2'
+				|| document.form.band2_auth_mode_x.value == 'sae'
+				|| document.form.band2_auth_mode_x.value == 'pskpsk2'
+				|| document.form.band2_auth_mode_x.value == 'psk2sae'){
+					variable['wl1_crypto'] = document.form.band2_crypto.value;
+					variable['wl1_wpa_psk'] = document.form.band2_wpa_psk.value;
+					variable['wl1_mfp'] = document.form.band2_mfp.value;
+					variable['wl1_wpa_gtk_rekey'] = document.form.band2_wpa_gtk_rekey.value;
+				}
+				else if(document.form.band2_auth_mode_x.value == 'wpa2'
+					|| document.form.band2_auth_mode_x.value == 'wpawpa2'
+					|| document.form.band2_auth_mode_x.value == 'wpa3'
+					|| document.form.band2_auth_mode_x.value == 'suite-b'
+					|| document.form.band2_auth_mode_x.value == 'wpa2wpa3'){
+						variable['wl1_crypto'] = document.form.band2_crypto.value;
+						variable['wl1_radius_ipaddr'] = document.form.band2_radius_ipaddr.value;
+						variable['wl1_radius_port'] = document.form.band2_radius_port.value;
+						variable['wl1_radius_key'] = document.form.band2_radius_key.value;
+						variable['wl1_mfp'] = document.form.band2_mfp.value;
+						variable['wl1_wpa_gtk_rekey'] = document.form.band2_wpa_gtk_rekey.value;
+				}
+			}
+			else{
+				variable['wl1_ssid'] = document.form.band01_ssid.value;
+				variable['wl1_auth_mode_x'] = document.form.band01_auth_mode_x.value;
+				variable['wl1_closed'] = document.form.wl25_closed.value;				
+				if(document.form.band01_auth_mode_x.value == 'psk2'
+				|| document.form.band01_auth_mode_x.value == 'sae'
+				|| document.form.band01_auth_mode_x.value == 'pskpsk2'
+				|| document.form.band01_auth_mode_x.value == 'psk2sae'){
+						variable['wl1_crypto'] = document.form.band01_crypto.value;
+						variable['wl1_wpa_psk'] = document.form.band01_wpa_psk.value;
+						variable['wl1_mfp'] = document.form.band01_mfp.value;
+						variable['wl1_wpa_gtk_rekey'] = document.form.band01_wpa_gtk_rekey.value;						
+				}
+				else if(document.form.band01_auth_mode_x.value == 'wpa2'
+					|| document.form.band01_auth_mode_x.value == 'wpawpa2'
+					|| document.form.band01_auth_mode_x.value == 'wpa3'
+					|| document.form.band01_auth_mode_x.value == 'suite-b'
+					|| document.form.band01_auth_mode_x.value == 'wpa2wpa3'){
+						variable['wl1_crypto'] = document.form.band01_crypto.value;
+						variable['wl1_radius_ipaddr'] = document.form.band01_radius_ipaddr.value;
+						variable['wl1_radius_port'] = document.form.band01_radius_port.value;
+						variable['wl1_radius_key'] = document.form.band01_radius_key.value;
+						variable['wl1_mfp'] = document.form.band01_mfp.value;
+						variable['wl1_wpa_gtk_rekey'] = document.form.band01_wpa_gtk_rekey.value;
+				}
+			}
+			
 			variable['wl1_bw'] = document.form.band2_bw.value;
 			variable['wl1_bw_160'] = band2_enable_bw_160;
-			variable['wl1_chanspec'] = document.form.band2_channel.value;
-			variable['wl1_auth_mode_x'] = document.form.band01_auth_mode_x.value;
-			variable['wl1_closed'] = document.form.wl25_closed.value;
-
-			if(document.form.band01_auth_mode_x.value == 'psk2'
-			|| document.form.band01_auth_mode_x.value == 'sae'
-			|| document.form.band01_auth_mode_x.value == 'pskpsk2'
-			|| document.form.band01_auth_mode_x.value == 'psk2sae'){
-					variable['wl1_crypto'] = document.form.band01_crypto.value;
-					variable['wl1_wpa_psk'] = document.form.band01_wpa_psk.value;
-					variable['wl1_mfp'] = document.form.band01_mfp.value;
-					variable['wl1_wpa_gtk_rekey'] = document.form.band01_wpa_gtk_rekey.value;						
-			}
-			else if(document.form.band01_auth_mode_x.value == 'wpa2'
-			     || document.form.band01_auth_mode_x.value == 'wpawpa2'
-				 || document.form.band01_auth_mode_x.value == 'wpa3'
-				 || document.form.band01_auth_mode_x.value == 'suite-b'
-				 || document.form.band01_auth_mode_x.value == 'wpa2wpa3'){
-					variable['wl1_crypto'] = document.form.band01_crypto.value;
-					variable['wl1_radius_ipaddr'] = document.form.band01_radius_ipaddr.value;
-					variable['wl1_radius_port'] = document.form.band01_radius_port.value;
-					variable['wl1_radius_key'] = document.form.band01_radius_key.value;
-					variable['wl1_mfp'] = document.form.band01_mfp.value;
-					variable['wl1_wpa_gtk_rekey'] = document.form.band01_wpa_gtk_rekey.value;
-			}
+			variable['wl1_chanspec'] = document.form.band2_channel.value;			
 		}
 		else{
 			variable['wl1_ssid'] = document.form.band2_ssid.value;
@@ -739,7 +778,6 @@ function applyRule(){var postObj = new Object();
 			variable['wl1_chanspec'] = document.form.band2_channel.value;
 			variable['wl1_auth_mode_x'] = document.form.band2_auth_mode_x.value;
 			variable['wl1_closed'] = document.form.wl2_closed.value;
-
 			if(document.form.band2_auth_mode_x.value == 'psk2'
 			|| document.form.band2_auth_mode_x.value == 'sae'
 			|| document.form.band2_auth_mode_x.value == 'pskpsk2'
@@ -764,34 +802,67 @@ function applyRule(){var postObj = new Object();
 		}
 
 		if(_smart_connect_enable == 1 && smart_connect_mode[2] == '1'){		// 5 GHz-1
-			variable['wl0_ssid'] = document.form.band01_ssid.value;
+			if(dwb_info.mode == '1' && dwb_info.band == '0'){
+				if(document.form.band1_ssid.value == document.form.band01_ssid.value){
+					alert("The fronthaul SSID is the same as the backhaul SSID.");
+					return false;
+				}
+
+				variable['wl0_ssid'] = document.form.band1_ssid.value;
+				variable['wl0_auth_mode_x'] = document.form.band1_auth_mode_x.value;
+				variable['wl0_closed'] = document.form.wl1_closed.value;
+				if(document.form.band1_auth_mode_x.value == 'psk2'
+				|| document.form.band1_auth_mode_x.value == 'sae'
+				|| document.form.band1_auth_mode_x.value == 'pskpsk2'
+				|| document.form.band1_auth_mode_x.value == 'psk2sae'){
+					variable['wl0_crypto'] = document.form.band1_crypto.value;
+					variable['wl0_wpa_psk'] = document.form.band1_wpa_psk.value;
+					variable['wl0_mfp'] = document.form.band1_mfp.value;
+					variable['wl0_wpa_gtk_rekey'] = document.form.band1_wpa_gtk_rekey.value;
+				}
+				else if(document.form.band1_auth_mode_x.value == 'wpa2'
+					|| document.form.band1_auth_mode_x.value == 'wpawpa2'
+					|| document.form.band1_auth_mode_x.value == 'wpa3'
+					|| document.form.band1_auth_mode_x.value == 'suite-b'
+					|| document.form.band1_auth_mode_x.value == 'wpa2wpa3'){
+						variable['wl0_crypto'] = document.form.band1_crypto.value;
+						variable['wl0_radius_ipaddr'] = document.form.band1_radius_ipaddr.value;
+						variable['wl0_radius_port'] = document.form.band1_radius_port.value;
+						variable['wl0_radius_key'] = document.form.band1_radius_key.value;
+						variable['wl0_mfp'] = document.form.band1_mfp.value;
+						variable['wl0_wpa_gtk_rekey'] = document.form.band1_wpa_gtk_rekey.value;
+				}
+			}
+			else{
+				variable['wl0_ssid'] = document.form.band01_ssid.value;
+				variable['wl0_auth_mode_x'] = document.form.band01_auth_mode_x.value;
+				variable['wl0_closed'] = document.form.wl25_closed.value;
+				if(document.form.band01_auth_mode_x.value == 'psk2'
+				|| document.form.band01_auth_mode_x.value == 'sae'
+				|| document.form.band01_auth_mode_x.value == 'pskpsk2'
+				|| document.form.band01_auth_mode_x.value == 'psk2sae'){
+					variable['wl0_crypto'] = document.form.band01_crypto.value;
+					variable['wl0_wpa_psk'] = document.form.band01_wpa_psk.value;
+					variable['wl0_mfp'] = document.form.band01_mfp.value;
+					variable['wl0_wpa_gtk_rekey'] = document.form.band01_wpa_gtk_rekey.value;						
+				}
+				else if(document.form.band01_auth_mode_x.value == 'wpa2'
+					|| document.form.band01_auth_mode_x.value == 'wpawpa2'
+					|| document.form.band01_auth_mode_x.value == 'wpa3'
+					|| document.form.band01_auth_mode_x.value == 'suite-b'
+					|| document.form.band01_auth_mode_x.value == 'wpa2wpa3'){
+						variable['wl0_crypto'] = document.form.band01_crypto.value;
+						variable['wl0_radius_ipaddr'] = document.form.band01_radius_ipaddr.value;
+						variable['wl0_radius_port'] = document.form.band01_radius_port.value;
+						variable['wl0_radius_key'] = document.form.band01_radius_key.value;
+						variable['wl0_mfp'] = document.form.band01_mfp.value;
+						variable['wl0_wpa_gtk_rekey'] = document.form.band01_wpa_gtk_rekey.value;
+				}			
+			}
+			
 			variable['wl0_bw'] = document.form.band1_bw.value;
 			variable['wl0_bw_160'] = band1_enable_bw_160;
 			variable['wl0_chanspec'] = document.form.band1_channel.value;
-			variable['wl0_auth_mode_x'] = document.form.band01_auth_mode_x.value;
-			variable['wl0_closed'] = document.form.wl25_closed.value;			
-
-			if(document.form.band01_auth_mode_x.value == 'psk2'
-			|| document.form.band01_auth_mode_x.value == 'sae'
-			|| document.form.band01_auth_mode_x.value == 'pskpsk2'
-			|| document.form.band01_auth_mode_x.value == 'psk2sae'){
-				variable['wl0_crypto'] = document.form.band01_crypto.value;
-				variable['wl0_wpa_psk'] = document.form.band01_wpa_psk.value;
-				variable['wl0_mfp'] = document.form.band01_mfp.value;
-				variable['wl0_wpa_gtk_rekey'] = document.form.band01_wpa_gtk_rekey.value;						
-			}
-			else if(document.form.band01_auth_mode_x.value == 'wpa2'
-				 || document.form.band01_auth_mode_x.value == 'wpawpa2'
-				 || document.form.band01_auth_mode_x.value == 'wpa3'
-				 || document.form.band01_auth_mode_x.value == 'suite-b'
-				 || document.form.band01_auth_mode_x.value == 'wpa2wpa3'){
-					variable['wl0_crypto'] = document.form.band01_crypto.value;
-					variable['wl0_radius_ipaddr'] = document.form.band01_radius_ipaddr.value;
-					variable['wl0_radius_port'] = document.form.band01_radius_port.value;
-					variable['wl0_radius_key'] = document.form.band01_radius_key.value;
-					variable['wl0_mfp'] = document.form.band01_mfp.value;
-					variable['wl0_wpa_gtk_rekey'] = document.form.band01_wpa_gtk_rekey.value;
-			}
 		}
 		else{
 			variable['wl0_ssid'] = document.form.band1_ssid.value;
@@ -825,18 +896,24 @@ function applyRule(){var postObj = new Object();
 		}
 
 		if(_smart_connect_enable == 1 && smart_connect_mode[3] == '1'){		// 2.4 GHz
-			variable['wl3_ssid'] = document.form.band01_ssid.value;
+			if(dwb_info.mode == '1' && dwb_info.band == '3'){
+				variable['wl3_ssid'] = document.form.band0_ssid.value;
+				variable['wl3_closed'] = document.form.wl0_closed.value;
+				variable['wl3_auth_mode_x'] = document.form.band0_auth_mode_x.value;
+			}
+			else{
+				variable['wl3_ssid'] = document.form.band01_ssid.value;
+				variable['wl3_closed'] = document.form.wl25_closed.value;
+				variable['wl3_auth_mode_x'] = document.form.band01_auth_mode_x.value;
+			}
+			
 			variable['wl3_bw'] = document.form.band0_bw.value;
-			variable['wl3_auth_mode_x'] = document.form.band01_auth_mode_x.value;
-			variable['wl3_closed'] = document.form.wl25_closed.value;
-
 			if(document.form.band0_bw.value == '1'){
 				variable['wl3_chanspec'] = document.form.band0_channel.value;
 			}
 			else{
 				variable['wl3_chanspec'] = document.form.band0_channel.value + document.form.band0_extChannel.value;
 			}
-
 			if(document.form.band01_auth_mode_x.value == 'psk2'
 			|| document.form.band01_auth_mode_x.value == 'sae'
 			|| document.form.band01_auth_mode_x.value == 'pskpsk2'
@@ -1082,7 +1159,7 @@ function applyRule(){var postObj = new Object();
 	//}
 
 	if(isSupport("amas_fronthaul_network")){
-		if($("#fh_ap_enabled").val() != undefined && $("#fh_ap_enabled").val() != "")
+		if(document.querySelector('#fh_ap_enabled') && $("#fh_ap_enabled").val() != undefined && $("#fh_ap_enabled").val() != "")
 			variable['fh_ap_enabled'] = $("#fh_ap_enabled").val();
 	}
 
@@ -1114,7 +1191,7 @@ function applyRule(){var postObj = new Object();
 	// 	}
 	// }
 
-	if(meshBackhaulAutoSupport){
+	if(meshBackhaulAutoSupport && document.querySelector('#fh_ap_enabled')){
 		if(document.form.fh_ap_enabled.value === '0' && document.querySelector('#fh_connection_hint_checkbox').checked){
 			variable['fh_ap_enabled'] = '1';
 		}
@@ -1153,13 +1230,17 @@ function validateInput(){
 		if(!validator.stringSSID(document.form.band2_ssid)){
 			return false;
 		}
-		
-		if(!check_wl_auth_support($("select[name=band0_auth_mode_x] option:selected"), 0))
-			return false;
-		if(!check_wl_auth_support($("select[name=band1_auth_mode_x] option:selected"), 1))
-			return false;
-		if(!check_wl_auth_support($("select[name=band2_auth_mode_x] option:selected"), 2))
-			return false;
+
+		if(amesh_support && (isSwMode("rt") || isSwMode("ap")) && ameshRouter_support) {
+			if(!check_wl_auth_support($("select[name=band0_auth_mode_x] option:selected"), 3))
+				return false;
+			if(!check_wl_auth_support($("select[name=band1_auth_mode_x] option:selected"), 0))
+				return false;
+			if(!check_wl_auth_support($("select[name=band2_auth_mode_x] option:selected"), 1))
+				return false;
+			if(!check_wl_auth_support($("select[name=band3_auth_mode_x] option:selected"), 2))
+				return false;
+		}
 
 		if(document.form.band0_auth_mode_x.value == 'psk2'
 		|| document.form.band0_auth_mode_x.value == 'sae'
@@ -1737,7 +1818,7 @@ function enableSmartCon(val){
 		if(wl_unit != 0){
 			if(wl_info[wl_unit].bw_160_support){
 				$("#enable_160_field").show();
-				if((based_modelid == 'GT-AX11000' || based_modelid == 'RT-AX92U' || based_modelid == 'RT-AX95Q' || based_modelid == 'XT8PRO' || based_modelid == 'BM68' || based_modelid == 'XT8_V2' || based_modelid == 'GT-AXE11000' || based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || based_modelid == "GT-AXE16000") && wl2.channel_160m == '' && wl_unit == '2'){
+				if((based_modelid == 'GT-AX11000' || based_modelid == 'RT-AX92U' || based_modelid == 'RT-AX95Q' || based_modelid == 'XT8PRO' || based_modelid == 'BT12' || based_modelid == 'BT10' || based_modelid == 'BQ16' || based_modelid == 'BQ16_PRO' || based_modelid == 'BM68' || based_modelid == 'XT8_V2' || based_modelid == 'GT-AXE11000' || based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == 'GT-BE98_PRO' || based_modelid == "GT-BE96" || based_modelid == "GT-BE19000") && wl2.channel_160m == '' && wl_unit == '2'){
 					$("#enable_160_field").hide();
 				}
 			}
@@ -1784,7 +1865,7 @@ function enableSmartCon(val){
 		// document.getElementById("smart_connect_field").style.display = "";
 		document.getElementById("smartcon_rule_link").style.display = "table-cell";
 		$("#enable_160_field").hide();
-		if ((wl_unit == '0' && val == '2') || based_modelid == "RT-AC3200" || ((based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "BM68" || based_modelid == "XT8_V2") && country != "EU" && wl_unit == "1")) {
+		if ((wl_unit == '0' && val == '2') || based_modelid == "RT-AC3200" || ((based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "BT12" || based_modelid == "BT10" || based_modelid == "BQ16" || based_modelid == "BQ16_PRO" || based_modelid == "BM68" || based_modelid == "XT8_V2") && country != "EU" && wl_unit == "1")) {
 			$("#dfs_checkbox").hide();
 		}
 		else {
@@ -1801,7 +1882,7 @@ function enableSmartCon(val){
 		
 		if(dwb_info.mode && wl_unit == dwb_info.band && wl_unit != 0 && bw_160_support) {
 			$("#enable_160_field").show();
-			if((based_modelid == 'GT-AX11000' || based_modelid == 'RT-AX92U' || based_modelid == 'RT-AX95Q' || based_modelid == 'XT8PRO' || based_modelid == 'BM68' || based_modelid == 'XT8_V2' || based_modelid == 'GT-AXE11000' || based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || based_modelid == "GT-AXE16000") && wl2.channel_160m == '' && wl_unit == '2'){
+			if((based_modelid == 'GT-AX11000' || based_modelid == 'RT-AX92U' || based_modelid == 'RT-AX95Q' || based_modelid == 'XT8PRO' || based_modelid == 'BT12' || based_modelid == 'BT10' || based_modelid == 'BQ16' || based_modelid == 'BQ16_PRO' || based_modelid == 'BM68' || based_modelid == 'XT8_V2' || based_modelid == 'GT-AXE11000' || based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == 'GT-BE98_PRO' || based_modelid == "GT-BE96" || based_modelid == "GT-BE19000") && wl2.channel_160m == '' && wl_unit == '2'){
 				$("#enable_160_field").hide();
 			}
 		}
@@ -1829,24 +1910,25 @@ function enableSmartCon(val){
 
 			if (band0_channel == '0') {
 				$('#band0_autoChannel').show();
-				$('#band0_autoChannel').html('Current Control Channel: ' + cur_control_channel[0]);
+				$('#band0_autoChannel').html('<#wireless_control_channel#>: ' + cur_control_channel[0]);
 			}
 
 			if (band1_channel == '0') {
 				$('#band1_autoChannel').show();
-				$('#band1_autoChannel').html('Current Control Channel: ' + cur_control_channel[1]);
+				$('#band1_autoChannel').html('<#wireless_control_channel#>: ' + cur_control_channel[1]);
 			}
 
 			if (wl_info.band5g_2_support || wl_info.band6g_support) {
 				band2_channel = '<% nvram_get("wl2_chanspec"); %>';
 				separateGenBWTable('2');
+				separateGenBWTable('3');
 				if(wl_info['2'].bw_160_support){
 					$('#band2_160_field').show();
 				}
 
 				if (band2_channel == '0') {
 					$('#band2_autoChannel').show();
-					$('#band2_autoChannel').html('Current Control Channel: ' + cur_control_channel[2]);
+					$('#band2_autoChannel').html('<#wireless_control_channel#>: ' + cur_control_channel[2]);
 				}
 			}
 
@@ -1935,7 +2017,7 @@ function enableSmartCon(val){
 
 				if (band1_channel == '0') {
 					$('#band1_autoChannel').show();
-					$('#band1_autoChannel').html('Current Control Channel: ' + cur_control_channel[1]);
+					$('#band1_autoChannel').html('<#wireless_control_channel#>: ' + cur_control_channel[1]);
 				}
 
 				if (wl_info.band5g_2_support || wl_info.band6g_support) {
@@ -1947,7 +2029,7 @@ function enableSmartCon(val){
 
 					if (band2_channel == '0') {
 						$('#band2_autoChannel').show();
-						$('#band2_autoChannel').html('Current Control Channel: ' + cur_control_channel[2]);
+						$('#band2_autoChannel').html('<#wireless_control_channel#>: ' + cur_control_channel[2]);
 					}
 				}
 
@@ -2101,7 +2183,8 @@ function separateGenBWTable(unit){
 	}
 	else if(unit == '2'){
 		curBandwidth = '<% nvram_get("wl1_bw"); %>';
-		curChannel = '<% nvram_get("wl1_chanspec"); %>';
+		curChannel = '<% nvram_get("wl1_chanspec"); %>';	
+		
 		if (band5g_11ax_support) {
 			if (band2_enable_bw_160 == '1') {
 				if (wl2.channel_160m == '') {
@@ -2125,6 +2208,46 @@ function separateGenBWTable(unit){
 
 		add_options_x2(document.form.band2_bw, bwsDesc, bws, curBandwidth);
 	}
+	else if(unit == '3'){
+		curBandwidth = '<% nvram_get("wl2_bw"); %>';
+		curChannel = '<% nvram_get("wl2_chanspec"); %>';
+		if (band5g_11ax_support) {
+			if(wifi7_support){
+				if(wl3.channel_320m.length !== 0){
+					bws = [0, 1, 2, 3, 5, 6];
+					bwsDesc = ["20/40/80/160/320 MHz", "20 MHz", "40 MHz", "80 MHz", "160 MHz", "320 MHz"];
+				}
+				else{
+					bws = [0, 1, 2, 3, 5];
+					bwsDesc = ["20/40/80/160 MHz", "20 MHz", "40 MHz", "80 MHz", "160 MHz"];
+				}
+				
+			}
+			else{
+				if (band3_enable_bw_160 == '1') {
+					if (wl3.channel_160m == '') {
+						bws = [0, 1, 2, 3];
+						bwsDesc = ["20/40/80 MHz", "20 MHz", "40 MHz", "80 MHz"];
+					}
+					else {
+						bws = [0, 1, 2, 3, 5];
+						bwsDesc = ["20/40/80/160 MHz", "20 MHz", "40 MHz", "80 MHz", "160 MHz"];
+					}
+				}
+				else {
+					bws = [0, 1, 2, 3];
+					bwsDesc = ["20/40/80 MHz", "20 MHz", "40 MHz", "80 MHz"];
+				}
+			}
+		
+		}
+		else {
+			bws = [0, 1, 2, 3];
+			bwsDesc = ["20/40/80 MHz", "20 MHz", "40 MHz", "80 MHz"];
+		}
+
+		add_options_x2(document.form.band3_bw, bwsDesc, bws, curBandwidth);
+	}
 
 	separateGenChannel(unit, curChannel, curBandwidth);
 }
@@ -2136,6 +2259,7 @@ function separateEnable_160MHz(obj){
 	else if(obj.id == 'band2_160'){
 		band2_enable_bw_160 = obj.checked ? '1' : '0';
 		separateGenBWTable('2');
+		separateGenBWTable('3');
 	}
 }
 
@@ -2144,6 +2268,11 @@ function separateGenChannel(unit, channel, bandwidth){
 	var channel_5g_1 = JSON.parse('<% channel_list_5g(); %>');
 	var channel_5g_2 = JSON.parse('<% channel_list_5g_2(); %>');
 	var channel_6g = JSON.parse('<% channel_list_6g(); %>');
+	channel_6g = channel_6g.filter((ch)=>{
+		if(parseInt(ch) <= 221){
+			return ch
+		}
+	})
 	var channel_2g_val = [...channel_2g];
 	var channel_5g_1_val = [];
 	var channel_5g_2_val = [];
@@ -2396,6 +2525,9 @@ function separateGenChannel(unit, channel, bandwidth){
 			else{
 				loop_auto: for (i = 0; i < channel_5g_2.length; i++) {
 					var _cur_channel = parseInt(channel_5g_2[i]);
+
+
+
 					if (band2_enable_bw_160 == '1') {
 						for (j = 0; j < wl2.channel_160m.length; j++) {
 							if (wl2.channel_160m[j].indexOf(_cur_channel) != -1) {						
@@ -2529,7 +2661,7 @@ function separateGenChannel(unit, channel, bandwidth){
 		if (document.form.band2_channel.value == '0') {
 			if(channel_5g_2.indexOf('100') != -1){
 				$('#band2_acsDFS').show();
-				if(document.form.band2_bw.value == '5'){
+				if(document.form.band2_bw.value == '5' || channel_5g_2.indexOf('149') == -1){
 					document.form.band2_acsDFS_checkbox.checked = true;
 					document.form.band2_acsDFS_checkbox.disabled = true;
 				}
@@ -2548,25 +2680,73 @@ function separateGenChannel(unit, channel, bandwidth){
 	else if(unit == '3'){		// 6 GHz
 		if(band6g_support){		// due to GT-AXE11000/GT-AXE16000 does not support
 			if(document.getElementById('band3_psc6g_checkbox').checked){
-				channel_6g = ['5', '21', '37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213', '229'];
-				if(is_EU_sku || ttc.indexOf('AU') != -1 || ttc.indexOf('AA') != -1){
-					channel_6g = ['5', '21', '37', '53', '69', '85'];
+				if(band6gBW160_limit){
+					let pscChannelAll = ['37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213'];
+					let pscChannel = [];
+					pscChannelAll.forEach((element) => {
+						if (channel_6g.indexOf(element) !== -1) {
+							pscChannel.push(element);
+						}
+					});
+
+					channel_6g = [...pscChannel];
+					if(ttc.indexOf('CH') != -1 || ttc.indexOf('JP') != -1){
+						pscChannelAll = ['37', '53', '69', '85'];
+						pscChannel = [];
+						pscChannelAll.forEach((element) => {
+							if (channel_6g.indexOf(element) !== -1) {
+								pscChannel.push(element);
+							}
+						});
+
+						channel_6g = [...pscChannel];
+					}
 				}
-				else if(ttc.indexOf('CH') != -1){
-					channel_6g = ['5', '21', '37', '53', '69', '85'];
+				else{
+					let pscChannelAll = ['5', '21', '37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213'];
+					let pscChannel = [];
+					pscChannelAll.forEach((element) => {
+						if (channel_6g.indexOf(element) !== -1) {
+							pscChannel.push(element);
+						}
+					});
+
+					channel_6g = [...pscChannel];
+					if(ttc.indexOf('CH') != -1 || ttc.indexOf('JP') != -1){
+						pscChannelAll = ['5', '21', '37', '53', '69', '85'];
+						pscChannel = [];
+						pscChannelAll.forEach((element) => {
+							if (channel_6g.indexOf(element) !== -1) {
+								pscChannel.push(element);
+							}
+						});
+
+						channel_6g = [...pscChannel];
+					}
+				}
+				
+				if(is_EU_sku || ttc.indexOf('AU') != -1 || ttc.indexOf('AA') != -1){
+					let pscChannelAll = ['5', '21', '37', '53', '69', '85'];
+					let pscChannel = [];
+					pscChannelAll.forEach((element) => {
+						if (channel_6g.indexOf(element) !== -1) {
+							pscChannel.push(element);
+						}
+					});
+
+					channel_6g = [...pscChannel];
 				}
 			}
 			
 			for(var i=channel_6g.length-1; i>=0; i--){
 				var _channel = parseInt(channel_6g[i]);
-				if(is_EU_sku){	// remove 225, 229, 233
-					if(_channel > 221){ // remove 225, 229, 233
+				if(is_EU_sku && band6gBW160_limit){
+					if(_channel > 221){
 						channel_6g.splice(i, 1);
-					}			
+					}					
 				}
-					
-				if(!is_EU_sku && _channel < 30){ // remove 1, 5, 9, 13, 17, 21, 25, 29,
-					if(productid != 'GT-AXE16000') channel_6g.splice(i, 1); 
+				else if(band6gBW160_limit && (_channel < 30 || _channel > 221)){
+					channel_6g.splice(i, 1);
 				}
 			}
 
@@ -2575,8 +2755,24 @@ function separateGenChannel(unit, channel, bandwidth){
 
 		if (curBandwidth == '0') {
 			$('#band3_extChannel_field').show();
+			var _wl_channel = new Array();
 			loop_auto: for (i = 0; i < channel_6g.length; i++) {
 				var _cur_channel = parseInt(channel_6g[i]);
+				if (wifi7_support && wl3.channel_320m.length !== 0) {
+					if((wl3.channel_320m.indexOf("6g" + _cur_channel + "/320-1") != -1) || (wl3.channel_320m.indexOf("6g" + _cur_channel + "/320-2") != -1)){
+						if(wl3.channel_320m.indexOf("6g" + _cur_channel + "/320-1") != -1){
+							channel_6g_val.push("6g" + _cur_channel + "/320-1");
+							_wl_channel.push(_cur_channel + "/320-1");
+						}
+						
+						if(wl3.channel_320m.indexOf("6g" + _cur_channel + "/320-2") != -1){
+							channel_6g_val.push("6g" + _cur_channel + "/320-2");
+							_wl_channel.push(_cur_channel + "/320-2");
+						}
+
+						continue loop_auto;
+					}
+				}
 				if (band3_enable_bw_160 == '1') {
 					for (j = 0; j < wl3.channel_160m.length; j++) {
 						if (wl3.channel_160m[j].indexOf(_cur_channel) != -1) {
@@ -2587,6 +2783,7 @@ function separateGenChannel(unit, channel, bandwidth){
 								channel_6g_val[i] = _cur_channel + "/160";
 							}
 							
+							_wl_channel.push(_cur_channel.toString());		
 							continue loop_auto;
 						}
 					}
@@ -2601,6 +2798,7 @@ function separateGenChannel(unit, channel, bandwidth){
 							channel_6g_val[i] = _cur_channel + "/80";
 						}
 						
+						_wl_channel.push(_cur_channel.toString());
 						continue loop_auto;
 					}
 				}
@@ -2614,6 +2812,7 @@ function separateGenChannel(unit, channel, bandwidth){
 							channel_6g_val[i] = wlextchannel_fourty(_cur_channel);
 						}
 						
+						_wl_channel.push(_cur_channel.toString());
 						continue loop_auto;
 					}
 				}
@@ -2621,16 +2820,39 @@ function separateGenChannel(unit, channel, bandwidth){
 				for (j = 0; j < wl3.channel_20m.length; j++) {
 					if (wl3.channel_20m[j].indexOf(_cur_channel) != -1) {
 						if(band6g_support){
-							channel_6g_val[i] = "6g" + _cur_channel.toString();
+							channel_6g_val.push("6g" + _cur_channel.toString());
 						}
 						else{
-							channel_6g_val[i] = _cur_channel.toString();
+							channel_6g_val.push(_cur_channel.toString());
 						}
 						
 						continue loop_auto;
 					}
+				}				
+			}
+
+			channel_6g = _wl_channel;
+		}
+		else if(curBandwidth == '6'){
+			$('#band3_extChannel_field').show();
+			var _wl_channel = new Array();
+			for (i = 0; i < channel_6g.length; i++) {
+				var _cur_channel = parseInt(channel_6g[i]);
+				var _reg = new RegExp("^" + _cur_channel);
+				for (j = 0; j < wl3.channel_320m.length; j++) {
+					if (wl3.channel_320m[j].includes('6g' + _cur_channel + '/320-1')) {
+						_wl_channel.push(_cur_channel + "/320-1");
+						channel_6g_val.push("6g" + _cur_channel + "/320-1");										
+					}
+
+					if (wl3.channel_320m[j].includes('6g' + _cur_channel + '/320-2')) {
+						_wl_channel.push(_cur_channel + "/320-2");
+						channel_6g_val.push("6g" + _cur_channel + "/320-2");											
+					}														
 				}
 			}
+			
+			channel_6g = _wl_channel;				
 		}
 		else if (curBandwidth == '5') {
 			$('#band3_extChannel_field').show();
@@ -2854,7 +3076,7 @@ function separateChannelHandler(unit, channel){
 		if (curCtrlChannel == '0') {
 			if(channel_5g_2.indexOf('100') != -1){
 				$('#band2_acsDFS').show();
-				if(document.form.band2_bw.value == '5'){
+				if(document.form.band2_bw.value == '5' || channel_5g_2.indexOf('149') == -1){
 					document.form.band2_acsDFS_checkbox.checked = true;
 					document.form.band2_acsDFS_checkbox.disabled = true;
 				}
@@ -2873,7 +3095,7 @@ function separateChannelHandler(unit, channel){
 }
 function controlHideSSIDHint() {
 	$("#dwb_band_hide_hint").hide();
-	if(dwb_info.mode && (dwb_info.band == wl_unit) && document.form.smart_connect_x.value == "1" && (based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "BM68" || based_modelid == "XT8_V2"))
+	if(dwb_info.mode && (dwb_info.band == wl_unit) && document.form.smart_connect_x.value == "1" && (based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "BT12" || based_modelid == "BT10" || based_modelid == "BQ16" || based_modelid == "BQ16_PRO" || based_modelid == "BM68" || based_modelid == "XT8_V2"))
 		$("#dwb_band_hide_hint").show();
 }
 function controlAXOnlyHint() {
@@ -2892,10 +3114,10 @@ function ajax_wl_channel(){
 		},
 		success: function(response){			
 			// $("#auto_channel").html("<#wireless_control_channel#>: " + cur_control_channel[wl_unit]);
-			$('#band0_autoChannel').html('Current Control Channel: ' + cur_control_channel[0]);
-			$('#band1_autoChannel').html('Current Control Channel: ' + cur_control_channel[1]);
-			$('#band2_autoChannel').html('Current Control Channel: ' + cur_control_channel[2]);
-			$('#band3_autoChannel').html('Current Control Channel: ' + cur_control_channel[3]);
+			$('#band0_autoChannel').html('<#wireless_control_channel#>: ' + cur_control_channel[0]);
+			$('#band1_autoChannel').html('<#wireless_control_channel#>: ' + cur_control_channel[1]);
+			$('#band2_autoChannel').html('<#wireless_control_channel#>: ' + cur_control_channel[2]);
+			$('#band3_autoChannel').html('<#wireless_control_channel#>: ' + cur_control_channel[3]);
 			setTimeout("ajax_wl_channel();", 5000);			
 		}
 	});
@@ -3698,7 +3920,7 @@ function handle_channel(unit, channel){
 
 		if(_ch == '0' && cur_control_channel == '0'){
 			$('#band0_autoChannel').show();
-			$('#band0_autoChannel').html('Current Control Channel: ' + current_control_channel[0]);
+			$('#band0_autoChannel').html('<#wireless_control_channel#>: ' + current_control_channel[0]);
 		}
 		else{
 			$('#band0_autoChannel').hide();
@@ -3722,7 +3944,7 @@ function handle_channel(unit, channel){
 
 		if(_ch == '0' && cur_control_channel == '0'){
 			$('#band1_autoChannel').show();
-			$('#band1_autoChannel').html('Current Control Channel: ' + current_control_channel[1]);
+			$('#band1_autoChannel').html('<#wireless_control_channel#>: ' + current_control_channel[1]);
 		}
 		else{
 			$('#band1_autoChannel').hide();
@@ -3732,7 +3954,19 @@ function handle_channel(unit, channel){
 		cur_control_channel = channel;
 		_ch = '<% nvram_get("wl1_chanspec"); %>';
 		if(cur_control_channel == '0'){
-			$('#band2_acsDFS').show();
+			if(wl_channel_list_5g_2.indexOf('100') != -1){
+				$('#band2_acsDFS').show();
+				if(document.form.band2_bw.value == '5' || wl_channel_list_5g_2.indexOf('149') == -1){
+					document.form.band2_acsDFS_checkbox.checked = true;
+					document.form.band2_acsDFS_checkbox.disabled = true;
+				}
+				else{
+					document.form.band2_acsDFS_checkbox.disabled = false;
+				}
+			}
+			else{
+				$('#band2_acsDFS').hide();
+			}
 		}
 		else{
 			$('#band2_acsDFS').hide();
@@ -3741,7 +3975,7 @@ function handle_channel(unit, channel){
 
 		if(_ch == '0' && cur_control_channel == '0'){
 			$('#band2_autoChannel').show();
-			$('#band2_autoChannel').html('Current Control Channel: ' + current_control_channel[2]);
+			$('#band2_autoChannel').html('<#wireless_control_channel#>: ' + current_control_channel[2]);
 		}
 		else{
 			$('#band2_autoChannel').hide();
@@ -3751,7 +3985,7 @@ function handle_channel(unit, channel){
 		_ch = '<% nvram_get("wl2_chanspec"); %>';
 		if(_ch == '0' && cur_control_channel == '0'){
 			$('#band3_autoChannel').show();
-			$('#band3_autoChannel').html('Current Control Channel: ' + current_control_channel[3]);
+			$('#band3_autoChannel').html('<#wireless_control_channel#>: ' + current_control_channel[3]);
 		}
 		else{
 			$('#band3_autoChannel').hide();
@@ -4125,29 +4359,83 @@ function channel_6g(bw){
 	var chanspec = '<% nvram_get("wl2_chanspec"); %>';
 	var nmode_x = '<% nvram_get("wl2_nmode_x"); %>';
 	if(document.getElementById('band3_psc6g_checkbox').checked){
-		wl_channel_list_6g = ['5', '21', '37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213', '229'];
-		if(is_EU_sku || ttc.indexOf('AU') != -1 || ttc.indexOf('AA') != -1){
-			wl_channel_list_6g = ['5', '21', '37', '53', '69', '85'];
+		if(band6gBW160_limit){
+			let pscChannelAll = ['37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213'];
+            let pscChannel = [];
+            pscChannelAll.forEach((element) => {
+                if (wl_channel_list_6g.indexOf(element) !== -1) {
+                    pscChannel.push(element);
+                }
+            });
+
+            wl_channel_list_6g = [...pscChannel];			
+			if(ttc.indexOf('CH') != -1 || ttc.indexOf('JP') != -1){
+				pscChannelAll = ['37', '53', '69', '85'];
+				pscChannel = [];
+				pscChannelAll.forEach((element) => {
+					if (wl_channel_list_6g.indexOf(element) !== -1) {
+						pscChannel.push(element);
+					}
+				});
+
+				wl_channel_list_6g = [...pscChannel];
+			}
 		}
-		else if(ttc.indexOf('CH') != -1){
-			wl_channel_list_6g = ['5', '21', '37', '53', '69', '85'];
+		else{
+			let pscChannelAll = ['5', '21', '37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213'];
+            let pscChannel = [];
+            pscChannelAll.forEach((element) => {
+                if (wl_channel_list_6g.indexOf(element) !== -1) {
+                    pscChannel.push(element);
+                }
+            });
+
+            wl_channel_list_6g = [...pscChannel];
+			if(ttc.indexOf('CH') != -1 || ttc.indexOf('JP') != -1){
+				pscChannelAll = ['5', '21', '37', '53', '69', '85'];
+				pscChannel = [];
+				pscChannelAll.forEach((element) => {
+					if (wl_channel_list_6g.indexOf(element) !== -1) {
+						pscChannel.push(element);
+					}
+				});
+
+				wl_channel_list_6g = [...pscChannel];
+			}
+		}		
+		
+		if(is_EU_sku || ttc.indexOf('AU') != -1 || ttc.indexOf('AA') != -1){
+			let pscChannelAll = ['5', '21', '37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213'];
+            let pscChannel = [];
+            pscChannelAll.forEach((element) => {
+                if (wl_channel_list_6g.indexOf(element) !== -1) {
+                    pscChannel.push(element);
+                }
+            });
+
+            wl_channel_list_6g = [...pscChannel];
 		}
 	}
 	else{
 		wl_channel_list_6g = JSON.parse('<% channel_list_6g(); %>');
+		wl_channel_list_6g = wl_channel_list_6g.filter((ch)=>{
+			if(parseInt(ch) <= 221){
+				return ch
+			}
+		});
 	}
 
+	
 	for(var i=wl_channel_list_6g.length-1; i>=0; i--){
 		var _channel = parseInt(wl_channel_list_6g[i]);
 
-		if(is_EU_sku){	// remove 225, 229, 233
+		if(is_EU_sku && band6gBW160_limit){	// remove 225, 229, 233
 			if(_channel > 221){
 				wl_channel_list_6g.splice(i, 1);
 			}			
 		}
-
-		if(!is_EU_sku && _channel < 30){ // remove 1, 5, 9, 13, 17, 21, 25, 29,
-			if(productid != 'GT-AXE16000') wl_channel_list_6g.splice(i, 1); 
+		else if(band6gBW160_limit && (_channel < 30 || _channel > 221)){	// remove 1, 5, 9, 13, 17, 21, 25, 29, 225, 229, 233
+			wl_channel_list_6g.splice(i, 1);
 		}
 	}
 	
@@ -4156,6 +4444,20 @@ function channel_6g(bw){
 		var _wl_channel = new Array();
 		loop_auto: for(i=0; i<wl_channel_list_6g.length; i++){
 			var _cur_channel = parseInt(wl_channel_list_6g[i]);
+			if(nmode_x != 1){
+				if((wl3.channel_320m.indexOf("6g" + _cur_channel + "/320-1") != -1) || (wl3.channel_320m.indexOf("6g" + _cur_channel + "/320-2") != -1)){
+					if(wl3.channel_320m.indexOf("6g" + _cur_channel + "/320-1") != -1){
+						_wl_channel.push("6g" + _cur_channel + "/320-1");
+					}
+
+					if(wl3.channel_320m.indexOf("6g" + _cur_channel + "/320-2") != -1){
+						_wl_channel.push("6g" + _cur_channel + "/320-2");
+					}
+
+					continue loop_auto;
+				}
+			}
+
 			if(nmode_x != 1){
 				for(j=0;j<wl3.channel_160m.length;j++){
 					if(wl3.channel_160m[j].indexOf("6g" + _cur_channel + "/160") != -1){
@@ -4187,6 +4489,22 @@ function channel_6g(bw){
 					continue loop_auto;
 				}
 			}				
+		}
+	}
+	else if(bw === '6'){
+		var _wl_channel = new Array();
+		for(i=0;i<wl_channel_list_6g.length; i++){
+			var _cur_channel = parseInt(wl_channel_list_6g[i]);
+			var _reg = new RegExp("^" + _cur_channel);
+			for(j=0;j<wl3.channel_320m.length;j++){
+				if(wl3.channel_320m[j].indexOf("6g" + _cur_channel + "/320-1") != -1){
+					_wl_channel.push("6g" + _cur_channel + "/320-1");
+				}
+
+				if(wl3.channel_320m[j].indexOf("6g" + _cur_channel + "/320-2") != -1){
+					_wl_channel.push("6g" + _cur_channel + "/320-2");
+				}
+			}	
 		}
 	}
 	else if(bw == '5'){
@@ -4280,6 +4598,7 @@ function channel_6g(bw){
 }
 
 function handle_smart_connect(value, flag){
+	
 	if(value == '0'){
 		// document.getElementById("smart_connect_field").style.display = "none";
 		document.getElementById("smartcon_rule_link").style.display = "none";
@@ -4337,7 +4656,7 @@ function handle_smart_connect(value, flag){
 			$("#band1_acsDFS").hide();
 		}
 
-		if(wl_info['2'].dfs_support){
+		if(wl_info['2'].dfs_support && document.form.band2_channel.value == '0'){
 			$("#band2_acsDFS").show();
 		}
 		else{
@@ -4365,32 +4684,34 @@ function handle_smart_connect(value, flag){
 		
 
 		if(smart_connect_mode[1] == '1'){		// 5 GHz-2
-			$('#band5_2_hide_ssid_field').hide();
-			$('#band2_ssid_field').hide();
-			$('#band2_auth_method_field').hide();
-			$('#band2_encrypt_field').hide();
-			$('#band2_psk_field').hide();
-			$('#band2_mfp_field').hide();
-			$('#band2_gtk_field').hide();
+			if(dwb_info.mode != '1' || dwb_info.band != '1'){			
+				$('#band5_2_hide_ssid_field').hide();
+				$('#band2_ssid_field').hide();
+				$('#band2_auth_method_field').hide();
+				$('#band2_encrypt_field').hide();
+				$('#band2_psk_field').hide();
+				$('#band2_mfp_field').hide();
+				$('#band2_gtk_field').hide();
 
-			$('#band2_radius_ip_field').hide();
-			$('#band2_radius_port_field').hide();
-			$('#band2_radius_key_field').hide();
+				$('#band2_radius_ip_field').hide();
+				$('#band2_radius_port_field').hide();
+				$('#band2_radius_key_field').hide();
 
-			auth_method_change('01', document.form.band01_auth_mode_x.value);
-			if(wl_info['2'].bw_160_support){
-				$("#band2_160_field").show();		
-			}
-			else{
-				$("#band2_160_field").hide();	
-			}
+				auth_method_change('01', document.form.band01_auth_mode_x.value);
+				if(wl_info['2'].bw_160_support){
+					$("#band2_160_field").show();		
+				}
+				else{
+					$("#band2_160_field").hide();	
+				}
 
 
-			if(wl_info['2'].dfs_support){
-				$("#band2_acsDFS").show();
-			}
-			else{
-				$("#band2_acsDFS").hide();
+				if(wl_info['2'].dfs_support && document.form.band2_channel.value == '0'){
+					$("#band2_acsDFS").show();
+				}
+				else{
+					$("#band2_acsDFS").hide();
+				}
 			}
 		}
 		else{
@@ -4406,7 +4727,7 @@ function handle_smart_connect(value, flag){
 			}
 
 
-			if(wl_info['2'].dfs_support){
+			if(wl_info['2'].dfs_support && document.form.band2_channel.value == '0'){
 				$("#band2_acsDFS").show();
 			}
 			else{
@@ -4656,13 +4977,13 @@ function handle_smart_connect(value, flag){
 	// 	}
 	// }
 
-	var showFronthaulAp = ($("#smart_connect_check_2").is(":visible") && $("#smart_connect_check_2").is(":checked")) ? 1 : 0;
+	var showFronthaulAp = ($("#smart_connect_check_" + dwb_band_ui_index).is(":visible") && $("#smart_connect_check_" + dwb_band_ui_index).is(":checked")) ? 1 : 0;
 	gen_fronthaul_ap(showFronthaulAp);
 }
 function handleAiMeshBackhaul(value){
 	var fh_ap_enabled = '<% nvram_get("fh_ap_enabled"); %>';
 	if(value === '2'){
-		if(meshBackhaulAutoSupport){
+		if(meshBackhaulAutoSupport && document.querySelector('#fh_ap_enabled')){
 			document.querySelector('#fh_connection_hint').style.display = 'none';
 			document.querySelector('#fh_ap_enabled').value = '2';
 		}
@@ -4707,7 +5028,7 @@ function handleFhConnectionHint(value){
 		if(document.querySelector('#fh_ap_enabled')){
 			document.querySelector('#fh_ap_enabled').value = '0';
 		}
-		
+
 		if(unii4Support){
 			document.querySelector('#acs_unii4_checkbox').checked =  true;
 		}
@@ -4721,12 +5042,10 @@ function handleUNII4Hint(value){
 }
 
 function gen_fronthaul_ap(value){
-	if(isSupport("amas_fronthaul_network")){
-		
+	if(isSupport("amas_fronthaul_network")){		
 		$(".fronthaul_ap").remove();
 		var get_cfg_clientlist = httpApi.hookGet("get_cfg_clientlist", true);
 		if(get_cfg_clientlist[0] != undefined){
-			
 			var $selectObj = $("<select/>").attr("id","fh_ap_enabled").addClass("input_option");
 			if(meshBackhaulAutoSupport || unii4Support) {
 				$selectObj.attr('onChange', 'handleAiMeshBackhaul(this.value)');
@@ -4755,7 +5074,7 @@ function gen_fronthaul_ap(value){
 					$trObj.append($thObj).append($tdObj.append(fh_connect_obj));
 				}
 
-				$("#band2_ssid_field").after($trObj);
+				$("#band" + dwb_band_ui_index + "_ssid_field").after($trObj);
 				var fh_ap_enabled = httpApi.nvramGet(["fh_ap_enabled"]).fh_ap_enabled;
 				if(fh_ap_enabled != "" && $selectObj.children("option[value=" + fh_ap_enabled + "]").length > 0)
 					$selectObj.val(fh_ap_enabled);
@@ -4927,7 +5246,7 @@ function updateSmartConnect(unit, checked){
 <input type="hidden" name="wl2_bw_160" value='<% nvram_get("wl2_bw_160"); %>'>
 <input type="hidden" name="wl2_auth_mode_x" value='<% nvram_get("wl2_auth_mode_x"); %>'>
 <input type="hidden" name="wl2_crypto" value='<% nvram_get("wl2_crypto"); %>'>
-<input type="hidden" name="wl2_wpa_psk" value='<% nvram_get("wl2_wpa_psk"); %>'>
+<input type="hidden" name="wl2_wpa_psk" value='<% nvram_char_to_ascii("WLANConfig11b", "wl2_wpa_psk"); %>'>
 <input type="hidden" name="wl2_mfp" value='<% nvram_get("wl2_mfp"); %>'>
 <input type="hidden" name="wl2_wpa_gtk_rekey" value='<% nvram_get("wl2_wpa_gtk_rekey"); %>'>
 
@@ -5117,7 +5436,7 @@ function updateSmartConnect(unit, checked){
 				<tr id="band01_psk_field">
 					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 7);"><#WLANConfig11b_x_PSKKey_itemname#></a></th>
 					<td>
-				  		<input type="password" name="band01_wpa_psk" maxlength="64" class="input_32_table" oninput="handle_auth(this);" value=""  autocorrect="off" autocapitalize="off" onfocus="plainPasswordSwitch(this, 'focus')" onblur="plainPasswordSwitch(this, 'blur')">
+				  		<input type="password" name="band01_wpa_psk" maxlength="64" class="input_32_table" oninput="handle_auth(this);" value="<% nvram_get("wl0_wpa_psk"); %>"  autocorrect="off" autocapitalize="off" onfocus="plainPasswordSwitch(this, 'focus')" onblur="plainPasswordSwitch(this, 'blur')">
 					</td>
 				</tr>
 				  
@@ -5203,7 +5522,7 @@ function updateSmartConnect(unit, checked){
 					<th><#WLANConfig11b_Channel_itemname#></th>
 					<td>
 						<select name="band0_channel" class="input_option" onChange="handle_channel(0, this.value);"></select>
-						<span id="band0_autoChannel" style="display:none;margin-left:10px;">Current Control Channel</span><br>
+						<span id="band0_autoChannel" style="display:none;margin-left:10px;"><#wireless_control_channel#></span><br>
 						<span id="band0_acs_ch13"  style="display:none;"><input id="band0_acs_ch13_checkbox" type="checkbox" <% nvram_match("acs_ch13", "1" , "checked" ); %>><#WLANConfig11b_EChannel_acs_ch13#></span>
 					</td>
 				</tr>
@@ -5337,7 +5656,7 @@ function updateSmartConnect(unit, checked){
 					<th><#WLANConfig11b_Channel_itemname#></th>
 					<td>
 						<select name="band1_channel" class="input_option" onChange="handle_channel('1', this.value);"></select>
-						<span id="band1_autoChannel" style="display:none;margin-left:10px;">Current Control Channel</span><br>
+						<span id="band1_autoChannel" style="display:none;margin-left:10px;"><#wireless_control_channel#></span><br>
 						<span id="band1_acsDFS"><input id="band1_acsDFS_checkbox" type="checkbox" <% nvram_match("acs_dfs", "1" , "checked" ); %>><#WLANConfig11b_EChannel_dfs#></span>
 					</td>
 				</tr>
@@ -5474,7 +5793,7 @@ function updateSmartConnect(unit, checked){
 					<th><#WLANConfig11b_Channel_itemname#></th>
 					<td>
 						<select name="band2_channel" class="input_option" onChange="handle_channel('2', this.value);"></select>
-						<span id="band2_autoChannel" style="display:none;margin-left:10px;">Current Control Channel</span><br>
+						<span id="band2_autoChannel" style="display:none;margin-left:10px;"><#wireless_control_channel#></span><br>
 						<span id="band2_acsDFS"><input id="band2_acsDFS_checkbox" type="checkbox" <% nvram_match("acs_band3", "1" , "checked" ); %>><#WLANConfig11b_EChannel_dfs#></span>
 						<div><span id="acs_unii4_field" style="display:none;"><input id="acs_unii4_checkbox" type="checkbox" onClick="handleUNII4Hint(this.checked)" <% nvram_match("acs_unii4", "1", "checked"); %>><#WLANConfig11b_EChannel_U-NII-4#></span></div>
 					</td>
@@ -5594,11 +5913,12 @@ function updateSmartConnect(unit, checked){
 					<th><#WLANConfig11b_ChannelBW_itemname#></th>
 					<td>
 						<select name="band3_bw" class="input_option" onChange="handle_bandwidth(3, this.value);">
-							<option value="0" <% nvram_match("wl2_bw", "0", "selected"); %>>20/40/80/160 MHz</option>
+							<option value="0" <% nvram_match("wl2_bw", "0", "selected"); %>>20/40/80/160/320 MHz</option>
 							<option value="1" <% nvram_match("wl2_bw", "1", "selected"); %>>20 MHz</option>
 							<option value="2" <% nvram_match("wl2_bw", "2", "selected"); %>>40 MHz</option>
 							<option value="3" <% nvram_match("wl2_bw", "3", "selected"); %>>80 MHz</option>
 							<option value="5" <% nvram_match("wl2_bw", "5", "selected"); %>>160 MHz</option>
+							<option value="6" <% nvram_match("wl2_bw", "6", "selected"); %>>320 MHz</option>
 						</select>
 					</td>
 				</tr>
@@ -5606,7 +5926,7 @@ function updateSmartConnect(unit, checked){
 					<th><#WLANConfig11b_Channel_itemname#></th>
 					<td>
 						<select name="band3_channel" class="input_option" onChange="handle_channel('3', this.value);"></select>
-						<span id="band3_autoChannel" style="display:none;margin-left:10px;">Current Control Channel</span><br>
+						<span id="band3_autoChannel" style="display:none;margin-left:10px;"><#wireless_control_channel#></span><br>
 						<span id="band3_psc6g" style="">
 							<input id="band3_psc6g_checkbox" type="checkbox" onclick="separateGenChannel('3', document.form.band3_channel.value, document.form.band3_bw.value);" <% nvram_match("psc6g", "1" , "checked" ); %>><#Enable_PSC_Hint#><br>
 						</span>

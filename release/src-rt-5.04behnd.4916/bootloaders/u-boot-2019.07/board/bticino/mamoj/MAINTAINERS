@@ -1,0 +1,10 @@
+MX6DL_MAMOJ BOARD
+M:	Jagan Teki <jagan@amarulasolutions.com>
+M:	Raffaele RECALCATI <raffaele.recalcati@bticino.it>
+M:	Simone CIANNI <simone.cianni@bticino.it>
+S:	Maintained
+F:	board/bticino/mamoj
+F:	include/configs/imx6dl-mamoj.h
+F:	configs/imx6dl_mamoj_defconfig
+F:	arch/arm/dts/imx6dl-mamoj.dts
+F:	arch/arm/dts/imx6dl-mamoj-u-boot.dtsi

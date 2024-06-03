@@ -1,0 +1,31 @@
+// SPDX-License-Identifier: GPL-2.0+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		gbb {
+			size = <0x2180>;
+			flags {
+				dev-screen-short-delay;
+				load-option-roms;
+				enable-alternate-os;
+				force-dev-switch-on;
+				force-dev-boot-usb;
+				disable-fw-rollback-check;
+				enter-triggers-tonorm;
+				force-dev-boot-legacy;
+				faft-key-override;
+				disable-ec-software-sync;
+				default-dev-boot-legacy;
+				disable-pd-software-sync;
+				disable-lid-shutdown;
+				force-dev-boot-fastboot-full-cap;
+				enable-serial;
+				disable-dwmp;
+			};
+		};
+	};
+};

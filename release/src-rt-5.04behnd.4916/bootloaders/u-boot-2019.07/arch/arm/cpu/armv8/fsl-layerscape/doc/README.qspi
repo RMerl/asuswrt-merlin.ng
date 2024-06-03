@@ -1,0 +1,42 @@
+QSPI Boot source support Overview
+-------------------
+	1. LS1043A
+		LS1043AQDS
+	2. LS2080A
+		LS2080AQDS
+	3. LS1012A
+		LS1012AQDS
+		LS1012ARDB
+	4. LS1046A
+		LS1046AQDS
+		LS1046ARDB
+
+Booting from QSPI
+-------------------
+Booting from QSPI requires two images, RCW and u-boot-dtb.bin.
+The difference between QSPI boot RCW image and NOR boot image is the PBI
+command sequence for setting the boot location pointer. It's should point
+to the address for u-boot in QSPI flash.
+
+RCW image should be written to the beginning of QSPI flash device.
+Example of using u-boot command
+
+=> sf probe 0:0
+SF: Detected S25FL256S_64K with page size 256 Bytes, erase size 64 KiB, total 32 MiB
+=> sf erase 0 +<size of rcw image>
+SF: 65536 bytes @ 0x0 Erased: OK
+=> sf write <rcw image in memory> 0 <size of rcw image>
+SF: 164 bytes @ 0x0 Written: OK
+
+To get the QSPI image, build u-boot with QSPI config, for example,
+<board_name>_qspi_defconfig. The image needed is u-boot-dtb.bin.
+The u-boot image should be written to 0x10000(but 0x1000 for LS1043A, LS2080A).
+
+=> sf probe 0:0
+SF: Detected S25FL256S_64K with page size 256 Bytes, erase size 64 KiB, total 32 MiB
+=> sf erase 10000 +<size of u-boot image>
+SF: 589824 bytes @ 0x10000 Erased: OK
+=> sf write <u-boot image in memory> 10000 <size of u-boot image>
+SF: 580966 bytes @ 0x10000 Written: OK
+
+With these two images in QSPI flash device, the board can boot from QSPI.

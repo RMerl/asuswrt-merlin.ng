@@ -1,0 +1,146 @@
+// SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause
+/*
+ * Copyright : STMicroelectronics 2018
+ */
+
+/ {
+	aliases {
+		gpio0 = &gpioa;
+		gpio1 = &gpiob;
+		gpio2 = &gpioc;
+		gpio3 = &gpiod;
+		gpio4 = &gpioe;
+		gpio5 = &gpiof;
+		gpio6 = &gpiog;
+		gpio7 = &gpioh;
+		gpio8 = &gpioi;
+		gpio9 = &gpioj;
+		gpio10 = &gpiok;
+		gpio25 = &gpioz;
+		pinctrl0 = &pinctrl;
+		pinctrl1 = &pinctrl_z;
+	};
+
+	config {
+		u-boot,dm-pre-reloc;
+	};
+
+	clocks {
+		u-boot,dm-pre-reloc;
+	};
+
+	soc {
+		u-boot,dm-pre-reloc;
+
+		stgen: stgen@5C008000 {
+			compatible = "st,stm32-stgen";
+			reg = <0x5C008000 0x1000>;
+			status = "okay";
+			u-boot,dm-pre-reloc;
+		};
+	};
+};
+
+&bsec {
+	u-boot,dm-pre-reloc;
+};
+
+&clk_hsi {
+	u-boot,dm-pre-reloc;
+};
+
+&clk_hse {
+	u-boot,dm-pre-reloc;
+};
+
+&clk_lse {
+	u-boot,dm-pre-reloc;
+};
+
+&clk_lsi {
+	u-boot,dm-pre-reloc;
+};
+
+&clk_csi {
+	u-boot,dm-pre-reloc;
+};
+
+&rcc {
+	u-boot,dm-pre-reloc;
+};
+
+&rcc_reboot {
+	u-boot,dm-pre-reloc;
+};
+
+&pinctrl {
+	u-boot,dm-pre-reloc;
+};
+
+&pinctrl_z {
+	u-boot,dm-pre-reloc;
+};
+
+&gpioa {
+	compatible = "st,stm32-gpio";
+	u-boot,dm-pre-reloc;
+};
+
+&gpiob {
+	compatible = "st,stm32-gpio";
+	u-boot,dm-pre-reloc;
+};
+
+&gpioc {
+	compatible = "st,stm32-gpio";
+	u-boot,dm-pre-reloc;
+};
+
+&gpiod {
+	compatible = "st,stm32-gpio";
+	u-boot,dm-pre-reloc;
+};
+
+&gpioe {
+	compatible = "st,stm32-gpio";
+	u-boot,dm-pre-reloc;
+};
+
+&gpiof {
+	compatible = "st,stm32-gpio";
+	u-boot,dm-pre-reloc;
+};
+
+&gpiog {
+	compatible = "st,stm32-gpio";
+	u-boot,dm-pre-reloc;
+};
+
+&gpioh {
+	compatible = "st,stm32-gpio";
+	u-boot,dm-pre-reloc;
+};
+
+&gpioi {
+	compatible = "st,stm32-gpio";
+	u-boot,dm-pre-reloc;
+};
+
+&gpioj {
+	compatible = "st,stm32-gpio";
+	u-boot,dm-pre-reloc;
+};
+
+&gpiok {
+	compatible = "st,stm32-gpio";
+	u-boot,dm-pre-reloc;
+};
+
+&gpioz {
+	compatible = "st,stm32-gpio";
+	u-boot,dm-pre-reloc;
+};
+
+&iwdg2 {
+	u-boot,dm-pre-reloc;
+};

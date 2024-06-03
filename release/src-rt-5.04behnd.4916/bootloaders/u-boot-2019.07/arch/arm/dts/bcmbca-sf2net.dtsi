@@ -1,0 +1,42 @@
+/ {
+	periph {
+		mdio_sf2: mdio_sf2 {
+			compatible = "simple-bus";
+		};
+		serdes_sf2: serdes_sf2 {
+			compatible = "simple-bus";
+		};
+	};
+};
+
+&mdio_sf2 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	gphy8:8 {
+		reg = <0x8>;
+		phy-type = "EGPHY";
+	};
+	gphy9:9 {
+		reg = <0x9>;
+		phy-type = "EGPHY";
+	};
+	gphya:a {
+		reg = <0xa>;
+		phy-type = "EGPHY";
+	};
+	gphyb:b {
+		reg = <0xb>;
+		phy-type = "EGPHY";
+	};
+	gphyc:c {
+		reg = <0xc>;
+		phy-type = "EGPHY";
+	};
+	phy_ge:8 {
+		reg = <0x8>;
+		phy-type = "EGPHY";
+	};
+
+};
+

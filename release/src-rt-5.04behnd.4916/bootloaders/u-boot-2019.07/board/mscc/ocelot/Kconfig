@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+
+config SYS_VENDOR
+	default "mscc"
+
+if SOC_OCELOT
+
+config SYS_BOARD
+	default "ocelot"
+
+config SYS_CONFIG_NAME
+	default "ocelot"
+
+endif

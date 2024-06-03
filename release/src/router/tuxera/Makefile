@@ -18,8 +18,10 @@ TNSA_SMBD = $(if $(RTCONFIG_SAMBA36X),,$(SRCFILE)/tnsa/smbd)
 else ifeq ($(RTCONFIG_SOC_IPQ8074),y)
 ifneq ($(findstring $(_BUILD_NAME_),$(SPF8_MODEL_LIST)),)
 SRCFILE = qca_ipq807x.spf8
+else ifneq ($(findstring $(_BUILD_NAME_),$(SPF11.0_MODEL_LIST)),)
+SRCFILE = qca_ipq807x.spf11.0
 else ifneq ($(findstring $(_BUILD_NAME_),$(SPF11.1_MODEL_LIST)),)
-SRCFILE = $(if $(RTCONFIG_MUSL_LIBC),qca_ipq807x.musl64.spf11.1,qca_ipq807x.spf11.1)
+SRCFILE = qca_ipq807x.spf11.1
 else ifneq ($(findstring $(_BUILD_NAME_),$(IPQ807X_MODEL_LIST)),)
 SRCFILE = $(if $(RTCONFIG_MUSL_LIBC),qca_ipq807x.musl64,qca_ipq807x)
 endif
@@ -69,12 +71,26 @@ endif # RTCONFIG_BCM_7114
 endif # RTCONFIG_BCM7
 
 ifeq ($(RTCONFIG_HND_ROUTER_AX),y)
-ifeq ($(or $(HND_ROUTER_AX_675X),$(HND_ROUTER_AX_6756),$(HND_ROUTER_AX_6710),$(BCM_502L07P2)),y)
+ifeq ($(or $(RTCONFIG_HND_ROUTER_AX_675X),$(RTCONFIG_HND_ROUTER_AX_6756),$(RTCONFIG_HND_ROUTER_AX_6710),$(RTCONFIG_BCM_502L07P2),$(RTCONFIG_HND_ROUTER_BE_4916)),y)
 ifneq ($(BCM_CHIP),)
 ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U_V2 TUF-AX5400_V2 RT-AX5400))
 SRCFILE = broadcom_arm_ax_$(BCM_CHIP)_src-rt-5.04axhnd.675x
 else ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),EBG19 EBG15))
 SRCFILE = broadcom_arm_ax_62118G
+else ifeq ($(RTCONFIG_HND_ROUTER_BE_4916),y)
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20231126)
+ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), RT-BE58U TUF-BE3600 RT-BE92U RT-BE95U))
+SRCFILE = broadcom_arm_be_6764l
+else
+SRCFILE = broadcom_arm_be_$(BCM_CHIP)
+endif
+else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20240103)
+SRCFILE = broadcom_arm_be_$(BCM_CHIP)_4.19.275
+else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20230426)
+SRCFILE = broadcom_arm_be_$(BCM_CHIP)_4.19.275
+else
+SRCFILE = broadcom_arm_be_$(BCM_CHIP)_4.19.235
+endif
 else
 SRCFILE = broadcom_arm_ax_$(BCM_CHIP)
 endif
@@ -82,7 +98,7 @@ endif
 else
 SRCFILE = broadcom_arm_ax
 endif
-ifeq ($(or $(HND_ROUTER_AX_675X),$(HND_ROUTER_AX_6756),$(HND_ROUTER_AX_6710),$(BCM_502L07P2)),y)
+ifeq ($(or $(RTCONFIG_HND_ROUTER_AX_675X),$(RTCONFIG_HND_ROUTER_AX_6756),$(RTCONFIG_HND_ROUTER_AX_6710),$(RTCONFIG_BCM_502L07P2),$(RTCONFIG_HND_ROUTER_BE_4916)),y)
 DSTDIR = $(INSTALLDIR)/lib/modules/$(LINUX_KERNEL)/kernel/fs
 else
 DSTDIR = $(INSTALLDIR)/lib/modules/4.1.51/kernel/fs
@@ -92,11 +108,11 @@ SRCFILE = broadcom_arm_hnd
 DSTDIR = $(INSTALLDIR)/lib/modules/4.1.27/kernel/fs
 else
 DSTDIR = $(INSTALLDIR)/lib/modules/2.6.36.4brcmarm/kernel/fs
-endif
+endif # RTCONFIG_HND_ROUTER_AX
 else # RTCONFIG_BCMARM
 SRCFILE = broadcom
 DSTDIR = $(INSTALLDIR)/lib/modules/2.6.22.19/kernel/fs
-endif
+endif # RTCONFIG_BCMARM
 endif
 
 #ifeq ($(BUILD_NAME),DSL-AC68U)
@@ -118,6 +134,12 @@ install:
 	@echo "[tuxera] Installing...from $(SRCFILE)"
 	@install -d $(DSTDIR)
 	@install -d $(INSTALLDIR)/usr/sbin
+ifeq ($(RTCONFIG_TUXERA_SMBD),y)
+	@cp -f $(SRCFILE)/smb/kernel-module/tsmb.ko $(DSTDIR)
+	install -D $(SRCFILE)/smb/bin/tsmb-server $(INSTALLDIR)/usr/sbin/tsmb-server
+	install -D $(SRCFILE)/smb/tools/tsmb-passwd $(INSTALLDIR)/usr/sbin/tsmb-passwd
+	install -D -m 0644 $(SRCFILE)/VERSION-INFO.tsmb $(INSTALLDIR)/rom/Tuxera-VERSION-INFO.tsmb
+endif
 ifeq ($(RTCONFIG_TFAT),y)
 	@cp -f $(SRCFILE)/fat/kernel-module/tfat.ko $(DSTDIR)
 	install -D $(SRCFILE)/fat/tools/fatfsck $(INSTALLDIR)/usr/sbin/fatfsck

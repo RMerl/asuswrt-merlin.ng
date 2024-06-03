@@ -1,0 +1,17 @@
+if TARGET_MT7629
+
+config SYS_BOARD
+	default "mt7629"
+
+config SYS_CONFIG_NAME
+	default "mt7629"
+
+config MTK_SPL_PAD_SIZE
+	hex
+	default 0x10000
+
+config MTK_BROM_HEADER_INFO
+	string
+	default "media=nor"
+
+endif

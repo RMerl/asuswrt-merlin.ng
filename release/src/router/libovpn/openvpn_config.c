@@ -467,7 +467,7 @@ ovpn_cconf_t *ovpn_get_cconf(int unit) {
 		cconf->if_type = OVPN_IF_TAP;
 	else
 		cconf->if_type = OVPN_IF_TUN;
-	snprintf(cconf->if_name, sizeof (cconf->if_name), "%s%d", buffer, unit + OVPN_CLIENT_BASEIF);
+	snprintf(cconf->if_name, sizeof (cconf->if_name), "%s%d", buffer, unit + OVPN_CLIENT_BASE);
 
 	if (!strcmp(nvram_pf_safe_get(prefix, "crypt"), "secret"))
 		cconf->auth_mode = OVPN_AUTH_STATIC;
@@ -550,7 +550,7 @@ ovpn_sconf_t *ovpn_get_sconf(int unit){
 	else
 		sconf->if_type = OVPN_IF_TUN;
 
-	snprintf(sconf->if_name, sizeof (sconf->if_name), "%s%d", buffer, unit + OVPN_SERVER_BASEIF);
+	snprintf(sconf->if_name, sizeof (sconf->if_name), "%s%d", buffer, unit + OVPN_SERVER_BASE);
 
 	if (!strcmp(nvram_pf_safe_get(prefix, "crypt"), "secret"))
 		sconf->auth_mode = OVPN_AUTH_STATIC;

@@ -1,0 +1,113 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2017 Álvaro Fernández Rojas <noltari@gmail.com>
+ */
+
+/dts-v1/;
+
+#include "brcm,bcm63268.dtsi"
+
+/ {
+	model = "Comtrend VR-3032u";
+	compatible = "comtrend,vr-3032u", "brcm,bcm63268";
+
+	aliases {
+		serial0 = &uart0;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+};
+
+&ehci {
+	status = "okay";
+};
+
+&enet {
+	status = "okay";
+
+	port@0 {
+		compatible = "brcm,enetsw-port";
+		reg = <0>;
+		label = "fe2";
+		brcm,phy-id = <1>;
+	};
+
+	port@1 {
+		compatible = "brcm,enetsw-port";
+		reg = <1>;
+		label = "fe3";
+		brcm,phy-id = <2>;
+	};
+
+	port@2 {
+		compatible = "brcm,enetsw-port";
+		reg = <2>;
+		label = "fe4";
+		brcm,phy-id = <3>;
+	};
+
+	port@3 {
+		compatible = "brcm,enetsw-port";
+		reg = <3>;
+		label = "fe1";
+		brcm,phy-id = <4>;
+	};
+};
+
+&leds {
+	status = "okay";
+	brcm,serial-leds;
+	brcm,serial-dat-low;
+	brcm,serial-shift-inv;
+
+	led@2 {
+		reg = <2>;
+		active-low;
+		label = "VR-3032u:red:inet";
+	};
+
+	led@3 {
+		reg = <3>;
+		active-low;
+		label = "VR-3032u:green:dsl";
+	};
+
+	led@4 {
+		reg = <4>;
+		active-low;
+		label = "VR-3032u:green:usb";
+	};
+
+	led@7 {
+		reg = <7>;
+		active-low;
+		label = "VR-3032u:green:wps";
+	};
+
+	led@8 {
+		reg = <8>;
+		active-low;
+		label = "VR-3032u:green:inet";
+	};
+
+	led@20 {
+		reg = <20>;
+		active-low;
+		label = "VR-3032u:green:power";
+	};
+};
+
+&ohci {
+	status = "okay";
+};
+
+&uart0 {
+	u-boot,dm-pre-reloc;
+	status = "okay";
+};
+
+&usbh {
+	status = "okay";
+};

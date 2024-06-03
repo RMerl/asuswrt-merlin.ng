@@ -1,0 +1,352 @@
+--- a/wifi_api.c
++++ a/wifi_api.c
+@@ -2271,10 +2271,10 @@
+ 				radius.RadiusServerRequestTimeout);
+ 			printf(" PMKLifetime				:%d\n",
+ 				radius.PMKLifetime);
+-			printf(" PMKCaching				:%s\n",
+-				(radius.PMKCaching == TRUE) ? "Enable" : "Disable");
+-			printf(" PMKCacheInterva			:%d\n",
+-				radius.PMKCacheInterval);
++/*			printf(" PMKCaching				:%s\n",
++				(radius.PMKCaching == TRUE) ? "Enable" : "Disable"); */
++/*			printf(" PMKCacheInterva			:%d\n",
++				radius.PMKCacheInterval);  */
+ 			printf(" MaxAuthenticationAttempts		:%d\n",
+ 				radius.MaxAuthenticationAttempts);
+ 			printf(" BlacklistTableTimeout			:%d\n",
+@@ -4986,6 +4986,7 @@
+ 					imap->vlan_id, imap->index, imap->vap_name);
+ 			}
+ 		}
++#if 0
+ #if defined(RDKB_LGI)
+ 		radio_interface_mapping_t *rmap;
+ 		printf("\n   Radio Interface Map:");
+@@ -4996,6 +4997,7 @@
+ 				rmap->radio_index, rmap->radio_name, rmap->interface_name);
+ 		} /* for */
+ #endif /* RDKB_LGI */
++#endif /* 0 */
+ 		printf("\n..........");
+ #endif /* WIFI_HAL_VERSION_GE_3_0_1 */
+ 		printf("\n");
+@@ -5831,13 +5831,13 @@
+ 			WIFI_ZWDFS_CHAN_STATUS_ENUM status;
+ 			while (ListOfDFSChannelStatus[i].Channel != 0) {
+ 				status = ListOfDFSChannelStatus[i].Status;
+-				printf("index=%d \tChannel=%lu \tStatus=%s\n", i,
++				/* printf("index=%d \tChannel=%lu \tStatus=%s\n", i,
+ 					ListOfDFSChannelStatus[i].Channel,
+ 					(status == AVAILABLE ? "AVAILABLE" :
+ 						status == CAC_ONGOING ? "CAC_ONGOING" :
+ 						status == NON_OCCUPANCY_PERIOD ? "NON_OCCUPANCY_PERIOD" :
+ 						status == NOT_CLEARED ? "NOT_CLEARED" :
+-						"INVALID_STATUS"));
++						"INVALID_STATUS")); */
+ 				i++;
+ 			}
+ 			printf("Number of DFS channels = %d\n", i);
+--- a/wifi_hal.c
++++ a/wifi_hal.c
+@@ -1690,7 +1690,7 @@
+ 	INT radioIndex,
+ 	mac_address_t *clientMacAddress,
+ 	wifi_associated_dev_tid_stats_t *tid_stats,
+-	uint64_t *handle)
++	ULLONG *handle)
+ {
+ /* NOT IMPLEMENTED */
+ 	(void)radioIndex;
+@@ -6741,8 +6741,8 @@
+ 	output->RadiusServerRetries = RadiusSettings.RadiusServerRetries;
+ 	output->RadiusServerRequestTimeout = RadiusSettings.RadiusServerRequestTimeout;
+ 	output->PMKLifetime = RadiusSettings.PMKLifetime;
+-	output->PMKCaching = RadiusSettings.PMKCaching;
+-	output->PMKCacheInterval = RadiusSettings.PMKCacheInterval;
++	/* output->PMKCaching = RadiusSettings.PMKCaching;
++	output->PMKCacheInterval = RadiusSettings.PMKCacheInterval; */
+ 	output->MaxAuthenticationAttempts = RadiusSettings.MaxAuthenticationAttempts;
+ 	output->BlacklistTableTimeout = RadiusSettings.BlacklistTableTimeout;
+ 	output->IdentityRequestRetryInterval = RadiusSettings.IdentityRequestRetryInterval;
+@@ -6765,8 +6765,8 @@
+ 	RadiusSettings.RadiusServerRetries = input->RadiusServerRetries;
+ 	RadiusSettings.RadiusServerRequestTimeout = input->RadiusServerRequestTimeout;
+ 	RadiusSettings.PMKLifetime = input->PMKLifetime;
+-	RadiusSettings.PMKCaching = input->PMKCaching;
+-	RadiusSettings.PMKCacheInterval = input->PMKCacheInterval;
++	/* RadiusSettings.PMKCaching = input->PMKCaching;
++	RadiusSettings.PMKCacheInterval = input->PMKCacheInterval; */
+ 	RadiusSettings.MaxAuthenticationAttempts = input->MaxAuthenticationAttempts;
+ 	RadiusSettings.BlacklistTableTimeout = input->BlacklistTableTimeout;
+ 	RadiusSettings.IdentityRequestRetryInterval = input->IdentityRequestRetryInterval;
+@@ -12792,24 +12792,26 @@
+ 			} else if (!strcmp(pApiInfo->api_name, "wifi_setApSecurityRadiusSettings")) {
+ 				wifi_radius_setting_t settings;
+ 				int PMKCaching;
+-				sscanf(pApiInfo->api_data, "%d %d %d %d %d %d %d %d %d",
++				/* sscanf(pApiInfo->api_data, "%d %d %d %d %d %d %d %d %d", */
++				sscanf(pApiInfo->api_data, "%d %d %d %d %d %d %d %d",
+ 					&settings.RadiusServerRetries,
+ 					&settings.RadiusServerRequestTimeout,
+ 					&settings.PMKLifetime,
+ 					&PMKCaching,
+-					&settings.PMKCacheInterval,
++					/* &settings.PMKCacheInterval, */
+ 					&settings.MaxAuthenticationAttempts,
+ 					&settings.BlacklistTableTimeout,
+ 					&settings.IdentityRequestRetryInterval,
+ 					&settings.QuietPeriodAfterFailedAuthentication);
+-					settings.PMKCaching = PMKCaching?TRUE:FALSE;
+-				HAL_WIFI_DBG(("%s: wifi_setApSecurityRadiusSettings %d %d %d %d %d %d %d %d %d\n",
++					/* settings.PMKCaching = PMKCaching?TRUE:FALSE; */
++				/* HAL_WIFI_DBG(("%s: wifi_setApSecurityRadiusSettings %d %d %d %d %d %d %d %d %d\n", */
++				HAL_WIFI_DBG(("%s: wifi_setApSecurityRadiusSettings %d %d %d %d %d %d %d\n",
+ 					__FUNCTION__,
+ 					settings.RadiusServerRetries,
+ 					settings.RadiusServerRequestTimeout,
+ 					settings.PMKLifetime,
+-					settings.PMKCaching,
+-					settings.PMKCacheInterval,
++					/* settings.PMKCaching, */
++					/* settings.PMKCacheInterval, */
+ 					settings.MaxAuthenticationAttempts,
+ 					settings.BlacklistTableTimeout,
+ 					settings.IdentityRequestRetryInterval,
+@@ -15921,6 +15921,7 @@
+ 	return WIFI_HAL_SUCCESS;
+ }
+ 
++#if 0
+ #if defined(RDKB_LGI)
+ static int
+ wl_getRadioInterfaceMap(int radioIndex, radio_interface_mapping_t *rmap)
+@@ -15934,6 +15935,7 @@
+ 	return WIFI_HAL_SUCCESS;
+ }
+ #endif /* RDKB_LGI */
++#endif /* 0 */
+ #endif /* WIFI_HAL_VERSION_GE_3_0_1 */
+ 
+ static int
+@@ -16189,6 +16191,7 @@
+ 				__FUNCTION__, i, ret));
+ 			return WIFI_HAL_ERROR;
+ 		}
++#if 0
+ #if defined(WIFI_HAL_VERSION_GE_3_0_1) && defined(RDKB_LGI)
+ 		/* init to invalid radio index - just to identify where the table stops
+ 		 * a valid radio index is < radios_cnt */
+@@ -16201,6 +16204,7 @@
+ 			return WIFI_HAL_ERROR;
+ 		}
+ #endif /* WIFI_HAL_VERSION_GE_3_0_1 && RDKB_LGI */
++#endif /* 0 */
+ 	}
+ 
+ #if defined(WIFI_HAL_VERSION_GE_3_0_1)
+@@ -17493,6 +17251,195 @@
+ }
+ 
+ /**
++ */
++INT wifi_getBandSteeringEnable_perSSID(INT ifIndex, BOOL *enable)
++{
++	return RETURN_OK;
++}
++
++INT wifi_getBandSteeringActive_perSSID(INT ifIndex, BOOL *active)
++{
++	return RETURN_OK;
++}
++
++INT wifi_setBandSteeringEnable_perSSID(INT ifIndex, BOOL enable)
++{
++	return RETURN_OK;
++}
++
++INT wifi_getBandSteeringRSSIThreshold_perSSID(INT ifIndex, INT *RSSIThr)
++{
++	return RETURN_OK;
++}
++
++INT wifi_setBandSteeringRSSIThreshold_perSSID(INT ifIndex, INT RSSIThr)
++{
++	return RETURN_OK;
++}
++
++INT wifi_getBandSteeringDeltaThreshold_perSSID(INT ifIndex, UINT *deltaThreshold)
++{
++	return RETURN_OK;
++}
++
++INT wifi_setBandSteeringDeltaThreshold_perSSID(INT ifIndex, UINT deltaThreshold)
++{
++	return RETURN_OK;
++}
++
++INT wifi_getBandSteeringBlacklistTimeout_perSSID(INT ifIndex, UINT *blacklistTimeout)
++{
++	return RETURN_OK;
++}
++
++INT wifi_setBandSteeringBlacklistTimeout_perSSID(INT ifIndex, UINT blacklistTimeout)
++{
++	return RETURN_OK;
++}
++
++INT wifi_getBandSteering5GCapableEntries_perSSID(INT ifIndex, ULONG *num, wifi_5gcapable_table_t **table)
++{
++	return RETURN_OK;
++}
++
++INT wifi_getBandSteering24GBlacklistEntries_perSSID(INT ifIndex, ULONG *num, wifi_24gblacklist_table_t **table)
++{
++	return RETURN_OK;
++}
++
++INT wifi_setBandSteeringClear5GCapableTable(BOOL clear)
++{
++	return RETURN_OK;
++}
++
++INT wifi_setBandSteeringClear24GTempBlacklistTable(BOOL clear)
++{
++	return RETURN_OK;
++}
++
++
++
++INT wifi_getAtmBandEnable(INT band, BOOL * enable)
++{
++	return RETURN_OK;
++}
++
++INT wifi_setAtmBandEnable(INT band, BOOL enable)
++{
++	return RETURN_OK;
++}
++
++INT wifi_getAtmBandMode(INT band, CHAR *mode)
++{
++	return RETURN_OK;
++}
++
++INT wifi_setAtmBandMode(INT band, ULONG mode)
++{
++	return RETURN_OK;
++}
++
++INT wifi_getAtmBandWeights(INT band, CHAR *weights, INT size)
++{
++	return RETURN_OK;
++}
++
++INT wifi_setAtmBandWeights(INT band, CHAR *weights)
++{
++	return RETURN_OK;
++}
++
++INT wifi_getAtmBandDistributionType(INT band, CHAR *distribType)
++{
++	return RETURN_OK;
++}
++
++INT wifi_setAtmBandDistributionType(INT band, CHAR *distribType)
++{
++	return RETURN_OK;
++}
++
++INT wifi_getAtmBandWaitThreshold(INT band, ULONG *thresholdTime)
++{
++	return RETURN_OK;
++}
++
++INT wifi_setAtmBandWaitThreshold(INT band, ULONG thresholdTime)
++{
++	return RETURN_OK;
++}
++
++INT wifi_getAtmBandDirection(INT band, CHAR *direction)
++{
++	return RETURN_OK;
++}
++
++INT wifi_setAtmBandDirection(INT band, ULONG direction)
++{
++	return RETURN_OK;
++}
++
++INT wifi_getAtmBandStaWeight(INT band, CHAR *staWeight)
++{
++	return RETURN_OK;
++}
++
++INT wifi_setAtmBandStaWeight(INT band, CHAR *staWeight)
++{
++	return RETURN_OK;
++}
++
++INT wifi_getAtmBandMWWWeight(INT band, CHAR *mwwWeight)
++{
++	return RETURN_OK;
++}
++
++INT wifi_setAtmBandMWWWeight(INT band, CHAR *mwwWeight)
++{
++	return RETURN_OK;
++}
++
++INT wifi_getAtmBandMWWEnable(INT band, BOOL *enable)
++{
++	return RETURN_OK;
++}
++
++INT wifi_setAtmBandMWWEnable(INT band, BOOL enable)
++{
++	return RETURN_OK;
++}
++
++INT wifi_getAtmStationAirtime(wlan_ATM_report_t **pStationAirtime, INT *stationNumber)
++{
++	return RETURN_OK;
++}
++
++
++INT wifi_getDefaultSsid(INT index, CHAR *default_ssid)
++{
++	return RETURN_OK;
++}
++
++INT wifi_getDefaultPassword(INT index, CHAR *default_password)
++{
++	return RETURN_OK;
++}
++
++INT wifi_getApAclDevicesList(INT apIndex, CHAR **macArray, CHAR **devArray, UINT *buf_size)
++{
++	return RETURN_OK;
++}
++
++
++/**
++ * @parameter RadiusInterface: 0/1 (wan0/eRouter0)
++ */
++INT wifi_getApRadiusTransportInterface(UINT *RadiusInterface)
++{
++	return RETURN_OK;
++}
++
++/**
+  * @parameter RadiusInterface: 0/1 (wan0/eRouter0)
+  */
+ INT wifi_setApRadiusTransportInterface(UINT RadiusInterface)
+@@ -17526,7 +17717,7 @@
+ 	/* Restart hostapds to make the change take effect. */
+ 	for (i = 0; i < HAL_GET_MAX_RADIOS; ++i) {
+ 		wldm_stop_wsec_daemons(i);
+-		wldm_start_wsec_daemons(i)
++		wldm_start_wsec_daemons(i);
+ 	}
+ 	return RETURN_OK;
+ }

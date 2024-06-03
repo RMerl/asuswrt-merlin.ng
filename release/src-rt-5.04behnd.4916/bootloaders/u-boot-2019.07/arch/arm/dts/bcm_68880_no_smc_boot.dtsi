@@ -1,0 +1,40 @@
+	pmc {
+			u-boot,dm-pre-reloc;
+			compatible = "brcm,bca-pmc-lite";
+			reg-names = "pmc";
+			reg = <0x0 0x84120100 0x0 0x1e0>;
+	};
+
+	nand: nand-controller@0x84202000 {
+			compatible = "brcm,nand-bcmbca",
+			"brcm,brcmnand-v7.3",
+			"brcm,brcmnand";
+			reg-names = "nand", "nand-cache";
+			reg = <0x0 0x84202000 0x0 0x440>,
+				  <0x0 0x84202600 0x0 0x200>;
+			parameter-page-big-endian = <0>;
+
+			status = "disabled";
+	};
+
+	sdhci: sdhci@ff810000 {
+			compatible = "brcm,bcm63xx-sdhci",
+						"brcm,sdhci-brcmbca";
+			reg-names = "sdhci-base", "sdhci-boot";
+			reg = <0x0 0x84200800 0x0 0x260>,
+                  <0x0 0x84200C00 0x0 0x200>,
+				  <0x0 0x84201000 0x0 0x40>;
+			bus-width = <8>;
+			u-boot,dm-pre-reloc;
+	};
+        
+        strap: strap {
+		u-boot,dm-pre-reloc;
+		compatible = "brcm,strap";
+		reg = <0x0 0x842100D0 0x0 0x4>;
+		boot-select-0=<0 1>;
+		boot-select-1=<1 1>;
+		boot-select-2=<2 1>;
+		boot-select-3=<3 1>;
+		boot-select-4=<4 1>;
+	};

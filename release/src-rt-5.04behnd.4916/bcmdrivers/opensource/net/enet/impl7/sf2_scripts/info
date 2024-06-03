@@ -1,0 +1,378 @@
+#!/bin/sh
+source /etc/sf2/_util
+
+# # /etc/sf2/info      # usage: info <unit>
+# /etc/sf2/info
+# found 63158 unit=1
+#          switch_reg_base=0x80480000
+# 
+#   swCtrl 00000637@0000|p5=3-3G p6=0-1G p7=1-2G p8=2-2.5G
+#    swRev 09030500@0010|sf2=0903 swTop=0500       swSts 01@0004|initDone=1
+#  xbarCtl 0f1e3c2e@00cc|3x4[I0/P4-E2rgmii0 I1/P6-E3rgmii1 I2/X5-E0serdes] P3-qgphy3 P8-XRDP wanLnkSel=use> wanLnkSt=0
+# 
+# qphyCtrl 00108000@001c|addr=x08 rst=0 ck25Dis=0 globalPwrDn=0 dllEn=0 iddqBias=0 pwrDn=0000 refClkSel=0 refClk=2-50Mhz
+#  qphySts 00000311@0020|energyDet[apd=0001 mask=0001] lockRecClk=0001 pllLock=1
+# sphyCtrl 00010c00@0024|addr=x0c rst=0 ck25Dis=0 globalPwrDn=0 dllEn=0 iddqBias=0 pwrDn=0 refClkSel=0 refClk=2-50Mhz
+#  sphySts 00000000@0028|energyDet[apd=0 mask=0]       lockRecClk=0    pllLock=0
+# 
+# ----PAGE_CONTROL(0x0)=0x80400000+(offset)<<3
+# rx_global_ctl 00@00-0a|disable[src_prune=0 ecc_chk=0 crc_chk=0] fmok_cnt=0
+#        swmode 07@00-0b|sw_fwd_en=1 fwd_mode=1-managed
+#       new_ctl c7@00-21|arl_miss_fwd[mcast=1 ucast=1] auto_pwr_dn[override=0,dis]
+#                       |diag_cable=10m err_drop_range[in=1 out=1] ip_mc=1
+# protect_sel 0000@00-24|
+#     wan_sel 0000@00-26|en_man2wan=0 wan=
+#  unKwn ucst 01a0@00-32|5 7 8
+#  unKwn mcst 01a0@00-34|5 7 8
+#  unKwn ipmc 01a0@00-36|5 7 8
+#      !learn 0000@00-3c|
+#    lpwrCtrl 0000@00-de|lpwr=0)12.5Mhz !swTmr=0 !swCoreClk=0 sleep[p4=0 p5=0 p8=0]
+# 
+# ## status decode in <port_status> below
+#      lnkSts 01a1@01-00|                   lnkStsChg 01a1@01-02|
+#   portSpeed 8802@01-04|                     dupxSts 01a1@01-08|
+#   pauseSts 0bc5e@01-0a|
+# 
+#      gMgmtCfg 82@02-00|rxBpdu=1 rstMibCnt=0 IMP0 port only
+#  rstMibCntEn 001@02-54|p0
+#    imp0PortId 08@02-01|id=8                imp1PortId 05@02-02|id=5
+#   brcmHdrCtrl 07@02-03|p7=1 p5=1 p8=1     brcmHdrCtl2 00@02-0a|
+#   ipgShrnk 08800@00-00|p5-4b p7-4b
+# 
+#  mirrorCtrl 0204@02-10|en=0 capPort=4 blk!mir=0
+#   rxMirCtrl 0000@02-12|all @every 1 pkts rxPort=
+#   txMirCtrl 0000@02-1c|all @every 1 pkts txPort=
+# 
+# SF2     port_ctrl     port_override           <port_status>         port vlan
+#      00- STP   off|  e4- en fc speed   link|fc speed   link |   31- 876543210
+# p0 a0@00:5-fwd    |4b@00:E[     1g full up]|     1g full up*|02f@00:000101111
+# p1 03@01:0-no.  TR|0b@02: [     1g full up]|TR  10m half dn |02f@02:000101111
+# p2 03@02:0-no.  TR|0b@04: [     1g full up]|TR  10m half dn |02f@04:000101111
+# p3 03@03:0-no.  TR|0b@06: [     1g full up]|TR  10m half dn |08f@06:010001111
+# p4 23@04:1-dis  TR|0b@08: [     1g full up]|TR  10m half dn |1ff@08:111111111
+# p5 a0@05:5-fwd    |cb@0a:E[  +  1g full up]|     1g full up*|02f@0a:000101111
+# p6 23@06:1-dis  TR|0a@0c: [     1g full dn]|TR  10m half dn |1ff@0c:111111111
+# p7 a0@07:5-fwd    |cb@0e:E[  +  1g full up]|     1g full up*|08f@0e:010001111
+# p8 1c@08:en:UMB   |cb@10:E[  +  1g full up]|     1g full up*|10f@10:100001111
+# 
+# ----PAGE_TRUNK(0x32)=0x80419000+(offset)<<3
+#           ctl 08@00|en=1 hash=DA_SA_VID
+#      imp0Grp 100@02|8
+# hashovr 40000000@20|ovrrdEn=0 impTrunkEn=1 hash2=00 hash1=00 hash0=00
+#       trunk0 000@10|
+#       trunk1 000@12|
+#       trunk2 000@14|
+#       trunk3 000@16|
+# 
+# ----PAGE_QOS_SCHED(0x46)=0x80423000+(offset)<<3
+#    txqEmptyStSel   -creditClrDis/rrbinBrstEn/wdrrUnit schedSel|weight q7 q6 q5 q4 q3 q2 q1 q0
+# p0 10@00| 0-txQ           0/1/0-wdrr 256byte 0-sp[q7-0]       |@10    01 01 01 01 01 01 01 01
+# p1 10@01| 0-txQ           0/1/0-wdrr 256byte 0-sp[q7-0]       |@18    01 01 01 01 01 01 01 01
+# p2 10@02| 0-txQ           0/1/0-wdrr 256byte 0-sp[q7-0]       |@20    01 01 01 01 01 01 01 01
+# p3 10@03| 0-txQ           0/1/0-wdrr 256byte 0-sp[q7-0]       |@28    01 01 01 01 01 01 01 01
+# p4 10@04| 0-txQ           0/1/0-wdrr 256byte 0-sp[q7-0]       |@30    01 01 01 01 01 01 01 01
+# p5 10@05| 0-txQ           0/1/0-wdrr 256byte 0-sp[q7-0]       |@38    01 01 01 01 01 01 01 01
+# p6 10@06| 0-txQ           0/1/0-wdrr 256byte 0-sp[q7-0]       |@40    01 01 01 01 01 01 01 01
+# p7 10@07| 0-txQ           0/1/0-wdrr 256byte 0-sp[q7-0]       |@48    01 01 01 01 01 01 01 01
+# p8 10@08| 0-txQ           0/1/0-wdrr 256byte 0-sp[q7-0]       |@50    01 01 01 01 01 01 01 01
+# 
+
+sf2_info() { #sf2_info <unit>
+    local unit=$1
+    read_chip $unit
+    if [ $sf2_unit == -1 ]
+    then echo "device has no (connected) sf2 switch!!"; return;
+    fi
+
+    if [ $sf2_reg_base != 0 ]
+    then
+        echo $sf2_reg_base | awk '{ printf "         switch_reg_base=%s\n\n", $1; }'
+        case $chip in
+        63138)  read_sf2_reg 0 | awk '{v=$1; 
+                    printf "  swCtrl %08x@0000|P5=%s P7=%s p8=%s\n", v, and(rshift(v,7),1)?"2.5g":"1g",
+                        and(rshift(v,6),1)?"2.5g":"1g", and(rshift(v,5),1)?"2.5g":"1g";}';;
+        63148)  read_sf2_reg 0 | awk '{v=$1; 
+                    printf "  swCtrl %08x@0000|moca_bp_en=%d\n", v, and(rshift(v,4),1);}';;
+        4908)   read_sf2_reg 0 | awk '{v=$1; 
+                    printf "  swCtrl %08x@0000|P5=%s P7=%s p8=%s p8-%s\n", v, and(rshift(v,7),1)?"2.5g":"1g",
+                        and(rshift(v,6),1)?"2.5g":"1g", and(rshift(v,5),1)?"2.5g":"1g", and(rshift(v,16),1)?"RDP":"sysPort";}';;
+        63158)  read_sf2_reg 0 | awk '{v=$1; split("0-1G 1-2G 2-2.5G 3-3G",gmii_spd_s);
+                    printf "  swCtrl %08x@0000|p5=%s p6=%s p7=%s p8=%s\n", v, gmii_spd_s[and(rshift(v,9),3)+1],
+                        gmii_spd_s[and(rshift(v,7),3)+1], gmii_spd_s[and(rshift(v,5),3)+1], gmii_spd_s[and(rshift(v,3),3)+1];}';;
+        63178)  read_sf2_reg 0 | awk '{v=$1; split("0-variable 1-250Mhz 2-300Mhz 3-reserved",sw_spd_s);
+                    split("0-variable 1-250Mhz/2G 2-300Mhz/2.4G 3-500Mhz/4G",imp_spd_s);
+                    printf "  swCtrl %08x@0000|clk)rgmii=%s switch=%s sysport=%s p8=%s\n", v, and(rshift(v,30),1)?"0-250Mhz":"1-variable",
+                        sw_spd_s[and(rshift(v,27),3)+1], sw_spd_s[and(rshift(v,24),3)+1], imp_spd_s[and(rshift(v,3),3)+1];}';;
+        6756|6765)   
+                read_sf2_reg 0 | awk '{v=$1; printf "  swCtrl %08x@0000|\n", v;}';;
+        esac
+        read_sf2_reg 0x10 | awk '{ v=$1; printf "   swRev %08x@0010|sf2=%04x swTop=%04x", v, rshift(v,16), and(v,0xffff);}'
+        read_sf2_reg 4 | awk '{ v=$1; printf "       swSts %02x@0004|initDone=%d\n", v, and(v,1);}'
+        
+        case $chip in
+        63138)  read_sf2_reg 0xac | awk '{v=$1; split("E0serdes E1sgphy E2rgmii0 E3rgmii1",xbar_s);
+                    printf " xbarctl %08x@00ac|3x5[I0/P3-%s I1/P4-%s I2/R0-%s] wanLnkSel=%s wanLnkSt=%d\n", v, and(rshift(v,2),1)?"E4gphy3":xbar_s[and(v,3)+1], 
+                        and(rshift(v,5),1)?"E4gphy3":xbar_s[and(rshift(v,3),3)+1], and(rshift(v,8),1)?"E4gphy3":xbar_s[and(rshift(v,6),3)+1],
+                        and(rshift(v,10),1)?"Phy":"use>", and(rshift(v,9),1);}';;
+        63148)  read_sf2_reg 0xac | awk '{v=$1; split("E0serdes E1sgphy E2rgmii0 E3rgmii1",xbar_s);
+                    printf " xbarCtl %08x@00ac|2x4[I0/P4-%s I1/R0-%s] wanLnkSt=%d\n", v, xbar_s[and(v,3)+1], xbar_s[and(rshift(v,2),3)+1], and(rshift(v,4),1);}';;
+        4908)   read_sf2_reg 0xc8 | awk '{v=$1; split("E0serdes E1sgphy E2rgmii E3disable",xbar_s);
+                    printf " xbarCtl %08x@00c8|2x3[I0/P7-%s I1/R3-%s] wanLnkSel=%s wanLnkSt=%d\n", v, xbar_s[and(v,3)+1], xbar_s[and(rshift(v,2),3)+1],
+                        and(rshift(v,5),1)?"Phy":"use>", and(rshift(v,4),1);}';;
+        63158)  read_sf2_reg 0xcc | awk '{v=$1; split("E0serdes E1sgphy E2rgmii0 E3rgmii1",xbar_s);
+                    printf " xbarCtl %08x@00cc|3x4[I0/P4-%s I1/P6-%s I2/X5-%s] P3-%s P8-%s wanLnkSel=%s wanLnkSt=%d\n", v, xbar_s[and(v,3)+1], xbar_s[and(rshift(v,2),3)+1],
+                        xbar_s[and(rshift(v,6),3)+1], and(rshift(v,4),1)?"rgmii2":"qgphy3", and(rshift(v,5),1)?"XRDP":"sysPort",
+                        and(rshift(v,9),1)?"Phy":"use>", and(rshift(v,8),1);}';;
+        esac
+        echo "" 
+        case $chip in
+        63138|63148)  
+                echo $(read_sf2_reg 0x24) $(read_sf2_reg 0x28) | awk '{ v=$1; v2=$2; 
+                    split("0000 0001 0010 0011 0100 0101 0110 0111 1000 1001 1010 1011 1100 1101 1110 1111",bin4_s);
+                    printf "qphyCtrl %08x@0024|addr=x%02x rst=%d ck25Dis=%d globalPwrDn=%d dllEn=%d iddqBias=%d pwrDn=%s\n", v, and(rshift(v,12),0x1f),
+                        and(rshift(v,8),1), and(rshift(v,7),1), and(rshift(v,6),1), and(rshift(v,5),1), and(rshift(v,0),1), bin4_s[and(rshift(v,1),0xf)+1];
+                    printf " qphySts %08x@0028|energyDet[apd=%s mask=%s] lockRecClk=%s pllLock=%d\n", v2, bin4_s[and(rshift(v2,4),0xf)+1],
+                        bin4_s[and(rshift(v2,0),0xf)+1], bin4_s[and(rshift(v2,9),0xf)+1], and(rshift(v2,8),1);}'
+                echo $(read_sf2_reg 0x2c) $(read_sf2_reg 0x30) | awk '{ v=$1; v2=$2;
+                    printf "sphyCtrl %08x@002c|addr=x%02x rst=%d ck25Dis=%d globalPwrDn=%d dllEn=%d iddqBias=%d pwrDn=%d\n", v, and(rshift(v,8),0x1f),
+                        and(rshift(v,5),1), and(rshift(v,4),1), and(rshift(v,3),1), and(rshift(v,2),1), and(rshift(v,0),1), and(rshift(v,1),1);
+                    printf " sphySts %08x@0030|energyDet[apd=%d mask=%d]       lockRecClk=%d    pllLock=%d\n", v2, and(rshift(v2,1),1),
+                        and(rshift(v2,0),1), and(rshift(v2,3),1), and(rshift(v2,2),1);}'
+                ;;
+        4908|63158)   
+                echo $(read_sf2_reg 0x1c) $(read_sf2_reg 0x20) | awk '{ v=$1; v2=$2; split("0-25Mhz 1-54Mhz 2-50Mhz 3-40Mhz", refclk_s);
+                    split("0000 0001 0010 0011 0100 0101 0110 0111 1000 1001 1010 1011 1100 1101 1110 1111",bin4_s);
+                    printf "qphyCtrl %08x@001c|addr=x%02x rst=%d ck25Dis=%d globalPwrDn=%d dllEn=%d iddqBias=%d pwrDn=%s refClkSel=%d refClk=%s\n", v, and(rshift(v,12),0x1f),
+                        and(rshift(v,8),1), and(rshift(v,7),1), and(rshift(v,6),1), and(rshift(v,5),1), and(rshift(v,0),1), bin4_s[and(rshift(v,1),0xf)+1], and(rshift(v,17),3), refclk_s[and(rshift(v,19),3)+1];
+                    printf " qphySts %08x@0020|energyDet[apd=%s mask=%s] lockRecClk=%s pllLock=%d\n", v2, bin4_s[and(rshift(v2,4),0xf)+1],
+                        bin4_s[and(rshift(v2,0),0xf)+1], bin4_s[and(rshift(v2,9),0xf)+1], and(rshift(v2,8),1);}'
+                echo $(read_sf2_reg 0x24) $(read_sf2_reg 0x28) | awk '{ v=$1; v2=$2; split("0-25Mhz 1-54Mhz 2-50Mhz 3-40Mhz", refclk_s);
+                    printf "sphyCtrl %08x@0024|addr=x%02x rst=%d ck25Dis=%d globalPwrDn=%d dllEn=%d iddqBias=%d pwrDn=%d refClkSel=%d refClk=%s\n", v, and(rshift(v,8),0x1f),
+                        and(rshift(v,5),1), and(rshift(v,4),1), and(rshift(v,3),1), and(rshift(v,2),1), and(rshift(v,0),1), and(rshift(v,1),1), and(rshift(v,13),3), refclk_s[and(rshift(v,15),3)+1];
+                    printf " sphySts %08x@0028|energyDet[apd=%d mask=%d]       lockRecClk=%d    pllLock=%d\n", v2, and(rshift(v2,1),1),
+                        and(rshift(v2,0),1), and(rshift(v2,3),1), and(rshift(v2,2),1);}'
+                ;;
+        63178)  echo $(read_sf2_reg 0x1c) $(read_sf2_reg 0x20) | awk '{ v=$1; v2=$2; split("0-25Mhz 1-54Mhz 2-50Mhz 3-40Mhz", refclk_s);
+                    split("0000 0001 0010 0011 0100 0101 0110 0111 1000 1001 1010 1011 1100 1101 1110 1111",bin4_s);
+                    printf "qphyCtrl %08x@001c|addr=x%02x rst=%d ck25Dis=%d globalPwrDn=%d dllEn=%d iddqBias=%d pwrDn=%s refClkSel=%d refClk=%s pllClk=%s\n", v, and(rshift(v,12),0x1f),
+                        and(rshift(v,8),1), and(rshift(v,7),1), and(rshift(v,6),1), and(rshift(v,5),1), and(rshift(v,0),1), bin4_s[and(rshift(v,1),0xf)+1], and(rshift(v,17),3), refclk_s[and(rshift(v,19),3)+1], and(rshift(v,21),1)?"250Mhz":"125Mhz";
+                    printf " qphySts %08x@0020|energyDet[apd=%s mask=%s] lockRecClk=%s pllLock=%d\n", v2, bin4_s[and(rshift(v2,4),0xf)+1],
+                        bin4_s[and(rshift(v2,0),0xf)+1], bin4_s[and(rshift(v2,9),0xf)+1], and(rshift(v2,8),1);}'
+                echo $(read_sf2_reg 0x24) $(read_sf2_reg 0x28) | awk '{ v=$1; v2=$2; split("0-25Mhz 1-54Mhz 2-50Mhz 3-40Mhz", refclk_s);
+                    printf "sphyCtrl %08x@0024|addr=x%02x rst=%d ck25Dis=%d globalPwrDn=%d dllEn=%d iddqBias=%d pwrDn=%d refClkSel=%d refClk=%s pllClk=%s\n", v, and(rshift(v,8),0x1f),
+                        and(rshift(v,5),1), and(rshift(v,4),1), and(rshift(v,3),1), and(rshift(v,2),1), and(rshift(v,0),1), and(rshift(v,1),1), and(rshift(v,13),3), refclk_s[and(rshift(v,15),3)+1], and(rshift(v,17),1)?"250Mhz":"125Mhz";
+                    printf " sphySts %08x@0028|energyDet[apd=%d mask=%d]       lockRecClk=%d    pllLock=%d\n", v2, and(rshift(v2,1),1),
+                        and(rshift(v2,0),1), and(rshift(v2,3),1), and(rshift(v2,2),1);}'
+                ;;
+        6756)   echo $(read_sf2_reg 0x24) $(read_sf2_reg 0x28) | awk '{ v=$1; v2=$2; split("0-25Mhz 1-54Mhz 2-50Mhz 3-40Mhz", refclk_s);
+                    printf "sphyCtrl %08x@0024|addr=x%02x rst=%d ck25Dis=%d globalPwrDn=%d dllEn=%d iddqBias=%d pwrDn=%d refClkSel=%d refClk=%s pllClk=%s\n", v, and(rshift(v,8),0x1f),
+                        and(rshift(v,5),1), and(rshift(v,4),1), and(rshift(v,3),1), and(rshift(v,2),1), and(rshift(v,0),1), and(rshift(v,1),1), and(rshift(v,13),3), refclk_s[and(rshift(v,15),3)+1], and(rshift(v,17),1)?"250Mhz":"125Mhz";
+                    printf " sphySts %08x@0028|energyDet[apd=%d mask=%d]       lockRecClk=%d    pllLock=%d\n", v2, and(rshift(v2,1),1),
+                        and(rshift(v2,0),1), and(rshift(v2,3),1), and(rshift(v2,2),1);}'
+                ;;
+        esac
+        
+    fi
+
+    echo ""
+    print_page_hdr 0x00 CONTROL
+    read_sf2 0 0x0a | awk '{v=$1; 
+        printf "rx_global_ctl %02x@00-0a|disable[src_prune=%d ecc_chk=%d crc_chk=%d] fmok_cnt=%x\n", v, and(rshift(v,6),1), and(rshift(v,5),1), and(rshift(v,4),1), and(v, 0xf)}'
+    read_sf2 0 0x0b | awk '{v=$1; 
+        printf "       swmode %02x@00-0b|sw_fwd_en=%d fwd_mode=%s\n", v, and(rshift(v,1),1), and(v,1)?"1-managed":"0-unmanaged"}'
+    read_sf2 0 0x21 | awk '{v=$1; 
+        printf "      new_ctl %02x@00-21|arl_miss_fwd[mcast=%d ucast=%d] auto_pwr_dn[override=%d,%s]\n", v, and(rshift(v,7),1), and(rshift(v,6),1), and(rshift(v,4),1), and(rshift(v,5),1)?"en":"dis";
+        printf "                      |diag_cable=%s err_drop_range[in=%d out=%d] ip_mc=%d\n", and(rshift(v,3),1)?"30m":"10m", and(rshift(v,2),1), and(rshift(v,1),1), and(rshift(v,0),1)}'
+
+    read_sf2 0 0x24 | awk '{v=$1; 
+        printf "protect_sel %04x@00-24|", v; for (i=0; i<9; i++) if (and(rshift(v,i),1)) printf "%d ",i; printf "\n"}'
+    read_sf2 0 0x26 | awk '{v=$1; 
+        printf "    wan_sel %04x@00-26|en_man2wan=%d wan=", v, and(rshift(v,9),1); for (i=0; i<8; i++) if (and(rshift(v,i),1)) printf "%d ",i; printf "\n"}'
+    read_sf2 0 0x32 | awk '{v=$1; 
+        printf " unKwn ucst %04x@00-32|", v; for (i=0; i<9; i++) if (and(rshift(v,i),1)) printf "%d ",i; printf "\n"}'
+    read_sf2 0 0x34 | awk '{v=$1; 
+        printf " unKwn mcst %04x@00-34|", v; for (i=0; i<9; i++) if (and(rshift(v,i),1)) printf "%d ",i; printf "\n"}'
+    read_sf2 0 0x36 | awk '{v=$1; 
+        printf " unKwn ipmc %04x@00-36|", v; for (i=0; i<9; i++) if (and(rshift(v,i),1)) printf "%d ",i; printf "\n"}'
+    read_sf2 0 0x3c | awk '{v=$1; 
+        printf "     !learn %04x@00-3c|", v; for (i=0; i<9; i++) if (and(rshift(v,i),1)) printf "%d ",i; printf "\n"}'
+    read_sf2 0 0xde | awk '{v=$1; split("12.5 6.25 4.17 3.125", d_s);
+        printf "   lpwrCtrl %04x@00-de|lpwr=%d)%sMhz !swTmr=%d !swCoreClk=%d sleep[p4=%d p5=%d p8=%d]\n\n", 
+        v, and(rshift(v,4),1), d_s[and(rshift(v,0),3)+1], and(rshift(v,5),1), and(rshift(v,6),1), and(rshift(v,11),1), and(rshift(v,12),1), and(rshift(v,15),1)}'
+
+    local lnkSts=$(read_sf2 1 0)
+    local lnkStsChg=$(read_sf2 1 2)
+    local portSpeed=$(read_sf2 1 4)
+    local dupxSts=$(read_sf2 1 8)
+    local pauseSts=$(read_sf2 1 10)
+    echo $lnkSts $lnkStsChg $portSpeed $dupxSts $pauseSts | awk '{lnkSts=$1; lnkStsChg=$2; portSpeed=$3; dupxSts=$4; pauseSts=$5;
+        printf "## status decode in <port_status> below\n";
+        printf "     lnkSts %04x@01-00|                   lnkStsChg %04x@01-02|\n", lnkSts, lnkStsChg;
+        printf "  portSpeed %04x@01-04|                     dupxSts %04x@01-08|\n", and(portSpeed,0xffff), dupxSts;
+        printf "  pauseSts %05x@01-0a|\n", pauseSts; }'
+
+    if [ $ext_spd == 1 ] 
+    then
+        if [ $chip == 6756 ] 
+        then
+            local newSpdSts=$(read_sf2 1 0x94)
+            echo $newSpdSts | awk '{newSpdSts=$1;
+                printf "  newSpd %07x@01-94|\n", newSpdSts; }'
+        fi
+        if [ $chip == 6765 ] 
+        then
+            local newSpdSts=$(read_sf2 1 0x94)
+            local xgmsts=$(read_sf2 1 0x98)
+            echo $newSpdSts $xgmsts | awk '{newSpdSts=$1; xgmsts=$2;
+                printf "  newSpd %07x@01-94|                      xgmSts %04x@01-98|\n", newSpdSts, xgmsts; }'
+        fi
+    fi
+    echo ""    
+
+    read_sf2 2 0 | awk '{v=$1; imp_s[0]="no IMP port"; imp_s[1]=""; imp_s[2]="IMP0 port only"; imp_s[3]="IMP0, IMP1 ports";
+        printf "     gMgmtCfg %02x@02-00|rxBpdu=%d rstMibCnt=%d %s\n", v, and(rshift(v,1),1), and(rshift(v,0),1), imp_s[and(rshift(v,6),3)]}'
+    read_sf2 2 0x54 | awk '{v=$1; 
+        printf " rstMibCntEn %03x@02-54|", v; for (i=0; i<9; i++) if (and(rshift(v,i),1)) printf "p%d ",i; printf "\n"}'
+    read_sf2 2 1 | awk '{v=$1; 
+        printf "   imp0PortId %02x@02-01|id=%x             ", v, and(rshift(v,0),0xf)}'
+    read_sf2 2 2 | awk '{v=$1; 
+        printf "   imp1PortId %02x@02-02|id=%x\n", v, and(rshift(v,0),0xf)}'
+
+    read_sf2 2 3 | awk '{v=$1; 
+        printf "  brcmHdrCtrl %02x@02-03|p7=%d p5=%d p8=%d   ", v, and(rshift(v,2),1), and(rshift(v,1),1), and(rshift(v,0),1)}'
+    read_sf2 2 0xa | awk '{v=$1; 
+        printf "  brcmHdrCtl2 %02x@02-0a|", v; for (i=0; i<7; i++) if (and(rshift(v,i),1)) printf "p%d ",i; printf "\n"}'
+    read_sf2 2 0xc | awk '{v=$1; shrink_s[0]=""; shrink_s[1]="1b"; shrink_s[2]="4b"; shrink_s[3]="5b";
+        printf "  ipgShrnk %05x@%02x-%02x|", v; for (i=0; i<9; i++) if (and(rshift(v,i*2),3)) printf "p%d-%s ",i, shrink_s[and(rshift(v,i*2),3)]; printf "\n\n"}'
+
+    read_sf2 2 0x10 | awk '{v=$1; 
+        printf " mirrorCtrl %04x@02-10|en=%d capPort=%d blk!mir=%d\n", v, and(rshift(v,15),1), and(rshift(v,0),0xff), and(rshift(v,14),1)}'
+
+    echo $(read_sf2 2 0x12) $(read_sf2 2 0x14) $(read_sf2 2 0x16)  $(read_sf2 2 0x18)| awk '{v=$1; v2=$2; v3=$3; v4=$4;
+        printf "  rxMirCtrl %04x@02-12|", v;  c=and(rshift(v,14),3);
+        if (c==0)      printf "all ";
+        else if (c==1) printf "DA=%04x-%08x ", v4, v3;
+        else if (c==2) printf "SA=%04x-%08x ", v4, v3;
+        printf "@every %d pkts rxPort=", and(rshift(v,13),1) ? v2+1 : 1;
+        for (i=0; i<=8; i++) if (and(rshift(v,i),1)) printf "%d ",i; printf "\n"}'
+
+    echo $(read_sf2 2 0x1c) $(read_sf2 2 0x1e) $(read_sf2 2 0x20)  $(read_sf2 2 0x22)| awk '{v=$1; v2=$2; v3=$3; v4=$4;
+        printf "  txMirCtrl %04x@02-1c|", v;  c=and(rshift(v,14),3);
+        if (c==0)      printf "all ";
+        else if (c==1) printf "DA=%04x-%08x ", v4, v3;
+        else if (c==2) printf "SA=%04x-%08x ", v4, v3;
+        printf "@every %d pkts txPort=", and(rshift(v,13),1) ? v2+1 : 1;
+        for (i=0; i<=8; i++) if (and(rshift(v,i),1)) printf "%d ",i; printf "\n"}'
+
+    echo ""    
+    echo "SF2     port_ctrl      port_override           <port_status>         port vlan"
+    if [ $sf2_ovr_page == 0 ]
+    then echo "     00- STP   off|   00- en fc speed   link|fc speed   link |   31- 876543210"
+    else echo "     00- STP   off|   e4- en fc speed   link|fc speed   link |   31- 876543210"
+    fi
+    for port in $sf2_ports
+    do
+        local ovr_reg
+        if [ $sf2_ovr_page == 0 ]
+        then
+            if [ $port == 8 ]
+            then ovr_reg=0x0e
+            else ovr_reg=$((port+0x58))
+            fi
+        else ovr_reg=$((port*2))
+        fi
+        if [ $ext_spd == 1 ]
+        then
+            echo $lnkSts $lnkStsChg $newSpdSts $dupxSts $pauseSts $port $(read_sf2 0 $port) $(read_sf2 $sf2_ovr_page $ovr_reg) $(read_sf2 0x31 $port*2) $ovr_reg | awk '{
+                lnkSts=$1; lnkStsChg=$2; portSpeed=$3; dupxSts=$4; pauseSts=$5; port=$6; ctrl=$7; ovrride=$8; pvlan=$9; ovr_reg=$10;
+                split("0-no. 1-dis 2-blk 3-lsn 4-lrn 5-fwd 6-res 7-res", stp_s);
+                printf "p%d %02x@%02x:", port, ctrl, 0+port;
+                if (port==8) printf "en:%s%s%s ", and(rshift(ctrl,4),1)?"U":" ", and(rshift(ctrl,3),1)?"M":" ", and(rshift(ctrl,2),1)?"B":" ";
+                else         printf "%s  ", stp_s[and(rshift(ctrl,5),7)+1];
+                printf "%s%s|", and(rshift(ctrl,1),1)?"T":" ", and(rshift(ctrl,0),1)?"R":" ";
+                
+                or_speed_s[0]=" 10m"; or_speed_s[1]="100m"; or_speed_s[2]="  1g"; or_speed_s[3]="2.5g"; or_speed_s[4]=" 10g"; or_speed_s[5]="  5g"; or_speed_s[6]=" res"; or_speed_s[7]=" res";
+                printf "%03x@%02x:", ovrride, ovr_reg;
+                if (port==8) printf "%s[%s%s%s%s %s %s]|", and(rshift(ovrride,7),1)?"E":"M",
+                    and(rshift(ovrride,5),1)?"T":" ", and(rshift(ovrride,4),1)?"R":" ", and(rshift(ovrride,6),1)?"+":" ",
+                    or_speed_s[and(rshift(ovrride,2),3)+(and(rshift(ovrride,7),1)?4:0)], and(rshift(ovrride,1),1)?"full":"half", and(rshift(ovrride,0),1)?"up":"dn";
+                else         printf "%s[%s%s%s%s %s %s]|", and(rshift(ovrride,6),1)?"E":" ",
+                    and(rshift(ovrride,5),1)?"T":" ", and(rshift(ovrride,4),1)?"R":" ", and(rshift(ovrride,7),1)?"+":" ",
+                    or_speed_s[and(rshift(ovrride,2),3)+(and(rshift(ovrride,6),1)?4:0)], and(rshift(ovrride,1),1)?"full":"half", and(rshift(ovrride,0),1)?"up":"dn";
+
+                printf "%s%s %s %s %s%s|", and(rshift(pauseSts,port),1)?"T":" ", and(rshift(pauseSts,9+port),1)?"R":" ", or_speed_s[and(rshift(portSpeed,port*3),7)],
+                    and(rshift(dupxSts,port),1)?"full":"half", and(rshift(lnkSts,port),1)?"up":"dn", and(rshift(lnkStsChg,port),1)?"*":" ";
+     
+                split("000 001 010 011 100 101 110 111", bin3_s);
+                printf "%03x@%02x:%s%s%s", pvlan, port*2, bin3_s[and(rshift(pvlan,6),7)+1], bin3_s[and(rshift(pvlan,3),7)+1], bin3_s[and(rshift(pvlan,0),7)+1];
+                printf "\n"}'
+        else
+            echo $lnkSts $lnkStsChg $portSpeed $dupxSts $pauseSts $port $(read_sf2 0 $port) $(read_sf2 $sf2_ovr_page $ovr_reg) $(read_sf2 0x31 $port*2) $ovr_reg | awk '{
+                lnkSts=$1; lnkStsChg=$2; portSpeed=$3; dupxSts=$4; pauseSts=$5; port=$6; ctrl=$7; ovrride=$8; pvlan=$9; ovr_reg=$10;
+                split("0-no. 1-dis 2-blk 3-lsn 4-lrn 5-fwd 6-res 7-res", stp_s);
+                printf "p%d %02x@%02x:", port, ctrl, 0+port;
+                if (port==8) printf "en:%s%s%s ", and(rshift(ctrl,4),1)?"U":" ", and(rshift(ctrl,3),1)?"M":" ", and(rshift(ctrl,2),1)?"B":" ";
+                else         printf "%s  ", stp_s[and(rshift(ctrl,5),7)+1];
+                printf "%s%s|", and(rshift(ctrl,1),1)?"T":" ", and(rshift(ctrl,0),1)?"R":" ";
+                
+                or_speed_s[0]=" 10m"; or_speed_s[1]="100m"; or_speed_s[2]="  1g"; or_speed_s[3]=" res";
+                printf "%03x@%02x:", ovrride, ovr_reg;
+                if (port==8) printf "%s[%s%s%s%s %s %s]|", and(rshift(ovrride,7),1)?"E":"M",
+                    and(rshift(ovrride,5),1)?"T":" ", and(rshift(ovrride,4),1)?"R":" ", and(rshift(ovrride,6),1)?"+":" ",
+                    or_speed_s[and(rshift(ovrride,2),3)], and(rshift(ovrride,1),1)?"full":"half", and(rshift(ovrride,0),1)?"up":"dn";
+                else         printf "%s[%s%s%s%s %s %s]|", and(rshift(ovrride,6),1)?"E":" ",
+                    and(rshift(ovrride,5),1)?"T":" ", and(rshift(ovrride,4),1)?"R":" ", and(rshift(ovrride,7),1)?"+":" ",
+                    or_speed_s[and(rshift(ovrride,2),3)], and(rshift(ovrride,1),1)?"full":"half", and(rshift(ovrride,0),1)?"up":"dn";
+
+                printf "%s%s %s %s %s%s|", and(rshift(pauseSts,port),1)?"T":" ", and(rshift(pauseSts,9+port),1)?"R":" ", or_speed_s[and(rshift(portSpeed,port*2),3)],
+                    and(rshift(dupxSts,port),1)?"full":"half", and(rshift(lnkSts,port),1)?"up":"dn", and(rshift(lnkStsChg,port),1)?"*":" ";
+     
+                split("000 001 010 011 100 101 110 111", bin3_s);
+                printf "%03x@%02x:%s%s%s", pvlan, port*2, bin3_s[and(rshift(pvlan,6),7)+1], bin3_s[and(rshift(pvlan,3),7)+1], bin3_s[and(rshift(pvlan,0),7)+1];
+                printf "\n"}'
+        fi
+    done
+
+    echo ""
+    print_page_hdr 0x32 TRUNK
+    read_sf2 0x32 0 | awk '{v=$1; split("DA_SA_VID DA_VID SA_VID N/A", hash_s);
+        printf "          ctl %02x@00|en=%d hash=%s\n", v, and(rshift(v,3),1), hash_s[and(rshift(v,0),3)+1]}'
+    read_sf2 0x32 2 | awk '{v=$1;
+        printf "     imp0Grp %03x@02|", v; for (i=0; i<9; i++) if (and(rshift(v,i),1)) printf "%d ",i; printf "\n"}'
+    local trunk_grps
+    if [ $sf2_ovr_page == 0 ]
+    then trunk_grps=2;
+    else trunk_grps=4;
+        read_sf2 0x32 0x20 | awk '{v=$1;
+            printf "hashovr %08x@20|ovrrdEn=%d impTrunkEn=%d hash2=%02x hash1=%02x hash0=%02x\n", 
+                v, and(rshift(v,31),1), and(rshift(v,30),1), and(rshift(v,16),0xff), and(rshift(v,8),0xff), and(rshift(v,0),0xff)}'
+    fi
+    local i=0
+    while [ $i -lt $trunk_grps ]
+    do
+        local reg=$((0x10+$i*2))
+        echo $(read_sf2 0x32 $reg) $reg $i | awk '{v=$1; reg=$2; n=$3;
+            printf "      trunk%d %03x@%02x|", n, v, reg; for (i=0; i<9; i++) if (and(rshift(v,i),1)) printf "%d ",i; printf "\n"}'
+        true $(( i++ ))        
+    done
+
+    echo ""
+    print_page_hdr 0x46 QOS_SCHED
+    echo "   txqEmptyStSel   -creditClrDis/rrbinBrstEn/wdrrUnit schedSel|weight q7 q6 q5 q4 q3 q2 q1 q0"
+    
+    for port in $sf2_ports
+    do
+        echo $(read_sf2 0x46 $port) $port | awk '{ v=$1; reg=$2; split("0-sp[q7-0] 1-sp[q7] 2-sp[q76] 3-sp[q765] 4-sp[q7654] 5-all.wdrr/wrr 6-??? 7-???", qos_sched_sel_s);
+            printf "p%d %02x@%02x| %s %d/%d/%s %-14s   ", reg, v, reg, and(rshift(v,7),1)?"1-egressQshaper":"0-txQ          ",
+            and(rshift(v,5),1), and(rshift(v,4),1), and(rshift(v,3),1)?"1-wrr pkt     ":"0-wdrr 256byte",
+            qos_sched_sel_s[and(rshift(v,0),7)+1]; }'
+        echo $(read_sf2_dw 0x46 $port*8+0x10) $port | awk '{ vl=$1; vh=$2; p=$3;
+            printf "|@%02x    %02x %02x %02x %02x %02x %02x %02x %02x\n", p*8+0x10, 
+            and(rshift(vh,24),0xff), and(rshift(vh,16),0xff), and(rshift(vh,8),0xff), and(rshift(vh,0),0xff),
+            and(rshift(vl,24),0xff), and(rshift(vl,16),0xff), and(rshift(vl,8),0xff), and(rshift(vl,0),0xff);}'
+    done
+    echo ""
+}
+
+sf2_info $1
+

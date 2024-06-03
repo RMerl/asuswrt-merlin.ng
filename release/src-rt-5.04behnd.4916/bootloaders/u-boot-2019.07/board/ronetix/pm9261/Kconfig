@@ -1,0 +1,12 @@
+if TARGET_PM9261
+
+config SYS_BOARD
+	default "pm9261"
+
+config SYS_VENDOR
+	default "ronetix"
+
+config SYS_CONFIG_NAME
+	default "pm9261"
+
+endif

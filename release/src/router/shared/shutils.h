@@ -42,7 +42,7 @@
 #define ENC_WORDS_LEN  (384)
 #define ASUSRT_STACKSIZE        0x200000
 
-extern int doSystem(char *fmt, ...);
+extern int doSystem(const char *fmt, ...);
 
 /*
  * Reads file and returns contents
@@ -589,8 +589,6 @@ extern int osifname_to_nvifname(const char *osifname, char *nvifname_buf,
 
 int ure_any_enabled(void);
 
-#define is_hwnat_loaded() module_loaded("hw_nat")
-
 #define vstrsep(buf, sep, args...) _vstrsep(buf, sep, args, NULL)
 extern int _vstrsep(char *buf, const char *sep, ...);
 
@@ -629,8 +627,6 @@ extern char *trimWS(char *str);
 extern int get_char_count(char *str, int ch);
 extern pid_t get_pid_by_name(char *name);
 extern pid_t get_pid_by_thrd_name(char *name);
-extern void replace_null_to_space(char *str, int len);
-extern pid_t get_pid_by_process_name(char *name);
 extern char *get_process_name_by_pid(const int pid);
 extern char *ether_etoa2(const unsigned char *e, char *a);
 extern char *ATE_FACTORY_MODE_STR();

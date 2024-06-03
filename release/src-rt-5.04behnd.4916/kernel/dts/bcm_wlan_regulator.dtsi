@@ -1,0 +1,97 @@
+/*
+ * Broadcom external PCIe card (WLAN) regulators dtsi template
+ */
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+#if defined(CONFIG_REGULATOR) && defined(CONFIG_REGULATOR_FIXED_VOLTAGE)
+/ {
+	/* PCIE0_PWR_CTRL to control 3.3V_PCIE0 */
+	vreg_pcie0: vreg-pcie0 {
+		compatible = "regulator-fixed";
+		regulator-name = "vreg-pcie0";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		enable-active-high;
+#if defined(PCIE0_REG_GPIO)
+		gpio = <&gpioc PCIE0_REG_GPIO GPIO_ACTIVE_HIGH>;
+		status = "okay";
+#else
+		status = "disabled";
+#endif
+	};
+ 
+	/* PCIE1_PWR_CTRL to control 3.3V_PCIE1 */
+	vreg_pcie1: vreg-pcie1 {
+		compatible = "regulator-fixed";
+		regulator-name = "vreg-pcie1";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		enable-active-high;
+#if defined(PCIE1_REG_GPIO)
+		gpio = <&gpioc PCIE1_REG_GPIO GPIO_ACTIVE_HIGH>;
+		status = "okay";
+#else
+		status = "disabled";
+#endif
+	};
+
+	/* PCIE2_PWR_CTRL to control 3.3V_PCIE2 */
+	vreg_pcie2: vreg-pcie2 {
+		compatible = "regulator-fixed";
+		regulator-name = "vreg-pcie2";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		enable-active-high;
+#if defined(PCIE2_REG_GPIO)
+		gpio = <&gpioc PCIE2_REG_GPIO GPIO_ACTIVE_HIGH>;
+		status = "okay";
+#else
+		status = "disabled";
+#endif
+	};
+
+	/* PCIE2_PWR_CTRL to control 3.3V_PCIE2 */
+	vreg_pcie3: vreg-pcie3 {
+		compatible = "regulator-fixed";
+		regulator-name = "vreg-pcie3";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		enable-active-high;
+#if defined(PCIE3_REG_GPIO)
+		gpio = <&gpioc PCIE3_REG_GPIO GPIO_ACTIVE_HIGH>;
+		status = "okay";
+#else
+		status = "disabled";
+#endif
+	};
+};
+
+#if defined(PCIE0_REG_GPIO)
+&pcie0 {
+	brcm,supply-names = "vreg-pcie0";
+};
+#endif
+
+#if defined(PCIE1_REG_GPIO)
+&pcie1 {
+	brcm,supply-names = "vreg-pcie1";
+};
+#endif
+
+#if defined(PCIE2_REG_GPIO)
+&pcie2 {
+	brcm,supply-names = "vreg-pcie2";
+};
+#endif
+
+#if defined(PCIE3_REG_GPIO)
+&pcie3 {
+	brcm,supply-names = "vreg-pcie3";
+};
+#endif
+#endif //defined(CONFIG_REGULATOR) && defined(CONFIG_REGULATOR_FIXED_VOLTAGE)
+#endif //#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+
+#undef PCIE0_REG_GPIO
+#undef PCIE1_REG_GPIO
+#undef PCIE2_REG_GPIO
+#undef PCIE3_REG_GPIO

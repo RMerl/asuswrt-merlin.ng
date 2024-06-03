@@ -1,0 +1,69 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright (C) 2015, Bin Meng <bmeng.cn@gmail.com>
+
+if VENDOR_GOOGLE
+
+choice
+	prompt "Mainboard model"
+	optional
+
+config TARGET_CHROMEBOOK_LINK
+	bool "Chromebook link"
+	help
+	  This is the Chromebook Pixel released in 2013. It uses an Intel
+	  i5 Ivybridge which is a die-shrink of Sandybridge, with 4GB of
+	  SDRAM. It has a Panther Point platform controller hub, PCIe
+	  WiFi and Bluetooth. It also includes a 720p webcam, USB SD
+	  reader, microphone and speakers, display port and 32GB SATA
+	  solid state drive. There is a Chrome OS EC connected on LPC,
+	  and it provides a 2560x1700 high resolution touch-enabled LCD
+	  display.
+
+config TARGET_CHROMEBOOK_LINK64
+	bool "Chromebook link 64-bit"
+	help
+	  This is the Chromebook Pixel released in 2013. With this config
+	  U-Boot is built as a 64-bit binary. This allows testing while this
+	  feature is being completed.
+
+config TARGET_CHROMEBOX_PANTHER
+	bool "Chromebox panther (not available)"
+	help
+	  Note: At present this must be used with coreboot. See README.x86
+	  for instructions.
+
+	  This is the Asus Chromebox CN60 released in 2014. It uses an Intel
+	  Haswell Celeron 2955U Dual Core CPU with 2GB of SDRAM. It has a
+	  Lynx Point platform controller hub, PCIe WiFi and Bluetooth. It also
+	  includes a USB SD reader, four USB3 ports, display port and HDMI
+	  video output and a 16GB SATA solid state drive. There is no Chrome
+	  OS EC on this model.
+
+config TARGET_CHROMEBOOK_SAMUS
+	bool "Chromebook samus"
+	help
+	  This is the Chromebook Pixel released in 2015. It uses an Intel
+	  Broadwell U Core i5 or Core i7 CPU with either 8GB or 16GB of
+	  LPDDR3 SDRAM. It has PCIe WiFi and Bluetooth. It also includes a
+	  720p webcam, USB SD reader, microphone and speakers, 2 USB 3 Type
+	  C ports which can support charging and up to a 4K external display.
+	  There is a solid state drive, either 32GB or 64GB. There is a
+	  Chrome OS EC connected on LPC, and it provides a 2560x1700 high
+	  resolution touch-enabled LCD display.
+
+config TARGET_CHROMEBOOK_SAMUS_TPL
+	bool "Chromebook samus booting from TPL"
+	help
+	  This is a version of Samus which boots into TPL, then to SPL and
+	  U-Boot proper. This is useful where verified boot must select
+	  between different A/B versions of SPL/U-Boot, to allow upgrading of
+	  almost all U-Boot code in the field.
+
+endchoice
+
+source "board/google/chromebook_link/Kconfig"
+source "board/google/chromebox_panther/Kconfig"
+source "board/google/chromebook_samus/Kconfig"
+
+endif

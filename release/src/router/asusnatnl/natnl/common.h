@@ -24,7 +24,13 @@
 
 #include <stdio.h>
 #include <ctype.h>
+
+#ifdef IS_NATNL_APP
+#include <sys/errno.h>
+#else
 #include <errno.h>
+#endif
+
 #include <pjlib.h>
 #include <pj/errno.h>
 #include <pj/sock.h>
@@ -70,7 +76,7 @@ typedef struct natnl_wl_ioctl {
 #define NVRAM_S2S_WGS1_PORT "wgs1_port"
 #define NVRAM_S2S_WGS2_ENABLE "wgs2_enable"
 #define NVRAM_S2S_WGS2_PORT "wgs2_port"
-#if defined(RTCONFIG_IG_SITE2SITE) && defined(RTCONFIG_WIREGUARD)
+#if defined(RTCONFIG_UAC_TUNNEL) && defined(RTCONFIG_WIREGUARD)
 extern int is_wgs_use_tunnel(const char *wgs_idx, const char *caller, const char *port);
 #endif
 #ifdef __cplusplus

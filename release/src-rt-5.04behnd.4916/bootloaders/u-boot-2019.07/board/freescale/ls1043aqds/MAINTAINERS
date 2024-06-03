@@ -1,0 +1,15 @@
+LS1043AQDS BOARD
+M:	Mingkai Hu <mingkai.hu@nxp.com>
+M:	Rajesh Bhagat <rajesh.bhagat@nxp.com>
+S:	Maintained
+F:	board/freescale/ls1043aqds/
+F:	include/configs/ls1043aqds.h
+F:	configs/ls1043aqds_defconfig
+F:	configs/ls1043aqds_nor_ddr3_defconfig
+F:	configs/ls1043aqds_nand_defconfig
+F:	configs/ls1043aqds_sdcard_ifc_defconfig
+F:	configs/ls1043aqds_sdcard_qspi_defconfig
+F:	configs/ls1043aqds_qspi_defconfig
+F:	configs/ls1043aqds_lpuart_defconfig
+F:	configs/ls1043aqds_tfa_defconfig
+F:	configs/ls1043aqds_tfa_SECURE_BOOT_defconfig

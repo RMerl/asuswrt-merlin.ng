@@ -1,0 +1,28 @@
+#include "94915REF1D.dts"
+
+/* 94915REF1D board with re-work for GPIO regulators */
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+/**********************************************************************/
+/* GPIO: Add one define per GPIO (individual or shared) regulator     */
+/*       - Skip if no GPIO regulators in use                          */
+/**********************************************************************/
+#define PCIE0_REG_GPIO    5     /* SPIS_CLK (5GU) for vreg_pcie0 node */
+#define PCIE1_REG_GPIO    4     /* SPIS_MOSI (2G5GL) for vreg_pcie1 node */
+
+#include "../bcm_wlan_regulator.dtsi"
+
+/**********************************************************************/
+/* Shared: Add brcm,supply-names = "vreg-pcieX" for shared PCIe nodes */
+/*         - Skip if not using shared GPIO regulators                 */
+/**********************************************************************/
+/* Share vreg_pcie1 with PCIe2 */
+&pcie2 {
+	brcm,supply-names = "vreg-pcie1";
+};
+
+/**********************************************************************/
+/* PCIe: Add status = "okay" for each PCIe slots of this boiard       */
+/*       - Skip if this is a derivative board (already done in base)  */
+/**********************************************************************/
+#endif //#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)

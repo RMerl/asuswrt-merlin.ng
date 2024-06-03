@@ -113,6 +113,8 @@
 <script language="JavaScript" type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script language="JavaScript" type="text/javascript" src="/form.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
+<script language="JavaScript" type="text/javascript" src="/replaceisp.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
 <!-- script language="JavaScript" type="text/javascript" src="/ajax/get_rbk_info.asp"></script -->
 <script>
 $(function () {
@@ -139,6 +141,10 @@ var Downloadlink = "";
 Downloadlink = get_Downloadlink();
 var faq_href1 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=131";
 var faq_href2 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=107";
+
+var is_ISP_incompatible = (in_territory_code("CX/01") || in_territory_code("CX/02") || in_territory_code("CX/03") || in_territory_code("CX/05") || in_territory_code("CX/06")
+						|| in_territory_code("CT/01") || in_territory_code("CT/02") || in_territory_code("CT/03") || in_territory_code("CT/04") || in_territory_code("CT/05")
+						|| in_territory_code("CH/01"));
 
 var dpi_engine_status = <%bwdpi_engine_status();%>;
 var sig_ver = '<% nvram_get("bwdpi_sig_ver"); %>';
@@ -180,6 +186,14 @@ var FWString = '';
 FWString = firmver.replace(/\./g,"") + "." + buildno;
 if ((extendno != "") && (extendno != "0"))
 	FWString += "_"+extendno;
+
+if(gobi_support){
+	var mobile_upgrade_md5 = "";
+	var mobile_upgrade_name = "";
+	var mobile_upgrade_process = "";
+	var mobile_upgrade_now = "";
+	var mobile_upgrade_status = "";
+}
 
 var dl_path="https://dlcdnets.asus.com/pub/ASUS/";
 var dl_beta="LiveUpdate/Release/Wireless_SQ/";
@@ -314,7 +328,7 @@ function save_update_enable(flag){
 			
 	document.firmware_form.submit();
 	if(flag == "on" || flag == "off"){
-		setTimeout("refreshpage()", 500);
+		// setTimeout("refreshpage()", 500);
 	}
 }
 function change_beta_path(flag){
@@ -325,7 +339,7 @@ function change_beta_path(flag){
 }
 
 function initial(){
-	show_menu();
+	show_menu();	
 	showDST();
 	load_time_hour();
 	load_time_min();
@@ -367,7 +381,7 @@ function initial(){
 	if(amesh_support && (isSwMode("rt") || isSwMode("ap")) && ameshRouter_support) {
 		
 		var have_node = false;
-		var get_cfg_clientlist = httpApi.hookGet("get_cfg_clientlist", true);		
+		var get_cfg_clientlist = httpApi.hookGet("get_cfg_clientlist");		
 		$("#fw_version_tr").empty();
 		var html = "";
 		html += "<tr id='update_div' style='display:none;'>";
@@ -542,15 +556,15 @@ function initial(){
 		else
 			document.getElementById("sig_ver_field").style.display="none";
 			
-		if(dpi_engine_status.bwdpi_sig_ver == "")
+		if(sig_ver_ori == "")
 			document.getElementById("sig_ver_word").innerHTML = "1.008";
 		else
-			document.getElementById("sig_ver_word").innerHTML = dpi_engine_status.bwdpi_sig_ver;
+			document.getElementById("sig_ver_word").innerHTML = sig_ver_ori;
 
-		if(dpi_engine_status.sig_update_t == "" || dpi_engine_status.sig_update_t == "0")
+		if(sig_update_t == "" || sig_update_t == "0")
 			document.getElementById("sig_update_date").innerHTML = "";
 		else
-			document.getElementById("sig_update_date").innerHTML = "&nbsp;&nbsp;"+transferTimeFormat(dpi_engine_status.sig_update_t*1000);
+			document.getElementById("sig_update_date").innerHTML = "&nbsp;&nbsp;"+transferTimeFormat(sig_update_t*1000);
 	}
 
 	if(cfg_sync_support){
@@ -653,7 +667,6 @@ function initial(){
 	}
 
 	if(no_fw_manual_support){	//No manual
-
 		$("#fw_note3").hide();
 		$("div").remove("#amesh_manual_upload_fw");
 		$("tr").remove("#manually_upgrade_tr");
@@ -662,8 +675,9 @@ function initial(){
 
 	if(is_ISP_incompatible)
 	{
+		var tmp_declaration = replace_isp_name("This equipment is authorized by %@ and the firmware will only be available for update online.");	//Untranslated
 		$("#fw_note2").show();
-		$("#fw_note2").html("The firmware of ISP (Internet Service Provider) project is not compatible with the ASUS retail models, and also it’s unavailable for firmware manual update.");	//Untranslated
+		$("#fw_note2").html(tmp_declaration);
 	}
 	if(isSupport("is_ax5400_i1"))
 	{
@@ -675,6 +689,25 @@ function initial(){
 		$("#modem_fw_upgrade").css("display", "");
 	}
 
+}
+
+function replace_isp_name(_str){
+	var updated_declaration = _str;
+	var isp_name = "";
+	if(isp_json[ttc]){
+		if(document.form.preferred_lang.value=="TW"){
+			isp_name = isp_json[ttc].ISP_TW;
+		}
+		else if(document.form.preferred_lang.value=="CN"){
+			isp_name = isp_json[ttc].ISP_CN;
+		}
+		else{
+			isp_name = isp_json[ttc].ISP_US;
+		}
+		updated_declaration = updated_declaration.replace("%@", isp_name);
+	}
+	
+	return updated_declaration;
 }
 
 var dead = 0;
@@ -903,7 +936,7 @@ function isDownloading(){
 
     		},
     		success: function(){
-				 
+
 				if(cfg_sync_support){
 
 					if(cfg_check == "7") {
@@ -1068,14 +1101,18 @@ function check_zip(obj){
 }
 
 function submitForm(){
-	if(!check_zip(document.form.file))
-			return;
-	else {
-		var status = onSubmitCtrlOnly(document.form.upload, 'Upload1');
-		if(amesh_support && status && (isSwMode("rt") || isSwMode("ap")) && ameshRouter_support) {
-			if(interval_update_AiMesh_fw_status) {
-				clearInterval(interval_update_AiMesh_fw_status);
-				interval_update_AiMesh_fw_status = false;
+	if(isSupport("demoui"))
+		return;
+	else{
+		if(!check_zip(document.form.file))
+				return;
+		else {
+			var status = onSubmitCtrlOnly(document.form.upload, 'Upload1');
+			if(amesh_support && status && (isSwMode("rt") || isSwMode("ap")) && ameshRouter_support) {
+				if(interval_update_AiMesh_fw_status) {
+					clearInterval(interval_update_AiMesh_fw_status);
+					interval_update_AiMesh_fw_status = false;
+				}
 			}
 		}
 	}
@@ -1861,6 +1898,38 @@ function toggle_fw_check(state) {
 			"action_mode": "apply"});
 }
 
+function upgrade_modem_fw(){
+	if(document.modem_form.file.value.length == 0){
+		alert("<#JS_Shareblanktest#>");
+		document.modem_form.focus();
+		return;
+	}
+	showLoading(300);
+	document.modem_form.submit();
+	setTimeout(get_mobile_fw_upgrade_status, 15000);
+	setTimeout("detect_httpd();", 272000);
+}
+
+
+function get_mobile_fw_upgrade_status(){
+	if(gobi_support){
+		var upgrade_status = httpApi.nvramGet(["mobile_upgrade_md5", "mobile_upgrade_name", "mobile_upgrade_process", "mobile_upgrade_now", "mobile_upgrade_status"]);
+
+		if(upgrade_status.mobile_upgrade_md5 != "1" && upgrade_status.mobile_upgrade_name != "1" && upgrade_status.mobile_upgrade_process != "100" && upgrade_status.mobile_upgrade_now != "1")
+			setTimeout(get_mobile_fw_upgrade_status, 1000);
+		else{
+			if(upgrade_status.mobile_upgrade_md5 == "1" || upgrade_status.mobile_upgrade_name == "1")
+				alert("<#Mobile_lte_upgrade_wrong_fw#>");
+			else if(upgrade_status.mobile_upgrade_now == "1")
+				alert("<#Mobile_lte_upgrade_fail#>");
+			else if(upgrade_status.mobile_upgrade_status == "3")
+				alert("<#Contact_customer_service#>");
+		}
+	}
+	else
+		return;
+}
+
 </script>
 </head>
 <body onload="initial();" class="bg">
@@ -1935,6 +2004,7 @@ function toggle_fw_check(state) {
 					<li><#FW_n1#></li>
 					<li id="fw_note2"><#FW_n2#>&nbsp;<#FW_n3#></li>
 					<li id="fw_note3">Get the latest firmware version from the download site at <a style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="https://www.asuswrt-merlin.net/download/" target="_blank">https://www.asuswrt-merlin.net/download/</a></li>
+					<li style="display:none;"id="fw_note5"><#FW_n5#></li>
 					</ol>
 		  </div>
 		  <br>
@@ -1946,12 +2016,21 @@ function toggle_fw_check(state) {
 			</tr>	
 			</thead>
 			<tr>
-				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(11, 14);"><#FW_auto_upgrade#></a></th>
+				<th><#FW_auto_upgrade#></th>
 				<td>
 					<div align="center" class="left" style="width:75px; float:left; cursor:pointer;" id="switch_webs_update_enable"></div>
 					<script type="text/javascript">
 					$('#switch_webs_update_enable').iphoneSwitch('<% nvram_get("webs_update_enable"); %>',
 						function(){
+							ASUS_EULA.config(function(){
+								hide_upgrade_opt(1);
+								save_update_enable('on');
+							},
+								refreshpage
+							)
+
+							if(!ASUS_EULA.check("asus_pp", "AUTOUPGRADE")) return false;
+
 							hide_upgrade_opt(1);
 							save_update_enable('on');
 						},
@@ -1966,11 +2045,53 @@ function toggle_fw_check(state) {
 			<tr>
 				<th><#FW_auto_time#></th>
 				<td>
-					<select name="webs_update_time_x_hour" class="input_option" onchange="save_update_enable();"></select> : 
-					<select name="webs_update_time_x_min" class="input_option" onchange="save_update_enable();"></select>
+					<select id="webs_update_time_x_hour" name="webs_update_time_x_hour" class="input_option" onchange="save_update_enable();"></select> : 
+					<select id="webs_update_time_x_min" name="webs_update_time_x_min" class="input_option" onchange="save_update_enable();"></select>
 					<span id="system_time" class="devicepin" style="color:#FFFFFF;"></span>
 					<br><span id="dstzone" style="display:none;margin-left:5px;color:#FFFFFF;"></span>
 				</td>	
+			</tr>
+
+			<tr>
+				<td colspan="2">
+					<#FW_auto_upgrade_desc#>
+				</td>
+			</tr>
+		</table>
+
+		<table id="secur_stab_setting" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
+			<thead>
+			<tr>
+				<td colspan="2"><#Secur_Stab_auto_upgrade#></td>
+			</tr>	
+			</thead>
+			<tr>
+				<th><#Secur_Stab_auto_upgrade#></th>
+				<td>
+					<div align="center" class="left" style="width:75px; float:left; cursor:pointer;" id="switch_security_update_enable"></div>
+					<script type="text/javascript">
+					$('#switch_security_update_enable').iphoneSwitch(httpApi.securityUpdate.get(),
+						function(){
+							//on
+							ASUS_EULA.config(function(){httpApi.securityUpdate.set(1);},refreshpage)
+							if(!ASUS_EULA.check("asus_pp", "ASD")) return false;
+							if(!ASUS_EULA.check("asus_pp", "AHS")) return false;
+
+							httpApi.securityUpdate.set(1);
+						},
+						function(){
+							//off
+							httpApi.securityUpdate.set(0);
+						}
+					);
+					</script>
+				</td>	
+			</tr>
+
+			<tr>
+				<td colspan="2">
+					<#Secur_Stab_auto_upgrade_desc#>
+				</td>
 			</tr>
 		</table>
 
@@ -2046,12 +2167,37 @@ function toggle_fw_check(state) {
 				</td>
 			</tr>
 		</table>
-		<div class="aimesh_manual_fw_update_hint" style="display:none;">
+		<div class="warning_desc aimesh_manual_fw_update_hint" style="display:none;">
 			<#FW_note#> <#FW_note_AiMesh#>
 		</div>
 		
 </form>
-		
+
+<form method="post" action="do_modem_fwupgrade.cgi" name="modem_form" target="hidden_frame" enctype="multipart/form-data">
+<input type="hidden" name="current_page" value="Advanced_FirmwareUpgrade_Content.asp">
+<input type="hidden" name="next_page" value="">
+<input type="hidden" name="action_mode" value="">
+<input type="hidden" name="action_script" value="">
+<input type="hidden" name="action_wait" value="">
+<input type="hidden" name="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
+<input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
+		<table id="modem_fw_upgrade" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable" style="display: none;">
+			<thead>
+				<tr>
+					<td colspan="2"><#Mobile_modem_fw#></td>
+				</tr>
+			</thead>
+			<tr><th><#Modem_fw_ver#></th><td><div id="usb_modem_act_swver"><% nvram_get("usb_modem_act_swver"); %></div></td></tr>
+			<tr>
+				<th><#New_modem_fw#></th>
+				<td>
+					<input type="file" name="file" class="input" style="color:#FFCC00;*color:#000;width: 194px;">
+					<input type="button" name="upload" class="button_gen" onclick="upgrade_modem_fw()" value="<#CTL_upload#>" />
+				</td>
+			</tr>
+		</table>
+</form>
+
 <form method="post" name="firmware_form" action="/start_apply.htm" target="hidden_frame">
 <input type="hidden" name="productid" value="<% nvram_get("productid"); %>">
 <input type="hidden" name="current_page" value="Advanced_FirmwareUpgrade_Content.asp">

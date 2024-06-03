@@ -1,0 +1,7 @@
+config CMD_DHRYSTONE
+	bool "Support the 'dhry' command to run the dhrystone benchmark"
+	help
+	  Dhrystone is an old benchmark in the public domain that gives a
+	  rough idea of CPU performance. This enables a 'dhry' command
+	  which runs this benchmark within U-Boot and reports the performance.
+	  The number of 'Dhrystone MIPS' is also reported.

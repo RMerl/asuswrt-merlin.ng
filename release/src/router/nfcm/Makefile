@@ -11,8 +11,10 @@ include ../.config
 
 ifeq ($(HND_ROUTER), y)
 NETLINK_LIB_VER := 1.0.1
-else
+else ifeq ($(DNSQUERY_INTERCEPT), y)
 NETLINK_LIB_VER := 1.0.2
+else
+NETLINK_LIB_VER := 1.0.1
 endif
 
 CFLAGS += -I$(TOP)/libev-4.33 -I$(TOP)/libnfnetlink-$(NETLINK_LIB_VER)/include 
@@ -146,7 +148,16 @@ endif
 #CFLAGS += -DNFCMDBG
 #CFLAGS += -D_MACDBG_
 
+ifeq ($(HND_ROUTER_BE_4916), y)
+CFLAGS+= -fcommon
+endif
+
+ifeq ($(wildcard $(SRCBASE)/router/nfcm/*.c),)
+all:
+	-cp -f prebuild/nfcm nfcm
+else
 all: nfcm
+endif
 
 .c.o:
 	$(CC) -c $*.c $(CFLAGS)

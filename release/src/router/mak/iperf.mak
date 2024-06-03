@@ -4,7 +4,11 @@ iperf: iperf/Makefile
 
 iperf/Makefile: iperf/configure
 	# libstdc++.so.6 is required if you want to remove CFLAGS=-static below.
-	( cd iperf ; $(if $(QCA)$(LANTIQ),,CFLAGS=-static) $(CONFIGURE) ac_cv_func_malloc_0_nonnull=yes $(if $(QCA),ac_cv_func_gettimeofday=yes ac_cv_func_inet_ntop=yes))
+	( cd iperf ; $(if $(QCA)$(LANTIQ)$(MT798X),,CFLAGS=-static) $(CONFIGURE) \
+		ac_cv_func_malloc_0_nonnull=yes \
+		$(if $(QCA),ac_cv_func_gettimeofday=yes ac_cv_func_inet_ntop=yes) \
+		$(if $(MT798X),ac_cv_sizeof_bool=1) \
+	)
 
 iperf/configure:
 	( cd iperf ; ./autogen.sh )
@@ -19,3 +23,4 @@ endif
 iperf-clean:
 	[ ! -f iperf/Makefile ] || $(MAKE) -C iperf distclean
 	@rm -f iperf/Makefile
+

@@ -49,6 +49,10 @@ LDFLAGS += -L$(TOP)/libqcsapi_client -lqcsapi_client
 endif
 endif
 
+ifeq ($(HND_ROUTER_BE_4916), y)
+CFLAGS+= -fcommon
+endif
+
 LDFLAGS += -L$(TOP)/curl/lib/.libs -lcurl -L$(TOP)/
 LDFLAGS += -L$(TOP)/libasc -lasc
 
@@ -152,6 +156,10 @@ endif
 CFLAGS += -I$(TOP)/amas-utils -I$(TOP)/shared/sysdeps/amas -pthread
 LDFLAGS += -L$(TOP)/amas-utils -lamas-utils -lpthread
 LDFLAGS += -L$(LLDPD_DIR)/src/lib/.libs -llldpctl -L$(STAGEDIR)/usr/lib/ -ljansson
+endif
+
+ifeq ($(RTCONFIG_TRUSTZONE),y)
+LDFLAGS += -L$(TOP)/ateed/ -latee
 endif
 
 ifneq ($(AC2900),y)

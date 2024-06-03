@@ -1,0 +1,44 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * NXP LX2160ARDB device tree source
+ *
+ * Author:	Priyanka Jain <priyanka.jain@nxp.com>
+ *		Sriram Dash <sriram.dash@nxp.com>
+ *
+ * Copyright 2018 NXP
+ *
+ */
+
+/dts-v1/;
+
+#include "fsl-lx2160a.dtsi"
+
+/ {
+	model = "NXP Layerscape LX2160ARDB Board";
+	compatible = "fsl,lx2160ardb", "fsl,lx2160a";
+
+};
+
+&esdhc0 {
+	status = "okay";
+};
+
+&esdhc1 {
+	status = "okay";
+};
+
+&sata0 {
+	status = "okay";
+};
+
+&sata1 {
+	status = "okay";
+};
+
+&sata2 {
+	status = "okay";
+};
+
+&sata3 {
+	status = "okay";
+};

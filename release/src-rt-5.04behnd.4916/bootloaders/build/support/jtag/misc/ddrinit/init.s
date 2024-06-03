@@ -1,0 +1,26 @@
+.section .text.startup
+
+.global _start
+_start:
+	mov r0, #0x0
+	mov r2, #0x0
+	mov r3, #0x0
+	mov r4, #0x0
+	mov r5, #0x0
+	mov r6, #0x0
+	mov r7, #0x0
+	mov r8, #0x0
+	mov r9, #0x0
+	mov r10, #0x0
+	mov r11, #0x0
+	mov r12, #0x0
+	mov r13, #0x0
+	mov r14, #0x0
+	ldr r1, =_start
+#	mov r1, #0xfffe
+#	lsl r1, r1, #0x10
+	add r1, #0x6000
+	mov sp, r1
+	mov r1, #0x0
+	b ddrinit
+

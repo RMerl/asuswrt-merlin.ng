@@ -1,0 +1,9 @@
+config BCM_PCAP
+	tristate "Packet capture utility from kernel driver"
+	depends on NF_CONNTRACK
+	default y
+
+config BCM_PCAP_IMPL
+	int "Implementaion version of pcap driver"
+	depends on BCM_PCAP
+	default 1

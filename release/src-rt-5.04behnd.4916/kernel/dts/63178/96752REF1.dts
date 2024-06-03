@@ -1,0 +1,168 @@
+#include "63178.dtsi"
+
+/ {
+    memory_controller {
+        memcfg = <(BP_DDR_SPEED_800_11_11_11 | \
+                   BP_DDR_TOTAL_SIZE_512MB   | \
+                   BP_DDR_DEVICE_WIDTH_16    | \
+                   BP_DDR_TOTAL_WIDTH_16BIT  | \
+                   BP_DDR_63178_DEFAULT)>;
+    };
+
+	buttons {
+		compatible = "brcm,buttons";
+		reset_button {
+			ext_irq = <&bca_extintr 4 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			press {
+				print = "Button Press -- Hold for 5s to do restore to default";
+			};
+			hold {
+				rst_to_dflt = <5>;
+			};
+			release {
+				reset = <0>;
+			};	
+		};
+		ses_button {
+			ext_irq = <&bca_extintr 5 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			release {
+				ses_short_period = <0>;
+				ses_long_period = <3>;
+			};
+		};
+	};
+
+	periph {
+		i2s: bcm63xx-i2s {
+			pinctrl-0 = <&e_i2s_sclk_pin_29 &e_i2s_lrck_pin_30 &e_i2s_rx_sdata_pin_31 &e_i2s_tx_sdata_pin_32 &e_i2s_mclk_pin_33>;
+			pinctrl-names = "default";
+			compatible = "brcm,bcm63xx-i2s";
+			reg = <0x2080 0x21>;
+			interrupts = <GIC_SPI 78 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&i2sclk>, <&osc>;
+			clock-names = "i2sclk","i2sosc"; 
+		};
+	};
+
+};
+
+&mdio_sf2 {
+    /* Port PHY mapping:
+            port_imp -8#0- port_gphy0 <--> phy_gphy0
+                      ##1- port_gphy1 <--> phy_gphy1
+     */
+	/* Disable EGPHY2~EGPHY4 */
+	phy_gphy2 {
+		status = "disabled";
+	};
+	phy_gphy3 {
+		status = "disabled";
+	};
+	phy_gphy4 {
+		status = "disabled";
+	};
+};
+
+&legacy_leds {
+	wl-sess-led = <&led4>;
+};
+
+
+&switch0 {
+	ports {
+		port_gphy0 {
+			network-leds = <&led00 &led01>;
+			status = "okay";
+		};
+
+		port_gphy1 {
+			network-leds = <&led02 &led03>;
+			status = "okay";
+		};
+	};
+};
+
+&led_ctrl {
+	/* GPHY0_100/10M */
+	led00: port_0-led-0-pin_0 {
+		active_low;
+		link = <(LED_SPEED_10|LED_SPEED_100)>;
+		activity = <(LED_SPEED_10|LED_SPEED_100)>;
+		status = "okay";
+	};
+
+	/* GPHY0_1G */
+	led01: port_0-led-1-pin_22 {
+		active_low;
+		link = <LED_SPEED_1G>;
+		activity = <LED_SPEED_1G>;
+		status = "okay";
+	};
+
+	/* GPHY1_100/10M */
+	led02: port_1-led-0-pin_7 {
+		active_low;
+		link = <(LED_SPEED_10|LED_SPEED_100)>;
+		activity = <(LED_SPEED_10|LED_SPEED_100)>;
+		status = "okay";
+	};
+
+	/* GPHY1_1G */
+	led03: port_1-led-1-pin_6 {
+		active_low;
+		link = <LED_SPEED_1G>;
+		activity = <LED_SPEED_1G>;
+		status = "okay";
+	};
+	led4: sw_led_17-pin_29 {
+		active_high;
+		status = "okay";
+	};
+};
+
+&vreg_sync {
+		pinctrl-0 = <&vreg_sync_pin_2>;
+		pinctrl-names = "default";
+};
+
+&hs_uart0 {
+	pinctrl-0 = <&b_hs_uart_cts_pin_22 &b_hs_uart_rts_pin_12 &b_hs_uart_sin_pin_21 &b_hs_uart_sout_pin_20>;
+	pinctrl-names = "default";
+};
+
+&usb_ctrl {
+	pinctrl-names="default";
+	pinctrl-0 = <&usb0a_pwrflt_pin_83 &usb0a_pwron_pin_84 &usb1a_pwrflt_pin_85 &usb1a_pwron_pin_86>;
+	status = "okay";
+	xhci-enable;
+	pwron-bias-pull-up;
+};
+
+&usb0_xhci {
+	status = "okay";
+};
+
+&usb0_ehci {
+	status = "okay";
+};
+
+&usb0_ohci {
+	status = "okay";
+};
+
+&usb1_ehci {
+	status = "okay";
+};
+
+&usb1_ohci {
+	status = "okay";
+};
+
+&pincontroller {
+	pinctrl-names = "default";
+	pinctrl-0 = <&wl_fem_ctrl_0_pin_34 &wl_fem_ctrl_1_pin_35 &wl_fem_ctrl_2_pin_36 &wl_fem_ctrl_3_pin_37 &wl_fem_ctrl_4_pin_38 &wl_fem_ctrl_5_pin_39 &wl_fem_ctrl_6_pin_40 &wl_fem_ctrl_7_pin_41 &wl_fem_ctrl_8_pin_42 &wl_fem_ctrl_9_pin_43  &wl_fem_ctrl_10_pin_44 &wl_fem_ctrl_11_pin_45>;
+};
+
+&nand {
+	status = "okay";
+};

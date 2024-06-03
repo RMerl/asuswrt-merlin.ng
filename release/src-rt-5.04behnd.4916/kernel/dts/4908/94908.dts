@@ -1,0 +1,16 @@
+#include "4908.dtsi"
+
+&usb_ctrl {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&usb0_pwr_pins &usb1_pwr_pins>;
+};
+
+&usb0_ehci {
+	status = "okay";
+};
+
+&usb0_ohci {
+	status = "okay";
+};
+

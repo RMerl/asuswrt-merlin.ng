@@ -1,0 +1,16 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2018 NXP
+ */
+
+&qspi1 {
+	num-cs = <2>;
+
+	flash0: n25q256a@0 {
+		compatible = "jedec,spi-nor";
+	};
+
+	flash1: n25q256a@1 {
+		compatible = "jedec,spi-nor";
+	};
+};

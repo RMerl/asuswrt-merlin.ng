@@ -1,0 +1,53 @@
+Texas Instruments TI SCI Clock Controller
+=========================================
+
+All clocks on Texas Instruments' SoCs that contain a System Controller,
+are only controlled by this entity. Communication between a host processor
+running an OS and the System Controller happens through a protocol known
+as TI SCI[1]. This clock implementation plugs into the common clock
+framework and makes use of the TI SCI protocol on clock API requests.
+
+[1] http://processors.wiki.ti.com/index.php/TISCI
+
+Clock Controller Node
+=====================
+The clock controller node represents the clocks managed by the SYSFW. Because
+this relies on the TI SCI protocol to communicate with the SYSFW it must be a
+child of the sysfw node.
+
+Required Properties:
+--------------------
+- compatible: Must be "ti,k2g-sci-clk"
+- #clock-cells: Must be be 2. In clock consumers, this cell represents the
+		device ID and clock ID exposed by the SYSFW firmware.
+
+Example (AM65x):
+----------------
+	dmsc: dmsc {
+		compatible = "ti,k2g-sci";
+		...
+		k3_clks: clocks {
+			compatible = "ti,k2g-sci-clk";
+			#clock-cells = <2>;
+		};
+	};
+
+Clock Consumers
+===============
+Hardware blocks supplied by a clock should contain a "clocks" property that is
+a phandle pointing to the clock controller node along with an index representing
+the device id together with a clock ID to be passed to the SYSFW for device
+control.
+
+Required Properties:
+--------------------
+- clocks: phandle pointing to the corresponding clock node, an ID representing
+	  the device, and an index representing a clock.
+
+Example (AM65x):
+----------------
+	uart2: serial@02800000 {
+		compatible = "ti,omap4-uart";
+		...
+		clocks = <&k3_clks 0x0007 1>;
+	};

@@ -48,7 +48,11 @@ extern const int   BUILDNUM;
 extern const char  BUILD_TYPE[];
 extern const int   PATCH;
 
+#if defined(KERNEL5_MUSL64)
+static char s_sysinfo [200] = "\0";
+#else
 static char s_sysinfo [80] = "\0";
+#endif
 
 extern struct udpxy_opt g_uopt;
 

@@ -1,0 +1,6 @@
+DB_MV784MP_GP BOARD
+M:	Stefan Roese <sr@denx.de>
+S:	Maintained
+F:	board/Marvell/db-mv784mp-gp/
+F:	include/configs/db-mv784mp-gp.h
+F:	configs/db-mv784mp-gp_defconfig

@@ -1,0 +1,25 @@
+if TARGET_VME8349
+
+config SYS_BOARD
+	default "vme8349"
+
+config SYS_VENDOR
+	default "esd"
+
+config SYS_CONFIG_NAME
+	default "vme8349"
+
+endif
+
+if TARGET_CADDY2
+
+config SYS_BOARD
+	default "vme8349"
+
+config SYS_VENDOR
+	default "esd"
+
+config SYS_CONFIG_NAME
+	default "caddy2"
+
+endif

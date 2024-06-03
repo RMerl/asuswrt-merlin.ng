@@ -1,0 +1,62 @@
+#include "96765SV1.dts"
+
+/ {
+
+	memory_controller {
+		memcfg = <(BP_DDR_TYPE_DDR4       | \
+			BP_DDR_SPEED_1600_22_22_22    | \
+			BP_DDR_TOTAL_SIZE_4096MB      | \
+			BP_DDR_DEVICE_WIDTH_8         | \
+			BP_DDR_TOTAL_WIDTH_16BIT      | \
+			BP_DDR_6765_DEFAULT          | \
+			BP_DDR_CONFIG_DEBUG)>;
+	};
+	sfp: sfp {
+		compatible = "brcm,sfp";
+		pinctrl-name = "default";
+		pinctrl-0 = <&a_slan_sd_rx_los_pin_4>;
+		mod-def0 = <&bca_extintr 3 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_BOTH_EDGE | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+		i2c-bus = <&i2c0>;
+		status = "okay";
+	};
+};
+
+
+&mdio_sf2 {
+
+	phy_cascade {
+		status = "disabled";
+	};
+       /* Port PHY mapping:
+            port_imp -8#0- port_xhy <----> phy_xphy
+                      # #
+                      ##5- port_sgmii <-> phy_serdes - sfp
+         */
+	phy_xphy {
+		status = "okay";
+	};
+	phy_serdes {
+		trx = <&sfp>;
+		status = "okay";
+		/delete-property/ phy-handle;
+	};
+};
+
+&ethphytop {
+    xphy0-enabled;
+    status = "okay";
+};
+
+&switch0 {
+
+	ports {
+		port_xphy {
+			phy-handle = <&phy_xphy>;
+			status = "okay";
+		};
+		port_sgmii {
+			phy-handle = <&phy_serdes>;
+			status = "okay";
+		};
+	};
+};

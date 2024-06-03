@@ -83610,6 +83610,8 @@ if test "x$ac_cv_lib_pthread_pthread_attr_init" = x""yes; then
 			else
 				PTHREAD_LDFLAGS="/opt/toolchains/crosstools-arm-gcc-5.3-linux-4.1-glibc-2.22-binutils-2.25/usr/arm-buildroot-linux-gnueabi/sysroot/usr/lib/libpthread.so"
 			fi
+		elif test "${RT4GAC86U}" = "y"; then
+			PTHREAD_LDFLAGS="${TOOLS}/lib/libpthread.so"
 		else
 			PTHREAD_LDFLAGS="$LD_LIBRARY_PATH/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/lib/libpthread.a"
 		fi

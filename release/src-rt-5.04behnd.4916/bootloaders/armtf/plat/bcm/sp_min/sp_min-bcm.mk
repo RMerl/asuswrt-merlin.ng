@@ -1,0 +1,1 @@
+LOAD_IMAGE_V2			:= 1

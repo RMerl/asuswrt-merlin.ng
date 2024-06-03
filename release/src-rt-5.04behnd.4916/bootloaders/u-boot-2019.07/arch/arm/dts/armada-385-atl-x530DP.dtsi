@@ -1,0 +1,149 @@
+// SPDX-License-Identifier: GPL-2.0
+
+&i2c0 {
+	mux@71 {
+		compatible = "nxp,pca9548";
+
+		i2c@1 {
+			hwmon@2c {
+				compatible = "ti,lm87";
+				reg = <0x2c>;
+			};
+
+			hwmon@2d {
+				compatible = "ti,lm87";
+				reg = <0x2d>;
+			};
+
+			hwmon@2e {
+				pwm-polarity = <1>;
+			};
+		};
+
+		psu_a_adapter: i2c@4 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <4>;
+		};
+
+		psu_b_adapter: i2c@5 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <5>;
+		};
+
+		i2c@6 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <6>;
+
+			misc_gpio: gpio@26 {
+				compatible = "nxp,pca9555";
+				gpio-controller;
+				#gpio-cells = <2>;
+				reg = <0x26>;
+				interrupt-parent = <&gpio0>;
+				interrupts = <5 IRQ_TYPE_LEVEL_LOW>;
+				status = "okay";
+				interrupt-controller;
+				#interrupt-cells = <2>;
+
+				psu_bank2 {
+					gpio-hog;
+					gpios = <0 GPIO_ACTIVE_HIGH>;
+					output-high;
+					line-name = "psu-bank2";
+				};
+			};
+		};
+	};
+};
+
+/ {
+	psu_slot_a {
+		compatible = "atl,dts-overlay-gpio-psu-slot";
+		slot-name = "PSU Bay A";
+		board-index = <1>;
+		present-gpio = <&misc_gpio 1 GPIO_ACTIVE_LOW>;
+		output-ok-gpio = <&gpio1 16 GPIO_ACTIVE_HIGH>;
+		interrupt-parent = <&misc_gpio>;
+		interrupts = <1 IRQ_TYPE_EDGE_BOTH>;
+		overlay = <&psu_a_overlay>;
+	};
+
+	psu_slot_b {
+		compatible = "atl,dts-overlay-gpio-psu-slot";
+		slot-name = "PSU Bay B";
+		board-index = <2>;
+		present-gpio = <&misc_gpio 2 GPIO_ACTIVE_LOW>;
+		output-ok-gpio = <&gpio1 22 GPIO_ACTIVE_HIGH>;
+		interrupt-parent = <&misc_gpio>;
+		interrupts = <2 IRQ_TYPE_EDGE_BOTH>;
+		overlay = <&psu_b_overlay>;
+	};
+
+	fan_slot_a {
+		compatible = "atl,fan05-slot";
+		slot-name = "Fan Bay A";
+		board-index = <3>;
+		present-gpio = <&misc_gpio 3 GPIO_ACTIVE_LOW>;
+		fault-gpio = <&misc_gpio 11 GPIO_ACTIVE_LOW>;
+		interrupt-parent = <&misc_gpio>;
+		interrupts = <3 IRQ_TYPE_EDGE_BOTH>;
+		overlay = <&fan_a_overlay>;
+	};
+};
+
+/ {
+	psu_a_overlay: psu_a {
+		fragment@0 {
+			target = <&psu_a_adapter>;
+			__overlay__ {
+				#address-cells = <1>;
+				#size-cells = <0>;
+
+				psu@51 {
+					compatible = "atl,atl-pwr-gen2";
+					reg = <0x51>;
+					board-index = <1>;
+				};
+			};
+		};
+	};
+};
+
+/ {
+	psu_b_overlay: psu_b {
+		fragment@0 {
+			target = <&psu_b_adapter>;
+			__overlay__ {
+				#address-cells = <1>;
+				#size-cells = <0>;
+
+				psu@51 {
+					compatible = "atl,atl-pwr-gen2";
+					reg = <0x51>;
+					board-index = <2>;
+				};
+			};
+		};
+	};
+};
+
+/ {
+	fan_a_overlay:fan_a {
+		fragment@1 {
+			target-path = "/";
+			__overlay__ {
+				fan@1 {
+					compatible = "atl,fan05";
+					board-index = <3>;
+					module-id-gpios =
+						<&misc_gpio 4 GPIO_ACTIVE_HIGH>,
+						<&misc_gpio 5 GPIO_ACTIVE_HIGH>,
+						<&misc_gpio 6 GPIO_ACTIVE_HIGH>;
+				};
+			};
+		};
+	};
+};

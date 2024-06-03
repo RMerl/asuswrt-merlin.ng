@@ -32,6 +32,31 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#ifdef RTCONFIG_MULTILAN_CFG
+char* pptpd_get_lan_ifnames(char* buf, size_t len)
+{
+	MTLAN_T *pmtl = (MTLAN_T *)INIT_MTLAN(sizeof(MTLAN_T));
+	size_t mtl_sz = 0;
+	int i;
+	int vpns_idx = get_vpns_idx_by_proto_unit(VPN_PROTO_PPTP, 0);
+
+	if (get_mtlan_by_idx(SDNFT_TYPE_VPNS, vpns_idx, pmtl, &mtl_sz)) {
+		memset(buf, 0, len);
+		for (i = 0; i < mtl_sz; i++) {
+			strlcat(buf, pmtl[i].nw_t.ifname, len);
+			strlcat(buf, " ", len);
+		}
+		FREE_MTLAN((void *)pmtl);
+		_dprintf("%s: %s\n", __FUNCTION__, buf);
+		return buf;
+	}
+	else {
+		FREE_MTLAN((void *)pmtl);
+		return NULL;
+	}
+}
+#endif
+
 void write_chap_secret(char *file)
 {
 	FILE *fp;
@@ -78,6 +103,12 @@ void start_pptpd(void)
 	char *pptpd_client, *vpn_network, *vpn_netmask;
 	int ret, pptpd_opt, count, port;
 	char lanip[20] = {0};
+	char lan_ifname[16] = {0};
+#ifdef RTCONFIG_MULTILAN_CFG
+	MTLAN_T *pmtl = (MTLAN_T *)INIT_MTLAN(sizeof(MTLAN_T));
+	size_t mtl_sz = 0;
+	int vpns_idx = get_vpns_idx_by_proto_unit(VPN_PROTO_PPTP, 0);
+#endif
 
 	if (!nvram_get_int("pptpd_enable"))
 		return;
@@ -106,6 +137,23 @@ void start_pptpd(void)
 		eval("fc", "config", "--gre", "0");
 	}
 #endif
+#endif
+
+#ifdef RTCONFIG_MULTILAN_CFG
+	if (get_mtlan_by_idx(SDNFT_TYPE_VPNS, vpns_idx, pmtl, &mtl_sz) && mtl_sz) {
+		if (mtl_sz != 1)
+			logmessage("PPTPD", "NOTE: only %s full function.", pmtl[0].nw_t.ifname);
+		strlcpy(lanip, pmtl[0].nw_t.addr, sizeof(lanip));
+		strlcpy(lan_ifname, pmtl[0].nw_t.ifname, sizeof(lan_ifname));
+	}
+	else {
+		strlcpy(lanip, nvram_safe_get("lan_ipaddr"), sizeof(lanip));
+		strlcpy(lan_ifname, nvram_safe_get("lan_ifname"), sizeof(lan_ifname));
+	}
+	FREE_MTLAN((void *)pmtl);
+#else
+	strlcpy(lanip, nvram_safe_get("lan_ipaddr"), sizeof(lanip));
+	strlcpy(lan_ifname, nvram_safe_get("lan_ifname"), sizeof(lan_ifname));
 #endif
 
 	// cprintf("stop vpn modules\n");
@@ -171,13 +219,13 @@ void start_pptpd(void)
 		count += fprintf(fp, "ms-dns %s\n", nvram_safe_get("pptpd_dns1")) > 0 ? 1 : 0;
 	if (nvram_invmatch("pptpd_dns2", ""))
 		count += fprintf(fp, "ms-dns %s\n", nvram_safe_get("pptpd_dns2")) > 0 ? 1 : 0;
-	if (count == 0 && nvram_invmatch("lan_ipaddr", ""))
-		fprintf(fp, "ms-dns %s\n", nvram_safe_get("lan_ipaddr"));
+	if (count == 0 && lanip[0] != '\0')
+		fprintf(fp, "ms-dns %s\n", lanip);
 
         //WINS Server
 	count = 0;
 	if (nvram_match("pptpd_ms_network", "1") && nvram_match("smbd_enable", "1"))
-		count += fprintf(fp, "ms-wins %s\n", nvram_safe_get("lan_ipaddr")) > 0 ? 1 : 0;
+		count += fprintf(fp, "ms-wins %s\n", lanip) > 0 ? 1 : 0;
 	if (nvram_invmatch("pptpd_wins1", "") && count < 2)
 		count += fprintf(fp,"ms-wins %s\n", nvram_safe_get("pptpd_wins1")) > 0 ? 1 : 0;
 	if (nvram_invmatch("pptpd_wins2", "") && count < 2)
@@ -223,12 +271,12 @@ void start_pptpd(void)
 	// Create pptpd.conf options file for pptpd daemon
 	fp = fopen("/tmp/pptpd/pptpd.conf", "w");
 	fprintf(fp, "localip %s\n"
-		"remoteip %s\n", nvram_safe_get("lan_ipaddr"),
+		"remoteip %s\n", lanip,
 		nvram_safe_get("pptpd_clients"));
 	if (nvram_invmatch("pptpd_broadcast", "") &&
 	    nvram_invmatch("pptpd_broadcast", "disable")) {
 		fprintf(fp, "bcrelay %s,%s\n",
-			nvram_safe_get("lan_ifname"), "pptp[0-9]+");
+			lan_ifname, "pptp[0-9]+");
 	}
 
 	append_custom_config("pptpd.conf", fp);
@@ -253,7 +301,6 @@ void start_pptpd(void)
 #endif
 		fprintf(fp, "iptables -t mangle -A FORWARD -i $1 -m state --state NEW -j MARK --set-mark 0x01/0x7\n");
 #endif
-	snprintf(lanip, sizeof(lanip), "%s", nvram_safe_get("lan_ipaddr"));
 	/* Add static route for vpn client */
 	nv = nvp = strdup(nvram_safe_get("pptpd_sr_rulelist"));
 	if (nv) {

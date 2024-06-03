@@ -1,0 +1,179 @@
+<html>
+	<iframe id="settingsWindow" style="
+		width: 100%;
+	" src="/Advanced_Wireless_Content.asp"></iframe>
+
+	<script>
+		var Session = Session || (function(){
+			var win = window.top || window;
+			try{
+				var store = (win.name ? JSON.parse(win.name) : {});
+				function Save() {
+					win.name = JSON.stringify(store);
+				};
+
+				if (window.addEventListener) window.addEventListener("unload", Save, false);
+				else if (window.attachEvent) window.attachEvent("onunload", Save);
+				else window.onunload = Save;
+
+				return {
+					set: function(name, value) {
+						store[name] = value;
+					},
+					get: function(name) {
+						return (store[name] ? store[name] : undefined);
+					},
+					clear: function() { store = {}; },
+					dump: function() { return JSON.stringify(store); }
+				};
+			}
+			catch(e){
+				win.name = ""; /* reset cache */
+				return {
+					set: function(){},
+					get: function(){},
+					clear: function(){},
+					dump: function(){}
+				};
+			}
+		})();
+
+		var webWrapper = true;
+		let targetPage = urlParameter.get("page");
+		if (targetPage === "" || targetPage === undefined || targetPage == null) {
+			let lastPage = Session.get("lastPage") || "";
+			if(lastPage == "index.html") lastPage = "";
+
+			if (lastPage !== "" && lastPage !== undefined) {
+				targetPage = lastPage;
+			} else {
+				targetPage = "Advanced_Wireless_Content.asp";
+			}
+		} else {
+			Session.set("lastPage", targetPage);
+			location.href = isMultisiteApp() ? "/index.html?url=settings&current_theme=white&mapp=true" : "/index.html?url=settings&current_theme=white"
+		}
+		var currentPage = $('#settingsWindow').attr('src').replace("/", "");
+		if (currentPage != targetPage) $('#settingsWindow').attr({'src': "/" + targetPage})
+
+		var findColorAndReplace = function(styleSheet, oldColor, newColor){
+			function hexToRgb(hex) {
+				var result;
+
+				result = /([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+				var retData = result ? [
+					parseInt(result[1], 16),
+					parseInt(result[2], 16),
+					parseInt(result[3], 16)
+				] : null;
+
+				return retData ? retData.join(", ") : false;
+			}
+
+			$("#settingsWindow").contents().find('*').filter(function(){
+				var getElement = $(this).css(styleSheet) || "";
+
+				if(getElement.indexOf(hexToRgb(oldColor)) != -1){
+					var targetStyleSheet = (oldColor == "FFCC00") ? {"font-size": "13px"} : {}
+					var originStyle = $(this).css(styleSheet);
+
+					if(originStyle){
+						targetStyleSheet[styleSheet] = (newColor != "transparent") ? originStyle.replace(hexToRgb(oldColor), hexToRgb(newColor)) : "transparent";
+					}
+
+					$(this).css(targetStyleSheet)
+
+				}
+			})
+		}
+
+		function setupWrapper(){
+			if(document.querySelector("#settingsWindow").contentWindow.document.body == null) return false;
+
+			var iframe = $("#settingsWindow").contents();
+			iframe.find(".formfonttitle").parent().addClass("p-0 m-0");
+			iframe.find("#whiteThemeWrapper table").css({"width": "100%"});
+
+			// top banner
+			iframe.find("#TopBanner").hide()
+
+			// menutree
+			iframe.find(".menu_Split").hide();
+			iframe.find(".menu_Split").first().show();
+			iframe.find("#mainMenu").parent().addClass("bg-shadow-right");
+			iframe.find("#tabMenu").parent().addClass("p-tabMenu");
+
+			// iframe.find(".menu_Split")[0].show()
+			iframe.find("#QIS_wizard_menu").remove()
+			iframe.find("#index_menu").remove()
+			iframe.find("#index_menu").remove()
+			iframe.find("#SDN_menu").remove()
+			iframe.find("#AiMesh_menu").remove()
+			iframe.find("#cloud_main_menu").remove()
+			iframe.find("#AiProtection_HomeProtection_menu").remove()
+			iframe.find("#TrafficAnalyzer_Statistic_menu").remove()
+			iframe.find("#Guest_network_menu").remove()
+			iframe.find("#Advanced_Smart_Home_Alexa_menu").remove()
+			iframe.find("#Advanced_VPNServer_Content_menu").remove()
+			// submenu
+			iframe.find("#tabMenu").parent().css({
+				"text-align": "center"
+			})
+
+			iframe.find("#tabMenu table").css({
+				"width": "100%",
+				"border-spacing": "0px"
+			})
+
+			iframe.find(".tab").parent().css({
+				"border-bottom": "solid 4px #dcdcdc"
+			})
+
+			iframe.find(".tabClicked").parent().css({
+				"border-bottom": "solid 4px #006ce1"
+			})
+
+			iframe.find("#FormTitle").attr({
+				"width": "100%"
+			})
+
+			iframe.find(".formfonttitle").hide()
+			iframe.find(".splitLine").hide()
+			iframe.find(".button_gen_dis").removeClass("button_gen_dis").addClass("button_gen")
+			iframe.find(".hint-color").removeClass("hint-color").addClass("warning_desc")
+
+			// footer
+			iframe.find("#footer").hide()
+		}
+
+		function setupBusinessUI(){
+			findColorAndReplace("color", "FFFFFF", "006CE1");
+			findColorAndReplace("color", "FFCC00", "006CE1");
+			setTimeout(function(){findColorAndReplace("color", "FFCC00", "e10000");}, 500);
+
+			findColorAndReplace("background-color", "475A5F", "transparent");
+			findColorAndReplace("background-color", "4D595D", "transparent");
+
+			if(theme.toLocaleUpperCase() == "WHITE"){
+				$("#settingsWindow").contents().find('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component_' + theme.toLocaleUpperCase() + '.css">');
+			}
+
+			setupWrapper();
+
+			// content
+			$("#settingsWindow").contents().find("#FormTitle").parent().parent().parent().parent()
+				.wrap( "<div id='whiteThemeWrapper'></div>")
+
+			setTimeout(function(){
+				$("#settingsWindow").contents().find("body").hide().css("visibility", "visible").fadeIn();
+			}, 100);
+
+			$("#settingsWindow").contents().find("body").addClass("scaleBody")
+		}
+
+		var iframe = document.getElementById('settingsWindow');
+		iframe.onload = function() {
+			iframe.style.height = `${document.body.clientHeight - 70}px`;
+		};
+	</script>
+</html>

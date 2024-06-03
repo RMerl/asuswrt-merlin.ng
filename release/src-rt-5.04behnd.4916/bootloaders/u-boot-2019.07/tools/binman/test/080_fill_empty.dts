@@ -1,0 +1,15 @@
+// SPDX-License-Identifier: GPL-2.0+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		size = <16>;
+		fill {
+			size = <0>;
+			fill-byte = [ff];
+		};
+	};
+};

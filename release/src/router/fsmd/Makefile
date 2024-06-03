@@ -7,6 +7,10 @@ CFLAGS += $(EXTRA_FLAG)
 CFLAGS += -I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T
 endif
 
+ifeq ($(HND_ROUTER_BE_4916), y)
+CFLAGS+= -fcommon
+endif
+
 CFLAGS += -I$(TOP)/shared -I$(SRCBASE)/include
 LDFLAGS += -L$(TOP)/shared -lshared -L$(TOP_PLATFORM)/nvram${BCMEX}$(EX7) -lnvram ${EXTRA_NV_LDFLAGS} -lpthread
 INSTALL = install
@@ -21,6 +25,10 @@ endif
 
 ifeq ($(RTCONFIG_BCM_502L07P2),y)
 LDFLAGS += -L$(TOP_PLATFORM)/ethctl_lib -lethctl
+endif
+
+ifeq ($(RTCONFIG_TRUSTZONE),y)
+LDFLAGS += -L$(TOP)/ateed/ -latee
 endif
 
 ifneq ($(wildcard ./prebuild),)

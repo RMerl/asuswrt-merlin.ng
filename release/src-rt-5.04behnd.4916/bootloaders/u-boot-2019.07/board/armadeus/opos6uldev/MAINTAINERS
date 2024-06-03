@@ -1,0 +1,6 @@
+OPOS6ULDev BOARD
+M:	Sébastien Szymanski <sebastien.szymanski@armadeus.com>
+S:	Maintained
+F:	board/armadeus/opos6uldev/
+F:	include/configs/opos6uldev.h
+F:	configs/opos6uldev_defconfig

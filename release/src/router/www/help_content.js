@@ -28,8 +28,6 @@ helpcontent[0] = new Array("",
 			"<#Access_Intranet_desc#>",
 			"Smart Connect is the feature which could automatically steer clients to the most appropriate band (2.4GHz, 5GHz-1 and 5GHz-2)." /*untranslated*/
 			 );
-if ("<% nvram_get("wl2_band"); %>".length == 0)
-	helpcontent[0][27] = "Smart Connect is the feature which could automatically steer clients to the most appropriate band (2.4GHz and 5GHz)."; /*untranslated*/
 helpcontent[1] = new Array("",
 						   "<#WLANConfig11b_x_APMode_itemdesc#>",
 						   "<#WLANConfig11b_Channel_itemdesc#>",
@@ -76,7 +74,8 @@ helpcontent[3] = new Array("",
 							"<#WLANConfig11b_x_roamingassit_desc#>",	//31
 							"<#WLANConfig11b_x_Airtime_Fairness_itemdesc#>",
 							"<#WLANConfig11b_x_Auto#>",
-							"<#WLANConfig11b_x_BTCoexistence_itemdesc#>"
+							"<#WLANConfig11b_x_BTCoexistence_itemdesc#>",
+							"<#WLANConfig11b_x_client_limit_itemdesc#>"
 							 );
 
 helpcontent[4] = new Array("",
@@ -195,7 +194,8 @@ helpcontent[11] = new Array("",
 							"<#usb_HDD_Hibernation_Desc#>",
 							"If there is no client connection for more than 1 minute, the PLC will enter sleep mode (power saving). The PLC will not wake up until the client connects. (It takes about ten seconds to wake up the PLC)", /* untranslated */
 							"Enable Login CAPTCHA is to ensure only human users to pass through and prevent brute force login attack.", /* untranslated */
-							"<#FW_auto_upgrade_desc#>");
+							"<#FW_auto_upgrade_desc#>",
+							"<#Secur_Stab_auto_upgrade_desc#>");	//15
 //Log
 helpcontent[12] = new Array("",
 							"<#General_x_SystemUpTime_itemdesc#>",
@@ -334,10 +334,8 @@ helpcontent[27] = new Array("",
 							"<#YandexDNS_mode1#>: <#YandexDNS_mode1desc#><br>" +
 							"<#YandexDNS_mode2#>: <#YandexDNS_mode2desc#>");
 
-if('<% nvram_default_get("lan_ipaddr"); %>' != "192.168.1.1"){
-	helpcontent[4][1] = "<#LANHostConfig_IPRouters_itemdesc#>".replace("192.168.1.1", '<% nvram_default_get("lan_ipaddr"); %>');
-	helpcontent[24][5] = "<#LANHostConfig_IPRouters_itemdesc#>".replace("192.168.1.1", '<% nvram_default_get("lan_ipaddr"); %>');
-}
+helpcontent[4][1] = "<#LANHostConfig_IPRouters_itemdesc#>".replace("192.168.1.1", '192.168.50.1');
+helpcontent[24][5] = "<#LANHostConfig_IPRouters_itemdesc#>".replace("192.168.1.1", '192.168.50.1');
 
 //28 is used by WAN Aggregation unexpectedly. Move help content of mobile broadband to 35.
 helpcontent[28] = new Array("");

@@ -1,0 +1,33 @@
+* Texas Instruments - dp83867 Giga bit ethernet phy
+
+Required properties:
+	- reg - The ID number for the phy, usually a small integer
+	- ti,rx-internal-delay - RGMII Recieve Clock Delay - see dt-bindings/net/ti-dp83867.h
+		for applicable values
+	- ti,tx-internal-delay - RGMII Transmit Clock Delay - see dt-bindings/net/ti-dp83867.h
+		for applicable values
+	- ti,fifo-depth - Transmitt FIFO depth- see dt-bindings/net/ti-dp83867.h
+		for applicable values
+	- enet-phy-lane-swap - Indicates that PHY will swap the TX/RX lanes to
+		compensate for the board being designed with the lanes swapped.
+	- enet-phy-no-lane-swap - Indicates that PHY will disable swap of the
+		TX/RX lanes.
+	- ti,clk-output-sel - Clock output select - see dt-bindings/net/ti-dp83867.h
+		for applicable values
+
+Default child nodes are standard Ethernet PHY device
+nodes as described in doc/devicetree/bindings/net/ethernet.txt
+
+Example:
+
+	ethernet-phy@0 {
+		reg = <0>;
+		ti,rx-internal-delay = <DP83867_RGMIIDCTL_2_25_NS>;
+		ti,tx-internal-delay = <DP83867_RGMIIDCTL_2_75_NS>;
+		ti,fifo-depth = <DP83867_PHYCR_FIFO_DEPTH_4_B_NIB>;
+		enet-phy-lane-no-swap;
+		ti,clk-output-sel = <DP83867_CLK_O_SEL_CHN_A_TCLK>;
+	};
+
+Datasheet can be found:
+http://www.ti.com/product/DP83867IR/datasheet

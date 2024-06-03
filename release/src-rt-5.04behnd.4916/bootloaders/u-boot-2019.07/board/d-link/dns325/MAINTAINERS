@@ -1,0 +1,6 @@
+DNS325 BOARD
+M:	Stefan Herbrechtsmeier <stefan@herbrechtsmeier.net>
+S:	Maintained
+F:	board/d-link/dns325/
+F:	include/configs/dns325.h
+F:	configs/dns325_defconfig

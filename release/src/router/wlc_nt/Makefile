@@ -51,6 +51,11 @@ ifeq ($(RTCONFIG_SW_HW_AUTH),y)
 CFLAGS  += -I$(TOP)/sw-hw-auth
 endif
 
+ifeq ($(RTCONFIG_TRUSTZONE),y)
+CFLAGS += -I$(TOP)/ateed/
+LDFLAGS += -L$(TOP)/ateed/ -latee
+endif
+
 vpath %.c $(SRCBASE)/shared $(WLAN_ComponentSrcDirs)
 
 ifeq ($(wildcard $(SRCBASE)/router/wlc_nt/*.c),)

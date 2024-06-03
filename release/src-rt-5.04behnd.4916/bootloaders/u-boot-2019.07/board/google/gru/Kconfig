@@ -1,0 +1,15 @@
+if TARGET_CHROMEBOOK_BOB
+
+config SYS_BOARD
+	default "gru"
+
+config SYS_VENDOR
+	default "google"
+
+config SYS_CONFIG_NAME
+	default "gru"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+
+endif

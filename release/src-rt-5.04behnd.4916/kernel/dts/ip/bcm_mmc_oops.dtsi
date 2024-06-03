@@ -1,0 +1,4 @@
+compatible = "mmcoops";
+start-offset = <MMC_OOPS_DUMP_OFFSET>;	/* start offset in 512B blocks */
+size = <MMC_OOPS_DUMP_SIZE>;		/* size in 512B blocks */
+record-size = <MMC_OOPS_DUMP_RECSIZE>;	/* size in 512B blocks */

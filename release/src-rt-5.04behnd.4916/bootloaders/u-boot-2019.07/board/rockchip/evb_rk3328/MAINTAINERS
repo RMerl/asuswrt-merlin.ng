@@ -1,0 +1,12 @@
+EVB-RK3328
+M:      Kever Yang <kever.yang@rock-chips.com>
+S:      Maintained
+F:      board/rockchip/evb_rk3328
+F:      include/configs/evb_rk3328.h
+F:      configs/evb-rk3328_defconfig
+
+ROCK64-RK3328
+M:      Matwey V. Kornilov <matwey.kornilov@gmail.com>
+S:      Maintained
+F:      configs/rock64-rk3328_defconfig
+F:      arch/arm/dts/rk3328-rock64-u-boot.dtsi

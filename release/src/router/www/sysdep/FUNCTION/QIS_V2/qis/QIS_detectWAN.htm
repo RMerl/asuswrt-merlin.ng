@@ -130,7 +130,7 @@ function ajax_detectWAN(){
 			setTimeout("ajax_detectWAN();", 1000);
 		},
 		success: function(response){
-			if(based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U"){
+			if(based_modelid.substring(0,3) == "4G-"){
 				getDualWANState();		
 			}
 
@@ -160,7 +160,7 @@ function successstatus(){
 	var ssid_5g = '<% nvram_char_to_ascii("WLANConfig11b", "wl1_ssid"); %>';
 
 	if(wanstate == 2 && wanauxstate != 1){
-		if(based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U"){
+		if(based_modelid.substring(0,3) == "4G-"){
 			if(usb_wanstate == 2 && usb_wansbstate == 0 && usb_wanauxstate == 0))
 				gotoPage('/qis/QIS_wireless.htm', '', 0);
 			else

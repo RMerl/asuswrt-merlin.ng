@@ -80,6 +80,10 @@
 #include <sys/sysmacros.h>
 #endif
 
+#ifdef HAVE_SYS_SYSMACROS_H
+#include <sys/sysmacros.h>
+#endif
+
 #if defined(__APPLE__) || defined(__DARWIN__)
 #include <sys/dirent.h>
 #elif defined(__sun) && defined (__SVR4)

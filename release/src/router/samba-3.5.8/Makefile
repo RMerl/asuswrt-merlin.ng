@@ -17,7 +17,16 @@ ifneq ($(CONFIG_LINUX26),y)
 SMBCFLAGS += -DMAX_DEBUG_LEVEL="-1"
 endif
 
-ifeq ($(RTCONFIG_BCMARM), y)
+ifeq ($(RTCONFIG_RALINK_MT7622), y)
+RT4GAC86U = y
+SMBLDFLAGS += -lresolv
+endif
+
+ifeq ($(HND_ROUTER_BE_4916),y)
+SMBCFLAGS += -DRTCONFIG_HND_ROUTER_BE_4916
+endif
+
+ifeq ($(or $(RTCONFIG_BCMARM),$(RTCONFIG_RALINK_MT7622)), y)
 HOST = arm
 else
 HOST = mips
@@ -29,10 +38,10 @@ apps: .conf
 	mkdir -p $(srcdir)/bin
 	$(MAKE) -C $(srcdir) include/proto.h && $(MAKE) -j 8 -C $(srcdir) bin/libsmbclient.so
 
-ifeq ($(HND_ROUTER),y)
+ifeq ($(or $(HND_ROUTER),$(RTCONFIG_RALINK_MT7622)),y)
 LIB_RESOLV="yes"
 else
-ifneq ($(RTCONFIG_MUSL_LIBC)$(RTCONFIG_RALINK_MT7622)$(MUSL_LIBC),y)
+ifneq ($(RTCONFIG_MUSL_LIBC)$(RTCONFIG_RALINK_MT7622),y)
 DEF_FCNTL="-Dfcntl=fcntl64"
 endif
 LIB_RESOLV="no"
@@ -148,7 +157,9 @@ install: all
 	@ln -sf libsmbclient.so.0 $(INSTALLDIR)/usr/lib/libsmbclient.so
 #	@install -D $(srcdir)/bin/libbigballofmud.so $(INSTALLDIR)/usr/lib/libbigballofmud.so
 ###############################Charles Modify##########	
-
+ifeq ($(RTCONFIG_RALINK_MT7622),y)
+	@install -D $(TOOLCHAIN)/lib/libresolv.so $(INSTALLDIR)/usr/lib/libresolv.so
+endif
 	$(STRIP) -s $(INSTALLDIR)/usr/lib/libsmbclient.so.0
 	# do not strip shared library, it will be optimized by libfoo.pl
 	# $(STRIP) -s $(INSTALLDIR)/usr/lib/libbigballofmud.so

@@ -1,0 +1,14 @@
+compatible = "brcm,dsl-ctrl";
+
+#ifdef DSL_XMEM_OFFSET
+reg-names = "dsl-phy", "dsl-lmem", "dsl-xmem";
+reg = <DSL_PHY_OFFSET DSL_PHY_SIZE>, <DSL_LMEM_OFFSET DSL_LMEM_SIZE>, <DSL_XMEM_OFFSET DSL_XMEM_SIZE>;
+#else
+reg-names = "dsl-phy", "dsl-lmem";
+reg = <DSL_PHY_OFFSET DSL_PHY_SIZE>, <DSL_LMEM_OFFSET DSL_LMEM_SIZE>;
+#endif
+
+interrupt-names = "dsl";
+interrupts = <GIC_SPI DSL_SPI IRQ_TYPE_LEVEL_HIGH>;
+
+status = "disabled";

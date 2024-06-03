@@ -1,0 +1,7 @@
+SAMA5D3_XPLAINED BOARD
+M:	Eugen Hristev <eugen.hristev@microchip.com>
+S:	Maintained
+F:	board/atmel/sama5d3_xplained/
+F:	include/configs/sama5d3_xplained.h
+F:	configs/sama5d3_xplained_mmc_defconfig
+F:	configs/sama5d3_xplained_nandflash_defconfig

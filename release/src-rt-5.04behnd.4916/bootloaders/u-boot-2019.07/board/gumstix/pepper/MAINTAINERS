@@ -1,0 +1,6 @@
+PEPPER BOARD
+M:	Ash Charles <ash@gumstix.com>
+S:	Maintained
+F:	board/gumstix/pepper/
+F:	include/configs/pepper.h
+F:	configs/pepper_defconfig

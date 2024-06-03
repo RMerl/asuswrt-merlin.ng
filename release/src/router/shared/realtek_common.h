@@ -206,4 +206,5 @@ extern int getmibInfo(const char *interface, void *data, int *length);
 extern int setmibInfo(const char *interface, void *data, int length);
 extern void iwpriv_set_mib_int(const char* ifname, const char* conf, int val);
 extern void iwpriv_set_mib_string(const char* ifname, const char* conf, char* val);
+extern int getWlStaInfo( char *interface,  WLAN_STA_INFO_Tp pInfo );
 #endif

@@ -56,6 +56,52 @@ enum {
 #endif
 	WAN_UNIT_MULTISRV_MAX
 };
+
+#ifdef RTCONFIG_MULTIWAN_IF
+enum {
+	WAN_UNIT_MTWAN_MS_BASE=1000,
+	WAN_UNIT_MTWAN0_MS_BASE=1500,
+	WAN_UNIT_MTWAN0_MS_START=1501,
+	WAN_UNIT_MTWAN0_MS_END=1507,
+#if MAX_MULTI_WAN_NUM > 1
+	WAN_UNIT_MTWAN1_MS_BASE=1510,
+	WAN_UNIT_MTWAN1_MS_START=1511,
+	WAN_UNIT_MTWAN1_MS_END=1517,
+#if MAX_MULTI_WAN_NUM > 2
+	WAN_UNIT_MTWAN2_MS_BASE=1520,
+	WAN_UNIT_MTWAN2_MS_START=1521,
+	WAN_UNIT_MTWAN2_MS_END=1527,
+#if MAX_MULTI_WAN_NUM > 3
+	WAN_UNIT_MTWAN3_MS_BASE=1530,
+	WAN_UNIT_MTWAN3_MS_START=1531,
+	WAN_UNIT_MTWAN3_MS_END=1537,
+#if MAX_MULTI_WAN_NUM > 4
+	WAN_UNIT_MTWAN4_MS_BASE=1540,
+	WAN_UNIT_MTWAN4_MS_START=1541,
+	WAN_UNIT_MTWAN4_MS_END=1547,
+#endif	//MAX_MULTI_WAN_NUM > 4
+#endif	//MAX_MULTI_WAN_NUM > 3
+#endif	//MAX_MULTI_WAN_NUM > 2
+#endif	//MAX_MULTI_WAN_NUM > 1
+	WAN_UNIT_MTWAN_MS_MAX
+};
+#endif
+#endif
+
+#ifdef RTCONFIG_MULTI_PPP
+#define WAN_MULTIPPP_MAX             8
+enum {
+	WAN_UNIT_MULTIPPP_BASE=30,
+	WAN_UNIT_FIRST_MULTIPPP_BASE=30,
+	WAN_UNIT_FIRST_MULTIPPP_START=31,
+	WAN_UNIT_FIRST_MULTIPPP_END=37,
+#if defined(RTCONFIG_DUALWAN)
+	WAN_UNIT_SECOND_MULTIPPP_BASE=40,
+	WAN_UNIT_SECOND_MULTIPPP_START=41,
+	WAN_UNIT_SECOND_MULTIPPP_END=47,
+#endif
+	WAN_UNIT_MULTIPPP_MAX
+};
 #endif
 
 enum {
@@ -335,6 +381,14 @@ enum {
 #define MAX_USB_TTY_NUM 10
 #endif	// RTCONFIG_USB
 
+#ifdef RTCONFIG_BROOP
+enum {
+	BROOP_IDLE,
+	BROOP_DETECT
+};
+
+#endif
+
 #ifdef RTCONFIG_ASUSCTRL
 /* Always append new definition to end of enumeration. */
 enum {
@@ -346,6 +400,8 @@ enum {
 	ASUSCTRL_SG_MODE = 6,
 	ASUSCTRL_ACS_IGNORE_BAND2 = 7,
 	ASUSCTRL_ACS_IGNORE_BAND3 = 8,
+	ASUSCTRL_GEARUP_SUPPORT = 9,
+	ASUSCTRL_GEARUP_BLOCK = 10,
 	ASUSCTRL_MAX
 };
 #endif
@@ -426,6 +482,14 @@ typedef struct _MOCA_MIB_DATA
 #define WANS_DUALWAN_IF_WAN2	7
 #define WANS_DUALWAN_IF_USB2    8
 #define WANS_DUALWAN_IF_SFPP	9
+
+#ifdef RTCONFIG_MULTIWAN_IF
+#define MULTI_WAN_START_IDX 50
+//#define MAX_MULTI_WAN_NUM //defined by MTWANIF
+#ifdef RTCONFIG_MULTIWAN_PROFILE
+#define MAX_MTWAN_PROFILE_NUM	4
+#endif
+#endif
 
 // the following definition is for free_caches()
 #define FREE_MEM_NONE  "0"	/* kernel < v2.6.39 */
@@ -513,22 +577,26 @@ extern char *get_userdns_r(const char *prefix, char *buf, size_t buflen);
 extern int asus_ctrl_en(int cid);
 
 int is_bridged(const char *brif, const char *ifname);
+int del_from_bridge(const char* ifname);
 #ifdef RTCONFIG_BROOP
 int netlink_broop(char ctrl, int val);
 int detect_broop();
 #endif
 
+#ifdef RTCONFIG_MULTI_PPP
+int is_mtppp_base_unit(int wan_unit);
+int is_mtppp_unit(int wan_unit);
+int get_mtppp_base_unit(int wan_unit);
+int get_mtppp_wan_unit(int base_wan_unit, int idx);
+int get_mtppp_idx_by_wan_unit(int wan_unit);
+#endif
+
 #ifdef RTCONFIG_MULTISERVICE_WAN
+int is_ms_base_unit(int wan_unit);
+int is_ms_wan_unit(int wan_unit);
 int get_ms_base_unit(int wan_unit);
 int get_ms_wan_unit(int base_wan_unit, int idx);
 int get_ms_idx_by_wan_unit(int wan_unit);
-#endif
-
-#ifdef RTCONFIG_BROOP
-enum {
-	BROOP_IDLE,
-	BROOP_DETECT
-};
 #endif
 
 #endif	/* !__RTSTATE_H__ */

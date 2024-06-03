@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000 Apple Computer, Inc. All rights reserved.
+ * Copyright (c) 2000-2006 Apple Computer, Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
  *
@@ -67,9 +67,6 @@ static int  CheckCatalogName(u_int16_t charCount, const u_int16_t *uniChars,
 static int  CheckCatalogName_HFS(u_int16_t charCount, const u_char *filename,
                                  u_int32_t parentID, Boolean thread);
 
-static int  RecordBadAllocation(UInt32 parID, unsigned char * filename, UInt32 forkType, UInt32 oldBlkCnt, UInt32 newBlkCnt);
-static int  RecordTruncation(UInt32 parID, unsigned char * filename, UInt32 forkType, UInt64 oldSize,  UInt64 newSize);
-
 static int  CaptureMissingThread(UInt32 threadID, const HFSPlusCatalogKey *nextKey);
 static 	OSErr	UniqueDotName( 	SGlobPtr GPtr, 
                                 CatalogName * theNewNamePtr, 
@@ -77,14 +74,6 @@ static 	OSErr	UniqueDotName( 	SGlobPtr GPtr,
                                 Boolean isSingleDotName,
                                 Boolean isHFSPlus );
 static Boolean 	FixDecomps(	u_int16_t charCount, const u_int16_t *inFilename, HFSUniStr255 *outFilename );
-
-static int FindOrigOverlapFiles(SGlobPtr GPtr);
-static void CheckHFSPlusExtentRecords(SGlobPtr GPtr, UInt32 fileID, HFSPlusExtentRecord extent, UInt8 forkType); 
-static void CheckHFSExtentRecords(SGlobPtr GPtr, UInt32 fileID, HFSExtentRecord extent, UInt8 forkType);
-static Boolean DoesOverlap(SGlobPtr GPtr, UInt32 fileID, UInt32 startBlock, UInt32 blockCount, UInt8 forkType); 
-
-void PrintOverlapFiles (SGlobPtr GPtr);
-static int CompareExtentFileID(const void *first, const void *second);
 
 /*
  * CheckCatalogBTree - Verifies the catalog B-tree structure
@@ -117,31 +106,28 @@ CheckCatalogBTree( SGlobPtr GPtr )
 	err = BTCheck(gScavGlobals, kCalculatedCatalogRefNum, (CheckLeafRecordProcPtr)CheckCatalogRecord);
 	if (err) goto exit;
 
-	if (GPtr->VIStat & S_OverlappingExtents) {
-		/* If BTCheck found any overlapped extents, fsck_hfs has reported 
-		 * all the fileIDs except the original fileIDs.  Traverse thei volume header,
-	 	 * catalog btree and extents btree to find the original fileIDs 
-	 	 */
-		err = FindOrigOverlapFiles(GPtr);
-		if (err) goto exit;
-		
-		/* Print all unique overlapping file IDs and paths */
-		(void) PrintOverlapFiles(GPtr);
-	}
-
 	if (gCIS.dirCount != gCIS.dirThreads) {
 		RcdError(gScavGlobals, E_IncorrectNumThdRcd);
 		gScavGlobals->CBTStat |= S_Orphan;  /* a directory record is missing */
+		if (gScavGlobals->logLevel >= kDebugLog) {
+			printf ("\t%s: dirCount = %u, dirThread = %u\n", __FUNCTION__, gCIS.dirCount, gCIS.dirThreads);
+		}
 	}
 
 	if (hfsplus && (gCIS.fileCount != gCIS.fileThreads)) {
 		RcdError(gScavGlobals, E_IncorrectNumThdRcd);
 		gScavGlobals->CBTStat |= S_Orphan;
+		if (gScavGlobals->logLevel >= kDebugLog) {
+			printf ("\t%s: fileCount = %u, fileThread = %u\n", __FUNCTION__, gCIS.fileCount, gCIS.fileThreads);
+		}
 	}
 
 	if (!hfsplus && (gCIS.fileThreads != gCIS.filesWithThreads)) {
 		RcdError(gScavGlobals, E_IncorrectNumThdRcd);
 		gScavGlobals->CBTStat |= S_Orphan;
+		if (gScavGlobals->logLevel >= kDebugLog) {
+			printf ("\t%s: fileThreads = %u, filesWithThread = %u\n", __FUNCTION__, gCIS.fileThreads, gCIS.filesWithThreads);
+		}
 	}
 
 	gScavGlobals->calculatedVCB->vcbEncodingsBitmap = gCIS.encodings;
@@ -497,7 +483,7 @@ CheckFile(const HFSPlusCatalogKey * key, const HFSPlusCatalogFile * file)
 	CheckBSDInfo(key, &file->bsdInfo, false);
 
 	/* check out data fork extent info */
-	result = CheckFileExtents(gScavGlobals, file->fileID, 0,
+	result = CheckFileExtents(gScavGlobals, file->fileID, kDataFork, NULL, 
                                 file->dataFork.extents, &blocks);
 	if (result != noErr)
 		return (result);
@@ -517,7 +503,7 @@ CheckFile(const HFSPlusCatalogKey * key, const HFSPlusCatalogFile * file)
 		}
 	}
 	/* check out resource fork extent info */
-	result = CheckFileExtents(gScavGlobals, file->fileID, 0xFF,
+	result = CheckFileExtents(gScavGlobals, file->fileID, kRsrcFork, NULL, 
 	                          file->resourceFork.extents, &blocks);
 	if (result != noErr)
 		return (result);
@@ -660,7 +646,7 @@ CheckFile_HFS(const HFSCatalogKey * key, const HFSCatalogFile * file)
 		gCIS.nextCNID = fileID + 1;
 
 	/* check out data fork extent info */
-	result = CheckFileExtents(gScavGlobals, file->fileID, 0,
+	result = CheckFileExtents(gScavGlobals, file->fileID, kDataFork, NULL, 
                                 file->dataExtents, &blocks);
 	if (result != noErr)
 		return (result);
@@ -674,7 +660,7 @@ CheckFile_HFS(const HFSCatalogKey * key, const HFSCatalogFile * file)
 	}
 
 	/* check out resource fork extent info */
-	result = CheckFileExtents(gScavGlobals, file->fileID, 0xFF,
+	result = CheckFileExtents(gScavGlobals, file->fileID, kRsrcFork, NULL,
 				file->rsrcExtents, &blocks);
 	if (result != noErr)
 		return (result);
@@ -1089,16 +1075,42 @@ UniqueDotName( 	SGlobPtr GPtr,
     
 } /* UniqueDotName */
 
-
-/* 
- * RecordBadAllocation
+/* Function: RecordBadAllocation
  *
- * Record a repair to adjust a file's allocation size.
+ * Description:
+ * Record a repair to adjust a file or extended attribute's allocation size.
+ * This could also trigger a truncation if the new block count isn't large 
+ * enough to cover the current LEOF.
  *
- * This could also trigger a truncation if the new block
- * count isn't large enough to cover the current LEOF.
+ * Note that it stores different values and prints different error message
+ * for file and extended attribute.
+ * For files - 
+ *	E_PEOF, parentID, filename, forkType (kDataFork/kRsrcFork).
+ *	Prints filename.
+ * For extended attributes -
+ *	E_PEOAttr, fileID, attribute name, forkType (kEAData).
+ *	Prints attribute name and filename.  Since the attribute name is 
+ *  passed as parameter, it needs to lookup the filename.
+ *
+ * Input:
+ *	For files - 
+ *		parID		- parent ID of file
+ *		filename	- name of the file	
+ *		forkType	- type of fork (kDataFork/kRsrcFork)
+ *	For extended attributes - 
+ *		parID		- fileID for attribute
+ *		filename	- name of the attribute	
+ *		forkType	- kEAData
+ *	Common inputs -
+ *		oldBlkCnt 	- Incorrect block count
+ *		newBlkCnt	- Correct block count
+ * Output:
+ *	On success, zero.
+ *	On failure, non-zero.
+ *		R_NoMem - out of memory
+ *		E_PEOF	- Bad allocation error on plain HFS volume
  */
-static int
+int
 RecordBadAllocation(UInt32 parID, unsigned char * filename, UInt32 forkType, UInt32 oldBlkCnt, UInt32 newBlkCnt)
 {
 	RepairOrderPtr 			p;
@@ -1106,9 +1118,32 @@ RecordBadAllocation(UInt32 parID, unsigned char * filename, UInt32 forkType, UIn
 	char 					badstr[16];
 	int 					n;
 	Boolean 				isHFSPlus;
+	int 					result;
+	char 					*real_filename;
+	unsigned int			filenamelen;
 
 	isHFSPlus = VolumeObjectIsHFSPlus( );
-	PrintError(gScavGlobals, E_PEOF, 1, filename);
+	if (forkType == kEAData) {
+		/* Print attribute name and filename for extended attribute */
+		filenamelen = NAME_MAX * 3;
+		real_filename = malloc(filenamelen);
+		if (!real_filename) {
+			return (R_NoMem);
+		}
+
+		/* Get the name of the file */
+		result = GetFileNamePathByID(gScavGlobals, parID, NULL, NULL, 
+					real_filename, &filenamelen, NULL);
+		if (result) {
+			/* If error while looking up filename, default to print file ID */
+			sprintf(real_filename, "id = %u", parID);
+		}
+
+		PrintError(gScavGlobals, E_PEOAttr, 2, filename, real_filename);
+		free(real_filename);
+	} else {
+		PrintError(gScavGlobals, E_PEOF, 1, filename);
+	}
 	sprintf(goodstr, "%d", newBlkCnt);
 	sprintf(badstr, "%d", oldBlkCnt);
 	PrintError(gScavGlobals, E_BadValue, 2, goodstr, badstr);
@@ -1122,7 +1157,11 @@ RecordBadAllocation(UInt32 parID, unsigned char * filename, UInt32 forkType, UIn
 	if (p == NULL)
 		return (R_NoMem);
 
-	p->type = E_PEOF;
+	if (forkType == kEAData) {
+		p->type = E_PEOAttr;
+	} else {
+		p->type = E_PEOF;
+	}
 	p->forkType = forkType;
 	p->incorrect = oldBlkCnt;
 	p->correct = newBlkCnt;
@@ -1135,13 +1174,40 @@ RecordBadAllocation(UInt32 parID, unsigned char * filename, UInt32 forkType, UIn
 	return (0);
 }
 
-
-/* 
- * RecordTruncation
+/* Function: RecordTruncation
  *
+ * Description:
  * Record a repair to trucate a file's logical size.
+ *
+ * Note that it stores different error values and prints 
+ * different error message for file and extended attribute.
+ * For files - 
+ *	E_LEOF, parentID, filename, forkType (kDataFork/kRsrcFork).
+ *	Prints filename.
+ * For extended attributes -
+ *	E_LEOAttr, fileID, attribute name, forkType (kEAData).
+ *	Prints attribute name and filename.  Since the attribute name is 
+ *  passed as parameter, it needs to lookup the filename.
+ *
+ * Input:
+ *	For files - 
+ *		parID		- parent ID of file
+ *		filename	- name of the file	
+ *		forkType	- type of fork (kDataFork/kRsrcFork)
+ *	For extended attributes - 
+ *		parID		- fileID for attribute
+ *		filename	- name of the attribute	
+ *		forkType	- kEAData
+ *	Common inputs -
+ *		oldSize 	- Incorrect logical size
+ *		newSize		- Correct logical size
+ * Output:
+ *	On success, zero.
+ *	On failure, non-zero.
+ *		R_NoMem - out of memory
+ *		E_LEOF	- Truncation error on plain HFS volume
  */
-static int
+int
 RecordTruncation(UInt32 parID, unsigned char * filename, UInt32 forkType, UInt64 oldSize, UInt64 newSize)
 {
 	RepairOrderPtr	 		p;
@@ -1149,9 +1215,32 @@ RecordTruncation(UInt32 parID, unsigned char * filename, UInt32 forkType, UInt64
 	char 					newSizeStr[48];
 	int 					n;
 	Boolean 				isHFSPlus;
+	int 					result;
+	char 					*real_filename;
+	unsigned int			filenamelen;
 
 	isHFSPlus = VolumeObjectIsHFSPlus( );
-	PrintError(gScavGlobals, E_LEOF, 1, filename);
+	if (forkType == kEAData) {
+		/* Print attribute name and filename for extended attribute */
+		filenamelen = NAME_MAX * 3;
+		real_filename = malloc(filenamelen);
+		if (!real_filename) {
+			return (R_NoMem);
+		}
+
+		/* Get the name of the file */
+		result = GetFileNamePathByID(gScavGlobals, parID, NULL, NULL, 
+					real_filename, &filenamelen, NULL);
+		if (result) {
+			/* If error while looking up filename, default to print file ID */
+			sprintf(real_filename, "id = %u", parID);
+		}
+
+		PrintError(gScavGlobals, E_LEOAttr, 2, filename, real_filename);
+		free(real_filename);
+	} else {
+		PrintError(gScavGlobals, E_LEOF, 1, filename);
+	}
 	sprintf(oldSizeStr, "%qd", oldSize);
 	sprintf(newSizeStr, "%qd", newSize);
 	PrintError(gScavGlobals, E_BadValue, 2, newSizeStr, oldSizeStr);
@@ -1165,7 +1254,11 @@ RecordTruncation(UInt32 parID, unsigned char * filename, UInt32 forkType, UInt64
 	if (p == NULL)
 		return (R_NoMem);
 
-	p->type = E_LEOF;
+	if (forkType == kEAData) {
+		p->type = E_LEOAttr;
+	} else {
+		p->type = E_LEOF;
+	}
 	p->forkType = forkType;
 	p->incorrect = oldSize;
 	p->correct = newSize;
@@ -1495,369 +1588,3 @@ FixDecomps(	u_int16_t charCount, const u_int16_t *inFilename, HFSUniStr255 *outF
     
 } /* FixDecomps */
 
-/* Function :  DoesOverlap
- * 
- * Description: 
- * This function takes a start block and the count of blocks in a 
- * given extent and compares it against the list of overlapped 
- * extents in the global structure.   
- * This is useful in finding the original files that overlap with
- * the files found in catalog btree check.  If a file is found
- * overlapping, it is added to the overlap list. 
- * 
- * Input: 
- * 1. GPtr - global scavenger pointer.
- * 2. fileID - file ID being checked.
- * 3. startBlock - start block in extent.
- * 4. blockCount - total number of blocks in extent.
- * 5. forkType - type of fork being check (kDataFork, kRsrcFork).
- * 
- * Output: isOverlapped - Boolean value of true or false.
- */
-static Boolean DoesOverlap(SGlobPtr GPtr, UInt32 fileID, UInt32 startBlock, UInt32 blockCount, UInt8 forkType) 
-{
-	int i;
-	Boolean isOverlapped = false;
-	ExtentInfo	*curExtentInfo;
-	ExtentsTable **extentsTableH = GPtr->overlappedExtents;
-
-	for (i = 0; i < (**extentsTableH).count; i++) {
-		curExtentInfo = &((**extentsTableH).extentInfo[i]);
-		/* Check extents */
-		if (curExtentInfo->startBlock < startBlock) {
-			if ((curExtentInfo->startBlock + curExtentInfo->blockCount) > startBlock) {
-				isOverlapped = true;
-				break;
-			}
-		} else {	/* curExtentInfo->startBlock >= startBlock */
-			if (curExtentInfo->startBlock < (startBlock + blockCount)) {
-				isOverlapped = true;
-				break;
-			}
-		}
-	} /* for loop Extents Table */	
-
-	/* Add this extent to overlap list */
-	if (isOverlapped) {
-		AddExtentToOverlapList(GPtr, fileID, startBlock, blockCount, forkType);
-	}
-
-	return isOverlapped;
-} /* DoesOverlap */
-
-/* Function : CheckHFSPlusExtentRecords
- * 
- * Description: 
- * For all valid extents, this function calls DoesOverlap to find
- * if a given extent is overlapping with another extent existing
- * in the overlap list.
- * 
- * Input: 
- * 1. GPtr - global scavenger pointer.
- * 2. fileID - file ID being checked.
- * 3. extent - extent information to check.
- * 4. forkType - type of fork being check (kDataFork, kRsrcFork).
- * 
- * Output: None.
- */
-static void CheckHFSPlusExtentRecords(SGlobPtr GPtr, UInt32 fileID, HFSPlusExtentRecord extent, UInt8 forkType) 
-{
-	int i;
-
-	/* Check for overlapping extents for all extents in given extent data */
-	for (i = 0; i < kHFSPlusExtentDensity; i++) {
-		if (extent[i].startBlock == 0) {
-			break;
-		}
-		DoesOverlap(GPtr, fileID, extent[i].startBlock, extent[i].blockCount, forkType);
-	} 
-	return;
-} /* CheckHFSPlusExtentRecords */ 
-
-/* Function : CheckHFSExtentRecords
- * 
- * Description: 
- * For all valid extents, this function calls DoesOverlap to find
- * if a given extent is overlapping with another extent existing
- * in the overlap list.
- * 
- * Input: 
- * 1. GPtr - global scavenger pointer.
- * 2. fileID - file ID being checked.
- * 3. extent - extent information to check.
- * 4. forkType - type of fork being check (kDataFork, kRsrcFork).
- * 
- * Output: None.
- */
-static void CheckHFSExtentRecords(SGlobPtr GPtr, UInt32 fileID, HFSExtentRecord extent, UInt8 forkType) 
-{
-	int i;
-
-	/* Check for overlapping extents for all extents in given extents */
-	for (i = 0; i < kHFSExtentDensity; i++) {
-		if (extent[i].startBlock == 0) {
-			break;
-		}
-		DoesOverlap(GPtr, fileID, extent[i].startBlock, extent[i].blockCount, forkType);
-	}
-	return;
-} /* CheckHFSExtentRecords */ 
-
-/* Function: FindOrigOverlapFiles 
- * 
- * Description:
- * This function is called only if catalog btree check results in
- * overlapped extents errors.  The catalog btree check does not find
- * out the original files whose extents are overlapping with one
- * being reported in its check.  This function finds out all the 
- * original files whose that are being overlapped.  
- * 
- * This function relies on comparison of extents with Overlap list
- * created in verify stage.  The list is also updated with the 
- * overlapped extents found in this function. 
- * 
- * 1. Compare extents for all the files located in volume header.
- * 2. Traverse catalog btree and compare extents of all files.
- * 3. Traverse extents btree and compare extents for all entries.
- * 
- * Input: GPtr - pointer to global scanvenger area.
- * 
- * Output: err - function result
- *			zero means success
- *			non-zero means failure
- */
-static int FindOrigOverlapFiles(SGlobPtr GPtr)
-{
-	OSErr err = noErr;
-	Boolean isHFSPlus; 
-
-	UInt16 selCode;		/* select access pattern for BTree */
-	UInt16 recordSize;
-	UInt32 hint;
-	CatalogRecord catRecord; 
-	CatalogKey catKey;
-	ExtentRecord extentRecord; 
-	ExtentKey extentKey;
-	SVCB *calculatedVCB = GPtr->calculatedVCB;
-
-	isHFSPlus = VolumeObjectIsHFSPlus();
-
-	/* Check file extents from volume header */
-	if (isHFSPlus) {
-		/* allocation file */
-		if (calculatedVCB->vcbAllocationFile) {
-			CheckHFSPlusExtentRecords(GPtr, calculatedVCB->vcbAllocationFile->fcbFileID, 
-		                              calculatedVCB->vcbAllocationFile->fcbExtents32, kDataFork);
-		}
-
-		/* extents file */
-		if (calculatedVCB->vcbExtentsFile) {
-			CheckHFSPlusExtentRecords(GPtr, calculatedVCB->vcbExtentsFile->fcbFileID, 
-		                              calculatedVCB->vcbExtentsFile->fcbExtents32, kDataFork);
-		}
-
-		/* catalog file */
-		if (calculatedVCB->vcbCatalogFile) {
-			CheckHFSPlusExtentRecords(GPtr, calculatedVCB->vcbCatalogFile->fcbFileID, 
-		                              calculatedVCB->vcbCatalogFile->fcbExtents32, kDataFork);
-		}
-
-		/* attributes file */
-		if (calculatedVCB->vcbAttributesFile) {
-			CheckHFSPlusExtentRecords(GPtr, calculatedVCB->vcbAttributesFile->fcbFileID, 
-		                              calculatedVCB->vcbAttributesFile->fcbExtents32, kDataFork);	
-	   	}
-
-		/* startup file */
-		if (calculatedVCB->vcbStartupFile) {
-			CheckHFSPlusExtentRecords(GPtr, calculatedVCB->vcbStartupFile->fcbFileID, 
-		                              calculatedVCB->vcbStartupFile->fcbExtents32, kDataFork);
-		}
-	} else {
-		/* extents file */
-		if (calculatedVCB->vcbExtentsFile) {
-			CheckHFSExtentRecords(GPtr, calculatedVCB->vcbExtentsFile->fcbFileID, 
-		                          calculatedVCB->vcbExtentsFile->fcbExtents16, kDataFork);
-		}
-
-		/* catalog file */
-		if (calculatedVCB->vcbCatalogFile) {
-			CheckHFSExtentRecords(GPtr, calculatedVCB->vcbCatalogFile->fcbFileID, 
-		                          calculatedVCB->vcbCatalogFile->fcbExtents16, kDataFork);
-		}
-	}
-
-	/* Traverse the catalog btree */ 
-	selCode = 0x8001;	/* Get first record from BTree */
-	err = GetBTreeRecord(GPtr->calculatedCatalogFCB, selCode, &catKey, &catRecord, &recordSize, &hint);
-	if (err != noErr) {
-		goto traverseExtents;
-	} 
-	selCode = 1;	/* Get next record */
-	do {
-		if ((catRecord.recordType == kHFSPlusFileRecord) ||  
-		    (catRecord.recordType == kHFSFileRecord)) {
-			
-			if (isHFSPlus) {
-				/* HFSPlus data fork */
-				CheckHFSPlusExtentRecords(GPtr, catRecord.hfsPlusFile.fileID, 
-			    	                      catRecord.hfsPlusFile.dataFork.extents, kDataFork);
-
-				/* HFSPlus resource fork */
-				CheckHFSPlusExtentRecords(GPtr, catRecord.hfsPlusFile.fileID, 
-			    	                      catRecord.hfsPlusFile.resourceFork.extents, kRsrcFork);
-			} else {
-				/* HFS data extent */
-				CheckHFSExtentRecords(GPtr, catRecord.hfsFile.fileID, 
-			    	                  catRecord.hfsFile.dataExtents, kDataFork);
-
-				/* HFS resource extent */
-				CheckHFSExtentRecords(GPtr, catRecord.hfsFile.fileID,
-				                      catRecord.hfsFile.rsrcExtents, kRsrcFork);
-			}
-		}
-
-		/* Access the next record */
-		err = GetBTreeRecord( GPtr->calculatedCatalogFCB, selCode, &catKey, &catRecord, &recordSize, &hint );
-	} while (err == noErr); 
-
-traverseExtents:
-	/* Traverse the extents btree */ 
-	selCode = 0x8001;	/* Get first record from BTree */
-	err = GetBTreeRecord(GPtr->calculatedExtentsFCB, selCode, &extentKey, &extentRecord, &recordSize, &hint);
-	if (err != noErr) {
-		goto out;
-	}
-	selCode = 1;	/* Get next record */
-	do {
-		if (isHFSPlus) {
-			CheckHFSPlusExtentRecords(GPtr, extentKey.hfsPlus.fileID, 
-			                          extentRecord.hfsPlus, extentKey.hfsPlus.forkType);
-		} else {
-			CheckHFSExtentRecords(GPtr, extentKey.hfs.fileID, extentRecord.hfs, 
-			                      extentKey.hfs.forkType);
-		}
-
-		/* Access the next record */
-		err = GetBTreeRecord(GPtr->calculatedExtentsFCB, selCode, &extentKey, &extentRecord, &recordSize, &hint);
-	} while (err == noErr); 
-
-out:
-	if (err == btNotFound) {
-		err = noErr;
-	}
-	return err;
-} /* FindOrigOverlapFiles */
-
-/* Function: PrintOverlapFiles
- *
- * Description: Print the information about all unique overlapping files.  
- * 1. Sort the overlap extent in increasing order of fileID
- * 2. For every unique fileID, prefix the string with fileID and find the
- *    filename/path based on fileID.
- *		If fileID > kHFSFirstUserCatalogNodeID, find path to file
- *		Else, find name of the system file.
- * 3. Print the new string.
- * Note that the path is printed only for HFS Plus volumes and not for 
- * plain HFS volumes.  This is done by not allocating buffer for finding
- * file path.
- *
- * Input:
- *	GPtr - Global scavenger structure pointer.
- *
- * Output:
- *	nothing (void)
- */
-void PrintOverlapFiles (SGlobPtr GPtr)
-{
-	OSErr err;
-	ExtentsTable **extentsTableH;
-	ExtentInfo *extentInfo;
-	unsigned int numOverlapExtents;
-	unsigned int buflen, filepathlen;
-	char *filepath = NULL;
-	char filenum[32];
-	UInt32 lastID = 0;
-	UInt32 bytesWritten;
-	Boolean printMsg;
-	Boolean	isHFSPlus;
-	int i;
-	
-	isHFSPlus = VolumeObjectIsHFSPlus();
-
-	extentsTableH = GPtr->overlappedExtents;
-	numOverlapExtents = (**extentsTableH).count;
-	
-	/* Sort the list according to file ID */
-	qsort((**extentsTableH).extentInfo, numOverlapExtents, sizeof(ExtentInfo), 
-		  CompareExtentFileID);
-
-	buflen = PATH_MAX * 4;
-	/* Allocate buffer to read data */
-	if (isHFSPlus) {
-		filepath = malloc (buflen);
-	}
-	
-	for (i = 0; i < numOverlapExtents; i++) {
-		extentInfo = &((**extentsTableH).extentInfo[i]);
-
-		/* Skip the same fileID */
-		if (lastID == extentInfo->fileID) {
-			continue;
-		}
-
-		lastID = extentInfo->fileID;
-		printMsg = false;
-
-		if (filepath) {
-			/* prefix with the file ID */
-			bytesWritten = sprintf (filepath, "%u ", extentInfo->fileID);
-			filepathlen = buflen - bytesWritten;
-	
-			if (extentInfo->fileID >= kHFSFirstUserCatalogNodeID) {
-				/* Lookup the file path */
-				err = GetFileNamePathByID (GPtr, extentInfo->fileID, (filepath + bytesWritten), &filepathlen, NULL, NULL, NULL);
-			} else {
-				/* Get system filename */
-			 	err = GetSystemFileName (extentInfo->fileID, (filepath + bytesWritten), &filepathlen);
-			}
-
-			if (err == noErr) {
-				/* print fileID, filepath */
-				PrintError(GPtr, E_OvlExt, 1, filepath);
-				printMsg = true;
-			}
-		}
-
-		if (printMsg == false) {
-			/* print only filenumber */
-			sprintf(filenum, "%u", extentInfo->fileID);
-			PrintError(GPtr, E_OvlExt, 1, filenum);
-		}
-	}
-
-	if (filepath) {
-		free (filepath);
-	}
-
-	return;
-} /* PrintOverlapFiles */
-
-/* Function: CompareExtentFileID
- *
- * Description: Compares the fileID from two ExtentInfo and return the
- * comparison result. (since we have to arrange in ascending order)
- *
- * Input:
- *	first and second - void pointers to ExtentInfo structure.
- *
- * Output:
- *	>0 if first > second
- * 	=0 if first == second
- *	<0 if first < second
- */
-static int CompareExtentFileID(const void *first, const void *second)
-{
-	return (((ExtentInfo *)first)->fileID - 
-			((ExtentInfo *)second)->fileID);
-} /* CompareExtentFileID */

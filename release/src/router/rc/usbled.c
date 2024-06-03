@@ -287,6 +287,9 @@ usbled_main(int argc, char *argv[])
 	sigset_t sigs_to_catch;
 	model = get_model();
 
+	if (nvram_match("led_usb_gpio", "255") && nvram_match("led_usb3_gpio", "255"))
+		return 0;
+
 	/* write pid */
 	if ((fp = fopen("/var/run/usbled.pid", "w")) != NULL)
 	{

@@ -1,0 +1,21 @@
+brcm-bca xdsl-distpoint driver
+==============================
+
+This driver will initialize GPIOs for xdsl-distpoint as follows:
+1. It will set all reset GPIOs to active.
+2. It will set default states for all non-reset GPIOs.
+3. It will set default states for reset GPIOs (allowing to leave state active if set to 1).
+
+Required properties:
+
+- compatible: must "brcm,xdsldistpoint"
+
+- gpios: Array of GPIO phandles
+
+- gpio-names: Array of string names matching above GPIOs
+  * Names prefexed with "reset-" will be marked as device reset GPIO
+
+- gpio-default-val: Array of default active states for above GPIOs
+  0: inactive
+  1: active
+

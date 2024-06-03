@@ -54,7 +54,7 @@ extern "C" {
 #define EXT2_LIB_CURRENT_REV	EXT2_DYNAMIC_REV
 
 #ifdef HAVE_SYS_TYPES_H
-#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
 #include <sys/sysmacros.h>
 #endif
 #include <sys/types.h>
@@ -75,6 +75,10 @@ extern "C" {
 #include <ext2fs/ext2_fs.h>
 #include <ext2fs/ext3_extents.h>
 #endif /* EXT2_FLAT_INCLUDES */
+
+#if defined(MUSL_LIBC)
+#include <sys/sysmacros.h>
+#endif
 
 typedef __u32 __bitwise		ext2_ino_t;
 typedef __u32 __bitwise		blk_t;

@@ -1,0 +1,190 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Samsung's Exynos4 SoC common device tree source
+ *
+ * Copyright (c) 2014 Samsung Electronics Co., Ltd.
+ *		http://www.samsung.com
+ */
+
+#include "skeleton.dtsi"
+
+/ {
+	aliases {
+		i2c0 = &i2c_0;
+		i2c1 = &i2c_1;
+		i2c2 = &i2c_2;
+		i2c3 = &i2c_3;
+		i2c4 = &i2c_4;
+		i2c5 = &i2c_5;
+		i2c6 = &i2c_6;
+		i2c7 = &i2c_7;
+	};
+
+	combiner: interrupt-controller@10440000 {
+		compatible = "samsung,exynos4210-combiner";
+		#interrupt-cells = <2>;
+		interrupt-controller;
+		reg = <0x10440000 0x1000>;
+	};
+
+	gic: interrupt-controller@10490000 {
+		compatible = "arm,cortex-a9-gic";
+		#interrupt-cells = <3>;
+		interrupt-controller;
+		cpu-offset = <0x4000>;
+		reg = <0x10490000 0x10000>, <0x10480000 0x10000>;
+	};
+
+	serial_0: serial@13800000 {
+		compatible = "samsung,exynos4210-uart";
+		reg = <0x13800000 0x3c>;
+		id = <0>;
+	};
+
+	serail_1: serial@13810000 {
+		compatible = "samsung,exynos4210-uart";
+		reg = <0x13810000 0x3c>;
+		id = <1>;
+	};
+
+	serial_2: serial@13820000 {
+		compatible = "samsung,exynos4210-uart";
+		reg = <0x13820000 0x3c>;
+		id = <2>;
+	};
+
+	serial_3: serial@13830000 {
+		compatible = "samsung,exynos4210-uart";
+		reg = <0x13830000 0x3c>;
+		id = <3>;
+	};
+
+	serial_4: serial@13840000 {
+		compatible = "samsung,exynos4210-uart";
+		reg = <0x13840000 0x3c>;
+		id = <4>;
+	};
+
+	i2c_0: i2c@13860000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "samsung,s3c2440-i2c";
+		reg = <0x13860000 0x100>;
+		interrupt-parent = <&gic>;
+		interrupts = <0 56 0>;
+	};
+
+	i2c_1: i2c@13870000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "samsung,s3c2440-i2c";
+		reg = <0x13870000 0x100>;
+		interrupt-parent = <&gic>;
+		interrupts = <1 57 0>;
+	};
+
+	i2c_2: i2c@13880000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "samsung,s3c2440-i2c";
+		reg = <0x13880000 0x100>;
+		interrupt-parent = <&gic>;
+		interrupts = <2 58 0>;
+	};
+
+	i2c_3: i2c@13890000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "samsung,s3c2440-i2c";
+		reg = <0x13890000 0x100>;
+		interrupt-parent = <&gic>;
+		interrupts = <3 59 0>;
+	};
+
+	i2c_4: i2c@138a0000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "samsung,s3c2440-i2c";
+		reg = <0x138a0000 0x100>;
+		interrupt-parent = <&gic>;
+		interrupts = <4 60 0>;
+	};
+
+	i2c_5: i2c@138b0000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "samsung,s3c2440-i2c";
+		reg = <0x138b0000 0x100>;
+		interrupt-parent = <&gic>;
+		interrupts = <5 61 0>;
+	};
+
+	i2c_6: i2c@138c0000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "samsung,s3c2440-i2c";
+		reg = <0x138c0000 0x100>;
+		interrupt-parent = <&gic>;
+		interrupts = <6 62 0>;
+	};
+
+	i2c_7: i2c@138d0000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "samsung,s3c2440-i2c";
+		reg = <0x138d0000 0x100>;
+		interrupt-parent = <&gic>;
+		interrupts = <7 63 0>;
+	};
+
+	sdhci0: sdhci@12510000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "samsung,exynos4412-sdhci";
+		reg = <0x12510000 0x1000>;
+		interrupt-parent = <&gic>;
+		interrupts = <0 75 0>;
+		status = "disabled";
+	};
+
+	sdhci1: sdhci@12520000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "samsung,exynos4412-sdhci";
+		reg = <0x12520000 0x1000>;
+		interrupt-parent = <&gic>;
+		interrupts = <0 76 0>;
+		status = "disabled";
+	};
+
+	sdhci2: sdhci@12530000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "samsung,exynos4412-sdhci";
+		reg = <0x12530000 0x1000>;
+		interrupt-parent = <&gic>;
+		interrupts = <0 77 0>;
+		status = "disabled";
+	};
+
+	sdhci3: sdhci@12540000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "samsung,exynos4412-sdhci";
+		reg = <0x12540000 0x1000>;
+		interrupt-parent = <&gic>;
+		interrupts = <0 78 0>;
+		status = "disabled";
+	};
+
+	mshc_0: dwmmc@12550000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "samsung,exynos4412-dw-mshc";
+		reg = <0x12550000 0x1000>;
+		interrupt-parent = <&gic>;
+		interrupts = <0 131 0>;
+		status = "disabled";
+	};
+
+};

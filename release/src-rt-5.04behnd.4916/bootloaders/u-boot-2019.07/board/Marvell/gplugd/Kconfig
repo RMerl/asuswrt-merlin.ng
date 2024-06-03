@@ -1,0 +1,15 @@
+if TARGET_GPLUGD
+
+config SYS_BOARD
+	default "gplugd"
+
+config SYS_VENDOR
+	default "Marvell"
+
+config SYS_SOC
+	default "armada100"
+
+config SYS_CONFIG_NAME
+	default "gplugd"
+
+endif

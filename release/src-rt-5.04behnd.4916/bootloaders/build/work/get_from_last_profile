@@ -1,0 +1,27 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use lib "../hostTools/PerlLib";
+use BRCM::GenConfig;
+
+my $profile;
+my $param = shift @ARGV;
+
+if (open(LP,"<../.last_profile")) {
+	local $/;
+	$profile = <LP>;
+	if ($profile =~ /(\S+)/) {
+		$profile = $1;
+	}
+}
+
+if ($profile) {
+	my $p = new BRCM::GenConfig("../targets/$profile/$profile");
+	print $p->get($param);
+}
+
+
+
+

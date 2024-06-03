@@ -1,0 +1,6 @@
+../XRDP_CFE2/firmware/src/project_data_structures.xml
+../XRDP_CFE2/firmware/xml/pon_common_cfe.xml
+../XRDP_CFE2/firmware/xml/common.xml
+../XRDP_CFE2/firmware/xml/hw_data_structures.xml
+../XRDP_CFE2/firmware/xml/BCM6846_A0_hw_data_structures.xml
+

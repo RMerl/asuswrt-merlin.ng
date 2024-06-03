@@ -1,0 +1,13 @@
+#address-cells = <1>;
+#size-cells = <0>;
+compatible = "brcm,bcmbca-hsspi";
+reg-names = "hsspi", "spim-ctrl";
+reg = <HS_SPI_OFFSET HS_SPI_SIZE>, <SPIM_CTRL_OFFSET SPIM_CTRL_SIZE>;
+clocks = <&hsspi_pll>, <&hsspi_pll>;
+clock-names = "hsspi", "pll";
+spi-max-frequency = <HS_SPI_MAX_FREQ>;
+num-cs = <8>;
+#ifdef HS_SPIM_SPI
+interrupts = <GIC_SPI HS_SPIM_SPI IRQ_TYPE_LEVEL_HIGH>;
+#endif
+status = "disabled";

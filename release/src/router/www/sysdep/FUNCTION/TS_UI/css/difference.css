@@ -1,0 +1,1155 @@
+/* aimesh/aimesh_topology.css */
+.info_right{
+	background-color: rgba(0,0,0,0.16);
+}
+
+.card_block_bg{
+	background: rgba(0,0,0,0.16);
+}
+
+.item_bg{
+	background-color: rgba(0,0,0,0.16);
+}
+
+.item_space{
+	background-color: rgba(0,0,0,0.16);
+}
+
+.item_bg.category{
+	background-color: rgba(0,0,0,0.16);
+}
+
+.category_bg{
+	background-image: linear-gradient(180deg, #3C3F42 4%, #1F2124 92%);
+}
+
+.category_bg.clicked{
+	background-image: linear-gradient(180deg, #8AAFAC 4%, #4B638C 92%);
+}
+
+.manage_switch_led .switch.off, .manage_switch_wifi .switch.off{
+	background: #333536;
+}
+
+.manage_switch_led .switch.on, .manage_switch_wifi .switch.on{
+	background:#2ED9C3 !important;
+}
+
+.manage_switch_led .switch:before, .manage_switch_wifi .switch:before{
+	background: #565D63;
+}
+
+.client_tab_bg{
+	background-image: linear-gradient(180deg, #3C3F42 4%, #1F2124 92%);
+}
+
+.client_tab_bg div.clicked{
+	background-image: linear-gradient(180deg, #8AAFAC 4%, #4B638C 92%);
+}
+
+.jstree-default .jstree-wholerow-hovered {
+	background: rgba(0,0,0,0.16);
+}
+
+.jstree-default .jstree-wholerow-clicked {
+	background: rgba(0,0,0,0.16);
+	box-shadow: -3px 0 0 0 #27EED5, 0 2px 0 0 rgba(0,0,0,0.10);
+}
+
+.aimesh_tab > span.clicked:before{
+	border-bottom: 2px solid #2ED9C3;
+}
+/*-- aimesh/aimesh_topology.css --*/
+
+/* css/basic.css */
+.border-container{
+	border: 1px solid #2ED9C3;
+}
+
+.border-bar{
+	background-color: #2ED9C3;
+}
+
+.title-symbol{
+	background-color: #2ED9C3;
+}
+
+.title-content{
+	border-bottom: 1px solid #2ED9C3;
+}
+
+.switch-button:checked ~.switch-button-bg{
+	background-color: #2ED9C3;
+}
+
+.icon-button-container:hover, .icon-button-container:active{
+	border: 2px solid #2ED9C3;
+}
+
+.button-container:hover, .button-container:active,
+.icon-button-container:hover, .icon-button-container:active{
+	border: 2px solid #2ED9C3;
+}
+
+.button-container{
+	border: 2px solid #2ED9C3;
+}
+
+.divide-line{
+	background-color: #2ED9C3;
+}
+
+input[type="checkbox"] + label{
+	border: 1px solid #2ED9C3;
+}
+
+input[type="checkbox"] + label:hover{
+	border: 1px solid #2ED9C3;
+}
+
+input[type="checkbox"]:checked + label{
+	background: #2ED9C3;
+}
+
+.select-arrow{
+	border-left: 1px solid #2ED9C3;
+}
+
+.icon-button-container{
+	border: 2px solid #2ED9C3;
+}
+/*-- css/basic.css --*/
+
+/* css/gameprofile.css */
+.new-g-p-step {
+	background-color: #2ED9C3;
+	color:#000000;
+}
+/*-- css/gameprofile.css --*/
+
+/* css/internetSpeed.css */
+.bg_internetSpeed{
+	background-color: #24272A;
+}
+/*-- css/internetSpeed.css --*/
+
+/* css/internetSpeed_customize.css */
+.container{
+	background-color: unset;
+}
+
+.split-Line{
+	background-image: linear-gradient(136deg, #657582 0%, #93BCC9 100%);
+}
+
+.ookla_info{
+	color: #2ED9C3;
+}
+
+.speedTest_div{
+	border: 1px solid #2ED9C3;
+}
+
+.date_div{
+	border-bottom: solid #2ED9C3 6px;
+}
+
+.history_select_checked{
+	background: #2ED9C3 url(../images/speedtest/checked_24px.svg) no-repeat center;
+}
+
+.detail_title{
+	border-bottom: #2ED9C3 solid 1px;
+}
+
+.detail_level_desc_div{
+	border-bottom: #2ED9C3 solid 1px;
+}
+
+.detail_last_test_div{
+	border-bottom: #2ED9C3 solid 1px;
+}
+
+.server_list_brick{
+	background: #2ED9C3;
+}
+/*-- css/internetSpeed_customize.css --*/
+
+/* css/networkMap.css */
+.division-block{
+	border-left: 5px solid #2ED9C3;
+}
+
+.tab-click{
+	background-color: #2ED9C3;
+	border-bottom: unset;
+	color:#000000;
+}
+
+.tab-block:hover{
+	background-color:#2ED9C3;
+	color:#000000;
+}
+/*-- css/networkMap.css --*/
+
+/* js/table/table.css */
+.tableApi_table thead td{
+	color: #000000;
+	background-color:#2ED9C3;
+}
+
+.actionButtonCancel {
+	background-color: #2ED9C3;
+}
+
+.actionButtonCancel:hover {
+	background: #2ee9d0;
+}
+
+.actionButtonOK {
+	background-color: #2ED9C3;
+}
+
+.actionButtonOK:hover {
+	background: #2ee9d0;
+}
+/*-- js/table/table.css --*/
+
+/* VPN/vpncTUF.css */
+.profile_setting_container .popup_edit_profile_container{
+	background: #3A4147;
+}
+
+.profile_setting_container .get_start_container{
+	background: #3A4147;
+}
+
+.get_start_container .main_info_container .title{
+	color:#2ED9C3;
+}
+
+.svr_item_container, .svr_item_error_hint_container{
+	background: #3A4147;
+	border-color: rgba(58, 65, 71, 0.5);
+}
+
+.svr_item_container.selected{
+	background: #3A4147;
+	border-color:#2ED9C3;
+}
+
+.svr_item_container.internet{
+	color:#2ED9C3;
+}
+
+.svr_item_container.active .svr_item_sub_info .vpn_status,
+.svr_item_container.internet.connected .svr_item_sub_info{
+	color:#2ED9C3;
+}
+
+.switch.on{
+	background:#2ED9C3 !important;
+}
+
+.checkbox.on{
+	border: 1px solid #29F4DA;
+	background-color: #29F4DA;
+}
+
+.btn_item .btn_container{
+	border: 1px solid#2ED9C3;
+	background: rgba(46, 217, 195, 0.2);
+}
+
+.textInput:focus{
+	box-shadow: 0 0 3px #2ED9C3;
+	border: 1px solid #2ED9C3;
+}
+
+.custom_select_container .select_options_container{
+	background: #3A4147;
+}
+
+.custom_select_container .select_options_container div.selected{
+	color:#2ED9C3;
+}
+
+.custom_select_container .select_options_container div.selected:before{
+	border-top: 2px solid #2ED9C3;
+	border-right: 2px solid #2ED9C3;
+}
+
+.action_container .btn_container, .get_start_container .main_info_container .add_btn{
+	background: #29F4DA;
+}
+
+.dropdown_select option{
+	background: #3A4147;
+}
+
+.popup_container .popup_content_container{
+	background: #3A4147;
+}
+
+.hidden_mask{
+	background: rgba(58, 65, 71, 0.1);
+}
+
+.popup_container .popup_content_container{
+	background: #3A4147;
+}
+
+.feature_desc .title{
+	color: #2ED9C3;
+}
+
+.del_profile .action_btn_container .del, .customize_alert .action_btn_container .ok{
+	background:#2ED9C3;
+}
+
+.client_list_content_container .client_container{
+	background-color: rgba(58, 65, 71, 0.1);
+}
+
+.client_icon_container.default_icon, .client_icon_container.user_icon{
+	background-color: #0F7F77;
+	box-shadow: 0px 0px 0px 1px #0F7F77;
+}
+
+.popup_edit_client_container .client_list_content_container::-webkit-scrollbar-track,
+.custom_select_container .select_options_container::-webkit-scrollbar-track{
+	border: 4px solid #3A4147;
+	background-color: #0F7F77;
+}
+
+.popup_edit_client_container .client_list_content_container::-webkit-scrollbar-thumb,
+.custom_select_container .select_options_container::-webkit-scrollbar-thumb{
+	background-color: #0F7F77;
+	border: 2px solid #3A4147;
+}
+
+.wan_status_container .connect_title:before{
+	border-top: 3px solid #2ED9C3;
+}
+
+.wan_status_container.connected .connect_status_text{
+	color:#2ED9C3;
+}
+/*-- VPN/vpncTUF.css --*/
+
+/* VPN/vpnsTUF.css */
+.profile_setting_container .popup_edit_profile_container,
+.client_content_bg .client_contorl_bg{
+	background: #3A4147;
+}
+
+.svr_item_container{
+	background: #3A4147;
+	border-color: rgba(58, 65, 71, 0.5);
+}
+
+.svr_item_container.selected{
+	background: #3A4147;
+	border-color: #2ED9C3;
+}
+
+.btn_item .btn_container{
+	border: 1px solid #2ED9C3;
+	background: rgba(46, 217, 195, 0.2);
+}
+
+.textInput:focus, .textareaInput:focus{
+	box-shadow: 0 0 3px #2ED9C3;
+	border: 1px solid #2ED9C3;
+}
+
+.custom_select_container .select_options_container{
+	background: #3A4147;
+}
+
+.custom_select_container .select_options_container div.selected{
+	color: #2ED9C3;
+}
+
+.custom_select_container .select_options_container div.selected:before{
+	border-top: 2px solid #2ED9C3;
+	border-right: 2px solid #2ED9C3;
+}
+
+.action_container .btn_container{
+	background: #29F4DA;
+}
+
+.dropdown_select option{
+	background: #3A4147;
+}
+
+.hidden_mask{
+	background: rgba(58, 65, 71, 0.1);
+}
+
+.popup_container .popup_content_container{
+	background: #3A4147;
+}
+
+.feature_desc .title{
+	color: #2ED9C3;
+}
+
+.customize_alert .action_btn_container .ok{
+	background: #2ED9C3;
+}
+
+.client_list_content_container .client_container{
+	background-color: rgba(58, 65, 71, 0.1);
+}
+
+.popup_edit_client_container .client_list_content_container::-webkit-scrollbar-track,
+.custom_select_container .select_options_container::-webkit-scrollbar-track{
+	border: 4px solid #3A4147;
+	background-color: #0F7F77;
+}
+
+.popup_edit_client_container .client_list_content_container::-webkit-scrollbar-thumb,
+.custom_select_container .select_options_container::-webkit-scrollbar-thumb{
+	background-color: #0F7F77;
+	border: 2px solid #3A4147;
+}
+
+.client_content_bg .detail_icon.active{
+	border: 2px solid #2ED9C3;
+	color: #2ED9C3;
+}
+
+.client_content_bg .client_contorl_bg .contorl_btn{
+	background-color: #2ED9C3;
+}
+
+.radio_options_container .radio_container.selected,
+.btn_options_container .btn_container.selected{
+	border: 1px solid #2ED9C3;
+}
+
+.radio_options_container .radio_container.selected .radio_icon{
+	border: 1px solid #2ED9C3;
+}
+
+.radio_options_container .radio_container.selected .radio_icon:before{
+	background-color: #2ED9C3;
+}
+/* -- VPN/vpnsTUF.css --*/
+
+/* form_style.css */
+.FormTable{
+	background-color: rgba(255,255,255,0.1);
+}
+
+.FormTable th{
+	border: 1px solid #25272a;
+}
+
+.FormTable thead td{
+	color: #000000;
+	background: #2ED9C3;
+	border: 1px solid #25272a;
+}
+
+.FormTable thead th{
+	border: 1px solid #25272a;
+}
+
+.FormTable td{
+	border: 1px solid #25272a;
+}
+
+.FormTable_table thead td{
+	color: #000000;
+	background-color: #2ED9C3;
+}
+
+.button_gen{
+	color: #ffffff;
+	border: solid 1px #2ED9C3;
+	background:rgba(0,0,0,0.2);
+}
+
+.button_gen:hover{
+	background:#27EED5;
+	color: #000000;
+	filter: drop-shadow(0px 3px 1px rgba(0, 0, 0, 0.24)) drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.45));
+}
+
+.button_gen_dis{
+	color: #ffffff;
+	border: solid 1px #2ED9C3;
+	background:rgba(0,0,0,0.2);
+}
+
+.button_gen_dis:hover{
+	background:#27EED5;
+	color: #000000;
+	filter: drop-shadow(0px 3px 1px rgba(0, 0, 0, 0.24)) drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.45));
+}
+
+.IPaddr input{
+	border:0px solid #657582;
+}
+
+.titlebtn {
+	background: #2ED9C3;
+}
+
+.titlebtn:hover {
+	background: #2ED9C3;
+	border: solid 0.5px rgba(0, 0, 0, 0.14);
+	box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.22), 0px 3px 1px rgba(0, 0, 0, 0.14);
+}
+
+.tab_NW {
+	border-bottom: 2px solid #2ED9C3;
+}
+
+.tab_NW:hover{
+	background: #2ceed5;
+}
+
+.tab_NW:hover span{
+	background: #2ceed5;
+}
+
+.tabclick_NW {
+	background: #2ED9C3;
+}
+
+.tab_item {
+	border-bottom: 2px solid #2ED9C3;
+}
+
+.tab_item_click {
+	background-color: #2ED9C3;
+}
+
+.navigation li dd:hover{
+	background-color: #2ED9C3;
+	color:#000000;
+}
+
+.content_bg{
+	background: rgba(0, 0, 0, 0.8);
+	border: solid 1px rgba(255,255,255,.1);
+}
+
+[bgcolor="#4D595D"]{
+	background: rgba(0, 0, 0, 0.8);
+	border: solid 1px rgba(255,255,255,.1);
+}
+
+.block_line{
+	border-bottom: 2px solid #657582;
+}
+
+.content_frame{
+	border: 1px solid #657582;
+}
+
+.analysis_bg, .web_frame{
+	border: 1px solid #657582;
+}
+
+.tm_title_bg{
+	background:  #657582;
+}
+
+.qos_tab{
+	background:  #657582;
+}
+
+.eula_panel_container{
+	border: 3px solid #2ED9C3;
+	background-color: rgba(0,0,0,0.9);
+}
+
+.splitLine{
+	background-image: linear-gradient(136deg, #657582 0%, #93BCC9 100%);
+}
+
+.query_list{
+	border: 1px solid  #657582;
+}
+
+.pull_arrow{
+	border:2px outset #768391;
+}
+
+#pull_arrow{
+	border:2px outset #768391;
+}
+
+/*-- form_style.css --*/
+
+/* index_style.css */
+.bg{
+	background-image: url(/images/New_ui/midup_bg.png), url(/images/New_ui/middown_bg.png);
+	background-repeat: no-repeat, no-repeat, repeat;
+	background-position: top center, top left, left;
+	background-size: auto, auto 100vh, auto;
+}
+
+.banner1{
+	background: unset;
+}
+
+#NM_table_div{
+	background-color: rgba(0,0,0,0.8);
+}
+
+.menu {
+	text-shadow: unset;
+	color: #c3c3c3;
+	background-color: rgba(0,0,0,0.8);
+	margin-bottom: 1px;
+}
+
+.menuClicked {
+	color: #FFFFFF;
+}
+
+.menu_blocked {
+	font-weight: unset;
+	text-shadow: unset;
+}
+
+.block_filter_pressed{
+	color: rgba(0,0,0,.87);
+	background: #2ED9C3;
+	background-image: linear-gradient(180deg, #FFFFFF 0%, rgba(255,255,255,0.04) 50%, rgba(0,0,0,0.14) 81%);
+	border: 1px solid rgba(29,29,29,0.30);
+}
+
+.menu_Desc{
+	font-weight: unset;
+}
+
+.menu_Split{
+	font-family: Xolonium;
+	color: #ffffff;
+	font-size:13px;
+}
+
+.menu_Split td{
+	padding-left: 16px;
+}
+
+.tab:hover{
+	background: #2ED9C3;
+	color:#000;
+}
+
+.tab{
+	background: #24272A;
+	border-radius: 4px 4px 0 0 ;
+}
+
+.tabClicked{
+	background: #2ED9C3;
+	color: #000;
+	border-bottom: unset;
+	border-radius: 4px 4px 0 0;
+}
+
+.modelName_top{
+	font-size: 24px;
+	margin: 33px 0 0 -380px;
+	text-shadow: unset;
+	font-family: Xolonium;
+}
+/*-- index_style.css --*/
+
+/* NM_style.css */
+.statusbody {
+	background: unset;
+}
+
+.statusTitle{
+	width:322px;
+	webkit-border-radius: unset;
+	-moz-border-radius: unset;
+	border-radius: unset;
+}
+
+.NM_radius_bottom_container{
+	background-color:rgba(0,0,0,0.16);
+}
+
+.NM_radius_bottom{
+	border: 1px solid #2ED9C3;
+}
+/*-- NM_style.css --*/
+
+/* tmmenu.css */
+#tabs a.active {
+	color: #000000;
+	background: #2ED9C3;
+}
+
+#tabs a:hover {
+	background: #2ED9C3;
+	color: #000000;
+}
+
+#tabs li:hover > a {
+	background: #2ED9C3;
+	color: #000000;
+}
+/*-- tmmenu.css --*/
+
+/* app_installation.css */
+.app_table{
+	background: #24272A;
+}
+
+/*-- app_installation.css --*/
+
+/*  Main_Login.asp */
+.logo-container{
+	margin-left: 140px;
+	margin-top: 25%;
+}
+
+.logo-rog{
+	background:url('../images/New_ui/TUF-logo.png') no-repeat left bottom;
+}
+
+.logo-rog, .logo-odm{
+	width: 100px;
+	height: 84px;
+}
+
+.model-name{
+	font-size: 32px;
+	font-family: Xolonium;
+}
+
+.login-btn-bg{
+	border: 2px solid #2ED9C3;
+}
+
+.login-btn-bg:hover{
+	border: 2px solid #19D3C5;
+}
+
+.form-input{
+	border-bottom: 2px solid #2ED9C3;
+}
+
+.form-input:focus{
+	border-bottom: 2px solid #0ae2d0;
+}
+
+/*-- main_login.css --*/
+
+/* Advanced_Smart_Connect.asp */
+#slider_wl0_bsd_steering_bandutil .ui-slider-range,
+#slider_wl1_bsd_steering_bandutil .ui-slider-range,
+#slider_wl2_bsd_steering_bandutil .ui-slider-range {
+	background: #2ED9C3;
+}
+
+#slider_wl2_bsd_steering_phy_l .ui-slider-range{
+	background: #2ED9C3;
+}
+
+#slider_wl0_bsd_steering_phy_g .ui-slider-range,
+#slider_wl1_bsd_steering_phy_g .ui-slider-range,
+#slider_wl2_bsd_steering_phy_g .ui-slider-range {
+	background: #2ED9C3;
+}
+
+#slider_wl0_bsd_sta_select_policy_phy_l .ui-slider-range,
+#slider_wl1_bsd_sta_select_policy_phy_l .ui-slider-range,
+#slider_wl2_bsd_sta_select_policy_phy_l .ui-slider-range {
+	background: #2ED9C3;
+}
+
+#slider_wl0_bsd_sta_select_policy_phy_g .ui-slider-range,
+#slider_wl1_bsd_sta_select_policy_phy_g .ui-slider-range,
+#slider_wl2_bsd_sta_select_policy_phy_g .ui-slider-range {
+	background: #2ED9C3;
+}
+
+#slider_wl0_bsd_if_qualify_policy .ui-slider-range,
+#slider_wl1_bsd_if_qualify_policy .ui-slider-range,
+#slider_wl2_bsd_if_qualify_policy .ui-slider-range {
+	background: #2ED9C3;
+}
+/*-- Advanced_Smart_Connect.asp --*/
+
+/* AiProtection_HomeProtection.asp */
+#mals_shade, #mals_count_shade, #vp_shade, #vp_count_shade,
+#cc_shade, #infected_count_shade {
+	background-color: unset;
+}
+/*-- AiProtection_HomeProtection.asp --*/
+
+/* AiProtection_InfectedDevicePreventBlock.asp */
+
+#vulner_table, #chart_div, #info_div {
+	background-color: rgba(255,255,255,0.05);
+	opacity: unset;
+}
+
+#chart_shade, #info_shade {
+	background-color: unset;
+	opacity: unset;
+}
+/*-- AiProtection_InfectedDevicePreventBlock.asp --*/
+
+/* GameBoost.asp */
+.btn{
+	border: 1px solid #2ED9C3;
+}
+
+.btn:hover{
+	background-color: #2ED9C3;
+	color: #000000;
+}
+
+.FormTitle_gb{
+	background-size: auto;
+	background-color: #24272A;
+}
+
+.gB_SplitLine{
+	background-color: unset;
+	background-image: linear-gradient(136deg, #657582 0%, #93BCC9 100%);
+}
+
+.gB_title_left{
+	font-family: Xolonium;
+	padding: 5px 0;
+	font-size: 16px;
+}
+
+.gB_title_right{
+	font-family: Xolonium;
+	padding: 5px 10px;
+	font-size: 16px;
+	color:rgb(5,252,238)
+}
+
+.android_font{
+	font-size: 16px;
+}
+/*-- GameBoost.asp --*/
+
+/* vpnc.html */
+#vpnc_bg{
+	background: unset;
+}
+/*-- vpnc.html --*/
+
+/* vpns.html */
+#vpns_bg{
+	background: unset;
+}
+/*-- vpns.html --*/
+
+/* mobile.customize/customize.css */
+@font-face{
+	font-family: Xolonium;
+	src: url(/fonts/xolonium.regular.otf) format("opentype");
+}
+
+#welcomeTitle{
+	font-family: Xolonium;
+    font-size: 2.5em;
+	color: #13E2CE;
+}
+
+#welcome_button{
+	font-family: Xolonium;
+	font-size: 1.75em;
+}
+
+.titleMain, .titleSub, .footer_desktop, .footer_mobile, .mobile_applyBtn, .mobile_abortBtn{
+	font-family: Xolonium;
+}
+
+.desktop_applyBtn, .desktop_abortBtn{
+	font-size: 1.2em;
+}
+
+.footer_mobile{
+	border-top: 2px solid #2ED9C3;
+}
+
+.desktop_applyBtn{
+	border: 2px solid #2ED9C3;
+	background: #13E2CE;
+}
+
+.desktop_abortBtn{
+	color: #2ED9C3;
+	background: #000;
+    border: solid 1px #2ED9C3;
+}
+
+.ui-input-text input, .ui-input-search input{
+	border-color: #2ED9C3;
+}
+
+#welcome_button{
+	background-color: #13E2CE;
+	border:1px solid #13E2CE;
+}
+
+#aimesh_welcome_button{
+	background-color: #2ED9C3;
+	border:1px solid #2ED9C3;
+}
+
+.advSetting{
+	color: #2ED9C3;
+}
+
+.descSteps{
+	color: #2ED9C3;
+}
+
+.mobileApply{
+	background: #2ED9C3;
+}
+
+.ap_ssid_hover{
+	color: #2ED9C3 !important;
+}
+
+.selectorContainerDiv:hover, .selectBar > label:hover, .labelInput:hover{
+	color: #2ED9C3;
+}
+
+.loadingBarContainer{
+	border: 2px solid #2ED9C3!important;
+}
+
+.loadingBar{
+	background-color: #2ED9C3!important;
+}
+
+@media screen and (min-aspect-ratio: 11/13){
+	.desktop_left_field{
+		color: #2ED9C3;
+	}
+}
+
+.icon_logo{
+	background-image: url("/images/New_ui/logo_TX.png");
+	margin-left: -20px;
+}
+
+.cssload-circle .cssload-inner{
+	border: 5px solid rgba(19,226,206,0.7);
+}
+
+.productIconContainer > div{
+	background: #000;
+}
+
+#welcome_button {
+	color:#000;
+	font-family: Xolonium;
+    font-size: 1.5em;
+    line-height: 2em;
+	height: 100%;
+}
+
+.textInput {
+    background: rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.inputTitle {
+    font-size: 1.3em;
+    color: #2ED9C3;
+}
+/*-- mobile.customize/customize.css--*/
+
+/* device-map/device-map.css */
+.custom_icon_category .category_content div{
+	background-color: #272b2a;
+	box-shadow: 0px 0px 0px 1px #2ed9c3;
+}
+
+.custom_icon_list_bg .custom_icon_category .category_content div:hover{
+	background-color: #2ed9c3;
+}
+
+.clientIconIE8HACK{
+	background-color: #272b2a \9;
+	box-shadow: 0px 0px 0px 1px #2ed9c3 \9;
+}
+
+.clientIcon, .clientIcon_clicked{
+	background-color: #272b2a;
+	box-shadow: 0px 0px 0px 1px #2ed9c3;
+}
+
+.clientIcon:hover{
+	background-color: #2ed9c3;
+}
+
+.clientIcon.clicked {
+	background-color: #2ed9c3;
+}
+
+.clientIcon_no_hover{
+	background-color: #272b2a;
+	box-shadow: 0px 0px 0px 1px #2ed9c3;
+}
+
+.clientBg{
+	border-bottom: 1px solid #272b2a;
+}
+
+.client_canvasUserIcon{
+	background-color: #272b2a;
+	box-shadow: 0px 0px 0px 1px #2ed9c3;
+}
+
+.imgUserIcon_viewlist {
+	background-color: #272b2a;
+	box-shadow: 0px 0px 0px 1px #2ed9c3;
+}
+
+.imgUserIcon_card{
+	background-color: #272b2a;
+}
+
+.imgUserIcon_card:hover{
+	background-color: #2ed9c3;
+}
+
+.nav li:hover{
+	background-color: #2ed9c3;
+}
+/*-- device-map/device-map.css --*/
+
+/* css/asus_eula.css */
+#cancelBtn, #applyBtn{
+	text-shadow: unset !important;
+	background: #000 !important;
+	border:solid 1px #2ED9C3 !important;
+	border-radius: 50px !important;
+}
+
+#tm_eula_content{
+	background-color: unset !important;
+	border-top: 1px solid #2ED9C3 !important;
+	border-bottom: 1px solid #2ED9C3 !important;
+}
+/*-- css/asus_eula.css --*/
+
+/* Main_Analysis_Content.asp */
+#ClientList_Block_PC{
+	border:1px outset #2ED9C3;
+	background-color: rgba(0,0,0,0.9);
+}
+/*-- Main_Analysis_Content.asp --*/
+
+/* aimesh_system_settings.css */
+.popup_hint_bg .switch_ctl_bg .title_text{
+	color: #FFFFFF;
+}
+
+.popup_hint_bg .inputTitleContainer .inputTitle{
+	color: #2ED9C3;
+}
+
+.system_settings_bg .switch.off, .popup_hint_bg .switch_ctl_bg .switch.off{
+	background: #878787;
+}
+
+.popup_hint_bg .custom_radio_text_bg .custom_radio_bg .custom_radio_label:before{
+	border-color: #2ED9C3;
+}
+.popup_hint_bg .custom_radio_text_bg .custom_radio_bg .custom_radio_label.checked:after{
+	background: #2ED9C3;
+}
+/*-- aimesh_system_settings.css --*/
+
+/* QIS */
+.gundam-footer-field{
+    width: 100%;
+    height: 144px;
+    position: fixed;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+}
+
+.TX-bg{
+	background-image: url('../images/gundam_bg.png'), url('../images/New_ui/middown_bg.png');
+	background-repeat: no-repeat, repeat;
+	background-size: 100%, auto;
+	width: 100%;
+	height: 100vh;
+	margin-top: -134px;
+}
+
+.TX-title{
+	display: flex;
+	align-items: center;
+	position: absolute;
+	top: -10px;
+	left: 13%;
+	width: 450px;
+	height: 100px;
+}
+
+.TX-logo{
+	background-image: url('../images/New_ui/logo_TX.png');
+	background-repeat: no-repeat;
+	width: 60px;
+	height: 96px;
+}
+
+.TX-modelText{
+	color: #FFFFFF;
+	font-family: Xolonium;
+	font-weight: bold;
+}
+
+.GD-wait{
+    position: absolute;
+    background-image: url('../images/gundam-waiting.png');
+    width: 240px;
+    height: 102px;
+    top: 8px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+}
+
+.GD-wait > div{
+    color:#FFF;
+    margin: 40px 0 0 60px;
+}
+/*-- QIS --*/
+@media screen and (max-width: 1000px){
+	/*  Main_Login.asp */
+	.bg_mainLogin{
+		background: unset;
+	}
+
+	.logo-rog{
+		margin: unset;
+	}
+	/*--*/
+
+	/* QIS */
+	.gundam-footer-field{
+		display: none;
+	}
+	/*--*/
+}

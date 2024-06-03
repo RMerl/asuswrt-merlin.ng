@@ -1,0 +1,6 @@
+MX53 CX9020
+M:	Patrick Bruenn <p.bruenn@beckhoff.com>
+S:	Maintained
+F:	board/beckhoff/mx53cx9020/
+F:	include/configs/mx53cx9020.h
+F:	configs/mx53cx9020_defconfig

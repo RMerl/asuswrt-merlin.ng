@@ -1,0 +1,109 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * at91sam9g45-corvus.dts Device Tree file fir Siemens corvus board
+ * (C) Copyright 2016 Heiko Schocher <hs@denx.de>
+ *
+ * based on:
+ * at91sam9m10g45ek.dts - Device Tree file for AT91SAM9M10G45-EK board
+ *
+ *  Copyright (C) 2011 Atmel,
+ *                2011 Nicolas Ferre <nicolas.ferre@atmel.com>
+ */
+/dts-v1/;
+#include "at91sam9g45.dtsi"
+
+/ {
+	model = "Siemens corvus";
+	compatible = "atmel,at91sam9m10g45ek", "atmel,at91sam9g45", "atmel,at91sam9";
+
+	chosen {
+		u-boot,dm-pre-reloc;
+		stdout-path = &dbgu;
+	};
+
+	memory {
+		reg = <0x70000000 0x8000000>;
+	};
+
+	clocks {
+		slow_xtal {
+		      clock-frequency = <32768>;
+		};
+
+		main_xtal {
+		      clock-frequency = <12000000>;
+		};
+	};
+
+	ahb {
+		apb {
+			dbgu: serial@ffffee00 {
+				u-boot,dm-pre-reloc;
+				status = "okay";
+			};
+
+			usart1: serial@fff90000 {
+				pinctrl-0 =
+					<&pinctrl_usart1
+					 &pinctrl_usart1_rts
+					 &pinctrl_usart1_cts>;
+				status = "okay";
+			};
+
+			macb0: ethernet@fffbc000 {
+				phy-mode = "rmii";
+				status = "okay";
+			};
+
+			watchdog@fffffd40 {
+				status = "okay";
+			};
+
+			spi0: spi@fffa4000{
+				status = "okay";
+				cs-gpios = <&pioB 3 0>, <0>, <0>, <0>;
+				mtd_dataflash@0 {
+					compatible = "atmel,at45", "atmel,dataflash";
+					spi-max-frequency = <13000000>;
+					reg = <0>;
+				};
+			};
+
+			usb2: gadget@fff78000 {
+				atmel,vbus-gpio = <&pioB 19 GPIO_ACTIVE_HIGH>;
+				status = "okay";
+			};
+
+			rtc@fffffd20 {
+				atmel,rtt-rtc-time-reg = <&gpbr 0x0>;
+				status = "okay";
+			};
+
+			gpbr: syscon@fffffd60 {
+				status = "okay";
+			};
+
+			rtc@fffffdb0 {
+				status = "okay";
+			};
+		};
+
+		nand0: nand@40000000 {
+			nand-bus-width = <8>;
+			nand-ecc-mode = "soft";
+			nand-on-flash-bbt;
+			status = "okay";
+		};
+
+		usb0: ohci@00700000 {
+			status = "okay";
+			num-ports = <2>;
+			atmel,vbus-gpio = <&pioD 1 GPIO_ACTIVE_LOW
+					   &pioD 3 GPIO_ACTIVE_LOW>;
+		};
+
+		usb1: ehci@00800000 {
+			status = "okay";
+		};
+	};
+};

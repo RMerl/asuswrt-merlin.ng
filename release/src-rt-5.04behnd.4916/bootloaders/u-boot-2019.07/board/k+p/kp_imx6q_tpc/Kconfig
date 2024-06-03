@@ -1,0 +1,12 @@
+if TARGET_KP_IMX6Q_TPC
+
+config SYS_BOARD
+	default "kp_imx6q_tpc"
+
+config SYS_VENDOR
+	default "k+p"
+
+config SYS_CONFIG_NAME
+	default "kp_imx6q_tpc"
+
+endif

@@ -1,0 +1,98 @@
+--- a/wifi_hal.c
++++ b/wifi_hal.c
+@@ -3226,7 +3226,9 @@
+ 	if (RETURN_OK != returnStatus) {
+ 		HAL_WIFI_ERR(("%s: wldm_Radio_TransmitPower CMD_GET failed for radioIndex = %d, Status=%d\n",
+ 					__FUNCTION__, radioIndex, returnStatus));
+-		return RETURN_ERR;
++		//return RETURN_ERR;
++	    *output_ulong = 100;
++	    return RETURN_OK;
+ 	}
+ 
+ 	*output_ulong = (transmitPower == -1) ? 100 : (ULONG)transmitPower;
+--- a/wifi_api.c
++++ b/wifi_api.c
+@@ -5004,7 +5004,7 @@
+ 			printf("security mode: %s\n", security_mode_table[i].str_val);
+
+ #if defined(_XB7_PRODUCT_REQ_) || defined(_XB8_PRODUCT_REQ_) || \
+-	defined(_CBR2_PRODUCT_REQ_)
++	defined(_CBR2_PRODUCT_REQ_) || defined(WIFI_HAL_VERSION_3)
+ 			/* is under WIFI_HAL_VERSION_3 */
+ 			printf("mfp: %d\n", security.mfp);
+ #else /* RDKM */
+@@ -5119,7 +5119,7 @@
+ 		switch (security.mode) {
+ 			case wifi_security_mode_none:
+ #if defined(_XB7_PRODUCT_REQ_) || defined(_XB8_PRODUCT_REQ_) || \
+-	defined(_CBR2_PRODUCT_REQ_)
++	defined(_CBR2_PRODUCT_REQ_) || defined(WIFI_HAL_VERSION_3)
+ 				/* is under WIFI_HAL_VERSION_3 */
+ 				security.mfp = atoi(argv[4]);
+ #else /* RDKM */
+@@ -5148,7 +5148,7 @@
+ 					goto print_setApSecurity_usage;
+ 				}
+ #if defined(_XB7_PRODUCT_REQ_) || defined(_XB8_PRODUCT_REQ_) || \
+-	defined(_CBR2_PRODUCT_REQ_)
++	defined(_CBR2_PRODUCT_REQ_) || defined(WIFI_HAL_VERSION_3)
+ 				/* is under WIFI_HAL_VERSION_3 */
+ 				security.mfp = atoi(argv[4]);
+ #else /* RDKM */
+@@ -5193,7 +5193,7 @@
+
+ 				/* mfp */
+ #if defined(_XB7_PRODUCT_REQ_) || defined(_XB8_PRODUCT_REQ_) || \
+-	defined(_CBR2_PRODUCT_REQ_)
++	defined(_CBR2_PRODUCT_REQ_) || defined(WIFI_HAL_VERSION_3)
+ 				/* is under WIFI_HAL_VERSION_3 */
+ 				security.mfp = atoi(argv[4]);
+ #else /* RDKM */
+@@ -5361,7 +5361,7 @@
+ 				/* If ret is SUCCESS, security mode must be valid */
+ 				printf("\tsecurity mode: %s\n", security_mode_table[k].str_val);
+ #if defined(_XB7_PRODUCT_REQ_) || defined(_XB8_PRODUCT_REQ_) || \
+-	defined(_CBR2_PRODUCT_REQ_)
++	defined(_CBR2_PRODUCT_REQ_) || defined(WIFI_HAL_VERSION_3)
+ 				/* is under WIFI_HAL_VERSION_3 */
+ 				printf("mfp: %d\n", security->mfp);
+ #else /* RDKM */
+--- a/wifi_hal.c
++++ b/wifi_hal.c
+@@ -13073,7 +13073,7 @@
+ 						map.vap_array[i].u.bss_info.security.mode =
+ 							wifi_security_mode_none;
+ #if defined(_XB7_PRODUCT_REQ_) || defined(_XB8_PRODUCT_REQ_) || \
+-	defined(_CBR2_PRODUCT_REQ_)
++	defined(_CBR2_PRODUCT_REQ_) || defined(WIFI_HAL_VERSION_3)
+        /* is under WIFI_HAL_VERSION_3 */
+ 						map.vap_array[i].u.bss_info.security.mfp =
+ 							wifi_mfp_cfg_optional;
+@@ -13103,7 +13103,7 @@
+ 						map.vap_array[i].u.bss_info.security.encr =
+ 							wifi_encryption_aes;
+ #if defined(_XB7_PRODUCT_REQ_) || defined(_XB8_PRODUCT_REQ_) || \
+-	defined(_CBR2_PRODUCT_REQ_)
++	defined(_CBR2_PRODUCT_REQ_) || defined(WIFI_HAL_VERSION_3)
+        /* is under WIFI_HAL_VERSION_3 */
+ 						map.vap_array[i].u.bss_info.security.mfp =
+ 							wifi_mfp_cfg_optional;
+@@ -16058,7 +16058,7 @@
+ 	HAL_WIFI_DBG(("%s: %d: mfp [%s]\n", __FUNCTION__,
+ 		apIndex, mfpStr));
+ #if defined(_XB7_PRODUCT_REQ_) || defined(_XB8_PRODUCT_REQ_) || \
+-	defined(_CBR2_PRODUCT_REQ_) || WIFI_HAL_VERSION_3_PHASE2
++	defined(_CBR2_PRODUCT_REQ_) || WIFI_HAL_VERSION_3_PHASE2 || defined(WIFI_HAL_VERSION_3)
+ 	/* WIFI_HAL_VERSION_3_PHASE2 for RDKM */
+ 	for (i = 0; mfp_table[i].str_val != NULL; ++i) {
+ 		if (!strcmp(mfp_table[i].str_val, mfpStr)) {
+@@ -16271,7 +16271,7 @@
+
+ 	/* set mfp */
+ #if defined(_XB7_PRODUCT_REQ_) || defined(_XB8_PRODUCT_REQ_) || \
+-	defined(_CBR2_PRODUCT_REQ_) || WIFI_HAL_VERSION_3_PHASE2
++	defined(_CBR2_PRODUCT_REQ_) || WIFI_HAL_VERSION_3_PHASE2 || defined(WIFI_HAL_VERSION_3)
+ 	/* WIFI_HAL_VERSION_3_PHASE2 for RDKM */
+ 	for (i = 0; mfp_table[i].str_val != NULL; ++i) {
+ 		if (mfp_table[i].enum_val == security->mfp)

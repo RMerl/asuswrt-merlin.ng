@@ -1,0 +1,69 @@
+#
+# <:copyright-BRCM:2013:DUAL/GPL:standard
+# 
+#    Copyright (c) 2013 Broadcom 
+#    All Rights Reserved
+# 
+# Unless you and Broadcom execute a separate written software license
+# agreement governing use of this software, this software is licensed
+# to you under the terms of the GNU General Public License version 2
+# (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
+# with the following added to such license:
+# 
+#    As a special exception, the copyright holders of this software give
+#    you permission to link this software with independent modules, and
+#    to copy and distribute the resulting executable under terms of your
+#    choice, provided that you also meet, for each linked independent
+#    module, the terms and conditions of the license of that module.
+#    An independent module is a module which is not derived from this
+#    software.  The special exception does not apply to any modifications
+#    of the software.
+# 
+# Not withstanding the above, under no circumstances may you combine
+# this software in any way with any other Broadcom software provided
+# under a license other than the GPL, without Broadcom's express prior
+# written consent.
+# 
+# :> 
+#
+
+# RDPA test
+# - GbE mode
+# - SP_Schedule_RL_on_queue diagram
+#
+# wan_port - egress_tm1(level=group, mode=sp)
+#	egress_tm2(level=queue,mode=disable) - af=200
+#		queue[0]=128
+#	egress_tm3(level=queue,mode=disable) - af=300
+#		queue[0]=128
+#	egress_tm4(level=queue,mode=disable) - af=400
+#		queue[0]=128
+#
+
+/bdmf
+trace debug egress_tm
+new system/init_cfg=<wan_type=gbe,wan_emac=emac4>
+new port/index=wan0,cfg={emac=emac4}
+new egress_tm/dir=us,index=1,level=egress_tm,mode=sp port/index=wan0
+
+# At this point egress_tm is active. port/tm_cfg.egress_tm was set automatically
+# the following configuration is dynamic
+new egress_tm/dir=us,index=2,level=queue,mode=disable egress_tm/dir=us,index=1
+new egress_tm/dir=us,index=3,level=queue,mode=disable egress_tm/dir=us,index=1
+new egress_tm/dir=us,index=4,level=queue,mode=disable egress_tm/dir=us,index=1
+conf egress_tm/dir=us,index=2 rl={af=200},queue_cfg[0]={drop_threshold=128}
+conf egress_tm/dir=us,index=3 rl={af=300},queue_cfg[0]={drop_threshold=128}
+conf egress_tm/dir=us,index=4 rl={af=400},queue_cfg[0]={drop_threshold=128}
+conf egress_tm/dir=us,index=1 subsidiary[0]={egress_tm/dir=us,index=2}
+conf egress_tm/dir=us,index=1 subsidiary[2]={egress_tm/dir=us,index=4}
+conf egress_tm/dir=us,index=1 subsidiary[1]={egress_tm/dir=us,index=3}
+
+#
+# At this point configuration is completed.
+# The following commands demonstrate dynamic re-configuration
+#
+
+conf egress_tm/dir=us,index=3 rl={af=500},queue_cfg[0]={drop_threshold=256}
+
+
+/quit

@@ -1,0 +1,6 @@
+config CMD_SH_ZIMAGEBOOT
+	bool "zimageboot - Boot a zImage on SH"
+	default y
+	help
+	  This is special SH-specific command to boot a zImage (compressed
+	  Linux image) on SH-architecture boards.

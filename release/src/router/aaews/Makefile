@@ -56,15 +56,15 @@ ROUTER_LDFLAGS=-L$(NVRAM_DIR) -L$(SHARED_DIR)
 ifeq ($(RTCONFIG_BCM_502L07P2),y)
 ROUTER_LIBS += -lethctl
 ROUTER_LDFLAGS += -L$(TOP_PLATFORM)/ethctl_lib
-endif
-endif
+endif #ifeq ($(RTCONFIG_BCM_502L07P2),y)
+endif #ifeq ($(RTCONFIG_QTN),y)
 ifeq ($(RTCONFIG_NOTIFICATION_CENTER),y)
 ROUTER_LIBS += -lsqlite3
 ROUTER_LDFLAGS += -L$(SQLITE_DIR)/.libs
 ROUTER_LIBS += -lnt
 ROUTER_LDFLAGS += -L$(NT_CENTER_DIR)/lib
-endif
-endif
+endif #ifeq ($(RTCONFIG_NOTIFICATION_CENTER),y)
+endif #ifeq ("$(MAKECMDGOALS)", $(filter "$(MAKECMDGOALS)", "router" "mastiff" "aaeuac"))
 
 CFLAGS += -g
 ifeq ($(RTCONFIG_NOTIFICATION_CENTER), y)
@@ -112,8 +112,21 @@ ifeq ($(RTCONFIG_BCMARM),y)
 CFLAGS += -I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T
 endif
 
+ifeq ($(HND_ROUTER_BE_4916), y)
+CFLAGS+= -fcommon
+endif
+
 ifeq ($(RTCONFIG_SW_HW_AUTH),y)
 CFLAGS += -I$(SW_HW_AUTH_DIR) -DSW_HW_AUTH
+endif
+
+ifeq ($(RTCONFIG_LIBASUSLOG),y)
+CFLAGS += -I$(TOP)/libasuslog
+LDFLAGS += -L$(TOP)/libasuslog -lasuslog
+endif
+
+ifeq ($(RTCONFIG_TRUSTZONE),y)
+LDFLAGS += -L$(TOP)/ateed/ -latee
 endif
 
 ifeq ($(wildcard $(TOP)/aaews/*.c),)
@@ -125,13 +138,13 @@ $(DOG): $(DOG).o nat_nvram.o aae_ipc_handler.o ws_caller.o nw_util.o natapi.o $(
 #	mipsel-uclibc-gcc -c $(CFLAGS) $(LDFLAGS) $(LIBS) -o $@ $^ 
 endif
 
-ifeq ($(and $(RTCONFIG_IG_SITE2SITE),$(RTCONFIG_WIREGUARD)),y)
+ifeq ($(RTCONFIG_UAC_TUNNEL),y)
 ifeq ($(wildcard $(TOP)/aaews/*.c),)
 $(UAC):
 	-cp -f $(TOP)/aaews/prebuild/$(BUILD_NAME)/aaeuac aaeuac
 else
 $(UAC): $(UAC).o nat_nvram.o natapi.o $(WSLIB_OBJS) queue_list.o queue_manager.o sync.o ws_caller.o nw_util.o info_report.o
-	$(CC) -fPIC $(CFLAGS) $(LDFLAGS) $(LIBS) $(ROUTER_LDFLAGS) $(ROUTER_LIBS) -o $@ $^
+	$(CC) -fPIC $(CFLAGS) $(LDFLAGS) $(LIBS) -pthread $(ROUTER_LDFLAGS) $(ROUTER_LIBS) -o $@ $^
 endif
 endif
 aicam:$(TARGET)
@@ -140,7 +153,7 @@ ifeq ($(wildcard $(TOP)/aaews/*.c),)
 router:
 	-cp -f $(TOP)/aaews/prebuild/$(BUILD_NAME)/aaews aaews
 else
-router: $(WSLIB) $(TARGET) $(DOG) $(if $(and $(RTCONFIG_IG_SITE2SITE),$(RTCONFIG_WIREGUARD)),  $(UAC))
+router: $(WSLIB) $(TARGET) $(DOG) $(if $($(RTCONFIG_UAC_TUNNEL)),  $(UAC))
 endif
 $(WSLIB):
 	cd $(WB_DIR) && \

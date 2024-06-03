@@ -1,0 +1,12 @@
+#
+# Copyright (C) 2014 Stefan Roese <sr@denx.de>
+#
+
+# Armada 38x uses version 1 image format
+VERSION		1
+
+# Boot Media configurations
+#@BOOT_FROM
+
+# Binary Header (bin_hdr) with DDR3 training code
+BINARY spl/u-boot-spl.bin 0000005b 00000068

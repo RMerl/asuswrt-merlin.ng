@@ -10,6 +10,7 @@
 <link rel="stylesheet" type="text/css" href="../NM_style.css">
 <link rel="stylesheet" type="text/css" href="aidisk.css">
 <link rel="stylesheet" type="text/css" href="/form_style.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script>
 var dummyShareway = '<% nvram_get("dummyShareway"); %>';

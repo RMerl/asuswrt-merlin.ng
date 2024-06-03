@@ -1,0 +1,64 @@
+${dtype} dev ${disk}
+
+setenv bootargs enable_wait_mode=off
+setenv nextcon 0;
+setenv bootargs $bootargs console=ttymxc1,115200 vmalloc=400M consoleblank=0 ;
+
+i2c dev 2
+
+if i2c probe 0x04 ; then
+	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,LDB-XGA,if=RGB666
+	if test "0" -eq $nextcon; then
+		setenv fbcon "fbcon=10M";
+	else
+		setenv fbcon ${fbcon},10M
+	fi
+	setexpr nextcon $nextcon + 1
+else
+	echo "------ no Freescale display";
+fi
+
+if i2c probe 0x38 ; then
+	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,1024x600M@60,if=RGB666
+	if test "0" -eq $nextcon; then
+		setenv fbcon "fbcon=10M";
+	else
+		setenv fbcon ${fbcon},10M
+	fi
+	setexpr nextcon $nextcon + 1
+else
+	echo "------ no 1024x600 display";
+fi
+
+if i2c probe 0x48 ; then
+	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=lcd,CLAA-WVGA,if=RGB666 tsdev=tsc2004 calibration
+	if test "0" -eq $nextcon; then
+		setenv fbcon "fbcon=10M";
+	else
+		setenv fbcon ${fbcon},10M
+	fi
+	setexpr nextcon $nextcon + 1
+else
+	echo "------ no 800x480 display";
+fi
+
+if hdmidet ; then
+	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=hdmi,1280x720M@60,if=RGB24
+	if test "0" -eq $nextcon; then
+		setenv fbcon "fbcon=28M";
+	else
+		setenv fbcon ${fbcon},28M
+	fi
+	setexpr nextcon $nextcon + 1
+else
+	echo "------ no HDMI monitor";
+fi
+
+while test "3" -ne $nextcon ; do
+	setenv bootargs $bootargs video=mxcfb${nextcon}:off ;
+	setexpr nextcon $nextcon + 1 ;
+done
+
+setenv bootargs $bootargs fbcon=$fbcon
+${fs}load ${dtype} ${disk}:1 10800000 uImage && ${fs}load ${dtype} ${disk}:1 12800000 uramdisk.img && bootm 10800000 12800000
+echo "Error loading kernel image"

@@ -6,7 +6,9 @@
 #include <linux/interrupt.h>	/* for "struct tasklet_struct" in linux-3.10.14 */
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
+#if !defined(CONFIG_MODEL_RT4GAX56) && !defined(CONFIG_MODEL_RTAX54) && !defined(CONFIG_MODEL_XD4S)
 #include <asm/rt2880/rt_mmap.h>
+#endif
 #endif
 #include "raether.h"
 

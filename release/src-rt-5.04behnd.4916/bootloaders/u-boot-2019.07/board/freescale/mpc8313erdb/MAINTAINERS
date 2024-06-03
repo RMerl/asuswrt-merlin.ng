@@ -1,0 +1,9 @@
+MPC8313ERDB BOARD
+#M:	-
+S:	Maintained
+F:	board/freescale/mpc8313erdb/
+F:	include/configs/MPC8313ERDB.h
+F:	configs/MPC8313ERDB_33_defconfig
+F:	configs/MPC8313ERDB_66_defconfig
+F:	configs/MPC8313ERDB_NAND_33_defconfig
+F:	configs/MPC8313ERDB_NAND_66_defconfig

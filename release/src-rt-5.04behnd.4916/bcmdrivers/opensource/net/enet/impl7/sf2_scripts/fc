@@ -1,0 +1,58 @@
+#!/bin/sh
+source /etc/sf2/_util
+
+# # /etc/sf2/fc        # usage: fc <unit>
+# found 6756 unit=0
+# Buffer Thresholds in page (256bytes)
+#    [LAN]    TxQ       .    total     |[IMP0]   TxQ       .    total     |[WAN]    TxQ       .    total
+#    Rsv  Hyst Paus Drop:Hyst Paus Drop|Rsv  Hyst Paus Drop:Hyst Paus Drop|Rsv  Hyst Paus Drop:Hyst Paus Drop
+# Q0   32  104  212  234  353  707  707|  32  102  212  235  356  712  712|  32  736  736  736  736  736  736
+# Q1   32  736  736  736  736  736  736|  32  104  215  238  360  720  720|  32  736  736  736  736  736  736
+# Q2   32  106  215  237  357  715  715|  32  106  218  241  364  728  728|  32  736  736  736  736  736  736
+# Q3   32  736  736  736  736  736  736|  32  108  221  244  368  736  736|  32  736  736  736  736  736  736
+# Q4   32  108  218  240  361  723  723|  32  110  224  247  372  744  744|  32  736  736  736  736  736  736
+# Q5   32  736  736  736  736  736  736|  32  112  227  250  376  752  752|  32  736  736  736  736  736  736
+# Q6   32  110  221  243  365  731  731|  32  114  230  253  380  760  760|  32  736  736  736  736  736  736
+# Q7   32  736  736  736  736  736  736|  32  116  233  256  384  768  768|  32  736  736  736  736  736  736
+# 
+# Note: Congested Status fields: F-final(@0a-60) C-congest(@0a-80) T-total(@0a-9a)
+#                        level: .< reserved_thd < R < hyst_thd < pause_thd < P < drop_thd < D
+# 
+#         in flight         |    mon TX    total=  10|    peak TX        total=  52| Congested Status FCT
+#    q0 q1 q2 q3 q4 q5 q6 q7| q0 q1 q2 q3 q4 q5 q6 q7| q0 q1 q2 q3 q4 q5 q6 q7 port| q0  q1  q2  q3  q4  q5  q6  q7
+# p0  0  0  0  0  0  0  0  0|  0  0  0  0  0  0  0  0|  0  0  0  0  0  0  0  0    2|... ... ... ... ... ... ... ...
+# p5  0  0  0  0  0  0  0  0|  0  0  0  0  0  0  0  0|  0  0  0  0  0  0  0  0    2|... ... ... ... ... ... ... ...
+# p8                        |  0  0  0  0  0  0  0  0|  0  0  0  0  0  0  0  0    2|... ... ... ... ... ... ... ...
+# Success.
+# 
+
+sf2_fc() { #sf2_fc <unit>
+    local unit=$1
+    read_chip $unit
+    if [ $sf2_unit == -1 ]
+    then echo "device has no (connected) sf2 switch!!"; return;
+    fi
+
+    echo "Buffer Thresholds in page (256bytes)"
+    echo "   [LAN]    TxQ       .    total     |[IMP0]   TxQ       .    total     |[WAN]    TxQ       .    total"
+    echo "   Rsv  Hyst Paus Drop:Hyst Paus Drop|Rsv  Hyst Paus Drop:Hyst Paus Drop|Rsv  Hyst Paus Drop:Hyst Paus Drop"
+    for queue in 0 2 4 6 8 10 12 14
+    do
+        echo $queue | awk '{ printf "Q%1d", $1/2; }'
+        for page in 11 13 14
+        do
+            echo $(read_sf2 $page $queue) $(read_sf2 $page $queue+0x10) $(read_sf2 $page $queue+0x20) $(read_sf2 $page $queue+0x30) $(read_sf2 $page $queue+0x40) $(read_sf2 $page $queue+0x50) $(read_sf2 $page $queue+0x60) $page | awk '{
+                printf "%s%4d %4d %4d %4d %4d %4d %4d", ($8==11)?" ":"|", $1, $2, $3, $4, $5, $6, $7; }'
+        done
+        echo ""
+    done
+
+    if [ $sf2_reg_base != 0 ]   # internal SF2 has ACB
+    then
+        echo ""
+        ethswctl -c acb_cfg -t 100
+    fi
+    echo ""
+}
+
+sf2_fc $1

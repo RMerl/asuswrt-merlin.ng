@@ -20,4 +20,5 @@ enum {
 	AAEWS_ACTION_SDK_INIT,
 };
 
+int set_device_id(int caller, int keep_login);
 #endif

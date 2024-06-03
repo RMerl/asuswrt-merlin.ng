@@ -1,0 +1,23 @@
+MPC83xx system clock devices
+
+MPC83xx SoCs supply a variety of clocks to drive various components of a
+system.
+
+Required properties:
+- compatible: must be one of "fsl,mpc8308-clk",
+                             "fsl,mpc8309-clk",
+                             "fsl,mpc8313-clk",
+                             "fsl,mpc8315-clk",
+                             "fsl,mpc832x-clk",
+                             "fsl,mpc8349-clk",
+                             "fsl,mpc8360-clk",
+                             "fsl,mpc8379-clk"
+  depending on which SoC is employed
+- #clock-cells: Must be 1
+
+Example:
+
+socclocks: clocks {
+	compatible = "fsl,mpc832x-clk";
+	#clock-cells = <1>;
+};

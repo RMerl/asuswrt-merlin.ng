@@ -1,0 +1,33 @@
+#include "96813REF1D_M4.dts"
+
+&mdio {
+    /* Port PHY mapping:
+            port_gphy0 <----> phy_gphy0
+            port_gphy1 <----> phy_gphy1
+            port_gphy2 <----> phy_gphy2
+            port_gphy3 <----> phy_gphy3
+            port_xphy <-----> phy_xphy
+            port_sgmii1 <---> phy_serdes0   - phy_cascade0
+            port_sgmii2 <---> phy_serdes1   - phy_cascade1
+            port_sgmii2_1 <-> phy_serdes1_1 - phy_cascade1_1
+            port_sgmii2_2 <-> phy_serdes1_2 - phy_cascade1_2
+            port_sgmii2_3 <-> phy_serdes1_3 - phy_cascade1_3
+     */
+
+	phy_cascade1 {
+        reg = <24>;
+	};
+
+	phy_cascade1_1 {
+        reg = <25>;
+	};
+
+	phy_cascade1_2 {
+        reg = <26>;
+	};
+
+	phy_cascade1_3 {
+        reg = <27>;
+	};
+};
+

@@ -1,0 +1,476 @@
+#include "inc/68880.dtsi"
+#include "../bcm_voice.dtsi"
+/ {
+	memory_controller {
+		memcfg = <(BP1_DDR_MCBSEL_FORMAT_VER1   | \
+					BP1_DDR_TYPE_LPDDR4         | \
+					BP1_DDR_SPEED_2133_36_39_39 | \
+					BP1_DDR_WIDTH_32BIT         | \
+					BP1_DDR_TOTAL_SIZE_8Gb      | \
+					BP1_DDR_SSC_CONFIG_1        | \
+					BP1_DDR_CONFIG_DEBUG)>;
+	};
+};
+
+/ {
+	model = "968880REF";
+
+	buttons {
+		compatible = "brcm,buttons";
+		reset_button {
+			ext_irq = <&bca_extintr 57 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			press {
+				print = "Button Press -- Hold for 5s to do restore to default";
+			};
+			hold {
+				rst_to_dflt = <5>;
+			};
+			release {
+				reset = <0>;
+			};
+		};
+		ses_button {
+			ext_irq = <&bca_extintr 56 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			release {
+				ses_short_period = <0>;
+				ses_long_period = <3>;
+			};
+		};
+	};
+
+    xfp_sfp: xfp_sfp {
+        pinctrl-names = "default", "tx-sd";
+        pinctrl-0 = <&pon_lbe_p_pin_30>;
+        pinctrl-1 = <&pon_lbe_p_pin_30 &rogue_onu_in_pin_27>;
+        compatible = "brcm,sfp";
+        i2c-bus = <&i2c0mux2>;
+        los-gpio = <&gpioc 26 GPIO_ACTIVE_HIGH>;
+        mod-def0 = <&bca_extintr 76 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_BOTH_EDGE | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+        tx-power-gpio = <&gpioc 55 GPIO_ACTIVE_HIGH>;
+        tx-power-down-gpio = <&gpioc 54 GPIO_ACTIVE_HIGH>;
+    };
+
+    wan_serdes {
+        status = "okay";
+        trx = <&xfp_sfp>;
+        pon-led = <&led16>;
+        alarm-led = <&led15>;
+    };
+
+    i2cmux {
+        compatible = "i2c-mux-gpio";
+        #address-cells = <1>;
+        #size-cells = <0>;
+        mux-gpios = <&gpioc 14 GPIO_ACTIVE_HIGH>;
+        i2c-parent = <&i2c0>;
+
+        i2c0mux1: i2c@1 {
+            reg = <0>;
+            #address-cells = <1>;
+            #size-cells = <0>;
+        };
+
+        i2c0mux2: i2c@2 {
+            reg = <1>;
+            #address-cells = <1>;
+            #size-cells = <0>;
+        };
+    };
+};
+
+&i2c0 {
+	pinctrl-0 = <&i2c_scl_pin_28 &i2c_sda_pin_29>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+&legacy_leds {
+    wl-sess-led = <&led19>;
+    wan-data-led = <&led14>;
+    voip1-ok-led = <&led21>;
+    voip2-ok-led = <&led20>;
+};
+
+&led_ctrl {
+	pinctrl-names = "default";
+	pinctrl-0 = <&a_ser_led_data_pin_0 &a_ser_led_clk_pin_1 &a_ser_led_mask_pin_2>;
+	serial-shifters-installed = <3>;
+
+    led0: serial-port_gphy0-led_1 { 
+        active_low;
+        crossbar-output = <2>;
+        activity = <(LED_SPEED_GBE)>;
+        status = "okay";
+    };
+
+    led1: serial-port_gphy0-led_0 { 
+        active_low;
+        crossbar-output = <3>;
+        link = <(LED_SPEED_GBE)>;
+        status = "okay";
+    };
+
+    led2: serial-port_gphy1-led_1 { 
+        active_low;
+        crossbar-output = <1>;
+        activity = <(LED_SPEED_GBE)>;
+        status = "okay";
+    };
+
+    led3: serial-port_gphy1-led_0 { 
+        active_low;
+        crossbar-output = <7>;
+        link = <(LED_SPEED_GBE)>;
+        status = "okay";
+    };
+
+    led4: serial-port_gphy2-led_1 { 
+        active_low;
+        crossbar-output = <14>;
+        activity = <(LED_SPEED_GBE)>;
+        status = "okay";
+    };
+
+    led5: serial-port_gphy2-led_0 { 
+        active_low;
+        crossbar-output = <0>;
+        link = <(LED_SPEED_GBE)>;
+        status = "okay";
+    };
+
+    led6: serial-port_gphy3-led_1 { 
+        active_low;
+        crossbar-output = <12>;
+        activity = <(LED_SPEED_GBE)>;
+        status = "okay";
+    };
+
+    led7: serial-port_gphy3-led_0 { 
+        active_low;
+        crossbar-output = <13>;
+        link = <(LED_SPEED_GBE)>;
+        status = "okay";
+    };
+
+    led8: serial-port_xgphy0-led_1 { 
+        active_low;
+        crossbar-output = <11>;
+        activity = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+        status = "okay";
+    };
+
+    led9: serial-port_xgphy0-led_0 { 
+        active_low;
+        crossbar-output = <15>;
+        link = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+        status = "okay";
+    };
+
+    led10: serial-port_xgphy1-led_1 { 
+        active_low;
+        crossbar-output = <9>;
+        activity = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+        status = "okay";
+    };
+
+    led11: serial-port_xgphy1-led_0 { 
+        active_low;
+        crossbar-output = <10>;
+        link = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+        status = "okay";
+    };
+
+    led12: serial-port_qlan3-led_1 { 
+        active_low;
+        crossbar-output = <23>;
+        activity = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+        status = "okay";
+    };
+
+    led13: serial-port_qlan3-led_0 { 
+        active_low;
+        crossbar-output = <8>;
+        link = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+        status = "okay";
+    };
+
+    led14: sw_serial_led_31 {
+        active_low;
+        label = "WAN";
+        crossbar-output = <4>;
+        status = "okay";
+    };
+
+    led15: sw_serial_led_30 {
+        active_low;
+        label = "ALARM";
+        crossbar-output = <5>;
+        status = "okay";
+    };
+
+    led16: sw_serial_led_29 {
+        active_low;
+        label = "PON";
+        crossbar-output = <6>;
+        status = "okay";
+    };
+
+    led17: sw_serial_led_27 {
+        active_low;
+        crossbar-output = <16>;
+        status = "okay";
+    };
+
+    led18: sw_serial_led_26 {
+        active_low;
+        crossbar-output = <17>;
+        status = "okay";
+    };
+
+    led19: sw_serial_led_24 {
+        active_low;
+        crossbar-output = <18>;
+        label = "WPS";
+        status = "okay";
+    };
+
+    led20: sw_serial_led_23 {
+        active_low;
+        crossbar-output = <19>;
+        label = "VOIP2";
+        status = "okay";
+    };
+
+    led21: sw_serial_led_22 {
+        active_low;
+        crossbar-output = <20>;
+        label = "VOIP1";
+        status = "okay";
+    };
+
+    led22: sw_serial_led_21 {
+        active_low;
+        crossbar-output = <21>;
+        label = "USB0";
+        trigger-sources = <&usb_port1>;
+        linux,default-trigger = "usbport";
+        status = "okay";
+    };
+
+    led23: sw_serial_led_20 {
+        active_low;
+        crossbar-output = <22>;
+        label = "USB1";
+        trigger-sources = <&usb_port2>;
+        linux,default-trigger = "usbport";
+        status = "okay";
+    };
+};
+
+&nand {
+	status = "okay";
+};
+&wdt {
+	status = "okay";
+};
+&uart0 {
+	status = "okay";
+};
+
+&spinand {
+	status = "okay";
+};
+
+&sdhci {
+    status = "okay";
+};
+
+&usb_ctrl {
+	pinctrl-names = "default";
+	pinctrl-0 = <&usb0_pwr_pins &usb1_pwr_pins>;
+	xhci-enable;
+	status = "okay";
+};
+
+&usb0_xhci {
+	status = "okay";
+
+	usb_port1: port1 {
+		reg = <1>;
+		#trigger-source-cells = <0>;
+	};
+
+	usb_port2: port2 {
+		reg = <2>;
+		#trigger-source-cells = <0>;
+	};
+};
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+/ {
+	/* WIFI_PWR_EN controls 5V_FEM & 3.3V_PCIE */
+	vreg_pcie: vreg-pcie {
+		compatible = "regulator-fixed";
+		regulator-name = "vreg-pcie";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		gpio = <&gpioc 11 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+		regulator-boot-off;
+	};
+};
+
+&pcie0 {
+	brcm,supply-names = "vreg-pcie";
+	brcm,vreg-supply = <&vreg_pcie>;
+	status = "okay";
+};
+
+&pcie1 {
+	brcm,supply-names = "vreg-pcie";
+	brcm,vreg-supply = <&vreg_pcie>;
+	status = "okay";
+};
+
+&pcie3 {
+	brcm,supply-names = "vreg-pcie";
+	brcm,vreg-supply = <&vreg_pcie>;
+	status = "okay";
+};
+#endif // defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+
+&xport {
+    status = "okay";
+};
+
+&ethphytop {
+    xphy0-enabled;
+    xphy1-enabled;
+    phy-mpd = <&bca_extintr 51 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+    phy-link = <&bca_extintr 49 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+    status = "okay";
+};
+
+&egphy {
+    status = "okay";
+};
+
+&unimac {
+    status = "okay";
+};
+
+&serdes{
+    status = "okay";
+};
+
+&mdio1 {
+    status = "okay";
+};
+
+&mpcs {
+    status = "okay";
+};
+
+&mdio {
+    egphy0 {
+        status = "okay";
+    };
+    egphy1 {
+        status = "okay";
+    };
+    egphy2 {
+        status = "okay";
+    };
+    egphy3 {
+        status = "okay";
+    };
+    xphy0 {
+        status = "okay";
+    };
+    xphy1 {
+        status = "okay";
+    };
+    serdes00 {
+        pinctrl-names = "default";
+        pinctrl-0 = <&a_slan_sd_rx_los_pin_3 &a_slan_sd_mod_abs_pin_4>;
+        tx-disable = <&gpioc 6 GPIO_ACTIVE_HIGH>;
+        10000-Base-R;
+        2500-Base-X;
+        1000-Base-X;
+        status = "okay";
+    };
+    serdes13_xphy {
+        reg = <0x1c>;
+        enet-phy-lane-swap;
+        caps-no-10000;
+        caps-no-5000;
+        USXGMII-S;
+        phy-power = <&gpioc 48 GPIO_ACTIVE_HIGH>;
+        phy-reset = <&gpioc 47 GPIO_ACTIVE_LOW>;
+        status = "okay";
+    };
+    serdes13 {
+        phy-handle = <&serdes13_xphy>;
+        status = "okay";
+    };
+    wan_ae {
+        trx = <&xfp_sfp>;
+        status = "okay";
+    };
+};
+
+&switch0 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&a_eth_mdc_pin_59 &a_eth_mdio_pin_60>;
+
+    ports {
+        port_gphy0 {
+            network-leds = <&led0 &led1>;
+            status = "okay";
+        };
+        port_gphy1 {
+            network-leds = <&led2 &led3>;
+            status = "okay";
+        };
+        port_gphy2 {
+            network-leds = <&led4 &led5>;
+            status = "okay";
+        };
+        port_gphy3 {
+            network-leds = <&led6 &led7>;
+            status = "okay";
+        };
+        port_xgphy0 {
+            network-leds = <&led8 &led9>;
+            status = "okay";
+        };
+        port_wan@ae {
+            status = "okay";
+        };
+        port_xgphy1 {
+            network-leds = <&led10 &led11>;
+            status = "okay";
+        };
+        port_slan0 {
+            status = "okay";
+        };
+        port_qlan3 {
+            status = "okay";
+        };
+        port_wan@fiber {
+            status = "okay";
+        };
+    };
+};
+
+&phy_wan_serdes {
+    status = "okay";
+};
+
+&bcm_voice{
+	sliclist ="NOSLIC", "LE9642_ZSI_TB";
+};
+
+&hsspi {
+	status = "okay";
+};

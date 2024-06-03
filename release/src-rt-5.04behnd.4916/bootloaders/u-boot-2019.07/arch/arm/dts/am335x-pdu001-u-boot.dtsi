@@ -1,0 +1,46 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2018 EETS GmbH - https://www.eets.ch/
+ */
+
+/ {
+	ocp {
+		u-boot,dm-pre-reloc;
+	};
+};
+
+&l4_wkup {
+	u-boot,dm-pre-reloc;
+};
+
+&scm {
+	u-boot,dm-pre-reloc;
+};
+
+&am33xx_pinmux {
+	u-boot,dm-pre-reloc;
+};
+
+&uart3_pins {
+	u-boot,dm-pre-reloc;
+};
+
+&uart3 {
+	u-boot,dm-pre-reloc;
+};
+
+&mmc1 {
+	u-boot,dm-pre-reloc;
+};
+
+&mmc1_pins {
+	u-boot,dm-pre-reloc;
+};
+
+&mmc2 {
+	u-boot,dm-pre-reloc;
+};
+
+&mmc2_pins {
+	u-boot,dm-pre-reloc;
+};

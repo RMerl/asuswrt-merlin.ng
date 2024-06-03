@@ -1,0 +1,6 @@
+TEC BOARD
+M:	Alban Bedel <alban.bedel@avionic-design.de>
+S:	Maintained
+F:	board/avionic-design/tec/
+F:	include/configs/tec.h
+F:	configs/tec_defconfig

@@ -1,0 +1,12 @@
+config BCM_OTP_DRV
+	bool "Broadcom BCA OTP driver"
+	default n
+	help
+	  Add the BCM BCA OTP support.
+
+config BCM_OTP_DRV_IMPL
+	int "Implementation index for BCA OTP module"
+	depends on BCM_OTP_DRV
+	default 2 if BCM968880
+	default 2 if BCM96837
+	default 1 

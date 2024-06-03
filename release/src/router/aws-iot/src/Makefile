@@ -10,9 +10,29 @@ include $(TOP)/.config
 
 NVRAM_DIR=$(TOP_PLATFORM)/nvram$(BCMEX)$(EX7)
 SHARED_DIR=$(TOP)/shared
+SQLITE_DIR=$(TOP)/sqlite
+BWDPI_DIR=$(TOP)/bwdpi_source
+LIBWEBAPI_DIR=$(TOP)/libwebapi
+CFGMNT_DIR=$(TOP)/cfg_mnt
 
-ROUTER_LIBS=-lnvram -lshared  
-ROUTER_LDFLAGS=-L$(NVRAM_DIR) -L$(SHARED_DIR)
+ROUTER_LIBS=-lnvram -lshared -lwebapi 
+ROUTER_LDFLAGS=-L$(NVRAM_DIR) -L$(SHARED_DIR) -L$(LIBWEBAPI_DIR)
+
+ifeq ($(RTCONFIG_BWDPI),y)
+ROUTER_LIBS += -lsqlite3
+ROUTER_LIBS += -lbwdpi
+ROUTER_LIBS += -lbwdpi_sql
+
+ROUTER_LDFLAGS += -L$(SQLITE_DIR)/.libs
+ROUTER_LDFLAGS += -L$(BWDPI_DIR)/asus
+ROUTER_LDFLAGS += -L$(BWDPI_DIR)/asus_sql
+endif
+
+ifeq ($(RTCONFIG_CFGSYNC),y)
+ROUTER_LIBS += -lcfgmnt
+
+ROUTER_LDFLAGS += -L$(CFGMNT_DIR)
+endif
 
 LDFLAGS = $(ROUTER_LDFLAGS) $(ROUTER_LIBS) 
 ifeq ($(RTCONFIG_BCM_502L07P2),y)
@@ -23,20 +43,8 @@ ifeq ($(HND_ROUTER),y)
 LDFLAGS += -L$(TOP_PLATFORM)/wlcsm$(EXHND) -lwlcsm
 endif
 
-ifeq ($(RTCONFIG_HTTPS),y)
-CFLAGS += -I$(TOP)/mssl
-CFLAGS += -I$(TOP)/openssl/include
-LIBS += -L$(TOP)/mssl -lmssl
-LIBS += -L$(TOP)/openssl -lssl -lcrypto -ldl
-endif
-
-ifeq ($(RTCONFIG_USB),y)
-CFLAGS += -I$(TOP)/libdisk
-LIBS += -L$(TOP)/libdisk -ldisk
-ifeq ($(RTCONFIG_USB_SMS_MODEM),y)
-CFLAGS += -I$(TOP)/smspdu
-LIBS += -L$(TOP)/smspdu -lsmspdu
-endif
+ifeq ($(RTCONFIG_TRUSTZONE),y)
+LDFLAGS += -L$(TOP)/ateed/ -latee
 endif
 
 #remove @ for no make command prints
@@ -46,7 +54,7 @@ APP_DIR = .
 APP_INCLUDE_DIRS += -I $(APP_DIR)
 
 APP_NAME = awsiot
-APP_SRC_FILES = time_util.c log.c api.c awsiot_ipc.c awsiot_mnt.c httpd_api.c pwenc.c
+APP_SRC_FILES = time_util.c log.c api.c awsiot_ipc.c awsiot_mnt.c pwenc.c
 APP_SRC_FILES += $(APP_NAME).c 
 
 #CC = gcc
@@ -98,8 +106,8 @@ LIBS +=  $(OPENSSL_LIBS) -ljson-c
 LIBS +=  -lcurl
 
 ifeq ($(RTCONFIG_TR069),y)
-LDFLAGS += -L$(TOP)/libssh2-1.10.0/src/.libs -lssh2
-LDFLAGS += -L$(TOP)/zlib -lz
+CFLAGS += -I$(TOP)/libssh2-1.10.0/include -I$(TOP)/zlib/include
+LDFLAGS += -L$(TOP)/libssh2-1.10.0/src/.libs -lssh2 -L$(TOP)/zlib -lz
 endif
 
 #Aggregate all include and src directories
@@ -113,9 +121,26 @@ CFLAGS += -I$(SHARED_DIR)
 CFLAGS += -I$(JSON_C_DIR) 
 CFLAGS += -I$(CURL_DIR)/include/curl
 CFLAGS += -I$(CURL_DIR)/include
+CFLAGS += -I$(LIBWEBAPI_DIR)
+CFLAGS += -DDISABLE_LOGGING
+
+ifeq ($(RTCONFIG_BWDPI),y)
+CFLAGS += -I$(SQLITE_DIR)	
+CFLAGS += -I$(BWDPI_DIR)/include
+CFLAGS += -I$(BWDPI_DIR)/asus_include
+endif
+
+ifeq ($(RTCONFIG_CFGSYNC),y)
+CFLAGS += -I$(SHARED_DIR)/sysdeps/amas
+CFLAGS += -I$(CFGMNT_DIR)
+endif
 
 ifeq ($(RTCONFIG_BCMARM),y)
 CFLAGS += -I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T
+endif
+
+ifeq ($(HND_ROUTER_BE_4916), y)
+CFLAGS+= -fcommon
 endif
 
 SRC_FILES += $(APP_SRC_FILES)

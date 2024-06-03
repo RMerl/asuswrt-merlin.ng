@@ -828,7 +828,7 @@ void setup_conntrack(void)
 		ct_modprobe_r("pptp");
 		ct_modprobe_r("proto_gre");
 	}
-#ifdef RTCONFIG_HND_ROUTER_AX_6756
+#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916) || defined(RTCONFIG_MT798X)
 	f_write_string("/proc/sys/net/netfilter/nf_conntrack_helper", "1", 0, 0);
 #endif
 
@@ -1200,8 +1200,8 @@ const zoneinfo_t tz_list[] = {
         {"UTC4DST_2",	"America/Santiago"},	// (GMT-04:00) Santiago
         {"NST3.30DST",	"Canada/Newfoundland"},	// (GMT-03:30) Newfoundland
         {"EBST3",	"America/Araguaina"},	// (GMT-03:00) Brasilia //EBST3DST_1
-	{"UTC3DST",	"America/Saint-Pierre-et-Miquelon"},	// (GMT-03:00) Saint Pierre	//UTC2DST
-	{"UTC3",	"America/Araguaina"},	// (GMT-03:00) Buenos Aires, Georgetown
+		{"UTC3DST",     "America/Saint-Pierre-et-Miquelon"},    // (GMT-03:00) Saint Pierre	//UTC2DST
+		{"UTC3",	"America/Araguaina"},	// (GMT-03:00) Buenos Aires, Georgetown
         {"UTC2_1",	"America/Godthab"},	// (GMT-03:00) Greenland	//EBST3DST_2
         {"UTC2",	"Atlantic/South_Georgia"},	// (GMT-02:00) South Georgia
         {"EUT1DST",     "Atlantic/Azores"},	// (GMT-01:00) Azores
@@ -1385,7 +1385,7 @@ void time_zone_x_mapping(void)
 	else if (nvram_match("time_zone", "UTC-6_2")){  /*Novosibirsk*/
 		nvram_set("time_zone", "UTC-7_3");
 	}
-	else if (nvram_match("time_zone", "UTC2DST")){	/*Saint-Pierre-et-Miquelon*/
+	else if (nvram_match("time_zone", "UTC2DST")){  /*Saint-Pierre-et-Miquelon*/
 		nvram_set("time_zone", "UTC3DST");
 	}
 	else if (nvram_match("time_zone", "JST")){	/* convert JST to JST-9 */
@@ -1434,11 +1434,9 @@ void
 setup_timezone(void)
 {
 #ifndef RC_BUILDTIME
-#define RC_BUILDTIME	1525496688	// May  5 05:04:48 GMT 2018
+#define RC_BUILDTIME	1704067200	// Jan  1 00:00:00 GMT 2024
 #endif
 	time_t now;
-	struct tm gm, local;
-	struct timezone tz;
 	struct timeval tv = { RC_BUILDTIME, 0 };
 	struct timeval *tvp = NULL;
 
@@ -1450,8 +1448,12 @@ setup_timezone(void)
 	setenv("TZ", nvram_get("time_zone_x"), 1);
 #endif
 
-	/* Update kernel timezone */
 	time(&now);
+
+	struct tm gm, local;
+	struct timezone tz;
+
+	/* Update kernel timezone */
 	gmtime_r(&now, &gm);
 	localtime_r(&now, &local);
 	gm.tm_isdst = local.tm_isdst;
@@ -1460,6 +1462,9 @@ setup_timezone(void)
 
 #if !defined(__GLIBC__) && !defined(__UCLIBC__) /* musl */
 	if (syscall(SYS_settimeofday, NULL, &tz))
+		_dprintf("[%s]: can't set kernel time zone!!!!\n");
+#elif defined(RTCONFIG_HND_ROUTER_BE_4916)
+	if (syscall(__NR_settimeofday, NULL, &tz))
 		_dprintf("[%s]: can't set kernel time zone!!!!\n");
 #endif
 
@@ -1471,7 +1476,13 @@ setup_timezone(void)
 		tv.tv_sec += info.uptime;
 		tvp = &tv;
 	}
+
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+	if (tvp)
+		settimeofday(tvp, NULL);
+#else
 	settimeofday(tvp, &tz);
+#endif
 }
 
 int get_meminfo_item(const char *name)
@@ -1906,4 +1917,28 @@ void envsave(const char* path)
 		}
 		fclose(fp);
 	}
+}
+
+int remove_ip_rules(const int pref, const int v6)
+{
+	char tmp[256], pref_str[8], tmp2[256];
+	FILE *fp;
+	static const char iprule_tmp[] = "/tmp/iprule_tmp";
+
+	// remove current default routing table
+	snprintf(pref_str, sizeof(pref_str), "%d", pref);
+	snprintf(tmp, sizeof(tmp), "ip %s rule show | grep %d > %s", (v6)?"-6":"-4", pref, iprule_tmp);
+
+	system(tmp);
+	fp = fopen(iprule_tmp, "r");
+	if(fp)
+	{
+		while(fgets(tmp, sizeof(tmp), fp))
+		{
+			eval("ip", (v6)?"-6":"-4", "rule", "del", "priority", pref_str);
+		}
+		fclose(fp);
+	}
+	unlink(iprule_tmp);
+	return 0;
 }

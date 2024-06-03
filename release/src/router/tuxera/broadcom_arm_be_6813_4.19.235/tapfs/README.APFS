@@ -1,0 +1,123 @@
+
+
+                    RELEASE NOTES FOR TUXERA APFS
+
+
+--- Introduction ---
+
+This file contains information regarding to the latest Tuxera APFS delivery.
+Tuxera recommends to read the entire file.
+
+Table of content
+
+ * Usage
+ * Options
+ * Mount options
+ * Contact & Support Information
+
+
+--- Usage ---
+
+Mount APFS volumes the following way:
+
+    tapfs-u device mountpoint
+
+Example:
+
+    tapfs-u /dev/sda1 /mnt/apfsvol
+
+Read-only mount APFS volumes the following way:
+
+    tapfs-u device mountpoint -o ro
+
+Example:
+
+    tapfs-u /dev/sda5 /home/user/mnt -o ro
+
+Unmount APFS volumes the following way:
+
+    umount mountpoint
+
+Example:
+
+    umount /mnt/apfsvol
+
+
+--- Options ---
+
+Below is a summary of the options that tapfs-u accepts.
+
+    -f/--foreground
+    Runs the file system in the foreground, without daemonizing it (which is the
+    default behaviour). This means that any error messages are printed directly
+    to the console.
+
+    -h/--help
+    Displays a brief help message including version number and copyright
+    information.
+
+    -v/--verbose
+    No-op option that APFS/U accepts in order to be compatible with options
+    passed by mount(8).
+
+    -V/--version
+    Dumps the version number of APFS/U and exits immediately.
+
+    -o/--options option[,...]
+    The mount options. These are described in more detail below.
+
+
+--- Mount Options ---
+
+Below is a summary of the mount options that tapfs-u accepts.
+
+	volume_id=id
+	This option selects a volume in the APFS container other than the default one.
+
+	vol_uuid=uuid
+	This option selects a volume by its UUID, as shown by apfsinfo.
+
+	vol_name=name
+	This option selects a volume by its name.
+
+	allow_other
+	This option overrides the security measure restricting file access to the
+	user mounting the filesystem. This option is only	allowed to root, but
+	this restriction can be overridden by the 'user_allow_other' option in the
+	/etc/fuse.conf file.
+
+	max_read=value
+	With this option the maximum size of read operations can be set. The default
+	is infinite. Note that the size of read requests is limited anyway to 32
+	pages (which is 128 KiB on i386).
+
+	no_def_opts
+	By default tapfs-u acts as if "allow_other" (allow any user to access files)
+	"default_permissions" (uid/gid/mode permission checks enabled) and
+	"nonempty" (allow mounting on non-empty	directories) were set.
+	"no_def_opts" cancels these default options.
+
+	big_writes
+	This option prevents fuse from splitting write buffers into 4K chunks,
+	enabling big write buffers to be transferred from the application in a
+	single step (up to some system limit, generally 128 KiB).
+	(Only available in FUSE 2.8 and higher)
+
+	debug
+	Makes tapfs-u to print a lot of debug output from libfuse and libapfs (if
+	compiled with debug messages enabled).
+
+--- Contact & Support Information ---
+
+Please send feedback and support queries to apfs-support@tuxera.com.
+
+Besides describing your issue please provide the following information
+to help Tuxera's engineers address the issue:
+
+  - detailed console error messages
+  - kernel log by using the 'dmesg' command, or 'cat /proc/kmsg'
+  - steps to reproduce the issue
+
+Thank you.
+
+Copyright (c) 2008-2023 Tuxera Inc. All Rights Reserved.

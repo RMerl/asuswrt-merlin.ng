@@ -1,0 +1,5 @@
+compatible = "brcm,sotp";
+#address-cells = <1>;
+#size-cells = <0>;
+reg = <SOTP_OFFSET SOTP_SIZE>;
+status = "okay";

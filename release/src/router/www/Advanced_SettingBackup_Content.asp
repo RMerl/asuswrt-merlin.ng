@@ -71,8 +71,10 @@ function restoreRule(_flag){
 			document.restoreform.action_mode.value = "Restore";
 		showtext(document.getElementById("loading_block2"), "<#SAVE_restart_desc#>");
 		document.getElementById('loading_block3').style.display = "none";
-		showLoading();
-		document.restoreform.submit();
+		if(!isSupport("demoui")){
+			showLoading();
+			document.restoreform.submit();
+		}
 	}
 	else
 		return false;
@@ -115,7 +117,8 @@ function uploadSetting(){
 		disableCheckChangedStatus();
 		showtext(document.getElementById("loading_block2"), "<#SET_ok_desc#>");
 		document.getElementById('loading_block3').style.display = "none";
-		document.form.submit();
+		if(!isSupport("demoui"))
+			document.form.submit();
 	}	
 }
 
@@ -262,11 +265,11 @@ function selectSetting() {
 	            								</th>
 	            								<td colspan = "4">
 													<div style="float:left;">
-														<input class="button_gen" onclick="restoreRule('restore');" type="button" value="<#CTL_restore#>" name="action1" />
+														<input class="btn_subusage button_gen" onclick="restoreRule('restore');" type="button" value="<#CTL_restore#>" name="action1" />
 													</div>
 													<div id="restoreInit_div">
 														<div style="float:left;margin-left:5px;">
-															<input type="checkbox" id="restoreInit">
+															<input type="checkbox" id="restoreInit" checked>
 														</div>
 														<div style="float:left;width:65%;">
 															<span><label for="restoreInit"><#Setting_initialize_desc#></label></span>
@@ -281,7 +284,7 @@ function selectSetting() {
 												</th>
 												<td>
 													<div style="float:left;display:table-cell">
-														<input class="button_gen" onclick="saveSetting('Router');" type="button" value="<#Setting_save_itemname#>" name="action2" />
+														<input class="btn_subusage button_gen" onclick="saveSetting('Router');" type="button" value="<#Setting_save_itemname#>" name="action2" />
 													</div>
 													<div style="display:table-cell">
 														<div id="remove_passwd_field" style="display:table-row">
@@ -312,7 +315,7 @@ function selectSetting() {
 														<table>
 															<tr>
 																<td style="border:0px">
-																	<input type="button" class="button_gen" onclick="selectSetting();" value="<#CTL_upload#>"/>
+																	<input type="button" class="btn_subusage button_gen" onclick="selectSetting();" value="<#CTL_upload#>"/>
 																</td>
 																<td style="display:none;">
 																	<input type="file" name="file" class="input" style="color:#FFCC00;"/>

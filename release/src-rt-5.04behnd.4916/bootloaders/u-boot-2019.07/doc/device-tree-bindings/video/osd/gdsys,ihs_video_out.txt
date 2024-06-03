@@ -1,0 +1,23 @@
+* Guntermann & Drunck Integrated Hardware Systems OSD
+
+Required properties:
+- compatible: "gdsys,ihs_video_out"
+- reg: A combination of three register spaces:
+       - Register base for the video registers
+       - Register base for the OSD registers
+       - Address of the OSD video memory
+- mode: The initial resolution and frequency: "1024_768_60", "720_400_70", or
+        "640_480_70"
+- clk_gen: phandle to the pixel clock generator
+- dp_tx: phandle to the display associated with the OSD
+
+Example:
+
+fpga0_video0 {
+	compatible = "gdsys,ihs_video_out";
+	reg = <0x100 0x40
+	       0x180 0x20
+	       0x1000 0x1000>;
+	dp_tx = <&fpga0_dp_video0>;
+	clk_gen = <&fpga0_video0_clkgen>;
+};

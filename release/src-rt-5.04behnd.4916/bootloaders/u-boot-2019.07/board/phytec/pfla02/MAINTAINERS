@@ -1,0 +1,6 @@
+PHYTEC PHYFLEX
+M:	Stefano Babic <sbabic@denx.de>
+S:	Maintained
+F:	board/phytec/pfla02/
+F:	include/configs/pfla02.h
+F:	configs/pfla02_defconfig

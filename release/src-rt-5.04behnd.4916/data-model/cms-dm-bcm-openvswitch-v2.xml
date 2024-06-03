@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2014" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_OpenVSwitchCfg." shortObjectName="Dev2OpenvswitchCfgObject" specSource="Broadcom" profile="X_BROADCOM_COM_OpenVSwitch:2" supportLevel="Present" oid="3820" />
+  <description source="BROADCOM">This object contains configuration parameters for openvswitch feature.</description>
+
+   <parameter name="Enable" type="boolean"  specSource="Broadcom" profile="X_BROADCOM_COM_OpenVSwitch:2" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">Enable/Disable of openvswitch.</description>
+
+   <parameter name="Status" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_OpenVSwitch:2" supportLevel="ReadOnly" defaultValue="Disabled" validValuesArray="status3eValues" />
+   <description source="BROADCOM">The status of openvswitchd. Enumeration of: *Disabled *Enabled * Error The {{enum|Error}} value MAY be used by the CPE to indicate a locally defined error condition. </description>
+
+  <parameter name="OFControllerIPAddress" type="string" specSource="BROADCOM" profile="X_BROADCOM_COM_OpenVSwitch:2" supportLevel="ReadWrite" defaultValue="0.0.0.0" maxLength="15" />
+    <description source="BROADCOM">IP address of the OF Controller.</description>
+
+  <parameter name="OFControllerPortNumber" type="unsignedInt" specSource="BROADCOM" profile="X_BROADCOM_COM_OpenVSwitch:2" supportLevel="ReadWrite" defaultValue="6653" minValue="0" maxValue="65535" />
+    <description source="BROADCOM">TCP Port of the OF Controller.</description>
+
+
+<vsaInfo>
+
+<validstringarray name="minimumSingleVsaValues" />
+  <element>IgnoreThis</element>
+
+<validstringarray name="status3eValues" />
+  <element>Disabled</element>
+  <element>Enabled</element>
+  <element>Error</element>
+
+</vsaInfo>
+
+
+
+
+<profileInfo>
+<profile name="Baseline:1" /> 
+<profile name="X_BROADCOM_COM_Baseline:1" /> 
+<profile name="X_BROADCOM_COM_OpenVSwitch:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+
+
+</xmlMandatorySingleRootNode>

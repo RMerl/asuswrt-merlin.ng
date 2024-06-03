@@ -1,0 +1,15 @@
+if TARGET_MIQI_RK3288
+
+config SYS_BOARD
+	default "miqi_rk3288"
+
+config SYS_VENDOR
+	default "mqmaker"
+
+config SYS_CONFIG_NAME
+	default "miqi_rk3288"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+
+endif

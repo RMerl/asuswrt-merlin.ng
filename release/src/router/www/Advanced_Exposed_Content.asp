@@ -185,8 +185,7 @@ function dmz_on_off(){
 											<li><#IPConnection_BattleNet_sectiondesc2#></li>
 											<script>
 												document.getElementById("addVtsRule_ftp").onclick = function(){
-													/* untranslated */
-													if(confirm("Are you sure you want to add a port forwarding rule on FTP service?")){
+													if(confirm("<#IPConnection_BattleNet_confirm#>")){
 														location.href = "/Advanced_VirtualServer_Content.asp?af=KnownApps&item=ftp";
 													}
 												}

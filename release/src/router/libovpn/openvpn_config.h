@@ -8,8 +8,8 @@
 #define PUSH_LAN_METRIC 500
 
 // interfaces
-#define OVPN_CLIENT_BASEIF 10
-#define OVPN_SERVER_BASEIF 20
+#define OVPN_CLIENT_BASE 10
+#define OVPN_SERVER_BASE 20
 
 #define OVPN_DIR_SAVE	"/jffs/openvpn"
 

@@ -1,0 +1,21 @@
+if ORION5X
+
+choice
+	prompt "Marvell Orion board select"
+	optional
+
+config TARGET_EDMINIV2
+	bool "LaCie Ethernet Disk mini V2"
+	select SUPPORT_SPL
+
+endchoice
+
+config SYS_SOC
+	default "orion5x"
+
+source "board/LaCie/edminiv2/Kconfig"
+
+config SPL_LDSCRIPT
+	default "$(CPUDIR)/orion5x/u-boot-spl.lds" if ORION5X
+
+endif

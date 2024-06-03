@@ -1,0 +1,6 @@
+TB100 BOARD
+M:	Alexey Brodkin <abrodkin@synopsys.com>
+S:	Maintained
+F:	board/abilis/tb100/
+F:	include/configs/tb100.h
+F:	configs/tb100_defconfig

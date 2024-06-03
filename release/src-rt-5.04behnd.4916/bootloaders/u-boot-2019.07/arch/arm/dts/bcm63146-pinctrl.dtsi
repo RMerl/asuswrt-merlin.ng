@@ -1,0 +1,28 @@
+&pinctrl {
+	pincontroller-functions {
+		spim_group_pins: spim_group_pinmux {
+			pins = <23 26 83>;
+			function = <0>;
+		};
+
+		hs_spim_ss_0_b_pin_36: hs_spim_ss_0_b_pinmux {
+			pins = <36>;
+			function = <0>;
+		};
+
+		data_pins: data_pinmux {
+			pins = <40 41 42 43 44 45 46 47>;
+			function = <1>;
+		};
+
+		nand_ctrl_pins: nand_ctrl_pinmux {
+			pins = <37 38 39 48 49 50>;
+			function = <1>;
+		};
+
+		nand_wpb_pin_27: nand_wpb_pinmux {
+			pins = <27>;
+			function = <0>;
+		};
+	};
+};

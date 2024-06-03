@@ -1,6 +1,6 @@
 include ../common.mak
 
-CFLAGS += $(if $(RTCONFIG_DEBUG),-g,-Os) -Wall $(EXTRACFLAGS)
+CFLAGS += -Os -Wall $(EXTRACFLAGS)
 CFLAGS += $(PRIVATE_EXTRACFLAGS)
 CFLAGS += -I$(SRCBASE) -I.
 ifeq ($(RTCONFIG_BCM7),y)
@@ -40,12 +40,12 @@ endif
 
 ifeq ($(RTCONFIG_RALINK),y)
 CFLAGS += -DRalink_WPS
-CFLAGS += -I$(TOP)/shared/sysdeps/ralink -I$(TOP)/wireless_tools
+CFLAGS += -I$(TOP)/shared/sysdeps/ralink -I$(TOP)/wireless_tools$(WTOOL_SUFFIX)
 endif
 
 ifeq ($(RTCONFIG_QCA),y)
 CFLAGS += -DQCA_WPS
-CFLAGS += -I$(TOP)/shared/sysdeps/qca -I$(TOP)/wireless_tools
+CFLAGS += -I$(TOP)/shared/sysdeps/qca -I$(TOP)/wireless_tools$(WTOOL_SUFFIX)
 endif
 
 ifeq ($(CONFIG_REALTEK),y)
@@ -54,11 +54,11 @@ endif
 
 ifeq ($(RTCONFIG_ALPINE),y)
 CFLAGS += -DALPINE_WPS
-CFLAGS += -I$(TOP)/httpd/sysdeps -I$(TOP)/shared/sysdeps/alpine -I$(TOP)/wireless_tools
+CFLAGS += -I$(TOP)/httpd/sysdeps -I$(TOP)/shared/sysdeps/alpine -I$(TOP)/wireless_tools$(WTOOL_SUFFIX)
 endif
 ifeq ($(RTCONFIG_LANTIQ),y)
 CFLAGS += -DLANTIQ_WPS
-CFLAGS += -I$(TOP)/shared/sysdeps/lantiq -I$(TOP)/wireless_tools
+CFLAGS += -I$(TOP)/shared/sysdeps/lantiq -I$(TOP)/wireless_tools$(WTOOL_SUFFIX)
 endif
 
 ifeq ($(RTN11P)$(RTN300),y)
@@ -110,8 +110,22 @@ endif
 CFLAGS += -D _FILE_OFFSET_BITS=64
 
 ifneq ($(findstring CONFIG_BCM_KF_NETFILTER=, $(shell cat $(LINUXDIR)/.config)),)
-ifneq ($(RTCONFIG_HND_ROUTER_AX_6756),y)
+ifeq ($(or $(RTCONFIG_HND_ROUTER_AX_6756),$(RTCONFIG_HND_ROUTER_BE_4916)),y)
+else
 export CFLAGS += -DBCM_KF_NETFILTER
+endif
+endif
+
+ifeq ($(HND_ROUTER_BE_4916), y)
+CFLAGS+= -fcommon
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20230426)
+CFLAGS += -DWIFI7_SDK_20230426
+endif
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20231126)
+CFLAGS += -DWIFI7_SDK_20231126
+endif
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20240103)
+CFLAGS += -DWIFI7_SDK_20240103
 endif
 endif
 
@@ -132,7 +146,7 @@ OBJS += web-alpine.o
 else ifeq ($(CONFIG_LANTIQ),y)
 OBJS += $(if $(wildcard sysdeps/web-lantiq.c),web-lantiq.o,prebuild/web-lantiq.o)
 else
-ifeq ($(or $(RTCONFIG_HND_ROUTER_AX_675X),$(RTCONFIG_HND_ROUTER_AX_6756),$(RTCONFIG_HND_ROUTER_AX_6710),$(RTCONFIG_BCM_502L07P2)),y)
+ifeq ($(or $(RTCONFIG_HND_ROUTER_AX_675X),$(RTCONFIG_HND_ROUTER_AX_6756),$(RTCONFIG_HND_ROUTER_BE_4916),$(RTCONFIG_HND_ROUTER_AX_6710),$(RTCONFIG_BCM_502L07P2)),y)
 OBJS += $(if $(wildcard sysdeps/web-broadcom_private.c),web-broadcom_private.o,prebuild/web-broadcom_private.o)
 endif
 OBJS += $(if $(wildcard sysdeps/web-broadcom.c),web-broadcom.o,prebuild/web-broadcom.o)
@@ -178,7 +192,7 @@ ifeq ($(HND_ROUTER),y)
 LIBS += -L$(TOP_PLATFORM)/wlcsm -lwlcsm
 endif
 
-ifeq ($(or $(RTCONFIG_HND_ROUTER_AX_675X),$(RTCONFIG_BCM_502L07P2),$(RTCONFIG_HND_ROUTER_AX_6756)),y)
+ifeq ($(or $(RTCONFIG_HND_ROUTER_AX_675X),$(RTCONFIG_BCM_502L07P2),$(RTCONFIG_HND_ROUTER_AX_6756),$(RTCONFIG_HND_ROUTER_BE_4916)),y)
 LIBS += -L$(TOP_PLATFORM)/bcm_flashutil -lbcm_flashutil -L$(TOP_PLATFORM)/gen_util -lgen_util -L$(TOP_PLATFORM)/sys_util -lsys_util -L$(TOP_PLATFORM)/bcm_util -lbcm_util -L$(TOP_PLATFORM)/bcm_boardctl -lbcm_boardctl
 endif
 
@@ -205,7 +219,7 @@ CFLAGS += -I$(SRCBASE)/wl/sys
 CFLAGS += -I$(SRCBASE)/../../43684/src/wl/sys
 endif
 LIBS += -lgcc_s
-ifeq ($(or $(RTCONFIG_HND_ROUTER_AX_675X),$(RTCONFIG_BCM_502L07P2),$(RTCONFIG_HND_ROUTER_AX_6756)),y)
+ifeq ($(or $(RTCONFIG_HND_ROUTER_AX_675X),$(RTCONFIG_BCM_502L07P2),$(RTCONFIG_HND_ROUTER_AX_6756),$(RTCONFIG_HND_ROUTER_BE_4916)),y)
 CFLAGS += -I$(TOP_PLATFORM)/bcm_flashutil -I$(HND_SRC)/userspace/public/include -I$(HND_SRC)/userspace/public/include/linux 
 endif
 ifeq ($(RTCONFIG_QTN),y)
@@ -343,12 +357,17 @@ CFLAGS += -I$(TOP)/libpasswd
 LIBS += -L$(TOP)/libpasswd -lpasswd
 
 ifeq ($(RTCONFIG_LANTIQ),y)
-LIBS += -L$(TOP)/fapi_wlan_common-05.04.00.131 -lfapiwlancommon -ldl -L$(TOP)/libhelper-1.4.0.2 -lhelper -L$(TOP)/libfapi-0.1 -lfapi -L$(TOP)/wireless_tools/ -liw
+LIBS += -L$(TOP)/fapi_wlan_common-05.04.00.131 -lfapiwlancommon -ldl -L$(TOP)/libhelper-1.4.0.2 -lhelper -L$(TOP)/libfapi-0.1 -lfapi -L$(TOP)/wireless_tools$(WTOOL_SUFFIX)/ -liw
 endif
 
 ifeq ($(RTCONFIG_LIBASUSLOG),y)
 CFLAGS += -I$(TOP)/libasuslog
 LIBS += -L$(TOP)/libasuslog -lasuslog
+endif
+
+ifeq ($(RTCONFIG_TRUSTZONE), y)
+CFLAGS += -I$(TOP)/ateed/
+LIBS += -L$(TOP)/ateed/ -latee
 endif
 
 CFLAGS += -I$(TOP)/libwebapi

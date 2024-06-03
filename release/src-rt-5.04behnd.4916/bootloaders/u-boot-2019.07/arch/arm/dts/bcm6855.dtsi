@@ -1,0 +1,195 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2019 Broadcom Ltd.
+ */
+
+#include "skeleton.dtsi"
+
+/ {
+	compatible = "brcm,bcm6855";
+	#address-cells = <0x1>;
+	#size-cells = <0x1>;
+
+	boot_state {
+		u-boot,dm-pre-reloc;
+		compatible = "brcm,bcmbca-bootstate-v2";
+		reg-names = "reset_reason", "reset_status";
+		reg =   <0xff802628 0x04>,
+			<0xff85a018 0x04>;
+	};
+
+	clocks {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+		u-boot,dm-pre-reloc;
+
+		periph_osc: periph-osc {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <200000000>;
+			u-boot,dm-pre-reloc;
+		};
+
+		hsspi_pll: hsspi-pll {
+			compatible = "fixed-factor-clock";
+			#clock-cells = <0>;
+			clocks = <&periph_osc>;
+			clock-mult = <1>;
+			clock-div = <1>;
+			u-boot,dm-pre-reloc;
+		};
+
+		refclk50mhz: refclk50mhz {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <50000000>;
+			u-boot,dm-pre-reloc;
+		};
+	};
+
+	pmc {
+		u-boot,dm-pre-reloc;
+		compatible = "brcm,bca-pmc-lite";
+		reg-names = "pmc";
+		reg = <0xffb20060 0x1e0>;
+	};
+
+	strap: strap {
+		u-boot,dm-pre-reloc;
+		compatible = "brcm,strap";
+		reg = <0xff802600 0x4>;
+		boot-select-0=<0 1>;
+		boot-select-1=<1 1>;
+		boot-select-2=<2 1>;
+		boot-select-3=<3 1>;
+		boot-select-4=<4 1>;
+		boot-select-5=<5 1>;
+		bootrom-boot=<12 1>;
+	};
+
+	/* UBUS */
+	ubus: ubus {
+		u-boot,dm-pre-reloc;
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		ubus_sys: ubus_sys {
+			u-boot,dm-pre-reloc;
+			#address-cells = <1>;
+			#size-cells = <1>;
+			compatible = "brcm,bca-ubus4";
+			reg = <0x83000000 0x80 0x83000200 0x80 0x810a0400 0x400>;
+			reg-names = "ubus_systop", "ubus_registration", "ubus_coherency_port";
+			flags = <0x0>;
+
+			ubus_mst_sys: ubus_mst {
+				u-boot,dm-pre-reloc;
+				reg-names = "BIU", "PER", "USB", "WIFI0",
+					"PCIE0", "DMA0", "DMA1", "DMA2",
+					"QM", "RQ0", "RQ1";
+				reg = <0x83020000 0x1000>,
+					<0x83010000 0x1000>,
+					<0x83018000 0x1000>,
+					<0x83050000 0x1000>,
+					<0x83030000 0x1000>,
+					<0x83078000 0x1000>,
+					<0x8307C000 0x1000>,
+					<0x83088000 0x1000>,
+					<0x83070000 0x1000>,
+					<0x8308C000 0x1000>,
+					<0x83090000 0x1000>;
+			};
+		};
+
+		ubus_dcm_sys: ubus_dcm_sys {
+			u-boot,dm-pre-reloc;
+			compatible = "brcm,bca-ubus4-dcm";
+			reg = <0x83000080 0x80>;
+			reg-names = "ubus_dcm_clk";
+			flags = <0x0>;
+		};
+	};
+
+	periph@ff800000 {
+		compatible = "simple-bus";
+		#address-cells = <0x1>;
+		#size-cells = <0x1>;
+		u-boot,dm-pre-reloc;
+
+		uart0: serial@ff812000 {
+			u-boot,dm-pre-reloc;
+			compatible = "arm,pl011", "arm,primecell";
+			reg = <0xff812000 0x1000>;
+			clock = <50000000>;
+			status = "okay";
+		};
+
+		wdt1: watchdog@ff800480 {
+			compatible = "brcm,bcm6345-wdt";
+			reg = <0xff800480 0x14>;
+			clocks = <&refclk50mhz>;
+			u-boot,dm-pre-reloc;
+		};
+
+		wdt2: watchdog@ff8004c0 {
+			compatible = "brcm,bcm6345-wdt";
+			reg = <0xff8004c0 0x14>;
+			clocks = <&refclk50mhz>;
+		};
+
+		wdt-reboot {
+			compatible = "wdt-reboot";
+			wdt = <&wdt1>;
+		};
+
+		hsspi: hsspi@ff801000 {
+			compatible = "brcm,bcmbca-hsspi";
+			#address-cells = <0x1>;
+			#size-cells = <0x0>;
+			u-boot,dm-pre-reloc;
+			reg-names = "hsspi", "spim-ctrl";
+			reg = <0xff801000 0x1000>, <0xff802610 0x4>;
+			clocks = <&hsspi_pll>, <&hsspi_pll>;
+			clock-names = "hsspi", "pll";
+			spi-max-frequency = <50000000>;
+			num-cs = <8>;
+			status = "disabled";
+		};
+
+		nand: nand-controller@ff801800 {
+			compatible = "brcm,nand-bcmbca", "brcm,brcmnand-v7.1";
+			reg-names = "nand", "nand-int-base";
+			reg = <0xff801800 0x600>, <0xff802000 0x10>;
+			parameter-page-big-endian = <0>;
+			status = "disabled";
+		};
+
+		sdhci: sdhci@ff810000 {
+			compatible = "brcm,bcm63xx-sdhci",
+						 "brcm,sdhci-brcmbca";
+			reg-names = "sdhci-base", "sdhci-boot";
+			reg = <0xff810000 0x100>,
+				  <0xff810200 0x40>;
+			bus-width = <8>;
+			u-boot,dm-pre-reloc;
+		};
+
+		rng: rng@ff800b80 {
+			compatible = "brcm,iproc-rng200";
+			reg = <0xff800b80 0x28>;
+			u-boot,dm-pre-reloc;
+		};
+
+		pinctrl: pinctrl {
+			compatible = "brcm,bcmbca-pinctrl";
+			reg = <0xff800554 0x14>;
+			gpio-mux = <4>;
+		};
+	};
+};
+
+#include "bcm6855-pinctrl.dtsi"

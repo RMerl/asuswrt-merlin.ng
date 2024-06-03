@@ -1,0 +1,15 @@
+compatible = "brcm,bca-ubus4-dcm";
+
+#ifdef XRDP_RCQ_GEN_OFFSET 
+reg = <UBUS_DCM_CLK_OFFSET UBUS_DCM_CLK_SIZE>, <XRDP_RCQ_GEN_OFFSET XRDP_RCQ_GEN_SIZE>;
+reg-names = "ubus_dcm_clk", "xrdp_rdp_gen";
+#else
+reg = <UBUS_DCM_CLK_OFFSET UBUS_DCM_CLK_SIZE>;
+reg-names = "ubus_dcm_clk";
+#endif
+flags = <UBUS_MODULE_XRDP>;
+
+#undef UBUS_DCM_CLK_OFFSET
+#undef UBUS_DCM_CLK_SIZE
+#undef XRDP_RCQ_GEN_OFFSET
+#undef UBUS_MODULE_XRDP

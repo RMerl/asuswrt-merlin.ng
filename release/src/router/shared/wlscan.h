@@ -138,6 +138,9 @@ typedef enum _NDIS_802_11_NETWORK_TYPE
 	Ndis802_11OFDMA5_HE,
 	Ndis802_11OFDMA24_HE,
 	Ndis802_11OFDMA6_HE,
+	Ndis802_11OFDMA5_BE,
+	Ndis802_11OFDMA24_BE,
+	Ndis802_11OFDMA6_BE,
 	Ndis802_11NetworkTypeMax    // not a real type, defined as an upper bound
 } NDIS_802_11_NETWORK_TYPE;
 
@@ -179,6 +182,10 @@ struct apinfo
 	int NetworkType;
 #ifdef RTCONFIG_AMAS
 	int amas;
+#endif
+#ifdef RTCONFIG_WIFI7
+	int mlo_sim_links;
+	struct ether_addr mld_addr;
 #endif
 };
 extern struct apinfo apinfos[MAX_NUMBER_OF_APINFO];

@@ -1,0 +1,12 @@
+if TARGET_DALMORE
+
+config SYS_BOARD
+	default "dalmore"
+
+config SYS_VENDOR
+	default "nvidia"
+
+config SYS_CONFIG_NAME
+	default "dalmore"
+
+endif

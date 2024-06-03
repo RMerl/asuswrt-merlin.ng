@@ -1,0 +1,9 @@
+config BCM_PCM
+	bool "PCM verification test"
+	help
+	   Support for PCM verification test
+
+config BCM_PCM_IMPL
+	int "Implementation index for voice dsphal driver"
+	depends on BCM_PCM
+	default 1

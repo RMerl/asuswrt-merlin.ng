@@ -1,0 +1,7 @@
+/ {
+	rtc: rtc {
+		compatible = "motorola,mc146818";
+		u-boot,dm-pre-reloc;
+		reg = <0x70 2>;
+	};
+};

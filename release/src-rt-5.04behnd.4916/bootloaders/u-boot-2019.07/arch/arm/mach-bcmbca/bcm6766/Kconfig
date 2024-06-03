@@ -1,0 +1,31 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# (C) Copyright 2022 Broadcom Ltd
+#
+
+if BCM6766
+
+config TARGET_BCM96766
+	bool "Broadcom 6766 Reference Board"
+	depends on ARCH_BCMBCA
+
+config SYS_SOC
+	default "bcm6766"
+
+if BCMBCA_DDRC
+config BCMBCA_DDR_DEF_MCBSEL
+	hex "default DDR3 mcb selector value"
+	default 0x00001607
+
+config BCMBCA_DDR4_DEF_MCBSEL
+	hex "default DDR4 mcb selector value"
+	default 0x101607
+endif
+
+config RSVD_USE_MAX_FROM_ENV_AND_DT 
+	bool "RSVD will use max value from env and DT"
+	default y
+
+source "board/broadcom/bcmbca/Kconfig"
+
+endif

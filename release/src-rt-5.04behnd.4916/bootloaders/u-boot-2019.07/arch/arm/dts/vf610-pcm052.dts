@@ -1,0 +1,17 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * Copyright 2016 Toradex AG
+ */
+
+/dts-v1/;
+#include "vf610-pcm052.dtsi"
+
+/ {
+	model = "Phytec phyCORE-Vybrid";
+	compatible = "phytec,pcm052", "fsl,vf610";
+
+	chosen {
+		stdout-path = &uart1;
+	};
+
+};

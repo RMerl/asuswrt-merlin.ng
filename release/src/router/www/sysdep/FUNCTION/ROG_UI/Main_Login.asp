@@ -13,9 +13,9 @@
 <title><#Web_Title#></title>
 <style>
 @font-face{
-	font-family: ROG;
-	src: url(/fonts/ROG_Fonts-Regular.woff) format("woff"),
-	     url(/fonts/ROG_Fonts-Regular.otf) format("opentype");
+	font-family: Xolonium;
+    src: url(/fonts/xolonium.regular.woff) format("woff"),
+         url(/fonts/xolonium.regular.otf) format("opentype");
 }
 body, .p1, .form-input{
 	color: #FFF;
@@ -69,9 +69,9 @@ body{
 }
 .model-name{
 	height: 100%;
-	font-size: 48px;
+	font-size: 36px;
 	font-weight: bold;
-	font-family: ROG;
+	font-family: Xolonium;
 	margin-left: 25px;
 }
 .login-bg, .login-bg-odm{
@@ -135,6 +135,10 @@ body{
 	margin: 20px 230px 0 0;
 	background: #141618;
 	border-radius: 8px;
+}
+.login-btn-bg.disabled{
+    filter: grayscale(100%) opacity(0.5);
+    pointer-events: none;
 }
 .login-btn-bg:hover{
 	border: 2px solid #AB0015;
@@ -400,6 +404,8 @@ else
 
 var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=SG_TeleStand&lang=&kw=&num=";
 function initial(){
+	top.name = "";/* reset cache of state.js win.name */
+
 	/*handle sysdep for ROG or ODM product*/
 	if(odm_support){
 		document.getElementsByClassName("main-field-bg")[0].className = "main-field-bg-odm";
@@ -523,7 +529,7 @@ function initial(){
 			if(captcha_on)
 				document.form.captcha_text.focus();
 			else
-				login();
+				preLogin();
 			return false;
 		}
 	};
@@ -542,7 +548,7 @@ function initial(){
 		document.form.captcha_text.onkeyup = function(e){
 			e=e||event;
 			if(e.keyCode == 13){
-				login();
+				preLogin();
 				return false;
 			}
 		};
@@ -574,7 +580,27 @@ function countdownfunc(){
 	remaining_time--;
 }
 
-function login(){
+function preLogin(){
+    if(document.querySelector('#button')?.classList.contains('disabled') || document.querySelector('.button')?.classList.contains('disabled')) return;
+    document.querySelector('#button')?.classList.add('disabled');
+    document.querySelector('.button')?.classList.add('disabled');
+    let id = randomString(10);
+    fetch('get_Nonce.cgi', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({id: id})
+    })
+    .then(response => response.json())
+    .then(data => {
+        const { nonce } = data;
+        login(id, nonce);
+    })
+    .catch(error => top.location.href='/Main_Login.asp');
+}
+
+function login(id, nonce){
+
+    const cnonce = randomString(32);
 
 	var trim = function(val){
 		val = val+'';
@@ -632,8 +658,9 @@ function login(){
 		};
 	}
 
-	document.form.login_username.value = trim(document.form.login_username.value);
-	document.form.login_authorization.value = btoa(document.form.login_username.value + ':' + document.form.login_passwd.value);
+	document.form.id.value = id;
+    document.form.cnonce.value = cnonce;
+	document.form.login_authorization.value = sha256(`${document.form.login_username.value}:${nonce}:${document.form.login_passwd.value}:${cnonce}`);
 	document.form.login_username.disabled = true;
 	document.form.login_passwd.disabled = true;
 	document.form.login_captcha.value = btoa(document.form.captcha_text.value);
@@ -683,18 +710,35 @@ function disable_button(val){
 		document.getElementById('button').style.display = "none";
 }
 
+function checkTime(i){
+	if (i<10){
+		i="0" + i
+	}
+	return i
+}
+
 function regen_captcha(){
 	var timestamp = new Date().getTime();
 	var captcha_pic = document.getElementById("captcha_pic");
 	var queryString = "?t=" + timestamp;
 	captcha_pic.src = "captcha.gif" + queryString;
 }
+
+function randomString(length) {
+    let chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let result = '';
+    for (var i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];
+    return result;
+}
+
+const sha256 = function a(b){function c(a,b){return a>>>b|a<<32-b}for(var d,e,f=Math.pow,g=f(2,32),h="length",i="",j=[],k=8*b[h],l=a.h=a.h||[],m=a.k=a.k||[],n=m[h],o={},p=2;64>n;p++)if(!o[p]){for(d=0;313>d;d+=p)o[d]=p;l[n]=f(p,.5)*g|0,m[n++]=f(p,1/3)*g|0}for(b+="\x80";b[h]%64-56;)b+="\x00";for(d=0;d<b[h];d++){if(e=b.charCodeAt(d),e>>8)return;j[d>>2]|=e<<(3-d)%4*8}for(j[j[h]]=k/g|0,j[j[h]]=k,e=0;e<j[h];){var q=j.slice(e,e+=16),r=l;for(l=l.slice(0,8),d=0;64>d;d++){var s=q[d-15],t=q[d-2],u=l[0],v=l[4],w=l[7]+(c(v,6)^c(v,11)^c(v,25))+(v&l[5]^~v&l[6])+m[d]+(q[d]=16>d?q[d]:q[d-16]+(c(s,7)^c(s,18)^s>>>3)+q[d-7]+(c(t,17)^c(t,19)^t>>>10)|0),x=(c(u,2)^c(u,13)^c(u,22))+(u&l[1]^u&l[2]^l[1]&l[2]);l=[w+x|0].concat(l),l[4]=l[4]+w|0}for(d=0;8>d;d++)l[d]=l[d]+r[d]|0}for(d=0;8>d;d++)for(e=3;e+1;e--){var y=l[d]>>8*e&255;i+=(16>y?0:"")+y.toString(16)}return i};
+
 </script>
 </head>
 <body onload="initial();" class="bg">
 <iframe name="hidden_frame" id="hidden_frame" width="0" height="0" frameborder="0"></iframe>
 <iframe id="dmRedirection" width="0" height="0" frameborder="0" scrolling="no" src=""></iframe>
-<form method="post" name="form" action="login.cgi" target="">
+<form method="post" name="form" action="login_v2.cgi" target="">
 <input type="hidden" name="group_id" value="">
 <input type="hidden" name="action_mode" value="">
 <input type="hidden" name="action_script" value="">
@@ -702,6 +746,8 @@ function regen_captcha(){
 <input type="hidden" name="current_page" value="Main_Login.asp">
 <input type="hidden" name="next_page" value="Main_Login.asp">
 <input type="hidden" name="login_authorization" value="">
+<input type="hidden" name="id" value="">
+<input type="hidden" name="cnonce" value="">
 <input type="hidden" name="login_captcha" value="">
 <input type="hidden" name="cloud_file" value="" disabled>
 <div class="main-field-bg">
@@ -735,7 +781,7 @@ function regen_captcha(){
 							<div class="error_hint" style="display:none; clear:left;" id="error_captcha_field">Captcha is wrong. Please input again.</div>
 						</div>
 					</div>
-					<div id="button" class="login-btn-bg" onclick="login();"><#CTL_signin#></div>
+					<div id="button" class="login-btn-bg" onclick="preLogin();"><#CTL_signin#></div>
 				</div>
  
 				<!-- Message field --> 

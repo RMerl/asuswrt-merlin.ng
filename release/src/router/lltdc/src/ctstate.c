@@ -78,8 +78,8 @@ openvpn_base64_encode(const void *data, int size, char **str) {
 
     return strlen(s);
 }
-
-int 
+/*
+int
 image_to_base64(char *file_path,  char *client_mac) {
 	FILE * pFile;
 	long lSize;
@@ -152,7 +152,7 @@ image_to_base64(char *file_path,  char *client_mac) {
 
 	sprintf(image_base64, "data:image/jpeg;base64,");
 	strcat(image_base64, base64);
-	
+
 	// terminate
 	fclose (pFile);
 	free (buffer);
@@ -161,7 +161,7 @@ image_to_base64(char *file_path,  char *client_mac) {
 	//wirte image_base64 to file
 	char write_file_path[35];
 	memset(write_file_path, 0, sizeof(write_file_path)); //file path: /jffs/usericon/mac.log
-	
+
 	//Check folder exist or not
 	if(!check_if_dir_exist("/jffs/usericon"))
 		system("mkdir /jffs/usericon");
@@ -190,6 +190,7 @@ image_to_base64(char *file_path,  char *client_mac) {
 	i = 1;
 	return i;
 }
+*/
 
 /****************************
  * Timeout handlers - 
@@ -453,7 +454,7 @@ state_process_packet()
 /* End */
     }
     dump_packet(g_rxbuf);
-
+/*
 #if 1
 	if (g_opcode == Opcode_QueryLargeTlvResp)
 	{
@@ -565,7 +566,7 @@ state_process_packet()
 		{
 		    while( (g_icon_fd == NULL) && (retry < 5) )
 		    {
-		        sprintf(src_mac, "%02x%02x%02x%02x%02x%02x", 
+		        sprintf(src_mac, "%02x%02x%02x%02x%02x%02x",
                 		ETHERADDR_PRINT(&ehdr->eh_src));//Yau
 			sprintf(icon_file, "%s%s.ico", TMP_ICON_PATH, src_mac);
 			DEBUG({printf("<>Write icon_file : %s <>\n", icon_file);})
@@ -622,7 +623,7 @@ state_process_packet()
 
     }
 #endif
-
+*/
     return 0;	/* Success! */
 }
 

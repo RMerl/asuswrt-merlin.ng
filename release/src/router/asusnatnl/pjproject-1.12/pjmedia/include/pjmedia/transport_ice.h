@@ -80,6 +80,8 @@ typedef struct pjmedia_ice_cb
 					pj_sockaddr *external_addr,
 					pj_sockaddr *local_addr);
 
+	void (*app_log_cb)(int inst_id, int level, const char *src, const char *format, ...);
+
 } pjmedia_ice_cb;
 
 

@@ -1,0 +1,46 @@
+Notes for the Blackfin architecture port of Das U-Boot
+
+ =========
+ ! ABOUT !
+ =========
+
+<marketing blurb>
+Blackfin Processors embody a new breed of 16/32-bit embedded processor, ideally
+suited for products where a convergence of capabilities are necessary -
+multi-format audio, video, voice and image processing; multi-mode baseband and
+packet processing; control processing; and real-time security.  The Blackfin's
+unique combination of software flexibility and scalability has gained it
+widespread adoption in convergent applications.
+</marketing blurb>
+
+The Blackfin processor is wholly developed by Analog Devices Inc.
+
+ ===========
+ ! SUPPORT !
+ ===========
+
+All open source code for the Blackfin processors are being handled via our
+collaborative website:
+http://blackfin.uclinux.org/
+
+In particular, bug reports, feature requests, help etc... for Das U-Boot are
+handled in the Das U-Boot sub project:
+http://blackfin.uclinux.org/gf/project/u-boot
+
+This website is backed both by an open source community as well as a dedicated
+team from Analog Devices Inc.
+
+ =============
+ ! TOOLCHAIN !
+ =============
+
+To compile the Blackfin aspects, you'll need the GNU toolchain configured for
+the Blackfin processor.  You can obtain such a cross-compiler here:
+http://blackfin.uclinux.org/gf/project/toolchain
+
+ =================
+ ! DOCUMENTATION !
+ =================
+
+For Blackfin specific documentation, you can visit our dedicated doc wiki:
+http://docs.blackfin.uclinux.org/doku.php?id=bootloaders:u-boot

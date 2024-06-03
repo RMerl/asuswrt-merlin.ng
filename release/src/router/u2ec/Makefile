@@ -73,6 +73,10 @@ LDFLAGS += -lm
 endif
 endif
 
+ifeq ($(RTCONFIG_TRUSTZONE),y)
+LDFLAGS += -L$(TOP)/ateed/ -latee
+endif
+
 CFLAGS += -Wall -I.
 CFLAGS += $(DEBFLAGS)
 

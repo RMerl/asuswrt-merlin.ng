@@ -1,0 +1,75 @@
+#include "../../../bcmdrivers/opensource/include/bcm963xx/bcm_bca_leds_dt_bindings.h"
+
+#define HW_CLED_SERIAL_PORT_LED_BIT(_name_, _port, _led, _bit) \
+    _name_ {\
+        compatible = "brcm,serial-cled"; \
+        hardware_led; \
+        port = <(_port)>;\
+        led = <(_led)>;\
+        bit = <(_bit)>;\
+        status = "disabled";\
+    }
+
+#define SW_CLED_SERIAL_BIT(_name_, _bit) \
+    _name_ {\
+        compatible = "brcm,serial-cled"; \
+        software_led; \
+        bit = <(_bit)>;\
+        status = "disabled";\
+    }
+
+#define HW_CLED_SERIAL_AGGREGATE_BIT(_name_, _bit) \
+    _name_ {\
+        compatible = "brcm,serial-cled"; \
+        hardware_led; \
+        bit = <(_bit)>;\
+        status = "disabled";\
+    }
+
+#define HW_CLED_PARALLEL_PORT_LED_BIT_PIN_NAME(_name_, _port, _led, _bit, _pin_) \
+    _name_ {\
+        compatible = "brcm,parallel-cled"; \
+        hardware_led; \
+        port = <(_port)>;\
+        led = <(_led)>;\
+        bit = <(_bit)>;\
+        pinctrl-names = "default";\
+        pinctrl-0 = <&_pin_>;\
+        status = "disabled";\
+    }
+
+#define SW_CLED_PARALLEL_BIT_PIN_NAME(_name_, _bit, _pin_) \
+    _name_ {\
+        compatible = "brcm,parallel-cled"; \
+        software_led; \
+        bit = <(_bit)>;\
+        pinctrl-names = "default";\
+        pinctrl-0 = <&_pin_>;\
+        status = "disabled";\
+    }
+
+#define HW_CLED_PARALLEL_AGGREGATE_BIT_PIN_NAME(_name_, _bit, _pin_) \
+    _name_ {\
+        compatible = "brcm,parallel-cled"; \
+        hardware_led; \
+        bit = <(_bit)>;\
+        pinctrl-names = "default";\
+        pinctrl-0 = <&_pin_>;\
+        status = "disabled";\
+    }
+
+compatible = "brcm,bca-cleds-ctrl,legacy";
+reg = <CLED_GLBL_CTRL_OFFSET CLED_GLBL_CTRL_SIZE>, <CLED_HW_EN_OFFSET CLED_HW_EN_SIZE>,
+    <CLED_SER_SHIFT_OFFSET CLED_SER_SHIFT_SIZE>,<CLED_HW_POLARITY_OFFSET CLED_HW_POLARITY_SIZE>,
+    <CLED_SW_SET_OFFSET CLED_SW_SET_SIZE>, <CLED_SW_POLARITY_OFFSET CLED_SW_POLARITY_SIZE>,
+    <CLED_CH_ACTIVATE_OFFSET CLED_CH_ACTIVATE_SIZE>, <CLED_XX_CONFIG_OFFSET CLED_XX_CONFIG_SIZE>,
+    <CLED_SERIAL_POLARITY_OFFSET CLED_SERIAL_POLARITY_SIZE>,
+    <CLED_PARALLEL_POLARITY_OFFSET CLED_PARALLEL_POLARITY_SIZE>;
+
+reg-names = "glbl_ctrl", "hw_en", 
+    "ser_shift", "hw_polarity", 
+    "sw_set", "sw_polarity",
+    "ch_activate", "ch_config",
+    "ser_polarity", "par_polarity";
+
+nleds = <MAX_SUPPORTED_LEDS>;

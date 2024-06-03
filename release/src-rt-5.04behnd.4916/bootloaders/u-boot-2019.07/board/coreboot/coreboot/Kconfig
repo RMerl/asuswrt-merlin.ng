@@ -1,0 +1,34 @@
+if TARGET_COREBOOT
+
+config SYS_BOARD
+	default "coreboot"
+
+config SYS_VENDOR
+	default "coreboot"
+
+config SYS_SOC
+	default "coreboot"
+
+config SYS_CONFIG_NAME
+	default "coreboot"
+
+config SYS_TEXT_BASE
+	default 0x01110000
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select BOARD_EARLY_INIT_R
+
+config SYS_CAR_ADDR
+	hex "Board specific Cache-As-RAM (CAR) address"
+	default 0x01920000
+	help
+	  This option specifies the board specific Cache-As-RAM (CAR) address.
+
+config SYS_CAR_SIZE
+	hex "Board specific Cache-As-RAM (CAR) size"
+	default 0x4000
+	help
+	  This option specifies the board specific Cache-As-RAM (CAR) size.
+
+endif

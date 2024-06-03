@@ -16,17 +16,15 @@ static int traffic_limiter_is_first = 1;
 
 void traffic_limiter_sendSMS(const char *type, int unit)
 {
-	char phone[32], message[IFPATH_MAX];
+	char phone[64], message[PATH_MAX];
 	char *at_cmd[] = {"/usr/sbin/modem_status.sh", "send_sms", phone, message, NULL};
-	char buf[32];
 
-	snprintf(buf, sizeof(buf), "tl%d_%s_max", unit, type);
 	snprintf(phone, sizeof(phone), "%s", nvram_safe_get("modem_sms_phone"));
 
-	if (strcmp(type, "alert") == 0)
-		snprintf(message, sizeof(message), "%s %s bytes.", nvram_safe_get("modem_sms_message1"), nvram_safe_get(buf));
-	else if (strcmp(type, "limit") == 0)
-		snprintf(message, sizeof(message), "%s %s bytes.", nvram_safe_get("modem_sms_message2"), nvram_safe_get(buf));
+	if(!strcmp(type, "alert"))
+		snprintf(message, sizeof(message), "%s", nvram_safe_get("modem_sms_message1"));
+	else
+		snprintf(message, sizeof(message), "%s", nvram_safe_get("modem_sms_message2"));
 
 #ifdef RTCONFIG_INTERNAL_GOBI
 	stop_lteled();

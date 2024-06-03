@@ -47,7 +47,7 @@ function show_popup_help_WGS(){
 		var $container = $("<div>");
 		var $popup_title_container = $("<div>").addClass("popup_title_container");
 		$popup_title_container.appendTo($container);
-		$("<div>").addClass("title").html("About Feature").appendTo($popup_title_container);/* untranslated */
+		$("<div>").addClass("title").html("<#NewFeatureAbout#>").appendTo($popup_title_container);
 		var $close_btn = $("<div>").addClass("vpn_icon_all_collect close_btn");
 		$close_btn.appendTo($popup_title_container);
 		$close_btn.unbind("click").click(function(e){
@@ -312,11 +312,11 @@ function Get_Component_Setup_Client_WGS(_wgsc_unit){
 	var nvramSet_obj = {"action_mode": "apply", "wgs_unit": wgs_unit, "wgsc_unit": _wgsc_unit};
 	httpApi.nvramSet(nvramSet_obj, function(){
 		httpApi.hookGet("get_wgsc_parameter", true);
-		var wgsc_settings = httpApi.nvramGet(["wgsc_name", "wgsc_addr", "wgsc_aips", "wgsc_caips"], true);
-		$wgsc_addr.val(wgsc_settings.wgsc_addr);
-		$wgsc_aips.val(wgsc_settings.wgsc_aips);
-		$wgsc_caips.val(wgsc_settings.wgsc_caips);
-		$wgsc_name.val(wgsc_settings.wgsc_name).keyup();
+		let wgsc_settings = httpApi.nvramCharToAscii(["wgsc_name", "wgsc_addr", "wgsc_aips", "wgsc_caips"], true);
+		$wgsc_addr.val(decodeURIComponent(wgsc_settings.wgsc_addr));
+		$wgsc_aips.val(decodeURIComponent(wgsc_settings.wgsc_aips));
+		$wgsc_caips.val(decodeURIComponent(wgsc_settings.wgsc_caips));
+		$wgsc_name.val(decodeURIComponent(wgsc_settings.wgsc_name)).keyup();
 		if(show_config){
 			get_wgs_client_conf($content_container);
 		}
@@ -371,14 +371,14 @@ function Update_wgs_clientlist_data(){
 			var wgs_c_addr = "wgs" + wgs_unit + "_c" + wgsc_unit + "_addr";
 			var wgs_c_aips = "wgs" + wgs_unit + "_c" + wgsc_unit + "_aips";
 			var wgs_c_caips = "wgs" + wgs_unit + "_c" + wgsc_unit + "_caips";
-			var wgsc_settings = httpApi.nvramGet([wgs_c_name, wgs_c_addr, wgs_c_aips, wgs_c_caips, wgs_c_caips]);
+			let wgsc_settings = httpApi.nvramCharToAscii([wgs_c_name, wgs_c_addr, wgs_c_aips, wgs_c_caips, wgs_c_caips]);
 			var client_profile = new wgs_clientlist_attr();
 			client_profile.enable = "1";
 			client_profile.unit = wgsc_unit;
-			client_profile.name = wgsc_settings[wgs_c_name];
-			client_profile.addr = wgsc_settings[wgs_c_addr];
-			client_profile.aips = wgsc_settings[wgs_c_aips];
-			client_profile.caips = wgsc_settings[wgs_c_caips];
+			client_profile.name = decodeURIComponent(wgsc_settings[wgs_c_name]);
+			client_profile.addr = decodeURIComponent(wgsc_settings[wgs_c_addr]);
+			client_profile.aips = decodeURIComponent(wgsc_settings[wgs_c_aips]);
+			client_profile.caips = decodeURIComponent(wgsc_settings[wgs_c_caips]);
 			wgs_clientlist_data.push(JSON.parse(JSON.stringify(client_profile)));
 		}
 	}
@@ -672,7 +672,7 @@ function validate_format_WGS(_obj, _validField){
 			$wgs_alive.focus();
 			return false;
 		}
-		var isValid_wgs_alive = valid_num_range($wgs_alive.val(), 1, 65535);
+		var isValid_wgs_alive = valid_num_range($wgs_alive.val(), 0, 65535);
 		if(isValid_wgs_alive.isError){
 			$wgs_alive.show_validate_hint(isValid_wgs_alive.errReason);
 			$wgs_alive.focus();
@@ -906,10 +906,10 @@ function Get_Component_Setting_Profile_WGS(_type){
 	var wgs_lanaccess_parm = {"title":"<#Access_Intranet#>", "type":"switch", "id":"wgs_lanaccess"};
 	Get_Component_Switch(wgs_lanaccess_parm).appendTo($detail_general);
 
-	var wgs_addr_parm = {"title":"Tunnel IPv4 and / or IPv6 Address", "type":"text", "id":"wgs_addr", "need_check":true, "maxlength":63};/* untranslated */
+	var wgs_addr_parm = {"title":"<#vpn_wireguard_addr#>", "type":"text", "id":"wgs_addr", "need_check":true, "maxlength":63};
 	Get_Component_Input(wgs_addr_parm).appendTo($detail_general);
 
-	var wgs_port_parm = {"title":"Listen Port", "type":"text", "id":"wgs_port", "need_check":true, "maxlength":5};/* untranslated */
+	var wgs_port_parm = {"title":"<#vpn_wireguard_listen_port#>", "type":"text", "id":"wgs_port", "need_check":true, "maxlength":5};
 	Get_Component_Input(wgs_port_parm).appendTo($detail_general)
 		.find("#" + wgs_port_parm.id + "")
 		.unbind("keypress").keypress(function(){

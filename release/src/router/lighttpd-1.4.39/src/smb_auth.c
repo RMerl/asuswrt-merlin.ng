@@ -34,7 +34,9 @@ typedef li_MD5_CTX MD5_CTX;
 #include "shared.h"	// check_if_file_exist() in shared/shared.h
 #include "nvram_control.h"
 #ifndef APP_IPKG
+#ifdef RTCONFIG_USB
 #include "disk_share.h"
+#endif
 #endif
 #endif
 
@@ -1265,22 +1267,23 @@ char* get_mac_address(const char* iface, char* mac){
 	return mac;
 }
 
-char *replace_str(char *st, char *orig, char *repl, char* buff) {  
+char *replace_str(char *st, char *orig, char *repl, char* buff, size_t buff_size) {  
 	char *ch;
 	if (!(ch = strstr(st, orig)))
 		return st;
+	if(ch-st >= buff_size) return st; // check buffer size before copy
 	strncpy(buff, st, ch-st);  
 	buff[ch-st] = 0;
+	if(strlen(repl) + strlen(ch+strlen(orig)) >= buff_size) return st; // check buffer size before sprintf
 	sprintf(buff+(ch-st), "%s%s", repl, ch+strlen(orig));  
 
 	return buff;
 }
 
-//- �P�_�}�l���Ȧ�m 
 int startposizition( char *str, int start )  
 {  
-	int i=0;            //-�Ω�p��
-    int posizition=0;   //- ��^��m
+	int i=0;
+    int posizition=0;
     int tempposi=start;    
     while(str[tempposi]<0)  
     {  
@@ -1295,11 +1298,10 @@ int startposizition( char *str, int start )
     return posizition;  
 } 
 
-//- �P�_���ݨ��Ȧ�m
 int endposizition( char *str, int end )  
 {  
-	int i=0;            //-�Ω�p��
-	int posizition=0;   //- ��^��m
+	int i=0;
+	int posizition=0;
 	int tempposi=end; 
 	while(str[tempposi]<0)  
 	{ 
@@ -1569,7 +1571,7 @@ int smbc_wrapper_parse_path(connection* con, char *pWorkgroup, char *pServer, ch
 		//- Jerry add: replace '\\' to '/'
 		do{
 			char buff[4096];
-			strcpy( pPath, replace_str(&pPath[0],"\\","/", (char *)&buff[0]) );
+			strcpy( pPath, replace_str(&pPath[0],"\\","/", (char *)&buff[0], 4096));
 		}while(strstr(pPath,"\\")!=NULL);
 	}
 	
@@ -1589,7 +1591,7 @@ int smbc_wrapper_parse_path2(connection* con, char *pWorkgroup, char *pServer, c
 		memset(buff, '\0', len);
 		
 		do{	
-			strcpy( pPath, replace_str(&pPath[0],"\\","/", buff) );
+			strcpy( pPath, replace_str(&pPath[0],"\\","/", buff, len));
 		}while(strstr(pPath,"\\")!=NULL);
 		
 		free(buff);
@@ -1876,11 +1878,13 @@ int smbc_get_usbdisk_permission(const char* user_name, const char* usbdisk_rel_s
 		    (user_name!=NULL && strncmp(user_name, "guest", 5)==0))
 			permission = 3;
 		else{
+#ifdef RTCONFIG_USB
 			permission = get_permission( user_name,
 									     usbdisk_rel_sub_path,
 									     usbdisk_sub_share_folder,
 									     "cifs",
 									     0);
+#endif
 		}
 		
 		Cdbg(DBE, "usbdisk_rel_sub_path=%s, usbdisk_sub_share_folder=%s, permission=%d, user_name=%s", 
@@ -1891,7 +1895,6 @@ int smbc_get_usbdisk_permission(const char* user_name, const char* usbdisk_rel_s
 	else if(var_type == T_ACCOUNT_AICLOUD){
 
 #if EMBEDDED_EANBLE
-	
 		permission = get_aicloud_permission( user_name,
 											 usbdisk_rel_sub_path,
 											 usbdisk_sub_share_folder,
@@ -1975,16 +1978,27 @@ int smbc_parser_basic_authentication(server *srv, connection* con, char** userna
 
 			if (basic_msg->used>1024){
 				buffer_free(basic_msg);
-                                free(user);
-                                free(pass);
-                                return 0;
+				free(user);
+				free(pass);
+				return 0;
 			}
 
 			char *s, bmsg[1024] = {0};
-
+			size_t bmsg_size = sizeof(bmsg);
+			
 			//fetech the username and password from credential
-			memcpy(bmsg, basic_msg->ptr, basic_msg->used);
+			size_t len = basic_msg->used > bmsg_size ? bmsg_size : basic_msg->used;
+			memcpy(bmsg, basic_msg->ptr, len);
+			bmsg[len] = '\0';
+
 			s = strchr(bmsg, ':');
+			if (s == NULL) {
+				buffer_free(basic_msg);
+				free(user);
+				free(pass);
+				return 0;
+			}
+
 			bmsg[s-bmsg] = '\0';
 
 			buffer_copy_string(user, bmsg);
@@ -2092,7 +2106,8 @@ int generate_sharelink( server* srv,
 		char* tmp = replace_str(buffer_real_url->ptr,
                                         usbdisk_path,
                                         usbdisk_rel_path,
-                                        (char *)&buff[0]);
+                                        (char *)&buff[0],
+										2048);
 		buffer_copy_string(buffer_real_url, tmp);
 	}
 
@@ -3457,6 +3472,9 @@ int get_aicloud_var_file_name(const char *const account, const char *const path,
 }
 
 int initial_aicloud_var_file(const char *const account, const char *const mount_path) {
+
+#ifdef RTCONFIG_USB
+
 	FILE *fp;
 	char *var_file;
 	int result, i;
@@ -3472,7 +3490,6 @@ int initial_aicloud_var_file(const char *const account, const char *const mount_
 	// 1. get the folder number and folder_list
 	//result = get_folder_list(mount_path, &sh_num, &folder_list);
 	result = get_all_folder(mount_path, &sh_num, &folder_list);
-
 	// 2. get the var file
 	if(get_aicloud_var_file_name(account, mount_path, &var_file)){
 		Cdbg(DBE, "Can't malloc \"var_file\".");
@@ -3505,12 +3522,17 @@ int initial_aicloud_var_file(const char *const account, const char *const mount_
 	free(var_file);
 
 	return 0;
+#else
+	return -1;
+#endif
 }
 
 int get_aicloud_permission(const char *const account,
 								const char *const mount_path,
 								const char *const folder,
 								const int is_group) {
+#ifdef RTCONFIG_USB
+
 	char *var_file, *var_info;
 	char *target, *follow_info;
 	int len, result;
@@ -3525,7 +3547,7 @@ int get_aicloud_permission(const char *const account,
 	}
 
 	Cdbg(DBE, "var_file: %s.", var_file);
-	
+
 	// 2. check the file integrity.
 	if(!check_file_integrity(var_file)){
 		Cdbg(DBE, "Fail to check the file: %s.", var_file);
@@ -3606,17 +3628,22 @@ retry_get_permission:
 	}
 	
 	return result;
+#else
+	return -1;
+#endif
 }
 
 int set_aicloud_permission(const char *const account,
 						  const char *const mount_path,
 						  const char *const folder,
 						  const int flag) {
+#ifdef RTCONFIG_USB
+
 	FILE *fp;
 	char *var_file, *var_info;
 	char *target, *follow_info;
 	int len;
-	
+
 	if (flag < 0 || flag > 3) {
 		Cdbg(DBE, "correct Rights is 0, 1, 2, 3.");
 		return -1;
@@ -3634,7 +3661,6 @@ int set_aicloud_permission(const char *const account,
 			return -1;
 		}
 	}
-	
 	
 	// 2. check the file integrity.
 	if(!check_file_integrity(var_file)){
@@ -3738,6 +3764,9 @@ int set_aicloud_permission(const char *const account,
 	free(var_info);
 	
 	return 0;
+#else
+	return -1;
+#endif
 }
 
 #endif

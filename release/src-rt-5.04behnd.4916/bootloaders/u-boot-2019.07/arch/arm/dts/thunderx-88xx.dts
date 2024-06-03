@@ -1,0 +1,30 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * Cavium Thunder DTS file - Thunder board description
+ *
+ * Copyright (C) 2014, Cavium Inc.
+ *
+ */
+
+/dts-v1/;
+
+/include/ "thunderx-88xx.dtsi"
+
+/ {
+	model = "Cavium ThunderX CN88XX board";
+	compatible = "cavium,thunder-88xx";
+
+	aliases {
+		serial0 = &uaa0;
+		serial1 = &uaa1;
+	};
+
+	chosen {
+                stdout-path = &uaa0;
+        };
+
+	memory@00000000 {
+		device_type = "memory";
+		reg = <0x0 0x00000000 0x0 0x80000000>;
+	};
+};

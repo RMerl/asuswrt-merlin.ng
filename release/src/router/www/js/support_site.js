@@ -12,9 +12,9 @@ New naming rule:
 
 var old_model = [ 
 	"",
-	"DSL-AC68U", "DSL-N55U", "DSL-N55U-B", "PL-N12", "RT-AC1200HP", "RT-AC3200", "RT-AC51U", "RT-AC52U", "RT-AC53U", "RT-AC54U", 
-	"RT-AC55U", "RT-AC55UHP", "RT-AC56U", "RT-AC66U", "RT-AC68U", "RT-AC87U", "RT-N12", "RT-N14UHP", "RT-N15U", "RT-N16", 
-	"RT-N18U", "RT-N53", "RT-N56U", "RT-N56UB1", "RT-N65U", "RT-N66U",
+	"DSL-AC68U", "DSL-N55U", "DSL-N55U-B", "PL-N12", "PL-AC56", "PL-AC66U", "RT-AC1200HP", "RT-AC3200", "RT-AC51U", "RT-AC52U",
+	"RT-AC53U", "RT-AC54U", "RT-AC55U", "RT-AC55UHP", "RT-AC56U", "RT-AC66U", "RT-AC68U", "RT-AC87U", "RT-N12", "RT-N14UHP",
+	"RT-N15U", "RT-N16", "RT-N18U", "RT-N53", "RT-N56U", "RT-N56UB1", "RT-N65U", "RT-N66U",
 	""
 ];
 var old_string = old_model.join("#");

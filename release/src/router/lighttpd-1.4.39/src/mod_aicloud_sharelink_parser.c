@@ -12,7 +12,9 @@
 
 #if EMBEDDED_EANBLE
 #ifndef APP_IPKG
+#ifdef RTCONFIG_USB
 #include "disk_share.h"
+#endif
 #endif
 #endif
 

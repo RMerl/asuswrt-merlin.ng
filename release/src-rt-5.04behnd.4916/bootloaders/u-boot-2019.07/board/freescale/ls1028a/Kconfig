@@ -1,0 +1,65 @@
+if TARGET_LS1028AQDS
+
+config SYS_BOARD
+	default "ls1028a"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_SOC
+	default "fsl-layerscape"
+
+config SYS_CONFIG_NAME
+	default "ls1028aqds"
+
+config EMMC_BOOT
+	bool "Support for booting from EMMC"
+	default n
+
+config SYS_TEXT_BASE
+	default 0x96000000 if SD_BOOT || EMMC_BOOT
+	default 0x82000000 if TFABOOT
+	default 0x20100000
+
+if FSL_LS_PPA
+config SYS_LS_PPA_FW_ADDR
+	hex "PPA Firmware Addr"
+	default 0x20400000 if SYS_LS_PPA_FW_IN_XIP && ARCH_LS1028A
+	default 0x400000 if SYS_LS_PPA_FW_IN_MMC && ARCH_LS1028A
+if CHAIN_OF_TRUST
+config SYS_LS_PPA_ESBC_ADDR
+	hex "PPA header Addr"
+	default 0x20600000 if SYS_LS_PPA_FW_IN_XIP && ARCH_LS1028A
+endif
+endif
+
+source "board/freescale/common/Kconfig"
+
+endif
+
+if TARGET_LS1028ARDB
+
+config SYS_BOARD
+	default "ls1028a"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_SOC
+	default "fsl-layerscape"
+
+config SYS_CONFIG_NAME
+	default "ls1028ardb"
+
+config EMMC_BOOT
+	bool "Support for booting from EMMC"
+	default n
+
+config SYS_TEXT_BASE
+	default 0x96000000 if SD_BOOT || EMMC_BOOT
+	default 0x82000000 if TFABOOT
+	default 0x20100000
+
+source "board/freescale/common/Kconfig"
+
+endif

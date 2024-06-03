@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999 Apple Computer, Inc. All rights reserved.
+ * Copyright (c) 1999, 2002, 2006 Apple Computer, Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
  * 
@@ -45,6 +45,14 @@ static OSErr	CheckBTreeKey(const BTreeKey *key, const BTreeControlBlock *btcb);
 static Boolean	ValidHFSRecord(const void *record, const BTreeControlBlock *btcb, UInt16 recordSize);
 
 
+//	This function determines the size of the output buffer depending on
+//	the type of the BTree.  It should really be taking the buffer size 
+//	as input instead of assuming it (4425231).
+//
+//	This function may also truncate inline attribute record because caller 
+//	sends HFSPlusAttrRecord as output buffer and this function also assumes 
+//	the output buffer of size HFSPlusAttrRecord.  It may therefore not be 
+//	enough to copy entire inline attribute record (4425232).
 
 OSErr SearchBTreeRecord(SFCB *fcb, const void* key, UInt32 hint, void* foundKey, void* data, UInt16 *dataSize, UInt32 *newHint)
 {
@@ -63,6 +71,8 @@ OSErr SearchBTreeRecord(SFCB *fcb, const void* key, UInt32 hint, void* foundKey,
 		btRecord.itemSize = sizeof(HFSExtentRecord);
 	else if ( btcb->maxKeyLength == kHFSPlusExtentKeyMaximumLength )
 		btRecord.itemSize = sizeof(HFSPlusExtentRecord);
+	else if ( btcb->maxKeyLength == kHFSPlusAttrKeyMaximumLength )
+		btRecord.itemSize = sizeof(HFSPlusAttrRecord);
 	else
 		btRecord.itemSize = sizeof(CatalogRecord);
 
@@ -109,6 +119,15 @@ ErrorExit:
 //	that we have a context in which to perfrom the iteration. Also note that the old B-tree
 //	allowed you to specify any number relative to the last operation (including 0) whereas the
 //	new B-tree only allows next/previous.
+//
+//	This function determines the size of the output buffer depending on
+//	the type of the BTree.  It should really be taking the buffer size 
+//	as input instead of assuming it (4425231).
+//
+//	This function may also truncate inline attribute record because caller 
+//	sends HFSPlusAttrRecord as output buffer and this function also assumes 
+//	the output buffer of size HFSPlusAttrRecord.  It may therefore not be
+//	enough to copy entire inline attribute record (4425232).
 
 OSErr GetBTreeRecord(SFCB *fcb, SInt16 selectionIndex, void* key, void* data, UInt16 *dataSize, UInt32 *newHint)
 {
@@ -130,6 +149,8 @@ OSErr GetBTreeRecord(SFCB *fcb, SInt16 selectionIndex, void* key, void* data, UI
 		btRecord.itemSize = sizeof(HFSExtentRecord);
 	else if ( btcb->maxKeyLength == kHFSPlusExtentKeyMaximumLength )
 		btRecord.itemSize = sizeof(HFSPlusExtentRecord);
+	else if ( btcb->maxKeyLength == kHFSPlusAttrKeyMaximumLength )
+		btRecord.itemSize = sizeof(HFSPlusAttrRecord);
 	else
 		btRecord.itemSize = sizeof(CatalogRecord);
 	
@@ -482,7 +503,7 @@ static Boolean ValidHFSRecord(const void *record, const BTreeControlBlock *btcb,
 			{
 				if ( recordSize != sizeof(HFSPlusCatalogFolder) )
 					return false;
-				if ( catalogRecord->hfsPlusFolder.flags != 0 )
+				if ( (catalogRecord->hfsPlusFolder.flags && (kHFSFileLockedMask | kHFSThreadExistsMask)) != 0 )
 					return false;
 					
 				cNodeID = catalogRecord->hfsPlusFolder.folderID;
@@ -540,8 +561,6 @@ static Boolean ValidHFSRecord(const void *record, const BTreeControlBlock *btcb,
 				
 				if ( recordSize != sizeof(HFSPlusCatalogFile) )
 					return false;								
-				if ( (catalogRecord->hfsPlusFile.flags & ~(0x83)) != 0 )
-					return false;
 					
 				cNodeID = catalogRecord->hfsPlusFile.fileID;
 				

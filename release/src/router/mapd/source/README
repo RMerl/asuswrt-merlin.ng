@@ -1,0 +1,8 @@
+How to Build:
+--Copy the mapd directory to the daemon folder
+--Execute  "Make"
+
+How to RUN:
+Command:
+    ./mapd -g <dir>/<name>
+    ./mapd_cli <dir>/<name>

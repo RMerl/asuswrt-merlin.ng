@@ -1,0 +1,7 @@
+menuconfig MTD_SPI_NAND
+	bool "SPI NAND device Support"
+	depends on MTD && DM_SPI
+	select MTD_NAND_CORE
+	select SPI_MEM
+	help
+	  This is the framework for the SPI NAND device drivers.

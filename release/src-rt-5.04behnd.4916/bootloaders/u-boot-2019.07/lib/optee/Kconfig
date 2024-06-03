@@ -1,0 +1,39 @@
+config OPTEE
+	bool "Support OPTEE images"
+	help
+	  U-Boot can be configured to boot OPTEE images.
+	  Selecting this option will enable shared OPTEE library code and
+          enable an OPTEE specific bootm command that will perform additional
+          OPTEE specific checks before booting an OPTEE image created with
+          mkimage.
+
+config OPTEE_LOAD_ADDR
+	hex "OPTEE load address"
+	default 0x00000000
+	depends on OPTEE
+	help
+	  The load address of the bootable OPTEE binary.
+
+config OPTEE_TZDRAM_SIZE
+	hex "Amount of Trust-Zone RAM for the OPTEE image"
+	default 0x0000000
+	help
+	  The size of pre-allocated Trust Zone DRAM to allocate for the OPTEE
+	  runtime.
+
+config OPTEE_TZDRAM_BASE
+	hex "Base address of Trust-Zone RAM for the OPTEE image"
+	default 0x00000000
+	help
+	  The base address of pre-allocated Trust Zone DRAM for
+	  the OPTEE runtime.
+
+config BOOTM_OPTEE
+	bool "Support OPTEE bootm command"
+	select BOOTM_LINUX
+	depends on OPTEE
+	default n
+	help
+	  Select this command to enable chain-loading of a Linux kernel
+	  via an OPTEE firmware.
+	  The bootflow is BootROM -> u-boot -> OPTEE -> Linux in this case.

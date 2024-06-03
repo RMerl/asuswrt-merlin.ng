@@ -1,0 +1,336 @@
+SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause
+#
+# Copyright (C) 2018 STMicroelectronics - All Rights Reserved
+#
+
+U-Boot on STMicroelectronics STM32MP1
+======================================
+
+1. Summary
+==========
+This is a quick instruction for setup stm32mp1 boards.
+
+2. Supported devices
+====================
+U-Boot supports one STMP32MP1 SoCs: STM32MP157
+
+The STM32MP157 is a Cortex-A MPU aimed at various applications.
+It features:
+- Dual core Cortex-A7 application core
+- 2D/3D image composition with GPU
+- Standard memories interface support
+- Standard connectivity, widely inherited from the STM32 MCU family
+- Comprehensive security support
+
+Everything is supported in Linux but U-Boot is limited to:
+1. UART
+2. SDCard/MMC controller (SDMMC)
+
+And the necessary drivers
+1. I2C
+2. STPMIC1 (PMIC and regulator)
+3. Clock, Reset, Sysreset
+4. Fuse
+
+Currently the following boards are supported:
++ stm32mp157c-ev1
++ stm32mp157c-ed1
++ stm32mp157a-dk1
++ stm32mp157c-dk2
++ stm32mp157a-avenger96
+
+3. Boot Sequences
+=================
+
+BootRom => FSBL in SYSRAM => SSBL in DDR => OS (Linux Kernel)
+
+with FSBL = First Stage Bootloader
+     SSBL = Second Stage Bootloader
+
+2 boot configurations are supported:
+
+1) The "Trusted" boot chain (defconfig_file : stm32mp15_trusted_defconfig)
+   BootRom => FSBL = Trusted Firmware-A (TF-A) => SSBL = U-Boot
+   TF-A performs a full initialization of Secure peripherals and installs a
+   secure monitor.
+   U-Boot is running in normal world and uses TF-A monitor
+   to access to secure resources
+
+2) The "Basic" boot chain (defconfig_file : stm32mp15_basic_defconfig)
+   BootRom => FSBL = U-Boot SPL => SSBL = U-Boot
+   SPL has limited security initialisation
+   U-Boot is running in secure mode and provide a secure monitor to the kernel
+   with only PSCI support (Power State Coordination Interface defined by ARM)
+
+All the STM32MP1 boards supported by U-Boot use the same generic board
+stm32mp1 which support all the bootable devices.
+
+Each board is configurated only with the associated device tree.
+
+4. Device Tree Selection
+========================
+
+You need to select the appropriate device tree for your board,
+the supported device trees for stm32mp157 are:
+
++ ev1: eval board with pmic stpmic1 (ev1 = mother board + daughter ed1)
+  dts: stm32mp157c-ev1
+
++ ed1: daughter board with pmic stpmic1
+  dts: stm32mp157c-ed1
+
++ dk1: Discovery board
+  dts: stm32mp157a-dk1
+
++ dk2: Discovery board = dk1 with a BT/WiFI combo and a DSI panel
+  dts: stm32mp157c-dk2
+
++ avenger96: Avenger96 board from Arrow Electronics
+  dts: stm32mp157a-avenger96
+
+5. Build Procedure
+==================
+
+1. Install required tools for U-Boot
+
+   + install package needed in U-Boot makefile
+     (libssl-dev, swig, libpython-dev...)
+   + install ARMv7 toolchain for 32bit Cortex-A (from Linaro,
+     from SDK for STM32MP1, or any crosstoolchains from your distribution)
+
+2. Set the cross compiler:
+
+	# export CROSS_COMPILE=/path/to/toolchain/arm-linux-gnueabi-
+	(you can use any gcc cross compiler compatible with U-Boot)
+
+3. Select the output directory (optional)
+
+	# export KBUILD_OUTPUT=/path/to/output
+
+	for example: use one output directory for each configuration
+	# export KBUILD_OUTPUT=stm32mp15_trusted
+	# export KBUILD_OUTPUT=stm32mp15_basic
+
+4. Configure U-Boot:
+
+	# make <defconfig_file>
+
+	- For trusted boot mode : "stm32mp15_trusted_defconfig"
+	- For basic boot mode: "stm32mp15_basic_defconfig"
+
+5. Configure the device-tree and build the U-Boot image:
+
+	# make DEVICE_TREE=<name> all
+
+
+  example:
+  a) trusted boot on ev1
+	# export KBUILD_OUTPUT=stm32mp15_trusted
+	# make stm32mp15_trusted_defconfig
+	# make DEVICE_TREE=stm32mp157c-ev1 all
+
+  b) basic boot on ev1
+	# export KBUILD_OUTPUT=stm32mp15_basic
+	# make stm32mp15_basic_defconfig
+	# make DEVICE_TREE=stm32mp157c-ev1 all
+
+  c) basic boot on ed1
+	# export KBUILD_OUTPUT=stm32mp15_basic
+	# make stm32mp15_basic_defconfig
+	# make DEVICE_TREE=stm32mp157c-ed1 all
+
+  d) basic boot on dk2
+	# export KBUILD_OUTPUT=stm32mp15_basic
+	# make stm32mp15_basic_defconfig
+	# make DEVICE_TREE=stm32mp157c-dk2 all
+
+  d) basic boot on avenger96
+	# export KBUILD_OUTPUT=stm32mp15_basic
+	# make stm32mp15_basic_defconfig
+	# make DEVICE_TREE=stm32mp157a-avenger96 all
+
+6. Output files
+
+  BootRom and TF-A expect binaries with STM32 image header
+  SPL expects file with U-Boot uImage header
+
+  So in the output directory (selected by KBUILD_OUTPUT),
+  you can found the needed files:
+
+  a) For Trusted boot
+   + FSBL = tf-a.stm32 (provided by TF-A compilation)
+   + SSBL = u-boot.stm32
+
+  b) For Basic boot
+   + FSBL = spl/u-boot-spl.stm32
+   + SSBL = u-boot.img
+
+6. Switch Setting for Boot Mode
+===============================
+
+You can select the boot mode, on the board ed1 with the switch SW1
+
+ -----------------------------------
+  Boot Mode   BOOT2   BOOT1   BOOT0
+ -----------------------------------
+  Reserved	0	0	0
+  NOR		0	0	1
+  SD-Card	1	0	1
+  eMMC		0	1	0
+  NAND		0	1	1
+  Recovery	1	1	0
+  Recovery	0	0	0
+
+- on board DK1/DK2 with the switch SW1 : BOOT0, BOOT2
+  (BOOT1 forced to 0, NOR not supported)
+
+ --------------------------
+  Boot Mode   BOOT2  BOOT0
+ --------------------------
+  Reserved	1      0
+  SD-Card	1      1
+  Recovery	0      0
+
+- Boot mode of Avenger96 can be selected using switch S3
+
+ -----------------------------------
+  Boot Mode   BOOT2   BOOT1   BOOT0
+ -----------------------------------
+  Recovery	0	0	0
+  NOR		0	0	1
+  SD-Card	1	0	1
+  eMMC		0	1	0
+  NAND		0	1	1
+  Reserved	1	0	0
+  Recovery	1	1	0
+  SD-Card	1	1	1
+
+Recovery is a boot from serial link (UART/USB) and it is used with
+STM32CubeProgrammer tool to load executable in RAM and to update the flash
+devices available on the board (NOR/NAND/eMMC/SDCARD).
+The communication between HOST and board is based on
+- for UARTs : the uart protocol used with all MCU STM32
+- for USB : based on USB DFU 1.1 (without the ST extensions used on MCU STM32)
+
+7. Prepare an SDCard
+===================
+
+The minimal requirements for STMP32MP1 boot up to U-Boot are:
+- GPT partitioning (with gdisk or with sgdisk)
+- 2 fsbl partitions, named fsbl1 and fsbl2, size at least 256KiB
+- one ssbl partition for U-Boot
+
+Then the minimal GPT partition is:
+   ----- ------- --------- --------------
+  | Num | Name  | Size    |  Content     |
+   ----- ------- -------- ---------------
+  |  1  | fsbl1 | 256 KiB |  TF-A or SPL |
+  |  2  | fsbl2 | 256 KiB |  TF-A or SPL |
+  |  3  | ssbl  | enought |  U-Boot      |
+  |  *  |  -    |  -      |  Boot/Rootfs |
+   ----- ------- --------- --------------
+
+(*) add bootable partition for extlinux.conf
+    following Generic Distribution
+    (doc/README.distro for use)
+
+  according the used card reader select the block device
+  (/dev/sdx or /dev/mmcblk0)
+  in the next example I use /dev/mmcblk0
+
+for example: with gpt table with 128 entries
+
+  a) remove previous formatting
+	# sgdisk -o /dev/<SDCard dev>
+
+  b) create minimal image
+	# sgdisk --resize-table=128 -a 1 \
+		-n 1:34:545		-c 1:fsbl1 \
+		-n 2:546:1057		-c 2:fsbl2 \
+		-n 3:1058:5153		-c 3:ssbl \
+		-p /dev/<SDCard dev>
+
+	you can add other partitions for kernel
+	one partition rootfs for example:
+		-n 4:5154:		-c 4:rootfs \
+
+  c) copy the FSBL (2 times) and SSBL file on the correct partition.
+     in this example in partition 1 to 3
+
+     for basic boot mode : <SDCard dev> = /dev/mmcblk0
+	# dd if=u-boot-spl.stm32 of=/dev/mmcblk0p1
+	# dd if=u-boot-spl.stm32 of=/dev/mmcblk0p2
+	# dd if=u-boot.img of=/dev/mmcblk0p3
+
+     for trusted boot mode :
+	# dd if=tf-a.stm32 of=/dev/mmcblk0p1
+	# dd if=tf-a.stm32 of=/dev/mmcblk0p2
+	# dd if=u-boot.stm32 of=/dev/mmcblk0p3
+
+To boot from SDCard, select BootPinMode = 1 1 1 and reset.
+
+8. Prepare eMMC
+===============
+You can use U-Boot to copy binary in eMMC.
+
+In the next example, you need to boot from SDCARD and the images (u-boot-spl.stm32, u-boot.img)
+are presents on SDCARD (mmc 0) in ext4 partition 4 (bootfs).
+
+To boot from SDCard, select BootPinMode = 1 0 1 and reset.
+
+Then you update the eMMC with the next U-Boot command :
+
+a) prepare GPT on eMMC,
+	example with 2 partitions, bootfs and roots:
+
+	# setenv emmc_part "name=ssbl,size=2MiB;name=bootfs,type=linux,bootable,size=64MiB;name=rootfs,type=linux,size=512"
+	# gpt write mmc 1 ${emmc_part}
+
+b) copy SPL on eMMC on firts boot partition
+	(SPL max size is 256kB, with LBA 512, 0x200)
+
+	# ext4load mmc 0:4 0xC0000000 u-boot-spl.stm32
+	# mmc dev 1
+	# mmc partconf 1 1 1 1
+	# mmc write ${fileaddr} 0 200
+	# mmc partconf 1 1 1 0
+
+c) copy U-Boot in first GPT partition of eMMC
+
+	# ext4load mmc 0:4 0xC0000000 u-boot.img
+	# mmc dev 1
+	# part start mmc 1 1 partstart
+	# part size mmc 1 1 partsize
+	# mmc write ${fileaddr} ${partstart} ${partsize}
+
+To boot from eMMC, select BootPinMode = 0 1 0 and reset.
+
+9. MAC Address
+==============
+
+Please read doc/README.enetaddr for the implementation guidelines for mac id
+usage. Basically, environment has precedence over board specific storage.
+
+Mac id storage and retrieval in stm32mp otp :
+- OTP_57[31:0] = MAC_ADDR[31:0]
+- OTP_58[15:0] = MAC_ADDR[47:32]
+
+To program a MAC address on virgin OTP words above, you can use the fuse command
+on bank 0 to access to internal OTP:
+
+    example to set mac address "12:34:56:78:9a:bc"
+
+    1- Write OTP
+       STM32MP> fuse prog -y 0 57 0x78563412 0x0000bc9a
+
+    2- Read OTP
+       STM32MP> fuse sense 0 57 2
+       Sensing bank 0:
+       Word 0x00000039: 78563412 0000bc9a
+
+    3- next REBOOT :
+       ### Setting environment from OTP MAC address = "12:34:56:78:9a:bc"
+
+    4 check env update
+       STM32MP> print ethaddr
+       ethaddr=12:34:56:78:9a:bc

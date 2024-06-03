@@ -1,0 +1,46 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * SAMSUNG Arndale board device tree source
+ *
+ * Copyright (c) 2013 Samsung Electronics Co., Ltd.
+ *		http://www.samsung.com
+ */
+
+/dts-v1/;
+#include "exynos5250.dtsi"
+
+/ {
+	model = "SAMSUNG Arndale board based on EXYNOS5250";
+	compatible = "samsung,arndale", "samsung,exynos5250";
+
+	aliases {
+		i2c0 = "/i2c@12C60000";
+		i2c1 = "/i2c@12C70000";
+		i2c2 = "/i2c@12C80000";
+		i2c3 = "/i2c@12C90000";
+		i2c4 = "/i2c@12CA0000";
+		i2c5 = "/i2c@12CB0000";
+		i2c6 = "/i2c@12CC0000";
+		i2c7 = "/i2c@12CD0000";
+		serial0 = "/serial@12C20000";
+		console = "/serial@12C20000";
+	};
+
+	mmc@12200000 {
+		samsung,bus-width = <8>;
+		samsung,timing = <1 3 3>;
+	};
+
+	mmc@12210000 {
+		status = "disabled";
+	};
+
+	mmc@12220000 {
+		samsung,bus-width = <4>;
+		samsung,timing = <1 2 3>;
+	};
+
+	mmc@12230000 {
+		status = "disabled";
+	};
+};

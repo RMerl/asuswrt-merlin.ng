@@ -1,0 +1,6 @@
+Intel Bayley Bay
+M:	Bin Meng <bmeng.cn@gmail.com>
+S:	Maintained
+F:	board/intel/bayleybay
+F:	include/configs/bayleybay.h
+F:	configs/bayleybay_defconfig

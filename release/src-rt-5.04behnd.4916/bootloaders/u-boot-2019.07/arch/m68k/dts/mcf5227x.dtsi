@@ -1,0 +1,48 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2018 Angelo Dureghello <angelo@sysam.it>
+ */
+
+/ {
+	compatible = "fsl,mcf5227x";
+
+	aliases {
+		serial0 = &uart0;
+		spi0 = &dspi0;
+	};
+
+	soc {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		uart0: uart@fc060000 {
+			compatible = "fsl,mcf-uart";
+			reg = <0xfc060000 0x40>;
+			status = "disabled";
+		};
+
+		uart1: uart@fc064000 {
+			compatible = "fsl,mcf-uart";
+			reg = <0xfc064000 0x40>;
+			status = "disabled";
+		};
+
+		uart2: uart@fc068000 {
+			compatible = "fsl,mcf-uart";
+			reg = <0xfc068000 0x40>;
+			status = "disabled";
+		};
+
+		dspi0: dspi@fc05c000 {
+			compatible = "fsl,mcf-dspi";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0xfc05c000 0x100>;
+			spi-max-frequency = <50000000>;
+			num-cs = <4>;
+			spi-mode = <0>;
+			status = "disabled";
+		};
+	};
+};

@@ -21,6 +21,8 @@
 #define CH_SYNC_ETH_BHL		-3
 #define CH_SYNC_WIFI_BHL	-4
 
+#define NON_MLO_CONNECTION	"/tmp/non_mlo_connection"
+
 /*
 Ethernet selection rule:
 ETHERNET_PLUGIN: ethernet connected to P-AP and CAP.
@@ -245,6 +247,20 @@ typedef struct uplinkport_capval_s {
     char name[32];
     int val;
 } uplinkport_capval_s;
+
+#ifdef RTCONFIG_AMAS_CHANNEL_PLAN
+/**
+ * @brief Channel Plan
+ *
+ **/
+enum {
+	CHANNEL_PLAN_OFF = 0,
+	CHANNEL_PLAN_ON = 1,
+	CHANNEL_PLAN_MANUAL = 2,
+	CHANNEL_PLAN_CENTRAL = 3,
+	CHANNEL_PLAN_MAX
+};
+#endif
 
 /* Uplink Port capbility End */
 

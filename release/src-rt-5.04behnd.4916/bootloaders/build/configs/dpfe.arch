@@ -1,0 +1,16 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use FindBin qw($Bin);
+use lib "$Bin/../../../hostTools/PerlLib";
+use BRCM::GenConfig;
+
+my $c = new BRCM::GenConfig(shift);
+
+######   Any config changes start here #####
+
+$c->set('CONFIG_BCMBCA_DPFE','y');
+
+#####   End of config changes #####
+$c->write();
+

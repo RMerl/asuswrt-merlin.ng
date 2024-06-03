@@ -18,6 +18,7 @@
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 
 <script><% wanlink(); %>
 
@@ -40,6 +41,9 @@ if(tagged_based_vlan){
 	jsFile.setAttribute("src", "js/subnet_rule.js");
 	document.getElementsByTagName("head")[0].appendChild(jsFile);
 }
+
+var alert_sdn_conflict_str = "* Conflicting with one of your $feature$ profile LAN IP address, you will not be able to access the Internet. Please change to another IP address."; // Untranslated
+alert_sdn_conflict_str = stringSafeGet(alert_sdn_conflict_str.replace("$feature$", Guest_Network_naming));
 
 function initial(){
 	show_menu();
@@ -232,7 +236,17 @@ function validForm(){
 			}						
 		}	
 	}	
-	
+
+	if(isSupport("mtlancfg")){
+		var subnet_rl = decodeURIComponent(httpApi.nvramCharToAscii(["subnet_rl"]).subnet_rl);
+		if(subnet_rl.indexOf(">" + document.form.lan_ipaddr.value + ">") >= 0){
+			document.form.lan_ipaddr.focus();
+			document.form.lan_ipaddr.select();
+			alert(alert_sdn_conflict_str);
+			return false;
+		}
+	}
+
 	var ip_obj = document.form.lan_ipaddr;
 	var ip_num = inet_network(ip_obj.value);
 	var ip_class = "";

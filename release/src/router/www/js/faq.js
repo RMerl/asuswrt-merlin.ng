@@ -93,7 +93,7 @@ var faq_data = {
 		"link": "Advanced_WTFast_Content.asp",
 		"menu": "<#Game_acceleration#>",
 		"mode": ["RT"],
-		"support": (() => isSupport("gameMode"))(),
+		"support": (() => isSupport("wtfast"))(),
 	},
 	"gearAccelerator": {
 		"index": "gearAccelerator",

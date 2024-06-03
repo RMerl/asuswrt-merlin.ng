@@ -1,0 +1,78 @@
+if ROCKCHIP_RK3399
+
+choice
+	prompt "RK3399 board select"
+
+config TARGET_EVB_RK3399
+	bool "RK3399 evaluation board"
+	help
+	  RK3399evb is a evaluation board for Rockchp rk3399,
+	  with full function and phisical connectors support like type-C ports,
+	  usb2.0 host ports, LVDS, JTAG, MAC, SDcard, HDMI, USB-2-serial...
+
+config TARGET_PUMA_RK3399
+	bool "Theobroma Systems RK3399-Q7 (Puma)"
+	help
+	  The RK3399-Q7 (Puma) is a system-on-module (designed and
+	  marketed by Theobroma Systems) featuring the Rockchip RK3399
+	  in a Qseven-compatible form-factor (running of a single 5V
+	  supply and exposing its external interfaces on a MXM-230
+	  connector).
+
+	  Key features of the RK3399-Q7 include:
+	   * on-module USB 3.0 hub (2x USB 3.0 host + 1x USB 2.0 host)
+	   * USB 3.0 dual-role
+	   * on-module Micrel KSZ9031 GbE PHY
+	   * on-module eMMC (up to 256GB configurations available)
+	   * on-module DDR3 (1GB, 2GB and 4GB configurations available)
+	   * HDMI, eDP, MIPI-DSI, MIPI-DSI/CSI and MIPI-CSI
+	   * SPI, I2C, I2S, UART, GPIO, ...
+
+config TARGET_ROCK960_RK3399
+	bool "Vamrs Limited Rock960 board family"
+	help
+	  Support for Rock960 board family by Vamrs Limited. This board
+	  family consists of Rock960 (Consumer Edition) and Ficus
+	  (Enterprise Edition) 96Boards.
+
+	  Common features implemented on both boards:
+	   * Rockchip RK3399 SoC (2xCortex A72, 4xCortex A53, ARM Mali T860MP4)
+	   * 16/32GB eMMC, uSD slot
+	   * HDMI/DP/MIPI
+	   * 20-pin low speed and 40-pin high speed expanders, 6 LED, 3 buttons
+
+	  Additional features of Rock960:
+	   * 2GiB/4GiB LPDDR3 RAM
+	   * 1x USB 3.0 type A, 1x USB 2.0 type A (host mode only),
+	     1x USB 3.0 type C OTG
+
+	  Additional features of Ficus:
+	   * 2GiB/4GiB DDR3 RAM
+	   * Ethernet
+	   * Dual SATA
+	   * 2x USB 3.0 type A, 2x USB 2.0 type A (host mode only),
+	     1x USB 3.0 type C OTG
+
+config TARGET_CHROMEBOOK_BOB
+	bool "Asus Flip C101PA Chromebook (RK3399)"
+	help
+	  Bob is a small RK3299-based device similar in apperance to Minnie.
+	  It has two USB 3.0 type-C ports, 4GB of SDRAM, WiFi and a 10.1",
+	  1280x800 display. It uses its USB ports for both power and external
+	  display. It includes a Chrome OS EC (Cortex-M3) to provide access to
+	  the keyboard and battery functions.
+
+endchoice
+
+config SYS_SOC
+	default "rk3399"
+
+config SYS_MALLOC_F_LEN
+	default 0x0800
+
+source "board/rockchip/evb_rk3399/Kconfig"
+source "board/theobroma-systems/puma_rk3399/Kconfig"
+source "board/vamrs/rock960_rk3399/Kconfig"
+source "board/google/gru/Kconfig"
+
+endif

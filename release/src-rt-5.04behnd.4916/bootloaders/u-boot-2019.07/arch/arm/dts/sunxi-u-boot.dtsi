@@ -1,0 +1,18 @@
+#include <config.h>
+
+/ {
+	aliases {
+		mmc1 = &mmc2;
+	};
+
+	binman {
+		filename = "u-boot-sunxi-with-spl.bin";
+		pad-byte = <0xff>;
+		blob {
+			filename = "spl/sunxi-spl.bin";
+		};
+		u-boot-img {
+			offset = <CONFIG_SPL_PAD_TO>;
+		};
+	};
+};

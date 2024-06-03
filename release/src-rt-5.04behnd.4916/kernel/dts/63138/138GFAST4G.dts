@@ -1,0 +1,7 @@
+#include "963138GFP40X.dts"
+
+&memc {
+	memcfg = <(BP_DDR_SPEED_800_11_11_11   | \
+		BP_DDR_TOTAL_SIZE_512MB  | \
+		BP_DDR_DEVICE_WIDTH_16)>;
+};

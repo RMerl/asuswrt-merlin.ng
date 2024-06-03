@@ -38,7 +38,8 @@ LIBS =
 # Uncomment the next line to include support for Microsoft's
 # MS-CHAP authentication protocol.  Also, edit plugins/radius/Makefile.linux.
 CHAPMS=y
-ifneq ($(HND_ROUTER_AX_6756),y)
+ifeq ($(or $(HND_ROUTER_AX_6756),$(HND_ROUTER_BE_4916)),y)
+else
 USE_CRYPT=y
 endif
 # Don't use MSLANMAN unless you really know what you're doing.

@@ -1,0 +1,16 @@
+
+To generate a new key pair, run each of the followign commands 
+and provide the same passphrase when prompted
+
+openssl genrsa -des3 -out mykey.pem 2048
+openssl rsa -in mykey.pem -outform PEM -pubout -out pkg_public.pem
+openssl rsa -in mykey.pem -out pkg_private.pem -outform PEM 
+rm mykey.pem
+
+A quick experiment
+
+cp README t1
+openssl dgst -sha256 -sign pkg_private.pem -out sign.txt t1 
+ls -l sign.txt 
+openssl dgst -sha256 -verify pkg_public.pem -signature sign.txt t1
+

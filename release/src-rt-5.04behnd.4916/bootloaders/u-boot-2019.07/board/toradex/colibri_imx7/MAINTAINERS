@@ -1,0 +1,12 @@
+Colibri iMX7
+M:	Stefan Agner <stefan.agner@toradex.com>
+W:	http://developer.toradex.com/software/linux/linux-software
+W:	https://www.toradex.com/community
+S:	Maintained
+F:	board/toradex/colibri_imx7/
+F:	include/configs/colibri_imx7.h
+F:	configs/colibri_imx7_defconfig
+F:	configs/colibri_imx7_emmc_defconfig
+F:	arch/arm/dts/imx7-colibri.dtsi
+F:	arch/arm/dts/imx7-colibri-emmc.dts
+F:	arch/arm/dts/imx7-colibri-rawnand.dts

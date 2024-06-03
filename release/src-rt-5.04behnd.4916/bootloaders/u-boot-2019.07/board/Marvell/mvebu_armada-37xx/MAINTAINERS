@@ -1,0 +1,16 @@
+MVEBU_DB_88F3720 BOARD
+M:	Stefan Roese <sr@denx.de>
+S:	Maintained
+F:	board/Marvell/mvebu_armada-37xx/
+F:	include/configs/mvebu_armada-37xx.h
+F:	configs/mvebu_db-88f3720_defconfig
+
+ESPRESSOBin BOARD
+M:	Konstantin Porotchkin <kostap@marvell.com>
+S:	Maintained
+F:	configs/mvebu_espressobin-88f3720_defconfig
+
+uDPU BOARD
+M:	Vladimir Vid <vladimir.vid@sartura.hr>
+S:	Maintained
+F:	configs/uDPU_defconfig

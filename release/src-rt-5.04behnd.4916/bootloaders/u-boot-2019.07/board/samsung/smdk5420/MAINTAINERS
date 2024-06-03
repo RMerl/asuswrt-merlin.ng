@@ -1,0 +1,18 @@
+SMDK5420 BOARD
+M:	Akshay Saraswat <akshay.s@samsung.com>
+S:	Maintained
+F:	board/samsung/smdk5420/
+F:	include/configs/peach-pit.h
+F:	configs/peach-pit_defconfig
+F:	include/configs/smdk5420.h
+F:	configs/smdk5420_defconfig
+F:	include/configs/peach-pi.h
+F:	configs/peach-pi_defconfig
+
+ODROID-XU3 BOARD
+M:	Jaehoon Chung <jh80.chung@samsung.com>
+M:	Lukasz Majewski <lukma@denx.de>
+S:	Maintained
+F:	board/samsung/smdk5420/
+F:	include/configs/odroid_xu3.h
+F:	configs/odroid-xu3_defconfig

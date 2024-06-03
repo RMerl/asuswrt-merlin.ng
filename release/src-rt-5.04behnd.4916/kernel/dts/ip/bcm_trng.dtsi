@@ -1,0 +1,3 @@
+u-boot,dm-pre-reloc;
+compatible = "brcm,bcmbca-trng";
+reg = <TRNG_OFFSET TRNG_SIZE>;

@@ -1,0 +1,169 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2018 Microsemi Corporation
+ */
+
+#include <dt-bindings/gpio/gpio.h>
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+	compatible = "mscc,luton";
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu@0 {
+			compatible = "mips,mips24KEc";
+			device_type = "cpu";
+			reg = <0>;
+		};
+	};
+
+	aliases {
+		serial0 = &uart0;
+	};
+
+	sys_clk: sys-clk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <250000000>;
+	};
+	ahb_clk: ahb-clk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <208333333>;
+	};
+
+	ahb {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges = <0 0x60000000 0x10200000>;
+
+		uart0: serial@10100000 {
+			pinctrl-0 = <&uart_pins>;
+			pinctrl-names = "default";
+
+			compatible = "ns16550a";
+			reg = <0x10100000 0x20>;
+			clocks = <&ahb_clk>;
+			reg-io-width = <4>;
+			reg-shift = <2>;
+
+			status = "disabled";
+		};
+
+		gpio: pinctrl@70068 {
+			compatible = "mscc,luton-pinctrl";
+			reg = <0x70068 0x68>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			gpio-ranges = <&gpio 0 0 32>;
+
+			sgpio_pins: sgpio-pins {
+				pins = "GPIO_0", "GPIO_1", "GPIO_2", "GPIO_3";
+				function = "sio";
+			};
+			uart_pins: uart-pins {
+				pins = "GPIO_30", "GPIO_31";
+				function = "uart";
+			};
+		};
+
+		sgpio: gpio@70130 {
+			compatible = "mscc,luton-sgpio";
+			status = "disabled";
+			clocks = <&sys_clk>;
+			pinctrl-0 = <&sgpio_pins>;
+			pinctrl-names = "default";
+			reg = <0x0070130 0x100>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			gpio-ranges = <&sgpio 0 0 64>;
+		};
+
+		spi0: spi-bitbang {
+			compatible = "mscc,luton-bb-spi";
+			status = "okay";
+			reg = <0x10000064 0x4>;
+			num-chipselects = <1>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
+
+		switch: switch@1010000 {
+			compatible = "mscc,vsc7527-switch";
+			reg = <0x1e0000 0x0100>, // VTSS_TO_DEV_0
+			      <0x1f0000 0x0100>, // VTSS_TO_DEV_1
+			      <0x200000 0x0100>, // VTSS_TO_DEV_2
+			      <0x210000 0x0100>, // VTSS_TO_DEV_3
+			      <0x220000 0x0100>, // VTSS_TO_DEV_4
+			      <0x230000 0x0100>, // VTSS_TO_DEV_5
+			      <0x240000 0x0100>, // VTSS_TO_DEV_6
+			      <0x250000 0x0100>, // VTSS_TO_DEV_7
+			      <0x260000 0x0100>, // VTSS_TO_DEV_8
+			      <0x270000 0x0100>, // VTSS_TO_DEV_9
+			      <0x280000 0x0100>, // VTSS_TO_DEV_10
+			      <0x290000 0x0100>, // VTSS_TO_DEV_11
+			      <0x2a0000 0x0100>, // VTSS_TO_DEV_12
+			      <0x2b0000 0x0100>, // VTSS_TO_DEV_13
+			      <0x2c0000 0x0100>, // VTSS_TO_DEV_14
+			      <0x2d0000 0x0100>, // VTSS_TO_DEV_15
+			      <0x2e0000 0x0100>, // VTSS_TO_DEV_16
+			      <0x2f0000 0x0100>, // VTSS_TO_DEV_17
+			      <0x300000 0x0100>, // VTSS_TO_DEV_18
+			      <0x310000 0x0100>, // VTSS_TO_DEV_19
+			      <0x320000 0x0100>, // VTSS_TO_DEV_20
+			      <0x330000 0x0100>, // VTSS_TO_DEV_21
+			      <0x340000 0x0100>, // VTSS_TO_DEV_22
+			      <0x350000 0x0100>, // VTSS_TO_DEV_23
+			      <0x010000 0x1000>, // VTSS_TO_SYS
+			      <0x020000 0x1000>, // VTSS_TO_ANA
+			      <0x030000 0x1000>, // VTSS_TO_REW
+			      <0x070000 0x1000>, // VTSS_TO_DEVCPU_GCB
+			      <0x080000 0x0100>, // VTSS_TO_DEVCPU_QS
+			      <0x0a0000 0x10000>; // VTSS_TO_HSIO
+			reg-names = "port0", "port1", "port2", "port3",
+				    "port4", "port5", "port6", "port7",
+				    "port8", "port9", "port10", "port11",
+				    "port12", "port13", "port14", "port15",
+				    "port16", "port17", "port18", "port19",
+				    "port20", "port21", "port22", "port23",
+				    "sys", "ana", "rew", "gcb", "qs", "hsio";
+			status = "okay";
+
+			ethernet-ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+			};
+		};
+
+		mdio0: mdio@700a0 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "mscc,luton-miim";
+			reg = <0x700a0 0x24>;
+			status = "disabled";
+		};
+
+		mdio1: mdio@700c4 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "mscc,luton-miim";
+			reg = <0x700c4 0x24>;
+			status = "disabled";
+		};
+
+		hsio: syscon@10d0000 {
+			compatible = "mscc,luton-hsio", "syscon", "simple-mfd";
+			reg = <0xa0000 0x10000>;
+
+			serdes_hsio: serdes_hsio {
+				compatible = "mscc,vsc7527-serdes";
+				#phy-cells = <3>;
+			};
+		};
+	};
+};

@@ -1,0 +1,31 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# (C) Copyright 2021 Broadcom Ltd
+#
+
+if BCM68880
+
+config TARGET_BCM968880
+	bool "Broadcom 68880 Reference Board"
+	depends on ARCH_BCMBCA
+
+config SYS_SOC
+	default "bcm68880"
+
+if BCMBCA_DDRC
+config BCMBCA_LPDDR4_DEF_MCBSEL
+    hex "default LPDDR4 mcb selector value"
+    default 0x1001324
+
+config BCMBCA_LPDDR5_DEF_MCBSEL
+    hex "default LPDDR5 mcb selector value"
+    default 0x1005329
+
+config BCMBCA_DDR_DEFAULT
+    hex "default ddr mcb selector"
+    default BCMBCA_LPDDR4_DEF_MCBSEL
+endif
+
+source "board/broadcom/bcmbca/Kconfig"
+
+endif

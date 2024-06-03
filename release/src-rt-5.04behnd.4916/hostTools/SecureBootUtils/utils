@@ -1,0 +1,55 @@
+#!/usr/bin/env perl
+use strict;
+#use warnings;
+use bytes;
+use Encode;
+use Getopt::Long;
+use FindBin qw($Bin);
+use lib qw($Bin $Bin/../PerlLib);
+use BRCM::SBI_UTIL;
+my %optn = (); 
+
+my $usage = qq( 
+  Writes <in> file content to <update> file content at offset 
+  Repeat 'optn'  to form input for keystore 
+  $0  -optn 'abort_time=<val>' -optn 'mid=<val>..'
+ The following arguments are supported 
+  in=<val> an update
+  update=<file name> file to update
+  offset=<offset> offset at which update is applied. If suffix is K denotes specifies kilobytes 
+);
+if (!GetOptions("optn=s",\%optn)) {
+    print $usage;
+    die ("Option is not implemented");
+}
+ 
+my $uts = BRCM::SBI_UTIL->new();
+if (exists $optn{update} and exists $optn{in}) {
+   if (!(exists $optn{offs})) {
+        $optn{offs} = 0;
+   }
+   my $dat = $uts->f2var($optn{update});
+   my $upd = $uts->f2var($optn{in});
+   if ($optn{offs} =~ m/.*K$/g) {
+       #print "Stripping $optn{offs} \n";
+       $optn{offs} =~ s/K$//g;
+       #print "Stripping $optn{offs} \n";
+       $optn{offs} = int($optn{offs})*1024;	
+   } else {
+       #print "Not Stripping $optn{offs} \n";
+       $optn{offs} = int($optn{offs});	
+   }
+   #printf("updating %s with %s at %d\n",$optn{update},$optn{in},$optn{offs});
+   if ($optn{offs} >= length $dat) {
+       $uts->fdump($optn{update}, $dat . $upd );
+   } else {
+       my $tail = substr($dat, $optn{offs}+(length $upd));
+       my $head = substr($dat, 0, $optn{offs});
+       $uts->fdump($optn{update}, $head .$upd . $tail);
+   }
+} else {
+   print $usage;
+   die ("ERROR: Unsupported option");
+}
+
+1;

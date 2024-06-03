@@ -1,0 +1,96 @@
+#include "6858.dtsi"
+
+/ {
+	/* arch */
+	#define PMU_CORE0_SPI	9
+	#define PMU_CORE1_SPI	10
+	#define PMU_CORE2_SPI	11
+	#define PMU_CORE3_SPI	12
+	#include "../../ip/bcm_b53_quad.dtsi"
+
+	/* usb */
+	usb_ctrl: usb_ctrl {
+		#define USB_CTRL_ADDR       0x0 0x8000c200
+		#define USB_CTRL_SIZE       0x0 0x100
+		#include "../../ip/bcm_usb_ctrl.dtsi"
+	};
+
+	usb0_xhci: usb0_xhci {
+		#define USB_ADDR            0x0 0x8000d000
+		#define USB_SIZE            0x0 0x1000
+		#define USB_IRQ             121
+		#include "../../ip/bcm_usb_xhci.dtsi"
+
+		xhci_port: port@1{
+			reg = <1>;
+			#trigger-source-cells = <0>;
+		};
+	};
+
+	usb0_ehci: usb0_ehci {
+		#define USB_ADDR            0x0 0x8000c300
+		#define USB_SIZE            0x0 0x100
+		#define USB_IRQ             125
+		#include "../../ip/bcm_usb_ehci.dtsi"
+
+ 		ehci0_port: port@1{
+			reg = <1>;
+			#trigger-source-cells = <0>;
+		};
+	};
+
+	usb0_ohci: usb0_ohci {
+		#define USB_ADDR            0x0 0x8000c400
+		#define USB_SIZE            0x0 0x100
+		#define USB_IRQ             124
+		#include "../../ip/bcm_usb_ohci.dtsi"
+
+ 		ohci0_port: port@1{
+			reg = <1>;
+			#trigger-source-cells = <0>;
+		};
+	};
+
+	/* pcie common */
+	pcie: pcie {
+		compatible = "brcm,bcm-pcie";
+		device_type = "cpci";
+		reg = <0x0 0xff802644 0x0 0x4>; /* PERIPH_MISC_PCIECtrl */
+		/* port 0,1 share same clock */
+		brcm,pllclkid = <0x200>;
+	};
+
+	/* pcie core 0 */
+	pcie0: pcie@0 {
+		#define PCIE_ID				0
+		#define PCIE_SPI			60
+		#define PCIE_ADDR			0x80040000
+		#define PCIE_SIZE			0x0000A000
+		#define PCIE_RANGE_ADDR		0xC0000000
+		#define PCIE_RANGE_SIZE		0x10000000
+		#include "../../ip/bcm_pcie_core.dtsi" 
+	};
+
+	/* pcie core 1 */
+	pcie1: pcie@1 {
+		#define PCIE_ID				1
+		#define PCIE_SPI			61
+		#define PCIE_ADDR			0x80050000
+		#define PCIE_SIZE			0x0000A000
+		#define PCIE_RANGE_ADDR		0xD0000000
+		#define PCIE_RANGE_SIZE		0x10000000
+		#include "../../ip/bcm_pcie_core.dtsi"
+	};
+
+	/* pcie core 2 */
+	pcie2: pcie@2 {
+		#define PCIE_ID				2
+		#define PCIE_SPI			62
+		#define PCIE_ADDR			0x80060000
+		#define PCIE_SIZE			0x0000A000
+		#define PCIE_RANGE_ADDR		0xE0000000
+		#define PCIE_RANGE_SIZE		0x10000000
+		#include "../../ip/bcm_pcie_core.dtsi"
+		brcm,strap-pcie-sata=<3 1>;
+	};
+};

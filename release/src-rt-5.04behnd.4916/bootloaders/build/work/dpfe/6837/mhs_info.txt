@@ -1,0 +1,3 @@
+#ddr_type      dmem_code_word_size    imem_code_word_size    total_segments    fw_version    last_segment_is_persistent
+DDR4                  2048                   8192                  2             37C0100                 0
+LPDDR4                2048                   8192                  3             3790000                 1

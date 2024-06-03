@@ -1,0 +1,7 @@
+i.MX8MQ EVK BOARD
+M:	Peng Fan <peng.fan@nxp.com>
+M:	Fabio Estevam <festevam@gmail.com>
+S:	Maintained
+F:	board/freescale/imx8mq_evk/
+F:	include/configs/imx8mq_evk.h
+F:	configs/imx8mq_evk_defconfig

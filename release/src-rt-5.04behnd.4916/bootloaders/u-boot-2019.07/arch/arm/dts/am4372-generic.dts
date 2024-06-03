@@ -1,0 +1,23 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Device Tree Source for Generic AM4372 EVM
+ *
+ * Copyright (C) 2018 Texas Instruments Incorporated - http://www.ti.com/
+ */
+
+/dts-v1/;
+
+#include "am4372.dtsi"
+
+/ {
+	compatible = "ti,am4372", "ti,am43";
+	model = "Texas Instruments AM4372 Generic";
+
+	chosen {
+		stdout-path = &uart0;
+	};
+};
+
+&i2c0 {
+	status = "okay";
+};

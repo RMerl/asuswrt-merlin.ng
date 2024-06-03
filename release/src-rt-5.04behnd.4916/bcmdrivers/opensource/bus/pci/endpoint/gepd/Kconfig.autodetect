@@ -1,0 +1,8 @@
+config BCM_PCIE_GEPD
+	tristate "PCIe Generic End Point driver from bcmdriver"
+	default n
+
+config BCM_PCIE_GEPD_IMPL
+	int "PCIe Generic End Point driver implementation selection"
+	depends on BCM_PCIE_GEPD
+	default 1

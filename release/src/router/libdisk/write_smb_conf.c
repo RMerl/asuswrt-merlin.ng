@@ -246,7 +246,7 @@ void get_wgsc_subnet(char *buf, size_t len)
 int main(int argc, char *argv[])
 {
 	FILE *fp;
-	int n=0, spnego = 0;
+	int n = 0;
 	char p_computer_name[16]; // computer_name's len is CKN_STR15.
 	disk_info_t *follow_disk, *disks_info = NULL;
 	partition_info_t *follow_partition;
@@ -273,11 +273,15 @@ int main(int argc, char *argv[])
 	int dup, same_m_pt = 0;
 	char unique_share_name[PATH_MAX];
 	int st_samba_mode = nvram_get_int("st_samba_mode");
-#if defined(RTCONFIG_SAMBA36X)
-	spnego = 1;
-#endif
+#if !defined(RTCONFIG_TUXERA_SMBD)
+	int spnego = 0;
 #ifdef RTCONFIG_WIREGUARD
 	char wgsc_subnet[1024] = {0};
+#endif
+
+#if defined(RTCONFIG_SAMBA36X) || defined(RTCONFIG_SAMBA4)
+	spnego = 1;
+#endif
 #endif
 
 	if (access(SAMBA_CONF, F_OK) == 0)
@@ -295,8 +299,13 @@ int main(int argc, char *argv[])
 		toUpperCase(p_computer_name);
 	}
 	if (*p_computer_name) {
+#if defined(RTCONFIG_TUXERA_SMBD)
+		fprintf(fp, "server_name = %s\n", p_computer_name);
+		fprintf(fp, "server_comment = %s\n", get_productid());
+#else
 		fprintf(fp, "netbios name = %s\n", p_computer_name);
 		fprintf(fp, "server string = %s\n", get_productid());
+#endif
 	}
 
 	strlcpy(p_computer_name, nvram_safe_get("st_samba_workgroup"), sizeof(p_computer_name));
@@ -306,13 +315,21 @@ int main(int argc, char *argv[])
 		toUpperCase(p_computer_name);
 	}
 	if (*p_computer_name)
+#if defined(RTCONFIG_TUXERA_SMBD)
+		fprintf(fp, "domain = %s\n", p_computer_name);
+#else
 		fprintf(fp, "workgroup = %s\n", p_computer_name);
+#endif
 
-#if defined(RTCONFIG_SAMBA36X)
-#if 0
-	fprintf(fp, "max protocol = SMB2\n"); /* enable SMB1 & SMB2 simultaneously, rewrite when GUI is ready!! */
-	fprintf(fp, "passdb backend = smbpasswd\n");
-#endif //0
+#if defined(RTCONFIG_TUXERA_SMBD)
+	fprintf(fp, "userdb_type = text\n");
+	fprintf(fp, "userdb_file = /etc/samba/smbpasswd\n");
+	fprintf(fp, "runstate_dir = /var/lib/tsmb\n");
+	fprintf(fp, "enable_ipc = true\n");
+	fprintf(fp, "dialects = SMB2.002 SMB2.1 SMB3.0 SMB3.02 SMB3.1.1\n");
+#elif defined(RTCONFIG_SAMBA36X) || defined(RTCONFIG_SAMBA4)
+//	fprintf(fp, "max protocol = SMB2\n"); /* enable SMB1 & SMB2 simultaneously, rewrite when GUI is ready!! */
+//	fprintf(fp, "passdb backend = smbpasswd\n");
 //#endif
 //#if defined(RTCONFIG_SAMBA36X) && defined(RTCONFIG_QCA)
 #if defined(RTCONFIG_QCA)
@@ -325,8 +342,43 @@ int main(int argc, char *argv[])
 	fprintf(fp, "username level = 20\n");
 #endif
 
+#if defined(RTCONFIG_TUXERA_SMBD)
+	if(st_samba_mode == 1) // guest mode
+		fprintf(fp, "allow_guest = true\n");
+	else // account mode
+		fprintf(fp, "allow_guest = false\n");
+
+	fprintf(fp, "null_session_access = false\n");
+	fprintf(fp, "require_message_signing = false\n");
+	fprintf(fp, "encrypt_data = false\n");
+	fprintf(fp, "reject_unencrypted_access = true\n");
+	fprintf(fp, "unix_extensions = false\n");
+	fprintf(fp, "enable_oplock = true\n");
+	fprintf(fp, "durable_v1_timeout = 960\n");
+	fprintf(fp, "durable_v2_timeout = 180\n");
+
+	fprintf(fp, "log_destination = file\n");
+	fprintf(fp, "log_level = 3\n");
+	fprintf(fp, "log_params = path=%s\n", SAMBA_LOG);
+
+	if(strcmp(nvram_safe_get("st_max_user"), "") != 0)
+		fprintf(fp, "sessions_max = %s\n", nvram_safe_get("st_max_user"));
+
+	// nvram_invmatch("re_mode", "1")
+	fprintf(fp, "listen = br0,0.0.0.0,IPv4,445,DIRECT_TCP\n");
+	fprintf(fp, "listen = br0,::,IPv6,445,DIRECT_TCP\n");
+	fprintf(fp, "listen = br0,0.0.0.0,IPv4,139,NBSS\n");
+	fprintf(fp, "listen = ANY,0.0.0.0,IPv4,3702,WSD\n");
+	fprintf(fp, "listen = ANY,0.0.0.0,IPv4,5355,LLMNR\n");
+
+	fprintf(fp, "printq_spool_path = /tmp/printq\n");
+
+	fprintf(fp, "[/global]\n");
+#else
 	fprintf(fp, "unix charset = UTF8\n");		// ASUS add
+#if !defined(RTCONFIG_SAMBA4)	// samba4 not support display charset
 	fprintf(fp, "display charset = UTF8\n");	// ASUS add
+#endif
 	fprintf(fp, "load printers = no\n");	//Andy Chiu, 2017/1/20. Add for Samba printcap issue.
 	fprintf(fp, "printing = bsd\n");
 	fprintf(fp, "printcap name = /dev/null\n");
@@ -345,7 +397,7 @@ int main(int argc, char *argv[])
 	// share mode
 	else if(st_samba_mode == 1 || st_samba_mode == 3){
 //#if defined(RTCONFIG_SAMBA3) && defined(RTCONFIG_SAMBA36X)
-#if defined(RTCONFIG_SAMBA36X)
+#if defined(RTCONFIG_SAMBA36X) || defined(RTCONFIG_SAMBA4)
 		fprintf(fp, "auth methods = guest\n");
 		fprintf(fp, "guest account = %s\n", nvram_get("http_username")? : "admin");
 		fprintf(fp, "map to guest = Bad Password\n");
@@ -387,6 +439,12 @@ int main(int argc, char *argv[])
 #ifdef RTCONFIG_BCM_7114
 		fprintf(fp, "socket options = IPTOS_LOWDELAY TCP_NODELAY SO_RCVBUF=131072 SO_SNDBUF=131072\n");
 #endif
+#elif defined(RTCONFIG_RALINK)
+#if defined(RTCONFIG_SAMBA4)
+		fprintf(fp, "socket options = TCP_NODELAY SO_KEEPALIVE SO_RCVBUF=960000 SO_SNDBUF=960000\n");
+#else
+		fprintf(fp, "socket options = TCP_NODELAY SO_KEEPALIVE SO_RCVBUF=65536 SO_SNDBUF=65536\n");
+#endif
 #else
 		fprintf(fp, "socket options = TCP_NODELAY SO_KEEPALIVE SO_RCVBUF=65536 SO_SNDBUF=65536\n");
 #endif
@@ -403,7 +461,7 @@ int main(int argc, char *argv[])
 	fprintf(fp, "bind interfaces only = yes\n");	// ASUS add
 	fprintf(fp, "interfaces = lo br0 %s/%s %s\n", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"), (is_routing_enabled() && nvram_get_int("smbd_wanac")) ? nvram_safe_get("wan0_ifname") : "");
 #if 0
-#if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD) || defined(RTCONFIG_OPENVPN) || defined(RTCONFIG_IPSEC)
+//#if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD) || defined(RTCONFIG_OPENVPN) || defined(RTCONFIG_IPSEC)
 	int ip[5];
 	char pptpd_subnet[16];
 	char openvpn_subnet[32];
@@ -454,17 +512,15 @@ int main(int argc, char *argv[])
 
 		fprintf(fp, "hosts deny = 0.0.0.0/0\n");
 	}
-#endif
 #endif //#if 0
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,36)
 	fprintf(fp, "use sendfile = no\n");
 #else
 	fprintf(fp, "use sendfile = yes\n");
 #endif
-
 #ifdef RTCONFIG_RECVFILE
 	if(!nvram_get_int("stop_samba_recv")
-#if defined(RTCONFIG_SAMBA36X)
+#if defined(RTCONFIG_SAMBA36X) || defined(RTCONFIG_SAMBA4)
 			&& 0
 #endif
 			)
@@ -475,7 +531,7 @@ int main(int argc, char *argv[])
 	fprintf(fp, "map hidden = no\n");
 	fprintf(fp, "map read only = no\n");
 	fprintf(fp, "map system = no\n");
-#ifdef RTCONFIG_SAMBA36X
+#if defined(RTCONFIG_SAMBA36X) || defined(RTCONFIG_SAMBA4)
 	fprintf(fp, "store dos attributes = no\n");
 #else
 	fprintf(fp, "store dos attributes = yes\n");
@@ -488,7 +544,7 @@ int main(int argc, char *argv[])
 #if 0	// Conflicts with openvpn clients
 	if(nvram_invmatch("re_mode", "1"))
 	{
-#if !defined(RTCONFIG_SAMBA36X)
+#if !defined(RTCONFIG_SAMBA36X) && !defined(RTCONFIG_SAMBA4)
 		fprintf(fp, "[ipc$]\n");
 #if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD) || defined(RTCONFIG_OPENVPN) || defined(RTCONFIG_IPSEC)
 		fprintf(fp, "hosts allow = 127.0.0.1 %s/%s %s %s %s\n", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"), pptpd_subnet, openvpn_subnet, ipsec_subnet);
@@ -499,6 +555,7 @@ int main(int argc, char *argv[])
 #endif
 	}
 #endif	// if 0
+#endif // RTCONFIG_TUXERA_SMBD
 
 	if (nvram_get_int("smbd_wins"))
 		fprintf(fp, "wins support = yes\n");
@@ -530,18 +587,42 @@ int main(int argc, char *argv[])
 	fprintf(fp, "smb passwd file = /etc/samba/smbpasswd\n");
 #endif
 
-	disks_info = read_disk_data();
-	if(disks_info == NULL){
-		usb_dbg("Couldn't get disk list when writing smb.conf!\n");
-		goto confpage;
-	}
-
 	/* share */
 	if(st_samba_mode == 0){
 		;
 	}
 	else if(st_samba_mode == 1 && nvram_match("st_samba_force_mode", "1")){
 		usb_dbg("samba mode: share\n");
+
+#if defined(RTCONFIG_TUXERA_SMBD)
+		char word[PATH_MAX], *next;
+		char nvram_name[32];
+		int port_num = 0;
+
+		foreach(word, nvram_safe_get("ohci_ports"), next){
+			snprintf(nvram_name, sizeof(nvram_name), "usb_path%d", (port_num+1));
+
+			if(!strcmp(nvram_safe_get(nvram_name), "printer")){
+				fprintf(fp, "[share]\n");
+				fprintf(fp, "type = printer\n");
+				fprintf(fp, "netname = %s_Printer\n", nvram_safe_get("productid"));
+				fprintf(fp, "remark = %s_Printer\n", nvram_safe_get("productid"));
+				fprintf(fp, "path = /dev/lp0\n");
+				fprintf(fp, "permissions = guest:full,everyone:full\n");
+				fprintf(fp, "[/share]\n");
+
+				break;
+			}
+
+			++port_num;
+		}
+#endif
+
+		disks_info = read_disk_data();
+		if(disks_info == NULL){
+			usb_dbg("Couldn't get disk list when writing smb.conf!\n");
+			goto confpage;
+		}
 
 		for(follow_disk = disks_info; follow_disk != NULL; follow_disk = follow_disk->next){
 			for(follow_partition = follow_disk->partitions; follow_partition != NULL; follow_partition = follow_partition->next){
@@ -556,6 +637,14 @@ int main(int argc, char *argv[])
 				} while(dup);
 				mount_folder = strrchr(unique_share_name, '/')+1;
 
+#if defined(RTCONFIG_TUXERA_SMBD)
+				fprintf(fp, "[share]\n");
+				fprintf(fp, "netname = %s\n", mount_folder);
+				fprintf(fp, "remark = %s's %s\n", follow_disk->tag, mount_folder);
+				fprintf(fp, "path = %s\n", follow_partition->mount_point);
+				fprintf(fp, "permissions = guest:full,everyone:full\n");
+				fprintf(fp, "[/share]\n");
+#else
 				fprintf(fp, "[%s]\n", mount_folder);
 				fprintf(fp, "comment = %s's %s\n", follow_disk->tag, mount_folder);
 #ifdef RTCONFIG_USB_CDROM
@@ -566,6 +655,7 @@ int main(int argc, char *argv[])
 				fprintf(fp, "writeable = %s\n", strcmp(follow_partition->permission, "rw") == 0 ? "yes" : "no");
 				fprintf(fp, "dos filetimes = yes\n");
 				fprintf(fp, "fake directory create times = yes\n");
+#endif // RTCONFIG_TUXERA_SMBD
 			}
 		}
 	}
@@ -791,6 +881,12 @@ int main(int argc, char *argv[])
 		}
 #endif
 
+		disks_info = read_disk_data();
+		if(disks_info == NULL){
+			usb_dbg("Couldn't get disk list when writing smb.conf!\n");
+			goto confpage;
+		}
+
 		for(follow_disk = disks_info; follow_disk != NULL; follow_disk = follow_disk->next){
 			for(follow_partition = follow_disk->partitions; follow_partition != NULL; follow_partition = follow_partition->next){
 				if(follow_partition->mount_point == NULL)
@@ -871,7 +967,7 @@ int main(int argc, char *argv[])
 
 					continue;
 				}
-#endif
+#endif // RTCONFIG_USB_CDROM
 
 				mount_folder = strrchr(follow_partition->mount_point, '/')+1;
 
@@ -884,6 +980,40 @@ int main(int argc, char *argv[])
 				// 2. start to get every share
 				for(n = 0; n < sh_num; ++n){
 					int count = get_list_strings_count(folder_list, sh_num, folder_list[n]);
+
+#if defined(RTCONFIG_TUXERA_SMBD)
+					fprintf(fp, "[share]\n");
+					if(count <= 1)
+						fprintf(fp, "netname = %s\n", folder_list[n]);
+					else
+						fprintf(fp, "netname = %s (at %s)\n", folder_list[n], mount_folder);
+					fprintf(fp, "remark = %s's %s in %s\n", mount_folder, folder_list[n], follow_disk->tag);
+					fprintf(fp, "path = %s/%s\n", follow_partition->mount_point, folder_list[n]);
+
+					char access_str[8];
+
+					fprintf(fp, "permissions = ");
+					first = 1;
+					for(i = 0; i < acc_num; ++i){
+						samba_right = get_permission(account_list[i], follow_partition->mount_point, folder_list[n], "cifs", 0);
+						if(samba_right >= 2)
+							strlcpy(access_str, "full", sizeof(access_str));
+						else if(samba_right == 1)
+							strlcpy(access_str, "read", sizeof(access_str));
+						else
+							continue;
+
+						if(first == 1)
+							first = 0;
+						else
+							fprintf(fp, ",");
+
+						fprintf(fp, "%s:%s", account_list[i], access_str);
+					}
+					fprintf(fp, "\n");
+
+					fprintf(fp, "[/share]\n");
+#else // RTCONFIG_TUXERA_SMBD
 					if ((!strcmp(nvram_safe_get("smbd_simpler_naming"), "1")) && (count <= 1))
 						fprintf(fp, "[%s]\n", folder_list[n]);
 					else
@@ -1101,6 +1231,7 @@ int main(int argc, char *argv[])
 					}
 #endif
 					fprintf(fp, "\n");
+#endif // RTCONFIG_TUXERA_SMBD
 				}
 
 				free_2_dimension_list(&sh_num, &folder_list);

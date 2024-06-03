@@ -1,0 +1,14 @@
+menu "Nios II architecture"
+	depends on NIOS2
+
+config SYS_ARCH
+	default "nios2"
+
+config SYS_CONFIG_NAME
+	string "Board header file"
+	help
+	  This option should contain the base name of board header file.
+	  The header file include/configs/<CONFIG_SYS_CONFIG_NAME>.h
+	  should be included from include/config.h.
+
+endmenu

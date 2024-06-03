@@ -1,0 +1,37 @@
+menu "Mailbox Controller Support"
+
+config DM_MAILBOX
+	bool "Enable mailbox controllers using Driver Model"
+	depends on DM && OF_CONTROL
+	help
+	  Enable support for the mailbox driver class. Mailboxes provide the
+	  ability to transfer small messages and/or notifications from one
+	  CPU to another CPU, or sometimes to dedicated HW modules. They form
+	  the basis of a variety of inter-process/inter-CPU communication
+	  protocols.
+
+config SANDBOX_MBOX
+	bool "Enable the sandbox mailbox test driver"
+	depends on DM_MAILBOX && SANDBOX
+	help
+	  Enable support for a test mailbox implementation, which simply echos
+	  back a modified version of any message that is sent.
+
+config TEGRA_HSP
+	bool "Enable Tegra HSP controller support"
+	depends on DM_MAILBOX && TEGRA
+	help
+	  This enables support for the NVIDIA Tegra HSP Hw module, which
+	  implements doorbells, mailboxes, semaphores, and shared interrupts.
+
+config K3_SEC_PROXY
+	bool "Texas Instruments K3 Secure Proxy Driver"
+	depends on DM_MAILBOX && ARCH_K3
+	help
+	  An implementation of Secure proxy slave driver for K3 SoCs from
+	  Texas Instruments. Secure proxy is a communication entity mainly
+	  used for communication between multiple processors with the SoC.
+	  Select this driver if your platform has support for this hardware
+	  block.
+
+endmenu

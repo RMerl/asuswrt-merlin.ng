@@ -1,0 +1,75 @@
+#include "inc/968880XSV.dtsi"
+
+/ {
+    model = "968880XSV_PVT1";
+};
+
+&mdio_bus {
+    serdes00 {
+        pinctrl-names = "default";
+        pinctrl-0 = <&a_slan_sd_rx_los_pin_3 &a_slan_sd_mod_abs_pin_4>;
+        10000-Base-R;
+        5000-Base-R;
+        2500-Base-X;
+        1000-Base-X;
+        status = "okay";
+    };
+    serdes10 {
+        pinctrl-names = "default";
+        pinctrl-0 = <&a_qlan_sd0_rx_los_pin_49 &a_qlan_sd0_mod_abs_pin_50>;
+        10000-Base-R;
+        5000-Base-R;
+        2500-Base-X;
+        1000-Base-X;
+        status = "okay";
+    };
+    serdes11 {
+        pinctrl-names = "default";
+        pinctrl-0 = <&a_qlan_sd1_rx_los_pin_51 &a_qlan_sd1_mod_abs_pin_52>;
+        10000-Base-R;
+        5000-Base-R;
+        2500-Base-X;
+        1000-Base-X;
+        status = "okay";
+    };
+    serdes12 {
+        pinctrl-names = "default";
+        pinctrl-0 = <&a_qlan_sd2_rx_los_pin_55 &a_qlan_sd2_mod_abs_pin_56>;
+        10000-Base-R;
+        5000-Base-R;
+        2500-Base-X;
+        1000-Base-X;
+        status = "okay";
+    };
+    wan_ae {
+        trx = <&xfp_sfp>;
+        status = "okay";
+    };
+};
+
+&switch0 {
+    ports {
+        port_slan0 {
+            status = "okay";
+        };
+        port_qlan0 {
+            status = "okay";
+        };
+        port_qlan1 {
+            status = "okay";
+        };
+        port_qlan2 {
+            status = "okay";
+        };
+        port_wan@fiber {
+            status = "okay";
+        };
+        port_wan@ae {
+            status = "okay";
+        };
+    };
+};
+
+&phy_wan_serdes {
+    status = "okay";
+};

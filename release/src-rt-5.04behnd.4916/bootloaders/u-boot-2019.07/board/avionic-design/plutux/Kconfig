@@ -1,0 +1,12 @@
+if TARGET_PLUTUX
+
+config SYS_BOARD
+	default "plutux"
+
+config SYS_VENDOR
+	default "avionic-design"
+
+config SYS_CONFIG_NAME
+	default "plutux"
+
+endif

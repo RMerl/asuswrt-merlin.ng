@@ -1,0 +1,42 @@
+/dts-v1/;
+
+/ {
+	description = "U-Boot mainline";
+	#address-cells = <1>;
+
+	images {
+		kernel {
+			description = "U-Boot mainline";
+			type = "kernel_noload";
+			arch = "arm";
+			os = "linux";
+			data = /incbin/("../../b/chromebook_jerry/u-boot.bin");
+			compression = "none";
+			load = <0>;
+			entry = <0>;
+			hash-2 {
+				algo = "sha1";
+			};
+		};
+
+		fdt-1{
+			description = "rk3288-veryron-jerry.dtb";
+			data = /incbin/("../../b/chromebook_jerry/u-boot.dtb");
+			type = "flat_dt";
+			arch = "arm";
+			compression = "none";
+			hash-1{
+				algo = "sha1";
+			};
+		};
+	};
+
+	configurations {
+		default = "config-1";
+		config-1 {
+			description = "Boot U-Boot";
+			kernel = "kernel";
+			fdt = "fdt-1";
+		};
+	};
+};

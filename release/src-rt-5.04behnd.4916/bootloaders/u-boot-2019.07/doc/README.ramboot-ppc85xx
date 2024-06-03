@@ -1,0 +1,102 @@
+			RAMBOOT for MPC85xx Platforms
+			==============================
+
+RAMBOOT literally means boot from DDR. But since DDR is volatile memory some
+pre-mechanism is required to load the DDR with the bootloader binary.
+- In case of SD and SPI boot this is done by BootROM code inside the chip
+  itself.
+- In case of NAND boot FCM supports loading initial 4K code from NAND flash
+  which can initialize the DDR and get the complete bootloader copied to DDR.
+
+In addition to the above there could be some more methods to initialize the DDR
+and load it manually.
+Two of them are described below.There is also an explanation as to where these
+methods could be handy.
+1. Load the RAM based bootloader onto DDR via JTAG/BDI interface. And then
+   execute the bootloader from DDR.
+   This may be handy in the following cases:
+     - In very early stage of platform bringup where other boot options are not
+       functional because of various reasons.
+     - In case the support to program the flashes on the board is not available.
+
+2. Load the RAM based bootloader onto DDR using already existing bootloader on
+   the board.And then execute the bootloader from DDR.
+   Some usecases where this may be used:
+      - While developing some new feature of u-boot, for example USB driver or
+	SPI driver.
+	Suppose the board already has a working bootloader on it. And you would
+	prefer to keep it intact, at the same time want to test your bootloader.
+	In this case you can get your test bootloader binary into DDR via tftp
+	for example. Then execute the test bootloader.
+     - Suppose a platform already has a propreitery bootloader which does not
+       support for example AMP boot. In this case also RAM boot loader can be
+       utilized.
+
+   So basically when the original bootloader is required to be kept intact
+   RAM based bootloader can offer an updated bootloader on the system.
+
+Both the above Bootloaders are slight variants of SDcard or SPI Flash
+bootloader or for that matter even NAND bootloader.
+All of them define CONFIG_SYS_RAMBOOT.
+The main difference among all of them is the way the pre-environment is getting
+configured and who is doing that.
+- In case of SD card and SPI flash bootloader this is done by On Chip BootROM inside the Si itself.
+- In case of NAND boot SPL/TPL code does it with some support from Si itself.
+- In case of the pure RAM based bootloaders we have to do it by JTAG manually or already existing bootloader.
+
+How to use them:
+1. Using JTAG
+   Boot up in core hold off mode or stop the core after reset using JTAG
+   interface.
+   Preconfigure DDR/L2SRAM through JTAG interface.
+	- setup DDR controller registers.
+	- setup DDR LAWs
+	- setup DDR TLB
+   Load the RAM based boot loader to the proper location in DDR/L2SRAM.
+   set up IAR (Instruction counter properly)
+   Enable the core to execute.
+
+2. Using already existing bootloader.
+   get the rambased boot loader binary into DDR/L2SRAM via tftp.
+   execute the RAM based bootloader.
+      => tftp 11000000 u-boot-ram.bin
+      => go 1107f000
+
+Please note that L2SRAM can also be used instead of DDR if the SOC has
+sufficient size of L2SRAM.
+
+Necessary Code changes Required:
+=====================================
+Please note that below mentioned changes are for 85xx platforms.
+They have been tested on P1020/P2020/P1010 RDB.
+
+The main difference between the above two methods from technical perspective is
+that in 1st case SOC is just out of reset so it is in default configuration.
+(CCSRBAR is at 0xff700000).
+In the 2nd case bootloader has already re-located CCSRBAR to 0xffe00000
+
+1. File name-> boards.cfg
+   There can be added specific Make options for RAMBoot. We can keep different
+   options for the two cases mentioned above.
+   for example
+   P1020RDB_JTAG_RAMBOOT and P1020RDB_GO_RAMBOOT.
+
+2. platform config file
+   for example include/configs/P1_P2_RDB.h
+
+   #ifdef CONFIG_RAMBOOT
+   #define CONFIG_SDCARD
+   #endif
+
+   This will finally use the CONFIG_SYS_RAMBOOT.
+
+3. Change CONFIG_SYS_CCSRBAR_DEFAULT in menuconfig accordingly.
+   In the section of the particular SOC, for example P1020, pseudo code
+
+   #if defined(CONFIG_GO)
+   #define CONFIG_SYS_CCSRBAR_DEFAULT	0xffe00000
+   #else
+   #define CONFIG_SYS_CCSRBAR_DEFAULT	0xff700000
+   #endif
+
+For JTAG  RAMBOOT this is not required because CCSRBAR is at ff700000.

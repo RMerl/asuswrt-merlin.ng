@@ -1,0 +1,6 @@
+SoCFPGA EPCS/EPCQx1 mini howto:
+- Instantiate EPCS/EPCQx1 Serial flash controller in QSys and rebuild
+- The controller base address is the "Base" in QSys + 0x400
+- Set MSEL[4:0]=10010 (AS Standard)
+- Load the bitstream into FPGA, enable bridges
+- Only then will the driver work

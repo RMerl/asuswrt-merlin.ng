@@ -1,0 +1,52 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2016 Marek Vasut <marex@denx.de>
+ */
+
+/dts-v1/;
+#include "ar934x.dtsi"
+
+/ {
+	model = "TP-Link WDR4300 Board";
+	compatible = "tplink,wdr4300", "qca,ar934x";
+
+	aliases {
+		serial0 = &uart0;
+		spi0 = &spi0;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+};
+
+&ehci0 {
+	status = "okay";
+};
+
+&gmac0 {
+	phy-mode = "rgmii";
+	status = "okay";
+};
+
+&spi0 {
+	spi-max-frequency = <25000000>;
+	status = "okay";
+	spi-flash@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "jedec,spi-nor";
+		memory-map = <0x1e000000 0x00800000>;
+		spi-max-frequency = <25000000>;
+		reg = <0>;
+	};
+};
+
+&uart0 {
+	clock-frequency = <40000000>;
+	status = "okay";
+};
+
+&xtal {
+	clock-frequency = <40000000>;
+};

@@ -1,0 +1,30 @@
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		sort-by-offset;
+		end-at-4gb;
+		size = <0x200>;
+		u-boot-with-ucode-ptr {
+			optional-ucode;
+		};
+
+		u-boot-dtb-with-ucode {
+		};
+
+		u-boot-ucode {
+		};
+	};
+
+	microcode {
+		update@0 {
+			data = <0x12345678 0x12345679>;
+		};
+		update@1 {
+			data = <0xabcd0000 0x78235609>;
+		};
+	};
+};

@@ -30,8 +30,15 @@
 #define CFG_STR_AP5G1_FH		"ap5g1_fh"
 #define CFG_STR_AP6G_FH		"ap6g_fh"
 #define CFG_STR_AP6G1_FH		"ap6g1_fh"
+#define CFG_STR_AP2G_IOT_FH		"ap2g_iot_fh"
+#define CFG_STR_AP5G_IOT_FH		"ap5g_iot_fh"
+#define CFG_STR_AP5G1_IOT_FH		"ap5g1_iot_fh"
+#define CFG_STR_AP6G_IOT_FH		"ap6g_iot_fh"
+#define CFG_STR_AP6G1_IOT_FH		"ap6g1_iot_fh"
+
 #define CFG_STR_APDWB		"apdwb"
 #define CFG_STR_WIRED_MAC	"wired_mac"
+#define CFG_STR_WIRED_INFO	"wired_info"
 #define CFG_STR_FWVER		"fwver"
 #define CFG_STR_NEW_FWVER		"newfwver"
 #define CFG_STR_STA2G		"sta2g"
@@ -62,6 +69,8 @@
 #define CFG_STR_PATH_V3	"re_path_v3"
 #endif
 #define CFG_STR_CHANNEL	"channel"
+#define CFG_STR_BW	"bw"
+#define CFG_STR_NCTRLSB	"nctrlsb"
 #define CFG_STR_FWSTATUS	"fwStatus"
 #define CFG_STR_GROUPID	"groupid"
 #define CFG_STR_ONLINE		"online"
@@ -70,6 +79,7 @@
 #define CFG_ACTION_SCRIPT	"action_script"
 #define CFG_STR_CURRENT_CHANNEL	"cur_channel"
 #define CFG_STR_SELECTED_CHANNEL	"sel_channel"
+#define CFG_STR_SELECTED_CHANNEL_INFO	"sel_channel_info"
 #define CFG_STR_CONFIG		"config"
 #define CFG_STR_SOURCE		"source"
 #define CFG_STR_OB_PATH	"ob_path"
@@ -84,6 +94,8 @@
 #define CFG_STR_2G 	"2G"
 #define CFG_STR_5G 	"5G"
 #define CFG_STR_5G1 	"5G1"
+#define CFG_STR_5G_LOW 	"5GL"
+#define CFG_STR_5G_HIGH 	"5GH"
 #define CFG_STR_6G 	"6G"
 #define CFG_STR_6G1 	"6G1"
 #define CFG_STR_6G_LOW 	"6GL"
@@ -112,6 +124,7 @@
 #define CFG_STR_AP5G1_SSID_FH		"ap5g1_ssid_fh"
 #define CFG_STR_AP6G_SSID_FH		"ap6g_ssid_fh"
 #define CFG_STR_AP6G1_SSID_FH		"ap6g1_ssid_fh"
+
 #define CFG_STR_WIRED_PORT	"wired_port"
 #define CFG_STR_WAN_PORT_COUNT	"wan_port_count"
 #define CFG_STR_LAN_PORT_COUNT	"lan_port_count"
@@ -120,7 +133,7 @@
 #define CFG_STR_LINK_RATE		"link_rate"
 #define CFG_STR_WLC_LLDP_COST_STAT  "lldp_wlc_cost_stat"
 #define CFG_STR_ETH_LLDP_COST_STAT  "lldp_eth_cost_stat"
-#if defined(RTCONFIG_AMAS_WGN)
+#if defined(RTCONFIG_AMAS_WGN) || defined(RTCONFIG_MULTILAN_CFG)
 #define CFG_STR_WGN_CTRL_FEATURE	"guest_network"
 #define CFG_STR_WGN_WO_VLAN 		"wgn_without_vlan"
 #define CFG_STR_WGN_WLOFF_VIFS		"cfg_wgn_wloff_vifs"
@@ -139,11 +152,13 @@
 #define CFG_STR_SYNC_NODE_5G        "cfg_sync_node_5g"
 #define CFG_STR_SYNC_NODE_5GH       "cfg_sync_node_5gh"
 #define CFG_STR_SYNC_NODE_6G        "cfg_sync_node_6g"
+#define CFG_STR_SYNC_NODE_6GH		"cfg_sync_node_6gh"
 
-#define CFG_STR_BSS_ENABLED_2G       "cfg_bss_enabled_2g"
-#define CFG_STR_BSS_ENABLED_5G       "cfg_bss_enabled_5g"
-#define CFG_STR_BSS_ENABLED_5GH      "cfg_bss_enabled_5gh"
-#define CFG_STR_BSS_ENABLED_6G       "cfg_bss_enabled_6g"
+#define CFG_STR_BSS_ENABLED_2G      "cfg_bss_enabled_2g"
+#define CFG_STR_BSS_ENABLED_5G      "cfg_bss_enabled_5g"
+#define CFG_STR_BSS_ENABLED_5GH     "cfg_bss_enabled_5gh"
+#define CFG_STR_BSS_ENABLED_6G      "cfg_bss_enabled_6g"
+#define CFG_STR_BSS_ENABLED_6GH		"cfg_bss_enabled_6gh"
 
 #define CFG_STR_BSS_ONOFF_X_Y		"cfg_wl%d.%d_bss_enabled"
 #define CFG_STR_BSS_ONOFF_2G_G1		"cfg_wl0.1_bss_enabled"
@@ -160,12 +175,14 @@
 #define CFG_STR_GUEST_IFNAMES_5G	"cfg_guest_ifnames_5g"
 #define CFG_STR_GUEST_IFNAMES_5GH	"cfg_guest_ifnames_5gh"
 #define CFG_STR_GUEST_IFNAMES_6G	"cfg_guest_ifnames_6g"
+#define CFG_STR_GUEST_IFNAMES_6GH	"cfg_guest_ifnames_6gh"
 
 #define CFG_STR_GUEST_VLANS_2G		"cfg_guest_vlans_2g"
 #define CFG_STR_GUEST_VLANS_5G		"cfg_guest_vlans_5g"
 #define CFG_STR_GUEST_VLANS_5GH		"cfg_guest_vlans_5gh"
 #define CFG_STR_GUEST_VLANS_6G		"cfg_guest_vlans_6g"
-#endif	/* RTCONFIG_AMAS_WGN */
+#define CFG_STR_GUEST_VLANS_6GH		"cfg_guest_vlans_6gh"
+#endif	/* RTCONFIG_AMAS_WGN || RTCONFIG_MULTILAN_CFG */
 #define CFG_STR_HASH_BUNDLE_KEY		"hash_bundle_key"
 #define CFG_STR_CHANGED_CONFIG		"changed_config"
 #define CFG_ACTION_ID	"action_id"
@@ -217,6 +234,12 @@
 #define CFG_BAND_TYPE		"BAND_TYPE"
 #define CFG_STR_UNIT 	"unit"
 #define CFG_DWB_RULE "dwb_rule" 
+#define CFG_STR_DWB_BAND "dwb_band"
+#ifdef RTCONFIG_MULTILAN_CFG
+#define CFG_STR_SDN_INDEX       "sdn_idx"
+#define CFG_STR_IFNAME      "ifname"
+#define CFG_STR_SDN_SUPPORT     "sdn_support"
+#endif
 #define CFG_STR_BAND		"band"
 #define CFG_STR_USE		"use"
 #define CFG_STR_INDEX		"index"
@@ -246,10 +269,16 @@
 #define CFG_STR_DS		"ds"
 #define CFG_STR_DS_NUM		"ds_num"
 #endif
+#define CFG_STR_UPLOAD_FILE		"upload_file"
+#define CFG_STR_FILE_SIZE		"file_size"
+#define CFG_STR_FW_VER		"fw_ver"
+#define CFG_STR_BUILD_NO	"build_no"
+#define CFG_STR_EXTEND_NO	"extend_no"
 #define CFG_STR_MOCA_PRIVACY	"moca_privacy"
 #define CFG_STR_PASSWD	"passwd"
 #define CFG_STR_EHANCED_PASSWD	"epasswd"
 #define CFG_STR_PRIVACY_ENABLE	"privacy_enable"
 #define CFG_STR_SECURITY_MODE	"security_mode"
 #define CFG_STR_MOCA_STATUS "moca_status"
+#define CFG_STR_MLD_MAC "mld_mac"
 #endif /* __CFG_STRING_H__ */

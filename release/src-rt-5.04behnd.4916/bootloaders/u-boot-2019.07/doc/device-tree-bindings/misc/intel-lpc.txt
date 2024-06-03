@@ -1,0 +1,64 @@
+Intel LPC Device Binding
+========================
+
+The device tree node which describes the operation of the Intel Low Pin
+Count device is as follows:
+
+Required properties :
+- compatible = "intel,lpc"
+- intel,alt-gp-smi-enable : Enable SMI sources. This cell is written to the
+    ALT_GP_SMI_EN register
+- intel,gen-dec : Specifies the values for the gen-dec registers. Up to four
+   cell pairs can be provided - the first of each pair is the base address and
+   the second is the size. These are written into the GENx_DEC registers of
+   the LPC device
+- intel,gpi-routing : Specifies the GPI routing. There are 16 cells, valid
+   values are:
+     0 No effect (default)
+     1 SMI# (if corresponding ALT_GPI_SMI_EN bit is also set)
+     2 SCI (if corresponding GPIO_EN bit is also set)
+- intel,pirq-routing : Speciffies the routing IRQ number for each of PIRQA-H,
+   one cell for each.
+     0x00 - 0000 = Reserved
+     0x01 - 0001 = Reserved
+     0x02 - 0010 = Reserved
+     0x03 - 0011 = IRQ3
+     0x04 - 0100 = IRQ4
+     0x05 - 0101 = IRQ5
+     0x06 - 0110 = IRQ6
+     0x07 - 0111 = IRQ7
+     0x08 - 1000 = Reserved
+     0x09 - 1001 = IRQ9
+     0x0A - 1010 = IRQ10
+     0x0B - 1011 = IRQ11
+     0x0C - 1100 = IRQ12
+     0x0D - 1101 = Reserved
+     0x0E - 1110 = IRQ14
+     0x0F - 1111 = IRQ15
+     PIRQ[n]_ROUT[7] - PIRQ Routing Control
+     0x80 - The PIRQ is not routed.
+
+
+Example
+-------
+
+lpc {
+	compatible = "intel,lpc";
+	#address-cells = <1>;
+	#size-cells = <1>;
+	intel,gen-dec = <0x800 0xfc 0x900 0xfc>;
+
+	intel,pirq-routing = <0x8b 0x8a 0x8b 0x8b
+				0x80 0x80 0x80 0x80>;
+	/*
+		* GPI routing
+		* 0 No effect (default)
+		* 1 SMI# (if corresponding ALT_GPI_SMI_EN bit is
+		*	also set)
+		* 2 SCI (if corresponding GPIO_EN bit is also set)
+		*/
+	intel,gpi-routing = <0 0 0 0 0 0 0 2
+				1 0 0 0 0 0 0 0>;
+	/* Enable EC SMI source */
+	intel,alt-gp-smi-enable = <0x0100>;
+};

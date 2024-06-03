@@ -1,0 +1,6 @@
+EVB AST2500 BOARD
+M:	Maxim Sloyko <maxims@google.com>
+S:	Maintained
+F:	board/aspeed/evb_ast2500/
+F:	include/configs/evb_ast2500.h
+F:	configs/evb-ast2500_defconfig

@@ -1,0 +1,34 @@
+if ROCKCHIP_RV1108
+
+config TARGET_EVB_RV1108
+	bool "EVB_RV1108"
+	help
+	  RV1108 EVB is a evaluation board for Rockchp RV1108.
+
+	  Key features of the board include:
+	   * one macro USB OTG port
+	   * one USB HOST port
+	   * one RS232 to USB port route to UART2 as debug port
+	   * MIPI screen with resolution 720 x 1280
+	   * 128M DDR3
+	   * 64M SPI Nor Flash
+	   * macro SD card interface
+	   * HDMI output
+	   * 10/100 Mbps Ethernet
+	   * camera interface compatible with imx323 / ov2710 / ov4689
+
+config TARGET_ELGIN_RV1108
+	bool "ELGIN_RV1108"
+	help
+	  RV1108 ELGIN is a board based on the Rockchip RV1108.
+
+config SYS_SOC
+	default "rv1108"
+
+config SYS_MALLOC_F_LEN
+	default 0x400
+
+source board/rockchip/evb_rv1108/Kconfig
+source board/elgin/elgin_rv1108/Kconfig
+
+endif

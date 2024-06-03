@@ -1,0 +1,65 @@
+menuconfig USB_HOST_ETHER
+	bool "USB to Ethernet Controller Drivers"
+	---help---
+	  Say Y here if you would like to enable support for USB Ethernet
+	  adapters.
+
+if USB_HOST_ETHER
+
+config USB_ETHER_ASIX
+	bool "ASIX AX8817X (USB 2.0) support"
+	depends on USB_HOST_ETHER
+	---help---
+	  Say Y here if you would like to support ASIX AX8817X based USB 2.0
+	  Ethernet Devices.
+
+config USB_ETHER_ASIX88179
+	bool "ASIX AX88179 (USB 3.0) support"
+	depends on USB_HOST_ETHER
+	---help---
+	  Say Y here if you would like to support ASIX AX88179 based USB 3.0
+	  Ethernet Devices.
+
+config USB_ETHER_LAN75XX
+	bool "Microchip LAN75XX support"
+	depends on USB_HOST_ETHER
+	depends on PHYLIB
+	---help---
+	  Say Y here if you would like to support Microchip LAN75XX Hi-Speed
+	  USB 2.0 to 10/100/1000 Gigabit Ethernet controller.
+	  Supports 10Base-T/ 100Base-TX/1000Base-T.
+	  This driver supports the internal PHY.
+
+config USB_ETHER_LAN78XX
+	bool "Microchip LAN78XX support"
+	depends on USB_HOST_ETHER
+	depends on PHYLIB
+	---help---
+	  Say Y here if you would like to support Microchip LAN78XX USB 3.1
+	  Gen 1 to 10/100/1000 Gigabit Ethernet controller.
+	  Supports 10Base-T/ 100Base-TX/1000Base-T.
+	  This driver supports the internal PHY.
+
+config USB_ETHER_MCS7830
+	bool "MOSCHIP MCS7830 (7730/7830/7832) suppport"
+	depends on USB_HOST_ETHER
+	---help---
+	  Say Y here if you would like to support MOSCHIP MCS7830 based
+	  (7730/7830/7832) USB 2.0 Ethernet Devices.
+
+config USB_ETHER_RTL8152
+	bool "Realtek RTL8152B/RTL8153 support"
+	depends on USB_HOST_ETHER
+	---help---
+	  Say Y here if you would like to support Realtek RTL8152B/RTL8153 base
+	  USB Ethernet Devices. This driver also supports compatible devices
+	  from Samsung, Lenovo, TP-LINK and Nvidia.
+
+config USB_ETHER_SMSC95XX
+	bool "SMSC LAN95x support"
+	depends on USB_HOST_ETHER
+	---help---
+	  Say Y here if you would like to support SMSC LAN95xx based USB 2.0
+	  Ethernet Devices.
+
+endif

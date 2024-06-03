@@ -1,0 +1,136 @@
+#include "6756.dtsi"
+#include "../bcm_voice.dtsi"
+
+/ {
+	memory_controller {
+		memcfg = <(BP_DDR_SPEED_1067_14_14_14 | \
+			BP_DDR_TOTAL_SIZE_512MB    | \
+			BP_DDR_DEVICE_WIDTH_16     | \
+			BP_DDR_TOTAL_WIDTH_16BIT   | \
+			BP_DDR_6756_DEFAULT          | \
+			BP_DDR_CONFIG_DEBUG)>;
+	};
+
+	sfp0: sfp0 {
+		compatible = "brcm,sfp";
+		pinctrl-names = "default", "rx-sd";
+		pinctrl-0 = <&sgmii_fiber_detect_pin_26>;
+		pinctrl-1 = <&sgmii_fiber_detect_pin_26>;
+
+		i2c-bus = <&i2c0>;
+		 mod-def0 = <&bca_extintr 9 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_BOTH_EDGE | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+	};
+
+	sfp1: sfp1 {
+		compatible = "brcm,sfp";
+		pinctrl-names = "default", "rx-sd";
+		pinctrl-0 = <&sgmii_fiber_detect_p1_pin_67>;
+		pinctrl-1 = <&sgmii_fiber_detect_p1_pin_67>;
+
+		i2c-bus = <&i2c1>;
+		 mod-def0 = <&bca_extintr 66 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_BOTH_EDGE | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+	};
+};
+
+&bcm_voice{
+	sliclist = SLICSLAC_LIST_COMMON_NOFXO;
+ };
+
+&hsspi {
+	voice0 {
+		pinctrl-0 = <&spim_ss1_b_pin_76>;
+		pinctrl-names = "default";
+		compatible = "bcm-spi-voice";
+		reg = <1>; /* chip select 1 */
+		spi-max-frequency = <1024000>;
+		reset-gpio = <&gpioc 30 GPIO_ACTIVE_LOW>;
+		spi-index = <0>;/* voice header index */
+	};
+};
+
+&mdio_sf2 {
+   /* Port PHY mapping:
+        port_imp -8#0- port_gphy <---> phy_gphy
+                  # 5- port_sgmii0 <-> phy_serdes0 - sfp0
+                  ##6- port_sgmii1 <-> phy_serdes1 - sfp1
+     */
+	phy_gphy {
+		status = "okay";
+	};
+	phy_serdes0 {
+		trx = <&sfp0>;
+		status = "okay";
+	};
+	phy_serdes1 {
+		trx = <&sfp1>;
+		status = "okay";
+	};
+};
+
+&switch0 {
+	pinctrl-names = "default"; 
+	pinctrl-0 = <&a_rgmii_mdc_pin_68 &a_rgmii_mdio_pin_69>; 
+
+	ports {
+		port_gphy {
+			phy-handle = <&phy_gphy>;
+			status = "okay";
+		};
+		port_sgmii0 {
+			phy-handle = <&phy_serdes0>;
+			status = "okay";
+		};
+		port_sgmii1 {
+			phy-handle = <&phy_serdes1>;
+			status = "okay";
+		};
+	};
+};
+
+
+&usb_ctrl {
+	pinctrl-names="default";
+	pinctrl-0 = <&usb0_pwr_pins &usb1_pwr_pins>;
+	status = "okay";
+	xhci-enable;
+};
+
+&usb0_xhci {
+	status = "okay";
+};
+
+&usb0_ehci {
+	status = "okay";
+};
+
+&usb1_ehci {
+	status = "okay";
+};
+
+&usb0_ohci {
+	status = "okay";
+};
+
+&usb1_ohci {
+	status = "okay";
+};
+
+&hs_uart0 {
+	status = "okay";
+};
+
+&i2c0 {
+	pinctrl-names="default";
+	pinctrl-0 = <&i2c_sda_pin_16 &i2c_scl_pin_17>;
+	status = "okay";
+};
+
+&i2c1 {
+	pinctrl-names="default";
+	pinctrl-0 = <&a_i2c1_sda_pin_7 &a_i2c1_scl_pin_8>;
+	status = "okay";
+};
+
+&voice7 {
+	pinctrl-0 = <&c_pcm_sdin_pin_32 &c_pcm_sdout_pin_33 &c_pcm_clk_pin_34 &c_pcm_fs_pin_35>;
+};

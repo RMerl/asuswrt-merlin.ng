@@ -1,0 +1,6 @@
+VINING_2000 BOARD
+M:	Silvio Fricke <open-source@softing.de>
+S:	Maintained
+F:	board/softing/vining_2000/
+F:	include/configs/vining_2000.h
+F:	configs/vining_2000_defconfig

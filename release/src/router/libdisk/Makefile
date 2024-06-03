@@ -14,7 +14,7 @@ endif
 ifeq ($(BCM_MMC),y)
 CFLAGS += -DBCM_MMC
 endif
-CFLAGS += $(if $(RTCONFIG_DEBUG),-g -Wall) -fPIC $(EXTRACFLAGS)
+CFLAGS += -fPIC $(EXTRACFLAGS)
 CFLAGS += -I. -I$(TOP)/shared -I$(SRCBASE)/include -I$(KERNEL_HEADER_DIR) -Wall
 #CFLAGS += $(PRIVATE_EXTRACFLAGS)
 LDFLAGS_SO = -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -lnvram -L$(TOP)/shared -lshared
@@ -46,6 +46,14 @@ CFLAGS += -I$(TOP)/PMS_DBapis
 LDFLAGS += -L$(TOP)/openssl -lcrypto
 LDFLAGS += -L$(TOP)/sqlCipher/.libs -lsqlcipher
 LDFLAGS += -L$(TOP)/PMS_DBapis -lpms_sql
+endif
+
+ifeq ($(HND_ROUTER_BE_4916), y)
+CFLAGS+= -fcommon
+endif
+
+ifeq ($(RTCONFIG_TRUSTZONE),y)
+LDFLAGS += -L$(TOP)/ateed/ -latee
 endif
 
 #SHARE_STATIC=y
@@ -92,7 +100,7 @@ infos:
 	install -D libdisk.so $(INSTALLDIR)/lib/libdisk.so
 
 install: all
-	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(PROGS))
+	$(STRIP) $(PROGS)
 ifneq ($(BUILD_NAME),RT-N10U)
 	install -D test_disk1 $(INSTALLDIR)/sbin/test_disk1
 	install -D test_disk2 $(INSTALLDIR)/sbin/test_disk2

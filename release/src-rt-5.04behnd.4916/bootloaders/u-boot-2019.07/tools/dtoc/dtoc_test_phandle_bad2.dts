@@ -1,0 +1,22 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Test device tree file for dtoc
+ *
+ * Copyright 2018 Google, Inc
+ */
+
+/dts-v1/;
+
+/ {
+	phandle: phandle-target {
+		u-boot,dm-pre-reloc;
+		compatible = "target";
+		intval = <0>;
+	};
+
+	phandle-source2 {
+		u-boot,dm-pre-reloc;
+		compatible = "source";
+		clocks = <&phandle>;
+	};
+};

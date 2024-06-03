@@ -114,7 +114,7 @@ int parse_download_update(char* publish_data, char* awsiot_clientid, char *sn_ha
 
   struct json_object *session_array = NULL;
   struct json_object *session_array_obj;
-  struct json_object *session_array_topic, *session_array_id, *session_array_state, *session_array_msg;
+  struct json_object *session_array_id, *session_array_state;
 
 
 
@@ -170,7 +170,7 @@ int parse_download_update(char* publish_data, char* awsiot_clientid, char *sn_ha
 
     // int session_error_code = 0;
 
-    char session_state[32];
+    // char session_state[32];
     char session_msg[128];
     char session_id[64];
 
@@ -192,7 +192,7 @@ int parse_download_update(char* publish_data, char* awsiot_clientid, char *sn_ha
 
 
     if((strcmp(session_msg, "start")  == 0) || (strcmp(session_msg, "(null)") == 0)) {
-      snprintf(session_msg, 128, "");
+      memset(session_msg, 0, sizeof(session_msg));
     }
 
 
@@ -248,8 +248,7 @@ int parse_download_update(char* publish_data, char* awsiot_clientid, char *sn_ha
 int split_received_tencent_session(const char *topic_url) {
 
   int i;
-  int ret = 0;
-
+  
 
   struct json_object *session_array = NULL;
 
@@ -271,7 +270,6 @@ int split_received_tencent_session(const char *topic_url) {
 
 
 
-  json_object *topic_session_array = NULL;
   json_object *other_session_array = NULL;
 
   //new a array
@@ -329,22 +327,20 @@ int split_received_tencent_session(const char *topic_url) {
 
 int parse_receive_remote_connection(const char* json_data, const char* subscribe_topic) {
 
-  struct json_object *received = NULL, *enable = NULL;
+  struct json_object *root_obj = NULL, *enable_obj = NULL;
 
-  received = json_tokener_parse(json_data);
+  root_obj = json_tokener_parse(json_data);
   
-  if(is_error(received)) {
+  if(is_error(root_obj)) {
     LogInfo( ( "json_tokener_parse failure" ) );
     return -1;
   }
 
-  json_object_object_get_ex(received, "tunnel_enable", &enable);
+  json_object_object_get_ex(root_obj, "tunnel_enable", &enable_obj);
 
-  int enable_status = json_object_get_int(enable);
+  int enable_status = json_object_get_int(enable_obj);
 
-  // IOT_INFO("enable=%s\n", json_object_get_int(enable));
-
-  json_object_put(received);
+  json_object_put(root_obj);
 
   return enable_status;
 }
@@ -445,8 +441,7 @@ int copy_tencent_update_tmp() {
 int compare_tencent_session() {
 
   int i;
-  int ret = 0;
-
+  
   struct json_object *session_array = NULL;
 
   struct json_object *session_array_obj;
@@ -481,7 +476,7 @@ int compare_tencent_session() {
   if (!create_session_array)
   {
     printf("Cannot create array object\n");
-    ret = -1;
+    return -1;
   }
 
   json_object *create_session_array_obj = NULL;
@@ -680,7 +675,7 @@ int tencentgame_session_id_cmp(const char* cmp_session_id, char* get_session_sta
           snprintf(get_session_msg, 128, "%s", json_object_get_string(session_array_msg));
           LogInfo( ( "tencentgame_session_id_cmp, get [%s], get_session_msg -> %s ", TENCENT_SESSION_REPORT_FILE, get_session_msg) );
         } else {
-          snprintf(get_session_msg, 128, "");
+          memset(get_session_msg, 0, strlen(get_session_msg));
         }
 
       }
@@ -703,7 +698,7 @@ int tencentgame_session_id_cmp(const char* cmp_session_id, char* get_session_sta
 int compare_received_session_id(const char* cmp_session_id, char* session_state, char* session_update_state, int *session_error_code, const char* session_update_json) {
 
 
-  int i, lock;
+  int i;
   int session_array_len = 0;
 
 
@@ -1116,12 +1111,11 @@ int merge_received_session(const int subscribe_topic_number) {
   char session_topic_json[session_len];
   char session_other_json[session_len];
 
-  int topic_status, other_status;
   // copy_tencent_update_tmp();    // json parse bug, add process speed
 
-  topic_status = read_file_data(TENCENT_SESSION_TOPIC, session_topic_json, session_len); 
+  read_file_data(TENCENT_SESSION_TOPIC, session_topic_json, session_len); 
 
-  other_status = read_file_data(TENCENT_SESSION_OTHER, session_other_json, session_len); 
+  read_file_data(TENCENT_SESSION_OTHER, session_other_json, session_len); 
 
 
   int topic_len = strlen(session_topic_json) + 1;
@@ -1169,8 +1163,6 @@ int merge_received_session(const int subscribe_topic_number) {
 
 
 int read_file_data(char *filename, char *data, int data_len) {
-
-  int status = 0;
 
   FILE *pFile;
 
@@ -1350,4 +1342,15 @@ void getTimeInMillis(char* timestamp_str)
   
   sprintf(timestamp_str,"%ld", t_val.tv_sec);
   
+}
+
+char *replace_str(char *st, char *orig, char *repl, char* buff) {
+    char *ch;
+    if (!(ch = strstr(st, orig)))
+        return st;
+    strncpy(buff, st, ch-st);
+    buff[ch-st] = 0;
+    sprintf(buff+(ch-st), "%s%s", repl, ch+strlen(orig));
+
+    return buff;
 }

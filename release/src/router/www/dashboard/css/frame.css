@@ -1,0 +1,27 @@
+@charset "UTF-8";
+.page-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--text-page-title-color);
+}
+.card {
+    background: linear-gradient(var(--gradient-card-color)) var(--bg-card-color);
+    border-radius: 10px;
+}
+.card-header {
+    font-size: 18px;
+    font-weight: bolder;
+    text-transform: uppercase;
+    background-color: transparent;
+    border-bottom: none;
+    color: var(--text-card-title-color);
+}
+.chart-client-value {
+    color: var(--text-value-color);
+    font-size: 28px;
+    font-weight: 500;
+    height: 28px;
+}
+.bg-img{
+    background-color: rgba(var(--color-gradient-card-2));
+}

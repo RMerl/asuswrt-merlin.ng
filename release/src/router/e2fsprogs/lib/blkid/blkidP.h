@@ -26,6 +26,10 @@
 
 #include <blkid/list.h>
 
+#if defined(MUSL_LIBC)
+#include <sys/sysmacros.h>
+#endif
+
 #ifdef __GNUC__
 #define __BLKID_ATTR(x) __attribute__(x)
 #else

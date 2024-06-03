@@ -1,32 +1,44 @@
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta http-equiv="X-UA-Compatible" content="ie=edge">
 <link rel="stylesheet" type="text/css" href="css/internetSpeed.css">
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script type="text/javaScript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <script>
-$(function(){
-	var getUrlParameter = function getUrlParameter(param){
-		var url_parm = window.location.search.substring(1);
-		var parm_array = url_parm.split("&");
-		var key_value;
 
-		for(var i = 0; i < parm_array.length; i += 1){
-			key_value = parm_array[i].split("=");
-			if (key_value[0] == param) {
-				return typeof key_value[1] == "undefined" ? "" : decodeURIComponent(key_value[1]);
-			}
+var getUrlParameter = function getUrlParameter(param){
+	var url_parm = window.location.search.substring(1);
+	var parm_array = url_parm.split("&");
+	var key_value;
+
+	for(var i = 0; i < parm_array.length; i += 1){
+		key_value = parm_array[i].split("=");
+		if (key_value[0] == param) {
+			return typeof key_value[1] == "undefined" ? "" : decodeURIComponent(key_value[1]);
 		}
-		return "";
-	};
-
-	var theme = getUrlParameter("current_theme").toLocaleLowerCase();
+	}
+	return "";
+};
+var theme = getUrlParameter("current_theme").toLocaleLowerCase();
+$(function(){
+	
 	if(theme == "white"){
 		$('link').last().after('<link rel="stylesheet" type="text/css" href="css/internetSpeed_' + theme + '_theme.css">');
 	}
 	else if(rog_support || tuf_support){
 		$('link').last().after('<link rel="stylesheet" type="text/css" href="css/internetSpeed_customize.css">');
+	}
+
+	if(CoBrand == "8")
+		$('link').last().after('<link rel="stylesheet" type="text/css" href="css/difference.css">');
+
+	if(top.webWrapper || theme == "white"){
+		$('link').last().after('<link rel="stylesheet" type="text/css" href="/css/business-white.css">');
+
+		setTimeout(function(){
+			$("body").css({"visibility":"visible"})
+		}, 1000)
 	}
 
 	if(internetSpeed_lite_support){
@@ -63,9 +75,94 @@ var preferred_lang = httpApi.nvramGet(["preferred_lang"], true).preferred_lang;
 var enable_auto_server = 1;
 var cur_server_id = "";
 
-$(document).ready(function(){
-	init();
+/* for link rate div */
+var is_speciel_model = (based_modelid=="GT-AX11000_PRO" || based_modelid=="BQ16")? true:false;
+var tmp_ispctrl_desc = decodeURIComponent(httpApi.nvramCharToAscii(["ispctrl_desc"], true).ispctrl_desc);
+var ispctrl_desc = "";
+var is_ispctrl = false;
+if(tmp_ispctrl_desc){
+	ispctrl_desc = JSON.parse(tmp_ispctrl_desc);
+	is_ispctrl = (ispctrl_desc.ISPCtrl != "")? true:false;
+}
+var is_linkRate_over_5G = false;
+var show_linkRate = 0;
+var show_linkRate_Pri = 0;
+var show_linkRate_Sec = 0;
+var cap_mac = (httpApi.hookGet('get_lan_hwaddr')) ? httpApi.hookGet('get_lan_hwaddr') : "";
+httpApi.get_port_status_array(cap_mac, function(port_info){
+	if(Object.keys(port_info).length > 0){
+
+		var show_notice = false;
+		//Find out 
+		$.each(port_info, function(label, label_array){
+			$.each(port_info[label], function(index, port_item){
+				if(port_item.is_on == "1"){
+
+					//#define PHY_PORT_CAP_DUALWAN_SECONDARY_WAN  (1U << 29) - 536,870,912
+					//#define PHY_PORT_CAP_DUALWAN_PRIMARY_WAN    (1U << 30) - 1,073,741,824
+					if( port_item.cap & 1073741824){        //Actived Pri
+						if(port_item.link_rate >= 5000){
+							is_linkRate_over_5G = true;
+							show_linkRate_Pri = port_item.link_rate;
+						}
+					}
+					if( port_item.cap & 536870912){         //Actived Sec
+						if(port_item.link_rate >= 5000){
+							is_linkRate_over_5G = true;
+							show_linkRate_Sec = port_item.link_rate;
+						}
+					}
+				}
+			});
+		});
+
+		if(is_linkRate_over_5G){
+			show_linkRate = (show_linkRate_Pri >= show_linkRate_Sec)? show_linkRate_Pri:show_linkRate_Sec;
+		}
+
+	}
 });
+
+$(document).ready(function(){
+	
+	$(".bg_linkRate").hide();
+	$(".bg_internetSpeed").hide();
+	setTimeout(function(){
+		if(((is_speciel_model && (is_AA_sku || is_SG_sku)) || is_ispctrl)
+			&& is_linkRate_over_5G )
+		{
+			$(".bg_linkRate").show();
+			$(".bg_internetSpeed").hide();
+			if(theme == "white"){
+				$("#LinkRate_div").addClass("LinkRate_div_white").removeClass("LinkRate_div");
+				$("#LinkRate_img").addClass("LinkRate_img_normal_white").removeClass("LinkRate_img_normal");
+				$("#receive_transmit_container").addClass("receive_transmit_container_white").removeClass("receive_transmit_container");
+			}
+			init_linkRate(show_linkRate);
+		}
+		else{
+			$(".bg_linkRate").hide();
+			$(".bg_internetSpeed").show();
+			init();
+		}
+	}, 100);
+
+});
+
+function init_linkRate(rate){
+	if(rate >= 1000){
+		rate = Math.round(rate/1000, -1);
+		$("#rLinkRate_unit").html("Gbps");
+		$("#tLinkRate_unit").html("Gbps");
+	}
+
+	$("#receive_rate").html(rate);
+	$("#transmit_rate").html(rate);
+	if(theme == "white"){
+		$("#receive_rate").addClass("rate_white");
+		$("#transmit_rate").addClass("rate_white");
+	}
+}
 
 function customize_speedTestBtn(){
 	if(preferred_lang == "UK")
@@ -1069,7 +1166,49 @@ function close_info(){
 }
 </script>
 <div id="hiddenMask" class="speed_level_mask"></div>
-<div class="bg">
+
+<div class="bg_linkRate" style="display:none;">
+	<div class="container">
+		<div class="function_desc">
+			<div class="function_title_pc"><div><#InternetSpeed#></div></div>
+			<div class="split-Line"></div>
+		</div>
+
+		<div id="LinkRate_div" class="LinkRate_div">
+			<div class="go_LinkRate_container">
+
+				<div class="LinkRate_container">
+					<div id="LinkRate_img" class="LinkRate_img_normal">
+
+						<div id="receive_transmit_container" class="receive_transmit_container">
+							<div class="speedRate_container">
+								<div class="LinkRate_container">
+									<div class="receive_icon">
+										<span class="receive_transmit_text"><#AiMesh_Receive_Rate#></span>
+									</div>
+								</div>
+								<span class="LinkRate_result"><div id="receive_rate">--</div><div id="rLinkRate_unit" class="LinkRate_unit"><#InternetSpeed_Mbps#></div></span>
+							</div>
+							<div class="speedRate_container" style="margin-left:200px;margin-top:-76px;">
+								<div class="LinkRate_container">
+									<div class="transmit_icon">
+										<span class="receive_transmit_text"><#AiMesh_Transmit_Rate#></span>
+									</div>
+								</div>
+								<span class="LinkRate_result"><div id="transmit_rate">--</div><div id="tLinkRate_unit" class="LinkRate_unit"><#InternetSpeed_Mbps#></div></span>
+							</div>
+						</div>
+
+					</div>
+				</div>
+
+			</div>
+		</div>
+
+	</div>
+</div>
+
+<div class="bg_internetSpeed" style="display:none;">
 	<div class="container">
 		<div class="function_desc">
 			<div class="function_container">

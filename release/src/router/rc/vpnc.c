@@ -407,8 +407,11 @@ int vpnc_update_resolvconf(void)
 		fclose(fp_servers);
 	file_unlock(lock);
 
+#ifdef RTCONFIG_MULTILAN_CFG
+	reload_dnsmasq(NULL);
+#else
 	reload_dnsmasq();
-
+#endif
 	return 0;
 
 error:

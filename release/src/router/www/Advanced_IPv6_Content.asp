@@ -1078,6 +1078,11 @@ function genWANSoption(){
 				document.form.wan_selection.options[i] = new Option("10G base-T", i);
 			else if(wans_dualwan_NAME == "SFP+")
 				document.form.wan_selection.options[i] = new Option("10G SFP+", i);
+		} else if (based_modelid == "TUF-AX4200" || based_modelid == "TUF-AX6000") {
+			if (wans_dualwan_NAME == "WAN")
+				document.form.wan_selection.options[i] = new Option("2.5G WAN", i);
+			else if (wans_dualwan_NAME == "LAN Port 5")
+				document.form.wan_selection.options[i] = new Option("2.5G LAN", i);
 		}
 	}
 
@@ -1149,8 +1154,8 @@ function genWANSoption(){
 				<div>&nbsp;</div>
 				<div class="formfonttitle">IPv6</div>
 	     		<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
-	      <div class="formfontdesc"><#LANHostConfig_display6_sectiondesc#></div>
-				<div class="formfontdesc" style="margin-top:-10px;">
+	      		<div class="formfontdesc">
+					<div><#LANHostConfig_display6_sectiondesc#></div>
 					<a id="faq" href="" target="_blank" style="font-family:Lucida Console;text-decoration:underline;">IPv6 FAQ</a>
 				</div>
 				  

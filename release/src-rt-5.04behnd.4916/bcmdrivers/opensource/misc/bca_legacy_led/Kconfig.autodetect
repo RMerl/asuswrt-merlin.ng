@@ -1,0 +1,11 @@
+config BCM_BCA_LEGACY_LED_API
+	bool "Broadcom BCA Legacy LED API"
+	depends on BCM_BCA_LED
+	default n
+	help
+	  Add the BCM BCA Legacy LED support.
+
+config BCM_BCA_LEGACY_LED_API_IMPL
+	int "Implementation index for BCA Legacy LED module"
+	depends on BCM_BCA_LEGACY_LED_API
+	default 1

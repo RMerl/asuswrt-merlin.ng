@@ -1,0 +1,239 @@
+---------------------------------------------
+Imximage Boot Image generation using mkimage
+---------------------------------------------
+
+This document describes how to set up a U-Boot image that can be booted
+by Freescale MX25, MX35, MX51, MX53 and MX6 processors via internal boot
+mode.
+
+These processors can boot directly from NAND, SPI flash and SD card flash
+using its internal boot ROM support. MX6 processors additionally support
+boot from NOR flash and SATA disks. All processors can boot from an internal
+UART, if booting from device media fails.
+Booting from NOR flash does not require to use this image type.
+
+For more details refer Chapter 2 - System Boot and section 2.14
+(flash header description) of the processor's manual.
+
+Command syntax:
+--------------
+./tools/mkimage -l <mx u-boot_file>
+		to list the imx image file details
+
+./tools/mkimage -T imximage \
+		-n <board specific configuration file> \
+		-e <execution address> -d <u-boot binary>  <output image file>
+
+For example, for the mx51evk board:
+./tools/mkimage -n ./board/freescale/mx51evk/imximage.cfg \
+		-T imximage -e 0x97800000  \
+		-d u-boot.bin u-boot.imx
+
+You can generate directly the image when you compile u-boot with:
+
+$ make u-boot.imx
+
+The output image can be flashed on the board SPI flash or on a SD card.
+In both cases, you have to copy the image at the offset required for the
+chosen media devices (0x400 for both SPI flash or SD card).
+
+Please check Freescale documentation for further details.
+
+Board specific configuration file specifications:
+-------------------------------------------------
+1. This file must present in the $(BOARDDIR) and the name should be
+	imximage.cfg (since this is used in Makefile).
+2. This file can have empty lines and lines starting with "#" as first
+	character to put comments.
+3. This file can have configuration command lines as mentioned below,
+	any other information in this file is treated as invalid.
+
+Configuration command line syntax:
+---------------------------------
+1. Each command line is must have two strings, first one command or address
+	and second one data string
+2. Following are the valid command strings and associated data strings:-
+	Command string		data string
+	--------------		-----------
+	IMXIMAGE_VERSION        1/2
+				1 is for mx25/mx35/mx51 compatible,
+				2 is for mx53/mx6 compatible,
+				others is invalid and error is generated.
+				This command need appear the fist before
+				other valid commands in configuration file.
+
+	BOOT_OFFSET		value
+
+				This command is parallel to BOOT_FROM and
+				is preferred over BOOT_FROM.
+
+				value:  Offset of the image header, this
+					value shall be set to one of the
+					values found in the file:
+						arch/arm/include/asm/\
+						mach-imx/imximage.cfg
+				Example:
+				BOOT_OFFSET FLASH_OFFSET_STANDARD
+
+	BOOT_FROM		nand/spi/sd/onenand/nor/sata
+
+				This command is parallel to BOOT_OFFSET and
+				is to be deprecated in favor of BOOT_OFFSET.
+
+				Example:
+				BOOT_FROM spi
+
+	CSF			value
+
+				Total size of CSF (Command Sequence File)
+				used for Secure Boot/ High Assurance Boot
+				(HAB).
+
+				Using this command will populate the IVT
+				(Initial Vector Table) CSF pointer and adjust
+				the length fields only. The CSF itself needs
+				to be generated with Freescale tools and
+				'manually' appended to the u-boot.imx file.
+
+				The CSF is then simply concatenated
+				to the u-boot image, making a signed bootloader,
+				that the processor can verify
+				if the fuses for the keys are burned.
+
+				Further infos how to configure the SOC to verify
+				the bootloader can be found in the "High
+				Assurance Boot Version Application Programming
+				Interface Reference Manual" as part of the
+				Freescale Code Signing Tool, available on the
+				manufacturer's website.
+
+				Example:
+				CSF 0x2000
+
+	DATA			type address value
+
+				type: word=4, halfword=2, byte=1
+				address: physycal register address
+				value: value to be set in register
+				All values are in in hexadecimal.
+				Example (write to IOMUXC):
+				DATA 4 0x73FA88a0 0x200
+
+The processor support up to 60 register programming commands for IMXIMAGE_VERSION 1
+and 220 register programming commands for IMXIMAGE_VERSION 2.
+An error is generated if more commands are found in the configuration file.
+
+3. All commands are optional to program.
+
+Setup a SD Card for booting
+--------------------------------
+
+The following example prepare a SD card with u-boot and a FAT partition
+to be used to stored the kernel to be booted.
+I will set the SD in the most compatible mode, setting it with
+255 heads and 63 sectors, as suggested from several documentation and
+howto on line (I took as reference the preparation of a SD Card for the
+Beagleboard, running u-boot as bootloader).
+
+You should start clearing the partitions table on the SD card. Because
+the u-boot image must be stored at the offset 0x400, it must be assured
+that there is no partition at that address. A new SD card is already
+formatted with FAT filesystem and the partition starts from the first
+cylinder, so we need to change it.
+
+You can do all steps with fdisk. If the device for the SD card is
+/dev/mmcblk0, the following commands make the job:
+
+1. Start the fdisk utility (as superuser)
+	fdisk /dev/mmcblk0
+
+2. Clear the actual partition
+
+Command (m for help): o
+
+3. Print card info:
+
+Command (m for help): p
+Disk /dev/mmcblk0: 1981 MB, 1981284352 bytes
+
+In my case, I have a 2 GB card. I need the size to set later the correct value
+for the cylinders.
+
+4. Go to expert mode:
+
+Command (m for help): x
+
+5. Set card geometry
+
+Expert command (m for help): h
+Number of heads (1-256, default 4): 255
+
+Expert command (m for help): s
+Number of sectors (1-63, default 16): 63
+Warning: setting sector offset for DOS compatiblity
+
+We have set 255 heads, 63 sector. We have to set the cylinder.
+The value to be set can be calculated with:
+
+	cylinder = <total size> / <heads> / <sectors> / <blocksize>
+
+in this example,
+	1981284352 / 255 / 63 / 512 = 239.x = 239
+
+
+Expert command (m for help): c
+Number of cylinders (1-1048576, default 60032): 239
+
+6. Leave the expert mode
+Expert command (m for help): r
+
+7. Set up a partition
+
+Now set a partition table to store the kernel or whatever you want. Of course,
+you can set additional partitions to store rootfs, data, etc.
+In my example I want to set a single partition. I must take care
+to not overwrite the space where I will put u-boot.
+
+Command (m for help): n
+Command action
+   e   extended
+   p   primary partition (1-4)
+p
+Partition number (1-4): 1
+First cylinder (1-239, default 1): 3
+Last cylinder, +cylinders or +size{K,M,G} (3-239, default 239): +100M
+
+Command (m for help): p
+
+Disk /dev/mmcblk0: 1967 MB, 1967128576 bytes
+255 heads, 63 sectors/track, 239 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+Disk identifier: 0xb712a870
+
+	Device Boot	 Start	       End	Blocks	 Id  System
+/dev/mmcblk0p1		     3		16	112455	 83  Linux
+
+I have set 100MB, leaving the first 2 sectors free. I will copy u-boot
+there.
+
+8. Write the partition table and exit.
+
+Command (m for help): w
+The partition table has been altered!
+
+Calling ioctl() to re-read partition table.
+
+9. Copy u-boot.imx on the SD card
+
+I use dd:
+
+dd if=u-boot.imx of=/dev/mmcblk0 bs=512 seek=2
+
+This command copies the u-boot image at the address 0x400, as required
+by the processor.
+
+Now remove your card from the PC and go to the target. If evrything went right,
+the u-boot prompt should come after power on.
+
+------------------------------------------------
+Author: Stefano babic <sbabic@denx.de>

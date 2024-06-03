@@ -1,0 +1,104 @@
+---------------------------------------------
+Kirkwood Boot Image generation using mkimage
+---------------------------------------------
+
+This document describes the U-Boot feature as it
+is implemented for the Kirkwood family of SoCs.
+
+The Kirkwood SoC's can boot directly from NAND FLASH,
+SPI FLASH, SATA etc. using its internal bootRom support.
+
+for more details refer section 24.2 of Kirkwood functional specifications.
+ref: www.marvell.com/products/embedded.../kirkwood/index.jsp
+
+Command syntax:
+--------------
+./tools/mkimage -l <kwboot_file>
+		to list the kwb image file details
+
+./tools/mkimage -n <board specific configuration file> \
+		-T kwbimage -a <start address> -e <execution address> \
+		-d <input_raw_binary> <output_kwboot_file>
+
+for ex.
+./tools/mkimage -n ./board/Marvell/openrd_base/kwbimage.cfg \
+		-T kwbimage -a 0x00600000 -e 0x00600000 \
+		-d u-boot.bin u-boot.kwb
+
+
+kwbimage support available with mkimage utility will generate kirkwood boot
+image that can be flashed on the board NAND/SPI flash.  The make target
+which uses mkimage to produce such an image is "u-boot.kwb".  For example:
+
+  export KBUILD_OUTPUT=/tmp/build
+  make distclean
+  make yourboard_config
+  make u-boot.kwb
+
+
+Board specific configuration file specifications:
+------------------------------------------------
+1. This file must present in the $(BOARDDIR).  The default name is
+	kwbimage.cfg.  The name can be set as part of the full path
+	to the file using CONFIG_SYS_KWD_CONFIG (probably in
+	include/configs/<yourboard>.h).   The path should look like:
+	$(CONFIG_BOARDDIR)/<yourkwbimagename>.cfg
+2. This file can have empty lines and lines starting with "#" as first
+	character to put comments
+3. This file can have configuration command lines as mentioned below,
+	any other information in this file is treated as invalid.
+
+Configuration command line syntax:
+---------------------------------
+1. Each command line is must have two strings, first one command or address
+	and second one data string
+2. Following are the valid command strings and associated data strings:-
+	Command string		data string
+	--------------		-----------
+	BOOT_FROM		nand/spi/sata
+	NAND_ECC_MODE		default/rs/hamming/disabled
+	NAND_PAGE_SIZE		any uint16_t hex value
+	SATA_PIO_MODE		any uint32_t hex value
+	DDR_INIT_DELAY		any uint32_t hex value
+	DATA			regaddr and regdara hex value
+	you can have maximum 55 such register programming commands
+
+3. All commands are optional to program
+
+Typical example of kwimage.cfg file:
+-----------------------------------
+
+# Boot Media configurations
+BOOT_FROM	nand
+NAND_ECC_MODE	default
+NAND_PAGE_SIZE	0x0800
+
+# Configure RGMII-0 interface pad voltage to 1.8V
+DATA 0xFFD100e0 0x1b1b1b9b
+# DRAM Configuration
+DATA 0xFFD01400 0x43000c30
+DATA 0xFFD01404 0x37543000
+DATA 0xFFD01408 0x22125451
+DATA 0xFFD0140C 0x00000a33
+DATA 0xFFD01410 0x000000cc
+DATA 0xFFD01414 0x00000000
+DATA 0xFFD01418 0x00000000
+DATA 0xFFD0141C 0x00000C52
+DATA 0xFFD01420 0x00000040
+DATA 0xFFD01424 0x0000F17F
+DATA 0xFFD01428 0x00085520
+DATA 0xFFD0147C 0x00008552
+DATA 0xFFD01504 0x0FFFFFF1
+DATA 0xFFD01508 0x10000000
+DATA 0xFFD0150C 0x0FFFFFF5
+DATA 0xFFD01514 0x00000000
+DATA 0xFFD0151C 0x00000000
+DATA 0xFFD01494 0x00030000
+DATA 0xFFD01498 0x00000000
+DATA 0xFFD0149C 0x0000E803
+DATA 0xFFD01480 0x00000001
+# End of Header extension
+DATA 0x0 0x0
+
+------------------------------------------------
+Author: Prafulla Wadaskar <prafulla@marvell.com>

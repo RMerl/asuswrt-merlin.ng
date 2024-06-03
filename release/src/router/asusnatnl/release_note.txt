@@ -1,10 +1,29 @@
-﻿2020-05-15: 2.1.0.128
-==> SDK : 1. Fine tune tunnel session flow. Lower the time consuming for tunnel session creating.
-          2. Update OpenSSL 1.1.1d.
-          3. Udpate Android NDK to r20.
+﻿2023-03-16: 2.1.1.3
+==> SDK : 1. [Adding] ANT : natnl_make_call_with_inst_id3 (Class CallInfo for Android). Add parameter use_dtls is to enable secure data for tunnel.
 
-2019-05-28: 2.1.0.127
-==> SDK : Enhance SIP retry mechanism. Let retry period get longer for every retry to avoid DDoS attack to SIP server.
+2023-03-01: 2.1.1.2
+==> SDK : 1. [Adding] ANT : app_log_cb for print critical debug logs.
+          2. [Update] Sync with ASUSWRT.
+
+2022-10-19: 2.1.1.1
+==> SDK : 1. [Adding] Support MacOS X.
+          2. [Adding] Add debug info to struct natnl_tnl_info and struct natnl_tnl_event (Android : class NatTnlInfo and class NatCallback).
+          3. [Adding] Add OpenSSL version to API natnl_lib_version().
+          4. [buf fix] Try to fix crash issue.
+          5. [Update][iOS] Update host environment Xcode to 14.0.1 and Remove arch armv7 armv7s i386 from fatlib.
+          6. [Update][iOS] Use libssl.a and libcrypto.a released by DUTUtil.
+
+2022-09-27: 2.1.1.0
+==> SDK : 1. [update] ANT : Update OpenSSL to 1.1.1.n.
+          2. [update] ANT : Update Android NDK to r20.
+
+2022-08-31: 2.1.0.128
+==> SDK : 1 [bug fix] ANT : fix crash issue on iOS 16.
+
+2022:01-12: 2.1.0.127
+==> SDK : 1. [bug fix] ANT : natnl_make_call_with_inst_id2 didn't apply caller's device_pwd properly.
+          2. [bug fix] ANT : Try to fix crash in pjsua_calls.c
+          3. [bug fix] ANT : Try to fix crash in device_pwd data copy.
 
 2018:01-08: 2.1.0.126
 ==> SDK : 1. [bug fix] ANT : deadlock issue when 477 error received at make_call.

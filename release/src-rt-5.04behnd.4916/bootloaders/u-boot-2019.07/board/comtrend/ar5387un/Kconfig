@@ -1,0 +1,12 @@
+if BOARD_COMTREND_AR5387UN
+
+config SYS_BOARD
+	default "ar5387un"
+
+config SYS_VENDOR
+	default "comtrend"
+
+config SYS_CONFIG_NAME
+	default "comtrend_ar5387un"
+
+endif

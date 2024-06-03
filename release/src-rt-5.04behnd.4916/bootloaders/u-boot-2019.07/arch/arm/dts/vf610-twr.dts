@@ -1,0 +1,21 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * Copyright 2016 Toradex AG
+ */
+
+/dts-v1/;
+#include "vf.dtsi"
+
+/ {
+	model = "VF610 Tower Board";
+	compatible = "fsl,vf610-twr", "fsl,vf610";
+
+	chosen {
+		stdout-path = &uart1;
+	};
+
+};
+
+&uart1 {
+	status = "okay";
+};

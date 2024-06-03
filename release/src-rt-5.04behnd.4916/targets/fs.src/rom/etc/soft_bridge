@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# disable forwarding in the switch, by creating a port-based vlan for each i/f
+echo "31 00 02 01 01" > /proc/switch
+echo "31 02 02 01 02" > /proc/switch
+echo "31 04 02 01 04" > /proc/switch
+echo "31 06 02 01 08" > /proc/switch
+echo "31 08 02 01 10" > /proc/switch
+echo "31 0a 02 01 20" > /proc/switch
+echo "31 0c 02 01 40" > /proc/switch
+echo "31 0e 02 01 80" > /proc/switch
+echo "31 10 02 01 ff" > /proc/switch
+
+# disable learning on all ports
+echo "00 3c 02 01 ff" > /proc/switch
+
+# flood unlearned packets
+echo "00 21 01 00" > /proc/switch
+

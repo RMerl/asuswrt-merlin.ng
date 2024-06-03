@@ -1,0 +1,6 @@
+EVB-RV1108
+M:      Andy Yan <andy.yan@rock-chips.com>
+S:      Maintained
+F:      board/rockchip/evb_rv1108
+F:      include/configs/evb_rv1108.h
+F:      configs/evb-rv1108_defconfig

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="124" height="268" viewBox="0 0 124 268">
+  <defs>
+    <linearGradient id="circle-a" x1="0%" x2="100%" y1="26.58%" y2="84.577%">
+      <stop offset="0%" stop-color="#787878"/>
+      <stop offset="48.691%" stop-color="#ECECEC"/>
+      <stop offset="100%" stop-color="#7C7C7C"/>
+    </linearGradient>
+    <linearGradient id="circle-b" x1="-5.977%" x2="106.052%" y1="-4.866%" y2="110.864%">
+      <stop offset="0%" stop-color="#816022"/>
+      <stop offset="50.203%" stop-color="#B2B2B2"/>
+      <stop offset="100%" stop-color="#816022"/>
+    </linearGradient>
+    <linearGradient id="circle-c" x1="-5.977%" x2="106.052%" y1="-4.866%" y2="110.864%">
+      <stop offset="0%" stop-color="#C58000" stop-opacity=".5"/>
+      <stop offset="50.203%" stop-color="#FFBF3A"/>
+      <stop offset="100%" stop-color="#804600"/>
+    </linearGradient>
+  </defs>
+  <g fill="none" fill-rule="evenodd">
+    <g opacity=".6">
+      <circle cx="62" cy="62" r="62" fill="#2F2C2C" fill-rule="nonzero"/>
+      <circle cx="62" cy="62" r="62" stroke="url(#circle-a)" stroke-width="1.5"/>
+    </g>
+    <circle cx="62" cy="62" r="48.214" stroke="url(#circle-a)"/>
+    <g transform="translate(0 144)">
+      <circle cx="62" cy="62" r="61.262" stroke="url(#circle-b)" stroke-width="1.476"/>
+      <circle cx="62" cy="62" r="49.922" fill="#292929" fill-opacity=".3" stroke="url(#circle-c)" stroke-width="1.61"/>
+    </g>
+  </g>
+</svg>

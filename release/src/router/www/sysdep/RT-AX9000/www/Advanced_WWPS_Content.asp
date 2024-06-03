@@ -67,7 +67,8 @@ function initial(){
 		if(wl_info.band5g_2_support || wl_info.band6g_support){	//Tri-band, RT-AC3200
 			if(band6g_support){
 				document.getElementById("wps_opt1").innerHTML = '5 GHz';
-				document.getElementById("wps_opt2").innerHTML = '6 GHz';
+				// document.getElementById("wps_opt2").innerHTML = '6 GHz';
+				document.getElementById("wps_opt2").remove();
 			}
 			
 			document.getElementById("wps_switch").style.display = "none";	
@@ -869,7 +870,7 @@ function checkWLReady(){
 										}					
 									}
 									
-									if( !SG_mode || (SG_mode && confirm('Enabling WPS may result in the leak of your WiFi network password. Do you still want to proceed?'))){
+									if( !SG_mode || (SG_mode && confirm(stringSafeGet("<#note_turn_on_WPS#>")))){
 										document.form.wps_enable.value = "1";
 										enableWPS();
 									}

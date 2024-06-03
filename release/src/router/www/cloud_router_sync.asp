@@ -185,7 +185,7 @@ else
         var theUrl = "<#Web_DOMAIN_NAME#>";
 	
 if(!rrsut_support){
-	alert("This function is not supported on this system.");
+	alert(stringSafeGet("<#sync_router_Invit_desc1#>"));
 	location.href = "/cloud_main.asp";
 }
 
@@ -650,7 +650,7 @@ function GetTree(layer_order, v){
 		document.getElementById('e'+layer_order).style.visibility = "";
 	}
 	else
-		alert("Error when show the folder-tree!");
+		alert(stringSafeGet("<#ALERT_OF_ERROR_show#>"));
 }
 
 function cancel_folderTree(){

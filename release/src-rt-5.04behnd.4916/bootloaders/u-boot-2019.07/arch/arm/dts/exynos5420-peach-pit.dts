@@ -1,0 +1,426 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * SAMSUNG/GOOGLE Peach-Pit board device tree source
+ *
+ * Copyright (c) 2013 Samsung Electronics Co., Ltd.
+ *		http://www.samsung.com
+ */
+
+/dts-v1/;
+#include "exynos54xx.dtsi"
+#include <dt-bindings/clock/maxim,max77802.h>
+#include <dt-bindings/regulator/maxim,max77802.h>
+
+/ {
+	model = "Samsung/Google Peach Pit board based on Exynos5420";
+
+	compatible = "google,pit-rev#", "google,pit",
+		"google,peach", "samsung,exynos5420", "samsung,exynos5";
+
+	config {
+		google,bad-wake-gpios = <&gpx0 6 GPIO_ACTIVE_HIGH>;
+		hwid = "PIT TEST A-A 7848";
+		lazy-init = <1>;
+	};
+
+	aliases {
+		serial0 = "/serial@12C30000";
+		console = "/serial@12C30000";
+		pmic = "/i2c@12CA0000";
+		i2c104 = &i2c_tunnel;
+	};
+
+	backlight: backlight {
+		compatible = "pwm-backlight";
+		pwms = <&pwm 0 1000000 0>;
+		brightness-levels = <0 100 500 1000 1500 2000 2500 2800>;
+		default-brightness-level = <7>;
+		power-supply = <&tps65090_fet1>;
+	};
+
+	dmc {
+		mem-manuf = "samsung";
+		mem-type = "ddr3";
+		clock-frequency = <800000000>;
+		arm-frequency = <900000000>;
+	};
+
+	tmu@10060000 {
+		samsung,min-temp	= <25>;
+		samsung,max-temp	= <125>;
+		samsung,start-warning	= <95>;
+		samsung,start-tripping	= <105>;
+		samsung,hw-tripping	= <110>;
+		samsung,efuse-min-value	= <40>;
+		samsung,efuse-value	= <55>;
+		samsung,efuse-max-value	= <100>;
+		samsung,slope		= <274761730>;
+		samsung,dc-value	= <25>;
+	};
+
+	/* MAX77802 is on i2c bus 4 */
+	i2c@12CA0000 {
+		clock-frequency = <400000>;
+		power-regulator@9 {
+			compatible = "maxim,max77802-pmic";
+			reg = <0x9>;
+		};
+	};
+
+	sound {
+		compatible = "google,peach-audio-max98090";
+
+		samsung,model = "PEACH-I2S-MAX98090";
+		samsung,audio-codec = <&max98090>;
+
+		cpu {
+			sound-dai = <&i2s0 0>;
+		};
+
+		codec {
+			sound-dai = <&max98090 0>;
+		};
+	};
+
+	i2c@12CD0000 { /* i2c7 */
+		clock-frequency = <100000>;
+		max98090: soundcodec@10 {
+			reg = <0x10>;
+			compatible = "maxim,max98090";
+			#sound-dai-cells = <1>;
+		};
+
+		edp-lvds-bridge@48 {
+			compatible = "parade,ps8625";
+			reg = <0x48>;
+			sleep-gpios = <&gpx3 5 GPIO_ACTIVE_LOW>;
+			reset-gpios = <&gpy7 7 GPIO_ACTIVE_LOW>;
+			parade,regs = /bits/ 8 <
+				0x02 0xa1 0x01  /* HPD low */
+				/*
+				* SW setting
+				* [1:0] SW output 1.2V voltage is lower to 96%
+				*/
+				0x04 0x14 0x01
+				/*
+				* RCO SS setting
+				* [5:4] = b01 0.5%, b10 1%, b11 1.5%
+				*/
+				0x04 0xe3 0x20
+				0x04 0xe2 0x80 /* [7] RCO SS enable */
+				/*
+				*  RPHY Setting
+				* [3:2] CDR tune wait cycle before
+				* measure for fine tune b00: 1us,
+				* 01: 0.5us, 10:2us, 11:4us.
+				*/
+				0x04 0x8a 0x0c
+				0x04 0x89 0x08 /* [3] RFD always on */
+				/*
+				* CTN lock in/out:
+				* 20000ppm/80000ppm. Lock out 2
+				* times.
+				*/
+				0x04 0x71 0x2d
+				/*
+				* 2.7G CDR settings
+				* NOF=40LSB for HBR CDR setting
+				*/
+				0x04 0x7d 0x07
+				0x04 0x7b 0x00  /* [1:0] Fmin=+4bands */
+				0x04 0x7a 0xfd  /* [7:5] DCO_FTRNG=+-40% */
+				/*
+				* 1.62G CDR settings
+				* [5:2]NOF=64LSB [1:0]DCO scale is 2/5
+				*/
+				0x04 0xc0 0x12
+				0x04 0xc1 0x92  /* Gitune=-37% */
+				0x04 0xc2 0x1c  /* Fbstep=100% */
+				0x04 0x32 0x80  /* [7]LOS signal disable */
+				/*
+				* RPIO Setting
+				* [7:4] LVDS driver bias current :
+				* 75% (250mV swing)
+				*/
+				0x04 0x00 0xb0
+				/*
+				* [7:6] Right-bar GPIO output strength is 8mA
+				*/
+				0x04 0x15 0x40
+				/* EQ Training State Machine Setting */
+				0x04 0x54 0x10  /* RCO calibration start */
+				/* [4:0] MAX_LANE_COUNT set to one lane */
+				0x01 0x02 0x81
+				/* [4:0] LANE_COUNT_SET set to one lane */
+				0x01 0x21 0x81
+				0x00 0x52 0x20
+				0x00 0xf1 0x03  /* HPD CP toggle enable */
+				0x00 0x62 0x41
+				/* Counter number add 1ms counter delay */
+				0x00 0xf6 0x01
+				/*
+				* [6]PWM function control by
+				* DPCD0040f[7], default is PWM
+				* block always works.
+				*/
+				0x00 0x77 0x06
+				/*
+				* 04h Adjust VTotal tolerance to
+				* fix the 30Hz no display issue
+				*/
+				0x00 0x4c 0x04
+				/* DPCD00400='h00, Parade OUI = 'h001cf8 */
+				0x01 0xc0 0x00
+				0x01 0xc1 0x1c  /* DPCD00401='h1c */
+				0x01 0xc2 0xf8  /* DPCD00402='hf8 */
+				/*
+				* DPCD403~408 = ASCII code
+				* D2SLV5='h4432534c5635
+				*/
+				0x01 0xc3 0x44
+				0x01 0xc4 0x32  /* DPCD404 */
+				0x01 0xc5 0x53  /* DPCD405 */
+				0x01 0xc6 0x4c  /* DPCD406 */
+				0x01 0xc7 0x56  /* DPCD407 */
+				0x01 0xc8 0x35  /* DPCD408 */
+				/*
+				* DPCD40A, Initial Code major  revision
+				* '01'
+				*/
+				0x01 0xca 0x01
+				/* DPCD40B Initial Code minor revision '05' */
+				0x01 0xcb 0x05
+				/* DPCD720 Select internal PWM */
+				0x01 0xa5 0xa0
+				/*
+				* FFh for 100% PWM of brightness, 0h for 0%
+				* brightness
+				*/
+				0x01 0xa7 0xff
+				/*
+				* Set LVDS output as 6bit-VESA mapping,
+				* single LVDS channel
+				*/
+				0x01 0xcc 0x13
+				/* Enable SSC set by register */
+				0x02 0xb1 0x20
+				/*
+				* Set SSC enabled and +/-1% central
+				* spreading
+				*/
+				0x04 0x10 0x16
+				/* MPU Clock source: LC => RCO */
+				0x04 0x59 0x60
+				0x04 0x54 0x14  /* LC -> RCO */
+				0x02 0xa1 0x91>;  /* HPD high */
+
+			ports {
+				port@0 {
+					bridge_out: endpoint {
+						remote-endpoint = <&panel_in>;
+					};
+				};
+
+				port@1 {
+					bridge_in: endpoint {
+						remote-endpoint = <&dp_out>;
+					};
+				};
+			};
+	        };
+	};
+
+        sound@3830000 {
+                samsung,codec-type = "max98090";
+        };
+
+	i2c@12E10000 { /* i2c9 */
+		clock-frequency = <400000>;
+		tpm@20 {
+			compatible = "infineon,slb9645tt";
+			reg = <0x20>;
+		};
+	};
+
+	panel: panel {
+		compatible = "auo,b116xw03";
+		power-supply = <&tps65090_fet6>;
+		backlight = <&backlight>;
+
+		port {
+			panel_in: endpoint {
+				remote-endpoint = <&bridge_out>;
+			};
+		};
+	};
+
+	spi@12d30000 { /* spi1 */
+		spi-max-frequency = <50000000>;
+		firmware_storage_spi: flash@0 {
+			compatible = "jedec,spi-nor";
+			reg = <0>;
+
+			/*
+			 * A region for the kernel to store a panic event
+			 * which the firmware will add to the log.
+			*/
+			elog-panic-event-offset = <0x01e00000 0x100000>;
+
+			elog-shrink-size = <0x400>;
+			elog-full-threshold = <0xc00>;
+		};
+	};
+
+	xhci@12000000 {
+		samsung,vbus-gpio = <&gph0 0 GPIO_ACTIVE_HIGH>;
+	};
+
+	xhci@12400000 {
+		samsung,vbus-gpio = <&gph0 1 GPIO_ACTIVE_HIGH>;
+	};
+
+	fimd@14400000 {
+		samsung,vl-freq = <60>;
+		samsung,vl-col = <1366>;
+		samsung,vl-row = <768>;
+		samsung,vl-width = <1366>;
+		samsung,vl-height = <768>;
+
+		samsung,vl-clkp;
+		samsung,vl-dp;
+		samsung,vl-bpix = <4>;
+
+		samsung,vl-hspw = <32>;
+		samsung,vl-hbpd = <40>;
+		samsung,vl-hfpd = <40>;
+		samsung,vl-vspw = <6>;
+		samsung,vl-vbpd = <10>;
+		samsung,vl-vfpd = <12>;
+		samsung,vl-cmd-allow-len = <0xf>;
+
+		samsung,winid = <3>;
+		samsung,interface-mode = <1>;
+		samsung,dp-enabled = <1>;
+		samsung,dual-lcd-enabled = <0>;
+	};
+};
+
+&dp {
+	status = "okay";
+	samsung,color-space = <0>;
+	samsung,dynamic-range = <0>;
+	samsung,ycbcr-coeff = <0>;
+	samsung,color-depth = <1>;
+	samsung,link-rate = <0x06>;
+	samsung,lane-count = <2>;
+	samsung,hpd-gpio = <&gpx2 6 GPIO_ACTIVE_HIGH>;
+
+	ports {
+		port@0 {
+			dp_out: endpoint {
+				remote-endpoint = <&bridge_in>;
+			};
+		};
+	};
+};
+
+&spi_2 {
+	spi-max-frequency = <3125000>;
+	spi-deactivate-delay = <200>;
+	status = "okay";
+	num-cs = <1>;
+	samsung,spi-src-clk = <0>;
+	cs-gpios = <&gpb1 2 0>;
+
+	cros_ec: cros-ec@0 {
+		compatible = "google,cros-ec-spi";
+		interrupt-parent = <&gpx1>;
+		interrupts = <5 0>;
+		reg = <0>;
+		spi-half-duplex;
+		spi-max-timeout-ms = <1100>;
+		ec-interrupt = <&gpx1 5 GPIO_ACTIVE_LOW>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		/*
+		 * This describes the flash memory within the EC. Note
+		 * that the STM32L flash erases to 0, not 0xff.
+		 */
+		flash@8000000 {
+			reg = <0x08000000 0x20000>;
+			erase-value = <0>;
+		};
+
+		controller-data {
+			samsung,spi-feedback-delay = <1>;
+		};
+
+		i2c_tunnel: i2c-tunnel {
+			compatible = "google,cros-ec-i2c-tunnel";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			google,remote-bus = <0>;
+
+			battery: sbs-battery@b {
+				compatible = "sbs,sbs-battery";
+				reg = <0xb>;
+				sbs,poll-retry-count = <1>;
+				sbs,i2c-retry-count = <2>;
+			};
+
+			power-regulator@48 {
+				compatible = "ti,tps65090";
+				reg = <0x48>;
+
+				regulators {
+					tps65090_dcdc1: dcdc1 {
+						ti,enable-ext-control;
+					};
+					tps65090_dcdc2: dcdc2 {
+						ti,enable-ext-control;
+					};
+					tps65090_dcdc3: dcdc3 {
+						ti,enable-ext-control;
+					};
+					tps65090_fet1: fet1 {
+						regulator-name = "vcd_led";
+					};
+					tps65090_fet2: fet2 {
+						regulator-name = "video_mid";
+						regulator-always-on;
+					};
+					tps65090_fet3: fet3 {
+						regulator-name = "wwan_r";
+						regulator-always-on;
+					};
+					tps65090_fet4: fet4 {
+						regulator-name = "sdcard";
+						regulator-always-on;
+					};
+					tps65090_fet5: fet5 {
+						regulator-name = "camout";
+						regulator-always-on;
+					};
+					tps65090_fet6: fet6 {
+						regulator-name = "lcd_vdd";
+					};
+					tps65090_fet7: fet7 {
+						regulator-name = "video_mid_1a";
+						regulator-always-on;
+					};
+					tps65090_ldo1: ldo1 {
+					};
+					tps65090_ldo2: ldo2 {
+					};
+				};
+
+				charger {
+					compatible = "ti,tps65090-charger";
+				};
+			};
+		};
+	};
+};
+
+#include "cros-ec-keyboard.dtsi"

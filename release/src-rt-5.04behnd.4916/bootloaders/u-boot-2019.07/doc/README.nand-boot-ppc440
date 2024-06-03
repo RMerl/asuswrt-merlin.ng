@@ -1,0 +1,60 @@
+-----------------------------
+NAND boot on PPC440 platforms
+-----------------------------
+
+This document describes the U-Boot NAND boot feature as it
+is implemented for the AMCC Sequoia (PPC440EPx) board.
+
+The PPC440EP(x)/GR(x) cpu's can boot directly from NAND FLASH,
+completely without NOR FLASH. This can be done by using the NAND
+boot feature of the 440 NAND flash controller (NDFC).
+
+Here a short description of the different boot stages:
+
+a) IPL (Initial Program Loader, integrated inside CPU)
+------------------------------------------------------
+Will load first 4k from NAND (SPL) into cache and execute it from there.
+
+b) SPL (Secondary Program Loader)
+---------------------------------
+Will load special U-Boot version (NUB) from NAND and execute it. This SPL
+has to fit into 4kByte. It sets up the CPU and configures the SDRAM
+controller and the NAND controller so that the special U-Boot image can be
+loaded from NAND to SDRAM.
+This special image is build in the directory "nand_spl".
+
+c) NUB (NAND U-Boot)
+--------------------
+This NAND U-Boot (NUB) is a special U-Boot version which can be started
+from RAM. Therefore it mustn't (re-)configure the SDRAM controller.
+
+On 440EPx the SPL is copied to internal SRAM before the NAND controller
+is set up. While still running from cache, I experienced problems accessing
+the NAND controller.
+
+
+Example: Build and install NAND boot image for Sequoia (440EPx):
+
+a) Configure for sequoia with NAND boot support:
+# make sequoia_nand_config
+
+b) Build image(s)
+# make
+
+This will generate the SPL image in the "nand_spl" directory:
+nand_spl/u-boot-spl.bin
+Also another image is created spanning a whole NAND block (16kBytes):
+nand_spl/u-boot-spl-16k.bin
+The main NAND U-Boot image is generated in the toplevel directory:
+u-boot.bin
+A combined image of u-boot-spl-16k.bin and u-boot.bin is also created:
+u-boot-nand.bin
+
+This image should be programmed at offset 0 in the NAND flash:
+
+# tftp 100000 /tftpboot/sequoia/u-boot-nand.bin
+# nand erase 0 60000
+# nand write 100000 0 60000
+
+
+September 07 2006, Stefan Roese <sr@denx.de>

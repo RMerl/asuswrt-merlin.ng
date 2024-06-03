@@ -1,0 +1,31 @@
+#include "94912REF3.dts"
+
+
+&mdio {
+    /* Port PHY mapping:
+            port_gphy0 <----> phy_gphy0
+            port_gphy1 <----> phy_gphy1
+            port_gphy2 <----> phy_gphy2
+            port_gphy3 <----> phy_gphy3
+            port_xgphy <----> phy_serdes0   - phy_cascade0
+            port_sgmii1 <---> phy_serdes1   - sfp0
+            port_sgmii2 <---> phy_serdes2   - phy_cascade2
+     */
+	phy_cascade2 {
+		status = "okay";
+	};
+
+	phy_serdes2 {
+		phy-handle = <&phy_cascade2>;
+		status = "okay";
+	};
+};
+
+&switch0 {
+	ports {
+		port_sgmii2 {
+			network-leds = <&led0 &led1>;
+			status = "okay";
+		};
+	};
+};

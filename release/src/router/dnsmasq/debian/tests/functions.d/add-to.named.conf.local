@@ -1,2 +1,0 @@
-zone "autopkg.test"      { type master; file "/etc/bind/db.autopkg.test"; };
-

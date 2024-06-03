@@ -1,0 +1,38 @@
+#
+# This list is used by git-shortlog to fix a few botched name translations
+# in the git archive, either because the author's full name was messed up
+# and/or not always written the same way, making contributions from the
+# same person appearing not to be so or badly displayed.
+#
+# This file can be modified by hand or updated by the following command:
+#  scripts/mailmapper > tmp; mv tmp .mailmap
+#
+
+Allen Martin <amartin@nvidia.com>
+Andreas Bießmann <andreas.devel@googlemail.com>
+Andreas Bießmann <andreas@biessmann.org>
+Aneesh V <aneesh@ti.com>
+Dirk Behme <dirk.behme@googlemail.com>
+Fabio Estevam <fabio.estevam@nxp.com>
+Jagan Teki <402jagan@gmail.com>
+Jagan Teki <jaganna@gmail.com>
+Jagan Teki <jaganna@xilinx.com>
+Jagan Teki <jagannadh.teki@gmail.com>
+Jagan Teki <jagannadha.sutradharudu-teki@xilinx.com>
+Markus Klotzbuecher <mk@denx.de>
+Paul Burton <paul.burton@mips.com> <paul.burton@imgtec.com>
+Prabhakar Kushwaha <prabhakar@freescale.com>
+Rajeshwari Shinde <rajeshwari.s@samsung.com>
+Ricardo Ribalda <ricardo.ribalda@uam.es>
+Ricardo Ribalda <ricardo.ribalda@gmail.com>
+Sandeep Paulraj <s-paulraj@ti.com>
+Shaohui Xie <Shaohui.Xie@freescale.com>
+Stefan Roese <stroese>
+Stefano Babic <sbabic@denx.de>
+TsiChung Liew <Tsi-Chung.Liew@freescale.com>
+Wolfgang Denk <wdenk>
+York Sun <yorksun@freescale.com>
+York Sun <york.sun@nxp.com>
+Łukasz Majewski <l.majewski@samsung.com>
+Lukasz Majewski <lukma@denx.de>
+Mirza <Taimoor_Mirza@mentor.com>

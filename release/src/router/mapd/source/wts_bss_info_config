@@ -1,0 +1,13 @@
+#ucc_bss_info
+1,ff:ff:ff:ff:ff:ff 11x Multi-AP-5LG-1 0x0020 0x0008 maprocks1 1 1 hidden-N 4095 pvid 5
+2,ff:ff:ff:ff:ff:ff 11x Multi-AP-5LG-2 0x0020 0x0008 maprocks2 0 1 hidden-N 4095 N/A N/A
+3,ff:ff:ff:ff:ff:ff 11x Multi-AP-5LG-3 0x0020 0x0008 maprocks3 0 1 hidden-N 4095 N/A N/A
+4,ff:ff:ff:ff:ff:ff 11x Multi-AP-5LG-4 0x0020 0x0008 maprocks4 0 1 hidden-N 4095 N/A N/A
+5,ff:ff:ff:ff:ff:ff 8x Multi-AP-24G-1 0x0020 0x0008 maprocks1 1 1 hidden-N 4095 N/A N/A
+6,ff:ff:ff:ff:ff:ff 8x Multi-AP-24G-2 0x0020 0x0008 maprocks2 0 1 hidden-N 4095 N/A N/A
+7,ff:ff:ff:ff:ff:ff 8x Multi-AP-24G-3 0x0020 0x0008 maprocks3 0 1 hidden-N 4095 N/A N/A
+8,ff:ff:ff:ff:ff:ff 8x Multi-AP-24G-4 0x0020 0x0008 maprocks4 0 1 hidden-N 4095 N/A N/A
+9,ff:ff:ff:ff:ff:ff 12x Multi-AP-5HG-1 0x0020 0x0008 maprocks1 1 1 hidden-N 4095 N/A N/A
+10,ff:ff:ff:ff:ff:ff 12x Multi-AP-5HG-2 0x0020 0x0008 maprocks2 0 1 hidden-N 4095 N/A N/A
+11,ff:ff:ff:ff:ff:ff 12x Multi-AP-5HG-3 0x0020 0x0008 maprocks3 0 1 hidden-N 4095 N/A N/A
+12,ff:ff:ff:ff:ff:ff 12x Multi-AP-5HG-4 0x0020 0x0008 maprocks4 0 1 hidden-N 4095 N/A N/A

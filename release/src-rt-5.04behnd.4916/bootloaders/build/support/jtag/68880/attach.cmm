@@ -1,0 +1,48 @@
+;**************************************************************
+;            Attach SMP script for BCM6888   
+;            JTAG Scan-chain for 6888 is
+;            TDI->ARM(4)->MEMC(4)->UCB(4)->DFT(16)->TDO                                  
+;**************************************************************
+
+AREA
+AREA.CLEAR
+SYSTEM.RESET
+SYSTEM.JTAGCLOCK 20MHz
+AREA.SELECT
+
+print "+++++++++++++++++++++++ Full scan chain +++++++++++++++++++++++++++++++++++"
+print "            TDI->ARM(4)->MEMC(4)->UCB(4)->DFT(16)->TDO              "
+print "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+print " "
+
+SYStem.CONFIG.DAPIRPOST  0.
+SYStem.CONFIG.DAPIRPRE   24.
+SYStem.CONFIG.DAPDRPOST  0.
+SYStem.CONFIG.DAPDRPRE   3.
+
+SYStem.option TRST OFF 
+SYStem.option EnReset OFF
+
+system.config.apbaccessport    0
+system.config.axiaccessport    1
+system.config.debugaccessport  0
+system.config.memoryaccessport 1
+
+SYSTEM.CPU CORTEXA53
+SYSTEM.CONFIG.CORENUMBER 1
+SYSTEM.CONFIG.CORE 1
+CORE.ASSIGN 1
+
+SYStem.CONFIG.COREDEBUG.Base 0x81810000
+SYStem.CONFIG CTI BASE       0x81820000 
+
+print "                           JTAG ATTACH CORE#0                              "
+print "                                                                           "
+print "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+print " "
+
+SYSTEM.MODE ATTACH
+
+
+
+

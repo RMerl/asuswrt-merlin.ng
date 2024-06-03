@@ -1,0 +1,69 @@
+if ARCH_K3
+
+choice
+	prompt "Texas Instruments' K3 based SoC select"
+	optional
+
+config SOC_K3_AM6
+	bool "TI's K3 based AM6 SoC Family Support"
+
+endchoice
+
+config SYS_SOC
+	default "k3"
+
+config SYS_K3_NON_SECURE_MSRAM_SIZE
+	hex
+	default 0x80000
+	help
+	  Describes the total size of the MCU MSRAM. This doesn't
+	  specify the total size of SPL as ROM can use some part
+	  of this RAM. Once ROM gives control to SPL then this
+	  complete size can be usable.
+
+config SYS_K3_MAX_DOWNLODABLE_IMAGE_SIZE
+	hex
+	default 0x58000
+	help
+	  Describes the maximum size of the image that ROM can download
+	  from any boot media.
+
+config SYS_K3_MCU_SCRATCHPAD_BASE
+	hex
+	default 0x40280000 if SOC_K3_AM6
+	help
+	  Describes the base address of MCU Scratchpad RAM.
+
+config SYS_K3_MCU_SCRATCHPAD_SIZE
+	hex
+	default 0x200 if SOC_K3_AM6
+	help
+	  Describes the size of MCU Scratchpad RAM.
+
+config SYS_K3_BOOT_PARAM_TABLE_INDEX
+	hex
+	default 0x41c7fbfc if SOC_K3_AM6
+	help
+	  Address at which ROM stores the value which determines if SPL
+	  is booted up by primary boot media or secondary boot media.
+
+config SYS_K3_KEY
+	string "Key used to generate x509 certificate"
+	help
+	  This option enables to provide a custom key that can be used for
+	  generating x509 certificate for spl binary. If not needed leave
+	  it blank so that a random key is generated and used.
+
+config SYS_K3_BOOT_CORE_ID
+	int
+	default 16
+
+config SYS_K3_SPL_ATF
+	bool "Start Cortex-A from SPL"
+	depends on SPL && CPU_V7R
+	help
+	  Enabling this will try to start Cortex-A (typically with ATF)
+	  after SPL from R5.
+
+source "board/ti/am65x/Kconfig"
+endif

@@ -34,8 +34,10 @@ typedef struct im_shm_data {
 #define MAX_IM_SHM_DATA_SIZE sizeof(im_shm_data)
 
 // Signal defined
-#ifdef PJ_CONFIG_IPHONE
+#if defined(PJ_CONFIG_IPHONE) || defined(PJ_DARWINOS)
 #define IM_MSG_SIG_REQ SIGUSR2
+#elif MUSL_LIBC
+#define IM_MSG_SIG_REQ SIGRTMAX
 #else
 #ifdef __SIGRTMAX
 #define IM_MSG_SIG_REQ __SIGRTMAX

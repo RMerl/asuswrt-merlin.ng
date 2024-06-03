@@ -1,0 +1,19 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use FindBin qw($Bin);
+use lib "$Bin/../../../hostTools/PerlLib";
+use BRCM::GenConfig;
+
+my $c = new BRCM::GenConfig( shift);
+
+######   Any config changes start here #####
+
+
+$c->unset('CONFIG_BCMBCA_BOARD_SDK');
+$c->unset('CONFIG_ENV_IS_IN_BOOT_MAGIC');
+$c->unset('CONFIG_BCMBCA_XRDP_ETH_SWITCH_IFACE');
+
+#####   End of config changes #####
+$c->write();
+

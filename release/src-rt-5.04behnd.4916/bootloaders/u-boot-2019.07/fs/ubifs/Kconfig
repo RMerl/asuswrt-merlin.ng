@@ -1,0 +1,6 @@
+config UBIFS_SILENCE_MSG
+	bool "UBIFS silence verbose messages"
+	default ENV_IS_IN_UBI
+	help
+	  Make the verbose messages from UBIFS stop printing. This leaves
+	  warnings and errors enabled.

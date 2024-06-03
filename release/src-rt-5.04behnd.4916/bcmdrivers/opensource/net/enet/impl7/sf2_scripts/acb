@@ -1,0 +1,115 @@
+#!/bin/sh
+source /etc/sf2/_util
+
+# # /etc/sf2/acb        # usage acb <unit>
+# found 6756 unit=0
+# 
+#          switch_acb_base=0x80480800
+# 
+#        ctrl 0321@000|acb_en:1 alg2 flush:0 eop_delay:50
+#  xonthres 003004@004|xon_hyst total:4 queue:6
+# 
+#                pess_mode total_x      xon xoff |pkts                     pess_mode total_x      xon xoff |pkts
+#                en/pktlen on off/thres en  thres|in_flight                en/pktlen on off/thres en  thres|in_flight
+# p0q0 00000030@008|_    0  _   _   0   _    30  |000@108   p0q1 00000030@00c|_    0  _   _   0   _    30  |000@10c
+# p0q2 00000030@010|_    0  _   _   0   _    30  |000@110   p0q3 00000030@014|_    0  _   _   0   _    30  |000@114
+# p0q4 00000030@018|_    0  _   _   0   _    30  |000@118   p0q5 00000030@01c|_    0  _   _   0   _    30  |000@11c
+# p0q6 00000030@020|_    0  _   _   0   _    30  |000@120   p0q7 00000030@024|_    0  _   _   0   _    30  |000@124
+# 
+# p1q0 00000030@028|_    0  _   _   0   _    30  |000@128   p1q1 00000030@02c|_    0  _   _   0   _    30  |000@12c
+# p1q2 00000030@030|_    0  _   _   0   _    30  |000@130   p1q3 00000030@034|_    0  _   _   0   _    30  |000@134
+# p1q4 00000030@038|_    0  _   _   0   _    30  |000@138   p1q5 00000030@03c|_    0  _   _   0   _    30  |000@13c
+# p1q6 00000030@040|_    0  _   _   0   _    30  |000@140   p1q7 00000030@044|_    0  _   _   0   _    30  |000@144
+# 
+# p5q0 00000030@0a8|_    0  _   _   0   _    30  |000@1a8   p5q1 00000030@0ac|_    0  _   _   0   _    30  |000@1ac
+# p5q2 00000030@0b0|_    0  _   _   0   _    30  |000@1b0   p5q3 00000030@0b4|_    0  _   _   0   _    30  |000@1b4
+# p5q4 00000030@0b8|_    0  _   _   0   _    30  |000@1b8   p5q5 00000030@0bc|_    0  _   _   0   _    30  |000@1bc
+# p5q6 00000030@0c0|_    0  _   _   0   _    30  |000@1c0   p5q7 00000030@0c4|_    0  _   _   0   _    30  |000@1c4
+# 
+# p6q0 00000030@0c8|_    0  _   _   0   _    30  |000@1c8   p6q1 00000030@0cc|_    0  _   _   0   _    30  |000@1cc
+# p6q2 00000030@0d0|_    0  _   _   0   _    30  |000@1d0   p6q3 00000030@0d4|_    0  _   _   0   _    30  |000@1d4
+# p6q4 00000030@0d8|_    0  _   _   0   _    30  |000@1d8   p6q5 00000030@0dc|_    0  _   _   0   _    30  |000@1dc
+# p6q6 00000030@0e0|_    0  _   _   0   _    30  |000@1e0   p6q7 00000030@0e4|_    0  _   _   0   _    30  |000@1e4
+# 
+#         port_xoff   q_ctrl
+#           en/thres  76543210
+# p0 968@208|E 168    10101010
+# p1 8a8@20c|E  a8    10101010
+# p5 8a8@21c|E  a8    10101010
+# p6 8a8@220|E  a8    10101010
+# 
+
+read_acb_reg() { # read_acb_reg <reg_offset>
+    local ret=`echo $sf2_reg_base $1 | awk '{printf "0x8%07x", rshift(lshift($1+$2+0x800, 4),4);}'`
+    ret=`dw $ret`
+    ret=`echo $ret | awk '{printf "0x%s", $3}'`
+    echo $ret
+}
+
+sf2_acb() { #sf2_acb <unit>
+    local unit=$1
+    read_chip $unit
+    if [ $sf2_acb == 0 ]
+    then echo "device has no access control block (acb)!!"; return;
+    fi
+
+    echo $sf2_reg_base | awk '{ printf "         switch_acb_base=0x8%07x\n\n", rshift(lshift($1+0x800, 4),4); }'
+
+    if [ $sf2_acb == 3 ]
+    then
+        read_acb_reg 0 |  awk '{v=$1;
+                printf "       ctrl %04x@000|acb_en:%d alg2 flush:%d eop_delay:%d\n", v, 
+                    and(v,1), and(rshift(v,1),7), and(rshift(v,4),0xff);}'
+    else
+        read_acb_reg 0 |  awk '{v=$1;
+                printf "         ctrl %04x@000|acb_en:%d %s flush:%d eop_delay:%d\n", v, 
+                    and(v,1), and(rshift(v,1),1)?"alg2":"alg1", and(rshift(v,2),7), and(rshift(v,5),0xff);}'
+    fi
+    read_acb_reg 4 | awk '{v=$1;
+        printf " xonthres %06x@004|xon_hyst total:%d queue:%d\n", v, and(v,0x7ff), and(rshift(v,11),0x7ff);}'
+
+    echo ""
+    echo "               pess_mode total_x      xon xoff |pkts                     pess_mode total_x      xon xoff |pkts     "
+    echo "               en/pktlen on off/thres en  thres|in_flight                en/pktlen on off/thres en  thres|in_flight"
+
+    for port in $sf2_ports
+    do
+        if [ $port -lt 8 ]
+        then
+            for queue in 0 1 2 3 4 5 6 7
+            do
+                echo $port $queue $(read_acb_reg $(((port*8+queue)*4+8))) $(read_acb_reg $(((port*8+queue)*4+0x108))) | awk '{ p=$1; q=$2; c=$3; pif=$4;
+                    printf "p%dq%d %08x@%03x|%s %4x  %s   %s %3x   %s   %3x  |%03x@%03x%s", p, q, 
+                        c, 8+p*0x20+q*4, rshift(c,31)? "E":"_", and(rshift(c,25),0x3f), and(rshift(c,24),1)?"E":"_", and(rshift(c,23),1)?"E":"_", and(rshift(c,12),0x3ff), and(rshift(c,1),1)?"E":"_", and(c,0x3f),
+                        pif, 0x108+p*0x20+q*4,
+                        (q%2)?"\n":"   ";
+                    }'
+            done
+            echo ""
+        fi
+    done
+    
+    if [ $sf2_acb == 3 ]
+    then
+        local qmap0=$(read_acb_reg 0x228)
+        local qmap1=$(read_acb_reg 0x22c)
+        echo "        port_xoff   q_ctrl  "
+        echo "          en/thres  76543210"
+        for port in $sf2_ports
+        do
+            if [ $port -lt 8 ]
+            then
+                echo $port $(read_acb_reg $((port*4+0x208))) $qmap0 $qmap1 | awk '{ p=$1; c=$2; m=$3;
+                    split("0000 0001 0010 0011 0100 0101 0110 0111 1000 1001 1010 1011 1100 1101 1110 1111",bin4_s);
+                    printf "p%d %03x@%03x|%s %3x    ", p, c, p*4+0x208, and(rshift(c,11),1)? "E":"_", and(c,0x7ff);
+                    if (p>=4) {m=$4; p-=4;}
+                    printf "%s%s\n", bin4_s[and(rshift(m,p*8+4),0xf)+1], bin4_s[and(rshift(m,p*8),0xf)+1];
+                    }' 
+            fi
+        done
+    fi
+}
+
+
+sf2_acb $1
+

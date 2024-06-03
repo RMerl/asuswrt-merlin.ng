@@ -1,0 +1,12 @@
+if TARGET_PM9G45
+
+config SYS_BOARD
+	default "pm9g45"
+
+config SYS_VENDOR
+	default "ronetix"
+
+config SYS_CONFIG_NAME
+	default "pm9g45"
+
+endif

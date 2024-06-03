@@ -1,0 +1,35 @@
+if TARGET_CHROMEBOX_PANTHER
+
+config SYS_BOARD
+	default "chromebox_panther"
+
+config SYS_VENDOR
+	default "google"
+
+config SYS_SOC
+	default "ivybridge"
+
+config SYS_CONFIG_NAME
+	default "chromebox_panther"
+
+config SYS_TEXT_BASE
+	default 0xfff00000
+
+# Panther actually uses haswell, not ivybridge, so this is just a placeholder
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select X86_RESET_VECTOR
+	select NORTHBRIDGE_INTEL_IVYBRIDGE
+	select HAVE_INTEL_ME
+	select BOARD_ROMSIZE_KB_8192
+	select SPI_FLASH_WINBOND
+
+config SYS_CAR_ADDR
+	hex
+	default 0xff7e0000
+
+config SYS_CAR_SIZE
+	hex
+	default 0x20000
+
+endif

@@ -1,0 +1,6 @@
+M5208EVBE BOARD
+#M:	-
+S:	Maintained
+F:	board/freescale/m5208evbe/
+F:	include/configs/M5208EVBE.h
+F:	configs/M5208EVBE_defconfig

@@ -174,7 +174,6 @@ int Gobi_SimCardReady(const char *status)
 	return 0;
 }
 
-
 // system("chat -t 1 -e '' 'AT+CGSN' OK >> /dev/ttyACM0 < /dev/ttyACM0 2>/tmp/at_cgsn; [ `sed -n 4p /tmp/at_cgsn | wc -m ` = 16 ] && v=`sed -n 4p /tmp/at_cgsn` || v=FAIL; echo $v");
 char *Gobi_IMEI(int unit, char *line, int size)
 {
@@ -194,6 +193,23 @@ char *Gobi_IMEI(int unit, char *line, int size)
 			return p;
 	}
 	return NULL;
+}
+
+// system("chat -t 1 -e '' 'AT+EGMR=1,7,\"xxxx\"' OK >> /dev/ttyACM0 < /dev/ttyACM0 2>/tmp/at_egmr; [ `sed -n 4p /tmp/at_egmr | wc -m ` = 16 ] && v=`sed -n 4p /tmp/at_egmr` || v=FAIL; echo $v");
+char *Gobi_setIMEI(int unit, char *line, int size, const char *IMEI)
+{
+	char atCmd[32];
+	const char *tmpFile = "/tmp/at_egmr";
+	char *p = NULL;
+
+	snprintf(atCmd, sizeof(atCmd), "+EGMR=1,7,\"%s\"", IMEI);
+
+	if (Gobi_AtCommand(unit, atCmd, tmpFile) >= 0
+	    && (p = get_line_by_str(line, size, tmpFile, "OK")) != NULL)
+	{
+		skip_space(p);
+	}
+	return p;
 }
 
 // system("chat -t 1 -e '' 'AT+CGNWS' OK >> /dev/ttyACM0 < /dev/ttyACM0 2>/tmp/at_cgnws; grep +CGNWS: /tmp/at_cgnws | awk -F, '{print $4}' | grep 0x01 -q && v=`grep +CGNWS: /tmp/at_cgnws | awk -F, '{print $7}'` || v=FAIL; echo $v");
@@ -344,6 +360,8 @@ char * Gobi_FwVersion(int unit, char *line, int size)
 			(p = get_line_by_str(line, size, tmpFile, "Revision: WWHC")) != NULL)
 #elif defined(RT4GAC68U)
 			(p = get_line_by_str(line, size, tmpFile, "WWHC")) != NULL)
+#elif defined(RT4GAC86U) || defined(RT4GAX56)
+			(p = get_line_by_str(line, size, tmpFile, "Revision: ")) != NULL)
 #else
 			(p = get_line_by_str(line, size, tmpFile, "WWLC")) != NULL)
 #endif

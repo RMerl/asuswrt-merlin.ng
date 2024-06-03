@@ -22,7 +22,7 @@ valgrind-install: valgrind
 	install -D $(STAGEDIR)/usr/sbin/valgrind $(INSTALLDIR)/valgrind/usr/sbin/valgrind
 	make -C valgrind -j8 DESTDIR=$(INSTALLDIR)/valgrind install
 	@rm -fr $(INSTALLDIR)/valgrind/usr/{include,share}
-	$(if $(DEBUG_VALGRIND),,$(STRIP) $(INSTALLDIR)/valgrind/usr/sbin/{valgrind,valgrind-di-server,valgrind-listener,vgdb})
+	$(if $(DEBUG_VALGRIND),,$(STRIP) $(INSTALLDIR)/valgrind/usr/sbin/{cg_merge,valgrind,valgrind-di-server,valgrind-listener,vgdb})
 	$(if $(DEBUG_VALGRIND),,$(STRIP) $(INSTALLDIR)/valgrind/usr/libexec/valgrind/{*-linux,*.so})
 
 valgrind-clean:

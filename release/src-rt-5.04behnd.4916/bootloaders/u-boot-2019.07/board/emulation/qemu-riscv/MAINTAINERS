@@ -1,0 +1,9 @@
+QEMU RISC-V 'VIRT' BOARD
+M:	Bin Meng <bmeng.cn@gmail.com>
+S:	Maintained
+F:	board/emulation/qemu-riscv/
+F:	include/configs/qemu-riscv.h
+F:	configs/qemu-riscv32_defconfig
+F:	configs/qemu-riscv32_smode_defconfig
+F:	configs/qemu-riscv64_defconfig
+F:	configs/qemu-riscv64_smode_defconfig

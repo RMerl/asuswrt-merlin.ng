@@ -1,0 +1,245 @@
+Freescale MCF54418TWR ColdFire Development Board
+================================================
+
+TsiChung Liew(Tsi-Chung.Liew@freescale.com)
+Created Mar 22, 2012
+===========================================
+
+
+Changed files:
+==============
+
+- board/freescale/m54418twr/m54418twr.c	Dram setup
+- board/freescale/m54418twr/Makefile	Makefile
+- board/freescale/m54418twr/config.mk	config make
+- board/freescale/m54418twr/u-boot.lds	Linker description
+- board/freescale/m54418twr/sbf_dram_init.S
+                                        DDR/SDRAM initialization
+
+- arch/m68k/cpu/mcf5445x/cpu.c		cpu specific code
+- arch/m68k/cpu/mcf5445x/cpu_init.c	Flexbus ChipSelect, Mux pins setup, icache and RTC extra regs
+- arch/m68k/cpu/mcf5445x/interrupts.c	cpu specific interrupt support
+- arch/m68k/cpu/mcf5445x/speed.c	system, pci, flexbus, and cpu clock
+- arch/m68k/cpu/mcf5445x/Makefile	Makefile
+- arch/m68k/cpu/mcf5445x/config.mk	config make
+- arch/m68k/cpu/mcf5445x/start.S	start up assembly code
+
+- doc/README.m54418twr			This readme file
+
+- drivers/net/mcffec.c			ColdFire common FEC driver
+- drivers/net/mcfmii.c			ColdFire common MII driver
+- drivers/serial/mcfuart.c		ColdFire common UART driver
+
+- arch/m68k/include/asm/bitops.h	Bit operation function export
+- arch/m68k/include/asm/byteorder.h	Byte order functions
+- arch/m68k/include/asm/fec.h		FEC structure and definition
+- arch/m68k/include/asm/global_data.h	Global data structure
+- arch/m68k/include/asm/immap.h		ColdFire specific header file and driver macros
+- arch/m68k/include/asm/immap_5441x.h	mcf5441x specific header file
+- arch/m68k/include/asm/io.h		io functions
+- arch/m68k/include/asm/m5441x.h	mcf5441x specific header file
+- arch/m68k/include/asm/posix_types.h	Posix
+- arch/m68k/include/asm/processor.h	header file
+- arch/m68k/include/asm/ptrace.h	Exception structure
+- arch/m68k/include/asm/rtc.h		Realtime clock header file
+- arch/m68k/include/asm/string.h	String function export
+- arch/m68k/include/asm/timer.h		Timer structure and definition
+- arch/m68k/include/asm/types.h		Data types definition
+- arch/m68k/include/asm/uart.h		Uart structure and definition
+- arch/m68k/include/asm/u-boot.h	u-boot structure
+
+- include/configs/M54418TWR.h		Board specific configuration file
+
+- arch/m68k/lib/board.c			board init function
+- arch/m68k/lib/cache.c
+- arch/m68k/lib/interrupts.c		Coldfire common interrupt functions
+- arch/m68k/lib/time.c			Timer functions (Dma timer and PIT)
+- arch/m68k/lib/traps.c			Exception init code
+
+1 MCF5441x specific Options/Settings
+====================================
+1.1 pre-loader is no longer suppoer in thie coldfire family
+
+1.2 Configuration settings for M54418TWR Development Board
+CONFIG_MCF5441x			-- define for all MCF5441x CPUs
+CONFIG_M54418			-- define for all Freescale MCF54418 CPUs
+
+CONFIG_MCFUART			-- define to use common CF Uart driver
+CONFIG_SYS_UART_PORT		-- define UART port number, start with 0, 1 and 2
+CONFIG_BAUDRATE			-- define UART baudrate
+
+CONFIG_MCFFEC			-- define to use common CF FEC driver
+CONFIG_MII			-- enable to use MII driver
+CONFIG_SYS_DISCOVER_PHY		-- enable PHY discovery
+CONFIG_SYS_RX_ETH_BUFFER	-- Set FEC Receive buffer
+CONFIG_SYS_FAULT_ECHO_LINK_DOWN	--
+CONFIG_SYS_FEC0_PINMUX		-- Set FEC0 Pin configuration
+CONFIG_SYS_FEC1_PINMUX		-- Set FEC1 Pin configuration
+CONFIG_SYS_FEC0_MIIBASE		-- Set FEC0 MII base register
+CONFIG_SYS_FEC1_MIIBASE		-- Set FEC0 MII base register
+MCFFEC_TOUT_LOOP		-- set FEC timeout loop
+CONFIG_HAS_ETH1			-- define to enable second FEC in u-boot
+
+CONFIG_MCFTMR			-- define to use DMA timer
+
+CONFIG_SYS_IMMR			-- define for MBAR offset
+
+CONFIG_EXTRA_CLOCK		-- Enable extra clock such as vco, flexbus, pci, etc
+
+CONFIG_SYS_MBAR			-- define MBAR offset
+
+CONFIG_MONITOR_IS_IN_RAM 	-- Not support
+
+CONFIG_SYS_INIT_RAM_ADDR	-- defines the base address of the MCF54455 internal SRAM
+
+CONFIG_SYS_CSn_BASE		-- defines the Chip Select Base register
+CONFIG_SYS_CSn_MASK		-- defines the Chip Select Mask register
+CONFIG_SYS_CSn_CTRL		-- defines the Chip Select Control register
+
+CONFIG_SYS_SDRAM_BASE		-- defines the DRAM Base
+
+2. MEMORY MAP UNDER U-BOOT AND LINUX KERNEL
+===========================================
+2.1. System memory map:
+	MRAM:		0x00000000-0x0003FFFF (256KB)
+	DDR:		0x40000000-0x47FFFFFF (128MB)
+	SRAM:		0x80000000-0x8000FFFF (64KB)
+	IP:		0xE0000000-0xFFFFFFFF (512MB)
+
+3. COMPILATION
+==============
+3.1	To create U-Boot the gcc-4.x compiler set (ColdFire ELF version)
+from codesourcery.com was used. Download it from:
+http://www.codesourcery.com/gnu_toolchains/coldfire/download.html
+
+3.2 Compilation
+   export CROSS_COMPILE=cross-compile-prefix
+   cd u-boot
+   make distclean
+   make M54418TWR_config, or			- default to spi serial flash boot, 50Mhz input clock
+   make M54418TWR_nand_mii_config, or		- default to nand flash boot, mii mode, 25Mhz input clock
+   make M54418TWR_nand_rmii_config, or		- default to nand flash boot, rmii mode, 50Mhz input clock
+   make M54418TWR_nand_rmii_lowfreq_config, or	- default to nand flash boot, rmii mode, 50Mhz input clock
+   make M54418TWR_serial_mii_config, or		- default to spi serial flash boot, 25Mhz input clock
+   make M54418TWR_serial_rmii_config, or	- default to spi serial flash boot, 50Mhz input clock
+   make
+
+4. SCREEN DUMP
+==============
+4.1 M54418TWR Development board
+    Boot from NAND flash (NOTE: May not show exactly the same)
+
+U-Boot 2012.10-00209-g12ae1d8-dirty (Oct 18 2012 - 15:54:54)
+
+CPU:   Freescale MCF54418 (Mask:a3 Version:1)
+       CPU CLK 250 MHz BUS CLK 125 MHz FLB CLK 125 MHz
+       INP CLK 50 MHz VCO CLK 500 MHz
+Board: Freescale MCF54418 Tower System
+SPI:   ready
+DRAM:  128 MiB
+NAND:  256 MiB
+In:    serial
+Out:   serial
+Err:   serial
+Net:   FEC0, FEC1
+-> pri
+baudrate=115200
+bootargs=root=/dev/mtdblock2 rw rootfstype=jffs2 mtdparts=NAND:1M(u-boot)ro,7M(k
+ernel)ro,-(jffs2) console=ttyS0,115200
+bootdelay=2
+eth1addr=00:e0:0c:bc:e5:61
+ethact=FEC0
+ethaddr=00:e0:0c:bc:e5:60
+fileaddr=40010000
+filesize=27354
+gatewayip=192.168.1.1
+hostname=M54418TWR
+inpclk=50000000
+ipaddr=192.168.1.2
+load=tftp ${loadaddr} ${u-boot};
+loadaddr=0x40010000
+mem=129024k
+netdev=eth0
+netmask=255.255.255.0
+prog=nand device 0;nand erase 0 40000;nb_update ${loadaddr} ${filesize};save
+serverip=192.168.1.1
+stderr=serial
+stdin=serial
+stdout=serial
+u-boot=u-boot.bin
+upd=run load; run prog
+
+Environment size: 653/131068 bytes
+-> bdinfo
+memstart    = 0x40000000
+memsize     = 0x08000000
+flashstart  = 0x00000000
+flashsize   = 0x00000000
+flashoffset = 0x00000000
+sramstart   = 0x80000000
+sramsize    = 0x00010000
+mbar        = 0xFC000000
+cpufreq     =    250 MHz
+busfreq     =    125 MHz
+flbfreq     =    125 MHz
+inpfreq     =     50 MHz
+vcofreq     =    500 MHz
+ethaddr     = 00:e0:0c:bc:e5:60
+eth1addr    = 00:e0:0c:bc:e5:61
+ip_addr     = 192.168.1.2
+baudrate    = 115200 bps
+-> help
+?       - alias for 'help'
+base    - print or set address offset
+bdinfo  - print Board Info structure
+boot    - boot default, i.e., run 'bootcmd'
+bootd   - boot default, i.e., run 'bootcmd'
+bootelf - Boot from an ELF image in memory
+bootm   - boot application image from memory
+bootp   - boot image via network using BOOTP/TFTP protocol
+bootvx  - Boot vxWorks from an ELF image
+cmp     - memory compare
+coninfo - print console devices and information
+cp      - memory copy
+crc32   - checksum calculation
+dcache  - enable or disable data cache
+dhcp    - boot image via network using DHCP/TFTP protocol
+echo    - echo args to console
+editenv - edit environment variable
+env     - environment handling commands
+exit    - exit script
+false   - do nothing, unsuccessfully
+go      - start application at address 'addr'
+help    - print command description/usage
+icache  - enable or disable instruction cache
+iminfo  - print header information for application image
+imxtract- extract a part of a multi-image
+itest   - return true/false on integer compare
+loop    - infinite loop on address range
+md      - memory display
+mdio    - MDIO utility commands
+mii     - MII utility commands
+mm      - memory modify (auto-incrementing address)
+mtest   - simple RAM read/write test
+mw      - memory write (fill)
+nand    - NAND sub-system
+nb_update- Nand boot update  program
+nboot   - boot from NAND device
+nfs     - boot image via network using NFS protocol
+nm      - memory modify (constant address)
+ping    - send ICMP ECHO_REQUEST to network host
+printenv- print environment variables
+reginfo - print register information
+reset   - Perform RESET of the CPU
+run     - run commands in an environment variable
+saveenv - save environment variables to persistent storage
+setenv  - set environment variables
+sf      - SPI flash sub-system
+showvar - print local hushshell variables
+sleep   - delay execution for some time
+source  - run script from memory
+sspi    - SPI utility command
+test    - minimal test like /bin/sh
+tftpboot- boot image via network using TFTP protocol
+true    - do nothing, successfully
+version - print monitor, compiler and linker version

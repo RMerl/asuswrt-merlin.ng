@@ -1,0 +1,33 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright (C) 2017, Bin Meng <bmeng.cn@gmail.com>
+
+config INTEL_BRASWELL
+	bool
+	select HAVE_FSP
+	select ARCH_MISC_INIT
+	select CPU_INTEL_TURBO_NOT_PACKAGE_SCOPED
+	imply HAVE_INTEL_ME
+	imply HAVE_VBT
+	imply ENABLE_MRC_CACHE
+	imply AHCI_PCI
+	imply ICH_SPI
+	imply MMC
+	imply MMC_PCI
+	imply MMC_SDHCI
+	imply MMC_SDHCI_SDMA
+	imply SCSI
+	imply SCSI_AHCI
+	imply SPI_FLASH
+	imply SYS_NS16550
+	imply USB
+	imply USB_XHCI_HCD
+	imply VIDEO_FSP
+
+if INTEL_BRASWELL
+
+config FSP_ADDR
+	hex
+	default 0xfff20000
+
+endif

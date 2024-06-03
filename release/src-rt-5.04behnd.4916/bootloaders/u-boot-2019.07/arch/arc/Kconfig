@@ -1,0 +1,193 @@
+menu "ARC architecture"
+	depends on ARC
+
+config SYS_ARCH
+	default "arc"
+
+config SYS_CPU
+	default "arcv1" if ISA_ARCOMPACT
+	default "arcv2" if ISA_ARCV2
+
+choice
+	prompt "ARC Instruction Set"
+	default ISA_ARCOMPACT
+
+config ISA_ARCOMPACT
+	bool "ARCompact ISA"
+	help
+	  The original ARC ISA of ARC600/700 cores
+
+config ISA_ARCV2
+	bool "ARC ISA v2"
+	help
+	  ISA for the Next Generation ARC-HS cores
+
+endchoice
+
+choice
+	prompt "CPU selection"
+	default CPU_ARC770D if ISA_ARCOMPACT
+	default CPU_ARCHS38 if ISA_ARCV2
+
+config CPU_ARC750D
+	bool "ARC 750D"
+	depends on ISA_ARCOMPACT
+	select ARC_MMU_V2
+	help
+	  Choose this option to build an U-Boot for ARC750D CPU.
+
+config CPU_ARC770D
+	bool "ARC 770D"
+	depends on ISA_ARCOMPACT
+	select ARC_MMU_V3
+	help
+	  Choose this option to build an U-Boot for ARC770D CPU.
+
+config CPU_ARCEM6
+	bool "ARC EM6"
+	depends on ISA_ARCV2
+	select ARC_MMU_ABSENT
+	help
+	  Next Generation ARC Core based on ISA-v2 ISA without MMU.
+
+config CPU_ARCHS36
+	bool "ARC HS36"
+	depends on ISA_ARCV2
+	select ARC_MMU_ABSENT
+	help
+	  Next Generation ARC Core based on ISA-v2 ISA without MMU.
+
+config CPU_ARCHS38
+	bool "ARC HS38"
+	depends on ISA_ARCV2
+	select ARC_MMU_V4
+	help
+	  Next Generation ARC Core based on ISA-v2 ISA with MMU.
+
+endchoice
+
+choice
+	prompt "MMU Version"
+	default ARC_MMU_V3 if CPU_ARC770D
+	default ARC_MMU_V2 if CPU_ARC750D
+	default ARC_MMU_ABSENT if CPU_ARCEM6
+	default ARC_MMU_ABSENT if CPU_ARCHS36
+	default ARC_MMU_V4 if CPU_ARCHS38
+
+config ARC_MMU_ABSENT
+	bool "No MMU"
+	help
+	  No MMU
+
+config ARC_MMU_V2
+	bool "MMU v2"
+	depends on CPU_ARC750D
+	help
+	  Fixed the deficiency of v1 - possible thrashing in memcpy sceanrio
+	  when 2 D-TLB and 1 I-TLB entries index into same 2way set.
+
+config ARC_MMU_V3
+	bool "MMU v3"
+	depends on CPU_ARC770D
+	help
+	  Introduced with ARC700 4.10: New Features
+	  Variable Page size (1k-16k), var JTLB size 128 x (2 or 4)
+	  Shared Address Spaces (SASID)
+
+config ARC_MMU_V4
+	bool "MMU v4"
+	depends on CPU_ARCHS38
+	help
+	  Introduced as a part of ARC HS38 release.
+
+endchoice
+
+config CPU_BIG_ENDIAN
+	bool "Enable Big Endian Mode"
+	default n
+	help
+	  Build kernel for Big Endian Mode of ARC CPU
+
+config SYS_ICACHE_OFF
+	bool "Do not enable icache"
+	default n
+	help
+	  Do not enable instruction cache in U-Boot.
+
+config SPL_SYS_ICACHE_OFF
+	bool "Do not enable icache in SPL"
+	depends on SPL
+	default SYS_ICACHE_OFF
+	help
+	  Do not enable instruction cache in SPL.
+
+config SYS_DCACHE_OFF
+	bool "Do not enable dcache"
+	default n
+	help
+	  Do not enable data cache in U-Boot.
+
+config SPL_SYS_DCACHE_OFF
+	bool "Do not enable dcache in SPL"
+	depends on SPL
+	default SYS_DCACHE_OFF
+	help
+	  Do not enable data cache in SPL.
+
+menuconfig ARC_DBG
+	bool "ARC debugging"
+	default n
+
+if ARC_DBG
+
+config ARC_DBG_IOC_ENABLE
+	bool "Enable IO coherency unit"
+	depends on CPU_ARCHS38
+	default n
+	help
+	  Enable IO coherency unit to debug problems with caches and
+	  DMA peripherals.
+	  NOTE: as of today linux will not work properly if this option
+	  is enabled in u-boot!
+
+endif
+
+choice
+	prompt "Target select"
+	default TARGET_AXS103
+
+config TARGET_TB100
+	bool "Support tb100"
+
+config TARGET_NSIM
+	bool "Support standalone nSIM & Free nSIM"
+
+config TARGET_AXS101
+	bool "Support Synopsys Designware SDP board AXS101"
+	select BOUNCE_BUFFER if CMD_NAND
+
+config TARGET_AXS103
+	bool "Support Synopsys Designware SDP board AXS103"
+	select BOUNCE_BUFFER if CMD_NAND
+
+config TARGET_EMSDP
+	bool "Synopsys EM Software Development Platform"
+	select CPU_ARCEM6
+
+config TARGET_HSDK
+	bool "Support Synpsys HS DevelopmentKit board"
+
+config TARGET_IOT_DEVKIT
+	bool "Synopsys Brite IoT Development kit"
+	select CPU_ARCEM6
+
+endchoice
+
+source "board/abilis/tb100/Kconfig"
+source "board/synopsys/Kconfig"
+source "board/synopsys/axs10x/Kconfig"
+source "board/synopsys/emsdp/Kconfig"
+source "board/synopsys/hsdk/Kconfig"
+source "board/synopsys/iot_devkit/Kconfig"
+
+endmenu

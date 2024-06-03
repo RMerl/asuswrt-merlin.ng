@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<!-- This is an automatically generated file.  Do not edit.
+   Copyright (c) 2013-2021 Tuxera Inc.  All rights reserved.  Confidential and
+   proprietary.  Distribution and reproduction are prohibited without Tuxera\[u2019]s
+   written permission.
+  
+   Author: Sougata Santra <sougata@tuxera.com>
+   -->
+<head>
+  <meta charset="utf-8"/>
+  <style>
+    table.head, table.foot { width: 100%; }
+    td.head-rtitle, td.foot-os { text-align: right; }
+    td.head-vol { text-align: center; }
+    div.Pp { margin: 1ex 0ex; }
+    div.Nd, div.Bf, div.Op { display: inline; }
+    span.Pa, span.Ad { font-style: italic; }
+    span.Ms { font-weight: bold; }
+    dl.Bl-diag > dt { font-weight: bold; }
+    code.Nm, code.Fl, code.Cm, code.Ic, code.In, code.Fd, code.Fn,
+    code.Cd { font-weight: bold; font-family: inherit; }
+  </style>
+  <title>NEWFS_HFS(8)</title>
+</head>
+<body>
+<table class="head">
+  <tr>
+    <td class="head-ltitle">NEWFS_HFS(8)</td>
+    <td class="head-vol">System Manager's Manual</td>
+    <td class="head-rtitle">NEWFS_HFS(8)</td>
+  </tr>
+</table>
+<div class="manual-text">
+<section class="Sh">
+<h1 class="Sh" id="NAME"><a class="permalink" href="#NAME">NAME</a></h1>
+newfs_hfs - create a HFS+ file system
+</section>
+<section class="Sh">
+<h1 class="Sh" id="SYNOPSIS"><a class="permalink" href="#SYNOPSIS">SYNOPSIS</a></h1>
+<b>newfs_hfs</b> [<i>options</i>] <i>device</i>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="DESCRIPTION"><a class="permalink" href="#DESCRIPTION">DESCRIPTION</a></h1>
+<b>newfs_hfs</b> is used to create an HFS+ file system on a device (usually a
+  disk or flash partition) or image. <i>device</i> is the special file
+  corresponding to the device (e.g. <i>/dev/sdXX,</i>
+  <i>/dev/block/mmcblk1p1</i>) or an image file.
+</section>
+<section class="Sh">
+<h1 class="Sh" id="OPTIONS"><a class="permalink" href="#OPTIONS">OPTIONS</a></h1>
+Below is a summary of all the options that <b>newfs_hfs</b> accepts.
+<dl class="Bl-tag">
+  <dt><b>-s</b>,</dt>
+  <dd>Creates a case-sensitive HFS+ file-system. By default a case-insensitive
+      file-system is created.</dd>
+  <dt><b>-w</b></dt>
+  <dd>Adds an HFS wrapper around the HFS+ file system.</dd>
+  <dt><b>-U</b> UID</dt>
+  <dd>Set owner of the file-system root directory.</dd>
+  <dt><b>-G</b> GID</dt>
+  <dd>Set group of the file-system root directory.</dd>
+  <dt><b>-M</b> MASK</dt>
+  <dd>Set permission mask for the file-system root directory.</dd>
+  <dt><b>-b</b> SIZE</dt>
+  <dd>Set the allocation block size (in bytes) to <b>SIZE</b>. The default value
+      is 4096.</dd>
+  <dt><b>-v</b> VOLUME-NAME</dt>
+  <dd>Volume name in ASCII or UTF-8 format.</dd>
+  <dt><b>-i</b> FIRST-CNID</dt>
+  <dd>Sets the first catalog node ID for user files and directories. The default
+      value is 16.</dd>
+  <dt><b>-N</b> PARTITION-SIZE</dt>
+  <dd>Print summary of file-system parameters without actually creating the
+      file- system. This might be useful for verifying the actual parameters
+      before creating the file-system.</dd>
+  <dt><b>-J</b> JOURNAL-SIZE</dt>
+  <dd>Creates a journaled HFS+ volume. The default journal size is 8MB.</dd>
+  <dt><b>-c</b> CLUMP-SIZE-LIST</dt>
+  <dd>Sets the clump and/or initial sizes, in allocation blocks, for meta-data
+      files. It is specified with -c option followed by comma seperated list of
+      the form args=value.
+    <p class="Pp">Set the attribute file clump size. Set the allocation bitmap
+        file clump size. Set the catalog file clump size. Set the extent
+        overflow file clump size.</p>
+    <p class="Pp"></p>
+  </dd>
+  <dt><b>-n</b> NODE-SIZE-LIST</dt>
+  <dd>Sets b-tree node sizes, in bytes, for the various b-tree files. It is
+      specified with the -n option followed by a comma separated list of the
+      form arg=value. Node size must be a power of two and no larger than 32768
+      bytes. Set the attribute b-tree node size. Set the catalog b-tree node
+      size. Set the extent overflow b-tree node size.
+    <p class="Pp"></p>
+  </dd>
+</dl>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="BUGS"><a class="permalink" href="#BUGS">BUGS</a></h1>
+If you find a bug please send an email describing the problem to
+  hfs-support@tuxera.com.
+</section>
+<section class="Sh">
+<h1 class="Sh" id="AVAILABILITY"><a class="permalink" href="#AVAILABILITY">AVAILABILITY</a></h1>
+<b>newfs_hfs</b> is part of the <b>Tuxera HFS+</b> package.
+</section>
+</div>
+<table class="foot">
+  <tr>
+    <td class="foot-date">December 2013</td>
+    <td class="foot-os">Tuxera HFS+ 3021.1.17</td>
+  </tr>
+</table>
+</body>
+</html>

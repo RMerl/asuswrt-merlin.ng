@@ -1,0 +1,3 @@
+compatible = "arm,cci-500";
+reg = <CCI_OFFSET CCI_SIZE>;
+slave-intf-cpu = <SLAVEINTF_CPU_NUM>;

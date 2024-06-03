@@ -1,0 +1,6 @@
+WB50N CPU MODULE
+M:	Ben Whitten <ben.whitten@lairdtech.com>
+S:	Maintained
+F:	board/laird/wb50n/
+F:	include/configs/wb50n.h
+F:	configs/wb50n_defconfig

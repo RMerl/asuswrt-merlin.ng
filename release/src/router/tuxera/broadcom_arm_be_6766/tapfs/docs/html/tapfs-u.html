@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<!-- This is an automatically generated file.  Do not edit.
+   Copyright (c) 2011-2020 Tuxera Inc.
+   -->
+<head>
+  <meta charset="utf-8"/>
+  <style>
+    table.head, table.foot { width: 100%; }
+    td.head-rtitle, td.foot-os { text-align: right; }
+    td.head-vol { text-align: center; }
+    div.Pp { margin: 1ex 0ex; }
+    div.Nd, div.Bf, div.Op { display: inline; }
+    span.Pa, span.Ad { font-style: italic; }
+    span.Ms { font-weight: bold; }
+    dl.Bl-diag > dt { font-weight: bold; }
+    code.Nm, code.Fl, code.Cm, code.Ic, code.In, code.Fd, code.Fn,
+    code.Cd { font-weight: bold; font-family: inherit; }
+  </style>
+  <title>TAPFS-U(8)</title>
+</head>
+<body>
+<table class="head">
+  <tr>
+    <td class="head-ltitle">TAPFS-U(8)</td>
+    <td class="head-vol">System Manager's Manual</td>
+    <td class="head-rtitle">TAPFS-U(8)</td>
+  </tr>
+</table>
+<div class="manual-text">
+<section class="Sh">
+<h1 class="Sh" id="NAME"><a class="permalink" href="#NAME">NAME</a></h1>
+tapfs-u - FUSE-based APFS driver.
+</section>
+<section class="Sh">
+<h1 class="Sh" id="SYNOPSIS"><a class="permalink" href="#SYNOPSIS">SYNOPSIS</a></h1>
+<b>tapfs-u</b> <b>[-f]</b> <b>[-o </b><i>option</i><b></b><b>[,...]]</b>
+  <i>volume mount_point</i>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="DESCRIPTION"><a class="permalink" href="#DESCRIPTION">DESCRIPTION</a></h1>
+<b>tapfs-u</b> is a read-only driver which can access the content of APFS
+  volumes.
+<p class="Pp">The <i>volume</i> to be mounted can be either a block device or an
+    image file.</p>
+<section class="Ss">
+<h2 class="Ss" id="Access_Handling_and_Security"><a class="permalink" href="#Access_Handling_and_Security">Access
+  Handling and Security</a></h2>
+APFS has full support for UNIX permissions (mode/uid/gid).
+</section>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="OPTIONS"><a class="permalink" href="#OPTIONS">OPTIONS</a></h1>
+Below is a summary of the options that <b>tapfs-u</b> accepts.
+<dl class="Bl-tag">
+  <dt><b>-f/--foreground</b></dt>
+  <dd>Runs the file system in the foreground, without daemonizing it (which is
+      the default behaviour). This means that any error messages are printed
+      directly to the console.</dd>
+  <dt><b>-h/--help</b></dt>
+  <dd>Displays a brief help message including version number and copyright
+      information.</dd>
+  <dt><b>-v/--verbose</b></dt>
+  <dd>No-op option that APFS/U accepts in order to be compatible with options
+      passed by <b>mount</b>(8).</dd>
+  <dt><b>-V/--version</b></dt>
+  <dd>Dumps the version number of APFS/U and exits immediately.</dd>
+  <dt><b>-o/--options</b> <i>option</i><b>[,...]</b></dt>
+  <dd>The mount options. These are described in more detail below.</dd>
+</dl>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="MOUNT_OPTIONS"><a class="permalink" href="#MOUNT_OPTIONS">MOUNT
+  OPTIONS</a></h1>
+Below is a summary of the mount options that <b>tapfs-u</b> accepts.
+<dl class="Bl-tag">
+  <dt><b>volume_id=</b><i>id</i></dt>
+  <dd>This option selects a volume in the APFS container other than the default
+      one.</dd>
+  <dt><b>vol_uuid=</b><i>uuid</i></dt>
+  <dd>This option selects a volume by its UUID, as shown by
+    <b>apfsinfo</b>.</dd>
+  <dt><b>vol_name=</b><i>name</i></dt>
+  <dd>This option selects a volume by its name.</dd>
+  <dt><b>passphrase=</b><i>passphrase</i></dt>
+  <dd>This optional option specifies the password on the commandline (unsafe).
+      If it is omitted, the driver will ask for the password when accessing an
+      encrypted volume.</dd>
+  <dt><b>tier2=</b><i>tier2-device</i></dt>
+  <dd>This optional option specifies a tier2 device. This is only needed for
+      fusion drives. In this case, specify the SSD as main device and the HD as
+      tier2 device.</dd>
+  <dt><b>allow_other</b></dt>
+  <dd>This option overrides the security measure restricting file access to the
+      user mounting the filesystem. This option is only allowed to root, but
+      this restriction can be overridden by the 'user_allow_other' option in the
+      /etc/fuse.conf file.</dd>
+  <dt><b>max_read=</b><i>value</i></dt>
+  <dd>With this option the maximum size of read operations can be set. The
+      default is infinite. Note that the size of read requests is limited anyway
+      to 32 pages (which is 128 KiB on i386).</dd>
+  <dt><b>no_def_opts</b></dt>
+  <dd>By default tapfs-u acts as if &quot;allow_other&quot; (allow any user to
+      access files) &quot;default_permissions&quot; (uid/gid/mode permission
+      checks enabled) and &quot;nonempty&quot; (allow mounting on non-empty
+      directories) were set. &quot;no_def_opts&quot; cancels these default
+      options.</dd>
+  <dt><b>big_writes</b></dt>
+  <dd>This option prevents fuse from splitting write buffers into 4K chunks,
+      enabling big write buffers to be transferred from the application in a
+      single step (up to some system limit, generally 128 KiB).
+    <br/>
+    (Only available in FUSE 2.8 and higher.)</dd>
+  <dt><b>debug</b></dt>
+  <dd>Makes tapfs-u to print a lot of debug output from libfuse and libapfs (if
+      compiled with debug messages enabled).</dd>
+</dl>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="EXAMPLES"><a class="permalink" href="#EXAMPLES">EXAMPLES</a></h1>
+Mount /dev/sda1 to /mnt/apfsvol:
+<div class="Bd-indent">
+<p class="Pp"><b>tapfs-u /dev/sda1 /mnt/apfsvol</b></p>
+<p class="Pp"></p>
+</div>
+Read-only mount /dev/sda5 to /home/user/mnt:
+<div class="Bd-indent">
+<p class="Pp"><b>tapfs-u /dev/sda5 /home/user/mnt -o ro</b></p>
+<p class="Pp"></p>
+</div>
+Unmount /mnt/apfsvol:
+<div class="Bd-indent">
+<p class="Pp"><b>umount /mnt/apfsvol</b></p>
+<p class="Pp"></p>
+</div>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="EXIT_CODES"><a class="permalink" href="#EXIT_CODES">EXIT
+  CODES</a></h1>
+Exit code 0 means success, and everything else means error. Currently the driver
+  only returns 1 on failure (additional error info is printed to stderr).
+</section>
+<section class="Sh">
+<h1 class="Sh" id="KNOWN_ISSUES"><a class="permalink" href="#KNOWN_ISSUES">KNOWN
+  ISSUES</a></h1>
+No known issues.
+<p class="Pp">Please see:</p>
+<div class="Bd-indent">http://www.tuxera.com/support/</div>
+for info on commercial support services.
+</section>
+<section class="Sh">
+<h1 class="Sh" id="AUTHORS"><a class="permalink" href="#AUTHORS">AUTHORS</a></h1>
+<b>tapfs-u</b> was written in 2018 by Simon Gander for Tuxera Inc.
+</section>
+</div>
+<table class="foot">
+  <tr>
+    <td class="foot-date">September 2020</td>
+    <td class="foot-os">Tuxera APFS/U 3020.7.28.4</td>
+  </tr>
+</table>
+</body>
+</html>

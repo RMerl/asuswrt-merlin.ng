@@ -1,0 +1,15 @@
+if TARGET_TS4600
+
+config SYS_BOARD
+	default "ts4600"
+
+config SYS_VENDOR
+	default "technologic"
+
+config SYS_SOC
+	default "mxs"
+
+config SYS_CONFIG_NAME
+	default "ts4600"
+
+endif

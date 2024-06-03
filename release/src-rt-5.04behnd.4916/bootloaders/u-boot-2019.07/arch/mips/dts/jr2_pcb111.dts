@@ -1,0 +1,474 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2018 Microsemi Corporation
+ */
+
+/dts-v1/;
+#include "mscc,jr2.dtsi"
+#include <dt-bindings/mscc/jr2_data.h>
+
+/ {
+	model = "Jaguar2 Cu48 PCB111 Reference Board";
+	compatible = "mscc,jr2-pcb111", "mscc,jr2";
+
+	aliases {
+		spi0 = &spi0;
+		serial0 = &uart0;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	gpio-leds {
+		compatible = "gpio-leds";
+
+		status_green {
+			label = "pcb111:green:status";
+			gpios = <&gpio 12 0>;
+			default-state = "on";
+		};
+
+		status_red {
+			label = "pcb111:red:status";
+			gpios = <&gpio 13 0>;
+			default-state = "off";
+		};
+	};
+};
+
+&uart0 {
+	status = "okay";
+};
+
+&spi0 {
+	status = "okay";
+	spi-flash@0 {
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <18000000>; /* input clock */
+		reg = <0>; /* CS0 */
+	};
+};
+
+&gpio {
+	/* SPIO only use DO, CLK, no inputs */
+	sgpio1_pins: sgpio1-pins {
+		pins = "GPIO_4", "GPIO_5";
+		function = "sg1";
+	};
+};
+
+&sgpio {
+	status = "okay";
+	sgpio-ports = <0xffffffff>;
+};
+
+&sgpio1 {
+	status = "okay";
+	sgpio-ports = <0x001effff>;
+};
+
+&sgpio2 {
+	status = "okay";
+	sgpio-ports = <0xff000000>;
+	gpio-ranges = <&sgpio2 0 0 96>;
+};
+
+&mdio1 {
+	status = "okay";
+
+	phy0: ethernet-phy@0 {
+		reg = <0>;
+	};
+	phy1: ethernet-phy@1 {
+		reg = <1>;
+	};
+	phy2: ethernet-phy@2 {
+		reg = <2>;
+	};
+	phy3: ethernet-phy@3 {
+		reg = <3>;
+	};
+	phy4: ethernet-phy@4 {
+		reg = <4>;
+	};
+	phy5: ethernet-phy@5 {
+		reg = <5>;
+	};
+	phy6: ethernet-phy@6 {
+		reg = <6>;
+	};
+	phy7: ethernet-phy@7 {
+		reg = <7>;
+	};
+	phy8: ethernet-phy@8 {
+		reg = <8>;
+	};
+	phy9: ethernet-phy@9 {
+		reg = <9>;
+	};
+	phy10: ethernet-phy@10 {
+		reg = <10>;
+	};
+	phy11: ethernet-phy@11 {
+		reg = <11>;
+	};
+	phy12: ethernet-phy@12 {
+		reg = <12>;
+	};
+	phy13: ethernet-phy@13 {
+		reg = <13>;
+	};
+	phy14: ethernet-phy@14 {
+		reg = <14>;
+	};
+	phy15: ethernet-phy@15 {
+		reg = <15>;
+	};
+	phy16: ethernet-phy@16 {
+		reg = <16>;
+	};
+	phy17: ethernet-phy@17 {
+		reg = <17>;
+	};
+	phy18: ethernet-phy@18 {
+		reg = <18>;
+	};
+	phy19: ethernet-phy@19 {
+		reg = <19>;
+	};
+	phy20: ethernet-phy@20 {
+		reg = <20>;
+	};
+	phy21: ethernet-phy@21 {
+		reg = <21>;
+	};
+	phy22: ethernet-phy@22 {
+		reg = <22>;
+	};
+	phy23: ethernet-phy@23 {
+		reg = <23>;
+	};
+};
+
+&mdio2 {
+	status = "okay";
+
+	phy24: ethernet-phy@24 {
+		reg = <0>;
+	};
+	phy25: ethernet-phy@25 {
+		reg = <1>;
+	};
+	phy26: ethernet-phy@26 {
+		reg = <2>;
+	};
+	phy27: ethernet-phy@27 {
+		reg = <3>;
+	};
+	phy28: ethernet-phy@28 {
+		reg = <4>;
+	};
+	phy29: ethernet-phy@29 {
+		reg = <5>;
+	};
+	phy30: ethernet-phy@30 {
+		reg = <6>;
+	};
+	phy31: ethernet-phy@31 {
+		reg = <7>;
+	};
+	phy32: ethernet-phy@32 {
+		reg = <8>;
+	};
+	phy33: ethernet-phy@33 {
+		reg = <9>;
+	};
+	phy34: ethernet-phy@34 {
+		reg = <10>;
+	};
+	phy35: ethernet-phy@35 {
+		reg = <11>;
+	};
+	phy36: ethernet-phy@36 {
+		reg = <12>;
+	};
+	phy37: ethernet-phy@37 {
+		reg = <13>;
+	};
+	phy38: ethernet-phy@38 {
+		reg = <14>;
+	};
+	phy39: ethernet-phy@39 {
+		reg = <15>;
+	};
+	phy40: ethernet-phy@40 {
+		reg = <16>;
+	};
+	phy41: ethernet-phy@41 {
+		reg = <17>;
+	};
+	phy42: ethernet-phy@42 {
+		reg = <18>;
+	};
+	phy43: ethernet-phy@43 {
+		reg = <19>;
+	};
+	phy44: ethernet-phy@44 {
+		reg = <20>;
+	};
+	phy45: ethernet-phy@45 {
+		reg = <21>;
+	};
+	phy46: ethernet-phy@46 {
+		reg = <22>;
+	};
+	phy47: ethernet-phy@47 {
+		reg = <23>;
+	};
+};
+
+&switch {
+	ethernet-ports {
+		port0: port@0 {
+			reg = <0>;
+			phy-handle = <&phy0>;
+			phys = <&serdes_hsio 0 SERDES6G(4) PHY_MODE_QSGMII>;
+		};
+		port1: port@1 {
+			reg = <1>;
+			phy-handle = <&phy1>;
+			phys = <&serdes_hsio 1 0xff PHY_MODE_QSGMII>;
+		};
+		port2: port@2 {
+			reg = <2>;
+			phy-handle = <&phy2>;
+			phys = <&serdes_hsio 2 0xff PHY_MODE_QSGMII>;
+		};
+		port3: port@3 {
+			reg = <3>;
+			phy-handle = <&phy3>;
+			phys = <&serdes_hsio 3 0xff PHY_MODE_QSGMII>;
+		};
+		port4: port@4 {
+			reg = <4>;
+			phy-handle = <&phy4>;
+			phys = <&serdes_hsio 4 SERDES6G(5) PHY_MODE_QSGMII>;
+		};
+		port5: port@5 {
+			reg = <5>;
+			phy-handle = <&phy5>;
+			phys = <&serdes_hsio 5 0xff PHY_MODE_QSGMII>;
+		};
+		port6: port@6 {
+			reg = <6>;
+			phy-handle = <&phy6>;
+			phys = <&serdes_hsio 6 0xff PHY_MODE_QSGMII>;
+		};
+		port7: port@7 {
+			reg = <7>;
+			phy-handle = <&phy7>;
+			phys = <&serdes_hsio 7 0xff PHY_MODE_QSGMII>;
+		};
+		port8: port@8 {
+			reg = <8>;
+			phy-handle = <&phy8>;
+			phys = <&serdes_hsio 8 SERDES6G(6) PHY_MODE_QSGMII>;
+		};
+		port9: port@9 {
+			reg = <9>;
+			phy-handle = <&phy9>;
+			phys = <&serdes_hsio 9 0xff PHY_MODE_QSGMII>;
+		};
+		port10: port@10 {
+			reg = <10>;
+			phy-handle = <&phy10>;
+			phys = <&serdes_hsio 10 0xff PHY_MODE_QSGMII>;
+		};
+		port11: port@11 {
+			reg = <11>;
+			phy-handle = <&phy11>;
+			phys = <&serdes_hsio 11 0xff PHY_MODE_QSGMII>;
+		};
+		port12: port@12 {
+			reg = <12>;
+			phy-handle = <&phy12>;
+			phys = <&serdes_hsio 12 SERDES6G(7) PHY_MODE_QSGMII>;
+		};
+		port13: port@13 {
+			reg = <13>;
+			phy-handle = <&phy13>;
+			phys = <&serdes_hsio 13 0xff PHY_MODE_QSGMII>;
+		};
+		port14: port@14 {
+			reg = <14>;
+			phy-handle = <&phy14>;
+			phys = <&serdes_hsio 14 0xff PHY_MODE_QSGMII>;
+		};
+		port15: port@15 {
+			reg = <15>;
+			phy-handle = <&phy15>;
+			phys = <&serdes_hsio 15 0xff PHY_MODE_QSGMII>;
+		};
+		port16: port@16 {
+			reg = <16>;
+			phy-handle = <&phy16>;
+			phys = <&serdes_hsio 16 SERDES6G(8) PHY_MODE_QSGMII>;
+		};
+		port17: port@17 {
+			reg = <17>;
+			phy-handle = <&phy17>;
+			phys = <&serdes_hsio 17 0xff PHY_MODE_QSGMII>;
+		};
+		port18: port@18 {
+			reg = <18>;
+			phy-handle = <&phy18>;
+			phys = <&serdes_hsio 18 0xff PHY_MODE_QSGMII>;
+		};
+		port19: port@19 {
+			reg = <19>;
+			phy-handle = <&phy19>;
+			phys = <&serdes_hsio 19 0xff PHY_MODE_QSGMII>;
+		};
+		port20: port@20 {
+			reg = <20>;
+			phy-handle = <&phy20>;
+			phys = <&serdes_hsio 20 SERDES6G(9) PHY_MODE_QSGMII>;
+		};
+		port21: port@21 {
+			reg = <21>;
+			phy-handle = <&phy21>;
+			phys = <&serdes_hsio 21 0xff PHY_MODE_QSGMII>;
+		};
+		port22: port@22 {
+			reg = <22>;
+			phy-handle = <&phy22>;
+			phys = <&serdes_hsio 22 0xff PHY_MODE_QSGMII>;
+		};
+		port23: port@23 {
+			reg = <23>;
+			phy-handle = <&phy23>;
+			phys = <&serdes_hsio 23 0xff PHY_MODE_QSGMII>;
+		};
+		port24: port@24 {
+			reg = <24>;
+			phy-handle = <&phy24>;
+			phys = <&serdes_hsio 24 SERDES6G(10) PHY_MODE_QSGMII>;
+		};
+		port25: port@25 {
+			reg = <25>;
+			phy-handle = <&phy25>;
+			phys = <&serdes_hsio 25 0xff PHY_MODE_QSGMII>;
+		};
+		port26: port@26 {
+			reg = <26>;
+			phy-handle = <&phy26>;
+			phys = <&serdes_hsio 26 0xff PHY_MODE_QSGMII>;
+		};
+		port27: port@27 {
+			reg = <27>;
+			phy-handle = <&phy27>;
+			phys = <&serdes_hsio 27 0xff PHY_MODE_QSGMII>;
+		};
+		port28: port@28 {
+			reg = <28>;
+			phy-handle = <&phy28>;
+			phys = <&serdes_hsio 28 SERDES6G(11) PHY_MODE_QSGMII>;
+		};
+		port29: port@29 {
+			reg = <29>;
+			phy-handle = <&phy29>;
+			phys = <&serdes_hsio 29 0xff PHY_MODE_QSGMII>;
+		};
+		port30: port@30 {
+			reg = <30>;
+			phy-handle = <&phy30>;
+			phys = <&serdes_hsio 30 0xff PHY_MODE_QSGMII>;
+		};
+		port31: port@31 {
+			reg = <31>;
+			phy-handle = <&phy31>;
+			phys = <&serdes_hsio 31 0xff PHY_MODE_QSGMII>;
+		};
+		port32: port@32 {
+			reg = <32>;
+			phy-handle = <&phy32>;
+			phys = <&serdes_hsio 32 SERDES6G(12) PHY_MODE_QSGMII>;
+		};
+		port33: port@33 {
+			reg = <33>;
+			phy-handle = <&phy33>;
+			phys = <&serdes_hsio 33 0xff PHY_MODE_QSGMII>;
+		};
+		port34: port@34 {
+			reg = <34>;
+			phy-handle = <&phy34>;
+			phys = <&serdes_hsio 34 0xff PHY_MODE_QSGMII>;
+		};
+		port35: port@35 {
+			reg = <35>;
+			phy-handle = <&phy35>;
+			phys = <&serdes_hsio 35 0xff PHY_MODE_QSGMII>;
+		};
+		port36: port@36 {
+			reg = <36>;
+			phy-handle = <&phy36>;
+			phys = <&serdes_hsio 36 SERDES6G(13) PHY_MODE_QSGMII>;
+		};
+		port37: port@37 {
+			reg = <37>;
+			phy-handle = <&phy37>;
+			phys = <&serdes_hsio 37 0xff PHY_MODE_QSGMII>;
+		};
+		port38: port@38 {
+			reg = <38>;
+			phy-handle = <&phy38>;
+			phys = <&serdes_hsio 38 0xff PHY_MODE_QSGMII>;
+		};
+		port39: port@39 {
+			reg = <39>;
+			phy-handle = <&phy39>;
+			phys = <&serdes_hsio 39 0xff PHY_MODE_QSGMII>;
+		};
+		port40: port@40 {
+			reg = <40>;
+			phy-handle = <&phy40>;
+			phys = <&serdes_hsio 40 SERDES6G(14) PHY_MODE_QSGMII>;
+		};
+		port41: port@41 {
+			reg = <41>;
+			phy-handle = <&phy41>;
+			phys = <&serdes_hsio 41 0xff PHY_MODE_QSGMII>;
+		};
+		port42: port@42 {
+			reg = <42>;
+			phy-handle = <&phy42>;
+			phys = <&serdes_hsio 42 0xff PHY_MODE_QSGMII>;
+		};
+		port43: port@43 {
+			reg = <43>;
+			phy-handle = <&phy43>;
+			phys = <&serdes_hsio 43 0xff PHY_MODE_QSGMII>;
+		};
+		port44: port@44 {
+			reg = <44>;
+			phy-handle = <&phy44>;
+			phys = <&serdes_hsio 44 SERDES6G(15) PHY_MODE_QSGMII>;
+		};
+		port45: port@45 {
+			reg = <45>;
+			phy-handle = <&phy45>;
+			phys = <&serdes_hsio 45 0xff PHY_MODE_QSGMII>;
+		};
+		port46: port@46 {
+			reg = <46>;
+			phy-handle = <&phy46>;
+			phys = <&serdes_hsio 46 0xff PHY_MODE_QSGMII>;
+		};
+		port47: port@47 {
+			reg = <47>;
+			phy-handle = <&phy47>;
+			phys = <&serdes_hsio 47 0xff PHY_MODE_QSGMII>;
+		};
+	};
+};

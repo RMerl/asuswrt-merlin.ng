@@ -1,0 +1,33 @@
+# SPDX-License-Identifier: GPL-2.0
+#
+# Copyright (c) 2018, Xilinx, Inc.
+
+if ARCH_ZYNQ
+
+config CMD_ZYNQ
+	bool "Enable Zynq specific commands"
+	default y
+	help
+	  Enables Zynq specific commands.
+
+config CMD_ZYNQ_AES
+	bool "Enable zynq aes command for decryption of encrypted images"
+	depends on CMD_ZYNQ
+	depends on FPGA_ZYNQPL
+	help
+	  Decrypts the encrypted image present in source address
+	  and places the decrypted image at destination address.
+
+config CMD_ZYNQ_RSA
+	bool "Enable zynq rsa command for loading secure images"
+	default y
+	depends on CMD_ZYNQ
+	depends on CMD_ZYNQ_AES
+	help
+	  Enabling this will support zynq secure image verification.
+	  The secure image is a xilinx specific BOOT.BIN with
+	  either authentication or encryption or both encryption
+	  and authentication feature enabled while generating
+	  BOOT.BIN using Xilinx bootgen tool.
+
+endif

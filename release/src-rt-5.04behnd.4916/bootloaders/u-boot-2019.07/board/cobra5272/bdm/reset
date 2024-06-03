@@ -1,0 +1,2 @@
+m68k-bdm-elf-gdb -n -x bdm/gdbinit.reset
+

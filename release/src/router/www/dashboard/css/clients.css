@@ -1,0 +1,496 @@
+@charset "UTF-8";
+.client-detail {
+    border-radius: 16px;
+    background-color: var(--bg-content-color);
+}
+
+.chart {
+    width: 47px;
+    height: 47px;
+    margin: 12px auto;
+    border-radius: 50%;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.chart::after {
+    --bord: 20%;
+    content: "";
+    position: absolute;
+    left: 49%;
+    top: 50%;
+    transform: translate(-50%, -49%);
+    width: calc(100% - var(--bord));
+    height: calc(100% - var(--bord));
+    background-color: var(--bg-circle-chart-color);
+    border-radius: inherit;
+}
+
+.chart-sub-content-text,
+.content-data-value {
+    color: var(--text-value-color);
+    font-size: 28px;
+    text-align: right;
+}
+.chart-sub-content-title,
+.content-data-title {
+    color: var(--text-title-color);
+    font-size: 16px;
+    font-weight: bolder;
+}
+.chart-color-2g1 {
+    background-color: var(--circle-chart-color-1);
+}
+
+.chart-color-5g1 {
+    background-color: var(--circle-chart-color-2);
+}
+.chart-color-5g2 {
+    background-color: var(--circle-chart-color-3);
+}
+.chart-color-6g1 {
+    background-color: var(--circle-chart-color-4);
+}
+.bar-percent-0 {
+    width: 0%;
+}
+.bar-percent-1 {
+    width: 1%;
+}
+.bar-percent-2 {
+    width: 2%;
+}
+.bar-percent-3 {
+    width: 3%;
+}
+.bar-percent-4 {
+    width: 4%;
+}
+.bar-percent-5 {
+    width: 5%;
+}
+.bar-percent-6 {
+    width: 6%;
+}
+.bar-percent-7 {
+    width: 7%;
+}
+.bar-percent-8 {
+    width: 8%;
+}
+.bar-percent-9 {
+    width: 9%;
+}
+.bar-percent-10 {
+    width: 10%;
+}
+.bar-percent-11 {
+    width: 11%;
+}
+.bar-percent-12 {
+    width: 12%;
+}
+.bar-percent-13 {
+    width: 13%;
+}
+.bar-percent-14 {
+    width: 14%;
+}
+.bar-percent-15 {
+    width: 15%;
+}
+.bar-percent-16 {
+    width: 16%;
+}
+.bar-percent-17 {
+    width: 17%;
+}
+.bar-percent-18 {
+    width: 18%;
+}
+.bar-percent-19 {
+    width: 19%;
+}
+.bar-percent-20 {
+    width: 20%;
+}
+.bar-percent-21 {
+    width: 21%;
+}
+.bar-percent-22 {
+    width: 22%;
+}
+.bar-percent-23 {
+    width: 23%;
+}
+.bar-percent-24 {
+    width: 24%;
+}
+.bar-percent-25 {
+    width: 25%;
+}
+.bar-percent-26 {
+    width: 26%;
+}
+.bar-percent-27 {
+    width: 27%;
+}
+.bar-percent-28 {
+    width: 28%;
+}
+.bar-percent29 {
+    width: 29%;
+}
+.bar-percent-30 {
+    width: 30%;
+}
+.bar-percent-31 {
+    width: 31%;
+}
+.bar-percent-32 {
+    width: 32%;
+}
+.bar-percent-33 {
+    width: 33%;
+}
+.bar-percent-34 {
+    width: 34%;
+}
+.bar-percent-35 {
+    width: 35%;
+}
+.bar-percent-36 {
+    width: 36%;
+}
+.bar-percent-37 {
+    width: 37%;
+}
+.bar-percent-38 {
+    width: 38%;
+}
+.bar-percent-39 {
+    width: 39%;
+}
+.bar-percent-40 {
+    width: 40%;
+}
+.bar-percent-41 {
+    width: 41%;
+}
+.bar-percent-42 {
+    width: 42%;
+}
+.bar-percent-43 {
+    width: 43%;
+}
+.bar-percent-44 {
+    width: 44%;
+}
+.bar-percent-45 {
+    width: 45%;
+}
+.bar-percent-46 {
+    width: 46%;
+}
+.bar-percent-47 {
+    width: 47%;
+}
+.bar-percent-48 {
+    width: 48%;
+}
+.bar-percent-49 {
+    width: 49%;
+}
+.bar-percent-50 {
+    width: 50%;
+}
+.bar-percent-51 {
+    width: 51%;
+}
+.bar-percent-52 {
+    width: 52%;
+}
+.bar-percent-53 {
+    width: 53%;
+}
+.bar-percent-54 {
+    width: 54%;
+}
+.bar-percent-55 {
+    width: 55%;
+}
+.bar-percent-56 {
+    width: 56%;
+}
+.bar-percent-57 {
+    width: 57%;
+}
+.bar-percent-58 {
+    width: 58%;
+}
+.bar-percent-59 {
+    width: 59%;
+}
+.bar-percent-60 {
+    width: 60%;
+}
+.bar-percent-61 {
+    width: 61%;
+}
+.bar-percent-62 {
+    width: 62%;
+}
+.bar-percent-63 {
+    width: 63%;
+}
+.bar-percent-64 {
+    width: 64%;
+}
+.bar-percent-65 {
+    width: 65%;
+}
+.bar-percent-66 {
+    width: 66%;
+}
+.bar-percent-67 {
+    width: 67%;
+}
+.bar-percent-68 {
+    width: 68%;
+}
+.bar-percent-69 {
+    width: 69%;
+}
+.bar-percent-70 {
+    width: 70%;
+}
+.bar-percent-71 {
+    width: 71%;
+}
+.bar-percent-72 {
+    width: 72%;
+}
+.bar-percent-73 {
+    width: 73%;
+}
+.bar-percent-74 {
+    width: 74%;
+}
+.bar-percent-75 {
+    width: 75%;
+}
+.bar-percent-76 {
+    width: 76%;
+}
+.bar-percent-77 {
+    width: 77%;
+}
+.bar-percent7-8 {
+    width: 78%;
+}
+.bar-percent-79 {
+    width: 79%;
+}
+.bar-percent8-0 {
+    width: 80%;
+}
+.bar-percent-81 {
+    width: 81%;
+}
+.bar-percent-82 {
+    width: 82%;
+}
+.bar-percent-83 {
+    width: 83%;
+}
+.bar-percent-84 {
+    width: 84%;
+}
+.bar-percent-85 {
+    width: 85%;
+}
+.bar-percent-86 {
+    width: 86%;
+}
+.bar-percent-87 {
+    width: 87%;
+}
+.bar-percent-88 {
+    width: 88%;
+}
+.bar-percent-89 {
+    width: 89%;
+}
+.bar-percent-90 {
+    width: 90%;
+}
+.bar-percent-91 {
+    width: 91%;
+}
+.bar-percent-92 {
+    width: 92%;
+}
+.bar-percent-93 {
+    width: 93%;
+}
+.bar-percent-94 {
+    width: 94%;
+}
+.bar-percent-95 {
+    width: 95%;
+}
+.bar-percent-96 {
+    width: 96%;
+}
+.bar-percent-97 {
+    width: 97%;
+}
+.bar-percent-98 {
+    width: 98%;
+}
+.bar-percent-99 {
+    width: 99%;
+}
+.bar-percent-100 {
+    width: 100%;
+}
+.divide-line {
+    height: 1px;
+    background-color: var(--bg-divide-line-color);
+}
+.clientBorder{
+    border: 1px solid var(--bg-divide-line-color);
+    border-radius: 16px;
+}
+.icon-color-active-1 {
+    background-color: var(--icon-active-color);
+}
+div[role~="icon-inner"] {
+    position: relative;
+    z-index: 1;
+    font-size: 14px;
+    color: var(--text-regular-color);
+}
+.btn-input-label {
+    background-color: var(--bg-btn-regular-color);
+    border-color: var(--bg-btn-regular-color);
+    color: var(--text-regular-color);
+}
+.btn-input-icon {
+    color: var(--bg-btn-confirm-color);
+    border-color: var(--bg-btn-confirm-color);
+    background-color: var(--bg-btn-confirm-color);
+}
+.card-sub-content {
+    width: 90%;
+    margin-left: auto;
+    background-color: var(--bg-btn-regular-color);
+    border-radius: 10px;
+}
+.disk-banner {
+    padding: 8px 16px;
+}
+.disk-banner:hover {
+    background-color: rgb(93, 114, 136);
+    border-radius: 10px;
+    cursor: pointer;
+}
+/* DNS PING */
+
+.dns-text {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-value-color);
+}
+.dns-empty-text {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text-regular-color);
+}
+
+.progress {
+    height: 5px;
+    background: var(--bg-loader-color);
+}
+.progress-active {
+    border-radius: 4px;
+    background-image: linear-gradient(var(--gradient-loader-color));
+}
+.dns-content-default {
+    overflow-y: auto;
+    max-height: 500px;
+}
+
+/* SYSTEM */
+.system-cpu-tab {
+    width: 12px;
+    height: 12px;
+    background-color: var(--chart-color-1);
+    border-radius: 2px;
+}
+.system-ram-tab {
+    width: 12px;
+    height: 12px;
+    background-color: var(--chart-color-2);
+    border-radius: 2px;
+}
+.system-sub-text {
+    color: var(--text-underline-color);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.extend-panel {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    border-radius: 4px;
+    border: 1px solid var(--bg-divide-line-color);
+}
+
+.detail-table-height {
+    max-height: 600px;
+    overflow-y: auto;
+}
+.list-square-tab {
+    width: 12px;
+    height: 12px;
+
+    border-radius: 2px;
+}
+.list-square-color-1 {
+    background-color: var(--circle-chart-color-1);
+}
+.list-square-color-2 {
+    background-color: var(--circle-chart-color-2);
+}
+.list-square-color-3 {
+    background-color: var(--circle-chart-color-3);
+}
+.list-square-color-4 {
+    background-color: var(--circle-chart-color-4);
+}
+.list-square-color-5 {
+    background-color: var(--circle-chart-color-5);
+}
+/* width < 768px */
+@media (max-width: 768px) {
+    .dns-content-default {
+        overflow-y: hidden;
+        max-height: none;
+    }
+}
+.top5Table{
+    min-height: 300px;
+}
+.aiProtection-scenario {
+    width: 75%;
+}
+.text-primary {
+    color: var(--bg-btn-confirm-color) !important;
+}
+.fixedChartSize {
+    height: 300px !important;
+}

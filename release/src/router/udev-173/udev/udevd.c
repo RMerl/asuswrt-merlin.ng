@@ -43,7 +43,7 @@
 #include <sys/ioctl.h>
 #include <sys/inotify.h>
 #include <sys/utsname.h>
-#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
 #include <sys/sysmacros.h>
 #endif
 

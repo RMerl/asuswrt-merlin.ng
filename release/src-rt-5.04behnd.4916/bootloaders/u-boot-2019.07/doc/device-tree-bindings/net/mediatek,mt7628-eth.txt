@@ -1,0 +1,17 @@
+* MediaTek Frame Engine Ethernet controller
+
+Required properties:
+- compatible: should be "mediatek,mt7628-eth"
+- reg: address and length of the register set for the frame
+       engine ethernet controller and the internal switch.
+- syscon: phandle to the system controller
+
+Example:
+
+eth@10100000 {
+	compatible = "mediatek,mt7628-eth";
+	reg = <0x10100000 0x10000
+	       0x10110000 0x8000>;
+
+	syscon = <&sysc>;
+};

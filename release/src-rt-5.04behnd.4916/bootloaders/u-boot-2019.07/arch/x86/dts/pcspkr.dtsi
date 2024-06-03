@@ -1,0 +1,5 @@
+/ {
+	pcspkr {
+		compatible = "i8254,beeper";
+	};
+};

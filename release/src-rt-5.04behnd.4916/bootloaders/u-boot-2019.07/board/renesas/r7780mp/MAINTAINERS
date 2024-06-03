@@ -1,0 +1,7 @@
+R7780MP BOARD
+M:	Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
+M:	Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+S:	Maintained
+F:	board/renesas/r7780mp/
+F:	include/configs/r7780mp.h
+F:	configs/r7780mp_defconfig

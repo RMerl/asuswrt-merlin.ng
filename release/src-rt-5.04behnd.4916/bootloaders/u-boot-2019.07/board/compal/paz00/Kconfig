@@ -1,0 +1,12 @@
+if TARGET_PAZ00
+
+config SYS_BOARD
+	default "paz00"
+
+config SYS_VENDOR
+	default "compal"
+
+config SYS_CONFIG_NAME
+	default "paz00"
+
+endif

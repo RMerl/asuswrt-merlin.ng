@@ -1,0 +1,12 @@
+diff -urN a/wifi_hal.c b/wifi_hal.c
+--- a/wifi_hal.c	2023-08-11 18:33:13.000000000 -0700
++++ b/wifi_hal.c	2023-08-18 15:46:39.418069635 -0700
+@@ -1768,7 +1768,7 @@
+ 	INT radioIndex,
+ 	mac_address_t *clientMacAddress,
+ 	wifi_associated_dev_tid_stats_t *tid_stats,
+-	uint64_t *handle)
++	ULLONG *handle)
+ {
+ /* NOT IMPLEMENTED */
+ 	(void)radioIndex;

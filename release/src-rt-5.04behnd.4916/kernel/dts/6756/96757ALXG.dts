@@ -1,0 +1,149 @@
+#include "6756.dtsi"
+
+/ {
+	memory_controller {
+		memcfg = <(BP_DDR_TYPE_DDR4           | \
+			BP_DDR_SPEED_1067_15_15_15 | \
+			BP_DDR_TOTAL_SIZE_1024MB   | \
+			BP_DDR_DEVICE_WIDTH_16     | \
+			BP_DDR_TOTAL_WIDTH_16BIT   | \
+			BP_DDR_6756_DEFAULT          | \
+			BP_DDR_CONFIG_DEBUG)>;
+	};
+
+	buttons {
+		compatible = "brcm,buttons";
+		reset_button {
+			ext_irq = <&bca_extintr 77 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			press {
+				print = "Button Press -- Hold for 5s to do restore to default";
+			};
+			hold {
+				rst_to_dflt = <5>;
+			};
+			release {
+				reset = <0>;
+			};	
+		};
+		ses_button {
+			ext_irq = <&bca_extintr 78 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			release {
+				ses_short_period = <0>;
+				ses_long_period = <3>;
+			};
+		};
+	};
+};
+
+
+&switch0 {
+	ports {
+		port_gphy {
+			phy-handle = <&phy_gphy>;
+			network-leds=<&led0 &led1>;
+			status = "okay";
+		};
+	};
+};
+
+&usb_ctrl {
+	pinctrl-names="default";
+	pinctrl-0 = <&usb0_pwr_pins &usb1_pwr_pins>;
+	pwron-bias-pull-up;
+	status = "okay";
+	xhci-enable;
+};
+
+&usb0_xhci {
+	status = "okay";
+};
+
+&usb0_ehci {
+	status = "okay";
+};
+
+&usb1_ehci {
+	status = "okay";
+};
+
+&usb0_ohci {
+	status = "okay";
+};
+
+&usb1_ohci {
+	status = "okay";
+};
+
+&sdhci {
+	pinctrl-names="default";
+	pinctrl-0 = <&emmc_ctrl_pins>;
+	status = "okay";
+};
+
+&i2c0 {
+	pinctrl-names="default";
+	pinctrl-0 = <&i2c_sda_pin_16 &i2c_scl_pin_17>;
+	status = "okay";
+
+	codec_tas2563:codec_tas2563@48{
+		compatible = "ti,tas2563amp";
+		reg = <0x48>;
+	};
+	codec_capture:codec_capture@4e{
+		compatible = "ti,tlv320adc5120";
+		reg = <0x4e>;
+	};
+};
+
+&i2s {
+			pinctrl-0 = <&i2s_tx_sclk_pin_11 &i2s_tx_lrck_pin_12 &i2s_tx_sdata_pin_15 &i2s_tx_mclk_pin_14 &i2s_rx_sclk_pin_22 &i2s_rx_lrck_pin_23 &i2s_rx_sdata_pin_13 &i2s_rx_mclk_pin_24>;
+			pinctrl-names = "default";
+			status = "okay";
+			mic_sel_1-gpio = <&gpioc 9 GPIO_ACTIVE_LOW>;
+			mic_sel_2-gpio = <&gpioc 10 GPIO_ACTIVE_LOW>;
+			mic_array_sw1-gpio = <&gpioc 38 GPIO_ACTIVE_LOW>;
+			mic_array_sw2-gpio = <&gpioc 39 GPIO_ACTIVE_LOW>;
+			mic_array_sw3-gpio = <&gpioc 36 GPIO_ACTIVE_LOW>;
+			mic_power_en-gpio  = <&gpioc 26 GPIO_ACTIVE_LOW>;
+			mic_mute_detect-gpio  = <&gpioc 37 GPIO_ACTIVE_LOW>;
+			i2s_clk_select-gpio   = <&gpioc 67 GPIO_ACTIVE_LOW>;
+};
+
+&legacy_leds {
+        wl-sess-led = <&led5>;
+	wl0-led = <&led4>;
+	wl1-led = <&led3>;
+};
+&led_ctrl {
+	led0: port_0-led-0 {
+		active_low;
+		link = <(LED_SPEED_100|LED_SPEED_1G)>;
+		pinctrl-0=<&b_per_led_28_pin_68>;
+		status = "okay";
+	};
+	led1: port_0-led-2 {
+		active_low;
+		activity = <LED_SPEED_GBE>;
+		pinctrl-0=<&b_per_led_29_pin_69>;
+		status = "okay";
+	};
+	led3:led_gpio_27 {
+                compatible = "brcm,gpio-led";
+                software_led;
+                pin = <27>;
+                active_low;
+        };
+        led4:led_gpio_28 {
+                compatible = "brcm,gpio-led";
+                software_led;
+                pin = <28>;
+                active_low;
+        };
+        led5: sw_led_01 {
+                active_low;
+                pinctrl-0=<&a_per_led_01_pin_1>;
+                status = "okay";
+        };
+
+
+};

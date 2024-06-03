@@ -1,0 +1,14 @@
+if TARGET_AM57XX_EVM
+
+config SYS_BOARD
+	default "am57xx"
+
+config SYS_VENDOR
+	default "ti"
+
+config SYS_CONFIG_NAME
+	default "am57xx_evm"
+
+source "board/ti/common/Kconfig"
+
+endif

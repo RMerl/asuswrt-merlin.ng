@@ -1,0 +1,5 @@
+compatible = "brcm,xtmcfg";
+reg = <SAR_OFFSET SAR_SIZE>,
+      <TXPAF_OFFSET TXPAF_SIZE>;
+clk = SAR_CLK_FREQ;
+status = "disabled";

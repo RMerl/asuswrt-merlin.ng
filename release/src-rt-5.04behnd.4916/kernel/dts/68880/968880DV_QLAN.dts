@@ -1,0 +1,89 @@
+#include "inc/968880DV.dtsi"
+#include "inc/968880DV_SFP.dtsi"
+
+/ {
+        memory_controller {
+                memcfg = <(BP1_DDR_MCBSEL_FORMAT_VER1   | \
+                           BP1_DDR_TYPE_LPDDR4         | \
+                           BP1_DDR_SPEED_2133_36_39_39 | \
+                           BP1_DDR_WIDTH_32BIT         | \
+                           BP1_DDR_TOTAL_SIZE_8Gb      | \
+                           BP1_DDR_SSC_CONFIG_1        | \
+                           BP1_DDR_CONFIG_DEBUG)>;
+        };
+};
+
+/ {
+    model = "968880DV_QLAN";
+};
+
+&ethphytop {
+    xphy0-enabled;
+    xphy1-enabled;
+};
+
+&mdio_bus {
+    egphy0 {
+        status = "okay";
+    };
+    serdes00_xphy {
+        reg = <0x1c>;
+        enet-phy-lane-swap;
+        USXGMII-S;
+        status = "okay";
+    };
+    serdes00 {
+        status = "okay";
+        phy-handle = <&serdes00_xphy>;
+    };
+    serdes10_xphy {
+        enet-phy-lane-swap;
+        USXGMII-S;
+        status = "okay";
+    };
+    serdes10 {
+        status = "okay";
+        phy-handle = <&serdes10_xphy>;
+    };
+    serdes11_xphy {
+        enet-phy-lane-swap;
+        USXGMII-S;
+        status = "okay";
+    };
+    serdes11 {
+        status = "okay";
+        phy-handle = <&serdes11_xphy>;
+    };
+    serdes12_xphy {
+        enet-phy-lane-swap;
+        USXGMII-S;
+        status = "okay";
+    };
+    serdes12 {
+        phy-handle = <&serdes12_xphy>;
+        status = "okay";
+    };
+};
+
+&switch0 {
+    ports {
+        port_gphy0 {
+            status = "okay";
+        };
+        port_slan0 {
+            status = "okay";
+        };
+        port_qlan0 {
+            status = "okay";
+        };
+        port_qlan1 {
+            status = "okay";
+        };
+        port_qlan2 {
+            status = "okay";
+        };
+        port_wan@fiber {
+            status = "okay";
+        };
+    };
+};

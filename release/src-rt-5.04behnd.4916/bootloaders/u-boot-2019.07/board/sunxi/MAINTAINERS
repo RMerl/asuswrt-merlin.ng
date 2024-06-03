@@ -1,0 +1,479 @@
+SUNXI BOARD
+M:	Hans de Goede <hdegoede@redhat.com>
+S:	Maintained
+F:	board/sunxi/
+F:	include/configs/sun4i.h
+F:	configs/A10-OLinuXino-Lime_defconfig
+F:	configs/ba10_tv_box_defconfig
+F:	configs/Chuwi_V7_CW0825_defconfig
+F:	configs/Cubieboard_defconfig
+F:	configs/dserve_dsrv9703c_defconfig
+F:	configs/Hyundai_A7HD_defconfig
+F:	configs/inet1_defconfig
+F:	configs/inet97fv2_defconfig
+F:	configs/inet9f_rev03_defconfig
+F:	configs/jesurun_q5_defconfig
+F:	configs/Mele_A1000_defconfig
+F:	configs/Mele_M3_defconfig
+F:	configs/Mini-X_defconfig
+F:	configs/mk802_defconfig
+F:	configs/mk802ii_defconfig
+F:	configs/pov_protab2_ips9_defconfig
+F:	include/configs/sun5i.h
+F:	configs/A10s-OLinuXino-M_defconfig
+F:	configs/A13-OLinuXino_defconfig
+F:	configs/A13-OLinuXinoM_defconfig
+F:	configs/Auxtek-T003_defconfig
+F:	configs/Auxtek-T004_defconfig
+F:	configs/CHIP_defconfig
+F:	configs/CHIP_pro_defconfig
+F:	configs/difrnce_dit4350_defconfig
+F:	configs/Empire_electronix_d709_defconfig
+F:	configs/Empire_electronix_m712_defconfig
+F:	configs/inet98v_rev2_defconfig
+F:	configs/mk802_a10s_defconfig
+F:	configs/q8_a13_tablet_defconfig
+F:	configs/r7-tv-dongle_defconfig
+F:	configs/UTOO_P66_defconfig
+F:	configs/Wobo_i5_defconfig
+F:	include/configs/sun6i.h
+F:	configs/colorfly_e708_q1_defconfig
+F:	configs/CSQ_CS908_defconfig
+F:	configs/inet_q972_defconfig
+F:	configs/Mele_A1000G_quad_defconfig
+F:	configs/Mele_M9_defconfig
+F:	configs/Sinovoip_BPI_M2_defconfig
+F:	include/configs/sun7i.h
+F:	configs/A20-OLinuXino_MICRO_defconfig
+F:	configs/A20-OLinuXino_MICRO-eMMC_defconfig
+F:	configs/Bananapi_defconfig
+F:	configs/Bananapro_defconfig
+F:	configs/i12-tvbox_defconfig
+F:	configs/Linksprite_pcDuino3_defconfig
+F:	configs/Linksprite_pcDuino3_fdt_defconfig
+F:	configs/Orangepi_defconfig
+F:	configs/Orangepi_mini_defconfig
+F:	configs/qt840a_defconfig
+F:	configs/Wits_Pro_A20_DKT_defconfig
+F:	include/configs/sun8i.h
+F:	configs/sun8i_a23_evb_defconfig
+F:	configs/ga10h_v1_1_defconfig
+F:	configs/gt90h_v4_defconfig
+F:	configs/inet86dz_defconfig
+F:	configs/orangepi_2_defconfig
+F:	configs/orangepi_lite_defconfig
+F:	configs/orangepi_one_defconfig
+F:	configs/orangepi_pc_defconfig
+F:	configs/orangepi_pc_plus_defconfig
+F:	configs/orangepi_plus_defconfig
+F:	configs/orangepi_plus2e_defconfig
+F:	configs/polaroid_mid2407pxe03_defconfig
+F:	configs/polaroid_mid2809pxe04_defconfig
+F:	configs/q8_a23_tablet_800x480_defconfig
+F:	configs/q8_a33_tablet_800x480_defconfig
+F:	configs/q8_a33_tablet_1024x600_defconfig
+F:	include/configs/sun9i.h
+F:	configs/Merrii_A80_Optimus_defconfig
+F:	include/configs/sun50i.h
+
+A20-OLIMEX-SOM-EVB BOARD
+M:	Marcus Cooper <codekipper@gmail.com>
+S:	Maintained
+F:	configs/A20-Olimex-SOM-EVB_defconfig
+
+A20-OLINUXINO-LIME BOARD
+M:	FUKAUMI Naoki <naobsd@gmail.com>
+S:	Maintained
+F:	configs/A20-OLinuXino-Lime_defconfig
+
+A20-OLINUXINO-LIME2 BOARD
+M:	Iain Paton <ipaton0@gmail.com>
+S:	Maintained
+F:	configs/A20-OLinuXino-Lime2_defconfig
+
+A20-OLINUXINO-LIME2-EMMC BOARD
+M:	Olliver Schinagl <oliver@schinagl.nl>
+S:	Maintained
+F:	configs/A20-OLinuXino-Lime2-eMMC_defconfig
+
+A33-OLINUXINO BOARD
+M:	Stefan Mavrodiev <stefan.mavrodiev@gmail.com>
+S:	Maintained
+F:	configs/A33-OLinuXino_defconfig
+
+A64-OLINUXINO BOARD
+M:	Jagan Teki <jagan@amarulasolutions.com>
+S:	Maintained
+F:	configs/a64-olinuxino_defconfig
+
+A80 OPTIMUS BOARD
+M:	Chen-Yu Tsai <wens@csie.org>
+S:	Maintained
+F:	configs/Merrii_A80_Optimus_defconfig
+
+AINOL AW1 BOARD
+M:	Paul Kocialkowski <contact@paulk.fr>
+S:	Maintained
+F:	configs/Ainol_AW1_defconfig
+
+AMARULA A64-RELIC
+M:	Jagan Teki <jagan@amarulasolutions.com>
+S:	Maintained
+F:	configs/amarula_a64_relic_defconfig
+F:	arch/arm/dts/sun50i-a64-amarula-relic.dts
+
+AMPE A76 BOARD
+M:	Paul Kocialkowski <contact@paulk.fr>
+S:	Maintained
+F:	configs/Ampe_A76_defconfig
+
+BANANAPI M1 PLUS
+M:	Jagan Teki <jagan@amarulasolutions.com>
+S:	Maintained
+F:	configs/bananapi_m1_plus_defconfig
+
+BANANAPI M2 BERRY
+M:	Jagan Teki <jagan@amarulasolutions.com>
+S:	Maintained
+F:	configs/bananapi_m2_berry_defconfig
+
+BANANAPI M2 PLUS BOARDS
+M:	Icenowy Zheng <icenowy@aosc.io>
+M:	Chen-Yu Tsai <wens@csie.org>
+S:	Maintained
+F:	configs/bananapi_m2_plus_h3_defconfig
+F:	configs/bananapi_m2_plus_h5_defconfig
+
+BANANAPI M2 ULTRA BOARD
+M:	Chen-Yu Tsai <wens@csie.org>
+S:	Maintained
+F:	configs/Bananapi_M2_Ultra_defconfig
+F:	arch/arm/dts/sun8i-r40-bananapi-m2-ultra.dts
+
+BANANAPI M2 MAGIC BOARD
+M:	Maxime Ripard <maxime.ripard@bootlin.com>
+S:	Maintained
+F:	configs/Bananapi_m2m_defconfig
+F:	arch/arm/dts/sun8i-r16-bananapi-m2m.dts
+
+BANANAPI M2 ZERO BOARD
+M:	Icenowy Zheng <icenowy@aosc.io>
+S:	Maintained
+F:	configs/bananapi_m2_zero_defconfig
+
+BANANAPI M64
+M:	Jagan Teki <jagan@amarulasolutions.com>
+S:	Maintained
+F:	configs/bananapi_m64_defconfig
+
+BEELINK GS1
+M:	Clément Péron <peron.clem@gmail.com>
+S:	Maintained
+F:	configs/beelink_gs1_defconfig
+F:	arch/arm/dts/sun50i-h6-beelink-gs1.dts
+
+COLOMBUS BOARD
+M:	Maxime Ripard <maxime.ripard@bootlin.com>
+S:	Maintained
+F:	configs/Colombus_defconfig
+
+CUBIEBOARD2 BOARD
+M:	Ian Campbell <ijc@hellion.org.uk>
+M:	Hans de Goede <hdegoede@redhat.com>
+S:	Maintained
+F:	include/configs/sun7i.h
+F:	configs/Cubieboard2_defconfig
+F:	configs/Cubietruck_defconfig
+
+CUBIEBOARD4 BOARD
+M:	Chen-Yu Tsai <wens@csie.org>
+S:	Maintained
+F:	configs/Cubieboard4_defconfig
+
+CUBIETRUCK-PLUS BOARD
+M:	Chen-Yu Tsai <wens@csie.org>
+S:	Maintained
+F:	configs/Cubietruck_plus_defconfig
+
+EMLID NEUTIS N5 DEV BOARD
+M:	Aleksandr Aleksandrov <aleksandr.aleksandrov@emlid.com>
+S:	Maintained
+F:	configs/emlid_neutis_n5_devboard_defconfig
+
+GEMEI-G9 TABLET
+M:	Priit Laes <plaes@plaes.org>
+S:	Maintained
+F:	configs/sunxi_Gemei_G9_defconfig
+
+H8HOMLET PROTO A83T BOARD
+M:	VishnuPatekar <vishnupatekar0510@gmail.com>
+S:	Maintained
+F:	configs/h8_homlet_v2_defconfig
+
+HUMMINGBIRD-A31 BOARD
+M:	Chen-Yu Tsai <wens@csie.org>
+S:	Maintained
+F:	configs/Hummingbird_A31_defconfig
+
+ICnova-A20-SWAC BOARD
+M:	Stefan Roese <sr@denx.de>
+S:	Maintained
+F:	configs/icnova-a20-swac_defconfig
+
+ITEAD IBOX BOARD
+M:	Marcus Cooper <codekipper@gmail.com>
+S:	Maintained
+F:	configs/Itead_Ibox_A20_defconfig
+
+INET 3F BOARD
+M:	Paul Kocialkowski <contact@paulk.fr>
+S:	Maintained
+F:	configs/iNet_3F_defconfig
+
+INET 3W BOARD
+M:	Paul Kocialkowski <contact@paulk.fr>
+S:	Maintained
+F:	configs/iNet_3W_defconfig
+
+INET 86VS BOARD
+M:	Michal Suchanek <hramrach@gmail.com>
+S:	Maintained
+F:	configs/iNet_86VS_defconfig
+
+INET D978 BOARD
+M:	Icenowy Zheng <icenowy@aosc.xyz>
+S:	Maintained
+F:	configs/iNet_D978_rev2_defconfig
+
+LAMOBO-R1 BOARD
+M:	Jelle de Jong <jelledejong@powercraft.nl>
+S:	Maintained
+F:	configs/Lamobo_R1_defconfig
+
+LICHEEPI-ZERO BOARD
+M:	Icenowy Zheng <icenowy@aosc.xyz>
+S:	Maintained
+F:	configs/LicheePi_Zero_defconfig
+
+LINKSPRITE-PCDUINO BOARD
+M:	Zoltan Herpai <wigyori@uid0.hu>
+S:	Maintained
+F:	configs/Linksprite_pcDuino_defconfig
+
+LINKSPRITE-PCDUINO3-NANO BOARD
+M:	Adam Sampson <ats@offog.org>
+S:	Maintained
+F:	configs/Linksprite_pcDuino3_Nano_defconfig
+
+MARSBOARD-A10 BOARD
+M:	Aleksei Mamlin <mamlinav@gmail.com>
+S:	Maintained
+F:	configs/Marsboard_A10_defconfig
+
+MELE I7 BOARD
+M:	Marcus Cooper <codekipper@gmail.com>
+S:	Maintained
+F:	configs/Mele_I7_defconfig
+
+MELE M5 BOARD
+M:	Ian Campbell <ijc@hellion.org.uk>
+S:	Maintained
+F:	configs/Mele_M5_defconfig
+
+MIXTILE-LOFTQ BOARD
+M:  Phil Han <pengphei@sina.com>
+S:  Maintained
+F:  configs/mixtile_loftq_defconfig
+
+MK808C BOARD
+M:	Marcus Cooper <codekipper@gmail.com>
+S:	Maintained
+F:	configs/MK808C_defconfig
+
+MSI-PRIMO73 BOARD
+M:	Siarhei Siamashka <siarhei.siamashka@gmail.com>
+S:	Maintained
+F:	configs/MSI_Primo73_defconfig
+
+MSI-PRIMO81 BOARD
+M:	Siarhei Siamashka <siarhei.siamashka@gmail.com>
+S:	Maintained
+F:	configs/MSI_Primo81_defconfig
+
+LIBRETECH ALL-H3-CC BOARDS
+M:	Chen-Yu Tsai <wens@csie.org>
+S:	Maintained
+F:	configs/libretech_all_h3_cc_h2_plus_defconfig
+F:	configs/libretech_all_h3_cc_h3_defconfig
+F:	configs/libretech_all_h3_cc_h5_defconfig
+
+NANOPI-M1 BOARD
+M:	Mylène Josserand <mylene.josserand@free-electrons.com>
+S:	Maintained
+F:	configs/nanopi_m1_defconfig
+
+NANOPI-M1 PLUS BOARD
+M:	Jagan Teki <jagan@amarulasolutions.com>
+S:	Maintained
+F:	configs/nanopi_m1_plus_defconfig
+
+NANOPI-NEO BOARD
+M:	Jelle van der Waa <jelle@vdwaa.nl>
+S:	Maintained
+F:	configs/nanopi_neo_defconfig
+
+NANOPI-NEO2 BOARD
+M:	Jagan Teki <jagan@amarulasolutions.com>
+S:	Maintained
+F:	configs/nanopi_neo2_defconfig
+
+NANOPI-NEO-PLUS2 BOARD
+M:	Antony Antony <antony@phenome.org>
+S:	Maintained
+F:	configs/nanopi_neo_plus2_defconfig
+
+NANOPI-NEO-AIR BOARD
+M:	Jelle van der Waa <jelle@vdwaa.nl>
+S:	Maintained
+F:	configs/nanopi_neo_air_defconfig
+
+NANOPI-A64 BOARD
+M:	Jagan Teki <jagan@amarulasolutions.com>
+S:	Maintained
+F:	configs/nanopi_a64_defconfig
+
+NINTENDO NES CLASSIC EDITION BOARD
+M:	FUKAUMI Naoki <naobsd@gmail.com>
+S:	Maintained
+F:	configs/Nintendo_NES_Classic_Edition_defconfig
+
+OCEANIC 5205 5INMFD BOARD
+M:	Jagan Teki <jagan@amarulasolutions.com>
+S:	Maintained
+F:	configs/oceanic_5205_5inmfd_defconfig
+
+OLIMEX A20-SOM204 BOARD
+M:	Stefan Mavrodiev <stefan@olimex.com>
+S:	Maintained
+F:	configs/A20-Olimex-SOM204-EVB_defconfig
+F:	configs/A20-Olimex-SOM204-EVB-eMMC_defconfig
+
+OLIMEX TERES-I BOARD
+M:	Jonas Smedegaard <dr@jones.dk>
+M:	Icenowy Zheng <icenowy@aosc.io>
+S:	Maintained
+F:	configs/teres_i_defconfig
+
+ORANGEPI LITE2 BOARD
+M:	Jagan Teki <jagan@amarulasolutions.com>
+S:	Maintained
+F:	configs/orangepi_lite2_defconfig
+
+ORANGEPI ONE PLUS BOARD
+M:	Jagan Teki <jagan@amarulasolutions.com>
+S:	Maintained
+F:	configs/orangepi_one_plus_defconfig
+
+ORANGEPI WIN/WIN PLUS BOARD
+M:	Jagan Teki <jagan@amarulasolutions.com>
+S:	Maintained
+F:	configs/orangepi_win_defconfig
+
+ORANGEPI ZERO BOARD
+M:	Icenowy Zheng <icenowy@aosc.xyz>
+S:	Maintained
+F:	configs/orangepi_zero_defconfig
+
+ORANGEPI ZERO PLUS BOARD
+M:	Hauke Mehrtens <hauke@hauke-m.de>
+S:	Maintained
+F:	configs/orangepi_zero_plus_defconfig
+
+ORANGEPI ZERO PLUS 2 BOARD
+M:	Jagan Teki <jagan@amarulasolutions.com>
+S:	Maintained
+F:	configs/orangepi_zero_plus2_defconfig
+
+ORANGEPI PC 2 BOARD
+M:	Andre Przywara <andre.przywara@arm.com>
+S:	Maintained
+F:	configs/orangepi_pc2_defconfig
+
+ORANGEPI PRIME BOARD
+M:	Jagan Teki <jagan@amarulasolutions.com>
+S:	Maintained
+F:	configs/orangepi_prime_defconfig
+
+ORANGEPI R1 BOARD
+M:	Hauke Mehrtens <hauke@hauke-m.de>
+S:	Maintained
+F:	configs/orangepi_r1_defconfig
+
+PINEBOOK BOARD:
+M:	Vasily Khoruzhick <anarsoul@gmail.com>
+S:	Maintained
+F:	configs/pinebook_defconfig
+
+PINE64 BOARDS
+M:	Andre Przywara <andre.przywara@arm.com>
+S:	Maintained
+F:	configs/pine64_plus_defconfig
+F:	configs/pine64-lts_defconfig
+
+PINE H64 BOARD
+M:	Icenowy Zheng <icenowy@aosc.io>
+S:	Maintained
+F:	configs/pine_h64_defconfig
+
+R16 EVB PARROT BOARD
+M:	Quentin Schulz <quentin.schulz@free-electrons.com>
+S:	Maintained
+F:	configs/parrot_r16_defconfig
+
+SINLINX SINA31s BOARD
+M:	Chen-Yu Tsai <wens@csie.org>
+S:	Maintained
+F:	configs/Sinlinx_SinA31s_defconfig
+W:	http://linux-sunxi.org/Sinlinx_SinA31s
+
+SINLINX SINA33 BOARD
+M:	Chen-Yu Tsai <wens@csie.org>
+S:	Maintained
+F:	configs/Sinlinx_SinA33_defconfig
+W:	http://linux-sunxi.org/Sinlinx_SinA33
+
+SINOVOIP BPI M3 A83T BOARD
+M:	VishnuPatekar <vishnupatekar0510@gmail.com>
+S:	Maintained
+F:	configs/Sinovoip_BPI_M3_defconfig
+
+SOPINE BOARD
+M:	Icenowy Zheng <icenowy@aosc.io>
+S:	Maintained
+F:	configs/sopine_baseboard_defconfig
+
+SUNCHIP CX-A99 BOARD
+M:	Rask Ingemann Lambertsen <rask@formelder.dk>
+S:	Maintained
+F:	configs/Sunchip_CX-A99_defconfig
+W:	https://linux-sunxi.org/Sunchip_CX-A99
+
+TBS A711 BOARD
+M:	Maxime Ripard <maxime.ripard@bootlin.com>
+S:	Maintained
+F:	configs/tbs_a711_defconfig
+
+WEXLER-TAB7200 BOARD
+M:	Aleksei Mamlin <mamlinav@gmail.com>
+S:	Maintained
+F:	configs/Wexler_TAB7200_defconfig
+
+YONES TOPTECH BD1078 BOARD
+M:	Paul Kocialkowski <contact@paulk.fr>
+S:	Maintained
+F:	configs/Yones_Toptech_BD1078_defconfig
+
+YONES TOPTECH BS1078 V2 BOARD
+M:	Peter Korsgaard <peter@korsgaard.com>
+S:	Maintained
+F:	configs/Yones_Toptech_BS1078_V2_defconfig

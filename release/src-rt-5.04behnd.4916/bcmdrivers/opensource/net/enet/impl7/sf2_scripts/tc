@@ -1,0 +1,139 @@
+#!/bin/sh
+source /etc/sf2/_util
+
+# # /etc/sf2/tc        # usage: tc <unit>
+# found 6756 unit=0
+# ----PAGE_QoS(0x30)=0x80418000+(offset)<<3
+#   global_ctrl 80@00|p8_aggregation:1 p5_aggregation:0
+# 
+#                    p8 7 6 5 4 3 2 1 0
+# <PID2TC> 0000000@4c|0 0 0 0 0 0 0 0 0
+#  en_diffserv 000@06|. . . . . . . . .
+#    en_qos_1p 000@04|. . . . . . . . .
+# 
+# <DSCP2TC> diffserv priority   L                 H
+#  dscp0 000000000000@34|00-15: 0000 0000 0000 0000
+#  dscp1 000000000000@3a|16-31: 0000 0000 0000 0000
+#  dscp2 000000000000@40|32-47: 0000 0000 0000 0000
+#  dscp3 000000000000@46|48-63: 0000 0000 0000 0000
+# 
+# <PCP2TC>DEI0 7654 3210       DEI1 7654 3210
+# p0 fac688@10:7654 3210| fac688@b0:7654 3210
+# p1 fac688@14:7654 3210| fac688@b4:7654 3210
+# p5 fac688@24:7654 3210| fac688@c4:7654 3210
+# p6 fac688@28:7654 3210| fac688@c8:7654 3210
+# p8 fac688@30:7654 3210| fac688@d0:7654 3210
+# 
+# TC_SEL(3bits):
+#     b0 IP Packet (IPV4 || IPv6)
+#     b1 Trusted Tagged Packet ((VLANTagged||PriorityTagged)&&Trust_1P[Ingress_PID])
+#     b2 ARL Static MAC dest
+# C_TABLES(2bits): A=<DSCP2TC> B=<PCP2TC> C=<DA2TC> D=<PID2TC>
+# 
+#                 TC_SEL_TABLE               TC2COS    DLF_DROP
+#             7 6 5 4  3 2 1 0              7654 3210 7654 3210
+# p0 0000@54: A A A A  A A A A| 00fac688@70:7654 3210 .... ....
+# p1 0000@56: A A A A  A A A A| 00000000@74:0000 0000 .... ....
+# p5 0000@5e: A A A A  A A A A| 00fac688@84:7654 3210 .... ....
+# p6 0000@60: A A A A  A A A A| 00000000@88:0000 0000 .... ....
+# p8 0000@64: A A A A  A A A A| 00fac688@90:7654 3210 .... ....
+# 
+# CPU2COS 00000@68| mirror=0         sa_lrn=0       sw_flood=0
+#     protocol_termination=0 protocol_snoop=0 exception_proc=0
+# 
+# ----PAGE_QOS_SCHED(0x46)=0x80423000+(offset)<<3
+#    txqEmptyStSel   -creditClrDis/rrbinBrstEn/wdrrUnit schedSel|weight q7 q6 q5 q4 q3 q2 q1 q0
+# p0 10@00| 0-txQ           0/1/0-wdrr 256byte 0-sp[q7-0]       |@10    01 01 01 01 01 01 01 01
+# p1 10@01| 0-txQ           0/1/0-wdrr 256byte 0-sp[q7-0]       |@18    01 01 01 01 01 01 01 01
+# p5 15@05| 0-txQ           0/1/0-wdrr 256byte 5-all.wdrr/wrr   |@38    01 01 01 01 01 01 01 01
+# p6 10@06| 0-txQ           0/1/0-wdrr 256byte 0-sp[q7-0]       |@40    01 01 01 01 01 01 01 01
+# p8 10@08| 0-txQ           0/1/0-wdrr 256byte 0-sp[q7-0]       |@50    01 01 01 01 01 01 01 01
+# 
+
+sf2_tc() { #sf2_tc <unit>
+    local unit=$1
+    read_chip $unit
+    if [ $sf2_unit == -1 ]
+    then echo "device has no (connected) sf2 switch!!"; return;
+    fi
+
+    print_page_hdr 0x30 QoS
+    read_sf2 0x30 0 | awk '{v=$1; 
+        printf "  global_ctrl %02x@00|p8_aggregation:%d p5_aggregation:%d\n\n", v, and(rshift(v,7),1), and(rshift(v,4),1) }'
+    echo "                   p8 7 6 5 4 3 2 1 0"
+    echo $(read_sf2 0x30 0x48+$qos_shift) $qos_shift | awk '{v=$1; 
+        printf "<PID2TC> %07x@%02x|", v, $2+0x48; for (i=0; i<9; i++) printf "%d ",(and(rshift(v,3*i),7)); printf "\n"}'
+    echo $(read_sf2 0x30 0x6) | awk '{v=$1; 
+        printf " en_diffserv %03x@06|", v; for (i=0; i<9; i++) printf "%s ",and(rshift(v,i),1)?"E":"."; printf "\n"}'
+    echo $(read_sf2 0x30 0x4) | awk '{v=$1; 
+        printf "   en_qos_1p %03x@04|", v; for (i=0; i<9; i++) printf "%s ",and(rshift(v,i),1)?"E":"."; printf "\n"}'
+    echo ""
+    echo "<DSCP2TC> diffserv priority   L                 H"
+    for i in 0 1 2 3
+    do
+       echo $(read_sf2_dw 0x30 $((0x30+qos_shift+i*6))) $qos_shift $i | awk '{vl=$1; vh=$2;
+            printf " dscp%d %04x%08x@%02x|%02d-%02d:", $4+0, vh, vl, 0x30+$3+$4*6, $4*16, ($4+1)*16-1;
+            for (i=0; i<10; i++) printf "%s%x", (i%4)?"":" ", and(rshift(vl,i*3),7);
+            printf "%x", and(or(rshift(vl,30),lshift(vh,2)), 7);
+            for (i=0; i<5; i++) printf "%s%x", (i!=1)?"":" ", and(rshift(vh,i*3+1),7);}'
+        echo""
+    done
+
+    echo ""
+    echo "<PCP2TC>DEI0 7654 3210       DEI1 7654 3210"
+    local port
+    for port in $sf2_ports
+    do
+        local adj=0
+        if [ $sf2_reg_base == 0 ] && [ $port -ge 8 ] 
+        then adj=-1
+        elif [ $sf2_reg_base == 0x800c0000 ] && [ $port -ge 7 ]  
+        then adj=-1
+        fi
+        echo $(read_sf2 0x30 $((0x10+4*(port+adj)))) $port $adj | awk '{ v=$1;
+            printf "p%d %06x@%02x:%d%d%d%d %d%d%d%d|", $2+0, v, 0x10+4*($2+$3), and(rshift(v,21),7), and(rshift(v,18),7),
+             and(rshift(v,15),7), and(rshift(v,12),7), and(rshift(v,9),7), and(rshift(v,6),7), and(rshift(v,3),7), and(v,7); }'
+        echo $(read_sf2 0x30 $((0xb0+4*port))) $port | awk '{ v=$1;
+            printf " %06x@%02x:%d%d%d%d %d%d%d%d\n", v, 0xb0+4*$2, and(rshift(v,21),7), and(rshift(v,18),7),
+             and(rshift(v,15),7), and(rshift(v,12),7), and(rshift(v,9),7), and(rshift(v,6),7), and(rshift(v,3),7), and(v,7); }'
+    done
+
+    echo ""
+    echo "TC_SEL(3bits):"
+    echo "    b0 IP Packet (IPV4 || IPv6)"
+    echo "    b1 Trusted Tagged Packet ((VLANTagged||PriorityTagged)&&Trust_1P[Ingress_PID])"
+    echo "    b2 ARL Static MAC dest"
+    echo "C_TABLES(2bits): A=<DSCP2TC> B=<PCP2TC> C=<DA2TC> D=<PID2TC>"
+    echo ""
+    echo "                TC_SEL_TABLE               TC2COS    DLF_DROP"
+    echo "            7 6 5 4  3 2 1 0              7654 3210 7654 3210"
+    for port in $sf2_ports
+    do
+        echo $(read_sf2 0x30 $((0x50+qos_shift+2*port))) $port $qos_shift | awk '{ v=$1;split("A B C D", tc_tbl_s);
+            printf "p%d %04x@%02x: %s %s %s %s  %s %s %s %s|", $2+0, v, 0x50+$3+$2*2, tc_tbl_s[and(rshift(v,14),3)+1], tc_tbl_s[and(rshift(v,12),3)+1], tc_tbl_s[and(rshift(v,10),3)+1], 
+            tc_tbl_s[and(rshift(v,8),3)+1], tc_tbl_s[and(rshift(v,6),3)+1], tc_tbl_s[and(rshift(v,4),3)+1], tc_tbl_s[and(rshift(v,2),3)+1], tc_tbl_s[and(rshift(v,0),3)+1]; }'
+        echo $(read_sf2 0x30 $((0x70+4*port))) $port | awk '{ v=$1;
+            printf " %08x@%02x:%d%d%d%d %d%d%d%d", v, 0x70+4*$2, and(rshift(v,21),7), and(rshift(v,18),7),
+            and(rshift(v,15),7), and(rshift(v,12),7), and(rshift(v,9),7), and(rshift(v,6),7), and(rshift(v,3),7), and(v,7); 
+            printf " %s%s%s%s %s%s%s%s\n", and(rshift(v,31),1)?"Y":".", and(rshift(v,30),1)?"Y":".", and(rshift(v,29),1)?"Y":".", and(rshift(v,28),1)?"Y":".",
+            and(rshift(v,27),1)?"Y":".", and(rshift(v,26),1)?"Y":".", and(rshift(v,25),1)?"Y":".", and(rshift(v,24),1)?"Y":".";}'
+    done
+    echo $(read_sf2 0x30 $((0x64+qos_shift))) $qos_shift | awk '{ v=$1;
+        printf "\nCPU2COS %05x@%02x| mirror=%d         sa_lrn=%d       sw_flood=%d\n", v, 0x64+$2, and(rshift(v,0),7), and(rshift(v,3),7), and(rshift(v,6),7);
+        printf "    protocol_termination=%d protocol_snoop=%d exception_proc=%d\n", and(rshift(v,9),7), and(rshift(v,12),7), and(rshift(v,15),7); }'
+    echo ""
+    print_page_hdr 0x46 QOS_SCHED
+    echo "   txqEmptyStSel   -creditClrDis/rrbinBrstEn/wdrrUnit schedSel|weight q7 q6 q5 q4 q3 q2 q1 q0"
+    for port in $sf2_ports
+    do
+        echo $(read_sf2 0x46 0+$port) $port  | awk '{ v=$1;split("0-sp[q7-0] 1-sp[q7] 2-sp[q76] 3-sp[q765] 4-sp[q7654] 5-all.wdrr/wrr 6-??? 7-???", qos_sel_s);
+            printf "p%d %02x@%02x| %s %d/%d/%s %-14s   ", $2+0, v, $2+0, and(rshift(v,7),1)?"1-egressQshaper":"0-txQ          ",
+            and(rshift(v,5),1), and(rshift(v,4),1), and(rshift(v,3),1)?"1-wrr pkt     ":"0-wdrr 256byte", qos_sel_s[and(v,7)+1]; }'
+        echo $(read_sf2_dw 0x46 $((0x10+8*port))) $port | awk '{ vl=$1; vh=$2;
+            printf "|@%02x    %02x %02x %02x %02x %02x %02x %02x %02x\n", 0x10+8*$3, and(rshift(vh,24),0xff), and(rshift(vh,16),0xff), and(rshift(vh,8),0xff), and(rshift(vh,0),0xff),
+            and(rshift(vl,24),0xff), and(rshift(vl,16),0xff), and(rshift(vl,8),0xff), and(rshift(vl,0),0xff);}'
+    done
+    echo ""
+}
+ 
+sf2_tc $1

@@ -1,0 +1,130 @@
+#!/bin/sh
+source /etc/sf2/_util
+
+# # /etc/sf2/shape     # usage: shape <unit>
+# found 6756 unit=0
+# shaper status [in_profile_flag, bucket_cnt]
+#         port p47 | q0 p48     q1 p49     q2 p4a     q3 p4b     q4 p4c     q5 p4d     q6 p4e     q7 p4f
+# x60 p0 i 00000000| i 00000000 i 00000000 i 00000000 i 00000000 i 00000000 i 00000000 i 00000000 i 00000000
+# x64 p1 i 00000000| i 00000000 i 00000000 i 00000000 i 00000000 i 00000000 i 00000000 i 00000000 i 00000000
+# x74 p5 i 00000000| i 00000000 i 00000000 i 00000000 i 00000000 i 00000000 i 00000000 i 00000000 i 00004000
+# x78 p6 i 00000000| i 00000000 i 00000000 i 00000000 i 00000000 i 00000000 i 00000000 i 00000000 i 00000000
+# x80 p8 i 00000000| i 00000000 i 00000000 i 00000000 i 00000000 i 00000000 i 00000000 i 00000000 i 00000000
+# 
+# glb_tick_ctrl 3@90-c2|3-128Khz(64kbps|125pps)
+# 
+# L1/L2-L1(+IFG); E-shaper enabled, A-AVB mode, X-blocking, P/B-packet/byte mode (xee;xe6,xe4,xea,xe8)
+#  rate port|   q0   q1   q2   q3   q4   q5   q6   q7    tick override
+# p0 L1 ...B| ...B ...B ...B ...B ...B ...B ...B ...B | 7@90-c4:7-use.global
+# p1 L1 ...B| ...B ...B ...B ...B ...B ...B ...B ...B | 7@90-c5:7-use.global
+# p5 L2 ...B| ...B ...B ...B ...B .A.B .A.B .A.B EA.B | 7@90-c9:7-use.global
+# p6 L1 ...B| ...B ...B ...B ...B ...B ...B ...B ...B | 7@90-ca:7-use.global
+# p8 L1 ...B| ...B ...B ...B ...B ...B ...B ...B ...B | 7@90-cc:7-use.global
+# 
+# Enabled shapers:
+#  MAX_THD_SEL:burst (*8*64/1000)  MAX_REFRESH:rate (*unit)
+# p5 q7 00010@4f-44:       8kbps   03d09@4f-14:15625*64kbps=1000000kbps
+# 
+
+sf2_shaper() { #sf2_shaper <unit>
+    local unit=$1
+    read_chip $unit
+    if [ $sf2_unit == -1 ]
+    then echo "device has no (connected) sf2 switch!!"; return;
+    fi
+
+    echo "shaper status [in_profile_flag, bucket_cnt]"
+    echo "        port p47 | q0 p48     q1 p49     q2 p4a     q3 p4b     q4 p4c     q5 p4d     q6 p4e     q7 p4f"
+
+    for port in $sf2_ports
+    do
+        echo $(read_sf2 0x47 $port*4+0x60) $port | awk '{ v=$1; port=$2;
+            printf "x%02x p%d %s %08x|", port*4+0x60, port, and(rshift(v,31),1)?"i":"O", and(v,0x1fffffff); }'
+        for queue in 0 1 2 3 4 5 6 7
+        do
+            echo $(read_sf2 $((0x48+$queue)) $(($port*4+0x60))) | awk '{ v=$1;
+                printf " %s %08x", and(rshift(v,31),1)?"i":"o", and(v,0x1fffffff); }' 
+        done 
+        echo ""
+    done
+    
+    read_sf2 0x90 0xc2 | awk '{v=$1; if (v==0) v=3; # for 53134 that does not support PAGE_AVB_TICK_CTRL
+        split("0-16Khz(8kbps|15.625pps) 1-32Khz(16kbps|31.25pps) 2-64Khz(32kbps|62.5pps) 3-128Khz(64kbps|125pps) 4-256Khz(128kbps|250pps) 5-512khz(256kbps|500pps) 6-1024khz(512kbps|1000pps) 7-use.global", shaper_tick_ctrl_s);
+        printf "\nglb_tick_ctrl %1x@90-c2|%s\n", v, shaper_tick_ctrl_s[v+1]}'
+    
+    echo ""
+    echo "L1/L2-L1(+IFG); E-shaper enabled, A-AVB mode, X-blocking, P/B-packet/byte mode (xee;xe6,xe4,xea,xe8)"
+    echo " rate port|   q0   q1   q2   q3   q4   q5   q6   q7    tick override"
+    local ifg=$(read_sf2 0x47 0xee)
+    local enb=$(read_sf2 0x47 0xe6)
+    local enbAvb=$(read_sf2 0x47 0xe4)
+    local blkCtrlEnb=$(read_sf2 0x47 0xea)
+    local enbPktBased=$(read_sf2 0x47 0xe8)
+    for port in $sf2_ports
+    do
+        echo $ifg $enb $enbAvb $blkCtrlEnb $enbPktBased $port | awk '{ ifg=$1; enb=$2; enbAvb=$3; blkCtrlEnb=$4; enbPktBased=$5; port=$6;
+            printf "p%d %s %s%s%s%s|", port, and(rshift(ifg,port),1)?"L1":"L2", and(rshift(enb,port),1)?"E":".",
+            and(rshift(enbAvb,port),1)?"A":".",and(rshift(eblkCtrlEnb,port),1)?"X":".",and(rshift(enbPktBased,port),1)?"P":"B";}' 
+        for queue in 0 1 2 3 4 5 6 7
+        do
+            local qpage=$((0x48+$queue))
+            echo $(read_sf2 $qpage 0xe6) $(read_sf2 $qpage 0xe4) $(read_sf2 $qpage 0xea) $(read_sf2 $qpage 0xe8) $port | awk '{
+                enb=$1; enbAvb=$2; blkCtrlEnb=$3; enbPktBased=$4; port=$5;
+                printf " %s%s%s%s", and(rshift(enb,port),1)?"E":".",
+                and(rshift(enbAvb,port),1)?"A":".",and(rshift(eblkCtrlEnb,port),1)?"X":".",and(rshift(enbPktBased,port),1)?"P":"B";}' 
+        done
+        if [ $chip == 6756 ] && [ $sf2_unit == 0 ]
+        then
+            echo $(read_sf2 0x90 0xc4+$port) $port | awk '{ v=$1; port=$2;
+                split("0-16Khz(8kbps|15.625pps) 1-32Khz(16kbps|31.25pps) 2-64Khz(32kbps|62.5pps) 3-128Khz(64kbps|125pps) 4-256Khz(128kbps|250pps) 5-512khz(256kbps|500pps) 6-1024khz(512kbps|1000pps) 7-use.global", shaper_tick_ctrl_s);
+                printf " | %1x@90-%02x:%s", v, port+0xc4,  shaper_tick_ctrl_s[and(v,7)+1];}'
+        fi 
+        echo ""
+    done
+    
+    echo ""
+    echo "Enabled shapers:"
+    echo " MAX_THD_SEL:burst (*8*64/1000)  MAX_REFRESH:rate (*unit)"
+    for page in 0 1 2 3 4 5 6 7 8
+    do
+        local enb=$(read_sf2 $((0x47+page)) 0xe6)
+        if [ $(( enb)) != 0 ]
+        then
+            local tick=$(read_sf2 0x90 0xc2)
+            for port in $sf2_ports
+            do
+                if [ $(( enb & (1<<port))) != 0 ]
+                then
+                    if [ $chip == 6756 ] && [ $sf2_unit == 0 ]
+                    then
+                        local tick_or=$(read_sf2 0x90 $((0xc4+port)))
+                        if [ $tick_or != 0x00000007 ]
+                        then tick = $tick_or;
+                        fi
+                    fi 
+
+                    echo $page $port | awk '{ page=$1; port=$2;
+                        if (page==0) printf "p%d   ", port;
+                        else         printf "p%d q%d", port, page-1; }'
+                    local enbPktBased=$(read_sf2 $((0x47+page)) 0xe8)
+                    if [ $(( enbPktBased & (1<<port))) != 0 ]
+                    then # pkt mode
+                        echo $(read_sf2 $((0x47+page)) $((0xc0+port*4))) $(read_sf2 $((0x47+page)) $((0x90+port*4))) $page $port $tick| awk '{ v1=$1; v2=$2; page=$3; port=$4; tick=$5;
+                            pkt_u[0]=125; pkt_u[1]=250; pkt_u[2]=500; pkt_u[3]=1000; pkt_u[4]=2000; pkt_u[5]=4000; pkt_u[6]=8000;
+                            printf " %05x@%02x-%02x:%8dpkts ", v1, 0x47+page, 0xc0+port*4, v1;
+                            printf "   %05x@%02x-%02x:%d*%d/8=%dpps\n", v2, 0x47+page, 0x90+port*4, v2, pkt_u[tick*1], v2*pkt_u[tick*1]/8; }'
+                    else # byte mode
+                        echo $(read_sf2 $((0x47+page)) $((0x30+port*4))) $(read_sf2 $((0x47+page)) $((port*4))) $page $port $tick | awk '{ v1=$1; v2=$2; page=$3; port=$4; tick=$5;
+                            byte_u[0]=8; byte_u[1]=16; byte_u[2]=32; byte_u[3]=64; byte_u[4]=128; byte_u[5]=256; byte_u[6]=512;
+                            printf " %05x@%02x-%02x:%8dkbps", v1, page+0x47, 0x30+port*4, v1*8*64/1000;
+                            printf "   %05x@%02x-%02x:%d*%dkbps=%dkbps\n", v2, page+0x47, port*4, v2, byte_u[tick*1], v2*byte_u[tick*1]; }'
+                    fi   
+                fi
+            done
+        fi
+    done
+    echo ""
+}
+
+
+sf2_shaper $1

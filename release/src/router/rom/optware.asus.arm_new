@@ -129,3 +129,25 @@ Size: 177965
 Filename: asuslibcurl_9.7.24.0-1_arm.ipk
 Source: http://curl.haxx.se/download/curl-7.24.0.tar.gz
 Description: Curl is a command line tool for transferring files with URL syntax, supporting FTP, FTPS, HTTP, HTTPS, GOPHER, TELNET, DICT, FILE and LDAP. Curl supports HTTPS certificates, HTTP POST, HTTP PUT, FTP uploading, kerberos, HTTP form based upload, proxies, cookies, user+password authentication, file transfer resume, http proxy tunneling and a busload of other useful tricks.
+
+Package: ncurses-base
+Version: 5.7-8
+Section: net
+Architecture: arm
+Maintainer: Christopher Blunck <christopher.blunck@gmail.com>
+MD5Sum: a10e6e52ac2c4974ee0df3f130d32927
+Size: 502997
+Filename: ncurses-base_5.7-8_arm_new.ipk
+Source: ftp://invisible-island.net/ncurses/ncurses-5.7.tar.gz
+Description: NCurses libraries
+
+Package: ncurses
+Version: 5.7-8
+Section: net
+Architecture: arm
+Maintainer: Christopher Blunck <christopher.blunck@gmail.com>
+MD5Sum: 15b5b2f2985a8ce8e7c355102e83a625
+Size: 710
+Filename: ncurses_5.7-8_arm_new.ipk
+Source: ftp://invisible-island.net/ncurses/ncurses-5.7.tar.gz
+Description: NCurses libraries

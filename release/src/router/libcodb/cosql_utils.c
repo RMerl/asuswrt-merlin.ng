@@ -2,6 +2,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <ctype.h>	//isdigit()
 #include <inttypes.h>
 #include <time.h>
 #include <json.h>
@@ -359,7 +360,7 @@ static int is_valid_text_ipv4(const char *input)
 		return FORMAT_ERROR;
 	}
 
-	char temp[31];
+  	char str[31], temp[31];
 	int a, b, c, d;
 
 	//- ipv4 format 
@@ -398,7 +399,7 @@ static int is_valid_text_ipv6(const char *input)
 		ns_int16sz   = 2
 	};
 
-	const char *curtok __attribute__((unused));
+	const char *curtok;
 	int tp;
 	const char *colonp;
 	int saw_xdigit;
@@ -1391,13 +1392,19 @@ int cosql_drop_db(sqlite3* pdb)
 
 int cosql_integrity_check(sqlite3* pdb)
 {
-	int ret = cosql_exec(pdb, "PRAGMA integrity_check");
-	if( ret != COSQL_OK ) {
-		codbg(pdb, "fail to integrity check");
+	char* db_status = cosql_get_text_field(pdb, "PRAGMA integrity_check");
+	if (db_status == NULL) {
 		return COSQL_ERROR;
 	}
 
-	return COSQL_OK;
+	if(!strcmp("ok", db_status))
+	{
+		sqlite3_free(db_status);
+		return COSQL_OK;
+	}
+
+	sqlite3_free(db_status);
+	return COSQL_ERROR;
 }
 
 int cosql_clear_table(sqlite3* pdb) 
@@ -2926,8 +2933,7 @@ int cosql_backup_and_resize_table_by_reserved_count(sqlite3* src_pdb, sqlite3* d
 }
 ////////////////////////////////////////////////////////////////////////////////////
 
-int cosql_free_query_columns(sql_column_prototype_t* query_columns, int query_columns_count)
-{
+int cosql_free_query_columns(sql_column_prototype_t* query_columns, int query_columns_count) {
 
 	int i = 0;
 
@@ -2951,8 +2957,7 @@ int cosql_free_query_columns(sql_column_prototype_t* query_columns, int query_co
 	return COSQL_OK;
 }
 
-int cosql_free_match_columns(sql_column_match_t* match_columns, int match_columns_count)
-{
+int cosql_free_match_columns(sql_column_match_t* match_columns, int match_columns_count) {
 	
 	int i = 0;
 

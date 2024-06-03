@@ -308,16 +308,6 @@ function initial(){
 			wl_mode_change(document.form.band0_nmode_x.value);
 		}
 	}
-	if(disable11b_support){
-		if(document.form.band01_rateset_check.value == "ofdm"){
-			document.form.band01_rateset_check.checked = true;
-		}
-		else{
-			document.form.band01_rateset_check.checked = false;
-		}
-
-		band01_mode_change(document.form.band01_nmode_x.value);
-	}
 
 	// if(!band5g_support)	
 	// 	document.getElementById("wl_unit_field").style.display = "none";
@@ -369,7 +359,7 @@ function initial(){
 	var skip_channel_5g = '<% nvram_get("skip_channel_5g"); %>';
 
 	if(acs_ch13_support){
-		document.getElementById("band0_acs_ch13_checkbox").style.display = "";
+		document.getElementById("band0_acs_ch13_checkbox").style = "";
 	}
 
 	if(skip_channel_5g == "band1" && wl_unit_value == "1"){
@@ -479,10 +469,7 @@ function initial(){
 	}
 
 	handle_bandwidth('0', nvram['wl0_bw']);
-	handle_bandwidth('1', nvram['wl1_bw']);	
-	if(acs_ch13_support){
-		handleAcsCh13(document.form.band0_channel.value);
-	}
+	handle_bandwidth('1', nvram['wl1_bw']);
 	
 	handleAcsDfs(document.form.band1_channel.value);
 	if('<% nvram_get("wl0_gmode_protection"); %>' == 'auto'){
@@ -584,7 +571,7 @@ function genBWTable(_unit, wl_nmode){
 		}
 		else{
 			bws = [1, 0, 2, 3];
-			bwsDesc = ["20/40/80 MHz", "20 MHz", "40 MHz", "80 MHz"];
+			bwsDesc = [document.form.wl_bw[0].text, "20 MHz", "40 MHz", "80 MHz"];
 		}
 
 		if(wl_nmode == 8 || (_unit != 0 && wl_nmode == 0)){// N/AC mixed or 5G Auto
@@ -928,6 +915,7 @@ function applyRule(){
 			}
 		}
 
+		if(confirm_flag==1 || confirm_flag==7){
 		if (document.form.band01_twt.value == "1" && document.form.band01_11ax.value == "0")
 			document.form.band01_twt.value = "0";
 		if (document.form.band0_twt.value == "1" && document.form.band0_11ax.value == "0")
@@ -937,9 +925,6 @@ function applyRule(){
 		if (document.form.wl_twt.value == "1" && document.form.wl_11ax.value == "0")
 			document.form.wl_twt.value = "0";
 
-		var reboot_time = eval("<% get_default_reboot_time(); %>");
-		var lan_ipaddr = "<% nvram_get("lan_ipaddr"); %>";
-		if(confirm_flag==1 || confirm_flag==7){
 			if($(".confirm_block").length > 0){
 				$(".confirm_block").remove();
 			}
@@ -994,7 +979,6 @@ function applyRule(){
 				"action_mode":"apply",
 				'rc_service': 'restart_wireless',
 				'smart_connect_x': document.form.smart_connect_x.value,
-				"action_wait": document.form.action_wait.value,
 			};
 					
 			var variable = {}
@@ -1115,7 +1099,6 @@ function applyRule(){
 				variable['wl0_nmode_x'] = document.form.band01_nmode_x.value;
 				variable['wl1_nmode_x'] = document.form.band01_nmode_x.value;				
 				if(document.form.band01_nmode_x.value == '0'){
-					variable['wl0_rateset'] = document.form.band01_rateset_check.checked ? 'ofdm' : 'default';
 					variable['wl0_11ax'] = document.form.band01_11ax.value;
 					variable['wl1_11ax'] = document.form.band01_11ax.value;
 				}
@@ -1196,10 +1179,6 @@ function applyRule(){
 					variable['acs_dfs'] = document.form.band1_acs_dfs_checkbox.checked ? '1' : '0';
 				}
 			}
-
-			if(acs_ch13_support && document.form.band0_channel.value == '0'){
-				variable['acs_ch13'] = document.getElementById('band0_acs_ch13').checked ? '1' : '0';
-			}
 			
 			postObj = Object.assign(postObj, variable);
 			rc_time = 60;
@@ -1225,7 +1204,7 @@ function applyRule(){
 						http.open("GET","/httpd_check.xml",!0);
 						http.send(null);
 					}, 3000);
-				}, 10000)
+				}, 10000);
 			});
 
 			// document.form.submit();
@@ -1480,8 +1459,6 @@ function enableSmartCon(val){
 	document.form.smart_connect_x.value = val;
 	var value = new Array();
 	var desc = new Array();
-	band0_channel = '<% nvram_get("wl0_channel"); %>';
-	band1_channel = '<% nvram_get("wl1_channel"); %>';
 
 	if(isSupport("triband") && dwb_info.mode) {
 		desc = ["<#smart_connect_dual#> (2.4GHz and 5GHz)"];
@@ -1604,12 +1581,12 @@ function enableSmartCon(val){
 
 		if (band0_channel == '0') {
 			$('#band0_auto_channel').show();
-			$('#band0_auto_channel').html('Current Control Channel: ' + cur_control_channel[0]);
+			$('#band0_auto_channel').html('<#wireless_control_channel#>: ' + cur_control_channel[0]);
 		}
 
 		if (band1_channel == '0') {
 			$('#band1_auto_channel').show();
-			$('#band1_auto_channel').html('Current Control Channel: ' + cur_control_channel[1]);
+			$('#band1_auto_channel').html('<#wireless_control_channel#>: ' + cur_control_channel[1]);
 		}
 	}else{
 		document.getElementById("wl_unit_field").style.display = "none";
@@ -1663,12 +1640,12 @@ function enableSmartCon(val){
 		
 		if (band0_channel == '0') {
 			$('#band0_auto_channel').show();
-			$('#band0_auto_channel').html('Current Control Channel: ' + cur_control_channel[0]);
+			$('#band0_auto_channel').html('<#wireless_control_channel#>: ' + cur_control_channel[0]);
 		}
 
 		if (band1_channel == '0') {
 			$('#band1_auto_channel').show();
-			$('#band1_auto_channel').html('Current Control Channel: ' + cur_control_channel[1]);
+			$('#band1_auto_channel').html('<#wireless_control_channel#>: ' + cur_control_channel[1]);
 		}
 
 		// regen_auto_option(document.form.wl_nmode_x);
@@ -1800,35 +1777,12 @@ function wl_mode_change(mode){
 	// }
 }
 
-function band01_mode_change(mode){
-
-	// if(is_unit_24g(wl_unit_value)){
-		if(mode == '0'){
-			document.form.band01_rateset_check.disabled = false;
-			document.getElementById("band01_rateset_checkbox").style.display = "";
-		}
-		else{
-			document.form.band01_rateset_check.disabled = true;
-			document.getElementById("band01_rateset_checkbox").style.display = "none";
-		}
-	// }
-}
-
 function wl_disable11b(obj){
 	if(obj.checked){
 		document.form.band0_rateset_check.value = 'ofdm';
 	}
 	else{
 		document.form.band0_rateset_check.value = 'default';
-	}
-}
-
-function band01_disable11b(obj){
-	if(obj.checked){
-		document.form.band01_rateset_check.value = 'ofdm';
-	}
-	else{
-		document.form.band01_rateset_check.value = 'default';
 	}
 }
 
@@ -1879,12 +1833,6 @@ function he_frame_mode(obj) {
 		document.form.acs_dfs_checkbox.checked = false;
 		document.form.acs_dfs.value = 0;
 	}
-	if (obj.value == "0") {
-		document.form.wl_twt.value = "0";
-		document.form.band01_twt.value = "0";
-		document.form.band0_twt.value = "0";
-		document.form.band1_twt.value = "0";
-	}
 }
 function controlHideSSIDHint() {
 	$("#dwb_band_hide_hint").hide();
@@ -1904,8 +1852,8 @@ function ajax_wl_channel(){
 		},
 		success: function(response){
 			// $("#auto_channel").html("<#wireless_control_channel#>: " + cur_control_channel[wl_unit]);
-			$('#band0_auto_channel').html('Current Control Channel: ' + cur_control_channel[0]);
-			$('#band1_auto_channel').html('Current Control Channel: ' + cur_control_channel[1]);
+			$('#band0_auto_channel').html('<#wireless_control_channel#>: ' + cur_control_channel[0]);
+			$('#band1_auto_channel').html('<#wireless_control_channel#>: ' + cur_control_channel[1]);
 			setTimeout("ajax_wl_channel();", 5000);
 		}
 	});
@@ -1926,32 +1874,11 @@ function ajax_wl_edmg_channel(){
 }
 
 function handleMFP(){
-	if(mbo_support) {
-		if (document.form.smart_connect_x.value == '1') {
-			if (document.form.band01_mbo_enable.value == '1' && document.form.wl01_mfp.value == '0')
-				$('#band01_mbo_notice').show();
-			else
-				$('#band01_mbo_notice').hide();
-		} else {
-			if (document.form.wl_mbo_enable.value == '1' && document.form.wl_mfp.value == '0')
-				$('#mbo_notice').show();
-			else
-				$('#mbo_notice').hide();
-			if (document.form.band0_mbo_enable.value == '1' && document.form.wl0_mfp.value == '0')
-				$('#band0_mbo_notice').show();
-			else
-				$('#band0_mbo_notice').hide();
-			if (document.form.band1_mbo_enable.value == '1' && document.form.wl1_mfp.value == '0')
-				$('#band1_mbo_notice').show();
-			else
-				$('#band1_mbo_notice').hide();
-		}
+	if(mbo_support && document.form.wl_mbo_enable.value == '1' && document.form.wl_mfp.value == '0'){
+		$('#mbo_notice').show();
 	}
 	else{
 		$('#mbo_notice').hide();
-		$('#band01_mbo_notice').hide();
-		$('#band0_mbo_notice').hide();
-		$('#band1_mbo_notice').hide();
 	}
 }
 
@@ -2546,7 +2473,6 @@ function genAuthMethod(unit, wlMode){
 
 
 		if(wlMode == '0'){
-			document.form.band0_rateset_check.disabled = false;
 			document.getElementById("band0_rateset_checkbox").style.display = "";
 			document.getElementById("band0_he_mode_field").style.display = "";
 		}
@@ -2652,12 +2578,9 @@ function genAuthMethod(unit, wlMode){
 		genBWTable('0', document.form.band0_nmode_x.value);
 		genBWTable('1', document.form.band1_nmode_x.value);
 		if(wlMode == '0'){
-			document.form.band01_rateset_check.disabled = false;
-			document.getElementById("band01_rateset_checkbox").style.display = "";
 			document.getElementById("band01_he_mode_field").style.display = "";
 		}
 		else{
-			document.getElementById("band01_rateset_checkbox").style.display = "none";
 			document.getElementById("band01_he_mode_field").style.display = "none";
 		}
 		auth_mehtod_change('01', wlAuthModeNvram);
@@ -3082,15 +3005,6 @@ function handleAcsDfs(channel){
 	}
 	else{
 		document.getElementById('band1_dfs_checkbox').style.display = 'none';
-	}
-}
-
-function handleAcsCh13(channel){
-	if(acs_ch13_support && channel == '0'){
-		document.getElementById('band0_acs_ch13_checkbox').style.display = '';
-	}
-	else{
-		document.getElementById('band0_acs_ch13_checkbox').style.display = 'none';
 	}
 }
 </script>
@@ -3555,7 +3469,6 @@ function handleAcsCh13(channel){
 							<option value="8" <% nvram_match("wl0_nmode_x", "8","selected"); %>>N/AC Mixed</option>		
 							<option value="2" <% nvram_match("wl0_nmode_x", "2","selected"); %>>Legacy</option>							
 						</select>
-						<span id="band01_rateset_checkbox"><input type="checkbox" name="band01_rateset_check" id="band01_rateset_check" value="<% nvram_get("wl0_rateset"); %>" onClick="band01_disable11b(this);">Disable 11b</span>
 						<!-- [N only] is not compatible with current guest network authentication method(TKIP or WEP),  Please go to <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">guest network</a> and change the authentication method. -->
 					</td>
 			  	</tr>
@@ -3565,7 +3478,7 @@ function handleAcsCh13(channel){
 					</th>
 					<td>
 						<div style="display:flex;align-items: center;">
-							<select name="band01_11ax" class="input_option" onChange="he_frame_mode(this);">
+							<select name="band01_11ax" class="input_option" >
 								<option value="1" <% nvram_match("wl0_11ax", "1" ,"selected"); %> ><#WLANConfig11b_WirelessCtrl_button1name#></option>
 								<option value="0" <% nvram_match("wl0_11ax", "0" ,"selected"); %> ><#WLANConfig11b_WirelessCtrl_buttonname#></option>
 							</select>
@@ -3828,11 +3741,11 @@ function handleAcsCh13(channel){
 				<tr id="band0_channel_field">
 					<th><a id="band0_channel_select" class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 3);"><#WLANConfig11b_Channel_itemname#></a></th>
 					<td>
-				 		<select name="band0_channel" class="input_option" onChange="high_power_auto_channel();insertExtChannelOption();genExtChannel('0', this.value, document.querySelector('[name=\'band0_bw\']').value);handleAcsCh13(this.value);"></select>
+				 		<select name="band0_channel" class="input_option" onChange="high_power_auto_channel();insertExtChannelOption();genExtChannel('0', this.value, document.querySelector('[name=\'band0_bw\']').value)"></select>
 						<span id="band0_auto_channel" style="display:none;margin-left:10px;"></span><br>
 						
 						<div style="margin-top:5px">
-						<div><span id="band0_acs_ch13_checkbox" style="display:none;"><input id="band0_acs_ch13" type="checkbox" onClick="check_acs_ch13_support(this);" <% nvram_match("acs_ch13", "1", "checked"); %>><#WLANConfig11b_EChannel_acs_ch13#></input></span></div>
+						<div><span id="band0_acs_ch13_checkbox" style="display:none;"><input type="checkbox" onClick="check_acs_ch13_support(this);" <% nvram_match("acs_ch13", "1", "checked"); %>><#WLANConfig11b_EChannel_acs_ch13#></input></span></div>
 						</div>
 					</td>
 			  	</tr>

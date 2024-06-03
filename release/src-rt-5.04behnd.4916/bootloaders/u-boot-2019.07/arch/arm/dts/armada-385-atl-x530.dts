@@ -1,0 +1,50 @@
+// SPDX-License-Identifier: GPL-2.0
+/dts-v1/;
+
+#include "armada-385-atl-x530.dtsi"
+#include "armada-385-atl-x530-u-boot.dtsi"
+
+/ {
+	model = "Allied Telesis x530";
+	compatible = "alliedtelesis,x530", "marvell,armada385", "marvell,armada380";
+
+	nand-protect {
+		compatible = "atl,nand-protect";
+		protect-gpio = <&gpio1 11 GPIO_ACTIVE_HIGH>;
+	};
+
+	usb-enable {
+		compatible = "atl,usb-enable";
+		enable-gpio = <&gpio0 19 GPIO_ACTIVE_HIGH>;
+	};
+
+	boot-board {
+		compatible = "atl,boot-board";
+		present-gpio = <&gpio0 24 GPIO_ACTIVE_HIGH>;
+		override-gpio = <&gpio1 14 GPIO_ACTIVE_HIGH>;
+	};
+
+	phy-reset {
+		compatible = "atl,phy-reset";
+		reset-gpio = <&gpio0 12 GPIO_ACTIVE_HIGH>,
+			     <&gpio1 21 GPIO_ACTIVE_HIGH>;
+	};
+
+	led-enable {
+		compatible = "atl,led-enable";
+		enable-gpio = <&gpio1 17 GPIO_ACTIVE_HIGH>;
+	};
+
+	led_7seg {
+		compatible = "atl,of-led-7seg";
+		segment-gpios = <
+			&led_7seg_gpio 0 0
+			&led_7seg_gpio 1 0
+			&led_7seg_gpio 2 0
+			&led_7seg_gpio 3 0
+			&led_7seg_gpio 4 0
+			&led_7seg_gpio 5 0
+			&led_7seg_gpio 6 0
+			&led_7seg_gpio 7 0>;
+	};
+};

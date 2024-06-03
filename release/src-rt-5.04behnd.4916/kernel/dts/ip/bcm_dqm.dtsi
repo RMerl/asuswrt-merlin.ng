@@ -1,0 +1,91 @@
+compatible = "brcm,dqm";
+reg = <SMC_REG_BASE 0x0 0x20790>;
+dev-name = "smc";
+cfg-offset = <0x1c00>;
+q-ctl-base-offset   = <0x4000>;
+q-data-base-offset  = <0x5000>;
+q-status-base-offset    = <0x2800>;
+q-mib-base-offset   = <0x3000>;
+q-count         = <32>;
+#cfg-qsm; /* NoT Used - enable DQM configuration */
+qsm-size        = <0x8000>;
+legacy-irq;
+#restricted-access; /* NOT Used - resticted access to DQM Registers (also in RO mode) */
+
+dqmintc0: dqmintc0 {
+    interrupts = <GIC_SPI SMC_ARM_IRQ IRQ_TYPE_LEVEL_HIGH>;
+    interrupt-controller;
+    #interrupt-cells = <1>;
+    interrupt-parent = <&gic>;
+    l1-irq-mask-offset  = <0x20728>;   /* SMC_IRQS_L1_ext1_Mask */
+    l1-irq-status-offset    = <0x20724>;   /* SMC_IRQS_L1_ext1_Status */
+    l1-irq-type-offset  = <0x2072c>;   /* SMC_IRQS_L1_ext1_Style */
+    l1-irq-dqm-mask     = <0x00000002>; /* Bit 1 */
+    lwm-irq-mask-offset = <0x1d3c>;   /* SMC_DQM_IRQ_LOW_WMK_MASK[1] */
+    lwm-irq-status-offset   = <0x1d34>;   /* SMC_DQM_IRQ_LOW_WMK_IRQ_STATUS */
+    ne-irq-mask-offset  = <0x1d0c>;   /* SMC_DQM_IRQ_NOT_EMPTY_MASK[1] */
+    ne-irq-status-offset    = <0x1d04>;   /* SMC_DQM_IRQ_NOT_EMPTY_IRQ_STATUS */
+    ne-status-offset    = <0x1d00>;   /* SMC_DQM_IRQ_NOT_EMPTY_STATUS */
+};
+
+dqm0: dqm0 {
+    qname = "RPC RG-->SMC (non-secure)";
+    id = <0>;
+    words = <4>;
+    depth = <16>;
+    lwm = <2>;
+    hwm = <1>;
+    interrupt-parent = <&dqmintc0>;
+    interrupts = <0>;
+};
+dqm1: dqm1 {
+    qname = "RPC SMC-->RG (non-secure)";
+    id = <1>;
+    words = <4>;
+    depth = <16>;
+    lwm = <2>;
+    hwm = <1>;
+    interrupt-parent = <&dqmintc0>;
+    interrupts = <1>;
+};
+dqm2: dqm2 {
+    qname = "RPC VFLASH-->SMC (non-secure)";
+    id = <2>;
+    words = <4>;
+    depth = <16>;
+    lwm = <2>;
+    hwm = <1>;
+    interrupt-parent = <&dqmintc0>;
+    interrupts = <2>;
+};
+dqm3: dqm3 {
+    qname = "RPC SMC-->VFLASH (non-secure)";
+    id = <3>;
+    words = <4>;
+    depth = <16>;
+    lwm = <2>;
+    hwm = <1>;
+    interrupt-parent = <&dqmintc0>;
+    interrupts = <3>;
+};
+dqm4: dqm4 {
+    qname = "RPC AVS-->SMC (non-secure)";
+    id = <4>;
+    words = <4>;
+    depth = <8>;
+    lwm = <2>;
+    hwm = <1>;
+    interrupt-parent = <&dqmintc0>;
+    interrupts = <4>;
+};
+dqm5: dqm5 {
+    qname = "RPC SMC-->AVS (non-secure)";
+    id = <5>;
+    words = <4>;
+    depth = <8>;
+    lwm = <2>;
+    hwm = <1>;
+    interrupt-parent = <&dqmintc0>;
+    interrupts = <5>;
+};
+

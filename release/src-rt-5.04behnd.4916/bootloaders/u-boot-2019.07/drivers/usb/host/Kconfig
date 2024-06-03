@@ -1,0 +1,308 @@
+#
+# USB Host Controller Drivers
+#
+comment "USB Host Controller Drivers"
+
+config USB_HOST
+	bool
+
+config USB_XHCI_HCD
+	bool "xHCI HCD (USB 3.0) support"
+	select USB_HOST
+	---help---
+	  The eXtensible Host Controller Interface (xHCI) is standard for USB 3.0
+	  "SuperSpeed" host controller hardware.
+
+if USB_XHCI_HCD
+
+config USB_XHCI_DWC3
+	bool "DesignWare USB3 DRD Core Support"
+	help
+	  Say Y or if your system has a Dual Role SuperSpeed
+	  USB controller based on the DesignWare USB3 IP Core.
+
+config USB_XHCI_DWC3_OF_SIMPLE
+	bool "DesignWare USB3 DRD Generic OF Simple Glue Layer"
+	depends on DM_USB
+	default y if DRA7XX
+	help
+	  Support USB2/3 functionality in simple SoC integrations with
+	  USB controller based on the DesignWare USB3 IP Core.
+
+config USB_XHCI_MVEBU
+	bool "MVEBU USB 3.0 support"
+	default y
+	depends on ARCH_MVEBU
+	select DM_REGULATOR
+	help
+	  Choose this option to add support for USB 3.0 driver on mvebu
+	  SoCs, which includes Armada8K, Armada3700 and other Armada
+	  family SoCs.
+
+config USB_XHCI_PCI
+	bool "Support for PCI-based xHCI USB controller"
+	depends on DM_USB
+	default y if X86
+	help
+	  Enables support for the PCI-based xHCI controller.
+
+config USB_XHCI_ROCKCHIP
+	bool "Support for Rockchip on-chip xHCI USB controller"
+	depends on ARCH_ROCKCHIP
+	depends on DM_REGULATOR
+	depends on DM_USB
+	default y
+	help
+	  Enables support for the on-chip xHCI controller on Rockchip SoCs.
+
+config USB_XHCI_RCAR
+	bool "Renesas RCar USB 3.0 support"
+	default y
+	depends on ARCH_RMOBILE
+	help
+	  Choose this option to add support for USB 3.0 driver on Renesas
+	  RCar Gen3 SoCs.
+
+config USB_XHCI_STI
+	bool "Support for STMicroelectronics STiH407 family on-chip xHCI USB controller"
+	depends on ARCH_STI
+	default y
+	help
+	  Enables support for the on-chip xHCI controller on STMicroelectronics
+	  STiH407 family SoCs. This is a driver for the dwc3 to provide the glue logic
+	  to configure the controller.
+
+config USB_XHCI_ZYNQMP
+	bool "Support for Xilinx ZynqMP on-chip xHCI USB controller"
+	depends on ARCH_ZYNQMP
+	depends on DM_USB
+	help
+	  Enables support for the on-chip xHCI controller on Xilinx ZynqMP SoCs.
+
+config USB_XHCI_DRA7XX_INDEX
+	int "DRA7XX xHCI USB index"
+	range 0 1
+	default 0
+	depends on DRA7XX
+	help
+	  Select the DRA7XX xHCI USB index.
+	  Current supported values: 0, 1.
+
+config USB_XHCI_FSL
+	bool "Support for NXP Layerscape on-chip xHCI USB controller"
+	default y if ARCH_LS1021A || FSL_LSCH3 || FSL_LSCH2
+	depends on !SPL_NO_USB
+	help
+	  Enables support for the on-chip xHCI controller on NXP Layerscape SoCs.
+endif # USB_XHCI_HCD
+
+config USB_EHCI_HCD
+	bool "EHCI HCD (USB 2.0) support"
+	default y if ARCH_MX5 || ARCH_MX6
+	select USB_HOST
+	---help---
+	  The Enhanced Host Controller Interface (EHCI) is standard for USB 2.0
+	  "high speed" (480 Mbit/sec, 60 Mbyte/sec) host controller hardware.
+	  If your USB host controller supports USB 2.0, you will likely want to
+	  configure this Host Controller Driver.
+
+	  EHCI controllers are packaged with "companion" host controllers (OHCI
+	  or UHCI) to handle USB 1.1 devices connected to root hub ports.  Ports
+	  will connect to EHCI if the device is high speed, otherwise they
+	  connect to a companion controller.  If you configure EHCI, you should
+	  probably configure the OHCI (for NEC and some other vendors) USB Host
+	  Controller Driver or UHCI (for Via motherboards) Host Controller
+	  Driver too.
+
+	  You may want to read <file:Documentation/usb/ehci.txt>.
+
+if USB_EHCI_HCD
+
+config USB_EHCI_ATMEL
+	bool  "Support for Atmel on-chip EHCI USB controller"
+	depends on ARCH_AT91
+	default y
+	---help---
+	  Enables support for the on-chip EHCI controller on Atmel chips.
+
+config USB_EHCI_MARVELL
+	bool "Support for Marvell on-chip EHCI USB controller"
+	depends on ARCH_MVEBU || KIRKWOOD || ORION5X
+	default y
+	---help---
+	  Enables support for the on-chip EHCI controller on MVEBU SoCs.
+
+config USB_EHCI_MX5
+	bool "Support for i.MX5 on-chip EHCI USB controller"
+	depends on ARCH_MX5
+	default n
+	help
+	  Enables support for the on-chip EHCI controller on i.MX5 SoCs.
+
+config USB_EHCI_MX6
+	bool "Support for i.MX6 on-chip EHCI USB controller"
+	depends on ARCH_MX6
+	default y
+	---help---
+	  Enables support for the on-chip EHCI controller on i.MX6 SoCs.
+
+config USB_EHCI_MX7
+	bool "Support for i.MX7 on-chip EHCI USB controller"
+	depends on ARCH_MX7
+	default y
+	---help---
+	  Enables support for the on-chip EHCI controller on i.MX7 SoCs.
+
+config USB_EHCI_OMAP
+	bool "Support for OMAP3+ on-chip EHCI USB controller"
+	depends on ARCH_OMAP2PLUS
+	default y
+	---help---
+	  Enables support for the on-chip EHCI controller on OMAP3 and later
+	  SoCs.
+
+config USB_EHCI_VF
+	bool "Support for Vybrid on-chip EHCI USB controller"
+	depends on ARCH_VF610
+	default y
+	help
+	  Enables support for the on-chip EHCI controller on Vybrid SoCs.
+
+if USB_EHCI_MX7
+
+config MXC_USB_OTG_HACTIVE
+	bool "USB Power pin high active"
+	---help---
+	  Set the USB Power pin polarity to be high active (PWR_POL)
+
+endif
+
+config USB_EHCI_MSM
+	bool "Support for Qualcomm on-chip EHCI USB controller"
+	depends on DM_USB
+	select USB_ULPI_VIEWPORT
+	select MSM8916_USB_PHY
+	default n
+	---help---
+	  Enables support for the on-chip EHCI controller on Qualcomm
+	  Snapdragon SoCs.
+
+config USB_EHCI_PCI
+	bool "Support for PCI-based EHCI USB controller"
+	default y if X86
+	help
+	  Enables support for the PCI-based EHCI controller.
+
+config USB_EHCI_TEGRA
+	bool "Support for NVIDIA Tegra on-chip EHCI USB controller"
+	depends on TEGRA
+	---help---
+	  Enable support for Tegra on-chip EHCI USB controller
+
+config USB_EHCI_ZYNQ
+	bool "Support for Xilinx Zynq on-chip EHCI USB controller"
+	depends on ARCH_ZYNQ
+	default y
+	---help---
+	  Enable support for Zynq on-chip EHCI USB controller
+
+config USB_EHCI_GENERIC
+	bool "Support for generic EHCI USB controller"
+	depends on OF_CONTROL
+	depends on DM_USB
+	default ARCH_SUNXI
+	default n
+	---help---
+	  Enables support for generic EHCI controller.
+
+config USB_EHCI_FSL
+	bool  "Support for FSL on-chip EHCI USB controller"
+	default n
+	select  CONFIG_EHCI_HCD_INIT_AFTER_RESET
+	---help---
+	  Enables support for the on-chip EHCI controller on FSL chips.
+
+config USB_EHCI_BCMBCA
+	bool  "Support for Broadcom BCA on-chip EHCI USB controller"
+	default n
+	depends on ARCH_BCMBCA
+	---help---
+	  Enables support for the on-chip EHCI controller on Broadcom BCA chips.
+endif # USB_EHCI_HCD
+
+config USB_OHCI_HCD
+	bool "OHCI HCD (USB 1.1) support"
+	---help---
+	  The Open Host Controller Interface (OHCI) is a standard for accessing
+	  USB 1.1 host controller hardware.  It does more in hardware than Intel's
+	  UHCI specification.  If your USB host controller follows the OHCI spec,
+	  say Y.  On most non-x86 systems, and on x86 hardware that's not using a
+	  USB controller from Intel or VIA, this is appropriate.  If your host
+	  controller doesn't use PCI, this is probably appropriate.  For a PCI
+	  based system where you're not sure, the "lspci -v" entry will list the
+	  right "prog-if" for your USB controller(s):  EHCI, OHCI, or UHCI.
+
+if USB_OHCI_HCD
+
+config USB_OHCI_GENERIC
+	bool "Support for generic OHCI USB controller"
+	depends on OF_CONTROL
+	depends on DM_USB
+	default ARCH_SUNXI
+	select USB_HOST
+	---help---
+	  Enables support for generic OHCI controller.
+
+config USB_OHCI_DA8XX
+	bool "Support for da850 OHCI USB controller"
+	help
+	  Enable support for the da850 USB controller.
+
+config USB_OHCI_BCMBCA
+	bool  "Support for Broadcom BCA on-chip OHCI USB controller"
+	default n
+	depends on ARCH_BCMBCA
+	---help---
+	  Enables support for the on-chip OHCI controller on Broadcom BCA chips.
+
+endif # USB_OHCI_HCD
+
+config USB_UHCI_HCD
+	bool "UHCI HCD (most Intel and VIA) support"
+	select USB_HOST
+	---help---
+	  The Universal Host Controller Interface is a standard by Intel for
+	  accessing the USB hardware in the PC (which is also called the USB
+	  host controller). If your USB host controller conforms to this
+	  standard, you may want to say Y, but see below. All recent boards
+	  with Intel PCI chipsets (like intel 430TX, 440FX, 440LX, 440BX,
+	  i810, i820) conform to this standard. Also all VIA PCI chipsets
+	  (like VIA VP2, VP3, MVP3, Apollo Pro, Apollo Pro II or Apollo Pro
+	  133) and LEON/GRLIB SoCs with the GRUSBHC controller.
+	  If unsure, say Y.
+
+if USB_UHCI_HCD
+
+endif # USB_UHCI_HCD
+
+config USB_DWC2
+	bool "DesignWare USB2 Core support"
+	select USB_HOST
+	---help---
+	  The DesignWare USB 2.0 controller is compliant with the
+	  USB-Implementers Forum (USB-IF) USB 2.0 specifications.
+	  Hi-Speed (480 Mbps), Full-Speed (12 Mbps), and Low-Speed (1.5 Mbps)
+	  operation is compliant to the controller Supplement. If you want to
+	  enable this controller in host mode, say Y.
+
+if USB_DWC2
+config USB_DWC2_BUFFER_SIZE
+	int "Data buffer size in kB"
+	default 64
+	---help---
+	  By default 64 kB buffer is used but if amount of RAM avaialble on
+	  the target is not enough to accommodate allocation of buffer of
+	  that size it is possible to shrink it. Smaller sizes should be fine
+	  because larger transactions could be split in smaller ones.
+
+endif # USB_DWC2

@@ -1,0 +1,9 @@
+OMAP3SOM BOARD
+M:	Adam Ford <aford173@gmail.com>
+S:	Maintained
+F:	board/logicpd/omap3som/
+F:	include/configs/omap3_logic.h
+F:	configs/omap3_logic_defconfig
+F:	configs/omap35_logic_defconfig
+F:	configs/omap35_logic_somlv_defconfig
+F:	configs/omap3_logic_somlv_defconfig

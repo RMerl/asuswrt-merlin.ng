@@ -1,0 +1,300 @@
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<link rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component.css">
+<link rel="stylesheet" type="text/css" href="/SDN/sdn.css">
+<link rel="stylesheet" type="text/css" href="/SDN/mlo.css">
+<script type="text/javaScript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/calendar/jquery-ui.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
+<script type="text/javascript" src="/state.js"></script>
+<script type="text/javascript" src="/help.js"></script>
+<script type="text/javascript" src="/general.js"></script>
+<script type="text/javascript" src="/RWD_UI/rwd_component.js"></script>
+<script type="text/javascript" src="/SDN/sdn.js"></script>
+<script type="text/javascript" src="/SDN/mlo.js"></script>
+</head>
+<script>
+const PAGE_CONTAINER = "mlo";
+var getUrlParameter = function getUrlParameter(param){
+	var url_parm = window.location.search.substring(1);
+	var parm_array = url_parm.split("&");
+	var key_value;
+
+	for(var i = 0; i < parm_array.length; i += 1){
+		key_value = parm_array[i].split("=");
+		if (key_value[0] == param) {
+			return typeof key_value[1] == "undefined" ? "" : decodeURIComponent(key_value[1]);
+		}
+	}
+	return "";
+};
+var theme = getUrlParameter("current_theme").toUpperCase();
+if(theme == "GT") theme = "ROG";
+var app_control = {
+	"type": (function(){
+		var sdn_type = getUrlParameter("wizard").toUpperCase();
+		var specific_type = wizard_type_text.filter(function(item, index, array){
+			return (item.type.toUpperCase() == sdn_type);
+		})[0];
+		if(specific_type != undefined)
+			return specific_type.type;
+		else
+			return "";
+	})(),
+	"sdn_idx": (function(){
+		var sdn_idx = parseInt(getUrlParameter("profile"));
+		if(isNaN(sdn_idx))
+			return "";
+		else
+			return sdn_idx;
+	})()
+}
+$('link[group="extend_css"]').remove();
+if(theme == "WHITE" || theme == "ROG" || theme == "TUF"){
+	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component_' + theme + '.css">');
+	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/SDN/sdn_' + theme + '.css">');
+	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/SDN/mlo_' + theme + '.css">');
+}
+function initial(){
+	postMessageToApp({"web_ready": "1", "web_init": "0"});
+	init_sdn_all_list();
+	show_loading_obj();
+	if(app_control.sdn_idx != ""){
+		var specific_sdn = sdn_all_rl_json.filter(function(item, index, array){
+			return (item.sdn_rl.idx == app_control.sdn_idx);
+		})[0];
+		if(specific_sdn != undefined){
+			app_control.type = specific_sdn.sdn_rl.sdn_name;
+		}
+		else{
+			app_control.sdn_idx = "";
+		}
+	}
+	if(app_control.type == "" || app_control.type != "MLO")
+		show_mlo_profilelist();
+	else
+		$(".container").hide();
+
+	$(".function_desc_container .help_icon, .profile_list_container .help_icon").unbind("click").click(function(e){
+		e = e || event;
+		e.stopPropagation();
+		show_feature_desc_mlo();
+	});
+
+	const is_Web_iframe = (($(parent.document).find("#mainMenu").length > 0) || (top.webWrapper)) ? true : false;
+	if(is_Web_iframe){
+		$(".function_switch_container [data-component=wifi_set]").unbind("click").click(function(e){
+			e = e || event;
+			e.stopPropagation();
+			top.location.href = "/Advanced_Wireless_Content.asp";
+		});
+		$(".function_switch_container [data-component=mlo_switch]").unbind("click").click(function(e){
+			e = e || event;
+			e.stopPropagation();
+			let nvramSet_obj = {"action_mode": "apply", "rc_service": "restart_wireless;", "mld_enable": "1"};
+			if($(this).hasClass("on")){
+				const sdn_mlo_enable = sdn_all_rl_json.filter((item)=>{
+					return (item.sdn_rl.sdn_name == "MLO" && item.sdn_rl.sdn_enable == "1" && item.apg_rl.mlo == "2")
+				});
+				if(sdn_mlo_enable.length > 0){
+					show_customize_confirm(`<#WiFi_mlo_disable_Hint#><br><#AiMesh_Are_U_Sure_Proceed#>`);
+					const $confirm_obj = $(".popup_container.popup_customize_alert");
+					$confirm_obj.find("[data-btn=ok]")
+						.click(()=>{
+							$(this).toggleClass("off on");
+							nvramSet_obj["mld_enable"] = "0";
+							let rc_sdn = "";
+							$.each(sdn_all_rl_json, function(index, sdn_all_rl){
+								if(sdn_all_rl.sdn_rl.sdn_name == "MLO" && sdn_all_rl.sdn_rl.sdn_enable == "1" && sdn_all_rl.apg_rl.mlo == "2"){
+									const sdn_idx = sdn_all_rl.sdn_rl.idx;
+									const apg_idx = sdn_all_rl.apg_rl.apg_idx;
+									sdn_all_rl.sdn_rl.sdn_enable = "0";
+									nvramSet_obj[`apg${apg_idx}_enable`] = "0";
+									if(rc_sdn == "")
+										rc_sdn = `restart_sdn ${sdn_all_rl.sdn_rl.idx}`;
+									else
+										rc_sdn += ` ${sdn_all_rl.sdn_rl.idx}`;
+								}
+							});
+							if(rc_sdn != ""){
+								rc_sdn += ";";
+								let sdn_all_rl_tmp = JSON.parse(JSON.stringify(sdn_all_rl_json));
+								let sdn_rl = parse_JSONToStr_sdn_all_list({"sdn_all_rl":sdn_all_rl_tmp}).sdn_rl;
+								nvramSet_obj[`sdn_rl`] = sdn_rl;
+								nvramSet_obj[`rc_service`] += rc_sdn;
+							}
+							apply_mlo_switch();
+						});
+				}
+				else{
+					$(this).toggleClass("off on");
+					nvramSet_obj["mld_enable"] = "0";
+					apply_mlo_switch();
+				}
+			}
+			else{
+				if(check_sdn_legacy_exists()){
+					$(this).toggleClass("off on");
+					if(check_mlo_meet_conditions()){
+						nvramSet_obj["mld_enable"] = "1";
+						if(get_wl_unit_by_band("2G") != ""){
+							nvramSet_obj[`2g1_11be`] = "1";
+							nvramSet_obj[`2g1_crypto`] = "aes+gcmp256";
+						}
+						if(get_wl_unit_by_band("5G1") != ""){
+							nvramSet_obj[`5g1_11be`] = "1";
+							nvramSet_obj[`5g1_crypto`] = "aes+gcmp256";
+						}
+						if(get_wl_unit_by_band("5G2") != ""){
+							nvramSet_obj[`5g2_11be`] = "1";
+							nvramSet_obj[`5g2_crypto`] = "aes+gcmp256";
+						}
+						if(get_wl_unit_by_band("6G1") != ""){
+							nvramSet_obj[`6g1_11be`] = "1";
+							nvramSet_obj[`6g1_crypto`] = "aes+gcmp256";
+						}
+						if(get_wl_unit_by_band("6G2") != ""){
+							nvramSet_obj[`6g2_11be`] = "1";
+							nvramSet_obj[`6g2_crypto`] = "aes+gcmp256";
+						}
+						const wl_mlo_config = httpApi.nvramGet(["wl_mlo_config"]).wl_mlo_config;
+						if(wl_mlo_config == ""){
+							nvramSet_obj["rc_service"] = "reboot";
+						}
+						apply_mlo_switch();
+					}
+					else{
+						top.location.href = "/QIS_wizard.htm?flag=mlo";
+					}
+				}
+				else{
+					show_get_start_mlo();
+				}
+			}
+
+			function apply_mlo_switch(){
+				const showLoading_status = get_showLoading_status(nvramSet_obj.rc_service);
+				showLoading();
+				close_popup_container("all");
+				if(isWLclient()){
+					showLoading(showLoading_status.time);
+					setTimeout(()=>{
+						showWlHintContainer();
+					}, showLoading_status.time*1000);
+					if(is_Web_iframe)
+						check_isAlive_and_redirect({"page": "MLO.asp", "time": showLoading_status.time});
+				}
+				httpApi.nvramSet(nvramSet_obj, ()=>{
+					if(isWLclient()) return;
+					showLoading(showLoading_status.time);
+					setTimeout(function(){
+						httpApi.nvramGet(["mld_enable"], true);
+						init_sdn_all_list();
+						show_mlo_profilelist();
+					}, showLoading_status.time*1000);
+					if(is_Web_iframe){
+						if(showLoading_status.disconnect){
+							check_isAlive_and_redirect({"page": "MLO.asp", "time": showLoading_status.time});
+						}
+					}
+				});
+			}
+		})
+		.removeClass("off on").addClass(()=>{
+			return (httpApi.nvramGet(["mld_enable"]).mld_enable == "1") ? "on" : "off";
+		});
+	}
+	else{
+		$(".function_switch_container").remove();
+	}
+
+	var delay_load = (app_control.type == "") ? 100 : 0;
+	setTimeout(function(){
+		if(theme == "WHITE" || theme == "ROG"){
+			$('link').first().before('<link rel="stylesheet" type="text/css" href="/js/weekSchedule/schedule_ui_' + theme + '.css">');
+		}
+		$('link').first().before('<link rel="stylesheet" type="text/css" href="/js/weekSchedule/schedule_ui.css">');
+		$('link').first().before('<link rel="stylesheet" type="text/css" href="/pwdmeter.css">');
+		$('link').first().before('<link rel="stylesheet" type="text/css" href="/other.css">');
+		$('link').first().before('<link rel="stylesheet" type="text/css" href="/form_style.css">');
+		$('link').first().before('<link rel="stylesheet" type="text/css" href="/index_style.css">');
+		$('link').first().before('<link rel="stylesheet" type="text/css" href="/device-map/device-map.css">');
+
+		$('<script />', { type : 'text/javascript', src : "/validator.js"}).appendTo('head');
+		$('<script />', { type : 'text/javascript', src : "/popup.js"}).appendTo('head');
+		$('<script />', { type : 'text/javascript', src : "/js/weekSchedule/schedule_ui.js"}).appendTo('head');
+		$('<script />', { type : 'text/javascript', src : "/form.js"}).appendTo('head');
+		$('<script />', { type : 'text/javascript', src : "/client_function.js"}).appendTo('head');
+		$('<script />', { type : 'text/javascript', src : "/js/qrcode/jquery.qrcode.min.js"}).appendTo('head');
+		if(!is_Web_iframe)
+			showLoading = showLoading_RWD;//overwrite function
+
+		if(isSwMode("rt")){
+			Get_VPNC_Profile();
+		}
+
+		if(app_control.type != ""){
+			if(app_control.sdn_idx != ""){
+				$(".popup_element").css("display", "flex");
+				$(".popup_container.popup_element").empty().append(Get_Component_Full_Setting("popup"));
+				var specific_sdn = sdn_all_rl_json.filter(function(item, index, array){
+					return (item.sdn_rl.idx == app_control.sdn_idx);
+				})[0];
+				Update_Setting_Profile($(".popup_container.popup_element"), specific_sdn);
+				$(".popup_container.popup_element").addClass("hide_title_cntr full_width mobile_view").find(".popup_title_container").hide();
+			}
+			else{
+				show_popup_Wizard_Setting(app_control.type);
+				$(".popup_container.popup_element_second").addClass("hide_title_cntr full_width mobile_view").find(".popup_title_container").hide();
+			}
+			$(".container, .hidden_mask").hide();
+		}
+
+		postMessageToApp({"web_init": "1"});
+
+		if(isSwMode("rt")){
+			Get_DNS_List_DB();
+		}
+
+	}, delay_load);
+}
+</script>
+<body class="body_rwd">
+<div id="Loading" class="popup_bg" style="visibility: hidden;"></div>
+<div class="hidden_mask popup_element"></div>
+<div class="popup_container popup_element"></div>
+<div class="hidden_mask popup_element_second"></div>
+<div class="popup_container popup_element_second"></div>
+<div class="hidden_mask popup_customize_alert"></div>
+<div class="popup_container popup_customize_alert"></div>
+<div class="bg_rwd">
+	<div class="container no_highlights">
+		<div class="function_desc_container">
+			<div class="title"><#WiFi_mlo_title#></div>
+			<div class="help_icon"></div>
+		</div>
+		<div class="function_switch_container">
+			<div class="title">MLO</div>
+			<div class="input_container">
+				<div data-component="wifi_set" class="profile_btn_container"><#QKSet_wireless_webtitle#></div>
+				<div data-component="mlo_switch" class="icon_switch off"></div>
+			</div>
+		</div>
+		<div class="content_container">
+			<div class="profile_list_container">
+				<div class="title_container">
+					<div class="title_text"><#GuestNetwork_ProfileList#></div>
+					<div class="help_icon mobile"></div>
+				</div>
+				<div id="profile_list_content"></div>
+			</div>
+			<div id="profile_setting_container" class="profile_setting_container"></div>
+		</div>
+	</div>
+</div>
+<script>
+	$(document).ready(initial);
+</script>
+</body>

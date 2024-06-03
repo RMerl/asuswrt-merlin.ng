@@ -1,0 +1,18 @@
+if TARGET_APF27
+
+config SPL_LDSCRIPT
+	default "arch/$(ARCH)/cpu/u-boot-spl.lds"
+
+config SYS_BOARD
+	default "apf27"
+
+config SYS_VENDOR
+	default "armadeus"
+
+config SYS_SOC
+	default "mx27"
+
+config SYS_CONFIG_NAME
+	default "apf27"
+
+endif

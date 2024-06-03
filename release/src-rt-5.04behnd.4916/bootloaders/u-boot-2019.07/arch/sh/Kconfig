@@ -1,0 +1,70 @@
+menu "SuperH architecture"
+	depends on SH
+
+config CPU_SH4
+	bool
+
+config CPU_SH4A
+	bool
+	select CPU_SH4
+
+config SH_32BIT
+	bool "32bit mode"
+	depends on CPU_SH4A
+	default n
+	help
+	  SH4A has 2 physical memory maps. This use 32bit mode.
+	  And this is board specific. Please check your board if you
+	  want to use this.
+
+choice
+	prompt "Target select"
+	optional
+
+config TARGET_MIGOR
+	bool "Migo-R"
+	select CPU_SH4
+
+config TARGET_R2DPLUS
+	bool "Renesas R2D-PLUS"
+	select CPU_SH4
+
+config TARGET_R7780MP
+	bool "R7780MP board"
+	select CPU_SH4A
+
+config TARGET_SH7752EVB
+	bool "SH7752EVB"
+	select CPU_SH4A
+
+config TARGET_SH7753EVB
+	bool "SH7753EVB"
+	select CPU_SH4
+
+config TARGET_SH7757LCR
+	bool "SH7757LCR"
+	select CPU_SH4A
+
+config TARGET_SH7763RDP
+	bool "SH7763RDP"
+	select CPU_SH4
+
+endchoice
+
+config SYS_ARCH
+	default "sh"
+
+config SYS_CPU
+	default "sh4" if CPU_SH4
+
+source "arch/sh/lib/Kconfig"
+
+source "board/renesas/MigoR/Kconfig"
+source "board/renesas/r2dplus/Kconfig"
+source "board/renesas/r7780mp/Kconfig"
+source "board/renesas/sh7752evb/Kconfig"
+source "board/renesas/sh7753evb/Kconfig"
+source "board/renesas/sh7757lcr/Kconfig"
+source "board/renesas/sh7763rdp/Kconfig"
+
+endmenu

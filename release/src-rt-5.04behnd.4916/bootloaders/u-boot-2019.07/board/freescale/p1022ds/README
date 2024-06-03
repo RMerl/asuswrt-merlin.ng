@@ -1,0 +1,23 @@
+Overview
+--------
+P1022ds is a Low End Dual core platform supporting the P1022 processor
+of QorIQ series. P1022 is an e500 based dual core SOC.
+
+
+Pin Multiplex(hwconfig setting)
+-------------------------------
+Add the environment 'usb2', 'audclk' and 'tdm' to support pin multiplex
+via hwconfig, i.e:
+'setenv hwconfig usb2' to enable USB2 and disable eTsec2
+'setenv hwconfig tdm' to enable TDM and disable Audio
+'setenv hwconfig audclk:12' to enable Audio(codec clock sources is 12MHz)
+ and disable TDM
+'setenv hwconfig 'usb2;tdm' to enable USB2 and TDM, disable eTsec2 and Audio
+'setenv hwconfig 'usb2;audclk:11' to enable USB2 and Audio(codec clock sources
+ is 11MHz), disable eTsec2 and TDM
+
+Warning: TDM and AUDIO can not enable simultaneous !
+and AUDIO codec clock sources only setting as 11MHz or 12MHz !
+'setenv hwconfig 'audclk:12;tdm'	--- error !
+'setenv hwconfig 'audclk:11;tdm'	--- error !
+'setenv hwconfig 'audclk:10'		--- error !

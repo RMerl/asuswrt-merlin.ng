@@ -1,0 +1,17 @@
+if TARGET_BCM963158
+
+config SYS_VENDOR
+	default "broadcom"
+
+config SYS_BOARD
+	default "bcm963158"
+
+config SYS_CONFIG_NAME
+	default "broadcom_bcm963158"
+
+endif
+
+config TARGET_BCM963158
+	bool "Support Broadcom bcm963158"
+	depends on ARCH_BCM63158
+	select ARM64

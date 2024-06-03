@@ -1,0 +1,6 @@
+XILFPGA BOARD
+M:	Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com>
+S:	Maintained
+F:	board/imgtec/xilfpga
+F:	include/configs/xilfpga.h
+F:	configs/imgtec_xilfpga_defconfig

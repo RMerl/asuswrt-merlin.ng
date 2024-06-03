@@ -1,0 +1,23 @@
+&pinctrl {
+	pincontroller-functions {
+		usb0a_pwrflt_pins: usb0a_pwrflt_pinmux {
+			pins = <66>;
+			function = <1>;
+		};
+
+		usb0a_pwron_pins: usb0a_pwron_pinmux {
+			pins = <67>;
+			function = <1>;
+		};
+
+		usb1a_pwrflt_pins: usb1a_pwrflt_pinmux {
+			pins = <68>;
+			function = <1>;
+		};
+
+		usb1a_pwron_pins: usb1a_pwron_pinmux {
+			pins = <69>;
+			function = <1>;
+		};
+	};
+};

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2005 Apple Computer, Inc. All rights reserved.
+ * Copyright (c) 1999-2006 Apple Computer, Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
  * 
@@ -34,7 +34,9 @@
 #include "CheckHFS.h"
 #include "BTreeScanner.h"
 #include "hfs_endian.h"
+#include "../fsck_debug.h"
 
+#include <assert.h>
 #if LINUX
 #define XATTR_MAXNAMELEN 127
 #include <limits.h>
@@ -45,8 +47,6 @@
 #include <sys/syslimits.h>
 #endif
 #include <sys/errno.h>
-#include <sys/types.h>
-
 
 #ifdef __cplusplus
 extern	"C" {
@@ -391,15 +391,20 @@ typedef struct MissingThread
 
 #define kDataFork	0
 #define kRsrcFork	(-1)
+#define kEAData		1
 
 struct ExtentInfo {
 	HFSCatalogNodeID fileID;
 	UInt32	startBlock;
 	UInt32 	blockCount;
 	UInt32	newStartBlock;
+	char *  attrname;
 	UInt8	forkType;
-	Boolean	hasThread;
-	Boolean hasRepair;
+	/* didRepair stores the result of moving of overlap extent and is used 
+	 * to decide which disk blocks (original blocks or blocks allocated for 
+	 * for new extent location) should be marked used and free.
+	 */
+	Boolean didRepair;		
 };
 typedef struct ExtentInfo ExtentInfo;
 
@@ -627,10 +632,16 @@ typedef struct PrimeBuckets {
 } PrimeBuckets;
 
 /* Record last attribute ID checked, used in CheckAttributeRecord, initialized in ScavSetup */
-typedef struct lastAttrID {
-	UInt32 fileID;
+typedef struct attributeInfo {
+	Boolean isValid;
 	Boolean hasSecurity;
-} lastAttrID;
+	int16_t	recordType;
+	u_int32_t fileID;
+	unsigned char attrname[XATTR_MAXNAMELEN+1];
+	u_int32_t totalBlocks;
+	u_int32_t calculatedTotalBlocks;
+	u_int64_t logicalSize;
+} attributeInfo;
 
 /* 	
 	VolumeObject encapsulates all infomration about the multiple volume anchor blocks (VHB and MSD) 
@@ -679,6 +690,7 @@ typedef struct SGlob {
 	UInt16				CatStat;				//	scavenge status flags for catalog file
 	UInt16				VeryMinorErrorsStat;	//	scavenge status flags for very minor errors
 	UInt16				JStat;					//	scavange status flags for journal errors
+	UInt16				PrintStat;				//	info about messages that should be displayed only once
 	DrvQElPtr			DrvPtr;					//	pointer to driveQ element for target drive
 	UInt32				TarID;					//	target ID (CNID of data structure being verified)
 	UInt64				TarBlock;				//	target block/node number being verified
@@ -749,7 +761,7 @@ typedef struct SGlob {
 	PrimeBuckets 	CBTSecurityBucket;	/* prime number buckets for Security bit in Catalog btree */
 	PrimeBuckets 	ABTAttrBucket;		/* prime number buckets for Attribute bit in Attribute btree */
 	PrimeBuckets 	ABTSecurityBucket;	/* prime number buckets for Security bit in Attribute btree */
-	lastAttrID 	lastAttrFileID; 	/* Record last attribute ID checked, used in CheckAttributeRecord, initialized in ScavSetup */
+	attributeInfo 	lastAttrInfo; 	/* Record last attribute ID checked, used in CheckAttributeRecord, initialized in ScavSetup */
 	UInt16		securityAttrName[XATTR_MAXNAMELEN];	/* Store security attribute name in UTF16, to avoid frequent conversion */
 	size_t  	securityAttrLen;
 } SGlob, *SGlobPtr;
@@ -787,6 +799,7 @@ enum
 #define S_ReservedBTH			0x0080  // fields in the BTree header should be zero but are not
 #define S_AttributeCount		0x0040	// incorrect number of xattr in attribute btree in comparison with attribute bit in catalog btree
 #define S_SecurityCount			0x0020	// incorrect number of security xattrs in attribute btree in comparison with security bit in catalog btree
+#define S_AttrRec				0x0010	// orphaned/unknown record in attribute BTree
 
 /* catalog file status flags (contents of CatStat) */
 
@@ -801,6 +814,7 @@ enum
 #define S_LinkCount			0x0080	/* data node link count needs repair */
 #define S_Permissions		0x0040	/* BSD permissions need repair */
 #define S_FileAllocation	0x0020	/* peof or leof needs adjustment */
+#define S_BadExtent			0x0010	/* invalid extent */
 
 /* VeryMinorErrorsStat */
 
@@ -812,6 +826,10 @@ enum
 
 /* Journal status flag (contents of JStat) */
 #define S_BadJournal		0x8000	/* Bad journal content */
+
+/* Print status flag (contents of PrintStat) */
+#define S_DamagedDir 		0x8000	/* message for M_LookDamagedDir already printed */
+#define S_SymlinkCreate		0x4000	/* message for E_SymlinkCreate already printed */
 
 /*------------------------------------------------------------------------------
  ScavCtrl Interface
@@ -967,12 +985,14 @@ enum {
 	E_InvalidUID		=  570,
 	E_IllegalName		=  571,
 	E_IncorrectNumThdRcd	=  572,
-	/* Init the next two errors to pre-existing messages.  Fix them in 3964748 */
-	E_IncorrectAttrCount	=  547,	/* Incorrect attributes in attr btree with attr bits in catalog btree */
-	E_IncorrectSecurityCount=  547, /* Incorrect security attributes in attr btree with security bits in catalog btree */
 	E_SymlinkCreate		=  573,
+	E_IncorrectAttrCount	=  574,	/* Incorrect attributes in attr btree with attr bits in catalog btree */
+	E_IncorrectSecurityCount=  575, /* Incorrect security attributes in attr btree with security bits in catalog btree */
+	E_PEOAttr		=  576, /* Incorrect physical end of extended attribute data */
+	E_LEOAttr		=  577, /* Incorrect logical end of extended attribute data */
+	E_AttrRec		=  578, /* Invalid attribute record (overflow extent without original extent, unknown type) */
 
-	E_LastError		=  573
+	E_LastError		=  578
 };
 
 
@@ -1042,8 +1062,6 @@ extern	short	CheckForStop( SGlobPtr GPtr );
 
 extern	OSErr	RepairVolume( SGlobPtr GPtr );
 
-extern	int		MRepair( SGlobPtr GPtr );
-
 extern	int		FixDFCorruption( const SGlobPtr GPtr, RepairOrderPtr DFOrderP );
 
 extern	OSErr	ProcessFileExtents( SGlobPtr GPtr, SFCB *fcb, UInt8 forkType, UInt16 flags, Boolean isExtentsBTree, Boolean *hasOverflowExtents, UInt32 *blocksUsed  );
@@ -1101,9 +1119,15 @@ OSErr	FlushAlternateVolumeControlBlock( SVCB *vcb, Boolean isHFSPlus );
 extern	void	ConvertToHFSPlusExtent(const HFSExtentRecord oldExtents, HFSPlusExtentRecord newExtents);
 
 
-/* ------------------------------- From SVerify1.c -------------------------------- */
+/* ------------------------------- From CatalogCheck.c -------------------------------- */
 
 extern	OSErr	CheckCatalogBTree( SGlobPtr GPtr );	//	catalog btree check
+
+extern int  RecordBadAllocation(UInt32 parID, unsigned char * filename, UInt32 forkType, UInt32 oldBlkCnt, UInt32 newBlkCnt);
+
+extern int  RecordTruncation(UInt32 parID, unsigned char * filename, UInt32 forkType, UInt64 oldSize,  UInt64 newSize);
+
+/* ------------------------------- From SVerify1.c -------------------------------- */
 
 extern	OSErr	CatFlChk( SGlobPtr GPtr );		//	catalog file check
 	
@@ -1111,7 +1135,7 @@ extern	OSErr	CatHChk( SGlobPtr GPtr );		//	catalog hierarchy check
 
 extern	OSErr	ExtBTChk( SGlobPtr GPtr );		//	extent btree check
 
-extern	OSErr	ExtFlChk( SGlobPtr GPtr );		//	extent file check
+extern	OSErr	BadBlockFileExtentCheck( SGlobPtr GPtr );	//	bad block file extent check
 
 extern	OSErr	AttrBTChk( SGlobPtr GPtr );		//	attributes btree check
 
@@ -1131,7 +1155,11 @@ extern	OSErr	OrphanedFileCheck( SGlobPtr GPtr, Boolean *problemsFound );
 
 extern	int		cmpLongs (const void *a, const void *b);
 
-extern	OSErr	AddExtentToOverlapList( SGlobPtr GPtr, HFSCatalogNodeID fileNumber, UInt32 extentStartBlock, UInt32 extentBlockCount, UInt8 forkType );
+extern  int CheckAttributeRecord(SGlobPtr GPtr, const HFSPlusAttrKey *key, const HFSPlusAttrRecord *rec, UInt16 reclen);
+
+extern  int FindOrigOverlapFiles(SGlobPtr GPtr);
+
+extern  void PrintOverlapFiles (SGlobPtr GPtr);
 
 /* ------------------------------- From SVerify2.c -------------------------------- */
 
@@ -1153,7 +1181,7 @@ extern	int		CmpVBM( SGlobPtr GPtr );
 
 extern	OSErr	CmpBlock( void *block1P, void *block2P, UInt32 length ); /* same as 'memcmp', but EQ/NEQ only */
 	
-extern	OSErr	ChkExtRec ( SGlobPtr GPtr, const void *extents );
+extern	OSErr	ChkExtRec ( SGlobPtr GPtr, const void *extents , unsigned int *lastExtentIndex);
 
 
 /* -------------------------- From SRebuildCatalogBTree.c ------------------------- */
@@ -1203,7 +1231,7 @@ OSErr UpdateExtentRecord (
 	HFSPlusExtentRecord		extentData,
 	UInt32					extentBTreeHint);
 
-OSErr	CheckFileExtents( SGlobPtr GPtr, UInt32 fileNumber, UInt8 forkType,
+OSErr	CheckFileExtents( SGlobPtr GPtr, UInt32 fileNumber, UInt8 forkType, const unsigned char *xattrName,
                           const void *extents, UInt32 *blocksUsed );
 OSErr	GetBTreeHeader( SGlobPtr GPtr, SFCB* fcb, BTHeaderRec *header );
 OSErr	CompareVolumeBitMap( SGlobPtr GPtr, SInt32 whichBuffer );
@@ -1436,13 +1464,14 @@ extern int  CaptureBitmapBits(UInt32 startBit, UInt32 bitCount);
 extern int  ReleaseBitmapBits(UInt32 startBit, UInt32 bitCount);
 extern int  CheckVolumeBitMap(SGlobPtr g, Boolean repair);
 extern void UpdateFreeBlockCount(SGlobPtr g);
+extern int 	AllocateContigBitmapBits (SVCB *vcb, UInt32 numBlocks, UInt32 *actualStartBlock);
 
 #ifdef __cplusplus
 };
 #endif
 
-#if LINUX
+/* #if LINUX
 #undef XATTR_MAXNAMELEN
-#endif
+#endif */
 
 #endif /* __SCAVENGER__ */

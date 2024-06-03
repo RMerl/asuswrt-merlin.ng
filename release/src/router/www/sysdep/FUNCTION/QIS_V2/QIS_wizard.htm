@@ -83,6 +83,7 @@
 <script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/js/https_redirect/https_redirect.js"></script>
 <script>
+var gobiSupport = ('<% nvram_get("rc_support"); %>'.indexOf("gobi") == -1)? false : true;
 var isFirst = ('<% nvram_get("x_Setting"); %>' == '1') ? false : true;
 var header_info = [<% get_header_info(); %>][0];
 var ROUTERHOSTNAME = '<#Web_DOMAIN_NAME#>';
@@ -128,6 +129,7 @@ var getBand = '<% get_parameter("band"); %>';
 var ISMOBILE = false;
 var isPassChanged = false;
 var yadns_stage = 0;
+var ewan_manual = 0;
 
 // live update
 
@@ -168,6 +170,13 @@ if(wans_dualwan[0].indexOf("wan") != -1  && wans_dualwan[1].indexOf("wan") != -1
 	var dual_ewan = true;
 else
 	var dual_ewan = false;
+
+var ewan_index = 0;
+var usb_index = -1;
+if(wans_dualwan.length != 0){
+	ewan_index = wans_dualwan.indexOf("wan");
+	usb_index = wans_dualwan.indexOf("usb");
+}
 
 var cur_wan_unit = 0;
 var hadModem = function(){return hadPlugged("modem")};
@@ -383,7 +392,7 @@ function QIS_load_body(){
 	document.getElementById("language_menu").innerHTML = '<% shown_language_css(); %>';
 	show_selected_language();
 	
-	if((based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U") && sim_state == "1" && modem_autoapn == "1" && usb_modem_auto_spn.length == 0)
+	if(based_modelid.substring(0,3) == "4G-" && sim_state == "1" && modem_autoapn == "1" && usb_modem_auto_spn.length == 0)
 		update_apn_progress();
 	else
 		document.getElementById("apn_div").style.display = "none";	

@@ -1,0 +1,371 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2019 B&R Industrial Automation GmbH
+ * http://www.br-automation.com
+ *
+ */
+/dts-v1/;
+
+#include "am33xx.dtsi"
+
+/ {
+	model = "BRXRE1 Panel";
+	compatible = "ti,am33xx";
+
+	fset: factory-settings {
+		bl-version	= "                                ";
+		order-no	= "                                ";
+		cpu-order-no	= "                                ";
+		hw-revision	= "                                ";
+		serial-no	= <0>;
+		device-id	= <0xE681>;
+		parent-id	= <0xE681>;
+		hw-variant	= <0x3>;
+		hw-platform	= <0x0>;
+		fram-offset	= <0x1000>;
+		fram-size	= <0x3000>;
+		cache-disable	= <0x0>;
+		cpu-clock	= <0x0>;
+	};
+	chosen {
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		bootargs = "console=ttyO0,115200 earlyprintk";
+		stdout-path = &uart0;
+
+		framebuffer: framebuffer@8fbe0000 {
+			display = <&lcdscreen0>;
+			compatible = "simple-framebuffer";
+			status = "okay";
+			reg = <0x8fbef000 (1024 * 600 * 4)>;
+			width = <1024>;
+			height = <600>;
+			stride = <(1024 * 4)>;
+			format = "a8r8g8b8";
+			clocks = <&dpll_disp_m2_ck>, <&dpll_per_m2_ck>;
+		};
+	};
+
+	aliases {
+		fset = &fset;
+		mmc = &mmc2;
+		spi0 = &spi0;
+		spi1 = &spi1;
+		touch0 = &burtouch0;
+		screen0 = &lcdscreen0;
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0x80000000 0x10000000>; /* 256 MB */
+	};
+
+	panel {
+		compatible = "ti,tilcdc,panel";
+		status = "okay";
+	};
+
+	vmmcsd_fixed: fixedregulator@0 {
+		compatible = "regulator-fixed";
+		regulator-name = "vmmcsd_fixed";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+	};
+
+	lcdscreen0: lcdscreen@0 {
+		status = "okay";
+		compatible = "ti,tilcdc,panel";
+
+		backlight = <&tps_bl>;
+
+		panel-info {
+			ac-bias		= <255>;
+			ac-bias-intrpt	= <0>;
+			dma-burst-sz	= <16>;
+			bpp		= <32>;
+			fdd		= <0x80>;
+			sync-edge	= <0>;
+			sync-ctrl	= <1>;
+			raster-order	= <0>;
+			fifo-th		= <0>;
+		};
+
+		display-timings {
+			native-mode = <&timing0>;
+			timing0: lcd {
+				clock-frequency	= <9142857>;
+				hactive		= <480>;
+				vactive		= <272>;
+				hfront-porch	= <8>;
+				hback-porch	= <43>;
+				hsync-len	= <2>;
+				vfront-porch	= <4>;
+				vback-porch	= <2>;
+				vsync-len	= <10>;
+				hsync-active	= <1>;
+				vsync-active	= <1>;
+				pupdelay	= <10>;
+				pondelay	= <10>;
+			};
+		};
+	};
+};
+
+&uart0 {		/* console uart */
+	u-boot,dm-spl;
+	status = "okay";
+};
+
+&uart2 {
+	status = "okay";
+};
+
+&uart3 {
+	status = "okay";
+};
+
+&uart4 {
+	status = "okay";
+};
+
+&i2c0 {
+	u-boot,dm-spl;
+	status = "okay";
+	clock-frequency = <100000>;
+
+	tps: tps@24 {		/* PMIC controller */
+		u-boot,dm-spl;
+		reg = <0x24>;
+		compatible = "ti,tps65217";
+
+		tps_bl: backlight {
+			compatible = "ti,tps65217-bl";
+			isel = <1>;	/* 1 - ISET1, 2 ISET2 */
+			fdim = <1000>;	/* TPS65217_BL_FDIM_1kHZ */
+			default-brightness = <50>;
+		};
+	};
+	resetc: rstpsc@75 { /* reset controller */
+		compatible = "bur,rstpsc";
+		reg = <0x75>;
+
+		cooling-min-state = <0>;
+		cooling-max-state = <1>;	/* reset gets fired */
+		#cooling-cells = <2>;		/* min followed by max */
+	};
+	rtc0: rv3029c2@56 {
+		status = "okay";
+		#thermal-sensor-cells = <0>;
+		compatible = "rv3029c2";
+		reg = <0x56>;
+	};
+};
+
+&spi0 {
+	status = "okay";
+};
+
+&spi1 {
+	status = "okay";
+};
+
+&edma {
+	status = "okay";
+};
+
+&cppi41dma  {
+	status = "okay";
+};
+
+&usb {
+	status = "okay";
+};
+
+&usb_ctrl_mod {
+	status = "okay";
+};
+
+&usb0_phy {
+	status = "okay";
+};
+
+&usb1_phy {
+	status = "okay";
+};
+
+&usb0 {
+	status = "okay";
+	dr_mode = "host";
+};
+
+&usb1 {
+	status = "okay";
+	dr_mode = "host";
+};
+
+&davinci_mdio {
+	status = "okay";
+};
+
+&mac {
+	status = "okay";
+};
+
+&cpsw_emac0 {
+	phy_id = <&davinci_mdio>, <1>;
+	phy-mode = "mii";
+};
+
+&cpsw_emac1 {
+	phy_id = <&davinci_mdio>, <2>;
+	phy-mode = "mii";
+};
+
+&mmc1 {
+	u-boot,dm-pre-reloc;
+	vmmc-supply = <&vmmcsd_fixed>;
+	bus-width = <0x4>;
+	ti,non-removable;
+	ti,needs-special-hs-handling;
+	ti,vcc-aux-disable-is-sleep;
+	status = "okay";
+};
+
+&mmc2 {
+	u-boot,dm-pre-reloc;
+	vmmc-supply = <&vmmcsd_fixed>;
+	bus-width = <0x8>;
+	ti,non-removable;
+	ti,needs-special-hs-handling;
+	ti,vcc-aux-disable-is-sleep;
+	status = "okay";
+};
+
+&lcdc {
+	status = "okay";
+	ti,no-reset-on-init;
+	ti,no-idle-on-init;
+};
+
+&elm {
+	status = "okay";
+};
+
+&sham {
+	status = "okay";
+};
+
+&aes {
+	status = "okay";
+};
+
+&gpio0 {
+	u-boot,dm-spl;
+	ti,no-reset-on-init;
+};
+
+&gpio1 {
+	u-boot,dm-spl;
+	ti,no-reset-on-init;
+};
+
+&gpio2 {
+	u-boot,dm-spl;
+	ti,no-reset-on-init;
+};
+
+&gpio3 {
+	u-boot,dm-spl;
+	ti,no-reset-on-init;
+};
+
+&timer1 {		/* today unused */
+	status = "okay";
+	ti,no-reset-on-init;
+	ti,no-idle-on-init;
+};
+
+&timer2 {		/* used for vxworks primary timer device */
+	status = "okay";
+	ti,no-reset-on-init;
+	ti,no-idle-on-init;
+};
+
+&timer3 {		/* used sysdelay and hal tsc counter*/
+	status = "okay";
+	ti,no-reset-on-init;
+	ti,no-idle-on-init;
+};
+
+&timer4 {		/* used for PWM beeper */
+	status = "okay";
+	ti,no-reset-on-init;
+	ti,no-idle-on-init;
+};
+
+&timer5 {		/* used for PWM backlight */
+	status = "okay";
+	ti,no-reset-on-init;
+	ti,no-idle-on-init;
+};
+
+&timer6 {		/* used for cpsw end device */
+	status = "okay";
+	ti,no-reset-on-init;
+	ti,no-idle-on-init;
+};
+
+&timer7 {		/* used for cpsw end device */
+	status = "okay";
+	ti,no-reset-on-init;
+	ti,no-idle-on-init;
+};
+
+&wdt2 {
+	status = "okay";
+	ti,no-reset-on-init;
+	ti,no-idle-on-init;
+};
+
+&epwmss0 {
+	status = "okay";
+};
+
+&tscadc {
+	status = "okay";
+
+	tsc {
+		burtouch0: burtouch@0 {
+			status = "okay";
+			compatible = "bur,DdVxSfTouchXXX";
+			bur,hwtree = "IF7";
+			bur,KX0 = <0x0>;
+			bur,KX1 = <0x0>;
+			bur,KX2 = <0x0>;
+			bur,KY0 = <0x0>;
+			bur,KY1 = <0x0>;
+			bur,KY2 = <0x0>;
+		};
+	};
+};
+
+&dcan0 {
+	status = "okay";
+};
+
+&dcan1 {
+	status = "okay";
+};
+
+&sham {
+	status = "disabled";
+};
+
+&aes {
+	status = "disabled";
+};
+
+&rng {
+	status = "disabled";
+};

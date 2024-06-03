@@ -1,0 +1,176 @@
+#include "68880.dtsi"
+#if defined(CONFIG_BCM_VOICE_SUPPORT)
+#include "../../bcm_voice.dtsi"
+#endif
+
+&xport {
+    status = "okay";
+};
+
+&egphy {
+    status = "okay";
+};
+
+&unimac {
+    status = "okay";
+};
+
+&serdes {
+    status = "okay";
+};
+
+&ethphytop {
+    status = "okay";
+};
+
+&mdio {
+    status = "okay";
+};
+
+&switch0 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&a_eth_mdc_pin_59 &a_eth_mdio_pin_60>;
+};
+
+#ifndef CONFIG_BRCM_SMC_BOOT
+&nand {
+	status = "okay";
+};
+&sdhci {
+    status = "okay";
+};
+#endif
+
+&usb_ctrl {
+        pinctrl-names = "default";
+        pinctrl-0 = <&usb0_pwr_pins &usb1_pwr_pins>;
+        xhci-enable;
+        status = "okay";
+};
+
+&usb0_xhci {
+        status = "okay";
+        usb_port1: port1 {
+            reg = <1>;
+            #trigger-source-cells = <0>;
+        };
+
+        usb_port2: port2 {
+            reg = <2>;
+            #trigger-source-cells = <0>;
+        };
+};
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+&pcie0 {
+        status = "okay";
+};
+&pcie1 {
+        status = "okay";
+};
+&pcie2 {
+        status = "okay";
+};
+&pcie3 {
+        status = "okay";
+};
+#endif
+
+#if defined(CONFIG_BCM_VOICE_SUPPORT)
+&bcm_voice {
+        sliclist = SLICSLAC_LIST_COMMON_NOFXO;
+};
+
+&hsspi {
+        status = "okay";
+        voice0 {
+                pinctrl-0 = <&a_spim1_ss0_b_pin_25>;
+                pinctrl-names = "default";
+                compatible = "bcm-spi-voice";
+                reg = <0>;
+                spi-max-frequency = <1024000>;
+                reset-gpio = <&gpioc 12 GPIO_ACTIVE_LOW>;
+                spi-index = <0>;
+        };
+};
+#endif
+
+/ {
+        memory_controller {
+                memcfg = <(BP1_DDR_MCBSEL_FORMAT_VER1   | \
+                           BP1_DDR_TYPE_LPDDR4         | \
+                           BP1_DDR_SPEED_2133_36_39_39 | \
+                           BP1_DDR_WIDTH_32BIT         | \
+                           BP1_DDR_TOTAL_SIZE_8Gb      | \
+                           BP1_DDR_SSC_CONFIG_1        | \
+                           BP1_DDR_CONFIG_DEBUG)>;
+        };
+};
+
+/ {
+    xfp_sfp: xfp_sfp {
+        pinctrl-names = "default", "tx-sd";
+        pinctrl-0 = <&pon_lbe_p_pin_30>;
+        pinctrl-1 = <&pon_lbe_p_pin_30 &rogue_onu_in_pin_27>;
+        compatible = "brcm,sfp";
+        i2c-bus = <&i2c0_mux1>;
+        los-gpio = <&gpioc 26 GPIO_ACTIVE_HIGH>;
+        mod-def0 = <&bca_extintr 76 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_BOTH_EDGE | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+        tx-power-gpio = <&gpioc 6 GPIO_ACTIVE_HIGH>;
+    };
+
+    wan_serdes {
+        trx = <&xfp_sfp>;
+        status = "okay";
+    };
+
+    tod {
+        compatible = "brcm,tod";
+        pinctrl-names = "default";
+        pinctrl-0 = <&a_wan_nco_1pps_sig_pin_13>;
+        unstable-gpio = <&gpioc 14 GPIO_ACTIVE_HIGH>;
+    };  
+};
+
+&wdt {
+	status = "okay";
+};
+
+&uart0 {
+	status = "okay";
+};
+
+&uart1 {
+    /* stty -F /dev/ttyS1 115200 */ 
+    pinctrl-names = "default";
+    pinctrl-0 = <&a_uart1_sin_pin_11 &a_uart1_sout_pin_12>;
+    status = "okay";
+};
+
+&uart2 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&a_rg_uart1_sin_pin_20 &a_rg_uart1_sout_pin_21>;
+    status = "okay";
+};
+
+&i2c0 {
+	pinctrl-0 = <&i2c_scl_pin_28 &i2c_sda_pin_29>;
+	pinctrl-names = "default";
+	status = "okay";
+
+    i2cswitch {
+        compatible = "nxp,pca9548";
+        #address-cells = <1>;
+        #size-cells = <0>;
+        reg = <0x72>;
+        i2c-mux-idle-disconnect;
+
+        i2c0_mux1: i2c@1 {
+            reg = <0x1>;
+        };
+
+        i2c0_mux2: i2c@2 {
+            reg = <0x2>;
+        };
+    };
+};

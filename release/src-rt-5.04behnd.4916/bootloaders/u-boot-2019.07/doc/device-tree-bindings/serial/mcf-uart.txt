@@ -1,0 +1,19 @@
+Freescale ColdFire UART
+
+Required properties:
+- compatible : should be "fsl,mcf-uart"
+- reg: start address and size of the registers
+
+Example:
+
+soc {
+	compatible = "simple-bus";
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	uart0: uart@fc060000 {
+		compatible = "fsl,mcf-uart";
+		reg = <0xfc060000 0x40>;
+		status = "disabled";
+	};
+};

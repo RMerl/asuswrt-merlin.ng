@@ -11,6 +11,9 @@
 */
 
 #include "rc.h"
+#if defined(RTCONFIG_RALINK)
+#include "ate.h"
+#endif
 
 #include <sys/sysinfo.h>
 #include <sys/ioctl.h>
@@ -270,6 +273,21 @@ static void wlcconnect_safeleave(int signo) {
 	exit(0);
 }
 
+#if defined(RTCONFIG_CONCURRENTREPEATER) && defined(RTCONFIG_REALTEK)
+int get_wlc_rssi_status(char *interface)
+{
+	bss_info bss_buf;
+	char bssid[8];
+	memset(&bss_buf,0,sizeof(bss_info));
+	if (wl_ioctl(interface, WLC_GET_BSSID, bssid, ETHER_ADDR_LEN) < 0 ||
+	    wl_ioctl(interface, WLC_GET_BSS_INFO, &bss_buf, sizeof(bss_buf)) < 0)
+		return 0;
+	logmessage(__func__,"*******%s %d interface=%s state=%d channel=%d txRate=%d rssi=%d ssid=%s bssid=%x%x%x%x%x%x********\n",__FUNCTION__,__LINE__,interface,bss_buf.state,bss_buf.channel,bss_buf.txRate,bss_buf.rssi,bss_buf.ssid,bss_buf.bssid[0],bss_buf.bssid[1],bss_buf.bssid[2],bss_buf.bssid[3],bss_buf.bssid[4],bss_buf.bssid[5]);
+
+	return (bss_buf.rssi);
+}
+#endif
+
 // wlcconnect_main
 //	wireless ap monitor to connect to ap
 //	when wlc_list, then connect to it according to priority
@@ -287,6 +305,11 @@ _dprintf("%s: Start to run...\n", __FUNCTION__);
 
 	_dprintf("%s: Start to run...\n", __FUNCTION__);
 	signal(SIGTERM, wlcconnect_safeleave);
+#if (defined(RTCONFIG_RALINK) || defined(RTCONFIG_QCA)) \
+ && !defined(RTCONFIG_CONCURRENTREPEATER)
+	signal(SIGTSTP, wlcconnect_sig_handle);
+	signal(SIGCONT, wlcconnect_sig_handle);
+#endif
 
 	nvram_set_int("wlc_state", WLC_STATE_INITIALIZING);
 	nvram_set_int("wlc_sbstate", WLC_STOPPED_REASON_NONE);
@@ -354,13 +377,31 @@ _dprintf("Ready to disconnect...%d.\n", wlc_count);
 				else
 					wanduck_notify = NOTIFY_DISCONN;
 
+#if defined(RTCONFIG_CONCURRENTREPEATER) && defined(RTCONFIG_REALTEK)
+#if defined(RPAC55)
+				if (!strcmp(nvram_safe_get("wlc_band"), "0"))
+				{
+					get_wlc_rssi_status("wl0-vxd");	
+				}
+				else if (!strcmp(nvram_safe_get("wlc_band"), "1"))
+				{
+					get_wlc_rssi_status("wl1-vxd");
+				}
+#endif
+#endif
 				// notify the change to init.
 				if (ret == WLC_STATE_CONNECTED)
 				{
+#if defined(RTCONFIG_WISP)
+					if (!wisp_mode())
+#endif
 					notify_rc_and_wait("restart_wlcmode 1");
 				}
 				else
 				{
+#if defined(RTCONFIG_WISP)
+					if (!wisp_mode())
+#endif
 					notify_rc_and_wait("restart_wlcmode 0");
 #if defined(RTCONFIG_CONCURRENTREPEATER) && defined(RTCONFIG_RALINK)
 					nvram_set_int("lan_ready",0);
@@ -368,7 +409,7 @@ _dprintf("Ready to disconnect...%d.\n", wlc_count);
 				}
 
 #if defined(RTCONFIG_BLINK_LED)
-#if defined(RTCONFIG_QCA)
+#if defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK)
 				if (wanduck_notify == NOTIFY_CONN)
 					append_netdev_bled_if(led_gpio, get_staifname(unit));
 				else

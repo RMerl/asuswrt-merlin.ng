@@ -1,0 +1,320 @@
+U-Boot for the Gateworks Ventana Product Family boards
+
+This file contains information for the port of U-Boot to the Gateworks
+Ventana Product family boards.
+
+The entire Ventana product family (http://www.gateworks.com/product#ventana)
+is supported by a single bootloader build by using a common SPL and U-Boot
+that dynamically determines the characterstics of the board at runtime via
+information from an EEPROM on the board programmed at the factory and supports
+all of the various boot mediums available.
+
+1. Secondary Program Loader (SPL)
+---------------------------------
+
+The i.MX6 has a BOOT ROM PPL (Primary Program Loader) which supports loading
+an executable image from various boot devices.
+
+The Gateworks Ventana board config uses an SPL build configuration. This
+will build the following artifacts from U-Boot source:
+ - SPL - Secondary Program Loader that the i.MX6 BOOT ROM (Primary Program
+         Loader) boots.  This detects CPU/DRAM configuration, configures
+         The DRAM controller, loads u-boot.img from the detected boot device,
+         and jumps to it.  As this is booted from the PPL, it has an IVT/DCD
+         table.
+ - u-boot.img - The main U-Boot core which is u-boot.bin with a image header.
+
+
+2. Build
+--------
+
+To build U-Boot for the Gateworks Ventana product family:
+
+For NAND FLASH based boards:
+ make gwventana_nand_config
+ make
+
+For EMMC FLASH based boards:
+ make gwventana_emmc_config
+ make
+
+
+3. Boot source:
+---------------
+
+The Gateworks Ventana boards support booting from NAND or micro-SD depending
+on the board model. The IMX6 BOOT ROM will choose a boot media based on eFUSE
+settings programmed at the factory.
+
+Boards with NAND flash will always boot from NAND, and NAND-less boards will
+always boot from micro-SD. However, it is possible to use the U-Boot bmode
+command (or the technique it uses) to essentially bootstrap to another boot
+media at runtime.
+
+3.1. boot from NAND
+-------------------
+
+The i.MX6 BOOT ROM expects some structures that provide details of NAND layout
+and bad block information (referred to as 'bootstreams') which are replicated
+multiple times in NAND. The number of replications and their spacing (referred
+to as search stride) is configurable through board strapping options and/or
+eFUSE settings (BOOT_SEARCH_COUNT / Pages in block from BOOT_CFG2). In
+addition, the i.MX6 BOOT ROM Flash Configuration Block (FCB) supports two
+copies of a bootloader in flash in the case that a bad block has corrupted one.
+The Freescale 'kobs-ng' application from the Freescale LTIB BSP, which runs
+under Linux and operates on an MTD partition, must be used to program the
+bootstream in order to setup this flash structure correctly.
+
+The Gateworks Ventana boards with NAND flash have been factory programmed
+such that their eFUSE settings expect 2 copies of the boostream (this is
+specified by providing kobs-ng with the --search_exponent=1 argument). Once in
+Linux with MTD support for the NAND on /dev/mtd0 you can program the SPL
+with:
+
+kobs-ng init -v -x --search_exponent=1 SPL
+
+The kobs-ng application uses an imximage which contains the Image Vector Table
+(IVT) and Device Configuration Data (DCD) structures that the i.MX6 BOOT ROM
+requires to boot.  The kobs-ng adds the Firmware Configuration Block (FCB) and
+Discovered Bad Block Table (DBBT).  The SPL build artifact from U-Boot is
+an imximage.
+
+The u-boot.img, which is the non SPL U-Boot binary appended to a U-Boot image
+header must be programmed in the NAND flash boot device at an offset hard
+coded in the SPL. For the Ventana boards, this has been chosen to be 14MB.
+The image can be programmed from either U-Boot or Linux:
+
+U-Boot:
+Ventana > setenv mtdparts mtdparts=nand:14m(spl),2m(uboot),1m(env),-(rootfs)
+Ventana > tftp ${loadaddr} u-boot.img && nand erase.part uboot && \
+          nand write ${loadaddr} uboot ${filesize}
+
+Linux:
+nandwrite /dev/mtd1 u-boot.img
+
+The above assumes the default Ventana partitioning scheme which is configured
+via the mtdparts env var:
+ - spl: 14MB
+ - uboot: 2M
+ - env: 1M
+ - rootfs: the rest
+
+This information is taken from:
+  http://trac.gateworks.com/wiki/ventana/bootloader#nand
+
+More details about the i.MX6 BOOT ROM can be found in the IMX6 reference manual.
+
+3.1. boot from MMC (eMMC/microSD)
+---------------------------------
+
+When the IMX6 eFUSE settings have been factory programmed to boot from
+MMC the SPL will be loaded from offset 0x400 (1KB). Once the SPL is
+booted, it will load and execute U-Boot (u-boot.img) from offset 69KB
+on the micro-SD (defined by CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR).
+
+While it is technically possible to enable the SPL to be able to load
+U-Boot from a file on a FAT/EXT filesystem on the micro-SD, we chose to
+use raw micro-SD access to keep the code-size and boot time of the SPL down.
+
+For these reasons an MMC device that will be used as an IMX6 primary boot
+device must be carefully partitioned and prepared.
+
+The following shell commands are executed on a Linux host (adjust DEV to the
+block storage device of your MMC, ie /dev/mmcblk0):
+
+ DEV=/dev/sdc
+ # zero out 1MB of device
+ sudo dd if=/dev/zero of=$DEV count=1 bs=1M oflag=sync status=none && sync
+ # copy SPL to 1KB offset
+ sudo dd if=SPL of=$DEV bs=1K seek=1 oflag=sync status=none && sync
+ # copy U-Boot to 69KB offset
+ sudo dd if=u-boot.img of=$DEV bs=1K seek=69 oflag=sync status=none && sync
+ # create a partition table with a single rootfs partition starting at 1MB
+ printf "1,,L\n" | sudo sfdisk --in-order --no-reread -L -uM $DEV && sync
+ # format partition
+ sudo mkfs.ext4 -L root ${DEV}1
+ # mount the partition
+ sudo udisks --mount ${DEV}1
+ # extract filesystem
+ sudo tar xvf rootfs.tar.gz -C /media/root
+ # flush and unmount
+ sync && sudo umount /media/root
+
+The above assumes the default Ventana micro-SD partitioning scheme
+ - spl    :   1KB-69KB  (68KB)  required by IMX6 BOOT ROM
+ - uboot  :  69KB-709KB (640KB) defined by
+                                CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR
+ - env    : 709KB-965KB (256KB) defined by
+                                CONFIG_ENV_MMC_SIZE
+                                CONFIG_ENV_MMC_OFFSET_REDUND
+ - rootfs :   1MB-
+
+This information is taken from:
+  http://trac.gateworks.com/wiki/ventana/bootloader#microsd
+
+More details about the i.MX6 BOOT ROM can be found in the IMX6 reference manual.
+
+4. Falcon Mode
+------------------------------
+
+The Gateworks Ventana board config enables Falcon mode (CONFIG_SPL_OS_BOOT)
+which allows the SPL to boot directly to an OS instead of to U-Boot
+(u-boot.img) thus acheiving a faster overall boot time. The time savings
+depends on your boot medium (ie NAND Flash vs micro-SD) and size/storage
+of the OS. The time savings can be anywhere from 2 seconds (256MB NAND Flash
+with ~1MB kernel) to 6 seconds or more (2GB NAND Flash with ~6 kernel)
+
+The Gateworks Ventana board supports Falcon mode for the following boot
+medium:
+ - NAND flash
+ - micro-SD
+
+For all boot mediums, raw mode is used. While support of more complex storage
+such as files on top of FAT/EXT filesystem is possible but not practical
+as the size of the SPL is fairly limitted (to 64KB based on the smallest
+size of available IMX6 iRAM) as well as the fact that this would increase
+OS load time which defeats the purpose of Falcon mode in the first place.
+
+The SPL decides to boot either U-Boot (u-boot.img) or the OS (args + kernel)
+based on the return value of the spl_start_uboot() function. While often
+this can simply be the state of a GPIO based pushbutton or DIP switch, for
+Gateworks Ventana, we use an EEPROM register on i2c-0 at 0x50:0x00:
+set to '0' will choose to boot to U-Boot and otherwise it will boot to OS.
+
+To use Falcon mode it is required that you first 'prepare' the 'args' data
+that is stored on your boot medium along with the kernel (which can be any
+OS or bare-metal application). In the case of the Linux kernel the 'args'
+is the flatenned device-tree which normally gets altered prior to booting linux
+by U-Boot's 'bootm' command. To achieve this for SPL we use the
+'spl export fdt' command in U-Boot after loading the kernel and dtb which
+will go through the same process of modifying the device-tree for the board
+being executed on but not jump to the kernel. This allows you to save the
+args data to the location the SPL expects it and then enable Falcon mode.
+
+It is important to realize that there are certain values in the dtb that
+are board model specific (IMX6Q vs IMX6DL for example) and board specific
+(board serial number, MAC addrs) so you do not want to use the 'args'
+data prepared from one board on another board.
+
+4.1. Falcon Mode on NAND flash
+------------------------------
+To prepare a Gateworks Ventana board that boots from NAND flash for Falcon
+mode you must program your flash such that the 'args' and 'kernel' are
+located where defined at compile time by the following:
+   CONFIG_CMD_SPL_NAND_OFS         17MB - offset of 'args'
+   CONFIG_SYS_NAND_SPL_KERNEL_OFFS 18MB - offset of 'kernel'
+
+The location offsets defined above are defaults chosen by Gateworks and are
+flexible if you want to re-define them.
+
+The following steps executed in U-Boot will configure Falcon mode for NAND
+using rootfs (ubi), kernel (uImage), and dtb from the network:
+
+ # change mtd partitions to the above mapping
+ Ventana > setenv mtdparts 'mtdparts=nand:14m(spl),2m(uboot),1m(env),1m(args),10m(kernel),-(rootfs)'
+
+ # flash rootfs (at 28MB)
+ Ventana > tftp ${loadaddr} rootfs_${flash_layout}.ubi && \
+   nand erase.part rootfs && nand write ${loadaddr} rootfs ${filesize}
+
+ # load the device-tree
+ Ventana > tftp ${fdt_addr} ventana/${fdt_file2}
+
+ # load the kernel
+ Ventana > tftp ${loadaddr} ventana/uImage
+
+ # flash kernel (at 18MB)
+ Ventana > nand erase.part kernel && nand write ${loadaddr} kernel ${filesize}
+
+ # set kernel args for the console and rootfs (used by spl export)
+ Ventana > setenv bootargs 'console=ttymxc1,115200 root=ubi0:rootfs ubi.mtd=5 rootfstype=ubifs quiet'
+
+ # create args based on env, board, EEPROM, and dtb
+ Ventana > spl export fdt ${loadaddr} - ${fdt_addr}
+
+ # flash args (at 17MB)
+ Ventana > nand erase.part args && nand write 18000000 args 100000
+
+ # set i2c register 0x50:0x00=0 to boot to Linux
+ Ventana > i2c dev 0 && i2c mw 0x50 0x00.0 0 1
+
+Be sure to adjust 'bootargs' above to your OS needs (this will be different
+for various distros such as OpenWrt, Yocto, Android, etc). You can use the
+value obtained from 'cat /proc/cmdline' when booted to Linux.
+
+This information is taken from:
+  http://trac.gateworks.com/wiki/ventana/bootloader/falcon-mode#nand
+
+
+4.2. Falcon Mode on micro-SD card
+---------------------------------
+
+To prepare a Gateworks Ventana board with a primary boot device of micro-SD
+you first need to make sure you build U-Boot with CONFIG_ENV_IS_IN_MMC
+instead of CONFIG_ENV_IS_IN_NAND.
+
+For micro-SD based Falcon mode you must program your micro-SD such that
+the 'args' and 'kernel' are located where defined at compile time
+by the following:
+   CONFIG_SYS_MMCSD_RAW_MODE_ARGS_SECTOR 0x800 (1MB) - offset of 'args'
+   CONFIG_SYS_MMCSD_RAW_MODE_KERNEL_SECTOR 0x1000 (2MB) - offset of 'kernel'
+
+The location offsets defined above are defaults chosen by Gateworks and are
+flexible if you want to re-define them.
+
+First you must prepare a micro-SD such that the SPL can be loaded by the
+IMX6 BOOT ROM (fixed offset of 1KB), and U-Boot can be loaded by the SPL
+(fixed offset of 69KB defined by CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR).
+
+The following shell commands are executed on a Linux host (adjust DEV to the
+block storage device of your micro-SD):
+
+ DEV=/dev/sdc
+ # zero out 1MB of device
+ sudo dd if=/dev/zero of=$DEV count=1 bs=1M oflag=sync status=none && sync
+ # copy SPL to 1KB offset
+ sudo dd if=SPL of=$DEV bs=1K seek=1 oflag=sync status=none && sync
+ # copy U-Boot to 69KB offset
+ sudo dd if=u-boot.img of=$DEV bs=1K seek=69 oflag=sync status=none && sync
+ # create a partition table with a single rootfs partition starting at 10MB
+ printf "10,,L\n" | sudo sfdisk --in-order --no-reread -L -uM $DEV && sync
+ # format partition
+ sudo mkfs.ext4 -L root ${DEV}1
+ # mount the partition
+ sudo udisks --mount ${DEV}1
+ # extract filesystem
+ sudo tar xvf rootfs.tar.gz -C /media/root
+ # flush and unmount
+ sync && sudo umount /media/root
+
+Now that your micro-SD partitioning has been adjusted to leave room for the
+raw 'args' and 'kernel' data boot the board with the prepared micro-SD, break
+out in U-Boot and use the following to enable Falcon mode:
+
+ # load device-tree from rootfs
+ Ventana > ext2load mmc 0:1 ${fdt_addr} boot/${fdt_file2}
+
+ # load kernel from rootfs
+ Ventana > ext2load mmc 0:1 ${loadaddr} boot/uImage
+
+ # write kernel at 2MB offset
+ Ventana > mmc write ${loadaddr} 0x1000 0x4000
+
+ # setup kernel bootargs
+ Ventana > setenv bootargs 'console=ttymxc1,115200 root=/dev/mmcblk0p1 rootfstype=ext4 rootwait rw'
+
+ # prepare args
+ Ventana > spl export fdt ${loadaddr} - ${fdt_addr}
+
+ # write args 1MB data (0x800 sectors) to 1MB offset (0x800 sectors)
+ Ventana > mmc write 18000000 0x800 0x800
+
+ # set i2c register 0x50:0x00=0 to boot to Linux
+ Ventana > i2c dev 0 && i2c mw 0x50 0x00.0 0 1
+
+Be sure to adjust 'bootargs' above to your OS needs (this will be different
+for various distros such as OpenWrt, Yocto, Android, etc). You can use the
+value obtained from 'cat /proc/cmdline' when booted to Linux.
+
+This information is taken from:
+  http://trac.gateworks.com/wiki/ventana/bootloader/falcon-mode#microsd

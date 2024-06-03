@@ -1,0 +1,216 @@
+/*
+   Copyright (c) 2015 Broadcom
+   All Rights Reserved
+
+    <:label-BRCM:2015:DUAL/GPL:standard
+
+    Unless you and Broadcom execute a separate written software license
+    agreement governing use of this software, this software is licensed
+    to you under the terms of the GNU General Public License version 2
+    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
+    with the following added to such license:
+
+       As a special exception, the copyright holders of this software give
+       you permission to link this software with independent modules, and
+       to copy and distribute the resulting executable under terms of your
+       choice, provided that you also meet, for each linked independent
+       module, the terms and conditions of the license of that module.
+       An independent module is a module which is not derived from this
+       software.  The special exception does not apply to any modifications
+       of the software.
+
+    Not withstanding the above, under no circumstances may you combine
+    this software in any way with any other Broadcom software provided
+    under a license other than the GPL, without Broadcom's express prior
+    written consent.
+
+:>
+*/
+
+
+#ifndef _XRDP_TCAM_AG_H_
+#define _XRDP_TCAM_AG_H_
+
+#include "ru_types.h"
+
+#define TCAM_CONTEXT_RAM_CONTEXT_DATA_FIELD_MASK 0xFFFFFFFF
+#define TCAM_CONTEXT_RAM_CONTEXT_DATA_FIELD_WIDTH 32
+#define TCAM_CONTEXT_RAM_CONTEXT_DATA_FIELD_SHIFT 0
+#if RU_INCLUDE_FIELD_DB
+extern const ru_field_rec TCAM_CONTEXT_RAM_CONTEXT_DATA_FIELD;
+#endif
+extern const ru_reg_rec TCAM_CONTEXT_RAM_CONTEXT_REG;
+#define TCAM_CONTEXT_RAM_CONTEXT_REG_OFFSET 0x00000000
+#define TCAM_CONTEXT_RAM_CONTEXT_REG_RAM_CNT 8192
+
+#define TCAM_CFG_BANK_EN_VALUE_FIELD_MASK 0x0000FFFF
+#define TCAM_CFG_BANK_EN_VALUE_FIELD_WIDTH 16
+#define TCAM_CFG_BANK_EN_VALUE_FIELD_SHIFT 0
+#if RU_INCLUDE_FIELD_DB
+extern const ru_field_rec TCAM_CFG_BANK_EN_VALUE_FIELD;
+#endif
+extern const ru_reg_rec TCAM_CFG_BANK_EN_REG;
+#define TCAM_CFG_BANK_EN_REG_OFFSET 0x00008000
+
+#define TCAM_CFG_TM_TCAM0_VALUE_FIELD_MASK 0x0000FFFF
+#define TCAM_CFG_TM_TCAM0_VALUE_FIELD_WIDTH 16
+#define TCAM_CFG_TM_TCAM0_VALUE_FIELD_SHIFT 0
+#if RU_INCLUDE_FIELD_DB
+extern const ru_field_rec TCAM_CFG_TM_TCAM0_VALUE_FIELD;
+#endif
+extern const ru_reg_rec TCAM_CFG_TM_TCAM0_REG;
+#define TCAM_CFG_TM_TCAM0_REG_OFFSET 0x00008010
+
+#define TCAM_CFG_TM_TCAM1_VALUE_FIELD_MASK 0x0000FFFF
+#define TCAM_CFG_TM_TCAM1_VALUE_FIELD_WIDTH 16
+#define TCAM_CFG_TM_TCAM1_VALUE_FIELD_SHIFT 0
+#if RU_INCLUDE_FIELD_DB
+extern const ru_field_rec TCAM_CFG_TM_TCAM1_VALUE_FIELD;
+#endif
+extern const ru_reg_rec TCAM_CFG_TM_TCAM1_REG;
+#define TCAM_CFG_TM_TCAM1_REG_OFFSET 0x00008014
+
+#define TCAM_CFG_GLOBAL_MASK_VALUE_FIELD_MASK 0xFFFFFFFF
+#define TCAM_CFG_GLOBAL_MASK_VALUE_FIELD_WIDTH 32
+#define TCAM_CFG_GLOBAL_MASK_VALUE_FIELD_SHIFT 0
+#if RU_INCLUDE_FIELD_DB
+extern const ru_field_rec TCAM_CFG_GLOBAL_MASK_VALUE_FIELD;
+#endif
+extern const ru_reg_rec TCAM_CFG_GLOBAL_MASK_REG;
+#define TCAM_CFG_GLOBAL_MASK_REG_OFFSET 0x00008100
+#define TCAM_CFG_GLOBAL_MASK_REG_RAM_CNT 8
+
+#define TCAM_COUNTERS_SRCH_SHORT_KEY_CNT_FIELD_MASK 0xFFFFFFFF
+#define TCAM_COUNTERS_SRCH_SHORT_KEY_CNT_FIELD_WIDTH 32
+#define TCAM_COUNTERS_SRCH_SHORT_KEY_CNT_FIELD_SHIFT 0
+#if RU_INCLUDE_FIELD_DB
+extern const ru_field_rec TCAM_COUNTERS_SRCH_SHORT_KEY_CNT_FIELD;
+#endif
+extern const ru_reg_rec TCAM_COUNTERS_SRCH_SHORT_KEY_REG;
+#define TCAM_COUNTERS_SRCH_SHORT_KEY_REG_OFFSET 0x00008200
+
+#define TCAM_COUNTERS_HIT_SHORT_KEY_CNT_FIELD_MASK 0xFFFFFFFF
+#define TCAM_COUNTERS_HIT_SHORT_KEY_CNT_FIELD_WIDTH 32
+#define TCAM_COUNTERS_HIT_SHORT_KEY_CNT_FIELD_SHIFT 0
+#if RU_INCLUDE_FIELD_DB
+extern const ru_field_rec TCAM_COUNTERS_HIT_SHORT_KEY_CNT_FIELD;
+#endif
+extern const ru_reg_rec TCAM_COUNTERS_HIT_SHORT_KEY_REG;
+#define TCAM_COUNTERS_HIT_SHORT_KEY_REG_OFFSET 0x00008204
+
+#define TCAM_COUNTERS_SRCH_LONG_KEY_CNT_FIELD_MASK 0xFFFFFFFF
+#define TCAM_COUNTERS_SRCH_LONG_KEY_CNT_FIELD_WIDTH 32
+#define TCAM_COUNTERS_SRCH_LONG_KEY_CNT_FIELD_SHIFT 0
+#if RU_INCLUDE_FIELD_DB
+extern const ru_field_rec TCAM_COUNTERS_SRCH_LONG_KEY_CNT_FIELD;
+#endif
+extern const ru_reg_rec TCAM_COUNTERS_SRCH_LONG_KEY_REG;
+#define TCAM_COUNTERS_SRCH_LONG_KEY_REG_OFFSET 0x00008208
+
+#define TCAM_COUNTERS_HIT_LONG_KEY_CNT_FIELD_MASK 0xFFFFFFFF
+#define TCAM_COUNTERS_HIT_LONG_KEY_CNT_FIELD_WIDTH 32
+#define TCAM_COUNTERS_HIT_LONG_KEY_CNT_FIELD_SHIFT 0
+#if RU_INCLUDE_FIELD_DB
+extern const ru_field_rec TCAM_COUNTERS_HIT_LONG_KEY_CNT_FIELD;
+#endif
+extern const ru_reg_rec TCAM_COUNTERS_HIT_LONG_KEY_REG;
+#define TCAM_COUNTERS_HIT_LONG_KEY_REG_OFFSET 0x0000820C
+
+#define TCAM_INDIRECT_OP_CMD_FIELD_MASK 0x0000000F
+#define TCAM_INDIRECT_OP_CMD_FIELD_WIDTH 4
+#define TCAM_INDIRECT_OP_CMD_FIELD_SHIFT 0
+#if RU_INCLUDE_FIELD_DB
+extern const ru_field_rec TCAM_INDIRECT_OP_CMD_FIELD;
+#endif
+extern const ru_reg_rec TCAM_INDIRECT_OP_REG;
+#define TCAM_INDIRECT_OP_REG_OFFSET 0x00008300
+
+#define TCAM_INDIRECT_OP_DONE_DONE_FIELD_MASK 0x00000001
+#define TCAM_INDIRECT_OP_DONE_DONE_FIELD_WIDTH 1
+#define TCAM_INDIRECT_OP_DONE_DONE_FIELD_SHIFT 0
+#if RU_INCLUDE_FIELD_DB
+extern const ru_field_rec TCAM_INDIRECT_OP_DONE_DONE_FIELD;
+#endif
+extern const ru_reg_rec TCAM_INDIRECT_OP_DONE_REG;
+#define TCAM_INDIRECT_OP_DONE_REG_OFFSET 0x00008304
+
+#define TCAM_INDIRECT_ADDR_KEY1_IND_FIELD_MASK 0x00000001
+#define TCAM_INDIRECT_ADDR_KEY1_IND_FIELD_WIDTH 1
+#define TCAM_INDIRECT_ADDR_KEY1_IND_FIELD_SHIFT 0
+#if RU_INCLUDE_FIELD_DB
+extern const ru_field_rec TCAM_INDIRECT_ADDR_KEY1_IND_FIELD;
+#endif
+#define TCAM_INDIRECT_ADDR_ENTRY_ADDR_FIELD_MASK 0x00000FFE
+#define TCAM_INDIRECT_ADDR_ENTRY_ADDR_FIELD_WIDTH 11
+#define TCAM_INDIRECT_ADDR_ENTRY_ADDR_FIELD_SHIFT 1
+#if RU_INCLUDE_FIELD_DB
+extern const ru_field_rec TCAM_INDIRECT_ADDR_ENTRY_ADDR_FIELD;
+#endif
+extern const ru_reg_rec TCAM_INDIRECT_ADDR_REG;
+#define TCAM_INDIRECT_ADDR_REG_OFFSET 0x00008308
+
+#define TCAM_INDIRECT_VLID_IN_VALID_FIELD_MASK 0x00000001
+#define TCAM_INDIRECT_VLID_IN_VALID_FIELD_WIDTH 1
+#define TCAM_INDIRECT_VLID_IN_VALID_FIELD_SHIFT 0
+#if RU_INCLUDE_FIELD_DB
+extern const ru_field_rec TCAM_INDIRECT_VLID_IN_VALID_FIELD;
+#endif
+extern const ru_reg_rec TCAM_INDIRECT_VLID_IN_REG;
+#define TCAM_INDIRECT_VLID_IN_REG_OFFSET 0x0000830C
+
+#define TCAM_INDIRECT_VLID_OUT_VALID_FIELD_MASK 0x00000001
+#define TCAM_INDIRECT_VLID_OUT_VALID_FIELD_WIDTH 1
+#define TCAM_INDIRECT_VLID_OUT_VALID_FIELD_SHIFT 0
+#if RU_INCLUDE_FIELD_DB
+extern const ru_field_rec TCAM_INDIRECT_VLID_OUT_VALID_FIELD;
+#endif
+extern const ru_reg_rec TCAM_INDIRECT_VLID_OUT_REG;
+#define TCAM_INDIRECT_VLID_OUT_REG_OFFSET 0x00008314
+
+#define TCAM_INDIRECT_RSLT_MATCH_FIELD_MASK 0x00000001
+#define TCAM_INDIRECT_RSLT_MATCH_FIELD_WIDTH 1
+#define TCAM_INDIRECT_RSLT_MATCH_FIELD_SHIFT 0
+#if RU_INCLUDE_FIELD_DB
+extern const ru_field_rec TCAM_INDIRECT_RSLT_MATCH_FIELD;
+#endif
+#define TCAM_INDIRECT_RSLT_INDEX_FIELD_MASK 0x00007FF0
+#define TCAM_INDIRECT_RSLT_INDEX_FIELD_WIDTH 11
+#define TCAM_INDIRECT_RSLT_INDEX_FIELD_SHIFT 4
+#if RU_INCLUDE_FIELD_DB
+extern const ru_field_rec TCAM_INDIRECT_RSLT_INDEX_FIELD;
+#endif
+extern const ru_reg_rec TCAM_INDIRECT_RSLT_REG;
+#define TCAM_INDIRECT_RSLT_REG_OFFSET 0x00008318
+
+#define TCAM_INDIRECT_KEY_IN_VALUE_FIELD_MASK 0xFFFFFFFF
+#define TCAM_INDIRECT_KEY_IN_VALUE_FIELD_WIDTH 32
+#define TCAM_INDIRECT_KEY_IN_VALUE_FIELD_SHIFT 0
+#if RU_INCLUDE_FIELD_DB
+extern const ru_field_rec TCAM_INDIRECT_KEY_IN_VALUE_FIELD;
+#endif
+extern const ru_reg_rec TCAM_INDIRECT_KEY_IN_REG;
+#define TCAM_INDIRECT_KEY_IN_REG_OFFSET 0x00008320
+#define TCAM_INDIRECT_KEY_IN_REG_RAM_CNT 8
+
+#define TCAM_INDIRECT_KEY_OUT_VALUE_FIELD_MASK 0xFFFFFFFF
+#define TCAM_INDIRECT_KEY_OUT_VALUE_FIELD_WIDTH 32
+#define TCAM_INDIRECT_KEY_OUT_VALUE_FIELD_SHIFT 0
+#if RU_INCLUDE_FIELD_DB
+extern const ru_field_rec TCAM_INDIRECT_KEY_OUT_VALUE_FIELD;
+#endif
+extern const ru_reg_rec TCAM_INDIRECT_KEY_OUT_REG;
+#define TCAM_INDIRECT_KEY_OUT_REG_OFFSET 0x00008340
+#define TCAM_INDIRECT_KEY_OUT_REG_RAM_CNT 8
+
+#define TCAM_TCAM_DEBUG_BUS_SELECT_SELECT_MODULE_FIELD_MASK 0x00000003
+#define TCAM_TCAM_DEBUG_BUS_SELECT_SELECT_MODULE_FIELD_WIDTH 2
+#define TCAM_TCAM_DEBUG_BUS_SELECT_SELECT_MODULE_FIELD_SHIFT 0
+#if RU_INCLUDE_FIELD_DB
+extern const ru_field_rec TCAM_TCAM_DEBUG_BUS_SELECT_SELECT_MODULE_FIELD;
+#endif
+extern const ru_reg_rec TCAM_TCAM_DEBUG_BUS_SELECT_REG;
+#define TCAM_TCAM_DEBUG_BUS_SELECT_REG_OFFSET 0x00008600
+
+extern const ru_block_rec TCAM_BLOCK;
+
+#endif

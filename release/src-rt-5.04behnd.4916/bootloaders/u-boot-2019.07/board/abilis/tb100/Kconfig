@@ -1,0 +1,15 @@
+if TARGET_TB100
+
+config SYS_CPU
+	default "arc700"
+
+config SYS_BOARD
+	default "tb100"
+
+config SYS_VENDOR
+	default "abilis"
+
+config SYS_CONFIG_NAME
+	default "tb100"
+
+endif

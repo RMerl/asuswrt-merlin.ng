@@ -1,0 +1,6 @@
+WaRP BOARD
+M:	Otavio Salvador <otavio@ossystems.com.br>
+S:	Maintained
+F:	board/warp/
+F:	include/configs/warp.h
+F:	configs/warp_defconfig

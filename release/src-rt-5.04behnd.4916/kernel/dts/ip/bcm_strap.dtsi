@@ -1,0 +1,5 @@
+
+compatible = "brcm,strap";
+
+reg = <STRAP_REG_OFFSET STRAP_REG_SIZE>;
+

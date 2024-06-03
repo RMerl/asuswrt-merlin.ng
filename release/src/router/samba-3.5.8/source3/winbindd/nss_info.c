@@ -147,8 +147,13 @@ static NTSTATUS nss_domain_list_add_domain(const char *domain,
 
 	nss_domain->init_status = nss_domain->backend->methods->init(nss_domain);
 	if (!NT_STATUS_IS_OK(nss_domain->init_status))  {
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+		DEBUG(0, ("nss_init_samba: Failed to init backend '%s' for domain "
+			  "'%s'!\n", nss_backend->name, nss_domain->domain));
+#else
 		DEBUG(0, ("nss_init: Failed to init backend '%s' for domain "
 			  "'%s'!\n", nss_backend->name, nss_domain->domain));
+#endif
 	}
 
 	DLIST_ADD(nss_domain_list, nss_domain);
@@ -164,7 +169,11 @@ static NTSTATUS nss_domain_list_add_domain(const char *domain,
  to initialize the state on a per domain basis.
  *******************************************************************/
 
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+ NTSTATUS nss_init_samba( const char **nss_list )
+#else
  NTSTATUS nss_init( const char **nss_list )
+#endif
 {
 	NTSTATUS status;
 	static NTSTATUS nss_initialized = NT_STATUS_UNSUCCESSFUL;
@@ -190,8 +199,13 @@ static NTSTATUS nss_domain_list_add_domain(const char *domain,
 	for ( i=0; nss_list && nss_list[i]; i++ ) {
 
 		if ( !parse_nss_parm(nss_list[i], &backend, &domain) ) {
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+			DEBUG(0,("nss_init_samba: failed to parse \"%s\"!\n",
+				 nss_list[i]));
+#else
 			DEBUG(0,("nss_init: failed to parse \"%s\"!\n",
 				 nss_list[i]));
+#endif
 			continue;
 		}
 
@@ -209,8 +223,13 @@ static NTSTATUS nss_domain_list_add_domain(const char *domain,
 
 			/* try again */
 			if ( (nss_backend = nss_get_backend( backend )) == NULL ) {
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+				DEBUG(0,("nss_init_samba: unregistered backend %s!.  Skipping\n",
+					 backend));
+#else
 				DEBUG(0,("nss_init: unregistered backend %s!.  Skipping\n",
 					 backend));
+#endif
 				continue;
 			}
 		}
@@ -220,8 +239,13 @@ static NTSTATUS nss_domain_list_add_domain(const char *domain,
 		 * is treated as the default nss info backend.
 		 */
 		if ((domain == NULL) && (default_backend == NULL)) {
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+			DEBUG(10, ("nss_init_samba: using '%s' as default backend.\n",
+				   backend));
+#else
 			DEBUG(10, ("nss_init: using '%s' as default backend.\n",
 				   backend));
+#endif
 			default_backend = nss_backend;
 		}
 
@@ -237,8 +261,13 @@ static NTSTATUS nss_domain_list_add_domain(const char *domain,
 	}
 
 	if ( !nss_domain_list ) {
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+		DEBUG(3,("nss_init_samba: no nss backends configured.  "
+			 "Defaulting to \"template\".\n"));
+#else
 		DEBUG(3,("nss_init: no nss backends configured.  "
 			 "Defaulting to \"template\".\n"));
+#endif
 
 
 		/* we shouild default to use template here */
@@ -257,7 +286,11 @@ static struct nss_domain_entry *find_nss_domain( const char *domain )
 	NTSTATUS status;
 	struct nss_domain_entry *p;
 
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+	status = nss_init_samba( lp_winbind_nss_info() );
+#else
 	status = nss_init( lp_winbind_nss_info() );
+#endif
 	if ( !NT_STATUS_IS_OK(status) ) {
 		DEBUG(4,("nss_get_info: Failed to init nss_info API (%s)!\n",
 			 nt_errstr(status)));

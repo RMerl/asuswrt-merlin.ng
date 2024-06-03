@@ -1,0 +1,345 @@
+# SPDX-License-Identifier: GPL-2.0+
+NAND FLASH commands and notes
+
+See NOTE below!!!
+
+# (C) Copyright 2003
+# Dave Ellis, SIXNET, dge@sixnetio.com
+#
+
+Commands:
+
+   nand bad
+      Print a list of all of the bad blocks in the current device.
+
+   nand device
+      Print information about the current NAND device.
+
+   nand device num
+      Make device `num' the current device and print information about it.
+
+   nand erase off|partition size
+   nand erase clean [off|partition size]
+      Erase `size' bytes starting at offset `off'. Alternatively partition
+      name can be specified, in this case size will be eventually limited
+      to not exceed partition size (this behaviour applies also to read
+      and write commands). Only complete erase blocks can be erased.
+
+      If `erase' is specified without an offset or size, the entire flash
+      is erased. If `erase' is specified with partition but without an
+      size, the entire partition is erased.
+
+      If `clean' is specified, a JFFS2-style clean marker is written to
+      each block after it is erased.
+
+      This command will not erase blocks that are marked bad. There is
+      a debug option in cmd_nand.c to allow bad blocks to be erased.
+      Please read the warning there before using it, as blocks marked
+      bad by the manufacturer must _NEVER_ be erased.
+
+   nand info
+      Print information about all of the NAND devices found.
+
+   nand read addr ofs|partition size
+      Read `size' bytes from `ofs' in NAND flash to `addr'.  Blocks that
+      are marked bad are skipped.  If a page cannot be read because an
+      uncorrectable data error is found, the command stops with an error.
+
+   nand read.oob addr ofs|partition size
+      Read `size' bytes from the out-of-band data area corresponding to
+      `ofs' in NAND flash to `addr'. This is limited to the 16 bytes of
+      data for one 512-byte page or 2 256-byte pages. There is no check
+      for bad blocks or ECC errors.
+
+   nand write addr ofs|partition size
+      Write `size' bytes from `addr' to `ofs' in NAND flash.  Blocks that
+      are marked bad are skipped.  If a page cannot be read because an
+      uncorrectable data error is found, the command stops with an error.
+
+      As JFFS2 skips blocks similarly, this allows writing a JFFS2 image,
+      as long as the image is short enough to fit even after skipping the
+      bad blocks.  Compact images, such as those produced by mkfs.jffs2
+      should work well, but loading an image copied from another flash is
+      going to be trouble if there are any bad blocks.
+
+   nand write.trimffs addr ofs|partition size
+      Enabled by the CONFIG_CMD_NAND_TRIMFFS macro. This command will write to
+      the NAND flash in a manner identical to the 'nand write' command
+      described above -- with the additional check that all pages at the end
+      of eraseblocks which contain only 0xff data will not be written to the
+      NAND flash. This behaviour is required when flashing UBI images
+      containing UBIFS volumes as per the UBI FAQ[1].
+
+      [1] http://www.linux-mtd.infradead.org/doc/ubi.html#L_flasher_algo
+
+   nand write.oob addr ofs|partition size
+      Write `size' bytes from `addr' to the out-of-band data area
+      corresponding to `ofs' in NAND flash. This is limited to the 16 bytes
+      of data for one 512-byte page or 2 256-byte pages. There is no check
+      for bad blocks.
+
+   nand read.raw addr ofs|partition [count]
+   nand write.raw addr ofs|partition [count]
+      Read or write one or more pages at "ofs" in NAND flash, from or to
+      "addr" in memory.  This is a raw access, so ECC is avoided and the
+      OOB area is transferred as well.  If count is absent, it is assumed
+      to be one page.  As with .yaffs2 accesses, the data is formatted as
+      a packed sequence of "data, oob, data, oob, ..." -- no alignment of
+      individual pages is maintained.
+
+Configuration Options:
+
+   CONFIG_SYS_NAND_U_BOOT_OFFS
+	NAND Offset from where SPL will read u-boot image. This is the starting
+	address of u-boot MTD partition in NAND.
+
+   CONFIG_CMD_NAND
+      Enables NAND support and commands.
+
+   CONFIG_CMD_NAND_TORTURE
+      Enables the torture command (see description of this command below).
+
+   CONFIG_SYS_MAX_NAND_DEVICE
+      The maximum number of NAND devices you want to support.
+
+   CONFIG_SYS_NAND_MAX_ECCPOS
+      If specified, overrides the maximum number of ECC bytes
+      supported.  Useful for reducing image size, especially with SPL.
+      This must be at least 48 if nand_base.c is used.
+
+   CONFIG_SYS_NAND_MAX_OOBFREE
+      If specified, overrides the maximum number of free OOB regions
+      supported.  Useful for reducing image size, especially with SPL.
+      This must be at least 2 if nand_base.c is used.
+
+   CONFIG_SYS_NAND_MAX_CHIPS
+      The maximum number of NAND chips per device to be supported.
+
+   CONFIG_SYS_NAND_SELF_INIT
+      Traditionally, glue code in drivers/mtd/nand/raw/nand.c has driven
+      the initialization process -- it provides the mtd and nand
+      structs, calls a board init function for a specific device,
+      calls nand_scan(), and registers with mtd.
+
+      This arrangement does not provide drivers with the flexibility to
+      run code between nand_scan_ident() and nand_scan_tail(), or other
+      deviations from the "normal" flow.
+
+      If a board defines CONFIG_SYS_NAND_SELF_INIT, drivers/mtd/nand/raw/nand.c
+      will make one call to board_nand_init(), with no arguments.  That
+      function is responsible for calling a driver init function for
+      each NAND device on the board, that performs all initialization
+      tasks except setting mtd->name, and registering with the rest of
+      U-Boot.  Those last tasks are accomplished by calling  nand_register()
+      on the new mtd device.
+
+      Example of new init to be added to the end of an existing driver
+      init:
+
+	/* chip is struct nand_chip, and is now provided by the driver. */
+	mtd = nand_to_mtd(&chip);
+
+	/*
+	 * Fill in appropriate values if this driver uses these fields,
+	 * or uses the standard read_byte/write_buf/etc. functions from
+	 * nand_base.c that use these fields.
+	 */
+	chip.IO_ADDR_R = ...;
+	chip.IO_ADDR_W = ...;
+
+	if (nand_scan_ident(mtd, CONFIG_SYS_MAX_NAND_CHIPS, NULL))
+		error out
+
+	/*
+	 * Insert here any code you wish to run after the chip has been
+	 * identified, but before any other I/O is done.
+	 */
+
+	if (nand_scan_tail(mtd))
+		error out
+
+	/*
+	 * devnum is the device number to be used in nand commands
+	 * and in mtd->name.  Must be less than CONFIG_SYS_MAX_NAND_DEVICE.
+	 */
+	if (nand_register(devnum, mtd))
+		error out
+
+      In addition to providing more flexibility to the driver, it reduces
+      the difference between a U-Boot driver and its Linux counterpart.
+      nand_init() is now reduced to calling board_nand_init() once, and
+      printing a size summary.  This should also make it easier to
+      transition to delayed NAND initialization.
+
+      Please convert your driver even if you don't need the extra
+      flexibility, so that one day we can eliminate the old mechanism.
+
+
+   CONFIG_SYS_NAND_ONFI_DETECTION
+	Enables detection of ONFI compliant devices during probe.
+	And fetching device parameters flashed on device, by parsing
+	ONFI parameter page.
+
+Platform specific options
+=========================
+   CONFIG_NAND_OMAP_GPMC
+	Enables omap_gpmc.c driver for OMAPx and AMxxxx platforms.
+	GPMC controller is used for parallel NAND flash devices, and can
+	do ECC calculation (not ECC error detection) for HAM1, BCH4, BCH8
+	and BCH16 ECC algorithms.
+
+   CONFIG_NAND_OMAP_ELM
+	Enables omap_elm.c driver for OMAPx and AMxxxx platforms.
+	ELM controller is used for ECC error detection (not ECC calculation)
+	of BCH4, BCH8 and BCH16 ECC algorithms.
+	Some legacy platforms like OMAP3xx do not have in-built ELM h/w engine,
+	thus such SoC platforms need to depend on software library for ECC error
+	detection. However ECC calculation on such plaforms would still be
+	done by GPMC controller.
+
+   CONFIG_SPL_NAND_AM33XX_BCH
+	Enables SPL-NAND driver (am335x_spl_bch.c) which supports ELM based
+        hardware ECC correction. This is useful for platforms which have ELM
+	hardware engine and use NAND boot mode.
+	Some legacy platforms like OMAP3xx do not have in-built ELM h/w engine,
+	so those platforms should use CONFIG_SPL_NAND_SIMPLE for enabling
+        SPL-NAND driver with software ECC correction support.
+
+   CONFIG_NAND_OMAP_ECCSCHEME
+	On OMAP platforms, this CONFIG specifies NAND ECC scheme.
+	It can take following values:
+	OMAP_ECC_HAM1_CODE_SW
+		1-bit Hamming code using software lib.
+		(for legacy devices only)
+	OMAP_ECC_HAM1_CODE_HW
+		1-bit Hamming code using GPMC hardware.
+		(for legacy devices only)
+	OMAP_ECC_BCH4_CODE_HW_DETECTION_SW
+		4-bit BCH code (unsupported)
+	OMAP_ECC_BCH4_CODE_HW
+		4-bit BCH code (unsupported)
+	OMAP_ECC_BCH8_CODE_HW_DETECTION_SW
+		8-bit BCH code with
+		- ecc calculation using GPMC hardware engine,
+		- error detection using software library.
+		- requires CONFIG_BCH to enable software BCH library
+		(For legacy device which do not have ELM h/w engine)
+	OMAP_ECC_BCH8_CODE_HW
+		8-bit BCH code with
+		- ecc calculation using GPMC hardware engine,
+		- error detection using ELM hardware engine.
+	OMAP_ECC_BCH16_CODE_HW
+		16-bit BCH code with
+		- ecc calculation using GPMC hardware engine,
+		- error detection using ELM hardware engine.
+
+	How to select ECC scheme on OMAP and AMxx platforms ?
+	-----------------------------------------------------
+	Though higher ECC schemes have more capability to detect and correct
+	bit-flips, but still selection of ECC scheme is dependent on following
+	- hardware engines present in SoC.
+		Some legacy OMAP SoC do not have ELM h/w engine thus such
+		SoC cannot support BCHx_HW ECC schemes.
+	- size of OOB/Spare region
+		With higher ECC schemes, more OOB/Spare area is required to
+		store ECC. So choice of ECC scheme is limited by NAND oobsize.
+
+	In general following expression can help:
+		NAND_OOBSIZE >= 2 + (NAND_PAGESIZE / 512) * ECC_BYTES
+	where
+		NAND_OOBSIZE	= number of bytes available in
+				OOB/spare area per NAND page.
+		NAND_PAGESIZE	= bytes in main-area of NAND page.
+		ECC_BYTES	= number of ECC bytes generated to
+				protect 512 bytes of data, which is:
+				3 for HAM1_xx ecc schemes
+				7 for BCH4_xx ecc schemes
+				14 for BCH8_xx ecc schemes
+				26 for BCH16_xx ecc schemes
+
+		example to check for BCH16 on 2K page NAND
+		NAND_PAGESIZE = 2048
+		NAND_OOBSIZE = 64
+		2 + (2048 / 512) * 26 = 106 > NAND_OOBSIZE
+		Thus BCH16 cannot be supported on 2K page NAND.
+
+		However, for 4K pagesize NAND
+		NAND_PAGESIZE = 4096
+		NAND_OOBSIZE = 224
+		ECC_BYTES = 26
+		2 + (4096 / 512) * 26 = 210 < NAND_OOBSIZE
+		Thus BCH16 can be supported on 4K page NAND.
+
+
+    CONFIG_NAND_OMAP_GPMC_PREFETCH
+	On OMAP platforms that use the GPMC controller
+	(CONFIG_NAND_OMAP_GPMC_PREFETCH), this options enables the code that
+	uses the prefetch mode to speed up read operations.
+
+NOTE:
+=====
+
+The Disk On Chip driver is currently broken and has been for some time.
+There is a driver in drivers/mtd/nand/raw, taken from Linux, that works with
+the current NAND system but has not yet been adapted to the u-boot
+environment.
+
+Additional improvements to the NAND subsystem by Guido Classen, 10-10-2006
+
+JFFS2 related commands:
+
+  implement "nand erase clean" and old "nand erase"
+  using both the new code which is able to skip bad blocks
+  "nand erase clean" additionally writes JFFS2-cleanmarkers in the oob.
+
+Miscellaneous and testing commands:
+  "markbad [offset]"
+  create an artificial bad block (for testing bad block handling)
+
+  "scrub [offset length]"
+  like "erase" but don't skip bad block. Instead erase them.
+  DANGEROUS!!! Factory set bad blocks will be lost. Use only
+  to remove artificial bad blocks created with the "markbad" command.
+
+  "torture offset [size]"
+  Torture block to determine if it is still reliable.
+  Enabled by the CONFIG_CMD_NAND_TORTURE configuration option.
+  This command returns 0 if the block is still reliable, else 1.
+  If the block is detected as unreliable, it is up to the user to decide to
+  mark this block as bad.
+  The analyzed block is put through 3 erase / write cycles (or less if the block
+  is detected as unreliable earlier).
+  This command can be used in scripts, e.g. together with the markbad command to
+  automate retries and handling of possibly newly detected bad blocks if the
+  nand write command fails.
+  It can also be used manually by users having seen some NAND errors in logs to
+  search the root cause of these errors.
+  The underlying nand_torture() function is also useful for code willing to
+  automate actions following a nand->write() error. This would e.g. be required
+  in order to program or update safely firmware to NAND, especially for the UBI
+  part of such firmware.
+  Optionally, a second parameter size can be given to test multiple blocks with
+  one call. If size is not a multiple of the NAND's erase size, then the block
+  that contains offset + size will be tested in full. If used with size, this
+  command returns 0 if all tested blocks have been found reliable, else 1.
+
+
+NAND locking command (for chips with active LOCKPRE pin)
+
+  "nand lock"
+  set NAND chip to lock state (all pages locked)
+
+  "nand lock tight"
+  set NAND chip to lock tight state (software can't change locking anymore)
+
+  "nand lock status"
+  displays current locking status of all pages
+
+  "nand unlock [offset] [size]"
+  unlock consecutive area (can be called multiple times for different areas)
+
+  "nand unlock.allexcept [offset] [size]"
+  unlock all except specified consecutive area
+
+I have tested the code with board containing 128MiB NAND large page chips
+and 32MiB small page chips.

@@ -1,0 +1,33 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * U-Boot additions to enable a generic Exynos GPIO driver
+ *
+ * Copyright (c) 2014 Google, Inc
+ */
+
+/{
+	/*
+	 * Replicate the ordering of arch/arm/include/asm/arch-exynos/gpio.h
+	 * TODO(sjg@chromium.org): This ordering ceases to matter once GPIO
+	 * numbers are not needed in U-Boot for exynos.
+	 */
+	pinctrl@14010000 {
+	};
+	pinctrl@13400000 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		gpy7 {
+		};
+
+		gpx0 {
+			reg = <0xc00 0x0>;
+		};
+	};
+	pinctrl@13410000 {
+	};
+	pinctrl@14000000 {
+	};
+	pinctrl@03860000 {
+	};
+
+};

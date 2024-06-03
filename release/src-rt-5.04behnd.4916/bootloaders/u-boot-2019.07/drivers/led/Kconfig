@@ -1,0 +1,401 @@
+menu "LED Support"
+
+config LED
+	bool "Enable LED support"
+	depends on DM
+	help
+	  Many boards have LEDs which can be used to signal status or alerts.
+	  U-Boot provides a uclass API to implement this feature. LED drivers
+	  can provide access to board-specific LEDs. Use of the device tree
+	  for configuration is encouraged.
+
+config LED_BCM6328
+	bool "LED Support for BCM6328"
+	depends on LED && ARCH_BMIPS
+	help
+	  This option enables support for LEDs connected to the BCM6328
+	  LED HW controller accessed via MMIO registers.
+	  HW blinking is supported and up to 24 LEDs can be controlled.
+	  All LEDs can blink at the same time but the delay is shared, which
+	  means that if one LED is set to blink at 100ms and then a different
+	  LED is set to blink at 200ms, both will blink at 200ms.
+
+config LED_BCM6358
+	bool "LED Support for BCM6358"
+	depends on LED && ARCH_BMIPS
+	help
+	  This option enables support for LEDs connected to the BCM6358
+	  LED HW controller accessed via MMIO registers.
+	  HW has no blinking capabilities and up to 32 LEDs can be controlled.
+
+config LED_BCM6858
+	bool "LED Support for BCM6858"
+	depends on LED && (ARCH_BCM6858 || ARCH_BCM63158)
+	help
+	  This option enables support for LEDs connected to the BCM6858
+	  HW has blinking capabilities and up to 32 LEDs can be controlled.
+
+config LED_BLINK
+	bool "Support LED blinking"
+	depends on LED
+	help
+	  Some drivers can support automatic blinking of LEDs with a given
+	  period, without needing timers or extra code to handle the timing.
+	  This option enables support for this which adds slightly to the
+	  code size.
+
+config SPL_LED
+	bool "Enable LED support in SPL"
+	depends on SPL && SPL_DM
+	help
+	  The LED subsystem adds a small amount of overhead to the image.
+	  If this is acceptable and you have a need to use LEDs in SPL,
+	  enable this option. You will need to enable device tree in SPL
+	  for this to work.
+
+config LED_GPIO
+	bool "LED support for GPIO-connected LEDs"
+	depends on LED && DM_GPIO
+	help
+	  Enable support for LEDs which are connected to GPIO lines. These
+	  GPIOs may be on the SoC or some other device which provides GPIOs.
+	  The GPIO driver must used driver model. LEDs are configured using
+	  the device tree.
+
+config SPL_LED_GPIO
+	bool "LED support for GPIO-connected LEDs in SPL"
+        depends on SPL_LED && DM_GPIO
+	help
+	  This option is an SPL-variant of the LED_GPIO option.
+	  See the help of LED_GPIO for details.
+
+config BCM_BCA_LED
+	bool "LED Support for BCMBCA devices"
+	depends on LED && ARCH_BCMBCA
+	help
+	  This option enables support for LEDs connected to the all BCMBCA based devices
+	  HW has blinking capabilities and up to 32 LEDs can be controlled.
+
+config LED_STATUS
+	bool "Enable status LED API"
+	help
+	  Allows common u-boot commands to use a board's leds to
+	  provide status for activities like booting and downloading files.
+
+if LED_STATUS
+
+# Hidden constants
+
+config LED_STATUS_OFF
+	int
+	default 0
+
+config LED_STATUS_BLINKING
+	int
+	default 1
+
+config LED_STATUS_ON
+	int
+	default 2
+
+# Hidden constants end
+
+config LED_STATUS_GPIO
+	bool "GPIO status LED implementation"
+	help
+	  The status LED can be connected to a GPIO pin. In such cases, the
+	  gpio_led driver can be used as a status LED backend implementation.
+
+config LED_STATUS_BOARD_SPECIFIC
+	bool "Specific board"
+	default y
+	help
+	  LED support is only for a specific board.
+
+comment "LEDs parameters"
+
+config LED_STATUS0
+	bool "Enable status LED 0"
+
+if LED_STATUS0
+
+config LED_STATUS_BIT
+	int "identification"
+	help
+	  CONFIG_LED_STATUS_BIT is passed into the __led_* functions to identify
+	  which LED is being acted on.  As such, the chosen value must be unique
+	  with respect to the other CONFIG_LED_STATUS_BIT's. Mapping the value
+	  to a physical LED is the responsibility of the __led_* function.
+
+config LED_STATUS_STATE
+	int "initial state"
+	range LED_STATUS_OFF LED_STATUS_ON
+	default LED_STATUS_OFF
+	help
+	  Should be set one of the following:
+	  0 - off
+	  1 - blinking
+	  2 - on
+
+config LED_STATUS_FREQ
+	int "blink frequency"
+	range 2 10
+	default 2
+	help
+	  The LED blink period calculated from LED_STATUS_FREQ:
+	  LED_STATUS_PERIOD = CONFIG_SYS_HZ/LED_STATUS_FREQ
+	  Values range: 2 - 10
+
+endif # LED_STATUS0
+
+config LED_STATUS1
+	bool "Enable status LED 1"
+
+if LED_STATUS1
+
+config LED_STATUS_BIT1
+	int "identification"
+	help
+	  CONFIG_LED_STATUS_BIT1 is passed into the __led_* functions to
+	  identify which LED is being acted on.  As such, the chosen value must
+	  be unique with respect to the other CONFIG_LED_STATUS_BIT's. Mapping
+	  the value to a physical LED is the responsibility of the __led_*
+	  function.
+
+config LED_STATUS_STATE1
+	int "initial state"
+	range LED_STATUS_OFF LED_STATUS_ON
+	default LED_STATUS_OFF
+	help
+	  Should be set one of the following:
+	  0 - off
+	  1 - blinking
+	  2 - on
+
+config LED_STATUS_FREQ1
+	int "blink frequency"
+	range 2 10
+	default 2
+	help
+	  The LED blink period calculated from LED_STATUS_FREQ1:
+	  LED_STATUS_PERIOD1 = CONFIG_SYS_HZ/LED_STATUS_FREQ1
+	  Values range: 2 - 10
+
+endif # LED_STATUS1
+
+config LED_STATUS2
+	bool "Enable status LED 2"
+
+if LED_STATUS2
+
+config LED_STATUS_BIT2
+	int "identification"
+	help
+	  CONFIG_LED_STATUS_BIT2 is passed into the __led_* functions to
+	  identify which LED is being acted on.  As such, the chosen value must
+	  be unique with respect to the other CONFIG_LED_STATUS_BIT's. Mapping
+	  the value to a physical LED is the responsibility of the __led_*
+	  function.
+
+config LED_STATUS_STATE2
+	int "initial state"
+	range LED_STATUS_OFF LED_STATUS_ON
+	default LED_STATUS_OFF
+	help
+	  Should be set one of the following:
+	  0 - off
+	  1 - blinking
+	  2 - on
+
+config LED_STATUS_FREQ2
+	int "blink frequency"
+	range 2 10
+	default 2
+	help
+	  The LED blink period calculated from LED_STATUS_FREQ2:
+	  LED_STATUS_PERIOD2 = CONFIG_SYS_HZ/LED_STATUS_FREQ2
+	  Values range: 2 - 10
+
+endif # LED_STATUS2
+
+config LED_STATUS3
+	bool "Enable status LED 3"
+
+if LED_STATUS3
+
+config LED_STATUS_BIT3
+	int "identification"
+	help
+	  CONFIG_LED_STATUS_BIT3 is passed into the __led_* functions to
+	  identify which LED is being acted on.  As such, the chosen value must
+	  be unique with respect to the other CONFIG_LED_STATUS_BIT's. Mapping
+	  the value to a physical LED is the responsibility of the __led_*
+	  function.
+
+config LED_STATUS_STATE3
+	int "initial state"
+	range LED_STATUS_OFF LED_STATUS_ON
+	default LED_STATUS_OFF
+	help
+	  Should be set one of the following:
+	  0 - off
+	  1 - blinking
+	  2 - on
+
+config LED_STATUS_FREQ3
+	int "blink frequency"
+	range 2 10
+	default 2
+	help
+	  The LED blink period calculated from LED_STATUS_FREQ3:
+	  LED_STATUS_PERIOD3 = CONFIG_SYS_HZ/LED_STATUS_FREQ3
+	  Values range: 2 - 10
+
+endif # LED_STATUS3
+
+config LED_STATUS4
+	bool "Enable status LED 4"
+
+if LED_STATUS4
+
+config LED_STATUS_BIT4
+	int "identification"
+	help
+	  CONFIG_LED_STATUS_BIT4 is passed into the __led_* functions to
+	  identify which LED is being acted on.  As such, the chosen value must
+	  be unique with respect to the other CONFIG_LED_STATUS_BIT's. Mapping
+	  the value to a physical LED is the responsibility of the __led_*
+	  function.
+
+config LED_STATUS_STATE4
+	int "initial state"
+	range LED_STATUS_OFF LED_STATUS_ON
+	default LED_STATUS_OFF
+	help
+	  Should be set one of the following:
+	  0 - off
+	  1 - blinking
+	  2 - on
+
+config LED_STATUS_FREQ4
+	int "blink frequency"
+	range 2 10
+	default 2
+	help
+	  The LED blink period calculated from LED_STATUS_FREQ4:
+	  LED_STATUS_PERIOD4 = CONFIG_SYS_HZ/LED_STATUS_FREQ4
+	  Values range: 2 - 10
+
+endif # LED_STATUS4
+
+config LED_STATUS5
+	bool "Enable status LED 5"
+
+if LED_STATUS5
+
+config LED_STATUS_BIT5
+	int "identification"
+	help
+	  CONFIG_LED_STATUS_BIT5 is passed into the __led_* functions to
+	  identify which LED is being acted on.  As such, the chosen value must
+	  be unique with respect to the other CONFIG_LED_STATUS_BIT's. Mapping
+	  the value to a physical LED is the responsibility of the __led_*
+	  function.
+
+config LED_STATUS_STATE5
+	int "initial state"
+	range LED_STATUS_OFF LED_STATUS_ON
+	default LED_STATUS_OFF
+	help
+	  Should be set one of the following:
+	  0 - off
+	  1 - blinking
+	  2 - on
+
+config LED_STATUS_FREQ5
+	int "blink frequency"
+	range 2 10
+	default 2
+	help
+	  The LED blink period calculated from LED_STATUS_FREQ5:
+	  LED_STATUS_PERIOD5 = CONFIG_SYS_HZ/LED_STATUS_FREQ5
+	  Values range: 2 - 10
+
+endif # LED_STATUS5
+
+config LED_STATUS_BOOT_ENABLE
+	bool "Enable BOOT LED"
+	help
+	  Enable to turn an LED on when the board is booting.
+
+if LED_STATUS_BOOT_ENABLE
+
+config LED_STATUS_BOOT
+	int "LED to light when the board is booting"
+	help
+	  Valid enabled LED device number.
+
+endif # LED_STATUS_BOOT_ENABLE
+
+config LED_STATUS_RED_ENABLE
+	bool "Enable red LED"
+	help
+	  Enable red status LED.
+
+if LED_STATUS_RED_ENABLE
+
+config LED_STATUS_RED
+	int "Red LED identification"
+	help
+	  Valid enabled LED device number.
+
+endif # LED_STATUS_RED_ENABLE
+
+config LED_STATUS_YELLOW_ENABLE
+	bool "Enable yellow LED"
+	help
+	  Enable yellow status LED.
+
+if LED_STATUS_YELLOW_ENABLE
+
+config LED_STATUS_YELLOW
+	int "Yellow LED identification"
+	help
+	  Valid enabled LED device number.
+
+endif # LED_STATUS_YELLOW_ENABLE
+
+config LED_STATUS_BLUE_ENABLE
+	bool "Enable blue LED"
+	help
+	  Enable blue status LED.
+
+if LED_STATUS_BLUE_ENABLE
+
+config LED_STATUS_BLUE
+	int "Blue LED identification"
+	help
+	  Valid enabled LED device number.
+
+endif # LED_STATUS_BLUE_ENABLE
+
+config LED_STATUS_GREEN_ENABLE
+	bool "Enable green LED"
+	help
+	  Enable green status LED.
+
+if LED_STATUS_GREEN_ENABLE
+
+config LED_STATUS_GREEN
+	int "Green LED identification"
+	help
+	  Valid enabled LED device number (0-5).
+
+endif # LED_STATUS_GREEN_ENABLE
+
+config LED_STATUS_CMD
+	bool "Enable status LED commands"
+
+endif # LED_STATUS
+
+endmenu

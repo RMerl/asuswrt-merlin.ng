@@ -1,0 +1,46 @@
+Here is the step-by-step to boot U-Boot on rv1108 evb.
+
+Get ddr init binary
+==============================================================================
+  > git clone  https://github.com/rockchip-linux/rkbin.git
+
+Compile  U-Boot
+===========================
+  > make CROSS_COMPILE=arm-linux-gnueabi- evb-rv1108_defconfig  all
+  > ./tools/mkimage  -n rv1108 -T rksd -d ../rkbin/rv1x/rv1108ddr_v1.00.bin spl.bin
+  > cat spl.bin u-boot.bin > u-boot.img
+
+Flash the image by rkdeveloptool
+================================
+rkdeveloptool can get from https://github.com/rockchip-linux/rkdeveloptool.git
+
+Power on(or reset with RESET KEY) with MASKROM KEY preesed, and then:
+  > rkdeveloptool db ./rkbin/rv1x/rv1108usbboot_v1.00.bin
+  > rkdeveloptool wl 0x40 u-boot.img
+  > rkdeveloptool RD
+
+You should be able to get U-Boot log message from boot console:
+
+DDR Version V1.02 20170220
+In
+400MHz
+DDR3
+Bus Width=16 Col=10 Bank=8 Row=15 CS=1 Die Bus-Width=16 Size=512MB
+mach:2
+OUT
+
+
+U-Boot 2017.05-00693-g3a5b171 (Jun 01 2017 - 17:37:53 +0800)
+
+Model: Rockchip RV1108 Evaluation board
+DRAM:  128 MiB
+APLL: 600000000 DPLL:792000000 GPLL:384000000
+MMC:
+Using default environment
+
+In:    serial@10210000
+Out:   serial@10210000
+Err:   serial@10210000
+Net:   No ethernet found.
+Hit any key to stop autoboot:  0
+=>

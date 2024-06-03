@@ -1,0 +1,104 @@
+FATFSCK(8)                  System Manager's Manual                 FATFSCK(8)
+
+
+
+NAME
+       fatfsck - check and repair a FAT volume
+
+SYNOPSIS
+       fatfsck [options] device
+
+DESCRIPTION
+       fatfsck will check a FAT volume for errors, and optionally correct
+       them.  Run fatfsck without arguments for a full list of options.
+
+OPTIONS
+       Below is a summary of all the options that fatfsck accepts.  Nearly all
+       options have two equivalent names.  The short name is preceded by - and
+       the long name is preceded by --.
+
+       -b, --basic
+              Do only a basic file system check or repair. This option limits
+              fatfsck to checking/repairing the boot region, FAT and the root
+              directory. All other directories and allocations are ignored.
+              This is useful when you want to do a fast check/repair which
+              makes sure that the volume will mount properly and that the root
+              directory will be accessible.
+
+       -p, --probe
+              Probe for a FAT file system. This runs some tests on the device
+              to check if the file system is FAT.
+
+       -q, --quiet
+              Suppresses informational messages. Only error/warning messages
+              and the final summary is displayed during execution.
+
+       -r, --repair
+              Repair on-disk inconsistencies encountered.
+
+       -a, --automatic-repair
+              If the volume is marked dirty, then repair on-disk
+              inconsistencies encountered (equivalent to the -r/--repair
+              option). Otherwise exit immediately with no action.
+
+       -s, --strict
+              Turns on strict checking. This includes checking things that are
+              not normally required to make sure the volume follows FAT
+              specifications. This may increase the execution time for
+              fatfsck.
+
+       -t, --timeout SECONDS
+              Timeout in seconds before fatfsck will abort the volume
+              check/repair. If specified, this sets an upper limit on the
+              execution time of fatfsck. After the timeout occurs, fatfsck
+              will clear all its pending tasks and return as soon as possible.
+              As a special case, a timeout value of 0 means that there is no
+              timeout, i.e. it is equivalent to not specifying the timeout
+              option at all.
+
+       -B, --progress-fd FD
+              Enables progress reporting through the dedicated file descriptor
+              FD using the same format as the one emitted by e2fsck's -C
+              option.
+
+       --cp CODEPAGE
+              Use the given code page to decode the volume label and short
+              file names. The following code pages are supported: 437, 737,
+              775, 850, 852, 855, 857, 860, 861, 862, 863, 864, 865, 866, 869,
+              874, 932, 936, 949, 950. The default is 437.
+
+       -v, --verbose
+              Verbose output. This makes fatfsck print more information about
+              what it's doing, for instance which directory/file it's
+              currently processing.
+
+EXIT STATUS
+       0: Success. fatfsck did what it was instructed to do successfully.
+
+       1: Unknown error. Error came from outside fatfsck (libraries, operating
+       system kernel, ...).
+
+       2: Invalid arguments. An error was detected when parsing the options.
+
+       3: FAT volume errors were detected (when checking) or could not be
+       repaired (when repairing)
+
+PLEASE NOTE
+       fatfsck currently does not support checking and repairing of FAT12
+       volumes.
+
+BUGS
+       If you find a bug please send an email describing the problem to fat-
+       support@tuxera.com.
+
+AUTHORS
+       fatfsck was written by
+               Erik Larsson, Tuxera Inc.
+               Sougata Santra, Tuxera Inc.
+
+AVAILABILITY
+       fatfsck is part of the Tuxera FATprogs package.
+
+
+
+Tuxera TFATprogs 3017.7.17.3      March 2014                        FATFSCK(8)

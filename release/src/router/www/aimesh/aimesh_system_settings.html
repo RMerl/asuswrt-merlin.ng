@@ -619,7 +619,16 @@ function check_not_support_nodes(_feature) {
 	get_cfg_clientlist.forEach(function(item, index, array){
 		var isReNode = (index == 0) ? false : true;
 		var node_capability = httpApi.aimesh_get_node_capability(item);
-		if(item.online == "0" || (!node_capability[_feature] && _feature != "manual_reset_default")) {
+		const feature_support = (()=>{
+			if(_feature == "ethernet_backhaul_mode"){
+				const is_no_wifi = (item.band_num != undefined) ? (item.band_num == "0" ? true : false) : false;
+				return (node_capability[_feature] || is_no_wifi);
+			}
+			else{
+				return node_capability[_feature];
+			}
+		})();
+		if(item.online == "0" || (!feature_support && _feature != "manual_reset_default")) {
 			if(not_support_list != "")
 				not_support_list += ", ";
 			if(item.ui_model_name == undefined || item.ui_model_name == "")

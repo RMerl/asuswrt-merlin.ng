@@ -9,6 +9,7 @@ else
 	prefix="usb_modem${unit}_"
 fi
 
+modem_model=`nvram get modem_model`
 modem_type=`nvram get ${prefix}act_type`
 modem_vid=`nvram get ${prefix}act_vid`
 modem_pid=`nvram get ${prefix}act_pid`
@@ -125,6 +126,27 @@ if [ "$modem_type" == "gobi" ]; then
 				/usr/sbin/modem_at.sh '' # clean the output of +COPS=2.
 			fi
 		fi
+	fi
+elif [ "$modem_model" == "1" ]; then
+	# Unregister the network first
+	echo "CFUN: Unregister the network(4)."
+	at_ret=`/usr/sbin/modem_at.sh '+CFUN=4' 2>&1`
+	ret=`echo -n $at_ret |grep "OK" 2>/dev/null`
+	if [ -z "$ret" ]; then
+		echo "CFUN: Fail to set +CFUN=4."
+	fi
+
+	killall quectel-CM
+elif [ "$modem_model" == "2" ]; then
+	at_ret=`/usr/sbin/modem_at.sh '+CFUN?' "$modem_reg_time" 2>&1`
+	ret=`echo -n $at_ret |grep "+CFUN: 4,0" 2>/dev/null`
+	if [ -z "$ret" ]; then
+			echo "CFUN: Unregister the network(4)."
+			at_ret=`/usr/sbin/modem_at.sh '+CFUN=4' "$modem_reg_time" 2>&1`
+			ret=`echo -n $at_ret |grep "OK" 2>/dev/null`
+			if [ -z "$ret" ]; then
+					echo "CFUN: Fail to set +CFUN=4."
+			fi
 	fi
 elif [ "$modem_type" == "qmi" ]; then
 	wdm=`_get_wdm_by_usbnet $modem_dev`

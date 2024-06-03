@@ -1,0 +1,6 @@
+SH7753EVB BOARD
+#M:	-
+S:	Maintained
+F:	board/renesas/sh7753evb/
+F:	include/configs/sh7753evb.h
+F:	configs/sh7753evb_defconfig

@@ -1,0 +1,15 @@
+if TARGET_MX53EVK
+
+config SYS_BOARD
+	default "mx53evk"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_SOC
+	default "mx5"
+
+config SYS_CONFIG_NAME
+	default "mx53evk"
+
+endif

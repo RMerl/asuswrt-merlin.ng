@@ -1,0 +1,7 @@
+Poplar BOARD
+M:     Jorge Ramirez-Ortiz <jorge.ramirez-ortiz@linaro.org>
+M:     Shawn Guo <shawn.guo@linaro.org>
+S:     Maintained
+F:     board/hisilicon/poplar
+F:     include/configs/poplar.h
+F:     configs/poplar_defconfig

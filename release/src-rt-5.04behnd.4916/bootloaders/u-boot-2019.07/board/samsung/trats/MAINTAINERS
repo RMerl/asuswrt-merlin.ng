@@ -1,0 +1,6 @@
+TRATS BOARD
+M:	Jaehoon Chung <jh80.chung@samsung.com>
+S:	Maintained
+F:	board/samsung/trats/
+F:	include/configs/trats.h
+F:	configs/trats_defconfig

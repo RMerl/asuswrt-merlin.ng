@@ -1,0 +1,35 @@
+Sandbox pmic
+
+This device uses two drivers:
+- drivers/power/pmic/sandbox.c (for parent device)
+- drivers/power/regulator/sandbox.c (for child regulators)
+
+This file describes the binding info for the PMIC driver.
+
+To bind the regulators, please read the regulator binding info:
+- doc/device-tree-bindings/regulator/sandbox.txt
+
+Required PMIC node properties:
+- compatible: "sandbox,pmic"
+- reg = 0x40
+
+Required PMIC's "emul" subnode,  with property:
+- compatible: "sandbox,i2c-pmic"
+
+With the above properties, the pmic device can be used for read/write only.
+To bind each regulator, the optional regulator subnodes should exists.
+
+Optional subnodes:
+- ldo/buck subnodes of each device's regulator (see regulator binding info)
+
+Example:
+
+sandbox_pmic {
+	compatible = "sandbox,pmic";
+	reg = <0x40>;
+
+	/* Mandatory for I/O */
+	emul {
+		compatible = "sandbox,i2c-pmic";
+	};
+};

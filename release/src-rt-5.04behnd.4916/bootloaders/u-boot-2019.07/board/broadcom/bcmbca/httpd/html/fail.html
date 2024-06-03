@@ -1,0 +1,26 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Update failed</title>
+		<link rel="icon" href="data:,">
+	</head>
+	<body>
+		<div id="m">
+			<h1 class="red">Update failed</h1>
+			<p>Please click on refresh button of your browser to go back to the upload page.<br>Check U-Boot console for any errors.</p>
+		</div>
+		<script>
+			if ( window.history.replaceState ) {
+				window.history.replaceState( null, null, window.location.href );
+			}
+			function checkEvt(){
+				var evTypep=window.performance.getEntriesByType("navigation")[0].type;
+				if (evTypep=='reload'){
+					window.location.replace("index.html");
+				}
+			}
+			checkEvt();
+		</script>
+	</body>
+</html>

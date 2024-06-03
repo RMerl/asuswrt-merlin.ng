@@ -1,0 +1,21 @@
+MPC83xx timer devices
+
+MPC83xx SoCs offer a decrementer interrupt that can be used to implement delay
+functionality, and periodically triggered actions.
+
+Required properties:
+- compatible: must be "fsl,mpc83xx-timer"
+- clocks: must be a reference to the system's CSB (coherent system bus) clock,
+  provided by one of the "fsl,mpc83xx-clk" devices
+
+Example:
+
+socclocks: clocks {
+	compatible = "fsl,mpc832x-clk";
+	#clock-cells = <1>;
+};
+
+timer {
+	compatible = "fsl,mpc83xx-timer";
+	clocks = <&socclocks MPC83XX_CLK_CSB>;
+};

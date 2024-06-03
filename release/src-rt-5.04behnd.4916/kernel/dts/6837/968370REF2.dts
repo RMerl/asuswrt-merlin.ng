@@ -1,0 +1,368 @@
+#include "inc/68370.dtsi"
+#include "../bcm_voice.dtsi"
+
+/ {
+    model = "968370REF2";
+
+    memory_controller {
+                    memcfg = <(BP_DDR_TYPE_DDR4        | \
+                                    BP_DDR_SPEED_1600_22_22_22 | \
+                                    BP_DDR_DEVICE_WIDTH_16     | \
+                                    BP_DDR_TOTAL_WIDTH_32BIT   | \
+                                    BP_DDR_TOTAL_SIZE_2048MB   | \
+                                    BP_DDR_SSC_CONFIG_1        | \
+                                    BP_DDR_CONFIG_DEBUG)>;
+    };
+
+    buttons {
+        compatible = "brcm,buttons";
+        reset_button {
+            ext_irq = <&bca_extintr 91 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+            press {
+                print = "Button Press -- Hold for 5s to do restore to default";
+            };
+            hold {
+                rst_to_dflt = <5>;
+            };
+            release {
+                reset = <0>;
+            };
+        };
+        ses_button {
+            ext_irq = <&bca_extintr 77 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+            press {
+                print = "Session Button pressed";
+            };
+            release {
+                ses_short_period = <0>;
+                ses_long_period = <3>;
+            };
+        };
+    };
+
+    xfp_sfp: xfp_sfp {
+        pinctrl-names = "default", "tx-sd";
+        pinctrl-0 = <&pon_lbe_p_pin_30>;
+        pinctrl-1 = <&pon_lbe_p_pin_30 &rogue_onu_in_pin_89>;
+        compatible = "brcm,sfp";
+        i2c-bus = <&i2c0>;
+        los-gpio = <&gpioc 85 GPIO_ACTIVE_HIGH>;
+        mod-def0 = <&bca_extintr 90 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_BOTH_EDGE | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+        tx-power-gpio = <&gpioc 76 GPIO_ACTIVE_HIGH>;
+        tx-power-down-gpio = <&gpioc 79 GPIO_ACTIVE_HIGH>;
+    };
+
+    wan_serdes {
+        status = "okay";
+        trx = <&xfp_sfp>;
+    };
+};
+
+#ifndef CONFIG_BRCM_SMC_BOOT
+&nand {
+    status = "okay";
+};
+&sdhci {
+    status = "okay";
+};
+#endif
+
+&wdt {
+    status = "okay";
+};
+&uart0 {
+    status = "okay";
+};
+
+
+#ifndef CONFIG_BRCM_SMC_BOOT
+&nand {
+    status = "okay";
+};
+&sdhci {
+    status = "okay";
+};
+#endif
+
+&i2c0 {
+    pinctrl-0 = <&i2c_scl_pin_28 &i2c_sda_pin_29>;
+    pinctrl-names = "default";
+    status = "okay";
+};
+
+&mpcs {
+    status = "okay";
+};
+
+&phy_wan_serdes {
+    status = "okay";
+};
+
+&xport {
+    status = "okay";
+};
+
+&egphy {
+    status = "okay";
+};
+
+&unimac {
+    status = "okay";
+};
+
+&serdes {
+    status = "okay";
+};
+
+&ethphytop {
+    status = "okay";
+    phy-mpd = <&bca_extintr 7 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+    phy-link = <&bca_extintr 3 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+};
+
+&mdio {
+    status = "okay";
+};
+
+&mdio_bus {
+    egphy0 {
+        status = "okay";
+    };
+    egphy1 {
+        status = "okay";
+    };
+    egphy2 {
+        status = "okay";
+    };
+    egphy3 {
+        status = "okay";
+    };
+    serdes11_xphy {
+        reg = <0x1d>;
+        enet-phy-lane-swap;
+        caps-no-10000;
+        caps-no-5000;
+        USXGMII-S;
+        phy-power = <&gpioc 16 GPIO_ACTIVE_HIGH>;
+        phy-reset = <&gpioc 14 GPIO_ACTIVE_LOW>;
+        status = "okay";
+    };
+    serdes11 {
+        phy-handle = <&serdes11_xphy>;
+        status = "okay";
+    };
+    wan_ae {
+        trx = <&xfp_sfp>;
+        status = "okay";
+    };
+};
+
+&led_ctrl {
+    led0: parallel-port_gphy0-led_0{
+        active_low;
+        pinctrl-0 = <&a_per_led_05_pin_5>;
+        link = <LED_SPEED_GBE>;
+        status = "okay";
+    };
+
+    led1: parallel-port_gphy1-led_0{
+        active_low;
+        pinctrl-0 = <&a_per_led_28_pin_55>;
+        link = <LED_SPEED_GBE>;
+        status = "okay";
+    };
+
+    led2: parallel-port_gphy2-led_0{
+        active_low;
+        pinctrl-0 = <&a_per_led_31_pin_58>;
+        link = <LED_SPEED_GBE>;
+        status = "okay";
+    };
+
+    led3: parallel-port_gphy3-led_0{
+        active_low;
+        pinctrl-0 = <&a_per_led_12_pin_12>;
+        link = <LED_SPEED_GBE>;
+        status = "okay";
+    };
+
+    led4: alarm {
+        compatible = "brcm,gpio-led";
+        software_led;                    
+        pin = <83>;                
+        active_low;       
+        init_high;
+        label = "ALARM";
+        status = "okay";
+    };
+
+    led5: wan{
+        compatible = "brcm,gpio-led";
+        software_led;                    
+        pin = <78>;                
+        active_low;       
+        init_high;
+        label = "WAN";
+        status = "okay";
+    };
+
+    led6: sw_parallel_led_24{
+        active_low;
+        pinctrl-0 = <&a_per_led_24_pin_50>;
+        label = "USB0";
+        status = "okay";
+        trigger-sources = <&usb_port1>;
+        linux,default-trigger = "usbport";
+    };
+
+    led7: sw_parallel_led_23{
+        active_low;
+        pinctrl-0 = <&a_per_led_23_pin_49>;
+        label = "USB1";
+        status = "okay";
+        trigger-sources = <&usb_port2>;
+        linux,default-trigger = "usbport";
+    };
+
+    led8: sw_parallel_led_25{
+        active_low;
+        pinctrl-0 = <&a_per_led_25_pin_51>;
+        label = "VOIP1";
+        status = "okay";
+    };
+
+    led9: sw_parallel_led_26{
+        active_low;
+        pinctrl-0 = <&a_per_led_26_pin_52>;
+        label = "VOIP2";
+        status = "okay";
+    };
+
+    led10: pon{
+        compatible = "brcm,gpio-led";
+        software_led;                    
+        pin = <82>;                
+        active_low;       
+        init_high;
+        label = "PON";
+        status = "okay";
+    };
+
+    led11: wps{
+        compatible = "brcm,gpio-led";
+        software_led;                    
+        pin = <81>;                
+        active_low;       
+        init_high;
+        label = "WPS";
+        status = "okay";
+    };
+};
+
+&switch0 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&a_eth_mdc_pin_59 &a_eth_mdio_pin_60>;
+
+    ports {
+        port_gphy0 {
+            network-leds = <&led0>;
+            status = "okay";
+        };
+        port_gphy1 {
+            network-leds = <&led1>;
+            status = "okay";
+        };
+        port_gphy2 {
+            network-leds = <&led2>;
+            status = "okay";
+        };
+        port_gphy3 {
+            network-leds = <&led3>;
+            status = "okay";
+        };
+        port_wan@ae {
+            status = "okay";
+        };
+        port_qlan1 {
+            status = "okay";
+        };
+        port_wan@fiber {
+            status = "okay";
+        };
+    };
+};
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+/ {
+    /* WIFI_PWR_EN controls 5V_FEM & 3.3V_PCIE */
+      vreg_pcie12: vreg-pcie12 {
+          compatible = "regulator-fixed";
+          regulator-name = "vreg-pcie12";
+          regulator-min-microvolt = <5000000>;
+          regulator-max-microvolt = <5000000>;
+          gpio = <&gpioc 86 GPIO_ACTIVE_LOW>;
+          enable-active-low;
+          regulator-boot-off;
+    };
+      vreg_pcie0: vreg-pcie0 {
+          compatible = "regulator-fixed";
+          regulator-name = "vreg-pcie0";
+          regulator-min-microvolt = <5000000>;
+          regulator-max-microvolt = <5000000>;
+          gpio = <&gpioc 87 GPIO_ACTIVE_LOW>;
+          enable-active-low;
+          regulator-boot-off;
+    };
+};
+
+&pcie {
+      status = "okay";
+};
+
+&pcie0 {
+      brcm,supply-names = "vreg-pcie0";
+      brcm,vreg-supply = <&vreg_pcie0>;
+      status = "okay";
+};
+
+&pcie1 {
+      brcm,supply-names = "vreg-pcie12";
+      brcm,vreg-supply = <&vreg_pcie12>;
+      status = "okay";
+};
+
+&pcie2 {
+      brcm,supply-names = "vreg-pcie12";
+      brcm,vreg-supply = <&vreg_pcie12>;
+      status = "okay";
+};
+#endif // defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+
+&usb_ctrl {
+	pinctrl-names = "default";
+	pinctrl-0 = <&usb0_pwr_pins &usb1_pwr_pins>;
+	xhci-enable;
+	status = "okay";
+};
+
+&usb0_xhci {
+	status = "okay";
+
+	usb_port1: port1 {
+		reg = <1>;
+		#trigger-source-cells = <0>;
+	};
+
+	usb_port2: port2 {
+		reg = <2>;
+		#trigger-source-cells = <0>;
+	};
+};
+
+&bcm_voice {
+        sliclist =  "NOSLIC", "LE9642_ZSI_TB"; 
+};
+
+&hsspi {
+        status = "okay";
+};

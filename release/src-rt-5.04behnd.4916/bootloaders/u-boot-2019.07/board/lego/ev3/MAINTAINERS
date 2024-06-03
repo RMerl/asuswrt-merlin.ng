@@ -1,0 +1,6 @@
+LEGOEV3 BOARD
+M:	David Lechner <david@lechnology.com>
+S:	Maintained
+F:	board/lego/ev3/
+F:	include/configs/legoev3.h
+F:	configs/legoev3_defconfig

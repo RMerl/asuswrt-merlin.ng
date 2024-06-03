@@ -1197,14 +1197,17 @@ static void stun_resolve_dec_ref(pjsua_stun_resolve *sess)
 static void stun_resolve_complete(pjsua_stun_resolve *sess)
 {
     pj_stun_resolve_result result;
+	int srv_idx = sess->idx;
 
     if (sess->has_result)
 	goto on_return;
 
     pj_bzero(&result, sizeof(result));
+	if (srv_idx)
+		srv_idx--;
     result.token = sess->token;
     result.status = sess->status;
-    result.name = sess->srv[sess->idx];
+	result.name = sess->srv[srv_idx];
     pj_memcpy(&result.addr, &sess->addr, sizeof(result.addr));
     sess->has_result = PJ_TRUE;
 
@@ -1213,8 +1216,8 @@ static void stun_resolve_complete(pjsua_stun_resolve *sess)
 	pj_sockaddr_print(&result.addr, addr, sizeof(addr), 3);
 	PJ_LOG(4,(THIS_FILE, 
 		  "STUN resolution success, using %.*s, address is %s",
-		  (int)sess->srv[sess->idx].slen,
-		  sess->srv[sess->idx].ptr,
+		  (int)sess->srv[srv_idx].slen,
+		  sess->srv[srv_idx].ptr,
 		  addr));
     } else {
 	char errmsg[PJ_ERR_MSG_SIZE];
@@ -1470,6 +1473,17 @@ static void internal_stun_resolve_cb(pjsua_inst_id inst_id, const pj_stun_resolv
     if (result->status == PJ_SUCCESS) {
 	pj_memcpy(&pjsua_var[inst_id].stun_srv, &result->addr, sizeof(result->addr));
     }
+
+	if (pjsua_var[inst_id].log_cfg.app_log_cb) {
+		char addr_str[PJ_INET6_ADDRSTRLEN+10] = {0};
+		if (pj_sockaddr_has_addr(&result->addr))
+			pj_sockaddr_print(&result->addr, addr_str, sizeof(addr_str), 3); // addr+port
+		pjsua_var[inst_id].log_cfg.app_log_cb(inst_id, 4, 
+									"natnl", "stun_resolve : stun=[%.*s], addr=[%s], status=[%d]", 
+									result->name.slen, result->name.ptr, addr_str, result->status);
+	}
+	/*if (pjsua_var[inst_id].ua_cfg.cb.on_stun_resolve)
+		pjsua_var[inst_id].ua_cfg.cb.on_stun_resolve(inst_id, result->status, result->name, result->addr);*/
 }
 
 /*

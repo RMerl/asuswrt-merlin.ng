@@ -1,0 +1,4 @@
+ifeq ("$(CONFIG_SYSTEM)", "linux")
+RDPA_OBJS += rdpa_spu_offload_ex.o
+endif
+

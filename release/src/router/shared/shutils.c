@@ -121,9 +121,9 @@ void dbgprintf (const char * format, ...)
 		}
 		else
 		{
-		close(nfd);
+			close(nfd);
+		}
 	}
-}
 }
 
 void dbg(const char * format, ...)
@@ -582,7 +582,7 @@ get_pid_by_name(char *name)
 
 	while ((next = readdir(dir)) != NULL) {
 		FILE *fp;
-		char filename[256];
+		char filename[sizeof("/proc/%s/cmdline") + 256];
 		char buffer[256];
 
 		/* If it isn't a number, we don't want it */
@@ -623,7 +623,7 @@ get_pid_by_thrd_name(char *name)
 
         while ((next = readdir(dir)) != NULL) {
                 FILE *fp;
-                char filename[256];
+		char filename[sizeof("/proc/%s/cmdline") + 256];
                 char buffer[256];
 
                 /* If it isn't a number, we don't want it */
@@ -664,6 +664,7 @@ void replace_null_to_space(char *str, int len) {
 pid_t
 get_pid_by_process_name(char *name)
 {
+	int i = 0;
 	size_t size = 0;
 	char p_name[128] = {0}, filename[256] = {0};
 	pid_t           pid = -1;
@@ -775,6 +776,57 @@ int ether_inc(unsigned char *e, const unsigned char n)
 	}
 
 	return (ret);
+}
+
+/* 
+ * Calculate Ethernet address
+ * @param	e	string in xx:xx:xx:xx:xx:xx notation
+ * @param	a	string in xx:xx:xx:xx:xx:xx notation
+ * @return	a
+ */
+char *
+ether_cal(const char *e, char *a, int i)
+{
+	unsigned char binary[6];
+	unsigned long long macvalue;
+	char buf[13];
+	memset(binary, 0, sizeof(binary));
+	memset(buf, 0, sizeof(buf));
+	ether_atoe(e, binary);
+	snprintf(buf, sizeof(buf), "%02X%02X%02X%02X%02X%02X",
+		binary[0], binary[1], binary[2], binary[3], binary[4],	binary[5]);
+	macvalue = strtoll(buf, (char **) NULL, 16) + i;
+	for(i=0; i<sizeof(binary); i++)
+	{
+		binary[i] = (macvalue >> ((5-i)*8)) & 0xff;
+	}
+	ether_etoa(binary, a);
+	return a;
+}
+
+/*
+ * Calculate Ethernet address
+ * @param	e	binary data
+ * @param	a	string in xx:xx:xx:xx:xx:xx notation
+ * @return	a
+ */
+char *
+ether_cal_b(const unsigned char *e, char *a, int i)
+{
+	unsigned char binary[6];
+	unsigned long long macvalue;
+	char buf[13];
+	memset(buf, 0, sizeof(buf));
+	memcpy(binary, e, sizeof(binary));
+	snprintf(buf, sizeof(buf), "%02X%02X%02X%02X%02X%02X",
+		binary[0], binary[1], binary[2], binary[3], binary[4],	binary[5]);
+	macvalue = strtoll(buf, (char **) NULL, 16) + i;
+	for(i=0; i<sizeof(binary); i++)
+	{
+		binary[i] = (macvalue >> ((5-i)*8)) & 0xff;
+	}
+	ether_etoa(binary, a);
+	return a;
 }
 
 #ifdef GTAC5300
@@ -1716,10 +1768,10 @@ static void put_ulong(strbuf_t *buf, unsigned long int value, int base,
  *	the first call, msize can be set to -1.
  */
 
-static int dsnprintf(char **s, int size, char *fmt, va_list arg, int msize)
+static int dsnprintf(char **s, int size, const char *fmt, va_list arg, int msize)
 {
 	strbuf_t	buf;
-	char		c;
+	char	c;
 
 	assert(s);
 	assert(fmt);
@@ -1911,7 +1963,7 @@ static int dsnprintf(char **s, int size, char *fmt, va_list arg, int msize)
  *	point, like %e, %f, %g...
  */
 
-int fmtAlloc(char **s, int n, char *fmt, ...)
+int fmtAlloc(char **s, int n, const char *fmt, ...)
 {
 	va_list	ap;
 	int		result;
@@ -1931,7 +1983,7 @@ int fmtAlloc(char **s, int n, char *fmt, ...)
  *	A vsprintf replacement.
  */
 
-int fmtValloc(char **s, int n, char *fmt, va_list arg)
+int fmtValloc(char **s, int n, const char *fmt, va_list arg)
 {
 	assert(s);
 	assert(fmt);
@@ -1943,7 +1995,7 @@ int fmtValloc(char **s, int n, char *fmt, va_list arg)
 /*
  *  * description: parse va and do system
  *  */
-int doSystem(char *fmt, ...)
+int doSystem(const char *fmt, ...)
 {
 	va_list		vargs;
 	char		*cmd = NULL;
@@ -2065,7 +2117,7 @@ wl_ether_etoa(const struct ether_addr *n)
 	for (i = 0; i < ETHER_ADDR_LEN; i++) {
 		if (i)
 			*c++ = ':';
-#if defined(RTCONFIG_LANTIQ)|| defined(RTCONFIG_LANTIQ)|| defined(RTCONFIG_QCA)			
+#if defined(RTCONFIG_LANTIQ)|| defined(RTCONFIG_LANTIQ)|| defined(RTCONFIG_QCA) || defined(RTCONFIG_MT798X) || defined(RTCONFIG_RALINK)
 		c += snprintf(c, sizeof(etoa_buf) - (c - etoa_buf), "%02X", n->ether_addr_octet[i] & 0xff);
 #else
 		c += snprintf(c, sizeof(etoa_buf) - (c - etoa_buf), "%02X", n->octet[i] & 0xff);
@@ -2487,6 +2539,18 @@ int remove_kmods(char *kmods_list)
 
 int num_of_wl_if()
 {
+#if defined(RTCONFIG_NOWL)
+	char prefix[sizeof("wlXXXXX_")];
+	int band, count = 0;
+
+	for (band = 0; band < MAX_NR_WL_BAND; band++) {
+		snprintf(prefix, sizeof(prefix), "wl%d_", band);
+		if (nvram_pf_get_int(prefix, "nband") > 0)
+			count++;
+		else
+			break;
+	}
+#else
 	char word[256], *next;
 	int count = 0;
 	char wl_ifnames[32] = { 0 };
@@ -2494,12 +2558,39 @@ int num_of_wl_if()
 	strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
 	foreach (word, wl_ifnames, next)
 		count++;
+#endif	/* RTCONFIG_NOWL */
+
+	return count;
+}
+
+int num_of_wan_if()
+{
+	char word[256], *next;
+	int count = 0;
+	char wan_ifnames[32] = { 0 };
+
+	strlcpy(wan_ifnames, nvram_safe_get("wan_ifnames"), sizeof(wan_ifnames));
+	foreach (word, wan_ifnames, next)
+		count++;
 
 	return count;
 }
 
 int num_of_5g_if()
 {
+#if defined(RTCONFIG_NOWL)
+	char prefix[sizeof("wlXXXXX_")];
+	int band, count = 0;
+
+	for (band = 0; band < MAX_NR_WL_BAND; band++) {
+		snprintf(prefix, sizeof(prefix), "wl%d_", band);
+		if (nvram_pf_match(prefix, "nband", "1"))
+			count++;
+
+		if (nvram_pf_get_int(prefix, "nband") == 0)
+			break;
+	}
+#else
 #if !defined(CONFIG_BCMWL5)
 	char prefix[] = "wlXXXXXXXXXXXX_";
 	int band, count = 0;
@@ -2523,19 +2614,7 @@ int num_of_5g_if()
 			count++;
 	}
 #endif
-	return count;
-}
-
-int num_of_wan_if()
-{
-	char word[256], *next;
-	int count = 0;
-	char wan_ifnames[32] = { 0 };
-
-	strlcpy(wan_ifnames, nvram_safe_get("wan_ifnames"), sizeof(wan_ifnames));
-	foreach (word, wan_ifnames, next)
-		count++;
-
+#endif	/* RTCONFIG_NOWL */
 	return count;
 }
 
@@ -2742,134 +2821,6 @@ found_next:
         return NULL;
 }
 
-#ifdef CONFIG_BCMWL5
-void retrieve_static_maclist_from_nvram(int idx,struct maclist *maclist,int maclist_buf_size)
-{
-	char prefix[16]={0};
-	struct ether_addr *ea;
-	char *buf = maclist;
-	char tmp[100];
-	char var[80], *next;
-	unsigned char sta_ea[6] = {0};
-	char *nv, *nvp, *b;
-#ifdef RTCONFIG_AMAS
-	char mac2g[32], mac5g[32], *next_mac;
-	char *reMac, *maclist2g, *maclist5g, *timestamp;
-	char stamac2g[18] = {0};
-	char stamac5g[18] = {0};
-#endif
-
-	if(!maclist) return;
-
-#ifdef RTCONFIG_AMAS
-	if (nvram_get_int("re_mode") == 1)
-		snprintf(prefix, sizeof(prefix), "wl%d.1_", idx);
-	else
-#endif
-	snprintf(prefix,16,"wl%d_",idx);
-
-#ifdef RTCONFIG_AMAS
-	if (is_cfg_relist_exist())
-	{
-		if (nvram_get_int("re_mode") == 1) {
-			nv = nvp = get_cfg_relist(0);
-			if (nv) {
-				while ((b = strsep(&nvp, "<")) != NULL) {
-					if ((vstrsep(b, ">", &reMac, &maclist2g, &maclist5g, &timestamp) != 4))
-						continue;
-					/* first mac for sta 2g of dut */
-					foreach_44 (mac2g, maclist2g, next_mac)
-						break;
-					/* first mac for sta 5g of dut */
-					foreach_44 (mac5g, maclist5g, next_mac)
-						break;
-
-					if (strcmp(reMac, get_lan_hwaddr()) == 0) {
-						snprintf(stamac2g, sizeof(stamac2g), "%s", mac2g);
-						//dbg("dut 2g sta (%s)\n", stamac2g);
-						snprintf(stamac5g, sizeof(stamac5g), "%s", mac5g);
-						//dbg("dut 5g sta (%s)\n", stamac5g);
-						break;
-					}
-				}
-				free(nv);
-			}
-		}
-	}
-#endif
-
-	maclist->count = 0;
-	if (!nvram_match(strcat_r(prefix, "macmode", tmp), "disabled")) {
-		memset(maclist, 0, sizeof(maclist_buf_size));
-		ea = &(maclist->ea[0]);
-
-		nv = nvp = strdup(nvram_safe_get(strcat_r(prefix, "maclist_x", tmp)));
-		if (nv) {
-			while ((b = strsep(&nvp, "<")) != NULL) {
-				if (strlen(b) == 0) continue;
-
-#ifdef RTCONFIG_AMAS
-				if(nvram_match(strcat_r(prefix, "macmode", tmp), "allow")){
-					if (nvram_get_int("re_mode") == 1) {
-						if (strcmp(b, stamac2g) == 0 ||
-							strcmp(b, stamac5g) == 0)
-							continue;
-					}
-				}
-#endif
-				//dbg("maclist sta (%s) in %s\n", b, wlif_name);
-				ether_atoe(b, sta_ea);
-				memcpy(ea, sta_ea, sizeof(struct ether_addr));
-				maclist->count++;
-				ea++;
-			}
-			free(nv);
-		}
-#ifdef RTCONFIG_AMAS
-		if (nvram_match(strcat_r(prefix, "macmode", tmp), "allow"))
-		{
-			nv = nvp = get_cfg_relist(0);
-			if (nv) {
-				while ((b = strsep(&nvp, "<")) != NULL) {
-					if ((vstrsep(b, ">", &reMac, &maclist2g, &maclist5g, &timestamp) != 4))
-						continue;
-
-					if (strcmp(reMac, get_lan_hwaddr()) == 0)
-						continue;
-
-					if (idx == 0) {
-						foreach_44 (mac2g, maclist2g, next_mac) {
-							if (check_re_in_macfilter(idx, mac2g))
-								continue;
-							//dbg("relist sta (%s) in %s\n", mac2g, wlif_name);
-							ether_atoe(mac2g, sta_ea);
-							memcpy(ea, sta_ea, sizeof(struct ether_addr));
-							maclist->count++;
-							ea++;
-						}
-					}
-					else
-					{
-						foreach_44 (mac5g, maclist5g, next_mac) {
-							if (check_re_in_macfilter(idx, mac5g))
-								continue;
-							//dbg("relist sta (%s) in %s\n", mac5g, wlif_name);
-							ether_atoe(mac5g, sta_ea);
-							memcpy(ea, sta_ea, sizeof(struct ether_addr));
-							maclist->count++;
-							ea++;
-						}
-					}
-				}
-				free(nv);
-			}
-		}
-#endif
-
-	}
-}
-#endif
-
 /* Compare two space-separated/null-terminated lists(str1 and str2)
  * NOTE : The individual names in the list should not exceed NVRAM_MAX_VALUE_LEN
  *
@@ -3027,7 +2978,7 @@ int parse_ping_content(char *fname, ping_result_t *out)
 		{
 			if(strstr(linebuf, "PING "))
 			{
-				snprintf(scan_format, sizeof(scan_format), "PING %%%us (%%%u[^)]", sizeof(alias) -1, sizeof(ip_addr) -1);
+				snprintf(scan_format, sizeof(scan_format), "PING %%%zus (%%%zu[^)]", sizeof(alias) -1, sizeof(ip_addr) -1);
 				n = sscanf(linebuf, scan_format, alias, ip_addr);
 				if(n == 2)
 				{
@@ -3169,6 +3120,7 @@ int ping_target_with_size(char *target, unsigned int pkt_size, unsigned int ping
 			return 0;
 		}
 	}
+	return 1;
 }
 
 /*******************************************************************

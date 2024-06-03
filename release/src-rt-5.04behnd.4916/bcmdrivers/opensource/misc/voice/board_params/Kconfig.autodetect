@@ -1,0 +1,18 @@
+config BCM_DSP_16FXS_SUPPORT
+	bool "Broadcom voice 16 FXS support"
+	default n
+	help
+	  Enable 16 FXS for Broadcom dsl/pon SoCs
+
+config BCM_VOICE_PARAMS
+	bool "Broadcom voice board params support"
+	default n
+	help
+	  Enable board params for Broadcom dsl/pon SoCs
+
+config BCM_VOICE_PARAMS_IMPL
+	int "Implementation index for board params driver"
+	depends on BCM_VOICE_PARAMS
+	default 1
+	
+

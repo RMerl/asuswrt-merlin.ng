@@ -1,0 +1,96 @@
+###############################################################################
+#
+#                          WLAN MAKE TARGETS
+#
+###############################################################################
+
+# Update profile BCM_WLIMPL if overridden from CLI
+ifneq ($(strip $(WLIMPL)),)
+export BCM_WLIMPL := $(WLIMPL)
+endif
+
+# For either wlan driver or userspace
+ifeq ($(filter ,$(strip $(BRCM_DRIVER_WIRELESS)) $(strip $(CONFIG_BCM_WLAN))),)
+# FIXME! move it to wlan driver only. Now ieee1905 is still using this flag.
+export WIRELESS=1
+
+# Both hnd_dongle and hndrouter need this
+export PLT = arm
+export LINUX_VERSION = 4_1_0
+
+# Enable HND WAY of compiling
+export BCA_CPEROUTER=y
+export BCA_HNDROUTER=y
+export BRCM_WLAN_DNGL_NUM_BSS
+export BUILD_SW_GSO_WLAN
+export BUILD_RDKWIFI
+export RDK_BUILD
+export BUILD_BCM_WLAUX
+
+ifneq ($(strip $(BUILD_RDK_ONEWIFI)),)
+export EXTRA_CFLAGS += -DRDKB_ONE_WIFI
+export USR_CFLAGS += -DRDKB_ONE_WIFI
+export RDKB_ONE_WIFI=y
+endif
+
+ifneq ($(strip $(BUILD_RDKWIFI)),)
+export USR_CFLAGS += -DBCA_CPEROUTER_RDKWIFI
+endif
+
+ifneq ($(strip $(BUILD_BCM_WLAN_DPDCTL)),)
+export WLDPD_CFLAGS += -DBCA_CPEROUTER_EDPD
+export EXTRA_CFLAGS +=  $(WLDPD_CFLAGS)
+export USR_CFLAGS +=  $(WLDPD_CFLAGS)
+endif
+
+ifneq ($(strip $(RDK_BUILD)),)
+export RDKB=y
+export EXTRA_CFLAGS += -DRDKB -DBCA_CPEROUTER_RDK
+export USR_CFLAGS += -DRDKB -DBCA_CPEROUTER_RDK
+export EXTRA_CFLAGS += -I${RDKB_BCALINUX_SYSROOT}/usr/include/json-c -I${RDKB_BCALINUX_SYSROOT}/usr/include/libnl3
+endif
+
+ifneq ($(strip $(BUILD_LIBNL)),)
+export BCA_CPEROUTER_LIBNL=y
+endif
+
+HNDCOMP_RDIR = main/components/router-sysdep
+HNDDRIVER_BASE = $(HNDCOMP_RDIR)
+
+ifeq ($(strip $(BUILD_HND_NIC))$(strip $(BUILD_43602NIC)),)
+BCM_EXTFDIMAGE_PATH=/etc/wlan/dhd
+endif
+
+ifneq ($(strip $(BUILD_BCM_WLAN_REMOVE_INTERNAL_DEBUG)),)
+export NO_BCMINTERNAL = 1
+export NO_BCMDBG = 1
+endif
+endif # For either wlan driver or userspace
+
+ifneq ($(strip $(BUILD_43602NIC)),)
+export BUILD_43602NIC
+endif
+
+# For wlan userspace, avoid export but including make.wlan
+ifneq ($(strip $(BRCM_DRIVER_WIRELESS)), )
+# Avoid defining in multiple wlan related userspace applications.
+WIRELESS_IMPL_PATH=$(BRCMDRIVERS_DIR)/broadcom/net/wl/impl$(BCM_WLIMPL)
+WIRELESS_DRIVER_PATH=$(WIRELESS_IMPL_PATH)/main/src
+INC_WIRELESS_DRIVER_PATH=$(WIRELESS_DRIVER_PATH)/include
+# Mainly for the wifi component in BAS.
+COMPON_WIRELESS_DRIVER_PATH=$(WIRELESS_DRIVER_PATH)/../components
+
+HNDAPPS_DIR=$(WIRELESS_IMPL_PATH)/$(HNDCOMP_RDIR)
+HNDAPPS_BASE = $(HNDCOMP_RDIR)
+
+ifneq ($(strip $(BRCM_DRIVER_DHD)),)
+# Mainly for enabling certain applets in busybox.
+BUILD_DHD_MONITOR=y
+endif
+# Mainly for the UTF hook point. There is security risk, never enable it with real product.
+ifneq ($(strip $(BUILD_BCM_WLAN_ENGR_DANGEROUS)),)
+BRCM_ENGR_ONLY=1
+endif
+export BCM_QOSMGMT_REL = 2
+export BCM_MSCS_IMPL_VER = 2
+endif # For wlan userspace

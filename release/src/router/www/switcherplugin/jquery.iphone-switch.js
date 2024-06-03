@@ -8,8 +8,16 @@ jQuery.fn.iphoneSwitch = function(start_state, switched_on_callback, switched_of
 		switch_container_path: '/switcherplugin/iphone_switch_container_on.png',
 		switch_path: '/switcherplugin/iphone_switch.png',
 		switch_height: 32,
-		switch_width: 74
+		switch_width: 74,
+		borderSize: "7"
 	};
+
+	if(parent.webWrapper){
+		settings.switch_container_path = '/switcherplugin/iphone_switch_container_on.svg';
+		settings.switch_path = '/switcherplugin/iphone_switch.svg';
+		settings.borderSize = "50";
+		settings.switch_width = "auto";
+	}
 
 	if(options) {
 		jQuery.extend(settings, options);
@@ -25,7 +33,7 @@ jQuery.fn.iphoneSwitch = function(start_state, switched_on_callback, switched_of
 		container = '<div class="iphone_switch_container" style="height:'+settings.switch_height+'px; width:'+settings.switch_width+'px; position: relative; overflow: hidden">';
 		
 		// make the switch image based on starting state
-		image = '<img id="iphone_switch" class="iphone_switch" src="'+settings.switch_container_path+'" style="border-radius:7px;height:'+settings.switch_height+'px; width:'+settings.switch_width+'px; background-image:url('+settings.switch_path+'); background-repeat:no-repeat; background-position:'+(state == '1' ? 0 : -37)+'px" /></div>';
+		image = '<img id="iphone_switch" class="iphone_switch" src="'+settings.switch_container_path+'" style="border-radius:'+ settings.borderSize +'px;height:'+settings.switch_height+'px; width:'+settings.switch_width+'px; background-image:url('+settings.switch_path+'); background-repeat:no-repeat; background-position:'+(state == '1' ? 0 : -37)+'px" /></div>';
 
 		// insert into placeholder
 		jQuery(this).html(container + image);
@@ -52,7 +60,7 @@ jQuery.fn.iphoneSwitch = function(start_state, switched_on_callback, switched_of
 				this.id == "nm_radio_dualwan_enable" ||  //Internet
 				this.id == "simdetect_switch" ||  //Advanced_MobileBroadband_Content
 				this.id == "dns_switch" ||   //Advanced_IPTV_Content
-				this.id == "radio_anonymous_enable" ||  //Advanced_AiDisk_ftp
+				this.id == "radio_anonymous_enable" ||	//Advanced_AiDisk_ftp
 				this.id == "radio_fbwifi_enable" ||   //Guest_network_fbwifi
 				this.id == "vlan_enable" ||  //Advanced_TagBasedVLAN_Content
 				this.id == "ad_radio_dualwan_enable" ||

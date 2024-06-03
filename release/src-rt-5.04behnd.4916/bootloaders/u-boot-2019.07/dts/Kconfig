@@ -1,0 +1,357 @@
+#
+# Device Tree Control
+#
+
+config SUPPORT_OF_CONTROL
+	bool
+
+config DTC
+	bool
+
+config PYLIBFDT
+	bool
+
+config DTOC
+	bool
+	select PYLIBFDT
+
+config BINMAN
+	bool
+	select DTOC
+
+menu "Device Tree Control"
+	depends on SUPPORT_OF_CONTROL
+
+config OF_CONTROL
+	bool "Run-time configuration via Device Tree"
+	select DTC
+	help
+	  This feature provides for run-time configuration of U-Boot
+	  via a flattened device tree.
+
+config OF_BOARD_FIXUP
+	bool "Board-specific manipulation of Device Tree"
+	help
+	  In certain circumstances it is necessary to be able to modify
+	  U-Boot's device tree (e.g. to delete device from it). This option
+	  make the Device Tree writeable and provides a board-specific
+	  "board_fix_fdt" callback (called during pre-relocation time), which
+	  enables the board initialization to modifiy the Device Tree. The
+	  modified copy is subsequently used by U-Boot after relocation.
+
+config SPL_OF_CONTROL
+	bool "Enable run-time configuration via Device Tree in SPL"
+	depends on SPL && OF_CONTROL
+	help
+	  Some boards use device tree in U-Boot but only have 4KB of SRAM
+	  which is not enough to support device tree. Enable this option to
+	  allow such boards to be supported by U-Boot SPL.
+
+config TPL_OF_CONTROL
+	bool "Enable run-time configuration via Device Tree in TPL"
+	depends on TPL && OF_CONTROL
+	help
+	  Some boards use device tree in U-Boot but only have 4KB of SRAM
+	  which is not enough to support device tree. Enable this option to
+	  allow such boards to be supported by U-Boot TPL.
+
+config OF_LIVE
+	bool "Enable use of a live tree"
+	depends on OF_CONTROL
+	help
+	  Normally U-Boot uses a flat device tree which saves space and
+	  avoids the need to unpack the tree before use. However a flat
+	  tree does not support modification from within U-Boot since it
+	  can invalidate driver-model device tree offsets. This option
+	  enables a live tree which is available after relocation,
+	  and can be adjusted as needed.
+
+choice
+	prompt "Provider of DTB for DT control"
+	depends on OF_CONTROL
+
+config OF_SEPARATE
+	bool "Separate DTB for DT control"
+	depends on !SANDBOX
+	help
+	  If this option is enabled, the device tree will be built and
+	  placed as a separate u-boot.dtb file alongside the U-Boot image.
+
+config OF_EMBED
+	bool "Embedded DTB for DT control"
+	help
+	  If this option is enabled, the device tree will be picked up and
+	  built into the U-Boot image. This is suitable for local debugging
+	  and development only and is not recommended for production devices.
+	  Boards in the mainline U-Boot tree should not use it.
+
+config OF_BOARD
+	bool "Provided by the board at runtime"
+	depends on !SANDBOX
+	help
+	  If this option is enabled, the device tree will be provided by
+	  the board at runtime if the board supports it, instead of being
+	  bundled with the image.
+
+config OF_HOSTFILE
+	bool "Host filed DTB for DT control"
+	depends on SANDBOX
+	help
+	  If this option is enabled, DTB will be read from a file on startup.
+	  This is only useful for Sandbox.  Use the -d flag to U-Boot to
+	  specify the file to read.
+
+config OF_PRIOR_STAGE
+	bool "Prior stage bootloader DTB for DT control"
+	help
+	  If this option is enabled, the device tree used for DT
+	  control will be read from a device tree binary, at a memory
+	  location passed to U-Boot by the prior stage bootloader.
+
+endchoice
+
+config DEFAULT_DEVICE_TREE
+	string "Default Device Tree for DT control"
+	depends on OF_CONTROL
+	help
+	  This option specifies the default Device Tree used for DT control.
+	  It can be overridden from the command line:
+	  $ make DEVICE_TREE=<device-tree-name>
+
+config OF_LIST
+	string "List of device tree files to include for DT control"
+	depends on SPL_LOAD_FIT || MULTI_DTB_FIT
+	default DEFAULT_DEVICE_TREE
+	help
+	  This option specifies a list of device tree files to use for DT
+	  control. These will be packaged into a FIT. At run-time, U-boot
+	  or SPL will select the correct DT to use by examining the
+	  hardware (e.g. reading a board ID value). This is a list of
+	  device tree files (without the directory or .dtb suffix)
+	  separated by <space>.
+
+choice
+	prompt "SPL OF LIST compression"
+	depends on MULTI_DTB_FIT
+	default MULTI_DTB_FIT_NO_COMPRESSION
+
+config MULTI_DTB_FIT_LZO
+	bool "LZO"
+	depends on SYS_MALLOC_F
+	select LZO
+	help
+	  Compress the FIT image containing the DTBs available for the SPL
+	  using LZO compression. (requires lzop on host).
+
+config MULTI_DTB_FIT_GZIP
+	bool "GZIP"
+	depends on SYS_MALLOC_F
+	select GZIP
+	help
+	  Compress the FIT image containing the DTBs available for the SPL
+	  using GZIP compression. (requires gzip on host)
+
+config MULTI_DTB_FIT_NO_COMPRESSION
+	bool "No compression"
+	help
+	  Do not compress the FIT image containing the DTBs available for the SPL.
+	  Use this options only if LZO is not available and the DTBs are very small.
+endchoice
+
+choice
+	prompt "Location of uncompressed DTBs"
+	depends on (MULTI_DTB_FIT_GZIP || MULTI_DTB_FIT_LZO)
+	default MULTI_DTB_FIT_DYN_ALLOC if SYS_MALLOC_F
+
+config MULTI_DTB_FIT_DYN_ALLOC
+	bool "Dynamically allocate the memory"
+	depends on SYS_MALLOC_F
+
+config MULTI_DTB_FIT_USER_DEFINED_AREA
+	bool "User-defined location"
+endchoice
+
+config MULTI_DTB_FIT_UNCOMPRESS_SZ
+	hex "Size of memory reserved to uncompress the DTBs"
+	depends on (MULTI_DTB_FIT_GZIP || MULTI_DTB_FIT_LZO)
+	default 0x8000
+	help
+	   This is the size of this area where the DTBs are uncompressed.
+	   If this area is dynamically allocated, make sure that
+	   SYS_MALLOC_F_LEN is big enough to contain it.
+
+config MULTI_DTB_FIT_USER_DEF_ADDR
+	hex "Address of memory where dtbs are uncompressed"
+	depends on MULTI_DTB_FIT_USER_DEFINED_AREA
+	help
+	   the FIT image containing the DTBs is uncompressed in an area defined
+	   at compilation time. This is the address of this area. It must be
+	   aligned on 2-byte boundary.
+
+config DTB_RESELECT
+	bool "Support swapping dtbs at a later point in boot"
+	depends on MULTI_DTB_FIT
+	help
+	  It is possible during initial boot you may need to use a generic
+	  dtb until you can fully determine the board your running on. This
+	  config allows boards to implement a function at a later point
+	  during boot to switch to the "correct" dtb.
+
+config MULTI_DTB_FIT
+	bool "Support embedding several DTBs in a FIT image for u-boot"
+	help
+	  This option provides hooks to allow U-boot to parse an
+	  appended FIT image and enable board specific code to then select
+	  the correct DTB to be used. Use this if you need to support
+	  multiple DTBs but don't use the SPL.
+
+
+config SPL_MULTI_DTB_FIT
+	depends on SPL_LOAD_FIT && SPL_OF_CONTROL && !SPL_OF_PLATDATA
+	bool "Support embedding several DTBs in a FIT image for the SPL"
+	help
+	  This option provides the SPL with the ability to select its own
+	  DTB at runtime from an appended FIT image containing several DTBs.
+	  This allows using the same SPL binary on multiple platforms.
+	  The primary purpose is to handle different versions of
+	  the same platform without tweaking the platform code if the
+	  differences can be expressed in the DTBs (common examples are: bus
+	  capabilities, pad configurations).
+
+config SPL_OF_LIST
+	string "List of device tree files to include for DT control in SPL"
+	depends on SPL_MULTI_DTB_FIT
+	default OF_LIST
+	help
+	  This option specifies a list of device tree files to use for DT
+	  control in the SPL. These will be packaged into a FIT. At run-time,
+	  the SPL will select the correct DT to use by examining the
+	  hardware (e.g. reading a board ID value). This is a list of
+	  device tree files (without the directory or .dtb suffix)
+	  separated by <space>.
+
+choice
+	prompt "SPL OF LIST compression"
+	depends on SPL_MULTI_DTB_FIT
+	default SPL_MULTI_DTB_FIT_LZO
+
+config SPL_MULTI_DTB_FIT_LZO
+	bool "LZO"
+	depends on SYS_MALLOC_F
+	select SPL_LZO
+	help
+	  Compress the FIT image containing the DTBs available for the SPL
+	  using LZO compression. (requires lzop on host).
+
+config SPL_MULTI_DTB_FIT_GZIP
+	bool "GZIP"
+	depends on SYS_MALLOC_F
+	select SPL_GZIP
+	help
+	  Compress the FIT image containing the DTBs available for the SPL
+	  using GZIP compression. (requires gzip on host)
+
+config SPL_MULTI_DTB_FIT_NO_COMPRESSION
+	bool "No compression"
+	help
+	  Do not compress the FIT image containing the DTBs available for the SPL.
+	  Use this options only if LZO is not available and the DTBs are very small.
+endchoice
+
+choice
+	prompt "Location of uncompressed DTBs"
+	depends on (SPL_MULTI_DTB_FIT_GZIP || SPL_MULTI_DTB_FIT_LZO)
+	default SPL_MULTI_DTB_FIT_DYN_ALLOC if SYS_MALLOC_F
+
+config SPL_MULTI_DTB_FIT_DYN_ALLOC
+	bool "Dynamically allocate the memory"
+	depends on SYS_MALLOC_F
+
+config SPL_MULTI_DTB_FIT_USER_DEFINED_AREA
+	bool "User-defined location"
+endchoice
+
+config SPL_MULTI_DTB_FIT_UNCOMPRESS_SZ
+	hex "Size of memory reserved to uncompress the DTBs"
+	depends on (SPL_MULTI_DTB_FIT_GZIP || SPL_MULTI_DTB_FIT_LZO)
+	default 0x8000
+	help
+	   This is the size of this area where the DTBs are uncompressed.
+	   If this area is dynamically allocated, make sure that
+	   SPL_SYS_MALLOC_F_LEN is big enough to contain it.
+
+config SPL_MULTI_DTB_FIT_USER_DEF_ADDR
+	hex "Address of memory where dtbs are uncompressed"
+	depends on SPL_MULTI_DTB_FIT_USER_DEFINED_AREA
+	help
+	   the FIT image containing the DTBs is uncompressed in an area defined
+	   at compilation time. This is the address of this area. It must be
+	   aligned on 2-byte boundary.
+
+config OF_SPL_REMOVE_PROPS
+	string "List of device tree properties to drop for SPL"
+	depends on SPL_OF_CONTROL
+	default "interrupt-parent interrupts" if SPL_PINCTRL && SPL_CLK
+	default "clocks clock-names interrupt-parent interrupts" if SPL_PINCTRL
+	default "pinctrl-0 pinctrl-names interrupt-parent interrupts" if SPL_CLK
+	default "pinctrl-0 pinctrl-names clocks clock-names interrupt-parent interrupts"
+	help
+	  Since SPL normally runs in a reduced memory space, the device tree
+	  is cut down to only what is needed to load and start U-Boot. Only
+	  nodes marked with the property "u-boot,dm-pre-reloc" will be
+	  included. In addition, some properties are not used by U-Boot and
+	  can be discarded. This option defines the list of properties to
+	  discard.
+
+config SPL_OF_PLATDATA
+	bool "Generate platform data for use in SPL"
+	depends on SPL_OF_CONTROL
+	select DTOC
+	help
+	  For very constrained SPL environments the overhead of decoding
+	  device tree nodes and converting their contents into platform data
+	  is too large. This overhead includes libfdt code as well as the
+	  device tree contents itself. The latter is fairly compact, but the
+	  former can add 3KB or more to a Thumb 2 Image.
+
+	  This option enables generation of platform data from the device
+	  tree as C code. This code creates devices using U_BOOT_DEVICE()
+	  declarations. The benefit is that it allows driver code to access
+	  the platform data directly in C structures, avoidin the libfdt
+	  overhead.
+
+	  This option works by generating C structure declarations for each
+	  compatible string, then adding platform data and U_BOOT_DEVICE
+	  declarations for each node. See of-plat.txt for more information.
+
+config TPL_OF_PLATDATA
+	bool "Generate platform data for use in TPL"
+	depends on TPL_OF_CONTROL
+	select DTOC
+	help
+	  For very constrained SPL environments the overhead of decoding
+	  device tree nodes and converting their contents into platform data
+	  is too large. This overhead includes libfdt code as well as the
+	  device tree contents itself. The latter is fairly compact, but the
+	  former can add 3KB or more to a Thumb 2 Image.
+
+	  This option enables generation of platform data from the device
+	  tree as C code. This code creates devices using U_BOOT_DEVICE()
+	  declarations. The benefit is that it allows driver code to access
+	  the platform data directly in C structures, avoidin the libfdt
+	  overhead.
+
+	  This option works by generating C structure declarations for each
+	  compatible string, then adding platform data and U_BOOT_DEVICE
+	  declarations for each node. See of-plat.txt for more information.
+
+endmenu
+
+config MKIMAGE_DTC_PATH
+	string "Path to dtc binary for use within mkimage"
+	default "dtc"
+	help
+	  The mkimage host tool will, in order to generate FIT images make
+	  calls to the dtc application in order to create the output.  In
+	  some cases the system dtc may not support all required features
+	  and the path to a different version should be given here.

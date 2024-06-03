@@ -1,12 +1,11 @@
 var asusGameProfile = []
 
-setTimeout(function(){
-    $.ajax({
-        url: "https://nw-dlcdnet.asus.com/plugin/js/opennat_pf.json",
-        dataType: 'jsonp',
-        timeout: 2000,
-    })    
-}, 1500)
+fetch("https://nw-dlcdnet.asus.com/plugin/js/opennat_pf.json")
+    .then(response => response.text())
+    .then(data => {
+        const jsonData = JSON.parse(data.replace(/^updatePfList\((.*)\)$/g, '$1'));
+        updatePfList(jsonData);
+    })
 
 function updatePfList(pfList){
     asusGameProfile = pfList;

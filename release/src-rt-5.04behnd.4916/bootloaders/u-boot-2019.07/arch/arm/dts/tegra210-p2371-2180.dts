@@ -1,0 +1,115 @@
+/dts-v1/;
+
+#include "tegra210.dtsi"
+
+/ {
+	model = "NVIDIA P2371-2180";
+	compatible = "nvidia,p2371-2180", "nvidia,tegra210";
+
+	chosen {
+		stdout-path = &uarta;
+	};
+
+	aliases {
+		i2c0 = "/i2c@7000d000";
+		mmc0 = "/sdhci@700b0600";
+		mmc1 = "/sdhci@700b0000";
+		usb0 = "/usb@7d000000";
+	};
+
+	memory {
+		reg = <0x0 0x80000000 0x0 0xc0000000>;
+	};
+
+	pcie@1003000 {
+		status = "okay";
+
+		pci@1,0 {
+			status = "okay";
+		};
+
+		pci@2,0 {
+			status = "okay";
+		};
+	};
+
+	padctl@7009f000 {
+		pinctrl-0 = <&padctl_default>;
+		pinctrl-names = "default";
+
+		padctl_default: pinmux {
+			xusb {
+				nvidia,lanes = "otg-1", "otg-2";
+				nvidia,function = "xusb";
+				nvidia,iddq = <0>;
+			};
+
+			usb3 {
+				nvidia,lanes = "pcie-5", "pcie-6";
+				nvidia,function = "usb3";
+				nvidia,iddq = <0>;
+			};
+
+			pcie-x1 {
+				nvidia,lanes = "pcie-0";
+				nvidia,function = "pcie-x1";
+				nvidia,iddq = <0>;
+			};
+
+			pcie-x4 {
+				nvidia,lanes = "pcie-1", "pcie-2",
+					       "pcie-3", "pcie-4";
+				nvidia,function = "pcie-x4";
+				nvidia,iddq = <0>;
+			};
+
+			sata {
+				nvidia,lanes = "sata-0";
+				nvidia,function = "sata";
+				nvidia,iddq = <0>;
+			};
+		};
+	};
+
+	sdhci@700b0000 {
+		status = "okay";
+		cd-gpios = <&gpio TEGRA_GPIO(Z, 1) GPIO_ACTIVE_LOW>;
+		power-gpios = <&gpio TEGRA_GPIO(Z, 3) GPIO_ACTIVE_HIGH>;
+		wp-gpios = <&gpio TEGRA_GPIO(Z, 4) GPIO_ACTIVE_LOW>;
+		bus-width = <4>;
+	};
+
+	sdhci@700b0600 {
+		status = "okay";
+		bus-width = <8>;
+		non-removable;
+	};
+
+	i2c@7000d000 {
+		status = "okay";
+		clock-frequency = <400000>;
+	};
+
+	usb@7d000000 {
+		status = "okay";
+		dr_mode = "otg";
+		nvidia,vbus-gpio = <&gpio TEGRA_GPIO(CC, 4) GPIO_ACTIVE_HIGH>;
+	};
+
+	clocks {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		clk32k_in: clock@0 {
+			compatible = "fixed-clock";
+			reg = <0>;
+			#clock-cells = <0>;
+			clock-frequency = <32768>;
+		};
+	};
+};
+
+&uarta {
+	status = "okay";
+};

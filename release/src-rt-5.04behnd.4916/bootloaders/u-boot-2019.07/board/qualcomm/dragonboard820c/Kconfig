@@ -1,0 +1,15 @@
+if TARGET_DRAGONBOARD820C
+
+config SYS_BOARD
+	default "dragonboard820c"
+
+config SYS_VENDOR
+	default "qualcomm"
+
+config SYS_SOC
+	default "apq8096"
+
+config SYS_CONFIG_NAME
+	default "dragonboard820c"
+
+endif

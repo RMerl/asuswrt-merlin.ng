@@ -1,0 +1,12 @@
+if TARGET_AT91SAM9RLEK
+
+config SYS_BOARD
+	default "at91sam9rlek"
+
+config SYS_VENDOR
+	default "atmel"
+
+config SYS_CONFIG_NAME
+	default "at91sam9rlek"
+
+endif

@@ -1,0 +1,257 @@
+
+            RELEASE NOTES FOR TUXERA SMB SERVER
+
+
+--- Introduction ---
+
+This file contains information regarding the latest Tuxera SMB server
+delivery. Tuxera recommends to read the entire file.
+
+Table of content
+
+ * Package Contents
+ * Installation
+ * Usage
+ * Dynamic Configuration Management
+ * Configuration file
+ * Contact & Support Information
+
+
+--- Package Contents ---
+
+The package includes:
+    - tsmb-server - Tuxera SMB server user space application
+    - tsmb.conf - configuration file of Tuxera SMB server
+    - tsmb-passwd - utility to manipulate SMB user accounts
+    - tsmb-cfg - utility to change TSMB server configuration in run-time
+    - tsmb.ko - Tuxera SMB server kernel module
+
+
+--- Installation ---
+
+Copy tsmb-server binary to the proper place in your system (it can be
+some 'bin' or 'sbin' directory) or integrate it into system specific
+set of scripts.
+
+    cp -af tsmb-server /usr/sbin/tsmb-server
+
+There is no particular dependency on where to put the binary file.
+The only dependency is where to place configuration file if you do not
+specify its location as the utility option.
+
+By default Tuxera SMB server expects configuration file to be located at:
+/etc/tsmb.conf, but you can use "-c" option to override the location.
+
+Copy tsmb-passwd and tsmb-cfg utilities to the proper place in your system,
+for example:
+
+    $ cp -af tsmb-passwd /usr/bin/tsmb-passwd
+    $ cp -af tsmb-cfg /usr/bin/tsmb-cfg
+
+Copy tsmb.ko Linux kernel module to the proper place in your system,
+for example:
+
+    $ cp -af tsmb.ko /lib/modules/4.5.2/tsmb.ko
+
+--- Usage ---
+
+Insert tsmb.ko module into the kernel
+
+    $ insmod /lib/modules/4.5.2/tsmb.ko
+
+After this you can start TSMB server application.
+The following command will run TSMB server in foreground mode using
+configuration file located at /etc/tsmb.conf
+
+    $ /usr/sbin/tsmb-server
+
+If you want to run TSMB server in daemonized (background) mode specifying
+particular path to configuration file, then use the following command:
+
+    $ /usr/sbin/tsmb-server -B -c <path_to_config_file>
+
+In order to be able to connect to TSMB server you need to configure
+SMB users. This can be done with tsmb-passwd utility. Use the following
+command to add a new user with name 'USER':
+
+    $ /usr/bin/tsmb-passwd -a USER
+
+The command will ask you to type password and then re-type it again,
+after which a new record will be added to user data base file.
+
+User database file location is configured by 'userdb_file' rune of
+/etc/tsmb.conf configuration file. You can specify alternative
+location of configuration file with '-c <path>' argument.
+
+For more options supported by tsmb-passwd please run:
+
+    $ /usr/bin/tsmb-passwd -h
+
+
+--- Dynamic Configuration Management ---
+
+Dynamic share management is possible with the tsmb-cfg utility. The config
+utility can be used to add new shares, delete an existing share or update
+certain share configuration parameters. The TSMB server, by default, does
+not persist the dynamic share configuration changes that are introduced using
+tsmb-cfg tool. Run the following command in order to persist the changes
+that have been dynamically configured,
+
+    $ /usr/sbin/tsmb-server -c <path_to_config_file> -p
+
+TSMB server persists the configuration file by modifying the original
+configuration file specified by the '-c' flag. Hence if persisting the
+dynamic configuration is required, it is important that the tsmb-server
+process has appropriate privileges to write to the file or that the config
+file path is not write-protected.
+
+The tool's help menu is progressive and hence the different level's of help
+menu displayed by the tool is helpful in guiding the user in performing the
+various dynamic configuration options provided by the tool.
+
+The first level help menu displays the list of commands supported by the
+tool. Run the following command to display the first level help menu:
+
+    $ /usr/bin/tsmb-cfg -h
+
+      Usage: tsmb-cfg [OPTIONS...] COMMAND [PARAMETERS]
+
+      Common TSMB options:
+        -V, --version    Print version
+        -h, --help       Display this message
+
+      The most commonly used tsmb commands are:
+        share                Perform share related operations
+        help                 Print this or command specific help information
+
+      See 'tsmb-cfg COMMAND help' for more command specific information
+
+The second-level help menu displays a list of sub commands that are supported
+by the first level commands. For example, in case of dynamic share
+configuration, the second-level help menu for the 'share' commands is:
+
+    $ /usr/bin/tsmb-cfg share help
+
+    Usage: tsmb-cfg share <COMMAND> [PARAMETERS]
+
+    The most commonly used share commands are:
+      add                  Register a share in the server
+      del                  Delete a share from the server
+      update               Update an existing share in the server
+      help                 Display this help info
+
+    See 'tsmb-cfg share COMMAND [-h|--help]' for more command specific information
+
+Registering a new share is done by using the 'add' subcommand under the share
+command. To get the list of options supported by the 'add' subcommand run the
+following:
+
+    $ /usr/bin/tsmb-cfg share add -h
+
+Run the following command to register a new share,
+
+    $ /usr/bin/tsmb-cfg share add -n <name_of_share> -t <share_type> \
+                                  -p <path_to_share> -P <everyone:full> \
+                                  -r <This_is_a_remark_for_new_share>
+
+By default, registering a new share requires some mandatory options like the
+path of the shared resource and the netname that is used to identify the shared
+resource over the network. If the 'type' option is not specified, the tool
+assumes that the share to be added is of 'disk' type. If the 'permission'
+option is not specified, then the default permission for a share is
+"everyone:read", meaning every user has only read permissions. The format for
+different options supported by the tool is similar to the configuration file
+and is explained in detail in the help menu.
+
+Deleting a share is performed by using the 'del' subcommand. List of parameters
+or options supported by the 'del' subcommand can be listed using the following:
+
+    $ /usr/bin/tsmb-cfg share del -h
+
+Only an existing share can be deleted and a delete operation on a non-existent
+share will fail. To delete a share, run the following command:
+
+    $ /usr/bin/tsmb-cfg share del -n <name_of_share>
+
+Suppose configuration changes are required for an existing share it is also
+possible to update it. Updating an existing share is done using the 'update'
+subcommand supported by the tool. The list of options available for updating
+a share can be seen using the following:
+
+    $ /usr/bin/tsmb-cfg share update -h
+
+To update an existing share run the following command:
+
+    $ /usr/bin/tsmb-cfg share update -n SH1 -P <share_permissions> \
+                                            -r <New_share_remark>
+
+There are however limitations to the options that can be updated using this
+command as imposed by the protocol technical document itself. The tool allows
+dynamically updating the user permissions and the remark associated with an
+existing share. This limitation is imposed so that if a user is connected to an
+existing share, the user need not reconnect to the share to see the effects of
+new user-permissions and the changes are immediately in-effect on-the-fly.
+During share configuration 'update', if either the remark or permission fields
+are not provided by the user, they are simply replaced with the default
+permissions and remark configured in tool and these values are used for
+updating the share configuration. So when updating a share configuration, all
+fields MUST be populated in order to ensure that the server updates the
+configuration with expected values.
+
+This tool allows for changing share configurations dynamically without the need
+to restart the TSMB server. If the non-persistent mode of operation(default) is
+requested the configuration changes are not saved when an instance of TSMB
+server is shutdown or reset. Hence all the configuration is lost when the TSMB
+server is killed or terminated. In the persistent mode, all configuration
+changes are persisted in the configuration file provided when executing the
+TSMB server. Hence if a server the restarted all the configuration changes done
+on shares are still in effect if the tsmb-server is suddenly reset.
+
+For more options supported by tsmb-cfg and info on different parameters
+please run:
+
+    $ /usr/bin/tsmb-cfg -h
+
+
+--- Configuration file ---
+
+Settings of TSMB Server can be tuned via configuration file. Please also
+note that configuration file is used not only by TSMB server, but by
+tsmb-passwd utility as well.
+
+Information about possible settings of configuration file can be found
+in a file supplied with the package. Please read information about the
+particular setting inlined.
+
+
+--- Contact & Support Information ---
+
+Please send feedback and support queries to support@tuxera.com.
+
+Besides describing your issue please provide the following information
+to help Tuxera's engineers address the issue:
+
+  - set-up details (for client and server side):
+    - target type ('uname -a'/distro version, windows version);
+    - SMB client tool with version number;
+    - TSMB package version;
+      $ tsmb-server -v
+      $ modinfo tsmb
+  - the sequence of events (to reproduce);
+  - expected results vs visible results;
+  - if the problem is reproducible, then please capture packet dump during
+    the sequence of events:
+    $ tcpdump -i eth0 -s 0 -w /tmp/pkts.pcap tcp port 445
+  - printouts from TSMB, kernel oops (if any);
+
+If you failed to run any TSMB utility or TSMB server please provide
+the following information:
+
+  - output of:
+    $ uname -a
+    $ ldd /usr/sbin/tsmb-server
+
+Thank you.
+
+Copyright (c) 2008-2023 Tuxera Inc. All Rights Reserved.
+

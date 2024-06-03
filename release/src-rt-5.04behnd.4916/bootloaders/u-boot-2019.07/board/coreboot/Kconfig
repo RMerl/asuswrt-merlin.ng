@@ -1,0 +1,25 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright (C) 2015, Bin Meng <bmeng.cn@gmail.com>
+
+if VENDOR_COREBOOT
+
+choice
+	prompt "Mainboard model"
+	optional
+
+config TARGET_COREBOOT
+	bool "coreboot"
+	help
+	  This target is used for running U-Boot on top of coreboot. In
+	  this case coreboot does the early inititalisation, and U-Boot
+	  takes over once the RAM, video and CPU are fully running.
+	  U-Boot is loaded as a fallback payload from coreboot, in
+	  coreboot terminology. This method was used for the Chromebook
+	  Pixel when launched.
+
+endchoice
+
+source "board/coreboot/coreboot/Kconfig"
+
+endif

@@ -1,0 +1,39 @@
+#!/bin/sh
+source /etc/sf2/_util
+
+# # /etc/sf2/maclmt    # usage: maclmt <unit>
+# found 6756 unit=0
+# ----PAGE_SA_LIMIT(0x45)=0x80422800+(offset)<<3
+# MAC_LMT   -00 -12*2N       -32*2N   -50*4N
+#            En limit  act   learned  >lmt_pkt_cnt
+#         p0 0   256   fwd.     0             0
+#         p1 0   256   fwd.     0             0
+#         p5 0   256   fwd.     0             0
+#         p6 0   256   fwd.     0             0
+#         p8 0   256   fwd.     0             0
+#       global  1024@-10        0@-30     toCpuPort=p8@-74
+# 
+
+sf2_maclmt() { #sf2_maclmt <unit>
+    local unit=$1
+    read_chip $unit
+    if [ $sf2_unit == -1 ]
+    then echo "device has no (connected) sf2 switch!!"; return;
+    fi
+    
+    print_page_hdr 0x45 SA_LIMIT
+    echo "MAC_LMT   -00 -12*2N       -32*2N   -50*4N"
+    echo "           En limit  act   learned  >lmt_pkt_cnt"
+    local lmten=$(read_sf2 0x45 0)
+    for port in $sf2_ports
+    do
+        echo $(read_sf2 0x45 $((0x12+2*port))) $lmten $(read_sf2 0x45 $((0x32+2*port))) $(read_sf2 0x45 $((0x50+4*port))) $port | awk '{ v=$1;
+            split("fwd. drop +cpu 2cpu",sa_lmt_act_s);
+            printf "        p%d %d  %4d   %s  %4d      %8d\n", $5+0, and(rshift($2,$5),1), v, sa_lmt_act_s[and(rshift(v,14),3)+1], $3, $4;}' 
+    done
+    echo $(read_sf2 0x45 0x10) $(read_sf2 0x45 0x30) $(read_sf2 0x45 0x74) | awk '{
+        printf "      global  %4d@-10     %4d@-30     toCpuPort=p%d@-74\n", $1, $2, $3;}' 
+    echo ""
+}
+
+sf2_maclmt $1

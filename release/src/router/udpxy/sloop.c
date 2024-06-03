@@ -18,7 +18,9 @@
  *  along with udpxy.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 
 #include <features.h>
 #include <sys/syscall.h>

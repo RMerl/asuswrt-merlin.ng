@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright 2018 Google LLC
+# Written by Simon Glass <sjg@chromium.org>
+
+U-Boot on Nyan
+==============
+
+Nyan-big is supported by mainline U-Boot. This device is based on Tegra124.
+To build it, use the nyan-big config.
+
+To boot it, connect a USB A-A cable from your computer to the back USB port.
+Connect a servo board. Then with t20_rec and warn_rst held down:
+
+   sudo tegrarcm --bct cbootimage-configs/tegra124/nvidia/norrin/PM370_Hynix_2GB_H5TC4G63AFR_PBA_924MHz_01212014.bct
+	    --bootloader u-boot-dtb-tegra.bin --loadaddr 0x80108000
+
+The norrin config is close enough that it works well with Nyan.

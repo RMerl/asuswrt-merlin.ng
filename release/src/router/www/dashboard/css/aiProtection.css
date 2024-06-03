@@ -1,0 +1,65 @@
+.tm-logo {
+    width: 96px;
+    height: 44px;
+}
+.tm-logo-smartHome {
+    width: 100px;
+    height: 48px;
+}
+.aiProtection-scenario {
+    max-width: 100%;
+}
+.aiProtection-step {
+    width: 34px;
+    height: 34px;
+}
+
+a,
+.feature-desc {
+    color: var(--text-regular-color) !important;
+}
+.router-scan-button {
+    min-width: 75px;
+}
+
+.button-danger {
+    color: #ffffff;
+    background-color: #ff3535;
+}
+.button-danger:hover {
+    color: #ffffff;
+    background-color: #c20013;
+}
+.button-warning {
+    color: #ffffff;
+    background-color: #ef9800;
+}
+.button-warning:hover {
+    color: #ffffff;
+    background-color: #ab6d01;
+}
+.button-safe {
+    color: #ffffff;
+    background-color: rgb(0, 177, 92);
+}
+.button-safe:hover {
+    color: #ffffff;
+    background-color: rgb(0, 131, 68);
+}
+.vp-tab {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+}
+.ips-chart-height {
+    height: 300px;
+}
+.vp-tab-high {
+    background-color: #ed1c24;
+}
+.vp-tab-medium {
+    background-color: #d7d700;
+}
+.vp-tab-low {
+    background-color: #13d3d2;
+}

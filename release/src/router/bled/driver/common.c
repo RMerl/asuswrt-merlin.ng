@@ -78,8 +78,12 @@ static struct list_head bled_list;
 /* Return value must greater than or equal to 0. */
 static void (*bled_type_printer[BLED_TYPE_MAX])(struct bled_priv *bp, struct seq_file *m) = {
 	[BLED_TYPE_NETDEV_BLED] = netdev_led_printer,
+#if !defined(RTCONFIG_RALINK_MT7629)
 	[BLED_TYPE_SWPORTS_BLED] = swports_led_printer,
+#endif
+#if !defined(RTCONFIG_RALINK_MT7622) && !defined(RTCONFIG_RALINK_MT7629) && !defined(RTCONFIG_RALINK_MT7621)
 	[BLED_TYPE_USBBUS_BLED] = usbbus_led_printer,
+#endif
 	[BLED_TYPE_INTERRUPT_BLED] = interrupt_led_printer,
 };
 
@@ -182,7 +186,11 @@ static void suspend_bled(struct bled_priv *bp)
 
 	if (bp->bh_type == BLED_BHTYPE_HYBRID)
 		cancel_delayed_work(&bp->bled_work);
+#ifdef USE_WORKQUEUE_INSTEAD_OF_TIMER
+	cancel_delayed_work(&bp->timer_work);
+#else
 	del_timer_sync(&bp->timer);
+#endif
 	dbg_bl_v("Suspend GPIO#%d.\n", bp->gpio_nr[0]);
 }
 
@@ -197,7 +205,11 @@ static void __resume_bled(struct bled_priv *bp)
 
 	if (bp->bh_type == BLED_BHTYPE_HYBRID)
 		schedule_delayed_work(&bp->bled_work, bp->next_check_interval);
+#ifdef USE_WORKQUEUE_INSTEAD_OF_TIMER
+	mod_delayed_work(bp->timer_wq, &bp->timer_work, bp->next_check_interval);
+#else
 	mod_timer(&bp->timer, jiffies + bp->next_check_interval);
+#endif
 	dbg_bl_v("Resume GPIO#%d.\n", bp->gpio_nr[0]);
 }
 
@@ -260,7 +272,11 @@ static void __bled_bh_func(struct bled_priv *bp)
 
 		if (unlikely(bp->bh_type == BLED_BHTYPE_HYBRID)) {
 			/* Don't use bp->next_blilnk_ts here. We need to keep timer running. */
+#ifdef USE_WORKQUEUE_INSTEAD_OF_TIMER
+			mod_delayed_work(bp->timer_wq, &bp->timer_work, bp->next_blink_interval);
+#else
 			mod_timer(&bp->timer, jiffies + bp->next_blink_interval);
+#endif
 			return;
 		}
 
@@ -287,15 +303,35 @@ static void __bled_bh_func(struct bled_priv *bp)
 	if (!bp->next_blink_ts || time_before(bp->next_check_ts, bp->next_blink_ts))
 		t = bp->next_check_ts;
 
+#ifdef USE_WORKQUEUE_INSTEAD_OF_TIMER
+	mod_delayed_work(bp->timer_wq, &bp->timer_work, (t - jiffies));
+#else
 	mod_timer(&bp->timer, t);
+#endif
 }
 /**
  * Timer handler of a bled.
  */
+#ifdef USE_WORKQUEUE_INSTEAD_OF_TIMER
+static void bled_timer_func(struct work_struct *work)
+{
+	struct bled_priv *bp = container_of(work, typeof(*bp), timer_work.work);
+	__bled_bh_func(bp);
+}
+#else
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4,14,0)
 static void bled_timer_func(unsigned long data)
 {
 	__bled_bh_func((struct bled_priv *) data);
 }
+#else
+static void bled_timer_func(struct timer_list *t)
+{
+	struct bled_priv *bp = from_timer(bp, t, timer);
+	__bled_bh_func(bp);
+}
+#endif
+#endif
 
 /**
  * workqueue of a bled.
@@ -604,10 +640,24 @@ static int init_bled_priv(struct bled_priv *bp, struct bled_common *bc)
 	bp->gpio_get = p->gpio_get;
 	bp->value = !!p->gpio_get(bp->gpio_nr[0]) ^ bp->active_low[0];
 
+#ifdef USE_WORKQUEUE_INSTEAD_OF_TIMER
+	bp->timer_wq = create_singlethread_workqueue(THIS_MODULE->name);
+        if (!bp->timer_wq) {
+		return -ENOMEM;
+	}
+	INIT_DELAYED_WORK(&bp->timer_work, bled_timer_func);
+	queue_delayed_work(bp->timer_wq, &bp->timer_work, bp->next_check_interval);
+#else
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4,14,0)
 	init_timer(&bp->timer);
 	bp->timer.expires = jiffies + bp->next_check_interval;
 	bp->timer.data = (unsigned long) bp;
 	bp->timer.function = bled_timer_func;
+#else
+	timer_setup(&bp->timer, bled_timer_func, 0);
+	mod_timer(&bp->timer, (jiffies + bp->next_check_interval));
+#endif
+#endif
 
 	INIT_DELAYED_WORK(&bp->bled_work, bled_wq_func);
 	bp->gpio_count++;
@@ -691,6 +741,10 @@ static void del_bled(struct bled_priv *bp, const char *id)
 		/* Always turn on LED */
 		bled_ctrl(bp, 1);
 		list_del(&bp->list);
+#ifdef USE_WORKQUEUE_INSTEAD_OF_TIMER
+		flush_workqueue(bp->timer_wq);
+		destroy_workqueue(bp->timer_wq);
+#endif
 		dbg_bl("Remove GPIO#%d.\n", bp->gpio_nr[0]);
 		kfree(bp);
 	}
@@ -924,7 +978,11 @@ static void wproc_set_mode(char *cmd_str)
 			patt->curr = 0;
 			bp->next_blink_ts = 0;
 			bp->mode = v;
+#ifdef USE_WORKQUEUE_INSTEAD_OF_TIMER
+			mod_delayed_work(bp->timer_wq, &bp->timer_work, 0);
+#else
 			mod_timer(&bp->timer, jiffies);
+#endif
 			break;
 		default:	/* BLED_NORMAL_MODE */
 			if (bp->reset_check)
@@ -1048,7 +1106,11 @@ static int proc_bled_open(struct inode *inode, struct file *file)
 /**
  * Main write procedure of /proc/bled
  */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4,14,0)
 static int proc_bled_write(struct file* file, const char __user* buffer, size_t count, loff_t *ppos)
+#else
+static ssize_t proc_bled_write(struct file* file, const char __user* buffer, size_t count, loff_t *ppos)
+#endif
 {
 	char *p, *buf = kmalloc(count, GFP_KERNEL);
 	struct bled_wproc_handler_s *wh;
@@ -1487,7 +1549,7 @@ static int handle_upd_swports_mask(unsigned long arg)
  * 	0:	success
  *  otherwise:	fail
  */
-#if defined(RTCONFIG_USB)
+#if defined(RTCONFIG_USB) && !defined(RTCONFIG_RALINK_MT7622) && !defined(RTCONFIG_RALINK_MT7629) && !defined(RTCONFIG_RALINK_MT7621)
 static int handle_add_usbbus_bled(unsigned long arg)
 {
 	struct usbbus_bled ul;
@@ -1669,7 +1731,11 @@ static int handle_set_mode(unsigned long arg)
 		patt->curr = 0;
 		bp->next_blink_ts = 0;
 		bp->mode = bc->mode;
+#ifdef USE_WORKQUEUE_INSTEAD_OF_TIMER
+		mod_delayed_work(bp->timer_wq, &bp->timer_work, 0);
+#else
 		mod_timer(&bp->timer, jiffies);
+#endif
 		break;
 	case BLED_NORMAL_MODE:
 		suspend_bled(bp);
@@ -1834,18 +1900,20 @@ static long bled_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		ret = handle_del_netdev_if(arg);
 		break;
 
+#if !defined(RTCONFIG_RALINK_MT7629)
 	case BLED_CTL_ADD_SWPORTS_BLED:
 		ret = handle_add_swports_bled(arg);
 		break;
+#endif
 
 	case BLED_CTL_UPD_SWPORTS_MASK:
 		ret = handle_upd_swports_mask(arg);
 		break;
-
+#if !defined(RTCONFIG_RALINK_MT7622) && !defined(RTCONFIG_RALINK_MT7629) && !defined(RTCONFIG_RALINK_MT7621)
 	case BLED_CTL_ADD_USBBUS_BLED:
 		ret = handle_add_usbbus_bled(arg);
 		break;
-
+#endif
 	case BLED_CTL_GET_BLED_TYPE:
 		ret = handle_get_bled_type(arg);
 		break;

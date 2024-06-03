@@ -103,6 +103,7 @@ int vpnc_load_profile(VPNC_PROFILE *list, const int list_size, const int prof_ve
 
 			list[cnt].active = atoi(active);
 			list[cnt].vpnc_idx = atoi(vpnc_idx);
+			list[cnt].wan_idx = (wan_idx) ? atoi(wan_idx) : 0;
 		}
 		else
 		{
@@ -123,7 +124,7 @@ int vpnc_load_profile(VPNC_PROFILE *list, const int list_size, const int prof_ve
 			{
 				list[cnt].protocol = VPNC_PROTO_L2TP;
 			}
-			else if (!strcmp(proto, PROTO_OVPN))
+			else if (!strcmp(proto, PROTO_OVPN) || !strcmp(proto, PROTO_CYBERGHOST))
 			{
 				list[cnt].protocol = VPNC_PROTO_OVPN;
 				list[cnt].config.ovpn.ovpn_idx = atoi(server);
@@ -411,7 +412,7 @@ int is_wgc_connected(int unit)
 #endif
 
 
-#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X)
+#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_BE_4916)
 int _wg_check_same_port(wg_type_t type, int unit, int port)
 {
 	int i;

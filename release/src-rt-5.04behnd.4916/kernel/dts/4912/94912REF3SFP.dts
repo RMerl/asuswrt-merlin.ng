@@ -1,0 +1,37 @@
+#include "94912REF3.dts"
+
+/ {
+	sfp1: sfp1 {
+		compatible = "brcm,sfp";
+		pinctrl-names = "default", "rx-sd";
+		pinctrl-0 = <&serdes2_rx_los_pin_2>;
+		pinctrl-1 = <&serdes2_rx_los_pin_2>;
+
+		i2c-bus = <&i2c1>;
+		mod-def0 = <&bca_extintr 5 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_BOTH_EDGE | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+	};
+};
+&mdio {
+    /* Port PHY mapping:
+            port_gphy0 <----> phy_gphy0
+            port_gphy1 <----> phy_gphy1
+            port_gphy2 <----> phy_gphy2
+            port_gphy3 <----> phy_gphy3
+            port_xgphy <----> phy_serdes0   - phy_cascade0
+            port_sgmii1 <---> phy_serdes1   - sfp0
+            port_sgmii2 <---> phy_serdes2   - sfp1
+     */
+	phy_serdes2 {
+		trx = <&sfp1>;
+		status = "okay";
+	};
+};
+
+&switch0 {
+	ports {
+		port_sgmii2 {
+			network-leds = <&led0 &led1>;
+			status = "okay";
+		};
+	};
+};

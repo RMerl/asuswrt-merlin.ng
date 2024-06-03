@@ -1,0 +1,25 @@
+* Intel High-definition Audio
+
+Configuration is set using 'verbs' which are blocks of 16 bytes of data each
+with a different purpose, a little like a simple instruction set.
+
+Top-level node
+--------------
+
+Required properties:
+- compatible: "intel,hd-audio"
+- beep-verbs: list of verbs to send for a beep
+
+Optional properties
+- intel,beep-nid: Node ID to use for beep (will be detected if not provided)
+
+Required subnodes:
+- codecs: Contains a list of codec nodes
+
+
+* Codec nodes
+
+Required properties:
+- vendor-id: 16-bit vendor ID for audio codec
+- device-id: 16-bit device ID for audio codec
+- verbs: List of verbs, each 4 cells in length

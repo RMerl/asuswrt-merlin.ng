@@ -87,6 +87,12 @@
 .wl6_icon_on{
 	background-position: 0px -158px;
 }
+.wl6_1_icon_on{
+	background-position: 0px -198px;
+}
+.wl6_2_icon_on{
+	background-position: 0px -238px;
+}
 .wl0_icon_off{
 	background-position: 40px 0px;
 }
@@ -101,6 +107,12 @@
 }
 .wl6_icon_off{
 	background-position: 40px -158px;
+}
+.wl6_1_icon_off{
+	background-position: 40px -198px;
+}
+.wl6_2_icon_off{
+	background-position: 40px -238px;
 }
 .block_all_icon{
 	position: absolute;
@@ -135,26 +147,82 @@
 	background-repeat: no-repeat;
 	background-image: url("data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAF92lUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNi4wLWMwMDYgNzkuMTY0NjQ4LCAyMDIxLzAxLzEyLTE1OjUyOjI5ICAgICAgICAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIiB4bWxuczpzdEV2dD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL3NUeXBlL1Jlc291cmNlRXZlbnQjIiB4bWxuczpkYz0iaHR0cDovL3B1cmwub3JnL2RjL2VsZW1lbnRzLzEuMS8iIHhtbG5zOnBob3Rvc2hvcD0iaHR0cDovL25zLmFkb2JlLmNvbS9waG90b3Nob3AvMS4wLyIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgMjIuMiAoTWFjaW50b3NoKSIgeG1wOkNyZWF0ZURhdGU9IjIwMjEtMDgtMDRUMTU6MTQ6NDArMDg6MDAiIHhtcDpNZXRhZGF0YURhdGU9IjIwMjEtMDgtMDRUMTU6MTQ6NDArMDg6MDAiIHhtcDpNb2RpZnlEYXRlPSIyMDIxLTA4LTA0VDE1OjE0OjQwKzA4OjAwIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOmYwOTZmYjFhLTY3ZDktNDkyZS1hNDk5LTdiZjUwMGU0NWNlMCIgeG1wTU06RG9jdW1lbnRJRD0iYWRvYmU6ZG9jaWQ6cGhvdG9zaG9wOmYzNDJlYWZiLTA3YmItMWI0NS05ZWI4LTY3ODExYjcxODg3MSIgeG1wTU06T3JpZ2luYWxEb2N1bWVudElEPSJ4bXAuZGlkOmEwODg4MWYwLTEwYWQtNGI4OC04MTFmLWIyZWQ3ZWVkZjliMCIgZGM6Zm9ybWF0PSJpbWFnZS9wbmciIHBob3Rvc2hvcDpDb2xvck1vZGU9IjMiIHBob3Rvc2hvcDpJQ0NQcm9maWxlPSJzUkdCIElFQzYxOTY2LTIuMSI+IDx4bXBNTTpIaXN0b3J5PiA8cmRmOlNlcT4gPHJkZjpsaSBzdEV2dDphY3Rpb249ImNyZWF0ZWQiIHN0RXZ0Omluc3RhbmNlSUQ9InhtcC5paWQ6YTA4ODgxZjAtMTBhZC00Yjg4LTgxMWYtYjJlZDdlZWRmOWIwIiBzdEV2dDp3aGVuPSIyMDIxLTA4LTA0VDE1OjE0OjQwKzA4OjAwIiBzdEV2dDpzb2Z0d2FyZUFnZW50PSJBZG9iZSBQaG90b3Nob3AgMjIuMiAoTWFjaW50b3NoKSIvPiA8cmRmOmxpIHN0RXZ0OmFjdGlvbj0ic2F2ZWQiIHN0RXZ0Omluc3RhbmNlSUQ9InhtcC5paWQ6ZjA5NmZiMWEtNjdkOS00OTJlLWE0OTktN2JmNTAwZTQ1Y2UwIiBzdEV2dDp3aGVuPSIyMDIxLTA4LTA0VDE1OjE0OjQwKzA4OjAwIiBzdEV2dDpzb2Z0d2FyZUFnZW50PSJBZG9iZSBQaG90b3Nob3AgMjIuMiAoTWFjaW50b3NoKSIgc3RFdnQ6Y2hhbmdlZD0iLyIvPiA8L3JkZjpTZXE+IDwveG1wTU06SGlzdG9yeT4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz5gqlrZAAABEklEQVQ4jYWRsU4CQRRF7yCJ2hAKQ2Vpb0UDVnRE/4ZCWwsTwgf4CTRbQkGDf7MJLYSwwWKPBYNel2W41e688+7ceS/ojIAbSfeSSkl5CGF/jq02DoAF8M2f9sAM6Kcam8AnlzUBGnUG3rwCRkAPeALegNzq47rYrh0wqDAtYGlM14sLu3mXMGlHBiD7nbYNbBTTpEzeY217PHiwWD17Uq0JMDS+09Bhz0c1JCmE8CXpRVIh6VbS3Ex8A6WAaw57BnitGe6/JMBH/F87OIuHOdBKmBTAJn5PHerbu5ZAu8akMKYEHlWBJgas4rSHwHOMvbF6pqqAK2BMWiWQAc0TAzPqRmhrjWtgehL7koAOcJdifgCrvyzQ8BT7EAAAAABJRU5ErkJggg==");
 }
+
+i.icon-clone {
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-size: 100%;
+	mask-size: 100%;
+	-webkit-mask-image: url(/images/clone.svg);
+	mask-image: url(/images/clone.svg);
+	height: 20px;
+	width: 20px;
+	display: inline-block;
+}
+
+.icon-group-center {
+	display: inline-flex;
+	align-items: center;
+}
+
+.icon-clone{
+    background: #c0c0c0!important;
+}
+.icon-clone:hover{
+    background: #FFFFFF!important;
+}
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip .tooltiptext {
+  display: none;
+  width: 60px;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px;
+  position: absolute;
+  z-index: 1;
+  bottom: 150%;
+  left: 50%;
+  margin-left: -40px;
+}
+
+.tooltip .tooltiptext::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: black transparent transparent transparent;
+}
 </style>
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/md5.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
-<script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
+<script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script language="JavaScript" type="text/javascript" src="/form.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
+<script type="text/javascript" src="/js/asus_clientlist.js"></script>
 <script>
 if(usb_support) addNewScript("/disk_functions.js");
 
 var userIconBase64 = "NoIcon";
 var userIconBase64_ori = "NoIcon";
 var userUploadFlag = false;
-var verderIcon = "";
+var vendorIcon = "";
 var userIconHideFlag = false;
 var custom_usericon_del = "";
 var firstTimeOpenBlock = false;
@@ -245,7 +313,7 @@ var wl0_radio = '<% nvram_get("wl0_radio"); %>';
 var wl1_radio = '<% nvram_get("wl1_radio"); %>';
 var wl2_radio = '<% nvram_get("wl2_radio"); %>';
 var wl3_radio = '<% nvram_get("wl3_radio"); %>';
-if(based_modelid === 'GT-AXE16000'){
+if(based_modelid === 'GT-AXE16000' || based_modelid === 'GT-BE98' || based_modelid === 'GT-BE98_PRO'){
 	var t = wl3_radio;
 	wl3_radio = wl2_radio;
 	wl2_radio = wl1_radio;
@@ -423,17 +491,7 @@ function initial(){
 			else
 				document.getElementById('rssi_div').style.display = "";
 			
-			if(wlc_band == 0){
-				document.getElementById('wlc_band_status').innerHTML = "2.4 GHz"; 
-			}
-			else{
-				if(band6g_support && wlc_band == '2'){
-					document.getElementById('wlc_band_status').innerHTML = "6 GHz";
-				}
-				else{
-					document.getElementById('wlc_band_status').innerHTML = "5 GHz";
-				}				
-			}	
+			document.getElementById('wlc_band_status').innerHTML = wl_nband_title[wlc_band];	
 		}
 		document.getElementById('NM_connect_title').innerHTML = "<#parent_AP_status#> :";
 	}
@@ -1269,11 +1327,13 @@ function edit_confirm(){
 		var originalCustomListArray = new Array();
 		var onEditClient = new Array();
 		var clientTypeNum = "";
-		if(document.getElementById('client_image').className.search("venderIcon_no_hover") != -1) {
+		if($('#client_image.vendorIcon_no_hover').length > 0) {
 			clientTypeNum = "0";
 		}
 		else {
-			clientTypeNum = document.getElementById('client_image').className.replace("clientIcon_no_hover type", "");
+            if($('#client_image.clientIcon_no_hover i').length > 0){
+			    clientTypeNum = $('#client_image.clientIcon_no_hover i').attr('class').replace("type", "");
+            }
 		}
 		var clientMac = document.getElementById('macaddr_field').value.toUpperCase();
 		originalCustomListArray = custom_name.split('<');
@@ -1526,47 +1586,41 @@ function show_custom_image() {
 	}
 }
 function select_custom_icon($obj){
-	var type = $obj.attr("class")
-	var icon_rul = $obj.css("background-image").replace('url(','').replace(')','').replace(/\"/gi, "");
-	$("#client_image").css("background-image","url(" + icon_rul + ")");
-	$("#client_image").find(".flash").remove();
-	$("#client_image").removeClass().addClass("clientIcon_no_hover").addClass(type).css("background-size", "");
-	$("#client_image").show();
-	$("#canvasUserIcon").hide();
-	userIconBase64 = icon_rul;
+	var type = $obj.find('i').attr("class");
+	var icon_url = $obj.find('i').css("mask").replace('url(','').replace(')','').replace(/\"/gi, "");
+    icon_url = icon_url.replace(/\s*50%\s+50%\s*\/\s*contain\s+no-repeat\s*/, '');
+    $("#client_image").empty();
+    $("#client_image").append($('<i>').addClass(type).attr('style','--svg:url(' + icon_url + ')'));
+	$("#client_image").removeClass().addClass("clientIcon_no_hover");
+	userIconBase64 = icon_url;
 	userUploadFlag = false;
 }
-function select_image(type){
-	var sequence = type.substring(4,type.length);
-	$("#client_image").find(".flash").remove();
-	$("#client_image").css("background-image","");
-	document.getElementById("client_image").style.display = "none";
-	document.getElementById("canvasUserIcon").style.display = "none";
-	document.getElementById('client_image').style.backgroundSize = "";
-	document.getElementById('client_image').className = "clientIcon_no_hover " + type;
-	if(verderIcon != "" && type == "type0" && !downsize_4m_support) {
-		var venderIconClassName = getVenderIconClassName(verderIcon.toLowerCase());
-		if(venderIconClassName != "") {
-			document.getElementById('client_image').className = "venderIcon_no_hover " + venderIconClassName;
-			document.getElementById('client_image').style.backgroundSize = "180%";
+function select_image(clientObj, useDefaultType=false){
+    let type = (useDefaultType) ? "type" + clientObj.defaultType : "type" + clientObj.type;
+	$("#client_image").empty();
+    $("#client_image").append($('<i>').addClass(type));
+    $("#client_image").removeClass().addClass("clientIcon_no_hover");
+	if(vendorIcon != "" && type == "type0" && !downsize_4m_support) {
+		var vendorIconClassName = getVendorIconClassName(vendorIcon.toLowerCase());
+		if(vendorIconClassName != "") {
+            $("#client_image").empty();
+            $("#client_image").append($('<i>').addClass("vendor-icon").addClass(vendorIconClassName));
+            $("#client_image").removeClass().addClass("vendorIcon_no_hover");
 		}
 	}
 
 	var userImageFlag = false;
 	if(!firstTimeOpenBlock) {
 		if(usericon_support) {
-			var clientMac = document.getElementById('macaddr_field').value.replace(/\:/g, "");
-			userIconBase64 = getUploadIcon(clientMac);
+			userIconBase64 = getUploadIcon(clientObj.mac.replace(/\:/g, ""));
 			userIconBase64_ori = userIconBase64;
 			if(userIconBase64 != "NoIcon") {
-				var img = document.createElement("img");
-				img.src = userIconBase64;
-				var canvas = document.getElementById("canvasUserIcon");
-				var ctx = canvas.getContext("2d");
-				ctx.clearRect(0,0,85,85);
-				document.getElementById("client_image").style.display = "none";
-				document.getElementById("canvasUserIcon").style.display = "";
-				ctx.drawImage(img, 0, 0, 85, 85);
+                $("#client_image").empty();
+                if(clientObj.isUserUplaodImg){
+                    $('#client_image').append($('<img>').addClass('clientIcon_no_hover').attr('src',userIconBase64));
+                }else{
+                    $('#client_image').append($('<i>').addClass(type).attr('style','--svg:url('+userIconBase64+');'));
+                }
 				userImageFlag = true;
 			}
 		}
@@ -1574,9 +1628,8 @@ function select_image(type){
 
 	if(!userImageFlag) {
 		userIconBase64 = "NoIcon";
-		document.getElementById("client_image").style.display = "";
 		if(type == "type36")
-			$("#client_image").append($("<div>").addClass("flash"));
+			$("#client_image").find("i").addClass("flash");
 	}
 }
 
@@ -1675,15 +1728,17 @@ function popupEditBlock(clientObj){
 
 		if(sw_mode != 4){
 			var radioIcon_css = "radioIcon";
-			if(clientObj.isGN != "" && clientObj.isGN != undefined)
+			if((clientObj.isGN != "" && clientObj.isGN != undefined) || (isSupport("mtlancfg") && clientObj.sdn_idx > 0))
 				radioIcon_css += " GN";
 			clientIconHtml += '<div class="' + radioIcon_css + ' radio_' + rssi_t +'" title="' + connectModeTip + '"></div>';
-			if(clientObj.isWL != 0) {
+			if(clientObj.isWL != 0 || (isSupport("mtlancfg") && clientObj.sdn_idx > 0)){
 				var bandClass = "band_txt";
 				if(navigator.userAgent.toUpperCase().match(/CHROME\/([\d.]+)/)){
 					bandClass = "band_txt_chrome";
 				}
-				clientIconHtml += '<div class="band_block"><span class="' + bandClass + '">' + isWL_map[clientObj.isWL]["text"] + '</span></div>';
+				let band_text = isWL_map[clientObj.isWL]["text"];
+				if(isSupport("mlo") && clientObj.mlo == "1") band_text = `MLO`;
+				clientIconHtml += `<div class="band_block"><span class="${bandClass}">${band_text}</span></div>`;
 			}
 			document.getElementById('client_interface').innerHTML = clientIconHtml;
 			document.getElementById('client_interface').title = connectModeTip;
@@ -1761,13 +1816,15 @@ function popupEditBlock(clientObj){
 		}
 	
 		var setRadioIPBinding = function (state, mode, mac) {
+			const manually_dhcp_maximum  = (isSupport("MaxRule_extend_limit") == 0) ? 64: isSupport("MaxRule_extend_limit");
+			const parentctrl_maximum = (isSupport("MaxRule_parentctrl") == 0) ? 16 : isSupport("MaxRule_parentctrl");
 			switch (mode) {
 				case "ipBinding" :
 					$('#radio_IPBinding_enable').iphoneSwitch(state,
 						function(){
 							if(dhcp_staticlist_orig.search(mac) == -1) {
-								if(dhcp_staticlist_num == 64) {
-									if(confirm("The max limit is 64 rule. Please check your client list on DHCP server.")) { /*untranslated*/
+								if(dhcp_staticlist_num >= manually_dhcp_maximum) {
+									if(confirm(stringSafeGet("<#Clientlist_IPMAC_Binding_max#>".replace("64", manually_dhcp_maximum)))) {
 										location.href = "Advanced_DHCP_Content.asp" ;
 									}
 									else {
@@ -1790,8 +1847,8 @@ function popupEditBlock(clientObj){
 					$('#radio_BlockInternet_enable').iphoneSwitch(state,
 						function(){
 							if(MULTIFILTER_MAC_orig.search(mac) == -1) {
-								if(MULTIFILTER_num == 16) {
-									if(confirm("The max limit is 16 clients. Please check your client list on time scheduling.")) { /*untranslated*/
+								if(MULTIFILTER_num >= parentctrl_maximum) {
+									if(confirm(stringSafeGet("<#Clientlist_block_internet_max#>".replace("16", parentctrl_maximum)))) {
 										location.href = "ParentalControl.asp" ;
 									}
 									else {
@@ -1814,8 +1871,8 @@ function popupEditBlock(clientObj){
 					$('#radio_TimeScheduling_enable').iphoneSwitch(state,
 						function(){
 							if(MULTIFILTER_MAC_orig.search(mac) == -1) {
-								if(MULTIFILTER_num == 16) {
-									if(confirm("The max limit is 16 clients. Please check your client list on time scheduling.")) { /*untranslated*/
+								if(MULTIFILTER_num >= parentctrl_maximum) {
+									if(confirm(stringSafeGet("<#Clientlist_block_internet_max#>".replace("16", parentctrl_maximum)))) {
 										location.href = "ParentalControl.asp" ;
 									}
 									else {
@@ -1868,9 +1925,9 @@ function popupEditBlock(clientObj){
 				break;
 		}
 
-		verderIcon = clientObj.vendor;
+		vendorIcon = clientObj.vendor;
 
-		select_image("type" + parseInt(clientObj.type));
+		select_image(clientObj);
 
 		//setting user upload icon attribute start.
 		//1.check rc_support
@@ -1890,20 +1947,22 @@ function popupEditBlock(clientObj){
 						if(file.type.search("image") != -1) {
 							var reader = new FileReader();
 							reader.onload = function (event) {
-								var img = document.createElement("img");
-								img.src = event.target.result;
-								var mimeType = img.src.split(",")[0].split(":")[1].split(";")[0];
-								var canvas = document.getElementById("canvasUserIcon");
-								var ctx = canvas.getContext("2d");
-								ctx.clearRect(0,0,85,85);
-								$("#client_image").find(".flash").remove();
-								document.getElementById("client_image").style.display = "none";
-								document.getElementById("canvasUserIcon").style.display = "";
-								setTimeout(function() {
-									ctx.drawImage(img, 0, 0, 85, 85);
-									var dataURL = canvas.toDataURL(mimeType);
-									userIconBase64 = dataURL;
-								}, 100); //for firefox FPS(Frames per Second) issue need delay
+                                var img = document.createElement("img");
+                                img.src = event.target.result;
+                                img.className="clientIcon_no_hover";
+                                var mimeType = img.src.split(",")[0].split(":")[1].split(";")[0];
+                                let canvas = document.createElement('canvas');
+                                canvas.width=85;
+                                canvas.height=85;
+                                var ctx = canvas.getContext("2d");
+                                ctx.clearRect(0,0,85,85);
+                                $("#client_image").empty();
+                                $("#client_image").append(img);
+                                setTimeout(function() {
+                                    ctx.drawImage(img, 0, 0, 85, 85);
+                                    var dataURL = canvas.toDataURL(mimeType);
+                                    userIconBase64 = dataURL;
+                                }, 100); //for firefox FPS(Frames per Second) issue need delay
 							};
 							reader.readAsDataURL(file);
 							userUploadFlag = true;
@@ -1957,18 +2016,29 @@ function popupEditBlock(clientObj){
 }
 
 function check_usb3(){
-	if(based_modelid == "DSL-AC68U" || based_modelid == "RT-AC3200" || based_modelid == "RT-AC87U" || based_modelid == "RT-AC68U" || based_modelid == "RT-AC68A" || based_modelid == "RT-AC56S" || based_modelid == "RT-AC56U" || based_modelid == "RT-AC55U" || based_modelid == "RT-AC55UHP" || based_modelid == "RT-N18U" || based_modelid == "RT-AC88U" || based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900" || based_modelid == "RT-AC3100" || based_modelid == "RT-AC5300" || based_modelid == "RP-AC68U" || based_modelid == "RT-AC58U" || based_modelid == "RT-AC82U" ||
-	based_modelid == "MAP-AC3000" || based_modelid == "RT-AC85P" || based_modelid == "RT-AC85U" || based_modelid == "RT-AC65U" || based_modelid == "4G-AC68U" || based_modelid == "BLUECAVE" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "BM68" || based_modelid == "XT8_V2" || based_modelid == "RT-AXE95Q" || based_modelid == "ET8PRO" || based_modelid == "ET8_V2" || based_modelid == "RT-AX56_XD4" || based_modelid == "XD4PRO" || based_modelid == "CT-AX56_XD4" || based_modelid == "RT-AX58U" || based_modelid == "RT-AX58U_V2" || based_modelid == "BR63" || based_modelid == "RT-AX3000N" || based_modelid == "TUF-AX3000" || based_modelid == "TUF-AX3000_V2" || based_modelid == "TUF-AX3000_V2" || based_modelid == "TUF-AX5400" || based_modelid == "TUF-AX5400_V2" || based_modelid == "RT-AX5400" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX82U_V2" || based_modelid == "RT-AX56U" || based_modelid == "RT-ACRH26" || based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" || based_modelid == "PL-AX56_XP4" || based_modelid == "GT-AX6000" || based_modelid == "RT-AXE7800" || based_modelid == "GT10" || based_modelid == "GT-AXE16000" || based_modelid == "XC5" || based_modelid == "GT-AX11000_PRO"){
-		document.getElementById('usb_text_1').innerHTML = "USB 3.0";
-	}
-	else if(based_modelid == "RT-AC88Q" || based_modelid == "RT-AX89U" || based_modelid == "RT-AD7200" || based_modelid == "RT-N65U" || based_modelid == "GT-AC5300" || based_modelid == "RT-AX88U" || based_modelid == "GT-AX11000" || based_modelid == "GT-AC9600" || based_modelid == "GT-AXY16000" || based_modelid == "GT-AXE11000"){
-		document.getElementById('usb_text_1').innerHTML = "USB 3.0";
-		document.getElementById('usb_text_2').innerHTML = "USB 3.0";
-	}
-	else if(based_modelid == "BRT-AC828") {
+	if(based_modelid == "BRT-AC828") {
 		document.getElementById('usb_text_1').innerHTML = "USB 3.0";
 		document.getElementById('usb_text_2').innerHTML = "USB 3.0";
 		document.getElementById('usb_text_3').innerHTML = "M.2 SSD";
+	}
+	else{
+		const rate_map_USB = [
+			{value:"480",text:"USB 2.0"},
+			{value:"5000",text:"USB 3.0"},
+			{value:"10000",text:"USB 3.2"}
+		];
+		const get_usb_phy_port = (httpApi.hookGet("get_usb_phy_port") == undefined) ? [] : httpApi.hookGet("get_usb_phy_port");
+		$.each(get_usb_phy_port, function(index, usb_info){
+			const usb_text = rate_map_USB.find(function(item){
+				return (item.value == usb_info.max_rate);
+			});
+			if(usb_text != undefined){
+				const usb_idx = usb_info.label_name.substring(1,2);
+				if($(`#usb_text_${usb_idx}`).length > 0){
+					$(`#usb_text_${usb_idx}`).html(usb_text.text);
+				}
+			}
+		});
 	}
 }
 
@@ -1977,15 +2047,15 @@ function addToBlockMacList(macAddr){
 		if(timeSchedulingFlag || blockInternetFlag) {
 			if(document.list_form.MULTIFILTER_MAC.value == "") {
 				if(timeSchedulingFlag)
-					document.list_form.MULTIFILTER_ENABLE.value += "1";
+					document.list_form.MULTIFILTER_ENABLE.value = "1";
 				else if(blockInternetFlag)
-					document.list_form.MULTIFILTER_ENABLE.value += "2";
-				document.list_form.MULTIFILTER_MAC.value += macAddr;
-				document.list_form.MULTIFILTER_DEVICENAME.value += document.getElementById("client_name").value.trim();
+					document.list_form.MULTIFILTER_ENABLE.value = "2";
+				document.list_form.MULTIFILTER_MAC.value = macAddr;
+				document.list_form.MULTIFILTER_DEVICENAME.value = document.getElementById("client_name").value.trim();
 				if(isSupport("PC_SCHED_V3"))
-					document.list_form.MULTIFILTER_MACFILTER_DAYTIME_V2.value += "W03E21000700<W04122000800";
+					document.list_form.MULTIFILTER_MACFILTER_DAYTIME_V2.value = "W03E21000700<W04122000800";
 				else
-					document.list_form.MULTIFILTER_MACFILTER_DAYTIME.value += "<";
+					document.list_form.MULTIFILTER_MACFILTER_DAYTIME.value = "<";
 			}
 			else {
 				document.list_form.MULTIFILTER_ENABLE.value += ">";
@@ -2021,7 +2091,7 @@ function addToBlockMacList(macAddr){
 
 function showClientIconList() {
 	var confirmFlag = true;
-	confirmFlag = confirm("The client icon over upload limting, please remove at least one client icon then try to upload again.");
+	confirmFlag = confirm(stringSafeGet("<#Client_Icon_overload#>"));
 	if(confirmFlag) {
 		edit_cancel();
 		$("#edit_usericon_block").fadeIn(10);
@@ -2131,13 +2201,15 @@ function previewImage($obj) {
 			fileReader.onload = function (fileReader) {
 				var img = document.createElement("img");
 				img.src = fileReader.target.result;
+                img.className="clientIcon_no_hover";
 				var mimeType = img.src.split(",")[0].split(":")[1].split(";")[0];
-				var canvas = document.getElementById("canvasUserIcon");
+                let canvas = document.createElement('canvas');
+                canvas.width=85;
+                canvas.height=85;
 				var ctx = canvas.getContext("2d");
 				ctx.clearRect(0,0,85,85);
-				$("#client_image").find(".flash").remove();
-				document.getElementById("client_image").style.display = "none";
-				document.getElementById("canvasUserIcon").style.display = "";
+				$("#client_image").empty();
+                $("#client_image").append(img);
 				setTimeout(function() {
 					ctx.drawImage(img, 0, 0, 85, 85);
 					var dataURL = canvas.toDataURL(mimeType);
@@ -2165,9 +2237,8 @@ function updateClientsCount() {
 	setTimeout("updateClientsCount();", 5000);
 }
 function setDefaultIcon() {
-	$("#client_image").css("background-image","");
 	var mac = document.getElementById("macaddr_field").value;
-	select_image("type" + parseInt(clientList[mac].defaultType));
+	select_image(clientList[mac], true);
 }
 function closeClientDetailView() {
 	edit_cancel();
@@ -2187,8 +2258,11 @@ function check_wireless(){
 			wl1_radio = '0';
 		}
 
-		if(based_modelid === 'GT-AXE16000'){
+		if(based_modelid === 'GT-AXE16000' || based_modelid === 'GT-BE98' || based_modelid == "BQ16"){
 			temp = (wl1_radio == "1") ? "wl1_1_icon_on" : "wl1_1_icon_off";
+		}
+		else if(based_modelid == "GT-BE98_PRO" || based_modelid == "BQ16_PRO"){
+			temp = (wl1_radio == "1") ? "wl1_icon_on" : "wl1_icon_off";
 		}
 		else{
 			temp = (wl1_radio == "1") ? "wl1_icon_on" : "wl1_icon_off";
@@ -2212,12 +2286,21 @@ function check_wireless(){
 			wl2_radio = '0';
 		}
 
-		if(based_modelid === 'GT-AXE16000'){
+		if(based_modelid === 'GT-AXE16000' || based_modelid === 'GT-BE98' || based_modelid == "BQ16"){
 			temp = (wl2_radio == "1") ? "wl2_icon_on" : "wl2_icon_off";
 			$("#wl2_icon").show();
 			$("#wl2_icon").addClass(temp);
 
 			temp = (wl3_radio == "1") ? "wl6_icon_on" : "wl6_icon_off";
+			$("#wl3_icon").show();
+			$("#wl3_icon").addClass(temp);
+		}
+		else if(based_modelid == "GT-BE98_PRO" ||  based_modelid == "BQ16_PRO"){
+			temp = (wl2_radio == "1") ? "wl6_1_icon_on" : "wl6_1_icon_off";
+			$("#wl2_icon").show();
+			$("#wl2_icon").addClass(temp);
+
+			temp = (wl3_radio == "1") ? "wl6_2_icon_on" : "wl6_2_icon_on";
 			$("#wl3_icon").show();
 			$("#wl3_icon").addClass(temp);
 		}
@@ -2275,6 +2358,33 @@ function close_phone_as_modem_hint(){
 	$("#phone_as_modem_div").hide();
 	cookie.unset("show_phone_as_modem_hints");
 }
+
+function copyDdnsName(e) {
+	var ddnsName = decodeURIComponent('<% nvram_char_to_ascii("", "ddns_hostname_x"); %>');
+	if (window.isSecureContext && navigator.clipboard) {
+		navigator.clipboard.writeText(ddnsName);
+	} else {
+		const textArea = document.createElement("textarea");
+		textArea.value = ddnsName;
+		document.body.appendChild(textArea);
+		textArea.select();
+		try {
+			document.execCommand('copy')
+		} catch (err) {
+			console.error('Unable to copy to clipboard', err)
+		}
+		document.body.removeChild(textArea)
+	}
+    let span = $("<span>").addClass("tooltiptext").html($(e).data('title'));
+    $(e).parent().append(span);
+    span.show().fadeOut(1500, function() { $(this).remove(); });
+}
+
+function showClientlistModal(){
+    const clientlistModal = new ClientlistModel();
+    clientlistModal.show();
+}
+
 </script>
 </head>
 
@@ -2455,7 +2565,6 @@ function close_phone_as_modem_hint(){
 			<td style="text-align:center;vertical-align:top;width:85px;">
 				<div id="divDropClientImage" class="client_preview_icon" title="Change client icon" onclick="show_custom_image();">
 					<div id="client_image" style="width:85px;height:85px;margin:0 auto;"></div>
-					<canvas id="canvasUserIcon" class="client_canvasUserIcon" width="85px" height="85px"></canvas>
 				</div>
 				<div id="changeClientIconControl" class="changeClientIcon">
 					<span title="Change to default client icon" class="IE8HACK" onclick="setDefaultIcon();"><#CTL_Default#></span>
@@ -2626,8 +2735,11 @@ function close_phone_as_modem_hint(){
 						<div id="ddnsHostName_div" style="margin-top:5px;word-break:break-all;word-wrap:break-word;width:180px;">
 							<span style="font-size:12px;font-family: Verdana, Arial, Helvetica, sans-serif;">DDNS:</span>
 							<strong id="ddnsHostName" class="index_status" style="font-size:14px;"><#QIS_detectWAN_desc2#></strong>
-							<span id="ddns_fail_hint" class="notificationoff" onClick="show_ddns_fail_hint();" onMouseOut="nd();"></span>
-							<span><img id="le_icon" src="images/New_ui/networkmap/LE_badge_color.svg" style="width:25px; height:25px; display:none;"></span>
+							<div class="icon-group-center">
+                                <div id="copyDdns" class="tooltip"><a onClick="copyDdnsName(this)" data-toggle="tooltip" data-title="Copied!"><i class="icon-clone"></i></a></div>
+                                <span id="ddns_fail_hint" class="notificationoff" onClick="show_ddns_fail_hint();" onMouseOut="nd();"></span>
+                                <span><img id="le_icon" src="images/New_ui/networkmap/LE_badge_color.svg" style="width:25px; height:25px;"></span>
+                            </div>
 						</div>
 						<div id="wlc_band_div" style="margin-top:5px;display:none">
 							<span style="font-size:14px;font-family: Verdana, Arial, Helvetica, sans-serif;"><#Interface#>:</span>
@@ -2711,7 +2823,7 @@ function close_phone_as_modem_hint(){
 				</tr>
 				<tr>
 					<td id="clients_td" width="150" bgcolor="#444f53" align="center" valign="top" class="NM_radius" style="padding-bottom:15px;">
-						<div class="block_all_icon"><div>Blocked</div></div>
+						<div class="block_all_icon"><div><#Blocked#></div></div>
 						<script type="text/javascript">
 							$(".block_all_icon").unbind("click").click(function(e){
 								e = e || event;
@@ -2726,7 +2838,7 @@ function close_phone_as_modem_hint(){
 							<div class="clients" id="clientNumber" style="cursor:pointer;"></div>
 						</div>
 
-						<input type="button" class="button_gen" value="<#View_List#>" style="margin-top:15px;" onClick="pop_clientlist_listview(true)">
+						<input type="button" class="button_gen" value="<#View_List#>" style="margin-top:15px;" onClick="showClientlistModal()">
 
 						<div id="networkmap_switch" style="display:none">
 							<div align="center" class="left" style="width:94px; cursor:pointer;margin-top:10px" id="networkmap_enable_t"></div>

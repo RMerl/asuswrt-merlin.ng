@@ -1,0 +1,12 @@
+if TARGET_VINCO
+
+config SYS_BOARD
+	default "vinco"
+
+config SYS_VENDOR
+	default "l+g"
+
+config SYS_CONFIG_NAME
+	default "vinco"
+
+endif

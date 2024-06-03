@@ -1,0 +1,216 @@
+Overview
+--------
+The LS2080A Development System (QDS) is a high-performance computing,
+evaluation, and development platform that supports the QorIQ LS2080A
+and LS2088A Layerscape Architecture processor. The LS2080AQDS provides
+validation and SW development platform for the Freescale LS2080A, LS2088A
+processor series, with a complete debugging environment.
+
+LS2080A, LS2088A SoC Overview
+--------------------
+Please refer arch/arm/cpu/armv8/fsl-layerscape/doc/README.soc for LS2080A,
+LS2088A SoC overview.
+
+ LS2080AQDS board Overview
+ -----------------------
+ - SERDES Connections, 16 lanes supporting:
+      - PCI Express - 3.0
+      - SGMII, SGMII 2.5
+      - QSGMII
+      - SATA 3.0
+      - XAUI
+      - XFI
+ - DDR Controller
+     - Two ports of 72-bits (8-bits ECC) DDR4. Each port supports four
+       chip-selects and two DIMM connectors. Support is up to 2133MT/s.
+     - One port of 40-bits (8-bits ECC) DDR4 which supports four chip-selects
+       and two DIMM connectors. Support is up to 1600MT/s.
+ -IFC/Local Bus
+    - IFC rev. 2.0 implementation supporting Little Endian connection scheme.
+    - One in-socket 128 MB NOR flash 16-bit data bus
+    - One 512 MB NAND flash with ECC support
+    - IFC Test Port
+    - PromJet Port
+    - FPGA connection
+ - USB 3.0
+    - Two high speed USB 3.0 ports
+    - First USB 3.0 port configured as Host with Type-A connector
+    - Second USB 3.0 port configured as OTG with micro-AB connector
+ - SDHC: PCIe x1 Right Angle connector for supporting following cards
+    - 1/4-/8-bit SD/MMC Legacy CARD supporting 3.3V devices only
+    - 1-/4-/8-bit SD/MMC Card supporting 1.8V devices only
+    - 4-bit eMMC Card Rev 4.4 (1.8V only)
+    - 8-bit eMMC Card Rev 4.5 (1.8V only)
+    - SD Card Rev 2.0 and Rev 3.0
+ - DSPI: 3 high-speed flash Memory for storage
+    - 16 MB high-speed flash Memory for boot code and storage (up to 108MHz)
+    - 8 MB high-speed flash Memory (up to 104 MHz)
+    - 512 MB low-speed flash Memory (up to 40 MHz)
+ - QSPI: via NAND/QSPI Card
+ - 4 I2C controllers
+ - Two SATA onboard connectors
+ - UART
+   - Two 4-pin (HW control) or four 2-pin (SW control) serial ports at up to 115.2 Kbit/s
+   - Two DB9 D-Type connectors supporting one Serial port each
+ - ARM JTAG support
+
+Memory map from core's view
+----------------------------
+0x00_0000_0000 .. 0x00_000F_FFFF	Boot Rom
+0x00_0100_0000 .. 0x00_0FFF_FFFF	CCSR
+0x00_1800_0000 .. 0x00_181F_FFFF	OCRAM
+0x00_3000_0000 .. 0x00_3FFF_FFFF	IFC region #1
+0x00_8000_0000 .. 0x00_FFFF_FFFF	DDR region #1
+0x05_1000_0000 .. 0x05_FFFF_FFFF	IFC region #2
+0x80_8000_0000 .. 0xFF_FFFF_FFFF	DDR region #2
+
+Other addresses are either reserved, or not used directly by U-Boot.
+This list should be updated when more addresses are used.
+
+IFC region map from core's view
+-------------------------------
+During boot i.e. IFC Region #1:-
+  0x30000000 - 0x37ffffff : 128MB : NOR flash
+  0x38000000 - 0x3BFFFFFF : 64MB  : Promjet
+  0x3C000000 - 0x40000000 : 64MB  : FPGA etc
+
+After relocate to DDR i.e. IFC Region #2:-
+  0x5_1000_0000..0x5_1fff_ffff	Memory Hole
+  0x5_2000_0000..0x5_3fff_ffff	IFC CSx (FPGA, NAND and others 512MB)
+  0x5_4000_0000..0x5_7fff_ffff	ASIC or others 1GB
+  0x5_8000_0000..0x5_bfff_ffff	IFC CS0 1GB (NOR/Promjet)
+  0x5_C000_0000..0x5_ffff_ffff	IFC CS1 1GB (NOR/Promjet)
+
+Booting Options
+---------------
+a) Promjet Boot
+b) NOR boot
+c) NAND boot
+d) SD boot
+e) QSPI boot
+
+Memory map for NOR boot
+-------------------------
+Image				Flash Offset
+RCW+PBI				0x00000000
+Boot firmware (U-Boot)		0x00100000
+Boot firmware Environment	0x00300000
+PPA firmware			0x00400000
+Secure Headers			0x00600000
+DPAA2 MC			0x00A00000
+DPAA2 DPL			0x00D00000
+DPAA2 DPC			0x00E00000
+Kernel.itb			0x01000000
+
+Memory map for SD boot
+-------------------------
+Image				Flash Offset	SD Card
+						Start Block No.
+RCW+PBI				0x00000000	0x00008
+Boot firmware (U-Boot)		0x00100000	0x00800
+Boot firmware Environment	0x00300000	0x01800
+PPA firmware			0x00400000	0x02000
+DPAA2 MC			0x00A00000	0x05000
+DPAA2 DPL			0x00D00000	0x06800
+DPAA2 DPC			0x00E00000	0x07000
+Kernel.itb			0x01000000	0x08000
+
+Environment Variables
+---------------------
+- mcboottimeout: MC boot timeout in milliseconds. If this variable is not defined
+  the value CONFIG_SYS_LS_MC_BOOT_TIMEOUT_MS will be assumed.
+
+- mcmemsize: MC DRAM block size. If this variable is not defined
+  the value CONFIG_SYS_LS_MC_DRAM_BLOCK_MIN_SIZE will be assumed.
+
+Booting Linux flavors which do not support 48-bit VA (< Linux 3.18)
+-------------------------------------------------------------------
+One needs to use appropriate bootargs to boot Linux flavors which do
+not support 48-bit VA (for e.g. < Linux 3.18) by appending mem=2048M, as shown
+below:
+
+=> setenv bootargs 'console=ttyS1,115200 root=/dev/ram
+   earlycon=uart8250,mmio,0x21c0600,115200 default_hugepagesz=2m hugepagesz=2m
+   hugepages=16 mem=2048M'
+
+
+X-QSGMII-16PORT riser card
+----------------------------
+The X-QSGMII-16PORT is a 4xQSGMII/8xSGMII riser card with eighth SerDes
+interfaces implemented in PCIe form factor board.
+It supports following:
+ - Card can operate with up to 4 QSGMII lane simultaneously
+ - Card can operate with up to 8 SGMII lane simultaneously
+
+Supported card configuration
+	- CSEL  : ON ON ON ON
+	- MSEL1 : ON ON ON ON OFF OFF OFF OFF
+	- MSEL2 : OFF OFF OFF OFF ON ON ON ON
+
+To enable this card: modify hwconfig to add "xqsgmii" variable.
+
+Supported PHY addresses during SGMII:
+#define XQSGMII_CARD_PHY1_PORT0_ADDR 0x0
+#define XQSGMII_CARD_PHY1_PORT2_ADDR 0x2
+#define XQSGMII_CARD_PHY2_PORT0_ADDR 0x4
+#define XQSGMII_CARD_PHY2_PORT2_ADDR 0x6
+#define XQSGMII_CARD_PHY3_PORT0_ADDR 0x8
+#define XQSGMII_CARD_PHY3_PORT2_ADDR 0xa
+#define XQSGMII_CARD_PHY4_PORT0_ADDR 0xc
+#define XQSGMII_CARD_PHY4_PORT2_ADDR 0xe
+
+Mapping DPMACx to PHY during SGMII
+DPMAC1 -> PHY1-P0
+DPMAC2 -> PHY2-P0
+DPMAC3 -> PHY3-P0
+DPMAC4 -> PHY4-P0
+DPMAC5 -> PHY3-P2
+DPMAC6 -> PHY1-P2
+DPMAC7 -> PHY4-P1
+DPMAC8 -> PHY2-P2
+DPMAC9 -> PHY1-P0
+DPMAC10 -> PHY2-P0
+DPMAC11 -> PHY3-P0
+DPMAC12 -> PHY4-P0
+DPMAC13 -> PHY3-P2
+DPMAC14 -> PHY1-P2
+DPMAC15 -> PHY4-P1
+DPMAC16 -> PHY2-P2
+
+
+Supported PHY address during QSGMII
+#define XQSGMII_CARD_PHY1_PORT0_ADDR 0x0
+#define XQSGMII_CARD_PHY1_PORT1_ADDR 0x1
+#define XQSGMII_CARD_PHY1_PORT2_ADDR 0x2
+#define XQSGMII_CARD_PHY1_PORT3_ADDR 0x3
+#define XQSGMII_CARD_PHY2_PORT0_ADDR 0x4
+#define XQSGMII_CARD_PHY2_PORT1_ADDR 0x5
+#define XQSGMII_CARD_PHY2_PORT2_ADDR 0x6
+#define XQSGMII_CARD_PHY2_PORT3_ADDR 0x7
+#define XQSGMII_CARD_PHY3_PORT0_ADDR 0x8
+#define XQSGMII_CARD_PHY3_PORT1_ADDR 0x9
+#define XQSGMII_CARD_PHY3_PORT2_ADDR 0xa
+#define XQSGMII_CARD_PHY3_PORT3_ADDR 0xb
+#define XQSGMII_CARD_PHY4_PORT0_ADDR 0xc
+#define XQSGMII_CARD_PHY4_PORT1_ADDR 0xd
+#define XQSGMII_CARD_PHY4_PORT2_ADDR 0xe
+#define XQSGMII_CARD_PHY4_PORT3_ADDR 0xf
+
+Mapping DPMACx to PHY during QSGMII
+DPMAC1 -> PHY1-P3
+DPMAC2 -> PHY1-P2
+DPMAC3 -> PHY1-P1
+DPMAC4 -> PHY1-P0
+DPMAC5 -> PHY2-P3
+DPMAC6 -> PHY2-P2
+DPMAC7 -> PHY2-P1
+DPMAC8 -> PHY2-P0
+DPMAC9 -> PHY3-P0
+DPMAC10 -> PHY3-P1
+DPMAC11 -> PHY3-P2
+DPMAC12 -> PHY3-P3
+DPMAC13 -> PHY4-P0
+DPMAC14 -> PHY4-P1
+DPMAC15 -> PHY4-P2
+DPMAC16 -> PHY4-P3
+

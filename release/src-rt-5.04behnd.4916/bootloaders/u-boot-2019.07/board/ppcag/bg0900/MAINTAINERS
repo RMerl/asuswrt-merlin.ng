@@ -1,0 +1,6 @@
+BG0900 BOARD
+M:	Marek Vasut <marex@denx.de>
+S:	Maintained
+F:	board/ppcag/bg0900/
+F:	include/configs/bg0900.h
+F:	configs/bg0900_defconfig

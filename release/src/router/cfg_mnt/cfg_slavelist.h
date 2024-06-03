@@ -13,7 +13,7 @@
 #define ALIAS_LEN			33
 #define IP_LEN				4
 #define MAC_LEN				6
-#define FWVER_LEN			33
+#define FWVER_LEN			65
 #define MODEL_NAME_LEN		33
 #define TERRITORY_CODE_LEN	33
 #define RE_LIST_JSON_FILE	"/tmp/relist.json"
@@ -61,6 +61,11 @@ typedef struct _CM_CLIENT_TABLE {
 	unsigned char ap5g1_fh[CFG_CLIENT_NUM][MAC_LEN];
 	unsigned char ap6g_fh[CFG_CLIENT_NUM][MAC_LEN];
 	unsigned char ap6g1_fh[CFG_CLIENT_NUM][MAC_LEN];
+	unsigned char ap2g_iot_fh[CFG_CLIENT_NUM][MAC_LEN];
+	unsigned char ap5g_iot_fh[CFG_CLIENT_NUM][MAC_LEN];
+	unsigned char ap5g1_iot_fh[CFG_CLIENT_NUM][MAC_LEN];
+	unsigned char ap6g_iot_fh[CFG_CLIENT_NUM][MAC_LEN];
+	unsigned char ap6g1_iot_fh[CFG_CLIENT_NUM][MAC_LEN];
 	char ap2g_ssid[CFG_CLIENT_NUM][SSID_LEN];
 	char ap5g_ssid[CFG_CLIENT_NUM][SSID_LEN];
 	char ap5g1_ssid[CFG_CLIENT_NUM][SSID_LEN];
@@ -92,6 +97,7 @@ typedef struct _CM_CLIENT_TABLE {
 	unsigned int joinTime[CFG_CLIENT_NUM];
 #endif
 	int cost[CFG_CLIENT_NUM];
+	int dwb_band[CFG_CLIENT_NUM];
 } CM_CLIENT_TABLE, *P_CM_CLIENT_TABLE;
 
 extern int cm_checkReListExist(char *Mac);
@@ -126,6 +132,10 @@ extern void cm_reorganizeReList();
 #ifdef RTCONFIG_AMAS_CENTRAL_CONTROL
 extern void cm_updateReObList(char *reMac, int action, int commit);
 #endif
+extern void cm_updateReInfo(CM_CLIENT_TABLE *clientTbl, char *reMac);
+extern int cm_deleteReInfo(char *reMac);
+extern void cm_updateReInfoToClientTbl(CM_CLIENT_TABLE *clientTbl);
+extern void cm_sortReLevel(json_object *reListObj, json_object *sortedReListObj);
 
 #endif /* __CFG_SLAVELIST_H__ */
 /* End of cfg_slavelist.h */

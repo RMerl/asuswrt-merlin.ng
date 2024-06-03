@@ -14,6 +14,7 @@ modem_type=`nvram get ${prefix}act_type`
 act_node1="${prefix}act_int"
 act_node2="${prefix}act_bulk"
 modem_vid=`nvram get ${prefix}act_vid`
+modem_model=`nvram get modem_model`
 
 atcmd=`nvram get modem_atcmd`
 
@@ -24,8 +25,7 @@ else
 	at_lock="flock -x /tmp/at_cmd_lock"
 fi
 
-
-if [ "$modem_type" == "" -o "$modem_type" == "ecm" -o "$modem_type" == "rndis" -o "$modem_type" == "asix" -o "$modem_type" == "ncm" ]; then
+if [ "$modem_type" == "" -o "$modem_type" == "ecm" -o "$modem_type" == "rndis" -o "$modem_type" == "asix" -o "$modem_type" == "ncm" ] && [ "$modem_model" == "2" -a "$modem_type" != "ncm" ]; then
 	exit 0
 fi
 

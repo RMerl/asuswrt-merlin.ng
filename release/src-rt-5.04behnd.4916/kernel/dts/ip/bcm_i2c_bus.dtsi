@@ -1,0 +1,9 @@
+compatible = "brcm,bcm63000-i2c";
+#address-cells = <1>;
+#size-cells = <0>;
+reg = <I2C_OFFSET I2C_SIZE>;
+status = "disabled";
+
+/* to let add multiple i2c without errors undefine i2c definitions */
+#undef I2C_OFFSET
+#undef I2C_SIZE

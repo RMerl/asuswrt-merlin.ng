@@ -1,0 +1,82 @@
+#!/usr/bin/env perl
+
+use FindBin qw[$Bin];
+use lib "$Bin/../PerlLib";
+use YAML;
+use Digest::SHA qw[sha256 sha256_hex];
+use Digest::CRC qw(crc32);
+use Getopt::Long;
+use File::Basename;
+use bytes;
+my $fdtget = "$Bin/../local_install/fdtget";
+use strict;
+use warnings;
+
+my $recurse;
+my $outdir = "out";
+
+my $usage = "$0 [--recursive] [--outdir dir] file.pkgtb";
+GetOptions( "outdir=s", \$outdir, "recursive", \$recurse ) or die($usage);
+my $pkgtb = shift @ARGV or die($usage);
+
+unpack_image( $pkgtb, $outdir, $recurse );
+exit;
+
+sub unpack_image {
+    my $dtb     = shift;
+    my $outdir  = shift;
+    my $recurse = shift;
+    open( F, "<$dtb" ) or die("cant open $dtb");
+    my $img;
+    {
+        local $/;
+        $img = <F>;
+    }
+
+    close(F);
+    my @a = unpack( "NN", $img );
+    if ( $a[0] != 0xd00dfeed ) {
+        print "$dtb is not a dtb\n";
+        return;
+    }
+    my $len = $a[1];
+    $len = ( $len + 3 ) & ~3;
+    mkdir($outdir);
+    if ( !-d $outdir ) {
+        die("cant create $outdir");
+    }
+    open( D, "$fdtget -p $dtb /security data 2>/dev/null|" );
+    my @props = <D>;
+    close(D);
+    if (@props) {
+        system("$fdtget -t r $dtb /security data > $outdir/security_node.bin");
+    }
+    open( D, "$fdtget -l $dtb /images 2>/dev/null|" ) or die("$!");
+    my @images = <D>;
+    close(D);
+    foreach my $image (@images) {
+        chomp($image);
+        print "$image\n";
+        my $soff = undef;
+        my $dataoffset =
+          `$fdtget -t u $dtb /images/$image data-offset 2>/dev/null`;
+        my $dataposition =
+          `$fdtget -t u $dtb /images/$image data-position 2>/dev/null`;
+        my $datasize = `$fdtget -t u $dtb /images/$image data-size`;
+        if ($dataposition) {
+            $soff = $dataposition;
+        }
+        else {
+            $soff = $len + $dataoffset;
+        }
+        my $fnam = "$outdir/file_$image.bin";
+        open( O, ">$fnam" );
+        print O substr( $img, $soff, $datasize );
+        close(O);
+        print "created $fnam of size $datasize\n";
+        if ($recurse) {
+            unpack_image( $fnam, "$outdir/$image", $recurse );
+        }
+    }
+
+}

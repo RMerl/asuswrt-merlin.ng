@@ -1,0 +1,32 @@
+comment "ULPI drivers"
+
+choice
+	prompt "ULPI Viewport type"
+	optional
+	help
+	  Select ULPI viewport (SoC-side interface to ULPI) implementation
+	  appropriate for the device if you want to communicate with
+	  UTMI (USB PHY) via ULPI interface.
+
+config USB_ULPI_VIEWPORT
+	bool "Generic ULPI Viewport"
+	help
+	  Support generic ULPI Viewport implementation that is used on
+	  some Tegra and Snapdragon devices.
+
+config USB_ULPI_VIEWPORT_OMAP
+	bool "OMAP ULPI Viewport"
+	help
+	  Support ULPI Viewport implementation that is used on OMAP devices.
+
+endchoice
+
+config USB_ULPI
+	bool "ULPI support"
+	depends on (USB_ULPI_VIEWPORT || USB_ULPI_VIEWPORT_OMAP)
+	help
+	  Select to commnicate with USB PHY via ULPI interface.
+	  ULPI is wrapper on UTMI+ core that is used as
+	  PHY Transreceiver for USB controllers.
+
+	  This driver uses ULPI viewports that are specific for each SoC.

@@ -774,6 +774,13 @@ function initial(){
 			add_options_x2(document.form.wl_ofdma, desc, value, _ori_value);
 		}
 	}
+
+	if(Bcmwifi_support){
+		$("#wl_bss_maxassoc_field").show();
+	}
+	else{
+		$("#wl_bss_maxassoc_field").hide();
+	}
 }
 
 function generate_country_selection(){
@@ -1014,6 +1021,13 @@ function validForm(){
 		else if(based_modelid == "RT-AC66U" || based_modelid == "RT-N66U" || based_modelid == "RT-N18U"){
 			FormActions("start_apply.htm", "apply", "set_wltxpower;restart_wireless", "15");
 		}	
+	}
+
+	if(Bcmwifi_support){
+		if(!validator.range(document.form.wl_bss_maxassoc, 1, 128)){
+			document.form.wl_bss_maxassoc.focus();
+			return false;
+		}
 	}
 
 	if(userRSSI_support){
@@ -1421,18 +1435,26 @@ function check_nodes_support_wireless_scheduler() {
 			  			</td>
 					</tr>
 
+					<tr id="wl_bss_maxassoc_field" style="display:none;">
+						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(3, 35);"><#WLANConfig11b_x_client_limit_max#></a></th>
+						<td>
+							<input type="text" maxlength="3" name="wl_bss_maxassoc" id="wl_bss_maxassoc" class="input_3_table" value="<% nvram_get("wl_bss_maxassoc"); %>" onKeyPress="return validator.isNumber(this,event)" autocorrect="off" autocapitalize="off">
+						</td>
+					</tr>
+
 					<tr id="rssiTr" class="rept ew">
 		  			<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(3, 31);"><#Roaming_assistant#></a></th>
 						<td>
-							<select id="wl_user_rssi_option" class="input_option" onchange="changeRSSI(this.value);">
-								<option value="1"><#WLANConfig11b_WirelessCtrl_button1name#></option>
-								<option value="0" <% nvram_match("wl_user_rssi", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
-							</select>
-							<span id="rssiDbm" style="color:#FFF">
-							<#Roaming_assistant_depart#>
-			  				<input type="text" maxlength="3" name="wl_user_rssi" class="input_3_table" value="<% nvram_get("wl_user_rssi"); %>" autocorrect="off" autocapitalize="off">
-								dBm
-							</span>
+							<div style="display:table-cell;vertical-align:middle">
+								<select id="wl_user_rssi_option" class="input_option" onchange="changeRSSI(this.value);">
+									<option value="1"><#WLANConfig11b_WirelessCtrl_button1name#></option>
+									<option value="0" <% nvram_match("wl_user_rssi", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
+								</select><br>
+								<span id="rssiDbm" style="color:#FFF">
+								<#Roaming_assistant_depart#>
+				  				<input type="text" maxlength="3" name="wl_user_rssi" class="input_3_table" value="<% nvram_get("wl_user_rssi"); %>" autocorrect="off" autocapitalize="off"> dBm
+								</span>
+							</div>
 						</td>
 					</tr>
 

@@ -1,0 +1,291 @@
+#include "6756.dtsi"
+#include "../bcm_voice.dtsi"
+
+/ {
+	memory_controller {
+		memcfg = <(
+			/* CUSTOM speed 1026MHz */
+			BP_DDR_SPEED_CUSTOM_1      | \
+			BP_DDR_TOTAL_SIZE_512MB    | \
+			BP_DDR_DEVICE_WIDTH_16     | \
+			BP_DDR_TOTAL_WIDTH_16BIT   | \
+			BP_DDR_6756_DEFAULT          | \
+			BP_DDR_CONFIG_DEBUG)>;
+	};
+
+	buttons {
+		compatible = "brcm,buttons";
+		ses_button {
+			ext_irq = <&bca_extintr 4 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			release {
+				ses_short_period = <0>;
+				ses_long_period = <3>;
+			};
+		};
+	};
+
+	switch_sf2_ext:0 {
+	};
+
+};
+
+
+&sysport {
+    ethsw_ext = <&switch_sf2_ext>;
+};
+
+&i2c0 {
+	pinctrl-names="default";
+	pinctrl-0 = <&i2c_sda_pin_16 &i2c_scl_pin_17>;
+	status = "okay";
+	
+	#address-cells = <1>;
+	#size-cells = <0>;
+	codec_playback:codec_palyback@18{
+		compatible = "ti,tlv320dac3203";
+		reg = <0x18>;
+	};
+	codec_capture:codec_capture@19{
+		compatible = "ti,tlv320adc3101";
+		reg = <0x19>;
+	};
+};
+
+&mdio_sf2 {
+   /* Port PHY mapping:
+        port_imp -8#0- port_gphy <---> phy_gphy
+                  ##5- port_sgmii0 <-> phy_serdes0 <--> port_ext_imp -8#0- port_ext_gphy0 <--> phy_ext_gphy0
+                                                                      # 1- port_ext_gphy1 <--> phy_ext_gphy1
+                                                                      # 2- port_ext_gphy2 <--> phy_ext_gphy2
+                                                                      ##3- port_ext_gphy3 <--> phy_ext_gphy3
+     */
+	phy_gphy {
+		status = "okay";
+	};
+
+	phy_m2m:phy_m2m {
+		compatible = "brcm,bcaphy";
+		phy-type = "MAC2MAC";
+		reg = <1>;
+		status = "disabled";
+	};
+
+	phy_serdes0 {
+		phy-extswitch;
+        force-2p5g-10gvco;
+        config-speed = <2500>;
+		status = "okay";
+	};
+
+	/* PHYs on external SF2 switch */
+	phy_ext_gphy0:phy_ext_gphy0 {
+		compatible = "brcm,bcaphy";
+		phy-type = "EGPHY";
+		reg = <0>;
+		status = "okay";
+	};
+	phy_ext_gphy1:phy_ext_gphy1 {
+		compatible = "brcm,bcaphy";
+		phy-type = "EGPHY";
+		reg = <1>;
+		status = "okay";
+	};
+	phy_ext_gphy2:phy_ext_gphy2 {
+		compatible = "brcm,bcaphy";
+		phy-type = "EGPHY";
+		reg = <2>;
+		status = "okay";
+	};
+	phy_ext_gphy3:phy_ext_gphy3 {
+		compatible = "brcm,bcaphy";
+		phy-type = "EGPHY";
+		reg = <3>;
+		status = "okay";
+	};
+};
+
+&switch_sf2_ext {                       /* linux/uboot: external sf2 */
+	unit = <1>;
+	sw-type = "SF2_SW";
+
+	compatible = "brcm,bcmbca-extsw";
+	extswsgmii_addr = <0x6>;
+	switch-reset = <&gpioc 10 GPIO_ACTIVE_LOW>;
+
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		port_ext_gphy0 {
+			phy-handle = <&phy_ext_gphy0>;
+			reg = <0>;
+			mac-type = "SF2MAC";
+			phy-mode = "gmii";
+			gmii-direct;
+			status = "okay";
+		};
+		port_ext_gphy1 {
+			phy-handle = <&phy_ext_gphy1>;
+			reg = <1>;
+			mac-type = "SF2MAC";
+			phy-mode = "gmii";
+			gmii-direct;
+			status = "okay";
+		};
+		port_ext_gphy2 {
+			phy-handle = <&phy_ext_gphy2>;
+			reg = <2>;
+			mac-type = "SF2MAC";
+			phy-mode = "gmii";
+			gmii-direct;
+			status = "okay";
+		};
+		port_ext_gphy3 {
+			phy-handle = <&phy_ext_gphy3>;
+			reg = <3>;
+			mac-type = "SF2MAC";
+			phy-mode = "gmii";
+			gmii-direct;
+			status = "okay";
+		};
+		port_ext_p5 {
+			management;                     /* sf2_ext.p5 <--> root.p5  when P8_SGMII_SEL=0 */
+			reg = <5>;
+			mac-type = "SF2MAC";
+			shrink-ipg;
+			phy-mode = "gmii";
+			gmii-direct;
+			status = "okay";
+		};
+		port_ext_imp {
+			management;                     /* sf2_ext.p8 <--> root.p5  when P8_SGMII_SEL=1 */
+			reg = <8>;
+			mac-type = "SF2MAC";
+			shrink-ipg;
+			phy-mode = "gmii";
+			gmii-direct;
+			status = "okay";
+		};
+	};
+};
+
+&switch0 {                              /* linux/uboot: internal sf2 */
+	pinctrl-names = "default"; 
+	pinctrl-0 = <&a_rgmii_mdc_pin_68 &a_rgmii_mdio_pin_69>; 
+
+	ports {
+		port_gphy {
+			phy-handle = <&phy_gphy>;
+			network-leds=<&led0 &led1>;
+			status = "okay";
+		};
+		port_sgmii0 {
+			phy-handle = <&phy_serdes0>;           /* root.p5 <--> sf2.p8 */
+			link = <&switch_sf2_ext>;
+			shrink-ipg;
+			status = "okay";
+		};
+	};
+};
+
+&usb_ctrl {
+	pinctrl-names="default";
+	pinctrl-0 = <&usb0_pwr_pins &usb1_pwr_pins>;
+	pwron-bias-pull-up;
+	status = "okay";
+	xhci-enable;
+};
+
+&usb0_xhci {
+	status = "okay";
+};
+
+&usb0_ehci {
+	status = "okay";
+};
+
+&usb1_ehci {
+	status = "okay";
+};
+
+&usb0_ohci {
+	status = "okay";
+};
+
+&usb1_ohci {
+	status = "okay";
+};
+
+&legacy_leds {
+	wl-sess-led = <&led2>;
+	wl0-led = <&led4>;
+	wl1-led = <&led3>;
+};
+&led_ctrl {
+	led0: port_0-led-0 {
+		active_low;
+		link = <(LED_SPEED_100|LED_SPEED_1G)>;
+		pinctrl-0=<&a_per_led_00_pin_0>;
+		status = "okay";
+	};
+	led1: port_0-led-2 {
+		active_low;
+		activity = <LED_SPEED_GBE>;
+		pinctrl-0=<&a_per_led_03_pin_3>;
+		status = "okay";
+	};
+	led2: sw_led_01 {
+		active_low;
+		pinctrl-0=<&a_per_led_01_pin_1>;
+		status = "okay";
+	};
+	led3:led_gpio_7 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <7>;
+		active_low;
+	};
+	led4:led_gpio_36 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <36>;
+		active_low;
+	};
+};
+
+&bcm_voice{
+	sliclist = SLICSLAC_LIST_COMMON_NOFXO;
+};
+
+&hsspi {
+	voice0 {
+		pinctrl-0 = <&spim_ss1_b_pin_76>;
+		pinctrl-names = "default";
+		compatible = "bcm-spi-voice";
+		reg = <1>; /* chip select 1 */
+		spi-max-frequency = <1024000>;
+		reset-gpio = <&gpioc 26 GPIO_ACTIVE_LOW>;
+		spi-index = <0>;/* voice header index */
+	};
+	voice1 {
+		pinctrl-0 = <&spim_ss2_b_pin_10>;
+		pinctrl-names = "default";
+		compatible = "bcm-spi-voice";
+		reg = <2>; /* chip select 2 */
+		spi-max-frequency = <1024000>;
+		/*reset-gpio = NA*/
+		spi-index = <1>;/* voice header index */
+	};
+};
+
+&sdhci {
+	pinctrl-names="default";
+	pinctrl-0 = <&emmc_ctrl_pins>;
+	status = "okay";
+};
+
+/* For 3-wire BT Coex */
+&pincontroller {
+    pinctrl-names = "default";
+    pinctrl-0 = <&wifi0_gci_gpio_0_pin_30 &wifi0_gci_gpio_1_pin_31 &wifi0_gci_gpio_2_pin_32>;
+};

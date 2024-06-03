@@ -1,0 +1,6 @@
+GURNARD BOARD
+M:	Simon Glass <sjg@chromium.org>
+S:	Maintained
+F:	board/bluewater/gurnard/
+F:	include/configs/snapper9g45.h
+F:	configs/gurnard_defconfig

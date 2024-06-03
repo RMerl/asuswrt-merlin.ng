@@ -1,0 +1,100 @@
+#!/bin/bash
+
+export LD_LIBRARY_PATH=$HOSTTOOLS_DIR/libelf/lib:$LD_LIBRARY_PATH 
+source $KERNEL_DIR/.config
+
+TARGETS_DIR=`pwd`
+
+if [ "$INSTALL_DIR" == "" ]; then
+    INSTALL_DIR=./$PROFILE/fs.install
+fi
+
+if [ -d $PROFILE/fs ]; then
+  ROOTFS=$PROFILE/fs
+else # Alternative path for DESKTOP_LINUX
+  ROOTFS=$PROFILE/fs.install
+fi
+
+USERSPACE_DL_MODULES_BEEP_DIR=$BUILD_DIR/userspace/dlModules/beep
+EEMNGR_DIR=$BUILD_DIR/userspace/private/apps/exampleEE3
+USERSPACE_DL_MODULES_EEMNGR_DIR=$EEMNGR_DIR/exampleEE3Dir
+
+EXE=exampleEE3
+PACKAGE_NAME=exampleEE3
+BEEP_MANIFEST_SUFIX=.manifest
+BEEP_PKT_INFO_SUFIIX=-pkginfo.txt
+BEEPPKG_INFO=$PACKAGE_NAME$BEEP_PKT_INFO_SUFIIX
+BEEPPKG_MANIFEST=$EXE$BEEP_MANIFEST_SUFIX
+
+#generate exampleEE3 package only if exampleEE2 exists
+if [ -f $EEMNGR_DIR/objs/exampleEE3 ]; then
+
+if [ "$ARCH" == "arm64" ]; then
+	LIBDIR_NAME="lib64"
+else
+	LIBDIR_NAME="lib"
+fi
+
+#construct EXAMPLEEE base filesystem
+echo "construct EXAMPLEEE base filesystem"
+mkdir -p $USERSPACE_DL_MODULES_EEMNGR_DIR/bin
+mkdir -p $USERSPACE_DL_MODULES_EEMNGR_DIR/data
+mkdir -p $USERSPACE_DL_MODULES_EEMNGR_DIR/dev
+mkdir -p $USERSPACE_DL_MODULES_EEMNGR_DIR/etc/data
+mkdir -p $USERSPACE_DL_MODULES_EEMNGR_DIR/lib
+if [ "$ARCH" == "arm64" ]; then
+mkdir -p $USERSPACE_DL_MODULES_EEMNGR_DIR/lib64
+fi
+mkdir -p $USERSPACE_DL_MODULES_EEMNGR_DIR/local
+mkdir -p $USERSPACE_DL_MODULES_EEMNGR_DIR/mnt
+mkdir -p $USERSPACE_DL_MODULES_EEMNGR_DIR/proc
+mkdir -p $USERSPACE_DL_MODULES_EEMNGR_DIR/sbin
+mkdir -p $USERSPACE_DL_MODULES_EEMNGR_DIR/sys
+mkdir -p $USERSPACE_DL_MODULES_EEMNGR_DIR/tmp
+mkdir -p $USERSPACE_DL_MODULES_EEMNGR_DIR/usr/bin
+mkdir -p $USERSPACE_DL_MODULES_EEMNGR_DIR/usr/sbin
+mkdir -p $USERSPACE_DL_MODULES_EEMNGR_DIR/var
+mkdir -p $USERSPACE_DL_MODULES_EEMNGR_DIR/libexec
+mkdir -p $USERSPACE_DL_MODULES_EEMNGR_DIR/run
+mkdir -p $USERSPACE_DL_MODULES_EEMNGR_DIR/share
+mkdir -p $USERSPACE_DL_MODULES_EEMNGR_DIR/include
+mkdir -p $USERSPACE_DL_MODULES_EEMNGR_DIR/opt
+mkdir -p $USERSPACE_DL_MODULES_EEMNGR_DIR/du
+
+#change etc directory mode to 777 so that passwd file can be created.
+chmod 777 $USERSPACE_DL_MODULES_EEMNGR_DIR/etc
+
+cp -av $EEMNGR_DIR/objs/exampleEE3 $USERSPACE_DL_MODULES_EEMNGR_DIR/bin
+
+cp -av $EEMNGR_DIR/SYS_OPS/$BEEPPKG_INFO $USERSPACE_DL_MODULES_EEMNGR_DIR/etc
+chmod 644 $USERSPACE_DL_MODULES_EEMNGR_DIR/etc/$BEEPPKG_INFO
+
+tar zcf exampleEE3.tar.gz -C $USERSPACE_DL_MODULES_EEMNGR_DIR .
+mv exampleEE3.tar.gz $USERSPACE_DL_MODULES_EEMNGR_DIR
+
+cd $EEMNGR_DIR
+
+SYS_DIRS=$(echo SYS_*)
+ 
+for d in $SYS_DIRS
+do
+   echo "Working on SYS dir $d ..."
+   if [ -f $d/$BEEPPKG_INFO ]
+   then
+     echo "pkginfo.txt file: $d/$BEEPPKG_INFO, pkg manifest file: $d/$BEEPPKG_MANIFEST "
+     if [ -f $d/$BEEPPKG_MANIFEST ] 
+     then
+       echo "pkg manifest file: $d/$BEEPPKG_MANIFEST"
+       cp -fav $d/$BEEPPKG_MANIFEST $USERSPACE_DL_MODULES_EEMNGR_DIR
+       $HOSTTOOLS_DIR/beep/beepPkgBuilder -f $d/$BEEPPKG_INFO
+       rm -f $USERSPACE_DL_MODULES_EEMNGR_DIR/$BEEPPKG_MANIFEST     
+     fi
+  fi
+  
+done
+
+mv ./pkg_*_*.tar.gz $USERSPACE_DL_MODULES_BEEP_DIR
+$HOSTTOOLS_DIR/beep/reposcan -d $USERSPACE_DL_MODULES_BEEP_DIR
+rm -rf $USERSPACE_DL_MODULES_EEMNGR_DIR
+
+fi

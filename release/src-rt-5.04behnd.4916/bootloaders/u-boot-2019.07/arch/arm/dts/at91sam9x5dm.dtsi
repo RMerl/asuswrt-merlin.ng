@@ -1,0 +1,66 @@
+/*
+ * at91sam9x5dm.dtsi - Device Tree file for SAM9x5 display module
+ *
+ *  Copyright (C) 2014 Atmel,
+ *                2014 Free Electrons
+ *
+ *  Author: Boris Brezillon <boris.brezillon@free-electrons.com>
+ *
+ * Licensed under GPLv2 or later.
+ */
+
+/ {
+	ahb {
+		apb {
+			i2c0: i2c@f8010000 {
+				qt1070: keyboard@1b {
+					compatible = "qt1070";
+					reg = <0x1b>;
+					interrupt-parent = <&pioA>;
+					interrupts = <7 0x0>;
+					pinctrl-names = "default";
+					pinctrl-0 = <&pinctrl_qt1070_irq>;
+					wakeup-source;
+				};
+			};
+
+			hlcdc: hlcdc@f8038000 {
+				atmel,vl-bpix = <4>;
+				atmel,guard-time = <1>;
+				pinctrl-names = "default";
+				pinctrl-0 = <&pinctrl_lcd_base &pinctrl_lcd_pwm &pinctrl_lcd_rgb888>;
+
+				display-timings {
+					u-boot,dm-pre-reloc;
+					800x480 {
+						clock-frequency = <24000000>;
+						hactive = <800>;
+						vactive = <480>;
+						hsync-len = <128>;
+						hfront-porch = <64>;
+						hback-porch = <64>;
+						vfront-porch = <22>;
+						vback-porch = <21>;
+						vsync-len = <2>;
+						u-boot,dm-pre-reloc;
+					};
+				};
+			};
+
+			adc0: adc@f804c000 {
+				atmel,adc-ts-wires = <4>;
+				atmel,adc-ts-pressure-threshold = <10000>;
+				status = "okay";
+			};
+
+			pinctrl@fffff400 {
+				board {
+					pinctrl_qt1070_irq: qt1070_irq {
+						atmel,pins =
+							<AT91_PIOA 7 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP_DEGLITCH>;
+					};
+				};
+			};
+		};
+	};
+};

@@ -1,0 +1,188 @@
+#include "inc/968370DV.dtsi"
+#include "inc/968370DV_SFP.dtsi"
+
+/ {
+    model = "968572DV_XFP";
+};
+
+&ethphytop {
+    phy-mpd = <&bca_extintr 82 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+    phy-link = <&bca_extintr 83 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+};
+
+&wdt {
+	status = "okay";
+};
+&uart0 {
+	status = "okay";
+};
+
+&mdio_bus {
+    serdes00_xphy {
+        reg = <0x1c>;
+        enet-phy-lane-swap;
+        USXGMII-S;
+        status = "okay";
+    };
+    serdes00 {
+        phy-handle = <&serdes00_xphy>;
+        status = "okay";
+    };
+    serdes13_xphy {
+        enet-phy-lane-swap;
+        caps-no-10000;
+        caps-no-5000;
+        USXGMII-M;
+        status = "okay";
+    };
+    serdes10 {
+        phy-handle = <&serdes13_xphy>;
+        status = "okay";
+    };
+};
+
+&led_ctrl {
+    pinctrl-names = "default";
+    pinctrl-0 = <&a_ser_led_data_pin_0 &a_ser_led_clk_pin_1 &a_ser_led_mask_pin_2>;
+    serial-shifters-installed = <3>;
+
+    led0: serial-port_gphy0-led_1 {
+        active_low;
+        crossbar-output = <2>;
+        activity = <(LED_SPEED_GBE)>;
+        status = "okay";
+    };
+
+    led1: serial-port_gphy0-led_0 {
+        active_low;
+        crossbar-output = <3>;
+        link = <(LED_SPEED_GBE)>;
+        status = "okay";
+    };
+
+    led2: serial-port_gphy1-led_1 {
+        active_low;
+        crossbar-output = <1>;
+        activity = <(LED_SPEED_GBE)>;
+        status = "okay";
+    };
+
+    led3: serial-port_gphy1-led_0 {
+        active_low;
+        crossbar-output = <7>;
+        link = <(LED_SPEED_GBE)>;
+        status = "okay";
+    };
+
+    led4: serial-port_gphy2-led_1 {
+        active_low;
+        crossbar-output = <11>;
+        activity = <(LED_SPEED_GBE)>;
+        status = "okay";
+    };
+
+    led5: serial-port_gphy2-led_0 {
+        active_low;
+        crossbar-output = <0>;
+        link = <(LED_SPEED_GBE)>;
+        status = "okay";
+    };
+
+    led6: serial-port_gphy3-led_1 {
+        active_low;
+        crossbar-output = <9>;
+        activity = <(LED_SPEED_GBE)>;
+        status = "okay";
+    };
+
+    led7: serial-port_gphy3-led_0 {
+        active_low;
+        crossbar-output = <10>;
+        link = <(LED_SPEED_GBE)>;
+        status = "okay";
+    };
+
+    led14: sw_serial_led_31 {
+        active_low;
+        label = "WAN";
+        crossbar-output = <4>;
+        status = "okay";
+    };
+
+    led15: sw_serial_led_30 {
+        active_low;
+        label = "ALARM";
+        crossbar-output = <5>;
+        status = "okay";
+    };
+
+    led16: sw_serial_led_29 {
+        active_low;
+        label = "PON";
+        crossbar-output = <6>;
+        status = "okay";
+    };
+
+    led19: sw_serial_led_24 {
+        active_low;
+        crossbar-output = <16>;
+        label = "WPS";
+        status = "okay";
+    };
+
+    led20: sw_serial_led_23 {
+        active_low;
+        crossbar-output = <17>;
+        label = "VOIP2";
+        status = "okay";
+    };
+
+    led21: sw_serial_led_22 {
+        active_low;
+        crossbar-output = <18>;
+        label = "VOIP1";
+        status = "okay";
+    };
+
+    led22: sw_serial_led_21 {
+        active_low;
+        crossbar-output = <20>;
+        label = "USB0";
+        trigger-sources = <&usb_port1>;
+        linux,default-trigger = "usbport";
+        status = "okay";
+    };
+
+    led23: sw_serial_led_20 {
+        active_low;
+        crossbar-output = <21>;
+        label = "USB1";
+        trigger-sources = <&usb_port2>;
+        linux,default-trigger = "usbport";
+        status = "okay";
+    };
+};
+
+&switch0 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&a_eth_mdc_pin_59 &a_eth_mdio_pin_60>;
+
+    ports {
+        port_wan@ae {
+            status = "okay";
+        };
+        port_slan0 {
+            status = "okay";
+        };
+        port_qlan0 {
+            status = "okay";
+        };
+        port_wan@fiber {
+            status = "okay";
+        };
+    };
+};
+
+&cpufreq {
+    op-mode = "dvfs";
+};

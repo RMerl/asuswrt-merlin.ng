@@ -137,13 +137,13 @@ int do_ssl = 0; 	// use Global for HTTPS upgrade judgment in web.c
 int ssl_stream_fd; 	// use Global for HTTPS stream fd in web.c
 int json_support = 0;
 char wl_band_list[8][8] = {{0}};
+char pidfile[32];
 char HTTPD_LOGIN_FAIL_LAN[32] = {0};
 char HTTPD_LOGIN_FAIL_WAN[32] = {0};
 char HTTPD_LAST_LOGIN_FAIL_TS[32] = {0};
 char HTTPD_LAST_LOGIN_FAIL_TS_W[32] = {0};
 char CAPTCHA_FAIL_NUM[32] = {0};
 char HTTPD_LOCK_NUM[32] = {0};
-char pidfile[32];
 
 #ifdef TRANSLATE_ON_FLY
 char Accept_Language[16];
@@ -294,7 +294,7 @@ time_t login_timestamp=0; // the timestamp of the logined ip
 time_t login_timestamp_tmp=0; // the timestamp of the current session.
 unsigned int login_ip_tmp = 0; // IPv6 compat: the ip of the current session.
 uaddr login_uip_tmp = {0}; // the ip of the current session.
-usockaddr login_usa_tmp = {{{0}}};
+usockaddr login_usa_tmp = {0};
 //Add by Andy for handle the login block mechanism by LAN/WAN
 time_t login_timestamp_tmp_wan=0; // the timestamp of the current session.
 time_t auth_check_dt=0;
@@ -555,7 +555,7 @@ send_login_page(int fromapp_flag, int error_status, char* url, char* file, int l
 	}else{
 		snprintf(inviteCode, sizeof(inviteCode), "\"error_status\":\"%d\", \"captcha_on\":\"%d\", \"last_time_lock_warning\":\"%d\"", error_status, captcha_on(), last_time_lock_warning());
 		if(error_status == LOGINLOCK){
-			snprintf(buf, sizeof(buf), ",\"remaining_lock_time\":\"%ld\",\"lock_version\":\"%d\"", max_lock_time - login_dt, HTTPD_LOCK_VERSION);
+			snprintf(buf, sizeof(buf), ",\"remaining_lock_time\":\"%ld\"", max_lock_time - login_dt);
 			strlcat(inviteCode, buf, sizeof(inviteCode));
 		}
 	}
@@ -633,7 +633,7 @@ static void
 send_headers( int status, char* title, char* extra_header, char* mime_type, int fromapp)
 {
     time_t now;
-    char timebuf[100];
+    char timebuf[100] = {0};
     (void) fprintf( conn_fp, "%s %d %s\r\n", PROTOCOL, status, title );
     (void) fprintf( conn_fp, "Server: %s\r\n", SERVER_NAME );
     (void) fprintf( conn_fp, "x-frame-options: SAMEORIGIN\r\n");
@@ -651,16 +651,18 @@ send_headers( int status, char* title, char* extra_header, char* mime_type, int 
 
     now = time( (time_t*) 0 );
     (void) strftime( timebuf, sizeof(timebuf), RFC1123FMT, gmtime( &now ) );
+
     (void) fprintf( conn_fp, "Date: %s\r\n", timebuf );
 
-	if ( extra_header != (char*) 0 ){
+	if ( extra_header != (char*) 0 && *extra_header != '\0'){
+
 		if(!strcmp(extra_header, cache_object) && fromapp != 0){
 			extra_header = cache_long_object;
 		}
 		(void) fprintf( conn_fp, "%s\r\n", extra_header );
 	}
 
-	if ( mime_type != (char*) 0 ){
+    if ( mime_type != (char*) 0 ){
 		if(fromapp != FROM_BROWSER && fromapp != FROM_WebView)
 			(void) fprintf( conn_fp, "Content-Type: %s\r\n", "application/json;charset=UTF-8" );
 		else
@@ -668,28 +670,28 @@ send_headers( int status, char* title, char* extra_header, char* mime_type, int 
 	}
 
 	(void) fprintf( conn_fp, "Connection: close\r\n" );
-	
+
 	if ( request_content_range!=NULL && strncasecmp( request_content_range, "bytes=", 6 ) == 0 ) {
 		//- ex. bytes=0-123
 		off_t content_start = 0;
 		off_t content_end = 0;
 		off_t content_length = 0;
-		
+
 		char *err = NULL;
 		char* cp = &request_content_range[6];
 		content_start = strtoll(cp, &err, 10);
 		content_end = strtoll(err+1, &err, 10);
 		if (content_end>=content_start) {
 			content_length = content_end - content_start + 1;
-			
-			(void) fprintf( conn_fp, "Content-Length: %lld\r\n", content_length);
-			(void) fprintf( conn_fp, "Content-Range: bytes %lld-%lld/%lld\r\n", content_start, content_end, request_file_size);
-			
+
+			(void) fprintf( conn_fp, "Content-Length: %jd\r\n", (intmax_t) content_length);
+			(void) fprintf( conn_fp, "Content-Range: bytes %jd-%jd/%lld\r\n", (intmax_t) content_start, (intmax_t) content_end, request_file_size);
+
 			HTTPD_DBG("Content-Range: bytes %lld-%lld/%lld, Content-Length: %lld\n", content_start, content_end, request_file_size, content_length);
 		}
 	}
 
-    (void) fprintf( conn_fp, "\r\n" );
+	(void) fprintf( conn_fp, "\r\n" );
 }
 
 static void
@@ -921,7 +923,7 @@ void do_file(char *path, FILE *stream)
 			if (content_start>=0) {
 				fseek(fp, content_start, SEEK_SET);
 			}
-			
+
 			if (content_length<read_size) {
 				read_size = content_length;
 			}
@@ -930,11 +932,11 @@ void do_file(char *path, FILE *stream)
 		while ((nr = fread(buf, 1, read_size, fp)) > 0) {
 
 			do_fwrite(buf, nr, stream);
-			
+
 			if (content_length>0) {
 
 				read_count = read_count + read_size;
-				
+
 				if (read_count>=content_length) {
 					// HTTPD_DBG("read count: %d", read_count);
 					break;
@@ -1044,6 +1046,48 @@ int wave_handle_flag(char *url)
 
 int max_lock_time = MAX_LOGIN_BLOCK_TIME;
 
+struct etag_filter_table etag_filter_table[] = {
+    {".cgi",0},
+    {"chanspec.js",0},
+    {"client_function.js",0},
+    {"disk.js",0},
+    {"form.js",0},
+    {"general.js",0},
+    {"handler.js",0},
+    {"help.js",0},
+    {"https_redirect.js",0},
+    {"notification.js",0},
+    {"oauth.js",0},
+    {"plugins.js",0},
+    {"remote.js",0},
+    {"state.js",0},
+    {"subnet_rule.js",0},
+    {"tableValidator.js",0},
+    {"validator.js",0},
+    {"vpns_openvpn.js",0},
+    {".png",2},
+    {".svg",2},
+    {".jpg",2},
+    {".gif",2},
+    {".css",2},
+    {"jquery.js",2},
+    {"bootstrap.bundle.min.js",2},
+    {"jquery-ui.js",2},
+    {"chart.min.js",2},
+    {"require.min.js",2},
+    {"FreeWiFi_template.json",2}
+};
+
+int getEtagHeaderFlag(const char *key) {
+    int numTables = sizeof(etag_filter_table) / sizeof(etag_filter_table[0]);
+    for (int i = 0; i < numTables; i++) {
+        if (strstr(key, etag_filter_table[i].file) != NULL) {
+            return etag_filter_table[i].flag;
+        }
+    }
+    return 1;
+}
+
 static void
 handle_request(void)
 {
@@ -1052,6 +1096,7 @@ handle_request(void)
 #endif
 	char line[10000], *cur;
 	char *method, *path, *protocol, *boundary, *alang, *cookies, *referer, *useragent, *range = NULL;
+    char *if_none_match = NULL;
 	char *cp;
 	char *file;
 	int len;
@@ -1244,6 +1289,13 @@ handle_request(void)
 			range = cp;
 			cur = cp + strlen(cp) + 1;
 		}
+        else if ( strncasecmp( cur, "If-None-Match:", 14 ) == 0 )
+        {
+            cp = &cur[14];
+            cp += strspn( cp, " \t" );
+            if_none_match = cp;
+            cur = cp + strlen(cp) + 1;
+        }
 	}
 
 	slowloris_check();
@@ -1369,8 +1421,11 @@ handle_request(void)
 	mime_exception = 0;
 	do_referer = 0;
 
+#if defined(RTCONFIG_UIDEBUG) || defined(RTCONFIG_DEMOUI)
+	if(0) {
+#else
 	if(!fromapp) {
-
+#endif
 		lock_status = check_lock_status(&login_dt);
 
 		if(lock_status == FORCELOCK || lock_status == LOGINLOCK){
@@ -1382,16 +1437,6 @@ handle_request(void)
 
 		http_login_timeout(&login_uip_tmp, cookies, fromapp);	// 2008.07 James.
 		login_state = http_login_check();
-		// for each page, mime_exception is defined to do exception handler
-
-		// check exception first
-		for (exhandler = &except_mime_handlers[0]; exhandler->pattern; exhandler++) {
-			if(match(exhandler->pattern, url))
-			{
-				mime_exception = exhandler->flag;
-				break;
-			}
-		}
 
 		// check doreferer first
 		for (doreferer = &mime_referers[0]; doreferer->pattern; doreferer++) {
@@ -1403,6 +1448,16 @@ handle_request(void)
 		}
 	}
 
+	// for each page, mime_exception is defined to do exception handler
+	// check exception first
+	for (exhandler = &except_mime_handlers[0]; exhandler->pattern; exhandler++) {
+		if(match(exhandler->pattern, url))
+		{
+			mime_exception = exhandler->flag;
+			break;
+		}
+	}
+
 	x_Setting = nvram_get_int("x_Setting");
 
 	for (handler = &mime_handlers[0]; handler->pattern; handler++) {
@@ -1411,7 +1466,7 @@ handle_request(void)
 			continue;
 #endif
 		if (match(handler->pattern, url) || customized_match(handler->pattern, url))
-		{	
+		{
 			if ( request_content_range!=NULL && strncasecmp( request_content_range, "bytes=", 6 ) == 0) {
 #ifdef RTCONFIG_TC_GAME_ACC
 				//- This is the download request for tencent game file.
@@ -1446,7 +1501,7 @@ handle_request(void)
 			}
 			if (handler->auth) {
 				url_do_auth = 1;
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) || defined(GTAX11000_PRO) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000)
 				switch_ledg(LEDG_QIS_FINISH);
 #endif
 				if ((mime_exception&MIME_EXCEPTION_NOAUTH_FIRST)&&!x_Setting) {
@@ -1481,6 +1536,7 @@ handle_request(void)
 							return;
 						}
 					}
+#ifndef RTCONFIG_DEMOUI
 					auth_result = auth_check(url, file, cookies, fromapp, &add_try);
 					if (auth_result != 0)
 					{
@@ -1490,6 +1546,7 @@ handle_request(void)
 						send_login_page(fromapp, auth_result, url, file, auth_check_dt, add_try);
 						return;
 					}
+#endif
 				}
 
 				if(!fromapp) {
@@ -1575,6 +1632,7 @@ handle_request(void)
 #ifdef RTCONFIG_IPSEC
 					&& !strstr(file, "renew_ikev2_cert_mobile.pem") && !strstr(file, "ikev2_cert_mobile.pem")
 					&& !strstr(file, "renew_ikev2_cert_windows.der") && !strstr(file, "ikev2_cert_windows.der")
+					&& !strstr(file, "ipsec_s2s.conf")
 					&& !strstr(file, "server_ipsec.cert")
 					&& !strstr(file, "ipsec.log")
 #endif
@@ -1594,9 +1652,50 @@ handle_request(void)
 				send_error( 404, "Not Found", (char*) 0, "File not found." );
 				return;
 			}
-			if(nvram_match("x_Setting", "0") && (strcmp(url, "QIS_default.cgi")==0 || strcmp(url, "page_default.cgi")==0 || !strcmp(websGetVar(file, "x_Setting", ""), "1"))){
-				if(!fromapp) set_referer_host();
-				send_token_headers( 200, "OK", handler->extra_header, handler->mime_type, fromapp);
+
+
+            char md5String[35] = {0};
+            char etag_header[256] = {0};
+            int ret = 0;
+
+
+            int etag_header_flag = getEtagHeaderFlag(file);
+            if(etag_header_flag > 0) {
+                if ((ret = get_file_md5(file, md5String, sizeof(md5String))) == 0) {
+                    if(strstr(file, ".js")){
+                        sprintf(md5String, "%s%s", md5String, nvram_get("preferred_lang"));
+                    }
+                    if(etag_header_flag==2){
+                        strlcpy(etag_header, handler->extra_header,sizeof(etag_header));
+                        strlcat(etag_header, "\r\n",sizeof(etag_header));
+                        strlcat(etag_header, "Etag: ",sizeof(etag_header));
+                        strlcat(etag_header, md5String,sizeof(etag_header));
+                    }else{
+                        strlcpy(etag_header, "Etag: ",sizeof(etag_header));
+                        strlcat(etag_header, md5String,sizeof(etag_header));
+                    }
+                }
+            }
+
+            char final_header[256] = {0};
+            int status = 200;
+            char *title = "OK";
+            if (strlen(etag_header) == 0) {
+                if(handler->extra_header)
+                    strlcpy(final_header, handler->extra_header,sizeof(final_header));
+            } else {
+                strlcpy(final_header, etag_header,sizeof(final_header));
+                if (if_none_match && strstr(if_none_match, md5String)){
+                    status = 304;
+                    title = "Not Modified";
+                }
+            }
+
+            if (nvram_match("x_Setting", "0") &&
+                (strcmp(url, "QIS_default.cgi") == 0 || strcmp(url, "page_default.cgi") == 0 ||
+                 !strcmp(websGetVar(file, "x_Setting", ""), "1"))) {
+                if (!fromapp) set_referer_host();
+                send_token_headers(status, title, final_header, handler->mime_type, fromapp);
 
 			}else if(strcmp(file, "login.cgi") && strcmp(file, "login_v2.cgi")){
 				send_headers( 200, "OK", handler->extra_header, handler->mime_type, fromapp);
@@ -1865,17 +1964,19 @@ void http_logout(uaddr *uip, char *cookies, int fromapp_flag)
 		nvram_set("login_ip", ""); /* IPv6 compat */
 		nvram_set("login_ip_str", "");
 		nvram_set("login_timestamp", "");
-		//memset(referer_host, 0, sizeof(referer_host));
+		memset(referer_host, 0, sizeof(referer_host));
 		delete_logout_from_list(cookies);
-
+// 2008.03 James. {
 		if (change_passwd == 1) {
 			change_passwd = 0;
 		}
-
+// 2008.03 James. }
 	}else if(fromapp_flag != 0){
 		delete_logout_from_list(cookies);
-	}
 }
+}
+//2008 magic}
+//
 
 int is_firsttime(void)
 {
@@ -2731,6 +2832,14 @@ void start_ssl(int http_port)
 
 	if (nvram_match("https_crt_gen", "1"))
 		erase_cert();
+
+	// the date of certificate is wrong, need to reload
+	if (nvram_get_int("reload_cert")) {
+		unlink(HTTPS_CA_JFFS);
+		erase_cert();
+		nvram_unset("reload_cert");
+		logmessage("httpd", "reload cert and clean all files\n");
+	}
 
 	retry = 1;
 	while (1) {

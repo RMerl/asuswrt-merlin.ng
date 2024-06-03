@@ -28,7 +28,7 @@ time_t t1, t2;
 #define REWPSC_PID_FILE "/var/run/re_wpsc.pid"
 
 int wps_first_success = 0;
-int re_wpsc_main(void)
+int re_wpsc_main(int argc, char *argv[])
 {
 
 
@@ -41,7 +41,6 @@ int re_wpsc_main(void)
 	memset(WscStatus_old, 0x0, sizeof(WscStatus_old));
 	memset(WscStatus, 0x0, sizeof(WscStatus));
 	int timeout = 0;
-	char rm_pid_file[64]={0};
 
 	FILE *fp_pid=NULL;
 
@@ -57,9 +56,13 @@ int re_wpsc_main(void)
 
 	//stop_wlcconnect();
 
-	start_wlcscan();
-	sleep(3);
-
+#ifdef RTCONFIG_AMAS
+	if (nvram_get_int("wps_enrollee") != 1)
+#endif
+	{
+		start_wlcscan();
+		sleep(3);
+	}
 
 	/* 0: Repeater. 1: Express way 2.4G 2: Express way 5G */
 	int wlc_express = nvram_get_int("wlc_express");
@@ -71,20 +74,20 @@ int re_wpsc_main(void)
 	if (wlc_express < 0 || wlc_express > 2)
 		wlc_express = 0;
 
-		if (wlc_express == 0) {
-			foreach(wif, nvram_safe_get("wl_ifnames"), next) {
-					sprintf(prefix, "wl%d_", j);
-					aif = nvram_safe_get(strcat_r(prefix, "vifs", tmp));
+	if (wlc_express == 0) {
+		foreach(wif, nvram_safe_get("wl_ifnames"), next) {
+				sprintf(prefix, "wl%d_", j);
+				aif = nvram_safe_get(strcat_r(prefix, "vifs", tmp));
 
-					sprintf(wsc_file_name,"/tmp/wsc.%s",aif);
-					unlink(wsc_file_name);
-					ap_set(aif, "ApCliEnable=0");
-					ap_set(aif, "WscConfMode=1");
-					ap_set(aif, "WscMode=2");
-					ap_set(aif, "ApCliEnable=1");
-					ap_set(aif, "WscGetConf=1");
-					j++;
-			}
+				sprintf(wsc_file_name,"/tmp/wsc.%s",aif);
+				unlink(wsc_file_name);
+				ap_set(aif, "ApCliEnable=0");
+				ap_set(aif, "WscConfMode=1");
+				ap_set(aif, "WscMode=2");
+				ap_set(aif, "ApCliEnable=1");
+				ap_set(aif, "WscGetConf=1");
+				j++;
+		}
 	}
 	else if ( wlc_express == 1) {
 
@@ -168,24 +171,26 @@ int re_wpsc_main(void)
 						wps_first_success = 1;
 						stop_wps_method();
 #ifdef RTCONFIG_AMAS
-                        if (nvram_get_int("wps_enrollee") == 1)
-                            obd_SetWpsResult(i, aif);
-                        else
+			if (nvram_get_int("wps_enrollee") == 1) {
+				obd_SetWpsResult(i, aif);
+				nvram_set("wps_cli_state", "2");
+				nvram_set_int("wps_e_success", 1);
+				nvram_set_int("obd_Setting", 1);
+			}
+			else
 #endif
-    						mtk_set_wps_result(i, aif);
-						nvram_set_int("led_status", LED_RESTART_WL);
-						sleep(3);
-						stop_lan_wl();
-						sleep(2);
-						start_lan_wl();
-						unlink(REWPSC_PID_FILE);
-						nvram_set("wps_cli_state", "2");
-#ifdef RTCONFIG_AMAS
-                        nvram_set_int("wps_e_success", 1);
-				        nvram_set_int("obd_Setting", 1);
-#endif
+			{
+			mtk_set_wps_result(i, aif);
+			nvram_set_int("led_status", LED_RESTART_WL);
+			sleep(3);
+			stop_lan_wl();
+			sleep(2);
+			start_lan_wl();
+			unlink(REWPSC_PID_FILE);
+			nvram_set("wps_cli_state", "2");
 						sleep(30);
 						nvram_set_int("led_status", LED_BOOTED);
+			}
 						return 0;
 					}
 			}
@@ -263,7 +268,9 @@ struct save_fuple {
 	char *setpart1;
 	char *setpart2;
 };
-static int comparetmp( char *arraylist[], int sizelist, char ssidptr1[], char *ssidptr2) {
+
+static int comparetmp( char *arraylist[], int sizelist, char ssidptr1[], char *ssidptr2)
+{
 	int sizetmp = 0;
 	char ssidcat[128];
 	memset(ssidcat, 0x0, sizeof(ssidcat));
@@ -278,7 +285,9 @@ static int comparetmp( char *arraylist[], int sizelist, char ssidptr1[], char *s
 	}
 	return 0;
 }
-static void auto_detect_ssid(unit) {
+
+static void auto_detect_ssid(int unit)
+{
 	char file_name[128]={0}, substrl[128]={0}, strNULL[]="";
 	char *ssid_buf=NULL, *getptr1=NULL, *getptr2=NULL, *substrr=NULL, *gettmp[128];
 	int fsize=0, idlength=0, cmpresult=0;
@@ -389,7 +398,6 @@ static void auto_detect_ssid(unit) {
 	}
 
 
-	free( file_name );
 	sprintf(file_name, "wlc%d_ssid", unit);
 	ssid_buf = nvram_safe_get(file_name);
 
@@ -416,7 +424,7 @@ static void auto_detect_ssid(unit) {
 				cmpresult=1;
 				break ;
 			}
-			if ( bandlist->setpart2 != "" ) {
+			if (*bandlist->setpart2 != '\0') {
 				if ( comparetmp( gettmp, idlength, substrl, bandlist->setpart2 ) ) {
 					cmpresult=1;
 					break;
@@ -429,7 +437,7 @@ static void auto_detect_ssid(unit) {
 				cmpresult=1;
 				break;
 			}
-			if ( bandlist->setpart2 != "" ) {
+			if (*bandlist->setpart2 != '\0') {
 				if ( comparetmp( gettmp, idlength, substrl, bandlist->setpart2 ) ) {
 					cmpresult=1;
 					break;
@@ -457,7 +465,7 @@ static void auto_detect_ssid(unit) {
 int obd_SetWpsResult(int n, char *wif)
 {
     WSC_CONFIGURED_VALUE result;
-    char tmp[128], buf[128] = {0}, prefix[] = "wlcXXXXXXXXXX_",
+    char tmp[128], prefix[] = "wlcXXXXXXXXXX_",
                    prefix_5g[] = "wlcXXXXXXXXXX_",
                    prefix_5g1[] = "wlcXXXXXXXXXX_";
     int is_psk = 0, is_nokey = 0, ret = 0;
@@ -637,7 +645,7 @@ int mtk_set_wps_result(int n, char *wif)
 		char *pt1, *pt2, buf[128];
 		int is_nokey = 0;
 		int is_psk = 0;
-		int key_idx;
+		int key_idx __attribute__((unused));
 		pt1 = strstr(fp, "Profile[0]:");
 		if (pt1) {
 			//SSID

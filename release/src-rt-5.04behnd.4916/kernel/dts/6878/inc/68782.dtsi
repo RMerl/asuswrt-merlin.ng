@@ -1,0 +1,89 @@
+#include "6878.dtsi"
+
+/ {
+	/* pcie common */
+	pcie: pcie {
+		compatible = "brcm,bcm-pcie";
+		device_type = "cpci";
+		brcm,pllclkid = <0x0>;
+	};
+	/* Internal WiFi Core 0 (virtual pcie with domain#0) */
+	vpcie0: vpcie@0 {
+		#define WIFI_COREID			0
+		#define WIFI_ADDR			0x84000000
+		#define WIFI_SIZE			0x01000000
+		#define WIFI_DEVID			0x6878
+		#define WIFI_CCM_SPI		44
+		#define WIFI_D11MAC_SPI		46
+		#define WIFI_M2MDMA_SPI		45
+		#define WIFI_WDRST_SPI		47
+		#include "../../ip/bcm_wifi_core.dtsi"
+	};
+
+	/* pcie core 0 */
+	pcie0: pcie@0 {
+		#define PCIE_ID				0
+		#define PCIE_DOMAIN_ID			1
+		#define PCIE_SPI			60
+		#define PCIE_ADDR			0x80040000
+		#define PCIE_SIZE			0x0000A000
+		#define PCIE_RANGE_ADDR		0x90000000
+		#define PCIE_RANGE_SIZE		0x10000000
+		#include "../../ip/bcm_pcie_core.dtsi"
+	};
+	
+	/* usb */
+	usb_ctrl: usb_ctrl {
+		#define USB_CTRL_ADDR       0x8000c200
+		#define USB_CTRL_SIZE       0x100
+		#include "../../ip/bcm_usb_ctrl.dtsi"
+	};
+
+	usb0_ehci: usb0_ehci {
+		#define USB_ADDR			0x8000c300
+		#define USB_SIZE			0x100
+		#define USB_IRQ             125
+		#include "../../ip/bcm_usb_ehci.dtsi"
+
+ 		ehci0_port: port@1{
+			reg = <1>;
+			#trigger-source-cells = <0>;
+		};
+	};
+
+	usb1_ehci: usb1_ehci {
+		#define USB_ADDR			0x8000c500
+		#define USB_SIZE			0x100
+		#define USB_IRQ             123
+		#include "../../ip/bcm_usb_ehci.dtsi"
+
+		ehci1_port: port@1{
+			reg = <1>;
+			#trigger-source-cells = <0>;
+		};
+	};
+
+	usb0_ohci: usb0_ohci {
+		#define USB_ADDR			0x8000c400
+		#define USB_SIZE			0x100
+		#define USB_IRQ             124
+		#include "../../ip/bcm_usb_ohci.dtsi"
+
+ 		ohci0_port: port@1{
+			reg = <1>;
+			#trigger-source-cells = <0>;
+		};
+	};
+
+	usb1_ohci: usb1_ohci {
+		#define USB_ADDR			0x8000c600
+		#define USB_SIZE			0x100
+		#define USB_IRQ             122
+		#include "../../ip/bcm_usb_ohci.dtsi"
+
+ 		ohci1_port: port@1{
+			reg = <1>;
+			#trigger-source-cells = <0>;
+		};
+	};
+};

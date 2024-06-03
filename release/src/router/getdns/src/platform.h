@@ -66,7 +66,11 @@ const char *_getdns_filestrerror(int errnum);
 #ifndef HAVE_SYS_POLL_H
 # include <poll.h>
 #else
+#if !defined(__GLIBC__) && !defined(__UCLIBC__) /* musl */
+# include <poll.h>
+#else
 # include <sys/poll.h>
+#endif
 #endif
 
 #define _getdns_EINTR       (EINTR)

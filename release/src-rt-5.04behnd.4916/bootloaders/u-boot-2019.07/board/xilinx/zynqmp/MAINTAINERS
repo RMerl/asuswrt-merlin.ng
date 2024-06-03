@@ -1,0 +1,9 @@
+XILINX_ZYNQMP BOARDS
+M:	Michal Simek <michal.simek@xilinx.com>
+S:	Maintained
+F:	arch/arm/dts/zynqmp-*
+F:	arch/arm/dts/avnet-ultra96*
+F:	board/xilinx/zynqmp/
+F:	include/configs/xilinx_zynqmp*
+F:	configs/xilinx_zynqmp*
+F:	configs/avnet_ultra96_rev1_defconfig

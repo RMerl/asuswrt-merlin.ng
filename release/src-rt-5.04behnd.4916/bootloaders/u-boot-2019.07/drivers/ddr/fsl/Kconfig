@@ -1,0 +1,185 @@
+config SYS_FSL_DDR
+	bool
+	help
+	  Select Freescale General DDR driver, shared between most Freescale
+	  PowerPC- based SoCs (such as mpc83xx, mpc85xx, mpc86xx) and ARM-
+	  based Layerscape SoCs (such as ls2080a).
+
+config SYS_FSL_MMDC
+	bool
+	help
+	  Select Freescale Multi Mode DDR controller (MMDC).
+
+config SYS_FSL_DDR_BE
+	bool
+	help
+		Access DDR registers in big-endian
+
+config SYS_FSL_DDR_LE
+	bool
+	help
+		Access DDR registers in little-endian
+
+config FSL_DDR_BIST
+	bool
+
+config FSL_DDR_INTERACTIVE
+	bool
+
+config FSL_DDR_SYNC_REFRESH
+	bool
+
+config FSL_DDR_FIRST_SLOT_QUAD_CAPABLE
+	bool
+
+menu "Freescale DDR controllers"
+	depends on SYS_FSL_DDR
+
+config SYS_NUM_DDR_CTLRS
+	int "Maximum DDR controllers"
+	default 3 if	ARCH_LS2080A	|| \
+			ARCH_T4240
+	default 2 if	ARCH_B4860	|| \
+			ARCH_BSC9132	|| \
+			ARCH_MPC8572	|| \
+			ARCH_MPC8641	|| \
+			ARCH_P4080	|| \
+			ARCH_P5020	|| \
+			ARCH_P5040	|| \
+			ARCH_LX2160A	|| \
+			ARCH_T4160
+	default 1
+
+config SYS_FSL_DDR_VER
+	int
+	default 50 if SYS_FSL_DDR_VER_50
+	default 47 if SYS_FSL_DDR_VER_47
+	default 46 if SYS_FSL_DDR_VER_46
+	default 44 if SYS_FSL_DDR_VER_44
+
+config SYS_FSL_DDR_VER_50
+	bool
+
+config SYS_FSL_DDR_VER_47
+	bool
+
+config SYS_FSL_DDR_VER_46
+	bool
+
+config SYS_FSL_DDR_VER_44
+	bool
+
+config SYS_FSL_DDRC_GEN1
+	bool
+	help
+	  Enable Freescale DDR controller.
+
+config SYS_FSL_DDRC_GEN2
+	bool
+	depends on !MPC86xx
+	help
+	  Enable Freescale DDR2 controller.
+
+config SYS_FSL_DDRC_86XX_GEN2
+	bool
+	depends on MPC86xx
+	help
+	  Enable Freescale DDR2 controller for MPC86xx SoCs.
+
+config SYS_FSL_DDRC_GEN3
+	bool
+	depends on PPC
+	help
+	  Enable Freescale DDR3 controller for PowerPC SoCs.
+
+config SYS_FSL_DDRC_ARM_GEN3
+	bool
+	depends on ARM
+	help
+	  Enable Freescale DDR3 controller for ARM SoCs.
+
+config SYS_FSL_DDRC_GEN4
+	bool
+	help
+	  Enable Freescale DDR4 controller.
+
+config SYS_FSL_HAS_DDR4
+	bool
+
+config SYS_FSL_HAS_DDR3
+	bool
+
+config SYS_FSL_HAS_DDR2
+	bool
+
+config SYS_FSL_HAS_DDR1
+	bool
+
+choice
+	prompt "DDR technology"
+	default SYS_FSL_DDR4 if SYS_FSL_HAS_DDR4
+	default SYS_FSL_DDR3 if SYS_FSL_HAS_DDR3
+	default SYS_FSL_DDR2 if SYS_FSL_HAS_DDR2
+	default SYS_FSL_DDR1 if SYS_FSL_HAS_DDR1
+
+config SYS_FSL_DDR4
+	bool "Freescale DDR4 controller"
+	depends on SYS_FSL_HAS_DDR4
+	select SYS_FSL_DDRC_GEN4
+
+config SYS_FSL_DDR3
+	bool "Freescale DDR3 controller"
+	depends on SYS_FSL_HAS_DDR3
+	select SYS_FSL_DDRC_GEN3 if PPC
+	select SYS_FSL_DDRC_ARM_GEN3 if ARM
+
+config SYS_FSL_DDR2
+	bool "Freescale DDR2 controller"
+	depends on SYS_FSL_HAS_DDR2
+	select SYS_FSL_DDRC_GEN2 if (!MPC86xx && !SYS_FSL_DDRC_GEN3)
+	select SYS_FSL_DDRC_86XX_GEN2 if MPC86xx
+
+config SYS_FSL_DDR1
+	bool "Freescale DDR1 controller"
+	depends on SYS_FSL_HAS_DDR1
+	select SYS_FSL_DDRC_GEN1
+
+endchoice
+
+endmenu
+
+config SYS_FSL_ERRATUM_A008378
+	bool
+
+config SYS_FSL_ERRATUM_A008511
+	bool
+
+config SYS_FSL_ERRATUM_A009663
+	bool
+
+config SYS_FSL_ERRATUM_A009801
+	bool
+
+config SYS_FSL_ERRATUM_A009803
+	bool
+
+config SYS_FSL_ERRATUM_A009942
+	bool
+
+config SYS_FSL_ERRATUM_A010165
+	bool
+
+config SYS_FSL_ERRATUM_NMG_DDR120
+	bool
+
+config SYS_FSL_ERRATUM_DDR_115
+	bool
+
+config SYS_FSL_ERRATUM_DDR111_DDR134
+	bool
+
+config SYS_FSL_ERRATUM_DDR_A003
+	bool
+
+config SYS_FSL_ERRATUM_DDR_A003474
+	bool

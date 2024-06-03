@@ -1,0 +1,213 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2017, Bin Meng <bmeng.cn@gmail.com>
+ */
+
+/dts-v1/;
+
+#include <asm/arch-braswell/fsp/fsp_configs.h>
+#include <dt-bindings/interrupt-router/intel-irq.h>
+
+/include/ "skeleton.dtsi"
+/include/ "serial.dtsi"
+/include/ "reset.dtsi"
+/include/ "rtc.dtsi"
+/include/ "tsc_timer.dtsi"
+
+/ {
+	model = "Intel Cherry Hill";
+	compatible = "intel,cherryhill", "intel,braswell";
+
+	aliases {
+		serial0 = &serial;
+		spi0 = &spi;
+	};
+
+	config {
+		silent_console = <0>;
+	};
+
+	chosen {
+		stdout-path = "/serial";
+	};
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu@0 {
+			device_type = "cpu";
+			compatible = "cpu-x86";
+			reg = <0>;
+			intel,apic-id = <0>;
+		};
+
+		cpu@1 {
+			device_type = "cpu";
+			compatible = "cpu-x86";
+			reg = <1>;
+			intel,apic-id = <2>;
+		};
+
+		cpu@2 {
+			device_type = "cpu";
+			compatible = "cpu-x86";
+			reg = <2>;
+			intel,apic-id = <4>;
+		};
+
+		cpu@3 {
+			device_type = "cpu";
+			compatible = "cpu-x86";
+			reg = <3>;
+			intel,apic-id = <6>;
+		};
+	};
+
+	pci {
+		compatible = "pci-x86";
+		#address-cells = <3>;
+		#size-cells = <2>;
+		u-boot,dm-pre-reloc;
+		ranges = <0x02000000 0x0 0x80000000 0x80000000 0 0x40000000
+			  0x42000000 0x0 0xc0000000 0xc0000000 0 0x20000000
+			  0x01000000 0x0 0x2000 0x2000 0 0xe000>;
+
+		pch@1f,0 {
+			reg = <0x0000f800 0 0 0 0>;
+			compatible = "intel,pch9";
+
+			irq-router {
+				compatible = "intel,irq-router";
+				intel,pirq-config = "ibase";
+				intel,ibase-offset = <0x50>;
+				intel,pirq-link = <8 8>;
+				intel,pirq-mask = <0xdee0>;
+				intel,pirq-routing = <
+					/* Braswell PCI devices */
+					PCI_BDF(0, 2, 0) INTA PIRQA
+					PCI_BDF(0, 3, 0) INTA PIRQA
+					PCI_BDF(0, 11, 0) INTA PIRQA
+					PCI_BDF(0, 16, 0) INTA PIRQA
+					PCI_BDF(0, 17, 0) INTA PIRQA
+					PCI_BDF(0, 18, 0) INTA PIRQA
+					PCI_BDF(0, 19, 0) INTA PIRQA
+					PCI_BDF(0, 20, 0) INTA PIRQA
+					PCI_BDF(0, 21, 0) INTA PIRQA
+					PCI_BDF(0, 24, 0) INTA PIRQA
+					PCI_BDF(0, 24, 1) INTC PIRQC
+					PCI_BDF(0, 24, 2) INTD PIRQD
+					PCI_BDF(0, 24, 3) INTB PIRQB
+					PCI_BDF(0, 24, 4) INTA PIRQA
+					PCI_BDF(0, 24, 5) INTC PIRQC
+					PCI_BDF(0, 24, 6) INTD PIRQD
+					PCI_BDF(0, 24, 7) INTB PIRQB
+					PCI_BDF(0, 26, 0) INTA PIRQA
+					PCI_BDF(0, 27, 0) INTA PIRQA
+					PCI_BDF(0, 28, 0) INTA PIRQA
+					PCI_BDF(0, 28, 1) INTB PIRQB
+					PCI_BDF(0, 28, 2) INTC PIRQC
+					PCI_BDF(0, 28, 3) INTD PIRQD
+					PCI_BDF(0, 30, 0) INTA PIRQA
+					PCI_BDF(0, 30, 3) INTA PIRQA
+					PCI_BDF(0, 30, 4) INTA PIRQA
+					PCI_BDF(0, 31, 0) INTB PIRQB
+					PCI_BDF(0, 31, 3) INTB PIRQB
+
+					/*
+					 * PCIe root ports downstream
+					 * interrupts
+					 */
+					PCI_BDF(1, 0, 0) INTA PIRQA
+					PCI_BDF(1, 0, 0) INTB PIRQB
+					PCI_BDF(1, 0, 0) INTC PIRQC
+					PCI_BDF(1, 0, 0) INTD PIRQD
+					PCI_BDF(2, 0, 0) INTA PIRQB
+					PCI_BDF(2, 0, 0) INTB PIRQC
+					PCI_BDF(2, 0, 0) INTC PIRQD
+					PCI_BDF(2, 0, 0) INTD PIRQA
+					PCI_BDF(3, 0, 0) INTA PIRQC
+					PCI_BDF(3, 0, 0) INTB PIRQD
+					PCI_BDF(3, 0, 0) INTC PIRQA
+					PCI_BDF(3, 0, 0) INTD PIRQB
+					PCI_BDF(4, 0, 0) INTA PIRQD
+					PCI_BDF(4, 0, 0) INTB PIRQA
+					PCI_BDF(4, 0, 0) INTC PIRQB
+					PCI_BDF(4, 0, 0) INTD PIRQC
+				>;
+			};
+
+			spi: spi {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				compatible = "intel,ich9-spi";
+				intel,spi-lock-down;
+
+				spi-flash@0 {
+					#address-cells = <1>;
+					#size-cells = <1>;
+					reg = <0>;
+					compatible = "macronix,mx25u6435f", "jedec,spi-nor";
+					memory-map = <0xff800000 0x00800000>;
+					rw-mrc-cache {
+						label = "rw-mrc-cache";
+						reg = <0x005e0000 0x00010000>;
+					};
+				};
+			};
+		};
+	};
+
+	fsp {
+		compatible = "intel,braswell-fsp";
+		fsp,memory-upd {
+			compatible = "intel,braswell-fsp-memory";
+			fsp,mrc-init-tseg-size = <MRC_INIT_TSEG_SIZE_4MB>;
+			fsp,mrc-init-mmio-size = <MRC_INIT_MMIO_SIZE_2048MB>;
+			fsp,mrc-init-spd-addr1 = <0xa0>;
+			fsp,mrc-init-spd-addr2 = <0xa2>;
+			fsp,igd-dvmt50-pre-alloc = <IGD_DVMT50_PRE_ALLOC_32MB>;
+			fsp,aperture-size = <APERTURE_SIZE_256MB>;
+			fsp,gtt-size = <GTT_SIZE_1MB>;
+			fsp,enable-dvfs;
+			fsp,memory-type = <DRAM_TYPE_DDR3>;
+		};
+		fsp,silicon-upd {
+			compatible = "intel,braswell-fsp-silicon";
+			fsp,sdcard-mode = <SDCARD_MODE_PCI>;
+			fsp,enable-hsuart1;
+			fsp,enable-sata;
+			fsp,enable-xhci;
+			fsp,lpe-mode = <LPE_MODE_PCI>;
+			fsp,enable-dma0;
+			fsp,enable-dma1;
+			fsp,enable-i2c0;
+			fsp,enable-i2c1;
+			fsp,enable-i2c2;
+			fsp,enable-i2c3;
+			fsp,enable-i2c4;
+			fsp,enable-i2c5;
+			fsp,enable-i2c6;
+			fsp,emmc-mode = <EMMC_MODE_PCI>;
+			fsp,sata-speed = <SATA_SPEED_GEN3>;
+			fsp,pmic-i2c-bus = <0>;
+			fsp,enable-isp;
+			fsp,isp-pci-dev-config = <ISP_PCI_DEV_CONFIG_2>;
+			fsp,pnp-settings = <PNP_SETTING_POWER_AND_PERF>;
+			fsp,sd-detect-chk;
+		};
+	};
+
+	microcode {
+		update@0 {
+#include "microcode/m01406c2220.dtsi"
+		};
+		update@1 {
+#include "microcode/m01406c3363.dtsi"
+		};
+		update@2 {
+#include "microcode/m01406c440a.dtsi"
+		};
+	};
+
+};

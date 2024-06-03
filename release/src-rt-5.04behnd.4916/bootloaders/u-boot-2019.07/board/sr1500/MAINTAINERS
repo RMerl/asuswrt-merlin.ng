@@ -1,0 +1,6 @@
+SOCFPGA SR1500 BOARD
+M:	Stefan Roese <sr@denx.de>
+S:	Maintained
+F:	board/sr1500/
+F:	include/configs/socfpga_sr1500.h
+F:	configs/socfpga_sr1500_defconfig

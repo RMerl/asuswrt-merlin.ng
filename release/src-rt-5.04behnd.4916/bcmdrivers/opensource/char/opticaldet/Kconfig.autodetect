@@ -1,0 +1,10 @@
+config BCM_OPTICALDET
+	tristate "Support for optical device detection"
+	depends on BCM_SFP
+	default m
+
+config BCM_OPTICALDET_IMPL
+	int "Implementation index for BRCM optical device detection"
+	depends on BCM_OPTICALDET
+	default 2
+

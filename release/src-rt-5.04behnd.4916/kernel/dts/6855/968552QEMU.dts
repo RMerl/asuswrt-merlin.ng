@@ -1,0 +1,14 @@
+#include "inc/68552_qemu.dtsi"
+
+/ {
+	model = "968552QEMU";
+
+
+      wan_serdes {
+          status = "okay";
+      };
+};
+
+&uart0 {
+	status = "okay";
+};

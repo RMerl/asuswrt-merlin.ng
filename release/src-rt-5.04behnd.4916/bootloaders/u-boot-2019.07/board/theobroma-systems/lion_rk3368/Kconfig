@@ -1,0 +1,21 @@
+if TARGET_LION_RK3368
+
+config SYS_BOARD
+	default "lion_rk3368"
+
+config SYS_VENDOR
+	default "theobroma-systems"
+
+config SYS_CONFIG_NAME
+	default "lion_rk3368"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+
+config ENV_SIZE
+	default 0x2000
+
+config ENV_OFFSET
+	default 0x3c000 if ENV_IS_IN_SPI_FLASH
+
+endif

@@ -1,0 +1,6 @@
+
+compatible = "brcm,otp";
+
+reg = <OTP_REG_OFFSET OTP_REG_SIZE>
+;
+

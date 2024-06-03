@@ -17,10 +17,10 @@ struct pnsInfo mapPushInfo[] =
 	---------------------------------*/
 	{SYS_WAN_DISCONN_EVENT                       ,"Unable to connect to the Internet"                       ,"" },
 	{SYS_WAN_BLOCK_EVENT                         ,"WAN Connection is paused"                                ,"" },
-	{SYS_NEW_DEVICE_WIFI_CONNECTED_EVENT         ,"New Device Connected(wifi)"                              ,"webhook_device_connect" },
-	{SYS_NEW_DEVICE_ETH_CONNECTED_EVENT          ,"New Device Connected(eth)"                               ,"webhook_device_connect" },
+	{SYS_NEW_DEVICE_WIFI_CONNECTED_EVENT         ,"New Device Connected(wifi)"                              ,"" },
+	{SYS_NEW_DEVICE_ETH_CONNECTED_EVENT          ,"New Device Connected(eth)"                               ,"" },
 	{SYS_FW_NWE_VERSION_AVAILABLE_EVENT          ,"New Firmware Available"                                  ,"" },
-	{SYS_EXISTED_DEVICE_WIFI_CONNECTED_EVENT     ,"Manage Your Wireless Client"                             ,"webhook_device_connect" },
+	{SYS_EXISTED_DEVICE_WIFI_CONNECTED_EVENT     ,"Manage Your Wireless Client"                             ,"" },
 	{SYS_WAN_CABLE_UNPLUGGED_EVENT               ,"The network cable is unplugged"                          ,"" },
 	{SYS_WAN_PPPOE_AUTH_FAILURE_EVENT            ,"PPPoE Authentication Failure"                            ,"" },
 	{SYS_WAN_USB_MODEM_UNREADY_EVENT             ,"USB modem is not ready."                                 ,"" },

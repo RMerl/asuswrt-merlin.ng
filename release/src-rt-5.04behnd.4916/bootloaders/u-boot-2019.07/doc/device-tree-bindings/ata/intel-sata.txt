@@ -1,0 +1,26 @@
+Intel Pantherpoint SATA Device Binding
+======================================
+
+The device tree node which describes the operation of the Intel Pantherpoint
+SATA device is as follows:
+
+Required properties :
+- compatible = "intel,pantherpoint-ahci"
+- intel,sata-mode : string, one of:
+     "ahci" : Use AHCI mode (default)
+     "combined" : Use combined IDE + legacy mode
+     "plain-ide" : Use plain IDE mode
+- intel,sata-port-map : Which SATA ports are enabled, bit 0=enable first port,
+    bit 1=enable second port, etc.
+- intel,sata-port0-gen3-tx : Value for the IOBP_SP0G3IR register
+- intel,sata-port1-gen3-tx : Value for the IOBP_SP1G3IR register
+
+Example
+-------
+
+sata {
+	compatible = "intel,pantherpoint-ahci";
+	intel,sata-mode = "ahci";
+	intel,sata-port-map = <1>;
+	intel,sata-port0-gen3-tx = <0x00880a7f>;
+};

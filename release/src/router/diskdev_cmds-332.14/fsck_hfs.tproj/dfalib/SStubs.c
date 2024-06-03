@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999 Apple Computer, Inc. All rights reserved.
+ * Copyright (c) 1999, 2002-2003, 2005-2006 Apple Computer, Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
  * 
@@ -91,6 +91,8 @@ OSErr MemError()
 
 void DebugStr(ConstStr255Param debuggerMsg)
 {
+	/* DebugStr is only called when built with DEBUG_BUILD set */
+	printf ("\t%.*s\n", debuggerMsg[0], &debuggerMsg[1]);
 }
 
 

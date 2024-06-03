@@ -1,0 +1,6 @@
+FIREFLY
+M:	Simon Glass <sjg@chromium.org>
+S:	Maintained
+F:	board/firefly/firefly-rk3288
+F:	include/configs/firefly-rk3288.h
+F:	configs/firefly-rk3288_defconfig

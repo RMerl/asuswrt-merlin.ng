@@ -1,0 +1,124 @@
+.schedule_content_container .list_period_content{
+	background: rgba(255,255,255,0.08);
+	border: 1px solid rgba(255, 255, 255, 0.05);
+	border-radius: 0;
+}
+.schedule_content_container .list_period_content:hover{
+	border: 1px solid transparent;
+	-moz-border-image: -moz-linear-gradient(88.88deg, #0A5EDB 20.22%, #DB0A2C 85.8%);
+	-webkit-border-image: -webkit-linear-gradient(88.88deg, #0A5EDB 20.22%, #DB0A2C 85.8%);
+	border-image: linear-gradient(88.88deg, #0A5EDB 20.22%, #DB0A2C 85.8%);
+	border-image-slice: 2;
+}
+.schedule_content_container .list_period_content.on .time_set_title{
+	color: #FF3535;
+}
+.schedule_timeset_container,
+.accesstime_container .timeset_container{
+	background: rgba(0, 0, 0, 0.12);
+	border: 1px solid rgba(255,255,255,0.1);
+	border-radius: 0;
+}
+.sche_action_container > div.sche_btn_save{
+	border: 1px solid #FF3535;
+	background: #FF3535;
+	border-radius: 0;
+}
+.sche_action_container > div.sche_btn_cancel{
+	background: rgba(235, 235, 235, 0.2);
+	border: 1px solid #4D4D4D;
+	color: #EBEBEB;
+	border-radius: 0;
+}
+.hr_mins_container .hr_mins_title{
+	color: #FF3535;
+}
+.combination_input_select{
+	border: 1px solid #4D4D4D;
+	border-radius: 0;
+}
+.combination_input_select .combi_sel:before{
+	border-top: 2px solid #FF3535;
+	border-right: 2px solid #FF3535;
+}
+.combination_input_select .combi_sel_list{
+	background: #0B0B0B;
+	border: 1px solid rgba(255, 255, 255, 0.3);
+	border-radius: 0;
+}
+.combination_input_select .combi_sel_list::-webkit-scrollbar-track{
+	border: 4px solid #0B0B0B;
+	background-color: rgba(255, 53, 53, 0.5);
+}
+.combination_input_select .combi_sel_list::-webkit-scrollbar-thumb{
+	background-color: #FF3535;
+	border: 1px solid #0B0B0B;
+}
+.all_day_component .cb_icon{
+	border-radius: 0;
+	border: 1px solid #4D4D4D;
+}
+.all_day_component .cb_icon.clicked{
+	background-color:#000;
+	border: 1px solid #4D4D4D;
+	box-shadow: initial;
+}
+.all_day_component .cb_icon.clicked:before{
+	border-top: 2px solid #FF3535;
+	border-right: 2px solid #FF3535;
+}
+.weekdayset_component > div{
+	border-radius: 0;
+	background: rgba(128, 128, 128, 0.2);
+	color: #999999;
+}
+.weekdayset_component > div.clicked{
+	background: linear-gradient(91.54deg, #0E7287 7.08%, #5600E6 54%, #940038 85.11%);
+	color: #FFFFFF;
+}
+.add_new_component{
+	background: rgba(255, 255, 255, 0.1);
+	border: 1px solid #4D4D4D;
+	border-radius: 0;
+}
+.add_new_component:hover{
+	background: linear-gradient(91.54deg, #0E7287 7.08%, #5600E6 54%, #940038 85.11%);
+	border: 1px solid initial;
+	border-radius: 0;
+	color: rgb(255, 255, 255);
+}
+.icon_switch{
+	border-radius: 0px;
+}
+.icon_switch.off{
+	background: #0B0B0B;
+	border: 2px solid #666666;
+}
+.icon_switch.on{
+	background: #000;
+	border: 2px solid #FF3535;
+}
+.icon_switch.on:before{
+	background: #FF3535;
+}
+.icon_switch:before{
+	background: #666666;
+	border-radius: 0%;
+}
+.accesstime_container{
+	background-color: transparent;
+}
+.quickset_component > div{
+	border: 1px solid #4D4D4D;
+	color: #EBEBEB;
+	border-radius: 0;
+}
+.quickset_component > div.clicked{
+	background: linear-gradient(91.54deg, #0E7287 7.08%, #5600E6 54%, #940038 85.11%);
+	border: 1px solid rgba(255, 53, 53, 0.4);
+	border-radius: 0;
+	color: rgb(255, 255, 255);
+}
+.radio_options_container{
+	background: rgba(128,128,128,0.08) !important;
+}

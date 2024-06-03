@@ -1,0 +1,164 @@
+#
+# Boot count configuration
+#
+
+menuconfig BOOTCOUNT_LIMIT
+	bool "Enable support for checking boot count limit"
+	help
+	  Enable checking for exceeding the boot count limit.
+	  More information: http://www.denx.de/wiki/DULG/UBootBootCountLimit
+
+if BOOTCOUNT_LIMIT
+
+choice
+	prompt "Boot count device"
+	default BOOTCOUNT_AM33XX if AM33XX || SOC_DA8XX
+	default BOOTCOUNT_AT91 if AT91SAM9XE
+	default BOOTCOUNT_GENERIC
+
+config BOOTCOUNT_GENERIC
+	bool "Generic default boot counter"
+	help
+	  Generic bootcount stored at SYS_BOOTCOUNT_ADDR.
+
+	  SYS_BOOTCOUNT_ADDR:
+	    Set to the address where the bootcount and bootcount magic
+	    will be stored.
+
+config BOOTCOUNT_EXT
+	bool "Boot counter on EXT filesystem"
+	help
+	  Add support for maintaining boot count in a file on an EXT
+	  filesystem.
+
+config BOOTCOUNT_AM33XX
+	bool "Boot counter in AM33XX RTC IP block"
+	depends on AM33XX || SOC_DA8XX
+	select SPL_AM33XX_ENABLE_RTC32K_OSC if AM33XX
+	help
+	  A bootcount driver for the RTC IP block found on many TI platforms.
+	  This requires the RTC clocks, etc, to be enabled prior to use and
+	  not all boards with this IP block on it will have the RTC in use.
+
+config BOOTCOUNT_ENV
+	bool "Boot counter in environment"
+	help
+	  If no softreset save registers are found on the hardware
+	  "bootcount" is stored in the environment. To prevent a
+	  saveenv on all reboots, the environment variable
+	  "upgrade_available" is used. If "upgrade_available" is
+	  0, "bootcount" is always 0, if "upgrade_available" is
+	  1 "bootcount" is incremented in the environment.
+	  So the Userspace Application must set the "upgrade_available"
+	  and "bootcount" variable to 0, if a boot was successfully.
+
+config BOOTCOUNT_RAM
+	bool "Boot counter in RAM"
+	help
+	  Store the bootcount in DRAM protected against against bit errors
+	  due to short power loss or holding a system in RESET.
+
+config BOOTCOUNT_I2C
+	bool "Boot counter on I2C device"
+	help
+	  Enable support for the bootcounter on an i2c (like RTC) device.
+	  CONFIG_SYS_I2C_RTC_ADDR = i2c chip address
+	  CONFIG_SYS_BOOTCOUNT_ADDR = i2c addr which is used for
+	                              the bootcounter.
+
+config BOOTCOUNT_AT91
+	bool "Boot counter for Atmel AT91SAM9XE"
+	depends on AT91SAM9XE
+
+config DM_BOOTCOUNT
+        bool "Boot counter in a device-model device"
+	help
+	  Enables reading/writing the bootcount in a device-model based
+	  backing store.  If an entry in /chosen/u-boot,bootcount-device
+	  exists, this will be the preferred bootcount device; otherwise
+	  the first available bootcount device will be used.
+
+endchoice
+
+if DM_BOOTCOUNT
+
+menu "Backing stores for device-model backed bootcount"
+config DM_BOOTCOUNT_RTC
+	bool "Support RTC devices as a backing store for bootcount"
+	depends on DM_RTC
+	help
+	  Enabled reading/writing the bootcount in a DM RTC device.
+	  The wrapper device is to be specified with the compatible string
+	  'u-boot,bootcount-rtc' and the 'rtc'-property (a phandle pointing
+	  to the underlying RTC device) and an optional 'offset' property
+	  are supported.
+
+	  Accesses to the backing store are performed using the write16
+	  and read16 ops of DM RTC devices.
+
+endmenu
+
+endif
+
+config BOOTCOUNT_BOOTLIMIT
+	int "Maximum number of reboot cycles allowed"
+	default 0
+	help
+	  Set the Maximum number of reboot cycles allowed without the boot
+	  counter being cleared.
+	  If set to 0 do not set a boot limit in the environment.
+
+config BOOTCOUNT_ALEN
+	int "I2C address length"
+	default 1
+	depends on BOOTCOUNT_I2C
+	help
+	  Length of the the I2C address at SYS_BOOTCOUNT_ADDR for storing
+	  the boot counter.
+
+config SYS_BOOTCOUNT_SINGLEWORD
+	bool "Use single word to pack boot count and magic value"
+	depends on BOOTCOUNT_GENERIC
+	help
+	  This option enables packing boot count magic value and boot count
+	  into single word (32 bits).
+
+config SYS_BOOTCOUNT_EXT_INTERFACE
+	string "Interface on which to find boot counter EXT filesystem"
+	default "mmc"
+	depends on BOOTCOUNT_EXT
+	help
+	  Set the interface to use when locating the filesystem to use for the
+	  boot counter.
+
+config SYS_BOOTCOUNT_EXT_DEVPART
+	string "Partition of the boot counter EXT filesystem"
+	default "0:1"
+	depends on BOOTCOUNT_EXT
+	help
+	  Set the partition to use when locating the filesystem to use for the
+	  boot counter.
+
+config SYS_BOOTCOUNT_EXT_NAME
+	string "Path and filename of the EXT filesystem based boot counter"
+	default "/boot/failures"
+	depends on BOOTCOUNT_EXT
+	help
+	  Set the filename and path of the file used to store the boot counter.
+
+config SYS_BOOTCOUNT_ADDR
+	hex "RAM address used for reading and writing the boot counter"
+	default 0x44E3E000 if BOOTCOUNT_AM33XX
+	default 0xE0115FF8 if ARCH_LS1043A || ARCH_LS1021A
+	depends on BOOTCOUNT_AM33XX || BOOTCOUNT_GENERIC || BOOTCOUNT_EXT || \
+		   BOOTCOUNT_I2C
+	help
+	  Set the address used for reading and writing the boot counter.
+
+config SYS_BOOTCOUNT_MAGIC
+	hex "Magic value for the boot counter"
+	default 0xB001C041
+	help
+	  Set the magic value used for the boot counter.
+
+endif

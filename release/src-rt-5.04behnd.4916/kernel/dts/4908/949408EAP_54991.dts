@@ -1,0 +1,85 @@
+#include "949408EAP_XPHY.dts"
+
+&mdio_sf2 {
+        /* Port PHY mapping:
+            port_runner_p0  <-->  port_sf2_p8 -###- port_sf2_p0 <------------------> phy_gphy0
+            port_runner_p1  <-->  port_sf2_p5 -# #- port_sf2_p1 <------------------> phy_gphy1
+            port_runner_p2  <-->  port_sf2_p4 -# #- port_sf2_p2 <------------------> phy_gphy2
+                                               # #- port_sf2_p3 <------------------> phy_gphy3
+                                               ###- port_sf2_p7 <--> xbar_grp0 -+-+- phy_serdes - phy_cascade
+         */
+	/* PHYs directly connected to SF2 */
+	phy_gphy0 {
+		status = "okay";
+	};
+	phy_gphy1 {
+		status = "okay";
+	};
+	phy_gphy2 {
+		status = "okay";
+	};
+	phy_gphy3 {
+		status = "okay";
+	};
+
+	/* Cascade PHY */
+	phy_cascade {
+		reg = <31>;
+		enet-phy-lane-swap;
+		phy-reset = <&gpioc 31 GPIO_ACTIVE_LOW>;
+		status = "okay";
+	};
+	
+	/* PHYs connected to crossbar */
+	phy_serdes {
+		phy-handle = <&phy_cascade>;
+		status = "okay";
+	};
+
+	/* Crossbar groups */
+	xbar_grp0 {
+		phy-handle = <&phy_serdes>;
+		status = "okay";
+	};
+};
+
+&switch_sf2 {
+	ports {
+		port_sf2_p0 {
+			phy-handle = <&phy_gphy0>;
+			network-leds = <&led26>;
+			status = "okay";
+		};
+
+		port_sf2_p1 {
+			phy-handle = <&phy_gphy1>;
+			network-leds = <&led27>;
+			status = "okay";
+		};
+
+		port_sf2_p2 {
+			phy-handle = <&phy_gphy2>;
+			network-leds = <&led28>;
+			status = "okay";
+		};
+
+		port_sf2_p3 {
+			phy-handle = <&phy_gphy3>;
+			network-leds = <&led29>;
+			status = "okay";
+		};
+
+		port_sf2_p7 {
+			phy-handle = <&xbar_grp0>;
+			status = "okay";
+		};
+
+	};
+};
+
+&switch0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&mii_mdc_pin_48 &mii_mdio_pin_49>;
+	ports {
+	};
+};

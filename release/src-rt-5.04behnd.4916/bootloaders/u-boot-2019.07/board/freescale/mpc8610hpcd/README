@@ -1,0 +1,73 @@
+Freescale MPC8610HPCD board
+===========================
+
+
+Building U-Boot
+---------------
+
+    $ make MPC8610HPCD_config
+    Configuring for MPC8610HPCD board...
+
+    $ make
+
+
+Flashing U-Boot
+---------------
+The flash is 128M starting at 0xF800_0000.
+
+The alternate image is at 0xFBF0_0000
+The      boot image is at 0xFFF0_0000.
+
+
+To Flash U-Boot into the booting bank:
+
+	tftp 1000000 u-boot.bin
+	protect off all
+	erase fff00000 +$filesize
+	cp.b 1000000 fff00000 $filesize
+
+
+To Flash U-Boot into the alternate bank
+
+	tftp 1000000 u-boot.bin
+	erase fbf00000 +$filesize
+	cp.b 1000000 fbf00000 $filesize
+
+
+pixis_reset command
+-------------------
+A new command, "pixis_reset", is introduced to reset mpc8610hpcd board
+using the FPGA sequencer.  When the board restarts, it has the option
+of using either the current or alternate flash bank as the boot
+image, with or without the watchdog timer enabled, and finally with
+or without frequency changes.
+
+Usage is;
+
+	pixis_reset
+	pixis_reset altbank
+	pixis_reset altbank wd
+	pixis_reset altbank cf <SYSCLK freq> <COREPLL ratio> <MPXPLL ratio>
+	pixis_reset cf <SYSCLK freq> <COREPLL ratio> <MPXPLL ratio>
+
+Examples;
+
+	/* reset to current bank, like "reset" command */
+	pixis_reset
+
+	/* reset board but use the to alternate flash bank */
+	pixis_reset altbank
+
+	/* reset board, use alternate flash bank with watchdog timer enabled*/
+	pixis_reset altbank wd
+
+	/* reset board to alternate bank with frequency changed.
+	 * 40 is SYSCLK, 2.5 is COREPLL ratio, 10 is MPXPLL ratio
+	 */
+	pixis-reset altbank cf 40 2.5 10
+
+
+DIP Switch Settings
+-------------------
+To manually switch the flash banks using the DIP switch
+settings, toggle both SW6:1 and SW6:2.

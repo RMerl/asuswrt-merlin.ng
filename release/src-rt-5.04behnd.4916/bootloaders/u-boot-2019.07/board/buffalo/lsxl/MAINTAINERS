@@ -1,0 +1,7 @@
+LSXL BOARD
+M:	Michael Walle <michael@walle.cc>
+S:	Maintained
+F:	board/buffalo/lsxl/
+F:	include/configs/lsxl.h
+F:	configs/lschlv2_defconfig
+F:	configs/lsxhl_defconfig

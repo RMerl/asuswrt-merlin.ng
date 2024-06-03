@@ -1,0 +1,6 @@
+BCM23550_W1D BOARD
+M:	Steve Rae <steve.rae@raedomain.com>
+S:	Maintained
+F:	board/broadcom/bcm23550_w1d/
+F:	include/configs/bcm23550_w1d.h
+F:	configs/bcm23550_w1d_defconfig

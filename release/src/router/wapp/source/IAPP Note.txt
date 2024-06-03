@@ -1,0 +1,1 @@
+Note: the broadcast/netmask address of all AP must be the same.

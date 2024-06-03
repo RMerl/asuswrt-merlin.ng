@@ -1,0 +1,12 @@
+SOCFPGA BOARD
+M:	Dinh Nguyen <dinguyen@kernel.org>
+M:	Chin-Liang See <clsee@altera.com>
+S:	Maintained
+F:	board/altera/cyclone5-socdk/
+F:	include/configs/socfpga_cyclone5_socdk.h
+F:	configs/socfpga_cyclone5_defconfig
+
+SOCRATES BOARD
+M:	Stefan Roese <sr@denx.de>
+S:	Maintained
+F:	configs/socfpga_socrates_defconfig

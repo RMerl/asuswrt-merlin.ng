@@ -1,0 +1,21 @@
+<PUBLISH>
+--- 963178G	(assumes base profile is UBus) 2022-01-04 13:05:07.831426556 -0800
++++ 963178G_DBUS	2022-01-04 13:01:20.088210419 -0800
+@@ -144,24 +144,17 @@
+#
+# Disable UBus and its associated apps.
+#
+-BUILD_UBUS=y
+-BUILD_LIBUBOX=y
+-BUILD_BUS_NONE=y
+#
+# Enable DBus and its associated apps.
+#
++BUILD_DBUS=y
++BUILD_GLIB=y
++BUILD_ZLIB=y
++BUILD_FFI=y
++BUILD_GETTEXT=y
+# Optional debug feature
+#+BUILD_DBUSREMOTE_TCP=y
+

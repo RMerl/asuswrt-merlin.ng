@@ -83,7 +83,11 @@ NTSTATUS smb_register_idmap_nss(int version,
 				const char *name, 
 				struct nss_info_methods *methods);
 
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+NTSTATUS nss_init_samba( const char **nss_list );
+#else
 NTSTATUS nss_init( const char **nss_list );
+#endif
 
 NTSTATUS nss_get_info( const char *domain, const DOM_SID *user_sid,
 		       TALLOC_CTX *ctx,

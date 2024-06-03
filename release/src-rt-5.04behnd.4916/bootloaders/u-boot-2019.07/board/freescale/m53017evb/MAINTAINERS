@@ -1,0 +1,6 @@
+M53017EVB BOARD
+M:	TsiChung Liew <Tsi-Chung.Liew@nxp.com>
+S:	Maintained
+F:	board/freescale/m53017evb/
+F:	include/configs/M53017EVB.h
+F:	configs/M53017EVB_defconfig

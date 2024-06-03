@@ -1,0 +1,41 @@
+How to use U-Boot on variscite DART-6UL Evaluation Kit
+------------------------------------------------------
+
+- Configure and build U-Boot for DART-6UL iMX6ULL:
+
+    $ make mrproper
+    $ make variscite_dart6ul_defconfig
+    $ make
+
+  This will generate SPL and u-boot-dtb.img images.
+
+Boot from MMC/SD:
+- The SPL and u-boot-dtb.img images need to be flashed into the micro SD card:
+
+    $ sudo dd if=SPL of=/dev/mmcblk0 bs=1k seek=1; sync
+    $ sudo dd if=u-boot-dtb.img of=/dev/mmcblk0 bs=1k seek=69; sync
+
+- Boot mode settings:
+
+  Boot switch position: SW1 -> 0
+			SW2 -> 0
+
+Boot from eMMC:
+- if bootpart is not enabled by default, to enable under Linux
+	echo 0 >/sys/block/mmcblk1boot0/force_ro
+	mmc bootpart enable 1 1 /dev/mmcblk1boot0
+
+- Flash the SPL and u-boot-dtb.img to mmcblk1boot0
+    $ sudo dd if=SPL of=/dev/mmcblk1boot0 bs=1k seek=1; sync
+    $ sudo dd if=u-boot-dtb.img of=/dev/mmcblk1boot0 bs=1k seek=69; sync
+
+- Boot mode settings:
+
+  Boot switch position: SW1 -> 0
+			SW2 -> 1
+
+- Connect the Serial cable to UART0 and the PC for the console.
+
+- Insert the micro SD card in the board and power it up.
+
+- U-Boot messages should come up.

@@ -1,0 +1,21 @@
+#include "6855_ikos.dtsi"
+
+/ {
+	/* arch */
+	#define PMU_CORE0_SPI	7
+	#define PMU_CORE1_SPI	8
+	#define PMU_CORE2_SPI	9
+	#include "../../ip/bcm_cortexA7_tri.dtsi"
+};
+
+&CA7_0 {
+	cpu-release-addr = <0xFF800568>;
+};
+
+&CA7_1 {
+	cpu-release-addr = <0xFF800568>;
+};
+
+&CA7_2 {
+	cpu-release-addr = <0xFF800568>;
+};

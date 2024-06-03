@@ -37,15 +37,85 @@
 	margin-left: 10px;
 	margin-right: 10px;
 }
+
+#popup_modal{
+    display: flex;
+    height: 100%;
+    width: 100%;
+    z-index: 99;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+    position: fixed;
+    left: 0;
+    top: 0;
+    overflow: auto;
+}
+
+#asus_pp_EULA_modal {
+    background: #FFF;
+    width: 60%;
+    height: fit-content;
+    z-index: 10;
+    margin-top: 50px;
+    border-radius: 5px;
+}
+#asus_pp_header {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+}
+#asus_pp_title {
+	font-size: 35px;
+	font-weight: bold;
+}
+#asus_pp_title_sub {
+	font-size: 18px;
+	font-weight: bold;
+}
+
+#asus_pp_desc {
+	font-size: 10px;
+	font-weight: bold;
+}
+
+#eula_pp_main, #eula_pp_popup_main {
+	padding: 20px;
+	display: flex;
+	gap: 15px;
+	flex-direction: column;
+	text-align: left;
+}
+
+#asus_pp_eula_scroll {
+    height: 400px;
+}
+
+#closeBtn {
+    font-weight: bolder;
+    border-radius: 8px;
+    color: #FFFFFF;
+    background-color: #006ce1;
+    height: 33px;
+    padding: 0 0.7em 0 0.7em;
+    width: auto;
+    cursor: pointer;
+    outline: none;
+    line-height: 33px;
+    text-align: center;
+}
+
 </style>
 <script>
 
 var eula_status = {
 	"ASUS_EULA": "0",
+	"ASUS_PP_EULA": "0",
 	"TM_EULA": "0"
 }
 
 eula_status = httpApi.nvramGet(["ASUS_EULA", "TM_EULA"], true);
+eula_status.ASUS_PP_EULA = httpApi.privateEula.get().ASUS_PP_EULA;
+
 var link_internet = httpApi.nvramGet(["link_internet"], true).link_internet;
 
 var services_array = {
@@ -55,13 +125,14 @@ var services_array = {
 }
 var services_show = "<#ASUS_eula_withdraw0#>";
 function initial(){
-	var url = "";
+    var url1 = "";
+    var url2 = "";
 	show_menu();
 
-	url = "https://www.trendmicro.com/en_us/about/legal/privacy-policy-product.html"
-	$("#tm_eula_url").attr("href",url);
-	url = "https://esupport.trendmicro.com/en-us/home/pages/technical-support/1120473.aspx";
-	$("#tm_disclosure_url").attr("href",url);
+	url1 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Policy&lang="+ui_lang+"&kw=tm_ppp&num=";
+	$("#tm_eula_url").attr("href",url1);    // #TM_privacy_policy#
+	url2 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Policy&lang="+ui_lang+"&kw=tm_ka&num=";
+	$("#tm_disclosure_url").attr("href",url2);  // #TM_data_collection#
 
 	if(eula_status.ASUS_EULA == "1"){
 		document.getElementById("asus_eula").style.display = "";
@@ -84,6 +155,13 @@ function initial(){
 	else
 		document.getElementById("asus_eula").style.display = "none";
 
+	if(eula_status.ASUS_PP_EULA == "1"){
+		document.getElementById("asus_pp_eula").style.display = "";
+	}
+	else{
+		document.getElementById("asus_pp_eula").style.display = "none";
+	}
+
 	if(eula_status.TM_EULA == "1"){
 		document.getElementById("tm_eula").style.display = "";
 	}
@@ -91,7 +169,7 @@ function initial(){
 		document.getElementById("tm_eula").style.display = "none";
 	}
 
-	if(eula_status.ASUS_EULA == "1" || eula_status.TM_EULA == "1")
+	if(eula_status.ASUS_EULA == "1" || eula_status.ASUS_PP_EULA == "1" ||eula_status.TM_EULA == "1")
 		$("#privacy_desc").css('display', 'none');
 	else
 		$("#privacy_desc").css('display', 'block');
@@ -107,7 +185,7 @@ function hide_withdraw_sec(eula_type){
 	var eula_id = '#' + eula_type + '_eula';
 	$(eula_id).css("display", "none");
 
-	if($("#asus_eula").css("display") == "none" && $("#tm_eula").css("display") == "none")
+	if($("#asus_eula").css("display") == "none" && $("#tm_eula").css("display") == "none" && $("#asus_pp_eula").css("display") == "none")
 		$("#privacy_desc").css('display', 'block');
 
 }
@@ -135,13 +213,140 @@ function check_unregister_result(){
 		$.ajax({
 			url: "/set_ASUS_EULA.cgi",
 			data:{
-			"ASUS_EULA":"0"
+				"ASUS_EULA":"0"
 			},
 			success: function( response ) {
 				hide_withdraw_sec('asus');
 			}
 		});
 	}
+}
+
+function getEulaAge(lang){
+    let age = '';
+    switch (lang){
+        case 'TH':
+            age = '20';
+            break;
+        case 'BR':
+            age = '18';
+            break;
+        default:
+            age = '16';
+            break;
+    }
+    return age;
+}
+
+function show_eula(eula_type){
+
+    function initialLoad(uiLanguage){
+        $('#asus_pp_header').show();
+        $(".eula_age").html(getEulaAge(uiLanguage));
+        if(uiLanguage=="EN"){
+            $("#eula_url").attr({"href": "http://www.asus.com/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy"});
+        }else{
+            $("#eula_url").attr({"href": "http://www.asus.com/" + uiLanguage + "/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy"});
+        }
+        if (["UA", "TH", "BR", "CN", "KR"].includes(uiLanguage)){
+            $(".eula_child_text").show();
+        }
+        $('#asus_pp_desc').remove();
+        $('#eulaButtonContainer').remove();
+        $('#eulaConfirmContainer').remove();
+        $('#eula_pp_popup_main').remove();
+        $('#asus_pp_eula_content>div:not(:first-child)').remove();
+        $('<div>')
+            .attr({
+                "id":"closeBtn",
+                "onClick":"close_eula()"
+            })
+            .html('OK')
+            .appendTo($('#eula_pp_main'))
+    }
+
+    $('#popup_modal').show();
+    switch(eula_type){
+    		case "asus_pp":
+                var uiLanguage = httpApi.nvramGet(["preferred_lang"]).preferred_lang;
+                var eulaCloudUrl = "https://nw-dlcdnet.asus.com/plugin/pages/asus_pp_eula.htm";
+                waitasecond = 2000;
+
+                $('<div>')
+                    .attr({
+                        "id":  eula_type + "_EULA_modal"
+                    })
+                    .load(eulaCloudUrl, function (data) {
+                        initialLoad(uiLanguage)
+                    })
+                    .appendTo($('#popup_modal'))
+
+                setTimeout(function () {
+                    if($('#popup_modal').css('display')!='none'){
+                        if ($("#" + eula_type + "_eula_content").length == 0 && $("#asus_pp_EULA_modal").length == 0) {
+                            $('#popup_modal').empty()
+                            $('<div>')
+                                .attr({
+                                    "id":  eula_type + "_EULA_modal"
+                                })
+                                .load(eula_type + "_eula.htm", function (data) {
+                                    initialLoad(uiLanguage);
+                                })
+                                .appendTo($('#popup_modal'))
+                        }
+                    }
+                }, waitasecond)
+    			break;
+    }
+}
+
+function show_eula_confirm(eula_type){
+
+    function initialLoadConfirm(){
+        $('#eula_pp_main').remove();
+        $('#eula_pp_popup_main').show();
+        $('#readAgainBtn').attr("onClick","close_eula()");
+        $('#knowRiskBtn').attr("onClick","withdraw_eula('asus_pp')");
+    }
+
+    $('#popup_modal').show();
+    switch(eula_type){
+    		case "asus_pp":
+                var uiLanguage = httpApi.nvramGet(["preferred_lang"]).preferred_lang;
+                var eulaCloudUrl = "https://nw-dlcdnet.asus.com/plugin/pages/asus_pp_eula.htm";
+                waitasecond = 2000;
+
+                $('<div>')
+                    .attr({
+                        "id":  eula_type + "_EULA_modal"
+                    })
+                    .load(eulaCloudUrl, function (data) {
+                        initialLoadConfirm();
+                    })
+                    .appendTo($('#popup_modal'))
+
+                setTimeout(function () {
+                    if($('#popup_modal').css('display')!='none'){
+                        if ($("#" + eula_type + "_eula_content").length == 0 && $("#asus_pp_EULA_modal").html() == "") {
+                            $('#popup_modal').empty();
+                            $('<div>')
+                                .attr({
+                                    "id":  eula_type + "_EULA_modal"
+                                })
+                                .load(eula_type + "_eula.htm", function (data) {
+                                    initialLoadConfirm();
+                                })
+                                .appendTo($('#popup_modal'))
+                        }
+                    }
+                }, waitasecond)
+    			break;
+    }
+}
+
+function close_eula() {
+    $('#popup_modal').hide();
+    $('#popup_modal').empty();
 }
 
 function withdraw_eula(eula_type){
@@ -166,6 +371,14 @@ function withdraw_eula(eula_type){
 				}
 			}
 
+			break;
+
+		case "asus_pp":
+			document.getElementById('asus_pp_withdraw_btn').style.display = "none";
+            document.getElementById('asus_pp_loadingicon').style.display = "";
+            httpApi.privateEula.set("0", function(){
+                    hide_withdraw_sec('asus_pp');
+            })
 			break;
 
 		case "tm":
@@ -220,7 +433,7 @@ function withdraw_eula(eula_type){
 									<div>&nbsp;</div>
 									<div id="formfonttitle" class="formfonttitle"><#menu5_6#> - <#ASUS_Notice_Privacy#></div>
 									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
-									<div id="privacy_desc" style="font-size:14px; margin: 20px 10px auto 10px; display:none;"><#ASUS_privacy_desc#></div>
+									<div id="privacy_desc" style="font-size:14px; margin: 20px 10px auto 10px; display:none;" class="formfontdesc"><#ASUS_privacy_desc#></div>
 									<div id="asus_eula" class="eula_withdraw" style="display:none;">
 										<div class="eula_withdraw_title" id="asus_eula_title"></div>
 										<div class="eula_withdraw_content">
@@ -235,12 +448,41 @@ function withdraw_eula(eula_type){
 											</div>
 										</div>
 										<div style="text-align: center;">
-											<div style="margin: 0px auto 10px;">
-												<input class="button_gen" id="asus_withdraw_btn" onclick="withdraw_eula('asus');" type="button" value="<#withdraw_str#>"/>
+											<div style="margin: 0px auto 10px;display: flex;justify-content: center;">
+												<input class="btn_subusage button_gen" id="asus_withdraw_btn" onclick="withdraw_eula('asus');" type="button" value="<#withdraw_str#>"/>
 												<img id="asus_loadingicon" style="display:none;" src="/images/InternetScan.gif">
 											</div>
 										</div>
 									</div>
+
+									<div id="asus_pp_eula" class="eula_withdraw">
+										<div class="eula_withdraw_title" id="asus_pp_eula_title">
+											<#ASUS_eula_withdraw_title#>
+										</div>
+
+										<div class="eula_withdraw_content">
+											<div>
+											    <#ASUS_eula_withdraw_content1#>
+												<br>
+												<#ASUS_eula_withdraw_content2#>
+											</div>
+
+											<div style="color:#006ce1; cursor: pointer;" onClick="show_eula('asus_pp')">
+												[<#ASUS_eula_withdraw_title#>]
+											</div>
+
+											<div style="margin-top:5px;">
+											    <#ASUS_eula_withdraw_content3#>
+											</div>
+										</div>
+										<div style="text-align: center;">
+											<div style="margin: 0px auto 10px;display: flex;justify-content: center;">
+												<input class="btn_subusage button_gen" id="asus_pp_withdraw_btn" onclick="show_eula_confirm('asus_pp');" type="button" value="<#withdraw_str#>"/>
+												<img id="asus_pp_loadingicon" style="display:none;" src="/images/InternetScan.gif">
+											</div>
+										</div>
+									</div>
+
 									<div id="tm_eula" class="eula_withdraw" style="display:none;">
 										<div class="eula_withdraw_title"><#TM_eula_withdraw0#></div>
 										<div class="eula_withdraw_content">
@@ -251,8 +493,8 @@ function withdraw_eula(eula_type){
 											</div>
 										</div>
 										<div style="text-align:center;">
-											<div style="margin: 0px auto 10px;">
-												<input class="button_gen" id="tm_withdraw_btn" onclick="withdraw_eula('tm');" type="button" value="<#withdraw_str#>"/>
+											<div style="margin: 0px auto 10px;display: flex;justify-content: center;">
+												<input class="btn_subusage button_gen" id="tm_withdraw_btn" onclick="withdraw_eula('tm');" type="button" value="<#withdraw_str#>"/>
 												<img id="tm_loadingicon" style="display:none;" src="/images/InternetScan.gif">
 											</div>
 										</div>
@@ -264,6 +506,7 @@ function withdraw_eula(eula_type){
 					</td>
 				</tr>
 			</table>
+			<div id="popup_modal" style="display: none;"></div>
 		<!--===================================Ending of Main Content===========================================-->
 		</td>
 		<td width="10" align="center" valign="top">&nbsp;</td>

@@ -1,0 +1,16 @@
+6888/dpfe_6888_dummy_lpddr5_0.bin      0
+6888/dpfe_6888_dummy_lpddr5_1.bin      1
+6888/dpfe_6888_dummy_lpddr5_2.bin      2
+6888/dpfe_6888_dummy_lpddr5_3.bin      3
+6888/dpfe_6888_dummy_lpddr5_4.bin      4
+6888/dpfe_6888_dummy_lpddr5_5.bin      5
+6888/dpfe_6888_dummy_lpddr5_6.bin      6
+6888/dpfe_6888_dummy_lpddr5_7.bin      87
+68880/dpfe_68880_dummy_lpddr5_0.bin      0
+68880/dpfe_68880_dummy_lpddr5_1.bin      1
+68880/dpfe_68880_dummy_lpddr5_2.bin      2
+68880/dpfe_68880_dummy_lpddr5_3.bin      3
+68880/dpfe_68880_dummy_lpddr5_4.bin      4
+68880/dpfe_68880_dummy_lpddr5_5.bin      5
+68880/dpfe_68880_dummy_lpddr5_6.bin      6
+68880/dpfe_68880_dummy_lpddr5_7.bin      87

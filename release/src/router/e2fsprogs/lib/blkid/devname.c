@@ -24,7 +24,7 @@
 #include <string.h>
 #include <ctype.h>
 #if HAVE_SYS_TYPES_H
-#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
 #include <sys/sysmacros.h>
 #endif
 #include <sys/types.h>

@@ -1,0 +1,216 @@
+#include "6765.dtsi"
+
+/ {
+	memory_controller {
+		memcfg = <(BP_DDR_TYPE_DDR4       | \
+			BP_DDR_SPEED_1600_22_22_22    | \
+			BP_DDR_TOTAL_SIZE_1024MB      | \
+			BP_DDR_DEVICE_WIDTH_16        | \
+			BP_DDR_TOTAL_WIDTH_16BIT      | \
+			BP_DDR_TEMP_EXTENDED_ASR      | \
+			BP_DDR_6765_DEFAULT           | \
+			BP_DDR_CONFIG_DEBUG)>;
+	};
+};
+
+/*
+/ {
+	buttons {
+		compatible = "brcm,buttons";
+		reset_button {
+			ext_irq = <&bca_extintr 33 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			press {
+				print = "Button Press -- Hold for 5s to do restore to default";
+			};
+			hold {
+				rst_to_dflt = <5>;
+			};
+			release {
+				reset = <0>;
+			};  
+		};
+		ses_button {
+			ext_irq = <&bca_extintr 23 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			release {
+				ses_short_period = <0>;
+				ses_long_period = <3>;
+			};
+		};
+	};    
+};
+*/
+
+&mdio_sf2 {
+	/* Port PHY mapping:
+		port_imp -8#0- port_xhy <----> phy_xphy
+				  # #
+				  ##5- port_sgmii <-> phy_serdes - phy_cascade -- RTL8372
+	 */
+	phy_xphy {
+		enet-phy-lane-swap;
+		status = "okay";
+	};
+
+	/* Enable SerDes0 for RTL8372  */
+    phy_serdes {
+		phy-fixed;
+		phy-reset = <&gpioc 11 GPIO_ACTIVE_HIGH>;
+		config-xfi = "10GBase-R";
+		status = "okay";
+	};
+};
+
+&ethphytop {
+    xphy0-enabled;
+    status = "okay";
+};
+
+&switch0 {
+
+	ports {
+		port_xphy {
+			phy-handle = <&phy_xphy>;
+			network-leds=<&led0>;
+			status = "okay";
+		};
+		port_sgmii {
+			phy-handle = <&phy_serdes>;
+			status = "okay";
+		};
+	};
+};
+
+&uart0 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&uart0_sdin_pin_64 &uart0_sdout_pin_65>;
+    status = "okay";
+};
+
+&usb_ctrl {
+    pinctrl-names="default";
+    pinctrl-0 = <&usb0_pwr_pins>;
+    status = "okay";
+    xhci-enable;
+    /* pwron-bias-pull-up; */   /* NOTE: Disable for now, depends on hardware design to enable it */
+};
+
+&usb0_xhci {
+    status = "okay";
+};
+
+&i2c0 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&a_i2c_sda_pin_37 &a_i2c_scl_pin_36 >;
+    status = "okay";
+
+    icp201xx@63 {
+        compatible = "invensense,icp201xx";
+        reg = <0x63>;
+    };
+};
+
+&led_ctrl {
+	led0: parallel-port_0-led_0 {
+		active_low;
+		pinctrl-0 = <&a_per_led_10_pin_10>;
+		link = <(LED_SPEED_ALL)>;
+		activity = <(LED_SPEED_ALL)>;
+		status="okay";
+	};
+
+	/* WAN ACT LED GPIO mode */
+	led1: led_gpio_10 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <10>;
+		active_low;
+	};
+
+	led2:led_gpio_18 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <18>;
+		active_low;
+		brightness = <0>;
+		flash_rate = <0>;
+		status = "okay";
+		label = "WiFi_24";
+	};
+
+	led3:led_gpio_38 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <38>;
+		active_low;
+		brightness = <0>;
+		flash_rate = <0>;
+		status = "okay";
+		label = "WiFi_6";
+	};
+
+	/* RTL8372 reset */
+	led4: led_gpio_11 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <11>;
+		active_low;
+	};
+
+	/* Power LED */
+	led5: led_gpio_28 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <28>;
+	};
+	
+	/* WAN Red LED */
+	led6: led_gpio_39 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <39>;
+		active_low;
+	};
+
+	/* LAN LED */
+	led7: led_gpio_12 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <12>;
+		active_low;
+	};
+
+	/* USB Power */
+	led8:led_gpio_67 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <67>;
+	};
+};
+
+&legacy_leds {
+	wl0-led = <&led3>;
+	wl1-led = <&led2>;
+};
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+/**********************************************************************/
+/* GPIO: Add one define per GPIO (individual or shared) regulator     */
+/*       - Skip if no GPIO regulators in use                          */
+/**********************************************************************/
+#define PCIE0_REG_GPIO    3    /* PCIE1_PWR_CTRL for vreg_pcie1 node */
+
+#include "../bcm_wlan_regulator.dtsi"
+
+/**********************************************************************/
+/* Shared: Add brcm,supply-names = "vreg-pcieX" for shared PCIe nodes */
+/*         - Skip if not using shared GPIO regulators                 */
+/**********************************************************************/
+
+/**********************************************************************/
+/* PCIe: Add status = "okay" for each PCIe slots of this boiard       */
+/*       - Skip if this is a derivative board (already done in base)  */
+/**********************************************************************/
+&pcie0 {
+	status = "okay";
+};
+#endif //#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)

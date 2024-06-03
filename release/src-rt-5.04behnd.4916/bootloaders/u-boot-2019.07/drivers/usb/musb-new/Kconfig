@@ -1,0 +1,74 @@
+#
+# MUSB Controller Driver
+#
+comment "MUSB Controller Driver"
+
+config USB_MUSB_HOST
+	bool "MUSB host mode support"
+	select SPL_SPRINTF if SPL
+	select TPL_SPRINTF if TPL
+	help
+	  Enables the MUSB USB dual-role controller in host mode.
+
+config USB_MUSB_GADGET
+	bool "MUSB gadget mode support"
+	select USB_GADGET_DUALSPEED
+	select SPL_SPRINTF if SPL
+	select TPL_SPRINTF if TPL
+	help
+	  Enables the MUSB USB dual-role controller in gadget mode.
+
+config USB_MUSB_TI
+	bool "Enable TI OTG USB controller"
+	depends on DM_USB
+	select USB_MUSB_DSPS
+	default n
+	help
+	  Say y here to enable support for the dual role high
+	  speed USB controller based on the Mentor Graphics
+	  silicon IP.
+
+config USB_MUSB_OMAP2PLUS
+	tristate "OMAP2430 and onwards"
+	depends on ARCH_OMAP2PLUS
+
+config USB_MUSB_AM35X
+	bool "AM35x"
+
+config USB_MUSB_DSPS
+	bool "TI DSPS platforms"
+
+if USB_MUSB_HOST || USB_MUSB_GADGET
+
+config USB_MUSB_PIC32
+	bool "Enable Microchip PIC32 DRC USB controller"
+	depends on DM_USB && MACH_PIC32
+	help
+	  Say y to enable PIC32 USB DRC controller support
+	  if it is available on your Microchip PIC32 platform.
+
+config USB_MUSB_SUNXI
+	bool "Enable sunxi OTG / DRC USB controller"
+	depends on ARCH_SUNXI
+	default y
+	---help---
+	Say y here to enable support for the sunxi OTG / DRC USB controller
+	used on almost all sunxi boards.
+
+config USB_MUSB_DISABLE_BULK_COMBINE_SPLIT
+	bool "Disable MUSB bulk split/combine"
+	default y
+	help
+	  On TI AM335x devices, MUSB has bulk split/combine feature enabled
+	  in the ConfigData register, but the current MUSB driver does not
+	  support it yet. Select this option to disable the feature until the
+	  driver adds the support.
+
+endif
+
+config USB_MUSB_PIO_ONLY
+	bool "Disable DMA (always use PIO)"
+	default y if USB_MUSB_AM35X || USB_MUSB_PIC32 || USB_MUSB_OMAP2PLUS || USB_MUSB_DSPS || USB_MUSB_SUNXI
+	help
+	  All data is copied between memory and FIFO by the CPU.
+	  DMA controllers are ignored.

@@ -1520,10 +1520,18 @@ finish:
 		bs_mode=BTNSETUP_NONE;
 		sleep(2);
 		stop_wan();
+#ifdef RTCONFIG_MULTILAN_CFG
+		stop_dnsmasq(NULL);
+#else
 		stop_dnsmasq(); /* stop_dhcpd(); */
+#endif
 		//convert_asus_values(1);
 		//nvram_commit_safe();
-		start_dnsmasq(); /* start_dhcpd(); */
+#ifdef RTCONFIG_MULTILAN_CFG
+		start_dnsmasq(ALL_SDN);
+#else
+		start_dnsmasq();/* start_dhcpd(); */
+#endif
 		start_wan();
 #else
 		

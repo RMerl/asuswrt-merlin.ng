@@ -1,0 +1,9 @@
+compatible = "brcm,bcm96xxx-wdt", "brcm,bcm6345-wdt";
+reg = <WATCHDOG_OFFSET WATCHDOG_SIZE>;
+timeout-sec = <WATCHDOG_TIMEOUT>;
+clocks = <&refclk50mhz>;
+status = "disabled";
+
+#undef WATCHDOG_OFFSET
+#undef WATCHDOG_SIZE
+#undef WATCHDOG_TIMEOUT

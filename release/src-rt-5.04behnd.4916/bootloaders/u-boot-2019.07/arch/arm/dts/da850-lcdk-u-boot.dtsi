@@ -1,0 +1,12 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * da850-lcdk U-Boot Additions
+ *
+ * Copyright (C) 2018 Texas Instruments Incorporated - http://www.ti.com/
+ */
+
+/ {
+	aliases {
+		i2c0 = &i2c0;
+	};
+};

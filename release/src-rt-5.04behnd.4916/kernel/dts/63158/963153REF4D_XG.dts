@@ -1,0 +1,222 @@
+#include "63158.dtsi"
+#include "963153REF4D_leds.dtsi"
+
+/ {
+    memory_controller {
+        memcfg = <(BP_DDR_SPEED_1067_14_14_14 | \
+                   BP_DDR_TOTAL_SIZE_1024MB   | \
+                   BP_DDR_DEVICE_WIDTH_16     | \
+                   BP_DDR_TOTAL_WIDTH_32BIT   | \
+                   BP_DDR_SSC_CONFIG_1)>;
+    };
+	buttons {
+		compatible = "brcm,buttons";
+		reset_button {
+			ext_irq = <&bca_extintr 46 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			press {
+				print = "Button Press -- Hold for 5s to do restore to default";
+			};
+			hold {
+				rst_to_dflt = <5>;
+			};
+			release {
+				reset = <0>;
+			};	
+		};
+		ses_button {
+			ext_irq = <&bca_extintr 38 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			release {
+				ses_short_period = <0>;
+				ses_long_period = <3>;
+			};
+		};
+	};
+
+	pmd: pmd {
+		compatible = "brcm,pmd";
+		pinctrl-names = "default", "state_ewake";
+		pinctrl-0 = <&a_pmd_ext_los_pin_10>;
+		pinctrl-1 = <&a_pmd_ext_los_pin_10 &c_wan_early_txen_pin_41>;
+		ewake-gpio = <&gpioc 41 GPIO_ACTIVE_HIGH>;
+		rstn-gpio = <&gpioc 5 GPIO_ACTIVE_LOW>;
+		alarm = <&bca_extintr 40 GPIO_ACTIVE_HIGH (BCA_EXTINTR_TYPE_HIGH_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+		i2c-bus = <&i2c0>;
+	};
+
+	wan_serdes {
+            status = "okay";
+            trx = <&pmd>;
+            tx-polarity-invert;
+            rx-polarity-invert;
+            pon-led = <&led26>;
+    };
+
+	periph {
+		i2s: bcm63xx-i2s {
+			pinctrl-0 = <&i2s_rx_sdata_pin_14 &i2s_mclk_pin_28 &i2s_lrck_pin_29 &i2s_sclk_pin_30 &i2s_tx_sdata_pin_31>;
+			pinctrl-names = "default";
+			compatible = "brcm,bcm63xx-i2s";
+			reg = <0 0x2080 0 0x7f>;
+			interrupts = <GIC_SPI 84 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&i2sclk>, <&osc>;
+			clock-names = "i2sclk","i2sosc"; 
+		};
+	};
+};
+
+&i2c0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&b0_i2c_scl_0_pin_25 &b0_i2c_sda_0_pin_24>;
+	status = "okay";
+};
+
+&usb_ctrl {
+	pinctrl-names="default";
+	pinctrl-0 = <&usb0a_pwr_pins &usb1a_pwr_pins>;
+	status = "okay";
+	xhci-enable;
+};
+
+&usb0_ehci {
+	status = "okay";
+};
+&usb1_ehci {
+	status = "okay";
+};
+
+&usb0_ohci {
+	status = "okay";
+};
+&usb1_ohci {
+	status = "okay";
+};
+
+&usb0_xhci {
+	status = "okay";
+};
+
+&vreg_sync {
+		pinctrl-0 = <&a_vreg_sync_pin_19>;
+		pinctrl-names = "default";
+		power_sync-gpio =  <&gpioc 8 GPIO_ACTIVE_LOW>;
+};
+
+&mdio_sf2 {
+        /* Port PHY mapping:
+            port_runner_p0  <-->  port_sf2_p8 -###- port_sf2_p0 <------------------> phy_gphy0
+            port_runner_p1  <-->  port_sf2_p5 -# #- port_sf2_p1 <------------------> phy_gphy1
+            port_runner_p2  <-->  port_sf2_p7 -# #- port_sf2_p2 <------------------> phy_gphy2
+                                               ###- port_sf2_p3 <------------------> phy_gphy3
+                                              port_runner_p4/P3 <------------------> phy_serdes0 - phy_cascade0 / PON
+         */
+	/* PHYs directly connected to SF2 */
+	phy_gphy0 {
+		status = "okay";
+	};
+	phy_gphy1 {
+		status = "okay";
+	};
+	phy_gphy2 {
+		status = "okay";
+	};
+	phy_gphy3 {
+		status = "okay";
+	};
+
+	/* Cascade PHY */
+	phy_cascade0 {
+		reg = <31>;
+		status = "okay";
+	};
+	
+	/* PHY directly connected to Runner */
+	phy_serdes0 {
+		phy-handle = <&phy_cascade0>;
+		status = "okay";
+	};
+
+};
+
+&switch_sf2 {
+	ports {
+		port_sf2_p0 {
+			phy-handle = <&phy_gphy0>;
+			network-leds = <&led0 &led1 &led20>;
+			status = "okay";
+		};
+
+		port_sf2_p1 {
+			phy-handle = <&phy_gphy1>;
+			network-leds = <&led2 &led3 &led21>;
+			status = "okay";
+		};
+
+		port_sf2_p2 {
+			phy-handle = <&phy_gphy2>;
+			network-leds = <&led4 &led5 &led22>;
+			status = "okay";
+		};
+
+		port_sf2_p3 {
+			phy-handle = <&phy_gphy3>;
+			network-leds = <&led6 &led7 &led23>;
+			status = "okay";
+		};
+	};
+};
+
+&switch0 {
+	ports {
+		
+		port_runner_p4 {
+			phy-handle = <&phy_serdes0>;
+			network-leds = <&led13 &led14 &led15>;
+			status = "okay";
+		};
+
+		port_runner_p3 {
+			status = "okay";
+		};
+
+	};
+};
+
+&dsl {
+	line0@0 {
+		pinctrl-0 = <&vdsl_ctrl_0_pin_32>;
+		pinctrl-names = "default";
+
+		afeid = <(DSL_AFE_CHIP_GFAST_CH0 | DSL_AFE_LD_6305 | DSL_AFE_FE_REV_6305_REV_12_5_60_2| DSL_AFE_FE_RNC)>;
+		afe-pwr-ctl = <DSL_AFE_VDSLCTL_0>;
+		pwrboost-gpio = <&gpioc 11 GPIO_ACTIVE_HIGH>;
+		status = "okay";
+	};
+
+	line1@1 {
+		pinctrl-0 = <&vdsl_ctrl_3_pin_35>;
+		pinctrl-names = "default";
+
+		afeid = <(DSL_AFE_CHIP_GFAST_CH1 | DSL_AFE_LD_6305 | DSL_AFE_FE_REV_6305_REV_12_5_60_1| DSL_AFE_FE_RNC)>;
+		afe-pwr-ctl = <DSL_AFE_VDSLCTL_3>;
+		pwrboost-gpio = <&gpioc 11 GPIO_ACTIVE_HIGH>;
+		status = "okay";
+	};
+};
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+&pcie0 {
+	brcm,dual-lane;
+	status = "okay";
+};
+&pcie2 {
+	status = "okay";
+};
+&pcie3 {
+	status = "okay";
+};
+#endif //#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+
+
+&phy_wan_serdes {
+    status = "okay";
+};

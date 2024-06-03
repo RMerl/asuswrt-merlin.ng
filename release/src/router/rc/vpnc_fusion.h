@@ -3,13 +3,9 @@
 
 #include <net/if.h>
 
-#define INTERNET_ROUTE_TABLE_ID	1
-
 #define L2TP_VPNC_PID	"/var/run/l2tpd-vpnc%d.pid"
 #define L2TP_VPNC_CTRL	"/var/run/l2tpctrl-vpnc%d"
 #define L2TP_VPNC_CONF	"/tmp/l2tp-vpnc%d.conf"
-
-#define SAFE_FREE(x)	if(x) {free(x); x=NULL;}
 
 #define PROTO_PPTP "PPTP"
 #define PROTO_L2TP "L2TP"
@@ -106,17 +102,19 @@ typedef enum{
 #define VPNC_PROFILE_VER_OLD	0
 #define VPNC_PROFILE_VER1		1
 
-#define VPNC_RULE_PRIORITY	"100"
-
-#define VPNC_RULE_PRIORITY_NETWORK	1000
 extern char vpnc_resolv_path[] ;
 #ifdef RTCONFIG_VPN_FUSION_SUPPORT_INTERFACE
 extern int vpnc_set_iif_routing_rule(const int vpnc_idx, const char* br_ifname);
 #endif
+#ifdef RTCONFIG_MULTILAN_CFG
+extern int vpnc_set_iptables_rule_by_sdn(MTLAN_T *pmtl, size_t mtl_sz, int restart_all_sdn);
+#endif
 
 VPNC_PROTO vpnc_get_proto_in_profile_by_vpnc_id(const int vpnc_id);
 
-int update_default_routing_rule();
+int vpnc_set_policy_by_ifname(const char *vpnc_ifname, const int action);
 
-#define VPNC_RULE_PRIORITY_DEFAULT		"10000"
+int update_default_routing_rule();
+int clean_routing_rule_by_vpnc_idx(const int vpnc_idx);
+int clean_vpnc_setting_value(const int vpnc_idx);
 #endif

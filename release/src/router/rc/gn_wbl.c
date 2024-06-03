@@ -88,7 +88,7 @@ void add_GN_WBL_EBTbrouteRule()
 	/* traveling whole guest network */
 	foreach(ifname, nvram_safe_get("wl_ifnames"), next) {
 		SKIP_ABSENT_BAND_AND_INC_UNIT(i);
-#if defined(RTCONFIG_PSR_GUEST) && !defined(HND_ROUTER)
+#if defined(RTCONFIG_PSR_GUEST) && !defined(HND_ROUTER) && !defined(RTCONFIG_HND_ROUTER_BE_4916)
 		max_mssid++;
 #endif
 		max_mssid = num_of_mssid_support(i);
@@ -126,7 +126,7 @@ void add_GN_WBL_ChainRule(FILE *fp)
 	/* traveling whole guest network */
 	foreach(ifname, nvram_safe_get("wl_ifnames"), next) {
 		SKIP_ABSENT_BAND_AND_INC_UNIT(i);
-#if defined(RTCONFIG_PSR_GUEST) && !defined(HND_ROUTER)
+#if defined(RTCONFIG_PSR_GUEST) && !defined(HND_ROUTER) && !defined(RTCONFIG_HND_ROUTER_BE_4916)
 		max_mssid++;
 #endif
 		max_mssid = num_of_mssid_support(i);
@@ -234,7 +234,7 @@ void add_GN_WBL_ForwardRule(FILE *fp)
 	/* traveling whole guest network */
 	foreach(ifname, nvram_safe_get("wl_ifnames"), next) {
 		SKIP_ABSENT_BAND_AND_INC_UNIT(i);
-#if defined(RTCONFIG_PSR_GUEST) && !defined(HND_ROUTER)
+#if defined(RTCONFIG_PSR_GUEST) && !defined(HND_ROUTER) && !defined(RTCONFIG_HND_ROUTER_BE_4916)
 		max_mssid++;
 #endif
 		max_mssid = num_of_mssid_support(i);

@@ -222,6 +222,8 @@ var isIE8 = navigator.userAgent.search("MSIE 8") > -1;
 var isIE9 = navigator.userAgent.search("MSIE 9") > -1; 
 
 function initial(){
+	top.name = "";/* reset cache of state.js win.name */
+
 	if(is_KR_sku || is_SG_sku || is_AA_sku)
 		document.getElementById("KRHint").style.display = "";
 
@@ -527,6 +529,7 @@ function showError(str){
 <input type="hidden" name="flag" value="">
 <input type="hidden" name="login_authorization" value="">
 <input name="foilautofill" style="display: none;" type="password">
+<input type="hidden" name="cfg_pause" value="0">
 <div class="main-field-bg">
 	<div class="main-field-padding">
 		<div class="logo-container">

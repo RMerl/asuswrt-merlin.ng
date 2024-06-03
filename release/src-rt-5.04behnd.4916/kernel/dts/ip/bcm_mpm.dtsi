@@ -1,0 +1,13 @@
+#if defined(CONFIG_64BIT)
+#define HI32    0x0
+#else
+#define HI32
+#endif
+
+compatible = "brcm,mpm";
+reg = <HI32 MPM_REG_OFFSET HI32 MPM_REG_SIZE>;
+
+#undef MPM_REG_OFFSET
+#undef MPM_REG_SIZE
+#undef HI32
+

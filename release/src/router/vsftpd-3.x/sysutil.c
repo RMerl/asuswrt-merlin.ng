@@ -69,6 +69,9 @@
 #include <PMS_DBAPIs.h>
 #endif
 
+#ifdef RTCONFIG_TRUSTZONE
+#include <libatee.h>
+#endif
 
 /* Private variables to this file */
 /* Current umask() */
@@ -1049,7 +1052,7 @@ vsf_sysutil_next_dirent(const char* session_user, const char *base_dir, struct v
 	}
 
 	char fullpath[PATH_MAX], truepath[PATH_MAX];
-	char *mount_path, *share_name;
+	char *mount_path = NULL, *share_name = NULL;
 	int layer = 0;
 	int user_right;
 #ifdef RTCONFIG_PERMISSION_MANAGEMENT
@@ -1073,9 +1076,14 @@ vsf_sysutil_next_dirent(const char* session_user, const char *base_dir, struct v
 	realpath(fullpath, truepath);
 
 	layer = how_many_layer(truepath, &mount_path, &share_name);
-	if(layer <= BASE_LAYER)
+	if(layer <= BASE_LAYER
+#if defined(RTCONFIG_HND_ROUTER_AX)
+			|| (layer >= MOUNT_LAYER && !strcmp(mount_path, "/tmp/mnt/defaults"))
+#endif
+			)
 		return DENIED_DIR;
-	else if(layer == MOUNT_LAYER){
+
+	if(layer == MOUNT_LAYER){
 		if(!check_if_dir_exist(truepath)){
 			free(mount_path);
 			return DENIED_DIR;
@@ -2556,6 +2564,10 @@ vsf_sysutil_getpwnam(const char* p_user)
 				ascii_to_char_safe(char_user, tmp_account, 64);
 				memset(char_passwd, 0, 64);
 				ascii_to_char_safe(char_passwd, tmp_passwd, 64);
+#ifdef RTCONFIG_TRUSTZONE
+				if (i == 0)
+					atee_get_admin_pw(char_passwd, sizeof(char_passwd));
+#endif
 
 				if(!strcmp(p_user, char_user)){
 					result = (struct passwd *)(malloc(sizeof(struct passwd)));

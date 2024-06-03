@@ -1,0 +1,266 @@
+/dts-v1/;
+
+/ {
+	#address-cells = <2>;
+	#size-cells = <2>;
+	compatible = "andestech,ax25";
+	model = "andestech,ax25";
+
+	aliases {
+		uart0 = &serial0;
+		spi0 = &spi;
+	};
+
+	chosen {
+		bootargs = "console=ttyS0,38400n8  debug loglevel=7";
+		stdout-path = "uart0:38400n8";
+	};
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		timebase-frequency = <60000000>;
+		CPU0: cpu@0 {
+			device_type = "cpu";
+			reg = <0>;
+			status = "okay";
+			compatible = "riscv";
+			riscv,isa = "rv64imafdc";
+			riscv,priv-major = <1>;
+			riscv,priv-minor = <10>;
+			mmu-type = "riscv,sv39";
+			clock-frequency = <60000000>;
+			i-cache-size = <0x8000>;
+			i-cache-line-size = <32>;
+			d-cache-size = <0x8000>;
+			d-cache-line-size = <32>;
+			next-level-cache = <&L2>;
+			CPU0_intc: interrupt-controller {
+				#interrupt-cells = <1>;
+				interrupt-controller;
+				compatible = "riscv,cpu-intc";
+			};
+		};
+		CPU1: cpu@1 {
+			device_type = "cpu";
+			reg = <1>;
+			status = "okay";
+			compatible = "riscv";
+			riscv,isa = "rv64imafdc";
+			riscv,priv-major = <1>;
+			riscv,priv-minor = <10>;
+			mmu-type = "riscv,sv39";
+			clock-frequency = <60000000>;
+			i-cache-size = <0x8000>;
+			i-cache-line-size = <32>;
+			d-cache-size = <0x8000>;
+			d-cache-line-size = <32>;
+			next-level-cache = <&L2>;
+			CPU1_intc: interrupt-controller {
+				#interrupt-cells = <1>;
+				interrupt-controller;
+				compatible = "riscv,cpu-intc";
+			};
+		};
+
+		L2: l2-cache@e0500000 {
+			compatible = "cache";
+			cache-level = <2>;
+			cache-size = <0x40000>;
+			reg = <0x0 0xe0500000 0x0 0x40000>;
+		};
+	};
+
+	memory@0 {
+		device_type = "memory";
+		reg = <0x0 0x00000000 0x0 0x40000000>;
+	};
+
+	soc {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		compatible = "simple-bus";
+		ranges;
+
+		plic0: interrupt-controller@e4000000 {
+			compatible = "riscv,plic0";
+			#address-cells = <2>;
+			#interrupt-cells = <2>;
+			interrupt-controller;
+			reg = <0x0 0xe4000000 0x0 0x2000000>;
+			riscv,ndev=<71>;
+			interrupts-extended = <&CPU0_intc 11 &CPU0_intc 9 &CPU1_intc 11 &CPU1_intc 9>;
+		};
+
+		plic1: interrupt-controller@e6400000 {
+			compatible = "riscv,plic1";
+			#address-cells = <2>;
+			#interrupt-cells = <2>;
+			interrupt-controller;
+			reg = <0x0 0xe6400000 0x0 0x400000>;
+			riscv,ndev=<2>;
+			interrupts-extended = <&CPU0_intc 3 &CPU1_intc 3>;
+		};
+
+		plmt0@e6000000 {
+			compatible = "riscv,plmt0";
+			interrupts-extended = <&CPU0_intc 7 &CPU1_intc 7>;
+			reg = <0x0 0xe6000000 0x0 0x100000>;
+		};
+	};
+
+	spiclk: virt_100mhz {
+		#clock-cells = <0>;
+		compatible = "fixed-clock";
+		clock-frequency = <100000000>;
+	};
+
+	timer0: timer@f0400000 {
+		compatible = "andestech,atcpit100";
+		reg = <0x0 0xf0400000 0x0 0x1000>;
+		clock-frequency = <60000000>;
+		interrupts = <3 4>;
+		interrupt-parent = <&plic0>;
+	};
+
+	serial0: serial@f0300000 {
+		compatible = "andestech,uart16550", "ns16550a";
+		reg = <0x0 0xf0300000 0x0 0x1000>;
+		interrupts = <9 4>;
+		clock-frequency = <19660800>;
+		reg-shift = <2>;
+		reg-offset = <32>;
+		no-loopback-test = <1>;
+		interrupt-parent = <&plic0>;
+	};
+
+	mac0: mac@e0100000 {
+		compatible = "andestech,atmac100";
+		reg = <0x0 0xe0100000 0x0 0x1000>;
+		interrupts = <19 4>;
+		interrupt-parent = <&plic0>;
+	};
+
+	mmc0: mmc@f0e00000 {
+		compatible = "andestech,atfsdc010";
+		max-frequency = <100000000>;
+		clock-freq-min-max = <400000 100000000>;
+		fifo-depth = <0x10>;
+		reg = <0x0 0xf0e00000 0x0 0x1000>;
+		interrupts = <18 4>;
+		cap-sd-highspeed;
+		interrupt-parent = <&plic0>;
+	};
+
+	dma0: dma@f0c00000 {
+		compatible = "andestech,atcdmac300";
+		reg = <0x0 0xf0c00000 0x0 0x1000>;
+		interrupts = <10 4 64 4 65 4 66 4 67 4 68 4 69 4 70 4 71 4>;
+		dma-channels = <8>;
+		interrupt-parent = <&plic0>;
+	};
+
+	lcd0: lcd@e0200000 {
+		compatible = "andestech,atflcdc100";
+		reg = <0x0 0xe0200000 0x0 0x1000>;
+		interrupts = <20 4>;
+		interrupt-parent = <&plic0>;
+	};
+
+	smc0: smc@e0400000 {
+		compatible = "andestech,atfsmc020";
+		reg = <0x0 0xe0400000 0x0 0x1000>;
+	};
+
+	snd0: snd@f0d00000 {
+		compatible = "andestech,atfac97";
+		reg = <0x0 0xf0d00000 0x0 0x1000>;
+		interrupts = <17 4>;
+		interrupt-parent = <&plic0>;
+	};
+
+	pmu {
+		compatible = "riscv,base-pmu";
+	};
+
+	virtio_mmio@fe007000 {
+		interrupts = <0x17 0x4>;
+		interrupt-parent = <0x2>;
+		reg = <0x0 0xfe007000 0x0 0x1000>;
+		compatible = "virtio,mmio";
+	};
+
+	virtio_mmio@fe006000 {
+		interrupts = <0x16 0x4>;
+		interrupt-parent = <0x2>;
+		reg = <0x0 0xfe006000 0x0 0x1000>;
+		compatible = "virtio,mmio";
+	};
+
+	virtio_mmio@fe005000 {
+		interrupts = <0x15 0x4>;
+		interrupt-parent = <0x2>;
+		reg = <0x0 0xfe005000 0x0 0x1000>;
+		compatible = "virtio,mmio";
+	};
+
+	virtio_mmio@fe004000 {
+		interrupts = <0x14 0x4>;
+		interrupt-parent = <0x2>;
+		reg = <0x0 0xfe004000 0x0 0x1000>;
+		compatible = "virtio,mmio";
+	};
+
+	virtio_mmio@fe003000 {
+		interrupts = <0x13 0x4>;
+		interrupt-parent = <0x2>;
+		reg = <0x0 0xfe003000 0x0 0x1000>;
+		compatible = "virtio,mmio";
+	};
+
+	virtio_mmio@fe002000 {
+		interrupts = <0x12 0x4>;
+		interrupt-parent = <0x2>;
+		reg = <0x0 0xfe002000 0x0 0x1000>;
+		compatible = "virtio,mmio";
+	};
+
+	virtio_mmio@fe001000 {
+		interrupts = <0x11 0x4>;
+		interrupt-parent = <0x2>;
+		reg = <0x0 0xfe001000 0x0 0x1000>;
+		compatible = "virtio,mmio";
+	};
+
+	virtio_mmio@fe000000 {
+		interrupts = <0x10 0x4>;
+		interrupt-parent = <0x2>;
+		reg = <0x0 0xfe000000 0x0 0x1000>;
+		compatible = "virtio,mmio";
+	};
+
+	nor@0,0 {
+		compatible = "cfi-flash";
+		reg = <0x0 0x88000000 0x0 0x1000>;
+		bank-width = <2>;
+		device-width = <1>;
+	};
+
+	spi: spi@f0b00000 {
+		compatible = "andestech,atcspi200";
+		reg = <0x0 0xf0b00000 0x0 0x1000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		num-cs = <1>;
+		clocks = <&spiclk>;
+		interrupts = <4 4>;
+		interrupt-parent = <&plic0>;
+		flash@0 {
+			compatible = "jedec,spi-nor";
+			spi-max-frequency = <50000000>;
+			reg = <0>;
+			spi-cpol;
+			spi-cpha;
+		};
+	};
+};

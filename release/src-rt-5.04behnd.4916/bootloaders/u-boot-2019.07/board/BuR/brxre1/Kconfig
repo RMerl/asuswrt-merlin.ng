@@ -1,0 +1,15 @@
+if TARGET_BRXRE1
+
+config SYS_BOARD
+	default "brxre1"
+
+config SYS_VENDOR
+	default "BuR"
+
+config SYS_SOC
+	default "am33xx"
+
+config SYS_CONFIG_NAME
+	default "brxre1"
+
+endif

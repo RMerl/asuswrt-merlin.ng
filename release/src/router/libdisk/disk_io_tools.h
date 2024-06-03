@@ -18,6 +18,9 @@
 #define _DISK_IO_TOOLS_
 
 #include <stdio.h>
+#if defined(MUSL_LIBC)
+#include <limits.h>
+#endif	// MUSL_LIBC
 
 typedef unsigned char u8;
 typedef unsigned short u16;

@@ -1,0 +1,35 @@
+Altera QUADSPI driver
+
+Required properties:
+- compatible: Should be "altr,quadspi-1.0"
+- reg: Address and length of the register set  for the device. It contains
+  the information of registers in the same order as described by reg-names
+- reg-names: Should contain the reg names
+  "avl_csr": Should contain the register configuration base address
+  "avl_mem": Should contain the data base address
+- #address-cells: Must be <1>.
+- #size-cells: Must be <0>.
+- flash device tree subnode, there must be a node with the following fields:
+	- compatible: Should contain the flash name:
+	  1. EPCS:   epcs16, epcs64, epcs128
+	  2. EPCQ:   epcq16, epcq32, epcq64, epcq128, epcq256, epcq512, epcq1024
+	  3. EPCQ-L: epcql256, epcql512, epcql1024
+	- #address-cells: please refer to /mtd/partition.txt
+	- #size-cells: please refer to /mtd/partition.txt
+	For partitions inside each flash, please refer to /mtd/partition.txt
+
+Example:
+
+	quadspi_controller_0: quadspi@0x180014a0 {
+		compatible = "altr,quadspi-1.0";
+		reg = <0x180014a0 0x00000020>,
+		      <0x14000000 0x04000000>;
+		reg-names = "avl_csr", "avl_mem";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		flash0: epcq512@0 {
+			compatible = "altr,epcq512";
+			#address-cells = <1>;
+			#size-cells = <1>;
+		};
+	};

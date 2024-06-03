@@ -1,0 +1,41 @@
+NDS32 is a new high-performance 32-bit RISC microprocessor core.
+
+http://www.andestech.com/
+
+AndeStar ISA
+============
+AndeStar is a patent-pending 16-bit/32-bit mixed-length instruction set to
+achieve optimal system performance, code density, and power efficiency.
+
+It contains the following features:
+ - Intermixable 32-bit and 16-bit instruction sets without the need for
+   mode switch.
+ - 16-bit instructions as a frequently used subset of 32-bit instructions.
+ - RISC-style register-based instruction set.
+ - 32 32-bit General Purpose Registers (GPR).
+ - Upto 1024 User Special Registers (USR) for existing and extension
+   instructions.
+ - Rich load/store instructions for...
+   - Single memory access with base address update.
+   - Multiple aligned and unaligned memory accesses for memory copy and stack
+     operations.
+   - Data prefetch to improve data cache performance.
+   - Non-bus locking synchronization instructions.
+ - PC relative jump and PC read instructions for efficient position independent
+   code.
+ - Multiply-add and multiple-sub with 64-bit accumulator.
+ - Instruction for efficient power management.
+ - Bi-endian support.
+ - Three instruction extension space for application acceleration:
+   - Performance extension.
+   - Andes future extensions (for floating-point, multimedia, etc.)
+   - Customer extensions.
+
+AndesCore CPU
+=============
+Andes Technology has 4 families of CPU cores: N12, N10, N9, N8.
+
+For details about N12 CPU family, please check doc/README.N1213.
+
+The NDS32 ports of u-boot, the Linux kernel, the GNU toolchain and
+other associated software are actively supported by Andes Technology Corporation.

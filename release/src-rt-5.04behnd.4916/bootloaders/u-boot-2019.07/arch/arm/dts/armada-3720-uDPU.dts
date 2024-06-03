@@ -1,0 +1,200 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Device tree for the uDPU board.
+ * Based on Marvell Armada 3720 development board (DB-88F3720-DDR3)
+ * Copyright (C) 2016 Marvell
+ * Copyright (C) 2018 Methode
+ * Copyright (C) 2018 Telus
+ *
+ * Vladimir Vid <vladimir.vid@sartura.hr>
+ */
+
+/dts-v1/;
+
+#include "armada-37xx.dtsi"
+#include "armada-3720-uDPU-u-boot.dtsi"
+
+/ {
+	model = "Methode uDPU Board";
+	compatible = "methode,udpu";
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+		bootargs = "console=ttyMV0,115200 earlycon=ar3700_uart,0xd0012000";
+	};
+
+	aliases {
+		i2c0 = &i2c0;
+		i2c1 = &i2c1;
+		spi0 = &spi0;
+	};
+
+	memory@0 {
+		device_type = "memory";
+		reg = <0x00000000 0x00000000 0x00000000 0x20000000>;
+	};
+
+	mdio: mdio@32004 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		ethphy0: ethernet-phy@0 {
+			 reg = <0>;
+		};
+		ethphy1: ethernet-phy@1 {
+			reg = <1>;
+		};
+	};
+
+	scsi: scsi {
+		compatible = "marvell,mvebu-scsi";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		max-id = <1>;
+		max-lun = <1>;
+		status = "okay";
+	};
+
+	i2c1: i2c@11080 {
+		compatible = "marvell,armada-3700-i2c", "simple-bus";
+		reg = <0x0 0x11080 0x0 0x80>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&i2c2_pins>;
+		#address-cells = <2>;
+		#size-cells = <2>;
+		status = "okay";
+	};
+
+	uart1: serial@12200 {
+		compatible = "marvell,armada-3700-uart-ext";
+		reg = <0x0 0x12200 0x0 0x30>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&uart2_pins>;
+		interrupts = <GIC_SPI 31 IRQ_TYPE_LEVEL_HIGH>;
+		status = "okay";
+		#address-cells = <2>;
+		#size-cells = <2>;
+	};
+
+	vcc_sd_reg0: regulator@0 {
+		compatible = "regulator-gpio";
+		regulator-name = "vcc_sd0";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-type = "voltage";
+		states = <1800000 0x1
+			3300000 0x0>;
+		gpios = <&gpiosb 23 GPIO_ACTIVE_HIGH>;
+	};
+
+	sfp_eth0: sfp-eth0 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c0>;
+		los-gpio = <&gpiosb 2 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpio = <&gpiosb 3 GPIO_ACTIVE_LOW>;
+		tx-disable-gpio = <&gpiosb 4 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpio = <&gpiosb 5 GPIO_ACTIVE_HIGH>;
+	};
+
+	sfp_eth1: sfp-eth1 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c1>;
+		sfp,ethernet = <&eth1>;
+		los-gpio = <&gpiosb 7 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpio = <&gpiosb 8 GPIO_ACTIVE_LOW>;
+		tx-disable-gpio = <&gpiosb 9 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpio = <&gpiosb 10 GPIO_ACTIVE_HIGH>;
+	};
+};
+
+&comphy {
+	phy0 {
+		phy-type = <PHY_TYPE_SGMII1>;
+		phy-speed = <PHY_SPEED_1_25G>;
+	};
+        phy1 {
+                phy-type = <PHY_TYPE_SGMII0>;
+                phy-speed = <PHY_SPEED_1_25G>;
+        };
+
+        phy2 {
+                phy-type = <PHY_TYPE_USB3_HOST1>;
+                phy-speed = <PHY_SPEED_5G>;
+        };
+};
+
+&eth0 {
+	pinctrl-0 = <&pcie_pins>;
+	status = "okay";
+	phy-mode = "sgmii";
+	phy = <&ethphy0>;
+	fixed-link {
+		speed = <1000>;
+		full-duplex;
+	};
+};
+
+&eth1 {
+	status = "okay";
+	phy-mode = "sgmii";
+	phy = <&ethphy1>;
+	fixed-link {
+		speed = <1000>;
+		full-duplex;
+	};
+};
+
+&i2c0 {
+        pinctrl-names = "default";
+        pinctrl-0 = <&i2c1_pins>;
+        status = "okay";
+};
+
+&spi0 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&spi_quad_pins>;
+
+	spi-flash@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "n25q1024a","n25q512a";
+		reg = <0>;
+		spi-max-frequency = <50000000>;
+		spi-rx-bus-width = <4>;
+		spi-tx-bus-width = <4>;
+		m25p,fast-read;
+
+		partition@0 {
+			label = "uboot";
+			reg = <0 0x400000>;
+		};
+	};
+};
+
+&sdhci1 {
+	non-removable;
+	mmc-ddr-1_8v;
+	mmc-hs200-1_8v;
+	bus-width = <4>;
+	vqmmc-supply = <&vcc_sd_reg0>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&sdio_pins>;
+	status = "okay";
+
+	#address-cells = <1>;
+	#size-cells = <0>;
+	mmccard: mmccard@0 {
+		compatible = "mmc-card";
+		reg = <0>;
+	};
+};
+
+&uart0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart1_pins>;
+	status = "okay";
+};
+
+&usb3 {
+	status = "okay";
+};

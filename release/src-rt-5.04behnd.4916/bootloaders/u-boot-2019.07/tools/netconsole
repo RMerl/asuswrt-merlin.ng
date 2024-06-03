@@ -1,0 +1,63 @@
+#!/bin/sh
+
+usage() {
+	(
+	echo "Usage: $0 <board-IP> [board-port [board-in-port]]"
+	echo ""
+	echo "If port is not specified, '6666' will be used"
+	[ -z "$*" ] && exit 0
+	echo ""
+	echo "ERROR: $*"
+	exit 1
+	) 1>&2
+	exit $?
+}
+
+while [ -n "$1" ] ; do
+	case $1 in
+		-h|--help) usage;;
+		--)        break;;
+		-*)        usage "Invalid option $1";;
+		*)         break;;
+	esac
+	shift
+done
+
+ip=$1
+board_out_port=${2:-6666}
+board_in_port=${3:-${board_out_port}}
+
+echo Board out port: ${board_out_port}
+echo Board in port: ${board_in_port}
+
+if [ -z "${ip}" ] || [ -n "$4" ] ; then
+	usage "Invalid number of arguments"
+fi
+
+for nc in netcat nc ; do
+	type ${nc} >/dev/null 2>&1 && break
+done
+
+trap "stty icanon echo intr ^C" 0 2 3 5 10 13 15
+echo "NOTE: the interrupt signal (normally ^C) has been remapped to ^T"
+
+stty -icanon -echo intr ^T
+(
+if type ncb 2>/dev/null ; then
+	# see if ncb is in $PATH
+	exec ncb ${board_out_port}
+
+elif [ -x ${0%/*}/ncb ] ; then
+	# maybe it's in the same dir as the netconsole script
+	exec ${0%/*}/ncb ${board_out_port}
+
+else
+	# blah, just use regular netcat
+	while ${nc} -u -l -p ${board_out_port} < /dev/null ; do
+		:
+	done
+fi
+) &
+pid=$!
+${nc} -u ${ip} ${board_in_port}
+kill ${pid} 2>/dev/null

@@ -1,0 +1,11 @@
+config BCM_PHY_DIAG
+	tristate "PHY Diag Driver"
+	default n
+	depends on BCM963158 || BCM963178 || BCM963146 || BCM963138 || BCM963148
+	help
+	  This driver provide APIs for Diag clients to print status/debug info to DSL Diags application.
+
+config BCM_PHY_DIAG_IMPL
+	int "Implementation index for PHY Diag driver"
+	depends on BCM_PHY_DIAG
+	default 1

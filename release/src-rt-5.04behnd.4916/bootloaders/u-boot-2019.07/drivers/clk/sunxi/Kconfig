@@ -1,0 +1,89 @@
+config CLK_SUNXI
+	bool "Clock support for Allwinner SoCs"
+	depends on CLK && ARCH_SUNXI
+	select DM_RESET
+	default y
+	help
+	  This enables support for common clock driver API on Allwinner
+	  SoCs.
+
+if CLK_SUNXI
+
+config CLK_SUN4I_A10
+	bool "Clock driver for Allwinner A10/A20"
+	default MACH_SUN4I || MACH_SUN7I
+	help
+	  This enables common clock driver support for platforms based
+	  on Allwinner A10/A20 SoC.
+
+config CLK_SUN5I_A10S
+	bool "Clock driver for Allwinner A10s/A13"
+	default MACH_SUN5I
+	help
+	  This enables common clock driver support for platforms based
+	  on Allwinner A10s/A13 SoC.
+
+config CLK_SUN6I_A31
+	bool "Clock driver for Allwinner A31/A31s"
+	default MACH_SUN6I
+	help
+	  This enables common clock driver support for platforms based
+	  on Allwinner A31/A31s SoC.
+
+config CLK_SUN8I_A23
+	bool "Clock driver for Allwinner A23/A33"
+	default MACH_SUN8I_A23 || MACH_SUN8I_A33
+	help
+	  This enables common clock driver support for platforms based
+	  on Allwinner A23/A33 SoC.
+
+config CLK_SUN8I_A83T
+	bool "Clock driver for Allwinner A83T"
+	default MACH_SUN8I_A83T
+	help
+	  This enables common clock driver support for platforms based
+	  on Allwinner A83T SoC.
+
+config CLK_SUN8I_R40
+	bool "Clock driver for Allwinner R40"
+	default MACH_SUN8I_R40
+	help
+	  This enables common clock driver support for platforms based
+	  on Allwinner R40 SoC.
+
+config CLK_SUN8I_V3S
+	bool "Clock driver for Allwinner V3S"
+	default MACH_SUN8I_V3S
+	help
+	  This enables common clock driver support for platforms based
+	  on Allwinner V3S SoC.
+
+config CLK_SUN9I_A80
+	bool "Clock driver for Allwinner A80"
+	default MACH_SUN9I
+	help
+	  This enables common clock driver support for platforms based
+	  on Allwinner A80 SoC.
+
+config CLK_SUN8I_H3
+	bool "Clock driver for Allwinner H3/H5"
+	default MACH_SUNXI_H3_H5
+	help
+	  This enables common clock driver support for platforms based
+	  on Allwinner H3/H5 SoC.
+
+config CLK_SUN50I_H6
+	bool "Clock driver for Allwinner H6"
+	default MACH_SUN50I_H6
+	help
+	  This enables common clock driver support for platforms based
+	  on Allwinner H6 SoC.
+
+config CLK_SUN50I_A64
+	bool "Clock driver for Allwinner A64"
+	default MACH_SUN50I
+	help
+	  This enables common clock driver support for platforms based
+	  on Allwinner A64 SoC.
+
+endif # CLK_SUNXI

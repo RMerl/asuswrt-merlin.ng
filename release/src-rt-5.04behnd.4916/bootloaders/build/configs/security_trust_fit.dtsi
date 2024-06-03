@@ -1,0 +1,160 @@
+
+anti-rollback {
+	status = "disabled";
+	description = "Anti-rollback update - Optional Node";
+	new_antirollback = <11>;
+};
+
+hw_state {
+	// all    - Blocks access for all masters 
+	// none   - Unlocks access for all masters
+	// nonsec - Blocks access for nonsecure masters only
+	// prov   - unlock access for nonsecure provisioning by 
+	//          locking populated data only (sotp)
+	sotp-lock = "prov";
+	rng-lock = "none";
+};
+
+encoded_keys {
+	// The 'keyx' node names are only placeholders and can be 
+	// renamed to any user defined name
+	// Fields:
+	//   key_name: Name of final exported item in dtb
+	//   algo: Encryption algorithm used
+	//   permission: security permissions of the decoded key. 'secure' items 
+	//               will not be available in UBOOT and Linux. 
+	//               WARNING: Only enable 'secure' permission if a TEE is being
+	//               deployed.
+	//   os_export: optional control to allow the export  of the decoded
+	//              key to linux if 'nonsecure' permission is set. If field
+	//              is present and has a value of 'yes' the decoded	key will
+	//              be exported to Linux via dtb.   
+	// key1 {
+		// description = "OPTEE Key";
+		// data = [ %OPTEE_KEY% ];
+		// size = <0x0 >;
+		// algo = "aes-cbc-128";
+		// load_addr = <0x0>;
+		// key_name = "optee_aes";
+		// permission = "secure";
+		// os_export = "no";
+	// }; 
+	key2 {
+		description = "Image decryption Key";
+		data = [ %IMAGE_KEY% ];
+		size = < 0x20 >;
+		algo = "aes-cbc-128";
+		load_addr = <0x0>;
+		key_name = "image_aes";
+		permission = "nonsecure";
+		os_export = "no";
+	};
+	key3 {
+		description = "Bootloader CLI Key seed";
+		data = [ %CMD_KEY% ];
+		size = < 0x20 >;
+		algo = "aes-cbc-128";
+		load_addr = <0x0>;
+		key_name = "cli_seed";
+		permission = "nonsecure";
+		os_export = "no";
+	};
+	key4 {
+		description = "rpmb authentication key for provisioning image";
+		data = [ %RPMB_KEY% ];
+		size = < 0x20 >;
+		algo = "aes-cbc-128";
+		load_addr = <0x0>;
+		key_name = "rpmb_auth";
+		permission = "nonsecure";
+		os_export = "no";
+	};
+	//key4 {
+	//	description = "rpmb authentication key for production image";
+	//	data = [ %RPMB_KEY% ];
+	//	size = < 0x20 >;
+	//	algo = "aes-cbc-128";
+	//	load_addr = <0x0>;
+	//	key_name = "rpmb_auth";
+	//	permission = "secure";
+	//	os_export = "no";
+	//};
+        key5 {
+                description = "Fscrypt Key salt";
+                data = [ %FSCRYPT_SALT% ];
+                size = < 0x20 >;
+                algo = "aes-cbc-128";
+                load_addr = <0x0>;
+                key_name = "fscrypt_salt";
+                permission = "secure";
+                os_export = "no";
+        };
+};
+
+// List of items that need to be exported from the secure environment in TPL
+// to the nonsecure uboot and linux environments via the dtb
+sec_exports {
+	// The 'export_itemx' node names are only placeholders and can be 
+	// renamed to any user defined name
+	// Fields:
+	//   item_sec_id: unique secure item identifier, must match ids in source
+	//   item_name: Name of final exported item in dtb
+	//   algo: Hashing algorithm to use if item needs to be obfuscated
+	//   salt: optional 32-bit salt value to use before hashing
+	//                      OR
+	//         Name of decoded key to be used for the salt. The key name
+	//         is formatted as 'key_<key_name from encoded keys section>'
+	//   length: Length of the final exported value
+	//   os_export: optional control to limit the export to uboot only.
+	//              If field is present and has a value of 'no' the items
+	//              will NOT be exported to linux via dtb.   
+	//   permission: security permissions of exported items. 'secure' items 
+	//               will not be available in UBOOT and Linux. 
+	export_item1 {
+		// Export 32 byte device specific key after salting and hashing
+		// key_dev_specific_256[0-31] = sha256(salt+dev_specific_key)
+		item_sec_id = "SEC_ITEM_KEY_DEV_SPECIFIC";
+		item_name = "key_dev_specific_256";
+		algo = "sha256";
+		salt = <0xaabbccdd>;
+		length = <32>;
+		permission = "nonsecure";
+		os_export = "yes";
+	};
+	export_item2 {
+		// Export a 64 byte device specific key after salting and hashing
+		// key_dev_specific_512[00-31] = sha256(salt+dev_specific_key)
+		// key_dev_specific_512[32-63] = sha256(dev_specific_key+salt)
+		item_sec_id = "SEC_ITEM_KEY_DEV_SPECIFIC";
+		item_name = "key_dev_specific_512";
+		algo = "sha256";
+		salt = <0x00112233>;
+		length = <64>;
+		permission = "nonsecure";
+		os_export = "yes";
+	};
+	export_item3 {
+		// Export secure serial number
+		// serial_num[00-32] = secure serial number
+		item_sec_id = "SEC_ITEM_SER_NUM";
+		item_name = "serial_num";
+		length = <32>;
+		permission = "nonsecure";
+		os_export = "yes";
+	};
+        export_item4 {
+                // Export a 64 byte device specific key after salting and hashing
+                // key_dev_specific_512[00-31] = sha256(salt+dev_specific_key)
+                // key_dev_specific_512[32-63] = sha256(dev_specific_key+salt)
+                item_sec_id = "SEC_ITEM_KEY_DEV_SPECIFIC";
+                item_name = "key_dev_specific_512_grypt_salt";
+                algo = "sha256";
+                salt = "key_fscrypt_salt";
+                length = <64>;
+		permission = "nonsecure";
+                os_export = "yes";
+        };
+
+};
+
+

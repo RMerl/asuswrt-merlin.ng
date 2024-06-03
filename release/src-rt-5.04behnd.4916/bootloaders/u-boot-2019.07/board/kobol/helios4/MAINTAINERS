@@ -1,0 +1,6 @@
+HELIOS4 BOARD
+M:	Dennis Gilmore <dgilmore@redhat.com>
+S:	Maintained
+F:	board/kobol/helios4/
+F:	include/configs/helios4.h
+F:	configs/helios4_defconfig

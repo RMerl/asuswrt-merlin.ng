@@ -1,0 +1,364 @@
+﻿.popup_container.hide_title_cntr .action_container .btn_container.delete{
+	background: rgb(255 255 255 / 0%);
+	border: 1px solid #B3B3B3;
+	color: #262626;
+}
+.profile_item_container.wizard{
+	background: rgba(0, 110, 255, 0.03);
+	margin: 0;
+	margin-bottom: 0.5rem;
+}
+.profile_item_container.wizard:hover{
+	background: rgba(255, 255, 255, 0.1);
+	outline: 1px solid #006ce1;
+	box-shadow: 0px 0px 4px 4px #cce4ff;
+}
+.profile_item_container.ScenariosExplorer{
+	background: #F5F5F5;
+}
+.profile_item_container.ScenariosExplorer .item_text_container .main_info{
+	color: #006CE1;
+}
+.profile_item_container.wizard .item_text_container {
+	flex-grow: 1;
+	margin-left: 40px;
+}
+.profile_item_container.wizard .item_text_container .main_info {
+	font-size: 16px;
+	margin-left: 24px;
+}
+.profile_item_container.profile_list .bottom_info{
+	background-color: rgb(245 245 245 / 50%);
+	color: #666;
+}
+.item_text_container .main_info:before{
+	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-build.svg);
+}
+.profile_item_container.wizard .item_text_container .main_info:before{
+	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-build.svg);
+}
+.profile_item_container.wizard .item_text_container .sub_info{
+	color: #4D4D4D;
+	margin-left: 24px;
+}
+.profile_item_container.addnew .item_text_container .main_info:before{
+	background-image: url(/images/New_ui/SDN/white_theme/Content/add_circle_outline.svg);
+}
+.profile_item_container.customized .item_text_container .main_info:before{
+	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-build.svg);
+}
+.profile_item_container.Employee .item_text_container .main_info:before{
+	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-employee.svg);
+}
+.profile_item_container.Portal .item_text_container .main_info:before{
+	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-portal.svg);
+}
+.profile_item_container.Guest .item_text_container .main_info:before{
+	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-guest.svg);
+}
+.profile_item_container.Kids .item_text_container .main_info:before{
+	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-kids.svg);
+}
+.profile_item_container.Sched .item_text_container .main_info:before{
+	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-schedule.svg);
+}
+.profile_item_container.IoT .item_text_container .main_info:before{
+	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-IoT.svg);
+}
+.profile_item_container.VPN .item_text_container .main_info:before{
+	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-vpn.svg);
+}
+.profile_item_container.Scenario .item_text_container .main_info:before{
+	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-scenario.svg);
+}
+.profile_item_container.MLO .item_text_container .main_info:before{
+	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-mlo.svg);
+}
+.profile_item_container.LEGACY .item_text_container .main_info:before{
+	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-legacy.svg);
+}
+.profile_item_container.feature_desc{
+	border: 1px solid #DCDCDC;
+	background: initial;
+}
+.profile_item_container.feature_desc:hover{
+	border: 1px solid #DCDCDC;
+}
+.profile_item_container.feature_desc .main_info{
+	color: #006CE1;
+}
+.item_scenarios_container > .title{
+	color: #4D4D4D;
+}
+.item_tag_container > .item_tag.VPN:before{
+	background-image: url(/images/New_ui/SDN/white_theme/Content/link.svg);
+}
+.item_tag_container > .item_tag.Timer:before{
+	background-image: url(/images/New_ui/SDN/white_theme/Image/timer.svg);
+}
+.item_text_container .bottom_info > div:not(:first-child):before{
+	border-right: 1px solid #DCDCDC;
+}
+.item_text_container .bottom_info span{
+	color: #181818;
+}
+.item_text_container .clients_num > .icon_client{
+	background-image: url(/images/New_ui/SDN/white_theme/Devices/devices.svg);
+}
+.status_info .split_line{
+	background-color: #DCDCDC;
+}
+.status_info .conn_type.WiFi_offline{
+	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_off.svg);
+}
+.status_info .conn_type.WiFi_2G{
+	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_2g.svg);
+}
+.status_info .conn_type.WiFi_2G_lock{
+	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_2g_lock.svg);
+}
+.status_info .conn_type.WiFi_5G{
+	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_5g.svg);
+}
+.status_info .conn_type.WiFi_5G_lock{
+	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_5g_lock.svg);
+}
+.status_info .conn_type.WiFi_6G{
+	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_6g.svg);
+}
+.status_info .conn_type.WiFi_6G_lock{
+	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_6g_lock.svg);
+}
+.status_info .conn_type.WiFi_mlo{
+	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_mlo.svg);
+}
+.status_info .conn_type.WiFi_mlo_lock{
+	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_mlo_lock.svg);
+}
+.status_info .conn_type.LAN{
+	background-image: url(/images/New_ui/SDN/white_theme/Notification/LAN.svg);
+}
+.status_info .conn_type.WiFi,
+.status_info .conn_type.WiFi_offline,
+.status_info .conn_type.LAN{
+	background-color: #006CE1;
+}
+.status_info .conn_type.WiFi7{
+	background-color: #000;
+}
+.profile_setting.Get_Start{
+	display: flex;
+	flex-direction: column;
+	padding: 0 16px !important;
+}
+.profile_setting.Get_Start > .title,
+.profile_setting.Scenarios > .title{
+	color: #006CE1;
+	margin: 16px;
+}
+.profile_setting.Get_Start .wizard_list_bg {
+	margin-top: 0px;
+	width: 100%;
+}
+.profile_setting.Get_Start .wizard_list_bg:last-child {
+	margin-bottom: 0;
+}
+.profile_setting.Scenarios > .title{
+	padding-top: 16px;
+}
+.bandwidth_item > .icon_download{
+	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-download-speed.svg);
+}
+.bandwidth_item > .icon_upload{
+	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-upload-speed.svg);
+}
+.profile_setting_item.schedule_ui{
+	background: #F5F5F5 !important;
+}
+.setting_subtab_container{
+	display: flex;
+	align-items: stretch;
+	justify-content: space-around;
+	width: 100%;
+	height: auto;
+	height: 60px;
+	font-size: 16px;
+	font-weight: 500;
+	border-bottom: 4px solid rgb(220, 220, 220);
+	line-height: 120%;
+	margin-bottom: initial;
+}
+.setting_subtab_container > .subtab_item{
+	color: #262626;
+	justify-content: space-evenly;
+}
+.setting_subtab_container > .subtab_item:hover{
+	background-color: rgba(0,108,225,0.03);
+	box-shadow: 0px 0px 0px 1px rgb(0 0 0 / 10%);
+	border-radius: 8px;
+	/* margin: 8px; */
+}
+.setting_subtab_container > .subtab_item.selected{
+	color: #006CE1;
+}
+.setting_subtab_container > .subtab_item.selected:before{
+	border-bottom: 4px solid rgba(0, 108, 225, 1);
+	content: "";
+	position: absolute;
+	left: 0;
+	bottom: -4px;
+	right: 0;
+	width: 100%;
+}
+.node_container{
+	background: #F5F5F5;
+}
+.node_container:before{
+	border-bottom: 1px solid #DCDCDC;
+}
+.node_content_container > .node_info > .node_main_info{
+	color: #4D4D4D;
+}
+.node_content_container  > .node_info > .node_sub_info{
+	color: #006CE1;
+}
+.node_content_container > .icon_wifi_band{
+	background-image: url(/images/New_ui/amesh/white_theme/client_control.svg);
+}
+.node_container > .node_hint,
+.profile_group > .profile_hint{
+	color: #ff0000;
+}
+.dns_list_container .category_title{
+	background: rgba(0, 133, 255, 0.1);
+	color: #262626;
+}
+.dns_list_container .item_container{
+	color: #4d4d4d;
+}
+.dns_list_container .item_container.dns_content{
+	color: #262626;
+}
+.dns_list_container .category_title:before,
+.dns_list_container .item_container:before{
+	border-bottom: 1px solid #DCDCDC;
+}
+.bg_template_container::-webkit-scrollbar-track{
+	border: 4px solid #FFFFFF;
+	background-color: #DCDCDC;
+}
+.bg_template_container::-webkit-scrollbar-thumb{
+	background-color: #CCCCCC;
+	border: 2px solid #FFFFFF;
+}
+.bg_template_container .bg_upload_image{
+	background: #F5F5F5;
+	border: 2px dashed #999999;
+}
+.bg_template_container .bg_upload_image:before{
+	color: #999999;
+}
+.bg_template_container .bg_upload_image:hover{
+	border: 2px dashed #262626;
+}
+.bg_template_container .bg_upload_image:hover:before{
+	color: #262626;
+}
+.VPN_list_container{
+	background: #F5F5F5;
+}
+.VPN_list_container:before{
+	border-bottom: 1px solid #DCDCDC;
+}
+.VPN_list_container .profile_group:not(:first-child):before{
+	border-top: 1px solid #DCDCDC;
+}
+.VPN_list_container .title{
+	color: #006CE1;
+}
+.VPN_list_container .profile_container{
+	background: #FFF;
+}
+.VPN_list_container .profile_item:before{
+	border-bottom: 1px solid #DCDCDC;
+}
+.clientlist_container .client_container:before,
+.clientlist_container .no_client_hint:before{
+	bottom: initial;
+	top: 0;
+	border-bottom: initial;
+}
+.clientlist_container .client_container:not(:first-child):before,
+.clientlist_container .no_client_hint:not(:first-child):before{
+	border-top: 1px solid #DCDCDC;
+}
+.clientlist_container .no_client_hint{
+	color: #181818;
+}
+.client_content_container > .sub_info > div{
+	color: #4D4D4D;
+}
+.client_content_container .sub_info > div:not(:first-child):before{
+	border-left: 1px solid #DCDCDC;
+}
+.client_content_container .client_name{
+	color: #262626;
+}
+.client_content_container .conn_type.LAN{
+	background-image: url(/images/New_ui/SDN/white_theme/Notification/LAN.svg);
+	background-position-y: -2px;
+}
+.client_content_container .conn_type.WiFi_2G{
+	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_2g.svg);
+	background-position-y: -2px;
+}
+.client_content_container .conn_type.WiFi_5G{
+	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_5g.svg);
+	background-position-y: -2px;
+}
+.client_content_container .conn_type.WiFi_6G{
+	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_6g.svg);
+}
+.client_content_container .conn_type.WiFi_MLO{
+	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_mlo.svg);
+}
+.feature_desc_container .title{
+	color: #006CE1;
+}
+.feature_desc_container .desc{
+	color: #4D4D4D;
+}
+.feature_desc_container .wizard_list_bg:before{
+	border-bottom: 1px solid #DCDCDC;
+}
+.wifi_share_container .qrcode_container{
+	border: 1px solid rgb(85 100 111);
+	border-radius: 8px;
+	background: initial;
+}
+.qrcode_container > .qr_text{
+	color: rgb(94, 100, 112);
+}
+.qrcode_btn{
+	background-image: url(/images/New_ui/SDN/white_theme/Action/qr_code.svg);
+}
+.export_btn_container > .export_btn{
+	color: rgb(94, 100, 112);
+}
+.export_btn_container > .export_btn .btn_text:before{
+	background-image: url(/images/New_ui/SDN/white_theme/Action/download.svg);
+}
+.profile_setting_title.Scenarios > .title{
+	color: #006CE1;
+}
+.btn_back_container{
+	color: #006CE1;
+}
+@media (max-width: 575px) {
+	.popup_container .setting_subtab_container{
+		margin-top: initial;
+	}
+	.export_btn_container > .export_btn .btn_text:before{
+		background-image: url(/images/New_ui/SDN/white_theme/Action/share.svg);
+	}
+}

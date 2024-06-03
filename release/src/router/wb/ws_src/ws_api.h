@@ -36,6 +36,11 @@
 #define GET_USER_TICKET_BY_REFRESH	"/aae/getuserticketbyrefresh"
 #define GET_AWS_CERTIFICATE	"/aae/getawscertificate"
 #define REMOTELOGIN	"/aae/remotelogin"
+#define FBWIF2_REG	"/aae/facebookwifiregister"
+#define GETPROVISIONPINCODE_REG	"/getProvisionningPincode"
+#define GET_DB_WIREGUARD	"/aae/getWireGuardVPNGroupList"
+#define UPDATE_DB_WIREGUARD	"/aae/updateWireGuardVPNGroup"
+#define UPDATE_DB_TUNNELTEST "/aae/updateTunnelTestResult"
 
 #define MAX_STATUS_LEN 	32
 #define MAX_URL_LEN		128
@@ -247,6 +252,39 @@ typedef struct _RemoteLogin
 	char 	status[MAX_STATUS_LEN];
 	char	time[MAX_TIME_LEN];
 } RemoteLogin, *pRemoteLogin;
+
+typedef struct _Fbwifi2Reg
+{
+	char 	status[MAX_STATUS_LEN];
+	char	gatewayid[MAX_ID_LEN];
+	char	gatewaysecret[MAX_ID_LEN];
+	char	error[MAX_DESC_LEN];
+	char	time[MAX_TIME_LEN];
+	char	raw_resp[MAX_DESC_LEN];
+} Fbwifi2Reg, *pFbwifi2Reg;
+
+typedef struct _GetProvisionPincode
+{
+	char 	status[MAX_STATUS_LEN];
+	char	pincode[MAX_ID_LEN];
+	char	endpoint[MAX_URL_LEN];
+	char	rootca[MAX_CA_DATA_LEN];
+	char	certificate[MAX_CA_DATA_LEN];
+	char	privatekey[MAX_CA_DATA_LEN];
+	// char	time[MAX_TIME_LEN];
+} GetProvisionPincode, *pGetProvisionPincode;
+
+typedef struct _GetDB
+{
+	char 	status[MAX_STATUS_LEN];
+	char	raw_reported[MAX_CA_DATA_LEN];
+} GetDB, *pGetDB;
+
+typedef struct _UpdateDB
+{
+	char 	status[MAX_STATUS_LEN];
+	char	message[MAX_DESC_LEN];
+} UpdateDB, *pUpdateDB;
 
 typedef enum _ws_status_code
 {
@@ -477,6 +515,80 @@ int send_remotelogin_req(
 	const int apilevel,
 	const char* modelname,
 	RemoteLogin *pRl
+);
+
+int send_account_reg_req(
+	const char* server,
+	const char* serviceid, 
+	const char* userid, 
+	const char* passwd,
+	const char* cusid, 
+	const char* userticket,
+	const char* devicemd5mac,
+	const char*	devicename,
+	const char*	deviceservice,
+	const char* devicetype,
+	const char*	permission,
+	const char* devicedesc,
+	const char* fwver, 
+	const int apilevel,
+	const char* modelname,
+	Login*		pLogin
+);
+
+int send_fbwifi2_reg_req(
+	const char *server,
+	const char* serviceid, 
+	const char *oauth_dm_cusid,
+	const char *dm_deviceid,
+	const char *dm_ticket,
+	const char* devicename, 
+	const char* hw_version, 
+	const char* sw_version,
+	const char* bssids,
+	const char* ssids,
+	const char* devicetype, 
+	const char* fwver, 
+	const int apilevel,
+	const char* modelname,
+	Fbwifi2Reg *pFr
+);
+
+int send_get_provision_pincode_req(
+	const char *server,
+	const char* mac,
+	GetProvisionPincode *pGetProvisionPincode
+);
+
+int send_get_db_wireguard_req(
+	const char *server,
+	const char *oauth_dm_cusid,
+	const char *dm_deviceid,
+	const char *dm_ticket,
+	GetDB *pGetDB
+);
+
+int send_update_db_wireguard_req(
+	const char *server,
+	const char *oauth_dm_cusid,
+	const char *group_name,
+	const char *dm_deviceid,
+	const char *dm_ticket,
+	const char *role,
+	const char *content,
+	UpdateDB *pUpdateDB
+);
+
+int send_update_db_tunneltest_req(
+	const char *server,
+	const char *oauth_dm_cusid,
+	const char *dm_deviceid,
+	const char *dm_ticket,
+	const char *master_deviceid,
+	const char *slave_deviceid,
+	const char *type,
+	int error_code,
+	UpdateDB *pUpdateDB
 );
 
 char *get_curl_status_string(int error);

@@ -1,0 +1,9 @@
+if TARGET_OMAP3_OVERO
+
+config SYS_BOARD
+	default "overo"
+
+config SYS_CONFIG_NAME
+	default "omap3_overo"
+
+endif

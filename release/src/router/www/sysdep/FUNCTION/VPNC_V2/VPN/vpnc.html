@@ -1,5 +1,5 @@
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta http-equiv="X-UA-Compatible" content="ie=edge">
 <link rel="stylesheet" type="text/css" href="/index_style.css">
 <link rel="stylesheet" type="text/css" href="/form_style.css">
@@ -43,10 +43,10 @@ var getUrlParameter = function getUrlParameter(param){
 	}
 	return "";
 };
-var app_lang = getUrlParameter("current_lang").toLocaleUpperCase();
+var app_lang = getUrlParameter("current_lang").toUpperCase();
 $(function () {
 	$('link[group="extend_css"]').remove();
-	var theme = getUrlParameter("current_theme").toLocaleUpperCase();
+	var theme = getUrlParameter("current_theme").toUpperCase();
 	if(theme == "WHITE" || theme == "GT" || theme == "TUF"){
 		$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/VPN/vpnc' + theme + '.css">');
 	}
@@ -59,6 +59,9 @@ $(function () {
 			$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/VPN/vpncTUF.css">');
 		}
 	}
+
+	if(CoBrand == "8")
+		$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/css/difference.css">');
 });
 var surfshark_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=sskVPN&lang="+ui_lang+"&kw=&num=&tcode="+ttc;
 var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=167";
@@ -73,7 +76,7 @@ if(isSupport("vpn_fusion"))
 var dhcp_staticlist_maximum = 64;
 var openvpnc_max = 5;
 var vpnc_openvpn_unit_edit = 5;
-var vpnc_conn_maxi_general_note = stringSafeGet("<#vpnc_conn_maxi_general#>");
+var vpnc_conn_maxi_general_note = stringSafeGet("<#vpnc_conn_maxi_general#>").replace("#MAXNUM", vpnc_activate_maximum);
 var vpnc_conn_maxi_ssk_note = stringSafeGet("<#vpnc_conn_maxi_ssk#>");
 var vpnc_first_note = stringSafeGet("<#vpnc_first#>");
 var str_vpnc_ip_allowed = stringSafeGet("<#vpnc_ip_allowed#>");
@@ -1010,7 +1013,7 @@ function Get_Component_Get_Start(){
 	var $main_info_container = $("<div>").addClass("main_info_container").appendTo($container);
 	$("<div>").addClass("title").html("<#IFTTT_start1#>").appendTo($main_info_container);
 	$("<div>").addClass("desc").html(vpnc_first_note).appendTo($main_info_container);
-	$("<div>").addClass("add_btn").html("<#vpnc_step1#>").appendTo($main_info_container).unbind("click").click(function(e){
+	$("<div>").addClass("add_btn_vpnc").addClass("add_btn").html("<#vpnc_step1#>").appendTo($main_info_container).unbind("click").click(function(e){
 		e = e || event;
 		e.stopPropagation();
 		var rule_num = vpnc_clientlist_json.length;
@@ -1064,7 +1067,7 @@ function Get_Component_Setting_Profile(_type){
 			$content_container.find("#ssk_promote_img").on("click", function(event){
 				window.open(surfshark_href);
 				event.preventDefault();
-                        }).attr('src', UrlPromote).on('load', function() {
+			}).attr('src', UrlPromote).on('load', function() {
 	 			// image loaded successfully
 				$content_container.find("#ssk_promote_img").css({"height":"185px","margin-left":"15px","cursor":"pointer"});
 			}).on('error', function() {
@@ -1080,6 +1083,7 @@ function Get_Component_Setting_Profile(_type){
 
 		}
 		else{
+
 			$content_container.find("#ssk_promote_img").on("click", function(event){
 				window.open(surfshark_href);
 				event.preventDefault();
@@ -1288,26 +1292,32 @@ function Get_Component_Client_List_Item(_client_data, _edit_mode){
 			userIconBase64 = client_upload_icon[clientMac];
 	}
 	if(userIconBase64 != "NoIcon") {
-		$clientIcon.addClass("user_icon");
-		$clientIcon.css("background-image", "url(" + userIconBase64 + ")");
+		if(clientObj.isUserUplaodImg) {
+			$clientIcon.addClass("user_icon").css("background-image", "url(" + userIconBase64 + ")");
+		}else {
+			$clientIcon.addClass("user_icon").append($('<i>').addClass('type').attr('style','--svg:url(' + userIconBase64 + ')'));
+		}
 	}
 	else if(clientObj.type != "0" || clientObj.vendor == "") {
 		var icon_type = "type" + clientObj.type;
-		$clientIcon.addClass("default_icon " + icon_type + "");
+		$clientIcon.addClass("default_icon");
+		if($clientIcon.find('i').length==0){
+			$clientIcon.append($('<i>').addClass(icon_type));
+		}
 		if(clientObj.type == "36"){
-			$flashObj = $("<div>");
-			$flashObj.addClass("flash");
-			$flashObj.appendTo($clientIcon);
+			$("<div>").addClass("flash").appendTo($clientIcon);
 		}
 	}
 	else if(clientObj.vendor != "") {
-		var venderIconClassName = getVenderIconClassName(clientObj.vendor.toLowerCase());
-		if(venderIconClassName != "" && !isSupport("sfp4m")) {
-			$clientIcon.addClass("vender_icon " + venderIconClassName + "");
+		var vendorIconClassName = getVendorIconClassName(clientObj.vendor.toLowerCase());
+		if(vendorIconClassName != "" && !isSupport("sfp4m")) {
+			$clientIcon.addClass("default_icon");
+			$clientIcon.append($('<i>').addClass("vendor-icon " + vendorIconClassName));
 		}
 		else {
 			var icon_type = "type" + clientObj.type;
-			$clientIcon.addClass("default_icon " + icon_type + "");
+			$clientIcon.addClass("default_icon");
+			$clientIcon.append($('<i>').addClass(icon_type));
 		}
 	}
 
@@ -1559,15 +1569,6 @@ function Get_Component_Input(_parm){
 		$container.attr("show_item", _parm.show_item);
 	}
 	$container.append($("<div>").addClass("title").html(htmlEnDeCode.htmlEncode(_parm.title)));
-	if(_parm.id == "ssk_wgc_priv"){
-		$container.append($("<div>").attr("id", "help_icon").addClass("setup_help_icon")
-			.on("click", function(event){
-            	window.open("https://asus.click/Surfshark");
-
-            	event.preventDefault();
-			})
-		);
-	}
 
 	var $input_container = $("<div>").addClass("input_container").appendTo($container);
 	var $input = $("<input/>").attr("id", _parm.id).appendTo($input_container).addClass("textInput")
@@ -1593,6 +1594,15 @@ function Get_Component_Input(_parm){
 			$(this).toggleClass("close open");
 			$("#"+$(this).attr("for")).prop("type", (function(){return targetObj.hasClass("icon_eye close") ? "password" : "text";}()));
 		}).appendTo($input_container);
+	}
+
+	if(_parm.id == "ssk_wgc_priv"){
+		$input_container.addClass("two_component").append($("<div>").attr("id", "help_icon").addClass("vpn_icon_all_collect vpnc_help_icon")
+			.on("click", function(event){
+				window.open("https://asus.click/Surfshark");
+				event.preventDefault();
+			})
+		);
 	}
 
 	return $container;
@@ -2149,13 +2159,6 @@ function vpn_type_change_control(_obj, _value){
 	}
 
 	$(_obj).find("#vpnc_des_edit").keyup();//change vpn type, then check input field
-
-	if($.find(".no_popup_content_container").length > 0){	//edit
-		$(_obj).find("#help_icon").css("margin-left","320px");
-	}
-	else{
-		$(_obj).find("#help_icon").css("margin-left","400px");
-	}
 
 	if(_value == "surfshark"){
 		$(_obj).find("#ssk_promote_img").show();
@@ -3857,7 +3860,7 @@ function validate_format(_obj){
 			$wgc_alive.focus();
 			return false;
 		}
-		var isValid_wgc_alive = valid_num_range($wgc_alive.val(), 1, 65535);
+		var isValid_wgc_alive = valid_num_range($wgc_alive.val(), 0, 65535);
 		if(isValid_wgc_alive.isError){
 			$wgc_alive.show_validate_hint(isValid_wgc_alive.errReason);
 			$wgc_alive.focus();
@@ -3939,6 +3942,8 @@ function get_wl_unit_by_band(_band){
 			wl_nband = "1";
 			break;
 		case "6G":
+		case "6G1":
+		case "6G2":
 			wl_nband = "4";
 			break;
 		case "60G":
@@ -4090,7 +4095,7 @@ function initial(){
 		check_profile_status();
 	}, 1000*5);
 
-	var referer = getUrlParameter("referer").toLocaleLowerCase();
+	var referer = getUrlParameter("referer").toLowerCase();
 	if(referer != "" && referer == "vpn_wifi"){
 		var specific_vpnc_policy_data = vpnc_dev_policy_list_json.filter(function(item, index, array){
 			return (item.brifname == "br1" || item.brifname == "br2");
@@ -4122,7 +4127,7 @@ $(document).ready(initial);
 <div class="popup_container popup_element_second"></div>
 <div class="hidden_mask popup_customize_alert"></div>
 <div class="popup_container popup_customize_alert"></div>
-<div class="bg">
+<div id="vpnc_bg" class="bg">
 	<div class="container no_highlights">
 		<div class="function_desc_container">
 			<div class="title"><#vpnc_title#></div>

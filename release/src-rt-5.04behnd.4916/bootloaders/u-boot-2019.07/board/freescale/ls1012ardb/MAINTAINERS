@@ -1,0 +1,21 @@
+LS1012ARDB BOARD
+M:	Prabhakar Kushwaha <prabhakar.kushwaha@nxp.com>
+M:	Rajesh Bhagat <rajesh.bhagat@nxp.com>
+S:	Maintained
+F:	board/freescale/ls1012ardb/
+F:	include/configs/ls1012ardb.h
+F:	configs/ls1012ardb_qspi_defconfig
+F:	configs/ls1012ardb_tfa_defconfig
+F:	configs/ls1012ardb_tfa_SECURE_BOOT_defconfig
+F:	configs/ls1012a2g5rdb_tfa_defconfig
+
+M:	Sumit Garg <sumit.garg@nxp.com>
+S:	Maintained
+F:	configs/ls1012ardb_qspi_SECURE_BOOT_defconfig
+
+LS1012A2G5RDB BOARD
+M:      Bhaskar Upadhaya <bhaskar.upadhaya@nxp.com>
+S:      Maintained
+F:      board/freescale/ls1012ardb/
+F:      include/configs/ls1012a2g5rdb.h
+F:      configs/ls1012a2g5rdb_qspi_defconfig

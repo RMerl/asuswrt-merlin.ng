@@ -36,5 +36,7 @@ struct basic_wireless_setting_s {
 };
 extern struct basic_wireless_setting_s basic_wireless_settings[];
 #endif
-
+#ifdef RTCONFIG_MLO
+int  check_mlo_dwb_profile(int dwb_subunit,int profile_type);
+#endif
 #endif // __AMAS_DWB_H__

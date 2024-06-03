@@ -1,0 +1,79 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * dts file for Xilinx ZynqMP Mini Configuration
+ *
+ * (C) Copyright 2015 - 2018, Xilinx, Inc.
+ *
+ * Siva Durga Prasad <siva.durga.paladugu@xilinx.com>
+ * Michal Simek <michal.simek@xilinx.com>
+ */
+
+/dts-v1/;
+
+/ {
+	model = "ZynqMP MINI QSPI";
+	compatible = "xlnx,zynqmp";
+	#address-cells = <2>;
+	#size-cells = <1>;
+
+	aliases {
+		serial0 = &dcc;
+		spi0 = &qspi;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	memory@fffc0000 {
+		device_type = "memory";
+		reg = <0x0 0xfffc0000 0x40000>;
+	};
+
+	dcc: dcc {
+		compatible = "arm,dcc";
+		status = "disabled";
+		u-boot,dm-pre-reloc;
+	};
+
+	amba: amba {
+		compatible = "simple-bus";
+		#address-cells = <2>;
+		#size-cells = <1>;
+		ranges;
+
+		qspi: spi@ff0f0000 {
+			compatible = "xlnx,zynqmp-qspi-1.0";
+			status = "disabled";
+			clock-names = "ref_clk", "pclk";
+			clocks = <&misc_clk &misc_clk>;
+			num-cs = <1>;
+			reg = <0x0 0xff0f0000 0x1000 0x0 0xc0000000 0x8000000>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
+
+		misc_clk: misc_clk {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <125000000>;
+		};
+	};
+};
+
+&qspi {
+	status = "okay";
+	flash0: flash@0 {
+		compatible = "n25q512a11", "spi-flash";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		reg = <0x0>;
+		spi-tx-bus-width = <1>;
+		spi-rx-bus-width = <4>;
+		spi-max-frequency = <10000000>;
+	};
+};
+
+&dcc {
+	status = "okay";
+};

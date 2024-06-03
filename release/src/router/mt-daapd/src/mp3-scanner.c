@@ -30,6 +30,10 @@
 #  include "config.h"
 #endif
 
+#ifdef MUSL_LIBC
+#include <sys/param.h>
+#endif	// MUSL_LIBC
+
 #define _POSIX_PTHREAD_SEMANTICS
 #include <ctype.h>
 #include <errno.h>

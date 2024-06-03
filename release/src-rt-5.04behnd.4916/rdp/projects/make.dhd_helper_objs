@@ -1,0 +1,7 @@
+RDPA_OBJS += rdpa_dhd_helper.o
+RDPA_OBJS += rdpa_dhd_helper_ex.o
+
+ifeq ("$(CONFIG_SYSTEM)", "sim")
+RDPA_OBJS += rdpa_dhd_sim.o
+endif
+

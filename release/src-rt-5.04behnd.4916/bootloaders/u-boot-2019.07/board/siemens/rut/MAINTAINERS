@@ -1,0 +1,6 @@
+RUT BOARD
+M:	Roger Meier <r.meier@siemens.com>
+S:	Maintained
+F:	board/siemens/rut/
+F:	include/configs/rut.h
+F:	configs/rut_defconfig

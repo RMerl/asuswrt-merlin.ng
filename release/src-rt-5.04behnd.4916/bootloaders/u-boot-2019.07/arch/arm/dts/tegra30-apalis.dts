@@ -1,0 +1,338 @@
+/dts-v1/;
+
+#include "tegra30.dtsi"
+
+/ {
+	model = "Toradex Apalis T30";
+	compatible = "toradex,apalis_t30", "nvidia,tegra30";
+
+	chosen {
+		stdout-path = &uarta;
+	};
+
+	aliases {
+		i2c0 = "/i2c@7000d000";
+		i2c1 = "/i2c@7000c000";
+		i2c2 = "/i2c@7000c500";
+		i2c3 = "/i2c@7000c700";
+		mmc0 = "/sdhci@78000600";
+		mmc1 = "/sdhci@78000400";
+		mmc2 = "/sdhci@78000000";
+		spi0 = "/spi@7000d400";
+		spi1 = "/spi@7000dc00";
+		spi2 = "/spi@7000de00";
+		spi3 = "/spi@7000da00";
+		usb0 = "/usb@7d000000";
+		usb1 = "/usb@7d004000";
+		usb2 = "/usb@7d008000";
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0x80000000 0x40000000>;
+	};
+
+	pcie@3000 {
+		status = "okay";
+		avdd-pexa-supply = <&vdd2_reg>;
+		vdd-pexa-supply = <&vdd2_reg>;
+		avdd-pexb-supply = <&vdd2_reg>;
+		vdd-pexb-supply = <&vdd2_reg>;
+		avdd-pex-pll-supply = <&vdd2_reg>;
+		avdd-plle-supply = <&ldo6_reg>;
+		vddio-pex-ctl-supply = <&sys_3v3_reg>;
+		hvdd-pex-supply = <&sys_3v3_reg>;
+
+		/* Apalis Type Specific 4 Lane PCIe */
+		pci@1,0 {
+			/* TS_DIFF1/2/3/4 left disabled */
+			nvidia,num-lanes = <4>;
+		};
+
+		/* Apalis PCIe */
+		pci@2,0 {
+			/* PCIE1_RX/TX left disabled */
+			nvidia,num-lanes = <1>;
+		};
+
+		/* I210 Gigabit Ethernet Controller (On-module) */
+		pci@3,0 {
+			status = "okay";
+			nvidia,num-lanes = <1>;
+		};
+	};
+
+	/*
+	 * GEN1_I2C: I2C1_SDA/SCL on MXM3 pin 209/211 (e.g. RTC on carrier
+	 * board)
+	 */
+	i2c@7000c000 {
+		status = "okay";
+		clock-frequency = <400000>;
+	};
+
+	/* GEN2_I2C: unused */
+
+	/*
+	 * CAM_I2C: I2C3_SDA/SCL on MXM3 pin 201/203 (e.g. camera sensor on
+	 * carrier board)
+	 */
+	i2c@7000c500 {
+		status = "okay";
+		clock-frequency = <400000>;
+	};
+
+	/* DDC: I2C2_SDA/SCL on MXM3 pin 205/207 (e.g. display EDID) */
+	i2c@7000c700 {
+		status = "okay";
+		clock-frequency = <10000>;
+	};
+
+	/*
+	 * PWR_I2C: power I2C to audio codec, PMIC, temperature sensor and
+	 * touch screen controller
+	 */
+	i2c@7000d000 {
+		status = "okay";
+		clock-frequency = <100000>;
+
+		pmic: tps65911@2d {
+			compatible = "ti,tps65911";
+			reg = <0x2d>;
+
+			interrupts = <GIC_SPI 86 IRQ_TYPE_LEVEL_HIGH>;
+			#interrupt-cells = <2>;
+			interrupt-controller;
+
+			ti,system-power-controller;
+
+			#gpio-cells = <2>;
+			gpio-controller;
+
+			vcc1-supply = <&sys_3v3_reg>;
+			vcc2-supply = <&sys_3v3_reg>;
+			vcc3-supply = <&vio_reg>;
+			vcc4-supply = <&sys_3v3_reg>;
+			vcc5-supply = <&sys_3v3_reg>;
+			vcc6-supply = <&vio_reg>;
+			vcc7-supply = <&charge_pump_5v0_reg>;
+			vccio-supply = <&sys_3v3_reg>;
+
+			regulators {
+				/* SW1: +V1.35_VDDIO_DDR */
+				vdd1_reg: vdd1 {
+					regulator-name = "vddio_ddr_1v35";
+					regulator-min-microvolt = <1350000>;
+					regulator-max-microvolt = <1350000>;
+					regulator-always-on;
+				};
+
+				/* SW2: +V1.05 */
+				vdd2_reg: vdd2 {
+					regulator-name =
+						"vdd_pexa,vdd_pexb,vdd_sata";
+					regulator-min-microvolt = <1050000>;
+					regulator-max-microvolt = <1050000>;
+				};
+
+				/* SW CTRL: +V1.0_VDD_CPU */
+				vddctrl_reg: vddctrl {
+					regulator-name = "vdd_cpu,vdd_sys";
+					regulator-min-microvolt = <1150000>;
+					regulator-max-microvolt = <1150000>;
+					regulator-always-on;
+				};
+
+				/* SWIO: +V1.8 */
+				vio_reg: vio {
+					regulator-name = "vdd_1v8_gen";
+					regulator-min-microvolt = <1800000>;
+					regulator-max-microvolt = <1800000>;
+					regulator-always-on;
+				};
+
+				/* LDO1: unused */
+
+				/*
+				 * EN_+V3.3 switching via FET:
+				 * +V3.3_AUDIO_AVDD_S, +V3.3 and +V1.8_VDD_LAN
+				 * see also v3_3 fixed supply
+				 */
+				ldo2_reg: ldo2 {
+					regulator-name = "en_3v3";
+					regulator-min-microvolt = <3300000>;
+					regulator-max-microvolt = <3300000>;
+					regulator-always-on;
+				};
+
+				/* +V1.2_CSI */
+				ldo3_reg: ldo3 {
+					regulator-name =
+						"avdd_dsi_csi,pwrdet_mipi";
+					regulator-min-microvolt = <1200000>;
+					regulator-max-microvolt = <1200000>;
+				};
+
+				/* +V1.2_VDD_RTC */
+				ldo4_reg: ldo4 {
+					regulator-name = "vdd_rtc";
+					regulator-min-microvolt = <1200000>;
+					regulator-max-microvolt = <1200000>;
+					regulator-always-on;
+				};
+
+				/*
+				 * +V2.8_AVDD_VDAC:
+				 * only required for analog RGB
+				 */
+				ldo5_reg: ldo5 {
+					regulator-name = "avdd_vdac";
+					regulator-min-microvolt = <2800000>;
+					regulator-max-microvolt = <2800000>;
+					regulator-always-on;
+				};
+
+				/*
+				 * +V1.05_AVDD_PLLE: avdd_plle should be 1.05V
+				 * but LDO6 can't set voltage in 50mV
+				 * granularity
+				 */
+				ldo6_reg: ldo6 {
+					regulator-name = "avdd_plle";
+					regulator-min-microvolt = <1100000>;
+					regulator-max-microvolt = <1100000>;
+				};
+
+				/* +V1.2_AVDD_PLL */
+				ldo7_reg: ldo7 {
+					regulator-name = "avdd_pll";
+					regulator-min-microvolt = <1200000>;
+					regulator-max-microvolt = <1200000>;
+					regulator-always-on;
+				};
+
+				/* +V1.0_VDD_DDR_HS */
+				ldo8_reg: ldo8 {
+					regulator-name = "vdd_ddr_hs";
+					regulator-min-microvolt = <1000000>;
+					regulator-max-microvolt = <1000000>;
+					regulator-always-on;
+				};
+			};
+		};
+	};
+
+	/* SPI1: Apalis SPI1 */
+	spi@7000d400 {
+		status = "okay";
+		spi-max-frequency = <25000000>;
+	};
+
+	/* SPI4: CAN2 */
+	spi@7000da00 {
+		status = "okay";
+		spi-max-frequency = <25000000>;
+	};
+
+	/* SPI5: Apalis SPI2 */
+	spi@7000dc00 {
+		status = "okay";
+		spi-max-frequency = <25000000>;
+	};
+
+	/* SPI6: CAN1 */
+	spi@7000de00 {
+		status = "okay";
+		spi-max-frequency = <25000000>;
+	};
+
+	sdhci@78000000 {
+		status = "okay";
+		bus-width = <4>;
+		/* SD1_CD# */
+		cd-gpios = <&gpio TEGRA_GPIO(CC, 5) GPIO_ACTIVE_LOW>;
+	};
+
+	sdhci@78000400 {
+		status = "okay";
+		bus-width = <8>;
+		/* MMC1_CD# */
+		cd-gpios = <&gpio TEGRA_GPIO(V, 3) GPIO_ACTIVE_LOW>;
+	};
+
+	sdhci@78000600 {
+		status = "okay";
+		bus-width = <8>;
+		non-removable;
+	};
+
+	/* EHCI instance 0: USB1_DP/N -> USBO1_DP/N */
+	usb@7d000000 {
+		status = "okay";
+		dr_mode = "otg";
+		/* USBO1_EN */
+		nvidia,vbus-gpio = <&gpio TEGRA_GPIO(T, 5) GPIO_ACTIVE_HIGH>;
+	};
+
+	/* EHCI instance 1: USB2_DP/N -> USBH2_DP/N */
+	usb@7d004000 {
+		status = "okay";
+		/* USBH_EN */
+		nvidia,vbus-gpio = <&gpio TEGRA_GPIO(DD, 1) GPIO_ACTIVE_HIGH>;
+	};
+
+	/* EHCI instance 2: USB3_DP/N -> USBH3_DP/N */
+	usb@7d008000 {
+		status = "okay";
+		/* USBH_EN */
+		nvidia,vbus-gpio = <&gpio TEGRA_GPIO(DD, 1) GPIO_ACTIVE_HIGH>;
+	};
+
+	clocks {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		clk32k_in: clk@0 {
+			compatible = "fixed-clock";
+			reg=<0>;
+			#clock-cells = <0>;
+			clock-frequency = <32768>;
+		};
+		clk16m: clk@1 {
+			compatible = "fixed-clock";
+			reg=<1>;
+			#clock-cells = <0>;
+			clock-frequency = <16000000>;
+			clock-output-names = "clk16m";
+		};
+	};
+
+	regulators {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		sys_3v3_reg: regulator@100 {
+			compatible = "regulator-fixed";
+			reg = <100>;
+			regulator-name = "3v3";
+			regulator-min-microvolt = <3300000>;
+			regulator-max-microvolt = <3300000>;
+			regulator-always-on;
+		};
+
+		charge_pump_5v0_reg: regulator@101 {
+			compatible = "regulator-fixed";
+			reg = <101>;
+			regulator-name = "5v0";
+			regulator-min-microvolt = <5000000>;
+			regulator-max-microvolt = <5000000>;
+			regulator-always-on;
+		};
+	};
+};
+
+&uarta {
+	status = "okay";
+};

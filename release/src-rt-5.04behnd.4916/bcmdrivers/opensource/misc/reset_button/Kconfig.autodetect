@@ -1,0 +1,11 @@
+config BCM_RESET_BUTTON
+	bool "Broadcom BCA Board Button driver"
+	depends on BCM_BUTTON
+	default n
+	help
+	  Add the BCM BCA External Interrup support.
+
+config BCM_RESET_BUTTON_IMPL
+	int "Implementation index for BCA Board Button module"
+	depends on BCM_RESET_BUTTON
+	default 1

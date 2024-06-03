@@ -83,8 +83,10 @@ void *cm_ipcPacketHandler(void *args)
 
     if (root) {
       json_object_object_get_ex(root, "function_name", &o_func_name);
+
       if (o_func_name) {
         const char *func_name = json_object_get_string(o_func_name);
+        
         if (!strcmp(func_name, "send_message")) {
           json_object *o_topic = NULL;
           json_object *o_msg = NULL;
@@ -94,11 +96,13 @@ void *cm_ipcPacketHandler(void *args)
           if (o_topic && o_msg) {
             const char *topic = json_object_get_string(o_topic);
             const char *msg = json_object_get_string(o_msg);
-            LogInfo( ( "%s topic = %s", __FUNCTION__, topic) );
-            LogInfo( ( "%s msg = %s", __FUNCTION__, msg) );
+            
+            Cdbg(APC_DBG, "topic = %s", topic);
+            Cdbg(APC_DBG, "msg = %s", msg);
+
             publish_router_service_topic(topic, msg);
           } else {
-            LogInfo( ( "%s topic or msg is invalid", __FUNCTION__) );
+            Cdbg(APC_DBG, "topic or msg is invalid");
           }
         } else if (!strcmp(func_name, "tunnel_status")) {
           char result[64];
@@ -122,6 +126,26 @@ void *cm_ipcPacketHandler(void *args)
           }
           */
           // TODO : publish it
+
+          json_object *o_source = NULL;
+          json_object_object_get_ex(root, "source", &o_source);
+          const char *source = json_object_get_string(o_source);
+
+          json_object *o_target = NULL;
+          json_object_object_get_ex(root, "target", &o_target);
+          const char *target = json_object_get_string(o_target);
+
+          json_object *o_type = NULL;
+          json_object_object_get_ex(root, "type", &o_type);
+          const char *type = json_object_get_string(o_type);
+
+          json_object *o_error = NULL;
+          json_object_object_get_ex(root, "error", &o_error);
+          int error = json_object_get_int(o_error);
+
+          Cdbg(APC_DBG, "%s -> %s, type=%s, error=%d", source, target, type, error);
+
+          update_db_tunnel_test_result(source, target, type, error);
         }
       }
 

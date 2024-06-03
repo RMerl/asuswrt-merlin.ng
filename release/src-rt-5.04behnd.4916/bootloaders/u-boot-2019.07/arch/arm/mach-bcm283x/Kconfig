@@ -1,0 +1,144 @@
+config BCM2835
+	bool "Broadcom BCM2835 SoC support"
+	depends on ARCH_BCM283X
+	select CPU_ARM1176
+
+config BCM2836
+	bool "Broadcom BCM2836 SoC support"
+	depends on ARCH_BCM283X
+	select ARMV7_LPAE
+	select CPU_V7A
+
+config BCM2837
+	bool "Broadcom BCM2837 SoC support"
+	depends on ARCH_BCM283X
+
+config BCM2837_32B
+	bool "Broadcom BCM2837 SoC 32-bit support"
+	depends on ARCH_BCM283X
+	select BCM2837
+	select ARMV7_LPAE
+	select CPU_V7A
+
+config BCM2837_64B
+	bool "Broadcom BCM2837 SoC 64-bit support"
+	depends on ARCH_BCM283X
+	select BCM2837
+	select ARM64
+
+menu "Broadcom BCM283X family"
+	depends on ARCH_BCM283X
+
+choice
+	prompt "Broadcom BCM283X board select"
+	optional
+
+config TARGET_RPI
+	bool "Raspberry Pi (all BCM2835 variants)"
+	help
+	  Support for all ARM1176-/BCM2835-based Raspberry Pi variants, such as
+	  the A, A+, B, B+, Compute Module, and Zero. This option cannot
+	  support BCM2836/BCM2837-based Raspberry Pis such as the RPi 2 and
+	  RPi 3 due to different peripheral address maps.
+
+	  This option creates a build targeting the ARM1176 ISA.
+	select BCM2835
+
+config TARGET_RPI_0_W
+	bool "Raspberry Pi Zero W"
+	help
+	  Support for all ARM1176-/BCM2835-based Raspberry Pi variants, such as
+	  the RPi Zero model W.
+
+	  This option assumes the VideoCore firmware is configured to use the
+	  mini UART (rather than PL011) for the serial console. This is the
+	  default on the RPi Zero W. To enable the UART console, the following
+	  non-default option must be present in config.txt: enable_uart=1.
+	  This is required for U-Boot to operate correctly, even if you only
+	  care about the HDMI/usbkbd console.
+
+	  This option creates a build targeting the ARMv7/AArch32 ISA.
+	select BCM2835
+
+config TARGET_RPI_2
+	bool "Raspberry Pi 2"
+	help
+	  Support for all BCM2836-based Raspberry Pi variants, such as
+	  the RPi 2 model B.
+
+	  This option also supports BCM2837-based variants such as the RPi 3
+	  Model B, when run in 32-bit mode, provided you have configured the
+	  VideoCore firmware to select the PL011 UART for the console by:
+	  a) config.txt should contain dtoverlay=pi3-miniuart-bt.
+	  b) You should run the following to tell the VC FW to process DT when
+	  booting, and copy u-boot.bin.img (rather than u-boot.bin) to the SD
+	  card as the kernel image:
+
+	       path/to/kernel/scripts/mkknlimg --dtok u-boot.bin u-boot.bin.img
+
+	  This works as of firmware.git commit 046effa13ebc "firmware:
+	  arm_loader: emmc clock depends on core clock See:
+	  https://github.com/raspberrypi/firmware/issues/572".
+
+	  This option creates a build targeting the ARMv7/AArch32 ISA.
+	select BCM2836
+
+config TARGET_RPI_3_32B
+	bool "Raspberry Pi 3 32-bit build"
+	help
+	  Support for all BCM2837-based Raspberry Pi variants, such as
+	  the RPi 3 model B, in AArch32 (32-bit) mode.
+
+	  This option assumes the VideoCore firmware is configured to use the
+	  mini UART (rather than PL011) for the serial console. This is the
+	  default on the RPi 3. To enable the UART console, the following non-
+	  default option must be present in config.txt: enable_uart=1. This is
+	  required for U-Boot to operate correctly, even if you only care
+	  about the HDMI/usbkbd console.
+
+	  This option creates a build targeting the ARMv7/AArch32 ISA.
+	select BCM2837_32B
+
+config TARGET_RPI_3
+	bool "Raspberry Pi 3 64-bit build"
+	help
+	  Support for all BCM2837-based Raspberry Pi variants, such as
+	  the RPi 3 model B, in AArch64 (64-bit) mode.
+
+	  This option assumes the VideoCore firmware is configured to use the
+	  mini UART (rather than PL011) for the serial console. This is the
+	  default on the RPi 3. To enable the UART console, the following non-
+	  default option must be present in config.txt: enable_uart=1. This is
+	  required for U-Boot to operate correctly, even if you only care
+	  about the HDMI/usbkbd console.
+
+	  At the time of writing, the VC FW requires a non-default option in
+	  config.txt to request the ARM CPU boot in 64-bit mode:
+	  arm_control=0x200
+
+	  The VC FW typically provides ARM "stub" code to set up the CPU and
+	  quiesce secondary SMP CPUs. This is not currently true in 64-bit
+	  mode. In order to boot U-Boot before the VC FW is enhanced, please
+	  see the commit description for the commit which added RPi3 support
+	  for a workaround. Since the instructions are temporary, they are not
+	  duplicated here. The VC FW enhancement is tracked in
+	  https://github.com/raspberrypi/firmware/issues/579.
+
+	  This option creates a build targeting the ARMv8/AArch64 ISA.
+	select BCM2837_64B
+
+endchoice
+
+config SYS_BOARD
+	default "rpi"
+
+config SYS_VENDOR
+	default "raspberrypi"
+
+config SYS_SOC
+	default "bcm283x"
+
+config SYS_CONFIG_NAME
+	default "rpi"
+
+endmenu

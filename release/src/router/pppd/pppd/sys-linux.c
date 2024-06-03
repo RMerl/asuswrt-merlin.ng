@@ -107,7 +107,7 @@
 #define MAX_ADDR_LEN 7
 #endif
 
-#if __GLIBC__ >= 2
+#if __GLIBC__ >= 2 || defined(MUSL_LIBC)
 #include <asm/types.h>		/* glibc 2 conflicts with linux/types.h */
 #include <net/if.h>
 #include <net/if_arp.h>
@@ -150,7 +150,7 @@
 #endif
 
 #ifdef INET6
-#if !defined(__GLIBC__) && !defined(__UCLIBC__) /* musl */
+#if !defined(__GLIBC__) && !defined(__UCLIBC__) && !defined(MUSL_LIBC)/* musl */
 #include <linux/ipv6_route.h>	//struct in6_rtmsg
 #endif
 #ifndef _LINUX_IN6_H

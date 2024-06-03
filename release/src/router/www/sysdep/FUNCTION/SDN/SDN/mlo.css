@@ -1,0 +1,95 @@
+﻿.feature_desc_container .feature_image{
+	background-image: url(/images/New_ui/SDN/dark_theme/Image/mlo_desc.svg);
+	background-repeat: no-repeat;
+	height: 200px;
+	background-size: contain;
+	background-position: 50%;
+	margin: 24px 0;
+}
+.feature_desc_container.introduce .feature_image{
+	margin-bottom: 24px;
+	margin-top: 0;
+}
+.feature_desc_container .feature_image2{
+	background-image: url(/images/New_ui/SDN/dark_theme/Image/mlo_desc2.svg);
+	background-repeat: no-repeat;
+	height: 190px;
+	background-size: contain;
+	background-position: 50%;
+}
+.feature_desc_container .faq{
+	font-size: 14px;
+	font-weight: normal;
+	margin-top: 20px;
+}
+.feature_desc_container .hyperlink{
+	font-family: Lucida Console;
+	text-decoration: underline;
+	margin-top: initial;
+	color: #FC0;
+}
+.feature_desc_container .hyperlink a{
+	color: #FC0;
+}
+.feature_desc_container .horizontal_line{
+	width: 100%;
+	margin: 12px 0;
+	height: 1px;
+	background-color: rgba(228, 235, 249, 0.2);
+}
+.feature_desc_container.introduce{
+	padding:5%;
+}
+.feature_desc_container.introduce .desc{
+	text-align: center;
+	font-size: 24px;
+	font-weight: 400;
+	line-height: 28px;
+}
+.feature_desc_container .introduce_hint{
+	color: #00FBBD;
+	text-align: center;
+	font-size: 16px;
+	font-weight: 400;
+	margin-top: 12px;
+}
+.feature_desc_container .profile_btn_container{
+	margin-left: initial;
+	margin-top: 24px;
+}
+.function_switch_container{
+	border-radius: 10px;
+	border: 1px solid #5B697C;
+	background: rgba(0, 0, 0, 0.10);
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	height: 50px;
+	padding: 0 16px;
+	margin: 12px 0 18px 0;
+}
+.function_switch_container .title{
+	font-size: 16px;
+	font-weight: 500;
+}
+.function_switch_container .input_container{
+	display: flex;
+	align-items: center;
+}
+.function_switch_container .input_container > div{
+	margin-left: 16px;
+}
+.function_switch_container .profile_btn_container{
+	min-width: auto;
+	padding: 0 24px;
+	height: 32px;
+	flex: initial;
+}
+@media (max-width: 575px) {
+	.function_switch_container{
+		width: 80%;
+		min-width: 300px;
+		margin: auto;
+		margin-top: 12px;
+	}
+}

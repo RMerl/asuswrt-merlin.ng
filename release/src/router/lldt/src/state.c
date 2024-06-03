@@ -22,6 +22,10 @@
 #include <assert.h>
 #include <limits.h>	//UINT_MAX
 
+#if defined(MUSL_LIBC)
+#include <limits.h>
+#endif  // MUSL_LIBC
+
 #include "globals.h"
 
 #include "statemachines.h"

@@ -1,0 +1,132 @@
+#include "6756.dtsi"
+
+/ {
+    model = "RT-AX3000N";
+
+	memory_controller {
+		memcfg = <(BP_DDR_SPEED_933_13_13_13 | \
+			BP_DDR_TOTAL_SIZE_256MB   | \
+			BP_DDR_DEVICE_WIDTH_16    | \
+			BP_DDR_TOTAL_WIDTH_16BIT  | \
+			BP_DDR_6756_DEFAULT)>;
+	};
+#if 0
+	buttons {
+		compatible = "brcm,buttons";
+		reset_button {
+			ext_irq = <&bca_extintr 9 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			press {
+				print = "Button Press -- Hold for 5s to do restore to default";
+			};
+			hold {
+				rst_to_dflt = <5>;
+			};
+			release {
+				reset = <0>;
+			};	
+		};
+		ses_button {
+			ext_irq = <&bca_extintr 4 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			release {
+				ses_short_period = <0>;
+				ses_long_period = <3>;
+			};
+		};
+	};
+#endif
+};
+
+&mdio_sf2 {
+	phy_ge:8 {
+		status = "okay";
+	};
+	phy_serdes0:serdes0 {
+		phy-extswitch;
+		phy-reset = <&gpioc 10 GPIO_ACTIVE_LOW>;
+        config_speed = <2500>;
+		status = "okay";
+	};
+};
+
+&switch0 {
+	pinctrl-names = "default"; 
+	pinctrl-0 = <&a_rgmii_mdc_pin_68 &a_rgmii_mdio_pin_69>; 
+
+	ports {
+		port0@0 {
+			phy-handle = <&phy_ge>;
+			status = "okay";
+			network-leds = <&led0>;
+		};
+		port5@5 {
+			phy-handle = <&phy_serdes0>;
+			status = "okay";
+		};
+	};
+};
+
+&legacy_leds {
+    wl0-led = <&led5>;
+    wl1-led = <&led6>;
+};
+
+&led_ctrl {
+    status="okay";
+
+    /* POWER_LED */
+    led1:led_gpio_5 {
+        compatible = "brcm,gpio-led";
+        software_led;
+        pin = <5>;
+        init_high;
+    };
+    /* WAN LED */
+    led0: port_0-led-0 {
+        active_low;
+        link = <LED_SPEED_GBE>;
+        activity = <LED_SPEED_GBE>;
+        pinctrl-0 = <&a_per_led_07_pin_7>;
+        status = "okay";
+    };
+    /* Internel LED (BLUE) */
+    led2:led_gpio_7 {
+        compatible = "brcm,gpio-led";
+        software_led;
+        pin = <7>;
+        active_low;
+        init_high;
+    };
+    /* Internel LED (RED) */
+    led3:led_gpio_11 {
+        compatible = "brcm,gpio-led";
+        software_led;
+        pin = <11>;
+        active_low;
+        init_high;
+    };
+    /* LAN LED */
+    led4:led_gpio_12 {
+        compatible = "brcm,gpio-led";
+        software_led;
+        pin = <12>;
+        active_low;
+        init_high;
+    };
+
+    /* wl0 LED */
+    led5:led_gpio_14 {
+        compatible = "brcm,gpio-led";
+        software_led;
+        pin = <14>;
+        active_low;
+        init_high;
+    };
+    /* wl1 LED */
+    led6:led_gpio_15 {
+        compatible = "brcm,gpio-led";
+        software_led;
+        pin = <15>;
+        active_low;
+        init_high;
+    };
+};

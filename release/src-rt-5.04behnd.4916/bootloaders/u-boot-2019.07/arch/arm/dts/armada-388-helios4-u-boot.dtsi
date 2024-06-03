@@ -1,0 +1,26 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+/ {
+	aliases {
+		i2c0 = &i2c0;
+		i2c1 = &i2c1;
+		spi1 = &spi1;
+	};
+};
+
+&eth0 {
+	phy-reset-gpios = <&gpio0 19 GPIO_ACTIVE_LOW>;
+};
+
+&spi1 {
+	u-boot,dm-spl;
+};
+
+&w25q32 {
+	status = "okay";
+	u-boot,dm-spl;
+};
+
+&sdhci {
+       u-boot,dm-spl;
+};

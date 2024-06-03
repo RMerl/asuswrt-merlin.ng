@@ -1,0 +1,158 @@
+#include "6765.dtsi"
+
+/ {
+
+	memory_controller {
+		memcfg = <(BP_DDR_TYPE_DDR4       | \
+			BP_DDR_SPEED_1600_22_22_22    | \
+			BP_DDR_TOTAL_SIZE_2048MB      | \
+			BP_DDR_DEVICE_WIDTH_16        | \
+			BP_DDR_TOTAL_WIDTH_16BIT      | \
+			BP_DDR_6765_DEFAULT           | \
+			BP_DDR_CONFIG_DEBUG)>;
+	};
+	
+	switch_sf2_ext:0 {
+	};
+};
+
+&sysport {
+    ethsw_ext = <&switch_sf2_ext>;
+};
+
+&mdio_sf2 {
+       /* Port PHY mapping:
+            port_imp -8#0- port_xhy <----> phy_xphy
+                      # #
+                      ##5- port_sgmii <-> phy_serdes <--> port_ext_imp -8#0- port_ext_gphy0 <--> phy_ext_gphy0
+                                                                        # 1- port_ext_gphy1 <--> phy_ext_gphy1
+                                                                        # 2- port_ext_gphy2 <--> phy_ext_gphy2
+                                                                        ##3- port_ext_gphy3 <--> phy_ext_gphy3
+         */
+	phy_xphy {
+		status = "okay";
+	};
+
+	phy_serdes {
+		phy-extswitch;
+		force-2p5g-10gvco;
+		config-speed = <2500>;
+		status = "okay";
+	};
+
+	/* PHYs on external SF2 switch */
+	phy_ext_gphy0:phy_ext_gphy0 {
+		compatible = "brcm,bcaphy";
+		phy-type = "EGPHY";
+		reg = <0>;
+		status = "okay";
+	};
+	phy_ext_gphy1:phy_ext_gphy1 {
+		compatible = "brcm,bcaphy";
+		phy-type = "EGPHY";
+		reg = <1>;
+		status = "okay";
+	};
+	phy_ext_gphy2:phy_ext_gphy2 {
+		compatible = "brcm,bcaphy";
+		phy-type = "EGPHY";
+		reg = <2>;
+		status = "okay";
+	};
+	phy_ext_gphy3:phy_ext_gphy3 {
+		compatible = "brcm,bcaphy";
+		phy-type = "EGPHY";
+		reg = <3>;
+		status = "okay";
+	};
+};
+
+&switch_sf2_ext {                       /* linux/uboot: external sf2 */
+	unit = <1>;
+	sw-type = "SF2_SW";
+
+	compatible = "brcm,bcmbca-extsw";
+	extswsgmii_addr = <0x6>;
+	switch-reset = <&gpioc 10 GPIO_ACTIVE_LOW>;
+
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		port_ext_gphy0 {
+			phy-handle = <&phy_ext_gphy0>;
+			reg = <0>;
+			mac-type = "SF2MAC";
+			phy-mode = "gmii";
+			gmii-direct;
+			status = "okay";
+		};
+		port_ext_gphy1 {
+			phy-handle = <&phy_ext_gphy1>;
+			reg = <1>;
+			mac-type = "SF2MAC";
+			phy-mode = "gmii";
+			gmii-direct;
+			status = "okay";
+		};
+		port_ext_gphy2 {
+			phy-handle = <&phy_ext_gphy2>;
+			reg = <2>;
+			mac-type = "SF2MAC";
+			phy-mode = "gmii";
+			gmii-direct;
+			status = "okay";
+		};
+		port_ext_gphy3 {
+			phy-handle = <&phy_ext_gphy3>;
+			reg = <3>;
+			mac-type = "SF2MAC";
+			phy-mode = "gmii";
+			gmii-direct;
+			status = "okay";
+		};
+		port_ext_imp {
+			management;                     /* sf2_ext.p8 <--> root.p5  when P8_SGMII_SEL=1 */
+			reg = <8>;
+			mac-type = "SF2MAC";
+			shrink-ipg;
+			phy-mode = "gmii";
+			gmii-direct;
+			status = "okay";
+		};
+	};
+};
+
+&ethphytop {
+    xphy0-enabled;
+    status = "okay";
+};
+
+&switch0 {
+
+	ports {
+		port_xphy {
+			phy-handle = <&phy_xphy>;
+			status = "okay";
+		};
+		port_sgmii {
+			phy-handle = <&phy_serdes>;
+			link = <&switch_sf2_ext>;
+			shrink-ipg;
+			status = "okay";
+		};
+	};
+};
+
+&usb_ctrl {
+	pinctrl-names="default";
+	pinctrl-0 = <&usb0_pwr_pins &usb1_pwr_pins>;
+	status = "okay";
+	xhci-enable;
+	pwron-bias-pull-up;
+};
+
+&usb0_xhci {
+	status = "okay";
+};
+

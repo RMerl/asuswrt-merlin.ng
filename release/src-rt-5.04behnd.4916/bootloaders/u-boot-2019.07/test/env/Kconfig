@@ -1,0 +1,9 @@
+config UT_ENV
+	bool "Enable env unit tests"
+	depends on UNIT_TEST
+	default y
+	help
+	  This enables the 'ut env' command which runs a series of unit
+	  tests on the env code.
+	  If all is well then all tests pass although there will be a few
+	  messages printed along the way.

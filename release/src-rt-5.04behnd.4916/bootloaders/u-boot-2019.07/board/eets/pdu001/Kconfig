@@ -1,0 +1,50 @@
+# Copyright (C) 2018 EETS GmbH - http://www.eets.ch/
+#
+# SPDX-License-Identifier: GPL-2.0+
+#
+
+if TARGET_PDU001
+
+config SYS_BOARD
+	default "pdu001"
+
+config SYS_VENDOR
+	default "eets"
+
+config SYS_SOC
+	default "am33xx"
+
+config SYS_CONFIG_NAME
+	default "pdu001"
+
+choice
+	prompt "State of Run LED"
+	default RUN_LED_RED
+	help
+	  The PDU001 has a bi-color (red/green) LED labeled 'Run' which
+	  can be used to indicate the operating state of the board. By
+	  default it will be lit red by U-Boot. Later in the start-up
+	  process it can be changed to green (or heartbeat or anything else)
+	  by the kernel or some other software.
+
+config RUN_LED_RED
+	bool
+	prompt "Red"
+	help
+	  Lit Run LED red.
+
+config RUN_LED_GREEN
+	bool
+	prompt "Green"
+	help
+	  Lit Run LED green.
+
+config RUN_LED_OFF
+	bool
+	prompt "Off"
+	help
+	  Do not lit Run LED.
+
+endchoice
+
+endif

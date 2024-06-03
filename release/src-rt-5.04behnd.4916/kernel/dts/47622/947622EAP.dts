@@ -1,0 +1,233 @@
+#include "47622.dtsi"
+
+/ {
+	compat_chip_id = <0x47622>;
+    memory_controller {
+        memcfg = <(BP_DDR_TYPE_DDR4           | \
+                   BP_DDR_SPEED_1067_15_15_15 | \
+                   BP_DDR_TOTAL_SIZE_2048MB   | \
+                   BP_DDR_DEVICE_WIDTH_8      | \
+                   BP_DDR_TOTAL_WIDTH_16BIT   | \
+                   BP_DDR_SSC_CONFIG_1)>;
+    };
+
+	buttons {
+		compatible = "brcm,buttons";
+		ses_button {
+			ext_irq = <&bca_extintr 4 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			release {
+				ses_short_period = <0>;
+				ses_long_period = <3>;
+			};
+		};
+	};
+
+	switch_sf2:0 {
+	};
+};
+
+
+&sysport {
+	compatible = "brcm,bcmbca-systemport-v2.0";
+	reg-names =
+		"systemport-rbuf-base",
+		"systemport-rdma-base",
+		"systemport-tdma-base",
+		"systemport-umac-base",
+		"systemport-topctrl-base",
+		"systemport1-rbuf-base",
+		"systemport1-rdma-base",
+		"systemport1-tdma-base",
+		"systemport1-umac-base",
+		"systemport1-topctrl-base",
+		"systemport-switchmdio-base",
+		"sphy-ctrl",
+		"phy-test-ctrl";
+	reg =   <0x80400400 0x14>,
+			<0x80402000 0x1300>,
+			<0x80404000 0x8ff>,
+			<0x80400800 0x350>,
+			<0x80400000 0x40>,
+			<0x80500400 0x14>,
+			<0x80502000 0x1300>,
+			<0x80504000 0x8ff>,
+			<0x80500800 0x350>,
+			<0x80500000 0x40>,
+			<0x80411300 0x10>,
+			<0x804110c0 0x04>,
+			<0x804110bc 0x04>;
+	phy_base = <0x8>;
+	phy_wkard_timeout = <25000>;
+	ethsw = <&switch_sf2>;
+};
+
+&hsspi {
+	spi-max-frequency = <67000000>;
+	status = "okay";
+	flash: m25p80@0 {
+		status = "okay";
+		compatible = "jedec,spi-nor";
+		reg = <0>; /* chip select 0 */
+		spi-max-frequency = <60000000>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+		partition@0 {
+			label = "bootloader";
+			reg = <0x0 0x0100000>;
+		};
+		partition@1 {
+			label = "mtdoops";
+			reg = <0x0100000 0x0020000>;
+		};
+	 };
+};
+
+&mdio {
+    /* Port PHY mapping:
+            port_sysp0 <---> phy_gphy
+            port_sysp1 <---> phy_serdes0 <--> port_ext_imp -8#0- port_ext_gphy0 <--> phy_ext_gphy0
+                                                            # 1- port_ext_gphy1 <--> phy_ext_gphy1
+                                                            # 2- port_ext_gphy2 <--> phy_ext_gphy2
+                                                            ##3- port_ext_gphy3 <--> phy_ext_gphy3
+     */
+	phy_gphy {
+		status = "okay";
+	};
+
+	phy_serdes0 {
+		phy-extswitch;
+		status = "okay";
+	};
+
+	/* PHYs on external SF2 switch */
+	phy_ext_gphy0:phy_ext_gphy0 {
+		compatible = "brcm,bcaphy";
+		phy-type = "EGPHY";
+		reg = <0>;
+		status = "okay";
+	};
+	phy_ext_gphy1:phy_ext_gphy1 {
+		compatible = "brcm,bcaphy";
+		phy-type = "EGPHY";
+		reg = <1>;
+		status = "okay";
+	};
+	phy_ext_gphy2:phy_ext_gphy2 {
+		compatible = "brcm,bcaphy";
+		phy-type = "EGPHY";
+		reg = <2>;
+		status = "okay";
+	};
+	phy_ext_gphy3:phy_ext_gphy3 {
+		compatible = "brcm,bcaphy";
+		phy-type = "EGPHY";
+		reg = <3>;
+		status = "okay";
+	};
+};
+
+&switch_sf2 {
+	unit = <1>;
+	sw-type = "SF2_SW";
+
+	compatible = "brcm,bcmbca-extsw";
+	pinctrl-0 = <&a_rgmii_mdc_pin_68 &a_rgmii_mdio_pin_69 >;
+	pinctrl-names="default";
+	reg-names ="systemport-serdes-cntrl";
+	reg = <0x804110a8 0x8>;
+	extswsgmii_addr = <0x6>;
+	switch-reset = <&gpioc 10 GPIO_ACTIVE_LOW>;
+
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		port_ext_gphy0 {
+			phy-handle = <&phy_ext_gphy0>;
+			reg = <0>;
+			mac-type = "SF2MAC";
+			phy-mode = "gmii";
+			gmii-direct;
+			status = "okay";
+		};
+		port_ext_gphy1 {
+			phy-handle = <&phy_ext_gphy1>;
+			reg = <1>;
+			mac-type = "SF2MAC";
+			phy-mode = "gmii";
+			gmii-direct;
+			status = "okay";
+		};
+		port_ext_gphy2 {
+			phy-handle = <&phy_ext_gphy2>;
+			reg = <2>;
+			mac-type = "SF2MAC";
+			phy-mode = "gmii";
+			gmii-direct;
+			status = "okay";
+		};
+		port_ext_gphy3 {
+			phy-handle = <&phy_ext_gphy3>;
+			reg = <3>;
+			mac-type = "SF2MAC";
+			phy-mode = "gmii";
+			gmii-direct;
+			status = "okay";
+		};
+		port_ext_imp {
+			management;                     /* sf2.p8 <--> sysp.p1 */
+			reg = <8>;
+			mac-type = "SF2MAC";
+			shrink-ipg;
+			phy-mode = "gmii";
+			gmii-direct;
+			status = "okay";
+		};
+	};
+};
+
+&switch0 {
+	pinctrl-names = "default"; 
+	pinctrl-0 = <&a_rgmii_mdc_pin_68 &a_rgmii_mdio_pin_69>; 
+
+	ports {
+		/* fixed port configuration */
+		port_sysp0 {
+			phy-handle = <&phy_gphy>;
+			network-leds = <&led0 &led3>;
+			status = "okay";
+		};
+		port_sysp1 {
+			phy-handle = <&phy_serdes0>;
+			link = <&switch_sf2>;           /* sysp.p1 <--> sf2.p8 */
+			shrink-ipg;
+			status = "okay";
+		};
+	};
+};
+
+
+&led_ctrl {
+	led0: port_0-led-0-pin_0 {
+		active_low;
+		link = <(LED_SPEED_1G)>;
+		status = "okay";
+	};
+	led3: port_0-led-3-pin_3 {
+		active_low;
+		activity = <LED_SPEED_GBE>;
+		status = "okay";
+	};
+};
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined (CONFIG_BCM_PCIE_HCD_MODULE)
+&pcie0 {
+	status = "okay";
+};
+#endif
+
+&pincontroller {
+	pinctrl-names = "default";
+	pinctrl-0 = <&wifi1_gci_gpio_0_pin_30 &wifi1_gci_gpio_1_pin_31 &wifi1_gci_gpio_2_pin_32>;
+};
+

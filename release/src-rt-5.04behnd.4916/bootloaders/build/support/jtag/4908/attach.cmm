@@ -1,0 +1,36 @@
+//**************************************************************//
+// Attach script for BCM4908                                   //
+//**************************************************************//
+
+AREA
+AREA.CLEAR
+SYSTEM.RESET
+SYSTEM.JTAGCLOCK 20MHz
+
+;JTAG_CE = 0 is TDI -> MEMC(5) -> PMC(5) -> URB(4) -> ARM(4) -> TDO
+print "scan chain is DAP-only"
+SYStem.CONFIG.DAPIRPOST  14.
+SYStem.CONFIG.DAPIRPRE   0.
+SYStem.CONFIG.DAPDRPOST  3.
+SYStem.CONFIG.DAPDRPRE   0.
+
+
+system.config.apbaccessport 0
+system.config.axiaccessport 1
+system.config.debugaccessport 0
+system.config.memoryaccessport 1
+
+SYSTEM.CPU CORTEXA53
+SYSTEM.CONFIG.CORENUMBER 1
+SYSTEM.CONFIG.CORE 1
+SYSTEM.CONFIG.COREBASE 0x80410000
+SYSTEM.CONFIG.CTIBASE  0x80420000
+
+CORE.ASSIGN 1
+SYStem.option TRST OFF 
+SYStem.option EnReset OFF
+
+SYSTEM.MODE ATTACH
+
+;do ~~/demo/windows_setup.cmm
+ENDDO

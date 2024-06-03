@@ -1,0 +1,10 @@
+M54455EVB BOARD
+M:	TsiChung Liew <Tsi-Chung.Liew@nxp.com>
+S:	Maintained
+F:	board/freescale/m54455evb/
+F:	include/configs/M54455EVB.h
+F:	configs/M54455EVB_defconfig
+F:	configs/M54455EVB_a66_defconfig
+F:	configs/M54455EVB_i66_defconfig
+F:	configs/M54455EVB_intel_defconfig
+F:	configs/M54455EVB_stm33_defconfig

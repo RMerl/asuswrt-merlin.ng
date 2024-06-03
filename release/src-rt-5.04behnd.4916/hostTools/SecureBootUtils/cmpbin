@@ -1,0 +1,50 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use Getopt::Long;
+use File::stat;
+use bytes;
+
+#lookup occurence of binary FL in the image
+#
+
+my %args = ();
+my $usage = qq[usage: $0 Matches occurences of 
+	--f2match <file name>  in 
+	--content <file name>  - the size of the content must 
+                    be bigger than file in --f2match
+          If matched prints out offset where it was matched 
+	];
+if (!GetOptions(\%args, 'f2match=s', 'content=s') ||  keys(%args) != 2)  {  
+    die ($usage); 
+}
+die ($usage) unless (stat($args{f2match})->size <= stat($args{content})->size);
+
+print "Searching $args{f2match} in $args{content} \n";
+open( F, "<", $args{f2match} ) or die("can't open $args{f2match} for reading");
+binmode F;
+local $/ = undef;
+my $f2match = <F>;
+close(F);
+
+open( F, "<", $args{content} ) or die("can't open $args{content} for reading");
+binmode F;
+local $/ = undef;
+my $cont = <F>;
+close(F);
+
+my $offs = 0;
+printf( "lengths %d %d\n", length($f2match), ( length($cont) ) );
+my $match_cnt = length($f2match) < 16? length($f2match) : 16; 
+while ( $offs <= ( length($cont) - length($f2match) ) ) {
+    if ( substr( $f2match, 0, $match_cnt ) eq substr( $cont, $offs, $match_cnt )
+        && $f2match eq substr( $cont, $offs, length($f2match) ) )
+    {
+        printf( "Found %s at offs %d length %d\n", $args{f2match}, $offs, length($f2match) );
+        $offs += length($f2match);
+    }
+    else {
+        $offs++;
+    }
+}

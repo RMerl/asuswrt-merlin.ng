@@ -1,0 +1,2034 @@
+/*
+ * Indices for 802.11 a/b/g/n/ac 1-3 chain symmetric transmit rates
+ *
+ * Copyright (C) 2023, Broadcom. All Rights Reserved.
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ *
+ * <<Broadcom-WL-IPTag/Open:>>
+ *
+ * $Id: bcmwifi_rates.h 831746 2023-10-25 12:04:55Z $
+ */
+
+#ifndef _bcmwifi_rates_h_
+#define _bcmwifi_rates_h_
+
+#include <typedefs.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
+#define WL_RATESET_SZ_DSSS		4
+#define WL_RATESET_SZ_OFDM		8
+#define WL_RATESET_SZ_VHT_MCS		10
+#define WL_RATESET_SZ_VHT_MCS_P		12	/* 10 VHT rates + 2 proprietary rates */
+#define WL_RATESET_SZ_HE_MCS		12	/* 12 HE rates (mcs 0-11) */
+#define WL_RATESET_SZ_EHT_MCS		16	/* 16 EHT rates (mcs 0-15) */
+
+/* Designates support of RU996_2 rates */
+#define WL_RU996_2
+
+#define WL_RATESET_SZ_HT_MCS	8
+#define WL_RATESET_SZ_HT_IOCTL	8	/* MAC histogram, compatibility with wl utility */
+
+#define WL_TX_CHAINS_MAX		4
+
+#define WL_RATE_DISABLED		(-128) /* Power value corresponding to unsupported rate */
+
+/* Transmit channel bandwidths */
+typedef enum wl_tx_bw {
+	WL_TX_BW_20,
+	WL_TX_BW_40,
+	WL_TX_BW_80,
+	WL_TX_BW_20IN40,
+	WL_TX_BW_20IN80,
+	WL_TX_BW_40IN80,
+	WL_TX_BW_160,
+	WL_TX_BW_20IN160,
+	WL_TX_BW_40IN160,
+	WL_TX_BW_80IN160,
+	WL_TX_BW_8080,
+	WL_TX_BW_8080CHAN2,
+	WL_TX_BW_20IN8080,
+	WL_TX_BW_40IN8080,
+	WL_TX_BW_80IN8080,
+	WL_TX_BW_320,
+	WL_TX_BW_20IN320,
+	WL_TX_BW_40IN320,
+	WL_TX_BW_80IN320,
+	WL_TX_BW_160IN320,
+	WL_TX_BW_60IN80,	/* EHT Punctured SU */
+	WL_TX_BW_60IN160,	/* EHT Punctured SU */
+	WL_TX_BW_120IN160,	/* EHT Punctured SU */
+	WL_TX_BW_140IN160,	/* EHT Punctured SU */
+	WL_TX_BW_60IN320,	/* EHT Punctured SU */
+	WL_TX_BW_120IN320,	/* EHT Punctured SU */
+	WL_TX_BW_140IN320,	/* EHT Punctured SU */
+	WL_TX_BW_200IN320,	/* EHT Punctured SU */
+	WL_TX_BW_240IN320,	/* EHT Punctured SU */
+	WL_TX_BW_280IN320,	/* EHT Punctured SU */
+	WL_TX_BW_ALL
+} wl_tx_bw_t;
+
+enum wl_bw_e {
+	BW_20MHZ = 1,  /* == (WL_RSPEC_BW_20MHZ >> WL_RSPEC_BW_SHIFT) */
+	BW_40MHZ = 2,  /* == (WL_RSPEC_BW_40MHZ >> WL_RSPEC_BW_SHIFT) */
+	BW_80MHZ = 3,  /* == (WL_RSPEC_BW_80MHZ >> WL_RSPEC_BW_SHIFT) */
+	BW_160MHZ = 4, /* == (WL_RSPEC_BW_160MHZ >> WL_RSPEC_BW_SHIFT) */
+	BW_320MHZ = 5  /* == (WL_RSPEC_BW_320MHZ >> WL_RSPEC_BW_SHIFT) */
+};
+
+/*
+ * Transmit modes.
+ * Not all modes are listed here, only those required for disambiguation. e.g. SPEXP is not listed
+ */
+typedef enum wl_tx_mode {
+	WL_TX_MODE_NONE,
+	WL_TX_MODE_STBC,
+	WL_TX_MODE_CDD,
+	WL_TX_MODE_TXBF,
+	WL_NUM_TX_MODES
+} wl_tx_mode_t;
+
+/* Number of transmit chains */
+typedef enum wl_tx_chains {
+	WL_TX_CHAINS_1 = 1,
+	WL_TX_CHAINS_2,
+	WL_TX_CHAINS_3,
+	WL_TX_CHAINS_4
+} wl_tx_chains_t;
+
+/* Number of transmit streams */
+typedef enum wl_tx_nss {
+	WL_TX_NSS_1 = 1,
+	WL_TX_NSS_2,
+	WL_TX_NSS_3,
+	WL_TX_NSS_4
+} wl_tx_nss_t;
+
+/* 802.11ax rate types
+ * Multiple Resource Unit (MRU) was introduced in 11be.
+ * Considering compatibility, the prefix WL_HE_RT was still applied to MRU.
+ * wl_he_rate_type is used by ClmAPI, Access and Mobility use the same ClmAPI,
+ * wl_he_rate_type needs to be the same as trunk's.
+ *
+ * These enum rate types are used by both WL util and FW.
+ * Changing the values may break backwards compatibility for WL util.
+ */
+typedef enum wl_he_rate_type {
+	WL_HE_RT_SU = 0,
+	WL_HE_RT_RU26 = 1,
+	WL_HE_RT_RU52 = 2,
+	WL_HE_RT_RU106 = 3,
+	WL_HE_RT_UB = 4,
+	WL_HE_RT_LUB = 5,
+	WL_HE_RT_RU242 = 6,
+	WL_HE_RT_RU484 = 7,
+	WL_HE_RT_RU996 = 8,
+	WL_HE_RT_RU996_2 = 9,
+	WL_HE_RT_RU52_26 = 10,		/* MRU */
+	WL_HE_RT_RU106_26 = 11,		/* MRU */
+	WL_HE_RT_RU484_242 = 12,	/* MRU */
+	WL_HE_RT_RU996_484 = 13,	/* MRU */
+	WL_HE_RT_RU996_484_242 = 14,	/* MRU */
+	WL_HE_RT_RU996_2_484 = 15,	/* MRU */
+	WL_HE_RT_RU996_3 = 16,		/* MRU */
+	WL_HE_RT_RU996_3_484 = 17,	/* MRU */
+	WL_HE_RT_RU996_4 = 18
+} wl_he_rate_type_t;
+
+#define WL_NUM_HE_RT 19u
+
+#define FOREACH_HE_RU(ENUMDEF)		\
+	ENUMDEF(WL_HE_RT_RU26)		\
+	ENUMDEF(WL_HE_RT_RU52)		\
+	ENUMDEF(WL_HE_RT_RU106)		\
+	ENUMDEF(WL_HE_RT_RU242)		\
+	ENUMDEF(WL_HE_RT_RU484)		\
+	ENUMDEF(WL_HE_RT_RU996)		\
+	ENUMDEF(WL_HE_RT_RU996_2)	\
+
+/* 802.11be D1.1 rate types */
+typedef enum wl_eht_rate_type {
+	WL_EHT_RT_SU = 0,
+	WL_EHT_RT_RU26 = 1,
+	WL_EHT_RT_RU52 = 2,
+	WL_EHT_RT_RU106 = 3,
+	WL_EHT_RT_RU242 = 6,
+	WL_EHT_RT_RU484 = 7,
+	WL_EHT_RT_RU996 = 8,
+	WL_EHT_RT_RU996_2 = 9,
+	WL_EHT_RT_RU996_4 = 10,
+	WL_EHT_RT_RU52_26 = 11,		/* MRU */
+	WL_EHT_RT_RU106_26 = 12,	/* MRU */
+	WL_EHT_RT_RU484_242 = 13,	/* MRU */
+	WL_EHT_RT_RU996_484 = 14,	/* MRU */
+	WL_EHT_RT_RU996_484_242 = 15,	/* MRU */
+	WL_EHT_RT_RU996_2_484 = 16,	/* MRU */
+	WL_EHT_RT_RU996_3 = 17,		/* MRU */
+	WL_EHT_RT_RU996_3_484 = 18	/* MRU */
+} wl_eht_rate_type_t;
+
+#define FOREACH_EHT_RU(ENUMDEF)			\
+	ENUMDEF(WL_EHT_RT_RU26)			\
+	ENUMDEF(WL_EHT_RT_RU52)			\
+	ENUMDEF(WL_EHT_RT_RU106)		\
+	ENUMDEF(WL_EHT_RT_RU242)		\
+	ENUMDEF(WL_EHT_RT_RU484)		\
+	ENUMDEF(WL_EHT_RT_RU996)		\
+	ENUMDEF(WL_EHT_RT_RU996_2)		\
+	ENUMDEF(WL_EHT_RT_RU996_4)		\
+
+#define FOREACH_EHT_MRU(ENUMDEF)		\
+	ENUMDEF(WL_EHT_RT_RU52_26)		\
+	ENUMDEF(WL_EHT_RT_RU106_26)		\
+	ENUMDEF(WL_EHT_RT_RU484_242)		\
+	ENUMDEF(WL_EHT_RT_RU996_484)		\
+	ENUMDEF(WL_EHT_RT_RU996_484_242)	\
+	ENUMDEF(WL_EHT_RT_RU996_2_484)		\
+	ENUMDEF(WL_EHT_RT_RU996_3)		\
+	ENUMDEF(WL_EHT_RT_RU996_3_484)		\
+
+#define GENERATE_ARRAY(ELEMENT) ELEMENT,
+
+/* ru rl types */
+typedef enum wl_ru_rl_type {
+	WL_RU_NSS_1 = 0,
+	WL_RU_NSS_2 = 1,
+	WL_RU_NSS_3 = 2,
+	WL_RU_NSS_4 = 3,
+	WL_RU_NSS_1_TXBF = 4,
+	WL_RU_NSS_2_TXBF = 5,
+	WL_RU_NSS_3_TXBF = 6,
+	WL_RU_NSS_4_TXBF = 7
+} wl_ru_rl_type_t;
+
+/* This enum maps each rate to a CLM index */
+
+typedef enum clm_rates {
+	/************
+	* 1 chain  *
+	************
+	*/
+
+	/* 1 Stream */
+	WL_RATE_1X1_DSSS_1            = 0,
+	WL_RATE_1X1_DSSS_2            = 1,
+	WL_RATE_1X1_DSSS_5_5          = 2,
+	WL_RATE_1X1_DSSS_11           = 3,
+
+	WL_RATE_1X1_OFDM_6            = 4,
+	WL_RATE_1X1_OFDM_9            = 5,
+	WL_RATE_1X1_OFDM_12           = 6,
+	WL_RATE_1X1_OFDM_18           = 7,
+	WL_RATE_1X1_OFDM_24           = 8,
+	WL_RATE_1X1_OFDM_36           = 9,
+	WL_RATE_1X1_OFDM_48           = 10,
+	WL_RATE_1X1_OFDM_54           = 11,
+
+	WL_RATE_1X1_MCS0              = 12,
+	WL_RATE_1X1_MCS1              = 13,
+	WL_RATE_1X1_MCS2              = 14,
+	WL_RATE_1X1_MCS3              = 15,
+	WL_RATE_1X1_MCS4              = 16,
+	WL_RATE_1X1_MCS5              = 17,
+	WL_RATE_1X1_MCS6              = 18,
+	WL_RATE_1X1_MCS7              = 19,
+	WL_RATE_P_1X1_MCS87           = 20,
+	WL_RATE_P_1X1_MCS88           = 21,
+
+	WL_RATE_1X1_VHT0SS1           = 12,
+	WL_RATE_1X1_VHT1SS1           = 13,
+	WL_RATE_1X1_VHT2SS1           = 14,
+	WL_RATE_1X1_VHT3SS1           = 15,
+	WL_RATE_1X1_VHT4SS1           = 16,
+	WL_RATE_1X1_VHT5SS1           = 17,
+	WL_RATE_1X1_VHT6SS1           = 18,
+	WL_RATE_1X1_VHT7SS1           = 19,
+	WL_RATE_1X1_VHT8SS1           = 20,
+	WL_RATE_1X1_VHT9SS1           = 21,
+	WL_RATE_P_1X1_VHT10SS1        = 22,
+	WL_RATE_P_1X1_VHT11SS1        = 23,
+
+	WL_RATE_1X1_HE0SS1            = 24,
+	WL_RATE_1X1_HE1SS1            = 25,
+	WL_RATE_1X1_HE2SS1            = 26,
+	WL_RATE_1X1_HE3SS1            = 27,
+	WL_RATE_1X1_HE4SS1            = 28,
+	WL_RATE_1X1_HE5SS1            = 29,
+	WL_RATE_1X1_HE6SS1            = 30,
+	WL_RATE_1X1_HE7SS1            = 31,
+	WL_RATE_1X1_HE8SS1            = 32,
+	WL_RATE_1X1_HE9SS1            = 33,
+	WL_RATE_1X1_HE10SS1           = 34,
+	WL_RATE_1X1_HE11SS1           = 35,
+
+	WL_RATE_1X1_EHT0SS1           = 24,
+	WL_RATE_1X1_EHT1SS1           = 25,
+	WL_RATE_1X1_EHT2SS1           = 26,
+	WL_RATE_1X1_EHT3SS1           = 27,
+	WL_RATE_1X1_EHT4SS1           = 28,
+	WL_RATE_1X1_EHT5SS1           = 29,
+	WL_RATE_1X1_EHT6SS1           = 30,
+	WL_RATE_1X1_EHT7SS1           = 31,
+	WL_RATE_1X1_EHT8SS1           = 32,
+	WL_RATE_1X1_EHT9SS1           = 33,
+	WL_RATE_1X1_EHT10SS1          = 34,
+	WL_RATE_1X1_EHT11SS1          = 35,
+	WL_RATE_1X1_EHT12SS1          = 36,
+	WL_RATE_1X1_EHT13SS1          = 37,
+	WL_RATE_1X1_EHT14SS1          = 38,	/* EHT14/15 are with nss 1 only */
+	WL_RATE_1X1_EHT15SS1          = 39,
+
+	/************
+	* 2 chains *
+	************
+	*/
+
+	/* 1 Stream expanded + 1 */
+	WL_RATE_1X2_DSSS_1            = 40,
+	WL_RATE_1X2_DSSS_2            = 41,
+	WL_RATE_1X2_DSSS_5_5          = 42,
+	WL_RATE_1X2_DSSS_11           = 43,
+
+	WL_RATE_1X2_CDD_OFDM_6        = 44,
+	WL_RATE_1X2_CDD_OFDM_9        = 45,
+	WL_RATE_1X2_CDD_OFDM_12       = 46,
+	WL_RATE_1X2_CDD_OFDM_18       = 47,
+	WL_RATE_1X2_CDD_OFDM_24       = 48,
+	WL_RATE_1X2_CDD_OFDM_36       = 49,
+	WL_RATE_1X2_CDD_OFDM_48       = 50,
+	WL_RATE_1X2_CDD_OFDM_54       = 51,
+
+	WL_RATE_1X2_CDD_MCS0          = 52,
+	WL_RATE_1X2_CDD_MCS1          = 53,
+	WL_RATE_1X2_CDD_MCS2          = 54,
+	WL_RATE_1X2_CDD_MCS3          = 55,
+	WL_RATE_1X2_CDD_MCS4          = 56,
+	WL_RATE_1X2_CDD_MCS5          = 57,
+	WL_RATE_1X2_CDD_MCS6          = 58,
+	WL_RATE_1X2_CDD_MCS7          = 59,
+	WL_RATE_P_1X2_CDD_MCS87       = 60,
+	WL_RATE_P_1X2_CDD_MCS88       = 61,
+
+	WL_RATE_1X2_VHT0SS1           = 52,
+	WL_RATE_1X2_VHT1SS1           = 53,
+	WL_RATE_1X2_VHT2SS1           = 54,
+	WL_RATE_1X2_VHT3SS1           = 55,
+	WL_RATE_1X2_VHT4SS1           = 56,
+	WL_RATE_1X2_VHT5SS1           = 57,
+	WL_RATE_1X2_VHT6SS1           = 58,
+	WL_RATE_1X2_VHT7SS1           = 59,
+	WL_RATE_1X2_VHT8SS1           = 60,
+	WL_RATE_1X2_VHT9SS1           = 61,
+	WL_RATE_P_1X2_VHT10SS1        = 62,
+	WL_RATE_P_1X2_VHT11SS1        = 63,
+
+	WL_RATE_1X2_HE0SS1            = 64,
+	WL_RATE_1X2_HE1SS1            = 65,
+	WL_RATE_1X2_HE2SS1            = 66,
+	WL_RATE_1X2_HE3SS1            = 67,
+	WL_RATE_1X2_HE4SS1            = 68,
+	WL_RATE_1X2_HE5SS1            = 69,
+	WL_RATE_1X2_HE6SS1            = 70,
+	WL_RATE_1X2_HE7SS1            = 71,
+	WL_RATE_1X2_HE8SS1            = 72,
+	WL_RATE_1X2_HE9SS1            = 73,
+	WL_RATE_1X2_HE10SS1           = 74,
+	WL_RATE_1X2_HE11SS1           = 75,
+
+	WL_RATE_1X2_EHT0SS1           = 64,
+	WL_RATE_1X2_EHT1SS1           = 65,
+	WL_RATE_1X2_EHT2SS1           = 66,
+	WL_RATE_1X2_EHT3SS1           = 67,
+	WL_RATE_1X2_EHT4SS1           = 68,
+	WL_RATE_1X2_EHT5SS1           = 69,
+	WL_RATE_1X2_EHT6SS1           = 70,
+	WL_RATE_1X2_EHT7SS1           = 71,
+	WL_RATE_1X2_EHT8SS1           = 72,
+	WL_RATE_1X2_EHT9SS1           = 73,
+	WL_RATE_1X2_EHT10SS1          = 74,
+	WL_RATE_1X2_EHT11SS1          = 75,
+	WL_RATE_1X2_EHT12SS1          = 76,
+	WL_RATE_1X2_EHT13SS1          = 77,
+	WL_RATE_1X2_EHT14SS1          = 78,	/* EHT14/15 are with nss 1 only */
+	WL_RATE_1X2_EHT15SS1          = 79,
+
+	/* 2 Streams */
+	WL_RATE_2X2_STBC_MCS0         = 80,
+	WL_RATE_2X2_STBC_MCS1         = 81,
+	WL_RATE_2X2_STBC_MCS2         = 82,
+	WL_RATE_2X2_STBC_MCS3         = 83,
+	WL_RATE_2X2_STBC_MCS4         = 84,
+	WL_RATE_2X2_STBC_MCS5         = 85,
+	WL_RATE_2X2_STBC_MCS6         = 86,
+	WL_RATE_2X2_STBC_MCS7         = 87,
+	WL_RATE_P_2X2_STBC_MCS87      = 88,
+	WL_RATE_P_2X2_STBC_MCS88      = 89,
+
+	WL_RATE_2X2_STBC_VHT0SS1      = 80,
+	WL_RATE_2X2_STBC_VHT1SS1      = 81,
+	WL_RATE_2X2_STBC_VHT2SS1      = 82,
+	WL_RATE_2X2_STBC_VHT3SS1      = 83,
+	WL_RATE_2X2_STBC_VHT4SS1      = 84,
+	WL_RATE_2X2_STBC_VHT5SS1      = 85,
+	WL_RATE_2X2_STBC_VHT6SS1      = 86,
+	WL_RATE_2X2_STBC_VHT7SS1      = 87,
+	WL_RATE_2X2_STBC_VHT8SS1      = 88,
+	WL_RATE_2X2_STBC_VHT9SS1      = 89,
+	WL_RATE_P_2X2_STBC_VHT10SS1   = 90,
+	WL_RATE_P_2X2_STBC_VHT11SS1   = 91,
+
+	WL_RATE_2X2_SDM_MCS8          = 92,
+	WL_RATE_2X2_SDM_MCS9          = 93,
+	WL_RATE_2X2_SDM_MCS10         = 94,
+	WL_RATE_2X2_SDM_MCS11         = 95,
+	WL_RATE_2X2_SDM_MCS12         = 96,
+	WL_RATE_2X2_SDM_MCS13         = 97,
+	WL_RATE_2X2_SDM_MCS14         = 98,
+	WL_RATE_2X2_SDM_MCS15         = 99,
+	WL_RATE_P_2X2_SDM_MCS99       = 100,
+	WL_RATE_P_2X2_SDM_MCS100      = 101,
+
+	WL_RATE_2X2_VHT0SS2           = 92,
+	WL_RATE_2X2_VHT1SS2           = 93,
+	WL_RATE_2X2_VHT2SS2           = 94,
+	WL_RATE_2X2_VHT3SS2           = 95,
+	WL_RATE_2X2_VHT4SS2           = 96,
+	WL_RATE_2X2_VHT5SS2           = 97,
+	WL_RATE_2X2_VHT6SS2           = 98,
+	WL_RATE_2X2_VHT7SS2           = 99,
+	WL_RATE_2X2_VHT8SS2           = 100,
+	WL_RATE_2X2_VHT9SS2           = 101,
+	WL_RATE_P_2X2_VHT10SS2        = 102,
+	WL_RATE_P_2X2_VHT11SS2        = 103,
+
+	WL_RATE_2X2_HE0SS2            = 104,
+	WL_RATE_2X2_HE1SS2            = 105,
+	WL_RATE_2X2_HE2SS2            = 106,
+	WL_RATE_2X2_HE3SS2            = 107,
+	WL_RATE_2X2_HE4SS2            = 108,
+	WL_RATE_2X2_HE5SS2            = 109,
+	WL_RATE_2X2_HE6SS2            = 110,
+	WL_RATE_2X2_HE7SS2            = 111,
+	WL_RATE_2X2_HE8SS2            = 112,
+	WL_RATE_2X2_HE9SS2            = 113,
+	WL_RATE_2X2_HE10SS2           = 114,
+	WL_RATE_2X2_HE11SS2           = 115,
+
+	WL_RATE_2X2_EHT0SS2            = 104,
+	WL_RATE_2X2_EHT1SS2            = 105,
+	WL_RATE_2X2_EHT2SS2            = 106,
+	WL_RATE_2X2_EHT3SS2            = 107,
+	WL_RATE_2X2_EHT4SS2            = 108,
+	WL_RATE_2X2_EHT5SS2            = 109,
+	WL_RATE_2X2_EHT6SS2            = 110,
+	WL_RATE_2X2_EHT7SS2            = 111,
+	WL_RATE_2X2_EHT8SS2            = 112,
+	WL_RATE_2X2_EHT9SS2            = 113,
+	WL_RATE_2X2_EHT10SS2           = 114,
+	WL_RATE_2X2_EHT11SS2           = 115,
+	WL_RATE_2X2_EHT12SS2           = 116,
+	WL_RATE_2X2_EHT13SS2           = 117,
+
+	/****************************
+	 * TX Beamforming, 2 chains *
+	 ****************************
+	 */
+
+	/* 1 Stream expanded + 1 */
+	WL_RATE_1X2_TXBF_OFDM_6       = 118,
+	WL_RATE_1X2_TXBF_OFDM_9       = 119,
+	WL_RATE_1X2_TXBF_OFDM_12      = 120,
+	WL_RATE_1X2_TXBF_OFDM_18      = 121,
+	WL_RATE_1X2_TXBF_OFDM_24      = 122,
+	WL_RATE_1X2_TXBF_OFDM_36      = 123,
+	WL_RATE_1X2_TXBF_OFDM_48      = 124,
+	WL_RATE_1X2_TXBF_OFDM_54      = 125,
+
+	WL_RATE_1X2_TXBF_MCS0         = 126,
+	WL_RATE_1X2_TXBF_MCS1         = 127,
+	WL_RATE_1X2_TXBF_MCS2         = 128,
+	WL_RATE_1X2_TXBF_MCS3         = 129,
+	WL_RATE_1X2_TXBF_MCS4         = 130,
+	WL_RATE_1X2_TXBF_MCS5         = 131,
+	WL_RATE_1X2_TXBF_MCS6         = 132,
+	WL_RATE_1X2_TXBF_MCS7         = 133,
+	WL_RATE_P_1X2_TXBF_MCS87      = 134,
+	WL_RATE_P_1X2_TXBF_MCS88      = 135,
+
+	WL_RATE_1X2_TXBF_VHT0SS1      = 126,
+	WL_RATE_1X2_TXBF_VHT1SS1      = 127,
+	WL_RATE_1X2_TXBF_VHT2SS1      = 128,
+	WL_RATE_1X2_TXBF_VHT3SS1      = 129,
+	WL_RATE_1X2_TXBF_VHT4SS1      = 130,
+	WL_RATE_1X2_TXBF_VHT5SS1      = 131,
+	WL_RATE_1X2_TXBF_VHT6SS1      = 132,
+	WL_RATE_1X2_TXBF_VHT7SS1      = 133,
+	WL_RATE_1X2_TXBF_VHT8SS1      = 134,
+	WL_RATE_1X2_TXBF_VHT9SS1      = 135,
+	WL_RATE_P_1X2_TXBF_VHT10SS1   = 136,
+	WL_RATE_P_1X2_TXBF_VHT11SS1   = 137,
+
+	WL_RATE_1X2_TXBF_HE0SS1       = 138,
+	WL_RATE_1X2_TXBF_HE1SS1       = 139,
+	WL_RATE_1X2_TXBF_HE2SS1       = 140,
+	WL_RATE_1X2_TXBF_HE3SS1       = 141,
+	WL_RATE_1X2_TXBF_HE4SS1       = 142,
+	WL_RATE_1X2_TXBF_HE5SS1       = 143,
+	WL_RATE_1X2_TXBF_HE6SS1       = 144,
+	WL_RATE_1X2_TXBF_HE7SS1       = 145,
+	WL_RATE_1X2_TXBF_HE8SS1       = 146,
+	WL_RATE_1X2_TXBF_HE9SS1       = 147,
+	WL_RATE_1X2_TXBF_HE10SS1      = 148,
+	WL_RATE_1X2_TXBF_HE11SS1      = 149,
+
+	WL_RATE_1X2_TXBF_EHT0SS1      = 138,
+	WL_RATE_1X2_TXBF_EHT1SS1      = 139,
+	WL_RATE_1X2_TXBF_EHT2SS1      = 140,
+	WL_RATE_1X2_TXBF_EHT3SS1      = 141,
+	WL_RATE_1X2_TXBF_EHT4SS1      = 142,
+	WL_RATE_1X2_TXBF_EHT5SS1      = 143,
+	WL_RATE_1X2_TXBF_EHT6SS1      = 144,
+	WL_RATE_1X2_TXBF_EHT7SS1      = 145,
+	WL_RATE_1X2_TXBF_EHT8SS1      = 146,
+	WL_RATE_1X2_TXBF_EHT9SS1      = 147,
+	WL_RATE_1X2_TXBF_EHT10SS1     = 148,
+	WL_RATE_1X2_TXBF_EHT11SS1     = 149,
+	WL_RATE_1X2_TXBF_EHT12SS1     = 150,
+	WL_RATE_1X2_TXBF_EHT13SS1     = 151,
+	WL_RATE_1X2_TXBF_EHT14SS1     = 152,	/* EHT14/15 are with nss 1 only */
+	WL_RATE_1X2_TXBF_EHT15SS1     = 153,
+
+	/* 2 Streams */
+	WL_RATE_2X2_TXBF_SDM_MCS8     = 154,
+	WL_RATE_2X2_TXBF_SDM_MCS9     = 155,
+	WL_RATE_2X2_TXBF_SDM_MCS10    = 156,
+	WL_RATE_2X2_TXBF_SDM_MCS11    = 157,
+	WL_RATE_2X2_TXBF_SDM_MCS12    = 158,
+	WL_RATE_2X2_TXBF_SDM_MCS13    = 159,
+	WL_RATE_2X2_TXBF_SDM_MCS14    = 160,
+	WL_RATE_2X2_TXBF_SDM_MCS15    = 161,
+	WL_RATE_P_2X2_TXBF_SDM_MCS99  = 162,
+	WL_RATE_P_2X2_TXBF_SDM_MCS100 = 163,
+
+	WL_RATE_2X2_TXBF_VHT0SS2      = 154,
+	WL_RATE_2X2_TXBF_VHT1SS2      = 155,
+	WL_RATE_2X2_TXBF_VHT2SS2      = 156,
+	WL_RATE_2X2_TXBF_VHT3SS2      = 157,
+	WL_RATE_2X2_TXBF_VHT4SS2      = 158,
+	WL_RATE_2X2_TXBF_VHT5SS2      = 159,
+	WL_RATE_2X2_TXBF_VHT6SS2      = 160,
+	WL_RATE_2X2_TXBF_VHT7SS2      = 161,
+	WL_RATE_2X2_TXBF_VHT8SS2      = 162,
+	WL_RATE_2X2_TXBF_VHT9SS2      = 163,
+	WL_RATE_P_2X2_TXBF_VHT10SS2   = 164,
+	WL_RATE_P_2X2_TXBF_VHT11SS2   = 165,
+
+	WL_RATE_2X2_TXBF_HE0SS2       = 166,
+	WL_RATE_2X2_TXBF_HE1SS2       = 167,
+	WL_RATE_2X2_TXBF_HE2SS2       = 168,
+	WL_RATE_2X2_TXBF_HE3SS2       = 169,
+	WL_RATE_2X2_TXBF_HE4SS2       = 170,
+	WL_RATE_2X2_TXBF_HE5SS2       = 171,
+	WL_RATE_2X2_TXBF_HE6SS2       = 172,
+	WL_RATE_2X2_TXBF_HE7SS2       = 173,
+	WL_RATE_2X2_TXBF_HE8SS2       = 174,
+	WL_RATE_2X2_TXBF_HE9SS2       = 175,
+	WL_RATE_2X2_TXBF_HE10SS2      = 176,
+	WL_RATE_2X2_TXBF_HE11SS2      = 177,
+
+	WL_RATE_2X2_TXBF_EHT0SS2      = 166,
+	WL_RATE_2X2_TXBF_EHT1SS2      = 167,
+	WL_RATE_2X2_TXBF_EHT2SS2      = 168,
+	WL_RATE_2X2_TXBF_EHT3SS2      = 169,
+	WL_RATE_2X2_TXBF_EHT4SS2      = 170,
+	WL_RATE_2X2_TXBF_EHT5SS2      = 171,
+	WL_RATE_2X2_TXBF_EHT6SS2      = 172,
+	WL_RATE_2X2_TXBF_EHT7SS2      = 173,
+	WL_RATE_2X2_TXBF_EHT8SS2      = 174,
+	WL_RATE_2X2_TXBF_EHT9SS2      = 175,
+	WL_RATE_2X2_TXBF_EHT10SS2     = 176,
+	WL_RATE_2X2_TXBF_EHT11SS2     = 177,
+	WL_RATE_2X2_TXBF_EHT12SS2     = 178,
+	WL_RATE_2X2_TXBF_EHT13SS2     = 179,
+
+	/************
+	* 3 chains *
+	************
+	*/
+
+	/* 1 Stream expanded + 2 */
+	WL_RATE_1X3_DSSS_1            = 180,
+	WL_RATE_1X3_DSSS_2            = 181,
+	WL_RATE_1X3_DSSS_5_5          = 182,
+	WL_RATE_1X3_DSSS_11           = 183,
+
+	WL_RATE_1X3_CDD_OFDM_6        = 184,
+	WL_RATE_1X3_CDD_OFDM_9        = 185,
+	WL_RATE_1X3_CDD_OFDM_12       = 186,
+	WL_RATE_1X3_CDD_OFDM_18       = 187,
+	WL_RATE_1X3_CDD_OFDM_24       = 188,
+	WL_RATE_1X3_CDD_OFDM_36       = 189,
+	WL_RATE_1X3_CDD_OFDM_48       = 190,
+	WL_RATE_1X3_CDD_OFDM_54       = 191,
+
+	WL_RATE_1X3_CDD_MCS0          = 192,
+	WL_RATE_1X3_CDD_MCS1          = 193,
+	WL_RATE_1X3_CDD_MCS2          = 194,
+	WL_RATE_1X3_CDD_MCS3          = 195,
+	WL_RATE_1X3_CDD_MCS4          = 196,
+	WL_RATE_1X3_CDD_MCS5          = 197,
+	WL_RATE_1X3_CDD_MCS6          = 198,
+	WL_RATE_1X3_CDD_MCS7          = 199,
+	WL_RATE_P_1X3_CDD_MCS87       = 200,
+	WL_RATE_P_1X3_CDD_MCS88       = 201,
+
+	WL_RATE_1X3_VHT0SS1           = 192,
+	WL_RATE_1X3_VHT1SS1           = 193,
+	WL_RATE_1X3_VHT2SS1           = 194,
+	WL_RATE_1X3_VHT3SS1           = 195,
+	WL_RATE_1X3_VHT4SS1           = 196,
+	WL_RATE_1X3_VHT5SS1           = 197,
+	WL_RATE_1X3_VHT6SS1           = 198,
+	WL_RATE_1X3_VHT7SS1           = 199,
+	WL_RATE_1X3_VHT8SS1           = 200,
+	WL_RATE_1X3_VHT9SS1           = 201,
+	WL_RATE_P_1X3_VHT10SS1        = 202,
+	WL_RATE_P_1X3_VHT11SS1        = 203,
+
+	WL_RATE_1X3_HE0SS1            = 204,
+	WL_RATE_1X3_HE1SS1            = 205,
+	WL_RATE_1X3_HE2SS1            = 206,
+	WL_RATE_1X3_HE3SS1            = 207,
+	WL_RATE_1X3_HE4SS1            = 208,
+	WL_RATE_1X3_HE5SS1            = 209,
+	WL_RATE_1X3_HE6SS1            = 210,
+	WL_RATE_1X3_HE7SS1            = 211,
+	WL_RATE_1X3_HE8SS1            = 212,
+	WL_RATE_1X3_HE9SS1            = 213,
+	WL_RATE_1X3_HE10SS1           = 214,
+	WL_RATE_1X3_HE11SS1           = 215,
+
+	WL_RATE_1X3_EHT0SS1           = 204,
+	WL_RATE_1X3_EHT1SS1           = 205,
+	WL_RATE_1X3_EHT2SS1           = 206,
+	WL_RATE_1X3_EHT3SS1           = 207,
+	WL_RATE_1X3_EHT4SS1           = 208,
+	WL_RATE_1X3_EHT5SS1           = 209,
+	WL_RATE_1X3_EHT6SS1           = 210,
+	WL_RATE_1X3_EHT7SS1           = 211,
+	WL_RATE_1X3_EHT8SS1           = 212,
+	WL_RATE_1X3_EHT9SS1           = 213,
+	WL_RATE_1X3_EHT10SS1          = 214,
+	WL_RATE_1X3_EHT11SS1          = 215,
+	WL_RATE_1X3_EHT12SS1          = 216,
+	WL_RATE_1X3_EHT13SS1          = 217,
+	WL_RATE_1X3_EHT14SS1          = 218,	/* EHT14/15 are with nss 1 only */
+	WL_RATE_1X3_EHT15SS1          = 219,
+
+	/* 2 Streams expanded + 1 */
+	WL_RATE_2X3_STBC_MCS0         = 220,
+	WL_RATE_2X3_STBC_MCS1         = 221,
+	WL_RATE_2X3_STBC_MCS2         = 222,
+	WL_RATE_2X3_STBC_MCS3         = 223,
+	WL_RATE_2X3_STBC_MCS4         = 224,
+	WL_RATE_2X3_STBC_MCS5         = 225,
+	WL_RATE_2X3_STBC_MCS6         = 226,
+	WL_RATE_2X3_STBC_MCS7         = 227,
+	WL_RATE_P_2X3_STBC_MCS87      = 228,
+	WL_RATE_P_2X3_STBC_MCS88      = 229,
+
+	WL_RATE_2X3_STBC_VHT0SS1      = 220,
+	WL_RATE_2X3_STBC_VHT1SS1      = 221,
+	WL_RATE_2X3_STBC_VHT2SS1      = 222,
+	WL_RATE_2X3_STBC_VHT3SS1      = 223,
+	WL_RATE_2X3_STBC_VHT4SS1      = 224,
+	WL_RATE_2X3_STBC_VHT5SS1      = 225,
+	WL_RATE_2X3_STBC_VHT6SS1      = 226,
+	WL_RATE_2X3_STBC_VHT7SS1      = 227,
+	WL_RATE_2X3_STBC_VHT8SS1      = 228,
+	WL_RATE_2X3_STBC_VHT9SS1      = 229,
+	WL_RATE_P_2X3_STBC_VHT10SS1   = 230,
+	WL_RATE_P_2X3_STBC_VHT11SS1   = 231,
+
+	WL_RATE_2X3_SDM_MCS8          = 232,
+	WL_RATE_2X3_SDM_MCS9          = 233,
+	WL_RATE_2X3_SDM_MCS10         = 234,
+	WL_RATE_2X3_SDM_MCS11         = 235,
+	WL_RATE_2X3_SDM_MCS12         = 236,
+	WL_RATE_2X3_SDM_MCS13         = 237,
+	WL_RATE_2X3_SDM_MCS14         = 238,
+	WL_RATE_2X3_SDM_MCS15         = 239,
+	WL_RATE_P_2X3_SDM_MCS99       = 240,
+	WL_RATE_P_2X3_SDM_MCS100      = 241,
+
+	WL_RATE_2X3_VHT0SS2           = 232,
+	WL_RATE_2X3_VHT1SS2           = 233,
+	WL_RATE_2X3_VHT2SS2           = 234,
+	WL_RATE_2X3_VHT3SS2           = 235,
+	WL_RATE_2X3_VHT4SS2           = 236,
+	WL_RATE_2X3_VHT5SS2           = 237,
+	WL_RATE_2X3_VHT6SS2           = 238,
+	WL_RATE_2X3_VHT7SS2           = 239,
+	WL_RATE_2X3_VHT8SS2           = 240,
+	WL_RATE_2X3_VHT9SS2           = 241,
+	WL_RATE_P_2X3_VHT10SS2        = 242,
+	WL_RATE_P_2X3_VHT11SS2        = 243,
+
+	WL_RATE_2X3_HE0SS2            = 244,
+	WL_RATE_2X3_HE1SS2            = 245,
+	WL_RATE_2X3_HE2SS2            = 246,
+	WL_RATE_2X3_HE3SS2            = 247,
+	WL_RATE_2X3_HE4SS2            = 248,
+	WL_RATE_2X3_HE5SS2            = 249,
+	WL_RATE_2X3_HE6SS2            = 250,
+	WL_RATE_2X3_HE7SS2            = 251,
+	WL_RATE_2X3_HE8SS2            = 252,
+	WL_RATE_2X3_HE9SS2            = 253,
+	WL_RATE_2X3_HE10SS2           = 254,
+	WL_RATE_2X3_HE11SS2           = 255,
+
+	WL_RATE_2X3_EHT0SS2           = 244,
+	WL_RATE_2X3_EHT1SS2           = 245,
+	WL_RATE_2X3_EHT2SS2           = 246,
+	WL_RATE_2X3_EHT3SS2           = 247,
+	WL_RATE_2X3_EHT4SS2           = 248,
+	WL_RATE_2X3_EHT5SS2           = 249,
+	WL_RATE_2X3_EHT6SS2           = 250,
+	WL_RATE_2X3_EHT7SS2           = 251,
+	WL_RATE_2X3_EHT8SS2           = 252,
+	WL_RATE_2X3_EHT9SS2           = 253,
+	WL_RATE_2X3_EHT10SS2          = 254,
+	WL_RATE_2X3_EHT11SS2          = 255,
+	WL_RATE_2X3_EHT12SS2          = 256,
+	WL_RATE_2X3_EHT13SS2          = 257,
+
+	/* 3 Streams */
+	WL_RATE_3X3_SDM_MCS16         = 258,
+	WL_RATE_3X3_SDM_MCS17         = 259,
+	WL_RATE_3X3_SDM_MCS18         = 260,
+	WL_RATE_3X3_SDM_MCS19         = 261,
+	WL_RATE_3X3_SDM_MCS20         = 262,
+	WL_RATE_3X3_SDM_MCS21         = 263,
+	WL_RATE_3X3_SDM_MCS22         = 264,
+	WL_RATE_3X3_SDM_MCS23         = 265,
+	WL_RATE_P_3X3_SDM_MCS101      = 266,
+	WL_RATE_P_3X3_SDM_MCS102      = 267,
+
+	WL_RATE_3X3_VHT0SS3           = 258,
+	WL_RATE_3X3_VHT1SS3           = 259,
+	WL_RATE_3X3_VHT2SS3           = 260,
+	WL_RATE_3X3_VHT3SS3           = 261,
+	WL_RATE_3X3_VHT4SS3           = 262,
+	WL_RATE_3X3_VHT5SS3           = 263,
+	WL_RATE_3X3_VHT6SS3           = 264,
+	WL_RATE_3X3_VHT7SS3           = 265,
+	WL_RATE_3X3_VHT8SS3           = 266,
+	WL_RATE_3X3_VHT9SS3           = 267,
+	WL_RATE_P_3X3_VHT10SS3        = 268,
+	WL_RATE_P_3X3_VHT11SS3        = 269,
+
+	WL_RATE_3X3_HE0SS3            = 270,
+	WL_RATE_3X3_HE1SS3            = 271,
+	WL_RATE_3X3_HE2SS3            = 272,
+	WL_RATE_3X3_HE3SS3            = 273,
+	WL_RATE_3X3_HE4SS3            = 274,
+	WL_RATE_3X3_HE5SS3            = 275,
+	WL_RATE_3X3_HE6SS3            = 276,
+	WL_RATE_3X3_HE7SS3            = 277,
+	WL_RATE_3X3_HE8SS3            = 278,
+	WL_RATE_3X3_HE9SS3            = 279,
+	WL_RATE_3X3_HE10SS3           = 280,
+	WL_RATE_3X3_HE11SS3           = 281,
+
+	WL_RATE_3X3_EHT0SS3           = 270,
+	WL_RATE_3X3_EHT1SS3           = 271,
+	WL_RATE_3X3_EHT2SS3           = 272,
+	WL_RATE_3X3_EHT3SS3           = 273,
+	WL_RATE_3X3_EHT4SS3           = 274,
+	WL_RATE_3X3_EHT5SS3           = 275,
+	WL_RATE_3X3_EHT6SS3           = 276,
+	WL_RATE_3X3_EHT7SS3           = 277,
+	WL_RATE_3X3_EHT8SS3           = 278,
+	WL_RATE_3X3_EHT9SS3           = 279,
+	WL_RATE_3X3_EHT10SS3          = 280,
+	WL_RATE_3X3_EHT11SS3          = 281,
+	WL_RATE_3X3_EHT12SS3          = 282,
+	WL_RATE_3X3_EHT13SS3          = 283,
+
+	/****************************
+	 * TX Beamforming, 3 chains *
+	 ****************************
+	 */
+
+	/* 1 Stream expanded + 2 */
+	WL_RATE_1X3_TXBF_OFDM_6       = 284,
+	WL_RATE_1X3_TXBF_OFDM_9       = 285,
+	WL_RATE_1X3_TXBF_OFDM_12      = 286,
+	WL_RATE_1X3_TXBF_OFDM_18      = 287,
+	WL_RATE_1X3_TXBF_OFDM_24      = 288,
+	WL_RATE_1X3_TXBF_OFDM_36      = 289,
+	WL_RATE_1X3_TXBF_OFDM_48      = 290,
+	WL_RATE_1X3_TXBF_OFDM_54      = 291,
+
+	WL_RATE_1X3_TXBF_MCS0         = 292,
+	WL_RATE_1X3_TXBF_MCS1         = 293,
+	WL_RATE_1X3_TXBF_MCS2         = 294,
+	WL_RATE_1X3_TXBF_MCS3         = 295,
+	WL_RATE_1X3_TXBF_MCS4         = 296,
+	WL_RATE_1X3_TXBF_MCS5         = 297,
+	WL_RATE_1X3_TXBF_MCS6         = 298,
+	WL_RATE_1X3_TXBF_MCS7         = 299,
+	WL_RATE_P_1X3_TXBF_MCS87      = 300,
+	WL_RATE_P_1X3_TXBF_MCS88      = 301,
+
+	WL_RATE_1X3_TXBF_VHT0SS1      = 292,
+	WL_RATE_1X3_TXBF_VHT1SS1      = 293,
+	WL_RATE_1X3_TXBF_VHT2SS1      = 294,
+	WL_RATE_1X3_TXBF_VHT3SS1      = 295,
+	WL_RATE_1X3_TXBF_VHT4SS1      = 296,
+	WL_RATE_1X3_TXBF_VHT5SS1      = 297,
+	WL_RATE_1X3_TXBF_VHT6SS1      = 298,
+	WL_RATE_1X3_TXBF_VHT7SS1      = 299,
+	WL_RATE_1X3_TXBF_VHT8SS1      = 300,
+	WL_RATE_1X3_TXBF_VHT9SS1      = 301,
+	WL_RATE_P_1X3_TXBF_VHT10SS1   = 302,
+	WL_RATE_P_1X3_TXBF_VHT11SS1   = 303,
+
+	WL_RATE_1X3_TXBF_HE0SS1       = 304,
+	WL_RATE_1X3_TXBF_HE1SS1       = 305,
+	WL_RATE_1X3_TXBF_HE2SS1       = 306,
+	WL_RATE_1X3_TXBF_HE3SS1       = 307,
+	WL_RATE_1X3_TXBF_HE4SS1       = 308,
+	WL_RATE_1X3_TXBF_HE5SS1       = 309,
+	WL_RATE_1X3_TXBF_HE6SS1       = 310,
+	WL_RATE_1X3_TXBF_HE7SS1       = 311,
+	WL_RATE_1X3_TXBF_HE8SS1       = 312,
+	WL_RATE_1X3_TXBF_HE9SS1       = 313,
+	WL_RATE_1X3_TXBF_HE10SS1      = 314,
+	WL_RATE_1X3_TXBF_HE11SS1      = 315,
+
+	WL_RATE_1X3_TXBF_EHT0SS1      = 304,
+	WL_RATE_1X3_TXBF_EHT1SS1      = 305,
+	WL_RATE_1X3_TXBF_EHT2SS1      = 306,
+	WL_RATE_1X3_TXBF_EHT3SS1      = 307,
+	WL_RATE_1X3_TXBF_EHT4SS1      = 308,
+	WL_RATE_1X3_TXBF_EHT5SS1      = 309,
+	WL_RATE_1X3_TXBF_EHT6SS1      = 310,
+	WL_RATE_1X3_TXBF_EHT7SS1      = 311,
+	WL_RATE_1X3_TXBF_EHT8SS1      = 312,
+	WL_RATE_1X3_TXBF_EHT9SS1      = 313,
+	WL_RATE_1X3_TXBF_EHT10SS1     = 314,
+	WL_RATE_1X3_TXBF_EHT11SS1     = 315,
+	WL_RATE_1X3_TXBF_EHT12SS1     = 316,
+	WL_RATE_1X3_TXBF_EHT13SS1     = 317,
+	WL_RATE_1X3_TXBF_EHT14SS1     = 318,	/* EHT14/15 are with nss 1 only */
+	WL_RATE_1X3_TXBF_EHT15SS1     = 319,
+
+	/* 2 Streams expanded + 1 */
+	WL_RATE_2X3_TXBF_SDM_MCS8     = 320,
+	WL_RATE_2X3_TXBF_SDM_MCS9     = 321,
+	WL_RATE_2X3_TXBF_SDM_MCS10    = 322,
+	WL_RATE_2X3_TXBF_SDM_MCS11    = 323,
+	WL_RATE_2X3_TXBF_SDM_MCS12    = 324,
+	WL_RATE_2X3_TXBF_SDM_MCS13    = 325,
+	WL_RATE_2X3_TXBF_SDM_MCS14    = 326,
+	WL_RATE_2X3_TXBF_SDM_MCS15    = 327,
+	WL_RATE_P_2X3_TXBF_SDM_MCS99  = 328,
+	WL_RATE_P_2X3_TXBF_SDM_MCS100 = 329,
+
+	WL_RATE_2X3_TXBF_VHT0SS2      = 320,
+	WL_RATE_2X3_TXBF_VHT1SS2      = 321,
+	WL_RATE_2X3_TXBF_VHT2SS2      = 322,
+	WL_RATE_2X3_TXBF_VHT3SS2      = 323,
+	WL_RATE_2X3_TXBF_VHT4SS2      = 324,
+	WL_RATE_2X3_TXBF_VHT5SS2      = 325,
+	WL_RATE_2X3_TXBF_VHT6SS2      = 326,
+	WL_RATE_2X3_TXBF_VHT7SS2      = 327,
+	WL_RATE_2X3_TXBF_VHT8SS2      = 328,
+	WL_RATE_2X3_TXBF_VHT9SS2      = 329,
+	WL_RATE_P_2X3_TXBF_VHT10SS2   = 330,
+	WL_RATE_P_2X3_TXBF_VHT11SS2   = 331,
+
+	WL_RATE_2X3_TXBF_HE0SS2       = 332,
+	WL_RATE_2X3_TXBF_HE1SS2       = 333,
+	WL_RATE_2X3_TXBF_HE2SS2       = 334,
+	WL_RATE_2X3_TXBF_HE3SS2       = 335,
+	WL_RATE_2X3_TXBF_HE4SS2       = 336,
+	WL_RATE_2X3_TXBF_HE5SS2       = 337,
+	WL_RATE_2X3_TXBF_HE6SS2       = 338,
+	WL_RATE_2X3_TXBF_HE7SS2       = 339,
+	WL_RATE_2X3_TXBF_HE8SS2       = 340,
+	WL_RATE_2X3_TXBF_HE9SS2       = 341,
+	WL_RATE_2X3_TXBF_HE10SS2      = 342,
+	WL_RATE_2X3_TXBF_HE11SS2      = 343,
+
+	WL_RATE_2X3_TXBF_EHT0SS2      = 332,
+	WL_RATE_2X3_TXBF_EHT1SS2      = 333,
+	WL_RATE_2X3_TXBF_EHT2SS2      = 334,
+	WL_RATE_2X3_TXBF_EHT3SS2      = 335,
+	WL_RATE_2X3_TXBF_EHT4SS2      = 336,
+	WL_RATE_2X3_TXBF_EHT5SS2      = 337,
+	WL_RATE_2X3_TXBF_EHT6SS2      = 338,
+	WL_RATE_2X3_TXBF_EHT7SS2      = 339,
+	WL_RATE_2X3_TXBF_EHT8SS2      = 340,
+	WL_RATE_2X3_TXBF_EHT9SS2      = 341,
+	WL_RATE_2X3_TXBF_EHT10SS2     = 342,
+	WL_RATE_2X3_TXBF_EHT11SS2     = 343,
+	WL_RATE_2X3_TXBF_EHT12SS2     = 344,
+	WL_RATE_2X3_TXBF_EHT13SS2     = 345,
+
+	/* 3 Streams */
+	WL_RATE_3X3_TXBF_SDM_MCS16    = 346,
+	WL_RATE_3X3_TXBF_SDM_MCS17    = 347,
+	WL_RATE_3X3_TXBF_SDM_MCS18    = 348,
+	WL_RATE_3X3_TXBF_SDM_MCS19    = 349,
+	WL_RATE_3X3_TXBF_SDM_MCS20    = 350,
+	WL_RATE_3X3_TXBF_SDM_MCS21    = 351,
+	WL_RATE_3X3_TXBF_SDM_MCS22    = 352,
+	WL_RATE_3X3_TXBF_SDM_MCS23    = 353,
+	WL_RATE_P_3X3_TXBF_SDM_MCS101 = 354,
+	WL_RATE_P_3X3_TXBF_SDM_MCS102 = 355,
+
+	WL_RATE_3X3_TXBF_VHT0SS3      = 346,
+	WL_RATE_3X3_TXBF_VHT1SS3      = 347,
+	WL_RATE_3X3_TXBF_VHT2SS3      = 348,
+	WL_RATE_3X3_TXBF_VHT3SS3      = 349,
+	WL_RATE_3X3_TXBF_VHT4SS3      = 350,
+	WL_RATE_3X3_TXBF_VHT5SS3      = 351,
+	WL_RATE_3X3_TXBF_VHT6SS3      = 352,
+	WL_RATE_3X3_TXBF_VHT7SS3      = 353,
+	WL_RATE_3X3_TXBF_VHT8SS3      = 354,
+	WL_RATE_3X3_TXBF_VHT9SS3      = 355,
+	WL_RATE_P_3X3_TXBF_VHT10SS3   = 356,
+	WL_RATE_P_3X3_TXBF_VHT11SS3   = 357,
+
+	WL_RATE_3X3_TXBF_HE0SS3       = 358,
+	WL_RATE_3X3_TXBF_HE1SS3       = 359,
+	WL_RATE_3X3_TXBF_HE2SS3       = 360,
+	WL_RATE_3X3_TXBF_HE3SS3       = 361,
+	WL_RATE_3X3_TXBF_HE4SS3       = 362,
+	WL_RATE_3X3_TXBF_HE5SS3       = 363,
+	WL_RATE_3X3_TXBF_HE6SS3       = 364,
+	WL_RATE_3X3_TXBF_HE7SS3       = 365,
+	WL_RATE_3X3_TXBF_HE8SS3       = 366,
+	WL_RATE_3X3_TXBF_HE9SS3       = 367,
+	WL_RATE_3X3_TXBF_HE10SS3      = 368,
+	WL_RATE_3X3_TXBF_HE11SS3      = 369,
+
+	WL_RATE_3X3_TXBF_EHT0SS3      = 358,
+	WL_RATE_3X3_TXBF_EHT1SS3      = 359,
+	WL_RATE_3X3_TXBF_EHT2SS3      = 360,
+	WL_RATE_3X3_TXBF_EHT3SS3      = 361,
+	WL_RATE_3X3_TXBF_EHT4SS3      = 362,
+	WL_RATE_3X3_TXBF_EHT5SS3      = 363,
+	WL_RATE_3X3_TXBF_EHT6SS3      = 364,
+	WL_RATE_3X3_TXBF_EHT7SS3      = 365,
+	WL_RATE_3X3_TXBF_EHT8SS3      = 366,
+	WL_RATE_3X3_TXBF_EHT9SS3      = 367,
+	WL_RATE_3X3_TXBF_EHT10SS3     = 368,
+	WL_RATE_3X3_TXBF_EHT11SS3     = 369,
+	WL_RATE_3X3_TXBF_EHT12SS3     = 370,
+	WL_RATE_3X3_TXBF_EHT13SS3     = 371,
+
+	/************
+	* 4 chains *
+	************
+	*/
+
+	/* 1 Stream expanded + 3 */
+	WL_RATE_1X4_DSSS_1            = 372,
+	WL_RATE_1X4_DSSS_2            = 373,
+	WL_RATE_1X4_DSSS_5_5          = 374,
+	WL_RATE_1X4_DSSS_11           = 375,
+
+	WL_RATE_1X4_CDD_OFDM_6        = 376,
+	WL_RATE_1X4_CDD_OFDM_9        = 377,
+	WL_RATE_1X4_CDD_OFDM_12       = 378,
+	WL_RATE_1X4_CDD_OFDM_18       = 379,
+	WL_RATE_1X4_CDD_OFDM_24       = 380,
+	WL_RATE_1X4_CDD_OFDM_36       = 381,
+	WL_RATE_1X4_CDD_OFDM_48       = 382,
+	WL_RATE_1X4_CDD_OFDM_54       = 383,
+
+	WL_RATE_1X4_CDD_MCS0          = 384,
+	WL_RATE_1X4_CDD_MCS1          = 385,
+	WL_RATE_1X4_CDD_MCS2          = 386,
+	WL_RATE_1X4_CDD_MCS3          = 387,
+	WL_RATE_1X4_CDD_MCS4          = 388,
+	WL_RATE_1X4_CDD_MCS5          = 389,
+	WL_RATE_1X4_CDD_MCS6          = 390,
+	WL_RATE_1X4_CDD_MCS7          = 391,
+	WL_RATE_P_1X4_CDD_MCS87       = 392,
+	WL_RATE_P_1X4_CDD_MCS88       = 393,
+
+	WL_RATE_1X4_VHT0SS1           = 384,
+	WL_RATE_1X4_VHT1SS1           = 385,
+	WL_RATE_1X4_VHT2SS1           = 386,
+	WL_RATE_1X4_VHT3SS1           = 387,
+	WL_RATE_1X4_VHT4SS1           = 388,
+	WL_RATE_1X4_VHT5SS1           = 389,
+	WL_RATE_1X4_VHT6SS1           = 390,
+	WL_RATE_1X4_VHT7SS1           = 391,
+	WL_RATE_1X4_VHT8SS1           = 392,
+	WL_RATE_1X4_VHT9SS1           = 393,
+	WL_RATE_P_1X4_VHT10SS1        = 394,
+	WL_RATE_P_1X4_VHT11SS1        = 395,
+
+	WL_RATE_1X4_HE0SS1            = 396,
+	WL_RATE_1X4_HE1SS1            = 397,
+	WL_RATE_1X4_HE2SS1            = 398,
+	WL_RATE_1X4_HE3SS1            = 399,
+	WL_RATE_1X4_HE4SS1            = 400,
+	WL_RATE_1X4_HE5SS1            = 401,
+	WL_RATE_1X4_HE6SS1            = 402,
+	WL_RATE_1X4_HE7SS1            = 403,
+	WL_RATE_1X4_HE8SS1            = 404,
+	WL_RATE_1X4_HE9SS1            = 405,
+	WL_RATE_1X4_HE10SS1           = 406,
+	WL_RATE_1X4_HE11SS1           = 407,
+
+	WL_RATE_1X4_EHT0SS1           = 396,
+	WL_RATE_1X4_EHT1SS1           = 397,
+	WL_RATE_1X4_EHT2SS1           = 398,
+	WL_RATE_1X4_EHT3SS1           = 399,
+	WL_RATE_1X4_EHT4SS1           = 400,
+	WL_RATE_1X4_EHT5SS1           = 401,
+	WL_RATE_1X4_EHT6SS1           = 402,
+	WL_RATE_1X4_EHT7SS1           = 403,
+	WL_RATE_1X4_EHT8SS1           = 404,
+	WL_RATE_1X4_EHT9SS1           = 405,
+	WL_RATE_1X4_EHT10SS1          = 406,
+	WL_RATE_1X4_EHT11SS1          = 407,
+	WL_RATE_1X4_EHT12SS1          = 408,
+	WL_RATE_1X4_EHT13SS1          = 409,
+	WL_RATE_1X4_EHT14SS1          = 410,	/* EHT14/15 are with nss 1 only */
+	WL_RATE_1X4_EHT15SS1          = 411,
+
+	/* 2 Streams expanded + 2 */
+	WL_RATE_2X4_STBC_MCS0         = 412,
+	WL_RATE_2X4_STBC_MCS1         = 413,
+	WL_RATE_2X4_STBC_MCS2         = 414,
+	WL_RATE_2X4_STBC_MCS3         = 415,
+	WL_RATE_2X4_STBC_MCS4         = 416,
+	WL_RATE_2X4_STBC_MCS5         = 417,
+	WL_RATE_2X4_STBC_MCS6         = 418,
+	WL_RATE_2X4_STBC_MCS7         = 419,
+	WL_RATE_P_2X4_STBC_MCS87      = 420,
+	WL_RATE_P_2X4_STBC_MCS88      = 421,
+
+	WL_RATE_2X4_STBC_VHT0SS1      = 412,
+	WL_RATE_2X4_STBC_VHT1SS1      = 413,
+	WL_RATE_2X4_STBC_VHT2SS1      = 414,
+	WL_RATE_2X4_STBC_VHT3SS1      = 415,
+	WL_RATE_2X4_STBC_VHT4SS1      = 416,
+	WL_RATE_2X4_STBC_VHT5SS1      = 417,
+	WL_RATE_2X4_STBC_VHT6SS1      = 418,
+	WL_RATE_2X4_STBC_VHT7SS1      = 419,
+	WL_RATE_2X4_STBC_VHT8SS1      = 420,
+	WL_RATE_2X4_STBC_VHT9SS1      = 421,
+	WL_RATE_P_2X4_STBC_VHT10SS1   = 422,
+	WL_RATE_P_2X4_STBC_VHT11SS1   = 423,
+
+	WL_RATE_2X4_SDM_MCS8          = 424,
+	WL_RATE_2X4_SDM_MCS9          = 425,
+	WL_RATE_2X4_SDM_MCS10         = 426,
+	WL_RATE_2X4_SDM_MCS11         = 427,
+	WL_RATE_2X4_SDM_MCS12         = 428,
+	WL_RATE_2X4_SDM_MCS13         = 429,
+	WL_RATE_2X4_SDM_MCS14         = 430,
+	WL_RATE_2X4_SDM_MCS15         = 431,
+	WL_RATE_P_2X4_SDM_MCS99       = 432,
+	WL_RATE_P_2X4_SDM_MCS100      = 433,
+
+	WL_RATE_2X4_VHT0SS2           = 424,
+	WL_RATE_2X4_VHT1SS2           = 425,
+	WL_RATE_2X4_VHT2SS2           = 426,
+	WL_RATE_2X4_VHT3SS2           = 427,
+	WL_RATE_2X4_VHT4SS2           = 428,
+	WL_RATE_2X4_VHT5SS2           = 429,
+	WL_RATE_2X4_VHT6SS2           = 430,
+	WL_RATE_2X4_VHT7SS2           = 431,
+	WL_RATE_2X4_VHT8SS2           = 432,
+	WL_RATE_2X4_VHT9SS2           = 433,
+	WL_RATE_P_2X4_VHT10SS2        = 434,
+	WL_RATE_P_2X4_VHT11SS2        = 435,
+
+	WL_RATE_2X4_HE0SS2            = 436,
+	WL_RATE_2X4_HE1SS2            = 437,
+	WL_RATE_2X4_HE2SS2            = 438,
+	WL_RATE_2X4_HE3SS2            = 439,
+	WL_RATE_2X4_HE4SS2            = 440,
+	WL_RATE_2X4_HE5SS2            = 441,
+	WL_RATE_2X4_HE6SS2            = 442,
+	WL_RATE_2X4_HE7SS2            = 443,
+	WL_RATE_2X4_HE8SS2            = 444,
+	WL_RATE_2X4_HE9SS2            = 445,
+	WL_RATE_2X4_HE10SS2           = 446,
+	WL_RATE_2X4_HE11SS2           = 447,
+
+	WL_RATE_2X4_EHT0SS2           = 436,
+	WL_RATE_2X4_EHT1SS2           = 437,
+	WL_RATE_2X4_EHT2SS2           = 438,
+	WL_RATE_2X4_EHT3SS2           = 439,
+	WL_RATE_2X4_EHT4SS2           = 440,
+	WL_RATE_2X4_EHT5SS2           = 441,
+	WL_RATE_2X4_EHT6SS2           = 442,
+	WL_RATE_2X4_EHT7SS2           = 443,
+	WL_RATE_2X4_EHT8SS2           = 444,
+	WL_RATE_2X4_EHT9SS2           = 445,
+	WL_RATE_2X4_EHT10SS2          = 446,
+	WL_RATE_2X4_EHT11SS2          = 447,
+	WL_RATE_2X4_EHT12SS2          = 448,
+	WL_RATE_2X4_EHT13SS2          = 449,
+
+	/* 3 Streams expanded + 1 */
+	WL_RATE_3X4_SDM_MCS16         = 450,
+	WL_RATE_3X4_SDM_MCS17         = 451,
+	WL_RATE_3X4_SDM_MCS18         = 452,
+	WL_RATE_3X4_SDM_MCS19         = 453,
+	WL_RATE_3X4_SDM_MCS20         = 454,
+	WL_RATE_3X4_SDM_MCS21         = 455,
+	WL_RATE_3X4_SDM_MCS22         = 456,
+	WL_RATE_3X4_SDM_MCS23         = 457,
+	WL_RATE_P_3X4_SDM_MCS101      = 458,
+	WL_RATE_P_3X4_SDM_MCS102      = 459,
+
+	WL_RATE_3X4_VHT0SS3           = 450,
+	WL_RATE_3X4_VHT1SS3           = 451,
+	WL_RATE_3X4_VHT2SS3           = 452,
+	WL_RATE_3X4_VHT3SS3           = 453,
+	WL_RATE_3X4_VHT4SS3           = 454,
+	WL_RATE_3X4_VHT5SS3           = 455,
+	WL_RATE_3X4_VHT6SS3           = 456,
+	WL_RATE_3X4_VHT7SS3           = 457,
+	WL_RATE_3X4_VHT8SS3           = 458,
+	WL_RATE_3X4_VHT9SS3           = 459,
+	WL_RATE_P_3X4_VHT10SS3        = 460,
+	WL_RATE_P_3X4_VHT11SS3        = 461,
+
+	WL_RATE_3X4_HE0SS3            = 462,
+	WL_RATE_3X4_HE1SS3            = 463,
+	WL_RATE_3X4_HE2SS3            = 464,
+	WL_RATE_3X4_HE3SS3            = 465,
+	WL_RATE_3X4_HE4SS3            = 466,
+	WL_RATE_3X4_HE5SS3            = 467,
+	WL_RATE_3X4_HE6SS3            = 468,
+	WL_RATE_3X4_HE7SS3            = 469,
+	WL_RATE_3X4_HE8SS3            = 470,
+	WL_RATE_3X4_HE9SS3            = 471,
+	WL_RATE_3X4_HE10SS3           = 472,
+	WL_RATE_3X4_HE11SS3           = 473,
+
+	WL_RATE_3X4_EHT0SS3           = 462,
+	WL_RATE_3X4_EHT1SS3           = 463,
+	WL_RATE_3X4_EHT2SS3           = 464,
+	WL_RATE_3X4_EHT3SS3           = 465,
+	WL_RATE_3X4_EHT4SS3           = 466,
+	WL_RATE_3X4_EHT5SS3           = 467,
+	WL_RATE_3X4_EHT6SS3           = 468,
+	WL_RATE_3X4_EHT7SS3           = 469,
+	WL_RATE_3X4_EHT8SS3           = 470,
+	WL_RATE_3X4_EHT9SS3           = 471,
+	WL_RATE_3X4_EHT10SS3          = 472,
+	WL_RATE_3X4_EHT11SS3          = 473,
+	WL_RATE_3X4_EHT12SS3          = 474,
+	WL_RATE_3X4_EHT13SS3          = 475,
+
+	/* 4 Streams */
+	WL_RATE_4X4_SDM_MCS24         = 476,
+	WL_RATE_4X4_SDM_MCS25         = 477,
+	WL_RATE_4X4_SDM_MCS26         = 478,
+	WL_RATE_4X4_SDM_MCS27         = 479,
+	WL_RATE_4X4_SDM_MCS28         = 480,
+	WL_RATE_4X4_SDM_MCS29         = 481,
+	WL_RATE_4X4_SDM_MCS30         = 482,
+	WL_RATE_4X4_SDM_MCS31         = 483,
+	WL_RATE_P_4X4_SDM_MCS103      = 484,
+	WL_RATE_P_4X4_SDM_MCS104      = 485,
+
+	WL_RATE_4X4_VHT0SS4           = 476,
+	WL_RATE_4X4_VHT1SS4           = 477,
+	WL_RATE_4X4_VHT2SS4           = 478,
+	WL_RATE_4X4_VHT3SS4           = 479,
+	WL_RATE_4X4_VHT4SS4           = 480,
+	WL_RATE_4X4_VHT5SS4           = 481,
+	WL_RATE_4X4_VHT6SS4           = 482,
+	WL_RATE_4X4_VHT7SS4           = 483,
+	WL_RATE_4X4_VHT8SS4           = 484,
+	WL_RATE_4X4_VHT9SS4           = 485,
+	WL_RATE_P_4X4_VHT10SS4        = 486,
+	WL_RATE_P_4X4_VHT11SS4        = 487,
+
+	WL_RATE_4X4_HE0SS4            = 488,
+	WL_RATE_4X4_HE1SS4            = 489,
+	WL_RATE_4X4_HE2SS4            = 490,
+	WL_RATE_4X4_HE3SS4            = 491,
+	WL_RATE_4X4_HE4SS4            = 492,
+	WL_RATE_4X4_HE5SS4            = 493,
+	WL_RATE_4X4_HE6SS4            = 494,
+	WL_RATE_4X4_HE7SS4            = 495,
+	WL_RATE_4X4_HE8SS4            = 496,
+	WL_RATE_4X4_HE9SS4            = 497,
+	WL_RATE_4X4_HE10SS4           = 498,
+	WL_RATE_4X4_HE11SS4           = 499,
+
+	WL_RATE_4X4_EHT0SS4           = 488,
+	WL_RATE_4X4_EHT1SS4           = 489,
+	WL_RATE_4X4_EHT2SS4           = 490,
+	WL_RATE_4X4_EHT3SS4           = 491,
+	WL_RATE_4X4_EHT4SS4           = 492,
+	WL_RATE_4X4_EHT5SS4           = 493,
+	WL_RATE_4X4_EHT6SS4           = 494,
+	WL_RATE_4X4_EHT7SS4           = 495,
+	WL_RATE_4X4_EHT8SS4           = 496,
+	WL_RATE_4X4_EHT9SS4           = 497,
+	WL_RATE_4X4_EHT10SS4          = 498,
+	WL_RATE_4X4_EHT11SS4          = 499,
+	WL_RATE_4X4_EHT12SS4          = 500,
+	WL_RATE_4X4_EHT13SS4          = 501,
+
+	/****************************
+	 * TX Beamforming, 4 chains *
+	 ****************************
+	 */
+
+	/* 1 Stream expanded + 3 */
+	WL_RATE_1X4_TXBF_OFDM_6       = 502,
+	WL_RATE_1X4_TXBF_OFDM_9       = 503,
+	WL_RATE_1X4_TXBF_OFDM_12      = 504,
+	WL_RATE_1X4_TXBF_OFDM_18      = 505,
+	WL_RATE_1X4_TXBF_OFDM_24      = 506,
+	WL_RATE_1X4_TXBF_OFDM_36      = 507,
+	WL_RATE_1X4_TXBF_OFDM_48      = 508,
+	WL_RATE_1X4_TXBF_OFDM_54      = 509,
+
+	WL_RATE_1X4_TXBF_MCS0         = 510,
+	WL_RATE_1X4_TXBF_MCS1         = 511,
+	WL_RATE_1X4_TXBF_MCS2         = 512,
+	WL_RATE_1X4_TXBF_MCS3         = 513,
+	WL_RATE_1X4_TXBF_MCS4         = 514,
+	WL_RATE_1X4_TXBF_MCS5         = 515,
+	WL_RATE_1X4_TXBF_MCS6         = 516,
+	WL_RATE_1X4_TXBF_MCS7         = 517,
+	WL_RATE_P_1X4_TXBF_MCS87      = 518,
+	WL_RATE_P_1X4_TXBF_MCS88      = 519,
+
+	WL_RATE_1X4_TXBF_VHT0SS1      = 510,
+	WL_RATE_1X4_TXBF_VHT1SS1      = 511,
+	WL_RATE_1X4_TXBF_VHT2SS1      = 512,
+	WL_RATE_1X4_TXBF_VHT3SS1      = 513,
+	WL_RATE_1X4_TXBF_VHT4SS1      = 514,
+	WL_RATE_1X4_TXBF_VHT5SS1      = 515,
+	WL_RATE_1X4_TXBF_VHT6SS1      = 516,
+	WL_RATE_1X4_TXBF_VHT7SS1      = 517,
+	WL_RATE_1X4_TXBF_VHT8SS1      = 518,
+	WL_RATE_1X4_TXBF_VHT9SS1      = 519,
+	WL_RATE_P_1X4_TXBF_VHT10SS1   = 520,
+	WL_RATE_P_1X4_TXBF_VHT11SS1   = 521,
+
+	WL_RATE_1X4_TXBF_HE0SS1       = 522,
+	WL_RATE_1X4_TXBF_HE1SS1       = 523,
+	WL_RATE_1X4_TXBF_HE2SS1       = 524,
+	WL_RATE_1X4_TXBF_HE3SS1       = 525,
+	WL_RATE_1X4_TXBF_HE4SS1       = 526,
+	WL_RATE_1X4_TXBF_HE5SS1       = 527,
+	WL_RATE_1X4_TXBF_HE6SS1       = 528,
+	WL_RATE_1X4_TXBF_HE7SS1       = 529,
+	WL_RATE_1X4_TXBF_HE8SS1       = 530,
+	WL_RATE_1X4_TXBF_HE9SS1       = 531,
+	WL_RATE_1X4_TXBF_HE10SS1      = 532,
+	WL_RATE_1X4_TXBF_HE11SS1      = 533,
+
+	WL_RATE_1X4_TXBF_EHT0SS1      = 522,
+	WL_RATE_1X4_TXBF_EHT1SS1      = 523,
+	WL_RATE_1X4_TXBF_EHT2SS1      = 524,
+	WL_RATE_1X4_TXBF_EHT3SS1      = 525,
+	WL_RATE_1X4_TXBF_EHT4SS1      = 526,
+	WL_RATE_1X4_TXBF_EHT5SS1      = 527,
+	WL_RATE_1X4_TXBF_EHT6SS1      = 528,
+	WL_RATE_1X4_TXBF_EHT7SS1      = 529,
+	WL_RATE_1X4_TXBF_EHT8SS1      = 530,
+	WL_RATE_1X4_TXBF_EHT9SS1      = 531,
+	WL_RATE_1X4_TXBF_EHT10SS1     = 532,
+	WL_RATE_1X4_TXBF_EHT11SS1     = 533,
+	WL_RATE_1X4_TXBF_EHT12SS1     = 534,
+	WL_RATE_1X4_TXBF_EHT13SS1     = 535,
+	WL_RATE_1X4_TXBF_EHT14SS1     = 536,	/* EHT14/15 are with nss 1 only */
+	WL_RATE_1X4_TXBF_EHT15SS1     = 537,
+
+	/* 2 Streams expanded + 2 */
+	WL_RATE_2X4_TXBF_SDM_MCS8     = 538,
+	WL_RATE_2X4_TXBF_SDM_MCS9     = 539,
+	WL_RATE_2X4_TXBF_SDM_MCS10    = 540,
+	WL_RATE_2X4_TXBF_SDM_MCS11    = 541,
+	WL_RATE_2X4_TXBF_SDM_MCS12    = 542,
+	WL_RATE_2X4_TXBF_SDM_MCS13    = 543,
+	WL_RATE_2X4_TXBF_SDM_MCS14    = 544,
+	WL_RATE_2X4_TXBF_SDM_MCS15    = 545,
+	WL_RATE_P_2X4_TXBF_SDM_MCS99  = 546,
+	WL_RATE_P_2X4_TXBF_SDM_MCS100 = 547,
+
+	WL_RATE_2X4_TXBF_VHT0SS2      = 538,
+	WL_RATE_2X4_TXBF_VHT1SS2      = 539,
+	WL_RATE_2X4_TXBF_VHT2SS2      = 540,
+	WL_RATE_2X4_TXBF_VHT3SS2      = 541,
+	WL_RATE_2X4_TXBF_VHT4SS2      = 542,
+	WL_RATE_2X4_TXBF_VHT5SS2      = 543,
+	WL_RATE_2X4_TXBF_VHT6SS2      = 544,
+	WL_RATE_2X4_TXBF_VHT7SS2      = 545,
+	WL_RATE_2X4_TXBF_VHT8SS2      = 546,
+	WL_RATE_2X4_TXBF_VHT9SS2      = 547,
+	WL_RATE_P_2X4_TXBF_VHT10SS2   = 548,
+	WL_RATE_P_2X4_TXBF_VHT11SS2   = 549,
+
+	WL_RATE_2X4_TXBF_HE0SS2       = 550,
+	WL_RATE_2X4_TXBF_HE1SS2       = 551,
+	WL_RATE_2X4_TXBF_HE2SS2       = 552,
+	WL_RATE_2X4_TXBF_HE3SS2       = 553,
+	WL_RATE_2X4_TXBF_HE4SS2       = 554,
+	WL_RATE_2X4_TXBF_HE5SS2       = 555,
+	WL_RATE_2X4_TXBF_HE6SS2       = 556,
+	WL_RATE_2X4_TXBF_HE7SS2       = 557,
+	WL_RATE_2X4_TXBF_HE8SS2       = 558,
+	WL_RATE_2X4_TXBF_HE9SS2       = 559,
+	WL_RATE_2X4_TXBF_HE10SS2      = 560,
+	WL_RATE_2X4_TXBF_HE11SS2      = 561,
+
+	WL_RATE_2X4_TXBF_EHT0SS2      = 550,
+	WL_RATE_2X4_TXBF_EHT1SS2      = 551,
+	WL_RATE_2X4_TXBF_EHT2SS2      = 552,
+	WL_RATE_2X4_TXBF_EHT3SS2      = 553,
+	WL_RATE_2X4_TXBF_EHT4SS2      = 554,
+	WL_RATE_2X4_TXBF_EHT5SS2      = 555,
+	WL_RATE_2X4_TXBF_EHT6SS2      = 556,
+	WL_RATE_2X4_TXBF_EHT7SS2      = 557,
+	WL_RATE_2X4_TXBF_EHT8SS2      = 558,
+	WL_RATE_2X4_TXBF_EHT9SS2      = 559,
+	WL_RATE_2X4_TXBF_EHT10SS2     = 560,
+	WL_RATE_2X4_TXBF_EHT11SS2     = 561,
+	WL_RATE_2X4_TXBF_EHT12SS2     = 562,
+	WL_RATE_2X4_TXBF_EHT13SS2     = 563,
+
+	/* 3 Streams expanded + 1 */
+	WL_RATE_3X4_TXBF_SDM_MCS16    = 564,
+	WL_RATE_3X4_TXBF_SDM_MCS17    = 565,
+	WL_RATE_3X4_TXBF_SDM_MCS18    = 566,
+	WL_RATE_3X4_TXBF_SDM_MCS19    = 567,
+	WL_RATE_3X4_TXBF_SDM_MCS20    = 568,
+	WL_RATE_3X4_TXBF_SDM_MCS21    = 569,
+	WL_RATE_3X4_TXBF_SDM_MCS22    = 570,
+	WL_RATE_3X4_TXBF_SDM_MCS23    = 571,
+	WL_RATE_P_3X4_TXBF_SDM_MCS101 = 572,
+	WL_RATE_P_3X4_TXBF_SDM_MCS102 = 573,
+
+	WL_RATE_3X4_TXBF_VHT0SS3      = 564,
+	WL_RATE_3X4_TXBF_VHT1SS3      = 565,
+	WL_RATE_3X4_TXBF_VHT2SS3      = 566,
+	WL_RATE_3X4_TXBF_VHT3SS3      = 567,
+	WL_RATE_3X4_TXBF_VHT4SS3      = 568,
+	WL_RATE_3X4_TXBF_VHT5SS3      = 569,
+	WL_RATE_3X4_TXBF_VHT6SS3      = 570,
+	WL_RATE_3X4_TXBF_VHT7SS3      = 571,
+	WL_RATE_P_3X4_TXBF_VHT8SS3    = 572,
+	WL_RATE_P_3X4_TXBF_VHT9SS3    = 573,
+	WL_RATE_P_3X4_TXBF_VHT10SS3   = 574,
+	WL_RATE_P_3X4_TXBF_VHT11SS3   = 575,
+
+	WL_RATE_3X4_TXBF_HE0SS3       = 576,
+	WL_RATE_3X4_TXBF_HE1SS3       = 577,
+	WL_RATE_3X4_TXBF_HE2SS3       = 578,
+	WL_RATE_3X4_TXBF_HE3SS3       = 579,
+	WL_RATE_3X4_TXBF_HE4SS3       = 580,
+	WL_RATE_3X4_TXBF_HE5SS3       = 581,
+	WL_RATE_3X4_TXBF_HE6SS3       = 582,
+	WL_RATE_3X4_TXBF_HE7SS3       = 583,
+	WL_RATE_3X4_TXBF_HE8SS3       = 584,
+	WL_RATE_3X4_TXBF_HE9SS3       = 585,
+	WL_RATE_3X4_TXBF_HE10SS3      = 586,
+	WL_RATE_3X4_TXBF_HE11SS3      = 587,
+
+	WL_RATE_3X4_TXBF_EHT0SS3      = 576,
+	WL_RATE_3X4_TXBF_EHT1SS3      = 577,
+	WL_RATE_3X4_TXBF_EHT2SS3      = 578,
+	WL_RATE_3X4_TXBF_EHT3SS3      = 579,
+	WL_RATE_3X4_TXBF_EHT4SS3      = 580,
+	WL_RATE_3X4_TXBF_EHT5SS3      = 581,
+	WL_RATE_3X4_TXBF_EHT6SS3      = 582,
+	WL_RATE_3X4_TXBF_EHT7SS3      = 583,
+	WL_RATE_3X4_TXBF_EHT8SS3      = 584,
+	WL_RATE_3X4_TXBF_EHT9SS3      = 585,
+	WL_RATE_3X4_TXBF_EHT10SS3     = 586,
+	WL_RATE_3X4_TXBF_EHT11SS3     = 587,
+	WL_RATE_3X4_TXBF_EHT12SS3     = 588,
+	WL_RATE_3X4_TXBF_EHT13SS3     = 589,
+
+	/* 4 Streams */
+	WL_RATE_4X4_TXBF_SDM_MCS24    = 590,
+	WL_RATE_4X4_TXBF_SDM_MCS25    = 591,
+	WL_RATE_4X4_TXBF_SDM_MCS26    = 592,
+	WL_RATE_4X4_TXBF_SDM_MCS27    = 593,
+	WL_RATE_4X4_TXBF_SDM_MCS28    = 594,
+	WL_RATE_4X4_TXBF_SDM_MCS29    = 595,
+	WL_RATE_4X4_TXBF_SDM_MCS30    = 596,
+	WL_RATE_4X4_TXBF_SDM_MCS31    = 597,
+	WL_RATE_P_4X4_TXBF_SDM_MCS103 = 598,
+	WL_RATE_P_4X4_TXBF_SDM_MCS104 = 599,
+
+	WL_RATE_4X4_TXBF_VHT0SS4      = 590,
+	WL_RATE_4X4_TXBF_VHT1SS4      = 591,
+	WL_RATE_4X4_TXBF_VHT2SS4      = 592,
+	WL_RATE_4X4_TXBF_VHT3SS4      = 593,
+	WL_RATE_4X4_TXBF_VHT4SS4      = 594,
+	WL_RATE_4X4_TXBF_VHT5SS4      = 595,
+	WL_RATE_4X4_TXBF_VHT6SS4      = 596,
+	WL_RATE_4X4_TXBF_VHT7SS4      = 597,
+	WL_RATE_P_4X4_TXBF_VHT8SS4    = 598,
+	WL_RATE_P_4X4_TXBF_VHT9SS4    = 599,
+	WL_RATE_P_4X4_TXBF_VHT10SS4   = 600,
+	WL_RATE_P_4X4_TXBF_VHT11SS4   = 601,
+
+	WL_RATE_4X4_TXBF_HE0SS4       = 602,
+	WL_RATE_4X4_TXBF_HE1SS4       = 603,
+	WL_RATE_4X4_TXBF_HE2SS4       = 604,
+	WL_RATE_4X4_TXBF_HE3SS4       = 605,
+	WL_RATE_4X4_TXBF_HE4SS4       = 606,
+	WL_RATE_4X4_TXBF_HE5SS4       = 607,
+	WL_RATE_4X4_TXBF_HE6SS4       = 608,
+	WL_RATE_4X4_TXBF_HE7SS4       = 609,
+	WL_RATE_4X4_TXBF_HE8SS4       = 610,
+	WL_RATE_4X4_TXBF_HE9SS4       = 611,
+	WL_RATE_4X4_TXBF_HE10SS4      = 612,
+	WL_RATE_4X4_TXBF_HE11SS4      = 613,
+
+	WL_RATE_4X4_TXBF_EHT0SS4      = 602,
+	WL_RATE_4X4_TXBF_EHT1SS4      = 603,
+	WL_RATE_4X4_TXBF_EHT2SS4      = 604,
+	WL_RATE_4X4_TXBF_EHT3SS4      = 605,
+	WL_RATE_4X4_TXBF_EHT4SS4      = 606,
+	WL_RATE_4X4_TXBF_EHT5SS4      = 607,
+	WL_RATE_4X4_TXBF_EHT6SS4      = 608,
+	WL_RATE_4X4_TXBF_EHT7SS4      = 609,
+	WL_RATE_4X4_TXBF_EHT8SS4      = 610,
+	WL_RATE_4X4_TXBF_EHT9SS4      = 611,
+	WL_RATE_4X4_TXBF_EHT10SS4     = 612,
+	WL_RATE_4X4_TXBF_EHT11SS4     = 613,
+	WL_RATE_4X4_TXBF_EHT12SS4     = 614,
+	WL_RATE_4X4_TXBF_EHT13SS4     = 615
+} clm_rates_t;
+
+/* Number of rate codes */
+#define WL_NUMRATES 616
+
+/* This enum maps 802.11ax OFDMA (RU) 'rates' to a CLM index */
+
+typedef enum clm_ru_rates {
+	/* RU26 OFDMA UL rates */
+	WL_RU_RATE_1X1_26SS1               = 0,
+	WL_RU_RATE_1X2_26SS1               = 1,
+	WL_RU_RATE_2X2_26SS2               = 2,
+	WL_RU_RATE_1X2_TXBF_26SS1          = 3,
+	WL_RU_RATE_2X2_TXBF_26SS2          = 4,
+	WL_RU_RATE_1X3_26SS1               = 5,
+	WL_RU_RATE_2X3_26SS2               = 6,
+	WL_RU_RATE_3X3_26SS3               = 7,
+	WL_RU_RATE_1X3_TXBF_26SS1          = 8,
+	WL_RU_RATE_2X3_TXBF_26SS2          = 9,
+	WL_RU_RATE_3X3_TXBF_26SS3          = 10,
+	WL_RU_RATE_1X4_26SS1               = 11,
+	WL_RU_RATE_2X4_26SS2               = 12,
+	WL_RU_RATE_3X4_26SS3               = 13,
+	WL_RU_RATE_4X4_26SS4               = 14,
+	WL_RU_RATE_1X4_TXBF_26SS1          = 15,
+	WL_RU_RATE_2X4_TXBF_26SS2          = 16,
+	WL_RU_RATE_3X4_TXBF_26SS3          = 17,
+	WL_RU_RATE_4X4_TXBF_26SS4          = 18,
+
+	/* RU52 OFDMA UL rates */
+	WL_RU_RATE_1X1_52SS1               = 19,
+	WL_RU_RATE_1X2_52SS1               = 20,
+	WL_RU_RATE_2X2_52SS2               = 21,
+	WL_RU_RATE_1X2_TXBF_52SS1          = 22,
+	WL_RU_RATE_2X2_TXBF_52SS2          = 23,
+	WL_RU_RATE_1X3_52SS1               = 24,
+	WL_RU_RATE_2X3_52SS2               = 25,
+	WL_RU_RATE_3X3_52SS3               = 26,
+	WL_RU_RATE_1X3_TXBF_52SS1          = 27,
+	WL_RU_RATE_2X3_TXBF_52SS2          = 28,
+	WL_RU_RATE_3X3_TXBF_52SS3          = 29,
+	WL_RU_RATE_1X4_52SS1               = 30,
+	WL_RU_RATE_2X4_52SS2               = 31,
+	WL_RU_RATE_3X4_52SS3               = 32,
+	WL_RU_RATE_4X4_52SS4               = 33,
+	WL_RU_RATE_1X4_TXBF_52SS1          = 34,
+	WL_RU_RATE_2X4_TXBF_52SS2          = 35,
+	WL_RU_RATE_3X4_TXBF_52SS3          = 36,
+	WL_RU_RATE_4X4_TXBF_52SS4          = 37,
+
+	/* RU106 OFDMA UL rates */
+	WL_RU_RATE_1X1_106SS1              = 38,
+	WL_RU_RATE_1X2_106SS1              = 39,
+	WL_RU_RATE_2X2_106SS2              = 40,
+	WL_RU_RATE_1X2_TXBF_106SS1         = 41,
+	WL_RU_RATE_2X2_TXBF_106SS2         = 42,
+	WL_RU_RATE_1X3_106SS1              = 43,
+	WL_RU_RATE_2X3_106SS2              = 44,
+	WL_RU_RATE_3X3_106SS3              = 45,
+	WL_RU_RATE_1X3_TXBF_106SS1         = 46,
+	WL_RU_RATE_2X3_TXBF_106SS2         = 47,
+	WL_RU_RATE_3X3_TXBF_106SS3         = 48,
+	WL_RU_RATE_1X4_106SS1              = 49,
+	WL_RU_RATE_2X4_106SS2              = 50,
+	WL_RU_RATE_3X4_106SS3              = 51,
+	WL_RU_RATE_4X4_106SS4              = 52,
+	WL_RU_RATE_1X4_TXBF_106SS1         = 53,
+	WL_RU_RATE_2X4_TXBF_106SS2         = 54,
+	WL_RU_RATE_3X4_TXBF_106SS3         = 55,
+	WL_RU_RATE_4X4_TXBF_106SS4         = 56,
+
+	/* Upper Bound OFDMA DL 'rates' */
+	WL_RU_RATE_1X1_UBSS1               = 57,
+	WL_RU_RATE_1X2_UBSS1               = 58,
+	WL_RU_RATE_2X2_UBSS2               = 59,
+	WL_RU_RATE_1X2_TXBF_UBSS1          = 60,
+	WL_RU_RATE_2X2_TXBF_UBSS2          = 61,
+	WL_RU_RATE_1X3_UBSS1               = 62,
+	WL_RU_RATE_2X3_UBSS2               = 63,
+	WL_RU_RATE_3X3_UBSS3               = 64,
+	WL_RU_RATE_1X3_TXBF_UBSS1          = 65,
+	WL_RU_RATE_2X3_TXBF_UBSS2          = 66,
+	WL_RU_RATE_3X3_TXBF_UBSS3          = 67,
+	WL_RU_RATE_1X4_UBSS1               = 68,
+	WL_RU_RATE_2X4_UBSS2               = 69,
+	WL_RU_RATE_3X4_UBSS3               = 70,
+	WL_RU_RATE_4X4_UBSS4               = 71,
+	WL_RU_RATE_1X4_TXBF_UBSS1          = 72,
+	WL_RU_RATE_2X4_TXBF_UBSS2          = 73,
+	WL_RU_RATE_3X4_TXBF_UBSS3          = 74,
+	WL_RU_RATE_4X4_TXBF_UBSS4          = 75,
+
+	/* Less Upper Bound OFDMA DL 'rates' */
+	WL_RU_RATE_1X1_LUBSS1              = 76,
+	WL_RU_RATE_1X2_LUBSS1              = 77,
+	WL_RU_RATE_2X2_LUBSS2              = 78,
+	WL_RU_RATE_1X2_TXBF_LUBSS1         = 79,
+	WL_RU_RATE_2X2_TXBF_LUBSS2         = 80,
+	WL_RU_RATE_1X3_LUBSS1              = 81,
+	WL_RU_RATE_2X3_LUBSS2              = 82,
+	WL_RU_RATE_3X3_LUBSS3              = 83,
+	WL_RU_RATE_1X3_TXBF_LUBSS1         = 84,
+	WL_RU_RATE_2X3_TXBF_LUBSS2         = 85,
+	WL_RU_RATE_3X3_TXBF_LUBSS3         = 86,
+	WL_RU_RATE_1X4_LUBSS1              = 87,
+	WL_RU_RATE_2X4_LUBSS2              = 88,
+	WL_RU_RATE_3X4_LUBSS3              = 89,
+	WL_RU_RATE_4X4_LUBSS4              = 90,
+	WL_RU_RATE_1X4_TXBF_LUBSS1         = 91,
+	WL_RU_RATE_2X4_TXBF_LUBSS2         = 92,
+	WL_RU_RATE_3X4_TXBF_LUBSS3         = 93,
+	WL_RU_RATE_4X4_TXBF_LUBSS4         = 94,
+
+	/* RU242 OFDMA UL rates */
+	WL_RU_RATE_1X1_242SS1              = 95,
+	WL_RU_RATE_1X2_242SS1              = 96,
+	WL_RU_RATE_2X2_242SS2              = 97,
+	WL_RU_RATE_1X2_TXBF_242SS1         = 98,
+	WL_RU_RATE_2X2_TXBF_242SS2         = 99,
+	WL_RU_RATE_1X3_242SS1              = 100,
+	WL_RU_RATE_2X3_242SS2              = 101,
+	WL_RU_RATE_3X3_242SS3              = 102,
+	WL_RU_RATE_1X3_TXBF_242SS1         = 103,
+	WL_RU_RATE_2X3_TXBF_242SS2         = 104,
+	WL_RU_RATE_3X3_TXBF_242SS3         = 105,
+	WL_RU_RATE_1X4_242SS1              = 106,
+	WL_RU_RATE_2X4_242SS2              = 107,
+	WL_RU_RATE_3X4_242SS3              = 108,
+	WL_RU_RATE_4X4_242SS4              = 109,
+	WL_RU_RATE_1X4_TXBF_242SS1         = 110,
+	WL_RU_RATE_2X4_TXBF_242SS2         = 111,
+	WL_RU_RATE_3X4_TXBF_242SS3         = 112,
+	WL_RU_RATE_4X4_TXBF_242SS4         = 113,
+
+	/* RU484 OFDMA UL rates */
+	WL_RU_RATE_1X1_484SS1              = 114,
+	WL_RU_RATE_1X2_484SS1              = 115,
+	WL_RU_RATE_2X2_484SS2              = 116,
+	WL_RU_RATE_1X2_TXBF_484SS1         = 117,
+	WL_RU_RATE_2X2_TXBF_484SS2         = 118,
+	WL_RU_RATE_1X3_484SS1              = 119,
+	WL_RU_RATE_2X3_484SS2              = 120,
+	WL_RU_RATE_3X3_484SS3              = 121,
+	WL_RU_RATE_1X3_TXBF_484SS1         = 122,
+	WL_RU_RATE_2X3_TXBF_484SS2         = 123,
+	WL_RU_RATE_3X3_TXBF_484SS3         = 124,
+	WL_RU_RATE_1X4_484SS1              = 125,
+	WL_RU_RATE_2X4_484SS2              = 126,
+	WL_RU_RATE_3X4_484SS3              = 127,
+	WL_RU_RATE_4X4_484SS4              = 128,
+	WL_RU_RATE_1X4_TXBF_484SS1         = 129,
+	WL_RU_RATE_2X4_TXBF_484SS2         = 130,
+	WL_RU_RATE_3X4_TXBF_484SS3         = 131,
+	WL_RU_RATE_4X4_TXBF_484SS4         = 132,
+
+	/* RU996 OFDMA UL rates */
+	WL_RU_RATE_1X1_996SS1              = 133,
+	WL_RU_RATE_1X2_996SS1              = 134,
+	WL_RU_RATE_2X2_996SS2              = 135,
+	WL_RU_RATE_1X2_TXBF_996SS1         = 136,
+	WL_RU_RATE_2X2_TXBF_996SS2         = 137,
+	WL_RU_RATE_1X3_996SS1              = 138,
+	WL_RU_RATE_2X3_996SS2              = 139,
+	WL_RU_RATE_3X3_996SS3              = 140,
+	WL_RU_RATE_1X3_TXBF_996SS1         = 141,
+	WL_RU_RATE_2X3_TXBF_996SS2         = 142,
+	WL_RU_RATE_3X3_TXBF_996SS3         = 143,
+	WL_RU_RATE_1X4_996SS1              = 144,
+	WL_RU_RATE_2X4_996SS2              = 145,
+	WL_RU_RATE_3X4_996SS3              = 146,
+	WL_RU_RATE_4X4_996SS4              = 147,
+	WL_RU_RATE_1X4_TXBF_996SS1         = 148,
+	WL_RU_RATE_2X4_TXBF_996SS2         = 149,
+	WL_RU_RATE_3X4_TXBF_996SS3         = 150,
+	WL_RU_RATE_4X4_TXBF_996SS4         = 151,
+
+	/* RU996x2 OFDMA UL rates */
+	WL_RU_RATE_1X1_996_2SS1            = 152,
+	WL_RU_RATE_1X2_996_2SS1            = 153,
+	WL_RU_RATE_2X2_996_2SS2            = 154,
+	WL_RU_RATE_1X2_TXBF_996_2SS1       = 155,
+	WL_RU_RATE_2X2_TXBF_996_2SS2       = 156,
+	WL_RU_RATE_1X3_996_2SS1            = 157,
+	WL_RU_RATE_2X3_996_2SS2            = 158,
+	WL_RU_RATE_3X3_996_2SS3            = 159,
+	WL_RU_RATE_1X3_TXBF_996_2SS1       = 160,
+	WL_RU_RATE_2X3_TXBF_996_2SS2       = 161,
+	WL_RU_RATE_3X3_TXBF_996_2SS3       = 162,
+	WL_RU_RATE_1X4_996_2SS1            = 163,
+	WL_RU_RATE_2X4_996_2SS2            = 164,
+	WL_RU_RATE_3X4_996_2SS3            = 165,
+	WL_RU_RATE_4X4_996_2SS4            = 166,
+	WL_RU_RATE_1X4_TXBF_996_2SS1       = 167,
+	WL_RU_RATE_2X4_TXBF_996_2SS2       = 168,
+	WL_RU_RATE_3X4_TXBF_996_2SS3       = 169,
+	WL_RU_RATE_4X4_TXBF_996_2SS4       = 170,
+
+	/* RU52+26 OFDMA UL rates */
+	WL_RU_RATE_1X1_52_26SS1            = 171,
+	WL_RU_RATE_1X2_52_26SS1            = 172,
+	WL_RU_RATE_2X2_52_26SS2            = 173,
+	WL_RU_RATE_1X2_TXBF_52_26SS1       = 174,
+	WL_RU_RATE_2X2_TXBF_52_26SS2       = 175,
+	WL_RU_RATE_1X3_52_26SS1            = 176,
+	WL_RU_RATE_2X3_52_26SS2            = 177,
+	WL_RU_RATE_3X3_52_26SS3            = 178,
+	WL_RU_RATE_1X3_TXBF_52_26SS1       = 179,
+	WL_RU_RATE_2X3_TXBF_52_26SS2       = 180,
+	WL_RU_RATE_3X3_TXBF_52_26SS3       = 181,
+	WL_RU_RATE_1X4_52_26SS1            = 182,
+	WL_RU_RATE_2X4_52_26SS2            = 183,
+	WL_RU_RATE_3X4_52_26SS3            = 184,
+	WL_RU_RATE_4X4_52_26SS4            = 185,
+	WL_RU_RATE_1X4_TXBF_52_26SS1       = 186,
+	WL_RU_RATE_2X4_TXBF_52_26SS2       = 187,
+	WL_RU_RATE_3X4_TXBF_52_26SS3       = 188,
+	WL_RU_RATE_4X4_TXBF_52_26SS4       = 189,
+
+	/* RU106+26 OFDMA UL rates */
+	WL_RU_RATE_1X1_106_26SS1           = 190,
+	WL_RU_RATE_1X2_106_26SS1           = 191,
+	WL_RU_RATE_2X2_106_26SS2           = 192,
+	WL_RU_RATE_1X2_TXBF_106_26SS1      = 193,
+	WL_RU_RATE_2X2_TXBF_106_26SS2      = 194,
+	WL_RU_RATE_1X3_106_26SS1           = 195,
+	WL_RU_RATE_2X3_106_26SS2           = 196,
+	WL_RU_RATE_3X3_106_26SS3           = 197,
+	WL_RU_RATE_1X3_TXBF_106_26SS1      = 198,
+	WL_RU_RATE_2X3_TXBF_106_26SS2      = 199,
+	WL_RU_RATE_3X3_TXBF_106_26SS3      = 200,
+	WL_RU_RATE_1X4_106_26SS1           = 201,
+	WL_RU_RATE_2X4_106_26SS2           = 202,
+	WL_RU_RATE_3X4_106_26SS3           = 203,
+	WL_RU_RATE_4X4_106_26SS4           = 204,
+	WL_RU_RATE_1X4_TXBF_106_26SS1      = 205,
+	WL_RU_RATE_2X4_TXBF_106_26SS2      = 206,
+	WL_RU_RATE_3X4_TXBF_106_26SS3      = 207,
+	WL_RU_RATE_4X4_TXBF_106_26SS4      = 208,
+
+	/* RU484+242 OFDMA UL rates */
+	WL_RU_RATE_1X1_484_242SS1          = 209,
+	WL_RU_RATE_1X2_484_242SS1          = 210,
+	WL_RU_RATE_2X2_484_242SS2          = 211,
+	WL_RU_RATE_1X2_TXBF_484_242SS1     = 212,
+	WL_RU_RATE_2X2_TXBF_484_242SS2     = 213,
+	WL_RU_RATE_1X3_484_242SS1          = 214,
+	WL_RU_RATE_2X3_484_242SS2          = 215,
+	WL_RU_RATE_3X3_484_242SS3          = 216,
+	WL_RU_RATE_1X3_TXBF_484_242SS1     = 217,
+	WL_RU_RATE_2X3_TXBF_484_242SS2     = 218,
+	WL_RU_RATE_3X3_TXBF_484_242SS3     = 219,
+	WL_RU_RATE_1X4_484_242SS1          = 220,
+	WL_RU_RATE_2X4_484_242SS2          = 221,
+	WL_RU_RATE_3X4_484_242SS3          = 222,
+	WL_RU_RATE_4X4_484_242SS4          = 223,
+	WL_RU_RATE_1X4_TXBF_484_242SS1     = 224,
+	WL_RU_RATE_2X4_TXBF_484_242SS2     = 225,
+	WL_RU_RATE_3X4_TXBF_484_242SS3     = 226,
+	WL_RU_RATE_4X4_TXBF_484_242SS4     = 227,
+
+	/* RU996+484 OFDMA UL rates */
+	WL_RU_RATE_1X1_996_484SS1          = 228,
+	WL_RU_RATE_1X2_996_484SS1          = 229,
+	WL_RU_RATE_2X2_996_484SS2          = 230,
+	WL_RU_RATE_1X2_TXBF_996_484SS1     = 231,
+	WL_RU_RATE_2X2_TXBF_996_484SS2     = 232,
+	WL_RU_RATE_1X3_996_484SS1          = 233,
+	WL_RU_RATE_2X3_996_484SS2          = 234,
+	WL_RU_RATE_3X3_996_484SS3          = 235,
+	WL_RU_RATE_1X3_TXBF_996_484SS1     = 236,
+	WL_RU_RATE_2X3_TXBF_996_484SS2     = 237,
+	WL_RU_RATE_3X3_TXBF_996_484SS3     = 238,
+	WL_RU_RATE_1X4_996_484SS1          = 239,
+	WL_RU_RATE_2X4_996_484SS2          = 240,
+	WL_RU_RATE_3X4_996_484SS3          = 241,
+	WL_RU_RATE_4X4_996_484SS4          = 242,
+	WL_RU_RATE_1X4_TXBF_996_484SS1     = 243,
+	WL_RU_RATE_2X4_TXBF_996_484SS2     = 244,
+	WL_RU_RATE_3X4_TXBF_996_484SS3     = 245,
+	WL_RU_RATE_4X4_TXBF_996_484SS4     = 246,
+
+	/* RU996+484+242 OFDMA UL rates */
+	WL_RU_RATE_1X1_996_484_242SS1      = 247,
+	WL_RU_RATE_1X2_996_484_242SS1      = 248,
+	WL_RU_RATE_2X2_996_484_242SS2      = 249,
+	WL_RU_RATE_1X2_TXBF_996_484_242SS1 = 250,
+	WL_RU_RATE_2X2_TXBF_996_484_242SS2 = 251,
+	WL_RU_RATE_1X3_996_484_242SS1      = 252,
+	WL_RU_RATE_2X3_996_484_242SS2      = 253,
+	WL_RU_RATE_3X3_996_484_242SS3      = 254,
+	WL_RU_RATE_1X3_TXBF_996_484_242SS1 = 255,
+	WL_RU_RATE_2X3_TXBF_996_484_242SS2 = 256,
+	WL_RU_RATE_3X3_TXBF_996_484_242SS3 = 257,
+	WL_RU_RATE_1X4_996_484_242SS1      = 258,
+	WL_RU_RATE_2X4_996_484_242SS2      = 259,
+	WL_RU_RATE_3X4_996_484_242SS3      = 260,
+	WL_RU_RATE_4X4_996_484_242SS4      = 261,
+	WL_RU_RATE_1X4_TXBF_996_484_242SS1 = 262,
+	WL_RU_RATE_2X4_TXBF_996_484_242SS2 = 263,
+	WL_RU_RATE_3X4_TXBF_996_484_242SS3 = 264,
+	WL_RU_RATE_4X4_TXBF_996_484_242SS4 = 265,
+
+	/* RU996x2+484 OFDMA UL rates */
+	WL_RU_RATE_1X1_996_2_484SS1        = 266,
+	WL_RU_RATE_1X2_996_2_484SS1        = 267,
+	WL_RU_RATE_2X2_996_2_484SS2        = 268,
+	WL_RU_RATE_1X2_TXBF_996_2_484SS1   = 269,
+	WL_RU_RATE_2X2_TXBF_996_2_484SS2   = 270,
+	WL_RU_RATE_1X3_996_2_484SS1        = 271,
+	WL_RU_RATE_2X3_996_2_484SS2        = 272,
+	WL_RU_RATE_3X3_996_2_484SS3        = 273,
+	WL_RU_RATE_1X3_TXBF_996_2_484SS1   = 274,
+	WL_RU_RATE_2X3_TXBF_996_2_484SS2   = 275,
+	WL_RU_RATE_3X3_TXBF_996_2_484SS3   = 276,
+	WL_RU_RATE_1X4_996_2_484SS1        = 277,
+	WL_RU_RATE_2X4_996_2_484SS2        = 278,
+	WL_RU_RATE_3X4_996_2_484SS3        = 279,
+	WL_RU_RATE_4X4_996_2_484SS4        = 280,
+	WL_RU_RATE_1X4_TXBF_996_2_484SS1   = 281,
+	WL_RU_RATE_2X4_TXBF_996_2_484SS2   = 282,
+	WL_RU_RATE_3X4_TXBF_996_2_484SS3   = 283,
+	WL_RU_RATE_4X4_TXBF_996_2_484SS4   = 284,
+
+	/* RU996x3 OFDMA UL rates */
+	WL_RU_RATE_1X1_996_3SS1            = 285,
+	WL_RU_RATE_1X2_996_3SS1            = 286,
+	WL_RU_RATE_2X2_996_3SS2            = 287,
+	WL_RU_RATE_1X2_TXBF_996_3SS1       = 288,
+	WL_RU_RATE_2X2_TXBF_996_3SS2       = 289,
+	WL_RU_RATE_1X3_996_3SS1            = 290,
+	WL_RU_RATE_2X3_996_3SS2            = 291,
+	WL_RU_RATE_3X3_996_3SS3            = 292,
+	WL_RU_RATE_1X3_TXBF_996_3SS1       = 293,
+	WL_RU_RATE_2X3_TXBF_996_3SS2       = 294,
+	WL_RU_RATE_3X3_TXBF_996_3SS3       = 295,
+	WL_RU_RATE_1X4_996_3SS1            = 296,
+	WL_RU_RATE_2X4_996_3SS2            = 297,
+	WL_RU_RATE_3X4_996_3SS3            = 298,
+	WL_RU_RATE_4X4_996_3SS4            = 299,
+	WL_RU_RATE_1X4_TXBF_996_3SS1       = 300,
+	WL_RU_RATE_2X4_TXBF_996_3SS2       = 301,
+	WL_RU_RATE_3X4_TXBF_996_3SS3       = 302,
+	WL_RU_RATE_4X4_TXBF_996_3SS4       = 303,
+
+	/* RU996x3+484 OFDMA UL rates */
+	WL_RU_RATE_1X1_996_3_484SS1        = 304,
+	WL_RU_RATE_1X2_996_3_484SS1        = 305,
+	WL_RU_RATE_2X2_996_3_484SS2        = 306,
+	WL_RU_RATE_1X2_TXBF_996_3_484SS1   = 307,
+	WL_RU_RATE_2X2_TXBF_996_3_484SS2   = 308,
+	WL_RU_RATE_1X3_996_3_484SS1        = 309,
+	WL_RU_RATE_2X3_996_3_484SS2        = 310,
+	WL_RU_RATE_3X3_996_3_484SS3        = 311,
+	WL_RU_RATE_1X3_TXBF_996_3_484SS1   = 312,
+	WL_RU_RATE_2X3_TXBF_996_3_484SS2   = 313,
+	WL_RU_RATE_3X3_TXBF_996_3_484SS3   = 314,
+	WL_RU_RATE_1X4_996_3_484SS1        = 315,
+	WL_RU_RATE_2X4_996_3_484SS2        = 316,
+	WL_RU_RATE_3X4_996_3_484SS3        = 317,
+	WL_RU_RATE_4X4_996_3_484SS4        = 318,
+	WL_RU_RATE_1X4_TXBF_996_3_484SS1   = 319,
+	WL_RU_RATE_2X4_TXBF_996_3_484SS2   = 320,
+	WL_RU_RATE_3X4_TXBF_996_3_484SS3   = 321,
+	WL_RU_RATE_4X4_TXBF_996_3_484SS4   = 322,
+
+	/* RU996x4 OFDMA UL rates */
+	WL_RU_RATE_1X1_996_4SS1            = 323,
+	WL_RU_RATE_1X2_996_4SS1            = 324,
+	WL_RU_RATE_2X2_996_4SS2            = 325,
+	WL_RU_RATE_1X2_TXBF_996_4SS1       = 326,
+	WL_RU_RATE_2X2_TXBF_996_4SS2       = 327,
+	WL_RU_RATE_1X3_996_4SS1            = 328,
+	WL_RU_RATE_2X3_996_4SS2            = 329,
+	WL_RU_RATE_3X3_996_4SS3            = 330,
+	WL_RU_RATE_1X3_TXBF_996_4SS1       = 331,
+	WL_RU_RATE_2X3_TXBF_996_4SS2       = 332,
+	WL_RU_RATE_3X3_TXBF_996_4SS3       = 333,
+	WL_RU_RATE_1X4_996_4SS1            = 334,
+	WL_RU_RATE_2X4_996_4SS2            = 335,
+	WL_RU_RATE_3X4_996_4SS3            = 336,
+	WL_RU_RATE_4X4_996_4SS4            = 337,
+	WL_RU_RATE_1X4_TXBF_996_4SS1       = 338,
+	WL_RU_RATE_2X4_TXBF_996_4SS2       = 339,
+	WL_RU_RATE_3X4_TXBF_996_4SS3       = 340,
+	WL_RU_RATE_4X4_TXBF_996_4SS4       = 341
+} clm_ru_rates_t;
+
+/* Number of OFDMA rate codes */
+#define WL_RU_NUMRATES 342
+
+/* Number of RU Tx modes */
+/* ex. WL_RU_RATE_1X1_26SS1 to WL_RU_RATE_4X4_TXBF_26SS4 */
+#define WL_RU_NUM_MODE 19
+
+/**
+ * HE rate capabilities, per tx/rx and per bw category. This typedef is *not* defined by the IEEE
+ * standard.
+ */
+typedef struct wlc_he_rateset {
+	uint16 bw80_tx_mcs_nss;         /* one mcs map, encoded in 8*2 bits (nss*mcs) */
+	uint16 bw80_rx_mcs_nss;
+	uint16 bw80p80_tx_mcs_nss;
+	uint16 bw80p80_rx_mcs_nss;
+	uint16 bw160_tx_mcs_nss;
+	uint16 bw160_rx_mcs_nss;
+} wlc_he_rateset_t;
+
+/*
+ * The .11be standard defines the EHT MCS Map format different than it was for HE. A consequence is
+ * that the .11be standard does not define values for EHT MCS codes. Still, it is handy in our
+ * source code to be able to refer to a range of EHT MCS'es. The enum below is *not* defined by the
+ * .11be standard. It represents the (nibble number +1) of the corresponding MCS_CODE in a
+ * "EHT-MCS Map (20 MHz-Only STA) subfield"
+ */
+enum wlc_eht_mcs_code_e {
+	EHT_MCS_CODE_NONE = 0,
+	EHT_MCS_CODE_0_7,	/**< Means: mcs'es [0..7]. Only used for 20MHz only STA */
+	EHT_MCS_CODE_0_9,	/**< Only used for !(20MHz only STA) */
+	EHT_MCS_CODE_0_11,
+	EHT_MCS_CODE_0_13
+};
+
+#define WLC_EHT_RS_RX_MCS_0_7_IDX	0u	/**< 1st nibble */
+#define WLC_EHT_RS_TX_MCS_0_7_IDX	4u	/**< 2nd nibble */
+#define WLC_EHT_RS_RX_MCS_8_9_IDX	8u
+#define WLC_EHT_RS_TX_MCS_8_9_IDX	12u
+#define WLC_EHT_RS_RX_MCS_10_11_IDX	16u
+#define WLC_EHT_RS_TX_MCS_10_11_IDX	20u
+#define WLC_EHT_RS_RX_MCS_12_13_IDX	24u
+#define WLC_EHT_RS_TX_MCS_12_13_IDX	28u
+
+#define WLC_EHT_MCS_MAP_NSS_SZ		4u	/**< 4 bits per nss nibble */
+#define WLC_EHT_MCS_MAP_NSS_MASK	0xF	/** mask for those 4 Nss bits */
+
+/**
+ * macro returning the bit offset of a nibble within the mcs_map members of struct wlc_eht_rateset
+ *
+ * @param[in] tx        TRUE for transmit
+ * @param[in] mcs_code  See enum wlc_eht_mcs_code_e
+ * @return              Starting bit at which the respective Nss nibble is located
+ */
+#define WLC_EHT_RS_GET_NSS_IDX(tx, mcs_code) (((2 * mcs_code - 2) + tx) * WLC_EHT_MCS_MAP_NSS_SZ)
+
+/**
+ * macro used to operate on the nibbles within the mcs_map members of struct wlc_eht_rateset
+ *
+ * @param[in] mcs_map   An mcs_map in EHT BW20ONLYSTA format, used even for e.g. BW160.
+ * @param[in] tx        TRUE for transmit
+ * @param[in] mcs_code  See enum wlc_eht_mcs_code_e
+ *
+ * @return              Max_nss value for the respective (tx, mcs_code) combination,
+ *                      eg 1: one spatial stream.
+ */
+#define WLC_EHT_RS_GET_NSS(mcs_map, tx, mcs_code) \
+	(((mcs_map) >> WLC_EHT_RS_GET_NSS_IDX((tx), (mcs_code))) & WLC_EHT_MCS_MAP_NSS_MASK)
+
+#define WLC_EHT_RS_SET_NSS(mcs_map, tx, mcs_code, nss) \
+	do { \
+		ASSERT(mcs_code != EHT_MCS_CODE_NONE); \
+		(mcs_map) &= ~(WLC_EHT_MCS_MAP_NSS_MASK << \
+			WLC_EHT_RS_GET_NSS_IDX((tx), (mcs_code))); \
+		(mcs_map) |= (((nss) & WLC_EHT_MCS_MAP_NSS_MASK) << \
+			WLC_EHT_RS_GET_NSS_IDX((tx), (mcs_code))); \
+	} while (0)
+
+/** defines an EHT mcs map indicating support for none MCS, for nss=[1..4], both for rx and tx */
+#define WLC_EHT_MCS_MAP_MCS_NONE		0x00000000
+/** defines an EHT mcs map indicating support for mcs 0.. 13, for nss=[1..2], both for rx and tx */
+#define WLC_EHT_MCS_MAP_MCS_0_13_NSS2		0x22222222
+/** defines an EHT mcs map indicating support for mcs 0.. 13, for nss=[1..3], both for rx and tx */
+#define WLC_EHT_MCS_MAP_MCS_0_13_NSS3           0x33333333
+/** defines an EHT mcs map indicating support for mcs 0.. 13, for nss=[1..4], both for rx and tx */
+#define WLC_EHT_MCS_MAP_MCS_0_13_NSS4		0x44444444
+/** the even nibbles in a 20MhzOnlySta mcs map are rx related */
+#define WLC_EHT_MCS_MAP_RXMASK			0x0F0F0F0F
+/** the odd nibbles in a 20MhzOnlySta mcs map are tx related */
+#define WLC_EHT_MCS_MAP_TXMASK			0xF0F0F0F0
+/** swaps tx and rx fields in an mcs map by swapping odd and even nibbles (for remote<->local) */
+#define WLC_EHT_MCS_MAP_SWAP_RXTX(mcs_map) \
+	((((mcs_map) & WLC_EHT_MCS_MAP_RXMASK) << 4) | (((mcs_map) & WLC_EHT_MCS_MAP_TXMASK) >> 4))
+
+/* WLC_EHT_RS_FLAGS_* : bitmasks to be used for wlc_eht_rateset::flags */
+#define WLC_EHT_RS_FLAGS_STA20ONLY	0x01 /**< 20MhzOnlySTA */
+#define WLC_EHT_RS_FLAGS_MCS14		0x02 /**< DCM + DUP */
+#define WLC_EHT_RS_FLAGS_MCS15		0x04 /**< DCM */
+
+/**
+ * EHT rate capabilities, per tx/rx and per bw category. This typedef is *not* defined by the IEEE
+ * standard.
+ */
+typedef struct wlc_eht_rateset {
+	uint8 flags;			/**< bitmask, see WLC_EHT_RS_FLAGS_* macro's */
+	uint32 mcs_map_bwle80;		/**< defined as an EHT BTW20ONLYSTA mcs map */
+	uint32 mcs_map_bw160;		/**< defined as an EHT BTW20ONLYSTA mcs map */
+	uint32 mcs_map_bw320;		/**< defined as an EHT BTW20ONLYSTA mcs map */
+} wlc_eht_rateset_t;
+
+/* MCS rates */
+#define WLC_MAX_VHT_MCS		11	/**< Std VHT MCS 0-9 plus prop VHT MCS 10-11 */
+#define WLC_MAX_HE_MCS		11	/**< Std HE MCS 0-11 */
+#define WLC_MAX_EHT_MCS		15	/**< Std EHT MCS 0-15 */
+#define WLC_FIRST_EHT_DCM_MCS	14	/**< MCS14 is the first DCM MCS */
+#define WLC_HIGHEST_TPUT_EHT_MCS 13
+
+/* NSS number of spatial streams */
+#define WLC_MIN_NSS		1
+#define WLC_MAX_VHT_NSS		8
+#define WLC_MAX_HE_NSS		8
+#define WLC_MAX_EHT_NSS		16 /**< wave-1 supports 8 NSS, wave-2 16 NSS */
+
+/* Convert encoded rate value in plcp header to numerical rates in 500 KHz increments */
+#define OFDM_PHY2MAC_RATE(rlpt)         plcp_ofdm_rate_tbl[(rlpt) & 0x7]
+#define CCK_PHY2MAC_RATE(signal)	((signal)/5)
+
+#define HIGHEST_SINGLE_STREAM_MCS	7 /* MCS values greater than this enable multiple streams */
+
+#define GET_11N_MCS_NSS(mcs) ((mcs) < 32 ? (1 + ((mcs) / 8)) : 1 /* mcs32 */)
+
+/* Macros for HE LTF and GI */
+#define HE_IS_1X_LTF(gi)	((gi) == WL_RSPEC_HE_1x_LTF_GI_0_8us)
+#define HE_IS_2X_LTF(gi)	(((gi) == WL_RSPEC_HE_2x_LTF_GI_0_8us) || \
+				((gi) == WL_RSPEC_HE_2x_LTF_GI_1_6us))
+#define HE_IS_4X_LTF(gi)	((gi) == WL_RSPEC_HE_4x_LTF_GI_3_2us)
+
+#define HE_IS_GI_0_8us(gi)	(((gi) == WL_RSPEC_HE_1x_LTF_GI_0_8us) || \
+				((gi) == WL_RSPEC_HE_2x_LTF_GI_0_8us))
+#define HE_IS_GI_1_6us(gi)	((gi) == WL_RSPEC_HE_2x_LTF_GI_1_6us)
+#define HE_IS_GI_3_2us(gi)	((gi) == WL_RSPEC_HE_4x_LTF_GI_3_2us)
+
+/* Macros for EHT LTF and GI */
+#define EHT_IS_2X_LTF(gi)	(((gi) == WL_RSPEC_EHT_2x_LTF_GI_0_8us) || \
+				((gi) == WL_RSPEC_EHT_2x_LTF_GI_1_6us))
+#define EHT_IS_4X_LTF(gi)	(((gi) == WL_RSPEC_EHT_4x_LTF_GI_0_8us) || \
+				((gi) == WL_RSPEC_EHT_4x_LTF_GI_3_2us))
+
+#define EHT_IS_GI_0_8us(gi)	(((gi) == WL_RSPEC_EHT_2x_LTF_GI_0_8us) || \
+				((gi) == WL_RSPEC_EHT_4x_LTF_GI_0_8us))
+#define EHT_IS_GI_1_6us(gi)	((gi) == WL_RSPEC_EHT_2x_LTF_GI_1_6us)
+#define EHT_IS_GI_3_2us(gi)	((gi) == WL_RSPEC_EHT_4x_LTF_GI_3_2us)
+
+#define HE_CAP_MAX_MCS_NSS_GET_SS_IDX(nss) HE_MCS_MAP_GET_SS_IDX(nss)
+#define HE_CAP_MAX_MCS_NSS_GET_MCS(nss, mcs_nss_map) HE_MCS_MAP_GET_MCS((nss), (mcs_nss_map))
+
+/**
+ * @param[in]  mcs1  A single stream mcs
+ * @param[in]  mcs2  A single stream mcs
+ * @return     TRUE if mcs1 is more robust than mcs2
+ */
+#define IS_MCS_MORE_ROBUST_THAN(mcs1, mcs2) ({\
+	(mcs1) < 14 && (mcs2) < 14 ? (mcs1) < (mcs2) : \
+	(mcs1) >= 14 && (mcs2) >= 14 ? (mcs1) < (mcs2) : \
+	(mcs1) >= 14 && (mcs2) < 14 ? TRUE : \
+	 FALSE;})
+
+/**
+ * @param[in]  mcs1  A single stream mcs
+ * @param[in]  mcs2  A single stream mcs
+ * @return     TRUE if mcs1 is less robust than mcs2
+ */
+#define IS_MCS_LESS_ROBUST_THAN(mcs1, mcs2) ({\
+	(mcs1) == (mcs2) ? FALSE : !IS_MCS_MORE_ROBUST_THAN((mcs1), (mcs2));})
+
+extern const uint8 plcp_ofdm_rate_tbl[];
+
+uint8 wf_get_single_stream_mcs(uint mcs);
+uint8 wf_vht_plcp_to_rspec_rate(uint8 *plcp);
+#ifdef BCMDRIVER
+uint8 wf_he_plcp_to_rspec_rate(uint8 *plcp, uint8 ft, uint8 hefmt);
+uint8 wf_eht_rx_plcp_to_rspec_rate(uint8 *plcp, uint8 ft, uint8 ehtfmt);
+#endif
+
+#define wf_mcs_to_rate		wf_ht_vht_mcs_to_kbps
+#define wf_mcs_to_kbps		wf_ht_vht_mcs_to_kbps
+#define wf_he_mcs_nsd_to_rate	wf_he_mcs_nsd_to_kbps
+#define wf_he_mcs_to_rate	wf_he_mcs_to_kbps
+#define wf_mcs_to_Ndbps		wf_ht_vht_mcs_to_Ndbps /**< obsolete function name */
+
+enum wl_rspec_bw_e; /* forward declaration */
+enum wl_rspec_he_gi_e;
+enum wl_rspec_eht_gi_e;
+
+uint wf_ht_vht_mcs_to_kbps(uint mcs, uint nss, enum wl_rspec_bw_e bw, int sgi);
+uint wf_he_mcs_nsd_to_kbps(uint mcs, uint nss, uint nsd, uint gi, bool dcm);
+uint wf_he_mcs_to_kbps(uint mcs, uint nss, enum wl_bw_e bw, enum wl_rspec_he_gi_e gi, bool dcm);
+uint wf_ht_vht_mcs_to_Ndbps(uint mcs, uint nss, enum wl_rspec_bw_e bw);
+uint wf_he_mcs_to_Ndbps(uint mcs, uint nss, enum wl_rspec_bw_e, bool dcm);
+uint wf_eht_mcs_to_Ndbps(uint mcs, uint nss, enum wl_rspec_bw_e bw);
+
+/** converts from enum wlc_eht_mcs_code_e to an MCS index, excluding MCS 14 and 15 */
+#define EHT_MCS_CODE_TO_INDEX(mcs_code) \
+	((mcs_code == EHT_MCS_CODE_0_13) ? 13 : \
+	((mcs_code == EHT_MCS_CODE_0_11) ? 11 : \
+	((mcs_code == EHT_MCS_CODE_0_9) ? 9 : \
+	((mcs_code == EHT_MCS_CODE_0_7) ? 7 : 0))))
+
+uint wf_eht_mcs_nsd_to_kbps(uint mcs, uint nss, uint nsd, enum wl_rspec_eht_gi_e gi);
+uint wf_eht_mcs_to_kbps(uint mcs, uint nss, enum wl_bw_e bw, enum wl_rspec_eht_gi_e gi);
+enum wlc_eht_mcs_code_e wf_eht_mcs_map_get_max_mcs_code(uint32 mcs_map, uint nss, bool tx);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
+#endif /* _bcmwifi_rates_h_ */

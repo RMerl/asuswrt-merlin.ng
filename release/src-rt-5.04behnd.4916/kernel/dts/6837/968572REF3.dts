@@ -1,0 +1,303 @@
+
+#include "inc/68370.dtsi"
+#include "../bcm_voice.dtsi"
+
+/ {
+    model = "968572REF3";
+
+    memory_controller {
+            memcfg = <(BP1_DDR_MCBSEL_FORMAT_VER1   | \
+                       BP1_DDR_TYPE_LPDDR4          | \
+                       BP1_DDR_SPEED_2133_36_39_39  | \
+                       BP1_DDR_WIDTH_32BIT          | \
+                       BP1_DDR_TOTAL_SIZE_16Gb      | \
+                       BP1_DDR_SSC_CONFIG_1         )>;
+        };
+
+    buttons {
+        compatible = "brcm,buttons";
+        reset_button {
+            ext_irq = <&bca_extintr 91 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+            press {
+                print = "Button Press -- Hold for 5s to do restore to default";
+            };
+            hold {
+                rst_to_dflt = <5>;
+            };
+            release {
+                reset = <0>;
+            };
+        };
+        ses_button {
+            ext_irq = <&bca_extintr 77 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+            press {
+                print = "Session Button pressed";
+            };
+            release {
+                ses_short_period = <0>;
+                ses_long_period = <3>;
+            };
+        };
+    };
+    
+    xfp_sfp: xfp_sfp {
+        pinctrl-names = "default", "tx-sd";
+        pinctrl-0 = <&pon_lbe_p_pin_30>;
+        pinctrl-1 = <&pon_lbe_p_pin_30 &rogue_onu_in_pin_89>;
+        compatible = "brcm,sfp";
+        i2c-bus = <&i2c0mux2>;
+        los-gpio = <&gpioc 85 GPIO_ACTIVE_HIGH>;
+        mod-def0 = <&bca_extintr 90 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_BOTH_EDGE | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+        tx-power-gpio = <&gpioc 76 GPIO_ACTIVE_HIGH>;
+        tx-power-down-gpio = <&gpioc 79 GPIO_ACTIVE_HIGH>;
+    };
+
+    wan_serdes {
+        status = "okay";
+        trx = <&xfp_sfp>;
+        tx-fir-0 = "6";
+        tx-fir-1 = "0";
+        tx-fir-2 = "33";
+        tx-fir-3 = "5";
+        tx-fir-4 = "3";
+    };
+
+    i2cmux {
+        compatible = "i2c-mux-gpio";
+        #address-cells = <1>;
+        #size-cells = <0>;
+        mux-gpios = <&gpioc 49 GPIO_ACTIVE_HIGH>;
+        i2c-parent = <&i2c0>;
+
+        i2c0mux1: i2c@1 {
+            reg = <0>;
+            #address-cells = <1>;
+            #size-cells = <0>;
+        };
+
+        i2c0mux2: i2c@2 {
+            reg = <1>;
+            #address-cells = <1>;
+            #size-cells = <0>;
+        };
+    };
+};
+
+#ifndef CONFIG_BRCM_SMC_BOOT
+&nand {
+    status = "okay";
+};
+&sdhci {
+    status = "okay";
+};
+#endif
+
+&wdt {
+    status = "okay";
+};
+&uart0 {
+    status = "okay";
+};
+
+&i2c0 {
+    pinctrl-0 = <&i2c_scl_pin_28 &i2c_sda_pin_29>;
+    pinctrl-names = "default";
+    status = "okay";
+};
+
+&usb_ctrl {
+	pinctrl-names = "default";
+	pinctrl-0 = <&usb0_pwr_pins &usb1_pwr_pins>;
+	xhci-enable;
+	status = "okay";
+};
+
+&usb0_xhci {
+	status = "okay";
+
+	usb_port1: port1 {
+		reg = <1>;
+		#trigger-source-cells = <0>;
+	};
+
+	usb_port2: port2 {
+		reg = <2>;
+		#trigger-source-cells = <0>;
+	};
+};
+
+&bcm_voice {
+        sliclist =  "NOSLIC", "LE9642_ZSI_TB"; 
+};
+
+&hsspi {
+        status = "okay";
+};
+
+&cpufreq {
+    op-mode = "dvfs";
+};
+
+&mpcs {
+    status = "okay";
+};
+
+&phy_wan_serdes {
+    status = "okay";
+};
+
+&xport {
+    status = "okay";
+};
+
+&egphy {
+    status = "okay";
+};
+
+&unimac {
+    status = "okay";
+};
+
+&serdes {
+    status = "okay";
+};
+
+&ethphytop {
+    phy-mpd = <&bca_extintr 7 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+    phy-link = <&bca_extintr 3 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+    status = "okay";
+};
+
+&mdio {
+    status = "okay";
+};
+
+&mdio_bus {
+    serdes00_xphy {
+        caps-no-10000;
+        caps-no-5000;
+        USXGMII-M;
+        phy-power = <&gpioc 16 GPIO_ACTIVE_LOW>;
+        phy-reset = <&gpioc 14 GPIO_ACTIVE_LOW>;
+        status = "okay";
+    };
+    serdes01_xphy {
+        caps-no-10000;
+        caps-no-5000;
+        USXGMII-M;
+        status = "okay";
+    };
+    serdes02_xphy {
+        caps-no-10000;
+        caps-no-5000;
+        USXGMII-M;
+        status = "okay";
+    };
+    serdes03_xphy {
+        caps-no-10000;
+        caps-no-5000;
+        USXGMII-M;
+        status = "okay";
+    };
+    serdes00 {
+        phy-handle = <&serdes00_xphy>;
+        status = "okay";
+    };
+    serdes01 {
+        phy-handle = <&serdes01_xphy>;
+        status = "okay";
+    };
+    serdes02 {
+        phy-handle = <&serdes02_xphy>;
+        status = "okay";
+    };
+    serdes03 {
+        phy-handle = <&serdes03_xphy>;
+        status = "okay";
+    };
+    serdes11 {
+        pinctrl-names = "default";
+        pinctrl-0 = <&d_slan_sd_rx_los_pin_11 &d_slan_sd_mod_abs_pin_12>;
+        tx-disable = <&gpioc 55 GPIO_ACTIVE_HIGH>;
+        caps-no-10000;
+        caps-no-5000;
+        2500-Base-X;
+        1000-Base-X;
+        status = "okay";
+    };
+    wan_ae {
+        trx = <&xfp_sfp>;
+        status = "okay";
+    };
+};
+
+&switch0 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&a_eth_mdc_pin_59 &a_eth_mdio_pin_60>;
+
+    ports {
+        port_wan@ae {
+            status = "okay";
+        };
+        port_slan0 {
+            status = "okay";
+        };
+        port_slan1 {
+            status = "okay";
+        };
+        port_slan2 {
+            status = "okay";
+        };
+        port_slan3 {
+            status = "okay";
+        };
+        port_qlan1 {
+            status = "okay";
+        };
+        port_wan@fiber {
+            status = "okay";
+        };
+    };
+};
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+/ {
+    /* WIFI_PWR_EN controls 5V_FEM & 3.3V_PCIE */
+      vreg_pcie12: vreg-pcie12 {
+          compatible = "regulator-fixed";
+          regulator-name = "vreg-pcie12";
+          regulator-min-microvolt = <5000000>;
+          regulator-max-microvolt = <5000000>;
+          gpio = <&gpioc 86 GPIO_ACTIVE_LOW>;
+          enable-active-low;
+          regulator-boot-off;
+    };
+      vreg_pcie0: vreg-pcie0 {
+          compatible = "regulator-fixed";
+          regulator-name = "vreg-pcie0";
+          regulator-min-microvolt = <5000000>;
+          regulator-max-microvolt = <5000000>;
+          gpio = <&gpioc 87 GPIO_ACTIVE_LOW>;
+          enable-active-low;
+          regulator-boot-off;
+    };
+};
+
+&pcie0 {
+      brcm,supply-names = "vreg-pcie0";
+      brcm,vreg-supply = <&vreg_pcie0>;
+      status = "okay";
+};
+
+&pcie1 {
+      brcm,supply-names = "vreg-pcie12";
+      brcm,vreg-supply = <&vreg_pcie12>;
+      status = "okay";
+};
+
+&pcie2 {
+      brcm,supply-names = "vreg-pcie12";
+      brcm,vreg-supply = <&vreg_pcie12>;
+      status = "okay";
+};
+#endif // defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)

@@ -1,0 +1,38 @@
+//**************************************************************//
+// Attach script for BCM63158                                   //
+//**************************************************************//
+
+AREA
+AREA.CLEAR
+SYSTEM.RESET
+SYSTEM.JTAGCLOCK 20MHz
+
+;TDI -> pmips(5) -> pmips2(5) -> memc(5) -> pmc(5) -> ARM(4) -> LVTAP(31) -> TDO
+print "Full scan chain"
+SYStem.CONFIG.DAPIRPOST  20.
+SYStem.CONFIG.DAPIRPRE   31.
+SYStem.CONFIG.DAPDRPOST  4.
+SYStem.CONFIG.DAPDRPRE   1.
+
+
+system.config.apbaccessport 0
+system.config.axiaccessport 1
+system.config.debugaccessport 0
+system.config.memoryaccessport 1
+
+SYSTEM.CPU CORTEXA53
+SYSTEM.CONFIG.CORENUMBER 1
+SYSTEM.CONFIG.CORE 1
+SYSTEM.CONFIG.COREDEBUG.Base 0x81810000
+SYSTEM.CONFIG CTI BASE  0x81820000
+;SYStem.CONFIG BMC BASE 0x81830000
+;SYStem.CONFIG ETM BASE 0x81840000
+
+CORE.ASSIGN 1
+SYStem.option TRST OFF 
+SYStem.option EnReset OFF
+
+SYSTEM.MODE ATTACH
+
+;do ~~/demo/windows_setup.cmm
+ENDDO

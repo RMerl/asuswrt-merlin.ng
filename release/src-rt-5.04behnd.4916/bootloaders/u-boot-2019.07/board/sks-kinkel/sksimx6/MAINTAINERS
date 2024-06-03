@@ -1,0 +1,6 @@
+SKS-Kinkel sksimx6
+M:	Stefano Babic <sbabic@denx.de>
+S:	Maintained
+F:	board/sks-kinkel/sksimx6/
+F:	include/configs/sksimx6.h
+F:	configs/sksimx6_defconfig

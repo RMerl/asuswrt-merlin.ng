@@ -13,14 +13,14 @@
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="device-map/device-map.css">
+<script language="JavaScript" type="text/javascript" src="js/jquery.js"></script>
+<script language="JavaScript" type="text/javascript" src="js/httpApi.js"></script>
 <script language="JavaScript" type="text/javascript" src="state.js"></script>
 <script language="JavaScript" type="text/javascript" src="general.js"></script>
 <script language="JavaScript" type="text/javascript" src="popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="help.js"></script>
 <script language="JavaScript" type="text/javascript" src="client_function.js"></script>
 <script language="JavaScript" type="text/javascript" src="validator.js"></script>
-<script language="JavaScript" type="text/javascript" src="js/jquery.js"></script>
-<script language="JavaScript" type="text/javascript" src="js/httpApi.js"></script>
 <style>
 #pull_arrow{
  	float:center;
@@ -56,19 +56,19 @@ function show_wl_maclist_x(){
 	else{
 		//user icon
 		var userIconBase64 = "NoIcon";
-		var clientName, deviceType, deviceVender;
+		var clientName, deviceType, deviceVendor;
 		Object.keys(wl_rast_static_client_array).forEach(function(key) {
 			var clientMac = key.toUpperCase();
 			var clientIconID = "clientIcon_" + clientMac.replace(/\:/g, "");
 			if(clientList[clientMac]) {
 				clientName = (clientList[clientMac].nickName == "") ? clientList[clientMac].name : clientList[clientMac].nickName;
 				deviceType = clientList[clientMac].type;
-				deviceVender = clientList[clientMac].vendor;
+				deviceVendor = clientList[clientMac].vendor;
 			}
 			else {
 				clientName = "New device";
 				deviceType = 0;
-				deviceVender = "";
+				deviceVendor = "";
 			}
 			code +='<tr id="row_'+clientMac+'">';
 			code +='<td width="80%" align="center">';
@@ -81,20 +81,24 @@ function show_wl_maclist_x(){
 					userIconBase64 = getUploadIcon(clientMac.replace(/\:/g, ""));
 				}
 				if(userIconBase64 != "NoIcon") {
-					code += '<div id="' + clientIconID + '" style="text-align:center;"><img class="imgUserIcon_card" src="' + userIconBase64 + '"></div>';
-				}
-				else if(deviceType != "0" || deviceVender == "") {
-					code += '<div id="' + clientIconID + '" class="clientIcon type' + deviceType + '"></div>';
-				}
-				else if(deviceVender != "" ) {
-					var venderIconClassName = getVenderIconClassName(deviceVender.toLowerCase());
-					if(venderIconClassName != "" && !downsize_4m_support) {
-						code += '<div id="' + clientIconID + '" class="venderIcon ' + venderIconClassName + '"></div>';
-					}
-					else {
-						code += '<div id="' + clientIconID + '" class="clientIcon type' + deviceType + '"></div>';
-					}
-				}
+                    if(clientList[clientMac].isUserUplaodImg){
+                        code += '<div id="' + clientIconID + '" class="clientIcon"><img class="imgUserIcon_card" src="' + userIconBase64 + '"></div>';
+                    }else{
+                        code += '<div id="' + clientIconID + '" class="clientIcon"><i class="type" style="--svg:url(' + userIconBase64 + ')"></i></div>';
+                    }
+                }
+                else if(deviceType != "0" || deviceVendor == "") {
+                    code += '<div id="' + clientIconID + '" class="clientIcon"><i class="type'+deviceType+'"></i></div>';
+                }
+                else if(deviceVendor != "" ) {
+                    var vendorIconClassName = getVendorIconClassName(deviceVendor.toLowerCase());
+                    if(vendorIconClassName != "" && !downsize_4m_support) {
+                        code += '<div id="' + clientIconID + '" class="clientIcon"><i class="vendor-icon '+ vendorIconClassName +'"></i></div>';
+                    }
+                    else {
+                        code += '<div id="' + clientIconID + '" class="clientIcon"><i class="type' + deviceType + '"></i></div>';
+                    }
+                }
 			}
 			code += '</td><td style="width:60%;border:0px;">';
 			code += '<div>' + clientName + '</div>';
@@ -227,7 +231,7 @@ function applyRule(){
 						location.href = "Advanced_Roaming_Block_Content.asp";
 				}, getXMLAndRedirect);
 			};
-			showWlHint();
+			showWlHintContainer();
 			setTimeout(getXMLAndRedirect, 5000);
 		}
 		else {
@@ -266,7 +270,7 @@ function pullWLMACList(obj){
 	var element = document.getElementById('WL_MAC_List_Block');
 	var isMenuopen = element.offsetWidth > 0 || element.offsetHeight > 0;
 	if(isMenuopen == 0){
-		obj.src = "/images/arrow-top.gif"
+		obj.src = "/images/unfold_less.svg"
 		element.style.display = "block";
 		document.form.wlX_rast_static_client.focus();
 	}
@@ -275,7 +279,7 @@ function pullWLMACList(obj){
 }
 
 function hideClients_Block(){
-	document.getElementById("pull_arrow").src = "/images/arrow-down.gif";
+	document.getElementById("pull_arrow").src = "/images/unfold_more.svg";
 	document.getElementById("WL_MAC_List_Block").style.display = "none";
 }
 
@@ -294,193 +298,6 @@ function enable_roaming_block(){
 		document.getElementById('MainTable2').style.display = "none";
 		document.getElementById('wl_rast_static_client_Block').style.display = "none";
 	}	
-}
-function showWlHint(){
-	if(!isSwMode('rt') && !isSwMode('ap')) return false;
-
-	var genWlObj = (function(){
-		var wlObj = [];
-		var wlUnit = function(_band, _ssid, _key){
-			this.band = _band;
-			this.ssid = _ssid;
-			this.key = _key;
-		}
-
-		var ssid_nvram = [decodeURIComponent('<% nvram_char_to_ascii("", "wl0_ssid"); %>'), decodeURIComponent('<% nvram_char_to_ascii("", "wl1_ssid"); %>'), decodeURIComponent('<% nvram_char_to_ascii("", "wl2_ssid"); %>')];
-		var auth_nvram = [decodeURIComponent('<% nvram_char_to_ascii("", "wl0_auth_mode_x"); %>'), decodeURIComponent('<% nvram_char_to_ascii("", "wl1_auth_mode_x"); %>'), decodeURIComponent('<% nvram_char_to_ascii("", "wl2_auth_mode_x"); %>')];
-		var key_nvram = [decodeURIComponent('<% nvram_char_to_ascii("", "wl0_wpa_psk"); %>'), decodeURIComponent('<% nvram_char_to_ascii("", "wl1_wpa_psk"); %>'), decodeURIComponent('<% nvram_char_to_ascii("", "wl2_wpa_psk"); %>')];
-		var smart_connect_nvram = '<% nvram_get("smart_connect_x"); %>';
-
-		var ssid_param = [decodeURIComponent('<% get_ascii_parameter("wl0_ssid"); %>'), decodeURIComponent('<% get_ascii_parameter("wl1_ssid"); %>'), decodeURIComponent('<% get_ascii_parameter("wl2_ssid"); %>')];
-		var auth_param = [decodeURIComponent('<% get_ascii_parameter("wl0_auth_mode_x"); %>'), decodeURIComponent('<% get_ascii_parameter("wl1_auth_mode_x"); %>'), decodeURIComponent('<% get_ascii_parameter("wl2_auth_mode_x"); %>')];
-		var key_param = [decodeURIComponent('<% get_ascii_parameter("wl0_wpa_psk"); %>'), decodeURIComponent('<% get_ascii_parameter("wl1_wpa_psk"); %>'), decodeURIComponent('<% get_ascii_parameter("wl2_wpa_psk"); %>')];
-
-		var applyParam = {
-			unit: decodeURIComponent('<% get_ascii_parameter("wl_unit"); %>'),
-			ssid: decodeURIComponent('<% get_ascii_parameter("wl_ssid"); %>'),
-			auth: decodeURIComponent('<% get_ascii_parameter("wl_auth_mode_x"); %>'),
-			key: decodeURIComponent('<% get_ascii_parameter("wl_wpa_psk"); %>'),
-			smartConnect: decodeURIComponent('<% get_ascii_parameter("smart_connect_x"); %>')
-		}
-
-		// original profile
-		for(var i=0; i<wl_nband_title.length; i++){
-			wlObj.push(new wlUnit(wl_nband_title[i], ssid_nvram[i], (auth_nvram[i] == "open") ? "" : key_nvram[i]));
-		}
-
-		if(applyParam.ssid != ""){
-			// handle wl
-			wlObj[applyParam.unit].ssid = applyParam.ssid;
-			wlObj[applyParam.unit].key = (applyParam.auth == "open") ? "" : applyParam.key;
-		}
-		else{
-			// handle wlX
-			for(var i=0; i<wlObj.length; i++){
-				if(ssid_param[i] != ""){
-					wlObj[i].ssid = ssid_param[i];
-					wlObj[i].key = (auth_param[i] == "open") ? "" : key_param[i];
-				}
-			}
-		}
-
-		// handle smart connect
-		if(applyParam.smartConnect == ""){
-			if(smart_connect_nvram == 1){
-				// Tri band steering
-				wlObj.length = 1;
-				wlObj[0].band = "Tri-band Smart Connect";
-			}
-			else if(smart_connect_nvram == 2){
-				// 5GHz band steering
-				wlObj.length = 2;
-				wlObj[1].band = "5 GHz Smart Connect";
-			}
-		}
-		else if(applyParam.smartConnect == 1){
-			// Tri band steering
-			wlObj.length = 1;
-			wlObj[0].band = "Tri-band Smart Connect";
-		}
-		else if(applyParam.smartConnect == 2){
-			// 5GHz band steering
-			wlObj.length = 2;
-			wlObj[1].band = "5 GHz Smart Connect";
-		}
-
-		return wlObj;
-	})();
-
-	(function(wlObj){
-		if(wlObj.length == 0 || typeof wlObj == "undefined") return false;
-
-		var wlHintCss = "";
-		wlHintCss += "<style type='text/css'>"
-		// Desktop style sheet
-		wlHintCss += "#wlHint{";
-		wlHintCss += "font-family: Arial;";
-		wlHintCss += "background:url(/images/New_ui/login_bg.png) #283437 no-repeat;";
-		wlHintCss += "background-size: 1280px 1076px;";
-		wlHintCss += "z-index:9999;";
-		wlHintCss += "position:absolute;";
-		wlHintCss += "left:0;";
-		wlHintCss += "top:0;";
-		wlHintCss += "width:100%;";
-		wlHintCss += "height:100%;";
-		wlHintCss += "background-position: center 0%;";
-		wlHintCss += "margin: 0px;";
-		wlHintCss += "}.prod_madelName{";
-		wlHintCss += "font-size: 26pt;";
-		wlHintCss += "color:#fff;";
-		wlHintCss += "margin-top: 10px;";
-		wlHintCss += "}.nologin{";
-		wlHintCss += "word-break: break-all;";
-		wlHintCss += "margin:10px 0px 0px 78px;";
-		wlHintCss += "background-color:rgba(255,255,255,0.2);";
-		wlHintCss += "padding:20px;";
-		wlHintCss += "line-height:36px;";
-		wlHintCss += "border-radius: 5px;";
-		wlHintCss += "width: 480px;";
-		wlHintCss += "border: 0;";
-		wlHintCss += "color:#fff;";
-		wlHintCss += "font-size:16pt;";
-		wlHintCss += "}.div_table{";
-		wlHintCss += "display:table;";
-		wlHintCss += "}.div_tr{";
-		wlHintCss += "display:table-row;";
-		wlHintCss += "}.div_td{";
-		wlHintCss += "display:table-cell;";
-		wlHintCss += "}.title_gap{";
-		wlHintCss += "margin:20px 0px 0px 78px;";
-		wlHintCss += "width: 480px;";
-		wlHintCss += "font-size: 16pt;";
-		wlHintCss += "color:#fff;";
-		wlHintCss += "}.main_field_gap{";
-		wlHintCss += "margin:100px auto 0;";
-		wlHintCss += "}b{color:#00BBFF;";
-		wlHintCss += "}.title_name{";
-		wlHintCss += "font-size: 40pt;";
-		wlHintCss += "color:#93d2d9;";
-		wlHintCss += "}.img_gap{";
-		wlHintCss += "padding-right:30px;";
-		wlHintCss += "vertical-align:middle;";
-		wlHintCss += "}.login_img{";
-		wlHintCss += "width:43px;";
-		wlHintCss += "height:43px;";
-		wlHintCss += "background-image: url('images/New_ui/icon_titleName.png');";
-		wlHintCss += "background-repeat: no-repeat;}";
-		// Mobile style sheet
-		wlHintCss += "@media screen and (max-width: 1000px){";
-		if(top.location.pathname.search("QIS") != -1){
-			wlHintCss += "#wlHint{background:url('/images/qis/pattern3-3_10_A15.png'),url('/images/qis/pattern3_05_4.png'),url('/images/qis/mainimage_img4.png') #1D1E1F no-repeat;";
-			wlHintCss += "background-size:auto;}b{color:#279FD9;}";
-		}
-		wlHintCss += ".prod_madelName{";
-		wlHintCss += "font-size: 13pt;";
-		wlHintCss += "}.nologin{";
-		wlHintCss += "margin-left:10px;";
-		wlHintCss += "padding:10px;";
-		wlHintCss += "line-height:18pt;";
-		wlHintCss += "width: 100%;";
-		wlHintCss += "font-size:14px;";
-		wlHintCss += "}.main_field_gap{";
-		wlHintCss += "width:82%;";
-		wlHintCss += "margin:10px 0 0 15px;";
-		wlHintCss += "}.title_name{";
-		wlHintCss += "font-size:20pt;";
-		wlHintCss += "margin-left:15px;";
-		wlHintCss += "}.login_img{";
-		wlHintCss += "background-size: 75%;";
-		wlHintCss += "}.img_gap{";
-		wlHintCss += "padding-right:0;";
-		wlHintCss += "vertical-align:middle;";
-		wlHintCss += "}.title_gap{";
-		wlHintCss += "margin:15px 0px 0px 15px;";
-		wlHintCss += "width: 100%;";
-		wlHintCss += "font-size: 12pt;";
-		wlHintCss += "}}";
-		wlHintCss += "</style>";
-
-		var wlHintHtml = '';
-		wlHintHtml += '<meta content="telephone=no" name="format-detection"><meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">';
-		wlHintHtml += '<div id="wlHint">';
-		wlHintHtml += '<div class="div_table main_field_gap">';
-		wlHintHtml += '<div class="div_tr">';
-		wlHintHtml += '<div class="prod_madelName"><div class="title_name"><div class="div_td img_gap"><div class="login_img"></div></div><div class="div_td"><#Web_Title2#></div></div></div>';
-		wlHintHtml += '<div id="login_filed">';
-		wlHintHtml += "<div class='p1 title_gap'><#DrSurf_sweet_advise1#></div>";
-		for(var i=0; i<wlObj.length; i++){
-			wlHintHtml += '<div class="p1 title_gap">'+ wlObj[i].band +'</div>';
-			wlHintHtml += '<div class="nologin">';
-			wlHintHtml += '<#QIS_finish_wireless_item1#>: <b>';
-			wlHintHtml += wlObj[i].ssid + '</b><br>';
-			wlHintHtml += '<#Network_key#>: <b>';
-			wlHintHtml += (wlObj[i].key == "") ? "Open System" : wlObj[i].key;
-			wlHintHtml += '</b></div>';
-		}
-		wlHintHtml += '</div></div></div></div>';
-
-		top.document.write(wlHintCss + wlHintHtml);
-	})(genWlObj);
 }
 </script>
 </head>
@@ -542,7 +359,7 @@ function showWlHint(){
 										<tr>
 											<td width="80%">
 												<input type="text" maxlength="17" class="input_macaddr_table" name="wlX_rast_static_client" onKeyPress="return validator.isHWAddr(this,event)" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off" placeholder="ex: <% nvram_get("lan_hwaddr"); %>" style="width:255px;">
-												<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;" onclick="pullWLMACList(this);" title="<#select_wireless_MAC#>">
+												<img id="pull_arrow" height="14px;" src="/images/unfold_more.svg" style="position:absolute;" onclick="pullWLMACList(this);" title="<#select_wireless_MAC#>">
 												<div id="WL_MAC_List_Block" class="clientlist_dropdown" style="margin-left:167px;"></div>
 											</td>
 											<td width="20%">

@@ -29,7 +29,8 @@ enum _sched_v2_type {
 	SCHED_V2_TYPE_UNKNOWN = 0,
 	SCHED_V2_TYPE_DAY,
 	SCHED_V2_TYPE_WEEK,
-	SCHED_V2_TYPE_WEEK_ONLINE
+	SCHED_V2_TYPE_WEEK_ONLINE,
+	SCHED_V2_TYPE_TIMESTAMP
 };
 
 typedef enum _sched_v2_d_index sched_v2_d_index;
@@ -55,6 +56,20 @@ enum _sched_v2_w_index {
 	SCHED_V2_W_IDX_NULL = 12,
 };
 
+typedef enum _sched_v2_t_index sched_v2_t_index;
+enum _sched_v2_t_index {
+	SCHED_V2_T_IDX_S_TYPE = 0,
+	SCHED_V2_T_IDX_S_FLAG = 1,
+	SCHED_V2_T_IDX_S_TIMESTAMP = 2,
+	SCHED_V2_T_IDX_S_Z_MARK = 12,
+	SCHED_V2_T_IDX_DELIMITER = 13,
+	SCHED_V2_T_IDX_E_TYPE = 14,
+	SCHED_V2_T_IDX_E_FLAG = 15,
+	SCHED_V2_T_IDX_E_TIMESTAMP = 16,
+	SCHED_V2_T_IDX_E_Z_MARK = 26,
+	SCHED_V2_T_IDX_NULL = 27,
+};
+
 typedef struct _sched_v2_d sched_v2_d_t;
 struct _sched_v2_d {
 	int enable;
@@ -75,14 +90,28 @@ struct _sched_v2_w {
 	unsigned int rule_to_number;
 };
 
+typedef struct _sched_v2_t sched_v2_t_t;
+struct _sched_v2_t {
+	int s_flag;
+	time_t s_ts;
+	char s_z_mark;
+	int e_flag;
+	time_t e_ts;
+	char e_z_mark;
+};
+
 typedef struct _sched_v2 sched_v2_t;
 struct _sched_v2 {
 	sched_v2_type type;
 	sched_v2_d_t value_d;
 	sched_v2_w_t value_w;
+	sched_v2_t_t value_t;
 	sched_v2_t *prev;
 	sched_v2_t *next;
 };
+
+#define	TIMESCHED_SCHEDULE 1 << 0
+#define TIMESCHED_ACCESSTIME 1 << 1
 
 #define SCHED_DEBUG "/tmp/SCHED_DEBUG"
 #define SCHED_DBG(fmt, arg...) \
@@ -96,6 +125,7 @@ extern void free_sched_v2_list(sched_v2_t **sched_v2_list);
 extern int parse_str_v2_to_sched_v2_list(const char *str_sched_v2, sched_v2_t **sched_v2_list, int merge_same_period, int skip_disabled);
 
 extern int check_sched_v2_on_off(const char *sched_str);
+extern int check_expire_on_off(const char *sched_str);
 extern void convert_wl_sched_v1_to_sched_v2();
 extern void convert_pc_sched_v1_to_sched_v2();
 

@@ -1,0 +1,303 @@
+#include "63178.dtsi"
+#include "../bcm_voice.dtsi"
+
+/ {
+    memory_controller {
+        memcfg = <(BP_DDR_SPEED_800_11_11_11 | \
+                   BP_DDR_TOTAL_SIZE_512MB   | \
+                   BP_DDR_DEVICE_WIDTH_16    | \
+                   BP_DDR_TOTAL_WIDTH_16BIT  | \
+                   BP_DDR_63178_DEFAULT)>;
+    };
+
+	buttons {
+		compatible = "brcm,buttons";
+		reset_button {
+			ext_irq = <&bca_extintr 0 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			press {
+				print = "Button Press -- Hold for 5s to do restore to default";
+			};
+			hold {
+				rst_to_dflt = <5>;
+			};
+			release {
+				reset = <0>;
+			};	
+		};
+		ses_button {
+			ext_irq = <&bca_extintr 1 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			release {
+				ses_short_period = <0>;
+				ses_long_period = <3>;
+			};
+		};
+	};
+};
+
+&bcm_voice{
+	sliclist = SLICSLAC_LIST_COMMON_NOFXO;
+ };
+
+&hsspi {
+	voice0 {
+		pinctrl-0 = <&spim_ss1_b_pin_80>;
+		pinctrl-names = "default";
+		compatible = "bcm-spi-voice";
+		reg = <1>; /* chip select 1 */
+		spi-max-frequency = <1024000>;
+		reset-gpio = <&gpioc 32 GPIO_ACTIVE_LOW>;
+		spi-index = <0>;/* voice header index */
+	};	
+};
+&mdio_sf2 {
+    /* Port PHY mapping:
+            port_imp -8#0- port_gphy0 <--> phy_gphy0
+                      # 1- port_gphy1 <--> phy_gphy1
+                      # 2- port_gphy2 <--> phy_gphy2
+                      # 3- port_gphy3 <--> phy_gphy3
+                      # 4- port_gphy4 <--> phy_gphy4
+                      ##5- port_rgmii <--> phy_rgmii
+    */
+	phy_rgmii {
+		reg = <25>;
+		status = "okay";
+	};
+};
+
+&switch0 {
+	pinctrl-names = "default", "rgmii"; 
+	pinctrl-0 = <&rgmii_mdc_pin_72 &rgmii_mdio_pin_73 &rgmii_pins>; 
+	pinctrl-1 = <&rgmii_pins>; 
+
+	ports {
+		port_gphy0 {
+			network-leds = <&led0 &led15>;
+			status = "okay";
+		};
+
+		port_gphy1 {
+			network-leds = <&led2 &led16>;
+			status = "okay";
+		};
+
+		port_gphy2 {
+			network-leds = <&led4 &led17>;
+			status = "okay";
+		};
+
+		port_gphy3 {
+			network-leds = <&led6 &led18>;
+			status = "okay";
+		};
+
+		port_gphy4 {
+			network-leds = <&led8 &led19>;
+			status = "okay";
+		};
+		port_rgmii {
+			mii-pinctrl-state = "rgmii";
+			rgmii-1p8v;
+			gmii-direct;
+			status = "okay";
+		};
+	};
+};
+
+&legacy_leds {
+	adsl-led = <&led22>;
+	wan-data-led = <&led30>;
+	voip1-ok-led = <&led24>;
+	voip2-ok-led = <&led25>;
+	wl-sess-led = <&led21>;
+	wl0-led = <&led20>;
+};
+
+&led_ctrl {
+    pinctrl-names = "default";
+    pinctrl-0 = <&b_ser_led_clk_pin_27 &b_ser_led_data_pin_26 &b_ser_led_mask_pin_28>;
+    serial-shifters-installed = <4>;
+    serial-data-polarity-high;
+    led0: port_0-led_0-bit_0 {
+        active_high;
+        link = <(LED_SPEED_100|LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led1: sw_led-bit_1 {
+        active_low;
+        status = "okay";
+    };
+    led2: port_1-led_0-bit_2 {
+        active_high;
+        link = <(LED_SPEED_100|LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led3: sw_led-bit_3 {
+        active_low;
+        status = "okay";
+    };
+    led4: port_2-led_0-bit_4 {
+        active_high;
+        link = <(LED_SPEED_100|LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led5: sw_led-bit_5 {
+        active_low;
+        status = "okay";
+    };
+    led6: port_3-led_0-bit_6 {
+        active_high;
+        link = <(LED_SPEED_100|LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led7: sw_led-bit_7 {
+        active_low;
+        status = "okay";
+    };
+    led8: port_4-led_0-bit_8 {
+        active_high;
+        link = <(LED_SPEED_100|LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led9: sw_led-bit_9 {
+        active_low;
+        status = "okay";
+    };
+    led10: sw_led-bit_10 {
+        active_low;
+        status = "okay";
+    };
+    led11: sw_led-bit_11 {
+        active_low;
+        status = "okay";
+    };
+    led12: sw_led-bit_12 {
+        active_low;
+        status = "okay";
+    };
+    led13: sw_led-bit_13 {
+        active_low;
+        status = "okay";
+    };
+    led14: sw_led-bit_14 {
+        active_low;
+        status = "okay";
+    };
+    led15: port_0-led_3-bit_15 {
+        active_high;
+        activity = <LED_SPEED_GBE>;
+        status = "okay";
+    };
+    led16: port_1-led_3-bit_16 {
+        active_high;
+        activity = <LED_SPEED_GBE>;
+        status = "okay";
+    };
+    led17: port_2-led_3-bit_17 {
+        active_high;
+        activity = <LED_SPEED_GBE>;
+        status = "okay";
+    };
+    led18: port_3-led_3-bit_18 {
+        active_high;
+        activity = <LED_SPEED_GBE>;
+        status = "okay";
+    };
+    led19: port_4-led_3-bit_19 {
+        active_high;
+        activity = <LED_SPEED_GBE>;
+        status = "okay";
+    };
+    led20: sw_led-bit_20 {
+        active_high;
+        status = "okay";
+    };
+    led21: sw_led-bit_21 {
+        active_high;
+        status = "okay";
+    };
+    led22: sw_led-bit_22 {
+        active_high;
+        status = "okay";
+    };
+    led23: dsl_act_0-bit_23 {
+        active_high;
+        status = "okay";
+    };
+    led24: sw_led-bit_24 {
+        active_high;
+        status = "okay";
+    };
+    led25: sw_led-bit_25 {
+        active_high;
+        status = "okay";
+    };
+    led26: sw_led-bit_26 {
+        active_low;
+        status = "okay";
+    };
+    led27: sw_led-bit_27 {
+        active_low;
+        status = "okay";
+    };
+    led28: sw_led-bit_28 {
+        active_low;
+        status = "okay";
+    };
+    led29: sw_led-bit_29 {
+        active_low;
+        status = "okay";
+    };
+    led30: sw_led-bit_30 {
+        active_low;
+        status = "okay";
+    };
+};
+
+&dsl {
+	line0@0 {
+		pinctrl-0 = <&vdsl_ctrl_0_pin_17 &vdsl_ctrl_1_pin_18 &vdsl_ctrl_2_pin_19>;
+		pinctrl-names = "default";
+
+		afeid = <(DSL_AFE_CHIP_CH0 | DSL_AFE_LD_6303 | DSL_AFE_FE_ANNEXA | DSL_AFE_FE_REV_6303_REV_12_3_70)>;
+		afe-pwr-ctl = <DSL_AFE_VDSLCTL_0>;
+		afe-data-ctl = <DSL_AFE_VDSLCTL_1>;
+		afe-clk-ctl = <DSL_AFE_VDSLCTL_2>;
+		status = "okay";
+	};
+};
+
+&hs_uart0 {
+	pinctrl-0 = <&b_hs_uart_cts_pin_22 &b_hs_uart_rts_pin_12 &b_hs_uart_sin_pin_21 &b_hs_uart_sout_pin_20>;
+	pinctrl-names = "default";
+};
+
+&usb_ctrl {
+	pinctrl-names="default";
+	pinctrl-0 = <&usb0a_pwrflt_pin_83 &usb0a_pwron_pin_84 &usb1a_pwrflt_pin_85 &usb1a_pwron_pin_86>;
+	status = "okay";
+	xhci-enable;
+};
+
+&usb0_xhci {
+	status = "okay";
+};
+
+&usb0_ehci {
+	status = "okay";
+};
+
+&usb0_ohci {
+	status = "okay";
+};
+
+&usb1_ehci {
+	status = "okay";
+};
+
+&usb1_ohci {
+	status = "okay";
+};
+
+&nand {
+	status = "okay";
+};

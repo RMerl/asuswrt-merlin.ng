@@ -20,13 +20,39 @@ LD	    = $(PJ_LD)
 #STRIP	= $(PJ_STRIP)   
 LDFLAGS = $(PJ_LDFLAGS)
 LDLIBS  = $(PJ_LDLIBS)
-LDLIBS += -L$(UDTBASE) -l$(LIB_UDT) -L$(NATBASE)
+#LDLIBS += -L$(UDTBASE) -l$(LIB_UDT) -L$(NATBASE)
 CFLAGS += $(PJ_CFLAGS)
 CFLAGS += -g -I$(NATBASE) -I$(NATBASE)/msvc_prjs/asusnatnl 
 CFLAGS += -DTUNNEL_V=\"$(VERSION)\"
 CFLAGS += -I$(UDTBASE) -I$(SCTPBASE)
 #CFLAGS += -Wall
 CPPFLAGS += -fPIC $(CFLAGS) 
+
+OS = $(shell uname -s)
+LIB_NAME=libasusnatnl
+LIBRARY = $(LIB_NAME).a
+DYLIB = $(LIB_NAME).dylib
+ifeq ($(OS),Darwin)
+YYY = $(CFLAGS)
+XXX = $(findstring armv7s, $(YYY))
+ifeq ($(XXX),)
+XXX = $(findstring armv7, $(YYY))
+ifeq ($(XXX),)
+XXX = $(findstring i386, $(YYY))
+ifeq ($(XXX),)
+XXX = $(findstring arm64, $(YYY))
+ifeq ($(XXX),)
+XXX = $(findstring x86_64, $(YYY))
+endif
+endif
+endif
+endif
+LIBRARY = $(LIB_NAME)-$(XXX).a
+LIB_UDT = udt-$(XXX)
+DYLIB = $(LIB_NAME)-$(XXX).dylib
+endif
+
+LDLIBS += -L$(UDTBASE) -l$(LIB_UDT) -L$(NATBASE)
 
 ifeq ($(AR),)
 AR=ar
@@ -55,7 +81,7 @@ endif
 endif
 
 #check if make goal is android-lib or linux-lib
-ifeq ("$(MAKECMDGOALS)", $(filter "$(MAKECMDGOALS)", "android-lib" "linux-lib" "ios-dylib" "static"))
+ifeq ("$(MAKECMDGOALS)", $(filter "$(MAKECMDGOALS)", "android-lib" "linux-lib" "ios-dylib" "static" "macos-dylib"))
 CFLAGS += -DNATNL_LIB=1
 endif
 
@@ -120,35 +146,14 @@ linux-lib: main.cpp $(OBJS)
 	$(CXX) -shared -o libasusnatnl.so $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(OBJS) $(LDLIBS)
 	NATLIB_NAME=libasusnatnl.so
 endif
-#ios-static: main.cpp $(OBJS)
-#	$(CXX)  -Wl $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(OBJS) $(LDLIBS) -static -all_load -o libasusnatnl.a
 
 ios-dylib: main.cpp $(OBJS)
-	$(CXX)  -Wl $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(OBJS) $(LDLIBS) -dynamiclib -o libasusnatnl.dylib
-	NATLIB_NAME=libasusnatnl.dylib
-	#$(CXX) -dynamiclib -o libasusnatnl.dylib -Wl $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(OBJS) $(LDLIBS)
-	#NATLIB_NAME=libasusnatnl.dylib
+	$(CXX)  -Wl $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(OBJS) $(LDLIBS) -dynamiclib -o $(DYLIB)
+	NATLIB_NAME=$(DYLIB)
 
-OS = $(shell uname -s)
-LIB_NAME=libasusnatnl
-LIBRARY = $(LIB_NAME).a
-ifeq ($(OS),Darwin)
-YYY = $(CFLAGS) 
-XXX = $(findstring armv7s, $(YYY))
-ifeq ($(XXX),)
-XXX = $(findstring armv7, $(YYY))
-ifeq ($(XXX),)
-XXX = $(findstring i386, $(YYY))
-ifeq ($(XXX),)
-XXX = $(findstring arm64, $(YYY))
-ifeq ($(XXX),)
-XXX = $(findstring x86_64, $(YYY))
-endif
-endif
-endif
-endif
-LIBRARY = $(LIB_NAME)-$(XXX).a
-endif
+macos-dylib: main.cpp $(OBJS)
+	$(CXX)  -Wl $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(OBJS) $(LDLIBS) -dynamiclib -o $(DYLIB)
+	NATLIB_NAME=$(DYLIB)
 
 $(LIBRARY): main.o $(OBJS)
 	$(AR) crs $@ $?

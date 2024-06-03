@@ -91,10 +91,6 @@ function QKinternettype_load_body(){
 	if(parent.based_modelid == "DSL-AC68U" || parent.based_modelid == "DSL-AX82U"){	//dsl detect trigger, MODELDEP : DSL-AC68U
 		var RetryCountDown_fail = 5;
 		update_dsl_info();
-		if('<% nvram_get("x_Setting"); %>' == '1' && parent.based_modelid == "DSL-AC68U"){
-			document.form.action = "/qis/QIS_detect.htm";
-			document.form.submit();
-		}
 	}
 	
         if(parent.based_modelid == "RT-AC58U" || parent.based_modelid == "RT-AC82U"){

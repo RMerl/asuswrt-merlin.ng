@@ -1,0 +1,12 @@
+if TARGET_POGO_E02
+
+config SYS_BOARD
+	default "pogo_e02"
+
+config SYS_VENDOR
+	default "cloudengines"
+
+config SYS_CONFIG_NAME
+	default "pogo_e02"
+
+endif

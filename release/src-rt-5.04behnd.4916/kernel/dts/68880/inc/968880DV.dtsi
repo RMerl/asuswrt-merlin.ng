@@ -1,0 +1,138 @@
+#include "68880.dtsi"
+
+/ {
+        buttons {
+                compatible = "brcm,buttons";
+                reset_button {
+                        ext_irq = <&bca_extintr 11 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+                        press {
+                                print = "Button Press -- Hold for 5s to do restore to default";
+                        };
+                        hold {
+                                rst_to_dflt = <5>;
+                        };
+                        release {
+                                reset = <0>;
+                        };
+                };
+        };
+};
+
+&wdt {
+	status = "okay";
+};
+
+&uart0 {
+	status = "okay";
+};
+
+#ifndef CONFIG_BRCM_SMC_BOOT
+&nand {
+    status = "okay";
+};
+&sdhci {
+    status = "okay";
+};
+#endif
+
+&phy_wan_serdes {
+    status = "okay";
+};
+
+&mpcs {
+    status = "okay";
+};
+
+&xport {
+    status = "okay";
+};
+
+&egphy {
+    status = "okay";
+};
+
+&unimac {
+    status = "okay";
+};
+
+&serdes {
+    status = "okay";
+};
+
+&ethphytop {
+    phy-mpd = <&bca_extintr 12 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+    phy-link = <&bca_extintr 13 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+    status = "okay";
+};
+
+&mdio {
+    status = "okay";
+};
+
+&switch0 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&a_eth_mdc_pin_59 &a_eth_mdio_pin_60>;
+};
+
+&i2c0 {
+    pinctrl-0 = <&i2c_scl_pin_28 &i2c_sda_pin_29>;
+    pinctrl-names = "default";
+    status = "okay";
+
+    gpiocext: gpio@1e {
+        compatible = "nxp,pca9557";
+        reg = <0x1e>;
+        #gpio-cells = <2>;
+        gpio-controller;
+        polarity = <0x00>;
+        pin4 {
+            gpio-hog;
+            gpios = <4 GPIO_ACTIVE_HIGH>;
+            output-low;
+            line-name = "PCIE02_WiFi_PWR_EN";
+        };
+        pin5 {
+            gpio-hog;
+            gpios = <5 GPIO_ACTIVE_HIGH>;
+            output-low;
+            line-name = "PCIE13_WiFi_PWR_EN";
+        };
+    };
+};
+
+&usb_ctrl {
+        pinctrl-names = "default";
+        pinctrl-0 = <&usb0_pwr_pins &usb1_pwr_pins>;
+        xhci-enable;
+        status = "okay";
+};
+
+&usb0_xhci {
+        status = "okay";
+        usb_port1: port1 {
+            reg = <1>;
+            #trigger-source-cells = <0>;
+        };
+
+        usb_port2: port2 {
+            reg = <2>;
+            #trigger-source-cells = <0>;
+        };
+};
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+&pcie0 {
+        status = "okay";
+};
+&pcie1 {
+        status = "okay";
+};
+&pcie2 {
+        status = "okay";
+};
+&pcie3 {
+        status = "okay";
+};
+#endif
+
+

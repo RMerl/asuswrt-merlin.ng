@@ -1,0 +1,7 @@
+#include "963158REF3D.dts"
+
+&chosen {
+	stdout-path="";
+	bootargs = "coherent_pool=4M cpuidle_sysfs_switch pci=pcie_bus_safe console=/dev/null rootwait rng_core.default_quality=1024";
+};
+

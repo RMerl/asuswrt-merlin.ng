@@ -14,15 +14,15 @@
 <link rel="stylesheet" type="text/css" href="usp_style.css">
 <link href="other.css"  rel="stylesheet" type="text/css">
 <link rel="stylesheet" type="text/css" href="/device-map/device-map.css">
-<script type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="js/httpApi.js"></script>
+<script type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/md5.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
-<script type="text/javascript" src="js/httpApi.js"></script>
 <script src="js/qrcode.min.js"></script>
 <style>
 </style>
@@ -34,7 +34,7 @@ var wl0_nmode_x = '<% nvram_get("wl0_nmode_x"); %>';
 if(wl_info.band5g_2_support || wl_info.band6g_support){
 	var wl2_nmode_x = '<% nvram_get("wl2_nmode_x"); %>';
 }
-if(based_modelid === 'GT-AXE16000'){
+if(based_modelid === 'GT-AXE16000' || based_modelid === 'GT-BE98' || based_modelid === 'GT-BE98_PRO'){
 	var wl3_nmode_x = '<% nvram_get("wl3_nmode_x"); %>';
 	radio_2 = '<% nvram_get("wl3_radio"); %>';
 	radio_5 = '<% nvram_get("wl0_radio"); %>';
@@ -119,7 +119,7 @@ function initial(){
 	if(document.form.preferred_lang.value == "JP"){    //use unique font-family for JP
 		document.getElementById('2g_radio_hint').style.fontFamily = "MS UI Gothic,MS P Gothic";
 		document.getElementById('5g_radio_hint').style.fontFamily = "MS UI Gothic,MS P Gothic";
-		if(based_modelid === 'GT-AXE16000'){
+		if(based_modelid === 'GT-AXE16000' || based_modelid === 'GT-BE98' || based_modelid === 'GT-BE98_PRO'){
 			document.getElementById('5g_2_radio_hint').style.fontFamily = "MS UI Gothic,MS P Gothic";
 			document.getElementById('6g_radio_hint').style.fontFamily = "MS UI Gothic,MS P Gothic";
 		}
@@ -266,8 +266,6 @@ function load_expire_selection(obj, opt, val){
 function translate_auth(flag){
 	if(flag == "open")
 		return "Open System";
-	else if(flag == "owe")
-		return "<#Wireless_Encryption_OWE#>";	
 	else if(flag == "shared")
 		return "Shared Key";
 	else if(flag == "psk")
@@ -308,7 +306,7 @@ function gen_gntable_tr(unit, gn_array, slicesb){
 	else
 		GN_band = 5;
 	
-	if(based_modelid === 'GT-AXE16000'){
+	if(based_modelid === 'GT-AXE16000' || based_modelid === 'GT-BE98' || based_modelid === 'GT-BE98_PRO'){
 		unit = (unit+3)%4;
 	}
 	else if(based_modelid === 'GT10' || based_modelid === 'RT-AX9000'){
@@ -535,14 +533,13 @@ function gen_gntable(){
 	var htmlcode = ""; 
 	var htmlcode5 = ""; 
 	var htmlcode5_2 = ""; 
-	var htmlcode6 = "";
+	var htmlcode60 = "";
 	var gn_array_2g_tmp = gn_array_2g;
 	var gn_array_5g_tmp = gn_array_5g;
 	var gn_array_5g_2_tmp = gn_array_5g_2;
-	
-	
 	var gn_array_60g_tmp = gn_array_60g;
-	if(based_modelid === 'GT-AXE16000'){
+	
+	if(based_modelid === 'GT-AXE16000' || based_modelid === 'GT-BE98' || based_modelid === 'GT-BE98_PRO'){
 		gn_array_2g_tmp = gn_array_60g;
 		gn_array_5g_tmp = gn_array_2g;
 		gn_array_5g_2_tmp = gn_array_5g;
@@ -553,11 +550,11 @@ function gen_gntable(){
 		gn_array_5g_tmp = gn_array_2g;
 		gn_array_5g_2_tmp = gn_array_5g;
 	}
+	
 	var band2sb = 0;
 	var band5sb = 0;
 	var band5sb_2 = 0;
 	var band60sb = 0;
-	var band6sb = 0;
 	var gn_bw_enabled = false;
 	var check_bw_status = function(_gn_array){
 		if(!gn_bw_enabled){
@@ -596,7 +593,7 @@ function gen_gntable(){
 		htmlcode5 += '<table style="margin-left:20px;margin-bottom:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_5g">';
 		htmlcode5 += '<tr id="5g_title"><td align="left" style="color:#5AD; font-size:16px; border-bottom:1px dashed #AAA;">';
 		if(wl_info.band5g_2_support || wl_info.band6g_support){
-			if(band6g_support && based_modelid !== 'GT-AXE16000'){
+			if(band6g_support){
 				htmlcode5 += '<span>5 GHz</span>';
 			}
 			else{
@@ -626,7 +623,7 @@ function gen_gntable(){
 
   	if((wl_info.band5g_2_support || wl_info.band6g_support)&& gn_array_5g_2_tmp.length > 0){
 		htmlcode5_2 += '<table style="margin-left:20px;margin-bottom:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_5g_2">';
-		if(band6g_support && based_modelid !== 'GT-AXE16000'){
+		if(band6g_support){
 			htmlcode5_2 += '<tr id="5g_2_title"><td align="left" style="color:#5AD; font-size:16px; border-bottom:1px dashed #AAA;"><span>6 GHz</span>';
 		}
 		else{
@@ -651,7 +648,7 @@ function gen_gntable(){
 		genQRCodes(gn_array_5g_2_tmp, 2);
 	}
 
-	if(based_modelid === 'GT-AXE16000'){	
+	if(based_modelid === 'GT-AXE16000' || based_modelid === 'GT-BE98' || based_modelid === 'GT-BE98_PRO'){	
 		if(gn_array_6g_tmp.length > 0){
 			htmlcode6 += '<table style="margin-left:20px;margin-bottom:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_6g">';
 			htmlcode6 += '<tr id="6g_title"><td align="left" style="color:#5AD; font-size:16px; border-bottom:1px dashed #AAA;">';
@@ -1179,7 +1176,7 @@ function create_guest_unit(_unit, _subunit){
 			gn_array = gn_array_60g;
 			break;
 	}
-
+	
 	if(gn_array[_subunit-1][15] != "1"){
 		change_guest_unit(_unit, _subunit);
 		document.form.wl_bss_enabled.value = "1";
@@ -1245,19 +1242,19 @@ function show_wl_maclist_x(){
 	else{
 		//user icon
 		var userIconBase64 = "NoIcon";
-		var clientName, deviceType, deviceVender;
+		var clientName, deviceType, deviceVendor;
 		Object.keys(manually_maclist_list_array).forEach(function(key) {
 			var clientMac = key.toUpperCase();
 			var clientIconID = "clientIcon_" + clientMac.replace(/\:/g, "");
 			if(clientList[clientMac]) {
 				clientName = (clientList[clientMac].nickName == "") ? clientList[clientMac].name : clientList[clientMac].nickName;
 				deviceType = clientList[clientMac].type;
-				deviceVender = clientList[clientMac].vendor;
+				deviceVendor = clientList[clientMac].vendor;
 			}
 			else {
 				clientName = "New device";
 				deviceType = 0;
-				deviceVender = "";
+				deviceVendor = "";
 			}
 			code += '<tr id="row_'+clientMac+'">';
 			code += '<td width="80%" align="center">';
@@ -1270,20 +1267,24 @@ function show_wl_maclist_x(){
 					userIconBase64 = getUploadIcon(clientMac.replace(/\:/g, ""));
 				}
 				if(userIconBase64 != "NoIcon") {
-					code += '<div id="' + clientIconID + '" style="text-align:center;"><img class="imgUserIcon_card" src="' + userIconBase64 + '"></div>';
-				}
-				else if(deviceType != "0" || deviceVender == "") {
-					code += '<div id="' + clientIconID + '" class="clientIcon type' + deviceType + '"></div>';
-				}
-				else if(deviceVender != "" ) {
-					var venderIconClassName = getVenderIconClassName(deviceVender.toLowerCase());
-					if(venderIconClassName != "" && !downsize_4m_support) {
-						code += '<div id="' + clientIconID + '" class="venderIcon ' + venderIconClassName + '"></div>';
-					}
-					else {
-						code += '<div id="' + clientIconID + '" class="clientIcon type' + deviceType + '"></div>';
-					}
-				}
+                    if(clientList[clientMac].isUserUplaodImg){
+                        code += '<div id="' + clientIconID + '" class="clientIcon"><img class="imgUserIcon_card" src="' + userIconBase64 + '"></div>';
+                    }else{
+                        code += '<div id="' + clientIconID + '" class="clientIcon"><i class="type" style="--svg:url(' + userIconBase64 + ')"></i></div>';
+                    }
+                }
+                else if(deviceType != "0" || deviceVendor == "") {
+                    code += '<div id="' + clientIconID + '" class="clientIcon"><i class="type'+deviceType+'"></i></div>';
+                }
+                else if(deviceVendor != "" ) {
+                    var vendorIconClassName = getVendorIconClassName(deviceVendor.toLowerCase());
+                    if(vendorIconClassName != "" && !downsize_4m_support) {
+                        code += '<div id="' + clientIconID + '" class="clientIcon"><i class="vendor-icon '+ vendorIconClassName +'"></i></div>';
+                    }
+                    else {
+                        code += '<div id="' + clientIconID + '" class="clientIcon"><i class="type' + deviceType + '"></i></div>';
+                    }
+                }
 			}
 			code += '</td><td style="width:60%;border:0px;">';
 			code += '<div>' + clientName + '</div>';
@@ -1407,7 +1408,7 @@ function pullWLMACList(obj){
 	var element = document.getElementById('WL_MAC_List_Block');
 	var isMenuopen = element.offsetWidth > 0 || element.offsetHeight > 0;	
 	if(isMenuopen == 0){		
-		obj.src = "/images/arrow-top.gif"
+		obj.src = "/images/unfold_less.svg"
 		element.style.display = "block";
 		document.form.wl_maclist_x_0.focus();		
 	}
@@ -1416,7 +1417,7 @@ function pullWLMACList(obj){
 }
 
 function hideClients_Block(){
-	document.getElementById("pull_arrow").src = "/images/arrow-down.gif";
+	document.getElementById("pull_arrow").src = "/images/unfold_more.svg";
 	document.getElementById("WL_MAC_List_Block").style.display="none";
 }
 
@@ -1729,7 +1730,6 @@ function hide_qr_code(unit) {
 						<div id="guest_table2" class="gn_info_table_bg"></div>
 						<div id="guest_table5" class="gn_info_table_bg"></div>
 						<div id="guest_table5_2" class="gn_info_table_bg"></div>
-						<div id="guest_table6" class="gn_info_table_bg"></div>
 						<div id="guest_table60" class="gn_info_table_bg"></div>
 						<div id="guest_tableFBWiFi" class="gn_info_table_bg">
 							<table style="margin-left:20px;margin-bottom:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_FBWiFi">
@@ -2019,7 +2019,7 @@ function hide_qr_code(unit) {
 									<tr>
 										<td width="80%">
 											<input type="text" maxlength="17" class="input_macaddr_table" name="wl_maclist_x_0" onKeyPress="return validator.isHWAddr(this,event)" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off" placeholder="ex: <% nvram_get("lan_hwaddr"); %>" style="width:255px;">
-											<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;display:none;" onclick="pullWLMACList(this);" title="<#select_wireless_MAC#>">
+											<img id="pull_arrow" height="14px;" src="/images/unfold_more.svg" style="position:absolute;display:none;" onclick="pullWLMACList(this);" title="<#select_wireless_MAC#>">
 											<div id="WL_MAC_List_Block" class="clientlist_dropdown" style="margin-left:107px;"></div>
 										</td>
 										<td width="20%">	

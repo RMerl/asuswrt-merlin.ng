@@ -1,0 +1,12 @@
+if TARGET_TEC_NG
+
+config SYS_BOARD
+	default "tec-ng"
+
+config SYS_VENDOR
+	default "avionic-design"
+
+config SYS_CONFIG_NAME
+	default "tec-ng"
+
+endif

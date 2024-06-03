@@ -6,6 +6,7 @@ extern char *Gobi_SimCard(int unit, char *line, int size);	//get sim card status
 extern int Gobi_SimCardReady(const char *line);		//check status via status line
 
 extern char *Gobi_IMEI(int unit, char *line, int size);		//get device IMEI number
+extern char *Gobi_setIMEI(int unit, char *line, int size, const char *IMEI);		//set device IMEI number
 
 extern char *Gobi_ConnectISP(int unit, char *line, int size);	//get current connect ISP name
 

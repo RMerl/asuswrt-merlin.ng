@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <html xmlns:v>
 <head>
@@ -164,7 +164,23 @@ function initial(){
 	if(noiTunes_support){		
 		document.getElementById("iTunes_div").style.display = "none";		
 	}
-		
+
+	if(isSupport("BUSINESS")){
+		document.getElementById("returnBtn").style.display = "none";
+	}
+
+	if(parent.webWrapper){
+		function setupWhiteThemeWrapper(){
+			$("#whiteThemeWrapper").css({"max-width":"unset"});
+			$(".upnp_table").css({
+				"max-width":"unset",
+				"margin":"0 auto"
+			});
+		}
+
+		let intervalId = setInterval(setupWhiteThemeWrapper, 100);
+		setTimeout(function(){clearInterval(intervalId);}, 2000);
+	}
 }
 
 function check_dms_status(){
@@ -596,7 +612,7 @@ function GetTree(layer_order, v){
 		document.getElementById('e'+layer_order).style.visibility = "";
 	}
 	else
-		alert("Error when show the folder-tree!");
+		alert(stringSafeGet("<#ALERT_OF_ERROR_show#>"));
 }
 function cancel_folderTree(){
 	this.FromObject ="0";
@@ -770,8 +786,8 @@ function set_dms_dir(obj){
 			</div>
 		</td></tr></table>
 		<div id="e0" class="folder_tree"></div>
-		<div style="background-image:url(images/Tree/bg_02.png);background-repeat:no-repeat;height:90px;">
-		<input class="button_gen" type="button" style="margin-left:27%;margin-top:18px;" onclick="cancel_folderTree();" value="<#CTL_Cancel#>">
+		<div class="mediaserverBiz" style="background-image:url(images/Tree/bg_02.png);background-repeat:no-repeat;height:90px;">
+		<input class="button_gen button_media_biz" type="button" style="margin-left:27%;margin-top:18px;" onclick="cancel_folderTree();" value="<#CTL_Cancel#>">
 		<input class="button_gen" type="button"  onclick="confirm_folderTree();" value="<#CTL_ok#>">	
 	</div>
 </div>

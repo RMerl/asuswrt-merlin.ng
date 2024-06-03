@@ -1,0 +1,23 @@
+if ROCKCHIP_RK3036
+
+config TARGET_EVB_RK3036
+	bool "EVB_RK3036"
+	select BOARD_LATE_INIT
+
+config TARGET_KYLIN_RK3036
+	bool "KYLIN_RK3036"
+	select BOARD_LATE_INIT
+
+config SYS_SOC
+	default "rk3036"
+
+config SYS_MALLOC_F_LEN
+	default 0x400
+
+config SPL_SERIAL_SUPPORT
+	default y
+
+source "board/rockchip/evb_rk3036/Kconfig"
+source "board/rockchip/kylin_rk3036/Kconfig"
+
+endif

@@ -1,0 +1,31 @@
+These scripts are needed for our development usecases. Copy this directory
+into your tftp root directory to be able to use this scripts.
+cp -r <u-boot-repo>/board/keymile/scripts <your_tftp_root>/
+
+To load and configure these usecase, two environment variables in the u-boot
+default environment must be parsed:
+run develop : setup environment to configure for rootfs via nfs
+run ramfs   : setup environment to configure for rootfs in ram
+
+Last change: 24.11.2011
+
+develop-common.txt
+============================
+This file defines variables for working with rootfs via nfs for powerpc and
+arm.
+
+develop-<arch>.txt
+============================
+This file defines architecture specific variables for working with rootfs via
+nfs arm.
+
+
+ramfs-common.txt
+============================
+This file defines variables for working with rootfs inside the ram for powerpc
+and arm.
+
+ramfs-<arch>.txt
+============================
+This file defines architecture specific variables for working with rootfs inside
+ram.

@@ -1,0 +1,15 @@
+if TARGET_M5253DEMO
+
+config SYS_CPU
+	default "mcf52x2"
+
+config SYS_BOARD
+	default "m5253demo"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_CONFIG_NAME
+	default "M5253DEMO"
+
+endif

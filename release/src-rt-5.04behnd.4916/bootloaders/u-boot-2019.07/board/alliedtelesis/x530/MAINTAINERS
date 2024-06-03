@@ -1,0 +1,12 @@
+x530 BOARD
+M:	Chris Packham <chris.packham@alliedtelesis.co.nz>
+S:	Maintained
+F:	board/alliedtelesis/x530/
+F:	board/alliedtelesis/common/gpio_hog.c
+F:	board/alliedtelesis/common/gpio_hog.h
+F:	arch/arm/dts/armada-385-atl-x530.dts
+F:	arch/arm/dts/armada-385-atl-x530.dtsi
+F:	arch/arm/dts/armada-385-atl-x530DP.dts
+F:	arch/arm/dts/armada-385-atl-x530DP.dtsi
+F:	include/configs/x530.h
+F:	configs/x530_defconfig

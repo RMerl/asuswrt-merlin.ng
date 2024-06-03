@@ -1,0 +1,23 @@
+LS1046A BOARD
+M:	Mingkai Hu <mingkai.hu@nxp.com>
+M:	Rajesh Bhagat <rajesh.bhagat@nxp.com>
+S:	Maintained
+F:	board/freescale/ls1046ardb/
+F:	board/freescale/ls1046ardb/ls1046ardb.c
+F:	include/configs/ls1046ardb.h
+F:	configs/ls1046ardb_qspi_defconfig
+F:	configs/ls1046ardb_qspi_spl_defconfig
+F:	configs/ls1046ardb_sdcard_defconfig
+F:	configs/ls1046ardb_emmc_defconfig
+F:	configs/ls1046ardb_tfa_defconfig
+F:	configs/ls1046ardb_tfa_SECURE_BOOT_defconfig
+
+LS1046A_SECURE_BOOT BOARD
+M:	Ruchika Gupta <ruchika.gupta@nxp.com>
+S:	Maintained
+F:	configs/ls1046ardb_SECURE_BOOT_defconfig
+F:	configs/ls1046ardb_sdcard_SECURE_BOOT_defconfig
+
+M:	Sumit Garg <sumit.garg@nxp.com>
+S:	Maintained
+F:	configs/ls1046ardb_qspi_SECURE_BOOT_defconfig

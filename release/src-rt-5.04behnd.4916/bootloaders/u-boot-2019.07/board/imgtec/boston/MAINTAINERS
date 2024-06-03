@@ -1,0 +1,13 @@
+BOSTON BOARD
+M:	Paul Burton <paul.burton@mips.com>
+S:	Maintained
+F:	board/imgtec/boston/
+F:	include/configs/boston.h
+F:	configs/boston32r2_defconfig
+F:	configs/boston32r2el_defconfig
+F:	configs/boston32r6_defconfig
+F:	configs/boston32r6el_defconfig
+F:	configs/boston64r2_defconfig
+F:	configs/boston64r2el_defconfig
+F:	configs/boston64r6_defconfig
+F:	configs/boston64r6el_defconfig

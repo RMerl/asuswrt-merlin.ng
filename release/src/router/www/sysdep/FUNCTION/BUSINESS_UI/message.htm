@@ -1,0 +1,135 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns:v>
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<meta HTTP-EQUIV="Expires" CONTENT="-1">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<link rel="icon" href="images/favicon.png">
+<title>AiMesh router detect</title>
+<style>
+body{
+	font-family: Arial, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
+}
+.wrapper{
+	background:url(images/New_ui/login_bg.png) #f5f5f5 no-repeat;
+	background-size: cover;
+	background-position: center 0%;
+	margin: 0px; 
+}
+.p1{
+	font-size: 16pt;
+	color:#4d4d4d;
+	width:480px;
+	line-height: 48pt;
+}
+.nologin{
+	background-color:rgba(255,255,255,0.4);
+	padding:16px;
+	line-height:36px;
+	border-radius: 8px;
+	width: 480px;
+	border: 1px solid #ccc;
+	color:#262626;
+	color:#FFF\9; /* IE6 IE7 IE8 */
+	font-size: 16pt;
+}
+.div_table{
+	display:table;
+}
+.div_tr{
+	display:flex;
+	flex-direction: column;
+}
+.title_gap{
+	display: flex;
+	width: 100%;
+}
+.main_field_gap{
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+	height: 75vh;
+}
+
+/*for mobile device*/
+@media screen and (max-width: 768px){
+	.p1{
+		font-size: 12pt;
+		margin-bottom: 16px;
+		width:100%;
+	}
+	.nologin{
+		padding:10px;
+		line-height:24px;
+		width: 320px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.main_field_gap{
+		display: flex;
+		flex-direction: row;
+		align-items: flex-start;
+		justify-content: center;
+		margin-top: 5rem;
+	}
+	.title_gap{
+		line-height: 130%;
+	}
+}
+</style>
+<script>
+/* add Array.prototype.forEach() in IE8 */
+if(typeof Array.prototype.forEach != 'function'){
+	Array.prototype.forEach = function(callback){
+		for(var i = 0; i < this.length; i++){
+			callback.apply(this, [this[i], i, this]);
+		}
+	};
+}
+
+var cfg_master_ipaddr = decodeURIComponent('<% nvram_char_to_ascii("","cfg_masterip"); %>');
+var cfg_alive = decodeURIComponent('<% nvram_char_to_ascii("","cfg_alive"); %>');
+
+var isAMeshRE = ('<% nvram_get("re_mode"); %>' == '1') ? true : false;
+var isDisableUI = ('<% nvram_get("disable_ui"); %>' == '1') ? true : false;
+(function(){
+	if(isAMeshRE || isDisableUI) {
+		if(cfg_alive == "1" && cfg_master_ipaddr != "") {
+			var s = document.createElement("script");
+			s.type = "text/javascript";
+			s.src = "http://" + cfg_master_ipaddr + "/chdom.json?hostname=" + cfg_master_ipaddr;
+			var h = document.getElementsByTagName("script")[0];
+			h.parentNode.insertBefore(s,h);
+		}
+		else
+			window.location.href = "/error_page.htm?flag=9";
+	}
+})();
+var chdom = function(){window.location.href = "http://" + cfg_master_ipaddr;};
+function initial(){
+	if(isAMeshRE) {	
+		setTimeout(function(){
+			window.location.href = "/error_page.htm?flag=9";
+		}, 5000);
+	}
+}
+
+</script>
+</head>
+<body class="wrapper" onload="initial();">
+<div class="div_table main_field_gap">
+	<div class="div_tr">
+		<!-- AiMesh node detect field -->
+		<div id="detect_field">
+			<div class="p1 title_gap"></div>
+			<div class="nologin">Detecting AiMesh router...</div>
+		</div>
+	</div>
+</div>
+</body>
+</html>

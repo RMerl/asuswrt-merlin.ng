@@ -1,0 +1,95 @@
+#include "63146.dtsi"
+#include "../bcm_voice.dtsi"
+
+/ {
+	memory_controller {
+		memcfg = <(BP_DDR_SPEED_1067_14_14_14 | \
+			BP_DDR_TOTAL_SIZE_512MB    | \
+			BP_DDR_DEVICE_WIDTH_16     | \
+			BP_DDR_TOTAL_WIDTH_16BIT   | \
+			BP_DDR_63146_DEFAULT          | \
+			BP_DDR_CONFIG_DEBUG)>;	
+	};
+
+};
+
+&nand {
+	pinctrl-0 = <&data_pins &nand_ctrl_pins &nand_wpb_pin_27>;
+	write-protect = <1>;
+	status = "okay";
+};
+
+&uart0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart0_sdin_pin_67 &uart0_sdout_pin_68>;
+	status = "okay";
+};
+
+&mdio {
+    /* Port PHY mapping:
+            port_gphy4 <----> phy_gphy4
+     */
+	phy_gphy4 {
+		status = "okay";
+	};
+};
+
+&switch0 {
+	ports {
+
+		port_gphy4 {
+			network-leds = <&led0>;
+			status = "okay";
+		};
+	};
+};
+&led_ctrl {
+    led0: parallel-port_4-led_0 {
+       	pinctrl-names = "default";
+	pinctrl-0 = <&a_per_led_31_pin_31>;
+	active_high;
+        activity = <LED_SPEED_GBE>;
+        link = <LED_SPEED_GBE>;
+        status = "okay";
+    };
+    led1: sw_parallel_led_17 {
+       	pinctrl-names = "default";
+	pinctrl-0 = <&a_per_led_17_pin_17>;
+	active_high;
+        status = "okay";
+	label = "POST Fail";
+    };
+    led2: led_power {
+	compatible = "brcm,gpio-led";
+	active_high;
+        software_led;
+	status = "okay";
+	label = "Power";
+        init_high;
+        pin=<86>;
+    };
+};
+
+&vreg_sync {
+		pinctrl-0 = <&vreg_sync_pin_10>;
+		pinctrl-names = "default";
+		vreg_sync_gpio = <10>;
+};
+
+&gpioc {
+
+        pinctrl-names = "default";
+        cpe-data {
+                gpio-hog-uboot;
+                gpios = <12 GPIO_ACTIVE_LOW>, <13 GPIO_ACTIVE_LOW>, <14 GPIO_ACTIVE_LOW>, <15 GPIO_ACTIVE_LOW>,
+               		<16 GPIO_ACTIVE_LOW>,<17 GPIO_ACTIVE_LOW>,
+		        <56 GPIO_ACTIVE_LOW>, <57 GPIO_ACTIVE_LOW>, <58 GPIO_ACTIVE_LOW>,
+			<59 GPIO_ACTIVE_LOW>, <60 GPIO_ACTIVE_LOW>;
+                output-low;
+        };
+
+};
+&i2s
+{
+	status = "disabled";
+};

@@ -1,0 +1,107 @@
+--- a/libfakeroot.c
++++ b/libfakeroot.c
+@@ -1570,7 +1570,7 @@
+ #endif /* HAVE_CAPSET */
+
+ #if defined(HAVE_SETXATTR) || defined(HAVE_LSETXATTR) || defined(HAVE_FSETXATTR)
+-static size_t common_setxattr(INT_STRUCT_STAT *st, const char *name, void * value, size_t size, int flags)
++static int common_setxattr(INT_STRUCT_STAT *st, const char *name, const void * value, size_t size, int flags)
+ {
+   xattr_args xattr;
+   xattr.name = name;
+@@ -1625,7 +1625,7 @@
+ #endif /* defined(HAVE_LISTXATTR) || defined(HAVE_LLISTXATTR) || defined(HAVE_FLISTXATTR) */
+
+ #if defined(HAVE_REMOVEXATTR) || defined(HAVE_LREMOVEXATTR) || defined(HAVE_FREMOVEXATTR)
+-static size_t common_removexattr(INT_STRUCT_STAT *st, const char *name)
++static int common_removexattr(INT_STRUCT_STAT *st, const char *name)
+ {
+   xattr_args xattr;
+   xattr.name = name;
+@@ -1643,7 +1643,7 @@
+ #endif /* defined(HAVE_REMOVEXATTR) || defined(HAVE_LREMOVEXATTR) || defined(HAVE_FREMOVEXATTR) */
+
+ #ifdef HAVE_SETXATTR
+-ssize_t setxattr(const char *path, const char *name, void *value, size_t size, int flags)
++int setxattr(const char *path, const char *name, const void *value, size_t size, int flags)
+ {
+   INT_STRUCT_STAT st;
+   int r;
+@@ -1664,7 +1664,7 @@
+ #endif /* HAVE_SETXATTR */
+
+ #ifdef HAVE_LSETXATTR
+-ssize_t lsetxattr(const char *path, const char *name, void *value, size_t size, int flags)
++int lsetxattr(const char *path, const char *name, const void *value, size_t size, int flags)
+ {
+   INT_STRUCT_STAT st;
+   int r;
+@@ -1685,7 +1685,7 @@
+ #endif /* HAVE_LSETXATTR */
+
+ #ifdef HAVE_FSETXATTR
+-ssize_t fsetxattr(int fd, const char *name, void *value, size_t size, int flags)
++int fsetxattr(int fd, const char *name, const void *value, size_t size, int flags)
+ {
+   INT_STRUCT_STAT st;
+   int r;
+@@ -1832,7 +1832,7 @@
+ #endif /* HAVE_FLISTXATTR */
+
+ #ifdef HAVE_REMOVEXATTR
+-ssize_t removexattr(const char *path, const char *name)
++int removexattr(const char *path, const char *name)
+ {
+   INT_STRUCT_STAT st;
+   int r;
+@@ -1853,7 +1853,7 @@
+ #endif /* HAVE_REMOVEXATTR */
+
+ #ifdef HAVE_LREMOVEXATTR
+-ssize_t lremovexattr(const char *path, const char *name)
++int lremovexattr(const char *path, const char *name)
+ {
+   INT_STRUCT_STAT st;
+   int r;
+@@ -1874,7 +1874,7 @@
+ #endif /* HAVE_LREMOVEXATTR */
+
+ #ifdef HAVE_FREMOVEXATTR
+-ssize_t fremovexattr(int fd, const char *name)
++int fremovexattr(int fd, const char *name)
+ {
+   INT_STRUCT_STAT st;
+   int r;
+--- a/wrapfunc.inp
++++ b/wrapfunc.inp
+@@ -168,22 +168,22 @@
+ fgetxattr;ssize_t;(int fd, const char *name, void *value, size_t size);(fd, name, value, size)
+ #endif /* HAVE_FGETXATTR */
+ #ifdef HAVE_SETXATTR
+-setxattr;ssize_t;(const char *path, const char *name, void *value, size_t size, int flags);(path, name, value, size, flags)
++setxattr;int;(const char *path, const char *name, const void *value, size_t size, int flags);(path, name, value, size, flags)
+ #endif /* HAVE_SETXATTR */
+ #ifdef HAVE_LSETXATTR
+-lsetxattr;ssize_t;(const char *path, const char *name, void *value, size_t size, int flags);(path, name, value, size, flags)
++lsetxattr;int;(const char *path, const char *name, const void *value, size_t size, int flags);(path, name, value, size, flags)
+ #endif /* HAVE_LSETXATTR */
+ #ifdef HAVE_FSETXATTR
+-fsetxattr;ssize_t;(int fd, const char *name, void *value, size_t size, int flags);(fd, name, value, size, flags)
++fsetxattr;int;(int fd, const char *name, const void *value, size_t size, int flags);(fd, name, value, size, flags)
+ #endif /* HAVE_FSETXATTR */
+ #ifdef HAVE_REMOVEXATTR
+-removexattr;ssize_t;(const char *path, const char *name);(path, name)
++removexattr;int;(const char *path, const char *name);(path, name)
+ #endif /* HAVE_REMOVEXATTR */
+ #ifdef HAVE_LREMOVEXATTR
+-lremovexattr;ssize_t;(const char *path, const char *name);(path, name)
++lremovexattr;int;(const char *path, const char *name);(path, name)
+ #endif /* HAVE_LREMOVEXATTR */
+ #ifdef HAVE_FREMOVEXATTR
+-fremovexattr;ssize_t;(int fd, const char *name);(fd, name)
++fremovexattr;int;(int fd, const char *name);(fd, name)
+ #endif /* HAVE_FREMOVEXATTR */
+
+ #ifdef HAVE_FSTATAT
+
+

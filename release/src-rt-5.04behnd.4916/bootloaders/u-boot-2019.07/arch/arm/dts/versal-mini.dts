@@ -1,0 +1,36 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * dts file for Xilinx Versal Mini Configuration
+ *
+ * (C) Copyright 2019, Xilinx, Inc.
+ *
+ * Siva Durga Prasad Paladugu <siva.durga.paladugu@xilinx.com>
+ */
+
+/dts-v1/;
+
+/ {
+	model = "Versal MINI";
+	compatible = "xlnx,versal";
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	aliases {
+		serial0 = &dcc;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	memory@0 {
+		device_type = "memory";
+		reg = <0x0 0xfffc0000 0x0 0x40000>, <0x0 0x0 0x0 0x80000000>;
+	};
+
+	dcc: dcc {
+		compatible = "arm,dcc";
+		status = "okay";
+		u-boot,dm-pre-reloc;
+	};
+};

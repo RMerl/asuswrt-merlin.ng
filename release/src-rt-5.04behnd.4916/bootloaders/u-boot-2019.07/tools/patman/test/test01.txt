@@ -1,0 +1,56 @@
+commit b9da5f937bd5ea4931ea17459bf79b2905d9594d
+Author: Simon Glass <sjg@chromium.org>
+Date:   Sat Apr 15 15:39:08 2017 -0600
+
+    pci: Correct cast for sandbox
+    
+    This gives a warning with some native compilers:
+    
+    cmd/pci.c:152:11: warning: format ‘%llx’ expects argument of type
+       ‘long long unsigned int’, but argument 3 has type
+       ‘u64 {aka long unsigned int}’ [-Wformat=]
+    
+    Fix it with a cast.
+    
+    Signed-off-by: Simon Glass <sjg@chromium.org>
+    Series-notes:
+    some notes
+    about some things
+    from the first commit
+    END
+    
+    Commit-notes:
+    Some notes about
+    the first commit
+    END
+
+commit 5ab48490f03051875ab13d288a4bf32b507d76fd
+Author: Simon Glass <sjg@chromium.org>
+Date:   Sat Apr 15 15:39:08 2017 -0600
+
+    fdt: Correct cast for sandbox in fdtdec_setup_mem_size_base()
+    
+    This gives a warning with some native compilers:
+    
+    lib/fdtdec.c:1203:8: warning: format ‘%llx’ expects argument of type
+       ‘long long unsigned int’, but argument 3 has type
+       ‘long unsigned int’ [-Wformat=]
+    
+    Fix it with a cast.
+    
+    Signed-off-by: Simon Glass <sjg@chromium.org>
+    Series-to: u-boot
+    Series-prefix: RFC
+    Series-cc: Stefan Brüns <stefan.bruens@rwth-aachen.de>
+    Cover-letter-cc: Lord Mëlchett <clergy@palace.gov>
+    Series-version: 3
+    Patch-cc: fred
+    Series-changes: 4
+    - Some changes
+    
+    Cover-letter:
+    test: A test patch series
+    This is a test of how the cover
+    leter
+    works
+    END

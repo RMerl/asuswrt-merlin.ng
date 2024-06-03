@@ -1,0 +1,21 @@
+LS1012AFRDM BOARD
+M:	Prabhakar Kushwaha <prabhakar.kushwaha@nxp.com>
+M:	Rajesh Bhagat <rajesh.bhagat@nxp.com>
+S:	Maintained
+F:	board/freescale/ls1012afrdm/
+F:	include/configs/ls1012afrdm.h
+F:	configs/ls1012afrdm_qspi_defconfig
+F:	configs/ls1012afrdm_tfa_defconfig
+F:	configs/ls1012afrwy_tfa_defconfig
+F:	configs/ls1012afrwy_tfa_SECURE_BOOT_defconfig
+
+LS1012AFRWY BOARD
+M:      Bhaskar Upadhaya <bhaskar.upadhaya@nxp.com>
+S:      Maintained
+F:      board/freescale/ls1012afrwy/
+F:      include/configs/ls1012afrwy.h
+F:      configs/ls1012afrwy_qspi_defconfig
+
+M:	Vinitha V Pillai <vinitha.pillai@nxp.com>
+S:	Maintained
+F:	configs/ls1012afrwy_qspi_SECURE_BOOT_defconfig

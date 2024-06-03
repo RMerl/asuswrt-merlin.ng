@@ -1,0 +1,11 @@
+config CLK_MVEBU
+	bool "MVEBU clock drivers"
+	depends on CLK && ARCH_MVEBU
+	help
+	  Enable support for clock present on Marvell MVEBU SoCs.
+
+config CLK_ARMADA_3720
+	bool "Marvell Armada 3720 clock driver"
+	depends on CLK_MVEBU && ARM64
+	help
+	  Enable this to support the clocks on Marvell Armada 3720 SoC.

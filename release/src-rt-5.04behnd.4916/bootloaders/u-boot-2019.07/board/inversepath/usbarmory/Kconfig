@@ -1,0 +1,15 @@
+if TARGET_USBARMORY
+
+config IMX_CONFIG
+	default "board/inversepath/usbarmory/imximage.cfg"
+
+config SYS_BOARD
+	default "usbarmory"
+
+config SYS_VENDOR
+	default "inversepath"
+
+config SYS_CONFIG_NAME
+	default "usbarmory"
+
+endif

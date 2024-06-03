@@ -1,0 +1,18 @@
+LS1046AQDS BOARD
+M:	Mingkai Hu <Mingkai.Hu@nxp.com>
+M:	Rajesh Bhagat <rajesh.bhagat@nxp.com>
+S:	Maintained
+F:	board/freescale/ls1046aqds/
+F:	include/configs/ls1046aqds.h
+F:	configs/ls1046aqds_defconfig
+F:	configs/ls1046aqds_nand_defconfig
+F:	configs/ls1046aqds_sdcard_ifc_defconfig
+F:	configs/ls1046aqds_sdcard_qspi_defconfig
+F:	configs/ls1046aqds_qspi_defconfig
+F:	configs/ls1046aqds_lpuart_defconfig
+F:	configs/ls1046aqds_tfa_defconfig
+F:	configs/ls1046aqds_tfa_SECURE_BOOT_defconfig
+
+M:	Sumit Garg <sumit.garg@nxp.com>
+S:	Maintained
+F:	configs/ls1046aqds_SECURE_BOOT_defconfig

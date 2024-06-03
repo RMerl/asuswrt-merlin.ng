@@ -1,0 +1,79 @@
+#define SPCR_PCIHPE_MASK	0x10000000
+#define SPCR_PCIPR_MASK		0x03000000
+#define SPCR_OPT_MASK		0x00800000
+#define SPCR_TBEN_MASK		0x00400000
+#define SPCR_COREPR_MASK	0x00300000
+#define SPCR_TSEC1DP_MASK	0x00003000
+#define SPCR_TSEC1BDP_MASK	0x00000C00
+#define SPCR_TSEC1EP_MASK	0x00000300
+#define SPCR_TSEC2DP_MASK	0x00000030
+#define SPCR_TSEC2BDP_MASK	0x0000000C
+#define SPCR_TSEC2EP_MASK	0x00000003
+#define SPCR_TSECDP_MASK	0x00003000
+#define SPCR_TSECBDP_MASK	0x00000C00
+#define SPCR_TSECEP_MASK	0x00000300
+
+	const __be32 spcr_mask =
+#if defined(CONFIG_SPCR_OPT) && !defined(CONFIG_SPCR_OPT_UNSET)
+		SPCR_OPT_MASK |
+#endif
+#if defined(CONFIG_SPCR_TSECEP) && !defined(CONFIG_SPCR_TSECEP_UNSET)
+		SPCR_TSECEP_MASK |
+#endif
+#if defined(CONFIG_SPCR_TSEC1EP) && !defined(CONFIG_SPCR_TSEC1EP_UNSET)
+		SPCR_TSEC1EP_MASK |
+#endif
+#if defined(CONFIG_SPCR_TSEC2EP) && !defined(CONFIG_SPCR_TSEC2EP_UNSET)
+		SPCR_TSEC2EP_MASK |
+#endif
+		0;
+	const __be32 spcr_val =
+#if defined(CONFIG_SPCR_OPT) && !defined(CONFIG_SPCR_OPT_UNSET)
+		CONFIG_SPCR_OPT |
+#endif
+#if defined(CONFIG_SPCR_TSECEP) && !defined(CONFIG_SPCR_TSECEP_UNSET)
+		CONFIG_SPCR_TSECEP |
+#endif
+#if defined(CONFIG_SPCR_TSEC1EP) && !defined(CONFIG_SPCR_TSEC1EP_UNSET)
+		CONFIG_SPCR_TSEC1EP |
+#endif
+#if defined(CONFIG_SPCR_TSEC2EP) && !defined(CONFIG_SPCR_TSEC2EP_UNSET)
+		CONFIG_SPCR_TSEC2EP |
+#endif
+		0;
+
+	const __be32 lcrr_mask =
+#if defined(CONFIG_LCRR_DBYP) && !defined(CONFIG_LCRR_DBYP_UNSET)
+		LCRR_DBYP |
+#endif
+#if defined(CONFIG_LCRR_BUFCMDC) && !defined(CONFIG_LCRR_BUFCMDC_UNSET)
+		LCRR_BUFCMDC |
+#endif
+#if defined(CONFIG_LCRR_ECL) && !defined(CONFIG_LCRR_ECL_UNSET)
+		LCRR_ECL |
+#endif
+#if defined(CONFIG_LCRR_EADC) && !defined(CONFIG_LCRR_EADC_UNSET)
+		LCRR_EADC |
+#endif
+#if defined(CONFIG_LCRR_CLKDIV) && !defined(CONFIG_LCRR_CLKDIV_UNSET)
+		LCRR_CLKDIV |
+#endif
+		0;
+
+	const __be32 lcrr_val =
+#if defined(CONFIG_LCRR_DBYP) && !defined(CONFIG_LCRR_DBYP_UNSET)
+		CONFIG_LCRR_DBYP |
+#endif
+#if defined(CONFIG_LCRR_BUFCMDC) && !defined(CONFIG_LCRR_BUFCMDC_UNSET)
+		CONFIG_LCRR_BUFCMDC |
+#endif
+#if defined(CONFIG_LCRR_ECL) && !defined(CONFIG_LCRR_ECL_UNSET)
+		CONFIG_LCRR_ECL |
+#endif
+#if defined(CONFIG_LCRR_EADC) && !defined(CONFIG_LCRR_EADC_UNSET)
+		CONFIG_LCRR_EADC |
+#endif
+#if defined(CONFIG_LCRR_CLKDIV) && !defined(CONFIG_LCRR_CLKDIV_UNSET)
+		CONFIG_LCRR_CLKDIV |
+#endif
+		0;

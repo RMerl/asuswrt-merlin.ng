@@ -1,0 +1,45 @@
+#!/bin/bash
+
+export LD_LIBRARY_PATH=$HOSTTOOLS_DIR/libelf/lib:$LD_LIBRARY_PATH 
+source $KERNEL_DIR/.config
+
+TARGETS_DIR=`pwd`
+BUILD_DIR=$TARGETS_DIR/..
+
+if [ "$MOD_DIR" == "" ] ; then
+    MOD_DIR=$PROFILE/modules
+fi
+
+if [ "$FSSRC_DIR" == "" ]; then
+    FSSRC_DIR=./fs.src
+fi
+
+if [ "$INSTALL_DIR" == "" ]; then
+    INSTALL_DIR=./$PROFILE/fs.install
+fi
+
+ROOTFS=$PROFILE/fs
+
+# For systemd
+#mkdir -p $ROOTFS/var/run
+#(cd ${ROOTFS} && ln -s var/run run)
+mkdir -p $ROOTFS/run
+mkdir -p $ROOTFS/home/root
+cp -av ${INSTALL_DIR}/etc/systemd/ ${ROOTFS}/etc/systemd/
+(cd ${ROOTFS}/lib/systemd/system/multi-user.target.wants && ln -s ../console-getty.service ./)
+mkdir -p ${ROOTFS}/etc/systemd/system/multi-user.target.wants
+(cd ${ROOTFS}/etc/systemd/system/multi-user.target.wants && ln -s /lib/systemd/system/console-getty.service ./)
+(cd ${ROOTFS}/etc/systemd/system/multi-user.target.wants && ln -s /lib/systemd/system/broadcom-drivers.service ./)
+(cd ${ROOTFS}/etc/systemd/system/multi-user.target.wants && ln -s /lib/systemd/system/broadcom-static-nodes.service ./)
+(cd ${ROOTFS}/etc/systemd/system/multi-user.target.wants && ln -s /lib/systemd/system/broadcom-env-setup.service ./)
+(cd ${ROOTFS}/etc/systemd/system/multi-user.target.wants && ln -s /lib/systemd/system/broadcom-bdmf.service ./)
+mkdir -p ${ROOTFS}/etc/systemd/system/sysinit.target.wants
+(cd ${ROOTFS}/etc/systemd/system/sysinit.target.wants && ln -s /lib/systemd/system/broadcom-wdt.service ./)
+(cd ${ROOTFS}/bin && rm -rf mount && ln -s ../usr/bin/mount.util-linux mount)
+(cd ${ROOTFS}/bin && rm -rf umount && ln -s ../usr/bin/umount.util-linux umount)
+(cd ${ROOTFS}/sbin && ln -s ../usr/sbin/agetty.util-linux agetty)
+(cd ${ROOTFS}/sbin && rm init && ln -s /lib/systemd/systemd init)
+
+
+chmod 777 $ROOTFS/rom/etc/make_static_devnodes.sh
+

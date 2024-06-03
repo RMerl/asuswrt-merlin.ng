@@ -4,7 +4,7 @@ ifeq ($(TOP_PLATFORM),)
 TOP_PLATFORM=$(TOP)
 endif
 
-CFLAGS += $(if $(RTCONFIG_DEBUG),-g,-Os) -Wall $(EXTRACFLAGS) -fPIC
+CFLAGS += -Os -Wall $(EXTRACFLAGS) -fPIC
 CFLAGS += -I. -I$(TOP)/shared -I$(TOP_PLATFORM)/nvram$(BCMEX)$(EX7) -I$(SRCBASE)/include -I$(TOP)/httpd
 CFLAGS += -I$(TOP)/bwdpi_source/src/tdts_udb_sample
 CFLAGS += -I$(TOP)/bwdpi_source/src/tdts_udb_sample/linux
@@ -29,7 +29,7 @@ endif
 ifeq ($(HND_ROUTER),y)
 CFLAGS += -idirafter$(LINUXDIR)/include
 CFLAGS += -I$(HND_SRC)/userspace/public/include -I$(HND_SRC)/userspace/public/include/linux -I$(HND_SRC)/userspace/private/include
-ifeq ($(or $(HND_ROUTER_AX_675X),$(HND_ROUTER_AX_6756),$(HND_ROUTER_AX_6710),$(BCM_502L07P2)),y)
+ifeq ($(or $(HND_ROUTER_AX_675X),$(HND_ROUTER_AX_6756),$(HND_ROUTER_BE_4916),$(HND_ROUTER_AX_6710),$(BCM_502L07P2)),y)
 LDFLAGS += -L$(TOP_PLATFORM)/wlcsm -lwlcsm -L$(TOP_PLATFORM)/bcm_flashutil -lbcm_flashutil -L$(TOP_PLATFORM)/gen_util -lgen_util -L$(TOP_PLATFORM)/sys_util -lsys_util -L$(TOP_PLATFORM)/bcm_util -lbcm_util -L$(TOP_PLATFORM)/bcm_boardctl -lbcm_boardctl
 else
 LDFLAGS += -L$(TOP_PLATFORM)/wlcsm -lwlcsm -L$(TOP_PLATFORM)/bcm_flashutil -lbcm_flashutil -L$(TOP_PLATFORM)/bcm_util -lbcm_crc -L$(TOP_PLATFORM)/bcm_boardctl -lbcm_boardctl
@@ -53,6 +53,10 @@ LDFLAGS += -L $(TOP)/sqlCipher/.libs -lsqlcipher
 LDFLAGS += -L$(TOP)/PMS_DBapis -lpms_sql
 endif
 
+ifeq ($(RTCONFIG_TRUSTZONE),y)
+LDFLAGS += -L$(TOP)/ateed/ -latee
+endif
+
 # BUILD_NAME
 ifneq ($(findstring 4G-,$(BUILD_NAME)),)
 TARGET_MODEL = RT$(subst -,,$(BUILD_NAME))
@@ -62,6 +66,10 @@ else
 TARGET_MODEL = $(subst -,,$(subst +,P,$(BUILD_NAME)))
 endif
 CFLAGS  += -D$(TARGET_MODEL)
+
+ifeq ($(HND_ROUTER_BE_4916), y)
+CFLAGS+= -fcommon
+endif
 
 # for QCA toolchain compile issue, xxxx-ld has no pthead and dl in openwrt-toolchain
 ifeq ($(RTCONFIG_QCA),y)
@@ -119,16 +127,16 @@ dbg_dpi_support: dbg_dpi_support.o dpi_support.o
 bwdpi_cmd: main.o $(OBJS)
 	@echo " [bwdpi] CC $@"
 	@$(CC) -o $@ $^ $(LD1) -L. -lgcc_s
-	@$(if $(RTCONFIG_DEBUG),,$(STRIP) bwdpi_cmd)
+	@$(STRIP) bwdpi_cmd
 
 install: all
 	@echo "[bwdpi] Installing..."
 	@install -d $(INSTALLDIR)/bwdpi_source/usr/lib
 	@install -m 755 libbwdpi.so $(INSTALLDIR)/bwdpi_source/usr/lib
-	@$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/bwdpi_source/usr/lib/libbwdpi.so)
+	@$(STRIP) $(INSTALLDIR)/bwdpi_source/usr/lib/libbwdpi.so
 	@install -d $(INSTALLDIR)/bwdpi_source/usr/sbin
 	@install -m 755 hwinfo $(INSTALLDIR)/bwdpi_source/usr/sbin/hwinfo
-	@$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/bwdpi_source/usr/sbin/hwinfo)
+	@$(STRIP) $(INSTALLDIR)/bwdpi_source/usr/sbin/hwinfo
 
 %.o: %.c
 	@echo " [bwdpi] CC $@"

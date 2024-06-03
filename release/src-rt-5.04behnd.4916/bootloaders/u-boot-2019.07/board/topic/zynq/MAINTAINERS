@@ -1,0 +1,6 @@
+TOPIC BOARD
+M:	Mike Looijmans <mike.looijmans@topic.nl>
+S:	Maintained
+F:	board/topic/zynq/
+F:	include/configs/topic*.h
+F:	configs/topic_*_defconfig

@@ -35,7 +35,6 @@ int
 fwupg_flashing_main(int argc, char *argv[])
 {
 	char *const new_argv[] = { "/bin/bcm_flasher", "/tmp/linux.trx", "1", NULL };
-	char *const new_argv_test[] = { "/bin/sh", NULL };
 	int i,r;
 
 	chdir("/");

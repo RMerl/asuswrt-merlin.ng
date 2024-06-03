@@ -1,0 +1,27 @@
+If you are experiencing hangups/data-aborts when trying to display a BMP image,
+the following might be relevant to your situation...
+
+Some architectures cannot handle unaligned memory accesses, and an attempt to
+perform one will lead to a data abort. On such architectures it is necessary to
+make sure all data is properly aligned, and in many situations simply choosing
+a 32 bit aligned address is enough to ensure proper alignment. This is not
+always the case when dealing with data that has an internal layout such as a
+BMP image:
+
+BMP images have a header that starts with 2 byte-size fields followed by mostly
+32 bit fields. The packed struct that represents this header can be seen below:
+
+typedef struct bmp_header {
+	/* Header */
+	char signature[2];
+	__u32	file_size;
+	__u32	reserved;
+	__u32	data_offset;
+	... etc
+} __attribute__ ((packed)) bmp_header_t;
+
+When placed in an aligned address such as 0x80a00000, char signature offsets
+the __u32 fields into unaligned addresses (in our example 0x80a00002,
+0x80a00006, and so on...). When these fields are accessed by U-Boot, a 32 bit
+access is generated at a non-32-bit-aligned address, causing a data abort.
+The proper alignment for BMP images is therefore: 32-bit-aligned-address + 2.

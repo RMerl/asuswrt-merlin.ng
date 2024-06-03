@@ -1,0 +1,12 @@
+if TARGET_BLANCHE
+
+config SYS_BOARD
+	default "blanche"
+
+config SYS_VENDOR
+	default "renesas"
+
+config SYS_CONFIG_NAME
+	default "blanche"
+
+endif

@@ -1,0 +1,65 @@
+if TARGET_SECOMX6
+
+choice
+	prompt "SECO i.MX6 Board variant"
+	optional
+
+config SECOMX6_Q7
+	bool "Q7"
+
+config SECOMX6_UQ7
+	bool "uQ7"
+
+config SECOMX6_USBC
+	bool "uSBC"
+
+endchoice
+
+choice
+	prompt "SECO i.MX6 SoC variant"
+	optional
+
+config SECOMX6Q
+	bool "i.MX6Q"
+	select MX6Q
+
+config SECOMX6DL
+	bool "i.MX6DL"
+	select MX6DL
+
+config SECOMX6S
+	bool "i.MX6S"
+	select MX6S
+
+endchoice
+
+choice
+	prompt "DDR size"
+
+config SECOMX6_512MB
+	bool "512MB"
+
+config SECOMX6_1GB
+	bool "1GB"
+
+config SECOMX6_2GB
+	bool "2GB"
+
+config SECOMX6_4GB
+	bool "4GB"
+
+endchoice
+
+config IMX_CONFIG
+	default "board/seco/mx6quq7/mx6quq7-2g.cfg" if SECOMX6_UQ7 && SECOMX6Q && SECOMX6_2GB
+
+config SYS_BOARD
+	default "mx6quq7" if SECOMX6_UQ7 && SECOMX6Q
+
+config SYS_VENDOR
+	default "seco"
+
+config SYS_CONFIG_NAME
+	default "secomx6quq7" if SECOMX6_UQ7 && SECOMX6Q
+
+endif

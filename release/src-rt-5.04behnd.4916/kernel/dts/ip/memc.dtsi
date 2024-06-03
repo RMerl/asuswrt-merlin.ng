@@ -1,0 +1,17 @@
+
+#include "../../../bcmdrivers/opensource/include/bcm963xx/bcmbca_memc_dt_bindings.h"
+
+compatible = "brcm,bcm-memc";
+
+#ifdef MEMC_REG_NAMES
+reg-names = MEMC_REG_NAMES;
+#endif
+
+#ifdef MEMC_REG
+reg = MEMC_REG;
+#endif
+
+#ifdef MEMC_CPU_INT_LINE
+interrupts =	<GIC_SPI MEMC_CPU_INT_LINE IRQ_TYPE_LEVEL_HIGH>;
+status 	   =	"okay";
+#endif

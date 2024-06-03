@@ -1,0 +1,204 @@
+/*
+ * Device Tree file for Marvell Armada XP theadorable board
+ *
+ * Copyright (C) 2013-2014 Marvell
+ *
+ * Lior Amsalem <alior@marvell.com>
+ * Gregory CLEMENT <gregory.clement@free-electrons.com>
+ * Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+ *
+ * This file is dual-licensed: you can use it either under the terms
+ * of the GPL or the X11 license, at your option. Note that this dual
+ * licensing only applies to this file, and not this project as a
+ * whole.
+ *
+ *  a) This file is free software; you can redistribute it and/or
+ *     modify it under the terms of the GNU General Public License as
+ *     published by the Free Software Foundation; either version 2 of the
+ *     License, or (at your option) any later version.
+ *
+ *     This file is distributed in the hope that it will be useful
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ * Or, alternatively
+ *
+ *  b) Permission is hereby granted, free of charge, to any person
+ *     obtaining a copy of this software and associated documentation
+ *     files (the "Software"), to deal in the Software without
+ *     restriction, including without limitation the rights to use
+ *     copy, modify, merge, publish, distribute, sublicense, and/or
+ *     sell copies of the Software, and to permit persons to whom the
+ *     Software is furnished to do so, subject to the following
+ *     conditions:
+ *
+ *     The above copyright notice and this permission notice shall be
+ *     included in all copies or substantial portions of the Software.
+ *
+ *     THE SOFTWARE IS PROVIDED , WITHOUT WARRANTY OF ANY KIND
+ *     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ *     OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ *     NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ *     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY
+ *     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ *     OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Note: this Device Tree assumes that the bootloader has remapped the
+ * internal registers to 0xf1000000 (instead of the default
+ * 0xd0000000). The 0xf1000000 is the default used by the recent,
+ * DT-capable, U-Boot bootloaders provided by Marvell. Some earlier
+ * boards were delivered with an older version of the bootloader that
+ * left internal registers mapped at 0xd0000000. If you are in this
+ * situation, you should either update your bootloader (preferred
+ * solution) or the below Device Tree should be adjusted.
+ */
+
+/dts-v1/;
+#include <dt-bindings/gpio/gpio.h>
+#include "armada-xp-mv78260.dtsi"
+
+/ {
+	model = "Marvell Armada XP theadorable";
+	compatible = "marvell,armadaxp-mv78260", "marvell,armadaxp", "marvell,armada-370-xp";
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	aliases {
+		spi0 = &spi0;
+		spi1 = &spi1;
+		ethernet0 = &eth0;
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0x00000000 0x00000000 0x00000000 0x80000000>;
+	};
+
+	soc {
+		ranges = <MBUS_ID(0xf0, 0x01) 0 0 0xf1000000 0x100000
+			  MBUS_ID(0x01, 0x1d) 0 0 0xfff00000 0x100000
+			  MBUS_ID(0x01, 0x2f) 0 0 0xf0000000 0x1000000>;
+
+		internal-regs {
+			serial@12000 {
+				status = "okay";
+				u-boot,dm-pre-reloc;
+			};
+
+			serial@12100 {
+				status = "okay";
+			};
+
+			serial@12200 {
+				status = "okay";
+			};
+
+			serial@12300 {
+				status = "okay";
+			};
+
+			sata@a0000 {
+				nr-ports = <2>;
+				status = "okay";
+			};
+
+			mdio {
+				phy0: ethernet-phy@0 {
+					reg = <0>;
+				};
+			};
+
+			ethernet@70000 {
+				status = "okay";
+				phy = <&phy0>;
+				phy-mode = "sgmii";
+			};
+
+			usb@50000 {
+				status = "okay";
+			};
+
+			usb@51000 {
+				status = "okay";
+			};
+
+			/* The LCD controller is only used on this board */
+			lcd0: lcd-controller@e0000 {
+				compatible = "marvell,armada-xp-lcd";
+				reg = <0xe0000 0x10000>;
+				status = "okay";
+				u-boot,dm-pre-reloc;
+
+				display-timings {
+					native-mode = <&timing0>;
+					timing0: panel0 {
+						hactive = <240>;
+						vactive = <320>;
+						hfront-porch = <1>;
+						hback-porch = <45>;
+						vfront-porch = <1>;
+						vback-porch = <3>;
+
+						/* Some dummy parameters */
+						clock-frequency = <0>;
+						hsync-len = <0>;
+						vsync-len = <0>;
+					};
+				};
+			};
+		};
+	};
+};
+
+&spi0 {
+	status = "okay";
+	u-boot,dm-pre-reloc;
+
+	spi-flash@0 {
+		u-boot,dm-pre-reloc;
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "n25q128a13", "jedec,spi-nor";
+		reg = <0>; /* Chip select 0 */
+		spi-max-frequency = <27777777>;
+	};
+
+	fpga@1 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "spi-generic-device";
+		reg = <1>; /* Chip select 1 */
+		spi-max-frequency = <27777777>;
+	};
+};
+
+&spi1 {
+	status = "okay";
+
+	fpga@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "spi-generic-device";
+		reg = <0>; /* Chip select 0 */
+		spi-max-frequency = <27777777>;
+	};
+};
+
+
+&pciec {
+	status = "okay";
+
+	pcie@1,0 {
+		/* Port 0, Lane 0 */
+		status = "okay";
+	};
+
+	pcie@9,0 {
+		/* Port 2, Lane 0 */
+		status = "okay";
+	};
+};

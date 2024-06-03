@@ -1,0 +1,6 @@
+&IIC {
+	ds1339@68 {
+		compatible = "dallas,ds1339";
+		reg = <0x68>;
+	};
+};

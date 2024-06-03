@@ -1,0 +1,6 @@
+CircuitCo Minnowboard Max
+M:	Simon Glass <sjg@chromium.org>
+S:	Maintained
+F:	board/intel/minnowmax
+F:	include/configs/minnowmax.h
+F:	configs/minnowmax_defconfig

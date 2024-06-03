@@ -1,0 +1,131 @@
+#!/bin/bash
+
+trap 'echo Error: command exited with code ["$?"]; exit 1' ERR
+trap 'parl_token_uninit' EXIT
+
+if [[ -f $PROFILE_DIR/$PROFILE ]]; then
+        source $PROFILE_DIR/$PROFILE
+fi
+source $TARGETS_DIR/buildFS_COMM
+
+# make root file system images for squashfs, jffs2 and ubifs
+
+	#### SQUASHFS
+
+function squashfs_enabled()
+{
+	[[ "$BRCM_FLASH_NAND_ROOTFS_SQUBI" = "y" ]] ||
+	[[ "$BRCM_FLASH_EMMC_ROOTFS_SQUASHFS" = "y" ]] ||
+	[[ "$BRCM_FLASH_VFBIO_ROOTFS_SQUASHFS" = "y" ]] ||
+	[[ "$BRCM_ROOTFS_SQUASHFS" = "y" ]] ||
+	[[ "$BUILD_ROOTFS_SQUASHFS_HASH" = "y" ]]
+}
+
+function mksquashfs_img()
+{
+parl_token_get
+(
+sqshimg_name="$1"
+if [ "$BRCM_IKOS" == "y" ]; then
+    $HOSTTOOLS_DIR/mksquashfs $TARGET_FS $PROFILE_DIR/$sqshimg_name -noappend -all-root
+    $HOSTTOOLS_DIR/mksquashfs $TARGET_FS $PROFILE_DIR/${sqshimg_name}.raw -noappend -all-root -noI -noD -noF -noX
+    #-noI			do not compress inode table
+    #-noD			do not compress data blocks
+    #-noF			do not compress fragment blocks
+    #-noX			do not compress extended attributes
+else
+    (ulimit -t 900 ; $HOSTTOOLS_DIR/mksquashfs $TARGET_FS $PROFILE_DIR/$sqshimg_name -noappend -all-root -comp xz)
+    if [ $? -ne 0 ]; then
+        echo "mksquashfs failed once"
+        (ulimit -t 900 ; $HOSTTOOLS_DIR/mksquashfs $TARGET_FS $PROFILE_DIR/$sqshimg_name -noappend -all-root -comp xz)
+        if [ $? -ne 0 ]; then
+            echo "mksquashfs failed twice"
+            touch ${SUBSHELL_ERR_PREFIX}.$$
+            exit 2
+        fi
+    fi
+fi
+parl_token_free
+)&
+}
+
+parl_token_init 1
+mkdir -p $TARGET_FS/bootfs
+
+if squashfs_enabled; then
+    mksquashfs_img rootfs.img
+fi
+
+NANDSIZES=
+for a in ${!BUILD_NAND_IMG_BLKSIZE_*}
+do
+  eval v=\$$a
+  if [ -n "$v" ]
+  then
+    a=${a#BUILD_NAND_IMG_BLKSIZE_}
+    a=${a%KB}
+    NANDSIZES="$NANDSIZES $a"
+  fi
+done
+echo "NANDSIZES is $NANDSIZES"
+
+if [ "$BRCM_KERNEL_ROOTFS" = "all" ]; then
+        SUMTOOL=`find $HOSTTOOLS_DIR/mtd-utils*/ -name 'sumtool' -print -quit`
+
+	for BLK in $NANDSIZES
+	do
+	parl_token_get
+	(
+	   parl_err_trap_reg
+
+	   let "BYTES = $BLK * 1024"
+	   case $BLK in
+		128)
+             		PAGE=2048
+			;;
+		256|512)
+             		PAGE=4096
+			;;
+		1024)
+             		PAGE=8192
+			;;
+           esac
+           let "LEB = $BYTES - 2 * $PAGE"
+
+           # Set journal size to be smaller than half of the FS size if the FS is smaller than 16 MB
+           JOURNALSIZE="8388608"
+           FS_SIZE=$(( $(du -shb $TARGET_FS | cut -f1) / 2 ))
+           while [ $FS_SIZE -lt $JOURNALSIZE ]; do
+              JOURNALSIZE=$[ $JOURNALSIZE / 2 ]
+           done
+
+           $HOSTTOOLS_DIR/mtd-utils*/mkfs.ubifs --squash-uids -F -v -c 2048 -m $PAGE -e $LEB -x zlib -j ${JOURNALSIZE} -r $TARGET_FS -o $PROFILE_DIR/rootfs_${BLK}.ubifs
+
+           parl_token_free
+        )&
+        done
+fi
+
+if [ "$BRCM_FLASH_EMMC_ROOTFS_EXT4" = "y" -o "$BRCM_FLASH_VFBIO_ROOTFS_EXT4" = "y" ]; then
+parl_token_get
+(
+   parl_err_trap_reg
+
+   #### eMMC ext4, minisize 12MB
+   FS_SIZE_INC=2
+   FS_SIZE=$(( $(du -shb $TARGET_FS | cut -f1) / 1000000 ))
+   if [ $FS_SIZE -lt 6 ]; then
+       FS_SIZE=6
+   fi
+   FS_SIZE_TARGET=$(( $FS_SIZE*$FS_SIZE_INC ))M
+   rm -f $PROFILE_DIR/rootfs.ext4
+   echo "Starting building ext4 actual-size:${FS_SIZE}M target-size:${FS_SIZE_TARGET}"
+   $HOSTTOOLS_DIR/local_install/make_ext4fs -I 256 -l $FS_SIZE_TARGET $PROFILE_DIR/rootfs.ext4 $TARGET_FS
+   resize2fs -M $PROFILE_DIR/rootfs.ext4
+   echo "Done building ext4"
+
+   parl_token_free
+)&
+fi
+
+parl_wait

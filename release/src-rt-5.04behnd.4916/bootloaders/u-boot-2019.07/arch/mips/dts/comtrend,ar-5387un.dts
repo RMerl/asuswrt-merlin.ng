@@ -1,0 +1,112 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2017 Álvaro Fernández Rojas <noltari@gmail.com>
+ */
+
+/dts-v1/;
+
+#include "brcm,bcm6328.dtsi"
+
+/ {
+	model = "Comtrend AR-5387un";
+	compatible = "comtrend,ar5387-un", "brcm,bcm6328";
+
+	aliases {
+		serial0 = &uart0;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+};
+
+&ehci {
+	status = "okay";
+};
+
+&enet {
+	status = "okay";
+
+	port@0 {
+		compatible = "brcm,enetsw-port";
+		reg = <0>;
+		label = "fe1";
+		brcm,phy-id = <1>;
+	};
+
+	port@1 {
+		compatible = "brcm,enetsw-port";
+		reg = <1>;
+		label = "fe2";
+		brcm,phy-id = <2>;
+	};
+
+	port@2 {
+		compatible = "brcm,enetsw-port";
+		reg = <2>;
+		label = "fe3";
+		brcm,phy-id = <3>;
+	};
+
+	port@3 {
+		compatible = "brcm,enetsw-port";
+		reg = <3>;
+		label = "fe4";
+		brcm,phy-id = <4>;
+	};
+};
+
+&leds {
+	status = "okay";
+
+	led@1 {
+		reg = <1>;
+		label = "AR-5387un:red:inet";
+	};
+
+	led@4 {
+		reg = <4>;
+		label = "AR-5387un:red:power";
+	};
+
+	led@7 {
+		reg = <7>;
+		label = "AR-5387un:green:inet";
+	};
+
+	led@8 {
+		reg = <8>;
+		label = "AR-5387un:green:power";
+	};
+
+	led@11 {
+		reg = <11>;
+		active-low;
+		label = "AR-5387un:green:dsl";
+	};
+};
+
+&ohci {
+	status = "okay";
+};
+
+&spi {
+	status = "okay";
+
+	spi-flash@0 {
+		compatible = "jedec,spi-nor";
+		reg = <0>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+		spi-max-frequency = <33333334>;
+	};
+};
+
+&uart0 {
+	u-boot,dm-pre-reloc;
+	status = "okay";
+};
+
+&usbh {
+	status = "okay";
+};

@@ -35,6 +35,12 @@
 var wanstate = -1;
 var wansbstate = -1;
 var wanauxstate = -1;
+var first_wanstate = -1;
+var first_wansbstate = -1;
+var first_wanauxstate = -1;
+var second_wanstate = -1;
+var second_wansbstate = -1;
+var second_wanauxstate = -1;
 var wl0_ssid_orig = decodeURIComponent('<% nvram_char_to_ascii("", "wl0_ssid"); %>');
 var wl1_ssid_orig = decodeURIComponent('<% nvram_char_to_ascii("", "wl1_ssid"); %>');
 var wl2_ssid_orig = decodeURIComponent('<% nvram_char_to_ascii("", "wl2_ssid"); %>');
@@ -234,6 +240,19 @@ function check_wan_state(){
 		},
 		success: function(response){
 			setTimeout("check_wan_state();", 1000);
+			if(parent.dualwan_enabled){
+				if( parent.ewan_index == 0 ){
+					wanstate = first_wanstate;
+					wansbstate = first_wansbstate;
+					wanauxstate = first_wanauxstate;
+				}
+				else if(parent.ewan_index == 1){
+					wanstate = second_wanstate;
+					wansbstate = second_wansbstate;
+					wanauxstate = second_wanauxstate;
+				}
+			}
+
 			if(wanstate == 4 && wansbstate == 2 && wanauxstate == 0){
 				parent.pppoe_failed_flag = true;
 			}
@@ -782,7 +801,6 @@ function submitForm(){
 	}
 
 	child_macaddr = '';
-	parent.w_Setting_tmp = document.form.w_Setting.value;
 	document.getElementById("loadingIcon").style.display = "";
 	if(parent.document.QKform.http_passwd.value != ""){
 		var postData = {"restart_httpd": "0", "new_username":parent.document.QKform.http_username.value, "new_passwd":parent.document.QKform.http_passwd.value};
@@ -810,6 +828,10 @@ function submitForm(){
 			parent.restartWireless = true;
 	}
 
+	if(parent.w_Setting_tmp == "1" && document.form.wl0_ssid.disabled)//Wait for getting firmware info
+		document.form.action_wait.value = "5";
+
+
 	if(parent.pppoe_failed_flag && parent.document.QKform.sw_mode.value == 1 && !parent.flag_manual){
 		document.form.action_script.value = "saveNvram";
 		document.form.flag.value = "pppoe_failed";
@@ -819,6 +841,8 @@ function submitForm(){
 	if(parent.document.QKform.wan_proto.value == "pppoe" && parent.flag_manual){
 		document.form.action_script.value += "restart_wan_if";
 	}
+
+	parent.w_Setting_tmp = document.form.w_Setting.value;
 
 	document.form.submit();
 }
@@ -1232,7 +1256,7 @@ function RP_useParentSetting(){
 				var _auth_mode_5g_2 = '<% nvram_get("wl2.1_auth_mode_x"); %>';
 			}				
 		}		
-		else{
+		else if('<% nvram_get("wlc_band"); %>' == '0'){
 			var _ssid_2g = '<% nvram_char_to_ascii("", "wl0.1_ssid"); %>';
 			var _psk_2g = '<% nvram_char_to_ascii("", "wl0.1_wpa_psk"); %>';
 			var _auth_mode_2g = '<% nvram_get("wl0.1_auth_mode_x"); %>';
@@ -1246,6 +1270,22 @@ function RP_useParentSetting(){
 				var _psk_5g_2 = wl2_wpa_psk_orig;
 				var _auth_mode_5g_2 = '<% nvram_get("wl2_auth_mode_x"); %>';
 			}	
+		}
+		else{
+			var _ssid_2g = encodeURIComponent(wl0_ssid_orig);
+			var _psk_2g = wl0_wpa_psk_orig;
+			var _auth_mode_2g = '<% nvram_get("wl0_auth_mode_x"); %>';
+			
+			if(band5g_support){
+				var _ssid_5g = encodeURIComponent(wl1_ssid_orig);
+				var _psk_5g = wl1_wpa_psk_orig;
+				var _auth_mode_5g = '<% nvram_get("wl1_auth_mode_x"); %>';
+			}
+			if(wl_info.band5g_2_support){
+				var _ssid_5g_2 = encodeURIComponent(wl2_ssid_orig);
+				var _psk_5g_2 = wl2_wpa_psk_orig;
+				var _auth_mode_5g_2 = '<% nvram_get("wl2_auth_mode_x"); %>';
+			}				
 		}
 
 		if(_ssid_2g.search("Guest1") != -1){

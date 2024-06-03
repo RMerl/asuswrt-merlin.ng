@@ -1,0 +1,92 @@
+HISTORY OF MICROSOFT NTFS BY TUXERA
+
+NTFSPROGS 3021.4.15.12
+
+- Includes security update and is recommended for all users.
+
+NTFSPROGS 3021.4.15.11
+
+- Fix bugs related to recovery of deleted files in ntfsck.
+
+NTFSPROGS 3021.4.15.9
+
+- Add ability to recovery corrupt attribute list attribute of an inode in fsck.
+
+NTFSPROGS 3021.4.15.8
+
+- Fixed the detection of the end of attribute list.
+- fsck: fix consistency check for index bitmap.
+- fsck: add checks for STANDARD_INFORMATION and OBJECT_ID.
+- fsck: add more extensive checks.
+- Reject unsupported compressed block size.
+- Add alignment checks for $AttrDef.
+- Add consistency check for resident attr ->value_offset field.
+- Fix 32 bit addition overflow in ntfs_ia_check().
+- Add consistency check to validate index_length in index block.
+- Validate attrlist length while opening and extending.
+- Refuse mounting when index block size < sector size.
+- Refuse mounting when cluster size < sector size.
+- Refuse mounting volumes were nr_clusters do not fit in 32-bit.
+- Shown in log the inode of directory read error.
+- Restricted the attribute definition table size to 24 bits.
+- Handle endian-ness in ntfs_boot_sector_is_ntfs() check.
+- Checked the layout of attribute list entries.
+- Improved checking of attribute list entries.
+- Added and grouped generic attribute checks.
+- Check consistency of general index entries.
+- Checked consistency of file name attributes.
+- Checked consistency of index entries in directories.
+- Fix name limit check for an external attribute.
+- Aborted mounting when cannot access standard information.
+- Checked attributes layout against length actually used.
+- Fixed checking the bounds of attribute names.
+- Checked $MFT data to be ready before fetching an extent.
+- Checked the layout of attribute list entries.
+- Checked name limits while looking up for an external.
+- Fixed possible overflow while checking resident data.
+- Make sure errno is properly set for corrupt inode.
+- Fix consistency check for AT_END and big endian issues.
+- fsck: Fix check_root_directory() error path.
+- Use EOVERFLOW instead of EINVAL for ntfs_attr_readall().
+- Fix consistency check in ntfs_attr_readall().
+- Added check of layout of attributes.
+- Added a consistency check of attribute size in readall().
+- Improved the consistency checks of standard information.
+- Cleaned the tail of compressed buffer before writing a full cluster.
+- Fix a->value_length conversion from LE-32 to CPU endian.
+- mkntfs: Allow long volume labels but truncate them.
+- Fix MFT & MFTmirr mismatch endless recursion bug.
+- Fix upcase table size consistency checks.
+- Fix inode and attr leaks if upcase sanity checks fail.
+- volume: fix an inode leak if ntfs_attr_open() fails.
+- Add consistency check on index sizes.
+- Add a consistency check in ntfs_attr_lookup() for attr length.
+- Add MFT record in-use byte and alignment check.
+- Update ctime when ACL is changed.
+- Processed ACL inheritance for authenticated users.
+- Support compactOS feature.
+- Fix for reparse point.
+- Refuse access to reparse point if permissions don't allow.
+- mkntfs: Fix maximum cluster size check.
+- Fix sectors_per_cluster check.
+- acls: free memory leaks.
+- Fix read from pointer after free().
+- fsck: update sectors_per_cluster related calculations.
+- Increase the cluster size support till <= 2MiB.
+- Update reparse attribute based on new REPARSE_POINT.
+- fsck: Fix missing bm to lcn_bitmap rename.
+- Fix for EIO during ntfs_readdir() with some non-zero pos arguments.
+- logfile: fix log_record_header_length while emptying of $LogFile.
+- ntfsdebug: fix when --mem value is >= actual LCN bitmap size.
+- fsck: reduce probability of getting killed in low-memory.
+- Fix NULL_DEREFERENCE reports at random places from static analysis.
+- fsck: fix more static analysis warnings.
+- fsck: fix incorrect logging cases.
+- ntfsdebug: add option to ignore progress percentage.
+- fsck: Fix compare_bitmaps miscalculations.
+- Ratelimit excessive ntfsck messages.
+- mkntfs -m option to create 1k or 2k MFT records for 4k sec disk.
+
+This file contains the history since NTFSPROGS 3017.7.18.14
+
+Copyright (c) 2008-2023 Tuxera Inc. All Rights Reserved.

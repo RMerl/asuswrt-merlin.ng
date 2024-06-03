@@ -1,0 +1,5 @@
+Freescale system clock options
+
+	- CONFIG_SYS_FSL_CLK
+		Enable to call get_clocks() in board_init_f() for
+		non-PPC platforms.

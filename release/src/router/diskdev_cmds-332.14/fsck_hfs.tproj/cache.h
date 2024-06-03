@@ -29,6 +29,21 @@
 #define _CACHE_H_
 #include <stdint.h>
 
+/* Different values for initializing cache */
+enum {
+	/* Default sizes */
+	DefaultCacheBlockSize	=	0x8000,		/* 32K */
+	DefaultCacheBlocks		=	1024,
+	DefaultCacheSize		=	(DefaultCacheBlockSize * DefaultCacheBlocks), 
+
+	/* Minimum allowed sizes */
+	MinCacheBlockSize		=	0x8000,		/* 32K */
+	MinCacheBlocks			=	128,
+	MinCacheSize			=	(MinCacheBlockSize * MinCacheBlocks), 
+
+	CacheHashSize			=	257,		/* prime number */
+};
+
 /*
  * Some nice lowercase shortcuts.
  */
@@ -135,7 +150,15 @@ typedef struct Cache_t
 	uint32_t	Span;		/* Requests that spanned cache blocks */
 } Cache_t;
 
+extern Cache_t fscache;
 
+/*
+ * CalculateCacheSize
+ *
+ * Determine the cache size that should be used to initialize the cache.
+ */
+int CalculateCacheSize(uint64_t userCacheSize, uint32_t *calcBlockSize, uint32_t *calcTotalBlocks, 
+					   char debug);
 /*
  * CacheInit
  *

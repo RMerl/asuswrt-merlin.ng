@@ -1,0 +1,195 @@
+/dts-v1/;
+/ {
+security_policy {
+	// Legacy Security Policy Format -- START
+	// For backward compatiblity with OLDER loaders. This can be removed if latest
+	// loader binaries have been installed on the device (i.e with TPLs upgraded to
+	// min_tpl_compatibility 0x3 or higher)
+	delegate_id = <12345>;
+	min_tpl_compatibility = <0x3>;
+	// Legacy Security Policy Format -- END
+
+	compatible {
+		delegate_id = <12345>;
+		min_tpl_compatibility = <0x3>;
+	};
+	key-aes {
+		description = "Encrypted AES key - Mandatory Node";
+		data = < 0xC938DA41 0x9F3627A0 0x72FAE006 0x43219655 0x2AC8C684 0x4F1F840C 0x62B591 0x18412759 0xC7DDCEDD 0x5C1978FB 0x7D3DE236 0x3B4CA38C>;
+		algo = "aes-cbc-128";
+	};
+	encoded_keys {
+		// The 'keyx' node names are only placeholders and can be 
+		// renamed to any user defined name. All keys are encoded using ROE
+		// Fields:
+		//   key_name: key_<key_name> will be the name of final exported item in dtb
+		//   algo: Encryption algorithm used
+		//   size: Unencrypted size
+		//   permission: security permissions of the decoded key. 'secure' items 
+		//               will not be available in UBOOT and Linux. 
+		//               WARNING: Only enable 'secure' permission if a TEE is being
+		//               deployed.
+		//   os_export: optional control to allow the export  of the decoded
+		//              key to linux if 'nonsecure' permission is set. If field
+		//              is present and has a value of 'yes' the decoded	key will
+		//              be exported to Linux via dtb.   
+		key1 {
+			description = "Secret key to be passed to secure world";
+			data = [ 161B7925D6E9DF6AA9796BD04B8A03FD37FFA8D5D53E150090591E38FFE512231B6FA4AD1E4E2EB2DD38C18E52396765 ];
+			size = < 0x20 >;
+			algo = "aes-cbc-128";
+			load_addr = <0x0>;
+			key_name = "secret_1";
+			permission = "secure";
+			os_export = "no";
+		};
+		key2 {
+			description = "Secret key to be passed to NON secure world";
+			data = [ 7089845D8A25C4195074C75BC051182A96DBB38101F11A7A24A55E54B440E51B217B1A38E9E36052D5148CA206FEED91 ];
+			size = < 0x20 >;
+			algo = "aes-cbc-128";
+			load_addr = <0x0>;
+			key_name = "secret_2";
+			permission = "nonsecure";
+			os_export = "no";
+		};
+	};
+	sec_restriction {
+		description = "Security Restrictions xxx - Optional Node";
+		sw_restriction {
+			status = "disabled";
+
+			// debug_groups enables key-owners to allow delegates to run debug
+			// images on select field devices. key-owners install a debug certificate
+			// on to devices which are allowed to run debug images. key-owners then
+			// provide a debug delegation, which contains a security policy with 
+			// active debug groups which correspond to the pre-installed debug
+			// certificates. TPL ensures that only delegate FIT images with a security
+			// policy with active debug_groups, which correspond to the certificate
+			// in flash on the debug device, are allowed to run.
+			debug_groups {
+				status = "disabled";
+				group_1 { // Node name is NOT important
+
+					 // group_name - is matched to name in debug certificate
+					 group_name = "debug_group_1";
+
+					 // group_cert - points to the location of the debug
+					 // certificate in flash. 
+					 // For nand, certificate is in raw ubi volume  
+					 // group_cert = "ubi:<ubi volume number>"
+					 // For emmc, certificate is a file in a ext4 partition
+					 // group_cert = "gpt:/<ext4 partition name>/<file>
+
+					 // Only enable ONE group_cert entry per debug group
+					 //group_cert = "ubi:7";
+					 //group_cert = "gpt:/data/debug.cert";
+
+					 // group_pubkey - Optional public key to authenticate 
+					 // the certificate. If not present then FLD_ROT is used
+					 group_pubkey = < 0xC889B428 0x40243D35 0x220C7508 0xFC28FE13 0x529A5084 0x69D3B94D 0x94036011 0x6603A688 0x3AD4751E 0x996FB38A 0x15FB43F9 0xCC37CC97 0xC2AA5774 0x7E568FFE 0x9B28D004 0x827D34A0 0xEE4180BF 0x5DBDBBC9 0x719A876E 0x9A4D54FE 0x9F3585E6 0x6EF98285 0x23DB34D 0x935D0D60 0xE91A0661 0x63FD68C 0x5A93B42A 0xABF1D6E2 0x446BE05E 0xFBE660A7 0x64CA8539 0x9E791EDF 0x6D7E7F96 0xB289EE1E 0xAD9CA67A 0xD3859987 0x57EA1781 0xF1CCF08A 0x5FAD34B2 0x9CD35CFF 0xA1FD530B 0xE0745759 0x584642E9 0x5616C4F2 0x9B913C87 0xD7548F7F 0x888BFC87 0xC364578E 0x8E84CDC 0x25F4B687 0x584ABD5 0x6FA9A062 0x9A6B775B 0x2824F956 0xC549F497 0xE2543786 0x4C2FD570 0xEE85200B 0xBC195853 0x24AA7E42 0x1167CE5C 0xC7C9F721 0xB7BDDA5A 0xDC184A75>;
+				};
+			};
+
+			// required_images allows key-owners to enforce the loading of certain
+			// key-owner provided images. The images in the FIT are matched against
+			// the list of required_images in the security policy. The TPL code 
+			// ensures the validity of the images via a hash, and also validates 
+			// load order and load address
+			required_images {
+				status = "disabled";
+				// Order of images is important
+				image1 {
+					//Name of the FIT node for this binary
+					node_name = "atf";
+					load_addr = <0x0>;
+					start_addr = <0x0>;
+					// Size of binary
+					size = <0x0>;
+					// Output of sha256sum <binary>
+					sha256 = [00 00];
+				};
+				image2 {
+					node_name = "optee";
+					load_addr = <0x0>;
+					start_addr = <0x0>;
+					size = <0x0>;
+					sha256 = [00 00];
+				};
+			};
+		};
+		sec_exports {
+			status = "enabled";
+
+			// allowed_exports - Items allowed to be exported by delegate
+			allowed_exports = "SEC_ITEM_KEY_DEV_SPECIFIC,SEC_ITEM_SER_NUM";
+
+			// The 'export_itemx' node names are only placeholders and can be 
+			// renamed to any user defined name
+			// Fields:
+			//   item_sec_id: unique secure item identifier, must match ids in source
+			//   item_name: Name of final exported item in dtb
+			//   algo: Hashing algorithm to use if item needs to be obfuscated
+			//   salt: optional 32-bit salt value to use before hashing
+			//   length: Length of the final exported value
+			//   permission: security permissions of exported items. 'secure' items 
+			//               will not be available in UBOOT and Linux. 
+			//   os_export: optional control to limit the export to uboot only.
+			//              If field is present and has a value of 'no' the items
+			//              will NOT be exported to linux via dtb.   
+			export_item1 {
+				// Export 32 byte device specific key after salting and hashing
+				// to secure world and UBOOT and LINUX
+				// key_dev_specific_256[0-31] = sha256(salt+dev_specific_key)
+				item_sec_id = "SEC_ITEM_KEY_DEV_SPECIFIC";
+				item_name = "key_dev_specific_delegate_private_256";
+				algo = "sha256";
+				salt = <0x12345678>;
+				length = <32>;
+				permission = "nonsecure";
+				os_export = "yes";
+			};
+			export_item2 {
+				// Export a 64 byte device specific key after salting and hashing
+				// to secure world and UBOOT only 
+				// key_dev_specific_512[00-31] = sha256(salt+dev_specific_key)
+				// key_dev_specific_512[32-63] = sha256(dev_specific_key+salt)
+				item_sec_id = "SEC_ITEM_KEY_DEV_SPECIFIC";
+				item_name = "key_dev_specific_delegate_private_512";
+				algo = "sha256";
+				salt = <0x87654321>;
+				length = <64>;
+				permission = "nonsecure";
+				os_export = "no";
+			};
+			export_item3 {
+				// Export a 64 byte device specific key after salting and hashing 
+				// to secure world only
+				item_sec_id = "SEC_ITEM_KEY_DEV_SPECIFIC";
+				item_name = "key_dev_specific_delegate_secure_512";
+				algo = "sha256";
+				salt = <0xaabbccdd>;
+				length = <64>;
+				permission = "secure";
+				os_export = "no";
+			};
+		};
+		hw_state {
+ 			// all    - Blocks access for all masters 
+			// none   - Unlocks access for all masters
+			// nonsec - Blocks access for nonsecure masters only.
+			// prov   - unlock access for nonsecure provisioning by 
+			//          locking populated data only (sotp)
+			sotp-lock = "prov";
+			rng-lock = "none";
+		};
+	};
+	anti-rollback {
+		status = "disabled";
+		description = "Anti-rollback update - Optional Node";
+		new_antirollback = <10>;
+		antirollback_limit = <12>;
+	};
+};
+
+};

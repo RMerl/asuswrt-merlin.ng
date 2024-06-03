@@ -1,0 +1,257 @@
+<meta charset='UTF-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0'>
+<meta http-equiv='X-UA-Compatible' content='ie=edge'>
+<link rel='stylesheet' type='text/css' href='/FreeUam.css'>
+<script type='text/javascript' src='/jquery.js'></script>
+<script type='text/javascript' src='/uam.js'></script>
+<script>
+var htmlEnDeCode = (function() {
+	var charToEntityRegex,
+		entityToCharRegex,
+		charToEntity,
+		entityToChar;
+
+	function resetCharacterEntities() {
+		charToEntity = {};
+		entityToChar = {};
+		// add the default set
+		addCharacterEntities({
+			'&amp;'     :   '&',
+			'&gt;'      :   '>',
+			'&lt;'      :   '<',
+			'&quot;'    :   '"',
+			'&#39;'     :   "'"
+		});
+	}
+
+	function addCharacterEntities(newEntities) {
+		var charKeys = [],
+			entityKeys = [],
+			key, echar;
+		for (key in newEntities) {
+			echar = newEntities[key];
+			entityToChar[key] = echar;
+			charToEntity[echar] = key;
+			charKeys.push(echar);
+			entityKeys.push(key);
+		}
+		charToEntityRegex = new RegExp('(' + charKeys.join('|') + ')', 'g');
+		entityToCharRegex = new RegExp('(' + entityKeys.join('|') + '|&#[0-9]{1,5};' + ')', 'g');
+	}
+
+	function htmlEncode(value){
+		var htmlEncodeReplaceFn = function(match, capture) {
+			return charToEntity[capture];
+		};
+
+		return (!value) ? value : String(value).replace(charToEntityRegex, htmlEncodeReplaceFn);
+	}
+
+	resetCharacterEntities();
+
+	return {
+		htmlEncode: htmlEncode
+	};
+})();
+var passcode_blank = "Passcode cannot be blank.";
+const auth_status = getUrlParameter("auth_status").toLowerCase();
+$(function(){
+	$.ajax({
+		url: '/FreeUam.json',
+		dataType: 'json',
+		async: false,
+		success: function(response){
+			if(response.splash_page_setting != undefined){
+				var settings = response.splash_page_setting;
+				var portal_type = ((settings.portal_type != undefined && settings.portal_type != "") ? settings.portal_type : "2");
+				$("#portal_cntr").removeClass().addClass("portal_cntr");
+				$('#portal_bg').css('background-image', 'url(' + settings.image + ')');
+				if(auth_status == 'pass') return;
+				//FreeWiFi=2, MessageBoard=4
+				if(portal_type == "2"){
+					$('#brand_name').html(htmlEnDeCode.htmlEncode(encode_decode_text(settings.brand_name, "decode")));
+					$('#terms_service_cb_text').html(encode_decode_text(settings.terms_service_cb_text, "decode"));
+					$('#terms_service_title').html(htmlEnDeCode.htmlEncode(encode_decode_text(settings.terms_service_title, "decode")));
+					var terms_service_content = htmlEnDeCode.htmlEncode(encode_decode_text(settings.terms_service_content, "decode"));
+					terms_service_content = terms_service_content.replace().replace(/(?:\r\n|\r|\n)/g, '<div style=height:6px;></div>');
+					$('#terms_service_content').html(terms_service_content);
+					$("#pre_terms_service").html(terms_service_content);
+					let terms_service_enabled = ((settings.terms_service_enabled != undefined && settings.terms_service_enabled != "") ? settings.terms_service_enabled : "1");
+					if(terms_service_enabled == "0"){
+						$("#portal_cntr").addClass("no_terms_service").find("[data-group=FWF_TS]").remove();
+						$("#continue_btn").removeClass("disabled");
+					}
+					var auth_type = ((settings.auth_type != undefined && settings.auth_type != "") ? settings.auth_type : "0");
+					if(auth_type != "1"){
+						$("#portal_cntr [data-container=passcode_cntr]").remove();
+					}
+					else{
+						if(settings.passcode_blank != undefined && settings.passcode_blank != "")
+							passcode_blank = htmlEnDeCode.htmlEncode(encode_decode_text(settings.passcode_blank, "decode"));
+						if(settings.passcode_placeholder != undefined && settings.passcode_placeholder != "")
+							$("#splash_template_passcode").attr("placeholder", htmlEnDeCode.htmlEncode(encode_decode_text(settings.passcode_placeholder, "decode")));
+					}
+					$("[data-portal-type=MB]").remove();
+				}
+				else if(portal_type == "4"){
+					$('#MB_desc').html(htmlEnDeCode.htmlEncode(encode_decode_text(settings.MB_desc, "decode")));
+					$("#portal_cntr").addClass("MB");
+					$("[data-portal-type=FWF]").remove();
+					$("#continue_btn").removeClass("disabled");
+					$("#portal_cntr [data-container=passcode_cntr]").remove();
+				}
+				$('#continue_btn').html(htmlEnDeCode.htmlEncode(encode_decode_text(settings.continue_btn, "decode")));
+				$('#agree_btn').html(htmlEnDeCode.htmlEncode(encode_decode_text(settings.agree_btn, "decode")));
+			}
+		}
+	});
+});
+function initial(){
+	if(auth_status == 'pass'){
+		$('.portal_cntr').hide().filter('#success_cntr').show();
+		return;
+	}
+	else{
+		$('.portal_cntr').hide().filter('#portal_cntr').show();
+	}
+	$("#terms_service_cb").unbind("click").click(function(e){
+		e = e || event;
+		e.stopPropagation();
+		$(this).toggleClass("clicked");
+		if($(this).hasClass("clicked")){
+			$("#continue_btn").removeClass("disabled");
+		}
+		else{
+			$("#continue_btn").addClass("disabled");
+		}
+	});
+	$("#terms_service_hyperlink").unbind("click").click(function(e){
+		e = e || event;
+		e.stopPropagation();
+		$(".popup_element").css("display", "flex");
+		$(".bg").addClass("blur_effect");
+	});
+	$("#title_close_btn").unbind("click").click(function(e){
+		e = e || event;
+		e.stopPropagation();
+		$(".popup_element").hide();
+		$(".bg").removeClass("blur_effect");
+	});
+	$("#continue_btn").unbind("click").click(function(e){
+		e = e || event;
+		e.stopPropagation();
+		var continue_flag = false;
+		if($("#terms_service_cb").length > 0){
+			if($("#terms_service_cb").hasClass("clicked")){
+				continue_flag = true;
+			}
+		}
+		else{
+			continue_flag = true;
+		}
+		if(continue_flag){
+			if(typeof formSubmit == 'function'){
+				var passcode_status = false;
+				if($("#splash_template_passcode").length != 0){
+					passcode_status = true;
+					$("#splash_template_passcode").val($("#splash_template_passcode").val().trim());
+					if($("#splash_template_passcode").val() == ""){
+						alert(passcode_blank);
+						return false;
+					}
+				}
+				if(passcode_status){
+					formSubmit(2);
+				}
+				else{
+					formSubmit(0);
+				}
+			}
+		}
+	});
+	$("#agree_btn").unbind("click").click(function(e){
+		e = e || event;
+		e.stopPropagation();
+		if(!($("#terms_service_cb").hasClass("clicked"))){
+			$("#terms_service_cb").click();
+		}
+		$("#title_close_btn").click();
+	});
+}
+function encode_decode_text(_string, _type){
+	var _string_temp = _string;
+	switch(_type) {
+		case "encode" :
+			//escaped character
+			 _string_temp = _string_temp.replace(/"/g, '\"').replace(/\\/g, "\\");
+			//replace new line
+			_string_temp = _string_temp.replace(/(?:\r\n|\r|\n)/g, '<br>');
+			//encode ASCII
+			_string_temp = encodeURIComponent(_string_temp).replace(/[!'()*]/g, escape);
+			break;
+		case "decode" :
+			_string_temp = decodeURIComponent(_string_temp);
+			_string_temp = _string_temp.replace(/\<br\>/g, "\n");
+			break
+	}
+	return _string_temp;
+}
+function getUrlParameter(param){
+	var url_parm = window.location.search.substring(1);
+	var parm_array = url_parm.split("&");
+	var key_value;
+
+	for(var i = 0; i < parm_array.length; i += 1){
+		key_value = parm_array[i].split("=");
+		if (key_value[0] == param) {
+			return typeof key_value[1] == "undefined" ? "" : decodeURIComponent(key_value[1]);
+		}
+	}
+	return "";
+}
+$(document).ready(initial);
+</script>
+<div class='hidden_mask popup_element'></div>
+<div class='popup_container popup_element'>
+	<div>
+		<div class="popup_title_container">
+			<div id='terms_service_title' class="title"><#Captive_Portal_Terms_Service#></div>
+			<div id="title_close_btn" class="icon_close_btn"></div>
+		</div>
+		<div class="popup_content_container">
+			<div id="terms_service_content" class="terms_service_content"></div>
+			<div class="action_container">
+				<div id="agree_btn" class="btn_container"><#CTL_Agree#></div>
+			</div>
+		</div>
+	</div>
+</div>
+<div id='portal_bg' class='bg no_highlights'>
+	<div class='container'>
+		<div id='portal_cntr' class='portal_cntr' style='display: none;'>
+			<div class='text_info_cntr'>
+				<div id='brand_name' class='brand_name' data-portal-type='FWF'><#FreeWiFi_BrandName#></div>
+				<div id='MB_desc' class='MB_desc' data-portal-type='MB'><#Description#></div>
+			</div>
+			<div class='terms_service_info_cntr' data-portal-type='FWF' data-group='FWF_TS'>
+				<div id='pre_terms_service' class='pre_terms_service'></div>
+			</div>
+			<div data-container="action_info_cntr" class='action_info_cntr'>
+				<div class='cb_text_container' data-portal-type='FWF' data-group='FWF_TS'>
+					<div id='terms_service_cb' class='cb_icon'></div>
+					<div id='terms_service_cb_text' class='cb_text'><#FreeWiFi_Agree_Terms_Service#></div>
+				</div>
+				<div data-container="passcode_cntr" class="passcode_cntr">
+					<input class="textInput" id="splash_template_passcode" type="text" maxlength="64" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Enter Passcode">
+				</div>
+				<div class='action_container'>
+					<div id='continue_btn' class='btn_container disabled'><#FreeWiFi_Continue#></div>
+				</div>
+			</div>
+		</div>
+		<div id='success_cntr' class='portal_cntr success' style='display: none;'>
+			<div class='image_success_cntr'></div>
+			<div class='success_text'>Successful!</div>
+		</div>
+	</div>
+</div>

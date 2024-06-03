@@ -1,0 +1,10 @@
+config BCM_BOOTSTATE
+	tristate "Broadcom Boot State Driver"
+	default n
+
+config BCM_BOOTSTATE_IMPL
+	int "Implementation index for Broadcom Boot State Driver"
+	depends on BCM_BOOTSTATE
+	default 1 
+
+

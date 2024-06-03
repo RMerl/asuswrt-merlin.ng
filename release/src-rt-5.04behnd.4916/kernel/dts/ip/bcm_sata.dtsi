@@ -1,0 +1,6 @@
+compatible = "brcm,bcmbca-ahci";
+
+reg-names = "ahci", "sata-ctrl", "ahci-ss";
+reg = <AHCI_ADDR AHCI_SIZE>, <SATA_CTRL_ADDR SATA_CTRL_SIZE>, <AHCI_SS_ADDR AHCI_SS_SIZE>;
+interrupts = <GIC_SPI AHCI_IRQ IRQ_TYPE_LEVEL_HIGH>;
+status = "disabled";

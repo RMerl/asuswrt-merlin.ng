@@ -1,0 +1,6 @@
+P2371-0000 BOARD
+M:	Tom Warren <twarren@nvidia.com>
+S:	Maintained
+F:	board/nvidia/p2371-0000/
+F:	include/configs/p2371-0000.h
+F:	configs/p2371-0000_defconfig

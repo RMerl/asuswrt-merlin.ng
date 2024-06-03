@@ -1,0 +1,22 @@
+This file contains status information for the port of U-Boot to the
+Motorola mpc74xx series of CPUs.
+
+Author: Josh Huber <huber@mclx.com>
+	Mission Critical Linux, Inc.
+
+Currently the support for these CPUs is pretty minimal, but enough to
+get things going.  (much like the support for the Galileo Eval Board)
+
+There is a framework in place to enable the L2 cache, and to program
+the BATs.  Currently, there are still problems with the code which
+sets up the L2 cache, so it's not enabled. (IMHO, it shouldn't be
+anyway).  Additionally, there is support for enabling the MMU, which
+we also don't do.  The BATs are programmed just for the benefit of
+jumping into Linux in a sane configuration.
+
+Most of the code was based on other cpus supported by U-Boot.
+
+If you find any errors in the CPU setup code, please send us a note.
+
+Thanks,
+Josh

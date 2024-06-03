@@ -1,0 +1,23 @@
+if ARCH_IMX8M
+
+config IMX8M
+	bool
+	select ROM_UNIFIED_SECTIONS
+
+config SYS_SOC
+	default "imx8m"
+
+choice
+	prompt  "NXP i.MX8M board select"
+	optional
+
+config TARGET_IMX8MQ_EVK
+	bool "imx8mq_evk"
+	select IMX8M
+	select IMX8M_LPDDR4
+
+endchoice
+
+source "board/freescale/imx8mq_evk/Kconfig"
+
+endif

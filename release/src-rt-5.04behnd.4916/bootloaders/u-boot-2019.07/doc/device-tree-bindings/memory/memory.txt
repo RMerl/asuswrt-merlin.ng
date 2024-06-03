@@ -1,0 +1,67 @@
+* Memory binding
+
+The memory binding for U-Boot is as in the ePAPR with the following additions:
+
+Optional subnodes can be used defining the memory layout for different board
+ID masks. To match a set of board ids, a board-id node may define match-mask
+and match-value ints to define a mask to apply to the board id, and the value
+that the result should have for the match to be considered valid. The mask
+defaults to -1, meaning that the value must fully match the board id.
+
+If subnodes are present, then the /memory node must define these properties:
+
+- #address-cells: should be 1.
+- #size-cells: should be 0.
+
+Each subnode must define
+
+ reg - board ID or mask for this subnode
+ memory-banks - list of memory banks in the same format as normal
+
+Each subnode may optionally define:
+
+ match-mask - A mask to apply to the board id.  This must be accompanied by
+              match-value.
+ match-value - The required resulting value of the board id mask for the given
+	       node to be considered a match.
+ auto-size - Indicates that the value given for a bank is the maximum size,
+	     each bank is probed to determine its actual size, which may be
+	     smaller
+
+
+The board id determination is up to the vendor and is not defined by this
+binding.
+
+Example:
+
+memory {
+	#address-cells = <1>;
+	#size-cells = <1>;
+	reg = <0x20000000 0x20000000
+		0x40000000 0x20000000
+		0x60000000 0x20000000
+		0x80000000 0x20000000>;
+	auto-size;
+	board-id@0 {
+		match-value = <17>;
+		reg = <0x20000000 0x20000000
+			0x40000000 0x20000000>;
+	};
+	board-id@1 {
+		match-mask = <2>;
+		match-value = <2>;
+		reg = <0x20000000 0x20000000
+			0x40000000 0x20000000
+			0x60000000 0x20000000
+			0x80000000 0x20000000
+			0xa0000000 0x20000000
+			0xc0000000 0x20000000
+			0xe0000000 0x20000000>;
+	};
+};
+
+
+This shows a system with the following properties:
+* Default of 2GB of memory, auto-sized, so could be smaller
+* 3.5GB of memory (with no auto-size) if (board id & 2) is 2
+* 1GB of memory (with no auto-size) if board id is 17.

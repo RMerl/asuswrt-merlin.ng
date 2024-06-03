@@ -1,0 +1,12 @@
+config BCM_SFP
+	bool "Broadcom BCA SFP/TRX driver"
+	depends on I2C
+	default n
+	help
+	  BCMBCA SFP/TRX driver.
+
+config BCM_SFP_IMPL
+	int "Implementation index for Broadcom BCA SFP/TRX driver"
+	depends on BCM_SFP
+	default 1
+

@@ -1,0 +1,12 @@
+if BOARD_SFR_NB4_SER
+
+config SYS_BOARD
+	default "nb4_ser"
+
+config SYS_VENDOR
+	default "sfr"
+
+config SYS_CONFIG_NAME
+	default "sfr_nb4_ser"
+
+endif

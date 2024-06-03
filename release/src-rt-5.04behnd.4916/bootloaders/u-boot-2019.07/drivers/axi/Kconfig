@@ -1,0 +1,32 @@
+menuconfig AXI
+	bool "AXI bus drivers"
+	help
+	  Support AXI (Advanced eXtensible Interface) busses, a on-chip
+	  interconnect specification for managing functional blocks in SoC
+	  designs, which is also often used in designs involving FPGAs (e.g.
+	  communication with IP cores in Xilinx FPGAs).
+
+	  These types of busses expose a virtual address space that can be
+	  accessed using different address widths (8, 16, and 32 are supported
+	  for now).
+
+	  Other similar bus architectures may be compatible as well.
+
+if AXI
+
+config IHS_AXI
+	bool "Enable IHS AXI driver"
+	depends on DM
+	help
+	  Support for gdsys Integrated Hardware Systems Advanced eXtensible
+	  Interface (IHS AXI) bus on a gdsys IHS FPGA used to communicate with
+	  IP cores in the FPGA (e.g. video transmitter cores).
+
+config AXI_SANDBOX
+	bool "Enable AXI sandbox driver"
+	depends on DM
+	help
+	  Support AXI (Advanced eXtensible Interface) emulation for the sandbox
+	  environment.
+
+endif

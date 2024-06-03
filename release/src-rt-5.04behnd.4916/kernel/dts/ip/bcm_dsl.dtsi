@@ -1,0 +1,21 @@
+#include "../../../bcmdrivers/opensource/include/bcm963xx/bcm_dsl_dt_bindings.h"
+
+compatible = "simple-bus";
+#address-cells = <1>;
+#size-cells = <0>;
+
+#ifdef DSL_LINE_0
+	line0@0 {
+		compatible = "brcm,dsl";
+		reg = <0>;
+		status = "disabled";
+	};
+#endif
+
+#ifdef DSL_LINE_1
+	line1@1 {
+		compatible = "brcm,dsl";
+		reg = <1>;
+		status = "disabled";
+	};
+#endif

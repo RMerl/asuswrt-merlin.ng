@@ -1,0 +1,7 @@
+Microchip MPFS icicle
+M:	Padmarao Begari <padmarao.begari@microchip.com>
+M:	Cyril Jean <cyril.jean@microchip.com>
+S:	Maintained
+F:	board/microchip/mpfs_icicle/
+F:	include/configs/microchip_mpfs_icicle.h
+F:	configs/microchip_mpfs_icicle_defconfig

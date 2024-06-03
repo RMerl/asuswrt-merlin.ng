@@ -1,0 +1,47 @@
+#include "963158REF3D.dts"
+
+        /* Port PHY mapping:
+            port_runner_p0  <-->  port_sf2_p8 -###- port_sf2_p0 <------------------> phy_gphy0
+            port_runner_p1  <-->  port_sf2_p5 -# #- port_sf2_p1 <------------------> phy_gphy1
+            port_runner_p2  <-->  port_sf2_p7 -# #- port_sf2_p2 <------------------> phy_gphy2
+                                               # #- port_sf2_p3 <------------------> phy_gphy3
+                                               ###- port_sf2_p6 <--> xbar_grp1 -+-+- phy_serdes1 - sfp1
+                                                 port_runner_p5 <--> xbar_grp2 -+-+- phy_gphy4
+                                                 port_runner_P3 <------------------> PON
+         */
+&mdio_sf2 {
+	/* PHYs directly connected to SF2 */
+	/* Crossbar groups */
+	xbar_grp1 {
+		phy-handle = <&phy_serdes1>;
+		status = "okay";
+	};
+	xbar_grp2 {
+		phy-handle = <&phy_gphy4>;
+		status = "okay";
+	};
+};
+
+&switch_sf2 {
+	ports {
+		port_sf2_p6 {
+			phy-handle = <&xbar_grp1>;
+			phy-mode = "serdes";
+			/* cb ext ep 0 serdes leds */
+			network-leds-0 = <&led10 &led11 &led12 &led25>;
+			status = "okay";
+		};
+	};
+};
+
+&switch0 {
+	ports {
+		port_runner_p5 {
+			phy-handle = <&xbar_grp2>;
+			/* xbar ext ep 1 sgphy leds */
+			network-leds-0 = <&led8 &led9 &led24>;
+			status = "okay";
+		};
+	};
+};
+

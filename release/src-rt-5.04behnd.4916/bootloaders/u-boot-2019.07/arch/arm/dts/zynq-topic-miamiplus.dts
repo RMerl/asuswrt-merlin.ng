@@ -1,0 +1,25 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Topic Miami Plus board DTS
+ *
+ * Copyright (C) 2016 Topic Embedded Products
+ */
+#include "zynq-topic-miami.dts"
+
+/ {
+	model = "Topic Miami+ Zynq Board";
+	compatible = "topic,miamiplus", "xlnx,zynq-7000";
+};
+
+/* The miamiplus contains a speedgrade-2 device and runs at 800MHz */
+&cpu0 {
+	operating-points = <
+		/* kHz    uV */
+		800000  1000000
+		400000  1000000
+	>;
+};
+
+&qspi {
+	is-dual = <1>;
+};

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24" viewBox="0 0 24 24">
+  <defs>
+    <path id="rt_focus-b" d="M6.88888889,18.2222222 C6.88888889,19.2 7.68888889,20 8.66666667,20 L15.7777778,20 C16.7555556,20 17.5555556,19.2 17.5555556,18.2222222 L17.5555556,9.33333333 C17.5555556,8.35555556 16.7555556,7.55555556 15.7777778,7.55555556 L8.66666667,7.55555556 C7.68888889,7.55555556 6.88888889,8.35555556 6.88888889,9.33333333 L6.88888889,18.2222222 Z M17.5555556,4.88888889 L15.3333333,4.88888889 L14.7022222,4.25777778 C14.5422222,4.09777778 14.3111111,4 14.08,4 L10.3644444,4 C10.1333333,4 9.90222222,4.09777778 9.74222222,4.25777778 L9.11111111,4.88888889 L6.88888889,4.88888889 C6.4,4.88888889 6,5.28888889 6,5.77777778 C6,6.26666667 6.4,6.66666667 6.88888889,6.66666667 L17.5555556,6.66666667 C18.0444444,6.66666667 18.4444444,6.26666667 18.4444444,5.77777778 C18.4444444,5.28888889 18.0444444,4.88888889 17.5555556,4.88888889 Z"/>
+    <filter id="rt_focus-a" width="204.5%" height="181.2%" x="-52.2%" y="-34.4%" filterUnits="objectBoundingBox">
+      <feOffset dy="1" in="SourceAlpha" result="shadowOffsetOuter1"/>
+      <feGaussianBlur in="shadowOffsetOuter1" result="shadowBlurOuter1" stdDeviation="2"/>
+      <feColorMatrix in="shadowBlurOuter1" result="shadowMatrixOuter1" values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.1 0"/>
+      <feOffset dx="1" dy="1" in="SourceAlpha" result="shadowOffsetOuter2"/>
+      <feGaussianBlur in="shadowOffsetOuter2" result="shadowBlurOuter2" stdDeviation="1"/>
+      <feColorMatrix in="shadowBlurOuter2" result="shadowMatrixOuter2" values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.08 0"/>
+      <feMerge>
+        <feMergeNode in="shadowMatrixOuter1"/>
+        <feMergeNode in="shadowMatrixOuter2"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <g fill="none" fill-rule="evenodd">
+    <polygon points="0 0 24 0 24 24 0 24"/>
+    <use fill="#000" filter="url(#rt_focus-a)" xlink:href="#rt_focus-b"/>
+    <use fill="#53ADFF" xlink:href="#rt_focus-b"/>
+  </g>
+</svg>

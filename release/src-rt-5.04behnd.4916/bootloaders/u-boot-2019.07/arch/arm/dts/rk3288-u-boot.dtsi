@@ -1,0 +1,36 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2019 Rockchip Electronics Co., Ltd
+ */
+
+&dmc {
+	u-boot,dm-pre-reloc;
+};
+
+&pmu {
+	u-boot,dm-pre-reloc;
+};
+
+&sgrf {
+	u-boot,dm-pre-reloc;
+};
+
+&cru {
+	u-boot,dm-pre-reloc;
+};
+
+&grf {
+	u-boot,dm-pre-reloc;
+};
+
+&vopb {
+	u-boot,dm-pre-reloc;
+};
+
+&vopl {
+	u-boot,dm-pre-reloc;
+};
+
+&noc {
+	u-boot,dm-pre-reloc;
+};

@@ -1,0 +1,12 @@
+if TARGET_DREAMPLUG
+
+config SYS_BOARD
+	default "dreamplug"
+
+config SYS_VENDOR
+	default "Marvell"
+
+config SYS_CONFIG_NAME
+	default "dreamplug"
+
+endif

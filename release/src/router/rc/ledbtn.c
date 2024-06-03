@@ -84,7 +84,6 @@ static void ledbtn(int sig)
 #else
 	int val = button_pressed(BTN_LED);
 #endif
-
 	if (val) {
 		if (!btn_led_pressed)
 		{
@@ -115,7 +114,6 @@ static void ledbtn(int sig)
 
 			dbg("switch effect\n");
 			kill_pidfile_s("/var/run/ledg.pid", SIGTSTP);
-
 		}
 		else if (++btn_led_count > LEDG_WAIT)
 		{

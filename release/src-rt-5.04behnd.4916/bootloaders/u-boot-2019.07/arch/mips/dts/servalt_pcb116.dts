@@ -1,0 +1,81 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2018 Microsemi Corporation
+ */
+
+/dts-v1/;
+#include "mscc,servalt.dtsi"
+
+/ {
+	model = "ServalT PCB116 Reference Board";
+	compatible = "mscc,servalt-pcb116", "mscc,servalt";
+
+	aliases {
+		spi0 = &spi0;
+		serial0 = &uart0;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	gpio-leds {
+		compatible = "gpio-leds";
+
+		status_green {
+			label = "pcb116:green:status";
+			gpios = <&sgpio 70 0>; /* p6.2 */
+			default-state = "on";
+		};
+
+		status_red {
+			label = "pcb116:red:status";
+			gpios = <&sgpio 102 0>; /* p6.3 */
+			default-state = "off";
+		};
+	};
+};
+
+&uart0 {
+	status = "okay";
+};
+
+&spi0 {
+	status = "okay";
+	spi-flash@0 {
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <18000000>; /* input clock */
+		reg = <0>; /* CS0 */
+		spi-cs-high;
+	};
+};
+
+&sgpio {
+	status = "okay";
+	sgpio-ports = <0x0000fe7f>;
+};
+
+&mdio0 {
+	status = "okay";
+
+	phy0: ethernet-phy@0 {
+		reg = <0>;
+	};
+	phy1: ethernet-phy@1 {
+		reg = <1>;
+	};
+};
+
+&switch {
+	ethernet-ports {
+
+		port0: port@0 {
+			reg = <0>;
+			phy-handle = <&phy0>;
+		};
+		port1: port@1 {
+			reg = <1>;
+			phy-handle = <&phy1>;
+		};
+	};
+};

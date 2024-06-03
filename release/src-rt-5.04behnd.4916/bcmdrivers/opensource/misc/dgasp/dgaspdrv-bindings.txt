@@ -1,0 +1,46 @@
+Broadcom Dying Gasp Driver Device Tree Bindings
+-----------------------------------------------
+
+The Dying Gasp driver controls access to dying gasp hardware. There are three types of Dying gasp 
+hardware supported:
+    
+    brcm,dgasp-periph - Dying gasp controls and hw in periph
+    brcm,dgasp-afe    - Dying gasp controls and hw in DSL AFE
+    brcm,dgasp-pmc    - Dying gasp controls and hw accessed via PMC/PMB/BPCM
+
+brcm,dgasp-periph - Bindings
+============================
+Required properties:
+
+- reg           : Periph DG register address, register size
+                  Uart data register, register size
+
+Optional Properties:
+
+- dg-get-otp-trim   : Flag indicating that DG trim value should be read from OTP
+- dg-get-otp-hys    : Flag indicating that DG hys value should be read from OTP
+- dg-trim           : DG trim value to program
+- dg-hys            : DG hys value to program
+
+
+brcm,dgasp-afe - Bindings
+=========================
+Required properties:
+
+- reg           : AFE register address, register size
+                  Bgbias register address, register size
+                  Uart data register, register size
+- afe-reg-val   : AFE register value 
+- bgbias-reg-val: Bgbias register value
+
+
+brcm,dgasp-pmc - Bindings
+=========================
+Required properties:
+
+- reg           : DG IRQ Mask register address, register size
+                  Uart data register, register size
+
+Optional Properties:
+
+- reinit-hw-irqenable : Flag indicating that the PMC hardware be reinitialized when IRQ is enabled

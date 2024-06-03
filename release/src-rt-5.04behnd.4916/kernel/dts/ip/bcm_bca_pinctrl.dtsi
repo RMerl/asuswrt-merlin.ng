@@ -1,0 +1,5 @@
+compatible = "brcm,bcmbca-pinctrl";
+reg = <PINCTRL_OFFSET PINCTRL_SIZE>;
+pinctrl-npins = < PINCTRL_NUM_PINS >;
+pinctrl-nfuncs = < PINCTRL_NUM_FUNC >;
+gpio-mux = <PINCTRL_GPIO_FUNC>;

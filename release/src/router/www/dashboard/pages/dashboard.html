@@ -1,0 +1,3102 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0,  user-scalable=no" />
+        <link rel="stylesheet" href="css/clients.css" />
+        <script type="text/javascript" src="/js/asus_clientlist.js"></script>
+    </head>
+    <body>
+        <div class="d-flex align-items-center mb-3">
+            <div class="page-title py-3"><#AiProtection_title_Dashboard_title#></div>
+            <div role="icon" class="icon-size-24 icon-add-chart ms-3" onclick="addCard()"></div>
+            <div role="icon" class="icon-size-24 icon-settings ms-3" onclick="databaseSetting()"></div>
+        </div>
+        <div class="row">
+            <!-- WAN -->
+            <div class="col-12 col-md-6 col-xl-4 mb-3 d-none" id="wan0_field"></div>
+
+            <!-- SECONDARY WAN -->
+            <div class="col-12 col-md-6 col-xl-4 mb-3 d-none" id="wan1_field"></div>
+
+            <!-- Clients -->
+            <div class="col-12 col-md-6 col-xl-4 mb-3">
+                <div class="card pt-2 h-100">
+                    <h5 class="card-header"><#Full_Clients#></h5>
+                    <div class="card-body">
+                        <div class="row px-2">
+                            <div class="col-12 col-sm-7 col-md-12 pt-2 clientBorder">
+                                <div class="d-flex">
+                                    <div class="col-12" style="height: 200px">
+                                        <canvas id="chart_clients"></canvas>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-around mt-2">
+                                    <div class="text-center mb-3">
+                                        <div class="my-2 card-data-title"><#All#></div>
+                                        <div class="my-2 chart-client-value" id="client_all_count"></div>
+                                    </div>
+
+                                    <div class="text-center mb-3">
+                                        <div class="my-2 card-data-title"><#tm_wireless#></div>
+                                        <div class="my-2 chart-client-value" id="wireless_count"></div>
+                                    </div>
+
+                                    <div class="text-center mb-3">
+                                        <div class="my-2 card-data-title"><#tm_wired#></div>
+                                        <div class="my-2 chart-client-value" id="wired_count"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div
+                                class="col-12 col-sm-4 col-md-12 my-2 ms-sm-auto p-0 client-detail"
+                                id="wifi_client_table"
+                            ></div>
+                        </div>
+                    </div>
+                    <div class="businessUI card-footer d-flex">
+                        <div role="icon" class="icon-size-24 icon-clients me-3" onclick="showClientlistModal()"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PING Time -->
+            <div class="col-12 col-md-6 col-xl-4 mb-3" id="ping_field">
+                <div class="card pt-2 h-100">
+                    <h5 class="card-header"><#Status_DNS_Benchmark#></h5>
+                    <div class="card-body">
+                        <div class="row h-100">
+                            <div class="dns-content-default">
+                                <div class="d-flex justify-content-between pb-2 dns-title">
+                                    <div><#Clientlist_name#></div>
+                                    <div><#SMS_time#></div>
+                                </div>
+                                <div id="dns_ping_table">
+                                    <div class="mt-5 text-center text-loading" data-text="DNS PING...">DNS PING...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex">
+                        <div role="icon" class="icon-size-24 icon-add-location me-3" onclick="dnsAddCard();"></div>
+                        <div role="icon" class="icon-size-24 icon-delete me-3" onclick="dnsDeleteCard()"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System -->
+            <div class="col-12 col-md-6 col-xl-4 mb-3">
+                <div class="card pt-2 h-100">
+                    <h5 class="card-header d-flex align-items-center justify-content-between"><#menu5_7_1#></h5>
+                    <div class="card-body p-0">
+                        <div class="">
+                            <div style="height: 300px" class="p-2 bg-opacity-50">
+                                <canvas id="cpu_ram_chart"></canvas>
+                            </div>
+                            <div class="col-12 mt-2">
+                                <div class="d-flex align-items-center p-2">
+                                    <div class="d-xl-flex">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-2 system-cpu-tab"></div>
+                                            <div class="ms-1 chart-sub-content-title">CPU</div>
+                                        </div>
+                                    </div>
+                                    <div class="ms-auto card-data-value">
+                                        <span id="cpu_usage_value"></span>
+                                        <span class="badge rounded-pill border text-primary small lh-1 fw-bold ms-2"><#feedback_when_now#></span>
+                                    </div>
+                                </div>
+
+                                <div class="divide-line"></div>
+
+                                <div class="d-flex align-items-center p-2" id="ram_usage_field">
+                                    <div class="d-xl-flex">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-2 system-ram-tab"></div>
+                                            <div class="ms-1 chart-sub-content-title">RAM</div>
+                                        </div>
+                                    </div>
+                                    <div class="ms-auto card-data-value">
+                                        <span id="ram_usage_value"></span>
+                                        <span class="badge rounded-pill border text-primary small lh-1 fw-bold ms-2"><#feedback_when_now#></span>
+                                    </div>
+                                </div>
+
+                                <div class="divide-line"></div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ethernet Ports -->
+            <div class="col-12 col-md-6 col-xl-4 mb-3">
+                <div class="card pt-2 h-100">
+                    <h5 class="card-header d-flex align-items-center justify-content-between"><#Status_Ethernet_Ports#></h5>
+                    <div class="card-body p-0">
+                        <div class="">
+							<iframe id="ethPortStatus" class="iframeInCard d-flex align-items-center clientBorder" src="/device-map/router_status.asp"></iframe>
+
+                            <div class="col-12 mt-2">
+                                <div class="d-flex align-items-center p-2">
+                                    <div class="d-xl-flex">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-2 system-good-tab"></div>
+                                            <div class="ms-1 chart-sub-content-title"><#Connected#></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="divide-line"></div>
+
+                                <div class="d-flex align-items-center p-2">
+                                    <div class="d-xl-flex">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-2 system-warning-tab"></div>
+                                            <div class="ms-1 chart-sub-content-title"><#Notice#></div>
+                                            <span id="ethPortStatus_hint" class="badge rounded-pill border text-primary small lh-1 fw-bold ms-2 d-none">!</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="divide-line"></div>
+
+                                <div class="d-flex align-items-center p-2">
+                                    <div class="d-xl-flex">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-2 system-unplug-tab"></div>
+                                            <div class="ms-1 chart-sub-content-title"><#Status_Unplugged#></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- USB -->
+            <div class="businessUI col-12 col-md-6 col-xl-4 mb-3 d-none" id="usb_field"></div>
+
+            <!-- BANDWIDTH & WIRELESS CLIENTS -->
+            <div class="col-12 mb-3">
+                <div class="card pt-2 h-100">
+                    <h5 class="card-header d-flex align-items-center justify-content-between"><#traffic_monitor#></h5>
+                    <div class="card-body p-0">
+                        <div class="">
+                            <!--div class="d-flex px-2">
+                                <div class="d-flex align-items-center col-6 col-xl-4 px-2">
+                                    <div class="me-2 system-cpu-tab"></div>
+                                    <div class="ms-1 me-3 content-data-title"><#Traffic_Analyzer_usedtraffic#></div>
+                                    <div class="fs-5 fw-bold" id="traffic">0 MB</div>
+                                    <div class="badge rounded-pill border text-primary small lh-1 fw-bold ms-2"><#feedback_when_now#></div>
+                                </div>
+
+                                <div class="d-flex align-items-center col-6 col-xl-4 px-2">
+                                    <div class="me-2 system-ram-tab"></div>
+                                    <div class="ms-1 me-3 content-data-title"><#tm_wireless#></div>
+                                    <div class="fs-5 fw-bold" id="wireless_client">0</div>
+                                    <div class="badge rounded-pill border text-primary small lh-1 fw-bold ms-2"><#feedback_when_now#></div>
+                                </div>
+                            </div-->
+
+                            <div class="mt-2 p-2 bg-opacity-50" style="height: 300px">
+                                <canvas id="bw_chart"></canvas>
+                            </div>
+
+                            <div class="col-12 mt-2">
+                                <div class="d-flex align-items-center p-2">
+                                    <div class="d-xl-flex">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-2 system-cpu-tab"></div>
+                                            <div class="ms-1 chart-sub-content-title"><#Traffic_Analyzer_usedtraffic#></div>
+                                        </div>
+                                    </div>
+                                    <div class="ms-auto card-data-value">
+                                        <span id="traffic">0 MB</span>
+                                        <span class="badge rounded-pill border text-primary small lh-1 fw-bold ms-2"><#feedback_when_now#></span>
+                                    </div>
+                                </div>
+
+                                <div class="divide-line"></div>
+
+                                <div class="d-flex align-items-center p-2" id="ram_usage_field">
+                                    <div class="d-xl-flex">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-2 system-ram-tab"></div>
+                                            <div class="ms-1 chart-sub-content-title"><#tm_wireless#></div>
+                                        </div>
+                                    </div>
+                                    <div class="ms-auto card-data-value">
+                                        <span id="wireless_client">0</span>
+                                        <span class="badge rounded-pill border text-primary small lh-1 fw-bold ms-2"><#feedback_when_now#></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CUSTOM CARD -->
+            <!-- <div class="col-12 col-md-6 col-xl-4 mb-3">
+                <div class="card pt-2 h-100">
+                    <h5 class="card-header d-flex align-items-center justify-content-between">
+                        <div>${cardName}</div>
+                        <div
+                            role="icon"
+                            class="icon-size-24 icon-more-horiz"
+                            onclick="showAddPanel('${cardName}')"
+                        ></div>
+                    </h5>
+                    <div class="card-body" id="${cardName}_body">
+                        <div class="row">
+                            <div style="height: 300px">
+                                <canvas id="test_chart"></canvas>
+                            </div>
+
+                            <div class="col-12 col-sm-4 col-md-12 mt-2">
+                                <div class="d-flex align-items-center py-2" id="">
+                                    <div class="d-xl-flex">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-2 ${colorTemplate[index][2]}"></div>
+                                            <div class="ms-1 system-state-title">${item}</div>
+                                        </div>
+                                        <div class="ps-4 system-state-text-1">/ 100% Total</div>
+                                    </div>
+                                    <div class="ms-auto system-state-text-2" id="${item}">${value}</div>
+                                </div>
+                                <div class="divide-line" id=""></div>
+
+                                <div class="d-flex align-items-center py-2" id="">
+                                    <div class="d-xl-flex">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-2 ${colorTemplate[index][2]}"></div>
+                                            <div class="ms-1 system-state-title">${item}</div>
+                                        </div>
+                                        <div class="ps-4 system-state-text-1">/ 100% Total</div>
+                                    </div>
+                                    <div class="ms-auto system-state-text-2" id="${item}">${value}</div>
+                                </div>
+                                <div class="divide-line" id=""></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> -->
+
+            <!-- FLOAT CARD TEMPLATE -->
+            <!-- <div class="shadow-bg"></div> -->
+        </div>
+        <script src="js/chart.min.js"></script>
+        <script>
+			var webWrapper = true;
+
+			setTimeout(httpApi.diag_ping.start, 1);
+            let custom_card_list = decodeURIComponent(httpApi.nvramCharToAscii(["custom_card_list"], true).custom_card_list)
+                .replace(/&#62/g, ">")
+                .replace(/&#60/g, "<");
+            function init() {
+                genAllClient();
+                getDnsPingData();
+                getWANInfo();
+                // get CPU/RAM of default card
+                httpApi.get_diag_content_data(
+                    {
+                        ts: Date.now(),
+                        duration: "60",
+                        point: "30",
+                        db: "sys_detect",
+                        content: "cpu_usage;mem_usage",
+                        filter: "node_mac>txt>" + system.labelMac + ">0",
+                    },
+                    (e) => {
+                        let cpuData = [],
+                            ramData = [];
+                        for (let item of e.contents) {
+                            cpuData.push(item[0]);
+                            ramData.push(item[1]);
+                        }
+
+                        genCpuRam([cpuData, ramData]);
+                    }
+                );
+
+                // get BANDWIDTH/WIRELESS CLIENTS for default card
+                httpApi.get_diag_eth_traffic_data(
+                    {
+                        ts: Date.now(),
+                        duration: "60",
+                        point: "30",
+                        db: "stainfo",
+                    },
+                    (e) => {
+                        bandwidthUsage = [...e.traffic];
+                        httpApi.get_diag_active_client(
+                            {
+                                ts: Date.now(),
+                                duration: "60",
+                                point: "30",
+                                node_mac: system.labelMac,
+                            },
+                            (e) => {
+                                activeClient = e.count;
+                                genBwClient(bandwidthUsage, activeClient);
+                            }
+                        );
+                    }
+                );
+
+                //custcom card
+                genCustomCard();
+            }
+
+            function genAllClient() {
+                const wiredColor = `${getComputedStyle(document.querySelector(":root")).getPropertyValue("--chart-color-1")}`;
+                const wirelesssColor = `${getComputedStyle(document.querySelector(":root")).getPropertyValue("--chart-color-2")}`;
+                const labelColor = `${getComputedStyle(document.querySelector(":root")).getPropertyValue("--text-title-color")}`;
+
+                let wirelessAllCount = system.client.wirelessCount,
+                    wireAllCount = system.client.wiredCount;
+                let client = [wireAllCount, wirelessAllCount];
+                const ctx1 = document.getElementById("chart_clients").getContext("2d");
+                const colorArray = [wirelesssColor, wiredColor];
+                const data = {
+                    labels: ["<#tm_wired#>", "<#tm_wireless#>"],
+                    datasets: [
+                        {
+                            data: client,
+                            backgroundColor: [colorArray[0], colorArray[1]],
+                            hoverOffset: 4,
+                            borderColor: "transparent",
+                        },
+                    ],
+                };
+                const myChart = new Chart(ctx1, {
+                    type: "doughnut",
+                    data: data,
+                    options: {
+                        scales: {
+                            ticks: {
+                                display: false,
+                            },
+                        },
+                        plugins: {
+                            legend: {
+                                position: "right",
+                                labels: {
+                                    color: labelColor,
+                                    display: false,
+                                    padding: 30,
+                                },
+                            },
+                        },
+                        responsive: true,
+                        maintainAspectRatio: false,
+                    },
+                });
+
+                let code = "";
+
+                for (let [index, value] of Object.entries(system.wlBandSeq)) {
+                    let { name } = value,
+                        _perCount = system.client.wireless[index].count,
+                        percentage = 100;
+
+                    if (code !== "") {
+                        code += '<div class="divide-line"></div>';
+                    }
+
+                    code += `
+                                <div class="row ps-4 pe-2">
+                                    <div class="col-3">
+                                        <div class="chart chart-color-${index}">
+                                            <div role="icon icon-inner" class="icon-size-20 icon-wifi icon-color-active-1"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-9 d-flex d-sm-block d-md-flex align-items-center justify-content-between">
+                                        <div class="me-3 text-sm-end pt-sm-2 pt-md-0 content-data-title" >
+                                            ${name}
+                                        </div>
+                                        <div class="me-3 content-data-value">${_perCount}</div>
+                                    </div>
+                                </div>
+                            `;
+                }
+
+                document.querySelector("#wifi_client_table").innerHTML = code;
+                document.querySelector("#client_all_count").innerHTML = system.client.activeCount;
+                document.querySelector("#wireless_count").innerHTML = wirelessAllCount;
+                document.querySelector("#wired_count").innerHTML = wireAllCount;
+            }
+
+            // DNS PING
+            let dns_ping_list = "",
+                ping_array = [];
+            function getDnsPingData() {
+                let data = httpApi.diag_ping.getResult(),
+                    dns_ping = {};
+                if (data.status === "PROCEEDING") {
+                    setTimeout(getDnsPingData, 1000);
+                } else {
+                    let item = Object.keys(data);
+                    for (let i = 0; i < item.length; i++) {
+                        if (item[i] === "status") {
+                            continue;
+                        }
+                        let target = data[item[i]],
+                            index = item[i];
+
+                        function findNameFromNvram(ip){
+                            var dns_ping_list_array = decodeURIComponent(httpApi.nvramCharToAscii(["dns_ping_list"]).dns_ping_list).split("<");
+                            var matchResult = dns_ping_list_array.filter(function(dns){return dns.split(">")[1] == ip})
+                            return matchResult[0] ? matchResult[0].split(">")[0] : "";
+                        }
+
+                        dns_ping[index] = {
+                            alias: findNameFromNvram(index) || target.alias,
+                            avg: target.avg,
+                            time: target.data_time,
+                            ip: index,
+                        };
+                    }
+
+                    ping_array = Object.values(dns_ping);
+                    ping_array.sort((a, b) => a.avg - b.avg);
+                    for (let item of Object.values(dns_ping)) {
+                        dns_ping_list += "<" + item.alias + ">" + item.ip;
+                    }
+
+                    genDnsPingTable();
+                }
+            }
+
+            function genDnsPingTable() {
+                let code = "";
+                let quota = (function () {
+                    let divisor = 100;
+                    if (ping_array.length === 0) return divisor;
+
+                    return (Math.floor(ping_array[ping_array.length - 1].avg / divisor) + 1) * divisor;
+                })();
+
+                if (ping_array.length === 0) {
+                    code += `
+                                <div class="d-flex justify-content-center align-items-center mt-4">
+                                    <div role="icon" class="icon-size-64 icon-search-server"></div>
+                                </div>
+                                <div class="text-center mt-2 dns-empty-text">No DNS Server</div>
+                            `;
+                } else {
+                    for (let i = 0; i < ping_array.length; i++) {
+                        let name = ping_array[i].alias;
+                        let avgTime = parseFloat(ping_array[i].avg).toFixed(2);
+                        let ip = ping_array[i].ip;
+                        let percentage = parseInt((avgTime / quota) * 100);
+                        let barWidth = percentage < 5 ? 5 : percentage;
+                        code += `
+                                    <div>
+                                        <div class="d-flex flex-row align-items-end my-3">
+                                            <div class="col-9 d-flex flex-column">
+                                                <div class="col-12 text-truncate card-data-title mb-2" title="${ip}">${name}</div>
+                                                 <div class="col-12 my-auto">
+                                                <div class="progress">
+                                                    <div class="progress-bar progress-active" role="progressbar" style="width: ${barWidth}%"></div>
+                                                </div>
+                                            </div>
+                                            </div>
+                                            <div class="col-3 text-end card-data-value">${avgTime} ms</div>
+                                        </div>
+                                    </div>
+                                `;
+                    }
+                }
+
+                document.querySelector("#dns_ping_table").innerHTML = code;
+            }
+
+            function genCpuRam(rawData) {
+                cpuLongData = [...rawData[0]];
+                ramLongData = [...rawData[1]];
+                let length = 15;
+                let cpuUsage = [],
+                    ramUsage = [],
+                    labelTag = [];
+
+                let dataIndex = ["CPU", "RAM"];
+                for (let i = 0; i < length; i++) {
+                    if (i === 0) {
+                        labelTag.push(length + " mins");
+                    } else if (i === length - 1) {
+                        labelTag.push("Now");
+                    } else {
+                        labelTag.push("");
+                    }
+                }
+
+                // show data from left to right that could easy to cut
+                cpuUsage = rawData[0].reverse();
+                ramUsage = rawData[1].reverse();
+                // cut data size
+                cpuUsage.length = length;
+                ramUsage.length = length;
+                // show data from rigth to left
+                cpuUsage = cpuUsage.reverse();
+                ramUsage = ramUsage.reverse();
+                let datasets = [];
+                let cpuLineColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--chart-color-1");
+                let cpuLineBgColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--bg-chart-color-1");
+                let ramLineColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--chart-color-2");
+                let ramLineBgColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--bg-chart-color-2");
+                for (let i = 0; i < dataIndex.length; i++) {
+                    if (dataIndex[i] === "CPU") {
+                        datasets.push({
+                            label: "CPU",
+                            data: cpuUsage,
+                            backgroundColor: [`${cpuLineBgColor}`],
+                            borderWidth: 1,
+                            borderColor: `${cpuLineColor}`,
+                            fill: true,
+                            yAxisID: "y",
+                            order: 2,
+                        });
+
+                        let value = !cpuUsage.length
+                            ? "0"
+                            : cpuUsage[cpuUsage.length - 1] === undefined
+                            ? "0"
+                            : cpuUsage[cpuUsage.length - 1];
+                        document.querySelector("#cpu_usage_value").innerHTML = value + "%";
+                    } else if (dataIndex[i] === "RAM") {
+                        datasets.push({
+                            label: "RAM",
+                            data: ramUsage,
+                            backgroundColor: [`${ramLineBgColor}`],
+                            borderWidth: 1,
+                            borderColor: `${ramLineColor}`,
+                            fill: true,
+                            yAxisID: "y",
+                            order: 0,
+                        });
+
+                        let value = !ramUsage.length
+                            ? "0"
+                            : ramUsage[ramUsage.length - 1] === undefined
+                            ? "0"
+                            : ramUsage[ramUsage.length - 1];
+                        document.querySelector("#ram_usage_value").innerHTML = value + "%";
+                    }
+                }
+
+                let ctx = document.getElementById("cpu_ram_chart").getContext("2d");
+                let labelColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--text-regular-color");
+                cpuChart = new Chart(ctx, {
+                    type: "line",
+                    data: {
+                        labels: labelTag,
+                        datasets: datasets,
+                    },
+                    options: {
+                        plugins: {
+                            legend: {
+                                display: false,
+                            },
+                        },
+                        scales: {
+                            y: {
+                                ticks: {
+                                    color: labelColor,
+                                    callback: function (value, index, ticks) {
+                                        return value + " %";
+                                    },
+
+                                    beginAtZero: true,
+                                    stepSize: 20,
+                                    count: 5,
+                                },
+                                suggestedMin: 0,
+                                suggestedMax: 100,
+                            },
+                            x: {
+                                ticks: {
+                                    color: labelColor,
+                                },
+                            },
+                        },
+                        responsive: true,
+                        maintainAspectRatio: false,
+                    },
+                });
+            }
+
+            function convertTrafficUnit(value) {
+                // the default unit of vlaue in here is 'Bytes'
+                let count = 0,
+                    scale = ["Byte", "KB", "MB", "GB"];
+
+                while (value > 1024 && count < 3) {
+                    value = value / 1024;
+                    count++;
+                }
+
+                return value.toFixed(1) + " " + scale[count];
+            }
+            function genBwClient(bw, client) {
+                const labelColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--text-regular-color");
+                let length = 30;
+                let labelTag = [];
+                let activeClient = [...client],
+                    bandwidthUsage = [...bw];
+                for (let i = 0; i < length; i++) {
+                    if (i === 0) {
+                        labelTag.unshift("Now");
+                    } else if (i === 15) {
+                        labelTag.unshift(i + " mins");
+                    } else if (i === length - 1) {
+                        labelTag.unshift(length + " mins");
+                    } else {
+                        labelTag.unshift("");
+                    }
+                }
+
+                let ctx = document.getElementById("bw_chart").getContext("2d");
+                let bwLineColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--chart-color-1");
+                let bwLineBgColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--bg-chart-color-1");
+                let clientColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--chart-color-2");
+                let clientBgColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--bg-chart-color-2");
+                let datasets = [
+                    {
+                        label: "<#tm_wireless#>",
+                        data: activeClient,
+                        backgroundColor: [`${clientBgColor}`],
+                        borderWidth: 1,
+                        borderColor: `${clientColor}`,
+                        fill: true,
+                        pointRadius: 0,
+                        yAxisID: "y",
+                        type: "bar",
+                        oerder: 1,
+                        barPercentage: 0.6,
+                    },
+                    {
+                        label: "TRAFFIC",
+                        data: bandwidthUsage,
+                        backgroundColor: [`${bwLineBgColor}`],
+                        borderWidth: 1,
+                        borderColor: `${bwLineColor}`,
+                        fill: true,
+                        tension: 0.2,
+                        pointRadius: 0,
+                        yAxisID: "y1",
+                        oerder: 0,
+                    },
+                ];
+
+                document.querySelector("#traffic").innerHTML = convertTrafficUnit(bandwidthUsage[bandwidthUsage.length - 1]);
+                document.querySelector("#wireless_client").innerHTML = activeClient[activeClient.length - 1];
+
+                const myChart1 = new Chart(ctx, {
+                    type: "line",
+                    data: {
+                        labels: labelTag,
+                        datasets: datasets,
+                    },
+                    options: {
+                        interaction: {
+                            mode: "nearest",
+                            axis: "x",
+                            intersect: false,
+                        },
+                        plugins: {
+                            legend: {
+                                display: false,
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        let label = context.dataset.label || "",
+                                            traffic = context.parsed.y;
+                                        if (traffic !== null) {
+                                            if (label === "TRAFFIC") {
+                                                label += ": " + convertTrafficUnit(traffic);
+                                            } else {
+                                                label += ": " + traffic;
+                                            }
+                                        }
+
+                                        return label;
+                                    },
+                                },
+                            },
+                        },
+                        scales: {
+                            y: {
+                                ticks: {
+                                    color: labelColor,
+                                    callback: function (value, index, ticks) {
+                                        return value;
+                                    },
+
+                                    beginAtZero: true,
+                                    stepSize: 1,
+                                    maxTicksLimit: 5,
+                                },
+                                suggestedMin: 0,
+                            },
+                            y1: {
+                                ticks: {
+                                    color: labelColor,
+                                    callback: function (value, index, ticks) {
+                                        return convertTrafficUnit(value);
+                                    },
+
+                                    beginAtZero: true,
+                                    maxTicksLimit: 5,
+                                },
+                                suggestedMin: 0,
+                                position: "right",
+                            },
+                            x: {
+                                ticks: {
+                                    color: labelColor,
+                                },
+                            },
+                        },
+                        responsive: true,
+                        maintainAspectRatio: false,
+                    },
+                });
+            }
+
+            function dnsAddCard() {
+                let template = `
+                            <div class="d-flex justify-content-center mt-5">
+                                <div class="card-float">
+                                    <div class="card-header-float"><#PPPConnection_x_WANDNSServer_itemname#></div>
+                                    <div class="card-body-float">
+                                        <div class="d-sm-flex align-items-center py-2">
+                                            <div class="me-auto"><#Clientlist_name#></div>
+                                            <div class="card-content-float">
+                                                <div class="input-group">
+                                                    <input type="type" class="form-control" value="" maxlength="16" id="dns_name" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="d-sm-flex align-items-center py-2">
+                                            <div class="me-auto"><#IPConnection_ExternalIPAddress_itemname#></div>
+                                            <div class="card-content-float">
+                                                <div class="input-group">
+                                                    <input type="type" class="form-control" value="" maxlength="15" id="dns_ip" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-end card-footer-float">
+                                        <div class="text-center btn-regular" id="dns_cancel">
+                                            <div><#CTL_Cancel#></div>
+                                        </div>
+                                        <div class="text-center btn-confirm" id="dns_confirm">
+                                            <div><#CTL_ok#></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+
+                let element = document.createElement("div");
+                element.className = "shadow-bg";
+                element.innerHTML = template;
+                document.body.appendChild(element);
+
+                document.getElementById("dns_cancel").addEventListener("click", function () {
+                    document.body.removeChild(element);
+                });
+                document.getElementById("dns_confirm").addEventListener("click", function () {
+                    let name = document.getElementById("dns_name").value,
+                        ip = document.getElementById("dns_ip").value,
+                        MAX_LENGTH = 16;
+
+                    // check length of DNS rule list
+                    if (ping_array.length === MAX_LENGTH) {
+                        alert("<#AiMesh_Binding_Rule_Maxi#>");
+                        return false;
+                    }
+                    // check DNS name can not be empty
+                    if (name === "") {
+                        alert("<#JS_fieldblank#>");
+                        document.getElementById("dns_name").focus();
+                        return false;
+                    }
+                    // check valid IP address
+                    if (!valid_IP(ip)) {
+                        document.getElementById("dns_ip").focus();
+                        return false;
+                    }
+                    // check same IP address
+                    for (let item of ping_array) {
+                        if (item.ip === ip) {
+                            alert(ip + " is already in the list");
+                            return false;
+                        }
+                    }
+
+                    dns_ping_list += "<" + name + ">" + ip;
+                    httpApi.nvramSet(
+                        {
+                            action_mode: "apply",
+                            dns_ping_list: dns_ping_list,
+                        },
+                        function () {
+                            httpApi.diag_ping.start();
+                            setTimeout(function () {
+                                getDnsPingData();
+                            }, 100);
+                        }
+                    );
+
+                    document.body.removeChild(element);
+                });
+            }
+
+            function dnsDeleteCard() {
+                let template = `
+                            <div class="d-flex justify-content-center mt-5">
+                                <div class="card-float">
+                                    <div class="card-header-float"><#CTL_del#> <#PPPConnection_x_WANDNSServer_itemname#></div>
+                                    <div class="card-body-float"></div>
+                                    <div class="d-flex justify-content-end card-footer-float">
+                                        <div class="text-center btn-regular" id="dns_cancel">
+                                            <div><#CTL_Cancel#></div>
+                                        </div>
+
+                                        <div class="text-center btn-confirm" id="dns_erase">
+                                            <div><#CTL_del#></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+
+                let element = document.createElement("div");
+                element.className = "shadow-bg";
+                element.innerHTML = template;
+                document.body.appendChild(element);
+
+                // APPEND CONTENT
+                let array = dns_ping_list.split("<");
+                let code = `
+                            <div class="form-check m-2 my-3">
+                                <input class="form-check-input col-1" type="checkbox" id="dnsSelectAll" />
+                                <label class="form-check-label col-7" for="dnsSelectAll">Name</label>
+                                <label class="form-check-label col-4" for="dnsSelectAll">IP</label>
+                            </div>
+                            <div class="divide-line"></div>
+                        `;
+
+                for (let item of ping_array) {
+                    let name = item.alias,
+                        ip = item.ip;
+
+                    code += `
+                                <div class="form-check m-2 my-3">
+                                    <input class="form-check-input col-1" type="checkbox" id="${ip}" />
+                                    <label class="form-check-label col-7" for="${ip}">${name}</label>
+                                    <label class="form-check-label col-4" for="${ip}">${ip}</label>
+                                </div>
+                                <div class="divide-line"></div>
+                            `;
+                }
+
+                document.querySelector(".card-body-float").innerHTML = code;
+
+                // button, "CANCEL"
+                document.getElementById("dns_cancel").addEventListener("click", function () {
+                    document.body.removeChild(element);
+                });
+                // select ALL
+                document.getElementById("dnsSelectAll").addEventListener("click", function () {
+                    let checked = document.getElementById("dnsSelectAll").checked;
+                    for (let item of ping_array) {
+                        document.getElementById(item.ip).checked = checked;
+                    }
+                });
+                // button, "DELETE"
+                document.getElementById("dns_erase").addEventListener("click", function () {
+                    let list = "";
+                    let array = dns_ping_list.split("<");
+                    for (let i = 1; i < array.length; i++) {
+                        let data = array[i].split(">");
+                        let ip = data[1];
+                        if (document.getElementById(ip).checked) {
+                            for (let j = ping_array.length - 1; j >= 0; j--) {
+                                if (ping_array[j].ip === ip) {
+                                    ping_array.splice(j, 1);
+                                }
+                            }
+
+                            continue;
+                        }
+
+                        list += "<" + data[0] + ">" + data[1];
+                    }
+
+                    genDnsPingTable();
+                    dns_ping_list = list;
+                    httpApi.nvramSet(
+                        {
+                            action_mode: "apply",
+                            dns_ping_list: dns_ping_list,
+                        },
+                        function () {}
+                    );
+                    document.body.removeChild(element);
+                });
+            }
+
+			var diskList;
+            function updateDisk(callback) {
+                $.ajax({
+                    url: "js/disk.js",
+                    dataType: "script",
+                    success: function () {
+                        callback(diskList);
+                    },
+                });
+            }
+
+            function getDisk() {
+                $.ajax({
+                    url: "js/disk.js",
+                    dataType: "script",
+                    success: function (repsonse) {
+                        if(diskList.length == 0){
+                            document.querySelector("#db_path").value = "<#no_usb_found#>";
+                        }
+                        else{
+                            genDisk(diskList);
+                        }
+                    },
+                });
+            }
+
+            let maxFreeSpace = 0;
+            function genDisk(diskList) {
+                let template = "";
+                for (let i = 0; i < diskList.length; i++) {
+                    for (let j = 0; j < diskList[i].partition.length; j++) {
+                        let diskName = diskList[i].partition[j].partName,
+                            active = diskList[i].partition[j].isAppDev,
+                            // space unit is KB
+                            totalSpace = diskList[i].partition[j].size,
+                            usedSpace = diskList[i].partition[j].used,
+                            freeSpace = totalSpace - usedSpace;
+
+                        template += `
+                                    <div class="d-flex align-items-center justify-content-center disk-banner">
+                                        <div class="mx-3">
+                                            <div role="icon" class="icon-size-48 icon-folder-open"></div>
+                                        </div>
+                                        <div class="ms-4">
+                                            <div data-diskName="" class="fs-5 fw-bold">${diskName}</div>
+                                            <div>
+                                                <span class="chart-sub-content-title">Total Space:</span>
+                                                <span>${parseInt(totalSpace / 1024)} MB</span>
+                                            </div>
+                                            <div>
+                                                <span class="chart-sub-content-title">Free Space:</span>
+                                                <span data-freeSpace="">${parseInt(freeSpace / 1024)} MB</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                    }
+                }
+
+                let element = document.createElement("div");
+                element.className = "card-sub-content";
+                element.innerHTML = template;
+                document.querySelector("#disk").appendChild(element);
+                // select
+                for (let i = 0; i < document.querySelectorAll(".disk-banner").length; i++) {
+                    document.querySelectorAll(".disk-banner")[i].addEventListener("click", function () {
+                        let mountPoint = this.querySelector("[data-diskName]").innerText;
+                        let freeSpace = this.querySelector("[data-freeSpace]").innerText;
+                        maxFreeSpace = freeSpace.split(" ")[0];
+                        document.getElementById("db_path").value = `/mnt/${mountPoint}/ASUS_Database`;
+                        document.getElementById("maxVolSize").innerHTML = `<#Availablespace#>: ${freeSpace}`;
+                        document.querySelector("#disk").removeChild(element);
+                    });
+                }
+            }
+
+            function databaseSetting() {
+                let template = `
+                            <div class="d-flex justify-content-center mt-5">
+                                <div class="card-float">
+                                    <div class="card-header-float"><#Firewall_App_Patrol_DB#></div>
+                                    <div class="card-body-float">
+                                        <div class="d-flex align-items-center py-2">
+                                            <div class="me-auto"><#routerSync_folder#></div>
+                                            <div class="card-content-float">
+                                                <div class="input-group">
+                                                    <input type="text" class="form-control" id="db_path" value="" readonly />
+                                                    <button class="btn btn-input-icon" type="button" id="path_search">
+                                                        <div role="icon" class="icon-size-24 icon-folder-open"></div>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div id="disk"></div>
+
+                                        <div class="d-flex align-items-center py-2">
+                                            <div class="me-auto"><#Mobile_traffic_limit#></div>
+                                            <div class="card-content-float">
+                                                <div class="input-group">
+                                                    <input
+                                                        type="number"
+                                                        class="form-control text-end"
+                                                        id="db_size"
+                                                        value="1"
+                                                        min="1"
+                                                    />
+                                                    <span class="input-group-text btn-input-label">MB</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="text-end" id="maxVolSize"></div>
+                                    </div>
+                                    <div class="d-flex justify-content-end card-footer-float">
+                                        <div class="text-center btn-regular" id="db_cancel">
+                                            <div><#CTL_Cancel#></div>
+                                        </div>
+                                        <div class="text-center btn-confirm" id="db_confirm">
+                                            <div><#CTL_ok#></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+
+                let element = document.createElement("div");
+                element.className = "shadow-bg";
+                element.innerHTML = template;
+                document.body.appendChild(element);
+                let { ex_db_backup_path, ex_db_backup_size } = httpApi.nvramGet(["ex_db_backup_path", "ex_db_backup_size"], true);
+
+                document.getElementById("db_path").value = ex_db_backup_path;
+                document.getElementById("db_size").value = ex_db_backup_size / 1024 / 1024;
+                // DATABASE path select icon
+                document.getElementById("path_search").addEventListener("click", function () {
+                    if (document.getElementById("disk").innerHTML !== "") return false;
+
+                    getDisk();
+                });
+                // DATABASE cancel
+                document.getElementById("db_cancel").addEventListener("click", function () {
+                    document.body.removeChild(element);
+                });
+                // DATABASE confirm
+                document.getElementById("db_confirm").addEventListener("click", function () {
+                    let dbSize = document.getElementById("db_size").value;
+
+                    if (document.querySelector("#space_size_hint")) {
+                        document.querySelector("#space_size_hint").remove();
+                    }
+
+                    if (parseInt(dbSize) > parseInt(maxFreeSpace)) {
+                        let element = document.createElement("div");
+                        element.className = "text-end hint-text";
+                        element.id = "space_size_hint";
+                        element.innerHTML = `Space can not exceed ${maxFreeSpace} MB`;
+
+                        document.getElementById("maxVolSize").appendChild(element);
+                        return false;
+                    }
+
+                    httpApi.nvramSet({
+                        action_mode: "apply",
+                        ex_db_backup_enable: "1",
+                        ex_db_backup_path: document.getElementById("db_path").value,
+                        ex_db_backup_size: dbSize * 1024 * 1024,
+                    });
+
+                    document.body.removeChild(element);
+                });
+            }
+
+            function addCard() {
+                let template = `
+                                <div class="d-flex justify-content-center mt-5">
+                                <div class="card-float">
+                                    <div class="card-header-float">ADD CARD</div>
+                                    <div class="card-body-float">
+                                        <div class="d-sm-flex align-items-center py-2">
+                                            <div class="me-auto"><#Clientlist_name#></div>
+                                            <div class="card-content-float">
+                                                <div class="input-group">
+                                                    <input type="type" class="form-control" value="" maxlength="16" id="card_name" />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-sm-flex align-items-center py-2">
+                                            <div class="me-auto"><#Device_type#></div>
+                                            <div class="card-content-float">
+                                                <div class="btn-group w-100" role="group">
+                                                    <input
+                                                        type="radio"
+                                                        class="btn-check form-check-input"
+                                                        id="btn-check-categoryMesh"
+                                                        name="radioTargetType"
+                                                        autocomplete="off"
+                                                        checked
+                                                    />
+                                                    <label class="btn btn-color form-check-label" for="btn-check-categoryMesh"
+                                                        ><#aimesh_mode#></label
+                                                    >
+
+                                                    <input
+                                                        type="radio"
+                                                        class="btn-check form-check-input"
+                                                        id="btn-check-categoryDevice"
+                                                        name="radioTargetType"
+                                                        autocomplete="off"
+                                                    />
+                                                    <label
+                                                        class="btn btn-color form-check-label"
+                                                        for="btn-check-categoryDevice"
+                                                        ><#Clientlist_device#></label
+                                                    >
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="d-sm-flex align-items-center py-2">
+                                            <div class="me-auto"><#ConnectedClient#></div>
+                                            <div class="card-content-float">
+                                                <div class="input-group">
+                                                    <select class="form-select w-auto" id="targetDeviceList"></select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-sm-flex align-items-center py-2">
+                                            <div class="me-auto"><#AiProtection_filter_category#></div>
+                                            <div class="card-content-float">
+                                                <div class="input-group">
+                                                    <select class="form-select w-auto" id="dataTypeList"></select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-end card-footer-float">
+                                        <div class="text-center btn-regular" id="add_card_cancel">
+                                            <div><#CTL_Cancel#></div>
+                                        </div>
+                                        <div class="text-center btn-confirm" id="add_card_confirm">
+                                            <div><#CTL_ok#></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+
+                let element = document.createElement("div");
+                element.className = "shadow-bg";
+                element.innerHTML = template;
+                document.body.appendChild(element);
+                categorySwitch();
+
+                // bind onchange event for Catetory
+                for (item of document.querySelectorAll('[name="radioTargetType"]')) {
+                    item.addEventListener("change", categorySwitch);
+                }
+
+                // ADD CARD cancel
+                document.getElementById("add_card_cancel").addEventListener("click", function () {
+                    document.body.removeChild(element);
+                });
+                // ADD CARD confirm
+                document.getElementById("add_card_confirm").addEventListener("click", function () {
+                    let name = document.getElementById("card_name").value;
+                    let mac = document.getElementById("targetDeviceList").value;
+                    let category = (function () {
+                        return document.getElementById("btn-check-categoryMesh").checked
+                            ? "M"
+                            : document.getElementById("btn-check-categoryDevice").checked
+                            ? "D"
+                            : "";
+                    })();
+                    let dataTypeString = (function () {
+                        let id_array = new Array(12).fill("0");
+                        let dataType = document.getElementById("dataTypeList").value;
+                        if (dataType === "cpu_ram") {
+                            return "3";
+                        } else if (dataType === "clients") {
+                            return "4";
+                        } else if (dataType === "rssi") {
+                            return "1";
+                        } else if (dataType === "tx_rx") {
+                            return "6";
+                        } else if (dataType === "tbyte_rbyte") {
+                            return "7";
+                        }
+                    })();
+
+                    if(name == ""){
+						alert("<#JS_fieldblank#>");
+						document.getElementById("card_name").focus()
+						return false;
+					}
+
+					var content = `${mac}>${category}>${dataTypeString}`;
+					if(custom_card_list.indexOf(content) != -1){
+						alert("<#JS_duplicate#>");
+						document.getElementById("card_name").focus()
+						return false;
+					}
+
+					let card_list = `${name}>${mac}>${category}>${dataTypeString}`;
+                    let mainContainer = document.querySelectorAll(".row")[0];
+                    createCard(card_list, mainContainer);
+                    custom_card_list += "<" + card_list;
+                    httpApi.nvramSet({
+                        action_mode: "apply",
+                        custom_card_list: custom_card_list,
+                    });
+                    document.body.removeChild(element);
+                });
+            }
+
+            function genCustomCard() {
+                //建立card
+                let cardListArray = custom_card_list.split("<");
+                let mainContainer = document.querySelectorAll(".row")[0];
+                for (let i = 1; i < cardListArray.length; i++) {
+                    createCard(cardListArray[i], mainContainer);
+                }
+            }
+
+            function createCard(data, mainContainer) {
+                let array = data.split(">");
+                let cardName = array[0],
+                    mac = array[1],
+                    type = array[2],
+                    id = parseInt(array[3]);
+
+                let element = document.createElement("div");
+                element.id = cardName;
+                element.classList.add("col-12", "col-md-6", "col-xl-4", "mb-3");
+                mainContainer.appendChild(element);
+                let dataTypeArray = [];
+                if (type === "M") {
+                    if (id === 3) {
+                        dataTypeArray = ["CPU", "RAM"];
+                    } else if (id === 4) {
+                        dataTypeArray = ["CLIENTS"];
+                    }
+                } else if (type === "D") {
+                    if (id === 1) {
+                        dataTypeArray = ["RSSI"];
+                    } else if (id === 6) {
+                        dataTypeArray = ["TX", "RX"];
+                    } else if (id === 7) {
+                        dataTypeArray = ["Tbyte", "Rbyte"];
+                    }
+                }
+
+                let tabColor = ["system-cpu-tab", "system-ram-tab"];
+                let code = `
+                            <div class="card pt-2 h-100">
+                                <h5 class="card-header d-flex align-items-center justify-content-between">
+                                    <div>${cardName}</div>
+                                    <div
+                                        role="icon"
+                                        class="icon-size-24 icon-more-horiz"
+                                        onclick="showAddPanel('${cardName}')"
+                                    ></div>
+                                </h5>
+                                <div class="card-body" id="${cardName}_body">
+                                    <div class="row">
+                                        <div style="height: 300px">
+                                            <canvas id="${cardName}_chart"></canvas>
+                                        </div>
+                                        <div class="col-12 col-sm-4 col-md-12 mt-2">
+                            `;
+                for (let i = 0; i < dataTypeArray.length; i++) {
+                    code += `
+                                    <div class="d-flex align-items-center py-2" id="">
+                                        <div class="d-xl-flex">
+                                            <div class="d-flex align-items-center">
+                                                <div class="me-2 ${tabColor[i]}"></div>
+                                                <span class="ps-1 chart-sub-content-title">${dataTypeArray[i]}</span>
+                                            </div>
+                                        </div>
+                                        <div class="ms-auto card-data-value">
+                                            <span id="${cardName}_${dataTypeArray[i]}_usage_value"></span>
+                                            <span class="badge rounded-pill border text-primary small lh-1 fw-bold ms-2"><#feedback_when_now#></span>
+                                        </div>
+                                    </div>
+                                    <div class="divide-line"></div>
+                            `;
+                }
+                // <div class="d-flex align-items-center py-2" id="">
+                //     <div class="d-xl-flex">
+                //         <div class="d-flex align-items-center">
+                //             <div class="me-2 system-cpu-tab"></div>
+                //             <span class="ps-1 chart-sub-content-title">CPU</span>
+                //         </div>
+                //     </div>
+                //     <div class="ms-auto system-text">
+                //         <span id="${cardName}_cpu_usage_value"></span>
+                //         <span class="ps-1 system-sub-text">Now</span>
+                //     </div>
+                // </div>
+                // <div class="divide-line" id=""></div>
+                // <div class="d-flex align-items-center py-2" id="">
+                //     <div class="d-xl-flex">
+                //         <div class="d-flex align-items-center">
+                //             <div class="me-2 system-ram-tab"></div>
+                //             <div class="ms-1 chart-sub-content-title">RAM</div>
+                //         </div>
+                //     </div>
+                //     <div class="ms-auto system-text">
+                //         <span id="${cardName}_ram_usage_value"></span>
+                //         <span class="ps-1 system-sub-text">Now</span>
+                //     </div>
+                // </div>
+                // <div class='divide-line'></div>;
+                code += `
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+
+                element.innerHTML = code;
+                if (type === "M") {
+                    if (id === 3) {
+                        getCpuRamData(mac, cardName);
+                    } else if (id === 4) {
+                        getClientData(mac, cardName);
+                    }
+                } else if (type === "D") {
+                    if (id === 1) {
+                        getRssiData(mac, cardName);
+                        // getCpuRamData(mac, cardName);
+                    } else if (id === 6) {
+                        getTxRxData(mac, cardName);
+                        // getClientData(mac, cardName);
+                    } else if (id === 7) {
+                        getTbyteRbyteData(mac, cardName);
+                        // getClientData(mac, cardName);
+                    }
+                }
+            }
+
+            function genCpuRamChart(targetID, rawData) {
+                let ctx = document.getElementById(targetID + "_chart").getContext("2d");
+                let labelColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--text-regular-color");
+                let cpuLineColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--color-icon-traffic-up");
+                let ramLineColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--color-icon-traffic-down");
+                cpuLongData = [...rawData[0]];
+                ramLongData = [...rawData[1]];
+                let length = 15;
+                let cpuUsage = [],
+                    ramUsage = [],
+                    labelTag = [];
+
+                let dataIndex = ["CPU", "RAM"];
+                for (let i = 0; i < length; i++) {
+                    if (i === 0) {
+                        labelTag.push(length + " mins");
+                    } else if (i === length - 1) {
+                        labelTag.push("Now");
+                    } else {
+                        labelTag.push("");
+                    }
+                }
+                // show data from left to right that could easy to cut
+                cpuUsage = rawData[0].reverse();
+                ramUsage = rawData[1].reverse();
+                // cut data size
+                cpuUsage.length = length;
+                ramUsage.length = length;
+                // show data from rigth to left
+                cpuUsage = cpuUsage.reverse();
+                ramUsage = ramUsage.reverse();
+                let datasets = [];
+                for (let i = 0; i < dataIndex.length; i++) {
+                    if (dataIndex[i] === "CPU") {
+                        datasets.push({
+                            label: "CPU",
+                            data: cpuUsage,
+                            backgroundColor: [`rgba(${cpuLineColor}, 0.3)`],
+                            borderWidth: 1,
+                            borderColor: `rgb(${cpuLineColor})`,
+                            fill: true,
+                            yAxisID: "y",
+                            order: 2,
+                        });
+
+                        let value = !cpuUsage.length
+                            ? "0"
+                            : cpuUsage[cpuUsage.length - 1] === undefined
+                            ? "0"
+                            : cpuUsage[cpuUsage.length - 1];
+                        document.getElementById(targetID + "_CPU_usage_value").innerHTML = value + "%";
+                    } else if (dataIndex[i] === "RAM") {
+                        datasets.push({
+                            label: "RAM",
+                            data: ramUsage,
+                            backgroundColor: [`rgba(${ramLineColor}, 0.3)`],
+                            borderWidth: 1,
+                            borderColor: `rgb(${ramLineColor})`,
+                            fill: true,
+                            yAxisID: "y",
+                            order: 0,
+                        });
+
+                        let value = !ramUsage.length
+                            ? "0"
+                            : ramUsage[ramUsage.length - 1] === undefined
+                            ? "0"
+                            : ramUsage[ramUsage.length - 1];
+                        document.getElementById(targetID + "_RAM_usage_value").innerHTML = value + "%";
+                    }
+                }
+                cpuChart = new Chart(ctx, {
+                    type: "line",
+                    data: {
+                        labels: [1, 2, 3, 4, 5, 6, 7, 8, 9, 0],
+                        datasets: [
+                            {
+                                label: "CPU",
+                                data: cpuUsage,
+                                backgroundColor: ["rgb(75, 192, 192)"],
+                                borderWidth: 1,
+                                borderColor: "rgb(75, 192, 192)",
+                                fill: true,
+                                yAxisID: "y",
+                                order: 1,
+                            },
+                            {
+                                label: "RAM",
+                                data: ramUsage,
+                                backgroundColor: [`rgba(${ramLineColor}, 0.3)`],
+                                borderWidth: 1,
+                                borderColor: `rgb(${ramLineColor})`,
+                                fill: true,
+                                yAxisID: "y",
+                                order: 0,
+                            },
+                        ],
+                    },
+                    options: {
+                        plugins: {
+                            legend: {
+                                display: false,
+                            },
+                        },
+                        scales: {
+                            y: {
+                                ticks: {
+                                    color: labelColor,
+                                    callback: function (value, index, ticks) {
+                                        return value + " %";
+                                    },
+
+                                    beginAtZero: true,
+                                    count: 5,
+                                },
+                                suggestedMin: 0,
+                                suggestedMax: 100,
+                            },
+                            x: {
+                                ticks: {
+                                    color: labelColor,
+                                },
+                            },
+                        },
+                        responsive: true,
+                        maintainAspectRatio: false,
+                    },
+                });
+            }
+
+            function getCpuRamData(targetMac, cardID) {
+                httpApi.get_diag_content_data(
+                    {
+                        ts: Date.now(),
+                        duration: "60",
+                        point: "30",
+                        db: "sys_detect",
+                        content: "cpu_usage;mem_usage",
+                        filter: "node_mac>txt>" + targetMac + ">0",
+                    },
+                    (e) => {
+                        let cpuData = [],
+                            ramData = [];
+                        for (let item of e.contents) {
+                            cpuData.push(item[0]);
+                            ramData.push(item[1]);
+                        }
+
+                        genCpuRamChart(cardID, [cpuData, ramData]);
+                    }
+                );
+            }
+
+            function genWlClientChart(targetID, rawData) {
+                let ctx = document.getElementById(targetID + "_chart").getContext("2d");
+                let labelColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--text-regular-color");
+                let clientLineColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--color-icon-traffic-up");
+
+                clientLongData = [...rawData[0]];
+                let length = 15;
+                let clientUsage = [],
+                    labelTag = [];
+
+                let dataIndex = ["CLIENTS"];
+                for (let i = 0; i < length; i++) {
+                    if (i === 0) {
+                        labelTag.push(length + " mins");
+                    } else if (i === length - 1) {
+                        labelTag.push("Now");
+                    } else {
+                        labelTag.push("");
+                    }
+                }
+                // show data from left to right that could easy to cut
+                clientUsage = rawData[0].reverse();
+
+                // cut data size
+                clientUsage.length = length;
+
+                // show data from rigth to left
+                clientUsage = clientUsage.reverse();
+                let datasets = [];
+                for (let i = 0; i < dataIndex.length; i++) {
+                    if (dataIndex[i] === "CLIENTS") {
+                        datasets.push({
+                            label: "CLIENTS",
+                            data: clientUsage,
+                            backgroundColor: [`rgba(${clientLineColor}, 0.3)`],
+                            borderWidth: 1,
+                            borderColor: `rgb(${clientLineColor})`,
+                            fill: true,
+                            yAxisID: "y",
+                            order: 2,
+                        });
+
+                        let value = !clientUsage.length
+                            ? "0"
+                            : clientUsage[clientUsage.length - 1] === undefined
+                            ? "0"
+                            : clientUsage[clientUsage.length - 1];
+                        document.getElementById(targetID + "_CLIENTS_usage_value").innerHTML = value;
+                    }
+                }
+                cpuChart = new Chart(ctx, {
+                    type: "line",
+                    data: {
+                        labels: labelTag,
+                        datasets: [
+                            {
+                                label: "CLIENTS",
+                                data: clientUsage,
+                                backgroundColor: [`rgba(${clientLineColor}, 0.3)`],
+                                borderWidth: 1,
+                                borderColor: `rgb(${clientLineColor})`,
+                                fill: true,
+                                yAxisID: "y",
+                                order: 1,
+                            },
+                        ],
+                    },
+                    options: {
+                        plugins: {
+                            legend: {
+                                display: false,
+                            },
+                        },
+                        scales: {
+                            y: {
+                                ticks: {
+                                    color: labelColor,
+                                    callback: function (value, index, ticks) {
+                                        return value;
+                                    },
+
+                                    beginAtZero: true,
+                                    // count: 5,
+                                    stepSize: 1,
+                                    maxTicksLimit: 5,
+                                },
+                                suggestedMin: 0,
+                                // stacked: true,
+
+                                // suggestedMax: 100,
+                            },
+                            x: {
+                                ticks: {
+                                    color: labelColor,
+                                },
+                            },
+                        },
+                        responsive: true,
+                        maintainAspectRatio: false,
+                    },
+                });
+            }
+
+            function getClientData(targetMac, cardID) {
+                httpApi.get_diag_active_client(
+                    {
+                        ts: Date.now(),
+                        duration: "60",
+                        point: "30",
+                        node_mac: targetMac,
+                    },
+                    (e) => {
+                        let activeClient = e.count;
+                        genWlClientChart(cardID, [activeClient]);
+                        // genBwClient(bandwidthUsage, activeClient);
+                    }
+                );
+            }
+
+            function genRssiChart(targetID, rawData) {
+                let ctx = document.getElementById(targetID + "_chart").getContext("2d");
+                let labelColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--text-regular-color");
+                let rssiLineColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--color-icon-traffic-up");
+
+                let length = 15;
+                let rssiUsage = [],
+                    labelTag = [];
+
+                rssiLongData = [...rawData[0]];
+                let dataIndex = ["RSSI"];
+                for (let i = 0; i < length; i++) {
+                    if (i === 0) {
+                        labelTag.push(length + " mins");
+                    } else if (i === length - 1) {
+                        labelTag.push("Now");
+                    } else {
+                        labelTag.push("");
+                    }
+                }
+                // show data from left to right that could easy to cut
+                rssiUsage = rawData[0].reverse();
+
+                // cut data size
+                rssiUsage.length = length;
+
+                // show data from rigth to left
+                rssiUsage = rssiUsage.reverse();
+
+                let datasets = [];
+                for (let i = 0; i < dataIndex.length; i++) {
+                    if (dataIndex[i] === "RSSI") {
+                        datasets.push({
+                            label: "RSSI",
+                            data: rssiUsage,
+                            backgroundColor: [`rgba(${rssiLineColor}, 0.3)`],
+                            borderWidth: 1,
+                            borderColor: `rgb(${rssiLineColor})`,
+                            fill: true,
+                            yAxisID: "y",
+                            order: 2,
+                        });
+
+                        let value = !rssiUsage.length
+                            ? "0"
+                            : rssiUsage[rssiUsage.length - 1] === undefined
+                            ? "0"
+                            : rssiUsage[rssiUsage.length - 1];
+
+                        document.getElementById(targetID + "_RSSI_usage_value").innerHTML = value + "dBm";
+                    }
+                }
+                cpuChart = new Chart(ctx, {
+                    type: "line",
+                    data: {
+                        labels: labelTag,
+                        datasets: [
+                            {
+                                label: "RSSI",
+                                data: rssiUsage,
+                                backgroundColor: [`rgba(${rssiLineColor}, 0.3)`],
+                                borderWidth: 1,
+                                borderColor: `rgb(${rssiLineColor})`,
+                                fill: true,
+                                yAxisID: "y",
+                                order: 1,
+                            },
+                        ],
+                    },
+                    options: {
+                        plugins: {
+                            legend: {
+                                display: false,
+                            },
+                        },
+                        scales: {
+                            y: {
+                                ticks: {
+                                    color: labelColor,
+                                    callback: function (value, index, ticks) {
+                                        return value;
+                                    },
+
+                                    beginAtZero: true,
+                                    count: 5,
+                                    // stepSize: 1,
+                                    maxTicksLimit: 5,
+                                },
+                                suggestedMin: 0,
+                                // stacked: true,
+
+                                suggestedMax: -100,
+                            },
+                            x: {
+                                ticks: {
+                                    color: labelColor,
+                                },
+                            },
+                        },
+                        responsive: true,
+                        maintainAspectRatio: false,
+                    },
+                });
+            }
+
+            function getRssiData(targetMac, cardID) {
+                httpApi.get_diag_content_data(
+                    {
+                        ts: Date.now(),
+                        duration: "60",
+                        point: "30",
+                        db: "stainfo",
+                        content: "sta_rssi",
+                        filter: "sta_mac>txt>" + targetMac + ">0",
+                    },
+                    (e) => {
+                        let rssiData = [];
+
+                        for (let item of e.contents) {
+                            rssiData.push(item[0]);
+                        }
+
+                        genRssiChart(cardID, [rssiData]);
+                    }
+                );
+            }
+
+            function genTxRxChart(targetID, rawData) {
+                let ctx = document.getElementById(targetID + "_chart").getContext("2d");
+                let labelColor = `rgb(${getComputedStyle(document.querySelector(":root")).getPropertyValue("--text-regular-color")})`;
+                let txLineColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--color-icon-traffic-up");
+                let rxLineColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--color-icon-traffic-down");
+                txLongData = [...rawData[0]];
+                rxLongData = [...rawData[1]];
+                let length = 15;
+                let txUsage = [],
+                    rxUsage = [],
+                    labelTag = [];
+
+                let dataIndex = ["TX", "RX"];
+                for (let i = 0; i < length; i++) {
+                    if (i === 0) {
+                        labelTag.push(length + " mins");
+                    } else if (i === length - 1) {
+                        labelTag.push("Now");
+                    } else {
+                        labelTag.push("");
+                    }
+                }
+                // show data from left to right that could easy to cut
+                txUsage = rawData[0].reverse();
+                rxUsage = rawData[1].reverse();
+                // cut data size
+                txUsage.length = length;
+                rxUsage.length = length;
+                // show data from rigth to left
+                txUsage = txUsage.reverse();
+                rxUsage = rxUsage.reverse();
+                let datasets = [];
+                for (let i = 0; i < dataIndex.length; i++) {
+                    if (dataIndex[i] === "TX") {
+                        datasets.push({
+                            label: "TX",
+                            data: txUsage,
+                            backgroundColor: [`rgba(${txLineColor}, 0.3)`],
+                            borderWidth: 1,
+                            borderColor: `rgb(${txLineColor})`,
+                            fill: true,
+                            yAxisID: "y",
+                            order: 2,
+                        });
+
+                        let value = !txUsage.length ? "0" : txUsage[txUsage.length - 1] === undefined ? "0" : txUsage[txUsage.length - 1];
+                        document.getElementById(targetID + "_TX_usage_value").innerHTML = value + " Mbps";
+                    } else if (dataIndex[i] === "RX") {
+                        datasets.push({
+                            label: "RX",
+                            data: rxUsage,
+                            backgroundColor: [`rgba(${rxLineColor}, 0.3)`],
+                            borderWidth: 1,
+                            borderColor: `rgb(${rxLineColor})`,
+                            fill: true,
+                            yAxisID: "y",
+                            order: 0,
+                        });
+
+                        let value = !rxUsage.length ? "0" : rxUsage[rxUsage.length - 1] === undefined ? "0" : rxUsage[rxUsage.length - 1];
+                        document.getElementById(targetID + "_RX_usage_value").innerHTML = value + " Mbps";
+                    }
+                }
+                cpuChart = new Chart(ctx, {
+                    type: "line",
+                    data: {
+                        labels: labelTag,
+                        datasets: [
+                            {
+                                label: "TX",
+                                data: txUsage,
+                                backgroundColor: [`rgba(${txLineColor}, 0.3)`],
+                                borderWidth: 1,
+                                borderColor: `rgb(${txLineColor})`,
+                                fill: true,
+                                yAxisID: "y",
+                                order: 1,
+                            },
+                            {
+                                label: "RX",
+                                data: rxUsage,
+                                backgroundColor: [`rgba(${rxLineColor}, 0.3)`],
+                                borderWidth: 1,
+                                borderColor: `rgb(${rxLineColor})`,
+                                fill: true,
+                                yAxisID: "y",
+                                order: 0,
+                            },
+                        ],
+                    },
+                    options: {
+                        plugins: {
+                            legend: {
+                                display: false,
+                            },
+                        },
+                        scales: {
+                            y: {
+                                ticks: {
+                                    color: labelColor,
+                                    callback: function (value, index, ticks) {
+                                        return value + " Mbps";
+                                    },
+
+                                    beginAtZero: true,
+                                    count: 5,
+                                },
+                                suggestedMin: 0,
+                                suggestedMax: 100,
+                            },
+                            x: {
+                                ticks: {
+                                    color: labelColor,
+                                },
+                            },
+                        },
+                        responsive: true,
+                        maintainAspectRatio: false,
+                    },
+                });
+            }
+            function getTxRxData(targetMac, cardID) {
+                httpApi.get_diag_content_data(
+                    {
+                        ts: Date.now(),
+                        duration: "60",
+                        point: "30",
+                        db: "stainfo",
+                        content: "sta_tx;sta_rx;",
+                        filter: "sta_mac>txt>" + targetMac + ">0",
+                    },
+                    (e) => {
+                        let txData = [],
+                            rxData = [];
+
+                        for (let item of e.contents) {
+                            txData.push(item[0]);
+                            rxData.push(item[1]);
+                        }
+
+                        genTxRxChart(cardID, [txData, rxData]);
+                    }
+                );
+            }
+
+			function genTbyteRbyteChart(targetID, rawData) {
+                let ctx = document.getElementById(targetID + "_chart").getContext("2d");
+                let labelColor = `rgb(${getComputedStyle(document.querySelector(":root")).getPropertyValue("--text-regular-color")})`;
+                let txLineColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--color-icon-traffic-up");
+                let rxLineColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--color-icon-traffic-down");
+                txLongData = [...rawData[0]];
+                rxLongData = [...rawData[1]];
+                let length = 15;
+                let txUsage = [],
+                    rxUsage = [],
+                    labelTag = [];
+
+                let dataIndex = ["TX", "RX"];
+                for (let i = 0; i < length; i++) {
+                    if (i === 0) {
+                        labelTag.push(length + " mins");
+                    } else if (i === length - 1) {
+                        labelTag.push("Now");
+                    } else {
+                        labelTag.push("");
+                    }
+                }
+                // show data from left to right that could easy to cut
+                txUsage = rawData[0].reverse();
+                rxUsage = rawData[1].reverse();
+                // cut data size
+                txUsage.length = length;
+                rxUsage.length = length;
+                // show data from rigth to left
+				const toKbyte = (currentValue) => parseInt(parseInt(currentValue)/(1024));
+                txUsage = txUsage.reverse().map(toKbyte);
+                rxUsage = rxUsage.reverse().map(toKbyte);
+                let datasets = [];
+                for (let i = 0; i < dataIndex.length; i++) {
+                    if (dataIndex[i] === "TX") {
+                        datasets.push({
+                            label: "TX",
+                            data: txUsage,
+                            backgroundColor: [`rgba(${txLineColor}, 0.3)`],
+                            borderWidth: 1,
+                            borderColor: `rgb(${txLineColor})`,
+                            fill: true,
+                            yAxisID: "y",
+                            order: 2,
+                        });
+
+                        let value = !txUsage.length ? "0" : txUsage[txUsage.length - 1] === undefined ? "0" : txUsage[txUsage.length - 1];
+                        document.getElementById(targetID + "_Tbyte_usage_value").innerHTML = value + " Kbps";
+                    } else if (dataIndex[i] === "RX") {
+                        datasets.push({
+                            label: "RX",
+                            data: rxUsage,
+                            backgroundColor: [`rgba(${rxLineColor}, 0.3)`],
+                            borderWidth: 1,
+                            borderColor: `rgb(${rxLineColor})`,
+                            fill: true,
+                            yAxisID: "y",
+                            order: 0,
+                        });
+
+                        let value = !rxUsage.length ? "0" : rxUsage[rxUsage.length - 1] === undefined ? "0" : rxUsage[rxUsage.length - 1];
+                        document.getElementById(targetID + "_Rbyte_usage_value").innerHTML = value + " Kbps";
+                    }
+                }
+                cpuChart = new Chart(ctx, {
+                    type: "line",
+                    data: {
+                        labels: labelTag,
+                        datasets: [
+                            {
+                                label: "TX",
+                                data: txUsage,
+                                backgroundColor: [`rgba(${txLineColor}, 0.3)`],
+                                borderWidth: 1,
+                                borderColor: `rgb(${txLineColor})`,
+                                fill: true,
+                                yAxisID: "y",
+                                order: 1,
+                            },
+                            {
+                                label: "RX",
+                                data: rxUsage,
+                                backgroundColor: [`rgba(${rxLineColor}, 0.3)`],
+                                borderWidth: 1,
+                                borderColor: `rgb(${rxLineColor})`,
+                                fill: true,
+                                yAxisID: "y",
+                                order: 0,
+                            },
+                        ],
+                    },
+                    options: {
+                        plugins: {
+                            legend: {
+                                display: false,
+                            },
+                        },
+                        scales: {
+                            y: {
+                                ticks: {
+                                    color: labelColor,
+                                    callback: function (value, index, ticks) {
+                                        return value + " Kbps";
+                                    },
+
+                                    beginAtZero: true,
+                                    count: 5,
+                                },
+                                suggestedMin: 0,
+                                suggestedMax: 100,
+                            },
+                            x: {
+                                ticks: {
+                                    color: labelColor,
+                                },
+                            },
+                        },
+                        responsive: true,
+                        maintainAspectRatio: false,
+                    },
+                });
+            }
+           
+            function getTbyteRbyteData(targetMac, cardID) {
+                httpApi.get_diag_content_data(
+                    {
+                        ts: Date.now(),
+                        duration: "60",
+                        point: "30",
+                        db: "stainfo",
+                        content: "sta_tbyte;sta_rbyte;",
+                        filter: "sta_mac>txt>" + targetMac + ">0",
+                    },
+                    (e) => {
+                        let tbyteData = [],
+                            rbyteData = [];
+
+                        for (let item of e.contents) {
+                            tbyteData.push(item[0]);
+                            rbyteData.push(item[1]);
+                        }
+
+                        genTbyteRbyteChart(cardID, [tbyteData, rbyteData]);
+                    }
+                );
+            }
+
+            function showAddPanel(id) {
+                var target = document.getElementById(id + "_panel");
+                if (target) {
+                } else {
+                    var element = document.createElement("div");
+                    var mainContainer = document.getElementById(id + "_body");
+                    element.id = id + "_panel";
+                    element.classList.add("extend-panel");
+                    mainContainer.appendChild(element);
+
+                    var container = document.getElementById(id + "_panel");
+                    var temp = id + "_panel";
+                    var code = `
+                                <div class="d-flex align-items-center justify-content-between px-3 py-2" onclick="deleteCard('${temp}')">
+                                    <div>Delete Card</div>
+                                    <div role="icon" class="icon-size-20 icon-delete ms-2"></div>
+                                </div>
+                            `;
+
+                    container.innerHTML = code;
+                }
+            }
+
+            function deleteCard(target) {
+                var id = target.split("_panel")[0];
+                var array = [""];
+
+                let cardListArray = custom_card_list.split("<");
+                for (var i = 1; i < cardListArray.length; i++) {
+                    var temp = cardListArray[i].split(">")[0];
+                    if (temp === id) {
+                        document.getElementById(id).remove();
+                        continue;
+                    }
+                    array.push(cardListArray[i]);
+                }
+
+                custom_card_list = [...array];
+                card_list = "";
+                if (custom_card_list.length != 1) {
+                    card_list = custom_card_list.join("<");
+                }
+
+                httpApi.nvramSet({ action_mode: "apply", custom_card_list: card_list }, function () {
+                    card_list = decodeURIComponent(httpApi.nvramCharToAscii(["custom_card_list"], true).custom_card_list)
+                        .replace(/&#62/g, ">")
+                        .replace(/&#60/g, "<");
+                    custom_card_list = card_list;
+                });
+            }
+            /*
+                        NEED to check rule again and write the following three functions
+                    */
+            function inet_network(ip_str) {
+                if (!ip_str) return -1;
+
+                var re = /^(\d+)\.(\d+)\.(\d+)\.(\d+)$/;
+                if (re.test(ip_str)) {
+                    var v1 = parseInt(RegExp.$1);
+                    var v2 = parseInt(RegExp.$2);
+                    var v3 = parseInt(RegExp.$3);
+                    var v4 = parseInt(RegExp.$4);
+
+                    if (v1 < 256 && v2 < 256 && v3 < 256 && v4 < 256) return v1 * 256 * 256 * 256 + v2 * 256 * 256 + v3 * 256 + v4;
+                }
+
+                return -2;
+            }
+            function ipFilterZero(ip_str) {
+                var re = /^(\d+)\.(\d+)\.(\d+)\.(\d+)$/;
+                if (re.test(ip_str)) {
+                    var v1 = parseInt(RegExp.$1);
+                    var v2 = parseInt(RegExp.$2);
+                    var v3 = parseInt(RegExp.$3);
+                    var v4 = parseInt(RegExp.$4);
+                    return v1 + "." + v2 + "." + v3 + "." + v4;
+                }
+                return -2;
+            }
+
+            function valid_IP(ip) {
+                // A : 1.0.0.0~126.255.255.255
+                // B : 127.0.0.0~127.255.255.255 (forbidden)
+                // C : 128.0.0.0~255.255.255.254
+                var A_class_start = inet_network("1.0.0.0");
+                var A_class_end = inet_network("126.255.255.255");
+                var B_class_start = inet_network("127.0.0.0");
+                var B_class_end = inet_network("127.255.255.255");
+                var C_class_start = inet_network("128.0.0.0");
+                var C_class_end = inet_network("255.255.255.255");
+
+                var ip_num = inet_network(ip);
+
+                if (ip_num > A_class_start && ip_num < A_class_end) {
+                    ip = ipFilterZero(ip);
+                    return true;
+                } else if (ip_num > B_class_start && ip_num < B_class_end) {
+                    alert(ip + " <#JS_validip#>");
+                    return false;
+                } else if (ip_num > C_class_start && ip_num < C_class_end) {
+                    ip = ipFilterZero(ip);
+                    return true;
+                } else {
+                    alert(ip + " <#JS_validip#>");
+                    return false;
+                }
+            }
+
+            setTimeout(init, 200);
+
+            function getDDNSState(ddns_return_code, ddns_hostname, ddns_old_hostname) {
+                var ddnsStateHint = "";
+                if (ddns_return_code.indexOf('-1') != -1)
+                    ddnsStateHint = `<#LANHostConfig_x_DDNS_alarm_2#>`;
+                else if (ddns_return_code.indexOf('200') != -1)
+                    ddnsStateHint = `<#LANHostConfig_x_DDNS_alarm_3#>`;
+                else if (ddns_return_code.indexOf('203') != -1)
+                    ddnsStateHint = `<#LANHostConfig_x_DDNS_alarm_hostname#>` + ddns_hostname + ` <#LANHostConfig_x_DDNS_alarm_registered#>`;
+                else if (ddns_return_code.indexOf('220') != -1)
+                    ddnsStateHint = `<#LANHostConfig_x_DDNS_alarm_4#>`;
+                else if (ddns_return_code.indexOf('230') != -1)
+                    ddnsStateHint = `<#LANHostConfig_x_DDNS_alarm_5#>`;
+                else if (ddns_return_code.indexOf('233') != -1)
+                    ddnsStateHint = `<#LANHostConfig_x_DDNS_alarm_hostname#> ` + ddns_hostname + ` <#LANHostConfig_x_DDNS_alarm_registered_2#> ` + ddns_old_hostname;
+                else if (ddns_return_code.indexOf('296') != -1)
+                    ddnsStateHint = `<#LANHostConfig_x_DDNS_alarm_6#>`;
+                else if (ddns_return_code.indexOf('297') != -1)
+                    ddnsStateHint = `<#LANHostConfig_x_DDNS_alarm_7#>`;
+                else if (ddns_return_code.indexOf('298') != -1)
+                    ddnsStateHint = `<#LANHostConfig_x_DDNS_alarm_8#>`;
+                else if (ddns_return_code.indexOf('299') != -1)
+                    ddnsStateHint = `<#LANHostConfig_x_DDNS_alarm_9#>`;
+                else if (ddns_return_code.indexOf('390') != -1)
+                    ddnsStateHint = "Server Error";
+                else if (ddns_return_code.indexOf('401') != -1)
+                    ddnsStateHint = `<#LANHostConfig_x_DDNS_alarm_10#>`;
+                else if (ddns_return_code.indexOf('402') != -1)
+                    ddnsStateHint = `<#LANHostConfig_x_DDNS_alarm_15#>`;
+                else if (ddns_return_code.indexOf('407') != -1)
+                    ddnsStateHint = `<#LANHostConfig_x_DDNS_alarm_11#>`;
+                else if (ddns_return_code == 'Time-out')
+                    ddnsStateHint = `<#LANHostConfig_x_DDNS_alarm_1#>`;
+                else if (ddns_return_code == 'unknown_error')
+                    ddnsStateHint = `<#LANHostConfig_x_DDNS_alarm_2#>`;
+                else if (ddns_return_code == 'connect_fail')
+                    ddnsStateHint = `<#qis_fail_desc7#>`;
+                else if (ddns_return_code == 'no_change')
+                    ddnsStateHint = `<#LANHostConfig_x_DDNS_alarm_nochange#>`;
+                else if (ddns_return_code == 'ddns_query')
+                    ddnsStateHint = `<#Main_alert_processing#>`;
+                else if (ddns_return_code == 'auth_fail')
+                    ddnsStateHint = `<#qis_fail_desc1#>`;
+                else if (ddns_return_code != '')
+                    ddnsStateHint = `<#LANHostConfig_x_DDNS_alarm_2#>`;
+
+                return ddnsStateHint;
+            }
+
+            function show_ddns_fail_hint(e) {
+                var str = "";
+                if (wanInfo[0].status !== "CONNECTED") {
+                    str = `<#Disconnected#>`;
+                } else if (wanInfo[0].ddnsServer = 'WWW.ASUS.COM') {
+                    var ddnsHint = getDDNSState(wanInfo[0].ddnsReturnCode, wanInfo[0].ddnsName, wanInfo[0].ddnsOldName);
+                    if (ddnsHint != "")
+                        str = ddnsHint;
+                } else {
+                    str = "<#LANHostConfig_x_DDNS_alarm_2#>";
+                }
+                const modalDiv = document.createElement("div");
+                modalDiv.classList.add("modal", "fade");
+                modalDiv.id = "ddnsNoticeModal";
+
+                modalDiv.innerHTML = `
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h4 class="modal-title" style="font-weight: bold;"><#Notice#></h4>
+                        <div type="button" class="close_btn" data-bs-dismiss="modal">&times;</div>
+                      </div>
+                      <div class="modal-body">
+                        <p>${str}</p>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+                      </div>
+                    </div>
+                  </div>
+                `;
+                if (!document.body.querySelector('#ddnsNoticeModal')) {
+                    document.body.appendChild(modalDiv);
+                }
+
+                const ddnsModal = new bootstrap.Modal(document.getElementById('ddnsNoticeModal'));
+                ddnsModal.show();
+            }
+
+            function copyDdnsName(e) {
+                let popover = new bootstrap.Popover($(e), {
+                  container: 'body'
+                })
+                popover.show();
+                setTimeout(function () {
+                    popover.hide();
+                }, 2000);
+
+                var ddnsName = decodeURIComponent(wanInfo[0].ddnsName);
+                if (window.isSecureContext && navigator.clipboard) {
+                    navigator.clipboard.writeText(ddnsName);
+                } else {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = ddnsName;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    try {
+                        document.execCommand('copy')
+                    } catch (err) {
+                        console.error('Unable to copy to clipboard', err)
+                    }
+                    document.body.removeChild(textArea)
+                }
+            }
+
+            function categorySwitch() {
+                let checked = (function () {
+                    return document.getElementById("btn-check-categoryMesh").checked
+                        ? "M"
+                        : document.getElementById("btn-check-categoryDevice").checked
+                        ? "D"
+                        : "";
+                })();
+
+                let code = "";
+
+                if(checked === "M"){
+                    for (let item of Object.values(system.aimesh_node_list)) {
+                        code += `<option value="${item.mac}">${item.display_name}(${item.mac})</option>`;
+                    }
+                }
+                else if(checked === "D"){
+                    for (let item of Object.values(system.client.detail)) {
+                        if (item.is_wireless > 0) {
+                            let display_name = (item.nickName !== '') ? item.nickName : (item.name !== '') ? item.name : item.mac;
+                            if (checked === "D" && item.amesh_isReClient === "1") {
+                                code += `<option value="${item.mac}">${display_name}</option>`;
+                            }
+                        }
+                    }
+                }
+
+                document.getElementById("targetDeviceList").innerHTML = code;
+
+                code = "";
+                let meshType = [
+                    { name: "<#Status_CPU#>/<#Status_RAM#>", value: "cpu_ram" },
+                    { name: "<#Full_Clients#> (<#tm_wireless#>)", value: "clients" },
+                ];
+                let deviceType = [
+                    { name: "RSSI", value: "rssi" },
+                    { name: "<#AiMesh_Transmit_Rate#>/<#AiMesh_Receive_Rate#>", value: "tx_rx" },
+                    { name: "<#Current#>", value: "tbyte_rbyte" }
+                ];
+
+                if (checked === "M") {
+                    for (let item of meshType) {
+                        code += `<option value="${item.value}">${item.name}</option>`;
+                    }
+                } else if (checked === "D") {
+                    for (let item of deviceType) {
+                        code += `<option value="${item.value}">${item.name}</option>`;
+                    }
+                }
+
+                document.getElementById("dataTypeList").innerHTML = code;
+            }
+
+            let wanInfo = [];
+            function getWANInfo() {
+                let nvram = httpApi.nvramGet([
+                    "wans_dualwan",
+                    "wans_mode",
+                    "ddns_hostname_x",
+                    "ddns_enable_x",
+                    "ddns_server_x",
+                    "ddns_old_name",
+                    "ddns_return_code_chk",
+                    "ddns_updated",
+                    "le_enable",
+                    "le_state",
+                    "wan0_state_t",
+                    "wan0_sbstate_t",
+                    "wan0_auxstate_t",
+                    "wan0_ipaddr",
+                    "wan0_realip_ip",
+                    "wan0_realip_state",
+                    "wan0_dns",
+                    "wan0_netmask",
+                    "wan0_gateway",
+                    "wan0_proto",
+                    "wan0_enable",
+                    "wan1_state_t",
+                    "wan1_sbstate_t",
+                    "wan1_auxstate_t",
+                    "wan1_ipaddr",
+                    "wan1_realip_ip",
+                    "wan1_realip_state",
+                    "wan1_dns",
+                    "wan1_netmask",
+                    "wan1_gateway",
+                    "wan1_proto",
+                    "wan1_enable",
+                ]);
+
+                if(nvram.wans_dualwan == "") nvram.wans_dualwan = "wan none";
+
+                let mapping_wanType = {
+                    dhcp: "<#BOP_ctype_title1#>",
+                    static: "<#BOP_ctype_title5#>",
+                    pppoe: "PPPoE",
+					pptp: "PPTP",
+					l2tp: "L2TP"
+                };
+                wanInfo[0] = (function () {
+                    let obj = {};
+                    obj.port = nvram.wans_dualwan.split(" ")[0].toUpperCase();
+                    obj.dualWANEnabled = (function () {
+                        if (system.dualWANSupport && nvram.wans_dualwan.indexOf("none") === -1) {
+                            return true;
+                        }
+
+                        return false;
+                    })();
+                    obj.wanEnabled = nvram.wan0_enable === "1" ? true : false;
+                    obj.dualWanMode = (function () {
+                        let mode = nvram.wans_mode;
+                        return mode === "lb" ? "<#dualwan_mode_lb#>" : "<#dualwan_mode_fo#>";
+                    })();
+                    obj.status = (function () {
+                        if (nvram.wan0_state_t === "2" && nvram.wan0_sbstate_t === "0" && nvram.wan0_auxstate_t === "0") {
+                            return "CONNECTED";
+                        }
+
+                        return "DISCONNECTED";
+                    })();
+                    obj.ip = nvram.wan0_ipaddr;
+                    obj.realIP = nvram.wan0_realip_ip;
+                    obj.realIpState = nvram.wan0_realip_state;
+                    obj.dns = nvram.wan0_dns;
+                    obj.mask = nvram.wan0_netmask;
+                    obj.gateway = nvram.wan0_gateway;
+                    obj.type = (function () {
+                        let type = nvram.wan0_proto.toLowerCase();
+                        if (obj.port === "USB") {
+                            return "USB Modem";
+                        }
+
+                        return mapping_wanType[type];
+                    })();
+
+                    obj.ddnsName = nvram.ddns_hostname_x;
+                    obj.ddnsEnale = nvram.ddns_enable_x;
+                    obj.ddnsServer = nvram.ddns_server_x;
+                    obj.ddnsOldName = nvram.ddns_old_name;
+                    obj.ddnsReturnCode = nvram.ddns_return_code_chk;
+                    obj.ddnsUpdated = nvram.ddns_updated;
+                    obj.leEnable = nvram.le_enable;
+                    obj.leState = nvram.le_state;
+                    return obj;
+                })();
+
+                wanInfo[1] = (function () {
+                    let obj = {};
+                    obj.port = nvram.wans_dualwan.split(" ")[1].toUpperCase();
+                    obj.wanEnabled = nvram.wan1_enable === "1" ? true : false;
+                    obj.dualWanMode = (function () {
+                        let mode = nvram.wans_mode;
+                        return mode === "lb" ? "<#dualwan_mode_lb#>" : "<#dualwan_mode_fo#>";
+                    })();
+                    obj.status = (function () {
+                        if (nvram.wan1_state_t === "2" && nvram.wan1_sbstate_t === "0" && nvram.wan1_auxstate_t === "0") {
+                            return "CONNECTED";
+                        }
+
+                        return "DISCONNECTED";
+                    })();
+                    obj.ip = nvram.wan1_ipaddr;
+                    obj.realIP = nvram.wan1_realip_ip;
+                    obj.realIpState = nvram.wan1_realip_state;
+                    obj.dns = nvram.wan1_dns;
+                    obj.mask = nvram.wan1_netmask;
+                    obj.gateway = nvram.wan1_gateway;
+                    obj.type = (function () {
+                        let type = nvram.wan1_proto.toLowerCase();
+                        if (obj.port === "USB") {
+                            return "USB Modem";
+                        }
+
+                        return mapping_wanType[type];
+                    })();
+
+                    return obj;
+                })();
+
+                genWAN();
+            }
+
+            function genWAN() {
+                let code = "";
+                // gen WAN 1
+
+                let wan_enable = wanInfo[0].wanEnabled ? "checked" : "";
+                target = document.getElementById("wan0_field");
+                code = `
+                <div class="card pt-2 h-100">
+                    <h5 class="card-header"><#dualwan_primary#></h5>
+                    <div class="card-body">
+                        <div class="d-sm-flex align-items-center">
+                            <div class="w-100">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="card-data-title"><#menu5_3_1#></div>
+                                    <div class="form-check form-switch ms-auto">
+                                        <input class="form-check-input form-switch-large" type="checkbox" id="wan0_enable_btn" ${wan_enable} />
+                                    </div>
+                                </div>
+            `;
+
+                if (wanInfo[0].dualWANEnabled) {
+                    code += `
+                                <div class="d-sm-flex align-items-center mb-3">
+                                    <div class="card-data-title"><#dualwan_mode#></div>
+                                    <div class="ms-auto card-data-value">${wanInfo[0].dualWanMode}</div>
+                                </div>
+                                <div class="d-sm-flex align-items-center mb-3">
+                                    <div class="card-data-title"><#wan_port#></div>
+                                    <div class="ms-auto card-data-value">${wanInfo[0].port}</div>
+                                </div>
+    	            `;
+                }
+
+				if(!wanInfo[0].dualWANEnabled && wanInfo[0].status === "CONNECTED"){
+	                code += `
+    							<div class="d-flex flex-column align-items-start flex-sm-row justify-content-sm-start clientBorder px-3 py-3 mb-3">
+                                    <a class="position-relative p-0 rounded-circle size-48 me-3" href="#!">
+                                        <div role="icon" class="icon-size-48 icon-wan-connection"></div>
+                                        <span class="p-0 size-10 rounded-circle position-absolute end-0 top-0 mt-1 me-1 bg-success"></span>
+                                    </a>
+                                    <div class="d-flex flex-column w-100">
+                                        <div class="d-flex flex-row align-items-center justify-content-between">
+                                            <h6 class="m-0"><#dualwan_primary#></h6>
+                                            <div class="d-flex align-items-base">
+                                                <div role="icon" class="icon-size-48 icon-wan-cable bg-primary"></div> 
+                                            </div>
+                                        </div>
+                                        <div class="d-flex align-items-center mb-2">
+                                            <h6 class="text-success m-0">${wanInfo[0].status === "CONNECTED" ? "<#Connected#>" : "<#Disconnected#>"}</h6>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <div class="card-data-value border-end pe-2 text-reset">${wanInfo[0].type}</div>
+                                            <div class="card-data-value ps-2 text-reset">${wanInfo[0].status === "CONNECTED" ? wanInfo[0].ip : "-"}</div>
+                                        </div>
+                                    </div>
+                                </div>
+    	            `;
+				}
+
+                let ddns_title = `DDNS`;
+                let ddns_code = isMultisiteApp()?`<div class="card-data-value"><a href="/index.html?url=settings&current_theme=white&page=Advanced_ASUSDDNS_Content.asp&mapp=true">GO</a></div>`:`<div class="card-data-value"><a href="/index.html?url=settings&current_theme=white&page=Advanced_ASUSDDNS_Content.asp">GO</a></div>`;
+                let show_ddns_hint = false;
+                const ddns_hint = `<div><div type="button" onClick="show_ddns_fail_hint(this);" data-bs-container="body" data-bs-toggle="popover" data-bs-placement="top"><i class="gg-danger ddns"></i></div></div>`;
+                let show_ddns_letsencrypt = false;
+                const ddns_letsencrypt = `<div id="ddns_letsencrypt" style="padding-bottom: 8px;"><img width="24px" height="24px" src="images/letsencrypt.svg" alt="Lets Encrypt" title="Lets Encrypt"></div>`
+                if (wanInfo[0].ddnsEnale == '1') {
+                    if(wanInfo[0].status !== "CONNECTED") //link down
+				        show_ddns_hint = true;
+
+                    if (wanInfo[0].ddnsServer == 'WWW.ASUS.COM') {
+                        if ((wanInfo[0].ddnsReturnCode.indexOf('200') == -1) && (wanInfo[0].ddnsReturnCode.indexOf('220') == -1) && (wanInfo[0].ddnsReturnCode.indexOf('230') == -1))
+                            show_ddns_hint = true;
+                    } else {
+                        if (wanInfo[0].ddnsUpdated != '1' || wanInfo[0].ddnsReturnCode == 'unknown_error' || wanInfo[0].ddnsReturnCode == "auth_fail")
+                            show_ddns_hint = true;
+                    }
+
+                    if (wanInfo[0].leEnable == "1" && wanInfo[0].leState == "1") {
+                        show_ddns_letsencrypt = true;
+                    }
+
+                    ddns_title += `<div class="d-sm-flex gap-2">
+                                    <div class="d-sm-flex align-items-center gap-1">
+                                        ${show_ddns_letsencrypt ? ddns_letsencrypt : ``}
+                                        ${show_ddns_hint ? ddns_hint : ``}
+                                    </div>
+                                </div>`;
+
+                    ddns_code = `<div class="d-sm-flex align-items-center gap-1">
+                                    <div class="card-data-value text-break w-100">${wanInfo[0].ddnsName !== "" ? wanInfo[0].ddnsName : "-"}</div>
+                                    <div type="button" onClick="copyDdnsName(this)" data-bs-container="body" data-bs-toggle="popover" data-bs-placement="top" data-bs-content="Copied!"><div role="icon" class="icon-size-24 icon-clone ddns"></div></div>
+                                </div>`
+                }
+
+                code += `
+                                <div class="d-sm-flex align-items-center mb-3 justify-content-between">
+                                    <div class="card-data-title"><#Status_Str#></div>
+                                    <div class="card-data-value">${wanInfo[0].status}</div>
+                                </div>
+                                <div class="d-sm-flex align-items-center mb-3 justify-content-between">
+                                    <div class="card-data-title"><#Connection_Type#></div>
+                                    <div class="card-data-value">${wanInfo[0].status === "CONNECTED" ? wanInfo[0].type : "-"}</div>
+                                </div>
+                                <div class="d-sm-flex align-items-center mb-3 justify-content-between">
+                                    <div class="card-data-title">WAN IP</div>
+                                    <div class="card-data-value">${wanInfo[0].status === "CONNECTED" ? wanInfo[0].ip : "-"}</div>
+                                </div>
+                                <div class="d-sm-flex align-items-center mb-3 justify-content-between">
+                                    <div class="card-data-title"><#IPConnection_x_ExternalSubnetMask_itemname#></div>
+                                    <div class="card-data-value">${wanInfo[0].status === "CONNECTED" ? wanInfo[0].mask : "-"}</div>
+                                </div>
+                                <div class="d-sm-flex align-items-center mb-3 justify-content-between">
+                                    <div class="card-data-title"><#RouterConfig_GWStaticGW_itemname#></div>
+                                    <div class="card-data-value">${
+                                        wanInfo[0].status === "CONNECTED" ? wanInfo[0].gateway : "-"
+                                    }</div>
+                                </div>
+                                <div class="d-sm-flex align-items-center mb-3 justify-content-between">
+                                    <div class="card-data-title">DNS</div>
+                                    <div class="card-data-value">${wanInfo[0].status === "CONNECTED" ? wanInfo[0].dns : "-"}</div>
+                                </div>
+                                <div class="d-sm-flex align-items-center mb-3 justify-content-between gap-2 flex-wrap">
+                                    <div class="card-data-title d-flex align-items-center gap-3">${ddns_title}</div>
+                                    ${ddns_code}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="businessUI card-footer d-flex">
+                        <div role="icon" class="icon-size-24 icon-search-server me-3" onclick="showSpeedTest();"></div>
+                    </div>
+                </div>
+            `;
+
+                document.getElementById("wan0_field").innerHTML = code;
+                target.innerHTML = code;
+                target.classList.remove("d-none");
+                document.getElementById("wan0_enable_btn").addEventListener("click", function () {
+                    let wan0_enable = this.checked;
+                    httpApi.nvramSet(
+                        {
+                            action_mode: "apply",
+                            rc_service: "restart_wan_if 0",
+                            wan0_enable: wan0_enable ? "1" : "0",
+                        },
+                        function () {
+                            setTimeout(function () {
+                                location.reload();
+                            }, 5 * 1000);
+                        }
+                    );
+                });
+
+                // gen WAN 2, if necessary
+                if (system.dualWANSupport && wanInfo[0].dualWANEnabled) {
+                    target = document.getElementById("wan1_field");
+                    wan_enable = wanInfo[1].wanEnabled ? "checked" : "";
+                    code = `
+                                <div class="card pt-2 h-100">
+                                    <h5 class="card-header"><#dualwan_secondary#></h5>
+                                    <div class="card-body">
+                                        <div class="d-sm-flex align-items-center">
+                                            <div class="w-100">
+                                                <div class="d-sm-flex align-items-center mb-3">
+                                                    <div class="card-data-title"><#menu5_3_1#></div>
+                                                    <div class="form-check form-switch ms-auto">
+                                                        <input class="form-check-input form-switch-large" type="checkbox" id="wan1_enable_btn" ${wan_enable} />
+                                                    </div>
+                                                </div>
+                                                <div class="d-sm-flex align-items-center mb-3">
+                                                    <div class="card-data-title"><#dualwan_mode#></div>
+                                                    <div class="ms-auto card-data-value">${wanInfo[1].dualWanMode}</div>
+                                                </div>
+                                                <div class="d-sm-flex align-items-center mb-3">
+                                                    <div class="card-data-title"><#wan_port#></div>
+                                                    <div class="ms-auto card-data-value">${wanInfo[1].port}</div>
+                                                </div>
+                                                <div class="d-sm-flex align-items-center mb-3">
+                                                    <div class="card-data-title"><#Status_Str#></div>
+                                                    <div class="ms-auto card-data-value">${wanInfo[1].status}</div>
+                                                </div>
+                                                <div class="d-sm-flex align-items-center mb-3">
+                                                    <div class="card-data-title"><#Connection_Type#></div>
+                                                    <div class="ms-auto card-data-value">${
+                                                        wanInfo[1].status === "CONNECTED" ? wanInfo[1].type : "-"
+                                                    }</div>
+                                                </div>
+                                            <div class="d-sm-flex align-items-center mb-3">
+                                                    <div class="card-data-title">WAN IP</div>
+                                                    <div class="ms-auto card-data-value">${
+                                                        wanInfo[1].status === "CONNECTED" ? wanInfo[1].ip : "-"
+                                                    }</div>
+                                                </div>
+                                            <div class="d-sm-flex align-items-center mb-3">
+                                                    <div class="card-data-title"><#IPConnection_x_ExternalSubnetMask_itemname#></div>
+                                                    <div class="ms-auto card-data-value">${
+                                                        wanInfo[1].status === "CONNECTED" ? wanInfo[1].mask : "-"
+                                                    }</div>
+                                                </div>
+                                            <div class="d-sm-flex align-items-center mb-3">
+                                                    <div class="card-data-title"><#RouterConfig_GWStaticGW_itemname#></div>
+                                                    <div class="ms-auto card-data-value">${
+                                                        wanInfo[1].status === "CONNECTED" ? wanInfo[1].gateway : "-"
+                                                    }</div>
+                                                </div>
+                                            <div class="d-sm-flex align-items-center mb-3">
+                                                    <div class="card-data-title">DNS</div>
+                                                    <div class="ms-auto card-data-value">${
+                                                        wanInfo[1].status === "CONNECTED" ? wanInfo[1].dns : "-"
+                                                    }</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                               </div>
+                            `;
+
+                    document.getElementById("wan1_field").innerHTML = code;
+                    target.innerHTML = code;
+
+                    target.classList.remove("d-none");
+                    document.getElementById("wan1_enable_btn").addEventListener("click", function () {
+                        let wan1_enable = this.checked;
+                        httpApi.nvramSet(
+                            {
+                                action_mode: "apply",
+                                rc_service: "restart_wan_if 1",
+                                wan1_enable: wan1_enable ? "1" : "0",
+                            },
+                            function () {
+                                setTimeout(function () {
+                                    location.reload();
+                                }, 5 * 1000);
+                            }
+                        );
+                    });
+                }
+            }
+
+            function showSpeedTest() {
+                let template = `
+                            <div class="d-flex justify-content-center mt-5">
+                                <div class="card-float">
+                                    <div class="card-header-float"><#InternetSpeed#></div>
+                                    <div class="card-body-float card-body-float-max">
+                                        <div class="d-sm-flex align-items-center py-2">
+											<iframe src="/internet_speed.html?current_theme=white" style="width:100%;height:65vh"></iframe>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-end card-footer-float">
+                                        <div class="text-center btn-confirm" id="showSpeedtest_cancel">
+                                            <div><#CTL_ok#></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+
+                let element = document.createElement("div");
+                element.className = "shadow-bg";
+                element.innerHTML = template;
+                document.body.appendChild(element);
+
+				// setTimeout(setClientListVisible, 1000);
+
+                document.getElementById("showSpeedtest_cancel").addEventListener("click", function () {
+                    document.body.removeChild(element);
+                });
+            }
+
+			function genUSB() {
+				if(diskList.length == 0) return false;
+
+				let code = "";
+				target = document.getElementById("usb_field");
+
+				var diskInfo = {
+					"deviceName": diskList[0].deviceName,
+					"totalSize": (diskList[0].totalSize/(1024*1024)).toFixed(2) + " GB",
+					"availSize": ((diskList[0].totalSize - diskList[0].totalUsed)/(1024*1024)).toFixed(2) + " GB",
+					"partName": (function(){
+						let partName = `<#DISK_UNMOUNTED#>`;
+						$.each(diskList[0].partition, function(index, partition){
+							if(partition.format != "unknown"){
+								partName = partition.partName;
+								return false;
+							}
+						});
+						return partName;
+					})()
+				}
+
+				code = `
+					<div class="card pt-2 h-100">
+						<h5 class="card-header">USB</h5>
+						<div class="card-body">
+							<div class="d-sm-flex align-items-center">
+								<div class="w-100">
+									<div class="d-sm-flex align-items-center mb-3">
+										<div class="card-data-title"><#ShareNode_DeviceName_itemname#></div>
+										<div class="ms-auto card-data-value">${diskInfo.deviceName}</div>
+									</div>
+
+									<div class="d-sm-flex align-items-center mb-3">
+										<div class="card-data-title"><#DiskLabel#></div>
+										<div class="ms-auto card-data-value">${diskInfo.partName}</div>
+									</div>
+
+									<div class="d-sm-flex align-items-center mb-3">
+										<div class="card-data-title"><#Availablespace#></div>
+										<div class="ms-auto card-data-value">${diskInfo.availSize}</div>
+									</div>
+
+									<div class="d-sm-flex align-items-center mb-3">
+										<div class="card-data-title"><#Totalspace#></div>
+										<div class="ms-auto card-data-value">${diskInfo.totalSize}</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="card-footer d-flex">
+							<div role="icon" class="icon-size-24 icon-edit-document me-3" id="formatDisk"></div>
+							<div role="icon" class="icon-size-24 icon-delete-circle me-3" id="removeDisk"></div>
+						</div>
+					</div>
+				`;
+
+				target.innerHTML = code;
+				target.classList.remove("d-none");
+
+				document.getElementById("formatDisk").onclick = function(){
+					let template = `
+								<div class="d-flex justify-content-center mt-5">
+									<div class="card-float">
+										<div class="card-header-float"><#CTL_format#></div>
+										<div class="card-body-float">
+											<div class="d-sm-flex align-items-center py-2">
+												<div class="me-auto"><#DiskLabel#></div>
+												<div class="card-content-float">
+													<div class="input-group">
+														<input type="type" class="form-control" value="${diskList[0].partition[0].partName}" maxlength="16" id="diskLabel" />
+													</div>
+												</div>
+											</div>
+											<div class="d-sm-flex align-items-center py-2">
+												<div class="me-auto"><#format_type#></div>
+												<div class="card-content-float">
+													<div class="input-group">
+	                                                    <select id="usbFormatType" class="form-select w-auto">
+															<option value="tntfs">NTFS</option>
+															<option value="tfat">FAT</option>
+															<option value="thfsplus">HFS</option>
+														</select>
+													</div>
+												</div>
+											</div>
+										</div>
+										<div class="d-flex justify-content-end card-footer-float">
+											<div class="text-center btn-regular" id="usbFormat_cancel">
+												<div><#CTL_Cancel#></div>
+											</div>
+											<div class="text-center btn-confirm" id="usbFormat_confirm">
+												<div><#CTL_ok#></div>
+											</div>
+										</div>
+									</div>
+								</div>
+							`;
+
+					let element = document.createElement("div");
+					element.className = "shadow-bg";
+					element.innerHTML = template;
+					document.body.appendChild(element);
+
+					document.getElementById("usbFormatType").addEventListener("change", function (format) {
+						var temp_label = $("#diskLabel").val();
+
+						if(format == "tfat") {
+							document.getElementById("diskLabel").maxLength = 11;
+							if(temp_label.length > 12)
+								document.form.disk_name.value = temp_label.substr(0, 11);
+						}
+						else if(format == "tntfs") {
+							document.getElementById("diskLabel").maxLength = 32;
+						}
+						else if(format == "thfsplus") {
+							document.getElementById("diskLabel").maxLength = 30;
+							if(temp_label.length > 31)
+								document.getElementById("diskLabel").value = temp_label.substr(0, 30);
+						}
+					});
+
+					document.getElementById("usbFormat_cancel").addEventListener("click", function () {
+						document.body.removeChild(element);
+					});
+
+					document.getElementById("usbFormat_confirm").addEventListener("click", function () {
+						var Block_chars = function(obj, keywordArray) {
+							var invalid_char = "";
+							for(var i = 0; i < obj.value.length; ++i) {
+								if(obj.value.charCodeAt(i) < '32' || obj.value.charCodeAt(i) > '126') {
+									invalid_char += obj.value.charAt(i);
+								}
+							}
+							if(invalid_char != "") {
+								alert('<#JS_validstr2#>" '+ invalid_char +'" !');
+								obj.focus();
+								return false;
+							}
+
+							// check if char in the specified array
+							if(obj.value) {
+								invalid_char = "";
+								for(var i=0; i<keywordArray.length; i++) {
+									if( obj.value.indexOf(keywordArray[i]) >= 0) {
+										if(keywordArray[i] == " ")
+											invalid_char += "Space";
+										else
+											invalid_char += keywordArray[i];
+
+									}
+								}
+								if(invalid_char != "") {
+									alert(invalid_char+ " <#JS_invalid_chars#>");
+									obj.focus();
+									return false;
+								}
+							}
+							return true;
+						};
+
+						$("#diskLabel").val($("#diskLabel").val().trim());
+						if(document.getElementById('diskLabel') == "") return false;
+
+						var disk_system = $("#usbFormatType").val();
+						var temp_label = $("#diskLabel").val();
+
+						if(!Block_chars(document.getElementById('diskLabel'), ["~", "`", "!", "#", "$", "%", "^", "&", "*", "(", ")", "+", "=", "{", "[", "}", "]", "|", "\\", ":", ";", "\"", "'", "<", ">", ",", ".", "?", "/", " "]))
+							return false;
+
+						if(!confirm("<#format_confirm_alert#>")) {
+							document.body.removeChild(element);
+							return false;
+						}
+
+						httpApi.nvramSet({
+							"action_mode": "change_diskmon_unit",
+							"diskmon_usbport": "1"
+						})
+
+							httpApi.nvramSet({
+								"action_mode": "apply",
+								"rc_service": "start_diskformat",
+								"diskformat_file_system": $("#usbFormatType").val(),
+								"disk_system": $("#usbFormatType").val(),
+								"diskformat_label": $("#diskLabel").val(),
+								"disk_name": $("#diskLabel").val()
+							}, applyLoading(5, "<#format_formatting#>"))
+
+						document.body.removeChild(element);
+					});
+				};
+
+				document.getElementById("removeDisk").onclick = function(){
+                    let template = `
+                        <div class="d-flex justify-content-center mt-5">
+                            <div class="card-float">
+                                <div class="card-header-float">USB</div>
+                                <div class="card-body-float">
+                                    <div class="py-2"><#Safelyremovedisk_confirm#></div>
+                                </div>
+                                <div class="d-flex justify-content-end card-footer-float">
+                                    <div class="text-center btn-regular" id="removeDisk_cancel">
+                                        <div><#CTL_Cancel#></div>
+                                    </div>
+                                    <div class="text-center btn-confirm" id="removeDisk_confirm">
+                                        <div><#CTL_ok#></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    let element = document.createElement("div");
+                    element.className = "shadow-bg";
+                    element.innerHTML = template;
+                    document.body.appendChild(element);
+                    document.getElementById("removeDisk_cancel").addEventListener("click", function () {
+                        document.body.removeChild(element);
+                    });
+                    document.getElementById("removeDisk_confirm").addEventListener("click", function () {
+                        applyLoading(8, "<#diskUtility_umount#>");
+                        $.ajax({
+                            url: "/device-map/safely_remove_disk.asp?disk=1",
+                            success: function () {
+                                updateDisk(genUSB);
+                            },
+                        });
+                        document.body.removeChild(element);
+                    });
+				}
+			}
+
+            function show_ethPortStatus_hint(error_port_list){
+                let port_item_html = "";
+                error_port_list.forEach(
+                    (port_item) => {
+                        let port_text = "";
+                        if(port_item.ui_display != undefined && port_item.ui_display != ""){
+                            port_text = port_item.ui_display;
+                        }
+                        else{
+                            port_text = port_item.special_port_name + " (" + port_item.label_port_name + ")";
+                        }
+                        port_item_html += `
+                            <div style="display:flex;align-items:center;margin-bottom:6px;">
+                                <div class="me-2 system-warning-tab"></div>
+                                <div class="chart-sub-content-title">${port_text}</div>
+                            </div>
+                        `;
+                    }
+                );
+                document.getElementById("ethPortStatus_hint").classList.remove("d-none");
+                document.getElementById("ethPortStatus_hint").style.cursor = "pointer";
+                document.getElementById("ethPortStatus_hint").onclick = function(){
+                    let template = `
+                        <div class="d-flex justify-content-center mt-5">
+                            <div class="card-float">
+                                <div class="card-data-title"><#Port_Status_Notice_Title1#> <#Port_Status_Notice_Title2#></div>
+                                <div>${port_item_html}</div>
+                                <div class="card-data-title"><#Things_To_Check#> :</div>
+                                <ol>
+                                    <li class="card-data-value"><#Port_Status_Notice_Check_Item1#></li>
+                                    <li class="card-data-value"><#Port_Status_Notice_Check_Item2#></li>
+                                    <li class="card-data-value"><#Port_Status_Notice_Check_Item3#></li>
+                                    <li class="card-data-value"><#Port_Status_Notice_Check_Item4#></li>
+                                </ol>
+                                <div class="d-flex justify-content-end card-footer-float">
+                                    <div class="text-center btn-confirm" id="ethPortStatus_confirm">
+                                        <div><#CTL_ok#></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    let element = document.createElement("div");
+                    element.className = "shadow-bg";
+                    element.innerHTML = template;
+                    document.body.appendChild(element);
+                    document.getElementById("ethPortStatus_confirm").addEventListener("click", function () {
+                        document.body.removeChild(element);
+                    });
+                };
+            }
+
+			function applyLoading(time, string, callback) {
+				let template = `
+					<div class="d-flex justify-content-center mt-5">
+						<div class="card-float">
+							<div class="card-header-float">${string}</div>
+							<div class="card-body-float">
+								<div class="d-flex align-items-center mt-3">
+									<div class="spinner-border loader-circle-color spinner-border-lg" role="status" aria-hidden="true"></div>
+									<div class="fs-4 fw-bold ms-4" id="loading_text"><#Main_alert_proceeding_desc1#>...</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				`;
+
+				let element = document.createElement("div");
+				element.className = "shadow-bg";
+				element.innerHTML = template;
+				document.body.appendChild(element);
+
+				let count = 1;
+				let counter = function (time) {
+					let value = Math.round((count / time) * 100);
+					document.getElementById("loading_text").innerHTML = value + "%";
+					count++;
+
+					if (value > 100) {
+						if (callback) {callback();}
+						document.body.removeChild(element);
+					} else {
+						setTimeout(function(){counter(time);}, 1000);
+					}
+				};
+
+				counter(time);
+			}
+			updateDisk(genUSB);
+
+			if(system.currentOPMode.id != "RT"){
+				$("#wan0_field").hide();
+				$("#wan1_field").hide();
+				$("#ping_field").hide();
+			}
+
+            function showClientlistModal(){
+                const clientlistModal = new ClientlistModel();
+                clientlistModal.show();
+            }
+        </script>
+    </body>
+</html>

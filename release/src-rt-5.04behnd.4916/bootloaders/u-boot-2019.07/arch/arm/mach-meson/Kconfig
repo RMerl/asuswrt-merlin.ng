@@ -1,0 +1,89 @@
+if ARCH_MESON
+
+config MESON64_COMMON
+	bool
+	select ARM64
+	select CLK
+	select DM
+	select DM_SERIAL
+	select SYSCON
+	select REGMAP
+	select BOARD_LATE_INIT
+	imply CMD_DM
+
+config MESON_GX
+	bool
+	select MESON64_COMMON
+
+choice
+	prompt "Platform select"
+	default MESON_GXBB
+
+config MESON_GXBB
+	bool "GXBB"
+	select MESON_GX
+	help
+	  Select this if your SoC is an S905
+
+config MESON_GXL
+	bool "GXL"
+	select MESON_GX
+	help
+	  Select this if your SoC is an S905X/D or S805X
+
+config MESON_GXM
+	bool "GXM"
+	select MESON_GX
+	help
+	  Select this if your SoC is an S912
+
+config MESON_AXG
+	bool "AXG"
+	select MESON64_COMMON
+	help
+	  Select this if your SoC is an A113X/D
+
+config MESON_G12A
+	bool "G12A"
+	select MESON64_COMMON
+	help
+	  Select this if your SoC is an S905X/D2
+
+endchoice
+
+config SYS_SOC
+	default "meson"
+
+config SYS_MALLOC_F_LEN
+	default 0x1000
+
+config SYS_VENDOR
+	string "Vendor name"
+	default "amlogic"
+	help
+	  This option contains information about board name.
+	  Based on this option board/<CONFIG_SYS_VENDOR>/<CONFIG_SYS_BOARD> will
+	  be used.
+
+config SYS_BOARD
+	string "Board name"
+	default "p200" if MESON_GXBB
+	default "p212" if MESON_GXL
+	default "q200" if MESON_GXM
+	default "s400" if MESON_AXG
+	default "u200" if MESON_G12A
+	default ""
+	help
+	  This option contains information about board name.
+	  Based on this option board/<CONFIG_SYS_VENDOR>/<CONFIG_SYS_BOARD> will
+	  be used.
+
+config SYS_CONFIG_NAME
+	string "Board configuration name"
+	default "meson64"
+	help
+	  This option contains information about board configuration name.
+	  Based on this option include/configs/<CONFIG_SYS_CONFIG_NAME>.h header
+	  will be used for board configuration.
+
+endif

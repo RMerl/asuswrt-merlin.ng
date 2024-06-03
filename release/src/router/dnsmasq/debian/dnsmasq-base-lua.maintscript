@@ -1,9 +1,0 @@
-# With the use of debhelper /usr/share/doc/dnsmasq-base-lua has become a
-# directory as required in
-# https://www.debian.org/doc/debian-policy/ch-docs.html#additional-documentation
-# thus /usr/share/doc/dnsmasq-base will be a link from now onwards.
-symlink_to_dir /usr/share/doc/dnsmasq-base-lua /usr/share/doc/dnsmasq-base 2.89-1.1~ dnsmasq-base-lua
-dir_to_symlink /usr/share/doc/dnsmasq-base /usr/share/doc/dnsmasq-base-lua 2.89-1.1~ dnsmasq-base-lua
-# Due to lintian warning dbus-policy-in-etc this file has been moved to
-# /usr/share/dbus-1/system.d/dnsmasq.conf and thus is not a conffile any more.
-rm_conffile /etc/dbus-1/system.d/dnsmasq.conf 2.89-1.1~ dnsmasq-base-lua

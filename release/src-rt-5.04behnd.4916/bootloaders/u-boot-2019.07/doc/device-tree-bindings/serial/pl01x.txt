@@ -1,0 +1,10 @@
+* ARM AMBA Primecell PL011 & PL010 serial UART
+
+Required properties:
+- compatible: must be "arm,primecell", "arm,pl011" or "arm,pl010"
+- reg: exactly one register range with length 0x1000
+- clock: input clock frequency for the UART (used to calculate the baud
+  rate divisor)
+
+Optional properties:
+- skip-init: if present, the baud rate divisor is not changed

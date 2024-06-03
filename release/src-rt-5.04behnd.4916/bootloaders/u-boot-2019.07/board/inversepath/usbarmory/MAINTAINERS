@@ -1,0 +1,6 @@
+USBARMORY BOARD
+M:	Andrej Rosano <andrej@inversepath.com>
+S:	Maintained
+F:	board/inversepath/usbarmory/
+F:	include/configs/usbarmory.h
+F:	configs/usbarmory_defconfig

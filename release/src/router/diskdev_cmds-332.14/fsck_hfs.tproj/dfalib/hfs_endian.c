@@ -437,7 +437,7 @@ hfs_swap_HFSPlusBTInternalNode (
     BTNodeDescriptor *srcDesc = src->buffer;
     UInt16 *srcOffs = (UInt16 *)((char *)src->buffer + (src->blockSize - (srcDesc->numRecords * sizeof (UInt16))));
 	char *nextRecord;	/*  Points to start of record following current one */
-    UInt32 i;
+    int i;
     UInt32 j;
 
     if (fileID == kHFSExtentsFileID) {

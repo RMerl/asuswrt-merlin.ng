@@ -1,0 +1,8 @@
+BRPPT1 BOARD
+M:	Hannes Schmelzer <hannes.schmelzer@br-automation.com>
+S:	Maintained
+F:	board/BuR/brppt1/
+F:	include/configs/brppt1.h
+F:	configs/brppt1_mmc_defconfig
+F:	configs/brppt1_nand_defconfig
+F:	configs/brppt1_spi_defconfig

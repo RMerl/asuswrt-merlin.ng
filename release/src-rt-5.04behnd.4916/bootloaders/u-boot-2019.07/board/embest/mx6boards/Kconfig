@@ -1,0 +1,12 @@
+if TARGET_EMBESTMX6BOARDS
+
+config SYS_BOARD
+	default "mx6boards"
+
+config SYS_VENDOR
+	default "embest"
+
+config SYS_CONFIG_NAME
+	default "embestmx6boards"
+
+endif

@@ -1,0 +1,12 @@
+if TARGET_IDS8313
+
+config SYS_BOARD
+	default "ids8313"
+
+config SYS_VENDOR
+	default "ids"
+
+config SYS_CONFIG_NAME
+	default "ids8313"
+
+endif

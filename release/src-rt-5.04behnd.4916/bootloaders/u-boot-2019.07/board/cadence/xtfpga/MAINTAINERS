@@ -1,0 +1,7 @@
+XTFPGA BOARD
+M:	Max Filippov <jcmvbkbc@gmail.com>
+S:	Maintained
+F:	board/cadence/xtfpga/
+F:	include/configs/xtfpga.h
+F:	configs/xtfpga_defconfig
+F:	drivers/sysreset/sysreset_xtfpga.c

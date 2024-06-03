@@ -1,0 +1,208 @@
+Overview
+=========
+The P1010RDB is a Freescale reference design board that hosts the P1010 SoC.
+
+The P1010 is a cost-effective, low-power, highly integrated host processor
+based on a Power Architecture e500v2 core (maximum core frequency 800/1000 MHz),
+that addresses the requirements of several routing, gateways, storage, consumer,
+and industrial applications. Applications of interest include the main CPUs and
+I/O processors in network attached storage (NAS), the voice over IP (VoIP)
+router/gateway, and wireless LAN (WLAN) and industrial controllers.
+
+The P1010RDB board features are as follows:
+Memory subsystem:
+	- 1Gbyte unbuffered DDR3 SDRAM discrete devices (32-bit bus)
+	- 32 Mbyte NOR flash single-chip memory
+	- 32 Mbyte NAND flash memory
+	- 256 Kbit M24256 I2C EEPROM
+	- 16 Mbyte SPI memory
+	- I2C Board EEPROM 128x8 bit memory
+	- SD/MMC connector to interface with the SD memory card
+Interfaces:
+	- PCIe:
+		- Lane0: x1 mini-PCIe slot
+		- Lane1: x1 PCIe standard slot
+	- SATA:
+		- 1 internal SATA connector to 2.5” 160G SATA2 HDD
+		- 1 eSATA connector to rear panel
+	- 10/100/1000 BaseT Ethernet ports:
+		- eTSEC1, RGMII: one 10/100/1000 port using Vitesse VSC8641XKO
+		- eTSEC2, SGMII: one 10/100/1000 port using Vitesse VSC8221
+		- eTSEC3, SGMII: one 10/100/1000 port using Vitesse VSC8221
+	- USB 2.0 port:
+		- x1 USB2.0 port via an external ULPI PHY to micro-AB connector
+		- x1 USB2.0 port via an internal UTMI PHY to micro-AB connector
+	- FlexCAN ports:
+		- 2 DB-9 female connectors for FlexCAN bus(revision 2.0B)
+		  interface;
+	- DUART interface:
+		- DUART interface: supports two UARTs up to 115200 bps for
+		   console display
+		- RJ45 connectors are used for these 2 UART ports.
+	- TDM
+		- 2 FXS ports connected via an external SLIC to the TDM interface.
+		  SLIC is controllled via SPI.
+		- 1 FXO port connected via a relay to FXS for switchover to POTS
+Board connectors:
+	- Mini-ITX power supply connector
+	- JTAG/COP for debugging
+IEEE Std. 1588 signals for test and measurement
+Real-time clock on I2C bus
+POR
+	- support critical POR setting changed via switch on board
+PCB
+	- 6-layer routing (4-layer signals, 2-layer power and ground)
+
+
+Physical Memory Map on P1010RDB
+===============================
+Address Start   Address End   Memory type	Attributes
+0x0000_0000	0x3fff_ffff   DDR		1G Cacheable
+0xa000_0000	0xdfff_ffff   PCI Express Mem	1G non-cacheable
+0xee00_0000	0xefff_ffff   NOR Flash		32M non-cacheable
+0xffc2_0000	0xffc5_ffff   PCI IO range	256K non-cacheable
+0xffa0_0000	0xffaf_ffff   NAND Flash	1M cacheable
+0xffb0_0000	0xffbf_ffff   Board CPLD	1M non-cacheable
+0xffd0_0000	0xffd0_3fff   L1 for Stack	16K Cacheable TLB0
+0xffe0_0000	0xffef_ffff   CCSR		1M non-cacheable
+
+
+Serial Port Configuration on P1010RDB
+=====================================
+Configure the serial port of the attached computer with the following values:
+	-Data rate: 115200 bps
+	-Number of data bits: 8
+	-Parity: None
+	-Number of Stop bits: 1
+	-Flow Control: Hardware/None
+
+
+Settings of DIP-switch
+======================
+  SW4[1:4]= 1111 and SW6[4]=0 for boot from 16bit NOR flash
+  SW4[1:4]= 1000 and SW6[4]=1 for boot from 8bit NAND flash
+  SW4[1:4]= 0110 and SW6[4]=0 for boot from SPI flash
+Note: 1 stands for 'on', 0 stands for 'off'
+
+
+Setting of hwconfig
+===================
+If FlexCAN or TDM is needed, please set "fsl_p1010mux:tdm_can=can" or
+"fsl_p1010mux:tdm_can=tdm" explicitly in u-booot prompt as below for example:
+setenv hwconfig "fsl_p1010mux:tdm_can=tdm;usb1:dr_mode=host,phy_type=utmi"
+By default, don't set fsl_p1010mux:tdm_can, in this case, spi chip selection
+is set to spi-flash instead of to SLIC/TDM/DAC and tdm_can_sel is set to TDM
+instead of to CAN/UART1.
+
+
+Build and burn U-Boot to NOR flash
+==================================
+1. Build u-boot.bin image
+	export ARCH=powerpc
+	export CROSS_COMPILE=/your_path/powerpc-linux-gnu-
+	make P1010RDB_NOR
+
+2. Burn u-boot.bin into NOR flash
+	=> tftp $loadaddr $uboot
+	=> protect off eff40000 +$filesize
+	=> erase eff40000 +$filesize
+	=> cp.b $loadaddr eff40000 $filesize
+
+3. Check SW4[1:4]= 1111 and SW6[4]=0, then power on.
+
+
+Alternate NOR bank
+==================
+1. Burn u-boot.bin into alternate NOR bank
+	=> tftp $loadaddr $uboot
+	=> protect off eef40000 +$filesize
+	=> erase eef40000 +$filesize
+	=> cp.b $loadaddr eef40000 $filesize
+
+2. Switch to alternate NOR bank
+	=> mw.b ffb00009 1
+	=> reset
+	or set SW1[8]= ON
+
+SW1[8]= OFF: Upper bank used for booting start
+SW1[8]= ON:  Lower bank used for booting start
+CPLD NOR bank selection register address 0xFFB00009 Bit[0]:
+0 - boot from upper 4 sectors
+1 - boot from lower 4 sectors
+
+
+Build and burn U-Boot to NAND flash
+===================================
+1. Build u-boot.bin image
+	export ARCH=powerpc
+	export CROSS_COMPILE=/your_path/powerpc-linux-gnu-
+	make P1010RDB_NAND
+
+2. Burn u-boot-nand.bin into NAND flash
+	=> tftp $loadaddr $uboot-nand
+	=> nand erase 0 $filesize
+	=> nand write $loadaddr 0 $filesize
+
+3. Check SW4[1:4]= 1000 and SW6[4]=1, then power on.
+
+
+Build and burn U-Boot to SPI flash
+==================================
+1. Build u-boot-spi.bin image
+	make P1010RDB_SPIFLASH_config; make
+	Boot up kernel with rootfs.ext2.gz.uboot.p1010rdb
+	Download u-boot.bin to linux and you can find some config files
+	under /usr/share such as config_xx.dat. Do below command:
+	boot_format config_ddr3_1gb_p1010rdb_800M.dat u-boot.bin -spi \
+			u-boot-spi.bin
+	to generate u-boot-spi.bin.
+
+2. Burn u-boot-spi.bin into SPI flash
+	=> tftp $loadaddr $uboot-spi
+	=> sf erase 0 100000
+	=> sf write $loadaddr 0 $filesize
+
+3. Check SW4[1:4]= 0110 and SW6[4]=0, then power on.
+
+
+CPLD POR setting registers
+==========================
+1. Set POR switch selection register (addr 0xFFB00011) to 0.
+2. Write CPLD POR registers (BCSR0~BCSR3, addr 0xFFB00014~0xFFB00017) with
+   proper values.
+   If change boot ROM location to NOR or NAND flash, need write the IFC_CS0
+   switch command by I2C.
+3. Send reset command.
+   After reset, the new POR setting will be implemented.
+
+Two examples are given in below:
+Switch from NOR to NAND boot with default frequency:
+	=> i2c dev 0
+	=> i2c mw 18 1 f9
+	=> i2c mw 18 3 f0
+	=> mw.b ffb00011 0
+	=> mw.b ffb00017 1
+	=> reset
+Switch from NAND to NOR boot with Core/CCB/DDR (800/400/667 MHz):
+	=> i2c dev 0
+	=> i2c mw 18 1 f1
+	=> i2c mw 18 3 f0
+	=> mw.b ffb00011 0
+	=> mw.b ffb00014 2
+	=> mw.b ffb00015 5
+	=> mw.b ffb00016 3
+	=> mw.b ffb00017 f
+	=> reset
+
+
+Boot Linux from network using TFTP on P1010RDB
+==============================================
+Place uImage, p1010rdb.dtb and rootfs files in the TFTP disk area.
+	=> tftp 1000000 uImage
+	=> tftp 2000000 p1010rdb.dtb
+	=> tftp 3000000 rootfs.ext2.gz.uboot.p1010rdb
+	=> bootm 1000000 3000000 2000000
+
+
+For more details, please refer to P1010RDB User Guide and access website
+www.freescale.com

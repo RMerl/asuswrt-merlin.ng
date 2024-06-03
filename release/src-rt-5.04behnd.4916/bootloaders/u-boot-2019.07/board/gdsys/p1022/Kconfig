@@ -1,0 +1,22 @@
+config GDSYS_LEGACY_DRIVERS
+	bool
+	help
+	  Enable the gdsys legacy drivers under board/gdsys/common. If this
+	  option is not set, all relevant DM drivers must be configured for the
+	  device in question.
+
+if TARGET_CONTROLCENTERD
+
+config SYS_BOARD
+	default "p1022"
+
+config SYS_VENDOR
+	default "gdsys"
+
+config SYS_CONFIG_NAME
+	default "controlcenterd"
+
+config GDSYS_LEGACY_DRIVERS
+	default y
+
+endif

@@ -1,0 +1,26 @@
+Qualcomm SPMI arbiter/bus driver
+
+This is bus driver for Qualcomm chips that use SPMI to communicate with PMICs.
+
+Required properties:
+- compatible: "qcom,spmi-pmic-arb"
+- reg: Register block adresses and sizes for various parts of device:
+   1) PMIC arbiter channel mapping base (PMIC_ARB_REG_CHNLn)
+   2) SPMI write command (master) registers (PMIC_ARB_CORE_SW_DEC_CHANNELS)
+   3) SPMI read command (observer) registers (PMIC_ARB_CORE_REGISTERS_OBS)
+
+Optional properties (if not set by parent):
+- #address-cells: 0x1 - childs slave ID address
+- #size-cells: 0x1
+
+All PMICs should be placed as a child nodes of bus arbiter.
+Automatic detection of childs is currently not supported.
+
+Example:
+
+spmi@200f000 {
+	compatible = "qcom,spmi-pmic-arb";
+	reg = <0x200f800 0x200 0x2400000 0x400000 0x2c00000 0x400000>;
+	#address-cells = <0x1>;
+	#size-cells = <0x1>;
+};

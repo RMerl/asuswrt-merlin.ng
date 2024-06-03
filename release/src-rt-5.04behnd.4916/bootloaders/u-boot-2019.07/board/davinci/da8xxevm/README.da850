@@ -1,0 +1,159 @@
+Summary
+=======
+The README is for the boot procedure used for various DA850 (or compatible
+parts such as the AM1808) based boards.
+
+In the context of U-Boot, the board is booted in three stages. The initial
+bootloader which executes upon reset is the ROM Boot Loader (RBL) and sits
+in the internal ROM. The RBL initializes the internal memory and then
+depending on the exact board and pin configurations will initialize another
+controller (such as SPI or NAND) to continue the boot process by loading
+the secondary program loader (SPL).  The SPL will initialize the system
+further (some clocks, SDRAM) and then load the full u-boot from a
+predefined location in persistent storage to DDR and jumps to the u-boot
+entry point.
+
+AIS is an image format defined by TI for the images that are to be loaded
+to memory by the RBL. The image is divided into a series of sections and
+the image's entry point is specified. Each section comes with meta data
+like the target address the section is to be copied to and the size of the
+section, which is used by the RBL to load the image. At the end of the
+image the RBL jumps to the image entry point.  The AIS format allows for
+other things such as programming the clocks and SDRAM if the header is
+programmed for it.  We do not take advantage of this and instead use SPL as
+it allows for additional flexibility (run-time detect of board revision,
+loading the next image from a different media, etc).
+
+
+Compilation
+===========
+The exact build target you need will depend on the board you have.  For
+Logic PD boards, or other boards which store the ethernet MAC address at
+the end of SPI flash, run 'make da850evm'.  For boards which store the
+ethernet MAC address in the i2c EEPROM located at 0x50, run
+'make da850_am18xxevm'.  Once this build completes you will have a
+u-boot.ais file that needs to be written to the correct persistent
+storage.
+
+
+Flashing the images to SPI
+==========================
+The AIS image can be written to SPI flash using the following commands.
+Assuming that the network is configured and enabled and the u-boot.ais file
+is tftp'able.
+
+U-Boot > sf probe 0
+U-Boot > sf erase 0 +320000
+U-Boot > tftp u-boot.ais
+U-Boot > sf write c0700000 0 $filesize
+
+Flashing the images to NAND
+===========================
+The AIS image can be written to NAND using the u-boot "nand" commands.
+
+Example:
+
+OMAPL138_LCDK requires the AIS image to be written to the second block of
+the NAND flash.
+
+From the "nand info" command we see that the second block would start at
+offset 0x20000:
+
+  U-Boot > nand info
+      sector size      128 KiB (0x20000)
+      Page size       2048 b
+
+From the tftp command we see that we need to copy 0x74908 bytes from
+memory address 0xc0700000 (0x75000 if we align a page of 2048):
+
+  U-Boot > tftp u-boot.ais
+      Load address: 0xc0700000
+      Bytes transferred = 477448 (74908 hex)
+
+The commands to write the image from memory to NAND would be:
+
+  U-Boot > nand erase 0x20000 0x75000
+  U-Boot > nand write 0xc0700000 0x20000 0x75000
+
+Alternatively, MTD partitions may be defined. Using "mtdparts" to
+conveniently have a bootloader partition starting at the second block
+(offset 0x20000):
+
+  setenv mtdids nand0=davinci_nand.0
+  setenv mtdparts mtdparts=davinci_nand.0:128k(bootenv),2m(bootloader)
+
+In this case the commands would be simplified to:
+
+  U-Boot > tftp u-boot.ais
+  U-Boot > nand erase.part bootloader
+  U-Boot > nand write 0xc0700000 bootloader
+
+On the DA850-EVM, NAND can also be written with SW7:7-8 ON and
+
+  sudo mono sfh_OMAP-L138.exe -targetType AM1808 -p /dev/ttyUSB0 \
+	-flash_noubl -flashType NAND ~/src/u-boot/u-boot.ais
+
+To boot the DA850-EVM from NAND, SW7:5 should be switched on and all others
+off.
+
+Flashing the images to MMC
+==========================
+If the boot pins are set to boot from mmc, the RBL will try to load the
+next boot stage form the first couple of sectors of an external mmc card.
+As sector 0 is usually used for storing the partition information, the
+AIS image should be written at least after the first sector, but before the
+first partition begins. (e.g: make sure to leave at least 500KB of unallocated
+space at the start of the mmc when creating the partitions)
+
+CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR is used by SPL, and should
+point to the sector were the u-boot image is located. (eg. After SPL)
+
+There are 2 ways to copy the AIS image to the mmc card:
+
+ 1 - Using the TI tool "uflash"
+	$ uflash -d /dev/mmcblk0  -b ./u-boot.ais -p OMAPL138  -vv
+
+ 2 - using the "dd" command
+	$ dd if=u-boot.ais of=/dev/mmcblk0 seek=117 bs=512 conv=fsync
+
+uflash writes the AIS image at offset 117. For compatibility with uflash,
+CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR is set to take into account this
+offset, and the dd command is adjusted accordingly.
+
+Flashing the images to NOR
+==========================
+NOR Flash is XIP (execute-in-place), so no AIS (or SPL) is needed. The
+u-boot.bin is directy flashed, but CONFIT_DA850_LOWLEVEL must be set
+to initialize hardware that's normally done by SPL.
+
+For this case, CONFIG_SYS_TEXT_BASE=0x60000000 which is the address to
+which the bootloader jumps when powered on.
+
+Example:
+For the da850evm, there is a defconfig setup to use the NOR flash on
+the UI expander board called da850evm_direct_nor_defconfig.
+
+Flash to NOR directly using
+sudo mono ./sfh_OMAP-L138.exe -p /dev/ttyUSB0 -flash_noubl
+  -flashType NOR u-boot.bin
+
+SW7:5 through SW7:7 should be switched on and all others off.
+
+Recovery
+========
+
+In the case of a "bricked" board, you need to use the TI tools found
+here[1] to write the u-boot.ais file.  An example of recovering to the SPI
+flash of an AM1808 would be:
+
+$ mono sfh_OMAP-L138.exe -targetType AM1808 -p /dev/ttyUSB0 \
+	-flash_noubl /path/to/u-boot.ais
+
+For other target types and flash locations:
+
+$ mono sfh_OMAP-L138.exe -h
+
+Links
+=====
+[1]
+ http://processors.wiki.ti.com/index.php/Serial_Boot_and_Flash_Loading_Utility_for_OMAP-L138

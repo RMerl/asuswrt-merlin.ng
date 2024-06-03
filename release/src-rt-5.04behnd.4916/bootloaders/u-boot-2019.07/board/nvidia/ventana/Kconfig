@@ -1,0 +1,12 @@
+if TARGET_VENTANA
+
+config SYS_BOARD
+	default "ventana"
+
+config SYS_VENDOR
+	default "nvidia"
+
+config SYS_CONFIG_NAME
+	default "ventana"
+
+endif

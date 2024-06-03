@@ -293,6 +293,10 @@ function initial(){
 		$("#apMode").hide();
 		$("#sw_mode3_radio").attr("disabled", true);
 	}
+
+	if(!ameshNode_support && !repeater_support && !psta_support && isSupport("noAP")){
+		$("#op_title_desc").hide();
+	}
 }
 
 function restore_wl_config(prefix){
@@ -345,6 +349,7 @@ function close_guest_unit(_unit, _subunit){
 }
 
 function saveMode(){
+	let sdn_change_mode_hint = `<#AiProtection_title#>, <#vpnc_title#>, <#BOP_isp_heart_item#>, and <#EzQoS_type_QoS#> are not available. The profile list of ${Guest_Network_naming} will be cleared. Please reconfigure it. We recommend that you download and save the configuration file before switching to #OPMODE.\n<#Setting_factorydefault_hint2#>`;
 	if(sw_mode_orig == document.form.sw_mode.value){
 		if(document.form.sw_mode.value != 2){				
 			alert("<#Web_Title2#> <#op_already_configured#>");
@@ -373,7 +378,13 @@ function saveMode(){
 		return false;
 	}
 	else if(document.form.sw_mode.value == 3){
-		parent.location.href = '/QIS_wizard.htm?flag=lanip';
+		var confirmFlag = true;
+		if(isSupport("mtlancfg") && sw_mode_orig == "1"){
+			confirmFlag = confirm(sdn_change_mode_hint.replace("#OPMODE", $("#apMode").find("label").html()));
+		}
+		if(confirmFlag){
+			parent.location.href = '/QIS_wizard.htm?flag=lanip';
+		}
 		return false;
 	}
 	else if(document.form.sw_mode.value == 4){
@@ -385,7 +396,13 @@ function saveMode(){
 		return false;
 	}
 	else{ // default router
-		parent.location.href = '/QIS_wizard.htm?flag=rtMode';
+		let confirmFlag = true;
+		if(isSupport("mtlancfg") && sw_mode_orig == "3"){
+			confirmFlag = confirm(sdn_change_mode_hint.replace("#OPMODE", $("#routerMode").find("label").html()));
+		}
+		if(confirmFlag){
+			parent.location.href = '/QIS_wizard.htm?flag=rtMode';
+		}
 		return false;		
 	}
 
@@ -861,17 +878,17 @@ function change_smart_con(v){
 								<div>&nbsp;</div>
 								<div class="formfonttitle"><#menu5_6#> - <#menu5_6_1_title#></div>
 								<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
-								<div class="formfontdesc"><#OP_desc1#></div>
+								<div class="formfontdesc" id="op_title_desc"><#OP_desc1#></div>
 							</td>
 						</tr>
 						<tr bgcolor="#4D595D" valign="top" style="height:15%">
 							<td>
 								<div style="width:95%; margin:0 auto; padding-bottom:3px;">
-									<span style="font-size:16px; font-weight:bold;color:white;text-shadow:1px 1px 0px black">
+									<span style="font-size:16px; font-weight:bold;color:white;">
 										<div id="operation_mode_bg"></div>
 									</span>
 									<br/>
-									<span style="word-wrap:break-word;word-break:break-all"><label id="mode_desc"></label></span>
+									<span style="word-wrap:break-word;word-break:break-all"><div class="formfontdesc" id="mode_desc"></div></span>
 								</div>
 							</td>
 						</tr>

@@ -1,0 +1,31 @@
+How to use U-Boot on Grinn's chiliBoard
+--------------------------------------
+
+- Build U-Boot for chiliBoard:
+
+$ make mrproper
+$ make chiliboard_defconfig
+$ make
+
+This will generate the SPL image called MLO and the u-boot.img.
+
+- Flash the SPL image into the micro SD card:
+
+sudo dd if=MLO of=/dev/mmcblk0 bs=128k; sync
+
+- Flash the u-boot.img image into the micro SD card:
+
+sudo dd if=u-boot.img of=/dev/mmcblk0 bs=128k seek=3; sync
+
+- Jumper settings:
+
+S2: 1 1 1 0 1 0
+
+where 0 means bottom position and 1 means top position (from the
+switch label numbers reference).
+
+- Insert the micro SD card in the board.
+
+- Connect USB cable between chiliBoard and the PC for the power and console.
+
+- U-Boot messages should come up.

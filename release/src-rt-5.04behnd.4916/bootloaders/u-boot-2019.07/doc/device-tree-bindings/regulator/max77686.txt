@@ -1,0 +1,70 @@
+MAXIM, MAX77686 regulators
+
+This device uses two drivers:
+- drivers/power/pmic/max77686.c (as parent I/O device)
+- drivers/power/regulator/max77686.c (for child regulators)
+
+This file describes the binding info for the REGULATOR driver.
+
+First, please read the binding info for the pmic:
+- doc/device-tree-bindings/pmic/max77686.txt
+
+Required subnode:
+- voltage-regulators: required for the PMIC driver
+
+Required properties:
+- regulator-name: used for regulator uclass platform data '.name'
+
+Optional:
+- regulator-min-microvolt: minimum allowed Voltage to set
+- regulator-max-microvolt: minimum allowed Voltage to set
+- regulator-always-on: regulator should be never disabled
+- regulator-boot-on: regulator should be enabled by the bootloader
+
+Example:
+(subnode of max77686 pmic node)
+voltage-regulators {
+	ldo1 {
+		regulator-name = "VDD_ALIVE_1.0V";
+		regulator-min-microvolt = <1000000>;
+		regulator-max-microvolt = <1000000>;
+		regulator-always-on;
+		regulator-boot-on;
+	};
+
+	ldo2 {
+		regulator-name = "VDDQ_VM1M2_1.2V";
+		regulator-min-microvolt = <1200000>;
+		regulator-max-microvolt = <1200000>;
+		regulator-always-on;
+		regulator-boot-on;
+	};
+	.
+	.
+	.
+	ldo26 {
+		regulator-name = "nc";
+		regulator-min-microvolt = <3000000>;
+		regulator-max-microvolt = <3000000>;
+		regulator-always-on;
+		regulator-boot-on;
+	};
+
+	buck1 {
+		regulator-compatible = "BUCK1";
+		regulator-name = "VDD_MIF_1.0V";
+		regulator-min-microvolt = <8500000>;
+		regulator-max-microvolt = <1100000>;
+		regulator-always-on;
+		regulator-boot-on;
+	};
+	.
+	.
+	.
+	buck9 {
+		regulator-compatible = "BUCK9";
+		regulator-name = "nc";
+		regulator-min-microvolt = <1200000>;
+		regulator-max-microvolt = <1200000>;
+	};
+};

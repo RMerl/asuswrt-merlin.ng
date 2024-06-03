@@ -1,0 +1,6 @@
+GPLUGD BOARD
+M:	Ajay Bhargav <contact@8051projects.net>
+S:	Maintained
+F:	board/Marvell/gplugd/
+F:	include/configs/gplugd.h
+F:	configs/gplugd_defconfig

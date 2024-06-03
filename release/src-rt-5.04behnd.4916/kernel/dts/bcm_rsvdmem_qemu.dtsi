@@ -1,0 +1,163 @@
+/*
+ * Broadcom reserved memory dtsi template
+ */
+
+
+
+#if defined (CONFIG_BCM_RDPA) || defined (CONFIG_BCM_RDPA_MODULE)
+#if CONFIG_BCM_CHIP_NUMBER==63146 || CONFIG_BCM_CHIP_NUMBER==4912
+#define	 DT_RESERVED_BUFMEM_IN_CACHED_DEV
+#elif CONFIG_BCM_CHIP_NUMBER==6858 || CONFIG_BCM_CHIP_NUMBER==4908 || CONFIG_BCM_CHIP_NUMBER==63158 || CONFIG_BCM_CHIP_NUMBER==6855 || CONFIG_BCM_CHIP_NUMBER==6888
+#define	 DT_RESERVED_RDP1_IN_CACHED_DEV
+#else
+#define	 DT_RESERVED_RDP1_IN_UNCACHED_DEV
+#endif
+
+#if CONFIG_BCM_CHIP_NUMBER==63146 || CONFIG_BCM_CHIP_NUMBER==4912
+#ifdef CONFIG_BCM_GLB_COHERENCY
+#define	 DT_RESERVED_RNRMEM_IN_CACHED_DEV
+#else
+#define	 DT_RESERVED_RNRMEM_IN_UNCACHED_DEV
+#endif
+#elif (CONFIG_BCM_CHIP_NUMBER==63158) && defined(CONFIG_BCM_GLB_COHERENCY)
+#define	 DT_RESERVED_RDP2_IN_CACHED_DEV
+#else
+#define	 DT_RESERVED_RDP2_IN_UNCACHED_DEV
+#endif
+
+#else /* no RDPA */
+
+/* no RDPA, but have MPM */
+#if defined(CONFIG_BCM_MPM) || defined(CONFIG_BCM_MPM_MODULE)
+#define	 DT_RESERVED_BUFMEM_IN_CACHED_DEV
+#endif
+
+#endif
+
+#if defined (CONFIG_BCM_DHD_RUNNER) || (CONFIG_BCM_DHD_RUNNER_MODULE)
+#define DT_RESERVED_DHD_IN_UNCACHED_DEV
+#endif
+
+#if defined(CONFIG_BCM_PON_XRDP)
+
+#if CONFIG_BCM_CHIP_NUMBER==6878
+#define RDP_FLOW_TABLE_MEM_SIZE		0x0C00000	/* 8MB */
+#define RDP_PKT_BUFFER_MEM_SIZE		0x1000000	/* 16MB */
+#elif CONFIG_BCM_CHIP_NUMBER==6855
+#define RDP_FLOW_TABLE_MEM_SIZE		0x0400000	/* 4MB */
+#define RDP_PKT_BUFFER_MEM_SIZE		0x0400000	/* 4MB */
+#elif CONFIG_BCM_CHIP_NUMBER==6888
+#define RDP_FLOW_TABLE_MEM_SIZE		0x2000000	/* 32MB */
+#define RDP_PKT_BUFFER_MEM_SIZE		0x4000000	/* 64MB */
+#else
+#define RDP_FLOW_TABLE_MEM_SIZE		0x0C00000	/* 8MB */
+#define RDP_PKT_BUFFER_MEM_SIZE		0x2000000	/* 32MB */
+#endif
+#endif
+
+#define RDP_PARAM1_DEF_DDR_SIZE RDP_PKT_BUFFER_MEM_SIZE
+#define RDP_PARAM2_DEF_DDR_SIZE RDP_FLOW_TABLE_MEM_SIZE
+#define BUFMEM_DEF_DDR_SIZE RDP_PKT_BUFFER_MEM_SIZE
+#define RNRMEM_DEF_DDR_SIZE RDP_FLOW_TABLE_MEM_SIZE
+
+
+#if defined(CONFIG_ARM64) 
+#define CELLS_NUM 2
+#if CONFIG_BCM_CHIP_NUMBER==6888
+#define RSVDMEM_CMA_ADDR 0x0 0x1A000000 /* 98M = 0x20000000 - 0x5E00000 =  0xA200000*/
+#define RSVDMEM_CMA_SIZE 0x0 0x6000000 /* 96M =  0x6000000*/
+#else
+#define RSVDMEM_CMA_ADDR 0x0 0x0
+#define RSVDMEM_CMA_SIZE 0x0 0x0
+#endif
+#else
+#define CELLS_NUM 1
+#if CONFIG_BCM_CHIP_NUMBER==6855
+#define RSVDMEM_CMA_ADDR 0x07800000 /* 0x8000000 - 0x800000 */
+#define RSVDMEM_CMA_SIZE 0x00800000
+#else
+#define RSVDMEM_CMA_ADDR 0x0
+#define RSVDMEM_CMA_SIZE 0x0
+#endif
+#endif
+
+
+
+reserved-memory {
+	#address-cells = <CELLS_NUM>;
+	#size-cells = <CELLS_NUM>;
+	ranges;
+
+	dt_reserved_cma: dt_reserved_cma {
+		compatible = "shared-dma-pool";
+		reusable;
+		/* Bootloader will fill in the total size and offset */
+		reg = <RSVDMEM_CMA_ADDR RSVDMEM_CMA_SIZE>;
+	};
+};
+
+plat_rsvmem_cached_device {
+	compatible = "brcm,plat-rsvmem";
+	dma-coherent;
+	memory-region = <&dt_reserved_cma>;
+
+#ifdef DT_RESERVED_RDP1_IN_CACHED_DEV
+	dt_reserved_rdp1: dt_reserved_rdp1 {
+		rsvd-size = <RDP_PARAM1_DEF_DDR_SIZE>;
+	};
+#endif
+
+#ifdef DT_RESERVED_RDP2_IN_CACHED_DEV
+	dt_reserved_rdp2: dt_reserved_rdp2 {
+		rsvd-size = <RDP_PARAM2_DEF_DDR_SIZE>;
+	};
+#endif
+
+#ifdef DT_RESERVED_BUFMEM_IN_CACHED_DEV
+	dt_reserved_bufmem: dt_reserved_bufmem {
+		rsvd-size = <BUFMEM_DEF_DDR_SIZE>;
+	};
+#endif
+
+#ifdef DT_RESERVED_RNRMEM_IN_CACHED_DEV
+	dt_reserved_rnrmem: dt_reserved_rnrmem {
+		rsvd-size = <RNRMEM_DEF_DDR_SIZE>;
+	};
+#endif
+
+};
+
+plat_rsvmem_uncached_device {
+	compatible = "brcm,plat-rsvmem";
+	memory-region = <&dt_reserved_cma>;
+	
+
+
+#ifdef DT_RESERVED_RDP1_IN_UNCACHED_DEV
+	dt_reserved_rdp1: dt_reserved_rdp1 {
+		rsvd-size = <RDP_PARAM1_DEF_DDR_SIZE>;
+	};
+#endif
+
+
+#ifdef DT_RESERVED_RDP2_IN_UNCACHED_DEV
+	dt_reserved_rdp2: dt_reserved_rdp2 {
+		rsvd-size = <RDP_PARAM2_DEF_DDR_SIZE>;
+	};
+
+#endif
+
+
+#ifdef DT_RESERVED_BUFMEM_IN_UNCACHED_DEV
+	dt_reserved_bufmem: dt_reserved_bufmem {
+		rsvd-size = <BUFMEM_DEF_DDR_SIZE>;
+	};
+#endif
+
+#ifdef DT_RESERVED_RNRMEM_IN_UNCACHED_DEV
+	dt_reserved_rnrmem: dt_reserved_rnrmem {
+		rsvd-size = <RNRMEM_DEF_DDR_SIZE>;
+	};
+#endif
+
+};

@@ -1,0 +1,7 @@
+Q200
+M:	Neil Armstrong <narmstrong@baylibre.com>
+S:	Maintained
+L:	u-boot-amlogic@groups.io
+F:	board/amlogic/q200/
+F:	include/configs/q200.h
+F:	configs/khadas-vim2_defconfig

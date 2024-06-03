@@ -1,0 +1,254 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Samsung's Exynos4210 based Trats board device tree source
+ *
+ * Copyright (c) 2014 Samsung Electronics Co., Ltd.
+ *		http://www.samsung.com
+ */
+
+/dts-v1/;
+#include "exynos4210.dtsi"
+
+/ {
+	model = "Samsung Trats based on Exynos4210";
+	compatible = "samsung,trats", "samsung,exynos4210";
+
+	config {
+		samsung,dsim-device-name = "s6e8ax0";
+	};
+
+	aliases {
+		serial0 = "/serial@13800000";
+		console = "/serial@13820000";
+		i2c8 = &i2c_fg;
+	};
+
+	fimd@11c00000 {
+		compatible = "samsung,exynos-fimd";
+		reg = <0x11c00000 0xa4>;
+
+		samsung,vl-freq = <60>;
+		samsung,vl-col = <720>;
+		samsung,vl-row = <1280>;
+		samsung,vl-width = <720>;
+		samsung,vl-height = <1280>;
+
+		samsung,vl-clkp = <0>;
+		samsung,vl-oep = <0>;
+		samsung,vl-hsp = <1>;
+		samsung,vl-vsp = <1>;
+		samsung,vl-dp = <1>;
+		samsung,vl-bpix = <4>;
+
+		samsung,vl-hspw = <5>;
+		samsung,vl-hbpd = <10>;
+		samsung,vl-hfpd = <10>;
+		samsung,vl-vspw = <2>;
+		samsung,vl-vbpd = <1>;
+		samsung,vl-vfpd = <13>;
+		samsung,vl-cmd-allow-len = <0xf>;
+
+		samsung,winid = <3>;
+		samsung,power-on-delay = <30>;
+		samsung,interface-mode = <1>;
+		samsung,mipi-enabled = <1>;
+		samsung,dp-enabled;
+		samsung,dual-lcd-enabled;
+
+		samsung,logo-on = <1>;
+		samsung,resolution = <0>;
+		samsung,rgb-mode = <0>;
+	};
+
+	mipidsi@11c80000 {
+		compatible = "samsung,exynos-mipi-dsi";
+		reg = <0x11c80000 0x5c>;
+
+		samsung,dsim-config-e-interface = <1>;
+		samsung,dsim-config-e-virtual-ch = <0>;
+		samsung,dsim-config-e-pixel-format = <7>;
+		samsung,dsim-config-e-burst-mode = <1>;
+		samsung,dsim-config-e-no-data-lane = <3>;
+		samsung,dsim-config-e-byte-clk = <0>;
+		samsung,dsim-config-hfp = <1>;
+
+		samsung,dsim-config-p = <3>;
+		samsung,dsim-config-m = <120>;
+		samsung,dsim-config-s = <1>;
+
+		samsung,dsim-config-pll-stable-time = <500>;
+		samsung,dsim-config-esc-clk = <20000000>;
+		samsung,dsim-config-stop-holding-cnt = <0x7ff>;
+		samsung,dsim-config-bta-timeout = <0xff>;
+		samsung,dsim-config-rx-timeout = <0xffff>;
+
+		samsung,dsim-device-id = <0xffffffff>;
+		samsung,dsim-device-bus-id = <0>;
+
+		samsung,dsim-device-reverse-panel = <1>;
+	};
+
+	i2c_fg: fuel-gauge {
+		compatible = "i2c-gpio";
+		gpios = <&gpy4 1 0>,	/* sda */
+			<&gpy4 0 0>;	/* scl */
+		i2c-gpio,delay-us = <2>;        /* ~100 kHz */
+		status = "okay";
+	};
+};
+
+&i2c_5 {
+	clock-frequency = <100000>;
+	status = "okay";
+
+	max8997-pmic@66 {
+		compatible = "maxim,max8997";
+		reg = <0x66 0 0>;
+		voltage-regulators {
+			valive_reg: LDO2 {
+			     regulator-name = "VALIVE_1.1V_C210";
+			     regulator-min-microvolt = <1100000>;
+			     regulator-max-microvolt = <1100000>;
+			     regulator-always-on;
+			};
+
+			vusb_reg: LDO3 {
+			     regulator-name = "VUSB_1.1V_C210";
+			     regulator-min-microvolt = <1100000>;
+			     regulator-max-microvolt = <1100000>;
+			};
+
+			vmipi_reg: LDO4 {
+			     regulator-name = "VMIPI_1.8V";
+			     regulator-min-microvolt = <1800000>;
+			     regulator-max-microvolt = <1800000>;
+			};
+
+			vpda_reg: LDO6 {
+			     regulator-name = "VCC_1.8V_PDA";
+			     regulator-min-microvolt = <1800000>;
+			     regulator-max-microvolt = <1800000>;
+			     regulator-always-on;
+			};
+
+			vcam_reg: LDO7 {
+			     regulator-name = "CAM_ISP_1.8V";
+			     regulator-min-microvolt = <1800000>;
+			     regulator-max-microvolt = <1800000>;
+			};
+
+			vusbdac_reg: LDO8 {
+			     regulator-name = "VUSB+VDAC_3.3V_C210";
+			     regulator-min-microvolt = <3300000>;
+			     regulator-max-microvolt = <3300000>;
+			};
+
+			vccpda_reg: LDO9 {
+			     regulator-name = "VCC_2.8V_PDA";
+			     regulator-min-microvolt = <2800000>;
+			     regulator-max-microvolt = <2800000>;
+			     regulator-always-on;
+			};
+
+			vpll_reg: LDO10 {
+			     regulator-name = "VPLL_1.1V_C210";
+			     regulator-min-microvolt = <1100000>;
+			     regulator-max-microvolt = <1100000>;
+			     regulator-always-on;
+			};
+
+			vtcam_reg: LDO12 {
+			     regulator-name = "VT_CAM_1.8V";
+			     regulator-min-microvolt = <1800000>;
+			     regulator-max-microvolt = <1800000>;
+			};
+
+			vcclcd_reg: LDO13 {
+			     regulator-name = "VCC_3.3V_LCD";
+			     regulator-min-microvolt = <3300000>;
+			     regulator-max-microvolt = <3300000>;
+			};
+
+			vlcd_reg: LDO15 {
+			     regulator-name = "VLCD_2.2V";
+			     regulator-min-microvolt = <2200000>;
+			     regulator-max-microvolt = <2200000>;
+			};
+
+			camsensor_reg: LDO16 {
+			     regulator-name = "CAM_SENSOR_IO_1.8V";
+			     regulator-min-microvolt = <1800000>;
+			     regulator-max-microvolt = <1800000>;
+			};
+
+			vddq_reg: LDO21 {
+			     regulator-name = "VDDQ_M1M2_1.2V";
+			     regulator-min-microvolt = <1200000>;
+			     regulator-max-microvolt = <1200000>;
+			     regulator-always-on;
+			};
+
+			varm_breg: BUCK1 {
+			     /*
+			      * HACK: The real name is VARM_1.2V_C210,
+			      * but exynos-cpufreq does not support
+			      * DT-based regulator lookup yet.
+			      */
+			     regulator-name = "vdd_arm";
+			     regulator-min-microvolt = <900000>;
+			     regulator-max-microvolt = <1350000>;
+			     regulator-always-on;
+			};
+
+			vint_breg: BUCK2 {
+			     regulator-name = "VINT_1.1V_C210";
+			     regulator-min-microvolt = <900000>;
+			     regulator-max-microvolt = <1100000>;
+			     regulator-always-on;
+			};
+
+			camisp_breg: BUCK4 {
+			     regulator-name = "CAM_ISP_CORE_1.2V";
+			     regulator-min-microvolt = <1200000>;
+			     regulator-max-microvolt = <1200000>;
+			};
+
+			vmem_breg: BUCK5 {
+			     regulator-name = "VMEM_1.2V_C210";
+			     regulator-min-microvolt = <1200000>;
+			     regulator-max-microvolt = <1200000>;
+			     regulator-always-on;
+			};
+
+			vccsub_breg: BUCK7 {
+			     regulator-name = "VCC_SUB_2.0V";
+			     regulator-min-microvolt = <2000000>;
+			     regulator-max-microvolt = <2000000>;
+			     regulator-always-on;
+			};
+
+			safe1_sreg: ESAFEOUT1 {
+			     regulator-name = "SAFEOUT1";
+			};
+
+			safe2_sreg: ESAFEOUT2 {
+			     regulator-name = "SAFEOUT2";
+			     regulator-boot-on;
+			};
+		};
+	};
+};
+
+&sdhci0 {
+	samsung,bus-width = <8>;
+	samsung,timing = <1 3 3>;
+	pwr-gpios = <&gpk0 2 0>;
+	status = "okay";
+};
+
+&sdhci2 {
+	samsung,bus-width = <4>;
+	samsung,timing = <1 2 3>;
+	cd-gpios = <&gpx3 4 0>;
+	status = "okay";
+};

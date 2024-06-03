@@ -1,0 +1,172 @@
+if RCAR_32
+
+config ARCH_RMOBILE_BOARD_STRING
+	string "Renesas RCar Gen2 board name"
+	default "Board"
+
+config RCAR_GEN2
+	bool "Renesas RCar Gen2"
+	select PHY
+	select PHY_RCAR_GEN2
+
+config R8A7740
+	bool "Renesas SoC R8A7740"
+
+config R8A7790
+	bool "Renesas SoC R8A7790"
+	select RCAR_GEN2
+	select ARM_CORTEX_A15_CVE_2017_5715
+	imply CLK_R8A7790
+	imply PINCTRL_PFC_R8A7790
+
+config R8A7791
+	bool "Renesas SoC R8A7791"
+	select RCAR_GEN2
+	select ARM_CORTEX_A15_CVE_2017_5715
+	imply CLK_R8A7791
+	imply PINCTRL_PFC_R8A7791
+
+config R8A7792
+	bool "Renesas SoC R8A7792"
+	select RCAR_GEN2
+	select ARM_CORTEX_A15_CVE_2017_5715
+	imply CLK_R8A7792
+	imply PINCTRL_PFC_R8A7792
+
+config R8A7793
+	bool "Renesas SoC R8A7793"
+	select RCAR_GEN2
+	select ARM_CORTEX_A15_CVE_2017_5715
+	imply CLK_R8A7793
+	imply PINCTRL_PFC_R8A7793
+
+config R8A7794
+	bool "Renesas SoC R8A7794"
+	select RCAR_GEN2
+	imply CLK_R8A7794
+	imply PINCTRL_PFC_R8A7794
+
+choice
+	prompt "Renesas ARM SoCs board select"
+	optional
+
+config TARGET_ARMADILLO_800EVA
+	bool "armadillo 800 eva board"
+
+config TARGET_BLANCHE
+	bool "Blanche board"
+	select DM
+	select DM_SERIAL
+	select USE_TINY_PRINTF
+	imply CMD_DM
+
+config TARGET_GOSE
+	bool "Gose board"
+	select DM
+	select DM_SERIAL
+	select SPL_TINY_MEMSET
+	select SUPPORT_SPL
+	select USE_TINY_PRINTF
+	imply CMD_DM
+
+config TARGET_KOELSCH
+	bool "Koelsch board"
+	select DM
+	select DM_SERIAL
+	select SPL_TINY_MEMSET
+	select SUPPORT_SPL
+	select USE_TINY_PRINTF
+	imply CMD_DM
+
+config TARGET_LAGER
+	bool "Lager board"
+	select DM
+	select DM_SERIAL
+	select SPL_TINY_MEMSET
+	select SUPPORT_SPL
+	select USE_TINY_PRINTF
+	imply CMD_DM
+
+config TARGET_KZM9G
+	bool "KZM9D board"
+
+config TARGET_ALT
+	bool "Alt board"
+	select DM
+	select DM_SERIAL
+	select SPL_TINY_MEMSET
+	select SUPPORT_SPL
+	select USE_TINY_PRINTF
+	imply CMD_DM
+
+config TARGET_SILK
+	bool "Silk board"
+	select DM
+	select DM_SERIAL
+	select SPL_TINY_MEMSET
+	select SUPPORT_SPL
+	select USE_TINY_PRINTF
+	imply CMD_DM
+
+config TARGET_PORTER
+	bool "Porter board"
+	select DM
+	select DM_SERIAL
+	select SPL_TINY_MEMSET
+	select SUPPORT_SPL
+	select USE_TINY_PRINTF
+	imply CMD_DM
+
+config TARGET_STOUT
+	bool "Stout board"
+	select DM
+	select DM_SERIAL
+	select SPL_TINY_MEMSET
+	select SUPPORT_SPL
+	select USE_TINY_PRINTF
+	imply CMD_DM
+
+endchoice
+
+config SYS_SOC
+	default "rmobile"
+
+config RMOBILE_EXTRAM_BOOT
+	bool "Enable boot from RAM"
+	depends on TARGET_ALT || TARGET_BLANCHE || TARGET_KOELSCH || TARGET_LAGER || TARGET_PORTER || TARGET_SILK || TARGET_STOUT
+	default n
+
+choice
+	prompt "Qos setting primary"
+	depends on TARGET_ALT || TARGET_BLANCHE || TARGET_GOSE || TARGET_KOELSCH || TARGET_LAGER
+	default QOS_PRI_NORMAL
+
+config QOS_PRI_NORMAL
+	bool "Non primary"
+	help
+	   Select normal mode for QoS setting.
+
+config QOS_PRI_MEDIA
+	bool "Media primary"
+	help
+	   Select multimedia primary mode for QoS setting.
+
+config QOS_PRI_GFX
+	bool "GFX primary"
+	help
+	   Select GFX(graphics) primary mode for QoS setting.
+
+endchoice
+
+source "board/atmark-techno/armadillo-800eva/Kconfig"
+source "board/renesas/blanche/Kconfig"
+source "board/renesas/gose/Kconfig"
+source "board/renesas/koelsch/Kconfig"
+source "board/renesas/lager/Kconfig"
+source "board/kmc/kzm9g/Kconfig"
+source "board/renesas/alt/Kconfig"
+source "board/renesas/silk/Kconfig"
+source "board/renesas/porter/Kconfig"
+source "board/renesas/stout/Kconfig"
+
+endif

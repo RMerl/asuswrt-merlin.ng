@@ -1400,7 +1400,14 @@ static struct dhcp_netid *add_options(struct state *state, int do_refresh)
 		      end_opt6(o1);
 		    }
 		  else
-		    put_opt6(p, IN6ADDRSZ);
+		  {
+#if defined(RTAX82_XD6) || defined(XD6_V2) || defined(ET12)
+		    if (option_bool(OPT_RDNSS_WAR) && opt_cfg->opt == OPTION6_DNS_SERVER && p == state->fallback)
+		      put_opt6(state->ll_addr, IN6ADDRSZ);
+		    else
+#endif
+		      put_opt6(p, IN6ADDRSZ);
+		  }
 		}
 
 	      end_opt6(o);

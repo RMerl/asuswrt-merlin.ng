@@ -1,0 +1,33 @@
+#include "963158REF3D.dts"
+
+/ {
+	buttons {
+		reset_button {
+			ext_irq = <&bca_extintr 78 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+		};
+	};
+};
+
+&sfp1 {
+		mod-def0 = <&bca_extintr 12 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_BOTH_EDGE | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+};
+
+&hsspi {
+	voice0 {
+		reset-gpio = <&gpioc 64 GPIO_ACTIVE_LOW>;
+	};
+};
+
+&dsl {
+	line0@0 {
+		afeid = <(DSL_AFE_CHIP_GFAST_CH0 | DSL_AFE_LD_6307 | DSL_AFE_FE_REV_6307_REV_12_7_60_2 | DSL_AFE_FE_RNC)>;
+		secondary-afeid = <(DSL_AFE_CHIP_GFAST_CH0 | DSL_AFE_LD_6307 | DSL_AFE_FE_ANNEXA | DSL_AFE_FE_REV_6307_REV_12_7_60 | DSL_AFE_FE_RNC)>;
+		tddenable-gpio = <&gpioc 46 GPIO_ACTIVE_HIGH>;
+	};
+
+	line1@1 {
+		afeid = <(DSL_AFE_CHIP_GFAST_CH1 | DSL_AFE_LD_6307 | DSL_AFE_FE_REV_6307_REV_12_7_60_1 | DSL_AFE_FE_RNC)>;
+		secondary-afeid = <(DSL_AFE_CHIP_GFAST_CH1 | DSL_AFE_LD_6307 | DSL_AFE_FE_ANNEXA | DSL_AFE_FE_REV_6307_REV_12_7_60 | DSL_AFE_FE_RNC)>;
+		tddenable-gpio = <&gpioc 4 GPIO_ACTIVE_HIGH>;
+	};
+};

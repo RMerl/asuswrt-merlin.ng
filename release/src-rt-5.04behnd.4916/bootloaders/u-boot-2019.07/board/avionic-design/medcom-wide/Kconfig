@@ -1,0 +1,12 @@
+if TARGET_MEDCOM_WIDE
+
+config SYS_BOARD
+	default "medcom-wide"
+
+config SYS_VENDOR
+	default "avionic-design"
+
+config SYS_CONFIG_NAME
+	default "medcom-wide"
+
+endif

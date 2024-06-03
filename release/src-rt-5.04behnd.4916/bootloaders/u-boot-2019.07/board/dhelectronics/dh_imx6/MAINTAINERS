@@ -1,0 +1,7 @@
+DH_IMX6 BOARD
+M:	Andreas Geisreiter <ageisreiter@dh-electronics.de>
+M:	Ludwig Zenz <lzenz@dh-electronics.de>
+S:	Maintained
+F:	board/dhelectronics/dh_imx6/
+F:	include/configs/dh_imx6.h
+F:	configs/dh_imx6_defconfig

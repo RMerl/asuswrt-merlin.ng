@@ -1,0 +1,97 @@
+Freescale MPC83xx ADS Boards
+-----------------------------------------
+
+0. Toolchain / Building
+
+    $ PATH=$PATH:/usr/powerpc/bin
+    $ CROSS_COMPILE=powerpc-linux-
+    $ export PATH CROSS_COMPILE
+
+    $ powerpc-linux-gcc -v
+    Reading specs from /usr/powerpc/lib/gcc/powerpc-linux/3.4.3/specs
+    Configured with: ../configure --prefix=/usr/powerpc
+    --exec-prefix=/usr/powerpc --target=powerpc-linux --enable-shared
+    --disable-nls --disable-multilib --enable-languages=c,c++,ada,f77,objc
+    Thread model: posix
+    gcc version 3.4.3 (Debian)
+
+    $ powerpc-linux-as -v
+    GNU assembler version 2.15 (powerpc-linux) using BFD version 2.15
+
+
+    $ make MPC8349ADS_config
+    Configuring for MPC8349ADS board...
+
+    $ make
+
+
+1. Board Switches and Jumpers
+
+
+2. Memory Map
+
+2.1. The memory map should look pretty much like this:
+
+     0x0000_0000     0x7fff_ffff     DDR		     2G
+     0x8000_0000     0x9fff_ffff     PCI MEM		     512M
+     0xc000_0000     0xdfff_ffff     Rapid IO		     512M
+     0xe000_0000     0xe00f_ffff     CCSR		     1M
+     0xe200_0000     0xe2ff_ffff     PCI IO		     16M
+     0xf000_0000     0xf7ff_ffff     SDRAM		     128M
+     0xf800_0000     0xf80f_ffff     BCSR		     1M
+     0xfe00_0000     0xffff_ffff     FLASH (boot bank)	     16M
+
+
+3. Definitions
+
+3.1 Explanation of NEW definitions in:
+
+	include/configs/MPC8349ADS.h
+
+    CONFIG_MPC83xx	    MPC83xx family
+    CONFIG_MPC8349	    MPC8349 specific
+    CONFIG_TSEC_ENET	    Use on-chip 10/100/1000 ethernet
+
+
+4. Compilation
+
+    Assuming you're using BASH shell:
+
+	export CROSS_COMPILE=your-cross-compile-prefix
+	cd u-boot
+	make distclean
+	make MPC8349ADS_config
+	make
+
+5. Downloading and Flashing Images
+
+5.0 Download over serial line using Kermit:
+
+	loadb
+	[Drop to kermit:
+	    ^\c
+	    send <u-boot-bin-image>
+	    c
+	]
+
+
+    Or via tftp:
+
+	tftp 10000 u-boot.bin
+
+5.1 Reflash U-Boot Image using U-Boot
+
+    tftp 10000 u-boot.bin
+    protect off fe000000 fe09ffff
+    erase fe000000 fe09ffff
+
+    cp.b 10000 fe000000 xxxx
+or
+    cp.b 10000 fe000000 a0000
+
+You might have to supply the correct byte count for 'xxxx' from
+the TFTP.  Maybe a0000 will work too, that corresponds to the
+erased sectors.
+
+
+6. Notes

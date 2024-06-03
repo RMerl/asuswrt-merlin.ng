@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+if ARCH_K3
+
+config TI_K3_NAVSS_UDMA
+        bool "Texas Instruments UDMA"
+        depends on ARCH_K3
+        select DMA
+        select TI_K3_NAVSS_RINGACC
+        select TI_K3_NAVSS_PSILCFG
+        default n
+        help
+          Support for UDMA used in K3 devices.
+endif

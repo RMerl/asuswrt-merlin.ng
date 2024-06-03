@@ -1,0 +1,90 @@
+#
+# System reset devices
+#
+
+menu "System reset device drivers"
+
+config SYSRESET
+	bool "Enable support for system reset drivers"
+	depends on DM
+	help
+	  Enable system reset drivers which can be used to reset the CPU or
+	  board. Each driver can provide a reset method which will be called
+	  to effect a reset. The uclass will try all available drivers when
+	  reset_walk() is called.
+
+config SPL_SYSRESET
+	bool "Enable support for system reset drivers in SPL mode"
+	depends on SYSRESET && SPL_DM
+	help
+	  Enable system reset drivers which can be used to reset the CPU or
+	  board. Each driver can provide a reset method which will be called
+	  to effect a reset. The uclass will try all available drivers when
+	  reset_walk() is called.
+
+config TPL_SYSRESET
+	bool "Enable support for system reset drivers in TPL mode"
+	depends on SYSRESET && TPL_DM
+	help
+	  Enable system reset drivers which can be used to reset the CPU or
+	  board. Each driver can provide a reset method which will be called
+	  to effect a reset. The uclass will try all available drivers when
+	  reset_walk() is called.
+
+if SYSRESET
+
+config SYSRESET_GPIO
+	bool "Enable support for GPIO reset driver"
+	select DM_GPIO
+	help
+	  Reset support via GPIO pin connected reset logic. This is used for
+	  example on Microblaze where reset logic can be controlled via GPIO
+	  pin which triggers cpu reset.
+
+config SYSRESET_MICROBLAZE
+	bool "Enable support for Microblaze soft reset"
+	depends on MICROBLAZE
+	help
+	  This is soft reset on Microblaze which does jump to 0x0 address.
+
+config SYSRESET_PSCI
+	bool "Enable support for PSCI System Reset"
+	depends on ARM_PSCI_FW
+	help
+	  Enable PSCI SYSTEM_RESET function call.  To use this, PSCI firmware
+	  must be running on your system.
+
+config SYSRESET_TI_SCI
+	bool "TI System Control Interface (TI SCI) system reset driver"
+	depends on TI_SCI_PROTOCOL
+	help
+	  This enables the system reset driver support over TI System Control
+	  Interface available on some new TI's SoCs.
+
+endif
+
+config SYSRESET_SYSCON
+	bool "Enable support for mfd syscon reboot driver"
+	select REGMAP
+	select SYSCON
+	help
+	  Reboot support for generic SYSCON mapped register reset.
+
+config SYSRESET_WATCHDOG
+	bool "Enable support for watchdog reboot driver"
+	select WDT
+	help
+	  Reboot support for generic watchdog reset.
+
+config SYSRESET_X86
+	bool "Enable support for x86 processor reboot driver"
+	depends on X86
+	help
+	  Reboot support for generic x86 processor reset.
+
+config SYSRESET_MCP83XX
+	bool "Enable support MPC83xx SoC family reboot driver"
+	help
+	  Reboot support for NXP MPC83xx SoCs.
+
+endmenu

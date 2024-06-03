@@ -23,12 +23,17 @@ $(document).ready(function(){
 
 function load_page(){
 	document.getElementById("internetSpeed_iframe").style.height = document.getElementById("FormTitle").style.height;
-	document.getElementById("internetSpeed_iframe").src = "internet_speed.html";
+	var curTheme = (top.webWrapper) ? "?current_theme=white" : "";
+	document.getElementById("internetSpeed_iframe").src = "internet_speed.html" + curTheme;
 }
 
 function initial(){
 	show_menu();
-	if(rog_support){
+
+	if(CoBrand == "8"){
+		$("#FormTitle").css("background", "#24272A");
+	}
+	else if(rog_support){
 		$("#FormTitle").css("background-color", "transparent");
 	}
 	else if(tuf_support){

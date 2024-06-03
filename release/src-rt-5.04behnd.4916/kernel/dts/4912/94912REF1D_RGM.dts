@@ -1,0 +1,303 @@
+#include "4912.dtsi"
+
+/ {
+	memory_controller {
+		memcfg = <(BP_DDR_SPEED_1067_14_14_14 | \
+			BP_DDR_TOTAL_SIZE_1024MB      | \
+			BP_DDR_DEVICE_WIDTH_16        | \
+			BP_DDR_TOTAL_WIDTH_32BIT      | \
+			BP_DDR_4912_DEFAULT          | \
+			BP_DDR_CONFIG_DEBUG)>;
+	};
+
+	/* button irq gpio shared with RGMII signal. No button for RGMII board */
+
+	sfp0: sfp0 {
+		compatible = "brcm,sfp";
+		pinctrl-names = "default", "rx-sd";
+		pinctrl-0 = <&serdes1_rx_los_pin_1>;
+		pinctrl-1 = <&serdes1_rx_los_pin_1>;
+		
+		i2c-bus = <&i2c0>;
+		 mod-def0 = <&bca_extintr 4 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_BOTH_EDGE | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+	};
+
+	sfp1: sfp1 {
+		compatible = "brcm,sfp";
+		pinctrl-names = "default", "rx-sd";
+		pinctrl-0 = <&serdes2_rx_los_pin_2>;
+		pinctrl-1 = <&serdes2_rx_los_pin_2>;
+
+		i2c-bus = <&i2c1>;
+		mod-def0 = <&bca_extintr 5 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_BOTH_EDGE | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+	};
+};
+
+&nand {
+	pinctrl-0 = <&nand_data_pins &nand_ctrl_pins &nand_wp_b_pin_25>;
+	write-protect = <1>;
+	status = "okay";
+};
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+&pcie0 {
+	status = "okay";
+};
+&pcie1 {
+	status = "okay";
+};
+&pcie2 {
+	status = "okay";
+};
+&pcie3 {
+	status = "okay";
+};
+#endif //#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+
+&i2c0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c0_sclk_pin_12 &i2c0_sdata_pin_13>;
+	status = "okay";
+};
+&i2c1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c1_sclk_pin_14 &i2c1_sdata_pin_15>;
+	status = "okay";
+};
+
+&usb_ctrl {
+	pinctrl-names = "default";
+	pinctrl-0 = <&usb0_pwr_pins &usb1_pwr_pins>;
+	status = "okay";
+	xhci-enable;
+};
+&usb0_xhci {
+	status = "okay";
+};
+
+&mdio {
+    /* Port PHY mapping:
+            port_gphy0 <----> phy_gphy0
+            port_gphy1 <----> phy_gphy1
+            port_gphy2 <----> phy_gphy2
+            port_gphy3 <----> phy_gphy3
+            port_rgmii <----> phy_rgmii
+            port_xgphy <----> phy_serdes0   - phy_cascade0
+            port_sgmii1 <---> phy_serdes1   - sfp0
+            port_sgmii2 <---> phy_serdes2   - sfp1
+     */
+	phy_gphy0 {
+		status = "okay";
+	};
+
+	phy_gphy1 {
+		status = "okay";
+	};
+
+	phy_gphy2 {
+		status = "okay";
+	};
+
+	phy_gphy3 {
+		status = "okay";
+	};
+
+	phy_rgmii {
+		reg = <25>;
+		status = "okay";
+	};
+
+	phy_cascade0 {
+		status = "okay";
+	};
+
+	phy_serdes0 {
+		phy-handle = <&phy_cascade0>;
+		status = "okay";
+	};
+
+	phy_serdes1 {
+		trx = <&sfp0>;
+		status = "okay";
+	};
+
+	phy_serdes2 {
+		trx = <&sfp1>;
+		status = "okay";
+	};
+};
+
+&switch0 {
+	pinctrl-names = "default", "rgmii"; 
+	pinctrl-0 = <&b_rgmii_mdc_pin_0 &b_rgmii_mdio_pin_3 &rgmii_pins>; 
+	pinctrl-1 = <&rgmii_pins>; 
+
+	ports {
+		port_gphy0 {
+			network-leds = <&led0 &led1>;
+			status = "okay";
+		};
+
+		port_gphy1 {
+			network-leds = <&led2 &led3>;
+			status = "okay";
+		};
+
+		port_gphy2 {
+			network-leds = <&led4 &led5>;
+			status = "okay";
+		};
+
+		port_gphy3 {
+			network-leds = <&led6 &led7>;
+			status = "okay";
+		};
+
+		port_rgmii {
+			mii-pinctrl-state = "rgmii";
+			rgmii-1p8v;
+			gmii-direct;
+			status = "okay";
+		};
+
+		port_xgphy {
+			status = "okay";
+			network-leds = <&led8 &led9>;
+		};
+
+		port_sgmii1 {
+			status = "okay";
+			network-leds = <&led10 &led11>;
+		};
+
+		port_sgmii2 {
+			status = "okay";
+			network-leds = <&led12 &led13>;
+		};
+	};
+};
+
+&led_ctrl {
+    pinctrl-names = "default";
+    pinctrl-0 = <&ser_led_clk_pin_17 &ser_led_data_pin_16 &ser_led_mask_pin_18>;
+    serial-shifters-installed = <2>;
+    serial-data-polarity-high;
+
+    led0: serial-port_0-led_0 {
+        active_high;
+        crossbar-output = <0>;
+        link = <(LED_SPEED_100)>;
+        activity = <(LED_SPEED_100)>;
+        status = "okay";
+    };
+    led1: serial-port_0-led_1 {
+        active_high;
+        crossbar-output = <1>;
+        link = <(LED_SPEED_1G)>;
+        activity = <(LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led2: serial-port_1-led_0 {
+        active_high;
+        crossbar-output = <2>;
+        link = <(LED_SPEED_100)>;
+        activity = <(LED_SPEED_100)>;
+        status = "okay";
+    };
+    led3: serial-port_1-led_1 {
+        active_high;
+        crossbar-output = <3>;
+        link = <(LED_SPEED_1G)>;
+        activity = <(LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led4: serial-port_2-led_0 {
+        active_high;
+        crossbar-output = <4>;
+        link = <(LED_SPEED_100)>;
+        activity = <(LED_SPEED_100)>;
+        status = "okay";
+    };
+    led5: serial-port_2-led_1 {
+        active_high;
+        crossbar-output = <5>;
+        link = <(LED_SPEED_1G)>;
+        activity = <(LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led6: serial-port_3-led_0 {
+        active_high;
+        crossbar-output = <6>;
+        link = <(LED_SPEED_100)>;
+        activity = <(LED_SPEED_100)>;
+        status = "okay";
+    };
+    led7: serial-port_3-led_1 {
+        active_high;
+        crossbar-output = <7>;
+        link = <(LED_SPEED_1G)>;
+        activity = <(LED_SPEED_1G)>;
+        status = "okay";
+    };
+
+    led8: serial-port_5-led_0 {
+        active_high; 
+        label = "mphy00";
+        crossbar-output = <8>;
+        link = <(LED_SPEED_100|LED_SPEED_2500)>;
+        activity = <(LED_SPEED_100|LED_SPEED_2500)>;		
+        status = "okay";
+    };
+    led9: serial-port_5-led_1 {
+        active_high; 
+        label = "mphy01";
+        crossbar-output = <9>;
+        link = <(LED_SPEED_1G|LED_SPEED_2500)>;
+        activity = <(LED_SPEED_1G|LED_SPEED_2500)>;		
+        status = "okay";
+    };
+    led10: serial-port_6-led_0 {
+        active_high; 
+        label = "mphy10";
+        crossbar-output = <10>;
+        link = <(LED_SPEED_100|LED_SPEED_2500|LED_SPEED_10G)>;
+        activity = <(LED_SPEED_100|LED_SPEED_2500|LED_SPEED_10G)>;		
+        status = "okay";
+    };
+    led11: serial-port_6-led_1 {
+        active_high; 
+        label = "mphy11";
+        crossbar-output = <11>;
+        link = <(LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+        activity = <(LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;		
+        status = "okay";
+    };
+    led12: serial-port_7-led_0 {
+        active_high; 
+        label = "mphy20";
+        crossbar-output = <12>;
+        link = <(LED_SPEED_100|LED_SPEED_2500|LED_SPEED_10G)>;
+        activity = <(LED_SPEED_100|LED_SPEED_2500|LED_SPEED_10G)>;		
+        status = "okay";
+    };
+    led13: serial-port_7-led_1 {
+        active_high; 
+        label = "mphy21";
+        crossbar-output = <13>;
+        link = <(LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+        activity = <(LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;		
+        status = "okay";
+    };
+    led14: sw_serial_led_14 {
+        active_high; 
+        label = "INET";
+        crossbar-output = <14>;
+        status = "okay";
+    };
+    led15: sw_serial_led_15 {
+        active_high; 
+        label = "WPS";
+        crossbar-output = <15>;
+        status = "okay";
+    };
+};

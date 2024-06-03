@@ -39,6 +39,7 @@
 #define WEVENT_VSIE_MSG	 "{\""WEVENT_PREFIX"\":{\""EVENT_ID"\":\"%d\",\""VSIE"\":\"%s\"}}"
 #define HTTPD_GENERIC_MSG	 "{\""HTTPD_PREFIX"\":{\""EVENT_ID"\":\"%d\"}}"
 #define HTTPD_SLAVE_MSG	"{\""HTTPD_PREFIX"\":{\""EVENT_ID"\":\"%d\",\""SLAVE_MAC"\":\"%s\"}}"
+#define HTTPD_SLAVE_LIST_MSG	"{\""HTTPD_PREFIX"\":{\""EVENT_ID"\":\"%d\",\""SLAVE_MAC"\":%s}}"
 #define HTTPD_IP_MSG	"{\""HTTPD_PREFIX"\":{\""EVENT_ID"\":\"%d\",\""LOGIN_IP"\":\"%s\"}}"
 #define HTTPD_OB_AVAILABLE_MSG	"{\""HTTPD_PREFIX"\":{\""EVENT_ID"\":\"%d\",\""OB_STATUS"\":%d}}"
 #define HTTPD_OB_LOCK_MSG	"{\""HTTPD_PREFIX"\":{\""EVENT_ID"\":\"%d\",\""OB_STATUS"\":%d,\""RE_MAC"\":\"%s\",\""NEW_RE_MAC"\":\"%s\"}}"

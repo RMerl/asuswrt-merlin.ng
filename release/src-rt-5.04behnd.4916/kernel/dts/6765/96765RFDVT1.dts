@@ -1,0 +1,179 @@
+#include "6765.dtsi"
+
+/ {
+	memory_controller {
+		memcfg = <(BP_DDR_TYPE_DDR4       | \
+			BP_DDR_SPEED_1600_22_22_22    | \
+			BP_DDR_TOTAL_SIZE_2048MB      | \
+			BP_DDR_DEVICE_WIDTH_16        | \
+			BP_DDR_TOTAL_WIDTH_16BIT      | \
+			BP_DDR_6765_DEFAULT           | \
+			BP_DDR_CONFIG_DEBUG)>;
+	};
+	sfp: sfp {
+		compatible = "brcm,sfp";
+		pinctrl-name = "default";
+		pinctrl-0 = <&a_slan_sd_rx_los_pin_4>;
+		mod-def0 = <&bca_extintr 3 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_BOTH_EDGE | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+		i2c-bus = <&i2c0>;
+		status = "okay";
+	};
+	buttons {
+		compatible = "brcm,buttons";
+		reset_button {
+			ext_irq = <&bca_extintr 27 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			press {
+				print = "Button Press -- Hold for 5s to do restore to default";
+			};
+			hold {
+				rst_to_dflt = <5>;
+			};
+			release {
+				reset = <0>;
+			};  
+		};
+		ses_button {
+			ext_irq = <&bca_extintr 31 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			release {
+				ses_short_period = <0>;
+				ses_long_period = <3>;
+			};
+		};
+	};
+};
+
+&mdio_sf2 {
+       /* Port PHY mapping:
+            port_imp -8#0- port_xhy <----> phy_xphy
+                      # #
+                      ##5- port_sgmii <-> phy_serdes - sfp
+         */
+	phy_xphy {
+		enet-phy-lane-swap;
+		status = "okay";
+	};
+	phy_serdes {
+		status = "okay";
+		trx = <&sfp>;
+	};
+};
+
+&ethphytop {
+    xphy0-enabled;
+    status = "okay";
+};
+
+&switch0 {
+
+	ports {
+		port_xphy {
+			phy-handle = <&phy_xphy>;
+			network-leds=<&led0 &led1 &led2>;
+			status = "okay";
+		};
+		port_sgmii {
+			phy-handle = <&phy_serdes>;
+			status = "okay";
+		};
+	};
+};
+&vreg_sync {
+	pinctrl-0 = <&b_vreg_sync_pin_33>;
+	pinctrl-names = "default";
+	status="okay";
+};
+&uart0 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&uart0_sdin_pin_64 &uart0_sdout_pin_65>;
+    status = "okay";
+};
+
+
+&led_ctrl {
+	led0: parallel-port_0-led_0 {
+		active_low;
+		pinctrl-0 = <&a_per_led_24_pin_24>;
+		crossbar-output = <0>;
+		link = <(LED_SPEED_100|LED_SPEED_2500)>;
+		activity = <(LED_SPEED_100|LED_SPEED_2500)>;
+		status="okay";
+	};
+	led1: parallel-port_0-led_1 {
+		active_low;
+		pinctrl-0 = <&a_per_led_20_pin_20>;
+		crossbar-output = <1>;
+		link = <(LED_SPEED_1G)>;
+		activity = <(LED_SPEED_1G)>;
+		status="okay";
+	};
+	led2: parallel-port_0-led_2 {
+		active_low;
+		pinctrl-0 = <&a_per_led_00_pin_0>;
+		crossbar-output = <2>;
+		link = <(LED_SPEED_2500|LED_SPEED_10G)>;
+		activity = <(LED_SPEED_2500|LED_SPEED_10G)>;
+		status="okay";
+	};
+	led3: parallel-aggregate_activity {
+		active_low;
+		pinctrl-0 = <&a_per_led_08_pin_8>;
+		crossbar-output = <9>;
+		link = <(LED_SPEED_2500|LED_SPEED_10G)>;
+		activity = <(LED_SPEED_2500|LED_SPEED_10G)>;
+		status="okay";
+	};
+	led4: parallel-aggregate_link{
+		active_low;
+		pinctrl-0 = <&a_per_led_09_pin_9>;
+		crossbar-output = <10>;
+		link = <(LED_SPEED_2500|LED_SPEED_10G)>;
+		activity = <(LED_SPEED_2500|LED_SPEED_10G)>;
+		status="okay";
+	};
+	led5: sw_parallel_led_39 {
+		active_low; 
+		brightness = <255>;
+		pinctrl-0 = <&b_per_led_06_pin_39>;
+		flash_rate = <0>;
+		status = "okay";
+		label = "WiFi_0";
+	};
+	led6: sw_parallel_led_39 {
+		active_low; 
+		brightness = <255>;
+		pinctrl-0 = <&a_per_led_12_pin_12>;
+		flash_rate = <0>;
+		status = "okay";
+		label = "WiFi_1";
+	};
+	led7: sw_parallel_led_10 {
+		active_low; 
+		brightness = <255>;
+		pinctrl-0 = <&a_per_led_10_pin_10>;
+		flash_rate = <0>;
+		status = "okay";
+		label = "WiFi";
+	};
+
+};
+&legacy_leds {
+	wl-sess-led = <&led7>;
+	wl0-led = <&led5>;
+	wl1-led = <&led6>;
+};
+&i2c0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&b_i2c_sda_pin_7 &b_i2c_scl_pin_6>;
+	status = "okay";
+};
+&hsspi {
+	status = "okay";
+	voice0 {
+		pinctrl-0 = <&spim_ss0_b_pin_43>;
+		pinctrl-names = "default";
+		compatible = "bcm-spi-voice";
+		reg = <1>; /* chip select 1 */
+		spi-max-frequency = <1024000>;
+		spi-index = <0>;/* voice header index */
+	};
+};

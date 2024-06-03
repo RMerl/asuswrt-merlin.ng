@@ -1,0 +1,11 @@
+# Whitelist for KUDU_TWIG_17_10_369_18
+#
+# Please add new items at the bottom.
+#
+# Gain approval from your manager before editing this file.
+#
+# format:
+# JIRA:BCAWLAN-xxxxxx <description>
+# Example: JIRA:BCAWLAN-223535 Adding DTPC capability annoucement into sta_info
+#
+JIRA:BCAWLAN-256110 CLONE - RDKB WLTOB build failure on 6xxx/4xxx builds

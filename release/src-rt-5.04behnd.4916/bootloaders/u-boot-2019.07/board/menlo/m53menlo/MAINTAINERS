@@ -1,0 +1,7 @@
+M53MENLO BOARD
+M:	Marek Vasut <marex@denx.de>
+M:	Olaf Mandel <o.mandel@menlosystems.com>
+S:	Maintained
+F:	board/menlo/m53menlo/
+F:	include/configs/m53menlo.h
+F:	configs/m53menlo_defconfig

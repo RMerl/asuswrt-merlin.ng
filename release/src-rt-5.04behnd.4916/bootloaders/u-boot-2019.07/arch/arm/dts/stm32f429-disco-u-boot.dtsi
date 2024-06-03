@@ -1,0 +1,205 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2017, STMicroelectronics - All Rights Reserved
+ * Author(s): Patrice Chotard, <patrice.chotard@st.com> for STMicroelectronics.
+ */
+
+#include <dt-bindings/memory/stm32-sdram.h>
+/{
+	clocks {
+		u-boot,dm-pre-reloc;
+	};
+
+	aliases {
+		/* Aliases for gpios so as to use sequence */
+		gpio0 = &gpioa;
+		gpio1 = &gpiob;
+		gpio2 = &gpioc;
+		gpio3 = &gpiod;
+		gpio4 = &gpioe;
+		gpio5 = &gpiof;
+		gpio6 = &gpiog;
+		gpio7 = &gpioh;
+		gpio8 = &gpioi;
+		gpio9 = &gpioj;
+		gpio10 = &gpiok;
+	};
+
+	soc {
+		u-boot,dm-pre-reloc;
+		pin-controller {
+			u-boot,dm-pre-reloc;
+		};
+
+		fmc: fmc@A0000000 {
+			compatible = "st,stm32-fmc";
+			reg = <0xA0000000 0x1000>;
+			clocks = <&rcc 0 STM32F4_AHB3_CLOCK(FMC)>;
+			pinctrl-0 = <&fmc_pins>;
+			pinctrl-names = "default";
+			st,syscfg = <&syscfg>;
+			st,swp_fmc = <1>;
+			u-boot,dm-pre-reloc;
+
+			/*
+			 * Memory configuration from sdram datasheet
+			 * IS42S16400J
+			 */
+			bank1: bank@1 {
+			       st,sdram-control = /bits/ 8 <NO_COL_8
+							    NO_ROW_12
+							    MWIDTH_16
+							    BANKS_4
+							    CAS_3
+							    SDCLK_2
+							    RD_BURST_EN
+							    RD_PIPE_DL_0>;
+			       st,sdram-timing = /bits/ 8 <TMRD_3
+							   TXSR_7
+							   TRAS_4
+							   TRC_6
+							   TWR_2
+							   TRP_2 TRCD_2>;
+			       st,sdram-refcount = < 1386 >;
+		       };
+		};
+	};
+};
+
+&clk_hse {
+	u-boot,dm-pre-reloc;
+};
+
+&clk_i2s_ckin {
+	u-boot,dm-pre-reloc;
+};
+
+&clk_lse {
+	u-boot,dm-pre-reloc;
+};
+
+&gpioa {
+	compatible = "st,stm32-gpio";
+	u-boot,dm-pre-reloc;
+};
+
+&gpiob {
+	compatible = "st,stm32-gpio";
+	u-boot,dm-pre-reloc;
+};
+
+&gpioc {
+	compatible = "st,stm32-gpio";
+	u-boot,dm-pre-reloc;
+};
+
+&gpiod {
+	compatible = "st,stm32-gpio";
+	u-boot,dm-pre-reloc;
+};
+
+&gpioe {
+	compatible = "st,stm32-gpio";
+	u-boot,dm-pre-reloc;
+};
+
+&gpiof {
+	compatible = "st,stm32-gpio";
+	u-boot,dm-pre-reloc;
+};
+
+&gpiog {
+	compatible = "st,stm32-gpio";
+	u-boot,dm-pre-reloc;
+};
+
+&gpioh {
+	compatible = "st,stm32-gpio";
+	u-boot,dm-pre-reloc;
+};
+
+&gpioi {
+	compatible = "st,stm32-gpio";
+	u-boot,dm-pre-reloc;
+};
+
+&gpioj {
+	compatible = "st,stm32-gpio";
+	u-boot,dm-pre-reloc;
+};
+
+&gpiok {
+	compatible = "st,stm32-gpio";
+	u-boot,dm-pre-reloc;
+};
+
+&pinctrl {
+	usart1_pins_a: usart1@0	{
+		u-boot,dm-pre-reloc;
+		pins1 {
+			u-boot,dm-pre-reloc;
+		};
+		pins2 {
+			u-boot,dm-pre-reloc;
+		};
+	};
+
+	fmc_pins: fmc@0 {
+		u-boot,dm-pre-reloc;
+		pins
+		{
+			pinmux = <STM32_PINMUX('D',10, AF12)>, /* D15 */
+				 <STM32_PINMUX('D', 9, AF12)>, /* D14 */
+				 <STM32_PINMUX('D', 8, AF12)>, /* D13 */
+				 <STM32_PINMUX('E',15, AF12)>, /* D12 */
+				 <STM32_PINMUX('E',14, AF12)>, /* D11 */
+				 <STM32_PINMUX('E',13, AF12)>, /* D10 */
+				 <STM32_PINMUX('E',12, AF12)>, /* D09 */
+				 <STM32_PINMUX('E',11, AF12)>, /* D08 */
+				 <STM32_PINMUX('E',10, AF12)>, /* D07 */
+				 <STM32_PINMUX('E', 9, AF12)>, /* D06 */
+				 <STM32_PINMUX('E', 8, AF12)>, /* D05 */
+				 <STM32_PINMUX('E', 7, AF12)>, /* D04 */
+				 <STM32_PINMUX('D', 1, AF12)>, /* D03 */
+				 <STM32_PINMUX('D', 0, AF12)>, /* D02 */
+				 <STM32_PINMUX('D',15, AF12)>, /* D01 */
+				 <STM32_PINMUX('D',14, AF12)>, /* D00 */
+
+				 <STM32_PINMUX('E', 0, AF12)>, /* NBL0 */
+				 <STM32_PINMUX('E', 1, AF12)>, /* NBL1 */
+
+				 <STM32_PINMUX('G', 5, AF12)>, /* BA1 */
+				 <STM32_PINMUX('G', 4, AF12)>, /* BA0 */
+
+				 <STM32_PINMUX('G', 1, AF12)>, /* A11 */
+				 <STM32_PINMUX('G', 0, AF12)>, /* A10 */
+				 <STM32_PINMUX('F',15, AF12)>, /* A09 */
+				 <STM32_PINMUX('F',14, AF12)>, /* A08 */
+				 <STM32_PINMUX('F',13, AF12)>, /* A07 */
+				 <STM32_PINMUX('F',12, AF12)>, /* A06 */
+				 <STM32_PINMUX('F', 5, AF12)>, /* A05 */
+				 <STM32_PINMUX('F', 4, AF12)>, /* A04 */
+				 <STM32_PINMUX('F', 3, AF12)>, /* A03 */
+				 <STM32_PINMUX('F', 2, AF12)>, /* A02 */
+				 <STM32_PINMUX('F', 1, AF12)>, /* A01 */
+				 <STM32_PINMUX('F', 0, AF12)>, /* A00 */
+
+				 <STM32_PINMUX('B', 6, AF12)>, /* SDNE1 */
+				 <STM32_PINMUX('C', 0, AF12)>, /* SDNWE */
+				 <STM32_PINMUX('F',11, AF12)>, /* SDNRAS */
+				 <STM32_PINMUX('G',15, AF12)>, /* SDNCAS */
+				 <STM32_PINMUX('B', 5, AF12)>, /* SDCKE1 */
+				 <STM32_PINMUX('G', 8, AF12)>; /* SDCLK */
+			slew-rate = <2>;
+			u-boot,dm-pre-reloc;
+		};
+	};
+};
+
+&pwrcfg {
+	u-boot,dm-pre-reloc;
+};
+
+&rcc {
+	u-boot,dm-pre-reloc;
+};

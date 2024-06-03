@@ -2299,10 +2299,20 @@ static int redir_getreq(struct redir_t *redir, struct redir_socket_t *sock,
 	}else{
 		strcpy(customized_url, nvram_safe_get("external_UI"));
 	}
-	if(strlen(customized_url) != 0){
+  if(strlen(customized_url) != 0){
 		strcpy(conn->s_state.redir.userurl, customized_url);
 	}else{
-		bstrtocstr(bt2, conn->s_state.redir.userurl, sizeof(conn->s_state.redir.userurl));
+    char uurl[2048];
+    memset(uurl,0, sizeof(uurl));
+    safe_snprintf(uurl, 
+            sizeof(uurl), 
+            "%s%s%s", 
+            _options.wisprlogin ? _options.wisprlogin : redir->url, 
+            strchr(_options.wisprlogin ? _options.wisprlogin : redir->url, '?') ? "&amp;" : "?", 
+            "auth_status=pass");
+    log_dbg("-------->> uurl=[%s]", uurl);
+    strcpy(conn->s_state.redir.userurl, uurl);
+    log_dbg("-------->> redir.userurl=[%s]",conn->s_state.redir.userurl);
 	}
 	log_dbg("-->> Setting userurl=[%s]",conn->s_state.redir.userurl);
 	bdestroy(bt2);

@@ -1,0 +1,42 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (C) 2019 Marek Vasut <marex@denx.de>
+ */
+
+/ {
+	soc {
+		u-boot,dm-pre-reloc;
+
+		aips@50000000 {
+			u-boot,dm-pre-reloc;
+		};
+	};
+};
+
+&gpio1 {
+	u-boot,dm-pre-reloc;
+};
+
+&gpio2 {
+	u-boot,dm-pre-reloc;
+};
+
+&gpio3 {
+	u-boot,dm-pre-reloc;
+};
+
+&gpio4 {
+	u-boot,dm-pre-reloc;
+};
+
+&gpio5 {
+	u-boot,dm-pre-reloc;
+};
+
+&gpio6 {
+	u-boot,dm-pre-reloc;
+};
+
+&gpio7 {
+	u-boot,dm-pre-reloc;
+};

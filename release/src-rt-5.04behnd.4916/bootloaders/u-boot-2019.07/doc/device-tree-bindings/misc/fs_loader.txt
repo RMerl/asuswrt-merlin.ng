@@ -1,0 +1,48 @@
+* File system firmware loader
+
+Required properties:
+--------------------
+
+- compatible: should contain "u-boot,fs-loader"
+- phandlepart: which block storage device and partition the image loading from,
+	       this property is required for mmc, usb and sata. This is unsigned
+	       32-bit array. For example phandlepart=<&mmc_0 1>, meaning use
+	       that MMC0 node pointer, partition 1.
+- mdtpart: which partition of ubi the image loading from, this property is
+	   required for ubi and mounting.
+- ubivol: which volume of ubi the image loading from, this property is required
+	  for ubi and mounting.
+
+Example of storage device and partition search set for mmc, usb, sata and
+ubi in device tree source as shown in below:
+
+	Example of storage type and device partition search set for mmc, usb,
+	sata and ubi as shown in below:
+	Example for mmc:
+	fs_loader0: fs-loader@0 {
+		u-boot,dm-pre-reloc;
+		compatible = "u-boot,fs-loader";
+		phandlepart = <&mmc_0 1>;
+	};
+
+	Example for usb:
+	fs_loader1: fs-loader@1 {
+		u-boot,dm-pre-reloc;
+		compatible = "u-boot,fs-loader";
+		phandlepart = <&usb0 1>;
+	};
+
+	Example for sata:
+	fs_loader2: fs-loader@2 {
+		u-boot,dm-pre-reloc;
+		compatible = "u-boot,fs-loader";
+		phandlepart = <&sata0 1>;
+	};
+
+	Example for ubi:
+	fs_loader3: fs-loader@3 {
+		u-boot,dm-pre-reloc;
+		compatible = "u-boot,fs-loader";
+		mtdpart = "UBI",
+		ubivol = "ubi0";
+	};

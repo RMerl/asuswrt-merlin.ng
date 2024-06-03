@@ -181,6 +181,54 @@ const char* ifttt_notification_template =
 "%s"
 ;
 
+const char* fbwifi2_reg_template = 
+"{ \"cusid\" : \"%s\","
+" \"deviceid\" : \"%s\","
+" \"deviceticket\" : \"%s\","
+" \"devicename\" : \"%s\","
+" \"hw_version\" : \"%s\","
+" \"sw_version\" : \"%s\","
+" \"bssids\" : %s,"
+" \"ssids\" : %s"
+"}"
+;
+
+const char* getprovision_pincode_reg_template = 
+"{ \"mac\" : \"%s\","
+" \"timestamp\" : \"%d\""
+"}"
+;
+
+const char* get_db_wireguard_template = 
+"{ \"cusid\" : \"%s\","
+" \"deviceid\" : \"%s\","
+" \"deviceticket\" : \"%s\","
+" \"routerDeviceid\" : \"%s\""
+"}"
+;
+
+const char* update_db_wireguard_template = 
+"{ \"cusid\" : \"%s\","
+" \"groupName\" : \"%s\","
+" \"deviceid\" : \"%s\","
+" \"deviceticket\" : \"%s\","
+" \"routerDeviceid\" : \"%s\","
+" \"role\" : \"%s\","
+" \"content\" : %s"
+"}"
+;
+
+const char* update_db_tunneltest_template = 
+"{ \"cusid\" : \"%s\","
+" \"deviceid\" : \"%s\","
+" \"deviceticket\" : \"%s\","
+" \"masterDeviceid\" : \"%s\","
+" \"slaveDeviceid\" : \"%s\","
+" \"type\" : \"%s\","
+" \"errorCode\" : \"%d\""
+"}"
+;
+
 const char* wb_custom_header_templ = 
 "Set-Cookie:ONE_VER=1_0; path=/; sid=%s; devicetype=%s; fwver=%s; dmapilevel=%d; apilevel=%d; modelname=%s";
 
@@ -188,5 +236,14 @@ const char* wb_custom_header_templ2 =
 "Set-Cookie:ONE_VER=1_0; path=/; sid=%s; devicetype=%s; fwver=%s; dmapilevel=%d; apilevel=%s; modelname=%s";
 
 const char* ifttt_notification_header_templ = 
+"Content-Type: application/json";
+
+const char* fbwifi2_reg_header_templ = 
+"Content-Type: application/json";
+
+const char* get_provision_pincode_header_templ = 
+"Content-Type: application/json";
+
+const char* get_db_header_templ = 
 "Content-Type: application/json";
 #endif

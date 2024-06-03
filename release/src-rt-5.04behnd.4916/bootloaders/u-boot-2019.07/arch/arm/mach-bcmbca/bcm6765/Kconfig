@@ -1,0 +1,39 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# (C) Copyright 2022 Broadcom Ltd
+#
+
+if BCM6765
+
+config TARGET_BCM96765
+	bool "Broadcom 6765 Reference Board"
+	depends on ARCH_BCMBCA
+
+config SYS_SOC
+	default "bcm6765"
+
+if BCMBCA_DDRC
+config BCMBCA_DDR_DEF_MCBSEL
+	hex "default DDR3 mcb selector value"
+	default 0x1607
+
+config BCMBCA_DDR4_DEF_MCBSEL
+	hex "default DDR4 mcb selector value"
+	default 0x101632
+
+config BCMBCA_LPDDR4_DEF_MCBSEL
+	hex "default LPDDR4 mcb selector value"
+	default 0x1001501
+endif
+
+config RSVD_USE_MAX_FROM_ENV_AND_DT 
+	bool "RSVD will use max value from env and DT"
+	default y
+
+config BRCM_SEC_GEN3V
+        bool "Bootrom SEC GEN3 version support. AES256/192 and RSA2048/3072/4096 are supported"
+        default y
+
+source "board/broadcom/bcmbca/Kconfig"
+
+endif

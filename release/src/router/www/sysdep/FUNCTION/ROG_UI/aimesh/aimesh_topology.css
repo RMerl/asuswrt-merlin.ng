@@ -288,6 +288,63 @@
 .topology_icon:before{
 	background-image: url('/images/New_ui/amesh/location_topology.svg');
 }
+.topology_icon.cloud_product_icon:before{
+	background-image: initial !important;
+}
+.topology_icon .product_icon_container{
+	width: 74px;
+	height: 74px;
+	position: absolute;
+	margin: auto;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	border-radius: 10px;
+	border: 1px solid #262626;
+}
+.jstree-clicked .product_icon_container{
+	background: linear-gradient(0deg, #1C1C1E 0%, #1C1C1E 100%), #D9D9D9;
+	border: 1px solid #248DFF !important;
+	box-shadow: 0px 0px 2px 0px rgba(0,0,0,0.6), 0px 0px 2px 2px rgba(153,202,255,0.4), 0px 0px 4px 0px rgba(0,0,0,0.2);
+}
+.product_icon_container .product_icon{
+	width: 60px;
+	height: 60px;
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	right: 0;
+	left: 0;
+	margin: auto;
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+}
+.product_icon_container.optimize{
+	background: linear-gradient(315deg, rgba(3, 200, 253, 0.00) -2.81%, #03C8FD 42.25%, #133ED4 67.78%, rgba(19, 62, 212, 0.00) 101.56%);
+	background-size: 200% 200%;
+	animation: animation_product_icon_opt 2s ease infinite;
+	border: initial !important;
+	box-shadow: initial !important;
+}
+.cloud_product_icon.jstree-themeicon{
+	background-image: initial !important;
+}
+.cloud_product_icon.jstree-themeicon:after{
+	box-shadow: initial !important;
+}
+@keyframes animation_product_icon_opt{
+	0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+	}
+}
 .topology_icon.offline:before{
 	background-image: url('/images/New_ui/amesh/location_topology_offline.svg');
 }
@@ -1555,11 +1612,13 @@
 .client_list_bg .each_client_bg:before{
 	content: "";
 	position: absolute;
-	left: 5%;
 	bottom: 0;
 	height: 1px;
-	width: 90%;
+	width: 95%;
 	border-bottom: 1px solid #740F0F;
+	left: 0;
+	right: 0;
+	margin: auto;
 }
 .client_list_bg .client_icon_bg{
 	height: 42px;
@@ -1665,6 +1724,11 @@
 }
 .client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.plc{
 	background-position-x: -230px;
+}
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.mlo{
+	background-image: url(/images/New_ui/SDN/dark_theme/Notification/wifi_mlo.svg);
+	background-size: 110%;
+	background-position: -1px -2px;
 }
 .client_list_bg .client_content_bg > .client_content_mac_ip{
 	font-size: 13px;
@@ -2267,6 +2331,9 @@
 }
 .jstree-anchor .jstree-icon.jstree-themeicon.offline {
 	background-image: url("/images/New_ui/amesh/topology_circle_offline.svg");
+}
+.jstree-anchor .jstree-icon.cloud_product_icon{
+	background-image: initial !important;
 }
 .jstree-default > .jstree-no-dots .jstree-node:before{
 	content: "";

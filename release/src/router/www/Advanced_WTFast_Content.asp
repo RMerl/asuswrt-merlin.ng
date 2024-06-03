@@ -13,13 +13,14 @@
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="device-map/device-map.css">
+<script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <script language="JavaScript" type="text/javascript" src="state.js"></script>
 <script language="JavaScript" type="text/javascript" src="general.js"></script>
 <script language="JavaScript" type="text/javascript" src="help.js"></script>
 <script language="JavaScript" type="text/javascript" src="popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="client_function.js"></script>
 <script language="JavaScript" type="text/javascript" src="validator.js"></script>
-<script type="text/javascript" src="js/jquery.js"></script>
 <script type="text/javascript" src="switcherplugin/jquery.iphone-switch.js"></script>
 <style>
 #ClientList_Block_PC{
@@ -102,7 +103,7 @@ select{
 	appearance:none;
 	-moz-appearance:none;
 	-webkit-appearance:none;
-	background: url("images/arrow-down.gif") no-repeat scroll 90% center transparent;
+	background: url("images/unfold_more.svg") no-repeat scroll 90% center transparent;
 	padding-right: 14px;
 	height:25px;
 	background-color:#000;
@@ -395,7 +396,7 @@ function pullLANList(obj){
 	var element = document.getElementById('ClientList_Block_PC');
 	var isMenuopen = element.offsetWidth > 0 || element.offsetHeight > 0;
 	if(isMenuopen == 0){
-		obj.src = "images/arrow-top.gif"
+		obj.src = "images/unfold_less.svg"
 		element.style.display = 'block';
 		document.form.clientmac_x_0.focus();
 	}
@@ -547,19 +548,19 @@ function show_rulelist(){
 			code += '<td width="30%" align="center">';
 			code += '<table style="width:100%;"><tr><td style="width:40%;height:52px;border:0px;">';
 			var userIconBase64 = "NoIcon";
-			var clientName, deviceType, deviceVender, clientIP;
+			var clientName, deviceType, deviceVendor, clientIP;
 			var clientMac = wtfast_rulelist_array[key][1].toUpperCase();
 			var clientIconID = "clientIcon_" + clientMac.replace(/\:/g, "");
 			if(clientList[clientMac]) {
 				clientName = (clientList[clientMac].nickName == "") ? clientList[clientMac].name : clientList[clientMac].nickName;
 				deviceType = clientList[clientMac].type;
-				deviceVender = clientList[clientMac].vendor;
+				deviceVendor = clientList[clientMac].vendor;
 				clientIP = clientList[clientMac].ip;
 			}
 			else {
 				clientName = "New device";
 				deviceType = 0;
-				deviceVender = "";
+				deviceVendor = "";
 				clientIP = "";
 			}
 			if(typeof(clientList[clientMac]) == "undefined") {
@@ -570,20 +571,24 @@ function show_rulelist(){
 					userIconBase64 = getUploadIcon(clientMac.replace(/\:/g, ""));
 				}
 				if(userIconBase64 != "NoIcon") {
-					code += '<div id="' + clientIconID + '" style="width:80px;text-align:center;"><img class="imgUserIcon_card" src="' + userIconBase64 + '"></div>';
-				}
-				else if(deviceType != "0" || deviceVender == "") {
-					code += '<div id="' + clientIconID + '" class="clientIcon type' + deviceType + '"></div>';
-				}
-				else if(deviceVender != "" ) {
-					var venderIconClassName = getVenderIconClassName(deviceVender.toLowerCase());
-					if(venderIconClassName != "" && !downsize_4m_support) {
-						code += '<div id="' + clientIconID + '" class="venderIcon ' + venderIconClassName + '"></div>';
-					}
-					else {
-						code += '<div id="' + clientIconID + '" class="clientIcon type' + deviceType + '"></div>';
-					}
-				}
+                    if(clientList[clientMac].isUserUplaodImg){
+                        code += '<div id="' + clientIconID + '" class="clientIcon"><img class="imgUserIcon_card" src="' + userIconBase64 + '"></div>';
+                    }else{
+                        code += '<div id="' + clientIconID + '" class="clientIcon"><i class="type" style="--svg:url(' + userIconBase64 + ')"></i></div>';
+                    }
+                }
+                else if(deviceType != "0" || deviceVendor == "") {
+                    code += '<div id="' + clientIconID + '" class="clientIcon"><i class="type'+deviceType+'"></i></div>';
+                }
+                else if(deviceVendor != "" ) {
+                    var vendorIconClassName = getVendorIconClassName(deviceVendor.toLowerCase());
+                    if(vendorIconClassName != "" && !downsize_4m_support) {
+                        code += '<div id="' + clientIconID + '" class="clientIcon"><i class="vendor-icon '+ vendorIconClassName +'"></i></div>';
+                    }
+                    else {
+                        code += '<div id="' + clientIconID + '" class="clientIcon"><i class="type' + deviceType + '"></i></div>';
+                    }
+                }
 			}
 			if(wtfast_rulelist_array[key][0] == "0")
 				code += '</td><td style="width:60%;border:0px; color:#949393;">';
@@ -746,7 +751,7 @@ function change_server(target){
 }
 
 function hideClients_Block(){
-	document.getElementById("pull_arrow").src = "/images/arrow-down.gif";
+	document.getElementById("pull_arrow").src = "/images/unfold_more.svg";
 	document.getElementById("ClientList_Block_PC").style.display="none";
 }
 
@@ -1178,7 +1183,7 @@ function clean_macerr(){
 
 								<td>
 									<input type="text" class="wtfast_input_option" maxlength="17" name="clientmac_x_0" style="width:180px; border-right:0px;" onKeyPress="return validator.isHWAddr(this,event);" onKeyUp="check_value(this);" onKeyDown="clean_macerr();" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off" placeholder="ex: <% nvram_get("lan_hwaddr"); %>">
-										<img id="pull_arrow" src="images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANList(this);" title="<#select_MAC#>">
+										<img id="pull_arrow" src="images/unfold_more.svg" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANList(this);" title="<#select_MAC#>">
 										<div id="ClientList_Block_PC" class="ClientList_Block_PC"></div> 
 								</td>
 								<td>

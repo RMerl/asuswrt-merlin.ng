@@ -1,0 +1,190 @@
+if TEGRA
+
+config SPL_GPIO_SUPPORT
+	default y
+
+config SPL_LIBCOMMON_SUPPORT
+	default y
+
+config SPL_LIBGENERIC_SUPPORT
+	default y
+
+config SPL_SERIAL_SUPPORT
+	default y
+
+config TEGRA_CLKRST
+	bool
+
+config TEGRA_GP_PADCTRL
+	bool
+
+config TEGRA_IVC
+	bool "Tegra IVC protocol"
+	help
+	  IVC (Inter-VM Communication) protocol is a Tegra-specific IPC
+	  (Inter Processor Communication) framework. Within the context of
+	  U-Boot, it is typically used for communication between the main CPU
+	  and various auxiliary processors.
+
+config TEGRA_MC
+	bool
+
+config TEGRA_PINCTRL
+	bool
+
+config TEGRA_PMC
+	bool
+
+config TEGRA_PMC_SECURE
+	bool
+	depends on TEGRA_PMC
+
+config TEGRA_COMMON
+	bool "Tegra common options"
+	select BINMAN
+	select BOARD_EARLY_INIT_F
+	select CLK
+	select DM
+	select DM_ETH
+	select DM_GPIO
+	select DM_I2C
+	select DM_KEYBOARD
+	select DM_MMC
+	select DM_PWM
+	select DM_RESET
+	select DM_SERIAL
+	select DM_SPI
+	select DM_SPI_FLASH
+	select MISC
+	select OF_CONTROL
+	select SPI
+	select VIDCONSOLE_AS_LCD if DM_VIDEO
+	imply CMD_DM
+	imply CRC32_VERIFY
+
+config TEGRA_NO_BPMP
+	bool "Tegra common options for SoCs without BPMP"
+	select TEGRA_CAR
+	select TEGRA_CAR_CLOCK
+	select TEGRA_CAR_RESET
+
+config TEGRA_ARMV7_COMMON
+	bool "Tegra 32-bit common options"
+	select CPU_V7A
+	select SPL
+	select SPL_BOARD_INIT if SPL
+	select SUPPORT_SPL
+	select TEGRA_CLKRST
+	select TEGRA_COMMON
+	select TEGRA_GPIO
+	select TEGRA_GP_PADCTRL
+	select TEGRA_MC
+	select TEGRA_NO_BPMP
+	select TEGRA_PINCTRL
+	select TEGRA_PMC
+
+config TEGRA_ARMV8_COMMON
+	bool "Tegra 64-bit common options"
+	select ARM64
+	select LINUX_KERNEL_IMAGE_HEADER
+	select POSITION_INDEPENDENT
+	select TEGRA_COMMON
+
+if TEGRA_ARMV8_COMMON
+config LNX_KRNL_IMG_TEXT_OFFSET_BASE
+	default 0x80000000
+endif
+
+choice
+	prompt "Tegra SoC select"
+	optional
+
+config TEGRA20
+	bool "Tegra20 family"
+	select ARM_ERRATA_716044
+	select ARM_ERRATA_742230
+	select ARM_ERRATA_751472
+	select TEGRA_ARMV7_COMMON
+
+config TEGRA30
+	bool "Tegra30 family"
+	select ARM_ERRATA_743622
+	select ARM_ERRATA_751472
+	select TEGRA_ARMV7_COMMON
+
+config TEGRA114
+	bool "Tegra114 family"
+	select TEGRA_ARMV7_COMMON
+
+config TEGRA124
+	bool "Tegra124 family"
+	select TEGRA_ARMV7_COMMON
+	imply REGMAP
+	imply SYSCON
+
+config TEGRA210
+	bool "Tegra210 family"
+	select TEGRA_ARMV8_COMMON
+	select TEGRA_CLKRST
+	select TEGRA_GPIO
+	select TEGRA_GP_PADCTRL
+	select TEGRA_MC
+	select TEGRA_NO_BPMP
+	select TEGRA_PINCTRL
+	select TEGRA_PMC
+	select TEGRA_PMC_SECURE
+
+config TEGRA186
+	bool "Tegra186 family"
+	select DM_MAILBOX
+	select TEGRA186_BPMP
+	select TEGRA186_CLOCK
+	select TEGRA186_GPIO
+	select TEGRA186_RESET
+	select TEGRA_ARMV8_COMMON
+	select TEGRA_HSP
+	select TEGRA_IVC
+
+endchoice
+
+config TEGRA_DISCONNECT_UDC_ON_BOOT
+	bool "Disconnect USB device mode controller on boot"
+	depends on CI_UDC
+	default y
+	help
+	  When loading U-Boot into RAM over USB protocols using tools such as
+	  tegrarcm or L4T's exec-uboot.sh/tegraflash.py, Tegra's USB device
+	  mode controller is initialized and enumerated by the host PC running
+	  the tool. Unfortunately, these tools do not shut down the USB
+	  controller before executing the downloaded code, and so the host PC
+	  does not "de-enumerate" the USB device. This option shuts down the
+	  USB controller when U-Boot boots to avoid leaving a stale USB device
+	  present.
+
+config SYS_MALLOC_F_LEN
+	default 0x1800
+
+source "arch/arm/mach-tegra/tegra20/Kconfig"
+source "arch/arm/mach-tegra/tegra30/Kconfig"
+source "arch/arm/mach-tegra/tegra114/Kconfig"
+source "arch/arm/mach-tegra/tegra124/Kconfig"
+source "arch/arm/mach-tegra/tegra210/Kconfig"
+source "arch/arm/mach-tegra/tegra186/Kconfig"
+
+config CMD_ENTERRCM
+	bool "Enable 'enterrcm' command"
+	default y
+	help
+	  Tegra's boot ROM supports a mode whereby code may be downloaded and
+	  flash-programmed over a USB connection. On dev boards, this is
+	  typically entered by holding down a "force recovery" button and
+	  resetting the CPU. However, not all boards have such a button (one
+	  example is the Compulab Trimslice), so a method to enter RCM from
+	  software is useful.
+
+	  Even on boards other than Trimslice, controlling this over a UART
+	  may be useful, e.g. to allow simple remote control without the need
+	  for mechanical button actuators, or hooking up relays/... to the
+	  button.
+
+endif

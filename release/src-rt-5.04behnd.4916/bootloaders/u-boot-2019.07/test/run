@@ -1,0 +1,61 @@
+#!/bin/bash
+
+# Script to run all U-Boot tests that use sandbox.
+#  $1: tests to run (empty for all, 'quick' for quick ones only)
+
+# Runs a test and checks the exit code to decide if it passed
+#  $1:         Test name
+#  $2 onwards: command line to run
+run_test() {
+	echo -n "$1: "
+	shift
+	"$@"
+	[ $? -ne 0 ] && failures=$((failures+1))
+}
+
+# SKip slow tests if requested
+[ "$1" == "quick" ] && mark_expr="not slow"
+
+failures=0
+
+# Run all tests that the standard sandbox build can support
+run_test "sandbox" ./test/py/test.py --bd sandbox --build -m "${mark_expr}"
+
+# Run tests which require sandbox_spl
+run_test "sandbox_spl" ./test/py/test.py --bd sandbox_spl --build \
+	-k 'test_ofplatdata or test_handoff'
+
+# Run tests for the flat-device-tree version of sandbox. This is a special
+# build which does not enable CONFIG_OF_LIVE for the live device tree, so we can
+# check that functionality is the same. The standard sandbox build (above) uses
+# CONFIG_OF_LIVE.
+run_test "sandbox_flattree" ./test/py/test.py --bd sandbox_flattree --build \
+	-k test_ut
+
+# Set up a path to dtc (device-tree compiler) and libfdt.py, a library it
+# provides and which is built by the sandbox_spl config.
+DTC_DIR=build-sandbox_spl/scripts/dtc
+export PYTHONPATH=${DTC_DIR}/pylibfdt
+export DTC=${DTC_DIR}/dtc
+
+run_test "binman" ./tools/binman/binman -t
+run_test "patman" ./tools/patman/patman --test
+
+[ "$1" == "quick" ] && skip=--skip-net-tests
+run_test "buildman" ./tools/buildman/buildman -t ${skip}
+run_test "fdt" ./tools/dtoc/test_fdt -t
+run_test "dtoc" ./tools/dtoc/dtoc -t
+
+# This needs you to set up Python test coverage tools.
+# To enable Python test coverage on Debian-type distributions (e.g. Ubuntu):
+#   $ sudo apt-get install python-pytest python-coverage
+run_test "binman code coverage" ./tools/binman/binman -T
+run_test "dtoc code coverage" ./tools/dtoc/dtoc -T
+run_test "fdt code coverage" ./tools/dtoc/test_fdt -T
+
+if [ $failures == 0 ]; then
+	echo "Tests passed!"
+else
+	echo "Tests FAILED"
+	exit 1
+fi

@@ -1,0 +1,11 @@
+#address-cells = <1>;
+#size-cells = <1>;
+compatible = "brcm,fpm";
+reg = <FPM_REG_ADDR FPM_REG_SIZE>;
+interrupts = <GIC_SPI FPM_SPI_IRQ IRQ_TYPE_LEVEL_HIGH>;
+
+init = <FPM_INIT>;
+track-tokens = <FPM_TRACK_TOKENS>;
+track-on-err = <FPM_TRACK_ON_ERROR>;
+pool-alloc-weight = <FPM_POOL_O_ALLOC_WEIGHT FPM_POOL_1_ALLOC_WEIGHT>;
+pool-free-weight = <FPM_POOL_O_FREE_WEIGHT FPM_POOL_1_FREE_WEIGHT>;

@@ -1,0 +1,26 @@
+#!/bin/sh
+
+vid="$1"
+mac="$2"
+flags="$3"
+
+cd /proc
+echo "05 02 06:" "$mac" > switch
+echo "05 08 02:" "$vid" > switch
+
+echo "05 00 01: 81" > switch
+sleep 1
+
+if [ "$#" -gt  2 ]; then
+  echo "05 10 08:" "$vid" "$mac" > switch
+  echo "05 18 02:" "$flags" > switch
+  echo "05 00 01: 80" > switch
+  sleep 1
+fi
+
+echo "05 10 08" > switch
+echo "$vid:$mac: vid[59:48], mac[47:0] -> `cat switch`"
+
+echo "05 18 02" > switch
+echo "$vid:$mac: valid[15], static[14], age[13], pri[12:10], fwd[8:0] -> `cat switch`"
+

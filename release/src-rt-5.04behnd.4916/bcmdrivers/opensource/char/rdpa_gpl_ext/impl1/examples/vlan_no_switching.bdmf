@@ -1,0 +1,149 @@
+#
+# <:copyright-BRCM:2013:DUAL/GPL:standard
+# 
+#    Copyright (c) 2013 Broadcom 
+#    All Rights Reserved
+# 
+# Unless you and Broadcom execute a separate written software license
+# agreement governing use of this software, this software is licensed
+# to you under the terms of the GNU General Public License version 2
+# (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
+# with the following added to such license:
+# 
+#    As a special exception, the copyright holders of this software give
+#    you permission to link this software with independent modules, and
+#    to copy and distribute the resulting executable under terms of your
+#    choice, provided that you also meet, for each linked independent
+#    module, the terms and conditions of the license of that module.
+#    An independent module is a module which is not derived from this
+#    software.  The special exception does not apply to any modifications
+#    of the software.
+# 
+# Not withstanding the above, under no circumstances may you combine
+# this software in any way with any other Broadcom software provided
+# under a license other than the GPL, without Broadcom's express prior
+# written consent.
+# 
+# :> 
+#
+
+# VLAN configuration, isolation, aggregation example
+# VLAN switching is disabled
+#
+
+/bdmf
+new system/init_cfg=<wan_type=gbe,wan_emac=emac4,switching_mode=none>
+
+new port/index=wan0,cfg={emac=emac4}
+new port/index=lan0
+new port/index=lan1
+new port/index=lan2
+new bridge
+link port/index=lan0 bridge/index=0
+link port/index=lan1 bridge/index=0
+link port/index=lan2 bridge/index=0
+
+# Enable VLAN object debugging. DEbug output includes all RDD calls
+trace info
+trace debug vlan
+
+#
+# WAN side
+#
+
+# Create VLAN object without port owner - should fail
+new vlan/name=wan0_1
+
+# Restriction test: Create WAN VLAN with 2 VIDs 
+# should fail because only 1 VID per WAN VLAN object is allowed
+new vlan/name=wan0_1,vid_enable[10]=yes,vid_enable[20]=yes port/index=wan0
+
+# Create WAN VLAN with 1 VID-10 - should succeed
+new vlan/name=wan0_1,vid_enable[10]=yes port/index=wan0
+
+# Restriction test: Try to add 2nd VID. 
+# Should fail
+config vlan/name=wan0_1 vid_enable[20]=yes
+
+# Create WAN VLAN without VIDs - should succeed
+new vlan/name=wan0_2 port/index=wan0
+
+# Add VID. Should succeed
+config vlan/name=wan0_2 vid_enable[20]=yes
+
+# Create 3 more WAN VLANs - should succeed
+new vlan/name=wan0_3,vid_enable[30]=yes port/index=wan0
+new vlan/name=wan0_4,vid_enable[40]=yes port/index=wan0
+new vlan/name=wan0_5,vid_enable[50]=yes port/index=wan0
+
+
+#
+# LAN side
+#
+
+# Create VLAN container with VID 100,110 on lan0
+new vlan/name=lan0_1,vid_enable[100]=yes,vid_enable[110]=yes port/index=lan0
+
+# Restriction test: Try to create another VLAN container with VID 100 on lan0
+# It should fail
+new vlan/name=lan0_2,vid_enable[100]=yes port/index=lan0
+
+# Create VLAN container with VID 100,120,130 on lan1
+new vlan/name=lan1_1,vid_enable[100]=yes,vid_enable[120]=yes,vid_enable[130]=yes port/index=lan1
+
+# Add VID 120 to VLAN on lan0
+config vlan/name=lan0_1 vid_enable[120]=yes
+
+# Remove VID 120 on lan1
+config vlan/name=lan1_1 vid_enable[120]=no
+
+# Remove VID 130 on lan1
+config vlan/name=lan1_1 vid_enable[130]=no
+
+# Link lan0_1 to lan0_2 - should fail
+link vlan/name=lan0_1 vlan/name=lan1_1
+
+# Link lan0_1 to wan0_1 (aggregation if were enabled in system config)
+link vlan/name=wan0_1 vlan/name=lan0_1
+
+# Restriction test: Try to link the same object again
+# should fail 
+link vlan/name=lan0_1 vlan/name=wan0_1
+
+# Add VID to vlan/name=lan1_1. Should get aggregated if enabled in syscfg
+config vlan/name=lan0_1 vid_enable[140]=yes
+
+# Add a few MAC entries with VIDs 100, 130, 140
+config bridge/index=0 mac[{vid=100,mac=00:01:02:03:04:01}]={ports=lan1}
+config bridge/index=0 mac[{vid=120,mac=00:01:02:03:04:02}]={ports=lan0}
+config bridge/index=0 mac[{vid=140,mac=00:01:02:03:04:03}]={ports=lan0}
+
+# Display MAC entries. VID is kept only if switching_mode is not none
+examine bridge/index=0 mac
+
+# Remove VID 140. If switching_mode=vlan_aware, vid_140 should disapperar
+# from MAC entries
+config vlan/name=lan0_1 vid_enable[140]=no
+examine bridge/index=0 mac
+
+# 
+# Create 3 more LAN VLANs and aggregate them
+# 
+new vlan/name=lan2_1,vid_enable[150]=yes port/index=lan2
+new vlan/name=lan2_2,vid_enable[160]=yes port/index=lan2
+new vlan/name=lan2_3,vid_enable[170]=yes port/index=lan2
+new vlan/name=lan2_4,vid_enable[180]=yes port/index=lan2
+
+# Aggregate another 3 WAN VIDs. Should succeed 
+link vlan/name=lan2_1 vlan/name=wan0_2
+link vlan/name=lan2_2 vlan/name=wan0_3
+link vlan/name=lan2_3 vlan/name=wan0_4
+
+# Aggregate WAN VID #5 - should fail if switching mode is vlan_aware
+link vlan/name=lan2_4 vlan/name=wan0_5
+
+#
+# Remove 1 aggregation and try again
+#
+unlink vlan/name=lan2_2 vlan/name=wan0_3
+link vlan/name=lan2_4 vlan/name=wan0_5

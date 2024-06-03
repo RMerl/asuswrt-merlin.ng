@@ -1,0 +1,182 @@
+.container{
+	margin: 0px 0px 0px 5px;
+	background-color: #131313;
+}
+
+.function_title_pc{
+	text-shadow: 1px 1px 0px black;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 16px;
+	color: #FFFFFF;
+	font-weight: bolder;
+}
+
+.formfontdesc{
+	color: #C9D1D7;
+}
+
+.description-bar{
+	border-left: none;
+	padding-left: 0;
+}
+
+.wan_notice{
+	margin-left: 5px;
+}
+
+.split-Line{
+	background: linear-gradient(#CEC1C7 0%, #CEC1C7 20%, #766D71 80%,#766D71 100%);
+	height: 1px;
+}
+
+.ookla_info{
+	color: #92650F;
+}
+
+.speedTest_div{
+	background: #222222;
+	border: 1px solid rgba(243,153,41,0.4);
+}
+
+.speedTest_result_div{
+	background: #1F2025;
+}
+
+.date_div{
+	border-bottom: solid rgba(243,153,41,0.4) 6px;
+}
+
+.download_upload_text{
+	color: #A4B7C3;
+}
+
+.ping_result_title{
+	color: #A4B7C3;
+}
+
+.speedTest_btn_press{
+	color: #FFFFFF;
+}
+
+.alert_notification{
+	background-color: #232429;
+}
+
+.close_icon{
+	background-color: #333333;
+}
+
+.close_icon:hover{
+	background-color: #333333;
+}
+
+.history_delete:hover{
+	background-color: #333333;
+}
+
+.left_arrow:hover{
+	background: rgba(255,255,255,0.05) url(../images/speedtest/speedtest_arrow_left_yellow.svg) no-repeat center;
+	background-size: 50%;
+}
+
+.right_arrow:hover{
+	background: rgba(255,255,255,0.05) url(../images/speedtest/speedtest_arrow_right_yellow.svg) no-repeat center;
+	background-size: 50%;
+}
+
+.up_arrow{
+	background: url(../images/speedtest/speedtest_arrow_right_yellow.svg) no-repeat center;
+	background-size: 50%;
+}
+
+.up_arrow:hover{
+	background: url(../images/speedtest/speedtest_arrow_right_white.svg) no-repeat center;
+	background-size: 50%;
+}
+
+.history_select_checked{
+	background: #FFA83A url(../images/speedtest/checked_24px.svg) no-repeat center;
+	background-size: 90%;
+}
+
+.detail_speed_level{
+	background-color: #232429;
+}
+
+.detail_title{
+	font-family: Xolonium;
+	border-bottom: #92650F solid 1px;
+}
+
+.detail_level_desc_div{
+	border-bottom: #92650F solid 1px;
+}
+
+.detail_last_test_div{
+	border-bottom: #92650F solid 1px;
+}
+
+.speed_level_text2{
+	font-family: Xolonium;
+}
+
+.level_desc_title{
+	color: #D0982C;
+}
+
+.ping_title{
+	color: #D0982C;
+}
+
+.down_arrow{
+	background: url(../images/speedtest/speedtest_arrow_right_white.svg) no-repeat center;
+	background-size: 50%;
+}
+
+.server_list_check{
+	background: url(../images/speedtest/checked_24px_yellow.svg) no-repeat center;
+	background-size: 50%;
+}
+
+.no_test_result{
+	color: #8492B4;
+}
+
+.cur_server_container{
+	background: #2d2d31;
+}
+
+#outer_server_container{
+	background: #2d2d31;
+}
+
+.server_list_brick{
+	background: #F39929;
+}
+
+.level_ping_div{
+	background-color: #323232;
+}
+
+::-webkit-scrollbar{
+	background: #3C3E42;
+}
+
+::-webkit-scrollbar-thumb {
+	background: #595D64;
+}
+
+@media (max-width: 720px) {
+	.level_ping_div{
+		background-color: transparent;
+	}
+
+	.ping_result_div{
+		background-color: #232429;
+	}
+
+	.up_arrow_container{
+		background: #232429;
+	}
+
+}

@@ -1,0 +1,40 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2018 Angelo Dureghello <angelo@sysam.it>
+ */
+
+/ {
+	compatible = "fsl,mcf54x5";
+
+	aliases {
+		/* TO DO, clarify on serial, this SoC seems to have SPC and
+		 * no UARTS.
+		 */
+		spi0 = &dspi0;
+	};
+
+	soc {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		mbar: mbar@80000000 {
+			compatible = "simple-bus";
+			#address-cells = <1>;
+			#size-cells = <1>;
+			ranges = <0x00000000 0x80000000 0x10000>;
+			reg = <0x80000000 0x10000>;
+
+			dspi0: dspi@8a00 {
+				compatible = "fsl,mcf-dspi";
+				#address-cells = <1>;
+				#size-cells = <0>;
+				reg = <0x8a00 0x100>;
+				spi-max-frequency = <50000000>;
+				num-cs = <4>;
+				spi-mode = <0>;
+				status = "disabled";
+			};
+		};
+	};
+};

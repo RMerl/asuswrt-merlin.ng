@@ -1,0 +1,6 @@
+DRAGONBOARD410C BOARD
+M:	Ramon Fried <rfried.dev@gmail.com>
+S:	Maintained
+F:	board/qualcomm/dragonboard410c/
+F:	include/configs/dragonboard410c.h
+F:	configs/dragonboard410c_defconfig

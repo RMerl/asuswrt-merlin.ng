@@ -20,6 +20,9 @@ modem_roaming_imsi=`nvram get modem_roaming_imsi`
 modem_autoapn=`nvram get modem_autoapn`
 modem_auto_spn=`nvram get ${prefix}auto_spn`
 modem_act_path=`nvram get ${prefix}act_path`
+modem_model=`nvram get modem_model`
+modem_method=`nvram get modem_method`
+modem_debug=`nvram get modem_debug`
 modem_type=`nvram get ${prefix}act_type`
 act_node1="${prefix}act_int"
 act_node2="${prefix}act_bulk"
@@ -47,7 +50,6 @@ atcmd=`nvram get modem_atcmd`
 usb_gobi2=`nvram get usb_gobi2`
 Dev3G=`nvram get Dev3G`
 kernel_version=`uname -r`
-
 
 # $1: ifname.
 _get_wdm_by_usbnet(){
@@ -195,6 +197,22 @@ _get_pdp_str(){
 	echo "$str"
 }
 
+_get_qmi_q_pdp_str(){
+	str=""
+
+	if [ "$modem_pdp" == "1" ]; then
+		str=""
+	elif [ "$modem_pdp" == "2" ]; then
+		str="-6"
+	elif [ "$modem_pdp" == "3" ]; then
+		str="-4 -6"
+	else
+		str="-4"
+	fi
+
+	echo "$str"
+}
+
 _get_qmi_pdp_str(){
 	str=""
 
@@ -271,7 +289,39 @@ echo "VAR: modem_enable($modem_enable) modem_autoapn($modem_autoapn) prefix($pre
 echo "     modem_type($modem_type) modem_vid($modem_vid) modem_pid($modem_pid)";
 echo "     modem_isp($modem_isp) modem_apn($modem_apn)";
 
-if [ "$modem_type" == "tty" -o "$modem_type" == "qmi" -o "$modem_type" == "mbim" -o "$modem_type" == "gobi" ] || [ "$usb_gobi2" == "1" ]; then
+if [ "$modem_type" == "tty" -o "$modem_type" == "qmi" -o "$modem_type" == "mbim" -o "$modem_type" == "gobi" ] || [ "$usb_gobi2" == "1" ] || [ "$modem_model" == "2" -a "$modem_type" == "ncm" ]; then
+
+	if [ "$modem_model" == "2" ]; then
+		stty -F /dev/ttyUSB0 -icrnl -opost -isig -icanon -iexten -echo
+
+		# check modem usbmode
+		at_ret=`/usr/sbin/modem_at.sh '+GTUSBMODE?' "$modem_reg_time" 2>&1`
+		ret=`echo -n "$at_ret" |grep "+GTUSBMODE: " |awk 'BEGIN{FS=" "}{print $2}' 2>/dev/null`
+		if [ -z "$ret" ]; then
+			echo "reget usbmodem mode ..."
+			at_ret=`/usr/sbin/modem_at.sh '+GTUSBMODE?' "$modem_reg_time" 2>&1`
+			ret=`echo -n "$at_ret" |grep "+GTUSBMODE: " |awk 'BEGIN{FS=" "}{print $2}' 2>/dev/null`
+		fi
+
+		echo "usbmodem mode is $ret ..."
+		if [ "$ret" == "34" ]; then
+			echo "set usbmodem mode to 36"
+
+			at_ret=`/usr/sbin/modem_at.sh '+GTUSBMODE=36' "$modem_reg_time" 2>&1`
+			ret=`echo -n "$at_ret" |grep "OK" 2>/dev/null`
+			if [ -z "$ret" ]; then
+				echo "failed to set usbmodem mode 36 ..."
+			fi
+
+			at_ret=`/usr/sbin/modem_at.sh '+CFUN=15' "$modem_reg_time" 2>&1`
+			ret=`echo -n "$at_ret" |grep "OK" 2>/dev/null`
+			if [ -z "$ret" ]; then
+				echo "failed to reset modem ..."
+			fi
+			exit
+		fi
+	fi
+
 	if [ "$modem_type" == "gobi" ]; then
 		/usr/sbin/modem_status.sh imsi
 		target=`nvram get ${prefix}act_imsi |cut -c '1-5' 2>/dev/null`
@@ -402,6 +452,20 @@ if [ "$modem_type" == "tty" -o "$modem_type" == "qmi" -o "$modem_type" == "mbim"
 				nvram unset ${prefix}act_reboot
 				nvram commit
 			fi
+		elif [ "$modem_model" == "1" ] || [ "$modem_model" == "2" ]; then
+			ret=`echo -n $at_ret |grep "+CFUN: 4" 2>/dev/null`
+			if [ -z "$ret" ]; then
+				echo "Quectel: let the modem unregister the network."
+				at_ret=`/usr/sbin/modem_at.sh '+CFUN=4' "$modem_reg_time" 2>&1`
+				ret=`echo -n $at_ret |grep "OK" 2>/dev/null`
+				if [ -z "$ret" ]; then
+					echo "CFUN: Fail to set +CFUN=4."
+					#exit 5
+				fi
+			fi
+
+			echo "modem set mode..."
+			/usr/sbin/modem_status.sh setmode $modem_mode
 		else
 			ret=`echo -n $at_ret |grep "+CFUN: 1" 2>/dev/null`
 			if [ -z "$ret" ]; then
@@ -533,6 +597,124 @@ if [ "$modem_type" == "tty" -o "$modem_type" == "qmi" -o "$modem_type" == "mbim"
 		fi
 
 		echo "Gobi: Successfull to set the ISP profile."
+	elif [ "$modem_model" == "1" -a "$modem_method" != "tty" ]; then
+		modem_if=$(nvram get ${prefix}act_dev)
+		prefixes_wan="wan0_ wan1_"
+		wan_unit=0
+		for prefix_wan in $prefixes_wan; do
+			wan_if=$(nvram get ${prefix_wan}ifname)
+			if [ "$wan_if" == "$modem_if" ] ; then
+				break
+			else
+				wan_unit=$((wan_unit+1))
+			fi
+		done
+		echo "Quectel: set wan_unit be $wan_unit."
+		cmd_str="-w $wan_unit"
+
+		pdp_str=`_get_qmi_q_pdp_str`
+		echo "Quectel: set the PDP be \"$pdp_str\"."
+		cmd_str="$cmd_str $pdp_str"
+
+		if [ -n "$modem_user" -o -n "$modem_pass" ]; then
+			case "$modem_authmode" in
+				1) flag_auth="1" ;; # pap
+				2) flag_auth="2" ;; # chap
+				3) flag_auth="3" ;; # both
+				*) flag_auth="0" ;; # none
+			esac
+			auth_str="$modem_user $modem_pass $flag_auth"
+
+			echo "Quectel: set the profile: $modem_apn $auth_str"
+			cmd_str="$cmd_str -s $modem_apn $auth_str"
+		else
+			echo "Quectel: set the profile: $modem_apn"
+			cmd_str="$cmd_str -s $modem_apn"
+		fi
+
+		if [ "$modem_pin" != "" ]; then
+			cmd_str="$cmd_str -p $modem_pin"
+		fi
+		if [ "$modem_debug" != "" ]; then
+			cmd_str="$cmd_str -v -f /tmp/modem.log"
+		fi
+		echo "quectel-CM $cmd_str"
+		quectel-CM $cmd_str &
+		sleep 3
+
+		echo "Quectel: let the modem register the network again."
+		at_ret=`/usr/sbin/modem_at.sh '+CFUN=1' "$modem_reg_time" 2>&1`
+		ret=`echo -n $at_ret |grep "OK" 2>/dev/null`
+		if [ -z "$ret" ]; then
+			echo "Quectel: Fail to set +CFUN=1."
+		fi
+
+		/usr/sbin/modem_status.sh init_sms
+	elif [ "$modem_model" == "2" ]; then
+		/usr/sbin/modem_stop.sh
+
+		echo "Fibocom: let the modem register the network again."
+		at_ret=`/usr/sbin/modem_at.sh '+CFUN=1' "$modem_reg_time" 2>&1`
+		ret=`echo -n $at_ret |grep "OK" 2>/dev/null`
+		if [ -z "$ret" ]; then
+			echo "Fibocom: Fail to set +CFUN=1."
+		fi
+
+		at_ret=`/usr/sbin/modem_at.sh '+GTAUTOCONNECT?' "$modem_reg_time" 2>&1`
+		ret=`echo -n $at_ret |grep "+GTAUTOCONNECT: 0" 2>/dev/null`
+		if [ -z "$ret" ]; then
+			at_ret=`/usr/sbin/modem_at.sh '+GTAUTOCONNECT=0' "$modem_reg_time" 2>&1`
+			ret=`echo -n $at_ret |grep "OK" 2>/dev/null`
+			if [ -z "$ret" ]; then
+				echo "$modem_type: failed to disable auto connect..."
+			else
+				echo "$modem_type: Successfull to disable auto connect."
+			fi
+
+			sleep 2
+		else
+			echo "$modem_type: GTAUTOCONNECT = 0 ..."
+		fi
+
+		at_ret=`/usr/sbin/modem_at.sh '+GTIPPASS=1' "$modem_reg_time" 2>&1`
+		ret=`echo -n $at_ret |grep "OK" 2>/dev/null`
+		if [ -z "$ret" ]; then
+			echo "$modem_type: failed to set pass ip ..."
+			exit 0
+		fi
+
+		echo "modem set mode..."
+		/usr/sbin/modem_status.sh setmode $modem_mode
+
+		sleep 1
+
+        pdp_str=`_get_pdp_str`
+        echo "$modem_type: set the PDP be $pdp_str & APN be $modem_apn."
+        at_ret=`/usr/sbin/modem_at.sh '+CGDCONT=1,"'$pdp_str'","'$modem_apn'"' 2>&1`
+        ret=`echo -n $at_ret |grep "OK" 2>/dev/null`
+        if [ -z "$ret" ]; then
+			echo "$modem_type: Fail to set the APN profile."
+			exit 0
+        fi
+
+		wait_time=`expr $modem_reg_time + 10`
+		at_ret=`/usr/sbin/modem_at.sh '+GTRNDIS=1,1' "$wait_time" 2>&1`
+		ret=`echo -n $at_ret |grep "OK" 2>/dev/null`
+		if [ -z "$ret" ]; then
+			echo "$modem_type: Fail to set +GTRNDIS=1,1 to connect."
+			exit 0
+		fi
+
+		at_ret=`/usr/sbin/modem_at.sh '+GTRNDIS?' "$modem_reg_time" 2>&1`
+		ret=`echo -n "$at_ret" |grep "GTRNDIS: 1," |awk 'BEGIN{FS=","}{print $3}' |awk 'BEGIN{RS="\""}{print $1}' | grep "\." 2>/dev/null`
+		if [ -z "$ret" ]; then
+			echo "$modem_type: failed to start the network..."
+			exit 0
+		else
+			echo "$modem_type: Successfull to start the network."
+		fi
+
+		/usr/sbin/modem_status.sh init_sms
 	elif [ "$modem_type" == "qmi" ]; then
 		if [ "$modem_dev" == "" ]; then
 			path=`_find_usb_path "$modem_act_path"`
@@ -632,7 +814,11 @@ if [ "$modem_type" == "tty" -o "$modem_type" == "qmi" -o "$modem_type" == "mbim"
 
 	# set COPS.
 	is_Docomo=`_is_Docomo_modem`
-	if [ "$Dev3G" == "Docomo_dongles" ] || [ "$is_Docomo" == "1" ]; then
+	if [ "$modem_model" == "1" ]; then
+		echo "Quectel Skip to reset COPS."
+	elif [ "$modem_model" == "2" ]; then
+		echo "FG621 Skip to reset COPS."
+	elif [ "$Dev3G" == "Docomo_dongles" ] || [ "$is_Docomo" == "1" ]; then
 		echo "COPS: Docomo dongles cannot COPS=0, so skip it."
 	elif [ "$et128" == "1" ]; then
 		echo "COPS: Huawei ET128 skip to reset COPS."
@@ -699,7 +885,8 @@ if [ "$modem_type" == "tty" -o "$modem_type" == "qmi" -o "$modem_type" == "mbim"
 		fi
 	fi
 
-	if [ "$modem_enable" == "1" ]; then
+	if [ "$modem_enable" == "1" ] && [ "$modem_model" != "1" ] && [ "$modem_model" != "2" ]; then
+		echo "modem set mode..."
 		/usr/sbin/modem_status.sh setmode $modem_mode
 	fi
 

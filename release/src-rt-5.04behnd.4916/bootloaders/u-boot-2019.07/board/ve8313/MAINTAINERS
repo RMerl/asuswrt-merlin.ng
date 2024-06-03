@@ -1,0 +1,6 @@
+VE8313 BOARD
+M:	Heiko Schocher <hs@denx.de>
+S:	Maintained
+F:	board/ve8313/
+F:	include/configs/ve8313.h
+F:	configs/ve8313_defconfig

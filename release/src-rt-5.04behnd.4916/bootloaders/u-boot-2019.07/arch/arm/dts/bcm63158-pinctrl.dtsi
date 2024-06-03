@@ -1,0 +1,71 @@
+&pinctrl {
+	pincontroller-functions {
+		spim_group_pins: spim_group_pinmux {
+			pins = <108 109 110>;
+			function = <0>;
+		};
+		spim_ss0_b_pin_111: spim_ss0_b_pinmux {
+			pins = <111>;
+			function = <0>;
+		};
+		nand_data_pins: nand_data_pinmux {
+			pins = <51 52 53 54 55 56 57 58>;
+			function = <3>;
+		};
+
+		nand_ctrl_pins: nand_ctrl_pinmux {
+			pins = <49 50 59 60 61>;
+			function = <3>;
+		};
+
+		nand_ce_b_pin_48: nand_ce_b_pinmux {
+			pins = <48>;
+			function = <3>;
+		};
+
+		nand_wp_pin_47: nand_wp_pinmux {
+			pins = <47>;
+			function = <3>;
+		};
+
+		usb0a_pwrflt_pins: usb0a_pwrflt_pinmux {
+			pins = <121>;
+			function = <1>;
+		};
+
+		usb0a_pwron_pins: usb0a_pwron_pinmux {
+			pins = <122>;
+			function = <1>;
+		};
+
+		usb0b_pwrflt_pins: usb0b_pwrflt_pinmux {
+			pins = <123>;
+			function = <2>;
+		};
+
+		usb0b_pwron_pins: usb0b_pwron_pinmux {
+			pins = <124>;
+			function = <2>;
+		};
+
+		usb1a_pwrflt_pins: usb1a_pwrflt_pinmux {
+			pins = <123>;
+			function = <1>;
+		};
+
+		usb1a_pwron_pins: usb1a_pwron_pinmux {
+			pins = <124>;
+			function = <1>;
+		};
+
+		usb1b_pwrflt_pins: usb1b_pwrflt_pinmux {
+			pins = <121>;
+			function = <2>;
+		};
+
+		usb1b_pwron_pins: usb1b_pwron_pinmux {
+			pins = <122>;
+			function = <2>;
+		};
+	};
+};

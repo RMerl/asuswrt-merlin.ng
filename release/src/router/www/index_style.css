@@ -811,10 +811,13 @@ width:122px;
 }
 
 .block_filter_name{
-		text-align:center;
-		padding-top:5px;
-		color:#CCCCCC;
-		font-size:14px
+	text-align:center;
+	color:#CCCCCC;
+	font-size:14px;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 } 
 
 .block_filter_name:hover{
@@ -910,7 +913,7 @@ width:122px;
 	background: url(images/New_ui/game.png);
 	background-position: 0px 0px;
 }
-.menu_TrafficAnalyzer{
+.menu_TrafficAnalyzer, .menu_NewDashboard{
 	background: url(images/New_ui/icon_indexes.png);
 	background-position: 0px -144px;
 }
@@ -936,6 +939,9 @@ width:122px;
 .menu_AiCloud{
 	background: url(images/New_ui/icon_indexes.png);
 	background-position: 0px -252px;
+}
+.menu_SMS{
+	background: url(images/New_ui/icon_SMS.png);
 }
 .menu_Wireless{
 	background: url(images/New_ui/icon_menues.png);

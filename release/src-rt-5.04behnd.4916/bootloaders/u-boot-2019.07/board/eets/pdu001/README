@@ -1,0 +1,35 @@
+# Copyright (C) 2018 EETS GmbH - http://www.eets.ch/
+#
+# SPDX-License-Identifier: GPL-2.0+
+#
+
+Summary
+=======
+
+This document covers the PDU001 target.
+
+Hardware
+========
+
+The PDU-001 (Processor and Display Unit) is a plugin card for 19" racks. It is
+manufactured by EETS GmbH (https://www.eets.ch). The core of the board is a m2
+SOM from bytes at work (https://www.bytesatwork.ch) which in turn is based on
+AM3352 SOC from TI (http://www.ti.com).
+
+Customization
+=============
+
+As usual the console serial interface is set by CONFIG_CONS_INDEX. Best choice
+is 4 here since UART3 is wired to the connector K2.
+The Run LED on the PDU-001 can be turned on red by setting CONFIG_RUN_LED_RED
+or green by setting CONFIG_RUN_LED_GREEN. Setting CONFIG_RUN_LED_OFF will turn
+off the Run LED.
+
+Booting
+=======
+
+The system boots from either eMMC or SD card cage. It will first try to boot
+from the SD card cage. If this fails (missing or unbootable SD card) it will
+try to boot from the internal eMMC. The root file system is always expected to
+be located in the second partition of the device (eMMC or SD card) that pro-
+vided the boot loader.

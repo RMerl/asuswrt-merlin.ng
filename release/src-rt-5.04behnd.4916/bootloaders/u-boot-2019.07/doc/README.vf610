@@ -1,0 +1,10 @@
+U-Boot for Freescale Vybrid VF610
+
+This file contains information for the port of U-Boot to the Freescale Vybrid
+VF610 SoC.
+
+1. CONVENTIONS FOR FUSE ASSIGNMENTS
+-----------------------------------
+
+1.1 MAC Address: It is stored in fuse bank 4, with the 16 msbs in word 2 and the
+    32 lsbs in word 3.

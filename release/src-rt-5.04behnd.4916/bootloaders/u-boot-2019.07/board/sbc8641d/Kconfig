@@ -1,0 +1,9 @@
+if TARGET_SBC8641D
+
+config SYS_BOARD
+	default "sbc8641d"
+
+config SYS_CONFIG_NAME
+	default "sbc8641d"
+
+endif

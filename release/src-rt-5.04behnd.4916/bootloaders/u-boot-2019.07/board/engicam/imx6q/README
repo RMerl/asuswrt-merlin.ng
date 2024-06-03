@@ -1,0 +1,33 @@
+Hsow to use U-Boot on Engicam i.CoreM6 (RQS) Solo/DualLite/Quad/Dual Starter Kit:
+--------------------------------------------------------------------------------
+
+$ make mrproper
+
+- Configure U-Boot for Engicam i.CoreM6 Quad/Duali/Solo/DualLite:
+$ make imx6qdl_icore_mmc_defconfig
+
+- Configure U-Boot for Engicam i.CoreM6 RQS Quad/Duali/Solo/DualLite:
+$ make imx6qdl_icore_rqs_defconfig
+
+- Build U-Boot
+$ make
+
+This will generate the SPL image called SPL and the u-boot-dtb.img.
+
+- Flash the SPL image into the micro SD card:
+
+sudo dd if=SPL of=/dev/mmcblk0 bs=1k seek=1; sync
+
+- Flash the u-boot-dtb.img image into the micro SD card:
+
+sudo dd if=u-boot-dtb.img of=/dev/mmcblk0 bs=1k seek=69; sync
+
+- Jumper settings:
+
+MMC Boot: JM3 Closed
+
+- Connect the Serial cable between the Starter Kit and the PC for the console.
+(J28 is the Linux Serial console connector)
+
+- Insert the micro SD card in the board, power it up and U-Boot messages should
+come up.

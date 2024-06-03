@@ -1,0 +1,53 @@
+// SPDX-License-Identifier: GPL-2.0+
+//
+// Device Tree Source for Actions Semi S900 SoC
+//
+// Copyright (C) 2015 Actions Semi Co., Ltd.
+// Copyright (C) 2018 Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+
+/dts-v1/;
+#include <dt-bindings/clock/s900_cmu.h>
+
+/ {
+	compatible = "actions,s900";
+	#address-cells = <0x2>;
+	#size-cells = <0x2>;
+
+	losc: losc {
+		compatible = "fixed-clock";
+		clock-frequency = <32768>;
+		#clock-cells = <0>;
+	};
+
+	diff24M: diff24M {
+		compatible = "fixed-clock";
+		clock-frequency = <24000000>;
+		#clock-cells = <0>;
+	};
+
+	soc {
+		u-boot,dm-pre-reloc;
+		compatible = "simple-bus";
+		#address-cells = <0x2>;
+		#size-cells = <0x2>;
+		ranges;
+
+		uart5: serial@e012a000 {
+			u-boot,dm-pre-reloc;
+			compatible = "actions,s900-serial";
+			reg = <0x0 0xe012a000 0x0 0x1000>;
+			clocks = <&cmu CLOCK_UART5>;
+			status = "disabled";
+		};
+
+		cmu: clock-controller@e0160000 {
+			u-boot,dm-pre-reloc;
+			compatible = "actions,s900-cmu";
+			reg = <0x0 0xe0160000 0x0 0x1000>;
+			clocks = <&losc>, <&diff24M>;
+			clock-names = "losc", "diff24M";
+			#clock-cells = <1>;
+		};
+	};
+};
+

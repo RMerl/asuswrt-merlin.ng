@@ -1,0 +1,12 @@
+if TARGET_GURUPLUG
+
+config SYS_BOARD
+	default "guruplug"
+
+config SYS_VENDOR
+	default "Marvell"
+
+config SYS_CONFIG_NAME
+	default "guruplug"
+
+endif

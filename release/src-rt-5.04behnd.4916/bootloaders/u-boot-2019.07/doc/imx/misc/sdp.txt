@@ -1,0 +1,118 @@
+-------------
+SDP in U-Boot
+-------------
+
+SDP stands for serial download protocol. It is the protocol used in NXP's
+i.MX SoCs ROM Serial Downloader and provides means to download a program
+image to the chip over USB and UART serial connection.
+
+The implementation in U-Boot uses the USB Downloader Gadget (g_dnl) to
+provide a SDP implementation over USB. This allows to download program
+images to the target in SPL/U-Boot using the same protocol/tooling the
+SoC's recovery mechanism is using.
+
+The SDP protocol over USB is a USB HID class protocol. USB HID class
+protocols allow to access a USB device without OS specific drivers. The
+U-Boot implementation has primarly been tested using the open source
+imx_loader utility (https://github.com/boundarydevices/imx_usb_loader).
+
+imx_usb_loader is a very nice tool by Boundary Devices that allow to
+install U-Boot without a JTAG debugger, using the USB boot mode as
+described in the manual. It is a replacement for Freescale's
+MFGTOOLS.
+
+The host side utilities are typically capable to interpret the i.MX
+specific image header (see doc/README.imximage). There are extensions
+for imx_loader's imx_usb utility which allow to interpret the U-Boot
+specific legacy image format (see mkimage(1)). Also the U-Boot side
+support beside the i.MX specific header the U-Boot legacy header.
+
+1. Using imx_usb_loader for first install with SPL
+--------------------------------------------------
+
+This implementation can be started in U-Boot using the sdp command
+(CONFIG_CMD_USB_SDP) or in SPL if Serial Downloader boot mode has been
+detected (CONFIG_SPL_USB_SDP_SUPPORT).
+
+A typical use case is downloading full U-Boot after SPL has been
+downloaded through the boot ROM's Serial Downloader. Using boot mode
+detection the SPL will run the SDP implementation automatically in
+this case:
+
+  # imx_usb SPL
+
+Targets Serial Console:
+
+  Trying to boot from USB SDP
+  SDP: initialize...
+  SDP: handle requests...
+
+At this point the SPL reenumerated as a new HID device and emulating
+the boot ROM's SDP protocol. The USB VID/PID will depend on standard
+U-Boot configurations CONFIG_G_DNL_(VENDOR|PRODUCT)_NUM. Make sure
+imx_usb is aware of the USB VID/PID for your device by adding a
+configuration entry in imx_usb.conf:
+
+  0x1b67:0x4fff, mx6_usb_sdp_spl.conf
+
+And the device specific configuration file mx6_usb_sdp_spl.conf:
+
+  mx6_spl_sdp
+  hid,uboot_header,1024,0x910000,0x10000000,1G,0x00900000,0x40000
+
+This allows to download the regular U-Boot with legacy image headers
+(u-boot.img) using a second invocation of imx_usb:
+
+  # imx_usb u-boot.img
+
+Furthermore, when U-Boot is running the sdp command can be used to
+download and run scripts:
+
+  # imx_usb script.scr
+
+imx_usb configuration files can be also used to download multiple
+files and of arbitrary types, e.g.
+
+  mx6_usb_sdp_uboot
+  hid,1024,0x10000000,1G,0x00907000,0x31000
+  full.itb:load 0x12100000
+  boot.scr:load 0x12000000,jump 0x12000000
+
+There is also a batch mode which allows imx_usb to handle multiple
+consecutive reenumerations by adding multiple VID/PID specifications
+in imx_usb.conf:
+
+  0x15a2:0x0061, mx6_usb_rom.conf, 0x1b67:0x4fff, mx6_usb_sdp_spl.conf
+
+In this mode the file to download (imx_usb job) needs to be specified
+in the configuration files.
+
+mx6_usb_rom.conf:
+
+  mx6_qsb
+  hid,1024,0x910000,0x10000000,1G,0x00900000,0x40000
+  SPL:jump header2
+
+mx6_usb_sdp_spl.conf:
+
+  mx6_spl_sdp
+  hid,uboot_header,1024,0x10000000,1G,0x00907000,0x31000
+  u-boot.img:jump header2
+
+With that SPL and U-Boot can be downloaded with a single invocation
+of imx_usb without arguments:
+
+  # imx_usb
+
+2. Using imx_usb_loader non-SPL images
+---------------------------------------
+
+Booting in USB mode, the i.MX6 announces itself to the Linux Host as:
+
+Bus 001 Device 111: ID 15a2:0061 Freescale Semiconductor, Inc.
+
+imx_usb_loader is able to download a single file (u-boot.imx)
+to the board. For boards without SPL support, it is enough to
+issue the command:
+
+	sudo ../imx_usb_loader/imx_usb -v u-boot.imx

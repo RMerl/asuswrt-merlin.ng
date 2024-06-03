@@ -1,0 +1,34 @@
+#include "94912REF3.dts"
+
+// audio daughtercard shared i2c signal for sfp0 on this board.
+// Disable it just for the audio board id
+&sfp0 {
+	status = "disabled";
+};
+
+/ {
+	periph {
+		i2s: bcm63xx-i2s {
+			pinctrl-0 = <&a_i2s_tx_lrck_pin_12 &a_i2s_tx_mclk_pin_13  &a_i2s_rx_sclk_pin_45 &a_i2s_rx_lrck_pin_46 &a_i2s_sdata_in_pin_47 &a_i2s_rx_mclk_pin_48 &a_i2s_sdata_out_pin_49 &a_i2s_tx_sclk_pin_50>;
+			pinctrl-names = "default";
+			compatible = "brcm,bcm63xx-i2s";
+			reg = <0 0x2080 0 0x7f>;
+			interrupts = <GIC_SPI 44 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&i2stxclk>,<&i2srxclk>,<&osc>;
+			clock-names = "i2stxclk","i2srxclk","i2sosc";
+		};
+	};
+};
+
+&i2c1 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+		codec_playback:codec_palyback@18{
+		compatible = "ti,tlv320dac3203";
+		reg = <0x18>;
+	};
+	codec_capture:codec_capture@4e{
+		compatible = "ti,tlv320adc5140";
+		reg = <0x4e>;
+	};
+};

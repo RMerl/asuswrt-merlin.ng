@@ -1,0 +1,27 @@
+
+ test -e /rom/etc/rdpa_init.sh && /rom/etc/rdpa_init.sh
+
+# disable ipv6 on archer dummy netdevice
+if [ -e /proc/sys/net/ipv6/conf/archer/disable_ipv6 ]; then
+	echo 1 > /proc/sys/net/ipv6/conf/archer/disable_ipv6
+fi
+
+# Enable the PKA driver.
+ test -e /sys/devices/platform/bcm_pka/enable && echo 1 > /sys/devices/platform/bcm_pka/enable
+
+exit 0
+		;;
+
+	stop)
+		echo "removing bcm base drivers not implemented yet..."
+		exit 1
+		;;
+
+	*)
+		echo "bcmbasedrivers: unrecognized option $1"
+		exit 1
+		;;
+
+esac
+
+

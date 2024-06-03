@@ -1,0 +1,70 @@
+Broadcom DSL parameters device tree bindings
+============================================
+
+Broadcom bcmdsl driver parses the dsl board parameters from board dts file and
+make them available to the core DSL driver to use.
+
+The parameters are defined in each line's node as a device tree node property in
+the corresponding <boardid>.dts file. For customers that use board parameter in
+earlier release, all the DSL board parameters for the supported chips are
+converted to device tree. The following properties are supported in device tree
+bindings.
+
+1.  DSL AFE ID
+    afeid = <(AFE_ID_DEFINTION)>;
+    secondary-afeid = <(AFE_ID_DEFINTION)>;
+    AFE_ID_DEFINTION is defined in bcmdrivers/opensource/include/bcm963xx/\
+	bcm_dsl_dt_bindings.h
+
+2. DSL GPIOs
+   pwrboost-gpio, relay-gpio, reset-gpio, vr5p3pwr-gpio, tddenable-gpio. It follows the standard
+   device tree gpio definiton, for example:
+      pwrboost-gpio = <&gpioc 32 GPIO_ACTIVE_HIGH>;
+
+3. DSL control pins
+   The DSL control pins require two properties: pintrl-0 for pinmux setting and
+   a corresponding ctrl id for that pin. The following ctrl pin are defined:
+       afe-mode-ctl, afe-pwr-ctl, afe-data-ctl, afe-clk-ctl
+   To define afe power control pin,
+       pinctrl-0 = <&vdsl_ctrl_0_pin_87>;
+   	   afe-pwr-ctl = <AFE_VDSLCTL_0>;
+   Please refer to <chip>_pinctrl.dtsi and pinmux document for ctrl pin node
+   name and its ctrl id value.  Usually this is not needed because the Broadcom
+   reference board dts already has all the ctrl pin definitions and user just
+   need to copy to their board dts based on the board design.
+
+
+Below is the full dsl dts definition example from 63146REF1D board:
+
+&dsl {
+	line0@0 {
+		pinctrl-0 = <&vdsl_ctrl_0_pin_87 &vdsl_ctrl_1_pin_17 &vdsl_ctrl_2_pin_34>;
+		pinctrl-names = "default";
+
+		afeid = <(AFE_CHIP_GFAST_CH0 | AFE_LD_6305 | AFE_FE_REV_6305_REV_12_5_80\
+		   | AFE_FE_RNC)>;
+		secondary-afeid = <(AFE_CHIP_GFAST_CH0 | AFE_LD_6303 | AFE_FE_ANNEXA\
+		   | AFE_FE_REV_6303_146__REV_12_3_60 | AFE_FE_RNC)>;
+		afe-pwr-ctl = <AFE_VDSLCTL_0>;
+		afe-data-ctl = <AFE_VDSLCTL_1>;
+		afe-clk-ctl = <AFE_VDSLCTL_2>;
+
+		relay-gpio = <&gpioc 31 GPIO_ACTIVE_HIGH>;
+		status = "okay";
+	};
+
+	line1@1 {
+		pinctrl-0 = <&vdsl_ctrl_3_pin_33 &vdsl_ctrl_4_pin_86 &vdsl_ctrl_5_pin_84>;
+		pinctrl-names = "default";
+
+		afeid = <(AFE_CHIP_GFAST_CH1 | AFE_LD_6303 | AFE_FE_ANNEXA\
+		    | AFE_FE_REV_6303_146__REV_12_3_85 | AFE_FE_RNC)>;
+		secondary-afeid = <(AFE_CHIP_GFAST_CH1 | AFE_LD_6303 | AFE_FE_ANNEXA\
+		    | AFE_FE_REV_6303_146__REV_12_3_85 | AFE_FE_RNC)>;
+		afe-pwr-ctl = <AFE_VDSLCTL_3>;
+		afe-data-ctl = <AFE_VDSLCTL_4>;
+		afe-clk-ctl = <AFE_VDSLCTL_5>;
+
+		status = "okay";
+	};
+};

@@ -1,0 +1,554 @@
+U-Boot FIT Signature Verification
+=================================
+
+Introduction
+------------
+FIT supports hashing of images so that these hashes can be checked on
+loading. This protects against corruption of the image. However it does not
+prevent the substitution of one image for another.
+
+The signature feature allows the hash to be signed with a private key such
+that it can be verified using a public key later. Provided that the private
+key is kept secret and the public key is stored in a non-volatile place,
+any image can be verified in this way.
+
+See verified-boot.txt for more general information on verified boot.
+
+
+Concepts
+--------
+Some familiarity with public key cryptography is assumed in this section.
+
+The procedure for signing is as follows:
+
+   - hash an image in the FIT
+   - sign the hash with a private key to produce a signature
+   - store the resulting signature in the FIT
+
+The procedure for verification is:
+
+   - read the FIT
+   - obtain the public key
+   - extract the signature from the FIT
+   - hash the image from the FIT
+   - verify (with the public key) that the extracted signature matches the
+       hash
+
+The signing is generally performed by mkimage, as part of making a firmware
+image for the device. The verification is normally done in U-Boot on the
+device.
+
+
+Algorithms
+----------
+In principle any suitable algorithm can be used to sign and verify a hash.
+At present only one class of algorithms is supported: SHA1 hashing with RSA.
+This works by hashing the image to produce a 20-byte hash.
+
+While it is acceptable to bring in large cryptographic libraries such as
+openssl on the host side (e.g. mkimage), it is not desirable for U-Boot.
+For the run-time verification side, it is important to keep code and data
+size as small as possible.
+
+For this reason the RSA image verification uses pre-processed public keys
+which can be used with a very small amount of code - just some extraction
+of data from the FDT and exponentiation mod n. Code size impact is a little
+under 5KB on Tegra Seaboard, for example.
+
+It is relatively straightforward to add new algorithms if required. If
+another RSA variant is needed, then it can be added to the table in
+image-sig.c. If another algorithm is needed (such as DSA) then it can be
+placed alongside rsa.c, and its functions added to the table in image-sig.c
+also.
+
+
+Creating an RSA key pair and certificate
+----------------------------------------
+To create a new public/private key pair, size 2048 bits:
+
+$ openssl genpkey -algorithm RSA -out keys/dev.key \
+    -pkeyopt rsa_keygen_bits:2048 -pkeyopt rsa_keygen_pubexp:65537
+
+To create a certificate for this containing the public key:
+
+$ openssl req -batch -new -x509 -key keys/dev.key -out keys/dev.crt
+
+If you like you can look at the public key also:
+
+$ openssl rsa -in keys/dev.key -pubout
+
+
+Device Tree Bindings
+--------------------
+The following properties are required in the FIT's signature node(s) to
+allow the signer to operate. These should be added to the .its file.
+Signature nodes sit at the same level as hash nodes and are called
+signature-1, signature-2, etc.
+
+- algo: Algorithm name (e.g. "sha1,rsa2048")
+
+- key-name-hint: Name of key to use for signing. The keys will normally be in
+a single directory (parameter -k to mkimage). For a given key <name>, its
+private key is stored in <name>.key and the certificate is stored in
+<name>.crt.
+
+When the image is signed, the following properties are added (mandatory):
+
+- value: The signature data (e.g. 256 bytes for 2048-bit RSA)
+
+When the image is signed, the following properties are optional:
+
+- timestamp: Time when image was signed (standard Unix time_t format)
+
+- signer-name: Name of the signer (e.g. "mkimage")
+
+- signer-version: Version string of the signer (e.g. "2013.01")
+
+- comment: Additional information about the signer or image
+
+- padding: The padding algorithm, it may be pkcs-1.5 or pss,
+	if no value is provided we assume pkcs-1.5
+
+For config bindings (see Signed Configurations below), the following
+additional properties are optional:
+
+- sign-images: A list of images to sign, each being a property of the conf
+node that contains then. The default is "kernel,fdt" which means that these
+two images will be looked up in the config and signed if present.
+
+For config bindings, these properties are added by the signer:
+
+- hashed-nodes: A list of nodes which were hashed by the signer. Each is
+	a string - the full path to node. A typical value might be:
+
+	hashed-nodes = "/", "/configurations/conf-1", "/images/kernel",
+		"/images/kernel/hash-1", "/images/fdt-1",
+		"/images/fdt-1/hash-1";
+
+- hashed-strings: The start and size of the string region of the FIT that
+	was hashed
+
+Example: See sign-images.its for an example image tree source file and
+sign-configs.its for config signing.
+
+
+Public Key Storage
+------------------
+In order to verify an image that has been signed with a public key we need to
+have a trusted public key. This cannot be stored in the signed image, since
+it would be easy to alter. For this implementation we choose to store the
+public key in U-Boot's control FDT (using CONFIG_OF_CONTROL).
+
+Public keys should be stored as sub-nodes in a /signature node. Required
+properties are:
+
+- algo: Algorithm name (e.g. "sha1,rsa2048")
+
+Optional properties are:
+
+- key-name-hint: Name of key used for signing. This is only a hint since it
+is possible for the name to be changed. Verification can proceed by checking
+all available signing keys until one matches.
+
+- required: If present this indicates that the key must be verified for the
+image / configuration to be considered valid. Only required keys are
+normally verified by the FIT image booting algorithm. Valid values are
+"image" to force verification of all images, and "conf" to force verification
+of the selected configuration (which then relies on hashes in the images to
+verify those).
+
+Each signing algorithm has its own additional properties.
+
+For RSA the following are mandatory:
+
+- rsa,num-bits: Number of key bits (e.g. 2048)
+- rsa,modulus: Modulus (N) as a big-endian multi-word integer
+- rsa,exponent: Public exponent (E) as a 64 bit unsigned integer
+- rsa,r-squared: (2^num-bits)^2 as a big-endian multi-word integer
+- rsa,n0-inverse: -1 / modulus[0] mod 2^32
+
+
+Signed Configurations
+---------------------
+While signing images is useful, it does not provide complete protection
+against several types of attack. For example, it it possible to create a
+FIT with the same signed images, but with the configuration changed such
+that a different one is selected (mix and match attack). It is also possible
+to substitute a signed image from an older FIT version into a newer FIT
+(roll-back attack).
+
+As an example, consider this FIT:
+
+/ {
+	images {
+		kernel-1 {
+			data = <data for kernel1>
+			signature-1 {
+				algo = "sha1,rsa2048";
+				value = <...kernel signature 1...>
+			};
+		};
+		kernel-2 {
+			data = <data for kernel2>
+			signature-1 {
+				algo = "sha1,rsa2048";
+				value = <...kernel signature 2...>
+			};
+		};
+		fdt-1 {
+			data = <data for fdt1>;
+			signature-1 {
+				algo = "sha1,rsa2048";
+				vaue = <...fdt signature 1...>
+			};
+		};
+		fdt-2 {
+			data = <data for fdt2>;
+			signature-1 {
+				algo = "sha1,rsa2048";
+				vaue = <...fdt signature 2...>
+			};
+		};
+	};
+	configurations {
+		default = "conf-1";
+		conf-1 {
+			kernel = "kernel-1";
+			fdt = "fdt-1";
+		};
+		conf-1 {
+			kernel = "kernel-2";
+			fdt = "fdt-2";
+		};
+	};
+};
+
+Since both kernels are signed it is easy for an attacker to add a new
+configuration 3 with kernel 1 and fdt 2:
+
+	configurations {
+		default = "conf-1";
+		conf-1 {
+			kernel = "kernel-1";
+			fdt = "fdt-1";
+		};
+		conf-1 {
+			kernel = "kernel-2";
+			fdt = "fdt-2";
+		};
+		conf-3 {
+			kernel = "kernel-1";
+			fdt = "fdt-2";
+		};
+	};
+
+With signed images, nothing protects against this. Whether it gains an
+advantage for the attacker is debatable, but it is not secure.
+
+To solve this problem, we support signed configurations. In this case it
+is the configurations that are signed, not the image. Each image has its
+own hash, and we include the hash in the configuration signature.
+
+So the above example is adjusted to look like this:
+
+/ {
+	images {
+		kernel-1 {
+			data = <data for kernel1>
+			hash-1 {
+				algo = "sha1";
+				value = <...kernel hash 1...>
+			};
+		};
+		kernel-2 {
+			data = <data for kernel2>
+			hash-1 {
+				algo = "sha1";
+				value = <...kernel hash 2...>
+			};
+		};
+		fdt-1 {
+			data = <data for fdt1>;
+			hash-1 {
+				algo = "sha1";
+				value = <...fdt hash 1...>
+			};
+		};
+		fdt-2 {
+			data = <data for fdt2>;
+			hash-1 {
+				algo = "sha1";
+				value = <...fdt hash 2...>
+			};
+		};
+	};
+	configurations {
+		default = "conf-1";
+		conf-1 {
+			kernel = "kernel-1";
+			fdt = "fdt-1";
+			signature-1 {
+				algo = "sha1,rsa2048";
+				value = <...conf 1 signature...>;
+			};
+		};
+		conf-2 {
+			kernel = "kernel-2";
+			fdt = "fdt-2";
+			signature-1 {
+				algo = "sha1,rsa2048";
+				value = <...conf 1 signature...>;
+			};
+		};
+	};
+};
+
+
+You can see that we have added hashes for all images (since they are no
+longer signed), and a signature to each configuration. In the above example,
+mkimage will sign configurations/conf-1, the kernel and fdt that are
+pointed to by the configuration (/images/kernel-1, /images/kernel-1/hash-1,
+/images/fdt-1, /images/fdt-1/hash-1) and the root structure of the image
+(so that it isn't possible to add or remove root nodes). The signature is
+written into /configurations/conf-1/signature-1/value. It can easily be
+verified later even if the FIT has been signed with other keys in the
+meantime.
+
+
+Verification
+------------
+FITs are verified when loaded. After the configuration is selected a list
+of required images is produced. If there are 'required' public keys, then
+each image must be verified against those keys. This means that every image
+that might be used by the target needs to be signed with 'required' keys.
+
+This happens automatically as part of a bootm command when FITs are used.
+
+
+Enabling FIT Verification
+-------------------------
+In addition to the options to enable FIT itself, the following CONFIGs must
+be enabled:
+
+CONFIG_FIT_SIGNATURE - enable signing and verification in FITs
+CONFIG_RSA - enable RSA algorithm for signing
+
+WARNING: When relying on signed FIT images with required signature check
+the legacy image format is default disabled by not defining
+CONFIG_IMAGE_FORMAT_LEGACY
+
+Testing
+-------
+An easy way to test signing and verification is to use the test script
+provided in test/vboot/vboot_test.sh. This uses sandbox (a special version
+of U-Boot which runs under Linux) to show the operation of a 'bootm'
+command loading and verifying images.
+
+A sample run is show below:
+
+$ make O=sandbox sandbox_config
+$ make O=sandbox
+$ O=sandbox ./test/vboot/vboot_test.sh
+Simple Verified Boot Test
+=========================
+
+Please see doc/uImage.FIT/verified-boot.txt for more information
+
+/home/hs/ids/u-boot/sandbox/tools/mkimage -D -I dts -O dtb -p 2000
+Build keys
+do sha1 test
+Build FIT with signed images
+Test Verified Boot Run: unsigned signatures:: OK
+Sign images
+Test Verified Boot Run: signed images: OK
+Build FIT with signed configuration
+Test Verified Boot Run: unsigned config: OK
+Sign images
+Test Verified Boot Run: signed config: OK
+check signed config on the host
+Signature check OK
+OK
+Test Verified Boot Run: signed config: OK
+Test Verified Boot Run: signed config with bad hash: OK
+do sha256 test
+Build FIT with signed images
+Test Verified Boot Run: unsigned signatures:: OK
+Sign images
+Test Verified Boot Run: signed images: OK
+Build FIT with signed configuration
+Test Verified Boot Run: unsigned config: OK
+Sign images
+Test Verified Boot Run: signed config: OK
+check signed config on the host
+Signature check OK
+OK
+Test Verified Boot Run: signed config: OK
+Test Verified Boot Run: signed config with bad hash: OK
+
+Test passed
+
+
+Hardware Signing with PKCS#11
+-----------------------------
+
+Securely managing private signing keys can challenging, especially when the
+keys are stored on the file system of a computer that is connected to the
+Internet. If an attacker is able to steal the key, they can sign malicious FIT
+images which will appear genuine to your devices.
+
+An alternative solution is to keep your signing key securely stored on hardware
+device like a smartcard, USB token or Hardware Security Module (HSM) and have
+them perform the signing. PKCS#11 is standard for interfacing with these crypto
+device.
+
+Requirements:
+Smartcard/USB token/HSM which can work with the pkcs11 engine
+openssl
+libp11 (provides pkcs11 engine)
+p11-kit (recommended to simplify setup)
+opensc (for smartcards and smartcard like USB devices)
+gnutls (recommended for key generation, p11tool)
+
+The following examples use the Nitrokey Pro. Instructions for other devices may vary.
+
+Notes on pkcs11 engine setup:
+
+Make sure p11-kit, opensc are installed and that p11-kit is setup to use opensc.
+/usr/share/p11-kit/modules/opensc.module should be present on your system.
+
+
+Generating Keys On the Nitrokey:
+
+$ gpg --card-edit
+
+Reader ...........: Nitrokey Nitrokey Pro (xxxxxxxx0000000000000000) 00 00
+Application ID ...: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Version ..........: 2.1
+Manufacturer .....: ZeitControl
+Serial number ....: xxxxxxxx
+Name of cardholder: [not set]
+Language prefs ...: de
+Sex ..............: unspecified
+URL of public key : [not set]
+Login data .......: [not set]
+Signature PIN ....: forced
+Key attributes ...: rsa2048 rsa2048 rsa2048
+Max. PIN lengths .: 32 32 32
+PIN retry counter : 3 0 3
+Signature counter : 0
+Signature key ....: [none]
+Encryption key....: [none]
+Authentication key: [none]
+General key info..: [none]
+
+gpg/card> generate
+Make off-card backup of encryption key? (Y/n) n
+
+Please note that the factory settings of the PINs are
+  PIN = '123456' Admin PIN = '12345678'
+You should change them using the command --change-pin
+
+What keysize do you want for the Signature key? (2048) 4096
+The card will now be re-configured to generate a key of 4096 bits
+Note: There is no guarantee that the card supports the requested size.
+  If the key generation does not succeed, please check the
+  documentation of your card to see what sizes are allowed.
+What keysize do you want for the Encryption key? (2048) 4096
+The card will now be re-configured to generate a key of 4096 bits
+What keysize do you want for the Authentication key? (2048) 4096
+The card will now be re-configured to generate a key of 4096 bits
+Please specify how long the key should be valid.
+  0 = key does not expire
+  <n> = key expires in n days
+  <n>w = key expires in n weeks
+  <n>m = key expires in n months
+  <n>y = key expires in n years
+Key is valid for? (0)
+Key does not expire at all
+Is this correct? (y/N) y
+
+GnuPG needs to construct a user ID to identify your key.
+
+Real name: John Doe
+Email address: john.doe@email.com
+Comment:
+You selected this USER-ID:
+  "John Doe <john.doe@email.com>"
+
+Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? o
+
+
+Using p11tool to get the token URL:
+
+Depending on system configuration, gpg-agent may need to be killed first.
+
+$ p11tool --provider /usr/lib/opensc-pkcs11.so --list-tokens
+Token 0:
+URL: pkcs11:model=PKCS%2315%20emulated;manufacturer=ZeitControl;serial=000xxxxxxxxx;token=OpenPGP%20card%20%28User%20PIN%20%28sig%29%29
+Label: OpenPGP card (User PIN (sig))
+Type: Hardware token
+Manufacturer: ZeitControl
+Model: PKCS#15 emulated
+Serial: 000xxxxxxxxx
+Module: (null)
+
+
+Token 1:
+URL: pkcs11:model=PKCS%2315%20emulated;manufacturer=ZeitControl;serial=000xxxxxxxxx;token=OpenPGP%20card%20%28User%20PIN%29
+Label: OpenPGP card (User PIN)
+Type: Hardware token
+Manufacturer: ZeitControl
+Model: PKCS#15 emulated
+Serial: 000xxxxxxxxx
+Module: (null)
+
+Use the portion of the signature token URL after "pkcs11:" as the keydir argument (-k) to mkimage below.
+
+
+Use the URL of the token to list the private keys:
+
+$ p11tool --login --provider /usr/lib/opensc-pkcs11.so --list-privkeys \
+"pkcs11:model=PKCS%2315%20emulated;manufacturer=ZeitControl;serial=000xxxxxxxxx;token=OpenPGP%20card%20%28User%20PIN%20%28sig%29%29"
+Token 'OpenPGP card (User PIN (sig))' with URL 'pkcs11:model=PKCS%2315%20emulated;manufacturer=ZeitControl;serial=000xxxxxxxxx;token=OpenPGP%20card%20%28User%20PIN%20%28sig%29%29' requires user PIN
+Enter PIN:
+Object 0:
+URL: pkcs11:model=PKCS%2315%20emulated;manufacturer=ZeitControl;serial=000xxxxxxxxx;token=OpenPGP%20card%20%28User%20PIN%20%28sig%29%29;id=%01;object=Signature%20key;type=private
+Type: Private key
+Label: Signature key
+Flags: CKA_PRIVATE; CKA_NEVER_EXTRACTABLE; CKA_SENSITIVE;
+ID: 01
+
+Use the label, in this case "Signature key" as the key-name-hint in your FIT.
+
+Create the fitImage:
+$ ./tools/mkimage -f fit-image.its fitImage
+
+
+Sign the fitImage with the hardware key:
+
+$ ./tools/mkimage -F -k \
+"model=PKCS%2315%20emulated;manufacturer=ZeitControl;serial=000xxxxxxxxx;token=OpenPGP%20card%20%28User%20PIN%20%28sig%29%29" \
+-K u-boot.dtb -N pkcs11 -r fitImage
+
+
+Future Work
+-----------
+- Roll-back protection using a TPM is done using the tpm command. This can
+be scripted, but we might consider a default way of doing this, built into
+bootm.
+
+
+Possible Future Work
+--------------------
+- Add support for other RSA/SHA variants, such as rsa4096,sha512.
+- Other algorithms besides RSA
+- More sandbox tests for failure modes
+- Passwords for keys/certificates
+- Perhaps implement OAEP
+- Enhance bootm to permit scripted signature verification (so that a script
+can verify an image but not actually boot it)
+
+
+Simon Glass
+sjg@chromium.org
+1-1-13

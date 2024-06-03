@@ -1,0 +1,27 @@
+#include "963158REF1D.dts"
+
+/ {
+    memory_controller {
+		memcfg = <(BP_DDR_TYPE_DDR4 | \
+			BP_DDR_SPEED_1067_15_15_15 | \
+			BP_DDR_TOTAL_SIZE_2048MB   | \
+			BP_DDR_DEVICE_WIDTH_16     | \
+			BP_DDR_TOTAL_WIDTH_32BIT   | \
+			BP_DDR_SSC_CONFIG_1)>;
+    };
+};
+
+&dsl {
+	line0@0 {
+		afeid = <(DSL_AFE_CHIP_GFAST_CH0 | DSL_AFE_LD_6307 | DSL_AFE_FE_ANNEXA | DSL_AFE_FE_REV_6307_REV_12_7_60_2 | DSL_AFE_FE_RNC | DSL_AFE_FE_AVG)>;
+		secondary-afeid = <(DSL_AFE_CHIP_GFAST_CH0 | DSL_AFE_LD_6307 | DSL_AFE_FE_ANNEXA | DSL_AFE_FE_REV_6307_REV_12_7_60_2 | DSL_AFE_FE_RNC | DSL_AFE_FE_AVG)>;
+		tddenable-gpio = <&gpioc 94 GPIO_ACTIVE_HIGH>;
+	};
+
+	line1@1 {
+		afeid = <(DSL_AFE_CHIP_GFAST_CH1 | DSL_AFE_LD_6307 | DSL_AFE_FE_ANNEXA | DSL_AFE_FE_REV_6307_REV_12_7_60_1 | DSL_AFE_FE_RNC | DSL_AFE_FE_AVG)>;
+		secondary-afeid = <(DSL_AFE_CHIP_GFAST_CH1 | DSL_AFE_LD_6307 | DSL_AFE_FE_ANNEXA | DSL_AFE_FE_REV_6307_REV_12_7_60_1 | DSL_AFE_FE_RNC | DSL_AFE_FE_AVG)>;
+		tddenable-gpio = <&gpioc 95 GPIO_ACTIVE_HIGH>;
+	};
+};
+

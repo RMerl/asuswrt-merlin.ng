@@ -1,0 +1,316 @@
+#include "inc/968880DV.dtsi"
+#include "inc/968880DV_SFP.dtsi"
+#include "../bcm_voice.dtsi"
+
+/ {
+        memory_controller {
+                memcfg = <(BP1_DDR_MCBSEL_FORMAT_VER1   | \
+                           BP1_DDR_TYPE_LPDDR4         | \
+                           BP1_DDR_SPEED_2133_36_39_39 | \
+                           BP1_DDR_WIDTH_32BIT         | \
+                           BP1_DDR_TOTAL_SIZE_8Gb      | \
+                           BP1_DDR_SSC_CONFIG_1        | \
+                           BP1_DDR_CONFIG_DEBUG)>;
+        };
+};
+
+/ {
+    model = "968880DV";
+};
+
+&ethphytop {
+    xphy0-enabled;
+    xphy1-enabled;
+};
+
+&mdio_bus {
+    egphy0 {
+        status = "okay";
+    };
+    egphy1 {
+        status = "okay";
+    };
+    egphy2 {
+        status = "okay";
+    };
+    egphy3 {
+        status = "okay";
+    };
+    xphy0 {
+        status = "okay";
+    };
+    xphy1 {
+        status = "okay";
+    };
+    serdes00_xphy {
+        reg = <0x1c>;
+        enet-phy-lane-swap;
+        USXGMII-S;
+        status = "okay";
+    };
+    serdes00 {
+        phy-handle = <&serdes00_xphy>;
+        status = "okay";
+    };
+    serdes10_xphy {
+        enet-phy-lane-swap;
+        caps-no-10000;
+        caps-no-5000;
+        USXGMII-S;
+        status = "okay";
+    };
+    serdes12_xphy {
+        enet-phy-lane-swap;
+        caps-no-10000;
+        caps-no-5000;
+        USXGMII-S;
+        status = "okay";
+    };
+    serdes13_xphy {
+        enet-phy-lane-swap;
+        caps-no-10000;
+        caps-no-5000;
+        USXGMII-S;
+        status = "okay";
+    };
+    serdes10 {
+        phy-handle = <&serdes10_xphy>;
+        status = "okay";
+    };
+    serdes12 {
+        phy-handle = <&serdes12_xphy>;
+        status = "okay";
+    };
+    serdes13 {
+        phy-handle = <&serdes13_xphy>;
+        status = "okay";
+    };
+};
+&led_ctrl {
+    pinctrl-names = "default";
+    pinctrl-0 = <&a_ser_led_data_pin_0 &a_ser_led_clk_pin_1 &a_ser_led_mask_pin_2>;
+    serial-shifters-installed = <3>;
+
+    led0: serial-port_gphy0-led_1 {
+        active_low;
+        crossbar-output = <2>;
+        activity = <(LED_SPEED_GBE)>;
+        status = "okay";
+    };
+
+    led1: serial-port_gphy0-led_0 {
+        active_low;
+        crossbar-output = <3>;
+        link = <(LED_SPEED_GBE)>;
+        status = "okay";
+    };
+
+    led2: serial-port_gphy1-led_1 {
+        active_low;
+        crossbar-output = <1>;
+        activity = <(LED_SPEED_GBE)>;
+        status = "okay";
+    };
+
+    led3: serial-port_gphy1-led_0 {
+        active_low;
+        crossbar-output = <7>;
+        link = <(LED_SPEED_GBE)>;
+        status = "okay";
+    };
+
+    led4: serial-port_gphy2-led_1 {
+        active_low;
+        crossbar-output = <14>;
+        activity = <(LED_SPEED_GBE)>;
+        status = "okay";
+    };
+
+    led5: serial-port_gphy2-led_0 {
+        active_low;
+        crossbar-output = <0>;
+        link = <(LED_SPEED_GBE)>;
+        status = "okay";
+    };
+
+    led6: serial-port_gphy3-led_1 {
+        active_low;
+        crossbar-output = <12>;
+        activity = <(LED_SPEED_GBE)>;
+        status = "okay";
+    };
+
+    led7: serial-port_gphy3-led_0 {
+        active_low;
+        crossbar-output = <13>;
+        link = <(LED_SPEED_GBE)>;
+        status = "okay";
+    };
+
+    led8: serial-port_xgphy0-led_1 {
+        active_low;
+        crossbar-output = <11>;
+        activity = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+        status = "okay";
+    };
+
+    led9: serial-port_xgphy0-led_0 {
+        active_low;
+        crossbar-output = <15>;
+        link = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+        status = "okay";
+    };
+
+    led10: serial-port_xgphy1-led_1 {
+        active_low;
+        crossbar-output = <9>;
+        activity = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+        status = "okay";
+    };
+
+    led11: serial-port_xgphy1-led_0 {
+        active_low;
+        crossbar-output = <10>;
+        link = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+        status = "okay";
+    };
+
+
+    led14: sw_serial_led_31 {
+        active_low;
+        label = "WAN";
+        crossbar-output = <4>;
+        status = "okay";
+    };
+
+    led15: sw_serial_led_30 {
+        active_low;
+        label = "ALARM";
+        crossbar-output = <5>;
+        status = "okay";
+    };
+
+    led16: sw_serial_led_29 {
+        active_low;
+        label = "PON";
+        crossbar-output = <6>;
+        status = "okay";
+    };
+
+    led17: sw_serial_led_27 {
+        active_low;
+        crossbar-output = <16>;
+        status = "okay";
+    };
+
+    led18: sw_serial_led_26 {
+        active_low;
+        crossbar-output = <17>;
+        status = "okay";
+    };
+
+    led19: sw_serial_led_24 {
+        active_low;
+        crossbar-output = <18>;
+        label = "WPS";
+        status = "okay";
+    };
+
+    led20: sw_serial_led_23 {
+        active_low;
+        crossbar-output = <19>;
+        label = "VOIP2";
+        status = "okay";
+    };
+
+    led21: sw_serial_led_22 {
+        active_low;
+        crossbar-output = <20>;
+        label = "VOIP1";
+        status = "okay";
+    };
+
+    led22: sw_serial_led_21 {
+        active_low;
+        crossbar-output = <21>;
+        label = "USB0";
+        trigger-sources = <&usb_port1>;
+        linux,default-trigger = "usbport";
+        status = "okay";
+    };
+
+    led23: sw_serial_led_20 {
+        active_low;
+        crossbar-output = <22>;
+        label = "USB1";
+        trigger-sources = <&usb_port2>;
+        linux,default-trigger = "usbport";
+        status = "okay";
+    };
+};
+
+&switch0 {
+    ports {
+        port_gphy0 {
+            network-leds = <&led0 &led1>;
+            status = "okay";
+        };
+        port_gphy1 {
+            network-leds = <&led2 &led3>;
+            status = "okay";
+        };
+        port_gphy2 {
+            network-leds = <&led4 &led5>;
+            status = "okay";
+        };
+        port_gphy3 {
+            network-leds = <&led6 &led7>;
+            status = "okay";
+        };
+        port_xgphy0 {
+            network-leds = <&led8 &led9>;
+            status = "okay";
+        };
+        port_xgphy1 {
+            network-leds = <&led10 &led11>;
+            status = "okay";
+        };
+        port_slan0 {
+            status = "okay";
+        };
+        port_qlan0 {
+            status = "okay";
+        };
+        port_qlan2 {
+            status = "okay";
+        };
+        port_qlan3 {
+            status = "okay";
+        };
+        port_wan@fiber {
+            status = "okay";
+        };
+        port_wan@ae {
+            status = "okay";
+        };
+    };
+};
+
+&bcm_voice {
+        sliclist = SLICSLAC_LIST_COMMON_NOFXO;
+};
+
+&hsspi {
+        status = "okay";
+        voice0 {
+                pinctrl-0 = <&a_spim1_ss0_b_pin_25>;
+                pinctrl-names = "default";
+                compatible = "bcm-spi-voice";
+                reg = <0>;
+                spi-max-frequency = <1024000>;
+                reset-gpio = <&gpioc 9 GPIO_ACTIVE_LOW>;
+                spi-index = <0>;
+        };
+};
+
+

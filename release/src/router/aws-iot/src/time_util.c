@@ -3,7 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/time.h>
-
+#include <time.h>
 
 #define TIME_LEN	64
 #define DEFAULT_FMT "%Y-%m-%d_%H:%M:%S"
@@ -40,7 +40,7 @@ char* alloc_time_string(const char* tf, int is_msec, char** time_string)
 
 char* alloc_utctime_string(const char* tf, int is_msec, char** time_string)
 {
-    time_t t;
+    // time_t t;
     struct timeval tv;
     struct tm *ptm;
     char*  mtf = NULL;

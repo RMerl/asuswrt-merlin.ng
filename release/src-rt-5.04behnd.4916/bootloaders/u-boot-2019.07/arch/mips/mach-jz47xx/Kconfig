@@ -1,0 +1,26 @@
+menu "Ingenic JZ47xx platforms"
+	depends on ARCH_JZ47XX
+
+config SYS_SOC
+	default "jz47xx"
+
+config SOC_JZ4780
+	bool
+	select SUPPORTS_LITTLE_ENDIAN
+	select SUPPORTS_CPU_MIPS32_R1
+	select SUPPORTS_CPU_MIPS32_R2
+	help
+	  Support for Ingenic JZ4780 family SoCs.
+
+choice
+	prompt "Board select"
+
+config TARGET_JZ4780_CI20
+	bool "Creator CI20 Reference Board"
+	select SOC_JZ4780
+
+endchoice
+
+source "board/imgtec/ci20/Kconfig"
+
+endmenu

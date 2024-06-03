@@ -285,6 +285,63 @@
 .topology_icon:before{
 	background-image: url('/images/New_ui/amesh/location_topology.svg');
 }
+.topology_icon.cloud_product_icon:before{
+	background-image: initial !important;
+}
+.topology_icon .product_icon_container{
+	width: 74px;
+	height: 74px;
+	position: absolute;
+	margin: auto;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	border-radius: 10px;
+	border: 1px solid #262626;
+}
+.jstree-clicked .product_icon_container{
+	background: linear-gradient(0deg, #1C1C1E 0%, #1C1C1E 100%), #D9D9D9;
+	border: 1px solid #248DFF !important;
+	box-shadow: 0px 0px 2px 0px rgba(0,0,0,0.6), 0px 0px 2px 2px rgba(153,202,255,0.4), 0px 0px 4px 0px rgba(0,0,0,0.2);
+}
+.product_icon_container .product_icon{
+	width: 60px;
+	height: 60px;
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	right: 0;
+	left: 0;
+	margin: auto;
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+}
+.product_icon_container.optimize{
+	background: linear-gradient(315deg, rgba(3, 200, 253, 0.00) -2.81%, #03C8FD 42.25%, #133ED4 67.78%, rgba(19, 62, 212, 0.00) 101.56%);
+	background-size: 200% 200%;
+	animation: animation_product_icon_opt 2s ease infinite;
+	border: initial !important;
+	box-shadow: initial !important;
+}
+.cloud_product_icon.jstree-themeicon{
+	background-image: initial !important;
+}
+.cloud_product_icon.jstree-themeicon:after{
+	box-shadow: initial !important;
+}
+@keyframes animation_product_icon_opt{
+	0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+	}
+}
 .topology_icon.offline:before{
 	background-image: url('/images/New_ui/amesh/location_topology_offline.svg');
 }
@@ -701,6 +758,14 @@
 }
 .category_bg.clicked > div.manage:before{
 	background-position: -99px -136.8px;
+}
+.category_bg > div.iperf:before{
+	background: url(/images/New_ui/amesh/iperf_speed.svg) no-repeat;
+	background-size: 100%;
+}
+.category_bg.clicked > div.iperf:before{
+	background: url(/images/New_ui/amesh/iperf_speed_active.svg) no-repeat;
+	background-size: 100%;
 }
 .connect_type_status_bg.uplink > div, .manage_settings_bg > div,
 .connect_type_status_bg .fronthaul_title, .connect_type_status_bg .fronthaul_info > div,
@@ -1551,11 +1616,13 @@
 .client_list_bg .each_client_bg:before{
 	content: "";
 	position: absolute;
-	left: 5%;
 	bottom: 0;
 	height: 1px;
-	width: 90%;
+	width: 95%;
 	border-bottom: 1px solid #3E4E59;
+	left: 0;
+	right: 0;
+	margin: auto;
 }
 .client_list_bg .client_icon_bg{
 	height: 42px;
@@ -1571,12 +1638,6 @@
 	background-color: #596E74;
 	box-shadow: 0px 0px 0px 1px #3E4243;
 	background-position: 50%;
-}
-.client_list_bg .client_icon_bg.vender_icon{
-	background-image: url(/images/New_ui/networkmap/vender-list.png);
-	background-repeat: no-repeat;
-	background-size: 180%;
-	top: 1px;
 }
 .client_list_bg .client_action_bg{
 	right: 0;
@@ -1668,6 +1729,11 @@
 .client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.plc{
 	background-position-x: -230px;
 }
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.mlo{
+	background-image: url(/images/New_ui/SDN/dark_theme/Notification/wifi_mlo.svg);
+	background-size: 110%;
+	background-position: -1px -2px;
+}
 .client_list_bg .client_content_bg > .client_content_mac_ip{
 	font-size: 13px;
 	color: #B9CFDE;
@@ -1716,7 +1782,8 @@
 }
 .popup_hint_bg .action_bg{
 	margin-top: 18px;
-	text-align: right;
+	display: flex;
+	justify-content: flex-end;
 }
 .popup_hint_bg .action_bg .button_gen{
 	margin-left: 18px;
@@ -2264,6 +2331,9 @@
 }
 .jstree-anchor .jstree-icon.jstree-themeicon.offline {
 	background-image: url("/images/New_ui/amesh/topology_circle_offline.svg");
+}
+.jstree-anchor .jstree-icon.cloud_product_icon{
+	background-image: initial !important;
 }
 .jstree-default > .jstree-no-dots .jstree-node:before{
 	content: "";
@@ -2901,6 +2971,62 @@
 	right: -5px;
 	bottom: -5px;
 	background-position: 0px -179px;
+}
+.iperf_control_all{
+	display: flex;
+	margin-bottom: 6px;
+	justify-content: center;
+}
+.iperf_title_field{
+	display: flex;
+	height: 48px;
+	align-items: center;
+	justify-content: space-between;	
+	margin: 0 22px;
+}
+.iperf_title{
+    font-family: Roboto-Regular, "Microsoft JhengHei";
+    font-size: 16px;
+    color: #FFFFFF;
+}
+.iperf_GO{
+	border: 1px solid #33ACFF;
+	padding: 4px 16px;
+	border-radius: 16px;
+	font-size: 16px;
+	color: #33ACFF;
+	cursor: pointer;
+	text-align: center;
+}
+.iperf_GO:hover{
+	background-color: #33ACFF;
+	color: #FFFFFF;
+}
+.iperf_content_field{
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	border-bottom: 1px solid #3E4E59;
+	height: 32px !important;
+	padding: 8px 0;
+}
+.iperf_time{
+	text-align: right;
+	font-size: 12px;
+}
+.iperf_value{
+	margin-right: 22px;
+	margin-bottom: 0;
+}
+.iperf_testing{
+	border: 1px solid #33ACFF;
+	background-color: #33ACFF;
+	color: #FFFFFF;
+	padding: 4px 16px;
+	border-radius: 16px;
+	font-size: 16px;
+	cursor: pointer;
+	text-align: center;
 }
 .text_link{
 	text-decoration: underline !important;

@@ -1,0 +1,9 @@
+config BCM_SMTC
+        tristate "Support SMTC PMD driver"
+        depends on BCM_SFP
+        default m
+
+config BCM_SMTC_IMPL
+        int "Implementation index for SMTC PMD driver"
+        depends on BCM_SMTC
+        default 1

@@ -1,12 +1,13 @@
-CFILES = fsck_hfs.c strings.c utilities.c cache.c
+CFILES = fsck_hfs.c strings.c utilities.c cache.c fsck_debug.c
 OFILES = $(CFILES:.c=.o)
 
 all: fsck_hfs
 
 fsck_hfs: $(OFILES) dfalib/libdfa.a
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(OFILES) dfalib/libdfa.a
 
 dfalib/libdfa.a: FORCE
-	$(MAKE) -C dfalib -f Makefile.lnx libdfa.a
+	$(MAKE) -C dfalib -f Makefile.lnx CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" libdfa.a
 
 clean:
 	$(RM) fsck_hfs $(OFILES)

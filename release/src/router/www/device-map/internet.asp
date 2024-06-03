@@ -74,6 +74,7 @@ if(wan_bonding_support)
 <% wan_get_parameter(); %>
 
 var wan_unit = '<% nvram_get("wan_unit"); %>' || 0;
+var wan_ipv6_network_json =('<% wan_ipv6_network(); %>' != '{}')? JSON.parse('<% wan_ipv6_network(); %>'):{};
 
 if(yadns_support){
 	var yadns_enable = '<% nvram_get("yadns_enable_x"); %>';
@@ -85,6 +86,10 @@ if(dnspriv_support)
 	var dnspriv_enable = '<% nvram_get("dnspriv_enable"); %>';
 
 var wan_enable_orig = (parent.document.form.dual_wan_flag.value == 0)? '<% nvram_get("wan0_enable"); %>':'<% nvram_get("wan1_enable"); %>';
+
+if(gobi_support){
+	var modem_operation ='<% nvram_get("usb_modem_act_operation"); %>';
+}
 
 function add_lanport_number(if_name)
 {
@@ -138,6 +143,13 @@ function initial(){
 		pri_if = pri_if.toUpperCase();
 		sec_if = sec_if.toUpperCase();
 
+		if(gobi_support){
+			pri_if = (pri_if == "USB")? "<#Mobile_title#>" : pri_if;
+			sec_if = (sec_if == "USB")? "<#Mobile_title#>": sec_if;
+			if((unit == "0" && pri_if == "<#Mobile_title#>") || (unit == "1" && sec_if == "<#Mobile_title#>"))
+				$("#wan_enable_title").text("<#Mobile_cellular_data#>");
+		}
+
 		if(based_modelid == "GT-AXY16000" || based_modelid == "RT-AX89U"){
 			if(pri_if == "WAN2")
 				pri_if = "10G base-T";
@@ -147,6 +159,15 @@ function initial(){
 				sec_if = "10G base-T";
 			else if(sec_if == "SFP+")
 				sec_if = "10G SFP+";
+		} else if (based_modelid == "TUF-AX4200" || based_modelid == "TUF-AX6000") {
+			if (pri_if == "WAN")
+				pri_if = "2.5G WAN";
+			if (sec_if == "WAN")
+				sec_if = "2.5G WAN";
+			if (pri_if == "LAN5")
+				pri_if = "2.5G LAN";
+			if (sec_if == "LAN5")
+				sec_if = "2.5G LAN";
 		}
 
 		if(sec_if != 'NONE'){
@@ -354,8 +375,13 @@ function update_connection_type(dualwan_unit){
 	else if(wanlink_type_conv == "v6plus")
 		wanlink_type_conv = "<#IPv6_plus#>";
 	else if(wanlink_type_conv == "ocnvc")
-		wanlink_type_conv = "<#IPv6_ocnvc#>";
- 
+                wanlink_type_conv = "<#IPv6_ocnvc#>";
+	else if(gobi_support && wanlink_type_conv == "USB Modem"){
+		if(modem_operation != "")
+			wanlink_type_conv = modem_operation;
+		else
+			wanlink_type_conv = "<#Mobile_title#>";
+	}
 
 	showtext($("#connectionType")[0], wanlink_type_conv);
 }
@@ -365,11 +391,36 @@ function loadBalance_form(lb_unit){
 		return 0;
 
 	var pri_if = wans_dualwan.split(" ")[0];
-	var sec_if = wans_dualwan.split(" ")[1];	
+	var sec_if = wans_dualwan.split(" ")[1];
 	pri_if = add_lanport_number(pri_if);
 	sec_if = add_lanport_number(sec_if);
 	pri_if = pri_if.toUpperCase();
 	sec_if = sec_if.toUpperCase();
+
+	if(gobi_support){
+		pri_if = (pri_if == "USB")? "<#Mobile_title#>" : pri_if;
+		sec_if = (sec_if == "USB")? "<#Mobile_title#>": sec_if;
+	}
+
+	if(based_modelid == "GT-AXY16000" || based_modelid == "RT-AX89U"){
+		if(pri_if == "WAN2")
+			pri_if = "10G base-T";
+		else if(pri_if == "SFP+")
+			pri_if = "10G SFP+";
+		if(sec_if == "WAN2")
+			sec_if = "10G base-T";
+		else if(sec_if == "SFP+")
+			sec_if = "10G SFP+";
+	} else if (based_modelid == "TUF-AX4200" || based_modelid == "TUF-AX6000") {
+		if (pri_if == "WAN")
+			pri_if = "2.5G WAN";
+		if (sec_if == "WAN")
+			sec_if = "2.5G WAN";
+		if (pri_if == "LAN5")
+			pri_if = "2.5G LAN";
+		if (sec_if == "LAN5")
+			sec_if = "2.5G LAN";
+	}
 
 	if(lb_unit == 0){
 		have_lease = (first_wanlink_type() == "dhcp" || first_wanlink_type() == "dhcp");
@@ -471,8 +522,23 @@ function update_all_ip(wanip, wannetmask, wangateway, unit){
 
 	if(unit == 0){
 		showtext($("#WANIP")[0], wanip);
+		if(wan_ipv6_network_json.status != "0" && wan_ipv6_network_json.IPv6_Address != ""){
+			$("#ipv6_WANIP").show();
+			$("#ipv6_WANIP").prop('title', `<#IPv6_wan_addr#>`);
+			showtext($("#ipv6_WANIP")[0], wan_ipv6_network_json.IPv6_Address);
+		}
+		if(wan_ipv6_network_json.status != "0" && wan_ipv6_network_json.Link_Local_Address != ""){
+			$("#ipv6_WANIP_LL").show();
+			$("#ipv6_WANIP_LL").prop('title', 'WAN IPv6 Link-Local Address');
+			showtext($("#ipv6_WANIP_LL")[0], wan_ipv6_network_json.Link_Local_Address);
+		}
 		showtext($("#netmask")[0], wannetmask);
 		showtext($("#gateway")[0], wangateway);
+		if(wan_ipv6_network_json.status != "0" && wan_ipv6_network_json.IPv6_Gateway != ""){
+			$("#ipv6_gateway").show();
+			$("#ipv6_gateway").prop('title', `<#IPv6_wan_gateway#>`);
+			showtext($("#ipv6_gateway")[0], wan_ipv6_network_json.IPv6_Gateway);
+		}
 		showtext2($("#lease")[0], format_time(lease, "Renewing..."), have_lease);
 		showtext2($("#expires")[0], format_time(expires, "Expired"), have_lease);
 	}
@@ -541,6 +607,11 @@ function update_all_dns(wandns, wanxdns, unit){
 	if(unit == 0){
 		showtext2($("#DNS1")[0], dnsArray[0], dnsArray[0]);
 		showtext2($("#DNS2")[0], dnsArray[1], dnsArray[1]);
+		if(wan_ipv6_network_json.status != "0" && wan_ipv6_network_json.DNS_Servers != ""){
+			$("#ipv6_DNS_servers").show();
+			$("#ipv6_DNS_servers").prop('title', `<#ipv6_dns_serv#>`);
+			showtext($("#ipv6_DNS_servers")[0], wan_ipv6_network_json.DNS_Servers);
+		}
 		showtext2($("#xDNS1")[0], xdnsArray[0], !have_dns && xdnsArray[0]);
 		showtext2($("#xDNS2")[0], xdnsArray[1], !have_dns && xdnsArray[1]);
 	}
@@ -753,9 +824,9 @@ function manualSetup(){
 </tr>	
 <tr id="wan_enable_button">
     <td height="50" style="padding:10px 15px 0px 15px;">
-    		<p class="formfonttitle_nwm" style="float:left;width:98px;"><#menu5_3_1#></p>
-    		<div class="left" style="width:94px; float:right;" id="radio_wan_enable"></div>
-				<div class="clear"></div>
+		<div style="display:flex; align-items:center; justify-content:space-between;">
+			<div class="formfonttitle_nwm" style="width:80%; margin-bottom: 0px;" id="wan_enable_title"><#menu5_3_1#></div>
+			<div style="margin-right: 5px;" id="radio_wan_enable"></div>
 				<script type="text/javascript">
 						$('#radio_wan_enable').iphoneSwitch(wan_enable_orig,
 							 function() {
@@ -776,15 +847,16 @@ function manualSetup(){
 							 }
 						);
 				</script>
-    		<div style="margin-top:37px;" class="line_horizontal"></div>
+		</div>
+		<div style="margin-top:5px;" class="line_horizontal"></div>
     </td>
 </tr>
 
 <tr id="dualwan_enable_button">
     <td height="50" style="padding:10px 15px 0px 15px;">
-    		<p class="formfonttitle_nwm" style="float:left;width:98px;"><#dualwan_enable#></p>
-			<div class="left" style="width:94px; float:right;" id="nm_radio_dualwan_enable"></div>
-				<div class="clear"></div>
+		<div style="display:flex; align-items:center; justify-content:space-between;">
+			<div class="formfonttitle_nwm" style="width:80%; margin-bottom: 0px;"><#dualwan_enable#></div>
+			<div style="margin-right: 5px;" id="nm_radio_dualwan_enable"></div>
 				<script type="text/javascript">
 						$('#nm_radio_dualwan_enable').iphoneSwitch(parent.wans_flag,
 							 function() {
@@ -859,7 +931,8 @@ function manualSetup(){
 							 }
 						);
 				</script>
-    		<div style="margin-top:37px;" class="line_horizontal"></div>
+		</div>
+		<div style="margin-top:5px;" class="line_horizontal"></div>
     </td>
 </tr>
 
@@ -914,6 +987,8 @@ function manualSetup(){
     <td style="padding:5px 10px 5px 15px;">
     		<p class="formfonttitle_nwm"><#WAN_IP#></p>
     		<p class="tab_info_bg" style="padding-left:10px; margin-top:3px; line-height:20px;" id="WANIP"></p>
+			<p class="tab_info_bg" style="padding-left:10px; margin-top:3px; line-height:20px;display:none;" id="ipv6_WANIP"></p>
+			<p class="tab_info_bg" style="padding-left:10px; margin-top:3px; line-height:20px;display:none;" id="ipv6_WANIP_LL"></p>
     		<p class="tab_info_bg" style="padding-left:10px; margin-top:3px;line-height:20px;" id="xWANIP"></p>
     		<span id="wan_status" style="display:none"></span>
       	<div style="margin-top:5px;" class="line_horizontal"></div>
@@ -970,6 +1045,7 @@ function manualSetup(){
     		<p class="formfonttitle_nwm">DNS <span id="dnspriv_notice" style="color:#FFCC00;"></span></p>
     		<p class="tab_info_bg" style="padding-left:10px; margin-top:3px;line-height:20px;" id="DNS1"></p>
     		<p class="tab_info_bg" style="padding-left:10px; margin-top:3px;line-height:20px;" id="DNS2"></p>
+			<p class="tab_info_bg" style="padding-left:10px; margin-top:3px;line-height:20px;display:none;" id="ipv6_DNS_servers"></p>
     		<p class="tab_info_bg" style="padding-left:10px; margin-top:3px;line-height:20px;" id="xDNS1"></p>
     		<p class="tab_info_bg" style="padding-left:10px; margin-top:3px;line-height:20px;" id="xDNS2"></p>
       	<div style="margin-top:5px;" class="line_horizontal"></div>
@@ -990,6 +1066,7 @@ function manualSetup(){
     <td style="padding:5px 10px 5px 15px;">
     		<p class="formfonttitle_nwm"><#RouterConfig_GWStaticGW_itemname#></p>
     		<p class="tab_info_bg" style="padding-left:10px; margin-top:3px;line-height:20px;" id="gateway"></p>
+			<p class="tab_info_bg" style="padding-left:10px; margin-top:3px;line-height:20px;display:none;" id="ipv6_gateway"></p>
     		<p class="tab_info_bg" style="padding-left:10px; margin-top:3px;line-height:20px;" id="xgateway"></p>
       	<div style="margin-top:5px;" class="line_horizontal"></div>
     </td>

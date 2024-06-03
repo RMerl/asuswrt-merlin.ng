@@ -1,0 +1,6 @@
+/ {
+	tsc-timer {
+		compatible = "x86,tsc-timer";
+		u-boot,dm-pre-reloc;
+	};
+};

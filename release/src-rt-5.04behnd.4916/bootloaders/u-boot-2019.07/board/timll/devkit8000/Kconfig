@@ -1,0 +1,12 @@
+if TARGET_DEVKIT8000
+
+config SYS_BOARD
+	default "devkit8000"
+
+config SYS_VENDOR
+	default "timll"
+
+config SYS_CONFIG_NAME
+	default "devkit8000"
+
+endif

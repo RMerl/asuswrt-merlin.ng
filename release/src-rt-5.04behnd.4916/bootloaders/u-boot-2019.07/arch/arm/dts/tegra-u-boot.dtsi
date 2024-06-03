@@ -1,0 +1,43 @@
+#include <config.h>
+
+#ifdef CONFIG_SPL_TEXT_BASE
+#define U_BOOT_OFFSET (CONFIG_SYS_TEXT_BASE - CONFIG_SPL_TEXT_BASE)
+#else
+#define U_BOOT_OFFSET 0
+#endif
+
+/ {
+	binman {
+		multiple-images;
+		image1 {
+			filename = "u-boot-tegra.bin";
+			pad-byte = <0xff>;
+			u-boot-spl {
+			};
+			u-boot {
+				offset = <(U_BOOT_OFFSET)>;
+			};
+		};
+
+		/* Same as image1 - some tools still expect the -dtb suffix */
+		image2 {
+			filename = "u-boot-dtb-tegra.bin";
+			pad-byte = <0xff>;
+			u-boot-spl {
+			};
+			u-boot {
+				offset = <(U_BOOT_OFFSET)>;
+			};
+		};
+
+		image3 {
+			filename = "u-boot-nodtb-tegra.bin";
+			pad-byte = <0xff>;
+			u-boot-spl {
+			};
+			u-boot-nodtb {
+				offset = <(U_BOOT_OFFSET)>;
+			};
+		};
+	};
+};

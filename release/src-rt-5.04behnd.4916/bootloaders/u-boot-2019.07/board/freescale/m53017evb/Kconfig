@@ -1,0 +1,15 @@
+if TARGET_M53017EVB
+
+config SYS_CPU
+	default "mcf532x"
+
+config SYS_BOARD
+	default "m53017evb"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_CONFIG_NAME
+	default "M53017EVB"
+
+endif

@@ -1,0 +1,174 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ *  Copyright 2020 Broadcom Ltd.
+ */
+
+#include "skeleton64.dtsi"
+
+/ {
+	compatible = "brcm,bcm68880";
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	cpus {
+		#address-cells = <2>;
+		#size-cells = <0>;
+
+		cpu0: cpu@0 {
+			compatible = "arm,cortex-a55", "arm,armv8";
+			device_type = "cpu";
+			reg = <0x0 0x0>;
+			next-level-cache = <&l2>;
+		};
+
+		l2: l2-cache0 {
+			compatible = "cache";
+		};
+	};
+
+	clocks {
+		compatible = "simple-bus";
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+		u-boot,dm-pre-reloc;
+
+		periph_osc: periph-osc {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <81000000>;
+			u-boot,dm-pre-reloc;
+		};
+
+		hsspi_pll: hsspi-pll {
+			compatible = "fixed-factor-clock";
+			#clock-cells = <0>;
+			clocks = <&periph_osc>;
+			clock-mult = <1>;
+			clock-div = <1>;
+			u-boot,dm-pre-reloc;
+		};
+
+		refclk50mhz: refclk50mhz {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <50000000>;
+			u-boot,dm-pre-reloc;
+		};
+	};
+
+    uart0: serial@0x8421C000 {
+			compatible = "ns16550a";
+			reg = <0x0 0x8421C000 0x0 0x20>;
+			reg-io-width = <0x4>;
+			reg-shift = <0x2>;
+			clocks = <&periph_osc>;
+            status = "disabled";
+	};
+
+	/* watchdog */
+	wdt1: watchdog@0x84213700  {
+	    compatible = "brcm,bcm3390-wdt";
+	    reg = <0x0 0x84213700 0x0 0x40>;
+	    u-boot,dm-pre-reloc;
+	};
+
+	wdt-reboot {
+	    compatible = "wdt-reboot";
+	    wdt = <&wdt1>;
+	};
+
+	unimac:unimac {
+		compatible = "brcm,unimac3";
+			reg = <0x0 0x828a8000 0x0 0x5000>,
+				  <0x0 0x828b0000 0x0 0x1400>;
+				  conf_offset = <0x1000>;
+				  mib_offset = <0x400>;
+				  top_offset = <0x400>;
+				  status = "disabled";
+	};
+
+	switch0:switch0 {
+		compatible = "brcm,enet";
+		label = "bcmsw";
+		sw-type = "RUNNER_SW";
+
+		 ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			port_gphy0 {
+				reg = <0>;
+				mac-type = "UNIMAC";
+				status = "okay";
+			};
+
+			port_gphy1 {
+				reg = <1>;
+				mac-type = "UNIMAC";
+				status = "okay";
+			};
+
+			port_gphy2 {
+				reg = <2>;
+				mac-type = "UNIMAC";
+				status = "okay";
+			};
+
+			port_gphy3 {
+				reg = <3>;
+				mac-type = "UNIMAC";
+				status = "okay";
+			};
+		};
+	};
+
+	ubus {
+		compatible = "simple-bus";
+		#address-cells = <2>;
+		#size-cells = <2>;
+		u-boot,dm-pre-reloc;
+
+		pinctrl: pinctrl {
+			compatible = "brcm,bcmbca-pinctrl";
+			reg = <0x0 0xff800554 0x0 0xc>;
+			gpio-mux = <4>;
+		};
+	};
+	
+	dqm {
+		compatible = "brcm,dqm";
+		reg = <0x0 0x84100000 0x0 0x5200>;
+		q-data-base-offset = <0x5000>;
+		q-status-base-offset = <0x2800>;
+		q-count         = <6>;
+		u-boot,dm-pre-reloc;
+	};
+
+	boot_state {
+		u-boot,dm-pre-reloc;
+		compatible = "brcm,bcmbca-bootstate-v2";
+		reg-names = "reset_reason", "reset_status";
+		reg =  <0x0 0xFF802628 0x0 0x04>,
+			<0x0 0x842100C0 0x0 0x04>;
+	};
+
+	flash {
+		compatible = "brcm,vflash", "simple-bus";
+		u-boot,dm-pre-reloc;
+	};
+	
+	misc_io {
+		compatible = "brcm,misc-io";
+		misc-periph-spare = <0xff802700 0x10>;
+		u-boot,dm-pre-reloc;
+	};
+};
+
+#ifdef CONFIG_BCMBCA_NO_SMC_BOOT
+/ {
+	#include "bcm_68880_no_smc_boot.dtsi" 
+};	
+#endif
+
+#include "bcm68880-pinctrl.dtsi"

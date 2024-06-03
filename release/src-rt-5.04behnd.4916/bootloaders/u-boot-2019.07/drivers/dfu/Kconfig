@@ -1,0 +1,50 @@
+menu "DFU support"
+
+config DFU
+	bool
+	imply DFU_OVER_USB if USB_GADGET
+
+config DFU_OVER_USB
+	bool
+	select HASH
+	depends on USB_GADGET
+
+config DFU_OVER_TFTP
+	bool
+	depends on NET
+
+if DFU
+config DFU_TFTP
+	bool "DFU via TFTP"
+	select DFU_OVER_TFTP
+	help
+	  This option allows performing update of DFU-managed medium with data
+	  sent via TFTP boot.
+
+	  Detailed description of this feature can be found at ./doc/README.dfutftp
+
+config DFU_MMC
+	bool "MMC back end for DFU"
+	help
+	  This option enables using DFU to read and write to MMC based storage.
+
+config DFU_NAND
+	bool "NAND back end for DFU"
+	depends on CMD_MTDPARTS
+	help
+	  This option enables using DFU to read and write to NAND based
+	  storage.
+
+config DFU_RAM
+	bool "RAM back end for DFU"
+	help
+	  This option enables using DFU to read and write RAM on the target.
+
+config DFU_SF
+	bool "SPI flash back end for DFU"
+	help
+	  This option enables using DFU to read and write to SPI flash based
+	  storage.
+
+endif
+endmenu

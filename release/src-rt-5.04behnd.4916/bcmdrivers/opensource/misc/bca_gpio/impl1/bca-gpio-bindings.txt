@@ -1,0 +1,55 @@
+Gpio controller:
+
+Gpio controlled should be declared under ubus or periph single-bus parent
+
+gpioc: gpioc {
+	compatible = "brcm,bca-gpio";
+            gpio-controller;
+            #gpio-cells = <2>;
+            reg = <0x0 0x500 0x0 0x40>;  /*offset from parent base, size of mapped region*/
+            ngpios = <NUM_OF_GPIO_PINS>;   /* Should be defined on Family level */
+            gpio-ranges = <&pincontroller 0 0 NUM_OF_GPIO_PINS>;
+        };
+			
+
+Gpio Definition:
+			
+Gpio should be defined in the scope of the device/controller using it.
+The gpio name must have one of the suffixes ("-gpio" or "-gpios")
+Each gpio in the device tree is defined by three parameters:
+The first is phandle to the gpio controller.
+The second is the gpio number.
+The third parameter is the flag. We will use a generic flag bitfield. All flag definitions are in include/dt-bindings/gpio/gpio.h. 			
+
+&pon {
+    status = "okay";
+	pinctrl-0 = <&1pps_0_pins &RogueOnuEn_1_pins &WanNcoProgMClk_pins>;
+	pinctrl-names = "default";
+	txen-gpio = <&gpioc 34 GPIOF_ACTIVE_LOW> 
+};
+
+Once a device driver requires the gpio functionality it should call to standard linux API's
+
+    struct gpio_desc * devm_gpiod_get(struct device *dev, const char *con_id, enum gpiod_flags flags)
+Example:
+    gpio_desc = devm_gpiod_get (node, "gio_function_name(w/o suffix)", GPIO_ASIS)
+
+This will find the needed GPIO and request it from the gpio controller.
+
+To set the GPIO  state to active (1) or not-active (0) use the following API:
+
+    void gpiod_set_value(struct gpio_desc *desc, int value); 
+
+To get current GPIO state use:
+    int gpiod_get_value(const struct gpio_desc *desc);
+
+The polarity is handled by this APIs.
+
+To get current GPIO direction use:
+    int gpiod_get_direction(struct gpio_desc *desc);
+
+To set GPIO output direction and initial value of it use:
+    int gpiod_direction_output(struct gpio_desc *desc, int value);
+To set GPIO input direction use:
+    int gpiod_direction_input(struct gpio_desc *desc);
+

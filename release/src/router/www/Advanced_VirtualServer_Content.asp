@@ -12,6 +12,8 @@
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="device-map/device-map.css">
+<script type="text/javascript" language="JavaScript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" language="JavaScript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
@@ -19,8 +21,6 @@
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script language="JavaScript" type="text/javascript" src="/form.js"></script>
-<script type="text/javascript" language="JavaScript" src="/js/jquery.js"></script>
-<script type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <style type="text/css">
 .contentM_qis{
@@ -315,7 +315,7 @@ function pullLANIPList(obj){
 	var element = document.getElementById('ClientList_Block');
 	var isMenuopen = element.offsetWidth > 0 || element.offsetHeight > 0;
 	if(isMenuopen == 0) {
-		obj.src = "/images/arrow-top.gif"
+		obj.src = "/images/unfold_less.svg"
 		element.style.display = 'block';
 		document.getElementById("vts_ipaddr_x").focus();
 	}
@@ -324,7 +324,7 @@ function pullLANIPList(obj){
 }
 
 function hideClients_Block(){
-	document.getElementById("pull_arrow").src = "/images/arrow-down.gif";
+	document.getElementById("pull_arrow").src = "/images/unfold_more.svg";
 	document.getElementById('ClientList_Block').style.display = 'none';
 	validator.validIPForm(document.getElementById("vts_ipaddr_x"), 0);
 }
@@ -839,17 +839,15 @@ function cancelProfile() {
 								<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 								<div>
 									<div id="ftpPortConflict" class="formfontdesc" style="display:none;color:#FFCC00;"></div>
-									<div class="formfontdesc"><#IPConnection_VServerEnable_sectiondesc#></div>
-									<ul style="margin-left:-25px; *margin-left:10px;">
-										<div class="formfontdesc"><li><#FirewallConfig_Port80_itemdesc#></div>
-										<div class="formfontdesc" id="FTP_desc"><li><#FirewallConfig_FTPPrompt_itemdesc#></div>
-									</ul>
+									<div class="formfontdesc">
+										<div><#IPConnection_VServerEnable_sectiondesc#></div>
+										<div><#FirewallConfig_Port80_itemdesc#></div>
+										<div id="FTP_desc"><#FirewallConfig_FTPPrompt_itemdesc#></div>
+										<a id="faq" href="" target="_blank" style="font-family:Lucida Console;text-decoration:underline;"><#menu5_3_4#>&nbspFAQ</a>
+									</div>
 								</div>
 
-								<div class="formfontdesc" style="margin-top:-10px;">
-									<a id="faq" href="" target="_blank" style="font-family:Lucida Console;text-decoration:underline;"><#menu5_3_4#>&nbspFAQ</a>
-								</div>
-								<div class="formfontdesc" id="lb_note" style="color:#FFCC00; display:none;"><#lb_note_portForwarding#></div>
+								<div class="formfontdesc hint-color" id="lb_note" style="color:#FFCC00; display:none;"><#lb_note_portForwarding#></div>
 
 								<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable">
 									<thead>
@@ -966,7 +964,7 @@ function cancelProfile() {
 			<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,25);"><#IPConnection_VSList_Internal_IP#></a></th>
 			<td>
 				<input type="text" maxlength="15" class="input_25_table" id="vts_ipaddr_x" align="left" onkeypress="return validator.isIPAddr(this, event);" style="float:left;" onClick="hideClients_Block();" autocomplete="off" autocorrect="off" autocapitalize="off">
-				<img id="pull_arrow" class="pull_arrow" height="16px;" src="images/arrow-down.gif" align="right" onclick="pullLANIPList(this);" title="<#select_IP#>">
+				<img id="pull_arrow" class="pull_arrow" height="16px;" src="images/unfold_more.svg" align="right" onclick="pullLANIPList(this);" title="<#select_IP#>">
 				<div id="ClientList_Block" class="clientlist_dropdown" style="margin-left:2px;margin-top:27px;width:238px;"></div>
 			</td>
 		</tr>
@@ -993,7 +991,7 @@ function cancelProfile() {
 		<br>
 		<#IPConnection_VSList_SourceTarget_desc#>
 	</div>
-	<div style="margin-top:15px;text-align:center;">
+	<div style="margin-top:15px;text-align:center;display: flex; justify-content: center; margin: auto;">
 		<input class="button_gen" type="button" onclick="cancelProfile();" value="<#CTL_Cancel#>">
 		<input id="saveProfile" class="button_gen" type="button" value="<#CTL_ok#>">
 	</div>

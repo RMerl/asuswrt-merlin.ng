@@ -63,5 +63,8 @@ int merge_received_session(const int subscribe_topic_number);
 
 int compare_received_session(const int subscribe_topic_number, int b_print);
 
+int tencentgame_session_id_cmp(const char* cmp_session_id, char* get_session_state, char *get_session_msg);
 
 void getTimeInMillis(char* timestamp_str);
+
+char *replace_str(char *st, char *orig, char *repl, char* buff);

@@ -1,0 +1,18 @@
+#include "963146REF2D.dts"
+
+&i2c1 {
+	pinctrl-names="default";
+	pinctrl-0 = <&b_i2c1_sclk_pin_53 &b_i2c1_sdata_pin_54>;
+	status = "okay";
+
+	#address-cells = <1>;
+	#size-cells = <0>;
+	codec_playback:codec_palyback@18{
+		compatible = "ti,tlv320dac3203";
+		reg = <0x18>;
+	};
+	codec_capture:codec_capture@4e{
+		compatible = "ti,tlv320adc5140";
+		reg = <0x4e>;
+	};
+};

@@ -1,0 +1,38 @@
+if TARGET_APALIS_TK1
+
+config SYS_BOARD
+	default "apalis-tk1"
+
+config SYS_VENDOR
+	default "toradex"
+
+config SYS_CONFIG_NAME
+	default "apalis-tk1"
+
+config TDX_CFG_BLOCK
+	default y
+
+config TDX_HAVE_MMC
+	default y
+
+config TDX_CFG_BLOCK_DEV
+	default "0"
+
+config TDX_CFG_BLOCK_PART
+	default "1"
+
+# Toradex config block in eMMC, at the end of 1st "boot sector"
+config TDX_CFG_BLOCK_OFFSET
+	default "-512"
+
+config APALIS_TK1_PCIE_EVALBOARD_INIT
+	bool "Apalis Evaluation Board PCIe Initialisation"
+	help
+	  Bring up the Apalis PCIe port with the PCIe switch as found on the
+	  Apalis Evaluation board. Note that by default the PCIe port is also
+	  left disabled in the device tree which needs changing as well for this
+	  to actually work.
+
+source "board/toradex/common/Kconfig"
+
+endif

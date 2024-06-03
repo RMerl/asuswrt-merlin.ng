@@ -1,0 +1,122 @@
+if ARCH_UNIPHIER
+
+config SYS_CONFIG_NAME
+	default "uniphier"
+
+config ARCH_UNIPHIER_32BIT
+	bool
+	select ARCH_SUPPORT_PSCI
+	select ARMV7_NONSEC
+	select CPU_V7A
+	select CPU_V7_HAS_NONSEC
+
+choice
+        prompt "UniPhier SoC select"
+        default ARCH_UNIPHIER_V7_MULTI
+
+config ARCH_UNIPHIER_LD4_SLD8
+	bool "UniPhier LD4/sLD8 SoCs"
+	select ARCH_UNIPHIER_32BIT
+
+config ARCH_UNIPHIER_V7_MULTI
+	bool "UniPhier Pro4/Pro5/PXs2/LD6b SoCs"
+	select ARCH_UNIPHIER_32BIT
+
+config ARCH_UNIPHIER_V8_MULTI
+	bool "UniPhier V8 SoCs"
+	depends on !SPL
+	select ARM64
+	select CMD_UNZIP
+
+endchoice
+
+config ARCH_UNIPHIER_LD4
+	bool "Enable UniPhier LD4 SoC support"
+	depends on ARCH_UNIPHIER_LD4_SLD8
+	default y
+
+config ARCH_UNIPHIER_SLD8
+	bool "Enable UniPhier sLD8 SoC support"
+	depends on ARCH_UNIPHIER_LD4_SLD8
+	default y
+
+config ARCH_UNIPHIER_PRO4
+	bool "Enable UniPhier Pro4 SoC support"
+	depends on ARCH_UNIPHIER_V7_MULTI
+	default y
+
+config ARCH_UNIPHIER_PRO5
+	bool "Enable UniPhier Pro5 SoC support"
+	depends on ARCH_UNIPHIER_V7_MULTI
+	default y
+
+config ARCH_UNIPHIER_PXS2
+	bool "Enable UniPhier Pxs2 SoC support"
+	depends on ARCH_UNIPHIER_V7_MULTI
+	default y
+
+config ARCH_UNIPHIER_LD6B
+	bool "Enable UniPhier LD6b SoC support"
+	depends on ARCH_UNIPHIER_V7_MULTI
+	default y
+
+config ARCH_UNIPHIER_LD11
+	bool "Enable UniPhier LD11 SoC support"
+	depends on ARCH_UNIPHIER_V8_MULTI
+	default y
+
+config ARCH_UNIPHIER_LD20
+	bool "Enable UniPhier LD20 SoC support"
+	depends on ARCH_UNIPHIER_V8_MULTI
+	default y
+	select OF_BOARD_SETUP
+
+config ARCH_UNIPHIER_PXS3
+	bool "Enable UniPhier PXs3 SoC support"
+	depends on ARCH_UNIPHIER_V8_MULTI
+	default y
+
+config CACHE_UNIPHIER
+	bool "Enable the UniPhier L2 cache controller"
+	depends on ARCH_UNIPHIER_32BIT
+	default y
+	select SYS_CACHE_SHIFT_7
+	help
+	  This option allows to use the UniPhier System Cache as L2 cache.
+
+config MICRO_SUPPORT_CARD
+	bool "Use Micro Support Card"
+	help
+	  This option provides support for the expansion board, available
+	  on some UniPhier reference boards.
+
+	  Say Y to use the on-board UART, Ether, LED devices.
+
+config CMD_PINMON
+	bool "Enable boot mode pins monitor command"
+	default y
+	help
+	  The command "pinmon" shows the state of the boot mode pins.
+	  The boot mode pins are latched when the system reset is deasserted
+	  and determine which device the system should load a boot image from.
+
+config CMD_DDRPHY_DUMP
+	bool "Enable dump command of DDR PHY parameters"
+	depends on ARCH_UNIPHIER_LD4 || ARCH_UNIPHIER_PRO4 || \
+		ARCH_UNIPHIER_SLD8 || ARCH_UNIPHIER_LD11
+	default y
+	help
+	  The command "ddrphy" shows the resulting parameters of DDR PHY
+	  training; it is useful for the evaluation of DDR PHY training.
+
+config CMD_DDRMPHY_DUMP
+	bool "Enable dump command of DDR Multi PHY parameters"
+	depends on ARCH_UNIPHIER_PXS2 || ARCH_UNIPHIER_LD6B
+	default y
+	help
+	  The command "ddrmphy" shows the resulting parameters of DDR Multi PHY
+	  training; it is useful for the evaluation of DDR Multi PHY training.
+
+config SYS_SOC
+	default "uniphier-v7" if ARCH_UNIPHIER_LD4_SLD8 || ARCH_UNIPHIER_V7_MULTI
+endif

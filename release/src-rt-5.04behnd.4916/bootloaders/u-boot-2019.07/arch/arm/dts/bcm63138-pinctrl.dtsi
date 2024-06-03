@@ -1,0 +1,33 @@
+&pinctrl {
+	pincontroller-functions {
+		spim_group_pins: spim_group_pinmux {
+			pins = <123 124 125>;
+			function = <0>;
+		};
+
+		a_spim_ss0_b_pin_126: a_spim_ss0_b_pinmux {
+			pins = <126>;
+			function = <0>;
+		};
+
+		nand_data_pins: nand_data_pinmux {
+			pins = <41 42 43 44 45 46 47 48>;
+			function = <3>;
+		};
+
+		nand_ctrl_pins: nand_ctrl_pinmux {
+			pins = <38 39 40 49 50 51>;
+			function = <3>;
+		};
+
+		usb0a_pwrflt_pins: usb0a_pwrflt_pinmux {
+			pins = <132>;
+			function = <1>;
+		};
+
+		usb0a_pwron_pins: usb0a_pwron_pinmux {
+			pins = <133>;
+			function = <1>;
+		};
+	};
+};

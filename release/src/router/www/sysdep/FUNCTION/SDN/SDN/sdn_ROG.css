@@ -1,0 +1,330 @@
+﻿.popup_container.hide_title_cntr .action_container .btn_container.delete{
+	background: rgb(255 255 255 / 0%);
+	border: 1px solid #B3B3B3;
+	color: #EBEBEB;
+}
+.profile_item_container.wizard{
+	background: linear-gradient(to left, #fff, #fff) left top no-repeat, linear-gradient(to bottom, #fff, #fff) left top no-repeat, linear-gradient(to left, #fff, #fff) right top no-repeat, linear-gradient(to bottom, #fff, #fff) right top no-repeat, linear-gradient(to left, #fff, #fff) left bottom no-repeat, linear-gradient(to bottom, #fff, #fff) left bottom no-repeat, linear-gradient(to left, #fff, #fff) right bottom no-repeat, linear-gradient(to left, #fff, #fff) right bottom no-repeat,rgba(255, 255, 255, 0.08);
+	background-size: 1px 5px, 5px 1px, 1px 5px, 5px 1px;
+	margin: 0;
+	margin-bottom: 0.5rem;
+	border-radius: 0;
+}
+.profile_item_container.wizard:hover{
+	background: linear-gradient(0deg, rgba(10, 94, 219, 0.1), rgba(10, 94, 219, 0.1)), linear-gradient(0deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.08)), rgba(25, 53, 255, 0.05);
+	/* outline: 1px solid #FF3535; */
+	box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.14), 0px 3px 1px rgba(0, 0, 0, 0.12), 0px 1px 5px rgba(0, 0, 0, 0.2);
+	border: 1px solid transparent;
+	-moz-border-image: -moz-linear-gradient(88.88deg, #0A5EDB 20.22%, #DB0A2C 85.8%);
+	-webkit-border-image: -webkit-linear-gradient(88.88deg, #0A5EDB 20.22%, #DB0A2C 85.8%);
+	border-image: linear-gradient(88.88deg, #0A5EDB 20.22%, #DB0A2C 85.8%);
+	border-image-slice: 1;
+}
+.profile_item_container.ScenariosExplorer{
+	background: #F5F5F5;
+}
+.profile_item_container.ScenariosExplorer .item_text_container .main_info{
+	color: #FF3535;
+}
+.profile_item_container.wizard .item_text_container {
+	flex-grow: 1;
+	margin-left: 40px;
+}
+.profile_item_container.wizard .item_text_container .main_info {
+	font-size: 16px;
+	margin-left: 24px;
+}
+.profile_item_container.wizard .item_text_container .sub_info{
+	color: #B3B3B3;
+	margin-left: 24px;
+}
+.profile_item_container.feature_desc{
+	background: linear-gradient(to left, #FF3535, #FF3535) left top no-repeat,
+		linear-gradient(to bottom, #FF3535, #FF3535) left top no-repeat,
+		linear-gradient(to left, #FF3535, #FF3535) right top no-repeat,
+		linear-gradient(to bottom, #FF3535, #FF3535) right top no-repeat,
+		linear-gradient(to left, #FF3535, #FF3535) left bottom no-repeat,
+		linear-gradient(to bottom, #FF3535, #FF3535) left bottom no-repeat,
+		linear-gradient(to left, #FF3535, #FF3535) right bottom no-repeat,
+		linear-gradient(to left, #FF3535, #FF3535) right bottom no-repeat;
+	background-size: 1px 5px, 5px 1px, 1px 5px, 5px 1px;
+	border: 1px outset rgba(128, 128, 128, 0.3);
+}
+.profile_item_container.feature_desc .main_info{
+	color: #FF3535;
+}
+.item_scenarios_container > .title{
+	color: #B3B3B3;
+}
+.item_tag_container > .item_tag.VPN:before{
+	-webkit-mask: url(/images/New_ui/SDN/dark_theme/Content/link.svg);
+	mask: url(/images/New_ui/SDN/dark_theme/Content/link.svg);
+	-webkit-mask-size: 18px 22px;
+}
+.item_tag_container > .item_tag.Timer:before{
+	-webkit-mask: url(/images/New_ui/SDN/dark_theme/Image/timer.svg);
+	mask: url(/images/New_ui/SDN/dark_theme/Image/timer.svg);
+	-webkit-mask-size: 14px 24px;
+}
+.item_tag_container > .item_tag.VPN:before,
+.item_tag_container > .item_tag.Timer:before{
+	background-image: initial;
+	transform: skew(30deg);
+	-webkit-mask-repeat: no-repeat;
+	-webkit-mask-position: center;
+	background-color: #FFFFFF;
+}
+.item_text_container .clients_num > .icon_client{
+	-webkit-mask-box-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cg%20id%3D%22Group%22%3E%3Cg%20id%3D%22Devices%20%2F%20clients%22%3E%3Cg%20id%3D%22Group%203532%22%3E%3Cg%20id%3D%22Group_2%22%3E%3Cpath%20id%3D%22Vector%20136_____0_0_YECTQAEVUZ%22%20stroke%3D%22%23EBEBEB%22%20stroke-width%3D%221.2%22%20d%3D%22M4.93607%209.68965V6H20.9245V17.2988%22%2F%3E%3C%2Fg%3E%3Cg%20id%3D%22Mobile%20Phone%20(iPhone%20Shape)%22%3E%3Cpath%20id%3D%22Rectangle%2010370_____0_2_UHYMPAHAIF%22%20stroke%3D%22%23EBEBEB%22%20stroke-width%3D%221.2%22%20d%3D%22M2.60018%2010.1H7.40018V17.9H2.60018z%22%2F%3E%3Cg%20id%3D%22Vector_____0_3_ZKGIWADNGV%22%3E%3Cpath%20fill%3D%22%23EBEBEB%22%20fill-rule%3D%22evenodd%22%20d%3D%22M4.50018%2011.6H5.50018Z%22%20clip-rule%3D%22evenodd%22%2F%3E%3Cpath%20stroke%3D%22%23EBEBEB%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%220.8%22%20d%3D%22M4.50018%2011.6H5.50018%22%2F%3E%3C%2Fg%3E%3Cpath%20id%3D%22Vector_____0_4_WXQRLQSGHN%22%20fill%3D%22%23EBEBEB%22%20fill-rule%3D%22evenodd%22%20d%3D%22M5.07709%2016.5249C4.79407%2016.5249%204.56464%2016.2955%204.56464%2016.0125C4.56464%2015.7294%204.79407%2015.5%205.07709%2015.5C5.36011%2015.5%205.58954%2015.7294%205.58954%2016.0125C5.58954%2016.2955%205.36011%2016.5249%205.07709%2016.5249Z%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fg%3E%3Cpath%20id%3D%22Rectangle%209336_____0_5_AFTRBVEOHK%22%20fill%3D%22%23EBEBEB%22%20d%3D%22M8.00004%2016.6606C8.00004%2016.6054%208.04481%2016.5606%208.10004%2016.5606H22.8797C22.9422%2016.5606%2022.9894%2016.6174%2022.978%2016.6788L22.878%2017.2186C22.7903%2017.6926%2022.3768%2018.0365%2021.8948%2018.0365H8.00004V16.6606Z%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+	background-color: #ebebeb;
+	mask-repeat: no-repeat;
+}
+.status_info .conn_type.WiFi_offline{
+	-webkit-mask-box-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cg%20id%3D%22Group%22%3E%3Cg%20id%3D%22Devices%20%2F%20wireless_off%22%3E%3Cpath%20id%3D%22Union_____0_0_HRMIFQUASL%22%20fill%3D%22%23EBEBEB%22%20fill-rule%3D%22evenodd%22%20d%3D%22M2.38874%2011.6113L2.91907%2011.0809C3.93814%2010.0619%205.06093%209.38871%205.5786%209.07835L5.61431%209.05694L6.25743%208.67107L7.02917%209.9573L6.38605%2010.3432L6.36522%2010.3557C5.85867%2010.6595%204.86681%2011.2545%203.97973%2012.1416L3.4494%2012.6719L2.38874%2011.6113ZM7.68963%208.0561L8.41688%207.8728C12.6136%206.81507%2017.743%207.73226%2021.0917%2011.0809L21.622%2011.6113L20.5614%2012.6719L20.0311%2012.1416C17.1204%209.23093%2012.5637%208.37455%208.78348%209.32731L8.05622%209.51061L7.68963%208.0561ZM6.6319%2015.1468L7.16223%2014.6165C8.27777%2013.5009%209.2184%2013.1549%209.89324%2013.0577L10.6356%2012.9508L10.8494%2014.4355L10.1071%2014.5424C9.78196%2014.5892%209.13102%2014.769%208.22289%2015.6771L7.69256%2016.2074L6.6319%2015.1468ZM12.9505%2012.6576L13.6789%2012.8363C14.8515%2013.124%2015.8246%2013.7329%2016.7082%2014.6165L17.2385%2015.1468L16.1778%2016.2074L15.6475%2015.6771C14.9193%2014.9489%2014.1796%2014.5037%2013.3215%2014.2931L12.5931%2014.1144L12.9505%2012.6576ZM12.0002%2021.2601C12.4627%2021.2615%2012.9256%2021.0858%2013.2785%2020.7329C13.9815%2020.03%2013.9815%2018.8903%2013.2785%2018.1873C12.5756%2017.4844%2011.4359%2017.4844%2010.7329%2018.1873C10.03%2018.8903%2010.03%2020.03%2010.7329%2020.7329C11.083%2021.083%2011.5414%2021.2587%2012.0002%2021.2601Z%22%20clip-rule%3D%22evenodd%22%2F%3E%3Cpath%20id%3D%22Vector_____0_4_IYQEWYKWVK%22%20stroke%3D%22%23EBEBEB%22%20stroke-linecap%3D%22square%22%20stroke-width%3D%221.2%22%20d%3D%22M3.25%203.75L7.09%207.59L10.32%2010.82L14.68%2015.18L17.91%2018.41L21.75%2022.25%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+	background-color: #ebebeb;
+	mask-repeat: no-repeat;
+	background-image: none;
+}
+.status_info .conn_type.WiFi_offline, .status_info .conn_type.WiFi_2G, .status_info .conn_type.WiFi_2G_lock, .status_info .conn_type.WiFi_5G, .status_info .conn_type.WiFi_5G_lock, .status_info .conn_type.WiFi_6G, .status_info .conn_type.WiFi_6G_lock{
+	background-position-y: 0;
+}
+.status_info .conn_type.WiFi_2G,
+.client_content_container .conn_type.WiFi_2G{
+	background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cg%20id%3D%22Group%22%3E%3Cg%20id%3D%22Devices%20%2F%20wifi_2g%22%3E%3Cg%20id%3D%22Airplay%22%3E%3Cg%20id%3D%22Group_2%22%3E%3Cpath%20id%3D%22Rectangle%2010368_____0_1_CQLCXXCIMC%22%20stroke%3D%22%23EBEBEB%22%20stroke-width%3D%221.2%22%20d%3D%22M7.5002%205.49991H3.0002V22.9999H21.0002V5.49991H17.5002%22%2F%3E%3C%2Fg%3E%3Cg%20id%3D%22Group_3%22%3E%3Cpath%20id%3D%22Vector_____0_2_SOVWXMGBQB%22%20stroke%3D%22%23EBEBEB%22%20stroke-linecap%3D%22square%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.2%22%20d%3D%22M9.0002%204C13.1877%204%2016.5627%207.375%2016.5627%2011.5625%22%2F%3E%3Cpath%20id%3D%22Vector_____0_3_LOVYOGJOWV%22%20stroke%3D%22%23EBEBEB%22%20stroke-linecap%3D%22square%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.2%22%20d%3D%22M9.3127%207.43752C11.3752%207.43752%2013.0627%209.12501%2013.0627%2011.1875%22%2F%3E%3C%2Fg%3E%3Cpath%20id%3D%222.4_____0_4_NYCPECMJHE%22%20fill%3D%22%23EBEBEB%22%20d%3D%22M4.80143%2020V17.525C4.80143%2016.805%205.25143%2016.445%206.15143%2016.445H8.49143C8.73143%2016.445%208.85143%2016.349%208.85143%2016.157V15.113C8.85143%2014.921%208.73143%2014.825%208.49143%2014.825H5.25143V14.06H8.76143C9.66143%2014.06%2010.1114%2014.42%2010.1114%2015.14V16.13C10.1114%2016.85%209.66143%2017.21%208.76143%2017.21H6.42143C6.18143%2017.21%206.06143%2017.306%206.06143%2017.498V19.235H10.1114V20H4.80143ZM11.3711%2020V18.92H12.6311V20H11.3711ZM13.8893%2018.785V18.02L17.6243%2014.06H19.1993V20H17.9393V18.785H13.8893ZM15.3473%2018.02H17.9393V15.275L15.3473%2018.02Z%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
+.status_info .conn_type.WiFi_2G_lock{
+	background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cg%20id%3D%22Group%22%3E%3Cg%20id%3D%22Devices%20%2F%20wifi_2g_lock%22%3E%3Cg%20id%3D%22Airplay%22%3E%3Cg%20id%3D%22Group_2%22%3E%3Cpath%20id%3D%22Rectangle%2010368_____0_1_XRYRUHZPZE%22%20stroke%3D%22%23EBEBEB%22%20stroke-width%3D%221.2%22%20d%3D%22M21.0002%205.49991V22.9999H3.0002V5.49991H7.5002%22%2F%3E%3C%2Fg%3E%3Cg%20id%3D%22Group_3%22%3E%3Cpath%20id%3D%22Vector_____0_2_IOURADJPVB%22%20stroke%3D%22%23EBEBEB%22%20stroke-linecap%3D%22square%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.2%22%20d%3D%22M9.0002%204C13.1877%204%2016.5627%207.375%2016.5627%2011.5625%22%2F%3E%3Cpath%20id%3D%22Vector_____0_3_UPIIGLXXWN%22%20stroke%3D%22%23EBEBEB%22%20stroke-linecap%3D%22square%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.2%22%20d%3D%22M9.3127%207.43752C11.3752%207.43752%2013.0627%209.12501%2013.0627%2011.1875%22%2F%3E%3C%2Fg%3E%3Cpath%20id%3D%222.4_____0_4_GXRGNPLVWZ%22%20fill%3D%22%23EBEBEB%22%20d%3D%22M4.80143%2020V17.525C4.80143%2016.805%205.25143%2016.445%206.15143%2016.445H8.49143C8.73143%2016.445%208.85143%2016.349%208.85143%2016.157V15.113C8.85143%2014.921%208.73143%2014.825%208.49143%2014.825H5.25143V14.06H8.76143C9.66143%2014.06%2010.1114%2014.42%2010.1114%2015.14V16.13C10.1114%2016.85%209.66143%2017.21%208.76143%2017.21H6.42143C6.18143%2017.21%206.06143%2017.306%206.06143%2017.498V19.235H10.1114V20H4.80143ZM11.3711%2020V18.92H12.6311V20H11.3711ZM13.8893%2018.785V18.02L17.6243%2014.06H19.1993V20H17.9393V18.785H13.8893ZM15.3473%2018.02H17.9393V15.275L15.3473%2018.02Z%22%2F%3E%3C%2Fg%3E%3Cg%20id%3D%22Group%204644%22%3E%3Ccircle%20id%3D%22Ellipse%201299_____0_5_TARNGYAKWJ%22%20cx%3D%2219%22%20cy%3D%225%22%20r%3D%224.75%22%20fill%3D%22black%22%20stroke%3D%22white%22%20stroke-width%3D%220.5%22%2F%3E%3Cg%20id%3D%22Huge-icon%2Finterface%2Fsolid%2Flock%22%3E%3Cg%20id%3D%22lock%22%3E%3Cpath%20id%3D%22Union_____0_6_CQFFOILQVS%22%20fill%3D%22%23FF3535%22%20fill-rule%3D%22evenodd%22%20d%3D%22M17.9167%203.25C17.9167%202.65169%2018.4017%202.16667%2019%202.16667C19.5983%202.16667%2020.0833%202.65169%2020.0833%203.25V3.66667H17.9167V3.25ZM17.4167%203.69007V3.25C17.4167%202.37555%2018.1255%201.66667%2019%201.66667C19.8745%201.66667%2020.5833%202.37555%2020.5833%203.25V3.69007C21.2002%203.80708%2021.6667%204.34907%2021.6667%205V7C21.6667%207.73638%2021.0697%208.33333%2020.3333%208.33333H17.6667C16.9303%208.33333%2016.3333%207.73638%2016.3333%207V5C16.3333%204.34907%2016.7998%203.80708%2017.4167%203.69007ZM19.6667%206C19.6667%206.36819%2019.3682%206.66667%2019%206.66667C18.6318%206.66667%2018.3333%206.36819%2018.3333%206C18.3333%205.63181%2018.6318%205.33333%2019%205.33333C19.3682%205.33333%2019.6667%205.63181%2019.6667%206Z%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
+.status_info .conn_type.WiFi_5G,
+.client_content_container .conn_type.WiFi_5G{
+	background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cg%20id%3D%22Group%22%3E%3Cg%20id%3D%22Devices%20%2F%20wifi_5g%22%3E%3Cg%20id%3D%22Airplay%22%3E%3Cg%20id%3D%22Group_2%22%3E%3Cpath%20id%3D%22Rectangle%2010369_____0_1_KTIDYLHSSO%22%20stroke%3D%22%23EBEBEB%22%20stroke-width%3D%221.2%22%20d%3D%22M7.5002%205.49991H3.0002V22.9999H21.0002V5.49991H17.5002%22%2F%3E%3C%2Fg%3E%3Cg%20id%3D%22Group_3%22%3E%3Cpath%20id%3D%22Vector_____0_2_COKCKYDIPL%22%20stroke%3D%22%23EBEBEB%22%20stroke-linecap%3D%22square%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.2%22%20d%3D%22M9.0002%204C13.1877%204%2016.5627%207.375%2016.5627%2011.5625%22%2F%3E%3Cpath%20id%3D%22Vector_____0_3_UCQBZQEBUC%22%20stroke%3D%22%23EBEBEB%22%20stroke-linecap%3D%22square%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.2%22%20d%3D%22M9.3127%207.43752C11.3752%207.43752%2013.0627%209.12501%2013.0627%2011.1875%22%2F%3E%3C%2Fg%3E%3Cpath%20id%3D%225_____0_4_NQWKTDWUCH%22%20fill%3D%22%23EBEBEB%22%20d%3D%22M9.84537%2020V19.235H13.5354C13.7754%2019.235%2013.8954%2019.139%2013.8954%2018.947V17.498C13.8954%2017.306%2013.7754%2017.21%2013.5354%2017.21H9.84537V14.06H14.7954V14.825H11.1054V16.445H13.8054C14.7054%2016.445%2015.1554%2016.805%2015.1554%2017.525V18.92C15.1554%2019.64%2014.7054%2020%2013.8054%2020H9.84537Z%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
+.status_info .conn_type.WiFi_5G_lock{
+	background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cg%20id%3D%22Group%22%3E%3Cg%20id%3D%22Devices%20%2F%20wifi_5g_lock%22%3E%3Cg%20id%3D%22Airplay%22%3E%3Cg%20id%3D%22Group_2%22%3E%3Cpath%20id%3D%22Rectangle%2010368_____0_1_PBUQLGFEOH%22%20stroke%3D%22%23EBEBEB%22%20stroke-width%3D%221.2%22%20d%3D%22M21.0002%205.49991V22.9999H3.0002V5.49991H7.5002%22%2F%3E%3C%2Fg%3E%3Cg%20id%3D%22Group_3%22%3E%3Cpath%20id%3D%22Vector_____0_2_IVMIDQMDDM%22%20stroke%3D%22%23EBEBEB%22%20stroke-linecap%3D%22square%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.2%22%20d%3D%22M9.0002%204C13.1877%204%2016.5627%207.375%2016.5627%2011.5625%22%2F%3E%3Cpath%20id%3D%22Vector_____0_3_VUQRDBOVCX%22%20stroke%3D%22%23EBEBEB%22%20stroke-linecap%3D%22square%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.2%22%20d%3D%22M9.3127%207.43752C11.3752%207.43752%2013.0627%209.12501%2013.0627%2011.1875%22%2F%3E%3C%2Fg%3E%3Cpath%20id%3D%225_____0_4_CFSCWHRQIY%22%20fill%3D%22%23EBEBEB%22%20d%3D%22M9.84537%2020V19.235H13.5354C13.7754%2019.235%2013.8954%2019.139%2013.8954%2018.947V17.498C13.8954%2017.306%2013.7754%2017.21%2013.5354%2017.21H9.84537V14.06H14.7954V14.825H11.1054V16.445H13.8054C14.7054%2016.445%2015.1554%2016.805%2015.1554%2017.525V18.92C15.1554%2019.64%2014.7054%2020%2013.8054%2020H9.84537Z%22%2F%3E%3C%2Fg%3E%3Cg%20id%3D%22Group%204644%22%3E%3Ccircle%20id%3D%22Ellipse%201299_____0_5_NFOAHBWTDF%22%20cx%3D%2219%22%20cy%3D%225%22%20r%3D%224.75%22%20fill%3D%22black%22%20stroke%3D%22white%22%20stroke-width%3D%220.5%22%2F%3E%3Cg%20id%3D%22Huge-icon%2Finterface%2Fsolid%2Flock%22%3E%3Cg%20id%3D%22lock%22%3E%3Cpath%20id%3D%22Union_____0_6_BAFMNHWXPH%22%20fill%3D%22%23FF3535%22%20fill-rule%3D%22evenodd%22%20d%3D%22M17.9167%203.25C17.9167%202.65169%2018.4017%202.16667%2019%202.16667C19.5983%202.16667%2020.0833%202.65169%2020.0833%203.25V3.66667H17.9167V3.25ZM17.4167%203.69007V3.25C17.4167%202.37555%2018.1255%201.66667%2019%201.66667C19.8745%201.66667%2020.5833%202.37555%2020.5833%203.25V3.69007C21.2002%203.80708%2021.6667%204.34907%2021.6667%205V7C21.6667%207.73638%2021.0697%208.33333%2020.3333%208.33333H17.6667C16.9303%208.33333%2016.3333%207.73638%2016.3333%207V5C16.3333%204.34907%2016.7998%203.80708%2017.4167%203.69007ZM19.6667%206C19.6667%206.36819%2019.3682%206.66667%2019%206.66667C18.6318%206.66667%2018.3333%206.36819%2018.3333%206C18.3333%205.63181%2018.6318%205.33333%2019%205.33333C19.3682%205.33333%2019.6667%205.63181%2019.6667%206Z%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
+.status_info .conn_type.WiFi_6G,
+.client_content_container .conn_type.WiFi_6G{
+	background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cg%20id%3D%22Group%22%3E%3Cg%20id%3D%22Devices%20%2F%20wifi_6g%22%3E%3Cg%20id%3D%22Airplay%22%3E%3Cg%20id%3D%22Group_2%22%3E%3Cpath%20id%3D%22Rectangle%2010369_____0_1_KWWIIUSRMJ%22%20stroke%3D%22%23EBEBEB%22%20stroke-width%3D%221.2%22%20d%3D%22M7.5002%205.49991H3.0002V22.9999H21.0002V5.49991H17.5002%22%2F%3E%3C%2Fg%3E%3Cg%20id%3D%22Group_3%22%3E%3Cpath%20id%3D%22Vector_____0_2_YOOCWRYPWB%22%20stroke%3D%22%23EBEBEB%22%20stroke-linecap%3D%22square%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.2%22%20d%3D%22M9.0002%204C13.1877%204%2016.5627%207.375%2016.5627%2011.5625%22%2F%3E%3Cpath%20id%3D%22Vector_____0_3_XASBBZXQIC%22%20stroke%3D%22%23EBEBEB%22%20stroke-linecap%3D%22square%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.2%22%20d%3D%22M9.3127%207.43752C11.3752%207.43752%2013.0627%209.12501%2013.0627%2011.1875%22%2F%3E%3C%2Fg%3E%3Cpath%20id%3D%226_____0_4_UUUQWZMXXU%22%20fill%3D%22%23EBEBEB%22%20d%3D%22M9.84537%2018.92V15.356C9.84537%2014.492%2010.3854%2014.06%2011.4654%2014.06H14.7054V14.825H11.8254C11.3454%2014.825%2011.1054%2015.017%2011.1054%2015.401V16.445H13.8054C14.7054%2016.445%2015.1554%2016.805%2015.1554%2017.525V18.92C15.1554%2019.64%2014.7054%2020%2013.8054%2020H11.1954C10.2954%2020%209.84537%2019.64%209.84537%2018.92ZM11.1054%2018.947C11.1054%2019.139%2011.2254%2019.235%2011.4654%2019.235H13.5354C13.7754%2019.235%2013.8954%2019.139%2013.8954%2018.947V17.498C13.8954%2017.306%2013.7754%2017.21%2013.5354%2017.21H11.1054V18.947Z%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
+.status_info .conn_type.WiFi_6G_lock{
+	background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cg%20id%3D%22Group%22%3E%3Cg%20id%3D%22Devices%20%2F%20wifi_6g_lock%22%3E%3Cg%20id%3D%22Airplay%22%3E%3Cg%20id%3D%22Group_2%22%3E%3Cpath%20id%3D%22Rectangle%2010368_____0_1_TNGUYHZGHO%22%20stroke%3D%22%23EBEBEB%22%20stroke-width%3D%221.2%22%20d%3D%22M21.0002%205.49991V22.9999H3.0002V5.49991H7.5002%22%2F%3E%3C%2Fg%3E%3Cg%20id%3D%22Group_3%22%3E%3Cpath%20id%3D%22Vector_____0_2_PFROUMHFGC%22%20stroke%3D%22%23EBEBEB%22%20stroke-linecap%3D%22square%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.2%22%20d%3D%22M9.0002%204C13.1877%204%2016.5627%207.375%2016.5627%2011.5625%22%2F%3E%3Cpath%20id%3D%22Vector_____0_3_ZDRTEWCVVC%22%20stroke%3D%22%23EBEBEB%22%20stroke-linecap%3D%22square%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.2%22%20d%3D%22M9.3127%207.43752C11.3752%207.43752%2013.0627%209.12501%2013.0627%2011.1875%22%2F%3E%3C%2Fg%3E%3Cpath%20id%3D%226_____0_4_DAZRSGEMIS%22%20fill%3D%22%23EBEBEB%22%20d%3D%22M9.84537%2018.92V15.356C9.84537%2014.492%2010.3854%2014.06%2011.4654%2014.06H14.7054V14.825H11.8254C11.3454%2014.825%2011.1054%2015.017%2011.1054%2015.401V16.445H13.8054C14.7054%2016.445%2015.1554%2016.805%2015.1554%2017.525V18.92C15.1554%2019.64%2014.7054%2020%2013.8054%2020H11.1954C10.2954%2020%209.84537%2019.64%209.84537%2018.92ZM11.1054%2018.947C11.1054%2019.139%2011.2254%2019.235%2011.4654%2019.235H13.5354C13.7754%2019.235%2013.8954%2019.139%2013.8954%2018.947V17.498C13.8954%2017.306%2013.7754%2017.21%2013.5354%2017.21H11.1054V18.947Z%22%2F%3E%3C%2Fg%3E%3Cg%20id%3D%22Group%204644%22%3E%3Ccircle%20id%3D%22Ellipse%201299_____0_5_BLDHOSYKWN%22%20cx%3D%2219%22%20cy%3D%225%22%20r%3D%224.75%22%20fill%3D%22black%22%20stroke%3D%22white%22%20stroke-width%3D%220.5%22%2F%3E%3Cg%20id%3D%22Huge-icon%2Finterface%2Fsolid%2Flock%22%3E%3Cg%20id%3D%22lock%22%3E%3Cpath%20id%3D%22Union_____0_6_CTLIGTCWXX%22%20fill%3D%22%23FF3535%22%20fill-rule%3D%22evenodd%22%20d%3D%22M17.9167%203.25C17.9167%202.65169%2018.4017%202.16667%2019%202.16667C19.5983%202.16667%2020.0833%202.65169%2020.0833%203.25V3.66667H17.9167V3.25ZM17.4167%203.69007V3.25C17.4167%202.37555%2018.1255%201.66667%2019%201.66667C19.8745%201.66667%2020.5833%202.37555%2020.5833%203.25V3.69007C21.2002%203.80708%2021.6667%204.34907%2021.6667%205V7C21.6667%207.73638%2021.0697%208.33333%2020.3333%208.33333H17.6667C16.9303%208.33333%2016.3333%207.73638%2016.3333%207V5C16.3333%204.34907%2016.7998%203.80708%2017.4167%203.69007ZM19.6667%206C19.6667%206.36819%2019.3682%206.66667%2019%206.66667C18.6318%206.66667%2018.3333%206.36819%2018.3333%206C18.3333%205.63181%2018.6318%205.33333%2019%205.33333C19.3682%205.33333%2019.6667%205.63181%2019.6667%206Z%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
+.status_info .conn_type.LAN,
+.client_content_container .conn_type.LAN{
+	background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cg%20id%3D%22Group%22%3E%3Cg%20id%3D%22Devices%20%2F%20cable%22%3E%3Cg%20id%3D%22Group%203486%22%3E%3Cpath%20id%3D%22Rectangle%209917_____0_0_ODEEUPNZTG%22%20stroke%3D%22%23EBEBEB%22%20stroke-width%3D%221.5%22%20d%3D%22M.75-.75H19.25V17.75H.75z%22%20transform%3D%22matrix(1%200%200%20-1%202%2020.5)%22%2F%3E%3Cg%20id%3D%22Group%203495%22%3E%3Cpath%20id%3D%22Union_____0_1_HQXKKDHKPM%22%20fill%3D%22%23EBEBEB%22%20d%3D%22M5.75%2017.625V18.375H5V17.625H5.75ZM18.25%2017.625H19V18.375H18.25V17.625ZM5.75%2010.125H5V9.375H5.75V10.125ZM8.25%2010.125H9V10.875H8.25V10.125ZM8.25%207.1249H7.5V6.3749H8.25V7.1249ZM15.75%207.1249V6.3749H16.5V7.1249H15.75ZM15.75%2010.125V10.875H15V10.125H15.75ZM18.25%2010.125V9.375H19V10.125H18.25ZM5.75%2016.875H18.25V18.375H5.75V16.875ZM6.5%2010.125V17.625H5V10.125H6.5ZM8.25%2010.875H5.75V9.375H8.25V10.875ZM9%207.1249V10.125H7.5V7.1249H9ZM15.75%207.8749H8.25V6.3749H15.75V7.8749ZM15%2010.125V7.1249H16.5V10.125H15ZM18.25%2010.875H15.75V9.375H18.25V10.875ZM17.5%2017.625V10.125H19V17.625H17.5Z%22%2F%3E%3Cg%20id%3D%22Frame%203483%22%3E%3Cpath%20id%3D%22Vector_____0_4_AAXJDOKQVA%22%20stroke%3D%22%23EBEBEB%22%20stroke-linecap%3D%22square%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.2%22%20d%3D%22M8.25%2017.625V14.825%22%2F%3E%3Cpath%20id%3D%22Vector_____0_5_SYJDSYNYJN%22%20stroke%3D%22%23EBEBEB%22%20stroke-linecap%3D%22square%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.2%22%20d%3D%22M10.49%2017.625V14.825%22%2F%3E%3Cpath%20id%3D%22Vector_____0_6_CKHGHPHXJW%22%20stroke%3D%22%23EBEBEB%22%20stroke-linecap%3D%22square%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.2%22%20d%3D%22M12.73%2017.625V14.825%22%2F%3E%3Cpath%20id%3D%22Vector_____0_7_XTKEUQMUEO%22%20stroke%3D%22%23EBEBEB%22%20stroke-linecap%3D%22square%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.2%22%20d%3D%22M14.97%2017.625V14.825%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
+.status_info .conn_type.WiFi,
+.status_info .conn_type.WiFi_offline,
+.status_info .conn_type.LAN{
+	background-color: #00D5FF;
+}
+.client_content_container .conn_type.WiFi_2G,
+.client_content_container .conn_type.WiFi_5G,
+.client_content_container .conn_type.WiFi_6G,
+.client_content_container .conn_type.LAN{
+	background-position-y: -2px;
+}
+.profile_setting.Get_Start{
+	display: flex;
+	flex-direction: column;
+	padding: 0 16px !important;
+}
+.profile_setting.Get_Start > .title,
+.profile_setting.Scenarios > .title{
+	color: #FF3535;
+	margin: 16px 0;
+}
+.profile_setting.Get_Start .wizard_list_bg {
+	margin-top: 0px;
+	width: 100%;
+}
+.profile_setting.Get_Start .wizard_list_bg:last-child {
+	margin-bottom: 0;
+}
+.profile_setting.Scenarios > .title{
+	padding-top: 16px;
+}
+.bandwidth_item > .icon_download{
+	background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cg%20id%3D%22Group%22%3E%3Cg%20id%3D%22Content%20%2F%20download%20speed%22%3E%3Cg%20id%3D%22Group%204646%22%3E%3Cg%20id%3D%22Group%203478%22%3E%3Cpath%20id%3D%22Vector_____0_0_HHREMPWSWQ%22%20stroke%3D%22%23EBEBEB%22%20stroke-linecap%3D%22square%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.2%22%20d%3D%22M11.9751%204.02486L12.0002%208.99974%22%2F%3E%3Cpath%20id%3D%22Polygon%204_____0_1_SKZYUOGNXQ%22%20stroke%3D%22%23EBEBEB%22%20stroke-linecap%3D%22round%22%20stroke-width%3D%221.2%22%20d%3D%22M17.3928%209.19613L12.1966%2018.1961L7.0005%209.19613L12.1967%2010.1961L17.3928%209.19613Z%22%2F%3E%3C%2Fg%3E%3Cpath%20id%3D%22Vector_____0_2_EFOXNKSECO%22%20stroke%3D%22%23EBEBEB%22%20stroke-linecap%3D%22square%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.2%22%20d%3D%22M17%2020.9998L7%2020.9998%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
+.bandwidth_item > .icon_upload{
+	background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cg%20id%3D%22Group%22%3E%3Cg%20id%3D%22Content%20%2F%20upload%20speed%22%3E%3Cg%20id%3D%22Group%204646%22%3E%3Cg%20id%3D%22Group%203478%22%3E%3Cpath%20id%3D%22Vector_____0_3_SSZZJCIATM%22%20stroke%3D%22%23EBEBEB%22%20stroke-linecap%3D%22square%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.2%22%20d%3D%22M11.9177%2018.8183L11.8926%2013.8434%22%2F%3E%3Cpath%20id%3D%22Polygon%204_____0_4_UHPMHNJFHZ%22%20stroke%3D%22%23EBEBEB%22%20stroke-linecap%3D%22round%22%20stroke-width%3D%221.2%22%20d%3D%22M6.50001%2013.647L11.6962%204.64702L16.8923%2013.647L11.6962%2012.647L6.50001%2013.647Z%22%2F%3E%3C%2Fg%3E%3Cpath%20id%3D%22Vector_____0_5_TJZVIQRMTQ%22%20stroke%3D%22%23EBEBEB%22%20stroke-linecap%3D%22square%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.2%22%20d%3D%22M16.9998%2020.9998L6.99978%2020.9998%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
+.profile_setting_item.schedule_ui{
+	background: rgba(128,128,128,0.08) !important;
+}
+.setting_subtab_container{
+	display: flex;
+	align-items: stretch;
+	justify-content: space-around;
+	width: 100%;
+	height: auto;
+	height: 60px;
+	font-size: 16px;
+	font-weight: 500;
+	border-bottom: 3px solid rgba(255,255,255,0.15);
+	line-height: 120%;
+	margin-bottom: initial;
+}
+.setting_subtab_container > .subtab_item{
+	color: #999999;
+	justify-content: space-evenly;
+}
+.setting_subtab_container > .subtab_item:not(:first-child):after{
+	border-right: 1px solid rgb(255 255 255 / 0.1);
+}
+.setting_subtab_container > .subtab_item.selected{
+	color: #FFFFFF;
+	background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, #184559 100%);
+	border-radius: 0;
+}
+.setting_subtab_container > .subtab_item.selected:before{
+	border-bottom: 3px solid rgba(0, 255, 209, 1);
+	content: "";
+	position: absolute;
+	left: 0;
+	bottom: -3px;
+	right: 0;
+	width: 100%;
+}
+.category_container {
+	margin-bottom: 1px;
+}
+.node_container{
+	background: rgba(255,255,255,0.08);
+}
+.node_container:before{
+	border-bottom: 1px solid rgba(255,255,255,0.15);
+}
+.node_content_container > .node_info > .node_main_info{
+	color: #EBEBEB;
+}
+.node_content_container  > .node_info > .node_sub_info{
+	color: #999999;
+}
+.node_content_container > .icon_wifi_band{
+	background-image: url(/images/New_ui/amesh/client_control.svg);
+}
+.node_content_container > .icon_location{
+   -webkit-mask-image: url(/images/New_ui/amesh/location_dropdown.svg);
+   -webkit-mask-repeat: no-repeat;
+   background-color: #999999;
+   background-image: none;
+}
+.node_container > .node_hint,
+.profile_group > .profile_hint{
+	color: #999999;
+}
+.dns_list_container .category_title{
+	background: rgba(0, 133, 255, 0.1);
+	color: #EBEBEB;
+}
+.dns_list_container .item_container{
+	color: #B3B3B3;
+}
+.dns_list_container .item_container.dns_content{
+	color: #EBEBEB;
+}
+.dns_list_container .category_title:before,
+.dns_list_container .item_container:before{
+	border-bottom: 1px solid rgba(255,255,255,0.15);
+}
+.bg_template_container::-webkit-scrollbar-track{
+	border: 4px solid #0B0B0B;
+	background-color: rgba(255, 53, 53, 0.5);
+}
+.bg_template_container::-webkit-scrollbar-thumb{
+	background-color: #FF3535;
+	border: 1px solid #0B0B0B;
+}
+.bg_template_container .bg_upload_image{
+	border: 2px dashed #EBEBEB ;
+}
+.bg_template_container .bg_upload_image:before{
+	color: #EBEBEB ;
+}
+.bg_template_container .bg_upload_image:hover{
+	border: 2px dashed #FF3535;
+}
+.bg_template_container .bg_upload_image:hover:before{
+	color: #FF3535;
+}
+.VPN_list_container{
+	background: rgba(255,255,255,0.08);
+}
+.VPN_list_container:before{
+	border-bottom: 1px solid rgba(255,255,255,0.15);
+}
+.VPN_list_container .profile_group:not(:first-child):before{
+	border-top: 1px solid #DCDCDC;
+}
+.VPN_list_container .title{
+	color: #FF3535;
+}
+.VPN_list_container .profile_container{
+	background: rgba(255,255,255,0.2);
+	color: #ebebeb;
+}
+.VPN_list_container .profile_item:before{
+	border-bottom: 1px solid rgba(255,255,255,0.15);
+}
+.clientlist_container .client_container:before,
+.clientlist_container .no_client_hint:before{
+	border-bottom: 1px solid rgba(255,255,255,0.15);
+}
+.clientlist_container .no_client_hint{
+	color: #FF40BF;
+}
+.client_container .client_icon_container.default_icon,
+.client_container .client_icon_container.user_icon,
+.client_container .client_icon_container.vender_icon{
+	background-color: #B3B3B3;
+	box-shadow: 0px 0px 0px 1px #B3B3B3;
+}
+.client_content_container > .sub_info > div{
+	color: #B3B3B3;
+}
+.client_content_container .sub_info > div:not(:first-child):before{
+	border-left: 1px solid #DCDCDC;
+}
+.client_content_container .client_name{
+	color: #EBEBEB;
+}
+.feature_desc_container .title{
+	color: #FF3535;
+}
+.feature_desc_container .desc{
+	color: #ebebeb;
+}
+.feature_desc_container .wizard_list_bg:before{
+	border-bottom: 1px solid rgba(255,255,255,0.15);
+}
+.wifi_share_container .qrcode_container{
+	color: #EBEBEB;
+	border: 1px solid #666;
+	border-radius: 0;
+	background: initial;
+}
+.qrcode_container > .qr_text{
+	color: #EBEBEB;
+}
+.export_btn_container > .export_btn{
+	color: #EBEBEB;
+	border: 1px solid #666;
+	border-radius: 0;
+}
+.export_btn_container > .export_btn:hover{
+	background: linear-gradient(91.54deg, #0E7287 7.08%, #5600E6 54%, #940038 85.11%);
+	border: 1px solid rgba(255, 53, 53, 0.4);
+}
+.profile_setting_title.Scenarios > .title{
+	color: #FF3535;
+}
+.btn_back_container{
+	color: #FF3535;
+}
+@media (max-width: 575px) {
+	.popup_container .setting_subtab_container{
+		margin-top: initial;
+	}
+}

@@ -1,0 +1,216 @@
+#!/bin/sh
+source /etc/sf2/_util
+
+# # /etc/sf2/cfp       # usage cfp <unit>
+# found 63158 unit=1
+# 
+# ----PAGE_CFP(0xa0)=0x80450000+(offset)<<3
+# ----PAGE_CFP_KEY(0xa1)=0x80450800+(offset)<<3
+# 
+# rate  00@a0-04|rateRefreshEn=0 pktLenCorr=0)+0bytes
+# ctrl 1ff@a1-00|cfpEnMap=0 1 2 3 4 5 6 7 8
+#              UDF0   UDF1   UDF2   UDF3   UDF4   UDF5   UDF6   UDF7   UDF8   UDF9   UDF10  UDF11
+# IPv4 Slice0 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00
+#      Slice1 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00
+#      Slice2 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00
+# IPv6 Slice0 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00
+#      Slice1 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00
+#      Slice2 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00
+# Othr Slice0 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00
+#      Slice1 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00
+#      Slice2 SOF+00 SOF+02 SOF+04 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00
+#  Chain rule SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00 SOF+00
+# 
+# 00:tcam-00000000-03000000-03000000-00000000-00000000-00000000-000000c2-0001800b
+#    mask-00000000-03000000-03000000-00000000-00000000-00000000-000000ff-00ffff0c
+#   Othr-Slice2: udf0[0180/ffff] udf1[c200/ff00]
+#    act -00000000-00000000-02400200
+#   action: lpbkEn IP_dstMap=r:100
+# 
+
+dump_cfp_udf() { # dump_cfp_udf "prompt" <offset> <len>
+    local i=0
+    echo $1 | awk '{ printf "%11s", $0}'
+    while [ $i -lt $3 ]
+    do
+        read_sf2 0xa1 $(($2+i)) | awk '{ v=$1; split("SOF ??? eL2 eL3",start_s);
+            printf " %s+%02d", start_s[and(rshift(v,5),3)+1], and(v,0x1f)*2; }'
+        true $(( i++ ))
+    done
+    echo ""   
+}
+
+cfp_ready_wait() {
+    local st=$(($(read_sf2 0xa0 0) & 1))
+    while [ $st -ne 0 ]
+    do
+       st=$(($(read_sf2 0xa0 0) & 1))
+    done
+}
+
+cfp_fetch() { #cfp_fetch <index> <ram_sel> <rd_sts>
+    local v=$(($1 << 16 | 3 | $2 << 10))
+    write_sf2 0xa0 0 $v
+    v=$(($(read_sf2 0xa0 0) >> 28 ))
+    while [ $v -ne $3 ]
+    do
+        v=$(($(read_sf2 0xa0 0) >> 28 ))
+    done
+}
+
+cfp_read() { #cfp_read <offset> <num>
+    local i=0
+    while [ $i -lt $2 ]
+    do
+        local ret
+        ret=`ethswctl -c regaccess -v $((0xa000|$1+$i*4)) -l 4 -n $sf2_unit`
+        echo $ret | awk '{printf "0x%s ", $3}'
+        true $(( i++ ))
+    done
+}
+
+dump_cfp_entry() { # dump_cfp_entry <index>
+    cfp_ready_wait;
+    cfp_fetch $1 1 1    # TCAM_SEL, READ_ST_TCAM
+    local v=$(($(read_sf2 0xa0 0x10) & 3))
+    if [ $v -ne 3 ]
+    then 
+        return;
+    fi
+
+    echo $(cfp_read 0x10 8) $(cfp_read 0x30 8) $1 $sf2_cfp | awk '{ i=$17; 
+        v[0]=$1; v[1]=$2; v[2]=$3; v[3]=$4; v[4]=$5; v[5]=$6; v[6]=$7; v[7]=$8;
+        m[0]=$9; m[1]=$10;m[2]=$11;m[3]=$12;m[4]=$13;m[5]=$14;m[6]=$15;m[7]=$16;
+        printf "%02x:tcam-%08x-%08x-%08x-%08x-%08x-%08x-%08x-%08x\n", i, v[7], v[6], v[5], v[4], v[3], v[2], v[1], v[0];
+        printf "   mask-%08x-%08x-%08x-%08x-%08x-%08x-%08x-%08x\n", m[7], m[6], m[5], m[4], m[3], m[2], m[1], m[0];
+        slice=and(rshift(v[0],2),3); l3_framing=and(rshift(v[6],24),3);
+        if (slice == 3) {
+            udf_valid=and(rshift(v[6],8),0xfff);
+            printf "  Chain Slice:"; 
+            for (i=0; i<12; i++) 
+                if (and(rshift(udf_valid,i),1)) {
+                    if (and(i,1)) {
+                        val= and(or(rshift(v[int(i/2)],24),lshift(v[int(i/2)+1],8)),0xffff);
+                        mask=and(or(rshift(m[int(i/2)],24),lshift(m[int(i/2)+1],8)),0xffff);
+                    } else {
+                        val= and(rshift(v[int(i/2)],8),0xffff); 
+                        mask=and(rshift(m[int(i/2)],8),0xffff);
+                    }
+                    printf " udf%d[%04x/%04x]", i, val, mask;
+                }
+            val= and(rshift(v[6],24),0xff); mask=and(rshift(m[6],24),0xff);
+            if (mask) printf " chainId[%02x/%02x]",val, mask;
+        } else if (l3_framing == 2) {
+            printf "  unsupported l3-framing";
+        } else {
+            udf_valid=and(or(rshift(v[5],24),lshift(v[6],8)),0x1ff);
+            split("IPv4 IPv6 ??? Othr", l3_frame_s);
+            printf "  %s-Slice%d:", l3_frame_s[l3_framing+1], slice;
+            for (i=0; i<9; i++) 
+                if (and(rshift(udf_valid,i),1)) {
+                    if (and(i,1)) {
+                        val= and(or(rshift(v[int(i/2)],24),lshift(v[int(i/2)+1],8)),0xffff);
+                        mask=and(or(rshift(m[int(i/2)],24),lshift(m[int(i/2)+1],8)),0xffff);
+                    } else {
+                        val= and(rshift(v[int(i/2)],8),0xffff); 
+                        mask=and(rshift(m[int(i/2)],8),0xffff);
+                    }
+                    printf " udf%d[%04x/%04x]", i, val, mask;
+                }
+            val= and(or(rshift(v[4],24),lshift(v[5],8)),0xffff); mask=and(or(rshift(m[4],24),lshift(m[5],8)),0xffff);
+            if (mask) printf " cTag[%04x/%04x]", val, mask;
+            val= and(rshift(v[5],8),0xffff); mask=and(rshift(m[5],8),0xffff);  if (mask) printf " sTag[%04x/%04x]", val, mask;
+            if ($18 == 128 ) {
+                val= and(v[7],0x1ff); mask=and(m[7],0x1ff);
+            } else {
+                val= and(v[7],0xff); mask=and(m[7],0xff);
+            } 
+            if (mask) printf " srcPorts[%x/%x]", val, mask;
+            val= rshift(v[6],30); mask=rshift(m[6],30);
+            split("!tag vid=0 ??? vid!=0",tags_s);                             if (mask) printf " sTagS[%x/%x]%s", val, mask, tags_s[val+1];
+            val= and(rshift(v[6],28),3); mask=and(rshift(m[6],28),3);          if (mask) printf " cTagS[%x/%x]%s", val, mask, tags_s[val+1];
+            split("DIXv2 snapPublic LLC snapPrivate",l2_s);
+            val= and(rshift(v[6],26),3); mask=and(rshift(m[6],26),3);          if (mask) printf " L2[%x/%x]%s", val, mask, l2_s[val+1];
+            val= and(rshift(v[6],2),1); mask=and(rshift(m[6],2),1);            if (mask) printf " pppoeSess=%d", val;
+            
+            if (l3_framing == 0) { # IPv4
+                val= and(rshift(v[6],16),0xff); mask=and(rshift(m[6],16),0xff);     if (mask) printf " tos[%02x/%02x]",val, mask;
+                val= and(rshift(v[6],8),0xff); mask=and(rshift(m[6],8),0xff);       if (mask) printf " ipProt[%02x/%02x]",val, mask;
+                val= and(rshift(v[6],7),1); mask=and(rshift(m[6],7),1);             if (mask) printf " %s", (val)? "fragmented":"!fragmented";
+                val= and(rshift(v[6],6),1); mask=and(rshift(m[6],6),1);             if (mask) printf " %s", (val)? "!1stFrag":"1stFrag";
+                val= and(rshift(v[6],5),1); mask=and(rshift(m[6],5),1);             if (mask) printf " authenticated=%d", val;
+                val= and(rshift(v[6],3),3); mask=and(rshift(m[6],3),3);             if (mask) printf " ttls[%x/%x]",val, mask;
+            } else if (l3_framing == 1) { # IPv6
+                val= and(rshift(v[6],16),0xff); mask=and(rshift(m[6],16),0xff);     if (mask) printf " tc[%02x/%02x]",val, mask;
+                val= and(rshift(v[6],8),0xff); mask=and(rshift(m[6],8),0xff);       if (mask) printf " nextHdr[%02x/%02x]",val, mask;
+                val= and(rshift(v[6],7),1); mask=and(rshift(m[6],7),1);             if (mask) printf " %s", (val)? "fragmented":"!fragmented";
+                val= and(rshift(v[6],6),1); mask=and(rshift(m[6],6),1);             if (mask) printf " %s", (val)? "!1stFrag":"1stFrag";
+                val= and(rshift(v[6],5),1); mask=and(rshift(m[6],5),1);             if (mask) printf " authenticated=%d", val;
+                val= and(rshift(v[6],3),3); mask=and(rshift(m[6],3),3);             if (mask) printf " hop[%x/%x]",val, mask;
+           
+            } else { # other
+                val= and(rshift(v[6],8),0xffff); mask=and(rshift(m[6],8),0xffff);   if (mask) printf " eType[%04x/%04x]",val, mask;
+            }
+        }}'
+    echo ""
+    cfp_fetch $1 2 2    # ACTION_RAM
+    echo $(cfp_read 0x50 3) $1 | awk '{ a[0]=$1; a[1]=$2; a[2]=$3;
+        printf "   act -%08x-%08x-%08x\n  action:", a[2], a[1], a[0];
+        if (and(rshift(a[0],0),1))          printf " bypVlan";
+        if (and(rshift(a[0],1),1))          printf " bypEAP";
+        if (and(rshift(a[0],2),1))          printf " bypSTP";
+        if (and(rshift(a[2],0),1))          printf " bypMacLmt";
+        v=and(rshift(a[0],3),0x3f); if (v)  printf " reason=%x", v;
+        if (and(rshift(a[0],9),1))          printf " lpbkEn";
+        if (and(rshift(a[0],13),1))         printf " TC=%x", and(rshift(a[0],10),7);
+        v=and(rshift(a[0],24),3); if (v)    printf " IP_dstMap=%s:%x", v==1?"-":v==2?"r":"+",and(rshift(a[0],14),0x3ff);
+        if (and(rshift(a[1],0),1))          printf " IP_DSCP=%x", and(rshift(a[0],26),0x3f);
+        v=and(rshift(a[1],11),3); if (v)    printf " OP_dstMap=%s:%x", v==1?"-":v==2?"r":"+",and(rshift(a[1],1),0x3ff);
+        if (and(rshift(a[1],19),1))         printf " OP_DSCP=%x", and(rshift(a[1],13),0x3f);
+        v=and(rshift(a[1],20),0xff); if (v) printf " chainId=%x", v;
+        split("0-green 1-yellow 2-red 3-??",gyr_s);
+        if (and(rshift(a[1],28),1))         printf " color=%s", gyr_s[and(rshift(a[1],29),3)+1];
+        if (and(rshift(a[1],31),1))         printf " REDdefault";
+        if (and(rshift(a[2],1),1))          printf " TCo=%x", and(rshift(a[2],2),7);
+        if (and(rshift(a[2],5),1))          printf " spcpRemarkDis";
+        if (and(rshift(a[2],6),1))          printf " cpcpRemarkDis";
+        if (and(rshift(a[2],7),1))          printf " deiRemarkDis";
+        }'
+    echo ""
+}
+
+sf2_cfp() { #sf2_cfp <unit>
+    local unit=$1
+    read_chip $unit
+    if [ $sf2_cfp == 0 ]
+    then echo "device has no (connected) sf2-cfp switch!!"; return;
+    fi
+
+    echo ""
+    print_page_hdr 0xa0 CFP
+    print_page_hdr 0xa1 CFP_KEY
+    
+    echo ""
+    read_sf2 0xa0 0x04 | awk '{v=$1; split("0)+0bytes 1)+8bytes 2)+20bytes 3)??",cor_s);
+        printf "rate  %02x@a0-04|rateRefreshEn=%d pktLenCorr=%s\n", v, and(rshift(v,2),1),cor_s[and(v,3)+1];}'
+    read_sf2 0xa1 0x00 | awk '{v=$1;
+        printf "ctrl %03x@a1-00|cfpEnMap=", v; for (i=0; i<9; i++) if (and(rshift(v,i),1)) printf "%d ",i; printf"\n";}' 
+
+    echo "             UDF0   UDF1   UDF2   UDF3   UDF4   UDF5   UDF6   UDF7   UDF8   UDF9   UDF10  UDF11"
+    dump_cfp_udf "IPv4 Slice0" 0x10 9; dump_cfp_udf "Slice1" 0x20 9; dump_cfp_udf "Slice2" 0x30 9;
+    dump_cfp_udf "IPv6 Slice0" 0x40 9; dump_cfp_udf "Slice1" 0x50 9; dump_cfp_udf "Slice2" 0x60 9;
+    dump_cfp_udf "Othr Slice0" 0x70 9; dump_cfp_udf "Slice1" 0x80 9; dump_cfp_udf "Slice2" 0x90 9;
+    dump_cfp_udf "Chain rule"  0xa0 12;
+
+    echo ""
+    local i=0
+    while [ $i -lt $sf2_cfp ]
+    do
+        dump_cfp_entry $i
+        true $(( i++ ))
+    done
+}
+
+
+sf2_cfp $1
+

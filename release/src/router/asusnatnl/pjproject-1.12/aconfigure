@@ -10790,8 +10790,16 @@ case $target in
 	ac_os_objs="$ac_os_objs file_access_unistd.o file_io_ansi.o os_core_unix.o os_error_unix.o os_time_unix.o os_timestamp_posix.o"
 	case $target in
 	  #arm*-apple-darwin*)
-	  *-apple-darwin*)
-		ac_os_objs="$ac_os_objs os_info_iphone.o"
+	  #*-apple-darwin*)
+	  #*-apple-darwin_ios*)
+	#	ac_os_objs="$ac_os_objs os_info_iphone.o"
+	#	;;
+	  *darwin*)
+		if test "${TARGET_OS}" == IOS; then
+			ac_os_objs="$ac_os_objs os_info_iphone.o"
+		else
+			ac_os_objs="$ac_os_objs"
+		fi
 		;;
 	esac
 	# UUID
@@ -11484,25 +11492,33 @@ if test "$enable_sound" = "no"; then
 else
  case $target in
   #arm*-apple-darwin*)
-  *-apple-darwin*)
-	LIBS="$LIBS -framework CoreAudio -framework CoreFoundation -framework AudioToolbox -framework CFNetwork -framework UIKit"
-	{ echo "$as_me:$LINENO: result: Checking sound device backend... AudioUnit" >&5
-echo "${ECHO_T}Checking sound device backend... AudioUnit" >&6; }
-	;;
+  #*-apple-darwin*)
+  #*-apple-darwin_ios*)
+	#LIBS="$LIBS -framework CoreAudio -framework CoreFoundation -framework AudioToolbox -framework CFNetwork -framework UIKit"
+	#{ echo "$as_me:$LINENO: result: Checking sound device backend... AudioUnit" >&5
+#echo "${ECHO_T}Checking sound device backend... AudioUnit" >&6; }
+	#;;
   *darwin*)
 #	LIBS="$LIBS -framework CoreAudio -framework CoreServices -framework AudioUnit -framework AudioToolbox -framework UIKit"
-	LIBS="$LIBS -framework CoreAudio -framework CoreServices -framework CoreFoundation -framework AudioToolbox -framework AudioUnit"
-	if test "`uname -r`" = "6.8"; then
-		#ac_pa_cflags="$ac_pa_cflags -DPA_OLD_CORE_AUDIO -DMOSX_USE_NON_ATOMIC_FLAG_BITS"
-		#AC_MSG_RESULT([Setting additional PortAudio CFLAGS.. -DPA_OLD_CORE_AUDIO -DMOSX_USE_NON_ATOMIC_FLAG_BITS])
-		ac_pjmedia_snd=pa_old_darwinos
-		{ echo "$as_me:$LINENO: result: Checking sound device backend... old coreaudio" >&5
-echo "${ECHO_T}Checking sound device backend... old coreaudio" >&6; }
+	if test "${TARGET_OS}" == IOS; then
+    LIBS="$LIBS -framework CoreAudio -framework CoreFoundation -framework AudioToolbox -framework CFNetwork -framework UIKit"
+    { echo "$as_me:$LINENO: result: Checking sound device backend... AudioUnit" >&5
+echo "${ECHO_T}Checking sound device backend... AudioUnit" >&6; }
 	else
-		ac_pjmedia_snd=pa_darwinos
-		{ echo "$as_me:$LINENO: result: Checking sound device backend... coreaudio" >&5
+    LIBS="$LIBS -framework CoreAudio -framework CoreServices -framework CoreFoundation -framework AudioToolbox -framework AudioUnit"
+    if test "`uname -r`" = "6.8"; then
+      #ac_pa_cflags="$ac_pa_cflags -DPA_OLD_CORE_AUDIO -DMOSX_USE_NON_ATOMIC_FLAG_BITS"
+      #AC_MSG_RESULT([Setting additional PortAudio CFLAGS.. -DPA_OLD_CORE_AUDIO -DMOSX_USE_NON_ATOMIC_FLAG_BITS])
+      ac_pjmedia_snd=pa_old_darwinos
+      { echo "$as_me:$LINENO: result: Checking sound device backend... old coreaudio" >&5
+echo "${ECHO_T}Checking sound device backend... old coreaudio" >&6; }
+    else
+      ac_pjmedia_snd=pa_darwinos
+      { echo "$as_me:$LINENO: result: Checking sound device backend... coreaudio" >&5
 echo "${ECHO_T}Checking sound device backend... coreaudio" >&6; }
+    fi
 	fi
+	
 	;;
   *cygwin* | *mingw*)
 	ac_pjmedia_snd=pa_win32

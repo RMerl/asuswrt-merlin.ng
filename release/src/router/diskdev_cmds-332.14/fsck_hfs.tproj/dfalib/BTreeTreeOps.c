@@ -177,7 +177,7 @@ Output:		nodeNum			- number of the node containing the key position
 			
 Result:		noErr			- key found, index is record index
 			fsBTRecordNotFoundErr	- key not found, index is insert index
-			fsBTEmptyErr		- key not found, return params are nil
+			fsBTEmptyErr		- key not found, return params are NULL
 			otherwise			- catastrophic failure (GetNode/ReleaseNode failed)
 -------------------------------------------------------------------------------*/
 
@@ -321,8 +321,8 @@ ReleaseAndExit:
 ErrorExit:
 	
 	*nodeNum					= 0;
-	nodePtr->buffer				= nil;
-	nodePtr->blockHeader		= nil;
+	nodePtr->buffer				= NULL;
+	nodePtr->blockHeader		= NULL;
 	*returnIndex				= 0;
 
 	return	err;
@@ -354,7 +354,7 @@ OSStatus	InsertTree ( BTreeControlBlockPtr		 btreePtr,
 	primaryKey.replacingKey	= replacingKey;
 	primaryKey.skipRotate	= false;
 
-	err	= InsertLevel (btreePtr, treePathTable, &primaryKey, nil,
+	err	= InsertLevel (btreePtr, treePathTable, &primaryKey, NULL,
 					   targetNode, index, level, insertNode );
 						
 	return err;
@@ -385,7 +385,7 @@ OSStatus	InsertLevel (BTreeControlBlockPtr		 btreePtr,
 #if defined(applec) && !defined(__SC__)
 	PanicIf ((level == 1) && (((NodeDescPtr)targetNode->buffer)->kind != kBTLeafNode), "\P InsertLevel: non-leaf at level 1! ");
 #endif
-	siblingNode.buffer = nil;
+	siblingNode.buffer = NULL;
 	targetNodeNum = treePathTable [level].node;
 
 	insertParent = false;
@@ -420,7 +420,7 @@ OSStatus	InsertLevel (BTreeControlBlockPtr		 btreePtr,
 	
 	////// process second insert (if any) //////
 
-	if  ( secondaryKey != nil )
+	if (secondaryKey != NULL)
 	{
 		Boolean				temp;
 
@@ -446,7 +446,7 @@ OSStatus	InsertLevel (BTreeControlBlockPtr		 btreePtr,
 		UInt8 *				recPtr;
 		UInt16				recSize;
 		
-		secondaryKey = nil;
+		secondaryKey = NULL;
 		
 		PanicIf ( (level == btreePtr->treeDepth), "InsertLevel: unfinished insert!?");
 
@@ -606,9 +606,9 @@ static OSErr	InsertNode	(BTreeControlBlockPtr	 btreePtr,
 	
 	if ( leftNodeNum > 0 )
 	{
-		PanicIf ( siblingNode->buffer != nil, "InsertNode: siblingNode already aquired!");
+		PanicIf(siblingNode->buffer != NULL, "InsertNode: siblingNode already aquired!");
 
-		if ( siblingNode->buffer == nil )
+		if (siblingNode->buffer == NULL)
 		{
 			err = GetNode (btreePtr, leftNodeNum, siblingNode);	// will be released by caller or a split below
 			M_ExitOnError (err);
@@ -703,7 +703,7 @@ OSStatus	DeleteTree			(BTreeControlBlockPtr		 btreePtr,
 
 	targetNodeNum = treePathTable[level].node;
 	targetNodePtr = targetNode->buffer;
-	PanicIf (targetNodePtr == nil, "DeleteTree: targetNode has nil buffer!");
+	PanicIf (targetNodePtr == NULL, "DeleteTree: targetNode has NULL buffer!");
 
 	DeleteRecord (btreePtr, targetNodePtr, index);
 		
@@ -766,7 +766,7 @@ OSStatus	DeleteTree			(BTreeControlBlockPtr		 btreePtr,
 		deleteRequired = false;
 		updateRequired = false;
 		
-		if ( targetNode->buffer == nil )	// then root was freed and the btree is empty
+		if (targetNode->buffer == NULL)	// then root was freed and the btree is empty
 		{
 			btreePtr->rootNode  = 0;
 			btreePtr->treeDepth = 0;
@@ -1124,7 +1124,7 @@ static OSStatus	SplitLeft		(BTreeControlBlockPtr		 btreePtr,
 	if ( (right->height == 1) && (right->kind != kBTLeafNode) )
 		return	fsBTInvalidNodeErr;
 	
-	if ( left != nil )
+	if (left != NULL)
 	{
 		if ( left->fLink != rightNodeNum )
 			return fsBTInvalidNodeErr;										//ее E_BadSibling ?
@@ -1145,7 +1145,7 @@ static OSStatus	SplitLeft		(BTreeControlBlockPtr		 btreePtr,
 
 	/////////////// Update Forward Link In Original Left Node ///////////////////
 
-	if ( left != nil )
+	if (left != NULL)
 	{
 		left->fLink	= newNodeNum;
 		err = UpdateNode (btreePtr, leftNode);
@@ -1240,8 +1240,8 @@ static OSStatus	AddNewRootNode	(BTreeControlBlockPtr	 btreePtr,
 	Boolean				didItFit;
 	UInt16				keyLength;	
 	
-	PanicIf (leftNode == nil, "AddNewRootNode: leftNode == nil");
-	PanicIf (rightNode == nil, "AddNewRootNode: rightNode == nil");
+	PanicIf (leftNode == NULL, "AddNewRootNode: leftNode == NULL");
+	PanicIf (rightNode == NULL, "AddNewRootNode: rightNode == NULL");
 	
 	
 	/////////////////////// Initialize New Root Node ////////////////////////////
@@ -1362,7 +1362,7 @@ static OSStatus	SplitRight		(BTreeControlBlockPtr		 btreePtr,
 	if ( (leftPtr->height == 1) && (leftPtr->kind != kBTLeafNode) )
 		return	fsBTInvalidNodeErr;
 	
-	if ( rightPtr != nil )
+	if (rightPtr != NULL)
 	{
 		if ( rightPtr->bLink != nodeNum )
 			return fsBTInvalidNodeErr;										//ее E_BadSibling ?
@@ -1382,7 +1382,7 @@ static OSStatus	SplitRight		(BTreeControlBlockPtr		 btreePtr,
 
 	/////////////// Update backward Link In Original Right Node ///////////////////
 
-	if ( rightPtr != nil )
+	if (rightPtr != NULL)
 	{
 		rightPtr->bLink	= newNodeNum;
 		err = UpdateNode (btreePtr, rightNodePtr);
@@ -1739,7 +1739,7 @@ static int DoKeyCheck( NodeDescPtr nodeP, BTreeControlBlock *btcb )
 	UInt16				keyLength;
 	KeyPtr 				keyPtr;
 	UInt8				*dataPtr;
-	KeyPtr				prevkeyP	= nil;
+	KeyPtr				prevkeyP	= NULL;
 
 
 	if ( nodeP->numRecords == 0 )
@@ -1766,7 +1766,7 @@ static int DoKeyCheck( NodeDescPtr nodeP, BTreeControlBlock *btcb )
 				return( -1 );
 			}
 	
-			if ( prevkeyP != nil )
+			if (prevkeyP != NULL)
 			{
 				if ( CompareKeys( (BTreeControlBlockPtr)btcb, prevkeyP, keyPtr ) >= 0 )
 				{

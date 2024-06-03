@@ -1,0 +1,6 @@
+DALMORE BOARD
+M:	Tom Warren <twarren@nvidia.com>
+S:	Maintained
+F:	board/nvidia/dalmore/
+F:	include/configs/dalmore.h
+F:	configs/dalmore_defconfig

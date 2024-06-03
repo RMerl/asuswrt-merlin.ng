@@ -89,7 +89,7 @@ void write_ovpn_dnsmasq_config(FILE* dnsmasq_conf) {
 	for (unit = 1; unit <= OVPN_SERVER_MAX; unit++) {
 		sprintf(prefix, "vpn_server%d_", unit);
 		if (nvram_pf_get_int(prefix, "pdns"))
-			fprintf(dnsmasq_conf, "interface=%s%d\n", nvram_pf_safe_get(prefix, "if"), OVPN_SERVER_BASEIF + unit);
+			fprintf(dnsmasq_conf, "interface=%s%d\n", nvram_pf_safe_get(prefix, "if"), OVPN_SERVER_BASE + unit);
 	}
 
 	for (unit = 1; unit <= OVPN_CLIENT_MAX; unit++) {
@@ -239,10 +239,10 @@ int ovpn_setup_iface(char *iface, ovpn_if_t iface_type, int bridge) {
 void ovpn_remove_iface(ovpn_type_t type, int unit) {
 	char tmp[8];
 
-	snprintf(tmp, sizeof(tmp), "tap%d", (type == OVPN_TYPE_CLIENT ? OVPN_CLIENT_BASEIF : OVPN_SERVER_BASEIF) + unit);
+	snprintf(tmp, sizeof(tmp), "tap%d", (type == OVPN_TYPE_CLIENT ? OVPN_CLIENT_BASE : OVPN_SERVER_BASE) + unit);
 	eval("openvpn", "--rmtun", "--dev", tmp);
 
-	snprintf(tmp, sizeof(tmp), "tun%d", (type == OVPN_TYPE_CLIENT ? OVPN_CLIENT_BASEIF : OVPN_SERVER_BASEIF) + unit);
+	snprintf(tmp, sizeof(tmp), "tun%d", (type == OVPN_TYPE_CLIENT ? OVPN_CLIENT_BASE : OVPN_SERVER_BASE) + unit);
 	eval("openvpn", "--rmtun", "--dev", tmp);
 }
 

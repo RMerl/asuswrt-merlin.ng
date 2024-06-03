@@ -236,13 +236,13 @@ OSStatus	FindIteratorPosition	(BTreeControlBlockPtr	 btreePtr,
 	// assume index points to UInt16
 	// assume foundRecord points to Boolean
 	
-	left->buffer		= nil;
-	middle->buffer		= nil;
-	right->buffer		= nil;
+	left->buffer		= NULL;
+	middle->buffer		= NULL;
+	right->buffer		= NULL;
 	
 	foundIt				= false;
 	
-	if (iterator == nil)						// do we have an iterator?
+	if (iterator == NULL)						// do we have an iterator?
 	{
 		err = fsBTInvalidIteratorErr;
 		goto ErrorExit;
@@ -250,7 +250,7 @@ OSStatus	FindIteratorPosition	(BTreeControlBlockPtr	 btreePtr,
 
 #if SupportsKeyDescriptors
 	//ее verify iterator key (change CheckKey to take btreePtr instead of keyDescPtr?)
-	if (btreePtr->keyDescPtr != nil)
+	if (btreePtr->keyDescPtr != NULL)
 	{
 		err = CheckKey (&iterator->key, btreePtr->keyDescPtr, btreePtr->maxKeyLength );
 		M_ExitOnError (err);
@@ -309,7 +309,7 @@ OSStatus	FindIteratorPosition	(BTreeControlBlockPtr	 btreePtr,
 		{
 			*right			= *middle;
 			*middle			= *left;
-			left->buffer	= nil;
+			left->buffer	= NULL;
 			index			= leftIndex;
 			
 			goto SuccessfulExit;
@@ -330,7 +330,7 @@ OSStatus	FindIteratorPosition	(BTreeControlBlockPtr	 btreePtr,
 		{
 			*right			= *middle;
 			*middle			= *left;
-			left->buffer	= nil;
+			left->buffer	= NULL;
 			index			= leftIndex;
 			
 			goto SuccessfulExit;
@@ -363,7 +363,7 @@ OSStatus	FindIteratorPosition	(BTreeControlBlockPtr	 btreePtr,
 		{
 			*left			= *middle;
 			*middle			= *right;
-			right->buffer	= nil;
+			right->buffer	= NULL;
 			index			= rightIndex;
 			
 			goto SuccessfulExit;
@@ -427,15 +427,15 @@ OSStatus	CheckInsertParams		(SFCB						*filePtr,
 {
 	BTreeControlBlockPtr	btreePtr;
 	
-	if (filePtr == nil)									return	paramErr;
+	if (filePtr == NULL)									return	paramErr;
 
 	btreePtr = (BTreeControlBlockPtr) filePtr->fcbBtree;
-	if (btreePtr == nil)								return	fsBTInvalidFileErr;
-	if (iterator == nil)								return	paramErr;
-	if (record	 == nil)								return	paramErr;
+	if (btreePtr == NULL)								return	fsBTInvalidFileErr;
+	if (iterator == NULL)								return	paramErr;
+	if (record	 == NULL)								return	paramErr;
 	
 #if SupportsKeyDescriptors
-	if (btreePtr->keyDescPtr != nil)
+	if (btreePtr->keyDescPtr != NULL)
 	{
 		OSStatus	err;
 

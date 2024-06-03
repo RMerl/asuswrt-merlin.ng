@@ -1,0 +1,6 @@
+INTEL GALILEO BOARD
+M:	Bin Meng <bmeng.cn@gmail.com>
+S:	Maintained
+F:	board/intel/galileo/
+F:	include/configs/galileo.h
+F:	configs/galileo_defconfig

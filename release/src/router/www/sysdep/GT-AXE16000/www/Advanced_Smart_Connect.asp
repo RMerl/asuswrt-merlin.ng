@@ -13,12 +13,12 @@
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="/device-map/device-map.css">
 <script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
-<script type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="/client_function.js"></script>
 <style>
 .FormTable th{
@@ -76,7 +76,7 @@ hook = httpApi.hookGet('wl_cap_2g', true);
 	for(let i=0; i< wl_info.wl_if_total; i++){
 		let shift = i;
 		
-		if(based_modelid == 'GT-AXE16000'){		// wireless介面順序變換調整
+		if(based_modelid == 'GT-AXE16000' || based_modelid == 'GT-BE98' || based_modelid == 'GT-BE98_PRO' || based_modelid == 'BQ16_PRO' || based_modelid == 'BQ16'){		// wireless介面順序變換調整
 			shift = (i + 3) % 4;		// wireless unit ['1', '2', '3', '0']			
 		}
 		
@@ -128,7 +128,7 @@ let spatialStreams = (function(){
 
 let phyRate = (function(){
 	let array = [];
-	if(based_modelid === 'GT-AXE16000'){
+	if(based_modelid === 'GT-AXE16000' || based_modelid === 'GT-BE98' || based_modelid == 'GT-BE98_PRO' || based_modelid == 'BQ16_PRO' || based_modelid == 'BQ16'){
 		array = [1148, 4804, 4804, 4804];
 	}
 
@@ -691,7 +691,7 @@ function applyRule(){
 			continue;
 		}
 
-		if(based_modelid == 'GT-AXE16000'){		// wireless介面順序變換調整
+		if(based_modelid == 'GT-AXE16000' || based_modelid == 'GT-BE98' || based_modelid == 'GT-BE98_PRO' || based_modelid == 'BQ16_PRO' || based_modelid == 'BQ16'){		// wireless介面順序變換調整
 			shift = (i + 3) % 4;		// wireless unit ['1', '2', '3', '0']			
 		}
 		/*

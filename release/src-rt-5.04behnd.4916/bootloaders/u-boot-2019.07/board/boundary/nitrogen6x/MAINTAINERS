@@ -1,0 +1,12 @@
+NITROGEN6X BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/nitrogen6x/
+F:	include/configs/nitrogen6x.h
+F:	configs/mx6qsabrelite_defconfig
+F:	configs/nitrogen6dl_defconfig
+F:	configs/nitrogen6dl2g_defconfig
+F:	configs/nitrogen6q_defconfig
+F:	configs/nitrogen6q2g_defconfig
+F:	configs/nitrogen6s_defconfig
+F:	configs/nitrogen6s1g_defconfig

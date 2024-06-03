@@ -1,6 +1,6 @@
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta http-equiv="X-UA-Compatible" content="ie=edge">
 <link rel="stylesheet" type="text/css" href="/index_style.css">
 <link rel="stylesheet" type="text/css" href="/form_style.css">
@@ -34,7 +34,7 @@ $(function () {
 		return "";
 	};
 
-	var theme = getUrlParameter("current_theme").toLocaleUpperCase();
+	var theme = getUrlParameter("current_theme").toUpperCase();
 	if(theme == "WHITE" || theme == "GT" || theme == "TUF"){
 		$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/VPN/vpns' + theme + '.css">');
 	}
@@ -48,6 +48,9 @@ $(function () {
 			$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/VPN/vpnsTUF.css">');
 		}
 	}
+
+	if(CoBrand == "8")
+		$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/css/difference.css">');
 });
 if(isSupport("pptpd")){
 	$('<script />', { type : 'text/javascript', src : "/VPN/vpns_pptp.js"}).appendTo('head');
@@ -403,7 +406,7 @@ $(document).ready(initial);
 <div class="popup_container popup_element_second"></div>
 <div class="hidden_mask popup_customize_alert"></div>
 <div class="popup_container popup_customize_alert"></div>
-<div class="bg">
+<div id="vpns_bg" class="bg">
 	<div class="container no_highlights">
 		<div class="function_desc_container">
 			<div class="title"><#BOP_isp_heart_item#></div>

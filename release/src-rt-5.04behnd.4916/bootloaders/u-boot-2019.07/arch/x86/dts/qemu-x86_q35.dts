@@ -1,0 +1,96 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2015, Bin Meng <bmeng.cn@gmail.com>
+ */
+
+/dts-v1/;
+
+#include <dt-bindings/interrupt-router/intel-irq.h>
+
+/* ICH9 IRQ router has discrete PIRQ control registers */
+#undef PIRQE
+#undef PIRQF
+#undef PIRQG
+#undef PIRQH
+#define PIRQE	8
+#define PIRQF	9
+#define PIRQG	10
+#define PIRQH	11
+
+/include/ "skeleton.dtsi"
+/include/ "serial.dtsi"
+/include/ "keyboard.dtsi"
+/include/ "reset.dtsi"
+/include/ "rtc.dtsi"
+/include/ "tsc_timer.dtsi"
+
+/ {
+	model = "QEMU x86 (Q35)";
+	compatible = "qemu,x86";
+
+	config {
+		silent_console = <0>;
+		u-boot,no-apm-finalize;
+	};
+
+	chosen {
+		stdout-path = "/serial";
+	};
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		u-boot,dm-pre-reloc;
+
+		cpu@0 {
+			device_type = "cpu";
+			compatible = "cpu-qemu";
+			u-boot,dm-pre-reloc;
+			reg = <0>;
+			intel,apic-id = <0>;
+		};
+	};
+
+	tsc-timer {
+		clock-frequency = <1000000000>;
+	};
+
+	pci {
+		compatible = "pci-x86";
+		#address-cells = <3>;
+		#size-cells = <2>;
+		u-boot,dm-pre-reloc;
+		ranges = <0x02000000 0x0 0xc0000000 0xc0000000 0 0x10000000
+			0x42000000 0x0 0xd0000000 0xd0000000 0 0x10000000
+			0x01000000 0x0 0x2000 0x2000 0 0xe000>;
+
+		pch@1f,0 {
+			reg = <0x0000f800 0 0 0 0>;
+			compatible = "intel,pch9";
+			u-boot,dm-pre-reloc;
+
+			irq-router {
+				compatible = "intel,irq-router";
+				u-boot,dm-pre-reloc;
+				intel,pirq-config = "pci";
+				intel,actl-8bit;
+				intel,actl-addr = <0x44>;
+				intel,pirq-link = <0x60 8>;
+				intel,pirq-mask = <0x0e40>;
+				intel,pirq-routing = <
+					/* e1000 NIC */
+					PCI_BDF(0, 2, 0) INTA PIRQG
+					/* ICH9 UHCI */
+					PCI_BDF(0, 29, 0) INTA PIRQA
+					PCI_BDF(0, 29, 1) INTB PIRQB
+					PCI_BDF(0, 29, 2) INTC PIRQC
+					/* ICH9 EHCI */
+					PCI_BDF(0, 29, 7) INTD PIRQD
+					/* ICH9 SATA */
+					PCI_BDF(0, 31, 2) INTA PIRQA
+				>;
+			};
+		};
+	};
+
+};

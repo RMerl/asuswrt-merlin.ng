@@ -36,8 +36,14 @@
 void netdev_stats64_to_stats(struct net_device_stats *netdev_stats, const struct rtnl_link_stats64 *stats64)
 {
 #if BITS_PER_LONG == 64
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4,14,0)
 	BUILD_BUG_ON(sizeof(*stats64) != sizeof(*netdev_stats));
 	memcpy(netdev_stats, stats64, sizeof(*netdev_stats));
+#else
+	memcpy(netdev_stats, stats64, sizeof(*netdev_stats));
+	// rtnl_link_stats64 have one extra item
+	// __u32   rx_nohandler;           /* dropped, no handler found    */
+#endif
 #else
 	size_t i, n = sizeof(*stats64) / sizeof(u64);
 	const u64 *src = (const u64 *)stats64;

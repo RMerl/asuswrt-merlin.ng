@@ -1,0 +1,6 @@
+THEADORABLE BOARD
+M:	Stefan Roese <sr@denx.de>
+S:	Maintained
+F:	board/theadorable/
+F:	include/configs/theadorable.h
+F:	configs/theadorable_debug_defconfig

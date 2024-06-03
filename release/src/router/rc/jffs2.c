@@ -29,7 +29,7 @@
 
 #ifdef RTCONFIG_BRCM_NAND_JFFS2
 #ifdef HND_ROUTER
-#ifdef RTCONFIG_HND_ROUTER_AX_6756
+#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
 #define JFFS2_PARTITION "jffs"
 #else
 #define JFFS2_PARTITION	"misc2"
@@ -87,6 +87,12 @@ unsigned int get_root_type(void)
 		case MODEL_RTAC1200GU:
 		case MODEL_RTAC1200:
 		case MODEL_RTAC1200V2:
+		case MODEL_RTACRH18:
+		case MODEL_RT4GAC86U:
+		case MODEL_RTAX53U:
+		case MODEL_XD4S:
+		case MODEL_RTAX54:
+		case MODEL_RT4GAX56:
 		case MODEL_RTN11P_B1:
 		case MODEL_RPAC53:
 		case MODEL_RPAC55:
@@ -103,12 +109,14 @@ unsigned int get_root_type(void)
 		case MODEL_BC109:
 		case MODEL_BC105:
 		case MODEL_EBG19:
-		case MODEL_EBG15:
-		case MODEL_EBP15:
 		case MODEL_GTAX11000:
 		case MODEL_RTAX92U:
 		case MODEL_RTAX95Q:
 		case MODEL_XT8PRO:
+		case MODEL_BT12:
+		case MODEL_BT10:
+		case MODEL_BQ16:
+		case MODEL_BQ16_PRO:
 		case MODEL_BM68:
 		case MODEL_XT8_V2:
 		case MODEL_RTAXE95Q:
@@ -132,12 +140,18 @@ unsigned int get_root_type(void)
 		case MODEL_GTAX6000:
 		case MODEL_GTAX11000_PRO:
 		case MODEL_GTAXE16000:
+		case MODEL_GTBE98:
+		case MODEL_GTBE98_PRO:
 		case MODEL_ET12:
 		case MODEL_XT12:
 		case MODEL_RTAX86U:
 		case MODEL_RTAX68U:
 		case MODEL_RTAX86U_PRO:
 		case MODEL_RTAX88U_PRO:
+		case MODEL_RTBE96U:
+		case MODEL_GTBE96:
+		case MODEL_RTBE88U:
+		case MODEL_GTBE19000:
 			return 0x24051905;      /* ubifs */
 		case MODEL_DSLAX82U:
 		{
@@ -504,6 +518,7 @@ void stop_jffs2(int stop)
 #if defined(RTCONFIG_PSISTLOG) || defined(RTCONFIG_JFFS2LOG)
 	int restart_syslogd = 0;
 #endif
+
 	if (!wait_action_idle(10)) return;
 
 	if ((statfs("/jffs", &sf) == 0) && (sf.f_type != 0x73717368)) {

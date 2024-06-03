@@ -1,0 +1,209 @@
+
+Summary
+=======
+
+This README is about U-Boot support for TI's ARM Cortex-A8 based OMAP3 [1]
+family of SoCs. TI's OMAP3 SoC family contains an ARM Cortex-A8. Additionally,
+some family members contain a TMS320C64x+ DSP and/or an Imagination SGX 2D/3D
+graphics processor and various other standard peripherals.
+
+Currently the following boards are supported:
+
+* OMAP3530 BeagleBoard [2]
+
+* Gumstix Overo [3]
+
+* TI EVM [4]
+
+* OpenPandora Ltd. Pandora [5]
+
+* TI/Logic PD Zoom MDK [6]
+
+* TI/Logic PD Zoom 2 [7]
+
+* CompuLab Ltd. CM-T35 [8]
+
+Build
+=====
+
+* BeagleBoard:
+
+make omap3_beagle_config
+make
+
+* Gumstix Overo:
+
+make omap3_overo_config
+make
+
+* TI EVM:
+
+make omap3_evm_config
+make
+
+* Pandora:
+
+make omap3_pandora_config
+make
+
+* Zoom MDK:
+
+make omap3_zoom1_config
+make
+
+* Zoom 2:
+
+make omap3_zoom2_config
+make
+
+* CM-T35:
+
+make cm_t35_config
+make
+
+
+Custom commands
+===============
+
+To make U-Boot for OMAP3 support NAND device SW or HW ECC calculation, U-Boot
+for OMAP3 supports custom user command
+
+nandecc hw/sw
+
+To be compatible with NAND drivers using SW ECC (e.g. kernel code)
+
+nandecc sw
+
+enables SW ECC calculation. HW ECC enabled with
+
+nandecc hw
+
+is typically used to write 2nd stage bootloader (known as 'x-loader') which is
+executed by OMAP3's boot rom and therefore has to be written with HW ECC.
+
+For all other commands see
+
+help
+
+Interfaces
+==========
+
+gpio
+----
+
+To set a bit :
+
+	if (!gpio_request(N, "")) {
+		gpio_direction_output(N, 0);
+		gpio_set_value(N, 1);
+	}
+
+To clear a bit :
+
+	if (!gpio_request(N, "")) {
+		gpio_direction_output(N, 0);
+		gpio_set_value(N, 0);
+	}
+
+To read a bit :
+
+	if (!gpio_request(N, "")) {
+		gpio_direction_input(N);
+		val = gpio_get_value(N);
+		gpio_free(N);
+	}
+	if (val)
+		printf("GPIO N is set\n");
+	else
+		printf("GPIO N is clear\n");
+
+dma
+---
+void omap3_dma_init(void)
+	Init the DMA module
+int omap3_dma_get_conf_chan(uint32_t chan, struct dma4_chan *config);
+	Read config of the channel
+int omap3_dma_conf_chan(uint32_t chan, struct dma4_chan *config);
+	Write config to the channel
+int omap3_dma_conf_transfer(uint32_t chan, uint32_t *src, uint32_t *dst,
+		uint32_t sze)
+	Config source, destination and size of a transfer
+int omap3_dma_wait_for_transfer(uint32_t chan)
+	Wait for a transfer to end - this hast to be called before a channel
+	or the data the channel transferd are used.
+int omap3_dma_get_revision(uint32_t *minor, uint32_t *major)
+	Read silicon Revision of the DMA module
+
+NAND
+====
+
+There are some OMAP3 devices out there with NAND attached. Due to the fact that
+OMAP3 ROM code can only handle 1-bit hamming ECC for accessing first page
+(place where SPL lives) we require this setup for u-boot at least when reading
+the second progam within SPL.  A lot of newer NAND chips however require more
+than 1-bit ECC for the pages, some can live with 1-bit for the first page. To
+handle this we can switch to another ECC algorithm after reading the payload
+within SPL.
+
+BCH8
+----
+
+To enable hardware assisted BCH8 (8-bit BCH [Bose, Chaudhuri, Hocquenghem]) on
+OMAP3 devices we can use the BCH library in lib/bch.c. To do so add CONFIG_BCH
+and set CONFIG_NAND_OMAP_ECCSCHEME=5 (refer README.nand) for selecting BCH8_SW.
+The NAND OOB layout is the same as in linux kernel, if the linux kernel BCH8
+implementation for OMAP3 works for you so the u-boot version should also.
+When you require the SPL to read with BCH8 there are two more configs to
+change:
+
+ * CONFIG_SYS_NAND_ECCPOS (must be the same as .eccpos in
+   GPMC_NAND_HW_BCH8_ECC_LAYOUT defined in
+   arch/arm/include/asm/arch-omap3/omap_gpmc.h)
+ * CONFIG_SYS_NAND_ECCSIZE must be 512
+ * CONFIG_SYS_NAND_ECCBYTES must be 13 for this BCH8 setup
+
+Acknowledgements
+================
+
+OMAP3 U-Boot is based on U-Boot tar ball [9] for BeagleBoard and EVM done by
+several TI employees.
+
+Links
+=====
+
+[1] OMAP3:
+
+http://www.ti.com/omap3 (high volume) and
+http://www.ti.com/omap35x (broad market)
+
+[2] OMAP3530 BeagleBoard:
+
+http://beagleboard.org/
+
+[3] Gumstix Overo:
+
+http://www.gumstix.net/Overo/
+
+[4] TI EVM:
+
+http://focus.ti.com/docs/toolsw/folders/print/tmdxevm3503.html
+
+[5] OpenPandora Ltd. Pandora:
+
+http://openpandora.org/
+
+[6] TI/Logic PD Zoom MDK:
+
+http://www.logicpd.com/products/devkit/ti/zoom_mobile_development_kit
+
+[7] TI/Logic PD Zoom 2
+
+http://www.logicpd.com/sites/default/files/1012659A_Zoom_OMAP34x-II_MDP_Brief.pdf
+
+[8] CompuLab Ltd. CM-T35:
+
+http://www.compulab.co.il/t3530/html/t3530-cm-datasheet.htm
+
+[9] TI OMAP3 U-Boot:
+
+http://beagleboard.googlecode.com/files/u-boot_beagle_revb.tar.gz

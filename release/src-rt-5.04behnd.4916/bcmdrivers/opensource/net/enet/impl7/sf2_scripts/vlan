@@ -1,0 +1,195 @@
+#!/bin/sh
+source /etc/sf2/_util
+
+# # /etc/sf2/vlan      # usage: vlan <unit>
+# found 6756 unit=0
+# 
+# ----PAGE_8021Q_VLAN(0x34)=0x8041a000+(offset)<<3
+#      ctrl0 63@34-00|vlanEn=1 learn=IVL replace= oP iP
+#      ctrl1 0a@34-01|impcBypass[UntagEn=0 FwdMapEn=0] rsvMcast[UntagEn=1 FwdMapEn=0]
+#      ctrl2 10@34-02|  gmrpGvrp[UntagEn=0 FwdMapEn=0] miiMBypassVFwdMapEn=0
+#      ctrl3 00@34-03|drop!1Q=
+#      ctrl4 c0@34-05|rxVidChk!valid=3)fwd2Imp!learn gvrp2Mgmt=0 gmrp2Mgmt=0 duoTagMode=0)disable rsvMcastFlood=0
+#      ctrl5 10@34-06|presv!1Q=0 txBypassTrunkEn=1 dropVtableMiss=0 vidFffFwdEnd=0 rxImpCrc!Chk=0
+#      ctrl6 00@34-07|!arlBurstLmt=0 strictSfdDet=0
+# 
+# dtagTpid 88a8@34-30|TPID=88a8
+#  ispPorts 000@34-32|port=
+#   joinAll 000@34-50|joinAllVlanEn port=
+#  *vlCtrl 0000@34-52|perPort=0 SVL=
+# 
+# ----PAGE_ARLCTRL(0x4)=0x80402000+(offset)<<3
+# mportCtrl 00f@34-0a|Untagmap_Chk [mport_addr=0 1 ]  fwdmap_Chk[mport_addr=0 1 ]
+# mportCtl 400a@04-0e|tsEn=0 daHitEn=1
+# multiport          04-    Mac/etype  fwd_ports 04- 876543210 cmp 04-0e
+# m0 00000180c2000013@10:0180-c200-0013/0000|100@18: 100000000|2)mac
+# m1 0000021011300436@20:0210-1130-0436/0000|100@28: 100000000|2)mac
+# m2 0000000000000000@30:0000-0000-0000/0000|000@38: 000000000|0)disable
+# m3 0000000000000000@40:0000-0000-0000/0000|000@48: 000000000|0)disable
+# m4 0000000000000000@50:0000-0000-0000/0000|000@58: 000000000|0)disable
+# m5 0000000000000000@60:0000-0000-0000/0000|000@68: 000000000|0)disable
+# 
+# ----PAGE_PBVLAN(0x31)=0x80418800+(offset)<<3
+# SF2    default tag        port vlan
+#     34- pri-c-vlan|   31- 876543210|
+# p0 0001@10:0 0 001|121@00:100100001|
+# p1 0001@12:0 0 001|1ff@02:111111111|
+# p5 0001@1a:0 0 001|121@0a:100100001|
+# p6 0001@1c:0 0 001|1ff@0c:111111111|
+# p8 0001@20:0 0 001|1ff@10:111111111|
+# 
+# ----PAGE_8021S_MSPT(0x43)=0x80421800+(offset)<<3
+#   MSPT       43- p0    p1    p2    p3    p4    p5    p6    p7
+# tbl0 00000000@10|0-no. 0-no. ..... ..... ..... 0-no. 0-no. .....
+# tbl1 00000000@14|0-no. 0-no. ..... ..... ..... 0-no. 0-no. .....
+# tbl2 00000000@18|0-no. 0-no. ..... ..... ..... 0-no. 0-no. .....
+# tbl3 00000000@1c|0-no. 0-no. ..... ..... ..... 0-no. 0-no. .....
+# tbl4 00000000@20|0-no. 0-no. ..... ..... ..... 0-no. 0-no. .....
+# tbl5 00000000@24|0-no. 0-no. ..... ..... ..... 0-no. 0-no. .....
+# tbl6 00000000@28|0-no. 0-no. ..... ..... ..... 0-no. 0-no. .....
+# tbl7 00000000@2c|0-no. 0-no. ..... ..... ..... 0-no. 0-no. .....
+#       ctrl 00@00|En802.1S=0
+#        age 00@02|PerSptTblAgeingEn=7-4:0000 3-0:0000
+#     bypass 00@50|EnBypassSptMport=5-3:000 2-0:000
+#
+#----PAGE_AVTBL_ACCESS(0x5)=0x80081400+(offset)<<2
+#!! traversing vlan table 0..4095 takes awhile ctrl-c to break!!
+#    vlan fwd_map   untag_map mstp fwd_mode
+#   table 876543210 876543210 ndx
+#       2 .....1111 .......11   0  0)ArlFlow
+
+vlan_ready_wait() {
+    local st=$(($(read_sf2 0x05 0x80) & 0x80))
+    while [ $st -ne 0 ]
+    do
+        st=$(($(read_sf2 0x05 0x80) & 0x80))
+    done
+}
+
+dump_vlan_entry() { # dump_vlan_entry <index>
+    write_sf2 0x05 0x81 $1;
+    write_sf2 0x05 0x80 0x81;
+    vlan_ready_wait;
+    echo $(read_sf2 0x05 0x83) $i | awk '{ v=$1; i=$2;
+        split("... ..1 .1. .11 1.. 1.1 11. 111", bin3_s);
+        if (v) printf "    %4d %s%s%s %s%s%s %3d  %s\n", i, 
+            bin3_s[and(rshift(v,6),7)+1],bin3_s[and(rshift(v,3),7)+1],bin3_s[and(rshift(v,0),7)+1],
+            bin3_s[and(rshift(v,15),7)+1],bin3_s[and(rshift(v,12),7)+1],bin3_s[and(rshift(v,9),7)+1],
+            and(rshift(v,18),3), and(rshift(v,21),1)?"1)VlanMap":"0)ArlFlow"}'
+}
+
+sf2_vlan() { #sf2_vlan <unit>
+    local unit=$1
+    read_chip $unit
+    if [ $sf2_unit == -1 ]
+    then echo "device has no (connected) sf2 switch!!"; return;
+    fi
+    if [ $sf2_reg_base == 0x80480000 ]
+    then local qos_shift=4  
+    else local qos_shift=0
+    fi
+    
+    echo ""
+    print_page_hdr 0x34 8021Q_VLAN
+    read_sf2 0x34 0 | awk '{ v=$1; split("SVL ??? ??? IVL", vmode_s);
+        printf "     ctrl0 %02x@34-00|vlanEn=%d learn=%s replace=%s %s %s\n", v, and(rshift(v,7),1), vmode_s[and(rshift(v,5),3)+1],
+        and(rshift(v,3),1)?"vid":"", and(rshift(v,1),1)?"oP":"", and(v,1)?"iP":"";}'
+    read_sf2 0x34 1 | awk '{ v=$1;
+        printf "     ctrl1 %02x@34-01|impcBypass[UntagEn=%d FwdMapEn=%d] rsvMcast[UntagEn=%d FwdMapEn=%d]\n", v, 
+        and(rshift(v,6),1), and(rshift(v,5),1), and(rshift(v,3),1), and(rshift(v,2),1);}'
+    read_sf2 0x34 2 | awk '{ v=$1;
+        printf "     ctrl2 %02x@34-02|  gmrpGvrp[UntagEn=%d FwdMapEn=%d] miiMBypassVFwdMapEn=%d\n", v,
+        and(rshift(v,6),1), and(rshift(v,5),1), and(rshift(v,2),1);}'
+    read_sf2 0x34 3 | awk '{ v=$1;
+        printf "     ctrl3 %02x@34-03|drop!1Q=", v;  for (i=0; i<9; i++) if (and(rshift(v,i),1)) printf "%d ",i; printf "\n"}'
+    read_sf2 0x34 5 | awk '{ v=$1; split("0)fwd!learn 1)drop!learn 2)!chk 3)fwd2Imp!learn",rxVidChk_s);
+        split("0)disable 1)enable 2)iDuoTag 3)???", duoTag_s);
+        printf "     ctrl4 %02x@34-05|rxVidChk!valid=%s gvrp2Mgmt=%d gmrp2Mgmt=%d duoTagMode=%s rsvMcastFlood=%d\n", v,
+        rxVidChk_s[and(rshift(v,6),3)+1], and(rshift(v,5),1), and(rshift(v,4),1), duoTag_s[and(rshift(v,2),3)+1], and(rshift(v,1),1);}'
+    read_sf2 0x34 6 | awk '{ v=$1;
+        printf "     ctrl5 %02x@34-06|presv!1Q=%d txBypassTrunkEn=%d dropVtableMiss=%d vidFffFwdEnd=%d rxImpCrc!Chk=%d\n", v, 
+        and(rshift(v,6),1), and(rshift(v,4),1), and(rshift(v,3),1), and(rshift(v,2),1),  and(v,1);}'
+    read_sf2 0x34 7 | awk '{ v=$1;
+        printf "     ctrl6 %02x@34-07|!arlBurstLmt=%d strictSfdDet=%d\n", v, and(rshift(v,4),1),  and(v,1);}'
+    echo ""
+    read_sf2 0x34 0x30 | awk '{ v=$1;
+        printf "dtagTpid %04x@34-30|TPID=%04x\n",  v, and(v,0xffff);}'
+    read_sf2 0x34 0x32 | awk '{ v=$1;
+        printf " ispPorts %03x@34-32|port=", v;  for (i=0; i<9; i++) if (and(rshift(v,i),1)) printf "%d ",i; printf "\n"}'
+    read_sf2 0x34 0x50 | awk '{ v=$1;
+        printf "  joinAll %03x@34-50|joinAllVlanEn port=", v;  for (i=0; i<9; i++) if (and(rshift(v,i),1)) printf "%d ",i; printf "\n"}'
+    read_sf2 0x34 0x52 | awk '{ v=$1;
+        printf " *vlCtrl %04x@34-52|perPort=%d SVL=", v, and(rshift(v,15),1);  for (i=0; i<9; i++) if (and(rshift(v,i),1)) printf "%d ",i; printf "\n"}'
+
+    echo ""
+    print_page_hdr 0x04 ARLCTRL
+     read_sf2 0x34 0x0a | awk '{ v=$1;
+        printf "mportCtrl %03x@34-0a|Untagmap_Chk [mport_addr=", v;  for (i=0; i<6; i++) if (and(rshift(v,i*2+1),1)) printf "%d ",i;  
+        printf "]  fwdmap_Chk[mport_addr="; for (i=0; i<6; i++) if (and(rshift(v,i*2),1)) printf "%d ",i; printf "]\n";}'
+     read_sf2 0x04 0x0e | awk '{ v=$1;
+        printf "mportCtl %04x@04-0e|tsEn=%d daHitEn=%d\n", v, and(rshift(v,15),1), and(rshift(v,14),1);}'
+     echo "multiport          04-    Mac/etype  fwd_ports 04- 876543210 cmp 04-0e"
+     for i in 0 1 2 3 4 5
+     do
+        echo $(read_sf2_dw 0x04 $((0x10+i*0x10))) $i | awk '{ vl=$1; vh=$2;
+            printf "m%d %02x%02x%02x%02x%02x%02x%02x%02x@%02x:%02x%02x-%02x%02x-%02x%02x/%02x%02x|", $3+0,
+                and(rshift(vh,24),0xff), and(rshift(vh,16),0xff), and(rshift(vh,8),0xff), and(rshift(vh,0),0xff),
+                and(rshift(vl,24),0xff), and(rshift(vl,16),0xff), and(rshift(vl,8),0xff), and(rshift(vl,0),0xff), 0x10+$3*0x10,
+                and(rshift(vh,8),0xff), and(rshift(vh,0),0xff), and(rshift(vl,24),0xff), and(rshift(vl,16),0xff), 
+                and(rshift(vl,8),0xff), and(rshift(vl,0),0xff), and(rshift(vh,24),0xff), and(rshift(vh,16),0xff);
+            }'
+        echo $(read_sf2 0x04 $((0x18+i*0x10))) $i $(read_sf2 0x04 0x0e) | awk '{v=$1; ctl=$3;
+            split("000 001 010 011 100 101 110 111", bin3_s); split("0)disable 1)etype 2)mac 3)etype&mac", mportCmp_s);
+            printf "%03x@%02x: %s%s%s|%s\n", v, 0x18+$2*0x10, bin3_s[and(rshift(v,6),7)+1], bin3_s[and(rshift(v,3),7)+1], 
+            bin3_s[and(rshift(v,0),7)+1], mportCmp_s[and(rshift(ctl,$2*2),3)+1];}'
+    done
+    
+    echo ""
+    print_page_hdr 0x31 PBVLAN
+    echo "SF2    default tag        port vlan"
+    echo "    34- pri-c-vlan|   31- 876543210|"
+    for port in $sf2_ports
+    do
+        echo $(read_sf2 0x34 $((0x10+port*2))) $port  | awk '{ v=$1;
+            printf "p%d %04x@%02x:%x %x %03x|", $2+0, v, 0x10+$2*2, and(rshift(v,13),7), and(rshift(v,12),1), and(v,0xfff); }'
+        echo $(read_sf2 0x31 $((port*2))) $port  | awk '{ v=$1;
+            split("000 001 010 011 100 101 110 111", bin3_s);
+            printf "%03x@%02x:%s%s%s|", v, $2*2, bin3_s[and(rshift(v,6),7)+1], bin3_s[and(rshift(v,3),7)+1], bin3_s[and(rshift(v,0),7)+1]; }'
+        echo ""
+    done
+    echo ""
+    print_page_hdr 0x43 8021S_MSPT
+    echo "  MSPT       43- p0    p1    p2    p3    p4    p5    p6    p7"
+    local mask=0
+    for i in $sf2_ports
+    do 
+        mask=$(($mask | 1 << $i))
+    done
+    for i in 0 1 2 3 4 5 6 7
+    do
+        echo $(read_sf2 0x43 $((0x10+i*4))) $i $mask | awk '{ v=$1;
+            split("0-no. 1-dis 2-blk 3-lsn 4-lrn 5-fwd 6-res 7-res", stp_s);
+            printf "tbl%d %08x@%02x|", $2+0, v, 0x10+$2*4; 
+            for (i=0; i<8; i++) printf "%s ", and(rshift($3,i),1)?stp_s[and(rshift(v,3*i),7)+1]:"....."; printf "\n";}'
+    done
+    read_sf2 0x43 0 | awk '{ v=$1;
+        printf "      ctrl %02x@00|En802.1S=%d\n", v, and(v,1); }'
+    read_sf2 0x43 2 | awk '{ v=$1; split("0000 0001 0010 0011 0100 0101 0110 0111 1000 1001 1010 1011 1100 1101 1110 1111",bin4_s);
+        printf "       age %02x@02|PerSptTblAgeingEn=7-4:%s 3-0:%s\n", v, bin4_s[and(rshift(v,4),0xf)+1],  bin4_s[and(rshift(v,0),0xf)+1]; }'
+    read_sf2 0x43 0x50 | awk '{ v=$1; split("000 001 010 011 100 101 110 111", bin3_s);
+        printf "    bypass %02x@50|EnBypassSptMport=5-3:%s 2-0:%s\n", v, bin3_s[and(rshift(v,3),0x7)+1],  bin3_s[and(rshift(v,0),0x7)+1]; }'
+    
+    echo ""
+    print_page_hdr 0x05 AVTBL_ACCESS
+    echo "!! traversing vlan table 0..4095 takes awhile ctrl-c to break!!"
+    echo "    vlan fwd_map   untag_map mstp fwd_mode"
+    echo "   table 876543210 876543210 ndx"
+    local i=0
+    while [ $i -lt 4096 ]
+    do
+        dump_vlan_entry $i
+        true $(( i++ ))
+    done
+}
+
+sf2_vlan $1

@@ -7,6 +7,7 @@ else
 
 var _chanspecs_5g =  JSON.parse('<% chanspecs_5g(); %>');
 var _chanspecs_5g_2 = JSON.parse('<% chanspecs_5g_2(); %>');
+
 var bw_160_support = (function(){
 	if(wl_unit == '1'){
 		for(i=0;i<_chanspecs_5g.length;i++){
@@ -28,12 +29,11 @@ var bw_160_support = (function(){
 
 var band6gBW160_limit = (function(){
 	if(isSupport('wifi6e') || isSupport('wifi7')){
-		if(based_modelid == "GT-AXE11000" 
-		|| based_modelid == "RT-AXE7800" 
-		|| based_modelid == "RT-AXE95Q" 
-		|| based_modelid == "ET8_V2" 
-		|| based_modelid == "ET8PRO" 
-		|| based_modelid == "ET12"){
+		if(based_modelid == "GT-AXE11000"
+		|| based_modelid == "RT-AXE95Q"
+		|| based_modelid == "ET12"
+		|| based_modelid == "ET8_V2"
+		|| based_modelid == "ET8PRO"){
 			return true
 		}
 	}
@@ -45,7 +45,8 @@ var wl1 = {
 	"channel_20m": [],
 	"channel_40m": [],
 	"channel_80m": [],
-	"channel_160m": []
+	"channel_160m": [],
+	"channel_320m": []
 }
 
 if(band2g_support){
@@ -64,6 +65,10 @@ if(band5g_support){
 		return false;
 	})();
 	wl_info['1'].bw_160_support = (function(){
+		if(based_modelid == 'ET8_V2'){
+			return false;
+		}
+
 		var count = 0;
 		for(i=0;i<_chanspecs_5g.length;i++){
 			if(_chanspecs_5g[i].indexOf('/160') != -1){
@@ -103,12 +108,13 @@ for(i=0;i<_chanspecs_5g.length;i++){
 		}
 	}
 }
-if(wl_info.band5g_2_support || isSupport('wifi6e')){
+if(wl_info.band5g_2_support || isSupport('wifi6e') || isSupport('wifi7')){
 	var wl2 = {
 		"channel_20m": [],
 		"channel_40m": [],
 		"channel_80m": [],
-		"channel_160m": []
+		"channel_160m": [],
+		"channel_320m": []
 	}
 
 	wl_info['2'] = new Object;
@@ -127,6 +133,17 @@ if(wl_info.band5g_2_support || isSupport('wifi6e')){
 			}
 		}
 		
+		return (count != 0) ? true : false;
+	})();
+
+	wl_info['2'].bw_320_support = (function(){
+		var count = 0;
+		for(i=0;i<_chanspecs_5g_2.length;i++){
+			if(_chanspecs_5g_2[i].indexOf('/320') != -1){
+				count++;
+			}
+		}
+
 		return (count != 0) ? true : false;
 	})();
 
@@ -465,20 +482,60 @@ function wl_chanspec_list_change(){
 			if(band6g_support){		// due to GT-AXE11000 does not support
 				if(document.getElementById('psc6g_checkbox').checked){
 					if(band6gBW160_limit){
-						wl_channel_list_5g_2 = ['37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213'];
+						let pscChannelAll = ['37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213'];
+						let pscChannel = [];
+						pscChannelAll.forEach((element) => {
+							if (wl_channel_list_5g_2.indexOf(element) !== -1) {
+								pscChannel.push(element);
+							}
+						});
+
+						wl_channel_list_5g_2 = [...pscChannel];
 						if (ttc.indexOf("CH") != -1) {
-							wl_channel_list_5g_2 = ["37", "53", "69", "85"];
+							pscChannelAll = ["37", "53", "69", "85"];
+							pscChannel = [];
+							pscChannelAll.forEach((element) => {
+								if (wl_channel_list_5g_2.indexOf(element) !== -1) {
+									pscChannel.push(element);
+								}
+							});
+
+							wl_channel_list_5g_2 = [...pscChannel];
                         }
 					}
 					else{
-						wl_channel_list_5g_2 = ['5', '21', '37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213', '229'];
+						let pscChannelAll = ['5', '21', '37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213'];
+						let pscChannel = [];
+						pscChannelAll.forEach((element) => {
+							if (wl_channel_list_5g_2.indexOf(element) !== -1) {
+								pscChannel.push(element);
+							}
+						});
+
+						wl_channel_list_5g_2 = [...pscChannel];
 						if (ttc.indexOf("CH") != -1) {
-                            wl_channel_list_5g_2 = ['5', '21', '37', '53', '69', '85'];
+							pscChannelAll = ["5", "21", "37", "53", "69", "85"];
+							pscChannel = [];
+							pscChannelAll.forEach((element) => {
+								if (wl_channel_list_5g_2.indexOf(element) !== -1) {
+									pscChannel.push(element);
+								}
+							});
+
+							wl_channel_list_5g_2 = [...pscChannel];
                         }
 					}
 
 					if(is_EU_sku || ttc.indexOf('AU') != -1 || ttc.indexOf('AA') != -1){
-						wl_channel_list_5g_2 = ['5', '21', '37', '53', '69', '85'];
+						let pscChannelAll = ['5', '21', '37', '53', '69', '85'];
+						let pscChannel = [];
+						pscChannelAll.forEach((element) => {
+							if (wl_channel_list_5g_2.indexOf(element) !== -1) {
+								pscChannel.push(element);
+							}
+						});
+
+						wl_channel_list_5g_2 = [...pscChannel];
 					}
 				}
 

@@ -1,0 +1,10 @@
+SBC8548 BOARD
+M:	Paul Gortmaker <paul.gortmaker@windriver.com>
+S:	Maintained
+F:	board/sbc8548/
+F:	include/configs/sbc8548.h
+F:	configs/sbc8548_defconfig
+F:	configs/sbc8548_PCI_33_defconfig
+F:	configs/sbc8548_PCI_33_PCIE_defconfig
+F:	configs/sbc8548_PCI_66_defconfig
+F:	configs/sbc8548_PCI_66_PCIE_defconfig

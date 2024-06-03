@@ -118,7 +118,7 @@ function pullWirelessList(obj, WirelessNum)
 		case 1:
 			if(isMenuopen1 == 0)
 			{		
-				obj.src = "/images/arrow-top.gif"
+				obj.src = "/images/unfold_less.svg"
 				$("divWirelessBlock1").style.display = 'block';		
 				document.form.tWireless1.focus();		
 				isMenuopen1 = 1;
@@ -129,7 +129,7 @@ function pullWirelessList(obj, WirelessNum)
 		case 2:
 			if(isMenuopen2 == 0)
 			{		
-				obj.src = "/images/arrow-top.gif"
+				obj.src = "/images/unfold_less.svg"
 				$("divWirelessBlock2").style.display = 'block';		
 				document.form.tWireless2.focus();		
 				isMenuopen2 = 1;
@@ -142,7 +142,7 @@ function pullWirelessList(obj, WirelessNum)
 
 function hideWirelessBlock(WirelessNum)
 {
-	$("imgPullArrow" + WirelessNum).src = "/images/arrow-down.gif";
+	$("imgPullArrow" + WirelessNum).src = "/images/unfold_more.svg";
 	$('divWirelessBlock' + WirelessNum).style.display='none';
 	switch(parseInt(WirelessNum))
 	{
@@ -586,12 +586,12 @@ configuration. Please go to DHCP setting.</div>
 										</td>
 										<td id="tdWireless1" style="width:31%;">
 											<input type="text" maxlength="0" class="input_12_table" id="tWireless1" name="tWireless1" style="float:left;width:97px;" onblur="if(!over_var){hideWirelessBlock(1);}" >
-											<img id="imgPullArrow1" class="pull_arrow" height="14px;" src="images/arrow-down.gif"  onclick="pullWirelessList(this, 1);">
+											<img id="imgPullArrow1" class="pull_arrow" height="14px;" src="images/unfold_more.svg"  onclick="pullWirelessList(this, 1);">
 											<div id="divWirelessBlock1" class="ClientList_Block" style="display:none;"></div>
 										</td>
 										<td id="tdWireless2" style="width:31%;">
 											<input type="text" maxlength="0" class="input_12_table" id="tWireless2" name="tWireless2" style="float:left;width:97px;" onblur="if(!over_var){hideWirelessBlock(2);}" >
-											<img id="imgPullArrow2" class="pull_arrow" height="14px;" src="images/arrow-down.gif"  onclick="pullWirelessList(this, 2);">
+											<img id="imgPullArrow2" class="pull_arrow" height="14px;" src="images/unfold_more.svg"  onclick="pullWirelessList(this, 2);">
 											<div id="divWirelessBlock2" class="ClientList_Block" style="display:none;"></div>
 										</td>
 										<td >

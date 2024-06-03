@@ -1,0 +1,29 @@
+#include "96765REF1.dts"
+
+&pincontroller {
+	pincontroller-functions {
+		emmc_ctrl_pins_hs200: emmc_ctrl_hs200_pinconf {
+		    pins = <60 61>;
+		    drive-strength = <10 6>;
+		};
+
+		emmc_data_pins_hs200: emmc_data_hs200_pinconf {
+		    pins = <48 49 50 51 52 53 54 55>;
+		    drive-strength = <6 6 6 6 6 6 6 6>;
+		};
+	};
+};
+
+&sdhci {
+	/delete-property/ no-1-8-v;
+	/delete-property/ mmc-ddr-3_3v;
+	sd-uhs-sdr50;
+	sd-uhs-sdr104;
+	sd-uhs-ddr50;
+	mmc-ddr-1_8v;
+	mmc-hs200-1_8v;
+	clock-frequency = <SDHCI_HS200_BASE_CLOCK_FREQ>;
+	status = "okay";
+	pinctrl-0 = <&emmc_ctrl_pins &emmc_ctrl_pins_hs200 &emmc_data_pins_hs200>;
+};
+

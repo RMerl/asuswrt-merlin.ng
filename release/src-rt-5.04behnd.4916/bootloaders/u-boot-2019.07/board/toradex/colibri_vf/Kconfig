@@ -1,0 +1,26 @@
+if TARGET_COLIBRI_VF
+
+config SYS_BOARD
+	default "colibri_vf"
+
+config SYS_VENDOR
+	default "toradex"
+
+config SYS_CONFIG_NAME
+	default "colibri_vf"
+
+config TDX_CFG_BLOCK
+	default y
+
+config TDX_HAVE_NAND
+	default y
+
+config TDX_CFG_BLOCK_OFFSET
+	default "2048"
+
+config TDX_CFG_BLOCK_2ND_ETHADDR
+	default y
+
+source "board/toradex/common/Kconfig"
+
+endif

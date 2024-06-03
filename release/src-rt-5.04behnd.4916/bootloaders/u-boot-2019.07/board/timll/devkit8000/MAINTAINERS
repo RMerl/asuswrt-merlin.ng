@@ -1,0 +1,6 @@
+DEVKIT8000 BOARD
+M:	Thomas Weber <weber@corscience.de>
+S:	Maintained
+F:	board/timll/devkit8000/
+F:	include/configs/devkit8000.h
+F:	configs/devkit8000_defconfig

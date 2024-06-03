@@ -1,0 +1,45 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2018, Bin Meng <bmeng.cn@gmail.com>
+ *
+ * Generic EFI payload device tree for x86 targets
+ */
+
+/dts-v1/;
+
+/include/ "skeleton.dtsi"
+/include/ "serial.dtsi"
+/include/ "keyboard.dtsi"
+/include/ "reset.dtsi"
+/include/ "rtc.dtsi"
+/include/ "tsc_timer.dtsi"
+
+/ {
+	model = "EFI x86 Payload";
+	compatible = "efi,x86-payload";
+
+	aliases {
+		serial0 = &serial;
+	};
+
+	config {
+		silent_console = <0>;
+	};
+
+	chosen {
+		stdout-path = "/serial";
+	};
+
+	tsc-timer {
+		clock-frequency = <1000000000>;
+	};
+
+	pci {
+		compatible = "pci-x86";
+		u-boot,dm-pre-reloc;
+	};
+
+	efi-fb {
+		compatible = "efi-fb";
+	};
+};

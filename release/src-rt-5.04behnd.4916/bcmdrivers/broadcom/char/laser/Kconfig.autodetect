@@ -1,0 +1,7 @@
+config BCM_LASER
+        depends on BCM_SFP
+        tristate "Support for LASER"
+
+config BCM_LASER_IMPL
+        int "Implementation index for LASER"
+        depends on BCM_LASER

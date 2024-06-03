@@ -1168,7 +1168,6 @@ void rc_ipsec_psk_xauth_rw_init()
 void rc_ipsec_secrets_set()
 {
 	char ipsec_client_list_name[SZ_MIN] = {0}, buf[SZ_MAX] = {0}, s_tmp[SZ_MAX] = {0};
-	char auth2meth[SZ_MIN] = {0};
 #ifdef RTCONFIG_INSTANT_GUARD
 	char ig_client_list[2048] = {0}, ig_client_buf[128] = {0}, ig_guest_client_list[4096] = {0};
 	char *desc = NULL, *ts = NULL, *active = NULL;
@@ -1429,8 +1428,87 @@ void ipsec_conf_local_set(FILE *fp, int prof_idx, ipsec_prof_type_t prof_type)
     return;
 }
 
+/*
+**
+** Note that 'rightdns' of strongSwan is a comma separated list of DNS server addresses.
+**
+*/
+/*******************************************************************
+* NAME: get_wan_dns_add_comma
+* AUTHOR: Renjie Lee
+* CREATE DATE: 2024/01/10
+* DESCRIPTION: Copy WAN DNS into buf, add a comma to separate them if there are multiple DNS addresses.
+* If WAN DNS is "168.95.192.1 168.95.1.1", then buf will be "168.95.192.1,168.95.1.1".
+* INPUT: buf, len
+* OUTPUT: buf
+* RETURN: NULL (on error case or empty buf) or buf (if buf is not empty)
+* NOTE: The 'rightdns' parameter of strongSwan is a comma separated list of DNS server addresses.
+*******************************************************************/
+char *get_wan_dns_add_comma(char *buf, size_t len)
+{
+	char *next = NULL;
+	char all_dns[512] = {0};
+	char separate_dns[64] = {0};
+
+	if(buf && (len > 0))
+	{
+		memset(buf, 0, len);
+#ifdef RTCONFIG_HND_ROUTER_BE_4916
+		if(1 == nvram_get_int("wan0_primary"))
+		{
+			snprintf(all_dns, sizeof(all_dns), "%s", nvram_safe_get("wan0_dns"));
+			foreach (separate_dns, all_dns, next)
+			{
+				snprintf(buf + strlen(buf), len - strlen(buf), "%s", separate_dns);
+				if(next)
+				{
+					//add a 'comma' character
+					snprintf(buf + strlen(buf), len - strlen(buf), "%s", ",");
+				}
+			}
+		}
+		else if(1 == nvram_get_int("wan1_primary"))
+		{
+			snprintf(all_dns, sizeof(all_dns), "%s", nvram_safe_get("wan1_dns"));
+			foreach (separate_dns, all_dns, next)
+			{
+				snprintf(buf + strlen(buf), len - strlen(buf), "%s", separate_dns);
+				if(next)
+				{
+					//add a 'comma' character
+					snprintf(buf + strlen(buf), len - strlen(buf), "%s", ",");
+				}
+			}
+		}
+		else
+		{
+			snprintf(buf, len, "%s", nvram_safe_get("lan_ipaddr"));
+		}
+#else /* RTCONFIG_HND_ROUTER_BE_4916 */
+		snprintf(buf, len, "%s", nvram_safe_get("lan_ipaddr"));
+#endif /* RTCONFIG_HND_ROUTER_BE_4916 */
+		logmessage("get_wan_dns_add_comma", "WAN DNS[%s]\n", buf);
+		if(strlen(buf) > 0)
+		{
+			return buf;
+		}
+		else
+		{
+			return NULL;
+		}
+	}
+	else
+	{
+		_dprintf("[%s]Failed to get WAN DNS.\n", __FUNCTION__);
+		logmessage("get_wan_dns_add_comma", "Failed to get WAN DNS.\n");
+		return NULL;
+	}
+}
+
 void ipsec_conf_remote_set(FILE *fp, int prof_idx, ipsec_prof_type_t prof_type)
 {
+    char wan_dns[256] = {0};
+
     if((VPN_TYPE_NET_NET_SVR == prof[prof_type][prof_idx].vpn_type) || 
        (VPN_TYPE_HOST_NET == prof[prof_type][prof_idx].vpn_type)){
         fprintf(fp, "  right=%%any\n");
@@ -1469,7 +1547,7 @@ void ipsec_conf_remote_set(FILE *fp, int prof_idx, ipsec_prof_type_t prof_type)
            ('\0' != prof[prof_type][prof_idx].virtual_subnet[0])){
             fprintf(fp, "#sourceip_en=%s\n  rightsourceip=%s\n"
                  , prof[prof_type][prof_idx].virtual_ip_en, prof[prof_type][prof_idx].virtual_subnet);
-	    fprintf(fp, "  rightdns=%s\n", nvram_safe_get("lan_ipaddr"));
+	    fprintf(fp, "  rightdns=%s\n", get_wan_dns_add_comma(wan_dns, sizeof(wan_dns)) ? wan_dns : nvram_safe_get("lan_ipaddr"));
         }
     }
     if((0 != strcmp(prof[prof_type][prof_idx].remote_id, "null")) &&
@@ -2446,6 +2524,168 @@ static void rc_strongswan_plugin_set()
 	}
 }
 
+/* e.g.
+ * "1>S2S>null>null>wan>>1>12345678><192.168.50.0/24>0><192.168.1.0/24>0>
+ *    tunnel>null>null>null>2>auto>auto>0>ID-MODEL>>
+ *    172800>0>null>null>eap-md5>1>500>4500>10>1>auto>auto>3600>3>null>1"
+ * "2>S2S-cli>1>1.2.3.4>wan>>1>12345678><192.168.1.0/24>0><192.168.50.0/24>0>
+ *    tunnel>null>null>null>2>auto>auto>0>>ID-MODEL>
+ *    172800>0>null>null>eap-md5>1>500>4500>10>1>auto>auto>3600>3>null>1"
+ */
+static void _ipsec_export()
+{
+	int i;
+	char cli_prof[SZ_MAX] = {0};
+	char buf[128] = {0};
+	char *p = NULL;
+	int v6 = 0;
+
+	for(i = 0; i < MAX_PROF_NUM; i++) {
+		if (prof[PROF_SVR][i].vpn_type == VPN_TYPE_NET_NET_SVR) {
+			memset(cli_prof, 0, sizeof(cli_prof));
+			// vpn_type
+			snprintf(cli_prof + strlen(cli_prof), sizeof(cli_prof) - strlen(cli_prof),
+				"%d>", VPN_TYPE_NET_NET_CLI);
+			// profile name
+			snprintf(cli_prof + strlen(cli_prof), sizeof(cli_prof) - strlen(cli_prof),
+				"%s-c%d>", prof[PROF_SVR][i].profilename, i + 1);
+			// remote_gateway_method
+			strlcat(cli_prof, "1>", sizeof(cli_prof));
+			// remote gateway
+			foreach_44(buf, prof[PROF_SVR][i].local_subnet, p) {
+				p = strchr(buf, '/');
+				*p = '\0';
+				v6 = is_valid_ip6(buf) ? 1 : 0;
+				break;
+			}
+			strlcpy(buf, get_ddns_hostname(), sizeof(buf));
+			if (nvram_get_int("ddns_enable_x") && nvram_get_int("ddns_status") && strlen(buf)) {
+				if (v6) {
+					if (nvram_get_int("ddns_ipv6_update"))
+						strlcat(cli_prof, buf, sizeof(cli_prof));
+					else
+						strlcat(cli_prof, getifaddr(get_wan6face(), AF_INET6, GIF_PREFIXLEN), sizeof(cli_prof));
+				}
+				else {
+					if (nvram_get_int("ddns_ipv6_update"))
+						strlcat(cli_prof, get_wanip(), sizeof(cli_prof));
+					else
+						strlcat(cli_prof, buf, sizeof(cli_prof));
+				}
+			}
+			else {
+				if (v6)
+					strlcat(cli_prof, getifaddr(get_wan6face(), AF_INET6, GIF_PREFIXLEN), sizeof(cli_prof));
+				else
+					strlcat(cli_prof, get_wanip(), sizeof(cli_prof));
+			}
+			strlcat(cli_prof, ">", sizeof(cli_prof));
+			// local public interface
+			strlcat(cli_prof, "wan>", sizeof(cli_prof));
+			// local public ip
+			strlcat(cli_prof, ">", sizeof(cli_prof));
+			// auth method
+			snprintf(cli_prof + strlen(cli_prof), sizeof(cli_prof) - strlen(cli_prof),
+				"%d>", prof[PROF_SVR][i].auth_method);
+			// auth method value -- psk password or private key of rsa
+			strlcat(cli_prof, prof[PROF_SVR][i].auth_method_key, sizeof(cli_prof));
+			strlcat(cli_prof, ">", sizeof(cli_prof));
+			// local subnet
+			foreach_44(buf, prof[PROF_SVR][i].remote_subnet, p) {
+				strlcat(cli_prof, "<", sizeof(cli_prof));
+				strlcat(cli_prof, buf, sizeof(cli_prof));
+			}
+			strlcat(cli_prof, ">", sizeof(cli_prof));
+			// local port, deprecated
+			strlcat(cli_prof, "0>", sizeof(cli_prof));
+			// remote subnet
+			foreach_44(buf, prof[PROF_SVR][i].local_subnet, p) {
+				strlcat(cli_prof, "<", sizeof(cli_prof));
+				strlcat(cli_prof, buf, sizeof(cli_prof));
+			}
+			strlcat(cli_prof, ">", sizeof(cli_prof));
+			// remote port, deprecated
+			strlcat(cli_prof, "0>", sizeof(cli_prof));
+			// tunnel type
+			strlcat(cli_prof, prof[PROF_SVR][i].tun_type, sizeof(cli_prof));
+			strlcat(cli_prof, ">", sizeof(cli_prof));
+			// virtual ip, not for net to net
+			strlcat(cli_prof, "null>", sizeof(cli_prof));
+			// virtual ip subnet,  not for net to net
+			strlcat(cli_prof, "null>", sizeof(cli_prof));
+			// accessible networks ?
+			snprintf(cli_prof + strlen(cli_prof), sizeof(cli_prof) - strlen(cli_prof),
+				"%d>", prof[PROF_SVR][i].accessible_networks);
+			// ike version
+			snprintf(cli_prof + strlen(cli_prof), sizeof(cli_prof) - strlen(cli_prof),
+				"%d>", prof[PROF_SVR][i].ike);
+			// encryption_p1
+			strlcat(cli_prof, "auto>", sizeof(cli_prof));
+			// hash_p1
+			strlcat(cli_prof, "auto>", sizeof(cli_prof));
+			// exchange
+			snprintf(cli_prof + strlen(cli_prof), sizeof(cli_prof) - strlen(cli_prof),
+				"%d>", prof[PROF_SVR][i].exchange);
+			// local id
+			strlcat(cli_prof, prof[PROF_SVR][i].remote_id, sizeof(cli_prof));
+			strlcat(cli_prof, ">", sizeof(cli_prof));
+			// remote id
+			strlcat(cli_prof, prof[PROF_SVR][i].local_id, sizeof(cli_prof));
+			strlcat(cli_prof, ">", sizeof(cli_prof));
+			// keylife_p1
+			snprintf(cli_prof + strlen(cli_prof), sizeof(cli_prof) - strlen(cli_prof),
+				"%d>", prof[PROF_SVR][i].keylife_p1);
+			// xauth
+			snprintf(cli_prof + strlen(cli_prof), sizeof(cli_prof) - strlen(cli_prof),
+				"%d>", prof[PROF_SVR][i].xauth);
+			// xauth_account, not used
+			strlcat(cli_prof, ">", sizeof(cli_prof));
+			// xauth_password, not used
+			strlcat(cli_prof, ">", sizeof(cli_prof));
+			// xauth_server_type, not used
+			strlcat(cli_prof, prof[PROF_SVR][i].rightauth2_method, sizeof(cli_prof));
+			strlcat(cli_prof, ">", sizeof(cli_prof));
+			// traversal
+			snprintf(cli_prof + strlen(cli_prof), sizeof(cli_prof) - strlen(cli_prof),
+				"%d>", prof[PROF_SVR][i].traversal);
+			// ike_isakmp
+			snprintf(cli_prof + strlen(cli_prof), sizeof(cli_prof) - strlen(cli_prof),
+				"%d>", prof[PROF_SVR][i].ike_isakmp_port);
+			// ike_isakmp_nat
+			snprintf(cli_prof + strlen(cli_prof), sizeof(cli_prof) - strlen(cli_prof),
+				"%d>", prof[PROF_SVR][i].ike_isakmp_nat_port);
+			// ipsec_dpd
+			snprintf(cli_prof + strlen(cli_prof), sizeof(cli_prof) - strlen(cli_prof),
+				"%d>", prof[PROF_SVR][i].ipsec_dpd);
+			// dead_peer_detection
+			snprintf(cli_prof + strlen(cli_prof), sizeof(cli_prof) - strlen(cli_prof),
+				"%d>", prof[PROF_SVR][i].dead_peer_detection);
+			// encryption_p2
+			strlcat(cli_prof, "auto>", sizeof(cli_prof));
+			// hash_p2
+			strlcat(cli_prof, "auto>", sizeof(cli_prof));
+			// keylife_p2: IPSEC phase 2
+			snprintf(cli_prof + strlen(cli_prof), sizeof(cli_prof) - strlen(cli_prof),
+				"%d>", prof[PROF_SVR][i].keylife_p2);
+			// keyingtries
+			snprintf(cli_prof + strlen(cli_prof), sizeof(cli_prof) - strlen(cli_prof),
+				"%d>", prof[PROF_SVR][i].keyingtries);
+			// samba settings
+			strlcat(cli_prof, "null>", sizeof(cli_prof));
+			// ipsec connection enable
+			strlcat(cli_prof, "1", sizeof(cli_prof));
+
+			// ext
+			snprintf(buf, sizeof(buf), "ipsec_profile_%d_ext", i + 1);
+			snprintf(cli_prof + strlen(cli_prof), sizeof(cli_prof) - strlen(cli_prof),
+				"\n%s", nvram_safe_get(buf));
+
+			snprintf(buf, sizeof(buf), "%s%d", FILE_PATH_IPSEC_N2N_PREFIX, i + 1);
+			f_write_string(buf, cli_prof, 0, 0);
+		}
+	}
+}
+
 void rc_ipsec_set(ipsec_conn_status_t conn_status, ipsec_prof_type_t prof_type)
 {
     static bool ipsec_start_en = FALSE;
@@ -2480,6 +2720,7 @@ void rc_ipsec_set(ipsec_conn_status_t conn_status, ipsec_prof_type_t prof_type)
 #if defined(RTCONFIG_QUICKSEC)
 	rc_ipsec_topology_set_XML();
 #endif
+	_ipsec_export();
 	if ((fp = fopen(FILE_PATH_IPSEC_SH, "w")) == NULL){
 		DBG(("OPEN %s FAIL!!\n", FILE_PATH_IPSEC_SH));
 		return;
@@ -2776,6 +3017,8 @@ void rc_ipsec_set(ipsec_conn_status_t conn_status, ipsec_prof_type_t prof_type)
     }
 #if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ8074) || defined(RTCONFIG_SOC_IPQ60XX)
 	reinit_ecm(-1);
+#elif defined(RTCONFIG_RALINK_MT7621) || defined(RTCONFIG_MT798X)
+	reinit_hwnat(-1);
 #endif
 	DBG(("rc_ipsec_down_stat<<<< CLI: 0x%x, SVR: 0x%x\n", cur_bitmap_en_p[PROF_CLI],cur_bitmap_en_p[PROF_SVR]));
 	chmod(FILE_PATH_IPSEC_SH, 0777);
@@ -2917,7 +3160,8 @@ static void _ipsec_updown_host_net_cli(int unit)
 #ifdef RTCONFIG_VPN_FUSION
 		vpnc_idx = _get_vpnc_idx_by_prof_idx(unit);
 		if (vpnc_idx) {
-			snprintf(table_str, sizeof(table_str), "%d", vpnc_idx);
+			snprintf(table_str, sizeof(table_str), "%d", IP_ROUTE_TABLE_ID_VPNC_BASE + vpnc_idx);
+#if !defined(RTCONFIG_MULTILAN_CFG)
 			{// copy from main
 				char cmd[128] = {0};
 				eval("ip", "route", "flush", "table", table_str);
@@ -2933,6 +3177,7 @@ static void _ipsec_updown_host_net_cli(int unit)
 				}
 				unlink("/tmp/route_tmp");
 			}
+#endif
 			// server route
 			eval("ip", "route", "add", addr_peer, "via", wan_gateway, "dev", wan_if, "table", table_str);
 			// server subnet
@@ -3160,3 +3405,182 @@ void rc_ipsec_ctrl(int prof_type, int prof_idx, int enable)
 		}
 	}
 }
+
+void update_ipsec_s2sc_conf()
+{
+	pre_ipsec_prof_set();
+	_ipsec_export();
+}
+
+#ifdef RTCONFIG_MULTILAN_CFG
+extern const char sdn_dir[];
+void update_ipsec_server_by_sdn(MTLAN_T *pmtl, size_t mtl_sz, int restart_all_sdn)
+{
+	char fpath[128] = {0};
+	char virtual_subnet[32] = {0};
+	FILE *fp;
+	int i, j;
+	VPN_VPNX_T vpnx;
+	int bind = 0;
+	size_t bind_cnt = 0, unbind_cnt = 0, unbinded_cnt = 0, mtlan_cnt = 0;
+
+	if (!nvram_get_int("ipsec_server_enable"))
+		return;
+
+	get_virtual_subnet("ipsec_profile_1", virtual_subnet, sizeof(virtual_subnet));
+
+	//TODO: Define the behaviour of "ipsec_block_intranet"
+
+	if (restart_all_sdn) {
+		eval("iptables", "-F", IPSEC_SRV_SDN_F_CHAIN);
+		for (i = 0; i < mtl_sz; i++) {
+			// Drop to/from LAN ifnames traffic, except those have binded with IPSec server.
+			bind = 0;
+			for (j = 0; j < MTLAN_VPNS_MAXINUM; j++) {
+				if (pmtl[i].enable
+				 && pmtl[i].sdn_t.vpns_idx_rl[j]
+				 && get_vpnx_by_vpns_idx(&vpnx, pmtl[i].sdn_t.vpns_idx_rl[j])
+				 && vpnx.proto == VPN_PROTO_IPSEC) {
+					bind = 1;
+					bind_cnt++;
+				}
+			}
+			if (bind) {
+				_dprintf("%s: bind with SDN(%d)\n", __FUNCTION__, pmtl[i].nw_t.idx);
+			}
+			else {
+				snprintf(fpath, sizeof(fpath), "%s/ipsec_sdn%d.sh", sdn_dir, pmtl[i].nw_t.idx);
+				fp = fopen(fpath, "w");
+				if (fp) {
+					fprintf(fp, "iptables -I %s -s %s.0/24 -o %s -j DROP\n", IPSEC_SRV_SDN_F_CHAIN, virtual_subnet, pmtl[i].nw_t.ifname);
+					fprintf(fp, "iptables -I %s -d %s.0/24 -i %s -j DROP\n", IPSEC_SRV_SDN_F_CHAIN, virtual_subnet, pmtl[i].nw_t.ifname);
+					fclose(fp);
+					chmod(fpath, S_IRUSR|S_IWUSR|S_IXUSR);
+					if (pmtl[i].enable) {
+						eval(fpath);
+						unbinded_cnt++;
+					}
+				}
+			}
+		}
+		// If all LAN ifnames not bind with IPSec server, accept all. No need go through all rules.
+		if (bind_cnt == 0 && unbinded_cnt) {
+			_dprintf("%s: accept all lan\n", __FUNCTION__);
+			eval("iptables", "-I", IPSEC_SRV_SDN_F_CHAIN, "-j", "RETURN");
+		}
+	}
+	else {
+		eval("iptables", "-D", IPSEC_SRV_SDN_F_CHAIN, "-j", "RETURN");
+
+		for (i = 0; i < mtl_sz; i++) {
+			snprintf(fpath, sizeof(fpath), "%s/ipsec_sdn%d.sh", sdn_dir, pmtl[i].nw_t.idx);
+			if (f_exists(fpath)) {
+				// If there is drop rule file, it was not binded with IPSec server previously.
+				// If bined with IPSec server now (unbind -> bind), remove drop rule.
+				bind = 0;
+				for (j = 0; j < MTLAN_VPNS_MAXINUM; j++) {
+					if (pmtl[i].enable
+					 && pmtl[i].sdn_t.vpns_idx_rl[j]
+					 && get_vpnx_by_vpns_idx(&vpnx, pmtl[i].sdn_t.vpns_idx_rl[j])
+					 && vpnx.proto == VPN_PROTO_IPSEC) {
+						bind = 1;
+					}
+				}
+				if (bind ) {
+					eval("sed", "-i", "s/-I/-D/", fpath);
+					eval(fpath);
+					unlink(fpath);
+					eval("iptables", "-D", IPSEC_SRV_SDN_F_CHAIN, "-j", "RETURN");
+				}
+			}
+			else {
+				// If no drop rule file, it may binded with IPSec server previously.
+				// If not bined with IPSec server (bind -> unbind), add drop rule.
+				bind = 0;
+				for (j = 0; j < MTLAN_VPNS_MAXINUM; j++) {
+					if (pmtl[i].enable
+					 && pmtl[i].sdn_t.vpns_idx_rl[j]
+					 && get_vpnx_by_vpns_idx(&vpnx, pmtl[i].sdn_t.vpns_idx_rl[j])
+					 && vpnx.proto == VPN_PROTO_IPSEC) {
+						bind = 1;
+					}
+				}
+				if (bind == 0) {
+					fp = fopen(fpath, "w");
+					if (fp) {
+						fprintf(fp, "iptables -I %s -s %s.0/24 -o %s -j DROP\n", IPSEC_SRV_SDN_F_CHAIN, virtual_subnet, pmtl[i].nw_t.ifname);
+						fprintf(fp, "iptables -I %s -d %s.0/24 -i %s -j DROP\n", IPSEC_SRV_SDN_F_CHAIN, virtual_subnet, pmtl[i].nw_t.ifname);
+						fclose(fp);
+						chmod(fpath, S_IRUSR|S_IWUSR|S_IXUSR);
+						if (pmtl[i].enable)
+							eval(fpath);
+					}
+				}
+			}
+		}
+		// If all LAN ifnames not bind with IPSec server, accept all. No need go through all rules.
+		bind = 1;
+		unbind_cnt = 0;
+		mtlan_cnt = get_mtlan_cnt();
+		_dprintf("number of rule in sdn_rl: %d\n", mtlan_cnt);
+		for (i = 0; i < MTLAN_MAXINUM; i++) {
+			snprintf(fpath, sizeof(fpath), "%s/ipsec_sdn%d.sh", sdn_dir, i);
+			if (f_exists(fpath)) {
+				bind = 0;
+				unbind_cnt++;
+			}
+		}
+		if (bind == 0 && unbind_cnt == mtlan_cnt) {
+			_dprintf("%s: accept all lan\n", __FUNCTION__);
+			eval("iptables", "-I", IPSEC_SRV_SDN_F_CHAIN, "-j", "RETURN");
+		}
+	}
+}
+
+void update_ipsec_server_by_sdn_remove(MTLAN_T *pmtl, size_t mtl_sz)
+{
+	char fpath[128] = {0};
+	char virtual_subnet[32] = {0};
+	int i, bind, binded;
+	size_t unbind_cnt = 0, mtlan_cnt = 0;
+
+	if (!nvram_get_int("ipsec_server_enable"))
+		return;
+
+	get_virtual_subnet("ipsec_profile_1", virtual_subnet, sizeof(virtual_subnet));
+
+	/// check bind with any SDN now.
+	bind = 1;
+	unbind_cnt = 0;
+	mtlan_cnt = get_mtlan_cnt();
+	// _dprintf("number of rule in sdn_rl: %d\n", mtlan_cnt);
+	for (i = 0; i < MTLAN_MAXINUM; i++) {
+		snprintf(fpath, sizeof(fpath), "%s/ipsec_sdn%d.sh", sdn_dir, i);
+		if (f_exists(fpath)) {
+			bind = 0;
+			unbind_cnt++;
+		}
+	}
+
+	/// remove DROP rule if not binded with the removed SDN.
+	binded = 0;
+	for (i = 0; i < mtl_sz; i++) {
+		snprintf(fpath, sizeof(fpath), "%s/ipsec_sdn%d.sh", sdn_dir, pmtl[i].nw_t.idx);
+		if (f_exists(fpath)) {
+			eval("sed", "-i", "s/-I/-D/", fpath);
+			eval(fpath);
+			unlink(fpath);
+		}
+		else {
+			binded = 1;
+		}
+	}
+
+	/// If binded with the removed SDNs previously, not bind with any SDN now.
+	/// Accept all. No need go through all rules.
+	if (binded == 1 && bind == 0 && unbind_cnt == mtlan_cnt) {
+		_dprintf("%s: accept all lan\n", __FUNCTION__);
+		eval("iptables", "-I", IPSEC_SRV_SDN_F_CHAIN, "-j", "RETURN");
+	}
+}
+#endif

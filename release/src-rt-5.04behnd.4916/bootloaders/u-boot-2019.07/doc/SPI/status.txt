@@ -1,0 +1,32 @@
+Status on SPI subsystem:
+=======================
+
+SPI COMMAND (common/cmd_sf, cmd_spi):
+-
+
+SPI FLASH (drivers/mtd/spi):
+- sf_probe.c: SPI flash probing code.
+- sf_ops.c: SPI flash operations code.
+- sf.c: SPI flash interface, which interacts controller driver.
+- Bank Address Register (Accessing flashes > 16Mbytes in 3-byte addressing)
+- Added memory_mapped support for read operations.
+- Common probe support for all supported flash vendors except, ramtron.
+- Extended read commands support(dual read, dual IO read)
+- Quad Page Program support.
+- Quad Read support(quad fast read, quad IO read)
+- Dual flash connection topology support(accessing two spi flash memories with single cs)
+- Banking support on dual flash connection topology.
+
+SPI DRIVERS (drivers/spi):
+-
+
+TODO:
+- Runtime detection of spi_flash params, SFDP(if possible)
+- Add support for multibus build/accessing.
+- Need proper cleanups on spi_flash and drivers.
+
+--
+Jagannadha Sutradharudu Teki <jagannadh.teki@gmail.com>
+18-09-2013.
+07-10-2013.
+08-01-2014.

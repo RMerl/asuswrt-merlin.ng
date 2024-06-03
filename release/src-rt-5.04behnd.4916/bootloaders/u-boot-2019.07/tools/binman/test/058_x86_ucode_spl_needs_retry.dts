@@ -1,0 +1,36 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		sort-by-offset;
+		end-at-4gb;
+		size = <0x200>;
+		u-boot-spl-with-ucode-ptr {
+		};
+
+		/*
+		 * Microcode goes before the DTB which contains it, so binman
+		 * will need to obtain the contents of the next section before
+		 * obtaining the contents of this one.
+		 */
+		u-boot-ucode {
+		};
+
+		u-boot-dtb-with-ucode {
+		};
+	};
+
+	microcode {
+		update@0 {
+			data = <0x12345678 0x12345679>;
+		};
+		update@1 {
+			data = <0xabcd0000 0x78235609>;
+		};
+	};
+};

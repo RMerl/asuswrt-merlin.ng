@@ -1,0 +1,12 @@
+if TARGET_NAS220
+
+config SYS_BOARD
+	default "nas220"
+
+config SYS_VENDOR
+	default "Seagate"
+
+config SYS_CONFIG_NAME
+	default "nas220"
+
+endif

@@ -1,0 +1,56 @@
+//**************************************************************//
+// Attach script for BCM6858                                    //
+//**************************************************************//
+
+AREA
+AREA.CLEAR
+SYSTEM.RESET
+SYSTEM.JTAGCLOCK 10MHz
+
+jtag.lock
+jtag.pin.enable
+jtag.pin.TDI LOW
+jtag.SHIFTTMS 1 1 1 1 1 1 1 0 1 1 0 0
+jtag.SHIFTTDI %Long 0x0 0x0 
+jtag.shifttdi %Long 0xffffffff 0xffffffff
+&a=jtag.SHIFT() 
+&b=&a&0xfffff
+jtag.SHIFTTMS 1 1 1 1 1 1 1 1 1
+jtag.unlock
+
+if (&b>0xfff00) 
+(
+   print "scan chain is DAP-only"
+)
+else
+(
+   // JTAG Scan-chain
+   //    TDI -> memc(5) -> pmc(5) -> dap(4) -> LVTAP(31) -> TDO
+   SYStem.CONFIG.DAPIRPOST  10.
+   SYStem.CONFIG.DAPIRPRE   31.
+   SYStem.CONFIG.DAPDRPOST  2.
+   SYStem.CONFIG.DAPDRPRE   1.
+   print "full scan chain"
+)
+
+system.config.apbaccessport 0
+system.config.axiaccessport 1
+system.config.debugaccessport 0
+system.config.memoryaccessport 1
+
+SYSTEM.CPU CORTEXA53
+SYSTEM.CONFIG.CORENUMBER 1
+SYSTEM.CONFIG.CORE 1
+SYSTEM.CONFIG.COREBASE 0x81810000
+SYSTEM.CONFIG.CTIBASE  0x81820000
+
+CORE.ASSIGN 1
+SYStem.option TRST OFF 
+SYStem.option EnReset OFF
+
+SYSTEM.MODE ATTACH
+
+;d.out 0x80180020 %LONG 0x60000042
+
+;do ~~/demo/windows_setup.cmm
+ENDDO

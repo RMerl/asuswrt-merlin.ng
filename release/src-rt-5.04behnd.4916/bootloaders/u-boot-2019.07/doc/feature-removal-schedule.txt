@@ -1,0 +1,43 @@
+The following is a list of files and features that are going to be
+removed from the U-Boot source tree.  Every entry should contain what
+exactly is going away, when it will be gone, why it is being removed,
+and who is going to be doing the work.	When the feature is removed
+from U-Boot, its corresponding entry should also be removed from this
+file.
+
+---------------------------
+
+What:	Remove unused CONFIG_SYS_MEMTEST_START/END
+When:	Release v2013.10
+
+Why:	As the 'mtest' command is no longer default, a number of platforms
+	have not opted to turn the command back on and thus provide unused
+	defines (which are likely to be propagated to new platforms from
+	copy/paste).  Remove these defines when unused.
+
+Who:	Tom Rini <trini@ti.com>
+
+---------------------------
+
+What:	Users of the legacy miiphy_* code
+When:	undetermined
+
+Why:	We now have a PHY library, which allows everyone to share PHY
+	drivers. All new drivers should use this infrastructure, and
+	all old drivers should get converted to use it.
+
+Who:	Andy Fleming <afleming@gmail.com> and driver maintainers
+
+---------------------------
+
+What:	GPL cleanup
+When:	August 2009
+Why:	Over time, a couple of files have sneaked in into the U-Boot
+	source code that are either missing a valid GPL license
+	header or that carry a license that is incompatible with the
+	GPL.
+	Such files shall be removed from the U-Boot source tree.
+	See http://www.denx.de/wiki/pub/U-Boot/TaskGplCleanup/u-boot-1.1.2-files
+	for an old and probably incomplete list of such files.
+
+Who:	Wolfgang Denk <wd@denx.de> and board maintainers

@@ -1,0 +1,12 @@
+if TARGET_DS109
+
+config SYS_BOARD
+	default "ds109"
+
+config SYS_VENDOR
+	default "Synology"
+
+config SYS_CONFIG_NAME
+	default "ds109"
+
+endif

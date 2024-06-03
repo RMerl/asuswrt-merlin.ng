@@ -33,5 +33,11 @@ extern int cm_getMultipleBandListByMac(char *mac, int isCap, json_object *indexB
 extern char *cm_getBandTypeByChannel(char *mac, int channel);
 extern char *cm_findSuitableBandType(json_object *allBandObj, char *bandKey);
 
+#ifdef RTCONFIG_AMAS_CHANNEL_PLAN
+#define SEL_CHANNEL_INFO_FILE   TEMP_ROOT_PATH"/sel_channel_info.json"
+extern int cm_getSelChannelInfo(json_object *selChannelInfoObj);
+#endif
+extern void cm_saveReOriginalChannelInfo(char *mac, json_object *channelInfoObj);
+
 #endif /* __CFG_CHANSPEC_H__ */
 /* End of cfg_chanspec.h */

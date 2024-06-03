@@ -27,7 +27,8 @@
 function initial(){
 	show_menu();
 	setTimeout(function(){
-		document.getElementById("vpns_iframe").setAttribute("src", "/VPN/vpns.html");
+		var curTheme = (parent.webWrapper) ? "?current_theme=white" : "";
+		document.getElementById("vpns_iframe").setAttribute("src", "/VPN/vpns.html" + curTheme);
 	},((window.location.protocol == "https:") ? 1000 : 50));
 }
 </script>

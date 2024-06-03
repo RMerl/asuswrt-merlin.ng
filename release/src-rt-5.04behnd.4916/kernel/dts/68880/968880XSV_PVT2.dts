@@ -1,0 +1,93 @@
+#include "inc/968880XSV.dtsi"
+
+/ {
+    model = "968880XSV_PVT2";
+};
+
+&ethphytop {
+    xphy0-enabled;
+    xphy1-enabled;
+};
+
+&mdio_bus {
+    egphy0 {
+        status = "okay";
+    };
+    egphy1 {
+        status = "okay";
+    };
+    egphy2 {
+        status = "okay";
+    };
+    egphy3 {
+        status = "okay";
+    };
+    xphy0 {
+        status = "okay";
+    };
+    xphy1 {
+        status = "okay";
+    };
+    serdes00 {
+        pinctrl-names = "default";
+        pinctrl-0 = <&a_slan_sd_rx_los_pin_3 &a_slan_sd_mod_abs_pin_4>;
+        10000-Base-R;
+        2500-Base-X;
+        1000-Base-X;
+        status = "okay";
+    };
+    serdes13_xphy {
+        enet-phy-lane-swap;
+        caps-no-10000;
+        caps-no-5000;
+        USXGMII-S;
+        status = "okay";
+    };
+    serdes13 {
+        phy-handle = <&serdes13_xphy>;
+        status = "okay";
+    };
+    wan_ae {
+        trx = <&xfp_sfp>;
+        status = "okay";
+    };
+};
+
+&switch0 {
+    ports {
+        port_gphy0 {
+            status = "okay";
+        };
+        port_gphy1 {
+            status = "okay";
+        };
+        port_gphy2 {
+            status = "okay";
+        };
+        port_gphy3 {
+            status = "okay";
+        };
+        port_xgphy0 {
+            status = "okay";
+        };
+        port_xgphy1 {
+            status = "okay";
+        };
+        port_slan0 {
+            status = "okay";
+        };
+        port_qlan3 {
+            status = "okay";
+        };
+        port_wan@fiber {
+            status = "okay";
+        };
+        port_wan@ae {
+            status = "okay";
+        };
+    };
+};
+
+&phy_wan_serdes {
+    status = "okay";
+};

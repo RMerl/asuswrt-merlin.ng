@@ -1,0 +1,12 @@
+#include "949418EAP_P200.dts"
+&mdio {
+    /* Port PHY mapping:
+            port_xgphy <----> phy_serdes0   - phy_cascade0
+            port_sgmii1 <---> phy_serdes1   - phy_cascade1
+     */
+	phy_cascade0 {
+		wake-on-lan;
+		status = "okay";
+	};
+
+};

@@ -1,0 +1,13 @@
+Sandbox serial
+
+The sandbox serial device is an emulated device which displays its output
+on the host machine's console, and accepts input from its keyboard.
+
+Required properties:
+  compatible: "sandbox,serial"
+
+Optional properties:
+  sandbox,text-colour: If present, this is the colour of the console text.
+        Supported values are:
+        "black", "red", "green", "yellow", "blue", "megenta", "cyan",
+        "white"

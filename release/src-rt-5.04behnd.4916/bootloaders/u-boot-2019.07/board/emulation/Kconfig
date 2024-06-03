@@ -1,0 +1,30 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright (C) 2015, Bin Meng <bmeng.cn@gmail.com>
+
+if VENDOR_EMULATION
+
+choice
+	prompt "Mainboard model"
+
+config TARGET_QEMU_X86
+	bool "QEMU x86"
+	help
+	  This is the QEMU emulated x86 board. U-Boot supports running
+	  as a coreboot payload as well as bare boot without coreboot.
+	  There are two types of x86 boards supported by QEMU which are
+	  supported by U-Boot. They are via QEMU '-M pc', an i440FX/PIIX
+	  chipset platform and '-M q35', a Q35/ICH9 chipset platform.
+
+config TARGET_QEMU_X86_64
+	bool "QEMU x86 64-bit"
+	help
+	  This is the QEMU emulated x86 64-bit board. With this config
+	  U-Boot is built as a 64-bit binary. This allows testing while
+	  this feature is being completed.
+
+endchoice
+
+source "board/emulation/qemu-x86/Kconfig"
+
+endif

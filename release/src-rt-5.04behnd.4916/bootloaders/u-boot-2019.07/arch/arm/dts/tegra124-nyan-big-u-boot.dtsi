@@ -1,0 +1,25 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2016 Google, Inc
+ * Written by Simon Glass <sjg@chromium.org>
+ */
+
+#include "tegra-u-boot.dtsi"
+
+/ {
+	host1x@50000000 {
+		u-boot,dm-pre-reloc;
+		dc@54200000 {
+			u-boot,dm-pre-reloc;
+		};
+	};
+
+	spi@7000d400 {
+		spi-deactivate-delay = <500>;
+		spi-max-frequency = <3000000>;
+
+		cros_ec: cros-ec@0 {
+			ec-interrupt = <&gpio TEGRA_GPIO(C, 7) GPIO_ACTIVE_LOW>;
+		};
+	};
+};

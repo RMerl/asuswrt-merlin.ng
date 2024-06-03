@@ -1,0 +1,35 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2018 Synopsys, Inc. All rights reserved.
+ */
+/dts-v1/;
+
+#include "skeleton.dtsi"
+
+/ {
+	model = "snps,emsdp";
+
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	aliases {
+		console = &uart0;
+	};
+
+	cpu_card {
+		core_clk: core_clk {
+			#clock-cells = <0>;
+			compatible = "fixed-clock";
+			clock-frequency = <40000000>;
+			u-boot,dm-pre-reloc;
+		};
+	};
+
+	uart0: serial0@f0004000 {
+		compatible = "snps,dw-apb-uart";
+		clock-frequency = <100000000>;
+		reg = <0xf0004000 0x1000>;
+		reg-shift = <2>;
+		reg-io-width = <4>;
+	};
+};

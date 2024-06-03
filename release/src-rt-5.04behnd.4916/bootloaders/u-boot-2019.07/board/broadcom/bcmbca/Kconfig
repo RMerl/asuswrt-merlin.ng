@@ -1,0 +1,246 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# (C) Copyright 2019 Broadcom Ltd
+#
+
+config SYS_VENDOR
+	default "broadcom"
+
+config SYS_BOARD
+	default "bcmbca"
+
+if TARGET_BCM963158
+config SYS_CONFIG_NAME
+	default "bcm963158"
+endif
+
+if TARGET_BCM96858
+config SYS_CONFIG_NAME
+	default "bcm96858"
+endif
+
+if TARGET_BCM96856
+config SYS_CONFIG_NAME
+	default "bcm96856"
+endif
+
+if TARGET_BCM963178
+config SYS_CONFIG_NAME
+	default "bcm963178"
+endif
+
+if TARGET_BCM947622
+config SYS_CONFIG_NAME
+	default "bcm947622"
+endif
+
+if TARGET_BCM96756
+config SYS_CONFIG_NAME
+	default "bcm96756"
+endif
+
+if TARGET_BCM96765
+config SYS_CONFIG_NAME
+	default "bcm96765"
+endif
+
+if TARGET_BCM96766
+config SYS_CONFIG_NAME
+	default "bcm96766"
+endif
+
+if TARGET_BCM96846
+config SYS_CONFIG_NAME
+    default "bcm96846"
+endif
+
+if TARGET_BCM96878
+config SYS_CONFIG_NAME
+    default "bcm96878"
+endif
+
+if TARGET_BCM96855
+config SYS_CONFIG_NAME
+    default "bcm96855"
+endif
+
+if TARGET_BCM94908
+config SYS_CONFIG_NAME
+	default "bcm94908"
+endif
+
+if TARGET_BCM94912
+config SYS_CONFIG_NAME
+	default "bcm94912"
+endif
+
+if TARGET_BCM96813
+config SYS_CONFIG_NAME
+	default "bcm96813"
+endif
+
+if TARGET_BCM963146
+config SYS_CONFIG_NAME
+	default "bcm963146"
+endif
+
+if TARGET_BCM963138
+config SYS_CONFIG_NAME
+	default "bcm963138"
+endif
+
+if TARGET_BCM963148
+config SYS_CONFIG_NAME
+	default "bcm963148"
+endif
+
+if TARGET_BCM96888
+config SYS_CONFIG_NAME
+    default "bcm96888"
+endif
+
+if TARGET_BCM96837
+config SYS_CONFIG_NAME
+    default "bcm96837"
+endif
+
+if TARGET_BCM968880
+config SYS_CONFIG_NAME
+    default "bcm968880"
+endif
+
+config BCMBCA_HTTPD
+	bool "Support HTTPD server"
+	depends on NET
+
+config BCMBCA_IKOS
+	bool "IKOS"
+	depends on !CONFIG_SYS_ARCH_TIMER
+	help
+	  Enable IKOS build 
+
+config BCMBCA_IKOS_SPL_JUMP_TO_UBOOT
+	bool "IKOS SPL to u-boot jump"
+	depends on BCMBCA_IKOS && SPL
+	default n
+	help
+	  Enable IKOS SPL early jump to u-boot entry directly
+
+config BCMBCA_IKOS_SKIP_PGTBL_CLEAN
+	bool "IKOS skip page table clean"
+	depends on BCMBCA_IKOS
+	default n
+	help
+	  Skip MMU page table clean to speed up IKOS boot up time
+
+config BCMBCA_NO_SMC_BOOT
+	bool "NO SMC Define"
+	help
+		"No System Management Controller boot
+
+config ARM_A55
+	bool "ARM Cortex@ A55 based"
+	help
+	  ARM Cortex@ A55 based 
+
+config SMC_BASED
+	bool "SoCs based on SMC"
+    default y if BCM68880
+    default y if BCM6837
+    default n
+	help
+	  SoCs based on SMC 
+
+config BCMBCA_BOARD_SPECIFIC_DT
+	bool "Load board specific device tree for uboot"
+
+config BCMBCA_UPDATE_MCB_IN_ENV
+	bool "Auto update MCB selector in environment"
+	depends on BCMBCA_BOARD_SPECIFIC_DT
+	default y
+
+config BCMBCA_BOARD_SDK
+	bool "Support board sdk"
+	depends on !BCMBCA_IKOS
+	default y
+
+config BCMBCA_DECRYPT_TPL
+	bool "Directs SPL to unconditionally decrypt TPL in Bootrom FLD/MFG Secure mode using AES symmetric key. Caution: TPL will not be capable to run in unsecrue mode"
+
+config BCMBCA_DISABLE_SECURE_VERIFY
+	bool "WARNING!!!: allows to run unsecured images(FIT, u-boot and rootfs) under Bootrom secure mode.  All keys sent from bootrom will be tossed; Secured OTP will be disabled. If a symmetric encryption is applied to the rootfs content then system will crash upon run"
+	default n
+
+config BCMBCA_EARLY_ABORT_JTAG_UNLOCK
+	bool "Unlocks JTAG in early abort. Hazardous: Use in debug/development mode only"
+	help
+          JTAG unlock is a debug feature helping to unbrick board if booted to BOOTROM secure mode
+
+config BCMBCA_EARLY_ABORT_DDRINIT
+	bool "Manual DDR Init in early abort (Debug/Development only)"
+	default n
+	help
+		  Manually initialize DDR in early abort menu. This allow user to load binary
+		  to DDR over UART and recover board in case TPL or u-boot fails to boot.
+		  WARNING: this feature is for debug and development only!
+
+config BCMBCA_EARLY_ABORT_LOADB
+	bool "Load binary through UART in early abort (Debug/Development only)"
+	select SPL_HASH_SUPPORT
+	select BCMBCA_EARLY_ABORT_DDRINIT
+	default n
+	help
+		  Load binary through UART, currently using Ymodem only, to memory in early
+		  abort menu. It can be used with early abort ddr init to recover board. 
+		  WARNING: this feature is for debug and development only!
+
+config BCMBCA_RELAX_CHECKS_WHEN_NONSECURE
+	bool "Relax security checks when device is not in secure boot modes"
+	default n
+	help
+	  If selected, mechanisms to lock the uboot CLI and override environment that
+	  are normally used to secure a device in secure boot mode can be compiled
+          in but relaxed when the image is used in non-secure modes.  This allows
+          the same (signed) image to be used prior to switching to secure boot and
+	  after.
+
+
+#since we need this in tpl, we can't have it under misc 
+config BCM_BOOTSTATE
+	bool "Enable support for Broadcom Bootstate Driver"
+	help
+	  If you say Y here, you will get support broadcom bootstate
+	  mechanism
+
+config BCM_BOOTSTATE_FALLBACK_SUPPORT
+	bool "Enable support for Broadcom Bootstate Fallback in case of unsteady image"
+	depends on BCM_BOOTSTATE && !SMC_BASED
+	default n
+	help
+	  If you say Y here, you will get support broadcom bootstate fallback
+	  mechanism
+
+config BCM_THERMAL
+	bool "Support thermal throttling"
+	default n
+
+config BCMBCA_EXTRA_BOARD_OBJECTS
+	string "Space Seperated List of Extra board/broadcom/bcmbca objects to build"
+	help
+	  To add additional files to the uboot proper in the board/broadcom/bcmbca directory
+	  add the names of the .o files in a space-separated list
+
+config BCMBCA_BOARD_TK_PROG
+	bool "Build Turnkey Programming SPL Version"
+	default n
+
+config BCMBCA_BUTTON
+	bool "button support for broadcom board"
+	depends on DM
+	default y
+
+config BCMBCA_SPL_SALT
+	string "Random SALT String for SPL"
+	depends on SPL
+	help
+	  Specify the random string adding to spl binary for security enhancement

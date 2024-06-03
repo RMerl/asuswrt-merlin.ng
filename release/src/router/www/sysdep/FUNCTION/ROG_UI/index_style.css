@@ -42,7 +42,7 @@ body{
 .banner1{
 	width:1064px;
 	height:70px;
-	background:url(images/New_ui/title_bg.png) 0 0 no-repeat;
+	/*background:url(images/New_ui/title_bg.png) 0 0 no-repeat;*/
 	margin:0px auto 30px auto;
 }	
 #banner3{
@@ -627,6 +627,9 @@ width:122px;
 	font-weight:bolder;
 	margin: 20px 0 0 0;
 	text-shadow: 3px 2px #000;
+	width: 240px;
+    word-break: break-all;
+    text-align: left;
 }
 .cloud_main_radius{
 	-webkit-border-radius: 10px;
@@ -804,10 +807,13 @@ width:122px;
 }
 
 .block_filter_name{
-		text-align:center;
-		padding-top:5px;
-		color:#CCCCCC;
-		font-size:14px
+	text-align:center;
+	color:#CCCCCC;
+	font-size:14px;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 } 
 
 .block_filter_name:hover{
@@ -986,7 +992,7 @@ width:122px;
 	background-position: -0px -144px;
 }
 
-.menu_Dashboard{
+.menu_Dashboard, .menu_NewDashboard{
 	background-image: url(images/New_ui/icon_Gamecenter.png);
 	background-position: -0px 0px;
 }

@@ -109,16 +109,16 @@ fi
 
 # Other settings to feed to configure script. 
 DEVELOPER=`xcode-select -print-path`
-export CFLAGS="${CFLAGS} -DPJ_SDK_NAME=\"\\\"`basename $SDKPATH`\\\"\" ${ARCH} -isysroot ${SDKPATH} -miphoneos-version-min=7.0"
+export CFLAGS="${CFLAGS} -DPJ_SDK_NAME=\"\\\"`basename $SDKPATH`\\\"\" ${ARCH} -isysroot ${SDKPATH} -miphoneos-version-min=11.0"
 #export LDFLAGS="${LDFLAGS} ${ARCH} -isysroot ${SDKPATH} -framework AudioToolbox -framework Foundation"
-export LDFLAGS="${LDFLAGS} ${ARCH} -isysroot ${SDKPATH} -framework AudioToolbox -framework Foundation -miphoneos-version-min=7.0"
-#export LDFLAGS="${LDFLAGS} ${ARCH}  -miphoneos-version-min=7.0"
+export LDFLAGS="${LDFLAGS} ${ARCH} -isysroot ${SDKPATH} -framework AudioToolbox -framework Foundation -miphoneos-version-min=11.0"
+#export LDFLAGS="${LDFLAGS} ${ARCH}  -miphoneos-version-min=11.0"
 #export AR="${DEVPATH}/usr/bin/libtool -static -o"
 export AR="${DEVELOPER}/Toolchains/XcodeDefault.xctoolchain/usr/bin/libtool -static -o"
 export RANLIB="echo ranlib"
 # Use gcc -E as preprocessor instead of cpp, since cpp will find the
 # header files in standard /usr/include instead of in isysroot
-export CPP="${CC} ${ARCH} -E -isysroot ${SDKPATH} -miphoneos-version-min=7.0"
+export CPP="${CC} ${ARCH} -E -isysroot ${SDKPATH} -miphoneos-version-min=11.0"
 
 # Print settings
 if test "1" = "1"; then

@@ -24,10 +24,18 @@
 PWD=$(shell pwd)
 
 all:
+ifeq ($(MT798X),y)
+	$(MAKE) -C $(LINUXDIR) CROSS_COMPILE=$(patsubst %-gcc,%-,$(KERNELCC)) EXTRA_CFLAGS=-I$(TOP)/shared M=$(PWD)/driver modules
+else
 	$(MAKE) -C $(LINUXDIR) CROSS_COMPILE=$(patsubst %-gcc,%-,$(KERNELCC)) EXTRA_CFLAGS=-I$(TOP)/shared SUBDIRS=$(PWD)/driver modules
+endif
 
 install:
+ifeq ($(MT798X),y)
+	$(MAKE) -C $(LINUXDIR) CROSS_COMPILE=$(patsubst %-gcc,%-,$(KERNELCC)) EXTRA_CFLAGS=-I$(TOP)/shared M=$(PWD)/driver INSTALL_MOD_PATH=$(INSTALLDIR) modules_install
+else
 	$(MAKE) -C $(LINUXDIR) CROSS_COMPILE=$(patsubst %-gcc,%-,$(KERNELCC)) EXTRA_CFLAGS=-I$(TOP)/shared SUBDIRS=$(PWD)/driver INSTALL_MOD_PATH=$(INSTALLDIR) modules_install
+endif
 	@find $(INSTALLDIR) -name "modules.*" | xargs rm -f
 	@find $(INSTALLDIR) -name "*.ko" | xargs $(STRIPX)
 

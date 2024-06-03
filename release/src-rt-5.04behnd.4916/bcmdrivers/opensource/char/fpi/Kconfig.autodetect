@@ -1,0 +1,15 @@
+config BCM_FPI
+	tristate "Support for Broadcom Flow Provisioning Interface"
+	depends on BCM_ACCEL && !BCM_PKFLOW
+	depends on BCM94912 || BCM96813
+
+config BCM_FPI_IMPL
+	int "BCM Flow Provisioning Interface Implementation Selection"
+	depends on BCM_FPI
+	default 1
+
+config BCM_FPI_BLOG
+	tristate "BCM FPI Control Dataplane via Blog (sample)"
+	depends on BCM_FPI
+	default n
+

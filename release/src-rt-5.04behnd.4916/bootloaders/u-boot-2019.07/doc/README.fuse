@@ -1,0 +1,67 @@
+Fuse API functions and commands
+
+The fuse API allows to control a fusebox and how it is used by the upper
+hardware layers.
+
+A fuse corresponds to a single non-volatile memory bit that can be programmed
+(i.e. blown, set to 1) only once. The programming operation is irreversible. A
+fuse that has not been programmed reads 0.
+
+Fuses can be used by SoCs to store various permanent configuration and data,
+e.g. boot configuration, security configuration, MAC addresses, etc.
+
+A fuse word is the smallest group of fuses that can be read at once from the
+fusebox control IP registers. This is limited to 32 bits with the current API.
+
+A fuse bank is the smallest group of fuse words having a common ID, as defined
+by each SoC.
+
+Upon startup, the fusebox control IP reads the fuse values and stores them to a
+volatile shadow cache.
+
+See the README files of the drivers implementing this API in order to know the
+SoC- and implementation-specific details.
+
+Functions / commands:
+
+   int fuse_read(u32 bank, u32 word, u32 *val);
+   fuse read <bank> <word> [<cnt>]
+      Read fuse words from the shadow cache.
+
+   int fuse_sense(u32 bank, u32 word, u32 *val);
+   fuse sense <bank> <word> [<cnt>]
+      Sense - i.e. read directly from the fusebox, skipping the shadow cache -
+      fuse words. This operation does not update the shadow cache.
+
+      This is useful to know the true value of fuses if an override has been
+      performed (see below).
+
+   int fuse_prog(u32 bank, u32 word, u32 val);
+   fuse prog [-y] <bank> <word> <hexval> [<hexval>...]
+      Program fuse words. This operation directly affects the fusebox and is
+      irreversible. The shadow cache is updated accordingly or not, depending on
+      each IP.
+
+      Only the bits to be programmed should be set in the input value (i.e. for
+      fuse bits that have already been programmed and hence should be left
+      unchanged by a further programming, it is preferable to clear the
+      corresponding bits in the input value in order not to perform a new
+      hardware programming operation on these fuse bits).
+
+   int fuse_override(u32 bank, u32 word, u32 val);
+   fuse override <bank> <word> <hexval> [<hexval>...]
+      Override fuse words in the shadow cache.
+
+      The fusebox is unaffected, so following this operation, the shadow cache
+      may differ from the fusebox values. Read or sense operations can then be
+      used to get the values from the shadow cache or from the fusebox.
+
+      This is useful to change the behaviors linked to some cached fuse values,
+      either because this is needed only temporarily, or because some of the
+      fuses have already been programmed or are locked (if the SoC allows to
+      override a locked fuse).
+
+Configuration:
+
+   CONFIG_CMD_FUSE
+      Define this to enable the fuse commands.

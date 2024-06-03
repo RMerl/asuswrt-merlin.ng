@@ -1,0 +1,104 @@
+if ARCH_MX5
+
+config MX5
+	bool
+	default y
+	select GPT_TIMER
+
+config MX51
+	bool
+	select ARM_CORTEX_A8_CVE_2017_5715
+	select SYS_FSL_ERRATUM_ESDHC_A001
+
+config MX53
+	bool
+	select ARM_CORTEX_A8_CVE_2017_5715
+
+choice
+	prompt "MX5 board select"
+	optional
+
+config TARGET_KP_IMX53
+	bool "Support K+P imx53 board"
+	select BOARD_LATE_INIT
+	select DM
+	select DM_ETH
+	select DM_GPIO
+	select DM_I2C
+	select DM_PMIC
+	select DM_SERIAL
+	select DM_MMC
+	select BLK
+	select DM_USB
+	select DM_REGULATOR
+	select MX53
+	imply CMD_DM
+
+config TARGET_M53MENLO
+	bool "Support m53menlo"
+	select MX53
+	select SUPPORT_SPL
+
+config TARGET_MX51EVK
+	bool "Support mx51evk"
+	select BOARD_LATE_INIT
+	select MX51
+
+config TARGET_MX53ARD
+	bool "Support mx53ard"
+	select MX53
+
+config TARGET_MX53CX9020
+	bool "Support CX9020"
+	select BOARD_LATE_INIT
+	select DM
+	select DM_SERIAL
+	select MX53
+	imply CMD_DM
+
+config TARGET_MX53EVK
+	bool "Support mx53evk"
+	select BOARD_LATE_INIT
+	select MX53
+
+config TARGET_MX53LOCO
+	bool "Support mx53loco"
+	select BOARD_LATE_INIT
+	select MX53
+
+config TARGET_MX53PPD
+	bool "Support mx53ppd"
+	select MX53
+	help
+	  Enable support for the GE Healthcare PPD.
+
+config TARGET_MX53SMD
+	bool "Support mx53smd"
+	select MX53
+
+config TARGET_TS4800
+	bool "Support TS4800"
+	select MX51
+
+config TARGET_USBARMORY
+	bool "Support USB armory"
+	select MX53
+
+endchoice
+
+config SYS_SOC
+	default "mx5"
+
+source "board/beckhoff/mx53cx9020/Kconfig"
+source "board/freescale/mx51evk/Kconfig"
+source "board/freescale/mx53ard/Kconfig"
+source "board/freescale/mx53evk/Kconfig"
+source "board/freescale/mx53loco/Kconfig"
+source "board/freescale/mx53smd/Kconfig"
+source "board/ge/mx53ppd/Kconfig"
+source "board/inversepath/usbarmory/Kconfig"
+source "board/k+p/kp_imx53/Kconfig"
+source "board/menlo/m53menlo/Kconfig"
+source "board/technologic/ts4800/Kconfig"
+
+endif

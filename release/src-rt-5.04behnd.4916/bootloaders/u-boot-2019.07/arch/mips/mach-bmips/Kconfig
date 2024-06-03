@@ -1,0 +1,280 @@
+menu "Broadcom MIPS platforms"
+	depends on ARCH_BMIPS
+
+config SYS_MALLOC_F_LEN
+	default 0x1000
+
+config SYS_SOC
+	default "bcm3380" if SOC_BMIPS_BCM3380
+	default "bcm6318" if SOC_BMIPS_BCM6318
+	default "bcm6328" if SOC_BMIPS_BCM6328
+	default "bcm6338" if SOC_BMIPS_BCM6338
+	default "bcm6348" if SOC_BMIPS_BCM6348
+	default "bcm6358" if SOC_BMIPS_BCM6358
+	default "bcm6368" if SOC_BMIPS_BCM6368
+	default "bcm6362" if SOC_BMIPS_BCM6362
+	default "bcm63268" if SOC_BMIPS_BCM63268
+	default "bcm6838" if SOC_BMIPS_BCM6838
+
+choice
+	prompt "Broadcom MIPS SoC select"
+
+config SOC_BMIPS_BCM3380
+	bool "BMIPS BCM3380 family"
+	select MIPS_L1_CACHE_SHIFT_4
+	select MIPS_TUNE_4KC
+	select SUPPORTS_BIG_ENDIAN
+	select SUPPORTS_CPU_MIPS32_R1
+	select SYSRESET_WATCHDOG
+	help
+	  This supports BMIPS BCM3380 family.
+
+config SOC_BMIPS_BCM6318
+	bool "BMIPS BCM6318 family"
+	select MIPS_L1_CACHE_SHIFT_4
+	select MIPS_TUNE_4KC
+	select SUPPORTS_BIG_ENDIAN
+	select SUPPORTS_CPU_MIPS32_R1
+	select SYSRESET_SYSCON
+	help
+	  This supports BMIPS BCM6318 family.
+
+config SOC_BMIPS_BCM6328
+	bool "BMIPS BCM6328 family"
+	select MIPS_L1_CACHE_SHIFT_4
+	select MIPS_TUNE_4KC
+	select SUPPORTS_BIG_ENDIAN
+	select SUPPORTS_CPU_MIPS32_R1
+	select SYSRESET_SYSCON
+	help
+	  This supports BMIPS BCM6328 family including BCM63281 and BCM63283.
+
+config SOC_BMIPS_BCM6338
+	bool "BMIPS BCM6338 family"
+	select MIPS_L1_CACHE_SHIFT_4
+	select MIPS_TUNE_4KC
+	select SUPPORTS_BIG_ENDIAN
+	select SUPPORTS_CPU_MIPS32_R1
+	select SYSRESET_SYSCON
+	help
+	  This supports BMIPS BCM6338 family.
+
+config SOC_BMIPS_BCM6348
+	bool "BMIPS BCM6348 family"
+	select MIPS_L1_CACHE_SHIFT_4
+	select MIPS_TUNE_4KC
+	select SUPPORTS_BIG_ENDIAN
+	select SUPPORTS_CPU_MIPS32_R1
+	select SYSRESET_WATCHDOG
+	help
+	  This supports BMIPS BCM6348 family.
+
+config SOC_BMIPS_BCM6358
+	bool "BMIPS BCM6358 family"
+	select MIPS_L1_CACHE_SHIFT_4
+	select MIPS_TUNE_4KC
+	select SUPPORTS_BIG_ENDIAN
+	select SUPPORTS_CPU_MIPS32_R1
+	select SYSRESET_SYSCON
+	help
+	  This supports BMIPS BCM6358 family including BCM6358 and BCM6359.
+
+config SOC_BMIPS_BCM6368
+	bool "BMIPS BCM6368 family"
+	select MIPS_L1_CACHE_SHIFT_4
+	select MIPS_TUNE_4KC
+	select SUPPORTS_BIG_ENDIAN
+	select SUPPORTS_CPU_MIPS32_R1
+	select SYSRESET_SYSCON
+	help
+	  This supports BMIPS BCM6368 family including BCM6368 and BCM6369.
+
+config SOC_BMIPS_BCM6362
+	bool "BMIPS BCM6362 family"
+	select MIPS_L1_CACHE_SHIFT_4
+	select MIPS_TUNE_4KC
+	select SUPPORTS_BIG_ENDIAN
+	select SUPPORTS_CPU_MIPS32_R1
+	select SYSRESET_SYSCON
+	help
+	  This supports BMIPS BCM6362 family including BCM6361 and BCM6362.
+
+config SOC_BMIPS_BCM63268
+	bool "BMIPS BCM63268 family"
+	select MIPS_L1_CACHE_SHIFT_4
+	select MIPS_TUNE_4KC
+	select SUPPORTS_BIG_ENDIAN
+	select SUPPORTS_CPU_MIPS32_R1
+	select SYSRESET_SYSCON
+	help
+	  This supports BMIPS BCM63268 family including BCM63168, BCM63169,
+	  BCM63268 and BCM63269.
+
+config SOC_BMIPS_BCM6838
+	bool "BMIPS BCM6838 family"
+	select MIPS_L1_CACHE_SHIFT_4
+	select MIPS_TUNE_4KC
+	select SUPPORTS_BIG_ENDIAN
+	select SUPPORTS_CPU_MIPS32_R1
+	select SYSRESET_SYSCON
+	help
+	  This supports BMIPS BCM6838 family including BCM68380, BCM68381,
+	  and BCM68385.
+
+endchoice
+
+choice
+	prompt "Board select"
+
+config BOARD_BROADCOM_BCM968380GERG
+	bool "Broadcom bcm968380gerg"
+	depends on SOC_BMIPS_BCM6838
+	select BMIPS_SUPPORTS_BOOT_RAM
+	help
+	  Broadcom BCM968380GERG reference board with BCM68380 SoC with 512 MB
+	  of RAM and 128 MB of flash (nand).
+	  Between its different peripherals there's an integrated switch with 4
+	  ethernet ports, 2 USB ports, 1 UART, GPIO buttons and LEDs, and
+	  a BCM43217 (PCIe).
+
+config BOARD_COMTREND_AR5315U
+	bool "Comtrend AR-5315u"
+	depends on SOC_BMIPS_BCM6318
+	select BMIPS_SUPPORTS_BOOT_RAM
+	help
+	  Comtrend AR-5315u boards have a BCM6318 SoC with 64 MB of RAM and 16
+	  MB of flash (SPI).
+	  Between its different peripherals there's an integrated switch with 4
+	  ethernet ports, 1 USB port, 1 UART, GPIO buttons and LEDs, and
+	  a BCM43217 (PCIe).
+
+config BOARD_COMTREND_AR5387UN
+	bool "Comtrend AR-5387un"
+	depends on SOC_BMIPS_BCM6328
+	select BMIPS_SUPPORTS_BOOT_RAM
+	help
+	  Comtrend AR-5387un boards have a BCM6328 SoC with 64 MB of RAM and 16
+	  MB of flash (SPI).
+	  Between its different peripherals there's an integrated switch with 4
+	  ethernet ports, 1 USB port, 1 UART, GPIO buttons and LEDs, and
+	  a BCM43225 (PCIe).
+
+config BOARD_COMTREND_CT5361
+	bool "Comtrend CT-5361"
+	depends on SOC_BMIPS_BCM6348
+	select BMIPS_SUPPORTS_BOOT_RAM
+	help
+	  Comtrend CT-5361 boards have a BCM6348 SoC with 16 MB of RAM and 4 MB
+	  of flash (CFI).
+	  Between its different peripherals there's a BCM5325 switch with 4
+	  ethernet ports, 1 USB port, 1 UART, GPIO buttons and LEDs, and a
+	  BCM4312 (miniPCI).
+
+config BOARD_COMTREND_VR3032U
+	bool "Comtrend VR-3032u board"
+	depends on SOC_BMIPS_BCM63268
+	select BMIPS_SUPPORTS_BOOT_RAM
+	help
+	  Comtrend VR-3032u boards have a BCM63268 SoC with 64 MB of RAM and
+	  128 MB of flash (NAND).
+	  Between its different peripherals there's an integrated switch with 4
+	  ethernet ports, 1 USB port, 1 UART, GPIO buttons and LEDs,
+	  and a BCM6362 (integrated).
+
+config BOARD_COMTREND_WAP5813N
+	bool "Comtrend WAP-5813n board"
+	depends on SOC_BMIPS_BCM6368
+	select BMIPS_SUPPORTS_BOOT_RAM
+	help
+	  Comtrend WAP-5813n boards have a BCM6369 SoC with 64 MB of RAM and
+	  8 MB of flash (CFI).
+	  Between its different peripherals there's a BCM53115 switch with 5
+	  ethernet ports, 1 USB port, 1 UART, GPIO buttons and LEDs,
+	  and a BCM4322 (miniPCI).
+
+config BOARD_HUAWEI_HG556A
+	bool "Huawei EchoLife HG556a"
+	depends on SOC_BMIPS_BCM6358
+	select BMIPS_SUPPORTS_BOOT_RAM
+	help
+	  Huawei EchoLife HG556a boards have a BCM6358 SoC with 64 MB of RAM
+	  and 16 MB of flash (CFI).
+	  Between its different peripherals there's a BCM5325 switch with 4
+	  ethernet ports, 3 USB ports, 1 UART, GPIO buttons and LEDs, and
+	  a RT3062F/AR9223 (PCI).
+
+config BOARD_NETGEAR_CG3100D
+	bool "Netgear CG3100D"
+	depends on SOC_BMIPS_BCM3380
+	select BMIPS_SUPPORTS_BOOT_RAM
+	help
+	  Netgear CG3100D boards have a BCM3380 SoC with 64 MB of RAM and 8 MB
+	  of flash (SPI).
+	  Between its different peripherals there's a BCM53115 switch with 4
+	  ethernet ports, 1 UART, GPIO buttons and LEDs, and a BCM43225
+	  (miniPCIe).
+
+config BOARD_NETGEAR_DGND3700V2
+	bool "Netgear DGND3700v2"
+	depends on SOC_BMIPS_BCM6362
+	select BMIPS_SUPPORTS_BOOT_RAM
+	help
+	  Netgear DGND3700v2 boards have a BCM6362 SoC with 64 MB of RAM and
+	  32 MB of flash (NAND).
+	  Between its different peripherals there's a BCM53125 switch with 5
+	  ethernet ports, 2 USB ports, 1 UART, GPIO buttons and LEDs, and a
+	  BCM43228 (miniPCIe).
+
+config BOARD_SAGEM_FAST1704
+	bool "Sagem F@ST1704"
+	depends on SOC_BMIPS_BCM6338
+	select BMIPS_SUPPORTS_BOOT_RAM
+	help
+	  Sagem F@ST1704 boards have a BCM6338 SoC with 16 MB of RAM and 4 MB
+	  of flash (SPI).
+	  Between its different peripherals there's a BCM5325 switch with 4
+	  ethernet ports, 1 UART, GPIO buttons and LEDs, and a BCM4312
+	  (miniPCI).
+
+config BOARD_SFR_NB4_SER
+	bool "SFR NeufBox 4 (Sercomm)"
+	depends on SOC_BMIPS_BCM6358
+	select BMIPS_SUPPORTS_BOOT_RAM
+	help
+	  SFR NeufBox 4 (Sercomm) boards have a BCM6358 SoC with 32 MB of RAM
+	  and 8 MB of flash (CFI).
+	  Between its different peripherals there's a BCM5325 switch with 4
+	  ethernet ports, 2 USB ports, 1 UART, GPIO buttons and LEDs, and
+	  a BCM4318 (PCI).
+
+endchoice
+
+choice
+	prompt "Boot mode"
+
+config BMIPS_BOOT_RAM
+	bool "RAM boot"
+	depends on BMIPS_SUPPORTS_BOOT_RAM
+	help
+	  This builds an image that is linked to a RAM address. It can be used
+	  for booting from CFE via TFTP using an ELF image, but it can also be
+	  booted from RAM by other bootloaders using a BIN image.
+
+endchoice
+
+config BMIPS_SUPPORTS_BOOT_RAM
+	bool
+
+source "board/broadcom/bcm968380gerg/Kconfig"
+source "board/comtrend/ar5315u/Kconfig"
+source "board/comtrend/ar5387un/Kconfig"
+source "board/comtrend/ct5361/Kconfig"
+source "board/comtrend/vr3032u/Kconfig"
+source "board/comtrend/wap5813n/Kconfig"
+source "board/huawei/hg556a/Kconfig"
+source "board/netgear/cg3100d/Kconfig"
+source "board/netgear/dgnd3700v2/Kconfig"
+source "board/sagem/f@st1704/Kconfig"
+source "board/sfr/nb4_ser/Kconfig"
+
+endmenu

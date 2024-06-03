@@ -1,0 +1,199 @@
+menu "SPI Flash Support"
+
+config DM_SPI_FLASH
+	bool "Enable Driver Model for SPI flash"
+	depends on DM && DM_SPI
+	help
+	  Enable driver model for SPI flash. This SPI flash interface
+	  (spi_flash_probe(), spi_flash_write(), etc.) is then
+	  implemented by the SPI flash uclass. There is one standard
+	  SPI flash driver which knows how to probe most chips
+	  supported by U-Boot. The uclass interface is defined in
+	  include/spi_flash.h, but is currently fully compatible
+	  with the old interface to avoid confusion and duplication
+	  during the transition parent. SPI and SPI flash must be
+	  enabled together (it is not possible to use driver model
+	  for one and not the other).
+
+config SPI_FLASH_SANDBOX
+	bool "Support sandbox SPI flash device"
+	depends on SANDBOX && DM_SPI_FLASH
+	help
+	  Since sandbox cannot access real devices, an emulation mechanism is
+	  provided instead. Drivers can be connected up to the sandbox SPI
+	  bus (see CONFIG_SANDBOX_SPI) and SPI traffic will be routed to this
+	  device. Typically the contents of the emulated SPI flash device is
+	  stored in a file on the host filesystem.
+
+config SPI_FLASH
+	bool "Legacy SPI Flash Interface support"
+	depends on SPI
+	select SPI_MEM
+	help
+	  Enable the legacy SPI flash support. This will include basic
+	  standard support for things like probing, read / write, and
+	  erasing through cmd_sf interface.
+
+	  If unsure, say N
+
+config SF_DEFAULT_BUS
+	int "SPI Flash default bus identifier"
+	depends on SPI_FLASH || DM_SPI_FLASH
+	default 0
+	help
+	  The default bus may be provided by the platform
+	  to handle the common case when only a single serial
+	  flash is present on the system.
+
+config SF_DEFAULT_CS
+	int "SPI Flash default Chip-select"
+	depends on SPI_FLASH || DM_SPI_FLASH
+	default 0
+	help
+	  The default chip select may be provided by the platform
+	  to handle the common case when only a single serial
+	  flash is present on the system.
+
+config SF_DEFAULT_MODE
+	hex "SPI Flash default mode (see include/spi.h)"
+	depends on SPI_FLASH || DM_SPI_FLASH
+	default 3
+	help
+	  The default mode may be provided by the platform
+	  to handle the common case when only a single serial
+	  flash is present on the system.
+	  Not used for boot with device tree; the SPI driver reads
+	  speed and mode from platdata values computed from
+	  available node.
+
+config SF_DEFAULT_SPEED
+	int "SPI Flash default speed in Hz"
+	depends on SPI_FLASH || DM_SPI_FLASH
+	default 1000000
+	help
+	  The default speed may be provided by the platform
+	  to handle the common case when only a single serial
+	  flash is present on the system.
+	  Not used for boot with device tree; the SPI driver reads
+	  speed and mode from platdata values computed from
+	  available node.
+
+if SPI_FLASH
+
+config SPI_FLASH_SFDP_SUPPORT
+	bool "SFDP table parsing support for SPI NOR flashes"
+	depends on !SPI_FLASH_BAR
+	help
+	 Enable support for parsing and auto discovery of parameters for
+	 SPI NOR flashes using Serial Flash Discoverable Parameters (SFDP)
+	 tables as per JESD216 standard.
+
+config SPI_FLASH_BAR
+	bool "SPI flash Bank/Extended address register support"
+	help
+	  Enable the SPI flash Bank/Extended address register support.
+	  Bank/Extended address registers are used to access the flash
+	  which has size > 16MiB in 3-byte addressing.
+
+config SF_DUAL_FLASH
+	bool "SPI DUAL flash memory support"
+	help
+	  Enable this option to support two flash memories connected to a single
+	  controller. Currently Xilinx Zynq qspi supports this.
+
+config SPI_FLASH_ATMEL
+	bool "Atmel SPI flash support"
+	help
+	  Add support for various Atmel SPI flash chips (AT45xxx and AT25xxx)
+
+config SPI_FLASH_EON
+	bool "EON SPI flash support"
+	help
+	  Add support for various EON SPI flash chips (EN25xxx)
+
+config SPI_FLASH_GIGADEVICE
+	bool "GigaDevice SPI flash support"
+	help
+	  Add support for various GigaDevice SPI flash chips (GD25xxx)
+
+config SPI_FLASH_ISSI
+	bool "ISSI SPI flash support"
+	help
+	  Add support for various ISSI SPI flash chips (ISxxx)
+
+config SPI_FLASH_MACRONIX
+	bool "Macronix SPI flash support"
+	help
+	  Add support for various Macronix SPI flash chips (MX25Lxxx)
+
+config SPI_FLASH_SPANSION
+	bool "Spansion SPI flash support"
+	help
+	  Add support for various Spansion SPI flash chips (S25FLxxx)
+
+config SPI_FLASH_STMICRO
+	bool "STMicro SPI flash support"
+	help
+	  Add support for various STMicro SPI flash chips (M25Pxxx and N25Qxxx)
+
+config SPI_FLASH_SST
+	bool "SST SPI flash support"
+	help
+	  Add support for various SST SPI flash chips (SST25xxx)
+
+config SPI_FLASH_WINBOND
+	bool "Winbond SPI flash support"
+	help
+	  Add support for various Winbond SPI flash chips (W25xxx)
+
+config SPI_FLASH_XMC
+	bool "XMC SPI flash support"
+	help
+	  Add support for various XMC (Wuhan Xinxin Semiconductor
+	  Manufacturing Corp.) SPI flash chips (XM25xxx)
+
+endif
+
+config SPI_FLASH_USE_4K_SECTORS
+	bool "Use small 4096 B erase sectors"
+	depends on SPI_FLASH
+	default y
+	help
+	  Many flash memories support erasing small (4096 B) sectors. Depending
+	  on the usage this feature may provide performance gain in comparison
+	  to erasing whole blocks (32/64 KiB).
+	  Changing a small part of the flash's contents is usually faster with
+	  small sectors. On the other hand erasing should be faster when using
+	  64 KiB block instead of 16 × 4 KiB sectors.
+
+	  Please note that some tools/drivers/filesystems may not work with
+	  4096 B erase size (e.g. UBIFS requires 15 KiB as a minimum).
+
+config SPI_FLASH_DATAFLASH
+	bool "AT45xxx DataFlash support"
+	depends on SPI_FLASH && DM_SPI_FLASH
+	help
+	  Enable the access for SPI-flash-based AT45xxx DataFlash chips.
+	  DataFlash is a kind of SPI flash. Most AT45 chips have two buffers
+	  in each chip, which may be used for double buffered I/O; but this
+	  driver doesn't (yet) use these for any kind of i/o overlap or prefetching.
+
+	  Sometimes DataFlash is packaged in MMC-format cards, although the
+	  MMC stack can't (yet?) distinguish between MMC and DataFlash
+	  protocols during enumeration.
+
+	  If unsure, say N
+
+config SPI_FLASH_MTD
+	bool "SPI Flash MTD support"
+	depends on SPI_FLASH
+	help
+          Enable the MTD support for spi flash layer, this adapter is for
+	  translating mtd_read/mtd_write commands into spi_flash_read/write
+	  commands. It is not intended to use it within sf_cmd or the SPI
+	  flash subsystem. Such an adapter is needed for subsystems like
+	  UBI which can only operate on top of the MTD layer.
+
+	  If unsure, say N
+
+endmenu # menu "SPI Flash Support"

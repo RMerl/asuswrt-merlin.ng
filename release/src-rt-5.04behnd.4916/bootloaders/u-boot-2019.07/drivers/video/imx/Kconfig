@@ -1,0 +1,8 @@
+
+config VIDEO_IPUV3
+	bool "i.MX IPUv3 Core video support"
+	depends on (VIDEO || DM_VIDEO) && (MX5 || MX6)
+	help
+	  This enables framebuffer driver for i.MX processors working
+	  on the IPUv3(Image Processing Unit) internal graphic processor.
+

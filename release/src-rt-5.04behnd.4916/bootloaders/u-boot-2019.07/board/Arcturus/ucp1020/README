@@ -1,0 +1,54 @@
+The uCP1020 product family (ucp1020) is an Arcturus Networks Inc. System on Modules
+product featuring a Freescale P1020 CPU, optionally populated with 1, 2 or 3 Gig-Ethernet PHYs,
+DDR3, NOR Flash, eMMC NAND Flash and/or SPI Flash.
+
+Information on the generic product family can be found here:
+	http://www.arcturusnetworks.com/products/ucp1020
+
+The UCP1020 several configurable options
+========================================
+
+- the selection of populated phy(s):
+	KSZ9031 (current default for eTSEC 1 and 3)
+
+- the selection of boot location:
+	SPI Flash or NOR flash
+
+The UCP1020 includes 2 default configurations
+=============================================
+NOR boot image:
+	configs/UCP1020_defconfig
+SPI boot image:
+	configs/UCP1020_SPIFLASH_defconfig
+
+The UCP1020 adds an additional command in cmd_arc.c to access and program
+SPI resident factory defaults for serial number, and 1, 2 or 3 Ethernet
+HW Addresses.
+
+
+Build example
+=============
+
+make distclean
+make UCP1020_defconfig
+make
+
+Default Scripts
+===============
+A default upgrade scripts is included in the default environment variable example:
+
+B$ run tftpflash
+
+Dual Environment
+================
+
+This build enables dual / failover environment environment.
+
+NOR Flash Partition declarations and scripts
+============================================
+Several scripts are available to allow TFTP of images and programming directly
+into defined NOR flash partitions. Examples:
+
+B$ run program0
+B$ run program1
+B$ run program2

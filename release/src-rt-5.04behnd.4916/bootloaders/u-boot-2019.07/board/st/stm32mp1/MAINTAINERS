@@ -1,0 +1,9 @@
+STM32MP1 BOARD
+M:	Patrick Delaunay <patrick.delaunay@st.com>
+L:	uboot-stm32@st-md-mailman.stormreply.com (moderated for non-subscribers)
+S:	Maintained
+F:	arch/arm/dts/stm32mp157*
+F:	board/st/stm32mp1
+F:	configs/stm32mp15_basic_defconfig
+F:	configs/stm32mp15_trusted_defconfig
+F:	include/configs/stm32mp1.h

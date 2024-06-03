@@ -1,0 +1,23 @@
+menu "SPMI support"
+
+config SPMI
+	bool "Enable SPMI bus support"
+	depends on DM
+	---help---
+	  Select this to enable to support SPMI bus.
+	  SPMI (System Power Management Interface) bus is used
+	  to connect PMIC devices on various SoCs.
+
+config SPMI_MSM
+	bool "Support Qualcomm SPMI bus"
+	depends on SPMI
+	---help---
+	  Support SPMI bus implementation found on Qualcomm Snapdragon SoCs.
+
+config SPMI_SANDBOX
+	bool "Support for Sandbox SPMI bus"
+	depends on SPMI
+	---help---
+	  Demo SPMI bus implementation. Emulates part of PM8916 as single
+          slave (0) on bus. It has 4 GPIO peripherals, pid 0xC0-0xC3.
+endmenu

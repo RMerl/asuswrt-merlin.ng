@@ -1,0 +1,36 @@
+menuconfig UNIT_TEST
+	bool "Unit tests"
+	help
+	  Select this to compile in unit tests for various parts of
+	  U-Boot. Test suites will be subcommands of the "ut" command.
+	  This does not require sandbox to be included, but it is most
+	  often used there.
+
+config UT_LIB
+	bool "Unit tests for library functions"
+	depends on UNIT_TEST
+	default y
+	help
+	  Enables the 'ut lib' command which tests library functions like
+	  memcat(), memcyp(), memmove().
+
+config UT_TIME
+	bool "Unit tests for time functions"
+	depends on UNIT_TEST
+	help
+	  Enables the 'ut time' command which tests that the time functions
+	  work correctly. The test is fairly simple and will not catch all
+	  problems. But if you are having problems with udelay() and the like,
+	  this is a good place to start.
+
+config UT_UNICODE
+	bool "Unit tests for Unicode functions"
+	depends on UNIT_TEST
+	default y
+	help
+	  Enables the 'ut unicode' command which tests that the functions for
+	  manipulating Unicode strings work correctly.
+
+source "test/dm/Kconfig"
+source "test/env/Kconfig"
+source "test/overlay/Kconfig"

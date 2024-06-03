@@ -1,0 +1,6 @@
+U200
+M:	Neil Armstrong <narmstrong@baylibre.com>
+S:	Maintained
+L:	u-boot-amlogic@groups.io
+F:	board/amlogic/u200/
+F:	configs/u200_defconfig

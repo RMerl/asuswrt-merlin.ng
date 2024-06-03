@@ -123,7 +123,8 @@
 
 #if defined(__linux__)
 #include <asm/types.h>
-#include <linux/if.h>
+#include <net/if.h>
+//#include <linux/if.h>
 #include <linux/if_packet.h>
 #include <linux/if_ether.h>
 #include <linux/if_tun.h>

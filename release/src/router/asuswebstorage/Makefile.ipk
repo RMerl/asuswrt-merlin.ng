@@ -8,7 +8,7 @@ CFLAGS =  -I$(LD_DIR)/include -I$(SRCBASE)/curl-7.21.7/include   -I$(SRCBASE)/li
 CFLAGS += -DIPKG -D_FILE_OFFSET_BITS=64
  
 LDFLAGS =  -L$(SRCBASE)/curl-7.21.7/lib/.libs    -L$(SRCBASE)/libxml2/.libs  -L$(SRCBASE)/openssl-ipk -L$(SRCBASE)/zlib -I$(LD_DIR)/lib
-LDFLAGS += -Wl,-rpath,/opt/lib -Wl,-rpath-link,$(SRCBASE)/opt/lib
+LDFLAGS += -Wl,-rpath,/opt/lib -Wl,-rpath-link,$(SRCBASE)/opt/lib -L. -lspwenc
 
 LIBS = -lpthread -ldl -lm -L$(SRCBASE)/curl-7.21.7/lib/.libs -lcurl -L$(SRCBASE)/libxml2/.libs -lxml2 -L$(SRCBASE)/openssl-ipk -lssl -lcrypto -L$(SRCBASE)/zlib -lz  
 
@@ -25,10 +25,13 @@ ifeq ($(SMARTSYNCIPK_D),1)
 CFLAGS += -DSMARTSYNCIPK
 endif
 
-all: asuswebstorage
+all: spwenc asuswebstorage
 asuswebstorage: asuswebstorage.o api.o function.o list.o mem_pool.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $(LIBS)  $^ -o $@ 
-
+spwenc:spwenc.c
+	#@$(CC) $(CFLAGS) -c spwenc.c
+	$(CC) -fPIC -c spwenc.c
+	$(CC) -shared -o libspwenc.so spwenc.o
 
 .PHONY: clean
 clean:

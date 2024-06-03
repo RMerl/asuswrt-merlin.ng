@@ -1,0 +1,121 @@
+#!/bin/sh
+source /etc/sf2/_util
+
+# # /etc/sf2/xgmii      # usage: xgmii
+# found 6765 unit=0
+#  === SIB SF2 interface block 0x80474c00
+#             ctrl 0@00|lpbk[remote=0 local=0]       FlushEn[tx=0 rx=0]
+#           txCtrl 4@04|backPressureThres=2          removeCrc=0
+#         rxCtrl 001@08|padExt=0  strictPreamble=0   idleCnt=1
+#          status 00@0c|rxMiss[sopEop=0 eop=0 sop=0] txFifo[ovr=0 undr=0] rxFifo[ovr=0 undr=0]
+#     ipgSt 7fffffff@10|txIpg[max=255 min=252]       rxIpg[max=254 min=252]
+# 
+#  === LFH XGMII link fault handling
+#  P0_base 0x00474b00
+#            ctrl 00@00|sync=0 xgmii[SelOvrd=0 Sel=0] clkMuxEn[tx=0 rx=0] lnkDnSwRstEn=0 flushEn[tx=0 rx=0]
+#    extCtl 0cac10cc@04|txIpg[min=0 thres:insert= 3 start= 5 del=12]
+#                       rxIpg[min=0 thres:insert= 4 start= 6 del=12]
+#       faultCtl 000@08|lnkIntr[dis=0 dropDis=0 txEn=0] remoteFault[dis=0 dropDis=0 txEn=0] localFault[dis=0 dropDis=0 txEn=0]
+#          status 00@0c|xgmiiSel=0 rxFault=0   txFifo[ovr=0 undr=0] rxFifo[ovr=0 undr=0]
+#   txIpgSt 00ff00ff@10|tx64Ipg[max=  0 min=255] tx32Ipg[max=  0 min=255]
+#   rxIpgSt 00ff00ff@14|rx64Ipg[max=  0 min=255] rx32Ipg[max=  0 min=255]
+# 
+#  P5_base 0x00474ba0
+#            ctrl 00@00|sync=0 xgmii[SelOvrd=0 Sel=0] clkMuxEn[tx=0 rx=0] lnkDnSwRstEn=0 flushEn[tx=0 rx=0]
+#    extCtl 0cac10cc@04|txIpg[min=0 thres:insert= 3 start= 5 del=12]
+#                       rxIpg[min=0 thres:insert= 4 start= 6 del=12]
+#       faultCtl 000@08|lnkIntr[dis=0 dropDis=0 txEn=0] remoteFault[dis=0 dropDis=0 txEn=0] localFault[dis=0 dropDis=0 txEn=0]
+#          status 00@0c|xgmiiSel=0 rxFault=0   txFifo[ovr=0 undr=0] rxFifo[ovr=0 undr=0]
+#   txIpgSt 00ff00ff@10|tx64Ipg[max=  0 min=255] tx32Ipg[max=  0 min=255]
+#   rxIpgSt 00ff00ff@14|rx64Ipg[max=  0 min=255] rx32Ipg[max=  0 min=255]
+# 
+
+sib_base=0x80474c00;
+lfh_base=0x80474b00;
+
+read_sib_reg() { # read_sib_reg <reg_offset>
+    local ret=`echo $sib_base $1 | awk '{printf "0x8%07x", rshift(lshift($1+$2, 4),4);}'`
+    ret=`dw $ret`
+    ret=`echo $ret | awk '{printf "0x%s", $3}'`
+    echo $ret
+}
+
+read_lfh_reg() { # read_lfh_reg <port> <reg_offset>
+    local ret=`echo $lfh_base $1 $2 | awk '{printf "0x8%07x", rshift(lshift($1+$3+$2*0x20, 4),4);}'`
+    ret=`dw $ret`
+    ret=`echo $ret | awk '{printf "0x%s", $3}'`
+    echo $ret
+}
+
+dump_port_lfh() { # dump_port_lfh <port>
+    echo $lfh_base $1 | awk '{ printf " P%d_base 0x%08x\n", $2, rshift(lshift($1+0x20*$2, 4),4); }'
+    echo $(read_lfh_reg $1 0) | awk '{ v=$1;
+        printf "           ctrl %02x@00|sync=%d xgmii[SelOvrd=%d Sel=%d] clkMuxEn[tx=%d rx=%d] lnkDnSwRstEn=%d flushEn[tx=%d rx=%d]\n", v,
+            and(rshift(v,7),1), and(rshift(v,6),1), and(rshift(v,5),1), and(rshift(v,4),1), 
+            and(rshift(v,3),1), and(rshift(v,2),1), and(rshift(v,1),1), and(rshift(v,0),1);}'
+    echo $(read_lfh_reg $1 4) | awk '{ v=$1;
+        printf "   extCtl %08x@04|txIpg[min=%d thres:insert=%2d start=%2d del=%2d]\n", v,
+            and(rshift(v,31),1), and(rshift(v,26),0x1f), and(rshift(v,21),0x1f), and(rshift(v,16),0x1f);
+        printf "                      rxIpg[min=%d thres:insert=%2d start=%2d del=%2d]\n", 
+            and(rshift(v,15),1), and(rshift(v,10),0x1f), and(rshift(v,5),0x1f), and(rshift(v,0),0x1f);}'
+    echo $(read_lfh_reg $1 8) | awk '{ v=$1;
+        printf "      faultCtl %03x@08|lnkIntr[dis=%d dropDis=%d txEn=%d] remoteFault[dis=%d dropDis=%d txEn=%d] localFault[dis=%d dropDis=%d txEn=%d]\n", v,
+            and(rshift(v,8),1), and(rshift(v,7),1), and(rshift(v,6),1), 
+            and(rshift(v,5),1), and(rshift(v,4),1), and(rshift(v,3),1), 
+            and(rshift(v,2),1), and(rshift(v,1),1), and(rshift(v,0),1);}'
+    echo $(read_lfh_reg $1 0xc) | awk '{ v=$1;
+        printf "         status %02x@0c|xgmiiSel=%d rxFault=%d   txFifo[ovr=%d undr=%d] rxFifo[ovr=%d undr=%d]\n", v,
+            and(rshift(v,6),1), and(rshift(v,4),3), and(rshift(v,3),1), 
+            and(rshift(v,2),1), and(rshift(v,1),1), and(rshift(v,0),1);}'
+    echo $(read_lfh_reg $1 0x10) | awk '{ v=$1;
+        printf "  txIpgSt %08x@10|tx64Ipg[max=%3d min=%3d] tx32Ipg[max=%3d min=%3d]\n", v,
+            and(rshift(v,24),0xff), and(rshift(v,16),0xff), and(rshift(v,8),0xff), and(rshift(v,0),0xff);}'
+    echo $(read_lfh_reg $1 0x14) | awk '{ v=$1;
+        printf "  rxIpgSt %08x@14|rx64Ipg[max=%3d min=%3d] rx32Ipg[max=%3d min=%3d]\n", v,
+            and(rshift(v,24),0xff), and(rshift(v,16),0xff), and(rshift(v,8),0xff), and(rshift(v,0),0xff);}'
+    echo ""
+}
+
+sf2_xgmii() { #sf2_xgmii <unit>
+    local unit=$1
+    read_chip $unit
+    if [ $sf2_unit == -1 ]
+    then echo "device has no (connected) sf2 switch!!"; return;
+    fi
+
+    if [ $chip != 6765 ] 
+    then echo "xgmii is only available for 6765 device!!"; return;
+    fi
+
+    if [ $sf2_reg_base != 0 ]
+    then
+        
+        echo $sib_base | awk '{ printf " === SIB SF2 interface block %s\n", $1; }'
+        echo $(read_sib_reg 0) | awk '{ v=$1;
+            printf "            ctrl %01x@00|lpbk[remote=%d local=%d]       FlushEn[tx=%d rx=%d]\n", v,
+                 and(rshift(v,3),1), and(rshift(v,2),1), and(rshift(v,1),1), and(rshift(v,0),1);}'
+        echo $(read_sib_reg 4) | awk '{ v=$1;
+            printf "          txCtrl %01x@04|backPressureThres=%d          removeCrc=%d\n", v,
+                and(rshift(v,1),3), and(rshift(v,0),1);}'
+        echo $(read_sib_reg 8) | awk '{ v=$1;
+            printf "        rxCtrl %03x@08|padExt=%d  strictPreamble=%d   idleCnt=%d\n", v,
+                and(rshift(v,5),0x3f), and(rshift(v,4),1), and(rshift(v,0),0xf);}'
+        echo $(read_sib_reg 0xc) | awk '{ v=$1;
+            printf "         status %02x@0c|rxMiss[sopEop=%d eop=%d sop=%d] txFifo[ovr=%d undr=%d] rxFifo[ovr=%d undr=%d]\n", v,
+                and(rshift(v,6),1), and(rshift(v,5),1), and(rshift(v,4),1), and(rshift(v,3),1),and(rshift(v,2),1),and(rshift(v,1),1), and(rshift(v,0),1);}'
+        echo $(read_sib_reg 0x10) | awk '{ v=$1;
+            printf "    ipgSt %08x@10|txIpg[max=%3d min=%3d]       rxIpg[max=%3d min=%3d]\n", v,
+                and(rshift(v,24),0xff), and(rshift(v,16),0xff), and(rshift(v,8),0xff), and(rshift(v,0),0xff);}'
+        echo ""
+        
+        echo " === LFH XGMII link fault handling"
+        dump_port_lfh 0
+        dump_port_lfh 5
+    fi
+    
+    
+
+}
+
+sf2_xgmii $1
+

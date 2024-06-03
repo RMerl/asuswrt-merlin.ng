@@ -1,0 +1,10 @@
+AM43XX BOARD
+M:	Lokesh Vutla <lokeshvutla@ti.com>
+S:	Maintained
+F:	board/ti/am43xx/
+F:	include/configs/am43xx_evm.h
+F:	configs/am43xx_evm_defconfig
+F:	configs/am43xx_evm_qspiboot_defconfig
+F:	configs/am43xx_evm_usbhost_boot_defconfig
+F:	configs/am43xx_evm_rtconly_defconfig
+F:	configs/am43xx_hs_evm_defconfig

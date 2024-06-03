@@ -1,0 +1,108 @@
+MKFATFS(8)                  System Manager's Manual                 MKFATFS(8)
+
+
+
+NAME
+       mkfatfs - create a FAT file system
+
+SYNOPSIS
+       mkfatfs [options] device
+
+DESCRIPTION
+       mkfatfs is used to create a FAT file system on a device (usually a disk
+       or flash partition).  device is the special file corresponding to the
+       device (e.g.  /dev/sdXX, /dev/block/mmcblk1p1).
+
+OPTIONS
+       Below is a summary of all the options that mkfatfs accepts.  Nearly all
+       options have two equivalent names.  The short name is preceded by - and
+       the long name is preceded by --.
+
+       -f, --force
+              Allow formatting a FAT volume for which the physical sector size
+              cannot be automatically detected (for example an image file).
+
+       --cp CODEPAGE
+              Use the given code page to encode the volume label. The
+              following code pages are supported: 437, 737, 775, 850, 852,
+              855, 857, 860, 861, 862, 863, 864, 865, 866, 869, 874, 932, 936,
+              949, 950. The default is 437.
+
+       -l, --volume-label STRING
+              Set the volume label for the filesystem. The volume label can be
+              up to 11 bytes long when encoded with code page specified by
+              --cp option.
+
+       -i, --volume-id STRING
+              Sets the volume ID for the volume to STRING, which must be in
+              the format XXXX-XXXX where X is a hexadecimal character (0-9, A-
+              F).
+
+       -r, --rootdir-entries NUMBER
+              Set the count of 32 bytes directory entries in the root
+              directory to NUMBER.  For FAT32 volumes this value is ignored
+              and set to zero. For FAT 12/16 volume the default value is 512.
+
+       -F, --fat-type FATBITS
+              Set the FAT bits for the volume to FATBITS. The legal values for
+              this field are [12, 16, 32].
+
+       -S, --sector-size SIZE
+              Set the volume sector size (in bytes) to SIZE. The default is to
+              detect sector size automatically. Note: This option should
+              probably never be used when formatting devices directly as most
+              FAT drivers won't be able to use a FAT volume where the volume
+              sector size doesn't match the physical sector size.
+
+       -c, --cluster-size SIZE
+              Set the cluster size (in bytes) of the volume to SIZE. The
+              default is to determine optimal cluster size automatically. The
+              legal values for this field are powers of 2, such that SIZE does
+              not exceed 32 KiB.
+
+       -s, --sectors-per-cluster VALUE
+              Set the volume cluster size (in bytes) to VALUE * sector_size.
+              The default value is calculated dynamically depending on FAT
+              type (FAT 12/16/32) and the size of the volume. The legal values
+              for this field are [1, 2, 4, 8, 16, 32, 64, 128], such that
+              VALUE * sector_size does not exceed 32 KiB.
+
+       -a, --alignment VALUE
+              Align the filesystem structures to VALUE bytes.
+              WARNING: Don't use this in production unless explictly
+              instructed by Tuxera. The default alignment is usually the
+              appropriate one.
+
+       -v, --verbose
+              Makes mkfatfs emit certain status messages related to the
+              formatting process.
+
+       --discard
+              This option sends a 'discard' command, like TRIM, to the device
+              which will zero all data on it.
+
+       --secure-discard
+              This option sends a 'secure discard' command, e.g. eMMC's secure
+              erase, to the device which will zero all data on it. The
+              difference from the --discard option is that this command
+              attempts to securely erase the data, guaranteeing that all
+              internal copies of the discarded sectors are also erased. If the
+              underlying hardware does not support this mode of operation, we
+              fall back on a regular discard. This option is only available on
+              systems where this is supported.
+
+BUGS
+       If you find a bug please send an email describing the problem to fat-
+       support@tuxera.com.
+
+AUTHORS
+       mkfatfs was written by
+               Erik Larsson, Tuxera Inc.
+               Sougata Santra, Tuxera Inc.
+
+AVAILABILITY
+       mkfatfs is part of the Tuxera FATprogs package.
+
+
+
+Tuxera TFATprogs 3017.7.17.3      March 2014                        MKFATFS(8)

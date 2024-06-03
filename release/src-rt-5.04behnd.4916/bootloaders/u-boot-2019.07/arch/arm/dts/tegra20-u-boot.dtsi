@@ -1,0 +1,13 @@
+#include <config.h>
+
+#include "tegra-u-boot.dtsi"
+
+
+/ {
+	host1x@50000000 {
+		u-boot,dm-pre-reloc;
+		dc@54200000 {
+			u-boot,dm-pre-reloc;
+		};
+	};
+};

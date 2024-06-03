@@ -1,0 +1,158 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use Getopt::Long;
+use Data::Dumper;
+
+
+my $str;
+my $dir;
+my $chip; 
+my $loader;
+my $bootfs;
+my $rev;
+my $profile;
+my $compatstr;
+
+my $usage = q[
+Usage: generate_bundle_its --chip= --profile= --compatstr= --rootfsspec= --loader= --bootfs=
+	rootfsspec = <flashtype>,<rootfsbinary> e.g 
+		--rootfsspec=nand128,rootfs_128.ubifs
+		--rootfsspec=nand256,rootfs_256.ubifs
+		--rootfsspec=nand,rootfs.squashfs
+		--rootfsspec=emmc,rootfs.ext4
+];
+
+# Array of parsed rootfs config hashes
+my @rootfs;
+
+# Array of cmdline rootfs specs
+my @rootfs_specs;
+
+# Hash of rootfs config
+my %rootfs_cfg;
+
+GetOptions("chip=s",\$chip, "profile=s",\$profile, "compatstr=s",\$compatstr, "rootfsspec=s",\@rootfs_specs,  "loader:s",\$loader, "bootfs=s",\$bootfs) or die("$usage");
+
+die($usage) unless ($chip && $bootfs && @rootfs_specs && $profile && $compatstr);
+
+# Retrieve rev from compatstr
+my %compatstr_hash= ($compatstr=~/([^ =;]+)/g);
+#print Dumper(\%compatstr_hash);
+$rev = $compatstr_hash{rev};
+
+foreach (@rootfs_specs)
+{
+	($rootfs_cfg{"flashtype"}, $rootfs_cfg{"rootfsbin"}) = split /,/, $_;
+	if (index($rootfs_cfg{"rootfsbin"}, "ubifs") != -1) {
+		$rootfs_cfg{"fstype"} = "ubifs";
+	} elsif (index($rootfs_cfg{"rootfsbin"}, "ext4") != -1) {
+		$rootfs_cfg{"fstype"} = "ext4";
+	} else {
+		$rootfs_cfg{"fstype"} = "squashfs";
+	}
+	push @rootfs,  { %rootfs_cfg };
+}
+#print Dumper @rootfs;
+
+my $fitout = q[
+/*
+ * Copyright (C) 2017 Rockchip Electronic Co.,Ltd
+ * Copyright (C) 2019 Broadcom
+ *
+ * Simple U-boot fit source file containing U-Boot, dtb and optee
+ */
+
+/dts-v1/;
+
+/ {
+	description = "Broadcom BCA image upgrade package tree binary";
+	#address-cells = <1>;
+
+	images {
+] 
+. ($loader ? qq[
+		loader_$chip\_$rev {
+			description = "loader";
+			data = /incbin/("$loader");
+			type = "firmware";
+			compression = "none";
+			hash-1 {
+				algo = "sha256";
+			};
+		};
+] : "") . qq[
+		bootfs_$chip\_$rev {
+			description = "bootfs";
+			data = /incbin/("$bootfs");
+			type = "multi";
+			compression = "none";
+			hash-1 {
+				algo = "sha256";
+			};
+		};
+];		
+
+my $href;
+my $default_conf;
+my $pkg_file_name;
+for $href ( @rootfs ) {
+	if ( ! defined $default_conf ) {
+		$default_conf = qq[conf_$chip\_$rev\_$href->{"flashtype"}\_$href->{"fstype"}];
+	}
+	if ( ! defined $pkg_file_name ) {
+		$pkg_file_name = "obj/binaries/bcm$profile\_" . $href->{"flashtype"} . "_" . $href->{"fstype"} . ($loader ? "_loader":"") . "_update";
+	}
+	else {
+		$pkg_file_name = "obj/binaries/bcm$profile\_multi" . ($loader ? "_loader":"") . "_update";
+	}
+
+	$fitout .= qq[
+		$href->{"flashtype"}\_$href->{"fstype"} {
+			description = "rootfs";
+			type = "filesystem";
+			data = /incbin/("$href->{"rootfsbin"}");
+			compression = "none";
+			hash-1 {
+				algo = "sha256";
+			};
+		};
+	];
+}
+
+$fitout .=  qq[
+	};
+	configurations {
+		default = "$default_conf";
+];
+
+for $href ( @rootfs ) {
+	$fitout .= qq[
+		conf_$chip\_$rev\_$href->{"flashtype"}\_$href->{"fstype"} {
+			description = "Brcm Image Bundle";] 
+	. ($loader ? qq[
+			loader = "loader_$chip\_$rev";] : "") 
+	. qq[
+			bootfs = "bootfs_$chip\_$rev";
+			rootfs = "$href->{"flashtype"}\_$href->{"fstype"}";
+			compatible = "flash=$href->{"flashtype"};chip=$chip;$compatstr;fstype=$href->{"fstype"}";
+		};
+];
+}
+
+$fitout .= q[
+
+	};
+};
+];
+
+#print $fitout;
+#print "$pkg_file_name \n";
+my $fg_pkgts;
+my $pkgts_file_name = "$pkg_file_name" . ".pkgts";
+my $pkgtb_file_name = "$pkg_file_name" . ".pkgtb";
+open $fg_pkgts, '>', $pkgts_file_name  or die "Unable to open file: '$pkgts_file_name' $!\n";
+print $fg_pkgts $fitout;
+my $cmd = "./obj/uboot/tools/mkimage -f $pkgts_file_name -E $pkgtb_file_name";
+system($cmd);

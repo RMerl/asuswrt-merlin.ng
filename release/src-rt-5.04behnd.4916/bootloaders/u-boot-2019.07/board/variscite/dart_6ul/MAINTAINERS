@@ -1,0 +1,8 @@
+MX6UL_DART BOARD
+M:	Parthiban Nallathambi <parthitce@gmail.com>
+S:	Maintained
+F:	arch/arm/dts/imx6ull-dart-6ul.dts
+F:	arch/arm/dts/imx6ull-dart-6ul.dtsi
+F:	board/variscite/dart_6ul/
+F:	configs/variscite_dart6ul_defconfig
+F:	include/configs/dart_6ul.h

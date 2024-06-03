@@ -1,0 +1,16 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Topic Miami Lite board DTS
+ *
+ * Copyright (C) 2017 Topic Embedded Products
+ */
+#include "zynq-topic-miami.dts"
+
+/ {
+	model = "Topic Miami Lite Zynq Board";
+	compatible = "topic,miamilite", "xlnx,zynq-7000";
+};
+
+&qspi {
+	is-dual = <1>;
+};

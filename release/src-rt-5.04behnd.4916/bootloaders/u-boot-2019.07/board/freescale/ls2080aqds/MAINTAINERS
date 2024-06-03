@@ -1,0 +1,17 @@
+LS2080A BOARD
+M:	Prabhakar Kushwaha <prabhakar.kushwaha@nxp.com>, Priyanka Jain <priyanka.jain@nxp.com>
+M:	Rajesh Bhagat <rajesh.bhagat@nxp.com>
+S:	Maintained
+F:	board/freescale/ls2080aqds/
+F:	board/freescale/ls2080a/ls2080aqds.c
+F:	include/configs/ls2080aqds.h
+F:	configs/ls2080aqds_defconfig
+F:	configs/ls2080aqds_nand_defconfig
+F:	configs/ls2080aqds_qspi_defconfig
+F:	configs/ls2080aqds_sdcard_defconfig
+F:	configs/ls2088aqds_tfa_defconfig
+
+LS2080A_SECURE_BOOT BOARD
+#M:	Saksham Jain <saksham.jain@nxp.freescale.com>
+S:	Orphan (since 2018-05)
+F:	configs/ls2080aqds_SECURE_BOOT_defconfig

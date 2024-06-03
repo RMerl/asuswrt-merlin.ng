@@ -169,7 +169,7 @@ function QKinternettype_load_body(){
 	}
 
 	/* MODELDEP */
-	if(based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U"){
+	if(based_modelid.substring(0,3) == "4G-"){
 		document.getElementById("main_manual").style.display = "none";
 		document.getElementById("lte_manual").style.display = "";
 	}
@@ -228,8 +228,8 @@ function detect_if_wan_plug(flag){
 			detect_if_wan_plug();		
 		},
 		success: function(response){
-			if(autodet_state == "4"){// ethernet did not plug
-				if(based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U"){
+			if(autodet_state == "4" || link_wan_status == "0"){// ethernet did not plug
+				if(based_modelid.substring(0,3) == "4G-"){
 					if( sim_state == "-1")
 						redirect_page("unplug_ethsim");
 					else

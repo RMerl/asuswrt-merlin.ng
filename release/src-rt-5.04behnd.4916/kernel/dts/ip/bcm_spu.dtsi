@@ -1,0 +1,24 @@
+spu_pdc: spu_pdc {
+	compatible = "brcm,spu-pdc";
+	reg = <SPU_DMA_ADDR SPU_DMA_SIZE>;
+	interrupts = <GIC_SPI SPU_GMAC_SPI IRQ_TYPE_LEVEL_HIGH>;
+	brcm,num_chan = <SPU_DMA_NUM_CHAN>;
+	status = "disabled";
+};
+
+spu_flexrm: spu_flexrm {
+	compatible = "brcm,spu-flexrm";
+	reg = <SPU_DMA_ADDR SPU_DMA_SIZE>;
+	interrupts = <GIC_SPI SPU_GMAC_SPI IRQ_TYPE_LEVEL_HIGH>, <GIC_SPI (SPU_GMAC_SPI + 1) IRQ_TYPE_LEVEL_HIGH>, <GIC_SPI (SPU_GMAC_SPI + 2) IRQ_TYPE_LEVEL_HIGH>, <GIC_SPI (SPU_GMAC_SPI + 3) IRQ_TYPE_LEVEL_HIGH>;
+	brcm,num_chan = <SPU_DMA_NUM_CHAN>;
+	brcm,num_ae = <SPU_DMA_NUM_AE>;
+	status = "disabled";
+};
+
+spu_crypto: spu_crypto {
+	compatible = "brcm,spu-crypto";
+	reg = <SPU_CRYPTO_ADDR SPU_CRYPTO_SIZE>;
+	brcm,num_spu = <1>;
+	brcm,spu_type = <1>;
+	status = "disabled";
+};

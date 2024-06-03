@@ -1,0 +1,13 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * Copyright 2014 Toradex AG
+ */
+
+/dts-v1/;
+#include "vf-colibri.dtsi"
+#include "vf-colibri-u-boot.dtsi"
+
+/ {
+	model = "Toradex Colibri VF61";
+	compatible = "toradex,vf610-colibri_vf61", "toradex,vf610-colibri_vf61", "fsl,vf610";
+};

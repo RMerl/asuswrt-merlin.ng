@@ -1,0 +1,65 @@
+diff -ru a/cmwifi/Makefile b/cmwifi/Makefile
+--- a/cmwifi/Makefile
++++ b/cmwifi/Makefile
+@@ -2,7 +2,6 @@
+ # Toploevel makefile to build hnd dongle
+ #
+ 
+-ifeq ($(CM_BUILDROOT),)
+ CURR_DIR := $(CURDIR)
+ CURR_NAME := $(notdir $(CURDIR))
+ PARENT_DIR := $(word 1, $(subst /$(CURR_NAME), /$(CURR_NAME),$(CURR_DIR)))
+@@ -21,7 +20,7 @@
+ export KBUILD_VERBOSE := 1
+ SUBMAKE_SETTINGS = SRCBASE=$(SRCBASE) BASEDIR=$(BASEDIR)
+ 
+-include $(BUILD_DIR)/make.common
++-include $(BUILD_DIR)/make.common
+ 
+ include $(CURR_DIR)/cmwifi.mk
+ 
+@@ -32,4 +31,3 @@
+ # EXT_CPU_ARCH_NAME := $(subst \",,$(CONFIG_BCM_CPU_ARCH_NAME))
+ # export EXT_CPU_ARCH_NAME
+ # prebuilt_files = $(shell find . -name *$(EXT_CPU_ARCH_NAME) -print)
+-endif
+diff -ru a/main/components/apps/ieee1905/ieee1905_glue.c b/main/components/apps/ieee1905/ieee1905_glue.c
+--- a/main/components/apps/ieee1905/ieee1905_glue.c
++++ b/main/components/apps/ieee1905/ieee1905_glue.c
+@@ -290,7 +290,11 @@
+ 
+   strncpy(info.if_name, ifname, sizeof(info.if_name) - 1);
+   info.if_name[sizeof(info.if_name) - 1] = '\0';
+-  *((unsigned int *)&info.ret_val) = 0;
++
++  unsigned int *tmp;
++  tmp = (unsigned int *)&info.ret_val;
++  *tmp = 0;
++
+ 
+   /* BCMNET_IOCTL_GET_EXT_FLAGS 0 */
+   err = ioctl(fd, 0, &info);
+diff -ru a/main/components/apps/wldm/Makefile b/main/components/apps/wldm/Makefile
+--- a/main/components/apps/wldm/Makefile
++++ b/main/components/apps/wldm/Makefile
+@@ -91,7 +91,7 @@
+ 
+ all: $(WLDM_LIB) $(PROGS)
+ 
+-CFLAGS		+= -DSHELLPATH=\"$(run_prefix)/bin/sh\" -Wextra -Wall -Os -fPIC -Werror
++CFLAGS		+= -DSHELLPATH=\"$(run_prefix)/bin/sh\" -Wall -Os -fPIC -Werror
+ CFLAGS		+= -I$(ALLSRCBASE)/main/src/include
+ CFLAGS		+= -I$(ALLSRCBASE)/main/src/shared/bcmwifi/include
+ CFLAGS          += -I$(ALLSRCBASE)/main/components/bcmhal/include
+diff -ru a/main/components/router/ecbd/Makefile b/main/components/router/ecbd/Makefile
+--- a/main/components/router/ecbd/Makefile
++++ b/main/components/router/ecbd/Makefile
+@@ -63,7 +63,7 @@
+ endif
+ 
+ CFLAGS  += -I. -I$(TOP)/shared -I$(SRCBASE)/include -I$(SRCBASE)/../components/shared -I$(SRCBASE)/../components/wlioctl/include
+-CFLAGS  += -I$(SRCBASE)/../components/proto/include -I$(SRCBASE)/common/include -Wextra -Wall -Werror
++CFLAGS  += -I$(SRCBASE)/../components/proto/include -I$(SRCBASE)/common/include -Wextra -Wall
+ CFLAGS  += -I$(SRCBASE)/../../cmwifi/libs/wlcsm/include
+ # CFLAGS  += -I$(SRCBASE)/../components/apps/wldm
+ 

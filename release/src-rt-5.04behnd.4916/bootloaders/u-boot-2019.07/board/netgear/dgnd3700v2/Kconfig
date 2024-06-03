@@ -1,0 +1,12 @@
+if BOARD_NETGEAR_DGND3700V2
+
+config SYS_BOARD
+	default "dgnd3700v2"
+
+config SYS_VENDOR
+	default "netgear"
+
+config SYS_CONFIG_NAME
+	default "netgear_dgnd3700v2"
+
+endif

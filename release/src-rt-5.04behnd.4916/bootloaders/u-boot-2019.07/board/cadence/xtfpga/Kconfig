@@ -1,0 +1,39 @@
+if TARGET_XTFPGA
+
+choice
+	prompt "XTFPGA board type select"
+
+config XTFPGA_LX60
+	bool "Support Avnet LX60"
+config XTFPGA_LX110
+	bool "Support Avnet LX110"
+config XTFPGA_LX200
+	bool "Support Avnet LX200"
+config XTFPGA_ML605
+	bool "Support Xilinx ML605"
+config XTFPGA_KC705
+	bool "Support Xilinx KC705"
+
+endchoice
+
+config SYS_BOARD
+	string
+	default "xtfpga"
+
+config SYS_VENDOR
+	string
+	default "cadence"
+
+config SYS_CONFIG_NAME
+	string
+	default "xtfpga"
+
+config BOARD_SDRAM_SIZE
+	hex
+	default 0x04000000 if XTFPGA_LX60
+	default 0x03000000 if XTFPGA_LX110
+	default 0x06000000 if XTFPGA_LX200
+	default 0x18000000 if XTFPGA_ML605
+	default 0x38000000 if XTFPGA_KC705
+
+endif

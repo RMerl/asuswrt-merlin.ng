@@ -566,7 +566,8 @@ function createHostList(query_type, folder_array){
 		host_item_html += ">";
 		host_item_html += "<div id='hosticon' class='sicon " + a[8];
 		if(a[2]==0) host_item_html += "off";
-		host_item_html += "'/>";
+		// host_item_html += "'/>";
+		host_item_html += "'>";
 		
 		if(a[8] == "usbdisk"){
 			var usbdisk_id = "usbdisk" + (i+10);
@@ -595,6 +596,7 @@ function createHostList(query_type, folder_array){
 			host_item_html += "</div>";
 		}
 		
+		host_item_html += "</div>";
 		host_item_html += "</div>";
 		host_item_html += "</div>";
 	}

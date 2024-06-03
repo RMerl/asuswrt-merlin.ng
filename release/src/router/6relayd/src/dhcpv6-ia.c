@@ -30,6 +30,9 @@
 #include <sys/timerfd.h>
 #include <stdio.h>	//FILE
 
+#if defined(MUSL_LIBC)
+#include <stdio.h>
+#endif	// MUSL_LIBC
 
 struct assignment {
 	struct list_head head;

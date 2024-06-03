@@ -1,0 +1,23 @@
+* Mmcoops oops/panic logger
+
+Mmcoops is an oops/panic logger that write its logs to MMC before the system crashes.
+Introduction and concept are similar to other oops logger.
+(Refer to Documention/ramoops.txt)
+- Disadvantage: if MMC is occurred an oops/panic, this logger can't work.
+
+After reboot, you can get the last log with below command.
+#dd if=/dev/mmcblk0 of=/tmp/dump.log skip=1536 count=512
+#vi dump.log
+
+Required Properties:
+
+* compatible: should be "mmcoops"
+* start-offset: block-offset for start.
+* size: the number of block to write oopses and panics.
+
+Example:
+	mmcoops {
+		compatible = "mmcoops";
+		start-offset = <1536>;	/* 1536 * 512B = 768KiB offset */
+		size = <512>;		/* 512 * 512B = 256KiB */
+	};

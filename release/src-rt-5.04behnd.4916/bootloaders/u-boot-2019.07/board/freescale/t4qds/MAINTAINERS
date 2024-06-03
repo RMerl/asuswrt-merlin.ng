@@ -1,0 +1,18 @@
+T4QDS BOARD
+#M:	Shaohui Xie <Shaohui.Xie@freescale.com>
+S:	Orphan (since 2018-05)
+F:	board/freescale/t4qds/
+F:	include/configs/T4240QDS.h
+F:	configs/T4160QDS_defconfig
+F:	configs/T4160QDS_NAND_defconfig
+F:	configs/T4160QDS_SDCARD_defconfig
+F:	configs/T4240QDS_defconfig
+F:	configs/T4240QDS_NAND_defconfig
+F:	configs/T4240QDS_SDCARD_defconfig
+F:	configs/T4240QDS_SRIO_PCIE_BOOT_defconfig
+
+T4160QDS_SECURE_BOOT BOARD
+M:	Ruchika Gupta <ruchika.gupta@nxp.com>
+S:	Maintained
+F:	configs/T4160QDS_SECURE_BOOT_defconfig
+F:	configs/T4240QDS_SECURE_BOOT_defconfig

@@ -182,6 +182,7 @@ a{
 	color: #FFF;
 	background: #007AFF;
 }
+
 .desktop_abortBtn{
 	display: inline-block;
 	max-width: 300px;
@@ -323,7 +324,7 @@ a{
 }
 .advSetting{
 	font-size: 2em !important;
-	color: #007AFF;
+	color: #007AFF !important;
 }
 .pageDesc{
 	font-family: Helvetica, Arial;
@@ -567,6 +568,26 @@ a{
 	position: absolute;
 	display: none;
 }
+#noWanEth2{
+	position: absolute;
+	display: none;
+}
+
+.port_img{
+	position: absolute;
+	width: 480px;
+	height: 330px;
+	background: url('../../images/GT-BExx_port.png') no-repeat center;
+}
+
+.port_plugin_img{
+	position: absolute;
+	width: 480px;
+	height: 330px;
+	background: url('../../images/GT-BExx_plugin.png') no-repeat center;
+	right: 215px;
+}
+
 .green{
 	background-color: #0F0;
 }
@@ -1056,10 +1077,10 @@ a{
 		display:none;
 	}
 	.footer_desktop{
-		display:block;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 		margin-top:50px;
-		height: 120px;
-		max-width:1000px;
 	}
 	.desktop_sort{
 		display:table-cell;
@@ -1560,6 +1581,14 @@ a{
 #summary_page{
 	min-height: 750px;
 }
+#summary_page .icon_excl_mark.help{
+	width: 24px;
+	height: 24px;
+	font-size: .7em;
+	cursor: pointer;
+	position: relative;
+	margin-left: 18px;
+}
 #wireless_setting{
 	min-height: 800px;
 }
@@ -1786,4 +1815,119 @@ a{
 .defpass_guideline_container .desc_container{
 	flex-basis: 35%;
 	font-size: 2em;
+}
+
+#asus_pp_eula_scroll {
+	height: 45vh !important;
+}
+
+#eulaButtonContainer {
+	display: none !important;
+	height: 0px !important;
+}
+
+#asusEulaContainer {
+	color: #FFFFFF;
+}
+
+#eulaConfirmContainer label {
+	color: #FFFFFF;
+	border: unset!important;
+}
+
+#eulaPopupButtonContainer{
+	display: flex;
+	flex-direction: row;
+	justify-content: space-around;
+	margin-top: 25px;
+}
+
+#readAgainBtn, #knowRiskBtn{
+	width: 40%;
+	height: 40px;
+	cursor: pointer;
+	border-radius: 35px;
+	color: #007AFF;
+	background: #FFF;
+	border: 1px solid;
+}
+
+#eula_popup_bg {
+	position: absolute;
+	display: flex;
+	height: 100%;
+	width: 100%;
+	z-index: 9;
+	justify-content: center;
+	backdrop-filter: blur(2px);
+}
+#eula_popup_view {
+	z-index: 10;
+	border-radius: .3rem;
+	background-clip: padding-box;
+	width: 40vw;
+	height: min-content;
+	background-color: #FFFFFF;
+	align-items: center;
+	justify-content: center;
+	margin-top: 200px;
+	padding: 30px;
+	box-shadow: 0 0 3px #9E9E9E;
+}
+#eulaButtonContainer {
+	display: none;
+}
+
+@media screen and (max-width: 1000px) {
+	#eula_popup_view {
+		width: 80vw;
+		font-size: 24px;
+	}
+
+}
+
+.desktop_applyBtn.disabled, .desktop_abortBtn.disabled, .mobileApply.disabled, .mobileAbort.disabled {
+	background: #808080;
+	border: 2px	solid #FFFFFF;
+	cursor: not-allowed;
+	color: #FFFFFF;
+}
+
+.mobileAbort.disabled .mobile_abortBtn{
+	color: #FFFFFF;
+}
+
+#eulaConfirmInfo {
+	font-size: 14px!important;
+	border: 1px solid #ddd;
+	padding: 10px;
+	border-radius: 5px;
+	background-color: unset!important;
+}
+.lds-dual-ring {
+	display: inline-block;
+	width: 66px;
+	height: 66px;
+}
+.lds-dual-ring:after {
+	content: " ";
+	display: block;
+	width: 30px;
+	height: 30px;
+	margin: 13px;
+	border-radius: 50%;
+	border: 6px solid #fff;
+	border-color: #fff transparent #fff transparent;
+	animation: lds-dual-ring 1.2s linear infinite;
+}
+@keyframes lds-dual-ring {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}
+.moreBold{
+	font-weight: bolder;
 }

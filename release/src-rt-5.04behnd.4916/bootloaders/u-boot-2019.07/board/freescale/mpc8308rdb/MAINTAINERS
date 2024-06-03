@@ -1,0 +1,6 @@
+MPC8308RDB BOARD
+M:	Ilya Yanok <yanok@emcraft.com>
+S:	Maintained
+F:	board/freescale/mpc8308rdb/
+F:	include/configs/MPC8308RDB.h
+F:	configs/MPC8308RDB_defconfig

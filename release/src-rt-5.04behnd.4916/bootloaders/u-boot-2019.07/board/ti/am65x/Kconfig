@@ -1,0 +1,53 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright (C) 2017-2018 Texas Instruments Incorporated - http://www.ti.com/
+#	Lokesh Vutla <lokeshvutla@ti.com>
+
+choice
+	prompt "K3 AM65 based boards"
+	optional
+
+config TARGET_AM654_A53_EVM
+	bool "TI K3 based AM654 EVM running on A53"
+	select ARM64
+	select SOC_K3_AM6
+	select SYS_DISABLE_DCACHE_OPS
+
+config TARGET_AM654_R5_EVM
+	bool "TI K3 based AM654 EVM running on R5"
+	select CPU_V7R
+	select SYS_THUMB_BUILD
+	select SOC_K3_AM6
+	select K3_AM654_DDRSS
+	imply SYS_K3_SPL_ATF
+
+endchoice
+
+if TARGET_AM654_A53_EVM
+
+config SYS_BOARD
+       default "am65x"
+
+config SYS_VENDOR
+       default "ti"
+
+config SYS_CONFIG_NAME
+       default "am65x_evm"
+
+endif
+
+if TARGET_AM654_R5_EVM
+
+config SYS_BOARD
+       default "am65x"
+
+config SYS_VENDOR
+       default "ti"
+
+config SYS_CONFIG_NAME
+       default "am65x_evm"
+
+config SPL_LDSCRIPT
+	default "arch/arm/mach-omap2/u-boot-spl.lds"
+
+endif

@@ -1156,7 +1156,11 @@ static pj_status_t init_mutex(int inst_id, pj_mutex_t *mutex, const char *name, 
 	rc = pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_NORMAL);
 #elif (defined(PJ_LINUX) && PJ_LINUX!=0) || \
     defined(PJ_HAS_PTHREAD_MUTEXATTR_SETTYPE)
+#if !defined(MUSL_LIBC)
 	rc = pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_FAST_NP);
+#else
+	rc = pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_NORMAL);
+#endif
 #elif (defined(PJ_RTEMS) && PJ_RTEMS!=0) || \
        defined(PJ_PTHREAD_MUTEXATTR_T_HAS_RECURSIVE)
 	/* Nothing to do, default is simple */
@@ -1168,7 +1172,11 @@ static pj_status_t init_mutex(int inst_id, pj_mutex_t *mutex, const char *name, 
 	rc = pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
 #elif (defined(PJ_LINUX) && PJ_LINUX!=0) || \
      defined(PJ_HAS_PTHREAD_MUTEXATTR_SETTYPE)
+#if !defined(MUSL_LIBC)
 	rc = pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE_NP);
+#else
+	 rc = pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+#endif
 #elif (defined(PJ_RTEMS) && PJ_RTEMS!=0) || \
        defined(PJ_PTHREAD_MUTEXATTR_T_HAS_RECURSIVE)
 	// Phil Torre <ptorre@zetron.com>:

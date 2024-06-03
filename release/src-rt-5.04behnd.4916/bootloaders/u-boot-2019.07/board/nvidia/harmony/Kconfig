@@ -1,0 +1,12 @@
+if TARGET_HARMONY
+
+config SYS_BOARD
+	default "harmony"
+
+config SYS_VENDOR
+	default "nvidia"
+
+config SYS_CONFIG_NAME
+	default "harmony"
+
+endif

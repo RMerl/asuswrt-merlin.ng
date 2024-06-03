@@ -22,6 +22,7 @@
 #define FILE_PATH_IPSEC_SH    "/tmp/etc/ipsec_exe.sh"
 #define FILE_PATH_IPSEC_IPTABLES_RULE    "/tmp/ipsec_iptables_rules"
 #define FILE_PATH_IPSEC_UPDOWN    "/tmp/ipsec_updown"
+#define FILE_PATH_IPSEC_N2N_PREFIX "/tmp/ipsec_s2sc"
 #define FILE_PATH_CA_CHECK_SH "/jffs/ca_files/awk.sh"
 #define FILE_PATH_CA_GEN_SH   "/jffs/ca_files/pki_genkey.sh"
 #define FILE_PATH_CA_ETC      "/jffs/ca_files/"

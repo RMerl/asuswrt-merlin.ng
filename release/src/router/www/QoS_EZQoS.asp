@@ -10,12 +10,14 @@
 <link rel="icon" href="images/favicon.png">
 <title><#Web_Title#> - <#EZQoS#></title>
 <link rel="stylesheet" type="text/css" href="index_style.css">
+<link rel="stylesheet" type="text/css" href="css/basic.css">
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="usp_style.css">
 <link rel="stylesheet" type="text/css" href="device-map/device-map.css">
 <link rel="stylesheet" type="text/css" href="css/icon.css">
 <script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/calendar/jquery-ui.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/help.js"></script>
@@ -24,7 +26,6 @@
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/form.js"></script>
 <script type="text/javascript" src="client_function.js"></script>
-<script type="text/javascript" src="/js/httpApi.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
 <style>
 *{
@@ -456,11 +457,15 @@ function initial(){
 			document.getElementById('int_type_link').style.display = "";
 			show_settings("NonAdaptive");
 		}
-    if(router_boost_support){
-      document.getElementById('router_boost_tr').style.display = "none";
-    }
+    //if(router_boost_support){
+    //  document.getElementById('router_boost_tr').style.display = "none";
+    //}
 	}
 
+	if(router_boost_support){
+      document.getElementById('router_boost_tr').style.display = "";
+    }
+	
 	if(adaptiveqos_support){
 		document.getElementById('content_title').innerHTML = "<#menu5_3_2#> - <#Adaptive_QoS_Conf#>";
 		if(document.form.qos_enable.value == "1"){
@@ -506,9 +511,9 @@ function initial(){
 		document.getElementById('function_int_desc').style.display = "none";
 		document.getElementById('int_type').style.display = "none";
 		document.getElementById('int_type_link').style.display = "none";
-		if(router_boost_support){
-      document.getElementById('router_boost_tr').style.display = "none";
-    }
+		//if(router_boost_support){
+			//document.getElementById('router_boost_tr').style.display = "none";
+		//}
     show_settings("NonAdaptive");
 	}
 	
@@ -667,6 +672,9 @@ function validForm(){
 	var error_obw1=0;
 	var error_ibw=0;
 	var error_ibw1=0;
+	if(router_boost_support && document.form.qos_enable.value == 0 && document.form.qos_enable_orig.value == 0
+	   && document.form.rb_enable.value != document.form.rb_enable_orig.value)
+	   return true;
 	if(document.form.qos_enable.value == 0 && document.form.qos_enable_orig.value == 0){
 		if(geforceNow_support){
 			if(document.form.nvgfn_enable.value == orig_nvgfn_enable){
@@ -898,7 +906,10 @@ function determineActionScript(){
 			 ((document.form.qos_enable_orig.value == document.form.qos_enable.value) && 				//qos_enable and qos_type no change
 		 	  (document.form.qos_type_orig.value == document.form.qos_type.value)) ){
         if(router_boost_support) {
-          document.form.action_script.value = "restart_routerboost;restart_wireless;restart_qos;restart_firewall;";
+			if(mtk_support)
+				document.form.action_script.value = "restart_routerboost;restart_qos;restart_firewall;";
+			else 
+				document.form.action_script.value = "restart_routerboost;restart_wireless;restart_qos;restart_firewall;";
         }
         else {
           document.form.action_script.value = "restart_qos;restart_firewall;";
@@ -908,7 +919,10 @@ function determineActionScript(){
 	else if(document.form.qos_enable.value == "1" && document.form.qos_type.value == "1" && (ctf_fa_mode != "2" || qca_support)){
 		//BCM: Support FA but disable FA ,or not support FA. QCA Models
 		if(router_boost_support) {
-      document.form.action_script.value = "restart_routerboost;restart_wireless;restart_qos;restart_firewall;";
+			if(mtk_support)
+					document.form.action_script.value = "restart_routerboost;restart_qos;restart_firewall;";
+			else	
+					document.form.action_script.value = "restart_routerboost;restart_wireless;restart_qos;restart_firewall;";
     }
     else {
       document.form.action_script.value = "restart_qos;restart_firewall;";
@@ -917,7 +931,10 @@ function determineActionScript(){
 	}
 	else if(document.form.qos_enable.value == "1" && document.form.qos_type.value == "1" && (fc_disable_orig != "" && runner_disable_orig != "")){ //HND Router
 		if(router_boost_support) {
-      document.form.action_script.value = "restart_routerboost;restart_wireless;restart_qos;restart_firewall;";
+			if(mtk_support)
+			     document.form.action_script.value = "restart_routerboost;restart_qos;restart_firewall;";
+			else
+				document.form.action_script.value = "restart_routerboost;restart_wireless;restart_qos;restart_firewall;";
     }
     else {
       document.form.action_script.value = "restart_qos;restart_firewall;";
@@ -1012,9 +1029,9 @@ function change_qos_type(value){
 		document.getElementById('cake_type').checked = false;
 	if(geforceNow_support)
 			document.getElementById('GeForce_type').checked = false;
-    if(router_boost_support) {
-      document.getElementById('router_boost_tr').style.display = "none";  
-    }
+    //if(router_boost_support) {
+    //  document.getElementById('router_boost_tr').style.display = "none";  
+    //}
     document.getElementById('bandwidth_setting_tr').style.display = "none";
 		show_up_down(1);
 		document.getElementById('list_table').style.display = "none";
@@ -1043,8 +1060,8 @@ function change_qos_type(value){
     document.getElementById('bandwidth_setting_tr').style.display = "";
 		if(geforceNow_support)
 			document.getElementById('GeForce_type').checked = false;
-    if(router_boost_support)
-      document.getElementById('router_boost_tr').style.display = "";
+    //if(router_boost_support)
+    //  document.getElementById('router_boost_tr').style.display = "";
     document.getElementById('list_table').style.display = "none";
 		if (codel_support || cake_support) {
 			document.getElementById('qos_overhead_tr').style.display = "none";
@@ -1076,8 +1093,8 @@ function change_qos_type(value){
 		document.getElementById('cake_type').checked = false;
     if(geforceNow_support)
 			document.getElementById('GeForce_type').checked = false;
-    if(router_boost_support)
-      document.getElementById('router_boost_tr').style.display = "none";
+    //if(router_boost_support)
+    //  document.getElementById('router_boost_tr').style.display = "none";
     document.getElementById('bandwidth_setting_tr').style.display = "none";
 		show_up_down(0);
 		document.getElementById('list_table').style.display = "block";
@@ -1104,8 +1121,8 @@ function change_qos_type(value){
 		document.getElementById('trad_type').checked = false;
 		document.getElementById('bw_limit_type').checked = false;
     document.getElementById('GeForce_type').checked = true;
-	  if(router_boost_support)
-      document.getElementById('router_boost_tr').style.display = "none";
+	//  if(router_boost_support)
+    //  document.getElementById('router_boost_tr').style.display = "none";
     document.getElementById('bandwidth_setting_tr').style.display = "none";
 		document.getElementById('cake_type').checked = false;
 		show_up_down(1);
@@ -1385,8 +1402,9 @@ function register_overHint(){
 }
 
 function routerboost_enable_setting(){
-  if(document.getElementById("rb_on").checked && document.form.qos_enable.value == 1 && document.form.qos_type.value == 1){
-    document.form.rb_enable.value = 1;
+  //if(document.getElementById("rb_on").checked && document.form.qos_enable.value == 1 && document.form.qos_type.value == 1){
+  if(document.getElementById("rb_on").checked){  
+	document.form.rb_enable.value = 1;
     document.form.re_rb_enable.value = 1;
   }
   else{
@@ -1421,7 +1439,7 @@ function pullLANIPList(obj){
 	var element = document.getElementById('ClientList_Block_PC');
 	var isMenuopen = element.offsetWidth > 0 || element.offsetHeight > 0;
 	if(isMenuopen == 0){
-		obj.src = "/images/arrow-top.gif"
+		obj.src = "/images/unfold_less.svg"
 		element.style.display = 'block';
 		document.form.PC_devicename.focus();
 	}
@@ -1430,7 +1448,7 @@ function pullLANIPList(obj){
 }
 
 function hideClients_Block(){
-	document.getElementById("pull_arrow").src = "/images/arrow-down.gif";
+	document.getElementById("pull_arrow").src = "/images/unfold_more.svg";
 	document.getElementById('ClientList_Block_PC').style.display='none';
 }
 var PC_mac = "";
@@ -1638,7 +1656,7 @@ function genMain_table(){
 		code += '<input type="text" style="margin-left:10px;float:left;width:255px;" class="input_20_table" name="PC_devicename" onkeyup="device_filter(this);check_field();" placeholder="Please select the Device Group Name" autocorrect="off" autocapitalize="off" autocomplete="off" disabled>';/*untranslated*/
 	else
 		code += '<input type="text" style="margin-left:10px;float:left;width:255px;" class="input_20_table" name="PC_devicename" onkeyup="device_filter(this);check_field();" placeholder="<#AiProtection_client_select#>" autocorrect="off" autocapitalize="off" autocomplete="off">';
-	code += '<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" onclick="pullLANIPList(this);" title="<#select_client#>">';
+	code += '<img id="pull_arrow" height="14px;" src="/images/unfold_more.svg" onclick="pullLANIPList(this);" title="<#select_client#>">';
 	code += '<div id="ClientList_Block_PC" class="clientlist_dropdown" style="margin-top:25px;margin-left:10px;"></div>';
 	code += '</td>';
 	code += '<td style="border-bottom:2px solid #000;text-align:right;"><input type="text" id="download_rate" class="input_6_table" maxlength="6" onkeypress="return validator.bandwidth_code(this, event);" onkeyup="check_field();"><span style="margin: 0 5px;color:#FFF;">Mb/s</span></td>';
@@ -1710,7 +1728,7 @@ function device_filter(obj){
 		showDropdownClientList('setClientIP', 'name>mac', 'all', 'ClientList_Block_PC', 'pull_arrow', 'all');
 	}
 	else{
-		obj.src = "/images/arrow-top.gif"
+		obj.src = "/images/unfold_less.svg"
 		document.getElementById("ClientList_Block_PC").style.display = 'block';
 		document.form.PC_devicename.focus();
 		var code = "";
@@ -1943,7 +1961,8 @@ function set_overhead(entry) {
 			<input type="hidden" name="qos_type_orig" value="<% nvram_get("qos_type"); %>">
 			<input type="hidden" name="qos_type" value="<% nvram_get("qos_type"); %>">
       <input type="hidden" name="rb_enable" value="<% nvram_get("rb_enable"); %>">
-      <input type="hidden" name="re_rb_enable" value="<% nvram_get("re_rb_enable"); %>">
+	  <input type="hidden" name="rb_enable_orig" value="<% nvram_get("rb_enable"); %>"> 
+	<input type="hidden" name="re_rb_enable" value="<% nvram_get("re_rb_enable"); %>">
       <input type="hidden" name="qos_obw" value="<% nvram_get("qos_obw"); %>" disabled>
 			<input type="hidden" name="qos_ibw" value="<% nvram_get("qos_ibw"); %>" disabled>
 			<input type="hidden" name="qos_obw1" value="<% nvram_get("qos_obw1"); %>" disabled>
@@ -2050,10 +2069,7 @@ function set_overhead(entry) {
 																show_up_down(0);
 																document.getElementById('qos_type_tr').style.display = "none";
 																document.getElementById('bandwidth_setting_tr').style.display = "none";
-																document.getElementById('list_table').style.display = "none";
-                                if(router_boost_support)
-                                  document.getElementById('router_boost_tr').style.display = "none";
-																
+																document.getElementById('list_table').style.display = "none";								
 																var alert_hint = "";
 																if(GN_with_BandwidthLimeter)
 																	alert_hint += "<#Guest_Network_disable_BWL#>";
@@ -2081,6 +2097,13 @@ function set_overhead(entry) {
 												<div id="qos_enable_hint" style="color:#FC0;margin:5px 0px 0px 100px;display:none"><#QzQoS_note#></div>
 											</td>
 										</tr>
+										<tr id="router_boost_tr" style="display:none">
+											<th>RouterBoost</th>
+											<td colspan="2">
+                        <input id="rb_on" name="rb_toggle" onClick="routerboost_enable_setting();" type="radio" <% nvram_match("rb_enable", "1","checked"); %>><label for="rb_on"><#CTL_Activate#></label>
+												<input id="rb_off" name="rb_toggle" onClick="routerboost_enable_setting();" type="radio" <% nvram_match("rb_enable", "0","checked"); %>><label for="rb_off"><#CTL_Deactivate#></label>
+											</td>
+										</tr>
 										<tr id="qos_type_tr" style="display:none">
 											<th><#QoS_Type#></th>
 											<td colspan="3">
@@ -2090,15 +2113,6 @@ function set_overhead(entry) {
 											  <span id="GeForceNow_item" style="display: none;"><input id="GeForce_type" name="qos_type_radio" value="3" onClick="change_qos_type(this.value);" type="radio" <% nvram_match("qos_type", "3","checked"); %>><a class="hintstyle" href="javascript:void(0);"><label for="GeForce_type">GeForce NOW QoS</label></a></span>
 												<input id="cake_type" name="qos_type_radio" value="9" onClick="change_qos_type(this.value);" style="display:none;" type="radio" <% nvram_match("qos_type", "9","checked"); %>><a id="cake_type_link" style="display:none;" class="hintstyle" href="javascript:void(0);" onClick="openHint(50, 32);"><label for="cake_type">Cake</label></a>
 										  </td>
-										</tr>
-										<tr id="router_boost_tr" style="display:none">
-											<th>RouterBoost</th>
-											<td colspan="2">
-                        <input id="rb_on" name="rb_toggle" onClick="routerboost_enable_setting();" type="radio" <% nvram_match("rb_enable", "1","checked"); %>><label for="rb_on"><#CTL_Activate#></label>
-												<input id="rb_off" name="rb_toggle" onClick="routerboost_enable_setting();" type="radio" <% nvram_match("rb_enable", "0","checked"); %>><label for="rb_off"><#CTL_Deactivate#></label>
-
-												
-                      </td>
 										</tr>
 										<tr id="qos_overhead_tr" style="display:none">
 											<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50, 28);">WAN packet overhead</a></th>

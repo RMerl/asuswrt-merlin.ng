@@ -1,0 +1,226 @@
+README on how boot images are created for secure TI devices
+
+CONFIG_TI_SECURE_DEVICE:
+Secure TI devices require a boot image that is authenticated by ROM
+code to function. Without this, even JTAG remains locked and the
+device is essentially useless. In order to create a valid boot image for
+a secure device from TI, the initial public software image must be signed
+and combined with various headers, certificates, and other binary images.
+
+Information on the details on the complete boot image format can be obtained
+from Texas Instruments. The tools used to generate boot images for secure
+devices are part of a secure development package (SECDEV) that can be
+downloaded from:
+
+	http://www.ti.com/mysecuresoftware (login required)
+
+The secure development package is access controlled due to NDA and export
+control restrictions. Access must be requested and granted by TI before the
+package is viewable and downloadable. Contact TI, either online or by way
+of a local TI representative, to request access.
+
+Booting of U-Boot SPL
+=====================
+
+	When CONFIG_TI_SECURE_DEVICE is set, the U-Boot SPL build process
+	requires the presence and use of these tools in order to create a
+	viable boot image. The build process will look for the environment
+	variable TI_SECURE_DEV_PKG, which should be the path of the installed
+	SECDEV package. If the TI_SECURE_DEV_PKG variable is not defined or
+	if it is defined but doesn't point to a valid SECDEV package, a
+	warning is issued during the build to indicate that a final secure
+	bootable image was not created.
+
+	Within the SECDEV package exists an image creation script:
+
+	${TI_SECURE_DEV_PKG}/scripts/create-boot-image.sh
+
+	This is called as part of the SPL/u-boot build process. As the secure
+	boot image formats and requirements differ between secure SOC from TI,
+	the purpose of this script is to abstract these details as much as
+	possible.
+
+	The script is basically the only required interface to the TI SECDEV
+	package for creating a bootable SPL image for secure TI devices.
+
+	Invoking the script for AM33xx Secure Devices
+	=============================================
+
+	create-boot-image.sh \
+		<IMAGE_FLAG> <INPUT_FILE> <OUTPUT_FILE> <SPL_LOAD_ADDR>
+
+	<IMAGE_FLAG> is a value that specifies the type of the image to
+	generate OR the action the image generation tool will take. Valid
+	values are:
+		SPI_X-LOADER - Generates an image for SPI flash (byte swapped)
+		X-LOADER - Generates an image for non-XIP flash
+		MLO - Generates an image for SD/MMC/eMMC media
+		2ND - Generates an image for USB, UART and Ethernet
+		XIP_X-LOADER - Generates a single stage u-boot for NOR/QSPI XiP
+
+	<INPUT_FILE> is the full path and filename of the public world boot
+	loaderbinary file (depending on the boot media, this is usually
+	either u-boot-spl.bin or u-boot.bin).
+
+	<OUTPUT_FILE> is the full path and filename of the final secure
+	image. The output binary images should be used in place of the standard
+	non-secure binary images (see the platform-specific user's guides and
+	releases notes for how the non-secure images are typically used)
+	u-boot-spl_HS_SPI_X-LOADER - byte swapped boot image for SPI flash
+	u-boot-spl_HS_X-LOADER - boot image for NAND or SD/MMC/eMMC rawmode
+	u-boot-spl_HS_MLO - boot image for SD/MMC/eMMC media
+	u-boot-spl_HS_2ND - boot image for USB, UART and Ethernet
+	u-boot_HS_XIP_X-LOADER - boot image for NOR or QSPI Xip flash
+
+	<SPL_LOAD_ADDR> is the address at which SOC ROM should load the
+	<INPUT_FILE>
+
+	Invoking the script for AM43xx Secure Devices
+	=============================================
+
+	create-boot-image.sh \
+		<IMAGE_FLAG> <INPUT_FILE> <OUTPUT_FILE> <SPL_LOAD_ADDR>
+
+	<IMAGE_FLAG> is a value that specifies the type of the image to
+	generate OR the action the image generation tool will take. Valid
+	values are:
+		SPI_X-LOADER - Generates an image for SPI flash (byte
+			swapped)
+		XIP_X-LOADER - Generates a single stage u-boot for
+			NOR/QSPI XiP
+		ISSW - Generates an image for all other boot modes
+
+	<INPUT_FILE> is the full path and filename of the public world boot
+	loaderbinary file (depending on the boot media, this is usually
+	either u-boot-spl.bin or u-boot.bin).
+
+	<OUTPUT_FILE> is the full path and filename of the final secure
+	image. The output binary images should be used in place of the standard
+	non-secure binary images (see the platform-specific user's guides and
+	releases notes for how the non-secure images are typically used)
+	u-boot-spl_HS_SPI_X-LOADER - byte swapped boot image for SPI flash
+	u-boot_HS_XIP_X-LOADER - boot image for NOR or QSPI flash
+	u-boot-spl_HS_ISSW - boot image for all other boot media
+
+	<SPL_LOAD_ADDR> is the address at which SOC ROM should load the
+	<INPUT_FILE>
+
+	Invoking the script for DRA7xx/AM57xx Secure Devices
+	====================================================
+
+	create-boot-image.sh \
+		<IMAGE_TYPE> <INPUT_FILE> <OUTPUT_FILE> <SPL_LOAD_ADDR>
+
+	<IMAGE_TYPE> is a value that specifies the type of the image to
+	generate OR the action the image generation tool will take. Valid
+	values are:
+		X-LOADER - Generates an image for NOR or QSPI boot modes
+		MLO - Generates an image for SD/MMC/eMMC boot modes
+		ULO - Generates an image for USB/UART peripheral boot modes
+
+	<INPUT_FILE> is the full path and filename of the public world boot
+	loader binary file (for this platform, this is always u-boot-spl.bin).
+
+	<OUTPUT_FILE> is the full path and filename of the final secure image.
+	The output binary images should be used in place of the standard
+	non-secure binary images (see the platform-specific user's guides
+	and releases notes for how the non-secure images are typically used)
+	u-boot-spl_HS_MLO - boot image for SD/MMC/eMMC. This image is
+		copied to a file named MLO, which is the name that
+		the device ROM bootloader requires for loading from
+		the FAT partition of an SD card (same as on
+		non-secure devices)
+	u-boot-spl_HS_ULO - boot image for USB/UART peripheral boot modes
+	u-boot-spl_HS_X-LOADER - boot image for all other flash memories
+		including QSPI and NOR flash
+
+	<SPL_LOAD_ADDR> is the address at which SOC ROM should load the
+	<INPUT_FILE>
+
+	Invoking the script for Keystone2 Secure Devices
+	================================================
+
+	create-boot-image.sh \
+		<UNUSED> <INPUT_FILE> <OUTPUT_FILE> <UNUSED>
+
+	<UNUSED> is currently ignored and reserved for future use.
+
+	<INPUT_FILE> is the full path and filename of the public world boot
+	loader binary file (only u-boot.bin is currently supported on
+	Keystone2 devices, u-boot-spl.bin is not currently supported).
+
+	<OUTPUT_FILE> is the full path and filename of the final secure image.
+	The output binary images should be used in place of the standard
+	non-secure binary images (see the platform-specific user's guides
+	and releases notes for how the non-secure images are typically used)
+	u-boot_HS_MLO - signed and encrypted boot image that can be used to
+		boot from all media. Secure boot from SPI NOR flash is not
+		currently supported.
+
+	Invoking the script for K3 Secure Devices
+	=========================================
+
+	The signing steps required to produce a bootable SPL image on secure
+	K3 TI devices are the same as those performed on non-secure devices.
+	The only difference is the key is not checked on non-secure devices so
+	a dummy key is used when building U-Boot for those devices. For secure
+	K3 TI devices simply use the real hardware key for your device. This
+	real key can be set with the Kconfig option "K3_KEY". The environment
+	variable TI_SECURE_DEV_PKG is also searched for real keys when the
+	build targets secure devices.
+
+Booting of Primary U-Boot (u-boot.img)
+======================================
+
+	The SPL image is responsible for loading the next stage boot loader,
+	which is the main u-boot image. For secure TI devices, the SPL will
+	be authenticated, as described above, as part of the particular
+	device's ROM boot process. In order to continue the secure boot
+	process, the authenticated SPL must authenticate the main u-boot
+	image that it loads.
+
+	The configurations for secure TI platforms are written to make the boot
+	process use the FIT image format for the u-boot.img (CONFIG_SPL_FRAMEWORK
+	and CONFIG_SPL_LOAD_FIT). With these configurations the binary
+	components that the SPL loads include a specific DTB image and u-boot
+	image. These DTB image may be one of many available to the boot
+	process. In order to secure these components so that they can be
+	authenticated by the SPL as they are loaded from the FIT image,	the
+	build procedure for secure TI devices will secure these images before
+	they are integrated into the FIT image. When those images are extracted
+	from the FIT image at boot time, they are post-processed to verify that
+	they are still secure. The outlined security-related SPL post-processing
+	is enabled through the CONFIG_SPL_FIT_IMAGE_POST_PROCESS option which
+	must be enabled for the secure boot scheme to work. In order to allow
+	verifying proper operation of the secure boot chain in case of successful
+	authentication messages like "Authentication passed" are output by the
+	SPL to the console for each blob that got extracted from the FIT image.
+
+	The exact details of the how the images are secured is handled by the
+	SECDEV package. Within the SECDEV package exists a script to process
+	an input binary image:
+
+	${TI_SECURE_DEV_PKG}/scripts/secure-binary-image.sh
+
+	This is called as part of the u-boot build process. As the secure
+	image formats and requirements can differ between the various secure
+	SOCs from TI, this script in the SECDEV package abstracts these
+	details. This script is essentially the only required interface to the
+	TI SECDEV package for creating a u-boot.img image for secure TI
+	devices.
+
+	The SPL/u-boot code contains calls to dedicated secure ROM functions
+	to perform the validation on the secured images. The details of the
+	interface to those functions is shown in the code. The summary
+	is that they are accessed by invoking an ARM secure monitor call to
+	the device's secure ROM (fixed read-only-memory that is secure and
+	only accessible when the ARM core is operating in the secure mode).
+
+	Invoking the secure-binary-image script for Secure Devices
+	==========================================================
+
+	secure-binary-image.sh <INPUT_FILE> <OUTPUT_FILE>
+
+	<INPUT_FILE> is the full path and filename of the input binary image
+
+	<OUTPUT_FILE> is the full path and filename of the output secure image.

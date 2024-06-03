@@ -1,0 +1,11 @@
+config BCM_BCA_EXTINTR
+	bool "Broadcom BCA External Interrup Driver"
+	depends on BCM_BCA_GPIO
+	default n
+	help
+	  Add the BCM BCA External Interrup support.
+
+config BCM_BCA_EXTINTR_IMPL
+	int "Implementation index for BCA External Interrup module"
+	depends on BCM_BCA_EXTINTR
+	default 1

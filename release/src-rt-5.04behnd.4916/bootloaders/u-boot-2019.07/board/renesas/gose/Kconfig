@@ -1,0 +1,12 @@
+if TARGET_GOSE
+
+config SYS_BOARD
+	default "gose"
+
+config SYS_VENDOR
+	default "renesas"
+
+config SYS_CONFIG_NAME
+	default "gose"
+
+endif

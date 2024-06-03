@@ -1,0 +1,109 @@
+diff --git a/Makefile b/Makefile
+index c3123b7..0a38a29 100644
+--- a/Makefile
++++ b/Makefile
+@@ -400,10 +400,11 @@ CPPFLAGS		=	${DEFINES} ${INCLUDES} ${MBEDTLS_INC} -nostdinc	\
+ 				$(ERRORS) $(WARNINGS)
+ ASFLAGS			+=	$(CPPFLAGS) $(ASFLAGS_$(ARCH))			\
+ 				-ffreestanding -Wa,--fatal-warnings
++# BRCM_PATCH: Code optimization causes issue with Cortex-A9 and Cortex-A55
+ TF_CFLAGS		+=	$(CPPFLAGS) $(TF_CFLAGS_$(ARCH))		\
+ 				-ffunction-sections -fdata-sections		\
+ 				-ffreestanding -fno-builtin -fno-common		\
+-				-Os -std=gnu99
++				-O0 -std=gnu99
+ 
+ $(eval $(call add_define,SVE_VECTOR_LEN))
+ 
+@@ -514,7 +515,7 @@ INCLUDE_TBBR_MK		:=	1
+ 
+ ifneq (${SPD},none)
+     ifeq (${ARCH},aarch32)
+-        $(error "Error: SPD is incompatible with AArch32.")
++        #$(error "Error: SPD is incompatible with AArch32.")
+     endif
+ 
+     ifdef EL3_PAYLOAD_BASE
+diff --git a/bl31/aarch64/bl31_entrypoint.S b/bl31/aarch64/bl31_entrypoint.S
+index b0c46dc..cba371f 100644
+--- a/bl31/aarch64/bl31_entrypoint.S
++++ b/bl31/aarch64/bl31_entrypoint.S
+@@ -135,6 +135,7 @@ endfunc bl31_entrypoint
+ 	 * warmboot entrypoint
+ 	 * --------------------------------------------------------------------
+ 	 */
++.align 8
+ func bl31_warm_entrypoint
+ #if ENABLE_RUNTIME_INSTRUMENTATION
+ 
+diff --git a/bl32/sp_min/aarch32/entrypoint.S b/bl32/sp_min/aarch32/entrypoint.S
+index f102967..8889900 100644
+--- a/bl32/sp_min/aarch32/entrypoint.S
++++ b/bl32/sp_min/aarch32/entrypoint.S
+@@ -334,12 +334,24 @@ func sp_min_warm_entrypoint
+ #else
+ 	mov	r0, #DISABLE_DCACHE
+ #endif
++	/* BRCM_PATCH: BCM63138 (Cortex-A9) does not support long MMU descriptor.
++	 *             Need to use A9 specific short MMU descriptor.
++	 */
++#if defined(PLATFORM_FLAVOR_63138)
++	bl	a9_l1cache_inval_d
++	bl	a9_bl32_plat_enable_mmu
++#else
+ 	bl	bl32_plat_enable_mmu
++#endif
+ 
+ #if SP_MIN_WITH_SECURE_FIQ
+ 	route_fiq_to_sp_min r0
+ #endif
+ 
++#if defined(SPD_opteed)
++	bl	opteed_setup
++#endif
++
+ 	bl	sp_min_warm_boot
+ 	bl	smc_get_next_ctx
+ 	/* r0 points to `smc_ctx_t` */
+diff --git a/include/lib/cpus/aarch64/cortex_a53.h b/include/lib/cpus/aarch64/cortex_a53.h
+index 54e646c..61a8463 100644
+--- a/include/lib/cpus/aarch64/cortex_a53.h
++++ b/include/lib/cpus/aarch64/cortex_a53.h
+@@ -11,6 +11,7 @@
+ 
+ /* Cortex-A53 midr for revision 0 */
+ #define CORTEX_A53_MIDR			U(0x410FD030)
++#define CORTEX_B53_MIDR			U(0x420F1000)
+ 
+ /* Retention timer tick definitions */
+ #define RETENTION_ENTRY_TICKS_2		U(0x1)
+diff --git a/lib/cpus/aarch64/cortex_a53.S b/lib/cpus/aarch64/cortex_a53.S
+index df11d86..1cfe0e2 100644
+--- a/lib/cpus/aarch64/cortex_a53.S
++++ b/lib/cpus/aarch64/cortex_a53.S
+@@ -403,7 +403,7 @@ func cortex_a53_cpu_reg_dump
+ 	ret
+ endfunc cortex_a53_cpu_reg_dump
+ 
+-declare_cpu_ops cortex_a53, CORTEX_A53_MIDR, \
++declare_cpu_ops cortex_a53, CORTEX_B53_MIDR, \
+ 	cortex_a53_reset_func, \
+ 	cortex_a53_core_pwr_dwn, \
+ 	cortex_a53_cluster_pwr_dwn
+diff --git a/make_helpers/armv7-a-cpus.mk b/make_helpers/armv7-a-cpus.mk
+index eec85cc..2d194b1 100644
+--- a/make_helpers/armv7-a-cpus.mk
++++ b/make_helpers/armv7-a-cpus.mk
+@@ -53,6 +53,12 @@ $(eval $(call add_defines,\
+ )))
+ endif
+ 
++# BRCM_PATCH: 1. Even though A9 does not support LARGE_PAGE_ADDRESSING
++#                needed to enable it to get compilation going.
++ifeq ($(filter yes,$(ARM_CORTEX_A9)),yes)
++$(eval $(call add_define,ARMV7_SUPPORTS_LARGE_PAGE_ADDRESSING))
++endif
++
+ ifeq ($(ARM_CORTEX_A5),yes)
+ $(eval $(call add_define,ARM_CORTEX_A5))
+ endif

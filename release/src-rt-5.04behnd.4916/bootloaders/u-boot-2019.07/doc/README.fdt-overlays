@@ -1,0 +1,114 @@
+U-Boot FDT Overlay usage
+=============================================
+
+Overlays Syntax
+---------------
+
+Overlays require slightly different syntax compared to traditional overlays.
+Please refer to dt-object-internal.txt in the dtc sources for information
+regarding the internal format of overlays:
+https://git.kernel.org/pub/scm/utils/dtc/dtc.git/tree/Documentation/dt-object-internal.txt
+
+Building Overlays
+-----------------
+
+In a nutshell overlays provides a means to manipulate a symbol a previous dtb
+or overlay has defined. It requires both the base and all the overlays
+to be compiled with the -@ command line switch so that symbol information is
+included.
+
+Note support for -@ option can only be found in dtc version 1.4.4 or newer.
+Only version 4.14 or higher of the Linux kernel includes a built in version
+of dtc that meets this requirement.
+
+Building an overlay follows the same process as building a traditional dtb.
+
+For example:
+
+base.dts
+--------
+
+	/dts-v1/;
+	/ {
+		foo: foonode {
+			foo-property;
+		};
+	};
+
+	$ dtc -@ -I dts -O dtb -o base.dtb base.dts
+
+bar.dts
+-------
+
+	/dts-v1/;
+	/plugin/;
+	/ {
+		fragment@1 {
+			target = <&foo>;
+			__overlay__ {
+				overlay-1-property;
+				bar: barnode {
+					bar-property;
+				};
+			};
+		};
+	};
+
+	$ dtc -@ -I dts -O dtb -o bar.dtb bar.dts
+
+Ways to Utilize Overlays in U-boot
+----------------------------------
+
+There are two ways to apply overlays in U-boot.
+1. Include and define overlays within a FIT image and have overlays
+   automatically applied.
+
+2. Manually load and apply overlays
+
+The remainder of this document will discuss using overlays via the manual
+approach. For information on using overlays as part of a FIT image please see:
+doc/uImage.FIT/overlay-fdt-boot.txt
+
+Manually Loading and Applying Overlays
+--------------------------------------
+
+1. Figure out where to place both the base device tree blob and the
+overlay. Make sure you have enough space to grow the base tree without
+overlapping anything.
+
+=> setenv fdtaddr 0x87f00000
+=> setenv fdtovaddr 0x87fc0000
+
+2. Load the base blob and overlay blobs
+
+=> load ${devtype} ${bootpart} ${fdtaddr} ${bootdir}/base.dtb
+=> load ${devtype} ${bootpart} ${fdtovaddr} ${bootdir}/overlay.dtb
+
+3. Set it as the working fdt tree.
+
+=> fdtaddr $fdtaddr
+
+4. Grow it enough so it can 'fit' all the applied overlays
+
+=> fdt resize 8192
+
+5. You are now ready to apply the overlay.
+
+=> fdt apply $fdtovaddr
+
+6. Boot system like you would do with a traditional dtb.
+
+For bootm:
+
+=> bootm ${kerneladdr} - ${fdtaddr}
+
+For bootz:
+
+=> bootz ${kerneladdr} - ${fdtaddr}
+
+Please note that in case of an error, both the base and overlays are going
+to be invalidated, so keep copies to avoid reloading.
+
+Pantelis Antoniou
+pantelis.antoniou@konsulko.com
+11/7/2017

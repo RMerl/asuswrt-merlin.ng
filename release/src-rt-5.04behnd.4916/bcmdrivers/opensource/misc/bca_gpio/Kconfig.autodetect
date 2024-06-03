@@ -1,0 +1,16 @@
+config BCM_BCA_GPIO
+	bool "Broadcom BCA GPIO Driver"
+	depends on BCM_BCA_PINCTRL
+	select GPIOLIB
+	select GPIO_SYSFS
+	select OF_GPIO
+	select GPIO_DEVRES
+	select GPIO_GENERIC_PLATFORM
+	default n
+	help
+	  Add the BCM BCA GPIO support.
+
+config BCM_BCA_GPIO_IMPL
+	int "Implementation index for BCA GPIO module"
+	depends on BCM_BCA_GPIO
+	default 1

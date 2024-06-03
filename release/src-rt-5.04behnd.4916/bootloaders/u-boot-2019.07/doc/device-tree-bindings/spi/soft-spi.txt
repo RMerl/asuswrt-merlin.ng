@@ -1,0 +1,38 @@
+Soft SPI
+
+The soft SPI bus implementation allows the use of GPIO pins to simulate a
+SPI bus. No SPI host is required for this to work. The down-side is that the
+performance will typically be much lower than a real SPI bus.
+
+The soft SPI node requires the following properties:
+
+Mandatory properties:
+compatible: "spi-gpio"
+cs-gpios: GPIOs to use for SPI chip select (output)
+gpio-sck: GPIO to use for SPI clock (output)
+And at least one of:
+gpio-mosi: GPIO to use for SPI MOSI line (output)
+gpio-miso: GPIO to use for SPI MISO line (input)
+
+Optional propertie:
+spi-delay-us: Number of microseconds of delay between each CS transition
+
+The GPIOs should be specified as required by the GPIO controller referenced.
+The first cell holds the phandle of the controller and the second cell
+typically holds the GPIO number.
+
+
+Example:
+
+	soft-spi {
+		compatible = "spi-gpio";
+		cs-gpios = <&gpio 235 0>;	/* Y43 */
+		gpio-sck = <&gpio 225 0>;	/* Y31 */
+		gpio-mosi = <&gpio 227 0>;	/* Y33 */
+		gpio-miso = <&gpio 224 0>;	/* Y30 */
+		spi-delay-us = <1>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		cs@0 {
+		};
+	};

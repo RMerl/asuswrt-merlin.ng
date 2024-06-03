@@ -1,0 +1,60 @@
+I2C Bus Arbitration
+===================
+
+While I2C supports multi-master buses this is difficult to get right.
+The implementation on the master side in software is quite complex.
+Clock-stretching and the arbitrary time that an I2C transaction can take
+make it difficult to share the bus fairly in the face of high traffic.
+When one or more masters can be reset independently part-way through a
+transaction it is hard to know the state of the bus.
+
+U-Boot provides a scheme based on two 'claim' GPIOs, one driven by the
+AP (Application Processor, meaning the main CPU) and one driven by the EC
+(Embedded Controller, a small CPU aimed at handling system tasks). With
+these they can communicate and reliably share the bus. This scheme has
+minimal overhead and involves very little code. The scheme can survive
+reboots by either side without difficulty.
+
+Since U-Boot runs on the AP, the terminology used is 'our' claim GPIO,
+meaning the AP's, and 'their' claim GPIO, meaning the EC's. This terminology
+is used by the device tree bindings in Linux also.
+
+The driver is implemented as an I2C mux, as it is in Linux. See
+i2c-arb-gpio-challenge for the implementation.
+
+GPIO lines are shared between the AP and EC to manage the bus. The AP and EC
+each have a 'bus claim' line, which is an output that the other can see.
+
+- AP_CLAIM: output from AP, signalling to the EC that the AP wants the bus
+- EC_CLAIM: output from EC, signalling to the AP that the EC wants the bus
+
+The basic algorithm is to assert your line when you want the bus, then make
+sure that the other side doesn't want it also. A detailed explanation is best
+done with an example.
+
+Let's say the AP wants to claim the bus. It:
+
+1. Asserts AP_CLAIM
+2. Waits a little bit for the other side to notice (slew time)
+3. Checks EC_CLAIM. If this is not asserted, then the AP has the bus, and we
+   are done
+4. Otherwise, wait for a few milliseconds (retry time) and see if EC_CLAIM is
+   released
+5. If not, back off, release the claim and wait for a few more milliseconds
+  (retry time again)
+6. Go back to 1 if things don't look wedged (wait time has expired)
+7. Panic. The other side is hung with the CLAIM line set.
+
+The same algorithm applies on the EC.
+
+To release the bus, just de-assert the claim line.
+
+Typical delays are:
+- slew time 10 us
+- retry time 3 ms
+- wait time - 50ms
+
+In general the traffic is fairly light, and in particular the EC wants access
+to the bus quite rarely (maybe every 10s or 30s to check the battery). This
+scheme works very nicely with very low contention. There is only a 10 us
+wait for access to the bus assuming that the other side isn't using it.

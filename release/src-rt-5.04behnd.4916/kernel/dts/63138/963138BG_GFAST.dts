@@ -1,0 +1,92 @@
+#include "63138.dtsi"
+
+/ {
+    memory_controller {
+        memcfg = <(BP_DDR_SPEED_533_8_8_8   | \
+                   BP_DDR_TOTAL_SIZE_128MB  | \
+                   BP_DDR_DEVICE_WIDTH_16)>;
+    };
+};
+
+&vreg_sync {
+		pinctrl-0 = <&vreg_clk_2_pin_37>;
+		pinctrl-names = "default";
+};
+
+&mdio_sf2 {
+        /* Port PHY mapping:
+            port_runner_p1  <-->  port_sf2_p8 -###- port_sf2_p4 <--> xbar_grp1 -+-+- phy_gphy4
+         */
+	/* PHYs directly connected to SF2 */
+
+	/* PHYs connected to crossbar */
+	phy_gphy4 {
+		status = "okay";
+	};
+
+	/* Crossbar groups */
+	xbar_grp1 {
+		phy-handle = <&phy_gphy4>;
+		status = "okay";
+	};
+};
+
+&switch_sf2 {
+	ports {
+		/* ports connect directly */
+
+		/* ports connected to crossbar */
+		port_sf2_p4 {
+			phy-handle = <&xbar_grp1>;
+			network-leds = <&led14>;
+			status = "okay";
+		};
+	};
+};
+
+&switch0 {
+	ports {
+	};
+};
+
+&legacy_leds {
+	adsl-led = <&led28>;
+};
+
+&led_ctrl {
+    led14: port_4-led_2-pin_14 {
+        active_low;
+        activity = <(LED_SPEED_100|LED_SPEED_1G)>;
+        link = <(LED_SPEED_100|LED_SPEED_1G)>;
+        status = "okay";
+    };
+	led24: sw_led_24-pin_24 {
+        active_low;
+        status = "okay";	
+	};
+	led28: sw_led_24-pin_28 {
+        active_low;
+        status = "okay";	
+	};
+};
+
+&dsl {
+	line0@0 {
+		pinctrl-0 = <&vdsl_ctrl_0_pin_52>;
+		pinctrl-names = "default";
+
+		afeid = <(DSL_AFE_CHIP_GFAST | DSL_AFE_LD_6303 | DSL_AFE_FE_REV_6303_REV_12_3_40)>;
+		afe-pwr-ctl = <DSL_AFE_VDSLCTL_0>;
+		status = "okay";
+	};
+};
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+&pcie0 {
+	status = "okay";
+};
+&pcie1 {
+	status = "okay";
+};
+#endif //#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+

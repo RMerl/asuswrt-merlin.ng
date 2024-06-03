@@ -20,6 +20,10 @@
 #include <limits.h>		//PATH_MAX
 #include "shutils.h"
 #include "shared.h"
+#if defined(RTACRH18) || defined(RT4GAC86U)
+#include <limits.h>
+#include <time.h>
+#endif
 
 unsigned int __dir_size__ = 0;
 

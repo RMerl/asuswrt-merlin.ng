@@ -1,0 +1,94 @@
+#!/bin/sh
+
+read_chip() { #read_chip <unit>
+    local ochip
+    sf2_unit=-1;
+    sf2_ovr_page=0
+    sf2_reg_base=0
+    sf2_cfp=0
+    sf2_acb=0
+    ext_spd=0
+    qos_shift=0
+    ochip=`dw 0xfffe8000`
+    ochip=`echo $ochip | awk '{printf "0x%s", substr($3,1,6)}'`
+
+    case $ochip in
+    0x631480)     chip=63148;;
+    0x631380)     chip=63138;;
+    *)
+        chip=`dw 0xff800000`
+        chip=`echo $chip | awk '{printf "0x%s", substr($3,1,6)}'`
+
+        case $chip in
+        0x490800) chip=4908;;
+        0x631580) chip=63158;;
+        0x631780) chip=63178;;
+        0x476220) chip=47622;;
+        0x049121) chip=4912 ;;
+        0x631460) chip=63146 ;;
+        0x067560|0x067570) 
+                  chip=6756;;
+        0x067650|0x477220) chip=6765;;
+        *) echo unknown $ochip@fffe8000 $chip@ff800000; return;;
+        esac
+    esac
+    
+    case $chip in
+    63138) sf2_unit=1; sf2_ports='0 1 2 3 4 5   7 8'; sf2_reg_base=0x800c0000; sf2_cfp=1; sf2_acb=2;;
+    63148) sf2_unit=1; sf2_ports='0 1 2 3 4 5   7 8'; sf2_reg_base=0x800c0000; sf2_cfp=1; sf2_acb=1;;
+     4908) sf2_unit=1; sf2_ports='0 1 2 3 4 5   7 8'; sf2_reg_base=0x800c0000; sf2_cfp=1; sf2_acb=2;;
+    63158) sf2_unit=1; sf2_ports='0 1 2 3 4 5 6 7 8'; sf2_reg_base=0x80480000; sf2_cfp=1; sf2_acb=2; sf2_ovr_page=0xe4; qos_shift=4;;
+    63178) sf2_unit=0; sf2_ports='0 1 2 3 4 5     8'; sf2_reg_base=0x80480000; sf2_ovr_page=0xe4; sf2_acb=3; qos_shift=4;;
+    47622) sf2_unit=1; sf2_ports='0 1 2 3   5     8' ;;
+     6756) 
+            if [ $# -ne 0 ]  && [ $1 == 1 ] 
+            then                sf2_unit=1; sf2_ports='0 1 2 3   5     8';
+            else                sf2_unit=0; sf2_ports='0 1       5 6   8'; sf2_reg_base=0x80480000; sf2_ovr_page=0xe4; sf2_acb=3; ext_spd=1; qos_shift=4;
+            fi ;;
+     6765) 
+            if [ $# -ne 0 ]  && [ $1 == 1 ] 
+            then                sf2_unit=1; sf2_ports='0 1 2 3   5     8';
+            else                sf2_unit=0; sf2_ports='0         5     8'; sf2_reg_base=0x80474000; sf2_ovr_page=0xe4; sf2_acb=3; ext_spd=1; qos_shift=4;
+            fi ;;
+    esac
+    
+    echo found $chip unit=$sf2_unit
+}
+
+read_sf2() { # read_sf2 <page> <reg>
+    local ret
+    ret=`ethswctl -c regaccess -v $((($1*256)|$2)) -l 4 -n $sf2_unit`
+    ret=`echo $ret |awk '{printf "0x%s", $3}'`
+    echo $ret
+}
+
+write_sf2() { # write_sf2 <page> <reg> <val>
+    local ret
+    ret=`ethswctl -c regaccess -v $((($1*256)|$2)) -l 4 -n $sf2_unit -d $3`
+}
+
+read_sf2_dw() { # read_sf2_dw <page> <reg>
+    local ret
+    ret=`ethswctl -c regaccess -v $((($1*256)|$2)) -l 8 -n $sf2_unit`
+    ret=`echo $ret |awk '{printf "0x%s 0x%s", $3, $2}'`
+    echo $ret
+}
+
+read_sf2_reg() { # read_sf2_reg <reg_offset>
+    local ret=`echo $sf2_reg_base $1 | awk '{printf "0x8%07x", rshift(lshift($1+$2, 4),4);}'`
+    ret=`dw $ret`
+    ret=`echo $ret | awk '{printf "0x%s", $3}'`
+    echo $ret
+}
+
+print_page_hdr() { # print_page_hdr <page> <desc>
+    if [ $sf2_reg_base == 0x800c0000 ]
+    then
+        echo $1 $2 | awk '{p=$1; printf "----PAGE_%s(0x%x)=0x8%07x+(offset)<<2\n", $2, p, p*0x400+0x80000;}'  
+    elif [ $sf2_reg_base == 0x80480000 ]
+    then 
+        echo $1 $2 | awk '{p=$1; printf "----PAGE_%s(0x%x)=0x8%07x+(offset)<<3\n", $2, p, p*0x800+0x400000;}'  
+    else 
+        echo "----PAGE_$2($1)"; 
+    fi
+}

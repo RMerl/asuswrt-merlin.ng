@@ -1,0 +1,9 @@
+MPC8536DS BOARD
+M:	Prabhakar Kushwaha <prabhakar.kushwaha@nxp.com>
+S:	Maintained
+F:	board/freescale/mpc8536ds/
+F:	include/configs/MPC8536DS.h
+F:	configs/MPC8536DS_defconfig
+F:	configs/MPC8536DS_36BIT_defconfig
+F:	configs/MPC8536DS_SDCARD_defconfig
+F:	configs/MPC8536DS_SPIFLASH_defconfig

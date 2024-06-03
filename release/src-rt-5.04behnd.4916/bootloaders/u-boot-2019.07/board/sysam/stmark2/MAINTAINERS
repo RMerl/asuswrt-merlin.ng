@@ -1,0 +1,6 @@
+STMARK2 BOARD
+M:	Angelo Dureghello <angelo@sysam.it>
+S:	Maintained
+F:	board/sysam/stmark2/
+F:	include/configs/stmark2.h
+F:	configs/stmark2_defconfig

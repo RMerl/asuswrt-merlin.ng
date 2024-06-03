@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999, 2005 Apple Computer, Inc. All rights reserved.
+ * Copyright (c) 1999, 2005-2006 Apple Computer, Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
  * 
@@ -105,7 +105,7 @@ Function:	Gets an existing BTree node from FS Agent and verifies it.
 Input:		btreePtr	- pointer to BTree control block
 			nodeNum		- number of node to request
 			
-Output:		nodePtr		- pointer to beginning of node (nil if error)
+Output:		nodePtr		- pointer to beginning of node (NULL if error)
 			
 Result:
 			noErr		- success
@@ -139,7 +139,7 @@ OSStatus	GetNode		(BTreeControlBlockPtr	 btreePtr,
 	if (err != noErr)
 	{
 		Panic ("\pGetNode: getNodeProc returned error.");
-		nodePtr->buffer = nil;
+		nodePtr->buffer = NULL;
 		goto ErrorExit;
 	}
 	++btreePtr->numGetNodes;
@@ -156,8 +156,8 @@ OSStatus	GetNode		(BTreeControlBlockPtr	 btreePtr,
 	return noErr;
 
 ErrorExit:
-	nodePtr->buffer			= nil;
-	nodePtr->blockHeader	= nil;
+	nodePtr->buffer		= NULL;
+	nodePtr->blockHeader	= NULL;
 	
 //	LogEndTime(kTraceGetNode, err);
 
@@ -176,7 +176,7 @@ Function:	Gets a new BTree node from FS Agent and initializes it to an empty
 Input:		btreePtr		- pointer to BTree control block
 			nodeNum			- number of node to request
 			
-Output:		returnNodePtr	- pointer to beginning of node (nil if error)
+Output:		returnNodePtr	- pointer to beginning of node (NULL if error)
 			
 Result:		noErr		- success
 			!= noErr	- failure
@@ -203,7 +203,7 @@ OSStatus	GetNewNode	(BTreeControlBlockPtr	 btreePtr,
 	if (err != noErr)
 	{
 		Panic ("\pGetNewNode: getNodeProc returned error.");
-		returnNodePtr->buffer = nil;
+		returnNodePtr->buffer = NULL;
 		return err;
 	}
 	++btreePtr->numGetNewNodes;
@@ -248,7 +248,7 @@ OSStatus	ReleaseNode	(BTreeControlBlockPtr	 btreePtr,
 
 	err = noErr;
 	
-	if (nodePtr->buffer != nil)
+	if (nodePtr->buffer != NULL)
 	{
 		/*
 		 * The nodes must remain in the cache as big endian!
@@ -267,8 +267,8 @@ OSStatus	ReleaseNode	(BTreeControlBlockPtr	 btreePtr,
 		++btreePtr->numReleaseNodes;
 	}
 	
-	nodePtr->buffer = nil;
-	nodePtr->blockHeader = nil;
+	nodePtr->buffer = NULL;
+	nodePtr->blockHeader = NULL;
 	
 //	LogEndTime(kTraceReleaseNode, err);
 
@@ -299,18 +299,18 @@ OSStatus	TrashNode	(BTreeControlBlockPtr	 btreePtr,
 
 	err = noErr;
 	
-	if (nodePtr->buffer != nil)
+	if (nodePtr->buffer != NULL)
 	{
 		releaseNodeProc = btreePtr->releaseBlockProc;
 		err = releaseNodeProc (btreePtr->fcbPtr,
 							   nodePtr,
 							   kReleaseBlock | kTrashBlock );
-		PanicIf (err, "TrashNode: releaseNodeProc returned error.");
+		PanicIf (err, "\pTrashNode: releaseNodeProc returned error.");
 		++btreePtr->numReleaseNodes;
 	}
 
-	nodePtr->buffer			= nil;
-	nodePtr->blockHeader	= nil;
+	nodePtr->buffer		= NULL;
+	nodePtr->blockHeader	= NULL;
 	
 	return err;
 }
@@ -338,7 +338,7 @@ OSStatus	UpdateNode	(BTreeControlBlockPtr	 btreePtr,
 	
 	err = noErr;
 		
-	if (nodePtr->buffer != nil)			//ее why call UpdateNode if nil ?!?
+	if (nodePtr->buffer != NULL)			//ее why call UpdateNode if NULL ?!?
 	{
 	//	LogStartTime(kTraceReleaseNode);
 		err = hfs_swap_BTNode(nodePtr, btreePtr->fcbPtr, kSwapBTNodeHostToBig);
@@ -358,8 +358,8 @@ OSStatus	UpdateNode	(BTreeControlBlockPtr	 btreePtr,
 		++btreePtr->numUpdateNodes;
 	}
 	
-	nodePtr->buffer			= nil;
-	nodePtr->blockHeader	= nil;
+	nodePtr->buffer		= NULL;
+	nodePtr->blockHeader	= NULL;
 
 	return	noErr;
 

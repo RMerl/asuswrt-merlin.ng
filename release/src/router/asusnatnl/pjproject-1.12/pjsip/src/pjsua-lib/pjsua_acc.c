@@ -1094,7 +1094,7 @@ PJ_DEF(pj_status_t) pjsua_acc_modify( pjsua_inst_id inst_id,
     }
 
     /* Unregister first */
-    if (unreg_first) {
+    if (0 && unreg_first) {
 	pjsua_acc_set_registration(inst_id, acc->index, PJ_FALSE);
 	if (acc->regc != NULL) {
 	    pjsip_regc_destroy(acc->regc);
@@ -1104,7 +1104,7 @@ PJ_DEF(pj_status_t) pjsua_acc_modify( pjsua_inst_id inst_id,
     }
 
     /* Update registration */
-    if (update_reg) {
+    if (0 && update_reg) {
 	/* If accounts has registration enabled, start registration */
 	if (acc->cfg.reg_uri.slen)
 	    pjsua_acc_set_registration(inst_id, acc->index, PJ_TRUE);

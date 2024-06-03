@@ -1,0 +1,12 @@
+if TARGET_OMAP4_PANDA
+
+config SYS_BOARD
+	default "panda"
+
+config SYS_VENDOR
+	default "ti"
+
+config SYS_CONFIG_NAME
+	default "omap4_panda"
+
+endif

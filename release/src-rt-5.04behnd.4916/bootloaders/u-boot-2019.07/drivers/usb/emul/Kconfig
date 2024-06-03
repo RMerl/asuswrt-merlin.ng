@@ -1,0 +1,8 @@
+config USB_EMUL
+	bool "Support for USB device emulation"
+	depends on DM_USB && SANDBOX
+	help
+	  Since sandbox does not have access to a real USB bus, it is possible
+	  to use device emulators instead. This allows testing of the USB
+	  stack on sandbox without needing a real device, or any host machine
+	  USB resources.

@@ -1,0 +1,46 @@
+AX25 is Andes CPU IP to adopt RISC-V architecture.
+
+Features
+========
+
+CPU Core
+ - 5-stage in-order execution pipeline
+ - Hardware Multiplier
+	 - radix-2/radix-4/radix-16/radix-256/fast
+ - Hardware Divider
+ - Optional branch prediction
+ - Machine mode and optional user mode
+ - Optional performance monitoring
+
+ISA
+ - RV64I base integer instructions
+ - RVC for 16-bit compressed instructions
+ - RVM for multiplication and division instructions
+
+Memory subsystem
+ - I & D local memory
+   - Size: 4KB to 16MB
+ - Memory subsyetem soft-error protection
+   - Protection scheme: parity-checking or error-checking-and-correction (ECC)
+   - Automatic hardware error correction
+
+Bus
+ - Interface Protocol
+   - Synchronous AHB (32-bit/64-bit data-width), or
+   - Synchronous AXI4 (64-bit data-width)
+
+Power management
+ - Wait for interrupt (WFI) mode
+
+Debug
+ - Configurable number of breakpoints: 2/4/8
+ - External Debug Module
+   - AHB slave port
+ - External JTAG debug transport module
+
+Platform Level Interrupt Controller (PLIC)
+ - AHB slave port
+ - Configurable number of interrupts: 1-1023
+ - Configurable number of interrupt priorities: 3/7/15/63/127/255
+ - Configurable number of targets:  1-16
+ - Preempted interrupt priority stack

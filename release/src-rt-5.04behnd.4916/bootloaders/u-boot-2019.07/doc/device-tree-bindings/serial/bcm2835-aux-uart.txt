@@ -1,0 +1,10 @@
+* BCM283x mini UART
+
+Required properties:
+- compatible: must be "brcm,bcm2835-aux-uart"
+- reg: exactly one register range with length 0x1000
+- clock: input clock frequency for the UART (used to calculate the baud
+  rate divisor)
+
+Optional properties:
+- skip-init: if present, the baud rate divisor is not changed

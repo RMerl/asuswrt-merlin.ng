@@ -1,0 +1,6 @@
+SHEEVAPLUG BOARD
+M:	Prafulla Wadaskar <prafulla@marvell.com>
+S:	Maintained
+F:	board/Marvell/sheevaplug/
+F:	include/configs/sheevaplug.h
+F:	configs/sheevaplug_defconfig

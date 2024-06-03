@@ -1,0 +1,15 @@
+if TARGET_SAMA5D2_XPLAINED
+
+config SYS_BOARD
+	default "sama5d2_xplained"
+
+config SYS_VENDOR
+	default "atmel"
+
+config SYS_SOC
+	default "at91"
+
+config SYS_CONFIG_NAME
+	default "sama5d2_xplained"
+
+endif

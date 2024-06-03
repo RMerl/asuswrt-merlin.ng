@@ -1,0 +1,25 @@
+Qualcomm Snapdragon SDHCI controller
+
+Required properties:
+- compatible : "qcom,sdhci-msm-v4"
+- reg: Base address and length of registers:
+	- Host controller registers (SDHCI)
+	- SD Core registers
+- clock: interface clock (must accept SD bus clock as a frequency)
+
+Optional properties:
+- index: If there is more than one controller - controller index (required
+	by generic SDHCI code).
+- bus_width: Width of SD/eMMC bus (default 4)
+- clock-frequency: Frequency of SD/eMMC bus (default 400 kHz)
+
+Example:
+
+sdhci@07864000 {
+	compatible = "qcom,sdhci-msm-v4";
+	reg = <0x7864900 0x11c 0x7864000 0x800>;
+	index = <0x1>;
+	bus-width = <0x4>;
+	clock = <&clkc 1>;
+	clock-frequency = <200000000>;
+};

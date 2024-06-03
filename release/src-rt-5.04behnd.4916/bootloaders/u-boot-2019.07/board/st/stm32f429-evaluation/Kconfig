@@ -1,0 +1,19 @@
+if TARGET_STM32F429_EVALUATION
+
+config SYS_BOARD
+	string
+	default "stm32f429-evaluation"
+
+config SYS_VENDOR
+	string
+	default "st"
+
+config SYS_SOC
+	string
+	default "stm32f4"
+
+config SYS_CONFIG_NAME
+	string
+	default "stm32f429-evaluation"
+
+endif

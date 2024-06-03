@@ -1,0 +1,35 @@
+if ROCKCHIP_RK3188
+
+config TARGET_ROCK
+	bool "Radxa Rock"
+	help
+	  Rock is a RK3188-based development board with 2 USB and 1 otg
+	  ports, HDMI, TV-out, micro-SD card, audio, WiFi  and 100MBit
+	  Ethernet, It also includes on-board nand and 1GB of SDRAM.
+	  Expansion connectors provide access to display pins, I2C, SPI,
+	  UART and GPIOs.
+
+config SYS_SOC
+	default "rk3188"
+
+config SYS_MALLOC_F_LEN
+	default 0x0800
+
+config SPL_LIBCOMMON_SUPPORT
+	default y
+
+config SPL_LIBGENERIC_SUPPORT
+	default y
+
+config SPL_SERIAL_SUPPORT
+	default y
+
+config TPL_LIBCOMMON_SUPPORT
+	default y
+
+config TPL_LIBGENERIC_SUPPORT
+	default y
+
+source "board/radxa/rock/Kconfig"
+
+endif

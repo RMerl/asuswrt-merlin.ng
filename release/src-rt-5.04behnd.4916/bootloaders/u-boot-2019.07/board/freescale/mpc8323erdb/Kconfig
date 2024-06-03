@@ -1,0 +1,12 @@
+if TARGET_MPC8323ERDB
+
+config SYS_BOARD
+	default "mpc8323erdb"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_CONFIG_NAME
+	default "MPC8323ERDB"
+
+endif

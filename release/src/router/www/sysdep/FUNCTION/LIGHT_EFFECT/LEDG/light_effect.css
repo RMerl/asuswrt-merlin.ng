@@ -81,9 +81,19 @@
 .setting_enable_bg > div:last-child {
 	float: right;
 }
+.settings_container{
+	min-height: 50px;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+}
 .light_effect_setting_bg .setting_enable_bg {
-	height: 70px;
+	height: 100%;
 	position: relative;
+	width: 100%;
+	min-height: 50px;
+	align-items: center;
+	display: flex;
 }
 .hue_bar {
 	cursor: pointer;

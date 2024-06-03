@@ -1,0 +1,104 @@
+Board: Nokia RX-51 aka N900
+
+This board definition results in a u-boot.bin which can be chainloaded
+from NOLO in qemu or on a real N900. It does very little hardware config
+because NOLO has already configured the board. Only needed is enabling
+internal eMMC memory via twl4030 regulator which is not enabled by NOLO.
+
+NOLO is expecting a kernel image and will treat any image it finds in
+onenand as such. This u-boot is intended to be flashed to the N900 like
+a kernel. In order to transparently boot the original kernel, it will be
+appended to u-boot.bin at 0x40000. NOLO will load the entire image into
+(random) memory and execute u-boot, which saves hw revision, boot reason
+and boot mode ATAGs set by NOLO. Then the bootscripts will attempt to load
+uImage or boot.scr from a fat, ext2/ext3 or ext4 filesystem in external
+SD card or internal eMMC memory. If this fails or keyboard is closed then
+the appended kernel image will be booted using some generated and some
+stored ATAGs (see boot order).
+
+There is support for hardware watchdog. Hardware watchdog is started by
+NOLO so u-boot must kick watchdog to prevent reboot device (but not very
+often, max every 2 seconds). There is also support for framebuffer display
+output with ANSI espace codes and the N900 HW keyboard input. USB tty works
+but is disabled because it prevents the current Maemo kernel from booting.
+
+When U-Boot is starting it enable IBE bit in Auxiliary Control Register,
+which is needed for Thumb-2 ISA support. It is workaround for errata 430973.
+
+Default boot order:
+
+ * 0. if keyboard is closed boot automatically attached kernel image
+ * 1. try boot from external SD card
+ * 2. try boot from internal eMMC memory
+ * 3. try boot from attached kernel image
+
+Boot from SD or eMMC in this order:
+
+ * 1.
+   * 1.1 find boot.scr on first fat partition
+   * 1.2 find uImage on first fat parition
+   * 1.3 same order for 2. - 4. fat partition
+ * 2. same as 1. but for ext2/3 partition
+ * 3. same as 1. but for ext4 partition
+
+
+Available additional commands/variables:
+
+ * run sercon - Use serial port for control
+ * run usbcon - Use usbtty for control
+ * run vgacon - Use framebuffer and HW keyboard for control (default)
+
+ * run sdboot - Boot from external SD card (see boot order)
+ * run emmcboot - Boot from internal eMMC memory (see boot order)
+ * run attachboot - Boot attached kernel image (attached to U-Boot binary)
+
+ * run scriptload - Load boot script ${mmcscriptfile}
+ * run scriptboot - Run loaded boot script
+ * run kernload - Load kernel image ${mmckernfile}
+ * run initrdload - Load initrd image ${mmcinitrdfile}
+ * run kernboot - Boot loaded kernel image
+ * run kerninitrdboot - Boot loaded kernel image with loaded initrd image
+
+ * run trymmcscriptboot - Try to load and boot script ${mmcscriptfile}
+ * run trymmckernboot - Try to load and boot kernel image ${mmckernfile}
+ * run trymmckerninitrdboot - Try to load and boot kernel image ${mmckernfile}
+			      with initrd image ${mmcinitrdfile}
+
+Additional variables for loading files from mmc:
+
+ * mmc ${mmcnum} (0 - external, 1 - internal)
+ * partition number ${mmcpart} (1 - 4)
+ * parition type ${mmctype} (fat, ext2)
+
+Additional varuables for booting kernel:
+
+ * setup_omap_atag - Add OMAP table into atags structure (needs maemo kernel)
+ * setup_console_atag - Enable serial console in OMAP table
+ * setup_boot_reason_atag - Change boot reason in OMAP table
+ * setup_boot_mode_atag - Change boot mode in OMAP table
+
+USB TTY:
+
+ Maemo kernel 2.6.28 will crash if u-boot enable usb tty. So USB TTY is disabled.
+ For enabling USB TTY just add this line to file include/configs/nokia_rx51.h
+
+ #define CONFIG_USB_TTY
+
+
+ONENAND support:
+
+ ONENAND support is disabled because not working yet and cause linux kernel to
+ crash or no access to mtd. For enabling ONENAND support add this line at begin
+ of file include/configs/nokia_rx51.h
+
+ #define ONENAND_SUPPORT
+
+
+UBIFS support:
+
+ UBIFS support is disabled, because U-Boot image is too big and cannot be
+ flashed with attached zImage to RX-51 kernel nand area. For enabling UBIFS
+ support first enable ONENAND support and then add this line at begin of file
+ include/configs/nokia_rx51.h
+
+ #define UBIFS_SUPPORT

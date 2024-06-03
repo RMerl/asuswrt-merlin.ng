@@ -1,0 +1,63 @@
+#include "968880DV.dts"
+
+/delete-node/ &pcie0;
+/delete-node/ &pcie1;
+/delete-node/ &pcie2;
+/delete-node/ &pcie3;
+
+/ {
+    /* pcie core 2 (wl0:2G) */
+    pcie2: pcie2 {
+        #define PCIE_ID         2
+        #define PCIE_SPI        81
+        #define PCIE_ADDR       0x800A0000
+        #define PCIE_SIZE       0x0000A000
+        #define PCIE_RANGE_ADDR 0xE0000000
+        #define PCIE_RANGE_SIZE 0x10000000
+        #include "../ip/bcm_pcie_core.dtsi"
+    };
+    /* pcie core 0 (wl1:5G)*/
+    pcie0: pcie0 {
+        #define PCIE_ID         0
+        #define PCIE_SPI        79
+        #define PCIE_ADDR       0x80080000
+        #define PCIE_SIZE       0x0000A000
+        #define PCIE_RANGE_ADDR 0xC0000000
+        #define PCIE_RANGE_SIZE 0x10000000
+        #include "../ip/bcm_pcie_core.dtsi"
+    };
+    /* pcie core 1 (wl2:6G)*/
+    pcie1: pcie1 {
+        #define PCIE_ID         1
+        #define PCIE_SPI        80
+        #define PCIE_ADDR       0x80090000
+        #define PCIE_SIZE       0x0000A000
+        #define PCIE_RANGE_ADDR 0xD0000000
+        #define PCIE_RANGE_SIZE 0x10000000
+        #include "../ip/bcm_pcie_core.dtsi"
+    };
+    /* pcie core 4 */
+    pcie3: pcie3 {
+        #define PCIE_ID         3
+        #define PCIE_SPI        82
+        #define PCIE_ADDR       0x800B0000
+        #define PCIE_SIZE       0x0000B000
+        #define PCIE_RANGE_ADDR 0xA0000000
+        #define PCIE_RANGE_SIZE 0x20000000
+        #include "../ip/bcm_pcie_core.dtsi"
+    };
+
+};
+
+&pcie2 {
+    status = "okay";
+};
+&pcie0 {
+    status = "okay";
+};
+&pcie1 {
+    status = "okay";
+};
+&pcie3 {
+    status = "okay";
+};

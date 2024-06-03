@@ -31,6 +31,7 @@
 
 #include <bcmnvram.h>
 #include <shutils.h>
+#include <rtstate.h>
 #include <rc.h>
 
 /*
@@ -47,12 +48,33 @@ ppp_ifunit(char *ifname)
 		if (nvram_match(strcat_r(prefix, "pppoe_ifname", tmp), ifname))
 			return unit;
 	}
+#ifdef RTCONFIG_MULTI_PPP
+	if (ifname && !strncmp(ifname, "ppp", 3)) {
+		unit = (isdigit(ifname[3])) ? atoi(ifname + 3) : -1;
+		if (is_mtppp_unit(unit))
+			return unit;
+	}
+#endif
 #ifdef RTCONFIG_MULTISERVICE_WAN
 	for (unit = WAN_UNIT_FIRST_MULTISRV_START; unit < WAN_UNIT_MULTISRV_MAX; unit++) {
 		snprintf(prefix, sizeof(prefix), "wan%d_", unit);
 		if (nvram_match(strcat_r(prefix, "pppoe_ifname", tmp), ifname))
 			return unit;
 	}
+#endif
+#ifdef RTCONFIG_MULTIWAN_IF
+	for (unit = MULTI_WAN_START_IDX; unit < MULTI_WAN_START_IDX + MAX_MULTI_WAN_NUM; unit++) {
+		snprintf(prefix, sizeof(prefix), "wan%d_", unit);
+		if (nvram_match(strcat_r(prefix, "pppoe_ifname", tmp), ifname))
+			return unit;
+	}
+#ifdef RTCONFIG_MULTISERVICE_WAN
+	for (unit = WAN_UNIT_MTWAN0_MS_START; unit < WAN_UNIT_MTWAN_MS_MAX; unit++) {
+		snprintf(prefix, sizeof(prefix), "wan%d_", unit);
+		if (nvram_match(strcat_r(prefix, "pppoe_ifname", tmp), ifname))
+			return unit;
+	}
+#endif
 #endif
 
 	return -1;
@@ -149,6 +171,9 @@ ipup_main(int argc, char **argv)
 	if (strlen(buf) == 0 && !nvram_get_int(strcat_r(prefix, "dnsenable_x", tmp)))
 		get_userdns_r(prefix, buf, sizeof(buf));
 
+#ifdef RTCONFIG_MULTI_PPP
+	if (!is_mtppp_unit(unit))
+#endif
 	nvram_set(strcat_r(prefix, "dns", tmp), buf);
 
 	wan_up(wan_ifname);
@@ -264,7 +289,7 @@ int ip6up_main(int argc, char **argv)
 	nvram_set(strcat_r(prefix, "pppoe_ifname", tmp), wan_ifname);
 
 	if ((value = getenv("LLREMOTE")))
-		nvram_set(ipv6_nvname("ipv6_llremote"), value);
+		nvram_set(ipv6_nvname_by_unit("ipv6_llremote", unit), value);
 
 	wan6_up(wan_ifname);
 

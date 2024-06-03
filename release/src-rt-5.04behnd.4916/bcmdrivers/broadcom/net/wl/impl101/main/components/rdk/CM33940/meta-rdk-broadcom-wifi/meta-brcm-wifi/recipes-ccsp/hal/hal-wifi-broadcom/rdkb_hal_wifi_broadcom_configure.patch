@@ -1,0 +1,12 @@
+diff -urN a/configure.ac b/configure.ac
+--- a/configure.ac	2021-12-09 11:28:47.173905092 -0800
++++ b/configure.ac	2021-12-09 11:29:10.562809645 -0800
+@@ -22,7 +22,7 @@
+ 
+ AC_PREREQ([2.65])
+ AC_INIT([hal], [1.0], [BUG-REPORT-ADDRESS])
+-AM_INIT_AUTOMAKE
++AM_INIT_AUTOMAKE([foreign])
+ LT_INIT
+ 
+ AC_PREFIX_DEFAULT(`pwd`)

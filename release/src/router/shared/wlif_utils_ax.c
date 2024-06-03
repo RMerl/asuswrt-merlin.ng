@@ -98,6 +98,18 @@ char nv_lan_ifname[WLIFU_MAX_NO_BRIDGE][64];
 char nv_wan_ifnames[64];
 char nv_wan_ifname[64];
 
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+typedef struct {
+	uint16 id;
+	uint16 len;
+	uint32 val;
+} he_xtlv_v32;
+
+typedef he_xtlv_v32 twt_xtlv_v32;
+typedef he_xtlv_v32 mlo_xtlv_v32;
+typedef he_xtlv_v32 eht_xtlv_v32;
+#endif
+
 int
 get_wlname_by_mac(unsigned char *mac, char *wlname)
 {
@@ -110,7 +122,7 @@ get_wlname_by_mac(unsigned char *mac, char *wlname)
 	ether_etoa(mac, eabuf);
 	/* find out the wl name from mac */
 	for (i = 0; i < MAX_NVPARSE; i++) {
-		sprintf(wlname, "wl%d", i);
+		snprintf(wlname, sizeof(wlname), "wl%d", i);
 		snprintf(tmptr, sizeof(tmptr), "wl%d_hwaddr", i);
 		snprintf(bss_en, sizeof(bss_en), "wl%d_bss_enabled", i);
 		wl_hw = nvram_get(tmptr);
@@ -121,7 +133,7 @@ get_wlname_by_mac(unsigned char *mac, char *wlname)
 		}
 
 		for (j = 1; j < WL_MAXBSSCFG; j++) {
-			sprintf(wlname, "wl%d.%d", i, j);
+			snprintf(wlname, sizeof(wlname), "wl%d.%d", i, j);
 			snprintf(tmptr, sizeof(tmptr), "wl%d.%d_hwaddr", i, j);
 			snprintf(bss_en, sizeof(bss_en), "wl%d.%d_bss_enabled", i, j);
 			wl_hw = nvram_get(tmptr);
@@ -1844,7 +1856,7 @@ end:
 
 // Stops the ongoing wps session for the interface provided in wps_ifname
 int
-#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2)
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916) || defined(RTCONFIG_BCM_502L07P2)
 wl_wlif_wps_stop_session(char *wps_ifname, bool bUpdateUI)
 #else
 wl_wlif_wps_stop_session(char *wps_ifname)
@@ -1879,7 +1891,7 @@ wl_wlif_wps_stop_session(char *wps_ifname)
 		dprintf("Info: shared %s cli cmd %s failed for interface %s ret = %d\n", __func__,
 			cmd, wps_ifname, ret);
 	}
-#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2)
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916) || defined(RTCONFIG_BCM_502L07P2)
 	if (bUpdateUI)
 #endif
 	{
@@ -2018,8 +2030,16 @@ bool
 wl_wlif_is_map_onboarding(char *prefix)
 {
 	char map[WLIF_MIN_BUF] = {0}, *ptr = NULL;
-	uint16 map_val = 0;
+	uint16 map_val = 0, multiap_mode = 0;
 	bool ret;
+
+	ptr = nvram_safe_get("multiap_mode");
+	if (ptr[0] != '\0') {
+		multiap_mode = (uint16)strtoul(ptr, NULL, 0);
+	}
+	if (multiap_mode == 0) {
+		return FALSE;
+	}
 
 	snprintf(map, sizeof(map), "%s_map", prefix);
 	ptr = nvram_safe_get(map);
@@ -2374,6 +2394,7 @@ int
 wl_wlif_map_configure_backhaul_sta_interface(wlif_bss_t *bss_in, wlif_wps_nw_creds_t *creds)
 {
 	char *list = nvram_safe_get("lan_ifnames");
+	char *bh_sta_list = nvram_safe_get("map_bhsta_ifnames");
 	wlif_bss_list_t	bss_list;
 	wlif_bss_t *bss = NULL;
 	int idx = 0, ret = -1;
@@ -2397,13 +2418,16 @@ wl_wlif_map_configure_backhaul_sta_interface(wlif_bss_t *bss_in, wlif_wps_nw_cre
 	}
 
 	wl_wlif_map_get_candidate_bhsta_bsslist(list, &bss_list, skip_ifname);
-	wl_wlif_select_bhsta_from_bsslist(&bss_list, creds->ssid, bh_ifname, sizeof(bh_ifname));
-	if (bh_ifname[0] != '\0') {
-		cprintf("Info: shared %s selected backhaul station ifname "
-			" %s for backhaul ssid %s\n", __func__, bh_ifname, creds->ssid);
+
+	/* If the backhaul STA list is present, just apply the backhaul STA credentials in all the
+	 * interfaces in the list
+	 */
+	if (strlen(bh_sta_list) > 0) {
+		cprintf("Info: shared %s apply backhaul SSID %s in ifnames %s\n", __func__,
+			creds->ssid, bh_sta_list);
 		for (idx = 0; idx < bss_list.count; idx++) {
 			bss = &bss_list.bss[idx];
-			if (!strcmp(bss->ifname, bh_ifname)) {
+			if (find_in_list(bh_sta_list, bss->ifname)) {
 				// apply the settings received from wps;
 				wl_wlif_apply_map_backhaul_creds(bss, creds);
 				nvram_set("map_onboarded", "1");
@@ -2416,12 +2440,34 @@ wl_wlif_map_configure_backhaul_sta_interface(wlif_bss_t *bss_in, wlif_wps_nw_cre
 		}
 		ret = 0;
 	} else {
-		cprintf("Err: shared %s multiap backhaul ifname not found for "
-			"backhaul ssid = %s \n", __func__, creds->ssid);
-		// In case of failure restore ap_scan parameter to 1 in supplicant.
-		for (idx = 0; idx < bss_list.count; idx++) {
-			bss = &bss_list.bss[idx];
-			wl_wlif_wpa_supplicant_update_ap_scan(bss->ifname, bss->nvifname, 1);
+		wl_wlif_select_bhsta_from_bsslist(&bss_list, creds->ssid, bh_ifname,
+			sizeof(bh_ifname));
+		if (bh_ifname[0] != '\0') {
+			cprintf("Info: shared %s selected backhaul station ifname "
+				" %s for backhaul ssid %s\n", __func__, bh_ifname, creds->ssid);
+			for (idx = 0; idx < bss_list.count; idx++) {
+				bss = &bss_list.bss[idx];
+				if (!strcmp(bss->ifname, bh_ifname)) {
+					// apply the settings received from wps;
+					wl_wlif_apply_map_backhaul_creds(bss, creds);
+					nvram_set("map_onboarded", "1");
+					nvram_unset("wps_on_sta");
+				} else {
+					// uneset  the map settings and change mode from sta to AP
+					nvram_set(strlcat_r(bss->nvifname, "_mode", tmp, sizeof(tmp)), "ap");
+					nvram_unset(strlcat_r(bss->nvifname, "_map", tmp, sizeof(tmp)));
+				}
+			}
+			ret = 0;
+		} else {
+			cprintf("Err: shared %s multiap backhaul ifname not found for "
+				"backhaul ssid = %s \n", __func__, creds->ssid);
+			// In case of failure restore ap_scan parameter to 1 in supplicant.
+			for (idx = 0; idx < bss_list.count; idx++) {
+				bss = &bss_list.bss[idx];
+				wl_wlif_wpa_supplicant_update_ap_scan(bss->ifname, bss->nvifname,
+					1);
+			}
 		}
 	}
 
@@ -2487,7 +2533,7 @@ end:
 #endif	/* MULTIAP */
 #endif	/* CONFIG_HOSTAPD */
 
-#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2)
+#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916) || defined(RTCONFIG_BCM_502L07P2)
 #if !defined(RTCONFIG_SDK504L02_188_1303)
 /* Supported rate bitmap control feature initially requested by LGI, but make it a common feature
  * Supported rate bitmap definition
@@ -2856,11 +2902,154 @@ double get_wifi_5GH_maxpower()
 
 double get_wifi_6G_maxpower()
 {
-#if defined(RTCONFIG_WIFI6E)
+#if defined(RTCONFIG_WIFI6E) || (defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G))
+#if defined(BT12)
+	return 0;
+#else
 	return get_wifi_maxpower(WL_6G_BAND);
+#endif
 #else
 	return 0;
 #endif
 }
+#ifdef RTCONFIG_HAS_6G_2
+double get_wifi_6GH_maxpower()
+{
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7)
+	return get_wifi_maxpower(WL_6G_2_BAND);
+#else
+	return 0;
+#endif
+}
+#endif
+#endif
+
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+/*
+ * Set eht subcommand to int value
+ */
+int
+wl_ehtiovar_setint(char *ifname, char *iovar, char *subcmd, int val)
+{
+	char smbuf[WLC_IOCTL_SMLEN] = {0};
+	eht_xtlv_v32 v32;
+	char *p = smbuf;
+	int namelen, subcmd_len, iolen;
+
+	if (strcmp(iovar, "eht") != 0) {
+		return BCME_BADARG;
+	}
+
+	/* length of iovar name + null */
+	namelen = strlen(iovar) + 1;
+
+	memset(&v32, 0, sizeof(v32));
+
+	if (strcmp(subcmd, "features") == 0) {
+		v32.id = WL_EHT_CMD_FEATURES;
+		v32.len = 4;
+		v32.val = (uint32)val;
+
+		subcmd_len = sizeof(v32.id) + sizeof(v32.len) + v32.len;
+	} else if (strcmp(subcmd, "enab") == 0) {
+		v32.id = WL_EHT_CMD_ENAB;
+		v32.len = 4;
+		v32.val = (uint32)val;
+
+		subcmd_len = sizeof(v32.id) + sizeof(v32.len) + v32.len;
+        } else if (strcmp(subcmd, "bssehtmode") == 0) {
+                v32.id = WL_EHT_CMD_BSSEHTMODE;
+                v32.len = 4;
+                v32.val = (uint32)val;
+
+                subcmd_len = sizeof(v32.id) + sizeof(v32.len) + v32.len;
+	} else {
+		/* Other eht subcommands not yet supported */
+		return BCME_UNSUPPORTED;
+	}
+
+	iolen = namelen + subcmd_len;
+
+	/* check for overflow */
+	if (iolen > sizeof(smbuf)) {
+		return BCME_BUFTOOSHORT;
+	}
+
+	/* copy iovar name including null */
+	memcpy(p, iovar, namelen);
+	p += namelen;
+
+	/* copy eht subcommand structure */
+	memcpy(p, (void *)&v32, subcmd_len);
+
+	return wl_ioctl(ifname, WLC_SET_VAR, (void *)smbuf, iolen);
+}
+
+/*
+ * Set mlo subcommand to int value
+ */
+int
+wl_mloiovar_setint(char *ifname, char *iovar, char *subcmd, int val)
+{
+	char smbuf[WLC_IOCTL_SMLEN] = {0};
+	mlo_xtlv_v32 v32;
+	char *p = smbuf;
+	int namelen = 0, subcmd_len = 0, iolen = 0;
+
+	if (strcmp(iovar, "mlo") != 0) {
+		return BCME_BADARG;
+	}
+
+	/* length of iovar name + null */
+	namelen = strlen(iovar) + 1;
+
+	memset(&v32, 0, sizeof(v32));
+
+	if (strcmp(subcmd, "tidmap_enab") == 0) {
+		v32.id = WL_MLO_CMD_TID_MAP_ENAB;
+		v32.len = 4;
+		v32.val = (uint32)val;
+
+		subcmd_len = sizeof(v32.id) + sizeof(v32.len) + v32.len;
+	} else if (strcmp(subcmd, "emlsr") == 0) {
+		v32.id = WL_MLO_CMD_EMLSR;
+		v32.len = 4;
+		v32.val = (uint32)val;
+
+		subcmd_len = sizeof(v32.id) + sizeof(v32.len) + v32.len;
+	} else if (strcmp(subcmd, "emlmr") == 0) {
+		v32.id = WL_MLO_CMD_EMLMR;
+		v32.len = 4;
+		v32.val = (uint32)val;
+
+		subcmd_len = sizeof(v32.id) + sizeof(v32.len) + v32.len;
+	} else if (strcmp(subcmd, "tid_map_on_active_link") == 0) {
+		v32.id = WL_MLO_CMD_TID_ACTIVE_LINK;
+		v32.len = 4;
+		v32.val = (uint32)val;
+
+		subcmd_len = sizeof(v32.id) + sizeof(v32.len) + v32.len;
+	} else {
+		/* Other mlo subcommands not yet supported */
+		return BCME_UNSUPPORTED;
+	}
+
+	iolen = namelen + subcmd_len;
+
+	/* check for overflow */
+	if (iolen > sizeof(smbuf)) {
+		return BCME_BUFTOOSHORT;
+	}
+
+	/* copy iovar name including null */
+	memcpy(p, iovar, namelen);
+	p += namelen;
+
+	/* copy mlo subcommand structure */
+	memcpy(p, (void *)&v32, subcmd_len);
+
+	return wl_ioctl(ifname, WLC_SET_VAR, (void *)smbuf, iolen);
+}
 
 #endif
+

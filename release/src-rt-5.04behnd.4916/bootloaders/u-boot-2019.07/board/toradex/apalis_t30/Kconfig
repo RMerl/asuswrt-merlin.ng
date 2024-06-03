@@ -1,0 +1,39 @@
+if TARGET_APALIS_T30
+
+config SYS_BOARD
+	default "apalis_t30"
+
+config SYS_VENDOR
+	default "toradex"
+
+config SYS_CONFIG_NAME
+	default "apalis_t30"
+
+config TDX_CFG_BLOCK
+	default y
+
+config TDX_HAVE_MMC
+	default y
+
+config TDX_CFG_BLOCK_DEV
+	default "0"
+
+config TDX_CFG_BLOCK_PART
+	default "1"
+
+# Toradex config block in eMMC, at the end of 1st "boot sector"
+config TDX_CFG_BLOCK_OFFSET
+	default "-512"
+
+config APALIS_T30_PCIE_EVALBOARD_INIT
+	bool "Apalis Evaluation Board PCIe Initialisation"
+	help
+	  Bring up the Apalis type specific 4 lane PCIe port as well as the
+	  Apalis PCIe port with the PCIe switch as found on the Apalis
+	  Evaluation board. Note that by default both those ports are also left
+	  disabled in the device tree which needs changing as well for this to
+	  actually work.
+
+source "board/toradex/common/Kconfig"
+
+endif

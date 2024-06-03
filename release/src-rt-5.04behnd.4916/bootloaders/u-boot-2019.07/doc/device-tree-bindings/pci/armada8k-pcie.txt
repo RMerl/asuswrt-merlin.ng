@@ -1,0 +1,49 @@
+Armada-8K PCIe DT details:
+==========================
+
+Armada-8k uses synopsis designware PCIe controller.
+
+Required properties:
+- compatible : should be "marvell,armada8k-pcie", "snps,dw-pcie".
+- reg: base addresses and lengths of the pcie control and global control registers.
+ "ctrl" registers points to the global control registers, while the "config" space
+ points to the pcie configuration registers as mentioned in dw-pcie dt bindings in the link below.
+- interrupt-map-mask and interrupt-map, standard PCI properties to
+  define the mapping of the PCIe interface to interrupt numbers.
+- All other definitions as per generic PCI bindings
+See Linux kernel documentation:
+"Documentation/devicetree/bindings/pci/designware-pcie.txt"
+
+Optional properties:
+PHY support is still not supported for armada-8k, once it will, the following parameters can be used:
+- phys		    : phandle to phy node associated with pcie controller.
+- phy-names	    : must be "pcie-phy"
+- marvell,reset-gpio :  specifies a gpio that needs to be activated for plug-in
+			card reset signal release.
+Example:
+
+cpm_pcie0: pcie@f2600000 {
+	compatible = "marvell,armada8k-pcie", "snps,dw-pcie";
+	reg = <0 0xf2600000 0 0x10000>,
+	      <0 0xf6f00000 0 0x80000>;
+	reg-names = "ctrl", "config";
+	#address-cells = <3>;
+	#size-cells = <2>;
+	#interrupt-cells = <1>;
+	device_type = "pci";
+	dma-coherent;
+
+	bus-range = <0 0xff>;
+	ranges =
+		/* downstream I/O */
+		<0x81000000 0 0xf9000000 0  0xf9000000 0 0x10000
+		/* non-prefetchable memory */
+		0x82000000 0 0xf6000000 0  0xf6000000 0 0xf00000>;
+	interrupt-map-mask = <0 0 0 0>;
+	interrupt-map = <0 0 0 0 &gic 0 GIC_SPI 32 IRQ_TYPE_LEVEL_HIGH>;
+	interrupts = <GIC_SPI 32 IRQ_TYPE_LEVEL_HIGH>;
+	num-lanes = <1>;
+	clocks = <&cpm_syscon0 1 13>;
+	marvell,reset-gpio = <&cpm_gpio1 20 GPIO_ACTIVE_HIGH>;
+	status = "disabled";
+};

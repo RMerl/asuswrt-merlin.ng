@@ -1,0 +1,11 @@
+config BCM_SPIDEV_REV2
+	bool "rev2 SPI device driver"
+    #depends on BCM_HS_SPI 
+    #depends on BCM_FTTDP_G9991
+	help
+	  Add the BCM BCA External Interrup support.
+
+config BCM_SPIDEV_REV2_IMPL
+	int "Implementation index for rev2 SPI device driver"
+	depends on BCM_SPIDEV_REV2
+	default 1

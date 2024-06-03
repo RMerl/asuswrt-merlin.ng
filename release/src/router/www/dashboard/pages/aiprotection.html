@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+        <link rel="stylesheet" href="css/clients.css" />
+        <link rel="stylesheet" href="css/aiProtection.css" />
+    </head>
+    <body>
+        <div class="d-flex align-items-center">
+            <div class="page-title py-3"><#AiProtection_title#></div>
+            <div role="icon" class="icon-size-24 icon-settings-alert ms-3" onclick="alertPreference()"></div>
+        </div>
+        <div class="row">
+            <div class="col-12 col-md-6 mb-3">
+                <div class="card pt-2 h-100" id="feature_desc"></div>
+            </div>
+            <div class="col-12 col-md-6 mb-3">
+                <div class="card pt-2 h-100" id="router_scan"></div>
+            </div>
+
+            <div class="col-12 col-md-6 col-xl-4 mb-3">
+                <div class="card pt-2 h-100" id="mals_topClient"></div>
+            </div>
+
+            <div class="col-12 col-md-6 col-xl-4 mb-3">
+                <div class="card pt-2 h-100" id="vp_topClient"></div>
+            </div>
+            <div class="col-12 col-md-6 col-xl-4 mb-3">
+                <div class="card pt-2 h-100" id="cc_topClient"></div>
+            </div>
+
+            <!-- CHART -->
+            <div class="col-12 col-md-6 col-xl-4 mb-3">
+                <div class="card pt-2 h-100">
+                    <h5 class="card-header d-flex align-items-center justify-content-between"><#AiProtection_sites_blocking#></h5>
+                    <div class="card-body">
+                        <div class="row">
+                            <span><#AiProtection_activity#></span>
+                            <div class="ips-chart-height">
+                                <canvas id="mals_chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-xl-4 mb-3">
+                <div class="card pt-2 h-100">
+                    <h5 class="card-header d-flex align-items-center justify-content-between"><#AiProtection_two-way_IPS#></h5>
+
+                    <div class="card-body">
+                        <div class="row">
+                            <span><#AiProtection_level#></span>
+                            <div class="ips-chart-height">
+                                <canvas id="vp_chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex align-items-center">
+                        <div class="d-flex align-items-center me-3">
+                            <div class="me-2 vp-tab vp-tab-high"></div>
+                            <div>High</div>
+                        </div>
+                        <div class="d-flex align-items-center me-3">
+                            <div class="me-2 vp-tab vp-tab-medium"></div>
+                            <div>Medium</div>
+                        </div>
+                        <div class="d-flex align-items-center me-3">
+                            <div class="me-2 vp-tab vp-tab-low"></div>
+                            <div>Low</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-xl-4 mb-3">
+                <div class="card pt-2 h-100">
+                    <h5 class="card-header d-flex align-items-center justify-content-between"><#AiProtection_detection_blocking#></h5>
+                    <div class="card-body">
+                        <div class="row">
+                            <span><#AiProtection_activity#></span>
+                            <div class="ips-chart-height">
+                                <canvas id="cc_chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 mb-3">
+                <div class="card pt-2 h-100" id="mals_detail"></div>
+            </div>
+            <div class="col-12 mb-3">
+                <div class="card pt-2 h-100" id="vp_detail"></div>
+            </div>
+            <div class="col-12 mb-3">
+                <div class="card pt-2 h-100" id="cc_detail"></div>
+            </div>
+        </div>
+
+        <script></script>
+        <script src="../js/aiProtection.js"></script>
+    </body>
+</html>

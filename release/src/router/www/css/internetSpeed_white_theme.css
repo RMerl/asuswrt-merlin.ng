@@ -429,6 +429,53 @@
 	background: #006EFF;
 }
 
+.LinkRate_div_white{
+        /*background: #2C373D;*/
+        border: 1px solid #364752;
+        box-shadow: 0 2px 4px 0 rgba(0,0,0,0.20) , 0 1px 4px 0 rgba(60,60,60,0.30);
+        border-radius: 5px;
+        width: 98%;
+        height: 480px;
+}
+.receive_transmit_container_white{
+	width: 0%;
+	height: 106px;
+    margin-left:640px;
+	margin-top:100px;
+	justify-content: space-around;
+}
+.rate_white{
+	color: #333538;
+}
+.LinkRate_img_normal_white{
+	width: 640px;
+	height: 480px;
+	max-width: 100%;
+	background-image: url('../images/speedtest/linkspeed_light.png');
+	background-repeat: no-repeat;
+	transform: scale(0.8);
+	display:flex;
+	justify-content:center;
+	margin-left:-850px;
+	margin-top:-30px;
+}
+
+@media (max-width: 480px) {
+	.LinkRate_div_white{
+        width: 97%;
+        height: 480px;
+	}
+	.receive_transmit_container_white{
+		margin-left: -200px;
+		margin-top: 350px;
+	}
+	.LinkRate_img_normal_white{
+		transform: scale(0.6);
+		margin-left:-225px;
+		margin-top:-90px;
+	}
+}
+
 @media (max-width: 720px) {
 	.level_ping_div{
 		background-color: transparent;
@@ -472,5 +519,19 @@
 
 	.speedtest_logo{
 		background-position: left;
+	}
+
+	.LinkRate_div_white{
+        width: 97%;
+        height: 480px;
+	}
+	.receive_transmit_container_white{
+		margin-left: -300px;
+		margin-top: 390px;
+	}
+	.LinkRate_img_normal_white{
+		transform: scale(0.7);
+		margin-left:-175px;
+		margin-top:-70px;
 	}
 }

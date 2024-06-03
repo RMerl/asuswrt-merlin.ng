@@ -1,0 +1,54 @@
+* Exynos DWC_mobile_storage
+
+The Exynos provides DWC_mobile_storage interface which supports
+. Embedded Multimedia Cards (EMMC-version 4.5)
+. Secure Digital memory (SD mem-version 2.0)
+. Secure Digital I/O (SDIO-version 3.0)
+. Consumer Electronics Advanced Transport Architecture (CE-ATA-version 1.1)
+
+The Exynos DWC_mobile_storage provides four channels.
+SOC specific and Board specific properties are channel specific.
+
+Required SoC Specific Properties:
+
+- compatible: should be
+	- samsung,exynos-dwmmc: for exynos platforms
+
+- reg: physical base address of the controller and length of memory mapped
+	region.
+
+- interrupts: The interrupt number to the cpu.
+
+Required Board Specific Properties:
+
+- #address-cells: should be 1.
+- #size-cells: should be 0.
+- samsung,bus-width: The width of the bus used to interface the devices
+	supported by DWC_mobile_storage (SD-MMC/EMMC/SDIO).
+	. Typically the bus width is 4 or 8.
+- samsung,timing: The timing values to be written into the
+	Drv/sample clock selection register of corresponding channel.
+	. It is comprised of 3 values corresponding to the 3 fileds
+	  'SelClk_sample', 'SelClk_drv' and 'DIVRATIO' of CLKSEL register.
+	. SelClk_sample: Select sample clock among 8 shifted clocks.
+	. SelClk_drv: Select drv clock among 8 shifted clocks.
+	. DIVRATIO: Clock Divide ratio select.
+	. The above 3 values are used by the clock phase shifter.
+
+Example:
+
+mmc@12200000 {
+	samsung,bus-width = <8>;
+	samsung,timing = <1 3 3>;
+	samsung,removable = <1>;
+}
+In the above example,
+	. The bus width is 8
+	. Timing is comprised of 3 values as explained below
+		1 - SelClk_sample
+		3 - SelClk_drv
+		3 - DIVRATIO
+	. The 'removable' flag indicates whether the the particilar device
+	  cannot be removed (always present) or it is a removable device.
+		1 - Indicates that the device is removable.
+		0 - Indicates that the device cannot be removed.

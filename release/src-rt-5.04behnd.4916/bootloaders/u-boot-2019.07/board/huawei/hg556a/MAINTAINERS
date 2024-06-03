@@ -1,0 +1,6 @@
+HUAWEI HG556A BOARD
+M:	Álvaro Fernández Rojas <noltari@gmail.com>
+S:	Maintained
+F:	board/huawei/hg556a/
+F:	include/configs/huawei_hg556a.h
+F:	configs/huawei_hg556a_ram_defconfig

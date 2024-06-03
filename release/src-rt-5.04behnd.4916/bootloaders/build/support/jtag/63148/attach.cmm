@@ -1,0 +1,79 @@
+//**************************************************************//
+// Attach script for BCM63148                                    //
+//**************************************************************//
+// JTAG Scan-chain for 63148 is
+//    TDI -> PMIPS(5) -> MEMC(5) -> URB_DAP(4) -> PMC(5) -> B15_DAP(4) -> LV(29) -> TDO
+
+AREA
+AREA.CLEAR
+
+SYSTEM.RESET
+
+SYSTEM.JTAGCLOCK 10MHz
+
+; comment out the following scan chain detect for now. assume scan chain is DAP-only
+;jtag.lock
+;jtag.pin.enable
+;jtag.pin.TDI LOW
+;jtag.SHIFTTMS 1 1 1 1 1 1 1 0 1 1 0 0
+;jtag.SHIFTTDI %Long 0x0 0x0 
+;jtag.shifttdi %Long 0xffffffff 0xffffffff
+;&a=jtag.SHIFT() 
+;&b=&a&0xfffff
+;jtag.SHIFTTMS 1 1 1 1 1 1 1 1 1
+;jtag.unlock
+
+;if (&b>0xfff00) 
+;(
+;   print "scan chain is DAP-only"
+;)
+;else
+;(
+;   SYStem.CONFIG.DAPIRPOST  19.
+;   SYStem.CONFIG.DAPIRPRE   29.
+;   SYStem.CONFIG.DAPDRPOST  4.
+;   SYStem.CONFIG.DAPDRPRE   1.
+;)
+
+SYSTEM.CPU CORTEXA15MPCORE
+
+SYSTEM.CONFIG.CORENUMBER 2
+SYSTEM.CONFIG.CORE 1
+SYSTEM.CONFIG.MEMORYACCESSPORT 0
+SYSTEM.CONFIG.DEBUGACCESSPORT 1
+SYSTEM.CONFIG.COREBASE 0x80110000	; 0x80112000	; for core#1
+SYSTEM.CONFIG.BMCBASE  0x80111000	; 0x80113000	; for core#1
+SYSTEM.CONFIG.CTIBASE  0x80118000	; 0x80119000	; for core#1
+SYSTEM.CONFIG.ETMBASE  0x8011c000	; 0x8011d000	; for core#1
+SYSTEM.CONFIG.FUNNELBASE 0x80200000
+SYSTEM.CONFIG.TPIUBASE 0x80400000
+
+CORE.ASSIGN 1		; 2	; for SMP
+
+SYSTEM.MEMACCESS.DAP 
+
+SYSTEM.OPTION.DACR ON
+SYSTEM.OPTION ENRESET ON
+SYSTEM.OPTION RESBREAK OFF
+SYSTEM.OPTION WAITRESET 0us
+SYSTEM.OPTION IMASKASM ON
+SYSTEM.OPTION IMASKHLL ON
+
+;TRACE.DISABLE
+
+TrOnchip.Set StepVector off
+TrOnchip.Set FIQ off
+TrOnchip.Set IRQ off
+TrOnchip.Set DABORT OFF
+TrOnchip.Set PABORT OFF
+TrOnchip.Set SWI off
+TrOnchip.Set UNDEF off
+
+SYSTEM.MODE NODEBUG
+SYSTEM.MODE ATTACH
+
+;if run()
+;break
+;do ~~/demo/windows_setup.cmm
+
+ENDDO

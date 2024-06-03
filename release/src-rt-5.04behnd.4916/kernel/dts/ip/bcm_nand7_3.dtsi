@@ -1,0 +1,16 @@
+#address-cells = <1>;
+#size-cells = <0>;
+compatible = "brcm,nand-bcm63xx", "brcm,nand-bcmbca", "brcm,brcmnand-v7.3";
+reg = <NAND_CTRL_OFFSET NAND_CTRL_SIZE>, <NAND_CACHE_OFFSET NAND_CACHE_SIZE>;
+reg-names = "nand", "nand-cache";
+parameter-page-big-endian = <0>;
+write-protect = <0>;
+timing_1 = <0x00320000>;
+timing_2 = <0x00000004>;
+status = "disabled";
+
+nandcs@0 {
+	compatible = "brcm,nandcs";
+	reg = <0>;
+	nand-on-flash-bbt;
+};

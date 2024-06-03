@@ -1,0 +1,343 @@
+﻿.body_rwd{
+	color: #181818;
+}
+.bg_rwd{
+	color: #181818;
+}
+.function_desc_container .help_icon,
+.profile_list_container .help_icon{
+	background-image: url(/images/New_ui/SDN/white_theme/Action/help_outline.svg);
+}
+.function_desc_container:before{
+	background: #DCDCDC;
+	height: 1px;
+}
+.function_desc_container .title{
+	margin: 0;
+	font-size: 24px;
+	font-weight: bold;
+	color: #181818;
+}
+.profile_list_container{
+	width: 40%;
+	display: flex;
+	flex-direction: column;
+}
+.profile_list_container .title_container{
+	color: #4D4D4D;
+	margin: 0;
+	width: 100%;
+}
+.profile_list_container .horizontal_line{
+	background-color: #DCDCDC;
+	width: initial;
+	margin-right: 1.5rem;
+}
+.profile_item_container{
+	background: #FFFFFF;
+	box-shadow: 0px 1px 4px 0px rgb(0 0 0 / 8%);
+	border: 0.5px solid rgb(0 0 0 / 5%);
+	width: initial;
+	margin-right: 1.5rem;
+}
+.profile_item_container.selected{
+	background: #ffffff;
+	outline: 1px solid #006ce1;
+	box-shadow: 0px 0px 4px 4px #cce4ff;
+}
+.profile_item_container .item_text_container{
+	color: #181818;
+}
+.profile_item_container .item_text_container:before{
+	border-right: 2px solid #DCDCDC;
+}
+.profile_item_container .item_text_container:after{
+	border-top: 2px solid #006CE1;
+	border-right: 2px solid #006CE1;
+}
+.profile_item_container .item_tag_container{
+	color: #006CE1;
+}
+.item_tag_container > .item_tag{
+	background: #FFFFFF;
+}
+.profile_setting_container {
+	flex-grow: 1;
+}
+.profile_setting_container .setting_content_container{
+	background: #fff;
+	width: 100%;
+	flex-grow: 1;
+	margin-top: 0.5rem;
+	box-shadow: 0px 1px 8px 0px rgb(0 0 0 / 8%);
+	border: 0;
+}
+.profile_setting_title > .title{
+	color: #4D4D4D;
+}
+.profile_setting_title .del_btn{
+	background-image: url(/images/New_ui/SDN/white_theme/Action/delete.svg);
+}
+.profile_setting_item{
+	background-color: #FFFFFF;
+}
+.profile_setting_item:before{
+	border-bottom: 1px solid #DCDCDC;
+}
+.profile_setting_item > .title,
+.profile_setting_two_item .title{
+	color: #006CE1;
+}
+.profile_setting_item > .title a:link,
+.profile_setting_two_item .title a:link{
+	color: #006CE1 !important;
+}
+.profile_setting_two_item{
+	background-color: #FFFFFF;
+}
+.profile_setting_two_item:before{
+	border-bottom: 1px solid #DCDCDC;
+}
+.profile_title_item{
+	color: #4D4D4D;
+}
+.profile_title_item:before{
+	border-bottom: 1px solid #DCDCDC;
+}
+.profile_btn_container{
+	border: 1px solid #006CE1;
+}
+.profile_btn_container:hover{
+	background-color: #006CE1;
+	color: #FFF;
+}
+.profile_btn_container:hover .icon_arrow_right{
+	color: #FFF;
+}
+.category_slide_title{
+	background: #FFFFFF;
+	box-shadow: 0px 1px 2px rgb(20 50 80 / 12%);
+	color: #4D4D4D
+}
+.category_slide_title.expand{
+	color: #181818;
+}
+.category_slide_title > .title_cntr:before{
+	border-top: 3px solid #999999;
+	border-right: 3px solid #999999;
+}
+.category_slide_title.expand > .title_cntr:before{
+	border-top: 3px solid #006CE1;
+	border-right: 3px solid #006CE1;
+}
+.action_container.category_mode{
+	background-color: #FFFFFF;
+	box-shadow: 0px 1px 2px rgb(20 50 80 / 12%);
+}
+.action_container .btn_container{
+	background: #006CE1;
+}
+.popup_container .popup_content_container .action_container.category_mode{
+	background-color: #FFFFFF;
+}
+
+.popup_bg{
+	background-color: #f5f5f5f2 !important;
+}
+.hidden_mask{
+	background: rgb(255, 255, 255);
+}
+.popup_container .popup_title_container > .close_btn,
+.popup_container .popup_title_container > .del_btn{
+	background-image: url(/images/New_ui/SDN/white_theme/Navigation/close_fill.svg);
+}
+.popup_container .popup_title_container .title{
+	color: #4D4D4D;
+}
+.popup_container .popup_content_container{
+	background: #FFFFFF;
+}
+.popup_container.mobile_view .popup_content_container{
+	box-shadow: initial;
+	background: #FFFFFF;
+}
+.popup_container .popup_content_container .profile_setting_item,
+.popup_container .popup_content_container .profile_setting_two_item{
+	background: #FFFFFF;
+}
+.popup_container .popup_content_container .category_slide_title{
+	background: #FFFFFF;
+	box-shadow: 0px 1px 2px rgba(20, 50, 80, 0.12);
+}
+.customize_alert .action_btn_container .ok,
+.customize_alert.confirm .action_btn_container .ok{
+	border: initial;
+	box-shadow: 0 0 0 1px #B3B3B3;
+	color: #4D4D4D;
+}
+.customize_alert .desc{
+	color: #181818;
+}
+.del_profile .title{
+	color: #4D4D4D;
+}
+.del_profile .desc{
+	color: #181818;
+}
+.del_profile .action_btn_container .del{
+	border: 1px solid #B3B3B3;
+	color: #4D4D4D;
+}
+.del_profile .action_btn_container .cancel,
+.customize_alert.confirm .action_btn_container .cancel{
+	background: #006CE1;
+}
+.textInput,
+.custom_select_container,
+.textareaInput{
+	color: #4D4D4D;
+	border: 1px solid #DCDCDC;
+}
+.textViewOnly{
+	color: #4D4D4D;
+}
+.custom_select_container:before,
+.profile_title_item.arrow_icon:after{
+	border-top: 2px solid #006CE1;
+	border-right: 2px solid #006CE1;
+}
+.custom_select_container .select_options_container{
+	background: #FFFFFF;
+}
+.custom_select_container .select_options_container div.selected{
+	color: #006CE1;
+}
+.custom_select_container .select_options_container div.selected:before{
+	border-top: 2px solid #006CE1;
+	border-right: 2px solid #006CE1;
+}
+.custom_select_container .select_options_container div:hover{
+	background: rgba(0, 133, 255, 0.1);
+}
+.custom_select_container .select_options_container div.disabled{
+	color: rgb(77 77 77 / 40%);
+}
+.custom_select_container .select_options_container::-webkit-scrollbar-track,
+.textareaInput::-webkit-scrollbar-track{
+	border: 4px solid #FFFFFF;
+	background-color: #DCDCDC;
+}
+.custom_select_container .select_options_container::-webkit-scrollbar-thumb,
+.textareaInput::-webkit-scrollbar-thumb{
+	background-color: #CCCCCC;
+	border: 2px solid #FFFFFF;
+}
+.icon_add{
+	background-image: url(/images/New_ui/SDN/white_theme/Content/add_circle_outline.svg);
+}
+.icon_switch.off{
+	background: #666666;
+}
+.icon_switch:before{
+	background: #FFFFFF;
+}
+.icon_eye.close{
+	background-image: url(/images/New_ui/SDN/white_theme/Action/eye_off.svg);
+}
+.icon_eye.open{
+	background-image: url(/images/New_ui/SDN/white_theme/Action/eye.svg);
+}
+.icon_lock{
+	background-image: url(/images/New_ui/SDN/white_theme/Action/lock_close.svg);
+}
+.icon_checkbox{
+	border: 1px solid #666666;
+}
+.icon_checkbox.closed{
+	background: #DCDCDC;
+}
+.icon_checkbox.closed:before,
+.icon_checkbox.closed:after{
+	background-color: #666666;
+}
+.icon_checkbox.clicked.disabled{
+	border: 1px solid #666666;
+	background: #DCDCDC;
+}
+.icon_checkbox.clicked.disabled:before{
+	border-top: 2px solid #666666;
+	border-right: 2px solid #666666;
+}
+.rwd_icon_radio{
+	border: 1px solid #9CA3AF;
+}
+.rwd_icon_radio.clicked,
+.rwd_icon_radio.disabled{
+	border: 2px solid #006CE1;
+}
+.rwd_icon_radio.clicked:before,
+.rwd_icon_radio.disabled:before{
+	background-color: #006CE1;
+}
+.rwd_icon_radio.disabled{
+	border: 2px solid #999999;
+}
+.rwd_icon_radio.disabled:before{
+	background-color: #999999;
+}
+.icon_arrow_right{
+	color: #006CE1;
+}
+.icon_error_outline{
+	background-image: url(/images/New_ui/SDN/white_theme/Alert/error_outline.svg);
+}
+.icon_warning_amber{
+	background-image: url(/images/New_ui/SDN/white_theme/Alert/warning_amber.svg);
+}
+.icon_print{
+	background-image: url(/images/New_ui/SDN/white_theme/Action/download.svg);
+}
+.validate_hint,
+.item_hint{
+	background: #FFF1E8;
+	color: #C74200;
+}
+.switch_text_container > .switch_text_item{
+	color: #4D4D4D;
+}
+.switch_text_container > .switch_text_item.selected{
+	background-color: rgb(36 141 255);
+	border-color: rgb(36 141 255 / 20%);
+}
+@media (max-width: 575px) {
+	.profile_item_container,
+	.profile_item_container.selected{
+		background: #FFFFFF;
+		box-shadow: 0px 1px 2px 0px rgb(20 50 80 / 20%);
+		border: 1px solid rgb(0 0 0 / 10%);
+		margin-right: initial;
+	}
+	.profile_list_container .horizontal_line{
+		margin-right: initial;
+	}
+	.item_tag_container > .item_tag{
+		background: #FFFFFF;
+		border: 1px solid #2597FF;
+		box-shadow: 0px 4px 8px rgb(0 0 0 / 60%), 0px 0px 1px rgb(0 0 0 / 90%);
+	}
+	.action_container .btn_container.delete{
+		background: rgb(255 255 255 / 0%);
+		border: 1px solid #B3B3B3;
+		color: #53565A;
+	}
+	.popup_container .popup_content_container{
+		background: #FBFBFB;
+	}
+	.popup_container .custom_select_container .select_options_container{
+		background: #FFFFFF;
+		box-shadow: 0px 3px 4px 0px rgb(0 0 0 / 14%), 0px 3px 3px -2px rgb(0 0 0 / 12%), 0px 1px 8px 0px rgb(0 0 0 / 20%);
+	}
+	.popup_container .custom_select_container .select_options_container div:hover{
+		background: rgba(0, 133, 255, 0.1);
+	}
+}

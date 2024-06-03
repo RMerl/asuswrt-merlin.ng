@@ -1,0 +1,122 @@
+<html>
+	<iframe id="settingsWindow" style="
+		width: 100%;
+		height: 100vh;
+	"></iframe>
+
+	<script>
+		var webWrapper = true;
+		$("#settingsWindow").attr({src: "/AiMesh.asp?current_theme=" + theme});
+
+		var findColorAndReplace = function(styleSheet, oldColor, newColor){
+			function hexToRgb(hex) {
+				var result;
+
+				result = /([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+				var retData = result ? [
+					parseInt(result[1], 16),
+					parseInt(result[2], 16),
+					parseInt(result[3], 16)
+				] : null;
+
+				return retData ? retData.join(", ") : false;
+			}
+
+			$("#settingsWindow").contents().find('*').filter(function(){
+				var getElement = $(this).css(styleSheet) || "";
+
+				if(getElement.indexOf(hexToRgb(oldColor)) != -1){
+					var targetStyleSheet = {}
+					var originStyle = $(this).css(styleSheet);
+
+					if(originStyle){
+						targetStyleSheet[styleSheet] = (newColor != "transparent") ? originStyle.replace(hexToRgb(oldColor), hexToRgb(newColor)) : "transparent";
+					}
+
+					$(this).css(targetStyleSheet)
+				}
+			})
+		}
+
+		function setupWrapper(){
+			var iframe = $("#settingsWindow").contents();
+
+			// top banner
+			iframe.find("#TopBanner").hide()
+			iframe.find("#mainMenu").hide()
+			iframe.find("#mainMenu").parent().hide()
+
+			// menutree
+			iframe.find(".menu_Split").hide()
+			iframe.find("#QIS_wizard_menu").remove()
+			iframe.find("#index_menu").remove()
+			iframe.find("#index_menu").remove()
+			iframe.find("#SDN_menu").remove()
+			iframe.find("#AiMesh_menu").remove()
+			iframe.find("#cloud_main_menu").remove()
+			iframe.find("#AiProtection_HomeProtection_menu").remove()
+			iframe.find("#TrafficAnalyzer_Statistic_menu").remove()
+			iframe.find("#Guest_network_menu").remove()
+			iframe.find("#Advanced_Smart_Home_Alexa_menu").remove()
+			iframe.find("#Advanced_VPNServer_Content_menu").remove()
+
+			// submenu
+			iframe.find("#tabMenu").parent().css({
+				"text-align": "center"
+			})
+
+			iframe.find("#tabMenu table").css({
+				"width": "100%"
+			})
+
+			iframe.find(".tab").parent().css({
+				"border-bottom": "solid 3px #6B7071"
+			})
+
+			iframe.find(".tabClicked").parent().css({
+				"border-bottom": "solid 3px #006ce1"
+			})
+
+			// content
+			iframe.find("#FormTitle")
+				.parent().parent().parent().parent().wrap( "<div style='display:inline-block;width:100%;'></div>")
+
+			iframe.find("#FormTitle").attr({
+				"width": "100%"
+			})
+
+			iframe.find(".aimesh_introduction").css({
+				"visibility": "hidden"
+			})
+			iframe.find(".formfonttitle").hide()
+			iframe.find(".splitLine").hide()
+			iframe.find(".button_gen_dis").removeClass("button_gen_dis").addClass("button_gen")
+			iframe.find(".hint-color").removeClass("hint-color").addClass("warning_desc")
+
+			// footer
+			iframe.find("#footer").hide()
+		}
+	
+		function setupBusinessUI(){
+			findColorAndReplace("color", "FFFFFF", "006CE1");
+			findColorAndReplace("color", "FFCC00", "006CE1");
+			findColorAndReplace("background-color", "475A5F", "transparent");
+			findColorAndReplace("background-color", "4D595D", "transparent");
+
+			setupWrapper();
+
+			// content
+			$("#settingsWindow").contents().find("#FormTitle").parent().parent().parent().parent()
+				.wrap( "<div id='whiteThemeWrapper'></div>")
+
+			setTimeout(function(){
+				$("#settingsWindow").contents().find("body").hide().css("visibility", "visible").fadeIn();
+			}, 100);
+		}
+
+		var iframe = document.getElementById('settingsWindow');
+		iframe.onload = function() {
+			iframe.style.height = `${document.body.clientHeight - 70}px`;
+		};
+	</script>
+</html>

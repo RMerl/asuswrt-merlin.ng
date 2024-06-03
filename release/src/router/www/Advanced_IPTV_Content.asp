@@ -35,6 +35,34 @@
 	display:none;
 	box-shadow: 3px 3px 10px #000;
 }
+
+#autowan_hint_div{
+	position: absolute;
+	z-index: 1000;
+	width: 600px;
+	height: 550px;
+	margin-left: 40%;
+	background-color: #232629;
+	box-shadow: 3px 3px 10px #000;
+	border-radius: 4px;
+	border: 2px solid #818181;
+	font-size: 13px;
+}
+
+.port_img{
+	position: absolute;
+	width: 480px;
+	height: 330px;
+	background: url('images/model_port.png') no-repeat center;
+}
+
+.port_plugin_img{
+	position: absolute;
+	width: 480px;
+	height: 330px;
+	background: url('images/wanport_plugin.png') no-repeat center;
+	left: 135px;
+}
 </style>
 
 <script>
@@ -63,18 +91,9 @@ var iptv_profiles = [<% get_iptvSettings();%>][0];
 var isp_profiles = iptv_profiles.isp_profiles;
 var port_definitions = iptv_profiles.port_definitions;
 var stbPortMappings = [<% get_stbPortMappings();%>][0];
-var orig_wnaports_bond = '<% nvram_get("wanports_bond"); %>';
+var orig_wanports_bond = '<% nvram_get("wanports_bond"); %>';
 var cloud_isp_profiles = [];
-if(lacp_support){
-	if(based_modelid == "GT-AC5300")
-		var bonding_port_settings = [{"val": "4", "text": "LAN5"}, {"val": "3", "text": "LAN6"}];
-	else if(based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900")
-		var bonding_port_settings = [{"val": "4", "text": "LAN1"}, {"val": "3", "text": "LAN2"}];
-	else if(based_modelid == "XT8PRO" || based_modelid == "BM68")
-		var bonding_port_settings = [{"val": "2", "text": "LAN2"}, {"val": "3", "text": "LAN3"}];
-	else
-		var bonding_port_settings = [{"val": "1", "text": "LAN1"}, {"val": "2", "text": "LAN2"}];
-}
+var bonding_port_settings = get_bonding_ports(based_modelid);
 
 if(wan_bonding_support)
 	var orig_bond_wan = httpApi.nvramGet(["bond_wan"], true).bond_wan;
@@ -89,6 +108,8 @@ for(var i = 1; i < MSWAN_List_Pri.length; i++){
 		with_multiservice++;
 	}
 }
+
+var autowan_enable = httpApi.nvramGet(["autowan_enable"], true).autowan_enable;
 
 function initial(){
 	show_menu();
@@ -575,9 +596,6 @@ function check_port_conflicts(){
 	var lacp_port_conflict = false;
 	var iptv_port = document.form.switch_stb_x.value;
 	var iptv_port_settings = document.form.iptv_port_settings.value;
-	var autowan_enable = httpApi.nvramGet(["autowan_enable"], true).autowan_enable;
-	var autowan_detected_ifname = httpApi.nvramGet(["autowan_detected_ifname"], true).autowan_detected_ifname;
-	var autowan_detected_label = httpApi.nvramGet(["autowan_detected_label"], true).autowan_detected_label;
 
 	if(dualWAN_support){	// dualwan LAN port should not be equal to IPTV port
 		var tmp_pri_if = wans_dualwan_orig.split(" ")[0].toUpperCase();
@@ -632,20 +650,13 @@ function check_port_conflicts(){
 			}
 		}
 	}
-	else if(autowan_enable == "1" && autowan_detected_ifname != "" && autowan_detected_label != ""){
-		for(var i = 0; i < stbPortMappings.length; i++){
-			if(iptv_port == stbPortMappings[i].value && stbPortMappings[i].name.indexOf(autowan_detected_label) != -1){
-				wan_port_conflict = true;
-			}
-		}
-	}
 
 	if(lacp_enabled && document.form.switch_wantag.value == "none"){
 		var selected_stb_option = $('#switch_stb_x0 :selected').text();;
 
 		bonding_port_settings.forEach(function(bonding_value){
 			var bonding_port = bonding_value.text;
-			if(selected_stb_option.indexOf(bonding_port) != -1 ||selected_stb_option.indexOf(bonding_port) != -1 || selected_stb_option.indexOf(bonding_port) != -1)
+			if(selected_stb_option.indexOf(bonding_port) != -1 || bonding_port.indexOf(selected_stb_option) != -1)
 				lacp_port_conflict = true;
 		});
 	}
@@ -760,8 +771,8 @@ function applyRule(){
 		}
 
 		if(wan_bonding_support && orig_bond_wan == "1"){
-			if(wanAggr_p2_conflicts_w_stb_port(document.form.switch_stb_x.value, wanAggr_p2_num(orig_wnaports_bond))){
-				var msg = "<#WANAggregation_PortConflict_hint1#>".replace(/LAN-*\D* 4/, wanAggr_p2_name(orig_wnaports_bond));
+			if(wanAggr_p2_conflicts_w_stb_port(document.form.switch_stb_x.value, wanAggr_p2_num(orig_wanports_bond))){
+				var msg = "<#WANAggregation_PortConflict_hint1#>".replace(/LAN-*\D* 4/, wanAggr_p2_name(orig_wanports_bond));
 				if(confirm(msg)){
 					document.form.bond_wan.disabled = false;
 					document.form.bond_wan.value = "0";
@@ -813,17 +824,46 @@ function applyRule(){
 				return false;
 		}
 
-		if(reboot_confirm==1){
-			if(confirm("<#AiMesh_Node_Reboot#>")){
-				FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
+		if(((isSupport("autowan") && autowan_enable == "1") || (is_GTBE_series && wans_dualwan_array[0] == "wan" && wans_extwan == "1")) &&
+			(document.form.switch_stb_x.value != "0" || document.form.switch_wantag.value != "none")){
+			var hint_str = "To ensure that there are no conflicts, when you enable %1$@, the WAN port will be change to %2$@ only. Please make sure that your WAN cable is correctly plugged into the %2$@. Are you sure to continue?"
+			var msg = "";
+			if(is_GTBE_series)
+				msg = hint_str.replace("%1$@", "IPTV").replaceAll("%2$@", "10G WAN");
+			else
+				msg = hint_str.replace("%1$@", "IPTV").replaceAll("%2$@", get_default_wan_name());
+			$("#autowan_hint").html(msg);
+			$("#autowan_hint_div").show();
+			if(check_file_exists('images/model_port.png') && check_file_exists('images/wanport_plugin.png')){
+				setTimeout(function(){
+						if($(".port_plugin_img").is(":visible"))
+							$(".port_plugin_img").fadeOut(500);
+						else
+							setTimeout(function(){$(".port_plugin_img").fadeIn(500);}, 500);
+
+						if($("#autowan_hint_div").is(":visible"))
+							setTimeout(arguments.callee, 1500);
+					}, 1500);
+			}
+			else{
+				$("#schematic_diagram").hide();
+				$("#autowan_hint_div").css("height", "auto");
+				$("#autowan_hint").css("margin", "50px 0");
+				$("#hint_action_div").css("margin-bottom", "30px");
+			}
+		}
+		else{
+			if(reboot_confirm==1){
+				if(confirm("<#AiMesh_Node_Reboot#>")){
+					FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
+					showLoading();
+					document.form.submit();
+				}
+			}
+			else{
 				showLoading();
 				document.form.submit();
-	        	}
-        	}
-		else{
-
-			showLoading();
-			document.form.submit();
+			}
 		}
 	}
 }
@@ -1466,6 +1506,74 @@ function change_switch_stb(switch_stb_x){
 
 	change_mr_enable(document.form.mr_enable_x.value);
 }
+
+function close_autowan_hint(){
+	$("#autowan_hint_div").hide();
+}
+
+function confirm_autowan_change(){
+	let lacp_ifnames_x = httpApi.nvramGet(["lacp_ifnames_x"], true).lacp_ifnames_x;
+
+	$("#autowan_hint_div").hide();
+
+	$('<input>').attr({
+		type: 'hidden',
+		name: "autowan_enable",
+		value: "0"
+	}).appendTo('form');
+
+	$('<input>').attr({
+		type: 'hidden',
+		name: "wans_extwan",
+		value: "0"
+	}).appendTo('form');
+
+	if(is_GTBE_series){
+		if(lacp_ifnames_x == "eth0 eth3"){
+			document.form.lacp_enabled.disabled = false;
+			document.form.lacp_enabled.value = "0";
+
+			$('<input>').attr({
+				type: 'hidden',
+				name: "lacp_ifnames_x",
+				value: ""
+			}).appendTo('form');
+		}
+	}
+	setTimeout(function(){
+				if(reboot_confirm == 1){
+					if(confirm("<#AiMesh_Node_Reboot#>")){
+						FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
+						showLoading();
+						document.form.submit();
+					}
+				}
+				else{
+					showLoading();
+					document.form.submit();
+				}
+			}, 100);
+}
+
+function isEmpty(obj)
+{
+	for (var name in obj){
+		return false;
+	}
+
+	return true;
+};
+
+function get_default_wan_name(){
+	var default_wan_name = "WAN";
+	var eth_wan_list = httpApi.hookGet("get_ethernet_wan_list", true);
+
+	if(!isEmpty(eth_wan_list)){
+		default_wan_name = eth_wan_list["wan"].wan_name;
+	}
+
+	return default_wan_name;
+}
 </script>
 </head>
 
@@ -1552,7 +1660,21 @@ function change_switch_stb(switch_stb_x){
 <input type="hidden" name="lacp_enabled" value="<% nvram_get("lacp_enabled"); %>" disabled>
 <input type="hidden" name="switch_stb_x" value="<% nvram_get("switch_stb_x"); %>" disabled>
 <input type="hidden" name="bond_wan" value="<% nvram_get("bond_wan"); %>" disabled>
-
+<!--===================================Beginning of Auto WAN Detection Confirm===========================================-->
+<div id="autowan_hint_div" style="display: none;">
+	<div style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: space-evenly; align-items: center;">
+		<div id="autowan_hint" style="width: 80%; line-height: 20px;"></div>
+		<div id="schematic_diagram" style="width: 480px; height: 330px;">
+			<div class="port_img"></div>
+			<div class="port_plugin_img"></div>
+		</div>
+		<div id="hint_action_div" style="display: flex; width: 80%; justify-content: space-evenly;">
+			<input class="button_gen" type="button" value="<#CTL_Cancel#>" onclick="close_autowan_hint();">
+			<input class="button_gen" type="button" value="<#CTL_ok#>" onclick="confirm_autowan_change();">
+		</div>
+	</div>
+</div>
+<!--===================================End of Auto WAN Detection Confirm===========================================-->
 <!---- connection settings start  ---->
 <div id="connection_settings_table"  class="contentM_connection">
 	<table border="0" align="center" cellpadding="5" cellspacing="5">

@@ -1,0 +1,6 @@
+&IIC {
+	cs4265@4f {
+		compatible = "cirrus,cs4265";
+		reg = <0x0000004f>;
+	};
+};

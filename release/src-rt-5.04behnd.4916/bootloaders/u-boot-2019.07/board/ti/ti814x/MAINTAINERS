@@ -1,0 +1,6 @@
+TI814X BOARD
+M:	Tom Rini <trini@konsulko.com>
+S:	Maintained
+F:	board/ti/ti814x/
+F:	include/configs/ti814x_evm.h
+F:	configs/ti814x_evm_defconfig

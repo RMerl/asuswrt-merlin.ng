@@ -1,0 +1,89 @@
+SPDX-License-Identifier: GPL-2.0+
+/*
+ * (C) Copyright 2008
+ * Gary Jennejohn, DENX Software Engineering GmbH <garyj@denx.de>
+ */
+
+U-Boot console multiplexing
+===========================
+
+HOW CONSOLE MULTIPLEXING WORKS
+------------------------------
+
+This functionality is controlled with CONFIG_CONSOLE_MUX in the board
+configuration file.
+
+Two new files, common/iomux.c and include/iomux.h, contain the heart
+(iomux_doenv()) of the environment setting implementation.
+
+iomux_doenv() is called in common/cmd_nvedit.c to handle setenv and in
+common/console.c in console_init_r() during bootup to initialize
+stdio_devices[].
+
+A user can use a comma-separated list of devices to set stdin, stdout
+and stderr.  For example: "setenv stdin serial,nc".  NOTE: No spaces
+are allowed around the comma(s)!
+
+The length of the list is limited by malloc(), since the array used
+is allocated and freed dynamically.
+
+It should be possible to specify any device which console_assign()
+finds acceptable, but the code has only been tested with serial and
+nc.
+
+iomux_doenv() prevents multiple use of the same device, e.g. "setenv
+stdin nc,nc,serial" will discard the second nc.  iomux_doenv() is
+not able to modify the environment, however, so that "pri stdin" still
+shows "nc,nc,serial".
+
+The major change in common/console.c was to modify fgetc() to call
+the iomux_tstc() routine in a for-loop.  iomux_tstc() in turn calls
+the tstc() routine for every registered device, but exits immediately
+when one of them returns true.  fgetc() then calls iomux_getc(),
+which calls the corresponding getc() routine.  fgetc() hangs in
+the for-loop until iomux_tstc() returns true and the input can be
+retrieved.
+
+Thus, a user can type into any device registered for stdin.  No effort
+has been made to demulitplex simultaneous input from multiple stdin
+devices.
+
+fputc() and fputs() have been modified to call iomux_putc() and
+iomux_puts() respectively, which call the corresponding output
+routines for every registered device.
+
+Thus, a user can see the ouput for any device registered for stdout
+or stderr on all devices registered for stdout or stderr.  As an
+example, if stdin=serial,nc and stdout=serial,nc then all output
+for serial, e.g. echos of input on serial, will appear on serial and nc.
+
+Just as with the old console code, this statement is still true:
+If not defined in the environment, the first input device is assigned
+to the 'stdin' file, the first output one to 'stdout' and 'stderr'.
+
+If CONFIG_SYS_CONSOLE_IS_IN_ENV is defined then multiple input/output
+devices can be set at boot time if defined in the environment.
+
+CAVEATS
+-------
+
+Note that common/iomux.c calls console_assign() for every registered
+device as it is discovered.  This means that the environment settings
+for application consoles will be set to the last device in the list.
+
+On a slow machine, such as MPC852T clocked at 66MHz, the overhead associated
+with calling tstc() and then getc() means that copy&paste will normally not
+work, even when stdin=stdout=stderr=serial.
+On a faster machine, such as a sequoia, cut&paste of longer (about 80
+characters) lines works fine when serial is the only device used.
+
+Using nc as a stdin device results in even more overhead because nc_tstc()
+is quite slow.  Even on a sequoia cut&paste does not work on the serial
+interface when nc is added to stdin, although there is no character loss using
+the ethernet interface for input. In this test case stdin=serial,nc and
+stdout=serial.
+
+In addition, the overhead associated with sending to two devices, when one of
+them is nc, also causes problems.  Even on a sequoia cut&paste does not work
+on the serial interface (stdin=serial) when nc is added to stdout (stdout=
+serial,nc).

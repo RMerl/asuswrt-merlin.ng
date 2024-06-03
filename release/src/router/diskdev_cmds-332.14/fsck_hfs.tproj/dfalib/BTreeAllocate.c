@@ -83,7 +83,7 @@ OSStatus	AllocateNode (BTreeControlBlockPtr		btreePtr, UInt32	*nodeNum)
 	
 	
 	nodeNumber		= 0;				// first node number of header map record
-	node.buffer		= nil;				// clear node.buffer to get header node
+	node.buffer		= NULL;				// clear node.buffer to get header node
 										//	- and for ErrorExit
 	
 	while (true)
@@ -192,7 +192,7 @@ OSStatus	FreeNode (BTreeControlBlockPtr		btreePtr, UInt32	nodeNum)
 
 	//////////////////////////// Find Map Record ////////////////////////////////
 	nodeIndex			= 0;				// first node number of header map record
-	node.buffer			= nil;				// invalidate node.buffer to get header node
+	node.buffer			= NULL;				// invalidate node.buffer to get header node
 	
 	while (nodeNum >= nodeIndex)
 	{
@@ -278,8 +278,8 @@ OSStatus	ExtendBTree	(BTreeControlBlockPtr	btreePtr,
 	nodeSize			= btreePtr->nodeSize;
 	filePtr				= btreePtr->fcbPtr;
 	
-	mapNode.buffer		= nil;
-	newNode.buffer		= nil;
+	mapNode.buffer		= NULL;
+	newNode.buffer		= NULL;
 
 	mapNodeRecSize	= nodeSize - sizeof(BTNodeDescriptor) - 6;	// 2 bytes of free space (see note)
 
@@ -448,7 +448,7 @@ ErrorExit:
 Routine:	GetMapNode	-	Get the next map node and pointer to the map record.
 
 Function:	Given a BlockDescriptor to a map node in nodePtr, GetMapNode releases
-			it and gets the next node. If nodePtr->buffer is nil, then the header
+			it and gets the next node. If nodePtr->buffer is NULL, then the header
 			node is retrieved.
 
 
@@ -474,7 +474,7 @@ OSStatus	GetMapNode (BTreeControlBlockPtr	  btreePtr,
 	UInt16		mapIndex;
 	UInt32		nextNodeNum;
 	
-	if (nodePtr->buffer != nil)		// if iterator is valid...
+	if (nodePtr->buffer != NULL)		// if iterator is valid...
 	{
 		nextNodeNum = ((NodeDescPtr)nodePtr->buffer)->fLink;
 		if (nextNodeNum == 0)
@@ -521,7 +521,7 @@ ErrorExit:
 	
 	(void) ReleaseNode (btreePtr, nodePtr);
 	
-	*mapPtr		= nil;
+	*mapPtr		= NULL;
 	*mapSize	= 0;
 	
 	return	err;

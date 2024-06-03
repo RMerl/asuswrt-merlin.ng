@@ -1,0 +1,174 @@
+#include "inc/968880REF1.dtsi"
+/ {
+        memory_controller {
+                memcfg = <(BP1_DDR_MCBSEL_FORMAT_VER1   | \
+                           BP1_DDR_TYPE_LPDDR4         | \
+                           BP1_DDR_SPEED_2133_36_39_39 | \
+                           BP1_DDR_WIDTH_32BIT         | \
+                           BP1_DDR_TOTAL_SIZE_8Gb      | \
+                           BP1_DDR_SSC_CONFIG_1        | \
+                           BP1_DDR_CONFIG_DEBUG)>;
+        };
+};
+
+/ {
+    model = "968880REF1";
+};
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+/ {
+	/* WIFI_PWR_EN controls 5V_FEM & 3.3V_PCIE */
+	vreg_pcie: vreg-pcie {
+		compatible = "regulator-fixed";
+		regulator-name = "vreg-pcie";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		gpio = <&gpioc 11 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+		regulator-boot-off;
+	};
+};
+
+&pcie0 {
+	brcm,supply-names = "vreg-pcie";
+	brcm,vreg-supply = <&vreg_pcie>;
+	status = "okay";
+};
+
+&pcie1 {
+	brcm,supply-names = "vreg-pcie";
+	brcm,vreg-supply = <&vreg_pcie>;
+	status = "okay";
+};
+
+&pcie3 {
+	brcm,supply-names = "vreg-pcie";
+	brcm,vreg-supply = <&vreg_pcie>;
+	status = "okay";
+};
+#endif // defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+
+&xport {
+    status = "okay";
+};
+
+&egphy {
+    status = "okay";
+};
+
+&unimac {
+    status = "okay";
+};
+
+&serdes {
+    status = "okay";
+};
+
+&ethphytop {
+    xphy0-enabled;
+    xphy1-enabled;
+    phy-mpd = <&bca_extintr 51 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+    phy-link = <&bca_extintr 49 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+    status = "okay";
+};
+
+&mpcs {
+    status = "okay";
+};
+
+&mdio {
+    status = "okay";
+};
+
+&mdio_bus {
+    egphy0 {
+        status = "okay";
+    };
+    egphy1 {
+        status = "okay";
+    };
+    egphy2 {
+        status = "okay";
+    };
+    egphy3 {
+        status = "okay";
+    };
+    xphy0 {
+        status = "okay";
+    };
+    xphy1 {
+        status = "okay";
+    };
+    serdes00 {
+        pinctrl-names = "default";
+        pinctrl-0 = <&a_slan_sd_rx_los_pin_3 &a_slan_sd_mod_abs_pin_4>;
+        tx-disable = <&gpioc 6 GPIO_ACTIVE_HIGH>;
+        10000-Base-R;
+        5000-Base-R;
+        2500-Base-X;
+        1000-Base-X;
+        status = "okay";
+    };
+    serdes13_xphy {
+        reg = <0x1c>;
+        enet-phy-lane-swap;
+        caps-no-10000;
+        caps-no-5000;
+        USXGMII-S;
+        phy-power = <&gpioc 48 GPIO_ACTIVE_HIGH>;
+        phy-reset = <&gpioc 47 GPIO_ACTIVE_LOW>;
+        status = "okay";
+    };
+    serdes13 {
+        phy-handle = <&serdes13_xphy>;
+        status = "okay";
+    };
+    wan_ae {
+        trx = <&xfp_sfp>;
+        status = "okay";
+    };
+};
+
+&switch0 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&a_eth_mdc_pin_59 &a_eth_mdio_pin_60>;
+
+    ports {
+        port_gphy0 {
+            network-leds = <&led0 &led1>;
+            status = "okay";
+        };
+        port_gphy1 {
+            network-leds = <&led2 &led3>;
+            status = "okay";
+        };
+        port_gphy2 {
+            network-leds = <&led4 &led5>;
+            status = "okay";
+        };
+        port_gphy3 {
+            network-leds = <&led6 &led7>;
+            status = "okay";
+        };
+        port_xgphy0 {
+            network-leds = <&led8 &led9>;
+            status = "okay";
+        };
+        port_wan@ae {
+            status = "okay";
+        };
+        port_xgphy1 {
+            network-leds = <&led10 &led11>;
+            status = "okay";
+        };
+        port_slan0 {
+            status = "okay";
+        };
+        port_qlan3 {
+            status = "okay";
+        };
+        port_wan@fiber {
+            status = "okay";
+        };
+    };
+};

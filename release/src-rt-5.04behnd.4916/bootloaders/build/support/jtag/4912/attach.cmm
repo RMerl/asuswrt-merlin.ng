@@ -1,0 +1,40 @@
+;; BRCM PUBLISH
+
+//**************************************************************//
+// Attach script for BCM63146                                   //
+//**************************************************************//
+
+AREA
+AREA.CLEAR
+SYSTEM.RESET
+SYSTEM.JTAGCLOCK 20MHz
+
+; TDI->ARM(4)->MEMC(5)->DFT(16)->TDO
+print "Full scan chain"
+SYStem.CONFIG.DAPIRPOST  0.
+SYStem.CONFIG.DAPIRPRE   21.
+SYStem.CONFIG.DAPDRPOST  0.
+SYStem.CONFIG.DAPDRPRE   2.
+
+
+system.config.apbaccessport 0
+system.config.axiaccessport 1
+system.config.debugaccessport 0
+system.config.memoryaccessport 1
+
+SYSTEM.CPU CORTEXA53
+SYSTEM.CONFIG.CORENUMBER 1
+SYSTEM.CONFIG.CORE 1
+SYSTEM.CONFIG.COREDEBUG.Base 0x81810000
+SYSTEM.CONFIG CTI BASE  0x81820000
+;SYStem.CONFIG BMC BASE 0x81830000
+;SYStem.CONFIG ETM BASE 0x81840000
+
+CORE.ASSIGN 1
+SYStem.option TRST OFF 
+SYStem.option EnReset OFF
+
+SYSTEM.MODE ATTACH
+
+;do ~~/demo/windows_setup.cmm
+ENDDO

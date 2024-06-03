@@ -1,0 +1,12 @@
+if TARGET_MX6CUBOXI
+
+config SYS_BOARD
+	default "mx6cuboxi"
+
+config SYS_VENDOR
+	default "solidrun"
+
+config SYS_CONFIG_NAME
+	default "mx6cuboxi"
+
+endif

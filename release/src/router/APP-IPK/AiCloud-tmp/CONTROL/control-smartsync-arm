@@ -2,7 +2,7 @@ Package: smartsync
 Architecture: arm
 Priority: optional
 Section: net
-Version: 1.0.0.16.0.gc2102d5
+Version: 1.0.0.17.0.g23a7cee
 OptionalUtility:
 Maintainer: ASUS
 Source: http://nw-dlcdnet.asus.com/asusware/arm/stable

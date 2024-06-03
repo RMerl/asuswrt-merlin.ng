@@ -1,0 +1,67 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright (C) 2014, Bin Meng <bmeng.cn@gmail.com>
+
+config INTEL_QUEENSBAY
+	bool
+	select HAVE_FSP
+	select HAVE_CMC
+	select ARCH_EARLY_INIT_R
+	imply AHCI_PCI
+	imply ICH_SPI
+	imply INTEL_ICH6_GPIO
+	imply MMC
+	imply MMC_PCI
+	imply MMC_SDHCI
+	imply MMC_SDHCI_SDMA
+	imply PCH_GBE
+	imply SCSI
+	imply SCSI_AHCI
+	imply SPI_FLASH
+	imply SYS_NS16550
+	imply USB
+	imply USB_EHCI_HCD
+	imply VIDEO_VESA
+
+if INTEL_QUEENSBAY
+
+config HAVE_CMC
+	bool "Add a Chipset Micro Code state machine binary"
+	help
+	  Select this option to add a Chipset Micro Code state machine binary
+	  to the resulting U-Boot image. It is a 64K data block of machine
+	  specific code which must be put in the flash for the processor to
+	  access when powered up before system BIOS is executed.
+
+config CMC_FILE
+	string "Chipset Micro Code state machine filename"
+	depends on HAVE_CMC
+	default "cmc.bin"
+	help
+	  The filename of the file to use as Chipset Micro Code state machine
+	  binary in the board directory.
+
+config CMC_ADDR
+	hex "Chipset Micro Code state machine binary location"
+	depends on HAVE_CMC
+	default 0xfffb0000
+	help
+	  The location of the CMC binary is determined by a strap. It must be
+	  put in flash at a location matching the strap-determined base address.
+
+	  The default base address of 0xfffb0000 indicates that the binary must
+	  be located at offset 0xb0000 from the beginning of a 1MB flash device.
+
+config CPU_ADDR_BITS
+	int
+	default 32
+
+config DISABLE_IGD
+	bool "Disable Integrated Graphics Device (IGD)"
+	help
+	  Disable the Integrated Graphics Device (IGD) so that it does not
+	  show in the PCI configuration space as a VGA disaplay controller.
+	  This gives a chance for U-Boot to run PCI/PCIe based graphics
+	  card's VGA BIOS and use that card for the graphics console.
+
+endif

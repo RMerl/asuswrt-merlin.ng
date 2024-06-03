@@ -1,0 +1,12 @@
+if BOARD_HUAWEI_HG556A
+
+config SYS_BOARD
+	default "hg556a"
+
+config SYS_VENDOR
+	default "huawei"
+
+config SYS_CONFIG_NAME
+	default "huawei_hg556a"
+
+endif

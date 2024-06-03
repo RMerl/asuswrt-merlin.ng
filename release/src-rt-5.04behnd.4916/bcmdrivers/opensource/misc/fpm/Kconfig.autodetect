@@ -1,0 +1,10 @@
+config BCM_FPM_DRV
+	bool "Broadcom BCA Dying FPM driver"
+	default n
+	help
+	  Add the BCM BCA Dying FPM support.
+
+config BCM_FPM_DRV_IMPL
+	int "Implementation index for BCA Dying FPM module"
+	depends on BCM_FPM_DRV
+	default 1

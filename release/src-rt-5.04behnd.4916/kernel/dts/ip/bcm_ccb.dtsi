@@ -1,0 +1,2 @@
+compatible = "brcm,ccb";
+reg = <CCB_OFFSET CCB_SIZE>;

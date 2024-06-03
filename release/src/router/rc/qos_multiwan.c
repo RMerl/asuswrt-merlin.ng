@@ -92,7 +92,6 @@ static int qos_action_manual()
 	return ret;
 }
 
-#ifdef RTCONFIG_AMAS_WGN
 static void WGN_ifname(int i, int j, char *wl_if)
 {
 	if (nvram_get_int("re_mode") == 1) {
@@ -119,7 +118,7 @@ static void add_iptables_AMAS_WGN(FILE *fn, const char *action)
 	char mssid_mark[4] = {0};
 	int  i = 0;
 	int  j = 1;
-	char net[20] = {0};
+	char net[64] = {0};
 
 	/*
 	example:
@@ -134,7 +133,7 @@ static void add_iptables_AMAS_WGN(FILE *fn, const char *action)
 
 			if(nvram_get_int(strcat_r(wlv, "_bss_enabled", tmp)) && 
 			   nvram_get_int(strcat_r(wlv, "_bw_enabled" , tmp))) {
-				wgn_subnet(wlv, net, sizeof(net)); // move API to shared/amas_wgn_shared.c
+				wl_vif_to_subnet(wlv, net, sizeof(net)); // shared/misc.c
 				snprintf(mssid_mark, sizeof(mssid_mark), "%d", guest_mark);
 				if (!strcmp(net, "")) continue;
 				fprintf(fn, "-A PREROUTING -s %s -j %s %s\n", net, action, mssid_mark);
@@ -146,7 +145,6 @@ static void add_iptables_AMAS_WGN(FILE *fn, const char *action)
 		i++; j = 1;
 	}
 }
-#endif
 
 /* In load-balance mode, redirect TX of each WAN interface to
  * imq0 interface and limit TX speed of imq0 interface instead
@@ -587,11 +585,7 @@ void add_EbtablesRules_BW()
 
 			if(nvram_get_int(strcat_r(wlv, "_bss_enabled", tmp)) && 
 			   nvram_get_int(strcat_r(wlv, "_bw_enabled" , tmp))) {
-#ifdef RTCONFIG_AMAS_WGN
 				WGN_ifname(i, j, wl_if);
-#else
-				get_wlxy_ifname(i, j, wl_if);
-#endif
 				if (!strcmp(wl_if, "")) continue;
 				snprintf(mssid_mark, sizeof(mssid_mark), "%d", guest_mark);
 				eval("ebtables", "-t", "nat", "-D", "PREROUTING",  "-i", wl_if, "-j", "mark", "--set-mark", mssid_mark, "--mark-target", "ACCEPT");
@@ -1638,10 +1632,8 @@ static int add_bandwidth_limiter_rules(char *pcWANIF)
 	}
 #endif
 
-#ifdef RTCONFIG_AMAS_WGN
 	// AMAS non-RE mode
 	if (nvram_get_int("re_mode") == 0) add_iptables_AMAS_WGN(fn, action);
-#endif
 
 	fprintf(fn, "COMMIT\n");
 	fclose(fn);
@@ -2384,7 +2376,6 @@ int add_iQosRules(char *pcWANIF)
 	return status;
 }
 
-#ifdef RTCONFIG_AMAS_WGN
 static int start_bandwidth_limiter_AMAS_WGN(void)
 {
 	FILE *f = NULL;
@@ -2527,7 +2518,6 @@ static int start_bandwidth_limiter_AMAS_WGN(void)
 
 	return 0;
 }
-#endif
 
 int start_iQos(void)
 {
@@ -2561,11 +2551,9 @@ int start_iQos(void)
 		// AMAS non-RE mode
 		if (nvram_get_int("re_mode") == 0)
 			status = start_bandwidth_limiter();
-#ifdef RTCONFIG_AMAS_WGN
 		// AMAS RE mode
 		if (nvram_get_int("re_mode") == 1)
 			status = start_bandwidth_limiter_AMAS_WGN();
-#endif
 		break;
 #ifdef HND_ROUTER
 	case 9:

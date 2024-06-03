@@ -1,0 +1,77 @@
+========================================
+Renesas R0P7757LC0030RL board
+========================================
+
+This board specification:
+=========================
+
+The R0P7757LC0030RL(board config name:sh7757lcr) has the following device:
+
+ - SH7757 (SH-4A)
+ - DDR3-SDRAM 256MB (with ECC)
+ - SPI ROM 8MB
+ - 2D Graphic controller
+ - Ethernet controller
+ - eMMC 2GB
+
+
+configuration for This board:
+=============================
+
+You can select the configuration as follows:
+
+ - make sh7757lcr_config
+
+
+This board specific command:
+============================
+
+This board has the following its specific command:
+
+ - sh_g200
+ - write_mac
+
+
+1. sh_g200
+
+If we run this command, SH4 can control the G200.
+The default setting is that SH4 cannot control the G200.
+
+
+2. write_mac
+
+You can write MAC address to SPI ROM.
+
+ Usage 1) Write MAC address
+
+   write_mac [ETHERC ch0] [ETHERC ch1] [GETHERC ch0] [GETHERC ch1]
+
+	For example)
+	 => write_mac 00:00:87:6c:21:80 00:00:87:6c:21:81 00:00:87:6c:21:82 00:00:87:6c:21:83
+		*) We have to input the command as a single line
+		   (without carriage return)
+		*) We have to reset after input the command.
+
+ Usage 2) Show current data
+
+   write_mac
+
+	For example)
+		=> write_mac
+		 ETHERC ch0 = 00:00:87:6c:21:80
+		 ETHERC ch1 = 00:00:87:6c:21:81
+		GETHERC ch0 = 00:00:87:6c:21:82
+		GETHERC ch1 = 00:00:87:6c:21:83
+
+
+Update SPI ROM:
+============================
+
+1. Copy u-boot image to RAM area.
+2. Probe SPI device.
+   => sf probe 0
+   8192 KiB M25P64 at 0:0 is now current device
+3. Erase SPI ROM.
+   => sf erase 0 80000
+4. Write u-boot image to SPI ROM.
+   => sf write 0x89000000 0 80000

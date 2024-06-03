@@ -1,0 +1,4 @@
+Altera sysid
+
+Required properties:
+- compatible : should be "altr,sysid-1.0"

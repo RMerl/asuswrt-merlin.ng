@@ -1,0 +1,243 @@
+/ {
+	/*
+	 * The flash node and subnodes below are temporary for development. Once
+	 * a 3391 BOLT is available, it will be responsible for querying the SMC
+	 * via the vflash RPC interface to discover the LUNs available and
+	 * creating these nodes.
+	 */
+	flash {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		/*
+		 * This smc node will not be created by BOLT. It is only necessary
+		 * when emulating the SMC's vflash obligations via the vfbioss
+		 * driver.
+		 */
+		smc@0 {
+			compatible = "brcm,vfbioss";
+			reg = <0>;
+			rpc-channel = <&rpcsmcrg>;
+		};
+
+		lun@8 {
+			compatible = "brcm,vfbio";
+			reg = <8>;
+			lun-name = "bolt";
+			block-size = <2048>;
+			blocks = <1024>;
+			rpc-channel = <&rpcrgsmc>;
+		};
+
+		lun@9 {
+			compatible = "brcm,vfbio";
+			reg = <9>;
+			lun-name = "bolt1";
+			block-size = <2048>;
+			blocks = <1024>;
+			rpc-channel = <&rpcrgsmc>;
+		};
+
+		lun@10 {
+			compatible = "brcm,vfbio";
+			reg = <10>;
+			lun-name = "macadr";
+			block-size = <4096>;
+			blocks = <8>;
+			rpc-channel = <&rpcrgsmc>;
+		};
+
+		lun@11 {
+			compatible = "brcm,vfbio";
+			reg = <11>;
+			lun-name = "macadr1";
+			block-size = <4096>;
+			blocks = <8>;
+			rpc-channel = <&rpcrgsmc>;
+		};
+
+		lun@12 {
+			compatible = "brcm,vfbio";
+			reg = <12>;
+			lun-name = "nvram";
+			block-size = <2048>;
+			blocks = <32>;
+			rpc-channel = <&rpcrgsmc>;
+		};
+
+		lun@13 {
+			compatible = "brcm,vfbio";
+			reg = <13>;
+			lun-name = "nvram1";
+			block-size = <2048>;
+			blocks = <32>;
+			rpc-channel = <&rpcrgsmc>;
+		};
+
+		lun@14 {
+			compatible = "brcm,vfbio";
+			reg = <14>;
+			lun-name = "devtree0";
+			block-size = <1024>;
+			blocks = <256>;
+			rpc-channel = <&rpcrgsmc>;
+		};
+
+		lun@15 {
+			compatible = "brcm,vfbio";
+			reg = <15>;
+			lun-name = "devtree1";
+			block-size = <1024>;
+			blocks = <256>;
+			rpc-channel = <&rpcrgsmc>;
+		};
+
+		lun@16 {
+			compatible = "brcm,vfbio";
+			reg = <16>;
+			lun-name = "kernel0";
+			block-size = <4096>;
+			blocks = <512>;
+			rpc-channel = <&rpcrgsmc>;
+		};
+
+		lun@17 {
+			compatible = "brcm,vfbio";
+			reg = <17>;
+			lun-name = "kernel1";
+			block-size = <4096>;
+			blocks = <512>;
+			rpc-channel = <&rpcrgsmc>;
+		};
+
+		lun@18 {
+			compatible = "brcm,vfbio";
+			reg = <18>;
+			lun-name = "rg0";
+			block-size = <4096>;
+			blocks = <512>;
+			rpc-channel = <&rpcrgsmc>;
+		};
+
+		lun@19 {
+			compatible = "brcm,vfbio";
+			reg = <19>;
+			lun-name = "rg1";
+			block-size = <4096>;
+			blocks = <512>;
+			rpc-channel = <&rpcrgsmc>;
+		};
+
+		lun@20 {
+			compatible = "brcm,vfbio";
+			reg = <20>;
+			lun-name = "rgusrapps0";
+			block-size = <4096>;
+			blocks = <512>;
+			rpc-channel = <&rpcrgsmc>;
+		};
+
+		lun@21 {
+			compatible = "brcm,vfbio";
+			reg = <21>;
+			lun-name = "rgusrapps1";
+			block-size = <4096>;
+			blocks = <512>;
+			rpc-channel = <&rpcrgsmc>;
+		};
+
+		lun@22 {
+			compatible = "brcm,vfbio";
+			reg = <22>;
+			lun-name = "rgnonvol0";
+			block-size = <512>;
+			blocks = <1024>;
+			rpc-channel = <&rpcrgsmc>;
+		};
+
+		lun@23 {
+			compatible = "brcm,vfbio";
+			reg = <23>;
+			lun-name = "rgnonvol1";
+			block-size = <512>;
+			blocks = <1024>;
+			rpc-channel = <&rpcrgsmc>;
+		};
+
+		lun@24 {
+			compatible = "brcm,vfbio";
+			reg = <24>;
+			lun-name = "rgusrnonvol0";
+			block-size = <2048>;
+			blocks = <1024>;
+			rpc-channel = <&rpcrgsmc>;
+		};
+
+		lun@25 {
+			compatible = "brcm,vfbio";
+			reg = <25>;
+			lun-name = "rgusrnonvol1";
+			block-size = <2048>;
+			blocks = <1024>;
+			rpc-channel = <&rpcrgsmc>;
+		};
+
+		lun@26 {
+			compatible = "brcm,vfbio";
+			reg = <26>;
+			lun-name = "trustzone0";
+			block-size = <4096>;
+			blocks = <512>;
+			rpc-channel = <&rpcrgsmc>;
+		};
+
+		lun@27 {
+			compatible = "brcm,vfbio";
+			reg = <27>;
+			lun-name = "trustzone1";
+			block-size = <4096>;
+			blocks = <512>;
+			rpc-channel = <&rpcrgsmc>;
+		};
+	};
+
+	dqm: dqm@d3800000 {
+		dqm80: dqm80 {
+			qname = "RPC RG-->SMC";
+			id = <80>;
+			words = <4>;
+			depth = <8>;
+			lwm = <2>;
+			hwm = <1>;
+			interrupt-parent = <&dqmintc0>;
+			interrupts = <80>;
+		};
+		dqm81: dqm81 {
+			qname = "RPC SMC-->RG";
+			id = <81>;
+			words = <4>;
+			depth = <8>;
+			lwm = <2>;
+			hwm = <1>;
+			interrupt-parent = <&dqmintc0>;
+			interrupts = <81>;
+		};
+	};
+
+	rpcrgsmc: rpcrgsmc {
+		compatible = "brcm,itc-rpc";
+		dev-name = "rg-smc";
+		fifo-dev = "cpucomm";
+		tx-fifo = <80>;
+		rx-fifo = <81>;
+	};
+
+	rpcsmcrg: rpcsmcrg {
+		compatible = "brcm,itc-rpc";
+		dev-name = "smc-rg";
+		fifo-dev = "cpucomm";
+		tx-fifo = <81>;
+		rx-fifo = <80>;
+	};
+};

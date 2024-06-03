@@ -1,0 +1,6 @@
+MX53SMD BOARD
+M:	Fabio Estevam <fabio.estevam@nxp.com>
+S:	Maintained
+F:	board/freescale/mx53smd/
+F:	include/configs/mx53smd.h
+F:	configs/mx53smd_defconfig

@@ -18,7 +18,7 @@ else
 	HTTP_VERSION=3.1.0.97
 	OPENSSL_VERSION=1.0.2j.v001
 endif
-else ifeq ($(or $(RTCONFIG_QCA),$(RTCONFIG_LANTIQ)),y)
+else ifeq ($(or $(RTCONFIG_QCA),$(RTCONFIG_LANTIQ),$(RTCONFIG_RALINK_MT7622),$(RTCONFIG_MT798X)),y)
 ifeq ($(RTCONFIG_NEW_APP_ARM),y)
 	pkg_type=arm
 	DM_VERSION=9.1.0.101
@@ -89,6 +89,7 @@ install:
 ifeq ($(RTCONFIG_DEBUG),y)
 	$(if $(or $(RTCONFIG_SOC_IPQ8064),$(RTCONFIG_SOC_IPQ8074)),install -m 0755 $(if $(filter y,$(MUSL64)),gdb.ipq807x.musl64,gdb.ipq806x) $(INSTALLDIR)/bin/gdb)
 	$(if $(RTCONFIG_MT798X),install -m 0755 gdb-10.1-arm64-musl $(INSTALLDIR)/bin/gdb)
+	$(if $(RTCONFIG_RALINK_MT7621),install -m 0755 gdb.mips-musl $(INSTALLDIR)/bin/gdb)
 endif
 
 	$(MAKE) certs-install
@@ -140,6 +141,9 @@ endif
 endif
 
 	mkdir -p $(INSTALLDIR)/usr/sbin
+ifeq ($(RTCONFIG_RALINK_MT7622),y)
+	install -m 0755 apps_scripts/mtketh_reset.sh $(INSTALLDIR)/usr/sbin
+endif
 ifeq ($(RTCONFIG_USB),y)
 ifneq ($(APP),none)
 	install -m 0755 apps_scripts/asusrouter $(INSTALLDIR)/rom/.asusrouter
@@ -359,6 +363,14 @@ ifeq ($(BUILD_NAME), GTAX6000)
 	install -m 0755 dlna/icon_lrg.gt-ax6000_eva.jpg $(INSTALLDIR)/rom/dlna/icon_eva_lrg.jpg
 	install -m 0755 dlna/icon_lrg.gt-ax6000_eva.png $(INSTALLDIR)/rom/dlna/icon_eva_lrg.png
 endif
+ifeq ($(BUILD_NAME),TUF-AX4200)
+	# Non-default icon files
+	mkdir -p $(INSTALLDIR)/rom/dlna.TUF-AX4200Q
+	install -m 0755 dlna/icon_sm.tuf-ax4200q.jpg $(INSTALLDIR)/rom/dlna.TUF-AX4200Q/icon_sm.jpg
+	install -m 0755 dlna/icon_sm.tuf-ax4200q.png $(INSTALLDIR)/rom/dlna.TUF-AX4200Q/icon_sm.png
+	install -m 0755 dlna/icon_lrg.tuf-ax4200q.jpg $(INSTALLDIR)/rom/dlna.TUF-AX4200Q/icon_lrg.jpg
+	install -m 0755 dlna/icon_lrg.tuf-ax4200q.png $(INSTALLDIR)/rom/dlna.TUF-AX4200Q/icon_lrg.png
+endif
 ifeq ($(and $(LJPG),$(SJPG),$(LPNG),$(SPNG)),)
 	$(warning Add media server icon for $(BUILD_NAME) !!!!!!!!!!!!)
 else
@@ -397,7 +409,7 @@ else
 	rm -f $(INSTALLDIR)/rom/etc/profile.hnd
 endif
 
-ifeq ($(RTCONFIG_TPVPN),y)
+ifeq ($(RTCONFIG_HMA),y)
 	mkdir -p $(INSTALLDIR)/rom/vpn
 	install -m 0644 vpn/HMA_TCP.JSON $(INSTALLDIR)/rom/vpn/HMA_TCP.JSON
 	install -m 0644 vpn/HMA_UDP.JSON $(INSTALLDIR)/rom/vpn/HMA_UDP.JSON
@@ -405,10 +417,6 @@ endif
 
 ifeq ($(RTCONFIG_HND_ROUTER_AX_6756), y)
 	install -m 0755 apps_scripts/brcm_cled.sh $(INSTALLDIR)/usr/sbin
-endif
-
-ifeq ($(RTCONFIG_FSMD),y)
-	sed '/#/d' ../.config > $(INSTALLDIR)/rom/rtconfig
 endif
 
 ifeq ($(RTCONFIG_BCM_MFG), y)
@@ -426,6 +434,10 @@ ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U_V2 TUF-AX5400_V2 XD6_V2 RT-A
 endif
 endif
 
+ifeq ($(RTCONFIG_FSMD),y)
+	sed '/#/d' ../.config > $(INSTALLDIR)/rom/rtconfig
+endif
+
 ifeq ($(RTAX86U), y)
 	install -m 0755 9873w_b0-b4.bin $(INSTALLDIR)/rom
 endif
@@ -434,13 +446,24 @@ ifeq ($(BRCM_CHIP),63178)
 	cp -rf rom/etc/adsl1 $(INSTALLDIR)/rom/etc
 endif
 
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT10 RT-AX9000))
+ifeq ($(RTCONFIG_HND_ROUTER_BE_4916),y)
+ifneq ($(wildcard $(SRCBASE)/../../../../../../opensource/net/enet/impl7/sf2_scripts),)
+	mkdir -p $(INSTALLDIR)/rom/etc/sf2
+	install -m 0755 $(SRCBASE)/../../../../../../opensource/net/enet/impl7/sf2_scripts/* $(INSTALLDIR)/rom/etc/sf2
+endif
+endif
+
+ifeq ($(BUILD_NAME), GT10)
 	install -m 0755 apps_scripts/$(BUILD_NAME)/ingress_filter_config.sh $(INSTALLDIR)/usr/sbin
 	install -m 0755 apps_scripts/$(BUILD_NAME)/ingress_filter_config_bridging.sh $(INSTALLDIR)/usr/sbin
 endif
 
 ifeq ($(RTCONFIG_BCMARM),y)
 	install -m 0755 apps_scripts/brcmsysinfo.sh $(INSTALLDIR)/usr/sbin
+endif
+
+ifeq ($(RTCONFIG_GEARUPPLUGIN),y)
+	install -m 0755 gearup_script/guplugin_monitor.sh $(INSTALLDIR)/usr/sbin
 endif
 
 .PHONY: dummy

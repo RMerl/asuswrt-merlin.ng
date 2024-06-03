@@ -43,10 +43,10 @@ define(function(){
 				]
 			}, 
 			/*{
-				menuName: "<#Guest_Network#>",
+				menuName: Guest_Network_naming,
 				index: "menu_GuestNetwork",
 				tab: [
-					{url: "Guest_network.asp", tabName: "<#Guest_Network#>"},
+					{url: (isSupport("mtlancfg") ? "SDN.asp" : "Guest_network.asp"), tabName: Guest_Network_naming},
 					{url: "Captive_Portal.asp", tabName: "Free WiFi"},
 					{url: "Captive_Portal_Advanced.asp", tabName: "Captive Portal"},
 					{url: "Guest_network_fbwifi.asp", tabName: "Facebook WiFi"},
@@ -175,14 +175,15 @@ define(function(){
 					{url: "Advanced_WSecurity_Content.asp", tabName: "<#menu5_1_5#>"},
 					{url: "Advanced_WAdvanced_Content.asp", tabName: "<#menu5_1_6#>"},
 					{url: "Advanced_WProxy_Content.asp", tabName: "WiFi Proxy"},
+					{url: "MLO.asp", tabName: `MLO`},
 					{url: "NULL", tabName: "__INHERIT__"}
 				] 
 			},
 			{
-				menuName: "<#Guest_Network#>",
+				menuName: Guest_Network_naming,
 				index: "menu_GuestNetwork",
 				tab: [
-					{url: "Guest_network.asp", tabName: "<#Guest_Network#>"},
+					{url: (isSupport("mtlancfg") ? "SDN.asp" : "Guest_network.asp"), tabName: Guest_Network_naming},
 					{url: "Captive_Portal.asp", tabName: "Free WiFi"},
 					{url: "Captive_Portal_Advanced.asp", tabName: "Captive Portal"},
 					{url: "Guest_network_fbwifi.asp", tabName: "Facebook WiFi"},
@@ -331,7 +332,7 @@ define(function(){
 					retArray.push("menu_APP");
 				}
 
-				if((!cloudsync_support && !aicloudipk_support) || nocloudsync_support){
+				if((!cloudsync_support && !aicloudipk_support) || nocloudsync_support || isSupport("BUSINESS")){
 					retArray.push("menu_AiCloud");
 				}
 
@@ -621,6 +622,30 @@ define(function(){
 
 				if(!dnsfilter_support)
 					retArray.push("DNSFilter.asp");
+
+				if(isSupport("mtlancfg")){
+					retArray.push("Captive_Portal.asp");
+					retArray.push("Captive_Portal_Advanced.asp");
+					retArray.push("Guest_network_fbwifi.asp");
+				}
+
+				if(!isSupport("mtlancfg") || !isSupport("mlo")){
+					retArray.push("MLO.asp");
+				}
+
+				if(isSupport("BUSINESS")){
+					retArray.push("APP_Installation.asp");
+					retArray.push("aidisk.asp");
+					retArray.push("PrinterServer.asp");
+					retArray.push("Advanced_Modem_Content.asp");
+					retArray.push("Advanced_TimeMachine.asp");
+					retArray.push("fileflex.asp");
+				}
+
+				if(isSupport("wifi7")){
+					retArray.push("cloud_sync.asp");
+					retArray.push("cloud_router_sync.asp");
+				}
 
 				/* Operation Mode */
 				if(isSwMode("re")){

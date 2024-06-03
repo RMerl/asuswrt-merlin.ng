@@ -1,0 +1,152 @@
+#include "47622.dtsi"
+
+/ {
+	compat_chip_id = <0x6755 0x47622>;
+    memory_controller {
+        /* CUSTOM speed 1026MHz */
+        memcfg = <(BP_DDR_SPEED_CUSTOM_1      | \
+                   BP_DDR_TOTAL_SIZE_512MB    | \
+                   BP_DDR_DEVICE_WIDTH_16     | \
+                   BP_DDR_TOTAL_WIDTH_16BIT   | \
+                   BP_DDR_SSC_CONFIG_1)>;
+    };
+
+	buttons {
+		compatible = "brcm,buttons";
+		reset_button {
+			ext_irq = <&bca_extintr 10 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			press {
+				print = "Button Press -- Hold for 5s to do restore to default";
+			};
+			hold {
+				rst_to_dflt = <5>;
+			};
+			release {
+				reset = <0>;
+			};	
+		};
+		ses_button {
+			ext_irq = <&bca_extintr 8 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			release {
+				ses_short_period = <0>;
+				ses_long_period = <3>;
+			};
+		};
+	};
+
+};
+
+&mdio {
+    /* Port PHY mapping:
+            port_sysp0 <---> phy_gphy
+            port_sysp1 <---> phy_serdes0 <--> phy_cascade0
+     */
+	phy_gphy {
+		status = "okay";
+	};
+
+	phy_cascade0 {
+		compatible = "brcm,bcaphy";
+		phy-type = "EXT3";
+		reg = <31>;
+		enet-phy-lane-swap;
+		status = "okay";
+		phy-external;
+	};
+
+	phy_serdes0 {
+		phy-handle = <&phy_cascade0>;
+		status = "okay";
+	};
+};
+
+&switch0 {
+	pinctrl-names = "default"; 
+	pinctrl-0 = <&a_rgmii_mdc_pin_68 &a_rgmii_mdio_pin_69>; 
+	ports {
+		port_sysp0 {
+			phy-handle = <&phy_gphy>;
+			network-leds = <&led0 &led3>;
+			status = "okay";
+		};
+		port_sysp1 {
+			phy-handle = <&phy_serdes0>;
+			status = "okay";
+		};
+	};
+};
+&legacy_leds {
+	wl-sess-led = <&led2>;
+};
+
+&led_ctrl {
+	led0: port_0-led-0-pin_25 {
+		active_low;
+		link = <(LED_SPEED_10|LED_SPEED_100|LED_SPEED_1G)>;
+		status = "okay";
+	};
+	led3: port_0-led-3-pin_28 {
+		active_low;
+		activity = <LED_SPEED_GBE>;
+		status = "okay";
+	};
+	led2:led_gpio_7 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <7>;
+		active_low;
+	};
+};
+
+&hs_uart0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&hs_uart_cts_pin_3 &hs_uart_rts_pin_4 &hs_uart_sin_pin_5 &hs_uart_sout_pin_6>;
+};
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined (CONFIG_BCM_PCIE_HCD_MODULE)
+&vpcie0 {
+	linux,pci-domain = <0>;
+};
+&vpcie1 {
+	linux,pci-domain = <2>;
+};
+&pcie0 {
+	linux,pci-domain = <1>;
+	status = "okay";
+};
+#endif
+
+&i2c {
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c_sda_pin_16 &i2c_scl_pin_17>;
+	status = "okay";
+};
+
+&usb_ctrl {
+	status = "okay";
+	xhci-enable;
+	pinctrl-names = "default";
+	pinctrl-0 = <&usb0_pwr_pins &usb1_pwr_pins>;
+	pwron-bias-pull-up;
+};
+
+&usb0_xhci {
+	status = "okay";
+};
+
+&usb0_ehci {
+	status = "okay";
+};
+
+&usb0_ohci {
+	status = "okay";
+};
+
+&usb1_ehci {
+	status = "okay";
+};
+
+&usb1_ohci {
+	status = "okay";
+};
+

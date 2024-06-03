@@ -36,6 +36,10 @@ FUNC_GETIFADDRS=no
 SHARED_MODULES=
 endif
 
+ifeq ($(or $(RTCONFIG_RALINK),$(RTCONFIG_REALTEK)),y)
+TARGET_CFLAGS += -Wl,-z,relro,-z,now #-Wno-error=unused-but-set-variable	// msdk-linux-gcc: No option -Wunused-but-set-variable
+MAKE_FLAGS = DYNEXP= PICFLAG= MODULES=
+endif
 
 CONFIGURE_VARS = \
 	ac_cv_lib_attr_getxattr=no \

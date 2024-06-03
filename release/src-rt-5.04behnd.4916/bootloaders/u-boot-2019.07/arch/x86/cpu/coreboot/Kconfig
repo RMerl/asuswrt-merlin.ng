@@ -1,0 +1,28 @@
+if TARGET_COREBOOT
+
+config SYS_COREBOOT
+	bool
+	default y
+	imply SYS_NS16550
+	imply SCSI
+	imply SCSI_AHCI
+	imply AHCI_PCI
+	imply MMC
+	imply MMC_PCI
+	imply MMC_SDHCI
+	imply MMC_SDHCI_SDMA
+	imply USB
+	imply USB_EHCI_HCD
+	imply USB_XHCI_HCD
+	imply USB_STORAGE
+	imply USB_KEYBOARD
+	imply VIDEO_COREBOOT
+	imply E1000
+	imply ETH_DESIGNWARE
+	imply PCH_GBE
+	imply RTL8169
+	imply CMD_CBFS
+	imply FS_CBFS
+	imply CBMEM_CONSOLE
+
+endif

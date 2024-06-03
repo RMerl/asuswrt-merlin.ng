@@ -1,0 +1,297 @@
+if TI816X
+
+config TARGET_TI816X_EVM
+	bool "Support ti816x_evm"
+	help
+	  This option specifies support for the TI8168 EVM development platform
+	  with PG2.0 silicon and DDR3 DRAM.
+
+endif
+
+if TI814X
+
+config TARGET_TI814X_EVM
+	bool "Support ti814x_evm"
+	help
+	  This option specifies support for the TI8148
+	  EVM development platform.
+
+endif
+
+if AM33XX
+
+config AM33XX_CHILISOM
+	bool
+	select SUPPORT_SPL
+
+choice
+	prompt "AM33xx board select"
+
+config TARGET_AM335X_EVM
+	bool "Support am335x_evm"
+	select BOARD_LATE_INIT
+	select DM
+	select DM_GPIO
+	select DM_SERIAL
+	select TI_I2C_BOARD_DETECT
+	imply CMD_DM
+	imply SPL_DM
+	imply SPL_DM_SEQ_ALIAS
+	imply SPL_ENV_SUPPORT
+	imply SPL_FS_EXT4
+	imply SPL_FS_FAT
+	imply SPL_GPIO_SUPPORT
+	imply SPL_I2C_SUPPORT
+	imply SPL_LIBCOMMON_SUPPORT
+	imply SPL_LIBDISK_SUPPORT
+	imply SPL_LIBGENERIC_SUPPORT
+	imply SPL_MMC_SUPPORT
+	imply SPL_NAND_SUPPORT
+	imply SPL_OF_LIBFDT
+	imply SPL_POWER_SUPPORT
+	imply SPL_SEPARATE_BSS
+	imply SPL_SERIAL_SUPPORT
+	imply SPL_SYS_MALLOC_SIMPLE
+	imply SPL_WATCHDOG_SUPPORT
+	imply SPL_YMODEM_SUPPORT
+	help
+	  This option specifies support for the AM335x
+	  GP and HS EVM development platforms. The AM335x
+	  GP EVM is a standalone test, development, and
+	  evaluation module system that enables developers
+	  to write software and develop hardware around
+	  an AM335x processor subsystem.
+
+config TARGET_AM335X_BALTOS
+	bool "Support am335x_baltos"
+	select BOARD_LATE_INIT
+	select DM
+	select DM_GPIO
+	select DM_SERIAL
+	imply CMD_DM
+
+config TARGET_AM335X_IGEP003X
+	bool "Support am335x_igep003x"
+	select BOARD_LATE_INIT
+	select DM
+	select DM_GPIO
+	select DM_SERIAL
+	imply CMD_DM
+
+config TARGET_AM335X_SHC
+	bool "Support am335x based shc board from bosch"
+	select BOARD_LATE_INIT
+	select DM
+	select DM_GPIO
+	select DM_SERIAL
+	imply CMD_DM
+	imply CMD_SPL
+
+config TARGET_AM335X_GUARDIAN
+	bool "Support am335x based guardian board from bosch"
+	select DM
+	select DM_SERIAL
+	select DM_GPIO
+	select DM_USB
+
+config TARGET_AM335X_SL50
+	bool "Support am335x_sl50"
+	select BOARD_LATE_INIT
+	select DM
+	select DM_GPIO
+	select DM_SERIAL
+	imply CMD_DM
+
+config TARGET_BAV335X
+	bool "Support bav335x"
+	select BOARD_LATE_INIT
+	select DM
+	select DM_SERIAL
+	imply CMD_DM
+	help
+	  The BAV335x OEM Network Processor integrates all the functions of an
+	  embedded network computer in a small, easy to use SODIMM module which
+	  incorporates the popular Texas Instruments Sitara 32bit ARM Coretex-A8
+	  processor, with fast DDR3 512MB SDRAM, 4GB of embedded MMC and a Gigabit
+	  ethernet with simple connection to external connectors.
+
+	  For more information, visit: http://birdland.com/oem
+
+config TARGET_BRXRE1
+	bool "Support BRXRE1"
+	select BOARD_LATE_INIT
+
+config TARGET_BRPPT1
+	bool "Support BRPPT1"
+	select BOARD_LATE_INIT
+
+config TARGET_CHILIBOARD
+	bool "Grinn chiliBoard"
+	select AM33XX_CHILISOM
+	select BOARD_LATE_INIT
+	select DM
+	select DM_SERIAL
+	imply CMD_DM
+
+config TARGET_CM_T335
+	bool "Support cm_t335"
+	select DM
+	select DM_GPIO
+	select DM_SERIAL
+	imply CMD_DM
+
+config TARGET_DRACO
+	bool "Support draco"
+	select BOARD_LATE_INIT
+	select DM
+	select DM_GPIO
+	select DM_SERIAL
+	imply CMD_DM
+
+config TARGET_ETAMIN
+	bool "Support etamin"
+	select BOARD_LATE_INIT
+	select DM
+	select DM_GPIO
+	select DM_SERIAL
+	imply CMD_DM
+
+config TARGET_PCM051
+	bool "Support pcm051"
+	select DM
+	select DM_GPIO
+	select DM_SERIAL
+	imply CMD_DM
+
+config TARGET_PENGWYN
+	bool "Support pengwyn"
+	select DM
+	select DM_GPIO
+	select DM_SERIAL
+	imply CMD_DM
+
+config TARGET_PEPPER
+	bool "Support pepper"
+	select DM
+	select DM_GPIO
+	select DM_SERIAL
+	imply CMD_DM
+
+config TARGET_PXM2
+	bool "Support pxm2"
+	select BOARD_LATE_INIT
+	select DM
+	select DM_GPIO
+	select DM_SERIAL
+	imply CMD_DM
+
+config TARGET_RASTABAN
+	bool "Support rastaban"
+	select BOARD_LATE_INIT
+	select DM
+	select DM_GPIO
+	select DM_SERIAL
+	imply CMD_DM
+
+config TARGET_RUT
+	bool "Support rut"
+	select BOARD_LATE_INIT
+	select DM
+	select DM_GPIO
+	select DM_SERIAL
+	imply CMD_DM
+
+config TARGET_THUBAN
+	bool "Support thuban"
+	select BOARD_LATE_INIT
+	select DM
+	select DM_GPIO
+	select DM_SERIAL
+	imply CMD_DM
+
+config TARGET_PDU001
+	bool "Support PDU001"
+	select DM
+	select DM_SERIAL
+	imply SPL_SEPARATE_BSS
+	imply CMD_DM
+	help
+	  Support for PDU001 platform developed by EETS GmbH.
+	  The PDU001 is a processor and display unit developed around
+	  the Computing-Module m2 from bytes at work AG.
+
+endchoice
+
+endif
+
+if AM43XX
+
+choice
+	prompt "AM43xx board select"
+
+config TARGET_AM43XX_EVM
+	bool "Support am43xx_evm"
+	select BOARD_LATE_INIT
+	select TI_I2C_BOARD_DETECT
+	imply DM_ETH
+	imply DM_I2C
+	imply DM_SPI
+	imply DM_SPI_FLASH
+	imply SPL_ENV_SUPPORT
+	imply SPL_FS_EXT4
+	imply SPL_FS_FAT
+	imply SPL_GPIO_SUPPORT
+	imply SPL_I2C_SUPPORT
+	imply SPL_LIBCOMMON_SUPPORT
+	imply SPL_LIBDISK_SUPPORT
+	imply SPL_LIBGENERIC_SUPPORT
+	imply SPL_MMC_SUPPORT
+	imply SPL_NAND_SUPPORT
+	imply SPL_POWER_SUPPORT
+	imply SPL_SERIAL_SUPPORT
+	imply SPL_WATCHDOG_SUPPORT
+	imply SPL_YMODEM_SUPPORT
+	help
+	  This option specifies support for the AM43xx
+	  GP and HS EVM development platforms.The AM437x
+	  GP EVM is a standalone test, development, and
+	  evaluation module system that enables developers
+	  to write software and develop hardware around
+	  an AM43xx processor subsystem.
+
+config TARGET_CM_T43
+	bool "Support cm_t43"
+
+endchoice
+
+config SPL_RTC_DDR_SUPPORT
+	bool
+	depends on SPL
+	prompt "Enable RTC-DDR ONLY Support"
+	help
+	  If you want RTC-DDR ONLY Support, say Y. RTC Only with DDR in
+	  self-refresh mode is a special power saving mode where in all
+	  the other voltages are turned off apart from the RTC domain and DDR.
+	  So only RTC is alive and ticking and one can program it to wake
+	  up after a predetermined period. Once RTC alarm fires, the PMIC
+	  powers up all the voltage domains. U-Boot takes a special path
+	  as the DDR has contents is in self-refresh and restore path is
+	  followed.
+
+endif
+
+if AM43XX || AM33XX
+config PUB_ROM_DATA_SIZE
+	hex "Size in bytes of the L3 SRAM reserved by ROM to store data"
+	default 0x8400
+	help
+	  During the device boot, the public ROM uses the top of
+	  the public L3 OCMC RAM to store r/w data like stack,
+	  heap, globals etc. When the ROM is copying the boot
+	  image from the boot media into memory, the image must
+	  not spill over into this area. This value can be used
+	  during compile time to determine the maximum size of a
+	  boot image. Once the ROM transfers control to the boot
+	  image, this area is no longer used, and can be reclaimed
+	  for run time use by the boot image.
+endif

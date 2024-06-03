@@ -1,0 +1,323 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2018 SolidRun ltd
+ */
+
+#include "armada-8040.dtsi"
+
+/ {
+	model = "ClearFog-GT-8K";
+	compatible = "solidrun,clearfog-gt-8k",
+		     "marvell,armada8040";
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	aliases {
+		i2c0 = &cpm_i2c0;
+		i2c1 = &cpm_i2c1;
+		spi0 = &cps_spi1;
+	};
+
+	memory@00000000 {
+		device_type = "memory";
+		reg = <0x0 0x0 0x0 0x80000000>;
+	};
+
+	simple-bus {
+		compatible = "simple-bus";
+
+		reg_usb3h0_vbus: usb3-vbus0 {
+			compatible = "regulator-fixed";
+			pinctrl-names = "default";
+			pinctrl-0 = <&cpm_xhci_vbus_pins>;
+			regulator-name = "reg-usb3h0-vbus";
+			regulator-min-microvolt = <5000000>;
+			regulator-max-microvolt = <5000000>;
+			startup-delay-us = <300000>;
+			shutdown-delay-us = <500000>;
+			regulator-force-boot-off;
+			gpio = <&cpm_gpio1 15 GPIO_ACTIVE_LOW>; /* GPIO[47] */
+		};
+	};
+};
+
+&uart0 {
+	status = "okay";
+};
+
+&ap_pinctl {
+	/*
+	 * MPP Bus:
+	 * eMMC [0-10]
+	 * UART0 [11,19]
+	 */
+		  /* 0 1 2 3 4 5 6 7 8 9 */
+	pin-func = < 1 1 1 1 1 1 1 1 1 1
+		     1 3 0 0 0 0 0 0 0 3 >;
+};
+
+/* on-board eMMC */
+&ap_sdhci0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&ap_emmc_pins>;
+	bus-width = <8>;
+	status = "okay";
+};
+
+&cpm_pinctl {
+	/*
+	 * MPP Bus:
+	 * [0-31] = 0xff: Keep default CP0_shared_pins:
+	 * [11] CLKOUT_MPP_11 (out)
+	 * [23] LINK_RD_IN_CP2CP (in)
+	 * [25] CLKOUT_MPP_25 (out)
+	 * [29] AVS_FB_IN_CP2CP (in)
+	 * [32, 33, 34] pci0/1/2 reset
+	 * [35-38] CP0 I2C1 and I2C0
+	 * [39] GPIO reset button
+	 * [40,41] LED0 and LED1
+	 * [43] 1512 phy reset
+	 * [47] USB VBUS EN (active low)
+	 * [48] FAN PWM
+	 * [49] SFP+ present signal
+	 * [50] TPM interrupt
+	 * [51] WLAN0 disable
+	 * [52] WLAN1 disable
+	 * [53] LTE disable
+	 * [54] NFC reset
+	 * [55] Micro SD card detect
+	 * [56-61] Micro SD
+	 */
+		/*   0    1    2    3    4    5    6    7    8    9 */
+	pin-func = < 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
+		     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
+		     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
+		     0xff 0    0    0    0    2    2    2    2    0
+		     0    0    0    0    0    0    0    0    0    0
+		     0    0    0    0    0    0    0xe  0xe  0xe  0xe
+		     0xe  0xe  0 >;
+
+	cpm_pcie_reset_pins: cpm-pcie-reset-pins {
+		marvell,pins = < 32 >;
+		marvell,function = <0>;
+	};
+
+	cpm_xhci_vbus_pins: cpm-xhci-vbus-pins {
+		marvell,pins = < 47 >;
+		marvell,function = <0>;
+	};
+
+	cps_1g_phy_reset: cps-1g-phy-reset {
+		marvell,pins = < 43 >;
+		marvell,function = <0>;
+	};
+};
+
+/* uSD slot */
+&cpm_sdhci0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&cpm_sdhci_pins>;
+	bus-width = <4>;
+	status = "okay";
+};
+
+&cpm_pcie0 {
+	num-lanes = <1>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&cpm_pcie_reset_pins>;
+	marvell,reset-gpio = <&cpm_gpio1 0 GPIO_ACTIVE_LOW>;
+	status = "okay";
+};
+
+&cpm_i2c0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&cpm_i2c0_pins>;
+	status = "okay";
+	clock-frequency = <100000>;
+};
+
+&cpm_i2c1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&cpm_i2c1_pins>;
+	status = "okay";
+	clock-frequency = <100000>;
+};
+
+&cpm_sata0 {
+	status = "okay";
+};
+
+&cpm_comphy {
+	/*
+	 * CP0 Serdes Configuration:
+	 * Lane 0: PCIe0 (x1)
+	 * Lane 1: Not connected
+	 * Lane 2: SFI (10G)
+	 * Lane 3: Not connected
+	 * Lane 4: USB 3.0 host port1 (can be PCIe)
+	 * Lane 5: Not connected
+	 */
+	phy0 {
+		phy-type = <PHY_TYPE_PEX0>;
+	};
+	phy1 {
+		phy-type = <PHY_TYPE_UNCONNECTED>;
+	};
+	phy2 {
+		phy-type = <PHY_TYPE_SFI>;
+	};
+	phy3 {
+		phy-type = <PHY_TYPE_UNCONNECTED>;
+	};
+	phy4 {
+		phy-type = <PHY_TYPE_USB3_HOST1>;
+	};
+	phy5 {
+		phy-type = <PHY_TYPE_UNCONNECTED>;
+	};
+};
+
+&cpm_ethernet {
+        pinctrl-names = "default";
+        status = "okay";
+};
+
+/* 10G SFI SFP */
+&cpm_eth0 {
+        status = "okay";
+        phy-mode = "sfi";
+};
+
+&cps_sata0 {
+	status = "okay";
+};
+
+&cps_usb3_0 {
+	vbus-supply = <&reg_usb3h0_vbus>;
+	status = "okay";
+};
+
+&cps_utmi0 {
+	status = "okay";
+};
+
+&cps_pinctl {
+	/*
+	 * MPP Bus:
+	 * [0-5] TDM
+	 * [6]   VHV Enable
+	 * [7]   CP1 SPI0 CSn1 (FXS)
+	 * [8]   CP1 SPI0 CSn0 (TPM)
+	 * [9.11]CP1 SPI0 MOSI/MISO/CLK
+	 * [13]  CP1 SPI1 MISO (TDM and SPI ROM shared)
+	 * [14]  CP1 SPI1 CS0n (64Mb SPI ROM)
+	 * [15]  CP1 SPI1 MOSI (TDM and SPI ROM shared)
+	 * [16]  CP1 SPI1 CLK (TDM and SPI ROM shared)
+	 * [24]  Topaz switch reset
+	 * [26]  Buzzer
+	 * [27]  CP1 SMI MDIO
+	 * [28]  CP1 SMI MDC
+	 * [29]  CP0 10G SFP TX Disable
+	 * [30]  WPS button
+	 * [31]  Front panel button
+	 * [32-62] = 0xff: Keep default CP1_shared_pins:
+	 */
+		/*   0    1    2    3    4    5    6    7    8    9 */
+	pin-func = < 0x4  0x4  0x4  0x4  0x4  0x4  0x0  0x4  0x4  0x4
+		     0x4  0x4  0x0  0x3  0x3  0x3  0x3  0xff 0xff 0xff
+		     0xff 0xff 0xff 0xff 0x0  0xff 0x0  0x8  0x8  0x0
+		     0x0  0x0  0x0  0xff 0xff 0xff 0xff 0xff 0xff 0xff
+		     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
+		     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
+		     0xff 0xff 0xff>;
+};
+
+&cps_spi1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&cps_spi1_pins>;
+	status = "okay";
+
+	spi-flash@0 {
+		compatible = "jedec,spi-nor";
+		reg = <0>;
+		spi-max-frequency = <10000000>;
+
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			partition@0 {
+				label = "U-Boot";
+				reg = <0 0x200000>;
+			};
+			partition@200000 {
+				label = "Filesystem";
+				reg = <0x200000 0xce0000>;
+			};
+		};
+	};
+};
+
+&cps_comphy {
+	/*
+	 * CP1 Serdes Configuration:
+	 * Lane 0: SATA 1 (RX swapped). Can be PCIe0
+	 * Lane 1: Not used
+	 * Lane 2: USB HOST 0
+	 * Lane 3: SGMII1 - Connected to 1512 port
+	 * Lane 4: Not used
+	 * Lane 5: SGMII2 - Connected to Topaz switch
+	 */
+	phy0 {
+		phy-type = <PHY_TYPE_SATA1>;
+		phy-invert = <PHY_POLARITY_RXD_INVERT>;
+	};
+	phy1 {
+		phy-type = <PHY_TYPE_UNCONNECTED>;
+	};
+	phy2 {
+		phy-type = <PHY_TYPE_USB3_HOST0>;
+	};
+	phy3 {
+		phy-type = <PHY_TYPE_SGMII1>;
+		phy-speed = <PHY_SPEED_1_25G>;
+	};
+	phy4 {
+		phy-type = <PHY_TYPE_UNCONNECTED>;
+	};
+	phy5 {
+		phy-type = <PHY_TYPE_SGMII2>;
+		phy-speed = <PHY_SPEED_3_125G>;
+	};
+};
+
+&cps_mdio {
+	phy0: ethernet-phy@0 {
+		reg = <0>;
+	};
+};
+
+&cps_ethernet {
+	pinctrl-names = "default";
+	pinctrl-0 = <&cps_1g_phy_reset>;
+	status = "okay";
+};
+
+/* 1G SGMII */
+&cps_eth1 {
+	status = "okay";
+	phy-mode = "sgmii";
+	phy = <&phy0>;
+	phy-reset-gpios = <&cpm_gpio1 11 GPIO_ACTIVE_LOW>;
+};
+
+/* 2.5G to Topaz switch */
+&cps_eth2 {
+	status = "okay";
+	phy-mode = "sgmii";
+	phy-speed = <2500>;
+	phy-reset-gpios = <&cps_gpio0 24 GPIO_ACTIVE_LOW>;
+};

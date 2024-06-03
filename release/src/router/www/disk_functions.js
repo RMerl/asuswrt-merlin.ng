@@ -279,7 +279,7 @@ function GetTree(layer_order, v){
 		document.getElementById('e'+layer_order).style.visibility = "";
 	}
 	else
-		alert("Error when show the folder-tree!");
+		alert(stringSafeGet("<#ALERT_OF_ERROR_show#>"));
 }
 
 function get_layer_items(new_layer_order, motion){
@@ -617,7 +617,7 @@ function getChangedPermission(selectedObj){
 
 	permission = getValueofRadio(radioName);
 	if(permission == -1){
-		alert("Can't read the permission when change the radio!");	// system error msg. must not be translate
+		alert(stringSafeGet("<#ALERT_OF_ERROR_cant_read#>"));
 		return;
 	}
 	
@@ -632,8 +632,13 @@ function getChangedPermission(selectedObj){
 	
 	if(selectedlayer == 2)
 		selectedFolder = "";
-	else
-		selectedFolder = parent.get_sharedfolder_in_pool(selectedPoolDevice)[getSelectedFolderOrder()];
+	else{
+		try{
+		 	selectedFolder = parent.get_sharedfolder_in_pool(selectedPoolDevice)[getSelectedFolderOrder()];
+		}catch(e){
+		 	selectedFolder = get_sharedfolder_in_pool(selectedPoolDevice)[getSelectedFolderOrder()];
+		}
+	}
 	
 	this.changedPermissions[this.selectedAccount][selectedPoolDevice][selectedFolder] = permission;
 	this.controlApplyBtn = 1;

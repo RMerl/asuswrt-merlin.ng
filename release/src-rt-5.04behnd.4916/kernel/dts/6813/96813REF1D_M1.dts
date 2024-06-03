@@ -1,0 +1,33 @@
+#include "96813REF1D.dts"
+
+&mdio {
+    /* Port PHY mapping:
+            port_gphy0 <----> phy_gphy0
+            port_gphy1 <----> phy_gphy1
+            port_gphy2 <----> phy_gphy2
+            port_gphy3 <----> phy_gphy3
+            port_xphy <-----> phy_xphy
+            port_sgmii1 <---> phy_serdes0   - phy_cascade0
+            port_sgmii2 <---> phy_serdes1   - phy_cascade1
+     */
+
+	phy_cascade1 {
+		usxgmii-m-type = "10G-SXGMII";  /* types: 10G-SXGMII 10G-DXGMII 10G-QXGMII 5G-SXGMII 5G-DXGMII 2.5G-SXGMII */
+		status = "okay";
+	};
+
+	phy_serdes1 {
+		phy-handle = <&phy_cascade1>;
+		usxgmii-m-type = "10G-SXGMII";  /* types: 10G-SXGMII 10G-DXGMII 10G-QXGMII 5G-SXGMII 5G-DXGMII 2.5G-SXGMII */
+		status = "okay";
+	};
+};
+
+&switch0 {
+	ports {
+		port_sgmii2 {
+			network-leds = <&led0 &led1>;
+			status = "okay";
+		};
+	};
+};

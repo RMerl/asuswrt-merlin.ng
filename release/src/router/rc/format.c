@@ -544,7 +544,6 @@ void adjust_vpnc_config(void)
 	char buf[1024];
 	char *nv = NULL, *nvp = NULL, *b = NULL, *mac, *static_ip, *desc, *proto, *server, *username, *passwd, *dns;
 
-	_dprintf("[%s, %d]\n", __FUNCTION__, __LINE__);
 	vpnc_clientlist = nvram_safe_get("vpnc_clientlist");
 	if(vpnc_clientlist[0] != '\0')
 	{

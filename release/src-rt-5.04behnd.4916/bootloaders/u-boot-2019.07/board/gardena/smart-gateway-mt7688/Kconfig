@@ -1,0 +1,12 @@
+if BOARD_GARDENA_SMART_GATEWAY_MT7688
+
+config SYS_BOARD
+	default "smart-gateway-mt7688"
+
+config SYS_VENDOR
+	default "gardena"
+
+config SYS_CONFIG_NAME
+	default "gardena-smart-gateway-mt7688"
+
+endif

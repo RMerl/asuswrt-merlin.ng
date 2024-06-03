@@ -16,6 +16,7 @@
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script><% wl_get_parameter(); %>
 $(function () {
@@ -67,7 +68,8 @@ function initial(){
 		if(wl_info.band5g_2_support || wl_info.band6g_support){	//Tri-band, RT-AC3200
 			if(band6g_support){
 				document.getElementById("wps_opt1").innerHTML = '5 GHz';
-				document.getElementById("wps_opt2").innerHTML = '6 GHz';
+				// document.getElementById("wps_opt2").innerHTML = '6 GHz';
+				document.getElementById("wps_opt2").remove();
 			}
 			
 			document.getElementById("wps_switch").style.display = "none";	
@@ -77,6 +79,34 @@ function initial(){
 		document.getElementById("wps_band_tr").style.display = "";
 		if(!wps_multiband_support || document.form.wps_multiband.value == "0") {
 			document.getElementById("wps_band_word").innerHTML = get_band_str(document.form.wps_band.value);
+			var band = get_band_str(document.form.wps_band.value);
+			var band_prefix = '';
+			switch (band){
+				case "2.4 GHz":
+					band_prefix = '2g1';
+					break;
+
+				case "5 GHz-1":
+					band_prefix = '5g1';
+					break;
+					
+				case "5 GHz-2":
+					band_prefix = '5g2';
+					break;
+				
+				case "6 GHz-1": 
+					band_prefix = '6g1';
+					break;
+				
+				case "6 GHz-2": 
+					band_prefix = '6g2';
+					break;
+			}
+
+			var auth = httpApi.nvramGet([band_prefix + '_auth_mode_x'])[band_prefix + '_auth_mode_x'];	
+			if(auth == 'sae' || auth == 'wpa3' || auth == 'suite-b'){			
+				document.getElementById('wpa3_not_support_hint').style.display = "";
+			}
 		}
 
 		if((wps_multiband_support && document.form.wps_multiband.value == "1") 
@@ -91,6 +121,13 @@ function initial(){
 				band1 = "<del>" + band1 + "</del>";
 			
 			document.getElementById("wps_band_word").innerHTML = band0 + " / " + band1;
+			var auth = httpApi.nvramGet(['2g1_auth_mode_x', '5g1_auth_mode_x']);
+			var wl0_auth = auth['2g1_auth_mode_x'];
+			var wl1_auth = auth['5g1_auth_mode_x'];
+			if(wl0_auth == 'sae' || wl0_auth == 'wpa3' || wl0_auth == 'suite-b' 
+			|| wl1_auth == 'sae' || wl1_auth == 'wpa3' || wl1_auth == 'suite-b'){			
+				document.getElementById('wpa3_not_support_hint').style.display = "";
+			}
 		}
 	}
 
@@ -216,6 +253,12 @@ function enableWPS(){
 }
 
 function configCommand(){
+	var display = document.getElementById('wpa3_not_support_hint').style.display;
+	if(display != 'none'){
+		alert('WPS is not available on WPA3-Personal.');
+		return true;
+	}
+
 	if(lantiq_support && wave_ready != 1){
 		alert("Please wait a minute for wireless ready");
 		return false;
@@ -778,7 +821,7 @@ function checkWLReady(){
 		  <div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 		  <div class="formfontdesc"><#WLANConfig11b_display6_sectiondesc#></div>
 		  <div id="lantiq_ready" style="display:none;color:#FC0;margin-left:5px;font-size:13px;">Wireless is setting...</div>
-		  <div id="WPS_hideSSID_hint" class="formfontdesc" style="display:none;color:#FFCC00;"></div>		  
+		  <div id="WPS_hideSSID_hint" class="hint-color formfontdesc" style="display:none;color:#FFCC00;"></div>		  
 
 		<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0"  class="FormTable">
 			<tr>
@@ -868,7 +911,7 @@ function checkWLReady(){
 										}					
 									}
 									
-									if( !SG_mode || (SG_mode && confirm('Enabling WPS may result in the leak of your WiFi network password. Do you still want to proceed?'))){
+									if( !SG_mode || (SG_mode && confirm(stringSafeGet("<#note_turn_on_WPS#>")))){
 										document.form.wps_enable.value = "1";
 										enableWPS();
 									}
@@ -920,8 +963,8 @@ function checkWLReady(){
 								<div class="devicepin" style="color:#FFF;" id="wps_config_td"></div>
 							</td>
 							<td style="border:0px">
-								<input class="button_gen" type="button" onClick="resetWPS();" id="Reset_OOB" name="Reset_OOB" value="<#CTL_Reset_OOB#>" style="padding:0 0.3em 0 0.3em;" >
-								<br><span id="Reset_OOB_desc"><#WLANConfig11b_x_ResetWPS_desc#></span>
+								<input class="btn_subusage button_gen" type="button" onClick="resetWPS();" id="Reset_OOB" name="Reset_OOB" value="<#CTL_Reset_OOB#>" style="padding:0 0.3em 0 0.3em;" >
+								<div id="Reset_OOB_desc"><#WLANConfig11b_x_ResetWPS_desc#></div>
 							</td>
 						</tr></table>
 					</div>
@@ -948,11 +991,12 @@ function checkWLReady(){
 				<th>
 			  	<span id="wps_method"><a class="hintstyle" href="javascript:void(0);" onclick="openHint(13,2);"><#WLANConfig11b_x_WPSMode_itemname#></a></span>
 			  </th>
-			  <td>
-					<input type="radio" name="wps_method" onclick="changemethod(0);" value="0"><#WLANConfig11b_x_WPS_pushbtn#>
-					<input type="radio" name="wps_method" onclick="changemethod(1);" value="1"><#WLANConfig11b_x_WPSPIN_itemname#>
-			  	<input type="text" name="wps_sta_pin" id="wps_sta_pin" value="" size="9" maxlength="9" class="input_15_table" autocorrect="off" autocapitalize="off">
-				  <div id="starBtn" style="margin-top:10px;"><input class="button_gen" type="button" style="margin-left:5px;" onClick="configCommand();" id="addEnrolleebtn_client" name="addEnrolleebtn"  value="<#wps_start_btn#>"></div>
+				<td>
+					<label><input type="radio" name="wps_method" onclick="changemethod(0);" value="0"><#WLANConfig11b_x_WPS_pushbtn#></label>
+					<label><input type="radio" name="wps_method" onclick="changemethod(1);" value="1"><#WLANConfig11b_x_WPSPIN_itemname#></label>
+					<input type="text" name="wps_sta_pin" id="wps_sta_pin" value="" size="9" maxlength="9" class="input_15_table" autocorrect="off" autocapitalize="off">
+					<div id="starBtn" style="margin-top:10px;"><input class="button_gen" type="button" style="margin-left:5px;" onClick="configCommand();" id="addEnrolleebtn_client" name="addEnrolleebtn"  value="<#wps_start_btn#>"></div>
+					<div style="color:#FC0;display:none" id="wpa3_not_support_hint">WPS is not available on WPA3-Personal. Please refer to FAQ</div>
 				</td>
 			</tr>
 

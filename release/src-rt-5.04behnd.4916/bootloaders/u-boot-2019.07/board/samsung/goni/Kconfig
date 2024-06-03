@@ -1,0 +1,15 @@
+if TARGET_S5P_GONI
+
+config SYS_BOARD
+	default "goni"
+
+config SYS_VENDOR
+	default "samsung"
+
+config SYS_SOC
+	default "s5pc1xx"
+
+config SYS_CONFIG_NAME
+	default "s5p_goni"
+
+endif

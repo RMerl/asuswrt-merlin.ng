@@ -1,0 +1,12 @@
+if TARGET_VENICE2
+
+config SYS_BOARD
+	default "venice2"
+
+config SYS_VENDOR
+	default "nvidia"
+
+config SYS_CONFIG_NAME
+	default "venice2"
+
+endif

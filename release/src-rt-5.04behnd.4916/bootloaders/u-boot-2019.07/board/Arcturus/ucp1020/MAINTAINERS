@@ -1,0 +1,7 @@
+UCP1020 BOARD
+M:	Oleksandr Zhadan and Michael Durrant <arcsupport@arcturusnetworks.com>
+S:	Maintained
+F:	board/Arcturus/ucp1020/
+F:	include/configs/UCP1020.h
+F:	configs/UCP1020_defconfig
+F:	configs/UCP1020_SPIFLASH_defconfig

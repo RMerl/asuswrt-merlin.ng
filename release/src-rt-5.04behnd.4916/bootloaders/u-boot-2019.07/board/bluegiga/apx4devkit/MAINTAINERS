@@ -1,0 +1,6 @@
+APX4DEVKIT BOARD
+M:	Lauri Hintsala <lauri.hintsala@bluegiga.com>
+S:	Maintained
+F:	board/bluegiga/apx4devkit/
+F:	include/configs/apx4devkit.h
+F:	configs/apx4devkit_defconfig

@@ -1,0 +1,2 @@
+m68k-bdm-elf-gdb -n -x board/cobra5272/bdm/cobra5272_uboot.gdb u-boot
+

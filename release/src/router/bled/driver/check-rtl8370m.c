@@ -42,9 +42,11 @@ static inline void get_port_stats(int port, unsigned long *rx, unsigned long *tx
 {
 	int r;
 
+#if !defined(RTCONFIG_RALINK_MT7622)
 	r = rtk_get_port_stat(port, rx, tx);
 	if (r)
 		printk("%s: rtk_get_port_stat(%d) failed, return %d\n", __func__, port, r);
+#endif
 }
 
 /**

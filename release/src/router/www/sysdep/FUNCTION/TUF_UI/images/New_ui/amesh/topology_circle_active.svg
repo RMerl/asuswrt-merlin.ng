@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="84" height="84" viewBox="0 0 84 84">
+  <defs>
+    <linearGradient id="circle-topology-locate-active-copy-a" x1="-5.977%" x2="106.052%" y1="-4.866%" y2="110.864%">
+      <stop offset="0%" stop-color="#816022"/>
+      <stop offset="50.203%" stop-color="#B2B2B2"/>
+      <stop offset="100%" stop-color="#816022"/>
+    </linearGradient>
+    <linearGradient id="circle-topology-locate-active-copy-b" x1="-5.977%" x2="106.052%" y1="-4.866%" y2="110.864%">
+      <stop offset="0%" stop-color="#C58000" stop-opacity=".5"/>
+      <stop offset="50.203%" stop-color="#FFBF3A"/>
+      <stop offset="100%" stop-color="#804600"/>
+    </linearGradient>
+    <linearGradient id="circle-topology-locate-active-copy-d" x1="14.08%" x2="90.873%" y1="10.446%" y2="91.304%">
+      <stop offset="0%" stop-color="#0E37C4"/>
+      <stop offset="50.203%" stop-color="#86DFFF"/>
+      <stop offset="100%" stop-color="#0E37C4"/>
+    </linearGradient>
+    <linearGradient id="circle-topology-locate-active-copy-e" x1="-5.977%" x2="106.052%" y1="-4.866%" y2="110.864%">
+      <stop offset="0%" stop-color="#0E37C4"/>
+      <stop offset="50.203%" stop-color="#86DFFF"/>
+      <stop offset="100%" stop-color="#0E37C4"/>
+    </linearGradient>
+    <circle id="circle-topology-locate-active-copy-c" cx="36" cy="36" r="29.455"/>
+  </defs>
+  <g fill="none" fill-rule="evenodd" transform="translate(6 6)">
+    <circle cx="36" cy="36" r="36" fill="#2F2C2C" stroke="url(#circle-topology-locate-active-copy-a)" stroke-width=".786"/>
+    <circle cx="36" cy="36" r="29.026" fill="#292929" stroke="url(#circle-topology-locate-active-copy-b)" stroke-width=".857"/>
+    <use fill="#303030" xlink:href="#circle-topology-locate-active-copy-c"/>
+    <use fill="url(#circle-topology-locate-active-copy-d)" xlink:href="#circle-topology-locate-active-copy-c" style="mix-blend-mode:hard-light"/>
+    <circle cx="36" cy="36" r="29.026" stroke="url(#circle-topology-locate-active-copy-e)" stroke-linejoin="square" stroke-width=".857"/>
+  </g>
+</svg>

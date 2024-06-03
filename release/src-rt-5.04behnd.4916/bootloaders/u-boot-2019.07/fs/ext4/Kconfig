@@ -1,0 +1,13 @@
+config FS_EXT4
+	bool "Enable ext4 filesystem support"
+	help
+	  This provides support for reading images from the ext4 filesystem.
+	  ext4 is a widely used general-purpose filesystem for Linux.
+	  You can also enable CMD_EXT4 to get access to ext4 commands.
+
+config EXT4_WRITE
+	bool "Enable ext4 filesystem write support"
+	depends on FS_EXT4
+	help
+	  This provides support for creating and writing new files to an
+	  existing ext4 filesystem partition.

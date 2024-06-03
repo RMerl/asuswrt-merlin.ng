@@ -1,0 +1,3 @@
+buildtools/checkjffs.py
+buildtools/checktmpfs.py
+release/src/router/dnsqd/dns_app_client.h

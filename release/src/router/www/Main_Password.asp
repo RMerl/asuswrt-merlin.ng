@@ -209,6 +209,8 @@ function isSupport(_ptn){
 var gobi_support = isSupport("gobi");
 
 function initial(){
+	top.name = "";/* reset cache of state.js win.name */
+
 	if(isSupport("BUSINESS")){
 		$(".title_name").css({"color": "#000"})
 		$(".sub_title_name").css({"color": "#000"})
@@ -601,6 +603,7 @@ function showError(str){
 <input name="foilautofill" style="display: none;" type="password">
 <input type="hidden" name="time_zone" value="" disabled>
 <input type="hidden" name="time_zone_dst" value="" disabled>
+<input type="hidden" name="cfg_pause" value="0">
 <table id="loginTable" align="center" cellpadding="0" cellspacing="0" style="display:none">
 	<tr>
 		<td>

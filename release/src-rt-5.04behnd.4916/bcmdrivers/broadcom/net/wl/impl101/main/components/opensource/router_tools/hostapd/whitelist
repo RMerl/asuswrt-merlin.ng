@@ -1,0 +1,12 @@
+# Whitelist for KUDU_TWIG_17_10_369_18
+#
+# Please add new items at the bottom.
+#
+# Gain approval from your manager before editing this file.
+#
+# format:
+# JIRA:BCAWLAN-xxxxxx <description>
+# Example: JIRA:BCAWLAN-223535 Adding DTPC capability annoucement into sta_info
+#
+JIRA:BCAWLAN-254878 SmartMesh+MLO : Repeater Re-OnBoarding Failure after RootAP Restart due to Deauth with ?Reason code: Class 2 frame received from nonauthenticated STA (0x0006)?
+JIRA:BCAWLAN-256868 47722EAP:Multiclient P40: STA is failed to auto-join to APUT after APUT restart/reboot

@@ -1,0 +1,62 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Test device tree file for dtoc
+ *
+ * Copyright 2017 Google, Inc
+ */
+
+ /dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+	spl-test {
+		u-boot,dm-pre-reloc;
+		compatible = "sandbox,spl-test";
+		boolval;
+		intval = <1>;
+		intarray = <2 3 4>;
+		byteval = [05];
+		bytearray = [06];
+		longbytearray = [09 0a 0b 0c 0d 0e 0f 10 11];
+		stringval = "message";
+		stringarray = "multi-word", "message";
+		notstring = [20 21 22 10 00];
+	};
+
+	spl-test2 {
+		u-boot,dm-pre-reloc;
+		compatible = "sandbox,spl-test";
+		intval = <3>;
+		intarray = <5>;
+		byteval = [08];
+		bytearray = [01 23 34];
+		longbytearray = [09 0a 0b 0c];
+		stringval = "message2";
+		stringarray = "another", "multi-word", "message";
+	};
+
+	spl-test3 {
+		u-boot,dm-pre-reloc;
+		compatible = "sandbox,spl-test";
+		stringarray = "one";
+	};
+
+	spl-test4 {
+		u-boot,dm-pre-reloc;
+		compatible = "sandbox,spl-test.2";
+	};
+
+	i2c@0 {
+		compatible = "sandbox,i2c-test";
+		u-boot,dm-pre-reloc;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		pmic@9 {
+			compatible = "sandbox,pmic-test";
+			u-boot,dm-pre-reloc;
+			reg = <9>;
+			low-power;
+		};
+	};
+};

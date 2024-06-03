@@ -98,6 +98,9 @@ extern uint16 wbd_get_mdid(char *prefix);
 /* Enable FBT */
 extern int wbd_enable_fbt(char *prefix);
 
+/* Disable FBT */
+extern int wbd_disable_fbt(char *prefix);
+
 /* Check whether FBT enabling is possible or not. First it checks for psk2 and then wbd_fbt */
 extern int wbd_is_fbt_possible(char *prefix);
 #endif /* WLHOSTFBT */
@@ -114,6 +117,8 @@ extern int wbd_weak_sta_identification(struct ether_addr *sta_mac,
 	wbd_weak_sta_metrics_t *sta_stats, wbd_weak_sta_policy_t *thresholds,
 	int *out_fail_cnt, int *out_weak_flag);
 
+/* Disable a BSS if it is a backhaul BSS */
+extern int disable_map_bh_bss(char *name, char *ifname, int bsscfg_idx);
 /* ----------------------------- WBD shared Routines --------------------------------- */
 
 #endif /* _WBD_RC_SHARED_H_ */

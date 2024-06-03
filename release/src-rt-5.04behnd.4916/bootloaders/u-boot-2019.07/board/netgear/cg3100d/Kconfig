@@ -1,0 +1,12 @@
+if BOARD_NETGEAR_CG3100D
+
+config SYS_BOARD
+	default "cg3100d"
+
+config SYS_VENDOR
+	default "netgear"
+
+config SYS_CONFIG_NAME
+	default "netgear_cg3100d"
+
+endif

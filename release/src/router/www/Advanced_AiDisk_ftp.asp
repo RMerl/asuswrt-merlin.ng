@@ -107,8 +107,21 @@ function initial(){
 	}
 
 	//short term solution for brt-ac828
-	if(based_modelid == "BRT-AC828") {
-		document.getElementById("back_app_installation").style.display = "none";
+	if(based_modelid == "BRT-AC828" || isSupport("BUSINESS")) {
+		document.getElementById("returnBtn").style.display = "none";
+	}
+
+	if(parent.webWrapper){
+		function setupWhiteThemeWrapper(){
+			$("#whiteThemeWrapper").css({"max-width":"unset"});
+			$(".upnp_table").css({
+				"max-width":"unset",
+				"margin":"0 auto"
+			});
+		}
+
+		let intervalId = setInterval(setupWhiteThemeWrapper, 100);
+		setTimeout(function(){clearInterval(intervalId);}, 2000);
 	}
 
 	if(pm_support)
@@ -809,7 +822,7 @@ function secure_check(flag){
 	  <div id="tabMenu" class="submenuBlock"></div>
 	  <!--=====Beginning of Main Content=====-->
 <div id="FormTitle" align="left" border="0" cellpadding="0" cellspacing="0" style="width: 760px; display: none;">
-<table border="0" cellpadding="5" cellspacing="0">
+<table border="0" cellpadding="5" cellspacing="0" style="width: 100%;">
 	<tbody>
 		<tr>
 		  <td>

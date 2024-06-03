@@ -1,0 +1,6 @@
+AP121 BOARD
+M:	Wills Wang <wills.wang@live.com>
+S:	Maintained
+F:	board/qca/ap121/
+F:	include/configs/ap121.h
+F:	configs/ap121_defconfig

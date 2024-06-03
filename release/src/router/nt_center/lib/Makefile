@@ -14,15 +14,22 @@ LDFLAGS += -L$(TOP)/sqlite/.libs -lsqlite3
 ifeq ($(RTCONFIG_QCA),y)
 LDFLAGS += -L$(LIBDIR)
 EXTRACC += -ldl
+else ifeq ($(RTCONFIG_MT798X),y)
+LDFLAGS += -L$(LIBDIR)
 endif
+ifneq ($(RTCONFIG_WLMODULE_MT7915D_AP),y)
 LDFLAGS += -lm
 EXTRACC += -lpthread #Depend on sqlite
 EXTRALD += -lpthread #Depend on sqlite
+endif
 
 LD_BINARY  += $(LDFLAGS) $(EXTRACC)
 LD_LIBRARY += $(LDFLAGS) $(EXTRALD)
 
 OBJS = nt_share.o nt_utility.o linklist.o hashtable.o nt_db_stat.o
+ifeq ($(RT4GAC86U),y)
+OBJS += $(LIBDIR)/libc_nonshared.a
+endif
 
 vpath %.c $(SRCBASE)/nt_center/
 

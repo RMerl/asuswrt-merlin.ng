@@ -1,0 +1,590 @@
+/dts-v1/;
+
+#include <dt-bindings/gpio/x86-gpio.h>
+#include <dt-bindings/sound/azalia.h>
+#include <pci_ids.h>
+
+/include/ "skeleton.dtsi"
+/include/ "keyboard.dtsi"
+/include/ "serial.dtsi"
+/include/ "reset.dtsi"
+/include/ "rtc.dtsi"
+/include/ "tsc_timer.dtsi"
+
+/ {
+	model = "Google Link";
+	compatible = "google,link", "intel,celeron-ivybridge";
+
+	aliases {
+		spi0 = &spi;
+		usb0 = &usb_0;
+		usb1 = &usb_1;
+	};
+
+	config {
+	       silent_console = <0>;
+	};
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu@0 {
+			device_type = "cpu";
+			compatible = "intel,core-gen3";
+			reg = <0>;
+			intel,apic-id = <0>;
+		};
+
+		cpu@1 {
+			device_type = "cpu";
+			compatible = "intel,core-gen3";
+			reg = <1>;
+			intel,apic-id = <1>;
+		};
+
+		cpu@2 {
+			device_type = "cpu";
+			compatible = "intel,core-gen3";
+			reg = <2>;
+			intel,apic-id = <2>;
+		};
+
+		cpu@3 {
+			device_type = "cpu";
+			compatible = "intel,core-gen3";
+			reg = <3>;
+			intel,apic-id = <3>;
+		};
+
+	};
+
+	chosen {
+		stdout-path = "/serial";
+	};
+
+	keyboard {
+		intel,duplicate-por;
+	};
+
+	pch_pinctrl {
+		compatible = "intel,x86-pinctrl";
+		u-boot,dm-pre-reloc;
+		reg = <0 0>;
+
+		gpio_a0 {
+			gpio-offset = <0 0>;
+			mode-gpio;
+			direction = <PIN_INPUT>;
+		};
+
+		gpio_a1 {
+			gpio-offset = <0>;
+			mode-gpio;
+			direction = <PIN_OUTPUT>;
+			output-value = <1>;
+		};
+
+		gpio_a3 {
+			gpio-offset = <0 3>;
+			mode-gpio;
+			direction = <PIN_INPUT>;
+		};
+
+		gpio_a5 {
+			gpio-offset = <0 5>;
+			mode-gpio;
+			direction = <PIN_INPUT>;
+		};
+
+		gpio_a6 {
+			gpio-offset = <0 6>;
+			mode-gpio;
+			direction = <PIN_OUTPUT>;
+			output-value = <1>;
+		};
+
+		gpio_a7 {
+			gpio-offset = <0 7>;
+			mode-gpio;
+			direction = <PIN_INPUT>;
+			invert;
+		};
+
+		gpio_a8 {
+			gpio-offset = <0 8>;
+			mode-gpio;
+			direction = <PIN_INPUT>;
+			invert;
+		};
+
+		gpio_a9 {
+			gpio-offset = <0 9>;
+			mode-gpio;
+			direction = <PIN_INPUT>;
+		};
+
+		gpio_a10 {
+			u-boot,dm-pre-reloc;
+			gpio-offset = <0 10>;
+			mode-gpio;
+			direction = <PIN_INPUT>;
+		};
+
+		gpio_a11 {
+			gpio-offset = <0 11>;
+			mode-gpio;
+			direction = <PIN_INPUT>;
+		};
+
+		gpio_a12 {
+			gpio-offset = <0 12>;
+			mode-gpio;
+			direction = <PIN_INPUT>;
+			invert;
+		};
+
+		gpio_a14 {
+			gpio-offset = <0 14>;
+			mode-gpio;
+			direction = <PIN_INPUT>;
+			invert;
+		};
+
+		gpio_a15 {
+			gpio-offset = <0 15>;
+			mode-gpio;
+			direction = <PIN_INPUT>;
+			invert;
+		};
+
+		gpio_a21 {
+			gpio-offset = <0 21>;
+			mode-gpio;
+			direction = <PIN_INPUT>;
+		};
+
+		gpio_a24 {
+			gpio-offset = <0 24>;
+			mode-gpio;
+			output-value = <0>;
+			direction = <PIN_OUTPUT>;
+		};
+
+		gpio_a28 {
+			gpio-offset = <0 28>;
+			mode-gpio;
+			direction = <PIN_INPUT>;
+		};
+
+		gpio_b4 {
+			gpio-offset = <0x30 4>;
+			mode-gpio;
+			direction = <PIN_OUTPUT>;
+			output-value = <1>;
+		};
+
+		gpio_b9 {
+			u-boot,dm-pre-reloc;
+			gpio-offset = <0x30 9>;
+			mode-gpio;
+			direction = <PIN_INPUT>;
+		};
+
+		gpio_b10 {
+			u-boot,dm-pre-reloc;
+			gpio-offset = <0x30 10>;
+			mode-gpio;
+			direction = <PIN_INPUT>;
+		};
+
+		gpio_b11 {
+			u-boot,dm-pre-reloc;
+			gpio-offset = <0x30 11>;
+			mode-gpio;
+			direction = <PIN_INPUT>;
+		};
+
+		gpio_b25 {
+			gpio-offset = <0x30 25>;
+			mode-gpio;
+			direction = <PIN_INPUT>;
+		};
+
+		gpio_b28 {
+			gpio-offset = <0x30 28>;
+			mode-gpio;
+			direction = <PIN_OUTPUT>;
+			output-value = <1>;
+		};
+
+	};
+
+	pci {
+		compatible = "pci-x86";
+		#address-cells = <3>;
+		#size-cells = <2>;
+		u-boot,dm-pre-reloc;
+		ranges = <0x02000000 0x0 0xe0000000 0xe0000000 0 0x10000000
+			0x42000000 0x0 0xd0000000 0xd0000000 0 0x10000000
+			0x01000000 0x0 0x1000 0x1000 0 0xefff>;
+
+		northbridge@0,0 {
+			reg = <0x00000000 0 0 0 0>;
+			u-boot,dm-pre-reloc;
+			compatible = "intel,bd82x6x-northbridge";
+			board-id-gpios = <&gpio_b 9 0>, <&gpio_b 10 0>,
+					<&gpio_b 11 0>, <&gpio_a 10 0>;
+			spd {
+				u-boot,dm-pre-reloc;
+				#address-cells = <1>;
+				#size-cells = <0>;
+				elpida_4Gb_1600_x16 {
+					u-boot,dm-pre-reloc;
+					reg = <0>;
+					data = [92 10 0b 03 04 19 02 02
+						03 52 01 08 0a 00 fe 00
+						69 78 69 3c 69 11 18 81
+						20 08 3c 3c 01 40 83 81
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 0f 11 42 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 02 fe 00
+						11 52 00 00 00 07 7f 37
+						45 42 4a 32 30 55 47 36
+						45 42 55 30 2d 47 4e 2d
+						46 20 30 20 02 fe 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00];
+				};
+				samsung_4Gb_1600_1.35v_x16 {
+					u-boot,dm-pre-reloc;
+					reg = <1>;
+					data = [92 11 0b 03 04 19 02 02
+						03 11 01 08 0a 00 fe 00
+						69 78 69 3c 69 11 18 81
+						f0 0a 3c 3c 01 40 83 01
+						00 80 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 0f 11 02 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 80 ce 01
+						00 00 00 00 00 00 6a 04
+						4d 34 37 31 42 35 36 37
+						34 42 48 30 2d 59 4b 30
+						20 20 00 00 80 ce 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00];
+					};
+				micron_4Gb_1600_1.35v_x16 {
+					reg = <2>;
+					data = [92 11 0b 03 04 19 02 02
+						03 11 01 08 0a 00 fe 00
+						69 78 69 3c 69 11 18 81
+						20 08 3c 3c 01 40 83 05
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 0f 01 02 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 80 2c 00
+						00 00 00 00 00 00 ad 75
+						34 4b 54 46 32 35 36 36
+						34 48 5a 2d 31 47 36 45
+						31 20 45 31 80 2c 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						ff ff ff ff ff ff ff ff
+						ff ff ff ff ff ff ff ff
+						ff ff ff ff ff ff ff ff
+						ff ff ff ff ff ff ff ff
+						ff ff ff ff ff ff ff ff
+						ff ff ff ff ff ff ff ff
+						ff ff ff ff ff ff ff ff
+						ff ff ff ff ff ff ff ff
+						ff ff ff ff ff ff ff ff
+						ff ff ff ff ff ff ff ff];
+				};
+			};
+		};
+
+		gma@2,0 {
+			reg = <0x00001000 0 0 0 0>;
+			compatible = "intel,gma";
+			intel,dp_hotplug = <0 0 0x06>;
+			intel,panel-port-select = <1>;
+			intel,panel-power-cycle-delay = <6>;
+			intel,panel-power-up-delay = <2000>;
+			intel,panel-power-down-delay = <500>;
+			intel,panel-power-backlight-on-delay = <2000>;
+			intel,panel-power-backlight-off-delay = <2000>;
+			intel,cpu-backlight = <0x00000200>;
+			intel,pch-backlight = <0x04000000>;
+		};
+
+		me@16,0 {
+			reg = <0x0000b000 0 0 0 0>;
+			compatible = "intel,me";
+			u-boot,dm-pre-reloc;
+		};
+
+		usb_1: usb@1a,0 {
+			reg = <0x0000d000 0 0 0 0>;
+			compatible = "ehci-pci";
+		};
+
+		hda@1b,0 {
+			reg = <0x0000d800 0 0 0 0>;
+			compatible = "intel,bd82x6x-hda";
+
+			/* These correspond to the Intel HDA specification */
+			beep-verbs = <
+				0x00170500	/* power up codec */
+				0x00270500	/* power up DAC */
+				0x00b70500	/* power up speaker */
+				0x00b70740	/* enable speaker out */
+				0x00b78d00	/* enable EAPD pin */
+				0x00b70c02	/* set EAPD pin */
+				0x0143b013>;	/* beep volume */
+
+			codecs {
+				creative_codec: creative-ca0132 {
+					vendor-id = <PCI_VENDOR_ID_CREATIVE>;
+					device-id = <PCI_DEVICE_ID_CREATIVE_CA01322>;
+				};
+				intel_hdmi: hdmi {
+					vendor-id = <PCI_VENDOR_ID_INTEL>;
+					device-id = <PCI_DEVICE_ID_INTEL_COUGARPOINT_HDMI>;
+				};
+			};
+		};
+
+		usb_0: usb@1d,0 {
+			reg = <0x0000e800 0 0 0 0>;
+			compatible = "ehci-pci";
+		};
+
+		pch@1f,0 {
+			reg = <0x0000f800 0 0 0 0>;
+			compatible = "intel,bd82x6x", "intel,pch9";
+			u-boot,dm-pre-reloc;
+			#address-cells = <1>;
+			#size-cells = <1>;
+			intel,pirq-routing = <0x8b 0x8a 0x8b 0x8b
+						0x80 0x80 0x80 0x80>;
+			intel,gpi-routing = <0 0 0 0 0 0 0 2
+						1 0 0 0 0 0 0 0>;
+			/* Enable EC SMI source */
+			intel,alt-gp-smi-enable = <0x0100>;
+
+			spi: spi {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				compatible = "intel,ich9-spi";
+				u-boot,dm-pre-reloc;
+				spi-flash@0 {
+					#size-cells = <1>;
+					#address-cells = <1>;
+					u-boot,dm-pre-reloc;
+					reg = <0>;
+					compatible = "winbond,w25q64",
+							"jedec,spi-nor";
+					memory-map = <0xff800000 0x00800000>;
+					rw-mrc-cache {
+						label = "rw-mrc-cache";
+						reg = <0x003e0000 0x00010000>;
+						u-boot,dm-pre-reloc;
+					};
+				};
+			};
+
+			gpio_a: gpioa {
+				compatible = "intel,ich6-gpio";
+				u-boot,dm-pre-reloc;
+				#gpio-cells = <2>;
+				gpio-controller;
+				reg = <0 0x10>;
+				bank-name = "A";
+			};
+
+			gpio_b: gpiob {
+				compatible = "intel,ich6-gpio";
+				u-boot,dm-pre-reloc;
+				#gpio-cells = <2>;
+				gpio-controller;
+				reg = <0x30 0x10>;
+				bank-name = "B";
+			};
+
+			gpio_c: gpioc {
+				compatible = "intel,ich6-gpio";
+				u-boot,dm-pre-reloc;
+				#gpio-cells = <2>;
+				gpio-controller;
+				reg = <0x40 0x10>;
+				bank-name = "C";
+			};
+
+			lpc {
+				compatible = "intel,bd82x6x-lpc";
+				#address-cells = <1>;
+				#size-cells = <0>;
+				u-boot,dm-pre-reloc;
+				intel,gen-dec = <0x800 0xfc 0x900 0xfc>;
+				cros-ec@200 {
+					compatible = "google,cros-ec";
+					reg = <0x204 1 0x200 1 0x880 0x80>;
+
+					/*
+					 * Describes the flash memory within
+					 * the EC
+					 */
+					#address-cells = <1>;
+					#size-cells = <1>;
+					flash@8000000 {
+						reg = <0x08000000 0x20000>;
+						erase-value = <0xff>;
+					};
+				};
+			};
+		};
+
+		sata@1f,2 {
+			compatible = "intel,pantherpoint-ahci";
+			reg = <0x0000fa00 0 0 0 0>;
+			u-boot,dm-pre-reloc;
+			intel,sata-mode = "ahci";
+			intel,sata-port-map = <1>;
+			intel,sata-port0-gen3-tx = <0x00880a7f>;
+		};
+
+		smbus: smbus@1f,3 {
+			compatible = "intel,ich-i2c";
+			reg = <0x0000fb00 0 0 0 0>;
+			u-boot,dm-pre-reloc;
+		};
+	};
+
+	tpm {
+		reg = <0xfed40000 0x5000>;
+		compatible = "infineon,slb9635lpc";
+	};
+
+	microcode {
+		u-boot,dm-pre-reloc;
+		update@0 {
+			u-boot,dm-pre-reloc;
+#include "microcode/m12306a9_0000001b.dtsi"
+		};
+	};
+
+};
+
+&creative_codec {
+	verbs =  <
+		/**
+		 * Malcolm Setup. These correspond to the Intel HDA
+		 * specification.
+		 */
+		0x01570d09 0x01570c23 0x01570a01 0x01570df0
+		0x01570efe 0x01570775 0x015707d3 0x01570709
+		0x01570753 0x015707d4 0x015707ef 0x01570775
+		0x015707d3 0x01570709 0x01570702 0x01570737
+		0x01570778 0x01553cce 0x015575c9 0x01553dce
+		0x0155b7c9 0x01570de8 0x01570efe 0x01570702
+		0x01570768 0x01570762 0x01553ace 0x015546c9
+		0x01553bce 0x0155e8c9 0x01570d49 0x01570c88
+		0x01570d20 0x01570e19 0x01570700 0x01571a05
+		0x01571b29 0x01571a04 0x01571b29 0x01570a01
+
+		/* Pin Widget Verb Table */
+
+		/* NID 0x01, HDA Codec Subsystem ID Verb Table: 0x144dc0c2 */
+		AZALIA_SUBVENDOR(0x0, 0x144dc0c2)
+
+		/*
+		 * Pin Complex (NID 0x0B)  Port-G Analog Unknown
+		 * Speaker at Int N/A
+		 */
+		AZALIA_PIN_CFG(0x0, 0x0b, 0x901700f0)
+
+		/* Pin Complex (NID 0x0C)  N/C */
+		AZALIA_PIN_CFG(0x0, 0x0c, 0x70f000f0)
+
+		/* Pin Complex (NID 0x0D)  N/C */
+		AZALIA_PIN_CFG(0x0, 0x0d, 0x70f000f0)
+
+		/* Pin Complex (NID 0x0E)  N/C */
+		AZALIA_PIN_CFG(0x0, 0x0e, 0x70f000f0)
+
+		/* Pin Complex (NID 0x0F)  N/C */
+		AZALIA_PIN_CFG(0x0, 0x0f, 0x70f000f0)
+
+		/* Pin Complex (NID 0x10) Port-D 1/8 Black HP Out at Ext Left */
+		AZALIA_PIN_CFG(0x0, 0x10, 0x032110f0)
+
+		/* Pin Complex (NID 0x11) Port-B Click Mic */
+		AZALIA_PIN_CFG(0x0, 0x11, 0x90a700f0)
+
+		/* Pin Complex (NID 0x12) Port-C Combo Jack Mic or D-Mic */
+		AZALIA_PIN_CFG(0x0, 0x12, 0x03a110f0)
+
+		/* Pin Complex (NID 0x13) What you hear */
+		AZALIA_PIN_CFG(0x0, 0x13, 0x90d600f0)>;
+};
+
+&intel_hdmi {
+	verbs = <
+		/* NID 0x01, HDA Codec Subsystem ID Verb Table: 0x80860101 */
+		AZALIA_SUBVENDOR(0x3, 0x80860101)
+
+		/* Pin Complex (NID 0x05) Digital Out at Int HDMI */
+		AZALIA_PIN_CFG(0x3, 0x05, 0x18560010)
+
+		/* Pin Complex (NID 0x06) Digital Out at Int HDMI */
+		AZALIA_PIN_CFG(0x3, 0x06, 0x18560020)
+
+		/* Pin Complex (NID 0x07) Digital Out at Int HDMI */
+		AZALIA_PIN_CFG(0x3, 0x07, 0x18560030)>;
+};

@@ -1,0 +1,7 @@
+SBx81LIFKW BOARD
+M:	Chris Packham <chris.packham@alliedtelesis.co.nz>
+S:	Maintained
+F:	board/alliedtelesis/SBx81LIFKW/
+F:	include/configs/SBx81LIFKW
+F:	configs/SBx81LIFKW_defconfig
+F:	arch/arm/dts/kirkwood-atl-sbx81lifkw.dts

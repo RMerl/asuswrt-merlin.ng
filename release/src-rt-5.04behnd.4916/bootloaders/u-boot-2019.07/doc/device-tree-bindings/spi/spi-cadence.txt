@@ -1,0 +1,31 @@
+Cadence QSPI controller device tree bindings
+--------------------------------------------
+
+Required properties:
+- compatible		: should be "cdns,qspi-nor"
+- reg			: 1.Physical base address and size of SPI registers map.
+			  2. Physical base address & size of NOR Flash.
+- clocks		: Clock phandles (see clock bindings for details).
+- cdns,fifo-depth	: Size of the data FIFO in words.
+- cdns,fifo-width	: Bus width of the data FIFO in bytes.
+- cdns,trigger-address	: 32-bit indirect AHB trigger address.
+- cdns,is-decoded-cs	: Flag to indicate whether decoder is used or not.
+- status		: enable in requried dts.
+
+connected flash properties
+--------------------------
+
+- spi-max-frequency	: Max supported spi frequency.
+- page-size		: Flash page size.
+- block-size		: Flash memory block size.
+- cdns,tshsl-ns		: Added delay in master reference clocks (ref_clk) for
+			  the length that the master mode chip select outputs
+			  are de-asserted between transactions.
+- cdns,tsd2d-ns		: Delay in master reference clocks (ref_clk) between one
+			  chip select being de-activated and the activation of
+			  another.
+- cdns,tchsh-ns		: Delay in master reference clocks between last bit of
+			  current transaction and de-asserting the device chip
+			  select (n_ss_out).
+- cdns,tslch-ns		: Delay in master reference clocks between setting
+			  n_ss_out low and first bit transfer

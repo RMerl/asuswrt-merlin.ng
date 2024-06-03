@@ -1,0 +1,15 @@
+<PUBLISH>
+@@ -408 +402,2 @@
+-# BUILD_NDI is not set
++BUILD_NDI=y
++BRCM_DRIVER_NDI=m
+@@ -552 +547,3 @@
+-# BUILD_SGS is not set
++BUILD_SGS=y
++BUILD_PFRING=y
+@@ -611 +608 @@
+-BRCM_DEFAULTCFG=""
++BRCM_DEFAULTCFG="default_sgs_settings.conf"
+@@ -618 +615 @@
+-# BUILD_PROTOBUF_C is not set
++BUILD_PROTOBUF_C=y

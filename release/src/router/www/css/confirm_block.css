@@ -10,19 +10,22 @@
 }
 .confirm{
 	animation: confirm 0.3s ease 1 forwards;
-	background-color: rgb(43, 55, 59);/*rgb(33,51,62);*/
-	border-radius: 10px;
+	background-color: #191919;
+	border-radius: 5px;
 	max-width: 600px;
 	min-width: 200px;
 	margin: auto;
-	box-shadow: 0 0 20px #21333E;
+	box-shadow: 0 0 10px #21333E;
+	border: 1px solid #444f53;
 }
 .confirm_block{
 	position:absolute;
-	width:100%;
+	width:90%;
 	top:10%;
-	left:0%;
+	right: 5%;
+    left: 5%;
 	text-align:center;
+	line-height: 25px;
 }
 .confirm_title{
 	font-size: 18pt;
@@ -99,7 +102,7 @@
 	height:34px;
 	text-align:center;
 	line-height:34px;
-	margin:0px 0px 20px 265px;
+	margin:10px;
 	font-family:Verdana;
 	font-size:12px; 	
   overflow:visible;
@@ -142,7 +145,7 @@
 	height:34px;
 	text-align:center;
 	line-height:34px;
-	margin:-54px 0px 20px 430px;
+	margin:10px;
 	font-family:Verdana;
 	font-size:12px; 	
   overflow:visible;

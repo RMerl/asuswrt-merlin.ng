@@ -1,0 +1,7 @@
+TAURUS BOARD
+M:	Heiko Schocher <hs@denx.de>
+S:	Maintained
+F:	board/siemens/taurus/
+F:	include/configs/taurus.h
+F:	configs/axm_defconfig
+F:	configs/taurus_defconfig

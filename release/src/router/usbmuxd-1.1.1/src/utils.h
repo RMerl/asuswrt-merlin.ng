@@ -73,9 +73,9 @@ void collection_copy(struct collection *dest, struct collection *src);
 #ifndef HAVE_STPCPY
 char *stpcpy(char * s1, const char * s2);
 #endif
-#if 0
 char *string_concat(const char *str, ...);
 
+#if 0
 int buffer_read_from_filename(const char *filename, char **buffer, uint64_t *length);
 int buffer_write_to_filename(const char *filename, const char *buffer, uint64_t length);
 

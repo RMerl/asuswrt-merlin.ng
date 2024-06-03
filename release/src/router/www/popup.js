@@ -74,9 +74,21 @@ function LoadingProgress(seconds){
 }
 
 function showLoading(seconds, flag){
+	if(window.scrollTo){
+		window.scrollTo({
+			top: 0,
+			left: 0,
+			behavior: 'smooth'
+		});
+	}
 
-	if(window.scrollTo)
-		window.scrollTo(0,0);
+	if(parent.window.scrollTo){
+		parent.window.scrollTo({
+			top: 0,
+			left: 0,
+			behavior: 'smooth'
+		});
+	}
 
 	disableCheckChangedStatus();
 	

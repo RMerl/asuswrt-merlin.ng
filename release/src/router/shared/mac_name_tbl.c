@@ -41,9 +41,15 @@ char *search_mnt(char *mac)
 	char *line_buf = NULL, upperMac[13], s_mac[18];
 	char *t_str1, *t_str2;
 
-	strlcpy(upperMac, mac, sizeof(upperMac));
-	toUpperCase(upperMac);	
-	snprintf(s_mac, sizeof(s_mac), "%C%C:%C%C:%C%C:%C%C:%C%C:%C%C%c", upperMac[0], upperMac[1], upperMac[2], upperMac[3], upperMac[4], upperMac[5], upperMac[6], upperMac[7], upperMac[8], upperMac[9], upperMac[10], upperMac[11], '\0');
+	if (mac && strchr(mac,':')) {
+		strlcpy(s_mac, mac, sizeof(s_mac));
+		toUpperCase(s_mac);
+	}
+	else {
+		strlcpy(upperMac, mac, sizeof(upperMac));
+		toUpperCase(upperMac);
+		snprintf(s_mac, sizeof(s_mac), "%C%C:%C%C:%C%C:%C%C:%C%C:%C%C%c", upperMac[0], upperMac[1], upperMac[2], upperMac[3], upperMac[4], upperMac[5], upperMac[6], upperMac[7], upperMac[8], upperMac[9], upperMac[10], upperMac[11], '\0');
+	}
 	MNT_DEBUG("[MNT]: search MAC %s\n", s_mac);
 
 	if ((fp_mnt=fopen(NMP_CL_JSON_FILE, "r"))) {

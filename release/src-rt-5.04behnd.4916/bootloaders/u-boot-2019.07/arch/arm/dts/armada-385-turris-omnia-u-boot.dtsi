@@ -1,0 +1,54 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2017 Marek Behun <marek.behun@nic.cz>
+ */
+
+/ {
+	aliases {
+		i2c0 = &i2c0;
+		i2c1 = &i2cmux;
+		spi0 = &spi0;
+	};
+};
+
+&i2c0 {
+	u-boot,dm-pre-reloc;
+
+	i2cmux: i2cmux@70 {
+		u-boot,dm-pre-reloc;
+
+		i2c@0 {
+			u-boot,dm-pre-reloc;
+		};
+
+		i2c@1 {
+			u-boot,dm-pre-reloc;
+		};
+
+		i2c@5 {
+			u-boot,dm-pre-reloc;
+
+			/* ATSHA204A at address 0x64 */
+			atsha204a@64 {
+				u-boot,dm-pre-reloc;
+				compatible = "atmel,atsha204a";
+				reg = <0x64>;
+			};
+		};
+	};
+};
+
+&spi0 {
+	u-boot,dm-pre-reloc;
+
+	spi-flash@0 {
+		compatible = "jedec,spi-nor";
+		reg = <0>;
+		spi-max-frequency = <40000000>;
+		u-boot,dm-pre-reloc;
+	};
+};
+
+&uart0 {
+	u-boot,dm-pre-reloc;
+};

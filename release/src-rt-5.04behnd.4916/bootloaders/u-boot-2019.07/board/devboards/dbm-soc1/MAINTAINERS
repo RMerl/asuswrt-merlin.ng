@@ -1,0 +1,5 @@
+Devboards.de DBM-SoC1 BOARD
+M:	Marek Vasut <marex@denx.de>
+S:	Maintained
+F:	include/configs/socfpga_dbm_soc1.h
+F:	configs/socfpga_dbm_soc1_defconfig

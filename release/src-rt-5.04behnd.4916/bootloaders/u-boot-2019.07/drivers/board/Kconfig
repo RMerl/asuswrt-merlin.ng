@@ -1,0 +1,22 @@
+menuconfig BOARD
+	bool "Device Information"
+	help
+	  Support methods to query hardware configurations from internal
+	  mechanisms (e.g. reading GPIO values, determining the presence of
+	  devices on busses, etc.). This enables the usage of U-Boot with
+	  modular board architectures.
+
+if BOARD
+
+
+config BOARD_GAZERBEAM
+	bool "Enable board driver for the Gazerbeam board"
+	help
+	  Support querying device information for the gdsys Gazerbeam board.
+
+config BOARD_SANDBOX
+	bool "Enable board driver for the Sandbox board"
+	help
+	  Support querying device information for the Sandbox boards.
+
+endif

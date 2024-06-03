@@ -1,0 +1,78 @@
+#!/usr/bin/perl -T
+
+use strict;
+use warnings;
+use POSIX;
+
+my $losetup    = '/usr/sbin/losetup';
+my $dmsetup    = '/usr/sbin/dmsetup';
+my $cryptsetup = '/usr/sbin/cryptsetup';
+my $blockdev   = '/usr/sbin/blockdev';
+my $dir        = shift @ARGV;
+my $maptmp;
+
+my $uid = getuid() || $ENV{SUDO_UID};
+if ($uid =~ /(\d+)/) {
+   $uid = $1;
+}
+my $euid = geteuid();
+if ( $euid > 0 ) {
+    print q[
+This needs to be run as root.  Copy to an appropriate directory (owned by root)
+and add a sudoers rule such as ...
+ALL             ALL=NOPASSWD:     /opt/local/encrypt_rootfs
+and then update your encrypt_rootfs.sh (or equivalent) to 
+specify that path.
+
+];
+    die("must be run under sudo");
+}
+
+if ( $dir =~ /^\/tmp\/([\w\-\.]+)\/?$/ ) {
+    $dir = "/tmp/$1";
+    $maptmp = "tmp_$1";
+}
+else {
+    die("directory argument must be in /tmp");
+}
+my @st = stat($dir);
+if ( $uid ne $st[4] ) {
+    die("you $uid dont own $dir");
+}
+
+chdir $dir;
+
+delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
+$ENV{PATH} = '/usr/bin:/bin:/usr/sbin:/sbin';
+if ( !( -r 'rootfs.img' && -r 'rootfs_key.bin' ) ) {
+    die("both rootfs.img and rootfs_key.bin must be readable");
+}
+
+@st = stat("rootfs.img");
+my $siz = $st[7];
+$siz = int($siz / 1024) + 4;
+system("dd if=/dev/zero of=rootfs.enc bs=1024 count=0 seek=$siz");
+chown $uid,-1,"rootfs.enc";
+
+my $loop = `$losetup --show -f rootfs.enc`;
+if ( $loop =~ m|(^/dev/loop\d+)$| ) {
+    $loop = $1;
+}
+print "got $loop\n";
+
+if (system("$cryptsetup -d rootfs_key.bin  -s 256 -c aes-xts-plain64 create $maptmp $loop") != 0) {
+    die("$cryptsetup failed");
+}
+system("dd if=rootfs.img of=/dev/mapper/$maptmp");
+my $concise = `$dmsetup table --showkeys $maptmp`;
+print "$concise\n";
+if ($concise !~ /aes/) {
+	die("$dmsetup failed .. only got $concise");
+}
+open(C,">dm.txt");
+print C "$concise";
+close(C);
+chown $uid,-1,"dm.txt";
+system("$dmsetup remove $maptmp");
+system("$losetup -d $loop");
+

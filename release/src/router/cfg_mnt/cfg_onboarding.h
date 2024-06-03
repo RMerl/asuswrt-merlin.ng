@@ -6,6 +6,9 @@
 #define ONBOARDING_STATUS_PATH	"/tmp/obstatus"
 #define ONBOARDING_VSIE_PATH	"/tmp/obvsie"
 #define GUEST_VSIE_PATH	"/tmp/guest_vsie"
+#ifdef RTCONFIG_MLO
+#define DWB_VSIE_PATH	"/tmp/dwb_vsie"
+#endif
 #define WPS_CHECK_TIME		5
 #define WPS_TIMEOUT		120		//  minutes
 #define WPS_WAIT_TIMEOUT		150		// 3 minutes
@@ -88,10 +91,14 @@ enum vsieType {
 	VSIE_TYPE_BUNDLE_KEY = 20,
 	VSIE_TYPE_INF_TYPE = 21,
 	VSIE_TYPE_TCODE = 22,
-#if defined(RTCONFIG_AMAS_QCA_WDS) && defined(RTCONFIG_BHCOST_OPT)
+#if defined(RTCONFIG_AMAS_WDS) && defined(RTCONFIG_BHCOST_OPT)
 	VSIE_TYPE_WDS =23,
 #endif
 	VSIE_TYPE_MISC_INFO = 27,
+	VSIE_TYPE_MLO = 28,
+	VSIE_TYPE_MLO_BAND = 29,
+	VSIE_TYPE_MAC = 30,
+	VSIE_TYPE_AP_FOLLOW_MAC = 31,
 	VSIE_TYPE_MAX
 };
 

@@ -1,0 +1,26 @@
+RDPA_OBJS += rdpa_spdtest_common.o
+
+ifeq ("$(CONFIG_SYSTEM)", "sim")
+RDPA_OBJS += rdpa_spdsvc.o
+RDPA_OBJS += rdpa_spdsvc_ex.o
+RDPA_OBJS += rdpa_spdtest_common_ex.o
+RDPA_OBJS += rdpa_tcpspdtest.o
+RDPA_OBJS += rdpa_tcpspdtest_ex.o
+RDPA_OBJS += rdpa_udpspdtest.o
+RDPA_OBJS += rdpa_udpspdtest_ex.o
+endif
+
+ifeq ("$(CONFIG_SYSTEM)", "linux")
+ifneq ("$(CONFIG_BCM_SPDSVC)","")
+RDPA_OBJS += rdpa_spdsvc.o
+RDPA_OBJS += rdpa_spdsvc_ex.o
+RDPA_OBJS += rdpa_spdtest_common_ex.o
+RDPA_OBJS += rdpa_tcpspdtest.o
+RDPA_OBJS += rdpa_tcpspdtest_ex.o
+RDPA_OBJS += rdpa_udpspdtest.o
+RDPA_OBJS += rdpa_udpspdtest_ex.o
+else
+PROJ_DEFS += -UCONFIG_BCM_SPDSVC_SUPPORT -UDHD_SPDSVC_SUPPORT
+endif
+endif
+

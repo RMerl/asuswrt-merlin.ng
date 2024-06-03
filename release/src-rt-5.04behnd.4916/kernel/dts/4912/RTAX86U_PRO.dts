@@ -1,0 +1,269 @@
+#include "4912.dtsi"
+
+/ {
+	model="RTAX86U_PRO";
+
+	memory_controller {
+		memcfg = <(BP_DDR_TYPE_DDR4       | \
+			BP_DDR_SPEED_1333_19_19_19    | \
+			BP_DDR_TOTAL_SIZE_1024MB      | \
+			BP_DDR_DEVICE_WIDTH_16        | \
+			BP_DDR_TOTAL_WIDTH_32BIT      | \
+			BP_DDR_SSC_CONFIG_1)>;
+	};
+/*
+	buttons: buttons {
+		compatible = "brcm,buttons";
+		reset_button {
+			ext_irq = <&bca_extintr 13 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			press {
+				print = "Button Press -- Hold for 5s to do restore to default";
+			};
+			hold {
+				rst_to_dflt = <5>;
+			};
+			release {
+				reset = <0>;
+			};
+		};
+		ses_button {
+			ext_irq = <&bca_extintr 12 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			release {
+				ses_short_period = <0>;
+				ses_long_period = <3>;
+			};
+		};
+		led_on_off_button {
+			ext_irq = <&bca_extintr 10 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_BOTH_EDGE | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			press {
+				print = "LED ON";
+			};
+			release {
+				print = "LED OFF";
+			};
+		};
+	};
+*/
+};
+
+&nand {
+	write-protect = <1>;
+};
+
+&pcie1 {
+	status = "okay";
+};
+
+&pcie3 {
+	status = "okay";
+};
+
+&usb_ctrl {
+	pinctrl-names = "default";
+	pinctrl-0 = <&usb0_pwr_pins &usb1_pwr_pins>;
+	status = "okay";
+	pwron-bias-pull-up;
+	xhci-enable;
+};
+
+&usb0_xhci {
+	status = "okay";
+};
+
+&mdio {
+	phy1:1 {
+		status = "okay";
+	};
+
+	phy2:2 {
+		status = "okay";
+	};
+
+	phy3:3 {
+		status = "okay";
+	};
+
+	phy4:4 {
+		status = "okay";
+	};
+
+	phy_rgmii: rgmii {
+		reg = <25>;
+		/* phy-reset = <&gpioc 1 GPIO_ACTIVE_LOW>; */
+		status = "okay";
+	};
+
+	phy_cascade0:9 {
+		reg = <17>;
+		status = "okay";
+	};
+
+	phy_serdes0:6 {
+		phy-handle = <&phy_cascade0>;
+		status = "okay";
+	};
+};
+
+&switch0 {
+	pinctrl-names = "default", "rgmii";
+	pinctrl-0 = <&b_rgmii_mdc_pin_0 &b_rgmii_mdio_pin_3 &rgmii_pins>;
+	pinctrl-1 = <&rgmii_pins>;
+
+	ports {
+		port0@0 {
+			network-leds = <&led0>;
+			status = "okay";
+		};
+
+		port1@1 {
+			network-leds = <&led1>;
+			status = "okay";
+		};
+
+		port2@2 {
+			network-leds = <&led2>;
+			status = "okay";
+		};
+
+		port3@3 {
+			network-leds = <&led3>;
+			status = "okay";
+		};
+
+		port4@4 {
+			mii-pinctrl-state = "rgmii";
+			rgmii-3p3v;
+			gmii-direct;
+			network-leds = <&led4>;
+			status = "okay";
+		};
+
+		port5@5 {
+			network-leds = <&led5>;
+			status = "okay";
+		};
+	};
+};
+
+/*
+&legacy_leds {
+	wl-sess-led = <&led9>;
+};
+*/
+
+&led_ctrl {
+	status="okay";
+
+	/* 50212 PHY Reset, LED GPIO 1 pretend */
+	B50212E_RST:led_gpio_1 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <1>;
+		active_low;
+		init_high;
+	};
+
+
+	/* CLED mode LED */
+
+	/* GPHY0 LED: GPIO_19 */
+	led0: parallel-port_0-led_1{
+		label = "GPHY0";
+		active_low;
+		pinctrl-0 = <&a_per_led_19_pin_19>;
+		crossbar-output = <1>;
+		link = <(LED_SPEED_GBE)>;
+		activity = <LED_SPEED_GBE>;
+		status = "okay";
+	};
+
+	/* GPHY1 LED: GPIO_08 */
+	led1: parallel-port_1-led_1{
+		label = "GPHY1";
+		active_low;
+		pinctrl-0 = <&a_per_led_08_pin_8>;
+		link = <(LED_SPEED_GBE)>;
+		activity = <LED_SPEED_GBE>;
+		status = "okay";
+	};
+
+	/* GPHY2 LED: GPIO_07 */
+	led2: parallel-port_2-led_1{
+		label = "GPHY2";
+		active_low;
+		pinctrl-0 = <&a_per_led_07_pin_7>;
+		link = <(LED_SPEED_GBE)>;
+		activity = <LED_SPEED_GBE>;
+		status = "okay";
+	};
+
+	/* GPHY3 LED: GPIO_05 */
+	led3: parallel-port_3-led_1{
+		label = "GPHY3";
+		active_low;
+		pinctrl-0 = <&a_per_led_05_pin_5>;
+		crossbar-output = <10>;
+		link = <(LED_SPEED_GBE)>;
+		activity = <LED_SPEED_GBE>;
+		status = "okay";
+	};
+
+	/* 50212B LED: GPIO_04 */
+	led4: parallel-port_4-led_1{
+		label = "RGMII";
+		active_low;
+		pinctrl-0 = <&a_per_led_04_pin_4>;
+		crossbar-output = <13>;
+		link = <(LED_SPEED_GBE)>;
+		activity = <(LED_SPEED_GBE)>;
+		status = "okay";
+	};
+
+	/* 2.5GPHY LED: GPIO_17 */
+	led5: parallel-port_5-led_2{
+		label = "2_5GPHY";
+		active_low;
+		pinctrl-0 = <&a_per_led_17_pin_17>;
+		link = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500)>;
+		activity = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500)>;
+		status = "okay";
+	};
+
+	/* GPIO mode LED */
+
+	/* GPHY0 RED LED: GPIO_15 */
+	led6:led_gpio_15 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <15>;
+		active_low;
+		init_high;
+	};
+
+	/* 2.5GPHY RED LED: GPIO_16 */
+	led7:led_gpio_16 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <16>;
+		active_low;
+		init_high;
+	};
+
+	/* POWER LED: GPIO_02 */
+	led8:led_gpio_2 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <2>;
+		active_low;
+		init_low;
+	};
+
+	/* WPS LED: GPIO_14 */
+	led9:led_gpio_14 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <14>;
+		active_low;
+		init_high;
+	};
+};

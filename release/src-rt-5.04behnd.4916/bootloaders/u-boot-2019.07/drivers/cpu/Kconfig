@@ -1,0 +1,21 @@
+config CPU
+	bool "Enable CPU drivers using Driver Model"
+	help
+	  This allows drivers to be provided for CPUs and their type to be
+	  specified in the board's device tree. For boards which support
+	  multiple CPUs, then normally have to be set up in U-Boot so that
+	  they can work correctly in the OS. This provides a framework for
+	  finding out information about available CPUs and making changes.
+
+config CPU_MPC83XX
+	bool "Enable MPC83xx CPU driver"
+	depends on CPU
+	select CLK_MPC83XX
+	help
+	  Support CPU cores for SoCs of the MPC83xx series.
+
+config CPU_RISCV
+	bool "Enable RISC-V CPU driver"
+	depends on CPU && RISCV
+	help
+	  Support CPU cores for RISC-V architecture.

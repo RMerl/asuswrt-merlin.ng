@@ -1,0 +1,157 @@
+#include "inc/968880DV_common.dtsi"
+
+/ {
+        model = "968880DV_AE";
+
+};
+
+&led_ctrl {
+    led2: serial-port_xgphy1-led_1 {
+        active_low;
+        crossbar-output = <1>;
+        activity = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+        status = "okay";
+    };
+
+    led3: serial-port_xgphy1-led_0 {
+        active_low;
+        crossbar-output = <3>;
+        link = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+        status = "okay";
+    };
+
+    led4: serial-port_slan0-led_1 {
+        active_low;
+        crossbar-output = <14>;
+        activity = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+        status = "okay";
+    };
+
+    led5: serial-port_slan0-led_0 {
+        active_low;
+        crossbar-output = <0>;
+        link = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+        status = "okay";
+    };
+
+    led6: serial-port_qlan0-led_1 {
+        active_low;
+        crossbar-output = <12>;
+        activity = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+        status = "okay";
+    };
+
+    led7: serial-port_qlan0-led_0 {
+        active_low;
+        crossbar-output = <13>;
+        link = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+        status = "okay";
+    };
+
+    led8: serial-port_qlan2-led_1 {
+        active_low;
+        crossbar-output = <11>;
+        activity = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+        status = "okay";
+    };
+
+    led9: serial-port_qlan2-led_0 {
+        active_low;
+        crossbar-output = <15>;
+        link = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+        status = "okay";
+    };
+
+    led10: serial-port_wan_ae-led_1 {
+        active_low;
+        crossbar-output = <9>;
+        activity = <(LED_SPEED_ALL)>;
+        status = "okay";
+    };
+
+    led11: serial-port_wan_ae-led_0 {
+        active_low;
+        crossbar-output = <10>;
+        link = <(LED_SPEED_ALL)>;
+        status = "okay";
+    };
+};
+
+&ethphytop {
+    status = "okay";
+    xphy1-enabled;
+};
+
+&mdio {
+    egphy0 {
+        status = "okay";
+    };
+    xphy1 {
+        status = "okay";
+    };
+    serdes00 {
+        status = "okay";
+    };
+    serdes10_xphy {
+        enet-phy-lane-swap;
+        USXGMII-S;
+        status = "okay";
+    };
+    serdes10 {
+        status = "okay";
+        phy-handle = <&serdes10_xphy>;
+    };
+    serdes12_xphy {
+        enet-phy-lane-swap;
+        USXGMII-S;
+        status = "okay";
+    };
+    serdes12 {
+        phy-handle = <&serdes12_xphy>;
+        status = "okay";
+    };
+    wan_xphy {
+        status = "okay";
+        enet-phy-lane-swap;
+        1000-Base-X;
+        2500-Base-X;
+        5000-Base-R;
+        10000-Base-R;
+    };
+    wan_ae {
+        phy-handle = <&wan_xphy>;
+        status = "okay";
+    };
+};
+
+&switch0 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&a_eth_mdc_pin_59 &a_eth_mdio_pin_60>;
+
+    ports {
+        port_gphy0 {
+            status = "okay";
+            network-leds = <&led0 &led1>;
+        };
+        port_xgphy1 {
+            network-leds = <&led2 &led3>;
+            status = "okay";
+        };
+        port_slan0 {
+            status = "okay";
+            network-leds = <&led4 &led5>;
+        };
+        port_qlan0 {
+            status = "okay";
+            network-leds = <&led6 &led7>;
+        };
+        port_qlan2 {
+            status = "okay";
+            network-leds = <&led8 &led9>;
+        };
+        port_wan@ae {
+            status = "okay";
+            network-leds = <&led10 &led11>;
+        };
+    };
+};

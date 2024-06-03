@@ -1,0 +1,45 @@
+/ {
+        xfp_sfp: xfp_sfp {
+                pinctrl-names = "default", "tx-sd";
+                pinctrl-0 = <&pon_lbe_p_pin_30>;
+                pinctrl-1 = <&pon_lbe_p_pin_30 &rogue_onu_in_pin_27>;
+                compatible = "brcm,sfp";
+                i2c-bus = <&i2c0mux2>;
+                los-gpio = <&gpioc 26 GPIO_ACTIVE_HIGH>;
+                mod-def0 = <&bca_extintr 76 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_BOTH_EDGE | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+                tx-power-gpio = <&gpioc 6 GPIO_ACTIVE_HIGH>;
+                tx-power-down-gpio = <&gpiocext 6 GPIO_ACTIVE_HIGH>;
+        };
+
+        wan_serdes {
+                status = "okay";
+                trx = <&xfp_sfp>;
+        };
+
+        i2cmux {
+                compatible = "i2c-mux-gpio";
+                #address-cells = <1>;
+                #size-cells = <0>;
+                mux-gpios = <&gpiocext 7 GPIO_ACTIVE_HIGH>;
+                i2c-parent = <&i2c0>;
+
+                i2c0mux1: i2c@1 {
+                    reg = <0>;
+                    #address-cells = <1>;
+                    #size-cells = <0>;
+                };
+
+                i2c0mux2: i2c@2 {
+                    reg = <1>;
+                    #address-cells = <1>;
+                    #size-cells = <0>;
+                };
+        };
+};
+
+&mdio_bus {
+        wan_ae {
+                trx = <&xfp_sfp>;
+                status = "okay";
+        };
+};

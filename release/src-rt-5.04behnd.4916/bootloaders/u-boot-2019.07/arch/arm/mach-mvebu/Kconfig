@@ -1,0 +1,277 @@
+if ARCH_MVEBU
+
+config HAVE_MVEBU_EFUSE
+	bool
+	default n
+
+config ARMADA_32BIT
+	bool
+	select ARCH_MISC_INIT
+	select BOARD_EARLY_INIT_F
+	select CPU_V7A
+	select SPL_DM if SPL
+	select SPL_DM_SEQ_ALIAS if SPL
+	select SPL_OF_CONTROL if SPL
+	select SPL_SIMPLE_BUS if SPL
+	select SUPPORT_SPL
+	select TRANSLATION_OFFSET
+
+config ARMADA_64BIT
+	bool
+	select ARM64
+
+# ARMv7 SoCs...
+config ARMADA_375
+	bool
+	select ARMADA_32BIT
+
+config ARMADA_38X
+	bool
+	select ARMADA_32BIT
+	select HAVE_MVEBU_EFUSE
+
+config ARMADA_XP
+	bool
+	select ARMADA_32BIT
+
+# ARMv8 SoCs...
+config ARMADA_3700
+	bool
+	select ARM64
+
+# Armada 7K and 8K are very similar - use only one Kconfig symbol for both
+config ARMADA_8K
+	bool
+	select ARM64
+
+# Armada PLL frequency (used for NAND clock generation)
+config SYS_MVEBU_PLL_CLOCK
+	int
+	default "2000000000" if ARMADA_XP || ARMADA_3700 || ARMADA_8K || ARMADA_MSYS
+	default "1000000000" if ARMADA_38X || ARMADA_375
+
+# Armada XP/38x SoC types...
+config MV78230
+	bool
+	select ARMADA_XP
+
+config MV78260
+	bool
+	select ARMADA_XP
+	imply CMD_SATA
+
+config MV78460
+	bool
+	select ARMADA_XP
+
+config ARMADA_MSYS
+	bool
+	select ARMADA_32BIT
+
+config 98DX4251
+	bool
+	select ARMADA_MSYS
+
+config 98DX3336
+	bool
+	select ARMADA_MSYS
+
+config 98DX3236
+	bool
+	select ARMADA_MSYS
+
+config 88F6820
+	bool
+	select ARMADA_38X
+
+choice
+	prompt "Armada XP/375/38x/3700/7K/8K board select"
+	optional
+
+config TARGET_CLEARFOG
+	bool "Support ClearFog"
+	select 88F6820
+
+config TARGET_HELIOS4
+	bool "Support Helios4"
+	select 88F6820
+
+config TARGET_MVEBU_ARMADA_37XX
+	bool "Support Armada 37xx platforms"
+	select ARMADA_3700
+	imply SCSI
+
+config TARGET_DB_88F6720
+	bool "Support DB-88F6720 Armada 375"
+	select ARMADA_375
+
+config TARGET_DB_88F6820_GP
+	bool "Support DB-88F6820-GP"
+	select 88F6820
+
+config TARGET_DB_88F6820_AMC
+	bool "Support DB-88F6820-AMC"
+	select 88F6820
+
+config TARGET_TURRIS_OMNIA
+	bool "Support Turris Omnia"
+	select 88F6820
+	select BOARD_LATE_INIT
+	select DM_I2C
+	select I2C_MUX
+	select I2C_MUX_PCA954x
+	select SPL_I2C_MUX
+	select SYS_I2C_MVTWSI
+	select ATSHA204A
+
+config TARGET_TURRIS_MOX
+	bool "Support Turris Mox"
+	select ARMADA_3700
+
+config TARGET_MVEBU_ARMADA_8K
+	bool "Support Armada 7k/8k platforms"
+	select ARMADA_8K
+	select BOARD_LATE_INIT
+	imply SCSI
+
+config TARGET_DB_MV784MP_GP
+	bool "Support db-mv784mp-gp"
+	select MV78460
+
+config TARGET_DS414
+	bool "Support Synology DS414"
+	select MV78230
+
+config TARGET_MAXBCM
+	bool "Support maxbcm"
+	select MV78460
+
+config TARGET_THEADORABLE
+	bool "Support theadorable Armada XP"
+	select BOARD_LATE_INIT if USB
+	select MV78260
+	imply CMD_SATA
+
+config TARGET_CONTROLCENTERDC
+	bool "Support CONTROLCENTERDC"
+	select 88F6820
+
+config TARGET_X530
+	bool "Support Allied Telesis x530"
+	select 88F6820
+
+config TARGET_DB_XC3_24G4XG
+	bool "Support DB-XC3-24G4XG"
+	select 98DX3336
+
+config TARGET_CRS305_1G_4S
+	bool "Support CRS305-1G-4S"
+	select 98DX3236
+
+endchoice
+
+config SYS_BOARD
+	default "clearfog" if TARGET_CLEARFOG
+	default "helios4" if TARGET_HELIOS4
+	default "mvebu_armada-37xx" if TARGET_MVEBU_ARMADA_37XX
+	default "db-88f6720" if TARGET_DB_88F6720
+	default "db-88f6820-gp" if TARGET_DB_88F6820_GP
+	default "db-88f6820-amc" if TARGET_DB_88F6820_AMC
+	default "turris_omnia" if TARGET_TURRIS_OMNIA
+	default "turris_mox" if TARGET_TURRIS_MOX
+	default "mvebu_armada-8k" if TARGET_MVEBU_ARMADA_8K
+	default "db-mv784mp-gp" if TARGET_DB_MV784MP_GP
+	default "ds414" if TARGET_DS414
+	default "maxbcm" if TARGET_MAXBCM
+	default "theadorable" if TARGET_THEADORABLE
+	default "a38x" if TARGET_CONTROLCENTERDC
+	default "x530" if TARGET_X530
+	default "db-xc3-24g4xg" if TARGET_DB_XC3_24G4XG
+	default "crs305-1g-4s" if TARGET_CRS305_1G_4S
+
+config SYS_CONFIG_NAME
+	default "clearfog" if TARGET_CLEARFOG
+	default "helios4" if TARGET_HELIOS4
+	default "mvebu_armada-37xx" if TARGET_MVEBU_ARMADA_37XX
+	default "db-88f6720" if TARGET_DB_88F6720
+	default "db-88f6820-gp" if TARGET_DB_88F6820_GP
+	default "db-88f6820-amc" if TARGET_DB_88F6820_AMC
+	default "mvebu_armada-8k" if TARGET_MVEBU_ARMADA_8K
+	default "db-mv784mp-gp" if TARGET_DB_MV784MP_GP
+	default "ds414" if TARGET_DS414
+	default "maxbcm" if TARGET_MAXBCM
+	default "theadorable" if TARGET_THEADORABLE
+	default "turris_omnia" if TARGET_TURRIS_OMNIA
+	default "turris_mox" if TARGET_TURRIS_MOX
+	default "controlcenterdc" if TARGET_CONTROLCENTERDC
+	default "x530" if TARGET_X530
+	default "db-xc3-24g4xg" if TARGET_DB_XC3_24G4XG
+	default "crs305-1g-4s" if TARGET_CRS305_1G_4S
+
+config SYS_VENDOR
+	default "Marvell" if TARGET_DB_MV784MP_GP
+	default "Marvell" if TARGET_MVEBU_ARMADA_37XX
+	default "Marvell" if TARGET_DB_88F6720
+	default "Marvell" if TARGET_DB_88F6820_GP
+	default "Marvell" if TARGET_DB_88F6820_AMC
+	default "Marvell" if TARGET_MVEBU_ARMADA_8K
+	default "Marvell" if TARGET_DB_XC3_24G4XG
+	default "Marvell" if TARGET_MVEBU_DB_88F7040
+	default "solidrun" if TARGET_CLEARFOG
+	default "kobol" if TARGET_HELIOS4
+	default "Synology" if TARGET_DS414
+	default "CZ.NIC" if TARGET_TURRIS_OMNIA
+	default "CZ.NIC" if TARGET_TURRIS_MOX
+	default "gdsys" if TARGET_CONTROLCENTERDC
+	default "alliedtelesis" if TARGET_X530
+	default "mikrotik" if TARGET_CRS305_1G_4S
+
+config SYS_SOC
+	default "mvebu"
+
+choice
+	prompt "Boot method"
+
+config MVEBU_SPL_BOOT_DEVICE_SPI
+	bool "SPI NOR flash"
+
+config MVEBU_SPL_BOOT_DEVICE_MMC
+	bool "SDIO/MMC card"
+	select SPL_LIBDISK_SUPPORT
+
+config MVEBU_SPL_BOOT_DEVICE_UART
+	bool "UART"
+
+endchoice
+
+config MVEBU_EFUSE
+	bool "Enable eFuse support"
+	default n
+	depends on HAVE_MVEBU_EFUSE
+	help
+	  Enable support for reading and writing eFuses on mvebu SoCs.
+
+config MVEBU_EFUSE_FAKE
+	bool "Fake eFuse access (dry run)"
+	default n
+	depends on MVEBU_EFUSE
+	help
+	  This enables a "dry run" mode where eFuses are not really programmed.
+	  Instead the eFuse accesses are emulated by writing to and reading
+	  from a memory block.
+	  This is can be used for testing prog scripts.
+
+config SECURED_MODE_IMAGE
+	bool "Build image for trusted boot"
+	default false
+	depends on 88F6820
+	help
+	  Build an image that employs the ARMADA SoC's trusted boot framework
+	  for securely booting images.
+
+config SECURED_MODE_CSK_INDEX
+	int "Index of active CSK"
+	default 0
+	depends on SECURED_MODE_IMAGE
+
+endif

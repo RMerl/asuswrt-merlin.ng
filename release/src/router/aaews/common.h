@@ -2,6 +2,9 @@
 #define _CMD_COMMON_H
 
 #include <shared.h>
+#ifdef RTCONFIG_LIBASUSLOG
+#include "libasuslog.h"
+#endif
 
 #define AIHOME_API_LEVEL	EXTEND_AIHOME_API_LEVEL // From shared/shared.h
 
@@ -68,5 +71,17 @@
 #define my_memcpy(dst, src, dst_len, src_len) {memcpy(dst, src, dst_len < src_len ? dst_len : src_len);}
 
 extern char *generate_device_desc(int public, char *tnl_sdk_version, char *out_buf, int out_len);
+
+/* mastiff.c */
+void start_sip_conn();
+#ifdef RTCONFIG_LIBASUSLOG
+#define AAE_MAX_LOG_LEN 960
+#define AAE_DBG_LOG	"aae.log"
+extern char *__progname;
+#define AAEDBG(fmt,args...) \
+		asusdebuglog(LOG_INFO, AAE_DBG_LOG, LOG_CUSTOM, LOG_SHOWTIME, 50, "[%s][%d]][%s:(%d)] "fmt"\n", __progname, getpid(), __FUNCTION__, __LINE__, ##args);
+#else
+#define AAEDBG(fmt,args...)
+#endif
 
 #endif

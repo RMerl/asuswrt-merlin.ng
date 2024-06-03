@@ -1,0 +1,7 @@
+STIH410-B2260 BOARD
+M:	Patrice Chotard <patrice.chotard@st.com>
+S:	Maintained
+F:	board/st/stih410-b2260/
+F:	include/configs/stih410-b2260.h
+F:	configs/stih410-b2260_defconfig
+F:	arch/arm/dts/stih*

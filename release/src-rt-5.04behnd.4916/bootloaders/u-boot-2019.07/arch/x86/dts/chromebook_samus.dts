@@ -1,0 +1,715 @@
+/dts-v1/;
+
+#include <dt-bindings/gpio/x86-gpio.h>
+
+/include/ "skeleton.dtsi"
+/include/ "keyboard.dtsi"
+/include/ "serial.dtsi"
+/include/ "reset.dtsi"
+/include/ "rtc.dtsi"
+/include/ "tsc_timer.dtsi"
+
+#ifdef CONFIG_CHROMEOS
+#include "chromeos-x86.dtsi"
+#include "flashmap-x86-ro.dtsi"
+#include "flashmap-8mb-rw.dtsi"
+#endif
+
+/ {
+	model = "Google Samus";
+	compatible = "google,samus", "intel,broadwell";
+
+	aliases {
+		spi0 = &spi;
+		usb0 = &usb_0;
+		usb1 = &usb_1;
+		cros-ec0 = &cros_ec;
+	};
+
+	config {
+	       silent_console = <0>;
+	};
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu@0 {
+			device_type = "cpu";
+			compatible = "intel,core-i3-gen5";
+			reg = <0>;
+			intel,apic-id = <0>;
+			intel,slow-ramp = <3>;
+		};
+
+		cpu@1 {
+			device_type = "cpu";
+			compatible = "intel,core-i3-gen5";
+			reg = <1>;
+			intel,apic-id = <1>;
+		};
+
+		cpu@2 {
+			device_type = "cpu";
+			compatible = "intel,core-i3-gen5";
+			reg = <2>;
+			intel,apic-id = <2>;
+		};
+
+		cpu@3 {
+			device_type = "cpu";
+			compatible = "intel,core-i3-gen5";
+			reg = <3>;
+			intel,apic-id = <3>;
+		};
+
+	};
+
+	chosen {
+		stdout-path = "/serial";
+	};
+
+	keyboard {
+		intel,duplicate-por;
+	};
+
+	pch_pinctrl {
+		compatible = "intel,x86-broadwell-pinctrl";
+		u-boot,dm-pre-reloc;
+		reg = <0 0>;
+
+		/* Put this first: it is the default */
+		gpio_unused: gpio-unused {
+			u-boot,dm-pre-reloc;
+			mode-gpio;
+			direction = <PIN_INPUT>;
+			owner = <OWNER_GPIO>;
+			sense-disable;
+		};
+
+		gpio_acpi_sci: acpi-sci {
+			u-boot,dm-pre-reloc;
+			mode-gpio;
+			direction = <PIN_INPUT>;
+			invert;
+			route = <ROUTE_SCI>;
+		};
+
+		gpio_acpi_smi: acpi-smi {
+			u-boot,dm-pre-reloc;
+			mode-gpio;
+			direction = <PIN_INPUT>;
+			invert;
+			route = <ROUTE_SMI>;
+		};
+
+		gpio_input: gpio-input {
+			u-boot,dm-pre-reloc;
+			mode-gpio;
+			direction = <PIN_INPUT>;
+			owner = <OWNER_GPIO>;
+		};
+
+		gpio_input_invert: gpio-input-invert {
+			u-boot,dm-pre-reloc;
+			mode-gpio;
+			direction = <PIN_INPUT>;
+			owner = <OWNER_GPIO>;
+			invert;
+		};
+
+		gpio_native: gpio-native {
+			u-boot,dm-pre-reloc;
+		};
+
+		gpio_out_high: gpio-out-high {
+			u-boot,dm-pre-reloc;
+			mode-gpio;
+			direction = <PIN_OUTPUT>;
+			output-value = <1>;
+			owner = <OWNER_GPIO>;
+			sense-disable;
+		};
+
+		gpio_out_low: gpio-out-low {
+			u-boot,dm-pre-reloc;
+			mode-gpio;
+			direction = <PIN_OUTPUT>;
+			output-value = <0>;
+			owner = <OWNER_GPIO>;
+			sense-disable;
+		};
+
+		gpio_pirq: gpio-pirq {
+			u-boot,dm-pre-reloc;
+			mode-gpio;
+			direction = <PIN_INPUT>;
+			owner = <OWNER_GPIO>;
+			pirq-apic = <PIRQ_APIC_ROUTE>;
+		};
+
+		soc_gpio@0 {
+			u-boot,dm-pre-reloc;
+			config =
+				<0 &gpio_unused 0>,	/* unused */
+				<1 &gpio_unused 0>,	/* unused */
+				<2 &gpio_unused 0>,	/* unused */
+				<3 &gpio_unused 0>,	/* unused */
+				<4 &gpio_native 0>,	/* native: i2c0_sda_gpio4 */
+				<5 &gpio_native 0>,	/* native: i2c0_scl_gpio5 */
+				<6 &gpio_native 0>,	/* native: i2c1_sda_gpio6 */
+				<7 &gpio_native 0>,	/* native: i2c1_scl_gpio7 */
+				<8 &gpio_acpi_sci 0>,	/* pch_lte_wake_l */
+				<9 &gpio_input_invert 0>,	/* trackpad_int_l (wake) */
+				<10 &gpio_acpi_sci 0>,	/* pch_wlan_wake_l */
+				<11 &gpio_unused 0>,	/* unused */
+				<12 &gpio_unused 0>,	/* unused */
+				<13 &gpio_pirq 3>,	/* trackpad_int_l (pirql) */
+				<14 &gpio_pirq 4>,	/* touch_int_l (pirqm) */
+				<15 &gpio_unused 0>,	/* unused (strap) */
+				<16 &gpio_input 0>,	/* pch_wp */
+				<17 &gpio_unused 0>,	/* unused */
+				<18 &gpio_unused 0>,	/* unused */
+				<19 &gpio_unused 0>,	/* unused */
+				<20 &gpio_native 0>,	/* pcie_wlan_clkreq_l */
+				<21 &gpio_out_high 0>,	/* pp3300_ssd_en */
+				<22 &gpio_unused 0>,	/* unused */
+				<23 &gpio_out_low 0>,	/* pp3300_autobahn_en */
+				<24 &gpio_unused 0>,	/* unused */
+				<25 &gpio_input 0>,	/* ec_in_rw */
+				<26 &gpio_unused 0>,	/* unused */
+				<27 &gpio_acpi_sci 0>,	/* pch_wake_l */
+				<28 &gpio_unused 0>,	/* unused */
+				<29 &gpio_unused 0>,	/* unused */
+				<30 &gpio_native 0>,	/* native: pch_suswarn_l */
+				<31 &gpio_native 0>,	/* native: acok_buf */
+				<32 &gpio_native 0>,	/* native: lpc_clkrun_l */
+				<33 &gpio_native 0>,	/* native: ssd_devslp */
+				<34 &gpio_acpi_smi 0>,	/* ec_smi_l */
+				<35 &gpio_acpi_smi 0>,	/* pch_nmi_dbg_l (route in nmi_en) */
+				<36 &gpio_acpi_sci 0>,	/* ec_sci_l */
+				<37 &gpio_unused 0>,	/* unused */
+				<38 &gpio_unused 0>,	/* unused */
+				<39 &gpio_unused 0>,	/* unused */
+				<40 &gpio_native 0>,	/* native: pch_usb1_oc_l */
+				<41 &gpio_native 0>,	/* native: pch_usb2_oc_l */
+				<42 &gpio_unused 0>,	/* wlan_disable_l */
+				<43 &gpio_out_high 0>,	/* pp1800_codec_en */
+				<44 &gpio_unused 0>,	/* unused */
+				<45 &gpio_acpi_sci 0>,	/* dsp_int - codec wake */
+				<46 &gpio_pirq 6>,	/* hotword_det_l_3v3 (pirqo) - codec irq */
+				<47 &gpio_out_low 0>,	/* ssd_reset_l */
+				<48 &gpio_unused 0>,	/* unused */
+				<49 &gpio_unused 0>,	/* unused */
+				<50 &gpio_unused 0>,	/* unused */
+				<51 &gpio_unused 0>,	/* unused */
+				<52 &gpio_input 0>,	/* sim_det */
+				<53 &gpio_unused 0>,	/* unused */
+				<54 &gpio_unused 0>,	/* unused */
+				<55 &gpio_unused 0>,	/* unused */
+				<56 &gpio_unused 0>,	/* unused */
+				<57 &gpio_out_high 0>,	/* codec_reset_l */
+				<58 &gpio_unused 0>,	/* unused */
+				<59 &gpio_out_high 0>,	/* lte_disable_l */
+				<60 &gpio_unused 0>,	/* unused */
+				<61 &gpio_native 0>,	/* native: pch_sus_stat */
+				<62 &gpio_native 0>,	/* native: pch_susclk */
+				<63 &gpio_native 0>,	/* native: pch_slp_s5_l */
+				<64 &gpio_unused 0>,	/* unused */
+				<65 &gpio_input 0>,	/* ram_id3 */
+				<66 &gpio_input 0>,	/* ram_id3_old (strap) */
+				<67 &gpio_input 0>,	/* ram_id0 */
+				<68 &gpio_input 0>,	/* ram_id1 */
+				<69 &gpio_input 0>,	/* ram_id2 */
+				<70 &gpio_unused 0>,	/* unused */
+				<71 &gpio_native 0>,	/* native: modphy_en */
+				<72 &gpio_unused 0>,	/* unused */
+				<73 &gpio_unused 0>,	/* unused */
+				<74 &gpio_unused 0>,	/* unused */
+				<75 &gpio_unused 0>,	/* unused */
+				<76 &gpio_unused 0>,	/* unused */
+				<77 &gpio_unused 0>,	/* unused */
+				<78 &gpio_unused 0>,	/* unused */
+				<79 &gpio_unused 0>,	/* unused */
+				<80 &gpio_unused 0>,	/* unused */
+				<81 &gpio_unused 0>,	/* unused */
+				<82 &gpio_native 0>,	/* native: ec_rcin_l */
+				<83 &gpio_native 0>,	/* gspi0_cs */
+				<84 &gpio_native 0>,	/* gspi0_clk */
+				<85 &gpio_native 0>,	/* gspi0_miso */
+				<86 &gpio_native 0>,	/* gspi0_mosi (strap) */
+				<87 &gpio_unused 0>,	/* unused */
+				<88 &gpio_unused 0>,	/* unused */
+				<89 &gpio_out_high 0>,	/* pp3300_sd_en */
+				<90 &gpio_unused 0>,	/* unused */
+				<91 &gpio_unused 0>,	/* unused */
+				<92 &gpio_unused 0>,	/* unused */
+				<93 &gpio_unused 0>,	/* unused */
+				<94 &gpio_unused 0>;	/* unused */
+		};
+	};
+
+	pci {
+		compatible = "pci-x86";
+		#address-cells = <3>;
+		#size-cells = <2>;
+		u-boot,dm-pre-reloc;
+		ranges = <0x02000000 0x0 0xe0000000 0xe0000000 0 0x10000000
+			0x42000000 0x0 0xd0000000 0xd0000000 0 0x10000000
+			0x01000000 0x0 0x1000 0x1000 0 0xefff>;
+
+		northbridge@0,0 {
+			reg = <0x00000000 0 0 0 0>;
+			compatible = "intel,broadwell-northbridge";
+			board-id-gpios = <&gpio_c 5 0>, <&gpio_c 4 0>,
+					<&gpio_c 3 0>, <&gpio_c 1 0>;
+			u-boot,dm-pre-reloc;
+			spd {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				u-boot,dm-pre-reloc;
+				samsung_4 {
+					reg = <6>;
+					u-boot,dm-pre-reloc;
+					data = [91 20 f1 03 04 11 05 0b
+						03 11 01 08 0a 00 50 01
+						78 78 90 50 90 11 50 e0
+						10 04 3c 3c 01 90 00 00
+						00 80 00 00 00 00 00 a8
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 0f 11 02 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 80 ce 01
+						00 00 55 00 00 00 00 00
+						4b 34 45 38 45 33 30 34
+						45 44 2d 45 47 43 45 20
+						20 20 00 00 80 ce 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00];
+				};
+				hynix-h9ccnnnbltmlar-ntm-lpddr3-32 {
+					/*
+					 * banks 8, ranks 2, rows 14,
+					 * columns 10, density 4096 mb, x32
+					 */
+					reg = <8>;
+					u-boot,dm-pre-reloc;
+					data = [91 20 f1 03 04 11 05 0b
+						03 11 01 08 0a 00 50 01
+						78 78 90 50 90 11 50 e0
+						10 04 3c 3c 01 90 00 00
+						00 80 00 00 00 00 00 a8
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 0f 01 02 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 80 ad 00
+						00 00 55 00 00 00 00 00
+						48 39 43 43 4e 4e 4e 42
+						4c 54 4d 4c 41 52 2d 4e
+						54 4d 00 00 80 ad 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00];
+					};
+				samsung_8 {
+					reg = <10>;
+					u-boot,dm-pre-reloc;
+					data = [91 20 f1 03 04 12 05 0a
+						03 11 01 08 0a 00 50 01
+						78 78 90 50 90 11 50 e0
+						10 04 3c 3c 01 90 00 00
+						00 80 00 00 00 00 00 a8
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 0f 11 02 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 80 ce 01
+						00 00 55 00 00 00 00 00
+						4b 34 45 36 45 33 30 34
+						45 44 2d 45 47 43 45 20
+						20 20 00 00 80 ce 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00];
+				};
+				hynix-h9ccnnnbltmlar-ntm-lpddr3-16 {
+					/*
+					 * banks 8, ranks 2, rows 14,
+					 * columns 11, density 4096 mb, x16
+					 */
+					reg = <12>;
+					u-boot,dm-pre-reloc;
+					data = [91 20 f1 03 04 12 05 0a
+						03 11 01 08 0a 00 50 01
+						78 78 90 50 90 11 50 e0
+						10 04 3c 3c 01 90 00 00
+						00 80 00 00 00 00 00 a8
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 0f 01 02 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 80 ad 00
+						00 00 55 00 00 00 00 00
+						48 39 43 43 4e 4e 4e 42
+						4c 54 4d 4c 41 52 2d 4e
+						54 4d 00 00 80 ad 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00];
+				};
+				hynix-h9ccnnncltmlar-lpddr3 {
+					/*
+					 * banks 8, ranks 2, rows 15,
+					 * columns 11, density 8192 mb, x16
+					 */
+					reg = <13>;
+					u-boot,dm-pre-reloc;
+					data = [91 20 f1 03 05 1a 05 0a
+						03 11 01 08 0a 00 50 01
+						78 78 90 50 90 11 50 e0
+						90 06 3c 3c 01 90 00 00
+						00 80 00 00 00 00 00 a8
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 0f 01 02 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 80 ad 00
+						00 00 55 00 00 00 00 00
+						48 39 43 43 4e 4e 4e 43
+						4c 54 4d 4c 41 52 00 00
+						00 00 00 00 80 ad 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00];
+				};
+				elpida-edfb232a1ma {
+					/*
+					 * banks 8, ranks 2, rows 15,
+					 * columns 11, density 8192 mb, x16
+					 */
+					reg = <15>;
+					u-boot,dm-pre-reloc;
+					data = [91 20 f1 03 05 1a 05 0a
+						03 11 01 08 0a 00 50 01
+						78 78 90 50 90 11 50 e0
+						90 06 3c 3c 01 90 00 00
+						00 80 00 00 00 00 00 a8
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 0f 01 02 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 02 fe 00
+						00 00 00 00 00 00 00 00
+						45 44 46 42 32 33 32 41
+						31 4d 41 2d 47 44 2d 46
+						00 00 00 00 02 fe 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00];
+				};
+			};
+		};
+
+		gma@2,0 {
+			reg = <0x00001000 0 0 0 0>;
+			compatible = "intel,broadwell-igd";
+			intel,dp-hotplug = <6 6 6>;
+			intel,port-select = <1>;	/* eDP */
+			intel,power-cycle-delay = <6>;
+			intel,power-up-delay = <2000>;
+			intel,power-down-delay = <500>;
+			intel,power-backlight-on-delay = <2000>;
+			intel,power-backlight-off-delay = <2000>;
+			intel,cpu-backlight = <0x00000200>;
+			intel,pch-backlight = <0x04000200>;
+			intel,pre-graphics-delay = <200>;
+		};
+
+		adsp@13,0 {
+			reg = <0x00009800 0 0 0 0>;
+			compatible = "intel,wildcatpoint-adsp";
+			intel,adsp-d3-pg-enable = <0>;
+			intel,adsp-sram-pg-enable = <0>;
+			intel,sio-acpi-mode;
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			i2s: shim {
+				compatible = "intel,broadwell-i2s";
+				#sound-dai-cells = <1>;
+				reg = <0xfb000 0xfc000 0xfd000>;
+			};
+		};
+
+		usb_1: usb@14,0 {
+			reg = <0x0000a000 0 0 0 0>;
+			compatible = "xhci-pci";
+		};
+
+		i2c0: i2c@15,1 {
+			reg = <0x0000a900 0 0 0 0>;
+			compatible = "snps,designware-i2c";
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			rt5677: rt5677@2c {
+				compatible = "realtek,rt5677";
+				#sound-dai-cells = <1>;
+				reg = <0x2c>;
+			};
+		};
+
+		me@16,0 {
+			reg = <0x0000b000 0 0 0 0>;
+			compatible = "intel,me";
+			u-boot,dm-pre-reloc;
+		};
+
+		usb_0: usb@1d,0 {
+			status = "disabled";
+			reg = <0x0000e800 0 0 0 0>;
+			compatible = "ehci-pci";
+		};
+
+		pch: pch@1f,0 {
+			reg = <0x0000f800 0 0 0 0>;
+			compatible = "intel,broadwell-pch";
+			u-boot,dm-pre-reloc;
+			#address-cells = <1>;
+			#size-cells = <1>;
+			intel,pirq-routing = <0x8b 0x8a 0x8b 0x8b
+						0x80 0x80 0x80 0x80>;
+			intel,gpi-routing = <0 0 0 0 0 0 0 2
+						1 0 0 0 0 0 0 0>;
+			/* Enable EC SMI source */
+			intel,alt-gp-smi-enable = <0x0040>;
+
+			/* EC-SCI is GPIO36 */
+			intel,gpe0-en = <0 0x10 0 0>;
+
+			power-enable-gpio = <&gpio_a 23 0>;
+
+			spi: spi {
+				u-boot,dm-pre-reloc;
+				#address-cells = <1>;
+				#size-cells = <0>;
+				compatible = "intel,ich9-spi";
+				fwstore_spi: spi-flash@0 {
+					u-boot,dm-pre-reloc;
+					#size-cells = <1>;
+					#address-cells = <1>;
+					reg = <0>;
+					compatible = "winbond,w25q64",
+							"jedec,spi-nor";
+					memory-map = <0xff800000 0x00800000>;
+					rw-mrc-cache {
+						u-boot,dm-pre-reloc;
+						label = "rw-mrc-cache";
+						reg = <0x003e0000 0x00010000>;
+					};
+				};
+			};
+
+			gpio_a: gpioa {
+				compatible = "intel,broadwell-gpio";
+				u-boot,dm-pre-reloc;
+				#gpio-cells = <2>;
+				gpio-controller;
+				reg = <0 0>;
+				bank-name = "A";
+			};
+
+			gpio_b: gpiob {
+				compatible = "intel,broadwell-gpio";
+				u-boot,dm-pre-reloc;
+				#gpio-cells = <2>;
+				gpio-controller;
+				reg = <1 0>;
+				bank-name = "B";
+			};
+
+			gpio_c: gpioc {
+				compatible = "intel,broadwell-gpio";
+				u-boot,dm-pre-reloc;
+				#gpio-cells = <2>;
+				gpio-controller;
+				reg = <2 0>;
+				bank-name = "C";
+			};
+
+			lpc {
+				compatible = "intel,broadwell-lpc";
+				#address-cells = <1>;
+				#size-cells = <0>;
+				u-boot,dm-pre-reloc;
+				intel,gen-dec = <0x800 0xfc 0x900 0xfc>;
+				cros_ec: cros-ec {
+					u-boot,dm-pre-reloc;
+					compatible = "google,cros-ec-lpc";
+					reg = <0x204 1 0x200 1 0x880 0x80>;
+
+					/*
+					 * Describes the flash memory within
+					 * the EC
+					 */
+					#address-cells = <1>;
+					#size-cells = <1>;
+					flash@8000000 {
+						reg = <0x08000000 0x20000>;
+						erase-value = <0xff>;
+					};
+				};
+			};
+		};
+
+		sata@1f,2 {
+			compatible = "intel,wildcatpoint-ahci";
+			reg = <0x0000fa00 0 0 0 0>;
+			u-boot,dm-pre-proper;
+			intel,sata-mode = "ahci";
+			intel,sata-port-map = <1>;
+			intel,sata-port0-gen3-tx = <0x72>;
+			reset-gpio = <&gpio_b 15 GPIO_ACTIVE_LOW>;
+		};
+
+		smbus: smbus@1f,3 {
+			compatible = "intel,ich-i2c";
+			reg = <0x0000fb00 0 0 0 0>;
+			u-boot,dm-pre-reloc;
+		};
+	};
+
+	tpm {
+		u-boot,dm-pre-reloc;
+		reg = <0xfed40000 0x5000>;
+		compatible = "infineon,slb9635lpc";
+		secdata {
+			u-boot,dm-pre-reloc;
+			compatible = "google,tpm-secdata";
+		};
+	};
+
+	microcode {
+		u-boot,dm-pre-reloc;
+		update@0 {
+			u-boot,dm-pre-reloc;
+#include "microcode/mc0306d4_00000018.dtsi"
+		};
+	};
+
+	sound {
+		compatible = "google,samus-sound";
+		codec-enable-gpio = <&gpio_b 11 GPIO_ACTIVE_HIGH>;
+		cpu {
+			sound-dai = <&i2s 0>;
+		};
+
+		codec {
+			sound-dai = <&rt5677 0>;
+		};
+	};
+
+};
+
+&rtc {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	nvdata {
+		u-boot,dm-pre-reloc;
+		compatible = "google,cmos-nvdata";
+		reg = <0x26>;
+	};
+};

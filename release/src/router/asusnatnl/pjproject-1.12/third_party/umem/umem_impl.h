@@ -235,7 +235,7 @@ typedef struct umem_magtype {
 	umem_cache_t	*mt_cache;	/* magazine cache */
 } umem_magtype_t;
 
-#if (defined(__PTHREAD_MUTEX_SIZE__) && __PTHREAD_MUTEX_SIZE__ >= 24) || defined(UMEM_PTHREAD_MUTEX_TOO_BIG)
+#if (defined(__PTHREAD_MUTEX_SIZE__) && __PTHREAD_MUTEX_SIZE__ >= 24) || defined(UMEM_PTHREAD_MUTEX_TOO_BIG) || defined(RT4GAC86U)
 #define	UMEM_CPU_CACHE_SIZE	128	/* must be power of 2 */
 #else
 #define	UMEM_CPU_CACHE_SIZE	64	/* must be power of 2 */

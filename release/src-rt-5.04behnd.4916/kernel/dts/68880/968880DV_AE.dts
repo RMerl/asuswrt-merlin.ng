@@ -1,0 +1,93 @@
+#include "inc/968880DV.dtsi"
+
+/ {
+        memory_controller {
+                memcfg = <(BP1_DDR_MCBSEL_FORMAT_VER1   | \
+                           BP1_DDR_TYPE_LPDDR4         | \
+                           BP1_DDR_SPEED_2133_36_39_39 | \
+                           BP1_DDR_WIDTH_32BIT         | \
+                           BP1_DDR_TOTAL_SIZE_8Gb      | \
+                           BP1_DDR_SSC_CONFIG_1        | \
+                           BP1_DDR_CONFIG_DEBUG)>;
+        };
+};
+
+/ {
+    model = "968880DV_AE";
+
+    wan_serdes {
+        status = "okay";
+    };
+};
+
+&ethphytop {
+    xphy1-enabled;
+};
+
+&mdio_bus {
+    egphy0 {
+        status = "okay";
+    };
+    xphy1 {
+        status = "okay";
+    };
+    serdes00 {
+        status = "okay";
+    };
+    serdes10_xphy {
+        enet-phy-lane-swap;
+        USXGMII-S;
+        status = "okay";
+    };
+    serdes10 {
+        status = "okay";
+        phy-handle = <&serdes10_xphy>;
+    };
+    serdes12_xphy {
+        enet-phy-lane-swap;
+        USXGMII-S;
+        status = "okay";
+    };
+    serdes12 {
+        phy-handle = <&serdes12_xphy>;
+        status = "okay";
+    };
+    wan_xphy {
+        status = "okay";
+        enet-phy-lane-swap;
+        1000-Base-X;
+        2500-Base-X;
+        5000-Base-R;
+        10000-Base-R;
+    };
+    wan_ae {
+        phy-handle = <&wan_xphy>;
+        status = "okay";
+    };
+};
+
+&switch0 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&a_eth_mdc_pin_59 &a_eth_mdio_pin_60>;
+
+    ports {
+        port_gphy0 {
+            status = "okay";
+        };
+        port_xgphy1 {
+            status = "okay";
+        };
+        port_slan0 {
+            status = "okay";
+        };
+        port_qlan0 {
+            status = "okay";
+        };
+        port_qlan2 {
+            status = "okay";
+        };
+        port_wan@ae {
+            status = "okay";
+        };
+    };
+};

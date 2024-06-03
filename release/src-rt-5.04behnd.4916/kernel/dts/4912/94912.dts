@@ -1,0 +1,27 @@
+#include "4912.dtsi"
+&switch0 {
+	ports {
+		port_gphy0 {
+			status = "okay";
+		};
+
+		port_gphy1 {
+			status = "okay";
+		};
+
+		port_gphy2 {
+			status = "okay";
+		};
+
+		port_gphy3 {
+			status = "okay";
+		};
+
+/* FIXME
+		port_xgphy {
+			status = "okay";
+		};
+*/
+	};
+};
+

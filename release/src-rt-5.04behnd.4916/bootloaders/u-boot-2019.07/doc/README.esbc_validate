@@ -1,0 +1,40 @@
+SPDX-License-Identifier: GPL-2.0+
+/*
+ * (C) Copyright 2015
+ */
+
+esbc_validate command
+========================================
+
+1. esbc_validate command is meant for validating header and
+    signature of images (Boot Script and ESBC uboot client).
+    SHA-256 and RSA operations are performed using SEC block in HW.
+    This command works on both PBL based and Non PBL based Freescale
+    platforms.
+   Command usage:
+    esbc_validate img_hdr_addr [pub_key_hash]
+    esbc_validate hdr_addr <hash_val>
+     Validates signature using RSA verification.
+     $hdr_addr Address of header of the image to be validated.
+     $hash_val -Optional. It provides Hash of public/srk key to be
+       used to verify signature.
+
+2. ESBC uboot client can be linux. Additionally, rootfs and device
+    tree blob can also be signed.
+3. In the event of header or signature failure in validation,
+    ITS and ITF bits determine further course of action.
+4. In case of soft failure, appropriate error is dumped on console.
+5. In case of hard failure, SoC is issued RESET REQUEST after
+    dumping error on the console.
+6. KEY REVOCATION Feature:
+    QorIQ platforms like B4/T4 have support of srk key table and key
+    revocation in ISBC code in Silicon.
+    The srk key table allows the user to have a key table with multiple
+    keys and revoke any key in case of particular key gets compromised.
+    In case the ISBC code uses the key revocation and srk key table to
+    verify the u-boot code, the subsequent chain of trust should also
+    use the same.
+6. ISBC KEY EXTENSION Feature:
+    This feature allows large number of keys to be used for esbc validation
+    of images. A set of public keys is being signed and validated by ISBC
+    which can be further used for esbc validation of images.

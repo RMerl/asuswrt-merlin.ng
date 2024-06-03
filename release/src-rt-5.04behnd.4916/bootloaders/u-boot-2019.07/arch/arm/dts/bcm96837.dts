@@ -1,0 +1,46 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ *  Copyright 2020 Broadcom Ltd.
+ */
+
+/dts-v1/;
+
+#include "bcm6837.dtsi"
+
+/ {
+	model = "Broadcom bcm96837";
+	compatible = "broadcom,bcm96837", "brcm,bcm6837";
+
+    aliases {
+		serial0 = &uart0;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0x0 0x0 0x0 0x08000000>;
+	};
+};
+
+&uart0 {
+	u-boot,dm-pre-reloc;
+	status = "okay";
+};
+
+#ifdef CONFIG_BCMBCA_NO_SMC_BOOT
+&nand {
+	status = "okay";
+	write-protect = <0>;
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	nandcs@0 {
+		compatible = "brcm,nandcs";
+		reg = <0>;
+	};
+};
+#endif
+

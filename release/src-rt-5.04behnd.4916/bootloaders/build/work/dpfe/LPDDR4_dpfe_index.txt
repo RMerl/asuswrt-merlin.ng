@@ -1,0 +1,16 @@
+6888/dpfe_6888_hpl2_lpddr4_0.bin    0
+6888/dpfe_6888_hpl2_lpddr4_1.bin    1
+6888/dpfe_6888_hpl2_lpddr4_2.bin    2
+6888/dpfe_6888_hpl2_lpddr4_3.bin    3
+6888/dpfe_6888_hpl2_lpddr4_4.bin    4
+6888/dpfe_6888_hpl2_lpddr4_5.bin    5
+6888/dpfe_6888_hpl2_lpddr4_6.bin    6
+6888/dpfe_6888_hpl2_lpddr4_7.bin    87
+68880/dpfe_68880_hpl2_lpddr4_0.bin    0
+68880/dpfe_68880_hpl2_lpddr4_1.bin    1
+68880/dpfe_68880_hpl2_lpddr4_2.bin    82
+6837/dpfe_6837_hpm1_lpddr4_0.bin    0
+6837/dpfe_6837_hpm1_lpddr4_1.bin    1
+6837/dpfe_6837_hpm1_lpddr4_2.bin    82
+6765/dpfe_6765_hpm1_lpddr4_0.bin    0
+6765/dpfe_6765_hpm1_lpddr4_1.bin    81

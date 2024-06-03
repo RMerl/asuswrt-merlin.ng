@@ -37,7 +37,7 @@
 #endif
 #include <sys/errno.h>
 #include <sys/stat.h>
-#if defined(__GLIBC__) || defined(__UCLIBC__)
+#if 0
 #include <sys/sysctl.h>
 #endif
 #if !LINUX
@@ -72,13 +72,14 @@ extern Boolean _CFStringGetFileSystemRepresentation(CFStringRef string, UInt8 *b
 #include "readme.h"
 
 
-#define HFS_BOOT_DATA	"/usr/share/misc/hfsbootdata"
+#define HFS_BOOT_DATA	"/usr/share/hfsprogs/hfsbootdata"
 
 #define HFS_JOURNAL_FILE	".journal"
 #define HFS_JOURNAL_INFO	".journal_info_block"
 
 #define kJournalFileType	0x6a726e6c	/* 'jrnl' */
 
+#define __P(x)	x
 
 typedef HFSMasterDirectoryBlock HFS_MDB;
 
@@ -170,7 +171,7 @@ void SETOFFSET (void *buffer, UInt16 btNodeSize, SInt16 recOffset, SInt16 vecOff
 #define ROUNDUP(x, u)	(((x) % (u) == 0) ? (x) : ((x)/(u) + 1) * (u))
 
 #if LINUX
-#define ENCODING_TO_BIT(e)       (e)                    
+#define ENCODING_TO_BIT(e)       (e)
 #else
 #define ENCODING_TO_BIT(e)
           ((e) < 48 ? (e) :                              \
@@ -376,7 +377,7 @@ make_hfsplus(const DriveInfo *driveInfo, hfsparams_t *defaults)
 	if ( (temp & 0x01FF) != 0 )
 		temp = (temp + kBytesPerSector) & 0xFFFFFE00;
 	
-	nodeBuffer = valloc((size_t)temp);
+	(void)posix_memalign(&nodeBuffer, sysconf(_SC_PAGESIZE), (size_t)temp);
 	if (nodeBuffer == NULL)
 		err(1, NULL);
 
@@ -572,7 +573,7 @@ InitMDB(hfsparams_t *defaults, UInt32 driveBlocks, HFS_MDB *mdbp)
 	/* Save the encoding hint in the Finder Info (field 4). */
 	mdbp->drVN[0] = strlen(defaults->volumeName);
 	bcopy(defaults->volumeName,&mdbp->drVN[1],mdbp->drVN[0]);
-	
+
 	mdbp->drFndrInfo[4] = SET_HFS_TEXT_ENCODING(defaults->encodingHint);
 
 	mdbp->drWrCnt = kWriteSeqNum;
@@ -1143,7 +1144,7 @@ InitCatalogRoot_HFSPlus(const hfsparams_t *dp, const HFSPlusVolumeHeader *header
 	 * First record is always the root directory...
 	 */
 	ckp = (HFSPlusCatalogKey *)((UInt8 *)buffer + offset);
-#if LINUX	
+#if LINUX
 	ConvertUTF8toUnicode(dp->volumeName, sizeof(ckp->nodeName.unicode), ckp->nodeName.unicode, &ckp->nodeName.length);
 #else
 	/* Use CFString functions to get a HFSPlus Canonical name */
@@ -1814,7 +1815,7 @@ ClearDisk(const DriveInfo *driveInfo, UInt64 startingSector, UInt32 numberOfSect
 
 	bufferSize = bufferSizeInSectors << kLog2SectorSize;
 
-	tempBuffer = valloc((size_t)bufferSize);
+	(void)posix_memalign(&tempBuffer, sysconf(_SC_PAGESIZE), (size_t)bufferSize);
 	if (tempBuffer == NULL)
 		err(1, NULL);
 
@@ -2041,6 +2042,7 @@ getencodinghint(unsigned char *name)
         if (getvfsbyname("hfs", &vfc) < 0)
 		goto error;
 
+#ifdef __GLIBC__
         mib[0] = CTL_VFS;
         mib[1] = vfc.vfc_typenum;
         mib[2] = HFS_ENCODINGHINT;
@@ -2048,6 +2050,7 @@ getencodinghint(unsigned char *name)
 	if (sysctl(mib, 3, &hint, &buflen, name, strlen((char *)name) + 1) < 0)
  		goto error;
 	return (hint);
+#endif
 error:
 	hint = GetDefaultEncoding();
 	return (0);
@@ -2064,7 +2067,7 @@ void GenerateVolumeUUID(VolumeUUID *newVolumeID) {
 	clock_t uptime;
 	size_t datalen;
 	double sysloadavg[3];
-#if !LINUX
+#if !LINUX && defined(__GLIBC__)
 	int sysdata;
 	int mib[2];
 	char sysctlstring[128];
@@ -2082,7 +2085,7 @@ void GenerateVolumeUUID(VolumeUUID *newVolumeID) {
 		SHA1_Update(&context, &uptime, sizeof(uptime));
 		
 		/* The kernel's boot time: */
-#if !LINUX
+#if !LINUX && defined(__GLIBC__)
 		mib[0] = CTL_KERN;
 		mib[1] = KERN_BOOTTIME;
 		datalen = sizeof(sysdata);
@@ -2090,7 +2093,7 @@ void GenerateVolumeUUID(VolumeUUID *newVolumeID) {
 		SHA1_Update(&context, &sysdata, datalen);
 #endif
 		/* The system's host id: */
-#if !LINUX
+#if !LINUX && defined(__GLIBC__)
 		mib[0] = CTL_KERN;
 		mib[1] = KERN_HOSTID;
 		datalen = sizeof(sysdata);
@@ -2098,7 +2101,7 @@ void GenerateVolumeUUID(VolumeUUID *newVolumeID) {
 		SHA1_Update(&context, &sysdata, datalen);
 #endif
 		/* The system's host name: */
-#if !LINUX
+#if !LINUX && defined(__GLIBC__)
 		mib[0] = CTL_KERN;
 		mib[1] = KERN_HOSTNAME;
 		datalen = sizeof(sysctlstring);
@@ -2106,7 +2109,7 @@ void GenerateVolumeUUID(VolumeUUID *newVolumeID) {
 		SHA1_Update(&context, sysctlstring, datalen);
 #endif
 		/* The running kernel's OS release string: */
-#if !LINUX
+#if !LINUX && defined(__GLIBC__)
 		mib[0] = CTL_KERN;
 		mib[1] = KERN_OSRELEASE;
 		datalen = sizeof(sysctlstring);
@@ -2114,21 +2117,22 @@ void GenerateVolumeUUID(VolumeUUID *newVolumeID) {
 		SHA1_Update(&context, sysctlstring, datalen);
 #endif
 		/* The running kernel's version string: */
-#if !LINUX
+#if !LINUX && defined(__GLIBC__)
 		mib[0] = CTL_KERN;
 		mib[1] = KERN_VERSION;
 		datalen = sizeof(sysctlstring);
 		sysctl(mib, 2, sysctlstring, &datalen, NULL, 0);
 		SHA1_Update(&context, sysctlstring, datalen);
 #endif
-#if 0 //Cherry Cho marked for undefined reference to `getloadavg' in 2013/12/31.
+#ifndef __UCLIBC__
 		/* The system's load average: */
 		datalen = sizeof(sysloadavg);
 		getloadavg(sysloadavg, 3);
 		SHA1_Update(&context, &sysloadavg, datalen);
 #endif
+
 		/* The system's VM statistics: */
-#if !LINUX
+#if !LINUX && defined(__GLIBC__)
 		mib[0] = CTL_VM;
 		mib[1] = VM_METER;
 		datalen = sizeof(sysvmtotal);

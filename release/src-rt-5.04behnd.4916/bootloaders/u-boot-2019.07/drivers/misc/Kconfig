@@ -1,0 +1,413 @@
+#
+# Multifunction miscellaneous devices
+#
+
+menu "Multifunction device drivers"
+
+config MISC
+	bool "Enable Driver Model for Misc drivers"
+	depends on DM
+	help
+	  Enable driver model for miscellaneous devices. This class is
+	  used only for those do not fit other more general classes. A
+	  set of generic read, write and ioctl methods may be used to
+	  access the device.
+
+config SPL_MISC
+	bool "Enable Driver Model for Misc drivers in SPL"
+	depends on SPL_DM
+	help
+	  Enable driver model for miscellaneous devices. This class is
+	  used only for those do not fit other more general classes. A
+	  set of generic read, write and ioctl methods may be used to
+	  access the device.
+
+config TPL_MISC
+	bool "Enable Driver Model for Misc drivers in TPL"
+	depends on TPL_DM
+	help
+	  Enable driver model for miscellaneous devices. This class is
+	  used only for those do not fit other more general classes. A
+	  set of generic read, write and ioctl methods may be used to
+	  access the device.
+
+config ALTERA_SYSID
+	bool "Altera Sysid support"
+	depends on MISC
+	help
+	  Select this to enable a sysid for Altera devices. Please find
+	  details on the "Embedded Peripherals IP User Guide" of Altera.
+
+config ATSHA204A
+	bool "Support for Atmel ATSHA204A module"
+	depends on MISC
+	help
+	   Enable support for I2C connected Atmel's ATSHA204A
+	   CryptoAuthentication module found for example on the Turris Omnia
+	   board.
+
+config ROCKCHIP_EFUSE
+        bool "Rockchip e-fuse support"
+	depends on MISC
+	help
+	  Enable (read-only) access for the e-fuse block found in Rockchip
+	  SoCs: accesses can either be made using byte addressing and a length
+	  or through child-nodes that are generated based on the e-fuse map
+	  retrieved from the DTS.
+
+	  This driver currently supports the RK3399 only, but can easily be
+	  extended (by porting the read function from the Linux kernel sources)
+	  to support other recent Rockchip devices.
+
+config VEXPRESS_CONFIG
+	bool "Enable support for Arm Versatile Express config bus"
+	depends on MISC
+	help
+	  If you say Y here, you will get support for accessing the
+	  configuration bus on the Arm Versatile Express boards via
+	  a sysreg driver.
+
+config CMD_CROS_EC
+	bool "Enable crosec command"
+	depends on CROS_EC
+	help
+	  Enable command-line access to the Chrome OS EC (Embedded
+	  Controller). This provides the 'crosec' command which has
+	  a number of sub-commands for performing EC tasks such as
+	  updating its flash, accessing a small saved context area
+	  and talking to the I2C bus behind the EC (if there is one).
+
+config CROS_EC
+	bool "Enable Chrome OS EC"
+	help
+	  Enable access to the Chrome OS EC. This is a separate
+	  microcontroller typically available on a SPI bus on Chromebooks. It
+	  provides access to the keyboard, some internal storage and may
+	  control access to the battery and main PMIC depending on the
+	  device. You can use the 'crosec' command to access it.
+
+config SPL_CROS_EC
+	bool "Enable Chrome OS EC in SPL"
+	help
+	  Enable access to the Chrome OS EC in SPL. This is a separate
+	  microcontroller typically available on a SPI bus on Chromebooks. It
+	  provides access to the keyboard, some internal storage and may
+	  control access to the battery and main PMIC depending on the
+	  device. You can use the 'crosec' command to access it.
+
+config TPL_CROS_EC
+	bool "Enable Chrome OS EC in TPL"
+	help
+	  Enable access to the Chrome OS EC in TPL. This is a separate
+	  microcontroller typically available on a SPI bus on Chromebooks. It
+	  provides access to the keyboard, some internal storage and may
+	  control access to the battery and main PMIC depending on the
+	  device. You can use the 'crosec' command to access it.
+
+config CROS_EC_I2C
+	bool "Enable Chrome OS EC I2C driver"
+	depends on CROS_EC
+	help
+	  Enable I2C access to the Chrome OS EC. This is used on older
+	  ARM Chromebooks such as snow and spring before the standard bus
+	  changed to SPI. The EC will accept commands across the I2C using
+	  a special message protocol, and provide responses.
+
+config CROS_EC_LPC
+	bool "Enable Chrome OS EC LPC driver"
+	depends on CROS_EC
+	help
+	  Enable I2C access to the Chrome OS EC. This is used on x86
+	  Chromebooks such as link and falco. The keyboard is provided
+	  through a legacy port interface, so on x86 machines the main
+	  function of the EC is power and thermal management.
+
+config SPL_CROS_EC_LPC
+	bool "Enable Chrome OS EC LPC driver in SPL"
+	depends on CROS_EC
+	help
+	  Enable I2C access to the Chrome OS EC. This is used on x86
+	  Chromebooks such as link and falco. The keyboard is provided
+	  through a legacy port interface, so on x86 machines the main
+	  function of the EC is power and thermal management.
+
+config TPL_CROS_EC_LPC
+	bool "Enable Chrome OS EC LPC driver in TPL"
+	depends on CROS_EC
+	help
+	  Enable I2C access to the Chrome OS EC. This is used on x86
+	  Chromebooks such as link and falco. The keyboard is provided
+	  through a legacy port interface, so on x86 machines the main
+	  function of the EC is power and thermal management.
+
+config CROS_EC_SANDBOX
+	bool "Enable Chrome OS EC sandbox driver"
+	depends on CROS_EC && SANDBOX
+	help
+	  Enable a sandbox emulation of the Chrome OS EC. This supports
+	  keyboard (use the -l flag to enable the LCD), verified boot context,
+	  EC flash read/write/erase support and a few other things. It is
+	  enough to perform a Chrome OS verified boot on sandbox.
+
+config SPL_CROS_EC_SANDBOX
+	bool "Enable Chrome OS EC sandbox driver in SPL"
+	depends on SPL_CROS_EC && SANDBOX
+	help
+	  Enable a sandbox emulation of the Chrome OS EC in SPL. This supports
+	  keyboard (use the -l flag to enable the LCD), verified boot context,
+	  EC flash read/write/erase support and a few other things. It is
+	  enough to perform a Chrome OS verified boot on sandbox.
+
+config TPL_CROS_EC_SANDBOX
+	bool "Enable Chrome OS EC sandbox driver in TPL"
+	depends on TPL_CROS_EC && SANDBOX
+	help
+	  Enable a sandbox emulation of the Chrome OS EC in TPL. This supports
+	  keyboard (use the -l flag to enable the LCD), verified boot context,
+	  EC flash read/write/erase support and a few other things. It is
+	  enough to perform a Chrome OS verified boot on sandbox.
+
+config CROS_EC_SPI
+	bool "Enable Chrome OS EC SPI driver"
+	depends on CROS_EC
+	help
+	  Enable SPI access to the Chrome OS EC. This is used on newer
+	  ARM Chromebooks such as pit, pi and nyan-big. The SPI interface
+	  provides a faster and more robust interface than I2C but the bugs
+	  are less interesting.
+
+config DS4510
+	bool "Enable support for DS4510 CPU supervisor"
+	help
+	  Enable support for the Maxim DS4510 CPU supervisor. It has an
+	  integrated 64-byte EEPROM, four programmable non-volatile I/O pins
+	  and a configurable timer for the supervisor function. The device is
+	  connected over I2C.
+
+config FSL_SEC_MON
+	bool "Enable FSL SEC_MON Driver"
+	help
+	  Freescale Security Monitor block is responsible for monitoring
+	  system states.
+	  Security Monitor can be transitioned on any security failures,
+	  like software violations or hardware security violations.
+
+config JZ4780_EFUSE
+	bool "Ingenic JZ4780 eFUSE support"
+	depends on ARCH_JZ47XX
+	help
+	  This selects support for the eFUSE on Ingenic JZ4780 SoCs.
+
+config MXC_OCOTP
+	bool "Enable MXC OCOTP Driver"
+	depends on ARCH_IMX8M || ARCH_MX6 || ARCH_MX7 || ARCH_VF610
+	default y
+	help
+	  If you say Y here, you will get support for the One Time
+	  Programmable memory pages that are stored on the some
+	  Freescale i.MX processors.
+
+config NUVOTON_NCT6102D
+	bool "Enable Nuvoton NCT6102D Super I/O driver"
+	help
+	  If you say Y here, you will get support for the Nuvoton
+	  NCT6102D Super I/O driver. This can be used to enable or
+	  disable the legacy UART, the watchdog or other devices
+	  in the Nuvoton Super IO chips on X86 platforms.
+
+config PWRSEQ
+	bool "Enable power-sequencing drivers"
+	depends on DM
+	help
+	  Power-sequencing drivers provide support for controlling power for
+	  devices. They are typically referenced by a phandle from another
+	  device. When the device is started up, its power sequence can be
+	  initiated.
+
+config SPL_PWRSEQ
+	bool "Enable power-sequencing drivers for SPL"
+	depends on PWRSEQ
+	help
+	  Power-sequencing drivers provide support for controlling power for
+	  devices. They are typically referenced by a phandle from another
+	  device. When the device is started up, its power sequence can be
+	  initiated.
+
+config PCA9551_LED
+	bool "Enable PCA9551 LED driver"
+	help
+	  Enable driver for PCA9551 LED controller. This controller
+	  is connected via I2C. So I2C needs to be enabled.
+
+config PCA9551_I2C_ADDR
+	hex "I2C address of PCA9551 LED controller"
+	depends on PCA9551_LED
+	default 0x60
+	help
+	  The I2C address of the PCA9551 LED controller.
+
+config STM32MP_FUSE
+	bool "Enable STM32MP fuse wrapper providing the fuse API"
+	depends on ARCH_STM32MP && MISC
+	default y if CMD_FUSE
+	help
+	  If you say Y here, you will get support for the fuse API (OTP)
+	  for STM32MP architecture.
+	  This API is needed for CMD_FUSE.
+
+config STM32_RCC
+	bool "Enable RCC driver for the STM32 SoC's family"
+	depends on (STM32 || ARCH_STM32MP) && MISC
+	help
+	  Enable the STM32 RCC driver. The RCC block (Reset and Clock Control
+	  block) is responsible of the management of the clock and reset
+	  generation.
+	  This driver is similar to an MFD driver in the Linux kernel.
+
+config TEGRA_CAR
+	bool "Enable support for the Tegra CAR driver"
+	depends on TEGRA_NO_BPMP
+	help
+	  The Tegra CAR (Clock and Reset Controller) is a HW module that
+	  controls almost all clocks and resets in a Tegra SoC.
+
+config TEGRA186_BPMP
+	bool "Enable support for the Tegra186 BPMP driver"
+	depends on TEGRA186
+	help
+	  The Tegra BPMP (Boot and Power Management Processor) is a separate
+	  auxiliary CPU embedded into Tegra to perform power management work,
+	  and controls related features such as clocks, resets, power domains,
+	  PMIC I2C bus, etc. This driver provides the core low-level
+	  communication path by which feature-specific drivers (such as clock)
+	  can make requests to the BPMP. This driver is similar to an MFD
+	  driver in the Linux kernel.
+
+config TWL4030_LED
+	bool "Enable TWL4030 LED controller"
+	help
+	  Enable this to add support for the TWL4030 LED controller.
+
+config WINBOND_W83627
+	bool "Enable Winbond Super I/O driver"
+	help
+	  If you say Y here, you will get support for the Winbond
+	  W83627 Super I/O driver. This can be used to enable the
+	  legacy UART or other devices in the Winbond Super IO chips
+	  on X86 platforms.
+
+config QFW
+	bool
+	help
+	  Hidden option to enable QEMU fw_cfg interface. This will be selected by
+	  either CONFIG_CMD_QFW or CONFIG_GENERATE_ACPI_TABLE.
+
+config I2C_EEPROM
+	bool "Enable driver for generic I2C-attached EEPROMs"
+	depends on MISC
+	help
+	  Enable a generic driver for EEPROMs attached via I2C.
+
+
+config SPL_I2C_EEPROM
+	bool "Enable driver for generic I2C-attached EEPROMs for SPL"
+	depends on MISC && SPL && SPL_DM
+	help
+	  This option is an SPL-variant of the I2C_EEPROM option.
+	  See the help of I2C_EEPROM for details.
+
+config ZYNQ_GEM_I2C_MAC_OFFSET
+	hex "Set the I2C MAC offset"
+	default 0x0
+	depends on DM_I2C
+	help
+	  Set the MAC offset for i2C.
+
+if I2C_EEPROM
+
+config SYS_I2C_EEPROM_ADDR
+	hex "Chip address of the EEPROM device"
+	default 0
+
+config SYS_I2C_EEPROM_BUS
+	int "I2C bus of the EEPROM device."
+	default 0
+
+config SYS_EEPROM_SIZE
+	int "Size in bytes of the EEPROM device"
+	default 256
+
+config SYS_EEPROM_PAGE_WRITE_BITS
+	int "Number of bits used to address bytes in a single page"
+	default 0
+	help
+	  The EEPROM page size is 2^SYS_EEPROM_PAGE_WRITE_BITS.
+	  A 64 byte page, for example would require six bits.
+
+config SYS_EEPROM_PAGE_WRITE_DELAY_MS
+	int "Number of milliseconds to delay between page writes"
+	default 0
+
+config SYS_I2C_EEPROM_ADDR_LEN
+	int "Length in bytes of the EEPROM memory array address"
+	default 1
+	help
+	  Note: This is NOT the chip address length!
+
+config SYS_I2C_EEPROM_ADDR_OVERFLOW
+	hex "EEPROM Address Overflow"
+	default 0
+	help
+	  EEPROM chips that implement "address overflow" are ones
+	  like Catalyst 24WC04/08/16 which has 9/10/11 bits of
+	  address and the extra bits end up in the "chip address" bit
+	  slots. This makes a 24WC08 (1Kbyte) chip look like four 256
+	  byte chips.
+
+endif
+
+config GDSYS_RXAUI_CTRL
+	bool "Enable gdsys RXAUI control driver"
+	depends on MISC
+	help
+	  Support gdsys FPGA's RXAUI control.
+
+config GDSYS_IOEP
+	bool "Enable gdsys IOEP driver"
+	depends on MISC
+	help
+	  Support gdsys FPGA's IO endpoint driver.
+
+config MPC83XX_SERDES
+	bool "Enable MPC83xx serdes driver"
+	depends on MISC
+	help
+	  Support for serdes found on MPC83xx SoCs.
+
+config FS_LOADER
+	bool "Enable loader driver for file system"
+	help
+	  This is file system generic loader which can be used to load
+	  the file image from the storage into target such as memory.
+
+	  The consumer driver would then use this loader to program whatever,
+	  ie. the FPGA device.
+
+config GDSYS_SOC
+	bool "Enable gdsys SOC driver"
+	depends on MISC
+	help
+	  Support for gdsys IHS SOC, a simple bus associated with each gdsys
+	  IHS (Integrated Hardware Systems) FPGA, which holds all devices whose
+	  register maps are contained within the FPGA's register map.
+
+config IHS_FPGA
+	bool "Enable IHS FPGA driver"
+	depends on MISC
+	help
+	  Support IHS (Integrated Hardware Systems) FPGA, the main FPGAs on
+	  gdsys devices, which supply the majority of the functionality offered
+	  by the devices. This driver supports both CON and CPU variants of the
+	  devices, depending on the device tree entry.
+
+endmenu

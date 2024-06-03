@@ -236,6 +236,8 @@ typedef struct pj_ice_strans_cb
 					pj_sockaddr *external_addr,
 					pj_sockaddr *local_addr);
 
+	void (*app_log_cb)(int inst_id, int level, const char *src, const char *format, ...);
+
 } pj_ice_strans_cb;
 
 
@@ -947,6 +949,7 @@ PJ_DECL(void) pj_ice_strans_update_or_add_incoming_check(void *user_data,
 														 int tcp_sess_idx);
 
 
+PJ_DECL(void) pj_ice_strans_get_turn_state(struct pj_ice_strans *ice_st, pj_turn_tp_type conn_type, char *buf, int buf_len);
 
 /**
  * @}

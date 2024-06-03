@@ -116,4 +116,23 @@ Source: http://dlcdnet.asus.com/pub/ASUS/wireless/ASUSWRT
 Description: 
 URL: 
 
+Package: libevent
+Version: 2.0.20-2
+Section: libs
+Architecture: mipsel
+Maintainer: NSLU2 Linux <nslu2-linux@yahoogroups.com>
+Size: 514006
+Filename: libevent_2.0.20-2_mipsel.ipk
+Source: http://dlcdnet.asus.com/pub/ASUS/wireless/ASUSWRT
+Description: NCurses libraries
 
+
+Package: ncurses
+Version: 5.7-4
+Section: libs
+Architecture: mipsel
+Maintainer: NSLU2 Linux <nslu2-linux@yahoogroups.com>
+Size: 559282
+Filename: ncurses_5.7-4_mipsel.ipk
+Source: http://dlcdnet.asus.com/pub/ASUS/wireless/ASUSWRT
+Description: NCurses libraries

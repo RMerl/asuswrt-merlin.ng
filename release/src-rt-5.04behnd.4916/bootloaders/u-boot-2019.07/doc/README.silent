@@ -1,0 +1,28 @@
+The config option CONFIG_SILENT_CONSOLE can be used to quiet messages
+on the console.  If the option has been enabled, the output can be
+silenced by setting the environment variable "silent".
+
+- CONFIG_SILENT_CONSOLE_UPDATE_ON_SET
+	When the "silent" variable is changed with env set, the change
+	will take effect immediately.
+
+- CONFIG_SILENT_CONSOLE_UPDATE_ON_RELOC
+	Some environments are not available until relocation (e.g. NAND)
+	so this will make the value in the flash env take effect at
+	relocation.
+
+The following actions are taken if "silent" is set at boot time:
+
+ - Until the console devices have been initialized, output has to be
+   suppressed by testing for the flag "GD_FLG_SILENT" in "gd->flags".
+
+ - When the console devices have been initialized, "stdout" and
+   "stderr" are set to "nulldev", so subsequent messages are
+   suppressed automatically. Make sure to enable "nulldev" by
+   #defining CONFIG_SYS_DEVICE_NULLDEV in your board config file.
+
+ - When booting a linux kernel, the "bootargs" are fixed up so that
+   the argument "console=" will be in the command line, no matter how
+   it was set in "bootargs" before. If you don't want the linux command
+   line to be affected, define CONFIG_SILENT_U_BOOT_ONLY in your board
+   config file as well, and this part of the feature will be disabled.

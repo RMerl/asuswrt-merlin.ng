@@ -44,6 +44,7 @@
 #include <service_table.h>
 #include <upnpapi.h>
 #include "ssdplib.h"
+#include <gena.h>	//libupnp-1.3.1/upnp/src/inc/gena.h
 
 #define UUID_STR_LEN            36	
 #define WSC_UPNP_UUID_STR_LEN	(5 + UUID_STR_LEN + 1)	// The UUID string get from the driver by ioctl and the strlen is 36 plus 1 '\0', 

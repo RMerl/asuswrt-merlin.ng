@@ -1,0 +1,10 @@
+config BCM_BCA_SATA
+	tristate "Broadcom BCA SATA AHCI Driver"
+	default n
+	help
+	  Add the BCM BCA SATA AHCI host driver support
+
+config BCM_BCA_SATA_IMPL
+	int "Implementation index for BCA SATA AHCI module"
+	depends on BCM_BCA_SATA
+	default 1

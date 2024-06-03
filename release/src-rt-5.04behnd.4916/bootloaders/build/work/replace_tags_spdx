@@ -1,0 +1,40 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+my $spdx = "// SPDX-License-Identifier: GPL-2.0+\n";
+
+my $example = q[
+/*
+ * PCI autoconfiguration library
+ *
+ * Author: Matt Porter <mporter@mvista.com>
+ *
+ * Copyright 2000 MontaVista Software Inc.
+ */
+];
+
+
+while (my $fname = shift @ARGV) {
+    local $/;
+    open(F,"<",$fname) or die("open of $fname failed");
+    my $code = <F>;
+    close(F);
+    if ($code =~ s/<:(label|copyright)-BRCM:(\w+):.*?GPL.*?:>//ms) {
+        if ($1 eq 'copyright') {
+            my $c = qq[/*
+ * Copyright (c) $2 Broadcom
+ */
+];
+            $code = $c . $code;
+        } 
+        if ($code !~ /^.*SPDX/) {
+            $code = $spdx . $code;
+        }
+        system("chmod +w $fname");
+	open(F,">",$fname) or die("open for write of $fname failed");
+	print F $code;
+        close(F);
+    }
+}
+

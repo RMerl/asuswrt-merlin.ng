@@ -1,0 +1,312 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2018 Philippe Reynes <philippe.reynes@softathome.com>
+ */
+
+#include "skeleton64.dtsi"
+
+/ {
+	compatible = "brcm,bcm6858";
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	aliases {
+		spi0 = &hsspi;
+	};
+
+	cpus {
+		#address-cells = <2>;
+		#size-cells = <0>;
+		u-boot,dm-pre-reloc;
+
+		cpu0: cpu@0 {
+			compatible = "arm,cortex-a53", "arm,armv8";
+			device_type = "cpu";
+			reg = <0x0 0x0>;
+			next-level-cache = <&l2>;
+			u-boot,dm-pre-reloc;
+		};
+
+		cpu1: cpu@1 {
+			compatible = "arm,cortex-a53", "arm,armv8";
+			device_type = "cpu";
+			reg = <0x0 0x1>;
+			next-level-cache = <&l2>;
+			u-boot,dm-pre-reloc;
+		};
+
+		cpu2: cpu@2 {
+			compatible = "arm,cortex-a53", "arm,armv8";
+			device_type = "cpu";
+			reg = <0x0 0x2>;
+			next-level-cache = <&l2>;
+			u-boot,dm-pre-reloc;
+		};
+
+		cpu3: cpu@3 {
+			compatible = "arm,cortex-a53", "arm,armv8";
+			device_type = "cpu";
+			reg = <0x0 0x3>;
+			next-level-cache = <&l2>;
+			u-boot,dm-pre-reloc;
+		};
+
+		l2: l2-cache0 {
+			compatible = "cache";
+			u-boot,dm-pre-reloc;
+		};
+	};
+
+	clocks {
+		compatible = "simple-bus";
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+		u-boot,dm-pre-reloc;
+
+		periph_osc: periph-osc {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <200000000>;
+			u-boot,dm-pre-reloc;
+		};
+
+		hsspi_pll: hsspi-pll {
+			compatible = "fixed-factor-clock";
+			#clock-cells = <0>;
+			clocks = <&periph_osc>;
+			clock-mult = <2>;
+			clock-div = <1>;
+			u-boot,dm-pre-reloc;
+		};
+
+		refclk50mhz: refclk50mhz {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <50000000>;
+			u-boot,dm-pre-reloc;
+		};
+	};
+
+	pmc {
+		u-boot,dm-pre-reloc;
+		compatible = "brcm,bca-pmc-1-x";
+		reg = <0x0 0x80201000 0x0 0x3800>,
+			<0x0 0x80280000 0x0 0x184>,
+			<0x0 0xff802600 0x0 0x4>;
+		reg-names = "pmc", "procmon", "strap";
+	};
+
+	boot_state {
+		u-boot,dm-pre-reloc;
+		compatible = "brcm,bcmbca-bootstate-v2";
+		reg-names = "reset_reason", "reset_status";
+		reg =   <0x00 0xff802624 0x00 0x04>,
+			<0x00 0xff802748 0x00 0x04>;
+	};
+
+	strap: strap {
+		u-boot,dm-pre-reloc;
+		compatible = "brcm,strap";
+		reg = <0x0 0xff802600 0x0 0x4>;
+		boot-select-0=<5 1>;
+		boot-select-1=<6 1>;
+		boot-select-2=<7 1>;
+		boot-select-3=<8 1>;
+		boot-select-4=<9 1>;
+		boot-select-5=<11 1>;
+		bootrom-boot=<10 0>;
+		sata-strap-enable-bit=<3 0>;
+		strap-cpu-slow-freq=<14 1>;
+	};
+
+	/* UBUS */
+	ubus: ubus {
+		compatible = "simple-bus";
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		ubus_sys: ubus_sys {
+			#address-cells = <2>;
+			#size-cells = <2>;
+			compatible = "brcm,bca-ubus4";
+			reg = <0x0 0x83000000 0x0 0x80 0x0 0x83000200 0x0 0x80 0x0 0x810a0400 0x0 0x400>;
+			reg-names = "ubus_systop", "ubus_registration", "ubus_coherency_port";
+			flags = <0x0>;
+
+			ubus_mst_sys: ubus_mst {
+				reg-names = "BIU", "PER", "USB", "PERDMA",
+					"SPU", "PCIE0", "PCIE2", "PMC",
+					"TOP_BUFF";
+				reg = <0x0 0x83020000 0x0 0x1000>,
+					<0x0 0x83058000 0x0 0x1000>,
+					<0x0 0x83038000 0x0 0x1000>,
+					<0x0 0x83060000 0x0 0x1000>,
+					<0x0 0x83030000 0x0 0x1000>,
+					<0x0 0x8300C000 0x0 0x1000>,
+					<0x0 0x83014000 0x0 0x1000>,
+					<0x0 0x83044000 0x0 0x1000>,
+					<0x0 0x830e0000 0x0 0x1000>;
+			};
+		};
+
+		ubus_xrdp: ubus_xrdp {
+			#address-cells = <2>;
+			#size-cells = <2>;
+			compatible = "brcm,bca-ubus4";
+			reg = <0x0 0x834d4000 0x0 0x80 0x0 0x834d4200 0x0 0x80>;
+			reg-names = "ubus_systop", "ubus_registration";
+			flags = <0x1>;
+
+			ubus_mst_xrdp: ubus_mst {
+				reg-names = "QM", "DQM", "DMA0", "DMA1",
+					"NATC", "RQ0", "RQ1", "RQ2",
+					"RQ3", "XRDP_BUFF";
+				reg = <0x0 0x834AC000 0x0 0x1000>,
+					<0x0 0x834A4000 0x0 0x1000>,
+					<0x0 0x83464000 0x0 0x1000>,
+					<0x0 0x83468000 0x0 0x1000>,
+					<0x0 0x834A0000 0x0 0x1000>,
+					<0x0 0x83480000 0x0 0x1000>,
+					<0x0 0x83488000 0x0 0x1000>,
+					<0x0 0x83490000 0x0 0x1000>,
+					<0x0 0x83498000 0x0 0x1000>,
+					<0x0 0x834e4000 0x0 0x1000>;
+			};
+		};
+	};
+
+	periph {
+		compatible = "simple-bus";
+		#address-cells = <2>;
+		#size-cells = <2>;
+		u-boot,dm-pre-reloc;
+
+		uart0: serial@ff800640 {
+			compatible = "brcm,bcm6345-uart";
+			reg = <0x0 0xff800640 0x0 0x18>;
+			clocks = <&periph_osc>;
+
+			status = "disabled";
+		};
+
+		leds: led-controller@ff800800 {
+			compatible = "brcm,bcm6858-leds";
+			reg = <0x0 0xff800800 0x0 0xe4>;
+
+			status = "disabled";
+		};
+
+		wdt1: watchdog@ff802780 {
+			compatible = "brcm,bcm6345-wdt";
+			reg = <0x0 0xff802780 0x0 0x14>;
+			clocks = <&refclk50mhz>;
+			u-boot,dm-pre-reloc;
+		};
+
+		wdt2: watchdog@ff8027c0 {
+			compatible = "brcm,bcm6345-wdt";
+			reg = <0x0 0xff8027c0 0x0 0x14>;
+			clocks = <&refclk50mhz>;
+		};
+
+		wdt-reboot {
+			compatible = "wdt-reboot";
+			wdt = <&wdt1>;
+		};
+
+		hsspi: spi-controller@ff801000 {
+			compatible = "brcm,bcm6328-hsspi";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			u-boot,dm-pre-reloc;
+
+			reg = <0x0 0xff801000 0x0 0x600>;
+			clocks = <&hsspi_pll>, <&hsspi_pll>;
+			clock-names = "hsspi", "pll";
+			spi-max-frequency = <100000000>;
+			num-cs = <8>;
+
+			status = "disabled";
+		};
+
+		nand: nand-controller@ff801800 {
+			compatible = "brcm,nand-bcmbca",
+					 "brcm,brcmnand-v7.1",
+					 "brcm,brcmnand";
+			reg-names = "nand", "nand-int-base", "nand-cache";
+			reg = <0x0 0xff801800 0x0 0x400>,
+				  <0x0 0xff802000 0x0 0x10>,
+				  <0x0 0xff801c00 0x0 0x200>;
+			parameter-page-big-endian = <0>;
+
+			status = "disabled";
+		};
+
+		sdhci: sdhci@ff858000 {
+			compatible = "brcm,bcm63xx-sdhci",
+						 "brcm,sdhci-brcmbca";
+			reg-names = "sdhci-base", "sdhci-boot";
+			reg = <0x0 0xff858000 0x0 0x100>,
+				  <0x0 0xff858200 0x0 0x40>;
+			bus-width = <8>;
+			u-boot,dm-pre-reloc;
+		};
+
+		rng: rng@ff800b80 {
+			compatible = "brcm,iproc-rng200";
+			reg = <0x0 0xff800b80 0x0 0x28>;
+			u-boot,dm-pre-reloc;
+		};
+
+		pinctrl: pinctrl {
+			compatible = "brcm,bcmbca-pinctrl";
+			reg = <0x0 0xff800554 0x0 0x14>;
+			gpio-mux = <5>;
+		};
+
+		gpioc: gpioc {
+			compatible = "brcm,bca-gpio";
+			gpio-controller;
+			#gpio-cells = <2>;
+			reg = <0x0 0xff800500 0x0 0x20>, <0x0 0xff800520 0x0 0x20>;
+			reg-names = "gpio-dir", "gpio-data";
+			ngpios = <118>;
+			gpio-ranges = <&pinctrl 0 0 118>;
+		};
+
+		usb_ctrl:usb_ctrl {
+		compatible = "brcm,bcmbca-usb-ctrl";
+		reg-names = "usb-ctrl";
+		reg = <0x0 0x8000c200 0x0 0x100>;
+		status = "okay";
+		};
+
+		usb0: usb@8000c300 {
+		compatible = "brcm,bcmbca-ehci";
+		reg-names = "usb-ehci";
+		reg = <0x0 0x8000c300 0x0 0x100>;
+		};
+
+		usb1: usb@8000c500 {
+		compatible = "brcm,bcmbca-ehci";
+		reg-names = "usb-ehci";
+		reg = <0x0 0x8000c500 0x0 0x100>;
+		};
+
+		usb_ohci0: usb_ohci@8000c400 {
+		compatible = "brcm,bcmbca-ohci";
+		reg-names = "usb-ohci";
+		reg = <0x0 0x8000c400 0x0 0x100>;
+		};
+
+		usb_ohci1: usb_ohci@8000c600 {
+		compatible = "brcm,bcmbca-ohci";
+		reg-names = "usb-ohci";
+		reg = <0x0 0x8000c600 0x0 0x100>;
+		};
+	};
+};
+
+#include "bcm6858-pinctrl.dtsi"

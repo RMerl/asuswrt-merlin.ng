@@ -1,0 +1,10 @@
+config BCM_LIBS
+	tristate "Broadcom Uitility Library"
+	default m
+
+config BCM_LIBS_IMPL
+	int "Implementation index for Broadcom Uitility Library"
+	depends on BCM_LIBS
+	default 1 
+
+

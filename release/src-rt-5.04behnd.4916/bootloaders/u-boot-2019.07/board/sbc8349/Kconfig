@@ -1,0 +1,9 @@
+if TARGET_SBC8349
+
+config SYS_BOARD
+	default "sbc8349"
+
+config SYS_CONFIG_NAME
+	default "sbc8349"
+
+endif

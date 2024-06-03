@@ -1,0 +1,327 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2014, Bin Meng <bmeng.cn@gmail.com>
+ * Copyright (C) 2016 Stefan Roese <sr@denx.de>
+ */
+
+#include <asm/arch-baytrail/fsp/fsp_configs.h>
+#include <dt-bindings/gpio/x86-gpio.h>
+#include <dt-bindings/interrupt-router/intel-irq.h>
+
+#include "skeleton.dtsi"
+#include "reset.dtsi"
+#include "rtc.dtsi"
+#include "tsc_timer.dtsi"
+
+/ {
+	config {
+		silent_console = <0>;
+	};
+
+	pch_pinctrl {
+		compatible = "intel,x86-pinctrl";
+		reg = <0 0>;
+
+		/* Add UART1 PAD configuration (SIO HS-UART) */
+		uart1_txd@0 {
+			pad-offset = <0x10>;
+			mode-func = <1>;
+		};
+
+		uart1_rxd@0 {
+			pad-offset = <0x20>;
+			mode-func = <1>;
+		};
+
+		/*
+		 * As of today, the latest version FSP (gold4) for BayTrail
+		 * misses the PAD configuration of the SD controller's Card
+		 * Detect signal. The default PAD value for the CD pin sets
+		 * the pin to work in GPIO mode, which causes card detect
+		 * status cannot be reflected by the Present State register
+		 * in the SD controller (bit 16 & bit 18 are always zero).
+		 *
+		 * Configure this pin to function 1 (SD controller).
+		 */
+		sdmmc3_cd@0 {
+			pad-offset = <0x3a0>;
+			mode-func = <1>;
+		};
+
+		xhci_hub_reset: usb_ulpi_stp@0 {
+			gpio-offset = <0xa0 10>;
+			pad-offset = <0x23b0>;
+			mode-func = <0>;
+			mode-gpio;
+			output-value = <1>;
+			direction = <PIN_OUTPUT>;
+		};
+	};
+
+	chosen {
+		stdout-path = "/serial";
+	};
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu@0 {
+			device_type = "cpu";
+			compatible = "intel,baytrail-cpu";
+			reg = <0>;
+			intel,apic-id = <0>;
+		};
+
+		cpu@1 {
+			device_type = "cpu";
+			compatible = "intel,baytrail-cpu";
+			reg = <1>;
+			intel,apic-id = <2>;
+		};
+
+		cpu@2 {
+			device_type = "cpu";
+			compatible = "intel,baytrail-cpu";
+			reg = <2>;
+			intel,apic-id = <4>;
+		};
+
+		cpu@3 {
+			device_type = "cpu";
+			compatible = "intel,baytrail-cpu";
+			reg = <3>;
+			intel,apic-id = <6>;
+		};
+	};
+
+	pci {
+		compatible = "intel,pci-baytrail", "pci-x86";
+		#address-cells = <3>;
+		#size-cells = <2>;
+		u-boot,dm-pre-reloc;
+		ranges = <0x02000000 0x0 0x80000000 0x80000000 0 0x40000000
+			  0x42000000 0x0 0xc0000000 0xc0000000 0 0x20000000
+			  0x01000000 0x0 0x2000 0x2000 0 0xe000>;
+
+		pciuart0: uart@1e,3 {
+			compatible = "pci8086,0f0a.00",
+					"pci8086,0f0a",
+					"pciclass,070002",
+					"pciclass,0700",
+					"ns16550";
+			u-boot,dm-pre-reloc;
+			reg = <0x0200f310 0x0 0x0 0x0 0x0>;
+			reg-shift = <2>;
+			clock-frequency = <58982400>;
+			current-speed = <115200>;
+		};
+
+		pch@1f,0 {
+			reg = <0x0000f800 0 0 0 0>;
+			compatible = "pci8086,0f1c", "intel,pch9";
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			irq-router {
+				compatible = "intel,irq-router";
+				intel,pirq-config = "ibase";
+				intel,ibase-offset = <0x50>;
+				intel,actl-addr = <0>;
+				intel,pirq-link = <8 8>;
+				intel,pirq-mask = <0xdee0>;
+				intel,pirq-routing = <
+					/* BayTrail PCI devices */
+					PCI_BDF(0, 2, 0) INTA PIRQA
+					PCI_BDF(0, 3, 0) INTA PIRQA
+					PCI_BDF(0, 16, 0) INTA PIRQA
+					PCI_BDF(0, 17, 0) INTA PIRQA
+					PCI_BDF(0, 18, 0) INTA PIRQA
+					PCI_BDF(0, 19, 0) INTA PIRQA
+					PCI_BDF(0, 20, 0) INTA PIRQA
+					PCI_BDF(0, 21, 0) INTA PIRQA
+					PCI_BDF(0, 22, 0) INTA PIRQA
+					PCI_BDF(0, 23, 0) INTA PIRQA
+					PCI_BDF(0, 24, 0) INTA PIRQA
+					PCI_BDF(0, 24, 1) INTC PIRQC
+					PCI_BDF(0, 24, 2) INTD PIRQD
+					PCI_BDF(0, 24, 3) INTB PIRQB
+					PCI_BDF(0, 24, 4) INTA PIRQA
+					PCI_BDF(0, 24, 5) INTC PIRQC
+					PCI_BDF(0, 24, 6) INTD PIRQD
+					PCI_BDF(0, 24, 7) INTB PIRQB
+					PCI_BDF(0, 26, 0) INTA PIRQA
+					PCI_BDF(0, 27, 0) INTA PIRQA
+					PCI_BDF(0, 28, 0) INTA PIRQA
+					PCI_BDF(0, 28, 1) INTB PIRQB
+					PCI_BDF(0, 28, 2) INTC PIRQC
+					PCI_BDF(0, 28, 3) INTD PIRQD
+					PCI_BDF(0, 29, 0) INTA PIRQA
+					PCI_BDF(0, 30, 0) INTA PIRQA
+					PCI_BDF(0, 30, 1) INTD PIRQD
+					PCI_BDF(0, 30, 2) INTB PIRQB
+					PCI_BDF(0, 30, 3) INTC PIRQC
+					PCI_BDF(0, 30, 4) INTD PIRQD
+					PCI_BDF(0, 30, 5) INTB PIRQB
+					PCI_BDF(0, 31, 3) INTB PIRQB
+
+					/*
+					 * PCIe root ports downstream
+					 * interrupts
+					 */
+					PCI_BDF(1, 0, 0) INTA PIRQA
+					PCI_BDF(1, 0, 0) INTB PIRQB
+					PCI_BDF(1, 0, 0) INTC PIRQC
+					PCI_BDF(1, 0, 0) INTD PIRQD
+					PCI_BDF(2, 0, 0) INTA PIRQB
+					PCI_BDF(2, 0, 0) INTB PIRQC
+					PCI_BDF(2, 0, 0) INTC PIRQD
+					PCI_BDF(2, 0, 0) INTD PIRQA
+					PCI_BDF(3, 0, 0) INTA PIRQC
+					PCI_BDF(3, 0, 0) INTB PIRQD
+					PCI_BDF(3, 0, 0) INTC PIRQA
+					PCI_BDF(3, 0, 0) INTD PIRQB
+					PCI_BDF(4, 0, 0) INTA PIRQD
+					PCI_BDF(4, 0, 0) INTB PIRQA
+					PCI_BDF(4, 0, 0) INTC PIRQB
+					PCI_BDF(4, 0, 0) INTD PIRQC
+				>;
+			};
+
+			spi: spi {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				compatible = "intel,ich9-spi";
+				spi-flash@0 {
+					#address-cells = <1>;
+					#size-cells = <1>;
+					reg = <0>;
+					compatible = "stmicro,n25q064a",
+						"jedec,spi-nor";
+					memory-map = <0xff800000 0x00800000>;
+					rw-mrc-cache {
+						label = "rw-mrc-cache";
+						reg = <0x006f0000 0x00010000>;
+					};
+				};
+			};
+
+			gpioa {
+				compatible = "intel,ich6-gpio";
+				u-boot,dm-pre-reloc;
+				reg = <0 0x20>;
+				bank-name = "A";
+				use-lvl-write-cache;
+			};
+
+			gpiob {
+				compatible = "intel,ich6-gpio";
+				u-boot,dm-pre-reloc;
+				reg = <0x20 0x20>;
+				bank-name = "B";
+				use-lvl-write-cache;
+			};
+
+			gpioc {
+				compatible = "intel,ich6-gpio";
+				u-boot,dm-pre-reloc;
+				reg = <0x40 0x20>;
+				bank-name = "C";
+				use-lvl-write-cache;
+			};
+
+			gpiod {
+				compatible = "intel,ich6-gpio";
+				u-boot,dm-pre-reloc;
+				reg = <0x60 0x20>;
+				bank-name = "D";
+				use-lvl-write-cache;
+			};
+
+			gpioe {
+				compatible = "intel,ich6-gpio";
+				u-boot,dm-pre-reloc;
+				reg = <0x80 0x20>;
+				bank-name = "E";
+				use-lvl-write-cache;
+			};
+
+			gpiof {
+				compatible = "intel,ich6-gpio";
+				u-boot,dm-pre-reloc;
+				reg = <0xA0 0x20>;
+				bank-name = "F";
+				use-lvl-write-cache;
+			};
+		};
+	};
+
+	fsp {
+		compatible = "intel,baytrail-fsp";
+		fsp,mrc-init-tseg-size = <MRC_INIT_TSEG_SIZE_1MB>;
+		fsp,mrc-init-mmio-size = <MRC_INIT_MMIO_SIZE_2048MB>;
+		fsp,mrc-init-spd-addr1 = <0xa0>;
+		fsp,mrc-init-spd-addr2 = <0xa2>;
+		fsp,emmc-boot-mode = <EMMC_BOOT_MODE_AUTO>;
+		fsp,enable-sdio;
+		fsp,enable-sdcard;
+		fsp,enable-hsuart0;
+		fsp,enable-hsuart1;
+		fsp,enable-spi;
+		fsp,enable-sata;
+		fsp,sata-mode = <SATA_MODE_AHCI>;
+#ifdef CONFIG_USB_XHCI_HCD
+		fsp,enable-xhci;
+#endif
+		fsp,lpe-mode = <LPE_MODE_PCI>;
+		fsp,lpss-sio-mode = <LPSS_SIO_MODE_PCI>;
+		fsp,enable-dma0;
+		fsp,enable-dma1;
+		fsp,enable-i2c0;
+		fsp,enable-i2c1;
+		fsp,enable-i2c2;
+		fsp,enable-i2c3;
+		fsp,enable-i2c4;
+		fsp,enable-i2c5;
+		fsp,enable-i2c6;
+		fsp,enable-pwm0;
+		fsp,enable-pwm1;
+		fsp,igd-dvmt50-pre-alloc = <IGD_DVMT50_PRE_ALLOC_64MB>;
+		fsp,aperture-size = <APERTURE_SIZE_256MB>;
+		fsp,gtt-size = <GTT_SIZE_2MB>;
+		fsp,scc-mode = <SCC_MODE_PCI>;
+		fsp,os-selection = <OS_SELECTION_LINUX>;
+		fsp,emmc45-ddr50-enabled;
+		fsp,emmc45-retune-timer-value = <8>;
+		fsp,enable-igd;
+		fsp,enable-memory-down;
+		fsp,memory-down-params {
+			compatible = "intel,baytrail-fsp-mdp";
+			fsp,dram-speed = <DRAM_SPEED_1333MTS>;
+			fsp,dram-type = <DRAM_TYPE_DDR3L>;
+			fsp,dimm-0-enable;
+			fsp,dimm-width = <DIMM_WIDTH_X16>;
+			fsp,dimm-density = <DIMM_DENSITY_8GBIT>;
+			fsp,dimm-bus-width = <DIMM_BUS_WIDTH_64BITS>;
+			fsp,dimm-sides = <DIMM_SIDES_1RANKS>;
+
+			/* These following values might need a re-visit */
+			fsp,dimm-tcl = <8>;
+			fsp,dimm-trpt-rcd = <8>;
+			fsp,dimm-twr = <8>;
+			fsp,dimm-twtr = <4>;
+			fsp,dimm-trrd = <6>;
+			fsp,dimm-trtp = <4>;
+			fsp,dimm-tfaw = <22>;
+		};
+	};
+
+	microcode {
+		update@0 {
+#include "microcode/m0130673325.dtsi"
+		};
+		update@1 {
+#include "microcode/m0130679907.dtsi"
+		};
+	};
+};

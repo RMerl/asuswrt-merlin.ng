@@ -1,0 +1,11 @@
+config BCM_GPS
+	bool "Broadcom GPS driver"
+	depends on SPI_SPIDEV
+	default n
+	help
+	  Broacom GPS driver.
+
+config BCM_GPS_IMPL
+	int "Implementation index for Broadcom GPS driver"
+	depends on BCM_GPS
+	default 1

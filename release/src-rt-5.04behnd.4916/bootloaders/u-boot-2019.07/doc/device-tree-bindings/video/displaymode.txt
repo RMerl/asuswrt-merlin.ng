@@ -1,0 +1,42 @@
+videomode bindings
+==================
+
+(from http://lists.freedesktop.org/archives/dri-devel/2012-July/024875.html)
+
+Required properties:
+ - xres, yres: Display resolution
+ - left-margin, right-margin, hsync-len: Horizontal Display timing
+   parameters in pixels
+ - upper-margin, lower-margin, vsync-len: Vertical display timing
+   parameters in lines
+ - clock: display clock in Hz
+
+Optional properties:
+ - width-mm, height-mm: Display dimensions in mm
+ - hsync-active-high (bool): Hsync pulse is active high
+ - vsync-active-high (bool): Vsync pulse is active high
+ - interlaced (bool): This is an interlaced mode
+ - doublescan (bool): This is a doublescan mode
+
+There are different ways of describing a display mode. The devicetree
+representation corresponds to the one used by the Linux Framebuffer
+framework described here in Documentation/fb/framebuffer.txt. This
+representation has been chosen because it's the only format which does
+not allow for inconsistent parameters. Unlike the Framebuffer framework
+the devicetree has the clock in Hz instead of ps.
+
+Example:
+
+	display@0 {
+		/* 1920x1080p24 */
+		clock = <52000000>;
+		xres = <1920>;
+		yres = <1080>;
+		left-margin = <25>;
+		right-margin = <25>;
+		hsync-len = <25>;
+		lower-margin = <2>;
+		upper-margin = <2>;
+		vsync-len = <2>;
+		hsync-active-high;
+	};

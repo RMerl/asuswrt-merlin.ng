@@ -1,0 +1,5 @@
+* Microchip PIC32 serial UART
+
+Required properties:
+- compatible: must be "microchip,pic32mzda-uart".
+- reg: exactly one register range.

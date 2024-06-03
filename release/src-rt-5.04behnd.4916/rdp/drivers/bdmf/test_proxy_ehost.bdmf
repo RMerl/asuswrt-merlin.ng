@@ -1,0 +1,7 @@
+/ transport
+this ehost
+connect cmips domain_socket listen 0 /tmp/bdmf_cmips_ehost.socket
+connect pmips1 proxy connect address:cmips
+
+
+

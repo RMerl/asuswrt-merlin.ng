@@ -1,0 +1,15 @@
+#usb-cells = <0>;
+
+compatible = "generic-ohci";
+
+reg = <USB_ADDR USB_SIZE>;
+interrupts = <GIC_SPI USB_IRQ IRQ_TYPE_LEVEL_HIGH>;
+status = "disabled";
+
+#address-cells = <1>;
+#size-cells = <0>;
+
+/* to let add multiple usb without errors undefine usb definitions */
+#undef USB_ADDR
+#undef USB_SIZE
+#undef USB_IRQ

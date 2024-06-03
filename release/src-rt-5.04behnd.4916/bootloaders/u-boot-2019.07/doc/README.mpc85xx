@@ -1,0 +1,166 @@
+External Debug Support
+----------------------
+
+Freescale's e500v1 and e500v2 cores (used in mpc85xx chips) have some
+restrictions on external debugging (JTAG).  In particular, for the debugger to
+be able to receive control after a single step or breakpoint:
+	- MSR[DE] must be set
+	- A valid opcode must be fetchable, through the MMU, from the debug
+	  exception vector (IVPR + IVOR15).
+
+To maximize the time during which this requirement is met, U-Boot sets MSR[DE]
+immediately on entry and keeps it set. It also uses a temporary TLB to keep a
+mapping to a valid opcode at the debug exception vector, even if we normally
+don't support exception vectors being used that early, and that's not the area
+where U-Boot currently executes from.
+
+Note that there may still be some small windows where debugging will not work,
+such as in between updating IVPR and IVOR15.
+
+Config Switches:
+----------------
+
+Please refer README section "MPC85xx External Debug Support"
+
+Major Config Switches during various boot Modes
+----------------------------------------------
+
+NOR boot
+		!defined(CONFIG_SYS_RAMBOOT) && !defined(CONFIG_SPL)
+NOR boot Secure
+		!defined(CONFIG_SYS_RAMBOOT) && defined(CONFIG_SECURE_BOOT)
+RAMBOOT(SD, SPI & NAND boot)
+		 defined(CONFIG_SYS_RAMBOOT)
+RAMBOOT Secure (SD, SPI & NAND)
+		 defined(CONFIG_SYS_RAMBOOT) && defined(CONFIG_SECURE_BOOT)
+NAND SPL BOOT
+		 defined(CONFIG_SYS_RAMBOOT) && defined(CONFIG_NAND_SPL)
+
+
+TLB Entries during u-boot execution
+-----------------------------------
+
+Note: Sequence number is in order of execution
+
+A) defined(CONFIG_SYS_RAMBOOT) i.e. SD, SPI, NAND RAMBOOT & NAND_SPL boot
+
+   1) TLB entry to overcome e500 v1/v2 debug restriction
+       Location	  : Label "_start_e500"
+       TLB Entry  : CONFIG_SYS_PPC_E500_DEBUG_TLB
+       EPN -->RPN : CONFIG_SYS_MONITOR_BASE --> CONFIG_SYS_MONITOR_BASE
+       Properties : 256K, AS0, I, IPROT
+
+   2) TLB entry for working in AS1
+       Location	  : Label "create_init_ram_area"
+       TLB Entry  : 15
+       EPN -->RPN : CONFIG_SYS_MONITOR_BASE --> CONFIG_SYS_MONITOR_BASE
+       Properties : 1M, AS1, I, G, IPROT
+
+   3) TLB entry for the stack during AS1
+       Location	  : Lable "create_init_ram_area"
+       TLB Entry  : 14
+       EPN -->RPN : CONFIG_SYS_INIT_RAM_ADDR --> CONFIG_SYS_INIT_RAM_ADDR
+       Properties : 16K, AS1, IPROT
+
+   4) TLB entry for CCSRBAR during AS1 execution
+       Location	  : cpu_init_early_f
+       TLB Entry  : 13
+       EPN -->RPN : CONFIG_SYS_CCSRBAR --> CONFIG_SYS_CCSRBAR
+       Properties : 1M, AS1, I, G
+
+   5) Invalidate unproctected TLB Entries
+       Location	  : cpu_init_early_f
+       Invalidated: 13
+
+   6) Create TLB entries as per boards/freescale/<board>/tlb.c
+       Location	  : cpu_init_early_f --> init_tlbs()
+       Properties : ..., AS0, ...
+      Please note It can overwrites previous TLB Entries.
+
+   7) Disable TLB Entries of AS1
+       Location	  : cpu_init_f --> disable_tlb()
+       Disable	  : 15, 14
+
+   8) Update Flash's TLB entry
+       Location	  : Board_init_r
+       TLB entry  : Search from TLB entries
+       EPN -->RPN : CONFIG_SYS_FLASH_BASE --> CONFIG_SYS_FLASH_BASE_PHYS
+       Properties : Board specific size, AS0, I, G, IPROT
+
+
+B) !defined(CONFIG_SYS_RAMBOOT) i.e. NOR boot
+
+   1) TLB entry to overcome e500 v1/v2 debug restriction
+       Location	  : Label "_start_e500"
+       TLB Entry  : CONFIG_SYS_PPC_E500_DEBUG_TLB
+#if defined(CONFIG_SECURE_BOOT)
+       EPN -->RPN : CONFIG_SYS_MONITOR_BASE --> CONFIG_SYS_PBI_FLASH_WINDOW
+       Properties : 1M, AS1, I, G, IPROT
+#else
+       EPN -->RPN : CONFIG_SYS_MONITOR_BASE & 0xffc00000 --> 0xffc00000
+       Properties : 4M, AS0, I, G, IPROT
+#endif
+
+   2) TLB entry for working in AS1
+       Location	  : Label "create_init_ram_area"
+       TLB Entry  : 15
+#if defined(CONFIG_SECURE_BOOT)
+       EPN -->RPN : CONFIG_SYS_MONITOR_BASE --> CONFIG_SYS_PBI_FLASH_WINDOW
+       Properties : 1M, AS1, I, G, IPROT
+#else
+       EPN -->RPN : CONFIG_SYS_MONITOR_BASE & 0xffc00000 --> 0xffc00000
+       Properties : 4M, AS1, I, G, IPROT
+#endif
+
+   3) TLB entry for the stack during AS1
+       Location	  : Lable "create_init_ram_area"
+       TLB Entry  : 14
+       EPN -->RPN : CONFIG_SYS_INIT_RAM_ADDR --> CONFIG_SYS_INIT_RAM_ADDR
+       Properties : 16K, AS1, IPROT
+
+   4) TLB entry for CCSRBAR during AS1 execution
+       Location	  : cpu_init_early_f
+       TLB Entry  : 13
+       EPN -->RPN : CONFIG_SYS_CCSRBAR --> CONFIG_SYS_CCSRBAR
+       Properties : 1M, AS1, I, G
+
+   5) TLB entry for Errata workaround CONFIG_SYS_FSL_ERRATUM_IFC_A003399
+       Location	  : cpu_init_early_f
+       TLB Entry  : 9
+       EPN -->RPN : SRAM_BASE_ADDR --> SRAM_BASE_ADDR
+       Properties : 1M, AS1, I
+
+   6) CONFIG_SYS_FSL_ERRATUM_IFC_A003399 Adjust flash's phys addr
+       Location	  : cpu_init_early_f --> setup_ifc
+       TLB Entry  : Get Flash TLB
+       EPN -->RPN : Adjusted flash_phys --> Adjusted flash_phys
+       Properties : 4M, AS1, I, G, IPROT
+
+   7) CONFIG_SYS_FSL_ERRATUM_IFC_A003399: E500 v1,v2 debug restriction
+       Location	  : cpu_init_early_f --> setup_ifc
+       TLB Entry  : CONFIG_SYS_PPC_E500_DEBUG_TLB
+       EPN -->RPN : Adjusted flash_phys --> Adjusted flash_phys
+       Properties : 4M, AS0, I, G, IPROT
+
+   8) Invalidate unproctected TLB Entries
+       Location	  : cpu_init_early_f
+       Invalidated: 13, 9
+
+   9) Create TLB entries as per boards/freescale/<board>/tlb.c
+       Location	  : cpu_init_early_f --> init_tlbs()
+       Properties : ..., AS0, ...
+      Note: It can overwrites previous TLB Entries
+
+   10) Disable TLB Entries of AS1
+       Location	  : cpu_init_f --> disable_tlb()
+       Disable	  : 15, 14
+
+   11) Create DDR's TLB entriy
+       Location	  : Board_init_f -> dram_init
+       TLB entry  : Search free TLB entry
+
+   12) Update Flash's TLB entry
+       Location	  : Board_init_r
+       TLB entry  : Search from TLB entries
+       EPN -->RPN : CONFIG_SYS_FLASH_BASE --> CONFIG_SYS_FLASH_BASE_PHYS
+       Properties : Board specific size, AS0, I, G, IPROT

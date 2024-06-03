@@ -1,0 +1,11 @@
+config BCM_RPC_SERVICES_DRV
+	bool "Broadcom BCA RPC_SERVICES driver"
+	depends on BCM_ITC_RPC_DRV	
+	default n
+	help
+	  Add the BCM BCA RPC_SERVICES support.
+
+config BCM_RPC_SERVICES_DRV_IMPL
+	int "Implementation index for BCA ITC_RPC module"
+	depends on BCM_RPC_SERVICES_DRV 
+	default 1

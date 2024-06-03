@@ -1,0 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * (C) Copyright 2017 Theobroma Systems Design und Consulting GmbH
+ */
+
+/dts-v1/;
+
+#include "rk3399-puma.dtsi"
+#include "rk3399-sdram-ddr3-1333.dtsi"
+

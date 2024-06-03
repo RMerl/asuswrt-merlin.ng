@@ -1,0 +1,6 @@
+SOCFPGA IS1 BOARD
+M:	Pavel Machek <pavel@denx.de>
+S:	Maintained
+F:	board/is1/
+F:	include/configs/socfpga_is1.h
+F:	configs/socfpga_is1_defconfig

@@ -1,0 +1,113 @@
+The pinctrl driver enables Marvell Armada 8K SoCs to configure the multi-purpose
+pins (mpp) to a specific function.
+A Marvell SoC pin configuration node is a node of a group of pins which can
+be used for a specific device or function. Each node requires one or more
+mpp pins or group of pins and a mpp function common to all pins.
+
+Required properties for the pinctrl driver:
+- compatible:	"marvell,mvebu-pinctrl",
+		"marvell,ap806-pinctrl",
+		"marvell,armada-7k-pinctrl",
+		"marvell,armada-8k-cpm-pinctrl",
+		"marvell,armada-8k-cps-pinctrl"
+- bank-name:	A string defining the pinc controller bank name
+- reg: 		A pair of values defining the pin controller base address
+		and the address space
+- pin-count:	Numeric value defining the amount of multi purpose pins
+		included in this bank
+- max-func:	Numeric value defining the maximum function value for
+		pins in this bank
+- pin-func:	Array of pin function values for every pin in the bank.
+		When the function value for a specific pin equal 0xFF,
+		the pin configuration is skipped and a default function
+		value is used for this pin.
+
+The A8K is a hybrid SoC that contains several silicon dies interconnected in
+a single package. Each such die may have a separate pin controller.
+
+Example:
+/ {
+	ap806 {
+		config-space {
+			pinctl: pinctl@6F4000 {
+				compatible = "marvell,mvebu-pinctrl",
+					     "marvell,ap806-pinctrl";
+				bank-name ="apn-806";
+				reg = <0x6F4000 0x10>;
+				pin-count = <20>;
+				max-func = <3>;
+				/* MPP Bus:
+				 * SPI0 [0-3]
+				 * I2C0 [4-5]
+				 * UART0 [11,19]
+				 */
+					  /* 0 1 2 3 4 5 6 7 8 9 */
+				pin-func = < 3 3 3 3 3 3 0 0 0 0
+					     0 3 0 0 0 0 0 0 0 3>;
+			};
+		};
+	};
+
+	cp110-master {
+		config-space {
+			cpm_pinctl: pinctl@44000 {
+				compatible = "marvell,mvebu-pinctrl",
+					     "marvell,armada-7k-pinctrl",
+					     "marvell,armada-8k-cpm-pinctrl";
+				bank-name ="cp0-110";
+				reg = <0x440000 0x20>;
+				pin-count = <63>;
+				max-func = <0xf>;
+				/* MPP Bus:
+				 * [0-31] = 0xff: Keep default CP0_shared_pins:
+				 * [11] CLKOUT_MPP_11 (out)
+				 * [23] LINK_RD_IN_CP2CP (in)
+				 * [25] CLKOUT_MPP_25 (out)
+				 * [29] AVS_FB_IN_CP2CP (in)
+				 * [32,34] SMI
+				 * [31]    GPIO: push button/Wake
+				 * [35-36] GPIO
+				 * [37-38] I2C
+				 * [40-41] SATA[0/1]_PRESENT_ACTIVEn
+				 * [42-43] XSMI
+				 * [44-55] RGMII1
+				 * [56-62] SD
+				 */
+					/*   0    1    2    3    4    5    6    7    8    9 */
+				pin-func = < 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
+					     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
+					     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
+					     0xff 0    7    0    7    0    0    2    2    0
+					     0    0    8    8    1    1    1    1    1    1
+					     1    1    1    1    1    1    0xE  0xE  0xE  0xE
+					     0xE  0xE  0xE>;
+			};
+		};
+	};
+
+	cp110-slave {
+		config-space {
+			cps_pinctl: pinctl@44000 {
+				compatible = "marvell,mvebu-pinctrl",
+					     "marvell,armada-8k-cps-pinctrl";
+				bank-name ="cp1-110";
+				reg = <0x440000 0x20>;
+				pin-count = <63>;
+				max-func = <0xf>;
+				/* MPP Bus:
+				 * [0-11]  RGMII0
+				 * [27,31] GE_MDIO/MDC
+				 * [32-62] = 0xff: Keep default CP1_shared_pins:
+				 */
+					/*   0    1    2    3    4    5    6    7    8    9 */
+				pin-func = < 0x3  0x3  0x3  0x3  0x3  0x3  0x3  0x3  0x3  0x3
+					     0x3  0x3  0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
+					     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0x8  0xff 0xff
+					     0xff 0x8  0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
+					     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
+					     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
+					     0xff 0xff 0xff>;
+			};
+		};
+	};
+}

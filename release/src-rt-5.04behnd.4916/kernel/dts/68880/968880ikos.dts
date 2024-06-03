@@ -1,0 +1,183 @@
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+
+/dts-v1/;
+
+
+#define GIC_DIST_BASE	0x81001000
+#define GIC_CPUI_BASE	0x81002000
+
+#define TIMER_HYP_PPI			10
+#define TIMER_VIRT_PPI			11
+#define TIMER_PHYS_SECURE_PPI		13
+#define TIMER_PHYS_NONSECURE_PPI	14
+
+#define PMU_CORE0_SPI	9
+#define PMU_CORE1_SPI	10
+#define PMU_CORE2_SPI	11
+#define PMU_CORE3_SPI	12
+#define UARTA_SPI	    31
+	
+/ {
+    model = "Broadcom BCM968880_IKOS";
+    publish = "BRCM_DO_NOT_PUBLISH";
+    compatible = "brcm,bcm968880";
+    interrupt-parent = <&gic>;
+    #address-cells = <2>;
+    #size-cells = <2>;
+   
+	aliases {
+		serial0 = &uart0;
+	};
+
+	chosen { 
+		stdout-path = "serial0:1687500n8";
+		bootargs = "console=ttyS0,1687500 earlycon debug lpj=800000 ikosboot mem=128M root=/dev/ram0 ro";
+                linux,initrd-start = <0x1b00000>;
+		linux,initrd-end   = <0x2AFFFFF>;
+	};
+
+	pmc: pmc {
+		compatible = "brcm,bca-pmc-3-2";
+
+		reg = <0x0 0xffb01018 0x0 0x5080>,
+		    <0x0 0xffb20000 0x0 0x240>, 
+		    <0x0 0xffb20400 0x0 0x5d0>,
+		    <0x0 0xffbc0000 0x0 0x4000>,
+		    <0x0 0xffb80000 0x0 0x1000>;
+		reg-names = "pmc", "procmon", "maestro", "itcm", "dtcm";
+	};
+
+	cpus {
+		#address-cells = <2>;
+		#size-cells = <0>;
+
+		CA55_0: cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a55";
+			reg = <0x0 0x0>;
+			enable-method = "spin-table";
+			cpu-release-addr = <0x0 0xfff8>;
+			next-level-cache = <&L2_0>;
+		};
+
+		CA55_1: cpu@100 {
+		    device_type = "cpu";
+		    compatible = "arm,cortex-a55";
+		    reg = <0x0 0x100>;
+		    enable-method = "spin-table";
+		    cpu-release-addr = <0x0 0xfff8>;
+		    next-level-cache = <&L2_1>;
+		};
+
+		CA55_2: cpu@200 {
+		    device_type = "cpu";
+		    compatible = "arm,cortex-a55";
+		    reg = <0x0 0x200>;
+		    enable-method = "spin-table";
+		    cpu-release-addr = <0x0 0xfff8>;
+		    next-level-cache = <&L2_2>;
+		};
+
+        CA55_3: cpu@300 {
+		    device_type = "cpu";
+		    compatible = "arm,cortex-a55";
+		    reg = <0x0 0x300>;
+		    enable-method = "spin-table";
+		    cpu-release-addr = <0x0 0xfff8>;
+		    next-level-cache = <&L2_3>;
+		};
+
+
+		L2_0: l2-cache0 {
+			compatible = "cache";
+			next-level-cache = <&L3_0>;
+		};
+
+		L2_1: l2-cache1 {
+            compatible = "cache";
+			next-level-cache = <&L3_0>;
+        };
+
+		L2_2: l2-cache2 {
+            compatible = "cache";
+			next-level-cache = <&L3_0>;
+        };
+
+        L2_3: l2-cache3 {
+            compatible = "cache";
+			next-level-cache = <&L3_0>;
+        };
+
+
+		L3_0: l3-cache0 {
+            compatible = "cache";
+        };
+
+	};
+
+
+	gic: interrupt-controller@81000000 {
+    	compatible = "arm,cortex-a15-gic", "arm,cortex-a9-gic";
+    	#interrupt-cells = <3>;
+    	#address-cells = <0>;
+    	interrupt-controller;
+    	reg = <0x0 GIC_DIST_BASE 0 0x1000>,
+    	      <0x0 GIC_CPUI_BASE 0 0x2000>;
+	};
+
+    pmu {
+        compatible = "arm,armv8-pmuv3";
+        interrupts = <GIC_SPI PMU_CORE0_SPI IRQ_TYPE_LEVEL_HIGH>,
+                     <GIC_SPI PMU_CORE1_SPI IRQ_TYPE_LEVEL_HIGH>, 
+                     <GIC_SPI PMU_CORE2_SPI IRQ_TYPE_LEVEL_HIGH>,
+                     <GIC_SPI PMU_CORE3_SPI IRQ_TYPE_LEVEL_HIGH>;
+        interrupt-affinity = <&CA55_0>, <&CA55_1>, <&CA55_2>, <&CA55_3>;
+
+    };
+
+
+	timer {
+		compatible = "arm,armv8-timer";
+		interrupts = <GIC_PPI TIMER_PHYS_SECURE_PPI    (GIC_CPU_MASK_SIMPLE(2) | IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI TIMER_PHYS_NONSECURE_PPI (GIC_CPU_MASK_SIMPLE(2) | IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI TIMER_VIRT_PPI           (GIC_CPU_MASK_SIMPLE(2) | IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI TIMER_HYP_PPI            (GIC_CPU_MASK_SIMPLE(2) | IRQ_TYPE_LEVEL_LOW)>;
+	};
+
+	
+	brcm-legacy {
+		compatible = "brcm,brcm-legacy";
+	};
+
+	memory@00000000 {
+		device_type = "memory";
+		reg = <0x0 0x00000000 0x0 0x04000000>;  /* 64MBMB */
+	};
+
+	uart_clk: uart_clk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <81000000>;
+	};
+
+        uart0: serial@8421C000 {
+		compatible = "ns16550a";
+		reg = <0x0 0x8421C000 0x0 0x20>;
+		reg-io-width = <0x4>;
+		reg-shift = <0x2>;
+		interrupts = <GIC_SPI UARTA_SPI IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&uart_clk>;
+	};
+
+
+	/* Legacy UBUS base */
+	ubus@ff800000 {
+		compatible = "simple-bus";
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges = <0x0 0x0 0x0 0xff800000 0x0 0x62000>;
+
+	};
+
+};

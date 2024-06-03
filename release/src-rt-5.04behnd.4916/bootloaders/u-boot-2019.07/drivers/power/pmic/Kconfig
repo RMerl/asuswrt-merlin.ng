@@ -1,0 +1,247 @@
+config DM_PMIC
+	bool "Enable Driver Model for PMIC drivers (UCLASS_PMIC)"
+	depends on DM
+	---help---
+	This config enables the driver-model PMIC support.
+	UCLASS_PMIC - designed to provide an I/O interface for PMIC devices.
+	For the multi-function PMIC devices, this can be used as parent I/O
+	device for each IC's interface. Then, each children uses its parent
+	for read/write. For detailed description, please refer to the files:
+	- 'drivers/power/pmic/pmic-uclass.c'
+	- 'include/power/pmic.h'
+
+config PMIC_CHILDREN
+	bool "Allow child devices for PMICs"
+	depends on DM_PMIC
+	default y
+	---help---
+	This allows PMICs to support child devices (such as regulators) in
+	SPL. This adds quite a bit of code so if you are not using this
+	feature you can turn it off. Most likely you should turn it on for
+	U-Boot proper.
+
+config SPL_PMIC_CHILDREN
+	bool "Allow child devices for PMICs in SPL"
+	depends on DM_PMIC
+	default y
+	---help---
+	This allows PMICs to support child devices (such as regulators) in
+	SPL. This adds quite a bit of code so if you are not using this
+	feature you can turn it off. In this case you may need a 'back door'
+	to call your regulator code (e.g. see rk8xx.c for direct functions
+	for use in SPL).
+
+config PMIC_ACT8846
+	bool "Enable support for the active-semi 8846 PMIC"
+	depends on DM_PMIC && DM_I2C
+	---help---
+	This PMIC includes 4 DC/DC step-down buck regulators and 8 low-dropout
+	regulators (LDOs). It also provides some GPIO, reset and battery
+	functions. It uses an I2C interface and is designed for use with
+	tablets and smartphones.
+
+config PMIC_AS3722
+	bool "Enable support for the Austria Micro Systems (AMS) AS7322 PMIC"
+	help
+	  The AS3722 includes 7 DC/DC buck convertors, 11 low-noise LDOs, a
+	  real-time clock, GPIOs, ADC and a few other features. It uses an I2C
+	  interface and is designs to cover most of the power managementment
+	  required for a tablets or laptop.
+
+config DM_PMIC_BD71837
+ 	bool "Enable Driver Model for PMIC BD71837"
+ 	depends on DM_PMIC
+ 	help
+	  This config enables implementation of driver-model pmic uclass features
+	  for PMIC BD71837. The driver implements read/write operations.
+
+config DM_PMIC_FAN53555
+	bool "Enable support for OnSemi FAN53555"
+	depends on DM_PMIC && DM_REGULATOR && DM_I2C
+	select DM_REGULATOR_FAN53555
+	help
+	  This config enables implementation of driver-model PMIC
+	  uclass features for the FAN53555 regulator. The FAN53555 is
+	  a (family of) single-output regulators that supports
+	  transitioning between two different output voltages based on
+	  an voltage selection pin.
+
+	  The driver implements read/write operations for use with the FAN53555
+	  regulator driver and binds the regulator driver to its node.
+
+config DM_PMIC_PFUZE100
+	bool "Enable Driver Model for PMIC PFUZE100"
+	depends on DM_PMIC
+	---help---
+	This config enables implementation of driver-model pmic uclass features
+	for PMIC PFUZE100. The driver implements read/write operations.
+
+config DM_PMIC_MAX77686
+	bool "Enable Driver Model for PMIC MAX77686"
+	depends on DM_PMIC
+	---help---
+	This config enables implementation of driver-model pmic uclass features
+	for PMIC MAX77686. The driver implements read/write operations.
+
+config DM_PMIC_MAX8998
+	bool "Enable Driver Model for PMIC MAX8998"
+	depends on DM_PMIC
+	---help---
+	This config enables implementation of driver-model pmic uclass features
+	for PMIC MAX8998. The driver implements read/write operations.
+
+config DM_PMIC_MC34708
+	bool "Enable Driver Model for PMIC MC34708"
+	depends on DM_PMIC
+	help
+	 This config enables implementation of driver-model pmic uclass features
+	 for PMIC MC34708. The driver implements read/write operations.
+
+config PMIC_MAX8997
+	bool "Enable Driver Model for PMIC MAX8997"
+	depends on DM_PMIC
+	---help---
+	This config enables implementation of driver-model pmic uclass features
+	for PMIC MAX8997. The driver implements read/write operations.
+	This is a Power Management IC with RTC, Fuel Gauge, MUIC control on Chip.
+	- 21x LDOs
+	- 12x GPIOs
+	- Haptic Motor driver
+	- RTC with two alarms
+	- Fueal Gauge and One backup battery charger
+	- MUIC
+	- Others
+
+config PMIC_PM8916
+	bool "Enable Driver Model for Qualcomm PM8916 PMIC"
+	depends on DM_PMIC
+	---help---
+	The PM8916 is a PMIC connected to one (or several) processors
+	with SPMI bus. It has 2 slaves with several peripherals:
+	- 18x LDO
+	- 4x GPIO
+	- Power and Reset buttons
+	- Watchdog
+	- RTC
+	- Vibrator drivers
+	- Others
+
+	Driver binding info: doc/device-tree-bindings/pmic/pm8916.txt
+
+config PMIC_RK8XX
+	bool "Enable support for Rockchip PMIC RK8XX"
+	depends on DM_PMIC
+	---help---
+	The Rockchip RK808 PMIC provides four buck DC-DC convertors, 8 LDOs,
+	an RTC and two low Rds (resistance (drain to source)) switches. It is
+	accessed via an I2C interface. The device is used with Rockchip SoCs.
+	This driver implements register read/write operations.
+
+config PMIC_S2MPS11
+	bool "Enable Driver Model for PMIC Samsung S2MPS11"
+	depends on DM_PMIC
+	---help---
+	The Samsung S2MPS11 PMIC provides:
+	 - 38 adjustable LDO regulators
+	 - 9 High-Efficiency Buck Converters
+	 - 1 BuckBoost Converter
+	 - RTC with two alarms
+	 - Backup battery charger
+	 - I2C Configuration Interface
+	This driver provides access to I/O interface only.
+	Binding info: doc/device-tree-bindings/pmic/s2mps11.txt
+
+config DM_PMIC_SANDBOX
+	bool "Enable Driver Model for emulated Sandbox PMIC"
+	depends on DM_PMIC
+	---help---
+	Enable the driver for Sandbox PMIC emulation. The emulated PMIC device
+	depends on two drivers:
+	- sandbox PMIC I/O driver - implements dm pmic operations
+	- sandbox PMIC i2c emul driver - emulates the PMIC's I2C transmission
+
+	A detailed information can be found in header: '<power/sandbox_pmic.h>'
+
+	The Sandbox PMIC info:
+	* I/O interface:
+	  - I2C chip address:       0x40
+	  - first register address: 0x0
+	  - register count:         0x10
+	* Adjustable outputs:
+	  - 2x LDO
+	  - 2x BUCK
+	  - Each, with a different operating conditions (header).
+	* Reset values:
+	  - set by i2c emul driver's probe() (defaults in header)
+
+	Driver binding info: doc/device-tree-bindings/pmic/sandbox.txt
+
+config PMIC_S5M8767
+	bool "Enable Driver Model for the Samsung S5M8767 PMIC"
+	depends on DM_PMIC
+	---help---
+	The S5M8767 PMIC provides a large array of LDOs and BUCKs for use
+	as a SoC power controller. It also provides 32KHz clock outputs. This
+	driver provides basic register access and sets up the attached
+	regulators if regulator support is enabled.
+
+config PMIC_RN5T567
+	bool "Enable driver for Ricoh RN5T567 PMIC"
+	depends on DM_PMIC
+	---help---
+	The RN5T567 is a PMIC with 4 step-down DC/DC converters, 5 LDO
+	regulators Real-Time Clock and 4 GPIOs. This driver provides
+	register access only.
+
+config PMIC_TPS65090
+	bool "Enable driver for Texas Instruments TPS65090 PMIC"
+	depends on DM_PMIC
+	---help---
+	The TPS65090 is a PMIC containing several LDOs, DC to DC convertors,
+	FETs and a battery charger. This driver provides register access
+	only, and you can enable the regulator/charger drivers separately if
+	required.
+
+config PMIC_PALMAS
+	bool "Enable driver for Texas Instruments PALMAS PMIC"
+	depends on DM_PMIC
+	---help---
+	The PALMAS is a PMIC containing several LDOs, SMPS.
+	This driver binds the pmic children.
+
+config PMIC_LP873X
+	bool "Enable driver for Texas Instruments LP873X PMIC"
+	depends on DM_PMIC
+	---help---
+	The LP873X is a PMIC containing couple of LDOs and couple of SMPS.
+	This driver binds the pmic children.
+
+config PMIC_LP87565
+	bool "Enable driver for Texas Instruments LP87565 PMIC"
+	depends on DM_PMIC
+	---help---
+	The LP87565 is a PMIC containing a bunch of SMPS.
+	This driver binds the pmic children.
+
+config POWER_MC34VR500
+	bool "Enable driver for Freescale MC34VR500 PMIC"
+	---help---
+	The MC34VR500 is used in conjunction with the FSL T1 and LS1 series
+	SoC. It provides 4 buck DC-DC convertors and 5 LDOs, and it is accessed
+	via an I2C interface.
+
+config DM_PMIC_TPS65910
+	bool "Enable driver for Texas Instruments TPS65910 PMIC"
+	depends on DM_PMIC
+	---help---
+	The TPS65910 is a PMIC containing 3 buck DC-DC converters, one boost
+	DC-DC converter, 8 LDOs and a RTC. This driver binds the SMPS and LDO
+	pmic children.
+
+config PMIC_STPMIC1
+	bool "Enable support for STMicroelectronics STPMIC1 PMIC"
+	depends on DM_PMIC && DM_I2C
+	---help---
+	The STPMIC1 PMIC provides 4 BUCKs, 6 LDOs, 1 VREF and 2 power switches.
+	It is accessed via an I2C interface. The device is used with STM32MP1
+	SoCs. This driver implements register read/write operations.

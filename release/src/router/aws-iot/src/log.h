@@ -20,25 +20,14 @@
 #define FILE_TYPE	4
 #define CONSOLE_TYPE	8
 
-// #define SDCARD_DEBUG 0
-
-// #ifdef SDCARD_DEBUG
-// #define APP_LOG_PATH	"/mnt/SDCard/aicam_log"
-// #define AWS_DEBUG_TO_FILE "/mnt/SDCard/AWSIOT_DEBUG_FILE"
-// #define AWS_DEBUG_TO_CONSOLE "/mnt/SDCard/AWSIOT_DEBUG_CONSOLE"
-// #define AWS_DEBUG_TO_SYSLOG "/mnt/SDCard/AWSIOT_DEBUG_SYSLOG"
-// #else
-
 #define APP_LOG_PATH	"/tmp/awsiot_log"
 #define AWS_DEBUG_TO_FILE "/tmp/AWSIOT_DEBUG_FILE"
 #define AWS_DEBUG_TO_CONSOLE "/tmp/AWSIOT_DEBUG_CONSOLE"
 #define AWS_DEBUG_TO_SYSLOG "/tmp/AWSIOT_DEBUG_SYSLOG"
 
-// #endif
 
-
-#define FEEDBACK_LOG_PATH                       "/tmp/awsiot_log"
-#define FEEDBACK_LOG_TMP_PATH                   "/tmp/awsiot_log_tmp"
+#define DBG_LOG_PATH                       "/tmp/awsiot_log"
+#define DBG_LOG_TMP_PATH                   "/tmp/awsiot_log_tmp"
 
 
 void dprintf_impl(const char* file,const char* func, size_t line, int enable, const char* fmt, ...);
@@ -50,12 +39,12 @@ int open_log(const char* log_path, int stream_type);
 void close_log();
 extern FILE* gfp;
 //FILE* gfp =NULL;
-// #define WHERESTR "%23s >> [%*s] >> func > %*s, line %i, Msg : "
+
 #define WHERESTR "[%28s][%25s] <<%38s>>, line %i: "
 #define WHEREARG  __FILE__,__func__,__LINE__
 
 long file_size(const char* filename);
-void feedback_log_downsizing();
+void dbg_log_downsizing();
 
 #ifndef NDEBUG
 //#define WHERESTR "[%s][%s][%s] <<%s>>, line %i: "

@@ -10,6 +10,8 @@ include $(SRCBASE)/router/.config
 
 ifeq ($(HND_ROUTER_AX_6756),y)
 CFLAGS	+= -I. -I$(TOP)/shared -I$(SRCBASE)/include -I$(SRCBASE)/common/include -Wall -Werror -Wno-format-truncation
+else ifeq ($(HND_ROUTER_BE_4916),y)
+CFLAGS	+= -I. -I$(TOP)/shared -I$(SRCBASE)/include -I$(SRCBASE)/common/include -Wall -Werror -Wno-format-truncation -Wno-unused-variable
 else
 CFLAGS	+= -I. -I$(TOP)/shared -I$(SRCBASE)/include -I$(SRCBASE)/common/include -Wall -Werror
 endif
@@ -67,6 +69,10 @@ endif
 ifeq ($(RTCONFIG_LIBASUSLOG),y)
 CFLAGS += -I$(TOP)/libasuslog
 LDFLAGS += -L$(TOP)/libasuslog -lasuslog
+endif
+
+ifeq ($(RTCONFIG_TRUSTZONE),y)
+LDFLAGS += -L$(TOP)/ateed/ -latee
 endif
 
 

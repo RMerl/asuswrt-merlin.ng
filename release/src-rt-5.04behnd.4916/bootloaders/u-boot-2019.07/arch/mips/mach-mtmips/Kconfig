@@ -1,0 +1,136 @@
+menu "MediaTek MIPS platforms"
+	depends on ARCH_MTMIPS
+
+config SYS_MALLOC_F_LEN
+	default 0x1000
+
+config SYS_SOC
+	default "mt7628" if SOC_MT7628
+
+choice
+	prompt "MediaTek MIPS SoC select"
+
+config SOC_MT7628
+	bool "MT7628"
+	select MIPS_L1_CACHE_SHIFT_5
+	help
+	  This supports MediaTek MT7628/MT7688.
+
+endchoice
+
+choice
+	prompt "Board select"
+
+config BOARD_GARDENA_SMART_GATEWAY_MT7688
+	bool "GARDENA smart Gateway"
+	depends on SOC_MT7628
+	select BOARD_LATE_INIT
+	select SUPPORTS_BOOT_RAM
+	help
+	  GARDENA smart Gateway boards have a MT7688 SoC with 128 MiB of RAM
+	  and 8 MiB of flash (SPI NOR) and additional SPI NAND storage.
+
+config BOARD_LINKIT_SMART_7688
+	bool "LinkIt Smart 7688"
+	depends on SOC_MT7628
+	select SUPPORTS_BOOT_RAM
+	help
+	  Seeed LinkIt Smart 7688 boards have a MT7688 SoC with 128 MiB of RAM
+	  and 32 MiB of flash (SPI).
+	  Between its different peripherals there's an integrated switch with 4
+	  ethernet ports, 1 USB port, 1 UART, GPIO buttons and LEDs, and
+	  a MT7688 (PCIe).
+
+endchoice
+
+choice
+	prompt "Boot mode"
+
+config BOOT_RAM
+	bool "RAM boot"
+	depends on SUPPORTS_BOOT_RAM
+	help
+	  This builds an image that is linked to a RAM address. It can be used
+	  for booting from CFE via TFTP using an ELF image, but it can also be
+	  booted from RAM by other bootloaders using a BIN image.
+
+config BOOT_ROM
+	bool "ROM boot"
+	depends on SUPPORTS_BOOT_RAM
+	help
+	  This builds an image that is linked to a ROM address. It can be
+	  used as main bootloader image which is programmed onto the onboard
+	  flash storage (SPI NOR).
+
+endchoice
+
+choice
+	prompt "DDR2 size"
+
+config ONBOARD_DDR2_SIZE_256MBIT
+	bool "256MBit (32MByte) total size"
+	depends on BOOT_ROM
+	help
+	  Use 256MBit (32MByte) of DDR total size
+
+config ONBOARD_DDR2_SIZE_512MBIT
+	bool "512MBit (64MByte) total size"
+	depends on BOOT_ROM
+	help
+	  Use 512MBit (64MByte) of DDR total size
+
+config ONBOARD_DDR2_SIZE_1024MBIT
+	bool "1024MBit (128MByte) total size"
+	depends on BOOT_ROM
+	help
+	  Use 1024MBit (128MByte) of DDR total size
+
+config ONBOARD_DDR2_SIZE_2048MBIT
+	bool "2048MBit (256MByte) total size"
+	depends on BOOT_ROM
+	help
+	  Use 2048MBit (256MByte) of DDR total size
+
+endchoice
+
+choice
+	prompt "DDR2 chip width"
+
+config ONBOARD_DDR2_CHIP_WIDTH_8BIT
+	bool "8bit DDR chip width"
+	depends on BOOT_ROM
+	help
+	  Use DDR chips with 8bit width
+
+config ONBOARD_DDR2_CHIP_WIDTH_16BIT
+	bool "16bit DDR chip width"
+	depends on BOOT_ROM
+	help
+	  Use DDR chips with 16bit width
+
+endchoice
+
+choice
+	prompt "DDR2 bus width"
+
+config ONBOARD_DDR2_BUS_WIDTH_16BIT
+	bool "16bit DDR bus width"
+	depends on BOOT_ROM
+	help
+	  Use 16bit DDR bus width
+
+config ONBOARD_DDR2_BUS_WIDTH_32BIT
+	bool "32bit DDR bus width"
+	depends on BOOT_ROM
+	help
+	  Use 32bit DDR bus width
+
+endchoice
+
+config SUPPORTS_BOOT_RAM
+	bool
+
+source "board/gardena/smart-gateway-mt7688/Kconfig"
+source "board/seeed/linkit-smart-7688/Kconfig"
+
+endmenu

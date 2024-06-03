@@ -1,0 +1,69 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * (C) Copyright 2017 Theobroma Systems Design und Consulting GmbH
+ */
+/ {
+	chosen {
+		u-boot,spl-boot-order = &emmc;
+		tick-timer = "/timer@ff810000";
+	};
+};
+
+&dmc {
+	u-boot,dm-pre-reloc;
+
+	/*
+	 * PX5-evb(2GB) need to use CBRD mode, or else the dram is not correct
+	 * See doc/device-tree-bindings/clock/rockchip,rk3368-dmc.txt for
+	 * details on the 'rockchip,memory-schedule' property and how it
+	 * affects the physical-address to device-address mapping.
+	 */
+	rockchip,memory-schedule = <DMC_MSCH_CBRD>;
+	rockchip,ddr-frequency = <800000000>;
+	rockchip,ddr-speed-bin = <DDR3_1600K>;
+
+	status = "okay";
+};
+
+&pinctrl {
+	u-boot,dm-pre-reloc;
+};
+
+&service_msch {
+	u-boot,dm-pre-reloc;
+};
+
+&dmc {
+	u-boot,dm-pre-reloc;
+	status = "okay";
+};
+
+&pmugrf {
+	u-boot,dm-pre-reloc;
+};
+
+&sgrf {
+	u-boot,dm-pre-reloc;
+};
+
+&cru {
+	u-boot,dm-pre-reloc;
+};
+
+&grf {
+	u-boot,dm-pre-reloc;
+};
+
+&uart4 {
+	u-boot,dm-pre-reloc;
+};
+
+&emmc {
+	u-boot,dm-pre-reloc;
+};
+
+&timer0 {
+	u-boot,dm-pre-reloc;
+	clock-frequency = <24000000>;
+	status = "okay";
+};

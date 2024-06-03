@@ -5,7 +5,7 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=11;IE=Edge"/>
 	<meta http-equiv="Pragma" CONTENT="no-cache">
 	<meta http-equiv="Expires" CONTENT="-1">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 	<link rel="shortcut icon" href="images/favicon.png">
 	<title><#menu1#> - Light Effect</title><!-- untranslated -->
 	<link rel="stylesheet" href="../form_style.css">
@@ -46,13 +46,20 @@ function switchTab(id){
 		</div>
 		<iframe id="light_effect_iframe" class="light_effect_iframe" frameborder="0"></iframe>
 		<script>
-			$("#light_effect_iframe").attr("src", "/light_effect/light_effect.html");
-			$("#light_effect_iframe").load(function(){
-				if(based_modelid.substr(0,2) == "GT" || based_modelid.substr(0,3) == "TUF")
-					$("#light_effect_iframe").css("background-color", "initial");
-				else
-					$("#light_effect_iframe").css("background-color", "#273342");
-			});
+			$("#light_effect_iframe")
+				.attr("src", "/light_effect/light_effect.html")
+				.load(function(){
+					if(isSupport("rog") || isSupport("tuf"))
+						$("#light_effect_iframe").css("background-color", "initial");
+					else
+						$("#light_effect_iframe").css("background-color", "#273342");
+				})
+				.css("height", function(){
+					const support_night_mode = (()=>{
+						return ((based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" || based_modelid == "GT-BE96" || based_modelid == "GT-BE19000") ? true : false);
+					})();
+					return (support_night_mode ? "530px" : $(this).css("height"));
+				})
 		</script>
 	</div>
 </body>

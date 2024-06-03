@@ -166,8 +166,6 @@ extern int isMMCDevice(const char *device_name);
 
 extern char *find_sg_of_device(const char *device_name, char *buf, const int buf_size);
 
-#ifdef RTCONFIG_INTERNAL_GOBI
-extern char *get_gobi_portpath();
-#endif
+extern int is_builtin_modem(char *modem_type);
 
 #endif	/* !_USB_INFO_H_ */

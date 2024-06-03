@@ -1,0 +1,20 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Samsung's Exynos4210-based SMDKV310 board device tree source
+ *
+ * Copyright (c) 2014 Google, Inc
+ */
+
+/dts-v1/;
+#include "exynos4.dtsi"
+
+/ {
+	model = "Samsung SMDKV310 on Exynos4210";
+	compatible = "samsung,smdkv310", "samsung,exynos4210";
+
+	aliases {
+		serial0 = "/serial@13800000";
+		console = "/serial@13820000";
+	};
+
+};

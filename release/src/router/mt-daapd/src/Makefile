@@ -14,6 +14,10 @@ ifeq ($(HND_ROUTER),y)
 CFLAGS := $(shell echo $(CFLAGS)| sed 's/-O2//g')
 CFLAGS += -DHAVE_CONFIG_H
 endif
+ifeq ($(MUSL_LIBC),y)
+CFLAGS := $(shell echo $(CFLAGS)| sed 's/-O2//g')
+CFLAGS += -DHAVE_CONFIG_H -DHAVE_STRCASESTR
+endif
 else
 CFLAGS += -I$(SRCDIR)/libgdbm -I$(SRCDIR)/libid3tag -I$(SRCDIR)/zlib
 endif

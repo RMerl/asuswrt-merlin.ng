@@ -51,6 +51,12 @@
 	font-size: 14px;
 	padding: 18px 42px;
 }
+#alert_tm_eula_content{
+	background-color: #111;
+	overflow-y: auto;
+	font-size: 14px;
+	padding: 18px 42px;
+}
 .control-field{
 	margin: 18px 0;
 	display: flex;
@@ -58,4 +64,66 @@
 }
 .eula-content-padding{
 	margin-top: 18px;
+}
+#eulaButtonContainer{
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+#eulaButtonContainer .button_gen{
+	margin: auto !important;
+}
+
+#eulaConfirmContainer{
+	display: flex;
+	flex-direction: column;
+}
+
+#eulaConfirmContainer > div:has(#ASUS_EULA_enable) {
+	display: flex;
+	align-items: center;
+}
+
+#asus_pp_header {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+}
+
+#asus_pp_title {
+	font-size: 35px;
+	font-weight: bold;
+}
+
+#asus_pp_title_sub {
+	font-size: 18px;
+	font-weight: bold;
+}
+
+#asus_pp_desc {
+	font-size: 10px;
+	font-weight: bold;
+}
+
+#eula_pp_main, #eula_pp_popup_main {
+	padding: 20px;
+	display: flex;
+	gap: 15px;
+	flex-direction: column;
+}
+
+#applyBtn.disabled, #cancelBtn.disabled{
+	background: #808080!important;
+	border: 2px	solid #FFFFFF!important;
+	cursor: not-allowed!important;
+	color: #FFFFFF!important;
+}
+
+#eulaConfirmInfo {
+	font-size: 8px!important;
+	border: 1px solid #ddd;
+	padding: 10px;
+	border-radius: 5px;
+	background-color: unset!important;
 }

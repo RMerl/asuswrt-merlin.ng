@@ -1,0 +1,12 @@
+if TARGET_IB62X0
+
+config SYS_BOARD
+	default "ib62x0"
+
+config SYS_VENDOR
+	default "raidsonic"
+
+config SYS_CONFIG_NAME
+	default "ib62x0"
+
+endif

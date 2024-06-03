@@ -1,0 +1,15 @@
+if TARGET_PHYCORE_RK3288
+
+config SYS_BOARD
+	default "phycore_rk3288"
+
+config SYS_VENDOR
+	default "phytec"
+
+config SYS_CONFIG_NAME
+	default "phycore_rk3288"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+
+endif

@@ -1,0 +1,117 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ *  Copyright 2020 Broadcom Ltd.
+ */
+
+/dts-v1/;
+
+#include "bcm4912.dtsi"
+
+/ {
+	model = "Broadcom bcm94912";
+	compatible = "broadcom,bcm94912", "brcm,bcm4912";
+
+	aliases {
+		serial0 = &uart0;
+		spi1 = &hsspi;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0x0 0x0 0x0 0x08000000>;
+	};
+	boot_state {
+		u-boot,dm-pre-reloc;
+		compatible = "brcm,bcmbca-bootstate-v2";
+		reg-names = "reset_reason", "reset_status";
+		reg =   <0x0 0xff802628 0x0 0x04>,
+			<0x0 0xff85a01c 0x0 0x04>;
+	};
+};
+
+&uart0 {
+	u-boot,dm-pre-reloc;
+	status = "okay";
+};
+
+&hsspi {
+	status = "okay";
+	spi-nand {
+		pinctrl-0 = <&hs_spim_ss_0_b_pin_24>;
+		pinctrl-names = "default";
+		compatible = "spi-nand";
+		reg = <0>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		u-boot,dm-pre-reloc;				
+		spi-max-frequency = <100000000>;
+	};
+
+	spi-nor@0 {
+		pinctrl-0 = <&hs_spim_ss_0_b_pin_24>;
+		pinctrl-names = "default";
+		compatible = "jedec,spi-nor";
+		reg = <0>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		spi-max-frequency = <50000000>;
+		u-boot,dm-pre-reloc;
+	};
+};
+
+&nand {
+	pinctrl-0 = <&nand_data_pins &nand_ctrl_pins &nand_wp_b_pin_25>;
+	pinctrl-names = "default";
+	status = "okay";
+	write-protect = <1>;
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	nandcs@0 {
+		compatible = "brcm,nandcs";
+		reg = <0>;
+	};
+};
+
+&mdio {
+	phy_gphy0 {
+		status = "okay";
+	};
+
+	phy_gphy1 {
+		status = "okay";
+	};
+
+	phy_gphy2 {
+		status = "okay";
+	};
+
+	phy_gphy3 {
+		status = "okay";
+	};
+};
+
+&switch0 {
+	ports {
+		port_gphy0 {
+			status = "okay";
+		};
+
+		port_gphy1 {
+			status = "okay";
+		};
+
+		port_gphy2 {
+			status = "okay";
+		};
+
+		port_gphy3 {
+			status = "okay";
+		};
+	};
+};
+

@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright (C) 2018 BayLibre, SAS
+#
+# Author: Neil Armstrong <narmstrong@baylibre.com>
+
+config VIDEO_MESON
+	bool "Enable Amlogic Meson video support"
+	depends on DM_VIDEO
+	select DISPLAY
+	help
+	  Enable Amlogic Meson Video Processing Unit video support.

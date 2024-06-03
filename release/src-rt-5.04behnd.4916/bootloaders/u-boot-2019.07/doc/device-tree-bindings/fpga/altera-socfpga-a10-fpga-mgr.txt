@@ -1,0 +1,43 @@
+Altera SOCFPGA Arria10 FPGA Manager
+
+Required properties:
+- compatible : should contain "altr,socfpga-a10-fpga-mgr"
+- reg        : base address and size for memory mapped io.
+               - The first index is for FPGA manager register access.
+               - The second index is for writing FPGA configuration data.
+- resets     : Phandle and reset specifier for the device's reset.
+- clocks     : Clocks used by the device.
+- altr,bitstream : Fit image file name for both FPGA peripheral bitstream,
+		   FPGA core bitstream and full bitstream.
+
+		   Full bitstream, consist of peripheral bitstream and core
+		   bitstream.
+
+		   FPGA peripheral bitstream is used to initialize FPGA IOs,
+		   PLL, IO48 and DDR. This bitstream is required to get DDR up
+		   running.
+
+		   FPGA core bitstream contains FPGA design which is used to
+		   program FPGA CRAM and ERAM.
+
+Example: Bundles both peripheral bitstream and core bitstream into FIT image
+	 called fit_spl_fpga.itb. This FIT image can be created through running
+	 this command: tools/mkimage
+		       -E -p 400
+		       -f board/altera/arria10-socdk/fit_spl_fpga.its
+		       fit_spl_fpga.itb
+
+	 For details of describing structure and contents of the FIT image,
+	 please refer board/altera/arria10-socdk/fit_spl_fpga.its
+
+- Examples for booting with full release or booting with early IO release, then
+  follow by entering early user mode:
+
+	fpga_mgr: fpga-mgr@ffd03000 {
+		compatible = "altr,socfpga-a10-fpga-mgr";
+		reg = <0xffd03000 0x100
+		       0xffcfe400 0x20>;
+		clocks = <&l4_mp_clk>;
+		resets = <&rst FPGAMGR_RESET>;
+		altr,bitstream = "fit_spl_fpga.itb";
+	};

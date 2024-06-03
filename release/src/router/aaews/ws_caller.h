@@ -2,6 +2,8 @@
 #define _WS_CALLER_H
 #include <ws_api.h>					// include the header of web service 
 
+#define MAC_MAX_LEN		18
+
 typedef int (*cb_DeviceDesc)(char *buf, int *buf_len, int flag);
 
 int st_KeepAlive(GetServiceArea* gsa, Login* lg);

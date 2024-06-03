@@ -1,0 +1,15 @@
+if TARGET_FIREFLY_RK3288
+
+config SYS_BOARD
+	default "firefly-rk3288"
+
+config SYS_VENDOR
+	default "firefly"
+
+config SYS_CONFIG_NAME
+	default "firefly-rk3288"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+
+endif

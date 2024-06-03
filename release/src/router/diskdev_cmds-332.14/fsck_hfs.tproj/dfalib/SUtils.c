@@ -395,11 +395,11 @@ OSErr GetVolumeFeatures( SGlobPtr GPtr )
 	err = GetVCBDriveNum( &GPtr->realVCB, GPtr->DrvNum );
 	ReturnIfError( err );
 
-	if ( GPtr->realVCB != nil )
+	if (GPtr->realVCB != NULL)
 	{
 		GPtr->volumeFeatures	|= volumeIsMountedMask;
 
-		pb.ioParam.ioNamePtr	= nil;
+		pb.ioParam.ioNamePtr	= NULL;
 		pb.ioParam.ioVRefNum	= GPtr->realVCB->vcbVRefNum;
 		pb.ioParam.ioBuffer		= (Ptr) &buffer;
 		pb.ioParam.ioReqCount	= sizeof( buffer );
@@ -2282,7 +2282,7 @@ void print_prime_buckets(PrimeBuckets *cur);
  *     	   	4. btreetye - can be kHFSPlusCatalogRecord or kHFSPlusAttributeRecord
  *                            indicates which btree prime number bucket should be incremented
  *
- * Output:	nil
+ * Output:	NULL
  */
 void RecordXAttrBits(SGlobPtr GPtr, UInt16 flags, HFSCatalogNodeID fileid, UInt16 btreetype) 
 {

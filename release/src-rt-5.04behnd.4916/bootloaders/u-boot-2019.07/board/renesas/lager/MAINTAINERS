@@ -1,0 +1,6 @@
+LAGER BOARD
+M:	Nobuhiro Iwamatsu <nobuhiro.iwamatsu.yj@renesas.com>
+S:	Maintained
+F:	board/renesas/lager/
+F:	include/configs/lager.h
+F:	configs/lager_defconfig

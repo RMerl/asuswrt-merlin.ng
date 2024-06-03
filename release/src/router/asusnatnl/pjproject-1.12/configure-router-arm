@@ -31,6 +31,10 @@ if [ "$QCA" = "y" ]; then
 	EXTRA_LDFLAGS="-L$LIBDIR -L$(ls -d -1 $LIBDIR/gcc/*/*) -lc -lm -ldl -lgcc_s"
 fi
 
+if [ "$MUSL_LIBC" = "y" ]; then
+	EXTRA_LDFLAGS="-L$LIBDIR -L$(ls -d -1 $LIBDIR/gcc/*/*) -lc -lm -ldl -lgcc_s"
+fi  
+
 if [ "$ALPINE" = "y" ]; then
 	EXTRA_LDFLAGS="-lc -ldl -lgcc_s"
 fi

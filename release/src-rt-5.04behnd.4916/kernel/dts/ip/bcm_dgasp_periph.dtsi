@@ -1,0 +1,5 @@
+compatible = "brcm,dgasp-periph";
+reg-names = "dg-periph-reg", "uart-dr";
+reg = <DG_PERIPH_REG_OFFSET DG_PERIPH_REG_SIZE>,
+      <DG_UART_DR_OFFSET DG_UART_DR_SIZE>;
+status = "okay";

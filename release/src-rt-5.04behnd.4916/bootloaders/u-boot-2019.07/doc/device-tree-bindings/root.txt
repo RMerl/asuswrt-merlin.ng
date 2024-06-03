@@ -1,0 +1,4 @@
+The root node
+
+Optional properties:
+  - serial-number : a string representing the device's serial number

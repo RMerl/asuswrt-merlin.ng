@@ -1,0 +1,57 @@
+config RAM
+	bool "Enable RAM drivers using Driver Model"
+	depends on DM
+	help
+	  This allows drivers to be provided for SDRAM and other RAM
+	  controllers and their type to be specified in the board's device
+	  tree. Generally some parameters are required to set up the RAM and
+	  the RAM size can either be statically defined or dynamically
+	  detected.
+
+config SPL_RAM
+	bool "Enable RAM support in SPL"
+	depends on RAM && SPL_DM
+	help
+	  The RAM subsystem adds a small amount of overhead to the image.
+	  If this is acceptable and you have a need to use RAM drivers in
+	  SPL, enable this option. It might provide a cleaner interface to
+	  setting up RAM (e.g. SDRAM / DDR) within SPL.
+
+config TPL_RAM
+	bool "Enable RAM support in TPL"
+	depends on RAM && TPL_DM
+	help
+	  The RAM subsystem adds a small amount of overhead to the image.
+	  If this is acceptable and you have a need to use RAM drivers in
+	  TPL, enable this option. It might provide a cleaner interface to
+	  setting up RAM (e.g. SDRAM / DDR) within TPL.
+
+config STM32_SDRAM
+	bool "Enable STM32 SDRAM support"
+	depends on RAM
+	help
+	  STM32F7 family devices support flexible memory controller(FMC) to
+	  support external memories like sdram, psram & nand.
+	  This driver is for the sdram memory interface with the FMC.
+
+config MPC83XX_SDRAM
+	bool "Enable MPC83XX SDRAM support"
+	depends on RAM
+	help
+	  Enable support for the internal DDR Memory Controller of the MPC83xx
+	  family of SoCs. Both static configurations, as well as configuring
+	  the RAM through the use of SPD (Serial Presence Detect) is supported
+	  via device tree settings.
+
+config K3_AM654_DDRSS
+	bool "Enable AM654 DDRSS support"
+	depends on RAM && SOC_K3_AM6
+	help
+	  K3 based AM654 devices has DDR memory subsystem that comprises
+	  Synopys DDR controller, Synopsis DDR phy and wrapper logic to
+	  intergrate these blocks into the device. This DDR subsystem
+	  provides an interface to external SDRAM devices. Enabling this
+	  config add support for the initialization of the external
+	  SDRAM devices connected to DDR subsystem.
+
+source "drivers/ram/stm32mp1/Kconfig"

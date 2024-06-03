@@ -1,0 +1,65 @@
+
+U-Boot MARUBUN MR-SHPC-01 PCMCIA controller driver
+	Last update 21/11/2007 by Nobuhiro Iwamatsu
+
+========================================================================================
+
+0. What's this?
+    This driver supports MARUBUN MR-SHPC-01.
+	url: http://www.marubun.co.jp/product/semicon/devices/qgc18e0000002n2z.html
+	(Sorry Japanese only.)
+
+    This chip is used with SuperH well, and adopted by the
+    reference board.
+	ex. * MS7750SE01
+		* MS7722SE01
+		* other
+
+    This chip doesn't support CardBus.
+
+1. base source code
+    The code is based on sources from the Linux kernel
+	( arch/sh/kernel/cf-enabler.c ).
+
+2. How to use
+    The options you have to specify in the config file are (with the
+    value for my board as an example):
+
+    * CONFIG_MARUBUN_PCCARD
+	If you want to use this device driver, should define CONFIG_MARUBUN_PCCARD.
+	ex.	#define CONFIG_MARUBUN_PCCARD
+
+    * CONFIG_PCMCIA_SLOT_A
+	Most devices have only one slot. You should define CONFIG_PCMCIA_SLOT_A .
+	ex.	#define CONFIG_PCMCIA_SLOT_A    1
+
+    * CONFIG_SYS_MARUBUN_MRSHPC
+	This is MR-SHPC-01 PCMCIA controller base address.
+	You should do the setting matched to your environment.
+	ex.  #define CONFIG_SYS_MARUBUN_MRSHPC 0xb03fffe0
+	     ( for MS7722SE01 environment )
+
+    * CONFIG_SYS_MARUBUN_MW1
+	This is MR-SHPC-01 memory window base address.
+	You should do the setting matched to your environment.
+	ex. #define CONFIG_SYS_MARUBUN_MW1 0xb0400000
+	     ( for MS7722SE01 environment )
+
+    * CONFIG_SYS_MARUBUN_MW1
+	This is MR-SHPC-01 attribute window base address.
+	You should do the setting matched to your environment.
+	ex. #define CONFIG_SYS_MARUBUN_MW2 0xb0500000
+	     ( for MS7722SE01 environment )
+
+    * CONFIG_SYS_MARUBUN_MW1
+	This is MR-SHPC-01 I/O window base address.
+	You should do the setting matched to your environment.
+	ex. #define CONFIG_SYS_MARUBUN_IO  0xb0600000
+	     ( for MS7722SE01 environment )
+
+3. Other
+    * Check Compact Flash only.
+    * Maybe, NE2000 compatible NIC is sure to move.
+
+Copyright (c) 2007
+	Nobuhiro Iwamatsu <iwamatsu@nigaur.org>

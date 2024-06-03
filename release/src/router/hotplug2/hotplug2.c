@@ -39,6 +39,10 @@
 #ifdef HND_ROUTER
 #define inline	
 #endif
+
+#if defined(MUSL_LIBC)
+#define WAIT_ANY	-1
+#endif	// MUSL_LIBC
 /*
  * These variables are accessed from throughout the code.
  *

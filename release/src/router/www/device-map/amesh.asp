@@ -12,11 +12,11 @@
 <link rel="stylesheet" type="text/css" href="/device-map/amesh.css" />
 <link rel="stylesheet" type="text/css" href="/device-map/device-map.css" />
 <title>device-map/amesh.asp</title>
+<script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/help.js"></script>
-<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/client_function.js"></script>
-<script type="text/javascript" src="../js/httpApi.js"></script>
 <script type="text/javascript" src="../js/sorterApi.js"></script>
 <script>
 
@@ -1133,6 +1133,10 @@ function show_connect_msg(_reMac, _newReMac, _node_info) {
 
 						if(enable_wps_flag){
 							postData["wps_enable"] = "1";
+						}
+
+						if(isSupport("mlo")){
+							if(httpApi.nvramGet(["mld_enable"]).mld_enable == "1") postData = {};
 						}
 
 						if(Object.keys(postData).length){
@@ -2421,21 +2425,25 @@ function gen_AiMesh_node_client(_nodeClient_array) {
 			}
 			nodeClientHtml += "<td class='IE8HACK' width='" + aimesh_node_client_info_width[0] + "' align='center' title='" + deviceTitle + "'>";
 			if(userIconBase64 != "NoIcon") {
-				nodeClientHtml += "<div class='aimesh_node_client_icon_userIcon' style='background-image:url(" + userIconBase64 + ");'></div>";
+                if(nodeClientObj.isUserUplaodImg){
+				    nodeClientHtml += "<div class='aimesh_node_client_icon_userIcon' style='background-image:url(" + userIconBase64 + ");'></div>";
+                }else{
+                    nodeClientHtml += "<div class='aimesh_node_client_icon_userIcon'><i class='type' style='--svg:url(" + userIconBase64 + ")'></i></div>";
+                }
 				nodeClientHtml += "";
 			}
 			else if( nodeClientObj.type != "0" || nodeClientObj.vendor == "") {
 				var icon_type = "type" + nodeClientObj.type;
-				nodeClientHtml += "<div class='clientIcon_no_hover " + icon_type + " aimesh_node_client_icon_default'></div>";
+				nodeClientHtml += "<div class='clientIcon_no_hover aimesh_node_client_icon_default'><i class='" + icon_type + "'></i></div>";
 			}
 			else if(nodeClientObj.vendor != "" ) {
-				var venderIconClassName = getVenderIconClassName(nodeClientObj.vendor.toLowerCase());
-				if(venderIconClassName != "" && !downsize_4m_support) {
-					nodeClientHtml += "<div class='venderIcon_no_hover " + venderIconClassName + " aimesh_node_client_icon_vendor'></div>";
+				var vendorIconClassName = getVendorIconClassName(nodeClientObj.vendor.toLowerCase());
+				if(vendorIconClassName != "" && !downsize_4m_support) {
+					nodeClientHtml += "<div class='vendorIcon_no_hover aimesh_node_client_icon_vendor'><i class='vendor-icon " + vendorIconClassName + "'></i></div>";
 				}
 				else {
 					var icon_type = "type" + nodeClientObj.type;
-					nodeClientHtml += "<div class='clientIcon_no_hover " + icon_type + " aimesh_node_client_icon_default'></div>";
+					nodeClientHtml += "<div class='clientIcon_no_hover aimesh_node_client_icon_default'><i class='" + icon_type + "'></i></div>";
 				}
 			}
 			nodeClientHtml += "</td>";
@@ -2453,7 +2461,9 @@ function gen_AiMesh_node_client(_nodeClient_array) {
 			nodeClientHtml += "<div style='margin: auto;' class='radioIcon radio_" + rssi + "'></div>";
 			if(nodeClientObj.isWL != "0") {
 				var bandClass = (navigator.userAgent.toUpperCase().match(/CHROME\/([\d.]+)/)) ? "band_txt_chrome" : "band_txt";
-				nodeClientHtml += "<div class='band_block' style='margin: auto;'><span class=" + bandClass + " style='color: #000000;'>" + isWL_map[nodeClientObj.isWL]["text"] + "</span></div>";
+				let band_text = isWL_map[nodeClientObj.isWL]["text"];
+				if(isSupport("mlo") && nodeClientObj.mlo == "1") band_text = `MLO`;
+				nodeClientHtml += `<div class='band_block' style='margin: auto;'><span class="${bandClass}" style='color: #000000;'>${band_text}</span></div>`;
 			}
 			nodeClientHtml += "</td>";
 			nodeClientHtml += "</tr>";

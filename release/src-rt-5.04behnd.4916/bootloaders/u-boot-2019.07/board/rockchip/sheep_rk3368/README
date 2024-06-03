@@ -1,0 +1,44 @@
+Here is the step-by-step to boot to U-Boot on rk3368.
+
+Get miniloader and trust.img form rockchip vendor u-boot source code
+==============================================================================
+  > git clone  https://github.com/rockchip-linux/u-boot.git rockchip-uboot
+  > cd rockchip-uboot
+  > make rk3368_defconfig /*chose px5_defconfig if you run a px5 platform here*/
+  > ./mkv8.sh
+
+Compile the upstream U-Boot
+===========================
+  > cd u-boot
+  > make CROSS_COMPILE=aarch64-linux-gnu- sheep-rk3368_defconfig  all
+
+Package u-boot for miniloader
+================================
+  > ../rockchip-uboot/tools/loaderimage --pack --uboot u-boot.bin u-boot.img
+
+Flash the image by rkdeveloptool
+================================
+rkdeveloptool can get from https://github.com/rockchip-linux/rkdeveloptool.git
+
+Power on(or reset with RESET KEY) with MASKROM KEY preesed, and then:
+  > rkdeveloptool db ./rockchip-uboot/rk3368_loader_v2.00.256.bin
+  > rkdeveloptool wl 0x6000 ./rockchip-uboot/trust.img
+  > rkdeveloptool wl 0x4000 ./u-boot/u-boot.img
+  > rkdeveloptool RD
+
+You should be able to get U-Boot log message from boot console:
+
+U-Boot 2017.05-rc3-01094-g9ddd1e8-dirty (May 15 2017 - 15:57:23 +0800)
+
+Model: Rockchip sheep board
+DRAM:  2 GiB
+MMC:   dwmmc@ff0f0000: 0
+Using default environment
+
+In:    serial@ff690000
+Out:   serial@ff690000
+Err:   serial@ff690000
+Net:   Net Initialization Skipped
+No ethernet found.
+Hit any key to stop autoboot:  0
+=>

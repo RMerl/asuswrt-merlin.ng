@@ -10,6 +10,7 @@ else
 	prefix="usb_modem${unit}_"
 fi
 
+modem_model=`nvram get modem_model`
 modem_type=`nvram get ${prefix}act_type`
 modem_vid=`nvram get ${prefix}act_vid`
 modem_autoapn=`nvram get modem_autoapn`
@@ -18,7 +19,7 @@ apps_local_space=`nvram get apps_local_space`
 dataf="$apps_local_space/spn_asus.dat"
 
 
-if [ "$modem_type" == "" -o  "$modem_type" == "ecm" -o "$modem_type" == "rndis" -o "$modem_type" == "asix" -o "$modem_type" == "ncm" ]; then
+if [ "$modem_type" == "" -o  "$modem_type" == "ecm" -o "$modem_type" == "rndis" -o "$modem_type" == "asix" -o "$modem_type" == "ncm" ] && [ "$modem_model" == "2" -a "$modem_type" != "ncm" ]; then
 	exit 0
 fi
 

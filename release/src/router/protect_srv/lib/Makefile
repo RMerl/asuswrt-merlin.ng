@@ -21,6 +21,10 @@ ifneq ($(RTCONFIG_NOTIFICATION_CENTER),y)
 OBJS += linklist.o
 endif
 
+ifeq ($(RT4GAC86U),y)
+OBJS += $(LIBDIR)/libc_nonshared.a
+endif
+
 vpath %.c $(SRCBASE)/protect_srv/
 
 ifeq ($(wildcard $(SRCBASE)/router/protect_srv/lib/*.c),)

@@ -1,0 +1,12 @@
+if TARGET_SAMA5D4EK
+
+config SYS_BOARD
+	default "sama5d4ek"
+
+config SYS_VENDOR
+	default "atmel"
+
+config SYS_CONFIG_NAME
+	default "sama5d4ek"
+
+endif

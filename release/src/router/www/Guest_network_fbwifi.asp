@@ -90,6 +90,7 @@ var fbwifi_5g_2_index = '<% nvram_get("fbwifi_5g_2"); %>';
 if(fbwifi_5g_2_index == "")
 	fbwifi_5g_2_index = "off";
 var fbwifi_id = '<% nvram_get("fbwifi_id"); %>';
+var fbwifi_config_url = '<% nvram_get("fbwifi_cp_config_url"); %>';
 var fbwifi_wl_idx = "";
 window.onresize = function() {
 	if(document.getElementById("fbwifi_page_setting") != null){
@@ -349,8 +350,7 @@ function fbwifiShowAndHide(flag) {
 }
 
 function configure_fbwifi() {
-	var url = "https://www.facebook.com/wifiauth/config?gw_id=" + fbwifi_id;
-	window.open(url, '_blank', 'toolbar=no, location=no, menubar=no, top=0, left=0, width=700, height=600, scrollbars=1');
+	window.open(fbwifi_config_url, '_blank', 'toolbar=no, location=no, menubar=no, top=0, left=0, width=700, height=600, scrollbars=1');
 }
 
 function checkFBWiFiID() {

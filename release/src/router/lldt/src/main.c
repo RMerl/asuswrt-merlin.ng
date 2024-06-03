@@ -75,7 +75,10 @@ init_from_conf_file()
     strcpy(g_icon_path,default_icon_path);
 
     /* Examine configuration file, if it exists */
-    conf_file = fopen("/rom/etc/lld2d.conf", "r");
+#if defined(RTCONFIG_MT798X)
+    if (!(conf_file = fopen("/etc/lld2d.conf", "r")))
+#endif
+	    conf_file = fopen("/rom/etc/lld2d.conf", "r");
     if (conf_file == NULL)  return;
     while ((numread = getline(&line, &len, conf_file)) != -1)
     {

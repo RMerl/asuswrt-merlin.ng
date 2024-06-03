@@ -24,6 +24,7 @@
 
 #include "cache.h"
 
+#define __P(x)	x
 
 const extern char	*cdevname;		/* name of device being checked */
 extern char	*progname;

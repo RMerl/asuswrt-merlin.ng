@@ -1,0 +1,15 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * Device Tree file for Freescale Layerscape-1043A family SoC.
+ *
+ * Copyright (C) 2015, Freescale Semiconductor
+ */
+
+/dts-v1/;
+#include "fsl-ls1043a-qds.dtsi"
+
+/ {
+       chosen {
+               stdout-path = &duart0;
+       };
+};

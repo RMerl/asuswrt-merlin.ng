@@ -1,0 +1,31 @@
+---------------------------------------------------------------------
+Cleanup of AMCC eval boards (Walnut/Sycamore, Bubinga, Ebony, Ocotea)
+---------------------------------------------------------------------
+
+Changes to all AMCC eval boards:
+--------------------------------
+
+o Changed u-boot image size to 256 kBytes instead of 512 kBytes on most
+  boards.
+
+o Use 115200 baud as default console baudrate.
+
+o Added config option to use redundant environment in flash. This is also
+  the default setting. Option for environment in nvram is still available
+  for backward compatibility.
+
+o Merged board specific flash drivers to common flash driver:
+  board/amcc/common/flash.c
+
+
+Sycamore/Walnut (one port supporting both eval boards):
+-------------------------------------------------------
+
+o Cleanup to allow easier "cloning" for different (custom) boards:
+
+  o Moved EBC configuration from board specific asm-file "init.S"
+    using defines in board configuration file. No board specific
+    asm file needed anymore.
+
+
+August 01 2005, Stefan Roese <sr@denx.de>

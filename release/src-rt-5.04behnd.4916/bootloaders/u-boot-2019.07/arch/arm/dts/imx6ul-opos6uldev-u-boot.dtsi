@@ -1,0 +1,24 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Device Tree Source extras for U-Boot for the OPOS6ULDev board
+ *
+ * Copyright (C) 2018 Armadeus Systems <support@armadeus.com>
+ */
+
+#include "imx6ul-opos6ul-u-boot.dtsi"
+
+&aips1 {
+	u-boot,dm-spl;
+
+	spba-bus@02000000 {
+		u-boot,dm-spl;
+	};
+};
+
+&pinctrl_uart1 {
+	u-boot,dm-spl;
+};
+
+&uart1 {
+	u-boot,dm-spl;
+};

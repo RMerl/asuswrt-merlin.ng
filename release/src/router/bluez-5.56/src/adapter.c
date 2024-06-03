@@ -6908,7 +6908,7 @@ static void adapter_remove_connection(struct btd_adapter *adapter,
 	) {
 #if defined(RTCONFIG_LP5523)
 		lp55xx_leds_proc(LP55XX_BTCOR_LEDS, LP55XX_ACT_NONE);
-#elif defined(RTCONFIG_FIXED_BRIGHTNESS_RGBLED)
+#elif defined(RTCONFIG_ZENWIFI_RGBLED)
 		set_rgbled(RGBLED_DEFAULT_STANDBY);
 #endif
 #if defined(RTCONFIG_PRELINK) 
@@ -6920,7 +6920,7 @@ static void adapter_remove_connection(struct btd_adapter *adapter,
 #ifdef RTCONFIG_LANTIQ
 	notify_rc("restart_bluetooth_service");
 #endif
-#if defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(ET12) || defined(XT12) || defined(BC109) || defined(BC105) || defined(EBG19) || defined(EBG15) || defined(XC5)
+#if defined(RTAX95Q) || defined(XT8PRO) || defined(BT12) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(ET12) || defined(XT12) || defined(BC109) || defined(BC105) || defined(EBG19) || defined(EBG15) || defined(XC5)
 	/// enable advertising
 	if (bdaddr_type != BDADDR_BREDR) {
 		int dd = hci_open_dev(adapter->dev_id);
@@ -8869,7 +8869,7 @@ static void connected_callback(uint16_t index, uint16_t length,
 #endif
 #if defined(RTCONFIG_LP5523)
 	lp55xx_leds_proc(LP55XX_BTCOR_LEDS, LP55XX_ACT_SBLINK);
-#elif defined(RTCONFIG_FIXED_BRIGHTNESS_RGBLED)
+#elif defined(RTCONFIG_ZENWIFI_RGBLED)
 	set_rgbled(RGBLED_BT_CONNECT);
 #endif
 

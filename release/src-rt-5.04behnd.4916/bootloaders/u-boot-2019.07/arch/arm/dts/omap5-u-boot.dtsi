@@ -1,0 +1,106 @@
+/*
+ * Copyright (C) 2017 Texas Instruments Incorporated - http://www.ti.com/
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ * Based on "dra7.dtsi"
+ */
+
+/{
+	chosen {
+		tick-timer = &timer2;
+	};
+
+	aliases {
+		usb0 = &usb1;
+		usb1 = &usb2;
+	};
+
+	ocp {
+		u-boot,dm-spl;
+
+		ocp2scp@4a080000 {
+			compatible = "ti,omap-ocp2scp", "simple-bus";
+		};
+
+		ocp2scp@4a090000 {
+			compatible = "ti,omap-ocp2scp", "simple-bus";
+		};
+
+		bandgap@4a0021e0 {
+			u-boot,dm-spl;
+		};
+	};
+};
+
+&uart1 {
+	u-boot,dm-spl;
+	reg-shift = <2>;
+};
+
+&uart3 {
+	u-boot,dm-spl;
+	reg-shift = <2>;
+};
+
+&mmc1 {
+	u-boot,dm-spl;
+};
+
+&mmc2 {
+	u-boot,dm-spl;
+};
+
+&l4_cfg {
+	u-boot,dm-spl;
+};
+
+&scm {
+	u-boot,dm-spl;
+};
+
+&scm_conf {
+	u-boot,dm-spl;
+};
+
+&qspi {
+	u-boot,dm-spl;
+
+	m25p80@0 {
+		compatible = "jedec,spi-nor";
+		u-boot,dm-spl;
+	};
+};
+
+&gpio1 {
+	u-boot,dm-spl;
+};
+
+&gpio2 {
+	u-boot,dm-spl;
+};
+
+&gpio3 {
+	u-boot,dm-spl;
+};
+
+&gpio4 {
+	u-boot,dm-spl;
+};
+
+&gpio5 {
+	u-boot,dm-spl;
+};
+
+&gpio6 {
+	u-boot,dm-spl;
+};
+
+&gpio7 {
+	u-boot,dm-spl;
+};
+
+&i2c1 {
+	u-boot,dm-spl;
+};

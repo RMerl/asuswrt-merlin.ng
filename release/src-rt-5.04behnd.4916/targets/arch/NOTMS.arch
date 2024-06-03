@@ -1,0 +1,6 @@
+<PUBLISH>
+--- targets/96750GW/96750GW.old
++++ targets/96750GW/96750GW
+@@ -485,7 +485,7 @@
+-BUILD_TMS=y
++# BUILD_TMS is not set

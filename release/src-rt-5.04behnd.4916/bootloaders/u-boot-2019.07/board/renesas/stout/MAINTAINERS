@@ -1,0 +1,6 @@
+STOUT BOARD
+M:	Cogent Embedded, Inc. <source@cogentembedded.com>
+S:	Maintained
+F:	board/renesas/stout/
+F:	include/configs/stout.h
+F:	configs/stout_defconfig

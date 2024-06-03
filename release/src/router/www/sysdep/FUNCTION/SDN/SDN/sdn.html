@@ -1,0 +1,336 @@
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<link rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component.css">
+<link rel="stylesheet" type="text/css" href="/SDN/sdn.css">
+<script type="text/javaScript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/calendar/jquery-ui.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
+<script type="text/javascript" src="/state.js"></script>
+<script type="text/javascript" src="/help.js"></script>
+<script type="text/javascript" src="/general.js"></script>
+<script type="text/javascript" src="/RWD_UI/rwd_component.js"></script>
+<script type="text/javascript" src="/SDN/sdn.js"></script>
+</head>
+<script>
+const PAGE_CONTAINER = "sdn";
+var getUrlParameter = function getUrlParameter(param){
+	var url_parm = window.location.search.substring(1);
+	var parm_array = url_parm.split("&");
+	var key_value;
+
+	for(var i = 0; i < parm_array.length; i += 1){
+		key_value = parm_array[i].split("=");
+		if (key_value[0] == param) {
+			return typeof key_value[1] == "undefined" ? "" : decodeURIComponent(key_value[1]);
+		}
+	}
+	return "";
+};
+var theme = getUrlParameter("current_theme").toUpperCase();
+if(theme == "GT") theme = "ROG";
+var app_control = {
+	"type": (function(){
+		var sdn_type = getUrlParameter("wizard").toUpperCase();
+		var specific_type = wizard_type_text.filter(function(item, index, array){
+			return (item.type.toUpperCase() == sdn_type);
+		})[0];
+		if(specific_type != undefined)
+			return specific_type.type;
+		else
+			return "";
+	})(),
+	"sdn_idx": (function(){
+		var sdn_idx = parseInt(getUrlParameter("profile"));
+		if(isNaN(sdn_idx))
+			return "";
+		else
+			return sdn_idx;
+	})()
+}
+$('link[group="extend_css"]').remove();
+if(theme == "WHITE" || theme == "ROG"){
+	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component_' + theme + '.css">');
+	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/SDN/sdn_' + theme + '.css">');
+}
+
+function check_fbwifi2_id_secret(){
+	var nvram_values = httpApi.nvramGet(["fbwifi_id", "fbwifi_secret", "link_internet"], true);
+	var fbwifi_id = nvram_values.fbwifi_id;
+	var fbwifi_secret = nvram_values.fbwifi_secret;
+	var link_internet = nvram_values.link_internet;
+
+	if(fbwifi_id == "off" || fbwifi_id.length == 0 || fbwifi_secret.length == 0){
+		if(link_internet == "2")
+			httpApi.fbwifi.register();
+		else
+			setTimeout(check_fbwifi2_id_secret, 3000);
+	}
+}
+
+function initial(){
+	postMessageToApp({"web_ready": "1", "web_init": "0"});
+
+	init_sdn_all_list();
+	show_loading_obj();
+	if(app_control.sdn_idx != ""){
+		var specific_sdn = sdn_all_rl_json.filter(function(item, index, array){
+			return (item.sdn_rl.idx == app_control.sdn_idx);
+		})[0];
+		if(specific_sdn != undefined){
+			app_control.type = specific_sdn.sdn_rl.sdn_name;
+		}
+		else{
+			app_control.sdn_idx = "";
+		}
+	}
+	if(app_control.type == "")
+		show_sdn_profilelist();
+	else
+		$(".container").hide();
+
+	$(".function_desc_container .title").html(Guest_Network_naming);
+	$(".function_desc_container .help_icon, .profile_list_container .help_icon").unbind("click").click(function(e){
+		e = e || event;
+		e.stopPropagation();
+		show_feature_desc();
+	});
+
+	var delay_load = (app_control.type == "") ? 100 : 0;
+	setTimeout(function(){
+		if(theme == "WHITE" || theme == "ROG"){
+			$('link').first().before('<link rel="stylesheet" type="text/css" href="/js/weekSchedule/schedule_ui_' + theme + '.css">');
+		}
+		$('link').first().before('<link rel="stylesheet" type="text/css" href="/js/weekSchedule/schedule_ui.css">');
+		$('link').first().before('<link rel="stylesheet" type="text/css" href="/pwdmeter.css">');
+		$('link').first().before('<link rel="stylesheet" type="text/css" href="/other.css">');
+		$('link').first().before('<link rel="stylesheet" type="text/css" href="/form_style.css">');
+		$('link').first().before('<link rel="stylesheet" type="text/css" href="/index_style.css">');
+		$('link').first().before('<link rel="stylesheet" type="text/css" href="/device-map/device-map.css">');
+
+		$('<script />', { type : 'text/javascript', src : "/validator.js"}).appendTo('head');
+		$('<script />', { type : 'text/javascript', src : "/popup.js"}).appendTo('head');
+		$('<script />', { type : 'text/javascript', src : "/js/weekSchedule/schedule_ui.js"}).appendTo('head');
+		$('<script />', { type : 'text/javascript', src : "/form.js"}).appendTo('head');
+		$('<script />', { type : 'text/javascript', src : "/client_function.js"}).appendTo('head');
+		$('<script />', { type : 'text/javascript', src : "/js/qrcode/jquery.qrcode.min.js"}).appendTo('head');
+		if(!is_Web_iframe)
+			showLoading = showLoading_RWD;//overwrite function
+
+		if(isSwMode("rt")){
+			Get_VPNC_Profile();
+		}
+
+		if(app_control.type != ""){
+			if(app_control.sdn_idx != ""){
+				$(".popup_element").css("display", "flex");
+				$(".popup_container.popup_element").empty().append(Get_Component_Full_Setting("popup"));
+				var specific_sdn = sdn_all_rl_json.filter(function(item, index, array){
+					return (item.sdn_rl.idx == app_control.sdn_idx);
+				})[0];
+				Update_Setting_Profile($(".popup_container.popup_element"), specific_sdn);
+				$(".popup_container.popup_element").addClass("hide_title_cntr full_width mobile_view").find(".popup_title_container").hide();
+			}
+			else{
+				show_popup_Wizard_Setting(app_control.type);
+				$(".popup_container.popup_element_second").addClass("hide_title_cntr full_width mobile_view").find(".popup_title_container").hide();
+			}
+			$(".container, .hidden_mask").hide();
+		}
+
+		postMessageToApp({"web_init": "1"});
+
+		if(isSwMode("rt")){
+			Get_DNS_List_DB();
+			if(app_control.type == ""){
+				if(isSupport("BUSINESS")){
+					Get_Scenarios_List();
+				}
+			}
+
+			if(isSupport("captivePortal") && isSupport("cp_freewifi")){
+				Get_FreeWiFi_template();
+				if(!isSupport("BUSINESS"))
+					Get_MessageBoard_template();
+			}
+		}
+
+		if(isSupport("fbwifi_sdn"))
+			setTimeout(check_fbwifi2_id_secret, 100);
+	}, delay_load);
+}
+</script>
+<body class="body_rwd">
+<div id="Loading" class="popup_bg" style="visibility: hidden;"></div>
+<div class="hidden_mask popup_element"></div>
+<div class="popup_container popup_element"></div>
+<div class="hidden_mask popup_element_second"></div>
+<div class="popup_container popup_element_second"></div>
+<div class="hidden_mask popup_customize_alert"></div>
+<div class="popup_container popup_customize_alert"></div>
+<div class="bg_rwd">
+	<div class="container no_highlights">
+		<div class="function_desc_container">
+			<div class="title"></div>
+			<div class="help_icon"></div>
+		</div>
+		<div class="content_container">
+			<div class="profile_list_container">
+				<div class="title_container">
+					<div class="title_text"><#GuestNetwork_ProfileList#></div>
+					<div class="help_icon mobile"></div>
+				</div>
+				<div id="profile_list_content"></div>
+			</div>
+			<div id="profile_setting_container" class="profile_setting_container"></div>
+		</div>
+	</div>
+</div>
+<script>
+	$(document).ready(initial);
+</script>
+<div id="print_css" style="display:none;">
+<style>
+	.print_body{
+		-webkit-print-color-adjust: exact;
+		margin: auto;
+		color: #000;
+		min-width: 595px;
+		max-width: 700px;
+	}
+	.print_info_cntr{
+		width: 80%;
+		height: 100%;
+		margin: auto;
+		font-size: 1.25em;
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		font-family: Arial;
+		color: #000;
+	}
+	.print_wifi_info_title{
+		font-size: 1.25em;
+		text-transform: capitalize;
+		text-align: center;
+	}
+	.print_wifi_info_desc{
+		font-size: 2.5em;
+		text-align: center;
+	}
+	.print_qrcode_info_cntr{
+		height: 15em;
+		display: flex;
+		align-items: center;
+		flex-direction: column;
+		justify-content: space-evenly;
+	}
+	.print_qrcode_img_cntr{
+		border: 0.5em solid #000;
+		border-radius: 4px;
+		height: 8em;
+		width: 8em;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+	.print_qrcode_img{
+		height: 90%;
+		width: 90%;
+		background-size: contain;
+	}
+	.print_qrcode_desc{
+		font-size: 1em;
+		text-align: center;
+		width: 60%;
+	}
+	.print_manually_info_cntr{
+		height: auto;
+		display: flex;
+		align-items: center;
+		flex-direction: column;
+	}
+	.print_wifi_info_cntr{
+		width: 80%;
+		padding: 16px;
+		padding-top: 1.5em;
+		font-size: 1em;
+		position: relative;
+	}
+	.print_wifi_info_cntr:before{
+		content: "";
+		position: absolute;
+		width: 80%;
+		border-top: 1px solid rgb(220, 220, 220);
+		top: 0;
+		left: 0;
+		right: 0;
+		margin: auto;
+	}
+	.print_wifi_info_cntr .print_wifi_info{
+		display: flex;
+		align-items: center;
+		flex-direction: column;
+		margin-bottom: 1.5em;
+	}
+	.print_wifi_info_cntr .print_wifi_info:not(:first-child){
+		margin-top: 0.75em
+	}
+	.print_wifi_info > div{
+		flex-basis: 50%;
+		word-break: break-all;
+	}
+	.print_wifi_info .print_wifi_text{
+		font-size: 1.5em;
+		font-weight: 700;
+		margin-top: .5em;
+	}
+	.print_bottom_desc{
+		font-size: 0.75em;
+		text-align: center;
+		margin-bottom: 2vh;
+	}
+</style>
+</div>
+<div id="print_html" style="display:none;">
+	<div class="print_info_cntr">
+		<div>
+			<div style="height: 4.75em;"></div>
+			<div class="print_wifi_info_title"><#FreeWiFi_Welcome#></div>
+			<div style="height: 1.5em;"></div>
+			<div id="print_wifi_info_desc" class="print_wifi_info_desc">ASUS ExpertWiFi</div>
+			<div style="height: 2.5em;"></div>
+			<div class="print_qrcode_info_cntr">
+				<div class="print_qrcode_img_cntr">
+					<div id="print_qrcode_img" class="print_qrcode_img"></div>
+				</div>
+				<div class="print_qrcode_desc"><#Scan_QR_Code_To_Connect_Desc#></div>
+			</div>
+			<div style="height: 2.5em;"></div>
+			<div class="print_manually_info_cntr">
+				<div class="print_wifi_info_cntr">
+					<div id="print_wifi_ssid_cntr" class="print_wifi_info">
+						<div><#QIS_finish_wireless_item1#></div>
+						<div id="print_wifi_ssid" class="print_wifi_text"></div>
+					</div>
+					<div id="print_wifi_pwd_cntr" class="print_wifi_info">
+						<div><#QIS_finish_wireless_item2#></div>
+						<div id="print_wifi_pwd" class="print_wifi_text"></div>
+					</div>
+					<div id="print_wifi_passcode_cntr" class="print_wifi_info">
+						<div><#FreeWiFi_Passcode#></div>
+						<div id="print_wifi_passcode" class="print_wifi_text"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div>
+			<div class="print_bottom_desc">
+				Powered by ASUS ExpertWiFi
+			</div>
+		</div>
+	</div>
+</div>
+</body>

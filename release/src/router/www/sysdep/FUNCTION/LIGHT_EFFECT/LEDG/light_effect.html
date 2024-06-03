@@ -26,7 +26,7 @@ $(function(){
 		return "";
 	};
 
-	var theme = getUrlParameter("current_theme").toLocaleLowerCase();
+	let theme = getUrlParameter("current_theme").toLowerCase();
 	if(theme == "white"){
 		$('link[href*="/light_effect/light_effect_' + theme + '.css"]').remove();
 		$('link').last().after('<link rel="stylesheet" type="text/css" href="/light_effect/light_effect_' + theme + '.css">');
@@ -59,27 +59,51 @@ for(var i = 1; i <= ledg_group; i += 1){
 }
 var gradient_color = retune_gradient_color({"ledg_group":ledg_group, "productid":model_info.productid, "CoBrand":model_info.CoBrand});
 var hue_bar_color = 360;
+const support_night_mode = (()=>{
+	let ledg_night_mode = httpApi.nvramGet(["ledg_night_mode"])["ledg_night_mode"];
+	let nv_support = (ledg_night_mode != "" && ledg_night_mode != undefined) ? true : false;
+	let model_support = (model_info.productid == "GT-BE98" || model_info.productid == "GT-BE98_PRO" || model_info.productid == "GT-BE96" || model_info.productid == "GT-BE19000") ? true : false;
+	return (nv_support && model_support) ? true : false;
+})();
+if(support_night_mode){
+	var gradient_color_night = retune_gradient_color_night({"productid":model_info.productid});
+	scheme_item_post["Night_Mode"] = false;
+	scheme_item_post["LED_Night_Set"] = JSON.parse(JSON.stringify(scheme_item_post.LED_Set));
+}
 function initial_led_control() {
-	var set_scheme_item_post = function(_ledg_rgb) {
-		var ledg_rgb_array = _ledg_rgb.split(",");
-		if(ledg_rgb_array.length == (ledg_group * 3)) {
-			for(var i = 0; i < ledg_rgb_array.length; i += 3) {
-				var group_idx = (Math.floor(i / 3)) + 1;
-				scheme_item_post["LED_Set"][group_idx]["R"] = multiply_rgb(parseInt(ledg_rgb_array[i]));
-				scheme_item_post["LED_Set"][group_idx]["G"] = multiply_rgb(parseInt(ledg_rgb_array[i+1]));
-				scheme_item_post["LED_Set"][group_idx]["B"] = multiply_rgb(parseInt(ledg_rgb_array[i+2]));
+	if(!support_night_mode){
+		$("#ledg_night_mode_switch").remove();
+	}
+	var set_scheme_item_post = function(parm){
+		let scheme_item_key = "LED_Set";
+		if(parm.ledg_rgb != undefined)
+			set_led_rgb("LED_Set", parm.ledg_rgb);
+		if(parm.ledg_night_rgb != undefined)
+			set_led_rgb("LED_Night_Set", parm.ledg_night_rgb);
+
+		function set_led_rgb(key, rgb_list){
+			let rgb_arr = rgb_list.split(",");
+			if(rgb_arr.length == (ledg_group * 3)){
+				let i;
+				let len = rgb_arr.length;
+				for(i = 0; i < len; i += 3){
+					let group_idx = (Math.floor(i / 3)) + 1;
+					scheme_item_post[key][group_idx]["R"] = (key == "LED_Set") ? multiply_rgb(parseInt(rgb_arr[i])) : parseInt(rgb_arr[i]);
+					scheme_item_post[key][group_idx]["G"] = (key == "LED_Set") ? multiply_rgb(parseInt(rgb_arr[i+1])) : parseInt(rgb_arr[i+1]);
+					scheme_item_post[key][group_idx]["B"] = (key == "LED_Set") ? multiply_rgb(parseInt(rgb_arr[i+2])) : parseInt(rgb_arr[i+2]);
+				}
 			}
 		}
 	};
 
-	if(model_info.productid == "TUF-AX5400")
+	if(model_info.productid == "TUF-AX5400" || model_info.productid == "TUF-AX6000")
 		$("#light_effect_setting .scheme_bg:not(#static, #breathing, #wave, #rainbow)").remove();
 
 	$light_effect_bg = $("#light_effect_bg");
 	$hue_bar = $("#hue_bar");
 	$hue_slider = $("#hue_slider");
-	if($("#light_effect_setting .setting_enable_bg .schedule").css("display") != "none"){
-		$("#light_effect_setting .setting_enable_bg .switch").css("right", "20%");
+	if($("#light_effect_setting #ledg_scheme_switch .schedule").css("display") != "none"){
+		$("#light_effect_setting #ledg_scheme_switch .switch").css("right", "20%");
 	}
 
 	if(!isMobile()) {
@@ -135,18 +159,18 @@ function initial_led_control() {
 		});
 	}
 
-	$("#light_effect_setting .setting_enable_bg .switch").unbind("click").click(function(e){
+	$("#ledg_scheme_switch .switch").unbind("click").click(function(e){
 		e = e || event;
 		e.stopPropagation();
 		var AllLED = httpApi.nvramGet(["AllLED"]).AllLED;
 		if(AllLED == "1"){
-			$("#light_effect_setting .setting_enable_bg .switch").toggleClass("off on").promise().done(function(){
-				var switch_status = $("#light_effect_setting .setting_enable_bg .switch").hasClass("on");
+			$("#ledg_scheme_switch .switch").toggleClass("off on").promise().done(function(){
+				var switch_status = $("#ledg_scheme_switch .switch").hasClass("on");
 				lightl_effect_animate.clear($light_effect_bg);
 				if(switch_status){
 					$(".light_effect_setting_bg .switch_off").show();
 					scheme_item_post.Mode = $("#light_effect_setting .scheme_bg.active").attr("Mode");
-					set_scheme_mode(scheme_item_post.Mode, scheme_item_post["LED_Set"]);
+					set_scheme_mode();
 				}
 				else{
 					$(".light_effect_setting_bg .switch_off").hide();
@@ -163,22 +187,49 @@ function initial_led_control() {
 			});
 		}
 	});
+	if(support_night_mode){
+		let ledg_night_mode = httpApi.nvramGet(["ledg_night_mode"], true)["ledg_night_mode"];
+		scheme_item_post.Night_Mode = ((ledg_night_mode == "1") ? true : false);
+		$("#ledg_night_mode_switch .switch").unbind("click").click(function(e){
+			e = e || event;
+			e.stopPropagation();
+			$(this).toggleClass("off on").promise().done(function(){
+				let switch_status = $(this).hasClass("on");
+				lightl_effect_animate.clear($light_effect_bg);
+				scheme_item_post.Night_Mode = switch_status;
+				set_scheme_mode();
+				let postData = {"ledg_scheme": scheme_item_post.Mode};
+				postData["ledg_night_mode"] = (switch_status) ? "1" : "0";
+				httpApi.set_ledg(postData);
+			});
+		}).addClass(()=>{return ((ledg_night_mode == "1") ? "on" : "off");});
+	}
 	$("#light_effect_setting .setting_scheme .scheme_bg").unbind("click").click(function(e){
 		e = e || event;
 		e.stopPropagation();
 		var id = e.currentTarget.id;
-		if(id == "")
-			return;
+		if(id == "") return;
 		lightl_effect_animate.clear($light_effect_bg);
 		$light_effect_bg.removeClass().addClass("light_effect_bg");
 		var mode = e.currentTarget.getAttribute("mode");
+		scheme_item_post.Mode = mode;
 		$("#light_effect_setting .setting_scheme .scheme_bg").removeClass("active");
 		$("#light_effect_setting .setting_scheme #" + id + "").addClass("active");
-		var ledg_rgb = httpApi.nvramGet(["ledg_rgb" + mode + ""], true)["ledg_rgb" + mode + ""];
-		if(mode == "6")
-			ledg_rgb = retune_wave_color({"ledg_group":ledg_group, "productid":model_info.productid, "CoBrand":model_info.CoBrand});
-		set_scheme_item_post(ledg_rgb);
-		set_scheme_mode(mode, scheme_item_post["LED_Set"]);
+		let rgb_parm = {};
+		let ledg_rgb = httpApi.nvramGet(["ledg_rgb" + mode + ""], true)["ledg_rgb" + mode + ""];
+		if(mode == "6"){
+			ledg_rgb = retune_wave_color({"ledg_group":ledg_group, "productid":model_info.productid, "CoBrand":model_info.CoBrands});
+		}
+		rgb_parm["ledg_rgb"] = ledg_rgb;
+		if(support_night_mode){
+			let ledg_night_rgb = httpApi.nvramGet(["ledg_night_rgb" + mode + ""], true)["ledg_night_rgb" + mode + ""];
+			if(mode == "6"){
+				ledg_night_rgb = retune_wave_color({"ledg_group":ledg_group, "productid":model_info.productid, "CoBrand":model_info.CoBrand, "night":scheme_item_post.Night_Mode})
+			}
+			rgb_parm["ledg_night_rgb"] = ledg_night_rgb;
+		}
+		set_scheme_item_post(rgb_parm);
+		set_scheme_mode();
 		var postData = {"ledg_scheme": scheme_item_post.Mode};
 		if(scheme_item_post.Mode == "1" || scheme_item_post.Mode == "2" || scheme_item_post.Mode == "3" || scheme_item_post.Mode == "7") {
 			var ledg_rgb_post = [];
@@ -188,6 +239,15 @@ function initial_led_control() {
 				ledg_rgb_post.push(Math.ceil(scheme_item_post["LED_Set"][group_idx]["B"] / 2));
 			});
 			postData["ledg_rgb"] = ledg_rgb_post.join(',');
+			if(support_night_mode){
+				let ledg_night_rgb_post = [];
+				Object.keys(scheme_item_post["LED_Night_Set"]).forEach(function(group_idx) {
+					ledg_night_rgb_post.push(scheme_item_post["LED_Night_Set"][group_idx]["R"]);
+					ledg_night_rgb_post.push(scheme_item_post["LED_Night_Set"][group_idx]["G"]);
+					ledg_night_rgb_post.push(scheme_item_post["LED_Night_Set"][group_idx]["B"]);
+				});
+				postData["ledg_night_rgb"] = ledg_night_rgb_post.join(',');
+			}
 		}
 		httpApi.set_ledg(postData);
 	});
@@ -208,11 +268,22 @@ function initial_led_control() {
 			lightl_effect_animate.clear($light_effect_bg);
 			$light_effect_bg.removeClass().addClass("light_effect_bg");
 			var mode = $("#light_effect_setting .scheme_list_bg .scheme_bg.active").attr("mode");
-			var ledg_rgb = httpApi.nvramDefaultGet(["ledg_rgb" + mode + ""])["ledg_rgb" + mode + ""];
-			if(mode == "6")
+			scheme_item_post.Mode = mode;
+			let rgb_parm = {};
+			let ledg_rgb = httpApi.nvramDefaultGet(["ledg_rgb" + mode + ""])["ledg_rgb" + mode + ""];
+			if(mode == "6"){
 				ledg_rgb = retune_wave_color({"ledg_group":ledg_group, "productid":model_info.productid, "CoBrand":model_info.CoBrand});
-			set_scheme_item_post(ledg_rgb);
-			set_scheme_mode(mode, scheme_item_post["LED_Set"]);
+			}
+			rgb_parm["ledg_rgb"] = ledg_rgb;
+			if(support_night_mode){
+				let ledg_night_rgb = httpApi.nvramDefaultGet(["ledg_night_rgb" + mode + ""])["ledg_night_rgb" + mode + ""];
+				if(mode == "6"){
+					ledg_night_rgb = retune_wave_color({"ledg_group":ledg_group, "productid":model_info.productid, "CoBrand":model_info.CoBrand, "night":scheme_item_post.Night_Mode})
+				}
+				rgb_parm["ledg_night_rgb"] = ledg_night_rgb;
+			}
+			set_scheme_item_post(rgb_parm);
+			set_scheme_mode();
 			var postData = {"ledg_scheme": scheme_item_post.Mode};
 			if(scheme_item_post.Mode == "1" || scheme_item_post.Mode == "2" || scheme_item_post.Mode == "3" || scheme_item_post.Mode == "7") {
 				var ledg_rgb_post = [];
@@ -222,6 +293,15 @@ function initial_led_control() {
 					ledg_rgb_post.push(Math.ceil(scheme_item_post["LED_Set"][group_idx]["B"] / 2));
 				});
 				postData["ledg_rgb"] = ledg_rgb_post.join(',');
+				if(support_night_mode){
+					let ledg_night_rgb_post = [];
+					Object.keys(scheme_item_post["LED_Night_Set"]).forEach(function(group_idx) {
+						ledg_night_rgb_post.push(scheme_item_post["LED_Night_Set"][group_idx]["R"]);
+						ledg_night_rgb_post.push(scheme_item_post["LED_Night_Set"][group_idx]["G"]);
+						ledg_night_rgb_post.push(scheme_item_post["LED_Night_Set"][group_idx]["B"]);
+					});
+					postData["ledg_night_rgb"] = ledg_night_rgb_post.join(',');
+				}
 			}
 			httpApi.set_ledg(postData);
 		}
@@ -243,19 +323,30 @@ function initial_led_control() {
 	}
 
 	var ledg_scheme_old = ledg_info.ledg_scheme_old;
-	var ledg_rgb = httpApi.nvramGet(["ledg_rgb" + ledg_scheme + ""], true)["ledg_rgb" + ledg_scheme + ""];
 	if(ledg_scheme == "1" ||ledg_scheme == "2" || ledg_scheme == "3" || ledg_scheme == "7" || ledg_scheme == "6" || (ledg_scheme == "0" && ledg_scheme_old != "")) {
 		var ledg_rgb_idx = ledg_scheme;
 		if(ledg_rgb_idx == "0")
 			ledg_rgb_idx = ledg_scheme_old;
 		var ledg_rgb = "";
 		if(ledg_rgb_idx == "6")//wave
-			ledg_rgb = ledg_rgb = retune_wave_color({"ledg_group":ledg_group, "productid":model_info.productid, "CoBrand":model_info.CoBrand});
+			ledg_rgb = retune_wave_color({"ledg_group":ledg_group, "productid":model_info.productid, "CoBrand":model_info.CoBrand});
 		else
 			ledg_rgb = httpApi.nvramGet(["ledg_rgb" + ledg_rgb_idx + ""], true)["ledg_rgb" + ledg_rgb_idx + ""];
 
-		set_scheme_item_post(ledg_rgb);
 		scheme_item_post.Mode = ledg_rgb_idx;
+		let rgb_parm = {};
+		rgb_parm["ledg_rgb"] = ledg_rgb;
+		if(support_night_mode){
+			let ledg_night_rgb = "";
+			if(ledg_rgb_idx == "6")
+				ledg_night_rgb = retune_wave_color({"ledg_group":ledg_group, "productid":model_info.productid, "CoBrand":model_info.CoBrand, "night":scheme_item_post.Night_Mode})
+			else
+				ledg_night_rgb = httpApi.nvramGet(["ledg_night_rgb" + ledg_rgb_idx + ""], true)["ledg_night_rgb" + ledg_rgb_idx + ""];
+
+			rgb_parm["ledg_night_rgb"] = ledg_night_rgb;
+		}
+
+		set_scheme_item_post(rgb_parm);
 	}
 	else {
 		scheme_item_post.Mode = ledg_scheme;
@@ -263,18 +354,18 @@ function initial_led_control() {
 
 	$("#light_effect_setting .scheme_list_bg .setting_scheme .scheme_bg[mode=" + scheme_item_post.Mode + "]").addClass("active");
 	if(ledg_scheme == "0") {
-		$("#light_effect_setting .setting_enable_bg .switch").addClass("off");
+		$("#ledg_scheme_switch .switch").addClass("off");
 		lightl_effect_animate.clear($light_effect_bg);
 		$(".light_effect_setting_bg .switch_off").hide();
 		$light_effect_bg.removeClass().addClass("light_effect_bg");
 		$light_effect_bg.css("background", "initial");
 	}
 	else {
-		$("#light_effect_setting .setting_enable_bg .switch").addClass("on");
+		$("#ledg_scheme_switch .switch").addClass("on");
 		var count = 0;
 		var interval_check = setInterval(function() {
 			if(get_offset($hue_bar).width != 0) {
-				set_scheme_mode(scheme_item_post.Mode, scheme_item_post["LED_Set"]);
+				set_scheme_mode();
 				clearInterval(interval_check);
 			}
 			else {
@@ -311,23 +402,18 @@ function initial_led_control() {
 	if(retune_slider_w > cur_slider_w)
 		$hue_slider.css({"width": retune_slider_w});
 }
-function set_scheme_mode(_type, _LED_Set_Obj){
-	Object.keys(_LED_Set_Obj).forEach(function(group_idx) {
-		scheme_item_post["LED_Set"][group_idx]["R"] = _LED_Set_Obj[group_idx]["R"];
-		scheme_item_post["LED_Set"][group_idx]["G"] = _LED_Set_Obj[group_idx]["G"];
-		scheme_item_post["LED_Set"][group_idx]["B"] = _LED_Set_Obj[group_idx]["B"];
-	});
-
-	var group_rgb = scheme_item_post["LED_Set"];
-	var hue_slider_rgb = [group_rgb[1]["R"],group_rgb[1]["G"],group_rgb[1]["B"]];
-	if(_type == "3" ||_type == "7"){//for Gradient RGB, use idx 2 RGB
+function set_scheme_mode(){
+	const mode = scheme_item_post.Mode;
+	let group_rgb = scheme_item_post["LED_Set"];
+	let hue_slider_rgb = [group_rgb[1]["R"], group_rgb[1]["G"], group_rgb[1]["B"]];
+	if(mode == "3" || mode == "7"){//for Gradient RGB, use idx 2 RGB
 		if(scheme_item_post["LED_Set"][2] != undefined){
 			if(JSON.stringify(scheme_item_post["LED_Set"][1]) != JSON.stringify(scheme_item_post["LED_Set"][2])){
 				hue_slider_rgb = [group_rgb[2]["R"],group_rgb[2]["G"],group_rgb[2]["B"]];
 			}
 		}
 	}
-	switch(_type) {
+	switch(mode){
 		case "2" :
 			rgbToLeft(hue_slider_rgb);
 			$light_effect_bg.css("background", "rgb("+ group_rgb[1]["R"] + ", " + group_rgb[1]["G"] + ", " + group_rgb[1]["B"] + ")");
@@ -336,20 +422,17 @@ function set_scheme_mode(_type, _LED_Set_Obj){
 			break;
 		case "3" :
 			rgbToLeft(hue_slider_rgb);
-			$light_effect_bg.css("background", "rgb("+ group_rgb[1]["R"] + ", " + group_rgb[1]["G"] + ", " + group_rgb[1]["B"] + ")");
 			lightl_effect_animate.breathing($light_effect_bg, hue_slider_rgb);
 			$("#light_effect_setting .setting_hue").fadeTo(0, 1);
 			scheme_item_post.Mode = "3";//breathing
 			break;
 		case "6" :
-			$light_effect_bg.css("background", "rgb("+ group_rgb[1]["R"] + ", " + group_rgb[1]["G"] + ", " + group_rgb[1]["B"] + ")");
 			lightl_effect_animate.wave($light_effect_bg, hue_slider_rgb);
 			$("#light_effect_setting .setting_hue").fadeTo(0, 0);
 			scheme_item_post.Mode = "6";//wave
 			break;
 		case "7" :
 			rgbToLeft(hue_slider_rgb);
-			$light_effect_bg.css("background", "rgb("+ group_rgb[1]["R"] + ", " + group_rgb[1]["G"] + ", " + group_rgb[1]["B"] + ")");
 			lightl_effect_animate.marquee($light_effect_bg, hue_slider_rgb);
 			$("#light_effect_setting .setting_hue").fadeTo(0, 1);
 			scheme_item_post.Mode = "7";//marquee
@@ -524,6 +607,9 @@ function set_hue_value(e) {
 				return false;
 		});
 		var gradient_current_rgb = gradient_color[select_id].color.join().split(",");
+		if(support_night_mode){
+			var gradient_current_rgb_night = gradient_color_night[select_id].color.join().split(",");
+		}
 		var gradient_display_rgb = [];
 		if(gradient_current_rgb.length == (ledg_group * 3)) {
 			for(var i = 0; i < gradient_current_rgb.length; i += 3) {
@@ -532,6 +618,11 @@ function set_hue_value(e) {
 				scheme_item_post["LED_Set"][group_idx]["G"] = multiply_rgb(parseInt(gradient_current_rgb[i+1]));
 				scheme_item_post["LED_Set"][group_idx]["B"] = multiply_rgb(parseInt(gradient_current_rgb[i+2]));
 				gradient_display_rgb.push(scheme_item_post["LED_Set"][group_idx]["R"] + ", " + scheme_item_post["LED_Set"][group_idx]["G"] + ", " + scheme_item_post["LED_Set"][group_idx]["B"]);
+				if(support_night_mode){
+					scheme_item_post["LED_Night_Set"][group_idx]["R"] = parseInt(gradient_current_rgb_night[i]);
+					scheme_item_post["LED_Night_Set"][group_idx]["G"] = parseInt(gradient_current_rgb_night[i+1]);
+					scheme_item_post["LED_Night_Set"][group_idx]["B"] = parseInt(gradient_current_rgb_night[i+2]);
+				}
 			}
 		}
 		var gradient_css = set_gradient_css({"ledg_group":ledg_group, "rgb":gradient_display_rgb});
@@ -544,20 +635,11 @@ function set_light_effect() {
 	var select_rgb = $("#light_effect_setting .hue_slider").css("background-color").replace('rgb(', '').replace(')','' ).split(',').map(Number);
 	$hue_slider.removeClass("active");
 	hue_click = false;
-	if($("#light_effect_setting .scheme_bg.active")[0].id == "breathing") {
+	const scheme_active = $("#light_effect_setting .scheme_bg.active")[0].id;
+	if(scheme_active == "breathing" || scheme_active == "marquee" || scheme_active == "wave"){
 		rgbToLeft(select_rgb);
 		$light_effect_bg.css("background", "rgb("+ select_rgb[0] + ", " + select_rgb[1] + ", " + select_rgb[2] + ")");
-		lightl_effect_animate.breathing($light_effect_bg, select_rgb);
-	}
-	if($("#light_effect_setting .scheme_bg.active")[0].id == "marquee") {
-		rgbToLeft(select_rgb);
-		$light_effect_bg.css("background", "rgb("+ select_rgb[0] + ", " + select_rgb[1] + ", " + select_rgb[2] + ")");
-		lightl_effect_animate.marquee($light_effect_bg, select_rgb);
-	}
-	if($("#light_effect_setting .scheme_bg.active")[0].id == "wave") {
-		rgbToLeft(select_rgb);
-		$light_effect_bg.css("background", "rgb("+ select_rgb[0] + ", " + select_rgb[1] + ", " + select_rgb[2] + ")");
-		lightl_effect_animate.wave($light_effect_bg, select_rgb);
+		lightl_effect_animate[scheme_active]($light_effect_bg, select_rgb);
 	}
 
 	var postData = {"ledg_scheme": scheme_item_post.Mode};
@@ -568,6 +650,14 @@ function set_light_effect() {
 				scheme_item_post["LED_Set"][group_idx]["G"] = select_rgb[1];
 				scheme_item_post["LED_Set"][group_idx]["B"] = select_rgb[2];
 			});
+			if(support_night_mode){
+				const ratio_night = get_color_ratio_night(scheme_item_post.Mode)
+				Object.keys(scheme_item_post["LED_Night_Set"]).forEach(function(group_idx) {
+					scheme_item_post["LED_Night_Set"][group_idx]["R"] = parseInt(Math.ceil(select_rgb[0] / 2) / ratio_night);
+					scheme_item_post["LED_Night_Set"][group_idx]["G"] = parseInt(Math.ceil(select_rgb[1] / 2) / ratio_night);
+					scheme_item_post["LED_Night_Set"][group_idx]["B"] = parseInt(Math.ceil(select_rgb[2] / 2) / ratio_night);
+				});
+			}
 		}
 		var ledg_rgb_post = [];
 		Object.keys(scheme_item_post["LED_Set"]).forEach(function(group_idx) {
@@ -576,8 +666,23 @@ function set_light_effect() {
 			ledg_rgb_post.push(Math.ceil(scheme_item_post["LED_Set"][group_idx]["B"] / 2));
 		});
 		postData["ledg_rgb"] = ledg_rgb_post.join(',');
+		if(support_night_mode){
+			let ledg_night_rgb_post = [];
+			Object.keys(scheme_item_post["LED_Night_Set"]).forEach(function(group_idx) {
+				ledg_night_rgb_post.push(scheme_item_post["LED_Night_Set"][group_idx]["R"]);
+				ledg_night_rgb_post.push(scheme_item_post["LED_Night_Set"][group_idx]["G"]);
+				ledg_night_rgb_post.push(scheme_item_post["LED_Night_Set"][group_idx]["B"]);
+			});
+			postData["ledg_night_rgb"] = ledg_night_rgb_post.join(',');
+		}
 	}
 	httpApi.set_ledg(postData);
+
+	function get_color_ratio_night(mode){
+		const ratio = 2;
+		const ratio_static = 40;
+		return ((mode == "2") ? ratio_static : ratio);
+	}
 }
 function rgbToLeft(_rgb) {
 	var hsl_array = color_converter.RGBtoHSL(_rgb);
@@ -589,10 +694,19 @@ function rgbToLeft(_rgb) {
 	$hue_slider.css("background" , "hsl(" + hsl.h + ", " + hsl.s + "%" + ", " + hsl.l + "%" + ")");
 	$light_effect_bg.css("background" , "hsl(" + hsl.h + ", " + hsl.s + "%" + ", " + hsl.l + "%" + ")");
 }
+const support_gradient_effect = (()=>{
+	if(model_info.productid == "GT-AXE16000" || model_info.productid == "GT-AX11000_PRO" || model_info.productid == "GT10" ||
+		model_info.productid == "GT-BE98" || model_info.productid == "GT-BE98_PRO" || model_info.productid == "GT-BE96" || model_info.productid == "GT-BE19000"){
+		return true;
+	}
+	else{
+		return false;
+	}
+})();
 var lightl_effect_animate = {
 	"interval" : false,
 	"breathing" : function(_obj, _rgbArr) {
-		if((model_info.productid == "GT-AXE16000" || model_info.productid == "GT-AX11000_PRO") || model_info.productid == "GT10"){
+		if(support_gradient_effect){
 			var breathing_color = function(_obj) {
 				var led1 = "rgba(" + scheme_item_post['LED_Set'][1]['R'] + ", " + scheme_item_post['LED_Set'][1]['G'] + ", " + scheme_item_post['LED_Set'][1]['B'] + ", " + alpha + ") 40%";
 				var led2 = "rgba(" + scheme_item_post['LED_Set'][2]['R'] + ", " + scheme_item_post['LED_Set'][2]['G'] + ", " + scheme_item_post['LED_Set'][2]['B'] + ", " + alpha + ") 60%";
@@ -641,7 +755,7 @@ var lightl_effect_animate = {
 			min = Math.max(0, (percent_init - 30));
 			middle = percent_init;
 			max = Math.min(100, (percent_init + 30));
-			if((model_info.productid == "GT-AXE16000" || model_info.productid == "GT-AX11000_PRO") || model_info.productid == "GT10"){
+			if(support_gradient_effect){
 				var led1 = "rgb(" + scheme_item_post['LED_Set'][1]['R'] + ", " + scheme_item_post['LED_Set'][1]['G'] + ", " + scheme_item_post['LED_Set'][1]['B'] + ") " + Math.max(0, (middle - 10)) + "%";
 				var led2 = "rgb(" + scheme_item_post['LED_Set'][2]['R'] + ", " + scheme_item_post['LED_Set'][2]['G'] + ", " + scheme_item_post['LED_Set'][2]['B'] + ") " + middle + "%";
 				var led3 = "rgb(" + scheme_item_post['LED_Set'][3]['R'] + ", " + scheme_item_post['LED_Set'][3]['G'] + ", " + scheme_item_post['LED_Set'][3]['B'] + ") " +  Math.min(100, (middle + 10)) + "%";
@@ -663,7 +777,7 @@ var lightl_effect_animate = {
 		var percent_init = 0;
 		var percent_end = 100;
 		var wave_color = function(_obj, _rgbArr) {
-			if((model_info.productid == "GT-AXE16000" || model_info.productid == "GT-AX11000_PRO") || model_info.productid == "GT10"){
+			if(support_gradient_effect){
 				var led1 = "rgb(" + scheme_item_post['LED_Set'][1]['R'] + ", " + scheme_item_post['LED_Set'][1]['G'] + ", " + scheme_item_post['LED_Set'][1]['B'] + ") " + Math.max(0, (percent_init - 10)) + "%";
 				var led2 = "rgb(" + scheme_item_post['LED_Set'][2]['R'] + ", " + scheme_item_post['LED_Set'][2]['G'] + ", " + scheme_item_post['LED_Set'][2]['B'] + ") " + percent_init + "%";
 				var led3 = "rgb(" + scheme_item_post['LED_Set'][3]['R'] + ", " + scheme_item_post['LED_Set'][3]['G'] + ", " + scheme_item_post['LED_Set'][3]['B'] + ") " +  Math.min(100, (percent_init + 10)) + "%";
@@ -713,6 +827,9 @@ function switch_mode(_type){
 	$("div[mode_group]").hide();
 	$("div[mode_group=" + _type + "]").show();
 }
+function is_night_mode(){
+	return ((support_night_mode && scheme_item_post.Night_Mode) ? true : false);
+}
 $(document).ready(initial_led_control);
 </script>
 <body style="margin:initial;">
@@ -727,10 +844,16 @@ $(document).ready(initial_led_control);
 	<div class="light_effect_mask"></div>
 </div>
 <div class="light_effect_setting_bg" id="light_effect_setting" mode_group="panel">
-	<div class="setting_enable_bg">
-		<div class="text"><span>Aura RGB <#WLANConfig11b_WirelessCtrl_button1name#></span></div>
-		<div class="switch"></div>
-		<div class="schedule"></div>
+	<div class="settings_container">
+		<div id="ledg_scheme_switch" class="setting_enable_bg">
+			<div class="text"><span>Aura RGB <#WLANConfig11b_WirelessCtrl_button1name#></span></div>
+			<div class="switch"></div>
+			<div class="schedule"></div>
+		</div>
+		<div id="ledg_night_mode_switch" class="setting_enable_bg switch_off">
+			<div class="text"><span><#BoostKey_Aura_NightMode#></span></div>
+			<div class="switch"></div>
+		</div>
 	</div>
 	<div class="switch_off">
 		<div class="horizontal_line "></div>
@@ -792,9 +915,11 @@ $(document).ready(initial_led_control);
 	<div class="light_effect_mask"></div>
 </div>
 <div class="light_effect_setting_bg" id="antenna_setting" mode_group="antenna">
-	<div class="setting_enable_bg">
-		<div class="text"><span>Antenna Scheme</span></div>
-		<div class="switch" style="display: none;"></div>
+	<div class="settings_container">
+		<div class="setting_enable_bg">
+			<div class="text"><span>Antenna Scheme</span></div>
+			<div class="switch" style="display: none;"></div>
+		</div>
 	</div>
 	<div class="switch_off">
 		<div class="horizontal_line "></div>

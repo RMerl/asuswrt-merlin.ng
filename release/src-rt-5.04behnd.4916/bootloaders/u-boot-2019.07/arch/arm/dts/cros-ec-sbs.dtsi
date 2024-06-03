@@ -1,0 +1,15 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Smart battery dts fragment for devices that use cros-ec-sbs
+ *
+ * Copyright (c) 2015 Google, Inc
+ */
+
+&i2c_tunnel {
+	battery: sbs-battery@b {
+		compatible = "sbs,sbs-battery";
+		reg = <0xb>;
+		sbs,i2c-retry-count = <2>;
+		sbs,poll-retry-count = <1>;
+	};
+};

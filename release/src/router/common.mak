@@ -96,7 +96,8 @@ export PKG_CONFIG_SYSROOT_DIR := $(STAGEDIR)
 export PKG_CONFIG_PATH := $(STAGEDIR)/usr/lib/pkgconfig:$(STAGEDIR)/etc/lib/pkgconfig
 export PKG_CONFIG_LIBDIR := $(STAGEDIR)/usr/lib/pkgconfig:$(STAGEDIR)/usr/local/lib/pkgconfig:$(STAGEDIR)/etc/lib/pkgconfig
 
-export EXTRACFLAGS += -DLINUX_KERNEL_VERSION=$(LINUX_KERNEL_VERSION) $(if $(STAGING_DIR),--sysroot=$(STAGING_DIR))
+export EXTRACFLAGS += -DLINUX_KERNEL_VERSION=$(LINUX_KERNEL_VERSION) $(if $(STAGING_DIR),--sysroot=$(STAGING_DIR)) \
+	$(if $(MT798X),-Wno-format-truncation -Wno-format-overflow -Wno-stringop-truncation -Wno-stringop-overflow)
 export EXTRALDFLAGS += $(if $(STAGING_DIR),--sysroot=$(STAGING_DIR))
 
 #ifeq ($(RTCONFIG_BCMARM),y)

@@ -1,0 +1,20 @@
+config BCM_ENET
+	tristate "Support for Ethernet"
+
+config BCM_ENET_IMPL
+	int "Implementation index for Ethernet"
+	depends on BCM_ENET
+
+config BCM_ENET_TC_OFFLOAD
+	bool "Hardware offload traffic control rules"
+	depends on BCM_ENET
+
+
+config BCM_XDP
+    bool "Allow XDP execution from enet driver"
+    depends on BCM_ENET    
+    depends on BPF
+
+config BCM_NFT_OFFLOAD
+    bool "Allow flow nftables to offload flwos through xdp or runner"
+

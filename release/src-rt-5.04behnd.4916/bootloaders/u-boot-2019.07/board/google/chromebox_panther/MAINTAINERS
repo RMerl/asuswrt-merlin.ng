@@ -1,0 +1,6 @@
+CHROMEBOX PANTHER BOARD
+M:	Simon Glass <sjg@chromium.org>
+S:	Maintained
+F:	board/google/chromebook_panther/
+F:	include/configs/chromebox_panther.h
+F:	configs/chromebox_panther_defconfig

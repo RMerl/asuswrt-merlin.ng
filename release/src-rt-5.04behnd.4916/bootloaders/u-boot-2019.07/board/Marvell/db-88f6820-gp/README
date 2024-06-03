@@ -1,0 +1,18 @@
+Update from original Marvell U-Boot to mainline U-Boot:
+-------------------------------------------------------
+
+The resulting image including the SPL binary with the
+full DDR setup is "u-boot-spl.kwb".
+
+To update the SPI NOR flash, please use the following
+command:
+
+=> sf probe;tftpboot 2000000 db-88f6820-gp/u-boot-spl.kwb;\
+sf update 2000000 0 60000
+
+Note that the original Marvell U-Boot seems to have
+problems with the "sf update" command. This does not
+work reliable. So here this command should be used:
+
+=> sf probe;tftpboot 2000000 db-88f6820-gp/u-boot-spl.kwb;\
+sf erase 0 60000;sf write 2000000 0 60000

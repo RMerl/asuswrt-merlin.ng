@@ -1,0 +1,9 @@
+[Unit]
+Description=BRCM WiFi Ready Path
+
+[Path]
+PathExists=/tmp/.brcm_wifi_ready
+Unit=ccspwifiagent.service
+
+[Install]
+WantedBy=multi-user.target

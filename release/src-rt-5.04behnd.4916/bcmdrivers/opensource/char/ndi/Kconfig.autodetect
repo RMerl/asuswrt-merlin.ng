@@ -1,0 +1,7 @@
+config BCM_NDI
+	tristate "Support Network Device Identification"
+
+config BCM_NDI_IMPL
+	int "Implementation index for NDI module"
+	depends on BCM_NDI
+	default 1

@@ -1,0 +1,40 @@
+;; BRCM PUBLISH
+
+//**************************************************************//
+// Attach script for BCM96765                                   //
+//**************************************************************//
+
+AREA
+AREA.CLEAR
+SYSTEM.RESET
+SYSTEM.JTAGCLOCK 20MHz
+
+; tdi -> sys_lock(2) -> ucb(4) -> wifi1_dap(4) -> wifi1(32) -> memc(4) -> b53(4) -> crossbow_dap(4) -> wifi0_dap(4) -> wifi0(32) -> dft(16) -> tdo
+print "Full scan chain"
+SYStem.CONFIG.DAPIRPOST  46.
+SYStem.CONFIG.DAPIRPRE   56.
+SYStem.CONFIG.DAPDRPOST  5.
+SYStem.CONFIG.DAPDRPRE   4.
+
+
+system.config.apbaccessport 0
+system.config.axiaccessport 1
+system.config.debugaccessport 0
+system.config.memoryaccessport 1
+
+SYSTEM.CPU CORTEXA53
+SYSTEM.CONFIG.CORENUMBER 1
+SYSTEM.CONFIG.CORE 1
+SYSTEM.CONFIG.COREDEBUG.Base 0x81810000
+SYSTEM.CONFIG CTI BASE  0x81820000
+;SYStem.CONFIG BMC BASE 0x81830000
+;SYStem.CONFIG ETM BASE 0x81840000
+
+CORE.ASSIGN 1
+SYStem.option TRST OFF 
+SYStem.option EnReset OFF
+
+SYSTEM.MODE ATTACH
+
+;do ~~/demo/windows_setup.cmm
+ENDDO

@@ -1,0 +1,32 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Samsung's Exynos4210 based Origen board device tree source
+ *
+ * Copyright (c) 2014 Samsung Electronics Co., Ltd.
+ *		http://www.samsung.com
+ */
+
+/dts-v1/;
+#include "skeleton.dtsi"
+#include "exynos4210.dtsi"
+
+/ {
+	model = "Insignal Origen evaluation board based on Exynos4210";
+	compatible = "insignal,origen", "samsung,exynos4210";
+
+	chosen {
+		bootargs ="";
+	};
+
+	aliases {
+		serial0 = "/serial@13800000";
+		console = "/serial@13820000";
+	};
+};
+
+&sdhci2 {
+	samsung,bus-width = <4>;
+	samsung,timing = <1 2 3>;
+	cd-gpios = <&gpk2 2 0>;
+	status = "okay";
+};

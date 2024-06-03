@@ -1,0 +1,6 @@
+-include $(PROJECT_DIR)/$(RDP_TARGET)/rdpa/make.proj_6g_basic_set_objs
+-include $(PROJECT_DIR)/$(RDP_TARGET)/rdpa/make.dhd_helper_objs
+-include $(PROJECT_DIR)/$(RDP_TARGET)/rdpa/make.xpon_objs
+-include $(PROJECT_DIR)/$(RDP_TARGET)/rdpa/make.spu_offload_objs
+
+RDPA_OBJS += rdpa_ct.o

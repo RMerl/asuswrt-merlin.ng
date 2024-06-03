@@ -12,6 +12,8 @@
 #include "gldns/parseutil.h"
 #include "gldns/gbuffer.h"
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <limits.h>
 #include <strings.h>
 

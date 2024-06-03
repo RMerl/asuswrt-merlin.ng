@@ -1,0 +1,10 @@
+This file documents Freescale DPAA-specific options.
+
+FMan (Frame Manager)
+  - CONFIG_FSL_FM_10GEC_REGULAR_NOTATION
+	on SoCs T4240, T2080, LS1043A, etc, the notation between 10GEC and MAC as below:
+		10GEC1->MAC9, 10GEC2->MAC10, 10GEC3->MAC1, 10GEC4->MAC2
+	on SoCs T1024, etc, the notation between 10GEC and MAC as below:
+		10GEC1->MAC1, 10GEC2->MAC2
+	so we introduce CONFIG_FSL_FM_10GEC_REGULAR_NOTATION to identify the new SoCs on
+	which 10GEC enumeration is consistent with MAC enumeration.

@@ -306,6 +306,52 @@ function loadData()
 		speed_history = [];
 	}
 	else {
+		const wl_nband_array = httpApi.hookGet("wl_nband_info");
+
+		function countBand(arr) {
+			const countMap = new Map();
+			arr.forEach((item, index) => {
+				if (countMap.has(item)) {
+					countMap.get(item).count++;
+					countMap.get(item).indices.push(index);
+				} else {
+					countMap.set(item, {band: item, count: 1, indices: [index]});
+				}
+			});
+			return Array.from(countMap.values());
+		}
+
+		const bandArray = countBand(wl_nband_array);
+		for (const item of bandArray) {
+			const { band, count, indices } = item;
+			indices.forEach(function(value, index) {
+				let tabLabel = "";
+				if (band === "1") {
+					tabLabel = count === 1 ? "5GHz" : `5GHz-${index + 1}`;
+				} else if (band === "2") {
+					tabLabel = "2.4GHz";
+				} else if (band === "4") {
+					tabLabel = count === 1 ? "6GHz" : `6GHz-${index + 1}`;
+				} else if (band === "6") {
+					tabLabel = "60GHz";
+				}
+				tabs.push([`speed-tab-WIRELESS${value}`, `<#tm_wireless#> (${tabLabel})`]);
+			});
+		}
+
+		tabs.sort((a, b) => {
+			const valueA = a[1];
+			const valueB = b[1];
+			const contains60GHzA = valueA.includes('60GHz');
+			const contains60GHzB = valueB.includes('60GHz');
+			if (contains60GHzA && !contains60GHzB) {
+				return 1;
+			} else if (!contains60GHzA && contains60GHzB) {
+				return -1;
+			}
+			return valueA.localeCompare(valueB);
+		});
+
 		for (var i in speed_history) {
 			var h = speed_history[i];
 			if ((typeof(h.rx) == 'undefined') || (typeof(h.tx) == 'undefined')) {
@@ -339,40 +385,7 @@ function loadData()
 			if (h.rx_max > xx_max) xx_max = h.rx_max;
 			if (h.tx_max > xx_max) xx_max = h.tx_max;
 
-			if (i == "WIRELESS1"){
-				if((based_modelid == "GT-AXE16000" || based_modelid == "GT10" || based_modelid == "RT-AX9000") && wl_info.band5g_2_support)
-					t = "<#tm_wireless#> (5GHz-2)";
-				else if(wl_info.band5g_2_support)
-					t = "<#tm_wireless#> (5GHz-1)";
-				else
-					t = "<#tm_wireless#> (5GHz)";
-			}
-			else if (i == "WIRELESS0"){
-				if((based_modelid == "GT-AXE16000" || based_modelid == "GT10" || based_modelid == "RT-AX9000") && wl_info.band5g_2_support)
-					t = "<#tm_wireless#> (5GHz-1)";
-				else if(based_modelid == "GT10" || based_modelid == "RT-AX9000")
-					t = "<#tm_wireless#> (5GHz-1)";
-				else
-					t = "<#tm_wireless#> (2.4GHz)";
-			}
-			else if (i == "WIRELESS2"){
-				if(wl_info.band6g_support){
-					t = "<#tm_wireless#> (6GHz)";
-				}
-				else if(based_modelid == "GT10" || based_modelid == "RT-AX9000"){
-					t = "<#tm_wireless#> (2.4GHz)";
-				}
-				else{
-					t = "<#tm_wireless#> (5GHz-2)";
-				}
-			}
-			else if (i == "WIRELESS3"){
-				if(based_modelid == "GT-AXE16000")
-					t = "<#tm_wireless#> (2.4GHz)";
-				else
-					t = "<#tm_wireless#> (60GHz)";
-			}
-			else if (i == "WIRED")
+			if (i == "WIRED")
 				t = "<#tm_wired#>";
 			else if (i == "BRIDGE")
 				t = "LAN";
@@ -385,10 +398,13 @@ function loadData()
 							t = "USB Modem";
 					}
 					else if(wans_dualwan_array[0] == "wan"){
-						if (nvram.bond_wan == '1' && nvram.rc_support.indexOf("wanbonding") != -1)
-							t = "Bond";
-						else
-							t = "WAN";
+						t = "WAN";
+						if (based_modelid == "TUF-AX4200" || based_modelid == "TUF-AX6000")
+							t = "2.5G WAN";
+						if (based_modelid == "GT-AXY16000" || based_modelid == "RT-AX89U" || based_modelid == "TUF-AX4200" || based_modelid == "TUF-AX6000") {
+							if (nvram.bond_wan == '1' && nvram.rc_support.indexOf("wanbonding") != -1)
+								t = "Bond";
+						}
 					}
 					else if(wans_dualwan_array[0] == "wan2"){
 						if (based_modelid == "GT-AXY16000" || based_modelid == "RT-AX89U")
@@ -396,8 +412,13 @@ function loadData()
 						else
 							t = "WAN2";
 					}		
-					else if(wans_dualwan_array[0] == "lan")
-						t = "LAN";
+					else if(wans_dualwan_array[0] == "lan") {
+						t = "LAN Port " + nvram.wans_lanport;
+						if (based_modelid == "TUF-AX4200" || based_modelid == "TUF-AX6000") {
+							if (nvram.wans_lanport == '5')
+								t = "2.5G LAN";
+						}
+					}
 					else if(wans_dualwan_array[0] == "dsl")
 						t = "DSL WAN";
 					else if(wans_dualwan_array[0] == "sfp+")
@@ -415,10 +436,13 @@ function loadData()
 						t = "USB Modem";
 				}
 				else if(wans_dualwan_array[1] == "wan"){
-					if (nvram.bond_wan == '1' && nvram.rc_support.indexOf("wanbonding") != -1)
-						t = "Bond";
-					else
-						t = "WAN";
+					t = "WAN";
+					if (based_modelid == "TUF-AX4200" || based_modelid == "TUF-AX6000")
+						t = "2.5G WAN";
+					if (based_modelid == "GT-AXY16000" || based_modelid == "RT-AX89U" || based_modelid == "TUF-AX4200" || based_modelid == "TUF-AX6000") {
+						if (nvram.bond_wan == '1' && nvram.rc_support.indexOf("wanbonding") != -1)
+							t = "Bond";
+					}
 				}
 				else if(wans_dualwan_array[1] == "wan2"){
 					if (based_modelid == "GT-AXY16000" || based_modelid == "RT-AX89U")
@@ -426,8 +450,13 @@ function loadData()
 					else
 						t = "WAN2";
 				}
-				else if(wans_dualwan_array[1] == "lan")
-					t = "LAN";
+				else if(wans_dualwan_array[1] == "lan") {
+					t = "LAN Port " + nvram.wans_lanport;
+					if (based_modelid == "TUF-AX4200" || based_modelid == "TUF-AX6000") {
+						if (nvram.wans_lanport == '5')
+							t = "2.5G LAN";
+					}
+				}
 				else if(wans_dualwan_array[1] == "sfp+")
 					t = "10G SFP+";
 				else
@@ -440,7 +469,7 @@ function loadData()
 				if (bs_port_id == 0)
 					t = "bond-slave (WAN)";
 				else if (bs_port_id >= 1 && bs_port_id <= 8)
-					t = "bond-slave (LAN"+bs_port_id+")";
+					t = "bond-slave (LAN Port "+bs_port_id+")";
 				else if (bs_port_id == 30)
 					t = "bond-slave (10G base-T)";
 				else if (bs_port_id == 31)
@@ -454,7 +483,7 @@ function loadData()
 			}
 			else if (i.search("LACP") > -1){
 				var num = i.substr(4);
-				t = "bond-slave (LAN"+num+")";
+				t = "bond-slave (LAN Port "+num+")";
 			}
 			else
 				t = i;			
@@ -481,7 +510,7 @@ function loadData()
 		
 		//Sort tab by Viz 2014.06
 		var tabsort = [
-			"speed-tab-INTERNET,<#Internet#>", 
+			"speed-tab-INTERNET,<#Internet#>",
 			"speed-tab-INTERNET,<#dualwan_primary#>",
 			"speed-tab-INTERNET1,<#dualwan_secondary#>",
 			"speed-tab-INTERNET,DSL WAN",
@@ -489,46 +518,67 @@ function loadData()
 			"speed-tab-INTERNET,WAN2",
 			"speed-tab-INTERNET,10G base-T",
 			"speed-tab-INTERNET,10G SFP+",
+			"speed-tab-INTERNET,2.5G WAN",
 			"speed-tab-INTERNET,Bond",
 			"speed-tab-INTERNET,LAN",
+			"speed-tab-INTERNET,LAN Port 1",
+			"speed-tab-INTERNET,LAN Port 2",
+			"speed-tab-INTERNET,LAN Port 3",
+			"speed-tab-INTERNET,LAN Port 4",
+			"speed-tab-INTERNET,LAN Port 5",
+			"speed-tab-INTERNET,LAN Port 6",
+			"speed-tab-INTERNET,LAN Port 7",
+			"speed-tab-INTERNET,LAN Port 8",
+			"speed-tab-INTERNET,2.5G LAN",
 			"speed-tab-INTERNET,USB Modem",
 			"speed-tab-INTERNET,<#Mobile_title#>",
 			"speed-tab-INTERNET1,WAN",
 			"speed-tab-INTERNET1,WAN2",
 			"speed-tab-INTERNET1,10G base-T",
 			"speed-tab-INTERNET1,10G SFP+",
+			"speed-tab-INTERNET1,2.5G WAN",
 			"speed-tab-INTERNET1,Bond",
 			"speed-tab-INTERNET1,LAN",
+			"speed-tab-INTERNET1,LAN Port 1",
+			"speed-tab-INTERNET1,LAN Port 2",
+			"speed-tab-INTERNET1,LAN Port 3",
+			"speed-tab-INTERNET1,LAN Port 4",
+			"speed-tab-INTERNET1,LAN Port 5",
+			"speed-tab-INTERNET1,LAN Port 6",
+			"speed-tab-INTERNET1,LAN Port 7",
+			"speed-tab-INTERNET1,LAN Port 8",
+			"speed-tab-INTERNET1,2.5G LAN",
 			"speed-tab-INTERNET1,<#Mobile_title#>",
 			"speed-tab-INTERNET1,USB Modem",
 			"speed-tab-WAGGR0,bond-slave (WAN)",
-			"speed-tab-WAGGR1,bond-slave (LAN1)",
-			"speed-tab-WAGGR2,bond-slave (LAN2)",
-			"speed-tab-WAGGR3,bond-slave (LAN3)",
-			"speed-tab-WAGGR4,bond-slave (LAN4)",
-			"speed-tab-WAGGR5,bond-slave (LAN5)",
-			"speed-tab-WAGGR6,bond-slave (LAN6)",
-			"speed-tab-WAGGR7,bond-slave (LAN7)", 
-			"speed-tab-WAGGR8,bond-slave (LAN8)", 
-			"speed-tab-WAGGR30,bond-slave (10G base-T)", 
-			"speed-tab-WAGGR31,bond-slave (10G SFP+)", 
-			"speed-tab-WIRED,<#tm_wired#>", 
+			"speed-tab-WAGGR0,bond-slave (2.5G WAN)",
+			"speed-tab-WAGGR1,bond-slave (LAN Port 1)",
+			"speed-tab-WAGGR2,bond-slave (LAN Port 2)",
+			"speed-tab-WAGGR3,bond-slave (LAN Port 3)",
+			"speed-tab-WAGGR4,bond-slave (LAN Port 4)",
+			"speed-tab-WAGGR5,bond-slave (LAN Port 5)",
+			"speed-tab-WAGGR6,bond-slave (LAN Port 6)",
+			"speed-tab-WAGGR7,bond-slave (LAN Port 7)",
+			"speed-tab-WAGGR8,bond-slave (LAN Port 8)",
+			"speed-tab-WAGGR30,bond-slave (10G base-T)",
+			"speed-tab-WAGGR31,bond-slave (10G SFP+)",
+			"speed-tab-WIRED,<#tm_wired#>",
 			"speed-tab-LACPW1,bond-slave (WAN1)",
 			"speed-tab-LACPW2,bond-slave (WAN2)",
-			"speed-tab-LACP1,bond-slave (LAN1)", 
-			"speed-tab-LACP2,bond-slave (LAN2)", 
-			"speed-tab-LACP3,bond-slave (LAN3)", 
-			"speed-tab-LACP4,bond-slave (LAN4)", 
-			"speed-tab-LACP5,bond-slave (LAN5)", 
-			"speed-tab-LACP6,bond-slave (LAN6)", 
-			"speed-tab-LACP7,bond-slave (LAN7)", 
-			"speed-tab-LACP8,bond-slave (LAN8)", 
+			"speed-tab-LACP1,bond-slave (LAN Port 1)",
+			"speed-tab-LACP2,bond-slave (LAN Port 2)",
+			"speed-tab-LACP3,bond-slave (LAN Port 3)",
+			"speed-tab-LACP4,bond-slave (LAN Port 4)",
+			"speed-tab-LACP5,bond-slave (LAN Port 5)",
+			"speed-tab-LACP6,bond-slave (LAN Port 6)",
+			"speed-tab-LACP7,bond-slave (LAN Port 7)",
+			"speed-tab-LACP8,bond-slave (LAN Port 8)",
 			"speed-tab-WIRELESS0,<#tm_wireless#> (2.4GHz)",
-			"speed-tab-WIRELESS1,<#tm_wireless#> (5GHz)", 
-			"speed-tab-WIRELESS1,<#tm_wireless#> (5GHz-1)", 
-			"speed-tab-WIRELESS2,<#tm_wireless#> (5GHz-2)", 
-			"speed-tab-WIRELESS2,<#tm_wireless#> (6GHz)", 
-			"speed-tab-WIRELESS3,<#tm_wireless#> (60GHz)", 
+			"speed-tab-WIRELESS1,<#tm_wireless#> (5GHz)",
+			"speed-tab-WIRELESS1,<#tm_wireless#> (5GHz-1)",
+			"speed-tab-WIRELESS2,<#tm_wireless#> (5GHz-2)",
+			"speed-tab-WIRELESS2,<#tm_wireless#> (6GHz)",
+			"speed-tab-WIRELESS3,<#tm_wireless#> (60GHz)",
 			"speed-tab-BRIDGE,LAN"
 		];
 		

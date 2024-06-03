@@ -390,6 +390,7 @@ struct pjsip_inv_session
     void		*mod_data[PJSIP_MAX_MODULE];/**< Modules data.	    */
     struct pjsip_timer	*timer;			    /**< Session Timers.    */
 	int use_sctp;
+	int use_dtls;
 };
 
 

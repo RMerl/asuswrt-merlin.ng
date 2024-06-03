@@ -1,0 +1,150 @@
+Falcon boot option
+------------------
+Falcon boot is a short cut boot method for SD/eMMC targets. It skips loading the
+RAM version U-Boot. Instead, it loads FIT image and boot directly to Linux.
+CONFIG_SPL_OS_BOOT enables falcon boot. CONFIG_SPL_LOAD_FIT enables the FIT
+image support (also need CONFIG_SPL_OF_LIBFDT, CONFIG_SPL_FIT and optionally
+CONFIG_SPL_GZIP).
+
+To enable falcon boot, a hook function spl_start_uboot() returns 0 to indicate
+booting U-Boot is not the first choice. The kernel FIT image needs to be put
+at CONFIG_SYS_MMCSD_RAW_MODE_KERNEL_SECTOR. SPL mmc driver reads the header to
+determine if this is a FIT image. If true, FIT image components are parsed and
+copied or decompressed (if applicable) to their destinations. If FIT image is
+not found, normal U-Boot flow will follow.
+
+An important part of falcon boot is to prepare the device tree. A normal U-Boot
+does FDT fixups when booting Linux. For falcon boot, Linux boots directly from
+SPL, skipping the normal U-Boot. The device tree has to be prepared in advance.
+A command "spl export" should be called under the normal RAM version U-Boot.
+It is equivalent to go through "bootm" step-by-step until device tree fixup is
+done. The device tree in memory is the one needed for falcon boot. Falcon boot
+flow suggests to save this image to SD/eMMC at the location pointed by macro
+CONFIG_SYS_MMCSD_RAW_MODE_ARGS_SECTOR, with maximum size specified by macro
+CONFIG_SYS_MMCSD_RAW_MODE_ARGS_SECTORS. However, when FIT image is used for
+Linux, the device tree stored in FIT image overwrites the memory loaded by spl
+driver from these sectors. We could change this loading order to favor the
+stored sectors. But when secure boot is enabled, these sectors are used for
+signature header and needs to be loaded before the FIT image. So it is important
+to understand the device tree in FIT image should be the one actually used, or
+leave it absent to favor the stored sectors. It is easier to deploy the FIT
+image with embedded static device tree to multiple boards.
+
+Macro CONFIG_SYS_SPL_ARGS_ADDR serves two purposes. One is the pointer to load
+the stored sectors to. Normally this is the static device tree. The second
+purpose is the memory location of signature header for secure boot. After the
+FIT image is loaded into memory, it is validated against the signature header
+before individual components are extracted (and optionally decompressed) into
+their final memory locations, respectively. After the validation, the header
+is no longer used. The static device tree is copied into this location. So
+this macro is passed as the location of device tree when booting Linux.
+
+Steps to prepare static device tree
+-----------------------------------
+To prepare the static device tree for Layerscape boards, it is important to
+understand the fixups in U-Boot. Memory size and location, as well as reserved
+memory blocks are added/updated. Ethernet MAC addressed are updated. FMan
+microcode (if used) is embedded in the device tree. Kernel command line and
+initrd information are embedded. Others including CPU status, boot method,
+Ethernet port status, etc. are also updated.
+
+Following normal booting process, all variables are set, all images are loaded
+before "bootm" command would be issued to boot, run command
+
+spl export fdt <address>
+
+where the address is the location of FIT image. U-Boot goes through the booting
+process as if "bootm start", "bootm loados", "bootm ramdisk"... commands but
+stops before "bootm go". There we have the fixed-up device tree in memory.
+We can check the device tree header by these commands
+
+fdt addr <fdt address>
+fdt header
+
+Where the fdt address is the device tree in memory. It is printed by U-Boot.
+It is useful to know the exact size. One way to extract this static device
+tree is to save it to eMMC/SD using command in U-Boot, and extract under Linux
+with these commands, repectively
+
+mmc write <address> <sector> <sectors>
+dd if=/dev/mmcblk0 of=<filename> bs=512 skip=<sector> count=<sectors>
+
+Note, U-Boot takes values as hexadecimals while Linux takes them as decimals by
+default. If using NAND or other storage, the commands are slightly different.
+When we have the static device tree image, we can re-make the FIT image with
+it. It is important to specify the load addresses in FIT image for every
+components. Otherwise U-Boot cannot load them correctly.
+
+Generate FIT image with static device tree
+------------------------------------------
+Example:
+
+/dts-v1/;
+
+/ {
+	description = "Image file for the LS1043A Linux Kernel";
+	#address-cells = <1>;
+
+	images {
+		kernel {
+			description = "ARM64 Linux kernel";
+			data = /incbin/("./arch/arm64/boot/Image.gz");
+			type = "kernel";
+			arch = "arm64";
+			os = "linux";
+			compression = "gzip";
+			load = <0x80080000>;
+			entry = <0x80080000>;
+		};
+		fdt-1 {
+			description = "Flattened Device Tree blob";
+			data = /incbin/("./fsl-ls1043ardb-static.dtb");
+			type = "flat_dt";
+			arch = "arm64";
+			compression = "none";
+			load = <0x90000000>;
+		};
+		ramdisk {
+			description = "LS1043 Ramdisk";
+                        data = /incbin/("./rootfs.cpio.gz");
+			type = "ramdisk";
+			arch = "arm64";
+			os = "linux";
+			compression = "none";
+			load = <0xa0000000>;
+		};
+	};
+
+	configurations {
+		default = "config-1";
+		config-1 {
+			description = "Boot Linux kernel";
+			kernel = "kernel";
+			fdt = "fdt-1";
+			ramdisk = "ramdisk";
+			loadables = "fdt", "ramdisk";
+		};
+	};
+};
+
+The "loadables" is not optional. It tells SPL which images to load into memory.
+
+Falcon mode with QSPI boot
+--------------------------
+To use falcon mode with QSPI boot, SPL needs to be enabled. Similar to SD or
+NAND boot, a RAM version full feature U-Boot is needed. Unlike SD or NAND boot,
+SPL with QSPI doesn't need to combine SPL image with RAM version image. Two
+separated images are used, u-boot-spl.pbl and u-boot.img. The former is SPL
+image with RCW and PBI commands to load the SPL payload into On-Chip RAM. The
+latter is RAM version U-Boot in FIT format (or legacy format if FIT is not
+used).
+
+Other things to consider
+-----------------------
+Falcon boot skips a lot of initialization in U-Boot. If Linux expects the
+hardware to be initialized by U-Boot, the related code should be ported to SPL
+build. For example, if Linux expect Ethernet PHY to be initialized in U-Boot
+(which is not a common case), the PHY initialization has to be included in
+falcon boot. This increases the SPL image size and should be handled carefully.
+If Linux has PHY driver enabled, it still depends on the correct MDIO bus setup
+in U-Boot. Normal U-Boot sets the MDC ratio to generate a proper clock signal.

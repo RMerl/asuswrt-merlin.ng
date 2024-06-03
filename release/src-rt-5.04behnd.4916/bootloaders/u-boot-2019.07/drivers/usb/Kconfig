@@ -1,0 +1,124 @@
+menuconfig USB
+	bool "USB support"
+	---help---
+	  Universal Serial Bus (USB) is a specification for a serial bus
+	  subsystem which offers higher speeds and more features than the
+	  traditional PC serial port.  The bus supplies power to peripherals
+	  and allows for hot swapping.  Up to 127 USB peripherals can be
+	  connected to a single USB host in a tree structure.
+
+	  The USB host is the root of the tree, the peripherals are the
+	  leaves and the inner nodes are special USB devices called hubs.
+	  Most PCs now have USB host ports, used to connect peripherals
+	  such as scanners, keyboards, mice, modems, cameras, disks,
+	  flash memory, network links, and printers to the PC.
+
+	  Say Y here if your device has an USB port, either host, peripheral or
+	  dual-role.
+
+	  For an USB host port, you then need to say Y to at least one of the
+	  Host Controller Driver (HCD) options below.  Choose a USB 1.1
+	  controller, such as "UHCI HCD support" or "OHCI HCD support",
+	  and "EHCI HCD (USB 2.0) support" except for older systems that
+	  do not have USB 2.0 support.  It doesn't normally hurt to select
+	  them all if you are not certain.
+
+	  If your system has a device-side USB port, used in the peripheral
+	  side of the USB protocol, see the "USB Gadget" framework instead.
+
+	  After choosing your HCD, then select drivers for the USB peripherals
+	  you'll be using.  You may want to check out the information provided
+	  in <file:Documentation/usb/> and especially the links given in
+	  <file:Documentation/usb/usb-help.txt>.
+
+if USB
+
+config DM_USB
+	bool "Enable driver model for USB"
+	depends on USB && DM
+	help
+	  Enable driver model for USB. The USB interface is then implemented
+	  by the USB uclass. Multiple USB controllers of different types
+	  (XHCI, EHCI) can be attached and used. The 'usb' command works as
+	  normal. OCHI is not supported at present.
+
+	  Much of the code is shared but with this option enabled the USB
+	  uclass takes care of device enumeration. USB devices can be
+	  declared with the U_BOOT_USB_DEVICE() macro and will be
+	  automatically probed when found on the bus.
+
+config SPL_DM_USB
+	bool "Enable driver model for USB in SPL"
+	depends on SPL_DM && DM_USB
+	default y
+
+config DM_USB_GADGET
+	bool "Enable driver model for USB Gadget"
+	depends on DM_USB
+	help
+	  Enable driver model for USB Gadget (Peripheral
+	  mode)
+
+config SPL_DM_USB_GADGET
+	bool "Enable driver model for USB Gadget in sPL"
+	depends on SPL_DM_USB
+	help
+	  Enable driver model for USB Gadget in SPL
+	  (Peripheral mode)
+
+source "drivers/usb/host/Kconfig"
+
+source "drivers/usb/dwc3/Kconfig"
+
+source "drivers/usb/musb/Kconfig"
+
+source "drivers/usb/musb-new/Kconfig"
+
+source "drivers/usb/emul/Kconfig"
+
+source "drivers/usb/phy/Kconfig"
+
+source "drivers/usb/ulpi/Kconfig"
+
+comment "USB peripherals"
+
+config USB_STORAGE
+	bool "USB Mass Storage support"
+	depends on !(BLK && !DM_USB)
+	---help---
+	  Say Y here if you want to connect USB mass storage devices to your
+	  board's USB port.
+
+config USB_KEYBOARD
+	bool "USB Keyboard support"
+	select SYS_STDIO_DEREGISTER
+	---help---
+	  Say Y here if you want to use a USB keyboard for U-Boot command line
+	  input.
+
+if USB_KEYBOARD
+
+choice
+	prompt "USB keyboard polling"
+	default SYS_USB_EVENT_POLL
+	---help---
+	  Enable a polling mechanism for USB keyboard.
+
+	config SYS_USB_EVENT_POLL
+		bool "Interrupt polling"
+
+	config SYS_USB_EVENT_POLL_VIA_INT_QUEUE
+		bool "Poll via interrupt queue"
+
+	config SYS_USB_EVENT_POLL_VIA_CONTROL_EP
+		bool "Poll via control EP"
+
+endchoice
+
+endif
+
+source "drivers/usb/gadget/Kconfig"
+
+source "drivers/usb/eth/Kconfig"
+
+endif

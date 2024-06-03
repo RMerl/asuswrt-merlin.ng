@@ -1,0 +1,6 @@
+AMCORE BOARD
+M:	Angelo Dureghello <angelo@sysam.it>
+S:	Maintained
+F:	board/sysam/amcore/
+F:	include/configs/amcore.h
+F:      configs/amcore_defconfig

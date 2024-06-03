@@ -1,0 +1,64 @@
+* TSEC-compatible ethernet nodes
+
+Properties:
+
+  - compatible : Should be "fsl,tsec"
+  - reg : Offset and length of the register set for the device
+  - phy-handle : See ethernet.txt file in the same directory.
+  - phy-connection-type : See ethernet.txt file in the same directory. This
+    property is only really needed if the connection is of type "rgmii-id",
+    "rgmii-rxid" and "rgmii-txid" as all other connection types are detected
+    by hardware.
+
+Example:
+	ethernet@24000 {
+		compatible = "fsl,tsec";
+		reg = <0x24000 0x1000>;
+		phy-handle = <&phy0>;
+		phy-connection-type = "sgmii";
+	};
+
+Child nodes of the TSEC controller are typically the individual PHY devices
+connected via the MDIO bus (sometimes the MDIO bus controller is separate).
+
+* MDIO IO device
+
+The MDIO is a bus to which the PHY devices are connected.  For each
+device that exists on this bus, a PHY node should be created.
+
+Required properties:
+  - compatible : Should define the compatible device type for the
+    mdio. Currently supported string/device is "fsl,tsec-mdio".
+  - reg : Offset and length of the register set for the device
+
+Example:
+
+	mdio@24520 {
+		compatible = "fsl,tsec-mdio";
+		reg = <0x24520 0x20>;
+
+		ethernet-phy@0 {
+			reg = <0>;
+		};
+	};
+
+* TBI Internal MDIO bus
+
+As of this writing, every tsec is associated with an internal TBI PHY.
+This PHY is accessed through the local MDIO bus.  These buses are defined
+similarly to the mdio buses.  The TBI PHYs underneath them are similar to
+normal PHYs, but the reg property is considered instructive, rather than
+descriptive.  The reg property should be chosen so it doesn't interfere
+with other PHYs on the bus.  The TBI PHYs are referred to by a "tbi-handle"
+property under the tsec node, which has a similar meaning of "phy-handle".
+
+Example:
+	ethernet@24000 {
+		phy-handle = <&tbi1>;
+	};
+
+	mdio@24520 {
+		tbi1: tbi-phy@1f {
+			reg = <0x1f>;
+		};
+	};

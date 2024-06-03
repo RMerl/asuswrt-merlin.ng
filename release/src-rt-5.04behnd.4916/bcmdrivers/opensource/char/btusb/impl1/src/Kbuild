@@ -1,0 +1,32 @@
+MYBASEDIR := $(src)/..
+
+usbobjs := \
+        btusb.o \
+        btusb_dev.o \
+        btusb_isoc.o \
+        btusb_version.o
+
+gkiobjs := \
+        gki/gki_buffer.o \
+        gki/gki_klinux.o
+
+# Specify Include folders
+EXTRA_CFLAGS += -I$(MYBASEDIR)
+EXTRA_CFLAGS += -I$(MYBASEDIR)/inc
+EXTRA_CFLAGS += -I$(MYBASEDIR)/src
+EXTRA_CFLAGS += -I$(MYBASEDIR)/src/gki
+EXTRA_CFLAGS += -DEXPORT_SYMTAB
+
+ifeq ($(CONFIG_PROC_FS),y)
+usbobjs += \
+        btusb_proc.o
+endif
+        
+obj-m += btusbdrv.o
+btusbdrv-objs := $(usbobjs) $(gkiobjs)
+
+clean:
+	rm -f Module.markers
+	rm -f Module.symvers
+	rm -f modules.order
+

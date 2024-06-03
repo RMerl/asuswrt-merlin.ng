@@ -36,7 +36,9 @@
 	display: flex;
 	align-items: center;
 }
-
+.wpa_psk_input{
+    width: 100% !important;
+}
 .pwdmeter_container{
 	margin-left: 5px;
 	outline: 0px;
@@ -58,6 +60,16 @@ wl_channel_list_2g = '<% channel_list_2g(); %>';
 wl_channel_list_5g = '<% channel_list_5g(); %>';
 wl_channel_list_5g_2 = '<% channel_list_5g_2(); %>';
 wl_channel_list_60g = '<% channel_list_60g(); %>';
+var acs_ch13_support = (function(){
+    var ch_2g = JSON.parse(wl_channel_list_2g);
+    for(var element of ch_2g){
+        if(element > 11){
+            return true;
+        }
+    }
+    
+    return false;
+})();
 var wl_unit_value = '<% nvram_get("wl_unit"); %>';
 var wl_subunit_value = '<% nvram_get("wl_subunit"); %>';
 var wlc_band_value = '<% nvram_get("wlc_band"); %>';
@@ -84,6 +96,10 @@ function initial(){
 
 	if(vht160_support){
 		$("#enable_160mhz").attr("checked", enable_bw_160);
+	}
+
+	if(mbo_support){
+		$('#mbo_field').show();
 	}
 
 	wireless_mode_change(document.form.wl_nmode_x);
@@ -306,7 +322,7 @@ function initial(){
 	var skip_channel_2g = '<% nvram_get("skip_channel_2g"); %>';
 	var skip_channel_5g = '<% nvram_get("skip_channel_5g"); %>';
 
-	if(skip_channel_2g == "CH13" && wl_unit_value == "0"){
+	if(acs_ch13_support && wl_unit_value == "0"){
 		document.getElementById("acs_ch13_checkbox").style = "";
 	}
 
@@ -320,7 +336,7 @@ function initial(){
 		document.getElementById("dfs_checkbox").style = "";
 	}
 
-	if(Qcawifi_support && document.form.wl_channel.value  == '0'){
+	if((Qcawifi_support || Rawifi_support ) && document.form.wl_channel.value  == '0'){
 		if((wl_unit == '1' && has_dfs_channel(wl_channel_list_5g)) || (wl_unit == '2' && has_dfs_channel(wl_channel_list_5g_2))){
 			document.getElementById('dfs_checkbox').style.display = "";
 			check_DFS_support(document.form.acs_dfs_checkbox);
@@ -339,7 +355,10 @@ function initial(){
 	if(smart_connect_support && (isSwMode("rt") || isSwMode("ap"))){
 		var flag = '<% get_parameter("flag"); %>';		
 		var smart_connect_flag_t;
-		document.getElementById("smartcon_enable_field").style.display = "";
+		if(based_modelid.indexOf('EBG') == -1){
+			document.getElementById("smartcon_enable_field").style.display = "";
+		}
+		
 		if(flag == '')
 			smart_connect_flag_t = '<% nvram_get("smart_connect_x"); %>';
 		else
@@ -392,6 +411,10 @@ function initial(){
 		validator.ssidCheck($("#"+this.id), $("#ssid_msg"));
 	});
 
+	if(top.webWrapper){
+		$("input[name='wl_wpa_psk']").parent().css("flex-basis","60%");
+		$("input[name='wl_wpa_psk']").addClass("wpa_psk_input");
+	}
 	$("input[name='wl_wpa_psk']").parent().parent().append(Get_Component_PWD_Strength_Meter());
 	$("#scorebarBorder").addClass("pwdmeter_container short_pwdmeter");
 	$("#scorebarBorder *").addClass("short_pwdmeter");
@@ -399,6 +422,12 @@ function initial(){
 	$("input[name='wl_wpa_psk']").keyup(function(e){
 									chkPass(this.value, "");
 								})
+
+	if(band5g_11ax_support){
+		if(based_modelid != 'RT-AX92U' || (wl_unit != '0' && wl_unit != '1')){
+			$("#twt_field").show();
+		}
+	}
 }
 
 function genBWTable(_unit){
@@ -716,7 +745,7 @@ function applyRule(){
 		}
 
 		document.form.wps_config_state.value = "1";		
-		if((auth_mode == "shared" || auth_mode == "wpa" || auth_mode == "wpa2"  || auth_mode == "wpawpa2" || auth_mode == "radius" ||
+		if((auth_mode == "shared" || auth_mode == "wpa" || auth_mode == "wpa2" || auth_mode == "wpawpa2" || auth_mode == "radius" ||
 				((auth_mode == "open") && !(document.form.wl_wep_x.value == "0")))
 				&& document.form.wps_mode.value == "enabled")
 			document.form.wps_mode.value = "disabled";
@@ -727,11 +756,17 @@ function applyRule(){
 			}
 		}
 
+		var mbo = document.form.wl_mbo_enable.value;
 		if(auth_mode == 'sae'){
 			document.form.wl_mfp.value = '2';
 		}
 		else if(auth_mode == 'psk2sae' && document.form.wl_mfp.value == '0'){
 			document.form.wl_mfp.value = '1';
+		}
+		else if(auth_mode == 'psk2' || auth_mode == 'pskpsk2' || auth_mode == 'wpa2' || auth_mode == 'wpawpa2'){
+			if(mbo_support && mbo == '1' && document.form.wl_mfp.value == '0'){
+				document.form.wl_mfp.value = '1';
+			}
 		}
 
 		if(Bcmwifi_support) {
@@ -1081,13 +1116,17 @@ function enableSmartCon(val){
 			value = ["1"];
 			add_options_x2(document.form.smart_connect_t, desc, value, val);
 		}
-		else if(based_modelid == "RT-AC88U" || based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900" || based_modelid == "RT-AC3100" || based_modelid == "BLUECAVE" || based_modelid == "MAP-AC1750" || based_modelid == "RT-AX89U" || based_modelid == "GT-AXY16000" || based_modelid.substring(0,7) == "RT-AC59"){
+		else if(based_modelid == "RT-AC88U" || based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900" || based_modelid == "RT-AC3100" || based_modelid == "BLUECAVE" || based_modelid == "MAP-AC1750" || based_modelid == "RT-AX89U" || based_modelid == "GT-AXY16000" || based_modelid.substring(0,7) == "RT-AC59" || based_modelid == "XD4S"){
 			desc = ["<#smart_connect_dual#> (2.4GHz and 5GHz)"];
 			value = ["1"];
 			add_options_x2(document.form.smart_connect_t, desc, value, val);
 		}
 	}
 	
+	if (Qcawifi_support || Rawifi_support) {
+		document.getElementById("smartcon_rule_link").style.display = "none";
+		document.getElementById("smart_connect_field").style.display = "none";
+	}
 	
 	if(based_modelid=="RT-AC5300" || 
 		based_modelid=="GT-AC5300" || 
@@ -1101,6 +1140,7 @@ function enableSmartCon(val){
 		based_modelid.substring(0,7) == "RT-AC59" ||
 		based_modelid == "RT-AX89U" ||
 		based_modelid == "GT-AXY16000" ||
+		based_modelid == "XD4S" || 
 		based_modelid == "BLUECAVE"){
 		document.getElementById("smartcon_rule_link").style.display = "none";
 		if(val == 0){
@@ -1186,7 +1226,12 @@ function __regen_auto_option(obj,val){
 }
 
 function regen_auto_option(obj){
-	__regen_auto_option(obj,0);
+	var value = 0;
+	if(obj.name === 'wl_bw' && (Rawifi_support || Qcawifi_support)){
+		value = 1;
+	}
+
+	__regen_auto_option(obj, value);
 }
 
 var wl_unit = <% nvram_get("wl_unit"); %>;
@@ -1327,6 +1372,15 @@ function ajax_wl_edmg_channel(){
 			setTimeout("ajax_wl_edmg_channel();", 5000);
 		}
 	});
+}
+
+function handleMFP(){
+	if(mbo_support && document.form.wl_mbo_enable.value == '1' && document.form.wl_mfp.value == '0'){
+		$('#mbo_notice').show();
+	}
+	else{
+		$('#mbo_notice').hide();
+	}
 }
 </script>
 </head>
@@ -1547,6 +1601,32 @@ function ajax_wl_edmg_channel(){
 								<option value="0" <% nvram_match("wl_11ax", "0" ,"selected"); %> ><#WLANConfig11b_WirelessCtrl_buttonname#></option>
 							</select>
 							<span id="he_mode_faq" style="padding: 0 10px"><#WLANConfig11b_HE_Frame_Mode_faq#></span>
+						</div>
+					</td>
+				</tr>
+				<tr id="mbo_field" style="display:none">
+					<th>
+						<a class="hintstyle"><#WLANConfig11b_AgileMultiband_itemdesc#></a>
+					</th>
+					<td>
+						<div style="width:465px;display:flex;align-items: center;">
+							<select name="wl_mbo_enable" class="input_option" onChange="handleMFP();">
+								<option value="1" <% nvram_match("wl_mbo_enable", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
+								<option value="0" <% nvram_match("wl_mbo_enable", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
+							</select>
+						</div>
+					</td>
+				</tr>
+				<tr id="twt_field" style="display:none">
+					<th>
+						<a class="hintstyle"><#WLANConfig11b_WakeTime_itemname#></a>
+					</th>
+					<td>
+						<div style="width:465px;display:flex;align-items: center;">
+							<select name="wl_twt" class="input_option">
+								<option value="1" <% nvram_match("wl_twt", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
+								<option value="0" <% nvram_match("wl_twt", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
+							</select>
 						</div>
 					</td>
 				</tr>

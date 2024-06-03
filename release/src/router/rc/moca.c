@@ -382,7 +382,7 @@ static int _mxl371x_set_privacy(ClnkLib_Handle_t *clnkIf)
 	ClnkLib_ClnkCfgV2_t clinkConf;
 	clnk_param_mask_t mask;
 	int is_enable, is_pwd_given = 0, supported;
-	char password[20] = {0}, epassword[68] = {0};
+	char *password = NULL, *epassword = NULL;
 
 	if(!clnkIf)
 	{
@@ -391,8 +391,8 @@ static int _mxl371x_set_privacy(ClnkLib_Handle_t *clnkIf)
 	}
 
 	is_enable = nvram_get_int("moca_privacy_enable");
-	strlcpy(password,  nvram_safe_get("moca_password"), sizeof(password));
-	strlcpy(epassword,  nvram_safe_get("moca_epassword"), sizeof(epassword));
+	password = nvram_safe_get("moca_password");
+	epassword = nvram_safe_get("moca_epassword");
 	supported = nvram_get_int("moca_sceu_mode");
 
 	if(strlen(password) > 0)
@@ -789,7 +789,7 @@ static int _mxl371x_get_mib_data(ClnkLib_Handle_t *clnkIf, MOCA_MIB_DATA *mib)
 static int _init_mxl371x()
 {
 	char cmd[512], path[128];
-	char amas_bdlkey[64] = {0};
+	char *amas_bdlkey;
 	const char workdir[] = "/jffs/mxl371x";
 	const char confdir[] = "conf";
 	const char fwdir[] = "fw";
@@ -798,7 +798,7 @@ static int _init_mxl371x()
 	const char default_conf_file[] = "/jffs/mxl371x/conf/clink.backup";
 	const char *passwd_name[] = {"mocapasswordbandd", "mocapasswordbanddlo", "mocapasswordbanddhi", 
 		"mocapasswordbande", "mocapasswordbandfsat", "mocapasswordbandfcbl", "mocapasswordbandh", "mocapasswordcustom", ""};
-	char passwd[20] = {0}, epasswd[68] = {0}, pwd[68] = {0};
+	char passwd[20] = {0}, epasswd[68] = {0}, *pwd;
 	int flag = 0, i;
 	FILE *fp;
 
@@ -835,29 +835,25 @@ static int _init_mxl371x()
 		system(cmd);
 
 		//confirm prelink key
-		if(nvram_match("x_Setting", "0"))
+		amas_bdlkey = nvram_safe_get("amas_bdlkey");
+		if(amas_bdlkey[0] != '\0')
 		{
-			strlcpy(amas_bdlkey, nvram_safe_get("amas_bdlkey"), sizeof(amas_bdlkey));
-			if(amas_bdlkey[0] != '\0')
+			memset(passwd, 0, sizeof(passwd));
+			memset(epasswd, 0, sizeof(epasswd));
+			if(_convert_moca_passwd(amas_bdlkey, passwd, sizeof(passwd), 0) > 0)
 			{
-				memset(passwd, 0, sizeof(passwd));
-				memset(epasswd, 0, sizeof(epasswd));
-				if(_convert_moca_passwd(amas_bdlkey, passwd, sizeof(passwd), 0) > 0)
-				{
-					nvram_set("moca_password", passwd);
-				}
-				if(_convert_moca_passwd(amas_bdlkey, epasswd, sizeof(epasswd), 1) > 0)
-				{
-					nvram_set("moca_epassword", epasswd);
-				}
+				nvram_set("moca_password", passwd);
+			}
+			if(_convert_moca_passwd(amas_bdlkey, epasswd, sizeof(epasswd), 1) > 0)
+			{
+				nvram_set("moca_epassword", epasswd);
 			}
 		}
-
 		//update password to the default config file from nvram whether there is a bundle key.
 		fp = fopen(default_conf_file, "a");
 		if(fp)
 		{
-			strlcpy(pwd, nvram_safe_get("moca_password"), sizeof(pwd));
+			pwd = nvram_safe_get("moca_password");
 			if(pwd[0] != '\0')
 			{
 				for(i = 0; passwd_name[i][0] != '\0'; ++i)
@@ -865,7 +861,7 @@ static int _init_mxl371x()
 					fprintf(fp, "%s 17 %s\n", passwd_name[i], pwd);
 				}
 			}
-			strlcpy(pwd, nvram_safe_get("moca_epassword"), sizeof(pwd));
+			pwd = nvram_safe_get("moca_epassword");
 			if(pwd[0] != '\0')
 			{
 				fprintf(fp, "enhancedpassword 64 %s\n", pwd);
@@ -1405,7 +1401,7 @@ static int _handle_moca_if_status(const int conn)
 
 static int _handle_moca_if_bridge()
 {
-	char path[256], brif[IFNAMSIZ];
+	char path[256], *brif;
 	static int moca_br_init;
 	moca_br_init  = nvram_get_int("moca_br_init");
 
@@ -1413,7 +1409,7 @@ static int _handle_moca_if_bridge()
 	{
 		nvram_unset("moca_br_init");
 		moca_br_init = 0;
-		strlcpy(brif, nvram_safe_get("lan_ifname"), sizeof(brif));
+		brif = nvram_safe_get("lan_ifname");
 		snprintf(path, sizeof(path), "/sys/class/net/%s/brif/%s", brif, nvram_safe_get("moca_ifname") );
 		if(!check_if_dir_exist(path))
 		{
@@ -1461,7 +1457,7 @@ void get_moca_devices(MOCA_NODE_INFO *moca_devices, int max_devices, int port_id
 {
 	MOCA_ONE_NODE_INFO node[MAX_MOCA_NODES];
 	int i;
-	char mac[18] = {0};
+	char *mac;
 	// dean : Please fill current node information, currently max_devices is always 1 and port_idx is unused.
 	// port_idx is not used currently
 	if (moca_devices) {
@@ -1471,7 +1467,7 @@ void get_moca_devices(MOCA_NODE_INFO *moca_devices, int max_devices, int port_id
 			return;
 		moca_node_state(node, MAX_MOCA_NODES);
 		//_dump_node_array(node, MAX_MOCA_NODES);
-		strlcpy(mac, nvram_safe_get("et0macaddr"), sizeof(mac));
+		mac = nvram_safe_get("et0macaddr");
 		for(i = 0; i < MAX_MOCA_NODES; ++i)
 		{
 			if(!strcasecmp(node[i].macaddr, mac))

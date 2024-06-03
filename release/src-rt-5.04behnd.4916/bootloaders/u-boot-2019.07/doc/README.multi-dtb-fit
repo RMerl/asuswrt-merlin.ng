@@ -1,0 +1,65 @@
+MULTI DTB FIT and SPL_MULTI_DTB_FIT
+
+The purpose of this feature is to enable U-Boot or the SPL to select its DTB
+from a FIT appended at the end of the binary.
+It comes in two flavors: U-Boot (CONFIG_MULTI_DTB_FIT) and SPL
+(CONFIG_SPL_MULTI_DTB_FIT).
+
+U-Boot flavor:
+Usually the DTB is selected by the SPL and passed down to U-Boot. But some
+platforms don't use the SPL. In this case MULTI_DTB_FIT can used to provide
+U-Boot with a choice of DTBs.
+The relevant DTBs are packed into a FIT (list provided by CONFIG__OF_LIST). The
+FIT is automatically generated at the end of the compilation and appended to
+u-boot.bin so that U-Boot can locate it and select the correct DTB from inside
+the FIT.
+The selection is done using board_fit_config_name_match() (same as what the SPL
+uses to select the DTB for U-Boot). The selection happens during fdtdec_setup()
+which is called during before relocation by board_init_f().
+
+SPL flavor:
+the SPL uses only a small subset of the DTB and it usually depends more
+on the SOC than on the board. So it's usually fine to include a DTB in the
+SPL that doesn't exactly match the board. There are howerver some cases
+where it's not possible. In the later case, in order to support multiple
+boards (or board revisions) with the same SPL binary, SPL_MULTI_DTB_FIT
+can be used.
+The relevant DTBs are packed into a FIT. This FIT is automatically generated
+at the end of the compilation, compressed and appended to u-boot-spl.bin, so
+that SPL can locate it and select the correct DTB from inside the FIT.
+CONFIG_SPL__OF_LIST is used to list the relevant DTBs.
+The compression stage is optional but reduces the impact on the size of the
+SPL. LZO and GZIP compressions are supported. By default, the area where the
+FIT is uncompressed is dynamicaly allocated but this behaviour can be changed
+for platforms that don't provide a HEAP big enough to contain the uncompressed
+FIT.
+The SPL uses board_fit_config_name_match() to find the correct DTB within the
+FIT (same as what the SPL uses to select the DTB for U-Boot).
+Uncompression and selection stages happen in fdtdec_setup() which is called
+during the early initialization stage of the SPL (spl_early_init() or
+spl_init())
+
+Impacts and performances (SPL flavor):
+The impact of this option is relatively small. Here are some numbers measured
+for a TI DRA72 platform:
+
+                            +----------+------------+-----------+------------+
+                            |  size    | size delta | SPL boot  | boot time  |
+                            |  (bytes) | (bytes)    | time (s)  | delta (s)  |
++---------------------------+----------+------------+-----------+------------+
+| 1 DTB                     |          |            |           |            |
++---------------------------+----------+------------+-----------+------------+
+| reference                 |   125305 |          0 |     1.389 |          0 |
+| LZO (dynamic allocation)  |   125391 |         86 |     1.381 |     -0.008 |
++---------------------------+----------+------------+-----------+------------+
+| 4 DTBs (DRA7, DRA71,      |          |            |           |            |
+| DRA72, DRA72 revC)        |          |            |           |            |
++---------------------------+----------+------------+-----------+------------+
+| LZO (dynamic allocation)  |   125991 |        686 |      1.39 |      0.001 |
+| LZO (user defined area)   |   125927 |        622 |     1.403 |      0.014 |
+| GZIP (user defined area)  |   133880 |       8575 |     1.421 |      0.032 |
+| No compression (in place) |   137472 |      12167 |     1.412 |      0.023 |
++---------------------------+----------+------------+-----------+------------+
+
+Note: SPL boot time is the time elapsed between the 'reset' command is entered
+and the time when the first U-Boot (not SPL) version string is displayed.

@@ -1,0 +1,130 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * (C) Copyright 2012 SAMSUNG Electronics
+ * SAMSUNG EXYNOS5250 SoC device tree source
+ */
+
+#include "exynos5.dtsi"
+#include "exynos5250-pinctrl.dtsi"
+#include "exynos5250-pinctrl-uboot.dtsi"
+
+/ {
+	aliases {
+		pinctrl0 = &pinctrl_0;
+		pinctrl1 = &pinctrl_1;
+		pinctrl2 = &pinctrl_2;
+		pinctrl3 = &pinctrl_3;
+	};
+
+	pinctrl_0: pinctrl@11400000 {
+		compatible = "samsung,exynos5250-pinctrl";
+		reg = <0x11400000 0x1000>;
+		interrupts = <0 46 0>;
+
+		wakup_eint: wakeup-interrupt-controller {
+			compatible = "samsung,exynos4210-wakeup-eint";
+			interrupt-parent = <&gic>;
+			interrupts = <0 32 0>;
+		};
+	};
+
+	pinctrl_1: pinctrl@13400000 {
+		compatible = "samsung,exynos5250-pinctrl";
+		reg = <0x13400000 0x1000>;
+		interrupts = <0 45 0>;
+	};
+
+	pinctrl_2: pinctrl@10d10000 {
+		compatible = "samsung,exynos5250-pinctrl";
+		reg = <0x10d10000 0x1000>;
+		interrupts = <0 50 0>;
+	};
+
+	pinctrl_3: pinctrl@03860000 {
+		compatible = "samsung,exynos5250-pinctrl";
+		reg = <0x03860000 0x1000>;
+		interrupts = <0 47 0>;
+	};
+
+	i2c_4: i2c@12CA0000 {
+		compatible = "samsung,s3c2440-i2c";
+		reg = <0x12CA0000 0x100>;
+		interrupts = <0 60 0>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+	};
+
+	i2c_5: i2c@12CB0000 {
+		compatible = "samsung,s3c2440-i2c";
+		reg = <0x12CB0000 0x100>;
+		interrupts = <0 61 0>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+	};
+
+	i2c_6: i2c@12CC0000 {
+		compatible = "samsung,s3c2440-i2c";
+		reg = <0x12CC0000 0x100>;
+		interrupts = <0 62 0>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+	};
+
+	i2c_7: i2c@12CD0000 {
+		compatible = "samsung,s3c2440-i2c";
+		reg = <0x12CD0000 0x100>;
+		interrupts = <0 63 0>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+	};
+
+	i2s0: i2s@3830000 {
+		compatible = "samsung,s5pv210-i2s";
+		reg = <0x03830000 0x100>;
+		samsung,idma-addr = <0x03000000>;
+		#clock-cells = <1>;
+		#sound-dai-cells = <1>;
+		samsung,i2s-epll-clock-frequency = <192000000>;
+		samsung,i2s-sampling-rate = <48000>;
+		samsung,i2s-bits-per-sample = <16>;
+		samsung,i2s-channels = <2>;
+		samsung,i2s-lr-clk-framesize = <256>;
+		samsung,i2s-bit-clk-framesize = <32>;
+		samsung,i2s-id = <0>;
+	};
+
+	i2s1: i2s@12d60000 {
+		compatible = "samsung,s5pv210-i2s";
+		reg = <0x12d60000 0x20>;
+		#clock-cells = <1>;
+		#sound-dai-cells = <1>;
+		samsung,i2s-epll-clock-frequency = <192000000>;
+		samsung,i2s-sampling-rate = <48000>;
+		samsung,i2s-bits-per-sample = <16>;
+		samsung,i2s-channels = <2>;
+		samsung,i2s-lr-clk-framesize = <256>;
+		samsung,i2s-bit-clk-framesize = <32>;
+		samsung,i2s-id = <1>;
+	};
+
+
+	xhci@12000000 {
+		compatible = "samsung,exynos5250-xhci";
+		reg = <0x12000000 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		phy {
+			compatible = "samsung,exynos5250-usb3-phy";
+			reg = <0x12100000 0x100>;
+		};
+	};
+
+	pwm: pwm@12dd0000 {
+		compatible = "samsung,exynos4210-pwm";
+		reg = <0x12dd0000 0x100>;
+		samsung,pwm-outputs = <0>, <1>, <2>, <3>;
+		#pwm-cells = <3>;
+	};
+
+};

@@ -1,0 +1,25 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * U-Boot additions
+ *
+ * Copyright (C) 2019 Intel Corporation <www.intel.com>
+ */
+
+/{
+	aliases {
+		spi0 = &qspi;
+	};
+};
+
+&qspi {
+	status = "okay";
+	u-boot,dm-pre-reloc;
+};
+
+&flash0 {
+	compatible = "jedec,spi-nor";
+	spi-max-frequency = <100000000>;
+	spi-tx-bus-width = <4>;
+	spi-rx-bus-width = <4>;
+	u-boot,dm-pre-reloc;
+};

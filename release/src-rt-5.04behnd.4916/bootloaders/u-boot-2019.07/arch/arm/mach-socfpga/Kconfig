@@ -1,0 +1,183 @@
+if ARCH_SOCFPGA
+
+config NR_DRAM_BANKS
+	default 1
+
+config SPL_SIZE_LIMIT
+	default 65536 if TARGET_SOCFPGA_GEN5
+
+config SPL_SIZE_LIMIT_PROVIDE_STACK
+	default 0x200 if TARGET_SOCFPGA_GEN5
+
+config SPL_STACK_R_ADDR
+	default 0x00800000 if TARGET_SOCFPGA_GEN5
+
+config SPL_SYS_MALLOC_F_LEN
+	default 0x800 if TARGET_SOCFPGA_GEN5
+
+config SYS_MMCSD_RAW_MODE_U_BOOT_PARTITION_TYPE
+	default 0xa2
+
+config SYS_MALLOC_F_LEN
+	default 0x2000 if TARGET_SOCFPGA_ARRIA10
+	default 0x2000 if TARGET_SOCFPGA_GEN5
+
+config SYS_TEXT_BASE
+	default 0x01000040 if TARGET_SOCFPGA_ARRIA10
+	default 0x01000040 if TARGET_SOCFPGA_GEN5
+
+config TARGET_SOCFPGA_ARRIA5
+	bool
+	select TARGET_SOCFPGA_GEN5
+
+config TARGET_SOCFPGA_ARRIA10
+	bool
+	select SPL_ALTERA_SDRAM
+	select SPL_BOARD_INIT if SPL
+	select CLK
+	select SPL_CLK if SPL
+	select DM_I2C
+	select DM_RESET
+	select SPL_DM_RESET if SPL
+	select REGMAP
+	select SPL_REGMAP if SPL
+	select SYSCON
+	select SPL_SYSCON if SPL
+	select ETH_DESIGNWARE_SOCFPGA
+	imply FPGA_SOCFPGA
+	imply USE_TINY_PRINTF
+
+config TARGET_SOCFPGA_CYCLONE5
+	bool
+	select TARGET_SOCFPGA_GEN5
+
+config TARGET_SOCFPGA_GEN5
+	bool
+	select SPL_ALTERA_SDRAM
+	imply FPGA_SOCFPGA
+	imply SPL_SIZE_LIMIT_SUBTRACT_GD
+	imply SPL_SIZE_LIMIT_SUBTRACT_MALLOC
+	imply SPL_STACK_R
+	imply SPL_SYS_MALLOC_SIMPLE
+	imply USE_TINY_PRINTF
+
+config TARGET_SOCFPGA_STRATIX10
+	bool
+	select ARMV8_MULTIENTRY
+	select ARMV8_SET_SMPEN
+	select ARMV8_SPIN_TABLE
+	select FPGA_STRATIX10
+
+choice
+	prompt "Altera SOCFPGA board select"
+	optional
+
+config TARGET_SOCFPGA_ARIES_MCVEVK
+	bool "Aries MCVEVK (Cyclone V)"
+	select TARGET_SOCFPGA_CYCLONE5
+
+config TARGET_SOCFPGA_ARRIA10_SOCDK
+	bool "Altera SOCFPGA SoCDK (Arria 10)"
+	select TARGET_SOCFPGA_ARRIA10
+
+config TARGET_SOCFPGA_ARRIA5_SOCDK
+	bool "Altera SOCFPGA SoCDK (Arria V)"
+	select TARGET_SOCFPGA_ARRIA5
+
+config TARGET_SOCFPGA_CYCLONE5_SOCDK
+	bool "Altera SOCFPGA SoCDK (Cyclone V)"
+	select TARGET_SOCFPGA_CYCLONE5
+
+config TARGET_SOCFPGA_DEVBOARDS_DBM_SOC1
+	bool "Devboards DBM-SoC1 (Cyclone V)"
+	select TARGET_SOCFPGA_CYCLONE5
+
+config TARGET_SOCFPGA_EBV_SOCRATES
+	bool "EBV SoCrates (Cyclone V)"
+	select TARGET_SOCFPGA_CYCLONE5
+
+config TARGET_SOCFPGA_IS1
+	bool "IS1 (Cyclone V)"
+	select TARGET_SOCFPGA_CYCLONE5
+
+config TARGET_SOCFPGA_SAMTEC_VINING_FPGA
+	bool "samtec VIN|ING FPGA (Cyclone V)"
+	select BOARD_LATE_INIT
+	select TARGET_SOCFPGA_CYCLONE5
+
+config TARGET_SOCFPGA_SR1500
+	bool "SR1500 (Cyclone V)"
+	select TARGET_SOCFPGA_CYCLONE5
+
+config TARGET_SOCFPGA_STRATIX10_SOCDK
+	bool "Intel SOCFPGA SoCDK (Stratix 10)"
+	select TARGET_SOCFPGA_STRATIX10
+
+config TARGET_SOCFPGA_TERASIC_DE0_NANO
+	bool "Terasic DE0-Nano-Atlas (Cyclone V)"
+	select TARGET_SOCFPGA_CYCLONE5
+
+config TARGET_SOCFPGA_TERASIC_DE10_NANO
+	bool "Terasic DE10-Nano (Cyclone V)"
+	select TARGET_SOCFPGA_CYCLONE5
+
+config TARGET_SOCFPGA_TERASIC_DE1_SOC
+	bool "Terasic DE1-SoC (Cyclone V)"
+	select TARGET_SOCFPGA_CYCLONE5
+
+config TARGET_SOCFPGA_TERASIC_SOCKIT
+	bool "Terasic SoCkit (Cyclone V)"
+	select TARGET_SOCFPGA_CYCLONE5
+
+endchoice
+
+config SYS_BOARD
+	default "arria5-socdk" if TARGET_SOCFPGA_ARRIA5_SOCDK
+	default "arria10-socdk" if TARGET_SOCFPGA_ARRIA10_SOCDK
+	default "cyclone5-socdk" if TARGET_SOCFPGA_CYCLONE5_SOCDK
+	default "dbm-soc1" if TARGET_SOCFPGA_DEVBOARDS_DBM_SOC1
+	default "de0-nano-soc" if TARGET_SOCFPGA_TERASIC_DE0_NANO
+	default "de1-soc" if TARGET_SOCFPGA_TERASIC_DE1_SOC
+	default "de10-nano" if TARGET_SOCFPGA_TERASIC_DE10_NANO
+	default "is1" if TARGET_SOCFPGA_IS1
+	default "mcvevk" if TARGET_SOCFPGA_ARIES_MCVEVK
+	default "sockit" if TARGET_SOCFPGA_TERASIC_SOCKIT
+	default "socrates" if TARGET_SOCFPGA_EBV_SOCRATES
+	default "sr1500" if TARGET_SOCFPGA_SR1500
+	default "stratix10-socdk" if TARGET_SOCFPGA_STRATIX10_SOCDK
+	default "vining_fpga" if TARGET_SOCFPGA_SAMTEC_VINING_FPGA
+
+config SYS_VENDOR
+	default "altera" if TARGET_SOCFPGA_ARRIA5_SOCDK
+	default "altera" if TARGET_SOCFPGA_ARRIA10_SOCDK
+	default "altera" if TARGET_SOCFPGA_CYCLONE5_SOCDK
+	default "altera" if TARGET_SOCFPGA_STRATIX10_SOCDK
+	default "aries" if TARGET_SOCFPGA_ARIES_MCVEVK
+	default "devboards" if TARGET_SOCFPGA_DEVBOARDS_DBM_SOC1
+	default "ebv" if TARGET_SOCFPGA_EBV_SOCRATES
+	default "samtec" if TARGET_SOCFPGA_SAMTEC_VINING_FPGA
+	default "terasic" if TARGET_SOCFPGA_TERASIC_DE0_NANO
+	default "terasic" if TARGET_SOCFPGA_TERASIC_DE1_SOC
+	default "terasic" if TARGET_SOCFPGA_TERASIC_DE10_NANO
+	default "terasic" if TARGET_SOCFPGA_TERASIC_SOCKIT
+
+config SYS_SOC
+	default "socfpga"
+
+config SYS_CONFIG_NAME
+	default "socfpga_arria5_socdk" if TARGET_SOCFPGA_ARRIA5_SOCDK
+	default "socfpga_arria10_socdk" if TARGET_SOCFPGA_ARRIA10_SOCDK
+	default "socfpga_cyclone5_socdk" if TARGET_SOCFPGA_CYCLONE5_SOCDK
+	default "socfpga_dbm_soc1" if TARGET_SOCFPGA_DEVBOARDS_DBM_SOC1
+	default "socfpga_de0_nano_soc" if TARGET_SOCFPGA_TERASIC_DE0_NANO
+	default "socfpga_de1_soc" if TARGET_SOCFPGA_TERASIC_DE1_SOC
+	default "socfpga_de10_nano" if TARGET_SOCFPGA_TERASIC_DE10_NANO
+	default "socfpga_is1" if TARGET_SOCFPGA_IS1
+	default "socfpga_mcvevk" if TARGET_SOCFPGA_ARIES_MCVEVK
+	default "socfpga_sockit" if TARGET_SOCFPGA_TERASIC_SOCKIT
+	default "socfpga_socrates" if TARGET_SOCFPGA_EBV_SOCRATES
+	default "socfpga_sr1500" if TARGET_SOCFPGA_SR1500
+	default "socfpga_stratix10_socdk" if TARGET_SOCFPGA_STRATIX10_SOCDK
+	default "socfpga_vining_fpga" if TARGET_SOCFPGA_SAMTEC_VINING_FPGA
+
+endif

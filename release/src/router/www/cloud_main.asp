@@ -160,6 +160,10 @@ function initial(){
 
 	//check DUT is belong to private IP.
 	setTimeout("show_warning_message();", 1000);
+
+	if(isSupport("wifi7")){
+		$("#tr_aicloud_sync").remove();
+	}
 }
 
 var wans_mode ='<% nvram_get("wans_mode"); %>';
@@ -850,7 +854,7 @@ function update_applist(e){
 											</td>
 									  </tr>
 
-									  <tr class="block_bg">
+									  <tr class="block_bg" id="tr_aicloud_sync">
 									    <td class="cloud_main_radius_left" width="20%" height="50px">
 												<div style="padding:10px;" align="center">
 													<img src="/images/cloudsync/003.png">

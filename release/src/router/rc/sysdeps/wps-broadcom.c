@@ -363,6 +363,9 @@ start_wps_method(void)
 	char ifname[NVRAM_MAX_PARAM_LEN];
 	char word[256], *next;
 	int unit;
+#if (defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G))
+	int band;
+#endif
 
 	if (getpid()!=1) {
 		notify_rc("start_wps_method");
@@ -445,6 +448,11 @@ start_wps_method(void)
 			kill_pidfile_s("/var/run/wps_pbcd.pid", SIGUSR1);
 
 			foreach (word, nvram_safe_get("wl_ifnames"), next) {
+#if (defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G))
+				wl_ioctl(word, WLC_GET_BAND, &band, sizeof(band));
+				if (band == WLC_BAND_6G)
+					continue;
+#endif
 				snprintf(cmd, sizeof(cmd), "hostapd_cli -p"
 					" %s -i %s wps_pbc", HAPD_DIR, word);
 

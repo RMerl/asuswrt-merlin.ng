@@ -171,6 +171,17 @@ static const char date_longopts[] ALIGN1 =
 		;
 #endif
 
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+int stime(const time_t *t)
+{
+	struct timeval tv;
+	tv.tv_sec = *t;
+	tv.tv_usec = 0;
+	return settimeofday(&tv, NULL);
+}
+
+#endif
+
 int date_main(int argc, char **argv) MAIN_EXTERNALLY_VISIBLE;
 int date_main(int argc UNUSED_PARAM, char **argv)
 {

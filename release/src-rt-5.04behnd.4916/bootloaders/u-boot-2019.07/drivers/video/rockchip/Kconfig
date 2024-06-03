@@ -1,0 +1,70 @@
+#
+# Video drivers selection for rockchip soc. These configs only impact the
+# compile process. You can surely check all the options. In this case, all the
+# display driver will be compiled, but which drivers finally  will be used is
+# decided by device tree configuration. What's more, enable needed power for
+# display by configure the device tree, and the vop driver will do the rest.
+#
+# Author: Eric Gao <eric.gao@rock-chips.com>
+#
+
+menuconfig VIDEO_ROCKCHIP
+	bool "Enable Rockchip Video Support"
+	depends on DM_VIDEO
+	help
+	  Rockchip SoCs provide video output capabilities for High-Definition
+	  Multimedia Interface (HDMI), Low-voltage Differential Signalling
+	  (LVDS), embedded DisplayPort (eDP) and Display Serial Interface (DSI).
+
+	  This driver supports the on-chip video output device, and targets the
+	  Rockchip RK3288 and RK3399.
+
+config VIDEO_ROCKCHIP_MAX_XRES
+        int "Maximum horizontal resolution (for memory allocation purposes)"
+	depends on VIDEO_ROCKCHIP
+	default 1920
+	help
+	  The maximum horizontal resolution to support for the framebuffer.
+	  This configuration is used for reserving/allocating memory for the
+	  framebuffer during device-model binding/probing.
+
+config VIDEO_ROCKCHIP_MAX_YRES
+        int "Maximum vertical resolution (for memory allocation purposes)"
+	depends on VIDEO_ROCKCHIP
+	default 1080
+	help
+	  The maximum vertical resolution to support for the framebuffer.
+	  This configuration is used for reserving/allocating memory for the
+	  framebuffer during device-model binding/probing.
+
+if VIDEO_ROCKCHIP
+
+config DISPLAY_ROCKCHIP_EDP
+	bool "EDP Port"
+	depends on VIDEO_ROCKCHIP
+	help
+	  This enables Embedded DisplayPort(EDP) display support.
+
+config DISPLAY_ROCKCHIP_LVDS
+	bool "LVDS Port"
+	depends on VIDEO_ROCKCHIP
+	help
+	  This enables Low-voltage Differential Signaling(LVDS) display
+	  support.
+
+config DISPLAY_ROCKCHIP_HDMI
+	bool "HDMI port"
+	select VIDEO_DW_HDMI
+	depends on VIDEO_ROCKCHIP
+	help
+	  This enables High-Definition Multimedia Interface display support.
+
+config DISPLAY_ROCKCHIP_MIPI
+	bool "MIPI Port"
+	depends on VIDEO_ROCKCHIP
+	help
+	  This enables Mobile Industry Processor Interface(MIPI) display
+	  support. The mipi controller and dphy on rk3288& rk3399 support
+	  16,18, 24 bits per pixel with up to 2k resolution ratio.
+
+endif

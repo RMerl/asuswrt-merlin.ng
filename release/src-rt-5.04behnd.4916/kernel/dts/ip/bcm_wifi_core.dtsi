@@ -1,0 +1,62 @@
+#if defined(CONFIG_64BIT)
+#define HI32    0
+#else
+#define HI32
+#endif
+
+compatible = "brcm,bcm963xx-vpcie";
+device_type = "vpci";
+reg = <HI32 WIFI_ADDR HI32 WIFI_SIZE>;
+
+brcm,coreid = <WIFI_COREID>;                              /* VPCIe core ID */
+brcm,devid = <WIFI_DEVID>;                                /* VPCIe Device Id */
+#if defined(PCIE_DOMAIN_ID)
+linux,pci-domain = <PCIE_DOMAIN_ID>;
+#else
+linux,pci-domain = <WIFI_COREID>;
+#endif
+
+/*
+ * Order:
+ *  CCM, D11MAC, M2MDMA, WDRST,                         * 11ax, 11be *
+ *  M2MDMA1, MLC, PHY, THERM_HI, THERM_LO, THERM_SD     * 11be *
+ */
+#if defined(WIFI_CCM_SPI)
+#if defined(WIFI_M2MDMA1_SPI)
+interrupts = <GIC_SPI WIFI_CCM_SPI IRQ_TYPE_LEVEL_HIGH>,         /* CCM */
+			<GIC_SPI WIFI_D11MAC_SPI IRQ_TYPE_LEVEL_HIGH>,       /* D11MAC */
+			<GIC_SPI WIFI_M2MDMA_SPI IRQ_TYPE_LEVEL_HIGH>,       /* M2MDMA */
+			<GIC_SPI WIFI_WDRST_SPI IRQ_TYPE_LEVEL_HIGH>,        /* WDRST */
+			<GIC_SPI WIFI_M2MDMA1_SPI IRQ_TYPE_LEVEL_HIGH>,      /* M2MDMA1 */
+			<GIC_SPI WIFI_MLC_SPI IRQ_TYPE_LEVEL_HIGH>,          /* MLC */
+			<GIC_SPI WIFI_PHY_SPI IRQ_TYPE_LEVEL_HIGH>,          /* PHY */
+			<GIC_SPI WIFI_THERM_HI_SPI IRQ_TYPE_LEVEL_HIGH>,     /* THERM_HI */
+			<GIC_SPI WIFI_THERM_LO_SPI IRQ_TYPE_LEVEL_HIGH>,     /* THERM_LO */
+			<GIC_SPI WIFI_THERM_SD_SPI IRQ_TYPE_LEVEL_HIGH>;     /* THERM_SD */
+#else
+interrupts = <GIC_SPI WIFI_CCM_SPI IRQ_TYPE_LEVEL_HIGH>,         /* CCM */
+			<GIC_SPI WIFI_D11MAC_SPI IRQ_TYPE_LEVEL_HIGH>,       /* D11MAC */
+			<GIC_SPI WIFI_M2MDMA_SPI IRQ_TYPE_LEVEL_HIGH>,       /* M2MDMA */
+			<GIC_SPI WIFI_WDRST_SPI IRQ_TYPE_LEVEL_HIGH>;        /* WDRST */
+#endif
+#endif
+
+status = "okay";
+
+/* to let add multiple wifi without errors undefine wifi/pcie definitions */
+#undef WIFI_COREID
+#undef WIFI_ADDR
+#undef WIFI_SIZE
+#undef WIFI_DEVID
+#undef WIFI_CCM_SPI
+#undef WIFI_D11MAC_SPI
+#undef WIFI_M2MDMA_SPI
+#undef WIFI_WDRST_SPI
+#undef WIFI_M2MDMA1_SPI
+#undef WIFI_MLC_SPI
+#undef WIFI_PHY_SPI
+#undef WIFI_THERM_HI_SPI
+#undef WIFI_THERM_LO_SPI
+#undef WIFI_THERM_SD_SPI
+#undef PCIE_DOMAIN_ID
+#undef HI32

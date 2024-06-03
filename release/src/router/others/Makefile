@@ -51,6 +51,18 @@ ifeq ($(RTAC1200GU),y)
 	install smp_4300.sh $(INSTALLDIR)/sbin/smp.sh
 else ifeq ($(RTAC85U)$(RTAC85P)$(RPAC87)$(RTN800HP)$(RTACRH26),y)
 	install smp_5010.sh $(INSTALLDIR)/sbin/smp.sh
+#else ifeq ($(RT4GAX56),y)
+#	install smp_openwr_4200_MT7621.sh $(INSTALLDIR)/sbin/smp.sh
+else ifeq ($(RTCONFIG_WLMODULE_MT7915D_AP),y)
+	install smp_openwr_4210_MT7621.sh $(INSTALLDIR)/sbin/smp.sh
+endif
+endif
+ifeq ($(RTCONFIG_RALINK_MT7629)$(RTCONFIG_RALINK_MT7622),y)
+ifeq ($(RTACRH18),y)
+	install smp_openwr_4200.sh $(INSTALLDIR)/sbin/smp.sh
+endif
+ifeq ($(RT4GAC86U),y)
+	install smp_openwr_4200_mt7622.sh $(INSTALLDIR)/sbin/smp.sh
 endif
 endif
 endif

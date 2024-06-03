@@ -1,0 +1,7 @@
+STM32H743 DISCOVERY BOARD
+M:	Patrice Chotard <patrice.chotard@st.com>
+S:	Maintained
+F:	board/st/stm32h743-disco
+F:	include/configs/stm32h743-disco.h
+F:	configs/stm32h743-disco_defconfig
+F:	arch/arm/dts/stm32h7*

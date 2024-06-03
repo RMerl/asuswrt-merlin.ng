@@ -1,0 +1,6 @@
+TQ SYSTEMS TQMA6 BOARD
+M:	Markus Niebel <Markus.Niebel@tq-group.com>
+S:	Maintained
+F:	board/tqc/tqma6/
+F:	include/configs/tqma6.h
+F:	configs/tqma6*_defconfig

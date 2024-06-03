@@ -1,0 +1,9 @@
+<PUBLISH>
+@@ special demark for maketargets.  All + and - lines after this line will modify profile.
+@@ Note this arch file assumes the base profile is CMS.
+@@ DSL and PON base profiles are now BDK, so use CMS181 to convert those profiles to CMS+TR181.
+-BUILD_DM_HYBRID=y
+-BUILD_DM_LEGACY98=y
++BUILD_DM_PURE181=y
+-BUILD_QUICKSETUP=y
++BUILD_QUICKSETUP is not set

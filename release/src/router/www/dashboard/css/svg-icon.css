@@ -1,0 +1,199 @@
+@charset "UTF-8";
+/*SVG icon mask image settings*/
+[role~="icon"] {
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-size: 100%;
+    mask-size: 100%;
+    transition: transform 0.35s ease;
+    background-color: rgb(var(--color-icon-default));
+}
+
+/* SVG icon size */
+.icon-size-logo {
+    width: 78px;
+    height: 16px;
+}
+.icon-size-logo-business {
+    width: 200px;
+    height: 48px;
+}
+.icon-size-20 {
+    width: 20px;
+    height: 20px;
+}
+.icon-size-24 {
+    width: 24px;
+    height: 24px;
+}
+.icon-size-28 {
+    width: 28px;
+    height: 28px;
+}
+.icon-size-32 {
+    width: 32px;
+    height: 32px;
+}
+.icon-size-36 {
+    width: 36px;
+    height: 36px;
+}
+.icon-size-48 {
+    width: 48px;
+    height: 48px;
+}
+.icon-size-64 {
+    width: 64px;
+    height: 64px;
+}
+
+/* SVG icon category */
+/* BASIC ARCHITECTURE */
+.icon-logo {
+    -webkit-mask-image: url("../images/logo_asus.svg");
+    mask-image: url("../images/logo_asus.svg");
+}
+.icon-logo-business {
+    background-image: url("../images/asus_logo_business.svg");
+    background-repeat: no-repeat;
+    background-color: transparent;
+}
+[role~="icon"].icon-logo-business:hover {
+    background-color: transparent;
+}
+.icon-menu {
+    -webkit-mask-image: url("../images/menu.svg");
+    mask-image: url("../images/menu.svg");
+}
+.icon-logout {
+    -webkit-mask-image: url("../images/logout.svg");
+    mask-image: url("../images/logout.svg");
+}
+.icon-reboot {
+    -webkit-mask-image: url("../images/reboot.svg");
+    mask-image: url("../images/reboot.svg");
+}
+.icon-language {
+    -webkit-mask-image: url("../images/language.svg");
+    mask-image: url("../images/language.svg");
+}
+.icon-more-vert {
+    -webkit-mask-image: url("../images/more_vert.svg");
+    mask-image: url("../images/more_vert.svg");
+}
+
+.icon-home {
+    -webkit-mask-image: url("../images/home.svg");
+    mask-image: url("../images/home.svg");
+}
+.icon-dashboard {
+    -webkit-mask-image: url("../images/dashboard.svg");
+    mask-image: url("../images/dashboard.svg");
+}
+.icon-aiProtection {
+    -webkit-mask-image: url("../images/aiProtection.svg");
+    mask-image: url("../images/aiProtection.svg");
+}
+.icon-trafficAnalyzer {
+    -webkit-mask-image: url("../images/traffic_analyzer.svg");
+    mask-image: url("../images/traffic_analyzer.svg");
+}
+.icon-help {
+    -webkit-mask-image: url("../images/help.svg");
+    mask-image: url("../images/help.svg");
+}
+.icon-theme-switch {
+    -webkit-mask-image: url("../images/theme_switch.svg");
+    mask-image: url("../images/theme_switch.svg");
+}
+.icon-close {
+    -webkit-mask-image: url("../images/close.svg");
+    mask-image: url("../images/close.svg");
+}
+.icon-more-horiz {
+    -webkit-mask-image: url("../images/more_horiz.svg");
+    mask-image: url("../images/more_horiz.svg");
+}
+
+/* DASHBOARD */
+.icon-add-chart {
+    -webkit-mask-image: url("../images/add_chart.svg");
+    mask-image: url("../images/add_chart.svg");
+}
+.icon-settings {
+    -webkit-mask-image: url("../images/settings.svg");
+    mask-image: url("../images/settings.svg");
+}
+.icon-wan-connection {
+    -webkit-mask-image: url("../images/wan-connection.svg");
+    mask-image: url("../images/wan-connection.svg");
+}
+.icon-wan-cable {
+    -webkit-mask-image: url("../images/wan-cable.svg");
+    mask-image: url("../images/wan-cable.svg");
+}
+
+/* DASHBOARD CLIENTS */
+.icon-wifi {
+    -webkit-mask-image: url("../images/wifi.svg");
+    mask-image: url("../images/wifi.svg");
+}
+.icon-clients {
+    -webkit-mask-image: url("../images/clients.svg");
+    mask-image: url("../images/clients.svg");
+}
+
+/* DASHBOARD PING */
+.icon-add-location {
+    -webkit-mask-image: url("../images/add_location.svg");
+    mask-image: url("../images/add_location.svg");
+}
+.icon-delete {
+    -webkit-mask-image: url("../images/delete.svg");
+    mask-image: url("../images/delete.svg");
+}
+.icon-search-server {
+    -webkit-mask-image: url("../images/search_server.svg");
+    mask-image: url("../images/search_server.svg");
+}
+.icon-folder-open {
+    -webkit-mask-image: url("../images/folder_open.svg");
+    mask-image: url("../images/folder_open.svg");
+}
+
+/* AiProtection */
+.icon-add-circle {
+    -webkit-mask-image: url("../images/add_circle.svg");
+    mask-image: url("../images/add_circle.svg");
+}
+.icon-delete-circle {
+    -webkit-mask-image: url("../images/delete_circle.svg");
+    mask-image: url("../images/delete_circle.svg");
+}
+.icon-export-file {
+    -webkit-mask-image: url("../images/export_file.svg");
+    mask-image: url("../images/export_file.svg");
+}
+.icon-edit-document {
+    -webkit-mask-image: url("../images/edit_document.svg");
+    mask-image: url("../images/edit_document.svg");
+}
+.icon-settings-alert {
+    -webkit-mask-image: url("../images/settings_alert.svg");
+    mask-image: url("../images/settings_alert.svg");
+}
+
+/* Web History */
+.icon-refresh {
+    -webkit-mask-image: url("../images/refresh.svg");
+    mask-image: url("../images/refresh.svg");
+}
+
+.icon-traffic-up {
+    -webkit-mask-image: url("../images/traffic_up.svg");
+    mask-image: url("../images/traffic_up.svg");
+}
+.icon-traffic-down {
+    -webkit-mask-image: url("../images/traffic_down.svg");
+    mask-image: url("../images/traffic_down.svg");
+}

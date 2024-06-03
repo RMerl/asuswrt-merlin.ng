@@ -174,16 +174,6 @@ int is_internet_connect(int unit){
 
 int is_wan_connect(int unit){
 	int wan_state, wan_sbstate, wan_auxstate;
-#ifdef RTCONFIG_BCMARM
-	char prefix[] = "wanXXXXXXXXXX_";
-	int wan_proto = 0;
-
-	snprintf(prefix, sizeof(prefix), "wan%d_", unit);
-	wan_proto = get_wan_proto(prefix);
-
-	if(wan_proto == WAN_STATIC)
-		return is_phy_connect2(unit);
-#endif
 
 	if(!is_phy_connect(unit))
 		return 0;
@@ -205,15 +195,6 @@ int is_wan_connect(int unit){
 int is_phy_connect(int unit){
 	char prefix[sizeof("link_wanXXXXXX")], *ptr;
 	int link_wan;
-#ifdef RTCONFIG_BCMARM
-	int wan_proto = 0;
-
-	snprintf(prefix, sizeof(prefix), "wan%d_", unit);
-	wan_proto = get_wan_proto(prefix);
-
-	if(wan_proto == WAN_STATIC)
-		return is_phy_connect2(unit);
-#endif
 
 	link_wan_nvname(unit, prefix, sizeof(prefix));
 
@@ -338,6 +319,39 @@ int get_wan_unit(char *ifname)
 		}
 	}
 
+#ifdef RTCONFIG_MULTIWAN_IF
+	for(unit = MULTI_WAN_START_IDX; unit < MULTI_WAN_START_IDX + MAX_MULTI_WAN_NUM; unit++) {
+		snprintf(prefix, sizeof(prefix), "wan%d_", unit);
+		wan_proto = get_wan_proto(prefix);
+
+		switch (wan_proto) {
+		case WAN_PPPOE:
+		case WAN_PPTP:
+		case WAN_L2TP:
+#ifdef RTCONFIG_SOFTWIRE46
+		case WAN_LW4O6:
+		case WAN_MAPE:
+		case WAN_V6PLUS:
+#endif
+			if (nvram_match(strlcat_r(prefix, "pppoe_ifname", tmp, sizeof(tmp)), ifname))
+				return unit;
+#ifdef RTCONFIG_USB_MODEM
+			if (dualwan_unit__usbif(unit))
+				break;
+#endif
+			/* fall through */
+		default:
+			if (nvram_match(strlcat_r(prefix, "ifname", tmp, sizeof(tmp)), ifname))
+				return unit;
+#ifdef BLUECAVE
+			if (bluecave)
+				return unit;
+#endif
+			break;
+		}
+	}
+#endif
+
 	return -1;
 }
 #endif
@@ -411,6 +425,7 @@ char *get_wan6_ifname(int unit)
 	char tmp[100], prefix[sizeof("wanXXXXXXXXXX_")];
 	char *wan_ifname;
 	int wan_proto;
+	static char tunnel_ifname[IFNAMSIZ] = {0};
 
 	switch (get_ipv6_service_by_unit(unit)) {
 	case IPV6_NATIVE_DHCP:
@@ -445,8 +460,8 @@ char *get_wan6_ifname(int unit)
 	case IPV6_6TO4:
 	case IPV6_6IN4:
 	case IPV6_6RD:
-		/* no ipv6 multiwan tunnel support so far */
-		wan_ifname = "v6tun0";
+		snprintf(tunnel_ifname, sizeof(tunnel_ifname), "v6tun%d", unit);
+		wan_ifname = tunnel_ifname;
 		break;
 	default:
 		return "";
@@ -570,6 +585,14 @@ wan_primary_ifunit(void)
 		if (nvram_match(strlcat_r(prefix, "primary", tmp, sizeof(tmp)), "1"))
 			return unit;
 	}
+
+#ifdef RTCONFIG_MULTIWAN_PROFILE
+	for (unit = MULTI_WAN_START_IDX; unit < MULTI_WAN_START_IDX + MAX_MULTI_WAN_NUM; unit++) {
+		snprintf(prefix, sizeof(prefix), "wan%d_", unit);
+		if (nvram_match(strlcat_r(prefix, "primary", tmp, sizeof(tmp)), "1"))
+			return unit;
+	}
+#endif
 
 	return 0;
 }
@@ -911,6 +934,33 @@ int get_wans_dualwan(void)
 	return caps;
 }
 
+static int _convert_wan_type(char *type)
+{
+	if(!type)
+		return WANS_DUALWAN_IF_NONE;
+	if (!strcmp(type,"lan"))
+		return WANS_DUALWAN_IF_LAN;
+	if (!strcmp(type,"2g"))
+		return WANS_DUALWAN_IF_2G;
+	if (!strcmp(type,"5g"))
+		return WANS_DUALWAN_IF_5G;
+	if (!strcmp(type,"usb"))
+		return WANS_DUALWAN_IF_USB;
+	if (!strcmp(type,"dsl"))
+		return WANS_DUALWAN_IF_DSL;
+	if (!strcmp(type,"wan"))
+		return WANS_DUALWAN_IF_WAN;
+	if (!strcmp(type,"wan2"))
+		return WANS_DUALWAN_IF_WAN2;
+#ifdef RTCONFIG_USB_MULTIMODEM
+	if (!strcmp(type,"usb2"))
+		return WANS_DUALWAN_IF_USB2;
+#endif
+	if (!strcmp(type,"sfp+"))
+		return WANS_DUALWAN_IF_SFPP;
+	return WANS_DUALWAN_IF_NONE;
+}
+
 int get_dualwan_by_unit(int unit) 
 {
 	int i;
@@ -929,6 +979,22 @@ int get_dualwan_by_unit(int unit)
 		return WAN_UNIT_VOIP;
 #endif
 
+#ifdef RTCONFIG_MULTIWAN_IF
+	if(unit >= MULTI_WAN_START_IDX && unit < MULTI_WAN_START_IDX + MAX_MULTI_WAN_NUM)
+	{
+		snprintf(word, sizeof(word), "wan%d_type", unit);
+		return _convert_wan_type(nvram_safe_get(word));
+	}
+#ifdef RTCONFIG_MULTISERVICE_WAN
+	int base_unit = get_ms_base_unit(unit);
+	if(base_unit >= MULTI_WAN_START_IDX && base_unit < MULTI_WAN_START_IDX + MAX_MULTI_WAN_NUM)
+	{
+		snprintf(word, sizeof(word), "wan%d_type", base_unit);
+		return _convert_wan_type(nvram_safe_get(word));
+	}
+#endif
+#endif
+
 	i = 0;
 	foreach(word, wans_dualwan, next) {
 		if(i==unit
@@ -936,18 +1002,7 @@ int get_dualwan_by_unit(int unit)
 			|| i == get_ms_base_unit(unit)
 #endif
 		) {
-			if (!strcmp(word,"lan")) return WANS_DUALWAN_IF_LAN;
-			if (!strcmp(word,"2g")) return WANS_DUALWAN_IF_2G;
-			if (!strcmp(word,"5g")) return WANS_DUALWAN_IF_5G;
-			if (!strcmp(word,"usb")) return WANS_DUALWAN_IF_USB;
-			if (!strcmp(word,"dsl")) return WANS_DUALWAN_IF_DSL;
-			if (!strcmp(word,"wan")) return WANS_DUALWAN_IF_WAN;
-			if (!strcmp(word,"wan2")) return WANS_DUALWAN_IF_WAN2;
-#ifdef RTCONFIG_USB_MULTIMODEM
-			if (!strcmp(word,"usb2")) return WANS_DUALWAN_IF_USB2;
-#endif
-			if (!strcmp(word,"sfp+")) return WANS_DUALWAN_IF_SFPP;
-			return WANS_DUALWAN_IF_NONE;
+			return _convert_wan_type(word);
 		}
 		i++;
 	}
@@ -963,6 +1018,15 @@ int get_wanunit_by_type(int wan_type){
 			return unit;
 		}
 	}
+
+#ifdef RTCONFIG_MULTIWAN_IF
+	char prefix[16];
+	for(unit = MULTI_WAN_START_IDX; unit < MULTI_WAN_START_IDX + MAX_MULTI_WAN_NUM; ++unit) {
+		snprintf(prefix, sizeof(prefix), "wan%d_", unit);
+		if (wan_type == _convert_wan_type(nvram_pf_safe_get(prefix, "type")))
+			return unit;
+	}
+#endif
 
 	return WAN_UNIT_NONE;
 }
@@ -1045,11 +1109,10 @@ int get_nr_guest_network(int band)
 
 int get_gate_num(void)
 {
-	char prefix[] = "wanXXXXXXXXXX_";
+	char prefix[] = "wanXXXXXXXXXX_", link_wan[sizeof("link_wanXXXXXX")];
 	char wan_ip[32], wan_gate[32];
 	int unit;
 	int gate_num = 0;
-
 	for (unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit){ // Multipath
 		snprintf(prefix, sizeof(prefix), "wan%d_", unit);
 		strncpy(wan_ip, nvram_pf_safe_get(prefix, "ipaddr"), 32);
@@ -1059,17 +1122,16 @@ int get_gate_num(void)
 		if(!is_wan_connect(unit))
 			continue;
 
-#ifndef RTCONFIG_BCMARM
 		/* We need to check link_wanX instead of wanX_state_t if this WAN unit is static IP. */
-		char link_wan[sizeof("link_wanXXXXXX")];
-
 		if (nvram_pf_match(prefix, "proto", "static") && dualwan_unit__nonusbif(unit)) {
-			link_wan_nvname(unit, link_wan, sizeof(link_wan));
+			if (unit == WAN_UNIT_FIRST)
+				strlcpy(link_wan, "link_wan", sizeof(link_wan));
+			else
+				snprintf(link_wan, sizeof(link_wan), "link_wan%d", unit);
 
 			if (!nvram_match(link_wan, "1"))
 				continue;
 		}
-#endif
 
 		if(strlen(wan_gate) <= 0 || !strcmp(wan_gate, "0.0.0.0"))
 			continue;
@@ -1125,6 +1187,22 @@ void add_lan_phy(char *phy)
 
 	snprintf(phys, sizeof(phys), "%s%s%s", ifnames,
 		(*ifnames && *phy) ? " " : "", phy);
+	nvram_set("lan_ifnames", phys);
+}
+
+void del_lan_phy(const char *phy)
+{
+	char phys[128] = {0};
+	const char *ifnames, *p;
+
+	if (phy == NULL || *phy == '\0')
+		return;
+
+	ifnames = nvram_safe_get("lan_ifnames");
+	if(!(p = find_word(ifnames, phy)))
+		return;	// not exist
+	strncpy(phys, ifnames, p - ifnames);
+	strlcat(phys, p + strlen(phy) + 1, sizeof(phys));
 	nvram_set("lan_ifnames", phys);
 }
 
@@ -1241,7 +1319,7 @@ char *get_default_ssid(int unit, int subunit)
 	char ssidbase[16], *macp = NULL;
 	unsigned char mac_binary[6];
 	const char *post_5g __attribute__((unused)) = "-1", *post_5g2 __attribute__((unused))= "-2", *post_guest = "_Guest";	/* postfix for RTCONFIG_NEWSSID_REV2 case */
-#if defined(RTCONFIG_WIFI6E)
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G)
 	const char *post_6g __attribute__((unused)) = "6G";
 #endif
 #if defined(RTCONFIG_NEWSSID_REV2) || defined(RTCONFIG_NEWSSID_REV4) || defined(RTCONFIG_NEWSSID_REV5)
@@ -1259,7 +1337,7 @@ char *get_default_ssid(int unit, int subunit)
 #elif defined(RTCONFIG_NEWSSID_REV4)
 	post_5g = "";
 	post_5g2 = "";
-#if defined(RTCONFIG_WIFI6E)
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G)
 	post_6g = "";
 #endif
 #elif !defined(RTCONFIG_NEWSSID_REV2) && !defined(RTCONFIG_NEWSSID_REV4) && !defined(RTCONFIG_SINGLE_SSID)
@@ -1355,6 +1433,14 @@ char *get_default_ssid(int unit, int subunit)
 #elif defined(DSL_AX82U) && !defined(RTCONFIG_BCM_MFG)
 		if (is_ax5400_i1() && unit == WL_5G_BAND)
 			strlcat(ssid, "_5G", sizeof(ssid));
+#elif defined(RTAX53U)
+		if (!strncmp(nvram_safe_get("territory_code"), "JP", 2))
+		{
+			if(unit == WL_2G_BAND)
+				strlcat(ssid, "_2G", sizeof(ssid));
+			else
+				strlcat(ssid, "_5G", sizeof(ssid));
+		}
 #endif
 #if defined(RTCONFIG_NEWSSID_REV5)
 #if defined(RTAX56_XD4)
@@ -1378,10 +1464,27 @@ char *get_default_ssid(int unit, int subunit)
 		strlcat(ssid, nvram_safe_get("model"), sizeof(ssid));
 #elif defined(XT8PRO)
 		strlcat(ssid, "_XT9", sizeof(ssid));
+#elif defined(BT12)
+		strlcat(ssid, "_BT12", sizeof(ssid));
+#elif defined(BT10)
+		strlcat(ssid, "_BT10", sizeof(ssid));
+#elif defined(BQ16)
+		strlcat(ssid, "_BQ16", sizeof(ssid));
+#elif defined(BQ16_PRO)
+		if(nvram_match("odmpid", "ZenWiFi_BQ16_Pro")){
+			strlcat(ssid, "_BQ16_Pro", sizeof(ssid));
+		}else{
+			strlcat(ssid, "_BE30000", sizeof(ssid));
+		}
 #elif defined(BM68)
 		strlcat(ssid, "_EBM68", sizeof(ssid));
 #elif defined(XT8_V2)
 		strlcat(ssid, "_XT8", sizeof(ssid));
+#elif defined(XD4S)
+		if(nvram_match("odmpid","ZenWiFi_XD4_Plus"))
+			strlcat(ssid, "_XD4_Plus", sizeof(ssid));
+		else
+			strlcat(ssid, "_XD4S", sizeof(ssid));
 #else
 		strlcat(ssid, "_", sizeof(ssid));
 		char *pid = get_productid();
@@ -1415,20 +1518,23 @@ char *get_default_ssid(int unit, int subunit)
 #if !defined(RTCONFIG_NEWSSID_REV4)
 		strlcat(ssid, "_5G", sizeof(ssid));
 #endif
+#ifdef RTCONFIG_HAS_5G_2
 		if (band_num > 2 &&
 		    nvram_get(wl_nvname("nband", WL_5G_2_BAND, 0)) != NULL)
 		{
 			strlcat(ssid, post_5g, sizeof(ssid));
 		}
-
+#endif
 		break;
+#ifdef RTCONFIG_HAS_5G_2
 	case WL_5G_2_BAND:
 #if !defined(RTCONFIG_NEWSSID_REV4)
 		strlcat(ssid, "_5G", sizeof(ssid));
 #endif
 		strlcat(ssid, post_5g2, sizeof(ssid));
 		break;
-#if defined(RTCONFIG_WIFI6E) && defined(RTCONFIG_QUADBAND)
+#endif
+#if (defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7)) && defined(RTCONFIG_QUADBAND)
 	case WL_6G_BAND:
 		strlcat(ssid, post_6g, sizeof(ssid));
 		break;
@@ -1463,28 +1569,40 @@ char *get_default_ssid(int unit, int subunit)
 			strlcat(ssid, "_2G", sizeof(ssid));
 			break;
 		case WL_5G_BAND:
-#if defined(RTCONFIG_QUADBAND) || (defined(RTCONFIG_HAS_5G_2) && !defined(RTCONFIG_WIFI6E))
+#if defined(RTCONFIG_QUADBAND) || defined(RTCONFIG_HAS_5G_2) && ((!defined(RTCONFIG_WIFI6E) && !defined(RTCONFIG_WIFI7)) || (defined(RTCONFIG_WIFI7) && defined(RTCONFIG_WIFI7_NO_6G)))
 			strlcat(ssid, "_5G-1", sizeof(ssid));
 #else
 			strlcat(ssid, "_5G", sizeof(ssid));
 #endif
 			break;
+#if defined(RTCONFIG_HAS_5G_2)
 		case WL_5G_2_BAND:
-#if defined(RTCONFIG_QUADBAND) || (defined(RTCONFIG_HAS_5G_2) && !defined(RTCONFIG_WIFI6E))
+#if defined(RTCONFIG_QUADBAND) || (!defined(RTCONFIG_WIFI6E) && !defined(RTCONFIG_WIFI7)) || (defined(RTCONFIG_WIFI7) && defined(RTCONFIG_WIFI7_NO_6G))
 			strlcat(ssid, "_5G-2", sizeof(ssid));
 #else
-#if defined(RTCONFIG_WIFI6E)
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7)
 			strlcat(ssid, "_6G", sizeof(ssid));
 #else
 			strlcat(ssid, "_5G", sizeof(ssid));
 #endif
 #endif
 			break;
-#if defined(RTCONFIG_QUADBAND) && defined(RTCONFIG_WIFI6E)
+#endif
+#if defined(RTCONFIG_QUADBAND) && (defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7))
 		case WL_6G_BAND:
+#if defined(RTCONFIG_HAS_6G_2)
+			strlcat(ssid, "_6G-1", sizeof(ssid));
+#else
 			strlcat(ssid, "_6G", sizeof(ssid));
+#endif
 			break;
 #endif
+#if defined(RTCONFIG_QUADBAND) && defined(RTCONFIG_HAS_6G_2) && (defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7))
+		case WL_6G_2_BAND:
+			strlcat(ssid, "_6G-2", sizeof(ssid));
+			break;
+#endif
+
 	}
 #endif
 		strlcat(ssid, post_guest, sizeof(ssid));
@@ -1497,6 +1615,30 @@ char *get_default_ssid(int unit, int subunit)
 
 	return ssid;
 }
+
+#if defined(EBG15) || defined(EBG19)
+char defpsk[32] = { 0 };
+char *get_default_psk(int unit, int subunit)
+{
+	char pskbase[32], *macp = NULL;
+	unsigned char mac_binary[6];
+
+	if (unit < 0 || unit >= WL_NR_BANDS || subunit < 0) {
+		dbg("%s: invalid parameter. (unit %d, subunit %d)\n",
+			__func__, unit, subunit);
+	}
+
+	memset(defpsk, 0x0, sizeof(defpsk));
+
+	macp = get_2g_hwaddr();
+	ether_atoe(macp, mac_binary);
+
+	snprintf((char *)pskbase, sizeof(pskbase), "%s_%02X%02X", SSID_PREFIX, mac_binary[4], mac_binary[5]);
+	strlcpy(defpsk, pskbase, sizeof(defpsk));
+
+	return defpsk;
+}
+#endif
 
 /**
  * Get Static IPv4 DNS list separated by spaces.
@@ -1540,6 +1682,20 @@ int is_bridged(const char *brif, const char *ifname)
 		snprintf(path, sizeof(path), "/sys/class/net/%s/brport/bridge", ifname);
 
 	return l_exists(path) || d_exists(path) || f_exists(path);
+}
+
+int del_from_bridge(const char* ifname)
+{
+	char path[128] = {0};
+	char br_path[PATH_MAX] = {0};
+	char *br_ifname;
+
+	snprintf(path, sizeof(path), "/sys/class/net/%s/brport/bridge", ifname);
+	if (readlink(path, br_path, sizeof(br_path)-1) <= 0)
+		return -1;
+	br_ifname = strrchr(br_path, '/');
+	br_ifname = (br_ifname) ? br_ifname+1 : br_path;
+	return eval("brctl", "delif", br_ifname, (char*)ifname);
 }
 
 #ifdef RTCONFIG_BROOP
@@ -1645,9 +1801,100 @@ int detect_broop()
 
 #endif
 
+#ifdef RTCONFIG_MULTI_PPP
+int is_mtppp_base_unit(int wan_unit)
+{
+	if (wan_unit < WAN_UNIT_MAX)
+		return 1;
+	else
+		return 0;
+}
+
+int is_mtppp_unit(int wan_unit)
+{
+	if (wan_unit > WAN_UNIT_FIRST_MULTIPPP_BASE && wan_unit < WAN_UNIT_MULTIPPP_MAX)
+		return 1;
+	else
+		return 0;
+}
+
+int get_mtppp_base_unit(int wan_unit)
+{
+	if (wan_unit >= WAN_UNIT_FIRST_MULTIPPP_START && wan_unit <= WAN_UNIT_FIRST_MULTIPPP_END)
+		return WAN_UNIT_FIRST;
+#ifdef RTCONFIG_DUALWAN
+	else if (wan_unit >= WAN_UNIT_SECOND_MULTIPPP_START && wan_unit <= WAN_UNIT_SECOND_MULTIPPP_END)
+		return WAN_UNIT_SECOND;
+#endif
+	else
+		return wan_unit;
+}
+
+int get_mtppp_wan_unit(int base_wan_unit, int idx)
+{
+	if (!is_mtppp_base_unit(base_wan_unit))
+		return WAN_UNIT_NONE;
+
+	if (idx) {
+		if (base_wan_unit == WAN_UNIT_FIRST)
+			return WAN_UNIT_FIRST_MULTIPPP_BASE + idx;
+#ifdef RTCONFIG_DUALWAN
+		else if (base_wan_unit == WAN_UNIT_SECOND)
+			return WAN_UNIT_SECOND_MULTIPPP_BASE + idx;
+#endif
+		else
+			return WAN_UNIT_NONE;
+	}
+	else
+		return base_wan_unit;
+}
+
+int get_mtppp_idx_by_wan_unit(int wan_unit)
+{
+	if (is_mtppp_base_unit(wan_unit))
+		return 0;
+	else if (wan_unit >= WAN_UNIT_FIRST_MULTIPPP_START && wan_unit <= WAN_UNIT_FIRST_MULTIPPP_END)
+		return (wan_unit - WAN_UNIT_FIRST_MULTIPPP_BASE);
+#ifdef RTCONFIG_DUALWAN
+	else if (wan_unit >= WAN_UNIT_SECOND_MULTIPPP_START && wan_unit <= WAN_UNIT_SECOND_MULTIPPP_END)
+		return (wan_unit - WAN_UNIT_SECOND_MULTIPPP_BASE);
+#endif
+	else
+		return -1;
+}
+#endif // RTCONFIG_MULTI_PPP
+
 #ifdef RTCONFIG_MULTISERVICE_WAN
+int is_ms_base_unit(int wan_unit)
+{
+	if (wan_unit < WAN_UNIT_MAX)
+		return 1;
+#ifdef RTCONFIG_MULTIWAN_IF
+	else if (wan_unit >= MULTI_WAN_START_IDX && wan_unit < MULTI_WAN_START_IDX + MAX_MULTI_WAN_NUM)
+		return 1;
+#endif
+	else
+		return 0;
+}
+
+int is_ms_wan_unit(int wan_unit)
+{
+#ifdef RTCONFIG_MULTIWAN_IF
+	if (wan_unit > WAN_UNIT_MTWAN0_MS_BASE && wan_unit < WAN_UNIT_MTWAN_MS_MAX)
+		return 1;
+#endif
+	if (wan_unit > WAN_UNIT_FIRST_MULTISRV_BASE && wan_unit < WAN_UNIT_MULTISRV_MAX)
+		return 1;
+	return 0;
+}
+
 int get_ms_base_unit(int wan_unit)
 {
+#ifdef RTCONFIG_MULTIWAN_IF
+	if (wan_unit > WAN_UNIT_MTWAN0_MS_BASE)
+		return ((wan_unit - WAN_UNIT_MTWAN_MS_BASE) / 10);
+	else
+#endif
 	return (wan_unit > WAN_UNIT_MULTISRV_BASE) ? ((wan_unit - WAN_UNIT_MULTISRV_BASE) / 10) : wan_unit;
 }
 
@@ -1657,7 +1904,7 @@ int get_ms_base_unit(int wan_unit)
  */
 int get_ms_wan_unit(int base_wan_unit, int idx)
 {
-	if (base_wan_unit >= WAN_UNIT_MAX || idx >= WAN_MULTISRV_MAX)
+	if (!is_ms_base_unit(base_wan_unit) || idx >= WAN_MULTISRV_MAX)
 		return WAN_UNIT_NONE;
 
 	if (idx)
@@ -1668,6 +1915,10 @@ int get_ms_wan_unit(int base_wan_unit, int idx)
 		else if (base_wan_unit == WAN_UNIT_SECOND)
 			return WAN_UNIT_SECOND_MULTISRV_BASE + idx;
 #endif
+#ifdef RTCONFIG_MULTIWAN_IF
+		else if (base_wan_unit >= MULTI_WAN_START_IDX && base_wan_unit < MULTI_WAN_START_IDX + MAX_MULTI_WAN_NUM)
+			return (WAN_UNIT_MTWAN_MS_BASE + base_wan_unit * 10 + idx);
+#endif
 		else
 			return WAN_UNIT_NONE;
 	}
@@ -1677,7 +1928,7 @@ int get_ms_wan_unit(int base_wan_unit, int idx)
 
 int get_ms_idx_by_wan_unit(int wan_unit)
 {
-	if (wan_unit < WAN_UNIT_MAX)
+	if (is_ms_base_unit(wan_unit))
 		return 0;
 	else if(wan_unit > WAN_UNIT_MULTISRV_BASE)
 		return wan_unit % 10;

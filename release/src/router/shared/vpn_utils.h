@@ -19,6 +19,7 @@
 #define PROTO_HMA "HMA"
 #define PROTO_NORDVPN "NordVPN"
 #define PROTO_SURFSHARK "Surfshark"
+#define PROTO_CYBERGHOST "CyberGhost"
 
 #define MAX_VPNC_DATA_LEN	256
 #define MAX_VPNC_PROFILE	16
@@ -78,6 +79,7 @@ typedef struct _vpnc_profile{
 	int vpnc_idx;	// 1 ~ MAX_VPNC_PROFILE
 	VPNC_PROTO protocol;
 	VPNC_BASIC_CONF basic;
+	int wan_idx;
 	union {
 		VPNC_PPTP pptp;
 		VPNC_OVPN ovpn;
@@ -131,8 +133,13 @@ extern int vpnc_set_iif_routing_rule(const int vpnc_idx, const char* br_ifname);
 #define WG_CLIENT_IF_PREFIX    "wgc"
 #define WG_SERVER_NVRAM_PREFIX "wgs"
 #define WG_CLIENT_NVRAM_PREFIX "wgc"
+#define WG_SERVER_SUBNET6_BASE 0x0110
 extern int read_wgc_config_file(const char* file_path, int wgc_unit);
 extern int is_wgc_connected(int unit);
+#endif
+
+#if defined(RTCONFIG_MULTILAN_CFG) && defined(RTCONFIG_VPN_FUSION)
+#define VPNC_IPSET_PREFIX   "vpnc_ipset"
 #endif
 
 #ifdef RTCONFIG_WIREGUARD
@@ -145,7 +152,7 @@ enum {
         WG_NF_DEL = 0,
         WG_NF_ADD
 };
-#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X)
+#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X)
 #define WG_DIR_CONF    "/etc/wg"
 typedef enum {
         WG_PORT_DST = 0,

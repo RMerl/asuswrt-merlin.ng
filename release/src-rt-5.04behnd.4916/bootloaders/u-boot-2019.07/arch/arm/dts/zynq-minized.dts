@@ -1,0 +1,106 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * dts file for Avnet MiniZed board
+ *
+ * (C) Copyright 2017 - 2018, Xilinx, Inc.
+ *
+ * Ibai Erkiaga <ibai.erkiaga-elorza@xilinx.com>
+ */
+
+/dts-v1/;
+#include "zynq-7000.dtsi"
+
+/ {
+	model = "Avnet Zynq MiniZed Development Board";
+	compatible = "avnet,minized", "xlnx,zynq-7000";
+
+	aliases {
+		serial0 = &uart1;
+		serial1 = &uart0;
+		spi0 = &qspi;
+		mmc0 = &sdhci0;
+	};
+
+	memory@0 {
+		device_type = "memory";
+		reg = <0x0 0x20000000>;
+	};
+
+	chosen {
+		bootargs = "";
+		stdout-path = "serial0:115200n8";
+	};
+
+	usb_phy0: phy0 {
+		compatible = "usb-nop-xceiv";
+		#phy-cells = <0>;
+	};
+};
+
+&qspi {
+	status = "okay";
+	is-dual = <0>;
+	num-cs = <1>;
+	flash@0 {
+		compatible = "micron,m25p128";
+		reg = <0x0>;
+		spi-tx-bus-width = <4>;
+		spi-rx-bus-width = <4>;
+		spi-max-frequency = <50000000>;
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+			partition@0 {
+				label = "boot";
+				reg = <0x0 0xff0000>;
+			};
+
+			partition@270000 {
+				label = "kernel";
+				reg = <0x270000 0xd80000>;
+			};
+
+			partition@ff0000 {
+				label = "bootenv";
+				reg = <0xff0000 0x10000>;
+			};
+
+			partition@1000000 {
+				label = "spare";
+				reg = <0x1000000 0x0>;
+			};
+		};
+	};
+};
+
+&uart0 {
+	status = "okay";
+};
+
+&uart1 {
+	u-boot,dm-pre-reloc;
+	status = "okay";
+};
+
+&usb0 {
+	status = "okay";
+	dr_mode = "host";
+	usb-phy = <&usb_phy0>;
+	usb-reset = <&gpio0 7 0>; /* USB_RST_N-MIO7 */
+};
+
+&sdhci1 {
+	status = "okay";
+	non-removable;
+	bus-width = <4>;
+	max-frequency = <12000000>;
+
+	#address-cells = <1>;
+	#size-cells = <0>;
+	mmccard: mmccard@0 {
+		compatible = "mmc-card";
+		reg = <0>;
+		broken-hpi;
+	};
+};

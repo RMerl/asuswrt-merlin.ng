@@ -1,0 +1,23 @@
+if TARGET_S32V234EVB
+
+config SYS_CPU
+	string
+	default "armv8"
+
+config SYS_BOARD
+	string
+	default "s32v234evb"
+
+config SYS_VENDOR
+	string
+	default "freescale"
+
+config SYS_SOC
+	string
+	default "s32v234"
+
+config SYS_CONFIG_NAME
+	string
+	default "s32v234evb"
+
+endif

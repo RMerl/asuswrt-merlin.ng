@@ -1,0 +1,12 @@
+if TARGET_SH7753EVB
+
+config SYS_BOARD
+	default "sh7753evb"
+
+config SYS_VENDOR
+	default "renesas"
+
+config SYS_CONFIG_NAME
+	default "sh7753evb"
+
+endif

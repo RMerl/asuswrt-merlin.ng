@@ -1,0 +1,26 @@
+config DM_THERMAL
+	bool "Driver support for thermal devices"
+	help
+	  Enable support for temperature-sensing devices. Some SoCs have on-chip
+	  temperature sensors to permit warnings, speed throttling or even
+	  automatic power-off when the temperature gets too high or low. Other
+	  devices may be discrete but connected on a suitable bus.
+
+if DM_THERMAL
+
+config IMX_THERMAL
+	bool "Temperature sensor driver for Freescale i.MX SoCs"
+	depends on MX6 || MX7
+	help
+	  Support for Temperature Monitor (TEMPMON) found on Freescale i.MX SoCs.
+          It supports one critical trip point and one passive trip point.  The
+          cpufreq is used as the cooling device to throttle CPUs when the
+          passive trip is crossed.
+
+config TI_DRA7_THERMAL
+        bool "Temperature sensor driver for TI dra7xx SOCs"
+        help
+	 Enable thermal support for for the Texas Instruments DRA752 SoC family.
+	 The driver supports reading CPU temperature.
+
+endif # if DM_THERMAL

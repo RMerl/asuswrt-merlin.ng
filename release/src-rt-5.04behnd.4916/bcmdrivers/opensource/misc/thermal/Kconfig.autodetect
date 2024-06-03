@@ -1,0 +1,10 @@
+config BCM_THERMAL
+	bool "Broadcom thermal throttling driver"
+	default n
+	help
+	  Add Broadcom thermal throttling support
+
+config BCM_THERMAL_IMPL
+	int "Implementation index for Broadcom thermal throttling driver"
+	depends on BCM_THERMAL
+	default 1

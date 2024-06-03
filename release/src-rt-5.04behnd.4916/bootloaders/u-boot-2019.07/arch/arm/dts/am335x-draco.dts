@@ -1,0 +1,152 @@
+/*
+ * Support for Siemens DRACO board
+ *
+ * Copyright (C) 2014 - Lukas Stockmann <lukas.stockmann@siemens.com>
+ *
+ * This file is licensed under the terms of the GNU General Public License
+ * version 2.  This program is licensed "as is" without any warranty of any
+ * kind, whether express or implied.
+ */
+
+/dts-v1/;
+
+#include "am33xx.dtsi"
+#include "am335x-draco.dtsi"
+#include <dt-bindings/input/input.h>
+
+/ {
+	model = "Siemens DRACO";
+	compatible = "siemens,draco", "ti,am33xx";
+
+	/* ethernet alias is needed for the MAC address passing from U-Boot */
+	aliases {
+		ethernet0 = &cpsw_emac0;
+		mdio-gpio0 = &mdio0;
+	};
+
+	gpio-keys {
+		compatible = "gpio-keys";
+		button0 {
+			label = "button0";
+			gpios = <&gpio0 27 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_F1>; /* button0 */
+		};
+		button1 {
+			label = "button1";
+			gpios = <&gpio2 23 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_F2>; /* button1 */
+		};
+	};
+
+	ocp {
+		debugss: debugss@4b000000 {
+			compatible = "ti,debugss";
+			ti,hwmods = "debugss";
+			reg = <0x4b000000 1000000>;
+			status = "disabled";
+		};
+	};
+};
+
+&am33xx_pinmux {
+	pinctrl-names = "default";
+	pinctrl-0 = <&gpio_mux_pins>;
+
+	gpio_mux_pins: gpio_mux_pins {
+		pinctrl-single,pins = <
+			0x1d0 (PIN_INPUT | MUX_MODE0)	/* tms jtag */
+			0x1d4 (PIN_INPUT | MUX_MODE0)	/* tdi jtag */
+			0x1d8 (PIN_OUTPUT | MUX_MODE0)	/* tdo jtag */
+			0x1dc (PIN_INPUT | MUX_MODE0)	/* tck jtag */
+			0x1e0 (PIN_INPUT | MUX_MODE0)	/* trstn jtag */
+		>;
+	};
+
+	cpsw_default: cpsw_default {
+		pinctrl-single,pins = <
+			0x0E8 (PIN_INPUT_PULLUP | MUX_MODE7)	/* lcd_plck FIX STO should be a OUTPUT driven high*/
+			0x10c (PIN_INPUT_PULLDOWN | MUX_MODE1)	/* mii1_crs.rmii1_crs_dv */
+			0x114 (PIN_OUTPUT | MUX_MODE1)		/* mii1_txen.mii1_txen */
+			0x124 (PIN_OUTPUT | MUX_MODE1)		/* mii1_txd1.mii1_txd1 */
+			0x128 (PIN_OUTPUT | MUX_MODE1)		/* mii1_txd0.mii1_txd0 */
+			0x13c (PIN_INPUT_PULLDOWN | MUX_MODE1)	/* mii1_rxd1.mii1_rxd1 */
+			0x140 (PIN_INPUT_PULLDOWN | MUX_MODE1)	/* mii1_rxd0.mii1_rxd0 */
+			0x144 (PIN_INPUT_PULLDOWN | MUX_MODE0)	/* rmii1_refclk.rmii1_refclk */
+		>;
+	};
+
+	cpsw_sleep: cpsw_sleep {
+		pinctrl-single,pins = <
+			0x10c (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x114 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x124 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x128 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x13c (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x140 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x144 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+		>;
+	};
+
+	davinci_mdio_default: davinci_mdio_default {
+		pinctrl-single,pins = <
+			/* MDIO */
+			0x148 (PIN_INPUT | SLEWCTRL_FAST | MUX_MODE0)	/* mdio_data.mdio_data */
+			0x14c (PIN_OUTPUT | MUX_MODE0)			/* mdio_clk.mdio_clk */
+		>;
+	};
+
+	davinci_mdio_sleep: davinci_mdio_sleep {
+		pinctrl-single,pins = <
+			/* MDIO reset value */
+			0x148 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x14c (PIN_INPUT_PULLDOWN | MUX_MODE7)
+		>;
+	};
+
+	gpio_mdio_default: gpio_mdio_default {
+		pinctrl-single,pins = <
+			/* MDIO via GPIO */
+			0x148 (PIN_INPUT | MUX_MODE7)	/* mdio_data.mdio_data GPIO0_0 */
+			0x14c (PIN_OUTPUT | MUX_MODE7)	/* mdio_clk.mdio_clk GPIO0_1 */
+		>;
+	};
+};
+
+&mac {
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&cpsw_default>;
+	pinctrl-1 = <&cpsw_sleep>;
+	slaves = <1>;			/* use only one emac if */
+
+	mdio0: gpio {
+		compatible = "virtual,mdio-gpio";
+		pinctrl-names = "default";
+		pinctrl-0 = <&gpio_mdio_default>;
+
+		#address-cells = <1>;
+		#size-cells = <0>;
+		gpios = <&gpio0 1 GPIO_ACTIVE_HIGH	/* MDIO-CLK */
+			 &gpio0 0 GPIO_ACTIVE_HIGH>;	/* MDIO-DATA */
+
+		phy0: ethernet-phy@1 {
+			reg = <0>;
+		};
+	};
+};
+
+/* Disable davinci/am335x mdio interface on this platform */
+&davinci_mdio {
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&davinci_mdio_default>;
+	pinctrl-1 = <&davinci_mdio_sleep>;
+	status = "disabled";
+};
+
+&cpsw_emac0 {
+	phy_id = <&mdio0>, <0>;
+	phy-mode = "rmii";
+};
+
+&phy_sel {
+	rmii-clock-ext;
+};

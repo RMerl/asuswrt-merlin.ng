@@ -306,6 +306,52 @@ function loadData()
 		speed_history = [];
 	}
 	else {
+		const wl_nband_array = httpApi.hookGet("wl_nband_info");
+
+		function countBand(arr) {
+			const countMap = new Map();
+			arr.forEach((item, index) => {
+				if (countMap.has(item)) {
+					countMap.get(item).count++;
+					countMap.get(item).indices.push(index);
+				} else {
+					countMap.set(item, {band: item, count: 1, indices: [index]});
+				}
+			});
+			return Array.from(countMap.values());
+		}
+
+		const bandArray = countBand(wl_nband_array);
+		for (const item of bandArray) {
+			const { band, count, indices } = item;
+			indices.forEach(function(value, index) {
+				let tabLabel = "";
+				if (band === "1") {
+					tabLabel = count === 1 ? "5GHz" : `5GHz-${index + 1}`;
+				} else if (band === "2") {
+					tabLabel = "2.4GHz";
+				} else if (band === "4") {
+					tabLabel = count === 1 ? "6GHz" : `6GHz-${index + 1}`;
+				} else if (band === "6") {
+					tabLabel = "60GHz";
+				}
+				tabs.push([`speed-tab-WIRELESS${value}`, `<#tm_wireless#> (${tabLabel})`]);
+			});
+		}
+
+		tabs.sort((a, b) => {
+			const valueA = a[1];
+			const valueB = b[1];
+			const contains60GHzA = valueA.includes('60GHz');
+			const contains60GHzB = valueB.includes('60GHz');
+			if (contains60GHzA && !contains60GHzB) {
+				return 1;
+			} else if (!contains60GHzA && contains60GHzB) {
+				return -1;
+			}
+			return valueA.localeCompare(valueB);
+		});
+
 		for (var i in speed_history) {
 			var h = speed_history[i];
 			if ((typeof(h.rx) == 'undefined') || (typeof(h.tx) == 'undefined')) {
@@ -337,38 +383,7 @@ function loadData()
 			if (h.rx_max > xx_max) xx_max = h.rx_max;
 			if (h.tx_max > xx_max) xx_max = h.tx_max;
 
-			if (i == "WIRELESS1"){
-				if((based_modelid == "GT-AXE16000" || based_modelid == "GT10") && wl_info.band5g_2_support)
-					t = "<#tm_wireless#> (5GHz-2)";
-				else if(wl_info.band5g_2_support)
-					t = "<#tm_wireless#> (5GHz-1)";
-				else
-					t = "<#tm_wireless#> (5GHz)";
-			}
-			else if (i == "WIRELESS0"){
-				if((based_modelid == "GT-AXE16000" || based_modelid == "GT10") && wl_info.band5g_2_support)
-					t = "<#tm_wireless#> (5GHz-1)";
-				else
-					t = "<#tm_wireless#> (2.4GHz)";
-			}
-			else if (i == "WIRELESS2"){
-				if(wl_info.band6g_support){
-					t = "<#tm_wireless#> (6GHz)";
-				}
-				else if(based_modelid == "GT10"){
-					t = "<#tm_wireless#> (2.4GHz)";
-				}
-				else{
-					t = "<#tm_wireless#> (5GHz-2)";
-				}
-			}
-			else if (i == "WIRELESS3"){
-				if(based_modelid == "GT-AXE16000")
-					t = "<#tm_wireless#> (2.4GHz)";
-				else
-					t = "<#tm_wireless#> (60GHz)";
-			}
-			else if (i == "WIRED")
+			if (i == "WIRED")
 				t = "<#tm_wired#>";
 			else if (i == "BRIDGE")
 				t = "LAN";

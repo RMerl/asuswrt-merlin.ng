@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright (C) 2018 Texas Instruments Incorporated - http://www.ti.com/
+
+config DRIVER_TI_CPSW
+	bool "TI Common Platform Ethernet Switch"
+	select PHYLIB
+	help
+	  This driver supports the TI three port switch gigabit ethernet
+	  subsystem found in the TI SoCs.
+
+config DRIVER_TI_EMAC
+	bool "TI Davinci EMAC"
+	help
+	   Support for davinci emac
+
+config DRIVER_TI_KEYSTONE_NET
+	bool "TI Keystone 2 Ethernet"
+	help
+	   This driver supports the TI Keystone 2 Ethernet subsystem

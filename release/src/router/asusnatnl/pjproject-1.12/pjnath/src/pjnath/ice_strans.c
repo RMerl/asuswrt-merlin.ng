@@ -281,6 +281,13 @@ struct pj_ice_strans
 
 	// nominated candidate remote address
 	pj_sockaddr nominated_rem_addr;
+
+	// The turn states occur in the process of turn allocation.
+	//int	 			turn_state;
+	// The turn states occur in the process of turn allocation.
+	char    tcp_turn_state[128];
+	char    udp_turn_state[128];
+	char    tls_turn_state[128];
 };
 
 
@@ -1435,6 +1442,7 @@ static int turn_ioq_temp_thread(void *arg)
 		curr_tv += timeout.msec;
 		// if TURN allocation isn't success in some period, then regarded as timeout.
 		if (curr_tv >= max_waiting_time) {
+			ice_st->turn_last_status = 408;
 			PJ_LOG(4, ("ice_strans.c", "turn_ioq_temp_thread turn allocation timeout. timeout=%d", max_waiting_time));
 			ice_st->turn_last_status = PJNATH_ESTUNTIMEDOUT;
 			break;
@@ -1654,7 +1662,7 @@ PJ_DEF(pj_status_t) pj_ice_strans_get_def_cand( pj_ice_strans *ice_st,
 	pj_memcpy(cand, valid_pair->lcand, sizeof(pj_ice_sess_cand));
     } else {
 	pj_ice_strans_comp *comp = ice_st->comp[comp_id - 1];
-	pj_assert(comp->default_cand>=0 && comp->default_cand<comp->cand_cnt);
+	PJ_ASSERT_RETURN(comp->default_cand<comp->cand_cnt, PJ_EINVAL);
 	pj_memcpy(cand, &comp->cand_list[comp->default_cand], 
 		  sizeof(pj_ice_sess_cand));
     }
@@ -2806,6 +2814,29 @@ static pj_bool_t stun_on_status(pj_stun_sock *stun_sock,
 	/* Get stun last status */
 	ice_st->stun_last_status = pj_stun_sock_get_last_status(stun_sock);
 
+	if (ice_st->cb.app_log_cb) {
+		pj_stun_sock_info stun_sock_info;
+		char addr_str[PJ_INET6_ADDRSTRLEN+10] = {0};
+		char bound_addr_str[PJ_INET6_ADDRSTRLEN+10] = {0};
+		char mapped_addr_str[PJ_INET6_ADDRSTRLEN+10] = {0};
+		char local_addr_str[PJ_INET6_ADDRSTRLEN+10] = {0};
+
+		pj_stun_sock_get_info(stun_sock, &stun_sock_info);
+		if (op != PJ_STUN_SOCK_KEEP_ALIVE_OP || stun_sock_info.last_status != 0) {
+			if (pj_sockaddr_has_addr(&stun_sock_info.srv_addr))
+				pj_sockaddr_print(&stun_sock_info.srv_addr, addr_str, sizeof(addr_str), 3); // addr+port
+			if (pj_sockaddr_has_addr(&stun_sock_info.bound_addr))
+				pj_sockaddr_print(&stun_sock_info.bound_addr, bound_addr_str, sizeof(bound_addr_str), 3); // addr+port
+			if (pj_sockaddr_has_addr(&stun_sock_info.mapped_addr))
+				pj_sockaddr_print(&stun_sock_info.mapped_addr, mapped_addr_str, sizeof(mapped_addr_str), 3); // addr+port
+			if (pj_sockaddr_has_addr(&stun_sock_info.local_addr))
+				pj_sockaddr_print(&stun_sock_info.local_addr, local_addr_str, sizeof(local_addr_str), 3); // addr+port
+			ice_st->cb.app_log_cb(ice_st->cfg.stun_cfg.inst_id, 4, 
+				"natnl", "stun status changed : srv_name=[%s], srv_addr=[%s], bound_addr_str=[%s], local_addr_str=[%s], mapped_addr_str=[%s], last_status=[%d], operation=[%s]", 
+				stun_sock_info.srv_name, addr_str, bound_addr_str, mapped_addr_str, local_addr_str, stun_sock_info.last_status, pj_stun_sock_op_name(op));
+		}
+	}
+
     /* Find the srflx UDP cancidate */
     for (i=0; i<comp->cand_cnt; ++i) {
 		if (comp->cand_list[i].type == PJ_ICE_CAND_TYPE_SRFLX) {
@@ -3092,6 +3123,7 @@ static void turn_on_state(pj_turn_sock *turn_sock, pj_turn_state_t old_state,
 			  pj_turn_state_t new_state)
 {
     pj_ice_strans_comp *comp;
+	pj_turn_session_info rel_info;
 
     comp = (pj_ice_strans_comp*) pj_turn_sock_get_user_data(turn_sock);
     if (comp == NULL) {
@@ -3101,21 +3133,60 @@ static void turn_on_state(pj_turn_sock *turn_sock, pj_turn_state_t old_state,
 	return;
     }
 
-    PJ_LOG(5,(comp->ice_st->obj_name, "TURN client state changed %s --> %s",
+    PJ_LOG(4,(comp->ice_st->obj_name, "TURN client state changed %s --> %s",
 	      pj_turn_state_name(old_state), pj_turn_state_name(new_state)));
 
-    pj_grp_lock_add_ref(comp->ice_st->grp_lock);
+	pj_grp_lock_add_ref(comp->ice_st->grp_lock);
+	//comp->ice_st->turn_state |= new_state;
+	if (pj_turn_sock_get_conn_type(turn_sock) == PJ_TURN_TP_UDP) {
+		if (strlen(comp->ice_st->udp_turn_state) == 0)
+			snprintf(&comp->ice_st->udp_turn_state[strlen(comp->ice_st->udp_turn_state)], 
+			sizeof(comp->ice_st->udp_turn_state)-strlen(comp->ice_st->udp_turn_state), "%s",  pj_turn_state_name(new_state));
+		else
+			snprintf(&comp->ice_st->udp_turn_state[strlen(comp->ice_st->udp_turn_state)], 
+			sizeof(comp->ice_st->udp_turn_state)-strlen(comp->ice_st->udp_turn_state), ",%s",  pj_turn_state_name(new_state));
+	}
+	else if (pj_turn_sock_get_conn_type(turn_sock) == PJ_TURN_TP_TCP) {
+		if (strlen(comp->ice_st->tcp_turn_state) == 0)
+			snprintf(&comp->ice_st->tcp_turn_state[strlen(comp->ice_st->tcp_turn_state)], 
+			sizeof(comp->ice_st->tcp_turn_state)-strlen(comp->ice_st->tcp_turn_state), "%s",  pj_turn_state_name(new_state));
+		else
+			snprintf(&comp->ice_st->tcp_turn_state[strlen(comp->ice_st->tcp_turn_state)], 
+			sizeof(comp->ice_st->tcp_turn_state)-strlen(comp->ice_st->tcp_turn_state), ",%s",  pj_turn_state_name(new_state));
+	}
+	else if (pj_turn_sock_get_conn_type(turn_sock) == PJ_TURN_TP_TLS) {
+		if (strlen(comp->ice_st->tls_turn_state) == 0)
+			snprintf(&comp->ice_st->tls_turn_state[strlen(comp->ice_st->tls_turn_state)], 
+				sizeof(comp->ice_st->tls_turn_state)-strlen(comp->ice_st->tls_turn_state), "%s",  pj_turn_state_name(new_state));
+		else
+			snprintf(&comp->ice_st->tls_turn_state[strlen(comp->ice_st->tls_turn_state)], 
+				sizeof(comp->ice_st->tls_turn_state)-strlen(comp->ice_st->tls_turn_state), ",%s",  pj_turn_state_name(new_state));
+	}
+
+	PJ_LOG(4,(comp->ice_st->obj_name, "tcp=%s\nudp=%s",
+		comp->ice_st->tcp_turn_state, comp->ice_st->udp_turn_state));
+
+	/* Get allocation info */
+
+	if (comp->ice_st->cb.app_log_cb) {
+		char addr_str[PJ_INET6_ADDRSTRLEN+10] = {0};
+		pj_turn_sock_get_info(turn_sock, &rel_info);
+		if (pj_sockaddr_has_addr(&rel_info.server))
+			pj_sockaddr_print(&rel_info.server, addr_str, sizeof(addr_str), 3); // addr+port
+		comp->ice_st->cb.app_log_cb(comp->ice_st->cfg.stun_cfg.inst_id, 4, 
+			"natnl", "turn state changed : srv_name=[%s], srv_addr=[%s], conn_type=[%d], last_status=[%d], old_state=[%s], new_state=[%s]", 
+			rel_info.srv_name, addr_str, rel_info.conn_type, rel_info.last_status, pj_turn_state_name(old_state), pj_turn_state_name(new_state));
+	} else {
+		/* Get allocation info */
+		pj_turn_sock_get_info(turn_sock, &rel_info);
+	}
 
     if (new_state == PJ_TURN_STATE_READY) {
-	pj_turn_session_info rel_info;
 	char ipaddr[PJ_INET6_ADDRSTRLEN+8];
 	pj_ice_sess_cand *cand = NULL;
 	unsigned i;
 
 	comp->turn_err_cnt = 0;
-
-	/* Get allocation info */
-	pj_turn_sock_get_info(turn_sock, &rel_info);
 
 	/* Wait until initialization completes */
 	pj_grp_lock_acquire(comp->ice_st->grp_lock);
@@ -3751,4 +3822,16 @@ PJ_DEF(void) pj_ice_strans_update_or_add_incoming_check(void *user_data,
 		&ice->clist, new_check)));
 
 	pj_grp_lock_release(ice->grp_lock);
+}
+
+PJ_DECL(void) pj_ice_strans_get_turn_state(struct pj_ice_strans *ice_st, pj_turn_tp_type conn_type, char *buf, int buf_len)
+{
+	if (!ice_st || !buf || !buf_len)
+		return;
+	if (conn_type == PJ_TURN_TP_TCP)
+		snprintf(buf, buf_len, "%s", ice_st->tcp_turn_state);
+	else if (conn_type == PJ_TURN_TP_UDP)
+		snprintf(buf, buf_len, "%s", ice_st->udp_turn_state);
+	else if (conn_type == PJ_TURN_TP_TLS)
+		snprintf(buf, buf_len, "%s", ice_st->tls_turn_state);
 }

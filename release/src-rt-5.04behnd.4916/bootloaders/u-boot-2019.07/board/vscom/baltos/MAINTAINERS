@@ -1,0 +1,6 @@
+BALTOS BOARD
+M:	Yegor Yefremov <yegorslists@googlemail.com>
+S:	Maintained
+F:	board/vscom/baltos/
+F:	include/configs/baltos.h
+F:	configs/am335x_baltos_defconfig

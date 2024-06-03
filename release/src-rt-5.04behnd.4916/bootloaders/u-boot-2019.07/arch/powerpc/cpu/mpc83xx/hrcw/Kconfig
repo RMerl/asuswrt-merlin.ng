@@ -1,0 +1,816 @@
+menu "Reset Configuration Word"
+
+choice
+	prompt "Local bus memory controller clock mode"
+
+config LBMC_CLOCK_MODE_1_1
+	bool "1 : 1"
+
+config LBMC_CLOCK_MODE_1_2
+	depends on ARCH_MPC8349 || ARCH_MPC8360 || ARCH_MPC837X
+	bool "1 : 2"
+
+endchoice
+
+choice
+	prompt "DDR SDRAM memory controller clock mode"
+
+config DDR_MC_CLOCK_MODE_1_2
+	bool "1 : 2"
+
+config DDR_MC_CLOCK_MODE_1_1
+	depends on ARCH_MPC8315 || ARCH_MPC8349 || ARCH_MPC8360 || ARCH_MPC837X
+	bool "1 : 1"
+
+endchoice
+
+if !ARCH_MPC8313 && !ARCH_MPC832X && !ARCH_MPC8349
+
+choice
+	prompt "System PLL VCO division"
+
+config SYSTEM_PLL_VCO_DIV_1
+	depends on !ARCH_MPC837X
+	bool "1"
+
+config SYSTEM_PLL_VCO_DIV_2
+	bool "2"
+
+config SYSTEM_PLL_VCO_DIV_4
+	depends on !ARCH_MPC831X
+	bool "4"
+
+config SYSTEM_PLL_VCO_DIV_8
+	depends on !ARCH_MPC831X
+	bool "8"
+
+endchoice
+
+endif
+
+choice
+	prompt "System PLL multiplication factor"
+
+config SYSTEM_PLL_FACTOR_2_1
+	bool "2 : 1"
+
+config SYSTEM_PLL_FACTOR_3_1
+	bool "3 : 1"
+
+config SYSTEM_PLL_FACTOR_4_1
+	bool "4 : 1"
+
+config SYSTEM_PLL_FACTOR_5_1
+	bool "5 : 1"
+
+config SYSTEM_PLL_FACTOR_6_1
+	bool "6 : 1"
+
+config SYSTEM_PLL_FACTOR_7_1
+	depends on ARCH_MPC8349 || ARCH_MPV8360 || ARCH_MPC837X
+	bool "7 : 1"
+
+config SYSTEM_PLL_FACTOR_8_1
+	depends on ARCH_MPC8349 || ARCH_MPV8360 || ARCH_MPC837X
+	bool "8 : 1"
+
+config SYSTEM_PLL_FACTOR_9_1
+	depends on ARCH_MPC8349 || ARCH_MPV8360 || ARCH_MPC837X
+	bool "9 : 1"
+
+config SYSTEM_PLL_FACTOR_10_1
+	depends on ARCH_MPC8349 || ARCH_MPV8360 || ARCH_MPC837X
+	bool "10 : 1"
+
+config SYSTEM_PLL_FACTOR_11_1
+	depends on ARCH_MPC8349 || ARCH_MPV8360 || ARCH_MPC837X
+	bool "11 : 1"
+
+config SYSTEM_PLL_FACTOR_12_1
+	depends on ARCH_MPC8349 || ARCH_MPV8360 || ARCH_MPC837X
+	bool "12 : 1"
+
+config SYSTEM_PLL_FACTOR_13_1
+	depends on ARCH_MPC8349 || ARCH_MPV8360 || ARCH_MPC837X
+	bool "13 : 1"
+
+config SYSTEM_PLL_FACTOR_14_1
+	depends on ARCH_MPC8349 || ARCH_MPV8360 || ARCH_MPC837X
+	bool "14 : 1"
+
+config SYSTEM_PLL_FACTOR_15_1
+	depends on ARCH_MPC8349 || ARCH_MPV8360 || ARCH_MPC837X
+	bool "15 : 1"
+
+config SYSTEM_PLL_FACTOR_16_1
+	depends on ARCH_MPC8349 || ARCH_MPV8360
+	bool "16 : 1"
+
+endchoice
+
+config CORE_PLL_BYPASS
+	bool "Core PLL bypassed"
+
+if !CORE_PLL_BYPASS
+
+choice
+	prompt "Core PLL Ratio"
+
+config CORE_PLL_RATIO_1_1
+	bool "1 : 1"
+
+config CORE_PLL_RATIO_15_1
+	bool "1.5 : 1"
+
+config CORE_PLL_RATIO_2_1
+	bool "2 : 1"
+
+config CORE_PLL_RATIO_25_1
+	bool "2.5 : 1"
+
+config CORE_PLL_RATIO_3_1
+	bool "3 : 1"
+
+endchoice
+
+choice
+	prompt "Core PLL VCO Divider"
+
+config CORE_PLL_VCO_DIVIDER_2
+	bool "2"
+
+config CORE_PLL_VCO_DIVIDER_4
+	bool "4"
+
+config CORE_PLL_VCO_DIVIDER_8
+	depends on !ARCH_MPC8315
+	bool "8"
+
+endchoice
+
+endif
+
+if MPC83XX_QUICC_ENGINE
+
+choice
+	prompt "QUICC Engine PLL VCO Divider"
+
+config QUICC_VCO_DIVIDER_2
+	bool "2"
+
+config QUICC_VCO_DIVIDER_4
+	bool "4"
+
+config QUICC_VCO_DIVIDER_8
+	depends on ARCH_MPC8309
+	bool "8"
+
+endchoice
+
+choice
+	prompt "QUICC Engine PLL division factor"
+
+config QUICC_DIV_FACTOR_1
+	bool "1"
+
+config QUICC_DIV_FACTOR_2
+	bool "2"
+
+endchoice
+
+choice
+	prompt "QUICC Engine PLL multiplication factor"
+
+config QUICC_MULT_FACTOR_2
+	bool "2"
+
+config QUICC_MULT_FACTOR_3
+	bool "3"
+
+config QUICC_MULT_FACTOR_4
+	bool "4"
+
+config QUICC_MULT_FACTOR_5
+	bool "5"
+
+config QUICC_MULT_FACTOR_6
+	bool "6"
+
+config QUICC_MULT_FACTOR_7
+	bool "7"
+
+config QUICC_MULT_FACTOR_8
+	bool "8"
+
+config QUICC_MULT_FACTOR_9
+	depends on ARCH_MPC8360
+	bool "9"
+
+config QUICC_MULT_FACTOR_10
+	depends on ARCH_MPC8360
+	bool "10"
+
+config QUICC_MULT_FACTOR_11
+	depends on ARCH_MPC8360
+	bool "11"
+
+config QUICC_MULT_FACTOR_12
+	depends on ARCH_MPC8360
+	bool "12"
+
+config QUICC_MULT_FACTOR_13
+	depends on ARCH_MPC8360
+	bool "13"
+
+config QUICC_MULT_FACTOR_14
+	depends on ARCH_MPC8360
+	bool "14"
+
+config QUICC_MULT_FACTOR_15
+	depends on ARCH_MPC8360
+	bool "15"
+
+config QUICC_MULT_FACTOR_16
+	depends on ARCH_MPC8360
+	bool "16"
+
+config QUICC_MULT_FACTOR_17
+	depends on ARCH_MPC8360
+	bool "17"
+
+config QUICC_MULT_FACTOR_18
+	depends on ARCH_MPC8360
+	bool "18"
+
+config QUICC_MULT_FACTOR_19
+	depends on ARCH_MPC8360
+	bool "19"
+
+config QUICC_MULT_FACTOR_20
+	depends on ARCH_MPC8360
+	bool "20"
+
+config QUICC_MULT_FACTOR_21
+	depends on ARCH_MPC8360
+	bool "21"
+
+config QUICC_MULT_FACTOR_22
+	depends on ARCH_MPC8360
+	bool "22"
+
+config QUICC_MULT_FACTOR_23
+	depends on ARCH_MPC8360
+	bool "23"
+
+config QUICC_MULT_FACTOR_24
+	depends on ARCH_MPC8360
+	bool "24"
+
+config QUICC_MULT_FACTOR_25
+	depends on ARCH_MPC8360
+	bool "25"
+
+config QUICC_MULT_FACTOR_26
+	depends on ARCH_MPC8360
+	bool "26"
+
+config QUICC_MULT_FACTOR_27
+	depends on ARCH_MPC8360
+	bool "27"
+
+config QUICC_MULT_FACTOR_28
+	depends on ARCH_MPC8360
+	bool "28"
+
+config QUICC_MULT_FACTOR_29
+	depends on ARCH_MPC8360
+	bool "29"
+
+config QUICC_MULT_FACTOR_30
+	depends on ARCH_MPC8360
+	bool "30"
+
+config QUICC_MULT_FACTOR_31
+	depends on ARCH_MPC8360
+	bool "31"
+
+endchoice
+
+endif
+
+if MPC83XX_PCI_SUPPORT
+
+choice
+	prompt "PCI host mode"
+
+config PCI_HOST_MODE_DISABLE
+	bool "Disabled"
+
+config PCI_HOST_MODE_ENABLE
+	bool "Enabled"
+
+endchoice
+
+if ARCH_MPC8349
+
+choice
+	prompt "PCI 64-bit mode"
+
+config PCI_64BIT_MODE_DISABLE
+	bool "Disabled"
+
+config PCI_64BIT_MODE_ENABLE
+	bool "Enabled"
+
+endchoice
+
+endif
+
+choice
+	prompt "PCI internal arbiter 1 mode"
+
+config PCI_INT_ARBITER1_DISABLE
+	bool "Disabled"
+
+config PCI_INT_ARBITER1_ENABLE
+	bool "Enabled"
+
+endchoice
+
+if ARCH_MPC8349
+
+choice
+	prompt "PCI internal arbiter 2 mode"
+
+config PCI_INT_ARBITER2_DISABLE
+	bool "Disabled"
+
+config PCI_INT_ARBITER2_ENABLE
+	bool "Enabled"
+
+endchoice
+
+endif
+
+if ARCH_MPC8360
+
+choice
+	prompt "PCI clock output drive"
+
+config PCI_CLOCK_OUTPUT_DRIVE_DISABLE
+	bool "Disabled"
+
+config PCI_CLOCK_OUTPUT_DRIVE_ENABLE
+	bool "Enabled"
+
+endchoice
+
+endif
+
+endif
+
+choice
+	prompt "Core disable mode"
+
+config CORE_DISABLE_MODE_OFF
+	bool "Off"
+
+config CORE_DISABLE_MODE_ON
+	bool "On"
+
+endchoice
+
+choice
+	prompt "Boot Memory Space"
+
+config BOOT_MEMORY_SPACE_HIGH
+	bool "High"
+
+config BOOT_MEMORY_SPACE_LOW
+	bool "Low"
+
+endchoice
+
+choice
+	prompt "Boot Sequencer Configuration"
+
+config BOOT_SEQUENCER_DISABLED
+	bool "Disabled"
+
+config BOOT_SEQUENCER_NORMAL_I2C
+	bool "Normal I2C"
+
+config BOOT_SEQUENCER_EXTENDED_I2C
+	bool "Extended I2C"
+
+endchoice
+
+choice
+	prompt "Software Watchdog"
+
+config SOFTWARE_WATCHDOG_DISABLED
+	bool "Disabled"
+
+config SOFTWARE_WATCHDOG_ENABLED
+	bool "Enabled"
+
+endchoice
+
+choice
+	prompt "Boot ROM interface location"
+
+config BOOT_ROM_INTERFACE_DDR_SDRAM
+	bool "DDR_SDRAM"
+
+config BOOT_ROM_INTERFACE_PCI1
+	depends on MPC83XX_PCI_SUPPORT
+	bool "PCI1"
+
+config BOOT_ROM_INTERFACE_PCI2
+	depends on MPC83XX_PCI_SUPPORT && ARCH_MPC8349
+	bool "PCI2"
+
+config BOOT_ROM_INTERFACE_ON_CHIP_BOOT_ROM
+	depends on ARCH_MPC837X
+	bool "PCI2"
+
+config BOOT_ROM_INTERFACE_ESDHC
+	depends on ARCH_MPC8309
+	bool "eSDHC"
+
+config BOOT_ROM_INTERFACE_SPI
+	depends on ARCH_MPC8309
+	bool "SPI"
+
+config BOOT_ROM_INTERFACE_GPCM_8BIT
+	bool "Local bus GPCM - 8-bit ROM"
+
+config BOOT_ROM_INTERFACE_GPCM_16BIT
+	bool "Local bus GPCM - 16-bit ROM"
+
+config BOOT_ROM_INTERFACE_GPCM_32BIT
+	depends on ARCH_MPC8349 || ARCH_MPC8360 || ARCH_MPC837X
+	bool "Local bus GPCM - 32-bit ROM"
+
+config BOOT_ROM_INTERFACE_NAND_FLASH_8BIT_SMALL
+	depends on !ARCH_MPC832X && !ARCH_MPC8349 && !ARCH_MPC8360
+	bool "Local bus NAND Flash- 8-bit small page ROM"
+
+config BOOT_ROM_INTERFACE_NAND_FLASH_8BIT_LARGE
+	depends on !ARCH_MPC832X && !ARCH_MPC8349 && !ARCH_MPC8360
+	bool "Local bus NAND Flash- 8-bit large page ROM"
+
+endchoice
+
+if MPC83XX_TSEC1_SUPPORT
+
+choice
+	prompt "TSEC1 mode"
+
+config TSEC1_MODE_MII
+	depends on !ARCH_MPC8349
+	bool "MII"
+
+config TSEC1_MODE_RMII
+	depends on ARCH_MPC831X && !ARCH_MPC8349
+	bool "RMII"
+
+config TSEC1_MODE_RGMII
+	bool "RGMII"
+
+config TSEC1_MODE_RTBI
+	depends on ARCH_MPC831X || ARCH_MPC837X
+	bool "RTBI"
+
+config TSEC1_MODE_GMII
+	depends on ARCH_MPC8349
+	bool "GMII"
+
+config TSEC1_MODE_TBI
+	depends on ARCH_MPC8349
+	bool "TBI"
+
+config TSEC1_MODE_SGMII
+	depends on ARCH_MPC831X || ARCH_MPC837X
+	bool "SGMII"
+
+endchoice
+
+endif
+
+if MPC83XX_TSEC2_SUPPORT
+
+choice
+	prompt "TSEC2 mode"
+
+config TSEC2_MODE_MII
+	depends on !ARCH_MPC8349
+	bool "MII"
+
+config TSEC2_MODE_RMII
+	depends on ARCH_MPC831X && !ARCH_MPC8349
+	bool "RMII"
+
+config TSEC2_MODE_RGMII
+	bool "RGMII"
+
+config TSEC2_MODE_RTBI
+	depends on ARCH_MPC831X || ARCH_MPC837X
+	bool "RTBI"
+
+config TSEC2_MODE_GMII
+	depends on ARCH_MPC8349
+	bool "GMII"
+
+config TSEC2_MODE_TBI
+	depends on ARCH_MPC8349
+	bool "TBI"
+
+config TSEC2_MODE_SGMII
+	depends on ARCH_MPC831X || ARCH_MPC837X
+	bool "SGMII"
+
+endchoice
+
+endif
+
+choice
+	prompt "True litle-endian mode"
+
+config TRUE_LITTLE_ENDIAN_BIG_ENDIAN
+	bool "Big-endian"
+
+config TRUE_LITTLE_ENDIAN_LITTLE_ENDIAN
+	bool "Little-endian"
+
+endchoice
+
+if ARCH_MPC8360
+
+choice
+	prompt "Secondary DDR IO"
+
+config SECONDARY_DDR_IO_DISABLE
+	bool "Disable"
+
+config SECONDARY_DDR_IO_ENABLE
+	bool "Enable"
+
+endchoice
+
+endif
+
+if ARCH_MPC831X || ARCH_MPC832X || ARCH_MPC8349 || ARCH_MPC8360
+
+choice
+	prompt "LALE timing"
+
+config LALE_TIMING_NORMAL
+	bool "Normal"
+
+config LALE_TIMING_EARLIER
+	bool "Earlier"
+
+endchoice
+
+endif
+
+if MPC83XX_LDP_PIN
+
+choice
+	prompt "LDP pin mux state"
+
+config LDP_PIN_MUX_STATE_1
+	bool "Inital value 1"
+
+config LDP_PIN_MUX_STATE_0
+	bool "Inital value 0"
+
+endchoice
+
+endif
+
+endmenu
+
+config LBMC_CLOCK_MODE
+	int
+	default 0 if LBMC_CLOCK_MODE_1_1
+	default 1 if LBMC_CLOCK_MODE_1_2
+
+config DDR_MC_CLOCK_MODE
+	int
+	default 1 if DDR_MC_CLOCK_MODE_1_2
+	default 0 if DDR_MC_CLOCK_MODE_1_1
+
+config SYSTEM_PLL_VCO_DIV
+	int
+	default 0 if ARCH_MPC8349 || ARCH_MPC832X
+	default 2 if ARCH_MPC8313
+	default 0 if SYSTEM_PLL_VCO_DIV_2 && !ARCH_MPC8360 && !ARCH_MPC837X
+	default 1 if SYSTEM_PLL_VCO_DIV_4 && !ARCH_MPC8360 && !ARCH_MPC837X
+	default 2 if SYSTEM_PLL_VCO_DIV_8 && !ARCH_MPC8360 && !ARCH_MPC837X
+	default 0 if SYSTEM_PLL_VCO_DIV_4 && (ARCH_MPC8360 || ARCH_MPC837X)
+	default 1 if SYSTEM_PLL_VCO_DIV_8 && (ARCH_MPC8360 || ARCH_MPC837X)
+	default 2 if SYSTEM_PLL_VCO_DIV_2 && (ARCH_MPC8360 || ARCH_MPC837X)
+	default 3 if SYSTEM_PLL_VCO_DIV_1
+
+config SYSTEM_PLL_FACTOR
+	int
+	default 2 if SYSTEM_PLL_FACTOR_2_1
+	default 3 if SYSTEM_PLL_FACTOR_3_1
+	default 4 if SYSTEM_PLL_FACTOR_4_1
+	default 5 if SYSTEM_PLL_FACTOR_5_1
+	default 6 if SYSTEM_PLL_FACTOR_6_1
+	default 7 if SYSTEM_PLL_FACTOR_7_1
+	default 8 if SYSTEM_PLL_FACTOR_8_1
+	default 9 if SYSTEM_PLL_FACTOR_9_1
+	default 10 if SYSTEM_PLL_FACTOR_10_1
+	default 11 if SYSTEM_PLL_FACTOR_11_1
+	default 12 if SYSTEM_PLL_FACTOR_12_1
+	default 13 if SYSTEM_PLL_FACTOR_13_1
+	default 14 if SYSTEM_PLL_FACTOR_14_1
+	default 15 if SYSTEM_PLL_FACTOR_15_1
+	default 0 if SYSTEM_PLL_FACTOR_16_1
+
+config CORE_PLL_RATIO
+	hex
+	default 0x0 if CORE_PLL_BYPASS
+	default 0x02 if CORE_PLL_RATIO_1_1 && CORE_PLL_VCO_DIVIDER_2
+	default 0x22 if CORE_PLL_RATIO_1_1 && CORE_PLL_VCO_DIVIDER_4
+	default 0x42 if CORE_PLL_RATIO_1_1 && CORE_PLL_VCO_DIVIDER_8
+	default 0x03 if CORE_PLL_RATIO_15_1 && CORE_PLL_VCO_DIVIDER_2
+	default 0x23 if CORE_PLL_RATIO_15_1 && CORE_PLL_VCO_DIVIDER_4
+	default 0x43 if CORE_PLL_RATIO_15_1 && CORE_PLL_VCO_DIVIDER_8
+	default 0x04 if CORE_PLL_RATIO_2_1 && CORE_PLL_VCO_DIVIDER_2
+	default 0x24 if CORE_PLL_RATIO_2_1 && CORE_PLL_VCO_DIVIDER_4
+	default 0x44 if CORE_PLL_RATIO_2_1 && CORE_PLL_VCO_DIVIDER_8
+	default 0x05 if CORE_PLL_RATIO_25_1 && CORE_PLL_VCO_DIVIDER_2
+	default 0x25 if CORE_PLL_RATIO_25_1 && CORE_PLL_VCO_DIVIDER_4
+	default 0x45 if CORE_PLL_RATIO_25_1 && CORE_PLL_VCO_DIVIDER_8
+	default 0x06 if CORE_PLL_RATIO_3_1 && CORE_PLL_VCO_DIVIDER_2
+	default 0x26 if CORE_PLL_RATIO_3_1 && CORE_PLL_VCO_DIVIDER_4
+	default 0x46 if CORE_PLL_RATIO_3_1 && CORE_PLL_VCO_DIVIDER_8
+
+config CORE_DISABLE_MODE
+	int
+	default 0 if CORE_DISABLE_MODE_OFF
+	default 1 if CORE_DISABLE_MODE_ON
+
+config BOOT_MEMORY_SPACE
+	int
+	default 0 if BOOT_MEMORY_SPACE_LOW
+	default 1 if BOOT_MEMORY_SPACE_HIGH
+
+config BOOT_SEQUENCER
+	int
+	default 0 if BOOT_SEQUENCER_DISABLED
+	default 1 if BOOT_SEQUENCER_NORMAL_I2C
+	default 2 if BOOT_SEQUENCER_EXTENDED_I2C
+
+config SOFTWARE_WATCHDOG
+	int
+	default 0 if SOFTWARE_WATCHDOG_DISABLED
+	default 1 if SOFTWARE_WATCHDOG_ENABLED
+
+config BOOT_ROM_INTERFACE
+	hex
+	default 0x0 if BOOT_ROM_INTERFACE_DDR_SDRAM
+	default 0x4 if BOOT_ROM_INTERFACE_PCI1
+	default 0x8 if BOOT_ROM_INTERFACE_PCI2
+	default 0x8 if BOOT_ROM_INTERFACE_ESDHC
+	default 0xc if BOOT_ROM_INTERFACE_SPI
+	default 0xc if BOOT_ROM_INTERFACE_ON_CHIP_BOOT_ROM
+	default 0x14 if BOOT_ROM_INTERFACE_GPCM_8BIT
+	default 0x18 if BOOT_ROM_INTERFACE_GPCM_16BIT
+	default 0x1c if BOOT_ROM_INTERFACE_GPCM_32BIT
+	default 0x5 if BOOT_ROM_INTERFACE_NAND_FLASH_8BIT_SMALL
+	default 0x15 if BOOT_ROM_INTERFACE_NAND_FLASH_8BIT_LARGE
+
+config TSEC1_MODE
+	hex
+	default 0x0 if !MPC83XX_TSEC1_SUPPORT
+	default 0x0 if TSEC1_MODE_MII
+	default 0x1 if TSEC1_MODE_RMII
+	default 0x3 if TSEC1_MODE_RGMII && !ARCH_MPC8349
+	default 0x5 if TSEC1_MODE_RTBI && !ARCH_MPC8349
+	default 0x6 if TSEC1_MODE_SGMII
+	default 0x0 if TSEC1_MODE_RGMII && ARCH_MPC8349
+	default 0x1 if TSEC1_MODE_RTBI && ARCH_MPC8349
+	default 0x2 if TSEC1_MODE_GMII
+	default 0x3 if TSEC1_MODE_TBI
+
+config TSEC2_MODE
+	hex
+	default 0x0 if !MPC83XX_TSEC2_SUPPORT
+	default 0x0 if TSEC2_MODE_MII
+	default 0x1 if TSEC2_MODE_RMII
+	default 0x3 if TSEC2_MODE_RGMII && !ARCH_MPC8349
+	default 0x5 if TSEC2_MODE_RTBI && !ARCH_MPC8349
+	default 0x6 if TSEC2_MODE_SGMII
+	default 0x0 if TSEC2_MODE_RGMII && ARCH_MPC8349
+	default 0x1 if TSEC2_MODE_RTBI && ARCH_MPC8349
+	default 0x2 if TSEC2_MODE_GMII
+	default 0x3 if TSEC2_MODE_TBI
+
+config SECONDARY_DDR_IO
+	int
+	default 0 if !ARCH_MPC8360
+	default 0 if SECONDARY_DDR_IO_DISABLE
+	default 1 if SECONDARY_DDR_IO_ENABLE
+
+config TRUE_LITTLE_ENDIAN
+	int
+	default 0 if TRUE_LITTLE_ENDIAN_BIG_ENDIAN
+	default 1 if TRUE_LITTLE_ENDIAN_LITTLE_ENDIAN
+
+config LALE_TIMING
+	int
+	default 0 if ARCH_MPC830X || ARCH_MPC837X
+	default 0 if LALE_TIMING_NORMAL
+	default 1 if LALE_TIMING_EARLIER
+
+config LDP_PIN_MUX_STATE
+	int
+	default 0 if !MPC83XX_LDP_PIN
+	default 0 if LDP_PIN_MUX_STATE_1
+	default 1 if LDP_PIN_MUX_STATE_0
+
+config QUICC_VCO_DIVIDER
+	int
+	default 0 if !MPC83XX_QUICC_ENGINE
+	default 0 if QUICC_VCO_DIVIDER_2 && ARCH_MPC8309
+	default 1 if QUICC_VCO_DIVIDER_4 && ARCH_MPC8309
+	default 2 if QUICC_VCO_DIVIDER_8 && ARCH_MPC8309
+	default 2 if QUICC_VCO_DIVIDER_2 && (ARCH_MPC832X || ARCH_MPC8360)
+	default 0 if QUICC_VCO_DIVIDER_4 && (ARCH_MPC832X || ARCH_MPC8360)
+	default 1 if QUICC_VCO_DIVIDER_8 && ARCH_MPC8360
+
+config QUICC_DIV_FACTOR
+	int
+	default 0 if !MPC83XX_QUICC_ENGINE
+	default 0 if QUICC_DIV_FACTOR_1
+	default 1 if QUICC_DIV_FACTOR_2
+
+config QUICC_MULT_FACTOR
+	int
+	default 0 if !MPC83XX_QUICC_ENGINE
+	default 2 if QUICC_MULT_FACTOR_2
+	default 3 if QUICC_MULT_FACTOR_3
+	default 4 if QUICC_MULT_FACTOR_4
+	default 5 if QUICC_MULT_FACTOR_5
+	default 6 if QUICC_MULT_FACTOR_6
+	default 7 if QUICC_MULT_FACTOR_7
+	default 8 if QUICC_MULT_FACTOR_8
+	default 9 if QUICC_MULT_FACTOR_9
+	default 10 if QUICC_MULT_FACTOR_10
+	default 11 if QUICC_MULT_FACTOR_11
+	default 12 if QUICC_MULT_FACTOR_12
+	default 13 if QUICC_MULT_FACTOR_13
+	default 14 if QUICC_MULT_FACTOR_14
+	default 15 if QUICC_MULT_FACTOR_15
+	default 16 if QUICC_MULT_FACTOR_16
+	default 17 if QUICC_MULT_FACTOR_17
+	default 18 if QUICC_MULT_FACTOR_18
+	default 19 if QUICC_MULT_FACTOR_19
+	default 20 if QUICC_MULT_FACTOR_20
+	default 21 if QUICC_MULT_FACTOR_21
+	default 22 if QUICC_MULT_FACTOR_22
+	default 23 if QUICC_MULT_FACTOR_23
+	default 24 if QUICC_MULT_FACTOR_24
+	default 25 if QUICC_MULT_FACTOR_25
+	default 26 if QUICC_MULT_FACTOR_26
+	default 27 if QUICC_MULT_FACTOR_27
+	default 28 if QUICC_MULT_FACTOR_28
+	default 29 if QUICC_MULT_FACTOR_29
+	default 30 if QUICC_MULT_FACTOR_30
+	default 31 if QUICC_MULT_FACTOR_31
+
+config PCI_HOST_MODE
+	int
+	default 0 if !MPC83XX_PCI_SUPPORT && !ARCH_MPC8308
+	default 0 if PCI_HOST_MODE_DISABLE
+	default 1 if PCI_HOST_MODE_ENABLE || ARCH_MPC8308 # MPC8308 needs this bit set regardless
+
+config PCI_64BIT_MODE
+	int
+	default 0 if !ARCH_MPC8349
+	default 0 if PCI_64BIT_MODE_DISABLE
+	default 1 if PCI_64BIT_MODE_ENABLE
+
+config PCI_INT_ARBITER1
+	int
+	default 0 if !MPC83XX_PCI_SUPPORT && !ARCH_MPC8308
+	default 0 if PCI_INT_ARBITER1_DISABLE
+	default 1 if PCI_INT_ARBITER1_ENABLE || ARCH_MPC8308 # MPC8308 needs this bit set regardless
+
+config PCI_INT_ARBITER2
+	int
+	default 0 if !ARCH_MPC8349
+	default 0 if PCI_INT_ARBITER2_DISABLE
+	default 1 if PCI_INT_ARBITER2_ENABLE
+
+config PCI_CLOCK_OUTPUT_DRIVE
+	int
+	default 0 if !ARCH_MPC8360
+	default 0 if PCI_CLOCK_OUTPUT_DRIVE_DISABLE
+	default 1 if PCI_CLOCK_OUTPUT_DRIVE_ENABLE

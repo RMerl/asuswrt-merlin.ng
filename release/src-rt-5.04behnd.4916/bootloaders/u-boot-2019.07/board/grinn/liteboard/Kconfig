@@ -1,0 +1,12 @@
+if TARGET_LITEBOARD
+
+config SYS_BOARD
+	default "liteboard"
+
+config SYS_VENDOR
+	default "grinn"
+
+config SYS_CONFIG_NAME
+	default "liteboard"
+
+endif

@@ -1,0 +1,13 @@
+if TARGET_MT7623
+
+config SYS_BOARD
+	default "mt7623"
+
+config SYS_CONFIG_NAME
+	default "mt7623"
+
+config MTK_BROM_HEADER_INFO
+	string
+	default "lk=1"
+
+endif

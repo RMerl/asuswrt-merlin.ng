@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0,  user-scalable=no" />
+        <link rel="stylesheet" href="css/clients.css" />
+    </head>
+    <body>
+        <div class="d-flex align-items-center">
+            <div class="page-title py-3"><#traffic_monitor#></div>
+        </div>
+        <div id="if_card_field"></div>
+        <script src="js/chart.min.js"></script>
+        <script>
+            let inspect_length = 120,
+                time_interval = 1,
+                if_names = [
+                    ["wan1", "WAN"],
+                    ["lan", "LAN"],
+                ];
+
+            let trafficData = {
+                wan1: {
+                    ul: new Array(inspect_length).fill(0),
+                    ulRaw: new Array(inspect_length).fill(0),
+                    dl: new Array(inspect_length).fill(0),
+                    dlRaw: new Array(inspect_length).fill(0),
+                    last_ul: 0,
+                    last_dl: 0,
+                    unit: "Bytes",
+                },
+                lan: {
+                    ul: new Array(inspect_length).fill(0),
+                    ulRaw: new Array(inspect_length).fill(0),
+                    dl: new Array(inspect_length).fill(0),
+                    dlRaw: new Array(inspect_length).fill(0),
+                    last_ul: 0,
+                    last_dl: 0,
+                    unit: "Bytes",
+                },
+            };
+
+            for (let [key, value] of Object.entries(system.wlBandSeq)) {
+                let index = key;
+                if_names.push([key, value.name]);
+                trafficData[index] = {
+                    ul: new Array(inspect_length).fill(0),
+                    ulRaw: new Array(inspect_length).fill(0),
+                    dl: new Array(inspect_length).fill(0),
+                    dlRaw: new Array(inspect_length).fill(0),
+                    last_ul: 0,
+                    last_dl: 0,
+                    unit: "Bytes",
+                };
+            }
+
+            function genIfElement() {
+                let code = "";
+                for (let i = 0; i < if_names.length; i++) {
+                    let index = if_names[i][0],
+                        name = if_names[i][1];
+
+                    if (i === 0) {
+                        code += `<div class="row">`;
+                    }
+
+                    code += `
+                            <div class="col-12 col-md-6 col-xl-6 mb-3">
+                                <div class="card pt-2 h-100">
+                                    <h5 class="card-header d-flex align-items-center justify-content-between">${name}</h5>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div style="height: 300px">
+                                                <canvas id="${index}_traffic_chart"></canvas>
+                                            </div>
+                                            <div class="col-12 mt-2">
+                                                <div class="d-flex align-items-center py-2">
+                                                    <div class="card-data-title me-auto"><#Current#></div>
+                                                    <div class="d-flex justify-content-end card-data-value ms-3">
+                                                        <span class="traffic-up-value-color" id="${index}_curr_up">100 MB/s</span>
+                                                        <div
+                                                            role="icon"
+                                                            class="icon-size-24 icon-traffic-up traffic-up-color"
+                                                        ></div>
+                                                    </div>
+                                                    <div class="d-flex card-data-value ms-3">
+                                                        <span class="traffic-down-value-color" id="${index}_curr_down">50 MB/s</span>
+                                                        <div
+                                                            role="icon"
+                                                            class="icon-size-24 icon-traffic-down traffic-down-color"
+                                                        ></div>
+                                                    </div>
+                                                </div>
+                                                <div class="divide-line"></div>
+                                                <div class="d-flex align-items-center py-2">
+                                                    <div class="card-data-title me-auto">Peak</div>
+                                                    <div class="d-flex justify-content-end card-data-value ms-3">
+                                                        <span class="traffic-up-value-color" id="${index}_peak_up">100 MB/s</span>
+                                                        <div
+                                                            role="icon"
+                                                            class="icon-size-24 icon-traffic-up traffic-up-color"
+                                                        ></div>
+                                                    </div>
+                                                    <div class="d-flex card-data-value ms-3">
+                                                        <span class="traffic-down-value-color" id="${index}_peak_down">50 MB/s</span>
+                                                        <div
+                                                            role="icon"
+                                                            class="icon-size-24 icon-traffic-down traffic-down-color"
+                                                        ></div>
+                                                    </div>
+                                                </div>
+                                                <div class="divide-line"></div>
+                                                <div class="d-flex align-items-center py-2">
+                                                    <div class="card-data-title me-auto"><#Status_Total#></div>
+                                                    <div class="d-flex justify-content-end card-data-value ms-3">
+                                                        <span class="traffic-up-value-color" id="${index}_total_up">100 MB/s</span>
+                                                        <div
+                                                            role="icon"
+                                                            class="icon-size-24 icon-traffic-up traffic-up-color"
+                                                        ></div>
+                                                    </div>
+                                                    <div class="d-flex card-data-value ms-3">
+                                                        <span class="traffic-down-value-color" id="${index}_total_down">50 MB/s</span>
+                                                        <div
+                                                            role="icon"
+                                                            class="icon-size-24 icon-traffic-down traffic-down-color"
+                                                        ></div>
+                                                    </div>
+                                                </div>
+                                                <div class="divide-line"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                    `;
+
+                    if (i === if_names.length - 1) {
+                        code += `</div>`;
+                    }
+                }
+
+                document.getElementById("if_card_field").innerHTML = code;
+                registerChart();
+            }
+
+            let objChartList = {};
+            let chartLine1_Color = getComputedStyle(document.querySelector(":root")).getPropertyValue("--chart-color-1"),
+                chartLine1_BgColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--bg-chart-color-1"),
+                chartLine2_Color = getComputedStyle(document.querySelector(":root")).getPropertyValue("--chart-color-2"),
+                chartLine2_BgColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--bg-chart-color-2"),
+                labelColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--text-regular-color");
+            function registerChart() {
+                for (let [item] of if_names) {
+                    let index = item;
+                    let ctx = document.getElementById(index + "_traffic_chart").getContext("2d");
+                    let labelTag = new Array(inspect_length).fill(" ");
+                    let datasets = [
+                        {
+                            // label: "Download",
+                            data: trafficData[index].dl,
+                            backgroundColor: [`${chartLine1_BgColor}`],
+                            borderWidth: 1,
+                            borderColor: `${chartLine1_Color}`,
+                            fill: true,
+                            yAxisID: "y",
+                            order: 0,
+                        },
+                        {
+                            // label: "Upload",
+                            data: trafficData[index].ul,
+                            backgroundColor: [`${chartLine2_BgColor}`],
+                            borderWidth: 1,
+                            borderColor: `${chartLine2_Color}`,
+                            fill: true,
+                            yAxisID: "y",
+                            order: 0,
+                        },
+                    ];
+
+                    objChartList[`${index}_trafficChart`] = new Chart(ctx, {
+                        type: "line",
+                        data: {
+                            labels: labelTag,
+                            datasets: datasets,
+                        },
+                        options: {
+                            plugins: {
+                                legend: {
+                                    display: false,
+                                },
+                                title: {
+                                    text: "Chart.js Time Scale",
+                                    display: false,
+                                },
+                                tooltip: {
+                                    enabled: false,
+                                },
+                            },
+                            scales: {
+                                y: {
+                                    ticks: {
+                                        color: labelColor,
+                                        callback: function (value, index, ticks) {
+                                            return " ";
+                                        },
+
+                                        beginAtZero: true,
+                                        count: 5,
+                                    },
+                                    suggestedMin: 0,
+                                    suggestedMax: 100,
+                                },
+                                x: {
+                                    ticks: {
+                                        color: labelColor,
+                                    },
+                                },
+                            },
+                            responsive: true,
+                            maintainAspectRatio: false,
+                        },
+                    });
+                }
+            }
+
+            function getTraffic() {
+                $.ajax({
+                    url: "/update.cgi",
+                    dataType: "script",
+                    data: { output: "netdev" },
+                    error: function (xhr) {
+                        console.log("Get Traffic Data error");
+                    },
+                    success: function (response) {
+                        if (netdev.INTERNET) {
+                            if (trafficData["wan1"].last_dl !== 0) {
+                                trafficData["wan1"]["dlRaw"].shift();
+                                trafficData["wan1"]["dl"].shift();
+                                trafficData["wan1"]["dlRaw"].push((netdev.INTERNET.rx - trafficData["wan1"].last_dl) / time_interval);
+                                trafficData["wan1"]["dl"].push((netdev.INTERNET.rx - trafficData["wan1"].last_dl) / time_interval);
+                            }
+
+                            if (trafficData["wan1"].last_ul !== 0) {
+                                trafficData["wan1"]["ulRaw"].shift();
+                                trafficData["wan1"]["ul"].shift();
+                                trafficData["wan1"]["ulRaw"].push((netdev.INTERNET.tx - trafficData["wan1"].last_ul) / time_interval);
+                                trafficData["wan1"]["ul"].push((netdev.INTERNET.tx - trafficData["wan1"].last_ul) / time_interval);
+                            }
+
+                            trafficData["wan1"].last_dl = netdev.INTERNET.rx;
+                            trafficData["wan1"].last_ul = netdev.INTERNET.tx;
+                        }
+
+                        if (netdev.WIRED) {
+                            if (trafficData["lan"].last_dl !== 0) {
+                                trafficData["lan"]["dlRaw"].shift();
+                                trafficData["lan"]["dl"].shift();
+                                trafficData["lan"]["dlRaw"].push((netdev.WIRED.tx - trafficData["lan"].last_dl) / time_interval);
+                                trafficData["lan"]["dl"].push((netdev.WIRED.tx - trafficData["lan"].last_dl) / time_interval);
+                            }
+
+                            if (trafficData["lan"].last_ul !== 0) {
+                                trafficData["lan"]["ulRaw"].shift();
+                                trafficData["lan"]["ul"].shift();
+                                trafficData["lan"]["ulRaw"].push((netdev.WIRED.rx - trafficData["lan"].last_ul) / time_interval);
+                                trafficData["lan"]["ul"].push((netdev.WIRED.rx - trafficData["lan"].last_ul) / time_interval);
+                            }
+
+                            trafficData["lan"].last_dl = netdev.WIRED.tx;
+                            trafficData["lan"].last_ul = netdev.WIRED.rx;
+                        }
+
+                        // update wireless interface traffic data
+                        for (let [index, value] of Object.entries(system.wlBandSeq)) {
+                            let wl_unit = "WIRELESS" + value.wl_unit;
+                            if (netdev[wl_unit]) {
+                                if (trafficData[index].last_dl !== 0) {
+                                    trafficData[index]["dlRaw"].shift();
+                                    trafficData[index]["dl"].shift();
+                                    trafficData[index]["dlRaw"].push((netdev[wl_unit].tx - trafficData[index].last_dl) / time_interval);
+                                    trafficData[index]["dl"].push((netdev[wl_unit].tx - trafficData[index].last_dl) / time_interval);
+                                }
+
+                                if (trafficData[index].last_ul !== 0) {
+                                    trafficData[index]["ulRaw"].shift();
+                                    trafficData[index]["ul"].shift();
+                                    trafficData[index]["ulRaw"].push((netdev[wl_unit].rx - trafficData[index].last_ul) / time_interval);
+                                    trafficData[index]["ul"].push((netdev[wl_unit].rx - trafficData[index].last_ul) / time_interval);
+                                }
+
+                                trafficData[index].last_dl = netdev[wl_unit].tx;
+                                trafficData[index].last_ul = netdev[wl_unit].rx;
+                            }
+                        }
+
+                        setTimeout(getTraffic, time_interval * 1000);
+                        setTimeout(updateChart, time_interval * 1000);
+                    },
+                });
+            }
+
+            getTraffic();
+            genIfElement();
+
+            function updateChart() {
+                for (let id of Object.keys(objChartList)) {
+                    objChartList[id].update();
+                }
+
+                for (let [iface, data] of Object.entries(trafficData)) {
+                    let upValue = 0,
+                        downValue = 0,
+                        maxUpValue = 0,
+                        MaxDownValue = 0,
+                        totalUpValue = 0,
+                        totalDownValue = 0;
+
+                    // CURRENT
+                    upValue = trafficData[iface]["ulRaw"].slice(-1)[0];
+                    downValue = trafficData[iface]["dlRaw"].slice(-1)[0];
+                    document.getElementById(iface + "_curr_up").innerHTML = `${trafficCoverUnit(upValue, 2, 1)} /s`;
+                    document.getElementById(iface + "_curr_down").innerHTML = `${trafficCoverUnit(downValue, 2, 1)} /s`;
+
+                    // PEAK
+                    maxUpValue = Math.max(...trafficData[iface]["ulRaw"]);
+                    maxDownValue = Math.max(...trafficData[iface]["dlRaw"]);
+                    document.getElementById(iface + "_peak_up").innerHTML = `${trafficCoverUnit(maxUpValue, 2, 1)} /s`;
+                    document.getElementById(iface + "_peak_down").innerHTML = `${trafficCoverUnit(maxDownValue, 2, 1)} /s`;
+                    // TOTAL
+                    totalUpValue = trafficData[iface]["ulRaw"].reduce((accu, curr) => accu + curr, 0);
+                    totalDownValue = trafficData[iface]["dlRaw"].reduce((accu, curr) => accu + curr, 0);
+                    document.getElementById(iface + "_total_up").innerHTML = trafficCoverUnit(totalUpValue, 2, 1);
+                    document.getElementById(iface + "_total_down").innerHTML = trafficCoverUnit(totalDownValue, 2, 1);
+                }
+            }
+
+            function trafficCoverUnit(value, digital = 2, defaultUnit = 1) {
+                let trafficUnit = ["bits", "Bytes", "KB", "MB", "GB"];
+                while (defaultUnit < 4 && value > 1024) {
+                    value = value / 1024;
+                    defaultUnit++;
+                }
+
+                return `${value.toFixed(digital)} ${trafficUnit[defaultUnit]}`;
+            }
+        </script>
+    </body>
+</html>

@@ -1,0 +1,8 @@
+#
+# Add the object(s) in for DSL component apps under Device.X_BROADCOM_COM_AppCfg. 
+#
+# See 0000-README.txt for more details
+#
+
+addFirstChildObjToObj cms-dm-bcm-afc.xml Device.WiFi.
+

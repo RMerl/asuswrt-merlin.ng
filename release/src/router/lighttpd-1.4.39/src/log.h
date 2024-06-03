@@ -32,6 +32,7 @@ int log_sys_write(server *srv, const char *fmt, ...);
 //void dprintf_impl(const char* date,const char* time,const char* file,const char* func, size_t line, int enable, const char* fmt, ...);
 void dprintf_impl(const char* file,const char* func, size_t line, int enable, const char* fmt, ...);
 // #define NDEBUG
+
 #ifndef NDEBUG
 // #define WHERESTR "[%s][%s][%25s] <<%38s>>, line %i: "
 // #define WHEREARG  __DATE__,__TIME__,__FILE__,__func__,__LINE__

@@ -1,0 +1,185 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2015 Microchip Technology, Inc.
+ * Purna Chandra Mandal, <purna.mandal@microchip.com>
+ */
+
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/clock/microchip,clock.h>
+#include <dt-bindings/gpio/gpio.h>
+#include "skeleton.dtsi"
+
+/ {
+	compatible = "microchip,pic32mzda", "microchip,pic32mz";
+
+	aliases {
+		gpio0 = &gpioA;
+		gpio1 = &gpioB;
+		gpio2 = &gpioC;
+		gpio3 = &gpioD;
+		gpio4 = &gpioE;
+		gpio5 = &gpioF;
+		gpio6 = &gpioG;
+		gpio7 = &gpioH;
+		gpio8 = &gpioJ;
+		gpio9 = &gpioK;
+	};
+
+	cpus {
+		cpu@0 {
+			compatible = "mips,mips14kc";
+		};
+	};
+
+	clock: clk@1f801200 {
+		compatible = "microchip,pic32mzda-clk";
+		reg = <0x1f801200 0x1000>;
+		#clock-cells = <1>;
+	};
+
+	uart1: serial@1f822000 {
+		compatible = "microchip,pic32mzda-uart";
+		reg = <0x1f822000 0x50>;
+		interrupts = <112 IRQ_TYPE_LEVEL_HIGH>;
+		status = "disabled";
+		clocks = <&clock PB2CLK>;
+	};
+
+	uart2: serial@1f822200 {
+		compatible = "microchip,pic32mzda-uart";
+		reg = <0x1f822200 0x50>;
+		interrupts = <145 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&clock PB2CLK>;
+		status = "disabled";
+	};
+
+	uart6: serial@1f822a00 {
+		compatible = "microchip,pic32mzda-uart";
+		reg = <0x1f822a00 0x50>;
+		interrupts = <188 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&clock PB2CLK>;
+		status = "disabled";
+	};
+
+	evic: interrupt-controller@1f810000 {
+		compatible = "microchip,pic32mzda-evic";
+		interrupt-controller;
+		#interrupt-cells = <2>;
+		reg = <0x1f810000 0x1000>;
+	};
+
+	pinctrl: pinctrl@1f801400 {
+		compatible = "microchip,pic32mzda-pinctrl";
+		reg = <0x1f801400 0x100>, /* in  */
+		      <0x1f801500 0x200>, /* out */
+		      <0x1f860000 0xa00>; /* port */
+		reg-names = "ppsin","ppsout","port";
+		status = "disabled";
+
+		ranges = <0 0x1f860000 0xa00>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+		gpioA: gpio0@0 {
+			compatible = "microchip,pic32mzda-gpio";
+			reg = <0x000 0x48>;
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpioB: gpio1@100 {
+			compatible = "microchip,pic32mzda-gpio";
+			reg = <0x100 0x48>;
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpioC: gpio2@200 {
+			compatible = "microchip,pic32mzda-gpio";
+			reg = <0x200 0x48>;
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpioD: gpio3@300 {
+			compatible = "microchip,pic32mzda-gpio";
+			reg = <0x300 0x48>;
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpioE: gpio4@400 {
+			compatible = "microchip,pic32mzda-gpio";
+			reg = <0x400 0x48>;
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpioF: gpio5@500 {
+			compatible = "microchip,pic32mzda-gpio";
+			reg = <0x500 0x48>;
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpioG: gpio6@600 {
+			compatible = "microchip,pic32mzda-gpio";
+			reg = <0x600 0x48>;
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpioH: gpio7@700 {
+			compatible = "microchip,pic32mzda-gpio";
+			reg = <0x700 0x48>;
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpioJ: gpio8@800 {
+			compatible = "microchip,pic32mzda-gpio";
+			reg = <0x800 0x48>;
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpioK: gpio9@900 {
+			compatible = "microchip,pic32mzda-gpio";
+			reg = <0x900 0x48>;
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+	};
+
+	sdhci: sdhci@1f8ec000 {
+		compatible = "microchip,pic32mzda-sdhci";
+		reg = <0x1f8ec000 0x100>;
+		interrupts = <191 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&clock REF4CLK>, <&clock PB5CLK>;
+		clock-names = "base_clk", "sys_clk";
+		clock-freq-min-max = <25000000>,<25000000>;
+		bus-width = <4>;
+		status = "disabled";
+	};
+
+	ethernet: ethernet@1f882000 {
+		compatible = "microchip,pic32mzda-eth";
+		reg = <0x1f882000 0x1000>;
+		interrupts = <153 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&clock PB5CLK>;
+		status = "disabled";
+		#address-cells = <1>;
+		#size-cells = <0>;
+	};
+
+	usb: musb@1f8e3000 {
+		compatible = "microchip,pic32mzda-usb";
+		reg = <0x1f8e3000 0x1000>,
+		      <0x1f884000 0x1000>;
+		reg-names = "mc", "control";
+		interrupts = <132 IRQ_TYPE_EDGE_RISING>,
+			     <133 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&clock PB5CLK>;
+		clock-names = "usb_clk";
+		status = "disabled";
+	};
+};

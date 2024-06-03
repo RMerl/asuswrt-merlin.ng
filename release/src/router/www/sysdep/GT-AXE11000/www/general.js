@@ -1831,7 +1831,7 @@ function limit_auth_method(g_unit){
 
 	if(_current_page == "Guest_network.asp"){
 		if(wpa3_support){
-			if(based_modelid === 'GT-AXE16000'){
+			if(based_modelid === 'GT-AXE16000' || based_modelid === 'GT-BE98' || based_modelid === 'GT-BE98_PRO'){
 				if(g_unit == '2'){
 					var auth_array = [["<#Wireless_Encryption_OWE#>", "owe"], ["WPA3-Personal", "sae"]];
 					if(auth_method_array != 'owe' && auth_method_array != 'sae'){
@@ -2082,7 +2082,7 @@ function check_is_merlin_fw(_fw) {
 }
 
 function is_unit_24g(_unit) {
-	if (based_modelid == "GT-AXE16000") {
+	if (based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid === 'GT-BE98_PRO' || based_modelid === 'BQ16' || based_modelid === 'BQ16_PRO') {
 		if (_unit == 3) return true;
 	} else {
 		if (_unit == 0) return true;
@@ -2091,7 +2091,7 @@ function is_unit_24g(_unit) {
 }
 
 function is_unit_5g(_unit) {
-	if (based_modelid == "GT-AXE16000") {
+	if (based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid === 'GT-BE98_PRO' || based_modelid === 'BQ16' || based_modelid === 'BQ16_PRO') {
 		if (_unit == 0) return true;
 	} else if (wl_info.band5g_support) {
 		if (_unit == 1) return true;
@@ -2100,7 +2100,7 @@ function is_unit_5g(_unit) {
 }
 
 function is_unit_5g_2(_unit) {
-	if (based_modelid == "GT-AXE16000") {
+	if (based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid === 'GT-BE98_PRO' || based_modelid === 'BQ16' || based_modelid === 'BQ16_PRO') {
 		if (_unit == 1) return true;
 	} else if (wl_info.band5g_2_support) {
 		if (_unit == 2) return true;

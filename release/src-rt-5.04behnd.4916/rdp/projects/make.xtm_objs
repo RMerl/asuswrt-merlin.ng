@@ -1,0 +1,4 @@
+RDPA_OBJS += rdpa_xtm.o
+RDPA_OBJS += rdpa_xtm_ex.o
+RDPA_OBJS += rdpa_xtmflow.o
+RDPA_OBJS += rdpa_xtmchannel.o

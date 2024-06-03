@@ -1,0 +1,27 @@
+Exynos Sound Subsystem
+
+The device node for sound subsytem which contains codec and i2s block
+that is a part of Exynos5250
+
+Required properties :
+ - compatible : Should be "samsung,exynos-sound" for sound
+ - samsung,i2s-epll-clock-frequency : epll clock output frequency in Hz
+ - samsung,i2s-sampling-rate : sampling rate, default is 48000
+ - samsung,i2s-bits-per-sample : sample width, defalut is 16 bit
+ - samsung,i2s-channels : nummber of channels, default is 2
+ - samsung,i2s-lr-clk-framesize : lr clock frame size
+ - samsung,i2s-bit-clk-framesize : bit clock frame size
+ - samsung,codec-type : sound codec type
+
+Example:
+
+sound@12d60000 {
+	compatible = "samsung,exynos-sound"
+	samsung,i2s-epll-clock-frequency = <192000000>;
+	samsung,i2s-sampling-rate = <48000>;
+	samsung,i2s-bits-per-sample = <16>;
+	samsung,i2s-channels = <2>;
+	samsung,i2s-lr-clk-framesize = <256>;
+	samsung,i2s-bit-clk-framesize = <32>;
+	samsung,codec-type = "wm8994";
+};

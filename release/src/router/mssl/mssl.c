@@ -52,10 +52,8 @@
 #define DSA_get0_pub_key(d) ((d)->pub_key)
 #endif
 
-#if defined(RTCONFIG_MUSL_LIBC_1116_WAR)
-/* Workaround for musl libc earlier than v1.1.19 that has its own fopencookie() implementation.
- * introduce musl fopencookie patch & copy some musl definition here (musl-1.1.16)
- */
+#if !defined(__GLIBC__) && !defined(__UCLIBC__) && !defined(MUSL_LIBC) /* musl */
+// introduce musl fopencookie patch & copy some musl definition here (musl-1.1.16)
 typedef ssize_t (cookie_read_function_t)(void *, char *, size_t);
 typedef ssize_t (cookie_write_function_t)(void *, const char *, size_t);
 typedef int (cookie_seek_function_t)(void *, off_t *, int);
@@ -239,7 +237,7 @@ FILE *fopencookie(void *cookie, const char *mode, cookie_io_functions_t iofuncs)
 	/* Add new FILE to open file list */
 	return __ofl_add(&f->f);
 }
-#endif	/* RTCONFIG_MUSL_LIBC_1116_WAR */
+#endif
 
 typedef struct {
 	SSL* ssl;

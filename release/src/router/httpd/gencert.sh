@@ -268,9 +268,9 @@ fi
 if [ ! -e ${HTTPD_ROOTCA_GEN_CERT} -o ! -e ${HTTPD_ROOTCA_GEN_KEY} ] ; then
 	echo "Generate new Root certificate"
 	if [ "${ECC256}" == "1" ] ; then
-		OPENSSL_CONF=/etc/openssl.config openssl ecparam -name prime256v1 -genkey -noout -out ${HTTPD_ROOTCA_GEN_KEY}
+		OPENSSL_CONF=/etc/openssl.config RANDFILE=/dev/urandom openssl ecparam -name prime256v1 -genkey -noout -out ${HTTPD_ROOTCA_GEN_KEY}
 	else
-		OPENSSL_CONF=/etc/openssl.config openssl genrsa -out ${HTTPD_ROOTCA_GEN_KEY}
+		OPENSSL_CONF=/etc/openssl.config RANDFILE=/dev/urandom openssl genrsa -out ${HTTPD_ROOTCA_GEN_KEY}
 	fi
 	OPENSSL_CONF=/etc/openssl.config RANDFILE=/dev/urandom openssl req -x509 \
 		-new -nodes -in /tmp/cert.csr -key ${HTTPD_ROOTCA_GEN_KEY} -days 7306 -sha256 -out ${HTTPD_ROOTCA_GEN_CERT}
@@ -324,11 +324,11 @@ fi
 # Create certificate, sign with ${HTTPD_ROOTCA_CERT}, for HTTPS/FTP-TLS/WebDav/Captive Portal/Free WiFi
 echo "Generate new server certificate"
 if [ "${ECC256}" == "1" ] ; then
-	OPENSSL_CONF=/etc/openssl.config openssl ecparam -name prime256v1 -genkey -noout -out ${HTTPD_GEN_KEY}
+	OPENSSL_CONF=/etc/openssl.config RANDFILE=/dev/urandom openssl ecparam -name prime256v1 -genkey -noout -out ${HTTPD_GEN_KEY}
 else
-	OPENSSL_CONF=/etc/openssl.config openssl genrsa -out ${HTTPD_GEN_KEY}
+	OPENSSL_CONF=/etc/openssl.config RANDFILE=/dev/urandom openssl genrsa -out ${HTTPD_GEN_KEY}
 fi
-OPENSSL_CONF=/etc/openssl.config openssl req -new \
+OPENSSL_CONF=/etc/openssl.config RANDFILE=/dev/urandom openssl req -new \
 	-subj "/C=US/CN=${ONAME} Server Certificate/O=${ONAME}" \
 	-batch -out /tmp/https_srv.csr -key ${HTTPD_GEN_KEY}
 OPENSSL_CONF=/etc/openssl.config RANDFILE=/dev/urandom openssl x509 -req \

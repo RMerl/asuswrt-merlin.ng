@@ -22,7 +22,7 @@
 #include <shared.h>
 #include <rc.h>
 
-static void wps_pbc(int sig)
+static void wpsaide_pbc(int sig)
 {
 	int unit = nvram_get_int("wps_band_x");
 #ifdef CONFIG_BCMWL5
@@ -74,7 +74,7 @@ wpsaide_main(int argc, char *argv[])
 	sigaddset(&sigs_to_catch, SIGTSTP);
 	sigprocmask(SIG_UNBLOCK, &sigs_to_catch, NULL);
 	signal(SIGTERM, wpsaide_exit);
-	signal(SIGTSTP, wps_pbc);
+	signal(SIGTSTP, wpsaide_pbc);
 
 	/* listen for replies */
 	while (1)

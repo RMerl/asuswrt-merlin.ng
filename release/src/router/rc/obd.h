@@ -92,7 +92,7 @@ struct scanned_bss {
 	uint8 vsie_len;
 	uint8 vsie[MAX_VSIE_LEN];
 	unsigned char RSSI;
-#if defined(RTCONFIG_AMAS_QCA_WDS) && defined(RTCONFIG_BHCOST_OPT)
+#if defined(RTCONFIG_AMAS_WDS) && defined(RTCONFIG_BHCOST_OPT)
 	int wds;
 #endif	
 };

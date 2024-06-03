@@ -1,0 +1,17 @@
+Device Tree Bindings Staging Area
+=================================
+
+This directory contains device tree bindings for U-Boot.
+
+These follow along with Linux kernel bindings, with a few additions. By
+adding the files here, U-Boot patches can clearly show thees additions.
+This makes it easier for device tree people to review these additions in
+patches sent to the U-Boot mailing list.
+
+The intent IS to commit these files to U-Boot. Hopefully at some point
+the files will be stored in another repo (shared with Linux) which is
+brought in as needed. Changes here are intended to mirror changes in the
+Linux Documentation/devicetree/bindings/ directory.
+
+sjg@chromium.org
+17-Jan-12

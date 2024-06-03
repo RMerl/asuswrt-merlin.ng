@@ -1,0 +1,15 @@
+if TARGET_AM335X_BALTOS
+
+config SYS_BOARD
+	default "baltos"
+
+config SYS_VENDOR
+	default "vscom"
+
+config SYS_SOC
+	default "am33xx"
+
+config SYS_CONFIG_NAME
+	default "baltos"
+
+endif

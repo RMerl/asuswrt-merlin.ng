@@ -157,7 +157,7 @@ void delete_user_from_smbpasswd(char *user)
 					fsetpos(fp, &r_pos);
 				}
 				ftruncate(fileno(fp), w_pos.__pos);
-#else
+#else /* musl */
 				long r_pos, w_pos;
 				char t2[256];
 				r_pos = ftell(fp);

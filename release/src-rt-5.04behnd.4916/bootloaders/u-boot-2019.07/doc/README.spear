@@ -1,0 +1,74 @@
+
+SPEAr (Structured Processor Enhanced Architecture).
+
+SPEAr600 is also known as SPEArPlus and SPEAr300 is also known as SPEArBasic
+
+The SPEAr SoC family embeds a customizable logic that can be programmed
+one-time by a customer at silicon mask level (i.e. not at runtime!).
+
+U-Boot supports four SoCs: SPEAr600, SPEAr3xx
+
+All 4 SoCs (SPEAr3xx and SPEAr600) share common peripherals. SPEAr300 and
+SPEAr600 do not have EMI.
+
+1. ARM926ejs core based (sp600 has two cores, the 2nd handled only in Linux)
+2. FastEthernet (sp600 has Gbit version, but same controller - GMAC)
+3. USB Host
+4. USB Device
+5. NAND controller (FSMC)
+6. Serial NOR ctrl
+7. I2C
+8. SPI
+9. CLCD
+10. others ..
+
+Everything is supported in Linux.
+u-boot is currently not supporting all peripeharls (just a few as listed below).
+1. USB Device
+2. NAND controller (FSMC)
+3. Serial Memory Interface
+4. EMI (Parallel NOR interface)
+4. I2C
+5. UART
+
+Build options
+	make spear320_config
+		spear320 build with environment variables placed at default
+		location i.e. Serial NOR device
+	make spear320_pnor_config
+		This option generates a uboot image that supports emi controller
+		for CFI compliant parallel NOR flash. Environment variables are
+		placed in Parallel NOR device
+	make spear320_nand_config
+		spear320 build with environment variables placed in NAND device
+	make spear320_usbtty_config
+		spear320 build with usbtty terminal as default and environment
+		placed at default location
+	make spear320_usbtty_pnor_config
+		spear320 build with usbtty terminal as default and environment
+		placed in pnor device
+	make spear320_usbtty_nand_config
+		Build with usbtty terminal as default and environment placed in
+		NAND device
+	make spear300_config
+	make spear300_nand_config
+	make spear300_usbtty_config
+	make spear300_usbtty_nand_config
+	make spear310_config
+	make spear310_pnor_config
+	make spear310_nand_config
+	make spear310_usbtty_config
+	make spear310_usbtty_pnor_config
+	make spear310_usbtty_nand_config
+	make spear600_config
+	make spear600_nand_config
+	make spear600_usbtty_config
+	make spear600_usbtty_nand_config
+
+Mac id storage and retrieval in spear platforms
+
+Please read doc/README.enetaddr for the implementation guidelines for mac id
+usage. Basically, environment has precedence over board specific storage. The
+ethaddr beeing used for the network interface is always taken only from
+environment variables. Although, we can check the mac id programmed in i2c
+memory by using chip_config command

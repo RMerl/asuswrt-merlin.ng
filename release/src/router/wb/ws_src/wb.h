@@ -69,7 +69,12 @@ typedef enum _WS_ID
 	e_getawscertificate,
 	e_psrsendmsg,
 	e_pnssendmsgfcm,
-	e_remotelogin
+	e_remotelogin,
+	e_accountreg,
+	e_fbwifi2reg,
+	e_getprovisionpincode,
+	e_get_db,
+	e_update_db
 }WS_ID;
 
 typedef struct _WS_MANAGER{

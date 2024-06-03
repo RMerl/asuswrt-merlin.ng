@@ -1,0 +1,12 @@
+if TARGET_S5PC210_UNIVERSAL
+
+config SYS_BOARD
+	default "universal_c210"
+
+config SYS_VENDOR
+	default "samsung"
+
+config SYS_CONFIG_NAME
+	default "s5pc210_universal"
+
+endif

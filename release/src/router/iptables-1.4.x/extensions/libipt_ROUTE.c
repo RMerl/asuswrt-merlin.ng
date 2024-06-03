@@ -85,7 +85,7 @@ static int ROUTE_parse(int c, char **argv, int invert, unsigned int *flags,
 
 		if (strlen(optarg) > sizeof(route_info->oif) - 1)
 			xtables_error(PARAMETER_PROBLEM,
-				   "Maximum interface name length %u",
+				   "Maximum interface name length %zu",
 				   sizeof(route_info->oif) - 1);
 
 		strcpy(route_info->oif, optarg);
@@ -103,7 +103,7 @@ static int ROUTE_parse(int c, char **argv, int invert, unsigned int *flags,
 
 		if (strlen(optarg) > sizeof(route_info->iif) - 1)
 			xtables_error(PARAMETER_PROBLEM,
-				   "Maximum interface name length %u",
+				   "Maximum interface name length %zu",
 				   sizeof(route_info->iif) - 1);
 
 		strcpy(route_info->iif, optarg);

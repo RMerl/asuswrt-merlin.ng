@@ -449,7 +449,7 @@ function edit_Row(r){
 }
 
 function delRow(_rulenum){
-	if(!confirm("Are you sure to delete this profile?"))/*untranslated*/
+	if(!confirm(stringSafeGet("<#aicloud_rm_list_confirm#>")))
 		return false;
 	document.form.cloud_sync.value = cloud_sync.split('<').del(_rulenum-1).join("<");
 	FormActions("start_apply.htm", "apply", "restart_cloudsync", "2");
@@ -1534,7 +1534,7 @@ function GetTree(layer_order, v){
 		document.getElementById('e'+layer_order).style.visibility = "";
 	}
 	else
-		alert("Error when show the folder-tree!");
+		alert(stringSafeGet("<#ALERT_OF_ERROR_show#>"));
 }
 
 function cancel_folderTree(){

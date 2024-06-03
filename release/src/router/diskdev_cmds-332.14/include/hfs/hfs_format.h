@@ -2,13 +2,13 @@
  * Copyright (c) 2000-2004 Apple Computer, Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
+ *
  * The contents of this file constitute Original Code as defined in and
  * are subject to the Apple Public Source License Version 1.1 (the
  * "License").  You may not use this file except in compliance with the
  * License.  Please obtain a copy of the License at
  * http://www.apple.com/publicsource and read it before using this file.
- * 
+ *
  * This Original Code and all software distributed under the License are
  * distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, EITHER
  * EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
@@ -16,7 +16,7 @@
  * FITNESS FOR A PARTICULAR PURPOSE OR NON-INFRINGEMENT.  Please see the
  * License for the specific language governing rights and limitations
  * under the License.
- * 
+ *
  * @APPLE_LICENSE_HEADER_END@
  */
 #ifndef __HFS_FORMAT__
@@ -43,7 +43,7 @@ extern "C" {
 /* some on-disk hfs structures have 68K alignment (misaligned) */
 
 #define PACKED_S	__attribute__((packed))
-	
+
 /* Signatures used to differentiate between HFS and HFS Plus volumes */
 enum {
 	kHFSSigWord		= 0x4244,	/* 'BD' in ASCII */
@@ -59,7 +59,7 @@ enum {
 }PACKED_S;
 
 
-#ifdef __APPLE_API_PRIVATE
+#if 1
 /*
  * Mac OS X has a special directory for linked and unlinked files (HFS Plus only).
  * This directory and its contents are never exported from the filesystem under
@@ -363,7 +363,7 @@ struct HFSPlusCatalogFile {
 	u_int32_t 		textEncoding;		/* hint for name conversions */
 	u_int32_t 		attrBlocks;		/* cached count of attribute data blocks */
 
-	/* Note: these start on double long (64 bit) boundry */
+	/* Note: these start on double long (64 bit) boundary */
 	HFSPlusForkData 	dataFork;		/* size and block data for data fork */
 	HFSPlusForkData 	resourceFork;		/* size and block data for resource fork */
 }PACKED_S;
@@ -402,7 +402,7 @@ enum {
 /*
   	HFSPlusAttrForkData
   	For larger attributes, whose value is stored in allocation blocks.
-  	If the attribute has more than 8 extents, there will be additonal
+  	If the attribute has more than 8 extents, there will be additional
   	records (of type HFSPlusAttrExtents) for this attribute.
 */
 struct HFSPlusAttrForkData {

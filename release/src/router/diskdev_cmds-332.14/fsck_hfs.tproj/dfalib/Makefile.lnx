@@ -9,7 +9,7 @@ CFILES = hfs_endian.c BlockCache.c\
 OFILES = $(CFILES:.c=.o)
 
 libdfa.a: $(OFILES)
-	ar rc $@ $?
+	$(AR) rc $@ $?
 
 clean:
 	$(RM) $(OFILES) libdfa.a

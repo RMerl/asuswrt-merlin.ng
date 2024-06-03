@@ -1,0 +1,174 @@
+if ARCH_EXYNOS
+
+choice
+	prompt "EXYNOS architecture type select"
+	optional
+
+config ARCH_EXYNOS4
+	bool "Exynos4 SoC family"
+	select BOARD_EARLY_INIT_F
+	select CPU_V7A
+	select BLK
+	select DM_MMC
+	help
+	  Samsung Exynos4 SoC family are based on ARM Cortex-A9 CPU. There
+	  are multiple SoCs in this family including Exynos4210, Exynos4412,
+	  and Exynos4212.
+
+config ARCH_EXYNOS5
+	bool "Exynos5 SoC family"
+	select BOARD_EARLY_INIT_F
+	select CPU_V7A
+	select SHA_HW_ACCEL
+	imply CMD_HASH
+	imply CRC32_VERIFY
+	imply HASH_VERIFY
+	imply USB_ETHER_ASIX
+	imply USB_ETHER_RTL8152
+	imply USB_ETHER_SMSC95XX
+	select BLK
+	select DM_MMC
+
+	help
+	  Samsung Exynos5 SoC family are based on ARM Cortex-A15 CPU (and
+	  Cortex-A7 CPU in big.LITTLE configuration). There are multiple SoCs
+	  in this family including Exynos5250, Exynos5420 and Exynos5800.
+
+config ARCH_EXYNOS7
+	bool "Exynos7 SoC family"
+	select ARM64
+	select BOARD_EARLY_INIT_F
+	select BLK
+	select DM_MMC
+	help
+	  Samsung Exynos7 SoC family are based on ARM Cortex-A57 CPU or
+	  Cortex-A53 CPU (and some in a big.LITTLE configuration). There are
+	  multiple SoCs in this family including Exynos7420.
+
+endchoice
+
+if ARCH_EXYNOS4
+
+choice
+	prompt "EXYNOS4 board select"
+
+config TARGET_SMDKV310
+	bool "Exynos4210 SMDKV310 board"
+	select OF_CONTROL
+	select SUPPORT_SPL
+
+config TARGET_TRATS
+	bool "Exynos4210 Trats board"
+
+config TARGET_S5PC210_UNIVERSAL
+	bool "EXYNOS4210 Universal C210 board"
+
+config TARGET_ORIGEN
+	bool "Exynos4412 Origen board"
+	select SUPPORT_SPL
+
+config TARGET_TRATS2
+	bool "Exynos4412 Trat2 board"
+
+config TARGET_ODROID
+	bool "Exynos4412 Odroid board"
+
+endchoice
+endif
+
+if ARCH_EXYNOS5
+
+config SPL_GPIO_SUPPORT
+	default y
+
+config SPL_LIBCOMMON_SUPPORT
+	default y
+
+config SPL_LIBGENERIC_SUPPORT
+	default y
+
+choice
+	prompt "EXYNOS5 board select"
+
+config TARGET_ODROID_XU3
+	bool "Exynos5422 Odroid board"
+	select OF_CONTROL
+
+config TARGET_ARNDALE
+	bool "Exynos5250 Arndale board"
+	select ARM_ERRATA_773022
+	select ARM_ERRATA_774769
+	select CPU_V7_HAS_NONSEC
+	select CPU_V7_HAS_VIRT
+	select OF_CONTROL
+	select SUPPORT_SPL
+
+config TARGET_SMDK5250
+	bool "SMDK5250 board"
+	select OF_CONTROL
+	select SUPPORT_SPL
+
+config TARGET_SNOW
+	bool "Snow board"
+	select OF_CONTROL
+	select SUPPORT_SPL
+
+config TARGET_SPRING
+	bool "Spring board"
+	select OF_CONTROL
+	select SUPPORT_SPL
+
+config TARGET_SMDK5420
+	bool "SMDK5420 board"
+	select OF_CONTROL
+	select SUPPORT_SPL
+
+config TARGET_PEACH_PI
+	bool "Peach Pi board"
+	select OF_CONTROL
+	select SUPPORT_SPL
+
+config TARGET_PEACH_PIT
+	bool "Peach Pit board"
+	select OF_CONTROL
+	select SUPPORT_SPL
+
+endchoice
+endif
+
+if ARCH_EXYNOS7
+
+choice
+	prompt "EXYNOS7 board select"
+
+config  TARGET_ESPRESSO7420
+	bool "ESPRESSO7420 board"
+	select ARM64
+	select ARMV8_MULTIENTRY
+	select CLK_EXYNOS
+	select OF_CONTROL
+	select PINCTRL
+	select PINCTRL_EXYNOS7420
+	select SUPPORT_SPL
+
+endchoice
+endif
+
+config SYS_SOC
+	default "exynos"
+
+source "board/samsung/smdkv310/Kconfig"
+source "board/samsung/trats/Kconfig"
+source "board/samsung/universal_c210/Kconfig"
+source "board/samsung/origen/Kconfig"
+source "board/samsung/trats2/Kconfig"
+source "board/samsung/odroid/Kconfig"
+source "board/samsung/arndale/Kconfig"
+source "board/samsung/smdk5250/Kconfig"
+source "board/samsung/smdk5420/Kconfig"
+source "board/samsung/espresso7420/Kconfig"
+
+config SPL_LDSCRIPT
+	default "board/samsung/common/exynos-uboot-spl.lds" if ARCH_EXYNOS5 || ARCH_EXYNOS4
+
+endif

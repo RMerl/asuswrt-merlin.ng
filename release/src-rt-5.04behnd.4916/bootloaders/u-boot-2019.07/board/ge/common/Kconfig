@@ -1,0 +1,14 @@
+config SYS_VPD_EEPROM_I2C_ADDR
+	hex "I2C address of the EEPROM device used for VPD"
+	help
+	  VPD = Vital Product Data
+
+config SYS_VPD_EEPROM_I2C_BUS
+	int "I2C bus of the EEPROM device used for VPD."
+
+config SYS_VPD_EEPROM_SIZE
+	int "Size in bytes of the EEPROM device used for VPD"
+
+config SYS_VPD_EEPROM_I2C_ADDR_LEN
+	int "Number of bytes to use for VPD EEPROM address"
+	default 1

@@ -125,7 +125,7 @@ function getWANStatus(){
 		success: function(response){
 			parent.wan_autodet_state = autodet_state;
 			--qtn_ready_fail_count;
-			if(based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U"){
+			if(based_modelid.substring(0,3) == "4G-"){
 				getDualWANState();
 				if(wans_mode == 'lb'){
 					if(wan_wanstate == 2){
@@ -174,8 +174,7 @@ function getWANStatus(){
 			else if(wanstate == 4 && wansbstate == 4){
 				parent.changeSubnet = true;
 				
-				if(based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U")
-				{
+				if(based_modelid.substring(0,3) == "4G-"){
 					if((wan_wanstate == 2 && wan_wansbstate == 0 && wan_wanauxstate == 0) &&
 					   (usb_wanstate == 2 && usb_wansbstate == 0 && usb_wanauxstate == 0)){
 							redirect_page("wireless");
@@ -265,8 +264,7 @@ function getWANStatus(){
 				}
 			}
 			else if(wanstate  == 2 && wansbstate == 0 && wanauxstate == 0){
-				if(based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U")
-				{
+				if(based_modelid.substring(0,3) == "4G-"){
 					if((wan_wanstate == 2 && wan_wansbstate == 0 && wan_wanauxstate == 0) &&
 					   (usb_wanstate == 2 && usb_wansbstate == 0 && usb_wanauxstate == 0)){
 							redirect_page("wireless");
@@ -356,7 +354,7 @@ function getWANStatus(){
 				}
 			}			
 			else if(autodet_state == 4 && parent.hadModem()){ // ethernet did not plug
-				if(based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U"){
+				if(based_modelid.substring(0,3) == "4G-"){
 					if(sim_state == 1){
 						if(modem_autoapn == "1"){
 							if(run_update_apn){

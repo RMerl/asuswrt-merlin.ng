@@ -27,7 +27,11 @@
 #include <net/if.h>
 
 #include <typedefs.h>
+#ifdef RTCONFIG_HND_ROUTER_AX
+#include <ethernet.h>
+#else
 #include <proto/ethernet.h>
+#endif
 
 #include <bcmconfig.h>
 

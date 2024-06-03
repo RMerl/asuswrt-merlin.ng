@@ -46,6 +46,7 @@ enum {
 // ErP parameters
 /* the total period : 96 * 10  sec = 960 sec = 16 * 60 sec = 16 min */
 #define ERP_DEFAULT_COUNT  96
+//#define ERP_DEFAULT_COUNT  2
 static int erp_det_period = 0;             // detect mode
 static int erp_led_period = 0;             // led mode for flashing
 static int erp_count = ERP_DEFAULT_COUNT;  // ERP_DEFAULT_COUNT * 10 sec
@@ -110,13 +111,14 @@ static int erp_check_wl_stat(int model)
 	|| nvram_match("wl3_timesched", "1")
 #endif
 	) {
+
 		return -1;
 	}
 
 	if (nvram_get_int("wl0_radio")) ret++;
 	if (nvram_get_int("wl1_radio")) ret++;
 
-#ifdef RTCONFIG_HAS_5G_2
+#if defined(RTCONFIG_HAS_5G_2) || defined(RTCONFIG_HAS_6G_2)
 	if (nvram_get_int("wl2_radio")) ret++;
 #endif
 #ifdef RTCONFIG_QUADBAND
@@ -637,12 +639,14 @@ static int ERP_CHECK_MODEL_LIST()
 		|| model == MODEL_BC109
 		|| model == MODEL_BC105
 		|| model == MODEL_EBG19
-		|| model == MODEL_EBG15
-		|| model == MODEL_EBP15
 		|| model == MODEL_GTAX11000
 		|| model == MODEL_RTAX92U
 		|| model == MODEL_RTAX95Q
 		|| model == MODEL_XT8PRO
+		|| model == MODEL_BT12
+		|| model == MODEL_BT10
+		|| model == MODEL_BQ16
+		|| model == MODEL_BQ16_PRO
 		|| model == MODEL_BM68
 		|| model == MODEL_XT8_V2
 		|| model == MODEL_RTAXE95Q
@@ -674,10 +678,20 @@ static int ERP_CHECK_MODEL_LIST()
 		|| model == MODEL_GTAX6000
 		|| model == MODEL_GTAX11000_PRO
 		|| model == MODEL_GTAXE16000
+		|| model == MODEL_GTBE98
+		|| model == MODEL_GTBE98_PRO
 		|| model == MODEL_ET12
 		|| model == MODEL_XT12
 		|| model == MODEL_RTAX86U_PRO
 		|| model == MODEL_RTAX88U_PRO
+		|| model == MODEL_RTBE96U
+		|| model == MODEL_GTBE96
+		|| model == MODEL_RTBE88U
+		|| model == MODEL_RTBE86U
+		|| model == MODEL_RTBE58U
+		|| model == MODEL_GTBE19000
+		|| model == MODEL_RTBE92U
+		|| model == MODEL_RTBE95U
 #endif
 	) {
 		ret = 1;
@@ -734,6 +748,11 @@ static void erp_standby_mode(int model)
 			eval("wl", "-i", "eth10", "down");
 			eval("wl", "-i", "eth7", "down"); // turn off 5g radio
 			break;
+		case MODEL_GTBE98:
+		case MODEL_GTBE98_PRO:
+			eval("wl", "-i", nvram_safe_get("wl3_ifname"), "down");
+			eval("wl", "-i", nvram_safe_get("wl0_ifname"), "down"); // turn off 5g radio
+			break;
 		case MODEL_RTAX95Q:
 		case MODEL_XT8PRO:
 		case MODEL_BM68:
@@ -745,6 +764,22 @@ static void erp_standby_mode(int model)
 		case MODEL_XT12:
 			eval("wl", "-i", "eth4", "down");
 			eval("wl", "-i", "eth5", "down"); // turn off 5g radio
+			break;
+		case MODEL_BT10:
+			eval("wl", "-i", WL_2G_IFNAME, "down");
+			eval("wl", "-i", WL_5G_IFNAME, "down"); // turn off 5g radio
+			break;
+		case MODEL_BT12:
+		case MODEL_RTBE96U:
+		case MODEL_GTBE96:
+		case MODEL_GTBE19000:
+			eval("wl", "-i", "wl0", "down");
+			eval("wl", "-i", "wl1", "down"); // turn off 5g radio
+			break;
+		case MODEL_BQ16:
+		case MODEL_BQ16_PRO:
+			eval("wl", "-i", "wl3", "down"); // turn off 2.4g radio
+			eval("wl", "-i", "wl0", "down"); // turn off 5g radio
 			break;
 		case MODEL_RTAX56_XD4:
 		case MODEL_XD4PRO:
@@ -770,13 +805,21 @@ static void erp_standby_mode(int model)
 		case MODEL_TUFAX5400_V2:
 		case MODEL_RTAX5400:
 		case MODEL_XD6_V2:
-			eval("wl", "-i", "eth5", "down");
-			eval("wl", "-i", "eth6", "down"); // turn off 5g radio
+		case MODEL_RTBE86U:
+		case MODEL_RTBE58U:
+			eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 0, 0)), "down");
+			eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 1, 0)), "down"); // turn off 5g radio
 			break;
 		case MODEL_RTAXE7800:
 			eval("wl", "-i", "eth5", "down");
 			eval("wl", "-i", "eth6", "down");
 			eval("wl", "-i", "eth7", "down");
+			break;
+		case MODEL_RTBE92U:
+		case MODEL_RTBE95U:
+			eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 0, 0)), "down");
+			eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 1, 0)), "down");
+			eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 2, 0)), "down");
 			break;
 		case MODEL_RTAX55:
 		case MODEL_RTAX58U_V2:
@@ -798,6 +841,10 @@ static void erp_standby_mode(int model)
 		case MODEL_RTAX88U:
 			eval("wl", "-i", "eth6", "down");
 			eval("wl", "-i", "eth7", "down"); // turn off 5g radio
+			break;
+		case MODEL_RTBE88U:
+			eval("wl", "-i", "wl0", "down");
+			eval("wl", "-i", "wl1", "down"); // turn off 5g radio
 			break;
 		default:
 			eval("wl", "-i", "eth1", "down");
@@ -827,11 +874,40 @@ static void erp_standby_mode(int model)
 		eval("wl", "-i", "eth8", "down"); // turn off 5g-2 radio
 	}
 
+	if (model == MODEL_RTBE96U || model == MODEL_GTBE19000) {
+		// triple band
+		eval("wl", "-i", "wl2", "down"); // turn off 5g-2 radio
+	}
+
 	if (model == MODEL_GTAXE16000) {
 		// triple band
 		eval("wl", "-i", "eth8", "down"); // turn off 5g-2 radio
 		eval("wl", "-i", "eth9", "down"); // turn off 6g radio
 	}
+
+#if defined(GTBE98)	/* avoid compile error for non WL_6G_BAND WIFI7 model */
+	if (model == MODEL_GTBE98) {
+		char nv_wlif[12]; 
+		snprintf(nv_wlif, sizeof(nv_wlif), "wl%d_ifname", WL_5G_2_BAND);
+		eval("wl", "-i", nvram_safe_get(nv_wlif), "down");	// turn off 5g-2 radio
+#ifdef RTCONFIG_WIFI7
+		snprintf(nv_wlif, sizeof(nv_wlif), "wl%d_ifname", WL_6G_BAND);
+		eval("wl", "-i", nvram_safe_get(nv_wlif), "down");	// turn off 6g radio
+#endif
+	}
+#endif
+
+#if defined(GTBE98_PRO)	/* avoid compile error for non WL_6G_BAND WIFI7 model */
+	if (model == MODEL_GTBE98_PRO) {
+		char nv_wlif[12]; 
+		snprintf(nv_wlif, sizeof(nv_wlif), "wl%d_ifname", WL_5G_BAND);
+		eval("wl", "-i", nvram_safe_get(nv_wlif), "down");	// turn off 5g radio
+#ifdef RTCONFIG_WIFI7
+		snprintf(nv_wlif, sizeof(nv_wlif), "wl%d_ifname", WL_6G_BAND);
+		eval("wl", "-i", nvram_safe_get(nv_wlif), "down");	// turn off 6g-1 radio
+#endif
+	}
+#endif
 
 	if (model == MODEL_ET12 || model == MODEL_XT12) {
 		// triple band
@@ -846,6 +922,21 @@ static void erp_standby_mode(int model)
 	if (model == MODEL_RTAX95Q || model == MODEL_XT8PRO || model == MODEL_BM68 || model == MODEL_XT8_V2 || model == MODEL_RTAXE95Q || model == MODEL_ET8PRO || model == MODEL_ET8_V2) {
 		// triple band
 		eval("wl", "-i", "eth4", "down"); // turn off 2g radio
+	}
+
+	if (model == MODEL_BT10) {
+		// triple band
+		eval("wl", "-i", WL_2G_IFNAME, "down"); // turn off 2g radio
+	}
+
+	if (model == MODEL_BT12 || model == MODEL_GTBE96) {
+		// triple band
+		eval("wl", "-i", "wl0", "down"); // turn off 2g radio
+	}
+
+	if (model == MODEL_BQ16 || model == MODEL_BQ16_PRO) {
+		// triple band
+		eval("wl", "-i", "wl3", "down"); // turn off 2g radio
 	}
 
 	if (model == MODEL_RTAX56_XD4 || model == MODEL_XD4PRO || model == MODEL_CTAX56_XD4 || model == MODEL_XC5 || model == MODEL_EBA63) {
@@ -877,11 +968,23 @@ static void erp_standby_mode(int model)
 	// step4. special case
 #if defined(RTCONFIG_QCA)
 	post_erp_standby_mode(model);
+#elif defined(RTCONFIG_HND_ROUTER_BE_4916)
+	// remove dhd module to save 1.4~1.6W
+	unload_wl();
 #else
 	if (model == MODEL_RTAC88U || model == MODEL_RTAC5300 || model == MODEL_RTAC3100) {
 		eval("devmem", "0x18000068", "32", "0x401");
 		eval("devmem", "0x18000064", "32", "0x0");
 	}
+#endif
+
+	// step5. BCM4916 with RGB led and rtkswitch special case
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000)
+	// disable RGB LED to save 1.4~1.6W
+	LEDGroupReset(LED_OFF);
+
+	// disable rtkswitch to save 0.2W
+	eval("rtkswitch", "6"); // rtkswitch off
 #endif
 
 	/* update status */
@@ -972,6 +1075,10 @@ static void erp_wakeup_mode(int model)
 	/* usb power up*/
 	eval("rc", "pwr_usb", "1");
 
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+	load_wl();
+#endif
+
 #if defined(RTCONFIG_QCA)
 	pre_erp_wakeup_mode(model);
 #else
@@ -1011,6 +1118,11 @@ static void erp_wakeup_mode(int model)
 
 #if defined(RTCONFIG_HND_ROUTER_AX_6756)
 	if (is_erp_cled_model() == 1) doSystem("rc cled 0 0"); // recover led behavior
+#endif
+
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000)
+	LEDGroupReset(LED_ON);
+	eval("rtkswitch", "5"); // rtkswitch on
 #endif
 
 	/* update status */
@@ -1178,7 +1290,7 @@ static void ERP_CHECK_MODE()
 	if (erp_wl == -1) goto wakeup;
 
 	// wifi interface is over 1
-	if (erp_wl == 2 || erp_wl == 3) goto wakeup;
+	if (erp_wl > 1) goto wakeup;
 
 	// lan / wlan / wan connection
 	if (erp_arp != 0) goto wakeup;

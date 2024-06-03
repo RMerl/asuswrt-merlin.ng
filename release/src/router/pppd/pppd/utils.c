@@ -55,6 +55,9 @@
 #ifdef SVR4
 #include <sys/mkdev.h>
 #endif
+#if defined(MUSL_LIBC)
+#include <paths.h>
+#endif	// MUSL_LIBC
 
 #include "pppd.h"
 #include "fsm.h"

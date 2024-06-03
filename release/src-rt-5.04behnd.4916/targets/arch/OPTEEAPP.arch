@@ -1,0 +1,15 @@
+<PUBLISH>
+--- 963158GW.old	2018-02-28 17:42:55.238762195 -0800
++++ 963158GW	2018-02-28 17:43:01.188022707 -0800
+@@ -485,7 +485,10 @@
+-# BUILD_SECURE_OS is not set
++BUILD_SECURE_OS=y
++BCM_OPTEE=y
++TA_HELLO=m
++TA_PKCS=y
++TA_SOTP=n
++TA_SKS=y
++TA_SIGNING_KEY="plat/plat-bca/user_ta_sign_key.pem"
++TA_PUBLIC_KEY="plat/plat-bca/unknown_pub_key.pem"
++DO_BUILD_OPENSSL=y
++# BCM_KERNEL_CODE_PROTECTION is not set

@@ -1,0 +1,77 @@
+>>>Done: - 1) Aggregate attributes support
+- implement bdmf_attr_aggregate_type_register, bdmf_attr_aggregate_type_unregister
+overview:
+- aggregate's component can't have read/write accessors
+- aggregate must have size, all components must have offset and size (withing the container)
+- all aggregate field flags, except for mandatory are ignored. fields are assumed to be read-write
+
+set flow:
+- allocate buffer <size> and initialize with 0
+- set values in the buffer. keep track of fields that have been set
+- verify that all mandatory fields have been set
+- call aggregate's write function passing the buffer as argument
+- release the buffer
+
+get flow:
+- allocate buffer <size>
+- call aggregate's read function to fill-up the buffer
+- read individual readable fields from the buffer
+- release the buffer
+
+restrictions:
+- aggregate can't contain fields of "custom" type
+- user-defined read_s, write_s is not supported
+- initial value is always zero [note if necessary, a new "init" callback can be added]
+
+>>>Done: 2) Add tracing facility. Trace all management actions
+- register/unregister types
+- create/destroy objects
+- link/unlink objects
+- set attributes
+
+Outline:
+- trace/log initialisation: trace can go to
+    - session
+    - callback
+    - off
+- what to trace is configurable:
+    - prints: debug, errors, all
+    - management actions
+    - selective per object, type?
+
+>>>Done: 3) add children list traversal
+
+>>>Done: 4) implement type access rights check
+
+>>>Done: 5) for attributes make sure that write access always require admin privileges
+[perhaps remove the ATTR access flags altogether and only allow seing HIDDEN attributes in DEBUG session ?]
+
+6) perhaps add rm handler in alloc/free memarea APIs?
+
+>>>Done: 7) add command for hierarchical statistic traversal. perhaps add options to examine
+- hierarchical
+- nzstat class = non-zero statistics
+
+>>>Done: 8) set parent by name in "drv" structure
+
+>>>Done: 9) use BL error codes instead of errno.h
+
+10) Integrate data base support
+- memory area type = data base
+- set memory set (in type or object ?)
+	- perhaps create record set automatically when registering an object type
+- transaction start (write_lock) / stop (write_unlock)
+- record pointer in object in the beginning of transaction
+
+11) Add support for save/restore configuration
+
+12) Add support for system restore without re-creating objects (hitless upgrade)
+
+======================================================================
+Problems:
+======================================================================
+- absence of central data base makes it very difficult to implement hitless upgrade
+- no support for transactions
+
+    
+

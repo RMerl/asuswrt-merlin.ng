@@ -1,0 +1,94 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * (C) Copyright 2017 Theobroma Systems Design und Consulting GmbH
+ */
+
+/ {
+	config {
+		u-boot,spl-payload-offset = <0x40000>; /* @ 256KB */
+		u-boot,mmc-env-offset = <0x4000>;      /* @  16KB */
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+		u-boot,spl-boot-order = &emmc, &sdmmc;
+		tick-timer = "/timer@ff810000";
+	};
+
+};
+
+&pinctrl {
+	u-boot,dm-pre-reloc;
+};
+
+&service_msch {
+	u-boot,dm-pre-reloc;
+};
+
+&dmc {
+	u-boot,dm-pre-reloc;
+
+	/*
+	 * Validation of throughput using SPEC2000 shows the following
+	 * relative performance for the different memory schedules:
+	 *  - CBDR: 30.1
+	 *  - CBRD: 29.8
+	 *  - CRBD: 29.9
+	 * Note that the best performance for any given application workload
+	 * may vary from the default configured here (e.g. 164.gzip is fastest
+	 * with CBRD, whereas 252.eon and 186.crafty are fastest with CRBD).
+	 *
+	 * See doc/device-tree-bindings/clock/rockchip,rk3368-dmc.txt for
+	 * details on the 'rockchip,memory-schedule' property and how it
+	 * affects the physical-address to device-address mapping.
+	 */
+	rockchip,memory-schedule = <DMC_MSCH_CBDR>;
+	rockchip,ddr-frequency = <800000000>;
+	rockchip,ddr-speed-bin = <DDR3_1600K>;
+
+	status = "okay";
+};
+
+&pmugrf {
+	u-boot,dm-pre-reloc;
+};
+
+&sgrf {
+        u-boot,dm-pre-reloc;
+};
+
+&cru {
+	u-boot,dm-pre-reloc;
+};
+
+&grf {
+	u-boot,dm-pre-reloc;
+};
+
+&uart0 {
+	u-boot,dm-pre-reloc;
+};
+
+&emmc {
+	u-boot,dm-spl;
+};
+
+&sdmmc {
+	u-boot,dm-spl;
+};
+
+&spi1 {
+	u-boot,dm-spl;
+
+	spiflash: w25q32dw@0 {
+		u-boot,dm-spl;
+	};
+};
+
+&timer0 {
+	u-boot,dm-pre-reloc;
+	clock-frequency = <24000000>;
+	status = "okay";
+};
+
+

@@ -1,0 +1,6 @@
+<PUBLISH>
+--- 962118GW.old
++++ 962118GW
+@@ -46,11 +46,10 @@
+-# BUILD_OPENTHREAD is not set
++BUILD_OPENTHREAD=y

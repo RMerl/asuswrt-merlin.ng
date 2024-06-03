@@ -192,6 +192,7 @@ struct myoption {
 #define LOPT_NO_DHCP4      383
 #define LOPT_MAX_PROCS     384
 #define LOPT_DNSSEC_LIMITS 385
+#define LOPT_RDNSS_WAR     386
 
 #ifdef HAVE_GETOPT_LONG
 static const struct option opts[] =  
@@ -388,6 +389,7 @@ static const struct myoption opts[] =
     { "use-stale-cache", 2, 0 , LOPT_STALE_CACHE },
     { "no-ident", 0, 0, LOPT_NO_IDENT },
     { "max-tcp-connections", 1, 0, LOPT_MAX_PROCS },
+	{ "rdnss-war", 0, 0, LOPT_RDNSS_WAR },
     { NULL, 0, 0, 0 }
   };
 
@@ -591,6 +593,7 @@ static struct {
   { LOPT_NO_IDENT, OPT_NO_IDENT, NULL, gettext_noop("Do not add CHAOS TXT records."), NULL },
   { LOPT_CACHE_RR, ARG_DUP, "<RR-type>", gettext_noop("Cache this DNS resource record type."), NULL },
   { LOPT_MAX_PROCS, ARG_ONE, "<integer>", gettext_noop("Maximum number of concurrent tcp connections."), NULL },
+  { LOPT_RDNSS_WAR, OPT_RDNSS_WAR, NULL, gettext_noop("Workaround to flush RDNSS."), NULL },
   { 0, 0, NULL, NULL, NULL }
 }; 
 

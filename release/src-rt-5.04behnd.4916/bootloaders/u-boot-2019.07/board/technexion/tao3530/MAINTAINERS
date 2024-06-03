@@ -1,0 +1,11 @@
+TAO3530 BOARD
+M:	Stefan Roese <sr@denx.de>
+S:	Maintained
+F:	board/technexion/tao3530/
+F:	include/configs/tao3530.h
+F:	configs/omap3_ha_defconfig
+
+TAO3530 BOARD
+M:	Tapani Utriainen <linuxfae@technexion.com>
+S:	Maintained
+F:	configs/tao3530_defconfig

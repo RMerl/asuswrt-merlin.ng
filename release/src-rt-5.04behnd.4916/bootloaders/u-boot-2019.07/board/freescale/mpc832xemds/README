@@ -1,0 +1,128 @@
+Freescale MPC832XEMDS Board
+-----------------------------------------
+1. Board Switches and Jumpers
+1.0 There are five Dual-In-Line Packages(DIP) Switches on MPC832XE SYS board
+	For some reason, the HW designers describe the switch settings
+	in terms of 0 and 1, and then map that to physical switches where
+	the label "On" refers to logic 0 and "Off" is logic 1.
+
+	Switch bits are numbered 1 through, like, 4 6 8 or 10, but the
+	bits may contribute to signals that are numbered based at 0,
+	and some of those signals may be high-bit-number-0 too.  Heed
+	well the names and labels and do not get confused.
+
+		"Off" == 1
+		"On"  == 0
+
+	SW3 is switch 18 as silk-screened onto the board.
+	SW4[8] is the bit labeled 8 on Switch 4.
+	SW5[1:6] refers to bits labeled 1 through 6 in order on switch 5.
+	SW6[7:1] refers to bits labeled 7 through 1 in order on switch 6.
+	SW7[1:8]= 0000_0001 refers to bits labeled 1 through 6 is set as "On"
+		and bits labeled 8 is set as "Off".
+
+1.1 For the MPC832XEMDS PROTO Board
+
+	First, make sure the board default setting is consistent with the document
+		 shipped with your board. Then apply the following setting:
+	SW3[1-8]= 0000_1000  (core PLL setting, core enable)
+	SW4[1-8]= 0001_0010  (Flash boot on local bus, system PLL setting)
+	SW5[1-8]= 0010_0110  (Boot from high end)
+	SW6[1-8]= 0011_0100  (Flash boot on 16 bit local bus)
+	SW7[1-8]= 1000_0011  (QE PLL setting)
+
+	ENET3/4 MII mode settings:
+	J1 1-2 (ETH3_TXER)
+	J2 2-3 (MII mode)
+	J3 2-3 (MII mode)
+	J4 2-3 (ADSL clockOscillator)
+	J5 1-2 (ETH4_TXER)
+	J6 2-3 (ClockOscillator)
+	JP1 removed (don't force PORESET)
+	JP2 mounted (ETH4/2 MII)
+	JP3 mounted (ETH3 MII)
+	JP4 mounted (HRCW from BCSR)
+
+	ENET3/4 RMII mode settings:
+	J1 1-2 (ETH3_TXER)
+	J2 1-2 (RMII mode)
+	J3 1-2 (RMII mode)
+	J4 2-3 (ADSL clockOscillator)
+	J5 1-2 (ETH4_TXER)
+	J6 2-3 (ClockOscillator)
+	JP1 removed (don't force PORESET)
+	JP2 removed (ETH4/2 RMII)
+	JP3 removed (ETH3 RMII)
+	JP4 removed (HRCW from FLASH)
+
+	on board Oscillator: 66M
+
+
+2. Memory Map
+
+2.1 The memory map should look pretty much like this:
+
+	0x0000_0000	0x7fff_ffff	DDR			2G
+	0x8000_0000	0x8fff_ffff	PCI MEM prefetch	256M
+	0x9000_0000	0x9fff_ffff	PCI MEM non-prefetch	256M
+	0xc000_0000	0xdfff_ffff	Empty			512M
+	0xe000_0000	0xe01f_ffff	Int Mem Reg Space	2M
+	0xe020_0000	0xe02f_ffff	Empty			1M
+	0xe030_0000	0xe03f_ffff	PCI IO			1M
+	0xe040_0000	0xefff_ffff	Empty			252M
+	0xf400_0000	0xf7ff_ffff	Empty			64M
+	0xf800_0000	0xf800_7fff	BCSR on CS1		32K
+	0xf800_8000	0xf800_ffff	PIB CS2			32K
+	0xf801_0000	0xf801_7fff	PIB CS3			32K
+	0xfe00_0000	0xfeff_ffff	FLASH on CS0		16M
+
+
+3. Definitions
+
+3.1 Explanation of NEW definitions in:
+
+	include/configs/MPC832XEPB.h
+
+    CONFIG_MPC83xx	MPC83xx family for MPC8349, MPC8360 and MPC832x
+    CONFIG_MPC832x	MPC832x specific
+    CONFIG_MPC832XEMDS	MPC832XEMDS board specific
+
+4. Compilation
+
+	Assuming you're using BASH shell:
+
+		export CROSS_COMPILE=your-cross-compile-prefix
+		cd u-boot
+		make distclean
+		make MPC832XEMDS_config
+		make
+
+	MPC832x support PCI 33MHz and PCI 66MHz, to make U-Boot support PCI:
+
+		1)Make sure the DIP SW support PCI mode as described in Section 1.1.
+
+		2)To Make U-Boot image support PCI 33MHz, use
+			Make MPC832XEMDS_HOST_33_config
+
+		3)To Make U-Boot image support PCI 66MHz, use
+			Make MPC832XEMDS_HOST_66M_config
+
+5. Downloading and Flashing Images
+
+5.0 Download over network:
+
+	tftp 10000 u-boot.bin
+
+5.1 Reflash U-Boot Image using U-Boot
+
+	tftp 20000 u-boot.bin
+	protect off fe000000 fe0fffff
+	erase fe000000 fe0fffff
+	cp.b 20000 fe000000 xxxx
+
+You have to supply the correct byte count with 'xxxx' from the TFTP result log.
+Maybe 3ffff will work too, that corresponds to the erased sectors.
+
+
+6. Notes
+	1) The console baudrate for MPC832XEMDS is 115200bps.

@@ -1,0 +1,1 @@
+source "../bcmkernel/Kconfig.bcm_kf.$(LINUX_VER_STR)"

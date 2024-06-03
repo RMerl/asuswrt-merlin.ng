@@ -16,7 +16,6 @@
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/help.js"></script>
-<script type="text/javascript" language="JavaScript" src="/validator.js"></script>
 <script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <style>
@@ -27,9 +26,50 @@
 	margin-top: 30px;
 	margin-left: -370px;
 }
+
+.businessStyle:link{
+	color: #262626 !important;
+}
+
+#autowan_hint_div{
+	position: absolute;
+	z-index: 1000;
+	width: 600px;
+	height: 550px;
+	margin-left: 40%;
+	background-color: #232629;
+	box-shadow: 3px 3px 10px #000;
+	border-radius: 4px;
+	border: 2px solid #818181;
+	font-size: 13px;
+}
+
+.port_img{
+	position: absolute;
+	width: 480px;
+	height: 330px;
+	background: url('images/model_port.png') no-repeat center;
+}
+
+.port_plugin_img{
+	position: absolute;
+	width: 480px;
+	height: 330px;
+	background: url('images/wanport_plugin.png') no-repeat center;
+}
+
 </style>
 
 <script>
+$(document).ready(function(){
+	if(isSupport("BUSINESS") && parent.webWrapper == undefined){
+		$('td[bgcolor="#4D595D"]').css("background", "transparent");
+		$('div[class="formfontdesc"]').css({"background-color": "#ececec", "color": "#262626", "font-weight": "bolder", "background-color": "#ececec", "padding": "15px"});
+		$('input[class="button_gen"]').css({"background-color": "#FFF", "color": "#006ce1", "border": "1px solid #CCC", "border-radius": "8px", "height":"50px"});
+		$('a[class="hintstyle"]').addClass("businessStyle");
+	}
+})
+
 var lacp_enabled = '<% nvram_get("lacp_enabled"); %>' == 1 ?true: false;
 var bonding_policy_support = false;
 if( lacp_support
@@ -48,23 +88,17 @@ var switch_stb_x_orig = '<% nvram_get("switch_stb_x"); %>';
 var no_jumbo_frame_support = isSupport("no_jumbo_frame");
 var wans_extwan = '<% nvram_get("wans_extwan"); %>';
 var autowan_enable = '<% nvram_get("autowan_enable"); %>';
+var lacp_ifnames_x = httpApi.nvramGet(["lacp_ifnames_x"], true).lacp_ifnames_x;
 
-if(lacp_support){
-	if(based_modelid == "GT-AC5300")
-		var bonding_port_settings = [{"val": "4", "text": "LAN5"}, {"val": "3", "text": "LAN6"}];
-	else if(based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900")
-		var bonding_port_settings = [{"val": "4", "text": "LAN1"}, {"val": "3", "text": "LAN2"}];
-	else if(based_modelid == "XT8PRO" || based_modelid == "BM68")
-		var bonding_port_settings = [{"val": "2", "text": "LAN2"}, {"val": "3", "text": "LAN3"}];
-	else
-		var bonding_port_settings = [{"val": "1", "text": "LAN1"}, {"val": "2", "text": "LAN2"}];
-}
+const bonding_port_settings = get_bonding_ports(based_modelid);
+var stbPortMappings = [<% get_stbPortMappings();%>][0];
 
 function disable_lacp_if_conflicts_with_dualwan(){
-	var wan_lanport_text = "";
-	var wan_lanport_num = "";
-	var autowan_detected_ifname = httpApi.nvramGet(["autowan_detected_ifname"], true).autowan_detected_ifname;
-	var autowan_detected_label = httpApi.nvramGet(["autowan_detected_label"], true).autowan_detected_label;
+	let conflict_lanport_text = "";
+	let wan_lanport_num = "";
+	let hint_str1 = "<#PortConflict_DisableFunc_Reason#>";
+	let hint_str2 = "";
+	let note_str = "";
 
 	if(wans_dualwan_array.indexOf("lan") != -1)
 		wan_lanport_num = wans_lanport;
@@ -74,16 +108,69 @@ function disable_lacp_if_conflicts_with_dualwan(){
 		wan_lanport_num = "";
 
 	for(var i = 0; i < bonding_port_settings.length; i++){
-		if((wan_lanport_num == bonding_port_settings[i].val) ||
-			(autowan_enable == "1" && autowan_detected_ifname != "" && autowan_detected_label == bonding_port_settings[i].text)){
-			wan_lanport_text = bonding_port_settings[i].text.toUpperCase();
+		if(wan_lanport_num == bonding_port_settings[i].val){
+			conflict_lanport_text = bonding_port_settings[i].text.toUpperCase();
+			break;
 		}
 	}
 
-	if(wan_lanport_text != ""){
-		var hint_str1 = "<#PortConflict_DisableFunc_Reason#>";
-		var hint_str2 = "<#ChangeSettings_Hint#>".replace("setting_link", "setting_link_1");
-		var note_str = hint_str1.replace("%1$@", wan_lanport_text).replace("%2$@", "WAN") + " " + hint_str2;
+	if(is_GTBE_series){
+		let disable_first_option = false;
+		let disable_two_10g_option = false;
+
+		if(wans_dualwan_array.indexOf("wan") != -1 && wans_extwan == "0"){//10G WAN/LAN1 conflict
+			if(conflict_lanport_text == ""){
+				conflict_lanport_text = "10G WAN/LAN1";
+			}
+			else
+				conflict_lanport_text +=", 10G WAN/LAN1";
+
+			disable_two_10g_option = true;
+		}
+
+		if(conflict_lanport_text.indexOf("LAN5") != -1)//1G LAN5
+			disable_first_option = true;
+
+		if(conflict_lanport_text.indexOf("LAN6") != -1){//10G LAN6
+			disable_first_option = true;
+			disable_two_10g_option = true;
+		}
+
+		if(disable_first_option && disable_two_10g_option){
+			hint_str2 = "<#ChangeSettings_Hint#>".replace("setting_link", "setting_link_1");
+			note_str = hint_str1.replace("%1$@", conflict_lanport_text).replace("%2$@", "WAN") + " " + hint_str2;
+
+			document.form.lacp_enabled.style.display = "none";
+			document.getElementById("lacp_note").innerHTML = note_str;
+			document.getElementById("setting_link_1").href = "http://"+"<#Web_DOMAIN_NAME#>"+"/Advanced_WANPort_Content.asp";
+			document.getElementById("lacp_desc").style.display = "";
+			document.form.lacp_enabled.disabled = true;
+		}
+		else if(disable_first_option){//disable "1G LAN5 and 10G LAN6" option
+			hint_str2 = "<#ChangeSettings_Hint#>".replace("setting_link", "setting_link_3");
+			note_str = hint_str1.replace("%1$@", conflict_lanport_text).replace("%2$@", "WAN") + " " + hint_str2;
+
+			$("input:radio[name='lacp_port_select']").filter('[value="0"]').attr('disabled', true).css("cursor", "unset");
+			$("#disable_first_option_hint").html(note_str);
+			$("#disable_first_option_hint").show();
+			$("#lacp_first_option").css("color", "#848c98");
+			$("#setting_link_3").attr("href", "http://"+"<#Web_DOMAIN_NAME#>"+"/Advanced_WANPort_Content.asp");
+		}
+		else if(disable_two_10g_option){// disable two 10g opton
+			hint_str2 = "<#ChangeSettings_Hint#>".replace("setting_link", "setting_link_4");
+			note_str = hint_str1.replace("%1$@", conflict_lanport_text).replace("%2$@", "WAN") + " " + hint_str2;
+
+			$("input:radio[name='lacp_port_select']").filter('[value="1"]').attr('disabled', true).css("cursor", "unset");
+			$("#disable_two_10g_hint").html(note_str);
+			$("#disable_two_10g_hint").show();
+			$("#two_10g_lacp").css("color", "#848c98");
+			$("#setting_link_4").attr("href", "http://"+"<#Web_DOMAIN_NAME#>"+"/Advanced_WANPort_Content.asp");
+		}
+
+	}
+	else if(conflict_lanport_text != ""){
+		hint_str2 = "<#ChangeSettings_Hint#>".replace("setting_link", "setting_link_1");
+		note_str = hint_str1.replace("%1$@", conflict_lanport_text).replace("%2$@", "WAN") + " " + hint_str2;
 
 		document.form.lacp_enabled.style.display = "none";
 		document.getElementById("lacp_note").innerHTML = note_str;
@@ -94,25 +181,37 @@ function disable_lacp_if_conflicts_with_dualwan(){
 }
 
 function disable_lacp_if_conflicts_with_iptv(){
-	var hint_str1 = "<#PortConflict_SamePort_Hint#>";
-	var hint_str2 = "<#ChangeSettings_Hint#>".replace("setting_link", "setting_link_2");
-	var note_str = hint_str1.replace("%1$@", "<#NAT_lacp#>").replace("%2$@", "IPTV") + " " + hint_str2;
-	var disable_lacp = false;
+	let hint_str1 = "<#PortConflict_SamePort_Hint#>";
+	let hint_str2 = "";
+	let note_str = "";
+	let disable_lacp = false;
 
-	if(bonding_port_settings[0].val == "1"  && bonding_port_settings[1].val == "2"){
-		// LAN1 and/or LAN2.
-		if(switch_stb_x_orig == "1" || switch_stb_x_orig == "2" || switch_stb_x_orig == "5"){
+	for(var i = 0; i < bonding_port_settings.length; i++){
+		if(bonding_port_settings[i].val == switch_stb_x_orig){
 			disable_lacp = true;
+			break;
 		}
-	}
-	else if(bonding_port_settings[0].val == "2"  && bonding_port_settings[1].val == "3"){
-		// LAN2 and/or LAN3.
-		if(switch_stb_x_orig == "2" || switch_stb_x_orig == "3" || switch_stb_x_orig == "5" || switch_stb_x_orig == "6" || switch_stb_x_orig == "8"){
-			disable_lacp = true;
+		else{
+			for(var j = 0; j < stbPortMappings.length; j++){
+				if(switch_stb_x_orig == stbPortMappings[j].value && stbPortMappings[j].comboport_value_list.length != 0){
+					var value_list = stbPortMappings[j].comboport_value_list.split(" ");
+					for(var k = 0; k < value_list.length; k++){
+						if(bonding_port_settings[i].val == value_list[k]){
+							disable_lacp = true;
+							break;
+						}
+					}
+				}
+
+				if(disable_lacp)
+					break;
+			}
 		}
 	}
 
 	if(disable_lacp){
+		hint_str2 = "<#ChangeSettings_Hint#>".replace("setting_link", "setting_link_2");
+		note_str = hint_str1.replace("%1$@", "<#NAT_lacp#>").replace("%2$@", "IPTV") + " " + hint_str2
 		document.form.lacp_enabled.style.display = "none";
 		document.getElementById("lacp_note").innerHTML = note_str;
 		document.getElementById("setting_link_2").href = "http://"+"<#Web_DOMAIN_NAME#>"+"/Advanced_IPTV_Content.asp";
@@ -123,30 +222,18 @@ function disable_lacp_if_conflicts_with_iptv(){
 
 function initial(){
 	if((based_modelid == "RT-AX89U" || based_modelid == "GT-AXY16000")){
-		document.form.aqr_hwnat_type.disabled = false;
-		document.form.aqr_link_speed.disabled = false;
-		document.form.aqr_ipg.disabled = false;
-		document.form.sfpp_hwnat_type.disabled = false;
-		document.form.sfpp_max_speed.disabled = false;
-		document.form.sfpp_force_on.disabled = false;
-		document.form.sfpp_module_ipaddr.disabled = false;
-		document.getElementById("sfpp_module_ipaddr").style.color = "#FFFFFF";
-		document.getElementById("aqr_sfpp_table").style.display = "";
-		if (wans_dualwan_array.indexOf("sfp+") == -1) {
-			document.form.sfpp_module_ipaddr.disabled = true;
-			document.getElementById("sfpp_module_ipaddr").style.color = "#8C8C8C";
-		}
-		if (sfpp2500m_support) {
-			var desc = [ "<#Auto#>", "1Gbps", "2.5Gbps", "10Gbps" ];
-			var val = [ "0", "1000", "2500", "10000" ];
-			var orig_sfpp_speed = '<% nvram_get("sfpp_max_speed"); %>';
-			if (val.indexOf(orig_sfpp_speed) == -1)
-				orig_sfpp_speed = val[0];
-			add_options_x2(document.form.sfpp_max_speed, desc, val, orig_sfpp_speed);
-		}
-		if (sw_mode != "1") {
-			document.getElementById("sfpp_ipaddr_tr").style.display = "none";
-		}
+			document.form.aqr_hwnat_type.disabled = false;
+			document.form.aqr_link_speed.disabled = false;
+			document.form.aqr_ipg.disabled = false;
+			document.form.sfpp_hwnat_type.disabled = false;
+			document.form.sfpp_max_speed.disabled = false;
+			document.form.sfpp_force_on.disabled = false;
+			document.getElementById("aqr_hwnat_type_tr").style.display = "";
+			document.getElementById("aqr_link_speed_tr").style.display = "";
+			document.getElementById("aqr_ipg_tr").style.display = "";
+			document.getElementById("sfpp_hwnat_type_tr").style.display = "";
+			document.getElementById("sfpp_max_speed_tr").style.display = "";
+			document.getElementById("sfpp_force_on_tr").style.display = "";
 	}
 	if(qca_support){
 		var nataccel = '<% nvram_get("qca_sfe"); %>';
@@ -157,6 +244,17 @@ function initial(){
 		}
 		else{
 			document.getElementById("natAccelDesc").innerHTML = "<#NAT_Acceleration_ctf_disable#>";
+		}
+	}
+	else if(mtk_support){
+		var nataccel = '<% nvram_get("hwnat"); %>';
+		var nataccel_status = '<% nat_accel_status(); %>';
+
+		if(nataccel == '1' && nataccel_status == '1'){
+			document.getElementById("MTKnatAccelDesc").innerHTML = "<#NAT_Acceleration_enable#>";
+		}
+		else{
+			document.getElementById("MTKnatAccelDesc").innerHTML = "<#NAT_Acceleration_ctf_disable#>";
 		}
 	}
 	else{
@@ -193,8 +291,8 @@ function initial(){
 			document.getElementById("lacp_desc").style.display = "";
 			if(bonding_policy_support){
 				document.form.bonding_policy.value = bonding_policy_value;
-				check_bonding_policy(document.form.lacp_enabled);
 			}
+			show_related_settings(document.form.lacp_enabled);
 		}
 		else
 			document.getElementById("lacp_desc").style.display = "none";
@@ -215,17 +313,18 @@ function initial(){
 			document.form.qca_sfe.disabled = false;
 		}
 	}
+	else if(mtk_support || based_modelid == "RT-ACRH18" || based_modelid == "4G-AC86U" || based_modelid == "4G-AX56" || based_modelid == "RT-AX53U" || based_modelid == "RT-AX54" || based_modelid == "XD4S"){//MTK
+		document.getElementById("mtk_tr").style.display = "";
+		document.form.hwnat.disabled = false;
+		document.getElementById("ctf_tr").style.display = "none";
+		document.form.ctf_disable_force.disabled = true;
+	}
 	else{
 		//MODELDEP
-		if(based_modelid == "GT-AC5300"){
+		if(bonding_port_settings.length == 2){
 			var new_str = "";
-			new_str = document.getElementById("lacp_note").innerHTML.replace(/LAN1/g, "LAN5");
-			document.getElementById("lacp_note").innerHTML = new_str.replace(/LAN2/g, "LAN6");
-		}
-		else if(based_modelid == "XT8PRO" || based_modelid == "BM68"){
-			var new_str = "";
-			new_str = document.getElementById("lacp_note").innerHTML.replace(/LAN1/g, "LAN3");
-			document.getElementById("lacp_note").innerHTML = new_str;
+			new_str = document.getElementById("lacp_note").innerHTML.replace(/LAN2/g, bonding_port_settings[1].text);
+			document.getElementById("lacp_note").innerHTML = new_str.replace(/LAN1/g, bonding_port_settings[0].text);
 		}
 
 		if(hnd_support){
@@ -242,7 +341,9 @@ function initial(){
 
 	if(lacp_support){
 		disable_lacp_if_conflicts_with_dualwan();
-		disable_lacp_if_conflicts_with_iptv();
+		if(!is_GTBE_series)
+			disable_lacp_if_conflicts_with_iptv();
+
 		if(based_modelid == "RT-AXE7800" && wan_bonding_support){
 			var bond_wan = httpApi.nvramGet(["bond_wan"], true).bond_wan;
 			if(bond_wan == "1"){
@@ -250,6 +351,18 @@ function initial(){
 				document.getElementById("lacp_note").innerHTML = note_str;
 				document.getElementById("lacp_desc").style.display = "";
 				document.form.lacp_enabled.value = "0";
+			}
+		}
+
+		if(is_GTBE_series && document.form.lacp_enabled.disabled == false){
+			var hint_str = "Enable Bonding (802.3ad) support for your wired client and then connect it to your Router.";
+			$("#lacp_note").html(hint_str);
+
+			if(lacp_enabled_ori == "1"){
+				if(lacp_ifnames_x == "eth0 eth3")
+					document.form.lacp_port_select[1].checked = true;
+				else
+					document.form.lacp_port_select[0].checked = true;
 			}
 		}
 	}
@@ -275,23 +388,49 @@ function applyRule(){
 			}
 			else{
 				document.form.lacp_enabled.value = "0";
-				check_bonding_policy(document.form.lacp_enabled);
+				show_related_settings(document.form.lacp_enabled);
 				document.form.lacp_enabled.focus();
 				return;
 			}
 		}
 	}
 
-	if (based_modelid == "RT-AX89U") {
-		var lan_netmask = inet_network('<% nvram_get("lan_netmask"); %>');
-		if (document.form.sfpp_module_ipaddr.value != "" && document.form.sfpp_force_on.value == "0")
-			document.form.sfpp_force_on.value = "1";
-		if ((document.form.sfpp_module_ipaddr.value == '<% nvram_get("lan_ipaddr"); %>')
-		 || ((inet_network(document.form.sfpp_module_ipaddr.value) & lan_netmask)
-		  == (inet_network('<% nvram_get("lan_ipaddr"); %>') & lan_netmask))) {
-			alert(document.form.sfpp_module_ipaddr.value + " conflicts with LAN IP address!");
-			return false;
+	var wan_lacp_conflict = false;
+	if(is_GTBE_series){
+		if(lacp_support && document.form.lacp_enabled.value == "1"){
+			if(document.form.lacp_port_select[1].checked){
+				if(isSupport("autowan")){
+					if(autowan_enable == "1" || (autowan_enable == "0" && wans_dualwan_array.indexOf("wan") != -1 && wans_extwan == "0"))
+						wan_lacp_conflict = true;
+				}
+				else if(wans_dualwan_array.indexOf("wan") != -1 && wans_extwan == "0"){
+					wan_lacp_conflict = true;
+				}
+
+				if(lacp_ifnames_x == ""){
+					$('<input>').attr({
+						type: 'hidden',
+						name: "lacp_ifnames_x",
+						value: "eth0 eth3"
+					}).appendTo('form');
+					setting_changed = true;
+				}
+			}
+			else{
+				if(lacp_ifnames_x == "eth0 eth3"){
+					$('<input>').attr({
+						type: 'hidden',
+						name: "lacp_ifnames_x",
+						value: ""
+					}).appendTo('form');
+					setting_changed = true;
+				}
+			}
 		}
+	}
+	else{
+		if(isSupport("autowan") && autowan_enable == "1")
+			wan_lacp_conflict = true;
 	}
 
 	if(!setting_changed){	// only change the bonding policy
@@ -309,27 +448,58 @@ function applyRule(){
 		}
 	}
 
-	if(document.form.action_script.value == "reboot"){
+	if(wan_lacp_conflict){
+		var hint_str = "To ensure that there are no conflicts, when you enable %1$@, the WAN port will be change to %2$@ only. Please make sure that your WAN cable is correctly plugged into the %2$@. Are you sure to continue?"
+		var msg = "";
+		if(is_GTBE_series)
+			msg = hint_str.replace("%1$@", "<#NAT_lacp#>").replaceAll("%2$@", "2.5G WAN");
+		else
+			msg = hint_str.replace("%1$@", "<#NAT_lacp#>").replaceAll("%2$@", get_default_wan_name());
 
-		if(confirm("<#AiMesh_Node_Reboot#>")){
-        	showLoading();
-			document.form.submit();
+		$("#autowan_hint").html(msg);
+		$("#autowan_hint_div").show();
+		if(check_file_exists('images/model_port.png') && check_file_exists('images/wanport_plugin.png')){
+			setTimeout(function(){
+					if($(".port_plugin_img").is(":visible"))
+						$(".port_plugin_img").fadeOut(500);
+					else
+						setTimeout(function(){$(".port_plugin_img").fadeIn(500);}, 500);
+
+					if($("#autowan_hint_div").is(":visible"))
+						setTimeout(arguments.callee, 1500);
+				}, 1500);
+		}
+		else{
+			$("#schematic_diagram").hide();
+			$("#autowan_hint_div").css("height", "auto");
+			$("#autowan_hint").css("margin", "50px 0");
+			$("#hint_action_div").css("margin-bottom", "30px");
 		}
 	}
 	else{
-
-		showLoading();
-		document.form.submit();
+		if(document.form.action_script.value == "reboot"){
+			if(confirm("<#AiMesh_Node_Reboot#>")){
+				showLoading();
+				document.form.submit();
+			}
+		}
+		else{
+			showLoading();
+			document.form.submit();
+		}
 	}
 }
 
-function check_bonding_policy(obj){
+function show_related_settings(obj){
 	if(obj.value == "1"){
 		if(bonding_policy_support){
 			document.getElementById("lacp_policy_tr").style.display = "";
 			document.form.bonding_policy.disabled = false;
 		}
-		
+
+		if(is_GTBE_series)
+			$("#lacp_port_selection").css("display", "flex");
+
 		document.getElementById("lacp_desc").style.display = "";
 	}
 	else{
@@ -339,8 +509,85 @@ function check_bonding_policy(obj){
 		}
 
 		document.getElementById("lacp_desc").style.display = "none";
+		if(is_GTBE_series)
+			$("#lacp_port_selection").hide();
 	}
 }
+
+function close_autowan_hint(){
+	$("#autowan_hint_div").hide();
+}
+
+function confirm_autowan_change(){
+	$("#autowan_hint_div").hide();
+
+	$('<input>').attr({
+		type: 'hidden',
+		name: "autowan_enable",
+		value: "0"
+	}).appendTo('form');
+
+	$('<input>').attr({
+		type: 'hidden',
+		name: "wans_dualwan",
+		value: "wan none"
+	}).appendTo('form');
+
+	if(is_GTBE_series){
+		$('<input>').attr({
+			type: 'hidden',
+			name: "wans_extwan",
+			value: "1"
+		}).appendTo('form');
+
+		$('<input>').attr({
+			type: 'hidden',
+			name: "lacp_ifnames_x",
+			value: "eth0 eth3"
+		}).appendTo('form');
+	}
+	else{
+		$('<input>').attr({
+			type: 'hidden',
+			name: "wans_extwan",
+			value: "0"
+		}).appendTo('form');
+	}
+
+	setTimeout(function(){
+				if(document.form.action_script.value == "reboot"){
+					if(confirm("<#AiMesh_Node_Reboot#>")){
+						showLoading();
+						document.form.submit();
+					}
+				}
+				else{
+					showLoading();
+					document.form.submit();
+				}
+			}, 100);
+}
+
+function isEmpty(obj)
+{
+	for (var name in obj){
+		return false;
+	}
+
+	return true;
+};
+
+function get_default_wan_name(){
+	var default_wan_name = "WAN";
+	var eth_wan_list = httpApi.hookGet("get_ethernet_wan_list", true);
+
+	if(!isEmpty(eth_wan_list)){
+		default_wan_name = eth_wan_list["wan"].wan_name;
+	}
+
+	return default_wan_name;
+}
+
 </script>
 </head>
 
@@ -377,6 +624,22 @@ function check_bonding_policy(obj){
 <input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
 <input type="hidden" name="iptv_port_settings" value="<% nvram_get("iptv_port_settings"); %>" disabled>
+<input type="hidden" name="sfpp_force_on" value="<% nvram_get("sfpp_force_on"); %>" disabled>
+<!--===================================Beginning of Auto WAN Detection Confirm===========================================-->
+<div id="autowan_hint_div" style="display: none;">
+	<div style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: space-evenly; align-items: center;">
+		<div id="autowan_hint" style="width: 80%; line-height: 20px;"></div>
+		<div id="schematic_diagram" style="width: 480px; height: 330px;">
+			<div class="port_img"></div>
+			<div class="port_plugin_img"></div>
+		</div>
+		<div id="hint_action_div" style="display: flex; width: 80%; justify-content: space-evenly; margin-bottom: 30px;">
+			<input class="button_gen" type="button" value="<#CTL_Cancel#>" onclick="close_autowan_hint();">
+			<input class="button_gen" type="button" value="<#CTL_ok#>" onclick="confirm_autowan_change();">
+		</div>
+	</div>
+</div>
+<!--===================================End of Auto WAN Detection Confirm===========================================-->
 <table id="content_table" align="center" cellspacing="0" style="margin:auto;">
 	<tr>
 		<td width="17">&nbsp;</td>
@@ -443,8 +706,8 @@ function check_bonding_policy(obj){
 														<option class="content_input_fd" value="0" <% nvram_match("hwnat", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
 														<option class="content_input_fd" value="1" <% nvram_match("hwnat", "1","selected"); %>><#Auto#></option>
 													</select>
-												&nbsp
-													<span id="natAccelDesc"></span>
+													&nbsp
+												<span id="MTKnatAccelDesc"></span>
 												</td>
 											</tr>
 
@@ -465,37 +728,9 @@ function check_bonding_policy(obj){
 													</select>
 												</td>
 											</tr>
-											<tr id="lacp_tr" style="display:none;">
-											<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(29,1);"><#NAT_lacp#></a></th>
-												<td>
-													<select name="lacp_enabled" class="input_option"  onchange="check_bonding_policy(this);" disabled>
-														<option class="content_input_fd" value="0" <% nvram_match("lacp_enabled", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
-														<option class="content_input_fd" value="1" <% nvram_match("lacp_enabled", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
-													</select>
-													<div id="lacp_desc" style="display:none"><span id="lacp_note"><#NAT_lacp_note#></span><div>
-												</td>
-											</tr>
-											<tr id="lacp_policy_tr" style="display:none">
-												<th><#SwitchCtrl_BondingPolicy#></th>
-												<td>
-													<select name="bonding_policy" class="input_option" disabled>
-														<option value="0"><#CTL_Default#></option>
-														<option value="1"><#SwitchCtrl_BondingPolicy_src#></option>
-														<option value="2"><#SwitchCtrl_BondingPolicy_dest#></option>
-													</select>
-												</td>
-											</tr>
-										</table>
 
-										<table id="aqr_sfpp_table" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable" style="display:none">
-											<!-- 10G base-T -->
-											<thead>
-												<tr id="aqr_title_field">
-													<td id="aqr_title" colspan="2">10G base-T port</td>
-												</tr>
-											</thead>
-											<tr id="aqr_hwnat_type_tr">
-												<th>Acceleration type</th><!--untranslated-->
+											<tr id="aqr_hwnat_type_tr" style="display:none">
+												<th>10G base-T port acceleration type</th><!--untranslated-->
 												<td>
 													<select name="aqr_hwnat_type" class="input_option" disabled>
 														<option value="0" <% nvram_match("aqr_hwnat_type", "0","selected"); %>><#Auto#></option>
@@ -505,8 +740,8 @@ function check_bonding_policy(obj){
 												</td>
 											</tr>
 
-											<tr id="aqr_link_speed_tr">
-												<th>Link speed</th><!--untranslated-->
+											<tr id="aqr_link_speed_tr" style="display:none">
+												<th>10G base-T port link speed</th><!--untranslated-->
 												<td>
 													<select name="aqr_link_speed" class="input_option" disabled>
 														<option value="0" <% nvram_match("aqr_link_speed", "0","selected"); %>><#Auto#></option>
@@ -518,8 +753,8 @@ function check_bonding_policy(obj){
 												</td>
 											</tr>
 
-											<tr id="aqr_ipg_tr">
-												<th>Interpacket gap</th><!--untranslated-->
+											<tr id="aqr_ipg_tr" style="display:none">
+												<th>10G base-T interpacket gap</th><!--untranslated-->
 												<td>
 													<select name="aqr_ipg" class="input_option" disabled>
 														<option value="96" <% nvram_match("aqr_ipg", "96","selected"); %>><#CTL_Default#></option>
@@ -528,14 +763,8 @@ function check_bonding_policy(obj){
 												</td>
 											</tr>
 
-											<!-- 10G SFP+ -->
-											<thead>
-												<tr id="sfpp_title_field">
-													<td id="sfpp_title" colspan="2">10G SFP+ port</td>
-												</tr>
-											</thead>
-											<tr id="sfpp_hwnat_type_tr">
-												<th>Acceleration type</th><!--untranslated-->
+											<tr id="sfpp_hwnat_type_tr" style="display:none">
+												<th>SFP+ port acceleration type</th><!--untranslated-->
 												<td>
 													<select name="sfpp_hwnat_type" class="input_option" disabled>
 														<option value="0" <% nvram_match("sfpp_hwnat_type", "0","selected"); %>><#Auto#></option>
@@ -545,8 +774,8 @@ function check_bonding_policy(obj){
 												</td>
 											</tr>
 
-											<tr id="sfpp_max_speed_tr">
-												<th>Link speed</th><!--untranslated-->
+											<tr id="sfpp_max_speed_tr" style="display:none">
+												<th>SFP+ port maximum link speed</th><!--untranslated-->
 												<td>
 													<select name="sfpp_max_speed" class="input_option" disabled>
 														<option value="0" <% nvram_match("sfpp_max_speed", "0","selected"); %>><#Auto#></option>
@@ -556,18 +785,38 @@ function check_bonding_policy(obj){
 												</td>
 											</tr>
 
-											<tr id="sfpp_force_on_tr">
-												<th>TX clock</th><!--untranslated-->
+											<tr id="sfpp_force_on_tr" style="display:none">
+												<th>SFP+ port TX clock</th><!--untranslated-->
 												<td>
 													<input type="radio" name="sfpp_force_on" value="0" <% nvram_match("sfpp_force_on", "0", "checked"); %>><#Auto#>
 													<input type="radio" name="sfpp_force_on" value="1" <% nvram_match("sfpp_force_on", "1", "checked"); %>>ON<!--untranslated-->
 												</td>
 											</tr>
 
-											<tr id="sfpp_ipaddr_tr">
-												<th><a class="hintstyle" href="javascript:void(0);" onClick="overlib('IP address of GPON module, e.g., 192.168.1.1 for ZTE ZXHN F5716G. You can access telnet or web server of GPON module if it exist via LAN/WLAN devices by configuring this setting. SFP+ port must be primary WAN or secondary WAN.');" onmouseout="nd();">GPON module's IP address</th><!--untranslated-->
+											<tr id="lacp_tr" style="display:none;">
+		      									<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(29,1);"><#NAT_lacp#></a></th>
 												<td>
-													<input type="text" id="sfpp_module_ipaddr" name="sfpp_module_ipaddr" value="<% nvram_get("sfpp_module_ipaddr"); %>" tabindex="3" onKeyPress="return validator.isIPAddr(this, event);" maxlength="15" class="input_15_table" autocorrect="off" autocapitalize="off">
+													<select name="lacp_enabled" class="input_option"  onchange="show_related_settings(this);" disabled>
+														<option class="content_input_fd" value="0" <% nvram_match("lacp_enabled", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
+														<option class="content_input_fd" value="1" <% nvram_match("lacp_enabled", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
+													</select>
+													<div id="lacp_desc" style="display:none; margin-top: 5px;"><span id="lacp_note"><#NAT_lacp_note#></span></div>
+													<div id = "lacp_port_selection" style="display: none; flex-direction: column; margin-top: 5px;">
+														<div style="display: flex;"><input type="radio" name="lacp_port_select" value="0" checked><div id="lacp_first_option">1G LAN5 and 10G LAN6</div></div>
+														<div id= "disable_first_option_hint" style="margin-left: 20px; color: #FFCC00;"></div>
+														<div style="display: flex;"><div><input type="radio" name="lacp_port_select" value="1"></div><div id="two_10g_lacp">10G WAN/LAN1 and 10G LAN6</div></div>
+														<div id= "disable_two_10g_hint" style="margin-left: 20px; color: #FFCC00;"></div>
+													</div>
+												</td>
+											</tr> 
+											<tr id="lacp_policy_tr" style="display:none">
+												<th><#SwitchCtrl_BondingPolicy#></th>
+												<td>
+													<select name="bonding_policy" class="input_option" disabled>
+														<option value="0"><#CTL_Default#></option>
+														<option value="1"><#SwitchCtrl_BondingPolicy_src#></option>
+														<option value="2"><#SwitchCtrl_BondingPolicy_dest#></option>
+													</select>
 												</td>
 											</tr>
 										</table>

@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: GPL-2.0+
+# Makefile version of include/config_uncmd_spl.h
+# TODO: Invent a better way
+
+ifdef CONFIG_SPL_BUILD
+
+ifndef CONFIG_SPL_DM
+CONFIG_DM_SERIAL=
+CONFIG_DM_GPIO=
+CONFIG_DM_I2C=
+CONFIG_DM_SPI=
+CONFIG_DM_SPI_FLASH=
+endif
+
+endif

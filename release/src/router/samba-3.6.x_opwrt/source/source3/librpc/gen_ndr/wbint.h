@@ -28,10 +28,10 @@ struct wbint_TransIDArray {
 };
 
 struct wbint_userinfo {
-	const char *acct_name;/* [charset(UTF8),unique] */
+	const char *acct_name;/* [unique,charset(UTF8)] */
 	const char *full_name;/* [unique,charset(UTF8)] */
-	const char *homedir;/* [charset(UTF8),unique] */
-	const char *shell;/* [unique,charset(UTF8)] */
+	const char *homedir;/* [unique,charset(UTF8)] */
+	const char *shell;/* [charset(UTF8),unique] */
 	uint64_t primary_gid;
 	struct dom_sid user_sid;
 	struct dom_sid group_sid;
@@ -50,7 +50,7 @@ struct wbint_RidArray {
 struct wbint_Principal {
 	struct dom_sid sid;
 	enum lsa_SidType type;
-	const char *name;/* [charset(UTF8),unique] */
+	const char *name;/* [unique,charset(UTF8)] */
 }/* [public] */;
 
 struct wbint_Principals {
@@ -137,7 +137,7 @@ struct wbint_Sid2Uid {
 
 struct wbint_Sid2Gid {
 	struct {
-		const char *dom_name;/* [charset(UTF8),unique] */
+		const char *dom_name;/* [unique,charset(UTF8)] */
 		struct dom_sid *sid;/* [ref] */
 	} in;
 

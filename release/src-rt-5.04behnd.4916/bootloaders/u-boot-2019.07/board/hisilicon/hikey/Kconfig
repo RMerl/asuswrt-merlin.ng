@@ -1,0 +1,15 @@
+if TARGET_HIKEY
+
+config SYS_BOARD
+	default "hikey"
+
+config SYS_VENDOR
+	default "hisilicon"
+
+config SYS_SOC
+	default "hi6220"
+
+config SYS_CONFIG_NAME
+	default "hikey"
+
+endif

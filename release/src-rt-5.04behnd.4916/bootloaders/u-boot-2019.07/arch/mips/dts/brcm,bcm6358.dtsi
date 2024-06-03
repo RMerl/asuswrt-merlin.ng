@@ -1,0 +1,240 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2017 Álvaro Fernández Rojas <noltari@gmail.com>
+ */
+
+#include <dt-bindings/clock/bcm6358-clock.h>
+#include <dt-bindings/dma/bcm6358-dma.h>
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/reset/bcm6358-reset.h>
+#include "skeleton.dtsi"
+
+/ {
+	compatible = "brcm,bcm6358";
+
+	aliases {
+		spi0 = &spi;
+	};
+
+	cpus {
+		reg = <0xfffe0000 0x4>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		u-boot,dm-pre-reloc;
+
+		cpu@0 {
+			compatible = "brcm,bcm6358-cpu", "mips,mips4Kc";
+			device_type = "cpu";
+			reg = <0>;
+			u-boot,dm-pre-reloc;
+		};
+
+		cpu@1 {
+			compatible = "brcm,bcm6358-cpu", "mips,mips4Kc";
+			device_type = "cpu";
+			reg = <1>;
+			u-boot,dm-pre-reloc;
+		};
+	};
+
+	clocks {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		u-boot,dm-pre-reloc;
+
+		periph_osc: periph-osc {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <50000000>;
+			u-boot,dm-pre-reloc;
+		};
+
+		periph_clk: periph-clk {
+			compatible = "brcm,bcm6345-clk";
+			reg = <0xfffe0004 0x4>;
+			#clock-cells = <1>;
+		};
+	};
+
+	pflash: nor@1e000000 {
+		compatible = "cfi-flash";
+		reg = <0x1e000000 0x2000000>;
+		bank-width = <2>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		status = "disabled";
+	};
+
+	ubus {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		u-boot,dm-pre-reloc;
+
+		pll_cntl: syscon@fffe0008 {
+			compatible = "syscon";
+			reg = <0xfffe0008 0x4>;
+		};
+
+		syscon-reboot {
+			compatible = "syscon-reboot";
+			regmap = <&pll_cntl>;
+			offset = <0x0>;
+			mask = <0x1>;
+		};
+
+		periph_rst: reset-controller@fffe0034 {
+			compatible = "brcm,bcm6345-reset";
+			reg = <0xfffe0034 0x4>;
+			#reset-cells = <1>;
+		};
+
+		wdt: watchdog@fffe005c {
+			compatible = "brcm,bcm6345-wdt";
+			reg = <0xfffe005c 0xc>;
+			clocks = <&periph_osc>;
+		};
+
+		wdt-reboot {
+			compatible = "wdt-reboot";
+			wdt = <&wdt>;
+		};
+
+		gpio1: gpio-controller@fffe0080 {
+			compatible = "brcm,bcm6345-gpio";
+			reg = <0xfffe0080 0x4>, <0xfffe0088 0x4>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			ngpios = <8>;
+
+			status = "disabled";
+		};
+
+		gpio0: gpio-controller@fffe0084 {
+			compatible = "brcm,bcm6345-gpio";
+			reg = <0xfffe0084 0x4>, <0xfffe008c 0x4>;
+			gpio-controller;
+			#gpio-cells = <2>;
+
+			status = "disabled";
+		};
+
+		leds: led-controller@fffe00d0 {
+			compatible = "brcm,bcm6358-leds";
+			reg = <0xfffe00d0 0x8>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			status = "disabled";
+		};
+
+		uart0: serial@fffe0100 {
+			compatible = "brcm,bcm6345-uart";
+			reg = <0xfffe0100 0x18>;
+			clocks = <&periph_osc>;
+
+			status = "disabled";
+		};
+
+		uart1: serial@fffe0120 {
+			compatible = "brcm,bcm6345-uart";
+			reg = <0xfffe0120 0x18>;
+			clocks = <&periph_osc>;
+
+			status = "disabled";
+		};
+
+		spi: spi@fffe0800 {
+			compatible = "brcm,bcm6358-spi";
+			reg = <0xfffe0800 0x70c>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			clocks = <&periph_clk BCM6358_CLK_SPI>;
+			resets = <&periph_rst BCM6358_RST_SPI>;
+			spi-max-frequency = <20000000>;
+			num-cs = <4>;
+
+			status = "disabled";
+		};
+
+		memory-controller@fffe1200 {
+			compatible = "brcm,bcm6358-mc";
+			reg = <0xfffe1200 0x4c>;
+			u-boot,dm-pre-reloc;
+		};
+
+		ehci: usb-controller@fffe1300 {
+			compatible = "brcm,bcm6358-ehci", "generic-ehci";
+			reg = <0xfffe1300 0x100>;
+			phys = <&usbh>;
+			big-endian;
+
+			status = "disabled";
+		};
+
+		ohci: usb-controller@fffe1400 {
+			compatible = "brcm,bcm6358-ohci", "generic-ohci";
+			reg = <0xfffe1400 0x100>;
+			phys = <&usbh>;
+			big-endian;
+
+			status = "disabled";
+		};
+
+		usbh: usb-phy@fffe1500 {
+			compatible = "brcm,bcm6358-usbh";
+			reg = <0xfffe1500 0x28>;
+			#phy-cells = <0>;
+			resets = <&periph_rst BCM6358_RST_USBH>;
+
+			status = "disabled";
+		};
+
+		enet0: ethernet@fffe4000 {
+			compatible = "brcm,bcm6348-enet";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0xfffe4000 0x2dc>;
+			clocks = <&periph_clk BCM6358_CLK_ENET0>;
+			dmas = <&iudma BCM6358_DMA_ENET0_RX>,
+			       <&iudma BCM6358_DMA_ENET0_TX>;
+			dma-names = "rx",
+				    "tx";
+
+			status = "disabled";
+		};
+
+		enet1: ethernet@fffe4800 {
+			compatible = "brcm,bcm6348-enet";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0xfffe4800 0x2dc>;
+			clocks = <&periph_clk BCM6358_CLK_ENET1>;
+			dmas = <&iudma BCM6358_DMA_ENET1_RX>,
+			       <&iudma BCM6358_DMA_ENET1_TX>;
+			dma-names = "rx",
+				    "tx";
+
+			status = "disabled";
+		};
+
+		iudma: dma-controller@fffe5000 {
+			compatible = "brcm,bcm6348-iudma";
+			reg = <0xfffe5000 0x24>,
+			      <0xfffe5100 0x80>,
+			      <0xfffe5200 0x80>;
+			reg-names = "dma",
+				    "dma-channels",
+				    "dma-sram";
+			#dma-cells = <1>;
+			dma-channels = <8>;
+			clocks = <&periph_clk BCM6358_CLK_EMUSB>,
+				 <&periph_clk BCM6358_CLK_USBSU>,
+				 <&periph_clk BCM6358_CLK_EPHY>;
+			resets = <&periph_rst BCM6358_RST_ENET>,
+				 <&periph_rst BCM6358_RST_EPHY>;
+		};
+	};
+};

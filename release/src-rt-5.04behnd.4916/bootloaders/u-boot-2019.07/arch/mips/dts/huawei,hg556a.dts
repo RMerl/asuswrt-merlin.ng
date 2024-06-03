@@ -1,0 +1,127 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2017 Álvaro Fernández Rojas <noltari@gmail.com>
+ */
+
+/dts-v1/;
+
+#include "brcm,bcm6358.dtsi"
+
+/ {
+	model = "Huawei EchoLife HG556a";
+	compatible = "huawei,hg556a", "brcm,bcm6358";
+
+	aliases {
+		serial0 = &uart0;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	gpio-leds {
+		compatible = "gpio-leds";
+
+		message_red {
+			label = "HG556a:red:message";
+			gpios = <&gpio0 0 GPIO_ACTIVE_LOW>;
+		};
+
+		hspa_red {
+			label = "HG556a:red:hspa";
+			gpios = <&gpio0 1 GPIO_ACTIVE_LOW>;
+		};
+
+		dsl_red {
+			label = "HG556a:red:dsl";
+			gpios = <&gpio0 2 GPIO_ACTIVE_LOW>;
+		};
+
+		power_red {
+			label = "HG556a:red:power";
+			gpios = <&gpio0 3 GPIO_ACTIVE_LOW>;
+		};
+
+		all_red {
+			label = "HG556a:red:all";
+			gpios = <&gpio0 6 GPIO_ACTIVE_LOW>;
+		};
+
+		lan1_green {
+			label = "HG556a:green:lan1";
+			gpios = <&gpio0 12 GPIO_ACTIVE_LOW>;
+		};
+
+		lan1_red {
+			label = "HG556a:red:lan1";
+			gpios = <&gpio0 13 GPIO_ACTIVE_LOW>;
+		};
+
+		lan2_green {
+			label = "HG556a:green:lan2";
+			gpios = <&gpio0 15 GPIO_ACTIVE_LOW>;
+		};
+
+		lan2_red {
+			label = "HG556a:red:lan2";
+			gpios = <&gpio0 22 GPIO_ACTIVE_LOW>;
+		};
+
+		lan3_green {
+			label = "HG556a:green:lan3";
+			gpios = <&gpio0 23 GPIO_ACTIVE_LOW>;
+		};
+
+		lan3_red {
+			label = "HG556a:red:lan3";
+			gpios = <&gpio0 26 GPIO_ACTIVE_LOW>;
+		};
+
+		lan4_green {
+			label = "HG556a:green:lan4";
+			gpios = <&gpio0 27 GPIO_ACTIVE_LOW>;
+		};
+
+		lan4_red {
+			label = "HG556a:red:lan4";
+			gpios = <&gpio0 28 GPIO_ACTIVE_LOW>;
+		};
+	};
+};
+
+&ehci {
+	status = "okay";
+};
+
+&enet1 {
+	status = "okay";
+	phy = <&enet1phy>;
+	phy-mode = "mii";
+
+	enet1phy: fixed-link {
+		reg = <1>;
+		speed = <100>;
+		full-duplex;
+	};
+};
+
+&gpio0 {
+	status = "okay";
+};
+
+&ohci {
+	status = "okay";
+};
+
+&pflash {
+	status = "okay";
+};
+
+&uart0 {
+	u-boot,dm-pre-reloc;
+	status = "okay";
+};
+
+&usbh {
+	status = "okay";
+};

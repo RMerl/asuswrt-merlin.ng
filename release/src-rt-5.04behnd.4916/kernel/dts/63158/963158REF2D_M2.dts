@@ -1,0 +1,25 @@
+#include "963158REF2D.dts"
+
+/* BCM963158D_M2 Daughter board with re-work for GPIO regulators */
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+/**********************************************************************/
+/* GPIO: Add one define per GPIO (individual or shared) regulator     */
+/*       - Skip if no GPIO regulators in use                          */
+/**********************************************************************/
+#define PCIE0_REG_GPIO   103    /* SPI_SS4_B (5G) for vreg_pcie0 node */
+#define PCIE1_REG_GPIO   102    /* SPI_SS3_B (2G) for vreg_pcie1 node */
+#define PCIE3_REG_GPIO   82     /* SGMII_SFP_RS0 (6G) vreg_pcie3 node */
+
+#include "../bcm_wlan_regulator.dtsi"
+
+/**********************************************************************/
+/* Shared: Add brcm,supply-names = "vreg-pcieX" for shared PCIe nodes */
+/*         - Skip if not using shared GPIO regulators                 */
+/**********************************************************************/
+
+/**********************************************************************/
+/* PCIe: Add status = "okay" for each PCIe slots of this boiard       */
+/*       - Skip if this is a derivative board (already done in base)  */
+/**********************************************************************/
+#endif //#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)

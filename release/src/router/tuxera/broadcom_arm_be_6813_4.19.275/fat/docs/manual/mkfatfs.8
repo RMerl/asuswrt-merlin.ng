@@ -1,0 +1,111 @@
+.\" Copyright (c) 2014 Sougata Santra / Tuxera Inc.
+.\" Copyright (c) 2011 Erik Larsson / Tuxera Inc.
+.\"
+.TH MKFATFS 8 "March 2014" "Tuxera TFATprogs 3017.7.17.3"
+.SH NAME
+mkfatfs \- create a FAT file system
+.SH SYNOPSIS
+.B mkfatfs
+[\fIoptions\fR] \fIdevice\fR
+.SH DESCRIPTION
+.B mkfatfs
+is used to create a FAT file system on a device (usually a disk or flash
+partition).
+.I device
+is the special file corresponding to the device (e.g.
+.IR /dev/sdXX, 
+.IR /dev/block/mmcblk1p1 ).
+.SH OPTIONS
+Below is a summary of all the options that
+.B mkfatfs
+accepts.  Nearly all options have two equivalent names.  The short name is
+preceded by
+.B \-
+and the long name is preceded by
+.BR \-\- .
+.TP
+.TP
+\fB\-f\fR, \fB\-\-force\fR
+Allow formatting a FAT volume for which the physical sector size cannot be
+automatically detected (for example an image file).
+.TP
+\fB\--cp\fR CODEPAGE
+Use the given code page to encode the volume label. The following code pages
+are supported: 437, 737, 775, 850, 852, 855, 857, 860, 861, 862, 863, 864, 865,
+866, 869, 874, 932, 936, 949, 950. The default is 437.
+.TP
+\fB\-l\fR, \fB\-\-volume\-label\fR STRING
+Set the volume label for the filesystem. The volume label can be up to 11
+bytes long when encoded with code page specified by --cp option.
+.TP
+\fB\-i\fR, \fB\-\-volume\-id\fR STRING
+Sets the volume ID for the volume to \fBSTRING\fR, which must be in the format
+XXXX-XXXX where X is a hexadecimal character (0-9, A-F).
+.TP
+\fB\-r\fR, \fB\-\-rootdir\-entries\fR NUMBER
+Set the count of 32 bytes directory entries in the root directory to \fBNUMBER\fR.
+For FAT32 volumes this value is ignored and set to zero. For FAT 12/16 volume the
+default value is 512.
+.TP
+\fB\-F\fR, \fB\-\-fat\-type\fR FATBITS
+Set the FAT bits for the volume to \fBFATBITS\fR. The legal values for
+this field are [12, 16, 32].
+.TP
+\fB\-S\fR, \fB\-\-sector\-size\fR SIZE
+Set the volume sector size (in bytes) to \fBSIZE\fR. The default is to
+detect sector size automatically. Note: This option should probably never be
+used when formatting devices directly as most FAT drivers won't be able to use
+a FAT volume where the volume sector size doesn't match the physical sector
+size.
+.TP
+\fB\-c\fR, \fB\-\-cluster\-size\fR SIZE
+Set the cluster size (in bytes) of the volume to \fBSIZE\fR. The default is to
+determine optimal cluster size automatically. The legal values for this field
+are powers of 2, such that \fBSIZE\fR does not exceed 32 KiB.
+.TP
+\fB\-s\fR, \fB\-\-sectors\-per\-cluster\fR VALUE
+Set the volume cluster size (in bytes) to \fBVALUE\fR * \fBsector_size\fR.
+The default value is calculated dynamically depending on FAT type
+(FAT 12/16/32) and the size of the volume. The legal values for this field
+are [1, 2, 4, 8, 16, 32, 64, 128], such that \fBVALUE\fR * \fBsector_size\fR
+does not exceed 32 KiB.
+.TP
+\fB\-a\fR, \fB\-\-alignment\fR VALUE
+Align the filesystem structures to \fBVALUE\fR bytes.
+.br
+\fBWARNING:\fR Don't use this in production unless explictly instructed by
+Tuxera. The default alignment is usually the appropriate one.
+.TP
+\fB\-v\fR, \fB\-\-verbose\fR
+Makes
+.B mkfatfs
+emit certain status messages related to the formatting process.
+.TP
+\fB\-\-discard\fR
+This option sends a 'discard' command, like TRIM, to the device
+which will zero all data on it.
+.TP
+\fB\-\-secure\-discard\fR
+This option sends a 'secure discard' command, e.g. eMMC's secure erase, to the
+device which will zero all data on it. The difference from the \fB\-\-discard\fR
+option is that this command attempts to securely erase the data, guaranteeing
+that all internal copies of the discarded sectors are also erased. If the
+underlying hardware does not support this mode of operation, we fall back on a
+regular discard. This option is only available on systems where this is
+supported.
+.SH BUGS
+If you find a bug please send an email describing the problem to 
+fat-support@tuxera.com.
+.SH AUTHORS
+.B mkfatfs
+was written by
+.RS 8
+Erik Larsson, Tuxera Inc.
+.br
+Sougata Santra, Tuxera Inc.
+.RE
+.SH AVAILABILITY
+.B mkfatfs
+is part of the
+.B Tuxera FATprogs
+package.

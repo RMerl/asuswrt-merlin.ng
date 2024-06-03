@@ -152,7 +152,7 @@
 	margin-top:10px;
 	font-size:12px;
 	font-family:Arial, Helvetica, sans-serif;
-	border: 1px solid transparent;
+	border: 1px solid #333;
 	border-collapse: collapse;
 }
 .FormTable_table th{
@@ -498,7 +498,6 @@
 .button_gen:hover{
 	font-weight: bolder;
 	height:33px;
- 	width:122px;
  	padding:0 .70em 0 .70em;
  	background-position:0px;
 	cursor:pointer;
@@ -517,7 +516,6 @@
 	font-family:Verdana,Bold;
 	font-size:12px;
   padding:0 .70em 0 .70em;
- 	width:122px;
   overflow:visible;
 	/*cursor:pointer;*/
 	outline: none; /* for Firefox */
@@ -897,11 +895,6 @@ form{
 	background: url(images/New_ui/helpicon.png) no-repeat;
 }
 /* CSS Document */
-@font-face{
-	font-family: rog;
-	src: url(/fonts/ROG_Fonts-Regular.woff) format("woff"),
-	     url(./fonts/ROG_Fonts-Regular.otf) format("opentype");
-}
 body{
 color:#FFFFFF;
 font-family:Arial, Helvetica, sans-serif;
@@ -1375,13 +1368,10 @@ padding-top:1px;
 	cursor: pointer;
 }
 .notificationon{
-	position: absolute;
-	display:inline;
+	display:inline-block;
 	background-image:url(images/New_ui/notification.png);
 	background-repeat:no-repeat;
 	background-position:2px 2px;
-	margin-top:-5px;
-	margin-top:3px \9;	/*IE*/
 	height:30px;
 	width:30px;
 	cursor: pointer;
@@ -2137,9 +2127,9 @@ padding-top:1px;
 	background-color:transparent !important;
 }
 .eula_panel_container{
-	margin: 20px 0 0 210px;
+	margin: 20px 0 0 200px;
 	display: none;
-	position: fixed;
+	position: absolute;
 	width: 600px;
 	z-index: 10000;
 	border: 3px solid #5C0C0B;
@@ -2147,6 +2137,14 @@ padding-top:1px;
 	font-family: monospace;
 	font-size: 14px;
 	text-align: left;
+}
+
+#tm_eula_content{
+	line-height: 20px;
+}
+
+#asus_eula_content{
+	line-height: 20px;
 }
 
 #bottom_border{
@@ -2330,4 +2328,12 @@ padding-top:1px;
     padding: 12px 24px;
     background-color: #141618;
     cursor: pointer;
+}
+
+#asus_pp_EULA_modal {
+	border: 3px solid #5C0C0B;
+	background: #000b !important;
+}
+.dnslist_viewlist {
+	background-color:#000 !important;;
 }

@@ -1,0 +1,23 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# (C) Copyright 2019 Broadcom Ltd
+#
+
+if BCM6858
+
+config TARGET_BCM96858
+	bool "Broadcom 6858 Reference Board"
+	depends on ARCH_BCMBCA
+
+config SYS_SOC
+	default "bcm6858"
+
+if BCMBCA_DDRC
+config BCMBCA_DDR_DEF_MCBSEL
+	hex "default DDR3 mcb selector value"
+	default 0x527
+endif
+
+source "board/broadcom/bcmbca/Kconfig"
+
+endif

@@ -1,0 +1,51 @@
+if TARGET_ODROID_XU3
+
+config SYS_BOARD
+	default "smdk5420"
+
+config SYS_VENDOR
+	default "samsung"
+
+config SYS_CONFIG_NAME
+	default "odroid_xu3"
+
+endif
+
+if TARGET_PEACH_PI
+
+config SYS_BOARD
+	default "smdk5420"
+
+config SYS_VENDOR
+	default "samsung"
+
+config SYS_CONFIG_NAME
+	default "peach-pi"
+
+endif
+
+if TARGET_PEACH_PIT
+
+config SYS_BOARD
+	default "smdk5420"
+
+config SYS_VENDOR
+	default "samsung"
+
+config SYS_CONFIG_NAME
+	default "peach-pit"
+
+endif
+
+if TARGET_SMDK5420
+
+config SYS_BOARD
+	default "smdk5420"
+
+config SYS_VENDOR
+	default "samsung"
+
+config SYS_CONFIG_NAME
+	default "smdk5420"
+
+endif

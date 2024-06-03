@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999, 2005 Apple Computer, Inc. All rights reserved.
+ * Copyright (c) 1999, 2005-2006 Apple Computer, Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
  * 
@@ -96,13 +96,16 @@ typedef enum {
 
 #if DEBUG_BUILD
 	#define Panic( message )					DebugStr( (ConstStr255Param) message )
-	#define PanicIf( condition, message )		if ( condition != 0 )	DebugStr( message )
+	#define PanicIf( condition, message )		if ( (condition) != 0 )	DebugStr( message )
 #else
 	#define Panic( message )
 	#define PanicIf( condition, message )
 #endif
 
 ///////////////////////////////////// Types /////////////////////////////////////
+
+// Forward declaration from Scavenger.h
+struct BTreeExtensionsRec;
 
 typedef struct BTreeControlBlock {					// fields specific to BTree CBs
 
@@ -144,7 +147,7 @@ typedef struct BTreeControlBlock {					// fields specific to BTree CBs
 	UInt32						 numPossibleHints;	// Looks like a formated hint
 	UInt32						 numValidHints;		// Hint used to find correct record.
 	
-	UInt32						 refCon;			//	Used by DFA to point to private data.
+	struct BTreeExtensionsRec			*refCon;			//	Used by DFA to point to private data.
 	SFCB						*fcbPtr;		// fcb of btree file
 	
 } BTreeControlBlock, *BTreeControlBlockPtr;
@@ -216,7 +219,7 @@ typedef BTreeKeyPtr			 KeyPtr;
 
 #if DEBUG_BUILD
 	#define Panic( message )					DebugStr( (ConstStr255Param) message )
-	#define PanicIf( condition, message )		if ( condition != 0 )	DebugStr( message )
+	#define PanicIf( condition, message )		if ( (condition) != 0 )	DebugStr( message )
 #else
 	#define Panic( message )
 	#define PanicIf( condition, message )

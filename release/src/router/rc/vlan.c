@@ -1031,6 +1031,9 @@ void start_vlan_wl(void)
 #endif	// CONFIG_BCMWL5
 				}
 				free(lan_ifnames);
+#ifdef RTCONFIG_MLO
+				bring_up_wifi_in_mlo_config();
+#endif
 			}
 		}
 #ifdef CONFIG_BCMWL5
@@ -1128,6 +1131,9 @@ void restart_vlan_wl(void)
 #endif	// CONFIG_BCMWL5
 				}
 				free(lan_ifnames);
+#ifdef RTCONFIG_MLO
+				bring_up_wifi_in_mlo_config();
+#endif
 			}
 		}
 #ifdef CONFIG_BCMWL5

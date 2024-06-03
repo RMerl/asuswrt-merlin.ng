@@ -1,0 +1,83 @@
+================================================================================
+Useful notes on bulding and using of U-Boot on
+ARC EM Software Development Platform (AKA EMSDP)
+================================================================================
+
+   BOARD OVERVIEW
+
+   The DesignWare ARC EM Software Development Platform is FPGA-bases platform
+   for rapid software development on the ARC EM family of processors.
+
+   Since this board is based on FPGA it's possible to load and use different
+   versions of ARC EM CPUs. U-Boot is built to be run on the simplest
+   possible configuration which means the same one binary will work on more
+   advanced configurations as well.
+
+   The board has the following features useful for U-Boot:
+    * On-board 2-channel FTDI TTL-to-USB converter
+      - The first channel is used for serial debug port (which makes it possible
+        to use a serial connection on pretty much any host machine be it
+        Windows, Linux or Mac).
+        On Linux machine typucally FTDI serial port would be /dev/ttyUSB0.
+        There's no HW flow-control and baud-rate is 115200.
+
+      - The second channel is used for built-in Digilent USB JTAG probe.
+        That means no extra hardware is required to access ARC core from a
+        debugger on development host. Both proprietary MetaWare debugger and
+        open source OpenOCD + GDB client are supported.
+
+      - Also with help of this FTDI chip it is possible to reset entire
+        board with help of a special `rff-ftdi-reset` utility, see:
+        https://github.com/foss-for-synopsys-dwc-arc-processors/rff-ftdi-reset
+
+    * Micro SD-card slot
+      - U-Boot expects to see the very first partition on the card formatted as
+        FAT file-system and uses it for keeping its environment in `uboot.env`
+        file. Note uboot.env is not just a text file but it is auto-generated
+        file created by U-Boot on invocation of `saveenv` command.
+        It contains a checksum which makes this saved environment invalid in
+        case of maual modification.
+
+      - There might be more useful files on that first FAT partition like
+        user applications, data files etc.
+
+    * 256 KiB of "ROM"
+      - This so-called "ROM" is a part of FPGA image and even though it
+        might be unlocked for writes its initial content will be restored
+        on the next power-on.
+
+
+   BUILDING U-BOOT
+
+   1. Configure U-Boot:
+      ------------------------->8----------------------
+      make emsdp_defconfig
+      ------------------------->8----------------------
+
+   2. To build Elf file (for example to be used with host debugger via JTAG
+      connection to the target board):
+      ------------------------->8----------------------
+      make mdbtrick
+      ------------------------->8----------------------
+
+      This will produce `u-boot` Elf file.
+
+   3. To build binary image to be put in "ROM":
+      ------------------------->8----------------------
+      make u-boot.bin
+      ------------------------->8----------------------
+
+
+   EXECUTING U-BOOT
+
+   1. The EMSDP board is supposed to auto-start U-Boot image stored in ROM on
+      power-on. For that make sure VCCIO DIP-switches are all in "off" state.
+
+   2. Though it is possible to load U-Boot as a simple Elf file via JTAG right
+      in "ROM" and start it from the debugger. One important note here we first
+      need to enable writes into "ROM" by writing 1 to 0xf0001000.
+
+      2.1. In case of proprietary MetaWare debugger run:
+      ------------------------->8----------------------
+      mdb -dll=opxdarc.so -OK -preloadexec="eval *(int*)0xf0001000=0" u-boot
+      ------------------------->8----------------------

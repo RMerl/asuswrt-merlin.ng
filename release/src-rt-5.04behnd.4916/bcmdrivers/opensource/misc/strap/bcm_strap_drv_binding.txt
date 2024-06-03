@@ -1,0 +1,71 @@
+BCM Strap register driver.
+==========================
+
+This driver provides generic access to the strap register for each SoC.
+
+The strap node is mandatory and defined in the SoC level dtsi file.
+uint32_t bcm_strap_get_val(void) API return the full 32 bit bootstrap value.
+To obtain certain bit-field value, an optional field property can be added to
+the strap node:
+ <field_name>=<[field_start_bit] [field_num_bit]>;
+Where:
+ field_name      - bootstrap field name string.
+ field_start_bit - [0..31] the required field start bit number.
+ field_num_bit   - [1..32] the total number of bits
+This example defines the vco clock field which is bit[14:13] from the strap:
+	strap: strap {
+	    ....
+		strap-vco-clock = <13 2>;
+	};
+The following API return the vco clock value:
+    field =  bcm_strap_get_field_val("strap-vco-clock");
+
+Each driver that wants to apply some logic based on a specific strap bit value 
+  should add the following property to its device tree node:
+
+<consumer_name>=<[strap_bit_num] [bit value]>;
+
+Where:
+ consumer_name - any applicable string.
+ strap_bit_num - [0..31] the required bit number.
+ bit_value     - [0, 1] the expected bit value.
+
+To get the logic value of the specified strap bit the device driver 
+  should call to the following API:
+
+int bcm_strap_parse_and_test(struct device_node *np, const char* consumer_name);
+
+Where:
+ np             - pointer to the device tree node of the specific device.
+ consumer_name  - the device tree property name.
+
+ Return values:
+ -EAGAIN - in case the strap driver was not initialized yet.
+ -ENODEV - in case no strap with such property defined in device tree node.
+ -EINVAL - in case the out of bound strip is specified.
+    0    - in case the bit value is not equal to the required value.
+    1    - in case the bit value is equal to the required value.
+
+
+Multiple bits with different names could be defined in the same node.
+The same bit with the different logical true values could be defined in different device nodes.
+Example:
+  
+&pcie2
+{
+    ...
+    brcm,strap-pcie-sata=<13 1>;
+}
+
+&sata
+{
+    ...
+    bcm_sata_port_enable=<13 0>;
+}
+  
+In case the code does not have it's own device tree node, the required strap bit property should be placed in the strap
+driver node and the NULL pointer should be passed as np asgument to bcm_strap_parse_and_test.
+
+Example: 
+     ret = bcm_strap_parse_and_test(NULL, "boot-select-0");
+     ret = bcm_strap_parse_and_test(NULL, "bootrom-boot");

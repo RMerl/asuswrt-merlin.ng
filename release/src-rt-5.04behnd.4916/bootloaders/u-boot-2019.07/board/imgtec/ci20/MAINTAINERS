@@ -1,0 +1,6 @@
+Creator CI20 BOARD
+M:      Ezequiel Garcia <ezequiel@collabora.com>
+S:      Maintained
+F:      board/imgtec/ci20/
+F:      include/configs/ci20.h
+F:      configs/ci20_mmc_defconfig

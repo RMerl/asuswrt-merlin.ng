@@ -1,0 +1,56 @@
+Summary
+=======
+
+The source for omap3logic.c encompases the OMAP35 and DM3730 SOM-LV and DM3730 Torpedo platforms, but there are device trees custom taylored to each board.
+
+omap3_logic_defconfig = DM37 Torpedo / Torpedo + Wireless
+omap35_logic_defconfig = OMAP35 Torpedo
+omap3_logic_somlv_defconfig = DM37 SOM-LV
+omap35_logic_somlv_defconfig = OMAP35 SOM-LV
+
+The device tree included with each of the defconfig files will also direct the board as to which dtb file to load when loading the kernel, so it is not
+recomended to mix and match the defconfig files.
+
+Falcon Mode: FAT SD cards
+=========================
+
+In this case the additional file is written to the filesystem.  In this
+example we assume that the uImage and device tree to be used are already on
+the FAT filesystem (only the uImage MUST be for this to function
+afterwards) along with a Falcon Mode aware MLO and the FAT partition has
+already been created and marked bootable:
+
+U-Boot # mmc rescan
+# Load kernel and device tree into memory, perform export
+U-Boot # fatload mmc 0 ${loadaddr} uImage
+U-Boot # run loadfdt
+U-Boot # setenv optargs quiet
+U-Boot # run mmcargs
+U-Boot # run common_bootargs
+U-Boot # spl export fdt ${loadaddr} - ${fdtaddr}
+
+This will print a number of lines and then end with something like:
+   Loading Device Tree to 8dec9000, end 8dee0295 ... OK
+
+So then note the starting address and write the args to mmc/sd:
+
+U-Boot # fatwrite mmc 0:1 0x8dec9000 args 0x20000
+
+The size of 0x20000 matches the CMD_SPL_WRITE_SIZE.
+
+Falcon Mode: NAND
+=================
+
+In this case the additional data is written to another partition of the
+NAND.  In this example we assume that the uImage and device tree to be are
+already located on the NAND somewhere (such as filesystem or mtd partition)
+along with a Falcon Mode aware MLO written to the correct locations for
+booting and mtdparts have been configured correctly for the board:
+
+U-Boot # nand read ${loadaddr} kernel
+U-Boot # load nand rootfs ${fdtaddr} /boot/am335x-evm.dtb
+U-Boot # run nandargs
+U-Boot # run common_bootargs
+U-Boot # spl export fdt ${loadaddr} - ${fdtaddr}
+U-Boot # nand erase.part u-boot-spl-os
+U-Boot # nand write ${fdtaddr} u-boot-spl-os

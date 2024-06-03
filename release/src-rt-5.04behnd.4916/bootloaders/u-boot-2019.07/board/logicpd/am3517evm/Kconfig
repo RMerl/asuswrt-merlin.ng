@@ -1,0 +1,14 @@
+if TARGET_AM3517_EVM
+
+config SYS_BOARD
+	default "am3517evm"
+
+config SYS_VENDOR
+	default "logicpd"
+
+config SYS_CONFIG_NAME
+	default "am3517_evm"
+
+source "board/ti/common/Kconfig"
+
+endif

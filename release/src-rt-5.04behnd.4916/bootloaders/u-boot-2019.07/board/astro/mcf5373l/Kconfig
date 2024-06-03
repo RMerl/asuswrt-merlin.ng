@@ -1,0 +1,15 @@
+if TARGET_ASTRO_MCF5373L
+
+config SYS_CPU
+	default "mcf532x"
+
+config SYS_BOARD
+	default "mcf5373l"
+
+config SYS_VENDOR
+	default "astro"
+
+config SYS_CONFIG_NAME
+	default "astro_mcf5373l"
+
+endif

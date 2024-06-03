@@ -23,7 +23,7 @@
 #if LINUX
 #include "missing.h"
 #else
-#include <CoreFoundation/CFBase.h>*/
+#include <CoreFoundation/CFBase.h>
 #endif
 
 /*

@@ -1,0 +1,15 @@
+// SPDX-License-Identifier: GPL-2.0+ OR MIT
+//
+// Device Tree Source for UniPhier Reference Daughter Board
+//
+// Copyright (C) 2015-2017 Socionext Inc.
+//   Author: Masahiro Yamada <yamada.masahiro@socionext.com>
+
+&i2c0 {
+	eeprom@50 {
+		compatible = "microchip,24lc128", "i2c-eeprom";
+		reg = <0x50>;
+		pagesize = <64>;
+		u-boot,i2c-offset-len = <2>;
+	};
+};

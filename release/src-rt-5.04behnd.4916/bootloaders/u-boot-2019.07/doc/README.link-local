@@ -1,0 +1,75 @@
+------------------------------------------
+ Link-local IP address auto-configuration
+------------------------------------------
+
+Negotiate with other link-local clients on the local network
+for an address that doesn't require explicit configuration.
+This is especially useful if a DHCP server cannot be guaranteed
+to exist in all environments that the device must operate.
+
+This is an implementation of RFC3927.
+
+----------
+ Commands
+----------
+
+When CONFIG_CMD_LINK_LOCAL is defined in the board config file,
+the "linklocal" command is available.  This running this will
+take approximately 5 seconds while the address is negotiated.
+
+------------------------
+ Environment interation
+------------------------
+
+The "llipaddr" variable is set with the most recently
+negotiated address and is preferred in future negotiations.
+
+The "ipaddr", "netmask", and "gatewayip" variables are set
+after successful negotiation to enable network access.
+
+-------------
+ Limitations
+-------------
+
+RFC3927 requires that addresses are continuously checked to
+avoid conflicts, however this can only happen when the net_loop
+is getting called.  It is possible for a conflict to go undetected
+until a command that accesses the network is executed.
+
+Using NetConsole is one way to ensure that net_loop is always
+processing packets and monitoring for conflicts.
+
+This is also not a concern if the feature is use to connect
+directly to another machine that may not be running a DHCP server.
+
+----------------
+ Example script
+----------------
+
+This script allows use of DHCP and/or Link-local controlled
+by env variables.  It depends on CONFIG_CMD_LINK_LOCAL, CONFIG_CMD_DHCP,
+and CONFIG_BOOTP_MAY_FAIL.
+If both fail or are disabled, static settings are used.
+
+#define CONFIG_EXTRA_ENV_SETTINGS \
+	"ipconfigcmd=if test \\\"$dhcpenabled\\\" -ne 0;"		\
+		"then "							\
+			"dhcpfail=0;dhcp || dhcpfail=1;"		\
+		"else "							\
+			"dhcpfail=-1;"					\
+		"fi;"							\
+		"if test \\\"$linklocalenabled\\\" -ne 0 -a "		\
+			"\\\"$dhcpfail\\\" -ne 0;"			\
+		"then "							\
+			"linklocal;"					\
+			"llfail=0;"					\
+		"else "							\
+			"llfail=-1;"					\
+		"fi;"							\
+		"if test \\\"$llfail\\\" -ne 0 -a "			\
+			"\\\"$dhcpfail\\\" -ne 0; "			\
+		"then "							\
+			"setenv ipaddr $sipaddr; "			\
+			"setenv netmask $snetmask; "			\
+			"setenv gatewayip $sgatewayip; "		\
+		"fi;\0"							\

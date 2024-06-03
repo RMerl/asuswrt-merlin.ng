@@ -82,7 +82,7 @@ int lteled_main(int argc, char **argv)
 			continue;
 		}
 
-		if(strcmp(nvram_safe_get(strcat_r(prefix2, "act_type", tmp2)), "gobi")){
+		if(!is_builtin_modem(nvram_safe_get(strcat_r(prefix2, "act_type", tmp2)))){
 			SET_LONG_PERIOD();
 			pause();
 			continue;
@@ -111,16 +111,26 @@ int lteled_main(int argc, char **argv)
 					old_percent = -100;
 #if defined(RT4GAC53U)
 					led_control(LED_LTE_OFF, LED_ON);
-#else
+#elif defined(RT4GAC56)
+					led_control(LED_SIM_UNDET, LED_ON);
+					led_control(LED_SIM_DET, LED_OFF);
 					led_control(LED_LTE, LED_OFF);
+#elif defined(RT4GAC55U)
+					led_control(LED_LTE, LED_OFF);
+#elif defined(RT4GAC68U)
+					led_control(LED_3G, LED_OFF);
+					led_control(LED_LTE, LED_OFF);
+#elif defined(RT4GAC86U) || defined(RT4GAX56)
+					led_control(LED_NOMOBILE, LED_OFF);
+					led_control(LED_2G_YELLOW, LED_OFF);
+					led_control(LED_3G_BLUE, LED_OFF);
+					led_control(LED_4G_WHITE, LED_OFF);
 #endif
 					led_control(LED_SIG1, LED_OFF);
 					led_control(LED_SIG2, LED_OFF);
 					led_control(LED_SIG3, LED_OFF);
-#if defined(RT4GAC53U)
+#if defined(RT4GAC53U) || defined(RT4GAC56)
 					led_control(LED_SIG4, LED_OFF);
-#elif defined(RT4GAC68U)
-					led_control(LED_3G, LED_OFF);
 #endif
 				}
 			}
@@ -139,6 +149,11 @@ int lteled_main(int argc, char **argv)
 #if defined(RT4GAC53U)
 					led_control(LED_SIG4, LED_OFF);
 					led_control(LED_LTE_OFF, LED_OFF);
+#elif defined(RT4GAC56)
+					led_control(LED_SIG4, LED_OFF);
+					led_control(LED_SIM_UNDET, LED_OFF);
+					led_control(LED_SIM_DET, LED_ON);
+					led_control(LED_LTE, LED_OFF);
 #endif
 				}
 			}
@@ -153,6 +168,48 @@ int lteled_main(int argc, char **argv)
 					led_control(LED_3G, LED_ON);
 					led_control(LED_LTE, LED_ON);
 				}
+#elif defined(RT4GAC86U) || defined(RT4GAX56)
+				char operation[16];
+				snprintf(operation, sizeof(operation), "%s", nvram_safe_get(strcat_r(prefix2, "act_operation", tmp2)));
+				if(strstr(operation, "LTE")){
+					led_control(LED_NOMOBILE, LED_OFF);
+					led_control(LED_2G_YELLOW, LED_OFF);
+					led_control(LED_3G_BLUE, LED_OFF);
+					led_control(LED_4G_WHITE, LED_ON);
+				}
+#if defined(RT4GAX56)
+				else if(strstr(operation, "WCDMA") || strstr(operation, "TDSCDMA")){
+					led_control(LED_NOMOBILE, LED_OFF);
+					led_control(LED_2G_YELLOW, LED_OFF);
+					led_control(LED_3G_BLUE, LED_ON);
+					led_control(LED_4G_WHITE, LED_OFF);
+				}
+				else if(strstr(operation, "GSM")){
+					led_control(LED_NOMOBILE, LED_OFF);
+					led_control(LED_2G_YELLOW, LED_ON);
+					led_control(LED_3G_BLUE, LED_OFF);
+					led_control(LED_4G_WHITE, LED_OFF);
+				}
+#else
+				else if(strstr(operation, "HS")){
+					led_control(LED_NOMOBILE, LED_OFF);
+					led_control(LED_2G_YELLOW, LED_OFF);
+					led_control(LED_3G_BLUE, LED_ON);
+					led_control(LED_4G_WHITE, LED_OFF);
+				}
+				else if(strstr(operation, "WCDMA")){
+					led_control(LED_NOMOBILE, LED_OFF);
+					led_control(LED_2G_YELLOW, LED_OFF);
+					led_control(LED_3G_BLUE, LED_ON);
+					led_control(LED_4G_WHITE, LED_OFF);
+				}
+#endif
+				else{
+					led_control(LED_NOMOBILE, LED_ON);
+					led_control(LED_2G_YELLOW, LED_OFF);
+					led_control(LED_3G_BLUE, LED_OFF);
+					led_control(LED_4G_WHITE, LED_OFF);
+				}
 #endif
 
 				if (state != STATE_CONNECTED)
@@ -160,12 +217,11 @@ int lteled_main(int argc, char **argv)
 					state = STATE_CONNECTED;
 #if defined(RT4GAC53U)
 					led_control(LED_LTE_OFF, LED_OFF);
-#elif defined(RT4GAC68U)
-#else /* 4G-AC55U */
+#elif defined(RT4GAC55U)
 					led_control(LED_LTE, LED_ON);
 #endif
 				}
-#if defined(RT4GAC53U)
+#if defined(RT4GAC53U) || defined(RT4GAC56)
 				if ((percent/20) != (old_percent/20))
 				{
 					led_control(LED_SIG1, (percent >= 20)? LED_ON : LED_OFF);
@@ -174,7 +230,7 @@ int lteled_main(int argc, char **argv)
 					led_control(LED_SIG4, (percent >= 80)? LED_ON : LED_OFF);
 					old_percent = percent;
 				}
-#else /* 4G-AC55U || 4G-AC68U */
+#elif defined(RT4GAC55U) || defined(RT4GAC68U) || defined(RT4GAC86U) || defined(RT4GAX56)
 				if ((percent/25) != (old_percent/25))
 				{
 					led_control(LED_SIG1, (percent > 0)? LED_ON : LED_OFF);
@@ -248,7 +304,7 @@ int lteled_main(int argc, char **argv)
 					led_control(LED_3G, ((cnt % 5) < 3)? LED_ON : LED_OFF);
 					led_control(LED_LTE, ((cnt % 5) < 3)? LED_ON : LED_OFF);
 				}
-#elif defined(RT4GAC53U)
+#elif defined(RT4GAC53U) || defined(RT4GAC56)
 				switch (cnt % 5) {
 				case 3:
 					led_control(LED_SIG1, LED_ON);
@@ -280,7 +336,49 @@ int lteled_main(int argc, char **argv)
 					led_control(LED_SIG3, LED_OFF);
 					led_control(LED_SIG4, LED_OFF);
 				}
-#else /* 4G-AC55U */
+#elif defined(RT4GAC86U) || defined(RT4GAX56)
+				char operation[16];
+				snprintf(operation, sizeof(operation), "%s", nvram_safe_get(strcat_r(prefix2, "act_operation", tmp2)));
+				if(strstr(operation, "LTE")){
+					led_control(LED_NOMOBILE, LED_OFF);
+					led_control(LED_2G_YELLOW, LED_OFF);
+					led_control(LED_3G_BLUE, LED_OFF);
+					led_control(LED_4G_WHITE, ((cnt % 5) < 3)? LED_ON : LED_OFF);
+				}
+#if defined(RT4GAX56)
+				else if(strstr(operation, "WCDMA") || strstr(operation, "TDSCDMA")){
+					led_control(LED_NOMOBILE, LED_OFF);
+					led_control(LED_2G_YELLOW, LED_OFF);
+					led_control(LED_3G_BLUE, ((cnt % 5) < 3)? LED_ON : LED_OFF);
+					led_control(LED_4G_WHITE, LED_OFF);
+				}
+				else if(strstr(operation, "GSM")){
+					led_control(LED_NOMOBILE, LED_OFF);
+					led_control(LED_2G_YELLOW, ((cnt % 5) < 3)? LED_ON : LED_OFF);
+					led_control(LED_3G_BLUE, LED_OFF);
+					led_control(LED_4G_WHITE, LED_OFF);
+				}
+#else
+				else if(strstr(operation, "HS")){
+					led_control(LED_NOMOBILE, LED_OFF);
+					led_control(LED_2G_YELLOW, LED_OFF);
+					led_control(LED_3G_BLUE, ((cnt % 5) < 3)? LED_ON : LED_OFF);
+					led_control(LED_4G_WHITE, LED_OFF);
+				}
+				else if(strstr(operation, "WCDMA")){
+					led_control(LED_NOMOBILE, LED_OFF);
+					led_control(LED_2G_YELLOW, ((cnt % 5) < 3)? LED_ON : LED_OFF);
+					led_control(LED_3G_BLUE, LED_OFF);
+					led_control(LED_4G_WHITE, LED_OFF);
+				}
+#endif
+				else{
+					led_control(LED_NOMOBILE, ((cnt % 5) < 3)? LED_ON : LED_OFF);
+					led_control(LED_2G_YELLOW, LED_OFF);
+					led_control(LED_3G_BLUE, LED_OFF);
+					led_control(LED_4G_WHITE, LED_OFF);
+				}
+#elif defined(RT4GAC55U)
 				led_control(LED_LTE, ((cnt % 5) < 3)? LED_ON : LED_OFF);
 #endif
 			}

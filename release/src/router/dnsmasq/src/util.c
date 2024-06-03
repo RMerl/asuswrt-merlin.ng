@@ -261,9 +261,9 @@ int valid_hostname(char *name)
   for (next = reserved; *next; next++)
     {
       if (strncasecmp(name, *next, len) == 0 && len == strlen(*next))
-	return 0;
+      return 0;
     }
-
+  
   return 1;
 }
   

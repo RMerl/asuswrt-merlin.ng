@@ -267,6 +267,8 @@ PJ_DEF(pj_status_t) pjmedia_ice_create2(pjmedia_endpt *endpt,
 	ice_st_cb.on_stun_binding_complete = &ice_on_stun_binding_complete;
 	// 2014-01-12 DEAN
 	ice_st_cb.on_server_created = &ice_on_tcp_server_binding_complete;
+	// 2023-01-19 DEAN
+	ice_st_cb.app_log_cb = tp_ice->cb.app_log_cb;
 
     /* Create ICE */
     status = pj_ice_strans_create2(name, cfg, comp_cnt, tp_ice, 
@@ -1977,6 +1979,10 @@ static pj_status_t transport_get_info(pjmedia_transport *tp,
     pj_bzero(&info->sock_info, sizeof(info->sock_info));
     info->sock_info.rtp_sock = info->sock_info.rtcp_sock = PJ_INVALID_SOCKET;
 
+	pj_ice_strans_get_turn_state(tp_ice->ice_st, PJ_TURN_TP_TCP, info->tcp_turn_state, sizeof(info->tcp_turn_state));
+	pj_ice_strans_get_turn_state(tp_ice->ice_st, PJ_TURN_TP_UDP, info->udp_turn_state, sizeof(info->udp_turn_state));
+	pj_ice_strans_get_turn_state(tp_ice->ice_st, PJ_TURN_TP_TLS, info->tls_turn_state, sizeof(info->tls_turn_state));
+
     /* Get RTP default address */
     status = pj_ice_strans_get_def_cand(tp_ice->ice_st, 1, &cand);
     if (status != PJ_SUCCESS)
@@ -2284,6 +2290,9 @@ static void ice_on_ice_complete(pj_ice_strans *ice_st,
 
 	tp_ice->base.ice_retry_count = 1;//pj_ice_strans_get_transmit_count(ice_st);
 
+	// Prepare stun and turn last status.
+	tp_ice->base.stun_last_status = pj_ice_strans_get_stun_last_status(ice_st);
+	tp_ice->base.turn_last_status = pj_ice_strans_get_turn_last_status(ice_st);
 	pj_sockaddr_cp(&tp_ice->base.nominated_rem_addr, pj_ice_strans_get_nominated_rem_addr(ice_st));
 
     /* Notify application */

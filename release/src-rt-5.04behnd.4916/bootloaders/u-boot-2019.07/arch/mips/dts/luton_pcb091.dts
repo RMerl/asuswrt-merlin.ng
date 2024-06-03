@@ -1,0 +1,156 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2018 Microsemi Corporation
+ */
+
+/dts-v1/;
+#include "mscc,luton.dtsi"
+
+/ {
+	model = "Luton10 PCB091 Reference Board";
+	compatible = "mscc,luton-pcb091", "mscc,luton";
+
+	aliases {
+		serial0 = &uart0;
+		spi0 = &spi0;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	gpio-leds {
+		compatible = "gpio-leds";
+
+		top_dimmer {
+			label = "pcb091:top:dimmer";
+			gpios = <&gpio 29 GPIO_ACTIVE_LOW>;
+			default-state = "on";
+		};
+
+		status_green {
+			label = "pcb091:green:status";
+			gpios = <&sgpio 26 GPIO_ACTIVE_HIGH>; /* p26.0 */
+			default-state = "on";
+		};
+
+		status_red {
+			label = "pcb091:red:status";
+			gpios = <&sgpio 58 GPIO_ACTIVE_HIGH>; /* p26.1 */
+			default-state = "off";
+		};
+	};
+};
+
+&sgpio {
+	status = "okay";
+	mscc,sgpio-ports = <0xFFF000FF>;
+};
+
+&uart0 {
+	status = "okay";
+};
+
+&spi0 {
+	status = "okay";
+	spi-flash@0 {
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <18000000>; /* input clock */
+		reg = <0>; /* CS0 */
+		spi-cs-high;
+	};
+};
+
+&mdio0 {
+	status = "okay";
+
+	phy0: ethernet-phy@0 {
+		reg = <0>;
+	};
+	phy1: ethernet-phy@1 {
+		reg = <1>;
+	};
+	phy2: ethernet-phy@2 {
+		reg = <2>;
+	};
+	phy3: ethernet-phy@3 {
+		reg = <3>;
+	};
+	phy4: ethernet-phy@4 {
+		reg = <4>;
+	};
+	phy5: ethernet-phy@5 {
+		reg = <5>;
+	};
+	phy6: ethernet-phy@6 {
+		reg = <6>;
+	};
+	phy7: ethernet-phy@7 {
+		reg = <7>;
+	};
+	phy8: ethernet-phy@8 {
+		reg = <8>;
+	};
+	phy9: ethernet-phy@9 {
+		reg = <9>;
+	};
+	phy10: ethernet-phy@10 {
+		reg = <10>;
+	};
+	phy11: ethernet-phy@11 {
+		reg = <11>;
+	};
+};
+
+&switch {
+	ethernet-ports {
+		port0: port@0 {
+			reg = <0>;
+			phy-handle = <&phy0>;
+		};
+		port1: port@1 {
+			reg = <1>;
+			phy-handle = <&phy1>;
+		};
+		port2: port@2 {
+			reg = <2>;
+			phy-handle = <&phy2>;
+		};
+		port3: port@3 {
+			reg = <3>;
+			phy-handle = <&phy3>;
+		};
+		port4: port@4 {
+			reg = <4>;
+			phy-handle = <&phy4>;
+		};
+		port5: port@5 {
+			reg = <5>;
+			phy-handle = <&phy5>;
+		};
+		port6: port@6 {
+			reg = <6>;
+			phy-handle = <&phy6>;
+		};
+		port7: port@7 {
+			reg = <7>;
+			phy-handle = <&phy7>;
+		};
+		port8: port@8 {
+			reg = <8>;
+			phy-handle = <&phy8>;
+		};
+		port9: port@9 {
+			reg = <9>;
+			phy-handle = <&phy9>;
+		};
+		port10: port@10 {
+			reg = <10>;
+			phy-handle = <&phy10>;
+		};
+		port11: port@11 {
+			reg = <11>;
+			phy-handle = <&phy11>;
+		};
+	};
+};

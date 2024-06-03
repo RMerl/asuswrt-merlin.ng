@@ -1,0 +1,68 @@
+1. SATA usage in U-Boot
+
+	There are two ways to operate the hard disk
+
+	* Read/write raw blocks from/to SATA hard disk
+	* ext2load to read a file from ext2 file system
+
+1.0 How to read the SATA hard disk's information?
+
+	=> sata info
+
+SATA device 0: Model: ST3320620AS Firm: 3.AAD Ser#:		4QF01ZTN
+	    Type: Hard Disk
+	    Supports 48-bit addressing
+	    Capacity: 305245.3 MB = 298.0 GB (625142448 x 512)
+
+1.1 How to raw write the kernel, file system, dtb to a SATA hard disk?
+
+	Notes: Hard disk sectors are normally 512 bytes, so
+		0x1000 sectors = 2 MBytes
+
+	write kernel
+	=> tftp 40000 /tftpboot/uImage.837x
+	=> sata write 40000 0 2000
+
+	write ramdisk
+	=> tftp 40000 /tftpboot/ramdisk.837x
+	=> sata write 40000 2000 8000
+
+	write dtb
+	=> tftp 40000 /tftpboot/mpc837xemds.dtb
+	=> sata write 40000 a000 1000
+
+1.2 How to raw read the kernel, file system, dtb from a SATA hard disk?
+
+	load kernel
+	=> sata read 200000 0 2000
+
+	load ramdisk
+	=> sata read 1000000 2000 8000
+
+	load dtb
+	=> sata read 2000000 a000 1000
+
+	boot
+	=> bootm 200000 1000000 2000000
+
+1.3 How to load an image from an ext2 file system in U-Boot?
+
+	U-Boot doesn't support writing to an ext2 file system, so the
+	files must be written by other means (e.g. linux).
+
+	=> ext2ls sata 0:1 /
+	<DIR>	    4096 .
+	<DIR>	    4096 ..
+	<DIR>	   16384 lost+found
+		 1352023 uImage.837x
+		 3646377 ramdisk.837x
+		   12288 mpc837xemds.dtb
+		      12 hello.txt
+
+	=> ext2load sata 0:1 200000 /uImage.837x
+
+	=> ext2load sata 0:1 1000000 /ramdisk.837x
+
+	=> ext2load sata 0:1 2000000 /mpc837xemds.dtb
+
+	=> bootm 200000 1000000 2000000

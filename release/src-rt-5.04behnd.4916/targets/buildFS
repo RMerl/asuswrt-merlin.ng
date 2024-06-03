@@ -1,0 +1,731 @@
+#!/bin/bash
+
+trap 'parl_token_uninit' EXIT
+
+export LD_LIBRARY_PATH=$HOSTTOOLS_DIR/libelf/lib:$LD_LIBRARY_PATH
+source $KERNEL_DIR/.config
+source $TARGETS_DIR/buildFS_COMM
+source $TARGETS_DIR/image_version.sh
+
+TARGETS_DIR=`pwd`
+BUILD_DIR=$TARGETS_DIR/..
+
+if [ "$MOD_DIR" == "" ] ; then
+    MOD_DIR=$PROFILE/modules
+fi
+
+if [ "$FSSRC_DIR" == "" ]; then
+    FSSRC_DIR=./fs.src
+fi
+
+if [ "$INSTALL_DIR" == "" ]; then
+    INSTALL_DIR=./$PROFILE/fs.install
+fi
+
+ROOTFS=$PROFILE/fs
+
+function process_vmlinux()
+{
+    # Copy over and strip vmlinux
+    cp $KERNEL_DIR/vmlinux $PROFILE_DIR/.
+    $KSTRIP --remove-section=.note --remove-section=.comment $PROFILE_DIR/vmlinux
+
+    # Generate vmlinux.bin
+    $KOBJCOPY -O binary $PROFILE_DIR/vmlinux $PROFILE_DIR/vmlinux.bin
+}
+
+parl_token_init 0
+
+if [ "$1" == "vmlinux" ]; then
+    process_vmlinux
+    exit 0
+fi
+
+# Create file system dir
+if [ -L $ROOTFS ]; then
+  rm -rf $ROOTFS/*
+else
+  rm -rf $ROOTFS
+  mkdir $ROOTFS
+fi
+chmod 777 $ROOTFS
+# Copy files onto root file system
+echo "Creating target root file system..."
+cp -av $FSSRC_DIR/* $ROOTFS
+
+# Update mdev.conf with 'ignore' entries for proprietary drivers
+echo "Updating mdev.conf"
+chmod 0644 $ROOTFS/rom/etc/mdev.conf
+grep /dev $ROOTFS/rom/etc/make_static_devnodes.sh | cut -d' ' -f 2 | cut -d'/' -f 3 | awk '{print $1 " " "0:0 666 !"}' >> $ROOTFS/rom/etc/mdev.conf
+
+# Remove all svn metadata files
+find $ROOTFS -name ".svn" -exec rm -rf '{}' \;
+
+bfiles="cms_entity_info.d  init.d  ld.so.cache  ld.so.conf  rc3.d  rdpa_init.sh wlan openssl.cnf"
+
+mkdir -p ${ROOTFS}/tmp/etc
+(cd ${ROOTFS} && rm -rf etc && ln -sf tmp/etc etc)
+for f in $bfiles
+do
+	echo "ln -sf /rom/etc/$f /etc/$f"
+	(cd ${ROOTFS} && rm -rf tmp/etc/$f && ln -sf /rom/etc/$f tmp/etc/$f)
+done
+
+# convert Snn*.symlink and Knn*.symlink files to real symlinks
+flist=`ls ${ROOTFS}/rom/etc/rc3.d/S*.symlink ${ROOTFS}/rom/etc/rc3.d/K*.symlink 2> /dev/null`
+for f in $flist
+do
+	f=$(basename $f)
+	numbase=${f%.*}
+	namebase=`echo $numbase | cut -c 4-`
+	(cd ${ROOTFS}/rom/etc/rc3.d; rm -f ${numbase}.symlink; ln -s ../init.d/${namebase}.sh ${numbase})
+done
+
+# Remove unneeded (wlan prebuilt) files
+find $INSTALL_DIR -name "*_saved-*" | xargs rm -fv
+
+# Copy over all files to ROOTFS
+parl_cmd "rsync -av --exclude=\"/lib\"  $INSTALL_DIR/* $ROOTFS"
+
+# Setup lib directories
+mkdir $ROOTFS/lib
+if [ "$USER_ARCH" == "aarch64" ]; then
+	# In aarch64 build, all 64-bit libs are in /lib, but the
+	# default search path for Dynamic Linker is /lib64
+	mkdir $ROOTFS/lib64
+	parl_cmd "rsync -av --exclude=\"/public\" --exclude=\"/private\" --exclude=\"/gpl\" --exclude=\"/arm\" --exclude=\"ld*\" $INSTALL_DIR/lib/* $ROOTFS/lib64"
+	parl_cmd "cp -av $INSTALL_DIR/lib/public/* $ROOTFS/lib64"
+	parl_cmd "cp -av $INSTALL_DIR/lib/private/* $ROOTFS/lib64"
+	parl_cmd "cp -av $INSTALL_DIR/lib/gpl/* $ROOTFS/lib64"
+	# If there are 32-bit libs present in 64-bit build
+	if [ -d $INSTALL_DIR/lib/arm ] ; then
+		parl_cmd "cp -av $INSTALL_DIR/lib/arm/* $ROOTFS/lib"
+	fi
+	# Copy all loaders to /lib, thats where linux looks for them
+	parl_cmd "cp -av $INSTALL_DIR/lib/ld* $ROOTFS/lib"
+else
+	parl_cmd "rsync -av --exclude=\"/public\" --exclude=\"/private\" --exclude=\"/gpl\" --exclude=\"/aarch64\" $INSTALL_DIR/lib/* $ROOTFS/lib"
+	parl_cmd "cp -av $INSTALL_DIR/lib/public/* $ROOTFS/lib"
+	parl_cmd "cp -av $INSTALL_DIR/lib/private/* $ROOTFS/lib"
+	parl_cmd "cp -av $INSTALL_DIR/lib/gpl/* $ROOTFS/lib"
+	# If there are 64-bit libs present in 32-bit build
+	if [ -d $INSTALL_DIR/lib/aarch64 ] ; then
+		mkdir $ROOTFS/lib64
+		parl_cmd "cp -av $INSTALL_DIR/lib/aarch64/* $ROOTFS/lib64"
+	fi
+fi
+parl_wait
+
+if [ "$BUILD_OPEN_PLATFORM" == "y" ]; then
+   mkdir -p $ROOTFS/lib/ops
+   ln -s /local/modsw/tr157du/Broadcom/OPS_HOSTEE/lib $ROOTFS/lib/ops/plugins
+fi
+
+
+
+# Create directories as needed
+mkdir $ROOTFS/dev
+#mkdir $ROOTFS/mnt
+mkdir $ROOTFS/sys
+mkdir $ROOTFS/proc
+mkdir $ROOTFS/var
+mkdir $ROOTFS/rom/etc/adsl
+mkdir $ROOTFS/data
+cp -av $BRCMDRIVERS_DIR/broadcom/char/adsl/bcm9$BRCM_CHIP/*.bin  $ROOTFS/rom/etc/adsl
+
+# debugfs
+if [ "$BUILD_DEBUG_TOOLS" == "y" ] ; then
+    chmod +w $ROOTFS/rom/etc/fstab
+    echo -e "debugfs\t/sys/kernel/debug\tdebugfs\tnofail\t0\t0\n" >> $ROOTFS/rom/etc/fstab
+    chmod -w $ROOTFS/rom/etc/fstab
+    rm -rf $ROOTFS/sys/kernel/debug
+    mkdir -p $ROOTFS/sys/kernel/debug
+    rm -f $ROOTFS/debug
+    ln -s sys/kernel/debug $ROOTFS/debug
+fi
+
+if [ "$BUILD_ASAN" == "y" ] ; then
+    echo "adding ASAN options to $ROOTFS/etc/proile"
+    chmod +w $ROOTFS/etc/profile
+    echo -e "export ASAN_OPTIONS=halt_on_error=false:start_deactivated=true:print_cmdline=true:quarantine_size_mb=1:detect_leaks=0:detect_odr_violation=0:log_path=/data/asan.log:log_exe_name=1" >> $ROOTFS/etc/profile
+    chmod -w $ROOTFS/etc/profile
+fi
+
+# Update kernel directory based on kernel:
+sed -i "s|^KERNELVER=_set_by_buildFS_$|KERNELVER=$LINUX_VER_STR|" $ROOTFS/rom/etc/init.d/*;
+
+
+if [ "$BRCM_KERNEL_OPROFILE" == "y" ] ; then
+   mkdir -p $ROOTFS/dev/oprofile
+fi
+
+
+# This hint file (init_enable_core) tells busybox to set the core rlimit to
+# unlimited on all apps, thus allowing them to dump their core when they crash.
+# There are several config variables that controls coredumps.
+# At the top level, there is the  BDK menuconfig variable ENABLE_APP_COREDUMPS.
+# ENABLE_APP_COREDUMPS then controls the setting of the kernel config variable CONFIG_ELF_CORE
+# and the busybox config variable CONFIG_FEATURE_INIT_COREDUMPS.  Note that
+# even if CONFIG_FEATURE_INIT_COREDUMPS=y, busybox/init.c still requires this
+# hint file.  There is also additional
+# logic in etc/init.d/system-config.sh which controls coredumps.
+if [ "$CONFIG_ELF_CORE" == "y" ]; then
+   touch $ROOTFS/.init_enable_core
+fi
+
+
+# copy our top level PROFILE file and image version to filesystem
+# We use some of the profile settings to configure the kernel through /proc settings
+echo "Include a copy of PROFILE file in system image"
+rm -f $ROOTFS/rom/etc/$PROFILE
+cp $PROFILE_DIR/$PROFILE $ROOTFS/rom/etc
+ln -s $PROFILE $ROOTFS/rom/etc/build_profile
+record_image_version
+cp $BUILD_DIR/patch.version $ROOTFS/rom/etc
+
+DEFAULTCFG=`echo $BRCM_DEFAULTCFG | tr -d '"'`
+
+if [ ! -z $DEFAULTCFG ]; then
+    if [[ $DEFAULTCFG != /* ]]; then
+        DEFAULTCFG=$DEFAULTCFG_DIR/$DEFAULTCFG
+    fi
+
+   if [ -f "$DEFAULTCFG" ]; then
+       echo "Using $DEFAULTCFG as default config"
+       mkdir -p $ROOTFS/rom/etc
+       cp -v $DEFAULTCFG $ROOTFS/rom/etc/default.cfg && chmod 444 $ROOTFS/rom/etc/default.cfg || exit 1
+   else
+       echo
+       echo "        No default run-time config file called $DEFAULTCFG"
+       echo "        Check your profile setting!"
+       echo
+       exit 1
+   fi
+fi
+
+# Create symbolic links
+mkdir $ROOTFS/dev/misc
+ln -s /var/fuse $ROOTFS/dev/misc/fuse
+ln -s /var/fuse $ROOTFS/dev/fuse
+ln -s /var/mtab $ROOTFS/etc/mtab
+ln -s /var/sysmsg $ROOTFS/etc/sysmsg
+ln -s /var/passwd $ROOTFS/etc/passwd
+ln -s /var/group $ROOTFS/etc/group
+ln -s /var/ppp/pppmsg $ROOTFS/etc/pppmsg
+ln -s /var/fyi/sys/dns $ROOTFS/etc/resolv.conf
+ln -s /var/fyi/sys/gateway $ROOTFS/etc/gateway.conf
+ln -s /var/udhcpd/udhcpd.conf $ROOTFS/etc/udhcpd.conf
+ln -s /data/udhcpd.leases $ROOTFS/etc/udhcpd.leases
+ln -s /var/TZ $ROOTFS/etc/TZ
+ln -s /var/timezone $ROOTFS/etc/timezone
+ln -s /var/localtime $ROOTFS/etc/localtime
+ln -s /var/dms.conf $ROOTFS/etc/dms.conf
+ln -s /var/ipsec/ipsec.conf $ROOTFS/etc/ipsec.conf
+ln -s /var/ipsec/racoon.conf $ROOTFS/etc/racoon.conf
+ln -s /var/ipsec/psk.txt $ROOTFS/etc/psk.txt
+ln -s /var/iproute2/rt_tables $ROOTFS/etc/iproute2/rt_tables
+#ln -s /var/tmp $ROOTFS/tmp
+ln -s /var/samba $ROOTFS/etc/samba
+
+echo "Setting $ROOTFS permissions ...."
+chmod 755 $ROOTFS
+
+#ln -s /data $ROOTFS/usr/local/data
+if [ "$BUILD_DBUS" == "y" ]; then
+   ln -s /var/dbus-1/system.d $ROOTFS/share/dbus-1/system.d
+fi
+if [ -x $PROFILE/special-buildFS ]; then
+   $PROFILE/special-buildFS
+fi
+
+# Copy proprietary binaries if any
+FSBIN=`ls $TARGETS_DIR/fs.bin|wc -l`
+if [ $FSBIN != 0 ]; then
+   echo "Copying proprietary binaries..."
+   cd $TARGETS_DIR
+   cp -avf fs.bin/* $ROOTFS
+fi
+
+# Copy 3rdParty supplied .ko onto dummy .ko
+if [ "$BRCM_DRIVER_ISDN" == "m" ] ; then
+   echo "Copying 3rdParty kernel objects (.ko) ..."
+   eval "find $TARGETS_DIR/$ROOTFS/../modules/lib/modules/. -name '*isdn.ko' | xargs cp -f $BRCMDRIVERS_DIR/broadcom/char/isdn/bcm9$BRCM_CHIP/3rdParty/*isdn.ko_3rdParty "
+fi
+
+
+   if [ -d $ROOTFS/opt/modules ]; then
+     pushd $ROOTFS/opt/modules && for f in *.ko.save; do mv "$f" "${f%.ko.save}.ko"; done
+     popd
+   fi
+cd $MOD_DIR
+kd=${LINUX_VER_STR}
+mkdir -p lib/modules/${kd}/extra
+#go through every directory other than the lib/modules/${LINUX_VER_STR}
+for dir in `ls lib/modules/ |grep -v ${kd}`
+do
+   for file in `find lib/modules/${dir} -type f`
+   do
+      mv $file lib/modules/${kd}/extra/
+   done
+   rm -rf lib/modules/$dir
+done
+#some modules are built with full build path (e.g. adsl, wl), treat them diferently
+bd=$(realpath ${BUILD_DIR})
+for file in `find lib/modules/${kd}*/kernel/${bd}/ -type f -name \*.ko`
+do
+   mv $file lib/modules/${kd}/extra/
+done
+if [ ! "x${bd}" == "x" ]; then
+   rm -rf lib/modules/${kd}/kernel/${bd}/
+fi
+
+
+
+cp -a lib $TARGETS_DIR/$ROOTFS/.
+
+if [ "$CONFIG_BCM_UBUSCAP" == "y" ]; then
+    # copy UBUSCAP control script
+    cp -avf $BRCMDRIVERS_DIR/broadcom/char/ubuscap/impl$CONFIG_BCM_UBUSCAP_IMPL/ubcap_$BRCM_CHIP.sh  $TARGETS_DIR/$ROOTFS/opt/scripts/ubcap
+fi
+
+if [ "$CONFIG_GCOV_KERNEL" == "y" ]; then
+    cp -avf $BUILD_DIR/userspace/private/apps/scripts/debug/gcov_gather.sh  $TARGETS_DIR/$ROOTFS/bin/
+fi
+
+DMfiles="bin etc lib sbin share tmp usr include doc"
+
+for f in $DMfiles
+do
+	echo "ln -sf /tmp/opt/$f opt/$f"
+	(cd $TARGETS_DIR/$ROOTFS && ln -sf /tmp/opt/$f opt/$f)
+done
+
+if [ "$KSTRIP" != "/bin/touch" ]; then
+# Stripping unneeded module symbols only when strip is "enabled"
+echo "Stripping kernel modules..."
+find $TARGETS_DIR/$ROOTFS/lib/modules -name "*.ko"
+   if [ "$CONFIG_KALLSYMS" == "y" ]; then
+      #if KALLSYMS is enabled only strip debug symbols from all modules, this helps
+      #to retain symbols of static functions
+      find $TARGETS_DIR/$ROOTFS/lib/modules -name '*.ko' | parl_flist_cmd "$KSTRIP --strip-debug" sl
+   else
+      #Modules that need parameters cannot be stripped
+      find $TARGETS_DIR/$ROOTFS/lib/modules -name '*.ko' ! -name 'ip*.ko' | parl_flist_cmd "$KSTRIP --strip-unneeded" sl
+      # However do strip debug symbols, in case debug symbols are included
+      find $TARGETS_DIR/$ROOTFS/lib/modules -name 'ip*.ko' | parl_flist_cmd "$KSTRIP --strip-debug" sl
+   fi
+fi
+
+if [ -f $TARGETS_DIR/$PROFILE/filesystem.tgz ]
+then
+  echo "consumer build -- not dynamically generating bcm-base-drivers.sh"
+else
+  line_num=0
+  TMP_DRIVERS_SH_BASE=bcm-base-drivers.sh.tmp
+  cat $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.head > $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh
+if [ "$BUILD_NAME" == "GT-BE98" ] || [ "$BUILD_NAME" == "GT-BE98_PRO" ]; then
+  echo "echo Trigger RESET_OUT_B" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh
+  echo "sw 0xff800554 0" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh
+  echo "sw 0xff800558 0x403e" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh
+  echo "sw 0xff80055c 0x21" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh
+  echo "echo 255 > /sys/class/leds/led_gpio_62/brightness" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh
+  echo "usleep 80" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh
+  echo "echo 0 > /sys/class/leds/led_gpio_62/brightness" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh
+  echo "sw 0xff800554 0" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh
+  echo "sw 0xff800558 0x003e" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh
+  echo "sw 0xff80055c 0x21" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh
+fi
+
+  cat $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.list | ( while IFS= read -r driver_line
+  do
+     let line_num=line_num+1
+     parl_token_get
+     (
+     TMP_DRIVERS_SH=${line_num}.${TMP_DRIVERS_SH_BASE}
+     read a b c <<< $driver_line
+     if echo $a | egrep -q '^\s*(#.*)?$'
+     then
+      if echo $a | egrep -q '^\s*(#KP:.*)?$'
+      then
+         echo "${driver_line:4}" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${TMP_DRIVERS_SH}
+      else
+         echo "$a $b" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${TMP_DRIVERS_SH}
+      fi
+     else
+       if echo $a | egrep -q '^-!'
+       then
+         eval v=\$${a:2}
+       elif echo $a | egrep -q '^-'
+       then
+         eval v=\$${a:1}
+         if [ -z "$v" ]
+         then
+           v=y
+         else
+           v=
+         fi
+       fi
+       if echo $a | egrep -q '^-'
+       then
+         echo "considering $a for $b $c"
+         if [ -z "$v" ]
+         then
+           echo "passed"
+           a=$b
+           b=$c
+           c=
+         else
+           echo "skipped"
+           a=NEVER
+         fi
+       fi
+       # Special insmod needed for rdpa/rdpa_prv ko depend on rdpa_prv existence and pspctl
+       if echo $a | egrep -q 'extra/rdpa.ko'
+       then
+         if test -e  $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/extra/rdpa.ko || test -e  $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/extra/rdpa_prv.ko
+         then
+           echo -e "if test -e  /lib/modules/$LINUX_VER_STR/extra/rdpa_prv.ko\nthen" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${TMP_DRIVERS_SH}
+           echo -e "  if echo \$(/bin/pspctl dump OperationMode) | grep -q 'FC'\n  then" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${TMP_DRIVERS_SH}
+           echo -e "    insmod /lib/modules/$LINUX_VER_STR/extra/rdpa.ko $b $c\n    echo 'FC operation mode loaded!'" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${TMP_DRIVERS_SH}
+           echo "  else" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${TMP_DRIVERS_SH}
+           echo -e "    insmod /lib/modules/$LINUX_VER_STR/extra/rdpa_prv.ko $b $c\n    echo 'Provision operation mode loaded!'" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${TMP_DRIVERS_SH}
+           echo "  fi" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${TMP_DRIVERS_SH}
+           echo -e "else\n  insmod /lib/modules/$LINUX_VER_STR/$a $b $c" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${TMP_DRIVERS_SH}
+           echo "fi" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${TMP_DRIVERS_SH}
+         fi
+       elif echo $a | egrep -q 'extra/pktflow.ko'
+       then
+         if test -e  $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/extra/rdpa_prv.ko
+         then
+           echo -e "if echo \$(/bin/pspctl dump OperationMode) | grep -q 'FC'\nthen" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${TMP_DRIVERS_SH}
+           echo -e "  insmod /lib/modules/$LINUX_VER_STR/$a $b $c" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${TMP_DRIVERS_SH}
+           echo "fi" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${TMP_DRIVERS_SH}
+         else
+           echo -e "insmod /lib/modules/$LINUX_VER_STR/$a $b $c" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${TMP_DRIVERS_SH}
+         fi
+       elif echo $a | egrep -q 'extra/pktrunner.ko'
+       then
+         if test -e  $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/extra/rdpa_prv.ko
+         then
+           echo -e "if echo \$(/bin/pspctl dump OperationMode) | grep -q 'FC'\nthen" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${TMP_DRIVERS_SH}
+           echo -e "  insmod /lib/modules/$LINUX_VER_STR/$a $b $c" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${TMP_DRIVERS_SH}
+           echo "fi" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${TMP_DRIVERS_SH}
+         else
+           echo -e "insmod /lib/modules/$LINUX_VER_STR/$a $b $c" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${TMP_DRIVERS_SH}
+         fi
+       elif echo $a | egrep -q 'extra/bcm_spdsvc.ko|extra/bcm_tcpspdtest.ko'
+       then
+         if test -e  $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/$a
+         then
+           echo -e "if test -e  /lib/modules/$LINUX_VER_STR/extra/rdpa_prv.ko\n then" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${TMP_DRIVERS_SH}
+           echo -e "  if echo \$(/bin/pspctl dump OperationMode) | grep -q 'FC'\n  then" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${TMP_DRIVERS_SH}
+           echo "    insmod /lib/modules/$LINUX_VER_STR/$a $b $c" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${TMP_DRIVERS_SH}
+           echo "  fi" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${TMP_DRIVERS_SH}
+           echo -e "else\n  insmod /lib/modules/$LINUX_VER_STR/$a $b $c" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${TMP_DRIVERS_SH}
+           echo "fi" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${TMP_DRIVERS_SH}
+         fi
+       elif echo $a | egrep -q -w '^pause$'
+       then
+         echo "echo 'hit Enter to continue' ; read" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${TMP_DRIVERS_SH}
+       else
+         if test -e  $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/$a
+         then
+           echo "insmod /lib/modules/$LINUX_VER_STR/$a $b $c" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${TMP_DRIVERS_SH}
+         fi
+       fi
+     fi
+     parl_token_free
+     )&
+  done
+  parl_wait
+  )
+
+  # Reorder and combine parallel processing results
+  ( cd $TARGETS_DIR/$ROOTFS/rom/etc/init.d; ls *.${TMP_DRIVERS_SH_BASE} | sort -n -t '.' -k 1 |  xargs cat >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh )
+  rm -f $TARGETS_DIR/$ROOTFS/rom/etc/init.d/*.${TMP_DRIVERS_SH_BASE}
+
+  cat $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.tail >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh
+  if [[ -z $BUILD_CUSTOMER ]]; then
+      sed -e 1d $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh > $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh1
+      cat - $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh1 <<ENDEND > $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh
+#!/bin/sh
+
+interactive_insmod() {
+    if [ ! -r /proc/environment/insmod_pause ] || [[ "\$yesall" == "yes" ]]; then
+        /sbin/insmod \$*
+        return
+    fi
+    echo ready to insmod \$*
+    echo "[y]" to insmod this module, "[s]" to skip this module, "[a]" to insmod all
+    read r
+    case "\$r" in
+        y|Y)
+            /sbin/insmod \$*
+            ;;
+        s|S)
+            echo skipping
+            ;;
+        a|A)
+            yesall="yes"
+            /sbin/insmod \$*
+            ;;
+        *)
+            ;;
+      esac
+}
+
+alias insmod=interactive_insmod
+
+ENDEND
+      rm $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh1
+  fi
+  chmod +x $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh
+  rm  -f $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.tail
+  rm -f $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.head
+  rm -f $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.list
+fi
+
+#delete unwanted module
+echo "deleting intermediate wl modules"
+MODULE_CLEAN_UP="wldrv.ko wl_tmp_partial.ko wlpartial.ko"
+#remove unnecessary wlan driver
+if [ "${WLBUS}"  != "" ]; then
+    if [ `expr index $WLBUS pci` == 0 ]; then
+           MODULE_CLEAN_UP=${MODULE_CLEAN_UP}" wl.ko"
+    fi
+    if [ `expr index $WLBUS usb` == 0 ]; then
+           MODULE_CLEAN_UP=${MODULE_CLEAN_UP}" wl-usb.ko"
+    fi
+else
+   MODULE_CLEAN_UP=${MODULE_CLEAN_UP}" wl-usb.ko"
+fi
+for f in $MODULE_CLEAN_UP; do \
+   eval "find $TARGETS_DIR/$ROOTFS/lib/modules -name $f |xargs rm -f";\
+done
+eval "find $TARGETS_DIR/$ROOTFS/lib/modules -name wlobj-*.ko | xargs rm -f"
+
+#$BUSYBOX_DIR/examples/depmod.pl -k $LINUXDIR/vmlinux -b $INSTALL_DIR/../modules/lib/modules/$LINUX_VER_STR
+#$BUSYBOX_DIR/examples/depmod.pl -k $LINUXDIR/vmlinux -b $INSTALL_DIR/../fs/lib/modules/$LINUX_VER_STR
+
+# put rtecdc.bin to file system
+if [ -f ${HND_SRC}/bcmdrivers/broadcom/net/wl/impl${BCM_WLIMPL}/sys/src/dongle/bin/43684b0/rtecdc.bin ]; then
+mkdir -p ${TARGET_FS}/rom/etc/wlan/dhd/43684b0
+if [ "${DHD_43684B0}" == "y" ]; then
+cp ${HND_SRC}/bcmdrivers/broadcom/net/wl/impl${BCM_WLIMPL}/sys/src/dongle/bin/43684b0/rtecdc.bin ${TARGET_FS}/rom/etc/wlan/dhd/43684b0
+fi
+fi
+
+if [ -f ${HND_SRC}/bcmdrivers/broadcom/net/wl/impl${BCM_WLIMPL}/sys/src/dongle/bin/43684c0/rtecdc.bin ]; then
+mkdir -p ${TARGET_FS}/rom/etc/wlan/dhd/43684c0
+if [ "${DHD_43684C0}" == "y" ]; then
+cp ${HND_SRC}/bcmdrivers/broadcom/net/wl/impl${BCM_WLIMPL}/sys/src/dongle/bin/43684c0/rtecdc.bin ${TARGET_FS}/rom/etc/wlan/dhd/43684c0
+fi
+fi
+
+if [ -f ${HND_SRC}/bcmdrivers/broadcom/net/wl/impl${BCM_WLIMPL}/sys/src/dongle/bin/6715a0/rtecdc.bin ]; then
+mkdir -p ${TARGET_FS}/rom/etc/wlan/dhd/6715a0
+if [ "${DHD_6715A0}" == "y" ]; then
+cp ${HND_SRC}/bcmdrivers/broadcom/net/wl/impl${BCM_WLIMPL}/sys/src/dongle/bin/6715a0/rtecdc.bin ${TARGET_FS}/rom/etc/wlan/dhd/6715a0
+fi
+fi
+
+if [ -f ${HND_SRC}/bcmdrivers/broadcom/net/wl/impl${BCM_WLIMPL}/sys/src/dongle/bin/6715b0/rtecdc.bin ]; then
+mkdir -p ${TARGET_FS}/rom/etc/wlan/dhd/6715b0
+if [ "${DHD_6715B0}" == "y" ]; then
+cp ${HND_SRC}/bcmdrivers/broadcom/net/wl/impl${BCM_WLIMPL}/sys/src/dongle/bin/6715b0/rtecdc.bin ${TARGET_FS}/rom/etc/wlan/dhd/6715b0
+fi
+fi
+
+mkdir -p ${TARGET_FS}/rom/etc/fw
+cp ${HND_SRC}/bcmdrivers/opensource/phy/firmware/*.bin ${TARGET_FS}/rom/etc/fw/
+
+if [ -f $BRCMDRIVERS_DIR/broadcom/char/pktflow/bcm9$BRCM_CHIP/scripts/FcStats.sh ]; then
+cp $BRCMDRIVERS_DIR/broadcom/char/pktflow/bcm9$BRCM_CHIP/scripts/FcStats.sh $TARGETS_DIR/$ROOTFS/bin/
+fi
+
+if [ "$BUILD_NAME" == "RT-AX3000N" ]; then
+	find $TARGETS_DIR/$ROOTFS/lib/modules -name usb | xargs rm -rf
+	find $TARGETS_DIR/$ROOTFS/lib/modules -name cdrom | xargs rm -rf
+	find $TARGETS_DIR/$ROOTFS/lib/modules -name scsi | xargs rm -rf
+	find $TARGETS_DIR/$ROOTFS/lib/modules -name hid | xargs rm -rf
+	find $TARGETS_DIR/$ROOTFS/lib/modules -name fs | xargs rm -rf
+	find $TARGETS_DIR/$ROOTFS/lib/modules -name nls | xargs rm -rf
+	find $TARGETS_DIR/$ROOTFS/lib/modules -name bonding | xargs rm -rf
+	find $TARGETS_DIR/$ROOTFS/lib/modules -name bcm_bca_usb.ko | xargs rm -f
+	find $TARGETS_DIR/$ROOTFS/lib/modules -name tcp_bic.ko | xargs rm -f
+	find $TARGETS_DIR/$ROOTFS/lib/modules -name tcp_htcp.ko | xargs rm -f
+	find $TARGETS_DIR/$ROOTFS/lib/modules -name tcp_westwood.ko | xargs rm -f
+	rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/wlan/nvram/9*.nvm
+	rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/wlan/nvram/X*.nvm
+	rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/wlan/nvram/E*.nvm
+	rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/wlan/nvram/RP*.nvm
+	rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/wlan/nvram/T*.nvm
+	rm -rf $TARGETS_DIR/$ROOTFS/usr/sbin/dhd
+fi
+
+if [ "$BUILD_NAME" == "XD6_V2" ]; then
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/kernel/drivers/cdrom
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/kernel/drivers/net/phy
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/kernel/drivers/scsi
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/kernel/drivers/usb/host/ehci*
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/kernel/drivers/usb/host/xhci*
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/kernel/drivers/usb/mon
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/kernel/drivers/usb/storage
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/kernel/drivers/net/bonding
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/kernel/fs
+	rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/wlan/nvram/9*.nvm
+	rm -rf $TARGETS_DIR/$ROOTFS/usr/lib/libusb*
+	rm -rf $TARGETS_DIR/$ROOTFS/usr/sbin/mk*
+	rm -rf $TARGETS_DIR/$ROOTFS/usr/sbin/*fsck*
+fi
+
+if [ "$BUILD_NAME" == "BR63" ]; then
+        find $TARGETS_DIR/$ROOTFS/lib/modules -name bonding | xargs rm -rf
+        find $TARGETS_DIR/$ROOTFS/lib/modules -name tcp_bic.ko | xargs rm -f
+        find $TARGETS_DIR/$ROOTFS/lib/modules -name tcp_htcp.ko | xargs rm -f
+        find $TARGETS_DIR/$ROOTFS/lib/modules -name tcp_westwood.ko | xargs rm -f
+        rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/wlan/nvram/9*.nvm
+        rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/wlan/nvram/X*.nvm
+        rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/wlan/nvram/E*.nvm
+        rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/wlan/nvram/RP*.nvm
+        rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/wlan/nvram/T*.nvm
+        rm -rf $TARGETS_DIR/$ROOTFS/usr/sbin/dhd
+fi
+
+if [ "$BUILD_NAME" == "RT-BE58U" ] || [ "$BUILD_NAME" == "TUF-BE3600" ] || [ "$BUILD_NAME" == "RT-BE92U" ] || [ "$BUILD_NAME" == "RT-BE95U" ] ; then
+if [ "$BUILD_NAME" != "RT-BE95U" ]; then
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/extra/dhd.ko
+fi
+	mkdir -p $TARGETS_DIR/$ROOTFS/rom/etc/licenses
+	rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/licenses/*.bin
+	cp $TARGETS_DIR/pakl/*$BUILD_NAME.bin $TARGETS_DIR/$ROOTFS/rom/etc/licenses
+	rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/fw/*a0*.bin
+	rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/fw/*b0*.bin
+fi
+
+# strip userspace binaries is sstrip is "enabled"
+# sstrip is set to /bin/touch if BUILD_GDBSERVER=y
+if [ "$SSTRIP" != "/bin/touch" ]; then
+    echo "Stripping userspace binaries..."
+    ls $TARGETS_DIR/$ROOTFS/bin/* $TARGETS_DIR/$ROOTFS/sbin/* $TARGETS_DIR/$ROOTFS/usr/bin/* $TARGETS_DIR/$ROOTFS/usr/sbin/* $TARGETS_DIR/$ROOTFS/lib/*.so* $TARGETS_DIR/$ROOTFS/lib/*/*.so* $TARGETS_DIR/$ROOTFS/usr/lib/*.so* | parl_flist_cmd "$SSTRIP" sl
+fi
+
+
+# Clear the execute bit in the stack segment, and fatal exit if we are not able
+# to modify the file.  Perhaps we can change this logic to "check if execute
+# bit is set on the stack segment, and fatal exit if found", so we warn the
+# user, but do not modify the file.
+EXECSTACK=$HOSTTOOLS_DIR/prelink/src/execstack
+
+if [ "$BUILD_DISABLE_EXEC_STACK" == "y" ]; then
+        echo "Running $EXECSTACK on $TARGETS_DIR/$ROOTFS"
+        RET_FAIL_FILE_PREFIX=${SUBSHELL_RET_DIR}/exestack_error_
+        rm -f ${RET_FAIL_FILE_PREFIX}*
+        find $TARGETS_DIR/$ROOTFS -type f -executable -exec file -i '{}' \; | grep 'x-executable; charset=binary' |(while read filename; \
+        do \
+        parl_token_get; \
+        ( \
+	IS_ELF=$(dd if=$filename count=3 skip=1  bs=1 2> /dev/null); \
+	if [ "x${IS_ELF}" == "xELF" ]; then\
+		E=$($EXECSTACK -c $filename 2>&1); \
+		if [ "x$?" == "x127" ]; then \
+		    echo "Fatal error " . $E;\
+		    touch ${RET_FAIL_FILE_PREFIX}${RANDOM}; \
+		    parl_token_free; \
+		    exit 1;\
+		fi;\
+        fi;\
+        parl_token_free; \
+        )& \
+        done; \
+        parl_wait;\
+        )
+
+        ls -l ${RET_FAIL_FILE_PREFIX}* > /dev/null 2>&1
+        if [ $? == "0" ]; then
+            rm -f ${RET_FAIL_FILE_PREFIX}*
+            exit 1;
+        fi
+fi
+
+
+# Generate vmlinux_rd_boot
+if [ "$BRCM_IKOS" != "y" ]; then
+   # when using ramdisk boot from CFE/boot loader, change of the virtual address in the vmlinux elf file is required for ARM-based device
+
+   la=""
+   if [ $KARCH == "arm64" ]; then
+       la=0xffffffffffffffff
+       offset=0x80000
+   elif [ "$KARCH" == "arm" ] ; then
+       offset=0x00018000
+       la=0xffffffff
+   fi
+   if [ ! "x$la" == "x" ]; then
+       entry=$(readelf -l $PROFILE_DIR/vmlinux |grep Entry |sed -e 's/.* //')
+       let entry=$entry-$offset
+       let change_addr=${la}-${entry}
+       let change_addr=${change_addr}+1
+       $KOBJCOPY --change-start ${change_addr} --change-addr ${change_addr} $PROFILE_DIR/vmlinux $PROFILE_DIR/vmlinux_rd_boot
+   else
+       cp $PROFILE_DIR/vmlinux $PROFILE_DIR/vmlinux_rd_boot
+   fi
+fi
+
+        echo -en "@(#) \$imageversion: " > $PROFILE_DIR/image_ident
+        cat $TARGET_FS/etc/image_version | tr -d "\n" >> $PROFILE_DIR/image_ident
+        echo -en " $\n@(#) \$imageversion: " >> $PROFILE_DIR/image_ident
+        cat $TARGET_FS/etc/image_version | tr -d "\n" >> $PROFILE_DIR/image_ident
+        echo -e " $" >> $PROFILE_DIR/image_ident
+
+        if [ -f $TARGET_FS/etc/JENKINS_CHANGELIST ];
+        then
+            echo -en "@(#) \$changelist: " >> $PROFILE_DIR/image_ident
+            cat $TARGET_FS/etc/JENKINS_CHANGELIST | tr -d "\n" >> $PROFILE_DIR/image_ident
+            echo -en " $\n@(#) \$changelist: " >> $PROFILE_DIR/image_ident
+            cat $TARGET_FS/etc/JENKINS_CHANGELIST | tr -d "\n" >> $PROFILE_DIR/image_ident
+            echo -e " $" >> $PROFILE_DIR/image_ident
+        fi
+        svnc=$TARGET_FS/etc/SVN_COMMIT_LIST.txt
+        if [ -f $svnc ]
+        then
+           svnr=`grep Revision $svnc | head -1`
+           echo -en " $\n@(#) \$svnrevision: $svnr " >> $PROFILE_DIR/image_ident
+           echo -e " $" >> $PROFILE_DIR/image_ident
+           echo -en " $\n@(#) \$svnrevision: $svnr " >> $PROFILE_DIR/image_ident
+           echo -e " $" >> $PROFILE_DIR/image_ident
+        fi
+        bid=$TARGET_FS/etc/build_id.txt
+        if [ -f $bid ]
+        then
+           tt=/tmp/bldfs$$
+	   cat $bid | sed -e "s/: */=/"  > $tt
+           svb=`( . $tt ; echo $BRANCH@$Revision)`
+           rm $tt
+           echo -en " $\n@(#) \$svnsource: $svb " >> $PROFILE_DIR/image_ident
+           echo -e " $" >> $PROFILE_DIR/image_ident
+           echo -en " $\n@(#) \$svnsource: $svb " >> $PROFILE_DIR/image_ident
+           echo -e " $" >> $PROFILE_DIR/image_ident
+        fi
+
+        echo -en "@(#) \$imgversion: " >> $PROFILE_DIR/image_ident
+        echo -en $BRCM_VERSION >> $PROFILE_DIR/image_ident
+        echo -en "." >> $PROFILE_DIR/image_ident
+        echo -en $BRCM_RELEASE >> $PROFILE_DIR/image_ident
+        echo -en "L." >> $PROFILE_DIR/image_ident
+        echo -en $BRCM_EXTRAVERSION >> $PROFILE_DIR/image_ident
+        echo -e " $" >> $PROFILE_DIR/image_ident
+
+        echo -en "@(#) \$imgversion: " >> $PROFILE_DIR/image_ident
+        echo -en $BRCM_VERSION >> $PROFILE_DIR/image_ident
+        echo -en "." >> $PROFILE_DIR/image_ident
+        echo -en $BRCM_RELEASE >> $PROFILE_DIR/image_ident
+        echo -en "L." >> $PROFILE_DIR/image_ident
+        echo -en $BRCM_EXTRAVERSION >> $PROFILE_DIR/image_ident
+        echo -e " $" >> $PROFILE_DIR/image_ident
+
+
+
+# If a consumer release has created a filesystem tarball, fill in
+# any missing proprietary binaries using that tarball
+( cd $TARGETS_DIR/$ROOTFS ; tar xzkf ../filesystem.tgz 2>/dev/null ; true )

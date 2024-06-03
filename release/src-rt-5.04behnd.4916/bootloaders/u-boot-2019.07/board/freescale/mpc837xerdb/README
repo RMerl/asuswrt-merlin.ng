@@ -1,0 +1,97 @@
+Freescale MPC837xE-RDB Board
+-----------------------------------------
+
+1.	Board Description
+
+	The MPC837xE-RDB are reference boards featuring the Freescale MPC8377E,
+	MPC8378E, and the MPC8379E processors in a Mini-ITX form factor.
+
+	The MPC837xE-RDB's have the following common features:
+
+	A) 256-MBytes on-board DDR2 unbuffered SDRAM
+	B) 8-Mbytes NOR Flash
+	C) 32-MBytes NAND Flash
+	D) 1 Secure Digital High Speed Card (SDHC) Interface
+	E) 1 Gigabit Ethernet
+	F) 5-port Ethernet switch (Vitesse 7385)
+	G) 1 32-bit, 3.3 V, PCI slot
+	H) 1 32-bit, 3.3 V, Mini-PCI slot
+	I) 4-port USB 2.0 Hub
+	J) 1-port OTG USB
+	K) 2 serial ports (top main console)
+	L) on board Oscillator: 66M
+
+	The MPC837xE-RDB's have the following differences:
+
+			    MPC8377E-RDB    MPC8378E-RDB    MPC8379E-RDB
+	SATA controllers	2		0		4
+	PCI-Express (mini)	2		2		0
+	SGMII Ports		0		2		0
+
+
+2.	Memory Map
+
+2.1.	The memory map should look pretty much like this:
+
+	Address Range			Device			Size		Port Size
+								(Bytes)		(Bits)
+	===========================	=================	=======		=========
+	0x0000_0000	0x0fff_ffff	DDR			256M		64
+	0x1000_0000	0x7fff_ffff	Empty			1.75G		-
+	0x8000_0000	0x8fff_ffff	PCI MEM prefetch	256M		32
+	0x9000_0000	0x9fff_ffff	PCI MEM non-prefetch	256M		32
+	0xe030_0000	0xe03f_ffff	PCI I/O space		1M		32
+	0xe000_0000	0xe00f_ffff	Int Mem Reg Space	1M		-
+	0xe060_0000	0xe060_7fff	NAND Flash		32K		8
+	0xfe00_0000	0xfe7f_ffff	NOR Flash on CS0	8M		16
+
+
+3. Definitions
+
+3.1 Explanation of NEW definitions in:
+
+	include/configs/MPC837XERDB.h
+
+    CONFIG_MPC83xx	    MPC83xx family for both MPC8349 and MPC8360
+    CONFIG_MPC837x	    MPC837x specific
+    CONFIG_MPC837XERDB	    MPC837xE-RDB board specific
+
+
+4. Compilation
+
+	Assuming you're using BASH shell:
+
+		export CROSS_COMPILE=your-cross-compile-prefix
+		cd u-boot
+		make distclean
+		make MPC837XERDB_config
+		make
+
+
+5. Downloading and Flashing Images
+
+5.0 Download over serial line using Kermit:
+
+	loadb $loadaddr
+	[Drop to kermit:
+	    ^\c
+	    send <u-boot-bin-image>
+	    c
+	]
+
+
+	Or via tftp:
+
+	tftp $loadaddr u-boot.bin
+
+5.1 Reflash U-Boot Image using U-Boot
+
+	tftp $loadaddr u-boot.bin
+	protect off fe000000 fe0fffff
+	erase fe000000 fe0fffff
+	cp.b $loadaddr fe000000 $filesize
+
+
+6. Additional Notes:
+	1) The console is connected to the top RS-232 connector and the
+	   baudrate for MPC837XE-RDB is 115200bps.

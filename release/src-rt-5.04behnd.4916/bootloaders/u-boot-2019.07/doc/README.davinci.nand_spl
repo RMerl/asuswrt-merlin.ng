@@ -1,0 +1,141 @@
+With this approach, we don't need the UBL any more on DaVinci boards.
+A "make boardname" will compile a u-boot.ubl, with UBL Header, which is
+needed for the RBL to find the "UBL", which actually is a  UBL-compatible
+header, nand spl code and u-boot code.
+
+
+As the RBL uses another read function as the "standard" u-boot,
+we need a command, which switches between this two read/write
+functions, so we can write the UBL header and the spl
+code in a format, which the RBL can read. This is realize
+(at the moment in board specific code) in the u-boot command
+nandrbl
+
+nandrbl without arguments returns actual mode (rbl or uboot).
+with nandrbl mode (mode = "rbl" or "uboot") you can switch
+between the two NAND read/write modes.
+
+
+To set up mkimage you need a config file for mkimage, example:
+board/ait/cam_enc_4xx/ublimage.cfg
+
+For information about the configuration please see:
+doc/README.ublimage
+
+Example for the cam_enc_4xx board:
+On the cam_enc_4xx board we have a NAND flash with blocksize = 0x20000 and
+pagesize = 0x800, so the u-boot.ubl image (which you get with:
+"make cam_enc_4xx") looks like this:
+
+00000000  00 ed ac a1 20 00 00 00  06 00 00 00 05 00 00 00  |.... ...........|
+00000010  00 00 00 00 20 00 00 00  ff ff ff ff ff ff ff ff  |.... ...........|
+00000020  ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  |................|
+*
+00000800  14 00 00 ea 14 f0 9f e5  10 f0 9f e5 0c f0 9f e5  |................|
+00000810  08 f0 9f e5 04 f0 9f e5  00 f0 9f e5 04 f0 1f e5  |................|
+00000820  00 01 00 00 78 56 34 12  78 56 34 12 78 56 34 12  |....xV4.xV4.xV4.|
+[...]
+*
+00001fe0  00 00 00 00 00 00 00 00  ff ff ff ff ff ff ff ff  |................|
+00001ff0  ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  |................|
+*
+00003800  14 00 00 ea 14 f0 9f e5  14 f0 9f e5 14 f0 9f e5  |................|
+00003810  14 f0 9f e5 14 f0 9f e5  14 f0 9f e5 14 f0 9f e5  |................|
+00003820  80 01 08 81 e0 01 08 81  40 02 08 81 a0 02 08 81  |........@.......|
+
+In the first "page" of the image, we have the UBL Header, needed for
+the RBL to find the spl code.
+
+The spl code starts in the second "page" of the image, with a size
+defined by:
+
+#define CONFIG_SYS_NROF_PAGES_NAND_SPL	6
+
+After the spl code, there comes the "real" u-boot code
+@ (6 + 1) * pagesize = 0x3800
+
+------------------------------------------------------------------------
+Setting up spl code:
+
+/*
+ * RBL searches from Block n (n = 1..24)
+ * so we can define, how many UBL Headers
+ * we write before the real spl code
+ */
+#define CONFIG_SYS_NROF_UBL_HEADER	5
+#define CONFIG_SYS_NROF_PAGES_NAND_SPL	6
+
+#define CONFIG_SYS_NAND_U_BOOT_OFFS	((CONFIG_SYS_NROF_UBL_HEADER * \
+					CONFIG_SYS_NAND_BLOCK_SIZE) + \
+					(CONFIG_SYS_NROF_PAGES_NAND_SPL) * \
+					CONFIG_SYS_NAND_PAGE_SIZE)
+------------------------------------------------------------------------
+
+Burning into NAND:
+
+step 1:
+The RBL searches from Block n ( n = 1..24) on page 0 for valid UBL
+Headers, so you have to burn the UBL header page from the u-boot.ubl
+image to the blocks, you want to have the UBL header.
+!! Don;t forget to switch to rbl nand read/write functions with
+   "nandrbl rbl"
+
+step 2:
+You need to setup in the ublimage.cfg, where the RBL can find the spl
+code, and how big it is.
+
+!! RBL always starts reading from page 0 !!
+
+For the AIT board, we have:
+PAGES		6
+START_BLOCK	5
+
+So we need to copy the spl code to block 5 page 0
+!! Don;t forget to switch to rbl nand read/write functions with
+   "nandrbl rbl"
+
+step 3:
+You need to copy the u-boot image to the block/page
+where the spl code reads it (CONFIG_SYS_NAND_U_BOOT_OFFS)
+!! Don;t forget to switch to rbl nand read/write functions with
+   "nandrbl uboot", which is default.
+
+On the cam_enc_4xx board it is:
+#define CONFIG_SYS_NAND_U_BOOT_OFFS	(0xc0000)
+
+-> this results in following NAND usage on the cam_enc_4xx board:
+
+addr
+
+20000		possible UBL Header
+40000		possible UBL Header
+60000		possible UBL Header
+80000		possilbe UBL Header
+a0000		spl code
+c0000		u-boot code
+
+The above steps are executeed through the following environment vars:
+(using 80000 as address for the UBL header)
+
+pagesz=800
+uboot=/tftpboot/cam_enc_4xx/u-boot.ubl
+load=tftp 80000000 ${uboot}
+writeheader nandrbl rbl;nand erase 80000 ${pagesz};nand write 80000000 80000 ${pagesz};nandrbl uboot
+writenand_spl nandrbl rbl;nand erase a0000 3000;nand write 80000800 a0000 3000;nandrbl uboot
+writeuboot nandrbl uboot;nand erase c0000 5d000;nand write 80003800 c0000 5d000
+update=run load writeheader writenand_spl writeuboot
+
+If you do a "run load update" u-boot, spl + ubl header
+are magically updated ;-)
+
+Note:
+- There seem to be a bug in the RBL code (at least on my HW),
+  In the UBL block, I can set the page to values != 0, so it
+  is possible to burn step 1 and step 2 in one step into the
+  flash, but the RBL ignores the page settings, so I have to
+  burn the UBL Header to a page 0 and the spl code to
+  a page 0 ... :-(
+- If we make the nand read/write functions in the RBL equal to
+  the functions in u-boot (as I have no RBL code, it is only
+  possible in u-boot), we could burn the complete image in
+  one step ... that would be nice ...

@@ -336,12 +336,19 @@ main(argc, argv)
 				else if (*ptr == 'm')
 					args.journal_tbuffer_size *= 1024*1024;
 			}
-			if (args.flags == VNOVAL) 
-				args.flags = HFSFSMNT_EXTENDED_ARGS;
+			if (args.flags == VNOVAL) {
+				args.flags = 0;
+			}
+			args.flags |= HFSFSMNT_EXTENDED_ARGS;
 			break;
 		}
 		case 'j':
+			/* disable the journal */
+			if (args.flags == VNOVAL) {
+				args.flags = 0;
+			}
 			args.journal_disable = 1;
+			args.flags |= HFSFSMNT_EXTENDED_ARGS;
 			break;
 		case 'c':
 			// XXXdbg JOURNAL_NO_GROUP_COMMIT == 0x0001

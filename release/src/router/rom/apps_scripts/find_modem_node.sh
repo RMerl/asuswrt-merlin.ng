@@ -14,6 +14,7 @@ modem_act_path=`nvram get ${prefix}act_path`
 modem_type=`nvram get ${prefix}act_type`
 modem_vid=`nvram get ${prefix}act_vid`
 modem_pid=`nvram get ${prefix}act_pid`
+modem_model=`nvram get modem_model`
 usb_gobi2=`nvram get usb_gobi2`
 dev_home=/sys/class/tty
 
@@ -291,6 +292,12 @@ elif [ "$modem_vid" == "4100" -a "$modem_pid" == "25382" ]; then # Docomo L-03D
 
 	first_bulk_dev=""
 	echo "Can't get the bulk node."
+elif [ "$modem_model" == "2" ]; then
+	first_int_dev="ttyUSB0"
+	echo "first_int_dev=$first_int_dev."
+
+	first_bulk_dev=""
+	echo "first_bulk_dev=$first_bulk_dev."
 else
 	dial_devs=`_find_dial_devs "$io_devs"`
 	echo "dial_devs=$dial_devs."

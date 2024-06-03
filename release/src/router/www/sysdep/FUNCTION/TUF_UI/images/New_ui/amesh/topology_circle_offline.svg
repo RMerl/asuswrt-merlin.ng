@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="84" height="84" viewBox="0 0 84 84">
+  <defs>
+    <linearGradient id="circle-topology-locate-disable-copy-a" x1="-5.977%" x2="106.052%" y1="-4.866%" y2="110.864%">
+      <stop offset="0%" stop-color="#816022"/>
+      <stop offset="50.203%" stop-color="#B2B2B2"/>
+      <stop offset="100%" stop-color="#816022"/>
+    </linearGradient>
+    <linearGradient id="circle-topology-locate-disable-copy-b" x1="-5.977%" x2="106.052%" y1="-4.866%" y2="110.864%">
+      <stop offset="0%" stop-color="#816022"/>
+      <stop offset="50.203%" stop-color="#B2B2B2"/>
+      <stop offset="100%" stop-color="#816022"/>
+    </linearGradient>
+  </defs>
+  <g fill="none" fill-rule="evenodd" transform="translate(6 6)">
+    <circle cx="36" cy="36" r="36" fill="#2F2C2C" stroke="url(#circle-topology-locate-disable-copy-a)" stroke-width=".786"/>
+    <circle cx="36" cy="36" r="29.026" fill="#292929" stroke="url(#circle-topology-locate-disable-copy-b)" stroke-width=".857"/>
+  </g>
+</svg>

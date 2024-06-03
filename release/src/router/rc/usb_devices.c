@@ -25,7 +25,7 @@
 #include <rtstate.h>	/* for get_wanunit_by_type inline function */
 
 #define MAX_RETRY_LOCK 1
-#define MAX_WAIT_MODULE 7
+#define MAX_WAIT_MODULE 3
 
 #ifdef RTCONFIG_USB_PRINTER
 #define U2EC_FIFO "/var/u2ec_fifo"
@@ -261,7 +261,7 @@ int write_3g_conf(FILE *fp, int dno, int aut, const unsigned int vid, const unsi
 		case SN_Huawei_E169:
 			fprintf(fp, "DefaultVendor=0x%04x\n",	0x12d1);
 			fprintf(fp, "DefaultProduct=0x%04x\n",	0x1001);
-			fprintf(fp, "HuaweiMode=1\n");
+			fprintf(fp, "HuaweiNewMode=1\n");
 			break;
 		case SN_Huawei_E220:
 			fprintf(fp, "DefaultVendor=0x%04x\n",	0x12d1);
@@ -3449,6 +3449,11 @@ int asus_lp(const char *device_name, const char *action)
 		return 0;
 	}
 
+#if defined(RTCONFIG_TUXERA_SMBD)
+	stop_samba(1);
+	start_samba();
+#endif
+
 	u2ec_fifo = open(U2EC_FIFO, O_WRONLY | O_NONBLOCK);
 	write(u2ec_fifo, "a", 1);
 	close(u2ec_fifo);
@@ -3609,6 +3614,12 @@ int asus_sg(const char *device_name, const char *action)
 			sleep(2);
 			usb_dbg("(%s): Running usb_modeswitch twice...\n", device_name);
 			xstart("usb_modeswitch", "-c", switch_file);
+#elif defined(RTCONFIG_RALINK_MT7621)
+			sleep(4);
+			if(!access(switch_file, F_OK)){
+				usb_dbg("(%s): Running usb_modeswitch twice...\n", device_name);
+				xstart("usb_modeswitch", "-c", switch_file);
+			}
 #endif
 		}
 	}
@@ -4671,8 +4682,8 @@ int asus_usb_interface(const char *device_name, const char *action)
 
 		// Wait if there is the printer/modem interface.
 #if defined(RTCONFIG_USB) || defined(RTCONFIG_USB_PRINTER) || defined(RTCONFIG_USB_MODEM)
-		retry = 0;
-		while(!nvram_get_int("stop_wait_usb_modules") && retry < MAX_WAIT_MODULE){
+		//retry = 0;
+		//while(!nvram_get_int("stop_wait_usb_modules") && retry < MAX_WAIT_MODULE){
 			if(isStorageInterface(device_name)){
 				usb_dbg("(%s): Is Storage interface on Port %s.\n", device_name, usb_node);
 				file_unlock(isLock);
@@ -4700,14 +4711,14 @@ int asus_usb_interface(const char *device_name, const char *action)
 #endif
 					){
 				usb_dbg("(%s): Is Modem interface on Port %s.\n", device_name, usb_node);
-				break;
+				//break;
 			}
 #endif
 
-			++retry;
-			usb_dbg("(%s): wait %d second for the printer/modem on Port %s.\n", device_name, retry, usb_node);
-			sleep(1); // Wait the printer module to be ready.
-		}
+		//	++retry;
+		//	usb_dbg("(%s): wait %d second for the printer/modem on Port %s.\n", device_name, retry, usb_node);
+		//	sleep(1); // Wait the printer module to be ready.
+		//}
 #endif
 	}
 
@@ -4749,23 +4760,23 @@ int asus_usb_interface(const char *device_name, const char *action)
 		return 0;
 	}
 
-	// set USB common nvram.
-	set_usb_common_nvram(action, device_name, usb_node, "modem");
-
 #ifdef RTCONFIG_INTERNAL_GOBI
-	if(nvram_get_int("usb_gobi") != 1 && !strcmp(port_path, get_gobi_portpath())){
+	if(nvram_get_int("usb_gobi") != 1 && !strcmp(port_path, nvram_safe_get("usb_buildin"))){
 		usb_dbg("(%s): Disable the built-in Gobi.\n", device_name);
 		file_unlock(isLock);
 		return 0;
 	}
 #ifndef RTCONFIG_USB_MULTIMODEM
-	else if(nvram_get_int("usb_gobi") == 1 && strcmp(port_path, get_gobi_portpath())){
+	if(nvram_get_int("usb_gobi") == 1 && strcmp(port_path, nvram_safe_get("usb_buildin"))){
 		usb_dbg("(%s): Just use the built-in Gobi and disable the USB modem.\n", device_name);
 		file_unlock(isLock);
 		return 0;
 	}
 #endif
 #endif
+
+	// set USB common nvram.
+	set_usb_common_nvram(action, device_name, usb_node, "modem");
 
 	// Modem add action.
 	// WiMAX
@@ -4870,6 +4881,10 @@ int asus_usb_interface(const char *device_name, const char *action)
 		usb_dbg("(%s): Android phone: Runing RNDIS...\n", device_name);
 	}
 	else if(isSerialInterface(device_name, 1, vid, pid)){
+#if defined(RT4GAC86U) || defined(RT4GAX56)
+		usb_dbg("(%s): Found USB serial with (0x%04x/0x%04x)...\n", device_name, vid, pid);
+		modprobe("option");
+#else
 		usb_dbg("(%s): Runing USB serial with (0x%04x/0x%04x)...\n", device_name, vid, pid);
 		modprobe("usbserial");
 #if LINUX_KERNEL_VERSION >= KERNEL_VERSION(2,6,36)
@@ -4890,6 +4905,7 @@ int asus_usb_interface(const char *device_name, const char *action)
 		modprobe("option", modem_cmd, buf);
 #endif
 		sleep(1);
+#endif // RT4GAC86U
 	}
 	else if(isACMInterface(device_name, 1, vid, pid)){
 		usb_dbg("(%s): Runing USB ACM...\n", device_name);

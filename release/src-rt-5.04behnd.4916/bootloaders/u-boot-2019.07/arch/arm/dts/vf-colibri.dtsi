@@ -1,0 +1,243 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * Copyright 2014-2019 Toradex AG
+ */
+
+/dts-v1/;
+#include "vf.dtsi"
+#include "vf610-pinfunc.h"
+
+/ {
+	chosen {
+		stdout-path = &uart0;
+	};
+
+	aliases {
+		usb0 = &ehci0; /* required for ums */
+	};
+
+	reg_usbh_vbus: regulator-usbh-vbus {
+		compatible = "regulator-fixed";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_usbh1_reg>;
+		regulator-name = "VCC_USB[1-4]";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		gpio = <&gpio2 19 GPIO_ACTIVE_LOW>; /* USBH_PEN */
+	};
+};
+
+&dspi1 {
+	bus-num = <1>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_dspi1>;
+	status = "okay";
+
+	spi_cmd: sspi@0 {
+		reg = <0>;
+		spi-max-frequency = <50000000>;
+	};
+};
+
+&ehci0 {
+	dr_mode = "otg";
+	fsl,cdet-gpio = <&gpio3 6 GPIO_ACTIVE_HIGH>;
+	status = "okay";
+};
+
+&ehci1 {
+	dr_mode = "host";
+	status = "okay";
+	vbus-supply = <&reg_usbh_vbus>;
+};
+
+&esdhc1 {
+	bus-width = <4>;
+	cd-gpios = <&gpio1 10 GPIO_ACTIVE_LOW>;
+	disable-wp;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_esdhc1>;
+	status = "okay";
+};
+
+/* Ethernet */
+&fec1 {
+	phy-mode = "rmii";
+	phy-handle = <&ethphy1>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_fec1>;
+	status = "okay";
+
+	mdio {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		ethphy1: ethernet-phy@1 {
+			compatible = "ethernet-phy-ieee802.3-c22";
+			max-speed = <100>;
+			reg = <1>;
+		};
+	};
+};
+
+&i2c0 {
+	clock-frequency = <400000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c0>;
+	status = "okay";
+
+	/* M41T0M6 real time clock on carrier board */
+	rtc: m41t0m6@68 {
+		compatible = "st,m41t0";
+		reg = <0x68>;
+	};
+};
+
+&iomuxc {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_ddr>;
+
+	pinctrl_ddr: ddrgrp {
+		fsl,pins = <
+			VF610_PAD_DDR_A15__DDR_A_15             0x180
+			VF610_PAD_DDR_A14__DDR_A_14             0x180
+			VF610_PAD_DDR_A13__DDR_A_13             0x180
+			VF610_PAD_DDR_A12__DDR_A_12             0x180
+			VF610_PAD_DDR_A11__DDR_A_11             0x180
+			VF610_PAD_DDR_A10__DDR_A_10             0x180
+			VF610_PAD_DDR_A9__DDR_A_9               0x180
+			VF610_PAD_DDR_A8__DDR_A_8               0x180
+			VF610_PAD_DDR_A7__DDR_A_7               0x180
+			VF610_PAD_DDR_A6__DDR_A_6               0x180
+			VF610_PAD_DDR_A5__DDR_A_5               0x180
+			VF610_PAD_DDR_A4__DDR_A_4               0x180
+			VF610_PAD_DDR_A3__DDR_A_3               0x180
+			VF610_PAD_DDR_A2__DDR_A_2               0x180
+			VF610_PAD_DDR_A1__DDR_A_1               0x180
+			VF610_PAD_DDR_A0__DDR_A_0               0x180
+			VF610_PAD_DDR_BA2__DDR_BA_2             0x180
+			VF610_PAD_DDR_BA1__DDR_BA_1             0x180
+			VF610_PAD_DDR_BA0__DDR_BA_0             0x180
+			VF610_PAD_DDR_CAS__DDR_CAS_B            0x180
+			VF610_PAD_DDR_CKE__DDR_CKE_0            0x180
+			VF610_PAD_DDR_CLK__DDR_CLK_0            0x180
+			VF610_PAD_DDR_CS__DDR_CS_B_0            0x180
+			VF610_PAD_DDR_D15__DDR_D_15             0x10180
+			VF610_PAD_DDR_D14__DDR_D_14             0x10180
+			VF610_PAD_DDR_D13__DDR_D_13             0x10180
+			VF610_PAD_DDR_D12__DDR_D_12             0x10180
+			VF610_PAD_DDR_D11__DDR_D_11             0x10180
+			VF610_PAD_DDR_D10__DDR_D_10             0x10180
+			VF610_PAD_DDR_D9__DDR_D_9               0x10180
+			VF610_PAD_DDR_D8__DDR_D_8               0x10180
+			VF610_PAD_DDR_D7__DDR_D_7               0x10180
+			VF610_PAD_DDR_D6__DDR_D_6               0x10180
+			VF610_PAD_DDR_D5__DDR_D_5               0x10180
+			VF610_PAD_DDR_D4__DDR_D_4               0x10180
+			VF610_PAD_DDR_D3__DDR_D_3               0x10180
+			VF610_PAD_DDR_D2__DDR_D_2               0x10180
+			VF610_PAD_DDR_D1__DDR_D_1               0x10180
+			VF610_PAD_DDR_D0__DDR_D_0               0x10180
+			VF610_PAD_DDR_DQM1__DDR_DQM_1           0x10180
+			VF610_PAD_DDR_DQM0__DDR_DQM_0           0x10180
+			VF610_PAD_DDR_DQS1__DDR_DQS_1           0x10180
+			VF610_PAD_DDR_DQS0__DDR_DQS_0           0x10180
+			VF610_PAD_DDR_RAS__DDR_RAS_B            0x180
+			VF610_PAD_DDR_WE__DDR_WE_B              0x180
+			VF610_PAD_DDR_ODT1__DDR_ODT_0           0x180
+			VF610_PAD_DDR_ODT0__DDR_ODT_1           0x180
+			VF610_PAD_DDR_DDRBYTE1__DDR_DDRBYTE1    0x180
+			VF610_PAD_DDR_DDRBYTE2__DDR_DDRBYTE2    0x180
+			VF610_PAD_DDR_RESETB                    0x180
+		>;
+	};
+
+	pinctrl_dspi1: dspi1grp {
+		fsl,pins = <
+			VF610_PAD_PTD5__DSPI1_CS0		0x33e2
+			VF610_PAD_PTD6__DSPI1_SIN		0x33e1
+			VF610_PAD_PTD7__DSPI1_SOUT		0x33e2
+			VF610_PAD_PTD8__DSPI1_SCK		0x33e2
+		>;
+	};
+
+	pinctrl_esdhc1: esdhc1grp {
+		fsl,pins = <
+			VF610_PAD_PTA24__ESDHC1_CLK		0x31ef
+			VF610_PAD_PTA25__ESDHC1_CMD		0x31ef
+			VF610_PAD_PTA26__ESDHC1_DAT0		0x31ef
+			VF610_PAD_PTA27__ESDHC1_DAT1		0x31ef
+			VF610_PAD_PTA28__ESDHC1_DATA2		0x31ef
+			VF610_PAD_PTA29__ESDHC1_DAT3		0x31ef
+			VF610_PAD_PTB20__GPIO_42		0x219d
+		>;
+	};
+
+	pinctrl_fec1: fec1grp {
+		fsl,pins = <
+			VF610_PAD_PTA6__RMII_CLKOUT		0x30df
+			VF610_PAD_PTC9__ENET_RMII1_MDC		0x30df
+			VF610_PAD_PTC10__ENET_RMII1_MDIO	0x30df
+			VF610_PAD_PTC11__ENET_RMII1_CRS		0x30df
+			VF610_PAD_PTC12__ENET_RMII1_RXD1	0x30df
+			VF610_PAD_PTC13__ENET_RMII1_RXD0	0x30df
+			VF610_PAD_PTC14__ENET_RMII1_RXER	0x30df
+			VF610_PAD_PTC15__ENET_RMII1_TXD1	0x30df
+			VF610_PAD_PTC16__ENET_RMII1_TXD0	0x30df
+			VF610_PAD_PTC17__ENET_RMII1_TXEN	0x30df
+		>;
+	};
+
+	pinctrl_i2c0: i2c0grp {
+		fsl,pins = <
+			VF610_PAD_PTB14__I2C0_SCL		0x37ff
+			VF610_PAD_PTB15__I2C0_SDA		0x37ff
+		>;
+	};
+
+	pinctrl_nfc: nfcgrp {
+		fsl,pins = <
+			VF610_PAD_PTD23__NF_IO7			0x28df
+			VF610_PAD_PTD22__NF_IO6			0x28df
+			VF610_PAD_PTD21__NF_IO5			0x28df
+			VF610_PAD_PTD20__NF_IO4			0x28df
+			VF610_PAD_PTD19__NF_IO3			0x28df
+			VF610_PAD_PTD18__NF_IO2			0x28df
+			VF610_PAD_PTD17__NF_IO1			0x28df
+			VF610_PAD_PTD16__NF_IO0			0x28df
+			VF610_PAD_PTB24__NF_WE_B		0x28c2
+			VF610_PAD_PTB25__NF_CE0_B		0x28c2
+			VF610_PAD_PTB27__NF_RE_B		0x28c2
+			VF610_PAD_PTC26__NF_RB_B		0x283d
+			VF610_PAD_PTC27__NF_ALE			0x28c2
+			VF610_PAD_PTC28__NF_CLE			0x28c2
+		>;
+	};
+
+	pinctrl_uart0: uart0grp {
+		fsl,pins = <
+			VF610_PAD_PTB10__UART0_TX		0x11af
+			VF610_PAD_PTB11__UART0_RX		0x11af
+			VF610_PAD_PTB12__UART0_RTS		0x11af
+			VF610_PAD_PTB13__UART0_CTS		0x11af
+		>;
+	};
+
+	pinctrl_usbh1_reg: gpio_usb_vbus {
+		fsl,pins = <
+			VF610_PAD_PTD4__GPIO_83			0x22ed
+		>;
+	};
+};
+
+&nfc {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_nfc>;
+	status = "okay";
+};
+
+&uart0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart0>;
+	status = "okay";
+};

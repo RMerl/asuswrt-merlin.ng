@@ -1,0 +1,160 @@
+#include "68370.dtsi"
+#include "../../bcm_voice.dtsi"
+
+/ {
+	memory_controller {
+			memcfg = <(BP_DDR_TYPE_DDR4        | \
+					BP_DDR_SPEED_1600_22_22_22 | \
+					BP_DDR_DEVICE_WIDTH_16     | \
+					BP_DDR_TOTAL_WIDTH_32BIT   | \
+					BP_DDR_TOTAL_SIZE_2048MB   | \
+					BP_DDR_SSC_CONFIG_1        | \
+					BP_DDR_CONFIG_DEBUG)>;
+	};
+
+  buttons {
+        compatible = "brcm,buttons";
+        reset_button {
+            ext_irq = <&bca_extintr 55 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+            press {
+                print = "Button Press -- Hold for 5s to do restore to default";
+            };
+            hold {
+                rst_to_dflt = <5>;
+            };
+            release {
+                reset = <0>;
+            };
+        };
+    };
+};
+
+
+&mpcs {
+    status = "okay";
+};
+
+&phy_wan_serdes {
+    status = "okay";
+};
+
+&xport {
+    status = "okay";
+};
+
+&egphy {
+    status = "okay";
+};
+
+&unimac {
+    status = "okay";
+};
+
+&serdes {
+    status = "okay";
+};
+
+&ethphytop {
+    status = "okay";
+};
+
+&mdio {
+    status = "okay";
+};
+
+#ifndef CONFIG_BRCM_SMC_BOOT
+&nand {
+    status = "okay";
+};
+&sdhci {
+    status = "okay";
+};
+#endif
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+/ {
+    /* PCIE02_WIFI_PWR_EN controls 5V_FEM & 3.3V_PCIE */
+      vreg_pcie02: vreg-pcie02 {
+          compatible = "regulator-fixed";
+          regulator-name = "vreg-pcie02";
+          regulator-min-microvolt = <5000000>;
+          regulator-max-microvolt = <5000000>;
+          gpio = <&gpioc 96 GPIO_ACTIVE_LOW>;
+          enable-active-low;
+          regulator-boot-off;
+    };
+
+      /* PCIE13_WIFI_PWR_EN controls 5V_FEM & 3.3V_PCIE */
+      vreg_pcie13: vreg-pcie13 {
+          compatible = "regulator-fixed";
+        regulator-name = "vreg-pcie13";
+        regulator-min-microvolt = <5000000>;
+        regulator-max-microvolt = <5000000>;
+        gpio = <&gpioc 97 GPIO_ACTIVE_LOW>;
+        enable-active-low;
+        regulator-boot-off;
+    };
+};
+
+&pcie0 {
+      brcm,supply-names = "vreg-pcie02";
+      brcm,vreg-supply = <&vreg_pcie02>;
+      status = "okay";
+};
+
+&pcie1 {
+      brcm,supply-names = "vreg-pcie13";
+      brcm,vreg-supply = <&vreg_pcie13>;
+      status = "okay";
+};
+
+&pcie2 {
+      brcm,supply-names = "vreg-pcie02";
+      brcm,vreg-supply = <&vreg_pcie02>;
+      status = "okay";
+};
+
+&pcie3 {
+      brcm,supply-names = "vreg-pcie13";
+      brcm,vreg-supply = <&vreg_pcie13>;
+      status = "okay";
+};
+#endif // defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+
+&usb_ctrl {
+	pinctrl-names = "default";
+	pinctrl-0 = <&usb0_pwr_pins &usb1_pwr_pins>;
+	xhci-enable;
+	status = "okay";
+};
+
+&usb0_xhci {
+	status = "okay";
+
+	usb_port1: port1 {
+		reg = <1>;
+		#trigger-source-cells = <0>;
+	};
+
+	usb_port2: port2 {
+		reg = <2>;
+		#trigger-source-cells = <0>;
+	};
+};
+
+&bcm_voice {
+        sliclist = SLICSLAC_LIST_COMMON_NOFXO;
+};
+
+&hsspi {
+        status = "okay";
+        voice0 {
+                pinctrl-0 = <&a_spim1_ss0_b_pin_25>;
+                pinctrl-names = "default";
+                compatible = "bcm-spi-voice";
+                reg = <0>; 
+                spi-max-frequency = <1024000>;
+                reset-gpio = <&gpioc 80 GPIO_ACTIVE_LOW>;
+                spi-index = <0>;
+        };
+};

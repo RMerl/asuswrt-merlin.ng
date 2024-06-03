@@ -1,0 +1,37 @@
+if ARCH_VF610
+
+config VF610
+	bool
+	default y
+
+choice
+	prompt "Vybrid board select"
+
+config TARGET_VF610TWR
+	bool "TWR-VF65GS10-DS5"
+
+config TARGET_COLIBRI_VF
+	bool "Colibri VF50/61"
+	select BOARD_LATE_INIT
+
+config TARGET_PCM052
+	bool "PCM-052"
+	select SYS_FSL_ERRATUM_ESDHC135
+	select SYS_FSL_ERRATUM_ESDHC_A001
+
+config TARGET_BK4R1
+	bool "BK4r1"
+	select SYS_FSL_ERRATUM_ESDHC135
+	select SYS_FSL_ERRATUM_ESDHC_A001
+	select BOARD_LATE_INIT
+
+endchoice
+
+config SYS_SOC
+	default "vf610"
+
+source "board/freescale/vf610twr/Kconfig"
+source "board/phytec/pcm052/Kconfig"
+source "board/toradex/colibri_vf/Kconfig"
+
+endif

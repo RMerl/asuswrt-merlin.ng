@@ -1,0 +1,20 @@
+T208XQDS BOARD
+M:	Shengzhou Liu <Shengzhou.Liu@nxp.com>
+S:	Maintained
+F:	board/freescale/t208xqds/
+F:	include/configs/T208xQDS.h
+F:	configs/T2080QDS_defconfig
+F:	configs/T2080QDS_NAND_defconfig
+F:	configs/T2080QDS_SDCARD_defconfig
+F:	configs/T2080QDS_SPIFLASH_defconfig
+F:	configs/T2080QDS_SRIO_PCIE_BOOT_defconfig
+F:	configs/T2081QDS_defconfig
+F:	configs/T2081QDS_NAND_defconfig
+F:	configs/T2081QDS_SDCARD_defconfig
+F:	configs/T2081QDS_SPIFLASH_defconfig
+F:	configs/T2081QDS_SRIO_PCIE_BOOT_defconfig
+
+T2080QDS_SECURE_BOOT BOARD
+M:	Ruchika Gupta <ruchika.gupta@nxp.com>
+S:	Maintained
+F:	configs/T2080QDS_SECURE_BOOT_defconfig

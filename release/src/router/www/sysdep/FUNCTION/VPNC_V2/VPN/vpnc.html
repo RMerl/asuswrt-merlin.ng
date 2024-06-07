@@ -47,15 +47,15 @@ var app_lang = getUrlParameter("current_lang").toUpperCase();
 $(function () {
 	$('link[group="extend_css"]').remove();
 	var theme = getUrlParameter("current_theme").toUpperCase();
-	if(theme == "WHITE" || theme == "GT" || theme == "TUF"){
+	if(theme == "WHITE" || rog_support || tuf_support){
 		$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/VPN/vpnc' + theme + '.css">');
 	}
 	else{
 		var productid = httpApi.nvramGet(["productid"]).productid;
-		if(productid.substr(0,2) == "GT"){
+		if(rog_support){
 			$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/VPN/vpncGT.css">');
 		}
-		else if(productid.substr(0,3) == "TUF"){
+		else if(tuf_support){
 			$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/VPN/vpncTUF.css">');
 		}
 	}

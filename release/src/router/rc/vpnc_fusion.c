@@ -87,6 +87,9 @@ int vpnc_pppstatus(const int unit)
 
 int start_vpnc(void) // start up all active vpnc profile
 {
+#ifdef RTCONFIG_VPN_FUSION_MERLIN
+	return legacy_start_vpnc();
+#else
 	int i;
 
 	// init vpnc profile
@@ -98,10 +101,14 @@ int start_vpnc(void) // start up all active vpnc profile
 			start_vpnc_by_unit(i);
 	}
 	return 0;
+#endif
 }
 
 void stop_vpnc(void) // start up all active vpnc profile
 {
+#ifdef RTCONFIG_VPN_FUSION_MERLIN
+	legacy_stop_vpnc();
+#else
 	int i;
 
 	// init vpnc profile
@@ -114,6 +121,7 @@ void stop_vpnc(void) // start up all active vpnc profile
 	}
 
 	return;
+#endif
 }
 
 /*******************************************************************
@@ -470,6 +478,9 @@ int vpnc_up(const int unit, const char *vpnc_ifname)
 
 int vpnc_ipup_main(int argc, char **argv)
 {
+#ifdef RTCONFIG_VPN_FUSION_MERLIN
+	return legacy_vpnc_ipup_main(argc, argv);
+#else
 	FILE *fp;
 	char *vpnc_ifname = safe_getenv("IFNAME");
 	char *vpnc_linkname = safe_getenv("LINKNAME");
@@ -527,6 +538,7 @@ int vpnc_ipup_main(int argc, char **argv)
 
 	_dprintf("%s:: done\n", __FUNCTION__);
 	return 0;
+#endif
 }
 
 void vpnc_down(const int vpnc_idx, char *vpnc_ifname)
@@ -561,6 +573,9 @@ void vpnc_down(const int vpnc_idx, char *vpnc_ifname)
  */
 int vpnc_ipdown_main(int argc, char **argv)
 {
+#ifdef RTCONFIG_VPN_FUSION_MERLIN
+	return legacy_vpnc_ipdown_main(argc, argv);
+#else
 	char *vpnc_ifname = safe_getenv("IFNAME");
 	char *vpnc_linkname = safe_getenv("LINKNAME");
 	char tmp[100];
@@ -589,6 +604,7 @@ int vpnc_ipdown_main(int argc, char **argv)
 
 	_dprintf("%s:: done\n", __FUNCTION__);
 	return 0;
+#endif
 }
 
 /*
@@ -596,6 +612,9 @@ int vpnc_ipdown_main(int argc, char **argv)
  */
 int vpnc_ippreup_main(int argc, char **argv)
 {
+#ifdef RTCONFIG_VPN_FUSION_MERLIN
+	return legacy_vpnc_ippreup_main(argc, argv);
+#else
 	char *vpnc_ifname = safe_getenv("IFNAME");
 	char *vpnc_linkname = safe_getenv("LINKNAME");
 	char tmp[100], prefix[] = "vpncXXXX_";
@@ -615,6 +634,7 @@ int vpnc_ippreup_main(int argc, char **argv)
 
 	_dprintf("%s:: done\n", __FUNCTION__);
 	return 0;
+#endif
 }
 
 /*
@@ -622,6 +642,9 @@ int vpnc_ippreup_main(int argc, char **argv)
  */
 int vpnc_authfail_main(int argc, char **argv)
 {
+#ifdef RTCONFIG_VPN_FUSION_MERLIN
+	return legacy_vpnc_authfail_main(argc, argv);
+#else
 	char *vpnc_ifname = safe_getenv("IFNAME");
 	char *vpnc_linkname = safe_getenv("LINKNAME");
 	int unit;
@@ -639,6 +662,7 @@ int vpnc_authfail_main(int argc, char **argv)
 
 	_dprintf("%s:: done\n", __FUNCTION__);
 	return 0;
+#endif
 }
 
 /*******************************************************************

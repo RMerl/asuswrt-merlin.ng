@@ -1789,6 +1789,15 @@ extern void vpnc_set_iptables_rule_by_sdn(MTLAN_T *pmtl, size_t mtl_sz, int rest
 extern void vpnc_set_iptables_rule_by_sdn_remove(MTLAN_T *pmtl, size_t mtl_sz);
 extern void adjust_sdn0_vpnc_idx();
 #endif
+// Legacy vpnc.c
+#ifdef RTCONFIG_VPN_FUSION_MERLIN
+extern int legacy_vpnc_ipup_main(int argc, char **argv);
+extern int legacy_vpnc_ipdown_main(int argc, char **argv);
+extern int legacy_vpnc_ippreup_main(int argc, char **argv);
+extern int legacy_vpnc_authfail_main(int argc, char **argv);
+extern void legacy_vpnc_add_firewall_rule();
+extern void legacy_update_vpnc_state(char *prefix, int state, int reason);
+#endif
 #else
 extern void vpnc_add_firewall_rule();
 extern void update_vpnc_state(char *prefix, int state, int reason);
@@ -2304,6 +2313,11 @@ extern int vpnc_active_dev_policy(const int policy_idx);
 extern int vpnc_remove_tmp_policy_rule();
 #else
 extern int vpnc_set_dev_policy_rule();
+extern int legacy_start_vpnc(void);
+#endif
+#ifdef RTCONFIG_VPN_FUSION_MERLIN
+extern int legacy_start_vpnc(void);
+extern void legacy_stop_vpnc(void);
 #endif
 #endif
 #endif

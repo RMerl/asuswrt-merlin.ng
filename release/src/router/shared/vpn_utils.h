@@ -5,9 +5,15 @@
 
 #define INTERNET_ROUTE_TABLE_ID	1
 
+#ifdef RTCONFIG_VPN_FUSION_MERLIN
+#define L2TP_VPNC_PID   "/var/run/l2tpd-vpnc.pid"
+#define L2TP_VPNC_CTRL  "/var/run/l2tpctrl-vpnc"
+#define L2TP_VPNC_CONF  "/tmp/l2tp-vpnc.conf"
+#else
 #define L2TP_VPNC_PID	"/var/run/l2tpd-vpnc%d.pid"
 #define L2TP_VPNC_CTRL	"/var/run/l2tpctrl-vpnc%d"
 #define L2TP_VPNC_CONF	"/tmp/l2tp-vpnc%d.conf"
+#endif
 
 #define SAFE_FREE(x)	if(x) {free(x); x=NULL;}
 

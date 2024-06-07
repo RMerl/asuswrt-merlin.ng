@@ -686,6 +686,9 @@ endif
 ifeq ($(RTCONFIG_VPNC),y)
 ifeq ($(RTCONFIG_VPN_FUSION),y)
 OBJS += vpnc_fusion.o
+ifeq ($(RTCONFIG_VPN_FUSION_MERLIN),y)
+OBJS += vpnc_legacy.o
+endif
 ifeq ($(RTCONFIG_MULTILAN_CFG),y)
 OBJS += sdn.o
 OBJS += firewall_sdn.o

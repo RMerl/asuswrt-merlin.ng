@@ -1,6 +1,6 @@
 /* A substitute for ISO C99 <wctype.h>, for platforms that lack it.
 
-   Copyright (C) 2006-2022 Free Software Foundation, Inc.
+   Copyright (C) 2006-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -44,6 +44,12 @@
 
 #ifndef _@GUARD_PREFIX@_WCTYPE_H
 
+/* This file uses _GL_INLINE_HEADER_BEGIN, _GL_INLINE, GNULIB_POSIXCHECK,
+   HAVE_RAW_DECL_*.  */
+#if !_GL_CONFIG_H_INCLUDED
+ #error "Please include config.h first."
+#endif
+
 #if @HAVE_WINT_T@
 /* Solaris 2.5 has a bug: <wchar.h> must be included before <wctype.h>.  */
 # include <wchar.h>
@@ -68,15 +74,14 @@
 #ifndef _@GUARD_PREFIX@_WCTYPE_H
 #define _@GUARD_PREFIX@_WCTYPE_H
 
-#ifndef _GL_INLINE_HEADER_BEGIN
- #error "Please include config.h first."
-#endif
 _GL_INLINE_HEADER_BEGIN
 #ifndef _GL_WCTYPE_INLINE
 # define _GL_WCTYPE_INLINE _GL_INLINE
 #endif
 
 /* The definitions of _GL_FUNCDECL_RPL etc. are copied here.  */
+
+/* The definition of _GL_ARG_NONNULL is copied here.  */
 
 /* The definition of _GL_WARN_ON_USE is copied here.  */
 
@@ -127,7 +132,8 @@ typedef unsigned int rpl_wint_t;
 /* FreeBSD 4.4 to 4.11 has <wctype.h> but lacks the functions.
    Linux libc5 has <wctype.h> and the functions but they are broken.
    mingw and MSVC have <wctype.h> and the functions but they take a wchar_t
-   as argument, not an rpl_wint_t.
+   as argument, not an rpl_wint_t.  Additionally, the mingw iswprint function
+   and the Android iswpunct function are broken.
    Assume all 11 functions (all isw* except iswblank) are implemented the
    same way, or not at all.  */
 # if ! @HAVE_ISWCNTRL@ || @REPLACE_ISWCNTRL@
@@ -179,7 +185,11 @@ rpl_iswlower (wint_t wc)
 _GL_WCTYPE_INLINE int
 rpl_iswprint (wint_t wc)
 {
+#   ifdef __MINGW32__
+  return ((wchar_t) wc == wc ? wc == ' ' || iswgraph ((wchar_t) wc) : 0);
+#   else
   return ((wchar_t) wc == wc ? iswprint ((wchar_t) wc) : 0);
+#   endif
 }
 
 _GL_WCTYPE_INLINE int
@@ -484,6 +494,16 @@ _GL_FUNCDECL_RPL (iswdigit, int, (wint_t wc));
 #   endif
 #  endif
 
+#  if @GNULIB_ISWPUNCT@
+#   if @REPLACE_ISWPUNCT@
+#    if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#     undef iswpunct
+#     define iswpunct rpl_iswpunct
+#    endif
+_GL_FUNCDECL_RPL (iswpunct, int, (wint_t wc));
+#   endif
+#  endif
+
 #  if @GNULIB_ISWXDIGIT@
 #   if @REPLACE_ISWXDIGIT@
 #    if !(defined __cplusplus && defined GNULIB_NAMESPACE)
@@ -623,14 +643,32 @@ _GL_CXXALIASWARN (iswblank);
 typedef void * wctype_t;
 #  define GNULIB_defined_wctype_t 1
 # endif
+#elif @REPLACE_WCTYPE@
+# if !GNULIB_defined_wctype_t
+typedef void *rpl_wctype_t;
+#  undef wctype_t
+#  define wctype_t rpl_wctype_t
+#  define GNULIB_defined_wctype_t 1
+# endif
 #endif
 
 /* Get a descriptor for a wide character property.  */
 #if @GNULIB_WCTYPE@
-# if !@HAVE_WCTYPE_T@
-_GL_FUNCDECL_SYS (wctype, wctype_t, (const char *name));
-# endif
+# if @REPLACE_WCTYPE@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef wctype
+#   define wctype rpl_wctype
+#  endif
+_GL_FUNCDECL_RPL (wctype, wctype_t, (const char *name)
+                                    _GL_ARG_NONNULL ((1)));
+_GL_CXXALIAS_RPL (wctype, wctype_t, (const char *name));
+# else
+#  if !@HAVE_WCTYPE_T@
+_GL_FUNCDECL_SYS (wctype, wctype_t, (const char *name)
+                                    _GL_ARG_NONNULL ((1)));
+#  endif
 _GL_CXXALIAS_SYS (wctype, wctype_t, (const char *name));
+# endif
 # if __GLIBC__ >= 2
 _GL_CXXALIASWARN (wctype);
 # endif
@@ -646,7 +684,7 @@ _GL_WARN_ON_USE (wctype, "wctype is unportable - "
    The argument WC must be either a wchar_t value or WEOF.
    The argument DESC must have been returned by the wctype() function.  */
 #if @GNULIB_ISWCTYPE@
-# if @GNULIBHEADERS_OVERRIDE_WINT_T@
+# if @GNULIBHEADERS_OVERRIDE_WINT_T@ || @REPLACE_WCTYPE@
 #  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
 #   undef iswctype
 #   define iswctype rpl_iswctype
@@ -687,14 +725,32 @@ _GL_CXXALIASWARN (towupper);
 typedef void * wctrans_t;
 #  define GNULIB_defined_wctrans_t 1
 # endif
+#elif @REPLACE_WCTRANS@
+# if !GNULIB_defined_wctrans_t
+typedef void *rpl_wctrans_t;
+#  undef wctrans_t
+#  define wctrans_t rpl_wctrans_t
+#  define GNULIB_defined_wctrans_t 1
+# endif
 #endif
 
 /* Get a descriptor for a wide character case conversion.  */
 #if @GNULIB_WCTRANS@
-# if !@HAVE_WCTRANS_T@
-_GL_FUNCDECL_SYS (wctrans, wctrans_t, (const char *name));
-# endif
+# if @REPLACE_WCTRANS@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef wctrans
+#   define wctrans rpl_wctrans
+#  endif
+_GL_FUNCDECL_RPL (wctrans, wctrans_t, (const char *name)
+                                      _GL_ARG_NONNULL ((1)));
+_GL_CXXALIAS_RPL (wctrans, wctrans_t, (const char *name));
+# else
+#  if !@HAVE_WCTRANS_T@
+_GL_FUNCDECL_SYS (wctrans, wctrans_t, (const char *name)
+                                      _GL_ARG_NONNULL ((1)));
+#  endif
 _GL_CXXALIAS_SYS (wctrans, wctrans_t, (const char *name));
+# endif
 # if __GLIBC__ >= 2
 _GL_CXXALIASWARN (wctrans);
 # endif
@@ -710,10 +766,19 @@ _GL_WARN_ON_USE (wctrans, "wctrans is unportable - "
    The argument WC must be either a wchar_t value or WEOF.
    The argument DESC must have been returned by the wctrans() function.  */
 #if @GNULIB_TOWCTRANS@
-# if !@HAVE_WCTRANS_T@
+# if @REPLACE_WCTRANS@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef towctrans
+#   define towctrans rpl_towctrans
+#  endif
+_GL_FUNCDECL_RPL (towctrans, wint_t, (wint_t wc, wctrans_t desc));
+_GL_CXXALIAS_RPL (towctrans, wint_t, (wint_t wc, wctrans_t desc));
+# else
+#  if !@HAVE_WCTRANS_T@
 _GL_FUNCDECL_SYS (towctrans, wint_t, (wint_t wc, wctrans_t desc));
-# endif
+#  endif
 _GL_CXXALIAS_SYS (towctrans, wint_t, (wint_t wc, wctrans_t desc));
+# endif
 # if __GLIBC__ >= 2
 _GL_CXXALIASWARN (towctrans);
 # endif

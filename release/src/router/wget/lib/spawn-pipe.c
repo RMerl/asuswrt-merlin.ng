@@ -1,5 +1,5 @@
 /* Creation of subprocesses, communicating via pipes.
-   Copyright (C) 2001-2004, 2006-2022 Free Software Foundation, Inc.
+   Copyright (C) 2001-2004, 2006-2024 Free Software Foundation, Inc.
    Written by Bruno Haible <haible@clisp.cons.org>, 2001.
 
    This program is free software: you can redistribute it and/or modify
@@ -33,7 +33,7 @@
 #include <unistd.h>
 
 #include "canonicalize.h"
-#include "error.h"
+#include <error.h>
 #include "fatal-signal.h"
 #include "filename.h"
 #include "findprog.h"
@@ -193,25 +193,24 @@ create_pipe (const char *progname,
         }
     }
 
-#if ((defined _WIN32 && !defined __CYGWIN__) && SPAWN_PIPE_IMPL_AVOID_POSIX_SPAWN) || defined __KLIBC__
-
-  /* Native Windows API.
-     This uses _pipe(), dup2(), and _spawnv().  It could also be implemented
-     using the low-level functions CreatePipe(), DuplicateHandle(),
-     CreateProcess() and _open_osfhandle(); see the GNU make and GNU clisp
-     and cvs source code.  */
-  char *argv_mem_to_free;
   int ifd[2];
   int ofd[2];
-  int child;
-  int nulloutfd;
-  int stdinfd;
-  int stdoutfd;
 
-  const char **argv = prepare_spawn (prog_argv, &argv_mem_to_free);
-  if (argv == NULL)
-    xalloc_die ();
-
+  /* It is important to create the file descriptors with the close-on-exec bit
+     set.
+     * In the child process that we are about to create here, the file
+       descriptors ofd[0] -> STDIN_FILENO and ifd[1] -> STDOUT_FILENO will be
+       preserved across exec, because each dup2 call scheduled by
+       posix_spawn_file_actions_adddup2 creates a file descriptor with the
+       close-on-exec bit clear.  Similarly on native Windows, where we use
+       explicit DuplicateHandle calls, and on kLIBC, where we use explicit dup2
+       calls.
+     * In the parent process, we close ofd[0] and ifd[1]; so, ofd[1] and ofd[0]
+       are still open. But if the parent process spawns another child process
+       later, if ofd[1] and ofd[0] were inherited by that child process, the
+       "end of input" / "end of output" detection would not work any more.  The
+       parent or the child process would block, as long as that other child
+       process is running.  */
   if (pipe_stdout)
     if (pipe2_safer (ifd, O_BINARY | O_CLOEXEC) < 0)
       error (EXIT_FAILURE, errno, _("cannot create pipe"));
@@ -226,6 +225,23 @@ create_pipe (const char *progname,
  *           read         system         write
  *
  */
+
+#if ((defined _WIN32 && !defined __CYGWIN__) && SPAWN_PIPE_IMPL_AVOID_POSIX_SPAWN) || defined __KLIBC__
+
+  /* Native Windows API.
+     This uses _pipe(), dup2(), and _spawnv().  It could also be implemented
+     using the low-level functions CreatePipe(), DuplicateHandle(),
+     CreateProcess() and _open_osfhandle(); see the GNU make and GNU clisp
+     and cvs source code.  */
+  char *argv_mem_to_free;
+  int child;
+  int nulloutfd;
+  int stdinfd;
+  int stdoutfd;
+
+  const char **argv = prepare_spawn (prog_argv, &argv_mem_to_free);
+  if (argv == NULL)
+    xalloc_die ();
 
   child = -1;
 
@@ -444,8 +460,6 @@ create_pipe (const char *progname,
 #else
 
   /* Unix API.  */
-  int ifd[2];
-  int ofd[2];
   sigset_t blocked_signals;
   posix_spawn_file_actions_t actions;
   bool actions_allocated;
@@ -453,21 +467,6 @@ create_pipe (const char *progname,
   bool attrs_allocated;
   int err;
   pid_t child;
-
-  if (pipe_stdout)
-    if (pipe_safer (ifd) < 0)
-      error (EXIT_FAILURE, errno, _("cannot create pipe"));
-  if (pipe_stdin)
-    if (pipe_safer (ofd) < 0)
-      error (EXIT_FAILURE, errno, _("cannot create pipe"));
-/* Data flow diagram:
- *
- *           write        system         read
- *    parent  ->   ofd[1]   ->   ofd[0]   ->   child       if pipe_stdin
- *    parent  <-   ifd[0]   <-   ifd[1]   <-   child       if pipe_stdout
- *           read         system         write
- *
- */
 
   if (slave_process)
     {

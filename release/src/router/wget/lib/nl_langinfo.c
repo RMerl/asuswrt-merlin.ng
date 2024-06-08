@@ -1,6 +1,6 @@
 /* nl_langinfo() replacement: query locale dependent information.
 
-   Copyright (C) 2007-2022 Free Software Foundation, Inc.
+   Copyright (C) 2007-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -30,7 +30,12 @@
 #endif
 
 #if REPLACE_NL_LANGINFO && !NL_LANGINFO_MTSAFE
-# if defined _WIN32 && !defined __CYGWIN__
+
+# if AVOID_ANY_THREADS
+
+/* The option '--disable-threads' explicitly requests no locking.  */
+
+# elif defined _WIN32 && !defined __CYGWIN__
 
 #  define WIN32_LEAN_AND_MEAN  /* avoid including junk */
 #  include <windows.h>
@@ -51,6 +56,7 @@
 #  include <threads.h>
 
 # endif
+
 #endif
 
 /* nl_langinfo() must be multithread-safe.  To achieve this without using
@@ -70,6 +76,8 @@
 static char *
 ctype_codeset (void)
 {
+  /* This function is only used on platforms which don't have uselocale().
+     Therefore we don't need to look at the per-thread locale first, here.  */
   static char result[2 + 10 + 1];
   char buf[2 + 10 + 1];
   char locale[SETLOCALE_NULL_MAX];
@@ -184,7 +192,12 @@ nl_langinfo_unlocked (nl_item item)
 /* Prohibit renaming this symbol.  */
 #  undef gl_get_nl_langinfo_lock
 
-#  if defined _WIN32 && !defined __CYGWIN__
+#  if AVOID_ANY_THREADS
+
+/* The option '--disable-threads' explicitly requests no locking.  */
+#   define nl_langinfo_with_lock nl_langinfo_unlocked
+
+#  elif defined _WIN32 && !defined __CYGWIN__
 
 extern __declspec(dllimport) CRITICAL_SECTION *gl_get_nl_langinfo_lock (void);
 
@@ -449,7 +462,7 @@ nl_langinfo (nl_item item)
     {
       static char const months[][sizeof "September"] = {
         "January", "February", "March", "April", "May", "June", "July",
-        "September", "October", "November", "December"
+        "August", "September", "October", "November", "December"
       };
       case MON_1:
       case MON_2:
@@ -513,7 +526,7 @@ nl_langinfo (nl_item item)
         static char result[12][30];
         static char const abmonths[][sizeof "Jan"] = {
           "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul",
-          "Sep", "Oct", "Nov", "Dec"
+          "Aug", "Sep", "Oct", "Nov", "Dec"
         };
         tmm.tm_mon = item - ABMON_1;
         if (!strftime (buf, sizeof result[0], "%b", &tmm))

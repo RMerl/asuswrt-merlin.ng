@@ -1,5 +1,5 @@
 /* Provide a netdb.h header file for systems lacking it (read: MinGW).
-   Copyright (C) 2008-2022 Free Software Foundation, Inc.
+   Copyright (C) 2008-2024 Free Software Foundation, Inc.
    Written by Simon Josefsson.
 
    This file is free software: you can redistribute it and/or modify
@@ -35,6 +35,11 @@
 
 #ifndef _@GUARD_PREFIX@_NETDB_H
 #define _@GUARD_PREFIX@_NETDB_H
+
+/* This file uses GNULIB_POSIXCHECK, HAVE_RAW_DECL_*.  */
+#if !_GL_CONFIG_H_INCLUDED
+ #error "Please include config.h first."
+#endif
 
 /* Get <netdb.h> definitions such as 'socklen_t' on IRIX 6.5 and OSF/1 4.0 and
    'struct hostent' on MinGW.  */

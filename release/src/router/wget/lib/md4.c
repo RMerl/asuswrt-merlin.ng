@@ -1,6 +1,6 @@
 /* Functions to compute MD4 message digest of files or memory blocks.
    according to the definition of MD4 in RFC 1320 from April 1992.
-   Copyright (C) 1995-1997, 1999-2003, 2005-2006, 2008-2022 Free Software
+   Copyright (C) 1995-1997, 1999-2003, 2005-2006, 2008-2024 Free Software
    Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
@@ -24,7 +24,6 @@
 /* Specification.  */
 #include "md4.h"
 
-#include <stdalign.h>
 #include <stdint.h>
 #include <string.h>
 #include <sys/types.h>

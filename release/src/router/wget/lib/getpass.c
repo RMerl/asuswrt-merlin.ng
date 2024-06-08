@@ -1,4 +1,4 @@
-/* Copyright (C) 1992-2001, 2003-2007, 2009-2022 Free Software Foundation, Inc.
+/* Copyright (C) 1992-2001, 2003-2007, 2009-2024 Free Software Foundation, Inc.
 
    This file is part of the GNU C Library.
 
@@ -27,8 +27,6 @@
 #include <stdio.h>
 
 #if !(defined _WIN32 && !defined __CYGWIN__)
-
-# include <stdbool.h>
 
 # if HAVE_DECL___FSETLOCKING && HAVE___FSETLOCKING
 #  if HAVE_STDIO_EXT_H

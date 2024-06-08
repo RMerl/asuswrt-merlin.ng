@@ -1,5 +1,5 @@
 /* Decomposed printf argument list.
-   Copyright (C) 1999, 2002-2003, 2005-2007, 2009-2022 Free Software
+   Copyright (C) 1999, 2002-2003, 2005-2007, 2009-2024 Free Software
    Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
@@ -28,6 +28,9 @@
 #ifndef PRINTF_FETCHARGS
 # include "printf-args.h"
 #endif
+
+/* Get INT_WIDTH.  */
+#include <limits.h>
 
 #ifdef STATIC
 STATIC
@@ -70,6 +73,102 @@ PRINTF_FETCHARGS (va_list args, arguments *a)
         break;
       case TYPE_ULONGLONGINT:
         ap->a.a_ulonglongint = va_arg (args, unsigned long long int);
+        break;
+      case TYPE_INT8_T:
+        #if INT8_WIDTH < INT_WIDTH
+        ap->a.a_int8_t = va_arg (args, /* int8_t */ int);
+        #else
+        ap->a.a_int8_t = va_arg (args, int8_t);
+        #endif
+        break;
+      case TYPE_UINT8_T:
+        #if UINT8_WIDTH < INT_WIDTH
+        ap->a.a_uint8_t = va_arg (args, /* uint8_t */ int);
+        #else
+        ap->a.a_uint8_t = va_arg (args, uint8_t);
+        #endif
+        break;
+      case TYPE_INT16_T:
+        #if INT16_WIDTH < INT_WIDTH
+        ap->a.a_int16_t = va_arg (args, /* int16_t */ int);
+        #else
+        ap->a.a_int16_t = va_arg (args, int16_t);
+        #endif
+        break;
+      case TYPE_UINT16_T:
+        #if UINT16_WIDTH < INT_WIDTH
+        ap->a.a_uint16_t = va_arg (args, /* uint16_t */ int);
+        #else
+        ap->a.a_uint16_t = va_arg (args, uint16_t);
+        #endif
+        break;
+      case TYPE_INT32_T:
+        #if INT32_WIDTH < INT_WIDTH
+        ap->a.a_int32_t = va_arg (args, /* int32_t */ int);
+        #else
+        ap->a.a_int32_t = va_arg (args, int32_t);
+        #endif
+        break;
+      case TYPE_UINT32_T:
+        #if UINT32_WIDTH < INT_WIDTH
+        ap->a.a_uint32_t = va_arg (args, /* uint32_t */ int);
+        #else
+        ap->a.a_uint32_t = va_arg (args, uint32_t);
+        #endif
+        break;
+      case TYPE_INT64_T:
+        ap->a.a_int64_t = va_arg (args, int64_t);
+        break;
+      case TYPE_UINT64_T:
+        ap->a.a_uint64_t = va_arg (args, uint64_t);
+        break;
+      case TYPE_INT_FAST8_T:
+        #if INT_FAST8_WIDTH < INT_WIDTH
+        ap->a.a_int_fast8_t = va_arg (args, /* int_fast8_t */ int);
+        #else
+        ap->a.a_int_fast8_t = va_arg (args, int_fast8_t);
+        #endif
+        break;
+      case TYPE_UINT_FAST8_T:
+        #if UINT_FAST8_WIDTH < INT_WIDTH
+        ap->a.a_uint_fast8_t = va_arg (args, /* uint_fast8_t */ int);
+        #else
+        ap->a.a_uint_fast8_t = va_arg (args, uint_fast8_t);
+        #endif
+        break;
+      case TYPE_INT_FAST16_T:
+        #if INT_FAST16_WIDTH < INT_WIDTH
+        ap->a.a_int_fast16_t = va_arg (args, /* int_fast16_t */ int);
+        #else
+        ap->a.a_int_fast16_t = va_arg (args, int_fast16_t);
+        #endif
+        break;
+      case TYPE_UINT_FAST16_T:
+        #if UINT_FAST16_WIDTH < INT_WIDTH
+        ap->a.a_uint_fast16_t = va_arg (args, /* uint_fast16_t */ int);
+        #else
+        ap->a.a_uint_fast16_t = va_arg (args, uint_fast16_t);
+        #endif
+        break;
+      case TYPE_INT_FAST32_T:
+        #if INT_FAST32_WIDTH < INT_WIDTH
+        ap->a.a_int_fast32_t = va_arg (args, /* int_fast32_t */ int);
+        #else
+        ap->a.a_int_fast32_t = va_arg (args, int_fast32_t);
+        #endif
+        break;
+      case TYPE_UINT_FAST32_T:
+        #if UINT_FAST32_WIDTH < INT_WIDTH
+        ap->a.a_uint_fast32_t = va_arg (args, /* uint_fast32_t */ int);
+        #else
+        ap->a.a_uint_fast32_t = va_arg (args, uint_fast32_t);
+        #endif
+        break;
+      case TYPE_INT_FAST64_T:
+        ap->a.a_int_fast64_t = va_arg (args, int_fast64_t);
+        break;
+      case TYPE_UINT_FAST64_T:
+        ap->a.a_uint_fast64_t = va_arg (args, uint_fast64_t);
         break;
       case TYPE_DOUBLE:
         ap->a.a_double = va_arg (args, double);
@@ -135,6 +234,30 @@ PRINTF_FETCHARGS (va_list args, arguments *a)
         break;
       case TYPE_COUNT_LONGLONGINT_POINTER:
         ap->a.a_count_longlongint_pointer = va_arg (args, long long int *);
+        break;
+      case TYPE_COUNT_INT8_T_POINTER:
+        ap->a.a_count_int8_t_pointer = va_arg (args, int8_t *);
+        break;
+      case TYPE_COUNT_INT16_T_POINTER:
+        ap->a.a_count_int16_t_pointer = va_arg (args, int16_t *);
+        break;
+      case TYPE_COUNT_INT32_T_POINTER:
+        ap->a.a_count_int32_t_pointer = va_arg (args, int32_t *);
+        break;
+      case TYPE_COUNT_INT64_T_POINTER:
+        ap->a.a_count_int64_t_pointer = va_arg (args, int64_t *);
+        break;
+      case TYPE_COUNT_INT_FAST8_T_POINTER:
+        ap->a.a_count_int_fast8_t_pointer = va_arg (args, int_fast8_t *);
+        break;
+      case TYPE_COUNT_INT_FAST16_T_POINTER:
+        ap->a.a_count_int_fast16_t_pointer = va_arg (args, int_fast16_t *);
+        break;
+      case TYPE_COUNT_INT_FAST32_T_POINTER:
+        ap->a.a_count_int_fast32_t_pointer = va_arg (args, int_fast32_t *);
+        break;
+      case TYPE_COUNT_INT_FAST64_T_POINTER:
+        ap->a.a_count_int_fast64_t_pointer = va_arg (args, int_fast64_t *);
         break;
 #if ENABLE_UNISTDIO
       /* The unistdio extensions.  */

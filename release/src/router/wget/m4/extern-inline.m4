@@ -1,6 +1,6 @@
 dnl 'extern inline' a la ISO C99.
 
-dnl Copyright 2012-2022 Free Software Foundation, Inc.
+dnl Copyright 2012-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -79,7 +79,8 @@ AC_DEFUN([gl_EXTERN_INLINE],
 # define _GL_EXTERN_INLINE_STDHEADER_BUG
 #endif
 #if ((__GNUC__ \
-      ? defined __GNUC_STDC_INLINE__ && __GNUC_STDC_INLINE__ \
+      ? (defined __GNUC_STDC_INLINE__ && __GNUC_STDC_INLINE__ \
+         && !defined __PCC__) \
       : (199901L <= __STDC_VERSION__ \
          && !defined __HP_cc \
          && !defined __PGI \
@@ -89,6 +90,7 @@ AC_DEFUN([gl_EXTERN_INLINE],
 # define _GL_EXTERN_INLINE extern inline
 # define _GL_EXTERN_INLINE_IN_USE
 #elif (2 < __GNUC__ + (7 <= __GNUC_MINOR__) && !defined __STRICT_ANSI__ \
+       && !defined __PCC__ \
        && !defined _GL_EXTERN_INLINE_STDHEADER_BUG)
 # if defined __GNUC_GNU_INLINE__ && __GNUC_GNU_INLINE__
    /* __gnu_inline__ suppresses a GCC 4.2 diagnostic.  */

@@ -1,5 +1,5 @@
-# hostent.m4 serial 4
-dnl Copyright (C) 2008, 2010-2022 Free Software Foundation, Inc.
+# hostent.m4 serial 5
+dnl Copyright (C) 2008, 2010-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -26,7 +26,7 @@ AC_DEFUN([gl_HOSTENT],
       AC_CACHE_CHECK([for gethostbyname in winsock2.h and -lws2_32],
         [gl_cv_w32_gethostbyname],
         [gl_cv_w32_gethostbyname=no
-         gl_save_LIBS="$LIBS"
+         gl_saved_LIBS="$LIBS"
          LIBS="$LIBS -lws2_32"
          AC_LINK_IFELSE(
            [AC_LANG_PROGRAM(
@@ -38,7 +38,7 @@ AC_DEFUN([gl_HOSTENT],
               ]],
               [[gethostbyname(NULL);]])],
            [gl_cv_w32_gethostbyname=yes])
-         LIBS="$gl_save_LIBS"
+         LIBS="$gl_saved_LIBS"
         ])
       if test "$gl_cv_w32_gethostbyname" = "yes"; then
         HOSTENT_LIB="-lws2_32"

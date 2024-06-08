@@ -1,5 +1,5 @@
 /* Work around platform bugs in stat.
-   Copyright (C) 2009-2022 Free Software Foundation, Inc.
+   Copyright (C) 2009-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -55,11 +55,9 @@ orig_stat (const char *filename, struct stat *buf)
 
 #include <errno.h>
 #include <limits.h>
-#include <stdbool.h>
 #include <string.h>
 #include "filename.h"
 #include "malloca.h"
-#include "verify.h"
 
 #ifdef WINDOWS_NATIVE
 # define WIN32_LEAN_AND_MEAN

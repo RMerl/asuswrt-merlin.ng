@@ -1,6 +1,6 @@
 /* Declarations of functions and data types used for MD4 sum
    library functions.
-   Copyright (C) 2000-2001, 2003, 2005, 2008-2022 Free Software Foundation,
+   Copyright (C) 2000-2001, 2003, 2005, 2008-2024 Free Software Foundation,
    Inc.
 
    This file is free software: you can redistribute it and/or modify

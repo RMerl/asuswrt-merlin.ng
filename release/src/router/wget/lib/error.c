@@ -1,5 +1,5 @@
 /* Error handler for noninteractive utilities
-   Copyright (C) 1990-1998, 2000-2007, 2009-2022 Free Software Foundation, Inc.
+   Copyright (C) 1990-1998, 2000-2007, 2009-2024 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    This file is free software: you can redistribute it and/or modify
@@ -19,9 +19,10 @@
 
 #if !_LIBC
 # include <config.h>
+# define _GL_NO_INLINE_ERROR
 #endif
 
-#include "error.h"
+#include <error.h>
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -42,8 +43,6 @@
 # define USE_UNLOCKED_IO 0
 # define _GL_ATTRIBUTE_FORMAT_PRINTF_STANDARD(a, b)
 # define _GL_ARG_NONNULL(a)
-#else
-# include "getprogname.h"
 #endif
 
 #if USE_UNLOCKED_IO

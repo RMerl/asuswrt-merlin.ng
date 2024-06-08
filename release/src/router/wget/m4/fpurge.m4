@@ -1,5 +1,5 @@
-# fpurge.m4 serial 12
-dnl Copyright (C) 2007, 2009-2022 Free Software Foundation, Inc.
+# fpurge.m4 serial 14
+dnl Copyright (C) 2007, 2009-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -10,7 +10,7 @@ AC_DEFUN([gl_FUNC_FPURGE],
   AC_REQUIRE([AC_CANONICAL_HOST]) dnl for cross-compiles
   AC_CHECK_HEADERS_ONCE([stdio_ext.h])
   AC_CHECK_FUNCS_ONCE([fpurge])
-  AC_CHECK_FUNCS_ONCE([__fpurge])
+  gl_CHECK_FUNCS_ANDROID([__fpurge], [[#include <stdio_ext.h>]])
   AC_CHECK_DECLS([fpurge], , , [[#include <stdio.h>]])
   if test "x$ac_cv_func_fpurge" = xyes; then
     HAVE_FPURGE=1
@@ -53,10 +53,10 @@ AC_DEFUN([gl_FUNC_FPURGE],
          [gl_cv_func_fpurge_works=yes],
          [gl_cv_func_fpurge_works=no],
          [case "$host_os" in
-                     # Guess yes on musl systems.
-            *-musl*) gl_cv_func_fpurge_works="guessing yes" ;;
-                     # Otherwise obey --enable-cross-guesses.
-            *)       gl_cv_func_fpurge_works="$gl_cross_guess_normal" ;;
+                                # Guess yes on musl systems.
+            *-musl* | midipix*) gl_cv_func_fpurge_works="guessing yes" ;;
+                                # Otherwise obey --enable-cross-guesses.
+            *)                  gl_cv_func_fpurge_works="$gl_cross_guess_normal" ;;
           esac
          ])
       ])

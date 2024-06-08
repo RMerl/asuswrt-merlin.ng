@@ -1,5 +1,5 @@
 /* MIN, MAX macros.
-   Copyright (C) 1995, 1998, 2001, 2003, 2005, 2009-2022 Free Software
+   Copyright (C) 1995, 1998, 2001, 2003, 2005, 2009-2024 Free Software
    Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
@@ -22,6 +22,11 @@
    (glibc, IRIX, HP-UX, OSF/1).  Therefore you might get warnings about
    MIN, MAX macro redefinitions on some systems; the workaround is to
    #include this file as the last one among the #include list.  */
+
+/* This file uses HAVE_MINMAX_IN_LIMITS_H, HAVE_MINMAX_IN_SYS_PARAM_H.  */
+#if !_GL_CONFIG_H_INCLUDED
+ #error "Please include config.h first."
+#endif
 
 /* Before we define the following symbols we get the <limits.h> file
    since otherwise we get redefinitions on some systems if <limits.h> is

@@ -1,5 +1,5 @@
 /* Open a descriptor to a file.
-   Copyright (C) 2007-2022 Free Software Foundation, Inc.
+   Copyright (C) 2007-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -38,9 +38,13 @@ orig_open (const char *filename, int flags, mode_t mode)
 }
 
 /* Specification.  */
+#ifdef __osf__
 /* Write "fcntl.h" here, not <fcntl.h>, otherwise OSF/1 5.1 DTK cc eliminates
    this include because of the preliminary #include <fcntl.h> above.  */
-#include "fcntl.h"
+# include "fcntl.h"
+#else
+# include <fcntl.h>
+#endif
 
 #include "cloexec.h"
 

@@ -1,5 +1,5 @@
 /* NTLM code.
-   Copyright (C) 2005-2011, 2015, 2018-2022 Free Software Foundation,
+   Copyright (C) 2005-2011, 2015, 2018-2024 Free Software Foundation,
    Inc.
    Contributed by Daniel Stenberg.
 

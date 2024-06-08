@@ -1,5 +1,5 @@
 /* Extended regular expression matching and search library.
-   Copyright (C) 2002-2022 Free Software Foundation, Inc.
+   Copyright (C) 2002-2024 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Isamu Hasegawa <isamu@yamato.ibm.com>.
 
@@ -29,7 +29,7 @@
 #include <locale.h>
 #include <wchar.h>
 #include <wctype.h>
-#include <stdbool.h>
+#include <stdckdint.h>
 #include <stdint.h>
 
 #ifndef _LIBC
@@ -151,9 +151,6 @@
    as some non-GCC platforms lack them, an issue when this code is
    used in Gnulib.  */
 
-#ifndef SSIZE_MAX
-# define SSIZE_MAX ((ssize_t) (SIZE_MAX / 2))
-#endif
 #ifndef ULONG_WIDTH
 # define ULONG_WIDTH REGEX_UINTEGER_WIDTH (ULONG_MAX)
 /* The number of usable bits in an unsigned integer type with maximum
@@ -823,7 +820,7 @@ re_string_elem_size_at (const re_string_t *pstr, Idx idx)
 }
 
 #ifdef _LIBC
-# if __GNUC__ >= 7
+# if __glibc_has_attribute (__fallthrough__)
 #  define FALLTHROUGH __attribute__ ((__fallthrough__))
 # else
 #  define FALLTHROUGH ((void) 0)

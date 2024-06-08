@@ -2,9 +2,9 @@
 # gendocs.sh -- generate a GNU manual in many formats.  This script is
 #   mentioned in maintain.texi.  See the help message below for usage details.
 
-scriptversion=2022-01-01.00
+scriptversion=2024-01-27.16
 
-# Copyright 2003-2022 Free Software Foundation, Inc.
+# Copyright 2003-2024 Free Software Foundation, Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -40,22 +40,22 @@ srcdir=`pwd`
 scripturl="https://git.savannah.gnu.org/cgit/gnulib.git/plain/build-aux/gendocs.sh"
 templateurl="https://git.savannah.gnu.org/cgit/gnulib.git/plain/doc/gendocs_template"
 
-: ${SETLANG="env LANG= LC_MESSAGES= LC_ALL= LANGUAGE="}
-: ${MAKEINFO="makeinfo"}
-: ${TEXI2DVI="texi2dvi"}
-: ${DOCBOOK2HTML="docbook2html"}
-: ${DOCBOOK2PDF="docbook2pdf"}
-: ${DOCBOOK2TXT="docbook2txt"}
-: ${GENDOCS_TEMPLATE_DIR="."}
-: ${PERL='perl'}
-: ${TEXI2HTML="texi2html"}
+: "${SETLANG="env LANG= LC_TIME= LC_MESSAGES= LC_ALL= LANGUAGE="}"
+: "${MAKEINFO="makeinfo"}"
+: "${TEXI2DVI="texi2dvi"}"
+: "${DOCBOOK2HTML="docbook2html"}"
+: "${DOCBOOK2PDF="docbook2pdf"}"
+: "${DOCBOOK2TXT="docbook2txt"}"
+: "${GENDOCS_TEMPLATE_DIR="."}"
+: "${PERL="perl"}"
+: "${TEXI2HTML="texi2html"}"
 unset CDPATH
 unset use_texi2html
 
 MANUAL_TITLE=
 PACKAGE=
 EMAIL=webmasters@gnu.org  # please override with --email
-commonarg= # passed to all makeinfo/texi2html invcations.
+commonarg= # passed to all makeinfo/texi2html invocations.
 dirargs=   # passed to all tools (-I dir).
 dirs=      # -I directories.
 htmlarg="--css-ref=https://www.gnu.org/software/gnulib/manual.css -c TOP_NODE_UP_URL=/manual"
@@ -66,14 +66,14 @@ generate_html=true
 generate_info=true
 generate_tex=true
 outdir=manual
-source_extra=
+unset source_extra
 split=node
 srcfile=
 texarg="-t @finalout"
 
 version="gendocs.sh $scriptversion
 
-Copyright 2022 Free Software Foundation, Inc.
+Copyright 2024 Free Software Foundation, Inc.
 There is NO warranty.  You may redistribute this software
 under the terms of the GNU General Public License.
 For more information about these matters, see the files named COPYING."
@@ -167,7 +167,7 @@ while test $# -gt 0; do
     --html)      shift; default_htmlarg=false; htmlarg=$1;;
     --info)      shift; infoarg=$1;;
     --no-ascii)  generate_ascii=false;;
-    --no-html)   generate_ascii=false;;
+    --no-html)   generate_html=false;;
     --no-info)   generate_info=false;;
     --no-tex)    generate_tex=false;;
     --source)    shift; source_extra=$1;;
@@ -304,7 +304,7 @@ fi  # end info
 # 
 if $generate_tex; then
   cmd="$SETLANG $TEXI2DVI $dirargs $texarg \"$srcfile\""
-  printf "\nGenerating dvi... ($cmd)\n"
+  printf "\nGenerating dvi... (%s)\n" "$cmd"
   eval "$cmd"
   # compress/finish dvi:
   gzip -f -9 $PACKAGE.dvi
@@ -313,7 +313,7 @@ if $generate_tex; then
   ls -l "$outdir/$PACKAGE.dvi.gz"
 
   cmd="$SETLANG $TEXI2DVI --pdf $dirargs $texarg \"$srcfile\""
-  printf "\nGenerating pdf... ($cmd)\n"
+  printf "\nGenerating pdf... (%s)\n" "$cmd"
   eval "$cmd"
   pdf_size=`calcsize $PACKAGE.pdf`
   mv $PACKAGE.pdf "$outdir/"
@@ -324,7 +324,7 @@ fi # end tex (dvi + pdf)
 if $generate_ascii; then
   opt="-o $PACKAGE.txt --no-split --no-headers $commonarg"
   cmd="$SETLANG $MAKEINFO $opt \"$srcfile\""
-  printf "\nGenerating ascii... ($cmd)\n"
+  printf "\nGenerating ascii... (%s)\n" "$cmd"
   eval "$cmd"
   ascii_size=`calcsize $PACKAGE.txt`
   gzip -f -9 -c $PACKAGE.txt >"$outdir/$PACKAGE.txt.gz"
@@ -341,7 +341,7 @@ html_split()
 {
   opt="--split=$1 --node-files $commonarg $htmlarg"
   cmd="$SETLANG $TEXI2HTML --output $PACKAGE.html $opt \"$srcfile\""
-  printf "\nGenerating html by $1... ($cmd)\n"
+  printf "\nGenerating html by %s... (%s)\n" "$1" "$cmd"
   eval "$cmd"
   split_html_dir=$PACKAGE.html
   (
@@ -359,7 +359,7 @@ html_split()
 if test -z "$use_texi2html"; then
   opt="--no-split --html -o $PACKAGE.html $commonarg $htmlarg"
   cmd="$SETLANG $MAKEINFO $opt \"$srcfile\""
-  printf "\nGenerating monolithic html... ($cmd)\n"
+  printf "\nGenerating monolithic html... (%s)\n" "$cmd"
   rm -rf $PACKAGE.html  # in case a directory is left over
   eval "$cmd"
   html_mono_size=`calcsize $PACKAGE.html`
@@ -380,7 +380,7 @@ if test -z "$use_texi2html"; then
   #
   opt="--html -o $PACKAGE.html $split_arg $commonarg $htmlarg"
   cmd="$SETLANG $MAKEINFO $opt \"$srcfile\""
-  printf "\nGenerating html by $split... ($cmd)\n"
+  printf "\nGenerating html by %s... (%s)\n" "$split" "$cmd"
   eval "$cmd"
   split_html_dir=$PACKAGE.html
   copy_images $split_html_dir/ $split_html_dir/*.html
@@ -398,7 +398,7 @@ if test -z "$use_texi2html"; then
 else # use texi2html:
   opt="--output $PACKAGE.html $commonarg $htmlarg"
   cmd="$SETLANG $TEXI2HTML $opt \"$srcfile\""
-  printf "\nGenerating monolithic html with texi2html... ($cmd)\n"
+  printf "\nGenerating monolithic html with texi2html... (%s)\n" "$cmd"
   rm -rf $PACKAGE.html  # in case a directory is left over
   eval "$cmd"
   html_mono_size=`calcsize $PACKAGE.html`
@@ -416,11 +416,49 @@ fi # end html
 printf "\nMaking .tar.gz for sources...\n"
 d=`dirname $srcfile`
 (
-  cd "$d"
-  srcfiles=`ls -d *.texinfo *.texi *.txi *.eps $source_extra 2>/dev/null` || true
-  tar czfh "$abs_outdir/$PACKAGE.texi.tar.gz" $srcfiles
-  ls -l "$abs_outdir/$PACKAGE.texi.tar.gz"
-)
+  cd "$d" || exit
+
+  # Set PATS to a list of globbing patterns that expand to
+  # file names to be put into the .tar.gz for sources.
+  # Omit patterns that do not expand to file names.
+  pats=
+
+  if case `$MAKEINFO --version | sed -e 's/^[^0-9]*//' -e 1q` in \
+       [1-6]* | 7.[01]*) false;; \
+       *) true;; \
+     esac \
+  ; then
+
+    for pat in '*.eps'; do
+      for file in $pat; do
+        test "$file" = "$pat" && test ! -e "$file" || pats="$pats $pat"
+        break
+      done
+    done
+
+    # if $MAKEINFO is recent enough, use --trace-includes on the
+    # $srcfile to get the included files of the targetted manual only
+    base=`basename "$srcfile"`
+
+    cmd="$SETLANG $MAKEINFO $commonarg --trace-includes \"$base\""
+    eval "$cmd" \
+    | tar -czhf "$abs_outdir/$PACKAGE.texi.tar.gz" \
+        --verbatim-files-from -T- -- "$base" $pats \
+        ${source_extra+"$source_extra"} \
+    && ls -l "$abs_outdir/$PACKAGE.texi.tar.gz"
+  else
+    for pat in '*.texinfo' '*.texi' '*.txi' '*.eps'; do
+     for file in $pat; do
+       test "$file" = "$pat" && test ! -e "$file" || pats="$pats $pat"
+       break
+      done
+    done
+
+    tar -czhf "$abs_outdir/$PACKAGE.texi.tar.gz" \
+       -- $pats ${source_extra+"$source_extra"} \
+    && ls -l "$abs_outdir/$PACKAGE.texi.tar.gz"
+  fi
+) || exit
 texi_tgz_size=`calcsize "$outdir/$PACKAGE.texi.tar.gz"`
 
 # 
@@ -428,7 +466,7 @@ texi_tgz_size=`calcsize "$outdir/$PACKAGE.texi.tar.gz"`
 if test -n "$docbook"; then
   opt="-o - --docbook $commonarg"
   cmd="$SETLANG $MAKEINFO $opt \"$srcfile\" >${srcdir}/$PACKAGE-db.xml"
-  printf "\nGenerating docbook XML... ($cmd)\n"
+  printf "\nGenerating docbook XML... (%s)\n" "$cmd"
   eval "$cmd"
   docbook_xml_size=`calcsize $PACKAGE-db.xml`
   gzip -f -9 -c $PACKAGE-db.xml >"$outdir/$PACKAGE-db.xml.gz"
@@ -438,7 +476,7 @@ if test -n "$docbook"; then
   split_html_db_dir=html_node_db
   opt="$commonarg -o $split_html_db_dir"
   cmd="$DOCBOOK2HTML $opt \"${outdir}/$PACKAGE-db.xml\""
-  printf "\nGenerating docbook HTML... ($cmd)\n"
+  printf "\nGenerating docbook HTML... (%s)\n" "$cmd"
   eval "$cmd"
   (
     cd ${split_html_db_dir} || exit 1
@@ -451,26 +489,40 @@ if test -n "$docbook"; then
   rmdir ${split_html_db_dir}
 
   cmd="$DOCBOOK2TXT \"${outdir}/$PACKAGE-db.xml\""
-  printf "\nGenerating docbook ASCII... ($cmd)\n"
+  printf "\nGenerating docbook ASCII... (%s)\n" "$cmd"
   eval "$cmd"
   docbook_ascii_size=`calcsize $PACKAGE-db.txt`
   mv $PACKAGE-db.txt "$outdir/"
 
   cmd="$DOCBOOK2PDF \"${outdir}/$PACKAGE-db.xml\""
-  printf "\nGenerating docbook PDF... ($cmd)\n"
+  printf "\nGenerating docbook PDF... (%s)\n" "$cmd"
   eval "$cmd"
   docbook_pdf_size=`calcsize $PACKAGE-db.pdf`
   mv $PACKAGE-db.pdf "$outdir/"
 fi
 
 # 
-printf "\nMaking index.html for $PACKAGE...\n"
+printf "\nMaking index.html for %s...\n" "$PACKAGE"
 if test -z "$use_texi2html"; then
-  CONDS="/%%IF  *HTML_SECTION%%/,/%%ENDIF  *HTML_SECTION%%/d;\
-         /%%IF  *HTML_CHAPTER%%/,/%%ENDIF  *HTML_CHAPTER%%/d"
+  if test x$split = xnode; then
+    CONDS="/%%IF  *HTML_NODE%%/d;/%%ENDIF  *HTML_NODE%%/d;\
+           /%%IF  *HTML_CHAPTER%%/,/%%ENDIF  *HTML_CHAPTER%%/d;\
+           /%%IF  *HTML_SECTION%%/,/%%ENDIF  *HTML_SECTION%%/d;"
+  elif test x$split = xchapter; then
+    CONDS="/%%IF  *HTML_CHAPTER%%/d;/%%ENDIF  *HTML_CHAPTER%%/d;\
+           /%%IF  *HTML_SECTION%%/,/%%ENDIF  *HTML_SECTION%%/d;\
+           /%%IF  *HTML_NODE%%/,/%%ENDIF  *HTML_NODE%%/d;"
+  elif test x$split = xsection; then
+    CONDS="/%%IF  *HTML_SECTION%%/d;/%%ENDIF  *HTML_SECTION%%/d;\
+           /%%IF  *HTML_CHAPTER%%/,/%%ENDIF  *HTML_CHAPTER%%/d;\
+           /%%IF  *HTML_NODE%%/,/%%ENDIF  *HTML_NODE%%/d;"
+  else
+    CONDS="/%%IF.*%%/d;/%%ENDIF.*%%/d;" # invalid split argument
+  fi
 else
-  # should take account of --split here.
-  CONDS="/%%ENDIF.*%%/d;/%%IF  *HTML_SECTION%%/d;/%%IF  *HTML_CHAPTER%%/d"
+  # for texi2html, we do not take account of --split and simply output
+  # all variants
+  CONDS="/%%IF.*%%/d;/%%ENDIF.*%%/d;"
 fi
 
 curdate=`$SETLANG date '+%B %d, %Y'`

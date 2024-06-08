@@ -1,5 +1,5 @@
-# libunistring-base.m4 serial 7
-dnl Copyright (C) 2010-2022 Free Software Foundation, Inc.
+# libunistring-base.m4 serial 8
+dnl Copyright (C) 2010-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -18,6 +18,8 @@ dnl You have to bump the VERSION argument to the next projected version
 dnl number each time you make a change that affects the behaviour of the
 dnl functions defined in Module (even if the sources of Module itself do not
 dnl change).
+dnl
+dnl This macro invocation must not occur in macros that are AC_REQUIREd.
 
 AC_DEFUN([gl_LIBUNISTRING_MODULE],
 [
@@ -26,6 +28,35 @@ AC_DEFUN([gl_LIBUNISTRING_MODULE],
   dnl gl_LIBUNISTRING_CORE if that macro has been run.
   gl_CONDITIONAL(AS_TR_CPP([LIBUNISTRING_COMPILE_$2]),
     [gl_LIBUNISTRING_VERSION_CMP([$1])])
+])
+
+dnl gl_LIBUNISTRING_MODULE_WITH_VARIABLE([VERSION], [Module])
+dnl is like gl_LIBUNISTRING_MODULE([VERSION], [Module]), except that it also
+dnl defines an AC_SUBSTed autoconf variable GNULIB_$MODULE_DLL_VARIABLE.
+dnl What's the expansion of this autoconf variable?
+dnl   - When building libunistring, it expands to LIBUNISTRING_DLL_VARIABLE.
+dnl     (This is necessary because this token must be present in the .h files
+dnl     when the .h files get installed.)
+dnl   - When building gnulib or application code it expands to
+dnl       - LIBUNISTRING_DLL_VARIABLE by default,
+dnl       - empty if the automake conditional LIBUNISTRING_COMPILE_$MODULE
+dnl         evaluates to true.
+dnl     (This is necessary because when the conditional evaluates to false,
+dnl     the application code expects to use the declared variable from the
+dnl     installed libunistring; it's in this case that the
+dnl     LIBUNISTRING_DLL_VARIABLE macro from the installed
+dnl     <unistring/woe32dll.h> must be used.)
+dnl
+dnl This macro invocation must not occur in macros that are AC_REQUIREd.
+
+AC_DEFUN([gl_LIBUNISTRING_MODULE_WITH_VARIABLE],
+[
+  gl_LIBUNISTRING_MODULE([$1], [$2])
+  m4_ifndef([gl_IN_LIBUNISTRING],
+    [if test -z "${AS_TR_CPP([LIBUNISTRING_COMPILE_$2])_TRUE}"; then
+       GL_MODULE_INDICATOR_PREFIX[]_GNULIB_[]AS_TR_CPP([$2_DLL_VARIABLE])=
+     fi
+    ])
 ])
 
 dnl gl_LIBUNISTRING_LIBHEADER([VERSION], [HeaderFile])
@@ -95,6 +126,26 @@ changequote([,])
     LIBUNISTRING_VERSION_MINOR=`echo "$LIBUNISTRING_VERSION" | sed -n -e "$gl_libunistring_sed_extract_minor"`
     LIBUNISTRING_VERSION_SUBMINOR=`echo "$LIBUNISTRING_VERSION" | sed -n -e "$gl_libunistring_sed_extract_subminor"`
   fi
+
+  dnl Determine whether <unistring/woe32dll.h> from an installed libunistring
+  dnl is available.
+  m4_ifdef([gl_IN_LIBUNISTRING],
+    [dnl In libunistring, all .h files that declare variables need to
+     dnl #include <unistring/woe32dll.h>.  This references the file
+     dnl unistring/woe32dll.h in libunistring.
+     HAVE_UNISTRING_WOE32DLL_H=1
+    ],
+    [dnl In gnulib or in applications, we need a #include <unistring/woe32dll.h>
+     dnl if and only if an installed libunistring is available.
+     if test "$HAVE_LIBUNISTRING" = yes; then
+       AC_CHECK_HEADERS([unistring/woe32dll.h],
+         [HAVE_UNISTRING_WOE32DLL_H=1],
+         [HAVE_UNISTRING_WOE32DLL_H=0])
+     else
+       HAVE_UNISTRING_WOE32DLL_H=0
+     fi
+    ])
+  AC_SUBST([HAVE_UNISTRING_WOE32DLL_H])
 ])
 
 dnl gl_LIBUNISTRING_VERSION_CMP([VERSION])

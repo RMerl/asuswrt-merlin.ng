@@ -1,5 +1,5 @@
 /* Locating a program in PATH.
-   Copyright (C) 2001-2003, 2009-2022 Free Software Foundation, Inc.
+   Copyright (C) 2001-2003, 2009-2024 Free Software Foundation, Inc.
    Written by Bruno Haible <haible@clisp.cons.org>, 2001.
 
    This file is free software: you can redistribute it and/or modify
@@ -17,8 +17,6 @@
 
 #ifndef _FINDPROG_H
 #define _FINDPROG_H
-
-#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {

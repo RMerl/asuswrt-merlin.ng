@@ -1,6 +1,6 @@
 /* sockets.h - wrappers for Windows socket functions
 
-   Copyright (C) 2008-2022 Free Software Foundation, Inc.
+   Copyright (C) 2008-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -19,6 +19,11 @@
 
 #ifndef SOCKETS_H
 #define SOCKETS_H 1
+
+/* This file uses _GL_ATTRIBUTE_CONST.  */
+#if !_GL_CONFIG_H_INCLUDED
+ #error "Please include config.h first."
+#endif
 
 #define SOCKETS_1_0 0x0001
 #define SOCKETS_1_1 0x0101

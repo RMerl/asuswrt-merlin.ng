@@ -1,6 +1,6 @@
 /* Create a temporary file or directory.
 
-   Copyright (C) 2006, 2009-2022 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2009-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -48,7 +48,7 @@ extern "C" {
                         and return a read-write fd.  The file is mode 0600.
    GT_DIR:              create a directory, which will be mode 0700.
 
-   We use a clever algorithm to get hard-to-predict names. */
+   */
 extern int gen_tempname (char *tmpl, int suffixlen, int flags, int kind);
 /* Similar, except X_SUFFIX_LEN gives the number of Xs.  */
 extern int gen_tempname_len (char *tmpl, int suffixlen, int flags, int kind,

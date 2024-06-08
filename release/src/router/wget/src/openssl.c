@@ -1,5 +1,5 @@
 /* SSL support via OpenSSL library.
-   Copyright (C) 2000-2012, 2015, 2018-2022 Free Software Foundation,
+   Copyright (C) 2000-2012, 2015, 2018-2024 Free Software Foundation,
    Inc.
    Originally contributed by Christian Fraenkel.
 
@@ -56,6 +56,7 @@ as that of the covered work.  */
 #include "ptimer.h"
 #include "url.h"
 #include "ssl.h"
+#include "exits.h"
 
 #include <fcntl.h>
 
@@ -177,7 +178,7 @@ static int ssl_true_initialized = 0;
 bool
 ssl_init (void)
 {
-  SSL_METHOD const *meth;
+  SSL_METHOD const *meth = NULL;
   long ssl_options = 0;
   char *ciphers_string = NULL;
 #if !defined(LIBRESSL_VERSION_NUMBER) && (OPENSSL_VERSION_NUMBER >= 0x10100000L)
@@ -218,17 +219,17 @@ ssl_init (void)
 
   switch (opt.secure_protocol)
     {
-#if !defined OPENSSL_NO_SSL2 && OPENSSL_VERSION_NUMBER < 0x10100000L
     case secure_protocol_sslv2:
+#if !defined OPENSSL_NO_SSL2 && OPENSSL_VERSION_NUMBER < 0x10100000L
       meth = SSLv2_client_method ();
-      break;
 #endif
+      break;
 
-#ifndef OPENSSL_NO_SSL3_METHOD
     case secure_protocol_sslv3:
+#ifndef OPENSSL_NO_SSL3_METHOD
       meth = SSLv3_client_method ();
-      break;
 #endif
+      break;
 
     case secure_protocol_auto:
     case secure_protocol_pfs:
@@ -289,9 +290,16 @@ ssl_init (void)
       abort ();
     }
 
+  if (!meth)
+    {
+      logprintf (LOG_NOTQUIET, _("Your OpenSSL version does not support option '%s'.\n"), opt.secure_protocol_name);
+      logprintf (LOG_NOTQUIET, _("Rebuilding Wget and/or OpenSSL may help in this situation.\n"));
+      exit (WGET_EXIT_GENERIC_ERROR);
+    }
+
   /* The type cast below accommodates older OpenSSL versions (0.9.8)
      where SSL_CTX_new() is declared without a "const" argument. */
-  ssl_ctx = SSL_CTX_new ((SSL_METHOD *)meth);
+  ssl_ctx = SSL_CTX_new ((SSL_METHOD *) meth);
   if (!ssl_ctx)
     goto error;
 

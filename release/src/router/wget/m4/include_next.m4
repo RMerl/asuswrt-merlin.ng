@@ -1,5 +1,5 @@
-# include_next.m4 serial 26
-dnl Copyright (C) 2006-2022 Free Software Foundation, Inc.
+# include_next.m4 serial 27
+dnl Copyright (C) 2006-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -74,17 +74,17 @@ EOF
 #endif
 #define DEFINED_IN_CONFTESTD2
 EOF
-     gl_save_CPPFLAGS="$CPPFLAGS"
-     CPPFLAGS="$gl_save_CPPFLAGS -Iconftestd1b -Iconftestd2"
+     gl_saved_CPPFLAGS="$CPPFLAGS"
+     CPPFLAGS="$gl_saved_CPPFLAGS -Iconftestd1b -Iconftestd2"
 dnl We intentionally avoid using AC_LANG_SOURCE here.
      AC_COMPILE_IFELSE([AC_LANG_DEFINES_PROVIDED[#include <conftest.h>]],
        [gl_cv_have_include_next=yes],
-       [CPPFLAGS="$gl_save_CPPFLAGS -Iconftestd1a -Iconftestd2"
+       [CPPFLAGS="$gl_saved_CPPFLAGS -Iconftestd1a -Iconftestd2"
         AC_COMPILE_IFELSE([AC_LANG_DEFINES_PROVIDED[#include <conftest.h>]],
           [gl_cv_have_include_next=buggy],
           [gl_cv_have_include_next=no])
        ])
-     CPPFLAGS="$gl_save_CPPFLAGS"
+     CPPFLAGS="$gl_saved_CPPFLAGS"
      rm -rf conftestd1a conftestd1b conftestd2
     ])
   PRAGMA_SYSTEM_HEADER=

@@ -1,7 +1,7 @@
 /* sha256.c - Functions to compute SHA256 and SHA224 message digest of files or
    memory blocks according to the NIST specification FIPS-180-2.
 
-   Copyright (C) 2005-2006, 2008-2022 Free Software Foundation, Inc.
+   Copyright (C) 2005-2006, 2008-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as

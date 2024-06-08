@@ -1,5 +1,5 @@
 /* Declarations for url.c.
-   Copyright (C) 1996-2011, 2015, 2018-2022 Free Software Foundation,
+   Copyright (C) 1996-2011, 2015, 2018-2024 Free Software Foundation,
    Inc.
 
 This file is part of GNU Wget.
@@ -108,7 +108,7 @@ void url_unescape (char *);
 void url_unescape_except_reserved (char *);
 
 struct url *url_parse (const char *, int *, struct iri *iri, bool percent_encode);
-char *url_error (const char *, int);
+const char *url_error (int);
 char *url_full_path (const struct url *);
 void url_set_dir (struct url *, const char *);
 void url_set_file (struct url *, const char *);

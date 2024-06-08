@@ -1,5 +1,5 @@
 /* Locking in multithreaded situations.
-   Copyright (C) 2005-2022 Free Software Foundation, Inc.
+   Copyright (C) 2005-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -76,6 +76,14 @@
 
 #ifndef _LOCK_H
 #define _LOCK_H
+
+/* This file uses HAVE_THREADS_H, HAVE_PTHREAD_RWLOCK,
+   HAVE_PTHREAD_RWLOCK_RDLOCK_PREFER_WRITER,
+   PTHREAD_RWLOCK_WRITER_NONRECURSIVE_INITIALIZER_NP,
+   HAVE_PTHREAD_MUTEX_RECURSIVE.  */
+#if !_GL_CONFIG_H_INCLUDED
+ #error "Please include config.h first."
+#endif
 
 #include <errno.h>
 #include <stdlib.h>

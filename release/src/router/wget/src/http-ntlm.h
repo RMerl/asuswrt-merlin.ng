@@ -1,7 +1,7 @@
 #ifndef __HTTP_NTLM_H
 #define __HTTP_NTLM_H
 /* Declarations for http_ntlm.c
-   Copyright (C) 1995-1997, 2000, 2007-2011, 2015, 2018-2022 Free
+   Copyright (C) 1995-1997, 2000, 2007-2011, 2015, 2018-2024 Free
    Software Foundation, Inc.
    Contributed by Daniel Stenberg.
 

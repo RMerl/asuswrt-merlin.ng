@@ -1,5 +1,5 @@
-# inet_ntop.m4 serial 21
-dnl Copyright (C) 2005-2006, 2008-2022 Free Software Foundation, Inc.
+# inet_ntop.m4 serial 22
+dnl Copyright (C) 2005-2006, 2008-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -36,14 +36,14 @@ AC_DEFUN([gl_FUNC_INET_NTOP],
       HAVE_DECL_INET_NTOP=0
     fi
   else
-    gl_save_LIBS=$LIBS
+    gl_saved_LIBS=$LIBS
     AC_SEARCH_LIBS([inet_ntop], [nsl resolv network], [],
       [AC_CHECK_FUNCS([inet_ntop])
        if test $ac_cv_func_inet_ntop = no; then
          HAVE_INET_NTOP=0
        fi
       ])
-    LIBS=$gl_save_LIBS
+    LIBS=$gl_saved_LIBS
 
     if test "$ac_cv_search_inet_ntop" != "no" \
        && test "$ac_cv_search_inet_ntop" != "none required"; then

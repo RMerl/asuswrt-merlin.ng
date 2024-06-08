@@ -1,5 +1,5 @@
 /* Safe automatic memory allocation.
-   Copyright (C) 2003-2007, 2009-2022 Free Software Foundation, Inc.
+   Copyright (C) 2003-2007, 2009-2024 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2003.
 
    This file is free software: you can redistribute it and/or modify
@@ -18,10 +18,19 @@
 #ifndef _MALLOCA_H
 #define _MALLOCA_H
 
+/* This file uses _GL_ATTRIBUTE_ALLOC_SIZE, _GL_ATTRIBUTE_DEALLOC,
+   _GL_ATTRIBUTE_MALLOC, HAVE_ALLOCA.  */
+#if !_GL_CONFIG_H_INCLUDED
+ #error "Please include config.h first."
+#endif
+
 #include <alloca.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdint.h>
+#if defined __CHERI_PURE_CAPABILITY__
+# include <cheri.h>
+#endif
 
 #include "xalloc-oversized.h"
 
@@ -62,12 +71,24 @@ extern void freea (void *p);
    memory allocated on the stack, that must be freed using freea() before
    the function returns.  Upon failure, it returns NULL.  */
 #if HAVE_ALLOCA
-# define malloca(N) \
-  ((N) < 4032 - (2 * sa_alignment_max - 1)                                   \
-   ? (void *) (((uintptr_t) (char *) alloca ((N) + 2 * sa_alignment_max - 1) \
-                + (2 * sa_alignment_max - 1))                                \
-               & ~(uintptr_t)(2 * sa_alignment_max - 1))                     \
-   : mmalloca (N))
+# if defined __CHERI_PURE_CAPABILITY__
+#  define malloca(N) \
+    ((N) < 4032 - (2 * sa_alignment_max - 1)                                  \
+     ? cheri_bounds_set ((void *) (((uintptr_t)                               \
+                                     (char *)                                 \
+                                      alloca ((N) + 2 * sa_alignment_max - 1) \
+                                    + (2 * sa_alignment_max - 1))             \
+                                   & ~(uintptr_t)(2 * sa_alignment_max - 1)), \
+                         (N))                                                 \
+     : mmalloca (N))
+# else
+#  define malloca(N) \
+    ((N) < 4032 - (2 * sa_alignment_max - 1)                                   \
+     ? (void *) (((uintptr_t) (char *) alloca ((N) + 2 * sa_alignment_max - 1) \
+                  + (2 * sa_alignment_max - 1))                                \
+                 & ~(uintptr_t)(2 * sa_alignment_max - 1))                     \
+     : mmalloca (N))
+# endif
 #else
 # define malloca(N) \
   mmalloca (N)

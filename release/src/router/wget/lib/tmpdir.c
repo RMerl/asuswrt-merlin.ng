@@ -1,4 +1,4 @@
-/* Copyright (C) 1999, 2001-2002, 2006, 2009-2022 Free Software Foundation,
+/* Copyright (C) 1999, 2001-2002, 2006, 2009-2024 Free Software Foundation,
    Inc.
    This file is part of the GNU C Library.
 
@@ -22,7 +22,6 @@
 /* Specification.  */
 #include "tmpdir.h"
 
-#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 

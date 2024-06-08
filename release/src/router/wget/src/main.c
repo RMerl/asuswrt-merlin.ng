@@ -1,5 +1,5 @@
 /* Command line parsing.
-   Copyright (C) 1996-2015, 2018-2022 Free Software Foundation, Inc.
+   Copyright (C) 1996-2015, 2018-2024 Free Software Foundation, Inc.
 
 This file is part of GNU Wget.
 
@@ -652,6 +652,8 @@ Download:\n"),
     N_("\
        --retry-connrefused         retry even if connection is refused\n"),
     N_("\
+       --retry-on-host-error       consider host errors as non-fatal, transient errors\n"),
+    N_("\
        --retry-on-http-error=ERRORS    comma-separated list of HTTP errors to retry\n"),
     N_("\
   -O,  --output-document=FILE      write documents to FILE\n"),
@@ -1065,13 +1067,13 @@ secs_to_human_time (double interval)
   mins = secs / 60, secs %= 60;
 
   if (days)
-    sprintf (buf, "%dd %dh %dm %ds", days, hours, mins, secs);
+    snprintf (buf, sizeof(buf), "%dd %dh %dm %ds", days, hours, mins, secs);
   else if (hours)
-    sprintf (buf, "%dh %dm %ds", hours, mins, secs);
+    snprintf (buf, sizeof(buf), "%dh %dm %ds", hours, mins, secs);
   else if (mins)
-    sprintf (buf, "%dm %ds", mins, secs);
+    snprintf (buf, sizeof(buf), "%dm %ds", mins, secs);
   else
-    sprintf (buf, "%ss", print_decimal (interval));
+    snprintf (buf, sizeof(buf), "%ss", print_decimal (interval));
 
   return buf;
 }
@@ -1437,7 +1439,6 @@ main (int argc, char **argv)
   char *p;
   int i, ret, longindex;
   int nurls;
-  int retconf;
   int argstring_length;
   bool use_userconfig = false;
   bool noconfig = false;
@@ -2259,9 +2260,7 @@ only if outputting to a regular file.\n"));
 
       if (!url_parsed)
         {
-          char *error = url_error (t, url_err);
-          logprintf (LOG_NOTQUIET, "%s: %s.\n",t, error);
-          xfree (error);
+          logprintf (LOG_NOTQUIET, "%s: %s.\n", t, url_error (url_err));
           inform_exit_status (URLERROR);
         }
       else

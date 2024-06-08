@@ -1,5 +1,5 @@
-# spawn_h.m4 serial 21
-dnl Copyright (C) 2008-2022 Free Software Foundation, Inc.
+# spawn_h.m4 serial 24
+dnl Copyright (C) 2008-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -65,17 +65,23 @@ AC_DEFUN([gl_HAVE_POSIX_SPAWN],
   dnl that occur in other macros.
   AC_REQUIRE([gl_SPAWN_H_DEFAULTS])
 
-  LIB_POSIX_SPAWN=
-  AC_SUBST([LIB_POSIX_SPAWN])
+  POSIX_SPAWN_LIB=
+  AC_SUBST([POSIX_SPAWN_LIB])
   gl_saved_libs=$LIBS
     AC_SEARCH_LIBS([posix_spawn], [rt],
                    [test "$ac_cv_search_posix_spawn" = "none required" ||
-                    LIB_POSIX_SPAWN=$ac_cv_search_posix_spawn])
-    AC_CHECK_FUNCS([posix_spawn])
+                    POSIX_SPAWN_LIB=$ac_cv_search_posix_spawn])
+    gl_CHECK_FUNCS_ANDROID([posix_spawn], [[#include <spawn.h>]])
   LIBS=$gl_saved_libs
+  dnl For backward compatibility.
+  LIB_POSIX_SPAWN="$POSIX_SPAWN_LIB"
+  AC_SUBST([LIB_POSIX_SPAWN])
 
   if test $ac_cv_func_posix_spawn != yes; then
     HAVE_POSIX_SPAWN=0
+    case "$gl_cv_onwards_func_posix_spawn" in
+      future*) REPLACE_POSIX_SPAWN=1 ;;
+    esac
   fi
 ])
 

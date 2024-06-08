@@ -1,7 +1,7 @@
-# serial 9
+# serial 10
 # See if we need to provide symlink replacement.
 
-dnl Copyright (C) 2009-2022 Free Software Foundation, Inc.
+dnl Copyright (C) 2009-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -38,6 +38,8 @@ AC_DEFUN([gl_FUNC_SYMLINK],
          [case "$host_os" in
                              # Guess yes on Linux systems.
             linux-* | linux) gl_cv_func_symlink_works="guessing yes" ;;
+                             # Guess yes on systems that emulate the Linux system calls.
+            midipix*)        gl_cv_func_symlink_works="guessing yes" ;;
                              # Guess yes on glibc systems.
             *-gnu* | gnu*)   gl_cv_func_symlink_works="guessing yes" ;;
                              # If we don't know, obey --enable-cross-guesses.

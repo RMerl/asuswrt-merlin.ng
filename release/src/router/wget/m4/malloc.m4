@@ -1,5 +1,5 @@
-# malloc.m4 serial 28
-dnl Copyright (C) 2007, 2009-2022 Free Software Foundation, Inc.
+# malloc.m4 serial 31
+dnl Copyright (C) 2007, 2009-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -16,7 +16,8 @@ AC_DEFUN([_AC_FUNC_MALLOC_IF],
           [[#include <stdlib.h>
           ]],
           [[void *p = malloc (0);
-            int result = !p;
+            void * volatile vp = p;
+            int result = !vp;
             free (p);
             return result;]])
        ],
@@ -25,8 +26,8 @@ AC_DEFUN([_AC_FUNC_MALLOC_IF],
        [case "$host_os" in
           # Guess yes on platforms where we know the result.
           *-gnu* | freebsd* | netbsd* | openbsd* | bitrig* \
-          | gnu* | *-musl* | midnightbsd* \
-          | hpux* | solaris* | cygwin* | mingw* | msys* )
+          | gnu* | *-musl* | midipix* | midnightbsd* \
+          | hpux* | solaris* | cygwin* | mingw* | windows* | msys* )
             ac_cv_func_malloc_0_nonnull="guessing yes" ;;
           # If we don't know, obey --enable-cross-guesses.
           *) ac_cv_func_malloc_0_nonnull="$gl_cross_guess_normal" ;;
@@ -128,7 +129,7 @@ AC_DEFUN([gl_CHECK_MALLOC_POSIX],
       dnl except on those platforms where we have seen 'test-malloc-gnu',
       dnl 'test-realloc-gnu', 'test-calloc-gnu' fail.
       case "$host_os" in
-        mingw*)
+        mingw* | windows*)
           gl_cv_func_malloc_posix=no ;;
         irix* | solaris*)
           dnl On IRIX 6.5, the three functions return NULL with errno unset

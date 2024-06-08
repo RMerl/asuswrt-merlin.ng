@@ -1,6 +1,6 @@
 /* Determine whether a locale is hard.
 
-   Copyright (C) 1999, 2003-2004, 2009-2022 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2003-2004, 2009-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -18,11 +18,11 @@
 #ifndef HARD_LOCALE_H_
 # define HARD_LOCALE_H_ 1
 
-# include <stdbool.h>
-
 /* Return true if the specified CATEGORY of the current locale is hard, i.e.
    different from the C or POSIX locale that has a fixed behavior.
-   CATEGORY must be one of the LC_* values, but not LC_ALL.  */
+   CATEGORY must be one of the LC_* values, but not LC_ALL.
+   Note: This function uses the current global locale; it ignores the
+   per-thread locale.  */
 extern bool hard_locale (int category);
 
 #endif /* HARD_LOCALE_H_ */

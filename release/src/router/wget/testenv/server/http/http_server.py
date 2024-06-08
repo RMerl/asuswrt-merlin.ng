@@ -47,10 +47,10 @@ class HTTPSServer(StoppableHTTPServer):
                                                os.getenv('srcdir', '.'),
                                                'certs',
                                                'server-key.pem'))
-        self.socket = ssl.wrap_socket(
+        ctx = ssl.SSLContext(protocol=ssl.PROTOCOL_TLS_SERVER)
+        ctx.load_cert_chain(CERTFILE, KEYFILE)
+        self.socket = ctx.wrap_socket(
             sock=socket.socket(self.address_family, self.socket_type),
-            certfile=CERTFILE,
-            keyfile=KEYFILE,
             server_side=True
         )
         self.server_bind()

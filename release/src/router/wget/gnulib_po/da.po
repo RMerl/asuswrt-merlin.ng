@@ -13,7 +13,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnulib 2.0.0.3462.e9796\n"
 "Report-Msgid-Bugs-To: bug-gnulib@gnu.org\n"
-"POT-Creation-Date: 2022-02-26 17:24+0100\n"
+"POT-Creation-Date: 2024-03-10 15:09+0100\n"
 "PO-Revision-Date: 2011-01-20 22:11+0100\n"
 "Last-Translator: Keld Simonsen <keld@keldix.com>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
@@ -24,7 +24,7 @@ msgstr ""
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: lib/error.c:195
+#: lib/error.c:194
 msgid "Unknown system error"
 msgstr "Ukendt systemfejl"
 
@@ -104,42 +104,42 @@ msgstr "Parameterstreng ikke korrekt kodet"
 msgid "Unknown error"
 msgstr "Ukendt fejl"
 
-#: lib/getopt.c:278
+#: lib/getopt.c:282
 #, fuzzy, c-format
 #| msgid "%s: option '%s' is ambiguous\n"
 msgid "%s: option '%s%s' is ambiguous\n"
 msgstr "%s: flaget '%s' er flertydigt\n"
 
-#: lib/getopt.c:284
+#: lib/getopt.c:288
 #, fuzzy, c-format
 #| msgid "%s: option '%s' is ambiguous\n"
 msgid "%s: option '%s%s' is ambiguous; possibilities:"
 msgstr "%s: flaget '%s' er flertydigt\n"
 
-#: lib/getopt.c:319
+#: lib/getopt.c:322
 #, fuzzy, c-format
 #| msgid "%s: unrecognized option '%c%s'\n"
 msgid "%s: unrecognized option '%s%s'\n"
 msgstr "%s: ukendt flag '%c%s'\n"
 
-#: lib/getopt.c:345
+#: lib/getopt.c:348
 #, fuzzy, c-format
 #| msgid "%s: option '%c%s' doesn't allow an argument\n"
 msgid "%s: option '%s%s' doesn't allow an argument\n"
 msgstr "%s: flaget '%c%s' tager intet argument\n"
 
-#: lib/getopt.c:360
+#: lib/getopt.c:363
 #, fuzzy, c-format
 #| msgid "%s: option '%s' requires an argument\n"
 msgid "%s: option '%s%s' requires an argument\n"
 msgstr "%s: flaget '%s' kræver et argument\n"
 
-#: lib/getopt.c:621
+#: lib/getopt.c:624
 #, c-format
 msgid "%s: invalid option -- '%c'\n"
 msgstr "%s: ugyldig flag -- '%c'\n"
 
-#: lib/getopt.c:636 lib/getopt.c:682
+#: lib/getopt.c:639 lib/getopt.c:685
 #, c-format
 msgid "%s: option requires an argument -- '%c'\n"
 msgstr "%s: flaget kræver et argument -- '%c'\n"
@@ -154,12 +154,12 @@ msgstr "kan ikke notere aktuelt arbejdskatalog"
 msgid "failed to return to initial working directory"
 msgstr "kunne ikke gå tilbage til det oprindelige arbejdskatalog"
 
-#: lib/os2-spawn.c:46
+#: lib/os2-spawn.c:45
 #, c-format
 msgid "_open_osfhandle failed"
 msgstr "_open_osfhandle mislykkedes"
 
-#: lib/os2-spawn.c:83
+#: lib/os2-spawn.c:82
 #, c-format
 msgid "cannot restore fd %d: dup2 failed"
 msgstr "kan ikke genskabe fb %d: dup2 mislykkedes"
@@ -185,11 +185,11 @@ msgstr "kan ikke genskabe fb %d: dup2 mislykkedes"
 #. If you don't know what to put here, please see
 #. <https://en.wikipedia.org/wiki/Quotation_marks_in_other_languages>
 #. and use glyphs suitable for your language.
-#: lib/quotearg.c:355
+#: lib/quotearg.c:354
 msgid "`"
 msgstr "'"
 
-#: lib/quotearg.c:356
+#: lib/quotearg.c:355
 msgid "'"
 msgstr "'"
 
@@ -267,13 +267,12 @@ msgstr "Ensomt ) eller \\)"
 msgid "No previous regular expression"
 msgstr "Intet foregående regulært udtryk"
 
-#: lib/spawn-pipe.c:217 lib/spawn-pipe.c:220 lib/spawn-pipe.c:459
-#: lib/spawn-pipe.c:462
+#: lib/spawn-pipe.c:216 lib/spawn-pipe.c:219
 #, c-format
 msgid "cannot create pipe"
 msgstr "kan ikke oprette datakanal"
 
-#: lib/spawn-pipe.c:597 lib/wait-process.c:291 lib/wait-process.c:365
+#: lib/spawn-pipe.c:596 lib/wait-process.c:291 lib/wait-process.c:365
 #, c-format
 msgid "%s subprocess failed"
 msgstr "%s-underproces mislykkedes"

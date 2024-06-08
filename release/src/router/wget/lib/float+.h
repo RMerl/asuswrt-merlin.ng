@@ -1,5 +1,5 @@
 /* Supplemental information about the floating-point formats.
-   Copyright (C) 2007, 2009-2022 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2009-2024 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2007.
 
    This file is free software: you can redistribute it and/or modify

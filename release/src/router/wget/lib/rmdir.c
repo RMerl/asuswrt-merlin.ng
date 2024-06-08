@@ -1,6 +1,6 @@
 /* Work around rmdir bugs.
 
-   Copyright (C) 1988, 1990, 1999, 2003-2006, 2009-2022 Free Software
+   Copyright (C) 1988, 1990, 1999, 2003-2006, 2009-2024 Free Software
    Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify

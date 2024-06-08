@@ -1,5 +1,5 @@
 /* Locating a program in a given path.
-   Copyright (C) 2001-2004, 2006-2022 Free Software Foundation, Inc.
+   Copyright (C) 2001-2004, 2006-2024 Free Software Foundation, Inc.
    Written by Bruno Haible <haible@clisp.cons.org>, 2001, 2019.
 
    This file is free software: you can redistribute it and/or modify
@@ -22,7 +22,6 @@
 #include "findprog.h"
 
 #include <errno.h>
-#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>

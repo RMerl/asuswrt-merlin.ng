@@ -1,5 +1,5 @@
 /* Unicode character classification and properties.
-   Copyright (C) 2002, 2005-2022 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -24,6 +24,12 @@
 
 /* Get size_t.  */
 #include <stddef.h>
+
+#if @HAVE_UNISTRING_WOE32DLL_H@
+# include <unistring/woe32dll.h>
+#else
+# define LIBUNISTRING_DLL_VARIABLE
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -101,44 +107,44 @@ enum
 };
 
 /* Predefined General category values.  */
-extern const uc_general_category_t UC_CATEGORY_L;
-extern const uc_general_category_t UC_CATEGORY_LC;
-extern const uc_general_category_t UC_CATEGORY_Lu;
-extern const uc_general_category_t UC_CATEGORY_Ll;
-extern const uc_general_category_t UC_CATEGORY_Lt;
-extern const uc_general_category_t UC_CATEGORY_Lm;
-extern const uc_general_category_t UC_CATEGORY_Lo;
-extern const uc_general_category_t UC_CATEGORY_M;
-extern const uc_general_category_t UC_CATEGORY_Mn;
-extern const uc_general_category_t UC_CATEGORY_Mc;
-extern const uc_general_category_t UC_CATEGORY_Me;
-extern const uc_general_category_t UC_CATEGORY_N;
-extern const uc_general_category_t UC_CATEGORY_Nd;
-extern const uc_general_category_t UC_CATEGORY_Nl;
-extern const uc_general_category_t UC_CATEGORY_No;
-extern const uc_general_category_t UC_CATEGORY_P;
-extern const uc_general_category_t UC_CATEGORY_Pc;
-extern const uc_general_category_t UC_CATEGORY_Pd;
-extern const uc_general_category_t UC_CATEGORY_Ps;
-extern const uc_general_category_t UC_CATEGORY_Pe;
-extern const uc_general_category_t UC_CATEGORY_Pi;
-extern const uc_general_category_t UC_CATEGORY_Pf;
-extern const uc_general_category_t UC_CATEGORY_Po;
-extern const uc_general_category_t UC_CATEGORY_S;
-extern const uc_general_category_t UC_CATEGORY_Sm;
-extern const uc_general_category_t UC_CATEGORY_Sc;
-extern const uc_general_category_t UC_CATEGORY_Sk;
-extern const uc_general_category_t UC_CATEGORY_So;
-extern const uc_general_category_t UC_CATEGORY_Z;
-extern const uc_general_category_t UC_CATEGORY_Zs;
-extern const uc_general_category_t UC_CATEGORY_Zl;
-extern const uc_general_category_t UC_CATEGORY_Zp;
-extern const uc_general_category_t UC_CATEGORY_C;
-extern const uc_general_category_t UC_CATEGORY_Cc;
-extern const uc_general_category_t UC_CATEGORY_Cf;
-extern const uc_general_category_t UC_CATEGORY_Cs;
-extern const uc_general_category_t UC_CATEGORY_Co;
-extern const uc_general_category_t UC_CATEGORY_Cn;
+extern @GNULIB_UNICTYPE_CATEGORY_L_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_L;
+extern @GNULIB_UNICTYPE_CATEGORY_LC_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_LC;
+extern @GNULIB_UNICTYPE_CATEGORY_LU_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_Lu;
+extern @GNULIB_UNICTYPE_CATEGORY_LL_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_Ll;
+extern @GNULIB_UNICTYPE_CATEGORY_LT_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_Lt;
+extern @GNULIB_UNICTYPE_CATEGORY_LM_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_Lm;
+extern @GNULIB_UNICTYPE_CATEGORY_LO_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_Lo;
+extern @GNULIB_UNICTYPE_CATEGORY_M_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_M;
+extern @GNULIB_UNICTYPE_CATEGORY_MN_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_Mn;
+extern @GNULIB_UNICTYPE_CATEGORY_MC_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_Mc;
+extern @GNULIB_UNICTYPE_CATEGORY_ME_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_Me;
+extern @GNULIB_UNICTYPE_CATEGORY_N_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_N;
+extern @GNULIB_UNICTYPE_CATEGORY_ND_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_Nd;
+extern @GNULIB_UNICTYPE_CATEGORY_NL_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_Nl;
+extern @GNULIB_UNICTYPE_CATEGORY_NO_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_No;
+extern @GNULIB_UNICTYPE_CATEGORY_P_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_P;
+extern @GNULIB_UNICTYPE_CATEGORY_PC_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_Pc;
+extern @GNULIB_UNICTYPE_CATEGORY_PD_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_Pd;
+extern @GNULIB_UNICTYPE_CATEGORY_PS_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_Ps;
+extern @GNULIB_UNICTYPE_CATEGORY_PE_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_Pe;
+extern @GNULIB_UNICTYPE_CATEGORY_PI_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_Pi;
+extern @GNULIB_UNICTYPE_CATEGORY_PF_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_Pf;
+extern @GNULIB_UNICTYPE_CATEGORY_PO_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_Po;
+extern @GNULIB_UNICTYPE_CATEGORY_S_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_S;
+extern @GNULIB_UNICTYPE_CATEGORY_SM_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_Sm;
+extern @GNULIB_UNICTYPE_CATEGORY_SC_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_Sc;
+extern @GNULIB_UNICTYPE_CATEGORY_SK_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_Sk;
+extern @GNULIB_UNICTYPE_CATEGORY_SO_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_So;
+extern @GNULIB_UNICTYPE_CATEGORY_Z_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_Z;
+extern @GNULIB_UNICTYPE_CATEGORY_ZS_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_Zs;
+extern @GNULIB_UNICTYPE_CATEGORY_ZL_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_Zl;
+extern @GNULIB_UNICTYPE_CATEGORY_ZP_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_Zp;
+extern @GNULIB_UNICTYPE_CATEGORY_C_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_C;
+extern @GNULIB_UNICTYPE_CATEGORY_CC_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_Cc;
+extern @GNULIB_UNICTYPE_CATEGORY_CF_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_Cf;
+extern @GNULIB_UNICTYPE_CATEGORY_CS_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_Cs;
+extern @GNULIB_UNICTYPE_CATEGORY_CO_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_Co;
+extern @GNULIB_UNICTYPE_CATEGORY_CN_DLL_VARIABLE@ const uc_general_category_t UC_CATEGORY_Cn;
 /* Non-public.  */
 extern const uc_general_category_t _UC_CATEGORY_NONE;
 
@@ -602,107 +608,111 @@ uc_property_t;
 
 /* Predefined properties.  */
 /* General.  */
-extern const uc_property_t UC_PROPERTY_WHITE_SPACE;
-extern const uc_property_t UC_PROPERTY_ALPHABETIC;
-extern const uc_property_t UC_PROPERTY_OTHER_ALPHABETIC;
-extern const uc_property_t UC_PROPERTY_NOT_A_CHARACTER;
-extern const uc_property_t UC_PROPERTY_DEFAULT_IGNORABLE_CODE_POINT;
-extern const uc_property_t UC_PROPERTY_OTHER_DEFAULT_IGNORABLE_CODE_POINT;
-extern const uc_property_t UC_PROPERTY_DEPRECATED;
-extern const uc_property_t UC_PROPERTY_LOGICAL_ORDER_EXCEPTION;
-extern const uc_property_t UC_PROPERTY_VARIATION_SELECTOR;
-extern const uc_property_t UC_PROPERTY_PRIVATE_USE;
-extern const uc_property_t UC_PROPERTY_UNASSIGNED_CODE_VALUE;
+extern @GNULIB_UNICTYPE_PROPERTY_WHITE_SPACE_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_WHITE_SPACE;
+extern @GNULIB_UNICTYPE_PROPERTY_ALPHABETIC_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_ALPHABETIC;
+extern @GNULIB_UNICTYPE_PROPERTY_OTHER_ALPHABETIC_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_OTHER_ALPHABETIC;
+extern @GNULIB_UNICTYPE_PROPERTY_NOT_A_CHARACTER_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_NOT_A_CHARACTER;
+extern @GNULIB_UNICTYPE_PROPERTY_DEFAULT_IGNORABLE_CODE_POINT_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_DEFAULT_IGNORABLE_CODE_POINT;
+extern @GNULIB_UNICTYPE_PROPERTY_OTHER_DEFAULT_IGNORABLE_CODE_POINT_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_OTHER_DEFAULT_IGNORABLE_CODE_POINT;
+extern @GNULIB_UNICTYPE_PROPERTY_DEPRECATED_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_DEPRECATED;
+extern @GNULIB_UNICTYPE_PROPERTY_LOGICAL_ORDER_EXCEPTION_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_LOGICAL_ORDER_EXCEPTION;
+extern @GNULIB_UNICTYPE_PROPERTY_VARIATION_SELECTOR_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_VARIATION_SELECTOR;
+extern @GNULIB_UNICTYPE_PROPERTY_PRIVATE_USE_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_PRIVATE_USE;
+extern @GNULIB_UNICTYPE_PROPERTY_UNASSIGNED_CODE_VALUE_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_UNASSIGNED_CODE_VALUE;
 /* Case.  */
-extern const uc_property_t UC_PROPERTY_UPPERCASE;
-extern const uc_property_t UC_PROPERTY_OTHER_UPPERCASE;
-extern const uc_property_t UC_PROPERTY_LOWERCASE;
-extern const uc_property_t UC_PROPERTY_OTHER_LOWERCASE;
-extern const uc_property_t UC_PROPERTY_TITLECASE;
-extern const uc_property_t UC_PROPERTY_CASED;
-extern const uc_property_t UC_PROPERTY_CASE_IGNORABLE;
-extern const uc_property_t UC_PROPERTY_CHANGES_WHEN_LOWERCASED;
-extern const uc_property_t UC_PROPERTY_CHANGES_WHEN_UPPERCASED;
-extern const uc_property_t UC_PROPERTY_CHANGES_WHEN_TITLECASED;
-extern const uc_property_t UC_PROPERTY_CHANGES_WHEN_CASEFOLDED;
-extern const uc_property_t UC_PROPERTY_CHANGES_WHEN_CASEMAPPED;
-extern const uc_property_t UC_PROPERTY_SOFT_DOTTED;
+extern @GNULIB_UNICTYPE_PROPERTY_UPPERCASE_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_UPPERCASE;
+extern @GNULIB_UNICTYPE_PROPERTY_OTHER_UPPERCASE_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_OTHER_UPPERCASE;
+extern @GNULIB_UNICTYPE_PROPERTY_LOWERCASE_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_LOWERCASE;
+extern @GNULIB_UNICTYPE_PROPERTY_OTHER_LOWERCASE_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_OTHER_LOWERCASE;
+extern @GNULIB_UNICTYPE_PROPERTY_TITLECASE_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_TITLECASE;
+extern @GNULIB_UNICTYPE_PROPERTY_CASED_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_CASED;
+extern @GNULIB_UNICTYPE_PROPERTY_CASE_IGNORABLE_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_CASE_IGNORABLE;
+extern @GNULIB_UNICTYPE_PROPERTY_CHANGES_WHEN_LOWERCASED_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_CHANGES_WHEN_LOWERCASED;
+extern @GNULIB_UNICTYPE_PROPERTY_CHANGES_WHEN_UPPERCASED_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_CHANGES_WHEN_UPPERCASED;
+extern @GNULIB_UNICTYPE_PROPERTY_CHANGES_WHEN_TITLECASED_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_CHANGES_WHEN_TITLECASED;
+extern @GNULIB_UNICTYPE_PROPERTY_CHANGES_WHEN_CASEFOLDED_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_CHANGES_WHEN_CASEFOLDED;
+extern @GNULIB_UNICTYPE_PROPERTY_CHANGES_WHEN_CASEMAPPED_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_CHANGES_WHEN_CASEMAPPED;
+extern @GNULIB_UNICTYPE_PROPERTY_SOFT_DOTTED_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_SOFT_DOTTED;
 /* Identifiers.  */
-extern const uc_property_t UC_PROPERTY_ID_START;
-extern const uc_property_t UC_PROPERTY_OTHER_ID_START;
-extern const uc_property_t UC_PROPERTY_ID_CONTINUE;
-extern const uc_property_t UC_PROPERTY_OTHER_ID_CONTINUE;
-extern const uc_property_t UC_PROPERTY_XID_START;
-extern const uc_property_t UC_PROPERTY_XID_CONTINUE;
-extern const uc_property_t UC_PROPERTY_PATTERN_WHITE_SPACE;
-extern const uc_property_t UC_PROPERTY_PATTERN_SYNTAX;
+extern @GNULIB_UNICTYPE_PROPERTY_ID_START_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_ID_START;
+extern @GNULIB_UNICTYPE_PROPERTY_OTHER_ID_START_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_OTHER_ID_START;
+extern @GNULIB_UNICTYPE_PROPERTY_ID_CONTINUE_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_ID_CONTINUE;
+extern @GNULIB_UNICTYPE_PROPERTY_OTHER_ID_CONTINUE_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_OTHER_ID_CONTINUE;
+extern @GNULIB_UNICTYPE_PROPERTY_XID_START_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_XID_START;
+extern @GNULIB_UNICTYPE_PROPERTY_XID_CONTINUE_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_XID_CONTINUE;
+extern @GNULIB_UNICTYPE_PROPERTY_ID_COMPAT_MATH_START_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_ID_COMPAT_MATH_START;
+extern @GNULIB_UNICTYPE_PROPERTY_ID_COMPAT_MATH_CONTINUE_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_ID_COMPAT_MATH_CONTINUE;
+extern @GNULIB_UNICTYPE_PROPERTY_PATTERN_WHITE_SPACE_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_PATTERN_WHITE_SPACE;
+extern @GNULIB_UNICTYPE_PROPERTY_PATTERN_SYNTAX_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_PATTERN_SYNTAX;
 /* Shaping and rendering.  */
-extern const uc_property_t UC_PROPERTY_JOIN_CONTROL;
-extern const uc_property_t UC_PROPERTY_GRAPHEME_BASE;
-extern const uc_property_t UC_PROPERTY_GRAPHEME_EXTEND;
-extern const uc_property_t UC_PROPERTY_OTHER_GRAPHEME_EXTEND;
-extern const uc_property_t UC_PROPERTY_GRAPHEME_LINK;
+extern @GNULIB_UNICTYPE_PROPERTY_JOIN_CONTROL_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_JOIN_CONTROL;
+extern @GNULIB_UNICTYPE_PROPERTY_GRAPHEME_BASE_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_GRAPHEME_BASE;
+extern @GNULIB_UNICTYPE_PROPERTY_GRAPHEME_EXTEND_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_GRAPHEME_EXTEND;
+extern @GNULIB_UNICTYPE_PROPERTY_OTHER_GRAPHEME_EXTEND_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_OTHER_GRAPHEME_EXTEND;
+extern @GNULIB_UNICTYPE_PROPERTY_GRAPHEME_LINK_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_GRAPHEME_LINK;
 /* Bidi.  */
-extern const uc_property_t UC_PROPERTY_BIDI_CONTROL;
-extern const uc_property_t UC_PROPERTY_BIDI_LEFT_TO_RIGHT;
-extern const uc_property_t UC_PROPERTY_BIDI_HEBREW_RIGHT_TO_LEFT;
-extern const uc_property_t UC_PROPERTY_BIDI_ARABIC_RIGHT_TO_LEFT;
-extern const uc_property_t UC_PROPERTY_BIDI_EUROPEAN_DIGIT;
-extern const uc_property_t UC_PROPERTY_BIDI_EUR_NUM_SEPARATOR;
-extern const uc_property_t UC_PROPERTY_BIDI_EUR_NUM_TERMINATOR;
-extern const uc_property_t UC_PROPERTY_BIDI_ARABIC_DIGIT;
-extern const uc_property_t UC_PROPERTY_BIDI_COMMON_SEPARATOR;
-extern const uc_property_t UC_PROPERTY_BIDI_BLOCK_SEPARATOR;
-extern const uc_property_t UC_PROPERTY_BIDI_SEGMENT_SEPARATOR;
-extern const uc_property_t UC_PROPERTY_BIDI_WHITESPACE;
-extern const uc_property_t UC_PROPERTY_BIDI_NON_SPACING_MARK;
-extern const uc_property_t UC_PROPERTY_BIDI_BOUNDARY_NEUTRAL;
-extern const uc_property_t UC_PROPERTY_BIDI_PDF;
-extern const uc_property_t UC_PROPERTY_BIDI_EMBEDDING_OR_OVERRIDE;
-extern const uc_property_t UC_PROPERTY_BIDI_OTHER_NEUTRAL;
+extern @GNULIB_UNICTYPE_PROPERTY_BIDI_CONTROL_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_BIDI_CONTROL;
+extern @GNULIB_UNICTYPE_PROPERTY_BIDI_LEFT_TO_RIGHT_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_BIDI_LEFT_TO_RIGHT;
+extern @GNULIB_UNICTYPE_PROPERTY_BIDI_HEBREW_RIGHT_TO_LEFT_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_BIDI_HEBREW_RIGHT_TO_LEFT;
+extern @GNULIB_UNICTYPE_PROPERTY_BIDI_ARABIC_RIGHT_TO_LEFT_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_BIDI_ARABIC_RIGHT_TO_LEFT;
+extern @GNULIB_UNICTYPE_PROPERTY_BIDI_EUROPEAN_DIGIT_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_BIDI_EUROPEAN_DIGIT;
+extern @GNULIB_UNICTYPE_PROPERTY_BIDI_EUR_NUM_SEPARATOR_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_BIDI_EUR_NUM_SEPARATOR;
+extern @GNULIB_UNICTYPE_PROPERTY_BIDI_EUR_NUM_TERMINATOR_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_BIDI_EUR_NUM_TERMINATOR;
+extern @GNULIB_UNICTYPE_PROPERTY_BIDI_ARABIC_DIGIT_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_BIDI_ARABIC_DIGIT;
+extern @GNULIB_UNICTYPE_PROPERTY_BIDI_COMMON_SEPARATOR_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_BIDI_COMMON_SEPARATOR;
+extern @GNULIB_UNICTYPE_PROPERTY_BIDI_BLOCK_SEPARATOR_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_BIDI_BLOCK_SEPARATOR;
+extern @GNULIB_UNICTYPE_PROPERTY_BIDI_SEGMENT_SEPARATOR_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_BIDI_SEGMENT_SEPARATOR;
+extern @GNULIB_UNICTYPE_PROPERTY_BIDI_WHITESPACE_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_BIDI_WHITESPACE;
+extern @GNULIB_UNICTYPE_PROPERTY_BIDI_NON_SPACING_MARK_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_BIDI_NON_SPACING_MARK;
+extern @GNULIB_UNICTYPE_PROPERTY_BIDI_BOUNDARY_NEUTRAL_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_BIDI_BOUNDARY_NEUTRAL;
+extern @GNULIB_UNICTYPE_PROPERTY_BIDI_PDF_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_BIDI_PDF;
+extern @GNULIB_UNICTYPE_PROPERTY_BIDI_EMBEDDING_OR_OVERRIDE_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_BIDI_EMBEDDING_OR_OVERRIDE;
+extern @GNULIB_UNICTYPE_PROPERTY_BIDI_OTHER_NEUTRAL_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_BIDI_OTHER_NEUTRAL;
 /* Numeric.  */
-extern const uc_property_t UC_PROPERTY_HEX_DIGIT;
-extern const uc_property_t UC_PROPERTY_ASCII_HEX_DIGIT;
+extern @GNULIB_UNICTYPE_PROPERTY_HEX_DIGIT_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_HEX_DIGIT;
+extern @GNULIB_UNICTYPE_PROPERTY_ASCII_HEX_DIGIT_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_ASCII_HEX_DIGIT;
 /* CJK.  */
-extern const uc_property_t UC_PROPERTY_IDEOGRAPHIC;
-extern const uc_property_t UC_PROPERTY_UNIFIED_IDEOGRAPH;
-extern const uc_property_t UC_PROPERTY_RADICAL;
-extern const uc_property_t UC_PROPERTY_IDS_BINARY_OPERATOR;
-extern const uc_property_t UC_PROPERTY_IDS_TRINARY_OPERATOR;
+extern @GNULIB_UNICTYPE_PROPERTY_IDEOGRAPHIC_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_IDEOGRAPHIC;
+extern @GNULIB_UNICTYPE_PROPERTY_UNIFIED_IDEOGRAPH_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_UNIFIED_IDEOGRAPH;
+extern @GNULIB_UNICTYPE_PROPERTY_RADICAL_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_RADICAL;
+extern @GNULIB_UNICTYPE_PROPERTY_IDS_UNARY_OPERATOR_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_IDS_UNARY_OPERATOR;
+extern @GNULIB_UNICTYPE_PROPERTY_IDS_BINARY_OPERATOR_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_IDS_BINARY_OPERATOR;
+extern @GNULIB_UNICTYPE_PROPERTY_IDS_TRINARY_OPERATOR_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_IDS_TRINARY_OPERATOR;
 /* Emoji.  */
-extern const uc_property_t UC_PROPERTY_EMOJI;
-extern const uc_property_t UC_PROPERTY_EMOJI_PRESENTATION;
-extern const uc_property_t UC_PROPERTY_EMOJI_MODIFIER;
-extern const uc_property_t UC_PROPERTY_EMOJI_MODIFIER_BASE;
-extern const uc_property_t UC_PROPERTY_EMOJI_COMPONENT;
-extern const uc_property_t UC_PROPERTY_EXTENDED_PICTOGRAPHIC;
+extern @GNULIB_UNICTYPE_PROPERTY_EMOJI_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_EMOJI;
+extern @GNULIB_UNICTYPE_PROPERTY_EMOJI_PRESENTATION_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_EMOJI_PRESENTATION;
+extern @GNULIB_UNICTYPE_PROPERTY_EMOJI_MODIFIER_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_EMOJI_MODIFIER;
+extern @GNULIB_UNICTYPE_PROPERTY_EMOJI_MODIFIER_BASE_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_EMOJI_MODIFIER_BASE;
+extern @GNULIB_UNICTYPE_PROPERTY_EMOJI_COMPONENT_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_EMOJI_COMPONENT;
+extern @GNULIB_UNICTYPE_PROPERTY_EXTENDED_PICTOGRAPHIC_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_EXTENDED_PICTOGRAPHIC;
 /* Misc.  */
-extern const uc_property_t UC_PROPERTY_ZERO_WIDTH;
-extern const uc_property_t UC_PROPERTY_SPACE;
-extern const uc_property_t UC_PROPERTY_NON_BREAK;
-extern const uc_property_t UC_PROPERTY_ISO_CONTROL;
-extern const uc_property_t UC_PROPERTY_FORMAT_CONTROL;
-extern const uc_property_t UC_PROPERTY_DASH;
-extern const uc_property_t UC_PROPERTY_HYPHEN;
-extern const uc_property_t UC_PROPERTY_PUNCTUATION;
-extern const uc_property_t UC_PROPERTY_LINE_SEPARATOR;
-extern const uc_property_t UC_PROPERTY_PARAGRAPH_SEPARATOR;
-extern const uc_property_t UC_PROPERTY_QUOTATION_MARK;
-extern const uc_property_t UC_PROPERTY_SENTENCE_TERMINAL;
-extern const uc_property_t UC_PROPERTY_TERMINAL_PUNCTUATION;
-extern const uc_property_t UC_PROPERTY_CURRENCY_SYMBOL;
-extern const uc_property_t UC_PROPERTY_MATH;
-extern const uc_property_t UC_PROPERTY_OTHER_MATH;
-extern const uc_property_t UC_PROPERTY_PAIRED_PUNCTUATION;
-extern const uc_property_t UC_PROPERTY_LEFT_OF_PAIR;
-extern const uc_property_t UC_PROPERTY_COMBINING;
-extern const uc_property_t UC_PROPERTY_COMPOSITE;
-extern const uc_property_t UC_PROPERTY_DECIMAL_DIGIT;
-extern const uc_property_t UC_PROPERTY_NUMERIC;
-extern const uc_property_t UC_PROPERTY_DIACRITIC;
-extern const uc_property_t UC_PROPERTY_EXTENDER;
-extern const uc_property_t UC_PROPERTY_IGNORABLE_CONTROL;
-extern const uc_property_t UC_PROPERTY_REGIONAL_INDICATOR;
+extern @GNULIB_UNICTYPE_PROPERTY_ZERO_WIDTH_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_ZERO_WIDTH;
+extern @GNULIB_UNICTYPE_PROPERTY_SPACE_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_SPACE;
+extern @GNULIB_UNICTYPE_PROPERTY_NON_BREAK_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_NON_BREAK;
+extern @GNULIB_UNICTYPE_PROPERTY_ISO_CONTROL_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_ISO_CONTROL;
+extern @GNULIB_UNICTYPE_PROPERTY_FORMAT_CONTROL_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_FORMAT_CONTROL;
+extern @GNULIB_UNICTYPE_PROPERTY_PREPENDED_CONCATENATION_MARK_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_PREPENDED_CONCATENATION_MARK;
+extern @GNULIB_UNICTYPE_PROPERTY_DASH_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_DASH;
+extern @GNULIB_UNICTYPE_PROPERTY_HYPHEN_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_HYPHEN;
+extern @GNULIB_UNICTYPE_PROPERTY_PUNCTUATION_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_PUNCTUATION;
+extern @GNULIB_UNICTYPE_PROPERTY_LINE_SEPARATOR_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_LINE_SEPARATOR;
+extern @GNULIB_UNICTYPE_PROPERTY_PARAGRAPH_SEPARATOR_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_PARAGRAPH_SEPARATOR;
+extern @GNULIB_UNICTYPE_PROPERTY_QUOTATION_MARK_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_QUOTATION_MARK;
+extern @GNULIB_UNICTYPE_PROPERTY_SENTENCE_TERMINAL_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_SENTENCE_TERMINAL;
+extern @GNULIB_UNICTYPE_PROPERTY_TERMINAL_PUNCTUATION_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_TERMINAL_PUNCTUATION;
+extern @GNULIB_UNICTYPE_PROPERTY_CURRENCY_SYMBOL_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_CURRENCY_SYMBOL;
+extern @GNULIB_UNICTYPE_PROPERTY_MATH_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_MATH;
+extern @GNULIB_UNICTYPE_PROPERTY_OTHER_MATH_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_OTHER_MATH;
+extern @GNULIB_UNICTYPE_PROPERTY_PAIRED_PUNCTUATION_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_PAIRED_PUNCTUATION;
+extern @GNULIB_UNICTYPE_PROPERTY_LEFT_OF_PAIR_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_LEFT_OF_PAIR;
+extern @GNULIB_UNICTYPE_PROPERTY_COMBINING_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_COMBINING;
+extern @GNULIB_UNICTYPE_PROPERTY_COMPOSITE_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_COMPOSITE;
+extern @GNULIB_UNICTYPE_PROPERTY_DECIMAL_DIGIT_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_DECIMAL_DIGIT;
+extern @GNULIB_UNICTYPE_PROPERTY_NUMERIC_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_NUMERIC;
+extern @GNULIB_UNICTYPE_PROPERTY_DIACRITIC_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_DIACRITIC;
+extern @GNULIB_UNICTYPE_PROPERTY_EXTENDER_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_EXTENDER;
+extern @GNULIB_UNICTYPE_PROPERTY_IGNORABLE_CONTROL_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_IGNORABLE_CONTROL;
+extern @GNULIB_UNICTYPE_PROPERTY_REGIONAL_INDICATOR_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_REGIONAL_INDICATOR;
 
 /* Return the property given by name, e.g. "White space".  */
 extern uc_property_t
@@ -774,6 +784,10 @@ extern bool uc_is_property_xid_start (ucs4_t uc)
        _UC_ATTRIBUTE_CONST;
 extern bool uc_is_property_xid_continue (ucs4_t uc)
        _UC_ATTRIBUTE_CONST;
+extern bool uc_is_property_id_compat_math_start (ucs4_t uc)
+       _UC_ATTRIBUTE_CONST;
+extern bool uc_is_property_id_compat_math_continue (ucs4_t uc)
+       _UC_ATTRIBUTE_CONST;
 extern bool uc_is_property_pattern_white_space (ucs4_t uc)
        _UC_ATTRIBUTE_CONST;
 extern bool uc_is_property_pattern_syntax (ucs4_t uc)
@@ -832,6 +846,8 @@ extern bool uc_is_property_unified_ideograph (ucs4_t uc)
        _UC_ATTRIBUTE_CONST;
 extern bool uc_is_property_radical (ucs4_t uc)
        _UC_ATTRIBUTE_CONST;
+extern bool uc_is_property_ids_unary_operator (ucs4_t uc)
+       _UC_ATTRIBUTE_CONST;
 extern bool uc_is_property_ids_binary_operator (ucs4_t uc)
        _UC_ATTRIBUTE_CONST;
 extern bool uc_is_property_ids_trinary_operator (ucs4_t uc)
@@ -857,6 +873,8 @@ extern bool uc_is_property_non_break (ucs4_t uc)
 extern bool uc_is_property_iso_control (ucs4_t uc)
        _UC_ATTRIBUTE_CONST;
 extern bool uc_is_property_format_control (ucs4_t uc)
+       _UC_ATTRIBUTE_CONST;
+extern bool uc_is_property_prepended_concatenation_mark (ucs4_t uc)
        _UC_ATTRIBUTE_CONST;
 extern bool uc_is_property_dash (ucs4_t uc)
        _UC_ATTRIBUTE_CONST;
@@ -899,6 +917,40 @@ extern bool uc_is_property_extender (ucs4_t uc)
 extern bool uc_is_property_ignorable_control (ucs4_t uc)
        _UC_ATTRIBUTE_CONST;
 extern bool uc_is_property_regional_indicator (ucs4_t uc)
+       _UC_ATTRIBUTE_CONST;
+
+/* ========================================================================= */
+
+/* Other attributes.  */
+
+/* ------------------------------------------------------------------------- */
+
+/* Indic_Conjunct_Break (InCB): from the file DerivedCoreProperties.txt
+   in the Unicode Character Database.  */
+
+/* Possible values of the Indic_Conjunct_Break attribute.
+   This enumeration may be extended in the future.  */
+enum
+{
+  UC_INDIC_CONJUNCT_BREAK_NONE,              /* None */
+  UC_INDIC_CONJUNCT_BREAK_CONSONANT,         /* Consonant */
+  UC_INDIC_CONJUNCT_BREAK_LINKER,            /* Linker */
+  UC_INDIC_CONJUNCT_BREAK_EXTEND             /* Extend */
+};
+
+/* Return the name of an Indic_Conjunct_Break value.  */
+extern const char *
+       uc_indic_conjunct_break_name (int indic_conjunct_break)
+       _UC_ATTRIBUTE_CONST;
+
+/* Return the Indic_Conjunct_Break value given by name, e.g. "Consonant".  */
+extern int
+       uc_indic_conjunct_break_byname (const char *indic_conjunct_break_name)
+       _UC_ATTRIBUTE_PURE;
+
+/* Return the Indic_Conjunct_Break attribute of a Unicode character.  */
+extern int
+       uc_indic_conjunct_break (ucs4_t uc)
        _UC_ATTRIBUTE_CONST;
 
 /* ========================================================================= */

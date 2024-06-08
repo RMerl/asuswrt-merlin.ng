@@ -1,7 +1,7 @@
 /* On some systems, mkdir ("foo/", 0700) fails because of the trailing
    slash.  On those systems, this wrapper removes the trailing slash.
 
-   Copyright (C) 2001, 2003, 2006, 2008-2022 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2003, 2006, 2008-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as

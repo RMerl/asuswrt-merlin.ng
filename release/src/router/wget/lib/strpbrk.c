@@ -1,4 +1,4 @@
-/* Copyright (C) 1991, 1994, 2000, 2002-2003, 2006, 2009-2022 Free Software
+/* Copyright (C) 1991, 1994, 2000, 2002-2003, 2006, 2009-2024 Free Software
    Foundation, Inc.
 
    NOTE: The canonical source of this file is maintained with the GNU C Library.

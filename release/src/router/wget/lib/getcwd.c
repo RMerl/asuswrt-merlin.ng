@@ -1,4 +1,4 @@
-/* Copyright (C) 1991-2022 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2024 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    This file is free software: you can redistribute it and/or modify
@@ -16,6 +16,7 @@
 
 #if !_LIBC
 # include <config.h>
+# include <stdio.h>
 # include <unistd.h>
 # include "pathmax.h"
 #else
@@ -28,7 +29,6 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <stdbool.h>
 #include <stddef.h>
 
 #include <fcntl.h> /* For AT_FDCWD on Solaris 9.  */
@@ -114,13 +114,21 @@
    FIXME - if the kernel ever adds support for multi-thread safety for
    avoiding standard fds, then we should use opendir_safer and
    openat_safer.  */
-#ifdef GNULIB_defined_opendir
+#ifdef GNULIB_defined_DIR
+# undef DIR
 # undef opendir
-#endif
-#ifdef GNULIB_defined_closedir
 # undef closedir
+# undef readdir
+# undef rewinddir
+#else
+# ifdef GNULIB_defined_opendir
+#  undef opendir
+# endif
+# ifdef GNULIB_defined_closedir
+#  undef closedir
+# endif
 #endif
-
+
 #if defined _WIN32 && !defined __CYGWIN__
 # if HAVE_MSVC_INVALID_PARAMETER_HANDLER
 static char *
@@ -173,6 +181,9 @@ __getcwd_generic (char *buf, size_t size)
 #if HAVE_OPENAT_SUPPORT
   int fd = AT_FDCWD;
   bool fd_needs_closing = false;
+# if defined __linux__
+  bool proc_fs_not_mounted = false;
+# endif
 #else
   char dots[DEEP_NESTING * sizeof ".." + BIG_FILE_NAME_COMPONENT_LENGTH + 1];
   char *dotlist = dots;
@@ -438,6 +449,67 @@ __getcwd_generic (char *buf, size_t size)
 
       thisdev = dotdev;
       thisino = dotino;
+
+#if HAVE_OPENAT_SUPPORT
+      /* On some platforms, a system call returns the directory that FD points
+         to.  This is useful if some of the ancestor directories of the
+         directory are unreadable, because in this situation the loop that
+         climbs up the ancestor hierarchy runs into an EACCES error.
+         For example, in some Android app, /data/data/com.termux is readable,
+         but /data/data and /data are not.  */
+# if defined __linux__
+      /* On Linux, in particular, if /proc is mounted,
+           readlink ("/proc/self/fd/<fd>")
+         returns the directory, if its length is < 4096.  (If the length is
+         >= 4096, it fails with error ENAMETOOLONG, even if the buffer that we
+         pass to the readlink function would be large enough.)  */
+      if (!proc_fs_not_mounted)
+        {
+          char namebuf[14 + 10 + 1];
+          sprintf (namebuf, "/proc/self/fd/%u", (unsigned int) fd);
+          char linkbuf[4096];
+          ssize_t linklen = readlink (namebuf, linkbuf, sizeof linkbuf);
+          if (linklen < 0)
+            {
+              if (errno != ENAMETOOLONG)
+                /* If this call was not successful, the next one will likely be
+                   not successful either.  */
+                proc_fs_not_mounted = true;
+            }
+          else
+            {
+              dirroom = dirp - dir;
+              if (dirroom < linklen)
+                {
+                  if (size != 0)
+                    {
+                      __set_errno (ERANGE);
+                      goto lose;
+                    }
+                  else
+                    {
+                      char *tmp;
+                      size_t oldsize = allocated;
+
+                      allocated += linklen - dirroom;
+                      if (allocated < oldsize
+                          || ! (tmp = realloc (dir, allocated)))
+                        goto memory_exhausted;
+
+                      /* Move current contents up to the end of the buffer.  */
+                      dirp = memmove (tmp + dirroom + (allocated - oldsize),
+                                      tmp + dirroom,
+                                      oldsize - dirroom);
+                      dir = tmp;
+                    }
+                }
+              dirp -= linklen;
+              memcpy (dirp, linkbuf, linklen);
+              break;
+            }
+        }
+# endif
+#endif
     }
 
   if (dirstream && __closedir (dirstream) != 0)

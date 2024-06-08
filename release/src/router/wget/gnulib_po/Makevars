@@ -1,5 +1,5 @@
 ## DO NOT EDIT! GENERATED AUTOMATICALLY!
-# Copyright (C) 2002-2022 Free Software Foundation, Inc.
+# Copyright (C) 2002-2024 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@ XGETTEXT_OPTIONS = \
   --keyword=_ --flag=_:1:pass-c-format \
   --keyword=N_ --flag=N_:1:pass-c-format \
   --keyword='proper_name:1,"This is a proper name. See the gettext manual, section Names."' \
+  --keyword='proper_name_lite:1,"This is a proper name. See the gettext manual, section Names."' \
   --keyword='proper_name_utf8:1,"This is a proper name. See the gettext manual, section Names."' \
   --flag=error:3:c-format --flag=error_at_line:5:c-format
 

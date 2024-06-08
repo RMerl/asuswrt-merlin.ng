@@ -1,13 +1,13 @@
 dnl A placeholder for ISO C99 <wchar.h>, for platforms that have issues.
 
-dnl Copyright (C) 2007-2022 Free Software Foundation, Inc.
+dnl Copyright (C) 2007-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
 
 dnl Written by Eric Blake.
 
-# wchar_h.m4 serial 55
+# wchar_h.m4 serial 63
 
 AC_DEFUN_ONCE([gl_WCHAR_H],
 [
@@ -86,8 +86,8 @@ AC_DEFUN([gl_WCHAR_H_INLINE_OK],
          dnl z/OS when using the XPLINK object format (due to duplicate
          dnl CSECT names). Instead, temporarily redefine $ac_compile so
          dnl that the object file has the latter name from the start.
-         save_ac_compile="$ac_compile"
-         ac_compile=`echo "$save_ac_compile" | sed s/conftest/conftest1/`
+         saved_ac_compile="$ac_compile"
+         ac_compile=`echo "$saved_ac_compile" | sed s/conftest/conftest1/`
          if echo '#include "conftest.c"' >conftest1.c \
             && AC_TRY_EVAL([ac_compile]); then
            AC_LANG_CONFTEST([
@@ -97,7 +97,7 @@ AC_DEFUN([gl_WCHAR_H_INLINE_OK],
                int zero (void) { return 0; }
              ]])])
            dnl See note above about renaming object files.
-           ac_compile=`echo "$save_ac_compile" | sed s/conftest/conftest2/`
+           ac_compile=`echo "$saved_ac_compile" | sed s/conftest/conftest2/`
            if echo '#include "conftest.c"' >conftest2.c \
               && AC_TRY_EVAL([ac_compile]); then
              if $CC -o conftest$ac_exeext $CFLAGS $LDFLAGS conftest1.$ac_objext conftest2.$ac_objext $LIBS >&AS_MESSAGE_LOG_FD 2>&1; then
@@ -107,7 +107,7 @@ AC_DEFUN([gl_WCHAR_H_INLINE_OK],
              fi
            fi
          fi
-         ac_compile="$save_ac_compile"
+         ac_compile="$saved_ac_compile"
          rm -f conftest[12].c conftest[12].$ac_objext conftest$ac_exeext
          ;;
      esac
@@ -147,6 +147,7 @@ AC_DEFUN([gl_WCHAR_H_REQUIRE_DEFAULTS],
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_BTOWC])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_WCTOB])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_MBSINIT])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_MBSZERO])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_MBRTOWC])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_MBRLEN])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_MBSRTOWCS])
@@ -185,6 +186,7 @@ AC_DEFUN([gl_WCHAR_H_REQUIRE_DEFAULTS],
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_WCSTOK])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_WCSWIDTH])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_WCSFTIME])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_WGETCWD])
     dnl Support Microsoft deprecated alias function names by default.
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_MDA_WCSDUP], [1])
   ])
@@ -253,5 +255,10 @@ AC_DEFUN([gl_WCHAR_H_DEFAULTS],
   REPLACE_WCWIDTH=0;    AC_SUBST([REPLACE_WCWIDTH])
   REPLACE_WCSWIDTH=0;   AC_SUBST([REPLACE_WCSWIDTH])
   REPLACE_WCSFTIME=0;   AC_SUBST([REPLACE_WCSFTIME])
+  REPLACE_WCSCMP=0;     AC_SUBST([REPLACE_WCSCMP])
+  REPLACE_WCSNCMP=0;    AC_SUBST([REPLACE_WCSNCMP])
+  REPLACE_WCSSTR=0;     AC_SUBST([REPLACE_WCSSTR])
   REPLACE_WCSTOK=0;     AC_SUBST([REPLACE_WCSTOK])
+  REPLACE_WMEMCMP=0;    AC_SUBST([REPLACE_WMEMCMP])
+  REPLACE_WMEMPCPY=0;   AC_SUBST([REPLACE_WMEMPCPY])
 ])

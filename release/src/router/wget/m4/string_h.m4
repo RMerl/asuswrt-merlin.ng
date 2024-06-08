@@ -1,11 +1,11 @@
 # Configure a GNU-like replacement for <string.h>.
 
-# Copyright (C) 2007-2022 Free Software Foundation, Inc.
+# Copyright (C) 2007-2024 Free Software Foundation, Inc.
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
 
-# serial 34
+# serial 39
 
 # Written by Paul Eggert.
 
@@ -21,7 +21,8 @@ AC_DEFUN_ONCE([gl_STRING_H],
   dnl guaranteed by C89.
   gl_WARN_ON_USE_PREPARE([[#include <string.h>
     ]],
-    [ffsl ffsll memmem mempcpy memrchr rawmemchr stpcpy stpncpy strchrnul
+    [explicit_bzero ffsl ffsll memmem mempcpy memrchr memset_explicit
+     rawmemchr stpcpy stpncpy strchrnul
      strdup strncat strndup strnlen strpbrk strsep strcasestr strtok_r
      strerror_r strerrorname_np sigabbrev_np sigdescr_np strsignal strverscmp])
 
@@ -54,6 +55,7 @@ AC_DEFUN([gl_STRING_H_REQUIRE_DEFAULTS],
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_MEMMEM])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_MEMPCPY])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_MEMRCHR])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_MEMSET_EXPLICIT])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_RAWMEMCHR])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_STPCPY])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_STPNCPY])
@@ -107,6 +109,7 @@ AC_DEFUN([gl_STRING_H_DEFAULTS],
   HAVE_FFSLL=1;                 AC_SUBST([HAVE_FFSLL])
   HAVE_DECL_MEMMEM=1;           AC_SUBST([HAVE_DECL_MEMMEM])
   HAVE_MEMPCPY=1;               AC_SUBST([HAVE_MEMPCPY])
+  HAVE_MEMSET_EXPLICIT=1;       AC_SUBST([HAVE_MEMSET_EXPLICIT])
   HAVE_DECL_MEMRCHR=1;          AC_SUBST([HAVE_DECL_MEMRCHR])
   HAVE_RAWMEMCHR=1;             AC_SUBST([HAVE_RAWMEMCHR])
   HAVE_STPCPY=1;                AC_SUBST([HAVE_STPCPY])
@@ -128,6 +131,9 @@ AC_DEFUN([gl_STRING_H_DEFAULTS],
   REPLACE_FFSLL=0;              AC_SUBST([REPLACE_FFSLL])
   REPLACE_MEMCHR=0;             AC_SUBST([REPLACE_MEMCHR])
   REPLACE_MEMMEM=0;             AC_SUBST([REPLACE_MEMMEM])
+  REPLACE_MEMPCPY=0;            AC_SUBST([REPLACE_MEMPCPY])
+  REPLACE_MEMSET_EXPLICIT=0;    AC_SUBST([REPLACE_MEMSET_EXPLICIT])
+  REPLACE_STPCPY=0;             AC_SUBST([REPLACE_STPCPY])
   REPLACE_STPNCPY=0;            AC_SUBST([REPLACE_STPNCPY])
   REPLACE_STRCHRNUL=0;          AC_SUBST([REPLACE_STRCHRNUL])
   REPLACE_STRDUP=0;             AC_SUBST([REPLACE_STRDUP])
@@ -141,5 +147,6 @@ AC_DEFUN([gl_STRING_H_DEFAULTS],
   REPLACE_STRERROR_R=0;         AC_SUBST([REPLACE_STRERROR_R])
   REPLACE_STRERRORNAME_NP=0;    AC_SUBST([REPLACE_STRERRORNAME_NP])
   REPLACE_STRSIGNAL=0;          AC_SUBST([REPLACE_STRSIGNAL])
+  REPLACE_STRVERSCMP=0;         AC_SUBST([REPLACE_STRVERSCMP])
   UNDEFINE_STRTOK_R=0;          AC_SUBST([UNDEFINE_STRTOK_R])
 ])

@@ -1,5 +1,5 @@
 /* Open a stream to a file.
-   Copyright (C) 2007-2022 Free Software Foundation, Inc.
+   Copyright (C) 2007-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -33,13 +33,16 @@ orig_fopen (const char *filename, const char *mode)
 }
 
 /* Specification.  */
+#ifdef __osf__
 /* Write "stdio.h" here, not <stdio.h>, otherwise OSF/1 5.1 DTK cc eliminates
    this include because of the preliminary #include <stdio.h> above.  */
-#include "stdio.h"
+# include "stdio.h"
+#else
+# include <stdio.h>
+#endif
 
 #include <errno.h>
 #include <fcntl.h>
-#include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -225,6 +228,10 @@ rpl_fopen (const char *filename, const char *mode)
       return fp;
     }
 #endif
+
+  /* open_direction is sometimes used, sometimes unused.
+     Silence gcc's warning about this situation.  */
+  (void) open_direction;
 
   return orig_fopen (filename, mode);
 }

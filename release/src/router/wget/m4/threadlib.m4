@@ -1,5 +1,5 @@
-# threadlib.m4 serial 32
-dnl Copyright (C) 2005-2022 Free Software Foundation, Inc.
+# threadlib.m4 serial 42
+dnl Copyright (C) 2005-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -85,10 +85,11 @@ AC_DEFUN([gl_WEAK_SYMBOLS],
   AC_CACHE_CHECK([whether imported symbols can be declared weak],
     [gl_cv_have_weak],
     [case "$host_os" in
-       cygwin*)
-         dnl On Cygwin 3.2.0 with gcc 10.2, the test below would succeed, but
-         dnl programs that use pthread_in_use() with weak symbol references
-         dnl crash miserably at runtime.
+       cygwin* | mingw* | windows*)
+         dnl On Cygwin 3.2.0 with gcc 10.2, and likewise on mingw 10.0.0 with
+         dnl gcc 11.3, the test below would succeed, but programs that use
+         dnl pthread_in_use() with weak symbol references crash miserably at
+         dnl runtime.
          gl_cv_have_weak="guessing no"
          ;;
        *)
@@ -174,7 +175,7 @@ dnl Sets the variable LIBPMULTITHREAD, for programs that really need
 dnl multithread functionality. The difference between LIBPTHREAD and
 dnl LIBPMULTITHREAD is that on platforms supporting weak symbols, typically
 dnl LIBPTHREAD is empty whereas LIBPMULTITHREAD is not.
-dnl Sets the variable LIB_SCHED_YIELD to the linker options needed to use the
+dnl Sets the variable SCHED_YIELD_LIB to the linker options needed to use the
 dnl sched_yield() function.
 dnl Adds to CPPFLAGS the flag -D_REENTRANT or -D_THREAD_SAFE if needed for
 dnl multithread-safe programs.
@@ -205,7 +206,7 @@ AC_DEFUN([gl_PTHREADLIB_BODY],
       # If -pthread works, prefer it to -lpthread, since Ubuntu 14.04
       # needs -pthread for some reason.  See:
       # https://lists.gnu.org/r/bug-gnulib/2014-09/msg00023.html
-      save_LIBS=$LIBS
+      saved_LIBS="$LIBS"
       for gl_pthread in '' '-pthread'; do
         LIBS="$LIBS $gl_pthread"
         AC_LINK_IFELSE(
@@ -219,7 +220,7 @@ AC_DEFUN([gl_PTHREADLIB_BODY],
           [gl_pthread_api=yes
            LIBPTHREAD=$gl_pthread
            LIBPMULTITHREAD=$gl_pthread])
-        LIBS=$save_LIBS
+        LIBS="$saved_LIBS"
         test $gl_pthread_api = yes && break
       done
       echo "$as_me:__oline__: gl_pthread_api=$gl_pthread_api" >&AS_MESSAGE_LOG_FD
@@ -261,11 +262,22 @@ AC_DEFUN([gl_PTHREADLIB_BODY],
              # On Solaris 10 or newer, this test is no longer needed, because
              # libc contains the fully functional pthread functions.
              case "$host_os" in
+changequote(,)dnl
                solaris | solaris2.[1-9] | solaris2.[1-9].* | hpux*)
+changequote([,])dnl
                  AC_DEFINE([PTHREAD_IN_USE_DETECTION_HARD], [1],
                    [Define if the pthread_in_use() detection is hard.])
              esac
            fi
+          ],
+          [dnl This is needed on FreeBSD 5.2.1.
+           AC_CHECK_LIB([thr], [pthread_kill],
+             [if test $gl_pthread_in_glibc = yes; then
+                LIBPMULTITHREAD=
+              else
+                LIBPMULTITHREAD=-lthr
+              fi
+             ])
           ])
       elif test $gl_pthread_api != yes; then
         # Some library is needed. Try libpthread and libc_r.
@@ -297,13 +309,16 @@ AC_DEFUN([gl_PTHREADLIB_BODY],
       [AC_LANG_PROGRAM(
          [[#include <sched.h>]],
          [[sched_yield ();]])],
-      [LIB_SCHED_YIELD=
+      [SCHED_YIELD_LIB=
       ],
       [dnl Solaris 7...10 has sched_yield in librt, not in libpthread or libc.
-       AC_CHECK_LIB([rt], [sched_yield], [LIB_SCHED_YIELD=-lrt],
+       AC_CHECK_LIB([rt], [sched_yield], [SCHED_YIELD_LIB=-lrt],
          [dnl Solaris 2.5.1, 2.6 has sched_yield in libposix4, not librt.
-          AC_CHECK_LIB([posix4], [sched_yield], [LIB_SCHED_YIELD=-lposix4])])
+          AC_CHECK_LIB([posix4], [sched_yield], [SCHED_YIELD_LIB=-lposix4])])
       ])
+    AC_SUBST([SCHED_YIELD_LIB])
+    dnl For backward compatibility.
+    LIB_SCHED_YIELD="$SCHED_YIELD_LIB"
     AC_SUBST([LIB_SCHED_YIELD])
 
     gl_pthreadlib_body_done=done
@@ -338,7 +353,7 @@ AC_DEFUN([gl_STDTHREADLIB_BODY],
     AC_CHECK_HEADERS_ONCE([threads.h])
 
     case "$host_os" in
-      mingw*)
+      mingw* | windows*)
         LIBSTDTHREAD=
         ;;
       *)
@@ -349,7 +364,7 @@ AC_DEFUN([gl_STDTHREADLIB_BODY],
           dnl on libpthread (for the symbol 'pthread_mutexattr_gettype').
           dnl glibc >= 2.34, AIX >= 7.1, and Solaris >= 11.4 have thrd_create in
           dnl libc.
-          AC_CHECK_FUNCS([thrd_create])
+          gl_CHECK_FUNCS_ANDROID([thrd_create], [[#include <threads.h>]])
           if test $ac_cv_func_thrd_create = yes; then
             LIBSTDTHREAD=
           else
@@ -362,7 +377,7 @@ AC_DEFUN([gl_STDTHREADLIB_BODY],
           fi
         else
           dnl Libraries needed by thrd.c, mtx.c, cnd.c, tss.c.
-          LIBSTDTHREAD="$LIBPMULTITHREAD $LIB_SCHED_YIELD"
+          LIBSTDTHREAD="$LIBPMULTITHREAD $SCHED_YIELD_LIB"
         fi
         ;;
     esac
@@ -433,10 +448,12 @@ AC_DEFUN([gl_THREADLIB_EARLY_BODY],
   m4_ifdef([gl_THREADLIB_DEFAULT_NO],
     [m4_divert_text([DEFAULTS], [gl_use_threads_default=no])],
     [m4_divert_text([DEFAULTS], [gl_use_threads_default=])])
-  m4_divert_text([DEFAULTS], [gl_use_winpthreads_default=])
+  dnl gl_use_winpthreads_default defaults to 'no', because in mingw 10, like
+  dnl in mingw 5, the use of libwinpthread still makes test-pthread-tss crash.
+  m4_divert_text([DEFAULTS], [gl_use_winpthreads_default=no])
   AC_ARG_ENABLE([threads],
-AS_HELP_STRING([--enable-threads={isoc|posix|isoc+posix|windows}], [specify multithreading API])m4_ifdef([gl_THREADLIB_DEFAULT_NO], [], [
-AS_HELP_STRING([--disable-threads], [build without multithread safety])]),
+AS_HELP_STRING([[--enable-threads={isoc|posix|isoc+posix|windows}]], [specify multithreading API])m4_ifdef([gl_THREADLIB_DEFAULT_NO], [], [
+AS_HELP_STRING([[--disable-threads]], [build without multithread safety])]),
     [gl_use_threads=$enableval],
     [if test -n "$gl_use_threads_default"; then
        gl_use_threads="$gl_use_threads_default"
@@ -457,7 +474,7 @@ changequote(,)dnl
                esac
                ;;
          dnl Obey gl_AVOID_WINPTHREAD on mingw.
-         mingw*)
+         mingw* | windows*)
                case "$gl_use_winpthreads_default" in
                  yes) gl_use_threads=posix ;;
                  no)  gl_use_threads=windows ;;
@@ -556,7 +573,7 @@ AC_DEFUN([gl_THREADLIB_BODY],
       case "$gl_use_threads" in
         yes | windows | win32) # The 'win32' is for backward compatibility.
           if { case "$host_os" in
-                 mingw*) true;;
+                 mingw* | windows*) true;;
                  *) false;;
                esac
              }; then
@@ -567,6 +584,10 @@ AC_DEFUN([gl_THREADLIB_BODY],
           ;;
       esac
     fi
+  else
+    dnl "$gl_use_threads" is "no".
+    AC_DEFINE([AVOID_ANY_THREADS], [1],
+      [Define if no multithread safety and no multithreading is desired.])
   fi
   AC_MSG_CHECKING([for multithread API to use])
   AC_MSG_RESULT([$gl_threads_api])
@@ -599,7 +620,8 @@ dnl -------------------
 dnl Sets the gl_THREADLIB default so that on mingw, a dependency to the
 dnl libwinpthread DLL (mingw-w64 winpthreads library) is avoided.
 dnl The user can still override it at installation time, by using the
-dnl configure option '--enable-threads'.
+dnl configure option '--enable-threads=posix'.
+dnl As of 2023, this is now the default.
 
 AC_DEFUN([gl_AVOID_WINPTHREAD], [
   m4_divert_text([INIT_PREPARE], [gl_use_winpthreads_default=no])

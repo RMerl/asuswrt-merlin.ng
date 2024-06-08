@@ -1,5 +1,5 @@
-# vasnprintf.m4 serial 38
-dnl Copyright (C) 2002-2004, 2006-2022 Free Software Foundation, Inc.
+# vasnprintf.m4 serial 52
+dnl Copyright (C) 2002-2004, 2006-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -29,6 +29,15 @@ AC_DEFUN([gl_REPLACE_VASNPRINTF],
   gl_PREREQ_ASNPRINTF
 ])
 
+AC_DEFUN([gl_FUNC_VASNWPRINTF],
+[
+  AC_LIBOBJ([printf-args])
+  gl_PREREQ_PRINTF_ARGS
+  gl_PREREQ_PRINTF_PARSE
+  gl_PREREQ_VASNWPRINTF
+  gl_PREREQ_ASNPRINTF
+])
+
 # Prerequisites of lib/printf-args.h, lib/printf-args.c.
 AC_DEFUN([gl_PREREQ_PRINTF_ARGS],
 [
@@ -37,6 +46,7 @@ AC_DEFUN([gl_PREREQ_PRINTF_ARGS],
 ])
 
 # Prerequisites of lib/printf-parse.h, lib/printf-parse.c.
+# Prerequisites of lib/wprintf-parse.h, lib/wprintf-parse.c.
 AC_DEFUN([gl_PREREQ_PRINTF_PARSE],
 [
   AC_REQUIRE([gl_FEATURES_H])
@@ -50,19 +60,13 @@ AC_DEFUN([gl_PREREQ_PRINTF_PARSE],
   AC_REQUIRE([gt_AC_TYPE_INTMAX_T])
 ])
 
-# Prerequisites of lib/vasnprintf.c.
+# Prerequisites of lib/vasnprintf.c if !WIDE_CHAR_VERSION.
 AC_DEFUN_ONCE([gl_PREREQ_VASNPRINTF],
 [
-  AC_REQUIRE([AC_FUNC_ALLOCA])
-  AC_REQUIRE([gt_TYPE_WCHAR_T])
-  AC_REQUIRE([gt_TYPE_WINT_T])
-  AC_CHECK_FUNCS([snprintf strnlen wcslen wcsnlen mbrtowc wcrtomb])
+  AC_CHECK_FUNCS([snprintf strnlen wcrtomb])
   dnl Use the _snprintf function only if it is declared (because on NetBSD it
   dnl is defined as a weak alias of snprintf; we prefer to use the latter).
   AC_CHECK_DECLS([_snprintf], , , [[#include <stdio.h>]])
-  dnl Knowing DBL_EXPBIT0_WORD and DBL_EXPBIT0_BIT enables an optimization
-  dnl in the code for NEED_PRINTF_LONG_DOUBLE || NEED_PRINTF_DOUBLE.
-  AC_REQUIRE([gl_DOUBLE_EXPONENT_LOCATION])
   dnl We can avoid a lot of code by assuming that snprintf's return value
   dnl conforms to ISO C99. So check that.
   AC_REQUIRE([gl_SNPRINTF_RETVAL_C99])
@@ -84,6 +88,108 @@ AC_DEFUN_ONCE([gl_PREREQ_VASNPRINTF],
          terminated.])
       ;;
   esac
+  gl_PREREQ_VASNXPRINTF
+])
+
+# Prerequisites of lib/vasnwprintf.c.
+AC_DEFUN_ONCE([gl_PREREQ_VASNWPRINTF],
+[
+  AC_REQUIRE([AC_CANONICAL_HOST]) dnl for cross-compiles
+  AC_CHECK_FUNCS_ONCE([swprintf wcsnlen mbrtowc])
+  AC_CHECK_DECLS([_snwprintf], , , [[#include <stdio.h>]])
+  AC_CHECK_DECLS([wcsnlen], , , [[#include <wchar.h>]])
+  gl_SWPRINTF_WORKS
+  case "$gl_cv_func_swprintf_works" in
+    *yes)
+      AC_DEFINE([HAVE_WORKING_SWPRINTF], [1],
+        [Define if the swprintf function works correctly when it produces output
+         that contains null wide characters.])
+      ;;
+  esac
+  gl_MBRTOWC_C_LOCALE
+  case "$gl_cv_func_mbrtowc_C_locale_sans_EILSEQ" in
+    *yes)
+      AC_CACHE_CHECK([whether swprintf in the C locale is free of encoding errors],
+        [gl_cv_func_swprintf_C_locale_sans_EILSEQ],
+        [
+          AC_RUN_IFELSE(
+            [AC_LANG_SOURCE([[
+#ifndef __USE_MINGW_ANSI_STDIO
+# define __USE_MINGW_ANSI_STDIO 1
+#endif
+#include <stdio.h>
+#include <wchar.h>
+int main()
+{
+  int result = 0;
+  { /* This test fails on glibc 2.35, musl libc 1.2.4, FreeBSD 13.2, NetBSD 9.3,
+       OpenBSD 7.2, Cygwin 2.9.0.
+       Reported at <https://www.openwall.com/lists/musl/2023/06/12/2>.  */
+    wchar_t buf[12];
+    int ret = swprintf (buf, 12, L"%c", '\377');
+    if (ret < 0)
+      result |= 1;
+  }
+  return result;
+}]])],
+            [gl_cv_func_swprintf_C_locale_sans_EILSEQ=yes],
+            [gl_cv_func_swprintf_C_locale_sans_EILSEQ=no],
+            [case "$host_os" in
+                                   # Guess no on glibc systems.
+               *-gnu* | gnu*)      gl_cv_func_swprintf_C_locale_sans_EILSEQ="guessing yes";;
+                                   # Guess no on musl systems.
+               *-musl* | midipix*) gl_cv_func_swprintf_C_locale_sans_EILSEQ="guessing no";;
+                                   # If we don't know, obey --enable-cross-guesses.
+               *)                  gl_cv_func_swprintf_C_locale_sans_EILSEQ="$gl_cross_guess_normal";;
+             esac
+            ])
+        ])
+      ;;
+  esac
+  if case "$gl_cv_func_mbrtowc_C_locale_sans_EILSEQ" in
+       *yes) false ;;
+       *) true ;;
+     esac \
+     || case "$gl_cv_func_swprintf_C_locale_sans_EILSEQ" in
+          *yes) false ;;
+          *) true ;;
+        esac; then
+    AC_DEFINE([NEED_WPRINTF_DIRECTIVE_C], [1],
+      [Define if the vasnwprintf implementation needs special code for
+       the 'c' directive.])
+  fi
+  gl_SWPRINTF_DIRECTIVE_LA
+  case "$gl_cv_func_swprintf_directive_la" in
+    *yes) ;;
+    *)
+      AC_DEFINE([NEED_WPRINTF_DIRECTIVE_LA], [1],
+        [Define if the vasnwprintf implementation needs special code for
+         the 'a' directive with 'long double' arguments.])
+      ;;
+  esac
+  gl_SWPRINTF_DIRECTIVE_LC
+  case "$gl_cv_func_swprintf_directive_lc" in
+    *yes) ;;
+    *)
+      AC_DEFINE([NEED_WPRINTF_DIRECTIVE_LC], [1],
+        [Define if the vasnwprintf implementation needs special code for
+         the 'lc' directive.])
+      ;;
+  esac
+  gl_MUSL_LIBC
+  gl_PREREQ_VASNXPRINTF
+])
+
+# Common prerequisites of lib/vasnprintf.c and lib/vasnwprintf.c.
+AC_DEFUN_ONCE([gl_PREREQ_VASNXPRINTF],
+[
+  AC_REQUIRE([AC_FUNC_ALLOCA])
+  AC_REQUIRE([gt_TYPE_WCHAR_T])
+  AC_REQUIRE([gt_TYPE_WINT_T])
+  AC_CHECK_FUNCS([wcslen])
+  dnl Knowing DBL_EXPBIT0_WORD and DBL_EXPBIT0_BIT enables an optimization
+  dnl in the code for NEED_PRINTF_LONG_DOUBLE || NEED_PRINTF_DOUBLE.
+  AC_REQUIRE([gl_DOUBLE_EXPONENT_LOCATION])
 ])
 
 # Extra prerequisites of lib/vasnprintf.c for supporting 'long double'
@@ -152,7 +258,22 @@ AC_DEFUN([gl_PREREQ_VASNPRINTF_DIRECTIVE_A],
       AC_DEFINE([NEED_PRINTF_DIRECTIVE_A], [1],
         [Define if the vasnprintf implementation needs special code for
          the 'a' and 'A' directives.])
-      AC_CHECK_FUNCS([nl_langinfo])
+      gl_CHECK_FUNCS_ANDROID([nl_langinfo], [[#include <langinfo.h>]])
+      ;;
+  esac
+])
+
+# Extra prerequisites of lib/vasnprintf.c for supporting the 'b' directive.
+AC_DEFUN([gl_PREREQ_VASNPRINTF_DIRECTIVE_B],
+[
+  AC_REQUIRE([gl_PRINTF_DIRECTIVE_B])
+  case "$gl_cv_func_printf_directive_b" in
+    *yes)
+      ;;
+    *)
+      AC_DEFINE([NEED_PRINTF_DIRECTIVE_B], [1],
+        [Define if the vasnprintf implementation needs special code for
+         the 'b' directive.])
       ;;
   esac
 ])
@@ -183,6 +304,21 @@ AC_DEFUN([gl_PREREQ_VASNPRINTF_DIRECTIVE_LS],
       AC_DEFINE([NEED_PRINTF_DIRECTIVE_LS], [1],
         [Define if the vasnprintf implementation needs special code for
          the 'ls' directive.])
+      ;;
+  esac
+])
+
+# Extra prerequisites of lib/vasnprintf.c for supporting the 'lc' directive.
+AC_DEFUN([gl_PREREQ_VASNPRINTF_DIRECTIVE_LC],
+[
+  AC_REQUIRE([gl_PRINTF_DIRECTIVE_LC])
+  case "$gl_cv_func_printf_directive_lc" in
+    *yes)
+      ;;
+    *)
+      AC_DEFINE([NEED_PRINTF_DIRECTIVE_LC], [1],
+        [Define if the vasnprintf implementation needs special code for
+         the 'lc' directive.])
       ;;
   esac
 ])
@@ -232,6 +368,22 @@ AC_DEFUN([gl_PREREQ_VASNPRINTF_FLAG_ZERO],
   esac
 ])
 
+# Extra prerequisites of lib/vasnprintf.c for supporting the # flag with a
+# zero precision and a zero value in the 'x' and 'X' directives.
+AC_DEFUN([gl_PREREQ_VASNPRINTF_FLAG_ALT_PRECISION_ZERO],
+[
+  AC_REQUIRE([gl_PRINTF_FLAG_ALT_PRECISION_ZERO])
+  case "$gl_cv_func_printf_flag_alt_precision_zero" in
+    *yes)
+      ;;
+    *)
+      AC_DEFINE([NEED_PRINTF_FLAG_ALT_PRECISION_ZERO], [1],
+        [Define if the vasnprintf implementation needs special code for the
+         # flag with a zero precision and a zero value in the 'x' and 'X' directives.])
+      ;;
+  esac
+])
+
 # Extra prerequisites of lib/vasnprintf.c for supporting large precisions.
 AC_DEFUN([gl_PREREQ_VASNPRINTF_PRECISION],
 [
@@ -276,23 +428,53 @@ AC_DEFUN([gl_PREREQ_VASNPRINTF_ENOMEM],
 ])
 
 # Prerequisites of lib/vasnprintf.c including all extras for POSIX compliance.
-AC_DEFUN([gl_PREREQ_VASNPRINTF_WITH_EXTRAS],
+AC_DEFUN([gl_PREREQ_VASNPRINTF_WITH_POSIX_EXTRAS],
 [
   AC_REQUIRE([gl_PREREQ_VASNPRINTF])
   gl_PREREQ_VASNPRINTF_LONG_DOUBLE
   gl_PREREQ_VASNPRINTF_INFINITE_DOUBLE
   gl_PREREQ_VASNPRINTF_INFINITE_LONG_DOUBLE
   gl_PREREQ_VASNPRINTF_DIRECTIVE_A
+  gl_PREREQ_VASNPRINTF_DIRECTIVE_B
   gl_PREREQ_VASNPRINTF_DIRECTIVE_F
   gl_PREREQ_VASNPRINTF_DIRECTIVE_LS
+  gl_PREREQ_VASNPRINTF_DIRECTIVE_LC
   gl_PREREQ_VASNPRINTF_FLAG_GROUPING
   gl_PREREQ_VASNPRINTF_FLAG_LEFTADJUST
   gl_PREREQ_VASNPRINTF_FLAG_ZERO
+  gl_PREREQ_VASNPRINTF_FLAG_ALT_PRECISION_ZERO
   gl_PREREQ_VASNPRINTF_PRECISION
   gl_PREREQ_VASNPRINTF_ENOMEM
 ])
 
+# Extra prerequisites of lib/vasnprintf.c for supporting the 'B' directive.
+AC_DEFUN([gl_PREREQ_VASNPRINTF_DIRECTIVE_UPPERCASE_B],
+[
+  AC_REQUIRE([gl_PRINTF_DIRECTIVE_UPPERCASE_B])
+  case "$gl_cv_func_printf_directive_uppercase_b" in
+    *yes)
+      ;;
+    *)
+      AC_DEFINE([NEED_PRINTF_DIRECTIVE_UPPERCASE_B], [1],
+        [Define if the vasnprintf implementation needs special code for
+         the 'B' directive.])
+      ;;
+  esac
+])
+
+# Prerequisites of lib/vasnprintf.c including all extras for POSIX compliance
+# and GNU compatibility.
+AC_DEFUN([gl_PREREQ_VASNPRINTF_WITH_GNU_EXTRAS],
+[
+  gl_PREREQ_VASNPRINTF_WITH_POSIX_EXTRAS
+  AC_DEFINE([SUPPORT_GNU_PRINTF_DIRECTIVES], [1],
+    [Define if the vasnprintf implementation should support GNU compatible
+     printf directives.])
+  gl_PREREQ_VASNPRINTF_DIRECTIVE_UPPERCASE_B
+])
+
 # Prerequisites of lib/asnprintf.c.
+# Prerequisites of lib/asnwprintf.c.
 AC_DEFUN([gl_PREREQ_ASNPRINTF],
 [
 ])

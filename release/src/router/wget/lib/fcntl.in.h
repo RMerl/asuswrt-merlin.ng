@@ -1,6 +1,6 @@
 /* Like <fcntl.h>, but with non-working flags defined to 0.
 
-   Copyright (C) 2006-2022 Free Software Foundation, Inc.
+   Copyright (C) 2006-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -73,6 +73,11 @@
 
 #ifndef _@GUARD_PREFIX@_FCNTL_H
 #define _@GUARD_PREFIX@_FCNTL_H
+
+/* This file uses GNULIB_POSIXCHECK, HAVE_RAW_DECL_*.  */
+#if !_GL_CONFIG_H_INCLUDED
+ #error "Please include config.h first."
+#endif
 
 #ifndef __GLIBC__ /* Avoid namespace pollution on glibc systems.  */
 # include <unistd.h>
@@ -435,6 +440,10 @@ _GL_WARN_ON_USE (openat, "openat is not portable - "
 # define AT_EACCESS 4
 #endif
 
+/* Ignore this flag if not supported.  */
+#ifndef AT_NO_AUTOMOUNT
+# define AT_NO_AUTOMOUNT 0
+#endif
 
 #endif /* _@GUARD_PREFIX@_FCNTL_H */
 #endif /* _@GUARD_PREFIX@_FCNTL_H */

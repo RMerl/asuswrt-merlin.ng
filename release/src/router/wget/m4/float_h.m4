@@ -1,5 +1,5 @@
-# float_h.m4 serial 13
-dnl Copyright (C) 2007, 2009-2022 Free Software Foundation, Inc.
+# float_h.m4 serial 14
+dnl Copyright (C) 2007, 2009-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -84,9 +84,11 @@ int main ()
                [gl_cv_func_itold_works="guessing no"],
                [gl_cv_func_itold_works="guessing yes"])
              ;;
-                   # Guess yes on native Windows.
-           mingw*) gl_cv_func_itold_works="guessing yes" ;;
-           *)      gl_cv_func_itold_works="guessing yes" ;;
+             # Guess yes on native Windows.
+           mingw* | windows*)
+             gl_cv_func_itold_works="guessing yes" ;;
+           *)
+             gl_cv_func_itold_works="guessing yes" ;;
          esac
         ])
     ])

@@ -1,5 +1,5 @@
 /* Substitute for and wrapper around <utime.h>.
-   Copyright (C) 2017-2022 Free Software Foundation, Inc.
+   Copyright (C) 2017-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -21,6 +21,13 @@
 #endif
 @PRAGMA_COLUMNS@
 
+/* This file uses #include_next of a system file that defines time_t.
+   For the 'year2038' module to work right, <config.h> needs to have been
+   included before.  */
+#if !_GL_CONFIG_H_INCLUDED
+ #error "Please include config.h first."
+#endif
+
 /* The include_next requires a split double-inclusion guard.  */
 #if @HAVE_UTIME_H@
 # @INCLUDE_NEXT@ @NEXT_UTIME_H@
@@ -28,6 +35,11 @@
 
 #ifndef _@GUARD_PREFIX@_UTIME_H
 #define _@GUARD_PREFIX@_UTIME_H
+
+/* This file uses GNULIB_POSIXCHECK, HAVE_RAW_DECL_*.  */
+#if !_GL_CONFIG_H_INCLUDED
+ #error "Please include config.h first."
+#endif
 
 #if !@HAVE_UTIME_H@
 # include <sys/utime.h>

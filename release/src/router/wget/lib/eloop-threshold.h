@@ -1,5 +1,5 @@
 /* Threshold at which to diagnose ELOOP.  Generic version.
-   Copyright (C) 2012-2022 Free Software Foundation, Inc.
+   Copyright (C) 2012-2024 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -18,6 +18,11 @@
 
 #ifndef _ELOOP_THRESHOLD_H
 #define _ELOOP_THRESHOLD_H      1
+
+/* This file uses _GL_ATTRIBUTE_CONST.  */
+#if !_LIBC && !_GL_CONFIG_H_INCLUDED
+ #error "Please include config.h first."
+#endif
 
 #include <limits.h>
 #ifdef _LIBC

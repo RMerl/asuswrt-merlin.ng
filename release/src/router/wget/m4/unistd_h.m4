@@ -1,5 +1,5 @@
-# unistd_h.m4 serial 90
-dnl Copyright (C) 2006-2022 Free Software Foundation, Inc.
+# unistd_h.m4 serial 95
+dnl Copyright (C) 2006-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -225,6 +225,7 @@ AC_DEFUN([gl_UNISTD_H_DEFAULTS],
   REPLACE_COPY_FILE_RANGE=0;         AC_SUBST([REPLACE_COPY_FILE_RANGE])
   REPLACE_DUP=0;                     AC_SUBST([REPLACE_DUP])
   REPLACE_DUP2=0;                    AC_SUBST([REPLACE_DUP2])
+  REPLACE_DUP3=0;                    AC_SUBST([REPLACE_DUP3])
   REPLACE_EXECL=0;                   AC_SUBST([REPLACE_EXECL])
   REPLACE_EXECLE=0;                  AC_SUBST([REPLACE_EXECLE])
   REPLACE_EXECLP=0;                  AC_SUBST([REPLACE_EXECLP])
@@ -233,11 +234,14 @@ AC_DEFUN([gl_UNISTD_H_DEFAULTS],
   REPLACE_EXECVP=0;                  AC_SUBST([REPLACE_EXECVP])
   REPLACE_EXECVPE=0;                 AC_SUBST([REPLACE_EXECVPE])
   REPLACE_FACCESSAT=0;               AC_SUBST([REPLACE_FACCESSAT])
+  REPLACE_FCHDIR=0;                  AC_SUBST([REPLACE_FCHDIR])
   REPLACE_FCHOWNAT=0;                AC_SUBST([REPLACE_FCHOWNAT])
+  REPLACE_FDATASYNC=0;               AC_SUBST([REPLACE_FDATASYNC])
   REPLACE_FTRUNCATE=0;               AC_SUBST([REPLACE_FTRUNCATE])
   REPLACE_GETCWD=0;                  AC_SUBST([REPLACE_GETCWD])
   REPLACE_GETDOMAINNAME=0;           AC_SUBST([REPLACE_GETDOMAINNAME])
   REPLACE_GETDTABLESIZE=0;           AC_SUBST([REPLACE_GETDTABLESIZE])
+  REPLACE_GETENTROPY=0;              AC_SUBST([REPLACE_GETENTROPY])
   REPLACE_GETLOGIN_R=0;              AC_SUBST([REPLACE_GETLOGIN_R])
   REPLACE_GETGROUPS=0;               AC_SUBST([REPLACE_GETGROUPS])
   REPLACE_GETPAGESIZE=0;             AC_SUBST([REPLACE_GETPAGESIZE])
@@ -248,12 +252,14 @@ AC_DEFUN([gl_UNISTD_H_DEFAULTS],
   REPLACE_LINK=0;                    AC_SUBST([REPLACE_LINK])
   REPLACE_LINKAT=0;                  AC_SUBST([REPLACE_LINKAT])
   REPLACE_LSEEK=0;                   AC_SUBST([REPLACE_LSEEK])
+  REPLACE_PIPE2=0;                   AC_SUBST([REPLACE_PIPE2])
   REPLACE_PREAD=0;                   AC_SUBST([REPLACE_PREAD])
   REPLACE_PWRITE=0;                  AC_SUBST([REPLACE_PWRITE])
   REPLACE_READ=0;                    AC_SUBST([REPLACE_READ])
   REPLACE_READLINK=0;                AC_SUBST([REPLACE_READLINK])
   REPLACE_READLINKAT=0;              AC_SUBST([REPLACE_READLINKAT])
   REPLACE_RMDIR=0;                   AC_SUBST([REPLACE_RMDIR])
+  REPLACE_SETHOSTNAME=0;             AC_SUBST([REPLACE_SETHOSTNAME])
   REPLACE_SLEEP=0;                   AC_SUBST([REPLACE_SLEEP])
   REPLACE_SYMLINK=0;                 AC_SUBST([REPLACE_SYMLINK])
   REPLACE_SYMLINKAT=0;               AC_SUBST([REPLACE_SYMLINKAT])

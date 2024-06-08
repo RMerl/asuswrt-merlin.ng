@@ -1,5 +1,5 @@
 /* Convert multibyte character to wide character.
-   Copyright (C) 2011-2022 Free Software Foundation, Inc.
+   Copyright (C) 2011-2024 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2011.
 
    This file is free software: you can redistribute it and/or modify
@@ -30,7 +30,7 @@ mbtowc (wchar_t *pwc, const char *s, size_t n)
       wchar_t wc;
       size_t result;
 
-      memset (&state, 0, sizeof (mbstate_t));
+      mbszero (&state);
       result = mbrtowc (&wc, s, n, &state);
       if (result == (size_t)-1 || result == (size_t)-2)
         {

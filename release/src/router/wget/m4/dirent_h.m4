@@ -1,5 +1,5 @@
-# dirent_h.m4 serial 19
-dnl Copyright (C) 2008-2022 Free Software Foundation, Inc.
+# dirent_h.m4 serial 22
+dnl Copyright (C) 2008-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -21,10 +21,26 @@ AC_DEFUN_ONCE([gl_DIRENT_H],
   fi
   AC_SUBST([HAVE_DIRENT_H])
 
+  gl_DIRENT_DIR
+
   dnl Check for declarations of anything we want to poison if the
   dnl corresponding gnulib module is not in use.
   gl_WARN_ON_USE_PREPARE([[#include <dirent.h>
     ]], [alphasort closedir dirfd fdopendir opendir readdir rewinddir scandir])
+])
+
+dnl Determine whether <dirent.h> needs to override the DIR type.
+AC_DEFUN_ONCE([gl_DIRENT_DIR],
+[
+  dnl Set DIR_HAS_FD_MEMBER if dirfd() works, i.e. not always returns -1.
+  dnl We could use the findings from gl_FUNC_DIRFD and gl_PREREQ_DIRFD, but
+  dnl it's simpler since we know the affected platforms.
+  AC_REQUIRE([AC_CANONICAL_HOST])
+  case "$host_os" in
+    mingw* | windows* | os2*) DIR_HAS_FD_MEMBER=0 ;;
+    *)                        DIR_HAS_FD_MEMBER=1 ;;
+  esac
+  AC_SUBST([DIR_HAS_FD_MEMBER])
 ])
 
 # gl_DIRENT_MODULE_INDICATOR([modulename])
@@ -73,6 +89,8 @@ AC_DEFUN([gl_DIRENT_H_DEFAULTS],
   HAVE_SCANDIR=1;       AC_SUBST([HAVE_SCANDIR])
   HAVE_ALPHASORT=1;     AC_SUBST([HAVE_ALPHASORT])
   REPLACE_OPENDIR=0;    AC_SUBST([REPLACE_OPENDIR])
+  REPLACE_READDIR=0;    AC_SUBST([REPLACE_READDIR])
+  REPLACE_REWINDDIR=0;  AC_SUBST([REPLACE_REWINDDIR])
   REPLACE_CLOSEDIR=0;   AC_SUBST([REPLACE_CLOSEDIR])
   REPLACE_DIRFD=0;      AC_SUBST([REPLACE_DIRFD])
   REPLACE_FDOPENDIR=0;  AC_SUBST([REPLACE_FDOPENDIR])

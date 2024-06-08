@@ -1,6 +1,6 @@
 dnl Reentrant time functions: localtime_r, gmtime_r.
 
-dnl Copyright (C) 2003, 2006-2022 Free Software Foundation, Inc.
+dnl Copyright (C) 2003, 2006-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -57,9 +57,7 @@ AC_DEFUN([gl_TIME_R],
          [gl_cv_time_r_posix=yes],
          [gl_cv_time_r_posix=no])
       ])
-    if test $gl_cv_time_r_posix = yes; then
-      REPLACE_LOCALTIME_R=0
-    else
+    if test $gl_cv_time_r_posix != yes; then
       REPLACE_LOCALTIME_R=1
     fi
   else

@@ -1,5 +1,5 @@
 /* Core of implementation of fstat and stat for native Windows.
-   Copyright (C) 2017-2022 Free Software Foundation, Inc.
+   Copyright (C) 2017-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -50,7 +50,6 @@
 #include "stat-w32.h"
 
 #include "pathmax.h"
-#include "verify.h"
 
 /* Don't assume that UNICODE is not defined.  */
 #undef LoadLibrary
@@ -228,7 +227,7 @@ _gl_fstat_by_handle (HANDLE h, const char *path, struct stat *buf)
           if (GetFileInformationByHandleExFunc (h, FileIdInfo, &id, sizeof (id)))
             {
               buf->st_dev = id.VolumeSerialNumber;
-              verify (sizeof (ino_t) == sizeof (id.FileId));
+              static_assert (sizeof (ino_t) == sizeof (id.FileId));
               memcpy (&buf->st_ino, &id.FileId, sizeof (ino_t));
               goto ino_done;
             }

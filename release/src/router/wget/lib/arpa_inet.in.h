@@ -1,6 +1,6 @@
 /* A GNU-like <arpa/inet.h>.
 
-   Copyright (C) 2005-2006, 2008-2022 Free Software Foundation, Inc.
+   Copyright (C) 2005-2006, 2008-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -48,6 +48,11 @@
 
 #ifndef _@GUARD_PREFIX@_ARPA_INET_H
 #define _@GUARD_PREFIX@_ARPA_INET_H
+
+/* This file uses GNULIB_POSIXCHECK, HAVE_RAW_DECL_*.  */
+#if !_GL_CONFIG_H_INCLUDED
+ #error "Please include config.h first."
+#endif
 
 /* Get all possible declarations of inet_ntop() and inet_pton().  */
 #if (@GNULIB_INET_NTOP@ || @GNULIB_INET_PTON@ || defined GNULIB_POSIXCHECK) \

@@ -2,9 +2,9 @@
 # Run this after each non-alpha release, to update the web documentation at
 # https://www.gnu.org/software/$pkg/manual/
 
-VERSION=2022-01-27.18; # UTC
+VERSION=2023-09-11.20; # UTC
 
-# Copyright (C) 2009-2022 Free Software Foundation, Inc.
+# Copyright (C) 2009-2024 Free Software Foundation, Inc.
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -153,8 +153,8 @@ cleanup()
   $GIT branch -d $tmp_branch
   exit $__st
 }
-trap cleanup 0
-trap 'exit $?' 1 2 13 15
+trap cleanup EXIT
+trap 'exit $?' HUP INT PIPE TERM
 
 # We must build using sources for which --version reports the
 # just-released version number, not some string like 7.6.18-20761.
@@ -175,11 +175,14 @@ set +e
 
 tmp=$(mktemp -d web-doc-update.XXXXXX) || exit 1
 ( cd $tmp \
-    && $CVS -d $cvs_user@cvs.sv.gnu.org:/webcvs/$pkg co $pkg )
+    && $CVS -d $cvs_user@cvs.savannah.gnu.org:/webcvs/$pkg co $pkg )
 $RSYNC -avP "$builddir"/doc/manual/ $tmp/$pkg/manual
 
 (
-  cd $tmp/$pkg/manual
+  cd $tmp/$pkg
+  test -d manual/CVS || $dryrun $CVS add -ko manual
+
+  cd manual
 
   # Add all the files.  This is simpler than trying to add only the
   # new ones because of new directories

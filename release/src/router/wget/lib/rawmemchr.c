@@ -1,5 +1,5 @@
 /* Searching in a string.
-   Copyright (C) 2008-2022 Free Software Foundation, Inc.
+   Copyright (C) 2008-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -19,32 +19,41 @@
 /* Specification.  */
 #include <string.h>
 
-/* A function definition is only needed if HAVE_RAWMEMCHR is not defined.  */
+/* A function definition is needed only if HAVE_RAWMEMCHR is not defined.  */
 #if !HAVE_RAWMEMCHR
 
 # include <limits.h>
-# include <stdalign.h>
 # include <stdint.h>
 
-# include "verify.h"
 
 /* Find the first occurrence of C in S.  */
 void *
 rawmemchr (const void *s, int c_in)
 {
-  /* Change this typedef to experiment with performance.  */
+# ifdef __CHERI_PURE_CAPABILITY__
+  /* Most architectures let you read an aligned word,
+     even if the unsigned char array at S ends in the middle of the word.
+     However CHERI does not, so call memchr
+     with the underlying object's remaining length.
+     This cannot return NULL if S points to a C_IN-terminated array.
+     Use builtins rather than including <cheri.h> which is less stable.  */
+  return memchr (s, c_in, (__builtin_cheri_length_get (s)
+                           - __builtin_cheri_offset_get (s)));
+# else
+
+  /* You can change this typedef to experiment with performance.  */
   typedef uintptr_t longword;
-  /* If you change the "uintptr_t", you should change UINTPTR_WIDTH to match.
-     This verifies that the type does not have padding bits.  */
-  verify (UINTPTR_WIDTH == UCHAR_WIDTH * sizeof (longword));
+  /* Verify that the longword type lacks padding bits.  */
+  static_assert (UINTPTR_WIDTH == UCHAR_WIDTH * sizeof (uintptr_t));
 
   const unsigned char *char_ptr;
   unsigned char c = c_in;
 
   /* Handle the first few bytes by reading one byte at a time.
-     Do this until CHAR_PTR is aligned on a longword boundary.  */
+     Do this until CHAR_PTR is aligned on a natural longword boundary,
+     as using alignof (longword) might be slower.  */
   for (char_ptr = (const unsigned char *) s;
-       (uintptr_t) char_ptr % alignof (longword) != 0;
+       (uintptr_t) char_ptr % sizeof (longword) != 0;
        ++char_ptr)
     if (*char_ptr == c)
       return (void *) char_ptr;
@@ -120,6 +129,7 @@ rawmemchr (const void *s, int c_in)
   while (*char_ptr != c)
     char_ptr++;
   return (void *) char_ptr;
+# endif
 }
 
 #endif

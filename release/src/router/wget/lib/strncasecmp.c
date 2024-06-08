@@ -1,5 +1,5 @@
 /* strncasecmp.c -- case insensitive string comparator
-   Copyright (C) 1998-1999, 2005-2007, 2009-2022 Free Software Foundation, Inc.
+   Copyright (C) 1998-1999, 2005-2007, 2009-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -22,8 +22,6 @@
 #include <ctype.h>
 #include <limits.h>
 
-#define TOLOWER(Ch) (isupper (Ch) ? tolower (Ch) : (Ch))
-
 /* Compare no more than N bytes of strings S1 and S2, ignoring case,
    returning less than, equal to or greater than zero if S1 is
    lexicographically less than, equal to or greater than S2.
@@ -41,8 +39,8 @@ strncasecmp (const char *s1, const char *s2, size_t n)
 
   do
     {
-      c1 = TOLOWER (*p1);
-      c2 = TOLOWER (*p2);
+      c1 = tolower (*p1);
+      c2 = tolower (*p2);
 
       if (--n == 0 || c1 == '\0')
         break;

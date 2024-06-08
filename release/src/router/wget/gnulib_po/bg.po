@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnulib 4.0.0.2567\n"
 "Report-Msgid-Bugs-To: bug-gnulib@gnu.org\n"
-"POT-Creation-Date: 2022-02-26 17:24+0100\n"
-"PO-Revision-Date: 2020-03-10 09:45+0100\n"
+"POT-Creation-Date: 2024-03-10 15:09+0100\n"
+"PO-Revision-Date: 2023-06-18 17:55+0300\n"
 "Last-Translator: Alexander Shopov <ash@kambanaria.org>\n"
 "Language-Team: Bulgarian <dict@ludost.net>\n"
 "Language: bg\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 
-#: lib/error.c:195
+#: lib/error.c:194
 msgid "Unknown system error"
 msgstr "Неизвестна системна грешка"
 
@@ -98,37 +98,37 @@ msgstr "Неправилно кодиран низ на аргумент"
 msgid "Unknown error"
 msgstr "Неизвестна грешка"
 
-#: lib/getopt.c:278
+#: lib/getopt.c:282
 #, c-format
 msgid "%s: option '%s%s' is ambiguous\n"
 msgstr "%s: опцията „%s%s“ не е еднозначна\n"
 
-#: lib/getopt.c:284
+#: lib/getopt.c:288
 #, c-format
 msgid "%s: option '%s%s' is ambiguous; possibilities:"
 msgstr "%s: опцията „%s%s“ не е еднозначна.  Възможности:"
 
-#: lib/getopt.c:319
+#: lib/getopt.c:322
 #, c-format
 msgid "%s: unrecognized option '%s%s'\n"
 msgstr "%s: непозната опция „%s%s“\n"
 
-#: lib/getopt.c:345
+#: lib/getopt.c:348
 #, c-format
 msgid "%s: option '%s%s' doesn't allow an argument\n"
 msgstr "%s: опцията „%s%s“ се използва без аргументи\n"
 
-#: lib/getopt.c:360
+#: lib/getopt.c:363
 #, c-format
 msgid "%s: option '%s%s' requires an argument\n"
 msgstr "%s: опцията „%s%s“ изисква аргумент\n"
 
-#: lib/getopt.c:621
+#: lib/getopt.c:624
 #, c-format
 msgid "%s: invalid option -- '%c'\n"
 msgstr "%s: неправилна опция — „%c“\n"
 
-#: lib/getopt.c:636 lib/getopt.c:682
+#: lib/getopt.c:639 lib/getopt.c:685
 #, c-format
 msgid "%s: option requires an argument -- '%c'\n"
 msgstr "%s: опцията изисква аргумент — „%c“\n"
@@ -136,19 +136,19 @@ msgstr "%s: опцията изисква аргумент — „%c“\n"
 #: lib/openat-die.c:38
 #, c-format
 msgid "unable to record current working directory"
-msgstr "текущата работна директория не може да се запише"
+msgstr "не може да се запише коя е текущата работна директория"
 
 #: lib/openat-die.c:57
 #, c-format
 msgid "failed to return to initial working directory"
 msgstr "не може да се върне към първоначалната работна директория"
 
-#: lib/os2-spawn.c:46
+#: lib/os2-spawn.c:45
 #, c-format
 msgid "_open_osfhandle failed"
 msgstr "неуспешно изпълнение на „_open_osfhandle“"
 
-#: lib/os2-spawn.c:83
+#: lib/os2-spawn.c:82
 #, c-format
 msgid "cannot restore fd %d: dup2 failed"
 msgstr ""
@@ -176,11 +176,11 @@ msgstr ""
 #. If you don't know what to put here, please see
 #. <https://en.wikipedia.org/wiki/Quotation_marks_in_other_languages>
 #. and use glyphs suitable for your language.
-#: lib/quotearg.c:355
+#: lib/quotearg.c:354
 msgid "`"
 msgstr "„"
 
-#: lib/quotearg.c:356
+#: lib/quotearg.c:355
 msgid "'"
 msgstr "“"
 
@@ -256,13 +256,12 @@ msgstr "„)“ или „\\)“ без еш"
 msgid "No previous regular expression"
 msgstr "Няма предхождащ регулярен израз"
 
-#: lib/spawn-pipe.c:217 lib/spawn-pipe.c:220 lib/spawn-pipe.c:459
-#: lib/spawn-pipe.c:462
+#: lib/spawn-pipe.c:216 lib/spawn-pipe.c:219
 #, c-format
 msgid "cannot create pipe"
 msgstr "не може да се създаде програмен канал"
 
-#: lib/spawn-pipe.c:597 lib/wait-process.c:291 lib/wait-process.c:365
+#: lib/spawn-pipe.c:596 lib/wait-process.c:291 lib/wait-process.c:365
 #, c-format
 msgid "%s subprocess failed"
 msgstr "дъщерният процес „%s“ завърши неуспешно"
@@ -536,7 +535,7 @@ msgstr "паметта е изчерпана"
 #~ msgstr "блоков специален файл"
 
 #~ msgid "character special file"
-#~ msgstr "знаков специален сайт"
+#~ msgstr "знаков специален файл"
 
 #~ msgid "contiguous data"
 #~ msgstr "последователни данни"
@@ -840,13 +839,9 @@ msgstr "паметта е изчерпана"
 #~ "This is free software: you are free to change and redistribute it.\n"
 #~ "There is NO WARRANTY, to the extent permitted by law.\n"
 #~ msgstr ""
-#~ "Лиценз — Общ публичен лиценз на GNU (GNU GPL), както е публикуван от "
-#~ "Фондацията\n"
-#~ "за свободен софтуер — версия 3 на лиценза или (по ваше решение) по-късна "
-#~ "версия.\n"
-#~ "<%s>\n"
-#~ "Тази програма е свободен софтуер. Можете да я разпространявате и/или "
-#~ "променяте.\n"
+#~ "Лиценз GPLv3+: GNU GPL — версия 3 или по-късна версия <%s>.\n"
+#~ "Тази програма е свободен софтуер. Може да я променяте и/или "
+#~ "разпространявате.\n"
 #~ "Тя се разпространява БЕЗ НИКАКВИ ГАРАНЦИИ доколкото е позволено от "
 #~ "закона.\n"
 

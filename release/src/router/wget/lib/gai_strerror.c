@@ -1,4 +1,4 @@
-/* Copyright (C) 1997, 2001-2002, 2004-2006, 2008-2022 Free Software
+/* Copyright (C) 1997, 2001-2002, 2004-2006, 2008-2024 Free Software
    Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Philip Blundell <pjb27@cam.ac.uk>, 1997.

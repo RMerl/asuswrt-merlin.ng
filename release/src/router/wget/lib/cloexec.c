@@ -1,6 +1,6 @@
 /* cloexec.c - set or clear the close-on-exec descriptor flag
 
-   Copyright (C) 1991, 2004-2006, 2009-2022 Free Software Foundation, Inc.
+   Copyright (C) 1991, 2004-2006, 2009-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as

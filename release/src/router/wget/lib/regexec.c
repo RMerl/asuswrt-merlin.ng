@@ -1,5 +1,5 @@
 /* Extended regular expression matching and search library.
-   Copyright (C) 2002-2022 Free Software Foundation, Inc.
+   Copyright (C) 2002-2024 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Isamu Hasegawa <isamu@yamato.ibm.com>.
 
@@ -324,7 +324,7 @@ re_search_2_stub (struct re_pattern_buffer *bufp, const char *string1,
   char *s = NULL;
 
   if (__glibc_unlikely ((length1 < 0 || length2 < 0 || stop < 0
-			 || INT_ADD_WRAPV (length1, length2, &len))))
+			 || ckd_add (&len, length1, length2))))
     return -2;
 
   /* Concatenate the strings.  */
@@ -1308,8 +1308,8 @@ push_fail_stack (struct re_fail_stack_t *fs, Idx str_idx, Idx dest_node,
 		 re_node_set *eps_via_nodes)
 {
   reg_errcode_t err;
-  Idx num = fs->num++;
-  if (fs->num == fs->alloc)
+  Idx num = fs->num;
+  if (num == fs->alloc)
     {
       struct re_fail_stack_ent_t *new_array;
       new_array = re_realloc (fs->stack, struct re_fail_stack_ent_t,
@@ -1324,6 +1324,7 @@ push_fail_stack (struct re_fail_stack_t *fs, Idx str_idx, Idx dest_node,
   fs->stack[num].regs = re_malloc (regmatch_t, 2 * nregs);
   if (fs->stack[num].regs == NULL)
     return REG_ESPACE;
+  fs->num = num + 1;
   memcpy (fs->stack[num].regs, regs, sizeof (regmatch_t) * nregs);
   memcpy (fs->stack[num].regs + nregs, prevregs, sizeof (regmatch_t) * nregs);
   err = re_node_set_init_copy (&fs->stack[num].eps_via_nodes, eps_via_nodes);

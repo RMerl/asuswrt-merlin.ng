@@ -1,5 +1,5 @@
 /* Program name management.
-   Copyright (C) 2016-2022 Free Software Foundation, Inc.
+   Copyright (C) 2016-2024 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as published by
@@ -19,22 +19,8 @@
 
 #include <stdlib.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/* Return the base name of the executing program.
-   On native Windows this will usually end in ".exe" or ".EXE". */
-#ifndef HAVE_GETPROGNAME
-extern char const *getprogname (void)
-# ifdef HAVE_DECL_PROGRAM_INVOCATION_NAME
-  _GL_ATTRIBUTE_PURE
-# endif
-  ;
-#endif
-
-#ifdef __cplusplus
-}
+#if __GNUC__ || (__clang_major__ >= 4)
+# warning "The include file getprogname.h is deprecated. Use <stdlib.h> instead."
 #endif
 
 #endif

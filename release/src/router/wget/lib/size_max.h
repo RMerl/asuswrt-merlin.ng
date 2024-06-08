@@ -1,5 +1,5 @@
 /* size_max.h -- declare SIZE_MAX through system headers
-   Copyright (C) 2005-2006, 2009-2022 Free Software Foundation, Inc.
+   Copyright (C) 2005-2006, 2009-2024 Free Software Foundation, Inc.
    Written by Simon Josefsson.
 
    This file is free software: you can redistribute it and/or modify
@@ -17,6 +17,11 @@
 
 #ifndef GNULIB_SIZE_MAX_H
 #define GNULIB_SIZE_MAX_H
+
+/* This file uses HAVE_STDINT_H.  */
+#if !_GL_CONFIG_H_INCLUDED
+ #error "Please include config.h first."
+#endif
 
 /* Get SIZE_MAX declaration on systems like Solaris 7/8/9.  */
 # include <limits.h>

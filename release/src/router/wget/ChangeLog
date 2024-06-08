@@ -1,4 +1,282 @@
+2024-03-10  Darshit Shah  <darnir@gnu.org>
+
+	version 1.24.5
+	* NEWS: Record release date.
+
+	* contrib/make-release: Some more release management
+
+	* NEWS: Update the noteworthy NEWS
+
+	* bootstrap.conf: Organize alphabetically
+
+	* gnulib: Update to the latest version
+
+2024-03-03  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Remove obsolete Travis CI files
+	* .travis.yml: Remove.
+	* contrib/travis-ci: Remove.
+
+2024-02-24  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Fix HSTS matching
+	* src/hsts.c (hsts_find_entry): Check for includeSubdomains,
+	  (test_hsts_new_entry): Fix test,
+	  (test_hsts_url_rewrite_superdomain): Improve test.
+
+	Reported-by: Hanno Böck <hanno@hboeck.de
+
+2024-02-19  Darshit Shah  <darnir@gnu.org>
+
+	Delete some redundant tests
+	* tests/Makefile.am: Remove some tests that are redundant with the
+	  Python testenv
+	* tests/Test-auth-basic.px: Delete file
+	* tests/Test-auth-no-challenge.px: Same
+	* tests/Test-auth-no-challenge-url.px: Same
+	* tests/Test-auth-retcode.px: Same
+	* tests/Test-auth-with-content-disposition.px: Same
+	* tests/Test-k.px: Same
+
+	* Makefile.am: Ignore some lcov errors, allowing the tests to run through
+
+	* README: Add a link to the COPYING file to meet the GNU Coding Standards
+
+	* bootstrap: Update script from gnulib
+
+	* gnulib: Update gnulib
+
+	* Update copyright year to 2024
+
+2024-02-19  Darshit Shah  <git@darnir.net>
+
+	Add tests for --convert-links option
+	* testenv/Makefile.am: Add two new tests, Test-k.py and Test-https-k.py
+	* testenv/Test-k.py: New file. Add a test based on tests/Test-k.px
+	* testenv/Test-https-k.py: New file. Add a new test to ensure that the
+	  protocol of the original host URL is retained when creatign absolute
+	  links.
+
+	This test is added as a result of an issue reported on StackExchange:
+	https://superuser.com/questions/1348940/making-wgets-convert-links-respect-http-vs-https
+
+2024-02-19  Darshit Shah  <git@darnir.net>
+
+	* testenv/conf/expected_files.py: Aesthetic changes only. Format file with black
+
+	* testenv/conf/expected_files.py: Nicer diff printing on error
+
+2024-02-18  Darshit Shah  <darnir@gnu.org>
+
+	* SECURITY.md: Add a file stating how to report security issues
+
+2024-01-27  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Parse 'srcset' HTML attr for 'source' HTML tag.
+	* src/html-url.c (struct known_tag): Use tag_handle_img() for 'source' tag.
+	* testenv/Test-recursive-include.py: Extend test.
+
+2023-11-26  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/netrc.c (parse_netrc_fp): Add fetchmail compatibility (user and passwd)
+	Reported-by: Gerald Pfeifer <gerald@pfeifer.com>
+
+2023-10-22  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Fix confusing 'Cannot write to ... (Success)' message
+	* src/http.c (gethttp): Store/restore errno value.
+
+	Reported-by: Christian Rosentreter, Andries E. Brouwer
+
+2023-10-20  Jan-Michael Brummer  <jan-michael.brummer1@volkswagen.de>  (tiny change)
+
+	Add libproxy support
+	Add support for libproxy, which is capable to extract desktop
+	environment proxy configurations from dozens of systems and platforms.
+	This also enables wget to handle pac/wpad proxy server.
+
+	* configure.ac: Add check for libbproxy.
+	* src/retr.c (getproxy): Retrieve proxy via libproxy.
+
+2023-08-03  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/retr.c: Fix sc_prohibit_empty_lines_at_EOF
+
+2023-08-03  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Fix crash when printing download rate
+	If the download rate is TB/s, a read buffer overflow happended
+	that either caused a crash or printed whatever string was pointed to.
+
+	* src/retr.c (retr_rate): Add missing array entrie for TB/s and Tb/s,
+	  (test_retr_rate): New test function.
+	* tests/unit-tests.c (all_tests): Run test 'test_retr_rate'.
+	* tests/unit-tests.h: Add prototype for test_retr_rate.
+
+	Reported-by: Wiebe Cazemier <wiebe@halfgaar.net>
+
+2023-08-03  Christian Weisgerber  <naddy@mips.inka.de>  (tiny change)
+
+	* tests/Makefile.am: Remove './' from  for portability (OpenBSD)
+
+2023-07-16  Yaakov Selkowitz  <yselkowi@redhat.com>  (tiny change)
+
+	testenv: fix for Python 3.12
+	* testenv/server/http/http_server.py (HTTPSServer): Update for
+	  ssl.SSLContext APIs instead of deprecated ssl.wrap_socket().
+
+	ssl.wrap_socket() was deprecated in 3.7 and removed in 3.12.
+	This should be compatible back to 3.6 (RHEL 8 and newer).
+
+2023-07-01  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/url.c (test_uri_merge): Fix check
+
+	Add new unit test test_uri_merge()
+	* src/url.c: New test function test_uri_merge().
+	* tests/unit-tests.c (tests/unit-tests.c): Call test_uri_merge().
+	* tests/unit-tests.h (tests/unit-tests.h): Declare test_uri_merge().
+
+2023-05-16  Darshit Shah  <darnir@gnu.org>
+
+	Ensure that spaces are quoted when converting links
+	* src/convert.c(convert_links): Print the actual quoted newname when printing DEBUG output
+	  (local_quote_string): Also quote the ' ' charcter as %20. While it is okay
+	  to leave the characted as-is, quoting it covers more edge cases.
+	  And it should resolve a >10 year old bug with CSS url() parameters not being quoted
+
+	Bug-Id: 64082
+	Reported-By: Ethan Gibbs <ethan@snowsign.net>
+	Discussed-At: https://stackoverflow.com/q/13300017
+
+2023-05-16  Darshit Shah  <darnir@gnu.org>
+
+	Add new test to ensure CSS url() encoding
+	url() parameters in CSS cannot have spaces in them. Ensure that Wget does not do that
+	when using --convert-links
+
+	* testenv/test_css_url.py: New file
+	* testenv/Makefile: Add test_css_url.py to tests
+
+	Bug-Id: 64082
+
+2023-05-14  Darshit Shah  <darnir@gnu.org>
+
+	Automatically verify if commit author has assigned copyrights in the past
+	* contrib/commit-check: Add new script
+	* .gitlab-ci.yml: Add new test in the CI pipeline
+
+2023-05-14  Jan Palus  <jpalus@fastmail.com>  (tiny change)
+
+	* testenv/conf/expected_files.py: Ignore common.conf
+
+2023-05-14  Darshit Shah  <darnir@gnu.org>
+
+	* AUTHORS: Rework file to prepare for autmated testing
+
+2023-05-11  Darshit Shah  <darnir@gnu.org>
+
+	maint: post-release administrivia
+	* NEWS: Add header line for next release.
+	* .prev-version: Record previous version.
+	* cfg.mk (old_NEWS_hash): Auto-update.
+
+	contrib/make-release: Update regexes to match the NEWS file
+
+2023-05-11  Darshit Shah  <git@darnir.net>
+
+	cfg.mk: Replace uses of filesystem with file system
+
+	Update NEWS
+
+2023-05-10  Darshit Shah  <git@darnir.net>
+
+	bootstrap.sh: Update script from gnulib
+
+	gnulib: Pull forward
+
+2023-04-09  jinfuchiang  <jinfuchiang@outlook.com>  (tiny change)
+
+	Update deprecated option '--html-extension' to '--adjust-extension'
+	* doc/wget.texi: Update option '--html-extension' to '--adjust-extension'.
+	  Renamed in Wget 1.12 to better reflect its behavior.
+
+2023-03-19  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Don't write core dump if --secure-option value isn't suppported.
+
+2023-02-18  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/retr.c (fd_read_body): Increase bufsize from 8k to 64k
+
+	* src/retr.c (fd_read_body): Simplify gzip initialization
+
+	* src/retr.c (fd_read_body): Use MAX instead of max
+
+	Simplify url_error function.
+	* src/url.c (url_error): simplify, remove url arg, return const char *.
+	* src/url.h (url_error): remove url arg, return const char *.
+	* src/html-url.c (get_urls_file): Simplify call to url_error(),
+	  remove call to free().
+	* src/http.c (metalink_from_http): Likewise.
+	* src/main.c (main): Likewise.
+	* src/metalink.c (retrieve_from_metalink, fetch_metalink_file): Likewise.
+	* src/recur.c (retrieve_tree): Likewise.
+	* src/res.c (res_retrieve_file): Likewise.
+	* src/retr.c (retrieve_url, retrieve_from_file): Likewise.
+
+	* src/url.c: Refactored url_error()
+
+	* tests/valgrind-suppressions: Add rule for 'strcmp-sse2.S in libdl.so'
+
+2023-02-17  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* configure.ac: Remove CC flags -Wc90-c99-compat and -Wlong-long
+
+	* fuzz/*: Use grep >/dev/null instead of grep -q
+
+	* src/retr.c: Don't include hash.h
+
+	Update copyright years
+
+	* gnulib: Update
+
+2022-12-11  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* configure.ac: Disable nettle if NTLM is explicitly disabled
+
+2022-12-10  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* configure.ac: Allow disabling NTLM if nettle present (Savannah #63431)
+
+2022-09-24  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* fuzz/Makefile.am: Add -lz to fuzzer libs
+
+2022-03-20  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/main.c (print_help): Add --retry-on-host-error to help text
+
+	Fix HSTS portability by using int64_t instead of time_t.
+	* src/hsts.c: Use int64_t instead of time_t.
+	* src/http.c: Use int64_t for parsing Strict-Transport-Security.
+
+	src/http.c (time_to_rfc1123): Fix -Wformat-nonliteral
+
+	* src/warc.c (warc_process_cdx_line): Fix variable type to idx_t
+
+	* src/main.c (secs_to_human_time): Use snprintf instead of sprintf
+
+	* src/main.c (main): Remove unused variable
+
+	* src/netrc.c (test_parse_netrc): Check if HAVE_FMEMOPEN is defined
+
 2022-02-26  Darshit Shah  <darnir@gnu.org>
+
+	maint: post-release administrivia
+	* NEWS: Add header line for next release.
+	* .prev-version: Record previous version.
+	* cfg.mk (old_NEWS_hash): Auto-update.
 
 	* NEWS: Update NEWS items for release
 

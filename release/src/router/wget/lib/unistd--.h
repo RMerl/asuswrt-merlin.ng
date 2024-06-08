@@ -1,6 +1,6 @@
 /* Like unistd.h, but redefine some names to avoid glitches.
 
-   Copyright (C) 2005, 2009-2022 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2009-2024 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by

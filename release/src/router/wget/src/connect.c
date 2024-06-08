@@ -1,5 +1,5 @@
 /* Establishing and handling network connections.
-   Copyright (C) 1995-2011, 2015, 2018-2022 Free Software Foundation,
+   Copyright (C) 1995-2011, 2015, 2018-2024 Free Software Foundation,
    Inc.
 
 This file is part of GNU Wget.

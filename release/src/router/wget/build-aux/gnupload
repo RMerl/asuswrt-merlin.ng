@@ -3,7 +3,7 @@
 
 scriptversion=2022-01-27.18; # UTC
 
-# Copyright (C) 2004-2022 Free Software Foundation, Inc.
+# Copyright (C) 2004-2024 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -398,7 +398,7 @@ upload ()
       for f in $files $base.directive.asc
       do
         echo put $f
-      done | $dbg sftp -b - puszcza.gnu.org.ua:/incoming/$destdir_topdir
+      done | $dbg sftp -b - download.gnu.org.ua:/incoming/$destdir_topdir
       ;;
     /*)
       dest_host=`echo "$dest" | sed 's,:.*,,'`

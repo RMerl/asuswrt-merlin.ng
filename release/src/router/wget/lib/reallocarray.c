@@ -1,6 +1,6 @@
 /* reallocarray function that is glibc compatible.
 
-   Copyright (C) 2017-2022 Free Software Foundation, Inc.
+   Copyright (C) 2017-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -19,16 +19,15 @@
 
 #include <config.h>
 
+#include <stdckdint.h>
 #include <stdlib.h>
 #include <errno.h>
-
-#include "intprops.h"
 
 void *
 reallocarray (void *ptr, size_t nmemb, size_t size)
 {
   size_t nbytes;
-  if (INT_MULTIPLY_WRAPV (nmemb, size, &nbytes))
+  if (ckd_mul (&nbytes, nmemb, size))
     {
       errno = ENOMEM;
       return NULL;

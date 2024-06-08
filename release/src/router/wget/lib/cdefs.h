@@ -1,4 +1,4 @@
-/* Copyright (C) 1992-2022 Free Software Foundation, Inc.
+/* Copyright (C) 1992-2024 Free Software Foundation, Inc.
    Copyright The GNU Toolchain Authors.
    This file is part of the GNU C Library.
 
@@ -42,8 +42,8 @@
 #if (defined __has_attribute \
      && (!defined __clang_minor__ \
          || (defined __apple_build_version__ \
-             ? 6000000 <= __apple_build_version__ \
-             : 3 < __clang_major__ + (5 <= __clang_minor__))))
+             ? 7000000 <= __apple_build_version__ \
+             : 5 <= __clang_major__)))
 # define __glibc_has_attribute(attr) __has_attribute (attr)
 #else
 # define __glibc_has_attribute(attr) 0
@@ -140,42 +140,47 @@
 #endif
 
 
+/* Gnulib avoids these definitions, as they don't work on non-glibc platforms.
+   In particular, __bos and __bos0 are defined differently in the Android libc.
+ */
+#ifndef __GNULIB_CDEFS
+
 /* Fortify support.  */
-#define __bos(ptr) __builtin_object_size (ptr, __USE_FORTIFY_LEVEL > 1)
-#define __bos0(ptr) __builtin_object_size (ptr, 0)
+# define __bos(ptr) __builtin_object_size (ptr, __USE_FORTIFY_LEVEL > 1)
+# define __bos0(ptr) __builtin_object_size (ptr, 0)
 
 /* Use __builtin_dynamic_object_size at _FORTIFY_SOURCE=3 when available.  */
-#if __USE_FORTIFY_LEVEL == 3 && (__glibc_clang_prereq (9, 0)		      \
-				 || __GNUC_PREREQ (12, 0))
-# define __glibc_objsize0(__o) __builtin_dynamic_object_size (__o, 0)
-# define __glibc_objsize(__o) __builtin_dynamic_object_size (__o, 1)
-#else
-# define __glibc_objsize0(__o) __bos0 (__o)
-# define __glibc_objsize(__o) __bos (__o)
-#endif
+# if __USE_FORTIFY_LEVEL == 3 && (__glibc_clang_prereq (9, 0)		      \
+				  || __GNUC_PREREQ (12, 0))
+#  define __glibc_objsize0(__o) __builtin_dynamic_object_size (__o, 0)
+#  define __glibc_objsize(__o) __builtin_dynamic_object_size (__o, 1)
+# else
+#  define __glibc_objsize0(__o) __bos0 (__o)
+#  define __glibc_objsize(__o) __bos (__o)
+# endif
 
 /* Compile time conditions to choose between the regular, _chk and _chk_warn
    variants.  These conditions should get evaluated to constant and optimized
    away.  */
 
-#define __glibc_safe_len_cond(__l, __s, __osz) ((__l) <= (__osz) / (__s))
-#define __glibc_unsigned_or_positive(__l) \
+# define __glibc_safe_len_cond(__l, __s, __osz) ((__l) <= (__osz) / (__s))
+# define __glibc_unsigned_or_positive(__l) \
   ((__typeof (__l)) 0 < (__typeof (__l)) -1				      \
    || (__builtin_constant_p (__l) && (__l) > 0))
 
 /* Length is known to be safe at compile time if the __L * __S <= __OBJSZ
-   condition can be folded to a constant and if it is true.  The -1 check is
-   redundant because since it implies that __glibc_safe_len_cond is true.  */
-#define __glibc_safe_or_unknown_len(__l, __s, __osz) \
-  (__glibc_unsigned_or_positive (__l)					      \
-   && __builtin_constant_p (__glibc_safe_len_cond ((__SIZE_TYPE__) (__l),     \
-						   __s, __osz))		      \
-   && __glibc_safe_len_cond ((__SIZE_TYPE__) (__l), __s, __osz))
+   condition can be folded to a constant and if it is true, or unknown (-1) */
+# define __glibc_safe_or_unknown_len(__l, __s, __osz) \
+  ((__osz) == (__SIZE_TYPE__) -1					      \
+   || (__glibc_unsigned_or_positive (__l)				      \
+       && __builtin_constant_p (__glibc_safe_len_cond ((__SIZE_TYPE__) (__l), \
+						       (__s), (__osz)))	      \
+       && __glibc_safe_len_cond ((__SIZE_TYPE__) (__l), (__s), (__osz))))
 
 /* Conversely, we know at compile time that the length is unsafe if the
    __L * __S <= __OBJSZ condition can be folded to a constant and if it is
    false.  */
-#define __glibc_unsafe_len(__l, __s, __osz) \
+# define __glibc_unsafe_len(__l, __s, __osz) \
   (__glibc_unsigned_or_positive (__l)					      \
    && __builtin_constant_p (__glibc_safe_len_cond ((__SIZE_TYPE__) (__l),     \
 						   __s, __osz))		      \
@@ -184,7 +189,7 @@
 /* Fortify function f.  __f_alias, __f_chk and __f_chk_warn must be
    declared.  */
 
-#define __glibc_fortify(f, __l, __s, __osz, ...) \
+# define __glibc_fortify(f, __l, __s, __osz, ...) \
   (__glibc_safe_or_unknown_len (__l, __s, __osz)			      \
    ? __ ## f ## _alias (__VA_ARGS__)					      \
    : (__glibc_unsafe_len (__l, __s, __osz)				      \
@@ -194,12 +199,15 @@
 /* Fortify function f, where object size argument passed to f is the number of
    elements and not total size.  */
 
-#define __glibc_fortify_n(f, __l, __s, __osz, ...) \
+# define __glibc_fortify_n(f, __l, __s, __osz, ...) \
   (__glibc_safe_or_unknown_len (__l, __s, __osz)			      \
    ? __ ## f ## _alias (__VA_ARGS__)					      \
    : (__glibc_unsafe_len (__l, __s, __osz)				      \
       ? __ ## f ## _chk_warn (__VA_ARGS__, (__osz) / (__s))		      \
       : __ ## f ## _chk (__VA_ARGS__, (__osz) / (__s))))		      \
+
+#endif
+
 
 #if __GNUC_PREREQ (4,3)
 # define __warnattr(msg) __attribute__((__warning__ (msg)))

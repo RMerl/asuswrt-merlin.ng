@@ -1,5 +1,5 @@
-# libunistring.m4 serial 12
-dnl Copyright (C) 2009-2022 Free Software Foundation, Inc.
+# libunistring.m4 serial 13
+dnl Copyright (C) 2009-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -73,7 +73,7 @@ AC_DEFUN([gl_LIBUNISTRING_CORE],
       dnl We have to erase the cached result of the first AC_LIB_HAVE_LINKFLAGS
       dnl invocation, otherwise the second one will not be run.
       unset ac_cv_libunistring
-      glus_save_LIBS="$LIBS"
+      glus_saved_LIBS="$LIBS"
       LIBS="$LIBS $LIBICONV"
       AC_LIB_HAVE_LINKFLAGS([unistring], [],
         [#include <uniconv.h>], [u8_strconv_from_locale((char*)0);],
@@ -82,7 +82,7 @@ AC_DEFUN([gl_LIBUNISTRING_CORE],
         LIBUNISTRING="$LIBUNISTRING $LIBICONV"
         LTLIBUNISTRING="$LTLIBUNISTRING $LTLIBICONV"
       fi
-      LIBS="$glus_save_LIBS"
+      LIBS="$glus_saved_LIBS"
     fi
   else
     AC_LIB_HAVE_LINKFLAGS([unistring], [],

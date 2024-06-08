@@ -1,6 +1,6 @@
 /* Reentrant time functions like localtime_r.
 
-   Copyright (C) 2003, 2006-2007, 2010-2022 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2006-2007, 2010-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -20,6 +20,11 @@
 #include <config.h>
 
 #include <time.h>
+
+/* The replacement functions in this file are only used on native Windows.
+   They are multithread-safe, because the gmtime() and localtime() functions
+   on native Windows — both in the ucrt and in the older MSVCRT — return a
+   pointer to a 'struct tm' in thread-local memory.  */
 
 static struct tm *
 copy_tm_result (struct tm *dest, struct tm const *src)

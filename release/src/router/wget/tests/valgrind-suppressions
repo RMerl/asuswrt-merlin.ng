@@ -244,3 +244,11 @@
    fun:retrieve_url
    fun:main
 }
+
+{
+   <strcmp-sse2.S in libdl.so>
+   Memcheck:Addr8
+   fun:strncmp
+   fun:is_dst
+   ...
+}

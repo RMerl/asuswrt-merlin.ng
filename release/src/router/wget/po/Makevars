@@ -13,7 +13,7 @@ top_builddir = ..
 
 # These options get passed to xgettext.
 XGETTEXT_OPTIONS = --keyword=_ --keyword=N_ \
-          \
+            \
  --flag=_:1:pass-c-format\
  --flag=N_:1:pass-c-format\
  --flag=error:3:c-format --flag=error_at_line:5:c-format\

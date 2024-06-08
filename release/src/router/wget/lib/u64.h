@@ -1,6 +1,6 @@
 /* uint64_t-like operations that work even on hosts lacking uint64_t
 
-   Copyright (C) 2006, 2009-2022 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2009-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -17,11 +17,13 @@
 
 /* Written by Paul Eggert.  */
 
-#include <stdint.h>
-
-#ifndef _GL_INLINE_HEADER_BEGIN
+/* This file uses _GL_INLINE_HEADER_BEGIN, _GL_INLINE.  */
+#if !_GL_CONFIG_H_INCLUDED
  #error "Please include config.h first."
 #endif
+
+#include <stdint.h>
+
 _GL_INLINE_HEADER_BEGIN
 #ifndef _GL_U64_INLINE
 # define _GL_U64_INLINE _GL_INLINE

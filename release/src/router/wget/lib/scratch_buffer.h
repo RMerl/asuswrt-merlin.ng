@@ -1,5 +1,5 @@
 /* Variable-sized buffer with on-stack default allocation.
-   Copyright (C) 2017-2022 Free Software Foundation, Inc.
+   Copyright (C) 2017-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -98,20 +98,10 @@ extern bool scratch_buffer_set_array_size (struct scratch_buffer *buffer,
                                            size_t nelem, size_t size);
 #endif
 
-/* Return a copy of *BUFFER's first SIZE bytes as a heap-allocated block,
-   deallocating *BUFFER if it was heap-allocated.  SIZE must be at
-   most *BUFFER's size.  Return NULL (setting errno) on memory
-   exhaustion.  */
-#if 0
-extern void *scratch_buffer_dupfree (struct scratch_buffer *buffer,
-                                     size_t size);
-#endif
-
 
 /* The implementation is imported from glibc.  */
 
 /* Avoid possible conflicts with symbols exported by the GNU libc.  */
-#define __libc_scratch_buffer_dupfree gl_scratch_buffer_dupfree
 #define __libc_scratch_buffer_grow gl_scratch_buffer_grow
 #define __libc_scratch_buffer_grow_preserve gl_scratch_buffer_grow_preserve
 #define __libc_scratch_buffer_set_array_size gl_scratch_buffer_set_array_size

@@ -3,7 +3,7 @@
 
 # Generate a release announcement message.
 
-# Copyright (C) 2002-2022 Free Software Foundation, Inc.
+# Copyright (C) 2002-2024 Free Software Foundation, Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@
 eval 'exec perl -wSx "$0" "$@"'
      if 0;
 
-my $VERSION = '2022-01-27 18:48'; # UTC
+my $VERSION = '2023-12-29 18:26'; # UTC
 # The definition above must lie within the first 8 lines in order
 # for the Emacs time-stamp write hook (at end) to update it.
 # If you change this file with Emacs, please let the write hook
@@ -90,6 +90,10 @@ The following are optional:
                                 VERSION is the result of running git describe
                                 in the gnulib source directory.
                                 required if gnulib is in TOOL_LIST.
+   --gpg-key-email=EMAIL        The email address of the key used to
+                                sign the tarballs
+   --gpg-keyring-url=URL        URL pointing to keyring containing the key used
+                                to sign the tarballs
    --no-print-checksums         do not emit SHA1 or SHA256 checksums
    --archive-suffix=SUF         add SUF to the list of archive suffixes
    --mail-headers=HEADERS       a space-separated list of mail headers, e.g.,
@@ -161,6 +165,17 @@ Print the SHA1 and SHA256 signature section for each C<@file>.
 
 =cut
 
+# This digest function omits the "=" padding that is required by cksum,
+# so add the 0..2 bytes of padding required for each of Digest's algorithms.
+sub digest_file_base64_wrap ($$)
+{
+  my ($file, $alg) = @_;
+  my $h = digest_file_base64($file, $alg);
+  $alg =~ tr{-}{}d;
+  my %pad = (MD5 => 2, SHA1 => 1, SHA256 => 1, SHA384 => 0, SHA512 => 2);
+  return $h . '=' x $pad{$alg};
+}
+
 sub print_checksums (@)
 {
   my (@file) = @_;
@@ -172,11 +187,11 @@ sub print_checksums (@)
 
   foreach my $f (@file)
     {
-      print digest_file_hex($f, "SHA-1"), "  $f\n";
-      print digest_file_base64($f, "SHA-256"), "  $f\n";
+      print '  ', digest_file_hex ($f, "SHA-1"), "  $f\n";
+      print '  ', digest_file_base64_wrap ($f, "SHA-256"), "  $f\n";
     }
-  print "\nThe SHA256 checksum is base64 encoded, instead of the\n";
-  print "hexadecimal encoding that most checksum tools default to.\n\n";
+  print "\nVerify the base64 SHA256 checksum with cksum -a sha256 --check\n";
+  print "from coreutils-9.2 or OpenBSD's cksum since 2007.\n\n";
 }
 
 =item C<print_news_deltas ($news_file, $prev_version, $curr_version)
@@ -361,6 +376,38 @@ sub get_tool_versions ($$)
   return @tool_version_pair;
 }
 
+# Print a more human-friendly representation of $SEC seconds.
+sub readable_interval0($)
+{
+  my $sec = shift;
+  $sec < 60 and return "$sec seconds";
+
+  my $min = int($sec / 60); $sec %= 60;
+  30 < $sec and $min++;
+  $min < 60 and return "$min minutes";
+
+  my $hr = int($min / 60); $min %= 60;
+  30 < $min and $hr++;
+  $hr < 24 and return "$hr hours";
+
+  my $day = int($hr / 24); $hr %= 24;
+  12 < $hr and $day++;
+  $day < 50 and return "$day days";
+
+  my $wk = int($day / 7); $day %= 7;
+  4 < $day and $wk++;
+  return "$wk weeks";
+}
+
+# Convert e.g., "1 weeks", to "1 week".
+sub readable_interval($)
+{
+  my $interval_str = shift;
+  my $i = readable_interval0 $interval_str;
+  $i =~ m{^1 \w+s$} and chop $i;
+  return $i;
+}
+
 {
   # Use the C locale so that, for instance, "du" does not
   # print "1,2" instead of "1.2", which would confuse our regexps.
@@ -377,6 +424,8 @@ sub get_tool_versions ($$)
   my $bootstrap_tools;
   my $gnulib_version;
   my $print_checksums_p = 1;
+  my $gpg_key_email;
+  my $gpg_keyring_url;
 
   # Reformat the warnings before displaying them.
   local $SIG{__WARN__} = sub
@@ -395,6 +444,8 @@ sub get_tool_versions ($$)
      'previous-version=s' => \$prev_version,
      'current-version=s'  => \$curr_version,
      'gpg-key-id=s'       => \$gpg_key_id,
+     'gpg-key-email=s'    => \$gpg_key_email,
+     'gpg-keyring-url=s'  => \$gpg_keyring_url,
      'url-directory=s'    => \@url_dir_list,
      'news=s'             => \@news_file,
      'srcdir=s'           => \$srcdir,
@@ -437,10 +488,14 @@ sub get_tool_versions ($$)
   my @tool_list = split ',', $bootstrap_tools
     if $bootstrap_tools;
 
-  grep (/^gnulib$/, @tool_list) ^ defined $gnulib_version
+  grep (/^gnulib$/, @tool_list) && ! defined $gnulib_version
     and (warn "when specifying gnulib as a tool, you must also specify\n"
         . "--gnulib-version=V, where V is the result of running git describe\n"
         . "in the gnulib source directory.\n"), $fail = 1;
+
+  ! grep (/^gnulib$/, @tool_list) && defined $gnulib_version
+    and (warn "with --gnulib-version=V you must use --bootstrap-tools=...\n"
+         . "including gnulib in that list"), $fail = 1;
 
   !$release_type || exists $valid_release_types{$release_type}
     or (warn "'$release_type': invalid release type\n"), $fail = 1;
@@ -481,8 +536,46 @@ sub get_tool_versions ($$)
 ${headers}Subject: $my_distdir released [$release_type]
 
 <\#secure method=pgpmime mode=sign>
+This is to announce $package_name-$curr_version, a $release_type release.
 
 FIXME: put comments here
+
+EOF
+
+  my $v0 = $prev_version;
+  my $v1 = $curr_version;
+
+  (my $first_name = `git config user.name|cut -d' ' -f1`)
+    =~ m{\S} or die "no name? set user.name in ~/.gitconfig\n";
+
+  chomp (my $n_ci = `git rev-list "v$v0..v$v1" | wc -l`);
+  chomp (my $n_p = `git shortlog "v$v0..v$v1" | grep -c '^[^ ]'`);
+
+  my $prev_release_date = `git log --pretty=%ct -1 "v$v0"`;
+  my $this_release_date = `git log --pretty=%ct -1 "v$v1"`;
+  my $n_seconds = $this_release_date - $prev_release_date;
+  my $time_since_prev = readable_interval $n_seconds;
+  my $names = `git shortlog "v$v0..v$v1"|perl -lne '/^(\\w.*):/ and print "  ".\$1'`;
+
+  print <<EOF;
+There have been $n_ci commits by $n_p people in the $time_since_prev since $v0.
+
+See the NEWS below for a brief summary.
+
+Thanks to everyone who has contributed!
+The following people contributed changes to this release:
+
+$names
+$first_name [on behalf of the $package_name maintainers]
+==================================================================
+
+Here is the GNU $package_name home page:
+    https://gnu.org/s/$package_name/
+
+For a summary of changes and contributors, see:
+  https://git.sv.gnu.org/gitweb/?p=$package_name.git;a=shortlog;h=v$v1
+or run this command from a git-cloned $package_name directory:
+  git shortlog v$v0..v$v1
 
 EOF
 
@@ -490,7 +583,7 @@ EOF
     {
       # When there's only one tarball and one URL, use a more concise form.
       my $m = "$url_dir_list[0]/$tarballs[0]";
-      print "Here are the compressed sources and a GPG detached signature[*]:\n"
+      print "Here are the compressed sources and a GPG detached signature:\n"
         . "  $m\n"
         . "  $m.sig\n\n";
     }
@@ -502,7 +595,7 @@ EOF
                              . "please tell bug-gnulib\@gnu.org)",
                              @url_dir_list, %size, $xd);
       my @sig_files = map { "$_.sig" } @tarballs;
-      print_locations ("GPG detached signatures[*]", @url_dir_list, %size,
+      print_locations ("GPG detached signatures", @url_dir_list, %size,
                        @sig_files);
     }
 
@@ -527,18 +620,54 @@ EOF
     and print_checksums (@sizable);
 
   print <<EOF;
-[*] Use a .sig file to verify that the corresponding file (without the
+Use a .sig file to verify that the corresponding file (without the
 .sig suffix) is intact.  First, be sure to download both the .sig file
 and the corresponding tarball.  Then, run a command like this:
 
   gpg --verify $tarballs[0].sig
 
+EOF
+  my $gpg_fingerprint = `LC_ALL=C gpg --fingerprint $gpg_key_id | grep -v ^sub`;
+  if ($gpg_fingerprint =~ /^pub/)
+    {
+      chop $gpg_fingerprint;
+      $gpg_fingerprint =~ s/ \[expires:.*//mg;
+      $gpg_fingerprint =~ s/^uid           \[ultimate\]/uid  /mg;
+      $gpg_fingerprint =~ s/^/  /mg;
+      print<<EOF
+The signature should match the fingerprint of the following key:
+
+$gpg_fingerprint
+EOF
+    }
+  print <<EOF;
 If that command fails because you don't have the required public key,
-then run this command to import it:
+or that public key has expired, try the following commands to retrieve
+or refresh it, and then rerun the 'gpg --verify' command.
+EOF
+  if ($gpg_key_email) {
+    print <<EOF;
 
-  gpg --keyserver keys.gnupg.net --recv-keys $gpg_key_id
+  gpg --locate-external-key $gpg_key_email
+EOF
+    }
+  print <<EOF;
 
-and rerun the 'gpg --verify' command.
+  gpg --recv-keys $gpg_key_id
+EOF
+    if ($gpg_keyring_url) {
+      print <<EOF;
+
+  wget -q -O- '$gpg_keyring_url' | gpg --import -
+EOF
+      }
+  print <<EOF;
+
+As a last resort to find the key, you can try the official GNU
+keyring:
+
+  wget -q https://ftp.gnu.org/gnu/gnu-keyring.gpg
+  gpg --keyring gnu-keyring.gpg --verify $tarballs[0].sig
 EOF
 
   my @tool_versions = get_tool_versions (\@tool_list, $gnulib_version);

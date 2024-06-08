@@ -1,5 +1,5 @@
 /* Private details of the DIR type.
-   Copyright (C) 2011-2022 Free Software Foundation, Inc.
+   Copyright (C) 2011-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -17,15 +17,36 @@
 #ifndef _DIRENT_PRIVATE_H
 #define _DIRENT_PRIVATE_H 1
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#if HAVE_DIRENT_H                       /* mingw */
 
-/* Don't assume that UNICODE is not defined.  */
-#undef WIN32_FIND_DATA
-#define WIN32_FIND_DATA WIN32_FIND_DATAA
+# undef DIR
 
 struct gl_directory
 {
+  /* File descriptor to close during closedir().
+     Needed for implementing fdopendir().  */
+  int fd_to_close;
+  /* Pointer to the real DIR.  */
+  DIR *real_dirp;
+};
+
+/* Restore definition from dirent.h.  */
+# define DIR struct gl_directory
+
+#else                                   /* MSVC */
+
+# define WIN32_LEAN_AND_MEAN
+# include <windows.h>
+
+/* Don't assume that UNICODE is not defined.  */
+# undef WIN32_FIND_DATA
+# define WIN32_FIND_DATA WIN32_FIND_DATAA
+
+struct gl_directory
+{
+  /* File descriptor to close during closedir().
+     Needed for implementing fdopendir().  */
+  int fd_to_close;
   /* Status, or error code to produce in next readdir() call.
      -2 means the end of the directory is already reached,
      -1 means the entry was already filled by FindFirstFile,
@@ -40,5 +61,7 @@ struct gl_directory
      directory name, followed by a directory separator and the wildcards.  */
   char dir_name_mask[1];
 };
+
+#endif
 
 #endif /* _DIRENT_PRIVATE_H */

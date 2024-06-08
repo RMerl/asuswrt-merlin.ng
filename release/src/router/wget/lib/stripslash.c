@@ -1,6 +1,6 @@
 /* stripslash.c -- remove redundant trailing slashes from a file name
 
-   Copyright (C) 1990, 2001, 2003-2006, 2009-2022 Free Software Foundation,
+   Copyright (C) 1990, 2001, 2003-2006, 2009-2024 Free Software Foundation,
    Inc.
 
    This file is free software: you can redistribute it and/or modify

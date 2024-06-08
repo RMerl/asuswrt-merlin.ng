@@ -1,5 +1,5 @@
 /* Determine a temporary directory.
-   Copyright (C) 2001-2002, 2009-2022 Free Software Foundation, Inc.
+   Copyright (C) 2001-2002, 2009-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -14,7 +14,6 @@
    You should have received a copy of the GNU Lesser General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
-#include <stdbool.h>
 #include <stddef.h>
 
 /* Path search algorithm, for tmpnam, tmpfile, etc.  If DIR is

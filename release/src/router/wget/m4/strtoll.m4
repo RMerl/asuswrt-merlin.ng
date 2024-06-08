@@ -1,5 +1,5 @@
-# strtoll.m4 serial 9
-dnl Copyright (C) 2002, 2004, 2006, 2008-2022 Free Software Foundation, Inc.
+# strtoll.m4 serial 12
+dnl Copyright (C) 2002, 2004, 2006, 2008-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -19,10 +19,23 @@ AC_DEFUN([gl_FUNC_STRTOLL],
               char *term;
               /* This test fails on Minix and native Windows.  */
               {
-                const char input[] = "0x";
-                (void) strtoll (input, &term, 16);
-                if (term != input + 1)
-                  result |= 1;
+                static char const input[2][3] = {"0x", "0b"};
+                static int const base[] = {0, 2, 10};
+                int i, j;
+                for (i = 0; i < 2; i++)
+                  for (j = 0; j < 3; j++)
+                    {
+                      (void) strtoll (input[i], &term, base[j]);
+                      if (term != input[i] + 1)
+                        result |= 1;
+                    }
+              }
+              /* This test fails on pre-C23 platforms.  */
+              {
+                const char input[] = "0b1";
+                (void) strtoll (input, &term, 2);
+                if (term != input + 3)
+                  result |= 2;
               }
               return result;
             ]])
@@ -30,9 +43,13 @@ AC_DEFUN([gl_FUNC_STRTOLL],
          [gl_cv_func_strtoll_works=yes],
          [gl_cv_func_strtoll_works=no],
          [case "$host_os" in
-                    # Guess no on native Windows.
-            mingw*) gl_cv_func_strtoll_works="guessing no" ;;
-            *)      gl_cv_func_strtoll_works="$gl_cross_guess_normal" ;;
+                                # Guess no on native Windows.
+            mingw* | windows*)  gl_cv_func_strtoll_works="guessing no" ;;
+                                # Guess no on glibc systems.
+            *-gnu* | gnu*)      gl_cv_func_strtoll_works="guessing no" ;;
+                                # Guess no on musl systems.
+            *-musl* | midipix*) gl_cv_func_strtoll_works="guessing no" ;;
+            *)                  gl_cv_func_strtoll_works="$gl_cross_guess_normal" ;;
           esac
          ])
     ])

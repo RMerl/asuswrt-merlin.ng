@@ -1,5 +1,5 @@
 /* Return the canonical absolute name of a given file.
-   Copyright (C) 1996-2022 Free Software Foundation, Inc.
+   Copyright (C) 1996-2024 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include <stdbool.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -35,13 +34,6 @@
 #include "hash-triple.h"
 #include "xalloc.h"
 
-/* Suppress bogus GCC -Wmaybe-uninitialized warnings.  */
-#if defined GCC_LINT || defined lint
-# define IF_LINT(Code) Code
-#else
-# define IF_LINT(Code) /* empty */
-#endif
-
 #ifndef DOUBLE_SLASH_IS_DISTINCT_ROOT
 # define DOUBLE_SLASH_IS_DISTINCT_ROOT false
 #endif
@@ -50,6 +42,11 @@
 # define SLASHES "/\\"
 #else
 # define SLASHES "/"
+#endif
+
+/* Avoid false GCC warning "'end_idx' may be used uninitialized".  */
+#if __GNUC__ + (__GNUC_MINOR__ >= 7) > 4
+# pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif
 
 /* Return true if FILE's existence can be shown, false (setting errno)
@@ -163,28 +160,18 @@ seen_triple (Hash_table **ht, char const *filename, struct stat const *st)
   return false;
 }
 
+/* Scratch buffers used by canonicalize_filename_mode_stk and managed
+   by __realpath.  */
+struct realpath_bufs
+{
+  struct scratch_buffer rname;
+  struct scratch_buffer extra;
+  struct scratch_buffer link;
+};
 
-/* Act like canonicalize_filename_mode (see below), with an additional argument
-   rname_buf that can be used as temporary storage.
-
-   If GCC_LINT is defined, do not inline this function with GCC 10.1
-   and later, to avoid creating a pointer to the stack that GCC
-   -Wreturn-local-addr incorrectly complains about.  See:
-   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=93644
-   Although the noinline attribute can hurt performance a bit, no better way
-   to pacify GCC is known; even an explicit #pragma does not pacify GCC.
-   When the GCC bug is fixed this workaround should be limited to the
-   broken GCC versions.  */
-#if _GL_GNUC_PREREQ (10, 1)
-# if defined GCC_LINT || defined lint
-__attribute__ ((__noinline__))
-# elif __OPTIMIZE__ && !__NO_INLINE__
-#  define GCC_BOGUS_WRETURN_LOCAL_ADDR
-# endif
-#endif
 static char *
 canonicalize_filename_mode_stk (const char *name, canonicalize_mode_t can_mode,
-                                struct scratch_buffer *rname_buf)
+                                struct realpath_bufs *bufs)
 {
   char *dest;
   char const *start;
@@ -212,12 +199,7 @@ canonicalize_filename_mode_stk (const char *name, canonicalize_mode_t can_mode,
       return NULL;
     }
 
-  struct scratch_buffer extra_buffer, link_buffer;
-  scratch_buffer_init (&extra_buffer);
-  scratch_buffer_init (&link_buffer);
-  scratch_buffer_init (rname_buf);
-  char *rname_on_stack = rname_buf->data;
-  char *rname = rname_on_stack;
+  char *rname = bufs->rname.data;
   bool end_in_extra_buffer = false;
   bool failed = true;
 
@@ -227,12 +209,12 @@ canonicalize_filename_mode_stk (const char *name, canonicalize_mode_t can_mode,
 
   if (!IS_ABSOLUTE_FILE_NAME (name))
     {
-      while (!getcwd (rname, rname_buf->length))
+      while (!getcwd (bufs->rname.data, bufs->rname.length))
         {
           switch (errno)
             {
             case ERANGE:
-              if (scratch_buffer_grow (rname_buf))
+              if (scratch_buffer_grow (&bufs->rname))
                 break;
               FALLTHROUGH;
             case ENOMEM:
@@ -242,7 +224,7 @@ canonicalize_filename_mode_stk (const char *name, canonicalize_mode_t can_mode,
               dest = rname;
               goto error;
             }
-          rname = rname_buf->data;
+          rname = bufs->rname.data;
         }
       dest = rawmemchr (rname, '\0');
       start = name;
@@ -266,7 +248,7 @@ canonicalize_filename_mode_stk (const char *name, canonicalize_mode_t can_mode,
                 for (i = 2; name[i] != '\0' && !ISSLASH (name[i]); )
                   i++;
                 if (name[i] != '\0' /* implies ISSLASH (name[i]) */
-                    && i + 1 < rname_buf->length)
+                    && i + 1 < bufs->rname.length)
                   {
                     prefix_len = i;
                     memcpy (dest, name + 2, i - 2 + 1);
@@ -276,7 +258,7 @@ canonicalize_filename_mode_stk (const char *name, canonicalize_mode_t can_mode,
                   {
                     /* Either name = '\\server'; this is an invalid file name.
                        Or name = '\\server\...' and server is more than
-                       rname_buf->length - 4 bytes long.  In either
+                       bufs->rname.length - 4 bytes long.  In either
                        case, stop the UNC processing.  */
                   }
               }
@@ -321,13 +303,13 @@ canonicalize_filename_mode_stk (const char *name, canonicalize_mode_t can_mode,
           if (!ISSLASH (dest[-1]))
             *dest++ = '/';
 
-          while (rname + rname_buf->length - dest
+          while (rname + bufs->rname.length - dest
                  < startlen + sizeof dir_suffix)
             {
               idx_t dest_offset = dest - rname;
-              if (!scratch_buffer_grow_preserve (rname_buf))
+              if (!scratch_buffer_grow_preserve (&bufs->rname))
                 xalloc_die ();
-              rname = rname_buf->data;
+              rname = bufs->rname.data;
               dest = rname + dest_offset;
             }
 
@@ -340,12 +322,12 @@ canonicalize_filename_mode_stk (const char *name, canonicalize_mode_t can_mode,
             {
               while (true)
                 {
-                  buf = link_buffer.data;
-                  idx_t bufsize = link_buffer.length;
+                  buf = bufs->link.data;
+                  idx_t bufsize = bufs->link.length;
                   n = readlink (rname, buf, bufsize - 1);
                   if (n < bufsize - 1)
                     break;
-                  if (!scratch_buffer_grow (&link_buffer))
+                  if (!scratch_buffer_grow (&bufs->link))
                     xalloc_die ();
                 }
             }
@@ -384,18 +366,18 @@ canonicalize_filename_mode_stk (const char *name, canonicalize_mode_t can_mode,
 
               buf[n] = '\0';
 
-              char *extra_buf = extra_buffer.data;
-              idx_t end_idx IF_LINT (= 0);
+              char *extra_buf = bufs->extra.data;
+              idx_t end_idx;
               if (end_in_extra_buffer)
                 end_idx = end - extra_buf;
               size_t len = strlen (end);
               if (INT_ADD_OVERFLOW (len, n))
                 xalloc_die ();
-              while (extra_buffer.length <= len + n)
+              while (bufs->extra.length <= len + n)
                 {
-                  if (!scratch_buffer_grow_preserve (&extra_buffer))
+                  if (!scratch_buffer_grow_preserve (&bufs->extra))
                     xalloc_die ();
-                  extra_buf = extra_buffer.data;
+                  extra_buf = bufs->extra.data;
                 }
               if (end_in_extra_buffer)
                 end = extra_buf + end_idx;
@@ -454,20 +436,15 @@ canonicalize_filename_mode_stk (const char *name, canonicalize_mode_t can_mode,
 error:
   if (ht)
     hash_free (ht);
-  scratch_buffer_free (&extra_buffer);
-  scratch_buffer_free (&link_buffer);
 
   if (failed)
-    {
-      scratch_buffer_free (rname_buf);
-      return NULL;
-    }
+    return NULL;
 
   *dest++ = '\0';
-  char *result = scratch_buffer_dupfree (rname_buf, dest - rname);
+  char *result = malloc (dest - rname);
   if (!result)
     xalloc_die ();
-  return result;
+  return memcpy (result, rname, dest - rname);
 }
 
 /* Return the canonical absolute name of file NAME, while treating
@@ -480,10 +457,13 @@ error:
 char *
 canonicalize_filename_mode (const char *name, canonicalize_mode_t can_mode)
 {
-  #ifdef GCC_BOGUS_WRETURN_LOCAL_ADDR
-   #warning "GCC might issue a bogus -Wreturn-local-addr warning here."
-   #warning "See <https://gcc.gnu.org/bugzilla/show_bug.cgi?id=93644>."
-  #endif
-  struct scratch_buffer rname_buffer;
-  return canonicalize_filename_mode_stk (name, can_mode, &rname_buffer);
+  struct realpath_bufs bufs;
+  scratch_buffer_init (&bufs.rname);
+  scratch_buffer_init (&bufs.extra);
+  scratch_buffer_init (&bufs.link);
+  char *result = canonicalize_filename_mode_stk (name, can_mode, &bufs);
+  scratch_buffer_free (&bufs.link);
+  scratch_buffer_free (&bufs.extra);
+  scratch_buffer_free (&bufs.rname);
+  return result;
 }

@@ -1,11 +1,11 @@
-# serial 41
+# serial 47
 
 dnl From Jim Meyering.
 dnl Check for the nanosleep function.
 dnl If not found, use the supplied replacement.
 dnl
 
-# Copyright (C) 1999-2001, 2003-2022 Free Software Foundation, Inc.
+# Copyright (C) 1999-2001, 2003-2024 Free Software Foundation, Inc.
 
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -21,15 +21,15 @@ AC_DEFUN([gl_FUNC_NANOSLEEP],
 
  AC_CHECK_DECLS_ONCE([alarm])
 
- nanosleep_save_libs=$LIBS
+ gl_saved_LIBS=$LIBS
 
  # Solaris 2.5.1 needs -lposix4 to get the nanosleep function.
  # Solaris 7 prefers the library name -lrt to the obsolescent name -lposix4.
- LIB_NANOSLEEP=
- AC_SUBST([LIB_NANOSLEEP])
+ NANOSLEEP_LIB=
+ AC_SUBST([NANOSLEEP_LIB])
  AC_SEARCH_LIBS([nanosleep], [rt posix4],
                 [test "$ac_cv_search_nanosleep" = "none required" ||
-                 LIB_NANOSLEEP=$ac_cv_search_nanosleep])
+                 NANOSLEEP_LIB=$ac_cv_search_nanosleep])
  if test "x$ac_cv_search_nanosleep" != xno; then
    dnl The system has a nanosleep function.
 
@@ -100,28 +100,40 @@ AC_DEFUN([gl_FUNC_NANOSLEEP],
             #else /* A simpler test for native Windows.  */
             if (nanosleep (&ts_sleep, &ts_remaining) < 0)
               return 3;
+            /* Test for 32-bit mingw bug: negative nanosecond values do not
+               cause failure.  */
+            ts_sleep.tv_sec = 1;
+            ts_sleep.tv_nsec = -1;
+            if (nanosleep (&ts_sleep, &ts_remaining) != -1)
+              return 7;
             #endif
             return 0;
           }]])],
        [gl_cv_func_nanosleep=yes],
-       [case $? in dnl (
-        4|5|6) gl_cv_func_nanosleep='no (mishandles large arguments)';; dnl (
-        *)   gl_cv_func_nanosleep=no;;
+       [case $? in
+        4|5|6) gl_cv_func_nanosleep='no (mishandles large arguments)' ;;
+        7)     gl_cv_func_nanosleep='no (mishandles negative tv_nsec)' ;;
+        *)     gl_cv_func_nanosleep=no ;;
         esac],
-       [case "$host_os" in dnl ((
-          linux*) # Guess it halfway works when the kernel is Linux.
+       [case "$host_os" in
+            # Guess it halfway works when the kernel is Linux.
+          linux*)
             gl_cv_func_nanosleep='guessing no (mishandles large arguments)' ;;
-          mingw*) # Guess no on native Windows.
+            # Midipix generally emulates the Linux system calls,
+            # but here it handles large arguments correctly.
+          midipix*)
+            gl_cv_func_nanosleep='guessing yes' ;;
+            # Guess no on native Windows.
+          mingw* | windows*)
             gl_cv_func_nanosleep='guessing no' ;;
-          *)      # If we don't know, obey --enable-cross-guesses.
+            # If we don't know, obey --enable-cross-guesses.
+          *)
             gl_cv_func_nanosleep="$gl_cross_guess_normal" ;;
         esac
        ])
     ])
    case "$gl_cv_func_nanosleep" in
-     *yes)
-       REPLACE_NANOSLEEP=0
-       ;;
+     *yes) ;;
      *)
        REPLACE_NANOSLEEP=1
        case "$gl_cv_func_nanosleep" in
@@ -135,5 +147,9 @@ AC_DEFUN([gl_FUNC_NANOSLEEP],
  else
    HAVE_NANOSLEEP=0
  fi
- LIBS=$nanosleep_save_libs
+ LIBS=$gl_saved_LIBS
+
+ # For backward compatibility.
+ LIB_NANOSLEEP="$NANOSLEEP_LIB"
+ AC_SUBST([LIB_NANOSLEEP])
 ])

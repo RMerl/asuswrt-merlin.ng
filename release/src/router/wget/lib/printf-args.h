@@ -1,5 +1,5 @@
 /* Decomposed printf argument list.
-   Copyright (C) 1999, 2002-2003, 2006-2007, 2011-2022 Free Software
+   Copyright (C) 1999, 2002-2003, 2006-2007, 2011-2024 Free Software
    Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
@@ -41,6 +41,9 @@
 # include <wchar.h>
 #endif
 
+/* Get intN_t, uintN_t, intN_fast_t, uintN_fast_t.  */
+#include <stdint.h>
+
 /* Get va_list.  */
 #include <stdarg.h>
 
@@ -59,6 +62,26 @@ typedef enum
   TYPE_ULONGINT,
   TYPE_LONGLONGINT,
   TYPE_ULONGLONGINT,
+  /* According to ISO C 23 § 7.23.6.1, "all exact-width integer types",
+     "all minimum-width integer types", and "all fastest minimum-width integer
+     types" defined in <stdint.h> should be supported.  But for portability
+     between platforms, we support only those with N = 8, 16, 32, 64.  */
+  TYPE_INT8_T,
+  TYPE_UINT8_T,
+  TYPE_INT16_T,
+  TYPE_UINT16_T,
+  TYPE_INT32_T,
+  TYPE_UINT32_T,
+  TYPE_INT64_T,
+  TYPE_UINT64_T,
+  TYPE_INT_FAST8_T,
+  TYPE_UINT_FAST8_T,
+  TYPE_INT_FAST16_T,
+  TYPE_UINT_FAST16_T,
+  TYPE_INT_FAST32_T,
+  TYPE_UINT_FAST32_T,
+  TYPE_INT_FAST64_T,
+  TYPE_UINT_FAST64_T,
   TYPE_DOUBLE,
   TYPE_LONGDOUBLE,
   TYPE_CHAR,
@@ -74,7 +97,15 @@ typedef enum
   TYPE_COUNT_SHORT_POINTER,
   TYPE_COUNT_INT_POINTER,
   TYPE_COUNT_LONGINT_POINTER,
-  TYPE_COUNT_LONGLONGINT_POINTER
+  TYPE_COUNT_LONGLONGINT_POINTER,
+  TYPE_COUNT_INT8_T_POINTER,
+  TYPE_COUNT_INT16_T_POINTER,
+  TYPE_COUNT_INT32_T_POINTER,
+  TYPE_COUNT_INT64_T_POINTER,
+  TYPE_COUNT_INT_FAST8_T_POINTER,
+  TYPE_COUNT_INT_FAST16_T_POINTER,
+  TYPE_COUNT_INT_FAST32_T_POINTER,
+  TYPE_COUNT_INT_FAST64_T_POINTER
 #if ENABLE_UNISTDIO
   /* The unistdio extensions.  */
 , TYPE_U8_STRING
@@ -99,7 +130,23 @@ typedef struct
     unsigned long int           a_ulongint;
     long long int               a_longlongint;
     unsigned long long int      a_ulonglongint;
-    float                       a_float;
+    int8_t                      a_int8_t;
+    uint8_t                     a_uint8_t;
+    int16_t                     a_int16_t;
+    uint16_t                    a_uint16_t;
+    int32_t                     a_int32_t;
+    uint32_t                    a_uint32_t;
+    int64_t                     a_int64_t;
+    uint64_t                    a_uint64_t;
+    int_fast8_t                 a_int_fast8_t;
+    uint_fast8_t                a_uint_fast8_t;
+    int_fast16_t                a_int_fast16_t;
+    uint_fast16_t               a_uint_fast16_t;
+    int_fast32_t                a_int_fast32_t;
+    uint_fast32_t               a_uint_fast32_t;
+    int_fast64_t                a_int_fast64_t;
+    uint_fast64_t               a_uint_fast64_t;
+    float                       a_float;                     /* unused */
     double                      a_double;
     long double                 a_longdouble;
     int                         a_char;
@@ -116,6 +163,14 @@ typedef struct
     int *                       a_count_int_pointer;
     long int *                  a_count_longint_pointer;
     long long int *             a_count_longlongint_pointer;
+    int8_t *                    a_count_int8_t_pointer;
+    int16_t *                   a_count_int16_t_pointer;
+    int32_t *                   a_count_int32_t_pointer;
+    int64_t *                   a_count_int64_t_pointer;
+    int_fast8_t *               a_count_int_fast8_t_pointer;
+    int_fast16_t *              a_count_int_fast16_t_pointer;
+    int_fast32_t *              a_count_int_fast32_t_pointer;
+    int_fast64_t *              a_count_int_fast64_t_pointer;
 #if ENABLE_UNISTDIO
     /* The unistdio extensions.  */
     const uint8_t *             a_u8_string;

@@ -1,5 +1,5 @@
-# dup.m4 serial 7
-dnl Copyright (C) 2011-2022 Free Software Foundation, Inc.
+# dup.m4 serial 8
+dnl Copyright (C) 2011-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -36,9 +36,9 @@ AC_DEFUN([gl_FUNC_DUP],
       [gl_cv_func_dup_works=yes],
       [gl_cv_func_dup_works=no],
       [case "$host_os" in
-                 # Guess no on native Windows.
-         mingw*) gl_cv_func_dup_works="guessing no" ;;
-         *)      gl_cv_func_dup_works="guessing yes" ;;
+                            # Guess no on native Windows.
+         mingw* | windows*) gl_cv_func_dup_works="guessing no" ;;
+         *)                 gl_cv_func_dup_works="guessing yes" ;;
        esac
       ])
     ])

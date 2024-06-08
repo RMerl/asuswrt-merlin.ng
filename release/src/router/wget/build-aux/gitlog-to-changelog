@@ -3,7 +3,7 @@
 
 # Convert git log output to ChangeLog format.
 
-# Copyright (C) 2008-2022 Free Software Foundation, Inc.
+# Copyright (C) 2008-2024 Free Software Foundation, Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 #
 # Written by Jim Meyering
 
-# This is a prologue that allows to run a perl script as an executable
+# This is a prologue that allows running a perl script as an executable
 # on systems that are compliant to a POSIX version before POSIX:2017.
 # On such systems, the usual invocation of an executable through execlp()
 # or execvp() fails with ENOEXEC if it is a script that does not start
@@ -35,7 +35,7 @@
 eval 'exec perl -wSx "$0" "$@"'
      if 0;
 
-my $VERSION = '2022-01-27 18:49'; # UTC
+my $VERSION = '2023-06-24 21:59'; # UTC
 # The definition above must lie within the first 8 lines in order
 # for the Emacs time-stamp write hook (at end) to update it.
 # If you change this file with Emacs, please let the write hook
@@ -355,7 +355,7 @@ sub git_dir_option($)
           . "(expected date/author/email):\n$author_line\n";
 
       # Format 'Copyright-paperwork-exempt: Yes' as a standard ChangeLog
-      # `(tiny change)' annotation.
+      # '(tiny change)' annotation.
       my $tiny = (grep (/^(?:Copyright-paperwork-exempt|Tiny-change):\s+[Yy]es$/, @line)
                   ? '  (tiny change)' : '');
 

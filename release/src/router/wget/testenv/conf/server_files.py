@@ -1,7 +1,7 @@
 from conf import hook
 
 """ Pre-Test Hook: ServerFiles
-This hook is used to define a set of files on the server's virtual filesystem.
+This hook is used to define a set of files on the server's virtual file system.
 server_files is expected to be dictionary that maps filenames to their
 contents. In the future, this can be used to add additional metadata to the
 files using the WgetFile class too.

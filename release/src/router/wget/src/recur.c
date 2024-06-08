@@ -1,5 +1,5 @@
 /* Handling of recursive HTTP retrieving.
-   Copyright (C) 1996-2012, 2015, 2018-2022 Free Software Foundation,
+   Copyright (C) 1996-2012, 2015, 2018-2024 Free Software Foundation,
    Inc.
 
 This file is part of GNU Wget.
@@ -321,9 +321,7 @@ retrieve_tree (struct url *start_url_parsed, struct iri *pi)
 
           if (!url_parsed)
             {
-              char *error = url_error (url, url_err);
-              logprintf (LOG_NOTQUIET, "%s: %s.\n",url, error);
-              xfree (error);
+              logprintf (LOG_NOTQUIET, "%s: %s.\n",url, url_error (url_err));
               inform_exit_status (URLERROR);
             }
           else

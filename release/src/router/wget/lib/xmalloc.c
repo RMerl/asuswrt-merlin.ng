@@ -1,6 +1,6 @@
 /* xmalloc.c -- malloc with out of memory checking
 
-   Copyright (C) 1990-2000, 2002-2006, 2008-2022 Free Software Foundation, Inc.
+   Copyright (C) 1990-2000, 2002-2006, 2008-2024 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -22,14 +22,15 @@
 #include "xalloc.h"
 
 #include "ialloc.h"
-#include "intprops.h"
 #include "minmax.h"
 
+#include <stdckdint.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 
 static void * _GL_ATTRIBUTE_PURE
-nonnull (void *p)
+check_nonnull (void *p)
 {
   if (!p)
     xalloc_die ();
@@ -41,13 +42,13 @@ nonnull (void *p)
 void *
 xmalloc (size_t s)
 {
-  return nonnull (malloc (s));
+  return check_nonnull (malloc (s));
 }
 
 void *
 ximalloc (idx_t s)
 {
-  return nonnull (imalloc (s));
+  return check_nonnull (imalloc (s));
 }
 
 char *
@@ -71,7 +72,7 @@ xrealloc (void *p, size_t s)
 void *
 xirealloc (void *p, idx_t s)
 {
-  return nonnull (irealloc (p, s));
+  return check_nonnull (irealloc (p, s));
 }
 
 /* Change the size of an allocated block of memory P to an array of N
@@ -89,7 +90,7 @@ xreallocarray (void *p, size_t n, size_t s)
 void *
 xireallocarray (void *p, idx_t n, idx_t s)
 {
-  return nonnull (ireallocarray (p, n, s));
+  return check_nonnull (ireallocarray (p, n, s));
 }
 
 /* Allocate an array of N objects, each with S bytes of memory,
@@ -195,7 +196,7 @@ x2nrealloc (void *p, size_t *pn, size_t s)
   else
     {
       /* Set N = floor (1.5 * N) + 1 to make progress even if N == 0.  */
-      if (INT_ADD_WRAPV (n, (n >> 1) + 1, &n))
+      if (ckd_add (&n, n, (n >> 1) + 1))
         xalloc_die ();
     }
 
@@ -236,7 +237,7 @@ xpalloc (void *pa, idx_t *pn, idx_t n_incr_min, ptrdiff_t n_max, idx_t s)
      N_MAX, and what the C language can represent safely.  */
 
   idx_t n;
-  if (INT_ADD_WRAPV (n0, n0 >> 1, &n))
+  if (ckd_add (&n, n0, n0 >> 1))
     n = IDX_MAX;
   if (0 <= n_max && n_max < n)
     n = n_max;
@@ -251,7 +252,7 @@ xpalloc (void *pa, idx_t *pn, idx_t n_incr_min, ptrdiff_t n_max, idx_t s)
   size_t nbytes;
 #endif
   idx_t adjusted_nbytes
-    = (INT_MULTIPLY_WRAPV (n, s, &nbytes)
+    = (ckd_mul (&nbytes, n, s)
        ? MIN (IDX_MAX, SIZE_MAX)
        : nbytes < DEFAULT_MXFAST ? DEFAULT_MXFAST : 0);
   if (adjusted_nbytes)
@@ -263,9 +264,9 @@ xpalloc (void *pa, idx_t *pn, idx_t n_incr_min, ptrdiff_t n_max, idx_t s)
   if (! pa)
     *pn = 0;
   if (n - n0 < n_incr_min
-      && (INT_ADD_WRAPV (n0, n_incr_min, &n)
+      && (ckd_add (&n, n0, n_incr_min)
           || (0 <= n_max && n_max < n)
-          || INT_MULTIPLY_WRAPV (n, s, &nbytes)))
+          || ckd_mul (&nbytes, n, s)))
     xalloc_die ();
   pa = xrealloc (pa, nbytes);
   *pn = n;
@@ -294,13 +295,13 @@ xizalloc (idx_t s)
 void *
 xcalloc (size_t n, size_t s)
 {
-  return nonnull (calloc (n, s));
+  return check_nonnull (calloc (n, s));
 }
 
 void *
 xicalloc (idx_t n, idx_t s)
 {
-  return nonnull (icalloc (n, s));
+  return check_nonnull (icalloc (n, s));
 }
 
 /* Clone an object P of size S, with error checking.  There's no need

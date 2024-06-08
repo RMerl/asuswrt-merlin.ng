@@ -1,5 +1,5 @@
 dnl Wget-specific Autoconf macros.
-dnl Copyright (C) 1995-2011, 2018-2022 Free Software Foundation, Inc.
+dnl Copyright (C) 1995-2011, 2018-2024 Free Software Foundation, Inc.
 
 dnl This program is free software; you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by

@@ -1,6 +1,6 @@
 /* Set file access and modification times.
 
-   Copyright (C) 2003-2022 Free Software Foundation, Inc.
+   Copyright (C) 2003-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -26,7 +26,6 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include <stdbool.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/time.h>
@@ -232,8 +231,8 @@ fdutimens (int fd, char const *file, struct timespec const timespec[2])
 
          The same bug occurs in Solaris 11.1 (Apr 2013).
 
-         FIXME: Simplify this for Linux in 2016 and for Solaris in
-         2024, when file system bugs are no longer common.  */
+         FIXME: Simplify this in 2024, when these file system bugs are
+         no longer common on Gnulib target platforms.  */
       if (adjustment_needed == 2)
         {
           if (fd < 0 ? stat (file, &st) : fstat (fd, &st))
@@ -406,10 +405,10 @@ fdutimens (int fd, char const *file, struct timespec const timespec[2])
     struct timeval *t;
     if (ts)
       {
-        timeval[0].tv_sec = ts[0].tv_sec;
-        timeval[0].tv_usec = ts[0].tv_nsec / 1000;
-        timeval[1].tv_sec = ts[1].tv_sec;
-        timeval[1].tv_usec = ts[1].tv_nsec / 1000;
+        timeval[0] = (struct timeval) { .tv_sec  = ts[0].tv_sec,
+                                        .tv_usec = ts[0].tv_nsec / 1000 };
+        timeval[1] = (struct timeval) { .tv_sec  = ts[1].tv_sec,
+                                        .tv_usec = ts[1].tv_nsec / 1000 };
         t = timeval;
       }
     else
@@ -503,8 +502,8 @@ fdutimens (int fd, char const *file, struct timespec const timespec[2])
       struct utimbuf *ut;
       if (ts)
         {
-          utimbuf.actime = ts[0].tv_sec;
-          utimbuf.modtime = ts[1].tv_sec;
+          utimbuf = (struct utimbuf) { .actime  = ts[0].tv_sec,
+                                       .modtime = ts[1].tv_sec };
           ut = &utimbuf;
         }
       else
@@ -622,10 +621,10 @@ lutimens (char const *file, struct timespec const timespec[2])
     int result;
     if (ts)
       {
-        timeval[0].tv_sec = ts[0].tv_sec;
-        timeval[0].tv_usec = ts[0].tv_nsec / 1000;
-        timeval[1].tv_sec = ts[1].tv_sec;
-        timeval[1].tv_usec = ts[1].tv_nsec / 1000;
+        timeval[0] = (struct timeval) { .tv_sec = ts[0].tv_sec,
+                                        .tv_usec = ts[0].tv_nsec / 1000 };
+        timeval[1] = (struct timeval) { .tv_sec = ts[1].tv_sec,
+                                        .tv_usec = ts[1].tv_nsec / 1000 };
         t = timeval;
       }
     else

@@ -1,5 +1,5 @@
-# stddef_h.m4 serial 12
-dnl Copyright (C) 2009-2022 Free Software Foundation, Inc.
+# stddef_h.m4 serial 14
+dnl Copyright (C) 2009-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -22,7 +22,14 @@ AC_DEFUN_ONCE([gl_STDDEF_H],
     [gl_cv_type_max_align_t],
     [AC_COMPILE_IFELSE(
        [AC_LANG_PROGRAM(
-          [[#include <stddef.h>
+          [[/* On FreeBSD 12.0/x86, max_align_t defined by <stddef.h> has
+               the correct alignment with the default (wrong) definition of
+               _Alignof, but a wrong alignment as soon as we activate an
+               ISO C compliant _Alignof definition.  */
+            #if ((defined __GNUC__ && 4 <= __GNUC__) || defined __clang__) && !defined __cplusplus
+             #define _Alignof(type) __builtin_offsetof (struct { char __a; type __b; }, __b)
+            #endif
+            #include <stddef.h>
             unsigned int s = sizeof (max_align_t);
             #if defined __GNUC__ || defined __clang__ || defined __IBM__ALIGNOF__
             int check1[2 * (__alignof__ (double) <= __alignof__ (max_align_t)) - 1];
@@ -58,6 +65,21 @@ AC_DEFUN_ONCE([gl_STDDEF_H],
       [gl_cv_decl_null_works=no])])
   if test $gl_cv_decl_null_works = no; then
     REPLACE_NULL=1
+    GL_GENERATE_STDDEF_H=true
+  fi
+
+  AC_CACHE_CHECK([for unreachable],
+    [gl_cv_func_unreachable],
+    [AC_LINK_IFELSE(
+       [AC_LANG_PROGRAM(
+          [[#include <stddef.h>
+          ]],
+          [[unreachable ();
+          ]])],
+       [gl_cv_func_unreachable=yes],
+       [gl_cv_func_unreachable=no])
+    ])
+  if test $gl_cv_func_unreachable = no; then
     GL_GENERATE_STDDEF_H=true
   fi
 

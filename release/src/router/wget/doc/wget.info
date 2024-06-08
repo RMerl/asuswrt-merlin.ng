@@ -1,15 +1,15 @@
-This is wget.info, produced by makeinfo version 6.8 from wget.texi.
+This is wget.info, produced by makeinfo version 7.1 from wget.texi.
 
 This file documents the GNU Wget utility for downloading network data.
 
-   Copyright © 1996–2011, 2015, 2018–2022 Free Software Foundation, Inc.
+   Copyright © 1996-2011, 2015, 2018-2024 Free Software Foundation, Inc.
 
    Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
 any later version published by the Free Software Foundation; with no
 Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
-Texts.  A copy of the license is included in the section entitled “GNU
-Free Documentation License”.
+Texts.  A copy of the license is included in the section entitled "GNU
+Free Documentation License".
 INFO-DIR-SECTION Network applications
 START-INFO-DIR-ENTRY
 * Wget: (wget).                 Non-interactive network downloader.
@@ -18,19 +18,19 @@ END-INFO-DIR-ENTRY
 
 File: wget.info,  Node: Top,  Next: Overview,  Prev: (dir),  Up: (dir)
 
-Wget 1.21.3
+Wget 1.24.5
 ***********
 
 This file documents the GNU Wget utility for downloading network data.
 
-   Copyright © 1996–2011, 2015, 2018–2022 Free Software Foundation, Inc.
+   Copyright © 1996-2011, 2015, 2018-2024 Free Software Foundation, Inc.
 
    Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
 any later version published by the Free Software Foundation; with no
 Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
-Texts.  A copy of the license is included in the section entitled “GNU
-Free Documentation License”.
+Texts.  A copy of the license is included in the section entitled "GNU
+Free Documentation License".
 
 * Menu:
 
@@ -39,9 +39,9 @@ Free Documentation License”.
 * Recursive Download::          Downloading interlinked pages.
 * Following Links::             The available methods of chasing links.
 * Time-Stamping::               Mirroring according to time-stamps.
-* Startup File::                Wget’s initialization file.
+* Startup File::                Wget's initialization file.
 * Examples::                    Examples of usage.
-* Various::                     The stuff that doesn’t fit anywhere else.
+* Various::                     The stuff that doesn't fit anywhere else.
 * Appendices::                  Some useful references.
 * Copying this manual::         You may give out copies of this manual.
 * Concept Index::               Topics covered by this manual.
@@ -56,19 +56,19 @@ GNU Wget is a free utility for non-interactive download of files from
 the Web.  It supports HTTP, HTTPS, and FTP protocols, as well as
 retrieval through HTTP proxies.
 
-   This chapter is a partial overview of Wget’s features.
+   This chapter is a partial overview of Wget's features.
 
    • Wget is non-interactive, meaning that it can work in the
      background, while the user is not logged on.  This allows you to
      start a retrieval and disconnect from the system, letting Wget
      finish the work.  By contrast, most of the Web browsers require
-     constant user’s presence, which can be a great hindrance when
+     constant user's presence, which can be a great hindrance when
      transferring a lot of data.
 
    • Wget can follow links in HTML, XHTML, and CSS pages, to create
      local versions of remote web sites, fully recreating the directory
      structure of the original site.  This is sometimes referred to as
-     “recursive downloading.” While doing that, Wget respects the Robot
+     "recursive downloading."  While doing that, Wget respects the Robot
      Exclusion Standard (‘/robots.txt’).  Wget can be instructed to
      convert the links in downloaded files to point at the local files,
      for offline viewing.
@@ -101,7 +101,7 @@ retrieval through HTTP proxies.
 
    • The progress of individual downloads is traced using a progress
      gauge.  Interactive downloads are tracked using a
-     “thermometer”-style gauge, whereas non-interactive ones are traced
+     "thermometer"-style gauge, whereas non-interactive ones are traced
      with dots, each dot representing a fixed amount of data received
      (1KB by default).  Either gauge can be customized to your
      preferences.
@@ -110,9 +110,9 @@ retrieval through HTTP proxies.
      line options, or via the initialization file ‘.wgetrc’ (*note
      Startup File::).  Wget allows you to define “global” startup files
      (‘/usr/local/etc/wgetrc’ by default) for site settings.  You can
-     also specify the location of a startup file with the –config
-     option.  To disable the reading of config files, use –no-config.
-     If both –config and –no-config are given, –no-config is ignored.
+     also specify the location of a startup file with the -config
+     option.  To disable the reading of config files, use -no-config.
+     If both -config and -no-config are given, -no-config is ignored.
 
    • Finally, GNU Wget is free software.  This means that everyone may
      use it, redistribute it and/or modify it under the terms of the GNU
@@ -182,10 +182,10 @@ default password.(1)
 command line, the username and password will be plainly visible to all
 users on the system, by way of ‘ps’.  On multi-user systems, this is a
 big security risk.  To work around it, use ‘wget -i -’ and feed the URLs
-to Wget’s standard input, each on a separate line, terminated by ‘C-d’.
+to Wget's standard input, each on a separate line, terminated by ‘C-d’.
 
    You can encode unsafe characters in a URL as ‘%xy’, ‘xy’ being the
-hexadecimal representation of the character’s ASCII value.  Some common
+hexadecimal representation of the character's ASCII value.  Some common
 unsafe characters include ‘%’ (quoted as ‘%25’), ‘:’ (quoted as ‘%3A’),
 and ‘@’ (quoted as ‘%40’).  Refer to RFC1738 for a comprehensive list of
 unsafe characters.
@@ -261,7 +261,7 @@ You can also clear the lists in ‘.wgetrc’ (*note Wgetrc Syntax::).
      wget -X "" -X /~nobody,/~somebody
 
    Most options that do not accept arguments are “boolean” options, so
-named because their state can be captured with a yes-or-no (“boolean”)
+named because their state can be captured with a yes-or-no ("boolean")
 variable.  For example, ‘--follow-ftp’ tells Wget to follow FTP links
 from HTML files and, on the other hand, ‘--no-glob’ tells it not to
 perform file globbing on FTP URLs.  A boolean option is either
@@ -275,7 +275,7 @@ _not_ follow FTP links from HTML pages.
 
    Affirmative options can be negated by prepending the ‘--no-’ to the
 option name; negative options can be negated by omitting the ‘--no-’
-prefix.  This might seem superfluous—if the default for an affirmative
+prefix.  This might seem superfluous--if the default for an affirmative
 option is to not do something, then why provide a way to explicitly turn
 it off?  But the startup file may in fact change the default.  For
 instance, using ‘follow_ftp = on’ in ‘.wgetrc’ makes Wget _follow_ FTP
@@ -294,7 +294,7 @@ File: wget.info,  Node: Basic Startup Options,  Next: Logging and Input File Opt
 
 ‘-h’
 ‘--help’
-     Print a help message describing all of Wget’s command-line options.
+     Print a help message describing all of Wget's command-line options.
 
 ‘-b’
 ‘--background’
@@ -332,14 +332,14 @@ File: wget.info,  Node: Logging and Input File Options,  Next: Download Options,
      developers of Wget if it does not work properly.  Your system
      administrator may have chosen to compile Wget without debug
      support, in which case ‘-d’ will not work.  Please note that
-     compiling with debug support is always safe—Wget compiled with the
+     compiling with debug support is always safe--Wget compiled with the
      debug support will _not_ print any debug info unless requested with
      ‘-d’.  *Note Reporting Bugs::, for more information on how to use
      ‘-d’ for sending bug reports.
 
 ‘-q’
 ‘--quiet’
-     Turn off Wget’s output.
+     Turn off Wget's output.
 
 ‘-v’
 ‘--verbose’
@@ -375,7 +375,7 @@ File: wget.info,  Node: Logging and Input File Options,  Next: Download Options,
 
      If the FILE is an external one, the document will be automatically
      treated as ‘html’ if the Content-Type matches ‘text/html’.
-     Furthermore, the FILE’s location will be implicitly used as base
+     Furthermore, the FILE's location will be implicitly used as base
      href if none was specified.
 
 ‘--input-metalink=FILE’
@@ -383,8 +383,8 @@ File: wget.info,  Node: Logging and Input File Options,  Next: Download Options,
      and 4 are supported.
 
 ‘--keep-badhash’
-     Keeps downloaded Metalink’s files with a bad hash.  It appends
-     .badhash to the name of Metalink’s files which have a checksum
+     Keeps downloaded Metalink's files with a bad hash.  It appends
+     .badhash to the name of Metalink's files which have a checksum
      mismatch, except without overwriting existing files.
 
 ‘--metalink-over-http’
@@ -396,10 +396,10 @@ File: wget.info,  Node: Logging and Input File Options,  Next: Download Options,
 
 ‘--metalink-index=NUMBER’
      Set the Metalink ‘application/metalink4+xml’ metaurl ordinal
-     NUMBER. From 1 to the total number of “application/metalink4+xml”
+     NUMBER. From 1 to the total number of "application/metalink4+xml"
      available.  Specify 0 or ‘inf’ to choose the first good one.
      Metaurls, such as those from a ‘--metalink-over-http’, may have
-     been sorted by priority key’s value; keep this in mind to choose
+     been sorted by priority key's value; keep this in mind to choose
      the right NUMBER.
 
 ‘--preferred-location’
@@ -407,7 +407,7 @@ File: wget.info,  Node: Logging and Input File Options,  Next: Download Options,
      multiple resources with same priority are available.
 
 ‘--xattr’
-     Enable use of file system’s extended attributes to save the
+     Enable use of file system's extended attributes to save the
      original URL and the Referer HTTP header value if used.
 
      Be aware that the URL might contain private information like access
@@ -435,8 +435,8 @@ File: wget.info,  Node: Logging and Input File Options,  Next: Download Options,
 
 ‘--config=FILE’
      Specify the location of a startup file you wish to use instead of
-     the default one(s).  Use –no-config to disable reading of config
-     files.  If both –config and –no-config are given, –no-config is
+     the default one(s).  Use -no-config to disable reading of config
+     files.  If both -config and -no-config are given, -no-config is
      ignored.
 
 ‘--rejected-log=LOGFILE’
@@ -474,7 +474,7 @@ File: wget.info,  Node: Download Options,  Next: Directory Options,  Prev: Loggi
 ‘--tries=NUMBER’
      Set number of tries to NUMBER.  Specify 0 or ‘inf’ for infinite
      retrying.  The default is to retry 20 times, with the exception of
-     fatal errors like “connection refused” or “not found” (404), which
+     fatal errors like "connection refused" or "not found" (404), which
      are not retried.
 
 ‘-O FILE’
@@ -485,8 +485,8 @@ File: wget.info,  Node: Download Options,  Next: Directory Options,  Prev: Loggi
      link conversion.  (Use ‘./-’ to print to a file literally named
      ‘-’.)
 
-     Use of ‘-O’ is _not_ intended to mean simply “use the name FILE
-     instead of the one in the URL;” rather, it is analogous to shell
+     Use of ‘-O’ is _not_ intended to mean simply "use the name FILE
+     instead of the one in the URL;" rather, it is analogous to shell
      redirection: ‘wget -O file http://foo’ is intended to work like
      ‘wget -O - http://foo > file’; ‘file’ will be truncated
      immediately, and _all_ downloaded content will be written there.
@@ -497,7 +497,7 @@ File: wget.info,  Node: Download Options,  Next: Directory Options,  Prev: Loggi
      combination is used.
 
      Similarly, using ‘-r’ or ‘-p’ with ‘-O’ may not work as you expect:
-     Wget won’t just download the first file to FILE and then download
+     Wget won't just download the first file to FILE and then download
      the rest to their normal names: _all_ downloaded content will be
      placed in FILE.  This was disabled in version 1.11, but has been
      reinstated (with a warning) in 1.11.2, as there are some cases
@@ -509,13 +509,13 @@ File: wget.info,  Node: Download Options,  Next: Directory Options,  Prev: Loggi
      Note that a combination with ‘-k’ is only permitted when
      downloading a single document, as in that case it will just convert
      all relative URIs to external ones; ‘-k’ makes no sense for
-     multiple URIs when they’re all being downloaded to a single file;
+     multiple URIs when they're all being downloaded to a single file;
      ‘-k’ can be used only when the output is a regular file.
 
 ‘-nc’
 ‘--no-clobber’
      If a file is downloaded more than once in the same directory,
-     Wget’s behavior depends on a few options, including ‘-nc’.  In
+     Wget's behavior depends on a few options, including ‘-nc’.  In
      certain cases, the local file will be “clobbered”, or overwritten,
      upon repeated download.  In other cases it will be preserved.
 
@@ -526,10 +526,10 @@ File: wget.info,  Node: Download Options,  Next: Directory Options,  Prev: Loggi
      will be named ‘FILE.2’, and so on.  (This is also the behavior with
      ‘-nd’, even if ‘-r’ or ‘-p’ are in effect.)  When ‘-nc’ is
      specified, this behavior is suppressed, and Wget will refuse to
-     download newer copies of ‘FILE’.  Therefore, “‘no-clobber’” is
-     actually a misnomer in this mode—it’s not clobbering that’s
+     download newer copies of ‘FILE’.  Therefore, "‘no-clobber’" is
+     actually a misnomer in this mode--it's not clobbering that's
      prevented (as the numeric suffixes were already preventing
-     clobbering), but rather the multiple version saving that’s
+     clobbering), but rather the multiple version saving that's
      prevented.
 
      When running Wget with ‘-r’ or ‘-p’, but without ‘-N’, ‘-nd’, or
@@ -575,7 +575,7 @@ File: wget.info,  Node: Download Options,  Next: Directory Options,  Prev: Loggi
      will ask the server to continue the retrieval from an offset equal
      to the length of the local file.
 
-     Note that you don’t need to specify this option if you just want
+     Note that you don't need to specify this option if you just want
      the current invocation of Wget to retry downloading a file should
      the connection be lost midway through.  This is the default
      behavior.  ‘-c’ only affects resumption of downloads started
@@ -594,37 +594,37 @@ File: wget.info,  Node: Download Options,  Next: Directory Options,  Prev: Loggi
      the file and print an explanatory message.  The same happens when
      the file is smaller on the server than locally (presumably because
      it was changed on the server since your last download
-     attempt)—because “continuing” is not meaningful, no download
+     attempt)--because "continuing" is not meaningful, no download
      occurs.
 
-     On the other side of the coin, while using ‘-c’, any file that’s
+     On the other side of the coin, while using ‘-c’, any file that's
      bigger on the server than locally will be considered an incomplete
      download and only ‘(length(remote) - length(local))’ bytes will be
      downloaded and tacked onto the end of the local file.  This
-     behavior can be desirable in certain cases—for instance, you can
-     use ‘wget -c’ to download just the new portion that’s been appended
+     behavior can be desirable in certain cases--for instance, you can
+     use ‘wget -c’ to download just the new portion that's been appended
      to a data collection or log file.
 
-     However, if the file is bigger on the server because it’s been
-     _changed_, as opposed to just _appended_ to, you’ll end up with a
+     However, if the file is bigger on the server because it's been
+     _changed_, as opposed to just _appended_ to, you'll end up with a
      garbled file.  Wget has no way of verifying that the local file is
      really a valid prefix of the remote file.  You need to be
      especially careful of this when using ‘-c’ in conjunction with
      ‘-r’, since every file will be considered as an "incomplete
      download" candidate.
 
-     Another instance where you’ll get a garbled file if you try to use
-     ‘-c’ is if you have a lame HTTP proxy that inserts a “transfer
-     interrupted” string into the local file.  In the future a
-     “rollback” option may be added to deal with this case.
+     Another instance where you'll get a garbled file if you try to use
+     ‘-c’ is if you have a lame HTTP proxy that inserts a "transfer
+     interrupted" string into the local file.  In the future a
+     "rollback" option may be added to deal with this case.
 
      Note that ‘-c’ only works with FTP servers and with HTTP servers
      that support the ‘Range’ header.
 
 ‘--start-pos=OFFSET’
      Start downloading at zero-based position OFFSET.  Offset may be
-     expressed in bytes, kilobytes with the ‘k’ suffix, or megabytes
-     with the ‘m’ suffix, etc.
+     expressed in bytes, kilobytes with the 'k' suffix, or megabytes
+     with the 'm' suffix, etc.
 
      ‘--start-pos’ has higher precedence over ‘--continue’.  When
      ‘--start-pos’ and ‘--continue’ are both specified, wget will emit a
@@ -635,14 +635,14 @@ File: wget.info,  Node: Download Options,  Next: Directory Options,  Prev: Loggi
 
 ‘--progress=TYPE’
      Select the type of the progress indicator you wish to use.  Legal
-     indicators are “dot” and “bar”.
+     indicators are "dot" and "bar".
 
-     The “bar” indicator is used by default.  It draws an ASCII progress
-     bar graphics (a.k.a “thermometer” display) indicating the status of
-     retrieval.  If the output is not a TTY, the “dot” bar will be used
+     The "bar" indicator is used by default.  It draws an ASCII progress
+     bar graphics (a.k.a "thermometer" display) indicating the status of
+     retrieval.  If the output is not a TTY, the "dot" bar will be used
      by default.
 
-     Use ‘--progress=dot’ to switch to the “dot” display.  It traces the
+     Use ‘--progress=dot’ to switch to the "dot" display.  It traces the
      retrieval by printing dots on the screen, each dot representing a
      fixed amount of downloaded data.
 
@@ -655,29 +655,29 @@ File: wget.info,  Node: Download Options,  Next: Directory Options,  Prev: Loggi
      specifying the type as ‘dot:STYLE’.  Different styles assign
      different meaning to one dot.  With the ‘default’ style each dot
      represents 1K, there are ten dots in a cluster and 50 dots in a
-     line.  The ‘binary’ style has a more “computer”-like orientation—8K
-     dots, 16-dots clusters and 48 dots per line (which makes for 384K
-     lines).  The ‘mega’ style is suitable for downloading large
-     files—each dot represents 64K retrieved, there are eight dots in a
-     cluster, and 48 dots on each line (so each line contains 3M). If
-     ‘mega’ is not enough then you can use the ‘giga’ style—each dot
-     represents 1M retrieved, there are eight dots in a cluster, and 32
-     dots on each line (so each line contains 32M).
+     line.  The ‘binary’ style has a more "computer"-like
+     orientation--8K dots, 16-dots clusters and 48 dots per line (which
+     makes for 384K lines).  The ‘mega’ style is suitable for
+     downloading large files--each dot represents 64K retrieved, there
+     are eight dots in a cluster, and 48 dots on each line (so each line
+     contains 3M). If ‘mega’ is not enough then you can use the ‘giga’
+     style--each dot represents 1M retrieved, there are eight dots in a
+     cluster, and 32 dots on each line (so each line contains 32M).
 
      With ‘--progress=bar’, there are currently two possible parameters,
      FORCE and NOSCROLL.
 
      When the output is not a TTY, the progress bar always falls back to
-     “dot”, even if ‘--progress=bar’ was passed to Wget during
-     invocation.  This behaviour can be overridden and the “bar” output
-     forced by using the “force” parameter as ‘--progress=bar:force’.
+     "dot", even if ‘--progress=bar’ was passed to Wget during
+     invocation.  This behaviour can be overridden and the "bar" output
+     forced by using the "force" parameter as ‘--progress=bar:force’.
 
      By default, the ‘bar’ style progress bar scroll the name of the
      file from left to right for the file being downloaded if the
      filename exceeds the maximum length allotted for its display.  In
      certain cases, such as with ‘--progress=bar:force’, one may not
      want the scrolling filename in the progress bar.  By passing the
-     “noscroll” parameter, Wget can be forced to display as much of the
+     "noscroll" parameter, Wget can be forced to display as much of the
      filename as possible without scrolling through it.
 
      Note that you can set the default style using the ‘progress’
@@ -709,12 +709,12 @@ File: wget.info,  Node: Download Options,  Next: Directory Options,  Prev: Loggi
      mode.
 
 ‘--no-use-server-timestamps’
-     Don’t set the local file’s timestamp by the one on the server.
+     Don't set the local file's timestamp by the one on the server.
 
      By default, when a file is downloaded, its timestamps are set to
      match those from the remote file.  This allows the use of
      ‘--timestamping’ on subsequent invocations of wget.  However, it is
-     sometimes useful to base the local file’s timestamp on when it was
+     sometimes useful to base the local file's timestamp on when it was
      actually downloaded; for that purpose, the
      ‘--no-use-server-timestamps’ option has been provided.
 
@@ -754,7 +754,7 @@ File: wget.info,  Node: Download Options,  Next: Directory Options,  Prev: Loggi
 
 ‘--dns-timeout=SECONDS’
      Set the DNS lookup timeout to SECONDS seconds.  DNS lookups that
-     don’t complete within the specified time will fail.  By default,
+     don't complete within the specified time will fail.  By default,
      there is no timeout on DNS lookups, other than that implemented by
      system libraries.
 
@@ -764,7 +764,7 @@ File: wget.info,  Node: Download Options,  Next: Directory Options,  Prev: Loggi
      connect timeout, other than that implemented by system libraries.
 
 ‘--read-timeout=SECONDS’
-     Set the read (and write) timeout to SECONDS seconds.  The “time” of
+     Set the read (and write) timeout to SECONDS seconds.  The "time" of
      this timeout refers to “idle time”: if, at any point in the
      download, no data is received for more than the specified number of
      seconds, reading fails and the download is restarted.  This option
@@ -779,7 +779,7 @@ File: wget.info,  Node: Download Options,  Next: Directory Options,  Prev: Loggi
      expressed in bytes, kilobytes with the ‘k’ suffix, or megabytes
      with the ‘m’ suffix.  For example, ‘--limit-rate=20k’ will limit
      the retrieval rate to 20KB/s.  This is useful when, for whatever
-     reason, you don’t want Wget to consume the entire available
+     reason, you don't want Wget to consume the entire available
      bandwidth.
 
      This option allows the use of decimal numbers, usually in
@@ -791,7 +791,7 @@ File: wget.info,  Node: Download Options,  Next: Directory Options,  Prev: Loggi
      specified by the rate.  Eventually this strategy causes the TCP
      transfer to slow down to approximately the specified rate.
      However, it may take some time for this balance to be achieved, so
-     don’t be surprised if limiting the rate doesn’t work well with very
+     don't be surprised if limiting the rate doesn't work well with very
      small files.
 
 ‘-w SECONDS’
@@ -809,7 +809,7 @@ File: wget.info,  Node: Download Options,  Next: Directory Options,  Prev: Loggi
      influenced by ‘--random-wait’, which see.
 
 ‘--waitretry=SECONDS’
-     If you don’t want Wget to wait between _every_ retrieval, but only
+     If you don't want Wget to wait between _every_ retrieval, but only
      between retries of failed downloads, you can use this option.  Wget
      will use “linear backoff”, waiting 1 second after the first failure
      on a given file, then waiting 2 seconds after the second failure on
@@ -823,7 +823,7 @@ File: wget.info,  Node: Download Options,  Next: Directory Options,  Prev: Loggi
      similarities in the time between requests.  This option causes the
      time between requests to vary between 0.5 and 1.5 * WAIT seconds,
      where WAIT was specified using the ‘--wait’ option, in order to
-     mask Wget’s presence from such analysis.
+     mask Wget's presence from such analysis.
 
      A 2001 article in a publication devoted to development on a popular
      consumer platform provided code to perform this analysis on the
@@ -836,7 +836,7 @@ File: wget.info,  Node: Download Options,  Next: Directory Options,  Prev: Loggi
      the actions of one.
 
 ‘--no-proxy’
-     Don’t use proxies, even if the appropriate ‘*_proxy’ environment
+     Don't use proxies, even if the appropriate ‘*_proxy’ environment
      variable is defined.
 
      *Note Proxies::, for more information about the use of proxies with
@@ -854,14 +854,14 @@ File: wget.info,  Node: Download Options,  Next: Directory Options,  Prev: Loggi
      URLs are specified on the command-line.  The quota is checked only
      at the end of each downloaded file, so it will never result in a
      partially downloaded file.  Thus you may safely type ‘wget -Q2m -i
-     sites’—download will be aborted after the file that exhausts the
+     sites’--download will be aborted after the file that exhausts the
      quota is completely downloaded.
 
      Setting quota to 0 or to ‘inf’ unlimits the download quota.
 
 ‘--no-dns-cache’
      Turn off caching of DNS lookups.  Normally, Wget remembers the IP
-     addresses it looked up from DNS so it doesn’t have to repeatedly
+     addresses it looked up from DNS so it doesn't have to repeatedly
      contact the DNS server for the same (typically small) set of hosts
      it retrieves from.  This cache exists in memory only; a new Wget
      run will contact DNS again.
@@ -875,8 +875,8 @@ File: wget.info,  Node: Download Options,  Next: Directory Options,  Prev: Loggi
      by the resolving library or by an external caching layer, such as
      NSCD.
 
-     If you don’t understand exactly what this option does, you probably
-     won’t need it.
+     If you don't understand exactly what this option does, you probably
+     won't need it.
 
 ‘--restrict-file-names=MODES’
      Change which characters found in remote URLs must be escaped during
@@ -902,13 +902,13 @@ File: wget.info,  Node: Download Options,  Next: Directory Options,  Prev: Loggi
      the set of characters that would be escaped, but rather force local
      file paths to be converted either to lower- or uppercase.
 
-     When “unix” is specified, Wget escapes the character ‘/’ and the
-     control characters in the ranges 0–31 and 128–159.  This is the
+     When "unix" is specified, Wget escapes the character ‘/’ and the
+     control characters in the ranges 0-31 and 128-159.  This is the
      default on Unix-like operating systems.
 
-     When “windows” is given, Wget escapes the characters ‘\’, ‘|’, ‘/’,
+     When "windows" is given, Wget escapes the characters ‘\’, ‘|’, ‘/’,
      ‘:’, ‘?’, ‘"’, ‘*’, ‘<’, ‘>’, and the control characters in the
-     ranges 0–31 and 128–159.  In addition to this, Wget in Windows mode
+     ranges 0-31 and 128-159.  In addition to this, Wget in Windows mode
      uses ‘+’ instead of ‘:’ to separate host and port in local file
      names, and uses ‘@’ instead of ‘?’ to separate the query portion of
      the file name from the rest.  Therefore, a URL that would be saved
@@ -921,7 +921,7 @@ File: wget.info,  Node: Download Options,  Next: Directory Options,  Prev: Loggi
      you are downloading URLs whose names contain UTF-8 characters, on a
      system which can save and display filenames in UTF-8 (some possible
      byte values used in UTF-8 byte sequences fall in the range of
-     values designated by Wget as “controls”).
+     values designated by Wget as "controls").
 
      The ‘ascii’ mode is used to specify that any bytes whose values are
      outside the range of ASCII characters (that is, greater than 127)
@@ -939,7 +939,7 @@ File: wget.info,  Node: Download Options,  Next: Directory Options,  Prev: Loggi
      connect to IPv6 hosts and ignore A records and IPv4 addresses.
 
      Neither options should be needed normally.  By default, an
-     IPv6-aware Wget will use the address family specified by the host’s
+     IPv6-aware Wget will use the address family specified by the host's
      DNS record.  If the DNS responds with both IPv4 and IPv6 addresses,
      Wget will try them in sequence until it finds one it can connect
      to.  (Also see ‘--prefer-family’ option described below.)
@@ -965,15 +965,15 @@ File: wget.info,  Node: Download Options,  Next: Directory Options,  Prev: Loggi
      used first; if the specified value is ‘none’, the address order
      returned by DNS is used without change.
 
-     Unlike ‘-4’ and ‘-6’, this option doesn’t inhibit access to any
+     Unlike ‘-4’ and ‘-6’, this option doesn't inhibit access to any
      address family, it only changes the _order_ in which the addresses
      are accessed.  Also note that the reordering performed by this
-     option is “stable”—it doesn’t affect order of addresses of the same
-     family.  That is, the relative order of all IPv4 addresses and of
-     all IPv6 addresses remains intact in all cases.
+     option is “stable”--it doesn't affect order of addresses of the
+     same family.  That is, the relative order of all IPv4 addresses and
+     of all IPv6 addresses remains intact in all cases.
 
 ‘--retry-connrefused’
-     Consider “connection refused” a transient error and try again.
+     Consider "connection refused" a transient error and try again.
      Normally Wget gives up on a URL when it is unable to connect to the
      site because failure to connect is taken as a sign that the server
      is not running at all and that retries would not help.  This option
@@ -1061,7 +1061,7 @@ File: wget.info,  Node: Directory Options,  Next: HTTP Options,  Prev: Download 
 
 ‘-x’
 ‘--force-directories’
-     The opposite of ‘-nd’—create a hierarchy of directories, even if
+     The opposite of ‘-nd’--create a hierarchy of directories, even if
      one would not have been created otherwise.  E.g.  ‘wget -x
      http://fly.srk.fer.hr/robots.txt’ will save the downloaded file to
      ‘fly.srk.fer.hr/robots.txt’.
@@ -1088,7 +1088,7 @@ File: wget.info,  Node: Directory Options,  Next: HTTP Options,  Prev: Download 
      it will be saved locally under ‘ftp.xemacs.org/pub/xemacs/’.  While
      the ‘-nH’ option can remove the ‘ftp.xemacs.org/’ part, you are
      still stuck with ‘pub/xemacs’.  This is where ‘--cut-dirs’ comes in
-     handy; it makes Wget not “see” NUMBER remote directory components.
+     handy; it makes Wget not "see" NUMBER remote directory components.
      Here are several examples of how ‘--cut-dirs’ option works.
 
           No options        -> ftp.xemacs.org/pub/xemacs/
@@ -1101,9 +1101,9 @@ File: wget.info,  Node: Directory Options,  Next: HTTP Options,  Prev: Download 
 
      If you just want to get rid of the directory structure, this option
      is similar to a combination of ‘-nd’ and ‘-P’.  However, unlike
-     ‘-nd’, ‘--cut-dirs’ does not lose with subdirectories—for instance,
-     with ‘-nH --cut-dirs=1’, a ‘beta/’ subdirectory will be placed to
-     ‘xemacs/beta’, as one would expect.
+     ‘-nd’, ‘--cut-dirs’ does not lose with subdirectories--for
+     instance, with ‘-nH --cut-dirs=1’, a ‘beta/’ subdirectory will be
+     placed to ‘xemacs/beta’, as one would expect.
 
 ‘-P PREFIX’
 ‘--directory-prefix=PREFIX’
@@ -1119,7 +1119,7 @@ File: wget.info,  Node: HTTP Options,  Next: HTTPS (SSL/TLS) Options,  Prev: Dir
 ================
 
 ‘--default-page=NAME’
-     Use NAME as the default file name when it isn’t known (i.e., for
+     Use NAME as the default file name when it isn't known (i.e., for
      URLs that end in a slash), instead of ‘index.html’.
 
 ‘-E’
@@ -1128,15 +1128,15 @@ File: wget.info,  Node: HTTP Options,  Next: HTTPS (SSL/TLS) Options,  Prev: Dir
      downloaded and the URL does not end with the regexp
      ‘\.[Hh][Tt][Mm][Ll]?’, this option will cause the suffix ‘.html’ to
      be appended to the local filename.  This is useful, for instance,
-     when you’re mirroring a remote site that uses ‘.asp’ pages, but you
+     when you're mirroring a remote site that uses ‘.asp’ pages, but you
      want the mirrored pages to be viewable on your stock Apache server.
-     Another good use for this is when you’re downloading CGI-generated
+     Another good use for this is when you're downloading CGI-generated
      materials.  A URL like ‘http://site.com/article.cgi?25’ will be
      saved as ‘article.cgi?25.html’.
 
      Note that filenames changed in this way will be re-downloaded every
-     time you re-mirror a site, because Wget can’t tell that the local
-     ‘X.html’ file corresponds to remote URL ‘X’ (since it doesn’t yet
+     time you re-mirror a site, because Wget can't tell that the local
+     ‘X.html’ file corresponds to remote URL ‘X’ (since it doesn't yet
      know that the URL produces output of type ‘text/html’ or
      ‘application/xhtml+xml’.
 
@@ -1168,18 +1168,18 @@ File: wget.info,  Node: HTTP Options,  Next: HTTPS (SSL/TLS) Options,  Prev: Dir
      being seen, use the ‘--use-askpass’ or store them in ‘.wgetrc’ or
      ‘.netrc’, and make sure to protect those files from other users
      with ‘chmod’.  If the passwords are really important, do not leave
-     them lying in those files either—edit the files and delete them
+     them lying in those files either--edit the files and delete them
      after Wget has started the download.
 
 ‘--no-http-keep-alive’
-     Turn off the “keep-alive” feature for HTTP downloads.  Normally,
+     Turn off the "keep-alive" feature for HTTP downloads.  Normally,
      Wget asks the server to keep the connection open so that, when you
      download more than one document from the same server, they get
      transferred over the same TCP connection.  This saves time and at
      the same time reduces the load on the server.
 
      This option is useful when, for some reason, persistent
-     (keep-alive) connections don’t work for you, for example due to a
+     (keep-alive) connections don't work for you, for example due to a
      server bug or due to the inability of server-side scripts to cope
      with the connections.
 
@@ -1204,7 +1204,7 @@ File: wget.info,  Node: HTTP Options,  Next: HTTPS (SSL/TLS) Options,  Prev: Dir
 
 ‘--load-cookies FILE’
      Load cookies from FILE before the first HTTP retrieval.  FILE is a
-     textual file in the format originally used by Netscape’s
+     textual file in the format originally used by Netscape's
      ‘cookies.txt’ file.
 
      You will typically use this option when mirroring sites that
@@ -1216,7 +1216,7 @@ File: wget.info,  Node: HTTP Options,  Next: HTTPS (SSL/TLS) Options,  Prev: Dir
 
      Mirroring such a site requires Wget to send the same cookies your
      browser sends when communicating with the site.  This is achieved
-     by ‘--load-cookies’—simply point Wget to the location of the
+     by ‘--load-cookies’--simply point Wget to the location of the
      ‘cookies.txt’ file, and it will send the same cookies your browser
      would send in the same situation.  Different browsers keep textual
      cookie files in different locations:
@@ -1225,7 +1225,7 @@ File: wget.info,  Node: HTTP Options,  Next: HTTPS (SSL/TLS) Options,  Prev: Dir
           The cookies are in ‘~/.netscape/cookies.txt’.
 
      Mozilla and Netscape 6.x.
-          Mozilla’s cookie file is also named ‘cookies.txt’, located
+          Mozilla's cookie file is also named ‘cookies.txt’, located
           somewhere under ‘~/.mozilla’, in the directory of your
           profile.  The full path usually ends up looking somewhat like
           ‘~/.mozilla/default/SOME-WEIRD-STRING/cookies.txt’.
@@ -1242,18 +1242,18 @@ File: wget.info,  Node: HTTP Options,  Next: HTTPS (SSL/TLS) Options,  Prev: Dir
           cookie file in the Netscape format that Wget expects.
 
      If you cannot use ‘--load-cookies’, there might still be an
-     alternative.  If your browser supports a “cookie manager”, you can
-     use it to view the cookies used when accessing the site you’re
+     alternative.  If your browser supports a "cookie manager", you can
+     use it to view the cookies used when accessing the site you're
      mirroring.  Write down the name and value of the cookie, and
      manually instruct Wget to send those cookies, bypassing the
-     “official” cookie support:
+     "official" cookie support:
 
           wget --no-cookies --header "Cookie: NAME=VALUE"
 
 ‘--save-cookies FILE’
      Save cookies to FILE before exiting.  This will not save cookies
-     that have expired or that have no expiry time (so-called “session
-     cookies”), but also see ‘--keep-session-cookies’.
+     that have expired or that have no expiry time (so-called "session
+     cookies"), but also see ‘--keep-session-cookies’.
 
 ‘--keep-session-cookies’
      When specified, causes ‘--save-cookies’ to also save session
@@ -1265,7 +1265,7 @@ File: wget.info,  Node: HTTP Options,  Next: HTTPS (SSL/TLS) Options,  Prev: Dir
      as far as the site is concerned.
 
      Since the cookie file format does not normally carry session
-     cookies, Wget marks them with an expiry timestamp of 0.  Wget’s
+     cookies, Wget marks them with an expiry timestamp of 0.  Wget's
      ‘--load-cookies’ recognizes those as session cookies, but it might
      confuse other browsers.  Also note that cookies so loaded will be
      treated as other session cookies, which means that if you want
@@ -1280,7 +1280,7 @@ File: wget.info,  Node: HTTP Options,  Next: HTTPS (SSL/TLS) Options,  Prev: Dir
      each time claiming that the (otherwise normal) connection has
      closed on the very same byte.
 
-     With this option, Wget will ignore the ‘Content-Length’ header—as
+     With this option, Wget will ignore the ‘Content-Length’ header--as
      if it never existed.
 
 ‘--header=HEADER-LINE’
@@ -1342,7 +1342,7 @@ File: wget.info,  Node: HTTP Options,  Next: HTTPS (SSL/TLS) Options,  Prev: Dir
      pertain here as well.
 
 ‘--referer=URL’
-     Include ‘Referer: URL’ header in HTTP request.  Useful for
+     Include 'Referer: URL' header in HTTP request.  Useful for
      retrieving documents with server-side processing that assume they
      are always being retrieved by interactive web browsers and only
      come out properly when Referer is set to one of the pages that
@@ -1406,13 +1406,13 @@ File: wget.info,  Node: HTTP Options,  Next: HTTPS (SSL/TLS) Options,  Prev: Dir
      Please be aware that Wget needs to know the size of the POST data
      in advance.  Therefore the argument to ‘--post-file’ must be a
      regular file; specifying a FIFO or something like ‘/dev/stdin’
-     won’t work.  It’s not quite clear how to work around this
+     won't work.  It's not quite clear how to work around this
      limitation inherent in HTTP/1.0.  Although HTTP/1.1 introduces
-     “chunked” transfer that doesn’t require knowing the request length
-     in advance, a client can’t use chunked unless it knows it’s talking
-     to an HTTP/1.1 server.  And it can’t know that until it receives a
+     “chunked” transfer that doesn't require knowing the request length
+     in advance, a client can't use chunked unless it knows it's talking
+     to an HTTP/1.1 server.  And it can't know that until it receives a
      response, which in turn requires the request to have been completed
-     – a chicken-and-egg problem.
+     - a chicken-and-egg problem.
 
      Note: As of version 1.15 if Wget is redirected after the POST
      request is completed, its behaviour will depend on the response
@@ -1517,8 +1517,8 @@ File: wget.info,  Node: HTTP Options,  Next: HTTPS (SSL/TLS) Options,  Prev: Dir
      in addition to form-based authentication.
 
 ‘--retry-on-host-error’
-     Consider host errors, such as “Temporary failure in name
-     resolution”, as non-fatal, transient errors.
+     Consider host errors, such as "Temporary failure in name
+     resolution", as non-fatal, transient errors.
 
 ‘--retry-on-http-error=CODE[,CODE,...]’
      Consider given HTTP response codes as non-fatal, transient errors.
@@ -1573,38 +1573,38 @@ compiled without SSL support, none of these options are available.
 ‘--ciphers’
      Set the cipher list string.  Typically this string sets the cipher
      suites and other SSL/TLS options that the user wish should be used,
-     in a set order of preference (GnuTLS calls it ’priority string’).
+     in a set order of preference (GnuTLS calls it 'priority string').
      This string will be fed verbatim to the SSL/TLS engine (OpenSSL or
      GnuTLS) and hence its format and syntax is dependent on that.  Wget
      will not process or manipulate it in any way.  Refer to the OpenSSL
      or GnuTLS documentation for more information.
 
 ‘--no-check-certificate’
-     Don’t check the server certificate against the available
-     certificate authorities.  Also don’t require the URL host name to
+     Don't check the server certificate against the available
+     certificate authorities.  Also don't require the URL host name to
      match the common name presented by the certificate.
 
-     As of Wget 1.10, the default is to verify the server’s certificate
+     As of Wget 1.10, the default is to verify the server's certificate
      against the recognized certificate authorities, breaking the SSL
      handshake and aborting the download if the verification fails.
      Although this provides more secure downloads, it does break
      interoperability with some sites that worked with previous Wget
      versions, particularly those using self-signed, expired, or
-     otherwise invalid certificates.  This option forces an “insecure”
+     otherwise invalid certificates.  This option forces an "insecure"
      mode of operation that turns the certificate verification errors
      into warnings and allows you to proceed.
 
-     If you encounter “certificate verification” errors or ones saying
-     that “common name doesn’t match requested host name”, you can use
+     If you encounter "certificate verification" errors or ones saying
+     that "common name doesn't match requested host name", you can use
      this option to bypass the verification and proceed with the
      download.  _Only use this option if you are otherwise convinced of
-     the site’s authenticity, or if you really don’t care about the
+     the site's authenticity, or if you really don't care about the
      validity of its certificate._  It is almost always a bad idea not
      to check the certificates when transmitting confidential or
      important data.  For self-signed/internal certificates, you should
      download the certificate and verify against that instead of forcing
      this insecure mode.  If you are really sure of not desiring any
-     certificate verification, you can specify –check-certificate=quiet
+     certificate verification, you can specify -check-certificate=quiet
      to tell wget to not print any warning about invalid certificates,
      albeit in most cases this is the wrong thing to do.
 
@@ -1628,7 +1628,7 @@ compiled without SSL support, none of these options are available.
 
 ‘--ca-certificate=FILE’
      Use FILE as the file with the bundle of certificate authorities
-     (“CA”) to verify the peers.  The certificates must be in PEM
+     ("CA") to verify the peers.  The certificates must be in PEM
      format.
 
      Without this option Wget looks for CA certificates at the
@@ -1654,7 +1654,7 @@ compiled without SSL support, none of these options are available.
      Tells wget to use the specified public key file (or hashes) to
      verify the peer.  This can be a path to a file which contains a
      single public key in PEM or DER format, or any number of base64
-     encoded sha256 hashes preceded by “sha256//” and separated by “;”
+     encoded sha256 hashes preceded by "sha256//" and separated by ";"
 
      When negotiating a TLS or SSL connection, the server sends a
      certificate indicating its identity.  A public key is extracted
@@ -1673,7 +1673,7 @@ compiled without SSL support, none of these options are available.
      the user.  If this option is not specified, Wget looks for random
      data in ‘$RANDFILE’ or, if that is unset, in ‘$HOME/.rnd’.
 
-     If you’re getting the “Could not seed OpenSSL PRNG; disabling SSL.”
+     If you're getting the "Could not seed OpenSSL PRNG; disabling SSL."
      error, you should provide random data using some of the methods
      described above.
 
@@ -1710,7 +1710,7 @@ compiled without SSL support, none of these options are available.
      HSTS database format used by Wget.  If Wget cannot parse the
      provided file, the behaviour is unspecified.
 
-     The Wget’s HSTS database is a plain text file.  Each line contains
+     The Wget's HSTS database is a plain text file.  Each line contains
      an HSTS entry (ie.  a site that has issued a
      ‘Strict-Transport-Security’ header and that therefore has specified
      a concrete HSTS policy to be applied).  Lines starting with a dash
@@ -1734,7 +1734,7 @@ compiled without SSL support, none of these options are available.
      only be applied if both of them match.  This feature has been
      included for testing/development purposes only.  The Wget testsuite
      (in ‘testenv/’) creates HSTS databases with explicit ports with the
-     purpose of ensuring Wget’s correct behaviour.  Applying HSTS
+     purpose of ensuring Wget's correct behaviour.  Applying HSTS
      policies to ports other than the default ones is discouraged by RFC
      6797 (see Appendix B "Differences between HSTS Policy and
      Same-Origin Policy").  Thus, this functionality should not be used
@@ -1744,7 +1744,7 @@ compiled without SSL support, none of these options are available.
      the subdomains of the target domain should be part of the given
      HSTS policy as well.  The CREATED and MAX-AGE fields hold the
      timestamp values of when such entry was created (first seen by
-     Wget) and the HSTS-defined value ’max-age’, which states how long
+     Wget) and the HSTS-defined value 'max-age', which states how long
      should that HSTS policy remain active, measured in seconds elapsed
      since the timestamp stored in CREATED.  Once that time has passed,
      that HSTS policy will no longer be valid and will eventually be
@@ -1821,16 +1821,16 @@ File: wget.info,  Node: FTP Options,  Next: Recursive Retrieval Options,  Prev: 
      being seen, store them in ‘.wgetrc’ or ‘.netrc’, and make sure to
      protect those files from other users with ‘chmod’.  If the
      passwords are really important, do not leave them lying in those
-     files either—edit the files and delete them after Wget has started
+     files either--edit the files and delete them after Wget has started
      the download.
 
 ‘--no-remove-listing’
-     Don’t remove the temporary ‘.listing’ files generated by FTP
+     Don't remove the temporary ‘.listing’ files generated by FTP
      retrievals.  Normally, these files contain the raw directory
      listings received from FTP servers.  Not removing them can be
      useful for debugging purposes, or when you want to be able to
      easily check on the contents of remote server directories (e.g.  to
-     verify that a mirror you’re running is complete).
+     verify that a mirror you're running is complete).
 
      Note that even though Wget writes to a known filename for this
      file, this is not a security hole in the scenario of a user making
@@ -1842,8 +1842,8 @@ File: wget.info,  Node: FTP Options,  Next: Recursive Retrieval Options,  Prev: 
      ‘.listing’ file, or the listing will be written to a
      ‘.listing.NUMBER’ file.
 
-     Even though this situation isn’t a problem, though, ‘root’ should
-     never run Wget in a non-trusted user’s directory.  A user could do
+     Even though this situation isn't a problem, though, ‘root’ should
+     never run Wget in a non-trusted user's directory.  A user could do
      something as simple as linking ‘index.html’ to ‘/etc/passwd’ and
      asking ‘root’ to run Wget with ‘-N’ or ‘-r’ so the file will be
      overwritten.
@@ -1873,7 +1873,7 @@ File: wget.info,  Node: FTP Options,  Next: Recursive Retrieval Options,  Prev: 
      and active FTP should work equally well.  Behind most firewall and
      NAT configurations passive FTP has a better chance of working.
      However, in some rare firewall configurations, active FTP actually
-     works when passive FTP doesn’t.  If you suspect this to be the
+     works when passive FTP doesn't.  If you suspect this to be the
      case, use this option, or set ‘passive_ftp=off’ in your init file.
 
 ‘--preserve-permissions’
@@ -1889,11 +1889,12 @@ File: wget.info,  Node: FTP Options,  Next: Recursive Retrieval Options,  Prev: 
 
      When ‘--retr-symlinks=no’ is specified, the linked-to file is not
      downloaded.  Instead, a matching symbolic link is created on the
-     local filesystem.  The pointed-to file will not be retrieved unless
-     this recursive retrieval would have encountered it separately and
-     downloaded it anyway.  This option poses a security risk where a
-     malicious FTP Server may cause Wget to write to files outside of
-     the intended directories through a specially crafted .LISTING file.
+     local file system.  The pointed-to file will not be retrieved
+     unless this recursive retrieval would have encountered it
+     separately and downloaded it anyway.  This option poses a security
+     risk where a malicious FTP Server may cause Wget to write to files
+     outside of the intended directories through a specially crafted
+     .LISTING file.
 
      Note that when retrieving a file (not a directory) because it was
      specified on the command-line, rather than because it was recursed
@@ -1965,7 +1966,7 @@ File: wget.info,  Node: Recursive Retrieval Options,  Next: Recursive Accept/Rej
 
      Ideally, one would expect this to download just ‘1.html’.  but
      unfortunately this is not the case, because ‘-l 0’ is equivalent to
-     ‘-l inf’—that is, infinite recursion.  To download a single HTML
+     ‘-l inf’--that is, infinite recursion.  To download a single HTML
      page (or a handful of them), specify them all on the command line
      and leave away ‘-r’ and ‘-l’.  To download the essential items to
      view a single HTML page, see ‘page requisites’.
@@ -2067,7 +2068,7 @@ File: wget.info,  Node: Recursive Retrieval Options,  Next: Recursive Accept/Rej
      documents that may be needed to display it properly are not
      downloaded.  Using ‘-r’ together with ‘-l’ can help, but since Wget
      does not ordinarily distinguish between external and inlined
-     documents, one is generally left with “leaf documents” that are
+     documents, one is generally left with "leaf documents" that are
      missing their requisites.
 
      For instance, say document ‘1.html’ contains an ‘<IMG>’ tag
@@ -2088,7 +2089,7 @@ File: wget.info,  Node: Recursive Retrieval Options,  Next: Recursive Accept/Rej
 
           wget -r -l 2 -p http://SITE/1.html
 
-     all the above files _and_ ‘3.html’’s requisite ‘3.gif’ will be
+     all the above files _and_ ‘3.html’'s requisite ‘3.gif’ will be
      downloaded.  Similarly,
 
           wget -r -l 1 -p http://SITE/1.html
@@ -2099,7 +2100,7 @@ File: wget.info,  Node: Recursive Retrieval Options,  Next: Recursive Accept/Rej
           wget -r -l 0 -p http://SITE/1.html
 
      would download just ‘1.html’ and ‘1.gif’, but unfortunately this is
-     not the case, because ‘-l 0’ is equivalent to ‘-l inf’—that is,
+     not the case, because ‘-l 0’ is equivalent to ‘-l inf’--that is,
      infinite recursion.  To download a single HTML page (or a handful
      of them, all specified on the command-line or in a ‘-i’ URL input
      file) and its (or their) requisites, simply leave off ‘-r’ and
@@ -2117,7 +2118,7 @@ File: wget.info,  Node: Recursive Retrieval Options,  Next: Recursive Accept/Rej
 
           wget -E -H -k -K -p http://SITE/DOCUMENT
 
-     To finish off this topic, it’s worth knowing that Wget’s idea of an
+     To finish off this topic, it's worth knowing that Wget's idea of an
      external document link is any URL specified in an ‘<A>’ tag, an
      ‘<AREA>’ tag, or a ‘<LINK>’ tag other than ‘<LINK
      REL="stylesheet">’.
@@ -2130,11 +2131,11 @@ File: wget.info,  Node: Recursive Retrieval Options,  Next: Recursive Accept/Rej
      “declarations”.  Declaration is special markup that begins with
      ‘<!’ and ends with ‘>’, such as ‘<!DOCTYPE ...>’, that may contain
      comments between a pair of ‘--’ delimiters.  HTML comments are
-     “empty declarations”, SGML declarations without any non-comment
+     "empty declarations", SGML declarations without any non-comment
      text.  Therefore, ‘<!--foo-->’ is a valid comment, and so is
      ‘<!--one-- --two-->’, but ‘<!--1--2-->’ is not.
 
-     On the other hand, most HTML writers don’t perceive comments as
+     On the other hand, most HTML writers don't perceive comments as
      anything other than text delimited with ‘<!--’ and ‘-->’, which is
      not quite the same.  For example, something like ‘<!------------>’
      works as a valid comment as long as the number of dashes is a
@@ -2148,7 +2149,7 @@ File: wget.info,  Node: Recursive Retrieval Options,  Next: Recursive Accept/Rej
      resulted in missing links in many web pages that displayed fine in
      browsers, but had the misfortune of containing non-compliant
      comments.  Beginning with version 1.9, Wget has joined the ranks of
-     clients that implements “naive” comments, terminating each comment
+     clients that implements "naive" comments, terminating each comment
      at the first occurrence of ‘-->’.
 
      If, for whatever reason, you want strict comment parsing, use this
@@ -2211,7 +2212,7 @@ File: wget.info,  Node: Recursive Accept/Reject Options,  Next: Exit Status,  Pr
 
      However, the author of this option came across a page with tags
      like ‘<LINK REL="home" HREF="/">’ and came to the realization that
-     specifying tags to ignore was not enough.  One can’t just tell Wget
+     specifying tags to ignore was not enough.  One can't just tell Wget
      to ignore ‘<LINK>’, because then stylesheets will not be
      downloaded.  Now the best bet for downloading a single page and its
      requisites is the dedicated ‘--page-requisites’ option.
@@ -2269,7 +2270,7 @@ Wget may return one of several error codes if it encounters problems.
      Generic error code.
 
 2
-     Parse error—for instance, when parsing command-line options, the
+     Parse error--for instance, when parsing command-line options, the
      ‘.wgetrc’ or ‘.netrc’...
 
 3
@@ -2294,7 +2295,7 @@ Wget may return one of several error codes if it encounters problems.
 precedence over higher-numbered ones, when multiple types of errors are
 encountered.
 
-   In versions of Wget prior to 1.12, Wget’s exit status tended to be
+   In versions of Wget prior to 1.12, Wget's exit status tended to be
 unhelpful and inconsistent.  Recursive downloads would virtually always
 return 0 (success), regardless of any issues encountered, and
 non-recursive fetches only returned the status corresponding to the most
@@ -2361,7 +2362,7 @@ things from other directories.  If you want to download all the files
 from one directory, use ‘-l 1’ to make sure the recursion depth never
 exceeds one.  *Note Following Links::, for more information about this.
 
-   Recursive retrieval should be used with care.  Don’t say you were not
+   Recursive retrieval should be used with care.  Don't say you were not
 warned.
 
 
@@ -2395,27 +2396,27 @@ File: wget.info,  Node: Spanning Hosts,  Next: Types of Files,  Prev: Following 
 4.1 Spanning Hosts
 ==================
 
-Wget’s recursive retrieval normally refuses to visit hosts different
+Wget's recursive retrieval normally refuses to visit hosts different
 than the one you specified on the command line.  This is a reasonable
 default; without it, every retrieval would have the potential to turn
 your Wget into a small version of google.
 
    However, visiting different hosts, or “host spanning,” is sometimes a
 useful option.  Maybe the images are served from a different server.
-Maybe you’re mirroring a site that consists of pages interlinked between
+Maybe you're mirroring a site that consists of pages interlinked between
 three servers.  Maybe the server has two equivalent names, and the HTML
 pages refer to both interchangeably.
 
-Span to any host—‘-H’
+Span to any host--‘-H’
 
-     The ‘-H’ option turns on host spanning, thus allowing Wget’s
+     The ‘-H’ option turns on host spanning, thus allowing Wget's
      recursive run to visit any host referenced by a link.  Unless
      sufficient recursion-limiting criteria are applied depth, these
      foreign hosts will typically link to yet more hosts, and so on
      until Wget ends up sucking up much more data than you have
      intended.
 
-Limit spanning to certain domains—‘-D’
+Limit spanning to certain domains--‘-D’
 
      The ‘-D’ option allows you to specify the domains that will be
      followed, thus limiting the recursion only to the hosts that belong
@@ -2429,7 +2430,7 @@ Limit spanning to certain domains—‘-D’
      You can specify more than one address by separating them with a
      comma, e.g.  ‘-Ddomain1.com,domain2.com’.
 
-Keep download off certain domains—‘--exclude-domains’
+Keep download off certain domains--‘--exclude-domains’
 
      If there are domains you want to exclude specifically, you can do
      it with ‘--exclude-domains’, which accepts the same type of
@@ -2463,7 +2464,7 @@ in ‘.wgetrc’.
 ‘accept-regex = URLREGEX’
      The argument to ‘--accept’ option is a list of file suffixes or
      patterns that Wget will download during recursive retrieval.  A
-     suffix is the ending part of a file, and consists of “normal”
+     suffix is the ending part of a file, and consists of "normal"
      letters, e.g.  ‘gif’ or ‘.jpg’.  A matching pattern contains
      shell-like wildcards, e.g.  ‘books*’ or ‘zelazny*196[0-9]*’.
 
@@ -2514,11 +2515,11 @@ accept/reject rules, even though these will actually contribute to the
 name chosen for the local file.  It is expected that a future version of
 Wget will provide an option to allow matching against query strings.
 
-   Finally, it’s worth noting that the accept/reject lists are matched
-_twice_ against downloaded files: once against the URL’s filename
+   Finally, it's worth noting that the accept/reject lists are matched
+_twice_ against downloaded files: once against the URL's filename
 portion, to determine if the file should be downloaded in the first
 place; then, after it has been accepted and successfully downloaded, the
-local file’s name is also checked against the accept/reject lists to see
+local file's name is also checked against the accept/reject lists to see
 if it should be removed.  The rationale was that, since ‘.htm’ and
 ‘.html’ files are always downloaded regardless of accept/reject rules,
 they should be removed _after_ being downloaded and scanned for links,
@@ -2548,7 +2549,7 @@ File: wget.info,  Node: Directory-Based Limits,  Next: Relative Links,  Prev: Ty
 
 Regardless of other link-following facilities, it is often useful to
 place the restriction of what files to retrieve based on the directories
-those files are placed in.  There can be many reasons for this—the home
+those files are placed in.  There can be many reasons for this--the home
 pages may be organized in a reasonable directory structure; or some
 directories may contain useless information, e.g.  ‘/cgi-bin’ or ‘/dev’
 directories.
@@ -2565,7 +2566,7 @@ equivalent command in ‘.wgetrc’.
      The directories are absolute paths.
 
      So, if you wish to download from ‘http://host/people/bozo/’
-     following only links to bozo’s colleagues in the ‘/people’
+     following only links to bozo's colleagues in the ‘/people’
      directory and the bogus scripts in ‘/cgi-bin’, you can specify:
 
           wget -I /people,/cgi-bin http://host/people/bozo/
@@ -2573,7 +2574,7 @@ equivalent command in ‘.wgetrc’.
 ‘-X LIST’
 ‘--exclude LIST’
 ‘exclude_directories = LIST’
-     ‘-X’ option is exactly the reverse of ‘-I’—this is a list of
+     ‘-X’ option is exactly the reverse of ‘-I’--this is a list of
      directories _excluded_ from the download.  E.g.  if you do not want
      Wget to download things from ‘/cgi-bin’ directory, specify ‘-X
      /cgi-bin’ on the command line.
@@ -2606,8 +2607,8 @@ equivalent command in ‘.wgetrc’.
 
      *Note* that, for HTTP (and HTTPS), the trailing slash is very
      important to ‘--no-parent’.  HTTP has no concept of a
-     “directory”—Wget relies on you to indicate what’s a directory and
-     what isn’t.  In ‘http://foo/bar/’, Wget will consider ‘bar’ to be a
+     "directory"--Wget relies on you to indicate what's a directory and
+     what isn't.  In ‘http://foo/bar/’, Wget will consider ‘bar’ to be a
      directory, while in ‘http://foo/bar’ (no trailing slash), ‘bar’
      will be considered a filename (so ‘--no-parent’ would be
      meaningless, as its parent is ‘/’).
@@ -2634,7 +2635,7 @@ server root.  For example, these links are relative:
 
    Using this option guarantees that recursive retrieval will not span
 hosts, even without ‘-H’.  In simple cases it also allows downloads to
-“just work” without having to convert links.
+"just work" without having to convert links.
 
    This option is probably not very useful and might be removed in a
 future release.
@@ -2761,7 +2762,7 @@ File: wget.info,  Node: HTTP Time-Stamping Internals,  Next: FTP Time-Stamping I
 
 Time-stamping in HTTP is implemented by checking of the ‘Last-Modified’
 header.  If you wish to retrieve the file ‘foo.html’ through HTTP, Wget
-will check whether ‘foo.html’ exists locally.  If it doesn’t, ‘foo.html’
+will check whether ‘foo.html’ exists locally.  If it doesn't, ‘foo.html’
 will be retrieved unconditionally.
 
    If the file does exist locally, Wget will first check its local
@@ -2770,13 +2771,13 @@ time-stamp (similar to the way ‘ls -l’ checks it), and then send a
 remote file.
 
    The ‘Last-Modified’ header is examined to find which file was
-modified more recently (which makes it “newer”).  If the remote file is
+modified more recently (which makes it "newer").  If the remote file is
 newer, it will be downloaded; if it is older, Wget will give up.(1)
 
    When ‘--backup-converted’ (‘-K’) is specified in conjunction with
 ‘-N’, server file ‘X’ is compared to local file ‘X.orig’, if extant,
 rather than being compared to local file ‘X’, which will always differ
-if it’s been converted by ‘--convert-links’ (‘-k’).
+if it's been converted by ‘--convert-links’ (‘-k’).
 
    Arguably, HTTP time-stamping should be implemented using the
 ‘If-Modified-Since’ request.
@@ -2794,7 +2795,7 @@ File: wget.info,  Node: FTP Time-Stamping Internals,  Prev: HTTP Time-Stamping I
 ===============================
 
 In theory, FTP time-stamping works much the same as HTTP, only FTP has
-no headers—time-stamps must be ferreted out of directory listings.
+no headers--time-stamps must be ferreted out of directory listings.
 
    If an FTP download is recursive or uses globbing, Wget will use the
 FTP ‘LIST’ command to get a file listing for the directory containing
@@ -2826,9 +2827,9 @@ File: wget.info,  Node: Startup File,  Next: Examples,  Prev: Time-Stamping,  Up
 Once you know how to change default settings of Wget through command
 line arguments, you may wish to make some of those settings permanent.
 You can do that in a convenient way by creating the Wget startup
-file—‘.wgetrc’.
+file--‘.wgetrc’.
 
-   Besides ‘.wgetrc’ is the “main” initialization file, it is convenient
+   Besides ‘.wgetrc’ is the "main" initialization file, it is convenient
 to have a special facility for storing passwords.  Thus Wget reads and
 interprets the contents of ‘$HOME/.netrc’, if it finds it.  You can find
 ‘.netrc’ format in your system manuals.
@@ -2854,14 +2855,14 @@ When initializing, Wget will look for a “global” startup file,
 ‘/usr/local’, if Wget was not installed there) and read commands from
 there, if it exists.
 
-   Then it will look for the user’s file.  If the environmental variable
+   Then it will look for the user's file.  If the environmental variable
 ‘WGETRC’ is set, Wget will try to load that file.  Failing that, no
 further attempts will be made.
 
    If ‘WGETRC’ is not set, Wget will try to load ‘$HOME/.wgetrc’.
 
-   The fact that user’s settings are loaded after the system-wide ones
-means that in case of collision user’s wgetrc _overrides_ the
+   The fact that user's settings are loaded after the system-wide ones
+means that in case of collision user's wgetrc _overrides_ the
 system-wide wgetrc (in ‘/usr/local/etc/wgetrc’ by default).  Fascist
 admins, away!
 
@@ -2925,12 +2926,12 @@ auth_no_challenge = on/off
      See ‘--auth-no-challenge’.
 
 background = on/off
-     Enable/disable going to background—the same as ‘-b’ (which enables
+     Enable/disable going to background--the same as ‘-b’ (which enables
      it).
 
 backup_converted = on/off
      Enable/disable saving pre-converted files with the suffix
-     ‘.orig’—the same as ‘-K’ (which enables it).
+     ‘.orig’--the same as ‘-K’ (which enables it).
 
 backups = NUMBER
      Use up to NUMBER backups for a file.  Backups are rotated by adding
@@ -2939,7 +2940,7 @@ backups = NUMBER
 base = STRING
      Consider relative URLs in input files (specified via the ‘input’
      command or the ‘--input-file’/‘-i’ option, together with
-     ‘force_html’ or ‘--force-html’) as being relative to STRING—the
+     ‘force_html’ or ‘--force-html’) as being relative to STRING--the
      same as ‘--base=STRING’.
 
 bind_address = ADDRESS
@@ -2968,15 +2969,15 @@ certificate_type = STRING
 
 check_certificate = on/off
      If this is set to off, the server certificate is not checked
-     against the specified client authorities.  The default is “on”.
+     against the specified client authorities.  The default is "on".
      The same as ‘--check-certificate’.
 
 connect_timeout = N
-     Set the connect timeout—the same as ‘--connect-timeout’.
+     Set the connect timeout--the same as ‘--connect-timeout’.
 
 content_disposition = on/off
      Turn on recognition of the (non-standard) ‘Content-Disposition’
-     HTTP header—if set to ‘on’, the same as ‘--content-disposition’.
+     HTTP header--if set to ‘on’, the same as ‘--content-disposition’.
 
 trust_server_names = on/off
      If set to on, construct the local file name from redirection URLs
@@ -3000,16 +3001,16 @@ debug = on/off
      Debug mode, same as ‘-d’.
 
 default_page = STRING
-     Default page name—the same as ‘--default-page=STRING’.
+     Default page name--the same as ‘--default-page=STRING’.
 
 delete_after = on/off
-     Delete after download—the same as ‘--delete-after’.
+     Delete after download--the same as ‘--delete-after’.
 
 dir_prefix = STRING
-     Top of directory tree—the same as ‘-P STRING’.
+     Top of directory tree--the same as ‘-P STRING’.
 
 dirstruct = on/off
-     Turning dirstruct on or off—the same as ‘-x’ or ‘-nd’,
+     Turning dirstruct on or off--the same as ‘-x’ or ‘-nd’,
      respectively.
 
 dns_cache = on/off
@@ -3018,13 +3019,13 @@ dns_cache = on/off
      ‘--no-dns-cache’.
 
 dns_timeout = N
-     Set the DNS timeout—the same as ‘--dns-timeout’.
+     Set the DNS timeout--the same as ‘--dns-timeout’.
 
 domains = STRING
      Same as ‘-D’ (*note Spanning Hosts::).
 
 dot_bytes = N
-     Specify the number of bytes “contained” in a dot, as seen
+     Specify the number of bytes "contained" in a dot, as seen
      throughout the retrieval (1024 by default).  You can postfix the
      value with ‘k’ or ‘m’, representing kilobytes and megabytes,
      respectively.  With dot settings you can tailor the dot retrieval
@@ -3044,14 +3045,14 @@ egd_file = FILE
 
 exclude_directories = STRING
      Specify a comma-separated list of directories you wish to exclude
-     from download—the same as ‘-X STRING’ (*note Directory-Based
+     from download--the same as ‘-X STRING’ (*note Directory-Based
      Limits::).
 
 exclude_domains = STRING
      Same as ‘--exclude-domains=STRING’ (*note Spanning Hosts::).
 
 follow_ftp = on/off
-     Follow FTP links from HTML documents—the same as ‘--follow-ftp’.
+     Follow FTP links from HTML documents--the same as ‘--follow-ftp’.
 
 follow_tags = STRING
      Only follow certain HTML tags when doing a recursive retrieval,
@@ -3059,7 +3060,7 @@ follow_tags = STRING
 
 force_html = on/off
      If set to on, force the input filename to be regarded as an HTML
-     document—the same as ‘-F’.
+     document--the same as ‘-F’.
 
 ftp_password = STRING
      Set your FTP password to STRING.  Without this setting, the
@@ -3078,7 +3079,7 @@ ftp_user = STRING
      This command used to be named ‘login’ prior to Wget 1.10.
 
 glob = on/off
-     Turn globbing on/off—the same as ‘--glob’ and ‘--no-glob’.
+     Turn globbing on/off--the same as ‘--glob’ and ‘--no-glob’.
 
 header = STRING
      Define a header for HTTP downloads, like using ‘--header=STRING’.
@@ -3131,7 +3132,7 @@ ignore_tags = STRING
 
 include_directories = STRING
      Specify a comma-separated list of directories you wish to follow
-     when downloading—the same as ‘-I STRING’.
+     when downloading--the same as ‘-I STRING’.
 
 iri = on/off
      When set to on, enable internationalized URI (IRI) support; the
@@ -3139,7 +3140,7 @@ iri = on/off
 
 inet4_only = on/off
      Force connecting to IPv4 addresses, off by default.  You can put
-     this in the global init file to disable Wget’s attempts to resolve
+     this in the global init file to disable Wget's attempts to resolve
      and connect to IPv6 hosts.  Available only if Wget was compiled
      with IPv6 support.  The same as ‘--inet4-only’ or ‘-4’.
 
@@ -3191,11 +3192,11 @@ no_proxy = STRING
      loading, instead of the one specified in environment.
 
 output_document = FILE
-     Set the output filename—the same as ‘-O FILE’.
+     Set the output filename--the same as ‘-O FILE’.
 
 page_requisites = on/off
      Download all ancillary documents necessary for a single HTML page
-     to display properly—the same as ‘-p’.
+     to display properly--the same as ‘-p’.
 
 passive_ftp = on/off
      Change setting of passive FTP, equivalent to the ‘--passive-ftp’
@@ -3247,7 +3248,7 @@ proxy_user = STRING
      ‘--proxy-user=STRING’.
 
 quiet = on/off
-     Quiet mode—the same as ‘-q’.
+     Quiet mode--the same as ‘-q’.
 
 quota = QUOTA
      Specify the download quota, which is useful to put in the global
@@ -3255,7 +3256,7 @@ quota = QUOTA
      retrieving after the download sum has become greater than quota.
      The quota can be specified in bytes (default), kbytes ‘k’ appended)
      or mbytes (‘m’ appended).  Thus ‘quota = 5m’ will set the quota to
-     5 megabytes.  Note that the user’s startup file overrides system
+     5 megabytes.  Note that the user's startup file overrides system
      settings.
 
 random_file = FILE
@@ -3267,21 +3268,21 @@ random_wait = on/off
      ‘--random-wait’.
 
 read_timeout = N
-     Set the read (and write) timeout—the same as ‘--read-timeout=N’.
+     Set the read (and write) timeout--the same as ‘--read-timeout=N’.
 
 reclevel = N
-     Recursion level (depth)—the same as ‘-l N’.
+     Recursion level (depth)--the same as ‘-l N’.
 
 recursive = on/off
-     Recursive on/off—the same as ‘-r’.
+     Recursive on/off--the same as ‘-r’.
 
 referer = STRING
      Set HTTP ‘Referer:’ header just like ‘--referer=STRING’.  (Note
      that it was the folks who wrote the HTTP spec who got the spelling
-     of “referrer” wrong.)
+     of "referrer" wrong.)
 
 relative_only = on/off
-     Follow only relative links—the same as ‘-L’ (*note Relative
+     Follow only relative links--the same as ‘-L’ (*note Relative
      Links::).
 
 remote_encoding = ENCODING
@@ -3301,11 +3302,11 @@ retr_symlinks = on/off
      files; the same as ‘--retr-symlinks’.
 
 retry_connrefused = on/off
-     When set to on, consider “connection refused” a transient error—the
-     same as ‘--retry-connrefused’.
+     When set to on, consider "connection refused" a transient
+     error--the same as ‘--retry-connrefused’.
 
 robots = on/off
-     Specify whether the norobots convention is respected by Wget, “on”
+     Specify whether the norobots convention is respected by Wget, "on"
      by default.  This switch controls both the ‘/robots.txt’ and the
      ‘nofollow’ aspect of the spec.  *Note Robot Exclusion::, for more
      details about this.  Be sure you know what you are doing before
@@ -3324,7 +3325,7 @@ secure_protocol = STRING
 
 server_response = on/off
      Choose whether or not to print the HTTP and FTP server
-     responses—the same as ‘-S’.
+     responses--the same as ‘-S’.
 
 show_all_dns_entries = on/off
      When a DNS name is resolved, show all the IP addresses, not just
@@ -3347,14 +3348,14 @@ timestamping = on/off
      Time-Stamping::).
 
 use_server_timestamps = on/off
-     If set to ‘off’, Wget won’t set the local file’s timestamp by the
+     If set to ‘off’, Wget won't set the local file's timestamp by the
      one on the server (same as ‘--no-use-server-timestamps’).
 
 tries = N
-     Set number of retries per URL—the same as ‘-t N’.
+     Set number of retries per URL--the same as ‘-t N’.
 
 use_proxy = on/off
-     When set to off, don’t use proxy even when proxy-related
+     When set to off, don't use proxy even when proxy-related
      environment variables are set.  In that case it is the same as
      using ‘--no-proxy’.
 
@@ -3364,17 +3365,17 @@ user = STRING
      command for FTP and HTTP respectively.
 
 user_agent = STRING
-     User agent identification sent to the HTTP Server—the same as
+     User agent identification sent to the HTTP Server--the same as
      ‘--user-agent=STRING’.
 
 verbose = on/off
-     Turn verbose on/off—the same as ‘-v’/‘-nv’.
+     Turn verbose on/off--the same as ‘-v’/‘-nv’.
 
 wait = N
-     Wait N seconds between retrievals—the same as ‘-w N’.
+     Wait N seconds between retrievals--the same as ‘-w N’.
 
 wait_retry = N
-     Wait up to N seconds between retries of failed retrievals only—the
+     Wait up to N seconds between retries of failed retrievals only--the
      same as ‘--waitretry=N’.  Note that this is turned on by default in
      the global ‘wgetrc’.
 
@@ -3385,7 +3386,7 @@ File: wget.info,  Node: Sample Wgetrc,  Prev: Wgetrc Commands,  Up: Startup File
 =================
 
 This is the sample initialization file, as given in the distribution.
-It is divided in two section—one for global usage (suitable for global
+It is divided in two section--one for global usage (suitable for global
 startup file), and one for local usage (suitable for ‘$HOME/.wgetrc’).
 Be careful about the things you change.
 
@@ -3566,7 +3567,7 @@ File: wget.info,  Node: Simple Usage,  Next: Advanced Usage,  Prev: Examples,  U
 
           wget --tries=45 http://fly.srk.fer.hr/jpg/flyweb.jpg
 
-   • Now let’s leave Wget to work in the background, and write its
+   • Now let's leave Wget to work in the background, and write its
      progress to log file ‘log’.  It is tiring to type ‘--tries’, so we
      shall use ‘-t’.
 
@@ -3624,8 +3625,8 @@ File: wget.info,  Node: Advanced Usage,  Next: Very Advanced Usage,  Prev: Simpl
      depending on where they were on the remote server.
 
    • The same as the above, but without the ‘www.example.com/’
-     directory.  In fact, I don’t want to have all those random server
-     directories anyway—just save _all_ those files under a ‘download/’
+     directory.  In fact, I don't want to have all those random server
+     directories anyway--just save _all_ those files under a ‘download/’
      subdirectory of the current directory.
 
           wget -p --convert-links -nH -nd -Pdownload \
@@ -3648,7 +3649,7 @@ File: wget.info,  Node: Advanced Usage,  Next: Very Advanced Usage,  Prev: Simpl
 
    • You want to download all the GIFs from a directory on an HTTP
      server.  You tried ‘wget http://www.example.com/dir/*.gif’, but
-     that didn’t work because HTTP retrieval does not support globbing.
+     that didn't work because HTTP retrieval does not support globbing.
      In that case, use:
 
           wget -r -l1 --no-parent -A.gif http://www.example.com/dir/
@@ -3701,21 +3702,21 @@ File: wget.info,  Node: Very Advanced Usage,  Prev: Advanced Usage,  Up: Example
 
    • In addition to the above, you want the links to be converted for
      local viewing.  But, after having read this manual, you know that
-     link conversion doesn’t play well with timestamping, so you also
+     link conversion doesn't play well with timestamping, so you also
      want Wget to back up the original HTML files before the conversion.
      Wget invocation would look like this:
 
           wget --mirror --convert-links --backup-converted  \
                https://www.gnu.org/ -o /home/me/weeklog
 
-   • But you’ve also noticed that local viewing doesn’t work all that
+   • But you've also noticed that local viewing doesn't work all that
      well when HTML files are saved under extensions other than ‘.html’,
-     perhaps because they were served as ‘index.cgi’.  So you’d like
+     perhaps because they were served as ‘index.cgi’.  So you'd like
      Wget to rename all the files served with content-type ‘text/html’
      or ‘application/xhtml+xml’ to ‘NAME.html’.
 
           wget --mirror --convert-links --backup-converted \
-               --html-extension -o /home/me/weeklog        \
+               --adjust-extension -o /home/me/weeklog      \
                https://www.gnu.org/
 
      Or, with less typing:
@@ -3734,9 +3735,9 @@ This chapter contains all the stuff that could not fit anywhere else.
 
 * Proxies::                     Support for proxy servers.
 * Distribution::                Getting the latest version.
-* Web Site::                    GNU Wget’s presence on the World Wide Web.
+* Web Site::                    GNU Wget's presence on the World Wide Web.
 * Mailing Lists::               Wget mailing list for announcements and discussion.
-* Internet Relay Chat::         Wget’s presence on IRC.
+* Internet Relay Chat::         Wget's presence on IRC.
 * Reporting Bugs::              How and where to report bugs.
 * Portability::                 The systems Wget works on.
 * Signals::                     Signal-handling performed by Wget.
@@ -3801,7 +3802,7 @@ schemes exist.  For proxy authorization only the ‘Basic’ authentication
 scheme is currently implemented.
 
    You may specify your username and password either through the proxy
-URL or through the command-line options.  Assuming that the company’s
+URL or through the command-line options.  Assuming that the company's
 proxy is located at ‘proxy.company.com’ at port 8001, a proxy URL
 location containing authorization data might look like this:
 
@@ -3819,8 +3820,8 @@ File: wget.info,  Node: Distribution,  Next: Web Site,  Prev: Proxies,  Up: Vari
 
 Like all GNU utilities, the latest version of Wget can be found at the
 master GNU archive site ftp.gnu.org, and its mirrors.  For example, Wget
-1.21.3 can be found at
-<https://ftp.gnu.org/pub/gnu/wget/wget-1.21.3.tar.gz>
+1.24.5 can be found at
+<https://ftp.gnu.org/pub/gnu/wget/wget-1.24.5.tar.gz>
 
 
 File: wget.info,  Node: Web Site,  Next: Mailing Lists,  Prev: Distribution,  Up: Various
@@ -3830,7 +3831,7 @@ File: wget.info,  Node: Web Site,  Next: Mailing Lists,  Prev: Distribution,  Up
 
 The official web site for GNU Wget is at
 <https//www.gnu.org/software/wget/>.  However, most useful information
-resides at “The Wget Wgiki”, <http://wget.addictivecode.org/>.
+resides at "The Wget Wgiki", <http://wget.addictivecode.org/>.
 
 
 File: wget.info,  Node: Mailing Lists,  Next: Internet Relay Chat,  Prev: Web Site,  Up: Various
@@ -3848,8 +3849,8 @@ GNU Wget is at <bug-wget@gnu.org>.  To subscribe, send an email to
 
    You do not need to subscribe to send a message to the list; however,
 please note that unsubscribed messages are moderated, and may take a
-while before they hit the list—*usually around a day*.  If you want your
-message to show up immediately, please subscribe to the list before
+while before they hit the list--*usually around a day*.  If you want
+your message to show up immediately, please subscribe to the list before
 posting.  Archives for the list may be found at
 <https://lists.gnu.org/archive/html/bug-wget/>.
 
@@ -3901,8 +3902,8 @@ info (how to subscribe, list archives, ...).
 simple guidelines.
 
   1. Please try to ascertain that the behavior you see really is a bug.
-     If Wget crashes, it’s a bug.  If Wget does not behave as
-     documented, it’s a bug.  If things work strange, but you are not
+     If Wget crashes, it's a bug.  If Wget does not behave as
+     documented, it's a bug.  If things work strange, but you are not
      sure about the way they are supposed to work, it might well be a
      bug, but you might want to double-check the documentation and the
      mailing lists (*note Mailing Lists::).
@@ -3923,14 +3924,14 @@ simple guidelines.
 
   3. Please start Wget with ‘-d’ option and send us the resulting output
      (or relevant parts thereof).  If Wget was compiled without debug
-     support, recompile it—it is _much_ easier to trace bugs with debug
+     support, recompile it--it is _much_ easier to trace bugs with debug
      support on.
 
      Note: please make sure to remove any potentially sensitive
      information from the debug log before sending it to the bug
-     address.  The ‘-d’ won’t go out of its way to collect sensitive
+     address.  The ‘-d’ won't go out of its way to collect sensitive
      information, but the log _will_ contain a fairly complete
-     transcript of Wget’s communication with the server, which may
+     transcript of Wget's communication with the server, which may
      include passwords and pieces of downloaded data.  Since the bug
      address is publicly archived, you may assume that all bug reports
      are visible to the public.
@@ -3948,7 +3949,7 @@ File: wget.info,  Node: Portability,  Next: Signals,  Prev: Reporting Bugs,  Up:
 
 Like all GNU software, Wget works on the GNU system.  However, since it
 uses GNU Autoconf for building and configuring, and mostly avoids using
-“special” features of any particular Unix, it should compile (and work)
+"special" features of any particular Unix, it should compile (and work)
 on all common Unix flavors.
 
    Various Wget versions have been compiled and tested under many kinds
@@ -4003,7 +4004,7 @@ This chapter contains some references I consider useful.
 
 * Menu:
 
-* Robot Exclusion::             Wget’s support for RES.
+* Robot Exclusion::             Wget's support for RES.
 * Security Considerations::     Security with Wget.
 * Contributors::                People who helped.
 
@@ -4014,16 +4015,16 @@ File: wget.info,  Node: Robot Exclusion,  Next: Security Considerations,  Prev: 
 ===================
 
 It is extremely easy to make Wget wander aimlessly around a web site,
-sucking all the available data in progress.  ‘wget -r SITE’, and you’re
+sucking all the available data in progress.  ‘wget -r SITE’, and you're
 set.  Great?  Not for the server admin.
 
    As long as Wget is only retrieving static pages, and doing it at a
-reasonable rate (see the ‘--wait’ option), there’s not much of a
-problem.  The trouble is that Wget can’t tell the difference between the
+reasonable rate (see the ‘--wait’ option), there's not much of a
+problem.  The trouble is that Wget can't tell the difference between the
 smallest static page and the most demanding CGI. A site I know has a
 section handled by a CGI Perl script that converts Info files to HTML on
 the fly.  The script is slow, but works well enough for human users
-viewing an occasional Info file.  However, when someone’s recursive Wget
+viewing an occasional Info file.  However, when someone's recursive Wget
 download stumbles upon the index page that links to all the Info files
 through the script, the system is brought to its knees without providing
 anything useful to the user (This task of converting Info files could be
@@ -4037,7 +4038,7 @@ administrators and document authors can specify which portions of the
 site they wish to protect from robots and those they will permit access.
 
    The most popular mechanism, and the de facto standard supported by
-all the major robots, is the “Robots Exclusion Standard” (RES) written
+all the major robots, is the "Robots Exclusion Standard" (RES) written
 by Martijn Koster et al.  in 1994.  It specifies the format of a text
 file containing directives that instruct the robots which URL paths to
 avoid.  To be found by the robots, the specifications must be placed in
@@ -4045,7 +4046,7 @@ avoid.  To be found by the robots, the specifications must be placed in
 download and parse.
 
    Although Wget is not a web robot in the strictest sense of the word,
-it can download large parts of the site without the user’s intervention
+it can download large parts of the site without the user's intervention
 to download an individual page.  Because of that, Wget honors RES when
 downloading recursively.  For instance, when you issue:
 
@@ -4060,7 +4061,7 @@ further downloads.  ‘robots.txt’ is loaded only once per each server.
 written by Martijn Koster in 1994 and available at
 <http://www.robotstxt.org/orig.html>.  As of version 1.8, Wget has
 supported the additional directives specified in the internet draft
-‘<draft-koster-robots-00.txt>’ titled “A Method for Web Robots Control”.
+‘<draft-koster-robots-00.txt>’ titled "A Method for Web Robots Control".
 The draft, which has as far as I know never made to an RFC, is available
 at <http://www.robotstxt.org/norobots-rfc.txt>.
 
@@ -4093,7 +4094,7 @@ through the network, which may present a security problem.  Here are the
 main issues, and some solutions.
 
   1. The passwords on the command line are visible using ‘ps’.  The best
-     way around it is to use ‘wget -i -’ and feed the URLs to Wget’s
+     way around it is to use ‘wget -i -’ and feed the URLs to Wget's
      standard input, each on a separate line, terminated by ‘C-d’.
      Another workaround is to use ‘.netrc’ to store passwords; however,
      storing unencrypted passwords is also considered a security risk.
@@ -4104,7 +4105,7 @@ main issues, and some solutions.
   3. The FTP passwords are also in no way encrypted.  There is no good
      solution for this at the moment.
 
-  4. Although the “normal” output of Wget tries to hide the passwords,
+  4. Although the "normal" output of Wget tries to hide the passwords,
      debugging logs show them, in all forms.  This problem is avoided by
      being careful when you send debug logs (yes, even when you send
      them to me).
@@ -4119,83 +4120,83 @@ GNU Wget was written by Hrvoje Nikšić <hniksic@xemacs.org>,
 
    However, the development of Wget could never have gone as far as it
 has, were it not for the help of many people, either with bug reports,
-feature proposals, patches, or letters saying “Thanks!”.
+feature proposals, patches, or letters saying "Thanks!".
 
    Special thanks goes to the following people (no particular order):
 
-   • Dan Harkless—contributed a lot of code and documentation of
+   • Dan Harkless--contributed a lot of code and documentation of
      extremely high quality, as well as the ‘--page-requisites’ and
      related options.  He was the principal maintainer for some time and
      released Wget 1.6.
 
-   • Ian Abbott—contributed bug fixes, Windows-related fixes, and
+   • Ian Abbott--contributed bug fixes, Windows-related fixes, and
      provided a prototype implementation of the breadth-first recursive
      download.  Co-maintained Wget during the 1.8 release cycle.
 
-   • The dotsrc.org crew, in particular Karsten Thygesen—donated system
+   • The dotsrc.org crew, in particular Karsten Thygesen--donated system
      resources such as the mailing list, web space, FTP space, and
      version control repositories, along with a lot of time to make
      these actually work.  Christian Reiniger was of invaluable help
      with setting up Subversion.
 
-   • Heiko Herold—provided high-quality Windows builds and contributed
+   • Heiko Herold--provided high-quality Windows builds and contributed
      bug and build reports for many years.
 
-   • Shawn McHorse—bug reports and patches.
+   • Shawn McHorse--bug reports and patches.
 
-   • Kaveh R. Ghazi—on-the-fly ‘ansi2knr’-ization.  Lots of portability
+   • Kaveh R. Ghazi--on-the-fly ‘ansi2knr’-ization.  Lots of portability
      fixes.
 
-   • Gordon Matzigkeit—‘.netrc’ support.
+   • Gordon Matzigkeit--‘.netrc’ support.
 
-   • Zlatko Čalušić, Tomislav Vujec and Dražen Kačar—feature suggestions
-     and “philosophical” discussions.
+   • Zlatko Čalušić, Tomislav Vujec and Dražen Kačar--feature
+     suggestions and "philosophical" discussions.
 
-   • Darko Budor—initial port to Windows.
+   • Darko Budor--initial port to Windows.
 
-   • Antonio Rosella—help and suggestions, plus the initial Italian
+   • Antonio Rosella--help and suggestions, plus the initial Italian
      translation.
 
-   • Tomislav Petrović, Mario Mikočević—many bug reports and
+   • Tomislav Petrović, Mario Mikočević--many bug reports and
      suggestions.
 
-   • Françis Pinard—many thorough bug reports and discussions.
+   • Françis Pinard--many thorough bug reports and discussions.
 
-   • Karl Eichwalder—lots of help with internationalization, Makefile
+   • Karl Eichwalder--lots of help with internationalization, Makefile
      layout and many other things.
 
-   • Junio Hamano—donated support for Opie and HTTP ‘Digest’
+   • Junio Hamano--donated support for Opie and HTTP ‘Digest’
      authentication.
 
-   • Mauro Tortonesi—improved IPv6 support, adding support for dual
+   • Mauro Tortonesi--improved IPv6 support, adding support for dual
      family systems.  Refactored and enhanced FTP IPv6 code.  Maintained
-     GNU Wget from 2004–2007.
+     GNU Wget from 2004-2007.
 
-   • Christopher G. Lewis—maintenance of the Windows version of GNU
+   • Christopher G. Lewis--maintenance of the Windows version of GNU
      WGet.
 
-   • Gisle Vanem—many helpful patches and improvements, especially for
+   • Gisle Vanem--many helpful patches and improvements, especially for
      Windows and MS-DOS support.
 
-   • Ralf Wildenhues—contributed patches to convert Wget to use Automake
-     as part of its build process, and various bugfixes.
+   • Ralf Wildenhues--contributed patches to convert Wget to use
+     Automake as part of its build process, and various bugfixes.
 
-   • Steven Schubiger—Many helpful patches, bugfixes and improvements.
+   • Steven Schubiger--Many helpful patches, bugfixes and improvements.
      Notably, conversion of Wget to use the Gnulib quotes and quoteargs
      modules, and the addition of password prompts at the console, via
      the Gnulib getpasswd-gnu module.
 
-   • Ted Mielczarek—donated support for CSS.
+   • Ted Mielczarek--donated support for CSS.
 
-   • Saint Xavier—Support for IRIs (RFC 3987).
+   • Saint Xavier--Support for IRIs (RFC 3987).
 
-   • Tim Rühsen—Loads of helpful patches, especially fuzzing support and
-     Continuous Integration.  Maintainer since 2014.
+   • Tim Rühsen--Loads of helpful patches, especially fuzzing support
+     and Continuous Integration.  Maintainer since 2014.
 
-   • Darshit Shah—Many helpful patches.  Community support on various
+   • Darshit Shah--Many helpful patches.  Community support on various
      platforms.  Maintainer since 2014.
 
-   • People who provided donations for development—including Brian
+   • People who provided donations for development--including Brian
      Gough.
 
    The following people have provided patches, bug/build reports, useful
@@ -4257,7 +4258,7 @@ A.1 GNU Free Documentation License
 
                      Version 1.3, 3 November 2008
 
-     Copyright © 2000–2002, 2007–2008, 2015, 2018–2022 Free
+     Copyright © 2000-2002, 2007-2008, 2015, 2018-2024 Free
      Software Foundation, Inc.
      <http://fsf.org/>
 
@@ -4274,7 +4275,7 @@ A.1 GNU Free Documentation License
      author and publisher a way to get credit for their work, while not
      being considered responsible for modifications made by others.
 
-     This License is a kind of “copyleft”, which means that derivative
+     This License is a kind of "copyleft", which means that derivative
      works of the document must themselves be free in the same sense.
      It complements the GNU General Public License, which is a copyleft
      license designed for free software.
@@ -4295,18 +4296,18 @@ A.1 GNU Free Documentation License
      be distributed under the terms of this License.  Such a notice
      grants a world-wide, royalty-free license, unlimited in duration,
      to use that work under the conditions stated herein.  The
-     “Document”, below, refers to any such manual or work.  Any member
-     of the public is a licensee, and is addressed as “you”.  You accept
+     "Document", below, refers to any such manual or work.  Any member
+     of the public is a licensee, and is addressed as "you".  You accept
      the license if you copy, modify or distribute the work in a way
      requiring permission under copyright law.
 
-     A “Modified Version” of the Document means any work containing the
+     A "Modified Version" of the Document means any work containing the
      Document or a portion of it, either copied verbatim, or with
      modifications and/or translated into another language.
 
-     A “Secondary Section” is a named appendix or a front-matter section
+     A "Secondary Section" is a named appendix or a front-matter section
      of the Document that deals exclusively with the relationship of the
-     publishers or authors of the Document to the Document’s overall
+     publishers or authors of the Document to the Document's overall
      subject (or to related matters) and contains nothing that could
      fall directly within that overall subject.  (Thus, if the Document
      is in part a textbook of mathematics, a Secondary Section may not
@@ -4315,7 +4316,7 @@ A.1 GNU Free Documentation License
      of legal, commercial, philosophical, ethical or political position
      regarding them.
 
-     The “Invariant Sections” are certain Secondary Sections whose
+     The "Invariant Sections" are certain Secondary Sections whose
      titles are designated, as being those of Invariant Sections, in the
      notice that says that the Document is released under this License.
      If a section does not fit the above definition of Secondary then it
@@ -4323,13 +4324,13 @@ A.1 GNU Free Documentation License
      contain zero Invariant Sections.  If the Document does not identify
      any Invariant Sections then there are none.
 
-     The “Cover Texts” are certain short passages of text that are
+     The "Cover Texts" are certain short passages of text that are
      listed, as Front-Cover Texts or Back-Cover Texts, in the notice
      that says that the Document is released under this License.  A
      Front-Cover Text may be at most 5 words, and a Back-Cover Text may
      be at most 25 words.
 
-     A “Transparent” copy of the Document means a machine-readable copy,
+     A "Transparent" copy of the Document means a machine-readable copy,
      represented in a format whose specification is available to the
      general public, that is suitable for revising the document
      straightforwardly with generic text editors or (for images composed
@@ -4341,7 +4342,7 @@ A.1 GNU Free Documentation License
      been arranged to thwart or discourage subsequent modification by
      readers is not Transparent.  An image format is not Transparent if
      used for any substantial amount of text.  A copy that is not
-     “Transparent” is called “Opaque”.
+     "Transparent" is called "Opaque".
 
      Examples of suitable formats for Transparent copies include plain
      ASCII without markup, Texinfo input format, LaTeX input format,
@@ -4354,23 +4355,23 @@ A.1 GNU Free Documentation License
      the machine-generated HTML, PostScript or PDF produced by some word
      processors for output purposes only.
 
-     The “Title Page” means, for a printed book, the title page itself,
+     The "Title Page" means, for a printed book, the title page itself,
      plus such following pages as are needed to hold, legibly, the
      material this License requires to appear in the title page.  For
-     works in formats which do not have any title page as such, “Title
-     Page” means the text near the most prominent appearance of the
-     work’s title, preceding the beginning of the body of the text.
+     works in formats which do not have any title page as such, "Title
+     Page" means the text near the most prominent appearance of the
+     work's title, preceding the beginning of the body of the text.
 
-     The “publisher” means any person or entity that distributes copies
+     The "publisher" means any person or entity that distributes copies
      of the Document to the public.
 
-     A section “Entitled XYZ” means a named subunit of the Document
+     A section "Entitled XYZ" means a named subunit of the Document
      whose title either is precisely XYZ or contains XYZ in parentheses
      following text that translates XYZ in another language.  (Here XYZ
      stands for a specific section name mentioned below, such as
-     “Acknowledgements”, “Dedications”, “Endorsements”, or “History”.)
-     To “Preserve the Title” of such a section when you modify the
-     Document means that it remains a section “Entitled XYZ” according
+     "Acknowledgements", "Dedications", "Endorsements", or "History".)
+     To "Preserve the Title" of such a section when you modify the
+     Document means that it remains a section "Entitled XYZ" according
      to this definition.
 
      The Document may include Warranty Disclaimers next to the notice
@@ -4400,7 +4401,7 @@ A.1 GNU Free Documentation License
 
      If you publish printed copies (or copies in media that commonly
      have printed covers) of the Document, numbering more than 100, and
-     the Document’s license notice requires Cover Texts, you must
+     the Document's license notice requires Cover Texts, you must
      enclose the copies in covers that carry, clearly and legibly, all
      these Cover Texts: Front-Cover Texts on the front cover, and
      Back-Cover Texts on the back cover.  Both covers must also clearly
@@ -4472,15 +4473,15 @@ A.1 GNU Free Documentation License
           the Addendum below.
 
        G. Preserve in that license notice the full lists of Invariant
-          Sections and required Cover Texts given in the Document’s
+          Sections and required Cover Texts given in the Document's
           license notice.
 
        H. Include an unaltered copy of this License.
 
-       I. Preserve the section Entitled “History”, Preserve its Title,
+       I. Preserve the section Entitled "History", Preserve its Title,
           and add to it an item stating at least the title, year, new
           authors, and publisher of the Modified Version as given on the
-          Title Page.  If there is no section Entitled “History” in the
+          Title Page.  If there is no section Entitled "History" in the
           Document, create one stating the title, year, authors, and
           publisher of the Document as given on its Title Page, then add
           an item describing the Modified Version as stated in the
@@ -4490,12 +4491,12 @@ A.1 GNU Free Documentation License
           for public access to a Transparent copy of the Document, and
           likewise the network locations given in the Document for
           previous versions it was based on.  These may be placed in the
-          “History” section.  You may omit a network location for a work
+          "History" section.  You may omit a network location for a work
           that was published at least four years before the Document
           itself, or if the original publisher of the version it refers
           to gives permission.
 
-       K. For any section Entitled “Acknowledgements” or “Dedications”,
+       K. For any section Entitled "Acknowledgements" or "Dedications",
           Preserve the Title of the section, and preserve in the section
           all the substance and tone of each of the contributor
           acknowledgements and/or dedications given therein.
@@ -4504,11 +4505,11 @@ A.1 GNU Free Documentation License
           in their text and in their titles.  Section numbers or the
           equivalent are not considered part of the section titles.
 
-       M. Delete any section Entitled “Endorsements”.  Such a section
+       M. Delete any section Entitled "Endorsements".  Such a section
           may not be included in the Modified Version.
 
        N. Do not retitle any existing section to be Entitled
-          “Endorsements” or to conflict in title with any Invariant
+          "Endorsements" or to conflict in title with any Invariant
           Section.
 
        O. Preserve any Warranty Disclaimers.
@@ -4517,15 +4518,15 @@ A.1 GNU Free Documentation License
      appendices that qualify as Secondary Sections and contain no
      material copied from the Document, you may at your option designate
      some or all of these sections as invariant.  To do this, add their
-     titles to the list of Invariant Sections in the Modified Version’s
+     titles to the list of Invariant Sections in the Modified Version's
      license notice.  These titles must be distinct from any other
      section titles.
 
-     You may add a section Entitled “Endorsements”, provided it contains
+     You may add a section Entitled "Endorsements", provided it contains
      nothing but endorsements of your Modified Version by various
-     parties—for example, statements of peer review or that the text has
-     been approved by an organization as the authoritative definition of
-     a standard.
+     parties--for example, statements of peer review or that the text
+     has been approved by an organization as the authoritative
+     definition of a standard.
 
      You may add a passage of up to five words as a Front-Cover Text,
      and a passage of up to 25 words as a Back-Cover Text, to the end of
@@ -4563,10 +4564,10 @@ A.1 GNU Free Documentation License
      combined work.
 
      In the combination, you must combine any sections Entitled
-     “History” in the various original documents, forming one section
-     Entitled “History”; likewise combine any sections Entitled
-     “Acknowledgements”, and any sections Entitled “Dedications”.  You
-     must delete all sections Entitled “Endorsements.”
+     "History" in the various original documents, forming one section
+     Entitled "History"; likewise combine any sections Entitled
+     "Acknowledgements", and any sections Entitled "Dedications".  You
+     must delete all sections Entitled "Endorsements."
 
   6. COLLECTIONS OF DOCUMENTS
 
@@ -4587,16 +4588,16 @@ A.1 GNU Free Documentation License
 
      A compilation of the Document or its derivatives with other
      separate and independent documents or works, in or on a volume of a
-     storage or distribution medium, is called an “aggregate” if the
+     storage or distribution medium, is called an "aggregate" if the
      copyright resulting from the compilation is not used to limit the
-     legal rights of the compilation’s users beyond what the individual
+     legal rights of the compilation's users beyond what the individual
      works permit.  When the Document is included in an aggregate, this
      License does not apply to the other works in the aggregate which
      are not themselves derivative works of the Document.
 
      If the Cover Text requirement of section 3 is applicable to these
      copies of the Document, then if the Document is less than one half
-     of the entire aggregate, the Document’s Cover Texts may be placed
+     of the entire aggregate, the Document's Cover Texts may be placed
      on covers that bracket the Document within the aggregate, or the
      electronic equivalent of covers if the Document is in electronic
      form.  Otherwise they must appear on printed covers that bracket
@@ -4618,8 +4619,8 @@ A.1 GNU Free Documentation License
      this License or a notice or disclaimer, the original version will
      prevail.
 
-     If a section in the Document is Entitled “Acknowledgements”,
-     “Dedications”, or “History”, the requirement (section 4) to
+     If a section in the Document is Entitled "Acknowledgements",
+     "Dedications", or "History", the requirement (section 4) to
      Preserve its Title (section 1) will typically require changing the
      actual title.
 
@@ -4660,7 +4661,7 @@ A.1 GNU Free Documentation License
 
      Each version of the License is given a distinguishing version
      number.  If the Document specifies that a particular numbered
-     version of this License “or any later version” applies to it, you
+     version of this License "or any later version" applies to it, you
      have the option of following the terms and conditions either of
      that specified version or of any later version that has been
      published (not as a draft) by the Free Software Foundation.  If the
@@ -4668,29 +4669,29 @@ A.1 GNU Free Documentation License
      choose any version ever published (not as a draft) by the Free
      Software Foundation.  If the Document specifies that a proxy can
      decide which future versions of this License can be used, that
-     proxy’s public statement of acceptance of a version permanently
+     proxy's public statement of acceptance of a version permanently
      authorizes you to choose that version for the Document.
 
   11. RELICENSING
 
-     “Massive Multiauthor Collaboration Site” (or “MMC Site”) means any
+     "Massive Multiauthor Collaboration Site" (or "MMC Site") means any
      World Wide Web server that publishes copyrightable works and also
      provides prominent facilities for anybody to edit those works.  A
      public wiki that anybody can edit is an example of such a server.
-     A “Massive Multiauthor Collaboration” (or “MMC”) contained in the
+     A "Massive Multiauthor Collaboration" (or "MMC") contained in the
      site means any set of copyrightable works thus published on the MMC
      site.
 
-     “CC-BY-SA” means the Creative Commons Attribution-Share Alike 3.0
+     "CC-BY-SA" means the Creative Commons Attribution-Share Alike 3.0
      license published by Creative Commons Corporation, a not-for-profit
      corporation with a principal place of business in San Francisco,
      California, as well as future copyleft versions of that license
      published by that same organization.
 
-     “Incorporate” means to publish or republish a Document, in whole or
+     "Incorporate" means to publish or republish a Document, in whole or
      in part, as part of another Document.
 
-     An MMC is “eligible for relicensing” if it is licensed under this
+     An MMC is "eligible for relicensing" if it is licensed under this
      License, and if all works that were first published under this
      License somewhere other than this MMC, and subsequently
      incorporated in whole or in part into the MMC, (1) had no cover
@@ -4717,7 +4718,7 @@ notices just after the title page:
        Free Documentation License''.
 
    If you have Invariant Sections, Front-Cover Texts and Back-Cover
-Texts, replace the “with...Texts.” line with this:
+Texts, replace the "with...Texts." line with this:
 
          with the Invariant Sections being LIST THEIR TITLES, with
          the Front-Cover Texts being LIST, and with the Back-Cover Texts
@@ -4741,12 +4742,12 @@ Concept Index
  [index ]
 * Menu:
 
-* #wget:                                 Internet Relay Chat. (line   6)
 * .css extension:                        HTTP Options.        (line  10)
 * .html extension:                       HTTP Options.        (line  10)
 * .listing files, removing:              FTP Options.         (line  21)
 * .netrc:                                Startup File.        (line   6)
 * .wgetrc:                               Startup File.        (line   6)
+* #wget:                                 Internet Relay Chat. (line   6)
 * accept directories:                    Directory-Based Limits.
                                                               (line  17)
 * accept suffixes:                       Types of Files.      (line  15)
@@ -5033,59 +5034,59 @@ Concept Index
 
 
 Tag Table:
-Node: Top753
-Node: Overview2094
-Node: Invoking5786
-Node: URL Format6646
-Ref: URL Format-Footnote-19325
-Node: Option Syntax9431
-Node: Basic Startup Options12209
-Node: Logging and Input File Options13067
-Node: Download Options18696
-Node: Directory Options48339
-Node: HTTP Options51190
-Node: HTTPS (SSL/TLS) Options71874
-Node: FTP Options85031
-Node: Recursive Retrieval Options92093
-Node: Recursive Accept/Reject Options102134
-Node: Exit Status106339
-Node: Recursive Download107374
-Node: Following Links110613
-Node: Spanning Hosts111579
-Node: Types of Files113848
-Node: Directory-Based Limits118742
-Node: Relative Links122009
-Node: FTP Links122859
-Node: Time-Stamping123750
-Node: Time-Stamping Usage125422
-Node: HTTP Time-Stamping Internals127293
-Ref: HTTP Time-Stamping Internals-Footnote-1128641
-Node: FTP Time-Stamping Internals128844
-Node: Startup File130331
-Node: Wgetrc Location131271
-Node: Wgetrc Syntax132125
-Node: Wgetrc Commands132890
-Node: Sample Wgetrc149483
-Node: Examples155511
-Node: Simple Usage155872
-Node: Advanced Usage157321
-Node: Very Advanced Usage161137
-Node: Various162681
-Node: Proxies163390
-Node: Distribution166347
-Node: Web Site166691
-Node: Mailing Lists166991
-Node: Internet Relay Chat168728
-Node: Reporting Bugs169023
-Node: Portability171749
-Node: Signals173396
-Node: Appendices174103
-Node: Robot Exclusion174451
-Node: Security Considerations178313
-Node: Contributors179523
-Node: Copying this manual185499
-Node: GNU Free Documentation License185739
-Node: Concept Index211102
+Node: Top745
+Node: Overview2074
+Node: Invoking5745
+Node: URL Format6605
+Ref: URL Format-Footnote-19280
+Node: Option Syntax9386
+Node: Basic Startup Options12159
+Node: Logging and Input File Options13015
+Node: Download Options18619
+Node: Directory Options48090
+Node: HTTP Options50935
+Node: HTTPS (SSL/TLS) Options71558
+Node: FTP Options84659
+Node: Recursive Retrieval Options91716
+Node: Recursive Accept/Reject Options101735
+Node: Exit Status105938
+Node: Recursive Download106970
+Node: Following Links110207
+Node: Spanning Hosts111173
+Node: Types of Files113433
+Node: Directory-Based Limits118317
+Node: Relative Links121571
+Node: FTP Links122417
+Node: Time-Stamping123308
+Node: Time-Stamping Usage124980
+Node: HTTP Time-Stamping Internals126851
+Ref: HTTP Time-Stamping Internals-Footnote-1128191
+Node: FTP Time-Stamping Internals128394
+Node: Startup File129880
+Node: Wgetrc Location130815
+Node: Wgetrc Syntax131663
+Node: Wgetrc Commands132428
+Node: Sample Wgetrc148962
+Node: Examples154989
+Node: Simple Usage155350
+Node: Advanced Usage156797
+Node: Very Advanced Usage160608
+Node: Various162144
+Node: Proxies162849
+Node: Distribution165804
+Node: Web Site166148
+Node: Mailing Lists166444
+Node: Internet Relay Chat168180
+Node: Reporting Bugs168475
+Node: Portability171192
+Node: Signals172835
+Node: Appendices173542
+Node: Robot Exclusion173888
+Node: Security Considerations177732
+Node: Contributors178936
+Node: Copying this manual184878
+Node: GNU Free Documentation License185118
+Node: Concept Index210274
 
 End Tag Table
 

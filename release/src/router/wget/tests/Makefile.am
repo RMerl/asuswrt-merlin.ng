@@ -1,5 +1,5 @@
 # Makefile for `wget' utility
-# Copyright (C) 1995-2011, 2015, 2018-2022 Free Software Foundation,
+# Copyright (C) 1995-2011, 2015, 2018-2024 Free Software Foundation,
 # Inc.
 
 # This program is free software; you can redistribute it and/or modify
@@ -44,11 +44,6 @@
 	cd ../lib && $(MAKE) $(AM_MAKEFLAGS)
 
 PX_TESTS = \
-             Test-auth-basic.px \
-             Test-auth-no-challenge.px \
-             Test-auth-no-challenge-url.px \
-             Test-auth-with-content-disposition.px \
-             Test-auth-retcode.px \
              Test-c-full.px \
              Test-c-partial.px \
              Test-c.px \
@@ -89,7 +84,6 @@ PX_TESTS = \
              Test-iri-disabled.px \
              Test-iri-forced-remote.px \
              Test-iri-list.px \
-             Test-k.px \
              Test-meta-robots.px \
              Test-N-current.px \
              Test-N-HTTP-Content-Disposition.px \
@@ -156,7 +150,7 @@ AM_CFLAGS = $(WERROR_CFLAGS) $(WARN_CFLAGS)
 
 CLEANFILES = *~ *.bak core core.[0-9]*
 
-TESTS = ./unit-tests$(EXEEXT) $(PX_TESTS)
+TESTS = unit-tests$(EXEEXT) $(PX_TESTS)
 TEST_EXTENSIONS = .px
 PX_LOG_COMPILER = $(PERL)
 AM_PX_LOG_FLAGS = -I$(srcdir)

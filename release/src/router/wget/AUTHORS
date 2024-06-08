@@ -1,62 +1,366 @@
 Authors of GNU Wget.
+Thank you very much for spending your time !
 
-[ Note that this file does not attempt to list all the contributors to
-  Wget; look at the ChangeLogs for that.  This is a list of people who
-  contributed sizeable amounts of code and assigned the copyright to
-  the FSF. ]
 
-Hrvoje Niksic.  Designed and implemented Wget.
+This list of contributors is maintained in
+(more or less) the order of date of first commit.
+Those with the "ASSGN" tag have assigned the copyrights
+of their patches to the FSF.
 
-Gordon Matzigkeit.  Wrote netrc.c and netrc.h.
+The list was generated on 14.05.23 by parsing the ChangeLog
+file until 2014 and the git commit history after that.
 
-Darko Budor.  Wrote initial support for Windows, wrote wsstartup.c,
-wsstartup.h and windecl.h.  (The files were later renamed, but his
-code and ideas remained present.)
+Current Maintainers:
 
-Junio Hamano.  Added support for FTP Opie and HTTP digest
-authentication.
+[ASSGN] Darshit Shah *darnir [at] gnu.org*
+[ASSGN] Tim Rühsen *tim.ruehsen [at] gmx.de*
 
-Dan Harkless.  Added --backup-converted, --follow-tags, --html-extension,
---ignore-tags, and --page-requisites; improved documentation; etc. Was
-the principle maintainer of GNU Wget for some time.
+Contributors:
 
-Christian Fraenkel.  Initially implemented SSL support.
 
-Thomas Lussnig.  Initially implemented IPv6 support.
-
-Ian Abbott.  Contributed bugfixes, Windows-related fixes, provided a
-prototype implementation of the new recursive code, and more.
-Co-maintained Wget during the 1.8 release cycle.
-
-Gisle Vanem.  Contributed Windows and MS-DOS improvements, including a
-port of run_with_timeout to Windows, additions to Makefiles, and many
-bug reports and fixes.
-
-Mauro Tortonesi.  Improved IPv6 support, adding support for dual
-family systems.  Refactored and enhanced FTP IPv6 code. Maintained GNU
-Wget from 2004-2007.
-
-Nicolas Schodet.  Contributed to cookie code and documentation.
-
-Daniel Stenberg.  NTLM authentication in http-ntlm.c and http-ntlm.h
-originally written for curl donated for use in GNU Wget.
-
-Micah Cowan.  Maintained Wget from mid-2007 to mid-2010.
-
-Ralf Wildenhues.  Contributed patches to convert Wget to use Automake as
-part of its build process, and various bugfixes.
-
-Steven Schubiger.  Many helpful patches, bugfixes and improvements.
-Notably, conversion of Wget to use the Gnulib quotes and quoteargs
-modules, and the addition of password prompts at the console, via the
-Gnulib getpasswd-gnu module.
-
-Ted Mielczarek.  Support for parsing links from CSS.
-
-Saint Xavier.  Support for IRIs (RFC 3987).
-
-Giuseppe Scrivano.  Added support for HTTP/1.1.  Active Wget Maintainer from 2010-2015.
-
-Tim Ruehsen.  Active Wget Maintainer / Developer from 2012-2020.
-
-Darshit Shah.  Active Wget Maintainer / Developer from 2013-2020.
+[ASSGN] Hrvoje Niksic *hniksic [at] srce.hr*
+        Designed and implemented Wget.
+[     ] Hrvoje Lacko *hlacko [at] fly.cc.fer.hr*
+[     ] Antonio Rosella *antonio.rosella [at] agip.it*
+[     ] Drazen Kacar *dave [at] fly.cc.fer.hr*
+[     ] Tage Stabell-Kulo *tage [at] acm.org*
+[     ] Shawn McHorse *riffraff [at] txdirect.net*
+[     ] Mark Boyns *boyns [at] sdsu.edu*
+[     ] Dieter Baron *dillo [at] danbala.tuwien.ac.at*
+[     ] Gregor Hoffleit *flight [at] mathi.uni-heidelberg.DE*
+[     ] Kaveh R. Ghazi *ghazi [at] caip.rutgers.edu*
+[ASSGN] Gordon Matzigkeit *gord [at] gnu.ai.mit.edu*
+        Wrote netrc.c and netrc.h.
+[ASSGN] Darko Budor *dbudor [at] zems.fer.hr*
+        Wrote initial support for Windows, wrote wsstartup.c,
+        wsstartup.h and windecl.h.(The files were later renamed,
+        but his code and ideas remained present.)
+[     ] Roger Beeman *beeman [at] cisco.com*
+[     ] Marin Purgar *pmc [at] asgard.hr*
+[     ] gilles Cedoc *gilles [at] cedocar.fr*
+[     ] Karl Eichwalder *ke [at] ke.Central.DE*
+[     ] Fila Kolodny *fila [at] ibi.com*
+[     ] Andreas Schwab *schwab [at] issan.informatik.uni-dortmund.de*
+[     ] Mike Thomas *mthomas [at] reality.ctron.com*
+[     ] Francois Pinard *pinard [at] iro.umontreal.ca*
+[     ] Jordan Mendelson *jordy [at] wserv.com*
+[     ] Karl Heuer *kwzh [at] gnu.org*
+[     ] Andy Eskilsson *andy.eskilsson [at] telelogic.se*
+[     ] Karl Eichwalder *ke [at] suse.de*
+[     ] Simon Josefsson *jas [at] pdc.kth.se*
+[     ] Karl Eichwalder *karl [at] suse.de*
+[ASSGN] Junio Hamano *junio [at] twinsun.com*
+        Added support for FTP Opie and HTTP digest authentication.
+[     ] Tim Adam *tma [at] osa.com.au*
+[     ] Wanderlei Cavassin *cavassin [at] conectiva.com.br*
+[ASSGN] Jan Prikryl *prikryl [at] cg.tuwien.ac.at*
+[     ] John *john [at] futuresguide.com*
+[     ] Tim Charron *tcharron [at] interlog.com*
+[     ] Robert Schmidt *rsc [at] vingmed.no*
+[     ] Stefan Hornburg *racke [at] gundel.han.de*
+[     ] Giovanni Bortolozzo *borto [at] dei.unipd.it*
+[     ] Gregor Hoffleit *flight [at] mathi.uni-heidelberg.de*
+[     ] Douglas E. Wegscheid *wegscd [at] whirlpool.com*
+[     ] Toomas Soome *tsoome [at] ut.ee*
+[     ] Simos KSenitellis *simos [at] teiath.gr*
+[     ] Juan Jose Rodriguez *jcnsoft [at] jal1.telmex.net.mx*
+[     ] Dominique Delamarre *dominique.delamarre [at] hol.fr*
+[     ] Martin Kraemer *Martin.Kraemer [at] mch.sni.de*
+[     ] Mathieu Guillaume *mat [at] cythere.com*
+[     ] Alexander Kourakos *awk [at] bnt.com*
+[     ] Dave Love *d.love [at] dl.ac.uk*
+[     ] Heinz Salzmann *heinz.salzmann [at] intermetall.de*
+[     ] Adam D. Moss *adam [at] foxbox.org*
+[     ] Howard Gayle *howard [at] fjst.com*
+[     ] Hans Grobler *grobh [at] conde.ee.sun.ac.za*
+[     ] Szakacsits Szabolcs *szaka [at] sienet.hu*
+[     ] Simon Munton *simonm [at] m4data.co.uk*
+[     ] Edward J. Sabol *sabol [at] alderaan.gsfc.nasa.gov*
+[     ] "R. K. Owen" *rkowen [at] Nersc.GOV*
+[     ] Alexander V. Lukyanov *lav [at] yars.free.net*
+[     ] andrew deryabin *djsf [at] softhome.net*
+[     ] Heiko Herold *Heiko.Herold [at] previnet.it*
+[     ] Dan Berger *dberger [at] ix.netcom.com*
+[     ] Charles G Waldman *cgw [at] fnal.gov*
+[     ] Damir Dzeko *ddzeko [at] zesoi.fer.hr*
+[ASSGN] Dan Harkless *wget [at] harkless.org*
+        Added --backup-converted, --follow-tags, --html-extension,
+        --ignore-tags, and --page-requisites;
+        improved documentation; etc. Was the principle maintainer
+        of GNU Wget for some time.
+[     ] Daniel S. Lewart *d-lewart [at] uiuc.edu*
+[     ] HIROSE Masaaki *hirose31 [at] t3.rim.or.jp*
+[     ] Const Kaplinsky *const [at] ce.cctpu.edu.ru*
+[     ] John Daily *jdaily [at] cyberdude.com*
+[     ] Adrian Aichner *adrian [at] xemacs.org*
+[     ] Matthew Seaman *m.seaman [at] inpharmatica.co.uk*
+[     ] Tyler Riddle *triddle [at] liquidmarket.com*
+[     ] John Summerfield *summer [at] OS2.ami.com.au*
+[     ] Csaba Raduly *csaba.raduly [at] sophos.com*
+[     ] Igor Khristophorov *igor [at] atdot.org*
+[     ] Adrian Aichner *Adrian.Aichner [at] t-online.de*
+[     ] Jonas Jensen *bones [at] huleboer.dk*
+[     ] Tim Mooney *mooney [at] dogbert.cc.ndsu.NoDak.edu*
+[     ] Hack Kampbjørn *hack [at] hackdata.com*
+[     ] Philipp Thomas *pthomas [at] suse.de*
+[     ] Nicolas Lichtmaier *nick [at] debian.org*
+[     ] KOJIMA Hajime *kjm [at] rins.ryukoku.ac.jp*
+[     ] Paul Bludov *paul [at] ozero.net*
+[     ] Trond Eivind Glomsrod *teg [at] redhat.com*
+[ASSGN] Ian Abbott *abbotti [at] mev.co.uk*
+        Contributed bugfixes, Windows-related fixes, provided a
+        prototype implementation of the new recursive code, and more.
+        Co-maintained Wget during the 1.8 release cycle.
+[ASSGN] Maciej W. Rozycki *macro [at] ds2.pg.gda.pl*
+[     ] R.I.P. Deaddog *maddog [at] linuxhall.org*
+[     ] Adam J. Richter *adam [at] yggdrasil.com*
+[     ] Dave Turner *dct25 [at] hermes.cam.ac.uk*
+[ASSGN] Christian Fraenkel *c.fraenkel [at] gmx.net*
+        Initially implemented SSL support.
+[     ] Daniel BODEA *dali [at] dali-designs.com*
+[     ] Alan Eldridge *alane [at] geeksrus.net*
+[     ] Chris Seawood *cls [at] seawood.org*
+[     ] Peter Farmer *peter.farmer [at] zveno.com*
+[     ] Jochen Hein *jochen [at] jochen.org*
+[     ] Lemble Gregory *gregory.lemble [at] st.com*
+[     ] Ingo T. Storm *tux-sparc [at] computerbild.de*
+[     ] T. Bharath *TBharath [at] responsenetworks.com*
+[     ] Andre Majorel *amajorel [at] teaser.fr*
+[     ] Christian Lackas *delta [at] lackas.net*
+[     ] Andreas Damm *andreas-sourceforge [at] radab.org*
+[     ] Chin-yuan Kuo *sr1111111 [at] yahoo.com.tw*
+[ASSGN] Thomas Lussnig *thomas.lussnig [at] bewegungsmelder.de*
+        Initially implemented IPv6 support.
+[     ] Bill Richardson *bill [at] riverstonenet.com*
+[ASSGN] Nicolas Schodet *contact [at] ni.fr.eu.org*
+        Contributed to cookie code and documentation.
+[     ] Ahmon Dancy *dancy [at] dancysoft.com*
+[     ] Noel Kothe *noel [at] debian.org*
+[     ] Aurelien Marchand *artaxerxes [at] users.sf.net*
+[     ] Aaron S. Hawley *Aaron.Hawley [at] uvm.edu*
+[     ] Bertrand Demiddelaer *bert [at] b3rt.org*
+[     ] Matthew J. Mellon *mellon [at] tymenet.com*
+[ASSGN] Gisle Vanem *giva [at] bgnett.no*
+        Contributed Windows and MS-DOS improvements, including a
+        port of run_with_timeout to Windows, additions to Makefiles,
+        and many bug reports and fixes.
+[     ] Philip Stadermann *philip.stadermann [at] credativ.de*
+[     ] Dennis Smit *ds [at] nerds-incorporated.org*
+[     ] Christian Biere *christianbiere [at] gmx.de*
+[     ] David Fritz *zeroxdf [at] att.net*
+[     ] Jens Roesner *jens.roesner [at] gmx.de*
+[     ] Nico R. *n-roeser [at] gmx.net*
+[     ] Larry Jones *lawrence.jones [at] ugsplm.com*
+[     ] YAMAZAKI Makoto *Yamazaki.Makoto [at] fujixerox.co.jp*
+[     ] Hans-Andreas Engel *engel [at] node.ch*
+[     ] Leonid Petrov *nouser [at] lpetrov.net*
+[     ] Ulf Harnhammar *ulf.harnhammar.9485 [at] student.uu.se*
+[ASSGN] Mauro Tortonesi *mauro [at] ferrara.linux.it*
+        Improved IPv6 support, adding support for dual
+        family systems.  Refactored and enhanced FTP IPv6 code.
+        Maintained GNU Wget from 2004-2007.
+[     ] Marco Colombo *m.colombo [at] ed.ac.uk*
+[     ] Joseph Caretto *jcaretto [at] pitt.edu*
+[     ] FUJISHIMA Satsuki *sf [at] FreeBSD.org*
+[     ] Charles C.Fu *ccwf [at] bacchus.com*
+[     ] Andreas Beckmann *debian [at] abeckmann.de*
+[     ] Keith Moore *keithmo [at] exmsft.com*
+[     ] Benno Schulenberg *benno [at] nietvergeten.nl*
+[     ] Giuseppe Bonacci *g.bonacci [at] libero.it*
+[     ] Vasil Dimov *vd [at] datamax.bg*
+[     ] Albert Chin *wget [at] mlists.thewrittenword.com*
+[     ] Jeremy Shapiro *jnshapiro [at] gmail.com*
+[     ] Stepan Kasal *kasal [at] ucw.cz*
+[     ] Russ Allbery *rra [at] stanford.edu*
+[ASSGN] Daniel Stenberg *daniel [at] haxx.se*
+        NTLM authentication in http-ntlm.c and http-ntlm.h
+        originally written for curl donated for use in GNU Wget.
+[     ] Lawrence Jones *lawrence.jones [at] ugs.com*
+[     ] CHEN Peng *chenpeng [at] alumni.nus.edu.sg*
+[ASSGN] Tony Lewis *tlewis [at] exelana.com*
+[     ] KJKHyperion *hackbunny [at] reactos.com*
+[     ] Daniel Richard G. *skunk [at] iSKUNK.ORG*
+[     ] Mike Grant *mggr [at] pml.ac.uk*
+[ASSGN] Micah Cowan *micah [at] cowan.name*
+        Maintained Wget from mid-2007 to mid-2010.
+[ASSGN] Joshua David Williams *yurimxpxman [at] gmail.com*
+[ASSGN] Ralf Wildenhues *Ralf.Wildenhues [at] gmx.de*
+        Contributed patches to convert Wget to use Automake as
+        part of its build process, and various bugfixes.
+[     ] Jochen Roderburg *roderburg [at] uni-koeln.de*
+[     ] Stephen Gildea *stepheng+wget [at] gildea.com*
+[     ] Benno Schulenberg *bensberg [at] justemail.net*
+[     ] Alexander Dergachev *cy6erbr4in [at] gmail.com*
+[ASSGN] Rabin Vincent *rabin [at] rab.in*
+[ASSGN] Steven Schubiger *schubiger [at] gmail.com*
+        Many helpful patches, bugfixes and improvements.
+        Notably, conversion of Wget to use the Gnulib quotes and
+        quoteargs modules, and the addition of password prompts
+        at the console, via the Gnulib getpasswd-gnu module.
+[     ] Alain Guibert *alguibert+bts [at] free.fr*
+[     ] Jim Paris *jim [at] jtan.com*
+[ASSGN] Mike Frysinger *vapier [at] gentoo.org*
+[     ] Pranab Shenoy *pranab.loosinit.shenoy [at] gmail.com*
+[ASSGN] Ted Mielczarek *ted.mielczarek [at] gmail.com*
+        Support for parsing links from CSS.
+[ASSGN] Joao Ferreira *joao [at] joaoff.com*
+[     ] Kenny Parnell *k.parnell [at] gmail.com*
+[     ] Henri Häkkinen *henux [at] users.sourceforge.net*
+[ASSGN] Madhusudan Hosaagrahara *com.gmail.hrmadhu*
+[ASSGN] Xavier Saint *wget [at] sxav.eu*
+        Support for IRIs (RFC 3987).
+[     ] Michael Kessler *kessler.michael [at] aon.at*
+[     ] Alexander Drozdov *dzal_mail [at] mtu-net.ru*
+[     ] Alexander Belopolsky *alexander.belopolsky [at] gmail.com*
+[ASSGN] Gerardo E. Gidoni *gerel [at] gnu.org*
+[     ] Benjamin Wolsey *bwy [at] benjaminwolsey.de*
+[     ] Xin Zou *zouxin2008 [at] gmail.com*
+[     ] Julien Pichon *julienpichon7 [at] gmail.com*
+[     ] Phil Pennock *mutt-dev [at] spodhuis.org*
+[     ] Jay Krell *jay.krell [at] cornell.edu*
+[ASSGN] Steven Schweda *sms [at] antinode.info*
+[ASSGN] Petr Pisar *petr.pisar [at] atlas.cz*
+[     ] Marcel Telka *marcel [at] telka.sk*
+[     ] Michael Baeuerle *michael.baeuerle [at] gmx.net*
+[ASSGN] Arvind Jamuna Dixit *ardsrk [at] gmail.com*
+[     ] Peter Rosin *peda [at] lysator.liu.se*
+[     ] David Holman *holman.david [at] gmail.com*
+[     ] Jeremy Olexa *darkside [at] gentoo.org*
+[     ] Paul Townsend *aab [at] purdue.edu*
+[ASSGN] Giuseppe Scrivano *gscrivano [at] gnu.org*
+        Added support for HTTP/1.1.
+        Active Wget Maintainer from 2010-2015.
+[     ] Muthu Subramanian K *muthusuba [at] gmail.com*
+[     ] Alan Jenkins *alan-jenkins [at] tuffmail.co.uk*
+[     ] John Trengrove *jtrengrove [at] gmail.com*
+[     ] Alon Bar-Lev *alon.barlev [at] gmail.com*
+[ASSGN] Reza Snowdon *vivi [at] mage.me.uk*
+[ASSGN] Dennis, CHENG Renquan *crquan [at] fedoraproject.org*
+[ASSGN] Merinov Nikolay *kim.roader [at] gmail.com*
+[     ] Ivanov Anton *x86mail [at] gmail.com*
+[     ] Manfred Koizar *mkoi-pg [at] aon.at*
+[ASSGN] Jessica McKellar *jesstess [at] mit.edu*
+[     ] Filipe Brandenburger *filbranden [at] gmail.com*
+[     ] Evgeniy Philippov *egphilippov [at] googlemail.com*
+[     ] Adrien Nader *adrien [at] notk.org*
+[     ] Gilles Carry *gilles.carry [at] st.com*
+[     ] Tomasz Buchert *tomek.buchert [at] gmail.com*
+[ASSGN] Ray Satiro *raysatiro [at] yahoo.com*
+[     ] Cristian Rodríguez *crrodriguez [at] opensuse.org*
+[ASSGN] Daniel Manrique *roadmr [at] tomechangosubanana.com*
+[     ] Carlos Martín Nieto *carlos [at] cmartin.tk*
+[     ] Jochen Roderburg *Roderburg [at] Uni-Koeln.DE*
+[     ] Mojca Miklavec *mojca.miklavec.lists [at] gmail.com*
+[     ] Alan Hourihane *alanh [at] fairlite.co.uk*
+[     ] Christian Jullien *eligis [at] orange.fr*
+[     ] Jakob Matthes *jakob.matthes [at] gmail.com*
+[     ] Karl Berry *karl [at] freefriends.org*
+[     ] Henrik Holst *henrik.holst [at] millistream.com*
+[ASSGN] Gijs van Tulder *gvtulder [at] gmail.com*
+[ASSGN] Sasikantha Babu *sasikanth.v19 [at] gmail.com*
+[     ] Ángel González *keisial [at] gmail.com*
+[     ] Daniel Kahn Gillmor *dkg [at] fifthhorseman.net*
+[     ] illusionoflife *illusion.of.life92 [at] gmail.com*
+[     ] mancha *mancha [at] mac.hush.com*
+[     ]  *y-iida [at] secom.co.jp*
+[     ] Rohit Mathulla *rohit_mathulla [at] yahoo.com*
+[     ] Nguyễn Thái Ngọc Duy *pclouds [at] gmail.com*
+[     ] Stefano Lattarini *stefano.lattarini [at] gmail.com*
+[     ] Michael Stapelberg *michael [at] stapelberg.de*
+[     ] Pavel Mateja *pavel [at] netsafe.cz*
+[ASSGN] Darshit Shah *darnir [at] gnu.org*
+[     ] Tomas Hozza *thozza [at] redhat.com*
+[     ] mancha *mancha1 [at] hush.com*
+[ASSGN] Bykov Aleksey *gnfalex [at] rambler.ru*
+[     ] Dave Reisner *dreisner [at] archlinux.org*
+[     ] Ciprian Vieru *devel.php [at] gmail.com*
+[     ] Karsten Hopp *karsten [at] redhat.com*
+[     ] Will Dietz *w [at] wdtz.org*
+[     ] Andrea Urbani *matfanjol [at] mail.com*
+[     ] Håkon Vågsether *hauk142 [at] gmail.com*
+[     ] Lars Wendler *polynomial-c [at] gentoo.org*
+[ASSGN] Yousong Zhou *yszhou4tech [at] gmail.com*
+[     ] Vladimír Pýcha *vpycha [at] gmail.com*
+[ASSGN] Zihang Chen *chsc4698 [at] gmail.com*
+[     ] Benjamin Goose *gans+wget [at] tngtech.com*
+[     ] Nikita Vetrov *admin [at] kanaria.ru*
+[     ] Nikolay Morozov *n.morozov [at] securitycode.ru*
+[     ] Matthew Atkinson *mutley456 [at] ntlworld.com*
+[     ] Peter Meiser *meiser [at] gmx-topmail.de*
+[     ] Pär Karlsson *feinorgh [at] gmail.com*
+[     ] Jakub Čajka *jcajka [at] redhat.com*
+[     ] Witchakorn Kamolpornwijit *witchakk [at] mit.edu*
+[     ] Tom Li *biergaizi2009 [at] gmail.com*
+[     ] Jérémie Courrèges-Anglas *jca [at] wxcvbn.org*
+[     ] Cong Ma *cma [at] pmo.ac.cn*
+[     ] Yuriy M. Kaminskiy *yumkam [at] gmail.com*
+[ASSGN] Eli Zaretskii *eliz [at] gnu.org*
+[     ] Mathieu Parent *math.parent [at] gmail.com*
+[     ] Dagobert Michelsen *dam [at] opencsw.org*
+[     ] Gisle Vanem *gvanem [at] yahoo.no*
+[     ] Anderson Goulart *global [at] kokre.com*
+[ASSGN] Ander Juaristi Alamos *ajuaristi [at] gmx.es*
+[     ] Rohan Prinja *rohan.prinja [at] gmail.com*
+[ASSGN] Hubert Tarasiuk *hubert.tarasiuk [at] gmail.com*
+[ASSGN] Miquel Llobet *mllobet.cm [at] gmail.com*
+[     ] Romain Bentz *romain.bentz [at] dataiku.com*
+[     ] Alex Henrie *alexhenrie24 [at] gmail.com*
+[ASSGN] Jookia *166291 [at] gmail.com*
+[     ] Daniele Calore *daniele.calore [at] tin.it*
+[     ] Christian Neukirchen *chneukirchen [at] gmail.com*
+[     ] christian fafard *cfaf [at] hotmail.com*
+[     ] Ikey Doherty *michael.i.doherty [at] intel.com*
+[     ] Ygal Blum *ygal.blum [at] technicolor.com*
+[     ] Jernej Simončič *jernej|s-wget [at] eternallybored.org*
+[     ] Maks Orlovich *morlovich [at] google.com*
+[ASSGN] moparisthebest *admin [at] moparisthebest.com*
+[     ] Sergio Gelato *sergio.gelato [at] astro.su.se*
+[     ] Sean Burford *sburford [at] google.com*
+[ASSGN] Matthew White *mehw.is.me [at] inventati.org*
+[     ] Jeffery To *jeffery.to [at] gmail.com*
+[     ] Tobias Stoeckmann *tobias [at] stoeckmann.org*
+[ASSGN] Dale R. Worley *worley [at] ariadne.com*
+[     ] Liam R. Howlett *Liam.Howlett [at] WindRiver.com*
+[     ] losgrandes *pwajda [at] gmail.net.pl*
+[     ] Rahul Bedarkar *rahul.bedarkar [at] imgtec.com*
+[     ] Nikos Mavrogiannopoulos *nmav [at] gnutls.org*
+[ASSGN] vijeth-aradhya *vijthaaa [at] gmail.com*
+[ASSGN] Tom Szilagyi *tomszilagyi [at] gmail.com*
+[ASSGN] YX Hao *lifenjoiner [at] 163.com*
+[     ] Benjamin Esham *benjamin [at] esham.io*
+[     ] Christof Horschitz *christof [at] nimbusec.com*
+[ASSGN] Vijo Cherian *codervijo [at] gmail.com*
+[     ] klemens *ka7 [at] github.com*
+[     ] Anton Yuzhaninov *citrin+github [at] citrin.ru*
+[ASSGN] Tim Schlueter *schlueter.tim [at] linux.com*
+[ASSGN] Josef Moellers *jmoellers [at] suse.de*
+[     ] Peter Wu *peter [at] lekensteyn.nl*
+[     ] Reiji *gey3dr [at] gmail.com*
+[     ] Loganaden Velvindron *logan [at] hackers.mu*
+[     ] ethus3h *kolubat [at] gmail.com*
+[     ] Tomas Korbar *tkorbar [at] redhat.com*
+[     ] Nikos Mavrogiannopoulos *nmav [at] redhat.com*
+[     ] Luiz Angelo Daros de Luca *luizluca [at] gmail.com*
+[     ] Kapus, Timotej *timotej.kapus13 [at] imperial.ac.uk*
+[     ] Rosen Penev *rosenp [at] gmail.com*
+[     ] André Wolski *andre [at] dena-design.de*
+[     ] Leon Klingele *git [at] leonklingele.de*
+[ASSGN] Jeffrey Walton *noloader [at] gmail.com*
+[     ] raminfp *ramin.blackhat [at] gmail.com*
+[     ] Leif Ryge *leif [at] synthesize.us*
+[     ] Eneas U de Queiroz *cote2004-github [at] yahoo.com*
+[     ] AviSoomirtee *avi [at] cyberstorm.mu*
+[ASSGN] sulfastor *torresmoisesa [at] gmail.com*
+[     ] Lauri Nurmi *lanurmi [at] iki.fi*
+[ASSGN] Вячеслав Петрищев *vyachemail [at] gmail.com*
+[     ] Matt Whitlock *gentoo [at] mattwhitlock.name*
+[     ] Shamil Gumirov *shamil [at] gumirov.com*
+[     ] Nils *nils [at] nilsand.re*
+[     ] Nekun *nekokun [at] firemail.cc*
+[     ] jmoellers *josef.moellers [at] suse.com*
+[     ] WB *3572564-wadersgeek [at] users.noreply.gitlab.com*
+[     ] Thomas Niederberger *thomas [at] niederb.ch*
+[     ] Nik Soggia *wget [at] niksoggia.it*
+[     ] Aarni Koskela *akx [at] iki.fi*
+[     ] jinfuchiang *jinfuchiang [at] outlook.com*
+[     ] Jan-Michael Brummer *jan-michael.brummer1 [at] volkswagen.de*

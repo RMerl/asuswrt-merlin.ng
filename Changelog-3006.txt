@@ -51,11 +51,12 @@ Asuswrt-Merlin 3006.xxx Changelog
          The rules are also created before WAN goes up, to reduce
          the risks of leaks between WAN going up and VPN connecting.
   - NEW: Added killswitch support for WireGuard clients.
-  - CHANGED: Merged with GPL 3.0.0.6.102_34369.
-  - CHANGED: Chart.js was upgraded from 2.x to 3.9, to share the
+  - UPDATED: Merged with GPL 3.0.0.6.102_34369.
+  - UPDATED: Chart.js was upgraded from 2.x to 3.9, to share the
              same version used by Asus.  Any third party addon
              that used it will need to upgrade their charts to
              the new version.
+  - UPDATED: wget to 1.24.5.
   - CHANGED: Switched to a different qrcode generation script, to
              share the same script used by Asus.
   - CHANGED: WireGuard and OpenVPN clients use different iproute2
@@ -79,3 +80,6 @@ Asuswrt-Merlin 3006.xxx Changelog
   - REMOVED: Option dns_local_cache from Tools -> Tweak settings,
              to avoid issues with SDN that run their own
              dnsmasq instances.
+  - REMOVED: Wifi Radar was removed (unsupported by Wifi 7 devices,
+             and security issues cited by Asus in their own recent
+             releases).

@@ -1,5 +1,5 @@
 /* Reading/parsing the initialization file.
-   Copyright (C) 1996-2012, 2014-2015, 2018-2022 Free Software
+   Copyright (C) 1996-2012, 2014-2015, 2018-2024 Free Software
    Foundation, Inc.
 
 This file is part of GNU Wget.
@@ -433,7 +433,7 @@ defaults (void)
   opt.ftp_pasv = true;
   /* 2014-09-07  Darshit Shah  <darnir@gmail.com>
    * opt.retr_symlinks is set to true by default. Creating symbolic links on the
-   * local filesystem pose a security threat by malicious FTP Servers that
+   * local file system pose a security threat by malicious FTP Servers that
    * server a specially crafted .listing file akin to this:
    *
    * lrwxrwxrwx   1 root     root           33 Dec 25  2012 JoCxl6d8rFU -> /
@@ -1756,6 +1756,7 @@ cmd_spec_secure_protocol (const char *com, const char *val, void *place)
     { "tlsv1_3", secure_protocol_tlsv1_3 },
     { "pfs", secure_protocol_pfs },
   };
+  snprintf (opt.secure_protocol_name, sizeof (opt.secure_protocol_name), "%s", val);
   int ok = decode_string (val, choices, countof (choices), place);
   if (!ok)
     fprintf (stderr, _("%s: %s: Invalid value %s.\n"), exec_name, com, quote (val));

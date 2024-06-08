@@ -1,5 +1,5 @@
-# lib-link.m4 serial 32
-dnl Copyright (C) 2001-2022 Free Software Foundation, Inc.
+# lib-link.m4 serial 34
+dnl Copyright (C) 2001-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -69,11 +69,11 @@ AC_DEFUN([AC_LIB_HAVE_LINKFLAGS],
   dnl Add $INC[]NAME to CPPFLAGS before performing the following checks,
   dnl because if the user has installed lib[]Name and not disabled its use
   dnl via --without-lib[]Name-prefix, he wants to use it.
-  ac_save_CPPFLAGS="$CPPFLAGS"
+  acl_saved_CPPFLAGS="$CPPFLAGS"
   AC_LIB_APPENDTOVAR([CPPFLAGS], [$INC]NAME)
 
   AC_CACHE_CHECK([for lib[]$1], [ac_cv_lib[]Name], [
-    ac_save_LIBS="$LIBS"
+    acl_saved_LIBS="$LIBS"
     dnl If $LIB[]NAME contains some -l options, add it to the end of LIBS,
     dnl because these -l options might require -L options that are present in
     dnl LIBS. -l options benefit only from the -L options listed before it.
@@ -89,7 +89,7 @@ AC_DEFUN([AC_LIB_HAVE_LINKFLAGS],
       [AC_LANG_PROGRAM([[$3]], [[$4]])],
       [ac_cv_lib[]Name=yes],
       [ac_cv_lib[]Name='m4_if([$5], [], [no], [[$5]])'])
-    LIBS="$ac_save_LIBS"
+    LIBS="$acl_saved_LIBS"
   ])
   if test "$ac_cv_lib[]Name" = yes; then
     HAVE_LIB[]NAME=yes
@@ -100,7 +100,7 @@ AC_DEFUN([AC_LIB_HAVE_LINKFLAGS],
     HAVE_LIB[]NAME=no
     dnl If $LIB[]NAME didn't lead to a usable library, we don't need
     dnl $INC[]NAME either.
-    CPPFLAGS="$ac_save_CPPFLAGS"
+    CPPFLAGS="$acl_saved_CPPFLAGS"
     LIB[]NAME=
     LTLIB[]NAME=
     LIB[]NAME[]_PREFIX=
@@ -196,8 +196,8 @@ AC_DEFUN([AC_LIB_LINKFLAGS_BODY],
     eval additional_libdir3=\"$exec_prefix/$acl_libdirstem3\"
   ])
   AC_ARG_WITH(PACK[-prefix],
-[[  --with-]]PACK[[-prefix[=DIR]  search for ]PACKLIBS[ in DIR/include and DIR/lib
-  --without-]]PACK[[-prefix     don't search for ]PACKLIBS[ in includedir and libdir]],
+[[  --with-]]PACK[[-prefix[=DIR]  search for ]]PACKLIBS[[ in DIR/include and DIR/lib
+  --without-]]PACK[[-prefix     don't search for ]]PACKLIBS[[ in includedir and libdir]],
 [
     if test "X$withval" = "Xno"; then
       use_additional=no
@@ -224,7 +224,7 @@ AC_DEFUN([AC_LIB_LINKFLAGS_BODY],
     additional_libdir3=
   fi
   dnl Search the library and its dependencies in $additional_libdir and
-  dnl $LDFLAGS. Using breadth-first-seach.
+  dnl $LDFLAGS. Use breadth-first search.
   LIB[]NAME=
   LTLIB[]NAME=
   INC[]NAME=
@@ -537,12 +537,12 @@ AC_DEFUN([AC_LIB_LINKFLAGS_BODY],
               dnl Read the .la file. It defines the variables
               dnl dlname, library_names, old_library, dependency_libs, current,
               dnl age, revision, installed, dlopen, dlpreopen, libdir.
-              save_libdir="$libdir"
+              saved_libdir="$libdir"
               case "$found_la" in
                 */* | *\\*) . "$found_la" ;;
                 *) . "./$found_la" ;;
               esac
-              libdir="$save_libdir"
+              libdir="$saved_libdir"
               dnl We use only dependency_libs.
               for dep in $dependency_libs; do
                 case "$dep" in
@@ -682,18 +682,18 @@ AC_DEFUN([AC_LIB_LINKFLAGS_BODY],
         alldirs="${alldirs}${alldirs:+$acl_hardcode_libdir_separator}$found_dir"
       done
       dnl Note: acl_hardcode_libdir_flag_spec uses $libdir and $wl.
-      acl_save_libdir="$libdir"
+      acl_saved_libdir="$libdir"
       libdir="$alldirs"
       eval flag=\"$acl_hardcode_libdir_flag_spec\"
-      libdir="$acl_save_libdir"
+      libdir="$acl_saved_libdir"
       LIB[]NAME="${LIB[]NAME}${LIB[]NAME:+ }$flag"
     else
       dnl The -rpath options are cumulative.
       for found_dir in $rpathdirs; do
-        acl_save_libdir="$libdir"
+        acl_saved_libdir="$libdir"
         libdir="$found_dir"
         eval flag=\"$acl_hardcode_libdir_flag_spec\"
-        libdir="$acl_save_libdir"
+        libdir="$acl_saved_libdir"
         LIB[]NAME="${LIB[]NAME}${LIB[]NAME:+ }$flag"
       done
     fi
@@ -790,18 +790,18 @@ AC_DEFUN([AC_LIB_LINKFLAGS_FROM_LIBS],
             for dir in $rpathdirs; do
               alldirs="${alldirs}${alldirs:+$acl_hardcode_libdir_separator}$dir"
             done
-            acl_save_libdir="$libdir"
+            acl_saved_libdir="$libdir"
             libdir="$alldirs"
             eval flag=\"$acl_hardcode_libdir_flag_spec\"
-            libdir="$acl_save_libdir"
+            libdir="$acl_saved_libdir"
             $1="$flag"
           else
             dnl The -rpath options are cumulative.
             for dir in $rpathdirs; do
-              acl_save_libdir="$libdir"
+              acl_saved_libdir="$libdir"
               libdir="$dir"
               eval flag=\"$acl_hardcode_libdir_flag_spec\"
-              libdir="$acl_save_libdir"
+              libdir="$acl_saved_libdir"
               $1="${$1}${$1:+ }$flag"
             done
           fi

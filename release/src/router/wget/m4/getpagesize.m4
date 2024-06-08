@@ -1,5 +1,5 @@
-# getpagesize.m4 serial 10
-dnl Copyright (C) 2002, 2004-2005, 2007, 2009-2022 Free Software Foundation,
+# getpagesize.m4 serial 11
+dnl Copyright (C) 2002, 2004-2005, 2007, 2009-2024 Free Software Foundation,
 dnl Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -22,7 +22,7 @@ AC_DEFUN([gl_FUNC_GETPAGESIZE],
     fi
   fi
   case "$host_os" in
-    mingw*)
+    mingw* | windows*)
       REPLACE_GETPAGESIZE=1
       ;;
   esac

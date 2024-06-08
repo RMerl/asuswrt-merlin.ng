@@ -1,6 +1,6 @@
 /* basename.c -- return the last element in a file name
 
-   Copyright (C) 1990, 1998-2001, 2003-2006, 2009-2022 Free Software
+   Copyright (C) 1990, 1998-2001, 2003-2006, 2009-2024 Free Software
    Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
@@ -21,7 +21,6 @@
 /* Specification.  */
 #include "basename-lgpl.h"
 
-#include <stdbool.h>
 #include <string.h>
 
 #include "filename.h"

@@ -1,5 +1,5 @@
 /* Auxiliary functions for the creation of subprocesses.  OS/2 kLIBC API.
-   Copyright (C) 2001, 2003-2022 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2003-2024 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2003.
 
    This program is free software: you can redistribute it and/or modify
@@ -23,14 +23,13 @@
 /* Get _open_osfhandle().  */
 #include <io.h>
 
-#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
 
 #include "cloexec.h"
-#include "error.h"
+#include <error.h>
 #include "gettext.h"
 
 #define _(str) gettext (str)

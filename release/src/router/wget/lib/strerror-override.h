@@ -1,6 +1,6 @@
 /* strerror-override.h --- POSIX compatible system error routine
 
-   Copyright (C) 2010-2022 Free Software Foundation, Inc.
+   Copyright (C) 2010-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -17,6 +17,11 @@
 
 #ifndef _GL_STRERROR_OVERRIDE_H
 # define _GL_STRERROR_OVERRIDE_H
+
+/* This file uses _GL_ATTRIBUTE_CONST.  */
+# if !_GL_CONFIG_H_INCLUDED
+#  error "Please include config.h first."
+# endif
 
 # include <errno.h>
 # include <stddef.h>

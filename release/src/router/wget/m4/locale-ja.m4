@@ -1,5 +1,5 @@
-# locale-ja.m4 serial 15
-dnl Copyright (C) 2003, 2005-2022 Free Software Foundation, Inc.
+# locale-ja.m4 serial 18
+dnl Copyright (C) 2003, 2005-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -7,7 +7,7 @@ dnl with or without modifications, as long as this notice is preserved.
 dnl From Bruno Haible.
 
 dnl Determine the name of a japanese locale with EUC-JP encoding.
-AC_DEFUN([gt_LOCALE_JA],
+AC_DEFUN_ONCE([gt_LOCALE_JA],
 [
   AC_REQUIRE([AC_CANONICAL_HOST])
   AC_REQUIRE([AM_LANGINFO_CODESET])
@@ -90,7 +90,7 @@ int main ()
         # "ge"(!) or "deu"(!) as "German" or "German_Germany.1252",
         # "ja" as "Japanese" or "Japanese_Japan.932",
         # and similar.
-        mingw*)
+        mingw* | windows*)
           # Note that on native Windows, the Japanese locale is
           # Japanese_Japan.932, and CP932 is very different from EUC-JP, so we
           # cannot use it here.
@@ -117,7 +117,7 @@ int main ()
                 if (LC_ALL=ja_JP.EUC LC_TIME= LC_CTYPE= ./conftest; exit) 2>/dev/null; then
                   gt_cv_locale_ja=ja_JP.EUC
                 else
-                  # Test for the Solaris 7 locale name.
+                  # Test for the Solaris 10 locale name.
                   if (LC_ALL=ja LC_TIME= LC_CTYPE= ./conftest; exit) 2>/dev/null; then
                     gt_cv_locale_ja=ja
                   else
@@ -139,5 +139,11 @@ int main ()
     rm -fr conftest*
   ])
   LOCALE_JA=$gt_cv_locale_ja
+  case $LOCALE_JA in #(
+    '' | *[[[:space:]\"\$\'*@<:@]]*)
+      dnl This locale name might cause trouble with sh or make.
+      AC_MSG_WARN([invalid locale "$LOCALE_JA"; assuming "none"])
+      LOCALE_JA=none;;
+  esac
   AC_SUBST([LOCALE_JA])
 ])

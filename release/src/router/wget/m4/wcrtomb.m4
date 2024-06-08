@@ -1,5 +1,5 @@
-# wcrtomb.m4 serial 17
-dnl Copyright (C) 2008-2022 Free Software Foundation, Inc.
+# wcrtomb.m4 serial 19
+dnl Copyright (C) 2008-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -82,9 +82,11 @@ int main ()
 changequote(,)dnl
           case "$host_os" in
             # Guess no on AIX 4, OSF/1, Solaris, native Windows.
-            aix4* | osf* | solaris* | mingw*) gl_cv_func_wcrtomb_retval="guessing no" ;;
+            aix4* | osf* | solaris* | mingw* | windows*)
+              gl_cv_func_wcrtomb_retval="guessing no" ;;
             # Guess yes otherwise.
-            *)                                gl_cv_func_wcrtomb_retval="guessing yes" ;;
+            *)
+              gl_cv_func_wcrtomb_retval="guessing yes" ;;
           esac
 changequote([,])dnl
           if test $LOCALE_FR != none || test $LOCALE_FR_UTF8 != none || test $LOCALE_JA != none || test $LOCALE_ZH_CN != none; then
@@ -97,12 +99,14 @@ changequote([,])dnl
 int main ()
 {
   int result = 0;
-  if (setlocale (LC_ALL, "$LOCALE_FR") != NULL)
+  if (strcmp ("$LOCALE_FR", "none") != 0
+      && setlocale (LC_ALL, "$LOCALE_FR") != NULL)
     {
       if (wcrtomb (NULL, 0, NULL) != 1)
         result |= 1;
     }
-  if (setlocale (LC_ALL, "$LOCALE_FR_UTF8") != NULL)
+  if (strcmp ("$LOCALE_FR_UTF8", "none") != 0
+      && setlocale (LC_ALL, "$LOCALE_FR_UTF8") != NULL)
     {
       if (wcrtomb (NULL, 0, NULL) != 1)
         result |= 2;
@@ -113,12 +117,14 @@ int main ()
             result |= 2;
       }
     }
-  if (setlocale (LC_ALL, "$LOCALE_JA") != NULL)
+  if (strcmp ("$LOCALE_JA", "none") != 0
+      && setlocale (LC_ALL, "$LOCALE_JA") != NULL)
     {
       if (wcrtomb (NULL, 0, NULL) != 1)
         result |= 4;
     }
-  if (setlocale (LC_ALL, "$LOCALE_ZH_CN") != NULL)
+  if (strcmp ("$LOCALE_ZH_CN", "none") != 0
+      && setlocale (LC_ALL, "$LOCALE_ZH_CN") != NULL)
     {
       if (wcrtomb (NULL, 0, NULL) != 1)
         result |= 8;

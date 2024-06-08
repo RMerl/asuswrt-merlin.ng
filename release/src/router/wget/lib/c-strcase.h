@@ -1,5 +1,5 @@
 /* Case-insensitive string comparison functions in C locale.
-   Copyright (C) 1995-1996, 2001, 2003, 2005, 2009-2022 Free Software
+   Copyright (C) 1995-1996, 2001, 2003, 2005, 2009-2024 Free Software
    Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
@@ -17,6 +17,11 @@
 
 #ifndef C_STRCASE_H
 #define C_STRCASE_H
+
+/* This file uses _GL_ATTRIBUTE_PURE.  */
+#if !_GL_CONFIG_H_INCLUDED
+ #error "Please include config.h first."
+#endif
 
 #include <stddef.h>
 

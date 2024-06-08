@@ -1,5 +1,5 @@
 /* Utility functions for writing WARC files.
-   Copyright (C) 2011-2012, 2015, 2018-2022 Free Software Foundation,
+   Copyright (C) 2011-2012, 2015, 2018-2024 Free Software Foundation,
    Inc.
 
 This file is part of GNU Wget.
@@ -1026,7 +1026,7 @@ warc_process_cdx_line (char *lineptr, int field_num_original_url,
       /* For some extra efficiency, we decode the base32 encoded
          checksum value.  This should produce exactly SHA1_DIGEST_SIZE
          bytes.  */
-      size_t checksum_l;
+      idx_t checksum_l;
       char * checksum_v;
       base32_decode_alloc (checksum, strlen (checksum), &checksum_v,
                            &checksum_l);

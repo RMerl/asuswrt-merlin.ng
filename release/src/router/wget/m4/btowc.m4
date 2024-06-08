@@ -1,5 +1,5 @@
-# btowc.m4 serial 12
-dnl Copyright (C) 2008-2022 Free Software Foundation, Inc.
+# btowc.m4 serial 14
+dnl Copyright (C) 2008-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -40,12 +40,12 @@ int main ()
           [
 changequote(,)dnl
            case "$host_os" in
-                      # Guess no on Cygwin.
-             cygwin*) gl_cv_func_btowc_nul="guessing no" ;;
-                      # Guess yes on native Windows.
-             mingw*)  gl_cv_func_btowc_nul="guessing yes" ;;
-                      # Guess yes otherwise.
-             *)       gl_cv_func_btowc_nul="guessing yes" ;;
+                                # Guess no on Cygwin.
+             cygwin*)           gl_cv_func_btowc_nul="guessing no" ;;
+                                # Guess yes on native Windows.
+             mingw* | windows*) gl_cv_func_btowc_nul="guessing yes" ;;
+                                # Guess yes otherwise.
+             *)                 gl_cv_func_btowc_nul="guessing yes" ;;
            esac
 changequote([,])dnl
           ])
@@ -59,12 +59,12 @@ changequote([,])dnl
         dnl is present.
 changequote(,)dnl
         case "$host_os" in
-                  # Guess no on IRIX.
-          irix*)  gl_cv_func_btowc_eof="guessing no" ;;
-                  # Guess yes on native Windows.
-          mingw*) gl_cv_func_btowc_eof="guessing yes" ;;
-                  # Guess yes otherwise.
-          *)      gl_cv_func_btowc_eof="guessing yes" ;;
+                             # Guess no on IRIX.
+          irix*)             gl_cv_func_btowc_eof="guessing no" ;;
+                             # Guess yes on native Windows.
+          mingw* | windows*) gl_cv_func_btowc_eof="guessing yes" ;;
+                             # Guess yes otherwise.
+          *)                 gl_cv_func_btowc_eof="guessing yes" ;;
         esac
 changequote([,])dnl
         if test $LOCALE_FR != none; then
@@ -88,6 +88,50 @@ int main ()
         fi
       ])
 
+    dnl On mingw, in the C locale, btowc is inconsistent with mbrtowc:
+    dnl mbrtowc avoids calling MultiByteToWideChar when MB_CUR_MAX is 1 and
+    dnl ___lc_codepage_func() is 0, but btowc is lacking this special case.
+    AC_CHECK_FUNCS_ONCE([mbrtowc])
+    AC_CACHE_CHECK([whether btowc is consistent with mbrtowc in the C locale],
+      [gl_cv_func_btowc_consistent],
+      [
+        AC_RUN_IFELSE(
+          [AC_LANG_SOURCE([[
+#include <stdlib.h>
+#include <string.h>
+#include <wchar.h>
+int main ()
+{
+#if HAVE_MBRTOWC
+  wint_t wc1 = btowc (0x80);
+  wchar_t wc2 = (wchar_t) 0xbadface;
+  char buf[1] = { 0x80 };
+  mbstate_t state;
+  memset (&state, 0, sizeof (mbstate_t));
+  if (mbrtowc (&wc2, buf, 1, &state) != 1 || wc1 != wc2)
+    return 1;
+#endif
+  return 0;
+}]])],
+          [gl_cv_func_btowc_consistent=yes],
+          [gl_cv_func_btowc_consistent=no],
+          [case "$host_os" in
+               # Guess no on mingw.
+             mingw* | windows*)
+               AC_EGREP_CPP([Problem], [
+#ifdef __MINGW32__
+ Problem
+#endif
+                 ],
+                 [gl_cv_func_btowc_consistent="guessing no"],
+                 [gl_cv_func_btowc_consistent="guessing yes"])
+               ;;
+               # Guess yes otherwise.
+             *) gl_cv_func_btowc_consistent="guessing yes" ;;
+           esac
+          ])
+      ])
+
     case "$gl_cv_func_btowc_nul" in
       *yes) ;;
       *) REPLACE_BTOWC=1 ;;
@@ -96,10 +140,22 @@ int main ()
       *yes) ;;
       *) REPLACE_BTOWC=1 ;;
     esac
+    case "$gl_cv_func_btowc_consistent" in
+      *yes) ;;
+      *) REPLACE_BTOWC=1 ;;
+    esac
+    if test $REPLACE_BTOWC = 0; then
+      gl_MBRTOWC_C_LOCALE
+      case "$gl_cv_func_mbrtowc_C_locale_sans_EILSEQ" in
+        *yes) ;;
+        *) REPLACE_BTOWC=1 ;;
+      esac
+    fi
   fi
 ])
 
 # Prerequisites of lib/btowc.c.
 AC_DEFUN([gl_PREREQ_BTOWC], [
   :
+  AC_CHECK_FUNCS_ONCE([mbrtowc])
 ])

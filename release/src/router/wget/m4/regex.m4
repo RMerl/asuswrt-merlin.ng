@@ -1,6 +1,6 @@
-# serial 73
+# serial 75
 
-# Copyright (C) 1996-2001, 2003-2022 Free Software Foundation, Inc.
+# Copyright (C) 1996-2001, 2003-2024 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -15,7 +15,7 @@ AC_DEFUN([gl_REGEX],
 [
   AC_REQUIRE([AC_CANONICAL_HOST]) dnl for cross-compiles
   AC_ARG_WITH([included-regex],
-    [AS_HELP_STRING([--without-included-regex],
+    [AS_HELP_STRING([[--without-included-regex]],
                     [don't compile regex; this is the default on systems
                      with recent-enough versions of the GNU C Library
                      (use with caution on other systems).])])
@@ -327,10 +327,10 @@ AC_DEFUN([gl_REGEX],
         [gl_cv_func_re_compile_pattern_working=yes],
         [gl_cv_func_re_compile_pattern_working=no],
         [case "$host_os" in
-                   # Guess no on native Windows.
-           mingw*) gl_cv_func_re_compile_pattern_working="guessing no" ;;
-                   # Otherwise obey --enable-cross-guesses.
-           *)      gl_cv_func_re_compile_pattern_working="$gl_cross_guess_normal" ;;
+                              # Guess no on native Windows.
+           mingw* | windows*) gl_cv_func_re_compile_pattern_working="guessing no" ;;
+                              # Otherwise obey --enable-cross-guesses.
+           *)                 gl_cv_func_re_compile_pattern_working="$gl_cross_guess_normal" ;;
          esac
         ])
       ])

@@ -1,5 +1,5 @@
 /* Unit testing declarations.
-   Copyright (C) 2005-2011, 2015, 2018-2022 Free Software Foundation,
+   Copyright (C) 2005-2011, 2015, 2018-2024 Free Software Foundation,
    Inc.
 
 This file is part of GNU Wget.
@@ -55,6 +55,7 @@ const char *test_is_robots_txt_url(void);
 const char *test_path_simplify (void);
 const char *test_append_uri_pathel(void);
 const char *test_are_urls_equal(void);
+const char *test_uri_merge(void);
 const char *test_subdir_p(void);
 const char *test_dir_matches_p(void);
 const char *test_hsts_new_entry(void);
@@ -62,6 +63,7 @@ const char *test_hsts_url_rewrite_superdomain(void);
 const char *test_hsts_url_rewrite_congruent(void);
 const char *test_hsts_read_database(void);
 const char *test_parse_netrc(void);
+const char *test_retr_rate(void);
 
 #endif /* TEST_H */
 

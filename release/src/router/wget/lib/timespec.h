@@ -1,6 +1,6 @@
 /* timespec -- System time interface
 
-   Copyright (C) 2000, 2002, 2004-2005, 2007, 2009-2022 Free Software
+   Copyright (C) 2000, 2002, 2004-2005, 2007, 2009-2024 Free Software
    Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
@@ -19,11 +19,14 @@
 #if ! defined TIMESPEC_H
 #define TIMESPEC_H
 
-#include <time.h>
-
-#ifndef _GL_INLINE_HEADER_BEGIN
+/* This file uses _GL_INLINE_HEADER_BEGIN, _GL_INLINE, _GL_ATTRIBUTE_CONST,
+   _GL_ATTRIBUTE_PURE, _GL_CMP.  */
+#if !_GL_CONFIG_H_INCLUDED
  #error "Please include config.h first."
 #endif
+
+#include <time.h>
+
 _GL_INLINE_HEADER_BEGIN
 #ifndef _GL_TIMESPEC_INLINE
 # define _GL_TIMESPEC_INLINE _GL_INLINE
@@ -52,10 +55,7 @@ enum { LOG10_TIMESPEC_RESOLUTION = LOG10_TIMESPEC_HZ };
 _GL_TIMESPEC_INLINE struct timespec
 make_timespec (time_t s, long int ns)
 {
-  struct timespec r;
-  r.tv_sec = s;
-  r.tv_nsec = ns;
-  return r;
+  return (struct timespec) { .tv_sec = s, .tv_nsec = ns };
 }
 
 /* Return negative, zero, positive if A < B, A == B, A > B, respectively.  */

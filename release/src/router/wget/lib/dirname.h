@@ -1,6 +1,6 @@
 /* Take file names apart into directory and base names.
 
-   Copyright (C) 1998, 2001, 2003-2006, 2009-2022 Free Software Foundation,
+   Copyright (C) 1998, 2001, 2003-2006, 2009-2024 Free Software Foundation,
    Inc.
 
    This file is free software: you can redistribute it and/or modify
@@ -19,7 +19,12 @@
 #ifndef DIRNAME_H_
 # define DIRNAME_H_ 1
 
-# include <stdbool.h>
+/* This file uses _GL_ATTRIBUTE_MALLOC, _GL_ATTRIBUTE_PURE,
+   _GL_ATTRIBUTE_RETURNS_NONNULL.  */
+#if !_GL_CONFIG_H_INCLUDED
+ #error "Please include config.h first."
+#endif
+
 # include <stdlib.h>
 # include "filename.h"
 # include "basename-lgpl.h"

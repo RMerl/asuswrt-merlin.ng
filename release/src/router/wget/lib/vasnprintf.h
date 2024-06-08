@@ -1,5 +1,5 @@
 /* vsprintf with automatic memory allocation.
-   Copyright (C) 2002-2004, 2007-2022 Free Software Foundation, Inc.
+   Copyright (C) 2002-2004, 2007-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -16,6 +16,11 @@
 
 #ifndef _VASNPRINTF_H
 #define _VASNPRINTF_H
+
+/* This file uses _GL_ATTRIBUTE_FORMAT.  */
+#if !_GL_CONFIG_H_INCLUDED
+ #error "Please include config.h first."
+#endif
 
 /* Get va_list.  */
 #include <stdarg.h>

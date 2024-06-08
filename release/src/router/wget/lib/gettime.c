@@ -1,6 +1,6 @@
 /* gettime -- get the system clock
 
-   Copyright (C) 2002, 2004-2007, 2009-2022 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004-2007, 2009-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -35,8 +35,8 @@ gettime (struct timespec *ts)
 #else
   struct timeval tv;
   gettimeofday (&tv, NULL);
-  ts->tv_sec = tv.tv_sec;
-  ts->tv_nsec = tv.tv_usec * 1000;
+  *ts = (struct timespec) { .tv_sec  = tv.tv_sec,
+                            .tv_nsec = tv.tv_usec * 1000 };
 #endif
 }
 

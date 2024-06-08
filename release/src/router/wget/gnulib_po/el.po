@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnulib 3.0.0.6062.a6b16\n"
 "Report-Msgid-Bugs-To: bug-gnulib@gnu.org\n"
-"POT-Creation-Date: 2022-02-26 17:24+0100\n"
+"POT-Creation-Date: 2024-03-10 15:09+0100\n"
 "PO-Revision-Date: 2012-03-11 11:25+0100\n"
 "Last-Translator: Simos Xenitellis <simos.lists@googlemail.com>\n"
 "Language-Team: Greek <team@lists.gnome.gr>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 
 #
-#: lib/error.c:195
+#: lib/error.c:194
 msgid "Unknown system error"
 msgstr "Άγνωστο σφάλμα συστήματος"
 
@@ -106,43 +106,43 @@ msgid "Unknown error"
 msgstr "Άγνωστο σφάλμα συστήματος"
 
 #
-#: lib/getopt.c:278
+#: lib/getopt.c:282
 #, fuzzy, c-format
 msgid "%s: option '%s%s' is ambiguous\n"
 msgstr "%s: η επιλογή `-W %s' είναι ασαφής\n"
 
 #
-#: lib/getopt.c:284
+#: lib/getopt.c:288
 #, fuzzy, c-format
 msgid "%s: option '%s%s' is ambiguous; possibilities:"
 msgstr "%s: η επιλογή `%s' είναι ασαφής\n"
 
 #
-#: lib/getopt.c:319
+#: lib/getopt.c:322
 #, fuzzy, c-format
 msgid "%s: unrecognized option '%s%s'\n"
 msgstr "%s: μη αναγνωρίσιμη επιλογή `%c%s'\n"
 
 #
-#: lib/getopt.c:345
+#: lib/getopt.c:348
 #, fuzzy, c-format
 msgid "%s: option '%s%s' doesn't allow an argument\n"
 msgstr "%s: η επιλογή `%c%s' δεν επιτρέπει ορίσματα\n"
 
 #
-#: lib/getopt.c:360
+#: lib/getopt.c:363
 #, fuzzy, c-format
 msgid "%s: option '%s%s' requires an argument\n"
 msgstr "%s: η επιλογή `-%s' απαιτεί ένα όρισμα\n"
 
 #
-#: lib/getopt.c:621
+#: lib/getopt.c:624
 #, fuzzy, c-format
 msgid "%s: invalid option -- '%c'\n"
 msgstr "%s: μη έγκυρη επιλογή -- %c\n"
 
 #
-#: lib/getopt.c:636 lib/getopt.c:682
+#: lib/getopt.c:639 lib/getopt.c:685
 #, fuzzy, c-format
 msgid "%s: option requires an argument -- '%c'\n"
 msgstr "%s: η επιλογή απαιτεί ένα όρισμα -- %c\n"
@@ -159,12 +159,12 @@ msgstr "αδύνατη η δημιουργία καταλόγου `%s'"
 msgid "failed to return to initial working directory"
 msgstr "αδύνατη η δημιουργία καταλόγου `%s'"
 
-#: lib/os2-spawn.c:46
+#: lib/os2-spawn.c:45
 #, c-format
 msgid "_open_osfhandle failed"
 msgstr ""
 
-#: lib/os2-spawn.c:83
+#: lib/os2-spawn.c:82
 #, c-format
 msgid "cannot restore fd %d: dup2 failed"
 msgstr ""
@@ -191,12 +191,12 @@ msgstr ""
 #. If you don't know what to put here, please see
 #. <https://en.wikipedia.org/wiki/Quotation_marks_in_other_languages>
 #. and use glyphs suitable for your language.
-#: lib/quotearg.c:355
+#: lib/quotearg.c:354
 msgid "`"
 msgstr "`"
 
 #
-#: lib/quotearg.c:356
+#: lib/quotearg.c:355
 msgid "'"
 msgstr "'"
 
@@ -291,14 +291,13 @@ msgid "No previous regular expression"
 msgstr "σφάλμα στην ανεύρεση μέσω κανονικής έκφρασης"
 
 #
-#: lib/spawn-pipe.c:217 lib/spawn-pipe.c:220 lib/spawn-pipe.c:459
-#: lib/spawn-pipe.c:462
+#: lib/spawn-pipe.c:216 lib/spawn-pipe.c:219
 #, fuzzy, c-format
 msgid "cannot create pipe"
 msgstr "αδύνατη η δημιουργία καταλόγου `%s'"
 
 #
-#: lib/spawn-pipe.c:597 lib/wait-process.c:291 lib/wait-process.c:365
+#: lib/spawn-pipe.c:596 lib/wait-process.c:291 lib/wait-process.c:365
 #, fuzzy, c-format
 msgid "%s subprocess failed"
 msgstr "%s: μη έγκυρη μορφή"

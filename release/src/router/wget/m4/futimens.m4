@@ -1,7 +1,7 @@
-# serial 9
+# serial 11
 # See if we need to provide futimens replacement.
 
-dnl Copyright (C) 2009-2022 Free Software Foundation, Inc.
+dnl Copyright (C) 2009-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -13,9 +13,12 @@ AC_DEFUN([gl_FUNC_FUTIMENS],
   AC_REQUIRE([gl_SYS_STAT_H_DEFAULTS])
   AC_REQUIRE([AC_CANONICAL_HOST]) dnl for cross-compiles
   AC_REQUIRE([gl_USE_SYSTEM_EXTENSIONS])
-  AC_CHECK_FUNCS_ONCE([futimens])
+  gl_CHECK_FUNCS_ANDROID([futimens], [[#include <sys/stat.h>]])
   if test $ac_cv_func_futimens = no; then
     HAVE_FUTIMENS=0
+    case "$gl_cv_onwards_func_futimens" in
+      future*) REPLACE_FUTIMENS=1 ;;
+    esac
   else
     AC_CACHE_CHECK([whether futimens works],
       [gl_cv_func_futimens_works],

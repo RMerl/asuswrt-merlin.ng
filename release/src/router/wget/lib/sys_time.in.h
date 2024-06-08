@@ -1,6 +1,6 @@
 /* Provide a more complete sys/time.h.
 
-   Copyright (C) 2007-2022 Free Software Foundation, Inc.
+   Copyright (C) 2007-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -24,6 +24,13 @@
 #endif
 @PRAGMA_COLUMNS@
 
+/* This file uses #include_next of a system file that defines time_t.
+   For the 'year2038' module to work right, <config.h> needs to have been
+   included before.  */
+#if !_GL_CONFIG_H_INCLUDED
+ #error "Please include config.h first."
+#endif
+
 /* On Cygwin and on many BSDish systems, <sys/time.h> includes itself
    recursively via <sys/select.h>.
    Simply delegate to the system's header in this case; it is a no-op.
@@ -40,6 +47,11 @@
 
 #ifndef _@GUARD_PREFIX@_SYS_TIME_H
 #define _@GUARD_PREFIX@_SYS_TIME_H
+
+/* This file uses GNULIB_POSIXCHECK, HAVE_RAW_DECL_*.  */
+#if !_GL_CONFIG_H_INCLUDED
+ #error "Please include config.h first."
+#endif
 
 #if ! @HAVE_SYS_TIME_H@
 # include <time.h>

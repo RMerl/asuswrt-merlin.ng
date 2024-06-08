@@ -1,9 +1,9 @@
-# serial 24
+# serial 25
 
 dnl From Jim Meyering.
 dnl A wrapper around AC_FUNC_GETGROUPS.
 
-# Copyright (C) 1996-1997, 1999-2004, 2008-2022 Free Software Foundation, Inc.
+# Copyright (C) 1996-1997, 1999-2004, 2008-2024 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -20,7 +20,7 @@ AC_DEFUN([AC_FUNC_GETGROUPS],
 
   # If we don't yet have getgroups, see if it's in -lbsd.
   # This is reported to be necessary on an ITOS 3000WS running SEIUX 3.1.
-  ac_save_LIBS=$LIBS
+  gl_saved_LIBS=$LIBS
   if test $ac_cv_func_getgroups = no; then
     AC_CHECK_LIB(bsd, getgroups, [GETGROUPS_LIB=-lbsd])
   fi
@@ -56,7 +56,7 @@ AC_DEFUN([AC_FUNC_GETGROUPS],
         [Define to 1 if your system has a working `getgroups' function.])
       ;;
   esac
-  LIBS=$ac_save_LIBS
+  LIBS=$gl_saved_LIBS
 ])# AC_FUNC_GETGROUPS
 
 AC_DEFUN([gl_FUNC_GETGROUPS],

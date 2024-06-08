@@ -1,5 +1,5 @@
-# intlmacosx.m4 serial 8 (gettext-0.20.2)
-dnl Copyright (C) 2004-2014, 2016, 2019-2020 Free Software Foundation, Inc.
+# intlmacosx.m4 serial 9 (gettext-0.22.3)
+dnl Copyright (C) 2004-2014, 2016, 2019-2023 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -59,7 +59,11 @@ AC_DEFUN([gt_INTL_MACOSX],
   INTL_MACOSX_LIBS=
   if test $gt_cv_func_CFPreferencesCopyAppValue = yes \
      || test $gt_cv_func_CFLocaleCopyPreferredLanguages = yes; then
-    INTL_MACOSX_LIBS="-Wl,-framework -Wl,CoreFoundation"
+    dnl Starting with macOS version 14, CoreFoundation relies on CoreServices,
+    dnl and we have to link it in explicitly, otherwise an exception
+    dnl NSInvalidArgumentException "unrecognized selector sent to instance"
+    dnl occurs.
+    INTL_MACOSX_LIBS="-Wl,-framework -Wl,CoreFoundation -Wl,-framework -Wl,CoreServices"
   fi
   AC_SUBST([INTL_MACOSX_LIBS])
 ])

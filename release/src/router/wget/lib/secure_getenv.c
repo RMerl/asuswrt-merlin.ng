@@ -1,6 +1,6 @@
 /* Look up an environment variable, returning NULL in insecure situations.
 
-   Copyright 2013-2022 Free Software Foundation, Inc.
+   Copyright 2013-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -30,7 +30,7 @@ secure_getenv (char const *name)
 {
 #if HAVE___SECURE_GETENV /* glibc */
   return __secure_getenv (name);
-#elif HAVE_ISSETUGID /* OS X, FreeBSD, NetBSD, OpenBSD */
+#elif HAVE_ISSETUGID /* musl, OS X, FreeBSD, NetBSD, OpenBSD, Solaris, Minix */
   if (issetugid ())
     return NULL;
   return getenv (name);

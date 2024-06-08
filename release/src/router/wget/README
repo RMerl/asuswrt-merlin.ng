@@ -55,12 +55,15 @@ Wget's home page is at <https://www.gnu.org/software/wget/>.
 If you would like to contribute code for Wget, please read
 CONTRIBUTING.md.
 
+Wget is offered under the terms of the GNU GPLv3 license. Please see the
+COPYING file for a full text of the license terms.
+
 Wget was originally written and mainained by Hrvoje Niksic.  Please see
 the file AUTHORS for a list of major contributors, and the ChangeLogs
 for a detailed listing of all contributions.
 
 
-Copyright (C) 1995-2022 Free Software Foundation, Inc.
+Copyright (C) 1995-2024 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

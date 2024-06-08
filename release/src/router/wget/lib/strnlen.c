@@ -1,5 +1,5 @@
 /* Find the length of STRING, but scan at most MAXLEN characters.
-   Copyright (C) 2005-2007, 2009-2022 Free Software Foundation, Inc.
+   Copyright (C) 2005-2007, 2009-2024 Free Software Foundation, Inc.
    Written by Simon Josefsson.
 
    This file is free software: you can redistribute it and/or modify

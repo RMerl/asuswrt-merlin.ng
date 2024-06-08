@@ -1,5 +1,5 @@
-# socketlib.m4 serial 3
-dnl Copyright (C) 2008-2022 Free Software Foundation, Inc.
+# socketlib.m4 serial 4
+dnl Copyright (C) 2008-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -18,7 +18,7 @@ AC_DEFUN([gl_SOCKETLIB],
     dnl defined through -lws2_32), we need to call it.
     AC_CACHE_CHECK([for WSAStartup],
       [gl_cv_func_wsastartup], [
-       gl_save_LIBS="$LIBS"
+       gl_saved_LIBS="$LIBS"
        LIBS="$LIBS -lws2_32"
        AC_LINK_IFELSE(
          [AC_LANG_PROGRAM([[
@@ -33,7 +33,7 @@ AC_DEFUN([gl_SOCKETLIB],
          ],
          [gl_cv_func_wsastartup=yes],
          [gl_cv_func_wsastartup=no])
-       LIBS="$gl_save_LIBS"
+       LIBS="$gl_saved_LIBS"
       ])
     if test "$gl_cv_func_wsastartup" = "yes"; then
       AC_DEFINE([WINDOWS_SOCKETS], [1], [Define if WSAStartup is needed.])
@@ -56,8 +56,8 @@ AC_DEFUN([gl_SOCKETLIB],
 #endif
 char setsockopt();]], [[setsockopt();]])],
         [],
-        [gl_save_LIBS="$LIBS"
-         LIBS="$gl_save_LIBS -lsocket"
+        [gl_saved_LIBS="$LIBS"
+         LIBS="$gl_saved_LIBS -lsocket"
          AC_LINK_IFELSE([AC_LANG_PROGRAM([[extern
 #ifdef __cplusplus
 "C"
@@ -65,7 +65,7 @@ char setsockopt();]], [[setsockopt();]])],
 char setsockopt();]], [[setsockopt();]])],
            [gl_cv_lib_socket="-lsocket"])
          if test -z "$gl_cv_lib_socket"; then
-           LIBS="$gl_save_LIBS -lnetwork"
+           LIBS="$gl_saved_LIBS -lnetwork"
            AC_LINK_IFELSE([AC_LANG_PROGRAM([[extern
 #ifdef __cplusplus
 "C"
@@ -73,7 +73,7 @@ char setsockopt();]], [[setsockopt();]])],
 char setsockopt();]], [[setsockopt();]])],
              [gl_cv_lib_socket="-lnetwork"])
            if test -z "$gl_cv_lib_socket"; then
-             LIBS="$gl_save_LIBS -lnet"
+             LIBS="$gl_saved_LIBS -lnet"
              AC_LINK_IFELSE([AC_LANG_PROGRAM([[extern
 #ifdef __cplusplus
 "C"
@@ -82,7 +82,7 @@ char setsockopt();]], [[setsockopt();]])],
                [gl_cv_lib_socket="-lnet"])
            fi
          fi
-         LIBS="$gl_save_LIBS"
+         LIBS="$gl_saved_LIBS"
         ])
       if test -z "$gl_cv_lib_socket"; then
         gl_cv_lib_socket="none needed"

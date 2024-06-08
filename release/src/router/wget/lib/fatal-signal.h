@@ -1,5 +1,5 @@
 /* Emergency actions in case of a fatal signal.
-   Copyright (C) 2003-2004, 2009-2022 Free Software Foundation, Inc.
+   Copyright (C) 2003-2004, 2009-2024 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2003.
 
    This file is free software: you can redistribute it and/or modify
@@ -18,6 +18,11 @@
 
 #ifndef _FATAL_SIGNAL_H
 #define _FATAL_SIGNAL_H
+
+/* This file uses _GL_ASYNC_SAFE.  */
+#if !_GL_CONFIG_H_INCLUDED
+ #error "Please include config.h first."
+#endif
 
 #include <signal.h>
 

@@ -1,6 +1,6 @@
 /* A replacement function, for systems that lack strndup.
 
-   Copyright (C) 1996-1998, 2001-2003, 2005-2007, 2009-2022 Free Software
+   Copyright (C) 1996-1998, 2001-2003, 2005-2007, 2009-2024 Free Software
    Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify

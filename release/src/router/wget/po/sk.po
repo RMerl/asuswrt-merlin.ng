@@ -1,15 +1,15 @@
 # Slovak translations for GNU wget
-# Copyright (C) 1999, 2002, 2003, 2005, 2007, 2008, 2009, 2010, 2012, 2013, 2015, 2016, 2017, 2018, 2020, 2021 Free Software Foundation, Inc.
+# Copyright (C) 1999, 2002, 2003, 2005, 2007, 2008, 2009, 2010, 2012, 2013, 2015, 2016, 2017, 2018, 2020, 2021, 2022, 2023 Free Software Foundation, Inc.
 # This file is distributed under the same license as the wget package.
 # Miroslav Vasko <vasko@debian.cz>, 1999.
-# Marcel Telka <marcel@telka.sk>, 2002, 2003, 2005, 2007, 2008, 2009, 2010, 2012, 2013, 2015, 2016, 2017, 2018, 2020, 2021.
+# Marcel Telka <marcel@telka.sk>, 2002, 2003, 2005, 2007, 2008, 2009, 2010, 2012, 2013, 2015, 2016, 2017, 2018, 2020, 2021, 2022, 2023.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: GNU wget 1.21.2\n"
+"Project-Id-Version: GNU wget 1.21.4\n"
 "Report-Msgid-Bugs-To: bug-wget@gnu.org\n"
-"POT-Creation-Date: 2022-02-26 17:24+0100\n"
-"PO-Revision-Date: 2021-09-09 20:59+0200\n"
+"POT-Creation-Date: 2024-03-10 15:08+0100\n"
+"PO-Revision-Date: 2023-05-11 17:01+0200\n"
 "Last-Translator: Marcel Telka <marcel@telka.sk>\n"
 "Language-Team: Slovak <sk-i18n@lists.linux.sk>\n"
 "Language: sk\n"
@@ -182,12 +182,12 @@ msgstr " (%s bajtov)"
 msgid "Length: %s"
 msgstr "Dĺžka: %s"
 
-#: src/ftp.c:231 src/http.c:4092
+#: src/ftp.c:231 src/http.c:4090
 #, c-format
 msgid ", %s (%s) remaining"
 msgstr ", ostáva %s (%s)"
 
-#: src/ftp.c:235 src/http.c:4096
+#: src/ftp.c:235 src/http.c:4094
 #, c-format
 msgid ", %s remaining"
 msgstr ", ostáva %s"
@@ -379,17 +379,17 @@ msgstr "Riadiace spojenie uzatvorené.\n"
 msgid "Data transfer aborted.\n"
 msgstr "Prenos dát bol predčasne ukončený.\n"
 
-#: src/ftp.c:1870 src/main.c:1690
+#: src/ftp.c:1870 src/main.c:1691
 #, c-format
 msgid "File %s already there; not retrieving.\n"
 msgstr "Súbor %s je už tam, nebude sa prenášať.\n"
 
-#: src/ftp.c:1955 src/http.c:4362
+#: src/ftp.c:1955 src/http.c:4364
 #, c-format
 msgid "(try:%2d)"
 msgstr "(pokus:%2d)"
 
-#: src/ftp.c:2047 src/http.c:4792
+#: src/ftp.c:2047 src/http.c:4794
 #, c-format
 msgid ""
 "%s (%s) - written to stdout %s[%s]\n"
@@ -398,7 +398,7 @@ msgstr ""
 "%s (%s) - zapísané na štandardný výstup %s[%s]\n"
 "\n"
 
-#: src/ftp.c:2048 src/http.c:4793
+#: src/ftp.c:2048 src/http.c:4795
 #, c-format
 msgid ""
 "%s (%s) - %s saved [%s]\n"
@@ -407,8 +407,8 @@ msgstr ""
 "%s (%s) - %s uložený [%s]\n"
 "\n"
 
-#: src/ftp.c:2108 src/main.c:2179 src/metalink.c:1135 src/recur.c:513
-#: src/recur.c:752 src/retr.c:1317
+#: src/ftp.c:2108 src/main.c:2178 src/metalink.c:1133 src/recur.c:511
+#: src/recur.c:750 src/retr.c:1303
 #, c-format
 msgid "Removing %s.\n"
 msgstr "Odstraňuje sa %s.\n"
@@ -578,7 +578,7 @@ msgstr "Vaša verzia GnuTLS je príliš stará, aby podporovala TLS 1.3\n"
 msgid "GnuTLS: unimplemented 'secure-protocol' option value %u\n"
 msgstr "GnuTLS: neimplementovaná hodnota %u voľby 'secure-protocol'\n"
 
-#: src/gnutls.c:791 src/gnutls.c:847 src/host.c:158 src/openssl.c:288
+#: src/gnutls.c:791 src/gnutls.c:847 src/host.c:158 src/openssl.c:289
 msgid "Please report this issue to bug-wget@gnu.org\n"
 msgstr "Oznámte, prosím, tento problém na bug-wget@gnu.org (iba anglicky)\n"
 
@@ -594,15 +594,15 @@ msgstr ""
 "GnuTLS: Nie je možné priamo nastaviť reťazec prio. Použije sa predvolená "
 "priorita.\n"
 
-#: src/gnutls.c:1027 src/openssl.c:1029
+#: src/gnutls.c:1027 src/openssl.c:1037
 msgid "ERROR"
 msgstr "CHYBA"
 
-#: src/gnutls.c:1027 src/openssl.c:1029
+#: src/gnutls.c:1027 src/openssl.c:1037
 msgid "WARNING"
 msgstr "UPOZORNENIE"
 
-#: src/gnutls.c:1038 src/openssl.c:1042
+#: src/gnutls.c:1038 src/openssl.c:1050
 #, c-format
 msgid "%s: No certificate presented by %s.\n"
 msgstr "%s: %s neprezentoval certifikát.\n"
@@ -670,7 +670,7 @@ msgstr "Certifikátu vypršala platnosť\n"
 msgid "The certificate's owner does not match hostname %s\n"
 msgstr "Majiteľ certifikátu sa nezhoduje s názvom hostiteľa %s\n"
 
-#: src/gnutls.c:1106 src/openssl.c:1238
+#: src/gnutls.c:1106 src/openssl.c:1246
 msgid "The public key does not match pinned public key!\n"
 msgstr "Verejný kľúč sa nezhoduje so zadaným verejným kľúčom!\n"
 
@@ -712,7 +712,7 @@ msgstr "zlyhalo: časový limit vypršal.\n"
 msgid "%s: Cannot resolve incomplete link %s.\n"
 msgstr "%s: Nie je možné rozložiť neúplný odkaz %s.\n"
 
-#: src/html-url.c:945
+#: src/html-url.c:944
 #, c-format
 msgid "%s: Invalid URL %s: %s\n"
 msgstr "%s: Neplatné URL %s: %s\n"
@@ -735,7 +735,7 @@ msgstr ""
 "Súbor %s je už tam, nebude sa prenášať.\n"
 "\n"
 
-#: src/http.c:1836
+#: src/http.c:1834
 msgid "gmtime failed. This is probably a bug.\n"
 msgstr "gmtime zlyhalo. Toto je pravdepodobne programátorská chyba.\n"
 
@@ -767,12 +767,12 @@ msgstr "Použije sa existujúce spojenie s %s:%d.\n"
 msgid "Failed reading proxy response: %s\n"
 msgstr "Zlyhalo čítanie odpovede z proxy: %s\n"
 
-#: src/http.c:2183 src/http.c:3465 src/http.c:4588
+#: src/http.c:2183 src/http.c:3460 src/http.c:4590
 #, c-format
 msgid "%s ERROR %d: %s.\n"
 msgstr "%s CHYBA %d: %s.\n"
 
-#: src/http.c:2185 src/http.c:3467 src/http.c:3668
+#: src/http.c:2185 src/http.c:3462 src/http.c:3663
 msgid "Malformed status line"
 msgstr "Odpoveď servera má skomolený stavový riadok"
 
@@ -795,7 +795,7 @@ msgstr "Vybraná autentifikácia: %s\n"
 msgid "Saving to: %s\n"
 msgstr "Ukladá sa do: %s\n"
 
-#: src/http.c:2831
+#: src/http.c:2830
 #, c-format
 msgid ""
 "When downloading signature:\n"
@@ -804,63 +804,63 @@ msgstr ""
 "Pri sťahovaní podpisu:\n"
 "%s: %s.\n"
 
-#: src/http.c:2867
+#: src/http.c:2865
 msgid "Unable to read signature content from temporary file. Skipping.\n"
 msgstr ""
 "Nie je možné prečítať obsah podpisu z dočasného súboru.  Preskakuje sa.\n"
 
-#: src/http.c:2890
+#: src/http.c:2888
 msgid "Could not create temporary file. Skipping signature download.\n"
 msgstr ""
 "Nepodarilo sa vytvoriť dočasný súbor.  Preskakuje sa sťahovanie podpisu.\n"
 
-#: src/http.c:2924 src/http.c:3006
+#: src/http.c:2922 src/http.c:3004
 #, c-format
 msgid "Invalid pri value. Assuming %d.\n"
 msgstr "Neplatná hodnota pri. Predpoklá sa %d.\n"
 
-#: src/http.c:3120
+#: src/http.c:3118
 msgid ""
 "Could not find acceptable digest for Metalink resources.\n"
 "Ignoring them.\n"
 msgstr "Nepodarilo sa nájsť prijateľný kontrolný súčet pre zdroje Metalink.\n"
 
-#: src/http.c:3257
+#: src/http.c:3252
 msgid "Disabling SSL due to encountered errors.\n"
 msgstr "Deaktivuje sa SSL z dôvodu výskytu chýb.\n"
 
-#: src/http.c:3401
+#: src/http.c:3396
 #, c-format
 msgid "%s request sent, awaiting response... "
 msgstr "%s požiadavka odoslaná, čakám na odpoveď... "
 
-#: src/http.c:3441
+#: src/http.c:3436
 msgid "No data received.\n"
 msgstr "Neboli prijaté žiadne dáta.\n"
 
-#: src/http.c:3447
+#: src/http.c:3442
 #, c-format
 msgid "Read error (%s) in headers.\n"
 msgstr "Chyba (%s) pri čítaní hlavičiek.\n"
 
-#: src/http.c:3670
+#: src/http.c:3665
 msgid "(no description)"
 msgstr "(bez popisu)"
 
-#: src/http.c:3861
+#: src/http.c:3859
 #, c-format
 msgid "Location: %s%s\n"
 msgstr "Presmerované na: %s%s\n"
 
-#: src/http.c:3862 src/http.c:4102
+#: src/http.c:3860 src/http.c:4100
 msgid "unspecified"
 msgstr "neudané"
 
-#: src/http.c:3863
+#: src/http.c:3861
 msgid " [following]"
 msgstr " [nasledované]"
 
-#: src/http.c:3945
+#: src/http.c:3943
 #, c-format
 msgid ""
 "File %s not modified on server. Omitting download.\n"
@@ -869,7 +869,7 @@ msgstr ""
 "Súbor %s nezmenený na serveri.  Sťahovanie vynechané.\n"
 "\n"
 
-#: src/http.c:4018
+#: src/http.c:4016
 #, c-format
 msgid ""
 "Server ignored If-Modified-Since header for file %s.\n"
@@ -880,7 +880,7 @@ msgstr ""
 "Mohli by ste chcieť pridať voľbu --no-if-modified-since.\n"
 "\n"
 
-#: src/http.c:4038
+#: src/http.c:4036
 msgid ""
 "\n"
 "    The file is already fully retrieved; nothing to do.\n"
@@ -890,58 +890,58 @@ msgstr ""
 "    Tento súbor je už kompletne prenesený; netreba nič robiť.\n"
 "\n"
 
-#: src/http.c:4082
+#: src/http.c:4080
 msgid "Length: "
 msgstr "Dĺžka:  "
 
-#: src/http.c:4102
+#: src/http.c:4100
 msgid "ignored"
 msgstr "ignorované"
 
-#: src/http.c:4270
+#: src/http.c:4272
 msgid "Warning: wildcards not supported in HTTP.\n"
 msgstr "Upozornenie: HTTP nepodporuje žolíkové znaky.\n"
 
-#: src/http.c:4352
+#: src/http.c:4354
 msgid "Spider mode enabled. Check if remote file exists.\n"
 msgstr "Povolený režim pavúka. Skontrolujte, či vzdialený súbor existuje.\n"
 
-#: src/http.c:4445
+#: src/http.c:4447
 #, c-format
 msgid "Cannot write to %s (%s).\n"
 msgstr "Nie je možné zapísať do %s (%s).\n"
 
-#: src/http.c:4467
+#: src/http.c:4469
 msgid "Required attribute missing from Header received.\n"
 msgstr "Prijatá hlavička neobsahuje povinný príznak.\n"
 
-#: src/http.c:4472
+#: src/http.c:4474
 msgid "Username/Password Authentication Failed.\n"
 msgstr "Zlyhalo overenie používateľa/hesla.\n"
 
-#: src/http.c:4478
+#: src/http.c:4480
 msgid "Cannot write to WARC file.\n"
 msgstr "Nie je možné zapísať do súboru WARC.\n"
 
-#: src/http.c:4484
+#: src/http.c:4486
 msgid "Cannot write to temporary WARC file.\n"
 msgstr "Nie je možné zapísať do dočasného súboru WARC.\n"
 
-#: src/http.c:4489
+#: src/http.c:4491
 msgid "Unable to establish SSL connection.\n"
 msgstr "Nepodarilo sa nadviazať SSL spojenie.\n"
 
-#: src/http.c:4495
+#: src/http.c:4497
 #, c-format
 msgid "Cannot unlink %s (%s).\n"
 msgstr "Nie je možné odstrániť %s (%s).\n"
 
-#: src/http.c:4505
+#: src/http.c:4507
 #, c-format
 msgid "ERROR: Redirection (%d) without location.\n"
 msgstr "CHYBA: Presmerovanie (%d) bez udanej novej adresy.\n"
 
-#: src/http.c:4527
+#: src/http.c:4529
 msgid ""
 "Could not find Metalink data in HTTP response. Downloading file using HTTP "
 "GET.\n"
@@ -949,23 +949,23 @@ msgstr ""
 "Nepodarilo sa v HTTP odpovedi nájsť dáta Metalink. Súbor sa sťahuje pomocou "
 "HTTP GET.\n"
 
-#: src/http.c:4536
+#: src/http.c:4538
 msgid "Metalink headers found. Switching to Metalink mode.\n"
 msgstr "Nájdené hlavičky Metalink. Prepnutie do režimu Metalink.\n"
 
-#: src/http.c:4577
+#: src/http.c:4579
 msgid "Remote file does not exist -- broken link!!!\n"
 msgstr "Vzdialený súbor neexistuje -- poškodený odkaz!!!\n"
 
-#: src/http.c:4605
+#: src/http.c:4607
 msgid "Last-modified header missing -- time-stamps turned off.\n"
 msgstr "Hlavička Last-modified chýba -- nebudú sa používať časové značky.\n"
 
-#: src/http.c:4613
+#: src/http.c:4615
 msgid "Last-modified header invalid -- time-stamp ignored.\n"
 msgstr "Hlavička Last-modified je neplatná -- časové značky ignorované.\n"
 
-#: src/http.c:4643
+#: src/http.c:4645
 #, c-format
 msgid ""
 "Server file no newer than local file %s -- not retrieving.\n"
@@ -974,16 +974,16 @@ msgstr ""
 "Súbor na serveri nie je novší ako miestny súbor %s -- neprenáša sa.\n"
 "\n"
 
-#: src/http.c:4651
+#: src/http.c:4653
 #, c-format
 msgid "The sizes do not match (local %s) -- retrieving.\n"
 msgstr "Veľkosti se nezhodujú (miestny %s) -- prenáša sa.\n"
 
-#: src/http.c:4660
+#: src/http.c:4662
 msgid "Remote file is newer, retrieving.\n"
 msgstr "Vzdialený súbor je novší, prenáša sa.\n"
 
-#: src/http.c:4678
+#: src/http.c:4680
 msgid ""
 "Remote file exists and could contain links to other resources -- "
 "retrieving.\n"
@@ -993,7 +993,7 @@ msgstr ""
 "prenáša sa.\n"
 "\n"
 
-#: src/http.c:4684
+#: src/http.c:4686
 msgid ""
 "Remote file exists but does not contain any link -- not retrieving.\n"
 "\n"
@@ -1001,7 +1001,7 @@ msgstr ""
 "Vzdialený súbor, ale neobsahuje žiadne odkazy -- neprenáša sa.\n"
 "\n"
 
-#: src/http.c:4693
+#: src/http.c:4695
 msgid ""
 "Remote file exists and could contain further links,\n"
 "but recursion is disabled -- not retrieving.\n"
@@ -1011,7 +1011,7 @@ msgstr ""
 "ale rekurzia nie je povolená -- neprenáša sa.\n"
 "\n"
 
-#: src/http.c:4699
+#: src/http.c:4701
 msgid ""
 "Remote file exists.\n"
 "\n"
@@ -1019,12 +1019,12 @@ msgstr ""
 "Vzdialený súbor existuje.\n"
 "\n"
 
-#: src/http.c:4708
+#: src/http.c:4710
 #, c-format
 msgid "%s URL: %s %2d %s\n"
 msgstr "%s URL: %s %2d %s\n"
 
-#: src/http.c:4756
+#: src/http.c:4758
 #, c-format
 msgid ""
 "%s (%s) - written to stdout %s[%s/%s]\n"
@@ -1033,7 +1033,7 @@ msgstr ""
 "%s (%s) - zapísané na štandardný výstup %s[%s/%s]\n"
 "\n"
 
-#: src/http.c:4757
+#: src/http.c:4759
 #, c-format
 msgid ""
 "%s (%s) - %s saved [%s/%s]\n"
@@ -1042,27 +1042,27 @@ msgstr ""
 "%s (%s) - %s uložené [%s/%s]\n"
 "\n"
 
-#: src/http.c:4823
+#: src/http.c:4825
 #, c-format
 msgid "%s (%s) - Connection closed at byte %s. "
 msgstr "%s (%s) - Spojenie uzatvorené na bajte %s. "
 
-#: src/http.c:4846
+#: src/http.c:4848
 #, c-format
 msgid "%s (%s) - Read error at byte %s (%s)."
 msgstr "%s (%s) - Chyba pri čítaní na bajte %s (%s)."
 
-#: src/http.c:4855
+#: src/http.c:4857
 #, c-format
 msgid "%s (%s) - Read error at byte %s/%s (%s). "
 msgstr "%s (%s) - Chyba pri čítaní na bajte %s/%s (%s). "
 
-#: src/http.c:5112
+#: src/http.c:5114
 #, c-format
 msgid "Unsupported quality of protection '%s'.\n"
 msgstr "Nepodporovaná kvalita ochrany '%s'.\n"
 
-#: src/http.c:5117
+#: src/http.c:5119
 #, c-format
 msgid "Unsupported algorithm '%s'.\n"
 msgstr "Nepodporovaný algoritmus '%s'.\n"
@@ -1073,7 +1073,7 @@ msgid ""
 "%s: WGETRC points to %s, which couldn't be accessed because of error: %s.\n"
 msgstr "%s: WGETRC ukazuje na %s, ktorý je nedostupný kvôli chybe: %s.\n"
 
-#: src/init.c:695 src/netrc.c:454
+#: src/init.c:695 src/netrc.c:456
 #, c-format
 msgid "%s: Cannot read %s (%s).\n"
 msgstr "%s: Nie je možné prečítať %s (%s).\n"
@@ -1161,7 +1161,7 @@ msgstr "%s: %s: Neplatný časový interval %s\n"
 msgid "%s: %s: Negative time period %s\n"
 msgstr "%s: %s: Záporný časový interval %s\n"
 
-#: src/init.c:1471 src/main.c:1926
+#: src/init.c:1471 src/main.c:1927
 #, c-format
 msgid ""
 "use-askpass requires a string or either environment variable WGET_ASKPASS or "
@@ -1171,7 +1171,7 @@ msgstr ""
 "WGET_ASKPASS alebo SSH_ASKPASS.\n"
 
 #: src/init.c:1489 src/init.c:1511 src/init.c:1619 src/init.c:1675
-#: src/init.c:1741 src/init.c:1761 src/init.c:1786
+#: src/init.c:1741 src/init.c:1762 src/init.c:1787
 #, c-format
 msgid "%s: %s: Invalid value %s.\n"
 msgstr "%s: %s: Neplatná hodnota %s.\n"
@@ -1205,16 +1205,16 @@ msgstr ""
 msgid "Encoding %s isn't valid\n"
 msgstr "Kódovanie %s nie je platné\n"
 
-#: src/iri.c:140 src/url.c:1615
+#: src/iri.c:140 src/url.c:1612
 #, c-format
 msgid "Conversion from %s to %s isn't supported\n"
 msgstr "Konverzia z %s na %s nie je podporovaná\n"
 
-#: src/iri.c:180 src/url.c:1645
+#: src/iri.c:180 src/url.c:1642
 msgid "Incomplete or invalid multibyte sequence encountered\n"
 msgstr "Vyskytla sa nekompletná alebo neplatná viacbajtová postupnosť\n"
 
-#: src/iri.c:200 src/url.c:1662
+#: src/iri.c:200 src/url.c:1659
 #, c-format
 msgid "Unhandled errno %d\n"
 msgstr "Nespracované errno %d\n"
@@ -1396,6 +1396,14 @@ msgstr ""
 
 #: src/main.c:651
 msgid ""
+"       --retry-on-host-error       consider host errors as non-fatal, "
+"transient errors\n"
+msgstr ""
+"       --retry-on-host-error       považovať chyby hostiteľa za nezávažné, "
+"dočasné\n"
+
+#: src/main.c:653
+msgid ""
 "       --retry-on-http-error=ERRORS    comma-separated list of HTTP errors "
 "to retry\n"
 msgstr ""
@@ -1403,11 +1411,11 @@ msgstr ""
 "pri ktorých\n"
 "                                         skúsiť znova\n"
 
-#: src/main.c:653
+#: src/main.c:655
 msgid "  -O,  --output-document=FILE      write documents to FILE\n"
 msgstr "  -O,  --output-document=SÚBOR     zapísať dokumenty do SÚBORu\n"
 
-#: src/main.c:655
+#: src/main.c:657
 msgid ""
 "  -nc, --no-clobber                skip downloads that would download to\n"
 "                                     existing files (overwriting them)\n"
@@ -1416,7 +1424,7 @@ msgstr ""
 "                                     do existujúcich súborov (prepísali "
 "ich)\n"
 
-#: src/main.c:658
+#: src/main.c:660
 msgid ""
 "       --no-netrc                  don't try to obtain credentials from ."
 "netrc\n"
@@ -1424,7 +1432,7 @@ msgstr ""
 "       --no-netrc                  nepokúšať sa získať prihlasovacie údaje "
 "z .netrc\n"
 
-#: src/main.c:660
+#: src/main.c:662
 msgid ""
 "  -c,  --continue                  resume getting a partially-downloaded "
 "file\n"
@@ -1432,7 +1440,7 @@ msgstr ""
 "  -c,  --continue                  obnoviť získavanie čiastočne stiahnutého "
 "súboru\n"
 
-#: src/main.c:662
+#: src/main.c:664
 msgid ""
 "       --start-pos=OFFSET          start downloading from zero-based "
 "position OFFSET\n"
@@ -1440,11 +1448,11 @@ msgstr ""
 "       --start-pos=POSUV           začať sťahovanie od pozície POSUV (začína "
 "nulou)\n"
 
-#: src/main.c:664
+#: src/main.c:666
 msgid "       --progress=TYPE             select progress gauge type\n"
 msgstr "       --progress=TYP              zvoliť typ zobrazenia postupu\n"
 
-#: src/main.c:666
+#: src/main.c:668
 msgid ""
 "       --show-progress             display the progress bar in any verbosity "
 "mode\n"
@@ -1452,7 +1460,7 @@ msgstr ""
 "       --show-progress             zobraziť lištu postupu v každom režime "
 "rozvláčnosti\n"
 
-#: src/main.c:668
+#: src/main.c:670
 msgid ""
 "  -N,  --timestamping              don't re-retrieve files unless newer "
 "than\n"
@@ -1462,7 +1470,7 @@ msgstr ""
 "novšie\n"
 "                                     ako miestne\n"
 
-#: src/main.c:671
+#: src/main.c:673
 msgid ""
 "       --no-if-modified-since      don't use conditional if-modified-since "
 "get\n"
@@ -1473,7 +1481,7 @@ msgstr ""
 "                                     if-modified-since v režime označovania\n"
 "                                     časovými značkami\n"
 
-#: src/main.c:674
+#: src/main.c:676
 msgid ""
 "       --no-use-server-timestamps  don't set the local file's timestamp by\n"
 "                                     the one on the server\n"
@@ -1482,21 +1490,21 @@ msgstr ""
 "súborov\n"
 "                                     podľa toho ako sú na serveri\n"
 
-#: src/main.c:677
+#: src/main.c:679
 msgid "  -S,  --server-response           print server response\n"
 msgstr "  -S,  --server-response           vytlačiť odpoveď servera\n"
 
-#: src/main.c:679
+#: src/main.c:681
 msgid "       --spider                    don't download anything\n"
 msgstr "       --spider                    nesťahovať nič\n"
 
-#: src/main.c:681
+#: src/main.c:683
 msgid "  -T,  --timeout=SECONDS           set all timeout values to SECONDS\n"
 msgstr ""
 "  -T,  --timeout=SEKUNDY           nastaviť všetky hodnoty časových limitov "
 "na SEKUNDY\n"
 
-#: src/main.c:684
+#: src/main.c:686
 msgid ""
 "       --dns-servers=ADDRESSES     list of DNS servers to query (comma "
 "separated)\n"
@@ -1504,7 +1512,7 @@ msgstr ""
 "       --dns-servers=ADRESY        zoznam DNS serverov, na ktoré posielať "
 "požiadavky (oddelené čiarkou)\n"
 
-#: src/main.c:686
+#: src/main.c:688
 msgid ""
 "       --bind-dns-address=ADDRESS  bind DNS resolver to ADDRESS (hostname or "
 "IP) on local host\n"
@@ -1512,24 +1520,24 @@ msgstr ""
 "       --bind-dns-address=ADRESA   zviazať DNS resolver s ADRESOU (názov "
 "hostiteľa alebo IP) na miestnom hostiteľovi\n"
 
-#: src/main.c:689
+#: src/main.c:691
 msgid "       --dns-timeout=SECS          set the DNS lookup timeout to SECS\n"
 msgstr ""
 "       --dns-timeout=SEKUNDY       nastaviť časový limit DNS vyhľadávania na "
 "SEKUNDY\n"
 
-#: src/main.c:691
+#: src/main.c:693
 msgid "       --connect-timeout=SECS      set the connect timeout to SECS\n"
 msgstr ""
 "       --connect-timeout=SEKUNDY   nastaviť časový limit spojenia na "
 "SEKUNDY\n"
 
-#: src/main.c:693
+#: src/main.c:695
 msgid "       --read-timeout=SECS         set the read timeout to SECS\n"
 msgstr ""
 "       --read-timeout=SEKUNDY      nastaviť časový limit čítania na SEKUNDY\n"
 
-#: src/main.c:695
+#: src/main.c:697
 msgid ""
 "  -w,  --wait=SECONDS              wait SECONDS between retrievals\n"
 "                                     (applies if more then 1 URL is to be "
@@ -1539,7 +1547,7 @@ msgstr ""
 "                                     (použije sa, ak sa bude sťahovať viac "
 "ako jedno URL)\n"
 
-#: src/main.c:698
+#: src/main.c:700
 msgid ""
 "       --waitretry=SECONDS         wait 1..SECONDS between retries of a "
 "retrieval\n"
@@ -1551,7 +1559,7 @@ msgstr ""
 "                                     (použije sa, ak sa bude sťahovať viac "
 "ako jedno URL)\n"
 
-#: src/main.c:701
+#: src/main.c:703
 msgid ""
 "       --random-wait               wait from 0.5*WAIT...1.5*WAIT secs "
 "between retrievals\n"
@@ -1564,16 +1572,16 @@ msgstr ""
 "sťahovať viac\n"
 "                                     ako jedno URL)\n"
 
-#: src/main.c:704
+#: src/main.c:706
 msgid "       --no-proxy                  explicitly turn off proxy\n"
 msgstr "       --no-proxy                  explicitne vypnúť proxy\n"
 
-#: src/main.c:706
+#: src/main.c:708
 msgid "  -Q,  --quota=NUMBER              set retrieval quota to NUMBER\n"
 msgstr ""
 "  -Q,  --quota=ČÍSLO               nastaviť limit sťahovania na ČÍSLO\n"
 
-#: src/main.c:708
+#: src/main.c:710
 msgid ""
 "       --bind-address=ADDRESS      bind to ADDRESS (hostname or IP) on local "
 "host\n"
@@ -1581,18 +1589,18 @@ msgstr ""
 "       --bind-address=ADRESA       zviazať s ADRESOU (názov hostiteľa alebo "
 "IP) na miestnom hostiteľovi\n"
 
-#: src/main.c:710
+#: src/main.c:712
 msgid "       --limit-rate=RATE           limit download rate to RATE\n"
 msgstr ""
 "       --limit-rate=RÝCHLOSŤ       obmedziť rýchlosť sťahovania na RÝCHLOSŤ\n"
 
-#: src/main.c:712
+#: src/main.c:714
 msgid "       --no-dns-cache              disable caching DNS lookups\n"
 msgstr ""
 "       --no-dns-cache              zakázať dočasné ukladanie DNS "
 "vyhľadávania\n"
 
-#: src/main.c:714
+#: src/main.c:716
 msgid ""
 "       --restrict-file-names=OS    restrict chars in file names to ones OS "
 "allows\n"
@@ -1600,7 +1608,7 @@ msgstr ""
 "       --restrict-file-names=OS    obmedziť znaky v názvoch súborov na tie, "
 "ktoré povoľuje OS\n"
 
-#: src/main.c:716
+#: src/main.c:718
 msgid ""
 "       --ignore-case               ignore case when matching files/"
 "directories\n"
@@ -1608,15 +1616,15 @@ msgstr ""
 "       --ignore-case               ignorovať veľkosť písmen pri porovnávaní "
 "súborov/adresárov\n"
 
-#: src/main.c:719
+#: src/main.c:721
 msgid "  -4,  --inet4-only                connect only to IPv4 addresses\n"
 msgstr "  -4,  --inet4-only                pripájať sa len na adresy IPv4\n"
 
-#: src/main.c:721
+#: src/main.c:723
 msgid "  -6,  --inet6-only                connect only to IPv6 addresses\n"
 msgstr "  -6,  --inet6-only                pripájať sa len na adresy IPv6\n"
 
-#: src/main.c:723
+#: src/main.c:725
 msgid ""
 "       --prefer-family=FAMILY      connect first to addresses of specified "
 "family,\n"
@@ -1626,23 +1634,23 @@ msgstr ""
 "rodiny,\n"
 "                                     jedno z IPv6, IPv4 alebo none\n"
 
-#: src/main.c:727
+#: src/main.c:729
 msgid "       --user=USER                 set both ftp and http user to USER\n"
 msgstr ""
 "       --user=POUŽÍVATEĽ           nastaviť ftp a http používateľov na "
 "POUŽÍVATEĽ\n"
 
-#: src/main.c:729
+#: src/main.c:731
 msgid ""
 "       --password=PASS             set both ftp and http password to PASS\n"
 msgstr ""
 "       --password=HESLO            nastaviť ftp a http heslo na HESLO\n"
 
-#: src/main.c:731
+#: src/main.c:733
 msgid "       --ask-password              prompt for passwords\n"
 msgstr "       --ask-password              pýtať sa na heslá\n"
 
-#: src/main.c:734
+#: src/main.c:736
 msgid ""
 "       --use-askpass=COMMAND       specify credential handler for "
 "requesting \n"
@@ -1660,28 +1668,28 @@ msgstr ""
 "prostredia \n"
 "                                     WGET_ASKPASS alebo SSH_ASKPASS.\n"
 
-#: src/main.c:740
+#: src/main.c:742
 msgid "       --no-iri                    turn off IRI support\n"
 msgstr "       --no-iri                    vypnúť podporu IRI\n"
 
-#: src/main.c:742
+#: src/main.c:744
 msgid ""
 "       --local-encoding=ENC        use ENC as the local encoding for IRIs\n"
 msgstr ""
 "       --local-encoding=KÓD        použiť KÓD ako miestne kódovanie pre IRI\n"
 
-#: src/main.c:744
+#: src/main.c:746
 msgid ""
 "       --remote-encoding=ENC       use ENC as the default remote encoding\n"
 msgstr ""
 "       --remote-encoding=KÓD       použiť KÓD ako predvolené vzdialené "
 "kódovanie\n"
 
-#: src/main.c:746
+#: src/main.c:748
 msgid "       --unlink                    remove file before clobber\n"
 msgstr "       --unlink                    odstrániť súbor pred čistením\n"
 
-#: src/main.c:749
+#: src/main.c:751
 msgid ""
 "       --keep-badhash              keep files with checksum mismatch "
 "(append .badhash)\n"
@@ -1689,7 +1697,7 @@ msgstr ""
 "       --keep-badhash              ponechať súbory s nesúhlasiacim "
 "kontrolným súčtom (pridať .badhash)\n"
 
-#: src/main.c:751
+#: src/main.c:753
 msgid ""
 "       --metalink-index=NUMBER     Metalink application/metalink4+xml "
 "metaurl ordinal NUMBER\n"
@@ -1697,7 +1705,7 @@ msgstr ""
 "       --metalink-index=ČÍSLO      Poradové ČÍSLO metaurl Metalink "
 "application/metalink4+xml\n"
 
-#: src/main.c:753
+#: src/main.c:755
 msgid ""
 "       --metalink-over-http        use Metalink metadata from HTTP response "
 "headers\n"
@@ -1705,7 +1713,7 @@ msgstr ""
 "       --metalink-over-http        použiť metadáta Metalink z hlavičiek "
 "odpovede HTTP\n"
 
-#: src/main.c:755
+#: src/main.c:757
 msgid ""
 "       --preferred-location        preferred location for Metalink "
 "resources\n"
@@ -1713,7 +1721,7 @@ msgstr ""
 "       --preferred-location        uprednostňované umiestnenie pre zdroje "
 "Metalink\n"
 
-#: src/main.c:759
+#: src/main.c:761
 msgid ""
 "       --xattr                     turn on storage of metadata in extended "
 "file attributes\n"
@@ -1721,32 +1729,32 @@ msgstr ""
 "       --xattr                     zapnúť ukladanie metaúdajov v rozšírených "
 "príznakoch súborov\n"
 
-#: src/main.c:764
+#: src/main.c:766
 msgid "Directories:\n"
 msgstr "Adresáre:\n"
 
-#: src/main.c:766
+#: src/main.c:768
 msgid "  -nd, --no-directories            don't create directories\n"
 msgstr "  -nd, --no-directories            nevytvárať adresáre\n"
 
-#: src/main.c:768
+#: src/main.c:770
 msgid "  -x,  --force-directories         force creation of directories\n"
 msgstr "  -x,  --force-directories         vynútiť vytváranie adresárov\n"
 
-#: src/main.c:770
+#: src/main.c:772
 msgid "  -nH, --no-host-directories       don't create host directories\n"
 msgstr "  -nH, --no-host-directories       nevytvárať adresáre hostiteľa\n"
 
-#: src/main.c:772
+#: src/main.c:774
 msgid "       --protocol-directories      use protocol name in directories\n"
 msgstr ""
 "       --protocol-directories      použiť názov protokolu v adresároch\n"
 
-#: src/main.c:774
+#: src/main.c:776
 msgid "  -P,  --directory-prefix=PREFIX   save files to PREFIX/..\n"
 msgstr "  -P,  --directory-prefix=PREDP    uložiť súbory do PREDP/..\n"
 
-#: src/main.c:776
+#: src/main.c:778
 msgid ""
 "       --cut-dirs=NUMBER           ignore NUMBER remote directory "
 "components\n"
@@ -1754,26 +1762,26 @@ msgstr ""
 "       --cur-dirs=POČET            ignorovať POČET vzdialených častí názvu "
 "adresára\n"
 
-#: src/main.c:780
+#: src/main.c:782
 msgid "HTTP options:\n"
 msgstr "HTTP voľby:\n"
 
-#: src/main.c:782
+#: src/main.c:784
 msgid "       --http-user=USER            set http user to USER\n"
 msgstr ""
 "       --http-user=POUŽÍVATEĽ      nastaviť http používateľa na POUŽÍVATEĽ\n"
 
-#: src/main.c:784
+#: src/main.c:786
 msgid "       --http-password=PASS        set http password to PASS\n"
 msgstr "       --http-password=HESLO       nastaviť http heslo na HESLO\n"
 
-#: src/main.c:786
+#: src/main.c:788
 msgid "       --no-cache                  disallow server-cached data\n"
 msgstr ""
 "       --no-cache                  nepovoliť dočasne uložené dáta na "
 "serveri\n"
 
-#: src/main.c:788
+#: src/main.c:790
 msgid ""
 "       --default-page=NAME         change the default page name (normally\n"
 "                                     this is 'index.html'.)\n"
@@ -1782,7 +1790,7 @@ msgstr ""
 "(štandardne\n"
 "                                     je to `index.html'.)\n"
 
-#: src/main.c:791
+#: src/main.c:793
 msgid ""
 "  -E,  --adjust-extension          save HTML/CSS documents with proper "
 "extensions\n"
@@ -1790,18 +1798,18 @@ msgstr ""
 "  -E,  --html-extension            uložiť HTML/CSS dokumenty so správnou "
 "príponou\n"
 
-#: src/main.c:793
+#: src/main.c:795
 msgid ""
 "       --ignore-length             ignore 'Content-Length' header field\n"
 msgstr ""
 "       --ignore-length             ignorovať pole 'Content-Length' v "
 "hlavičke\n"
 
-#: src/main.c:795
+#: src/main.c:797
 msgid "       --header=STRING             insert STRING among the headers\n"
 msgstr "       --header=REŤAZEC            vložiť REŤAZEC do hlavičky\n"
 
-#: src/main.c:798
+#: src/main.c:800
 msgid ""
 "       --compression=TYPE          choose compression, one of auto, gzip and "
 "none. (default: none)\n"
@@ -1809,24 +1817,24 @@ msgstr ""
 "       --compression=TYP           vybrať kompresiu spomedzi auto, gzip "
 "alebo none. (predvolené: none)\n"
 
-#: src/main.c:801
+#: src/main.c:803
 msgid ""
 "       --max-redirect              maximum redirections allowed per page\n"
 msgstr ""
 "       --max-redirect              maximum povolených presmerovaní na "
 "stránku\n"
 
-#: src/main.c:803
+#: src/main.c:805
 msgid "       --proxy-user=USER           set USER as proxy username\n"
 msgstr ""
 "       --proxy-user=POUŽÍVATEĽ     nastaviť POUŽÍVATEĽa ako používateľa "
 "proxy\n"
 
-#: src/main.c:805
+#: src/main.c:807
 msgid "       --proxy-password=PASS       set PASS as proxy password\n"
 msgstr "       --proxy-password=HESLO      nastaviť HESLO ako heslo proxy\n"
 
-#: src/main.c:807
+#: src/main.c:809
 msgid ""
 "       --referer=URL               include 'Referer: URL' header in HTTP "
 "request\n"
@@ -1834,11 +1842,11 @@ msgstr ""
 "       --referer=URL               zahrnúť hlavičku 'Referer: URL' do HTTP "
 "požiadavky\n"
 
-#: src/main.c:809
+#: src/main.c:811
 msgid "       --save-headers              save the HTTP headers to file\n"
 msgstr "       --save-headers              uložiť HTTP hlavičky do súboru\n"
 
-#: src/main.c:811
+#: src/main.c:813
 msgid ""
 "  -U,  --user-agent=AGENT          identify as AGENT instead of Wget/"
 "VERSION\n"
@@ -1846,7 +1854,7 @@ msgstr ""
 "  -U,  --user-agent=AGENT          identifikovať sa ako AGENT namiesto Wget/"
 "VERZIA\n"
 
-#: src/main.c:813
+#: src/main.c:815
 msgid ""
 "       --no-http-keep-alive        disable HTTP keep-alive (persistent "
 "connections)\n"
@@ -1854,22 +1862,22 @@ msgstr ""
 "       --no-http-keep-alive        zakázať HTTP keep-alive (trvalé "
 "spojenia)\n"
 
-#: src/main.c:815
+#: src/main.c:817
 msgid "       --no-cookies                don't use cookies\n"
 msgstr "       --no-cookies                nepoužívať koláčiky\n"
 
-#: src/main.c:817
+#: src/main.c:819
 msgid ""
 "       --load-cookies=FILE         load cookies from FILE before session\n"
 msgstr ""
 "       --load-cookies=SÚBOR        pre sedením načítať koláčiky zo SÚBORu\n"
 
-#: src/main.c:819
+#: src/main.c:821
 msgid "       --save-cookies=FILE         save cookies to FILE after session\n"
 msgstr ""
 "       --save-cookies=SÚBOR        po sedení uložiť koláčiky do SÚBORu\n"
 
-#: src/main.c:821
+#: src/main.c:823
 msgid ""
 "       --keep-session-cookies      load and save session (non-permanent) "
 "cookies\n"
@@ -1877,7 +1885,7 @@ msgstr ""
 "       --keep-session-cookies      načítať a uložiť koláčiky sedenia (nie "
 "trvalé)\n"
 
-#: src/main.c:823
+#: src/main.c:825
 msgid ""
 "       --post-data=STRING          use the POST method; send STRING as the "
 "data\n"
@@ -1885,21 +1893,21 @@ msgstr ""
 "       --post-data=REŤAZEC         použiť POST metódu; poslať REŤAZEC ako "
 "dáta\n"
 
-#: src/main.c:825
+#: src/main.c:827
 msgid ""
 "       --post-file=FILE            use the POST method; send contents of "
 "FILE\n"
 msgstr ""
 "       --post-file=SÚBOR           použiť POST metódu; poslať obsah SÚBORu\n"
 
-#: src/main.c:827
+#: src/main.c:829
 msgid ""
 "       --method=HTTPMethod         use method \"HTTPMethod\" in the request\n"
 msgstr ""
 "       --method=HTTPmetóda         použiť metódu \"HTTPmetóda\" v "
 "požiadavke\n"
 
-#: src/main.c:829
+#: src/main.c:831
 msgid ""
 "       --body-data=STRING          send STRING as data. --method MUST be "
 "set\n"
@@ -1907,7 +1915,7 @@ msgstr ""
 "       --body-data=REŤAZEC         poslať REŤAZEC ako dáta. --method MUSÍ "
 "byť nastavené\n"
 
-#: src/main.c:831
+#: src/main.c:833
 msgid ""
 "       --body-file=FILE            send contents of FILE. --method MUST be "
 "set\n"
@@ -1915,7 +1923,7 @@ msgstr ""
 "       --body-file=SÚBOR           poslať obsah SÚBORu.  --method MUSÍ byť "
 "nastavené\n"
 
-#: src/main.c:833
+#: src/main.c:835
 msgid ""
 "       --content-disposition       honor the Content-Disposition header "
 "when\n"
@@ -1926,7 +1934,7 @@ msgstr ""
 "                                     voľbe miestnych názvov súborov\n"
 "                                     (EXPERIMENTÁLNE)\n"
 
-#: src/main.c:836
+#: src/main.c:838
 msgid ""
 "       --content-on-error          output the received content on server "
 "errors\n"
@@ -1934,7 +1942,7 @@ msgstr ""
 "       --content-on-error          vypisovať prijatý obsah pri chybách "
 "servera\n"
 
-#: src/main.c:838
+#: src/main.c:840
 msgid ""
 "       --auth-no-challenge         send Basic HTTP authentication "
 "information\n"
@@ -1946,17 +1954,11 @@ msgstr ""
 "                                     HTTP bez počiatočného čakania na výzvu "
 "servera\n"
 
-#: src/main.c:845
+#: src/main.c:847
 msgid "HTTPS (SSL/TLS) options:\n"
 msgstr "Voľby HTTPS (SSL/TLS):\n"
 
-#: src/main.c:847
-#, fuzzy
-#| msgid ""
-#| "       --secure-protocol=PR        choose secure protocol, one of auto, "
-#| "SSLv2,\n"
-#| "                                     SSLv3, TLSv1, TLSv1_1, TLSv1_2 and "
-#| "PFS\n"
+#: src/main.c:849
 msgid ""
 "       --secure-protocol=PR        choose secure protocol, one of auto, "
 "SSLv2,\n"
@@ -1965,43 +1967,43 @@ msgid ""
 msgstr ""
 "       --secure-protocol=PR        vybrať bezpečný protokol, jeden z auto, "
 "SSLv2,\n"
-"                                     SSLv3, TLSv1, TLSv1_1, TLSv1_2 alebo "
-"PFS\n"
+"                                     SSLv3, TLSv1, TLSv1_1, TLSv1_2, TLSv1_3 "
+"alebo PFS\n"
 
-#: src/main.c:850
+#: src/main.c:852
 msgid "       --https-only                only follow secure HTTPS links\n"
 msgstr ""
 "       --htttps-only               nasledovať len bezpečné HTTPS odkazy\n"
 
-#: src/main.c:852
+#: src/main.c:854
 msgid ""
 "       --no-check-certificate      don't validate the server's certificate\n"
 msgstr "       --no-check-certificate      neoverovať certifikát servera\n"
 
-#: src/main.c:854
+#: src/main.c:856
 msgid "       --certificate=FILE          client certificate file\n"
 msgstr "       --certificate=SÚBOR         súbor certifikátu klienta\n"
 
-#: src/main.c:856
+#: src/main.c:858
 msgid ""
 "       --certificate-type=TYPE     client certificate type, PEM or DER\n"
 msgstr ""
 "       --certificate-type=TYP      typ certifikátu klienta, PEM alebo DER\n"
 
-#: src/main.c:858
+#: src/main.c:860
 msgid "       --private-key=FILE          private key file\n"
 msgstr "       --private-key=SÚBOR         súbor súkromného kľúča\n"
 
-#: src/main.c:860
+#: src/main.c:862
 msgid "       --private-key-type=TYPE     private key type, PEM or DER\n"
 msgstr ""
 "       --private-key-type=TYP      typ súkromného kľúča, PEM alebo DER\n"
 
-#: src/main.c:862
+#: src/main.c:864
 msgid "       --ca-certificate=FILE       file with the bundle of CAs\n"
 msgstr "       --ca-certificate=SÚBOR      súbor s balíkom CA\n"
 
-#: src/main.c:864
+#: src/main.c:866
 msgid ""
 "       --ca-directory=DIR          directory where hash list of CAs is "
 "stored\n"
@@ -2009,11 +2011,11 @@ msgstr ""
 "       --ca-directory=ADR          adresár, kde je uložený hašovaný zoznam "
 "CA\n"
 
-#: src/main.c:866
+#: src/main.c:868
 msgid "       --crl-file=FILE             file with bundle of CRLs\n"
 msgstr "       --crl-file=SÚBOR            súbor s balíkom CRL\n"
 
-#: src/main.c:868
+#: src/main.c:870
 msgid ""
 "       --pinnedpubkey=FILE/HASHES  Public key (PEM/DER) file, or any number\n"
 "                                   of base64 encoded sha256 hashes preceded "
@@ -2030,7 +2032,7 @@ msgstr ""
 "ktorých sa bude\n"
 "                                   overovať protistrana\n"
 
-#: src/main.c:874
+#: src/main.c:876
 msgid ""
 "       --random-file=FILE          file with random data for seeding the SSL "
 "PRNG\n"
@@ -2038,7 +2040,7 @@ msgstr ""
 "       --random-file=SÚBOR         súbor s náhodnými dátami, pre spustenie "
 "SSL PRNG\n"
 
-#: src/main.c:878
+#: src/main.c:880
 msgid ""
 "       --egd-file=FILE             file naming the EGD socket with random "
 "data\n"
@@ -2046,7 +2048,7 @@ msgstr ""
 "       --egd-file=SÚBOR            súbor s pomenovaním EGD soketu s "
 "náhodnými dátami\n"
 
-#: src/main.c:882
+#: src/main.c:884
 msgid ""
 "       --ciphers=STR           Set the priority string (GnuTLS) or cipher "
 "list string (OpenSSL) directly.\n"
@@ -2062,15 +2064,15 @@ msgstr ""
 "                                   Formát a syntax tohto reťazca závisí od "
 "príslušnej SSL/TLS implementácie.\n"
 
-#: src/main.c:889
+#: src/main.c:891
 msgid "HSTS options:\n"
 msgstr "HSTS voľby:\n"
 
-#: src/main.c:891
+#: src/main.c:893
 msgid "       --no-hsts                   disable HSTS\n"
 msgstr "       --no-hsts                   zakázať HSTS\n"
 
-#: src/main.c:893
+#: src/main.c:895
 msgid ""
 "       --hsts-file                 path of HSTS database (will override "
 "default)\n"
@@ -2078,11 +2080,11 @@ msgstr ""
 "       --hsts-file                 cesta k databáze HSTS (nahradí "
 "predvolenú)\n"
 
-#: src/main.c:898
+#: src/main.c:900
 msgid "FTP options:\n"
 msgstr "FTP voľby:\n"
 
-#: src/main.c:901
+#: src/main.c:903
 msgid ""
 "       --ftp-stmlf                 use Stream_LF format for all binary FTP "
 "files\n"
@@ -2090,37 +2092,37 @@ msgstr ""
 "       --ftp-stmlf                 použiť formát Stream_LF pre všetky "
 "binárne súbory FTP\n"
 
-#: src/main.c:904
+#: src/main.c:906
 msgid "       --ftp-user=USER             set ftp user to USER\n"
 msgstr ""
 "       --ftp-user=POUŽÍVATEĽ       nastaviť ftp používateľa na POUŽÍVATEĽ\n"
 
-#: src/main.c:906
+#: src/main.c:908
 msgid "       --ftp-password=PASS         set ftp password to PASS\n"
 msgstr "       --ftp-password=HESLO        nastaviť ftp heslo na HESLO\n"
 
-#: src/main.c:908
+#: src/main.c:910
 msgid "       --no-remove-listing         don't remove '.listing' files\n"
 msgstr "       --no-remove-listing         neodstraňovať súbory '.listing'\n"
 
-#: src/main.c:910
+#: src/main.c:912
 msgid "       --no-glob                   turn off FTP file name globbing\n"
 msgstr ""
 "       --no-glob                   pri FTP vypnúť používanie divokých znakov "
 "v názvoch súborov\n"
 
-#: src/main.c:912
+#: src/main.c:914
 msgid ""
 "       --no-passive-ftp            disable the \"passive\" transfer mode\n"
 msgstr "       --no-passive-ftp            zakázať \"pasívny\" režim prenosu\n"
 
-#: src/main.c:914
+#: src/main.c:916
 msgid "       --preserve-permissions      preserve remote file permissions\n"
 msgstr ""
 "       --preserve-permissions      zachovať vzdialené prístupové práva "
 "súborov\n"
 
-#: src/main.c:916
+#: src/main.c:918
 msgid ""
 "       --retr-symlinks             when recursing, get linked-to files (not "
 "dir)\n"
@@ -2128,11 +2130,11 @@ msgstr ""
 "       --retr-symlinks             pri rekurzii získať odkazované súbory "
 "(nie adresáre)\n"
 
-#: src/main.c:921
+#: src/main.c:923
 msgid "FTPS options:\n"
 msgstr "FTPS voľby:\n"
 
-#: src/main.c:923
+#: src/main.c:925
 msgid ""
 "       --ftps-implicit                 use implicit FTPS (default port is "
 "990)\n"
@@ -2140,7 +2142,7 @@ msgstr ""
 "       --ftps-implicit                 použiť implicitné FTPS (štandardný "
 "port je 990)\n"
 
-#: src/main.c:925
+#: src/main.c:927
 msgid ""
 "       --ftps-resume-ssl               resume the SSL/TLS session started in "
 "the control connection when\n"
@@ -2150,7 +2152,7 @@ msgstr ""
 "pokračovať v SSL/TLS sedení začatom\n"
 "                                         riadiacim spojením\n"
 
-#: src/main.c:928
+#: src/main.c:930
 msgid ""
 "       --ftps-clear-data-connection    cipher the control channel only; all "
 "the data will be in plaintext\n"
@@ -2158,7 +2160,7 @@ msgstr ""
 "       --ftps-clear-data-connection    šifrovať len riadiace spojenie; "
 "všetky dáta budú nešifrované\n"
 
-#: src/main.c:930
+#: src/main.c:932
 msgid ""
 "       --ftps-fallback-to-ftp          fall back to FTP if FTPS is not "
 "supported in the target server\n"
@@ -2166,11 +2168,11 @@ msgstr ""
 "       --ftps-fallback-to-ftp          vrátiť sa k FTP ak FTPS nie je "
 "podporované na cieľovom serveri\n"
 
-#: src/main.c:934
+#: src/main.c:936
 msgid "WARC options:\n"
 msgstr "WARC voľby:\n"
 
-#: src/main.c:936
+#: src/main.c:938
 msgid ""
 "       --warc-file=FILENAME        save request/response data to a .warc.gz "
 "file\n"
@@ -2178,24 +2180,24 @@ msgstr ""
 "       --warc-file=NÁZOVSÚBORU     uložiť údaje o požiadavkách/odpovediach "
 "do súboru .warc.gz\n"
 
-#: src/main.c:938
+#: src/main.c:940
 msgid ""
 "       --warc-header=STRING        insert STRING into the warcinfo record\n"
 msgstr ""
 "       --warc-header=REŤAZEC       vložiť REŤAZEC do záznamu warcinfo\n"
 
-#: src/main.c:940
+#: src/main.c:942
 msgid ""
 "       --warc-max-size=NUMBER      set maximum size of WARC files to NUMBER\n"
 msgstr ""
 "       --warc-max-size=ČÍSLO       nastaviť maximálnu veľkosť WARC súborov "
 "na ČÍSLO\n"
 
-#: src/main.c:942
+#: src/main.c:944
 msgid "       --warc-cdx                  write CDX index files\n"
 msgstr "       --warc-cdx                  zapísať indexové súbory CDX\n"
 
-#: src/main.c:944
+#: src/main.c:946
 msgid ""
 "       --warc-dedup=FILENAME       do not store records listed in this CDX "
 "file\n"
@@ -2203,17 +2205,17 @@ msgstr ""
 "       --warc-dedup=NÁZOVSÚBORU    neukladať záznamy uvedené v tomto CDX "
 "súbore\n"
 
-#: src/main.c:947
+#: src/main.c:949
 msgid ""
 "       --no-warc-compression       do not compress WARC files with GZIP\n"
 msgstr ""
 "       --no-warc-compression       nekomprimovať súbory WARC pomocou GZIP\n"
 
-#: src/main.c:950
+#: src/main.c:952
 msgid "       --no-warc-digests           do not calculate SHA1 digests\n"
 msgstr "       --no-warc-digests           nepočítať kontrolné súčty SHA1\n"
 
-#: src/main.c:952
+#: src/main.c:954
 msgid ""
 "       --no-warc-keep-log          do not store the log file in a WARC "
 "record\n"
@@ -2221,7 +2223,7 @@ msgstr ""
 "       --no-warc-keep-log          neukladať súbor so záznamom do WARC "
 "záznamu\n"
 
-#: src/main.c:954
+#: src/main.c:956
 msgid ""
 "       --warc-tempdir=DIRECTORY    location for temporary files created by "
 "the\n"
@@ -2231,15 +2233,15 @@ msgstr ""
 "vytvorených\n"
 "                                     WARC zapisovačom\n"
 
-#: src/main.c:959
+#: src/main.c:961
 msgid "Recursive download:\n"
 msgstr "Rekurzívne sťahovanie:\n"
 
-#: src/main.c:961
+#: src/main.c:963
 msgid "  -r,  --recursive                 specify recursive download\n"
 msgstr "  -r,  --recursive                 nastaviť rekurzívne sťahovanie\n"
 
-#: src/main.c:963
+#: src/main.c:965
 msgid ""
 "  -l,  --level=NUMBER              maximum recursion depth (inf or 0 for "
 "infinite)\n"
@@ -2247,7 +2249,7 @@ msgstr ""
 "  -l,  --level=ČÍSLO               maximálna hĺbka rekurzie (inf alebo 0 pre "
 "nekonečno)\n"
 
-#: src/main.c:965
+#: src/main.c:967
 msgid ""
 "       --delete-after              delete files locally after downloading "
 "them\n"
@@ -2255,7 +2257,7 @@ msgstr ""
 "       --delete-after              odstrániť miestne súbory po ich "
 "stiahnutí\n"
 
-#: src/main.c:967
+#: src/main.c:969
 msgid ""
 "  -k,  --convert-links             make links in downloaded HTML or CSS "
 "point to\n"
@@ -2265,7 +2267,7 @@ msgstr ""
 "tak,\n"
 "                                     aby ukazovaly na miestne súbory\n"
 
-#: src/main.c:970
+#: src/main.c:972
 msgid ""
 "       --convert-file-only         convert the file part of the URLs only "
 "(usually known as the basename)\n"
@@ -2273,7 +2275,7 @@ msgstr ""
 "       --convert-file-only         previesť len súborovú časť URL (väčšinou "
 "nazývané aj basename)\n"
 
-#: src/main.c:972
+#: src/main.c:974
 msgid ""
 "       --backups=N                 before writing file X, rotate up to N "
 "backup files\n"
@@ -2281,7 +2283,7 @@ msgstr ""
 "       --backups=N                 pred zapísaním súboru X, zachovať až N "
 "záložných súborov\n"
 
-#: src/main.c:976
+#: src/main.c:978
 msgid ""
 "  -K,  --backup-converted          before converting file X, back up as "
 "X_orig\n"
@@ -2289,7 +2291,7 @@ msgstr ""
 "  -K,  --backup-converted          pred konverziou súboru X ho zazálohovať "
 "ako X_orig\n"
 
-#: src/main.c:979
+#: src/main.c:981
 msgid ""
 "  -K,  --backup-converted          before converting file X, back up as X."
 "orig\n"
@@ -2297,7 +2299,7 @@ msgstr ""
 "  -K,  --backup-converted          pred konverziou súboru X ho zazálohovať "
 "ako X.orig\n"
 
-#: src/main.c:982
+#: src/main.c:984
 msgid ""
 "  -m,  --mirror                    shortcut for -N -r -l inf --no-remove-"
 "listing\n"
@@ -2305,7 +2307,7 @@ msgstr ""
 "  -m,  --mirror                    skratka pre -N -r -l inf --no-remove-"
 "listing\n"
 
-#: src/main.c:984
+#: src/main.c:986
 msgid ""
 "  -p,  --page-requisites           get all images, etc. needed to display "
 "HTML page\n"
@@ -2313,7 +2315,7 @@ msgstr ""
 "  -p,  --page-requisites           získať všetky obrázky, atď. potrebné pre "
 "zobrazenie HTML stránky\n"
 
-#: src/main.c:986
+#: src/main.c:988
 msgid ""
 "       --strict-comments           turn on strict (SGML) handling of HTML "
 "comments\n"
@@ -2321,11 +2323,11 @@ msgstr ""
 "       --strict-comments           zapnúť striktné (SGML) spracovávanie HTML "
 "komentárov\n"
 
-#: src/main.c:990
+#: src/main.c:992
 msgid "Recursive accept/reject:\n"
 msgstr "Rekurzívne akceptovanie/odmietnutie:\n"
 
-#: src/main.c:992
+#: src/main.c:994
 msgid ""
 "  -A,  --accept=LIST               comma-separated list of accepted "
 "extensions\n"
@@ -2333,7 +2335,7 @@ msgstr ""
 "  -A,  --accept=ZOZNAM             čiarkou oddelený zoznam akceptovaných "
 "prípon\n"
 
-#: src/main.c:994
+#: src/main.c:996
 msgid ""
 "  -R,  --reject=LIST               comma-separated list of rejected "
 "extensions\n"
@@ -2341,45 +2343,45 @@ msgstr ""
 "  -R,  --reject=ZOZNAM             čiarkou oddelený zoznam odmietnutých "
 "prípon\n"
 
-#: src/main.c:996
+#: src/main.c:998
 msgid "       --accept-regex=REGEX        regex matching accepted URLs\n"
 msgstr ""
 "       --accept-regex=REGVÝRAZ     regulárny výraz pre akceptované URL\n"
 
-#: src/main.c:998
+#: src/main.c:1000
 msgid "       --reject-regex=REGEX        regex matching rejected URLs\n"
 msgstr "       --reject-regex=REGVÝRAZ     regulárny výraz je odmietnuté URL\n"
 
-#: src/main.c:1001
+#: src/main.c:1003
 msgid "       --regex-type=TYPE           regex type (posix|pcre)\n"
 msgstr ""
 "       --regex-type=TYP            typ regulárneho výrazu (posix|pcre)\n"
 
-#: src/main.c:1004
+#: src/main.c:1006
 msgid "       --regex-type=TYPE           regex type (posix)\n"
 msgstr "       --regex-type=TYP            typ regulárneho výrazu (posix)\n"
 
-#: src/main.c:1007
+#: src/main.c:1009
 msgid ""
 "  -D,  --domains=LIST              comma-separated list of accepted domains\n"
 msgstr ""
 "  -D,  --domains=ZOZNAM            čiarkou oddelený zoznam akceptovaných "
 "domén\n"
 
-#: src/main.c:1009
+#: src/main.c:1011
 msgid ""
 "       --exclude-domains=LIST      comma-separated list of rejected domains\n"
 msgstr ""
 "       --exclude-domains=ZOZNAM    čiarkou oddelený zoznam odmietnutých "
 "domén\n"
 
-#: src/main.c:1011
+#: src/main.c:1013
 msgid ""
 "       --follow-ftp                follow FTP links from HTML documents\n"
 msgstr ""
 "       --follow-ftp                nasledovať FTP odkazy z HTML dokumentov\n"
 
-#: src/main.c:1013
+#: src/main.c:1015
 msgid ""
 "       --follow-tags=LIST          comma-separated list of followed HTML "
 "tags\n"
@@ -2387,7 +2389,7 @@ msgstr ""
 "       --follow-tags=ZOZNAM        čiarkou oddelený zoznam nasledovaných "
 "HTML značiek\n"
 
-#: src/main.c:1015
+#: src/main.c:1017
 msgid ""
 "       --ignore-tags=LIST          comma-separated list of ignored HTML "
 "tags\n"
@@ -2395,21 +2397,21 @@ msgstr ""
 "       --ignore-tags=ZOZNAM        čiarkou oddelený zoznam ignorovaných HTML "
 "značiek\n"
 
-#: src/main.c:1017
+#: src/main.c:1019
 msgid "  -H,  --span-hosts                go to foreign hosts when recursive\n"
 msgstr ""
 "  -H,  --span-hosts                prejsť na cudzích hostiteľov pri "
 "rekurzii\n"
 
-#: src/main.c:1019
+#: src/main.c:1021
 msgid "  -L,  --relative                  follow relative links only\n"
 msgstr "  -L,  --relative                  nasledovať len relatívne odkazy\n"
 
-#: src/main.c:1021
+#: src/main.c:1023
 msgid "  -I,  --include-directories=LIST  list of allowed directories\n"
 msgstr "  -I,  --include-directories=ZOZNAM zoznam povolených adresárov\n"
 
-#: src/main.c:1023
+#: src/main.c:1025
 msgid ""
 "       --trust-server-names        use the name specified by the "
 "redirection\n"
@@ -2419,17 +2421,17 @@ msgstr ""
 "komponentom\n"
 "                                     URL presmerovania\n"
 
-#: src/main.c:1026
+#: src/main.c:1028
 msgid "  -X,  --exclude-directories=LIST  list of excluded directories\n"
 msgstr "  -X,  --exclude-directories=ZOZNAM zoznam vynechaných adresárov\n"
 
-#: src/main.c:1028
+#: src/main.c:1030
 msgid ""
 "  -np, --no-parent                 don't ascend to the parent directory\n"
 msgstr ""
 "  -np, --no-parent                 nevystupovať do rodičovského adresára\n"
 
-#: src/main.c:1031
+#: src/main.c:1033
 msgid ""
 "Email bug reports, questions, discussions to <bug-wget@gnu.org>\n"
 "and/or open issues at https://savannah.gnu.org/bugs/?"
@@ -2441,70 +2443,70 @@ msgstr ""
 "Komentáre k slovenskému prekladu zasielajte na adresu <sk-i18n@lists.linux."
 "sk>\n"
 
-#: src/main.c:1037
+#: src/main.c:1039
 #, c-format
 msgid "GNU Wget %s, a non-interactive network retriever.\n"
 msgstr "GNU Wget %s, program pre neinteraktívne sťahovanie súborov.\n"
 
-#: src/main.c:1080
+#: src/main.c:1082
 #, c-format
 msgid "Password for user %s: "
 msgstr "Heslo pre používateľa %s: "
 
-#: src/main.c:1082
+#: src/main.c:1084
 #, c-format
 msgid "Password: "
 msgstr "Heslo: "
 
-#: src/main.c:1106
+#: src/main.c:1108
 #, c-format
 msgid "Cannot create pipe\n"
 msgstr "Nepodarilo sa vytvoriť dátovod\n"
 
-#: src/main.c:1114
+#: src/main.c:1116
 #, c-format
 msgid "Error initializing spawn file actions for use-askpass: %d\n"
 msgstr ""
 "Chyba pri inicializácii spúšťacích súborových akcií pre use-askpass: %d\n"
 
-#: src/main.c:1123
+#: src/main.c:1125
 #, c-format
 msgid "Error setting spawn file actions for use-askpass: %d\n"
 msgstr ""
 "Chyba pri nastavovaní spúšťacích súborových akcií pre use-askpass: %d\n"
 
-#: src/main.c:1147
+#: src/main.c:1149
 #, c-format
 msgid "Error reading response from command \"%s %s\": %s\n"
 msgstr "Chyba pri čítaní odpovede príkazu \"%s %s\": %s\n"
 
-#: src/main.c:1170
+#: src/main.c:1172
 #, c-format
 msgid "Username for '%s%s': "
 msgstr "Meno používateľa pre '%s%s: "
 
-#: src/main.c:1180
+#: src/main.c:1182
 #, c-format
 msgid "Password for '%s%s@%s': "
 msgstr "Heslo pre '%s%s@%s': "
 
-#: src/main.c:1252
+#: src/main.c:1254
 msgid "Wgetrc: "
 msgstr "Wgetrc: "
 
-#: src/main.c:1253
+#: src/main.c:1255
 msgid "Locale: "
 msgstr "Národné prostredie: "
 
-#: src/main.c:1254
+#: src/main.c:1256
 msgid "Compile: "
 msgstr "Kompilácia: "
 
-#: src/main.c:1255
+#: src/main.c:1257
 msgid "Link: "
 msgstr "Odkaz: "
 
-#: src/main.c:1259
+#: src/main.c:1261
 #, c-format
 msgid ""
 "GNU Wget %s built on %s.\n"
@@ -2513,29 +2515,29 @@ msgstr ""
 "GNU Wget %s zostavený na %s.\n"
 "\n"
 
-#: src/main.c:1292
+#: src/main.c:1294
 #, c-format
 msgid "    %s (env)\n"
 msgstr "    %s (prostredie)\n"
 
-#: src/main.c:1299
+#: src/main.c:1301
 #, c-format
 msgid "    %s (user)\n"
 msgstr "    %s (používateľ)\n"
 
-#: src/main.c:1304
+#: src/main.c:1306
 #, c-format
 msgid "    %s (system)\n"
 msgstr "    %s (systém)\n"
 
 #. TRANSLATORS: When available, an actual copyright character
 #. (circle-c) should be used in preference to "(C)".
-#: src/main.c:1332
+#: src/main.c:1334
 #, c-format
 msgid "Copyright (C) %s Free Software Foundation, Inc.\n"
 msgstr "Copyright © %s Free Software Foundation, Inc.\n"
 
-#: src/main.c:1335
+#: src/main.c:1337
 msgid ""
 "License GPLv3+: GNU GPL version 3 or later\n"
 "<http://www.gnu.org/licenses/gpl.html>.\n"
@@ -2549,7 +2551,7 @@ msgstr ""
 
 #. TRANSLATORS: When available, please use the proper diacritics for
 #. names such as this one. See en_US.po for reference.
-#: src/main.c:1343
+#: src/main.c:1345
 msgid ""
 "\n"
 "Originally written by Hrvoje Niksic <hniksic@xemacs.org>.\n"
@@ -2557,7 +2559,7 @@ msgstr ""
 "\n"
 "Pôvodným autorom tohoto programu je Hrvoje Nikšić <hniksic@xemacs.com>\n"
 
-#: src/main.c:1346
+#: src/main.c:1348
 msgid "Please send bug reports and questions to <bug-wget@gnu.org>.\n"
 msgstr ""
 "Hlásenia o chybách a otázky zasielajte, prosím, na adresu\n"
@@ -2565,34 +2567,34 @@ msgstr ""
 "Komentáre k slovenskému prekladu zasielajte na adresu <sk-i18n@lists.linux."
 "sk>.\n"
 
-#: src/main.c:1399
+#: src/main.c:1400
 #, c-format
 msgid "Memory allocation problem\n"
 msgstr "Problém s alokovaním pamäte\n"
 
-#: src/main.c:1450
+#: src/main.c:1451
 #, c-format
 msgid "Exiting due to error in %s\n"
 msgstr "Koniec z dôvodu chyby v %s\n"
 
-#: src/main.c:1480 src/main.c:1551 src/main.c:1793
+#: src/main.c:1481 src/main.c:1552 src/main.c:1794
 #, c-format
 msgid "Try `%s --help' for more options.\n"
 msgstr "Príkaz `%s --help' vypíše viac volieb.\n"
 
-#: src/main.c:1547
+#: src/main.c:1548
 #, c-format
 msgid "%s: illegal option -- `-n%c'\n"
 msgstr "%s: neprípustná voľba -- `-n%c'\n"
 
-#: src/main.c:1593
+#: src/main.c:1594
 #, c-format
 msgid "Debugging support not compiled in. Ignoring --debug flag.\n"
 msgstr ""
 "Podpora ladenia nebola zahrnutá pri zostavovaní. Príznak --debug sa "
 "ignoruje.\n"
 
-#: src/main.c:1606
+#: src/main.c:1607
 #, c-format
 msgid ""
 "Both --no-clobber and --convert-links were specified, only --convert-links "
@@ -2601,7 +2603,7 @@ msgstr ""
 "Oboje --no-clobber a --convert-links bolo zadané. Použije sa len --convert-"
 "links.\n"
 
-#: src/main.c:1608
+#: src/main.c:1609
 #, c-format
 msgid ""
 "Both --no-clobber and --convert-file-only were specified, only --convert-"
@@ -2610,22 +2612,22 @@ msgstr ""
 "Oboje --no-clobber a --convert-file-only bolo zadané. Použije sa len --"
 "convert-links.\n"
 
-#: src/main.c:1641
+#: src/main.c:1642
 #, c-format
 msgid "Can't be verbose and quiet at the same time.\n"
 msgstr "Nie je možné byť zároveň rozvláčny aj byť ticho.\n"
 
-#: src/main.c:1647
+#: src/main.c:1648
 #, c-format
 msgid "Can't timestamp and not clobber old files at the same time.\n"
 msgstr "Nie je možné používať časové značky a nemazať pritom staré súbory.\n"
 
-#: src/main.c:1656
+#: src/main.c:1657
 #, c-format
 msgid "Cannot specify both --inet4-only and --inet6-only.\n"
 msgstr "Nie je možné zadať naraz --inet4-only aj --inet6-only.\n"
 
-#: src/main.c:1666
+#: src/main.c:1667
 msgid ""
 "Cannot specify both -k or --convert-file-only and -O if multiple URLs are "
 "given, or in combination\n"
@@ -2637,7 +2639,7 @@ msgstr ""
 "s -p alebo -r. Podrobnosti nájdete v návode.\n"
 "\n"
 
-#: src/main.c:1675
+#: src/main.c:1676
 msgid ""
 "WARNING: combining -O with -r or -p will mean that all downloaded content\n"
 "will be placed in the single file you specified.\n"
@@ -2646,7 +2648,7 @@ msgstr ""
 "UPOZORNENIE: kombinácia -O s -r alebo -p bude znamenať, že celý stiahnutý\n"
 "obsah bude umiestnený do jedného vami zadaného súboru.\n"
 
-#: src/main.c:1681
+#: src/main.c:1682
 msgid ""
 "WARNING: timestamping does nothing in combination with -O. See the manual\n"
 "for details.\n"
@@ -2656,14 +2658,14 @@ msgstr ""
 "O.\n"
 "Podrobnosti nájdete v návode.\n"
 
-#: src/main.c:1701
+#: src/main.c:1702
 #, c-format
 msgid ""
 "WARC output does not work with --no-clobber, --no-clobber will be disabled.\n"
 msgstr ""
 "WARC výstup nefunguje s --no-clobber, --no-clobber bude deaktivované.\n"
 
-#: src/main.c:1708
+#: src/main.c:1709
 #, c-format
 msgid ""
 "WARC output does not work with timestamping, timestamping will be disabled.\n"
@@ -2672,12 +2674,12 @@ msgstr ""
 "značkame\n"
 "bude deaktivované.\n"
 
-#: src/main.c:1715
+#: src/main.c:1716
 #, c-format
 msgid "WARC output does not work with --spider.\n"
 msgstr "WARC výstup nefunguje so --spider.\n"
 
-#: src/main.c:1721
+#: src/main.c:1722
 #, c-format
 msgid ""
 "WARC output does not work with --continue or --start-pos, they will be "
@@ -2686,7 +2688,7 @@ msgstr ""
 "WARC výstup nefunguje s --continue alebo --start-pos, tieto budú "
 "deaktivované.\n"
 
-#: src/main.c:1729
+#: src/main.c:1730
 #, c-format
 msgid ""
 "Digests are disabled; WARC deduplication will not find duplicate records.\n"
@@ -2694,7 +2696,7 @@ msgstr ""
 "Kontrolné súčty nie sú povolené; WARC deduplikácia nenájde duplikátne "
 "záznamy.\n"
 
-#: src/main.c:1750
+#: src/main.c:1751
 #, c-format
 msgid ""
 "Compression does not work with --continue or --start-pos, they will be "
@@ -2703,12 +2705,12 @@ msgstr ""
 "Komprimovanie nefunguje s --continue alebo --start-pos, tieto budú "
 "deaktivované.\n"
 
-#: src/main.c:1761
+#: src/main.c:1762
 #, c-format
 msgid "Cannot specify both --ask-password and --password.\n"
 msgstr "Nie je možné zadať naraz --ask-password aj --password.\n"
 
-#: src/main.c:1769
+#: src/main.c:1770
 #, c-format
 msgid ""
 "WARNING: No username set with --ask-password. This is usually not what you "
@@ -2717,7 +2719,7 @@ msgstr ""
 "UPOZORNENIE: Nenastavené meno používateľa s --ask-password. Toto "
 "pravdepodobne nechcete.\n"
 
-#: src/main.c:1775
+#: src/main.c:1776
 #, c-format
 msgid ""
 "Specifying both --start-pos and --continue is not recommended; --continue "
@@ -2726,17 +2728,17 @@ msgstr ""
 "Zadanie --start-pos aj --continue je neodporúčané; --continue bude "
 "deaktivované.\n"
 
-#: src/main.c:1788
+#: src/main.c:1789
 #, c-format
 msgid "%s: missing URL\n"
 msgstr "%s: chýba URL\n"
 
-#: src/main.c:1836
+#: src/main.c:1837
 #, c-format
 msgid "You cannot specify both --post-data and --post-file.\n"
 msgstr "Nemôžete zadať naraz --post-data aj --post-file.\n"
 
-#: src/main.c:1841
+#: src/main.c:1842
 #, c-format
 msgid ""
 "You cannot use --post-data or --post-file along with --method. --method "
@@ -2745,7 +2747,7 @@ msgstr ""
 "Nemôžete použiť --post-data alebo --post-file spolu s --method. --method "
 "očakáva dáta pomocou voľby --body-data a --body-file\n"
 
-#: src/main.c:1850
+#: src/main.c:1851
 #, c-format
 msgid ""
 "You must specify a method through --method=HTTPMethod to use with --body-"
@@ -2754,17 +2756,17 @@ msgstr ""
 "Metódu, ktorá sa má použiť s --body-data alebo --body-file, musíte zadať "
 "pomocou --method=HTTPmetóda.\n"
 
-#: src/main.c:1856
+#: src/main.c:1857
 #, c-format
 msgid "You cannot specify both --body-data and --body-file.\n"
 msgstr "Nemôžete zadať naraz --body-data aj --body-file.\n"
 
-#: src/main.c:1908
+#: src/main.c:1909
 #, c-format
 msgid "This version does not have support for IRIs\n"
 msgstr "Táto verzia nemá podporu pre IRI\n"
 
-#: src/main.c:2008
+#: src/main.c:2009
 #, c-format
 msgid ""
 "-k or -r can be used together with -O only if outputting to a regular file.\n"
@@ -2772,7 +2774,7 @@ msgstr ""
 "-k alebo -r môže byť použité spolu s -O, len ak je výstup do bežného "
 "súboru.\n"
 
-#: src/main.c:2014
+#: src/main.c:2015
 #, c-format
 msgid ""
 "--convert-links or --convert-file-only can be used together only if "
@@ -2781,42 +2783,42 @@ msgstr ""
 "--convert-links alebo --convert-file-only môžu byť použité spolu, len ak je "
 "výstup do bežného súboru.\n"
 
-#: src/main.c:2025
+#: src/main.c:2026
 #, c-format
 msgid "Failed to init libcares\n"
 msgstr "Zlyhala inicializácia libcares\n"
 
-#: src/main.c:2031
+#: src/main.c:2032
 #, c-format
 msgid "Failed to init c-ares channel\n"
 msgstr "Zlyhala inicializácia kanála c-ares\n"
 
-#: src/main.c:2054
+#: src/main.c:2055
 #, c-format
 msgid "Failed to parse IP address '%s'\n"
 msgstr "Zlyhala analýza IP adresy '%s'\n"
 
-#: src/main.c:2065
+#: src/main.c:2066
 #, c-format
 msgid "Failed to set DNS server(s) '%s' (%d)\n"
 msgstr "Zlyhalo nastavenie DNS server(ov) '%s' (%d)\n"
 
-#: src/main.c:2202
+#: src/main.c:2201
 #, c-format
 msgid "No URLs found in %s.\n"
 msgstr "V %s neboli nájdené URL.\n"
 
-#: src/main.c:2218
+#: src/main.c:2217
 #, c-format
 msgid "Unable to parse metalink file %s.\n"
 msgstr "Nepodarilo sa analyzovať metalink súbor %s.\n"
 
-#: src/main.c:2248 src/metalink.c:337
+#: src/main.c:2247 src/metalink.c:337
 #, c-format
 msgid "Could not download all resources from %s.\n"
 msgstr "Nepodarilo sa stiahnuť všetky zdroje z %s.\n"
 
-#: src/main.c:2275
+#: src/main.c:2274
 #, c-format
 msgid ""
 "FINISHED --%s--\n"
@@ -2827,7 +2829,7 @@ msgstr ""
 "Celkový čas: %s\n"
 "Stiahnutých: %d súborov, %s za %s (%s)\n"
 
-#: src/main.c:2289
+#: src/main.c:2288
 #, c-format
 msgid "Download quota of %s EXCEEDED!\n"
 msgstr "Limit objemu stiahnutych dát %s PREKROČENÝ!\n"
@@ -2884,101 +2886,101 @@ msgstr "Spracovanie metaurl skončilo s chybou.\n"
 msgid "Resource type %s not supported, ignoring...\n"
 msgstr "Typ zdroja %s nepodporovaný, ignoruje sa...\n"
 
-#: src/metalink.c:509
+#: src/metalink.c:507
 msgid "Could not open downloaded file.\n"
 msgstr "Nepodarilo sa otvoriť stiahnutý súbor.\n"
 
-#: src/metalink.c:514
+#: src/metalink.c:512
 #, c-format
 msgid "Computing size for %s\n"
 msgstr "Počítanie veľkosti pre %s\n"
 
-#: src/metalink.c:519
+#: src/metalink.c:517
 msgid "File size not declared. Skipping check.\n"
 msgstr "Neuvedená veľkosť súboru. Kontrola preskočená.\n"
 
-#: src/metalink.c:527
+#: src/metalink.c:525
 msgid "Could not get downloaded file's size.\n"
 msgstr "Nepodarilo sa získať veľkost stiahnutého súboru.\n"
 
-#: src/metalink.c:539
+#: src/metalink.c:537
 #, c-format
 msgid "Size mismatch for file %s.\n"
 msgstr "Veľkosť súboru %s nesúhlasí.\n"
 
-#: src/metalink.c:547
+#: src/metalink.c:545
 msgid "Size matches.\n"
 msgstr "Veľkosť súhlasí.\n"
 
-#: src/metalink.c:600
+#: src/metalink.c:598
 #, c-format
 msgid "Computing checksum for %s\n"
 msgstr "Počítanie kontrolného súčtu pre %s\n"
 
-#: src/metalink.c:678
+#: src/metalink.c:676
 msgid "Checksum matches.\n"
 msgstr "Kontrolný súčet súhlasí.\n"
 
-#: src/metalink.c:683
+#: src/metalink.c:681
 #, c-format
 msgid "Checksum mismatch for file %s.\n"
 msgstr "Kontrolný súčet súboru %s nesúhlasí.\n"
 
-#: src/metalink.c:722
+#: src/metalink.c:720
 msgid "Could not open downloaded file for signature verification.\n"
 msgstr "Nepodarilo sa otvoriť stiahnutý súbor na overenie podpisu.\n"
 
-#: src/metalink.c:780
+#: src/metalink.c:778
 #, c-format
 msgid "GPGME data_new_from_mem: %s\n"
 msgstr "GPGME data_new_from_mem: %s\n"
 
-#: src/metalink.c:792
+#: src/metalink.c:790
 #, c-format
 msgid "GPGME op_verify: %s\n"
 msgstr "GPGME op_verify: %s\n"
 
-#: src/metalink.c:805
+#: src/metalink.c:803
 msgid "GPGME op_verify_result: NULL\n"
 msgstr "GPGME op_verify_result: NULL\n"
 
-#: src/metalink.c:821
+#: src/metalink.c:819
 msgid "Signature validation succeeded.\n"
 msgstr "Overenie podpisu úspešné.\n"
 
-#: src/metalink.c:829
+#: src/metalink.c:827
 msgid "Invalid signature. Rejecting resource.\n"
 msgstr "Neplatný podpis. Zdroj odmietnutý.\n"
 
-#: src/metalink.c:838
+#: src/metalink.c:836
 msgid "Data matches signature, but signature is not trusted.\n"
 msgstr "Údaje zodpovedajú podpisu, ale podpis nie je dôveryhodný.\n"
 
-#: src/metalink.c:865
+#: src/metalink.c:863
 msgid "No checksums found.\n"
 msgstr "Kontrolné súčty nenájdené.\n"
 
-#: src/metalink.c:871
+#: src/metalink.c:869
 #, c-format
 msgid "Failed to download %s. Skipping resource.\n"
 msgstr "Sťahovanie %s zlyhalo. Zdroj preskočený.\n"
 
-#: src/metalink.c:878
+#: src/metalink.c:876
 #, c-format
 msgid "File %s retrieved but size does not match. \n"
 msgstr "Súbor %s bol získaný, ale veľkosť nesúhlasí. \n"
 
-#: src/metalink.c:885
+#: src/metalink.c:883
 #, c-format
 msgid "File %s retrieved but checksum does not match. \n"
 msgstr "Súbor %s bol získaný, ale kontrolný súčet nesúhlasí. \n"
 
-#: src/metalink.c:894
+#: src/metalink.c:892
 #, c-format
 msgid "File %s retrieved but signature does not match. \n"
 msgstr "Súbor %s bol získaný, ale podpis nesúhlasí. \n"
 
-#: src/metalink.c:1113
+#: src/metalink.c:1111
 #, c-format
 msgid "Renaming %s to %s.\n"
 msgstr "Premenováva sa %s na %s.\n"
@@ -3024,87 +3026,97 @@ msgid "%s: %s:%d: warning: %s token appears before any machine name\n"
 msgstr ""
 "%s: %s:%d: upozornenie: token %s je uvedený pred akýmkoľvek názvom počítača\n"
 
-#: src/netrc.c:414
+#: src/netrc.c:416
 #, c-format
 msgid "%s: %s:%d: unknown token \"%s\"\n"
 msgstr "%s: %s:%d: neznámy token \"%s\"\n"
 
-#: src/netrc.c:553
+#: src/netrc.c:557
 #, c-format
 msgid "Usage: %s NETRC [HOSTNAME]\n"
 msgstr "Použitie: %s NETRC [NÁZOV_POČÍTAČA]\n"
 
-#: src/netrc.c:571
+#: src/netrc.c:575
 #, c-format
 msgid "%s: cannot stat %s: %s\n"
 msgstr "%s: volanie `stat %s' skončilo s chybou: %s\n"
 
-#: src/openssl.c:128
+#: src/openssl.c:129
 msgid "WARNING: using a weak random seed.\n"
 msgstr "UPOZORNENIE: používané slabé spúšťacie zrnko pre náhodné čísla.\n"
 
-#: src/openssl.c:208
+#: src/openssl.c:209
 msgid "Could not seed PRNG; consider using --random-file.\n"
 msgstr "Nepodarilo sa inicializovať PRNG; zvážte použitie --random-file.\n"
 
-#: src/openssl.c:271
+#: src/openssl.c:272
 msgid "Your OpenSSL version is too old to support TLS 1.3\n"
 msgstr "Vaša verzia OpenSSL je príliš stará, aby podporovala TLS 1.3\n"
 
-#: src/openssl.c:277
+#: src/openssl.c:278
 msgid "Your OpenSSL version is too old to support TLSv1.1\n"
 msgstr "Vaša verzia OpenSSL je príliš stará, aby podporovala TLSv1.1\n"
 
-#: src/openssl.c:281
+#: src/openssl.c:282
 msgid "Your OpenSSL version is too old to support TLSv1.2\n"
 msgstr "Vaša verzia OpenSSL je príliš stará, aby podporovala TLSv1.2\n"
 
-#: src/openssl.c:287
+#: src/openssl.c:288
 #, c-format
 msgid "OpenSSL: unimplemented 'secure-protocol' option value %d\n"
 msgstr "OpenSSL: neimplementovaná hodnota %d voľby 'secure-protocol'\n"
 
-#: src/openssl.c:333
+#: src/openssl.c:295
+#, c-format
+msgid "Your OpenSSL version does not support option '%s'.\n"
+msgstr "Vaša verzia OpenSSL nepodporuje voľbu '%s'.\n"
+
+#: src/openssl.c:296
+msgid "Rebuilding Wget and/or OpenSSL may help in this situation.\n"
+msgstr ""
+"Opätovné preloženie Wget a/alebo OpenSSL môže v tomto prípade pomôcť.\n"
+
+#: src/openssl.c:341
 #, c-format
 msgid "OpenSSL: Invalid cipher list: %s\n"
 msgstr "OpenSSL: Neplatný zoznam šifier: %s\n"
 
-#: src/openssl.c:360
+#: src/openssl.c:368
 msgid "OpenSSL: Failed set trust to partial chain\n"
 msgstr "OpenSSL: Zlyhalo nastavenie dôveryhodnosti pre neúplný reťazec\n"
 
-#: src/openssl.c:366
+#: src/openssl.c:374
 msgid "OpenSSL: Failed to allocate verification param\n"
 msgstr "OpenSSL: Zlyhalo vytvorenie overovacieho parametra\n"
 
-#: src/openssl.c:844
+#: src/openssl.c:852
 msgid "WARNING: Could not seed PRNG. Consider using --random-file.\n"
 msgstr ""
 "UPOZORNENIE: Nepodarilo sa inicializovať PRNG. Zvážte použitie --random-"
 "file.\n"
 
-#: src/openssl.c:1064
+#: src/openssl.c:1072
 #, c-format
 msgid "%s: cannot verify %s's certificate, issued by %s:\n"
 msgstr "%s: nie je možné overiť certifikát pre %s, vydaný %s:\n"
 
-#: src/openssl.c:1075
+#: src/openssl.c:1083
 msgid "  Unable to locally verify the issuer's authority.\n"
 msgstr "  Nie je možné miestne overiť autoritu vydavateľa.\n"
 
-#: src/openssl.c:1080
+#: src/openssl.c:1088
 msgid "  Self-signed certificate encountered.\n"
 msgstr "  Vyskytol sa certifikát podpísaný samým sebou.\n"
 
-#: src/openssl.c:1083
+#: src/openssl.c:1091
 msgid "  Issued certificate not yet valid.\n"
 msgstr "  Vydaný certifikát je ešte neplatný.\n"
 
-#: src/openssl.c:1086
+#: src/openssl.c:1094
 msgid "  Issued certificate has expired.\n"
 msgstr "  Vydanému certifikátu vypršala platnosť.\n"
 
-#: src/openssl.c:1174
+#: src/openssl.c:1182
 #, c-format
 msgid ""
 "%s: no certificate subject alternative name matches\n"
@@ -3113,7 +3125,7 @@ msgstr ""
 "%s: žiadny alternatívny názov predmetu v certifikáte\n"
 "\tsa nezhoduje s požadovaným názvom hostiteľa %s.\n"
 
-#: src/openssl.c:1193
+#: src/openssl.c:1201
 #, c-format
 msgid ""
 "    %s: certificate common name %s doesn't match requested host name %s.\n"
@@ -3121,7 +3133,7 @@ msgstr ""
 "    %s: bežný názov %s v certifikáte sa nezhoduje s požadovaným názvom "
 "hostiteľa %s.\n"
 
-#: src/openssl.c:1225
+#: src/openssl.c:1233
 #, c-format
 msgid ""
 "    %s: certificate common name is invalid (contains a NUL character).\n"
@@ -3132,7 +3144,7 @@ msgstr ""
 "    To môže byť znamením toho, že hostiteľ nie je tým, za koho sa vydáva\n"
 "    (to znamená, nie je to reálne %s).\n"
 
-#: src/openssl.c:1250
+#: src/openssl.c:1258
 #, c-format
 msgid "To connect to %s insecurely, use `--no-check-certificate'.\n"
 msgstr "Na nie bezpečné pripojenie k %s použite `--no-check-certificate'.\n"
@@ -3171,7 +3183,7 @@ msgstr "    za "
 msgid "Cannot get REALTIME clock frequency: %s\n"
 msgstr "Nie je možné získať frekvenciu hodín reálneho času: %s\n"
 
-#: src/recur.c:430
+#: src/recur.c:428
 #, c-format
 msgid ""
 "nofollow attribute found in %s. Will not follow any links on this page\n"
@@ -3179,7 +3191,7 @@ msgstr ""
 "Bol nájdený príznak nofollow v %s. Nebudú nasledované žiadne odkazy na tejto "
 "stránke\n"
 
-#: src/recur.c:514
+#: src/recur.c:512
 #, c-format
 msgid "Removing %s since it should be rejected.\n"
 msgstr "Odstraňuje sa %s, pretože by mal byť odmietnutý.\n"
@@ -3193,22 +3205,22 @@ msgstr "Nie je možné otvoriť %s: %s\n"
 msgid "Loading robots.txt; please ignore errors.\n"
 msgstr "Načítava sa robots.txt. Chybové hlásenia ignorujte, prosím.\n"
 
-#: src/retr.c:934
+#: src/retr.c:925
 #, c-format
 msgid "Error parsing proxy URL %s: %s.\n"
 msgstr "Chyba pri analýze proxy URL %s: %s\n"
 
-#: src/retr.c:948
+#: src/retr.c:938
 #, c-format
 msgid "Error in proxy URL %s: Must be HTTP.\n"
 msgstr "Chyba v proxy URL %s: Musí byť HTTP.\n"
 
-#: src/retr.c:1079
+#: src/retr.c:1067
 #, c-format
 msgid "%d redirections exceeded.\n"
 msgstr "Prekročený limit %d presmerovaní.\n"
 
-#: src/retr.c:1341
+#: src/retr.c:1327
 msgid ""
 "Giving up.\n"
 "\n"
@@ -3216,7 +3228,7 @@ msgstr ""
 "Nemá to zmysel.\n"
 "\n"
 
-#: src/retr.c:1341
+#: src/retr.c:1327
 msgid ""
 "Retrying.\n"
 "\n"
@@ -3250,48 +3262,51 @@ msgstr[2] ""
 "Nájdené %d poškodené odkazy.\n"
 "\n"
 
-#: src/url.c:675
+#: src/url.c:688
 msgid "No error"
 msgstr "Bez chyby"
 
-#: src/url.c:677
-#, c-format
-msgid "Unsupported scheme %s"
-msgstr "Nepodporovaná schéma %s"
-
-#: src/url.c:679
-msgid "Scheme missing"
-msgstr "Schéma chýba"
-
-#: src/url.c:681
-msgid "Invalid host name"
-msgstr "Neplatný názov hostiteľa"
-
-#: src/url.c:683
-msgid "Bad port number"
-msgstr "Zlé číslo portu"
-
-#: src/url.c:685
-msgid "Invalid user name"
-msgstr "Neplatné meno používateľa"
-
-#: src/url.c:687
-msgid "Unterminated IPv6 numeric address"
-msgstr "Neukončená číselná adresa pre IPv6"
-
 #: src/url.c:689
-msgid "IPv6 addresses not supported"
-msgstr "IPv6 adresy nie sú podporované"
+msgid "Unsupported scheme"
+msgstr "Nepodporovaná schéma"
 
-#: src/url.c:691
-msgid "Invalid IPv6 numeric address"
-msgstr "Neplatná číselná adresa IPv6"
-
-#: src/url.c:1007
+#: src/url.c:690
 msgid "HTTPS support not compiled in"
 msgstr "Podpora pre HTTPS nie je zakompilovaná"
 
-#: src/url.c:1648
+#: src/url.c:691
+msgid "FTPS support not compiled in"
+msgstr "Podpora pre FTPS nie je zakompilovaná"
+
+#: src/url.c:692
+msgid "Scheme missing"
+msgstr "Schéma chýba"
+
+#: src/url.c:693
+msgid "Invalid host name"
+msgstr "Neplatný názov hostiteľa"
+
+#: src/url.c:694
+msgid "Bad port number"
+msgstr "Zlé číslo portu"
+
+#: src/url.c:695
+msgid "Invalid user name"
+msgstr "Neplatné meno používateľa"
+
+#: src/url.c:696
+msgid "Unterminated IPv6 numeric address"
+msgstr "Neukončená číselná adresa pre IPv6"
+
+#: src/url.c:697
+msgid "IPv6 addresses not supported"
+msgstr "IPv6 adresy nie sú podporované"
+
+#: src/url.c:698
+msgid "Invalid IPv6 numeric address"
+msgstr "Neplatná číselná adresa IPv6"
+
+#: src/url.c:1645
 msgid "Unconvertable multibyte sequence encountered\n"
 msgstr "Vyskytla sa neprevoditeľná viacbajtová postupnosť\n"
 

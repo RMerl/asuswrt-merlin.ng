@@ -1,5 +1,5 @@
 dnl Template file for GNU Autoconf
-dnl Copyright (C) 1995-1997, 2001, 2007-2014, 2018-2022 Free Software
+dnl Copyright (C) 1995-1997, 2001, 2007-2014, 2018-2024 Free Software
 dnl Foundation, Inc.
 
 dnl This program is free software; you can redistribute it and/or modify
@@ -396,6 +396,8 @@ if test -n "$WARN_CFLAGS"; then
     nw="$nw -Wswitch-default" # TODO: Enable someday. Too noisy for now
     nw="$nw -Wpedantic" # GCC 11. Too noisy, will never be supported
     nw="$nw -Wnested-externs" # Stylistic choice and we do use it in hsts code
+    nw="$nw -Wc90-c99-compat" # gcc-12, we use C99
+    nw="$nw -Wlong-long" # gcc-12, we use C99
     if test "$cross_compiling" = yes; then
       nw="$nw -Wformat"
     fi
@@ -622,34 +624,34 @@ AS_IF([test x"$with_ssl" = xopenssl], [
 ]) # endif: --with-ssl == openssl?
 
 dnl Enable NTLM if requested and if SSL is available.
-if test x"$LIBSSL" != x || test "$ac_cv_lib_ssl32_SSL_connect" = yes
+if test x"$ENABLE_NTLM" != xno
 then
-  if test x"$ENABLE_NTLM" != xno
+  if test x"$LIBSSL" != x || test "$ac_cv_lib_ssl32_SSL_connect" = yes
   then
     ENABLE_NTLM=yes
     AC_DEFINE([ENABLE_NTLM], 1, [Define if you want the NTLM authorization support compiled in.])
-  fi
-else
-  PKG_CHECK_MODULES([NETTLE], nettle, [
-    HAVE_NETTLE=yes
-    LIBS="$NETTLE_LIBS $LIBS"
-    CFLAGS="$NETTLE_CFLAGS $CFLAGS"
-  ], [
-    AC_CHECK_LIB(nettle, nettle_md4_init, [HAVE_NETTLE=yes], [HAVE_NETTLE=no; AC_MSG_WARN(*** libnettle was not found. You will not be able to use NTLM)])
-    if test x"$HAVE_NETTLE" != xyes; then
-      if  test x"$ENABLE_NTLM" = xyes; then
-        AC_MSG_ERROR([NTLM authorization requested and SSL not enabled; aborting])
-      fi
-    else
-      AC_SUBST(NETTLE_LIBS, "-lnettle")
+  else
+    PKG_CHECK_MODULES([NETTLE], nettle, [
+      HAVE_NETTLE=yes
       LIBS="$NETTLE_LIBS $LIBS"
-    fi
-  ])
+      CFLAGS="$NETTLE_CFLAGS $CFLAGS"
+    ], [
+      AC_CHECK_LIB(nettle, nettle_md4_init, [HAVE_NETTLE=yes], [HAVE_NETTLE=no; AC_MSG_WARN(*** libnettle was not found. You will not be able to use NTLM)])
+      if test x"$HAVE_NETTLE" != xyes; then
+        if  test x"$ENABLE_NTLM" = xyes; then
+          AC_MSG_ERROR([NTLM authorization requested and SSL not enabled; aborting])
+        fi
+      else
+        AC_SUBST(NETTLE_LIBS, "-lnettle")
+        LIBS="$NETTLE_LIBS $LIBS"
+      fi
+    ])
 
-  if test x"$HAVE_NETTLE" = xyes; then
-    AC_DEFINE([HAVE_NETTLE], [1], [Use libnettle])
-    ENABLE_NTLM=yes
-    AC_DEFINE([ENABLE_NTLM], 1, [Define if you want the NTLM authorization support compiled in.])
+    if test x"$HAVE_NETTLE" = xyes; then
+      AC_DEFINE([HAVE_NETTLE], [1], [Use libnettle])
+      ENABLE_NTLM=yes
+      AC_DEFINE([ENABLE_NTLM], 1, [Define if you want the NTLM authorization support compiled in.])
+    fi
   fi
 fi
 
@@ -950,6 +952,21 @@ AS_IF([test x"$with_metalink" != xno], [
 ])
 
 dnl
+dnl libproxy support
+dnl
+with_libproxy=no
+AC_ARG_ENABLE(libproxy,
+  [  --enable-libproxy       libproxy support for system wide proxy configuration])
+AS_IF([test "${enable_libproxy}" = "yes"], [
+  with_libproxy=yes
+  PKG_CHECK_MODULES([LIBPROXY], [libproxy-1.0], [
+    LIBS="$LIBPROXY_LIBS $LIBS"
+    CFLAGS="$LIBPROXY_CFLAGS $CFLAGS"
+    AC_DEFINE([HAVE_LIBPROXY], [1], [Define if using libproxy.])
+  ])
+])
+
+dnl
 dnl Extended Attribute support
 dnl
 
@@ -1020,4 +1037,5 @@ AC_MSG_NOTICE([Summary of build options:
   GPGME:             $have_gpg
   IRI:               $iri
   Fuzzing build:     $enable_fuzzing, $LIB_FUZZING_ENGINE
+  libproxy:          $with_libproxy
 ])

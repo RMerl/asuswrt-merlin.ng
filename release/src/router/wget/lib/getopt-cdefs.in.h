@@ -1,5 +1,5 @@
 /* getopt-on-non-glibc compatibility macros.
-   Copyright (C) 1989-2022 Free Software Foundation, Inc.
+   Copyright (C) 1989-2024 Free Software Foundation, Inc.
    This file is part of gnulib.
    Unlike most of the getopt implementation, it is NOT shared
    with the GNU C Library.
@@ -57,7 +57,11 @@
 
 #ifndef __THROW
 # if defined __cplusplus && (__GNUC_PREREQ (2,8) || __clang_major__ >= 4)
-#  define __THROW       throw ()
+#  if __cplusplus >= 201103L
+#   define __THROW      noexcept (true)
+#  else
+#   define __THROW      throw ()
+#  endif
 # else
 #  define __THROW
 # endif

@@ -3572,14 +3572,6 @@ filter_setting(int wan_unit, char *lan_if, char *lan_ip, char *logaccept, char *
 	fprintf(fp, "-A FORWARD -j IPSEC_STRONGSWAN\n");
 #endif /* RTCONFIG_IPSEC */
 
-/* Setup traffic accounting */
-#if !defined(HND_ROUTER)
-	if (nvram_match("cstats_enable", "1")) {
-		fprintf(fp, ":ipttolan - [0:0]\n:iptfromlan - [0:0]\n");
-		ipt_account(fp, NULL);
-	}
-#endif
-
 #if defined(RTCONFIG_SWITCH_QCA8075_QCA8337_PHY_AQR107_AR8035_QCA8033)
 	add_filter_rule_for_gpon_sfp_module(fp);
 #endif

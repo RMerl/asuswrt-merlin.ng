@@ -1631,10 +1631,6 @@ obj-y += haveged
 
 #obj-$(RTCONFIG_BWDPI) += faketc
 
-ifneq ($(HND_ROUTER),y)
-obj-y += cstats
-endif
-
 ifeq ($(RTCONFIG_BCMARM),y)
 obj-y += libnfnetlink-1.0.1
 obj-y += libmnl-1.0.4

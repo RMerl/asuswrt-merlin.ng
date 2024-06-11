@@ -559,13 +559,18 @@ function applyRule(){
 
 	document.form.vpn_client_if.value = document.form.vpn_client_if_x.value;
 
-	if (((enforce_ori != getRadioValue(document.form.vpn_client_enforce)) ||
-	     (policy_ori != document.form.vpn_client_rgw.value)) &&
-	    (client_state == 0))
+	if ( (enforce_ori != getRadioValue(document.form.vpn_client_enforce)) ||
+	     (policy_ori != document.form.vpn_client_rgw.value)) {
+		if (document.form.action_script.value != "")
+			document.form.action_script.value += ";";
 		document.form.action_script.value += "start_vpnrouting"+openvpn_unit;
+	}
 
-	if ((dnsmode_ori != document.form.vpn_client_adns.value) && (client_state != 0))
+	if ((dnsmode_ori != document.form.vpn_client_adns.value) && (client_state != 0)) {
+		if (document.form.action_script.value != "")
+			document.form.action_script.value += ";";
 		document.form.action_script.value += ";restart_dnsmasq"
+	}
 
 	showLoading();
 	document.form.submit();

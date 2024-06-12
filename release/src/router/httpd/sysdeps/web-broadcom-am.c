@@ -502,16 +502,13 @@ sta_list:
 	   cases where a device uses a static IP rather than DHCP */
 #ifdef RTCONFIG_MULTILAN_CFG
 	/* Merge all SDN lease files into one */
+	doSystem("cp /var/lib/misc/dnsmasq.leases %s", MERGED_LEASE_FILE);
 	pmtl = (MTLAN_T *)INIT_MTLAN(sizeof(MTLAN_T));
 	if (pmtl) {
 		get_mtlan(pmtl, &mtl_sz);
-		for (i = 0; i < mtl_sz; i++) {
+		for (i = 1; i < mtl_sz; i++) {
 			if (pmtl[i].enable && pmtl[i].nw_t.dhcp_enable) {
-				if (i)
-					snprintf(leasefile_path, sizeof(leasefile_path), "/var/lib/misc/dnsmasq-%d.leases", pmtl[i].sdn_t.sdn_idx);
-				else
-					strlcpy(leasefile_path, "/var/lib/misc/dnsmasq.leases", sizeof(leasefile_path));
-
+				snprintf(leasefile_path, sizeof(leasefile_path), "/var/lib/misc/dnsmasq-%d.leases", pmtl[i].sdn_t.sdn_idx);
 				doSystem("cat %s >> %s", leasefile_path, MERGED_LEASE_FILE);
 			}
 		}

@@ -342,7 +342,7 @@ ej_wl_unit_status_array(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	char *ipv6list = NULL, *ipv6listptr;
 	char *line;
 	char hostnameentry[65];
-	char ipentry[1024], macentry[18];
+	char ipentry_arp[16], ipentry_dhcp[16], ipentry_ipv6[1024], macentry[18];
 	unsigned int flagentry;
 	int found, foundipv6 = 0, noclients = 0;
 	char rxrate[12], txrate[12];
@@ -506,7 +506,7 @@ sta_list:
 			arplistptr = strdup(arplist);
 			line = strtok(arplistptr, "\n");
 			while (line) {
-				if ( (sscanf(line,"%15s %*s %x %17s",ipentry,&flagentry,macentry) == 3) &&
+				if ( (sscanf(line,"%15s %*s %x %17s",ipentry_arp,&flagentry,macentry) == 3) &&
 				     (!strcasecmp(macentry, ether_etoa((void *)&auth->ea[i], ea))) &&
 				     (flagentry != 0) ) {
 					found = 1;
@@ -517,9 +517,9 @@ sta_list:
 			if (arplistptr)	free(arplistptr);
 
 			if (found || !leaselist)
-				ret += websWrite(wp, "\"%s\",", (found ? ipentry : "<unknown>"));
+				ret += websWrite(wp, "\"%s\",", (found ? ipentry_arp : ""));
 		} else {
-			ret += websWrite(wp, "\"<unknown>\",");
+			ret += websWrite(wp, "\"\",");
 		}
 
 		// Retrieve hostname from dnsmasq leases
@@ -527,8 +527,11 @@ sta_list:
 			leaselistptr = strdup(leaselist);
 			line = strtok(leaselistptr, "\n");
 			while (line) {
-				if ( (sscanf(line,"%*s %17s %15s %32s %*s", macentry, ipentry, tmp) == 3) &&
-				     (!strcasecmp(macentry, ether_etoa((void *)&auth->ea[i], ea))) ) {
+				if ( (sscanf(line,"%*s %17s %15s %32s %*s", macentry, ipentry_dhcp, tmp) == 3) &&
+				     ( (found > 0 && !strcmp(ipentry_arp, ipentry_dhcp)) ||
+				       (!strcasecmp(macentry, ether_etoa((void *)&auth->ea[i], ea)))
+				     )
+				   ) {
 					found += 2;
 					break;
 				} else
@@ -538,23 +541,25 @@ sta_list:
 
 			if ((found) && (str_escape_quotes(hostnameentry, tmp, sizeof(hostnameentry)) == 0 ))
 				strlcpy(hostnameentry, tmp, sizeof(hostnameentry));
+			else
+				*hostnameentry = '\0';
 
 			switch (found) {
 			case 0:	// Not in arplist nor in leaselist
-				ret += websWrite(wp, "\"<unknown>\",\"<unknown>\",");
+				ret += websWrite(wp, "\"\",\"\",");
 				break;
 			case 1:	// Only in arplist (static IP)
-				ret += websWrite(wp, "\"<unknown>\",");
+				ret += websWrite(wp, "\"\",");
 				break;
 			case 2:	// Only in leaselist (dynamic IP that has not communicated with router for a while)
-				ret += websWrite(wp, "\"%s\", \"%s\",", ipentry, hostnameentry);
+				ret += websWrite(wp, "\"%s\", \"%s\",", ipentry_dhcp, hostnameentry);
 				break;
 			case 3:	// In both arplist and leaselist (dynamic IP)
 				ret += websWrite(wp, "\"%s\",", hostnameentry);
 				break;
 			}
 		} else {
-			ret += websWrite(wp, "\"<unknown>\",");
+			ret += websWrite(wp, "\"\",");
 		}
 
 #ifdef RTCONFIG_IPV6
@@ -562,9 +567,9 @@ sta_list:
 		if (ipv6list) {
 			ipv6listptr = ipv6list;
 			foundipv6 = 0;
-			while ((ipv6listptr < ipv6list+strlen(ipv6list)-2) && (sscanf(ipv6listptr,"%*s %17s %1023s", macentry, ipentry) == 2)) {
+			while ((ipv6listptr < ipv6list+strlen(ipv6list)-2) && (sscanf(ipv6listptr,"%*s %17s %1023s", macentry, ipentry_ipv6) == 2)) {
 				if (strcasecmp(macentry, ether_etoa((void *)&auth->ea[i], ea)) == 0) {
-					ret += websWrite(wp, "\"%s\",", ipentry);
+					ret += websWrite(wp, "\"%s\",", ipentry_ipv6);
 					foundipv6 = 1;
 					break;
 				} else {
@@ -682,7 +687,7 @@ sta_list:
 					arplistptr = strdup(arplist);
 					line = strtok(arplistptr, "\n");
 					while (line) {
-						if ( (sscanf(line,"%15s %*s %x %17s", ipentry, &flagentry, macentry) == 3) &&
+						if ( (sscanf(line,"%15s %*s %x %17s", ipentry_arp, &flagentry, macentry) == 3) &&
 						     (!strcasecmp(macentry, ether_etoa((void *)&auth->ea[ii], ea))) &&
 						     (flagentry != 0) ) {
 						         found = 1;
@@ -693,9 +698,9 @@ sta_list:
 					if (arplistptr) free(arplistptr);
 
 					if (found || !leaselist)
-						ret += websWrite(wp, "\"%s\",", (found ? ipentry : "<unknown>"));
+						ret += websWrite(wp, "\"%s\",", (found ? ipentry_arp : ""));
 				} else {
-					ret += websWrite(wp, "\"<unknown>\",");
+					ret += websWrite(wp, "\"\",");
 				}
 
 				// Retrieve hostname from dnsmasq leases
@@ -703,8 +708,11 @@ sta_list:
 					leaselistptr = strdup(leaselist);
 					line = strtok(leaselistptr, "\n");
 					while (line) {
-						if ( (sscanf(line,"%*s %17s %15s %32s %*s", macentry, ipentry, tmp) == 3) &&
-						     (!strcasecmp(macentry, ether_etoa((void *)&auth->ea[ii], ea))) ) {
+						if ( (sscanf(line,"%*s %17s %15s %32s %*s", macentry, ipentry_dhcp, tmp) == 3) &&
+						     ( (found > 0 && !strcmp(ipentry_arp, ipentry_dhcp)) ||
+						       (!strcasecmp(macentry, ether_etoa((void *)&auth->ea[i], ea)))
+						     )
+						   ) {
 							found += 2;
 							break;
 						} else
@@ -714,23 +722,25 @@ sta_list:
 
 					if ((found) && (str_escape_quotes(hostnameentry, tmp,sizeof(hostnameentry)) == 0 ))
 						strlcpy(hostnameentry, tmp, sizeof(hostnameentry));
+					else
+						*hostnameentry = '\0';
 
 					switch (found) {
 					case 0:	// Not in arplist nor in leaselist
-						ret += websWrite(wp, "\"<not found>\",\"<not found>\",");
+						ret += websWrite(wp, "\"\",\"\",");
 						break;
 					case 1:	// Only in arplist (static IP)
-						ret += websWrite(wp, "\"<not found>\",");
+						ret += websWrite(wp, "\"\",");
 						break;
 					case 2:	// Only in leaselist (dynamic IP that has not communicated with router for a while)
-						ret += websWrite(wp, "\"%s\",\"%s\",", ipentry, hostnameentry);
+						ret += websWrite(wp, "\"%s\",\"%s\",", ipentry_dhcp, hostnameentry);
 						break;
 					case 3:	// In both arplist and leaselist (dynamic IP)
 						ret += websWrite(wp, "\"%s\",", hostnameentry);
 						break;
 					}
 				} else {
-					ret += websWrite(wp, "\"<unknown>\",");
+					ret += websWrite(wp, "\"\",");
 				}
 
 #ifdef RTCONFIG_IPV6
@@ -738,9 +748,9 @@ sta_list:
 				if (ipv6list) {
 					ipv6listptr = ipv6list;
 					foundipv6 = 0;
-					while ((ipv6listptr < ipv6list+strlen(ipv6list)-2) && (sscanf(ipv6listptr,"%*s %17s %1023s", macentry, ipentry) == 2)) {
+					while ((ipv6listptr < ipv6list+strlen(ipv6list)-2) && (sscanf(ipv6listptr,"%*s %17s %1023s", macentry, ipentry_ipv6) == 2)) {
 						if (strcasecmp(macentry, ether_etoa((void *)&auth->ea[ii], ea)) == 0) {
-							ret += websWrite(wp, "\"%s\",", ipentry);
+							ret += websWrite(wp, "\"%s\",", ipentry_ipv6);
 							foundipv6 = 1;
 							break;
 						} else {

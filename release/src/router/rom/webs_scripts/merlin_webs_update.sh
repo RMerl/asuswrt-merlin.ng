@@ -18,7 +18,7 @@ fi
 current_base=$(nvram get firmver | sed "s/\.//g")
 current_firm=$(nvram get buildno | cut -d. -f1)
 current_buildno=$(nvram get buildno | cut -d. -f2)
-current_extendno=$(nvram get extendno | sed "s/-g.*//" | sed "s/_.*//" | sed "s/alpha\|beta/-1/")
+current_extendno=$(nvram get extendno | awk -F'[_-]' '{n=$1} /[aA]lpha|[bB]eta/{n--} END{print n}') #Extract extendno, subtract value by 1 if it contains "alpha/beta", remove all other values such as "_rog" or "-g*"
 
 # get firmware information
 forsq=$(nvram get apps_sq)
@@ -37,13 +37,13 @@ if [ "$?" != "0" ]; then
 	nvram set webs_state_error=1
 else
 
-	fullver=$(grep $model /tmp/wlan_update.txt | sed s/.*#FW//;)
+	fullver="$(grep "$model" /tmp/wlan_update.txt | tail -n1 | sed 's/.*#FW//')"
 	fullver=$(echo $fullver | sed s/#.*//;)
 	firmbase=$(echo $fullver | cut -d. -f1)
 	firmver=$(echo $fullver | cut -d. -f2)
 	buildno=$(echo $fullver | cut -d. -f3)
 
-	extendno=$(grep $model /tmp/wlan_update.txt | sed s/.*#EXT//;)
+	extendno="$(grep "$model" /tmp/wlan_update.txt | tail -n1 | sed 's/.*#EXT//')"
 	extendno=$(echo $extendno | sed s/#.*//;)
 	lextendno=$(echo $extendno | sed s/-g.*//;)
 
@@ -93,11 +93,11 @@ if [ "$webs_state_flag" -eq "1" ]; then
 	if [ "$forsq" == "1" ]; then
 		echo "---- download SQ release note $fwsite/test/$releasenote_file0_US ----" >> /tmp/webs_upgrade.log
 		/usr/sbin/wget $wget_options $fwsite/test/$releasenote_file0_US -O $releasenote_path0
-		echo "---- $fwsite/test/$releasenote_file0 ----" >> /tmp/webs_upgrade.log
+		echo "---- $fwsite/test/$releasenote_file0_US ----" >> /tmp/webs_upgrade.log
 	else
 		echo "---- download real release note ----" >> /tmp/webs_upgrade.log
 		/usr/sbin/wget $wget_options $fwsite/$releasenote_file0_US -O $releasenote_path0
-		echo "---- $fwsite/$releasenote_file0 ----" >> /tmp/webs_upgrade.log
+		echo "---- $fwsite/$releasenote_file0_US ----" >> /tmp/webs_upgrade.log
 	fi
 
 	if [ "$?" != "0" ]; then

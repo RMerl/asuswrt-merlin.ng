@@ -31,7 +31,7 @@ function show_upnp() {
 	var Hours, Minutes, Seconds;
 
 	code = '<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable_table">';
-	code += '<thead><tr><td colspan="6">UPNP, NAT-PMP and PCP forwards</td></tr></thead>';
+	code += '<thead><tr><td colspan="6">UPnP IGD &amp; PCP/NAT-PMP port forwards</td></tr></thead>';
 	code += '<tr><th width="8%">Proto</th>';
 	code += '<th width="8%">Port</th>';
 	code += '<th width="17%">Redirect to</th>';
@@ -63,7 +63,7 @@ function show_upnp() {
 			code += '</tr>';
 		}
 	} else {
-		code += '<tr><td colspan="6"><span>No active UPNP forward.</span></td></tr>';
+		code += '<tr><td colspan="6"><span>No active port forwards.</span></td></tr>';
 	}
 
 	code += '</tr></table>';

@@ -2324,28 +2324,28 @@ function showInfo(){
 							</tr>
 
 							<tr>
-								<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,23);"><#BasicConfig_EnableMediaServer_itemname#></a>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<a id="faq" href="" target="_blank" style="font-family:Lucida Console;text-decoration:underline;">UPnP&nbspFAQ</a></th>
+								<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,23);">Enable UPnP IGD &amp; PCP/NAT-PMP</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a id="faq" href="" target="_blank" style="font-family:Lucida Console;text-decoration:underline;">FAQ</a></th>
 								<td>
 									<input type="radio" name="wan_upnp_enable" class="input" value="1" onclick="display_upnp_options();return change_common_radio(this, 'LANHostConfig', 'wan_upnp_enable', '1')" <% nvram_match("wan_upnp_enable", "1", "checked"); %>><#checkbox_Yes#>
 									<input type="radio" name="wan_upnp_enable" class="input" value="0" onclick="display_upnp_options();return change_common_radio(this, 'LANHostConfig', 'wan_upnp_enable', '0')" <% nvram_match("wan_upnp_enable", "0", "checked"); %>><#checkbox_No#>
 								</td>
 							</tr>
 							<tr id="upnp_pinhole">
-								<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,5);">Enable IGDv2 (IPv6 pinhole support)</a></th>
+								<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,5);">Enable UPnP IGDv2 (IPv6 support)</a></th>
 								<td>
 									<input type="radio" name="upnp_pinhole_enable" class="input" value="1" onclick="display_upnp_options();" <% nvram_match("upnp_pinhole_enable", "1", "checked"); %>><#checkbox_Yes#>
 									<input type="radio" name="upnp_pinhole_enable" class="input" value="0" onclick="display_upnp_options();" <% nvram_match("upnp_pinhole_enable", "0", "checked"); %>><#checkbox_No#>
 								</td>
 							</tr>
 							<tr id="upnp_secure_tr">
-								<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,3);">Enable secure UPnP mode</a></th>
+								<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,3);">Enable secure UPnP IGD mode</a></th>
 								<td>
 									<input type="radio" name="upnp_secure" class="input" value="1" <% nvram_match_x("", "upnp_secure", "1", "checked"); %>><#checkbox_Yes#>
 									<input type="radio" name="upnp_secure" class="input" value="0" <% nvram_match_x("", "upnp_secure", "0", "checked"); %>><#checkbox_No#>
 								</td>
 							</tr>
 							<tr id="upnp_range_int">
-								<th>UPNP: Allowed internal port range</th>
+								<th>UPnP …: Allowed internal port range</th>
 									<td>
 										<input type="text" maxlength="5" name="upnp_min_port_int" class="input_6_table" value="<% nvram_get("upnp_min_port_int"); %>" onkeypress="return validator.isNumber(this,event);">
 											to
@@ -2354,7 +2354,7 @@ function showInfo(){
 							</tr>
 							<tr id="upnp_range_ext">
 
-								<th>UPNP: Allowed external port range</th>
+								<th>UPnP …: Allowed external port range</th>
 									<td>
 										<input type="text" maxlength="5" name="upnp_min_port_ext" class="input_6_table" value="<% nvram_get("upnp_min_port_ext"); %>" onkeypress="return validator.isNumber(this,event);">
 											to

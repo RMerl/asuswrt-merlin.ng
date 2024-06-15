@@ -18,7 +18,8 @@ fi
 current_base=$(nvram get firmver | sed "s/\.//g")
 current_firm=$(nvram get buildno | cut -d. -f1)
 current_buildno=$(nvram get buildno | cut -d. -f2)
-current_extendno=$(nvram get extendno | awk -F'[_-]' '{n=$1} /[aA]lpha|[bB]eta/{n--} END{print n}') #Extract extendno, subtract value by 1 if it contains "alpha/beta", remove all other values such as "_rog" or "-g*"
+#Extract extendno, subtract value by 1 if it contains "alpha/beta", remove all other values such as "_rog" or "-g*"
+current_extendno="$(nvram get extendno | awk -F'[_-]' '{n=$1} /[aA]lpha|[bB]eta/{n--} END{print n}')"
 
 # get firmware information
 model=$(nvram get productid)

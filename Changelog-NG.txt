@@ -1,6 +1,33 @@
 Asuswrt-Merlin Changelog
 ========================
 
+3004.388.8 (xx-xxx-2024)
+  - NEW: Rewrote VPN killswitch implementation.  The new method
+         uses an always present routing rule to prohibit access to
+         the main routing table, so it will be active even if the
+         user manually stops a client.  Removing the prohibit rule
+         requires disabling the killswitch on the webui.
+         The rules are also created before WAN goes up, to reduce
+         the risks of leaks between WAN going up and VPN connecting.
+  - NEW: Added killswitch support for WireGuard clients.
+  - UPDATED: Chart.js was upgraded from 2.x to 3.9, to share the
+             same version used by Asus.  Any third party addon
+             that used it will need to upgrade their charts to
+             the new version.
+  - UPDATED: wget to 1.24.5.
+  - CHANGED: Removed stop/start and "Start with WAN" buttons from
+             OpenVPN clients.  There is now just a single
+             "Enable" option, which will immediately start the
+             client when applying changes, and will also start it
+             automatically when WAN comes up.  This is to reduce
+             confusion, better integrate into SDN, and match how
+             WireGuard clients already worked.
+  - FIXED: JS error on Wifi 6e/7 models when toggling DDNS.
+  - REMOVED: Wifi Radar was removed (unsupported by Wifi 7 devices,
+             and security issues cited by Asus in their own recent
+             releases).
+
+
 3004.388.7 (26-Apr-2024)
   - NOTE: RT-AX56U is exceptionally included in this release.
 

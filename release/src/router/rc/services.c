@@ -17484,7 +17484,7 @@ retry_wps_enr:
 				amvpn_refresh_wg_bypass_rules();
 #endif
 #endif
-				for (i = OVPN_CLIENT_MAX; i > 0; i --) {
+				for (i = OVPN_CLIENT_MAX; i > 0; i--) {
 					amvpn_set_killswitch_rules(VPNDIR_PROTO_OPENVPN, i, NULL);
 					amvpn_set_routing_rules(i, VPNDIR_PROTO_OPENVPN);
 					amvpn_clear_exclusive_dns(i, VPNDIR_PROTO_OPENVPN);

@@ -3739,6 +3739,9 @@ NOIP:
 
 	/* default route via default gateway */
 	add_multi_routes(0, wan_unit);
+#if defined(RTCONFIG_WIREGUARD) || defined(RTCONFIG_OPENVPN)
+	amvpn_set_kilswitch_rules_all();
+#endif
 
 	/* Kick syslog to re-resolve remote server */
 	reload_syslogd();
@@ -4182,8 +4185,12 @@ wan_down(char *wan_ifname)
 	update_resolvconf();
 
 #ifdef RTCONFIG_DUALWAN
-	if(nvram_match("wans_mode", "lb"))
+	if(nvram_match("wans_mode", "lb")) {
 		add_multi_routes(1, -1);
+#if defined(RTCONFIG_WIREGUARD) || defined(RTCONFIG_OPENVPN)
+		amvpn_set_kilswitch_rules_all();
+#endif
+	}
 #endif
 
 #ifdef RTCONFIG_GETREALIP

@@ -6627,7 +6627,7 @@ void start_upnp(void)
 					"listening_ip=%s\n"
 					"port=%d\n"
 					"enable_upnp=%s\n"
-					"enable_natpmp=%s\n"
+					"enable_pcp_pmp=%s\n"
 #if defined(RTCONFIG_AURASYNC)
 					"enable_aurasync=%s\n"
 #endif

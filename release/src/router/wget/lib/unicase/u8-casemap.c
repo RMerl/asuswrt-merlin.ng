@@ -1,5 +1,5 @@
 /* Case mapping for UTF-8 strings (locale dependent).
-   Copyright (C) 2009-2022 Free Software Foundation, Inc.
+   Copyright (C) 2009-2024 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2009.
 
    This file is free software.
@@ -29,7 +29,6 @@
 #include "unicasemap.h"
 
 #include <errno.h>
-#include <stdbool.h>
 #include <stdlib.h>
 
 #include "unistr.h"

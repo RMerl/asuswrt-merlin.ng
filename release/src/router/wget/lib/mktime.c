@@ -1,5 +1,5 @@
 /* Convert a 'struct tm' to a time_t value.
-   Copyright (C) 1993-2022 Free Software Foundation, Inc.
+   Copyright (C) 1993-2024 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Paul Eggert <eggert@twinsun.com>.
 
@@ -46,6 +46,7 @@
 #include <errno.h>
 #include <limits.h>
 #include <stdbool.h>
+#include <stdckdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -379,7 +380,7 @@ __mktime_internal (struct tm *tp,
   /* Invert CONVERT by probing.  First assume the same offset as last
      time.  */
 
-  INT_SUBTRACT_WRAPV (0, off, &negative_offset_guess);
+  ckd_sub (&negative_offset_guess, 0, off);
   long_int t0 = ydhms_diff (year, yday, hour, min, sec,
 			    EPOCH_YEAR - TM_YEAR_BASE, 0, 0, 0,
 			    negative_offset_guess);
@@ -465,7 +466,7 @@ __mktime_internal (struct tm *tp,
 	for (direction = -1; direction <= 1; direction += 2)
 	  {
 	    long_int ot;
-	    if (! INT_ADD_WRAPV (t, delta * direction, &ot))
+	    if (! ckd_add (&ot, t, delta * direction))
 	      {
 		struct tm otm;
 		if (! ranged_convert (convert, &ot, &otm))
@@ -503,8 +504,8 @@ __mktime_internal (struct tm *tp,
   /* Set *OFFSET to the low-order bits of T - T0 - NEGATIVE_OFFSET_GUESS.
      This is just a heuristic to speed up the next mktime call, and
      correctness is unaffected if integer overflow occurs here.  */
-  INT_SUBTRACT_WRAPV (t, t0, offset);
-  INT_SUBTRACT_WRAPV (*offset, negative_offset_guess, offset);
+  ckd_sub (offset, t, t0);
+  ckd_sub (offset, *offset, negative_offset_guess);
 
   if (LEAP_SECONDS_POSSIBLE && sec_requested != tm.tm_sec)
     {
@@ -513,7 +514,7 @@ __mktime_internal (struct tm *tp,
       long_int sec_adjustment = sec == 0 && tm.tm_sec == 60;
       sec_adjustment -= sec;
       sec_adjustment += sec_requested;
-      if (INT_ADD_WRAPV (t, sec_adjustment, &t)
+      if (ckd_add (&t, t, sec_adjustment)
 	  || ! (mktime_min <= t && t <= mktime_max))
 	{
 	  __set_errno (EOVERFLOW);

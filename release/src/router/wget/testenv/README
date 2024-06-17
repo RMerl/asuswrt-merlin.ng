@@ -144,7 +144,7 @@ Various variables used consistently across all tests are:
     list of files downloaded from Server[2], etc.  They must be relative URLs,
     i.e., not start with "/".
     * Files: This variable defines the files that exist in the Server's
-    filesystem. The Files variable is a list of lists of WgetFile objects.
+    file system. The Files variable is a list of lists of WgetFile objects.
     This means that File[0] is a list of WgetFile objects that lie on Server[0],
     File[1] a list of files on Server[1] and so on.
     * Existing_Files: This is a list of files that already exist in the

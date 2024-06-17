@@ -1,6 +1,6 @@
 /* xalloc-oversized.h -- memory allocation size checking
 
-   Copyright (C) 1990-2000, 2003-2004, 2006-2022 Free Software Foundation, Inc.
+   Copyright (C) 1990-2000, 2003-2004, 2006-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -29,8 +29,7 @@
    is SIZE_MAX - 1.  */
 #define __xalloc_oversized(n, s) \
   ((s) != 0 \
-   && ((size_t) (PTRDIFF_MAX < SIZE_MAX ? PTRDIFF_MAX : SIZE_MAX - 1) / (s) \
-       < (n)))
+   && (PTRDIFF_MAX < SIZE_MAX ? PTRDIFF_MAX : SIZE_MAX - 1) / (s) < (n))
 
 /* Return 1 if and only if an array of N objects, each of size S,
    cannot exist reliably because its total size in bytes would exceed
@@ -48,13 +47,13 @@
 #if 7 <= __GNUC__ && !defined __clang__ && PTRDIFF_MAX < SIZE_MAX
 # define xalloc_oversized(n, s) \
    __builtin_mul_overflow_p (n, s, (ptrdiff_t) 1)
-#elif (5 <= __GNUC__ && !defined __ICC && !__STRICT_ANSI__ \
-       && PTRDIFF_MAX < SIZE_MAX)
+#elif 5 <= __GNUC__ && !defined __ICC && PTRDIFF_MAX < SIZE_MAX
 # define xalloc_oversized(n, s) \
    (__builtin_constant_p (n) && __builtin_constant_p (s) \
     ? __xalloc_oversized (n, s) \
-    : ({ ptrdiff_t __xalloc_count; \
-         __builtin_mul_overflow (n, s, &__xalloc_count); }))
+    : __extension__ \
+        ({ ptrdiff_t __xalloc_count; \
+           __builtin_mul_overflow (n, s, &__xalloc_count); }))
 
 /* Other compilers use integer division; this may be slower but is
    more portable.  */

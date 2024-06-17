@@ -1,7 +1,7 @@
-# Mensajes en español para gnulib 3.0.0.6062.a6b16.
-# Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+# Mensajes en español para gnulib 4.0.0.2567
+# Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2022 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gnulib package.
-# Cristian Othón Martínez Vera <cfuga@cfuga.mx>, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011.
+# Cristian Othón Martínez Vera <cfuga@cfuga.mx>, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2022.
 #
 # Los mensajes iniciales de esta traducción provienen de la traducción
 # de mailutils.
@@ -11,12 +11,12 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnulib 3.0.0.6062.a6b16\n"
+"Project-Id-Version: gnulib 4.0.0.2567\n"
 "Report-Msgid-Bugs-To: bug-gnulib@gnu.org\n"
-"POT-Creation-Date: 2022-02-26 17:24+0100\n"
-"PO-Revision-Date: 2011-08-24 11:23-0500\n"
+"POT-Creation-Date: 2024-03-10 15:09+0100\n"
+"PO-Revision-Date: 2022-04-06 18:22-0500\n"
 "Last-Translator: Cristian Othón Martínez Vera <cfuga@cfuga.mx>\n"
-"Language-Team: Spanish <es@li.org>\n"
+"Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -24,7 +24,7 @@ msgstr ""
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: lib/error.c:195
+#: lib/error.c:194
 msgid "Unknown system error"
 msgstr "Error desconocido de sistema"
 
@@ -104,42 +104,37 @@ msgstr "La cadena de parámetro no está codificada correctamente"
 msgid "Unknown error"
 msgstr "Error desconocido"
 
-#: lib/getopt.c:278
-#, fuzzy, c-format
-#| msgid "%s: option '-W %s' is ambiguous\n"
+#: lib/getopt.c:282
+#, c-format
 msgid "%s: option '%s%s' is ambiguous\n"
-msgstr "%s: la opción '-W %s' es ambigua\n"
+msgstr "%s: la opción '%s%s' es ambigua\n"
 
-#: lib/getopt.c:284
-#, fuzzy, c-format
-#| msgid "%s: option '%s' is ambiguous; possibilities:"
+#: lib/getopt.c:288
+#, c-format
 msgid "%s: option '%s%s' is ambiguous; possibilities:"
-msgstr "%s: la opción '%s' es ambigua; posibilidades:"
+msgstr "%s: la opción '%s%s' es ambigua; posibilidades:"
 
-#: lib/getopt.c:319
-#, fuzzy, c-format
-#| msgid "%s: unrecognized option '%c%s'\n"
+#: lib/getopt.c:322
+#, c-format
 msgid "%s: unrecognized option '%s%s'\n"
-msgstr "%s: no se reconoce la opción '%c%s'\n"
+msgstr "%s: no se reconoce la opción '%s%s'\n"
 
-#: lib/getopt.c:345
-#, fuzzy, c-format
-#| msgid "%s: option '%c%s' doesn't allow an argument\n"
+#: lib/getopt.c:348
+#, c-format
 msgid "%s: option '%s%s' doesn't allow an argument\n"
-msgstr "%s: la opción '%c%s' no admite un argumento\n"
+msgstr "%s: la opción '%s%s' no admite un argumento\n"
 
-#: lib/getopt.c:360
-#, fuzzy, c-format
-#| msgid "%s: option '--%s' requires an argument\n"
+#: lib/getopt.c:363
+#, c-format
 msgid "%s: option '%s%s' requires an argument\n"
-msgstr "%s: la opción '--%s' requiere de un argumento\n"
+msgstr "%s: la opción '%s%s' requiere de un argumento\n"
 
-#: lib/getopt.c:621
+#: lib/getopt.c:624
 #, c-format
 msgid "%s: invalid option -- '%c'\n"
 msgstr "%s: opción inválida -- '%c'\n"
 
-#: lib/getopt.c:636 lib/getopt.c:682
+#: lib/getopt.c:639 lib/getopt.c:685
 #, c-format
 msgid "%s: option requires an argument -- '%c'\n"
 msgstr "%s: la opción requiere de un argumento -- '%c'\n"
@@ -154,12 +149,12 @@ msgstr "no se puede registrar el directorio de trabajo actual"
 msgid "failed to return to initial working directory"
 msgstr "no se puede volver al directorio de trabajo inicial"
 
-#: lib/os2-spawn.c:46
+#: lib/os2-spawn.c:45
 #, c-format
 msgid "_open_osfhandle failed"
 msgstr "falló _open_osfhandle"
 
-#: lib/os2-spawn.c:83
+#: lib/os2-spawn.c:82
 #, c-format
 msgid "cannot restore fd %d: dup2 failed"
 msgstr "no se puede restaurar el df %d: falló dup2"
@@ -187,11 +182,11 @@ msgstr "no se puede restaurar el df %d: falló dup2"
 #. If you don't know what to put here, please see
 #. <https://en.wikipedia.org/wiki/Quotation_marks_in_other_languages>
 #. and use glyphs suitable for your language.
-#: lib/quotearg.c:355
+#: lib/quotearg.c:354
 msgid "`"
 msgstr "«"
 
-#: lib/quotearg.c:356
+#: lib/quotearg.c:355
 msgid "'"
 msgstr "»"
 
@@ -224,10 +219,8 @@ msgid "Invalid back reference"
 msgstr "Referencia hacia atrás inválida"
 
 #: lib/regcomp.c:143
-#, fuzzy
-#| msgid "Unmatched [ or [^"
 msgid "Unmatched [, [^, [:, [., or [="
-msgstr "[ o [^ sin pareja"
+msgstr "[, [^, [:, [., o [= sin pareja"
 
 #: lib/regcomp.c:146
 msgid "Unmatched ( or \\("
@@ -269,13 +262,12 @@ msgstr ") o \\) sin pareja"
 msgid "No previous regular expression"
 msgstr "No hay una expresión regular previa"
 
-#: lib/spawn-pipe.c:217 lib/spawn-pipe.c:220 lib/spawn-pipe.c:459
-#: lib/spawn-pipe.c:462
+#: lib/spawn-pipe.c:216 lib/spawn-pipe.c:219
 #, c-format
 msgid "cannot create pipe"
-msgstr "no se puede una tubería"
+msgstr "no se puede crear una tubería"
 
-#: lib/spawn-pipe.c:597 lib/wait-process.c:291 lib/wait-process.c:365
+#: lib/spawn-pipe.c:596 lib/wait-process.c:291 lib/wait-process.c:365
 #, c-format
 msgid "%s subprocess failed"
 msgstr "%s: falló el subproceso"
@@ -302,7 +294,6 @@ msgstr "memoria agotada"
 #~ msgid "ambiguous argument %s for %s"
 #~ msgstr "argumento %s ambiguo para %s"
 
-#, c-format
 #~ msgid "Valid arguments are:"
 #~ msgstr "Los argumentos válidos son:"
 
@@ -313,10 +304,6 @@ msgstr "memoria agotada"
 #, c-format
 #~ msgid "%.*s: ARGP_HELP_FMT parameter requires a value"
 #~ msgstr "%.*s: El parámetro ARGP_HELP_FMT requiere de un valor"
-
-#, c-format
-#~ msgid "%.*s: ARGP_HELP_FMT parameter must be positive"
-#~ msgstr "%.*s: El parámetro ARGP_HELP_FMT debe ser positivo"
 
 #, c-format
 #~ msgid "%.*s: Unknown ARGP_HELP_FMT parameter"
@@ -343,8 +330,8 @@ msgstr "memoria agotada"
 #~ msgstr " [OPCIÓN...]"
 
 #, c-format
-#~ msgid "Try `%s --help' or `%s --usage' for more information.\n"
-#~ msgstr "Pruebe `%s --help' ó `%s --usage' para más información.\n"
+#~ msgid "Try '%s --help' or '%s --usage' for more information.\n"
+#~ msgstr "Pruebe '%s --help' ó `%s --usage' para más información.\n"
 
 #, c-format
 #~ msgid "Report bugs to %s.\n"
@@ -381,13 +368,66 @@ msgstr "memoria agotada"
 #~ msgid "(PROGRAM ERROR) Option should have been recognized!?"
 #~ msgstr "(ERROR DEL PROGRAMA) ¿¡La opción debería reconocerse!?"
 
+#, c-format
+#~ msgid "%u bitset_allocs, %u freed (%.2f%%).\n"
+#~ msgstr "%u bitset_allocs, %u liberados (%.2f%%).\n"
+
+#, c-format
+#~ msgid "%u bitset_sets, %u cached (%.2f%%)\n"
+#~ msgstr "%u bitset_sets, %u en caché (%.2f%%)\n"
+
+#, c-format
+#~ msgid "%u bitset_resets, %u cached (%.2f%%)\n"
+#~ msgstr "%u bitset_resets, %u en caché (%.2f%%)\n"
+
+#, c-format
+#~ msgid "%u bitset_tests, %u cached (%.2f%%)\n"
+#~ msgstr "%u bitset_tests, %u en caché (%.2f%%)\n"
+
+#, c-format
+#~ msgid "%u bitset_lists\n"
+#~ msgstr "%u bitset_lists\n"
+
+#~ msgid "count log histogram\n"
+#~ msgstr "histograma de registro de cuenta\n"
+
+#~ msgid "size log histogram\n"
+#~ msgstr "histograma de registro de tamaño\n"
+
+#~ msgid "density histogram\n"
+#~ msgstr "histograma de densidad\n"
+
+#, c-format
+#~ msgid ""
+#~ "Bitset statistics:\n"
+#~ "\n"
+#~ msgstr ""
+#~ "Estadísticas de conjuntos de bits:\n"
+#~ "\n"
+
+#, c-format
+#~ msgid "Accumulated runs = %u\n"
+#~ msgstr "Ejecuciones acumuladas = %u\n"
+
+#~ msgid "cannot read stats file"
+#~ msgstr "no se puede leer el fichero de estadísticas"
+
+#, c-format
+#~ msgid "bad stats file size\n"
+#~ msgstr "tamaño erróneo de fichero de estadísticas\n"
+
+#~ msgid "cannot write stats file"
+#~ msgstr "no se puede escribir el fichero de estadísticas"
+
+#~ msgid "cannot open stats file for writing"
+#~ msgstr "no se puede abrir el fichero de estadísticas para escritura"
+
 #~ msgid "program error"
 #~ msgstr "error del programa"
 
 #~ msgid "stack overflow"
 #~ msgstr "desbordamiento de la pila"
 
-#, c-format
 #~ msgid "cannot find a temporary directory, try setting $TMPDIR"
 #~ msgstr ""
 #~ "no se puede encontrar un directorio temporal, pruebe definir $TMPDIR"
@@ -415,36 +455,60 @@ msgstr "memoria agotada"
 #~ msgstr "se conservan los permisos de %s"
 
 #, c-format
-#~ msgid "error while opening \"%s\" for reading"
-#~ msgstr "error al abrir \"%s\" para lectura"
+#~ msgid "error while opening %s for reading"
+#~ msgstr "error al abrir %s para lectura"
 
 #, c-format
-#~ msgid "cannot open backup file \"%s\" for writing"
-#~ msgstr "no se puede abrir el fichero de respaldo \"%s\" para escritura"
+#~ msgid "cannot open backup file %s for writing"
+#~ msgstr "no se puede abrir el fichero de respaldo %s para escritura"
 
 #, c-format
-#~ msgid "error reading \"%s\""
-#~ msgstr "error al leer \"%s\""
+#~ msgid "error reading %s"
+#~ msgstr "error al leer %s"
 
 #, c-format
-#~ msgid "error writing \"%s\""
-#~ msgstr "error al escribir en \"%s\""
+#~ msgid "error writing %s"
+#~ msgstr "error al escribir en %s"
 
 #, c-format
-#~ msgid "error after reading \"%s\""
-#~ msgstr "error después de leer \"%s\""
+#~ msgid "error after reading %s"
+#~ msgstr "error después de leer %s"
 
-#, c-format
 #~ msgid "fdopen() failed"
 #~ msgstr "falló fdopen()"
 
-#, c-format
-#~ msgid "C# compiler not found, try installing pnet"
-#~ msgstr "No se encontró un compilador de C#, pruebe instalando pnet"
+#~ msgid "C# compiler not found, try installing mono"
+#~ msgstr "No se encontró un compilador de C#, pruebe instalando mono"
 
-#, c-format
-#~ msgid "C# virtual machine not found, try installing pnet"
-#~ msgstr "No se encontró una máquina virtual de C#, pruebe instalando pnet"
+#~ msgid "C# virtual machine not found, try installing mono"
+#~ msgstr "No se encontró una máquina virtual de C#, pruebe instalando mono"
+
+#~ msgid "unbalanced ["
+#~ msgstr "[ sin pareja"
+
+#~ msgid "invalid character class"
+#~ msgstr "clase de carácter inválida"
+
+#~ msgid "character class syntax is [[:space:]], not [:space:]"
+#~ msgstr "la sintaxis de clase de carácter es [[:space:]], no [:space:]"
+
+#~ msgid "unfinished \\ escape"
+#~ msgstr "escape \\ sin terminar"
+
+#~ msgid "invalid content of \\{\\}"
+#~ msgstr "contenido inválido de \\{\\}"
+
+#~ msgid "regular expression too big"
+#~ msgstr "expresión regular demasiado grande"
+
+#~ msgid "unbalanced ("
+#~ msgstr "( sin pareja"
+
+#~ msgid "no syntax specified"
+#~ msgstr "no se especificó la sintaxis"
+
+#~ msgid "unbalanced )"
+#~ msgstr ") sin pareja"
 
 #~ msgid "regular empty file"
 #~ msgstr "fichero regular vacío"
@@ -455,20 +519,8 @@ msgstr "memoria agotada"
 #~ msgid "directory"
 #~ msgstr "directorio"
 
-#~ msgid "block special file"
-#~ msgstr "fichero especial de bloques"
-
-#~ msgid "character special file"
-#~ msgstr "fichero especial de caracteres"
-
-#~ msgid "fifo"
-#~ msgstr "`fifo'"
-
 #~ msgid "symbolic link"
 #~ msgstr "enlace simbólico"
-
-#~ msgid "socket"
-#~ msgstr "`socket'"
 
 #~ msgid "message queue"
 #~ msgstr "cola de mensajes"
@@ -482,30 +534,57 @@ msgstr "memoria agotada"
 #~ msgid "typed memory object"
 #~ msgstr "objeto de memoria con tipo"
 
+#~ msgid "block special file"
+#~ msgstr "fichero especial de bloques"
+
+#~ msgid "character special file"
+#~ msgstr "fichero especial de caracteres"
+
+#~ msgid "contiguous data"
+#~ msgstr "datos contiguos"
+
+#~ msgid "fifo"
+#~ msgstr "`fifo'"
+
+#~ msgid "door"
+#~ msgstr "puerta"
+
+#~ msgid "multiplexed block special file"
+#~ msgstr "fichero especial de bloques multiplexado"
+
+#~ msgid "multiplexed character special file"
+#~ msgstr "fichero especial de caracteres multiplexado"
+
+#~ msgid "multiplexed file"
+#~ msgstr "fichero multiplexado"
+
+#~ msgid "named file"
+#~ msgstr "fichero nombrado"
+
+#~ msgid "network special file"
+#~ msgstr "fichero especial de red"
+
+#~ msgid "migrated file with data"
+#~ msgstr "fichero migrado con datos"
+
+#~ msgid "migrated file without data"
+#~ msgstr "fichero migrado sin datos"
+
+#~ msgid "port"
+#~ msgstr "puerto"
+
+#~ msgid "socket"
+#~ msgstr "`socket'"
+
+#~ msgid "whiteout"
+#~ msgstr "blanqueado"
+
 #~ msgid "weird file"
 #~ msgstr "fichero extraño"
 
-#, c-format
-#~ msgid "%s: option '--%s' doesn't allow an argument\n"
-#~ msgstr "%s: la opción '--%s' no admite un argumento\n"
-
-#, c-format
-#~ msgid "%s: unrecognized option '--%s'\n"
-#~ msgstr "%s: no se reconoce la opción '--%s'\n"
-
-#, c-format
-#~ msgid "%s: option '-W %s' doesn't allow an argument\n"
-#~ msgstr "%s: la opción '-W %s' no admite un argumento\n"
-
-#, c-format
-#~ msgid "%s: option '-W %s' requires an argument\n"
-#~ msgstr "%s: la opción '-W %s' requiere de un argumento\n"
-
-#, c-format
 #~ msgid "invalid source_version argument to compile_java_class"
 #~ msgstr "argumento source_version inválido para compile_java_class"
 
-#, c-format
 #~ msgid "invalid target_version argument to compile_java_class"
 #~ msgstr "argumento target_version inválido para compile_java_class"
 
@@ -517,13 +596,11 @@ msgstr "memoria agotada"
 #~ msgid "error while writing \"%s\" file"
 #~ msgstr "error al escribir el fichero \"%s\""
 
-#, c-format
 #~ msgid "Java compiler not found, try installing gcj or set $JAVAC"
 #~ msgstr ""
 #~ "No se encontró un compilador de Java, pruebe instalando gcj o definiendo "
 #~ "$JAVAC"
 
-#, c-format
 #~ msgid "Java virtual machine not found, try installing gij or set $JAVA"
 #~ msgstr ""
 #~ "No se encontró una máquina virtual de Java, pruebe instalando gij o "
@@ -534,6 +611,10 @@ msgstr "memoria agotada"
 #~ msgstr "%s: error de E/S del subproceso"
 
 #, c-format
+#~ msgid "cannot stat %s"
+#~ msgstr "no se puede ejecutar stat sobre %s"
+
+#, c-format
 #~ msgid "cannot change permissions of %s"
 #~ msgstr "no se pueden cambiar los permisos de %s"
 
@@ -541,11 +622,9 @@ msgstr "memoria agotada"
 #~ msgid "cannot create directory %s"
 #~ msgstr "no se puede crear el directorio %s"
 
-#, c-format
 #~ msgid "Failed to open /dev/zero for read"
 #~ msgstr "Falló al abrir /dev/zero para lectura"
 
-#, c-format
 #~ msgid "creation of reading thread failed"
 #~ msgstr "falló la creación del hilo de lectura"
 
@@ -569,16 +648,12 @@ msgstr "memoria agotada"
 #~ msgid "subprocess %s terminated with exit code %d"
 #~ msgstr "el subproceso %s terminó con el código de salida %d"
 
-#, c-format
 #~ msgid "creation of threads failed"
 #~ msgstr "falló la creación de hilos"
 
 #, c-format
 #~ msgid "%s subprocess terminated with exit code %d"
 #~ msgstr "subproceso %s terminado con el código de salida %d"
-
-#~ msgid "Franc,ois Pinard"
-#~ msgstr "François Pinard"
 
 # Esto es para responder "sí" cuando nos pregunte.
 #~ msgid "^[yY]"
@@ -705,6 +780,18 @@ msgstr "memoria agotada"
 #~ msgid "Unknown signal %d"
 #~ msgstr "Señal %d desconocida"
 
+#~ msgid "Execution times (seconds)"
+#~ msgstr "Tiempos de ejecución (segundos)"
+
+#~ msgid "CPU user"
+#~ msgstr "CPU de usuario"
+
+#~ msgid "CPU system"
+#~ msgstr "CPU de sistema"
+
+#~ msgid "wall clock"
+#~ msgstr "reloj de pared"
+
 #~ msgid "iconv function not usable"
 #~ msgstr "la función iconv no es utilizable"
 
@@ -759,7 +846,6 @@ msgstr "memoria agotada"
 #~ msgid "invalid spec"
 #~ msgstr "especificación inválida"
 
-#, c-format
 #~ msgid "unable to display error message"
 #~ msgstr "no se puede mostrar el mensaje de error"
 
@@ -774,17 +860,13 @@ msgstr "memoria agotada"
 #~ msgid "(C)"
 #~ msgstr "(C)"
 
+#, c-format
 #~ msgid ""
-#~ "\n"
-#~ "License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl."
-#~ "html>.\n"
+#~ "License GPLv3+: GNU GPL version 3 or later <%s>.\n"
 #~ "This is free software: you are free to change and redistribute it.\n"
 #~ "There is NO WARRANTY, to the extent permitted by law.\n"
-#~ "\n"
 #~ msgstr ""
-#~ "\n"
-#~ "Licencia GPLv3+: GPL de GNU versión 3 o posterior\n"
-#~ "<http://gnu.org/licenses/gpl.html>.\n"
+#~ "Licencia GPLv3+: GPL de GNU versión 3 o posterior <%s>.\n"
 #~ "Esto es software libre: tiene la libertad de cambiarlo y redistribuirlo.\n"
 #~ "No tiene GARANTÍA, en la extensión permitida por la ley.\n"
 #~ "\n"
@@ -864,13 +946,8 @@ msgstr "memoria agotada"
 #~ "%s, %s, y otros.\n"
 
 #, c-format
-#~ msgid ""
-#~ "\n"
-#~ "Report bugs to: %s\n"
-#~ msgstr ""
-#~ "\n"
-#~ "Reporte bichos a: %s.\n"
-#~ "Reporte errores de traducción a: es@li.org\n"
+#~ msgid "Report bugs to: %s\n"
+#~ msgstr "Reporte bichos a: %s.\n"
 
 #, c-format
 #~ msgid "Report %s bugs to: %s\n"
@@ -881,12 +958,11 @@ msgstr "memoria agotada"
 #~ msgstr "Página web de %s: <%s>\n"
 
 #, c-format
-#~ msgid "%s home page: <http://www.gnu.org/software/%s/>\n"
-#~ msgstr "Página web de %s: <http://www.gnu.org/software/%s/>\n"
+#~ msgid "General help using GNU software: <%s>\n"
+#~ msgstr "Ayuda general para usar software de GNU: <%s>\n"
 
-#~ msgid "General help using GNU software: <http://www.gnu.org/gethelp/>\n"
-#~ msgstr ""
-#~ "Ayuda general para usar software de GNU: <http://www.gnu.org/gethelp/>\n"
+#~ msgid "failed to set file descriptor text/binary mode"
+#~ msgstr "falló al establecer el modo texto/binario del descriptor de fichero"
 
 #~ msgid "stdin"
 #~ msgstr "entrada estándard"
@@ -904,11 +980,9 @@ msgstr "memoria agotada"
 #~ msgid "failed to reopen %s with mode %s"
 #~ msgstr "falló al reabrir %s con modo %s"
 
-#, c-format
 #~ msgid "string comparison failed"
 #~ msgstr "la comparación de cadenas falló"
 
-#, c-format
 #~ msgid "Set LC_ALL='C' to work around the problem."
 #~ msgstr ""
 #~ "Establezca LC_ALL='C' para solucionar este problema de forma temporal."
@@ -917,21 +991,44 @@ msgstr "memoria agotada"
 #~ msgid "The strings compared were %s and %s."
 #~ msgstr "Las cadenas comparadas eran %s y %s."
 
-#, c-format
 #~ msgid "cannot perform formatted output"
 #~ msgstr "no se puede mostrar la salida con formato"
 
-#, c-format
-#~ msgid "invalid %s%s argument `%s'"
-#~ msgstr "argumento `$3%s' inválido para $1%s$2%s"
+#~ msgid "standard file descriptors"
+#~ msgstr "descriptores de fichero estándar"
 
 #, c-format
-#~ msgid "invalid suffix in %s%s argument `%s'"
-#~ msgstr "sufijo inválido en el argumento `$3%s' para $1%s$2%s"
+#~ msgid "invalid %s%s argument '%s'"
+#~ msgstr "el argumento %s%s '%s' es inválido"
 
 #, c-format
-#~ msgid "%s%s argument `%s' too large"
-#~ msgstr "el argumento `$3%s' es demasiado grande para $1%s$2%s"
+#~ msgid "invalid suffix in %s%s argument '%s'"
+#~ msgstr "sufijo inválido en %s%s argumento '%s'"
+
+#, c-format
+#~ msgid "%s%s argument '%s' too large"
+#~ msgstr "el argumento %s%s '%s' es demasiado grande"
+
+#~ msgid "%.*s: ARGP_HELP_FMT parameter must be positive"
+#~ msgstr "%.*s: El parámetro ARGP_HELP_FMT debe ser positivo"
+
+#~ msgid "%s: option '--%s' doesn't allow an argument\n"
+#~ msgstr "%s: la opción '--%s' no admite un argumento\n"
+
+#~ msgid "%s: unrecognized option '--%s'\n"
+#~ msgstr "%s: no se reconoce la opción '--%s'\n"
+
+#~ msgid "%s: option '-W %s' doesn't allow an argument\n"
+#~ msgstr "%s: la opción '-W %s' no admite un argumento\n"
+
+#~ msgid "%s: option '-W %s' requires an argument\n"
+#~ msgstr "%s: la opción '-W %s' requiere de un argumento\n"
+
+#~ msgid "Franc,ois Pinard"
+#~ msgstr "François Pinard"
+
+#~ msgid "%s home page: <http://www.gnu.org/software/%s/>\n"
+#~ msgstr "Página web de %s: <http://www.gnu.org/software/%s/>\n"
 
 #~ msgid "%s: illegal option -- %c\n"
 #~ msgstr "%s: opción ilegal -- %c\n"

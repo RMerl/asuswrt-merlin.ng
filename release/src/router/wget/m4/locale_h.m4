@@ -1,5 +1,5 @@
-# locale_h.m4 serial 28
-dnl Copyright (C) 2007, 2009-2022 Free Software Foundation, Inc.
+# locale_h.m4 serial 31
+dnl Copyright (C) 2007, 2009-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -59,7 +59,9 @@ AC_DEFUN_ONCE([gl_LOCALE_H],
     dnl On native Windows with MSVC, merely define these member names as macros.
     dnl This avoids trouble in C++ mode.
     case "$host_os" in
-      mingw*)
+      windows*-msvc*)
+        ;;
+      mingw* | windows*)
         AC_EGREP_CPP([Special], [
 #ifdef _MSC_VER
  Special
@@ -152,7 +154,7 @@ AC_DEFUN([gl_LOCALE_H_REQUIRE_DEFAULTS],
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_SETLOCALE])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_SETLOCALE_NULL])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_DUPLOCALE])
-    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_LOCALENAME])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_LOCALENAME_UNSAFE])
   ])
   m4_require(GL_MODULE_INDICATOR_PREFIX[_LOCALE_H_MODULE_INDICATOR_DEFAULTS])
   AC_REQUIRE([gl_LOCALE_H_DEFAULTS])

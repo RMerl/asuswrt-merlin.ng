@@ -1,6 +1,6 @@
 /* stat-related time functions.
 
-   Copyright (C) 2005, 2007, 2009-2022 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2009-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -20,16 +20,18 @@
 #ifndef STAT_TIME_H
 #define STAT_TIME_H 1
 
-#include "intprops.h"
+/* This file uses _GL_INLINE_HEADER_BEGIN, _GL_INLINE, _GL_UNUSED,
+   _GL_ATTRIBUTE_PURE, HAVE_STRUCT_STAT_*.  */
+#if !_GL_CONFIG_H_INCLUDED
+ #error "Please include config.h first."
+#endif
 
 #include <errno.h>
+#include <stdckdint.h>
 #include <stddef.h>
 #include <sys/stat.h>
 #include <time.h>
 
-#ifndef _GL_INLINE_HEADER_BEGIN
- #error "Please include config.h first."
-#endif
 _GL_INLINE_HEADER_BEGIN
 #ifndef _GL_STAT_TIME_INLINE
 # define _GL_STAT_TIME_INLINE _GL_INLINE
@@ -50,11 +52,13 @@ extern "C" {
 #if _GL_WINDOWS_STAT_TIMESPEC || defined HAVE_STRUCT_STAT_ST_ATIM_TV_NSEC
 # if _GL_WINDOWS_STAT_TIMESPEC || defined TYPEOF_STRUCT_STAT_ST_ATIM_IS_STRUCT_TIMESPEC
 #  define STAT_TIMESPEC(st, st_xtim) ((st)->st_xtim)
+#  define STAT_TIMESPEC_OFFSETOF(st_xtim) offsetof (struct stat, st_xtim)
 # else
 #  define STAT_TIMESPEC_NS(st, st_xtim) ((st)->st_xtim.tv_nsec)
 # endif
 #elif defined HAVE_STRUCT_STAT_ST_ATIMESPEC_TV_NSEC
 # define STAT_TIMESPEC(st, st_xtim) ((st)->st_xtim##espec)
+# define STAT_TIMESPEC_OFFSETOF(st_xtim) offsetof (struct stat, st_xtim##espec)
 #elif defined HAVE_STRUCT_STAT_ST_ATIMENSEC
 # define STAT_TIMESPEC_NS(st, st_xtim) ((st)->st_xtim##ensec)
 #elif defined HAVE_STRUCT_STAT_ST_ATIM_ST__TIM_TV_NSEC
@@ -120,10 +124,8 @@ get_stat_atime (struct stat const *st)
 #ifdef STAT_TIMESPEC
   return STAT_TIMESPEC (st, st_atim);
 #else
-  struct timespec t;
-  t.tv_sec = st->st_atime;
-  t.tv_nsec = get_stat_atime_ns (st);
-  return t;
+  return (struct timespec) { .tv_sec = st->st_atime,
+                             .tv_nsec = get_stat_atime_ns (st) };
 #endif
 }
 
@@ -134,10 +136,8 @@ get_stat_ctime (struct stat const *st)
 #ifdef STAT_TIMESPEC
   return STAT_TIMESPEC (st, st_ctim);
 #else
-  struct timespec t;
-  t.tv_sec = st->st_ctime;
-  t.tv_nsec = get_stat_ctime_ns (st);
-  return t;
+  return (struct timespec) { .tv_sec = st->st_ctime,
+                             .tv_nsec = get_stat_ctime_ns (st) };
 #endif
 }
 
@@ -148,10 +148,8 @@ get_stat_mtime (struct stat const *st)
 #ifdef STAT_TIMESPEC
   return STAT_TIMESPEC (st, st_mtim);
 #else
-  struct timespec t;
-  t.tv_sec = st->st_mtime;
-  t.tv_nsec = get_stat_mtime_ns (st);
-  return t;
+  return (struct timespec) { .tv_sec = st->st_mtime,
+                             .tv_nsec = get_stat_mtime_ns (st) };
 #endif
 }
 
@@ -166,8 +164,8 @@ get_stat_birthtime (_GL_UNUSED struct stat const *st)
      || defined HAVE_STRUCT_STAT_ST_BIRTHTIM_TV_NSEC)
   t = STAT_TIMESPEC (st, st_birthtim);
 #elif defined HAVE_STRUCT_STAT_ST_BIRTHTIMENSEC
-  t.tv_sec = st->st_birthtime;
-  t.tv_nsec = st->st_birthtimensec;
+  t = (struct timespec) { .tv_sec = st->st_birthtime,
+                          .tv_nsec = st->st_birthtimensec };
 #elif defined _WIN32 && ! defined __CYGWIN__
   /* Native Windows platforms (but not Cygwin) put the "file creation
      time" in st_ctime (!).  See
@@ -175,13 +173,11 @@ get_stat_birthtime (_GL_UNUSED struct stat const *st)
 # if _GL_WINDOWS_STAT_TIMESPEC
   t = st->st_ctim;
 # else
-  t.tv_sec = st->st_ctime;
-  t.tv_nsec = 0;
+  t = (struct timespec) { .tv_sec = st->st_ctime };
 # endif
 #else
   /* Birth time is not supported.  */
-  t.tv_sec = -1;
-  t.tv_nsec = -1;
+  t = (struct timespec) { .tv_sec = -1, .tv_nsec = -1 };
 #endif
 
 #if (defined HAVE_STRUCT_STAT_ST_BIRTHTIMESPEC_TV_NSEC \
@@ -193,30 +189,28 @@ get_stat_birthtime (_GL_UNUSED struct stat const *st)
      sometimes returns junk in the birth time fields; work around this
      bug if it is detected.  */
   if (! (t.tv_sec && 0 <= t.tv_nsec && t.tv_nsec < 1000000000))
-    {
-      t.tv_sec = -1;
-      t.tv_nsec = -1;
-    }
+    t = (struct timespec) { .tv_sec = -1, .tv_nsec = -1 };
 #endif
 
   return t;
 }
 
 /* If a stat-like function returned RESULT, normalize the timestamps
-   in *ST, in case this platform suffers from the Solaris 11 bug where
+   in *ST, if this platform suffers from a macOS and Solaris bug where
    tv_nsec might be negative.  Return the adjusted RESULT, setting
    errno to EOVERFLOW if normalization overflowed.  This function
    is intended to be private to this .h file.  */
 _GL_STAT_TIME_INLINE int
 stat_time_normalize (int result, _GL_UNUSED struct stat *st)
 {
-#if defined __sun && defined STAT_TIMESPEC
+#if (((defined __APPLE__ && defined __MACH__) || defined __sun) \
+     && defined STAT_TIMESPEC_OFFSETOF)
   if (result == 0)
     {
       long int timespec_hz = 1000000000;
-      short int const ts_off[] = { offsetof (struct stat, st_atim),
-                                   offsetof (struct stat, st_mtim),
-                                   offsetof (struct stat, st_ctim) };
+      short int const ts_off[] = { STAT_TIMESPEC_OFFSETOF (st_atim),
+                                   STAT_TIMESPEC_OFFSETOF (st_mtim),
+                                   STAT_TIMESPEC_OFFSETOF (st_ctim) };
       int i;
       for (i = 0; i < sizeof ts_off / sizeof *ts_off; i++)
         {
@@ -230,9 +224,8 @@ stat_time_normalize (int result, _GL_UNUSED struct stat *st)
             }
           ts->tv_nsec = r;
           /* Overflow is possible, as Solaris 11 stat can yield
-             tv_sec == TYPE_MINIMUM (time_t) && tv_nsec == -1000000000.
-             INT_ADD_WRAPV is OK, since time_t is signed on Solaris.  */
-          if (INT_ADD_WRAPV (q, ts->tv_sec, &ts->tv_sec))
+             tv_sec == TYPE_MINIMUM (time_t) && tv_nsec == -1000000000.  */
+          if (ckd_add (&ts->tv_sec, q, ts->tv_sec))
             {
               errno = EOVERFLOW;
               return -1;

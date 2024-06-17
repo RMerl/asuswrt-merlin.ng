@@ -1,4 +1,4 @@
-/* Copyright (C) 2011-2022 Free Software Foundation, Inc.
+/* Copyright (C) 2011-2024 Free Software Foundation, Inc.
    This file is part of gnulib.
 
    This file is free software: you can redistribute it and/or modify
@@ -45,12 +45,12 @@ typedef int dummy;
 char *
 rpl_getcwd (char *buf, size_t size)
 {
-  char *ptr;
   char *result;
 
   /* Handle single size operations.  */
   if (buf)
     {
+      /* Check SIZE argument.  */
       if (!size)
         {
           errno = EINVAL;
@@ -79,7 +79,7 @@ rpl_getcwd (char *buf, size_t size)
   {
     char tmp[4032];
     size = sizeof tmp;
-    ptr = getcwd (tmp, size);
+    char *ptr = getcwd (tmp, size);
     if (ptr)
       {
         result = strdup (ptr);
@@ -95,7 +95,7 @@ rpl_getcwd (char *buf, size_t size)
   do
     {
       size <<= 1;
-      ptr = realloc (buf, size);
+      char *ptr = realloc (buf, size);
       if (ptr == NULL)
         {
           free (buf);

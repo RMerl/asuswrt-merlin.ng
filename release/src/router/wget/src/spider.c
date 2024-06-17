@@ -1,5 +1,5 @@
 /* Keep track of visited URLs in spider mode.
-   Copyright (C) 2006-2011, 2015, 2019-2022 Free Software Foundation,
+   Copyright (C) 2006-2011, 2015, 2019-2024 Free Software Foundation,
    Inc.
 
 This file is part of GNU Wget.

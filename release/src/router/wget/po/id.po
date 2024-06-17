@@ -5,27 +5,29 @@
 # this file and modified versions, provided that this
 # header is not removed and modified versions are marked
 # as such.
-# Arif E. Nugroho <arif_endro@yahoo.com>, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015.
+# Arif E. Nugroho <arif_endro@yahoo.com>, 2006-2015.
+# Andika Triwidada <andika@gmail.com>, 2022.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: GNU wget 1.16.1.46\n"
+"Project-Id-Version: GNU wget 1.21.3\n"
 "Report-Msgid-Bugs-To: bug-wget@gnu.org\n"
-"POT-Creation-Date: 2022-02-26 17:24+0100\n"
-"PO-Revision-Date: 2015-06-01 10:00+0700\n"
-"Last-Translator: Arif E. Nugroho <arif_endro@yahoo.com>\n"
+"POT-Creation-Date: 2024-03-10 15:08+0100\n"
+"PO-Revision-Date: 2022-05-03 13:20+0700\n"
+"Last-Translator: Andika Triwidada <andika@gmail.com>\n"
 "Language-Team: Indonesian <translation-team-id@lists.sourceforge.net>\n"
 "Language: id\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
-"Plural-Forms: nplurals=2; plural=n == 1 ? 0 : 1;\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Poedit 3.0\n"
 
 #: src/connect.c:201
 #, c-format
 msgid "%s: unable to resolve bind address %s; disabling bind.\n"
-msgstr "%s: tidak dapat menemukan alamat bind %s; menonaktifkan bind.\n"
+msgstr "%s: tidak bisa mengurai alamat bind %s; menonaktifkan bind.\n"
 
 #: src/connect.c:282
 #, c-format
@@ -45,7 +47,7 @@ msgstr "Menghubungi [%s]:%d... "
 #: src/connect.c:329
 #, c-format
 msgid "setsockopt SO_RCVBUF failed: %s\n"
-msgstr ""
+msgstr "setsockopt SO_RCVBUF gagal: %s\n"
 
 #: src/connect.c:357
 msgid "connected.\n"
@@ -59,29 +61,27 @@ msgstr "gagal: %s.\n"
 #: src/connect.c:400 src/http.c:2111
 #, c-format
 msgid "%s: unable to resolve host address %s\n"
-msgstr "%s: tidak dapat menemukan alamat dari %s\n"
+msgstr "%s: tidak bisa mengurai alamat host %s\n"
 
 #: src/connect.c:470
 #, c-format
 msgid "setsockopt SO_REUSEADDR failed: %s\n"
-msgstr ""
+msgstr "setsockopt SO_REUSEADDR gagal: %s\n"
 
 #: src/connect.c:694 src/connect.c:756
 #, c-format
 msgid "Too many fds open.  Cannot use select on a fd >= %d\n"
-msgstr ""
+msgstr "Terlalu banyak fd terbuka.  Tidak bisa memakai select pada fd >= %d\n"
 
 #: src/convert.c:201
-#, fuzzy, c-format
-#| msgid "Converted %d files in %s seconds.\n"
+#, c-format
 msgid "Converted links in %d files in %s seconds.\n"
-msgstr "Mengubah %d files dalam %s detik.\n"
+msgstr "Mengonversi tautan di %d berkas dalam %s detik.\n"
 
 #: src/convert.c:230
-#, fuzzy, c-format
-#| msgid "Converting %s... "
+#, c-format
 msgid "Converting links in %s... "
-msgstr "Mengubah %s... "
+msgstr "Mengonversi tautan di %s... "
 
 #: src/convert.c:243
 msgid "nothing to do.\n"
@@ -90,12 +90,12 @@ msgstr "tidak ada yang bisa dilakukan.\n"
 #: src/convert.c:246
 #, c-format
 msgid "%d.\n"
-msgstr ""
+msgstr "%d.\n"
 
 #: src/convert.c:252 src/convert.c:276
 #, c-format
 msgid "Cannot convert links in %s: %s\n"
-msgstr "Tidak dapat mengubah links dalam %s: %s\n"
+msgstr "Tidak dapat mengubah tautan dalam %s: %s\n"
 
 #: src/convert.c:267
 #, c-format
@@ -115,7 +115,7 @@ msgstr "Tidak dapat memperoleh cookie untuk %s\n"
 #: src/cookies.c:464
 #, c-format
 msgid "Syntax error in Set-Cookie: %s at position %d.\n"
-msgstr "Syntax error dalam Set-Cookie: %s pada posisi %d.\n"
+msgstr "Salah sintaks dalam Set-Cookie: %s pada posisi %d.\n"
 
 #: src/cookies.c:777
 #, c-format
@@ -130,36 +130,37 @@ msgstr "%s\n"
 #: src/cookies.c:1259 src/cookies.c:1380
 #, c-format
 msgid "Cannot open cookies file %s: %s\n"
-msgstr "Tidak dapat membuka berkas cookies %s: %s\n"
+msgstr "Tidak dapat membuka berkas cookie %s: %s\n"
 
 #: src/cookies.c:1417
 #, c-format
 msgid "Error writing to %s: %s\n"
-msgstr "Error menulis ke %s: %s\n"
+msgstr "Galat saat menulis ke %s: %s\n"
 
 #: src/cookies.c:1420
 #, c-format
 msgid "Error closing %s: %s\n"
-msgstr "Error menutup %s: %s\n"
+msgstr "Galat saat menutup %s: %s\n"
 
 #: src/ftp-ls.c:1045
+#, fuzzy
 msgid "Unsupported listing type, trying Unix listing parser.\n"
 msgstr "Tipe listing tidak disupport, mencoba listing Unix parser.\n"
 
 #: src/ftp-ls.c:1096 src/ftp-ls.c:1098
 #, c-format
 msgid "Index of /%s on %s:%d"
-msgstr "Index dari/%s pada %s:%d"
+msgstr "Indeks dari /%s pada %s:%d"
 
 #: src/ftp-ls.c:1123
 #, c-format
 msgid "time unknown       "
-msgstr "waktu tidak diketahui       "
+msgstr "waktu tak diketahui "
 
 #: src/ftp-ls.c:1127
 #, c-format
 msgid "File        "
-msgstr "File        "
+msgstr "Berkas      "
 
 #: src/ftp-ls.c:1130
 #, c-format
@@ -169,40 +170,40 @@ msgstr "Direktori   "
 #: src/ftp-ls.c:1133
 #, c-format
 msgid "Link        "
-msgstr "LInk        "
+msgstr "Tautan       "
 
 #: src/ftp-ls.c:1136
 #, c-format
 msgid "Not sure    "
-msgstr "Tidak yakin    "
+msgstr "Tidak yakin  "
 
 #: src/ftp-ls.c:1159
 #, c-format
 msgid " (%s bytes)"
-msgstr " (%s bytes)"
+msgstr " (%s byte)"
 
 #: src/ftp.c:225
 #, c-format
 msgid "Length: %s"
-msgstr "Besar: %s"
+msgstr "Panjang: %s"
 
-#: src/ftp.c:231 src/http.c:4092
+#: src/ftp.c:231 src/http.c:4090
 #, c-format
 msgid ", %s (%s) remaining"
 msgstr ", %s (%s) tersisa"
 
-#: src/ftp.c:235 src/http.c:4096
+#: src/ftp.c:235 src/http.c:4094
 #, c-format
 msgid ", %s remaining"
 msgstr ", %s tersisa"
 
 #: src/ftp.c:238
 msgid " (unauthoritative)\n"
-msgstr " (unauthoritative)\n"
+msgstr " (tidak otoritatif)\n"
 
 #: src/ftp.c:403
 msgid "Could not initialize SSL. It will be disabled.\n"
-msgstr ""
+msgstr "Tidak dapat menginisialisasi SSL. Itu akan dinonaktifkan.\n"
 
 #: src/ftp.c:485
 #, c-format
@@ -213,11 +214,11 @@ msgstr "Masuk sebagai %s ... "
 #: src/ftp.c:1016 src/ftp.c:1063 src/ftp.c:1126 src/ftp.c:1187 src/ftp.c:1285
 #: src/ftp.c:1335
 msgid "Error in server response, closing control connection.\n"
-msgstr "Error dalam balasan server, menutup kontrol koneksi.\n"
+msgstr "Galat dalam balasan server, menutup kontrol koneksi.\n"
 
 #: src/ftp.c:511
 msgid "Error in server greeting.\n"
-msgstr "Error dalam salam server.\n"
+msgstr "Galat dalam salam server.\n"
 
 #: src/ftp.c:518 src/ftp.c:730 src/ftp.c:971 src/ftp.c:1071 src/ftp.c:1136
 #: src/ftp.c:1197 src/ftp.c:1295 src/ftp.c:1345
@@ -226,7 +227,7 @@ msgstr "Gagal menulis, menutup kontrol koneksi.\n"
 
 #: src/ftp.c:524
 msgid "The server refuses login.\n"
-msgstr "Server menolak untuk login.\n"
+msgstr "Server menolak login.\n"
 
 #: src/ftp.c:530
 msgid "Login incorrect.\n"
@@ -234,24 +235,24 @@ msgstr "Login tidak benar.\n"
 
 #: src/ftp.c:536
 msgid "Logged in!\n"
-msgstr "Logged in!\n"
+msgstr "Log masuk!\n"
 
 #: src/ftp.c:556
 msgid "Server did not accept the 'PBSZ 0' command.\n"
-msgstr ""
+msgstr "Server tidak menerima perintah 'PBSZ 0'.\n"
 
 #: src/ftp.c:566
 #, c-format
 msgid "Server did not accept the 'PROT %c' command.\n"
-msgstr ""
+msgstr "Server tidak menerima perintah 'PROT %c'.\n"
 
 #: src/ftp.c:598
 msgid "Server error, can't determine system type.\n"
-msgstr "Server error, tidak dapat menentukan tipe sistem.\n"
+msgstr "Galat server, tidak dapat menentukan tipe sistem.\n"
 
 #: src/ftp.c:607 src/ftp.c:1106 src/ftp.c:1170 src/ftp.c:1213
 msgid "done.    "
-msgstr "selesai.    "
+msgstr "selesai. "
 
 #: src/ftp.c:710 src/ftp.c:989 src/ftp.c:1033 src/ftp.c:1315 src/ftp.c:1364
 msgid "done.\n"
@@ -260,11 +261,11 @@ msgstr "selesai.\n"
 #: src/ftp.c:737
 #, c-format
 msgid "Unknown type `%c', closing control connection.\n"
-msgstr "Tipe `%c' tidak diketahui, menutup kontrol koneksi.\n"
+msgstr "Tipe '%c' tidak diketahui, menutup kontrol koneksi.\n"
 
 #: src/ftp.c:749
 msgid "done.  "
-msgstr "selesai.   "
+msgstr "selesai. "
 
 #: src/ftp.c:755
 msgid "==> CWD not needed.\n"
@@ -272,7 +273,7 @@ msgstr "==> CWD tidak dibutuhkan.\n"
 
 #: src/ftp.c:946
 msgid "Logically impossible section reached in getftp()"
-msgstr "Secara logika bagian tidak mungkin dicapai dalam getftp()"
+msgstr "Bagian yang secara logika tidak mungkin, dicapai dalam getftp()"
 
 #: src/ftp.c:947
 #, c-format
@@ -281,6 +282,9 @@ msgid ""
 "cwd_start: %d\n"
 "cwd_end: %d\n"
 msgstr ""
+"cwd_count: %d\n"
+"cwd_start: %d\n"
+"cwd_end: %d\n"
 
 #: src/ftp.c:977
 #, c-format
@@ -305,7 +309,7 @@ msgstr "Tidak dapat menginitialisasi transfer PASV.\n"
 
 #: src/ftp.c:1081
 msgid "Cannot parse PASV response.\n"
-msgstr "Tidak dapat parse PASV balasan.\n"
+msgstr "Tidak bisa mengurai balasan PASV.\n"
 
 #: src/ftp.c:1098
 #, c-format
@@ -315,7 +319,7 @@ msgstr "tidak dapat menghubungi %s port %d: %s\n"
 #: src/ftp.c:1152
 #, c-format
 msgid "Bind error (%s).\n"
-msgstr "Bind error (%s).\n"
+msgstr "Galat bind (%s).\n"
 
 #: src/ftp.c:1158
 msgid "Invalid PORT.\n"
@@ -332,12 +336,12 @@ msgstr ""
 #: src/ftp.c:1247
 #, c-format
 msgid "File %s exists.\n"
-msgstr "Berkas %s ada.\n"
+msgstr "Berkas %s sudah ada.\n"
 
 #: src/ftp.c:1253
 #, c-format
 msgid "No such file %s.\n"
-msgstr "Tidak ada berkas seperti itu %s.\n"
+msgstr "Tidak ada berkas %s.\n"
 
 #: src/ftp.c:1303
 #, c-format
@@ -360,7 +364,7 @@ msgstr ""
 #: src/ftp.c:1512 src/http.c:2597
 #, c-format
 msgid "%s has sprung into existence.\n"
-msgstr "%s memiliki sprung kedalam eksistensi.\n"
+msgstr "%s telah menjadi ada.\n"
 
 #: src/ftp.c:1601
 #, c-format
@@ -370,7 +374,7 @@ msgstr "%s: %s, menutup kontrol koneksi.\n"
 #: src/ftp.c:1613
 #, c-format
 msgid "%s (%s) - Data connection: %s; "
-msgstr "%s (%s) - Data koneksi: %s; "
+msgstr "%s (%s) - Koneksi data: %s; "
 
 #: src/ftp.c:1628
 msgid "Control connection closed.\n"
@@ -378,19 +382,19 @@ msgstr "Koneksi kontrol ditutup.\n"
 
 #: src/ftp.c:1646
 msgid "Data transfer aborted.\n"
-msgstr "Data transfer dibatalkan.\n"
+msgstr "Transfer data digugurkan.\n"
 
-#: src/ftp.c:1870 src/main.c:1690
+#: src/ftp.c:1870 src/main.c:1691
 #, c-format
 msgid "File %s already there; not retrieving.\n"
-msgstr "Berkas %s sudah ada disana; tidak diambil.\n"
+msgstr "Berkas %s sudah ada di sana; tidak mengambil.\n"
 
-#: src/ftp.c:1955 src/http.c:4362
+#: src/ftp.c:1955 src/http.c:4364
 #, c-format
 msgid "(try:%2d)"
 msgstr "(coba:%2d)"
 
-#: src/ftp.c:2047 src/http.c:4792
+#: src/ftp.c:2047 src/http.c:4794
 #, c-format
 msgid ""
 "%s (%s) - written to stdout %s[%s]\n"
@@ -399,7 +403,7 @@ msgstr ""
 "%s (%s) - ditulis ke stdout %s[%s]\n"
 "\n"
 
-#: src/ftp.c:2048 src/http.c:4793
+#: src/ftp.c:2048 src/http.c:4795
 #, c-format
 msgid ""
 "%s (%s) - %s saved [%s]\n"
@@ -408,8 +412,8 @@ msgstr ""
 "%s (%s) - %s disimpan [%s]\n"
 "\n"
 
-#: src/ftp.c:2108 src/main.c:2179 src/metalink.c:1135 src/recur.c:513
-#: src/recur.c:752 src/retr.c:1317
+#: src/ftp.c:2108 src/main.c:2178 src/metalink.c:1133 src/recur.c:511
+#: src/recur.c:750 src/retr.c:1303
 #, c-format
 msgid "Removing %s.\n"
 msgstr "Menghapus %s.\n"
@@ -422,19 +426,18 @@ msgstr "Menggunakan %s sebagai berkas listing sementara.\n"
 #: src/ftp.c:2182
 #, c-format
 msgid "Removed %s.\n"
-msgstr "Menghapus %s.\n"
+msgstr "Dihapus %s.\n"
 
 #: src/ftp.c:2221
 #, c-format
 msgid "Recursion depth %d exceeded max. depth %d.\n"
-msgstr "Kedalaman recursion %d melebihi maksimum kedalaman %d.\n"
+msgstr "Kedalaman rekursi %d melebihi kedalaman maks. %d.\n"
 
 #: src/ftp.c:2291
 #, c-format
 msgid "Remote file no newer than local file %s -- not retrieving.\n"
 msgstr ""
-"Berkas remote tidak ada yang lebih baru dari berkas lokal %s -- tidak "
-"diambil.\n"
+"Berkas remote tidak lebih baru dari berkas lokal %s -- tidak mengambil.\n"
 
 #: src/ftp.c:2299
 #, c-format
@@ -442,7 +445,7 @@ msgid ""
 "Remote file is newer than local file %s -- retrieving.\n"
 "\n"
 msgstr ""
-"Berkas remote lebih baru dari berkas lokal %s -- diambil.\n"
+"Berkas remote lebih baru dari berkas lokal %s -- mengambil.\n"
 "\n"
 
 #: src/ftp.c:2306
@@ -451,7 +454,7 @@ msgid ""
 "The sizes do not match (local %s) -- retrieving.\n"
 "\n"
 msgstr ""
-"Besar tidak cocok dengan (local %s) -- diambil.\n"
+"Ukuran tidak cocok dengan (lokal %s) -- mengambil.\n"
 "\n"
 
 #: src/ftp.c:2324
@@ -485,28 +488,27 @@ msgstr "Melewati direktori %s.\n"
 #: src/ftp.c:2400
 #, c-format
 msgid "%s: unknown/unsupported file type.\n"
-msgstr "%s: tidak diketahui/tidak disupport tipe file.\n"
+msgstr "%s: tipe berkas tidak diketahui/tidak didukung.\n"
 
 #: src/ftp.c:2424
-#, fuzzy, c-format
-#| msgid "Unable to get cookie for %s\n"
+#, c-format
 msgid "Failed to set permissions for %s.\n"
-msgstr "Tidak dapat memperoleh cookie untuk %s\n"
+msgstr "Gagal menetapkan izin untuk %s.\n"
 
 #: src/ftp.c:2445
 #, c-format
 msgid "%s: corrupt time-stamp.\n"
-msgstr "%s: time-stamp corrupt/rusak.\n"
+msgstr "%s: stempel-waktu rusak.\n"
 
 #: src/ftp.c:2469
 #, c-format
 msgid "Will not retrieve dirs since depth is %d (max %d).\n"
-msgstr "Tidak akan mengambil dir karena kedalamannya %d (maksimal %d).\n"
+msgstr "Tidak akan mengambil dir karena kedalamannya %d (maks %d).\n"
 
 #: src/ftp.c:2528
 #, c-format
 msgid "Not descending to %s as it is excluded/not-included.\n"
-msgstr "Tidak turun ke %s karena ini di excluded/tidak termasuk.\n"
+msgstr "Tidak turun ke %s karena ini dikecualikan/tidak termasuk.\n"
 
 #: src/ftp.c:2644
 #, c-format
@@ -514,21 +516,19 @@ msgid "Rejecting %s.\n"
 msgstr "Menolak %s.\n"
 
 #: src/ftp.c:2654
-#, fuzzy, c-format
-#| msgid "Rejecting %s.\n"
+#, c-format
 msgid "Rejecting %s (Invalid Entry).\n"
-msgstr "Menolak %s.\n"
+msgstr "Menolak %s (Entri Tidak Valid).\n"
 
 #: src/ftp.c:2675
-#, fuzzy, c-format
-#| msgid "Not descending to %s as it is excluded/not-included.\n"
+#, c-format
 msgid "%s is excluded/not-included through regex.\n"
-msgstr "Tidak turun ke %s karena ini di excluded/tidak termasuk.\n"
+msgstr "%s dikecualikan/tidak disertakan melalui regex.\n"
 
 #: src/ftp.c:2695
 #, c-format
 msgid "Error matching %s against %s: %s\n"
-msgstr "Gagal mencocokan %s dengan %s: %s\n"
+msgstr "Galat mencocokkan %s dengan %s: %s\n"
 
 #: src/ftp.c:2735
 #, c-format
@@ -538,34 +538,32 @@ msgstr "Tidak ada pola %s yang cocok.\n"
 #: src/ftp.c:2807
 #, c-format
 msgid "Wrote HTML-ized index to %s [%s].\n"
-msgstr "Menulis HTML-ized indeks ke %s [%s].\n"
+msgstr "Menulis indeks yang di-HTML-kan ke %s [%s].\n"
 
 #: src/ftp.c:2812
 #, c-format
 msgid "Wrote HTML-ized index to %s.\n"
-msgstr "Menulis HTML-ized indeks ke %s.\n"
+msgstr "Menulis indeks yang di-HTML-kan ke %s.\n"
 
 #: src/gnutls.c:133
 #, c-format
 msgid "ERROR: Cannot open directory %s.\n"
-msgstr "ERROR: Tidak ada direktori %s.\n"
+msgstr "GALAT: Tidak bisa membuka direktori %s.\n"
 
 #: src/gnutls.c:179
 #, c-format
 msgid "ERROR: Failed to open cert %s: (%d).\n"
-msgstr "ERROR: Failed to open cert %s: (%d).\n"
+msgstr "GALAT: Gagal membuka sertifikat %s: (%d).\n"
 
 #: src/gnutls.c:184
-#, fuzzy, c-format
-#| msgid "Error parsing certificate: %s\n"
+#, c-format
 msgid "Loaded CA certificate '%s'\n"
-msgstr "Error dalam membaca sertifikat: %s.\n"
+msgstr "Dimuat sertifikat CA '%s'\n"
 
 #: src/gnutls.c:192
-#, fuzzy, c-format
-#| msgid "ERROR: Failed to open cert %s: (%d).\n"
+#, c-format
 msgid "ERROR: Failed to load CRL file '%s': (%d)\n"
-msgstr "ERROR: Failed to open cert %s: (%d).\n"
+msgstr "GALAT: Gagal memuat berkas CRL '%s': (%d).\n"
 
 #: src/gnutls.c:196
 #, c-format
@@ -574,88 +572,85 @@ msgstr "Dimuat berkas CRL '%s'\n"
 
 #: src/gnutls.c:220
 msgid "ERROR: GnuTLS requires the key and the cert to be of the same type.\n"
-msgstr "ERROR: GnuTLS requires the key and the cert to be of the same type.\n"
+msgstr "GALAT: GnuTLS mempersyaratkan kunci dan cert mesti bertipe sama.\n"
 
 #: src/gnutls.c:777 src/gnutls.c:841
 msgid "Your GnuTLS version is too old to support TLS 1.3\n"
-msgstr ""
+msgstr "Versi GnuTLS Anda terlalu tua untuk mendukung TLS 1.3\n"
 
 #: src/gnutls.c:789
-#, fuzzy, c-format
-#| msgid "GnuTLS: unimplemented 'secure-protocol' option value %d\n"
+#, c-format
 msgid "GnuTLS: unimplemented 'secure-protocol' option value %u\n"
-msgstr "GnuTLS: tidak diimplementasikan 'secure-protocol' nilai pilihan %d\n"
+msgstr "GnuTLS: nilai opsi %u 'secure-protocol' tidak diimplementasikan\n"
 
-#: src/gnutls.c:791 src/gnutls.c:847 src/host.c:158 src/openssl.c:288
-#, fuzzy
-#| msgid "Please send bug reports and questions to <bug-wget@gnu.org>.\n"
+#: src/gnutls.c:791 src/gnutls.c:847 src/host.c:158 src/openssl.c:289
 msgid "Please report this issue to bug-wget@gnu.org\n"
-msgstr ""
-"Mohon kirimkan laporan kesalahan dan pertanyaan ke <bug-wget@gnu.org>.\n"
+msgstr "Mohon laporkan masalah ini ke bug-wget@gnu.org\n"
 
 #: src/gnutls.c:846
 #, c-format
 msgid "GnuTLS: unimplemented 'secure-protocol' option value %d\n"
-msgstr "GnuTLS: tidak diimplementasikan 'secure-protocol' nilai pilihan %d\n"
+msgstr "GnuTLS: nilai pilihan %d 'secure-protocol' tidak diimplementasikan\n"
 
 #: src/gnutls.c:899
 msgid ""
 "GnuTLS: Cannot set prio string directly. Falling back to default priority.\n"
 msgstr ""
+"GnuTLS: Tidak dapat mengatur string prio secara langsung. Jatuh kembali ke "
+"prioritas baku.\n"
 
-#: src/gnutls.c:1027 src/openssl.c:1029
+#: src/gnutls.c:1027 src/openssl.c:1037
 msgid "ERROR"
-msgstr "ERROR"
+msgstr "GALAT"
 
-#: src/gnutls.c:1027 src/openssl.c:1029
+#: src/gnutls.c:1027 src/openssl.c:1037
 msgid "WARNING"
 msgstr "PERINGATAN"
 
-#: src/gnutls.c:1038 src/openssl.c:1042
+#: src/gnutls.c:1038 src/openssl.c:1050
 #, c-format
 msgid "%s: No certificate presented by %s.\n"
-msgstr "%s: Tidak ada certificate yang di berikan oleh %s.\n"
+msgstr "%s: Tidak ada sertifikat yang disajikan oleh %s.\n"
 
 #: src/gnutls.c:1044
 #, c-format
 msgid "%s: The certificate of %s is not trusted.\n"
-msgstr "%s: Sertifikat dari %s tidak dipercaya.\n"
+msgstr "%s: Sertifikat %s tidak dipercaya.\n"
 
 #: src/gnutls.c:1045
-#, fuzzy, c-format
-#| msgid "%s: The certificate of %s hasn't got a known issuer.\n"
+#, c-format
 msgid "%s: The certificate of %s doesn't have a known issuer.\n"
-msgstr "%s: Sertifikat dari %s belum memperoleh penerbit yang dikenal.\n"
+msgstr "%s: Sertifikat %s tak punya penerbit yang dikenal.\n"
 
 #: src/gnutls.c:1046
 #, c-format
 msgid "%s: The certificate of %s has been revoked.\n"
-msgstr "%s: Sertifikat dari %s telah dicabut.\n"
+msgstr "%s: Sertifikat %s telah dicabut.\n"
 
 #: src/gnutls.c:1047
 #, c-format
 msgid "%s: The certificate signer of %s was not a CA.\n"
-msgstr "%s: Sertifikat dari %s tidak dipercaya CA.\n"
+msgstr "%s: Penandatangan sertifikat %s bukan suatu CA.\n"
 
 #: src/gnutls.c:1048
 #, c-format
 msgid "%s: The certificate of %s was signed using an insecure algorithm.\n"
-msgstr "%s: Sertifikat dari %s belum memperoleh penerbit yang dikenal.\n"
+msgstr "%s: Sertifikat %s ditandatangani memakai algoritma yang tidak aman.\n"
 
 #: src/gnutls.c:1049
 #, c-format
 msgid "%s: The certificate of %s is not yet activated.\n"
-msgstr "%s: Sertifikat dari %s tidak dipercaya.\n"
+msgstr "%s: Sertifikat %s belum diaktifkan.\n"
 
 #: src/gnutls.c:1050
 #, c-format
 msgid "%s: The certificate of %s has expired.\n"
-msgstr "%s: Sertifikat dari %s telah dicabut.\n"
+msgstr "%s: Sertifikat %s telah kedaluwarsa.\n"
 
 #: src/gnutls.c:1062
 #, c-format
 msgid "Error initializing X509 certificate: %s\n"
-msgstr "Error menginisialisasi sertifikat X509: %s\n"
+msgstr "Galat saat menginisialisasi sertifikat X509: %s\n"
 
 #: src/gnutls.c:1071
 msgid "No certificate found\n"
@@ -664,7 +659,7 @@ msgstr "Tidak ada sertifikat yang ditemukan\n"
 #: src/gnutls.c:1078
 #, c-format
 msgid "Error parsing certificate: %s\n"
-msgstr "Error dalam membaca sertifikat: %s.\n"
+msgstr "Galat saat mengurai sertifikat: %s.\n"
 
 #: src/gnutls.c:1085
 msgid "The certificate has not yet been activated\n"
@@ -672,24 +667,24 @@ msgstr "Sertifikat belum diaktifkan.\n"
 
 #: src/gnutls.c:1090
 msgid "The certificate has expired\n"
-msgstr "Sertifikat telah habis masa berlakunya.\n"
+msgstr "Sertifikat telah kedaluwarsa.\n"
 
 #: src/gnutls.c:1097
 #, c-format
 msgid "The certificate's owner does not match hostname %s\n"
-msgstr "Pemilik sertifikat tidak cocok dengan nama host %s.\n"
+msgstr "Pemilik sertifikat tidak cocok dengan nama host %s\n"
 
-#: src/gnutls.c:1106 src/openssl.c:1238
+#: src/gnutls.c:1106 src/openssl.c:1246
 msgid "The public key does not match pinned public key!\n"
-msgstr ""
+msgstr "Kunci publik tidak cocok dengan kunci publik yang disematkan!\n"
 
 #: src/gnutls.c:1115
 msgid "Certificate must be X.509\n"
-msgstr "Certificate must bu X.509\n"
+msgstr "Sertifikat harus X.509\n"
 
 #: src/host.c:157
 msgid "Error in handling the address list.\n"
-msgstr "Kesalahan dalam penanganan daftar alamat.\n"
+msgstr "Galat dalam penanganan daftar alamat.\n"
 
 #: src/host.c:368
 msgid "Unknown host"
@@ -701,12 +696,12 @@ msgstr "Resolusi nama untuk sementara gagal"
 
 #: src/host.c:374
 msgid "Unknown error"
-msgstr "Kesalahan tidak diketahui"
+msgstr "Galat tidak dikenal"
 
 #: src/host.c:850
 #, c-format
 msgid "Resolving %s... "
-msgstr "Resolving %s... "
+msgstr "Mengurai '%s'... "
 
 #: src/host.c:926
 msgid "failed: No IPv4/IPv6 addresses for host.\n"
@@ -719,9 +714,9 @@ msgstr "gagal: waktu habis.\n"
 #: src/html-url.c:306
 #, c-format
 msgid "%s: Cannot resolve incomplete link %s.\n"
-msgstr "%s: Tidak dapat menresolve link yang tidak komplit %s.\n"
+msgstr "%s: Tidak dapat mengurai tautan yang tidak komplit %s.\n"
 
-#: src/html-url.c:945
+#: src/html-url.c:944
 #, c-format
 msgid "%s: Invalid URL %s: %s\n"
 msgstr "%s: URL tidak valid %s: %s\n"
@@ -733,7 +728,7 @@ msgstr "Gagal menulis permintaan HTTP: %s.\n"
 
 #: src/http.c:795
 msgid "No headers, assuming HTTP/0.9"
-msgstr "Tidak ada headers, mengasumsikan HTTP/0.9"
+msgstr "Tidak ada header, mengasumsikan HTTP/0.9"
 
 #: src/http.c:1637
 #, c-format
@@ -741,23 +736,25 @@ msgid ""
 "File %s already there; not retrieving.\n"
 "\n"
 msgstr ""
-"Berkas %s sudah ada; tidak diambil.\n"
+"Berkas %s sudah ada; tidak mengambil.\n"
 "\n"
 
-#: src/http.c:1836
+#: src/http.c:1834
 msgid "gmtime failed. This is probably a bug.\n"
-msgstr ""
+msgstr "gmtime gagal. Ini mungkin bug.\n"
 
 #: src/http.c:1918
 msgid ""
 "Cannot convert timestamp to http format. Falling back to time 0 as last "
 "modification time.\n"
 msgstr ""
+"Tidak dapat mengonversi stempel waktu ke format http. Jatuh kembali ke waktu "
+"0 sebagai waktu modifikasi terakhir.\n"
 
 #: src/http.c:2001
 #, c-format
 msgid "BODY data file %s missing: %s\n"
-msgstr "BODY data berkas %s hilang: %s\n"
+msgstr "Data BODY berkas %s hilang: %s\n"
 
 #: src/http.c:2093
 #, c-format
@@ -772,268 +769,279 @@ msgstr "Menggunakan koneksi yang sudah ada ke %s:%d.\n"
 #: src/http.c:2164
 #, c-format
 msgid "Failed reading proxy response: %s\n"
-msgstr "Gagal membaca balasan proxy: %s\n"
+msgstr "Gagal membaca balasan proksi: %s\n"
 
-#: src/http.c:2183 src/http.c:3465 src/http.c:4588
+#: src/http.c:2183 src/http.c:3460 src/http.c:4590
 #, c-format
 msgid "%s ERROR %d: %s.\n"
-msgstr "%s ERROR %d: %s.\n"
+msgstr "%s GALAT %d: %s.\n"
 
-#: src/http.c:2185 src/http.c:3467 src/http.c:3668
+#: src/http.c:2185 src/http.c:3462 src/http.c:3663
 msgid "Malformed status line"
-msgstr "Status line salah format"
+msgstr "Baris status salah bentuk"
 
 #: src/http.c:2196
-#, c-format
+#, fuzzy, c-format
 msgid "Proxy tunneling failed: %s"
 msgstr "Proxy tunneling gagal: %s"
 
 #: src/http.c:2460
 msgid "Unknown authentication scheme.\n"
-msgstr "Skema authentifikasi tidak diketahui.\n"
+msgstr "Skema autentikasi tidak diketahui.\n"
 
 #: src/http.c:2478
-#, fuzzy, c-format
-#| msgid "Unknown authentication scheme.\n"
+#, c-format
 msgid "Authentication selected: %s\n"
-msgstr "Skema authentifikasi tidak diketahui.\n"
+msgstr "Autentikasi dipilih: %s\n"
 
 #: src/http.c:2612
 #, c-format
 msgid "Saving to: %s\n"
-msgstr "Simpan ke: %s\n"
+msgstr "Menyimpan ke: %s\n"
 
-#: src/http.c:2831
+#: src/http.c:2830
 #, c-format
 msgid ""
 "When downloading signature:\n"
 "%s: %s.\n"
 msgstr ""
+"Saat mengunduh tanda tangan:\n"
+"%s: %s.\n"
 
-#: src/http.c:2867
+#: src/http.c:2865
 msgid "Unable to read signature content from temporary file. Skipping.\n"
 msgstr ""
+"Tidak dapat membaca konten tanda tangan dari berkas sementara. Melewatkan.\n"
 
-#: src/http.c:2890
+#: src/http.c:2888
 msgid "Could not create temporary file. Skipping signature download.\n"
 msgstr ""
+"Tidak dapat membuat berkas sementara. Melewatkan unduhan tanda tangan.\n"
 
-#: src/http.c:2924 src/http.c:3006
+#: src/http.c:2922 src/http.c:3004
 #, c-format
 msgid "Invalid pri value. Assuming %d.\n"
-msgstr ""
+msgstr "Nilai pri tidak valid. Mengasumsikan %d.\n"
 
-#: src/http.c:3120
+#: src/http.c:3118
 msgid ""
 "Could not find acceptable digest for Metalink resources.\n"
 "Ignoring them.\n"
 msgstr ""
+"Tidak dapat menemukan digest yang dapat diterima untuk sumber daya "
+"Metalink.\n"
+"Mengabaikan mereka.\n"
 
-#: src/http.c:3257
+#: src/http.c:3252
 msgid "Disabling SSL due to encountered errors.\n"
-msgstr "Menonaktifkan SSL karena adanya errors.\n"
+msgstr "Menonaktifkan SSL karena adanya galat.\n"
 
-#: src/http.c:3401
+#: src/http.c:3396
 #, c-format
 msgid "%s request sent, awaiting response... "
 msgstr "Permintaan %s dikirimkan, menunggu balasan... "
 
-#: src/http.c:3441
+#: src/http.c:3436
 msgid "No data received.\n"
 msgstr "Tidak ada data yang diterima.\n"
 
-#: src/http.c:3447
+#: src/http.c:3442
 #, c-format
 msgid "Read error (%s) in headers.\n"
-msgstr "Read error (%s) dalam headers.\n"
+msgstr "Galat baca (%s) dalam header.\n"
 
-#: src/http.c:3670
+#: src/http.c:3665
 msgid "(no description)"
 msgstr "(tidak ada deskripsi)"
 
-#: src/http.c:3861
+#: src/http.c:3859
 #, c-format
 msgid "Location: %s%s\n"
 msgstr "Lokasi: %s%s\n"
 
-#: src/http.c:3862 src/http.c:4102
+#: src/http.c:3860 src/http.c:4100
 msgid "unspecified"
 msgstr "tidak dispesifikasikan"
 
-#: src/http.c:3863
+#: src/http.c:3861
 msgid " [following]"
 msgstr " [mengikuti]"
 
-#: src/http.c:3945
-#, c-format
+#: src/http.c:3943
+#, fuzzy, c-format
 msgid ""
 "File %s not modified on server. Omitting download.\n"
 "\n"
 msgstr ""
+"Berkas %s tidak dimodifikasi di server. Menghilangkan unduhan.\n"
+"\n"
 
-#: src/http.c:4018
+#: src/http.c:4016
 #, c-format
 msgid ""
 "Server ignored If-Modified-Since header for file %s.\n"
 "You might want to add --no-if-modified-since option.\n"
 "\n"
 msgstr ""
+"Server mengabaikan header If-Modified-Since untuk berkas %s.\n"
+"Anda mungkin ingin menambahkan opsi --no-if-modified-since.\n"
+"\n"
 
-#: src/http.c:4038
+#: src/http.c:4036
 msgid ""
 "\n"
 "    The file is already fully retrieved; nothing to do.\n"
 "\n"
 msgstr ""
 "\n"
-"     File sudah secara penuh diterima; tidak ada yang harus dilakukan lagi.\n"
+"     Berkas sudah diambil sepenuhnya; tidak ada yang harus dilakukan lagi.\n"
 "\n"
 
-#: src/http.c:4082
+#: src/http.c:4080
 msgid "Length: "
-msgstr "Besar: "
+msgstr "Panjang: "
 
-#: src/http.c:4102
+#: src/http.c:4100
 msgid "ignored"
 msgstr "diabaikan"
 
-#: src/http.c:4270
+#: src/http.c:4272
 msgid "Warning: wildcards not supported in HTTP.\n"
-msgstr "Peringatan: wildcards tidak disupport dalam HTTP.\n"
+msgstr "Peringatan: wildcard tidak didukung dalam HTTP.\n"
 
-#: src/http.c:4352
+#: src/http.c:4354
+#, fuzzy
 msgid "Spider mode enabled. Check if remote file exists.\n"
 msgstr "Mode laba-laba diaktifkan. Check jika berkas tujuan ada.\n"
 
-#: src/http.c:4445
+#: src/http.c:4447
 #, c-format
 msgid "Cannot write to %s (%s).\n"
 msgstr "Tidak dapat menulis ke %s (%s).\n"
 
-#: src/http.c:4467
+#: src/http.c:4469
 msgid "Required attribute missing from Header received.\n"
-msgstr "Required attribute missing from Header received.\n"
+msgstr "Atribut yang diperlukan hilang dari Header yang diterima.\n"
 
-#: src/http.c:4472
+#: src/http.c:4474
 msgid "Username/Password Authentication Failed.\n"
-msgstr "Username/Password Authentication Failed.\n"
+msgstr "Autentikasi Nama Pengguna/Kata Sandi Gagal.\n"
 
-#: src/http.c:4478
+#: src/http.c:4480
 msgid "Cannot write to WARC file.\n"
-msgstr "Tidak dapat menulis ke WARC.\n"
+msgstr "Tidak dapat menulis ke berkas WARC.\n"
 
-#: src/http.c:4484
+#: src/http.c:4486
 msgid "Cannot write to temporary WARC file.\n"
-msgstr "Tidak dapat menulis ke WARC.\n"
+msgstr "Tidak dapat menulis ke berkas WARC sementara.\n"
 
-#: src/http.c:4489
+#: src/http.c:4491
 msgid "Unable to establish SSL connection.\n"
-msgstr "Tidak dapat membuat koneksi SSL.\n"
+msgstr "Tidak dapat menjalin koneksi SSL.\n"
 
-#: src/http.c:4495
+#: src/http.c:4497
 #, c-format
 msgid "Cannot unlink %s (%s).\n"
-msgstr "Tidak dapat menulis ke %s (%s).\n"
+msgstr "Tidak dapat unlink %s (%s).\n"
 
-#: src/http.c:4505
+#: src/http.c:4507
 #, c-format
 msgid "ERROR: Redirection (%d) without location.\n"
-msgstr "ERROR: Redireksi (%d) tanpa lokasi.\n"
+msgstr "GALAT: Redireksi (%d) tanpa lokasi.\n"
 
-#: src/http.c:4527
+#: src/http.c:4529
 msgid ""
 "Could not find Metalink data in HTTP response. Downloading file using HTTP "
 "GET.\n"
 msgstr ""
+"Tak bisa menemukan data Metalink dalam respons HTTP. Mengunduh berkas "
+"menggunakan HTTP GET.\n"
 
-#: src/http.c:4536
+#: src/http.c:4538
 msgid "Metalink headers found. Switching to Metalink mode.\n"
-msgstr ""
+msgstr "Header metalink ditemukan. Beralih ke mode Metalink.\n"
 
-#: src/http.c:4577
+#: src/http.c:4579
 msgid "Remote file does not exist -- broken link!!!\n"
-msgstr "Berkas tidak ada -- link rusak!!!\n"
+msgstr "Berkas remote tidak ada -- tautan rusak!!!\n"
 
-#: src/http.c:4605
+#: src/http.c:4607
 msgid "Last-modified header missing -- time-stamps turned off.\n"
-msgstr ""
-"Header yang paling akhir dimodifikasi hilang -- time-stamps dimatikan.\n"
+msgstr "Header Last-modified hilang -- stempel waktu dimatikan.\n"
 
-#: src/http.c:4613
+#: src/http.c:4615
 msgid "Last-modified header invalid -- time-stamp ignored.\n"
-msgstr ""
-"header yang paling akhir dimodifikasi tidak valid -- time-stamp diabaikan.\n"
+msgstr "Header Last-modified tidak valid -- stempel waktu diabaikan.\n"
 
-#: src/http.c:4643
+#: src/http.c:4645
 #, c-format
 msgid ""
 "Server file no newer than local file %s -- not retrieving.\n"
 "\n"
 msgstr ""
-"Berkas server tidak ada yang lebih baru dari lokal berkas %s -- tidak "
-"diambil.\n"
+"Berkas server tidak lebih baru dari berkas lokal %s -- tidak mengambil.\n"
 "\n"
 
-#: src/http.c:4651
+#: src/http.c:4653
 #, c-format
 msgid "The sizes do not match (local %s) -- retrieving.\n"
-msgstr "Besar tidak cocok (local %s) -- diambil.\n"
+msgstr "Ukuran tidak cocok (lokal %s) -- mengambil.\n"
 
-#: src/http.c:4660
+#: src/http.c:4662
 msgid "Remote file is newer, retrieving.\n"
-msgstr "File remote lebih baru, diambil.\n"
+msgstr "Berkas remote lebih baru, mengambil.\n"
 
-#: src/http.c:4678
+#: src/http.c:4680
 msgid ""
 "Remote file exists and could contain links to other resources -- "
 "retrieving.\n"
 "\n"
 msgstr ""
-"Berkas tujuan telah ada dan mungkin bisa berisi link ke sumber lain -- "
+"Berkas remote ada dan mungkin berisi tautan ke sumber daya lain -- "
 "mengambil.\n"
 "\n"
 
-#: src/http.c:4684
+#: src/http.c:4686
 msgid ""
 "Remote file exists but does not contain any link -- not retrieving.\n"
 "\n"
 msgstr ""
-"Berkas tujuan ada tapi tidak berisi sumber lain -- tidak diambil.\n"
+"Berkas tujuan ada tapi tidak berisi tautan apa pun -- tidak mengambil.\n"
 "\n"
 
-#: src/http.c:4693
+#: src/http.c:4695
 msgid ""
 "Remote file exists and could contain further links,\n"
 "but recursion is disabled -- not retrieving.\n"
 "\n"
 msgstr ""
-"Berkas tujuan ada dan dapat berisi link, tetap\n"
-"recursion dinonaktifkan -- tidak mencoba.\n"
+"Berkas remote ada dan dapat berisi tautan lebih jauh,\n"
+"tetapi rekursi dinonaktifkan -- tidak mengambil.\n"
 "\n"
 
-#: src/http.c:4699
+#: src/http.c:4701
 msgid ""
 "Remote file exists.\n"
 "\n"
 msgstr ""
-"Berkas tujuan ada.\n"
+"Berkas remote ada.\n"
 "\n"
 
-#: src/http.c:4708
+#: src/http.c:4710
 #, c-format
 msgid "%s URL: %s %2d %s\n"
 msgstr "%s: URL: %s %2d %s\n"
 
-#: src/http.c:4756
+#: src/http.c:4758
 #, c-format
 msgid ""
 "%s (%s) - written to stdout %s[%s/%s]\n"
 "\n"
 msgstr ""
-"%s (%s) - disimpan ke stdout %s[%s/%s]\n"
+"%s (%s) - ditulis ke stdout %s[%s/%s]\n"
 "\n"
 
-#: src/http.c:4757
+#: src/http.c:4759
 #, c-format
 msgid ""
 "%s (%s) - %s saved [%s/%s]\n"
@@ -1042,39 +1050,39 @@ msgstr ""
 "%s (%s) - %s disimpan [%s/%s]\n"
 "\n"
 
-#: src/http.c:4823
+#: src/http.c:4825
 #, c-format
 msgid "%s (%s) - Connection closed at byte %s. "
 msgstr "%s (%s) - Hubungan ditutup pada byte %s. "
 
-#: src/http.c:4846
+#: src/http.c:4848
 #, c-format
 msgid "%s (%s) - Read error at byte %s (%s)."
-msgstr "%s (%s) - Read error pada byte %s (%s)."
+msgstr "%s (%s) - Galat baca pada byte %s (%s)."
 
-#: src/http.c:4855
+#: src/http.c:4857
 #, c-format
 msgid "%s (%s) - Read error at byte %s/%s (%s). "
-msgstr "%s (%s) - Read error pada byte %s/%s (%s). "
+msgstr "%s (%s) - Galat baca pada byte %s/%s (%s). "
 
-#: src/http.c:5112
+#: src/http.c:5114
 #, c-format
 msgid "Unsupported quality of protection '%s'.\n"
-msgstr "Unsupported quality of protection '%s'.\n"
+msgstr "Kualitas perlindungan yang tidak didukung '%s'.\n"
 
-#: src/http.c:5117
+#: src/http.c:5119
 #, c-format
 msgid "Unsupported algorithm '%s'.\n"
-msgstr "Skema tidak didukung '%s'.\n"
+msgstr "Algoritma yang tidak didukung '%s'.\n"
 
 #: src/init.c:583
-#, fuzzy, c-format
-#| msgid "%s: WGETRC points to %s, which doesn't exist.\n"
+#, c-format
 msgid ""
 "%s: WGETRC points to %s, which couldn't be accessed because of error: %s.\n"
-msgstr "%s: WGETRC menunjuk ke %s, dimana itu tidak ada.\n"
+msgstr ""
+"%s: WGETRC menunjuk ke %s, yang tidak dapat diakses karena galat: %s.\n"
 
-#: src/init.c:695 src/netrc.c:454
+#: src/init.c:695 src/netrc.c:456
 #, c-format
 msgid "%s: Cannot read %s (%s).\n"
 msgstr "%s: Tidak dapat membaca %s (%s).\n"
@@ -1082,12 +1090,12 @@ msgstr "%s: Tidak dapat membaca %s (%s).\n"
 #: src/init.c:712
 #, c-format
 msgid "%s: Error in %s at line %d.\n"
-msgstr "%s: Error dalam %s pada baris %d.\n"
+msgstr "%s: Galat dalam %s pada baris %d.\n"
 
 #: src/init.c:718
 #, c-format
 msgid "%s: Syntax error in %s at line %d.\n"
-msgstr "%s: Syntax error dalam %s pada baris %d.\n"
+msgstr "%s: Salah sintas dalam %s pada baris %d.\n"
 
 #: src/init.c:723
 #, c-format
@@ -1101,9 +1109,9 @@ msgid ""
 "'%s',\n"
 "or specify a different file using --config.\n"
 msgstr ""
-"Parsing system wgetrc file (env SYSTEM_WGETRC) failed.  Please check\n"
+"Mengurai berkas wgetrc sistem (env SYSTEM_WGETRC) gagal.  Silakan periksa\n"
 "'%s',\n"
-"or specify a different file using --config.\n"
+"atau tentukan berkas lain menggunakan --config.\n"
 
 #: src/init.c:777
 #, c-format
@@ -1112,30 +1120,29 @@ msgid ""
 "'%s',\n"
 "or specify a different file using --config.\n"
 msgstr ""
-"Parsing system wgetrc file failed.  Please check\n"
+"Mengurai berkas wgetrc sistem gagal.  Silakan periksa\n"
 "'%s',\n"
-"or specify a different file using --config.\n"
+"atau tentukan berkas lain menggunakan --config.\n"
 
 #: src/init.c:793
 #, c-format
 msgid "%s: Warning: Both system and user wgetrc point to %s.\n"
-msgstr "%s: Peringatan: Kedua sistem dan pengguna wgetrc menunjuk ke %s.\n"
+msgstr "%s: Peringatan: wgetrc sistem dan pengguna keduanya menunjuk ke %s.\n"
 
 #: src/init.c:1006
 #, c-format
 msgid "%s: Invalid --execute command %s\n"
-msgstr "%s: Tidak valid --execute perintah %s\n"
+msgstr "%s: Perintah --execute tidak valid %s\n"
 
 #: src/init.c:1066
 #, c-format
 msgid "%s: %s: Invalid boolean %s; use `on' or `off'.\n"
-msgstr "%s: %s: Boolean tidak valid %s; gunakan `on' atau `off'.\n"
+msgstr "%s: %s: Boolean tidak valid %s; gunakan 'on' atau 'off'.\n"
 
 #: src/init.c:1099
-#, fuzzy, c-format
-#| msgid "%s: %s: Invalid boolean %s; use `on' or `off'.\n"
+#, c-format
 msgid "%s: %s: Invalid %s; use `on', `off' or `quiet'.\n"
-msgstr "%s: %s: Boolean tidak valid %s; gunakan `on' atau `off'.\n"
+msgstr "%s: %s: %s tidak valid; gunakan 'on', 'off', atau 'quiet'.\n"
 
 #: src/init.c:1119
 #, c-format
@@ -1145,7 +1152,7 @@ msgstr "%s: %s: Nomor tidak valid %s.\n"
 #: src/init.c:1201
 #, c-format
 msgid "%s: %s must only be used once\n"
-msgstr ""
+msgstr "%s: %s hanya boleh digunakan sekali\n"
 
 #: src/init.c:1356 src/init.c:1377
 #, c-format
@@ -1158,20 +1165,21 @@ msgid "%s: %s: Invalid time period %s\n"
 msgstr "%s: %s: Perioda waktu tidak valid %s\n"
 
 #: src/init.c:1443
-#, fuzzy, c-format
-#| msgid "%s: %s: Invalid time period %s\n"
+#, c-format
 msgid "%s: %s: Negative time period %s\n"
-msgstr "%s: %s: Perioda waktu tidak valid %s\n"
+msgstr "%s: %s: Perioda waktu negatif %s\n"
 
-#: src/init.c:1471 src/main.c:1926
+#: src/init.c:1471 src/main.c:1927
 #, c-format
 msgid ""
 "use-askpass requires a string or either environment variable WGET_ASKPASS or "
 "SSH_ASKPASS to be set.\n"
 msgstr ""
+"use-askpass memerlukan string atau variabel lingkungan WGET_ASKPASS atau "
+"SSH_ASKPASS untuk diatur.\n"
 
 #: src/init.c:1489 src/init.c:1511 src/init.c:1619 src/init.c:1675
-#: src/init.c:1741 src/init.c:1761 src/init.c:1786
+#: src/init.c:1741 src/init.c:1762 src/init.c:1787
 #, c-format
 msgid "%s: %s: Invalid value %s.\n"
 msgstr "%s: %s: Nilai tidak valid %s.\n"
@@ -1192,33 +1200,29 @@ msgid "%s: %s: Invalid progress type %s.\n"
 msgstr "%s: %s: Tipe progress tidak valid %s.\n"
 
 #: src/init.c:1714
-#, fuzzy, c-format
-#| msgid ""
-#| "%s: %s: Invalid restriction %s,\n"
-#| "    use [unix|windows],[lowercase|uppercase],[nocontrol],[ascii].\n"
+#, c-format
 msgid ""
 "%s: %s: Invalid restriction %s,\n"
 "    use [unix|vms|windows],[lowercase|uppercase],[nocontrol],[ascii].\n"
 msgstr ""
-"%s: %s: Pembatasan tidak benar %s, \n"
-"    gunakan [unix|windows],[lowercase|uppercase],[nocontrol],[ascii].\n"
+"%s: %s: Pembatasan tidak valid %s,\n"
+"    gunakan [unix|vms|windows],[lowercase|uppercase],[nocontrol],[ascii].\n"
 
 #: src/iri.c:114
 #, c-format
 msgid "Encoding %s isn't valid\n"
 msgstr "Pengkodean %s tidak valid\n"
 
-#: src/iri.c:140 src/url.c:1615
-#, fuzzy, c-format
-#| msgid "Conversion from %s to %s isn't supported\n"
+#: src/iri.c:140 src/url.c:1612
+#, c-format
 msgid "Conversion from %s to %s isn't supported\n"
-msgstr "Konversi dari %s ke %s belum didukung\n"
+msgstr "Konversi dari %s ke %s tidak didukung\n"
 
-#: src/iri.c:180 src/url.c:1645
+#: src/iri.c:180 src/url.c:1642
 msgid "Incomplete or invalid multibyte sequence encountered\n"
-msgstr "Tidak lengkap atau tidak valid urutan multibyte ditemui\n"
+msgstr "Urutan multibyte yang tidak lengkap atau tidak valid ditemui\n"
 
-#: src/iri.c:200 src/url.c:1662
+#: src/iri.c:200 src/url.c:1659
 #, c-format
 msgid "Unhandled errno %d\n"
 msgstr "Errno tidak tertangani %d\n"
@@ -1233,32 +1237,28 @@ msgid "idn_encode failed (%d): %s\n"
 msgstr "idn_encode gagal (%d): %s\n"
 
 #: src/iri.c:290
-#, fuzzy, c-format
-#| msgid "couldn't connect to %s port %d: %s\n"
+#, c-format
 msgid "Failed to convert to lower: %d: %s\n"
-msgstr "tidak dapat menghubungi %s port %d: %s\n"
+msgstr "Gagal mengonversi ke huruf kecil: %d: %s\n"
 
 #: src/log.c:938 src/log.c:957
-#, fuzzy, c-format
-#| msgid ""
-#| "\n"
-#| "%s received, redirecting output to %s.\n"
+#, c-format
 msgid ""
 "\n"
 "Redirecting output to %s.\n"
 msgstr ""
 "\n"
-"%s diterima, meneruskan output ke %s.\n"
+"Mengalihkan keluaran ke %s.\n"
 
 #: src/log.c:950
 #, c-format
 msgid "%s: %s; disabling logging.\n"
-msgstr "%s: %s; mematikan logging.\n"
+msgstr "%s: %s; mematikan pencatatan log.\n"
 
 #: src/main.c:574
 #, c-format
 msgid "Usage: %s [OPTION]... [URL]...\n"
-msgstr "Penggunaan: %s [PILIHAN]... [URL]...\n"
+msgstr "Penggunaan: %s [OPSI]... [URL]...\n"
 
 #: src/main.c:590
 msgid ""
@@ -1271,499 +1271,401 @@ msgstr ""
 
 #: src/main.c:592
 msgid "Startup:\n"
-msgstr "Memulai:\n"
+msgstr "Awal mula:\n"
 
 #: src/main.c:594
-#, fuzzy
-#| msgid "  -V,  --version           display the version of Wget and exit.\n"
 msgid ""
 "  -V,  --version                   display the version of Wget and exit\n"
-msgstr "  -V,  --version           menampilkan versi dari Wget dan keluar.\n"
+msgstr ""
+"  -V,  --version                   menampilkan versi dari Wget dan keluar\n"
 
 #: src/main.c:596
-#, fuzzy
-#| msgid "  -h,  --help              print this help.\n"
 msgid "  -h,  --help                      print this help\n"
-msgstr "  -h,  --help              menampilkan bantuan ini.\n"
+msgstr "  -h,  --help                      menampilkan bantuan ini\n"
 
 #: src/main.c:598
-#, fuzzy
-#| msgid "  -b,  --background        go to background after startup.\n"
 msgid "  -b,  --background                go to background after startup\n"
-msgstr "  -b,  --background        pergi ke background setelah memulai.\n"
+msgstr ""
+"  -b,  --background                pergi ke latar belakang setelah memulai\n"
 
 #: src/main.c:600
-#, fuzzy
-#| msgid "  -e,  --execute=COMMAND   execute a `.wgetrc'-style command.\n"
 msgid "  -e,  --execute=COMMAND           execute a `.wgetrc'-style command\n"
 msgstr ""
-"  -e,  --execute=COMMAND   menjalankan sebuah perintah `.wgetrc'-style.\n"
+"  -e,  --execute=COMMAND           menjalankan sebuah perintah gaya '."
+"wgetrc'\n"
 
 #: src/main.c:604
 msgid "Logging and input file:\n"
-msgstr "Mencatat dan memasukan berkas:\n"
+msgstr "Berkas masukan dan log:\n"
 
 #: src/main.c:606
-#, fuzzy
-#| msgid "  -o,  --output-file=FILE    log messages to FILE.\n"
 msgid "  -o,  --output-file=FILE          log messages to FILE\n"
-msgstr "  -o,  --output-file=FILE     pesan log pada FILE.\n"
+msgstr "  -o,  --output-file=BERKAS        catat log pesan ke BERKAS\n"
 
 #: src/main.c:608
-#, fuzzy
-#| msgid "  -a,  --append-output=FILE  append messages to FILE.\n"
 msgid "  -a,  --append-output=FILE        append messages to FILE\n"
-msgstr "  -a,  --append-output=FILE  tambahkan pesan pada FILE.\n"
+msgstr "  -a,  --append-output=BERKAS      tambahkan pesan ke BERKAS\n"
 
 #: src/main.c:611
-#, fuzzy
-#| msgid "  -d,  --debug               print lots of debugging information.\n"
 msgid ""
 "  -d,  --debug                     print lots of debugging information\n"
-msgstr "  -d,  --debug               tampilkan banyak informasi debugging.\n"
+msgstr ""
+"  -d,  --debug                     tampilkan banyak informasi awakutu\n"
 
 #: src/main.c:615
-#, fuzzy
-#| msgid "       --wdebug              print Watt-32 debug output.\n"
 msgid "       --wdebug                    print Watt-32 debug output\n"
-msgstr "       --wdebug               tampilkan keluaran Watt-32 debug.\n"
+msgstr "       --wdebug                    cetak keluaran awakutu Watt-32\n"
 
 #: src/main.c:618
-#, fuzzy
-#| msgid "  -q,  --quiet               quiet (no output).\n"
 msgid "  -q,  --quiet                     quiet (no output)\n"
-msgstr "  -q,  --quiet               diam (tidak ada output).\n"
+msgstr "  -q,  --quiet                     senyap (tidak ada keluaran)\n"
 
 #: src/main.c:620
-#, fuzzy
-#| msgid "  -v,  --verbose             be verbose (this is the default).\n"
 msgid "  -v,  --verbose                   be verbose (this is the default)\n"
-msgstr "  -v,  --verbose             jadi verbose (ini yang default).\n"
+msgstr "  -v,  --verbose                   cerewat (ini kondisi baku)\n"
 
 #: src/main.c:622
-#, fuzzy
-#| msgid ""
-#| "  -nv, --no-verbose          turn off verboseness, without being quiet.\n"
 msgid ""
 "  -nv, --no-verbose                turn off verboseness, without being "
 "quiet\n"
 msgstr ""
-"   -nv, --no-verbose          matikan verboseness, tanpa menjadi quiet.\n"
+"  -nv, --no-verbose                matikan kecerewetan, tanpa menjadi "
+"hening\n"
 
 #: src/main.c:624
-#, fuzzy
-#| msgid ""
-#| "       --report-speed=TYPE   Output bandwidth as TYPE.  TYPE can be "
-#| "bits.\n"
 msgid ""
 "       --report-speed=TYPE         output bandwidth as TYPE.  TYPE can be "
 "bits\n"
 msgstr ""
-"       --report-speed=TYPE   Output bandwidth as TYPE.  TYPE can be bits.\n"
+"       --report-speed=TYPE         keluarkan bandwidth sebagai TYPE.  TYPE "
+"bisa berupa bit\n"
 
 #: src/main.c:626
-#, fuzzy
-#| msgid ""
-#| "  -i,  --input-file=FILE     download URLs found in local or external "
-#| "FILE.\n"
 msgid ""
 "  -i,  --input-file=FILE           download URLs found in local or external "
 "FILE\n"
 msgstr ""
-"  -i,  --input-file=BERKAS    download URLs ditemukan dalam lokal atau "
-"BERKAS eksternal.\n"
+"  -i,  --input-file=BERKAS         unduh URL yang ditemukan dalam BERKAS "
+"lokal atau eksternal\n"
 
 #: src/main.c:629
-#, fuzzy
-#| msgid ""
-#| "  -i,  --input-file=FILE     download URLs found in local or external "
-#| "FILE.\n"
 msgid ""
 "       --input-metalink=FILE       download files covered in local Metalink "
 "FILE\n"
 msgstr ""
-"  -i,  --input-file=BERKAS    download URLs ditemukan dalam lokal atau "
-"BERKAS eksternal.\n"
+"       --input-metalink=BERKAS     unduh berkas yang tercakup dalam BERKAS "
+"Metalink lokal\n"
 
 #: src/main.c:632
-#, fuzzy
-#| msgid "  -F,  --force-html          treat input file as HTML.\n"
 msgid "  -F,  --force-html                treat input file as HTML\n"
-msgstr "  -F,  --force-html          perlakukan input file sebagai HTML.\n"
+msgstr ""
+"  -F,  --force-html                perlakukan berkas masukan sebagai HTML\n"
 
 #: src/main.c:634
 #, fuzzy
-#| msgid ""
-#| "  -B,  --base=URL            resolves HTML input-file links (-i -F)\n"
-#| "                             relative to URL.\n"
 msgid ""
 "  -B,  --base=URL                  resolves HTML input-file links (-i -F)\n"
 "                                     relative to URL\n"
 msgstr ""
-"  -B,  --base=URL            telusuri berkas masukan HTML (-i -F)\n"
-"                             relatif ke URL.\n"
+"  -B,  --base=URL                  telusuri berkas masukan HTML (-i -F)\n"
+"                                     relatif ke URL.\n"
 
 #: src/main.c:637
-#, fuzzy
-#| msgid "       --config=FILE         Specify config file to use.\n"
 msgid "       --config=FILE               specify config file to use\n"
-msgstr "       --config=FILE         Specify config file to use.\n"
+msgstr ""
+"       --config=BERKAS             menyatakan berkas konfig yang dipakai\n"
 
 #: src/main.c:639
-#, fuzzy
-#| msgid "       --no-cookies            don't use cookies.\n"
 msgid "       --no-config                 do not read any config file\n"
-msgstr "       --no-cookies            jangan menggunakan cookies.\n"
+msgstr ""
+"       --no-cookies                jangan baca berkas konfig mana pun\n"
 
 #: src/main.c:641
-#, fuzzy
-#| msgid "  -o,  --output-file=FILE    log messages to FILE.\n"
 msgid ""
 "       --rejected-log=FILE         log reasons for URL rejection to FILE\n"
-msgstr "  -o,  --output-file=FILE     pesan log pada FILE.\n"
+msgstr ""
+"       --rejected-log=BERKAS       catat log alasan penolakan URL ke BERKAS\n"
 
 #: src/main.c:645
 msgid "Download:\n"
-msgstr "Download:\n"
+msgstr "Unduh:\n"
 
 #: src/main.c:647
-#, fuzzy
-#| msgid ""
-#| "  -t,  --tries=NUMBER            set number of retries to NUMBER (0 "
-#| "unlimits).\n"
 msgid ""
 "  -t,  --tries=NUMBER              set number of retries to NUMBER (0 "
 "unlimits)\n"
 msgstr ""
-"  -t,  --tries=NUMBER            set nomor mencoba ke NUMBER (0 untuk tidak "
-"terbatas).\n"
+"  -t,  --tries=CACAH               atur berapa kali mencoba ke CACAH (0 "
+"untuk tanpa batas)\n"
 
 #: src/main.c:649
-#, fuzzy
-#| msgid ""
-#| "       --retry-connrefused       retry even if connection is refused.\n"
 msgid ""
 "       --retry-connrefused         retry even if connection is refused\n"
-msgstr "       --retry-connrefused       coba lagi walaupun koneksi ditolak.\n"
+msgstr ""
+"       --retry-connrefused         coba lagi bahkan bila koneksi ditolak\n"
 
 #: src/main.c:651
 #, fuzzy
 #| msgid ""
-#| "       --ignore-tags=LIST          comma-separated list of ignored HTML "
-#| "tags.\n"
+#| "       --retry-on-http-error=ERRORS    comma-separated list of HTTP "
+#| "errors to retry\n"
+msgid ""
+"       --retry-on-host-error       consider host errors as non-fatal, "
+"transient errors\n"
+msgstr ""
+"       --retry-on-http-error=GALAT      daftar dipisah koma dari galat HTTP "
+"yang dicoba lagi\n"
+
+#: src/main.c:653
 msgid ""
 "       --retry-on-http-error=ERRORS    comma-separated list of HTTP errors "
 "to retry\n"
 msgstr ""
-"       --ignore-tags=LIST          list yang dipisahkan oleh koma yang "
-"berisitag HTML yang diabaikan.\n"
-
-#: src/main.c:653
-#, fuzzy
-#| msgid "  -O,  --output-document=FILE    write documents to FILE.\n"
-msgid "  -O,  --output-document=FILE      write documents to FILE\n"
-msgstr "  -O,  --output-document=FILE    tulis document pada FILE.\n"
+"       --retry-on-http-error=GALAT      daftar dipisah koma dari galat HTTP "
+"yang dicoba lagi\n"
 
 #: src/main.c:655
-#, fuzzy
-#| msgid ""
-#| "  -nc, --no-clobber              skip downloads that would download to\n"
-#| "                                 existing files (overwriting them).\n"
+msgid "  -O,  --output-document=FILE      write documents to FILE\n"
+msgstr "  -O,  --output-document=BERKAS    tulis dokumen ke BERKAS\n"
+
+#: src/main.c:657
 msgid ""
 "  -nc, --no-clobber                skip downloads that would download to\n"
 "                                     existing files (overwriting them)\n"
 msgstr ""
-"  -nc, --no-clobber              skip downloads yang akan mendownload ke\n"
-"                                 file yang sudah ada.\n"
+"  -nc, --no-clobber                lewati unduhan yang akan mengunduh ke\n"
+"                                     berkas yang sudah ada (menimpa "
+"mereka).\n"
 
-#: src/main.c:658
-#, fuzzy
-#| msgid "       --no-cookies            don't use cookies.\n"
+#: src/main.c:660
 msgid ""
 "       --no-netrc                  don't try to obtain credentials from ."
 "netrc\n"
-msgstr "       --no-cookies            jangan menggunakan cookies.\n"
+msgstr ""
+"       --no-netrc                  jangan mencoba mendapatkan kredensial "
+"dari .netrc\n"
 
-#: src/main.c:660
-#, fuzzy
-#| msgid ""
-#| "  -c,  --continue                resume getting a partially-downloaded "
-#| "file.\n"
+#: src/main.c:662
 msgid ""
 "  -c,  --continue                  resume getting a partially-downloaded "
 "file\n"
 msgstr ""
-"  -c,  --continue                lanjutkan mengambil file yang terdownload  "
-"sebagian.\n"
+"  -c,  --continue                  lanjutkan mengambil berkas yang terunduh "
+"sebagian\n"
 
-#: src/main.c:662
+#: src/main.c:664
 msgid ""
 "       --start-pos=OFFSET          start downloading from zero-based "
 "position OFFSET\n"
 msgstr ""
-
-#: src/main.c:664
-#, fuzzy
-#| msgid "       --progress=TYPE           select progress gauge type.\n"
-msgid "       --progress=TYPE             select progress gauge type\n"
-msgstr "       --progress=TYPE           pilih tipe gauge progress.\n"
+"       --start-pos=OFSET           mulai mengunduh dari OFSET posisi "
+"berbasis nol\n"
 
 #: src/main.c:666
-#, fuzzy
-#| msgid "       --progress=TYPE           select progress gauge type.\n"
+msgid "       --progress=TYPE             select progress gauge type\n"
+msgstr "       --progress=TIPE             pilih tipe indikator kemajuan\n"
+
+#: src/main.c:668
 msgid ""
 "       --show-progress             display the progress bar in any verbosity "
 "mode\n"
-msgstr "       --progress=TYPE           pilih tipe gauge progress.\n"
+msgstr ""
+"       --show-progress             tampilkan bilah kemajuan dalam mode "
+"kerincian apa pun\n"
 
-#: src/main.c:668
-#, fuzzy
-#| msgid ""
-#| "  -N,  --timestamping            don't re-retrieve files unless newer "
-#| "than\n"
-#| "                                 local.\n"
+#: src/main.c:670
 msgid ""
 "  -N,  --timestamping              don't re-retrieve files unless newer "
 "than\n"
 "                                     local\n"
 msgstr ""
-"  -N,  --timestamping            jangan mengambil kembali file kecuali file\n"
-"                                 lebih baru dari file local.\n"
+"  -N,  --timestamping              jangan mengambil ulang berkas kecuali\n"
+"                                     lebih baru dari lokal\n"
 
-#: src/main.c:671
+#: src/main.c:673
 #, fuzzy
-#| msgid ""
-#| "  --no-use-server-timestamps     don't set the local file's timestamp by\n"
-#| "                                 the one on the server.\n"
 msgid ""
 "       --no-if-modified-since      don't use conditional if-modified-since "
 "get\n"
 "                                     requests in timestamping mode\n"
 msgstr ""
-"  -N,  --timestamping            jangan mengambil kembali file kecuali file\n"
-"                                 lebih baru dari file local.\n"
+"       --no-if-modified-since      jangan gunakan kondisional jika "
+"dimodifikasi-sejak get\n"
+"                                     permintaan dalam mode cap waktu\n"
 
-#: src/main.c:674
+#: src/main.c:676
 #, fuzzy
-#| msgid ""
-#| "  --no-use-server-timestamps     don't set the local file's timestamp by\n"
-#| "                                 the one on the server.\n"
 msgid ""
 "       --no-use-server-timestamps  don't set the local file's timestamp by\n"
 "                                     the one on the server\n"
 msgstr ""
-"  -N,  --timestamping            jangan mengambil kembali file kecuali file\n"
-"                                 lebih baru dari file local.\n"
-
-#: src/main.c:677
-#, fuzzy
-#| msgid "  -S,  --server-response         print server response.\n"
-msgid "  -S,  --server-response           print server response\n"
-msgstr "  -S,  --server-response         tampilkan balasan server.\n"
+"       --no-use-server-timestamps  tidak mengatur stempel waktu berkas lokal "
+"dengan\n"
+"                                     yang ada di server\n"
 
 #: src/main.c:679
-#, fuzzy
-#| msgid "       --spider                  don't download anything.\n"
-msgid "       --spider                    don't download anything\n"
-msgstr "       --spider                  jangan mendownload apapun.\n"
+msgid "  -S,  --server-response           print server response\n"
+msgstr "  -S,  --server-response           cetak balasan server\n"
 
 #: src/main.c:681
-#, fuzzy
-#| msgid ""
-#| "  -T,  --timeout=SECONDS         set all timeout values to SECONDS.\n"
+msgid "       --spider                    don't download anything\n"
+msgstr "       --spider                    jangan unduh apa pun\n"
+
+#: src/main.c:683
 msgid "  -T,  --timeout=SECONDS           set all timeout values to SECONDS\n"
 msgstr ""
-"  -T,  --timeout=SECONDS         set semua nilai timeout pada SECONDS.\n"
+"  -T,  --timeout=DETIK             atur semua nilai tenggat waktu ke DETIK\n"
 
-#: src/main.c:684
+#: src/main.c:686
 msgid ""
 "       --dns-servers=ADDRESSES     list of DNS servers to query (comma "
 "separated)\n"
 msgstr ""
+"       --dns-servers=ALAMAT        daftar server DNS untuk di-kueri (dipisah "
+"koma)\n"
 
-#: src/main.c:686
+#: src/main.c:688
 #, fuzzy
-#| msgid ""
-#| "       --bind-address=ADDRESS    bind to ADDRESS (hostname or IP) on "
-#| "local host.\n"
 msgid ""
 "       --bind-dns-address=ADDRESS  bind DNS resolver to ADDRESS (hostname or "
 "IP) on local host\n"
 msgstr ""
-"       --bind-address=ADDRESS    bind ke ADDRESS (hostname atau IP) pada "
-"local host.\n"
-
-#: src/main.c:689
-#, fuzzy
-#| msgid ""
-#| "       --dns-timeout=SECS        set the DNS lookup timeout to SECS.\n"
-msgid "       --dns-timeout=SECS          set the DNS lookup timeout to SECS\n"
-msgstr ""
-"       --dns-timeout=SECS        set the DNS lookup timeout pada SECS.\n"
+"       --bind-address=ADDRESS      bind ke ADDRESS (hostname atau IP) pada "
+"local host\n"
 
 #: src/main.c:691
-#, fuzzy
-#| msgid "       --connect-timeout=SECS    set the connect timeout to SECS.\n"
-msgid "       --connect-timeout=SECS      set the connect timeout to SECS\n"
-msgstr "       --connect-timeout=SECS    set the connect timeout pada SECS.\n"
+msgid "       --dns-timeout=SECS          set the DNS lookup timeout to SECS\n"
+msgstr ""
+"       --dns-timeout=DETIK         atur tenggat waktu pencarian DNS ke "
+"DETIK\n"
 
 #: src/main.c:693
-#, fuzzy
-#| msgid "       --read-timeout=SECS       set the read timeout to SECS.\n"
-msgid "       --read-timeout=SECS         set the read timeout to SECS\n"
-msgstr "       --read-timeout=SECS       set the read timeout pada SECS.\n"
+msgid "       --connect-timeout=SECS      set the connect timeout to SECS\n"
+msgstr ""
+"       --connect-timeout=DETIK     atur tenggat waktu koneksi ke DETIK\n"
 
 #: src/main.c:695
+msgid "       --read-timeout=SECS         set the read timeout to SECS\n"
+msgstr "       --read-timeout=DETIK        atur tenggat waktu baca ke DETIK\n"
+
+#: src/main.c:697
 #, fuzzy
-#| msgid "  -w,  --wait=SECONDS            wait SECONDS between retrievals.\n"
 msgid ""
 "  -w,  --wait=SECONDS              wait SECONDS between retrievals\n"
 "                                     (applies if more then 1 URL is to be "
 "retrieved)\n"
 msgstr ""
-"  -w,  --wait=SECONDS            tunggu SECONDS diantara pengambilan.\n"
+"  -w,  --wait=SECONDS              tunggu SECONDS diantara pengambilan\n"
 
-#: src/main.c:698
+#: src/main.c:700
 #, fuzzy
-#| msgid ""
-#| "       --waitretry=SECONDS       wait 1..SECONDS between retries of a "
-#| "retrieval.\n"
 msgid ""
 "       --waitretry=SECONDS         wait 1..SECONDS between retries of a "
 "retrieval\n"
 "                                     (applies if more then 1 URL is to be "
 "retrieved)\n"
 msgstr ""
-"       --waitretry=SECONDS       tunggu 1..SECONDS diantara pencobaan dari "
-"sebuah pengambilan.\n"
+"       --waitretry=SECONDS         tunggu 1..SECONDS diantara pencobaan dari "
+"sebuah pengambilan\n"
 
-#: src/main.c:701
+#: src/main.c:703
 #, fuzzy
-#| msgid ""
-#| "       --random-wait             wait from 0.5*WAIT...1.5*WAIT secs "
-#| "between retrievals.\n"
 msgid ""
 "       --random-wait               wait from 0.5*WAIT...1.5*WAIT secs "
 "between retrievals\n"
 "                                     (applies if more then 1 URL is to be "
 "retrieved)\n"
 msgstr ""
-"       --random-wait             tunggu dari 0.5*WAIT...1.5*WAIT secs "
-"diantara pengambilan.\n"
-
-#: src/main.c:704
-#, fuzzy
-#| msgid "       --no-proxy                explicitly turn off proxy.\n"
-msgid "       --no-proxy                  explicitly turn off proxy\n"
-msgstr "       --no-proxy                secara eksplisit mematikan proxy.\n"
+"       --random-wait               tunggu dari 0.5*WAIT...1.5*WAIT secs "
+"diantara pengambilan\n"
 
 #: src/main.c:706
-#, fuzzy
-#| msgid "  -Q,  --quota=NUMBER            set retrieval quota to NUMBER.\n"
-msgid "  -Q,  --quota=NUMBER              set retrieval quota to NUMBER\n"
-msgstr "  -Q,  --quota=NUMBER            set pengambilan quota pada NUMBER.\n"
+msgid "       --no-proxy                  explicitly turn off proxy\n"
+msgstr "       --no-proxy                  secara eksplisit matikan proksi\n"
 
 #: src/main.c:708
 #, fuzzy
-#| msgid ""
-#| "       --bind-address=ADDRESS    bind to ADDRESS (hostname or IP) on "
-#| "local host.\n"
+msgid "  -Q,  --quota=NUMBER              set retrieval quota to NUMBER\n"
+msgstr "  -Q,  --quota=NUMBER              set pengambilan quota pada NUMBER\n"
+
+#: src/main.c:710
+#, fuzzy
 msgid ""
 "       --bind-address=ADDRESS      bind to ADDRESS (hostname or IP) on local "
 "host\n"
 msgstr ""
-"       --bind-address=ADDRESS    bind ke ADDRESS (hostname atau IP) pada "
-"local host.\n"
-
-#: src/main.c:710
-#, fuzzy
-#| msgid "       --limit-rate=RATE         limit download rate to RATE.\n"
-msgid "       --limit-rate=RATE           limit download rate to RATE\n"
-msgstr "       --limit-rate=RATE         batasi kecepatan download ke RATE.\n"
+"       --bind-address=ADDRESS      bind ke ADDRESS (hostname atau IP) pada "
+"local host\n"
 
 #: src/main.c:712
 #, fuzzy
-#| msgid "       --no-dns-cache            disable caching DNS lookups.\n"
-msgid "       --no-dns-cache              disable caching DNS lookups\n"
-msgstr "       --no-dns-cache            matikan caching dari DNS lookups.\n"
+msgid "       --limit-rate=RATE           limit download rate to RATE\n"
+msgstr "       --limit-rate=RATE           batasi kecepatan download ke RATE\n"
 
 #: src/main.c:714
 #, fuzzy
-#| msgid ""
-#| "       --restrict-file-names=OS  restrict chars in file names to ones OS "
-#| "allows.\n"
+msgid "       --no-dns-cache              disable caching DNS lookups\n"
+msgstr "       --no-dns-cache              matikan caching dari DNS lookups\n"
+
+#: src/main.c:716
 msgid ""
 "       --restrict-file-names=OS    restrict chars in file names to ones OS "
 "allows\n"
 msgstr ""
-"       --restrict-file-names=OS  restrict karakter dalam nama file ke salah "
-"satu dari yang dibolehkan oleh OS.\n"
+"       --restrict-file-names=OS    restrict karakter dalam nama berkas ke "
+"salah satu dari yang dibolehkan oleh OS\n"
 
-#: src/main.c:716
+#: src/main.c:718
 #, fuzzy
-#| msgid ""
-#| "       --ignore-case             ignore case when matching files/"
-#| "directories.\n"
 msgid ""
 "       --ignore-case               ignore case when matching files/"
 "directories\n"
 msgstr ""
-"       --ignore-case             abaikan besar/kecil huruf ketika mencocokan "
-"files/direktori..\n"
-
-#: src/main.c:719
-#, fuzzy
-#| msgid "  -4,  --inet4-only              connect only to IPv4 addresses.\n"
-msgid "  -4,  --inet4-only                connect only to IPv4 addresses\n"
-msgstr ""
-"  -4,  --inet4-only              hanya menghubungi ke alamat IPv4 saja.\n"
+"       --ignore-case               abaikan besar/kecil huruf ketika "
+"mencocokan files/direktori\n"
 
 #: src/main.c:721
-#, fuzzy
-#| msgid "  -6,  --inet6-only              connect only to IPv6 addresses.\n"
-msgid "  -6,  --inet6-only                connect only to IPv6 addresses\n"
+msgid "  -4,  --inet4-only                connect only to IPv4 addresses\n"
 msgstr ""
-"  -6,  --inet6-only              hanya menghubungi ke alamat IPv6 saja.\n"
+"  -4,  --inet4-only                hanya menghubungi ke alamat IPv4 saja\n"
 
 #: src/main.c:723
+msgid "  -6,  --inet6-only                connect only to IPv6 addresses\n"
+msgstr ""
+"  -6,  --inet6-only                hanya menghubungi ke alamat IPv6 saja\n"
+
+#: src/main.c:725
 #, fuzzy
-#| msgid ""
-#| "       --prefer-family=FAMILY    connect first to addresses of specified "
-#| "family,\n"
-#| "                                 one of IPv6, IPv4, or none.\n"
 msgid ""
 "       --prefer-family=FAMILY      connect first to addresses of specified "
 "family,\n"
 "                                     one of IPv6, IPv4, or none\n"
 msgstr ""
-"       --prefer-family=FAMILY    hubungi terlebih dahulu alamat dari family  "
-"yang dispesifikasikan,\n"
-"                                 salah satu dari IPv6, IPv4 atau none.\n"
-
-#: src/main.c:727
-#, fuzzy
-#| msgid ""
-#| "       --user=USER               set both ftp and http user to USER.\n"
-msgid "       --user=USER                 set both ftp and http user to USER\n"
-msgstr ""
-"       --user=USER               set kedua ftp dan http user pada USER.\n"
+"       --prefer-family=FAMILY      hubungi terlebih dahulu alamat dari "
+"family  yang dispesifikasikan,\n"
+"                                     salah satu dari IPv6, IPv4 atau none\n"
 
 #: src/main.c:729
 #, fuzzy
-#| msgid ""
-#| "       --password=PASS           set both ftp and http password to PASS.\n"
-msgid ""
-"       --password=PASS             set both ftp and http password to PASS\n"
+msgid "       --user=USER                 set both ftp and http user to USER\n"
 msgstr ""
-"       --password=PASS           set kedua ftp dan http password pada PASS.\n"
+"       --user=USER                 set kedua ftp dan http user pada USER\n"
 
 #: src/main.c:731
 #, fuzzy
-#| msgid "       --ask-password            prompt for passwords.\n"
-msgid "       --ask-password              prompt for passwords\n"
-msgstr "       --ask-password            tanya untuk kata sandi.\n"
+msgid ""
+"       --password=PASS             set both ftp and http password to PASS\n"
+msgstr ""
+"       --password=PASS             set kedua ftp dan http password pada "
+"PASS\n"
 
-#: src/main.c:734
+#: src/main.c:733
+#, fuzzy
+msgid "       --ask-password              prompt for passwords\n"
+msgstr "       --ask-password              tanya untuk kata sandi\n"
+
+#: src/main.c:736
+#, fuzzy
 msgid ""
 "       --use-askpass=COMMAND       specify credential handler for "
 "requesting \n"
@@ -1773,469 +1675,384 @@ msgid ""
 "SSH_ASKPASS \n"
 "                                     environment variable is used.\n"
 msgstr ""
-
-#: src/main.c:740
-#, fuzzy
-#| msgid "       --no-iri                  turn off IRI support.\n"
-msgid "       --no-iri                    turn off IRI support\n"
-msgstr "       --no-iri                  non-aktifkan dukungan IRI.\n"
+"       --use-askpass=COMMAND       tentukan penangan kredensial untuk "
+"meminta \n"
+"                                     nama pengguna dan kata sandi.  Jika "
+"tidak ada PERINTAH yang \n"
+"                                     menentukan WGET_ASKPASS atau "
+"SSH_ASKPASS \n"
+"                                     variabel lingkungan digunakan.\n"
 
 #: src/main.c:742
 #, fuzzy
-#| msgid ""
-#| "       --local-encoding=ENC      use ENC as the local encoding for IRIs.\n"
-msgid ""
-"       --local-encoding=ENC        use ENC as the local encoding for IRIs\n"
-msgstr ""
-"       --local-encoding=ENC      gunakan ENC sebagai pengkodean lokal untuk "
-"IRI.\n"
+msgid "       --no-iri                    turn off IRI support\n"
+msgstr "       --no-iri                    non-aktifkan dukungan IRI\n"
 
 #: src/main.c:744
 #, fuzzy
-#| msgid ""
-#| "       --remote-encoding=ENC     use ENC as the default remote encoding.\n"
 msgid ""
-"       --remote-encoding=ENC       use ENC as the default remote encoding\n"
+"       --local-encoding=ENC        use ENC as the local encoding for IRIs\n"
 msgstr ""
-"       --remote-encoding=ENC     gunakan ENC sebagai pengkodean baku "
-"remote.\n"
+"       --local-encoding=ENC        gunakan ENC sebagai pengkodean lokal "
+"untuk IRI\n"
 
 #: src/main.c:746
 #, fuzzy
-#| msgid "       --unlink                  remove file before clobber.\n"
-msgid "       --unlink                    remove file before clobber\n"
-msgstr "       --unlink                  remove file before clobber.\n"
+msgid ""
+"       --remote-encoding=ENC       use ENC as the default remote encoding\n"
+msgstr ""
+"       --remote-encoding=ENC       gunakan ENC sebagai pengkodean baku "
+"remote\n"
 
-#: src/main.c:749
+#: src/main.c:748
+#, fuzzy
+msgid "       --unlink                    remove file before clobber\n"
+msgstr "       --unlink                    remove berkas before clobber\n"
+
+#: src/main.c:751
+#, fuzzy
 msgid ""
 "       --keep-badhash              keep files with checksum mismatch "
 "(append .badhash)\n"
 msgstr ""
+"       --keep-badhash              menyimpan berkas dengan ketidakcocokan "
+"checksum (tambahkan .badhash)\n"
 
-#: src/main.c:751
+#: src/main.c:753
+#, fuzzy
 msgid ""
 "       --metalink-index=NUMBER     Metalink application/metalink4+xml "
 "metaurl ordinal NUMBER\n"
 msgstr ""
+"       --metalink-index=NUMBER     Aplikasi metalink/metalink4+xml metaurl "
+"ordinal NUMBER\n"
 
-#: src/main.c:753
+#: src/main.c:755
+#, fuzzy
 msgid ""
 "       --metalink-over-http        use Metalink metadata from HTTP response "
 "headers\n"
 msgstr ""
+"       --metalink-over-http        gunakan metadata Metalink dari header "
+"respons HTTP\n"
 
-#: src/main.c:755
+#: src/main.c:757
+#, fuzzy
 msgid ""
 "       --preferred-location        preferred location for Metalink "
 "resources\n"
 msgstr ""
+"       --lokasi                    yang disukai lokasi yang disukai untuk "
+"sumber daya Metalink\n"
 
-#: src/main.c:759
+#: src/main.c:761
 #, fuzzy
-#| msgid "       --warc-cdx                write CDX index files.\n"
 msgid ""
 "       --xattr                     turn on storage of metadata in extended "
 "file attributes\n"
-msgstr "       --warc-cdx                write CDX index files.\n"
+msgstr ""
+"       --xattr                     mengaktifkan penyimpanan metadata dalam "
+"atribut berkas yang diperluas\n"
 
-#: src/main.c:764
+#: src/main.c:766
 msgid "Directories:\n"
 msgstr "Direktori:\n"
 
-#: src/main.c:766
-#, fuzzy
-#| msgid "  -nd, --no-directories           don't create directories.\n"
-msgid "  -nd, --no-directories            don't create directories\n"
-msgstr "  -nd,  --no-directories          jangan membuat direktori.\n"
-
 #: src/main.c:768
-#, fuzzy
-#| msgid "  -x,  --force-directories        force creation of directories.\n"
-msgid "  -x,  --force-directories         force creation of directories\n"
-msgstr "  -x,  --force-directories        paksa pembuatan direktori.\n"
+msgid "  -nd, --no-directories            don't create directories\n"
+msgstr "  -nd,  --no-directories           jangan membuat direktori\n"
 
 #: src/main.c:770
-#, fuzzy
-#| msgid "  -nH, --no-host-directories      don't create host directories.\n"
-msgid "  -nH, --no-host-directories       don't create host directories\n"
-msgstr "  -nH, --no-host-directories      jangan buat host directories.\n"
+msgid "  -x,  --force-directories         force creation of directories\n"
+msgstr "  -x,  --force-directories         paksa pembuatan direktori\n"
 
 #: src/main.c:772
 #, fuzzy
-#| msgid ""
-#| "       --protocol-directories     use protocol name in directories.\n"
-msgid "       --protocol-directories      use protocol name in directories\n"
-msgstr ""
-"       --protocol-directories     gunakan nama protocol dalam direktori.\n"
+msgid "  -nH, --no-host-directories       don't create host directories\n"
+msgstr "  -nH, --no-host-directories       jangan buat host directories\n"
 
 #: src/main.c:774
-#, fuzzy
-#| msgid "  -P,  --directory-prefix=PREFIX  save files to PREFIX/...\n"
-msgid "  -P,  --directory-prefix=PREFIX   save files to PREFIX/..\n"
-msgstr "  -P,  --directory-prefix=PREFIX  simpan file pada PREFIX/...\n"
+msgid "       --protocol-directories      use protocol name in directories\n"
+msgstr ""
+"       --protocol-directories      gunakan nama protokol dalam direktori\n"
 
 #: src/main.c:776
 #, fuzzy
-#| msgid ""
-#| "       --cut-dirs=NUMBER          ignore NUMBER remote directory "
-#| "components.\n"
+msgid "  -P,  --directory-prefix=PREFIX   save files to PREFIX/..\n"
+msgstr "  -P,  --directory-prefix=PREFIX   simpan berkas pada PREFIX/..\n"
+
+#: src/main.c:778
+#, fuzzy
 msgid ""
 "       --cut-dirs=NUMBER           ignore NUMBER remote directory "
 "components\n"
 msgstr ""
-"       --cut-dirs=NUMBER           abaikan NUMBER remote komponen "
-"direktori.\n"
-
-#: src/main.c:780
-msgid "HTTP options:\n"
-msgstr "Pilihan HTTP:\n"
+"       --cut-dirs=NUMBER           abaikan NUMBER remote komponen direktori\n"
 
 #: src/main.c:782
-#, fuzzy
-#| msgid "       --http-user=USER        set http user to USER.\n"
-msgid "       --http-user=USER            set http user to USER\n"
-msgstr "       --http-user=USER        set http user pada USER.\n"
+msgid "HTTP options:\n"
+msgstr "Opsi HTTP:\n"
 
 #: src/main.c:784
 #, fuzzy
-#| msgid "       --http-password=PASS    set http password to PASS.\n"
-msgid "       --http-password=PASS        set http password to PASS\n"
-msgstr "       --http-password=PASS    set http password pada PASS.\n"
+msgid "       --http-user=USER            set http user to USER\n"
+msgstr "       --http-user=USER            set http user pada USER\n"
 
 #: src/main.c:786
 #, fuzzy
-#| msgid "       --no-cache              disallow server-cached data.\n"
-msgid "       --no-cache                  disallow server-cached data\n"
-msgstr "       --nocache               dissallow server-cached data.\n"
+msgid "       --http-password=PASS        set http password to PASS\n"
+msgstr "       --http-password=PASS        set http password pada PASS\n"
 
 #: src/main.c:788
 #, fuzzy
-#| msgid ""
-#| "       --default-page=NAME     Change the default page name (normally\n"
-#| "                               this is `index.html'.).\n"
+msgid "       --no-cache                  disallow server-cached data\n"
+msgstr "       --no-cache                  melarang data server-cache\n"
+
+#: src/main.c:790
+#, fuzzy
 msgid ""
 "       --default-page=NAME         change the default page name (normally\n"
 "                                     this is 'index.html'.)\n"
 msgstr ""
-"       --default-page=NAMA     Ubah nama halaman baku (biasanya\n"
-"                               ini `index.html'.).\n"
+"       --default-page=NAMA         Ubah nama halaman baku (biasanya\n"
+"                                     ini 'index.html'.)\n"
 
-#: src/main.c:791
+#: src/main.c:793
 #, fuzzy
-#| msgid ""
-#| "  -E,  --adjust-extension      save HTML/CSS documents with proper "
-#| "extensions.\n"
 msgid ""
 "  -E,  --adjust-extension          save HTML/CSS documents with proper "
 "extensions\n"
 msgstr ""
-"  -E,  --adjust-extension      simpan HTML/CSS dokumen dengan ekstensi yang "
-"sesuai.\n"
-
-#: src/main.c:793
-#, fuzzy
-#| msgid ""
-#| "       --ignore-length         ignore `Content-Length' header field.\n"
-msgid ""
-"       --ignore-length             ignore 'Content-Length' header field\n"
-msgstr ""
-"       --ignore-length         abaikan `Content-Length' bagian header.\n"
+"  -E,  --adjust-extension          simpan HTML/CSS dokumen dengan ekstensi "
+"yang sesuai\n"
 
 #: src/main.c:795
 #, fuzzy
-#| msgid "       --header=STRING         insert STRING among the headers.\n"
-msgid "       --header=STRING             insert STRING among the headers\n"
-msgstr "       --header=STRING         masukkan STRING dalam headers.\n"
+msgid ""
+"       --ignore-length             ignore 'Content-Length' header field\n"
+msgstr ""
+"       --ignore-length             abaikan 'Content-Length' bagian header\n"
 
-#: src/main.c:798
+#: src/main.c:797
+msgid "       --header=STRING             insert STRING among the headers\n"
+msgstr "       --header=STRING             sisipkan STRING dalam header\n"
+
+#: src/main.c:800
+#, fuzzy
 msgid ""
 "       --compression=TYPE          choose compression, one of auto, gzip and "
 "none. (default: none)\n"
 msgstr ""
-
-#: src/main.c:801
-#, fuzzy
-#| msgid ""
-#| "       --max-redirect          maximum redirections allowed per page.\n"
-msgid ""
-"       --max-redirect              maximum redirections allowed per page\n"
-msgstr ""
-"       --max-redirect          batas maksimal yang diperbolehkan untuk "
-"redirection setiap halaman.\n"
+"       --compression=TYPE          pilih kompresi, salah satunya auto, gzip "
+"dan none. (default: tidak ada)\n"
 
 #: src/main.c:803
 #, fuzzy
-#| msgid "       --proxy-user=USER       set USER as proxy username.\n"
-msgid "       --proxy-user=USER           set USER as proxy username\n"
-msgstr "       --proxy-user=USER       set USER sebagai username proxy.\n"
+msgid ""
+"       --max-redirect              maximum redirections allowed per page\n"
+msgstr ""
+"       --max-redirect              batas maksimal yang diperbolehkan untuk "
+"redirection setiap halaman\n"
 
 #: src/main.c:805
 #, fuzzy
-#| msgid "       --proxy-password=PASS   set PASS as proxy password.\n"
-msgid "       --proxy-password=PASS       set PASS as proxy password\n"
-msgstr "       --proxy-password=PASS   set PASS sebagai password proxy.\n"
+msgid "       --proxy-user=USER           set USER as proxy username\n"
+msgstr "       --proxy-user=USER           set USER sebagai username proxy\n"
 
 #: src/main.c:807
 #, fuzzy
-#| msgid ""
-#| "       --referer=URL           include `Referer: URL' header in HTTP "
-#| "request.\n"
+msgid "       --proxy-password=PASS       set PASS as proxy password\n"
+msgstr "       --proxy-password=PASS       set PASS sebagai password proxy\n"
+
+#: src/main.c:809
+#, fuzzy
 msgid ""
 "       --referer=URL               include 'Referer: URL' header in HTTP "
 "request\n"
 msgstr ""
-"       --referer=URL           masukkan `Referer: URL' header dalam HTTP "
-"request.\n"
-
-#: src/main.c:809
-#, fuzzy
-#| msgid "       --save-headers          save the HTTP headers to file.\n"
-msgid "       --save-headers              save the HTTP headers to file\n"
-msgstr "       --save-headers          simpan HTTP headers pada file.\n"
+"       --referer=URL               masukkan 'Referer: URL' header dalam HTTP "
+"request\n"
 
 #: src/main.c:811
 #, fuzzy
-#| msgid ""
-#| "  -U,  --user-agent=AGENT      identify as AGENT instead of Wget/"
-#| "VERSION.\n"
+msgid "       --save-headers              save the HTTP headers to file\n"
+msgstr "       --save-headers              simpan HTTP headers pada berkas\n"
+
+#: src/main.c:813
+#, fuzzy
 msgid ""
 "  -U,  --user-agent=AGENT          identify as AGENT instead of Wget/"
 "VERSION\n"
 msgstr ""
-"  -U,  --user-agent=AGENT      identifikasi sebagai AGEN daripada sebagai "
-"Wget/VERSION.\n"
+"  -U,  --user-agent=AGENT          identifikasi sebagai AGEN daripada "
+"sebagai Wget/VERSION\n"
 
-#: src/main.c:813
+#: src/main.c:815
 #, fuzzy
-#| msgid ""
-#| "       --no-http-keep-alive    disable HTTP keep-alive (persistent "
-#| "connections).\n"
 msgid ""
 "       --no-http-keep-alive        disable HTTP keep-alive (persistent "
 "connections)\n"
 msgstr ""
-"       --no-http-keep-alive    disable HTTP keep-alive (persistent "
-"koneksi).\n"
-
-#: src/main.c:815
-#, fuzzy
-#| msgid "       --no-cookies            don't use cookies.\n"
-msgid "       --no-cookies                don't use cookies\n"
-msgstr "       --no-cookies            jangan menggunakan cookies.\n"
+"       --no-http-keep-alive        disable HTTP keep-alive (persistent "
+"koneksi)\n"
 
 #: src/main.c:817
-#, fuzzy
-#| msgid ""
-#| "       --load-cookies=FILE     load cookies from FILE before session.\n"
+msgid "       --no-cookies                don't use cookies\n"
+msgstr "       --no-cookies                jangan gunakan cookie\n"
+
+#: src/main.c:819
 msgid ""
 "       --load-cookies=FILE         load cookies from FILE before session\n"
 msgstr ""
-"       --load-cookies=FILE     load cookies dari FILE sebelum session.\n"
-
-#: src/main.c:819
-#, fuzzy
-#| msgid "       --save-cookies=FILE     save cookies to FILE after session.\n"
-msgid "       --save-cookies=FILE         save cookies to FILE after session\n"
-msgstr ""
-"       --save-cookies=FILE     simpan cookies pada FILE sesudah session.\n"
+"       --load-cookies=BERKAS       muat cookie dari BERKAS sebelum sesi\n"
 
 #: src/main.c:821
-#, fuzzy
-#| msgid ""
-#| "       --keep-session-cookies  load and save session (non-permanent) "
-#| "cookies.\n"
+msgid "       --save-cookies=FILE         save cookies to FILE after session\n"
+msgstr ""
+"       --save-cookies=BERKAS       simpan cookie pada BERKAS sesudah sesi\n"
+
+#: src/main.c:823
 msgid ""
 "       --keep-session-cookies      load and save session (non-permanent) "
 "cookies\n"
 msgstr ""
-"       --keep-session-cookies  load dan simpan session (non-permanen) "
-"cookies.\n"
+"       --keep-session-cookies      muat dan simpan sesi cookie (non-"
+"permanen)\n"
 
-#: src/main.c:823
-#, fuzzy
-#| msgid ""
-#| "       --post-data=STRING      use the POST method; send STRING as the "
-#| "data.\n"
+#: src/main.c:825
 msgid ""
 "       --post-data=STRING          use the POST method; send STRING as the "
 "data\n"
 msgstr ""
-"       --post-data=STRING      gunakan metoda POST; kirim STRING sebagai "
-"data.\n"
+"       --post-data=STRING          gunakan metoda POST; kirim STRING sebagai "
+"data\n"
 
-#: src/main.c:825
-#, fuzzy
-#| msgid ""
-#| "       --post-file=FILE        use the POST method; send contents of "
-#| "FILE.\n"
+#: src/main.c:827
 msgid ""
 "       --post-file=FILE            use the POST method; send contents of "
 "FILE\n"
 msgstr ""
-"       --post-file=FILE        gunakan metoda POST; kirim isi dari FILE.\n"
+"       --post-berkas=BERKAS        gunakan metoda POST; kirim isi dari "
+"BERKAS\n"
 
-#: src/main.c:827
-#, fuzzy
-#| msgid ""
-#| "       --method=HTTPMethod     use method \"HTTPMethod\" in the header.\n"
+#: src/main.c:829
 msgid ""
 "       --method=HTTPMethod         use method \"HTTPMethod\" in the request\n"
 msgstr ""
-"       --method=HTTPMethod     use method \"HTTPMethod\" in the header.\n"
+"       --method=HTTPMethod         gunakan metode \"HTTPMethod\" dalam "
+"permintaan\n"
 
-#: src/main.c:829
-#, fuzzy
-#| msgid ""
-#| "       --body-data=STRING      Send STRING as data. --method MUST be "
-#| "set.\n"
+#: src/main.c:831
 msgid ""
 "       --body-data=STRING          send STRING as data. --method MUST be "
 "set\n"
 msgstr ""
-"       --body-data=STRING      Send STRING as data. --method MUST be set.\n"
+"       --body-data=STRING          kirim STRING sebagai data. --method HARUS "
+"diatur\n"
 
-#: src/main.c:831
-#, fuzzy
-#| msgid ""
-#| "       --body-file=FILE        Send contents of FILE. --method MUST be "
-#| "set.\n"
+#: src/main.c:833
 msgid ""
 "       --body-file=FILE            send contents of FILE. --method MUST be "
 "set\n"
 msgstr ""
-"       --body-file=FILE        Send contents of FILE. --method MUST be set.\n"
+"       --body-berkas=BERKAS        kirim konten BERKAS. --method HARUS "
+"diatur\n"
 
-#: src/main.c:833
-#, fuzzy
-#| msgid ""
-#| "       --content-disposition   honor the Content-Disposition header when\n"
-#| "                               choosing local file names (EXPERIMENTAL).\n"
+#: src/main.c:835
 msgid ""
 "       --content-disposition       honor the Content-Disposition header "
 "when\n"
 "                                     choosing local file names "
 "(EXPERIMENTAL)\n"
 msgstr ""
-"       --content-disposition   Lihat header Content-Disposition ketika "
-"memilih\n"
-"                               berkas lokal (EKSPERIMEN).\n"
+"       --content-disposition       hormati header Content-Disposition "
+"ketika\n"
+"                                     memilih nama berkas lokal "
+"(EKSPERIMEN).\n"
 
-#: src/main.c:836
-#, fuzzy
-#| msgid ""
-#| "       --content-on-error      output the received content on server "
-#| "errors.\n"
+#: src/main.c:838
 msgid ""
 "       --content-on-error          output the received content on server "
 "errors\n"
 msgstr ""
-"       --content-on-error      output the received content on server "
-"errors.\n"
+"       --content-on-error          keluarkan konten yang diterima pada "
+"kesalahan server\n"
 
-#: src/main.c:838
+#: src/main.c:840
 #, fuzzy
-#| msgid ""
-#| "       --auth-no-challenge     send Basic HTTP authentication "
-#| "information\n"
-#| "                               without first waiting for the server's\n"
-#| "                               challenge.\n"
 msgid ""
 "       --auth-no-challenge         send Basic HTTP authentication "
 "information\n"
 "                                     without first waiting for the server's\n"
 "                                     challenge\n"
 msgstr ""
-"       --auth-no-challenge     Kirim informasi otentifikasi standar HTTP "
-"tanpa\n"
-"                               harus menunggu untuk ditanyai oleh server.\n"
-
-#: src/main.c:845
-msgid "HTTPS (SSL/TLS) options:\n"
-msgstr "Pilihan HTTPS (SSL/TLS):\n"
+"       --auth-no-challenge         kirim informasi otentikasi standar HTTP\n"
+"                                     tanpa harus menunggu untuk ditanyai\n"
+"                                     oleh server\n"
 
 #: src/main.c:847
-#, fuzzy
-#| msgid ""
-#| "       --secure-protocol=PR     choose secure protocol, one of auto, "
-#| "SSLv2,\n"
-#| "                                SSLv3, TLSv1 and PFS.\n"
+msgid "HTTPS (SSL/TLS) options:\n"
+msgstr "Opsi HTTPS (SSL/TLS):\n"
+
+#: src/main.c:849
 msgid ""
 "       --secure-protocol=PR        choose secure protocol, one of auto, "
 "SSLv2,\n"
 "                                     SSLv3, TLSv1, TLSv1_1, TLSv1_2, TLSv1_3 "
 "and PFS\n"
 msgstr ""
-"       --secure-protocol=PR     pilih secure protocolm salah satu dari "
+"       --secure-protocol=PR        pilih protokol aman, salah satu dari "
 "auto,\n"
-"                                SSLv2, SSLv3, dan TLSv1.\n"
-
-#: src/main.c:850
-#, fuzzy
-#| msgid "       --https-only             only follow secure HTTPS links\n"
-msgid "       --https-only                only follow secure HTTPS links\n"
-msgstr "       --https-only                ikuti link HTTPS only secure\n"
+"                                     SSLv2, SSLv3, TLSv1, TLSv1_1, TLSv1_2, "
+"TLSv1_3,\n"
+"                                     dan PFS\n"
 
 #: src/main.c:852
-#, fuzzy
-#| msgid ""
-#| "       --no-check-certificate   don't validate the server's certificate.\n"
+msgid "       --https-only                only follow secure HTTPS links\n"
+msgstr "       --https-only                hanya ikuti tautan HTTPS aman\n"
+
+#: src/main.c:854
 msgid ""
 "       --no-check-certificate      don't validate the server's certificate\n"
 msgstr ""
-"       --no-check-certificate   jangan memvalidasi server certificate.\n"
-
-#: src/main.c:854
-#, fuzzy
-#| msgid "       --certificate=FILE       client certificate file.\n"
-msgid "       --certificate=FILE          client certificate file\n"
-msgstr "       --certificate=FILE       client certificate file.\n"
+"       --no-check-certificate      jangan memvalidasi sertifikat server\n"
 
 #: src/main.c:856
-#, fuzzy
-#| msgid ""
-#| "       --certificate-type=TYPE  client certificate type, PEM or DER.\n"
+msgid "       --certificate=FILE          client certificate file\n"
+msgstr "       --certificate=FILE          berkas sertifikat klien\n"
+
+#: src/main.c:858
 msgid ""
 "       --certificate-type=TYPE     client certificate type, PEM or DER\n"
 msgstr ""
-"       --certificate-type=TYPE  tipe sertifikate client, PEM atau DER.\n"
-
-#: src/main.c:858
-#, fuzzy
-#| msgid "       --private-key=FILE       private key file.\n"
-msgid "       --private-key=FILE          private key file\n"
-msgstr "       --private-key=FILE       private key file.\n"
+"       --certificate-type=TYPE     tipe sertifikat klien, PEM atau DER\n"
 
 #: src/main.c:860
-#, fuzzy
-#| msgid "       --private-key-type=TYPE  private key type, PEM or DER.\n"
-msgid "       --private-key-type=TYPE     private key type, PEM or DER\n"
-msgstr "       --private-key-type=TYPE  tipe private key, PEM atau DER.\n"
+msgid "       --private-key=FILE          private key file\n"
+msgstr "       --private-key=FILE          berkas kunci privat\n"
 
 #: src/main.c:862
-#, fuzzy
-#| msgid "       --ca-certificate=FILE    file with the bundle of CA's.\n"
-msgid "       --ca-certificate=FILE       file with the bundle of CAs\n"
-msgstr "       --ca-certificate=FILE    file yang berisi CA's.\n"
+msgid "       --private-key-type=TYPE     private key type, PEM or DER\n"
+msgstr "       --private-key-type=TYPE     tipe kunci privat, PEM atau DER\n"
 
 #: src/main.c:864
-#, fuzzy
-#| msgid ""
-#| "       --ca-directory=DIR       directory where hash list of CA's is "
-#| "stored.\n"
+msgid "       --ca-certificate=FILE       file with the bundle of CAs\n"
+msgstr "       --ca-certificate=FILE       berkas dengan bundel CA\n"
+
+#: src/main.c:866
 msgid ""
 "       --ca-directory=DIR          directory where hash list of CAs is "
 "stored\n"
 msgstr ""
-"       --ca-directory=DIR       direktori dimana hash list dari CA's "
+"       --ca-directory=DIR          direktori dimana daftar hash list CA "
 "disimpan\n"
 
-#: src/main.c:866
-#, fuzzy
-#| msgid "       --ca-certificate=FILE    file with the bundle of CA's.\n"
-msgid "       --crl-file=FILE             file with bundle of CRLs\n"
-msgstr "       --ca-certificate=FILE    file yang berisi CA's.\n"
-
 #: src/main.c:868
+msgid "       --crl-file=FILE             file with bundle of CRLs\n"
+msgstr "       --ca-certificate=FILE       berkas dengan bundel CA\n"
+
+#: src/main.c:870
+#, fuzzy
 msgid ""
 "       --pinnedpubkey=FILE/HASHES  Public key (PEM/DER) file, or any number\n"
 "                                   of base64 encoded sha256 hashes preceded "
@@ -2244,32 +2061,33 @@ msgid ""
 "verify\n"
 "                                   peer against\n"
 msgstr ""
+"       --pinnedpubkey=FILE/HASHES  File kunci publik (PEM/DER), atau nomor "
+"apa pun\n"
+"                                   hash sha256 yang dikodekan base64 "
+"didahului oleh\n"
+"                                   'sha256//' dan dipisahkan oleh ';', untuk "
+"memverifikasi\n"
+"                                   peer terhadap\n"
 
-#: src/main.c:874
-#, fuzzy
-#| msgid ""
-#| "       --random-file=FILE       file with random data for seeding the SSL "
-#| "PRNG.\n"
+#: src/main.c:876
 msgid ""
 "       --random-file=FILE          file with random data for seeding the SSL "
 "PRNG\n"
 msgstr ""
-"       --random-file=FILE       file dengan data acak untuk seeding SSL "
-"PRNG.\n"
+"       --random-file=BERKAS        berkas dengan data acak untuk membibit "
+"PRNG SSL\n"
 
-#: src/main.c:878
+#: src/main.c:880
 #, fuzzy
-#| msgid ""
-#| "       --egd-file=FILE          file naming the EGD socket with random "
-#| "data.\n"
 msgid ""
 "       --egd-file=FILE             file naming the EGD socket with random "
 "data\n"
 msgstr ""
-"       --egd-file=FILE          penamaan file EGD socket dengan data "
-"random.\n"
+"       --egd-file=BERKAS           penamaan berkas EGD socket dengan data "
+"random\n"
 
-#: src/main.c:882
+#: src/main.c:884
+#, fuzzy
 msgid ""
 "       --ciphers=STR           Set the priority string (GnuTLS) or cipher "
 "list string (OpenSSL) directly.\n"
@@ -2278,907 +2096,789 @@ msgid ""
 "                                   The format and syntax of this string "
 "depend on the specific SSL/TLS engine.\n"
 msgstr ""
-
-#: src/main.c:889
-#, fuzzy
-#| msgid "HTTP options:\n"
-msgid "HSTS options:\n"
-msgstr "Pilihan HTTP:\n"
+"       --ciphers=STR           Atur string prioritas (GnuTLS) atau string "
+"daftar cipher (OpenSSL) secara langsung.\n"
+"                                   Gunakan dengan hati-hati. Opsi ini "
+"menimpa --secure-protocol.\n"
+"                                   Format dan sintaks string ini bergantung "
+"pada mesin SSL/TLS tertentu.\n"
 
 #: src/main.c:891
-#, fuzzy
-#| msgid "       --no-cache              disallow server-cached data.\n"
-msgid "       --no-hsts                   disable HSTS\n"
-msgstr "       --nocache               dissallow server-cached data.\n"
+msgid "HSTS options:\n"
+msgstr "Opsi HTTP:\n"
 
 #: src/main.c:893
-#, fuzzy
-#| msgid "  -v,  --verbose             be verbose (this is the default).\n"
+msgid "       --no-hsts                   disable HSTS\n"
+msgstr "       --no-hsts                   nonaktifkan HSTS\n"
+
+#: src/main.c:895
 msgid ""
 "       --hsts-file                 path of HSTS database (will override "
 "default)\n"
-msgstr "  -v,  --verbose             jadi verbose (ini yang default).\n"
+msgstr ""
+"       --hsts-file                 path basis data HSTS (akan menimpa nilai "
+"baku)\n"
 
-#: src/main.c:898
+#: src/main.c:900
 msgid "FTP options:\n"
-msgstr "Pilihan FTP:\n"
+msgstr "Opsi FTP:\n"
 
-#: src/main.c:901
-#, fuzzy
-#| msgid ""
-#| "       --ftp-stmlf             Use Stream_LF format for all binary FTP "
-#| "files.\n"
+#: src/main.c:903
 msgid ""
 "       --ftp-stmlf                 use Stream_LF format for all binary FTP "
 "files\n"
 msgstr ""
-"       --ftp-stmlf             Gunakan format Stream_LF untuk seluruh berkas "
-"binari FTP.\n"
-
-#: src/main.c:904
-#, fuzzy
-#| msgid "       --ftp-user=USER         set ftp user to USER.\n"
-msgid "       --ftp-user=USER             set ftp user to USER\n"
-msgstr "       --ftp-user=USER         set ftp user pada USER.\n"
+"       --ftp-stmlf                 gunakan format Stream_LF untuk semua "
+"berkas biner FTP\n"
 
 #: src/main.c:906
-#, fuzzy
-#| msgid "       --ftp-password=PASS     set ftp password to PASS.\n"
-msgid "       --ftp-password=PASS         set ftp password to PASS\n"
-msgstr "       --ftp-password=PASS     set ftp password pada PASS.\n"
+msgid "       --ftp-user=USER             set ftp user to USER\n"
+msgstr "       --ftp-user=PENGGUNA         menata pengguna ftp ke PENGGUNA\n"
 
 #: src/main.c:908
-#, fuzzy
-#| msgid "       --no-remove-listing     don't remove `.listing' files.\n"
-msgid "       --no-remove-listing         don't remove '.listing' files\n"
-msgstr "       --no-remove-listing     jangan hapus file `.listing'.\n"
+msgid "       --ftp-password=PASS         set ftp password to PASS\n"
+msgstr "       --ftp-password=SANDI        menata kata sandi ftp ke SANDI\n"
 
 #: src/main.c:910
-#, fuzzy
-#| msgid "       --no-glob               turn off FTP file name globbing.\n"
-msgid "       --no-glob                   turn off FTP file name globbing\n"
-msgstr "       --no-glob               matikan FTP nama file globbing.\n"
+msgid "       --no-remove-listing         don't remove '.listing' files\n"
+msgstr "       --no-remove-listing         jangan hapus berkas '.listing'\n"
 
 #: src/main.c:912
 #, fuzzy
-#| msgid ""
-#| "       --no-passive-ftp        disable the \"passive\" transfer mode.\n"
-msgid ""
-"       --no-passive-ftp            disable the \"passive\" transfer mode\n"
-msgstr "       --no-passive-ftp        disable the \"passive\" mode trasfer.\n"
+msgid "       --no-glob                   turn off FTP file name globbing\n"
+msgstr "       --no-glob                   matikan FTP nama berkas globbing\n"
 
 #: src/main.c:914
 #, fuzzy
-#| msgid "       --preserve-permissions  preserve remote file permissions.\n"
-msgid "       --preserve-permissions      preserve remote file permissions\n"
-msgstr "       --preserve-permissions  preserver remote file permissions.\n"
+msgid ""
+"       --no-passive-ftp            disable the \"passive\" transfer mode\n"
+msgstr ""
+"       --no-passive-ftp            menonaktifkan mode transfer \"pasif\"\n"
 
 #: src/main.c:916
 #, fuzzy
-#| msgid ""
-#| "       --retr-symlinks         when recursing, get linked-to files (not "
-#| "dir).\n"
+msgid "       --preserve-permissions      preserve remote file permissions\n"
+msgstr ""
+"       --preserve-permissions      mempertahankan izin berkas jarak jauh\n"
+
+#: src/main.c:918
+#, fuzzy
 msgid ""
 "       --retr-symlinks             when recursing, get linked-to files (not "
 "dir)\n"
 msgstr ""
-"       --retr-symlinks         ketika berekursif, ambil linked-to files "
-"(bukan dir).\n"
-
-#: src/main.c:921
-#, fuzzy
-#| msgid "FTP options:\n"
-msgid "FTPS options:\n"
-msgstr "Pilihan FTP:\n"
+"       --retr-symlinks             ketika berekursif, ambil linked-to files "
+"(bukan dir)\n"
 
 #: src/main.c:923
+msgid "FTPS options:\n"
+msgstr "Opsi FTPS:\n"
+
+#: src/main.c:925
 #, fuzzy
-#| msgid ""
-#| "       --ftp-stmlf             Use Stream_LF format for all binary FTP "
-#| "files.\n"
 msgid ""
 "       --ftps-implicit                 use implicit FTPS (default port is "
 "990)\n"
 msgstr ""
-"       --ftp-stmlf             Gunakan format Stream_LF untuk seluruh berkas "
-"binari FTP.\n"
+"       --ftp-stmlf                      gunakan format Stream_LF untuk "
+"seluruh berkas binari FTP\n"
 
-#: src/main.c:925
+#: src/main.c:927
 #, fuzzy
-#| msgid ""
-#| "  --trust-server-names             use the name specified by the "
-#| "redirection\n"
-#| "                                   url last component.\n"
 msgid ""
 "       --ftps-resume-ssl               resume the SSL/TLS session started in "
 "the control connection when\n"
 "                                         opening a data connection\n"
 msgstr ""
-"  --trust-server-names             jangan mengambil kembali file kecuali "
-"file\n"
-"                                   lebih baru dari file local.\n"
+"  --trust-server-names             jangan mengambil kembali berkas kecuali "
+"berkas\n"
+"                                     lebih baru dari berkas local\n"
 
-#: src/main.c:928
+#: src/main.c:930
+#, fuzzy
 msgid ""
 "       --ftps-clear-data-connection    cipher the control channel only; all "
 "the data will be in plaintext\n"
 msgstr ""
+"       --ftps-clear-data-connection     cipher saluran kontrol saja; semua "
+"data akan berada dalam plaintext\n"
 
-#: src/main.c:930
+#: src/main.c:932
+#, fuzzy
 msgid ""
 "       --ftps-fallback-to-ftp          fall back to FTP if FTPS is not "
 "supported in the target server\n"
 msgstr ""
-
-#: src/main.c:934
-msgid "WARC options:\n"
-msgstr "Pilihan WARC:\n"
+"       --ftps-fallback-to-ftp           kembali ke FTP jika FTPS tidak "
+"didukung di server target\n"
 
 #: src/main.c:936
-#, fuzzy
-#| msgid ""
-#| "       --warc-file=FILENAME      save request/response data to a .warc.gz "
-#| "file.\n"
+msgid "WARC options:\n"
+msgstr "Opsi WARC:\n"
+
+#: src/main.c:938
 msgid ""
 "       --warc-file=FILENAME        save request/response data to a .warc.gz "
 "file\n"
 msgstr ""
-"       --warc-file=FILENAME      save request/response data to a .warc.gz "
-"file.\n"
+"       --warc-file=FILENAME        menyimpan data permintaan/respon ke "
+"berkas .warc.gz\n"
 
-#: src/main.c:938
-#, fuzzy
-#| msgid ""
-#| "       --warc-header=STRING      insert STRING into the warcinfo record.\n"
+#: src/main.c:940
 msgid ""
 "       --warc-header=STRING        insert STRING into the warcinfo record\n"
 msgstr ""
-"       --warc-header=STRING      masukkan STRING dalam warcinfo record.\n"
-
-#: src/main.c:940
-#, fuzzy
-#| msgid ""
-#| "       --warc-max-size=NUMBER    set maximum size of WARC files to "
-#| "NUMBER.\n"
-msgid ""
-"       --warc-max-size=NUMBER      set maximum size of WARC files to NUMBER\n"
-msgstr ""
-"       --warc-max-size=NUMBER    set maximum size of WARC files to NUMBER.\n"
+"       --warc-header=STRING        sisipkan STRING dalam record warcinfo\n"
 
 #: src/main.c:942
 #, fuzzy
-#| msgid "       --warc-cdx                write CDX index files.\n"
-msgid "       --warc-cdx                  write CDX index files\n"
-msgstr "       --warc-cdx                write CDX index files.\n"
+msgid ""
+"       --warc-max-size=NUMBER      set maximum size of WARC files to NUMBER\n"
+msgstr ""
+"       --warc-max-size=NUMBER      mengatur ukuran maksimum berkas WARC ke "
+"NUMBER\n"
 
 #: src/main.c:944
+msgid "       --warc-cdx                  write CDX index files\n"
+msgstr "       --warc-cdx                  menulis berkas indeks CDX\n"
+
+#: src/main.c:946
 #, fuzzy
-#| msgid ""
-#| "       --warc-dedup=FILENAME     do not store records listed in this CDX "
-#| "file.\n"
 msgid ""
 "       --warc-dedup=FILENAME       do not store records listed in this CDX "
 "file\n"
 msgstr ""
-"       --warc-dedup=FILENAME     do not store records listed in this CDX "
-"file.\n"
+"       --warc-dedup=FILENAME       tidak menyimpan catatan yang tercantum "
+"dalam berkas CDX ini\n"
 
-#: src/main.c:947
+#: src/main.c:949
 #, fuzzy
-#| msgid ""
-#| "       --no-warc-compression     do not compress WARC files with GZIP.\n"
 msgid ""
 "       --no-warc-compression       do not compress WARC files with GZIP\n"
 msgstr ""
-"       --no-warc-compression     do not compress WARC files with GZIP.\n"
-
-#: src/main.c:950
-#, fuzzy
-#| msgid "       --no-warc-digests         do not calculate SHA1 digests.\n"
-msgid "       --no-warc-digests           do not calculate SHA1 digests\n"
-msgstr "       --no-warc-digests         do not calculate SHA1 digests.\n"
+"       --no-warc-compression       jangan mengompres berkas WARC dengan "
+"GZIP\n"
 
 #: src/main.c:952
 #, fuzzy
-#| msgid ""
-#| "       --no-warc-keep-log        do not store the log file in a WARC "
-#| "record.\n"
+msgid "       --no-warc-digests           do not calculate SHA1 digests\n"
+msgstr "       --no-warc-digests           tidak menghitung digest SHA1\n"
+
+#: src/main.c:954
+#, fuzzy
 msgid ""
 "       --no-warc-keep-log          do not store the log file in a WARC "
 "record\n"
 msgstr ""
-"       --no-warc-keep-log        do not store the log file in a WARC "
-"record.\n"
+"       --no-warc-keep-log          jangan menyimpan berkas log dalam catatan "
+"WARC\n"
 
-#: src/main.c:954
+#: src/main.c:956
 #, fuzzy
-#| msgid ""
-#| "       --warc-tempdir=DIRECTORY  location for temporary files created by "
-#| "the\n"
-#| "                                 WARC writer.\n"
 msgid ""
 "       --warc-tempdir=DIRECTORY    location for temporary files created by "
 "the\n"
 "                                     WARC writer\n"
 msgstr ""
-"       --warc-tempdir=DIRECTORY  location for temporary files created by "
-"the\n"
-"                                 WARC writer.\n"
-
-#: src/main.c:959
-msgid "Recursive download:\n"
-msgstr "Recursive download:\n"
+"       --warc-tempdir=DIREKTORI    untuk berkas sementara yang dibuat oleh\n"
+"                                     Penulis WARC\n"
 
 #: src/main.c:961
-#, fuzzy
-#| msgid "  -r,  --recursive          specify recursive download.\n"
-msgid "  -r,  --recursive                 specify recursive download\n"
-msgstr ""
-"  -r,  --recursive          spesifikasikan untuk mendownload rekursif.\n"
+msgid "Recursive download:\n"
+msgstr "Unduhan rekursif:\n"
 
 #: src/main.c:963
 #, fuzzy
-#| msgid ""
-#| "  -l,  --level=NUMBER       maximum recursion depth (inf or 0 for "
-#| "infinite).\n"
+msgid "  -r,  --recursive                 specify recursive download\n"
+msgstr ""
+"  -r,  --recursive                 spesifikasikan untuk mendownload "
+"rekursif\n"
+
+#: src/main.c:965
+#, fuzzy
 msgid ""
 "  -l,  --level=NUMBER              maximum recursion depth (inf or 0 for "
 "infinite)\n"
 msgstr ""
-"  -l,  --level=NUMBER      maksimum kedalaman rekursi (inf atau 0 untuk tak "
-"terhingga).\n"
+"  -l,  --level=NUMBER              maksimum kedalaman rekursi (inf atau 0 "
+"untuk tak terhingga)\n"
 
-#: src/main.c:965
-#, fuzzy
-#| msgid ""
-#| "       --delete-after       delete files locally after downloading them.\n"
+#: src/main.c:967
 msgid ""
 "       --delete-after              delete files locally after downloading "
 "them\n"
 msgstr ""
-"       --delete-after       delete files locally sesudah mendownloadnya.\n"
+"       --delete-after              hapus berkas di lokal setelah "
+"mengunduhnya\n"
 
-#: src/main.c:967
+#: src/main.c:969
 #, fuzzy
-#| msgid ""
-#| "  -k,  --convert-links      make links in downloaded HTML or CSS point "
-#| "to\n"
-#| "                            local files.\n"
 msgid ""
 "  -k,  --convert-links             make links in downloaded HTML or CSS "
 "point to\n"
 "                                     local files\n"
 msgstr ""
-"  -k,  --convert-links      buat links dalam HTML yang didownload atau CSS "
-"yang\n"
-"                            menunjuk ke berkas lokal.\n"
+"  -k,  --convert-links             buat links dalam HTML yang didownload "
+"atau CSS yang\n"
+"                                     menunjuk ke berkas lokal.\n"
 
-#: src/main.c:970
+#: src/main.c:972
+#, fuzzy
 msgid ""
 "       --convert-file-only         convert the file part of the URLs only "
 "(usually known as the basename)\n"
 msgstr ""
+"       --convert-file-only         mengonversi bagian berkas dari URL saja "
+"(biasanya dikenal sebagai nama dasar)\n"
 
-#: src/main.c:972
-#, fuzzy
-#| msgid ""
-#| "  --backups=N   before writing file X, rotate up to N backup files.\n"
+#: src/main.c:974
 msgid ""
 "       --backups=N                 before writing file X, rotate up to N "
 "backup files\n"
-msgstr "  --backups=N   sebelum mengubah berkas X, backup sebagai X.orig.\n"
+msgstr ""
+"       --backups=N                 sebelum menulis berkas X, putar hingga N "
+"berkas cadangan\n"
 
-#: src/main.c:976
-#, fuzzy
-#| msgid ""
-#| "  -K,  --backup-converted   before converting file X, back up as X_orig.\n"
+#: src/main.c:978
 msgid ""
 "  -K,  --backup-converted          before converting file X, back up as "
 "X_orig\n"
 msgstr ""
-"  -K,  --backup-converted   sebelum mengubah berkas X, backup sebagai X."
-"orig.\n"
+"  -K,  --backup-converted          sebelum mengonversi berkas X, cadangkan "
+"sebagai X_orig\n"
 
-#: src/main.c:979
-#, fuzzy
-#| msgid ""
-#| "  -K,  --backup-converted   before converting file X, back up as X.orig.\n"
+#: src/main.c:981
 msgid ""
 "  -K,  --backup-converted          before converting file X, back up as X."
 "orig\n"
 msgstr ""
-"  -K,  --backup-converted   sebelum mengubah file X, backup sebagai X.orig.\n"
+"  -K,  --backup-converted          sebelum mengonversi berkas X, cadangkan "
+"sebagai X.orig\n"
 
-#: src/main.c:982
-#, fuzzy
-#| msgid ""
-#| "  -m,  --mirror             shortcut for -N -r -l inf --no-remove-"
-#| "listing.\n"
+#: src/main.c:984
 msgid ""
 "  -m,  --mirror                    shortcut for -N -r -l inf --no-remove-"
 "listing\n"
 msgstr ""
-"  -m,  --mirror             shortcut untuk -N -r -l inf --no-remove-"
-"listing.\n"
+"  -m,  --mirror                    pintasan untuk -N -r -l inf --no-remove-"
+"listing\n"
 
-#: src/main.c:984
-#, fuzzy
-#| msgid ""
-#| "  -p,  --page-requisites    get all images, etc. needed to display HTML "
-#| "page.\n"
+#: src/main.c:986
 msgid ""
 "  -p,  --page-requisites           get all images, etc. needed to display "
 "HTML page\n"
 msgstr ""
-"  -p,  --page-requisites    ambil semua gambar, dll. yang diperlukan untuk "
-"menampilkan file HTML.\n"
+"  -p,  --page-requisites           ambil semua gambar, dll. yang diperlukan "
+"untuk menampilkan berkas HTML\n"
 
-#: src/main.c:986
-#, fuzzy
-#| msgid ""
-#| "       --strict-comments    turn on strict (SGML) handling of HTML "
-#| "comments.\n"
+#: src/main.c:988
 msgid ""
 "       --strict-comments           turn on strict (SGML) handling of HTML "
 "comments\n"
 msgstr ""
-"       --strict-comments    hidupkan strick (SGML) handling dari komentar "
-"HTML.\n"
-
-#: src/main.c:990
-msgid "Recursive accept/reject:\n"
-msgstr "Recursive diterima/ditolak:\n"
+"       --strict-comments           hidupkan penanganan (SGML) ketat dari "
+"komentar HTML\n"
 
 #: src/main.c:992
-#, fuzzy
-#| msgid ""
-#| "  -A,  --accept=LIST               comma-separated list of accepted "
-#| "extensions.\n"
+msgid "Recursive accept/reject:\n"
+msgstr "Terima/tolak rekursif:\n"
+
+#: src/main.c:994
 msgid ""
 "  -A,  --accept=LIST               comma-separated list of accepted "
 "extensions\n"
 msgstr ""
-"  -A,  --accept=LIST               list yang dipisahkan oleh koma yang "
-"berisiekstensi yang diterima.\n"
+"  -A,  --accept=DAFTAR             daftar yang dipisah koma dari ekstensi "
+"yang diterima\n"
 
-#: src/main.c:994
-#, fuzzy
-#| msgid ""
-#| "  -R,  --reject=LIST               comma-separated list of rejected "
-#| "extensions.\n"
+#: src/main.c:996
 msgid ""
 "  -R,  --reject=LIST               comma-separated list of rejected "
 "extensions\n"
 msgstr ""
-"  -R,  --reject=LIST               list yang dipisahkan oleh koma yang "
-"berisiekstensi yang ditolak.\n"
-
-#: src/main.c:996
-#, fuzzy
-#| msgid "       --accept-regex=REGEX        regex matching accepted URLs.\n"
-msgid "       --accept-regex=REGEX        regex matching accepted URLs\n"
-msgstr "       --accept-regex=REGEX        regex matching accepted URLs.\n"
+"  -R,  --reject=DAFTAR             daftar yang dipisah koma dari ekstensi "
+"yang ditolak\n"
 
 #: src/main.c:998
-#, fuzzy
-#| msgid "       --reject-regex=REGEX        regex matching rejected URLs.\n"
+msgid "       --accept-regex=REGEX        regex matching accepted URLs\n"
+msgstr ""
+"       --accept-regex=REGEX        regex cocok dengan URL yang diterima\n"
+
+#: src/main.c:1000
 msgid "       --reject-regex=REGEX        regex matching rejected URLs\n"
-msgstr "       --reject-regex=REGEX        regex matching rejected URLs.\n"
+msgstr ""
+"       --reject-regex=REGEX        regex cocok dengan URL yang ditolak\n"
 
-#: src/main.c:1001
-#, fuzzy
-#| msgid "       --regex-type=TYPE           regex type (posix|pcre).\n"
+#: src/main.c:1003
 msgid "       --regex-type=TYPE           regex type (posix|pcre)\n"
-msgstr "       --regex-type=TYPE           pilih tipe regex (posix|pcre).\n"
+msgstr "       --regex-type=TYPE           tipe regex (posix|pcre)\n"
 
-#: src/main.c:1004
-#, fuzzy
-#| msgid "       --regex-type=TYPE           regex type (posix).\n"
+#: src/main.c:1006
 msgid "       --regex-type=TYPE           regex type (posix)\n"
-msgstr "       --regex-type=TYPE           pilih tipe regex (posix).\n"
+msgstr "       --regex-type=TYPE           tipe regex (posix)\n"
 
-#: src/main.c:1007
-#, fuzzy
-#| msgid ""
-#| "  -D,  --domains=LIST              comma-separated list of accepted "
-#| "domains.\n"
+#: src/main.c:1009
 msgid ""
 "  -D,  --domains=LIST              comma-separated list of accepted domains\n"
 msgstr ""
-"  -D,  --domains=LIST              list yang dipisahkan oleh koma yang "
-"berisidomains yang dibolehkan.\n"
+"  -D,  --domains=DAFTAR            daftar yang dipisah koma dari domain yang "
+"diterima\n"
 
-#: src/main.c:1009
-#, fuzzy
-#| msgid ""
-#| "       --exclude-domains=LIST      comma-separated list of rejected "
-#| "domains.\n"
+#: src/main.c:1011
 msgid ""
 "       --exclude-domains=LIST      comma-separated list of rejected domains\n"
 msgstr ""
-"       --exclude-domains=LIST      list yang dipisahkan oleh koma yang "
-"berisidomains yang direject/tolak.\n"
-
-#: src/main.c:1011
-#, fuzzy
-#| msgid ""
-#| "       --follow-ftp                follow FTP links from HTML documents.\n"
-msgid ""
-"       --follow-ftp                follow FTP links from HTML documents\n"
-msgstr "       --follow-ftp                ikuti link FTP dari dokumen HTML.\n"
+"       --exclude-domains=DAFTAR    daftar yang dipisah koma dari domain yang "
+"diterima\n"
 
 #: src/main.c:1013
 #, fuzzy
-#| msgid ""
-#| "       --follow-tags=LIST          comma-separated list of followed HTML "
-#| "tags.\n"
+msgid ""
+"       --follow-ftp                follow FTP links from HTML documents\n"
+msgstr "       --follow-ftp                ikuti link FTP dari dokumen HTML\n"
+
+#: src/main.c:1015
 msgid ""
 "       --follow-tags=LIST          comma-separated list of followed HTML "
 "tags\n"
 msgstr ""
-"       --follow-tags=LIST          list yang dipisahkan oleh koma yang "
-"berisitag HTML yang diikuti\n"
+"       --follow-tags=DAFTAR        daftar yang dipisah koma dari tag HTML "
+"yang diikuti\n"
 
-#: src/main.c:1015
-#, fuzzy
-#| msgid ""
-#| "       --ignore-tags=LIST          comma-separated list of ignored HTML "
-#| "tags.\n"
+#: src/main.c:1017
 msgid ""
 "       --ignore-tags=LIST          comma-separated list of ignored HTML "
 "tags\n"
 msgstr ""
-"       --ignore-tags=LIST          list yang dipisahkan oleh koma yang "
-"berisitag HTML yang diabaikan.\n"
-
-#: src/main.c:1017
-#, fuzzy
-#| msgid ""
-#| "  -H,  --span-hosts                go to foreign hosts when recursive.\n"
-msgid "  -H,  --span-hosts                go to foreign hosts when recursive\n"
-msgstr ""
-"  -H,  --span-hosts                pergi ke host asing ketika recursive.\n"
+"       --ignore-tags=DAFTAR        daftar yang dipisah koma dari tag HTML "
+"yang diabaikan\n"
 
 #: src/main.c:1019
 #, fuzzy
-#| msgid "  -L,  --relative                  follow relative links only.\n"
-msgid "  -L,  --relative                  follow relative links only\n"
+msgid "  -H,  --span-hosts                go to foreign hosts when recursive\n"
 msgstr ""
-"  -L,  --relative                  hanya mengikuti links relative saja.\n"
+"  -H,  --span-hosts                pergi ke host asing ketika recursive\n"
 
 #: src/main.c:1021
 #, fuzzy
-#| msgid "  -I,  --include-directories=LIST  list of allowed directories.\n"
-msgid "  -I,  --include-directories=LIST  list of allowed directories\n"
+msgid "  -L,  --relative                  follow relative links only\n"
 msgstr ""
-"  -I,  --include-directories=LIST  list dari direktori yang dibolehkan.\n"
+"  -L,  --relative                  hanya mengikuti links relative saja\n"
 
 #: src/main.c:1023
 #, fuzzy
-#| msgid ""
-#| "  --trust-server-names             use the name specified by the "
-#| "redirection\n"
-#| "                                   url last component.\n"
+msgid "  -I,  --include-directories=LIST  list of allowed directories\n"
+msgstr ""
+"  -I,  --include-directories=LIST  list dari direktori yang dibolehkan\n"
+
+#: src/main.c:1025
+#, fuzzy
 msgid ""
 "       --trust-server-names        use the name specified by the "
 "redirection\n"
 "                                     URL's last component\n"
 msgstr ""
-"  --trust-server-names             jangan mengambil kembali file kecuali "
-"file\n"
-"                                   lebih baru dari file local.\n"
-
-#: src/main.c:1026
-#, fuzzy
-#| msgid "  -X,  --exclude-directories=LIST  list of excluded directories.\n"
-msgid "  -X,  --exclude-directories=LIST  list of excluded directories\n"
-msgstr ""
-"  -X,  --exclude-directories=LIST   list dari direktori yang diabaikan.\n"
+"       --trust-server-names        gunakan nama yang ditentukan oleh "
+"pengalihan\n"
+"                                     komponen terakhir URL\n"
 
 #: src/main.c:1028
 #, fuzzy
-#| msgid ""
-#| "  -np, --no-parent                 don't ascend to the parent directory.\n"
+msgid "  -X,  --exclude-directories=LIST  list of excluded directories\n"
+msgstr ""
+"  -X,  --exclude-directories=LIST  daftar dari direktori yang dikecualikan\n"
+
+#: src/main.c:1030
+#, fuzzy
 msgid ""
 "  -np, --no-parent                 don't ascend to the parent directory\n"
-msgstr ""
-"  -np, --no-parent                 jangan merambah direktori atasnya.\n"
+msgstr "  -np, --no-parent                 jangan naik ke direktori atasnya\n"
 
-#: src/main.c:1031
+#: src/main.c:1033
 msgid ""
 "Email bug reports, questions, discussions to <bug-wget@gnu.org>\n"
 "and/or open issues at https://savannah.gnu.org/bugs/?"
 "func=additem&group=wget.\n"
 msgstr ""
+"Surelkan laporan kutu, pertanyaan, diskusi ke <bug-wget@gnu.org>\n"
+"dan/atau buka masalah di https://savannah.gnu.org/bugs/?"
+"func=additem&group=wget.\n"
 
-#: src/main.c:1037
+#: src/main.c:1039
 #, c-format
 msgid "GNU Wget %s, a non-interactive network retriever.\n"
-msgstr "GNU Wget %s, adalah sebuah non-interaktif network retriever.\n"
+msgstr "GNU Wget %s, sebuah pengunduh jaringan non-interaktif.\n"
 
-#: src/main.c:1080
+#: src/main.c:1082
 #, c-format
 msgid "Password for user %s: "
 msgstr "Kata sandi untuk pengguna %s: "
 
-#: src/main.c:1082
+#: src/main.c:1084
 #, c-format
 msgid "Password: "
 msgstr "Kata sandi: "
 
-#: src/main.c:1106
-#, fuzzy, c-format
-#| msgid "cannot create pipe"
+#: src/main.c:1108
+#, c-format
 msgid "Cannot create pipe\n"
-msgstr "cannot create pipe"
+msgstr "Tidak bisa membuat pipa\n"
 
-#: src/main.c:1114
+#: src/main.c:1116
 #, c-format
 msgid "Error initializing spawn file actions for use-askpass: %d\n"
 msgstr ""
+"Kesalahan saat menginsialisasi tindakan spawn berkas untuk use-askpass: %d\n"
 
-#: src/main.c:1123
+#: src/main.c:1125
 #, c-format
 msgid "Error setting spawn file actions for use-askpass: %d\n"
-msgstr ""
+msgstr "Galat saat mengatur tindakan spawn berkas untuk use-askpass: %d\n"
 
-#: src/main.c:1147
+#: src/main.c:1149
 #, c-format
 msgid "Error reading response from command \"%s %s\": %s\n"
-msgstr ""
+msgstr "Galat saat membaca jawaban dari perintah \"%s %s\": %s\n"
 
-#: src/main.c:1170
+#: src/main.c:1172
 #, c-format
 msgid "Username for '%s%s': "
-msgstr ""
+msgstr "Nama pengguna untuk '%s%s': "
 
-#: src/main.c:1180
-#, fuzzy, c-format
-#| msgid "Password for user %s: "
+#: src/main.c:1182
+#, c-format
 msgid "Password for '%s%s@%s': "
-msgstr "Kata sandi untuk pengguna %s: "
+msgstr "Kata sandi untuk pengguna '%s%s@%s': "
 
-#: src/main.c:1252
+#: src/main.c:1254
 msgid "Wgetrc: "
 msgstr "Wgetrc: "
 
-#: src/main.c:1253
+#: src/main.c:1255
 msgid "Locale: "
 msgstr "Lokal: "
 
-#: src/main.c:1254
+#: src/main.c:1256
 msgid "Compile: "
 msgstr "Kompilasi: "
 
-#: src/main.c:1255
+#: src/main.c:1257
 msgid "Link: "
-msgstr "Sambungkan: "
+msgstr "Taut: "
 
-#: src/main.c:1259
+#: src/main.c:1261
 #, c-format
 msgid ""
 "GNU Wget %s built on %s.\n"
 "\n"
 msgstr ""
-"GNU Wget %s dibuat di %s.\n"
+"GNU Wget %s dibangun pada %s.\n"
 "\n"
 
-#: src/main.c:1292
+#: src/main.c:1294
 #, c-format
 msgid "    %s (env)\n"
 msgstr "    %s (lingkungan)\n"
 
-#: src/main.c:1299
+#: src/main.c:1301
 #, c-format
 msgid "    %s (user)\n"
 msgstr "    %s (pengguna)\n"
 
-#: src/main.c:1304
+#: src/main.c:1306
 #, c-format
 msgid "    %s (system)\n"
 msgstr "    %s (sistem)\n"
 
 #. TRANSLATORS: When available, an actual copyright character
 #. (circle-c) should be used in preference to "(C)".
-#: src/main.c:1332
-#, fuzzy, c-format
-#| msgid "Copyright (C) 2011 Free Software Foundation, Inc.\n"
+#: src/main.c:1334
+#, c-format
 msgid "Copyright (C) %s Free Software Foundation, Inc.\n"
-msgstr "Hak Cipta (C) 2011 Free Software Foundation, Inc.\n"
+msgstr "Hak Cipta (C) %s Free Software Foundation, Inc.\n"
 
-#: src/main.c:1335
+#: src/main.c:1337
 msgid ""
 "License GPLv3+: GNU GPL version 3 or later\n"
 "<http://www.gnu.org/licenses/gpl.html>.\n"
 "This is free software: you are free to change and redistribute it.\n"
 "There is NO WARRANTY, to the extent permitted by law.\n"
 msgstr ""
-"Lisensi GPLv3+: GNU GPL versi 3 atau lebih\n"
+"Lisensi GPLv3+: GNU GPL versi 3 atau lebih baru\n"
 "<http://www.gnu.org/licenses/gpl.html>.\n"
-"Ini adalah free software; Anda bebas untuk mengubah dan "
-"mendistribusikannya.\n"
-"Tidak ada GARANSI, selama masih diijinkan oleh hukum yang berlaku.\n"
+"Ini adalah perangkat lunak bebas: Anda bebas untuk mengubah dan "
+"mendistribusikannya kembali.\n"
+"Tidak ada JAMINAN, sejauh diizinkan oleh hukum.\n"
 
 #. TRANSLATORS: When available, please use the proper diacritics for
 #. names such as this one. See en_US.po for reference.
-#: src/main.c:1343
+#: src/main.c:1345
 msgid ""
 "\n"
 "Originally written by Hrvoje Niksic <hniksic@xemacs.org>.\n"
 msgstr ""
 "\n"
-"Originalnya ditulis oleh Hrvoje Niksic <hniksic@xemacs.org>.\n"
+"Aslinya ditulis oleh Hrvoje Niksic <hniksic@xemacs.org>.\n"
 
-#: src/main.c:1346
+#: src/main.c:1348
 msgid "Please send bug reports and questions to <bug-wget@gnu.org>.\n"
-msgstr ""
-"Mohon kirimkan laporan kesalahan dan pertanyaan ke <bug-wget@gnu.org>.\n"
+msgstr "Mohon kirim laporan kutu dan pertanyaan ke <bug-wget@gnu.org>.\n"
 
-#: src/main.c:1399
+#: src/main.c:1400
 #, c-format
 msgid "Memory allocation problem\n"
-msgstr "Memory allocation problem\n"
+msgstr "Masalah alokasi memori\n"
 
-#: src/main.c:1450
+#: src/main.c:1451
 #, c-format
 msgid "Exiting due to error in %s\n"
-msgstr "Exiting due to error in %s\n"
+msgstr "Keluar karena kesalahan dalam %s\n"
 
-#: src/main.c:1480 src/main.c:1551 src/main.c:1793
+#: src/main.c:1481 src/main.c:1552 src/main.c:1794
 #, c-format
 msgid "Try `%s --help' for more options.\n"
-msgstr "Coba `%s --help' untuk informasi lebih lanjut.\n"
+msgstr "Coba '%s --help' untuk informasi lebih lanjut.\n"
 
-#: src/main.c:1547
+#: src/main.c:1548
 #, c-format
 msgid "%s: illegal option -- `-n%c'\n"
-msgstr "%s: illegal pilihan -- `-n%c'\n"
+msgstr "%s: opsi ilegal - '-n%c'\n"
 
-#: src/main.c:1593
+#: src/main.c:1594
 #, c-format
 msgid "Debugging support not compiled in. Ignoring --debug flag.\n"
-msgstr ""
+msgstr "Dukungan pengawakutuan tidak dikompilasi. Mengabaikan flag --debug.\n"
 
-#: src/main.c:1606
+#: src/main.c:1607
 #, c-format
 msgid ""
 "Both --no-clobber and --convert-links were specified, only --convert-links "
 "will be used.\n"
 msgstr ""
-"Both --no-clobber and --convert-links were specified, only --convert-links "
-"will be used.\n"
+"Baik --no-clobber dan --convert-links ditentukan, hanya --convert-links yang "
+"akan digunakan.\n"
 
-#: src/main.c:1608
-#, fuzzy, c-format
-#| msgid ""
-#| "Both --no-clobber and --convert-links were specified, only --convert-"
-#| "links will be used.\n"
+#: src/main.c:1609
+#, c-format
 msgid ""
 "Both --no-clobber and --convert-file-only were specified, only --convert-"
 "file-only will be used.\n"
 msgstr ""
-"Both --no-clobber and --convert-links were specified, only --convert-links "
-"will be used.\n"
+"Baik --no-clobber dan --convert-berkas-only ditentukan, hanya --convert-"
+"berkas-only yang akan digunakan.\n"
 
-#: src/main.c:1641
+#: src/main.c:1642
 #, c-format
 msgid "Can't be verbose and quiet at the same time.\n"
-msgstr "Tidak dapat verbose dan quiet pada waktu bersamaan.\n"
+msgstr "Tak bisa cerewet dan hening pada waktu yang sama.\n"
 
-#: src/main.c:1647
+#: src/main.c:1648
 #, c-format
 msgid "Can't timestamp and not clobber old files at the same time.\n"
 msgstr ""
-"Tidak dapat timestamp dan tidak menclobber file lama pada waktu bersamaan.\n"
+"Tak bisa menstempel waktu dan tidak menimpa berkas lama pada waktu yang "
+"sama.\n"
 
-#: src/main.c:1656
+#: src/main.c:1657
 #, c-format
 msgid "Cannot specify both --inet4-only and --inet6-only.\n"
-msgstr "Tidak dapat menspesifikasikan berdua --inet4-only dan --inet6-only.\n"
+msgstr "Tidak bisa menyatakan --inet4-only dan --inet6-only sekaligus.\n"
 
-#: src/main.c:1666
-#, fuzzy
-#| msgid ""
-#| "Cannot specify both -k and -O if multiple URLs are given, or in "
-#| "combination\n"
-#| "with -p or -r. See the manual for details.\n"
-#| "\n"
+#: src/main.c:1667
 msgid ""
 "Cannot specify both -k or --convert-file-only and -O if multiple URLs are "
 "given, or in combination\n"
 "with -p or -r. See the manual for details.\n"
 "\n"
 msgstr ""
-"Tidak dapat menspesifikasikan kedua duanya -k dan -O jika multiple URL "
+"Tidak bisa menyatakan -k atau --convert-berkas-only dan -O jika beberapa URL "
 "diberikan, atau dalam kombinasi\n"
-"dengan -p atau -r. Lihat manual untuk informasi lebih details.\n"
+"dengan -p atau -r. Lihat manual untuk detailnya.\n"
 "\n"
 
-#: src/main.c:1675
+#: src/main.c:1676
 msgid ""
 "WARNING: combining -O with -r or -p will mean that all downloaded content\n"
 "will be placed in the single file you specified.\n"
 "\n"
 msgstr ""
-"PERINGATAN: mengkombinasikan -O dengan -r atau -p berarti bahwa semua yang\n"
-"akan diambil akan diletakan dalam sebuah berkas yang anda spesifikasikan.\n"
+"PERINGATAN: mengkombinasikan -O dengan -r atau -p berarti bahwa semua isi\n"
+"yang diunduh akan diletakan dalam satu berkas yang Anda spesifikasikan.\n"
 "\n"
 
-#: src/main.c:1681
+#: src/main.c:1682
 msgid ""
 "WARNING: timestamping does nothing in combination with -O. See the manual\n"
 "for details.\n"
 "\n"
 msgstr ""
-"PERINGATAN: penandawaktu tidak berfungsi dengan pilihan -O. Lihat manual\n"
-"untuk informasi lebih lengkap.\n"
+"PERINGATAN: stempel waktu tidak melakukan apa pun dalam kombinasi dengan -"
+"O.\n"
+"Lihat manual untuk detailnya.\n"
 "\n"
 
-#: src/main.c:1701
+#: src/main.c:1702
 #, c-format
 msgid ""
 "WARC output does not work with --no-clobber, --no-clobber will be disabled.\n"
 msgstr ""
-"WARC output does not work with --no-clobber, --no-clobber will be disabled.\n"
+"Keluaran WARC tidak berfungsi dengan --no-clobber, --no-clobber akan "
+"dinonaktifkan.\n"
 
-#: src/main.c:1708
+#: src/main.c:1709
 #, c-format
 msgid ""
 "WARC output does not work with timestamping, timestamping will be disabled.\n"
 msgstr ""
-"WARC output does not work with timestamping, timestamping will be disabled.\n"
+"Keluaran WARC tidak berfungsi dengan stempel waktu, stempel waktu akan "
+"dinonaktifkan.\n"
 
-#: src/main.c:1715
+#: src/main.c:1716
 #, c-format
 msgid "WARC output does not work with --spider.\n"
-msgstr "WARC output does not work with --spider.\n"
+msgstr "Keluaran WARC tidak bekerja dengan --spider.\n"
 
-#: src/main.c:1721
-#, fuzzy, c-format
-#| msgid ""
-#| "WARC output does not work with --continue, --continue will be disabled.\n"
+#: src/main.c:1722
+#, c-format
 msgid ""
 "WARC output does not work with --continue or --start-pos, they will be "
 "disabled.\n"
 msgstr ""
-"WARC output does not work with --continue, --continue will be disabled.\n"
+"Keluaran WARC tidak berfungsi dengan --continue atau --start-pos, mereka "
+"akan dinonaktifkan.\n"
 
-#: src/main.c:1729
+#: src/main.c:1730
 #, c-format
 msgid ""
 "Digests are disabled; WARC deduplication will not find duplicate records.\n"
 msgstr ""
-"Digests are disabled; WARC deduplication will not find duplicate records.\n"
+"Digest dinonaktifkan; deduplikasi WARC tidak akan menemukan catatan "
+"duplikat.\n"
 
-#: src/main.c:1750
-#, fuzzy, c-format
-#| msgid ""
-#| "WARC output does not work with --continue, --continue will be disabled.\n"
+#: src/main.c:1751
+#, c-format
 msgid ""
 "Compression does not work with --continue or --start-pos, they will be "
 "disabled.\n"
 msgstr ""
-"WARC output does not work with --continue, --continue will be disabled.\n"
+"Keluaran WARC tidak berfungsi dengan --continue atau --start-pos, mereka "
+"akan dinonaktifkan.\n"
 
-#: src/main.c:1761
+#: src/main.c:1762
 #, c-format
 msgid "Cannot specify both --ask-password and --password.\n"
-msgstr "Tidak dapat menspesifikasikan baik --ask-password dan --password.\n"
+msgstr "Tidak dapat menyatakan --ask-password dan --password sekaligus.\n"
 
-#: src/main.c:1769
+#: src/main.c:1770
 #, c-format
 msgid ""
 "WARNING: No username set with --ask-password. This is usually not what you "
 "want.\n"
 msgstr ""
+"PERINGATAN: Tidak ada nama pengguna yang diatur dengan --ask-password. Ini "
+"biasanya bukan yang Anda inginkan.\n"
 
-#: src/main.c:1775
+#: src/main.c:1776
 #, c-format
 msgid ""
 "Specifying both --start-pos and --continue is not recommended; --continue "
 "will be disabled.\n"
 msgstr ""
+"Menentukan --start-pos dan --continue tidak disarankan; --continue akan "
+"dinonaktifkan.\n"
 
-#: src/main.c:1788
+#: src/main.c:1789
 #, c-format
 msgid "%s: missing URL\n"
-msgstr "%s: hilang URL\n"
+msgstr "%s: URL hilang\n"
 
-#: src/main.c:1836
+#: src/main.c:1837
 #, c-format
 msgid "You cannot specify both --post-data and --post-file.\n"
-msgstr "Tidak dapat menspesifikasikan baik --post-data dan --post-file.\n"
+msgstr "Tidak bisa menyatakan --post-data dan --post-berkas sekaligus.\n"
 
-#: src/main.c:1841
-#, fuzzy, c-format
-#| msgid ""
-#| "You cannot use --post-data or --post-file along with --method. --method "
-#| "expects data through --body-data and --body-file options"
+#: src/main.c:1842
+#, c-format
 msgid ""
 "You cannot use --post-data or --post-file along with --method. --method "
 "expects data through --body-data and --body-file options\n"
 msgstr ""
-"You cannot use --post-data or --post-file along with --method. --method "
-"expects data through --body-data and --body-file options"
+"Anda tidak dapat menggunakan --post-data atau --post-berkas bersama dengan --"
+"method. --method mengharapkan data melalui opsi --body-data dan --body-"
+"berkas\n"
 
-#: src/main.c:1850
+#: src/main.c:1851
 #, c-format
 msgid ""
 "You must specify a method through --method=HTTPMethod to use with --body-"
 "data or --body-file.\n"
 msgstr ""
-"You must specify a method through --method=HTTPMethod to use with --body-"
-"data or --body-file.\n"
+"Anda harus menentukan metode melalui --method=HTTPMethod untuk digunakan "
+"dengan --body-data atau --body-berkas.\n"
 
-#: src/main.c:1856
+#: src/main.c:1857
 #, c-format
 msgid "You cannot specify both --body-data and --body-file.\n"
-msgstr "Tidak dapat menspesifikasikan berdua --body-data dan --body-file.\n"
+msgstr "Tidak bisa menyatakan --body-data dan --body-berkas sekaligus.\n"
 
-#: src/main.c:1908
+#: src/main.c:1909
 #, c-format
 msgid "This version does not have support for IRIs\n"
-msgstr "Versi ini tidak mendukung untuk IRI\n"
+msgstr "Versi ini tidak punya dukungan untuk IRI\n"
 
-#: src/main.c:2008
-#, fuzzy, c-format
-#| msgid ""
-#| "-k can be used together with -O only if outputting to a regular file.\n"
+#: src/main.c:2009
+#, c-format
 msgid ""
 "-k or -r can be used together with -O only if outputting to a regular file.\n"
 msgstr ""
-"-k can be used together with -O only if outputting to a regular file.\n"
+"-k atau -r dapat digunakan bersama dengan -O hanya jika menulis keluaran ke "
+"berkas biasa.\n"
 
-#: src/main.c:2014
-#, fuzzy, c-format
-#| msgid ""
-#| "-k can be used together with -O only if outputting to a regular file.\n"
+#: src/main.c:2015
+#, c-format
 msgid ""
 "--convert-links or --convert-file-only can be used together only if "
 "outputting to a regular file.\n"
 msgstr ""
-"-k can be used together with -O only if outputting to a regular file.\n"
+"--convert-links atau --convert-berkas-only dapat digunakan bersama hanya "
+"jika menulis keluaran ke berkas biasa.\n"
 
-#: src/main.c:2025
-#, fuzzy, c-format
-#| msgid "Failed to unlink symlink %s: %s\n"
+#: src/main.c:2026
+#, c-format
 msgid "Failed to init libcares\n"
-msgstr "Gagal untuk meng-unlink symlink %s: %s\n"
+msgstr "Gagal init libcares\n"
 
-#: src/main.c:2031
+#: src/main.c:2032
 #, c-format
 msgid "Failed to init c-ares channel\n"
-msgstr ""
+msgstr "Gagal init kanal c-ares\n"
 
-#: src/main.c:2054
-#, fuzzy, c-format
-#| msgid "%s: unable to resolve host address %s\n"
+#: src/main.c:2055
+#, c-format
 msgid "Failed to parse IP address '%s'\n"
-msgstr "%s: tidak dapat menemukan alamat dari %s\n"
+msgstr "Gagal mengurai alamat IP '%s'\n"
 
-#: src/main.c:2065
-#, fuzzy, c-format
-#| msgid "ERROR: Failed to open cert %s: (%d).\n"
+#: src/main.c:2066
+#, c-format
 msgid "Failed to set DNS server(s) '%s' (%d)\n"
-msgstr "ERROR: Failed to open cert %s: (%d).\n"
+msgstr "Gagal mengatur server DNS '%s' (%d)\n"
 
-#: src/main.c:2202
+#: src/main.c:2201
 #, c-format
 msgid "No URLs found in %s.\n"
 msgstr "Tidak ada URLs yang ditemukan dalam %s.\n"
 
-#: src/main.c:2218
-#, fuzzy, c-format
-#| msgid "Unable to delete %s: %s\n"
+#: src/main.c:2217
+#, c-format
 msgid "Unable to parse metalink file %s.\n"
-msgstr "Tidak dapat menghapus %s: %s\n"
+msgstr "Tidak dapat mengurai berkas metalink %s.\n"
 
-#: src/main.c:2248 src/metalink.c:337
+#: src/main.c:2247 src/metalink.c:337
 #, c-format
 msgid "Could not download all resources from %s.\n"
-msgstr ""
+msgstr "Tidak dapat mengunduh semua sumber daya dari %s.\n"
 
-#: src/main.c:2275
+#: src/main.c:2274
 #, c-format
 msgid ""
 "FINISHED --%s--\n"
@@ -3186,185 +2886,175 @@ msgid ""
 "Downloaded: %d files, %s in %s (%s)\n"
 msgstr ""
 "SELESAI --%s--\n"
-"Total wall clock time: %s\n"
-"Terambil: %d berkas, %s dalam %s (%s)\n"
+"Total waktu jam dinding: %s\n"
+"Diunduh: %d berkas, %s dalam %s (%s)\n"
 
-#: src/main.c:2289
+#: src/main.c:2288
 #, c-format
 msgid "Download quota of %s EXCEEDED!\n"
-msgstr "Download quota dari %s TERLEWATI!\n"
+msgstr "Kuota pengunduhan %s TERLAMPAUI!\n"
 
 #: src/metalink.c:93
 msgid "-O not supported for metalink download. Ignoring.\n"
-msgstr ""
+msgstr "-O tidak didukung untuk unduhan metalink. Mengabaikan.\n"
 
 #: src/metalink.c:172
 #, c-format
 msgid "[--trust-server-names %s, --directory-prefix=%s]\n"
-msgstr ""
+msgstr "[--trust-server-names %s, --directory-prefix=%s]\n"
 
 #: src/metalink.c:176
-#, fuzzy, c-format
-#| msgid "Proxy tunneling failed: %s"
+#, c-format
 msgid "Planned metalink file: %s\n"
-msgstr "Proxy tunneling gagal: %s"
+msgstr "Berkas metalink yang direncanakan: %s\n"
 
 #: src/metalink.c:179
 #, c-format
 msgid "Secured metalink file: %s\n"
-msgstr ""
+msgstr "Berkas metalink diamankan: %s\n"
 
 #: src/metalink.c:184
 msgid "Rejecting metalink file. Unsafe name.\n"
-msgstr ""
+msgstr "Menolak berkas metalink. Nama yang tidak aman.\n"
 
 #: src/metalink.c:238
 #, c-format
 msgid "Processing metaurl %s...\n"
-msgstr ""
+msgstr "Memroses metaurl %s...\n"
 
 #: src/metalink.c:251
 #, c-format
 msgid "Rejecting metaurl file %s. Unsafe name.\n"
-msgstr ""
+msgstr "Menolak berkas metaurl %s. Nama yang tidak aman.\n"
 
 #: src/metalink.c:268
 #, c-format
 msgid "Failed to download %s. Skipping metaurl.\n"
-msgstr ""
+msgstr "Gagal mengunduh %s. Melewatkan metaurl.\n"
 
 #: src/metalink.c:285
-#, fuzzy, c-format
-#| msgid "Unable to delete %s: %s\n"
+#, c-format
 msgid "Unable to parse metaurl file %s.\n"
-msgstr "Tidak dapat menghapus %s: %s\n"
+msgstr "Tidak dapat mengurai berkas metaurl %s.\n"
 
 #: src/metalink.c:354
 msgid "Metaurls processing returned with error.\n"
-msgstr ""
+msgstr "Pemrosesan metaurls dikembalikan dengan kesalahan.\n"
 
 #: src/metalink.c:386
-#, fuzzy, c-format
-#| msgid "ai_socktype not supported"
+#, c-format
 msgid "Resource type %s not supported, ignoring...\n"
-msgstr "ai_socktype tidak disupport"
+msgstr "Jenis sumber daya %s tidak didukung, mengabaikan...\n"
 
-#: src/metalink.c:509
-#, fuzzy
-#| msgid "Could not open WARC file.\n"
+#: src/metalink.c:507
 msgid "Could not open downloaded file.\n"
-msgstr "Tidak dapat menulis ke WARC.\n"
+msgstr "Tidak dapat membuka berkas yang diunduh.\n"
 
-#: src/metalink.c:514
+#: src/metalink.c:512
 #, c-format
 msgid "Computing size for %s\n"
-msgstr ""
+msgstr "Menghitung ukuran untuk %s\n"
 
-#: src/metalink.c:519
+#: src/metalink.c:517
 msgid "File size not declared. Skipping check.\n"
-msgstr ""
+msgstr "Ukuran berkas tidak diumumkan. Melewatkan pemeriksaan.\n"
 
-#: src/metalink.c:527
+#: src/metalink.c:525
 msgid "Could not get downloaded file's size.\n"
-msgstr ""
+msgstr "Tidak bisa mendapatkan ukuran berkas yang diunduh.\n"
 
-#: src/metalink.c:539
-#, fuzzy, c-format
-#| msgid "No such file %s.\n"
+#: src/metalink.c:537
+#, c-format
 msgid "Size mismatch for file %s.\n"
-msgstr "Tidak ada berkas seperti itu %s.\n"
+msgstr "Ketidakcocokan ukuran untuk berkas %s.\n"
 
-#: src/metalink.c:547
+#: src/metalink.c:545
 msgid "Size matches.\n"
-msgstr ""
+msgstr "Ukuran cocok.\n"
 
-#: src/metalink.c:600
+#: src/metalink.c:598
 #, c-format
 msgid "Computing checksum for %s\n"
-msgstr ""
+msgstr "Menghitung checksum untuk %s\n"
 
-#: src/metalink.c:678
+#: src/metalink.c:676
 msgid "Checksum matches.\n"
-msgstr ""
+msgstr "Checksum cocok.\n"
 
-#: src/metalink.c:683
+#: src/metalink.c:681
 #, c-format
 msgid "Checksum mismatch for file %s.\n"
-msgstr ""
+msgstr "Ketidakcocokan checksum untuk berkas %s.\n"
 
-#: src/metalink.c:722
-#, fuzzy
-#| msgid "Could not open CDX file for output.\n"
+#: src/metalink.c:720
 msgid "Could not open downloaded file for signature verification.\n"
-msgstr "Could not open CDX file for output.\n"
+msgstr ""
+"Tidak dapat membuka berkas yang diunduh untuk verifikasi tanda tangan.\n"
 
-#: src/metalink.c:780
+#: src/metalink.c:778
 #, c-format
 msgid "GPGME data_new_from_mem: %s\n"
-msgstr ""
+msgstr "GPGME data_new_from_mem: %s\n"
 
-#: src/metalink.c:792
+#: src/metalink.c:790
 #, c-format
 msgid "GPGME op_verify: %s\n"
-msgstr ""
+msgstr "GPGME op_verify: %s\n"
 
-#: src/metalink.c:805
+#: src/metalink.c:803
 msgid "GPGME op_verify_result: NULL\n"
-msgstr ""
+msgstr "GPGME op_verify_result: NULL\n"
 
-#: src/metalink.c:821
+#: src/metalink.c:819
 msgid "Signature validation succeeded.\n"
-msgstr ""
+msgstr "Validasi tanda tangan berhasil.\n"
 
-#: src/metalink.c:829
+#: src/metalink.c:827
 msgid "Invalid signature. Rejecting resource.\n"
-msgstr ""
+msgstr "Tanda tangan tidak valid. Menolak sumber daya.\n"
 
-#: src/metalink.c:838
+#: src/metalink.c:836
 msgid "Data matches signature, but signature is not trusted.\n"
-msgstr ""
+msgstr "Data cocok dengan tanda tangan, tetapi tanda tangan tidak dipercaya.\n"
 
-#: src/metalink.c:865
-#, fuzzy
-#| msgid "No certificate found\n"
+#: src/metalink.c:863
 msgid "No checksums found.\n"
-msgstr "Tidak ada sertifikat yang ditemukan\n"
+msgstr "Tidak ada checksum yang ditemukan.\n"
 
-#: src/metalink.c:871
+#: src/metalink.c:869
 #, c-format
 msgid "Failed to download %s. Skipping resource.\n"
-msgstr ""
+msgstr "Gagal mengunduh %s. Melewatkan sumber daya.\n"
 
-#: src/metalink.c:878
+#: src/metalink.c:876
 #, c-format
 msgid "File %s retrieved but size does not match. \n"
-msgstr ""
+msgstr "Berkas %s diambil tetapi ukurannya tidak cocok. \n"
 
-#: src/metalink.c:885
+#: src/metalink.c:883
 #, c-format
 msgid "File %s retrieved but checksum does not match. \n"
-msgstr ""
+msgstr "Berkas %s diambil tetapi checksum tidak cocok. \n"
 
-#: src/metalink.c:894
+#: src/metalink.c:892
 #, c-format
 msgid "File %s retrieved but signature does not match. \n"
-msgstr ""
+msgstr "Berkas %s diambil tetapi tanda tangan tidak cocok. \n"
 
-#: src/metalink.c:1113
-#, fuzzy, c-format
-#| msgid "Removing %s.\n"
+#: src/metalink.c:1111
+#, c-format
 msgid "Renaming %s to %s.\n"
-msgstr "Menghapus %s.\n"
+msgstr "Mengganti nama %s menjadi %s.\n"
 
 #: src/mswindows.c:96
 #, c-format
 msgid "Continuing in background.\n"
-msgstr "Melanjutkan di background.\n"
+msgstr "Melanjutkan di latar belakang.\n"
 
 #: src/mswindows.c:289
 #, c-format
 msgid "Continuing in background, pid %lu.\n"
-msgstr "Melanjutkan di background, pid %lu.\n"
+msgstr "Melanjutkan di latar belakang, pid %lu.\n"
 
 #: src/mswindows.c:291 src/utils.c:502
 #, c-format
@@ -3374,143 +3064,151 @@ msgstr "Keluaran akan ditulis ke %s.\n"
 #: src/mswindows.c:323
 #, c-format
 msgid "fake_fork_child() failed\n"
-msgstr "fake_fork_child() failed\n"
+msgstr "fake_fork_child() gagal\n"
 
 #: src/mswindows.c:331
 #, c-format
 msgid "fake_fork() failed\n"
-msgstr "fake_fork() failed\n"
+msgstr "fake_fork() gagal\n"
 
 #: src/mswindows.c:460 src/mswindows.c:467
 #, c-format
 msgid "%s: Couldn't find usable socket driver.\n"
-msgstr "%s: Tidak dapat mencari driver socket yang berguna.\n"
+msgstr "%s: Tidak dapat mencari driver socket yang bisa dipakai.\n"
 
 #: src/mswindows.c:647
 #, c-format
 msgid "ioctl() failed.  The socket could not be set as blocking.\n"
-msgstr "ioctl() failed.  The socket could not be set as blocking.\n"
+msgstr "ioctl() gagal.  Soket tidak dapat diatur sebagai memblokir.\n"
 
 #: src/netrc.c:373
 #, c-format
 msgid "%s: %s:%d: warning: %s token appears before any machine name\n"
-msgstr "%s: %s:%d: peringatan: %s token terlihat sebelum nama mesin lainnya\n"
+msgstr "%s: %s:%d: peringatan: token %s muncul sebelum sebarang nama mesin\n"
 
-#: src/netrc.c:414
+#: src/netrc.c:416
 #, c-format
 msgid "%s: %s:%d: unknown token \"%s\"\n"
-msgstr "%s: %s:%d: token tidak diketahui \"%s\"\n"
+msgstr "%s: %s:%d: token tidak dikenal \"%s\"\n"
 
-#: src/netrc.c:553
+#: src/netrc.c:557
 #, c-format
 msgid "Usage: %s NETRC [HOSTNAME]\n"
-msgstr "Penggunaan: %s NETRC [HOSTNAME]\n"
+msgstr "Penggunaan: %s NETRC [NAMAHOST]\n"
 
-#: src/netrc.c:571
+#: src/netrc.c:575
 #, c-format
 msgid "%s: cannot stat %s: %s\n"
-msgstr "%s: tidak dapat melihat statistik %s: %s\n"
+msgstr "%s: tidak bisa men-stat %s: %s\n"
 
-#: src/openssl.c:128
+#: src/openssl.c:129
 msgid "WARNING: using a weak random seed.\n"
-msgstr "PERINGATAN: menggunakan nilai random yang lemah.\n"
+msgstr "PERINGATAN: menggunakan bibt acak yang lemah.\n"
 
-#: src/openssl.c:208
+#: src/openssl.c:209
 msgid "Could not seed PRNG; consider using --random-file.\n"
-msgstr "Tidak dapat seed PRNG; pertimbangkan menggunakan --random-file.\n"
+msgstr "Tidak bisa membibit PRNG; pertimbangkan menggunakan --random-berkas.\n"
 
-#: src/openssl.c:271
+#: src/openssl.c:272
 msgid "Your OpenSSL version is too old to support TLS 1.3\n"
-msgstr ""
+msgstr "Versi OpenSSL Anda terlalu tua untuk mendukung TLS 1.3\n"
 
-#: src/openssl.c:277
+#: src/openssl.c:278
 msgid "Your OpenSSL version is too old to support TLSv1.1\n"
-msgstr ""
+msgstr "Versi OpenSSL Anda terlalu tua untuk mendukung TLSv1.1\n"
 
-#: src/openssl.c:281
+#: src/openssl.c:282
 msgid "Your OpenSSL version is too old to support TLSv1.2\n"
-msgstr ""
+msgstr "Versi OpenSSL Anda terlalu tua untuk mendukung TLSv1.2\n"
 
-#: src/openssl.c:287
+#: src/openssl.c:288
 #, c-format
 msgid "OpenSSL: unimplemented 'secure-protocol' option value %d\n"
-msgstr ""
+msgstr "OpenSSL: nilai opsi 'secure-protocol' %d tidak diimplementasi\n"
 
-#: src/openssl.c:333
+#: src/openssl.c:295
 #, fuzzy, c-format
-#| msgid "%s: Invalid URL %s: %s\n"
+#| msgid "Your OpenSSL version is too old to support TLS 1.3\n"
+msgid "Your OpenSSL version does not support option '%s'.\n"
+msgstr "Versi OpenSSL Anda terlalu tua untuk mendukung TLS 1.3\n"
+
+#: src/openssl.c:296
+msgid "Rebuilding Wget and/or OpenSSL may help in this situation.\n"
+msgstr ""
+
+#: src/openssl.c:341
+#, c-format
 msgid "OpenSSL: Invalid cipher list: %s\n"
-msgstr "%s: URL tidak valid %s: %s\n"
+msgstr "OpenSSL: Daftar cipher tidak valid: %s\n"
 
-#: src/openssl.c:360
+#: src/openssl.c:368
 msgid "OpenSSL: Failed set trust to partial chain\n"
-msgstr ""
+msgstr "OpenSSL: Gagal mengatur kepercayaan ke rantai parsial\n"
 
-#: src/openssl.c:366
+#: src/openssl.c:374
 msgid "OpenSSL: Failed to allocate verification param\n"
-msgstr ""
+msgstr "OpenSSL: Gagal mengalokasikan param verifikasi\n"
 
-#: src/openssl.c:844
-#, fuzzy
-#| msgid "Could not seed PRNG; consider using --random-file.\n"
+#: src/openssl.c:852
 msgid "WARNING: Could not seed PRNG. Consider using --random-file.\n"
-msgstr "Tidak dapat seed PRNG; pertimbangkan menggunakan --random-file.\n"
+msgstr ""
+"PERINGATAN: Tidak bisa menyemai PRNG. Pertimbangkan untuk menggunakan --"
+"random-berkas.\n"
 
-#: src/openssl.c:1064
+#: src/openssl.c:1072
 #, c-format
 msgid "%s: cannot verify %s's certificate, issued by %s:\n"
-msgstr ""
-"%s: Tidak dapat memverifikasi sertifikat %s, yang diterbitkan oleh %s:\n"
-
-#: src/openssl.c:1075
-msgid "  Unable to locally verify the issuer's authority.\n"
-msgstr "  Tidak dapat untuk memverifikasi atoritas penerbit secara lokal.\n"
-
-#: src/openssl.c:1080
-msgid "  Self-signed certificate encountered.\n"
-msgstr "  Selft-signed sertifikat ditemukan.\n"
+msgstr "%s: tidak dapat memverifikasi sertifikat %s, diterbitkan oleh %s:\n"
 
 #: src/openssl.c:1083
+msgid "  Unable to locally verify the issuer's authority.\n"
+msgstr "  Tidak bisa memverifikasi otoritas penerbit secara lokal.\n"
+
+#: src/openssl.c:1088
+msgid "  Self-signed certificate encountered.\n"
+msgstr "  Sertifikat yang ditandatangani mandiri ditemui.\n"
+
+#: src/openssl.c:1091
 msgid "  Issued certificate not yet valid.\n"
-msgstr "  Sertifikat yang diterbitkan tidak sah.\n"
+msgstr "  Sertifikat yang diterbitkan belum valid.\n"
 
-#: src/openssl.c:1086
+#: src/openssl.c:1094
 msgid "  Issued certificate has expired.\n"
-msgstr "  Sertifikat yang diterbikan telah expired.\n"
+msgstr "  Sertifikat yang diterbikan telah kedaluwarsa.\n"
 
-#: src/openssl.c:1174
+#: src/openssl.c:1182
 #, c-format
 msgid ""
 "%s: no certificate subject alternative name matches\n"
 "\trequested host name %s.\n"
 msgstr ""
-"%s: nama pengguna sertifikat\n"
-"\ttidak cocok dengan yang diberikan oleh hostname %s.\n"
+"%s: tidak ada subject alternative name sertifikat yang cocok\n"
+"\tdengan nama host %s yang diminta.\n"
 
-#: src/openssl.c:1193
+#: src/openssl.c:1201
 #, c-format
 msgid ""
 "    %s: certificate common name %s doesn't match requested host name %s.\n"
 msgstr ""
-"    %s: nama pengguna sertifikat %s tidak cocok dengan yang diberikan oleh "
-"hostname %s.\n"
+"    %s: common name sertifikat %s tidak cocok dengan hostname %s yang "
+"diminta.\n"
 
-#: src/openssl.c:1225
+#: src/openssl.c:1233
 #, c-format
 msgid ""
 "    %s: certificate common name is invalid (contains a NUL character).\n"
 "    This may be an indication that the host is not who it claims to be\n"
 "    (that is, it is not the real %s).\n"
 msgstr ""
-"    %s: nama umum sertifikat tidak valid (berisi sebuah karakter KOSONG).\n"
+"    %s: common name sertifikat tidak valid (berisi sebuah karakter NUL).\n"
 "    Ini mungkin merupakan indikasi bahwa host bukan yang dimaksud\n"
-"    (mungkin ini bukan %s sesungguhnya).\n"
+"    (mungkin ini bukan %s yang sesungguhnya).\n"
 
-#: src/openssl.c:1250
+#: src/openssl.c:1258
 #, c-format
 msgid "To connect to %s insecurely, use `--no-check-certificate'.\n"
 msgstr ""
-"Untuk menghubungi %s secara tidak secure, gunakan `--no-check-certificate'.\n"
+"Untuk menghubungi %s secara tidak aman, gunakan '--no-check-certificate'.\n"
 
 #: src/progress.c:260
 #, c-format
@@ -3519,19 +3217,17 @@ msgid ""
 "%*s[ skipping %sK ]"
 msgstr ""
 "\n"
-"%*s[ melewatkan %sK ]"
+"%*s[ melewati %sK ]"
 
 #: src/progress.c:545
 #, c-format
 msgid "Invalid dot style specification %s; leaving unchanged.\n"
-msgstr ""
-"Spesifikasi dot style %s tidak valid; membiarkan untuk tidak mengubahnya.\n"
+msgstr "Spesifikasi gaya dot %s tidak valid; dibiarkan tidak diubah.\n"
 
 #. TRANSLATORS: "ETA" is English-centric, but this must
 #. be short, ideally 3 chars.  Abbreviate if necessary.
 #: src/progress.c:1006
-#, fuzzy, c-format
-#| msgid "  eta %s"
+#, c-format
 msgid "    eta %s"
 msgstr "  %s lagi"
 
@@ -3540,53 +3236,52 @@ msgstr "  %s lagi"
 #. * This should not take up more room than
 #. * available here (6 columns).  Abbreviate if necessary.
 #: src/progress.c:1312
-#, fuzzy
-#| msgid "   in "
 msgid "    in "
 msgstr "   dalam "
 
 #: src/ptimer.c:158
 #, c-format
 msgid "Cannot get REALTIME clock frequency: %s\n"
-msgstr "Tidak dapat memperoleh REALTIME clock frequency: %s\n"
+msgstr "Tidak bisa memperoleh frekuensi clock REALTIME: %s\n"
 
-#: src/recur.c:430
+#: src/recur.c:428
 #, c-format
 msgid ""
 "nofollow attribute found in %s. Will not follow any links on this page\n"
 msgstr ""
+"atribut nofollow ditemukan di %s. Tidak akan mengikuti tautan apa pun di "
+"halaman ini\n"
 
-#: src/recur.c:514
+#: src/recur.c:512
 #, c-format
 msgid "Removing %s since it should be rejected.\n"
-msgstr "Menghapus %s karena ini seharusnya direject.\n"
+msgstr "Menghapus %s karena ini seharusnya ditolak.\n"
 
 #: src/res.c:394
-#, fuzzy, c-format
-#| msgid "Cannot open %s: %s"
+#, c-format
 msgid "Cannot open %s: %s\n"
-msgstr "Tidak dapat membuka %s: %s"
+msgstr "Tidak dapat membuka %s: %s\n"
 
 #: src/res.c:556
 msgid "Loading robots.txt; please ignore errors.\n"
-msgstr "Menload file robot.txt; tolong hiraukan kesalahan.\n"
+msgstr "Sedang memuat berkas robot.txt; harap abaikan kesalahan.\n"
 
-#: src/retr.c:934
+#: src/retr.c:925
 #, c-format
 msgid "Error parsing proxy URL %s: %s.\n"
-msgstr "Salah dalam parsing proxy URL %s: %s.\n"
+msgstr "Galat saat mengurai URL proksi %s: %s.\n"
 
-#: src/retr.c:948
+#: src/retr.c:938
 #, c-format
 msgid "Error in proxy URL %s: Must be HTTP.\n"
-msgstr "Salah dalam proxy URL %s: Harus berupa HTTP.\n"
+msgstr "Galat dalam URL proksi %s: Harus berupa HTTP.\n"
 
-#: src/retr.c:1079
+#: src/retr.c:1067
 #, c-format
 msgid "%d redirections exceeded.\n"
-msgstr "%d redirections exceeded.\n"
+msgstr "%d pengalihan terlampaui.\n"
 
-#: src/retr.c:1341
+#: src/retr.c:1327
 msgid ""
 "Giving up.\n"
 "\n"
@@ -3594,7 +3289,7 @@ msgstr ""
 "Menyerah.\n"
 "\n"
 
-#: src/retr.c:1341
+#: src/retr.c:1327
 msgid ""
 "Retrying.\n"
 "\n"
@@ -3607,7 +3302,7 @@ msgid ""
 "Found no broken links.\n"
 "\n"
 msgstr ""
-"Tidak ditemukan link yang rusak.\n"
+"Tidak ditemukan taut yang rusak.\n"
 "\n"
 
 #: src/spider.c:84
@@ -3619,119 +3314,117 @@ msgid_plural ""
 "Found %d broken links.\n"
 "\n"
 msgstr[0] ""
-"Ditemukan %d link rusak.\n"
-"\n"
-msgstr[1] ""
-"Ditemukan %d link rusak.\n"
+"Ditemukan %d taut rusak.\n"
 "\n"
 
-#: src/url.c:675
+#: src/url.c:688
 msgid "No error"
 msgstr "Tidak ada kesalahan"
 
-#: src/url.c:677
-#, c-format
-msgid "Unsupported scheme %s"
+#: src/url.c:689
+#, fuzzy
+#| msgid "Unsupported scheme %s"
+msgid "Unsupported scheme"
 msgstr "Skema tidak didukung %s"
 
-#: src/url.c:679
+#: src/url.c:690
+msgid "HTTPS support not compiled in"
+msgstr "Dukungan HTTPS tidak dikompilasi"
+
+#: src/url.c:691
+#, fuzzy
+#| msgid "HTTPS support not compiled in"
+msgid "FTPS support not compiled in"
+msgstr "Dukungan HTTPS tidak dikompilasi"
+
+#: src/url.c:692
 msgid "Scheme missing"
 msgstr "Skema hilang"
 
-#: src/url.c:681
+#: src/url.c:693
 msgid "Invalid host name"
-msgstr "Host name tidak valid"
+msgstr "Nama host tidak valid"
 
-#: src/url.c:683
+#: src/url.c:694
 msgid "Bad port number"
-msgstr "Nomor port tidak baik"
+msgstr "Nomor port buruk"
 
-#: src/url.c:685
+#: src/url.c:695
 msgid "Invalid user name"
-msgstr "User name tidak valid"
+msgstr "Nama pengguna tidak valid"
 
-#: src/url.c:687
+#: src/url.c:696
 msgid "Unterminated IPv6 numeric address"
-msgstr "Alamat numerik IPv6 tidak diselesaikan"
+msgstr "Alamat numerik IPv6 tidak diterminasi"
 
-#: src/url.c:689
+#: src/url.c:697
 msgid "IPv6 addresses not supported"
-msgstr "Pengalamatan IPv6 tidak disupport"
+msgstr "Alamat IPv6 tidak didukung"
 
-#: src/url.c:691
+#: src/url.c:698
 msgid "Invalid IPv6 numeric address"
 msgstr "Alamat numerik IPv6 tidak valid"
 
-#: src/url.c:1007
-msgid "HTTPS support not compiled in"
-msgstr "dukungan HTTPS tidak dikompilasi dalam versi ini"
-
-#: src/url.c:1648
-#, fuzzy
-#| msgid "Incomplete or invalid multibyte sequence encountered\n"
+#: src/url.c:1645
 msgid "Unconvertable multibyte sequence encountered\n"
-msgstr "Tidak lengkap atau tidak valid urutan multibyte ditemui\n"
+msgstr "Urutan multibyte yang tidak dapat dikonversi ditemui\n"
 
 #: src/utils.c:122
 #, c-format
 msgid "%s: %s: Failed to allocate enough memory; memory exhausted.\n"
 msgstr ""
-"%s: %s: Gagal untuk mengalokasikan memori yang mencukupi; kehabisan memori.\n"
+"%s: %s: Gagal mengalokasikan memori yang mencukupi; kehabisan memori.\n"
 
 #: src/utils.c:128
 #, c-format
 msgid "%s: %s: Failed to allocate %ld bytes; memory exhausted.\n"
-msgstr "%s: %s: Gagal untuk mengalokasikan %ld bytes; kehabisan memori.\n"
+msgstr "%s: %s: Gagal mengalokasikan %ld byte; kehabisan memori.\n"
 
 #: src/utils.c:348
-#, fuzzy, c-format
-#| msgid "%s: aprintf: text buffer is too big (%ld bytes), aborting.\n"
+#, c-format
 msgid "%s: aprintf: text buffer is too big (%d bytes), aborting.\n"
-msgstr "%s: aprintf: penyangga teks terlalu besar (%ld bytes), membatalkan.\n"
+msgstr "%s: aprintf: penyangga teks terlalu besar (%d byte), menggugurkan.\n"
 
 #: src/utils.c:500
 #, c-format
 msgid "Continuing in background, pid %d.\n"
-msgstr "Melanjutkan di background, pid %d.\n"
+msgstr "Melanjutkan di latar belakang, pid %d.\n"
 
 #: src/utils.c:551
 #, c-format
 msgid "Failed to unlink symlink %s: %s\n"
-msgstr "Gagal untuk meng-unlink symlink %s: %s\n"
+msgstr "Gagal meng-unlink symlink %s: %s\n"
 
 #: src/utils.c:872
-#, fuzzy, c-format
-#| msgid "ERROR: Failed to open cert %s: (%d).\n"
+#, c-format
 msgid "Failed to Fopen file %s\n"
-msgstr "ERROR: Failed to open cert %s: (%d).\n"
+msgstr "Gagal Fopen berkas %s\n"
 
 #: src/utils.c:878
-#, fuzzy, c-format
-#| msgid "Unable to get cookie for %s\n"
+#, c-format
 msgid "Failed to get FD for file %s\n"
-msgstr "Tidak dapat memperoleh cookie untuk %s\n"
+msgstr "Gagal mendapatkan FD untuk berkas %s\n"
 
 #: src/utils.c:885
 #, c-format
 msgid "Failed to stat file %s, (check permissions)\n"
-msgstr ""
+msgstr "Gagal men-stat berkas %s, (periksa izin)\n"
 
 #: src/utils.c:895
 #, c-format
 msgid "File %s changed since the last check. Security check failed.\n"
 msgstr ""
+"Berkas %s berubah sejak pemeriksaan terakhir. Pemeriksaan keamanan gagal.\n"
 
 #: src/utils.c:930
-#, fuzzy, c-format
-#| msgid "ERROR: Failed to open cert %s: (%d).\n"
+#, c-format
 msgid "Failed to open file %s, reason :%s\n"
-msgstr "ERROR: Failed to open cert %s: (%d).\n"
+msgstr "Gagal membuka berkas %s, alasan :%s\n"
 
 #: src/utils.c:936
-#, fuzzy, c-format
-#| msgid "Failed to unlink symlink %s: %s\n"
+#, c-format
 msgid "Failed to stat file %s, error: %s\n"
-msgstr "Gagal untuk meng-unlink symlink %s: %s\n"
+msgstr "Gagal men-stat berkas %s, galat: %s\n"
 
 #: src/utils.c:946
 #, c-format
@@ -3739,53 +3432,48 @@ msgid ""
 "Trying to open file %s but it changed since last check. Security check "
 "failed.\n"
 msgstr ""
+"Mencoba membuka berkas %s tetapi itu berubah sejak pemeriksaan terakhir. "
+"Pemeriksaan keamanan gagal.\n"
 
 #: src/utils.c:2443
-#, fuzzy, c-format
-#| msgid "Invalid regular expression %s, %s\n"
+#, c-format
 msgid "Invalid regular expression %s, PCRE2 error %d\n"
-msgstr "Invalid regular expression %s, %s\n"
+msgstr "Ekspresi reguler %s tidak valid, galat PCRE2 %d\n"
 
 #: src/utils.c:2460 src/utils.c:2483
 #, c-format
 msgid "Invalid regular expression %s, %s\n"
-msgstr "Invalid regular expression %s, %s\n"
+msgstr "Ekspresi reguler yang tidak valid %s, %s\n"
 
 #: src/utils.c:2513 src/utils.c:2535 src/utils.c:2559
 #, c-format
 msgid "Error while matching %s: %d\n"
-msgstr "Error menulis ke %s: %d\n"
+msgstr "Galat saat mencocokkan %s: %d\n"
 
 #: src/utils.c:2852
 #, c-format
 msgid "Skipping key with wrong size (%d/%d): %s\n"
-msgstr ""
+msgstr "Melewati kunci dengan ukuran yang salah (%d/%d): %s\n"
 
 #: src/warc.c:217
-#, fuzzy
-#| msgid "Error opening WARC file %s.\n"
 msgid "Error setting WARC file position.\n"
-msgstr "Error opening WARC file %s.\n"
+msgstr "Galat saat menata posisi berkas WARC.\n"
 
 #: src/warc.c:224
-#, fuzzy
-#| msgid "Error opening WARC file %s.\n"
 msgid "Error flushing WARC file to disk.\n"
-msgstr "Error opening WARC file %s.\n"
+msgstr "Galat saat mem-flush berkas WARC ke disk.\n"
 
 #: src/warc.c:234
-#, fuzzy
-#| msgid "Error opening WARC file %s.\n"
 msgid "Error duplicating WARC file file descriptor.\n"
-msgstr "Error opening WARC file %s.\n"
+msgstr "Galat saat menduplikasi deskriptor berkas WARC.\n"
 
 #: src/warc.c:245
 msgid "Error opening GZIP stream to WARC file.\n"
-msgstr "Error opening GZIP stream to WARC file.\n"
+msgstr "Galat saat membuka stream GZIP ke berkas WARC.\n"
 
 #: src/warc.c:830
 msgid "Error writing warcinfo record to WARC file.\n"
-msgstr "Tidak dapat menulis ke WARC.\n"
+msgstr "Galat saat menulis catatan warcinfo ke berkas WARC.\n"
 
 #: src/warc.c:893
 #, c-format
@@ -3793,25 +3481,25 @@ msgid ""
 "Opening WARC file %s.\n"
 "\n"
 msgstr ""
-"Opening WARC file %s.\n"
+"Membuka berkas WARC %s.\n"
 "\n"
 
 #: src/warc.c:899
 #, c-format
 msgid "Error opening WARC file %s.\n"
-msgstr "Error opening WARC file %s.\n"
+msgstr "Galat saat membuka berkas WARC %s.\n"
 
 #: src/warc.c:1095
 msgid "CDX file does not list original urls. (Missing column 'a'.)\n"
-msgstr "CDX file does not list original urls. (Missing column 'a'.)\n"
+msgstr "Berkas CDX tidak mencantumkan url asli. (Kurang kolom 'a'.)\n"
 
 #: src/warc.c:1098
 msgid "CDX file does not list checksums. (Missing column 'k'.)\n"
-msgstr "CDX file does not list checksums. (Missing column 'k'.)\n"
+msgstr "Berkas CDX tidak mencantumkan checksum. (Kurang kolom 'k'.)\n"
 
 #: src/warc.c:1101
 msgid "CDX file does not list record ids. (Missing column 'u'.)\n"
-msgstr "CDX file does not list record ids. (Missing column 'u'.)\n"
+msgstr "Berkas CDX tidak mencantumkan id rekaman. (Kurang kolom 'u'.)\n"
 
 #: src/warc.c:1125
 #, c-format
@@ -3822,298 +3510,36 @@ msgid_plural ""
 "Loaded %d records from CDX.\n"
 "\n"
 msgstr[0] ""
-"Loaded %d record from CDX.\n"
-"\n"
-msgstr[1] ""
-"Loaded %d records from CDX.\n"
+"Memuat %d rekaman dari CDX.\n"
 "\n"
 
 #: src/warc.c:1171
 #, c-format
 msgid "Could not read CDX file %s for deduplication.\n"
-msgstr "Could not read CDX file %s for deduplication.\n"
+msgstr "Tidak dapat membaca berkas CDX %s untuk deduplikasi.\n"
 
 #: src/warc.c:1181
 msgid "Could not open temporary WARC manifest file.\n"
-msgstr "Tidak dapat menulis ke WARC.\n"
+msgstr "Tidak dapat membuka berkas manifes WARC sementara.\n"
 
 #: src/warc.c:1191
 msgid "Could not open temporary WARC log file.\n"
-msgstr "Tidak dapat menulis ke WARC.\n"
+msgstr "Tidak dapat membuka berkas log WARC sementara.\n"
 
 #: src/warc.c:1200
 msgid "Could not open WARC file.\n"
-msgstr "Tidak dapat menulis ke WARC.\n"
+msgstr "Tidak dapat membuka berkas WARC.\n"
 
 #: src/warc.c:1209
 msgid "Could not open CDX file for output.\n"
-msgstr "Could not open CDX file for output.\n"
+msgstr "Tidak dapat membuka berkas CDX untuk keluaran.\n"
 
 #: src/warc.c:1239
 msgid "Could not open temporary WARC file.\n"
-msgstr "Tidak dapat menulis ke WARC.\n"
+msgstr "Tidak dapat membuka berkas WARC sementara.\n"
 
 #: src/warc.c:1515
 msgid "Found exact match in CDX file. Saving revisit record to WARC.\n"
-msgstr "Found exact match in CDX file. Saving revisit record to WARC.\n"
-
-#~ msgid "Unknown system error"
-#~ msgstr "Error sistem tidak diketahui"
-
-#~ msgid "Address family for hostname not supported"
-#~ msgstr "Pengalamatan IPv6 tidak disupport"
-
-#~ msgid "Bad value for ai_flags"
-#~ msgstr "Bad value for ai_flags"
-
-#~ msgid "Non-recoverable failure in name resolution"
-#~ msgstr "Resolusi nama untuk sementara gagal"
-
-#~ msgid "ai_family not supported"
-#~ msgstr "ai_family not supported"
-
-#~ msgid "Memory allocation failure"
-#~ msgstr "Memory allocation failure"
-
-#~ msgid "No address associated with hostname"
-#~ msgstr "No address associated with hostname"
-
-#~ msgid "Name or service not known"
-#~ msgstr "Name or service not known"
-
-#~ msgid "Servname not supported for ai_socktype"
-#~ msgstr "Servname not supported for ai_socktype"
-
-#~ msgid "System error"
-#~ msgstr "Error sistem tidak diketahui"
-
-#~ msgid "Argument buffer too small"
-#~ msgstr "Argument buffer too small"
-
-#~ msgid "Processing request in progress"
-#~ msgstr "Processing request in progress"
-
-#~ msgid "Request canceled"
-#~ msgstr "Request canceled"
-
-#~ msgid "Request not canceled"
-#~ msgstr "Request not canceled"
-
-#~ msgid "All requests done"
-#~ msgstr "All requests done"
-
-#~ msgid "Interrupted by a signal"
-#~ msgstr "Interrupted by a signal"
-
-#~ msgid "Parameter string not correctly encoded"
-#~ msgstr "Parameter string not correctly encoded"
-
-#, c-format
-#~ msgid "%s: option '%s' is ambiguous; possibilities:"
-#~ msgstr "%s: pilihan '%s' adalah pilihan yang ambigu:"
-
-#, c-format
-#~ msgid "%s: option '--%s' doesn't allow an argument\n"
-#~ msgstr "%s: pilihan '--%s' tidak memperbolehkan sebuah argumen\n"
-
-#, c-format
-#~ msgid "%s: option '%c%s' doesn't allow an argument\n"
-#~ msgstr "%s: pilihan '%c%s' tidak memperbolehkan sebuah argumen\n"
-
-#, c-format
-#~ msgid "%s: option '--%s' requires an argument\n"
-#~ msgstr "%s: pilihan '%s' membutuhkan sebuah argumen\n"
-
-#, c-format
-#~ msgid "%s: unrecognized option '--%s'\n"
-#~ msgstr "%s: pilihan '--%s' tidak diketahui\n"
-
-#, c-format
-#~ msgid "%s: unrecognized option '%c%s'\n"
-#~ msgstr "%s: pilihan '%c%s' tidak diketahui\n"
-
-#, c-format
-#~ msgid "%s: invalid option -- '%c'\n"
-#~ msgstr "%s: pilihan -- '%c' tidak valid\n"
-
-#, c-format
-#~ msgid "%s: option requires an argument -- '%c'\n"
-#~ msgstr "%s: pilihan membutuhkan sebuah argumen -- '%c'\n"
-
-#, c-format
-#~ msgid "%s: option '-W %s' is ambiguous\n"
-#~ msgstr "%s: pilihan '-W %s' adalah sebuah ambigu\n"
-
-#, c-format
-#~ msgid "%s: option '-W %s' doesn't allow an argument\n"
-#~ msgstr "%s: pilihan '-W %s' tidak memperbolehkan sebuah argumen\n"
-
-#, c-format
-#~ msgid "%s: option '-W %s' requires an argument\n"
-#~ msgstr "%s: pilihan '%s' membutuhkan sebuah argumen\n"
-
-#~ msgid "`"
-#~ msgstr "`"
-
-#~ msgid "'"
-#~ msgstr "'"
-
-#~ msgid "Success"
-#~ msgstr "Sukses"
-
-#~ msgid "No match"
-#~ msgstr "Tidak cocok"
-
-#~ msgid "Invalid regular expression"
-#~ msgstr "Invalid regular expression"
-
-#~ msgid "Invalid collation character"
-#~ msgstr "Karakter collation tidak valid"
-
-#~ msgid "Invalid character class name"
-#~ msgstr "Nama kelas karakter tidak valid"
-
-#~ msgid "Trailing backslash"
-#~ msgstr "Tambahan backslash"
-
-#~ msgid "Invalid back reference"
-#~ msgstr "Referensi balik tidak valid"
-
-#~ msgid "Unmatched [ or [^"
-#~ msgstr "Tidak cocok [ atau [^"
-
-#~ msgid "Unmatched ( or \\("
-#~ msgstr "Tidak cocok ( atau \\("
-
-#~ msgid "Unmatched \\{"
-#~ msgstr "Tidak cocok \\{"
-
-#~ msgid "Invalid content of \\{\\}"
-#~ msgstr "Isi dari \\{\\} tidak valid"
-
-#~ msgid "Invalid range end"
-#~ msgstr "batas akhir tidak valid"
-
-#~ msgid "Memory exhausted"
-#~ msgstr "Kehabisan memori"
-
-#~ msgid "Invalid preceding regular expression"
-#~ msgstr "Awal ekspresi regular tidak valid"
-
-#~ msgid "Premature end of regular expression"
-#~ msgstr "Gagal di akhir dari ekspresi regular"
-
-#~ msgid "Regular expression too big"
-#~ msgstr "Ekspresi regular terlalu besar"
-
-#~ msgid "Unmatched ) or \\)"
-#~ msgstr "Tidak cocok ) atau \\)"
-
-#~ msgid "No previous regular expression"
-#~ msgstr "Tidak ada ekspresi regular sebelumnya"
-
-#, c-format
-#~ msgid "%s subprocess failed"
-#~ msgstr "%s subprocess failed"
-
-#, c-format
-#~ msgid "_open_osfhandle failed"
-#~ msgstr "_open_osfhandle failed"
-
-#, c-format
-#~ msgid "cannot restore fd %d: dup2 failed"
-#~ msgstr "cannot restore fd %d: dup2 failed"
-
-#, c-format
-#~ msgid "%s subprocess"
-#~ msgstr "%s subprocess"
-
-#, c-format
-#~ msgid "%s subprocess got fatal signal %d"
-#~ msgstr "%s subprocess got fatal signal %d"
-
-#~ msgid "memory exhausted"
-#~ msgstr "kehabisan memori"
-
-#, c-format
-#~ msgid "idn_decode failed (%d): %s\n"
-#~ msgstr "idn_decode gagal (%d):%s\n"
-
-#, c-format
-#~ msgid ""
-#~ "\n"
-#~ "%s received.\n"
-#~ msgstr ""
-#~ "\n"
-#~ "%s diterima.\n"
-
-#, fuzzy
-#~| msgid "Mail bug reports and suggestions to <bug-wget@gnu.org>.\n"
-#~ msgid "Mail bug reports and suggestions to <bug-wget@gnu.org>\n"
-#~ msgstr "Laporkan bug dan saran kepada <bug-wget@gnu.org>.\n"
-
-#, c-format
-#~ msgid "File `%s' already there; not retrieving.\n"
-#~ msgstr "File `%s' sudah ada disana; tidak diambil.\n"
-
-#~ msgid "Authorization failed.\n"
-#~ msgstr "Authorisasi gagal.\n"
-
-#~ msgid "%s: illegal option -- %c\n"
-#~ msgstr "%s: pilihan illegal -- %c\n"
-
-#~ msgid ""
-#~ "GNU Wget %s built on VMS %s %s.\n"
-#~ "\n"
-#~ msgstr ""
-#~ "GNU Wget %s dibuat di VMS %s %s.\n"
-#~ "\n"
-
-#~ msgid "Currently maintained by Micah Cowan <micah@cowan.name>.\n"
-#~ msgstr "Saat ini dipelihara oleh Micah Cowan <micah@cowan.name>.\n"
-
-#~ msgid ""
-#~ "WARNING: Can't reopen standard output in binary mode;\n"
-#~ "         downloaded file may contain inappropriate line endings.\n"
-#~ msgstr ""
-#~ "PERINGATAN: Tidak dapat membuka keluaran standar dalam mode binari;\n"
-#~ "            berkas yang diunduh mungkin berisi akhir baris yang tidak "
-#~ "sesuai.\n"
-
-#~ msgid ""
-#~ "  -B,  --base=URL            prepends URL to relative links in -F -i "
-#~ "file.\n"
-#~ msgstr ""
-#~ "  -B,  --base=URL            prepends URL pada link relatif dalam file -F "
-#~ "-i.\n"
-
-#~ msgid "Error in Set-Cookie, field `%s'"
-#~ msgstr "Error dalam Set-Cookie, bagian `%s'"
-
-#~ msgid ""
-#~ "%s: %s: Invalid extended boolean `%s';\n"
-#~ "use one of `on', `off', `always', or `never'.\n"
-#~ msgstr ""
-#~ "%s: %s: Tidak valid extended boolean `%s';\n"
-#~ "gunakan salah satu dari `on', `off', `always', atau `newer'.\n"
-
-#~ msgid "  -Y,  --proxy                   explicitly turn on proxy.\n"
-#~ msgstr ""
-#~ "  -Y,  --proxy                   secara eksplisit menggunakan proxy.\n"
-
-#~ msgid ""
-#~ "This program is distributed in the hope that it will be useful,\n"
-#~ "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
-#~ "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
-#~ "GNU General Public License for more details.\n"
-#~ msgstr ""
-#~ "Program ini didistribusikan dengan harapan akan berguna,\n"
-#~ "TIDAK TERDAPAT GARANSI; bahkan untuk PENJUALAN atau \n"
-#~ "KESESUIAN UNTUK TUJUAN TERTENTU. Lihat GNU General Public Licence\n"
-#~ "untuk informasi selengkapnya.\n"
-
-#~ msgid "%s: Certificate verification error for %s: %s\n"
-#~ msgstr "%s: Verifikasi Certificate salah untuk %s: %s\n"
-
-#~ msgid "%s (%s) - Connection closed at byte %s/%s. "
-#~ msgstr "%s (%s) - Hubungan ditutup pada byte %s/%s. "
+msgstr ""
+"Ditemukan kecocokan eksak dalam berkas CDX. Menyimpan catatan kembali ke "
+"WARC.\n"

@@ -1,6 +1,6 @@
 /* strerror_r.c --- POSIX compatible system error routine
 
-   Copyright (C) 2010-2022 Free Software Foundation, Inc.
+   Copyright (C) 2010-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -166,16 +166,19 @@ strerror_r (int errnum, char *buf, size_t buflen)
 
 # if HAVE___XPG_STRERROR_R
       ret = __xpg_strerror_r (errnum, buf, buflen);
-      if (ret < 0)
-        ret = errno;
+      /* ret is 0 upon success, or EINVAL or ERANGE upon failure.  */
 # endif
 
       if (!*buf)
         {
-          /* glibc 2.13 would not touch buf on err, so we have to fall
-             back to GNU strerror_r which always returns a thread-safe
-             untruncated string to (partially) copy into our buf.  */
-          char *errstring = strerror_r (errnum, buf, buflen);
+          /* glibc 2.13 ... 2.34 (at least) don't touch buf upon failure.
+             Therefore we have to fall back to strerror_r which, for valid
+             errnum, returns a thread-safe untruncated string.  For invalid
+             errnum, though, it returns a truncated string, which does not
+             allow us to determine whether to return ERANGE or 0.  Thus we
+             need to pass a sufficiently large buffer.  */
+          char stackbuf[80];
+          char *errstring = strerror_r (errnum, stackbuf, sizeof stackbuf);
           ret = errstring ? safe_copy (buf, buflen, errstring) : errno;
         }
     }

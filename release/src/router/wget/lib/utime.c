@@ -1,5 +1,5 @@
 /* Work around platform bugs in utime.
-   Copyright (C) 2017-2022 Free Software Foundation, Inc.
+   Copyright (C) 2017-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -24,7 +24,6 @@
 #if defined _WIN32 && ! defined __CYGWIN__
 
 # include <errno.h>
-# include <stdbool.h>
 # include <windows.h>
 # include "filename.h"
 # include "malloca.h"

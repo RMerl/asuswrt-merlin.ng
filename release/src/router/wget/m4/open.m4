@@ -1,5 +1,5 @@
-# open.m4 serial 15
-dnl Copyright (C) 2007-2022 Free Software Foundation, Inc.
+# open.m4 serial 16
+dnl Copyright (C) 2007-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -9,7 +9,7 @@ AC_DEFUN([gl_FUNC_OPEN],
   AC_REQUIRE([AC_CANONICAL_HOST])
   AC_REQUIRE([gl_PREPROC_O_CLOEXEC])
   case "$host_os" in
-    mingw* | pw*)
+    mingw* | windows* | pw*)
       REPLACE_OPEN=1
       ;;
     *)

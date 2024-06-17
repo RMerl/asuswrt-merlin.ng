@@ -31,7 +31,7 @@ This file documents the GNU Wget utility for downloading network
 data.
 
 @c man begin COPYRIGHT
-Copyright @copyright{} 1996--2011, 2015, 2018--2022 Free Software
+Copyright @copyright{} 1996--2011, 2015, 2018--2024 Free Software
 Foundation, Inc.
 
 @iftex
@@ -2144,7 +2144,7 @@ download them recursively, though this feature may be added in the future.
 
 When @samp{--retr-symlinks=no} is specified, the linked-to file is not
 downloaded.  Instead, a matching symbolic link is created on the local
-filesystem.  The pointed-to file will not be retrieved unless this recursive
+file system.  The pointed-to file will not be retrieved unless this recursive
 retrieval would have encountered it separately and downloaded it anyway.  This
 option poses a security risk where a malicious FTP Server may cause Wget to
 write to files outside of the intended directories through a specially crafted
@@ -3982,7 +3982,7 @@ or @samp{application/xhtml+xml} to @file{@var{name}.html}.
 
 @example
 wget --mirror --convert-links --backup-converted \
-     --html-extension -o /home/me/weeklog        \
+     --adjust-extension -o /home/me/weeklog      \
      https://www.gnu.org/
 @end example
 

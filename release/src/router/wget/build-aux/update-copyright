@@ -3,7 +3,7 @@
 
 # Update an FSF copyright year list to include the current year.
 
-# Copyright (C) 2009-2022 Free Software Foundation, Inc.
+# Copyright (C) 2009-2024 Free Software Foundation, Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -98,7 +98,8 @@
 #   6. Blank lines, even if preceded by the prefix, do not appear
 #      within the FSF copyright statement.
 #   7. Each copyright year is 2 or 4 digits, and years are separated by
-#      commas, "-", or "--".  Whitespace may appear after commas.
+#      commas, "-", "--", or "\(en" (for troff).  Whitespace may appear
+#      after commas.
 #
 # Environment variables:
 #
@@ -122,7 +123,7 @@
 #   5. Set UPDATE_COPYRIGHT_HOLDER if the copyright holder is other
 #      than "Free Software Foundation, Inc.".
 
-# This is a prologue that allows to run a perl script as an executable
+# This is a prologue that allows running a perl script as an executable
 # on systems that are compliant to a POSIX version before POSIX:2017.
 # On such systems, the usual invocation of an executable through execlp()
 # or execvp() fails with ENOEXEC if it is a script that does not start
@@ -137,7 +138,7 @@
 eval 'exec perl -wSx -0777 -pi "$0" "$@"'
      if 0;
 
-my $VERSION = '2020-04-04.15:07'; # UTC
+my $VERSION = '2024-01-15.18:30'; # UTC
 # The definition above must lie within the first 8 lines in order
 # for the Emacs time-stamp write hook (at end) to update it.
 # If you change this file with Emacs, please let the write hook
@@ -145,9 +146,11 @@ my $VERSION = '2020-04-04.15:07'; # UTC
 
 use strict;
 use warnings;
+use re 'eval';
 
 my $copyright_re = 'Copyright';
 my $circle_c_re = '(?:\([cC]\)|@copyright\{}|\\\\\(co|&copy;|©)';
+my $ndash_re = '(?:--?|\\\\\(en)';
 my $holder = $ENV{UPDATE_COPYRIGHT_HOLDER};
 $holder ||= 'Free Software Foundation, Inc.';
 my $prefix_max = 5;
@@ -167,14 +170,13 @@ if (!$this_year || $this_year !~ m/^\d{4}$/)
 # Unless the file consistently uses "\r\n" as the EOL, use "\n" instead.
 my $eol = /(?:^|[^\r])\n/ ? "\n" : "\r\n";
 
-my $leading;
-my $prefix;
-my $ws_re;
 my $stmt_re;
-while (/(^|\n)(.{0,$prefix_max})$copyright_re/g)
+my $found;
+while (/(^|\n)(.{0,$prefix_max})$copyright_re/cg)
   {
-    $leading = "$1$2";
-    $prefix = $2;
+    my $pos=pos();
+    my $leading = "$1$2";
+    my $prefix = $2;
     if ($prefix =~ /^(\s*\/)\*(\s*)$/)
       {
         $prefix =~ s,/, ,;
@@ -185,105 +187,108 @@ while (/(^|\n)(.{0,$prefix_max})$copyright_re/g)
             $prefix = $prefix_ws;
           }
       }
-    $ws_re = '[ \t\r\f]'; # \s without \n
+    my $ws_re = '[ \t\r\f]'; # \s without \n
     $ws_re =
       "(?:$ws_re*(?:$ws_re|\\n" . quotemeta($prefix) . ")$ws_re*)";
     my $holder_re = $holder;
     $holder_re =~ s/\s/$ws_re/g;
     my $stmt_remainder_re =
       "(?:$ws_re$circle_c_re)?"
-      . "$ws_re(?:(?:\\d\\d)?\\d\\d(?:,$ws_re?|--?))*"
+      . "$ws_re(?:(?:\\d\\d)?\\d\\d(?:,$ws_re?|$ndash_re))*"
       . "((?:\\d\\d)?\\d\\d)$ws_re$holder_re";
     if (/\G$stmt_remainder_re/)
       {
+        $found = 1;
         $stmt_re =
           quotemeta($leading) . "($copyright_re$stmt_remainder_re)";
-        last;
-      }
-  }
-if (defined $stmt_re)
-  {
-    /$stmt_re/ or die; # Should never die.
-    my $stmt = $1;
-    my $final_year_orig = $2;
 
-    # Handle two-digit year numbers like "98" and "99".
-    my $final_year = $final_year_orig;
-    $final_year <= 99
-      and $final_year += 1900;
+        /$stmt_re/ or die; # Should never die.
+        my $stmt = $1;
+        my $final_year_orig = $2;
 
-    if ($final_year != $this_year)
-      {
-        # Update the year.
-        $stmt =~ s/\b$final_year_orig\b/$final_year, $this_year/;
-      }
-    if ($final_year != $this_year || $ENV{'UPDATE_COPYRIGHT_FORCE'})
-      {
-        # Normalize all whitespace including newline-prefix sequences.
-        $stmt =~ s/$ws_re/ /g;
+        # Handle two-digit year numbers like "98" and "99".
+        my $final_year = $final_year_orig;
+        $final_year <= 99
+          and $final_year += 1900;
 
-        # Put spaces after commas.
-        $stmt =~ s/, ?/, /g;
-
-        # Convert 2-digit to 4-digit years.
-        $stmt =~ s/(\b\d\d\b)/19$1/g;
-
-        # Make the use of intervals consistent.
-        if (!$ENV{UPDATE_COPYRIGHT_USE_INTERVALS})
+        if ($final_year != $this_year)
           {
-            $stmt =~ s/(\d{4})--?(\d{4})/join(', ', $1..$2)/eg;
+            # Update the year.
+            $stmt =~ s/(^|[^\d])$final_year_orig\b/$1$final_year, $this_year/;
           }
-        else
+        if ($final_year != $this_year || $ENV{'UPDATE_COPYRIGHT_FORCE'})
           {
-            my $ndash = $ARGV =~ /\.tex(i(nfo)?)?$/ ? "--" : "-";
+            # Normalize all whitespace including newline-prefix sequences.
+            $stmt =~ s/$ws_re/ /g;
 
-            $stmt =~
-              s/
-                (\d{4})
-                (?:
-                  (,\ |--?)
-                  ((??{
-                    if   ($2 ne ', ') { '\d{4}'; }
-                    elsif (!$3)       { $1 + 1;  }
-                    else              { $3 + 1;  }
-                  }))
-                )+
-              /$1$ndash$3/gx;
+            # Put spaces after commas.
+            $stmt =~ s/, ?/, /g;
 
-            # When it's 2, emit a single range encompassing all year numbers.
-            $ENV{UPDATE_COPYRIGHT_USE_INTERVALS} == 2
-              and $stmt =~ s/\b(\d{4})\b.*\b(\d{4})\b/$1$ndash$2/;
-          }
+            # Convert 2-digit to 4-digit years.
+            $stmt =~ s/(\b\d\d\b)/19$1/g;
 
-        # Format within margin.
-        my $stmt_wrapped;
-        my $text_margin = $margin - length($prefix);
-        if ($prefix =~ /^(\t+)/)
-          {
-            $text_margin -= length($1) * ($tab_width - 1);
-          }
-        while (length $stmt)
-          {
-            if (($stmt =~ s/^(.{1,$text_margin})(?: |$)//)
-                || ($stmt =~ s/^([\S]+)(?: |$)//))
+            # Make the use of intervals consistent.
+            if (!$ENV{UPDATE_COPYRIGHT_USE_INTERVALS})
               {
-                my $line = $1;
-                $stmt_wrapped .= $stmt_wrapped ? "$eol$prefix" : $leading;
-                $stmt_wrapped .= $line;
+                $stmt =~ s/(\d{4})$ndash_re(\d{4})/join(', ', $1..$2)/eg;
               }
             else
               {
-                # Should be unreachable, but we don't want an infinite
-                # loop if it can be reached.
-                die;
-              }
-          }
+                my $ndash = ($ARGV =~ /\.tex(i(nfo)?)?$/ ? "--"
+                             : $ARGV =~ /\.(\d[a-z]*|man)$/ ? "\\(en"
+                             : "-");
 
-        # Replace the old copyright statement.
-        s/$stmt_re/$stmt_wrapped/;
+                $stmt =~
+                  s/
+                    (\d{4})
+                    (?:
+                      (,\ |$ndash_re)
+                      ((??{
+                        if   ($2 ne ', ') { '\d{4}'; }
+                        elsif (!$3)       { $1 + 1;  }
+                        else              { $3 + 1;  }
+                      }))
+                    )+
+                  /$1$ndash$3/gx;
+
+                # When it's 2, emit a single range encompassing all year numbers.
+                $ENV{UPDATE_COPYRIGHT_USE_INTERVALS} == 2
+                  and $stmt =~ s/(^|[^\d])(\d{4})\b.*(?:[^\d])(\d{4})\b/$1$2$ndash$3/;
+              }
+
+            # Format within margin.
+            my $stmt_wrapped;
+            my $text_margin = $margin - length($prefix);
+            if ($prefix =~ /^(\t+)/)
+              {
+                $text_margin -= length($1) * ($tab_width - 1);
+              }
+            while (length $stmt)
+              {
+                if (($stmt =~ s/^(.{1,$text_margin})(?: |$)//)
+                    || ($stmt =~ s/^([\S]+)(?: |$)//))
+                  {
+                    my $line = $1;
+                    $stmt_wrapped .= $stmt_wrapped ? "$eol$prefix" : $leading;
+                    $stmt_wrapped .= $line;
+                  }
+                else
+                  {
+                    # Should be unreachable, but we don't want an infinite
+                    # loop if it can be reached.
+                    die;
+                  }
+              }
+
+            # Replace the old copyright statement.
+            my $p = pos();
+            s/$stmt_re/$stmt_wrapped/g;
+            pos() = $p;
+          }
       }
   }
-else
+
+if (!$found)
   {
     print STDERR "$ARGV: warning: copyright statement not found\n";
   }

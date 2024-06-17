@@ -1,5 +1,5 @@
 /* getdelim.c --- Implementation of replacement getdelim function.
-   Copyright (C) 1994, 1996-1998, 2001, 2003, 2005-2022 Free Software
+   Copyright (C) 1994, 1996-1998, 2001, 2003, 2005-2024 Free Software
    Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
@@ -29,10 +29,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <errno.h>
-
-#ifndef SSIZE_MAX
-# define SSIZE_MAX ((ssize_t) (SIZE_MAX / 2))
-#endif
 
 #if USE_UNLOCKED_IO
 # include "unlocked-io.h"

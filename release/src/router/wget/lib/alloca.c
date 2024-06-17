@@ -30,39 +30,12 @@
 #include <string.h>
 #include <stdlib.h>
 
-#ifdef emacs
-# include "lisp.h"
-# include "blockinput.h"
-# ifdef EMACS_FREE
-#  undef free
-#  define free EMACS_FREE
-# endif
-#else
-# define memory_full() abort ()
-#endif
-
 /* If compiling with GCC or clang, this file is not needed.  */
 #if !(defined __GNUC__ || defined __clang__)
 
 /* If someone has defined alloca as a macro,
    there must be some other way alloca is supposed to work.  */
 # ifndef alloca
-
-#  ifdef emacs
-#   ifdef static
-/* actually, only want this if static is defined as ""
-   -- this is for usg, in which emacs must undefine static
-   in order to make unexec workable
-   */
-#    ifndef STACK_DIRECTION
-you
-lose
--- must know STACK_DIRECTION at compile-time
-/* Using #error here is not wise since this file should work for
-   old and obscure compilers.  */
-#    endif /* STACK_DIRECTION undefined */
-#   endif /* static */
-#  endif /* emacs */
 
 /* Define STACK_DIRECTION if you know the direction of stack
    growth for your system; otherwise it will be automatically
@@ -145,10 +118,6 @@ alloca (size_t size)
   {
     register header *hp;        /* Traverses linked list.  */
 
-#  ifdef emacs
-    BLOCK_INPUT;
-#  endif
-
     for (hp = last_alloca_header; hp != NULL;)
       if ((STACK_DIR > 0 && hp->h.deep > depth)
           || (STACK_DIR < 0 && hp->h.deep < depth))
@@ -163,10 +132,6 @@ alloca (size_t size)
         break;                  /* Rest are not deeper.  */
 
     last_alloca_header = hp;    /* -> last valid storage.  */
-
-#  ifdef emacs
-    UNBLOCK_INPUT;
-#  endif
   }
 
   if (size == 0)

@@ -1,6 +1,6 @@
 /* Report a memory allocation failure and exit.
 
-   Copyright (C) 1997-2000, 2002-2004, 2006, 2009-2022 Free Software
+   Copyright (C) 1997-2000, 2002-2004, 2006, 2009-2024 Free Software
    Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
@@ -22,7 +22,7 @@
 
 #include <stdlib.h>
 
-#include "error.h"
+#include <error.h>
 #include "exitfail.h"
 
 #include "gettext.h"

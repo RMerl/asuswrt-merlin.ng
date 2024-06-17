@@ -1,5 +1,5 @@
 /* Extended regular expression matching and search library.
-   Copyright (C) 2002-2022 Free Software Foundation, Inc.
+   Copyright (C) 2002-2024 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Isamu Hasegawa <isamu@yamato.ibm.com>.
 
@@ -1396,24 +1396,22 @@ re_dfa_add_node (re_dfa_t *dfa, re_token_t token)
       if (__glibc_unlikely (new_nodes == NULL))
 	return -1;
       dfa->nodes = new_nodes;
+      dfa->nodes_alloc = new_nodes_alloc;
       new_nexts = re_realloc (dfa->nexts, Idx, new_nodes_alloc);
+      if (new_nexts != NULL)
+	dfa->nexts = new_nexts;
       new_indices = re_realloc (dfa->org_indices, Idx, new_nodes_alloc);
+      if (new_indices != NULL)
+	dfa->org_indices = new_indices;
       new_edests = re_realloc (dfa->edests, re_node_set, new_nodes_alloc);
+      if (new_edests != NULL)
+	dfa->edests = new_edests;
       new_eclosures = re_realloc (dfa->eclosures, re_node_set, new_nodes_alloc);
+      if (new_eclosures != NULL)
+	dfa->eclosures = new_eclosures;
       if (__glibc_unlikely (new_nexts == NULL || new_indices == NULL
 			    || new_edests == NULL || new_eclosures == NULL))
-	{
-	   re_free (new_nexts);
-	   re_free (new_indices);
-	   re_free (new_edests);
-	   re_free (new_eclosures);
-	   return -1;
-	}
-      dfa->nexts = new_nexts;
-      dfa->org_indices = new_indices;
-      dfa->edests = new_edests;
-      dfa->eclosures = new_eclosures;
-      dfa->nodes_alloc = new_nodes_alloc;
+	return -1;
     }
   dfa->nodes[dfa->nodes_len] = token;
   dfa->nodes[dfa->nodes_len].constraint = 0;

@@ -1,5 +1,5 @@
-# wcwidth.m4 serial 34
-dnl Copyright (C) 2006-2022 Free Software Foundation, Inc.
+# wcwidth.m4 serial 36
+dnl Copyright (C) 2006-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -41,9 +41,9 @@ AC_DEFUN([gl_FUNC_WCWIDTH],
   if test $ac_cv_func_wcwidth = yes || test $gl_cv_func_wcwidth_macro = yes; then
     HAVE_WCWIDTH=1
     dnl On Mac OS X 10.3, wcwidth(0x0301) (COMBINING ACUTE ACCENT) returns 1.
-    dnl On NetBSD 9.0, OpenBSD 5.0, MidnightBSD 1.1,
+    dnl On macOS 12.5, NetBSD 9.0, OpenBSD 5.0, MidnightBSD 1.1,
     dnl wcwidth(0x05B0) (HEBREW POINT SHEVA) returns 1.
-    dnl On NetBSD 9.0, MidnightBSD 1.1, OSF/1 5.1,
+    dnl On macOS 12.5, NetBSD 9.0, MidnightBSD 1.1, OSF/1 5.1,
     dnl wcwidth(0x200B) (ZERO WIDTH SPACE) returns 1.
     dnl On OpenBSD 5.8, wcwidth(0xFF1A) (FULLWIDTH COLON) returns 0.
     dnl This leads to bugs in 'ls' (coreutils).
@@ -86,13 +86,13 @@ int main ()
           [
 changequote(,)dnl
            case "$host_os" in
-                            # Guess yes on glibc systems.
-             *-gnu* | gnu*) gl_cv_func_wcwidth_works="guessing yes";;
-                            # Guess yes on musl systems.
-             *-musl*)       gl_cv_func_wcwidth_works="guessing yes";;
-                            # Guess yes on AIX 7 systems.
-             aix[7-9]*)     gl_cv_func_wcwidth_works="guessing yes";;
-             *)             gl_cv_func_wcwidth_works="$gl_cross_guess_normal";;
+                                 # Guess yes on glibc systems.
+             *-gnu* | gnu*)      gl_cv_func_wcwidth_works="guessing yes";;
+                                 # Guess yes on musl systems.
+             *-musl* | midipix*) gl_cv_func_wcwidth_works="guessing yes";;
+                                 # Guess yes on AIX 7 systems.
+             aix[7-9]*)          gl_cv_func_wcwidth_works="guessing yes";;
+             *)                  gl_cv_func_wcwidth_works="$gl_cross_guess_normal";;
            esac
 changequote([,])dnl
           ])

@@ -1,5 +1,5 @@
-# Look up an environment variable more securely.
-dnl Copyright 2013-2022 Free Software Foundation, Inc.
+# secure_getenv.m4 serial 2
+dnl Copyright 2013-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -20,7 +20,7 @@ AC_DEFUN([gl_FUNC_SECURE_GETENV],
 AC_DEFUN([gl_PREREQ_SECURE_GETENV], [
   AC_CHECK_FUNCS([__secure_getenv])
   if test $ac_cv_func___secure_getenv = no; then
-    AC_CHECK_FUNCS([issetugid])
+    gl_CHECK_FUNCS_ANDROID([issetugid], [[#include <unistd.h>]])
   fi
   AC_CHECK_FUNCS_ONCE([getuid geteuid getgid getegid])
 ])

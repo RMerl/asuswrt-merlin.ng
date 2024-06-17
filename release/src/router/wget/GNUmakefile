@@ -5,7 +5,7 @@
 # It is necessary if you want to build targets usually of interest
 # only to the maintainer.
 
-# Copyright (C) 2001, 2003, 2006-2022 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2003, 2006-2024 Free Software Foundation, Inc.
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ _gl-Makefile := $(wildcard [M]akefile)
 ifneq ($(_gl-Makefile),)
 
 # Make tar archive easier to reproduce.
-export TAR_OPTIONS = --owner=0 --group=0 --numeric-owner
+export TAR_OPTIONS = --owner=0 --group=0 --numeric-owner --sort=name
 
 # Allow the user to add to this in the Makefile.
 ALL_RECURSIVE_TARGETS =

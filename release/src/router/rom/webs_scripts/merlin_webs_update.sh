@@ -21,17 +21,11 @@ current_buildno=$(nvram get buildno | cut -d. -f2)
 current_extendno=$(nvram get extendno | sed "s/-g.*//" | sed "s/_.*//" | sed "s/alpha\|beta/-1/")
 
 # get firmware information
-forsq=$(nvram get apps_sq)
 model=$(nvram get productid)
 model="$model#"
 
-if [ "$forsq" == "1" ]; then
-	echo "---- update sq normal----" > /tmp/webs_upgrade.log
-	/usr/sbin/wget $wget_options $fwsite/test/manifest2.txt -O /tmp/wlan_update.txt
-else
 	echo "---- update real normal----" > /tmp/webs_upgrade.log
 	/usr/sbin/wget $wget_options $fwsite/manifest2.txt -O /tmp/wlan_update.txt
-fi
 
 if [ "$?" != "0" ]; then
 	nvram set webs_state_error=1
@@ -88,21 +82,16 @@ fi
 webs_state_flag=$(nvram get webs_state_flag)
 
 if [ "$webs_state_flag" -eq "1" ]; then
-	releasenote_file0_US=$(nvram get webs_state_info)_note.txt
+	releasenote_file0=$(nvram get webs_state_info)_note.txt
 	releasenote_path0="/tmp/release_note0.txt"
-	if [ "$forsq" == "1" ]; then
-		echo "---- download SQ release note $fwsite/test/$releasenote_file0_US ----" >> /tmp/webs_upgrade.log
-		/usr/sbin/wget $wget_options $fwsite/test/$releasenote_file0_US -O $releasenote_path0
-		echo "---- $fwsite/test/$releasenote_file0 ----" >> /tmp/webs_upgrade.log
-	else
-		echo "---- download real release note ----" >> /tmp/webs_upgrade.log
-		/usr/sbin/wget $wget_options $fwsite/$releasenote_file0_US -O $releasenote_path0
-		echo "---- $fwsite/$releasenote_file0 ----" >> /tmp/webs_upgrade.log
-	fi
+	echo "---- download real release note ----" >> /tmp/webs_upgrade.log
+	/usr/sbin/wget $wget_options $fwsite/$releasenote_file0 -O $releasenote_path0
 
 	if [ "$?" != "0" ]; then
-		echo "---- download SQ release note failed ----" >> /tmp/webs_upgrade.log
+		echo "---- download $fwsite/$releasenote_file0 failed ----" >> /tmp/webs_upgrade.log
 		nvram set webs_state_error=1
+	else
+		echo "---- $fwsite/$releasenote_file0 ----" >> /tmp/webs_upgrade.log
 	fi
 fi
 

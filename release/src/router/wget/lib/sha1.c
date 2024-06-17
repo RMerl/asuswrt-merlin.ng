@@ -1,7 +1,7 @@
 /* sha1.c - Functions to compute SHA1 message digest of files or
    memory blocks according to the NIST specification FIPS-180-1.
 
-   Copyright (C) 2000-2001, 2003-2006, 2008-2022 Free Software Foundation, Inc.
+   Copyright (C) 2000-2001, 2003-2006, 2008-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -29,7 +29,6 @@
 #endif
 #include "sha1.h"
 
-#include <stdalign.h>
 #include <stdint.h>
 #include <string.h>
 

@@ -1,6 +1,6 @@
 /* Determine a canonical name for the current locale's character encoding.
 
-   Copyright (C) 2000-2006, 2008-2022 Free Software Foundation, Inc.
+   Copyright (C) 2000-2006, 2008-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -1054,7 +1054,7 @@ locale_charset (void)
           }
       }
     if (0)
-      done_table_lookup: ;
+      done_table_lookup: {}
     else
 # endif
       {

@@ -1,5 +1,5 @@
-# select.m4 serial 13
-dnl Copyright (C) 2009-2022 Free Software Foundation, Inc.
+# select.m4 serial 16
+dnl Copyright (C) 2009-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -77,6 +77,8 @@ changequote([,])dnl
            case "$host_os" in
                              # Guess yes on Linux systems.
             linux-* | linux) gl_cv_func_select_detects_ebadf="guessing yes" ;;
+                             # Guess yes on systems that emulate the Linux system calls.
+            midipix*)        gl_cv_func_select_detects_ebadf="guessing yes" ;;
                              # Guess yes on glibc systems.
             *-gnu* | gnu*)   gl_cv_func_select_detects_ebadf="guessing yes" ;;
                              # If we don't know, obey --enable-cross-guesses.
@@ -91,10 +93,10 @@ changequote([,])dnl
   fi
 
   dnl Determine the needed libraries.
-  LIB_SELECT="$LIBSOCKET"
+  SELECT_LIB="$LIBSOCKET"
   if test $REPLACE_SELECT = 1; then
     case "$host_os" in
-      mingw*)
+      mingw* | windows*)
         dnl On the MSVC platform, the function MsgWaitForMultipleObjects
         dnl (used in lib/select.c) requires linking with -luser32. On mingw,
         dnl it is implicit.
@@ -109,9 +111,12 @@ main ()
   return 0;
 }]])],
           [],
-          [LIB_SELECT="$LIB_SELECT -luser32"])
+          [SELECT_LIB="$SELECT_LIB -luser32"])
         ;;
     esac
   fi
+  AC_SUBST([SELECT_LIB])
+  dnl For backward compatibility.
+  LIB_SELECT="$LIB_SELECT"
   AC_SUBST([LIB_SELECT])
 ])

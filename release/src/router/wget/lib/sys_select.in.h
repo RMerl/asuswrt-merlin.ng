@@ -1,5 +1,5 @@
 /* Substitute for <sys/select.h>.
-   Copyright (C) 2007-2022 Free Software Foundation, Inc.
+   Copyright (C) 2007-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -18,6 +18,13 @@
 @PRAGMA_SYSTEM_HEADER@
 # endif
 @PRAGMA_COLUMNS@
+
+/* This file uses #include_next of a system file that defines time_t.
+   For the 'year2038' module to work right, <config.h> needs to have been
+   included before.  */
+#if !_GL_CONFIG_H_INCLUDED
+ #error "Please include config.h first."
+#endif
 
 /* On OSF/1 and Solaris 2.6, <sys/types.h> and <sys/time.h>
    both include <sys/select.h>.
@@ -71,6 +78,11 @@
 
 #ifndef _@GUARD_PREFIX@_SYS_SELECT_H
 
+/* This file uses GNULIB_POSIXCHECK, HAVE_RAW_DECL_*.  */
+#if !_GL_CONFIG_H_INCLUDED
+ #error "Please include config.h first."
+#endif
+
 /* On many platforms, <sys/select.h> assumes prior inclusion of
    <sys/types.h>.  Also, mingw defines sigset_t there, instead of
    in <signal.h> where it belongs.  */
@@ -82,9 +94,10 @@
    of 'struct timeval', and no definition of this type.
    Also, Mac OS X, AIX, HP-UX, IRIX, Solaris, Interix declare select()
    in <sys/time.h>.
-   But avoid namespace pollution on glibc systems and "unknown type
-   name" problems on Cygwin.  */
-# if !(defined __GLIBC__ || defined __CYGWIN__)
+   But avoid namespace pollution on glibc systems, a circular include
+   <sys/select.h> -> <sys/time.h> -> <sys/select.h> on FreeBSD 13.1, and
+   "unknown type name" problems on Cygwin.  */
+# if !(defined __GLIBC__ || defined __FreeBSD__ || defined __CYGWIN__)
 #  include <sys/time.h>
 # endif
 
@@ -287,7 +300,9 @@ _GL_CXXALIAS_SYS_CAST (pselect, int,
                         struct timespec const *restrict,
                         const sigset_t *restrict));
 # endif
+# if __GLIBC__ >= 2
 _GL_CXXALIASWARN (pselect);
+# endif
 #elif defined GNULIB_POSIXCHECK
 # undef pselect
 # if HAVE_RAW_DECL_PSELECT

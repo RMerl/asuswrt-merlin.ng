@@ -1,6 +1,6 @@
 /* Provide a sys/socket header file for systems lacking it (read: MinGW)
    and for systems where it is incomplete.
-   Copyright (C) 2005-2022 Free Software Foundation, Inc.
+   Copyright (C) 2005-2024 Free Software Foundation, Inc.
    Written by Simon Josefsson.
 
    This file is free software: you can redistribute it and/or modify
@@ -63,9 +63,12 @@
 #ifndef _@GUARD_PREFIX@_SYS_SOCKET_H
 #define _@GUARD_PREFIX@_SYS_SOCKET_H
 
-#ifndef _GL_INLINE_HEADER_BEGIN
+/* This file uses _GL_INLINE_HEADER_BEGIN, _GL_INLINE, GNULIB_POSIXCHECK,
+   HAVE_RAW_DECL_*, alignof.  */
+#if !_GL_CONFIG_H_INCLUDED
  #error "Please include config.h first."
 #endif
+
 _GL_INLINE_HEADER_BEGIN
 #ifndef _GL_SYS_SOCKET_INLINE
 # define _GL_SYS_SOCKET_INLINE _GL_INLINE
@@ -97,7 +100,6 @@ typedef unsigned char   sa_family_t;
 #  endif
 # endif
 #else
-# include <stdalign.h>
 /* Code taken from glibc sysdeps/unix/sysv/linux/bits/socket.h on
    2009-05-08, licensed under LGPLv2.1+, plus portability fixes. */
 # define __ss_aligntype unsigned long int
@@ -356,7 +358,9 @@ _GL_CXXALIAS_SYS_CAST (accept, int,
                         struct sockaddr *restrict addr,
                         socklen_t *restrict addrlen));
 # endif
+# if __GLIBC__ >= 2
 _GL_CXXALIASWARN (accept);
+# endif
 #elif @HAVE_WINSOCK2_H@
 # undef accept
 # define accept accept_used_without_requesting_gnulib_module_accept
@@ -418,7 +422,9 @@ _GL_CXXALIAS_SYS_CAST (getpeername, int,
                        (int fd, struct sockaddr *restrict addr,
                         socklen_t *restrict addrlen));
 # endif
+# if __GLIBC__ >= 2
 _GL_CXXALIASWARN (getpeername);
+# endif
 #elif @HAVE_WINSOCK2_H@
 # undef getpeername
 # define getpeername getpeername_used_without_requesting_gnulib_module_getpeername
@@ -450,7 +456,9 @@ _GL_CXXALIAS_SYS_CAST (getsockname, int,
                        (int fd, struct sockaddr *restrict addr,
                         socklen_t *restrict addrlen));
 # endif
+# if __GLIBC__ >= 2
 _GL_CXXALIASWARN (getsockname);
+# endif
 #elif @HAVE_WINSOCK2_H@
 # undef getsockname
 # define getsockname getsockname_used_without_requesting_gnulib_module_getsockname
@@ -597,7 +605,9 @@ _GL_CXXALIAS_SYS_CAST (recvfrom, ssize_t,
                         struct sockaddr *restrict from,
                         socklen_t *restrict fromlen));
 # endif
+# if __GLIBC__ >= 2
 _GL_CXXALIASWARN (recvfrom);
+# endif
 #elif @HAVE_WINSOCK2_H@
 # undef recvfrom
 # define recvfrom recvfrom_used_without_requesting_gnulib_module_recvfrom

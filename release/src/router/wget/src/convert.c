@@ -1,5 +1,5 @@
 /* Conversion of links to local files.
-   Copyright (C) 2003-2011, 2014-2015, 2018-2022 Free Software
+   Copyright (C) 2003-2011, 2014-2015, 2018-2024 Free Software
    Foundation, Inc.
 
 This file is part of GNU Wget.
@@ -321,7 +321,7 @@ convert_links (const char *file, struct urlpos *links)
                                              link->refresh_timeout);
 
             DEBUGP (("TO_RELATIVE: %s to %s at position %d in %s.\n",
-                     link->url->url, newname, link->pos, file));
+                     link->url->url, quoted_newname, link->pos, file));
 
             xfree (newname);
             xfree (quoted_newname);
@@ -342,7 +342,7 @@ convert_links (const char *file, struct urlpos *links)
                                              link->refresh_timeout);
 
             DEBUGP (("Converted file part only: %s to %s at position %d in %s.\n",
-                     link->url->url, newname, link->pos, file));
+                     link->url->url, quoted_newname, link->pos, file));
 
             xfree (newname);
             xfree (quoted_newname);
@@ -365,7 +365,7 @@ convert_links (const char *file, struct urlpos *links)
                                              link->refresh_timeout);
 
             DEBUGP (("TO_COMPLETE: <something> to %s at position %d in %s.\n",
-                     newlink, link->pos, file));
+                     quoted_newlink, link->pos, file));
 
             xfree (quoted_newlink);
             ++to_url_count;
@@ -731,7 +731,11 @@ find_fragment (const char *beg, int size, const char **bp, const char **ep)
    safe for both local and HTTP-served browsing.
 
    We always quote "#" as "%23", "%" as "%25" and ";" as "%3B"
-   because those characters have special meanings in URLs.  */
+   because those characters have special meanings in URLs.
+
+   Additionally we always quote ' ' as "%20" since not quoting it
+   is illegal in CSS url()s and quoting it should not harm any
+   local browsing.  */
 
 static char *
 local_quote_string (const char *file, bool no_html_quote)
@@ -741,7 +745,7 @@ local_quote_string (const char *file, bool no_html_quote)
   char buf[1024];
   size_t tolen;
 
-  char *any = strpbrk (file, "?#%;");
+  char *any = strpbrk (file, "?#%; ");
   if (!any)
     return no_html_quote ? strdup (file) : html_quote_string (file);
 
@@ -770,6 +774,11 @@ local_quote_string (const char *file, bool no_html_quote)
         *to++ = '%';
         *to++ = '3';
         *to++ = 'B';
+        break;
+      case ' ':
+        *to++ = '%';
+        *to++ = '2';
+        *to++ = '0';
         break;
       case '?':
         if (opt.adjust_extension)

@@ -1,6 +1,6 @@
 /* calloc() function that is glibc compatible.
    This wrapper function is required at least on Tru64 UNIX 5.1 and mingw.
-   Copyright (C) 2004-2007, 2009-2022 Free Software Foundation, Inc.
+   Copyright (C) 2004-2007, 2009-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as

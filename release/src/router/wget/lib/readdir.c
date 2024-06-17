@@ -1,5 +1,5 @@
 /* Read the next entry of a directory.
-   Copyright (C) 2011-2022 Free Software Foundation, Inc.
+   Copyright (C) 2011-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -22,7 +22,9 @@
 #include <errno.h>
 #include <stddef.h>
 
-#include "dirent-private.h"
+#if GNULIB_defined_DIR
+# include "dirent-private.h"
+#endif
 
 /* Don't assume that UNICODE is not defined.  */
 #undef FindNextFile
@@ -30,7 +32,11 @@
 
 struct dirent *
 readdir (DIR *dirp)
+#undef readdir
 {
+#if HAVE_DIRENT_H                       /* equivalent to HAVE_READDIR */
+  return readdir (dirp->real_dirp);
+#else
   char type;
   struct dirent *result;
 
@@ -99,4 +105,5 @@ readdir (DIR *dirp)
   result->d_type = type;
 
   return result;
+#endif
 }

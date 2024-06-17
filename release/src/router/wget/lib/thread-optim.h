@@ -1,6 +1,6 @@
 /* Optimization of multithreaded code.
 
-   Copyright (C) 2020-2022 Free Software Foundation, Inc.
+   Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -50,9 +50,14 @@
    same optimization cannot be applied to locks that synchronize different
    processes (e.g. through shared memory mappings).  */
 
+/* This file uses HAVE_SYS_SINGLE_THREADED_H.  */
+#if !_GL_CONFIG_H_INCLUDED
+ #error "Please include config.h first."
+#endif
+
 #if HAVE_SYS_SINGLE_THREADED_H /* glibc >= 2.32 */
 # include <sys/single_threaded.h>
-# define gl_multithreaded()  !__libc_single_threaded
+# define gl_multithreaded()  (!__libc_single_threaded)
 #else
 # define gl_multithreaded()  1
 #endif

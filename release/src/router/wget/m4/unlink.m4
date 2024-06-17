@@ -1,5 +1,5 @@
-# unlink.m4 serial 15
-dnl Copyright (C) 2009-2022 Free Software Foundation, Inc.
+# unlink.m4 serial 17
+dnl Copyright (C) 2009-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -43,14 +43,16 @@ AC_DEFUN([gl_FUNC_UNLINK],
       [gl_cv_func_unlink_honors_slashes=yes],
       [gl_cv_func_unlink_honors_slashes=no],
       [case "$host_os" in
-                          # Guess yes on Linux systems.
-         linux-* | linux) gl_cv_func_unlink_honors_slashes="guessing yes" ;;
-                          # Guess yes on glibc systems.
-         *-gnu*)          gl_cv_func_unlink_honors_slashes="guessing yes" ;;
-                          # Guess no on native Windows.
-         mingw*)          gl_cv_func_unlink_honors_slashes="guessing no" ;;
-                          # If we don't know, obey --enable-cross-guesses.
-         *)               gl_cv_func_unlink_honors_slashes="$gl_cross_guess_normal" ;;
+                            # Guess yes on Linux systems.
+         linux-* | linux)   gl_cv_func_unlink_honors_slashes="guessing yes" ;;
+                            # Guess yes on systems that emulate the Linux system calls.
+         midipix*)          gl_cv_func_unlink_honors_slashes="guessing yes" ;;
+                            # Guess yes on glibc systems.
+         *-gnu*)            gl_cv_func_unlink_honors_slashes="guessing yes" ;;
+                            # Guess no on native Windows.
+         mingw* | windows*) gl_cv_func_unlink_honors_slashes="guessing no" ;;
+                            # If we don't know, obey --enable-cross-guesses.
+         *)                 gl_cv_func_unlink_honors_slashes="$gl_cross_guess_normal" ;;
        esac
       ])
      rm -f conftest.file conftest.lnk])

@@ -1,5 +1,5 @@
 /* Byte-wise substring search, using the Two-Way algorithm.
-   Copyright (C) 2008-2022 Free Software Foundation, Inc.
+   Copyright (C) 2008-2024 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Written by Eric Blake <ebb9@byu.net>, 2008.
 
@@ -231,7 +231,7 @@ critical_factorization (const unsigned char *needle, size_t needle_len,
    most 2 * HAYSTACK_LEN - NEEDLE_LEN comparisons occur in searching.
    If AVAILABLE modifies HAYSTACK_LEN (as in strstr), then at most 3 *
    HAYSTACK_LEN - NEEDLE_LEN comparisons occur in searching.  */
-static RETURN_TYPE
+static RETURN_TYPE _GL_ATTRIBUTE_PURE
 two_way_short_needle (const unsigned char *haystack, size_t haystack_len,
                       const unsigned char *needle, size_t needle_len)
 {
@@ -325,7 +325,7 @@ two_way_short_needle (const unsigned char *haystack, size_t haystack_len,
    If AVAILABLE modifies HAYSTACK_LEN (as in strstr), then at most 3 *
    HAYSTACK_LEN - NEEDLE_LEN comparisons occur in searching, and
    sublinear performance is not possible.  */
-static RETURN_TYPE
+static RETURN_TYPE _GL_ATTRIBUTE_PURE
 two_way_long_needle (const unsigned char *haystack, size_t haystack_len,
                      const unsigned char *needle, size_t needle_len)
 {

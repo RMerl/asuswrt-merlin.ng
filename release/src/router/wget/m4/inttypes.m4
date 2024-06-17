@@ -1,5 +1,5 @@
-# inttypes.m4 serial 36
-dnl Copyright (C) 2006-2022 Free Software Foundation, Inc.
+# inttypes.m4 serial 37
+dnl Copyright (C) 2006-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -170,6 +170,10 @@ AC_DEFUN([gl_INTTYPES_H_DEFAULTS],
   HAVE_DECL_STRTOIMAX=1; AC_SUBST([HAVE_DECL_STRTOIMAX])
   HAVE_DECL_STRTOUMAX=1; AC_SUBST([HAVE_DECL_STRTOUMAX])
   HAVE_IMAXDIV_T=1;      AC_SUBST([HAVE_IMAXDIV_T])
+  HAVE_IMAXABS=1;        AC_SUBST([HAVE_IMAXABS])
+  HAVE_IMAXDIV=1;        AC_SUBST([HAVE_IMAXDIV])
+  REPLACE_IMAXABS=0;     AC_SUBST([REPLACE_IMAXABS])
+  REPLACE_IMAXDIV=0;     AC_SUBST([REPLACE_IMAXDIV])
   REPLACE_STRTOIMAX=0;   AC_SUBST([REPLACE_STRTOIMAX])
   REPLACE_STRTOUMAX=0;   AC_SUBST([REPLACE_STRTOUMAX])
   INT32_MAX_LT_INTMAX_MAX=1;  AC_SUBST([INT32_MAX_LT_INTMAX_MAX])

@@ -1,6 +1,6 @@
-# serial 33
+# serial 36
 
-# Copyright (C) 1997-2001, 2003-2022 Free Software Foundation, Inc.
+# Copyright (C) 1997-2001, 2003-2024 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -18,7 +18,7 @@ AC_DEFUN([gl_FUNC_LSTAT],
   if test $ac_cv_func_lstat = yes; then
     AC_REQUIRE([gl_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK])
     case $host_os,$gl_cv_func_lstat_dereferences_slashed_symlink in
-      solaris* | *no)
+      darwin* | solaris* | *no)
         REPLACE_LSTAT=1
         ;;
     esac
@@ -56,10 +56,13 @@ AC_DEFUN([gl_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK],
           linux-* | linux)
             # Guess yes on Linux systems.
             gl_cv_func_lstat_dereferences_slashed_symlink="guessing yes" ;;
+          midipix*)
+            # Guess yes on systems that emulate the Linux system calls.
+            gl_cv_func_lstat_dereferences_slashed_symlink="guessing yes" ;;
           *-gnu* | gnu*)
             # Guess yes on glibc systems.
             gl_cv_func_lstat_dereferences_slashed_symlink="guessing yes" ;;
-          mingw*)
+          mingw* | windows*)
             # Guess no on native Windows.
             gl_cv_func_lstat_dereferences_slashed_symlink="guessing no" ;;
           *)

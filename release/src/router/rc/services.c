@@ -10871,6 +10871,14 @@ start_services(void)
 #if defined(RTCONFIG_MDNS)
 	start_mdns();
 #endif
+#ifdef RTCONFIG_OPENVPN
+	int i;
+	logmessage("openvpn-routing", "Initializing killswitch");
+	for (i = OVPN_CLIENT_MAX; i > 0; i --) {
+		amvpn_set_killswitch_rules(VPNDIR_PROTO_OPENVPN, i, NULL);
+	}
+#endif
+
 	/* Link-up LAN ports after DHCP server ready. */
 	start_lan_port(0);
 #ifdef RTCONFIG_CROND

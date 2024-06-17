@@ -178,7 +178,6 @@ typedef struct {
 
 	/* CONTENT */
 	size_t content_length; /* returned by strtoul() */
-	unsigned int free_mem; 
 
 	/* internal representation */
 	int     accept_encoding;

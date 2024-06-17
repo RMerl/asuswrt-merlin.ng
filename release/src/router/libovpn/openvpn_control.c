@@ -242,7 +242,6 @@ void ovpn_client_down_handler(int unit)
 	if ((unit < 1) || (unit > OVPN_CLIENT_MAX))
 		return;
 
-	ovpn_set_killswitch(unit);
 	_flush_routing_cache();
 
 	amvpn_clear_exclusive_dns(unit, VPNDIR_PROTO_OPENVPN);
@@ -441,20 +440,6 @@ exit:
 
 	if (fp_conf)
 		fclose(fp_conf);
-}
-
-
-void ovpn_set_killswitch(int unit) {
-	char buffer[64];
-
-	snprintf(buffer, sizeof (buffer), "vpn_client%d_enforce", unit);
-	if (nvram_get_int(buffer)) {
-		snprintf(buffer, sizeof (buffer), "/usr/sbin/ip route del default table ovpnc%d", unit);
-		system(buffer);
-		snprintf(buffer, sizeof (buffer), "/usr/sbin/ip route add prohibit default table ovpnc%d", unit);
-		logmessage("openvpn-routing", "Configured killswitch on VPN client %d", unit);
-		system(buffer);
-	}
 }
 
 
@@ -727,7 +712,8 @@ void ovpn_process_eas(int start) {
 		// Update kill switch states for clients set to auto-start with WAN
 		amvpn_set_wan_routing_rules();
 		amvpn_set_routing_rules(unit, VPNDIR_PROTO_OPENVPN);
-		ovpn_set_killswitch(unit);
+
+		amvpn_set_killswitch_rules(VPNDIR_PROTO_OPENVPN, unit, NULL);
 
 		if (unit > 0 && unit <= OVPN_CLIENT_MAX) {
 			sprintf(buffer2, "vpnclient%d", unit);

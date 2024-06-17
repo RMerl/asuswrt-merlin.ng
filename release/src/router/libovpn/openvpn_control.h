@@ -24,7 +24,6 @@ extern void ovpn_start_client(int unit);
 extern void ovpn_start_server(int unit);
 extern void ovpn_stop_client(int unit);
 extern void ovpn_stop_server(int unit);
-extern void ovpn_set_killswitch(int unit);
 extern int ovpn_need_dnsmasq_restart();
 
 extern void start_ovpn_serverall();

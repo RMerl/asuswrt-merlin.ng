@@ -23,6 +23,7 @@ Asuswrt-Merlin Changelog
              confusion, better integrate into SDN, and match how
              WireGuard clients already worked.
   - FIXED: JS error on Wifi 6e/7 models when toggling DDNS.
+  - FIXED: Couldn't mount CIFS shares on the router for BCM4912 devices
   - REMOVED: Wifi Radar was removed (unsupported by Wifi 7 devices,
              and security issues cited by Asus in their own recent
              releases).

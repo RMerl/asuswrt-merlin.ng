@@ -225,7 +225,13 @@ wl_stats () {
     display_cmd_op "NOISE: wl -i $IFNAME noise" "$WLCMD -i $IFNAME noise"
     display_cmd_op "TEMPERATURE SENSOR: wl -i $IFNAME phy_tempsense" "$WLCMD -i $IFNAME phy_tempsense"
     display_cmd_op "BAND: wl -i $IFNAME band" "$WLCMD -i $IFNAME band"
-    display_cmd_op "SCAN RESULTS: wl -i $IFNAME scanresults" "$WLCMD -i $IFNAME scanresults"
+    if [[ $MODE == "dhd" ]]; then
+        display_cmd_op "ESCAN RESULTS: wl -i $IFNAME escanresults" "$WLCMD -i $IFNAME escanresults"
+        display_cmd_op "ESCAN: wl -i $IFNAME escan" "$WLCMD -i $IFNAME escan"
+    else
+        display_cmd_op "SCAN RESULTS: wl -i $IFNAME scanresults" "$WLCMD -i $IFNAME scanresults"
+        display_cmd_op "SCAN: wl -i $IFNAME scan" "$WLCMD -i $IFNAME scan"
+    fi
     display_cmd_op "MACFLTR DUMP: wl -i $IFNAME macfilter_dump" "$WLCMD -i $IFNAME macfilter_dump"
     display_cmd_op "MACMODE DUMP: wl -i $IFNAME macmode" "$WLCMD -i $IFNAME macmode"
     display_cmd_op "MAC DUMP: wl -i $IFNAME mac" "$WLCMD -i $IFNAME mac"

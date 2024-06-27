@@ -31,9 +31,9 @@ dnl Process this file with autoconf to produce a configure script.
 dnl
 
 dnl Error if AX_CODE_COVERAGE if missing (like on the 1.21 release).
-m4_pattern_forbid([^_?AX_])
-m4_pattern_allow([AX_CHECK_GNU_MAKE_HEADLINE])
-m4_pattern_allow([_AX_CODE_COVERAGE_GCOV_PROG_WITH])
+dnl m4_pattern_forbid([^_?AX_])
+dnl m4_pattern_allow([AX_CHECK_GNU_MAKE_HEADLINE])
+dnl m4_pattern_allow([_AX_CODE_COVERAGE_GCOV_PROG_WITH])
 
 AC_INIT([wget],[m4_esyscmd(build-aux/git-version-gen .tarball-version)],[bug-wget@gnu.org])
 AC_PREREQ([2.64])
@@ -336,7 +336,7 @@ AC_CHECK_TYPES(sig_atomic_t, [], [], [
 AM_ICONV
 gl_INIT
 
-AX_CODE_COVERAGE
+dnl AX_CODE_COVERAGE
 
 dnl
 dnl Checks for library functions.

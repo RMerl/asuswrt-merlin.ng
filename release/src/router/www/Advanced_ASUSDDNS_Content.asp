@@ -811,7 +811,6 @@ function show_cert_details(){
 		}
 		else{
 			document.getElementById("cert_status").innerHTML = "<#Status_Active#>";
-			document.getElementById("SAN").innerHTML = httpd_cert_info.SAN;
 			document.getElementById("issueTo").innerHTML = httpd_cert_info.issueTo;
 			document.getElementById("issueBy").innerHTML = httpd_cert_info.issueBy;
 			document.getElementById("expireOn").innerHTML = httpd_cert_info.expire;
@@ -1161,10 +1160,6 @@ function check_unregister_result(){
 					<div style="display: flex;">
 						<div class="cert_status_title"><#vpn_openvpn_KC_to#> :</div>
 						<div id="issueTo" class="cert_status_val"></div>
-					</div>
-					<div style="display:flex;">
-						<div class="cert_status_title">SAN :</div>
-						<div id="SAN" class="cert_status_val"></div>
 					</div>
 					<div style="display: flex;">
 						<div class="cert_status_title"><#vpn_openvpn_KC_by#> :</div>

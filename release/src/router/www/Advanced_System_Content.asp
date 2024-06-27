@@ -1796,7 +1796,6 @@ function get_cert_info(){
 }
 
 function show_cert_details(){
-	document.getElementById("SAN").innerHTML = httpd_cert_info.SAN;
 	document.getElementById("issueTo").innerHTML = httpd_cert_info.issueTo;
 	document.getElementById("issueBy").innerHTML = httpd_cert_info.issueBy;
 	document.getElementById("expireOn").innerHTML = httpd_cert_info.expire;
@@ -2995,10 +2994,6 @@ function build_boostkey_options() {
 						<div style="display:table-row;">
 							<div style="display:table-cell;white-space: nowrap;">Issued to :</div>
 							<div id="issueTo" style="display:table-cell; padding-left:10px;"></div>
-						</div>
-						<div style="display:table-row;">
-							<div style="display:table-cell;white-space: nowrap">SAN :</div>
-							<div id="SAN" style="display:table-cell; padding-left:10px;"></div>
 						</div>
 						<div style="display:table-row;">
 							<div style="display:table-cell;white-space: nowrap">Issued by :</div>

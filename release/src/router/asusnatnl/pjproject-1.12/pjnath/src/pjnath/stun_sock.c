@@ -71,6 +71,7 @@ struct pj_stun_sock
      * Last error (if session was terminated because of error)
      */
     pj_status_t	    last_status;
+	char srv_name[128]; /* Stun Server domain name*/
 };
 
 /* 
@@ -380,6 +381,8 @@ PJ_DEF(pj_status_t) pj_stun_sock_start( pj_stun_sock *stun_sock,
 
     pj_grp_lock_acquire(stun_sock->grp_lock);
 
+	snprintf(stun_sock->srv_name, sizeof(stun_sock->srv_name), "%.*s:%d", domain->slen, domain->ptr, default_port);
+
     /* Check whether the domain contains IP address */
     stun_sock->srv_addr.addr.sa_family = (pj_uint16_t)stun_sock->af;
     status = pj_inet_pton(stun_sock->af, domain, 
@@ -626,6 +629,9 @@ PJ_DEF(pj_status_t) pj_stun_sock_get_info( pj_stun_sock *stun_sock,
     PJ_ASSERT_RETURN(stun_sock && info, PJ_EINVAL);
 
 	pj_grp_lock_acquire(stun_sock->grp_lock);
+
+	/* Prepare srv_name*/
+	snprintf(info->srv_name, sizeof(info->srv_name), "%s", stun_sock->srv_name);
 
 	/* Prepare last status */
 	info->last_status = stun_sock->last_status;

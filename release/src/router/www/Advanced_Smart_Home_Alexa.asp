@@ -17,7 +17,7 @@
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js"></script>
 <style>
 .div_table{
 	display:table;
@@ -35,7 +35,6 @@
 
 .div_img {
 	padding: 30px 0px 50px 25px;
-	position: absolute;
 }
 
 .and_you_can{
@@ -209,10 +208,15 @@ function tag_control(){
 	if((obj = document.getElementById('remote_control_here')) != null){
 		obj.style="text-decoration: underline;cursor:pointer;";
 		obj.onclick=function(){
-			ASUS_EULA.config(enable_remote_control, function(){});
-			if(ASUS_EULA.check('asus')){
-				enable_remote_control();
-			}
+            if(policy_status.PP == 0 || policy_status.PP_time == ''){
+                const policyModal = new PolicyModalComponent({
+                    policy: "PP",
+                    agreeCallback: enable_remote_control,
+                });
+                policyModal.show();
+            }else{
+                enable_remote_control();
+            }
 		};
 	}
 }
@@ -285,9 +289,16 @@ function detcet_aae_state(){
 
 function get_activation_code(){
 	close_alert('alert_pin');
-	ASUS_EULA.config(get_activation_code, function(){});
-	if(ASUS_EULA.check("asus"))
-		gen_new_pincode();
+
+    if(policy_status.PP == 0 || policy_status.PP_time == ''){
+        const policyModal = new PolicyModalComponent({
+            policy: "PP",
+            agreeCallback: gen_new_pincode,
+        });
+        policyModal.show();
+    }else{
+        gen_new_pincode();
+    }
 }
 
 function gen_new_pincode(){
@@ -420,6 +431,20 @@ function show_account_state(){
 	if(RetStatus == StatusList.EnableRemoteCtrl)
 		tag_control();
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    const thirdpartyPolicy = 'Alexa'
+    document.getElementById("thirdparty_pp").innerHTML=`<#Thirdparty_PP_Desc1#>`.replace("%1$@", thirdpartyPolicy).replace("[aa]%2$@[/aa]", `<a onclick="showThirdPartyPolicy('${thirdpartyPolicy}')" style="text-decoration: underline;cursor: pointer;">Alexa Terms of Use</a>`);
+})
+
+function showThirdPartyPolicy(party){
+    const thirdPartyPolicyModal = new ThirdPartyPolicyModalComponent({
+        policy: 'THIRDPARTY_PP',
+        party: party
+    });
+    thirdPartyPolicyModal.show();
+}
+
 </script>
 </head>
 <body onload="initial();" onunLoad="return unload_body();" class="bg">
@@ -573,6 +598,8 @@ function show_account_state(){
 															</tr>
 														</table>
 													</div>
+													<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
+													<div id="thirdparty_pp" style="padding:0px 40px"></div>
 												</div>
 											</div>
 									</div>

@@ -46,7 +46,7 @@ msgstr "Musik"
 
 #: scanner.c:529
 msgid "All Music"
-msgstr "All Musik"
+msgstr "All musik"
 
 #: scanner.c:530
 msgid "Genre"
@@ -66,11 +66,11 @@ msgstr "Mappar"
 
 #: scanner.c:534
 msgid "Playlists"
-msgstr "Spelningslistor"
+msgstr "Spellistor"
 
 #: scanner.c:598
 msgid "Recently Added"
-msgstr "nyligen tillagda"
+msgstr "Nyss tillagt"
 
 #: scanner.c:536
 msgid "Video"
@@ -108,4 +108,5 @@ msgstr "Söker %s\n"
 #: scanner.c:766
 #, c-format
 msgid "Scanning %s finished (%llu files)!\n"
-msgstr "Avsökning %s slutförd (%llu filer)!\n"
+msgstr "Genomsökning av %s slutförd (%llu filer)!\n"
+

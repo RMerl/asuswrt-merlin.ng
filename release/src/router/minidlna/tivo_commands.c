@@ -24,6 +24,7 @@
 #include <time.h>
 #include <sys/stat.h>
 
+#include "event.h"
 #include "tivo_utils.h"
 #include "upnpglobalvars.h"
 #include "upnphttp.h"

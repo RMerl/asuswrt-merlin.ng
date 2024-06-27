@@ -383,7 +383,7 @@ else
 	rm -f $(INSTALLDIR)/rom/etc/profile.hnd
 endif
 
-ifeq ($(RTCONFIG_TPVPN),y)
+ifeq ($(RTCONFIG_HMA),y)
 	mkdir -p $(INSTALLDIR)/rom/vpn
 	install -m 0644 vpn/HMA_TCP.JSON $(INSTALLDIR)/rom/vpn/HMA_TCP.JSON
 	install -m 0644 vpn/HMA_UDP.JSON $(INSTALLDIR)/rom/vpn/HMA_UDP.JSON

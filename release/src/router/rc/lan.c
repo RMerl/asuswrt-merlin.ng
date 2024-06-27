@@ -397,9 +397,8 @@ void start_wl(void)
 				if (strncmp(ifname, "wl", 2) == 0) {
 					if (get_ifname_unit(ifname, &unit, &subunit) < 0)
 						continue;
-					if (!wl_vif_enabled(ifname, tmp)) {
+					if (!wl_vif_enabled(ifname, tmp))
 						continue; /* Ignore dsiabled WL VIF */
-					}
 				}
 				// get the instance number of the wl i/f
 				else if (wl_ioctl(ifname, WLC_GET_INSTANCE, &unit, sizeof(unit)))
@@ -1375,7 +1374,11 @@ void start_lan(void)
 #if defined(GTAX6000) || defined(RTAX88U_PRO)
 	// configure 6715 GPIO direction
 	eval("wl", "-i", "eth6", "gpioout", "0x2002", "0x2002");
+#ifdef GTAX6000
+	eval("wl", "-i", "eth7", "gpioout", "0x2002", nvram_get_int("wl1_radio") ? "0x2002" : "0x0");
+#else
 	eval("wl", "-i", "eth7", "gpioout", "0x2002", "0x2002");
+#endif
 	eval("wl", "-i", "eth6", "ledbh", "13", "7");
 	eval("wl", "-i", "eth7", "ledbh", "13", "7");
 #endif
@@ -1575,9 +1578,11 @@ void start_lan(void)
 #ifdef RTAC87U
 		eval("brctl", "stp", lan_ifname, nvram_safe_get("lan_stp"));
 #else
+#if !defined(HND_ROUTER) || defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63)
 		if (is_routing_enabled())
 			eval("brctl", "stp", lan_ifname, nvram_safe_get("lan_stp"));
 		else
+#endif
 			eval("brctl", "stp", lan_ifname, "0");
 #endif
 
@@ -1621,10 +1626,10 @@ void start_lan(void)
 				if (strncmp(ifname, "wl", 2) == 0) {
 					if (get_ifname_unit(ifname, &unit, &subunit) < 0)
 						continue;
-					if (!wl_vif_enabled(ifname, tmp)) {
+					if (!wl_vif_enabled(ifname, tmp))
 						continue; /* Ignore disabled WL VIF */
-					}
-					wl_vif_hwaddr_set(ifname);
+					if (subunit != -1)
+						wl_vif_hwaddr_set(ifname);
 				}
 #endif
 #ifdef RTCONFIG_CONCURRENTREPEATER
@@ -1858,9 +1863,7 @@ void start_lan(void)
 						system("ethswctl -c pause -p 1 -v 2");
 #endif
 				}
-#if defined(RTAXE7800) && !defined(RTCONFIG_BCM_MFG)
-				if (!nvram_get_int("x_Setting") && !strcmp(ifname, "eth1")) continue;
-#endif
+
 				/* Set the logical bridge address to that of the first interface */
 				strlcpy(ifr.ifr_name, ifname, IFNAMSIZ);
 				if (ioctl(sfd, SIOCGIFHWADDR, &ifr) == 0) {
@@ -4205,6 +4208,7 @@ lan_up(char *lan_ifname)
 		}
 	}
 #endif
+	update_srv_cert_if_lan_ip_changed();
 #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_HND_ROUTER_AX)
 #if defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(ET8PRO) || defined(ET8_V2)
 	_dprintf("[%s][%d] skip (GPY211)\n", __FUNCTION__, __LINE__);
@@ -4242,6 +4246,7 @@ lan_down(char *lan_ifname)
 
 	update_lan_state(LAN_STATE_STOPPED, 0);
 
+	update_srv_cert_if_lan_ip_changed();
 #ifdef CONFIG_BCMWL5
 #if defined(RTCONFIG_WIRELESSREPEATER) || defined(RTCONFIG_PROXYSTA)
 #if defined(RTCONFIG_BCM4708) || defined(RTCONFIG_HND_ROUTER_AX)
@@ -4732,10 +4737,10 @@ void start_lan_wl(void)
 				if (strncmp(ifname, "wl", 2) == 0) {
 					if (get_ifname_unit(ifname, &unit, &subunit) < 0)
 						continue;
-					if (!wl_vif_enabled(ifname, tmp)) {
+					if (!wl_vif_enabled(ifname, tmp))
 						continue; /* Ignore disabled WL VIF */
-					}
-					wl_vif_hwaddr_set(ifname);
+					if (subunit != -1)
+						wl_vif_hwaddr_set(ifname);
 				}
 				else if (wl_ioctl(ifname, WLC_GET_INSTANCE, &unit, sizeof(unit))) {
 					continue;
@@ -5300,9 +5305,8 @@ void restart_wl(void)
 			if (strncmp(ifname, "wl", 2) == 0) {
 				if (get_ifname_unit(ifname, &unit, &subunit) < 0)
 					continue;
-				if (!wl_vif_enabled(ifname, tmp)) {
+				if (!wl_vif_enabled(ifname, tmp))
 					continue; /* Ignore dsiabled WL VIF */
-				}
 			}
 			// get the instance number of the wl i/f
 			else if (wl_ioctl(ifname, WLC_GET_INSTANCE, &unit, sizeof(unit)))
@@ -5799,8 +5803,10 @@ void restart_wireless(void)
 #endif
 	}
 #ifdef CONFIG_BCMWL5
-	else
+	else {
 		nvram_set_int("obd_allow_scan", 0);
+		nvram_set_int("wlcscan", 0);
+	}
 #endif
 #endif
 #ifdef RTCONFIG_LANTIQ
@@ -6143,6 +6149,7 @@ void restart_wireless(void)
 #ifdef RTCONFIG_CFGSYNC
 	send_event_to_cfgmnt(EID_RC_RESTART_WIRELESS);
 #endif
+	restore_wan_ebtables_rules();
 }
 
 #ifdef RTCONFIG_BCM_7114
@@ -6582,7 +6589,7 @@ void set_onboarding_vif_status()
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 	}
 
-	if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "sae")) {
+	if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "sae") || nvram_match(strcat_r(prefix, "closed", tmp), "1")) {
 		snprintf(wl_radio, sizeof(wl_radio), "wl%d_radio", unit);
 		if (nvram_get_int(wl_radio)) //radio on
 			nvram_set_int("obvif_bss", 1);

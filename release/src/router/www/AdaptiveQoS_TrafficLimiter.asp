@@ -795,12 +795,16 @@ function apply(){
 
 	document.form.submit();
 }
+
 function show_alert_preference(){
-	cal_panel_block("alert_preference", 0.25);
-	check_smtp_server_type();
-	$('#alert_preference').fadeIn(300);
-	document.getElementById('mail_address').value = document.form.PM_MY_EMAIL.value;
-	document.getElementById('mail_password').value = document.form.PM_SMTP_AUTH_PASS.value;
+	alert(`Install app to receive push notification when a suspicious connection between your client devices and malicious destination has been detected and blocked.`);
+
+	if($("#app_link_table").length > 0){
+        setTimeout(function(){
+    		$("#app_link_table").show();
+    		$("html, body").animate({ scrollTop: 0 }, "fast");
+        }, 1)
+	}
 }
 
 function close_alert_preference(){

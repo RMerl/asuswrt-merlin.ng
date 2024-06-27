@@ -80,6 +80,7 @@ function initial(){
 		document.getElementById("fb_desc0").style.display = "";
 		inputCtrl(document.form.fb_ISP, 0);
 		inputCtrl(document.form.fb_Subscribed_Info, 0);
+		document.form.gen_tarball_id.checked = false;
 		document.form.attach_syslog_id.checked = true;
 		document.form.attach_cfgfile_id.checked = true;
 		document.form.attach_iptables.checked = false;
@@ -198,6 +199,7 @@ function disbled_feedback_filed(status){
 	document.form.fb_country.disabled = true;
 	document.form.fb_email.disabled = true;
 	document.form.fb_serviceno.disabled = true;
+		document.form.gen_tarball.disabled = true;
 	document.form.attach_syslog.disabled = true;
 	document.form.attach_cfgfile.disabled = true;
 	document.form.attach_modemlog.disabled = true;
@@ -236,6 +238,7 @@ function check_wan_state(){
 		document.form.fb_country.disabled = "";
 		document.form.fb_email.disabled = "";
 		document.form.fb_serviceno.disabled = "";
+		document.form.gen_tarball.disabled = "";
 		document.form.attach_syslog.disabled = "";
 		document.form.attach_modemlog.disabled = "";
 		document.form.attach_wlanlog.disabled = "";
@@ -619,6 +622,11 @@ function applyRule(){
 				alert("Feedback report daily maximum(10) send limit reached.");
 				return false;
 		}*/
+		if(document.form.gen_tarball.checked == true)
+			document.form.fb_gen_tarball.value = 1;
+		else
+			document.form.fb_gen_tarball.value = 0;
+
 		if(document.form.attach_syslog.checked == true)
 			document.form.fb_attach_syslog.value = 1;
 		else
@@ -1283,6 +1291,7 @@ function detect_fb_state(){
 <input type="hidden" name="action_mode" value="apply">
 <input type="hidden" name="action_script" value="restart_sendfeedback">
 <input type="hidden" name="action_wait" value="60">
+<input type="hidden" name="fb_gen_tarball" value="">
 <input type="hidden" name="fb_attach_syslog" value="">
 <input type="hidden" name="fb_attach_cfgfile" value="">
 <input type="hidden" name="fb_attach_iptables" value="">	
@@ -1364,6 +1373,12 @@ function detect_fb_state(){
 <td>
 	<select class="input_option" name="fb_contact_type"></select>
 	<input type="text" name="fb_phone" maxlength="50" class="input_25_table" value="" autocorrect="off" autocapitalize="off">	
+</td>
+</tr>
+<tr>
+<th>Special options</th>
+<td>
+	<input type="checkbox" class="input" name="gen_tarball" id="gen_tarball_id"><label for="gen_tarball_id">Generate downloadable logs as ASUS support requested<!--Untranslated--></label>&nbsp;&nbsp;&nbsp;
 </td>
 </tr>
 <tr>

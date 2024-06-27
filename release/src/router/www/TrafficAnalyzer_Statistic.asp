@@ -23,7 +23,7 @@
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js"></script>
 <style>
 *{
 	box-sizing: content-box;
@@ -91,8 +91,6 @@ function initial(){
 
 	$('#traffic_unit').val(getTrafficUnit());
 
-	if(!ASUS_EULA.status("tm"))
-		ASUS_EULA.config(eula_confirm, cancel);
 }
 
 var date_string = "";
@@ -1453,21 +1451,32 @@ function cancel(){
 	document.form.action_script.value = "";
 	document.form.action_wait.value = "5";
 }
-function switch_control(_status){
-	if(_status) {
-		if(reset_wan_to_fo.check_status()) {
-			if(ASUS_EULA.check("tm")){
-				document.form.bwdpi_db_enable.value = 1;
-				applyRule();
-			}
-		}
-		else
-			cancel();
-	}
-	else {
-		document.form.bwdpi_db_enable.value = 0;
-		applyRule();
-	}
+function switch_control(_status) {
+    if (_status) {
+        if (!dns_dpi_support) {
+            if (reset_wan_to_fo.check_status()) {
+                if (policy_status.TM == 0 || policy_status.TM_time == '') {
+                    const policyModal = new PolicyModalComponent({
+                        policy: "TM",
+                        agreeCallback: eula_confirm,
+                        disagreeCallback: cancel
+                    });
+                    policyModal.show();
+                } else {
+                    eula_confirm();
+                }
+            } else
+                cancel();
+        } else {
+
+            document.form.bwdpi_db_enable.value = 1; // align user experience
+            document.form.dns_dpi_trf_analysis.value = 1;
+            applyRule();
+        }
+    } else {
+        document.form.bwdpi_db_enable.value = 0;
+        applyRule();
+    }
 }
 function applyRule(){
 	document.form.action_script.value = "restart_wrs;restart_firewall";

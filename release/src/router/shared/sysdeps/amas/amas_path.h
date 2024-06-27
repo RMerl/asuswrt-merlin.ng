@@ -10,6 +10,7 @@
 #define ETH_3		0x20	//ethernet_3
 #define ETH_4		0x40	//ethernet_4
 #define WL_6G		0x80	//6G
+#define WL_6G_1		0x100	//6G-1
 
 
 #define CH_SYNC_INIT_STATE	0

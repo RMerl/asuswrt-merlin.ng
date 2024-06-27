@@ -43,7 +43,7 @@ int get_remote_mac(struct in_addr ip_addr, unsigned char *mac);
 void reload_ifaces(int notify);
 
 int OpenAndConfMonitorSocket();
-void ProcessMonitorEvent(int s);
+void ProcessMonitorEvent(struct event *);
 
 #endif
 

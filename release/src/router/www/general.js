@@ -292,14 +292,27 @@ function handle_11ac_80MHz(){
 function show_cert_settings(show){
 	var orig_le_enable = '<% nvram_get("le_enable"); %>';
 	if(show){
-		document.form.le_enable.disabled = false;
 		showhide("https_cert", 1);
 		showhide("cert_details", 1);
+		if (orig_le_enable == "1") {
+			showhide("CAcert_details", 0);
+		} else {
+			showhide("CAcert_details", 1);
+		}
+		if (letsencrypt_support) {
+			document.form.le_enable.disabled = false;
+			document.getElementById("le_crypt").style.display = "";
+		} else {
+			document.form.le_enable.disabled = true;
+			document.getElementById("le_crypt").style.display = "none";
+		}
 	}
 	else{
 		document.form.le_enable.disabled = true;
 		showhide("https_cert", 0);
 		showhide("cert_details", 0);
+		showhide("CAcert_details", 0);
+		document.getElementById("le_crypt").style.display = "none";
 	}
 }
 
@@ -338,9 +351,6 @@ function change_common_radio(o, s, v, r){
 				showhide("wildcard_field",1);
 			}
 
-//			if(letsencrypt_support)
-//				show_cert_settings(1);
-
 			change_ddns_setting(document.form.ddns_server_x.value);
 			inputCtrl(document.form.ddns_refresh_x, 1);
 			show_ipv6update_setting();
@@ -367,9 +377,11 @@ function change_common_radio(o, s, v, r){
 
 			document.getElementById("ddns_status_tr").style.display = "none";
 			document.getElementById("ddns_result_tr").style.display = "none";
-//			if(letsencrypt_support)
-//				show_cert_settings(0);
 		}
+		if (HTTPS_support)
+			show_cert_settings(1);
+		else
+			show_cert_settings(0);
 		update_ddns_wan_unit_option();
 	}
 	else if(v == "wan_dnsenable_x"){
@@ -476,6 +488,10 @@ function openLink(s){
 			tourl = "https://www.oray.com/";
 		else if (document.form.ddns_server_x.value == 'DOMAINS.GOOGLE.COM')
 			tourl = "https://domains.google/";
+		else if (document.form.ddns_server_x.value == 'FREEDNS.AFRAID.ORG')
+			tourl = "https://freedns.afraid.org/signup/";
+		else if (document.form.ddns_server_x.value == 'FREEMYIP.COM')
+			tourl = "https://freemyip.com";
 		else	tourl = "";
 		link = window.open(tourl, "DDNSLink","toolbar=yes,location=yes,directories=no,status=yes,menubar=yes,scrollbars=yes,resizable=yes,copyhistory=no,width=640,height=480");
 	}

@@ -26,7 +26,7 @@
 #include <pj/sock.h>
 #include <pj/sock_select.h>
 
-#if defined(PJ_CONFIG_IPHONE) && PJ_CONFIG_IPHONE != 0 //BSD
+#if (defined(PJ_CONFIG_IPHONE) && PJ_CONFIG_IPHONE != 0) || (defined(PJ_DARWINOS) && PJ_DARWINOS != 0)//BSD
 #include <net/if_dl.h>
 #endif
 

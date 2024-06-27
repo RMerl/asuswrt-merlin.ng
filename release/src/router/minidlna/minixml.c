@@ -143,7 +143,7 @@ void parseelt(struct xmlparser * p)
 						return;
 					while( IS_WHITE_SPACE(*p->xml) )
 					{
-						p->xml++;
+						i++; p->xml++;
 						if (p->xml >= p->xmlend)
 							return;
 					}

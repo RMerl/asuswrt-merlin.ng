@@ -523,7 +523,7 @@ extern char cloud_file[256];
 #ifdef RTCONFIG_HTTPS
 extern int do_ssl;
 extern int ssl_stream_fd;
-extern int gen_ddns_hostname(char *ddns_hostname);
+extern int gen_ddns_hostname(char *ddns_hostname, int len);
 extern int check_model_name(void);
 extern char *pwenc(char *input, char *output, int len);
 #endif
@@ -611,4 +611,5 @@ extern int check_lock_status(time_t *dt);
 extern char *wl_nband_to_wlx(char *nv_name, char *wl_name, size_t len);
 extern int gen_asus_token_cookie(char *asus_token, int asus_token_len, char *token_cookie, int cookie_len);
 extern void check_lock_state();
+extern void gen_random_string_v2(char *out, size_t len);
 #endif /* _httpd_h_ */

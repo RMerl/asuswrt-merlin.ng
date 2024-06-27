@@ -683,6 +683,13 @@ function disable_button(val){
 		document.getElementById('button').style.display = "none";
 }
 
+function checkTime(i){
+	if (i<10){
+		i="0" + i
+	}
+	return i
+}
+
 function regen_captcha(){
 	var timestamp = new Date().getTime();
 	var captcha_pic = document.getElementById("captcha_pic");

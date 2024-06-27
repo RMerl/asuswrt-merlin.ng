@@ -1,6 +1,6 @@
 include ../common.mak
 
-CFLAGS += -Os -Wall $(EXTRACFLAGS)
+CFLAGS += $(if $(RTCONFIG_DEBUG),-g,-Os) -Wall $(EXTRACFLAGS)
 CFLAGS += $(PRIVATE_EXTRACFLAGS)
 CFLAGS += -I$(SRCBASE) -I.
 ifeq ($(RTCONFIG_BCM7),y)

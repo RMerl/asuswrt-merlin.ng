@@ -266,7 +266,7 @@ function selectSetting() {
 													</div>
 													<div id="restoreInit_div">
 														<div style="float:left;margin-left:5px;">
-															<input type="checkbox" id="restoreInit">
+															<input type="checkbox" id="restoreInit" checked>
 														</div>
 														<div style="float:left;width:65%;">
 															<span><label for="restoreInit"><#Setting_initialize_desc#></label></span>

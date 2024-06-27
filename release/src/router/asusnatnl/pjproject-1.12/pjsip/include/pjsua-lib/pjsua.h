@@ -403,6 +403,7 @@ typedef struct pjsua_logging_config
 	// Disable console log.
 	unsigned   disable_console_log; 
 
+    void (*app_log_cb)(pjsua_inst_id inst_id, int level, const char *src, const char *format, ...);
 
 } pjsua_logging_config;
 
@@ -1137,6 +1138,20 @@ typedef struct pjsua_callback
 									int idx,
 									pj_sockaddr *external_addr,
 									pj_sockaddr *local_addr);
+
+	/**
+	 * 2323-01-18 DEAN
+	 * This call will be called when stun resolve.
+
+	 * @param inst_id	        The instance id of pjsua.
+	 * @param [out] status.     The status of resolving.
+	 * @param [out] srv_name.   The stun server name.
+	 * @param [out] addr.       The ip address of resolving.
+	 */
+    void (*on_stun_resolve)(pjsua_inst_id inst_id, 
+                                    pj_status_t status, 
+                                    pj_str_t srv_name, 
+                                    pj_sockaddr addr);
 
 } pjsua_callback;
 
@@ -4758,6 +4773,11 @@ struct pjsua_media_config
      * Enable TURN relay candidate in ICE.
      */
     pj_bool_t		enable_turn;
+
+    /**
+     * Enable IPV6.
+     */
+    pj_bool_t		enable_ipv6;
 
 	int turn_server_cnt;
 

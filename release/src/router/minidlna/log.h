@@ -44,8 +44,9 @@ enum _log_facility
 };
 
 extern int log_level[L_MAX];
-extern int log_init(const char *fname, const char *debug);
+extern int log_init(const char *debug);
 extern void log_close(void);
+extern void log_reopen(void);
 extern void log_err(int level, enum _log_facility facility, char *fname, int lineno, char *fmt, ...)
 	__attribute__((__format__ (__printf__, 5, 6)));
 

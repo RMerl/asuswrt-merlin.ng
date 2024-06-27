@@ -46,5 +46,5 @@ void
 sendBeaconMessage(int fd, struct sockaddr_in * client, int len, int broadcast);
 
 void
-ProcessTiVoBeacon(int fd);
+ProcessTiVoBeacon(struct event *);
 #endif

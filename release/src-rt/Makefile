@@ -339,7 +339,7 @@ lowercase_N = $(shell echo $(N) | tr A-Z a-z)
 uppercase_B = $(shell echo $(BUILD_NAME) | tr a-z  A-Z)
 lowercase_B = $(shell echo $(BUILD_NAME) | tr A-Z a-z)
 BUILD_TIME := $(shell LC_ALL=C date -u)
-BUILD_USER ?= $(shell whoami)
+BUILD_USER ?= root
 BUILD_INFO := $(shell git log --pretty="%h" -n 1|sed -e "s,\([0-9a-z]\{7\}\)[0-9a-z]*,\1,")
 
 ifeq ($(CONFIG_LINUX26),y)
@@ -1541,7 +1541,13 @@ define RouterOptions
 	if [ "$(DNSPRIVACY)" = "y" ]; then \
 		sed -i "/RTCONFIG_DNSPRIVACY/d" $(1); \
 		echo "RTCONFIG_DNSPRIVACY=y" >>$(1); \
-	fi;
+	fi; \
+	if [ "$(DNSSEC)" = "y" ]; then \
+		sed -i "/RTCONFIG_DNSSEC/d" $(1); \
+		echo "RTCONFIG_DNSSEC=y" >>$(1); \
+		sed -i "/RTCONFIG_DNSSEC_NETTLE/d" $(1); \
+		echo "RTCONFIG_DNSSEC_NETTLE=y" >>$(1); \
+	fi; \
 	if [ "$(DNSFILTER)" = "y" ]; then \
 		sed -i "/RTCONFIG_DNSFILTER/d" $(1); \
 		echo "RTCONFIG_DNSFILTER=y" >>$(1); \
@@ -1627,6 +1633,10 @@ define RouterOptions
 	if [ "$(TCPDUMP)" = "y" ]; then \
 		sed -i "/RTCONFIG_TCPDUMP/d" $(1); \
 		echo "RTCONFIG_TCPDUMP=y" >>$(1); \
+	fi;
+	if [ "$(TCPREPLAY)" = "y" ]; then \
+		sed -i "/RTCONFIG_TCPREPLAY/d" $(1); \
+		echo "RTCONFIG_TCPREPLAY=y" >>$(1); \
 	fi;
 	if [ "$(DUMP4000)" = "y" ]; then \
 		sed -i "/RTCONFIG_DUMP4000/d" $(1); \
@@ -1917,11 +1927,15 @@ define RouterOptions
 		sed -i "/RTCONFIG_LIBASC/d" $(1); \
 		echo "RTCONFIG_LIBASC=y" >>$(1); \
 	fi;
-	if [ "$(ASD)" = "y" ]; then \
-		sed -i "/RTCONFIG_ASD/d" $(1); \
-		echo "RTCONFIG_ASD=y" >>$(1); \
+        if [ "$(ASD)" = "n" ]; then \
+                sed -i "/RTCONFIG_ASD\>/d" $(1); \
+                echo "# RTCONFIG_ASD is not set" >>$(1); \
 		sed -i "/RTCONFIG_LIBASC/d" $(1); \
-		echo "RTCONFIG_LIBASC=y" >>$(1); \
+		echo "# RTCONFIG_LIBASC is not set" >>$(1); \
+	fi;
+	if [ "$(ASD21)" = "y" ]; then \
+		sed -i "/RTCONFIG_ASD_2_1/d" $(1); \
+		echo "RTCONFIG_ASD_2_1=y" >>$(1); \
 	fi;
 	if [ "$(RSYSLOGD)" = "y" ]; then \
 		sed -i "/RTCONFIG_RSYSLOGD/d" $(1); \
@@ -2299,6 +2313,10 @@ define RouterOptions
 			if [ "$(OCNVC)" = "y" ]; then \
 				sed -i "/RTCONFIG_OCNVC/d" $(1); \
 				echo "RTCONFIG_OCNVC=y" >>$(1); \
+			fi; \
+			if [ "$(DSLITE)" = "y" ]; then \
+				sed -i "/RTCONFIG_DSLITE/d" $(1); \
+				echo "RTCONFIG_DSLITE=y" >>$(1); \
 			fi; \
 		fi; \
 	fi;
@@ -2835,11 +2853,12 @@ define RouterOptions
 	if [ "$(DHDAP)" = "y" ]; then \
 		sed -i "/RTCONFIG_DHDAP/d" $(1); \
 		echo "RTCONFIG_DHDAP=y" >>$(1); \
-		if [ "$(BW160M)" = "y" ]; then \
-			echo "RTCONFIG_BW160M=y" >>$(1); \
-		else \
-			echo "# RTCONFIG_BW160M is not set" >>$(1); \
-		fi; \
+	fi;
+	sed -i "/RTCONFIG_BW160M/d" $(1); \
+	if [ "$(BW160M)" = "y" ]; then \
+		echo "RTCONFIG_BW160M=y" >>$(1); \
+	else \
+		echo "# RTCONFIG_BW160M is not set" >>$(1); \
 	fi;
 	if [ "$(DPSTA)" = "y" ]; then \
 		sed -i "/RTCONFIG_DPSTA/d" $(1); \
@@ -3077,6 +3096,12 @@ define RouterOptions
 	if [ "$(WTFAST)" = "y" ]; then \
 		sed -i "/RTCONFIG_WTFAST/d" $(1); \
 		echo "RTCONFIG_WTFAST=y" >>$(1); \
+	fi;
+	sed -i "/RTCONFIG_WTFAST_V2/d" $(1); \
+	if [ "$(WTFAST_V2)" = "y" ]; then \
+		echo "RTCONFIG_WTFAST_V2=y" >>$(1); \
+	else \
+		echo "# RTCONFIG_WTFAST_V2 is not set" >>$(1); \
 	fi;
 	if [ "$(IFTTT)" = "y" ]; then \
 		sed -i "/RTCONFIG_IFTTT/d" $(1); \
@@ -4208,7 +4233,7 @@ define BusyboxOptions
 		sed -i "/CONFIG_DEVMEM/d" $(1); \
 		echo "CONFIG_DEVMEM=y" >>$(1); \
 	fi;
-	if [ "$(MAPAC1300)" = "y" ] || [ "$(MAPAC2200)" = "y" ] || [ "$(VZWAC1300)" = "y" ] || [ "$(SHAC1300)" = "y" ] || [ "$(RTAC95U)" = "y" ] ; then \
+	if [ "$(MAPAC1300)" = "y" ] || [ "$(MAPAC2200)" = "y" ] || [ "$(VZWAC1300)" = "y" ] || [ "$(SHAC1300)" = "y" ] || [ "$(RTAC95U)" = "y"  || [ "$(RTAC88U)" = "y" ] ; then \
 		sed -i "/CONFIG_TFTP/d" $(1); \
 		echo "CONFIG_TFTP=y" >>$(1); \
 		sed -i "/CONFIG_FEATURE_TFTP_GET/d" $(1); \
@@ -6162,7 +6187,7 @@ get_extendno:
 	$(MAKE) $*-clean $*
 
 %-tags: dummy
-	@[ ! -d router/$* ] || ctags -a -R $(CTAGS_EXCLUDE_OPT) $(SRC_ROOT)/router/$*
+	@[ ! -d router/$* ] || $(if $(QCA),TMPDIR=.) ctags -a -R $(CTAGS_EXCLUDE_OPT) $(SRC_ROOT)/router/$*
 
 #
 # check extendno

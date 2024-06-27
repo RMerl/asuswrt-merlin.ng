@@ -214,6 +214,7 @@ typedef struct _GetUserTicketByRefresh
 	char 	status[MAX_STATUS_LEN];
 	char	userticket[MAX_DEVTICKET_LEN];
 	char    userrefreshticket[MAX_REFRESH_TICKET_LEN];
+	char    userticketexpiretime[MAX_DEV_TICKET_EXP_LEN];
 	char	time[MAX_TIME_LEN];
 }GetUserTicketByRefresh, *pGetUserTicketByRefresh;
 

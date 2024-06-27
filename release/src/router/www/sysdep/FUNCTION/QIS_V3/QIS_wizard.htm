@@ -18,24 +18,30 @@
 		<script type="text/javascript" src="./mobile/js/plugins.js"></script>
 		<script type="text/javascript" src="./mobile/js/qisData.js"></script>
 		<script type="text/javascript" src="./mobile/js/handler.js"></script>
+		<script type="text/javascript" src="./mobile/js/login_state.js"></script>
 		<script type="text/javascript" src="./js/https_redirect/https_redirect.js"></script>
+		<script type="text/javascript" src="./js/asus_policy.js"></script>
 		<script>
+			if(httpApi.nvramGet(["CoBrand"]).CoBrand == "8")
+				$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/css/difference.css">');
+
 			$(document).ready(function(){
+				if(httpApi.nvramGet(["CoBrand"]).CoBrand == "8"){
+					setTimeout(function() {
+						// preload image
+						new Image().src = "images/New_ui/middown_bg.png";
+						new Image().src = "images/gundam_bg.png";
+					}, 1000);
+				}
+
 				if(Check_Https_Redirect_Status()){
 					Initial_Https_Redirect();
 					return;
 				}
-				var getJsonFromUrl = (function(){
-					var query = location.search.substr(1);
-					var result = {};
-					query.split("&").forEach(function(part) {
-						var item = part.split("=");
-						result[item[0]] = decodeURIComponent(item[1]);
-					});
-					return result;
-				})();
+				
+				let urlParameter = new URLSearchParams(window.location.search);
 
-				if(getJsonFromUrl["flag"] == "amas_addNode"){
+				if(urlParameter.get("flag") == "amas_addNode"){
 					$("#welcome").hide();
 					installPages("amasAddNodePages");
 				}
@@ -44,7 +50,7 @@
 					'content', 'width=' + verge.viewportW() + ', target-densitydpi=device-dpi, initial-scale=' + (0.5*verge.viewportW())/375 + ', maximum-scale=1, user-scalable=no'
 				);
 
-				$("#welcomeTitle").html("<#lyra_welcome_title#>".replace("Lyra", "<#Web_Title2#>").replace("BLUE_CAVE", "BLUE CAVE"));
+				$("#welcomeTitle").html("<#lyra_welcome_title#>".replace("Lyra", `<div><#Web_Title2#></div>`).replace("BLUE_CAVE", "BLUE CAVE"));
 				$("#welcome_button").html("<#lyra_welcome_create#>".replace(" Lyra ", ""));
 				$(".secureInput").click(checkPasswd);
 				$("div[data-role='page']").append("<div class='footerPadding'></div>");
@@ -55,7 +61,8 @@
 				// setup systemVariables
 				setTimeout(function(){
 					var initNvram = httpApi.nvramGet([
-						"sw_mode", 
+						"ASUS_NEW_EULA",
+						"sw_mode",
 						"wlc_psta", 
 						"wl_ifnames", 
 						"wl_version", 
@@ -68,8 +75,11 @@
 						"reboot_time", 
 						"lan_ipaddr", 
 						"wlc_dpsta", 
-						"CoBrand", 
-						"wans_dualwan", 
+						"wlc_band", 
+						"CoBrand",
+						"wans_dualwan",
+						"wans_extwan",
+						"wans_mode",
 						"dslx_transmode", 
 						"dsl0_proto", 
 						"dsl0_pppoe_username", 
@@ -79,11 +89,15 @@
 						"dsl8_pppoe_username", 
 						"dsl8_pppoe_passwd", 
 						"dsl8_dnsenable",
-						"smart_connect_x",
-						"dpsta_band",
+						"smart_connect_x"
 					]);
 
 					systemVariable.historyPage = [];
+
+					if(isSupport("BUSINESS")){
+						$('<script />', { type : 'text/javascript', src : "./js/qrcode/jquery.qrcode.min.js"}).appendTo('head');
+						$("#welcome").load("/mobile/pages/welcome_business.html");
+					}
 
 					var ethWan = initNvram.wans_dualwan.split(" ").indexOf("wan");
 					systemVariable.ethWanIf = (ethWan == -1) ? 0 : ethWan;
@@ -114,7 +128,7 @@
 							}
 							systemVariable.wanDnsenable = initNvram.dsl0_dnsenable;
 						}
-						systemVariable.originOpMode = "RT";
+
 					}
 					else{
 
@@ -124,17 +138,21 @@
 							systemVariable.originPppAccount.password = initWanNvram.wan_pppoe_passwd;
 						}
 						systemVariable.wanDnsenable = initWanNvram.wan_dnsenable_x;
-						systemVariable.originOpMode = (function(){
-							if(initNvram.sw_mode == "2" && (initNvram.wlc_psta == "0" || initNvram.wlc_psta == "") && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "RP";
-							else if(initNvram.sw_mode == "3" && initNvram.wlc_psta == "2" && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "RP";
-							else if(initNvram.sw_mode == "3" && initNvram.wlc_psta == "2" && initNvram.wlc_dpsta == "1") return "RP";
-							else if(initNvram.sw_mode == "3" && initNvram.wlc_psta == "2" && initNvram.wlc_dpsta == "2") return "RP";
-							else if(initNvram.sw_mode == "3" && (initNvram.wlc_psta == "0" || initNvram.wlc_psta == "") && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "AP";
-							else if(initNvram.sw_mode == "2" && initNvram.wlc_psta == "1" && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "MB";
-							else if(initNvram.sw_mode == "3" && initNvram.wlc_psta == "1" && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "MB";
-							else return "RT";
-						})();
 					}
+					systemVariable.originOpMode = (function(){
+						if(initNvram.sw_mode == "2" && (initNvram.wlc_psta == "0" || initNvram.wlc_psta == "") && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "RP";
+						else if(initNvram.sw_mode == "3" && initNvram.wlc_psta == "2" && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "RP";
+						else if(initNvram.sw_mode == "3" && initNvram.wlc_psta == "2" && initNvram.wlc_dpsta == "1") return "RP";
+						else if(initNvram.sw_mode == "3" && initNvram.wlc_psta == "2" && initNvram.wlc_dpsta == "2") return "RP";
+						else if(initNvram.sw_mode == "3" && (initNvram.wlc_psta == "0" || initNvram.wlc_psta == "") && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "AP";
+						else if(initNvram.sw_mode == "2" && initNvram.wlc_psta == "1" && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "MB";
+						else if(initNvram.sw_mode == "3" && initNvram.wlc_psta == "1" && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "MB";
+						else if(initNvram.sw_mode == "1" && initNvram.wlc_band != "") return "WISP";
+						else if(initNvram.sw_mode == "1" && isSupport("noRouter")) return "AP";
+						else return "RT";
+					})();
+
+					systemVariable.qisSession = "qis"+Date.now();
 					systemVariable.opMode = systemVariable.originOpMode;
 					systemVariable.wirelessBand = initNvram.wl_ifnames.split(" ").length;
 					systemVariable.sdkVersion = initNvram.wl_version.split(".")[0];
@@ -147,18 +165,27 @@
 					systemVariable.rebootTime = initNvram.reboot_time;
 					systemVariable.lanIpaddr = initNvram.lan_ipaddr;
 					systemVariable.CoBrand = initNvram.CoBrand;
-					systemVariable.dpsta_band = initNvram.dpsta_band;
 					systemVariable.forceChangePw = (httpApi.hookGet("check_pw") == '1') ? true : false;
 					systemVariable.linkLnternet = httpApi.isConnected();
 					systemVariable.maxPasswordLen = getSupportNum("MaxLen_http_passwd");
+					systemVariable.originWansMode = initNvram.wans_mode;
 					systemVariable.keepDefpsk = isSupport("defpsk");
+					systemVariable.eulaStatus = initNvram.ASUS_NEW_EULA;
+					httpApi.privateEula.get().then(data=>{
+						systemVariable.ppStatus = data
+					});
+					systemVariable.macClone = false;
+
+					httpApi.log("tcode", systemVariable.territoryCode, systemVariable.qisSession)
 
 					if(isSupport("2p5G_LWAN"))
 						systemVariable.originWansExtwan = httpApi.nvramGet(["wans_extwan"]).wans_extwan;
 					if(isSupport("10G_LWAN") || isSupport("10GS_LWAN"))
 						systemVariable.originWansDualwan = httpApi.nvramGet(["wans_dualwan"]).wans_dualwan;
+
 					$("#switchWanTagContainer").append(Get_Component_ISPSelect);
 					$("#switch_wantag").attr("class", "optionInput");
+					getCloudProfiles();
 
 					var allWlArray =  getAllWlArray();
 					for(var i = 0; i < allWlArray.length; i += 1){
@@ -172,11 +199,12 @@
 					if(systemVariable.get_feat_def.smart_connect_opt){
 						if( 
 							systemVariable.get_feat_def.smart_connect_opt.join(",").indexOf("3")+1 &&
-							isSupport("wifi6e")
+							get_wl_unit_by_band("6G") != ""
 						){
 							systemVariable.scMode = "SC_2g5g";
 						}
 					}
+
 					var dwb_mode = httpApi.nvramGet(["dwb_mode"]).dwb_mode;
 					if(dwb_mode == "1" && systemVariable.scMode == "SC_all")
 						systemVariable.scMode = "SC_dwb_mode";
@@ -195,43 +223,78 @@
 						});
 					}
 					handleSysDep();
-
-					switch(getJsonFromUrl["flag"] || ""){
-						case "sitesurvey_rep":
-							goTo.rpMode();
-						break;
-						case "lanip":
-							goTo.apMode();
-						break;
-						case "sitesurvey_mb":
-							goTo.mbMode();
-						break;
-						case "manual":
-							goTo.opMode();
-						break;
-						case "pppoe":
-							goTo.PPPoE();
-						break;
-						case "wireless":
-							goTo.Wireless();
-						break;					
-						case "amasrole_page":
-							goTo.chooseRole();
-						break;
-						case "amasnode_page":
-							goTo.asNode();
-						break;
-						case "amas_addNode":
-							systemVariable.amas_newWindow_addNode = true;
-							setTimeout(goTo.amasearch, 50);
-						break;
-						case "changePass":
-							goTo.login();
-						break;
-						default:
-							goTo.Welcome();
-						break;
+					if(systemVariable.isDefault){
+						set_cfg_pause();
 					}
+
+					httpApi.newEula.get()
+							.then(data => {
+								if (data.ASUS_NEW_EULA == 0 || data.ASUS_NEW_EULA_time == "") {
+									goTo.EULA();
+								} else {
+									httpApi.privateEula.get()
+											.then(data => {
+												if (data.ASUS_PP == 0 && data.ASUS_PP_time == "") {
+													goTo.PP();
+												} else {
+													switch (urlParameter.get("flag") || "") {
+														case "sitesurvey_rep":
+															goTo.rpMode();
+															break;
+														case "lanip":
+															goTo.apMode();
+															break;
+														case "sitesurvey_mb":
+															goTo.mbMode();
+															break;
+														case "manual":
+															goTo.opMode();
+															break;
+														case "pppoe":
+															goTo.PPPoE();
+															break;
+														case "wireless":
+															goTo.Wireless();
+															break;
+														case "amasrole_page":
+															goTo.chooseRole();
+															break;
+														case "amasnode_page":
+															goTo.asNode();
+															break;
+														case "amas_addNode":
+															systemVariable.amas_newWindow_addNode = true;
+															setTimeout(goTo.amassearch, 50);
+															break;
+														case "site2site":
+															goTo.site2site();
+															break;
+														case "changePass":
+															goTo.Login();
+															break;
+														case "EULA":
+															goTo.EULA();
+															break;
+														case "PP":
+															systemVariable.onlyReSignPP = true;
+															goTo.PP();
+															break;
+														case "rtMode":
+															systemVariable.advSetting = true;
+															goTo.rtMode();
+															break;
+														case "wispMode":
+															systemVariable.advSetting = true;
+															goTo.wispMode();
+															break;
+														default:
+															goTo.Welcome();
+															break;
+													}
+												}
+											});
+								}
+							});
 
 					if(initNvram.isError) setTimeout(arguments.callee, 1000);
 				}, 500);
@@ -239,12 +302,40 @@
 				$("#uiLanguage").load("/mobile/pages/uiLanguage.html", function(){
 					$('#selected_lang').html("<#selected_language#>");
 				});
+
+				if(isSupport("SDN_Scenario")){
+					$('<script />', { type : 'text/javascript', src : "/help.js"}).appendTo('head');
+				}
+
+				setInterval(function () {
+					let check_default = httpApi.nvramGet(["x_Setting"], true);
+					if(check_default.x_Setting == '0'){
+						const req = new XMLHttpRequest();
+						req.open("POST", "/QIS_default.cgi");
+						req.send();
+					}else{
+						const req = new XMLHttpRequest();
+						req.addEventListener("load", function (evt) {
+							try {
+								let auth_res = JSON.parse(evt.target.response);
+							} catch (e) {
+								window.location.href = '/Main_Login.asp';
+							}
+						});
+						req.open("POST", "/check_Auth.cgi");
+						req.send();
+					}
+				}, 3000);
+
+       			if(!isSupport("amasNode") && !isSupport("repeater") && !isSupport("psta") && isSupport("noAP")){
+					$("#op_title_desc").hide();
+				}
 			});
 		</script>
 	</head>
 	<body>
 		<!-- Welcome Page -->
-		<div id="welcome" data-role="page" class="qisBackgroundIndex">
+		<div id="welcome" data-role="page" class="qisBackgroundIndex NotInBusiness">
 			<div class="headerBarIndex">
 				<table style="width:100%">
 					<tr>
@@ -278,8 +369,16 @@
 					<div><div id="ROGLOGO"></div></div>
 				</div>
 
-				<div style="text-align:center;margin:50px 0;">
-					<div id="welcome_button" onclick="apply.welcome();"></div>
+				<div style="text-align:center;margin:50px 0;" class="welcomeBtnContainer">
+					<div id="welcome_button" class="welcome_button" onclick="apply.welcome();"></div>
+				</div>
+
+				<div style="text-align:center;margin:50px 0;" class="welcomeBtnContainer wispMode">
+					<div id="welcome_rt_button" class="welcome_button" onclick="goTo.rtMode();"><#wireless_router#></div>
+				</div>
+
+				<div style="text-align:center;margin:50px 0;" class="welcomeBtnContainer wispMode">
+					<div id="welcome_wisp_button" class="welcome_button" onclick="goTo.wispMode();">Public WiFi Mode (WISP)</div>
 				</div>
 
 				<!--div style="text-align:center;margin:50px 0" class="amasSupport">
@@ -298,6 +397,15 @@
 					<a href="#" onclick="goTo.TMToS()">Trend Micro End User License Agreement</a>.
 				</div>
 			</div>			
+			<script>
+				let isDefault = (()=>{
+					let x_Setting = httpApi.nvramGet(["x_Setting"]).x_Setting;
+					return (x_Setting == '0' || x_Setting == '') ? true : false;
+				})();
+				if(isSupport("wisp") && !isDefault){
+					$("#welcome_button, .wispMode").addClass("is_not_default");
+				}
+			</script>
 		</div>
 		
 		<!-- Prelink description -->
@@ -320,7 +428,7 @@
 							<div style="font-weight: normal;"><#Setup_node_desc_step2#></div>
 						</div>
 						<div style="text-align: center;">
-							<div><img id="product_location" width="504" src="/images/product_location.png"></div>
+							<div><img id="product_location" src="/images/product_location.png"></div>
 						</div>
 					</div>
 
@@ -376,7 +484,7 @@
 
 					<div style="height: 50px" class="amasNoWAN"></div>
 
-					<div class="pageDesc"><#OP_desc1#></div>
+					<div class="pageDesc" id="op_title_desc"><#OP_desc1#></div>
 					<div>
 						<div class="selectorTopContainer">
 							<div class="selectorContainer">
@@ -803,6 +911,17 @@
 									</div>
 								</div>
 							</div>
+
+							<div class="selectorContainer wispSupport">
+								<div class="selectorContainerDiv">
+									<div class="selectBar" onclick="goTo.wispMode()">
+										Public WiFi Mode (WISP)
+									</div>
+									<div class="narrowContainer">
+										<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+									</div>
+								</div>
+							</div>
 						</div>
 
 						<!-- Action Button -->
@@ -1047,6 +1166,32 @@
 									</div>
 								</div>
 							</div>
+							<div class="selectorContainer dslite">
+								<div class="selectorContainerDiv">
+									<div class="selectBar" onclick="goTo.DSLITE()">
+										DS-Lite
+									</div>
+									<div class="narrowContainer">
+										<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+									</div>
+								</div>
+							</div>
+							<div class="selectorContainer dslite_xpass">
+								<div class="selectorContainerDiv">
+									<div class="selectBar" onclick="goTo.DSLITE()"><#IPv6_xpass#> (DS-Lite)</div>
+									<div class="narrowContainer">
+										<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+									</div>
+								</div>
+							</div>
+							<div class="selectorContainer dslite_transix">
+                                                                <div class="selectorContainerDiv">
+                                                                        <div class="selectBar" onclick="goTo.DSLITE()">transix (DS-Lite)</div>
+                                                                        <div class="narrowContainer">
+                                                                                <div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+                                                                        </div>
+                                                                </div>
+                                                        </div>
 							<div class="selectorContainer dailIP vpnClient">
 								<div class="selectorContainerDiv">
 									<div class="selectBar" onclick="goTo.PPTP()">
@@ -1635,7 +1780,7 @@
 							</div>
 							<div class="inputContainer">
 								<input id="sim_pincode" class="textInput" data-role="none" type="password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-clear-btn="true" />
-								<span id="verify_pincode_status" class="inputTitle hint_yellow" style="display:none;"></span>
+								<span id="verify_pincode_status" class="hint_yellow" style="display:none;"></span>
 							</div>
 						</div>
 
@@ -1734,7 +1879,7 @@
 							</div>
 							<div class="inputContainer">
 								<input id="sim_puk" class="textInput" data-role="none" type="password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-clear-btn="true" />
-								<span id="verify_puk_status" class="inputTitle hint_yellow" style="display:none;"></span>
+								<span id="verify_puk_status" class="hint_yellow" style="display:none;"></span>
 							</div>
 						</div>
 
@@ -1745,7 +1890,7 @@
 							</div>
 							<div class="inputContainer">
 								<input id="new_pincode" class="textInput" data-role="none" type="password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-clear-btn="true" />
-								<span id="new_pincode_status" class="inputTitle hint_yellow" style="display:none;"></span>
+								<span id="new_pincode_status" class="hint_yellow" style="display:none;"></span>
 							</div>
 						</div>
 
@@ -1790,8 +1935,8 @@
 							</div>
 							<div class="inputContainer">
 								<select id="modem_android" class="optionInput">
-									<option value="0"><#menu5_4_4#></option>
-									<option value="1"><#Android_phone#></option>
+									<option value="0"><#Auto#></option>
+									<option value="1">Legacy</option>
 								</select>
 							</div>
 						</div>
@@ -1886,7 +2031,7 @@
 						</div>
 						<div class="dongle">
 							<div class="inputTitleContainer">
-								<div class="inputTitle"><#PIN_code#></div>
+								<div class="inputTitle"><#PIN_code#> <span style="font-size: 0.8em;">(Optional)</span></div>
 								<div class="secureInput icon_eye_close" for="modem_pincode"></div>
 							</div>
 							<div class="inputContainer">
@@ -1903,7 +2048,7 @@
 						</div>
 						<div>
 							<div class="inputTitleContainer">
-								<div class="inputTitle">USB MTU</div>
+								<div class="inputTitle">USB MTU <span style="font-size: 0.8em;">(Optional)</span></div><!--untranslated-->
 							</div>
 							<div class="inputContainer">
 								<input id="modem_mtu" class="textInput" data-role="none" data-clear-btn="true" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="5" />
@@ -2248,7 +2393,7 @@
 									<option value="psk">WPA-Personal</option>
 									<option value="psk2" selected>WPA2-Personal</option>
 								</select>
-								<div class="inputTitle hint_yellow" id="manual_pap_setup-nmode_hint">
+								<div class="hint_yellow" id="manual_pap_setup-nmode_hint">
 									<#WLANConfig11n_automode_limition_hint#>
 								</div>
 							</div>
@@ -2307,7 +2452,7 @@
 					<!-- Action Button -->
 					<div class="footer_desktop">
 						<div class="desktop_abortBtn" onclick='abort.wlcKey();'><#CTL_prev#></div>
-						<div class="desktop_applyBtn" onclick="apply.wlcKey();"><#CTL_next#></div>
+						<div class="desktop_applyBtn wlcKeyApply" onclick="apply.wlcKey();"><#CTL_next#></div>
 					</div>
 					<div class="footer_mobile">
 						<table style="width:100%;" cellpadding="0" cellspacing="0">
@@ -2316,7 +2461,7 @@
 									<div class="mobile_abortBtn"><#CTL_prev#></div>
 								</td>
 								<td class="mobileApply" onclick="apply.wlcKey();">
-									<div class="mobile_applyBtn"><#CTL_next#></div>
+									<div class="mobile_applyBtn wlcKeyApply"><#CTL_next#></div>
 								</td>
 							</tr>
 						</table>
@@ -2548,7 +2693,7 @@
 					</div>
 
 					<div class="pageDesc">
-						<div class="descSteps">Step 2</div>
+						<div class="descSteps" data-component="descSteps2">Step 2</div>
 						<div id="stepText2"><#qis_summary_description_step2#></div>
 					</div>
 					
@@ -2644,7 +2789,7 @@
 					<!-- Action Button -->
 					<div class="footer_desktop">
 						<div class="desktop_abortBtn" onclick='abort.amasbundle();'><#CTL_finished#></div>
-						<div class="desktop_applyBtn" onclick="goTo.amasearch();"><#CTL_search#></div>
+						<div class="desktop_applyBtn" onclick="goTo.amassearch();"><#CTL_search#></div>
 					</div>
 					<div class="footer_mobile">
 						<table style="width:100%;" cellpadding="0" cellspacing="0">
@@ -2652,7 +2797,7 @@
 								<td class="mobileAbort" style="width:50%" onclick='abort.amasbundle();'>
 									<div class="mobile_abortBtn"><#CTL_finished#></div>
 								</td>
-								<td class="mobileApply" onclick="goTo.amasearch();">
+								<td class="mobileApply" onclick="goTo.amassearch();">
 									<div class="mobile_applyBtn"><#CTL_search#></div>
 								</td>
 							</tr>
@@ -2661,6 +2806,9 @@
 				</div>
 			</div>			
 		</div>
+
+		<!-- Policy -->
+		<div id="policy_page" data-role="page" class="qisBackground"></div>
 
 		<!-- AMAS Search -->
 		<div id="amassearch_page" data-role="page" class="qisBackground aimeshPages"></div>
@@ -2676,9 +2824,6 @@
 
 		<!-- TrendMicro TOS -->
 		<div id="tmtos_page" data-role="page" class="qisBackground"></div>
-
-		<!-- ASUS Privacy Policy -->
-		<div id="asuspp_page" data-role="page" class="qisBackground"></div>
 
 		<!-- ASUS Terms of Use -->
 		<div id="asustos_page" data-role="page" class="qisBackground"></div>
@@ -2793,6 +2938,314 @@
 				<div style="display: flex;justify-content: center;">
 					<div class="GD-bg"></div>
 					<div class="GD-logo"></div>
+				</div>
+			</div>
+		</div>
+
+		<!-- site2site Setting -->
+		<div id="site2site_setting" data-role="page" class="qisBackground ig_site2site">
+			<div class="headerBar"></div>
+			<div class="tableContainer">
+				<div class="desktop_left_field">
+					<div>
+						<div class="titleMain">VPN</div>
+						<div class="titleSub">WiFi</div>
+					</div>
+				</div>
+				<div class="table_td">
+					<div id="s2s_desc" class="pageDesc">
+						Create an Instant Guard WiFi network establishing a secure connection with friend's ASUS router, so that all devices connected to Instant Guard WiFi can enjoy a secure internet access.<!-- untranslated -->
+					</div>
+					<div class="s2s_illustration_container">
+						<div id="s2s_device" class="s2s_icon_container">
+							<div class="s2s_icon device"></div>
+							<div class="s2s_text">
+								<div>My device</div><!-- untranslated -->
+								<div><#Web_Title2#></div>
+							</div>
+						</div>
+						<div class="s2s_blank_container">
+							<div class="horizontal_line"></div>
+						</div>
+						<div id="s2s_friend" class="s2s_icon_container">
+							<div class="s2s_icon"></div>
+							<div class="s2s_text">
+								<div>Friend's</div><!-- untranslated -->
+								<div data-component="friend_domain">asus.asuscomm.com</div>
+							</div>
+						</div>
+						<div class="s2s_blank_container">
+							<div class="horizontal_line"></div>
+						</div>
+						<div id="s2s_internet" class="s2s_icon_container">
+							<div class="s2s_icon internet"></div>
+							<div class="s2s_text"><div><#Internet#></div></div>
+						</div>
+					</div>
+					<div id="s2s_field">
+						<div>
+							<div class="inputTitleContainer">
+								<div class="inputTitle"><#QIS_finish_wireless_item1#></div>
+							</div>
+							<div class="inputContainer">
+								<input id="s2s_wireless_ssid" type="text" maxlength="33" class="textInput" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-role="none" data-clear-btn="true">
+							</div>
+						</div>
+						<div>
+							<div class="inputTitleContainer">
+								<div class="inputTitle"><#QIS_finish_wireless_item2#></div>
+								<div class="secureInput icon_eye_close" for="s2s_wireless_key"></div>
+							</div>
+							<div class="inputContainer">
+								<input id="s2s_wireless_key" type="password" maxlength="64" class="textInput" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false" data-role="none" data-clear-btn="true">
+							</div>
+						</div>
+						<!-- Action Button -->
+						<div class="footer_desktop">
+							<div class="desktop_applyBtn" onclick="apply.site2site();"><#CTL_apply#></div>
+						</div>
+						<div class="footer_mobile">
+							<table style="width:100%;" cellpadding="0" cellspacing="0">
+								<tr>
+									<td class="mobileApply" onclick="apply.site2site();">
+										<div class="mobile_applyBtn"><#CTL_apply#></div>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- site2site wl Setting -->
+		<div id="site2site_wlSet" data-role="page" class="qisBackground ig_site2site">
+			<div class="headerBar"></div>
+			<div class="tableContainer">
+				<div class="desktop_left_field">
+					<div>
+						<div class="titleMain">VPN</div>
+						<div class="titleSub"><#WiFi_Network_List#></div>
+					</div>
+				</div>
+				<div class="table_td">
+					<div id="s2s_wlSet_desc" class="pageDesc"><#Guest_Network#></div>
+					<div id="s2s_wlSet_field">
+						<div id="s2s_wlSet_hint" class="hint_yellow" style="padding:0 30px;margin-top:6px;display:none;">
+							You have set up the first set of guest networks, please choose to keep the original guest network settings or use the new network settings to create Instant Guard WiFi<!-- untranslated -->
+						</div>
+						<div class="selectorTopContainer">
+							<div class="apListContainer s2s_wlSetContainer" data-container="wl_new">
+								<div class="apListDiv">
+									<div class="ap_ssid"></div>
+									<div class="ap_band">New</div><!-- untranslated -->
+									<div class="ap_narrow_container">
+										<div class="icon_arrow_right ap_narrow"></div>
+									</div>
+								</div>
+							</div>
+							<div class="apListContainer s2s_wlSetContainer" data-container="wl_ori">
+								<div class="apListDiv">
+									<div class="ap_ssid"></div>
+									<div class="ap_band">Original</div><!-- untranslated -->
+									<div class="ap_narrow_container">
+										<div class="icon_arrow_right ap_narrow"></div>
+									</div>
+								</div>
+							</div>
+							<div class="apListContainer s2s_wlSetContainer" data-container="wl_none">
+								<div class="apListDiv">
+									<div class="ap_ssid">Do not apply to Instant Guard</div><!-- untranslated -->
+									<div class="ap_band"></div>
+									<div class="ap_narrow_container">
+										<div class="icon_arrow_right ap_narrow"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<!-- Action Button -->
+						<div class="footer_desktop">
+							<div class="desktop_abortBtn" onclick="abort.site2site_wlSet();"><#CTL_prev#></div>
+						</div>
+						<div class="footer_mobile">
+							<table style="width:100%;" cellpadding="0" cellspacing="0">
+								<tr>
+									<td class="mobileAbort" style="width:100%;" onclick="abort.site2site_wlSet();">
+										<div class="mobile_abortBtn"><#CTL_prev#></div>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- site2site Summary -->
+		<div id="site2site_summary_page" data-role="page" class="qisBackground">
+			<div class="headerBar"></div>
+			<div class="tableContainer">
+				<div class="desktop_left_field">
+					<div>
+						<div class="titleMain"><#QIS_finish_Summary#></div>
+					</div>
+				</div>
+				<div class="table_td">
+					<div data-group="summary_info" data-container="configuring">
+						<div class="pageDesc"><#Mobile_configuring#></div>
+						<div class="cssload-bellContainer">
+							<div class="cssload-bell">
+								<div class="cssload-circle">
+									<div class="cssload-inner"></div>
+								</div>
+								<div class="cssload-circle">
+									<div class="cssload-inner"></div>
+								</div>
+								<div class="cssload-circle">
+									<div class="cssload-inner"></div>
+								</div>
+								<div class="cssload-circle">
+									<div class="cssload-inner"></div>
+								</div>
+								<div class="cssload-circle">
+									<div class="cssload-inner"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div data-group="summary_info" data-container="success">
+						<div class="pageDesc">Your Instant Guard WiFi is operating perfectly!</div><!-- untranslated -->
+						<div class="pageDesc" id="wl_2G">
+							<div class="descSteps">2.4 GHz</div>
+							<div data-container="wl_info"></div>
+						</div>
+						<div class="pageDesc" id="wl_5G">
+							<div class="descSteps">5 GHz</div>
+							<div data-container="wl_info"></div>
+						</div>
+						<div data-container="action_container">
+							<div class="footer_desktop">
+								<div class="desktop_applyBtn" onclick="goTo.site2site_leave();"><#QKSet_finishpre_rebootnow#></div>
+							</div>
+							<div class="footer_mobile">
+								<table style="width:100%;" cellpadding="0" cellspacing="0">
+									<tr>
+										<td class="mobileApply" onclick="goTo.site2site_leave();">
+											<div class="mobile_applyBtn"><#QKSet_finishpre_rebootnow#></div>
+										</td>
+									</tr>
+								</table>
+							</div>
+						</div>
+					</div>
+
+					<div data-group="summary_info" data-container="err_msg">
+						<div data-group="msg_content" data-container="fail">
+							<div class="pageDesc"><#SET_fail_desc#></div>
+						</div>
+
+						<div data-group="msg_content" data-container="isDutSelf">
+							<div class="pageDesc">This is the device of inviter. Please choose another device to accept invitation for Instant Guard WiFi.</div><!-- untranslated -->
+						</div>
+
+						<div data-group="msg_content" data-container="profileMaximum">
+							<div data-group="msg_maxi_content" data-container="vpn_wifi_maxi" class="pageDesc">Your VPN WiFi profile already reached max number, please remove current profile to add new one.</div><!-- untranslated -->
+							<div data-group="msg_maxi_content" data-container="vpn_profile_maxi" class="pageDesc">Your VPN profile already reached max number, please remove current profile to add new one.</div><!-- untranslated -->
+							<div data-group="msg_maxi_content" data-container="vpn_wg_maxi" class="pageDesc">Your VPN profile with WireGuard type already reached max number, please remove current profile to add new one.</div><!-- untranslated -->
+						</div>
+
+						<div data-group="msg_content" data-container="notSupport">
+							<div class="pageDesc">This device currently does not support the Instant Guard WiFi connection feature, please confirm whether the device supports this feature and upgrade to the latest firmware.</div><!-- untranslated -->
+							<div class="pageDesc"><#AiMesh_confirm_msg12#></div>
+						</div>
+
+						<div data-container="action_container">
+							<div class="footer_desktop">
+								<div class="desktop_applyBtn" onclick="goTo.site2site_leave();"><#QKSet_finishpre_rebootnow#></div>
+							</div>
+							<div class="footer_mobile">
+								<table style="width:100%;" cellpadding="0" cellspacing="0">
+									<tr>
+										<td class="mobileApply" onclick="goTo.site2site_leave();">
+											<div class="mobile_applyBtn"><#QKSet_finishpre_rebootnow#></div>
+										</td>
+									</tr>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- SDN Scenarios -->
+		<div id="SDN_Scenarios_page" data-role="page" class="qisBackground">
+			<div class="qis_container">
+				<div class="headerBar"></div>
+				<div class="tableContainer">
+					<div class="desktop_left_field">
+						<div>
+							<div class="titleMain"></div>
+						</div>
+					</div>
+					<div class="table_td">
+						<div class="pageDesc"><#qis_wireless_set_done#> <#SDN_Scenarios_desc#></div>
+						<div id="rwd_container"></div>
+						<!-- Action Button -->
+						<div class="footer_desktop">
+							<div class="desktop_abortBtn" onclick='abort.SDN_Scenarios()'><#CTL_prev#></div>
+							<div class="desktop_applyBtn btn_SDN_apply" onclick='apply.SDN_Scenarios();'>Maybe Later</div><!-- untranslated -->
+						</div>
+						<div class="footer_mobile">
+							<table style="width:100%;" cellpadding="0" cellspacing="0">
+								<tr>
+									<td class="mobileAbort" style="width:50%;" onclick='abort.SDN_Scenarios()'>
+										<div class="mobile_abortBtn"><#CTL_prev#></div>
+									</td>
+									<td class="mobileApply" style="width:50%" onclick='apply.SDN_Scenarios();'>
+										<div class="mobile_applyBtn btn_SDN_apply">Maybe Later</div><!-- untranslated -->
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="hidden_mask popup_element"></div>
+			<div class="popup_container popup_element"></div>
+			<div class="hidden_mask popup_element_second"></div>
+			<div class="popup_container popup_element_second"></div>
+		</div>
+
+		<div id="phone_as_modem" data-role="page" class="qisBackground">
+			<div class="headerBar"></div>
+			<div class="tableContainer">
+				<div class="desktop_left_field">
+					<div>
+						<div class="titleMain"><#Internet#></div>
+						<div class="titleSub"><#Mobile_modem_desc#></div>
+					</div>
+				</div>
+				<div class="table_td">
+					<div id="phone_as_modem_instructions" style="margin-left: 70px;"></div>
+					<!-- Action Button -->
+					<div class="footer_desktop">
+						<div class="desktop_abortBtn" onclick="abort.wan();"><#CTL_prev#></div>
+						<div id="desktop_manual_applyBtn" class="desktop_applyBtn" onclick="goTo.Wireless();"><#CTL_next#></div>
+					</div>
+					<div class="footer_mobile">
+						<table style="width:100%;" cellpadding="0" cellspacing="0">
+							<tr>
+								<td class="mobileAbort" style="width:50%" onclick='abort.wan();'>
+									<div class="mobile_abortBtn"><#CTL_prev#></div>
+								</td>
+								<td class="mobileApply" onclick="goTo.Wireless();">
+									<div id="mobile_manual_applyBtn" class="mobile_applyBtn"><#CTL_next#></div>
+								</td>
+							</tr>
+						</table>
+					</div>
 				</div>
 			</div>
 		</div>

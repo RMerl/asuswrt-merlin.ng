@@ -25,6 +25,7 @@
 #define RAST_OBVS_RSSI_DELTA 3		/* condition of rssi for obvious moving */
 #define RAST_DFT_WEAK_RSSI_DIFF 10	/* rssi delta allow to roam the station which stamon result is not better than trigger criteria */
 #define RAST_DFT_RSSI_VIDEO_CALL -80	/* rssi thresold to change idle rate weighting scheme */
+#define RAST_EVENT_FREEZE_MAX_TIME 300
 #define WL_NBAND_2G 2
 #define WL_NBAND_5G 1
 #define WL_NBAND_6G 4
@@ -66,7 +67,9 @@ struct rcpi_checklist {
 #define	MAX_IF_NUM 3
 #endif
 
-# ifdef RTCONFIG_FRONTHAUL_DWB
+#if defined(RTCONFIG_MULTILAN_CFG)
+#define MAX_SUBIF_NUM 8
+#elif defined(RTCONFIG_FRONTHAUL_DWB)
 #define MAX_SUBIF_NUM 6
 #else
 #define MAX_SUBIF_NUM 4

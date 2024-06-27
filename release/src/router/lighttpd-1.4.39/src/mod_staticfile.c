@@ -318,6 +318,7 @@ static int http_response_parse_range(server *srv, connection *con, plugin_data *
 				buffer_append_string_len(b, CONST_STR_LEN("\r\n\r\n"));
 
 				con->response.content_length += buffer_string_length(b);
+
 				chunkqueue_append_buffer(con->write_queue, b);
 				buffer_free(b);
 			}

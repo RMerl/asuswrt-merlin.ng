@@ -23,7 +23,7 @@
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/form.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js"></script>
 <style type="text/css">
 .appIcons{
 	width:36px;
@@ -1284,12 +1284,16 @@ function cancel(){
 															<script type="text/javascript">
 																$('#apps_analysis_enable').iphoneSwitch('<% nvram_get("apps_analysis"); %>',
 																	function(){
-																		ASUS_EULA.config(eula_confirm, cancel);
-																		document.form._flag.value = "apps_analysis";
-
-																		if(ASUS_EULA.check("tm")){
-																			eula_confirm()
-																		}
+                                                                        document.form._flag.value = "apps_analysis";
+                                                                        if(policy_status.TM == 0 || policy_status.TM_time == ''){
+                                                                            const policyModal = new PolicyModalComponent({
+                                                                                policy: "TM",
+                                                                                agreeCallback: eula_confirm,
+                                                                            });
+                                                                            policyModal.show();
+                                                                        }else{
+                                                                            eula_confirm();
+                                                                        }
 																	},
 																	function(){
 																		document.form.apps_analysis.value = 0;
@@ -1353,12 +1357,16 @@ function cancel(){
 													<script type="text/javascript">
 														$('#radio_gameBoost_enable').iphoneSwitch(enable_GameBoost,
 															function(){
-																ASUS_EULA.config(eula_confirm, cancel);
 																document.form._flag.value = "game";
-
-																if(ASUS_EULA.check("tm")){
-																	eula_confirm();
-																}
+                                                                if(policy_status.TM == 0 || policy_status.TM_time == ''){
+                                                                    const policyModal = new PolicyModalComponent({
+                                                                        policy: "TM",
+                                                                        agreeCallback: eula_confirm,
+                                                                    });
+                                                                    policyModal.show();
+                                                                }else{
+                                                                    eula_confirm();
+                                                                }
 															},
 															function(){
 																document.form.qos_enable.value = '0';

@@ -149,6 +149,27 @@ int wl_get_bw_cap(int unit, int *bwcap)
 	return 0;
 }
 
+/*
+ * get_control_channel(unit, *channel, *bw, *nctrlsb)
+ *	*channel:
+ *		Current channel
+ *
+ *	*bw:
+ * 	return the bandwitdh value, could be 20/40/80/160.
+ *
+ * nctrlsb:
+ * 	return the side band when in HT40 mode
+ * 	1: the control sideband is upper
+ * 	0: the control sideband is lower
+ * 	-1: invalid
+ *
+ */
+void get_control_channel(int unit, int *channel, int *bw, int *nctrlsb)
+{
+	*channel = get_channel(get_wififname(unit));
+	get_bw_nctrlsb(get_wififname(unit), bw, nctrlsb);
+}
+
 int get_psta_status(int unit)
 {
 	bss_info bss_buf;

@@ -26,7 +26,6 @@
 <script language="JavaScript" type="text/javascript" src="/js/html5kellycolorpicker.min.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
 <script type="text/javascript" src="/md5.js"></script>
 <style>
 .traffic_bar{
@@ -473,10 +472,6 @@ function initial(){
 	$(".boost-function").hover(function(){
 		$("#boostKey_desc").html(boostKey[this.id].desc)
 	})
-
-	if(!ASUS_EULA.status("tm")){
-		ASUS_EULA.config(tm_agree, tm_disagree);
-	}
 
 	httpApi.nvramGetAsync({
 		data: ["ping_target"],
@@ -994,9 +989,11 @@ function handleBoostKey(obj){
 		return false;
 	}
 
-	var tm_status = httpApi.nvramGet(["TM_EULA", "TM_EULA_time"], true);
-	if(_id == 'boost_qos' && (tm_status.TM_EULA == "0" || tm_status.TM_EULA_time == "")){
-		ASUS_EULA.check("tm");
+	if(_id == 'boost_qos' && (policy_status.TM == "0" || policy_status.TM_time == "")){
+		const policyModal = new PolicyModalComponent({
+            policy: "TM"
+        });
+        policyModal.show();
 		return false;
 	}
 

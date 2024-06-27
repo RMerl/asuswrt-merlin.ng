@@ -136,7 +136,7 @@ int is_valid_ip(const char* addr)
 	hint.ai_flags = AI_NUMERICHOST;
 
 	if (getaddrinfo(addr, NULL, &hint, &res))
-		ret = -1;
+		return -1;
 	else if (res->ai_family == AF_INET)
 		ret = 1;
 	else if (res->ai_family == AF_INET6)
@@ -196,4 +196,156 @@ int is_ip4_in_use(const char* addr)
 	}
 
 	return 0;
+}
+
+static int _resolv_addr_(int af, const char *dn, char *buf, size_t len, int one)
+{
+	struct addrinfo hints, *servinfo, *p;
+	int ret;
+	const char* addr = NULL;
+	char tmp[INET6_ADDRSTRLEN] = {0};
+
+	if (!dn || !buf)
+		return -1;
+
+	memset(buf, 0 , len);
+
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = af;
+	hints.ai_socktype = SOCK_RAW;
+
+	if ((ret = getaddrinfo(dn, NULL , &hints , &servinfo)) != 0) {
+		_dprintf("getaddrinfo: %s\n", gai_strerror(ret));
+		return -1;
+	}
+
+	for (p = servinfo; p != NULL; p = p->ai_next) {
+		if (p->ai_family == AF_INET6)
+			addr = inet_ntop(AF_INET6, &(((struct sockaddr_in6 *)(p->ai_addr))->sin6_addr), tmp, INET6_ADDRSTRLEN);
+		else if (p->ai_family == AF_INET)
+			addr = inet_ntop(AF_INET, &(((struct sockaddr_in *)(p->ai_addr))->sin_addr), tmp, INET_ADDRSTRLEN);
+		else
+			addr = NULL;
+		if (addr) {
+			if (*buf)
+				strlcat(buf, " ", len);
+			strlcat(buf, addr, len);
+			if (one)
+				break;
+		}
+	}
+
+	freeaddrinfo(servinfo);
+
+	return 0;
+}
+int resolv_addr4(const char *dn, char *buf, size_t len)
+{
+	return _resolv_addr_(AF_INET, dn, buf, len, 1);
+}
+
+int resolv_addr4_all(const char *dn, char *buf, size_t len)
+{
+	return _resolv_addr_(AF_INET, dn, buf, len, 0);
+}
+
+int resolv_addr6(const char *dn, char *buf, size_t len)
+{
+	return _resolv_addr_(AF_INET6, dn, buf, len, 1);
+}
+
+int resolv_addr6_all(const char *dn, char *buf, size_t len)
+{
+	return _resolv_addr_(AF_INET6, dn, buf, len, 0);
+}
+
+int resolv_addr_all(const char *dn, char *buf, size_t len)
+{
+	return _resolv_addr_(AF_UNSPEC, dn, buf, len, 0);
+}
+
+int validate_number(char *str)
+{
+	while(*str)
+	{
+		if(!isdigit(*str))  //if the character is not a number, return false
+		{			
+			return 0;
+		}
+		str++; //point to next character
+	}
+	return 1;
+}
+
+int validate_ip(char *ip)
+{
+	//check whether the IP is valid or not
+	int num, dots = 0;
+	char *ptr;
+	char buf[16] = {0};
+
+	if(ip == NULL)
+	{
+		return 0;
+	}
+
+	strlcpy(buf, ip, sizeof(buf));
+	ptr = strtok(buf, "."); //cut the string using dor delimiter
+	if(ptr == NULL)
+	{
+		return 0;
+	}
+
+	while(ptr)
+	{
+		if(!validate_number(ptr))  //check whether the sub string is holding only number or not
+		{
+			return 0;
+		}
+		num = atoi(ptr); //convert substring to number
+		if(num >= 0 && num <= 255)
+		{
+			ptr = strtok(NULL, "."); //cut the next part of the string
+			if(ptr != NULL)
+			{
+				dots++;    //increase the dot count
+			}
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	if(dots != 3)  //if the number of dots are not 3, return false
+	{
+		return 0;
+	}
+	return 1;
+}
+
+in_addr_t get_network_addr(const char *ip, const char *netmask)
+{
+	struct in_addr in_addr;
+	in_addr_t addrt;
+	int prefix;
+
+	if(!ip || !netmask)
+		return -1;
+
+	inet_aton(ip, &in_addr);
+	addrt = ntohl(in_addr.s_addr);
+
+	prefix = convert_subnet_mask_to_cidr(netmask);
+
+	addrt = _network(addrt, prefix);
+
+	return addrt;
+}
+
+int is_same_subnet(const char *ip1, const char *ip2, const char *netmask)
+{
+	if(!ip1 || !ip2 || !netmask)
+		return 0;
+
+	return (get_network_addr(ip1, netmask) == get_network_addr(ip2, netmask)) ? 1 : 0;
 }

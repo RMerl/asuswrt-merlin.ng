@@ -3187,6 +3187,10 @@ int switch_wan_line(const int wan_unit, const int restart_other){
 		for(unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit){
 			if(unit == wan_unit)
 				continue;
+#ifdef RTCONFIG_DSL
+			else if (get_dualwan_by_unit(unit) == WANS_DUALWAN_IF_DSL)
+				continue;
+#endif
 
 			snprintf(prefix, sizeof(prefix), "wan%d_", unit);
 
@@ -4759,7 +4763,7 @@ _dprintf("nat_rule: start_nat_rules 6.\n");
 		else if(conn_changed_state[current_wan_unit] == C2D || (conn_changed_state[current_wan_unit] == CONNED && isFirstUse)){
 			if(!rule_setup){
 				if(conn_changed_state[current_wan_unit] == C2D){
-#if defined(RTCONFIG_WPS_ALLLED_BTN) || defined(RTCONFIG_DSL)
+#if (defined(RTCONFIG_WPS_ALLLED_BTN) || defined(RTCONFIG_DSL)) && !defined(DSL_AX82U)
 					led_control(LED_WAN, LED_OFF);
 #elif defined(RTCONFIG_HND_ROUTER_AX) || defined(RTCONFIG_LANWAN_LED) || defined(RTCONFIG_WANRED_LED) || defined(RTCONFIG_FAILOVER_LED)
 					update_wan_leds(current_wan_unit, link_wan[current_wan_unit]);
@@ -4875,6 +4879,9 @@ _dprintf("nat_rule: start_nat_rules 6.\n");
 #ifdef RTCONFIG_USB_MULTIMODEM
 					&& (dualwan_unit__nonusbif(other_wan_unit) || link_wan[other_wan_unit])
 #endif
+#ifdef RTCONFIG_DSL
+					&& (link_wan[other_wan_unit])
+#endif
 					&& (get_disconn_count(current_wan_unit) >= max_disconn_count[current_wan_unit]
 #ifdef RTCONFIG_USB_MODEM
 							|| (dualwan_unit__usbif(current_wan_unit) && !link_wan[current_wan_unit])
@@ -4978,7 +4985,11 @@ _dprintf("nat_rule: stop_nat_rules 7.\n");
 				switch_wan_line(other_wan_unit, 0);
 			}
 #endif
-			else if(conn_state[other_wan_unit] == PHY_RECONN){
+			else if(conn_state[other_wan_unit] == PHY_RECONN
+#ifdef RTCONFIG_DSL
+				&& other_wan_unit != wan_primary_ifunit()	//bypass wan_line just switched in this loop
+#endif
+			){
 				_dprintf("\n# wanduck(fail-back): Try to prepare the backup line.\n");
 				snprintf(cmd, sizeof(cmd), "restart_wan_if %d", other_wan_unit);
 				notify_rc(cmd);

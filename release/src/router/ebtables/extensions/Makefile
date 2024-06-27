@@ -5,7 +5,7 @@ include $(SRCBASE)/router/.config
 #EXT_FUNC+=802_3 nat arp arpreply ip ip6 standard log redirect vlan mark_m mark \
 #          pkttype stp among limit ulog nflog
 EXT_FUNC+=arp arpreply log vlan pkttype stp limit
-EXT_FUNC+=ip standard redirect mark
+EXT_FUNC+=ip standard redirect mark ip6
 ifeq ($(RTCONFIG_HND_ROUTER),y)
 EXT_FUNC+=time ftos skiplog wmm_mark
 else

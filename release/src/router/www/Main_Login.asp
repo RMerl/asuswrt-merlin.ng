@@ -368,8 +368,13 @@ var isRouterMode = (htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to
 
 var header_info = [<% get_header_info(); %>][0];
 var ROUTERHOSTNAME = '<#Web_DOMAIN_NAME#>';
+const getQueryString = function(name){
+    var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+    var r = window.location.search.substr(1).match(reg);
+    if (r != null) return unescape(r[2]); return null;
+};
 var domainNameUrl = header_info.protocol+"://"+ROUTERHOSTNAME+":"+header_info.port;
-var chdom = function(){window.location.href=domainNameUrl};
+var chdom = function(){if(getQueryString("redirct")!=="false")window.location.href=domainNameUrl};
 (function(){
 	if(ROUTERHOSTNAME !== header_info.host && ROUTERHOSTNAME != "" && isRouterMode){
 		setTimeout(function(){
@@ -500,7 +505,7 @@ function initial(){
 	else
 		document.getElementById("captcha_field").style.display = "none";
 
-	if(history.pushState != undefined) history.pushState("", document.title, window.location.pathname);
+	if(history.pushState != undefined) history.pushState("", document.title, window.location.pathname + window.location.search);
 }
 
 function countdownfunc(){

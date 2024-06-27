@@ -35,7 +35,7 @@ typedef uint32_t __u32;
 #define IEEE80211_IOCTL_GETCHANINFO     (SIOCIWFIRSTPRIV+7)
 typedef unsigned int	u_int;
 
-#if defined(RTCONFIG_SOC_IPQ50XX) || defined(RTCONFIG_SPF11_4_QSDK)
+#if defined(RTCONFIG_SOC_IPQ50XX) || defined(RTCONFIG_SPF11_4_QSDK) || defined(RTCONFIG_SPF11_5_QSDK)
 /* SPF11.4 or above, sync with qca-wifi's struct ieee80211_channel_info */
 struct ieee80211_channel {
     uint8_t ieee;

@@ -351,6 +351,7 @@ extern int get_lang_num();
 extern int ej_get_iptvSettings(int eid, webs_t wp, int argc, char_t **argv);
 extern int ej_get_stbPortMappings(int eid, webs_t wp, int argc, char_t **argv);
 extern int config_iptv_vlan(char *isp);
+extern int is_builtin_profile(char *isp);
 
 #ifdef RTCONFIG_ODMPID
 extern void replace_productid(char *GET_PID_STR, char *RP_PID_STR, int len);
@@ -382,6 +383,14 @@ static int nvram_check_and_set_for_prefix(char *name, char *tmp, char *value);
 extern int get_defpass(char *new_passwd, char *passwd, int passwd_len);
 extern void reset_accpw(void);
 extern int app_auth(char *authinfo, char *authpass);
+
+#if defined(RTCONFIG_ASD) || defined(RTCONFIG_AHS)
+extern void do_set_security_update_cgi(char *url, FILE *stream);
+extern void do_get_security_update_cgi(char *url, FILE *stream);
+#endif
+
+extern void do_set_ASUS_privacy_policy_cgi(char *url, FILE *stream);
+extern void do_get_ASUS_privacy_policy_cgi(char *url, FILE *stream);
 
 /*
 #define csprintf(fmt, args...) do{\
@@ -551,28 +560,32 @@ void not_ej_initial_folder_var_file();
 int string_to_htmlencode(char *dest, const char *src, size_t len)
 {
 	int ret = 0;
-	char tmp[2] = {0};
+	char tmp[2] = {0}, *buf = NULL, *s = NULL;
 
 	if(src == NULL || strlen(src) > len)
 		return 0;
 
-	replace_char(src, '+', ' ');
-	for (; *src; src++) {
-		if(*src == '"')
+	if (!(buf = strdup(src)))
+		return 0;
+	s = buf;
+	replace_char(s, '+', ' ');
+	for (; *s; s++) {
+		if(*s == '"')
 			ret += strlcat(dest, "&quot;", len);
-		else if(*src == '&')
+		else if(*s == '&')
 			ret += strlcat(dest, "&amp;", len);
-		else if(*src == '\'')
+		else if(*s == '\'')
 			ret += strlcat(dest, "&#39;", len);
-		else if(*src == '<')
+		else if(*s == '<')
 			ret += strlcat(dest, "&lt;", len);
-		else if(*src == '>')
+		else if(*s == '>')
 			ret += strlcat(dest, "&gt;", len);
 		else{
-			snprintf(tmp, sizeof(tmp), "%c", *src);
+			snprintf(tmp, sizeof(tmp), "%c", *s);
 			ret += strlcat(dest, tmp, len);
 		}
 	}
+	free(buf);
 	return ret;
 }
 
@@ -811,22 +824,6 @@ static void insert_hook_func(webs_t wp, char *fname, char *param)
 }
 #endif
 
-char *
-rfctime(const time_t *timep)
-{
-	static char s[200];
-	struct tm tm;
-
-#ifndef RTCONFIG_AVOID_TZ_ENV
-	if(setenv("TZ", nvram_safe_get_x("", "time_zone_x"), 1)==0)
-		tzset();
-#endif
-
-	localtime_r(timep, &tm);
-	strftime(s, sizeof(s), "%a, %d %b %Y %H:%M:%S %z", &tm);
-	return s;
-}
-
 void
 reltime(unsigned int seconds, char *cs, int len)
 {
@@ -999,10 +996,6 @@ void sys_script(char *name)
      else if (strcmp(name,"ddnsclient")==0)
      {
 		notify_rc("restart_ddns");
-     }
-     else if (strstr(name,"asusddns_register") != NULL)
-     {
-		notify_rc("asusddns_reg_domain");
      }
 #endif
      else if (strcmp(name, "leases.sh")==0 || strcmp(name, "dleases.sh")==0)
@@ -1183,7 +1176,7 @@ ej_nvram_get(int eid, webs_t wp, int argc, char_t **argv)
 
 #ifdef RTCONFIG_NVRAM_ENCRYPT
 	if(httpd_invalid_nvram_get_name(name))
-		return websWrite(wp, "");
+		return websWrite(wp, "%s", "");
 #endif
 
 	if (strcmp(name, "modem_spn") == 0 && !nvram_invmatch(name, ""))
@@ -1305,7 +1298,7 @@ ej_nvram_get_x(int eid, webs_t wp, int argc, char_t **argv)
 
 #ifdef RTCONFIG_NVRAM_ENCRYPT
 	if(httpd_invalid_nvram_get_name(name))
-		return websWrite(wp, "");
+		return websWrite(wp, "%s", "");
 #endif
 
 	wl_nband_to_wlx(name, name_tmp, sizeof(name_tmp));
@@ -1372,7 +1365,7 @@ ej_nvram_get_f(int eid, webs_t wp, int argc, char_t **argv)
 
 #ifdef RTCONFIG_NVRAM_ENCRYPT
 	if(httpd_invalid_nvram_get_name(field))
-		return websWrite(wp, "");
+		return websWrite(wp, "%s", "");
 #endif
 
 	strlcpy(buf, nvram_safe_get_f(file, field), sizeof(buf));
@@ -1401,7 +1394,7 @@ ej_nvram_show_chinese_char(int eid, webs_t wp, int argc, char_t **argv)
 
 #ifdef RTCONFIG_NVRAM_ENCRYPT
 	if(httpd_invalid_nvram_get_name(name))
-		return websWrite(wp, "");
+		return websWrite(wp, "%s", "");
 #endif
 
 	wl_nband_to_wlx(name, name_tmp, sizeof(name_tmp));
@@ -1595,7 +1588,7 @@ ej_nvram_get_list_x(int eid, webs_t wp, int argc, char_t **argv)
 
 #ifdef RTCONFIG_NVRAM_ENCRYPT
 	if(httpd_invalid_nvram_get_name(name))
-		return websWrite(wp, "");
+		return websWrite(wp, "%s", "");
 #endif
 
 	wl_nband_to_wlx(name, name_tmp, sizeof(name_tmp));
@@ -1623,7 +1616,7 @@ ej_nvram_get_buf_x(int eid, webs_t wp, int argc, char_t **argv)
 
 #ifdef RTCONFIG_NVRAM_ENCRYPT
 	if(httpd_invalid_nvram_get_name(name))
-		return websWrite(wp, "");
+		return websWrite(wp, "%s", "");
 #endif
 	return 0;
 }
@@ -1680,7 +1673,7 @@ ej_find_word(int eid, webs_t wp, int argc, char_t **argv)
 
 #ifdef RTCONFIG_NVRAM_ENCRYPT
 	if(httpd_invalid_nvram_get_name(name))
-		return websWrite(wp, "");
+		return websWrite(wp, "%s", "");
 #endif
 
 	wl_nband_to_wlx(name, name_tmp, sizeof(name_tmp));
@@ -1758,7 +1751,7 @@ ej_nvram_char_to_ascii(int eid, webs_t wp, int argc, char_t **argv)
 
 #ifdef RTCONFIG_NVRAM_ENCRYPT
 	if(httpd_invalid_nvram_get_name(name))
-		return websWrite(wp, "");
+		return websWrite(wp, "%s", "");
 #endif
 
 	if (!strcmp(name, "vpndirector_rulelist"))
@@ -2096,7 +2089,7 @@ static int get_basic_clientlist_info(webs_t wp, int opt)
 {
 	int ret = 0, client_name_status = 0, wl_count = 0, wire_count = 0;
 	struct json_object *clients = NULL, *cache_clients = NULL, *wire_clients_array_obj = NULL, *wl_clients_array_obj = NULL, *clients_array_obj = NULL;
-	struct json_object *client_tmp = NULL, *client_name = NULL, *isWL = NULL, *macArray = NULL, *macArray_tmp = NULL;
+	struct json_object *client_tmp = NULL, *client_name = NULL, *isWL = NULL, *isOnline = NULL, *macArray = NULL, *macArray_tmp = NULL;
 	macArray = json_object_new_array();
 	clients_array_obj = json_object_new_array();
 	wire_clients_array_obj = json_object_new_array();
@@ -2127,7 +2120,11 @@ static int get_basic_clientlist_info(webs_t wp, int opt)
 							json_object_array_add(macArray_tmp, json_object_new_string(key));
 
 						json_object_array_add(wl_clients_array_obj, macArray_tmp);
-						wl_count++;
+						if( (opt == 2) && json_object_object_get_ex(val, "isOnline", &isOnline) ) {
+							if(atoi(json_object_get_string(isOnline)) > 0) {
+								wl_count++;
+							}
+						}
 					}else{
 						json_object_array_add(macArray_tmp, json_object_new_string(key));
 						if(client_name_status)
@@ -2136,7 +2133,11 @@ static int get_basic_clientlist_info(webs_t wp, int opt)
 							json_object_array_add(macArray_tmp, json_object_new_string(key));
 
 						json_object_array_add(wire_clients_array_obj, macArray_tmp);
-						wire_count++;
+						if((opt == 2) && json_object_object_get_ex(val, "isOnline", &isOnline) ) {
+							if(atoi(json_object_get_string(isOnline)) > 0) {
+								wire_count++;
+							}
+						}
 					}
 				}
 			}
@@ -2218,15 +2219,15 @@ ej_uptime(int eid, webs_t wp, int argc, char_t **argv)
 {
 
 //	FILE *fp;
-	char buf[MAX_LINE_SIZE];
-	char bufx[MAX_LINE_SIZE];
+	char buf[MAX_LINE_SIZE] = {0};
+	char bufx[MAX_LINE_SIZE] = {0};
 //	unsigned long uptime;
 	int ret;
 	char *str = file2str("/proc/uptime");
 	time_t tm;
 
 	time(&tm);
-	snprintf(buf, sizeof(buf), rfctime(&tm));
+	rfctime(&tm, buf, sizeof(buf));
 
 	if (str) {
 		unsigned int up = atoi(str);
@@ -4403,7 +4404,7 @@ int validate_apply(webs_t wp, json_object *root)
 					HTTPD_SEND_NT_EVENT(GENERAL_TOGGLE_STATES_UPDATE, "wps");
 				}
 #endif
-				if(!strcmp(name, "switch_wantag") && strcmp(value, "manual")){
+				if(!strcmp(name, "switch_wantag") && strcmp(value, "manual") && is_builtin_profile(value)){
 					config_iptv_vlan(value);
 				}
 
@@ -4412,7 +4413,7 @@ int validate_apply(webs_t wp, json_object *root)
 					char timebuf[100];
 
 					now = time( (time_t*) 0 );
-					strlcpy(timebuf, rfctime(&now), sizeof(timebuf));
+					rfctime(&now, timebuf, sizeof(timebuf));
 					nvram_set("TM_EULA_time", timebuf);
 				}
 			}
@@ -4526,9 +4527,6 @@ int validate_apply(webs_t wp, json_object *root)
 				{
 					reg_default_final_token();
 					nvram_set("x_Setting", "1");
-#ifdef RTAXE7800
-					notify_rc("addif_extwan");
-#endif
 					notify_rc("restart_firewall");
 #ifdef RTCONFIG_EXTPHY_BCM84880
 					notify_rc("br_addif");
@@ -4536,9 +4534,6 @@ int validate_apply(webs_t wp, json_object *root)
 				}
 			}else if(fromapp_flag != 0) {
 				nvram_set("x_Setting", "1");
-#ifdef RTAXE7800
-				notify_rc("addif_extwan");
-#endif
 				notify_rc("restart_firewall");
 			}
 		}
@@ -6770,12 +6765,22 @@ static int login_state_hook(int eid, webs_t wp, int argc, char_t **argv)
 //	login_port = (unsigned int)atol(nvram_safe_get("login_port"));
 
 	if (!uaddr_is_unspecified(&uip)) {
+		int i=0;
 		FILE *fp;
 		char line[256];
 #ifdef RTCONFIG_IPV6
 		char *p, *save_ptr;
+		char lan_ifname[128] = {0};
 
-		snprintf(line, sizeof(line), "ip neigh show to %s dev %s 2>/dev/null", ip_str, nvram_safe_get("lan_ifname"));
+		strlcpy(lan_ifname, nvram_safe_get("lan_ifname"), sizeof(lan_ifname));
+
+		for (i=0 ; lan_ifname[i] != '\0'; i++){
+			if (isalnum(lan_ifname[i]) == 0 && lan_ifname[i] != '.' && isspace(lan_ifname[i]) == 0){
+				return 0;
+			}
+		}
+
+		snprintf(line, sizeof(line), "ip neigh show to %s dev %s 2>/dev/null", ip_str, lan_ifname);
 		fp = popen(line, "r");
 		if (fp != NULL) {
 			while (fgets(line, sizeof(line), fp) != NULL) {
@@ -7386,10 +7391,20 @@ END:
 
 void get_ipv6_client_info()
 {
+	int i = 0;
 	FILE *fp;
-	char buffer[128], ipv6_addr[128], mac[32];
+	char buffer[128], ipv6_addr[128], mac[32], lan_ifname[128] = {0};
 	char *ptr_end, hostname[64];
-	doSystem("ip -f inet6 neigh show dev %s > %s", nvram_safe_get("lan_ifname"), IPV6_CLIENT_NEIGH);
+
+	strlcpy(lan_ifname, nvram_safe_get("lan_ifname"), sizeof(lan_ifname));
+
+	for (i=0 ; lan_ifname[i] != '\0'; i++){
+		if (isalnum(lan_ifname[i]) == 0 && lan_ifname[i] != '.' && isspace(lan_ifname[i]) == 0){
+			return;
+		}
+	}
+
+	doSystem("ip -f inet6 neigh show dev %s > %s", lan_ifname, IPV6_CLIENT_NEIGH);
 	usleep(1000);
 
 	if ((fp = fopen(IPV6_CLIENT_NEIGH, "r")) == NULL)
@@ -9285,66 +9300,10 @@ static int get_client_bind_info(char *client_mac, char *node_mac, int node_mac_s
 #endif
 
 
-static int get_wireless_client_info(char *mac, char *wireless) {
-
-	// _dprintf("get_wireless_client_info mac = %s, wireless = %s\n", mac, wireless);
-
-	int status = -1;
-	int lock;
-	int conn_ts = 0;
-
-	json_object *wClietListObj = NULL;
-	json_object *brMacObj = NULL;
-	json_object *wlObj = NULL;
-	json_object *tsObj = NULL;
-
-	if(check_if_file_exist(NMP_CL_JSON_FILE))
-	{
-		wClietListObj = json_object_from_file(NMP_CL_JSON_FILE);
-	} else {
-		_dprintf("file not exist >> %s\n", NMP_CL_JSON_FILE);
-	}
-
-	if (wClietListObj) {
-
-		char cap_mac[18] = {0};
-		snprintf(cap_mac, sizeof(cap_mac), "%s", get_lan_hwaddr());
-		// _dprintf("cap_mac = %s\n", cap_mac);
-
-		json_object_object_foreach(wClietListObj, key, val) {
-
-			brMacObj = val;
-
-			// _dprintf("mac key = %s, brMacObj = %s\n", key, json_object_get_string(brMacObj));
-
-			if(strcmp(key, mac) == 0) {
-
-				json_object_object_get_ex(brMacObj, "is_wireless", &wlObj);
-				json_object_object_get_ex(brMacObj, "conn_ts", &tsObj);
-				if(wlObj && tsObj) {
-					snprintf(wireless, sizeof(wireless), "%s", json_object_get_string(wlObj));
-					conn_ts = json_object_get_int(tsObj);
-
-					if(memcmp(wireless, "0", 1)) {
-						status = 1;
-						_dprintf("mac = %s, get wireless = %s, conn_ts = %d\n", mac, wireless, conn_ts);
-					}
-				} else {
-					snprintf(wireless, sizeof(wireless), "%s", "0");
-					conn_ts = 0;
-				}
-				break;
-			}
-		}
-		json_object_put(wClietListObj);
-	}
-
-	return status;
-}
-
 //2016.09 Rawny add for new networkmap
 //static int get_client_detail_info(int eid, webs_t wp, int argc, char_t **argv, key_t shmkey, char *maclist_buf){
-static int get_client_detail_info(struct json_object *clients, struct json_object *macArray, key_t shmkey){
+static int get_client_detail_info(struct json_object *clients, struct json_object *macArray, key_t shmkey)
+{
 	CLIENT_DPRINTF("get_client_detail_info start\n");
 	int i, shm_client_info_id;
 	void *shared_client_info = (void *) 0;
@@ -9514,6 +9473,7 @@ static int get_client_detail_info(struct json_object *clients, struct json_objec
 			json_object_object_add(client, "from", json_object_new_string("networkmapd"));
 			json_object_object_add(client, "macRepeat", json_object_new_string(macRepeat));
 			json_object_object_add(client, "isGateway", json_object_new_string(!strcmp(nvram_safe_get("lan_ipaddr"), ipaddr) ? "1" : "0"));
+			json_object_object_add(client, "isASUS", json_object_new_string((p_client_info_tab->device_flag[i] & (1<<FLAG_ASUS)) ? "1" : "0"));
 			json_object_object_add(client, "isWebServer", json_object_new_string((p_client_info_tab->device_flag[i] & (1<FLAG_HTTP)) ? "1" : "0"));
 			json_object_object_add(client, "isPrinter", json_object_new_string((p_client_info_tab->device_flag[i] & (1<FLAG_PRINTER)) ? "1" : "0"));
 			json_object_object_add(client, "isITunes", json_object_new_string((p_client_info_tab->device_flag[i] & (1<FLAG_ITUNE)) ? "1" : "0"));
@@ -9770,23 +9730,14 @@ static int get_client_detail_info(struct json_object *clients, struct json_objec
 #endif
 			}
 
-
-			// start : get wireless type , form nmp_cl_json.js
-			json_object *get_isWL = NULL;
-			json_object_object_get_ex(client, "isWL", &get_isWL);
-			snprintf(wireless, sizeof(wireless), "%s", json_object_get_string(get_isWL));
-			if(!memcmp(wireless, "0", 1)) {
-				// get nmp_cl_json.js content -> is_wireless
-				if(get_wireless_client_info(mac_buf, &wireless) > 0) {
-					json_object_object_add(client, "isWL", json_object_new_string(wireless));
-				}
-			}
-			// end : get wireless type
-
             //check isOnline attribute only on amas support(not when RTCONFIG_AMAS defined)
             if(is_amas_support()) {
 
-                json_object_object_add(client, "isOnline", json_object_new_string(online));
+				struct json_object *isOnline = NULL;
+				json_object_object_get_ex(client, "isOnline", &isOnline);
+				snprintf(online, sizeof(online), "%s", json_object_get_string(isOnline));
+
+				// _dprintf("WEB i = %2d, mac = %s, online = %s, wireless = %s, ip = %s\n", i, mac_buf, online, wireless, ipaddr);
 
                 if(strcmp(online, "1") == 0) {
                     json_object_array_add(macArray, json_object_new_string(mac_buf));   
@@ -12223,7 +12174,6 @@ apply_cgi(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg,
 		)){
 			/* validate input */
 			if(strncasecmp(system_cmd, "ping", 4) == 0){
-				int ping_count = 0;
 				char *g = NULL, *buf = NULL;
 				char *ping_argv1 = NULL, *ping_argv2 = NULL, *ping_argv3 = NULL, *ping_argv4 = NULL;
 				g = buf = strdup(system_cmd);
@@ -12339,24 +12289,14 @@ apply_cgi(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg,
 		prepare_restore(wp);
 		sys_default();
 
-#if defined(RTCONFIG_HTTPS) && defined(RTCONFIG_LETSENCRYPT)
-		if (f_exists(UPLOAD_CERT))
-			unlink(UPLOAD_CERT);
-		if (f_exists(UPLOAD_KEY))
-			unlink(UPLOAD_KEY);
-#endif
+		remove_all_uploaded_cert_from_jffs();
 	}
 	else if (!strcmp(action_mode, "restore_erase"))
 	{
 		prepare_restore(wp);
 		sys_default_erase();
 
-#if defined(RTCONFIG_HTTPS) && defined(RTCONFIG_LETSENCRYPT)
-		if (f_exists(UPLOAD_CERT))
-			unlink(UPLOAD_CERT);
-		if (f_exists(UPLOAD_KEY))
-			unlink(UPLOAD_KEY);
-#endif
+		remove_all_uploaded_cert_from_jffs();
 	}
 	else if (!strcmp(action_mode, "logout")) // but, every one can reset it by this call
 	{
@@ -12394,19 +12334,19 @@ apply_cgi(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg,
 		wave_app_flag = wave_handle_app_flag(action_mode, wave_app_flag);
 #endif
 		action_para = get_cgi_json("wps_band",root);
-		if(action_para)
+		if(action_para && (safe_atoi(action_para) < 10))
 			nvram_set("wps_band_x", action_para);
 		else goto wps_finish;
 
 		action_para = get_cgi_json("wps_enable",root);
-		if(action_para) {
+		if(action_para && (safe_atoi(action_para) <= 1)) {
 			nvram_set("wps_enable", action_para);
 			nvram_set("wps_enable_x", action_para);
 		}
 		else goto wps_finish;
 
 		action_para = get_cgi_json("wps_sta_pin",root);
-		if(action_para)
+		if(action_para && (strlen(action_para) == 8) && isValid_digit_string(action_para))
 			nvram_set("wps_sta_pin", action_para);
 		else goto wps_finish;
 #if defined(RTCONFIG_WPSMULTIBAND)
@@ -13609,9 +13549,6 @@ do_lang_post(char *url, FILE *stream, int len, char *boundary)
 			cprintf ("set x_Setting --> 1\n");
 			reg_default_final_token();
 			nvram_set("x_Setting", "1");
-#ifdef RTAXE7800
-			notify_rc("addif_extwan");
-#endif
 			notify_rc("restart_firewall");
 		}
 		cprintf ("!!!!!!!!!Commit new language settings.\n");
@@ -15315,6 +15252,26 @@ err:
 }
 
 static void
+do_set_ASUS_NEW_EULA_cgi(char *url, FILE *stream)
+{
+	char from_service[200] = {0};
+	struct json_object *root = json_object_new_object();
+
+	do_json_decode(root);
+
+	char *ASUS_NEW_EULA = safe_get_cgi_json("ASUS_NEW_EULA", root);
+
+	strlcpy(from_service, user_agent, sizeof(from_service));
+
+	int ret = set_ASUS_NEW_EULA(ASUS_NEW_EULA, from_service);
+
+	if(root)
+		json_object_put(root);
+
+	websWrite(stream, "{\"statusCode\":\"%d\"}", ret);
+}
+
+static void
 do_upload_cgi(char *url, FILE *stream)
 {
 	int ret;
@@ -15741,13 +15698,208 @@ upload_cert_check_dir()
 	}
 }
 
+/* Return string of specified X509V3 extension by NID.
+ * NOTE: Caller must to release return value if it's not NULL!
+ * @x509:
+ * @nid:	e.g. NID_basic_constraints, NID_authority_key_identifier
+ * @return:	pointer to string or NULL if @nid not found, malloc failed, wrong parameter, etc.
+ */
+static char *x509v3ext2str_by_nid(X509 *x509, int nid)
+{
+	char *ret = NULL;
+	BUF_MEM *bptr = NULL;
+	char *buf = NULL, *ptr;
+	int loc;
+	BIO *bio = NULL;
+	X509_EXTENSION *ex;
+
+	if (!x509)
+		return NULL;
+
+	loc = X509_get_ext_by_NID(x509, nid, -1);
+	ex = X509_get_ext(x509, loc);
+	if (!ex) {
+		goto err_x509v3ext2str_by_nid;
+	}
+	bio = BIO_new(BIO_s_mem());
+	if (!X509V3_EXT_print(bio, ex, 0, 0)) {
+		dbg("%s: X509V3_EXT_print() fail (nid %d)!\n", __func__, nid);
+		goto err_x509v3ext2str_by_nid;
+	}
+	(void) BIO_flush(bio);
+	BIO_get_mem_ptr(bio, &bptr);
+	buf = malloc((bptr->length + 1) * sizeof(char));
+	if (!buf) {
+		goto err_x509v3ext2str_by_nid;
+	}
+	memcpy(buf, bptr->data, bptr->length);
+	buf[bptr->length] = '\0';
+	strtok_r(buf, "\r\n", &ptr);
+
+	ret = buf;
+
+err_x509v3ext2str_by_nid:
+	if (bio)
+		BIO_free(bio);
+
+	return ret;
+}
+
+/* If uploaded file is root/intermediate certificate, use it to sign end-entity
+ * certificate instead using it as end-entity certificate directly.
+ * NOTE: Don't change HTTPD_CERT in the function in all cases, otherwise,
+ *       prepare_cert rc_service is not able to detect change of HTTPD_CERT.
+ *       Because upload certificate and apply ddns settings are different button.
+ * @return:
+ * 	 0:	@cert_fn/@key_fn is root certificate
+ * 	 1:	@cert_fn/@key_fn is intermediate certificate
+ * 	 2:	@cert_fn/@key_fn is end-entity certificate
+ * 	-1:	@cert_fn or @key_fn doesn't exist
+ * 	<0:	error
+ */
+static int set_uploaded_cert_as_cacert(const char *cert_fn, const char *key_fn)
+{
+	int ret = 0;
+	FILE *fp;
+	long ver;
+	X509 *x509_cert = NULL;
+	char *b_constr = NULL, *s_keyid = NULL, *a_keyid = NULL, *dnsname = NULL;
+	char ddns[64] = "", lan_ip[16] = "", wan0_ip[16] = "";
+#if defined(RTCONFIG_DUALWAN) || defined(RTCONFIG_USB_MODEM)
+	char wan1_ip[16] = "";
+#endif
+	char **p, *dns_chk_list[] = { ddns, "www.asusrouter.com", lan_ip, wan0_ip,
+#if defined(RTCONFIG_DUALWAN) || defined(RTCONFIG_USB_MODEM)
+		wan1_ip,
+#endif
+		NULL
+	};
+	char *type = "unknown", *cert_type[] = { "root", "intermediate", "end-entity" };
+
+	if (!cert_fn || !key_fn)
+		return -1;
+	if (!f_exists(cert_fn) || !f_exists(key_fn))
+		return -2;
+
+	if (!(fp = fopen(cert_fn, "r")))
+		return -3;
+
+	if (!PEM_read_X509(fp, &x509_cert, NULL, NULL)) {
+		fseek(fp, 0, SEEK_SET);
+		d2i_X509_fp(fp, &x509_cert);
+	}
+	fclose(fp);
+	if (!x509_cert) {
+		_dprintf("%s: Read certificate %s failed\n", __func__, cert_fn);
+		ret = -4;
+		goto err_set_uploaded_cert_as_cacert;
+	}
+
+	if ((ver = X509_get_version(x509_cert)) != 2) {
+		logmessage("httpd", "Uploaded certificate is not X509 V3!");
+		ret = -5;
+		goto err_set_uploaded_cert_as_cacert;
+	}
+
+	if (illegal_cert_and_key(cert_fn, key_fn)) {
+		_dprintf("%s: public key of cert and key mismatch.\n", __func__);
+		logmessage("httpd", "public key of cert and key mismatch.\n");
+		ret = -6;
+		goto err_set_uploaded_cert_as_cacert;
+	}
+
+	b_constr = x509v3ext2str_by_nid(x509_cert, NID_basic_constraints);
+	if (!b_constr) {
+		_dprintf("%s: Can't get basic constrain from %s\n", __func__, cert_fn);
+		logmessage("httpd", "Can't get basic constrain from %s", cert_fn);
+		ret = -7;
+		goto err_set_uploaded_cert_as_cacert;
+	}
+
+	s_keyid = x509v3ext2str_by_nid(x509_cert, NID_subject_key_identifier);
+	a_keyid = x509v3ext2str_by_nid(x509_cert, NID_authority_key_identifier);
+
+	if (!s_keyid || !a_keyid) {
+		_dprintf("%s: Can't get subject/authority key identifier. ([%.10s]/[%.10s])\n",
+			__func__, s_keyid? : "NULL", a_keyid? : "NULL");
+		logmessage("httpd", "Can't get subject/authority key identifier. ([%.10s]/[%.10s])\n",
+			s_keyid? : "NULL", a_keyid? : "NULL");
+		ret = -8;
+		goto err_set_uploaded_cert_as_cacert;
+	}
+
+	if (strstr(b_constr, "CA:TRUE")) {
+		/* root/intermediate certificate */
+		/* root cert.:			same subject/issuer key identifier
+		 * intermediate/endentity cert.:different subject/issuer key identifier
+		 */
+		if (!strstr(a_keyid, s_keyid))
+			ret = 1;
+	} else if (strstr(b_constr, "CA:FALSE")) {
+		/* end-entity certificate */
+		if (strstr(a_keyid, s_keyid)) {
+			_dprintf("%s: self-signed end-entity certificate, reject.\n", __func__);
+			logmessage("httpd", "self-signed end-entity certificate, reject.");
+			ret = -9;
+			goto err_set_uploaded_cert_as_cacert;
+		}
+
+		dnsname = x509v3ext2str_by_nid(x509_cert, NID_subject_alt_name);
+		if (!dnsname) {
+			_dprintf("%s: Subject alternative name is not defined in %s, reject.\n", __func__, cert_fn);
+			logmessage("httpd", "Subject alternative name is not defined in %s, reject.", cert_fn);
+			ret = -10;
+			goto err_set_uploaded_cert_as_cacert;
+		}
+		strlcpy(ddns, nvram_safe_get("ddns_hostname_x"), sizeof(ddns));
+		strlcpy(lan_ip, nvram_safe_get("lan_ipaddr"), sizeof(lan_ip));
+		strlcpy(wan0_ip, nvram_safe_get("wan0_ipaddr"), sizeof(wan0_ip));
+#if defined(RTCONFIG_DUALWAN) || defined(RTCONFIG_USB_MODEM)
+		if (get_dualwan_by_unit(WAN_UNIT_SECOND) != WANS_DUALWAN_IF_NONE) {
+			strlcpy(wan1_ip, nvram_safe_get("wan1_ipaddr"), sizeof(wan1_ip));
+		}
+#endif
+
+		for (p = &dns_chk_list[0]; p && *p; ++p) {
+			if (*p == '\0')
+				continue;
+			if (!strstr(dnsname, *p)) {
+				_dprintf("%s: [%s] is not defined in subject alternate name of certificate.\n",
+					__func__, *p);
+				logmessage("httpd", "[%s] is not defined in subject alternate name of certificate.", *p);
+			}
+		}
+		ret = 2;
+	} else {
+		_dprintf("%s: CA is not defined in basic constrain [%s]\n", __func__, b_constr);
+		logmessage("httpd", "%s: CA is not defined in basic constrain [%s]\n", __func__, b_constr);
+		ret = -7;
+		goto err_set_uploaded_cert_as_cacert;
+	}
+
+	if (ret >= 0 && ret < ARRAY_SIZE(cert_type))
+		type = cert_type[ret];
+	_dprintf("%s: %s cert/key [%s]/[%s] seems okay\n", __func__, type, cert_fn, key_fn);
+
+err_set_uploaded_cert_as_cacert:
+	if (s_keyid)
+		free(s_keyid);
+	if (a_keyid)
+		free(a_keyid);
+	if (b_constr)
+		free(b_constr);
+	if (x509_cert)
+		X509_free(x509_cert);
+
+	return ret;
+}
 
 static void
 do_upload_cert_key(char *url, FILE *stream, int len, char *boundary)
 {
 	char upload_fifo[32];
 	FILE *fifo = NULL;
-	int ret = EINVAL, ch;
+	int ret = EINVAL, ch, r;
 	char *filename = NULL, *p = NULL;
 	char buf[1024] = {0};
 
@@ -15888,6 +16040,27 @@ do_upload_cert_key(char *url, FILE *stream, int len, char *boundary)
 	fclose(fifo);
 	fifo = NULL;
 
+	/* If uploaded file is root/intermediate certificate, use it to sign end-entity cert. instead.
+	 * Neither change HTTPD_CERT nor reload it here, otherwise, apply setting is executed via
+	 * connection with different encryption.
+	 */
+	r = set_uploaded_cert_as_cacert(UPLOAD_CERT, UPLOAD_KEY);
+	if (r == 0 || r == 1) {
+		/* root/intermediate cert. uploaded, use it to sign end-entity cert. */
+		eval("mv", "-f", UPLOAD_CERT, UPLOAD_CACERT);
+		eval("mv", "-f", UPLOAD_KEY, UPLOAD_CAKEY);
+		reset_last_cert_nvars();
+	} else if (r == 2) {
+		/* end-entity cert. uploaded, use it directly. */
+		if (f_exists(UPLOAD_CACERT))
+			unlink(UPLOAD_CACERT);
+		if (f_exists(UPLOAD_CAKEY))
+			unlink(UPLOAD_CAKEY);
+	} else {
+		logmessage("httpd", "Delete uploaded certificate");
+		remove_all_uploaded_cert_from_jffs();
+	}
+
 err:
 	if (fifo)
 		fclose(fifo);
@@ -15910,29 +16083,63 @@ do_upload_cert_key_cgi(char *url, FILE *stream)
 }
 #endif
 
+/* Export certificate and key in WAN -> DDNS. Currently using root/intermediate
+ * cert. and key, and end-entity cert and key should in the archive.
+ */
 static void
 do_download_cert_key_cgi(char *url, FILE *stream)//for DUT
 {
-	eval("tar", "cf",
-		"/tmp/cert_key.tar",
-		"-C",
-		"/etc",
-		"cert.pem",
-		"key.pem"
-		);
+	int i, len;
+	char **v, *argv[20] = { "tar", "chf", "/tmp/cert_key.tar", "-C", "/etc", NULL };
+	char *p, **f, **fn;
+	char *cert_fn[] = { HTTPD_CERT, HTTPD_KEY, NULL };
+	char *cacert_fn[] = { HTTPD_ROOTCA_CERT, HTTPD_ROOTCA_KEY, NULL };
+
+	for (i = 0, v = &argv[0]; i < ARRAY_SIZE(argv) && *v; ++v, ++i)
+		;
+
+	len = ARRAY_SIZE(argv) - i;
+	fn = cert_fn;
+	if (f_exists(cacert_fn[0]) && f_exists(cacert_fn[1]))
+		fn = cacert_fn;
+	for (f = &fn[0]; f && *f && len > 0; ++f) {
+		if (!f_exists(*f))
+			continue;
+		if ((p = strrchr(*f, '/')) != NULL)
+			p++;
+		else
+			p = *f;
+
+		*v++ = p;
+		len--;
+	}
+
+	if (!len) {
+		_dprintf("%s: argv too small!\n", __func__);
+		return;
+	}
+
+	*v++ = NULL;
+	_eval(argv, NULL, 0 , NULL);
 	do_file("/tmp/cert_key.tar", stream);
 }
 
 static void
 do_download_cert_cgi(char *url, FILE *stream)//for browser
 {
-	eval("tar", "cf",
+	eval("tar", "chf",
 		"/tmp/cert.tar",
 		"-C",
 		"/etc",
 		"cert.crt"
 		);
 	do_file("/tmp/cert.tar", stream);
+}
+
+static void
+do_download_cacert_cgi(char *url, FILE *stream)
+{
+	do_file("/etc/cert.crt", stream);
 }
 
 // Viz 2010.08
@@ -16033,6 +16240,13 @@ prf_file(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg, char_t *url, cha
 #endif
 #if defined(RTCONFIG_JFFS2USERICON)
 		"usericon",
+#endif
+#ifdef RTCONFIG_HTTPS
+		"cert.tgz",	/* source of self-signed root,server certificate/key */
+		".cert",	/* source of uploaded certificate/key */
+#ifdef RTCONFIG_LETSENCRYPT
+		".le",		/* source of certificate/key signed by Let's encrypt */
+#endif
 #endif
 		NULL
 	};
@@ -16491,10 +16705,49 @@ do_clear_file_cgi(char *url, FILE *stream)
 	char *clear_file;
 	clear_file = websGetVar(wp, "clear_file_name", "");
 
-	if(strcmp(clear_file, "cert.tgz") == 0) {
-		if(check_if_file_exist("/jffs/cert.tgz")){
-			eval("rm", "/jffs/cert.tgz");
-			notify_rc_and_wait("restart_httpd");
+	/* using HTTPS_CA_JFFS define in httpd.h */
+	if(strcmp(clear_file, "cert.tgz") == 0 || !strcmp(clear_file, "server_certs")) {
+		int le_enable = nvram_get_int("le_enable");
+		if(check_if_file_exist(HTTPS_CA_JFFS)) {
+			unlink(HTTPS_CA_JFFS);
+		}
+		if (!strcmp(clear_file, "cert.tgz")) {
+			char **p, *fn[] = { HTTPD_ROOTCA_CERT, HTTPD_ROOTCA_KEY,
+				HTTPD_ROOTCA_GEN_CERT, HTTPD_ROOTCA_GEN_KEY, NULL
+			};
+
+#if defined(RTCONFIG_LETSENCRYPT)
+			if (!le_enable)
+#endif
+			{
+				for (p = &fn[0]; *p; ++p) {
+					if (f_exists(*p))
+						unlink(*p);
+				}
+				/* Generate new root certificate and backup.
+				 * Ask httpds to reload end-entity certificate after the current
+				 * session logout, user can download new root certificate first
+				 * without accepting end-entity certificate that is signed by it.
+				 */
+				GENCERT_SH_AND_BACKUP_RELOAD_AFTER_LOGOUT();
+			}
+		} else if (!strcmp(clear_file, "server_certs")) {
+			char **p, *fn[] = { HTTPD_CERT, HTTPD_KEY, HTTPD_GEN_CERT, HTTPD_GEN_KEY, NULL };
+
+			if (
+#if defined(RTCONFIG_LETSENCRYPT)
+			    !le_enable || (le_enable == 2 && f_exists(UPLOAD_CACERT) && f_exists(UPLOAD_CAKEY))
+#else
+			    !f_exists(UPLOAD_CERT) || !f_exists(UPLOAD_KEY)
+#endif
+			) {
+				for (p = &fn[0]; *p; ++p) {
+					if (f_exists(*p))
+						unlink(*p);
+				}
+				/* backup new certificate and ask httpds to reload certificates. */
+				GENCERT_SH_AND_BACKUP_RELOAD();
+			}
 		}
 	}
 #ifdef RTCONFIG_IPSEC
@@ -18334,7 +18587,7 @@ void do_get_timezone_cgi(char *url, FILE *stream){
 		strlcpy(timezone, timezone_t, sizeof(timezone));
 	}
 	else if(!strcmp(lang, "KR")){
-		if(!strcmp(timezone_t, "JST"))
+		if(!strcmp(timezone_t, "JST-9"))
 			strlcpy(timezone, "UTC-9_1", sizeof(timezone));
 	}
 	else if(!strcmp(lang, "MS")){
@@ -18950,7 +19203,7 @@ do_set_ASUS_EULA_cgi(char *url, FILE *stream)
 	{
 		nvram_set("ASUS_EULA", ASUS_EULA);
 		now = time( (time_t*) 0 );
-		strlcpy(timebuf, rfctime(&now), sizeof(timebuf));
+		rfctime(&now, timebuf, sizeof(timebuf));
 		nvram_set("ASUS_EULA_time", timebuf);
 		if(!strcmp(ASUS_EULA, "0")){
 			if(nvram_match("ddns_server_x", "WWW.ASUS.COM")){
@@ -18998,7 +19251,7 @@ do_set_TM_EULA_cgi(char *url, FILE *stream)
 	{
 		nvram_set("TM_EULA", TM_EULA);
 		now = time( (time_t*) 0 );
-		strlcpy(timebuf, rfctime(&now), sizeof(timebuf));
+		rfctime(&now, timebuf, sizeof(timebuf));
 		nvram_set("TM_EULA_time", timebuf);
 
 		if(!strncmp(TM_EULA, "0", 1))
@@ -20061,9 +20314,9 @@ do_enable_remote_control_cgi(char *url, FILE *stream)
 		IFTTT_DEBUG("[HTTPD] do_enable_remote_control_cgi\n");
 #endif
 	int rc_ddns = 0, rc_httpd = 0;
-	char ddns_hostname[128];
-	char ddns_name[64];
-	char service_buf[128];
+	char ddns_hostname[128] = {0};
+	char ddns_name[64] = {0};
+	char service_buf[128] = {0};
 
 	memset(ddns_hostname, 0, sizeof(ddns_hostname));
 	memset(ddns_name, 0, sizeof(ddns_name));
@@ -20076,9 +20329,9 @@ do_enable_remote_control_cgi(char *url, FILE *stream)
 	if (nvram_match("ddns_hostname_x", "")){
 		nvram_set("ddns_server_x", "WWW.ASUS.COM");
 #ifdef RTCONFIG_HTTPS
-		gen_ddns_hostname(ddns_name);
+		gen_ddns_hostname(ddns_name, sizeof(ddns_name));
 #endif
-		snprintf(ddns_hostname, sizeof(ddns_hostname), "a%s.asuscomm.com", ddns_name);
+		snprintf(ddns_hostname, sizeof(ddns_hostname), "%s.asuscomm.com", ddns_name);
 		nvram_set("ddns_hostname_x", ddns_hostname);
 		rc_ddns = 1;
 	}
@@ -20705,12 +20958,17 @@ do_set_iperf3_svr_cgi(char *url, FILE *stream)
 	rc_service = safe_get_cgi_json("rc_service", root);
 	iperf3_svr_port = safe_get_cgi_json("iperf3_svr_port", root);
 
-	if(!isValid_digit_string(iperf3_svr_port) && atoi(iperf3_svr_port)<0 && atoi(iperf3_svr_port)>65535){
+	if(!isValid_digit_string(iperf3_svr_port)) {
 		ret = HTTP_INVALID_INPUT;
 		goto FINISH;
 	}else{
-		nvram_set("iperf3_svr_port", iperf3_svr_port);
-		nvram_commit();
+		if(safe_atoi(iperf3_svr_port)<1 || safe_atoi(iperf3_svr_port)>65535) {
+			ret = HTTP_INVALID_INPUT;
+			goto FINISH;
+		} else {
+			nvram_set_int("iperf3_svr_port", safe_atoi(iperf3_svr_port));
+			nvram_commit();
+		}
 	}
 
 	notify_rc(rc_service);
@@ -21281,26 +21539,22 @@ qos_bw_rulelist: del_idx=1
 wollist: del_idx=1
 <device_name>mac<device_name2>mac2<...
 */
-static int
+int
 delete_client_in_group_list(char *del_maclist, int del_idx, char *in_group_list, char *out_group_list, int out_len){
-	int ret=0, group_mac_idx=0;
-	char word[4096]={0}, *word_next=NULL;
-	char group_word_buf[4096]={0}, group_word[4096]={0}, *group_word_next=NULL;
+	int ret=0;
+	char tmp_buf[4096] = {0}, group_word[1024]={0};
+	char word[1024]={0}, *word_next=NULL;
 
-	foreach_60(word, in_group_list, word_next){
-		group_mac_idx=0;
-		strlcpy(group_word_buf, word, sizeof(group_word_buf));
-		foreach_62(group_word, word, group_word_next){
-			if(group_mac_idx == del_idx){
-				if (strcasestr(del_maclist, group_word)) {
-					ret = 1;
-					break;
-				}else{
-					strlcat(out_group_list, "<", out_len);
-					strlcat(out_group_list, group_word_buf, out_len);
-				}
-			}
-			group_mac_idx++;
+	if(in_group_list){
+		strlcpy(tmp_buf, in_group_list, sizeof(tmp_buf));
+		strlcpy(out_group_list, in_group_list, out_len);
+	}
+
+	foreach_60(word, tmp_buf, word_next){
+		get_string_in_62(word, del_idx, group_word, sizeof(group_word));
+		if (group_word[0] != '\0' && strcasestr(del_maclist, group_word)){
+			remove_client_in_list(out_group_list, word);
+			ret = 1;
 		}
 	}
 
@@ -21739,7 +21993,7 @@ do_chpass_cgi(char *url, FILE *stream)
 	int l = 0;
 	int is_def_pwd = 0;
 	char username_str[128]={0}, passwd_str[128]={0};
-	char def_username[128]={0}, def_passwd[128]={0};
+	char def_passwd[128]={0};
 	char real_action_script[256] = {0};
 	char *cur_passwd=NULL, *cur_username=NULL, *new_username=NULL, *new_passwd=NULL, *restart_httpd=NULL, *defpass_enable=NULL;
 #ifdef RTCONFIG_NVRAM_ENCRYPT
@@ -21849,9 +22103,6 @@ do_chpass_cgi(char *url, FILE *stream)
 		if(is_def_pwd){
 			reg_default_final_token();
 			nvram_set("x_Setting", "1");
-#ifdef RTAXE7800
-			notify_rc("addif_extwan");
-#endif
 			notify_rc("restart_firewall");
 #ifdef RTCONFIG_EXTPHY_BCM84880
 			notify_rc("br_addif");
@@ -21976,8 +22227,26 @@ static void do_ModelProduct_png(char *url, FILE *stream)
         free(odmpid);
 }
 
+#ifdef RTCONFIG_SOFTWIRE46
+static void
+do_s46reset_cgi(char *url, FILE *stream)
+{
+	char command[128];
+	int wan_unit = wan_primary_ifunit();
+	struct json_object *root = json_object_new_object();
+	do_json_decode(root);
+
+	snprintf(command, sizeof(command), "s46reset %d", wan_unit);
+	system(command);
+
+	if(root)
+		json_object_put(root);
+}
+#endif
+
 //2008.08 magic{
-struct mime_handler mime_handlers[] = {
+struct mime_handler mime_handlers[] =
+{
 	{ "Main_Login.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
 #ifdef RTCONFIG_CAPTCHA
 	{ "captcha.gif", "image/gif", no_cache_IE7, NULL, do_captcha_file, NULL },
@@ -22095,6 +22364,9 @@ struct mime_handler mime_handlers[] = {
 	{ "upgrade.cgi*", "text/html", no_cache_IE7, do_upgrade_post, do_upgrade_cgi, do_auth},
 	{ "upload.cgi*", "text/html", no_cache_IE7, do_upload_post, do_upload_cgi, do_auth },
 	{ "set_ASUS_EULA.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_ASUS_EULA_cgi, do_auth },
+	{ "set_ASUS_NEW_EULA.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_ASUS_NEW_EULA_cgi, do_auth },
+	{ "set_ASUS_privacy_policy.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_ASUS_privacy_policy_cgi, do_auth },
+	{ "get_ASUS_privacy_policy.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_ASUS_privacy_policy_cgi, do_auth },
 	{ "set_TM_EULA.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_TM_EULA_cgi, do_auth },
 #if defined(RTCONFIG_BWDPI)
 	{ "wrs_wbl.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_wrs_wbl_cgi, do_auth },
@@ -22105,6 +22377,9 @@ struct mime_handler mime_handlers[] = {
 #ifdef RTCONFIG_HTTPS
 	{ "upload_cert_key.cgi*", "text/html", no_cache_IE7, do_upload_cert_key, do_upload_cert_key_cgi, do_auth },
 #endif
+	/* No auth, allow user to download root certificate in HTTP to HTTPS redirection page of AA sku. */
+	{ "cert.crt", "application/x-x509-ca-cert", no_cache_IE7, NULL, do_download_cacert_cgi, NULL },
+
 	{ "cert_key.tar", "application/x-tar", NULL, do_html_post_and_get, do_download_cert_key_cgi, do_auth },
 	{ "cert.tar", "application/x-tar", NULL, do_html_post_and_get, do_download_cert_cgi, do_auth },
 #if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA) || defined(RTCONFIG_GOOGLE_ASST)
@@ -22257,6 +22532,13 @@ struct mime_handler mime_handlers[] = {
 	{ "get_usericon_md5.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_get_usericon_md5_cgi, do_auth },
 #endif
 	{ "chpass.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_chpass_cgi, do_auth },
+#ifdef RTCONFIG_SOFTWIRE46
+	{ "s46reset.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_s46reset_cgi, do_auth },
+#endif
+#if defined(RTCONFIG_ASD) || defined(RTCONFIG_AHS)
+	{ "set_security_update.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_security_update_cgi, do_auth },
+	{ "get_security_update.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_security_update_cgi, do_auth },
+#endif
 	{ NULL, NULL, NULL, NULL, NULL, NULL }
 };
 
@@ -25155,12 +25437,22 @@ int ej_UI_rs_status(int eid, webs_t wp, int argc, char **argv){
 
 #endif
 
-#define WEBDEVINFO_VER 3 //log ej_webdavInfo
+#define WEBDEVINFO_VER 5 //log ej_webdavInfo
 /* lv2: add nvram odmpid, productid, extendno info */
 /* lv3: add nvram w_Setting */
+/* lv4: app_mnt / mtlancfg / BUSINESS info */
 int ej_webdavInfo(int eid, webs_t wp, int argc, char **argv) {
 
-	char ssid[32];
+	int mtlancfg_flag = 0, BUSINESS_flag = 0;
+	char ssid[32] = {0};
+
+#ifdef RTCONFIG_MULTILAN_CFG
+	mtlancfg_flag = 1;
+#endif
+#ifdef RTCONFIG_BUSINESS
+	BUSINESS_flag = 1;
+#endif
+
 	get_discovery_ssid(ssid, sizeof(ssid));
 	websWrite(wp, "// pktInfo=['PrinterInfo','SSID','NetMask','ProductID','FWVersion','OPMode','MACAddr','Regulation'];\n");
 	websWrite(wp, "pktInfo=['','%s',", ssid);
@@ -25189,7 +25481,7 @@ int ej_webdavInfo(int eid, webs_t wp, int argc, char **argv) {
 #endif
 	websWrite(wp, "];\n");
 
-	websWrite(wp, "// toAPPInfo=['Ver','ExtendCap', label_mac, odmpid, productid, extendno, rtinfo, w_Setting];\n");
+	websWrite(wp, "// toAPPInfo=['Ver','ExtendCap', 'label_mac', 'odmpid', 'productid', 'extendno', 'rtinfo', 'w_Setting', 'app_mnt', 'mtlancfg', 'BUSINESS', 'CoBrand', ''];\n");
 	websWrite(wp, "toAPPInfo=['%d'", WEBDEVINFO_VER);
 	websWrite(wp, ",'%u',", get_extend_cap());
 	websWrite(wp, "'%s',", get_label_mac());
@@ -25198,6 +25490,10 @@ int ej_webdavInfo(int eid, webs_t wp, int argc, char **argv) {
 	websWrite(wp, "'%s',", nvram_safe_get("extendno"));
 	websWrite(wp, "'%d',", get_rtinfo());
 	websWrite(wp, "'%d',", nvram_get_int("w_Setting"));
+	websWrite(wp, "'%d',", nvram_get_int("app_mnt"));
+	websWrite(wp, "'%d',", mtlancfg_flag);
+	websWrite(wp, "'%d',", BUSINESS_flag);
+	websWrite(wp, "'%d',", nvram_get_int("CoBrand"));
 	websWrite(wp, "''];\n");
 
 	return 0;
@@ -25414,7 +25710,7 @@ int ej_qos_packet(int eid, webs_t wp, int argc, char_t **argv)
 	int n;
 	char comma;
 	char *a[1];
-	int ret=0, unit;
+	int ret=0, unit, i=0;
 	char tmp[100], prefix[] = "wanXXXXXXXXXX_";
 	char wan_ifname[16];
 
@@ -25426,8 +25722,19 @@ int ej_qos_packet(int eid, webs_t wp, int argc, char_t **argv)
 	a[0] = "1";
 	asp_ctcount(wp, 1, a);
 
+	char wan_ifname_buf[128] = {0};
+
+	strlcpy(wan_ifname_buf, nvram_safe_get(wan_ifname), sizeof(wan_ifname_buf));
+
+	for (i=0 ; wan_ifname_buf[i] != '\0'; i++){
+		if (isalnum(wan_ifname_buf[i]) == 0 && wan_ifname_buf[i] != '.' && isspace(wan_ifname_buf[i]) == 0){
+			return 0;
+		}
+	}
+
+
 	memset(rates, 0, sizeof(rates));
-	snprintf(s, sizeof(s), "tc -s class ls dev %s", nvram_safe_get(wan_ifname));
+	snprintf(s, sizeof(s), "tc -s class ls dev %s", wan_ifname_buf);
 	if ((f = popen(s, "r")) != NULL) {
 		n = 1;
 		while (fgets(s, sizeof(s), f)) {
@@ -26293,6 +26600,7 @@ ej_bwdpi_status(int eid, webs_t wp, int argc, char_t **argv)
 	}
 	else
 		websWrite(wp, "[]");
+	return 0;
 }
 
 static int
@@ -27978,7 +28286,7 @@ ej_chk_lte_fw(int eid, webs_t wp, int argc, char **argv) {
 static int
 ej_chk_aqr_fw(int eid, webs_t wp, int argc, char **argv)
 {
-#if defined(RTCONFIG_SPF11_1_QSDK) || defined(RTCONFIG_SPF11_3_QSDK) || defined(RTCONFIG_SPF11_4_QSDK)
+#if defined(RTCONFIG_SPF11_1_QSDK) || defined(RTCONFIG_SPF11_3_QSDK) || defined(RTCONFIG_SPF11_4_QSDK) || defined(RTCONFIG_SPF11_5_QSDK)
 	/* *.cld in aq-fw-download don't have version string, define version number manually. */
 	const char *aqr107_fw_ver = "3.7.B";		/* AQR107, AQR-G2_v3.7.B-AQR_Asus_GT-AX6000-prov1_TXDis_ID44757_VER12795.cld */
 	const char *aqr113_fw_ver = "5.4.A";		/* AQR113/113C, AQR-G4_v5.4.B-AQR_Asus_RT-AX89X_TXDis_ID44751_VER11505.cld */
@@ -28863,7 +29171,7 @@ ej_get_cfg_clientlist(int eid, webs_t wp, int argc, char **argv){
 	char ip_buf[16] = {0};
 	char alias_buf[33] = {0};
 	char rmac_buf[32] = {0};
-	char ap2g_buf[32], ap5g_buf[32], ap5g1_buf[32], apdwb_buf[32], ap6g_buf[32];
+	char ap2g_buf[32], ap5g_buf[32], ap5g1_buf[32], apdwb_buf[32], ap6g_buf[32], ap6g1_buf[32];
 	char pap2g_buf[32], pap5g_buf[32], pap6g_buf[32];
 	char rssi2g_buf[8], rssi5g_buf[8], rssi6g_buf[8];
 	char model_name_buf[33] = {0}, product_id_buf[33] = {0}, frs_model_name_buf[33] = {0};
@@ -28888,9 +29196,9 @@ ej_get_cfg_clientlist(int eid, webs_t wp, int argc, char **argv){
 	char sta2g_buf[32], sta5g_buf[32], sta6g_buf[32];
 	char capability_file_name[64] = {0};
 	char capability_buf[4096] = {0};
-	char ap2g_ssid_buf[33], ap5g_ssid_buf[33], ap5g1_ssid_buf[33], ap6g_ssid_buf[33];
+	char ap2g_ssid_buf[33], ap5g_ssid_buf[33], ap5g1_ssid_buf[33], ap6g_ssid_buf[33], ap6g1_ssid_buf[33];
 	char pap2g_ssid_buf[33], pap5g_ssid_buf[33], pap6g_ssid_buf[33];
-	char ap2g_ssid_conv_buf[65], ap5g_ssid_conv_buf[65], ap5g1_ssid_conv_buf[65], ap6g_ssid_conv_buf[65];
+	char ap2g_ssid_conv_buf[65], ap5g_ssid_conv_buf[65], ap5g1_ssid_conv_buf[65], ap6g_ssid_conv_buf[65], ap6g1_ssid_conv_buf[65];
 	char pap2g_ssid_conv_buf[65], pap5g_ssid_conv_buf[65], pap6g_ssid_conv_buf[65];
 	char word[256], *next = NULL, prefix[16], tmp[64];
 	int unit = 0, bandNum = 0;
@@ -28898,11 +29206,11 @@ ej_get_cfg_clientlist(int eid, webs_t wp, int argc, char **argv){
 	char tcode_buf[16] = {0};
 	int nband = 0;
 	char misc_info_buf[256] = {0};
-	char ap2g_fh_buf[32], ap5g_fh_buf[32], ap5g1_fh_buf[32], ap6g_fh_buf[32];
-	char ap2g_ssid_fh_buf[33], ap5g_ssid_fh_buf[33], ap5g1_ssid_fh_buf[33], ap6g_ssid_fh_buf[33];
-	char ap2g_ssid_fh_conv_buf[65], ap5g_ssid_fh_conv_buf[65], ap5g1_ssid_fh_conv_buf[65], ap6g_ssid_fh_conv_buf[65];
+	char ap2g_fh_buf[32], ap5g_fh_buf[32], ap5g1_fh_buf[32], ap6g_fh_buf[32], ap6g1_fh_buf[32];
+	char ap2g_ssid_fh_buf[33], ap5g_ssid_fh_buf[33], ap5g1_ssid_fh_buf[33], ap6g_ssid_fh_buf[33], ap6g1_ssid_fh_buf[33];
+	char ap2g_ssid_fh_conv_buf[65], ap5g_ssid_fh_conv_buf[65], ap5g1_ssid_fh_conv_buf[65], ap6g_ssid_fh_conv_buf[65], ap6g1_ssid_fh_conv_buf[65];
 	char custom_clientlist[65535] = {0}, icon_model_name_buf[33] = {0};
-	int num5g = 0;
+	int num5g = 0, num6g = 0;
 	char band_info_buf[256] = {0};
 
 	lock = file_lock(CFG_FILE_LOCK);
@@ -28936,6 +29244,7 @@ ej_get_cfg_clientlist(int eid, webs_t wp, int argc, char **argv){
 		memset(ap5g1_buf, 0, sizeof(ap5g1_buf));
 		memset(apdwb_buf, 0, sizeof(apdwb_buf));
 		memset(ap6g_buf, 0, sizeof(ap6g_buf));
+		memset(ap6g1_buf, 0, sizeof(ap6g1_buf));
 		memset(pap2g_buf, 0, sizeof(pap2g_buf));
 		memset(pap5g_buf, 0, sizeof(pap5g_buf));
 		memset(pap6g_buf, 0, sizeof(pap6g_buf));
@@ -28951,6 +29260,7 @@ ej_get_cfg_clientlist(int eid, webs_t wp, int argc, char **argv){
 		memset(ap5g_ssid_buf, 0, sizeof(ap5g_ssid_buf));
 		memset(ap5g1_ssid_buf, 0, sizeof(ap5g1_ssid_buf));
 		memset(ap6g_ssid_buf, 0, sizeof(ap6g_ssid_buf));
+		memset(ap6g1_ssid_buf, 0, sizeof(ap6g1_ssid_buf));
 		memset(pap2g_ssid_buf, 0, sizeof(pap2g_ssid_buf));
 		memset(pap5g_ssid_buf, 0, sizeof(pap5g_ssid_buf));
 		memset(pap6g_ssid_buf, 0, sizeof(pap6g_ssid_buf));
@@ -28958,6 +29268,7 @@ ej_get_cfg_clientlist(int eid, webs_t wp, int argc, char **argv){
 		memset(ap5g_ssid_conv_buf, 0, sizeof(ap5g_ssid_conv_buf));
 		memset(ap5g1_ssid_conv_buf, 0, sizeof(ap5g1_ssid_conv_buf));
 		memset(ap6g_ssid_conv_buf, 0, sizeof(ap6g_ssid_conv_buf));
+		memset(ap6g1_ssid_conv_buf, 0, sizeof(ap6g1_ssid_conv_buf));
 		memset(pap2g_ssid_conv_buf, 0, sizeof(pap2g_ssid_conv_buf));
 		memset(pap5g_ssid_conv_buf, 0, sizeof(pap5g_ssid_conv_buf));
 		memset(pap6g_ssid_conv_buf, 0, sizeof(pap6g_ssid_conv_buf));
@@ -28965,19 +29276,22 @@ ej_get_cfg_clientlist(int eid, webs_t wp, int argc, char **argv){
 		memset(ap5g_fh_buf, 0, sizeof(ap5g_fh_buf));
 		memset(ap5g1_fh_buf, 0, sizeof(ap5g1_fh_buf));
 		memset(ap6g_fh_buf, 0, sizeof(ap6g_fh_buf));
+		memset(ap6g1_fh_buf, 0, sizeof(ap6g1_fh_buf));
 		memset(ap2g_ssid_fh_buf, 0, sizeof(ap2g_ssid_fh_buf));
 		memset(ap5g_ssid_fh_buf, 0, sizeof(ap5g_ssid_fh_buf));
 		memset(ap5g1_ssid_fh_buf, 0, sizeof(ap5g1_ssid_fh_buf));
 		memset(ap6g_ssid_fh_buf, 0, sizeof(ap6g_ssid_fh_buf));
+		memset(ap6g1_ssid_fh_buf, 0, sizeof(ap6g1_ssid_fh_buf));
 		memset(ap2g_ssid_fh_conv_buf, 0, sizeof(ap2g_ssid_fh_conv_buf));
 		memset(ap5g_ssid_fh_conv_buf, 0, sizeof(ap5g_ssid_fh_conv_buf));
 		memset(ap5g1_ssid_fh_conv_buf, 0, sizeof(ap5g1_ssid_fh_conv_buf));
 		memset(ap6g_ssid_fh_conv_buf, 0, sizeof(ap6g_ssid_fh_conv_buf));
+		memset(ap6g1_ssid_fh_conv_buf, 0, sizeof(ap6g1_ssid_fh_conv_buf));
 
 		if (i == 0) { /* master */
 			strlcpy(alias_buf, nvram_safe_get("cfg_alias"), sizeof(alias_buf));
 
-			/* get ssid of 2g & 5g & 5g1 & 6g */
+			/* get ssid of 2g & 5g & 5g1 & 6g & 6g1*/
 			unit = 0;
 			foreach (word, nvram_safe_get("wl_ifnames"), next) {
 				SKIP_ABSENT_BAND_AND_INC_UNIT(unit);
@@ -29008,10 +29322,20 @@ ej_get_cfg_clientlist(int eid, webs_t wp, int argc, char **argv){
 				}
 				else if (nband == 4)
 				{
-					strlcpy(ap6g_ssid_buf, nvram_safe_get(strlcat_r(prefix, "ssid", tmp, sizeof(tmp))),
-						sizeof(ap6g_ssid_buf));
-					strlcpy(ap6g_ssid_fh_buf, get_fh_ap_ssid_by_unit(unit),
-						sizeof(ap6g_ssid_fh_buf));
+					num6g++;
+					if (num6g == 1) {
+						strlcpy(ap6g_ssid_buf, nvram_safe_get(strlcat_r(prefix, "ssid", tmp, sizeof(tmp))),
+							sizeof(ap6g_ssid_buf));
+						strlcpy(ap6g_ssid_fh_buf, get_fh_ap_ssid_by_unit(unit),
+							sizeof(ap6g_ssid_fh_buf));
+					}
+					else if (num6g == 2)
+					{
+						strlcpy(ap6g1_ssid_buf, nvram_safe_get(strlcat_r(prefix, "ssid", tmp, sizeof(tmp))),
+							sizeof(ap6g1_ssid_buf));
+						strlcpy(ap6g1_ssid_fh_buf, get_fh_ap_ssid_by_unit(unit),
+							sizeof(ap6g1_ssid_fh_buf));
+					}
 				}
 				unit++;
 			}
@@ -29023,22 +29347,26 @@ ej_get_cfg_clientlist(int eid, webs_t wp, int argc, char **argv){
 			strlcpy(ap5g_ssid_buf, p_client_tbl->ap5g_ssid[i], sizeof(ap5g_ssid_buf));
 			strlcpy(ap5g1_ssid_buf, p_client_tbl->ap5g1_ssid[i], sizeof(ap5g1_ssid_buf));
 			strlcpy(ap6g_ssid_buf, p_client_tbl->ap6g_ssid[i], sizeof(ap6g_ssid_buf));
+			strlcpy(ap6g1_ssid_buf, p_client_tbl->ap6g1_ssid[i], sizeof(ap6g1_ssid_buf));
 			/* for fronthaul */
 			strlcpy(ap2g_ssid_fh_buf, p_client_tbl->ap2g_ssid_fh[i], sizeof(ap2g_ssid_fh_buf));
 			strlcpy(ap5g_ssid_fh_buf, p_client_tbl->ap5g_ssid_fh[i], sizeof(ap5g_ssid_fh_buf));
 			strlcpy(ap5g1_ssid_fh_buf, p_client_tbl->ap5g1_ssid_fh[i], sizeof(ap5g1_ssid_fh_buf));
 			strlcpy(ap6g_ssid_fh_buf, p_client_tbl->ap6g_ssid_fh[i], sizeof(ap6g_ssid_fh_buf));
+			strlcpy(ap6g1_ssid_fh_buf, p_client_tbl->ap6g1_ssid_fh[i], sizeof(ap6g1_ssid_fh_buf));
 		}
 		escape_json_char(alias_buf, alias_conv_buf, 0);
 		escape_json_char(ap2g_ssid_buf, ap2g_ssid_conv_buf, 0);
 		escape_json_char(ap5g_ssid_buf, ap5g_ssid_conv_buf, 0);
 		escape_json_char(ap5g1_ssid_buf, ap5g1_ssid_conv_buf, 0);
 		escape_json_char(ap6g_ssid_buf, ap6g_ssid_conv_buf, 0);
+		escape_json_char(ap6g1_ssid_buf, ap6g1_ssid_conv_buf, 0);
 		/* for fronthaul */
 		escape_json_char(ap2g_ssid_fh_buf, ap2g_ssid_fh_conv_buf, 0);
 		escape_json_char(ap5g_ssid_fh_buf, ap5g_ssid_fh_conv_buf, 0);
 		escape_json_char(ap5g1_ssid_fh_buf, ap5g1_ssid_fh_conv_buf, 0);
 		escape_json_char(ap6g_ssid_fh_buf, ap6g_ssid_fh_conv_buf, 0);
+		escape_json_char(ap6g1_ssid_fh_buf, ap6g1_ssid_fh_conv_buf, 0);
 
 		snprintf(ip_buf, sizeof(ip_buf), "%d.%d.%d.%d", p_client_tbl->ipAddr[i][0], p_client_tbl->ipAddr[i][1],
 			p_client_tbl->ipAddr[i][2], p_client_tbl->ipAddr[i][3]);
@@ -29134,6 +29462,11 @@ ej_get_cfg_clientlist(int eid, webs_t wp, int argc, char **argv){
 			p_client_tbl->ap6g[i][0], p_client_tbl->ap6g[i][1],
 			p_client_tbl->ap6g[i][2], p_client_tbl->ap6g[i][3],
 			p_client_tbl->ap6g[i][4], p_client_tbl->ap6g[i][5]);
+
+		snprintf(ap6g1_buf, sizeof(ap6g1_buf), "%02X:%02X:%02X:%02X:%02X:%02X",
+			p_client_tbl->ap6g1[i][0], p_client_tbl->ap6g1[i][1],
+			p_client_tbl->ap6g1[i][2], p_client_tbl->ap6g1[i][3],
+			p_client_tbl->ap6g1[i][4], p_client_tbl->ap6g1[i][5]);
 
 		snprintf(sta2g_buf, sizeof(sta2g_buf), "%02X:%02X:%02X:%02X:%02X:%02X",
 			p_client_tbl->sta2g[i][0], p_client_tbl->sta2g[i][1],
@@ -29256,6 +29589,11 @@ ej_get_cfg_clientlist(int eid, webs_t wp, int argc, char **argv){
 			p_client_tbl->ap6g_fh[i][2], p_client_tbl->ap6g_fh[i][3],
 			p_client_tbl->ap6g_fh[i][4], p_client_tbl->ap6g_fh[i][5]);
 
+		snprintf(ap6g1_fh_buf, sizeof(ap6g1_fh_buf), "%02X:%02X:%02X:%02X:%02X:%02X",
+			p_client_tbl->ap6g1_fh[i][0], p_client_tbl->ap6g1_fh[i][1],
+			p_client_tbl->ap6g1_fh[i][2], p_client_tbl->ap6g1_fh[i][3],
+			p_client_tbl->ap6g1_fh[i][4], p_client_tbl->ap6g1_fh[i][5]);
+
 		if(first_info == 1){
 			first_info = 0;
 		}else{
@@ -29305,6 +29643,7 @@ ej_get_cfg_clientlist(int eid, webs_t wp, int argc, char **argv){
 		websWrite(wp, "\"ap5g1\":\"%s\",", strcmp(ap5g1_buf, "00:00:00:00:00:00") ? ap5g1_buf : "");
 		websWrite(wp, "\"apdwb\":\"%s\",", strcmp(apdwb_buf, "00:00:00:00:00:00") ? apdwb_buf : "");
 		websWrite(wp, "\"ap6g\":\"%s\",", strcmp(ap6g_buf, "00:00:00:00:00:00") ? ap6g_buf : "");
+		websWrite(wp, "\"ap6g1\":\"%s\",", strcmp(ap6g1_buf, "00:00:00:00:00:00") ? ap6g1_buf : "");
 		websWrite(wp, "\"wired_mac\":%s,", strlen(macList) ? macList : "[]");
 		websWrite(wp, "\"pap2g\":\"%s\",", strlen(pap2g_buf) ? pap2g_buf : "");
 		websWrite(wp, "\"rssi2g\":\"%s\",", strlen(rssi2g_buf) ? rssi2g_buf : "");
@@ -29323,6 +29662,7 @@ ej_get_cfg_clientlist(int eid, webs_t wp, int argc, char **argv){
 		websWrite(wp, "\"ap5g_ssid\":\"%s\",", strlen(ap5g_ssid_conv_buf) ? ap5g_ssid_conv_buf : "");
 		websWrite(wp, "\"ap5g1_ssid\":\"%s\",", strlen(ap5g1_ssid_conv_buf) ? ap5g1_ssid_conv_buf : "");
 		websWrite(wp, "\"ap6g_ssid\":\"%s\",", strlen(ap6g_ssid_conv_buf) ? ap6g_ssid_conv_buf : "");
+		websWrite(wp, "\"ap6g1_ssid\":\"%s\",", strlen(ap6g1_ssid_conv_buf) ? ap6g1_ssid_conv_buf : "");
 		websWrite(wp, "\"pap2g_ssid\":\"%s\",", strlen(pap2g_ssid_conv_buf) ? pap2g_ssid_conv_buf : "");
 		websWrite(wp, "\"pap5g_ssid\":\"%s\",", strlen(pap5g_ssid_conv_buf) ? pap5g_ssid_conv_buf : "");
 		websWrite(wp, "\"pap6g_ssid\":\"%s\",", strlen(pap6g_ssid_conv_buf) ? pap6g_ssid_conv_buf : "");
@@ -29335,10 +29675,12 @@ ej_get_cfg_clientlist(int eid, webs_t wp, int argc, char **argv){
 		websWrite(wp, "\"ap5g_fh\":\"%s\",", strcmp(ap5g_fh_buf, "00:00:00:00:00:00") ? ap5g_fh_buf : "");
 		websWrite(wp, "\"ap5g1_fh\":\"%s\",", strcmp(ap5g1_fh_buf, "00:00:00:00:00:00") ? ap5g1_fh_buf : "");
 		websWrite(wp, "\"ap6g_fh\":\"%s\",", strcmp(ap6g_fh_buf, "00:00:00:00:00:00") ? ap6g_fh_buf : "");
+		websWrite(wp, "\"ap6g1_fh\":\"%s\",", strcmp(ap6g1_fh_buf, "00:00:00:00:00:00") ? ap6g1_fh_buf : "");
 		websWrite(wp, "\"ap2g_ssid_fh\":\"%s\",", strlen(ap2g_ssid_fh_conv_buf) ? ap2g_ssid_fh_conv_buf : "");
 		websWrite(wp, "\"ap5g_ssid_fh\":\"%s\",", strlen(ap5g_ssid_fh_conv_buf) ? ap5g_ssid_fh_conv_buf : "");
 		websWrite(wp, "\"ap5g1_ssid_fh\":\"%s\",", strlen(ap5g1_ssid_fh_conv_buf) ? ap5g1_ssid_fh_conv_buf : "");
 		websWrite(wp, "\"ap6g_ssid_fh\":\"%s\",", strlen(ap6g_ssid_fh_conv_buf) ? ap6g_ssid_fh_conv_buf : "");
+		websWrite(wp, "\"ap6g1_ssid_fh\":\"%s\",", strlen(ap6g1_ssid_fh_conv_buf) ? ap6g1_ssid_fh_conv_buf : "");
 		websWrite(wp, "\"band_info\":%s", strlen(band_info_buf) ? band_info_buf : "{}");
 		websWrite(wp, "}");
 	}
@@ -30360,10 +30702,15 @@ static char* _get_common_name(const char *src, char *dst, size_t len)
 	}
 
 	strlcpy(dst, cp+3, len);
-
-	if((cp = strchr(dst, '/')) != NULL)
-	{
-		*cp = '\0';
+	while ((cp = strchr(dst, '/')) != NULL) {
+		if (!strncmp(cp, "/CN=", 4)) {
+			/* cascade value of all CN RDNs */
+			*cp = '\0';
+			strlcat(dst, ", ", len);
+			memmove(cp + 2, cp + 4, strlen(cp + 4) + 1);
+		} else {
+			*cp = '\0';
+		}
 	}
 
 	return dst;
@@ -30408,39 +30755,43 @@ static void ASN1_TimeToTM(ASN1_TIME* time, struct tm *t)
 static int
 ej_httpd_cert_info(int eid, webs_t wp, int argc, char **argv)
 {
+	int ret = 0, done = 0;
 	FILE *fp;
-	X509 *x509data = NULL;
-	char buf[256] = {0};
-	char issuer[64] = {0};
-	char subject[64] = {0};
-	char notBefore[64] = {0};
-	char notAfter[64] = {0};
-	struct tm tm;
-	char cert_path[128] = {0};
-#ifdef RTCONFIG_LETSENCRYPT
-	int le_enable = nvram_get_int("le_enable");
-	int http_enable = nvram_get_int("http_enable");
+	X509 *x509data = NULL, *CAx509data = NULL;
+	char buf[256] = {0}, CAbuf[256] = "";
+	char issuer[64] = {0}, CAissuer[64] = "";
+	char subject[64] = {0}, CAsubject[64] = "";
+	char notBefore[64] = {0}, CAnotBefore[64] = "";
+	char notAfter[64] = {0}, CAnotAfter[64] = "";
+	struct tm tm, CAtm;
+	char cert_path[128] = {0}, *CA_cert_path = HTTPD_ROOTCA_CERT;
 
-	if(http_enable == 0)	//http only
-	{
-		if(le_enable == 1)
-			get_path_le_domain_cert(cert_path, sizeof(cert_path));
-		else if(le_enable == 2)
-			snprintf(cert_path, sizeof(cert_path), "%s", UPLOAD_CERT);
-		else
-			snprintf(cert_path, sizeof(cert_path), "%s", HTTPD_CERT);
-	}
-	else //enable https, show current certificate content
+#if defined(RTCONFIG_LETSENCRYPT)
+	int le_enable = nvram_get_int("le_enable");
+
+	if (le_enable == 1) {
+		/* Let's encrypt */
+		get_path_le_domain_cert(cert_path, sizeof(cert_path));
+	} else if (le_enable == 2) {
+		/* uploaded cert. */
+		if (f_exists(UPLOAD_CACERT) && f_exists(UPLOAD_CAKEY)) {
+			CA_cert_path = UPLOAD_CACERT;
+			strlcpy(cert_path, UPLOAD_GEN_CERT, sizeof(cert_path));
+		} else if (f_exists(UPLOAD_CERT) && f_exists(UPLOAD_KEY)) {
+			CA_cert_path = NULL;
+			strlcpy(cert_path, UPLOAD_CERT, sizeof(cert_path));
+		}
+	} else
 #endif
 	{
-		snprintf(cert_path, sizeof(cert_path), "%s", HTTPD_CERT);
+		CA_cert_path = HTTPD_ROOTCA_GEN_CERT;
+		snprintf(cert_path, sizeof(cert_path), "%s", HTTPD_GEN_CERT);
 	}
 
 	fp = fopen(cert_path, "r");
-
 	if (fp == NULL){
-		websWrite(wp, "{\"issueTo\":\"\",\"issueBy\":\"\",\"from\":\"\",\"expire\":\"\"}");
-		return FALSE;
+		ret = -1;
+		goto err_ej_httpd_cert_info;
 	}
 	if(!PEM_read_X509(fp, &x509data, NULL, NULL))
 	{
@@ -30449,15 +30800,31 @@ ej_httpd_cert_info(int eid, webs_t wp, int argc, char **argv)
 	}
 	fclose(fp);
 	if(x509data == NULL){
-		websWrite(wp, "{\"issueTo\":\"\",\"issueBy\":\"\",\"from\":\"\",\"expire\":\"\"}");
-		return FALSE;
+		ret = -2;
+		goto err_ej_httpd_cert_info;
+	}
+	if (CA_cert_path != NULL) {
+		if (!(fp = fopen(CA_cert_path, "r"))) {
+			ret = -3;
+			goto err_ej_httpd_cert_info;
+		}
+		if (!PEM_read_X509(fp, &CAx509data, NULL, NULL)) {
+			fseek(fp, 0, SEEK_SET);
+			d2i_X509_fp(fp, &CAx509data);
+		}
+		fclose(fp);
+		if (CAx509data == NULL) {
+			ret = -4;
+			goto err_ej_httpd_cert_info;
+		}
 	}
 
+	/* server certificate: auto-generated/uploaded/signed by Let's encrypt */
 	X509_NAME_oneline(X509_get_issuer_name(x509data), buf, sizeof(buf));
 	if (strstr(buf, "Let's Encrypt")) {
 		snprintf(issuer, sizeof(issuer), "Let's Encrypt");
 	} else {
-	_get_common_name(buf, issuer, sizeof(issuer));
+		_get_common_name(buf, issuer, sizeof(issuer));
 	}
 	X509_NAME_oneline(X509_get_subject_name(x509data), buf, sizeof(buf));
 	_get_common_name(buf, subject, sizeof(subject));
@@ -30466,64 +30833,45 @@ ej_httpd_cert_info(int eid, webs_t wp, int argc, char **argv)
 	ASN1_TimeToTM(X509_getm_notAfter(x509data), &tm);
 	snprintf(notAfter, sizeof(notAfter), "%d/%d/%d", tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday);
 
+	/* root/intermediate certificate: auto-generated/upload, shouldn't be if Let's encrypt is chosen. */
+	if (CA_cert_path != NULL) {
+		X509_NAME_oneline(X509_get_issuer_name(CAx509data), CAbuf, sizeof(CAbuf));
+		_get_common_name(CAbuf, CAissuer, sizeof(CAissuer));
+		X509_NAME_oneline(X509_get_subject_name(CAx509data), CAbuf, sizeof(CAbuf));
+		_get_common_name(CAbuf, CAsubject, sizeof(CAsubject));
+		ASN1_TimeToTM(X509_getm_notBefore(CAx509data), &CAtm);
+		snprintf(CAnotBefore, sizeof(CAnotBefore), "%d/%d/%d",
+			CAtm.tm_year + 1900, CAtm.tm_mon + 1, CAtm.tm_mday);
+		ASN1_TimeToTM(X509_getm_notAfter(CAx509data), &CAtm);
+		snprintf(CAnotAfter, sizeof(CAnotAfter), "%d/%d/%d",
+			CAtm.tm_year + 1900, CAtm.tm_mon + 1, CAtm.tm_mday);
+	}
+
 	websWrite(wp, "{");
+	websWrite(wp, "\"CAissueTo\":\"%s\",", CAsubject);
+	websWrite(wp, "\"CAissueBy\":\"%s\",", CAissuer);
+	websWrite(wp, "\"CAfrom\":\"%s\",", CAnotBefore);
+	websWrite(wp, "\"CAexpire\":\"%s\",", CAnotAfter);
 	websWrite(wp, "\"issueTo\":\"%s\",", subject);
-
-	websWrite(wp, "\"SAN\":\"");
-
-// Dump SANs
-	GENERAL_NAMES* names = NULL;
-	unsigned char* utf8 = NULL;
-
-	do
-	{
-		names = X509_get_ext_d2i(x509data, NID_subject_alt_name, 0, 0 );
-		if(!names) break;
-
-		int i = 0, count = sk_GENERAL_NAME_num(names);
-		if(!count) break; /* failed */
-
-		for( i = 0; i < count; ++i )
-		{
-			GENERAL_NAME* entry = sk_GENERAL_NAME_value(names, i);
-			if(!entry) continue;
-
-			if(GEN_DNS == entry->type)
-			{
-				int len1 = 0, len2 = -1;
-
-				len1 = ASN1_STRING_to_UTF8(&utf8, entry->d.dNSName);
-				if(utf8) {
-					len2 = (int)strlen((const char*)utf8);
-				}
-
-				if(utf8 && len1 && len2 && (len1 == len2)) {
-					websWrite(wp, "%s ", utf8);
-				}
-
-				if(utf8) {
-					OPENSSL_free(utf8), utf8 = NULL;
-				}
-
-			}
-		}
-	} while (0);
-
-	if(names)
-		GENERAL_NAMES_free(names);
-
-	if(utf8)
-		OPENSSL_free(utf8);
-
-	websWrite(wp, "\",");
-
 	websWrite(wp, "\"issueBy\":\"%s\",", issuer);
 	websWrite(wp, "\"from\":\"%s\",", notBefore);
 	websWrite(wp, "\"expire\":\"%s\"", notAfter);
 	websWrite(wp, "}");
+	done = 1;
+	ret = 0;
+
+err_ej_httpd_cert_info:
+	if (!done) {
+		websWrite(wp, "{\"CAissueTo\":\"\",\"CAissueBy\":\"\",\"CAfrom\":\"\",\"CAexpire\":\"\",\"issueTo\":\"\",\"issueBy\":\"\",\"from\":\"\",\"expire\":\"\"}");
+		//dbg("%s: Empty cert info, ret = [%d]!\n", __func__, ret);
+		ret = FALSE;
+	}
+
 	if(x509data)
 		X509_free(x509data);
-	return 0;
+	if(CAx509data)
+		X509_free(CAx509data);
+	return ret;
 }
 #endif
 

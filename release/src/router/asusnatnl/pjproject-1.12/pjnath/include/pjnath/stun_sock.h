@@ -218,6 +218,11 @@ typedef struct pj_stun_sock_info
      */
     pj_status_t	    last_status;
 
+    /**
+     * stun server domain name
+     */
+    char	    srv_name[128];
+
 } pj_stun_sock_info;
 
 

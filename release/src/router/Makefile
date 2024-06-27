@@ -892,11 +892,7 @@ IPTC_LIBS := -lip4tc $(if $(RTCONFIG_IPV6),-lip6tc,) -liptc
 obj-y += iptables-1.4.x
 ifeq ($(HND_ROUTER),y)
 ifeq ($(or $(HND_ROUTER_AX_6756),$(HND_ROUTER_BE_4916)),y)
-ifeq ($(BRCM_CHIP),$(filter $(BRCM_CHIP),4912))
-obj-y += iproute2-4.19.0
-else
 obj-y += iproute2-5.7.0
-endif
 else
 obj-y += iproute2-4.3
 endif
@@ -968,7 +964,13 @@ obj-$(RTCONFIG_AHS) += curl
 obj-$(RTCONFIG_AHS) += json-c
 obj-$(RTCONFIG_AHS) += ahs
 
-obj-$(RTCONFIG_ASD) += asd
+ifeq ($(RTCONFIG_ASD_2_1),y)
+obj-y += asd2.1
+obj-y += onig-6.9.9
+obj-y += jq-1.7.1
+else ifeq ($(RTCONFIG_ASD),y)
+obj-y += asd
+endif
 
 obj-$(RTCONFIG_OPENVPN) += libovpn
 
@@ -1544,6 +1546,7 @@ endif
 obj-$(RTCONFIG_TCPDUMP) += openssl-1.0
 obj-$(RTCONFIG_TCPDUMP) += libpcap
 obj-$(RTCONFIG_TCPDUMP) += tcpdump-4.4.0
+obj-$(RTCONFIG_TCPREPLAY) += libpcap-1.9.1 tcpreplay
 obj-$(RTCONFIG_DUMP4000) += libpcap
 obj-$(RTCONFIG_DUMP4000) += tcpdump-4.4.0
 obj-$(RTCONFIG_TRACEROUTE) += traceroute-2.1.0
@@ -3092,7 +3095,12 @@ ifeq ($(HND_ROUTER),y)
 	mkdir -p $(BCM_FSBUILD_DIR)/public/include/openssl
 	cp -u $(OPENSSL)/include/openssl/* $(BCM_FSBUILD_DIR)/public/include/openssl
 endif
-	install -D -m 0500 httpd/gencert.sh $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/gencert.sh
+	install -D -m 0700 httpd/gencert.sh $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/gencert.sh
+ifeq ($(RTCONFIG_ECC256),y)
+	sed -i -e "s,^ECC256=0,ECC256=1," $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/gencert.sh
+endif
+	sed -i -e "s,^[ 	]*#[^!]*$$,," $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/gencert.sh
+	sed -i '/^$$/d' $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/gencert.sh
 endif
 
 openssl-stage:
@@ -3113,6 +3121,7 @@ openssl-1.1/Makefile:
 	-ffunction-sections -fdata-sections -Wl,--gc-sections \
 	shared $(OPENSSL_CIPHERS) no-err no-async --api=1.0.0 \
 	no-aria no-sm2 no-sm3 no-sm4 \
+	--with-rand-seed=devrandom \
 	$(if $(filter y,$(RTCONFIG_WTFAST)),-DRTCONFIG_WTFAST,) \
 	$(PRIORITY_CHACHA)
 	@$(MAKE) -C openssl-1.1 depend
@@ -4140,7 +4149,7 @@ ndisc6-install: ndisc6
 #	$(STRIP) $(INSTALLDIR)/ndisc6/usr/sbin/ndisc6
 ifneq ($(RTCONFIG_BCMWL6),y)
 ifneq ($(or $(MUSL32),$(MUSL64)),y)
-	install -D $(shell dirname $(shell which $(CXX)))/../lib/librt.so.0 $(TARGETDIR)/lib/librt.so.0
+	$(if $(wildcard $(shell dirname $(shell which $(CXX)))/../lib/librt.so.0),install -D $(shell dirname $(shell which $(CXX)))/../lib/librt.so.0 $(TARGETDIR)/lib/librt.so.0)
 endif
 endif
 
@@ -4730,7 +4739,7 @@ fprobe-1.1-clean:
 	@$(MAKE) -C fprobe-1.1 clean
 
 libev-4.33/stamp-h1:
-	cd libev-4.33 && $(CONFIGURE) --prefix='' --host=arm-linux
+	cd libev-4.33 && $(CONFIGURE) --prefix='' $(if $(or $(RTCONFIG_QCA),$(RTCONFIG_RALINK)),,--host=arm-linux)
 	touch $@
 
 libev-4.33: libev-4.33/stamp-h1
@@ -4740,7 +4749,7 @@ libev-4.33: libev-4.33/stamp-h1
 libev-4.33-install: libev-4.33
 	@$(SEP)
 	install -D libev-4.33/.libs/libev.so.4.0.0 $(INSTALLDIR)/$</usr/lib/libev.so.4.0.0
-	$(STRIP) $(INSTALLDIR)/$</usr/lib/libev.so.4.0.0
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/$</usr/lib/libev.so.4.0.0)
 	cd $(INSTALLDIR)/$</usr/lib && ln -sf libev.so.4.0.0 libev.so.4
 
 libev-4.33-clean:
@@ -4880,9 +4889,9 @@ lldpd-0.9.8-install: lldpd-0.9.8
 	install -D lldpd-0.9.8/src/client/.libs/lldpcli $(INSTALLDIR)/lldpd-0.9.8/usr/sbin/lldpcli
 	install -D lldpd-0.9.8/src/daemon/lldpd $(INSTALLDIR)/lldpd-0.9.8/usr/sbin/lldpd
 	install -D lldpd-0.9.8/src/lib/.libs/liblldpctl.so.4.8.0 $(INSTALLDIR)/lldpd-0.9.8/usr/lib/liblldpctl.so.4.8.0
-	$(STRIP) $(INSTALLDIR)/lldpd-0.9.8/usr/sbin/lldpcli
-	$(STRIP) $(INSTALLDIR)/lldpd-0.9.8/usr/sbin/lldpd
-	$(STRIP) $(INSTALLDIR)/lldpd-0.9.8/usr/lib/liblldpctl.so.4.8.0
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/lldpd-0.9.8/usr/sbin/lldpcli)
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/lldpd-0.9.8/usr/sbin/lldpd)
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/lldpd-0.9.8/usr/lib/liblldpctl.so.4.8.0)
 	cd $(INSTALLDIR)/lldpd-0.9.8/usr/lib && ln -sf liblldpctl.so.4.8.0 liblldpctl.so && ln -sf liblldpctl.so.4.8.0 liblldpctl.so.4
 
 lldpd-0.9.8-clean:
@@ -5178,7 +5187,7 @@ endif
 
 sqlite/stamp-h1:
 	cd sqlite && autoreconf -i -f && \
-	CC=$(CC) CFLAGS="-O2 $(EXTRACFLAGS) -ffunction-sections -fdata-sections -fPIC" \
+	CC=$(CC) CFLAGS="$(if $(RTCONFIG_DEBUG),-g -Wall,-Os) $(EXTRACFLAGS) -ffunction-sections -fdata-sections -fPIC" \
 		LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections -lpthread -ldl" \
 		$(CONFIGURE) --prefix=/usr --enable-shared --enable-static \
 		--disable-readline --disable-dynamic-extensions --enable-threadsafe \
@@ -5195,10 +5204,10 @@ sqlite-clean:
 sqlite-install: sqlite
 	@$(SEP)
 	install -D sqlite/.libs/libsqlite3.so.0.8.6 $(INSTALLDIR)/sqlite/usr/lib/libsqlite3.so.0.8.6
-	$(STRIP) $(INSTALLDIR)/sqlite/usr/lib/libsqlite3.so.0.8.6
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/sqlite/usr/lib/libsqlite3.so.0.8.6)
 	cd $(INSTALLDIR)/sqlite/usr/lib && ln -sf libsqlite3.so.0.8.6 libsqlite3.so.0 && ln -sf libsqlite3.so.0.8.6 libsqlite3.so
 	install -D sqlite/sqlite3 $(INSTALLDIR)/sqlite/usr/sbin/sqlite3
-	$(STRIP) $(INSTALLDIR)/sqlite/usr/sbin/sqlite3
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/sqlite/usr/sbin/sqlite3)
 
 # sqlite encrpted version
 sqlCipher/stamp-h1:
@@ -5453,10 +5462,52 @@ ifneq ($(MEDIA_SERVER_STATIC),y)
 	$(STRIP) $(INSTALLDIR)/libvorbis/usr/lib/libvorbis.so.0
 endif
 
-minidlna: zlib sqlite ffmpeg libogg flac jpeg libexif libid3tag libvorbis minidlna/Makefile
-	@$(SEP)
-	@cd minidlna && ./genosver.sh
-	$(MAKE) -C minidlna CC=$(CC) $(if $(MEDIA_SERVER_STATIC),STATIC=1) $(if $(RTCONFIG_MEDIASERVER_LIMIT),MS_LIMIT=1) minidlna
+minidlna-clean:
+	cd minidlna; make clean
+
+minidlna/configure:
+	if [ ! -f $@ ] ; then \
+		cd minidlna; autoreconf -fi; \
+	fi
+
+minidlna-configure: minidlna/configure shared/version.h
+	if [ ! -f minidlna/Makefile ] ; then \
+		cd minidlna; \
+		$(CONFIGURE) \
+		--with-log-path=/tmp/minidlna \
+		--with-db-path=/tmp/minidlna \
+		--with-os-name=asuswrt \
+		--with-os-version=$(shell cat shared/version.h | grep RT_SERIALNO | cut -d'"' -f 2) \
+		--with-os-url=http://www.asus.com/ \
+		--enable-tivo --disable-nls \
+		ac_cv_header_stddef_h=no ac_cv_header_stdlib_h=no \
+		$(if $(MSIPK),ac_cv_func_inotify_init=no ac_cv_header_sys_inotify_h=no) \
+		$(if $(MSIPK),$(if $(filter i686,$(PLATFORM)),EXTRACFLAGS="-DLINUX26 -DCONFIG_BCMWL5 -pipe -DBCMWPA2 -funit-at-a-time -Wno-pointer-sign -DLINUX_KERNEL_VERSION=132630 -DMS_IPK -DMS_I686",EXTRACFLAGS="-DLINUX26 -DCONFIG_BCMWL5 -pipe -DBCMWPA2 -funit-at-a-time -Wno-pointer-sign -mtune=mips32 -mips32 -DLINUX_KERNEL_VERSION=132630 -DMS_IPK"),) \
+		CFLAGS="-Wall -g -Os -D_GNU_SOURCE $(EXTRACFLAGS) \
+		-D_FILE_OFFSET_BITS=64 -ffunction-sections -fdata-sections \
+		-I$(TOP)/flac/include -I$(TOP)/sqlite -I$(TOP)/jpeg \
+		-I$(TOP)/libexif -I$(TOP)/libid3tag -I$(TOP)/libogg/include \
+		-I$(TOP)/libvorbis/include \
+		$(if $(MSIPK),-I$(TOP)/ffmpeg-0.5/libavutil -I$(TOP)/ffmpeg-0.5/libavcodec -I$(TOP)/ffmpeg-0.5/libavformat -I$(TOP)/ffmpeg-0.5/libswscale -I$(TOP)/ffmpeg-0.5,-I$(TOP)/ffmpeg) \
+		$(if $(RTCONFIG_BCMARM),-I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T,) \
+		$(if $(MSIPK),,-I$(TOP)/shared $(if $(RTAC68U),-I$(SRCBASE)/include) $(if $(RTN65U),-DRTN56U) $(if $(RTAC66U),-DRTN66U) $(if $(RTCONFIG_MEDIASERVER_LIMIT),-DMS_LIMIT) $(if $(RPAC68U),-DRPAC68U) $(if $(HND_ROUTER_BE_4916),-fcommon))" \
+		LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections \
+		$(if $(MEDIA_SERVER_STATIC),-static,) \
+		-L$(TOP)/zlib -L$(TOP)/sqlite/.libs \
+		$(if $(MEDIA_SERVER_STATIC),-L$(TOP)/jpeg/.libs,-L$(TOP)/jpeg) \
+		-L$(TOP)/libvorbis/lib/.libs -L$(TOP)/libogg/src/.libs \
+		-L$(TOP)/libexif/libexif/.libs -L$(TOP)/flac/src/libFLAC/.libs \
+		$(if $(MEDIA_SERVER_STATIC),-L$(TOP)/APP-IPK/MediaServer-ipk/asusffmpeg_1.0.0.5/opt/lib,-L$(TOP)/ffmpeg/libavutil -L$(TOP)/ffmpeg/libavcodec -L$(TOP)/ffmpeg/libavformat -L$(TOP)/libid3tag/.libs) \
+		$(if $(or $(RTAC68U),$(RTAX82U),$(GTAX6000),$(RTAX82U_V2)),-L$(TOP_PLATFORM)/nvram${BCMEX} -lnvram -L$(TOP)/shared -lshared,)" \
+		LDLIBS="$(if $(MSIPK),-lpthread -lm -lvorbis -logg -lsqlite3 -lexif -ljpeg -lFLAC -lid3tag_ms -lz $(TOP)/libid3tag/.libs/libid3tag_ms.so $(TOP)/APP-IPK/MediaServer-ipk/asusffmpeg_1.0.0.5/opt/lib/libavformat_asus.so $(TOP)/APP-IPK/MediaServer-ipk/asusffmpeg_1.0.0.5/opt/lib/libavcodec_asus.so $(TOP)/APP-IPK/MediaServer-ipk/asusffmpeg_1.0.0.5/opt/lib/libavutil_asus.so $(if $(filter i686,$(PLATFORM)),-lrt),)$(if $(MEDIA_SERVER_STATIC),-lpthread -ldl -lm $(TOP)/libvorbis/lib/.libs/libvorbis.a $(TOP)/libogg/src/.libs/libogg.a $(TOP)/sqlite/.libs/libsqlite3.a $(TOP)/libexif/libexif/.libs/libexif.a $(TOP)/jpeg/libjpeg.a $(TOP)/flac/src/libFLAC/.libs/libFLAC.a $(TOP)/libid3tag/.libs/libid3tag.a $(TOP)/zlib/libz.a $(TOP)/ffmpeg/libavformat/libavformat.a $(TOP)/ffmpeg/libavcodec/libavcodec.a $(TOP)/ffmpeg/libavutil/libavutil.a,-lpthread -ldl -lm -lvorbis -logg -lsqlite3 -lexif -ljpeg -lFLAC -lid3tag -lz -lavformat -lavcodec -lavutil)"; \
+	fi
+
+minidlna: zlib sqlite ffmpeg libogg flac jpeg libexif libid3tag libvorbis minidlna-configure
+	cd minidlna; make
+
+minidlna-install: minidlna
+	install -D minidlna/minidlnad $(INSTALLDIR)/minidlna/usr/sbin/minidlna
+	$(STRIP) $(INSTALLDIR)/minidlna/usr/sbin/minidlna
 
 libgdbm/stamp-h1:
 	cd libgdbm && \
@@ -8218,7 +8269,54 @@ asd-install:
 asd-clean:
 	$(MAKE) -C asd clean
 
+asd2.1: shared $(if $(BCM_502L07P2),ethctl_lib) nvram$(BCMEX)$(EX7) curl openssl libasc
+	$(MAKE) -C $@
 
+asd2.1-install:
+	install -D asd2.1/asd $(INSTALLDIR)/asd2.1/usr/bin/asd
+	install -D asd2.1/libasd.so $(INSTALLDIR)/asd2.1/usr/lib/libasd.so
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/asd2.1/usr/bin/asd)
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/asd2.1/usr/lib/libasd.so)
+
+asd2.1-clean:
+	$(MAKE) -C asd2.1 clean
+
+onig-6.9.8:
+	cd onig-6.9.8 && \
+	autoreconf -i -f && \
+	./configure  --host=arm-linux LD=$(CROSS_COMPILE)ld --prefix=/usr --exec-prefix=/usr --bindir=/usr/bin --sbindir=/usr/sbin --libexecdir=/usr/lib && \
+	make
+
+onig-6.9.9-install:
+	install -D onig-6.9.9/src/.libs/libonig.so.5.4.0 $(INSTALLDIR)/usr/lib/libonig.so.5.4.0
+	$(STRIP) $(INSTALLDIR)/usr/lib/libonig.so.5.4.0
+	cd $(INSTALLDIR)/usr/lib && \
+		ln -sf libonig.so.5.4.0 libonig.so.5 && \
+		ln -sf libonig.so.5.4.0 libonig.so.4 && \
+		ln -sf libonig.so.5.4.0 libonig.so
+
+onig-6.9.9-clean:
+	cd onig-6.9.9 && \
+	make distclean
+
+jq-1.7.1:
+	cd jq-1.7.1 && \
+	autoreconf -i &&\
+	./configure --host=arm-linux --with-oniguruma=$(SRCBASE)/router/onig-6.9.9/src LD=$(CROSS_COMPILE)ld --prefix=/usr && \
+	make
+
+jq-1.7.1-install:
+	install -D  jq-1.7.1/.libs/libjq.so.1.0.4 $(INSTALLDIR)/jq-1.7.1/usr/lib/libjq.so.1.0.4
+	install -D  jq-1.7.1/jq $(INSTALLDIR)/jq-1.7.1/usr/bin/jq
+	$(STRIP) $(INSTALLDIR)/jq-1.7.1/usr/lib/libjq.so.1.0.4
+	$(STRIP) $(INSTALLDIR)/jq-1.7.1/usr/bin/jq
+	cd $(INSTALLDIR)/jq-1.7.1/usr/lib/ && \
+		ln -sf libjq.so.1.0.4 libjq.so.1 && \
+		ln -sf libjq.so.1.0.4 libjq.so
+
+jq-1.7.1-clean:
+	cd jq-1.7.1 && \
+	make distclean
 #
 # tunnel related
 #
@@ -8243,13 +8341,13 @@ asusnatnl-install:
 
 mastiff: shared $(if $(BCM_502L07P2),ethctl_lib) nvram${BCMEX}$(EX7) wb
 	cd aaews && \
-	CC=$(CC) AR=$(AR) RANLIB=$(RANLIB) LD=$(LD) CFLAGS="-Os -Wall $(EXTRACFLAGS)" \
+	CC=$(CC) AR=$(AR) RANLIB=$(RANLIB) LD=$(LD) CFLAGS="$(if $(RTCONFIG_DEBUG),-g,-Os) -Wall $(EXTRACFLAGS)" \
 	$(MAKE) mastiff
 
 mastiff-install:
 	install -d $(INSTALLDIR)/wb/usr/lib/
 	install -D aaews/mastiff $(INSTALLDIR)/wb/usr/sbin/mastiff
-	$(STRIP) -s $(INSTALLDIR)/wb/usr/sbin/mastiff
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) -s $(INSTALLDIR)/wb/usr/sbin/mastiff)
 
 mastiff-clean:
 	cd aaews && make clean
@@ -8273,7 +8371,7 @@ lantiq_cmd-clean:
 #wb: shared $(if $(BCM_502L07P2),ethctl_lib) nvram curl openssl libxml2 asusnatnl
 aaews: wb
 	cd aaews && \
-	CC=$(CC) CXX=$(CXX) AR=$(AR) RANLIB=$(RANLIB) LD=$(LD) CFLAGS="-Os -Wall $(EXTRACFLAGS)" \
+	CC=$(CC) CXX=$(CXX) AR=$(AR) RANLIB=$(RANLIB) LD=$(LD) CFLAGS="$(if $(RTCONFIG_DEBUG),-g,-Os) -Wall $(EXTRACFLAGS)" \
 	make router
 #make static-lib && \
 

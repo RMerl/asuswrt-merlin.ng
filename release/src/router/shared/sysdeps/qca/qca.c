@@ -148,7 +148,8 @@ int get_parameter_from_ini_file(const char *param_name, char *param_val, size_t 
 }
 
 #if defined(RTCONFIG_SPF11_QSDK) || defined(RTCONFIG_SPF11_1_QSDK) \
- || defined(RTCONFIG_SPF11_3_QSDK) || defined(RTCONFIG_SPF11_4_QSDK)
+ || defined(RTCONFIG_SPF11_3_QSDK) || defined(RTCONFIG_SPF11_4_QSDK) \
+ || defined(RTCONFIG_SPF11_5_QSDK)
 /* Get one board/default parameter from .ini file and return it's value in string format.
  * If board-specific parameter absent, return default parameter instead.
  * If @param_name is replicated multi-times, first one is returned.
@@ -211,7 +212,7 @@ int get_board_or_default_parameter_from_ini_file(const char *board_name, const c
 
 	return 0;
 }
-#endif	/* RTCONFIG_SPF11_QSDK || RTCONFIG_SPF11_1_QSDK || RTCONFIG_SPF11_3_QSDK || defined(RTCONFIG_SPF11_4_QSDK) */
+#endif	/* RTCONFIG_SPF11_QSDK || RTCONFIG_SPF11_1_QSDK || RTCONFIG_SPF11_3_QSDK || RTCONFIG_SPF11_4_QSDK  || RTCONFIG_SPF11_5_QSDK */
 
 /* Get one parameter from .ini file and return it's value in integer format.
  * If @param_name is replicated multi-times, first one is returned.
@@ -528,7 +529,8 @@ static int __get_QCA_sta_info_by_ifname(const char *ifname, char subunit_id, int
 	if ((q = strstr(line_buf, "ACAPS")) != NULL) {
 		*(q - 1) = '\0';
 		l2 = q;
-#if defined(RTCONFIG_SPF11_QSDK) || defined(RTCONFIG_SPF11_1_QSDK) || defined(RTCONFIG_SPF11_3_QSDK) || defined(RTCONFIG_SPF11_4_QSDK)
+#if defined(RTCONFIG_SPF11_QSDK) || defined(RTCONFIG_SPF11_1_QSDK) || defined(RTCONFIG_SPF11_3_QSDK) \
+ || defined(RTCONFIG_SPF11_4_QSDK) || defined(RTCONFIG_SPF11_5_QSDK)
 		init_sta_info_item(q, part2_tbl);
 #else
 		/* ILQ2.x ~ SPF10 */
@@ -1639,7 +1641,7 @@ int resolv_bw_nctrlsb(const char *mode, int *bw, int *nctrlsb)
 char acs_string[2][20]={"acs_mode=","acs_ch="};
 #define IEEE80211_IOCTL_GETMODE         (SIOCIWFIRSTPRIV+17)
 #define IEEE80211_PARAM_ACS_RESULT 691	
-char ieee80211_phymode[33][40] ={
+char ieee80211_phymode[44][40] ={
     "IEEE80211_MODE_AUTO",    /* autoselect */
     "IEEE80211_MODE_11A",    /* 5GHz, OFDM */
     "IEEE80211_MODE_11B",    /* 2GHz, CCK */
@@ -1673,6 +1675,17 @@ char ieee80211_phymode[33][40] ={
     "IEEE80211_MODE_11AXA_HE80",   /* 5GHz, HE80 */
     "IEEE80211_MODE_11AXA_HE160",   /* 5GHz, HE160 */
     "IEEE80211_MODE_11AXA_HE80_80",   /* 5GHz, HE80_80 */
+    "IEEE80211_MODE_11BEA_EHT20",	/* 5GHz, EHT20 */
+    "IEEE80211_MODE_11BEG_EHT20",	/* 2GHz, EHT20 */
+    "IEEE80211_MODE_11BEA_EHT40PLUS",	/* 5GHz, EHT40 (ext ch +1) */
+    "IEEE80211_MODE_11BEA_EHT40MINUS",	/* 5GHz, EHT40 (ext ch -1) */
+    "IEEE80211_MODE_11BEG_EHT40PLUS",	/* 2GHz, EHT40 (ext ch +1) */
+    "IEEE80211_MODE_11BEG_EHT40MINUS",	/* 2GHz, EHT40 (ext ch -1) */
+    "IEEE80211_MODE_11BEA_EHT40",	/* 5GHz, EHT40 */
+    "IEEE80211_MODE_11BEG_EHT40",	/* 2GHz, EHT40 */
+    "IEEE80211_MODE_11BEA_EHT80",	/* 5GHz, EHT80 */
+    "IEEE80211_MODE_11BEA_EHT160",	/* 5GHz, EHT160 */
+    "IEEE80211_MODE_11BEA_EHT320",	/* 5GHz, EHT320 */
 };
 
 int update_band_info(int unit)
@@ -1959,7 +1972,10 @@ static const char *phymode_str_tbl[IEEE80211_MODE_MAX] = {
 	"11ACVHT20", "11ACVHT40PLUS", "11ACVHT40MINUS", "11ACVHT40", "11ACVHT80",
 	"11ACVHT160", "11ACVHT80_80", "11AHE20", "11GHE20", "11AHE40PLUS",
 	"11AHE40MINUS", "11GHE40PLUS", "11GHE40MINUS", "11AHE40", "11GHE40",
-	"11AHE80", "11AHE160", "11AHE80_80",
+	"11AHE80", "11AHE160", "11AHE80_80", "11BEA_EHT20", "11BEG_EHT20",
+	"11BEA_EHT40PLUS", "11BEA_EHT40MINUS", "11BEG_EHT40PLUS",
+	"11BEG_EHT40MINUS", "11BEA_EHT40", "11BEG_EHT40", "11BEA_EHT80",
+	"11BEA_EHT160", "11BEA_EHT320",
 };
 
 /* Get mode string of @phymode.
@@ -1980,7 +1996,7 @@ const char *phymode_str(int phymode)
 
 /* Get bandwidth of @mode
  * @mode:	parameter of private mode command, e.g., 11GHE20
- * @return:	one of 20/40/80/160
+ * @return:	one of 20/40/80/160/320
  */
 int get_bw_by_mode_str(char *mode)
 {
@@ -1988,7 +2004,9 @@ int get_bw_by_mode_str(char *mode)
 	if (!mode)
 		return r;
 
-	if (strstr(mode, "HE160") || strstr(mode, "HT160"))
+	if (strstr(mode, "HT320"))
+		r = 320;
+	else if (strstr(mode, "HE160") || strstr(mode, "HT160"))
 		r = 160;
 	else if (strstr(mode, "HE80") || strstr(mode, "HT80"))
 		r = 80;
@@ -2027,14 +2045,19 @@ int get_bw_by_phymode(int unit, int phymode)
 	}
 
 	switch (phymode) {
+	case IEEE80211_MODE_11BEA_EHT320:	/* fall-through */
+		ret = 320;
+		break;
 	case IEEE80211_MODE_11AC_VHT160:	/* fall-through */
 	case IEEE80211_MODE_11AXA_HE160:	/* fall-through */
+	case IEEE80211_MODE_11BEA_EHT160:	/* fall-through */
 		ret = 160;
 		break;
 	case IEEE80211_MODE_11AC_VHT80:		/* fall-through */
 	case IEEE80211_MODE_11AC_VHT80_80:	/* fall-through */
 	case IEEE80211_MODE_11AXA_HE80:		/* fall-through */
 	case IEEE80211_MODE_11AXA_HE80_80:	/* fall-through */
+	case IEEE80211_MODE_11BEA_EHT80:	/* fall-through */
 		ret = 80;
 		break;
 
@@ -2053,6 +2076,12 @@ int get_bw_by_phymode(int unit, int phymode)
 	case IEEE80211_MODE_11AXG_HE40MINUS:	/* fall-through */
 	case IEEE80211_MODE_11AXA_HE40:		/* fall-through */
 	case IEEE80211_MODE_11AXG_HE40:		/* fall-through */
+	case IEEE80211_MODE_11BEG_EHT40:	/* fall-through */
+	case IEEE80211_MODE_11BEA_EHT40:	/* fall-through */
+	case IEEE80211_MODE_11BEG_EHT40MINUS:	/* fall-through */
+	case IEEE80211_MODE_11BEG_EHT40PLUS:	/* fall-through */
+	case IEEE80211_MODE_11BEA_EHT40MINUS:	/* fall-through */
+	case IEEE80211_MODE_11BEA_EHT40PLUS:	/* fall-through */
 		ret = 40;
 		break;
 
@@ -2068,6 +2097,8 @@ int get_bw_by_phymode(int unit, int phymode)
 	case IEEE80211_MODE_11AC_VHT20:		/* fall-through */
 	case IEEE80211_MODE_11AXA_HE20:		/* fall-through */
 	case IEEE80211_MODE_11AXG_HE20:		/* fall-through */
+	case IEEE80211_MODE_11BEG_EHT20:	/* fall-through */
+	case IEEE80211_MODE_11BEA_EHT20:	/* fall-through */
 		ret = 20;
 		break;
 	default:
@@ -2091,9 +2122,11 @@ int get_bw_by_phymode(int unit, int phymode)
  */
 int wl_get_bw_cap(int unit, int *bwcap)
 {
-	int r, iv_des_hw_mode = 0, iv_cur_mode = 0, exp_bw, cur_bw;
+	int r, iv_des_hw_mode = 0, iv_cur_mode = 0, exp_bw, cur_bw, m, mask;
 	char mode[32] = "", cmd[sizeof("cat /proc/XXX/iv_config") + IFNAMSIZ];
+	char prefix[sizeof("wlXXX_")];
 
+	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 	if ((r = __wl_get_bw_cap(unit, bwcap)) != 0)
 		return r;
 
@@ -2101,29 +2134,71 @@ int wl_get_bw_cap(int unit, int *bwcap)
 	if (unit != WL_2G_BAND || !nvram_match(WLREADY, "1"))
 		return 0;
 
-	strlcpy(mode, iwpriv_get(get_wififname(unit), "get_mode"), sizeof(mode));
-	if (strstr(mode, "HT40") || strstr(mode, "HE40")) {
+	strlcpy(mode, iwpriv_get(get_wififname(unit), "get_mode")? : "", sizeof(mode));
+	if (*mode == '\0' || strstr(mode, "HT40") || strstr(mode, "HE40")) {
 		return 0;
 	}
 
-	/* 2G is not 40MHz, remove 40MHz capability if it's failed to set as 40MHz. */
 	snprintf(cmd, sizeof(cmd), "cat /proc/%s/iv_config", get_wififname(unit));
-	if (exec_and_parse(cmd, "iv_des_hw_mode", "%*[^:]:%d", 1, &iv_des_hw_mode) || !iv_des_hw_mode
-	 || exec_and_parse(cmd, "iv_cur_mode", "%*[^:]:%d", 1, &iv_cur_mode) || !iv_cur_mode) {
-		dbg("%s: Failed to parse iv_des_hw_mode %d or iv_cur_mode %d from %s\n",
-			__func__, iv_des_hw_mode, iv_cur_mode, cmd + 4);
-		return 0;
+	if (nvram_pf_match(prefix, "radio", "0")
+	 && (!strcmp(mode, "11A") || !strcmp(mode, "11B"))) {
+		/* For SPF11.5, if radio is turn off, mode of VAP would be 11A or 11B and can't be changed.
+		 * In this case, we can't get supported bandwidth from mode. Parsing iv_des_hw_mode and
+		 * mask out unsupported higher bandwidth instead.
+		 */
+		exec_and_parse(cmd, "iv_des_hw_mode", "%*[^:]:%d", 1, &iv_des_hw_mode);
+		exp_bw = get_bw_by_phymode(unit, iv_des_hw_mode);
+		if ((m = get_cfg_bw_mask_by_bw(exp_bw)) != 0) {
+			mask = m | (m - 1);
+			*bwcap &= mask;
+		}
+	} else {
+		/* 2G is not 40MHz, remove 40MHz capability if it's failed to set as 40MHz. */
+		if (exec_and_parse(cmd, "iv_des_hw_mode", "%*[^:]:%d", 1, &iv_des_hw_mode) || !iv_des_hw_mode
+		 || exec_and_parse(cmd, "iv_cur_mode", "%*[^:]:%d", 1, &iv_cur_mode) || !iv_cur_mode) {
+			dbg("%s: Failed to parse iv_des_hw_mode %d or iv_cur_mode %d from %s\n",
+				__func__, iv_des_hw_mode, iv_cur_mode, cmd + 4);
+			return 0;
+		}
+		if (iv_cur_mode == iv_des_hw_mode)
+			return 0;
+		exp_bw = get_bw_by_phymode(unit, iv_des_hw_mode);
+		cur_bw = get_bw_by_phymode(unit, iv_cur_mode);
+		if (exp_bw > cur_bw)
+			*bwcap &= ~(get_cfg_bw_mask_by_bw(exp_bw));
 	}
-	if (iv_cur_mode == iv_des_hw_mode)
-		return 0;
-	exp_bw = get_bw_by_phymode(unit, iv_des_hw_mode);
-	cur_bw = get_bw_by_phymode(unit, iv_cur_mode);
-	if (exp_bw > cur_bw)
-		*bwcap &= ~(get_cfg_bw_mask_by_bw(exp_bw));
 
 	return 0;
 }
 
+/*
+ * get_control_channel(unit, *channel, *bw, *nctrlsb)
+ *
+ * *bw:
+ * 	return the bandwitdh value, could be 20/40/80/160.
+ *
+ * nctrlsb:
+ * 	return the side band when in HT40 mode
+ * 	1: the control sideband is upper
+ * 	0: the control sideband is lower
+ * 	-1: invalid
+ *
+ */
+void get_control_channel(int unit, int *channel, int *bw, int *nctrlsb)
+{
+	char athfix[8];
+	int ret __attribute__ ((unused));
+
+	if (unit < 0 || unit >= MAX_NR_WL_IF)
+		return;
+	if (channel == NULL || bw == NULL || nctrlsb == NULL)
+		return;
+
+	__get_wlifname(swap_5g_band(unit), 0, athfix);
+	*channel = get_channel(athfix);
+
+	ret = get_bw_nctrlsb(athfix, bw, nctrlsb);
+}
 #endif
 
 #ifdef RTCONFIG_CFGSYNC

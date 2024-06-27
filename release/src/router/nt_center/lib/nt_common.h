@@ -19,7 +19,7 @@
 #define NOTIFY_MAIL_SERVICE_SOCKET_PATH         "/var/run/nt_actMail_socket"
 
 #define MAX_NOTIFY_SOCKET_CLIENT    5
-#define PTHREAD_STACK_SIZE          0x100000
+#define NT_CENTER_PTHREAD_STACK_SIZE          0x100000	/* cfg_common.h has PTHREAD_STACK_SIZE definition with different value. */
 
 #define NOTIFY_CENTER_PID_PATH                  "/var/run/nt_center.pid"
 #define NOTIFY_CENTER_MONITOR_PID_PATH          "/var/run/nt_monitor.pid"

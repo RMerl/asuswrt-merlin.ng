@@ -29,6 +29,10 @@ config RTCONFIG_MUSL_LIBC
 	bool "MUSL libc"
 	default n
 
+config RTCONFIG_MUSL_LIBC_1116_WAR
+	bool "Workaround for MUSL libc prior v1.1.19"
+	default n
+
 config RTCONFIG_L2TP
 	bool "L2TP"
 	default y
@@ -160,7 +164,7 @@ config RTCONFIG_DHDAP
 
 config RTCONFIG_BW160M
 	bool "Bandwidth 160MHz support"
-	depends on RTCONFIG_DHDAP || RTCONFIG_QCA
+	depends on RTCONFIG_DHDAP || RTCONFIG_HND_ROUTER_AX_6756 || RTCONFIG_QCA
 	default n
 
 config RTCONFIG_WLEXE
@@ -416,6 +420,10 @@ config RTCONFIG_IPERF
 
 config RTCONFIG_TCPDUMP
 	bool "tcpdump"
+	default n
+
+config RTCONFIG_TCPREPLAY
+	bool "tcpreplay"
 	default n
 
 config RTCONFIG_DUMP4000
@@ -919,6 +927,12 @@ config RTCONFIG_SPF11_4_QSDK
 	depends on RTCONFIG_QCA
 	default n
 
+config RTCONFIG_SPF11_5_QSDK
+	bool "SPF11.5 QSDK"
+	depends on RTCONFIG_QCA
+	depends on RTCONFIG_MUSL_LIBC
+	default n
+
 config RTCONFIG_QCA_BIGRATE_WIFI
 	bool "New QSDK wifi driver - need to adjust iwconfig bitrate"
 	default n
@@ -998,7 +1012,7 @@ config RTCONFIG_CFG80211
 
 config RTCONFIG_GLOBAL_INI
 	bool "Qualcomm globa.ini support. (SPF9 or above)"
-	depends on RTCONFIG_QCA && (RTCONFIG_SPF10_QSDK || RTCONFIG_SPF11_QSDK || RTCONFIG_SPF11_1_QSDK || RTCONFIG_SPF11_3_QSDK || RTCONFIG_SPF11_4_QSDK || RTCONFIG_QSDK10CS || RTCONFIG_SOC_IPQ60XX)
+	depends on RTCONFIG_QCA && (RTCONFIG_SPF10_QSDK || RTCONFIG_SPF11_QSDK || RTCONFIG_SPF11_1_QSDK || RTCONFIG_SPF11_3_QSDK || RTCONFIG_SPF11_4_QSDK || RTCONFIG_SPF11_5_QSDK || RTCONFIG_QSDK10CS || RTCONFIG_SOC_IPQ60XX)
 	default n
 
 config RTCONFIG_SINGLE_HOSTAPD
@@ -1731,6 +1745,10 @@ config RTCONFIG_WTFAST
 	bool "WTFast support"
 	default n
 
+config RTCONFIG_WTFAST_V2
+    bool "WTFast V2 support"
+    default n
+
 config RTCONFIG_ALEXA
 	bool "ALEXA support"
 	default n
@@ -1843,6 +1861,11 @@ config RTCONFIG_SOFTWIRE46
 
 config RTCONFIG_OCNVC
 	bool "IPoE - OCN Virtual Connect support"
+	depends on RTCONFIG_SOFTWIRE46
+	default n
+
+config RTCONFIG_DSLITE
+	bool "IPoE - DS-Lite support"
 	depends on RTCONFIG_SOFTWIRE46
 	default n
 
@@ -1993,6 +2016,24 @@ config RTCONFIG_MERLINUPDATE
 config RTCONFIG_OPENSSL11
 	bool "OpenSSL 1.1.x"
 	default n
+
+config RTCONFIG_DNSSEC
+	bool "dnsmasq: Enable DNSSEC support"
+	default n
+
+choice
+	prompt "dnsmasq: DNSSEC crypto library"
+	default RTCONFIG_DNSSEC_NETTLE
+
+config RTCONFIG_DNSSEC_OPENSSL
+	bool "OpenSSL"
+	depends on RTCONFIG_DNSSEC
+
+config RTCONFIG_DNSSEC_NETTLE
+	bool "Nettle"
+	depends on RTCONFIG_DNSSEC
+
+endchoice
 
 config RTCONFIG_DNSFILTER
 	bool "DNS-based filtering Support"
@@ -2374,6 +2415,10 @@ config RTCONFIG_AUTO_FW_UPGRADE
 config RTCONFIG_ASD
 	bool "RTCONFIG_ASD support"
 	default n
+
+config RTCONFIG_ASD_2_1
+        bool "RTCONFIG_ASD_2_1 support"
+        default n
 
 config RTCONFIG_LIVE_UPDATE_RSA
 	bool "RTCONFIG_LIVE_UPDATE_RSA support"

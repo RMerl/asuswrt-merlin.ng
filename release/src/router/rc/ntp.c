@@ -285,11 +285,6 @@ int ntp_main(int argc, char *argv[])
 			args[2] = server;
 		}
 			sleep(SECONDS_TO_WAIT);
-			/* Restart DDNS when reconnected */
-			if(nvram_get_int("ntp_ready") == 1) {
-				stop_ddns();
-				start_ddns(NULL);
-			}
 			set_alarm();
 		}
 

@@ -917,7 +917,7 @@ int CUDTUnited::close(const UDTSOCKET u)
    if (NULL == s)
       throw CUDTException(5, 4, 0);
 
-   CGuard socket_cg(s->m_ControlLock);
+   //CGuard socket_cg(s->m_ControlLock);
 
    if (s->m_Status == LISTENING)
    {

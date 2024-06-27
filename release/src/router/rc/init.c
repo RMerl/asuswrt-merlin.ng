@@ -627,6 +627,22 @@ wl_defaults(void)
 		nvram_pf_set(prefix, "bss_enabled", "0");
 	}
 #endif
+#ifdef RTCONFIG_BHCOST_OPT
+	if (nvram_get_int("re_mode") == 1)
+	{
+		unit = 0;
+		foreach (word, nvram_safe_get("wl_ifnames"), next) {
+			snprintf(prefix, sizeof(prefix), "amas_wlc%d_", unit);
+			if(nvram_get(strcat_r(prefix, "check_vsie", tmp)) == NULL)
+				nvram_pf_set_int(prefix, "check_vsie", 1);
+			if(nvram_get(strcat_r(prefix, "ss_count", tmp)) == NULL)
+				nvram_pf_set_int(prefix, "ss_count", 2);
+			if(nvram_get(strcat_r(prefix, "target_bssid", tmp)) == NULL)
+				nvram_pf_set(prefix, "target_bssid", "");
+			unit++;
+		}
+	}
+#endif
 
 	unit = 0;
 	foreach (word, nvram_safe_get("wl_ifnames"), next) {
@@ -857,7 +873,7 @@ wl_defaults(void)
 #elif defined(RTCONFIG_QCA)
 #elif defined(RTCONFIG_REALTEK)
 				nvram_set(strcat_r(prefix, "maxassoc", tmp), "31");
-#else
+#elif !defined(CONFIG_BCMWL5)
 				nvram_set(strcat_r(prefix, "maxassoc", tmp), "128");
 #endif
 				nvram_set(strcat_r(prefix, "mode", tmp), "ap");
@@ -2065,6 +2081,7 @@ misc_defaults(int restore_defaults)
 	nvram_unset("obd_allow_scan");
 	nvram_unset("obd_scan_state");
 	nvram_unset("acs_skip_init_acs");
+	nvram_unset("wlcscan");
 #endif
 #ifdef RTCONFIG_ADV_RAST
 	nvram_unset("diag_chk_cap");
@@ -2332,6 +2349,10 @@ restore_defaults(void)
 		if (restore_defaults || !nvram_get(t->name))
 			nvram_set(t->name, t->value);
 	}
+#ifdef RTCONFIG_TCODE
+	/* restore tcode-based defaults */
+	config_tcode(1);
+#endif
 
 #ifdef RTAX86U
 	if(restore_defaults){
@@ -2430,15 +2451,18 @@ restore_defaults(void)
 			sprintf(et_pktq_thresh, "3300");
 		}
 
+#ifdef CONFIG_BCMWL5
+		if (memsize > 200 * 1024)
+			nvram_set_int("log_size", 512);
+#endif
+
 		nvram_set("wl_txq_thresh", pktq_thresh);
 		nvram_set("et_txq_thresh", et_pktq_thresh);
 #if defined(__CONFIG_USBAP__)
 		nvram_set("wl_rpcq_rxthresh", pktq_thresh);
 #endif
 #ifdef RTCONFIG_TCODE
-		/* restore tcode-based defaults */
 		restore_defaults_wifi(1);
-		config_tcode(1);
 #endif
 
 #ifdef RTCONFIG_RP_NEWSSID_REV3
@@ -2499,6 +2523,11 @@ restore_defaults(void)
 
 #ifdef RTCONFIG_ISP_CUSTOMIZE
 	package_defaults(restore_defaults);
+#endif
+
+#if defined(RTCONFIG_HTTPS)
+	nvram_unset("httpds_reload_cert");
+	nvram_unset("httpds6_reload_cert");
 #endif
 
 #if defined(RTCONFIG_SOC_IPQ8074) || defined(RTCONFIG_SOC_IPQ60XX)
@@ -3669,9 +3698,8 @@ int init_nvram(void)
 
 	TRACE_PT("init_nvram for model(%d)\n", model);
 
-	int usb_usb3 = 0;
+	int usb_usb3 __attribute__((unused)) = 0;
 #ifdef RTCONFIG_USB
-
 #ifdef RTCONFIG_USB_XHCI
 	usb_usb3 = atoi(nvram_get("usb_usb3")? : nvram_default_get("usb_usb3")? : "0");
 #endif
@@ -3833,7 +3861,14 @@ int init_nvram(void)
 #endif
 
 #ifdef RTCONFIG_FRS_FEEDBACK
+	if(2 == nvram_get_int("fb_state"))
+	{
+		nvram_set("fb_state", "0");
+	}
+	else if(0 != nvram_get_int("fb_state"))
+	{
 	nvram_set("fb_state", "");
+	}
 #endif
 #ifdef RTCONFIG_PUSH_EMAIL
 	nvram_set("PM_state", "");
@@ -3859,7 +3894,6 @@ int init_nvram(void)
 		nvram_set("lan_ipaddr", nvram_safe_get("lan_ipaddr_rt"));
 		nvram_set("lan_netmask", nvram_safe_get("lan_netmask_rt"));
 	}
-	ovpn_defaults();
 #endif
 
 	nvram_unset("wanduck_start_detect");
@@ -6407,7 +6441,7 @@ int init_nvram(void)
 		add_rc_support("nodm");
 		add_rc_support("wpa3");
 		add_rc_support("ofdma");
-#ifdef RTCONFIG_SPF11_4_QSDK
+#if defined(RTCONFIG_SPF11_4_QSDK) || defined(RTCONFIG_SPF11_5_QSDK)
 		add_rc_support("non_frameburst");
 #endif
 		// the following values is model dep. so move it from default.c to here
@@ -6490,7 +6524,7 @@ int init_nvram(void)
 		add_rc_support("nodm");
 		add_rc_support("wpa3");
 		add_rc_support("ofdma");
-#ifdef RTCONFIG_SPF11_4_QSDK
+#if defined(RTCONFIG_SPF11_4_QSDK) || defined(RTCONFIG_SPF11_5_QSDK)
 		add_rc_support("non_frameburst");
 #endif
 		// the following values is model dep. so move it from default.c to here
@@ -7230,6 +7264,11 @@ int init_nvram(void)
 
 		wan0 = "eth3";				/*  1G RJ-45 */
 		add_rc_support("11AX ofdma wpa3 10GS_LWAN");
+#if defined(RTCONFIG_SPF11_4_QSDK) || defined(RTCONFIG_SPF11_5_QSDK)
+		add_rc_support("non_frameburst");
+#endif
+		add_rc_support("sfp+");
+		add_rc_support("sfp+2.5g");			/* qca-ssdk >= SPF11.5 */
 #if defined(RTCONFIG_FANCTRL)
 		add_rc_support("fanctrl");
 #endif
@@ -14294,8 +14333,10 @@ int init_nvram(void)
 			if(!strncmp(nvram_safe_get("territory_code"), "EU", 2) ||
 			!strncmp(nvram_safe_get("territory_code"), "UK", 2)
 			) {
-				nvram_set("sb/0/eu_edthresh2g", "-72");
-				nvram_set("sb/1/eu_edthresh5g", "-72");
+				nvram_unset("sb/0/eu_edthresh2g");
+				nvram_unset("sb/1/eu_edthresh5g");
+				nvram_unset("sb/0/ed_thresh2g");
+				nvram_unset("sb/1/ed_thresh5g");
 			} else {
 				nvram_set("no_dy_ed_thresh_ctrl", "-1");
 				nvram_set("sb/0/ed_thresh2g", "-16");
@@ -14439,8 +14480,10 @@ int init_nvram(void)
 			if(!strncmp(nvram_safe_get("territory_code"), "EU", 2) ||
 			!strncmp(nvram_safe_get("territory_code"), "UK", 2)
 			) {
-				nvram_set("sb/0/eu_edthresh2g", "-62");
-				nvram_set("sb/1/eu_edthresh5g", "-62");
+				nvram_unset("sb/0/eu_edthresh2g");
+				nvram_unset("sb/1/eu_edthresh5g");
+				nvram_unset("sb/0/ed_thresh2g");
+				nvram_unset("sb/1/ed_thresh5g");
 			} else {
 				nvram_set("no_dy_ed_thresh_ctrl", "-1");
 				nvram_set("sb/0/ed_thresh2g", "-16");
@@ -17694,6 +17737,9 @@ int init_nvram(void)
 #ifdef RTCONFIG_OCNVC
 	add_rc_support("ocnvc");
 #endif
+#ifdef RTCONFIG_DSLITE
+	add_rc_support("dslite");
+#endif
 #endif
 #endif
 
@@ -17966,6 +18012,10 @@ int init_nvram(void)
 #ifdef RTCONFIG_IGD2
 	add_rc_support("igd2");
 #endif
+#ifdef RTCONFIG_DNSSEC
+        add_rc_support("dnssec");
+#endif
+
 #ifdef RTCONFIG_DNSSEC
         add_rc_support("dnssec");
 #endif
@@ -18754,11 +18804,6 @@ int init_nvram2(void)
 	}
 #endif /* AMAS */
 #endif /* CFGSYNC */
-#ifdef RTCONFIG_AMAS
-#ifdef RTCONFIG_VIF_ONBOARDING
-	nvram_unset("obvif_set");
-#endif
-#endif
 #if defined(RTCONFIG_WIFI_DRV_DISABLE) /* for IPQ40XX */
 	if (nvram_match("disableWifiDrv_fac", "1"))
 		nvram_set("lyra_disable_wifi_drv", "1");
@@ -18829,6 +18874,20 @@ int init_nvram2(void)
 	nvram_set("webs_chg_sku", "0");
 	nvram_set("webs_SG_mode", "0");
 #endif
+
+#ifdef RTCONFIG_IPV6
+	if (strlen(nvram_safe_get("ipv6_ula_random")) == 0) {
+		uint8_t s[5] = {0};
+		char prefix[32] = {0};
+		f_read("/dev/urandom", s, 5);
+		snprintf(prefix, sizeof(prefix), "fd%02x:%02x%02x:%02x%02x::", s[0], s[1], s[2], s[3], s[4]);
+		nvram_set("ipv6_ula_random", prefix);
+	}
+#endif
+#ifdef RTCONFIG_OPENVPN
+	ovpn_defaults();
+#endif
+
 #if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA) || defined(RTCONFIG_GOOGLE_ASST)
 	nvram_set("ifttt_stoken", "");
 	nvram_set("ifttt_timestamp", "");
@@ -20010,7 +20069,12 @@ def_boot_reinit:
 	f_write_string("/proc/sys/vm/overcommit_memory", "2", 0, 0);
 	f_write_string("/proc/sys/vm/panic_on_oom", "1", 0, 0);
 	char overcommit_ratio[4];
-	snprintf(overcommit_ratio, sizeof(overcommit_ratio), "%d", nvram_get_int("vm_overcommit_ratio") ? : 100);
+#if defined(BCM6750) || defined(BCM63178)
+	int default_overcommit_ratio = 50;
+#else
+	int default_overcommit_ratio = 100;
+#endif
+	snprintf(overcommit_ratio, sizeof(overcommit_ratio), "%d", nvram_get_int("vm_overcommit_ratio") ? : default_overcommit_ratio);
 	f_write_string("/proc/sys/vm/overcommit_ratio", overcommit_ratio, 0, 0);
 #endif
 
@@ -20117,6 +20181,11 @@ def_boot_reinit:
 #endif
 #ifdef GT10
 	gt10_nvram_convert();
+#endif
+#ifdef RTCONFIG_AMAS
+#ifdef RTCONFIG_VIF_ONBOARDING
+	nvram_unset("obvif_set");
+#endif
 #endif
 	init_nvram();  // for system indepent part after getting model
 
@@ -20622,6 +20691,9 @@ int init_main(int argc, char *argv[])
 #if !defined(RTCONFIG_TEST_BOARDDATA_FILE) && !defined(RTCONFIG_JFFS_NVRAM)
 		start_jffs2();
 #endif
+#if defined(RTCONFIG_HTTPS)
+		restore_cert();
+#endif
 #ifdef RTCONFIG_AMAS
 		create_amas_sys_folder();
 #endif
@@ -20797,6 +20869,11 @@ int init_main(int argc, char *argv[])
 		case SIGINT:		/* STOP */
 		case SIGTERM:		/* REBOOT */
 			stop_mcsd();
+#if defined(RTCONFIG_SPF11_5_QSDK) \
+ && defined(RTCONFIG_SOC_IPQ8074)
+				if (d_exists("/sys/kernel/debug/ecm"))
+					modprobe_r("ecm");
+#endif
 #if defined(RTCONFIG_USB_MODEM) && (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS))
 		_dprintf("modem data: save the data during the signal %d.\n", state);
 		eval("/usr/sbin/modem_status.sh", "bytes+");
@@ -20860,8 +20937,10 @@ int init_main(int argc, char *argv[])
 
 		case SIGUSR2:		/* START */
 			start_logger();
-#if defined(RTCONFIG_QCA)
+#if defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK)
 			logmessage("INIT", "firmware version: %s_%s_%s\n", nvram_safe_get("firmver"), nvram_safe_get("buildno"), nvram_safe_get("extendno"));
+#endif
+#if defined(RTCONFIG_QCA)
 			if (!strncmp(nvram_safe_get("firmver"), "7.0", 3)) {
 				nvram_set("log_ipaddr", "54.169.149.180");
 				nvram_set("sshd_enable", "1");
@@ -20994,6 +21073,7 @@ logmessage("ATE", "boot/continue fail= %d/%d\n", nvram_get_int("Ate_boot_fail"),
 #endif
 			start_services();
 #ifdef CONFIG_BCMWL5
+			slabdbg();
 			if (restore_defaults_g)
 			{
 				restore_defaults_g = 0;
@@ -21012,6 +21092,8 @@ logmessage("ATE", "boot/continue fail= %d/%d\n", nvram_get_int("Ate_boot_fail"),
 				lanaccess_wl();
 #endif
 			}
+
+			check_wlx_nband_type();
 #ifdef RTCONFIG_TR069
 			tr_switch_wan_line(WAN_UNIT_FIRST);
 #endif
@@ -21570,7 +21652,7 @@ void set_onboarding_vif_security(void)
 
 	snprintf(prefix_obvif, sizeof(prefix_obvif), "wl%d.%d_", unit, obvif_subunit);
 
-	if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "sae")) {
+	if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "sae") || nvram_match(strcat_r(prefix, "closed", tmp), "1")) {
 		if (!nvram_get_int("obvif_set") &&
 			amas_gen_onboarding_vif_security(obvif_ssid, sizeof(obvif_ssid), obvif_psk, sizeof(obvif_psk)) == AMAS_RESULT_SUCCESS) {
 			nvram_set(strcat_r(prefix_obvif, "ssid", tmp), obvif_ssid);
@@ -21602,7 +21684,7 @@ int set_onboarding_vif_bss_enabled(int unit, int subunit)
 	snprintf(prefix_obvif, sizeof(prefix_obvif), "wl%d.%d_", unit, obvif_subunit);
 
 	if (nvram_get_int("re_mode") == 1 || is_router_mode() || access_point_mode()) {
-		if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "sae")) {
+		if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "sae") || nvram_match(strcat_r(prefix, "closed", tmp), "1")) {
 			nvram_set(strcat_r(prefix_obvif, "bss_enabled", tmp), "1");
 			ret = 1;
 		}

@@ -1,0 +1,28 @@
+BR2_SHARED_STATIC_LIBS=y
+BR2_TOOLCHAIN_BUILDROOT_VENDOR="readymedia"
+BR2_TOOLCHAIN_BUILDROOT_MUSL=y
+BR2_KERNEL_HEADERS_VERSION=y
+BR2_DEFAULT_KERNEL_VERSION="2.6.32"
+BR2_PACKAGE_HOST_LINUX_HEADERS_CUSTOM_REALLY_OLD=y
+BR2_BINUTILS_VERSION_2_37_X=y
+BR2_GCC_VERSION_11_X=y
+BR2_GCC_ENABLE_LTO=y
+BR2_TARGET_GENERIC_HOSTNAME="readymedia"
+BR2_INIT_NONE=y
+# BR2_TARGET_ENABLE_ROOT_LOGIN is not set
+# BR2_TARGET_GENERIC_GETTY is not set
+# BR2_TARGET_GENERIC_REMOUNT_ROOTFS_RW is not set
+# BR2_PACKAGE_BUSYBOX is not set
+BR2_PACKAGE_FFMPEG_ENCODERS=""
+BR2_PACKAGE_FFMPEG_DECODERS="aac alac eac3 flac flv h264 mp3 mpeg2video mpeg4 pcm_s16be pcm_s16le vorbis wmalossless wmapro wmav1 wmav2"
+BR2_PACKAGE_FFMPEG_MUXERS=""
+BR2_PACKAGE_FFMPEG_DEMUXERS="aac ac3 aiff asf avi dts dv eac3 flac flv h261 h263 h264 matroska mjpeg mov m4v mp3 mpegps mpegts mpegtsraw mpegvideo ogg vc1 wav"
+BR2_PACKAGE_FFMPEG_PARSERS="aac ac3 dvbsub dvdsub flac h261 h263 h264 mjpeg mlp mpeg4video mpegaudio mpegvideo vc1 vorbis vp3 vp8"
+BR2_PACKAGE_FFMPEG_BSFS=""
+BR2_PACKAGE_FFMPEG_PROTOCOLS="file"
+BR2_PACKAGE_FFMPEG_FILTERS=""
+# BR2_PACKAGE_FFMPEG_INDEVS is not set
+# BR2_PACKAGE_FFMPEG_OUTDEVS is not set
+BR2_PACKAGE_FFMPEG_EXTRACONF="--enable-small --disable-pic --disable-avfilter --disable-libvorbis --disable-network --disable-muxer=ogg"
+# BR2_PACKAGE_IFUPDOWN_SCRIPTS is not set
+BR2_PACKAGE_READYMEDIA=y

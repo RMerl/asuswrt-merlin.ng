@@ -1710,6 +1710,13 @@ void enable_jumbo_frame(void)
 
 	if (!nvram_contains_word("rc_support", "switchctrl"))
 		return;
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63)
+	if (enable)
+		system("rtkswitch 18");
+	else
+		system("rtkswitch 17");
+	return;
+#endif
 #ifdef RTCONFIG_HND_ROUTER_AX_6756
 #if defined(BCM6750) || defined(BCM6756) || defined(BCM4906_504)
 	int model = get_model();
@@ -2196,8 +2203,13 @@ void init_switch_pre()
   #else
 	doSystem("ethswctl -c wan -i %s -o %s", wan_if_eth(), is_router_mode() ? "enable" : "disable");
   #endif
+#if defined(TUFAX3000_V2) || defined(RTAXE7800)
+	if (is_router_mode())
+		doSystem("ethswctl -c wan -i %s -o enable", WAN_IF_ETH);
+#else
 	if (is_router_mode() && strcmp(WAN_IF_ETH, wan_if_eth()))
 		doSystem("ethswctl -c wan -i %s -o disable", WAN_IF_ETH);
+#endif
 #endif
 
 #if defined(TUFAX3000_V2) || defined(RTAXE7800)
@@ -4902,6 +4914,12 @@ void init_syspara(void)
 		nvram_set("wps_device_pin", wps_gen_pin(devPwd, sizeof(devPwd)) ? devPwd : "12345670");
 	} else
 		nvram_set("wps_device_pin", value);
+#ifdef RTCONFIG_AMAS
+	int ret = 0;
+
+	ret = chk_acscli2_cmds("acs_restart");
+	_dprintf("%s, acscli2_can_do_restart:%d\n", __func__, ret);
+#endif
 }
 
 #ifdef RTCONFIG_BCMARM
@@ -11160,6 +11178,31 @@ int reset_exclbase(int ifnum)
 		return 1;
 	}
 	return 0;
+}
+
+int reset_exclvalid()
+{
+	int i, ifnum=0, acs_valid=0;
+	char exchans[32], exchans_valid[32], wl_tmp[32];
+	char word[256], *next;
+
+	if(nvram_get_int("re_mode") == 1)
+		return 1;
+
+	foreach (word, nvram_safe_get("wl_ifnames"), next)
+		ifnum++;
+
+	for(i=0; i<ifnum; ++i) {
+		sprintf(wl_tmp, "wl%d_chanspec", i);
+		acs_valid = nvram_match(wl_tmp, "0")?1:0;
+		if(!acs_valid)
+			continue;
+
+		sprintf(exchans, "wl%d_acs_excl_chans", i);
+		sprintf(exchans_valid, "wl%d_acs_excl_chans_valid", i);
+		nvram_set(exchans_valid, nvram_safe_get(exchans));
+		_dprintf("\nset exclchans valid[%d]:[%s]=[%s]\n", i, exchans_valid, nvram_safe_get(exchans_valid));
+	}
 }
 
 void dump_acs_excl_chans(char *desc)

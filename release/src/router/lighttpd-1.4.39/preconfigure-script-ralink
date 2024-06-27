@@ -16,10 +16,16 @@ echo $SRCBASE
 PCRE_VER=8.31
 
 
-CFLAGS="-I$cur_dir/../pcre-$PCRE_VER -I$uclib_inc -I$cur_dir/../sqlite -I$cur_dir/../curl-7.21.7/include -I$srcbase_dir/include -I$router_dir/nvram${BCMEX} -I$router_dir/shared -I$router_dir/libdisk -I$router_dir/libpasswd -DHAVE_OPENSSL_SSL_H=1 -DHAVE_LIBSSL=1 -DEMBEDDED_EANBLE=1"
-LIBS="-L$uclib -L$router_dir/shared -lshared -L$router_dir/nvram${BCMEX} -lnvram -L$router_dir/libdisk -ldisk -L$router_dir/libpasswd -lpasswd -lpthread -L$router_dir/openssl -lcrypto -lssl -L$router_dir/curl-7.21.7/lib/.libs -lcurl -L$router_dir/libxml2/.libs -lxml2 -lpthread -lcrypt"
+CFLAGS="-I$cur_dir/../pcre-$PCRE_VER -I$uclib_inc -I$cur_dir/../sqlite -I$cur_dir/../curl-7.21.7/include -I$srcbase_dir/include -I$router_dir/nvram${BCMEX} -I$router_dir/shared -I$router_dir/libpasswd -DHAVE_OPENSSL_SSL_H=1 -DHAVE_LIBSSL=1 -DEMBEDDED_EANBLE=1"
+LIBS="-L$uclib -L$router_dir/shared -lshared -L$router_dir/nvram${BCMEX} -lnvram -L$router_dir/libpasswd -lpasswd -lpthread -L$router_dir/openssl -lcrypto -lssl -L$router_dir/curl-7.21.7/lib/.libs -lcurl -L$router_dir/libxml2/.libs -lxml2 -lpthread -lcrypt"
 LDFLAGS="-L$uclib -L$cur_dir/../pcre-$PCRE_VER/.libs -lpcre -L$cur_dir/../libxml2/.libs -lxml2 -L$router_dir/openssl -L$cur_dir/../curl-7.21.7/lib/.libs"
 XML_LIBS="-L$cur_dir/../libxml2/.libs -lxml2"
+
+USB=`cat ../.config |grep "RTCONFIG_USB=y"`
+if [ -n "$USB" ]; then
+        CFLAGS+=" -I$router_dir/libdisk "
+        LIBS+=" -L$router_dir/libdisk -ldisk "
+fi
 
 QTN=`cat ../.config |grep "RTCONFIG_QTN=y"`
 if [ -n "$QTN" ]; then

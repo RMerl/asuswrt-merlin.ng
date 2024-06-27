@@ -2208,21 +2208,27 @@ int hadPrinterModule(void)
 
 int hadPrinterInterface(const char *usb_node)
 {
-	char check_usb_node[32], device_name[4];
-	int printer_order, got_printer = 0;
+	char check_usb_interface[32];
+	int got_printer = 0;
+	DIR *dp;
+	struct dirent *file;
 
-	for(printer_order = 0; printer_order < MAX_USB_PRINTER_NUM; ++printer_order){
-		snprintf(device_name, sizeof(device_name), "lp%d", printer_order);
+	snprintf(check_usb_interface, sizeof(check_usb_interface), "%s:", usb_node);
 
-		if(get_usb_node_by_device(device_name, check_usb_node, 32) == NULL)
+	if((dp = opendir(USB_DEVICE_PATH)) == NULL)
+		return got_printer;
+
+	while((file = readdir(dp)) != NULL){
+		if(!strstr(file->d_name, check_usb_interface))
 			continue;
 
-		if(!strcmp(usb_node, check_usb_node)){
+		if(isPrinterInterface(file->d_name)){
 			got_printer = 1;
 
 			break;
 		}
 	}
+	closedir(dp);
 
 	return got_printer;
 }

@@ -49,6 +49,21 @@ int wl_get_bw_cap(int unit, int *bwcap)
 	return 0;
 }
 
+void get_control_channel(int unit, int *channel, int *bw, int *nctrlsb)
+{
+	char ifname[IFNAMSIZ];
+	int ret __attribute__ ((unused));
+
+	if (unit < 0 || unit >= MAX_NR_WL_IF)
+		return;
+	if (channel == NULL || bw == NULL || nctrlsb == NULL)
+		return;
+
+	__get_wlifname(unit, 0, ifname);
+
+	ret = get_channel_info(ifname, channel, bw, nctrlsb);
+}
+
 int get_psta_status(int unit)
 {
 	const char *ifname;

@@ -38,9 +38,10 @@
 #include <signal.h>
 #include <sys/wait.h>
 
+#include "config.h"
+#include "event.h"
 #include "upnpglobalvars.h"
 #include "process.h"
-#include "config.h"
 #include "log.h"
 
 #include "utils.h"
@@ -104,9 +105,12 @@ process_fork(struct client_cache_s *client)
 	{
 		if (client)
 			client->connections++;
-		if (add_process_info(pid, client))
-			number_of_children++;
-	}
+		add_process_info(pid, client);
+		number_of_children++;
+	} else if (pid == 0)
+		event_module.fini();
+	else
+		DPRINTF(E_FATAL, L_GENERAL, "Fork() failed: %s\n", strerror(errno));
 
 	return pid;
 }
@@ -125,10 +129,13 @@ process_handle_child_termination(int signal)
 			else
 				break;
 		}
-		if (remove_process_info(pid))
+		if (number_of_children)
 			number_of_children--;
+		remove_process_info(pid);
 	}
 }
+
+#undef USE_DAEMON
 
 int
 process_daemonize(void)

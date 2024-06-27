@@ -63,7 +63,7 @@ int valid_cache = 0;
 struct virtual_item
 {
 	int64_t objectID;
-	char parentID[64];
+	char parentID[80];
 	char name[256];
 };
 
@@ -204,7 +204,7 @@ insert_containers(const char *name, const char *path, const char *refID, const c
 		else
 		{
 			insert_container(date_taken, last_cam.parentID, NULL, "album.photoAlbum", NULL, NULL, NULL, &objectID, &parentID);
-			sprintf(last_camdate.parentID, "%s$%llX", last_cam.parentID, (long long)parentID);
+			sprintf(last_camdate.parentID, "%.63s$%llX", last_cam.parentID, (long long)parentID);
 			last_camdate.objectID = objectID;
 			strncpyt(last_camdate.name, date_taken, sizeof(last_camdate.name));
 			//DEBUG DPRINTF(E_DEBUG, L_SCANNER, "Creating cached camdate item: %s/%s/%s/%X\n", camera, last_camdate.name, last_camdate.parentID, last_camdate.objectID);
@@ -278,7 +278,7 @@ insert_containers(const char *name, const char *path, const char *refID, const c
 				last_artistAlbum.name[0] = '\0';
 				/* Add this file to the "- All Albums -" container as well */
 				insert_container(_("- All Albums -"), last_artist.parentID, NULL, "album", artist, genre, NULL, &objectID, &parentID);
-				sprintf(last_artistAlbumAll.parentID, "%s$%llX", last_artist.parentID, (long long)parentID);
+				sprintf(last_artistAlbumAll.parentID, "%.63s$%llX", last_artist.parentID, (long long)parentID);
 				last_artistAlbumAll.objectID = objectID;
 			}
 			else
@@ -294,7 +294,7 @@ insert_containers(const char *name, const char *path, const char *refID, const c
 			{
 				insert_container(album?album:_("Unknown Album"), last_artist.parentID, album?last_album.parentID:NULL,
 				                 "album.musicAlbum", artist, genre, album_art, &objectID, &parentID);
-				sprintf(last_artistAlbum.parentID, "%s$%llX", last_artist.parentID, (long long)parentID);
+				sprintf(last_artistAlbum.parentID, "%.63s$%llX", last_artist.parentID, (long long)parentID);
 				last_artistAlbum.objectID = objectID;
 				strncpyt(last_artistAlbum.name, album ? album : _("Unknown Album"), sizeof(last_artistAlbum.name));
 				//DEBUG DPRINTF(E_DEBUG, L_SCANNER, "Creating cached artist/album item: %s/%s/%X\n", last_artist.name, last_artist.parentID, last_artist.objectID);
@@ -319,7 +319,7 @@ insert_containers(const char *name, const char *path, const char *refID, const c
 				strncpyt(last_genre.name, genre, sizeof(last_genre.name));
 				/* Add this file to the "- All Artists -" container as well */
 				insert_container(_("- All Artists -"), last_genre.parentID, NULL, "person", NULL, genre, NULL, &objectID, &parentID);
-				sprintf(last_genreArtistAll.parentID, "%s$%llX", last_genre.parentID, (long long)parentID);
+				sprintf(last_genreArtistAll.parentID, "%.63s$%llX", last_genre.parentID, (long long)parentID);
 				last_genreArtistAll.objectID = objectID;
 			}
 			else
@@ -334,7 +334,7 @@ insert_containers(const char *name, const char *path, const char *refID, const c
 			{
 				insert_container(artist?artist:_("Unknown Artist"), last_genre.parentID, artist?last_artist.parentID:NULL,
 				                 "person.musicArtist", NULL, genre, NULL, &objectID, &parentID);
-				sprintf(last_genreArtist.parentID, "%s$%llX", last_genre.parentID, (long long)parentID);
+				sprintf(last_genreArtist.parentID, "%.63s$%llX", last_genre.parentID, (long long)parentID);
 				last_genreArtist.objectID = objectID;
 				strncpyt(last_genreArtist.name, artist ? artist : _("Unknown Artist"), sizeof(last_genreArtist.name));
 				//DEBUG DPRINTF(E_DEBUG, L_SCANNER, "Creating cached genre/artist item: %s/%s/%X\n", last_genreArtist.name, last_genreArtist.parentID, last_genreArtist.objectID);
@@ -384,70 +384,6 @@ insert_containers(const char *name, const char *path, const char *refID, const c
 	sqlite3_free_table(result);
 	valid_cache = 1;
 }
-
-#if 0
-int64_t
-insert_directory0(const char *name, const char *path, const char *base, const char *parentID, int objectID)
-{
-	int64_t detailID = 0;
-	char class[] = "container.storageFolder";
-	char *result, *p;
-	static char last_found[256] = "-1";
-
-	if( strcmp(base, BROWSEDIR_ID) != 0 )
-	{
-		int found = 0;
-		char id_buf[64], parent_buf[64], refID[64];
-		char *dir_buf, *dir;
-
- 		dir_buf = strdup(path);
-		dir = dirname(dir_buf);
-		snprintf(refID, sizeof(refID), "%s%s$%X", BROWSEDIR_ID, parentID, objectID);
-		snprintf(id_buf, sizeof(id_buf), "%s%s$%X", base, parentID, objectID);
-		snprintf(parent_buf, sizeof(parent_buf), "%s%s", base, parentID);
-		while( !found )
-		{
-			if( valid_cache && strcmp(id_buf, last_found) == 0 )
-				break;
-			if( sql_get_int_field(db, "SELECT count(*) from OBJECTS where OBJECT_ID = '%s'", id_buf) > 0 )
-			{
-				strcpy(last_found, id_buf);
-				break;
-			}
-			/* Does not exist.  Need to create, and may need to create parents also */
-			result = sql_get_text_field(db, "SELECT DETAIL_ID from OBJECTS where OBJECT_ID = '%s'", refID);
-			if( result )
-			{
-				detailID = strtoll(result, NULL, 10);
-				sqlite3_free(result);
-			}
-			sql_exec(db, "INSERT into OBJECTS"
-			             " (OBJECT_ID, PARENT_ID, REF_ID, DETAIL_ID, CLASS, NAME) "
-			             "VALUES"
-			             " ('%s', '%s', %Q, %lld, '%s', '%q')",
-                         id_buf, parent_buf, refID, detailID, class, strrchr(dir, '/')+1);
-            if( (p = strrchr(id_buf, '$')) )
-				*p = '\0';
-            if( (p = strrchr(parent_buf, '$')) )
-				*p = '\0';
-            if( (p = strrchr(refID, '$')) )
-				*p = '\0';
-			dir = dirname(dir);
-		}
-		free(dir_buf);
-        exit(0);
-	}
-
-	detailID = GetFolderMetadata(name, path, NULL, NULL, find_album_art(path, NULL, 0));
-	sql_exec(db, "INSERT into OBJECTS"
-	             " (OBJECT_ID, PARENT_ID, DETAIL_ID, CLASS, NAME) "
-	             "VALUES"
-	             " ('%s%s$%X', '%s%s', %lld, '%s', '%q')",
-	             base, parentID, objectID, base, parentID, detailID, class, name);
-
-    exit(0);
-}
-#endif
 
 int64_t
 insert_directory(const char *name, const char *path, const char *base, const char *parentID, int objectID)
@@ -511,129 +447,6 @@ insert_directory(const char *name, const char *path, const char *base, const cha
 	return detailID;
 }
 
-#if 0
-int
-insert_file0(const char *name, const char *path, const char *parentID, int object, media_types types)
-{
-	const char *class = NULL;
-	char objectID[64];
-	int64_t detailID = 0;
-	char base[8];
-	char *typedir_parentID;
-	char *baseid;
-	char *objname;
-	media_types mtype = get_media_type(name);
-
-	int a, v, p;
-	FILE * fp;
-
-	fp=fopen("/tmp/count","r");
-	if(fp){
-		DPRINTF(E_DEBUG, L_SCANNER, "read /tmp/count\n");
-		while (!feof(fp)){
-			fscanf(fp, "%d\n%d\n%d\n", &a,&v,&p);
-		}
-		fclose(fp);
-
-	}
-	else{
-		a=0;
-		v=0;
-		p=0;
-	}
-
-	if( mtype == TYPE_IMAGE && (types & TYPE_IMAGE) )
-	{
-		if( is_album_art(name) )
-			exit(-1);
-		strcpy(base, IMAGE_DIR_ID);
-		class = "item.imageItem.photo";
-		detailID = GetImageMetadata(path, name);
-		if( detailID )
-			++p;
-	}
-	else if( mtype == TYPE_VIDEO && (types & TYPE_VIDEO) )
-	{
-		strcpy(base, VIDEO_DIR_ID);
-		class = "item.videoItem";
-		detailID = GetVideoMetadata(path, name);
-		if( detailID )
-			++p;
-	}
-	else if( mtype == TYPE_PLAYLIST && (types & TYPE_PLAYLIST) )
-	{
-		if( insert_playlist(path, name) == 0 )
-			exit(1);
-	}
-	/* Some file extensions can be used for both audio and video.
-	** Fall back to audio on these files if video parsing fails. */
-	if (!detailID && (types & TYPE_AUDIO) && is_audio(name) )
-	{
-		strcpy(base, MUSIC_DIR_ID);
-		class = "item.audioItem.musicTrack";
-		detailID = GetAudioMetadata(path, name);
-		if(detailID)
-			++a;
-	}
-
-	fp=fopen("/tmp/count","w");
-	if(fp)
-	{
-		fprintf(fp, "%d\n%d\n%d\n", a,v,p);
-		fclose(fp);
-	}
-
-	if( !detailID )
-	{
-		DPRINTF(E_WARN, L_SCANNER, "Unsuccessful getting details for %s\n", path);
-		exit(-1);
-	}
-
-	sprintf(objectID, "%s%s$%X", BROWSEDIR_ID, parentID, object);
-	objname = strdup(name);
-	strip_ext(objname);
-
-	//DPRINTF(E_WARN, L_SCANNER, _("insert_file0-sql_exec,objectid=%s\n"),objectID);
-
-	sql_exec(db, "INSERT into OBJECTS"
-	             " (OBJECT_ID, PARENT_ID, CLASS, DETAIL_ID, NAME) "
-	             "VALUES"
-	             " ('%s', '%s%s', '%s', %lld, '%q')",
-	             objectID, BROWSEDIR_ID, parentID, class, detailID, objname);
-
-	//DPRINTF(E_WARN, L_SCANNER, _("after--insert_file0-sql_exec\n"));
-
-	if( *parentID )
-	{
-		int typedir_objectID = 0;
-		typedir_parentID = strdup(parentID);
-		baseid = strrchr(typedir_parentID, '$');
-		if( baseid )
-		{
-			typedir_objectID = strtol(baseid+1, NULL, 16);
-			*baseid = '\0';
-		}
-		insert_directory(objname, path, base, typedir_parentID, typedir_objectID);
-		free(typedir_parentID);
-	}
-
-	//DPRINTF(E_WARN, L_SCANNER, _("insert_file0--sql_exec 2--objectid=%s%s$%X\n"),base, parentID, object);
-
-	sql_exec(db, "INSERT into OBJECTS"
-	             " (OBJECT_ID, PARENT_ID, REF_ID, CLASS, DETAIL_ID, NAME) "
-	             "VALUES"
-	             " ('%s%s$%X', '%s%s', '%s', '%s', %lld, '%q')",
-	             base, parentID, object, base, parentID, objectID, class, detailID, objname);
-
-	//DPRINTF(E_WARN, L_SCANNER, _("after--insert_file0-sql_exec 2\n"));
-
-	insert_containers(objname, path, objectID, class, detailID);
-	free(objname);
-
-	return 0;
-}
-#endif
-
 int
 insert_file(const char *name, const char *path, const char *parentID, int object, media_types types)
 {
@@ -679,7 +492,7 @@ insert_file(const char *name, const char *path, const char *parentID, int object
 		return -1;
 	}
 
-	sprintf(objectID, "%s%s$%X", BROWSEDIR_ID, parentID, object);
+	snprintf(objectID, sizeof(objectID), "%s%s$%X", BROWSEDIR_ID, parentID, object);
 	objname = strdup(name);
 	strip_ext(objname);
 
@@ -967,10 +780,6 @@ ScanDirectory(const char *dir, const char *parent, media_types dir_types)
 	char *name = NULL;
 	static long long unsigned int fileno = 0;
 	enum file_types type;
-#if 0
-	pid_t pid;
-	int stat_val;
-#endif
 #if defined MS_IPK || defined MS_LIMIT
 	FILE *fp;
 	char memdata[256] = {0};
@@ -1086,80 +895,6 @@ ScanDirectory(const char *dir, const char *parent, media_types dir_types)
 			type = resolve_unknown_type(full_path, dir_types);
 		}
 		if( (type == TYPE_DIR) && (access(full_path, R_OK|X_OK) == 0) )
-//#ifdef MS_IPK
-#if 0
-		{
-			char *parent_id;
-			pid=fork();
-			switch(pid){
-				case 0:
-					DPRINTF(E_DEBUG, L_SCANNER, _("child process is running, curpid is %d,parent pid is %d\n"),pid, getppid());
-					DPRINTF(E_DEBUG, L_SCANNER, _("name=%s,full_path=%s,parent=%s\n"), name, full_path ,parent );
-					insert_directory0(name, full_path, BROWSEDIR_ID, THISORNUL(parent), i+startID);
-					break;
-				case -1:
-					DPRINTF(E_ERROR, L_SCANNER, _("process creation failed!\n"));
-					exit(EXIT_FAILURE);
-					break;
-				default:
-					DPRINTF(E_DEBUG, L_SCANNER, _("parent process is running,childpid is %d,parentpid is %d\n"),pid, getppid());
-
-			}
-			if(pid!=0){//for parent process wait for child process ending
-//				child_pid = wait(&stat_val);
-				wait(&stat_val);
-				DPRINTF(E_DEBUG, L_SCANNER, _("child process has exited pid is %d\n"),pid);
-				if(!WIFEXITED(stat_val)){
-					DPRINTF(E_DEBUG, L_SCANNER, _("child process exited abnormally\n"));
-				}
-			}
-
-			xasprintf(&parent_id, "%s$%X", THISORNUL(parent), i+startID);
-
-			char parent_id0[strlen(parent_id)+1];
-			sprintf(parent_id0,"%s",parent_id);
-			free(parent_id);
-			parent_id=NULL;
-
-			//ScanDirectory(full_path, parent_id, dir_types);
-			// process SQL ERROR 19 [column OBJECT_ID is not unique] when scan many directory
-			ScanDirectory(full_path, parent_id0, dir_types);
-			//free(parent_id);
-		}
-		else if( type == TYPE_FILE && (access(full_path, R_OK) == 0) )
-		{
-#ifdef MS_IPK
-			if(fileno>=25000)
-			{
-				DPRINTF(E_WARN, L_SCANNER, _("all type file number is too many!\n"));
-				break;
-			}
-#endif
-			pid=fork();
-			switch(pid){
-				case 0:
-					insert_file0(name, full_path, THISORNUL(parent), i+startID, dir_types);
-					break;
-				case -1:
-					DPRINTF(E_ERROR, L_SCANNER, _("process creation failed!\n"));
-					break;
-				default:
-					DPRINTF(E_DEBUG, L_SCANNER, _("parent process is running,childpid is %d,parentpid is %d\n"),pid, getppid());
-			}
-			if(pid!=0){//for parent process wait for child process ending
-//				child_pid = wait(&stat_val);
-				wait(&stat_val);
-				DPRINTF(E_DEBUG, L_SCANNER, _("child process has exited pid is %d\n"),pid);
-				if(WIFEXITED(stat_val)){
-					if(WEXITSTATUS(stat_val)==0){
-						fileno++;
-						DPRINTF(E_DEBUG, L_SCANNER, _("Scanning %s (%llu files)!\n"), dir, fileno);
-					}
-				} else
-					DPRINTF(E_WARN, L_SCANNER, _("child process exited abnormally\n"));
-			}
-		}
-#else
 		{
 			char *parent_id;
 			insert_directory(name, full_path, BROWSEDIR_ID, THISORNUL(parent), i+startID);
@@ -1172,7 +907,6 @@ ScanDirectory(const char *dir, const char *parent, media_types dir_types)
 			if( insert_file(name, full_path, THISORNUL(parent), i+startID, dir_types) == 0 )
 				fileno++;
 		}
-#endif
 		free(name);
 		free(namelist[i]);
 	}
@@ -1257,7 +991,6 @@ start_rescan(void)
 		summary = "changes found";
 	else
 		summary = "no changes";
-
 	DPRINTF(E_INFO, L_SCANNER, "Rescan completed. (%s)\n", summary);
 }
 /* end rescan functions */
@@ -1274,7 +1007,7 @@ start_scanner(void)
 	create_scantag();
 
 	setlocale(LC_COLLATE, "");
-	av_register_all();
+	lav_register_all();
 	av_log_set_level(AV_LOG_PANIC);
 
 	if( GETFLAG(RESCAN_MASK) )
@@ -1292,7 +1025,7 @@ start_scanner(void)
 		{
 			int startID = get_next_available_id("OBJECTS", BROWSEDIR_ID);
 			id = insert_directory(bname, path, BROWSEDIR_ID, "", startID);
-			sprintf(buf, "$%X", startID);
+			snprintf(buf, sizeof(buf), "$%X", startID);
 			parent = buf;
 		}
 		else

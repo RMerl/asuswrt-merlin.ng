@@ -256,23 +256,6 @@ function addRow_Group(){
 
 		manually_dhcp_list_array[document.form.dhcp_staticip_x_0.value.toUpperCase()] = item_para;
 
-		if(vpn_fusion_support) {
-			var policy_flag = false;
-			$.each(vpnc_dev_policy_list_array, function(index, value){
-				if(value[0] == document.form.dhcp_staticip_x_0.value){
-					policy_flag = true;
-					return false;
-				}
-			});
-			if(!policy_flag){
-				var newRuleArray = new Array();
-				newRuleArray.push(document.form.dhcp_staticip_x_0.value);
-				newRuleArray.push("0");
-				newRuleArray.push("0");
-				vpnc_dev_policy_list_array.push(newRuleArray);
-			}
-		}
-
 		document.form.dhcp_staticip_x_0.value = "";
 		document.form.dhcp_staticmac_x_0.value = "";
 		document.form.dhcp_dnsip_x_0.value = "";
@@ -297,21 +280,6 @@ function addRow_Group(){
 function del_Row(r){
 	var i = r.parentNode.parentNode.rowIndex;
 	var delIP = document.getElementById('dhcp_staticlist_table').rows[i].cells[1].innerHTML;
-
-	if(vpn_fusion_support) {
-		var policy_flag = false;
-		$.each(vpnc_dev_policy_list_array_ori, function(index, value){
-			if(value[0] == delIP){
-				policy_flag = true;
-				return false;
-			}
-		});
-
-		if(policy_flag){
-			if(!confirm("Remove the client's IP binding will also delete the client's policy in the exception list of <#VPN_Fusion#>. Are you sure you want to delete?"))/*untranslated*/
-				return false;
-		}
-	}
 
 	delete manually_dhcp_list_array[delIP];
 	document.getElementById('dhcp_staticlist_table').deleteRow(i);
@@ -968,25 +936,26 @@ function sortClientIP(){
 			  </thead>		
 			  
 			  <tr>
-				<th width="200"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,7);">DNS Server 1</a></th>
+				<th width="200"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,7);"><#LANHostConfig_x_LDNSServer1_itemname#> 1</a></th>
 				<td>
 				  <input type="text" maxlength="15" class="input_15_table" name="dhcp_dns1_x" value="<% nvram_get("dhcp_dns1_x"); %>" onKeyPress="return validator.isIPAddr(this,event)" autocorrect="off" autocapitalize="off">
 				  <div id="yadns_hint" style="display:none;"></div>
 				</td>
 			  </tr>
 			  <tr>
-				<th width="200"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,7);">DNS Server 2</a></th>
+				<th width="200"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,7);"><#LANHostConfig_x_LDNSServer1_itemname#> 2</a></th>
 				<td>
 				  <input type="text" maxlength="15" class="input_15_table" name="dhcp_dns2_x" value="<% nvram_get("dhcp_dns2_x"); %>" onKeyPress="return validator.isIPAddr(this,event)">
 				</td>
 			  </tr>
-                          <tr>
-                                <th>Advertise router's IP in addition to user-specified DNS</th>
-                                <td>
-                                  <input type="radio" value="1" name="dhcpd_dns_router" class="content_input_fd" onClick="return change_common_radio(this, 'LANHostConfig', 'dhcpd_dns_router', '1')" <% nvram_match("dhcpd_dns_router", "1", "checked"); %>><#checkbox_Yes#>
-                                  <input type="radio" value="0" name="dhcpd_dns_router" class="content_input_fd" onClick="return change_common_radio(this, 'LANHostConfig', 'dhcpd_dns_router', '0')" <% nvram_match("dhcpd_dns_router", "0", "checked"); %>><#checkbox_No#>
-                                </td>
-                          </tr>
+                          
+			<tr>
+				<th><#LAN_Advertise_Router_IP_DNS#></th>
+				<td>
+					<input type="radio" value="1" name="dhcpd_dns_router" class="content_input_fd" onClick="return change_common_radio(this, 'LANHostConfig', 'dhcpd_dns_router', '1')" <% nvram_match("dhcpd_dns_router", "1", "checked"); %>><#checkbox_Yes#>
+					<input type="radio" value="0" name="dhcpd_dns_router" class="content_input_fd" onClick="return change_common_radio(this, 'LANHostConfig', 'dhcpd_dns_router', '0')" <% nvram_match("dhcpd_dns_router", "0", "checked"); %>><#checkbox_No#>
+				</td>
+			</tr>
 			<tr style="display:none;">
 				<th width="200"><#ipv6_dns_serv#></th>
 				<td>

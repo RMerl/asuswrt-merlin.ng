@@ -37,8 +37,8 @@
 
 #if defined(RTCONFIG_WIFI_QCN5024_QCN5054)
 #define EXTRA_PBUF_CORE0_FN		"/proc/sys/dev/nss/n2hcfg/extra_pbuf_core0"
-#define N2H_QUEUE_LIMIT_CORE0_FN	"/proc/sys/dev.nss/n2hcfg/n2h_queue_limit_core0"
-#define N2H_QUEUE_LIMIT_CORE1_FN	"/proc/sys/dev.nss/n2hcfg/n2h_queue_limit_core1"
+#define N2H_QUEUE_LIMIT_CORE0_FN	"/proc/sys/dev/nss/n2hcfg/n2h_queue_limit_core0"
+#define N2H_QUEUE_LIMIT_CORE1_FN	"/proc/sys/dev/nss/n2hcfg/n2h_queue_limit_core1"
 #else
 #define EXTRA_PBUF_CORE0_FN		"/proc/sys/dev/nss/general/extra_pbuf_core0"
 #endif
@@ -149,6 +149,17 @@ enum ieee80211_phymode {
     IEEE80211_MODE_11AXA_HE80       = 30,   /* 5GHz, HE80 */
     IEEE80211_MODE_11AXA_HE160      = 31,   /* 5GHz, HE160 */
     IEEE80211_MODE_11AXA_HE80_80    = 32,   /* 5GHz, HE80_80 */
+    IEEE80211_MODE_11BEA_EHT20      = 33,   /* 5GHz, EHT20 */
+    IEEE80211_MODE_11BEG_EHT20      = 34,   /* 2GHz, EHT20 */
+    IEEE80211_MODE_11BEA_EHT40PLUS  = 35,   /* 5GHz, EHT40 (ext ch +1) */
+    IEEE80211_MODE_11BEA_EHT40MINUS = 36,   /* 5GHz, EHT40 (ext ch -1) */
+    IEEE80211_MODE_11BEG_EHT40PLUS  = 37,   /* 2GHz, EHT40 (ext ch +1) */
+    IEEE80211_MODE_11BEG_EHT40MINUS = 38,   /* 2GHz, EHT40 (ext ch -1) */
+    IEEE80211_MODE_11BEA_EHT40      = 39,   /* 5GHz, EHT40 */
+    IEEE80211_MODE_11BEG_EHT40      = 40,   /* 2GHz, EHT40 */
+    IEEE80211_MODE_11BEA_EHT80      = 41,   /* 5GHz, EHT80 */
+    IEEE80211_MODE_11BEA_EHT160     = 42,   /* 5GHz, EHT160 */
+    IEEE80211_MODE_11BEA_EHT320     = 43,   /* 5GHz, EHT320 */
 
     IEEE80211_MODE_MAX
 };

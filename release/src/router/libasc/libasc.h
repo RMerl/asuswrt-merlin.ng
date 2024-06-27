@@ -15,6 +15,7 @@
 #define LIBASC_INVALID_PARAMETER	-1
 #define LIBASC_WRITE_ERROR	-2 
 #define LIBASC_INIT_FAIL		-3
+#define LIBASC_CANNOT_GET_DL_PATH	-4
 
 extern int curl_download_file(const int feature, const char *url, const char *file_path);
 #endif

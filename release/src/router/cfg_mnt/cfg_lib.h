@@ -19,6 +19,7 @@ typedef struct _avbl_chanspec_t
 #endif
 	unsigned int existTribandRe;
 	unsigned int existDual5gRe;
+	unsigned int existDual6gRe;
 }AVBL_CHANSPEC_T;
 
 extern int send_cfgmnt_event(char *msg);

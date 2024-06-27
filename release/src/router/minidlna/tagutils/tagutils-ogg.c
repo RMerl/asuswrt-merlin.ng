@@ -435,7 +435,7 @@ _get_oggfileinfo(char *filename, struct song_metadata *psong)
 		return -1;
 	}
 
-	DPRINTF(E_MAXDEBUG, L_SCANNER, "Processing file \"%s\"...\n\n", filename);
+	DPRINTF(E_MAXDEBUG, L_SCANNER, "Processing file \"%s\"...\n", filename);
 
 	ogg_sync_init(&sync);
 

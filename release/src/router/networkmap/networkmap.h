@@ -92,6 +92,7 @@ enum
 
 #define NCL_LIMIT		14336   //database limit to 14KB to avoid UI glitch
 
+#define IP_TABLE_PATH               "/tmp/nmp_ip_table"
 #define NMP_DEBUG_FILE				"/tmp/NMP_DEBUG"
 #define NMP_DEBUG_MORE_FILE			"/tmp/NMP_DEBUG_MORE"
 #define NMP_DEBUG_FUNCTION_FILE		"/tmp/NMP_DEBUG_FUNCTION"
@@ -215,6 +216,7 @@ typedef struct {
 	unsigned char	type[MAX_NR_CLIENT_LIST];
 	unsigned char	ipMethod[MAX_NR_CLIENT_LIST][7];
 	unsigned char	opMode[MAX_NR_CLIENT_LIST];
+	unsigned char	dhcp_flag[MAX_NR_CLIENT_LIST];
 /* define bitmap flag:	0.http
 			1.printer
 			2.itune
@@ -289,7 +291,13 @@ void regularly_check_devices(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab
 
 void check_clientlist_offline(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab);
 
+int check_wire_info(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, const int i);
+
 int check_wireless_clientlist(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab);
+
+void check_clients_from_ip_cmd(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab);
+
+void check_dhcp_ip_online(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab, const char *mac, const char *ip_addr);
 
 void check_brctl_mac_online(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab);
 

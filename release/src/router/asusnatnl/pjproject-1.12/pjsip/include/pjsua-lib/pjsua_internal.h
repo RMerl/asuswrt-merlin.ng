@@ -140,6 +140,11 @@ typedef struct pjsua_call
 
 	int tnl_build_spent_sec;
 
+	//int inv_state;
+	char    inv_state_flow[128];
+	//int inv_tsx_state;
+	char    inv_tsx_state_flow[128];
+
 } pjsua_call;
 
 

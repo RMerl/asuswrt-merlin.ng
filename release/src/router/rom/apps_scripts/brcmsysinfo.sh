@@ -69,6 +69,11 @@ do
     fi
 done
 
+echo
+echo
+echo "======free======"
+free
+
 # Current Processes Information
 echo
 echo "###### ps ######"
@@ -136,6 +141,14 @@ brctl show
 echo
 echo "######route -n######"
 route -n
+
+echo
+echo "######route -A inet6######"
+route -A inet6
+
+echo
+echo "######ip -f inet6 neigh######"
+ip -f inet6 neigh
 
 echo
 echo "###### iptables -w -t nat -L ######"

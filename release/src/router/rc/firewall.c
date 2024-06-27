@@ -948,7 +948,15 @@ char *iprange_ex_conv(char *ip, char *buf)
 	char startip[16]; //, endip[16];
 	int i, j, k;
 	int mask;
+#ifdef RTCONFIG_IPV6
+	char *p;
 
+	if (*(p = ipv6_address(ip)))
+	{
+		strcpy(buf, p);
+		return buf;
+	}
+#endif
 	strcpy(buf, "");
 
 	if (!ip || (ip && (strchr(ip, ':') || strchr(ip, '/') || strlen(ip) > INET_ADDRSTRLEN)))
@@ -1955,12 +1963,23 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 				}
 #endif
 				break;
+			case WAN_DSLITE:
+				break;
 			}
 #endif
+#ifdef RTCONFIG_SOFTWIRE46
+			if (get_ipv4_service_by_unit(wan_ifunit(wan_if)) != WAN_DSLITE)
+#ifdef BCM_KF_NETFILTER
+				fprintf(fp, "-A POSTROUTING %s -o %s ! -s %s -j MASQUERADE --mode %s\n", p, wan_if, wan_ip, (nvram_get_int("nat_type") ? "fullcone" : "symmetric"));
+#else
+				fprintf(fp, "-A POSTROUTING %s -o %s ! -s %s -j MASQUERADE\n", p, wan_if, wan_ip);
+#endif
+#else
 #if defined(BCM_KF_NETFILTER) && !defined(BCM4912)
 			fprintf(fp, "-A POSTROUTING %s -o %s ! -s %s -j MASQUERADE --mode %s\n", p, wan_if, wan_ip, (nvram_get_int("nat_type") ? "fullcone" : "symmetric"));
 #else
 			fprintf(fp, "-A POSTROUTING %s -o %s ! -s %s -j MASQUERADE\n", p, wan_if, wan_ip);
+#endif
 #endif
 		}
 
@@ -3854,6 +3873,7 @@ TRACE_PT("writing Parental Control\n");
 		case WAN_MAPE:
 		case WAN_V6PLUS:
 		case WAN_OCNVC:
+		case WAN_DSLITE:
 #endif
 		case WAN_DISABLED:
 			break;
@@ -3993,6 +4013,7 @@ TRACE_PT("writing Parental Control\n");
 			case WAN_MAPE:
 			case WAN_V6PLUS:
 			case WAN_OCNVC:
+			case WAN_DSLITE:
 				fprintf(fp_ipv6, "-A INPUT -p 4 -j %s\n", "ACCEPT");
 				break;
 			}
@@ -4134,7 +4155,7 @@ TRACE_PT("writing Parental Control\n");
 	    dualwan_unit__usbif(wan_unit) ||
 #endif
 #ifdef RTCONFIG_SOFTWIRE46
-	    wan_proto == WAN_LW4O6 || wan_proto == WAN_MAPE || wan_proto == WAN_V6PLUS || wan_proto == WAN_OCNVC ||
+	    wan_proto == WAN_LW4O6 || wan_proto == WAN_MAPE || wan_proto == WAN_V6PLUS || wan_proto == WAN_OCNVC || wan_proto == WAN_DSLITE ||
 #endif
 	    wan_proto == WAN_PPPOE || wan_proto == WAN_PPTP || wan_proto == WAN_L2TP) {
 		fprintf(fp, "-A FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n");
@@ -4415,7 +4436,7 @@ TRACE_PT("writing Parental Control\n");
 		char ptr[32], *icmplist;
 		char *ftype, *dtype;
 		char protoptr[16], flagptr[16];
-		char srcipbuf[32], dstipbuf[32];
+		char srcipbuf[48], dstipbuf[48];
 		int apply;
 		char *p, *g;
 
@@ -4435,8 +4456,6 @@ TRACE_PT("writing Parental Control\n");
 		}
 
 		if(apply) {
-			v4v6_ok = IPT_V4|IPT_V6;
-
 			// LAN/WAN filter
 			nv = nvp = strdup(nvram_safe_get("filter_lwlist"));
 
@@ -4448,6 +4467,7 @@ TRACE_PT("writing Parental Control\n");
 					g_buf_init(); // need to modified
 
 					setting = filter_conv(protoptr, flagptr, iprange_ex_conv(srcip, srcipbuf), srcport, iprange_ex_conv(dstip, dstipbuf), dstport);
+					v4v6_ok = IPT_V4|IPT_V6;
 					if (srcip) v4v6_ok = ipt_addr_compact((*srcipbuf)?srcipbuf:srcip, v4v6_ok, (v4v6_ok == IPT_V4));
 					if (dstip) v4v6_ok = ipt_addr_compact((*dstipbuf)?dstipbuf:dstip, v4v6_ok, (v4v6_ok == IPT_V4));
 
@@ -4468,8 +4488,6 @@ TRACE_PT("writing Parental Control\n");
 				}
 				if(nv) free(nv);
 			}
-			//restore
-			v4v6_ok = IPT_V4;
 		}
 		// ICMP
 		foreach(ptr, nvram_safe_get("filter_lw_icmp_x"), icmplist)
@@ -4482,7 +4500,7 @@ TRACE_PT("writing Parental Control\n");
 					//cprintf("[timematch] g=%s, p=%s, lanwan=%s, buf=%s\n", g, p, lanwan_timematch, lanwan_buf);
 					fprintf(fp, "-A %s %s -i %s -o %s -p icmp --icmp-type %s -j %s\n", chain, g, lan_if, wan_if, ptr, ftype);
 #ifdef RTCONFIG_IPV6
-					if (ipv6_enabled() && (v4v6_ok & IPT_V6) && *wan6face)
+					if (ipv6_enabled() && *wan6face)
 					fprintf(fp_ipv6, "-A %s %s -i %s -o %s %s -j %s\n", chain, g, lan_if, wan6face, setting, ftype);
 #endif
 				}
@@ -4550,8 +4568,6 @@ TRACE_PT("writing Parental Control\n");
 		}
 
 		if(apply) {
-			v4v6_ok = IPT_V4;
-
 			// WAN/LAN filter
 			nv = nvp = strdup(nvram_safe_get("filter_wllist"));
 
@@ -4560,8 +4576,9 @@ TRACE_PT("writing Parental Control\n");
 					if ((vstrsep(b, ">", &proto, &flag, &srcip, &srcport, &dstip, &dstport) != 6)) continue;
 
 					setting=filter_conv(proto, flag, srcip, srcport, dstip, dstport);
-					if (srcip) v4v6_ok = ipt_addr_compact(srcip, v4v6_ok, (v4v6_ok == IPT_V4));
-					if (dstip) v4v6_ok = ipt_addr_compact(dstip, v4v6_ok, (v4v6_ok == IPT_V4));
+					v4v6_ok = IPT_V4|IPT_V6;
+					if (srcip) v4v6_ok = ipt_addr_compact((*srcipbuf)?srcipbuf:srcip, v4v6_ok, (v4v6_ok == IPT_V4));
+					if (dstip) v4v6_ok = ipt_addr_compact((*dstipbuf)?dstipbuf:dstip, v4v6_ok, (v4v6_ok == IPT_V4));
 					if (v4v6_ok & IPT_V4)
 		 			fprintf(fp, "-A FORWARD %s -i %s -o %s %s -j %s\n", wanlan_timematch, wan_if, lan_if, setting, ftype);
 #ifdef RTCONFIG_IPV6
@@ -5301,6 +5318,7 @@ TRACE_PT("writing Parental Control\n");
 			case WAN_MAPE:
 			case WAN_V6PLUS:
 			case WAN_OCNVC:
+			case WAN_DSLITE:
 #endif
 			case WAN_DISABLED:
 				continue;
@@ -5422,6 +5440,7 @@ TRACE_PT("writing Parental Control\n");
 				case WAN_MAPE:
 				case WAN_V6PLUS:
 				case WAN_OCNVC:
+				case WAN_DSLITE:
 					fprintf(fp_ipv6, "-A INPUT -p 4 -j %s\n", "ACCEPT");
 					break;
 				default:
@@ -5569,7 +5588,7 @@ TRACE_PT("writing Parental Control\n");
 		    dualwan_unit__usbif(unit) ||
 #endif
 #ifdef RTCONFIG_SOFTWIRE46
-		    wan_proto == WAN_LW4O6 || wan_proto == WAN_MAPE || wan_proto == WAN_V6PLUS || wan_proto == WAN_OCNVC ||
+		    wan_proto == WAN_LW4O6 || wan_proto == WAN_MAPE || wan_proto == WAN_V6PLUS || wan_proto == WAN_OCNVC || wan_proto == WAN_DSLITE ||
 #endif
 		    wan_proto == WAN_PPPOE || wan_proto == WAN_PPTP || wan_proto == WAN_L2TP) {
 		clamp_mss:
@@ -5823,7 +5842,7 @@ TRACE_PT("writing Parental Control\n");
 		char ptr[32], *icmplist;
 		char *ftype, *dtype;
 		char protoptr[16], flagptr[16];
-		char srcipbuf[32], dstipbuf[32];
+		char srcipbuf[48], dstipbuf[48];
 		int apply;
 		char *p, *g;
 
@@ -5844,8 +5863,6 @@ TRACE_PT("writing Parental Control\n");
 		}
 
 		if(apply) {
-			v4v6_ok = IPT_V4|IPT_V6;
-
 			// LAN/WAN filter
 			nv = nvp = strdup(nvram_safe_get("filter_lwlist"));
 
@@ -5857,6 +5874,7 @@ TRACE_PT("writing Parental Control\n");
 					g_buf_init(); // need to modified
 
 					setting = filter_conv(protoptr, flagptr, iprange_ex_conv(srcip, srcipbuf), srcport, iprange_ex_conv(dstip, dstipbuf), dstport);
+					v4v6_ok = IPT_V4|IPT_V6;
 					if (srcip) v4v6_ok = ipt_addr_compact((*srcipbuf)?srcipbuf:srcip, v4v6_ok, (v4v6_ok == IPT_V4));
 					if (dstip) v4v6_ok = ipt_addr_compact((*dstipbuf)?dstipbuf:dstip, v4v6_ok, (v4v6_ok == IPT_V4));
 					for(unit = WAN_UNIT_FIRST; unit < wan_max_unit; ++unit){
@@ -5892,9 +5910,6 @@ TRACE_PT("writing Parental Control\n");
 				}
 				if(nv) free(nv);
 			}
-
-			//restore
-			v4v6_ok = IPT_V4;
 		}
 
 		// ICMP
@@ -5912,7 +5927,6 @@ TRACE_PT("writing Parental Control\n");
 				while(p){
 					if((g=strsep(&p, ">")) != NULL){
 						//cprintf("[timematch] g=%s, p=%s, lanwan=%s, buf=%s\n", g, p, lanwan_timematch, lanwan_buf);
-						if (v4v6_ok & IPT_V4)
 						fprintf(fp, "-A %s %s -i %s -o %s -p icmp --icmp-type %s -j %s\n", chain, g, lan_if, wan_if, ptr, ftype);
 					}
 				}
@@ -5973,7 +5987,11 @@ TRACE_PT("writing Parental Control\n");
 #ifdef RTCONFIG_CAPTIVE_PORTAL
 	if (nvram_match("chilli_enable", "1") || nvram_match("hotss_enable", "1"))
 	{
-		fprintf(fp, "-I INPUT -i tun22 -m state --state NEW -j ACCEPT\n");
+		#ifdef RTCONFIG_MULTILAN_CFG
+		
+		#else
+			fprintf(fp, "-I INPUT -i tun22 -m state --state NEW -j ACCEPT\n");
+		#endif
 		fprintf(fp, "-I FORWARD -i tun22 -m state --state NEW -j ACCEPT\n");
 		fprintf(fp, "-I FORWARD -i tun22 -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n");
 	}
@@ -6008,8 +6026,6 @@ TRACE_PT("writing Parental Control\n");
 		}
 
 		if(apply) {
-			v4v6_ok = IPT_V4;
-
 			// WAN/LAN filter
 			nv = nvp = strdup(nvram_safe_get("filter_wllist"));
 
@@ -6018,8 +6034,9 @@ TRACE_PT("writing Parental Control\n");
 					if ((vstrsep(b, ">", &proto, &flag, &srcip, &srcport, &dstip, &dstport) != 6)) continue;
 
 					setting=filter_conv(proto, flag, srcip, srcport, dstip, dstport);
-					if (srcip) v4v6_ok = ipt_addr_compact(srcip, v4v6_ok, (v4v6_ok == IPT_V4));
-					if (dstip) v4v6_ok = ipt_addr_compact(dstip, v4v6_ok, (v4v6_ok == IPT_V4));
+					v4v6_ok = IPT_V4|IPT_V6;
+					if (srcip) v4v6_ok = ipt_addr_compact((*srcipbuf)?srcipbuf:srcip, v4v6_ok, (v4v6_ok == IPT_V4));
+					if (dstip) v4v6_ok = ipt_addr_compact((*dstipbuf)?dstipbuf:dstip, v4v6_ok, (v4v6_ok == IPT_V4));
 					if (v4v6_ok & IPT_V4)
 						for(unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit){
 							if(!is_wan_connect(unit))
@@ -6052,7 +6069,7 @@ TRACE_PT("writing Parental Control\n");
 			}
 
 #ifdef RTCONFIG_IPV6
-			if (ipv6_enabled() && (v4v6_ok & IPT_V6) && *wan6face)
+			if (ipv6_enabled() && *wan6face)
 				fprintf(fp_ipv6, "-A FORWARD %s -i %s -o %s -p icmp --icmp-type %s -j %s\n", wanlan_timematch, wan6face, lan_if, ptr, ftype);
 #endif
 		}
@@ -6555,6 +6572,7 @@ mangle_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 		case WAN_MAPE:
 		case WAN_V6PLUS:
 		case WAN_OCNVC:
+		case WAN_DSLITE:
 #ifdef RTCONFIG_BCMARM
 #ifdef HND_ROUTER
 			if (!nvram_match("fc_pt_war", "1"))
@@ -6977,7 +6995,7 @@ int start_firewall(int wanunit, int lanunit)
 	char wanx_if[IFNAMSIZ+1], wanx_ip[32];
 	char prefix[] = "wanXXXXXXXXXX_", tmp[100];
 	int lock;
-	char rp_if[32] = {0};
+	char rp_if[32] __attribute__((unused)) = {0};
 
 	if (!is_routing_enabled())
 		return -1;

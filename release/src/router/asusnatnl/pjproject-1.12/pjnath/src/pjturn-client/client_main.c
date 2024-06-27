@@ -97,6 +97,7 @@ static void my_perror(const char *title, pj_status_t status)
     char errmsg[PJ_ERR_MSG_SIZE];
     pj_strerror(status, errmsg, sizeof(errmsg));
 
+	printf("%s: %s\n", title, errmsg);
     PJ_LOG(3,(THIS_FILE, "%s: %s", title, errmsg));
 }
 

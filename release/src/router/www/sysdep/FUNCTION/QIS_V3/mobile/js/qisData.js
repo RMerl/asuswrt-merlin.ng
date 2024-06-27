@@ -3,7 +3,8 @@ var qisPostData = {};
 var opModeObj = {
 	"sw_mode": "",
 	"wlc_psta": "",
-	"wlc_dpsta": ""
+	"wlc_dpsta": "",
+	"wlc_band": ""
 }
 
 var generalObj = {
@@ -48,6 +49,11 @@ var wanObj = {
 		"ipv6_service": "ipv6pt"
 	},
 
+	"dslite": {
+		"ipv6_service": "ipv6pt",
+		"wan_s46_dslite_mode": "0"
+	},
+
 	"wan46": {
 		"wan_proto": "",
 		"ipv6_service": "ipv6pt"
@@ -88,6 +94,13 @@ var lanObj = {
 	"general":{
 		"lan_proto": "",
 		"lan_dnsenable_x": ""
+	},
+
+	"changeSubnet": {
+		"lan_ipaddr": "",
+		"lan_ipaddr_rt": "",
+		"dhcp_start": "",
+		"dhcp_end": ""
 	},
 
 	"staticIp": {
@@ -149,6 +162,16 @@ var wlcObj = {
 	"wlc_key": "",
 	"wlc_ap_mac": ""
 }
+
+var wispObj = {
+	"sw_mode": "1",
+	"wlc_psta": "0",
+	"wlc_dpsta": "0",
+	"wans_dualwan": "wan none",
+	"wan_unit": "0",
+	"wan_hwaddr_x": ""
+}
+
 var wlcMultiObj = {
 	"wlc0" : {
 		"wlc0_band": "",
@@ -204,7 +227,8 @@ var bwdpiObj = {
 
 var timeObj = {
 	"time_zone": "",
-	"time_zone_dst": ""
+	"time_zone_dst": "",
+	"time_zone_dstoff": ""
 }
 
 var iptvObj = {
@@ -259,6 +283,7 @@ var modemObj = {
 }
 
 var systemVariable = {
+	"qisSession": "",
 	"originWanType": "", /* ToDo: Secondary WAN support */
 	"originPppAccount":{
 		"username": "",
@@ -267,11 +292,12 @@ var systemVariable = {
 	"maxPasswordLen": 32,
 	"originWansExtwan": "",
 	"originWansDualwan": "",
+	"originWansMode": "",
 	"manualWanSetup": false,
 	"wanDnsenable": "",
 	"detwanResult": {
 		"wanType": "",
-		"isIPConflict": false,
+		"isIPConflict": false
 	},
 	"detwan46Result": {
 		"wan46State": ""
@@ -305,6 +331,40 @@ var systemVariable = {
 	"amas_newWindow_addNode": false,
 	"authModePostData": {},
 	"eth_wan_list":{},
+	"ispProfiles": [],
+	"ispPortDefinitions": {},
+	"cloudIspProfiles": [],
+	"site2site_wl": {
+		"wl_2G": {
+			"ifname": "",
+			"ssid_new": "",
+			"key_new": "",
+			"ssid_ori": "",
+			"select": "",
+			"confirm": false
+		},
+		"wl_5G": {
+			"ifname": "",
+			"ssid_new": "",
+			"key_new": "",
+			"ssid_ori": "",
+			"select": "",
+			"confirm": false
+		}
+	},
+	"site2site_vpnc" : {
+		"model": "",
+		"domain": "",
+		"ticket": "",
+		"area": "",
+		"vpnc_wl_ifname": ""
+	},
+	"site2site_status" : {
+		"profile_maximum" : false,
+		"profile_maximum_type" : "",
+		"is_dut_self" : false
+	},
+	"cfg_ready_check" : 0
 }
 
 var aimeshObj = {
@@ -357,7 +417,7 @@ var dsl_wanObj = {
 		"dsl_unit": "8",
 		"dsl_proto": "",
 		"dsl_dot1q": "",
-		"dsl_vid": "",
+		"dsl_vid": ""
 	},
 
 	"dslDHCPObj" : {

@@ -347,6 +347,63 @@ void sync_control_channel(int unit, int channel, int bw, int nctrlsb)
 
 #endif
 
+static int _wl_get_chanspec(char* ifname, chanspec_t* chanspec)
+{
+	union ioval_u {
+		char buf[WLC_IOCTL_MAXLEN];
+		uint32_t val;
+	} u;
+
+	strlcpy(u.buf, "chanspec", sizeof(u.buf));
+	if(wl_ioctl(ifname, WLC_GET_VAR, u.buf, sizeof(u.buf)) < 0)
+	{
+		return (-1);
+	}
+
+	*chanspec = (chanspec_t)dtoh32(u.val);
+
+	return (0);
+}
+
+void get_control_channel(int unit, int *channel, int *bw, int *nctrlsb)
+{
+	char tmp[128], prefix[] = "wlXXXXXXXXXX_";
+	char *name;
+	chanspec_t chanspec = 0;
+
+	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+	name = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
+
+	if (_wl_get_chanspec(name, &chanspec) < 0) {
+		//dbg("get chanspec failed on %s\n", name);
+		return;
+	}
+	
+	if (wf_chspec_valid(chanspec)) {
+		*channel = wf_chspec_ctlchan(chanspec);
+		if (CHSPEC_IS20(chanspec))
+			*bw = 20;
+		else if (CHSPEC_IS40(chanspec)) {
+			*bw = 40;
+			if (CHSPEC_SB_UPPER(chanspec))
+				*nctrlsb = 1;
+		}
+		else if (CHSPEC_IS80(chanspec))
+			*bw = 80;
+#if defined(RTCONFIG_HND_ROUTER_AX) || defined(RTCONFIG_BW160M)
+		else if (CHSPEC_IS160(chanspec))
+			*bw = 160;
+#endif
+#if defined(RTCONFIG_BW320M)
+		else if (CHSPEC_IS320(chanspec)) {
+			*bw = 320;
+			if (CHSPEC_IS320_2(chanspec))
+				*nctrlsb = 1;
+		}
+#endif
+	}
+}
+
 static int is_hex(char c)
 {
 	return (((c >= '0') && (c <= '9')) ||

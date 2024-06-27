@@ -102,7 +102,7 @@ body{
 <script type="text/javascript" src="/client_function.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" src="/form.js"></script>
-<script type="text/javascript" src="/js/asus_eula.js"></script>
+<script type="text/javascript" src="/js/asus_policy.js"></script>
 
 <script>
 var fc_disable_orig = '<% nvram_get("fc_disable"); %>';
@@ -299,9 +299,16 @@ function hideGameListField(){
 function enableGamePriority(){
 	if(adaptiveqos_support){
 		if(document.form.qos_enable.value == "0" && document.form.TM_EULA.value == "0"){
-			ASUS_EULA
-				.config(eula_confirm, cancel)
-				.show("tm");
+			if(policy_status.TM == 0 || policy_status.TM_time == ''){
+                const policyModal = new PolicyModalComponent({
+                    policy: "TM",
+                    agreeCallback: eula_confirm,
+                    disagreeCallback: cancel
+                });
+                policyModal.show();
+            }else{
+                eula_confirm();
+            }
 		}
 		else{
 			if(document.getElementById("game_priority_enable").checked){

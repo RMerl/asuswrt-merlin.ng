@@ -221,6 +221,35 @@ extern int PS_pclose(FILE *);
 #define GPIO_DIR_IN	0
 #define GPIO_DIR_OUT	1
 
+#if defined(RTCONFIG_QCA)
+#define SPF_VER_ID(maj,min)	(((maj) << 8) + (min))
+
+#if defined(RTCONFIG_WIFI_QCA9557_QCA9882)
+#define SPF_VER			SPF_VER_ID(2,1)
+#elif defined(RTCONFIG_SOC_IPQ8064)
+#define SPF_VER			SPF_VER_ID(3,1)
+#elif defined(RTCONFIG_SPF8_QSDK)
+#define SPF_VER			SPF_VER_ID(8,0)
+#elif defined(RTCONFIG_SPF10_QSDK)
+#define SPF_VER			SPF_VER_ID(10,0)
+#elif defined(RTCONFIG_SPF11_QSDK)
+#define SPF_VER			SPF_VER_ID(10,0)
+#elif defined(RTCONFIG_SPF11_1_QSDK)
+#define SPF_VER			SPF_VER_ID(11,1)
+#elif defined(RTCONFIG_SPF11_3_QSDK)
+#define SPF_VER			SPF_VER_ID(11,3)
+#elif defined(RTCONFIG_SPF11_4_QSDK)
+#define SPF_VER			SPF_VER_ID(11,4)
+#elif defined(RTCONFIG_SPF11_5_QSDK)
+#define SPF_VER			SPF_VER_ID(11,5)
+#elif defined(RTCONFIG_SPF12_2_QSDK)
+#define SPF_VER			SPF_VER_ID(12,2)
+#else
+#define SPF_VER			SPF_VER_ID(0,0)
+#warning SPF_VER is not defined!
+#endif	/* RTCONFIG_SPF8_QSDK */
+#endif	/* RTCONFIG_QCA */
+
 #define PROC_IRQ		"/proc/irq"
 #define SYS_CLASS_MTD		"/sys/class/mtd"
 #define SYS_CLASS_NET		"/sys/class/net"
@@ -414,6 +443,7 @@ enum {
 	WAN_MAPE,
 	WAN_V6PLUS,
 	WAN_OCNVC,
+	WAN_DSLITE,
 };
 
 #ifdef RTCONFIG_IPV6
@@ -524,6 +554,7 @@ enum {
 #define CFG_WL_STR_5G	"5G"
 #define CFG_WL_STR_5G1	"5G1"
 #define CFG_WL_STR_6G	"6G"
+#define CFG_WL_STR_6G1	"6G1"
 
 #ifdef RTCONFIG_ADV_RAST
 enum romaingEvent {
@@ -810,6 +841,10 @@ extern void chld_reap(int sig);
 extern int get_wan_proto(char *prefix);
 extern int get_ipv4_service(void);
 extern int get_ipv4_service_by_unit(int unit);
+#ifdef RTCONFIG_SOFTWIRE46
+extern int is_s46_service(void);
+extern int is_s46_service_by_unit(int unit);
+#endif
 #ifdef RTCONFIG_IPV6
 extern char *ipv6_nvname(const char *name);
 extern char *ipv6_nvname_by_unit(const char *name, int unit);
@@ -872,8 +907,8 @@ extern int nvram_get_int(const char *key);
 extern int nvram_pf_get_int(const char *prefix, const char *key);
 extern int nvram_set_int(const char *key, int value);
 extern int nvram_pf_set_int(const char *prefix, const char *key, int value);
-extern int nvram_pf_match(char *prefix, char *name, char *match);
-extern int nvram_pf_invmatch(char *prefix, char *name, char *invmatch);
+extern int nvram_pf_match(const char *prefix, char *name, char *match);
+extern int nvram_pf_invmatch(const char *prefix, char *name, char *invmatch);
 extern double nvram_get_double(const char *key);
 extern int nvram_set_double(const char *key, double value);
 extern int nvram_get_hex(const char *key);
@@ -914,6 +949,7 @@ extern int load_kmods(char *kmods_list);
 extern int remove_kmods(char *kmods_list);
 extern int num_of_wl_if(void);
 extern int num_of_5g_if(void);
+extern int num_of_6g_if(void);
 
 // usb.c
 #ifdef RTCONFIG_USB
@@ -1796,7 +1832,10 @@ static inline int __re_mode(int sw_mode) {
 static inline int re_mode(void) {
 	return __re_mode(sw_mode());
 }
-
+#else
+static inline int re_mode(void) {
+	return aimesh_re_node();
+}
 #endif
 
 static inline int client_mode(void)
@@ -2237,6 +2276,20 @@ typedef struct _phy_info_list {
 	phy_info phy_info[MAX_PHY_PORT];
 } phy_info_list;
 /* phy port related end.*/
+
+struct CHANNEL_MAPPING_TABLE {
+	int nband;
+	int channel;
+	int bandtype;  /*1:LOW 2:HIGH*/
+};
+
+static struct CHANNEL_MAPPING_TABLE channel_mapping_list[] __attribute__ ((unused)) = {
+	{ 2,	13,		-1 },
+	{ 1,	100,	-1 },
+	{ 4,	129,	-1 },
+	{ -1, -1, -1 }
+};
+
 #if defined(RTCONFIG_ALPINE) || defined(RTCONFIG_LANTIQ)
 extern uint32_t get_phy_status(int wan_unit);
 extern uint32_t get_phy_speed(int wan_unit);
@@ -2440,6 +2493,8 @@ extern int get_bw_by_mode_str(char *mode);
 extern int get_bw_by_phymode(int unit, int phymode);
 #endif
 extern int wl_get_bw_cap(int unit, int *bwcap);
+extern int get_bandnum_by_nband(int num);
+extern void check_wlx_nband_type();
 
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
 extern int get_psta_status(int unit);
@@ -2501,6 +2556,7 @@ extern void create_amas_sys_folder();
 				(ea).octet[5]
 #endif
 
+extern void get_control_channel(int unit, int *channel, int *bw, int *nctrlsb);
 #else	/* !RTCONFIG_AMAS */
 static inline int rtconfig_amas(void) { return 0; }
 #endif	/* RTCONFIG_AMAS */
@@ -2888,6 +2944,49 @@ extern int is_intf_up(const char* ifname);
 extern uint32_t crc_calc(uint32_t crc, const char *buf, int len);
 extern int illegal_ipv4_address(char *addr);
 extern int illegal_ipv4_netmask(char *netmask);
+
+#define HTTPS_CA_JFFS  "/jffs/cert.tgz"
+
+/* Same compile option for lan_ipaddr in shared/defaults.c */
+#if defined(RTN300) || defined(RTCONFIG_ALL_DEF_LAN50) || defined(RTN300)
+#define DEFAULT_LAN_IP_PARM	"-L", "192.168.50.1"
+#elif defined(RTCONFIG_WIFI_SON) || defined(RTCONFIG_LYRA_HIDE)
+#define DEFAULT_LAN_IP_PARM	"-L", "192.168.72.1"
+#else
+#define DEFAULT_LAN_IP_PARM	"-L", "192.168.1.1"
+#endif
+
+#define GENCERT_SH(args...)		({ char *argv[] = { "gencert.sh", DEFAULT_LAN_IP_PARM, ## args, NULL }; _eval(argv, NULL, 0, NULL); })
+#define GENCERT_SH_AND_RELOAD(args...)	({ char *argv[] = { "gencert.sh", DEFAULT_LAN_IP_PARM, "-l", ## args, NULL }; _eval(argv, NULL, 0, NULL); })
+#define GENCERT_SH_AND_BACKUP(args...)	({ char *argv[] = { "gencert.sh", DEFAULT_LAN_IP_PARM, "-b", ## args, NULL }; _eval(argv, NULL, 0, NULL); })
+#define GENCERT_SH_AND_BACKUP_RELOAD(args...)	({ char *argv[] = { "gencert.sh", DEFAULT_LAN_IP_PARM, "-b", "-l", ## args, NULL }; _eval(argv, NULL, 0, NULL); })
+#define GENCERT_SH_AND_BACKUP_RELOAD_AFTER_LOGOUT(args...)	({ char *argv[] = { "gencert.sh", DEFAULT_LAN_IP_PARM, "-b", "-l", "2", ## args, NULL }; _eval(argv, NULL, 0, NULL); })
+#if defined(RTCONFIG_HTTPS)
+extern void reset_last_cert_nvars(void);
+extern int restore_cert(void);
+extern void save_cert(void);
+extern void erase_cert(void);
+extern void remove_all_uploaded_cert_from_jffs(void);
+extern int illegal_cert_and_key(const char *cert_fn, const char *key_fn);
+extern void update_srv_cert_if_ddns_changed(void);
+extern void update_srv_cert_if_lan_ip_changed(void);
+extern void update_srv_cert_if_wan_ip_changed(int unit);
+#else
+static inline  void reset_last_cert_nvars(void) { }
+static inline int restore_cert(void) { return 0; }
+static inline void save_cert(void) { }
+static inline void erase_cert(void) { }
+static inline void remove_all_uploaded_cert_from_jffs(void) { }
+static inline int illegal_cert_and_key(char *cert_fn, char *key_fn) { return 0; }
+static inline void update_srv_cert_if_ddns_changed(void) { }
+static inline void update_srv_cert_if_lan_ip_changed(void) { }
+static inline void update_srv_cert_if_wan_ip_changed(int unit) { }
+#endif
+#if defined(RTCONFIG_HTTPS) && defined(RTCONFIG_IPV6)
+extern void update_srv_cert_if_wan_ipv6_changed(int unit);
+#else
+static inline void update_srv_cert_if_wan_ipv6_changed(int unit) { }
+#endif
 extern void convert_mac_string(char *mac);
 extern int test_and_get_free_uint_network(int t_class, uint32_t *exp_ip, uint32_t exp_cidr, uint32_t excl);
 extern int test_and_get_free_char_network(int t_class, char *ip_cidr_str, uint32_t excl);
@@ -3768,11 +3867,13 @@ extern int check_bwdpi_nvram_setting();
 extern int check_wan_2P5G_10G_speed();
 extern int check_AQoS_only_enabled();
 extern int check_WRS_only_enabled();
+extern void tm_recycle_stuck_process();
 #endif
 extern void erase_symbol(char *old, char *sym);
 extern void StampToDate(unsigned long timestamp, char *date);
 extern int check_filesize_over(char *path, long int size);
 extern time_t get_last_month_timestamp();
+extern void TstampToNvram(char *name);
 
 #if defined(RTCONFIG_USB)
 static inline int is_usb3_port(char *usb_node)
@@ -3841,12 +3942,77 @@ extern int FindBrifByWlif(const char *wl_ifname, char *brif_name, int size);
 #endif
 
 #ifdef RTCONFIG_HTTPS
-#define HTTPD_CERT	"/etc/cert.pem"
-#define HTTPD_KEY	"/etc/key.pem"
+/* auto-generated root certificate and key. */
+#define HTTPD_ROOTCA_GEN_CERT	"/etc/cacert_gen.pem"
+#define HTTPD_ROOTCA_GEN_KEY	"/etc/cakey_gen.pem"
+
+/* This certificate and key is used to sign end-entity certificate and key.
+ * could be auto-generated root certificate and key, or uploaded root/intermediate
+ * certificate and key.
+ */
+#define HTTPD_ROOTCA_CERT	"/etc/cacert.pem"
+#define HTTPD_ROOTCA_KEY	"/etc/cakey.pem"
+
+/* auto-generated end-entity certificate and key. Signed by auto-generated
+ * root certificate and key.
+ */
+#define HTTPD_GEN_CERT		"/etc/cert_gen.pem"
+#define HTTPD_GEN_KEY		"/etc/key_gen.pem"
+
+/* Currently using end-entity certificate and key. It is used when
+ * router mode: all httpds if le_enable == 0, or le_enable == 2 and uploaded
+ *              certificate is root/intermediate ceritificate.
+ * another mode, including AP/RP/MB/RE: all httpds, le_enable value is ignored.
+ */
+#define HTTPD_CERT		"/etc/cert.pem"
+#define HTTPD_KEY		"/etc/key.pem"
+
+/* Overwrite HTTPD_CERT and HTTPD_KEY with end-entity certificate, which is
+ * signed by Let's encrypt, in ACME_CERTHOME on all httpds when le_enable =1.
+ * Modern browser reject the certificate, error code SSL_ERROR_BAD_CERT_DOMAIN,
+ * when it connects to LAN side by domain name and IP address or when it
+ * connects to WAN side by IP address. Because connection to WAN side https
+ * port is redirected to port of LAN side https, and real URL is defined in HTTP
+ * header, it's impossible to use different certificate based on destination in
+ * URL respectively.
+ * Created by prepare_cert_in_etc() at run-time by copying LE_FULLCHAIN and
+ * LE_KEY to LE_HTTPD_CERT and LE_HTTPD_KEY respectively.
+ */
+#define LE_HTTPD_CERT		HTTPD_CERT
+#define LE_HTTPD_KEY		HTTPD_KEY
+/* Use uploaded certificate on all httpds when le_enable = 2. If it's
+ * root/intermediate certificate, it is used to sign end-entity a certificate at
+ * run-time and saved in UPLOAD_GEN_KEY. If it's a end-entity certificate, use
+ * it directly by overwrite HTTPD_CERT, user is incharge of fill DNS/IP for all
+ * httpds to subjectAltName of the certificates, otherwise, the certificate is
+ * rejected by modern browser, error code SSL_ERROR_BAD_CERT_DOMAIN. It is reject
+ * if the end-entity certificate was signed by public key of itself. keyUsage of
+ * root certificate must has keyCertSign, otherwise, SEC_ERROR_INADEQUATE_KEY_USAGE.
+ * Created by prepare_cert_in_etc() at run-time by copying UPLOAD_GEN_CERT or
+ * UPLOAD_CERT to UL_HTTPD_CERT respectively.
+ */
+#define UL_HTTPD_CERT		HTTPD_CERT
+#define UL_HTTPD_KEY		HTTPD_KEY
+
+/* Used by tar via system()/eval() respectively, leading '/' shouldn't be added,
+ * otherwise, it can't be used to extract specific files from tar-ball. It's is
+ * used to backup cert. and key to /jffs, and will be restore to /etc, all possible
+ * cert. and key should be backup.
+ */
+#define HTTPD_CERTS_KEYS_STR	"etc/cacert.pem etc/cakey.pem etc/cert.pem etc/key.pem etc/cacert_gen.pem etc/cakey_gen.pem etc/cert_gen.pem etc/key_gen.pem"
+#define HTTPD_CERTS_KEYS_ARGS	"etc/cacert.pem", "etc/cakey.pem", "etc/cert.pem", "etc/key.pem", "etc/cacert_gen.pem", "etc/cakey_gen.pem", "etc/cert_gen.pem", "etc/key_gen.pem"
+
 #define LIGHTTPD_CERTKEY	"/etc/server.pem"
 #define UPLOAD_CERT_FOLDER	"/jffs/.cert"
-#define UPLOAD_CERT	"/jffs/.cert/cert.pem"
-#define UPLOAD_KEY	"/jffs/.cert/key.pem"
+/* Uploaded cert is root/intermediate. */
+#define UPLOAD_CACERT		"/jffs/.cert/cacert.pem"
+#define UPLOAD_CAKEY		"/jffs/.cert/cakey.pem"
+/* End-entity certificate that is signed by uploaded root/intermediate certificate. */
+#define UPLOAD_GEN_CERT		"/jffs/.cert/cert_gen.pem"
+#define UPLOAD_GEN_KEY		"/jffs/.cert/key_gen.pem"
+/* Uploaded end-entity cert or signed by uploaded root/intermediate certificate. */
+#define UPLOAD_CERT		"/jffs/.cert/cert.pem"
+#define UPLOAD_KEY		"/jffs/.cert/key.pem"
 #ifdef RTCONFIG_LETSENCRYPT
 #define ACME_CERTHOME	"/jffs/.le"
 #endif
@@ -3911,6 +4077,7 @@ extern int invalid_nvram_get_program(char *name);
 extern int invalid_program_check(void);
 extern char *str_to_md5(const char *string, int length, char *out);
 #endif
+extern void c(char *buf, size_t len, ...);
 
 /* amas_utils.c */
 #ifdef RTCONFIG_AMAS
@@ -3988,6 +4155,7 @@ extern void deauth_guest_sta(char *, char *);
 #ifdef RTCONFIG_CFGSYNC
 #define MAX_RELIST_NUM	9
 #define	CFGSYNC_GROUPID_LEN	CKN_STR32
+#define	CFGSYNC_KEY_LEN	CKN_STR32
 #define CLIENT_STALIST_JSON_PATH	"/tmp/stalist.json"
 #define CFG_RELIST_FILE		"/tmp/cfg_relist"
 #define CFG_RELIST_X_FILE		"/tmp/cfg_relist_x"
@@ -4364,5 +4532,49 @@ extern struct devif_spdled devif_spdled_list[];
 int check_pkgtb_boardid(char *ptr_pkgtb);
 #endif
 
+enum{
+	ASUS_NV_PP_1 = 1,
+	ASUS_NV_PP_2,
+	ASUS_NV_PP_3,
+	ASUS_NV_PP_4,
+	ASUS_NV_PP_5,
+	ASUS_NV_PP_6,
+	ASUS_NV_PP_7,
+	ASUS_NV_PP_8,
+	ASUS_NV_PP_9,
+	ASUS_NV_PP_10,
+	ASUS_NV_PP_11,
+	ASUS_NV_PP_MAX
+};
+
+enum{
+	ASUS_PP_AUTOUPGRADE,
+	ASUS_PP_ASD,
+	ASUS_PP_AHS,
+	ASUS_PP_ACCOUNT_BINDING,
+	ASUS_PP_CONFIG_TRANSFER,
+	ASUS_PP_DDNS,
+	ASUS_PP_MAX,
+};
+
+struct ASUS_PP_table {
+	char *name;
+	char *version;
+	int id;
+};
+extern struct ASUS_PP_table ASUS_PP_t[];
+
+extern int webapi_get_b(const int id, char *buf, size_t len);
+extern int get_ASUS_privacy_policy_state(const int id);
+extern int get_ASUS_privacy_policy(void);
+extern int get_ASUS_privacy_policy_ver(const int id);
+extern char *rfctime(const time_t *timep, char *ts_string, int len);
+extern void update_ntp_ts(time_t bf_time, int ntp_diff_ts);
+
 extern int adjust_62_nv_list(char *name);
+
+extern char *get_ddns_macaddr(void);
+
+#define IP_RULE_PREF_VPNS							90
+
 #endif	/* !__SHARED_H__ */

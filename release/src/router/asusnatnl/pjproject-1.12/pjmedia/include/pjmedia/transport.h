@@ -493,6 +493,8 @@ struct pjmedia_transport
 	int				 use_upnp_flag; //for natnl
 	pj_bool_t		 use_stun_cand; //for natnl 
 	int				 use_turn_flag; //for natnl
+	int				 use_ipv6_flag; //for natnl
+	
 
 	char local_userid[64];
 	char remote_userid[64];
@@ -528,6 +530,10 @@ struct pjmedia_transport
 	// the stun and turn error status.
 	int stun_last_status;
 	int turn_last_status;
+	// The turn states occur in the process of turn allocation.
+	char    tcp_turn_state[128];
+	char    udp_turn_state[128];
+	char    tls_turn_state[128];
 };
 
 /**
@@ -583,7 +589,12 @@ struct pjmedia_transport_info
     /**
      * Buffer storage of transport specific info.
      */
-    pjmedia_transport_specific_info spc_info[PJMEDIA_TRANSPORT_SPECIFIC_INFO_MAXCNT];
+	pjmedia_transport_specific_info spc_info[PJMEDIA_TRANSPORT_SPECIFIC_INFO_MAXCNT];
+
+	// The turn states occur in the process of turn allocation.
+	char    tcp_turn_state[128];
+	char    udp_turn_state[128];
+	char    tls_turn_state[128];
 
 };
 

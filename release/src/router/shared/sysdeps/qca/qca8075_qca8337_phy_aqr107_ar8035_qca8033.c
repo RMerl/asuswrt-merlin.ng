@@ -848,7 +848,9 @@ static int get_qca8075_8337_8035_8033_aqr107_phy_linkStatus(unsigned int mask, u
 		break;
 	default:
 		speed=0;
-		_dprintf("%s: mask %8x t %8x invalid speed!\n", __func__, mask, t);
+		if ((mask & wanlanports_mask) != 0) {
+			_dprintf("%s: mask %8x t %8x invalid speed!\n", __func__, mask, t);
+		}
 	}
 	return speed;
 }
@@ -2163,7 +2165,7 @@ int add_filter_rule_for_gpon_sfp_module(FILE *fp)
 	char lan_if[IFNAMSIZ];
 	char sfpp_module_ipaddr[18], sfpp_mask[18], sfpp_nw_addr[18];
 
-	dbg("SSSSSS %s: start\n", __func__);
+	dbg("%s: start\n", __func__);
 	if (!fp)
 		return -1;
 	if (!is_routing_enabled() || !sfpp_iface_in_wan())
@@ -2580,7 +2582,7 @@ static int dump_sfpp_eeprom(FILE *fp)
 			tmp + 12, tmp + 13, tmp + 14, tmp + 15);
 		if (r > 0) {
 			if ((rlen + r) > sizeof(a0)) {
-				fprintf(fp, "Size of a0 (%d) is not enough (%d)!\n", sizeof(a0), rlen + r);
+				fprintf(fp, "Size of a0 (%d) is not enough (%d)!\n", (int) sizeof(a0), rlen + r);
 				rlen = sizeof(a0) - rlen;
 			}
 			memcpy(p, tmp, r);
@@ -2635,7 +2637,7 @@ static int dump_sfpp_eeprom(FILE *fp)
 
 		if (r > 0) {
 			if ((rlen + r) > sizeof(a2)) {
-				fprintf(fp, "Size of a2 (%d) is not enough (%d)!\n", sizeof(a2), rlen + r);
+				fprintf(fp, "Size of a2 (%d) is not enough (%d)!\n", (int) sizeof(a2), rlen + r);
 				rlen = sizeof(a2) - rlen;
 			}
 			memcpy(p, tmp, r);
@@ -3073,7 +3075,7 @@ static int dump_qca8337_regs(FILE *fp)
 				tmp + 2, tmp + 3, tmp + 4, tmp + 5, tmp + 6, tmp + 7);
 			if (r > 0) {
 				if ((rlen + r) * 4 > sizeof(reg)) {
-					fprintf(fp, "Size of reg (%d) is not enough (%d)!\n", sizeof(reg), (rlen + r) * 4);
+					fprintf(fp, "Size of reg (%d) is not enough (%d)!\n", (int) sizeof(reg), (rlen + r) * 4);
 					rlen = sizeof(reg) - rlen;
 				}
 				memcpy(p, tmp, r * 4);

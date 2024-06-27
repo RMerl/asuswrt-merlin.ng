@@ -13,17 +13,17 @@
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="usp_style.css">
 <link rel="stylesheet" type="text/css" href="/device-map/device-map.css" />
+<script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/calendar/jquery-ui.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/general.js"></script>
-<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/client_function.js"></script>
-<script type="text/javascript" src="/calendar/jquery-ui.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/form.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js"></script>
 <style type="text/css">
 *{
 	box-sizing: content-box;
@@ -200,8 +200,6 @@ function initial(){
 	else
 		show_clients();
 
-	if(!ASUS_EULA.status("tm"))
-		ASUS_EULA.config(eula_confirm, cancel);
 }
 
 
@@ -1498,16 +1496,24 @@ function cancel(){
 function switch_control(_status){
 	if(_status) {
 		if(reset_wan_to_fo.check_status()) {
-			if(ASUS_EULA.check("tm")){
-				document.form.apps_analysis.value = 1;
-				applyRule();
-			}
+			if(policy_status.TM == 0 || policy_status.TM_time == ''){
+                const policyModal = new PolicyModalComponent({
+                    policy: "TM",
+                    agreeCallback: eula_confirm,
+                    disagreeCallback: cancel
+                });
+                policyModal.show();
+            }else{
+                eula_confirm();
+            }
 		}
 		else
 			cancel();
 	}
 	else {
 		document.form.apps_analysis.value = 0;
+		if(dns_dpi_support)
+			document.form.dns_dpi_apps_analysis.value = 0;
 		applyRule();
 	}
 }

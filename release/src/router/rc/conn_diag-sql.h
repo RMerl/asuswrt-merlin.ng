@@ -1,3 +1,5 @@
+#ifndef _CONN_DIAG_SQL_H_
+#define _CONN_DIAG_SQL_H_
 #include <limits.h>
 #include <sqlite3.h>
 #include <pthread.h>
@@ -124,3 +126,4 @@ extern int run_download_file_by_name(const char *downloaded_file);
 #endif
 extern int query_stainfo(char *sta_mac,char **buf);
 extern void free_stainfo(char **buf);
+#endif  /* !_CONN_DIAG_SQL_H_ */

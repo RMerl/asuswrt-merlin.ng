@@ -18,7 +18,7 @@
 <script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/form.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js"></script>
 <script type="text/javascript" src="/client_function.js"></script>
 <script type="text/javascript" src="/form.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
@@ -173,9 +173,6 @@ function initial(){
 		$('#outfox_2').show();
 		$('#outfox_3').show();
 	}
-
-	if(!ASUS_EULA.status("tm"))
-		ASUS_EULA.config(eula_confirm, cancel);
 
 	setTimeout("showDropdownClientList('setClientIP', 'mac', 'all', 'ClientList_Block_PC', 'pull_arrow', 'all');", 500);
 	genGameList();
@@ -357,9 +354,16 @@ function hideGameListField(){
 function enableGamePriority(){
 	if(adaptiveqos_support){
 		if(document.form.qos_enable.value == "0" && document.form.TM_EULA.value == "0"){
-			ASUS_EULA
-				.config(eula_confirm, cancel)
-				.show("tm");
+			if(policy_status.TM == 0 || policy_status.TM_time == ''){
+                const policyModal = new PolicyModalComponent({
+                    policy: "TM",
+                    agreeCallback: eula_confirm,
+                    disagreeCallback: cancel
+                });
+                policyModal.show();
+            }else{
+                eula_confirm();
+            }
 		}
 		else{
 			if(document.getElementById("game_priority_enable").checked){
@@ -499,6 +503,19 @@ function redirectSite(url){
 	}
 
 	window.open(url, '_blank');
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const thirdpartyPolicy = 'WTFast'
+    document.getElementById("thirdparty_pp").innerHTML=`<#Thirdparty_PP_Desc1#>`.replace("%1$@", thirdpartyPolicy).replace("[aa]%2$@[/aa]", `<a onclick="showThirdPartyPolicy('${thirdpartyPolicy}')" style="text-decoration: underline;cursor: pointer;">AAA Internet Publishing Inc. PRIVACY POLICY</a>`);
+})
+
+function showThirdPartyPolicy(party){
+    const thirdPartyPolicyModal = new ThirdPartyPolicyModalComponent({
+        policy: 'THIRDPARTY_PP',
+        party: party
+    });
+    thirdPartyPolicyModal.show();
 }
 </script>
 </head>
@@ -704,7 +721,7 @@ function redirectSite(url){
 												</td>
 												<td style="width:400px;height:120px;">
 													<div style="font-size:16px;color:#949393;padding-left:10px; margin-top: 10px;"><#Game_WTFast_desc#></div>
-													<div style="font-size:16px;color:#949393;padding-left:10px; margin-top: 15px; margin-bottom: 10px;">*Please be aware this is a third-party service provided by WTFast®, and WTFast® is fully responsible for warranties and liabilities of this game server acceleration service.</div><!--untranslated-->
+													<div id="thirdparty_pp" style="font-size:16px;color:#949393;padding-left:10px; margin-top: 15px; margin-bottom: 10px;"></div>
 												</td>
 												<td>
 													<div class="btn" style="margin:auto;width:100px;height:40px;text-align:center;line-height:40px;font-size:18px;cursor:pointer;border-radius:5px;" onclick="redirectSite('wtfast');"><#btn_go#></div>

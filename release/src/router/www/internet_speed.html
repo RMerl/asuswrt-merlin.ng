@@ -1067,10 +1067,23 @@ function close_info(){
 	$(".function_desc").fadeOut(300);
 	$("#hiddenMask").css("display", "none");
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+	const thirdpartyPolicy = 'Speedtest'
+	document.getElementById("thirdparty_pp").innerHTML=`<#Thirdparty_PP_Desc1#>`.replace("%1$@", thirdpartyPolicy).replace("[aa]%2$@[/aa]", `<a onclick="showThirdPartyPolicy('${thirdpartyPolicy}')" style="text-decoration: underline;cursor: pointer;">Ookla PRIVACY POLICY</a>`);
+})
+
+function showThirdPartyPolicy(party){
+	const thirdPartyPolicyModal = new ThirdPartyPolicyModalComponent({
+		policy: 'THIRDPARTY_PP',
+		party: party
+	});
+	thirdPartyPolicyModal.show();
+}
 </script>
 <div id="hiddenMask" class="speed_level_mask"></div>
 <div class="bg">
-	<div class="container">
+	<div class="container info_content">
 		<div class="function_desc">
 			<div class="function_container">
 				<div class="function_title_pc"><div><#InternetSpeed#></div></div>
@@ -1079,14 +1092,6 @@ function close_info(){
 					<div class="info_title"><#diskUtility_information#></div>
 				</div>
 				<div class="split-Line"></div>
-				<div class="content_div info_content">
-					<div class="desc_div">
-						<div class="description-bar">
-							<div style="margin-bottom: 5px;"><#InternetSpeed_desc#></div>
-						</div>
-					</div>
-					<div class="speedtest_logo"></div>
-				</div>
 			</div>
 		</div>
 		<div class="normal_show">
@@ -1185,7 +1190,7 @@ function close_info(){
 				</div>
 			</div>
 		</div>
-		<div class="ookla_info"><div class="info_icon mobile_show" onclick="open_info();"></div><div><#InternetSpeed_ookla_mark#></div></div>
+		<div class="ookla_info"><div class="info_icon mobile_show" onclick="open_info();"></div><div><#InternetSpeed_ookla_mark#></div><div id="thirdparty_pp"></div></div>
 		<div id="speed_level_detail" class="speed_level_detail speedTest_div">
 			<div class="detail_speed_level">
 				<div class="last_test_container">

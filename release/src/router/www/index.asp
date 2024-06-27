@@ -114,7 +114,6 @@
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/disk_functions.js"></script>
 <script language="JavaScript" type="text/javascript" src="/form.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
 <script>
 //if(usb_support) addNewScript("/disk_functions.js");
 
@@ -463,7 +462,6 @@ function initial(){
 	}
 
 	orig_NM_container_height = parseInt($(".NM_radius_bottom_container").css("height"));
-	setTimeout(check_eula, 100);
 
 	if(!downsize_4m_support){
 		custom_icon_list_api.paramObj.container = $(".custom_icon_list_bg");
@@ -486,22 +484,7 @@ function initial(){
 		$(".block_all_icon").css("display", "flex");
 }
 
-function check_eula(){
-	ASUS_EULA.config(check_eula, check_eula);
 
-	var asus_status = httpApi.nvramGet(["ASUS_EULA", "ASUS_EULA_time", "ddns_enable_x", "ddns_server_x"], true);
-	if( (asus_status.ASUS_EULA == "1" && asus_status.ASUS_EULA_time == "") ||
-		(asus_status.ASUS_EULA != "1" && asus_status.ddns_enable_x == "1" && asus_status.ddns_server_x == "WWW.ASUS.COM") ){
-		ASUS_EULA.check("asus");
-		return false;
-	}
-
-	var tm_status = httpApi.nvramGet(["TM_EULA", "TM_EULA_time"], true);
-	if(tm_status.TM_EULA == "1" &&  tm_status.TM_EULA_time == ""){
-		ASUS_EULA.check("tm");
-		return false;
-	}
-}
 
 function show_smart_connect_status(){
 	document.getElementById("SmartConnectName").style.display = "";

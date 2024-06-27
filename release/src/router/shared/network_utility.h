@@ -13,4 +13,13 @@ extern int is_valid_ip4(const char* addr);
 extern int is_valid_ip6(const char* addr);
 extern int is_ip4_in_use(const char* addr);
 
+extern int resolv_addr4(const char *dn, char *buf, size_t len);
+extern int resolv_addr4_all(const char *dn, char *buf, size_t len);
+extern int resolv_addr6(const char *dn, char *buf, size_t len);
+extern int resolv_addr6_all(const char *dn, char *buf, size_t len);
+extern int resolv_addr_all(const char *dn, char *buf, size_t len);
+
+extern int validate_ip(char *ip);
+
+extern int is_same_subnet(const char *ip1, const char *ip2, const char *netmask);
 #endif

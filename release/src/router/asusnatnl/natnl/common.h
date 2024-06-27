@@ -24,7 +24,13 @@
 
 #include <stdio.h>
 #include <ctype.h>
+
+#ifdef IS_NATNL_APP
+#include <sys/errno.h>
+#else
 #include <errno.h>
+#endif
+
 #include <pjlib.h>
 #include <pj/errno.h>
 #include <pj/sock.h>

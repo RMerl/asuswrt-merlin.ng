@@ -285,6 +285,26 @@ static int request_uri_is_valid_char(unsigned char c) {
 	return 1;
 }
 
+static int request_file_size_check(char * content) {
+
+	if(strstr(content, "PUT") && strstr(content, "Content-Length:")) {
+
+		int filesize_pos = 0;
+		char filesize[30] = {0};
+		char *file_content = strstr(content, "Content-Length:");
+
+		filesize_pos = (file_content - content) + 15;
+		strncpy(filesize, content + filesize_pos , 11);
+		filesize[11] = '\0';
+
+		if(get_free_mem() < (int) strtol(filesize, NULL, 10) ) {
+			return 0;
+		}
+	}
+
+	return 1;
+}
+
 int http_request_parse(server *srv, connection *con) {
 	char *uri = NULL, *proto = NULL, *method = NULL, con_length_set;
 	int is_key = 1, key_len = 0, is_ws_after_key = 0, in_folding;
@@ -323,6 +343,13 @@ int http_request_parse(server *srv, connection *con) {
 	} else {
 		/* fill the local request buffer */
 		buffer_copy_buffer(con->parse_request, con->request.request);
+	}
+
+	// webdav upload : if file size > memory, probability crash
+	if(!request_file_size_check(con->request.request->ptr)) {
+		con->http_status = 413;
+		con->keep_alive = 0;
+		return 0;
 	}
 
 	keep_alive_set = 0;

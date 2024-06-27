@@ -2742,6 +2742,11 @@ _dprintf("restart_nas_services(%d): test 6.\n", getpid());
 			}
 		}
 		file_unlock(lock);
+#ifdef RTCONFIG_FRS_FEEDBACK
+#ifdef RTCONFIG_DBLOG
+		start_dblog(0);
+#endif /* RTCONFIG_DBLOG */
+#endif /* RTCONFIG_FRS_FEEDBACK */
 	}
 #endif
 	else if (strncmp(interface ? : "", "8/", 2) == 0) {	/* usb storage */
@@ -2867,49 +2872,19 @@ void write_ftpd_conf()
 	if(nvram_get_int("ftp_tls")){
 		fprintf(fp, "ssl_enable=YES\n");
 		fprintf(fp, "ssl_ciphers=HIGH\n");
+		if (!f_exists(HTTPD_CERT) || !f_exists(HTTPD_KEY))
+			restore_cert();
+
+		prepare_cert_in_etc();
+
 		fprintf(fp, "rsa_cert_file=%s\n", HTTPD_CERT);
 		fprintf(fp, "rsa_private_key_file=%s\n", HTTPD_KEY);
 
-		if(!f_exists(HTTPD_CERT) || !f_exists(HTTPD_KEY)
-#ifdef RTCONFIG_LETSENCRYPT
-			|| !cert_key_match(HTTPD_CERT, HTTPD_KEY)
-#endif
-			) {
-#ifdef RTCONFIG_LETSENCRYPT
-			if(nvram_match("le_enable", "1")) {
-				cp_le_cert(LE_FULLCHAIN, HTTPD_CERT);
-				cp_le_cert(LE_KEY, HTTPD_KEY);
-			}
-			else if(nvram_match("le_enable", "2")) {
-				unlink(HTTPD_CERT);
-				unlink(HTTPD_KEY);
-				if(f_exists(UPLOAD_CERT) && f_exists(UPLOAD_KEY)) {
-					eval("cp", UPLOAD_CERT, HTTPD_CERT);
-					eval("cp", UPLOAD_KEY, HTTPD_KEY);
-				}
-			}
-#else
-			if(f_exists(UPLOAD_CERT) && f_exists(UPLOAD_KEY)){
-				eval("cp", UPLOAD_CERT, HTTPD_CERT);
-				eval("cp", UPLOAD_KEY, HTTPD_KEY);
-			}
-#endif
-		}
-
 		// Is it valid now?  Otherwise, restore saved cert, or generate one.
-		if(!f_exists(HTTPD_CERT) || !f_exists(HTTPD_KEY)
-#ifdef RTCONFIG_LETSENCRYPT
-                        || !cert_key_match(HTTPD_CERT, HTTPD_KEY)
-#endif
-		) {
-			if (eval("tar", "-xzf", "/jffs/cert.tgz", "-C", "/", "etc/cert.pem", "etc/key.pem") == 0){
-				system("cat /etc/key.pem /etc/cert.pem > /etc/server.pem");
-				system("cp /etc/cert.pem /etc/cert.crt");
-			} else {
-				f_read("/dev/urandom", &sn, sizeof(sn));
-				sprintf(t, "%llu", sn & 0x7FFFFFFFFFFFFFFFULL);
-				eval("gencert.sh", t);
-			}
+		if (!f_exists(HTTPD_CERT) || !f_exists(HTTPD_KEY)) {
+			f_read("/dev/urandom", &sn, sizeof(sn));
+			sprintf(t, "%llu", sn & 0x7FFFFFFFFFFFFFFFULL);
+			GENCERT_SH(t);
 		}
 	} else {
 		fprintf(fp, "ssl_enable=NO\n");
@@ -3363,7 +3338,7 @@ start_samba(void)
 	char smbd_cmd[32];
 
 	if (getpid() != 1) {
-		notify_rc_after_wait("start_samba");
+		notify_rc_and_wait_1min("start_samba");
 		return;
 	}
 
@@ -3568,7 +3543,7 @@ start_samba(void)
 void stop_samba(int force)
 {
 	if(!force && getpid() != 1){
-		notify_rc_after_wait("stop_samba");
+		notify_rc_and_wait_1min("stop_samba");
 		return;
 	}
 
@@ -3779,6 +3754,7 @@ void start_dms(void)
 				"port=%d\n"
 				"friendly_name=%s\n"
 				"db_dir=%s\n"
+				"log_dir=%s\n"
 				"enable_tivo=%s\n"
 				"strict_dlna=%s\n"
 				"inotify=yes\n"
@@ -3787,6 +3763,7 @@ void start_dms(void)
 				nvram_safe_get("lan_ifname"),
 				(port < 0) || (port >= 0xffff) ? 0 : port,
 				friendly_name,
+				dbdir,
 				dbdir,
 				nvram_get_int("dms_tivo") ? "yes" : "no",
 				nvram_get_int("dms_stdlna") ? "yes" : "no");

@@ -2195,8 +2195,8 @@ function exportClientListLog() {
 		for(var i = 0; i < array.length; i += 1) {
 			tempArray = [];
 			tempArray[0] = (array[i][0] == 1) ? "Allow Internet access" : "Block Internet access";
-			tempArray[1] = array[i][1].replace(",", "");
-			tempArray[2] = array[i][2];
+            tempArray[1] = `"${array[i][1].replace(",", "").replace(/[=@]/g, " ")}"`;
+            tempArray[2] = `"${array[i][2].replace(/[=@]/g, " ")}"`;
 			tempArray[3] = array[i][3];
 			tempArray[4] = ipStateExport[clientList[array[i][4]].ipMethod];
 			tempArray[5] = array[i][4];

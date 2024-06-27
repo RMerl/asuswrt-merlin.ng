@@ -19,6 +19,7 @@
 #include <string.h>
 #include <getopt.h>
 #include <netdb.h>
+#include <sys/types.h>
 #include "../include/ebtables_u.h"
 #include "../include/linux/netfilter_bridge/ebt_ip6.h"
 

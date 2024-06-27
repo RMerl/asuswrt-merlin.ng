@@ -91,7 +91,6 @@ if (iptv_num_pvc_val > 0) {
 			iptv_ptm_pvc_str += " + ";
 		}
 		dsltmp_cfg_iptv_pvclist_col = dsltmp_cfg_iptv_pvclist_row[i].split('>');
-
 		for(j=0; j<dsltmp_cfg_iptv_pvclist_col.length; j++){
 			switch(j) {
 				case 0:	//vpi
@@ -102,11 +101,7 @@ if (iptv_num_pvc_val > 0) {
 					break;
 				case 2:	//proto
 					iptv_ptm_pvc_str += "<span class='cfg_val'>";
-					if(dsltmp_cfg_iptv_pvclist_col[j] == 2) {
-						iptv_atm_pvc_str += "MER, ";
-						iptv_ptm_pvc_str += "DHCP, ";
-					}
-					else if(dsltmp_cfg_iptv_pvclist_col[j] == 3) {
+					if(dsltmp_cfg_iptv_pvclist_col[j] == 3) {
 						iptv_atm_pvc_str += "Bridged, ";
 						iptv_ptm_pvc_str += "Bridged, ";
 					}
@@ -117,9 +112,9 @@ if (iptv_num_pvc_val > 0) {
 					break;
 				case 3:	//encap
 					if(dsltmp_cfg_iptv_pvclist_col[j] == 1)
-						iptv_atm_pvc_str += "VC-Mux, ";
+						iptv_atm_pvc_str += "VC-Mux";
 					else
-						iptv_atm_pvc_str += "LLC, ";
+						iptv_atm_pvc_str += "LLC";
 					break;
 				case 4:	//vlan id
 					if(dsltmp_cfg_iptv_pvclist_col[j] != "") {

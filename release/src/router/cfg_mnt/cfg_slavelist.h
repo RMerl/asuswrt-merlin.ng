@@ -55,18 +55,22 @@ typedef struct _CM_CLIENT_TABLE {
 	unsigned char ap5g1[CFG_CLIENT_NUM][MAC_LEN];
 	unsigned char apDwb[CFG_CLIENT_NUM][MAC_LEN];
 	unsigned char ap6g[CFG_CLIENT_NUM][MAC_LEN];
+	unsigned char ap6g1[CFG_CLIENT_NUM][MAC_LEN];
 	unsigned char ap2g_fh[CFG_CLIENT_NUM][MAC_LEN];
 	unsigned char ap5g_fh[CFG_CLIENT_NUM][MAC_LEN];
 	unsigned char ap5g1_fh[CFG_CLIENT_NUM][MAC_LEN];
 	unsigned char ap6g_fh[CFG_CLIENT_NUM][MAC_LEN];
+	unsigned char ap6g1_fh[CFG_CLIENT_NUM][MAC_LEN];
 	char ap2g_ssid[CFG_CLIENT_NUM][SSID_LEN];
 	char ap5g_ssid[CFG_CLIENT_NUM][SSID_LEN];
 	char ap5g1_ssid[CFG_CLIENT_NUM][SSID_LEN];
 	char ap6g_ssid[CFG_CLIENT_NUM][SSID_LEN];
+	char ap6g1_ssid[CFG_CLIENT_NUM][SSID_LEN];
 	char ap2g_ssid_fh[CFG_CLIENT_NUM][SSID_LEN];
 	char ap5g_ssid_fh[CFG_CLIENT_NUM][SSID_LEN];
 	char ap5g1_ssid_fh[CFG_CLIENT_NUM][SSID_LEN];
 	char ap6g_ssid_fh[CFG_CLIENT_NUM][SSID_LEN];
+	char ap6g1_ssid_fh[CFG_CLIENT_NUM][SSID_LEN];
 	int level[CFG_CLIENT_NUM];
 	char fwVer[CFG_CLIENT_NUM][FWVER_LEN];
 	char newFwVer[CFG_CLIENT_NUM][FWVER_LEN];
@@ -121,6 +125,11 @@ extern void cm_reorganizeReList();
 #ifdef RTCONFIG_AMAS_CENTRAL_CONTROL
 extern void cm_updateReObList(char *reMac, int action, int commit);
 #endif
+extern int cm_checkReKeyListExist(char *mac);
+extern void cm_updateReKeyList(char *mac, int action);
+extern int cm_checkJoinData(unsigned char *msg, int role);
+extern int cm_checkKeyData(unsigned char *msg, char *key);
+extern void cm_sortReLevel(json_object *reListObj, json_object *sortedReListObj);
 
 #endif /* __CFG_SLAVELIST_H__ */
 /* End of cfg_slavelist.h */

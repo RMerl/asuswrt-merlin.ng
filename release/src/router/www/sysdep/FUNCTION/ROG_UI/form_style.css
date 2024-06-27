@@ -2096,7 +2096,7 @@ padding-top:1px;
 	background-color: rgb(62,3,13);
 }
 .analysis_bg, .web_frame{
-	background: rgba(17, 17, 17, .5);
+	background: rgba(17, 17, 17, .95);
 	border: 1px solid rgb(145,7,31);
 }
 .tm_title_bg{

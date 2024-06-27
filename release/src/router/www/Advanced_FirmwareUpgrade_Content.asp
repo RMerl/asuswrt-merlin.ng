@@ -76,17 +76,17 @@
  	hlbr:expression(this.onFocus=this.blur()); /* for IE */
 }
 </style>
-
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/confirm_block.js"></script>
 <script language="JavaScript" type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script language="JavaScript" type="text/javascript" src="/form.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js"></script>
 <script>
 $(function () {
 	if(amesh_support && (isSwMode("rt") || isSwMode("ap")) && ameshRouter_support) {
@@ -1390,14 +1390,30 @@ function toggle_fw_check(state) {
 			</tr>	
 			</thead>
 			<tr>
-				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(11, 14);"><#FW_auto_upgrade#></a></th>
+				<th><#FW_auto_upgrade#></th>
 				<td>
 					<div align="center" class="left" style="width:75px; float:left; cursor:pointer;" id="switch_webs_update_enable"></div>
 					<script type="text/javascript">
 					$('#switch_webs_update_enable').iphoneSwitch('<% nvram_get("webs_update_enable"); %>',
 						function(){
-							hide_upgrade_opt(1);
-							save_update_enable('on');
+							if(policy_status.PP==0||policy_status.PP_time==""){
+                                const policyModal = new PolicyModalComponent({
+                                    policy: "PP",
+                                    submit_reload: 1,
+                                    agreeCallback: ()=>{
+                                        hide_upgrade_opt(1);
+                                        save_update_enable('on');
+                                    },
+                                    disagreeCallback: ()=>{
+                                        alert(`<#ASUS_POLICY_Function_Confirm#>`);
+                                    }
+                                });
+                                policyModal.show();
+                                return false;
+							}else{
+                                hide_upgrade_opt(1);
+                                save_update_enable('on');
+							}
 						},
 						function(){
 							hide_upgrade_opt(0);
@@ -1410,11 +1426,64 @@ function toggle_fw_check(state) {
 			<tr>
 				<th><#FW_auto_time#></th>
 				<td>
-					<select name="webs_update_time_x_hour" class="input_option" onchange="save_update_enable();"></select> : 
-					<select name="webs_update_time_x_min" class="input_option" onchange="save_update_enable();"></select>
+					<select id="webs_update_time_x_hour" name="webs_update_time_x_hour" class="input_option" onchange="save_update_enable();"></select> :
+					<select id="webs_update_time_x_min" name="webs_update_time_x_min" class="input_option" onchange="save_update_enable();"></select>
 					<span id="system_time" class="devicepin" style="color:#FFFFFF;"></span>
 					<br><span id="dstzone" style="display:none;margin-left:5px;color:#FFFFFF;"></span>
 				</td>	
+			</tr>
+
+			<tr>
+				<td colspan="2">
+					<#FW_auto_upgrade_desc#>
+				</td>
+			</tr>
+		</table>
+
+		<table id="secur_stab_setting" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
+			<thead>
+			<tr>
+				<td colspan="2"><#Secur_Stab_auto_upgrade#></td>
+			</tr>
+			</thead>
+			<tr>
+				<th><#Secur_Stab_auto_upgrade#></th>
+				<td>
+					<div align="center" class="left" style="width:75px; float:left; cursor:pointer;" id="switch_security_update_enable"></div>
+					<script type="text/javascript">
+					$('#switch_security_update_enable').iphoneSwitch(httpApi.securityUpdate.get(),
+						function(){
+                            //on
+							if(policy_status.PP==0||policy_status.PP_time==""){
+                                const policyModal = new PolicyModalComponent({
+                                    policy: "PP",
+                                    submit_reload: 1,
+                                    agreeCallback: ()=>{
+                                        httpApi.securityUpdate.set(1);
+                                    },
+                                    disagreeCallback: ()=>{
+                                        alert(`<#ASUS_POLICY_Function_Confirm#>`);
+                                    }
+                                });
+                                policyModal.show();
+                                return false;
+							}else{
+                                httpApi.securityUpdate.set(1);
+							}
+						},
+						function(){
+							//off
+							httpApi.securityUpdate.set(0);
+						}
+					);
+					</script>
+				</td>
+			</tr>
+
+			<tr>
+				<td colspan="2">
+					<#Secur_Stab_auto_upgrade_desc#>
+				</td>
 			</tr>
 		</table>
 
@@ -1487,7 +1556,7 @@ function toggle_fw_check(state) {
 					<input type="file" name="file" class="input" style="color:#FFCC00;*color:#000;width: 294px;">
 					<input type="button" name="upload" class="button_gen" onclick="submitForm()" value="<#CTL_upload#>" />
 				</td>
-			</tr>			
+			</tr>
 		</table>
 		<div class="aimesh_manual_fw_update_hint" style="display:none;">
 			<#FW_note#> <#FW_note_AiMesh#>

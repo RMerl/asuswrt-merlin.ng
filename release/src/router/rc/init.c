@@ -14114,6 +14114,8 @@ int init_nvram(void)
 		add_rc_support("mssid 2.4G 5G usbX1");
 		if(is_ax5400_i1()){
 			add_rc_support("noupdate");
+			nvram_set("ASUS_NEW_EULA", "1");
+			nvram_set("ASUS_NEW_EULA_time", "pass");
 		}
 		else{
 			add_rc_support("update");

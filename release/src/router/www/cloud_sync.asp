@@ -653,6 +653,9 @@ function updateCloudStatus(){
 						else if(cloud_status.toUpperCase() == "ERROR"){
 							document.getElementById("status_image").firstChild.className="status_png_Img_error";
 						}
+						else if(cloud_status.toUpperCase() == "SKIP DOWN"){
+							document.getElementById("status_image").firstChild.className="status_gif_Img_1";
+						}
 						else if(cloud_status.toUpperCase() == "INPUT CAPTCHA"){
 							document.getElementById("status_image").firstChild.className="status_png_Img_error";
 						}
@@ -706,6 +709,9 @@ function updateCloudStatus(){
 						}
 						else if( cloud_dropbox_status.toUpperCase() == "ERROR"){
 							document.getElementById("dropbox_status_image").firstChild.className="status_png_Img_error";
+						}
+						else if(cloud_status.toUpperCase() == "SKIP DOWN"){
+							document.getElementById("status_image").firstChild.className="status_gif_Img_1";
 						}
 						else if( cloud_dropbox_status.toUpperCase() == "INPUT CAPTCHA"){
 							document.getElementById("dropbox_status_image").firstChild.className="status_png_Img_error";

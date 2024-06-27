@@ -5498,7 +5498,7 @@ minidlna-configure: minidlna/configure shared/version.h
 		-L$(TOP)/libvorbis/lib/.libs -L$(TOP)/libogg/src/.libs \
 		-L$(TOP)/libexif/libexif/.libs -L$(TOP)/flac/src/libFLAC/.libs \
 		$(if $(MEDIA_SERVER_STATIC),-L$(TOP)/APP-IPK/MediaServer-ipk/asusffmpeg_1.0.0.5/opt/lib,-L$(TOP)/ffmpeg/libavutil -L$(TOP)/ffmpeg/libavcodec -L$(TOP)/ffmpeg/libavformat -L$(TOP)/libid3tag/.libs) \
-		$(if $(or $(RTAC68U),$(RTAX82U),$(GTAX6000),$(RTAX82U_V2)),-L$(TOP_PLATFORM)/nvram${BCMEX} -lnvram -L$(TOP)/shared -lshared,)" \
+		$(if $(or $(DSL_AC68U),$(RTAC88U),$(RTAC3100),$(RTAC68U),$(RTAX82U),$(GTAX6000),$(RTAX82U_V2),$(RTAC5300)),-L$(TOP_PLATFORM)/nvram${BCMEX} -lnvram -L$(TOP)/shared -lshared,)" \
 		LDLIBS="$(if $(MSIPK),-lpthread -lm -lvorbis -logg -lsqlite3 -lexif -ljpeg -lFLAC -lid3tag_ms -lz $(TOP)/libid3tag/.libs/libid3tag_ms.so $(TOP)/APP-IPK/MediaServer-ipk/asusffmpeg_1.0.0.5/opt/lib/libavformat_asus.so $(TOP)/APP-IPK/MediaServer-ipk/asusffmpeg_1.0.0.5/opt/lib/libavcodec_asus.so $(TOP)/APP-IPK/MediaServer-ipk/asusffmpeg_1.0.0.5/opt/lib/libavutil_asus.so $(if $(filter i686,$(PLATFORM)),-lrt),)$(if $(MEDIA_SERVER_STATIC),-lpthread -ldl -lm $(TOP)/libvorbis/lib/.libs/libvorbis.a $(TOP)/libogg/src/.libs/libogg.a $(TOP)/sqlite/.libs/libsqlite3.a $(TOP)/libexif/libexif/.libs/libexif.a $(TOP)/jpeg/libjpeg.a $(TOP)/flac/src/libFLAC/.libs/libFLAC.a $(TOP)/libid3tag/.libs/libid3tag.a $(TOP)/zlib/libz.a $(TOP)/ffmpeg/libavformat/libavformat.a $(TOP)/ffmpeg/libavcodec/libavcodec.a $(TOP)/ffmpeg/libavutil/libavutil.a,-lpthread -ldl -lm -lvorbis -logg -lsqlite3 -lexif -ljpeg -lFLAC -lid3tag -lz -lavformat -lavcodec -lavutil)"; \
 	fi
 

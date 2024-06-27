@@ -393,6 +393,10 @@ function initial(){
 			startDownloading();
 		}
 	}
+
+	if(isSupport("is_ax5400_i1"))
+		$("table").remove("#secur_stab_setting");
+
 	if(no_update_support){	//no live update
 		$("table").remove("#auto_upgrade_setting");
 		document.getElementById("update_div").style.display = "none";

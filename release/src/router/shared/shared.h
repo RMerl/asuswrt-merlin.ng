@@ -4060,11 +4060,11 @@ extern int pw_dec(const char *input, char *output, int len, int with_salt);
 extern int pw_enc_blen(const char *input);
 extern int pw_dec_len(const char *input);
 #endif
-#ifdef RTCONFIG_NVRAM_ENCRYPT
 struct INVALID_NVRAM_GET_TABLE {
         char *name;
         char *exclude_process;
 };
+#ifdef RTCONFIG_NVRAM_ENCRYPT
 #define NVRAM_ENC_LEN	1024
 #define NVRAM_ENC_MAXLEN	4096
 extern int set_enc_nvram(char *name, char *input, char *output);

@@ -24834,6 +24834,8 @@ static char *convert_cloudsync_status(const char *status_code){
 		return "STOP";
 	else if(!strcmp(status_code, "STATUS:77"))
 		return "INPUT CAPTCHA";
+	else if(!strcmp(status_code, "STATUS:78"))
+		return "SKIP DOWN";
 	else
 		return "ERROR";
 }

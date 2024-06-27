@@ -1,6 +1,11 @@
 Asuswrt-Merlin Changelog
 ========================
 
+386.14 (xx-xxx-xxxx)
+  - UPDATED: Merged with GPL 386_52805.
+  - UPDATED: wget to 1.24.5.
+
+
 386.13_2 (26-Apr-2024)
   - NOTE: This release is only available for the RT-AC86U
           and GT-AC2900.

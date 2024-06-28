@@ -539,10 +539,12 @@ sta_list:
 			}
 			if (leaselistptr) free(leaselistptr);
 
-			if ((found) && (str_escape_quotes(hostnameentry, tmp, sizeof(hostnameentry)) == 0 ))
-				strlcpy(hostnameentry, tmp, sizeof(hostnameentry));
-			else
+			if (found) {
+				if (str_escape_quotes(hostnameentry, tmp, sizeof(hostnameentry)) == 0 )
+					strlcpy(hostnameentry, tmp, sizeof(hostnameentry));
+			} else {
 				*hostnameentry = '\0';
+			}
 
 			switch (found) {
 			case 0:	// Not in arplist nor in leaselist
@@ -720,10 +722,12 @@ sta_list:
 					}
 					if (leaselistptr) free(leaselistptr);
 
-					if ((found) && (str_escape_quotes(hostnameentry, tmp,sizeof(hostnameentry)) == 0 ))
-						strlcpy(hostnameentry, tmp, sizeof(hostnameentry));
-					else
+					if (found) {
+						if (str_escape_quotes(hostnameentry, tmp, sizeof(hostnameentry)) == 0 )
+							strlcpy(hostnameentry, tmp, sizeof(hostnameentry));
+					} else {
 						*hostnameentry = '\0';
+					}
 
 					switch (found) {
 					case 0:	// Not in arplist nor in leaselist

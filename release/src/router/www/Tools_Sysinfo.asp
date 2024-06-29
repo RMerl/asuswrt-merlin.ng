@@ -493,32 +493,32 @@ function show_connstate(){
 			wlc_6_arr = wlc_2_arr;
 	}
 
-	document.getElementById("wlc_24_td").innerHTML = "<span>Associated: </span>" + wlc_24_arr[0] + "&nbsp;&nbsp;-&nbsp;&nbsp;" +
+	document.getElementById("wlc_24_td").innerHTML = (!wifi7_support ? "<span>Associated: </span>" + wlc_24_arr[0] + "&nbsp;&nbsp;-&nbsp;&nbsp;" : "") +
 	                                                 "<span>Authorized: </span>" + wlc_24_arr[1] + "&nbsp;&nbsp;-&nbsp;&nbsp;" +
 	                                                 "<span>Authenticated: </span>" + wlc_24_arr[2];
 
 	if (band5g_support) {
-		document.getElementById("wlc_51_td").innerHTML = "<span>Associated: </span>" + wlc_51_arr[0] + "&nbsp;&nbsp;-&nbsp;&nbsp;" +
+		document.getElementById("wlc_51_td").innerHTML = (!wifi7_support ? "<span>Associated: </span>" + wlc_51_arr[0] + "&nbsp;&nbsp;-&nbsp;&nbsp;" : "") +
 		                                                 "<span>Authorized: </span>" + wlc_51_arr[1] + "&nbsp;&nbsp;-&nbsp;&nbsp;" +
 		                                                 "<span>Authenticated: </span>" + wlc_51_arr[2];
 	}
 
 	if (wl_info.band5g_2_support) {
-		document.getElementById("wlc_52_td").innerHTML = "<span>Associated: </span>" + wlc_52_arr[0] + "&nbsp;&nbsp;-&nbsp;&nbsp;" +
+		document.getElementById("wlc_52_td").innerHTML = (!wifi7_support ? "<span>Associated: </span>" + wlc_52_arr[0] + "&nbsp;&nbsp;-&nbsp;&nbsp;" : "") +
 		                                                 "<span>Authorized: </span>" + wlc_52_arr[1] + "&nbsp;&nbsp;-&nbsp;&nbsp;" +
 		                                                 "<span>Authenticated: </span>" + wlc_52_arr[2];
 	}
 
 	if (wl_info.band6g_support) {
-		document.getElementById("wlc_6_td").innerHTML = "<span>Associated: </span>" + wlc_6_arr[0] + "&nbsp;&nbsp;-&nbsp;&nbsp;" +
+		document.getElementById("wlc_6_td").innerHTML = (!wifi7_support ? "<span>Associated: </span>" + wlc_6_arr[0] + "&nbsp;&nbsp;-&nbsp;&nbsp;" : "") +
 		                                                "<span>Authorized: </span>" + wlc_6_arr[1] + "&nbsp;&nbsp;-&nbsp;&nbsp;" +
 		                                                "<span>Authenticated: </span>" + wlc_6_arr[2];
 	}
 
 	if (wl_info.band6g_2_support) {
-		document.getElementById("wlc_62_td").innerHTML = "<span>Associated: </span>" + wlc_62_arr[0] + "&nbsp;&nbsp;-&nbsp;&nbsp;" +
-		                                                "<span>Authorized: </span>" + wlc_62_arr[1] + "&nbsp;&nbsp;-&nbsp;&nbsp;" +
-		                                                "<span>Authenticated: </span>" + wlc_62_arr[2];
+		document.getElementById("wlc_62_td").innerHTML = (!wifi7_support ? "<span>Associated: </span>" + wlc_62_arr[0] + "&nbsp;&nbsp;-&nbsp;&nbsp;" : "") +
+		                                                 "<span>Authorized: </span>" + wlc_62_arr[1] + "&nbsp;&nbsp;-&nbsp;&nbsp;" +
+		                                                 "<span>Authenticated: </span>" + wlc_62_arr[2];
         }
 }
 

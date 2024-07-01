@@ -30774,6 +30774,7 @@ ej_httpd_cert_info(int eid, webs_t wp, int argc, char **argv)
 	if (le_enable == 1) {
 		/* Let's encrypt */
 		get_path_le_domain_cert(cert_path, sizeof(cert_path));
+		CA_cert_path = NULL;
 	} else if (le_enable == 2) {
 		/* uploaded cert. */
 		if (f_exists(UPLOAD_CACERT) && f_exists(UPLOAD_CAKEY)) {

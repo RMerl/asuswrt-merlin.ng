@@ -2,6 +2,10 @@ Asuswrt-Merlin Changelog
 ========================
 
 386.14 (xx-xxx-xxxx)
+  - NOTE: Reminder that all models on the 386.xx series will
+          stop being supported by Asuswrt-Merlin at the end
+          of 2024.
+
   - UPDATED: Merged with GPL 386_52805.
   - UPDATED: wget to 1.24.5.
 

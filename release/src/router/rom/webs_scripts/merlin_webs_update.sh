@@ -65,9 +65,9 @@ else
 	        newfirm=1
 	elif [ "$current_base" -eq "$firmbase" ] && [ "$current_firm" -lt "$firmver" ]; then
 	        newfirm=1
-	elif [ "$current_base" -eq "$firmbase" ] && [ "$current_firm" -eq "$current_firm" ] && [ "$current_buildno" -lt "$buildno" ]; then
+	elif [ "$current_base" -eq "$firmbase" ] && [ "$current_firm" -eq "$firmver" ] && [ "$current_buildno" -lt "$buildno" ]; then
 	        newfirm=1
-	elif [ "$current_base" -eq "$firmbase" ] && [ "$current_firm" -eq "$current_firm" ] && [ "$current_buildno" -eq "$buildno" ] && [ "$current_extendno" -lt "$lextendno" ]; then
+	elif [ "$current_base" -eq "$firmbase" ] && [ "$current_firm" -eq "$firmver" ] && [ "$current_buildno" -eq "$buildno" ] && [ "$current_extendno" -lt "$lextendno" ]; then
 		newfirm=1
 	else
 		newfirm=0

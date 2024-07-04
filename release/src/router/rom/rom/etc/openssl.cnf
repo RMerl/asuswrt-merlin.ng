@@ -25,17 +25,17 @@ oid_section		= new_oids
 default_ca	= CA_default			# The default ca section
 
 [ CA_default ]
-dir				= /usr/share		# Where everything is kept
-certs			= $dir/certs		# Where the issued certs are kept
-crl_dir			= $dir/crl			# Where the issued crl are kept
-database		= $dir/index.txt	# database index file.
-new_certs_dir	= $dir/newcerts		# default place for new certs.
+dir		= /etc		# Where everything is kept
+certs		= /etc		# Where the issued certs are kept
+crl_dir		= /etc		# Where the issued crl are kept
+database	= /etc/index.txt	# database index file.
+new_certs_dir	= /etc		# default place for new certs.
 
-certificate	= $dir/cacert.pem 		# The CA certificate
-serial		= $dir/serial 			# The current serial number
-crl			= $dir/crl.pem 			# The current CRL
-private_key	= $dir/private/cakey.pem# The private key
-RANDFILE	= $dir/private/.rand	# private random number file
+certificate	= $dir/cacert.pem	# The CA certificate
+serial		= $dir/serial 		# The current serial number
+crl		= $dir/crl.pem 		# The current CRL
+private_key	= $dir/cakey.pem	# The private key
+RANDFILE	= $dir/.rand	# private random number file
 
 x509_extensions		= usr_cert			# The extentions to add to the cert
 
@@ -45,34 +45,34 @@ x509_extensions		= usr_cert			# The extentions to add to the cert
 
 default_days		= 7305			# how long to certify for
 default_crl_days	= 30			# how long before next CRL
-default_md			= md5			# which md to use.
-preserve			= no			# keep passed DN ordering
+default_md		= sha256		# which md to use.
+preserve		= no			# keep passed DN ordering
 
 # A few difference way of specifying how similar the request should look
 # For type CA, the listed attributes must be the same, and the optional
 # and supplied fields are just that :-)
-policy				= policy_match
+policy			= policy_match
 
 # For the CA policy
 [ policy_match ]
-countryName				= match
-stateOrProvinceName		= match
-organizationName		= match
+countryName		= match
+stateOrProvinceName	= match
+organizationName	= match
 organizationalUnitName	= optional
-commonName				= supplied
-emailAddress			= optional
+commonName		= supplied
+emailAddress		= optional
 
 # For the 'anything' policy
 # At this point in time, you must list all acceptable 'object'
 # types.
 [ policy_anything ]
-countryName				= optional
-stateOrProvinceName		= optional
-localityName			= optional
-organizationName		= optional
+countryName		= optional
+stateOrProvinceName	= optional
+localityName		= optional
+organizationName	= optional
 organizationalUnitName	= optional
-commonName				= supplied
-emailAddress			= optional
+commonName		= supplied
+emailAddress		= optional
 
 [ usr_cert ]
 # These extensions are added when 'ca' signs a request.
@@ -126,27 +126,25 @@ authorityKeyIdentifier = keyid,issuer:always
 
 basicConstraints = CA:FALSE
 keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+subjectAltName = @alt_names
 
 [ v3_ca ]
 # Extensions for a typical CA
 
-
 # PKIX recommendation.
-
 subjectKeyIdentifier = hash
-
 authorityKeyIdentifier = keyid:always,issuer:always
 
 # This is what PKIX recommends but some broken software chokes on critical
 # extensions.
 #basicConstraints = critical,CA:true
 # So we do this instead.
-basicConstraints = CA:true
+basicConstraints = CA:true,pathlen:0
 
 # Key usage: this is typical for a CA certificate. However since it will
 # prevent it being used as an test self-signed certificate it is best
 # left out by default.
-keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
+keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment, keyCertSign
 
 # Some might want this also
 # nsCertType = sslCA, emailCA
@@ -154,13 +152,16 @@ keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
 # Include email address in subject alt name: another PKIX recommendation
 subjectAltName = @alt_names
 # Copy issuer details
-# issuerAltName=issuer:copy
+issuerAltName=issuer:copy
 
 # DER hex encoding of an extension: beware experts only!
 # obj=DER:02:03
 # Where 'obj' is a standard or added object
 # You can even override a supported extension:
 # basicConstraints= critical, DER:30:03:01:01:FF
+
+[alt_names]
+DNS.1 = www.asusrouter.com
 
 [ crl_ext ]
 # CRL extensions.
@@ -179,13 +180,11 @@ default = openssl
 # bn_mod_exp_crt = openssl
 
 
-
-
 [ req ]
 default_bits		= 2048
-default_keyfile 	= privkey.pem
+default_keyfile 	= cakey.pem
 distinguished_name	= req_distinguished_name
-attributes			= req_attributes
+attributes		= req_attributes
 x509_extensions		= v3_ca	# The extentions to add to the self signed cert
 
 # Passwords for private keys if not present they will be prompted for
@@ -207,24 +206,24 @@ req_extensions = v3_req # The extensions to add to a certificate request
 
 [ req_attributes ]
 challengePassword		= .
-challengePassword_value	= 
+challengePassword_value		= 
 
 unstructuredName		= .
-unstructuredName_value	= 
+unstructuredName_value		= 
 
 
 [ req_distinguished_name ]
-countryName				= .
+countryName			= .
 countryName_value		= US
 
-stateOrProvinceName			= .
+stateOrProvinceName		= .
 stateOrProvinceName_value	= .
 
 localityName			= .
 localityName_value		= .
 
 organizationName		= .
-organizationName_value	= .
+organizationName_value		= .
 
-organizationalUnitName			= .
+organizationalUnitName		= .
 organizationalUnitName_value	= .

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-wget_options="-q -t 2 -T 30"
+wget_options="--no-check-certificate -q -t 2 -T 30"
 
 fwsite="https://fwupdate.asuswrt-merlin.net"
 

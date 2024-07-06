@@ -9,6 +9,11 @@ Asuswrt-Merlin Changelog
          requires disabling the killswitch on the webui.
          The rules are also created before WAN goes up, to reduce
          the risks of leaks between WAN going up and VPN connecting.
+
+         *** Make sure to double check that you don't have any
+         unwanted killswitch enabled if you have connectivity issues
+         following the upgrade to this firmware.
+
   - NEW: Added killswitch support for WireGuard clients.
   - UPDATED: Chart.js was upgraded from 2.x to 3.9, to share the
              same version used by Asus.  Any third party addon
@@ -22,8 +27,15 @@ Asuswrt-Merlin Changelog
              automatically when WAN comes up.  This is to reduce
              confusion, better integrate into SDN, and match how
              WireGuard clients already worked.
+  - CHANGED: Allow text selection on the Wireguard Server settings
+             page.
   - FIXED: JS error on Wifi 6e/7 models when toggling DDNS.
-  - FIXED: Couldn't mount CIFS shares on the router for BCM4912 devices
+  - FIXED: Couldn't mount CIFS shares on the router for BCM4912
+           devices.
+  - FIXED: Wrong band shown when selecting the 5 GHz band on the
+           WPS page for the GT-AXE11000.
+  - FIXED: WPS page wouldn't properly detect if 6 GHz radio is
+           disabled when selecting it for the GT-AXE11000
   - REMOVED: Wifi Radar was removed (unsupported by Wifi 7 devices,
              and security issues cited by Asus in their own recent
              releases).

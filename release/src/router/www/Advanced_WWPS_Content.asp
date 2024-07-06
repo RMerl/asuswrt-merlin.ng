@@ -36,6 +36,7 @@ var wl_ssid_closed = "<% nvram_get("wl_closed"); %>";
 var curState = "<% nvram_get("wps_enable"); %>";
 var radio_2 = '<% nvram_get("wl0_radio"); %>';
 var radio_5 = '<% nvram_get("wl1_radio"); %>';
+var radio_6 = '<% nvram_get("wl2_radio"); %>';
 var band_string = "";
 
 function reject_wps(auth_mode, wep){
@@ -419,18 +420,12 @@ function show_wsc_status(wps_infos){
 			currentBand = 0;
 	}
 	else if(wps_infos[12].firstChild.nodeValue == 1){
-		if(!wl_info.band5g_2_support && !wl_info.band6g_support){
+		if(!wl_info.band5g_2_support){
 			document.getElementById("wps_band_word").innerHTML = "5 GHz";
 			band_string = "5 GHz";
 		}else{
-			if(band6g_support){
-				document.getElementById("wps_band_word").innerHTML = "6 GHz";
-				band_string = "6 GHz";
-			}
-			else{
-				document.getElementById("wps_band_word").innerHTML = "5 GHz-1";
-				band_string = "5 GHz-1";
-			}			
+			document.getElementById("wps_band_word").innerHTML = "5 GHz-1";
+			band_string = "5 GHz-1";
 		}
 			
 		currentBand = 1;
@@ -445,7 +440,7 @@ function show_wsc_status(wps_infos){
 			band_string = "5 GHz-2";
 		}
 
-		currentBand = 1;
+		currentBand = 2;
 	}
 
 	
@@ -467,6 +462,11 @@ function show_wsc_status(wps_infos){
 		controlDisplayItem();
 		return;
 	}
+        else if(currentBand == 2 && radio_6 != "1") {   //5GHz
+                document.getElementById("wps_enable_hint").innerHTML = "* <#note_turn_wifi_on_WPS#> <a style='color:#FC0; text-decoration: underline; font-family:LucidaConsole;cursor:pointer;' onclick=\"_change_wl_advanced_unit_status(" + htmlEnDeCode.htmlEncode(wps_infos[12].firstChild.nodeValue) + ");\"><#btn_go#></a>"
+                controlDisplayItem();
+                return;
+        }
 	else if (reject_wps(wps_infos[11].firstChild.nodeValue, wep)){ // Second filter the authentication method
 		document.getElementById("wps_enable_hint").innerHTML = "<#WPS_weptkip_hint#><br><#wsc_mode_hint1#> <a style='color:#FC0; text-decoration: underline; font-family:Lucida Console;cursor:pointer;' onclick=\"_change_wl_unit_status(" + htmlEnDeCode.htmlEncode(wps_infos[12].firstChild.nodeValue) + ");\"><#menu5_1_1#></a> <#wsc_mode_hint2#>"
 		controlDisplayItem();

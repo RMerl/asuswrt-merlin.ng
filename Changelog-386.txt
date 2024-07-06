@@ -8,6 +8,10 @@ Asuswrt-Merlin Changelog
 
   - UPDATED: Merged with GPL 386_52805.
   - UPDATED: wget to 1.24.5.
+  - FIXED: WPS wouldn't start on RT-AC68U (note: starting through
+           webui was fixed, however starting through button is
+           still broken for the RT-AC66U_B1, including with
+           stock firmware).
 
 
 386.13_2 (26-Apr-2024)

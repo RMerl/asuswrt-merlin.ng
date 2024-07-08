@@ -133,11 +133,11 @@ function show_pinholes() {
 
 	code = '<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"class="FormTable_table">';
 	code += '<thead><tr><td colspan="6">UPnP IGDv2 &amp; PCP IPv6 port forwards</td></tr></thead>';
-	code += '<tr><th width="6%">Proto</th>';
+	code += '<tr><th width="32%">Local IP</th>';
+	code += '<th width="9%">Local Port</th>';
+	code += '<th width="6%">Proto</th>';
 	code += '<th width="32%">Remote IP</th>';
 	code += '<th width="9%">Rem Port</th>';
-	code += '<th width="32%">Local IP</th>';
-	code += '<th width="9%">Local Port</th>';
 	code += '<th width="12%">Time left</th>';
 	code += '</tr>';
 
@@ -147,11 +147,11 @@ function show_pinholes() {
 		if (pinholesarray.length > 1) {
 			for (i = 0; i < pinholesarray.length-1; ++i) {
 				line = pinholesarray[i];
+				code += '<td>' + line[3] + '</td>';
+				code += '<td>' + line[4] + '</td>';
 				code += '<td>' + line[0] + '</td>';
 				code += '<td>' + line[1] + '</td>';
 				code += '<td>' + line[2] + '</td>';
-				code += '<td>' + line[3] + '</td>';
-				code += '<td>' + line[4] + '</td>';
 
 				timestamp=new Date(line[5] * 1000);
 				currtime=new Date().getTime();

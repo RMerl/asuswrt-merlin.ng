@@ -32,10 +32,10 @@ function show_upnp() {
 
 	code = '<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable_table">';
 	code += '<thead><tr><td colspan="6">UPnP IGD &amp; PCP/NAT-PMP IPv4 port forwards</td></tr></thead>';
-	code += '<tr><th width="8%">Proto</th>';
-	code += '<th width="8%">Ext Port</th>';
+	code += '<tr><th width="8%">Ext Port</th>';
 	code += '<th width="17%">Local IP</th>';
 	code += '<th width="12%">Local Port</th>';
+	code += '<th width="8%">Proto</th>';
 	code += '<th width="13%">Time left</th>';
 	code += '<th width="42%">Description</th>';
 	code += '</tr>';
@@ -48,10 +48,10 @@ function show_upnp() {
 				line = upnparray[i];
 
 				code += '<tr>';
-				code += '<td>' + line[0] + '</td>';
 				code += '<td>' + line[1] + '</td>';
 				code += '<td>' + line[2] + '</td>';
 				code += '<td>' + line[3] + '</td>';
+				code += '<td>' + line[0] + '</td>';
 
 				if (line[4] != 0) {
 					Hours = Math.floor((line[4] / 3600));

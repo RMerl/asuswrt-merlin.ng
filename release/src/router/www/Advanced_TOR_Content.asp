@@ -89,9 +89,9 @@ function show_tor_redir_list(){
 					code += '<div class="clientIcon type' + deviceType + '" onClick="popClientListEditTable(&quot;' + mac + '&quot;, this, &quot;' + clientName + '&quot;, &quot;&quot;, &quot;DNSFilter&quot;)"></div>';
 				}
 				else if(deviceVender != "" ) {
-					var venderIconClassName = getVenderIconClassName(deviceVender.toLowerCase());
-					if(venderIconClassName != "") {
-						code += '<div class="venderIcon ' + venderIconClassName + '" onClick="popClientListEditTable(&quot;' + mac + '&quot;, this, &quot;' + clientName + '&quot;, &quot;&quot;, &quot;DNSFilter&quot;)"></div>';
+					var VendorIconClassName = getVendorIconClassName(deviceVender.toLowerCase());
+					if(VendorIconClassName != "") {
+						code += '<div class="vendorIcon ' + VendorIconClassName + '" onClick="popClientListEditTable(&quot;' + mac + '&quot;, this, &quot;' + clientName + '&quot;, &quot;&quot;, &quot;DNSFilter&quot;)"></div>';
 					}
 					else {
 						code += '<div class="clientIcon type' + deviceType + '" onClick="popClientListEditTable(&quot;' + mac + '&quot;, this, &quot;' + clientName + '&quot;, &quot;&quot;, &quot;DNSFilter&quot;)"></div>';

@@ -224,9 +224,9 @@ function show_dnsfilter_list(){
 					code += '<div id="' + clientIconID + '" class="clientIcon type' + deviceType + '"></div>';
 				}
 				else if(deviceVender != "" ) {
-					var venderIconClassName = getVenderIconClassName(deviceVender.toLowerCase());
-					if(venderIconClassName != "" && !downsize_4m_support) {
-						code += '<div id="' + clientIconID + '" class="venderIcon ' + venderIconClassName + '"></div>';
+					var VendorIconClassName = getVendorIconClassName(deviceVender.toLowerCase());
+					if(VendorIconClassName != "" && !downsize_4m_support) {
+						code += '<div id="' + clientIconID + '" class="vendorIcon ' + VendorIconClassName + '"></div>';
 					}
 					else {
 						code += '<div id="' + clientIconID + '" class="clientIcon type' + deviceType + '"></div>';

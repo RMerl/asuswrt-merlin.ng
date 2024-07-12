@@ -132,32 +132,38 @@ function show_pinholes() {
 	var code, i, line;
 
 	code = '<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"class="FormTable_table">';
-	code += '<thead><tr><td colspan="5">IPv6 firewall Pinholes</td></tr></thead>';
-	code += '<tr><th width="10%">Proto</th>';
-	code += '<th width="35%">Remote IP</th>';
-	code += '<th width="10%">Port</th>';
-	code += '<th width="35%">Local IP</th>';
-	code += '<th width="10%">Port</th>';
+	code += '<thead><tr><td colspan="6">UPnP IGDv2 &amp; PCP IPv6 port mappings</td></tr></thead>';
+	code += '<tr><th width="6%">Proto</th>';
+	code += '<th width="32%">Remote IP</th>';
+	code += '<th width="9%">Rem Port</th>';
+	code += '<th width="32%">Local IP</th>';
+	code += '<th width="9%">Local Port</th>';
+	code += '<th width="12%">Time left</th>';
 	code += '</tr>';
 
-	if ("<% nvram_get("upnp_pinhole_enable"); %>" == "0") {
-		code += '<tr><td colspan="5">Pinhole support is currently disabled.</td></tr>';
+	if ("<% nvram_get("wan_upnp_enable"); %>" == "0" || "<% nvram_get("upnp_pinhole_enable"); %>" == "0") {
+		code += '<tr><td colspan="6"><span>Service is currently disabled. Can be enabled <a href="Advanced_WAN_Content.asp" style="text-decoration: underline;">here</a>.</span></td></tr>';
 	} else {
 		if (pinholesarray.length > 1) {
 			for (i = 0; i < pinholesarray.length-1; ++i) {
 				line = pinholesarray[i];
-				code += '<tr>';
-				code += '<td style="color: cyan;text-align:left;" colspan="5">' + line[6] + '</td>';
-				code += '</tr><tr>';
 				code += '<td>' + line[0] + '</td>';
 				code += '<td>' + line[1] + '</td>';
 				code += '<td>' + line[2] + '</td>';
 				code += '<td>' + line[3] + '</td>';
 				code += '<td>' + line[4] + '</td>';
+
+				timestamp=new Date(line[5] * 1000);
+				currtime=new Date().getTime();
+				timeleftsec=(timestamp - currtime) / 1000;
+				Hours = Math.floor((timeleftsec / 3600));
+				Minutes = Math.floor(timeleftsec % 3600 / 60);
+				Seconds = Math.floor(timeleftsec % 60);
+				code += '<td>' + Hours + "h " + Minutes + "m "+ Seconds + "s" + '</td>';
 				code += '</tr>';
 			}
 		} else {
-			code += '<tr><td colspan="5"><span>No pinholes.</span></td></tr>';
+			code += '<tr><td colspan="6"><span>No active port mappings.</span></td></tr>';
 		}
 	}
 

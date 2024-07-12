@@ -31,39 +31,43 @@ function show_upnp() {
 	var Hours, Minutes, Seconds;
 
 	code = '<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable_table">';
-	code += '<thead><tr><td colspan="6">UPnP IGD &amp; PCP/NAT-PMP port forwards</td></tr></thead>';
+	code += '<thead><tr><td colspan="6">UPnP IGD &amp; PCP/NAT-PMP IPv4 port forwards</td></tr></thead>';
 	code += '<tr><th width="8%">Proto</th>';
-	code += '<th width="8%">Port</th>';
-	code += '<th width="17%">Redirect to</th>';
+	code += '<th width="8%">Ext Port</th>';
+	code += '<th width="17%">Local IP</th>';
 	code += '<th width="12%">Local Port</th>';
 	code += '<th width="13%">Time left</th>';
 	code += '<th width="42%">Description</th>';
 	code += '</tr>';
 
-	if (upnparray.length > 1) {
-		for (i = 0; i < upnparray.length-1; ++i) {
-			line = upnparray[i];
-
-			code += '<tr>';
-			code += '<td>' + line[0] + '</td>';
-			code += '<td>' + line[1] + '</td>';
-			code += '<td>' + line[2] + '</td>';
-			code += '<td>' + line[3] + '</td>';
-
-			if (line[4] != 0) {
-				Hours = Math.floor((line[4] / 3600));
-				Minutes = Math.floor(line[4] % 3600 / 60);
-				Seconds = Math.floor(line[4] % 60);
-				code += '<td>' + Hours + "h " + Minutes + "m "+ Seconds + "s" + '</td>';
-			} else {
-				code += '<td>' + 'N/A' + '</td>';
-			}
-
-			code += '<td>' + line[5].shorter(45) + '</td>';
-			code += '</tr>';
-		}
+	if ("<% nvram_get("wan_upnp_enable"); %>" == "0") {
+		code += '<tr><td colspan="6"><span>Service is currently disabled. Can be enabled <a href="Advanced_WAN_Content.asp" style="text-decoration: underline;">here</a>.</span></td></tr>';
 	} else {
-		code += '<tr><td colspan="6"><span>No active port forwards.</span></td></tr>';
+		if (upnparray.length > 1) {
+			for (i = 0; i < upnparray.length-1; ++i) {
+				line = upnparray[i];
+
+				code += '<tr>';
+				code += '<td>' + line[0] + '</td>';
+				code += '<td>' + line[1] + '</td>';
+				code += '<td>' + line[2] + '</td>';
+				code += '<td>' + line[3] + '</td>';
+
+				if (line[4] != 0) {
+					Hours = Math.floor((line[4] / 3600));
+					Minutes = Math.floor(line[4] % 3600 / 60);
+					Seconds = Math.floor(line[4] % 60);
+					code += '<td>' + Hours + "h " + Minutes + "m "+ Seconds + "s" + '</td>';
+				} else {
+					code += '<td>' + 'N/A' + '</td>';
+				}
+
+				code += '<td>' + line[5].shorter(45) + '</td>';
+				code += '</tr>';
+			}
+		} else {
+			code += '<tr><td colspan="6"><span>No active port forwards.</span></td></tr>';
+		}
 	}
 
 	code += '</tr></table>';
@@ -76,10 +80,10 @@ function show_vserver() {
 
 	code = '<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable_table">';
 	code += '<thead><tr><td colspan="6">Virtual Servers</td></tr></thead>';
-	code += '<tr><th width="20%">Source</th>';
+	code += '<tr><th width="20%">Source IP</th>';
 	code += '<th width="10%">Proto</th>';
-	code += '<th width="15%">Port range</th>';
-	code += '<th width="20%">Redirect to</th>';
+	code += '<th width="15%">Ext Port range</th>';
+	code += '<th width="20%">Local IP</th>';
 	code += '<th width="15%">Local Port</th>';
 	code += '<th width="20%">Chain</th>';
 	code += '</tr>';

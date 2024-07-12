@@ -2345,7 +2345,7 @@ function showInfo(){
 								</td>
 							</tr>
 							<tr id="upnp_range_int">
-								<th>UPnP …: Allowed internal port range</th>
+								<th>UPnP: Allowed internal port range</th>
 									<td>
 										<input type="text" maxlength="5" name="upnp_min_port_int" class="input_6_table" value="<% nvram_get("upnp_min_port_int"); %>" onkeypress="return validator.isNumber(this,event);">
 											to
@@ -2354,7 +2354,7 @@ function showInfo(){
 							</tr>
 							<tr id="upnp_range_ext">
 
-								<th>UPnP …: Allowed external port range</th>
+								<th>UPnP: Allowed external port range</th>
 									<td>
 										<input type="text" maxlength="5" name="upnp_min_port_ext" class="input_6_table" value="<% nvram_get("upnp_min_port_ext"); %>" onkeypress="return validator.isNumber(this,event);">
 											to

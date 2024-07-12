@@ -6650,6 +6650,7 @@ void start_upnp(void)
 					"serial=%s\n"
 					"uuid=%s\n"
 #ifdef RTCONFIG_IGD2
+					"ipv6_disable=%s\n"
 					"lease_file6=/tmp/upnp.leases6\n"
 #endif
 					"lease_file=%s\n",
@@ -6671,6 +6672,9 @@ void start_upnp(void)
 					"ASUS Wireless Router",
 					get_productid(),
 					nvram_get("serial_no") ? : serial, uuid,
+#ifdef RTCONFIG_IGD2
+					nvram_get_int("upnp_pinhole_enable") ? "no" : "yes",
+#endif
 					"/tmp/upnp.leases");
 
 				if (nvram_get_int("upnp_clean")) {

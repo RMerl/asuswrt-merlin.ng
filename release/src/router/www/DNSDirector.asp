@@ -209,7 +209,7 @@ function show_dnsfilter_list(){
 			code +='<tr id="row'+i+'">';
 			code +='<td width="50%" title="'+clientName+'">';
 
-			code += '<table style="width:100%;"><tr><td style="width:40%;height:56px;border:0px;float:right;">';
+			code += '<table style="width:100%;"><tr><td style="width:40%;height:56px;border:0px; float:right;padding-right:15px;">';
 			if(clientList[clientMac] == undefined) {
 				code += '<div id="' + clientIconID + '" class="clientIcon type0"></div>';
 			}
@@ -218,18 +218,22 @@ function show_dnsfilter_list(){
 					userIconBase64 = getUploadIcon(clientMac.replace(/\:/g, ""));
 				}
 				if(userIconBase64 != "NoIcon") {
-					code += '<div id="' + clientIconID + '" style="text-align:center;"><img class="imgUserIcon_card" src="' + userIconBase64 + '"></div>';
+					if(clientList[clientMac].isUserUplaodImg){
+						code += '<div id="' + clientIconID + '" class="clientIcon"><img class="imgUserIcon_card" src="' + userIconBase64 + '"></div>';
+					}else{
+						code += '<div id="' + clientIconID + '" class="clientIcon"><i class="type" style="--svg:url(' + userIconBase64 + ')"></i></div>';
+					}
 				}
-				else if(deviceType != "0" || deviceVender == "") {
-					code += '<div id="' + clientIconID + '" class="clientIcon type' + deviceType + '"></div>';
+				else if(deviceType != "0" || deviceVendor == "") {
+					code += '<div id="' + clientIconID + '" class="clientIcon"><i class="type'+deviceType+'"></i></div>';
 				}
-				else if(deviceVender != "" ) {
-					var VendorIconClassName = getVendorIconClassName(deviceVender.toLowerCase());
-					if(VendorIconClassName != "" && !downsize_4m_support) {
-						code += '<div id="' + clientIconID + '" class="vendorIcon ' + VendorIconClassName + '"></div>';
+				else if(deviceVendor != "" ) {
+					var vendorIconClassName = getVendorIconClassName(deviceVendor.toLowerCase());
+					if(vendorIconClassName != "" && !downsize_4m_support) {
+						code += '<div id="' + clientIconID + '" class="clientIcon"><i class="vendor-icon '+ vendorIconClassName +'"></i></div>';
 					}
 					else {
-						code += '<div id="' + clientIconID + '" class="clientIcon type' + deviceType + '"></div>';
+						code += '<div id="' + clientIconID + '" class="clientIcon"><i class="type' + deviceType + '"></i></div>';
 					}
 				}
 			}

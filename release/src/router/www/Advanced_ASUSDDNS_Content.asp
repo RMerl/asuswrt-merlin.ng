@@ -81,7 +81,6 @@ var http_enable = '<% nvram_get("http_enable"); %>';
 var httpd_cert_info = [<% httpd_cert_info(); %>][0];
 var orig_le_enable = '<% nvram_get("le_enable"); %>';
 var le_state = '<% nvram_get("le_state"); %>';
-var httpd_restart = 0;
 var ddnsStatus = getDDNSState(ddns_return_code_chk, ddns_hostname_x_t, ddns_old_name);
 var deregister_fail = 0;
 var cur_wan_ipaddr = wanlink_ipaddr();
@@ -186,14 +185,11 @@ function get_real_ip(){
 
 function submitForm(){
 	if(letsencrypt_support){
-		if(document.form.https_crt_cn.value != '<% nvram_get("https_crt_cn"); %>'){
-			document.form.https_crt_gen.value = "1";
-		}
 		if($("input[name='ddns_enable_x']:checked").val() == "1" && $("input[name='le_enable']:checked").val() == "1"){
 			document.form.action_wait.value = "10";
 			document.form.action_script.value = "restart_ddns_le;prepare_cert";
 		}
-		else if(http_enable != "0" && ($("input[name='le_enable']:checked").val() != orig_le_enable || document.form.https_crt_gen.value == "1" || httpd_restart == 1 )){
+		else if(http_enable != "0" && $("input[name='le_enable']:checked").val() != orig_le_enable){
 			document.form.action_wait.value = "10";
 			if(orig_le_enable == "1")
 				document.form.action_script.value = "prepare_cert;restart_webdav;restart_ddns_le";
@@ -384,15 +380,6 @@ function applyRule(){
 }
 
 function validForm(){
-
-	if ($("input[name='le_enable']:checked").val() == "0") {
-		if (!validator.safeName(document.form.https_crt_cn))
-			return false;
-	} else {
-		if (!validator.safeName(document.form.https_crt_cn, "noalert"))
-			document.form.https_crt_cn.value = "";
-	}
-
 	if(document.form.ddns_enable_x[0].checked){		//ddns enable
 		if(document.form.ddns_server_x.value.indexOf("WWW.ASUS.COM") != -1){		//WWW.ASUS.COM	or WWW.ASUS.COM.CN
 			if(document.form.DDNSName.value == ""){
@@ -857,7 +844,6 @@ function upload_cert_key(){
 		document.upload_form.submit();
 		hide_upload_window();
 		show_cert_details();
-		httpd_restart = 1;
 	}
 }
 
@@ -1114,19 +1100,6 @@ function check_unregister_result(){
 						</span>
 					</div>
 					<div id="cert_act" style="margin-top: 5px;"></div>
-				</td>
-			</tr>
-			<tr id="cert_gen" style="display:none;">
-				<th>Generate a new certificate</th>
-				<td>
-					<input type="radio" name="https_crt_gen" class="input" value="1" <% nvram_match_x("", "https_crt_gen", "1", "checked"); %>><#checkbox_Yes#>
-					<input type="radio" name="https_crt_gen" class="input" value="0" <% nvram_match_x("", "https_crt_gen", "0", "checked"); %>><#checkbox_No#>
-				</td>
-			</tr>
-			<tr id="cert_san" style="display:none;">
-				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,22)">Additional Certificate SANs</a></th>
-				<td>
-					<input type="text" name="https_crt_cn" value="<% nvram_get("https_crt_cn"); %>" autocomplete="off" class="input_32_table" maxlength="64" autocorrect="off" autocapitalize="off">
 				</td>
 			</tr>
 

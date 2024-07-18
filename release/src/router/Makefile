@@ -1383,6 +1383,7 @@ ifeq ($(or $(RTCONFIG_TIMEMACHINE),$(RTCONFIG_MDNS)),y)
 obj-y += libdaemon
 obj-y += expat-2.0.1
 obj-y += avahi
+obj-y += libnss-mdns
 else
 ifeq ($(or $(RTCONFIG_MEDIA_SERVER),$(RTCONFIG_BWDPI)),y)
 obj-y += mDNSResponder
@@ -8443,6 +8444,25 @@ iproute2-5.11.0-install:
 iproute2-5.11.0-clean:
 	-@$(MAKE) -C iproute2-5.11.0 clean
 	-rm -f iproute2-5.11.0/iproute2-5.11.0/Config
+
+libnss-mdns/configure:
+	cd libnss-mdns &&  autoreconf --force --install
+
+libnss-mdns/Makefile: libnss-mdns/configure
+	cd libnss-mdns && $(CONFIGURE) LDFLAGS="$(LDFLAGS) -L$(STAGEDIR)/usr/lib -ldl -lpthread $(EXTRA_LDFLAGS)" \
+		CFLAGS="$(CFLAGS) -I$(STAGEDIR)/usr/include -I$(TOP)/shared -I$(SRCBASE)/include" \
+		--prefix=/usr --sysconfdir=/tmp localstatedir=/var --with-distro=none \
+		--disable-tests --disable-static --enable-shared
+
+libnss-mdns: libnss-mdns/Makefile
+	@$(SEP)
+	@$(MAKE) -C libnss-mdns
+
+libnss-mdns-install: libnss-mdns
+	install -D libnss-mdns/.libs/libnss_mdns4_minimal.so.2 $(INSTALLDIR)/libnss-mdns/usr/lib/libnss_mdns4_minimal.so.2
+	install -D libnss-mdns/.libs/libnss_mdns4.so.2 $(INSTALLDIR)/libnss-mdns/usr/lib/libnss_mdns4.so.2
+	$(STRIP) $(INSTALLDIR)/libnss-mdns/usr/lib/libnss_mdns4_minimal.so.2
+	$(STRIP) $(INSTALLDIR)/libnss-mdns/usr/lib/libnss_mdns4.so.2
 
 # End merlin components
 

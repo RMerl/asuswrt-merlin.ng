@@ -12,6 +12,9 @@ Asuswrt-Merlin Changelog
            webui was fixed, however starting through button is
            still broken for the RT-AC66U_B1, including with
            stock firmware).
+  - REMOVED: Wifi Radar was removed (unsupported by Wifi 7 devices,
+             and security issues cited by Asus in their own recent
+             releases).
 
 
 386.13_2 (26-Apr-2024)

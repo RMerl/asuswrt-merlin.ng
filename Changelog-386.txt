@@ -1,7 +1,7 @@
 Asuswrt-Merlin Changelog
 ========================
 
-386.14 (xx-xxx-xxxx)
+386.14 (20-July-2024)
   - NOTE: Reminder that all models on the 386.xx series will
           stop being supported by Asuswrt-Merlin at the end
           of 2024.

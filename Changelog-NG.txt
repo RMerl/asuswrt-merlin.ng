@@ -1,7 +1,8 @@
 Asuswrt-Merlin Changelog
 ========================
 
-3004.388.8 (xx-xxx-2024)
+3004.388.8 (21-July-2024)
+  - NOTE: RT-AX56U is exceptionally included in this release.
   - NEW: Rewrote VPN killswitch implementation.  The new method
          uses an always present routing rule to prohibit access to
          the main routing table, so it will be active even if the
@@ -15,6 +16,8 @@ Asuswrt-Merlin Changelog
          following the upgrade to this firmware.
 
   - NEW: Added killswitch support for WireGuard clients.
+  - NEW: Added mDNS support to the router's local name resolution
+         (nss).
   - UPDATED: Chart.js was upgraded from 2.x to 3.9, to share the
              same version used by Asus.  Any third party addon
              that used it will need to upgrade their charts to
@@ -36,6 +39,9 @@ Asuswrt-Merlin Changelog
            WPS page for the GT-AXE11000.
   - FIXED: WPS page wouldn't properly detect if 6 GHz radio is
            disabled when selecting it for the GT-AXE11000
+  - FIXED: Disabling IGDv2/pinhole support wasn't fully disabling
+           IPv6 support.
+  - FIXED: CVE-2024-3080 issue
   - REMOVED: Wifi Radar was removed (unsupported by Wifi 7 devices,
              and security issues cited by Asus in their own recent
              releases).

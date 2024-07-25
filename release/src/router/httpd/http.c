@@ -148,6 +148,9 @@ wget(int method, const char *server, char *buf, size_t count, off_t offset)
 			for (s += 15; isblank(*s); s++);
 			chomp(s);
 			len = atoi(s);
+			if (len <= 0) {
+				return -EINVAL;
+			}
 		}
 		else if (!strncasecmp(s, "Transfer-Encoding:", 18)) {
 			for (s += 18; isblank(*s); s++);

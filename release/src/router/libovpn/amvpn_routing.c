@@ -221,7 +221,8 @@ void amvpn_set_routing_rules(int unit, vpndir_proto_t proto) {
 			// Set client rules if running or currently connecting
 			state = get_ovpn_status(OVPN_TYPE_CLIENT, unit);
 			if (state == OVPN_STS_RUNNING || state == OVPN_STS_INIT) {
-				snprintf(buffer, sizeof (buffer), "/usr/sbin/ip rule add table ovpnc%d priority %d iif %s", unit, VPNDIR_PRIO_ALL + unit, nvram_safe_get("lan_ifname"));
+//				snprintf(buffer, sizeof (buffer), "/usr/sbin/ip rule add table ovpnc%d priority %d iif %s", unit, VPNDIR_PRIO_ALL + unit, nvram_safe_get("lan_ifname"));
+				snprintf(buffer, sizeof (buffer), "/usr/sbin/ip rule add table ovpnc%d priority %d", unit, VPNDIR_PRIO_ALL + unit);
 				system(buffer);
 				if (verb >= 3)
 					logmessage("vpndirector","Routing all traffic through ovpnc%d", unit);

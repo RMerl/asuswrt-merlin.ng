@@ -160,9 +160,13 @@ wget(int method, const char *server, char *buf, size_t count, off_t offset)
 		}
 	}
 
-	if (chunked && fgets(line, sizeof(line), fp))
+	if (chunked && fgets(line, sizeof(line), fp)) {
 		len = strtol(line, NULL, 16);
-	
+		if (len <= 0) {
+			return -EINVAL;
+		}
+	}
+
 	len = (len > count) ? count : len;
 	len = fread(buf, 1, len, fp);
 

@@ -268,7 +268,7 @@ static const char usage_message[] =
 #if ENABLE_IP_PKTINFO
     "--multihome     : Configure a multi-homed UDP server.\n"
 #endif
-    "--fast-io       : (experimental) Optimize TUN/TAP/UDP writes.\n"
+    "--fast-io       : Optimize TUN/TAP/UDP writes.\n"
     "--remap-usr1 s  : On SIGUSR1 signals, remap signal (s='SIGHUP' or 'SIGTERM').\n"
     "--persist-tun   : Keep tun/tap device open across SIGUSR1 or --ping-restart.\n"
     "--persist-remote-ip : Keep remote IP address across SIGUSR1 or --ping-restart.\n"
@@ -1653,6 +1653,7 @@ show_http_proxy_options(const struct http_proxy_options *o)
     SHOW_STR(auth_file);
     SHOW_STR(auth_file_up);
     SHOW_BOOL(inline_creds);
+    SHOW_BOOL(nocache);
     SHOW_STR(http_version);
     SHOW_STR(user_agent);
     for  (i = 0; i < MAX_CUSTOM_HTTP_HEADER && o->custom_headers[i].name; i++)
@@ -3154,6 +3155,11 @@ options_postprocess_mutate_ce(struct options *o, struct connection_entry *ce)
     if (o->proto_force >= 0 && o->proto_force != ce->proto)
     {
         ce->flags |= CE_DISABLED;
+    }
+
+    if (ce->http_proxy_options)
+    {
+        ce->http_proxy_options->nocache = ssl_get_auth_nocache();
     }
 
     /* our socks code is not fully IPv6 enabled yet (TCP works, UDP not)

@@ -1,6 +1,12 @@
 Asuswrt-Merlin Changelog
 ========================
 
+3004.388.8_2 (xx-xxx-2024)
+  - FIXED: OpenVPN client routing not working properly when
+           configuring Internet redirection to "All" or "None".
+  - FIXED: New firmware check button missing for the RT-AX58U.
+
+
 3004.388.8 (21-July-2024)
   - NOTE: RT-AX56U is exceptionally included in this release.
   - NEW: Rewrote VPN killswitch implementation.  The new method

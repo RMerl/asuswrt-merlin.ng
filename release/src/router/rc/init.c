@@ -12231,7 +12231,7 @@ int init_nvram(void)
 #ifdef RTAX82_XD6
 		add_rc_support("mssid 2.4G 5G update");
 #else
-		add_rc_support("mssid 2.4G 5G usbX1");
+		add_rc_support("mssid 2.4G 5G update usbX1");
 #endif
 		add_rc_support("switchctrl"); // broadcom: for jumbo frame only
 		add_rc_support("manual_stb");

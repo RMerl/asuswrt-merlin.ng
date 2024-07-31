@@ -210,7 +210,11 @@ echo "DNS.${DNS_I} = www.asusrouter.com" >> ssl_server.ext && DNS_I=$((DNS_I+1))
 # add DDNS if operates in router mode
 if [ "`nvram get sw_mode`" == "1" ] ; then
 	if [ -n "`nvram get ddns_hostname_x`" ] ; then
-		echo "DNS.${DNS_I} = `nvram get ddns_hostname_x`" >> ssl_server.ext && DNS_I=$((DNS_I+1))
+		if [ "`nvram get ddns_server_x`" == "WWW.NAMECHEAP.COM" ] ; then
+			echo "DNS.${DNS_I} = `nvram get ddns_username_x`" >> ssl_server.ext && DNS_I=$((DNS_I+1))
+		else
+			echo "DNS.${DNS_I} = `nvram get ddns_hostname_x`" >> ssl_server.ext && DNS_I=$((DNS_I+1))
+		fi
 		nvram set last_cert_ddns_hostname=`nvram get ddns_hostname_x`
 	fi
 fi

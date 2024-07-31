@@ -230,6 +230,51 @@ check_tls(struct context *c)
     }
 }
 
+static void
+parse_incoming_control_channel_command(struct context *c, struct buffer *buf)
+{
+    if (buf_string_match_head_str(buf, "AUTH_FAILED"))
+    {
+        receive_auth_failed(c, buf);
+    }
+    else if (buf_string_match_head_str(buf, "PUSH_"))
+    {
+        incoming_push_message(c, buf);
+    }
+    else if (buf_string_match_head_str(buf, "RESTART"))
+    {
+        server_pushed_signal(c, buf, true, 7);
+    }
+    else if (buf_string_match_head_str(buf, "HALT"))
+    {
+        server_pushed_signal(c, buf, false, 4);
+    }
+    else if (buf_string_match_head_str(buf, "INFO_PRE"))
+    {
+        server_pushed_info(c, buf, 8);
+    }
+    else if (buf_string_match_head_str(buf, "INFO"))
+    {
+        server_pushed_info(c, buf, 4);
+    }
+    else if (buf_string_match_head_str(buf, "CR_RESPONSE"))
+    {
+        receive_cr_response(c, buf);
+    }
+    else if (buf_string_match_head_str(buf, "AUTH_PENDING"))
+    {
+        receive_auth_pending(c, buf);
+    }
+    else if (buf_string_match_head_str(buf, "EXIT"))
+    {
+        receive_exit_message(c);
+    }
+    else
+    {
+        msg(D_PUSH_ERRORS, "WARNING: Received unknown control message: %s", BSTR(buf));
+    }
+}
+
 /*
  * Handle incoming configuration
  * messages on the control channel.
@@ -245,51 +290,14 @@ check_incoming_control_channel(struct context *c)
     struct buffer buf = alloc_buf_gc(len, &gc);
     if (tls_rec_payload(c->c2.tls_multi, &buf))
     {
-        /* force null termination of message */
-        buf_null_terminate(&buf);
+        while (BLEN(&buf) > 1)
+        {
+            struct buffer cmdbuf = extract_command_buffer(&buf, &gc);
 
-        /* enforce character class restrictions */
-        string_mod(BSTR(&buf), CC_PRINT, CC_CRLF, 0);
-
-        if (buf_string_match_head_str(&buf, "AUTH_FAILED"))
-        {
-            receive_auth_failed(c, &buf);
-        }
-        else if (buf_string_match_head_str(&buf, "PUSH_"))
-        {
-            incoming_push_message(c, &buf);
-        }
-        else if (buf_string_match_head_str(&buf, "RESTART"))
-        {
-            server_pushed_signal(c, &buf, true, 7);
-        }
-        else if (buf_string_match_head_str(&buf, "HALT"))
-        {
-            server_pushed_signal(c, &buf, false, 4);
-        }
-        else if (buf_string_match_head_str(&buf, "INFO_PRE"))
-        {
-            server_pushed_info(c, &buf, 8);
-        }
-        else if (buf_string_match_head_str(&buf, "INFO"))
-        {
-            server_pushed_info(c, &buf, 4);
-        }
-        else if (buf_string_match_head_str(&buf, "CR_RESPONSE"))
-        {
-            receive_cr_response(c, &buf);
-        }
-        else if (buf_string_match_head_str(&buf, "AUTH_PENDING"))
-        {
-            receive_auth_pending(c, &buf);
-        }
-        else if (buf_string_match_head_str(&buf, "EXIT"))
-        {
-            receive_exit_message(c);
-        }
-        else
-        {
-            msg(D_PUSH_ERRORS, "WARNING: Received unknown control message: %s", BSTR(&buf));
+            if (cmdbuf.len > 0)
+            {
+                parse_incoming_control_channel_command(c, &cmdbuf);
+            }
         }
     }
     else
@@ -514,17 +522,24 @@ check_server_poll_timeout(struct context *c)
 }
 
 /*
- * Schedule a signal n_seconds from now.
+ * Schedule a SIGTERM signal c->options.scheduled_exit_interval seconds from now.
  */
-void
-schedule_exit(struct context *c, const int n_seconds, const int signal)
+bool
+schedule_exit(struct context *c)
 {
+    const int n_seconds = c->options.scheduled_exit_interval;
+    /* don't reschedule if already scheduled. */
+    if (event_timeout_defined(&c->c2.scheduled_exit))
+    {
+        return false;
+    }
     tls_set_single_session(c->c2.tls_multi);
     update_time();
     reset_coarse_timers(c);
     event_timeout_init(&c->c2.scheduled_exit, n_seconds, now);
-    c->c2.scheduled_exit_signal = signal;
+    c->c2.scheduled_exit_signal = SIGTERM;
     msg(D_SCHED_EXIT, "Delayed exit in %d seconds", n_seconds);
+    return true;
 }
 
 /*

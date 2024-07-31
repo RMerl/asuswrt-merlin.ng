@@ -499,12 +499,21 @@ ssl_set_auth_nocache(void)
 }
 
 /*
+ * Get the password caching
+ */
+bool
+ssl_get_auth_nocache(void)
+{
+    return passbuf.nocache;
+}
+
+/*
  * Set an authentication token
  */
 void
 ssl_set_auth_token(const char *token)
 {
-    set_auth_token(&auth_user_pass, &auth_token, token);
+    set_auth_token(&auth_token, token);
 }
 
 void

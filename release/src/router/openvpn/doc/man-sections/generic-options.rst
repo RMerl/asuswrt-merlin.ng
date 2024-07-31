@@ -19,9 +19,6 @@ which mode OpenVPN is configured as.
   When using ``--auth-nocache`` in combination with a user/password file
   and ``--chroot`` or ``--daemon``, make sure to use an absolute path.
 
-  This directive does not affect the ``--http-proxy`` username/password.
-  It is always cached.
-
 --cd dir
   Change directory to ``dir`` prior to reading any files such as
   configuration files, key files, scripts, etc. ``dir`` should be an
@@ -215,7 +212,7 @@ which mode OpenVPN is configured as.
   are supported by OpenSSL.
 
 --fast-io
-  (Experimental) Optimize TUN/TAP/UDP I/O writes by avoiding a call to
+  Optimize TUN/TAP/UDP I/O writes by avoiding a call to
   poll/epoll/select prior to the write operation. The purpose of such a
   call would normally be to block until the device or socket is ready to
   accept the write. Such blocking is unnecessary on some platforms which

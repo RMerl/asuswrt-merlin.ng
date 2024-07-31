@@ -308,6 +308,9 @@ int read_wgc_config_file(const char* file_path, int wgc_unit)
 	char wgc_prefix[8] = {0};
 	FILE *fp;
 	char buf[256] = {0};
+	char allowedips[4096] = {0};
+	char dns[128] = {0};
+	char addresses[64] = {0};
 
 	if (!file_path || file_path[0] == '\0')
 		return -1;
@@ -322,20 +325,32 @@ int read_wgc_config_file(const char* file_path, int wgc_unit)
 		while (fgets(buf, sizeof(buf), fp))
 		{
 			strtok(buf, "\r\n");
-			if (buf[0] == '[' || buf[0] == '#' || buf[0] == '\n')
+			if (buf[0] == '[' || buf[0] == '#' || buf[0] == '\n' || buf[0] == '\r')
 				continue;
 			else if (!strncmp(buf, "PrivateKey", 10))
 				nvram_pf_set(wgc_prefix, "priv", _get_wgconf_val(buf));
 			else if (!strncmp(buf, "Address", 7))
-				nvram_pf_set(wgc_prefix, "addr", _get_wgconf_val(buf));
+			{
+				if (*addresses)
+					 strlcat(addresses, ",", sizeof(addresses));
+				strlcat(addresses, _get_wgconf_val(buf), sizeof(addresses));
+			}
 			else if (!strncmp(buf, "DNS", 3))
-				nvram_pf_set(wgc_prefix, "dns", _get_wgconf_val(buf));
+			{
+				if (*dns)
+					strlcat(dns, ",", sizeof(dns));
+				strlcat(dns, _get_wgconf_val(buf), sizeof(dns));
+			}
 			else if (!strncmp(buf, "PublicKey", 9))
 				nvram_pf_set(wgc_prefix, "ppub", _get_wgconf_val(buf));
 			else if (!strncmp(buf, "PresharedKey", 12))
 				nvram_pf_set(wgc_prefix, "psk", _get_wgconf_val(buf));
 			else if (!strncmp(buf, "AllowedIPs", 10))
-				nvram_pf_set(wgc_prefix, "aips", _get_wgconf_val(buf));
+			{
+				if (*allowedips)
+					strlcat(allowedips, ",", sizeof(allowedips));
+				strlcat(allowedips, _get_wgconf_val(buf), sizeof(allowedips));
+			}
 			else if (!strncmp(buf, "Endpoint", 8))
 			{
 				char *ep, *p;
@@ -365,6 +380,13 @@ int read_wgc_config_file(const char* file_path, int wgc_unit)
 			}
 		}
 		fclose(fp);
+
+		if (*allowedips)
+			nvram_pf_set(wgc_prefix, "aips", allowedips);
+		if (*dns)
+			nvram_pf_set(wgc_prefix, "dns", dns);
+		if (*addresses)
+			nvram_pf_set(wgc_prefix, "addr", addresses);
 	}
 	else
 		return -1;

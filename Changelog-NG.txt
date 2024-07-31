@@ -1,10 +1,16 @@
 Asuswrt-Merlin Changelog
 ========================
 
-3004.388.8_2 (xx-xxx-2024)
+3004.388.8_2 (31-July-2024)
+  - UPDATED: OpenVPN to 2.6.12.
+  - CHANGED: Support importing Wireguard config files that
+             contain multiple AllowedIPs, Address or DNS
+             declarations.
   - FIXED: OpenVPN client routing not working properly when
            configuring Internet redirection to "All" or "None".
   - FIXED: New firmware check button missing for the RT-AX58U.
+  - FIXED: Generated web certificate wasn't using the FQDN
+           for Namecheap DDNS users.
 
 
 3004.388.8 (21-July-2024)

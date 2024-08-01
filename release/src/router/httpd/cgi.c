@@ -246,7 +246,7 @@ void webcgi_init(char *query)
        char *q, *end, *name, *value;
  
 #if !(defined(__GLIBC__) || defined(__UBLIBC__))
-	if (!htab.__tab)
+	if (htab.__tab)
 #else
        if (htab.table)
 #endif

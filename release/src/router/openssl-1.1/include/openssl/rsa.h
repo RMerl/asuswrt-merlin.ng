@@ -182,6 +182,8 @@ extern "C" {
 
 # define EVP_PKEY_CTRL_RSA_KEYGEN_PRIMES  (EVP_PKEY_ALG_CTRL + 13)
 
+# define EVP_PKEY_CTRL_RSA_IMPLICIT_REJECTION (EVP_PKEY_ALG_CTRL + 14)
+
 # define RSA_PKCS1_PADDING       1
 # define RSA_SSLV23_PADDING      2
 # define RSA_NO_PADDING          3
@@ -189,6 +191,9 @@ extern "C" {
 # define RSA_X931_PADDING        5
 /* EVP_PKEY_ only */
 # define RSA_PKCS1_PSS_PADDING   6
+
+/* internal RSA_ only */
+# define RSA_PKCS1_NO_IMPLICIT_REJECT_PADDING 8
 
 # define RSA_PKCS1_PADDING_SIZE  11
 

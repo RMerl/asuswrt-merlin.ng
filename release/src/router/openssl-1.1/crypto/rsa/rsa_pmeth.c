@@ -45,6 +45,8 @@ typedef struct {
     /* OAEP label */
     unsigned char *oaep_label;
     size_t oaep_labellen;
+    /* if to use implicit rejection in PKCS#1 v1.5 decryption */
+    int implicit_rejection;
 } RSA_PKEY_CTX;
 
 /* True if PSS parameters are restricted */
@@ -65,6 +67,7 @@ static int pkey_rsa_init(EVP_PKEY_CTX *ctx)
     /* Maximum for sign, auto for verify */
     rctx->saltlen = RSA_PSS_SALTLEN_AUTO;
     rctx->min_saltlen = -1;
+    rctx->implicit_rejection = 1;
     ctx->data = rctx;
     ctx->keygen_info = rctx->gentmp;
     ctx->keygen_info_count = 2;
@@ -89,6 +92,7 @@ static int pkey_rsa_copy(EVP_PKEY_CTX *dst, EVP_PKEY_CTX *src)
     dctx->pad_mode = sctx->pad_mode;
     dctx->md = sctx->md;
     dctx->mgf1md = sctx->mgf1md;
+    dctx->implicit_rejection = sctx->implicit_rejection;
     if (sctx->oaep_label) {
         OPENSSL_free(dctx->oaep_label);
         dctx->oaep_label = OPENSSL_memdup(sctx->oaep_label, sctx->oaep_labellen);
@@ -324,6 +328,7 @@ static int pkey_rsa_decrypt(EVP_PKEY_CTX *ctx,
                             const unsigned char *in, size_t inlen)
 {
     int ret;
+    int pad_mode;
     RSA_PKEY_CTX *rctx = ctx->data;
 
     if (rctx->pad_mode == RSA_PKCS1_OAEP_PADDING) {
@@ -339,8 +344,12 @@ static int pkey_rsa_decrypt(EVP_PKEY_CTX *ctx,
                                                 rctx->oaep_labellen,
                                                 rctx->md, rctx->mgf1md);
     } else {
-        ret = RSA_private_decrypt(inlen, in, out, ctx->pkey->pkey.rsa,
-                                  rctx->pad_mode);
+        if (rctx->pad_mode == RSA_PKCS1_PADDING &&
+              rctx->implicit_rejection == 0)
+            pad_mode = RSA_PKCS1_NO_IMPLICIT_REJECT_PADDING;
+        else
+            pad_mode = rctx->pad_mode;
+        ret = RSA_private_decrypt(inlen, in, out, ctx->pkey->pkey.rsa, pad_mode);
     }
     *outlen = constant_time_select_s(constant_time_msb_s(ret), *outlen, ret);
     ret = constant_time_select_int(constant_time_msb(ret), ret, 1);
@@ -559,6 +568,14 @@ static int pkey_rsa_ctrl(EVP_PKEY_CTX *ctx, int type, int p1, void *p2)
         *(unsigned char **)p2 = rctx->oaep_label;
         return rctx->oaep_labellen;
 
+    case EVP_PKEY_CTRL_RSA_IMPLICIT_REJECTION:
+        if (rctx->pad_mode != RSA_PKCS1_PADDING) {
+            RSAerr(RSA_F_PKEY_RSA_CTRL, RSA_R_INVALID_PADDING_MODE);
+            return -2;
+        }
+        rctx->implicit_rejection = p1;
+        return 1;
+
     case EVP_PKEY_CTRL_DIGESTINIT:
     case EVP_PKEY_CTRL_PKCS7_SIGN:
 #ifndef OPENSSL_NO_CMS
@@ -693,6 +710,19 @@ static int pkey_rsa_ctrl_str(EVP_PKEY_CTX *ctx,
         if (ret <= 0)
             OPENSSL_free(lab);
         return ret;
+    }
+
+    if (strcmp(type, "rsa_pkcs1_implicit_rejection") == 0) {
+        if (value == NULL)
+            return -1;
+
+        if (strcmp(value, "0") == 0)
+            return pkey_rsa_ctrl(ctx, EVP_PKEY_CTRL_RSA_IMPLICIT_REJECTION, 0, NULL); 
+
+        if (strcmp(value, "1") == 0)
+            return pkey_rsa_ctrl(ctx, EVP_PKEY_CTRL_RSA_IMPLICIT_REJECTION, 1, NULL); 
+
+        return -2;
     }
 
     return -2;

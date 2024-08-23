@@ -2,8 +2,21 @@ Asuswrt-Merlin 3006.xxx Changelog
 =================================
 
 3006.102.xx (xx-xxx-xxxx)
+  - NEW: Added mDNS support to the router's local name resolution
+         (nss).
+  - UPDATED: OpenVPN to 2.6.12.
+  - CHANGED: Support importing Wireguard config files that
+             contain multiple AllowedIPs, Address or DNS
+             declarations.
+  - FIXED: Generated web certificate wasn't using the FQDN
+           for Namecheap DDNS users.
   - FIXED: DNSDirector and Tor pages would fail to properly load
            in some environment.
+  - FIXED: CVE-2024-2511, CVE-2024-4741, CVE-2024-5535 &
+           Implicit rejection for RSA PKCS#1 in openssl
+           (backport from Ubuntu by RSDNTWK)
+  - FIXED: UPnP options were missing on WAN page for models
+           with multiservice WAN support.
 
 
 3006.102.1 (28-Jun-2024)

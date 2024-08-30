@@ -154,7 +154,7 @@ then
 	cp release/src-rt-5.04axhnd.675x/bcmdrivers/broadcom/char/pktrunner/impl2/pktrunner.o $REPO/release/src-rt-5.04axhnd.675x/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
 	cp release/src-rt-5.04axhnd.675x/bcmdrivers/broadcom/char/wlcsm_ext/impl1/wlcsm.o $REPO/release/src-rt-5.04axhnd.675x/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
 
-elif [ "$BUILD_NAME" == "RT-BE96U" ] || [ "$BUILD_NAME" == "GT-BE98_PRO" ]
+elif [ "$BUILD_NAME" == "RT-BE96U" ] || [ "$BUILD_NAME" == "GT-BE98_PRO" ] || [ "$BUILD_NAME" == "RT-BE88U" ] || [ "$BUILD_NAME" == "RT-BE86U" ]
 then
         SDK="_4916hnd"
         ARCH="_arm"

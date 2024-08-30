@@ -44,22 +44,22 @@ body{
 }
 
 @-moz-document url-prefix(){ 		/*Firefox Hack*/
-	.container_gb::after{
+	.container::after{
 		top:0;
 	}
 }
 
 @supports (-ms-accelerator:true) {		/*Edge Browser Hack, not work on Edge 38*/
-	.container_gb::after{
+	.container::after{
 		top:0;
 	}
 }
 
-.switch input:checked~.container_gb{
+.switch input:checked~.container{
 	background: rgb(255,165,35);
 }
 
-.switch input:checked~.container_gb::after{
+.switch input:checked~.container::after{
 	left: 50px;
 	border-top-right-radius:5px;
 	border-bottom-right-radius:5px;
@@ -67,7 +67,7 @@ body{
 
 @media all and (-ms-high-contrast:none)
 {
-	*::-ms-backdrop, .container_gb::after { margin-top: 0px} /* IE11 */
+	*::-ms-backdrop, .container::after { margin-top: 0px} /* IE11 */
 }
 
 .btn{
@@ -86,16 +86,11 @@ body{
 	position: absolute;
 	width: 700px;
 	height: 600px;
-	background-color: #555;
+	background-color: #444f53;
 	z-index: 199;
 	padding: 12px 18px;
 	overflow-y: auto;
 	margin-top: -40px;
-	border: 1px solid #000;
-}
-
-#game_list {
-    border: 1px solid #111 !important;
 }
 
 .qr_code{

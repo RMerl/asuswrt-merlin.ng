@@ -86,6 +86,25 @@ typedef struct apg_br_info_t {
 #define BIT_XX(x)  ((1 << x))
 #endif
 
+#define WIFI_BAND_2G    BIT_XX(0)
+#define WIFI_BAND_5G    BIT_XX(1)
+#define WIFI_BAND_5GL   BIT_XX(2)
+#define WIFI_BAND_5GH   BIT_XX(3)
+#define WIFI_BAND_6G    BIT_XX(4)
+#define WIFI_BAND_6GL	BIT_XX(5)
+#define WIFI_BAND_6GH	BIT_XX(6)
+
+#define WIFI_BAND_ARRAY_SIZE    7
+const static unsigned short WIFI_BAND_ARRAY[] = {
+    WIFI_BAND_2G, 
+    WIFI_BAND_5G, 
+    WIFI_BAND_5GL, 
+    WIFI_BAND_5GH, 
+    WIFI_BAND_6G, 
+	WIFI_BAND_6GL,
+	WIFI_BAND_6GH
+};
+
 #define VIF_TYPE_NO_USED	BIT_XX(0)
 #define VIF_TYPE_PRELINK	BIT_XX(1)
 #define VIF_TYPE_FRONTHAUL 	BIT_XX(2)

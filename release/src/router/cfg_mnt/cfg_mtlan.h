@@ -57,8 +57,7 @@ extern int get_max_mtlan(char *mac);
 extern int is_sdn_supported(char *mac);
 #if defined(RTCONFIG_MLO)
 extern int is_mlo_supported(char *mac);
-extern int is_mlo_bh_fh_supported(char *mac);
-extern int gen_mlo_band();
+extern int is_mlo_fh_supported(char *mac);
 extern int get_mlo_band(char *mac);
 #endif
 extern char* get_wgn_ifnames(int band, int total, char *ret_ifnames, size_t ret_bsize);

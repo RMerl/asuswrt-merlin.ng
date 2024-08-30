@@ -280,7 +280,7 @@ var header_info = [<% get_header_info(); %>];
 var location_org = header_info[0].protocol + "://" + header_info[0].host + ":" + header_info[0].port;
 
 function initial(){
-	if(isSupport("ROG_UI") || isSupport("TS_UI") || isSupport("TUF_UI")){
+	if(isSupport("ROG_UI") || isSupport("TS_UI") || (('<% nvram_get("productid"); %>').substring(0,3).toUpperCase() == "TUF")){
 		$(".wrapper").css({"background-size":"cover"});
 	}
 	var is_logined = [<% is_logined_hook(); %>][0];

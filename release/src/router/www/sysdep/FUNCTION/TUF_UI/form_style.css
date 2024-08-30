@@ -856,10 +856,9 @@ form{
 }
 /* CSS Document */
 @font-face{
-	font-family: Xolonium;
-	src: url(/fonts/xolonium.regular.woff) format("woff"),
-         url(/fonts/xolonium.regular.otf) format("opentype");
-
+	font-family: rog;
+	src: url(/fonts/ROG_Fonts-Regular.woff) format("woff"),
+	     url(./fonts/ROG_Fonts-Regular.otf) format("opentype");
 }
 body{
 	color:#FFFFFF;

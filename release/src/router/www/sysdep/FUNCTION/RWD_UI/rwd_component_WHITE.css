@@ -5,7 +5,8 @@
 	color: #181818;
 }
 .function_desc_container .help_icon,
-.profile_list_container .help_icon{
+.profile_list_container .help_icon,
+.profile_setting_item .help_icon{
 	background-image: url(/images/New_ui/SDN/white_theme/Action/help_outline.svg);
 }
 .function_desc_container:before{
@@ -46,14 +47,14 @@
 	box-shadow: 0px 0px 4px 4px #cce4ff;
 }
 .profile_item_container .item_text_container{
-	color: #181818;
+	color: #262626;
 }
 .profile_item_container .item_text_container:before{
 	border-right: 2px solid #DCDCDC;
 }
 .profile_item_container .item_text_container:after{
-	border-top: 2px solid #006CE1;
-	border-right: 2px solid #006CE1;
+	border-top: 2px solid #248DFF;
+	border-right: 2px solid #248DFF;
 }
 .profile_item_container .item_tag_container{
 	color: #006CE1;
@@ -120,29 +121,29 @@
 	color: #4D4D4D
 }
 .category_slide_title.expand{
-	color: #181818;
+	color: #262626;
 }
 .category_slide_title > .title_cntr:before{
 	border-top: 3px solid #999999;
 	border-right: 3px solid #999999;
 }
 .category_slide_title.expand > .title_cntr:before{
-	border-top: 3px solid #006CE1;
-	border-right: 3px solid #006CE1;
+	border-top: 3px solid #248DFF;
+	border-right: 3px solid #248DFF;
 }
 .action_container.category_mode{
 	background-color: #FFFFFF;
 	box-shadow: 0px 1px 2px rgb(20 50 80 / 12%);
 }
 .action_container .btn_container{
-	background: #006CE1;
+	background: #248DFF;
 }
 .popup_container .popup_content_container .action_container.category_mode{
 	background-color: #FFFFFF;
 }
 
 .popup_bg{
-	background-color: #f5f5f5f2 !important;
+	background-color: rgb(255 255 255 / 90%);
 }
 .hidden_mask{
 	background: rgb(255, 255, 255);
@@ -176,13 +177,13 @@
 	color: #4D4D4D;
 }
 .customize_alert .desc{
-	color: #181818;
+	color: #262626;
 }
 .del_profile .title{
 	color: #4D4D4D;
 }
 .del_profile .desc{
-	color: #181818;
+	color: #262626;
 }
 .del_profile .action_btn_container .del{
 	border: 1px solid #B3B3B3;
@@ -190,7 +191,7 @@
 }
 .del_profile .action_btn_container .cancel,
 .customize_alert.confirm .action_btn_container .cancel{
-	background: #006CE1;
+	background: #248DFF;
 }
 .textInput,
 .custom_select_container,
@@ -203,8 +204,8 @@
 }
 .custom_select_container:before,
 .profile_title_item.arrow_icon:after{
-	border-top: 2px solid #006CE1;
-	border-right: 2px solid #006CE1;
+	border-top: 2px solid #248DFF;
+	border-right: 2px solid #248DFF;
 }
 .custom_select_container .select_options_container{
 	background: #FFFFFF;
@@ -213,8 +214,8 @@
 	color: #006CE1;
 }
 .custom_select_container .select_options_container div.selected:before{
-	border-top: 2px solid #006CE1;
-	border-right: 2px solid #006CE1;
+	border-top: 2px solid #248DFF;
+	border-right: 2px solid #248DFF;
 }
 .custom_select_container .select_options_container div:hover{
 	background: rgba(0, 133, 255, 0.1);
@@ -236,7 +237,7 @@
 	background-image: url(/images/New_ui/SDN/white_theme/Content/add_circle_outline.svg);
 }
 .icon_switch.off{
-	background: #666666;
+	background: #818181;
 }
 .icon_switch:before{
 	background: #FFFFFF;
@@ -251,22 +252,22 @@
 	background-image: url(/images/New_ui/SDN/white_theme/Action/lock_close.svg);
 }
 .icon_checkbox{
-	border: 1px solid #666666;
+	border: 1px solid #818181;
 }
 .icon_checkbox.closed{
 	background: #DCDCDC;
 }
 .icon_checkbox.closed:before,
 .icon_checkbox.closed:after{
-	background-color: #666666;
+	background-color: #818181;
 }
 .icon_checkbox.clicked.disabled{
-	border: 1px solid #666666;
+	border: 1px solid #818181;
 	background: #DCDCDC;
 }
 .icon_checkbox.clicked.disabled:before{
-	border-top: 2px solid #666666;
-	border-right: 2px solid #666666;
+	border-top: 2px solid #818181;
+	border-right: 2px solid #818181;
 }
 .rwd_icon_radio{
 	border: 1px solid #9CA3AF;

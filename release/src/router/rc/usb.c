@@ -2943,20 +2943,50 @@ void write_ftpd_conf()
 #if defined(RTCONFIG_HTTPS) && defined(RTCONFIG_FTP_SSL)
 	if(nvram_get_int("ftp_tls")){
 		fprintf(fp, "ssl_enable=YES\n");
-		if (!f_exists(HTTPD_CERT) || !f_exists(HTTPD_KEY))
-			restore_cert();
-
-		prepare_cert_in_etc();
-
 		fprintf(fp, "ssl_ciphers=HIGH\n");
 		fprintf(fp, "rsa_cert_file=%s\n", HTTPD_CERT);
 		fprintf(fp, "rsa_private_key_file=%s\n", HTTPD_KEY);
 
+		if(!f_exists(HTTPD_CERT) || !f_exists(HTTPD_KEY)
+#ifdef RTCONFIG_LETSENCRYPT
+			|| !cert_key_match(HTTPD_CERT, HTTPD_KEY)
+#endif
+			) {
+#ifdef RTCONFIG_LETSENCRYPT
+			if(nvram_match("le_enable", "1")) {
+				cp_le_cert(LE_FULLCHAIN, HTTPD_CERT);
+				cp_le_cert(LE_KEY, HTTPD_KEY);
+			}
+			else if(nvram_match("le_enable", "2")) {
+				unlink(HTTPD_CERT);
+				unlink(HTTPD_KEY);
+				if(f_exists(UPLOAD_CERT) && f_exists(UPLOAD_KEY)) {
+					eval("cp", UPLOAD_CERT, HTTPD_CERT);
+					eval("cp", UPLOAD_KEY, HTTPD_KEY);
+				}
+			}
+#else
+			if(f_exists(UPLOAD_CERT) && f_exists(UPLOAD_KEY)){
+				eval("cp", UPLOAD_CERT, HTTPD_CERT);
+				eval("cp", UPLOAD_KEY, HTTPD_KEY);
+			}
+#endif
+		}
+
 		// Is it valid now?  Otherwise, restore saved cert, or generate one.
-		if (!f_exists(HTTPD_CERT) || !f_exists(HTTPD_KEY)) {
-			f_read("/dev/urandom", &sn, sizeof(sn));
-			sprintf(t, "%llu", sn & 0x7FFFFFFFFFFFFFFFULL);
-			GENCERT_SH(t);
+		if(!f_exists(HTTPD_CERT) || !f_exists(HTTPD_KEY)
+#ifdef RTCONFIG_LETSENCRYPT
+                        || !cert_key_match(HTTPD_CERT, HTTPD_KEY)
+#endif
+		) {
+			if (eval("tar", "-xzf", "/jffs/cert.tgz", "-C", "/", "etc/cert.pem", "etc/key.pem") == 0){
+				system("cat /etc/key.pem /etc/cert.pem > /etc/server.pem");
+				system("cp /etc/cert.pem /etc/cert.crt");
+			} else {
+				f_read("/dev/urandom", &sn, sizeof(sn));
+				sprintf(t, "%llu", sn & 0x7FFFFFFFFFFFFFFFULL);
+				eval("gencert.sh", t);
+			}
 		}
 	} else {
 		fprintf(fp, "ssl_enable=NO\n");

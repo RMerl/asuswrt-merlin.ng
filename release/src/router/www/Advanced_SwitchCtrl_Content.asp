@@ -94,11 +94,8 @@ const bonding_port_settings = get_bonding_ports(based_modelid);
 var stbPortMappings = [<% get_stbPortMappings();%>][0];
 
 function disable_lacp_if_conflicts_with_dualwan(){
-	let conflict_lanport_text = "";
-	let wan_lanport_num = "";
-	let hint_str1 = "<#PortConflict_DisableFunc_Reason#>";
-	let hint_str2 = "";
-	let note_str = "";
+	var conflict_lanport_text = "";
+	var wan_lanport_num = "";
 
 	if(wans_dualwan_array.indexOf("lan") != -1)
 		wan_lanport_num = wans_lanport;
@@ -114,63 +111,10 @@ function disable_lacp_if_conflicts_with_dualwan(){
 		}
 	}
 
-	if(is_GTBE_series){
-		let disable_first_option = false;
-		let disable_two_10g_option = false;
-
-		if(wans_dualwan_array.indexOf("wan") != -1 && wans_extwan == "0"){//10G WAN/LAN1 conflict
-			if(conflict_lanport_text == ""){
-				conflict_lanport_text = "10G WAN/LAN1";
-			}
-			else
-				conflict_lanport_text +=", 10G WAN/LAN1";
-
-			disable_two_10g_option = true;
-		}
-
-		if(conflict_lanport_text.indexOf("LAN5") != -1)//1G LAN5
-			disable_first_option = true;
-
-		if(conflict_lanport_text.indexOf("LAN6") != -1){//10G LAN6
-			disable_first_option = true;
-			disable_two_10g_option = true;
-		}
-
-		if(disable_first_option && disable_two_10g_option){
-			hint_str2 = "<#ChangeSettings_Hint#>".replace("setting_link", "setting_link_1");
-			note_str = hint_str1.replace("%1$@", conflict_lanport_text).replace("%2$@", "WAN") + " " + hint_str2;
-
-			document.form.lacp_enabled.style.display = "none";
-			document.getElementById("lacp_note").innerHTML = note_str;
-			document.getElementById("setting_link_1").href = "http://"+"<#Web_DOMAIN_NAME#>"+"/Advanced_WANPort_Content.asp";
-			document.getElementById("lacp_desc").style.display = "";
-			document.form.lacp_enabled.disabled = true;
-		}
-		else if(disable_first_option){//disable "1G LAN5 and 10G LAN6" option
-			hint_str2 = "<#ChangeSettings_Hint#>".replace("setting_link", "setting_link_3");
-			note_str = hint_str1.replace("%1$@", conflict_lanport_text).replace("%2$@", "WAN") + " " + hint_str2;
-
-			$("input:radio[name='lacp_port_select']").filter('[value="0"]').attr('disabled', true).css("cursor", "unset");
-			$("#disable_first_option_hint").html(note_str);
-			$("#disable_first_option_hint").show();
-			$("#lacp_first_option").css("color", "#848c98");
-			$("#setting_link_3").attr("href", "http://"+"<#Web_DOMAIN_NAME#>"+"/Advanced_WANPort_Content.asp");
-		}
-		else if(disable_two_10g_option){// disable two 10g opton
-			hint_str2 = "<#ChangeSettings_Hint#>".replace("setting_link", "setting_link_4");
-			note_str = hint_str1.replace("%1$@", conflict_lanport_text).replace("%2$@", "WAN") + " " + hint_str2;
-
-			$("input:radio[name='lacp_port_select']").filter('[value="1"]').attr('disabled', true).css("cursor", "unset");
-			$("#disable_two_10g_hint").html(note_str);
-			$("#disable_two_10g_hint").show();
-			$("#two_10g_lacp").css("color", "#848c98");
-			$("#setting_link_4").attr("href", "http://"+"<#Web_DOMAIN_NAME#>"+"/Advanced_WANPort_Content.asp");
-		}
-
-	}
-	else if(conflict_lanport_text != ""){
-		hint_str2 = "<#ChangeSettings_Hint#>".replace("setting_link", "setting_link_1");
-		note_str = hint_str1.replace("%1$@", conflict_lanport_text).replace("%2$@", "WAN") + " " + hint_str2;
+	if(conflict_lanport_text != ""){
+		var hint_str1 = "<#PortConflict_DisableFunc_Reason#>";
+		var hint_str2 = "<#ChangeSettings_Hint#>".replace("setting_link", "setting_link_1");
+		var note_str = hint_str1.replace("%1$@", conflict_lanport_text).replace("%2$@", "WAN") + " " + hint_str2;
 
 		document.form.lacp_enabled.style.display = "none";
 		document.getElementById("lacp_note").innerHTML = note_str;
@@ -181,10 +125,10 @@ function disable_lacp_if_conflicts_with_dualwan(){
 }
 
 function disable_lacp_if_conflicts_with_iptv(){
-	let hint_str1 = "<#PortConflict_SamePort_Hint#>";
-	let hint_str2 = "";
-	let note_str = "";
-	let disable_lacp = false;
+	var hint_str1 = "<#PortConflict_SamePort_Hint#>";
+	var hint_str2 = "<#ChangeSettings_Hint#>".replace("setting_link", "setting_link_2");
+	var note_str = hint_str1.replace("%1$@", "<#NAT_lacp#>").replace("%2$@", "IPTV") + " " + hint_str2;
+	var disable_lacp = false;
 
 	for(var i = 0; i < bonding_port_settings.length; i++){
 		if(bonding_port_settings[i].val == switch_stb_x_orig){
@@ -210,8 +154,6 @@ function disable_lacp_if_conflicts_with_iptv(){
 	}
 
 	if(disable_lacp){
-		hint_str2 = "<#ChangeSettings_Hint#>".replace("setting_link", "setting_link_2");
-		note_str = hint_str1.replace("%1$@", "<#NAT_lacp#>").replace("%2$@", "IPTV") + " " + hint_str2
 		document.form.lacp_enabled.style.display = "none";
 		document.getElementById("lacp_note").innerHTML = note_str;
 		document.getElementById("setting_link_2").href = "http://"+"<#Web_DOMAIN_NAME#>"+"/Advanced_IPTV_Content.asp";
@@ -291,8 +233,8 @@ function initial(){
 			document.getElementById("lacp_desc").style.display = "";
 			if(bonding_policy_support){
 				document.form.bonding_policy.value = bonding_policy_value;
+				check_bonding_policy(document.form.lacp_enabled);
 			}
-			show_related_settings(document.form.lacp_enabled);
 		}
 		else
 			document.getElementById("lacp_desc").style.display = "none";
@@ -340,9 +282,10 @@ function initial(){
 	}
 
 	if(lacp_support){
-		disable_lacp_if_conflicts_with_dualwan();
-		if(!is_GTBE_series)
+		if(!is_GTBE_series){
+			disable_lacp_if_conflicts_with_dualwan();
 			disable_lacp_if_conflicts_with_iptv();
+		}
 
 		if(based_modelid == "RT-AXE7800" && wan_bonding_support){
 			var bond_wan = httpApi.nvramGet(["bond_wan"], true).bond_wan;
@@ -359,10 +302,22 @@ function initial(){
 			$("#lacp_note").html(hint_str);
 
 			if(lacp_enabled_ori == "1"){
+				$("#lacp_port_selection").css("display", "flex");
 				if(lacp_ifnames_x == "eth0 eth3")
 					document.form.lacp_port_select[1].checked = true;
 				else
 					document.form.lacp_port_select[0].checked = true;
+			}
+
+			if(wans_dualwan_array.indexOf("wan") != -1 && wans_extwan == "0" && (switch_stb_x_orig != "0" || switch_wantag_orig != "none")){
+				hint_str = "<#PortConflict_DisableFunc_Reason#>";
+				var msg = hint_str.replace("%1$@", "10G WAN/LAN1").replace("%2$@", "WAN");
+				var hint_str2 = "<#ChangeSettings_Hint#>".replace("setting_link", "setting_link_3");
+				$("input:radio[name='lacp_port_select']").filter('[value="1"]').attr('disabled', true);
+				$("#disable_two_10g_hint").html(msg + " " + hint_str2);
+				$("#disable_two_10g_hint").show();
+				$("#two_10g_lacp").css("color", "#848c98");
+				$("#setting_link_3").attr("href", "http://"+"<#Web_DOMAIN_NAME#>"+"/Advanced_WANPort_Content.asp")
 			}
 		}
 	}
@@ -388,7 +343,7 @@ function applyRule(){
 			}
 			else{
 				document.form.lacp_enabled.value = "0";
-				show_related_settings(document.form.lacp_enabled);
+				check_bonding_policy(document.form.lacp_enabled);
 				document.form.lacp_enabled.focus();
 				return;
 			}
@@ -490,7 +445,7 @@ function applyRule(){
 	}
 }
 
-function show_related_settings(obj){
+function check_bonding_policy(obj){
 	if(obj.value == "1"){
 		if(bonding_policy_support){
 			document.getElementById("lacp_policy_tr").style.display = "";
@@ -796,14 +751,13 @@ function get_default_wan_name(){
 											<tr id="lacp_tr" style="display:none;">
 		      									<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(29,1);"><#NAT_lacp#></a></th>
 												<td>
-													<select name="lacp_enabled" class="input_option"  onchange="show_related_settings(this);" disabled>
+													<select name="lacp_enabled" class="input_option"  onchange="check_bonding_policy(this);" disabled>
 														<option class="content_input_fd" value="0" <% nvram_match("lacp_enabled", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
 														<option class="content_input_fd" value="1" <% nvram_match("lacp_enabled", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
 													</select>
 													<div id="lacp_desc" style="display:none; margin-top: 5px;"><span id="lacp_note"><#NAT_lacp_note#></span></div>
 													<div id = "lacp_port_selection" style="display: none; flex-direction: column; margin-top: 5px;">
-														<div style="display: flex;"><input type="radio" name="lacp_port_select" value="0" checked><div id="lacp_first_option">1G LAN5 and 10G LAN6</div></div>
-														<div id= "disable_first_option_hint" style="margin-left: 20px; color: #FFCC00;"></div>
+														<div><input type="radio" name="lacp_port_select" value="0" checked>1G LAN5 and 10G LAN6</div>
 														<div style="display: flex;"><div><input type="radio" name="lacp_port_select" value="1"></div><div id="two_10g_lacp">10G WAN/LAN1 and 10G LAN6</div></div>
 														<div id= "disable_two_10g_hint" style="margin-left: 20px; color: #FFCC00;"></div>
 													</div>

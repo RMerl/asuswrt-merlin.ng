@@ -135,7 +135,6 @@ extern void cm_updateReObList(char *reMac, int action, int commit);
 extern void cm_updateReInfo(CM_CLIENT_TABLE *clientTbl, char *reMac);
 extern int cm_deleteReInfo(char *reMac);
 extern void cm_updateReInfoToClientTbl(CM_CLIENT_TABLE *clientTbl);
-extern void cm_sortReLevel(json_object *reListObj, json_object *sortedReListObj);
 
 #endif /* __CFG_SLAVELIST_H__ */
 /* End of cfg_slavelist.h */

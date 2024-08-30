@@ -4157,13 +4157,12 @@ int validate_apply(webs_t wp, json_object *root)
 		value = get_cgi_json(name, root);
 
 #ifdef RTCONFIG_DEMOUI
-		if(value != NULL && !strcmp(name, "preferred_lang")){
+		if(strcmp(name, "preferred_lang"))
+			continue;
+		else{
 			nvram_set(name, value);
-			httpd_nvram_commit();
 			return 0;
 		}
-		else
-			continue;
 #endif
 
 		if(!value || (!strncmp(name, "wan_", 4) && (nvram_match("switch_wantag", "movistar") || nvram_match("switch_wantag", "starhub")))) {
@@ -4944,6 +4943,9 @@ int validate_apply(webs_t wp, json_object *root)
 				{
 					reg_default_final_token();
 					nvram_set("x_Setting", "1");
+#ifdef RTAXE7800
+					notify_rc("addif_extwan");
+#endif
 					notify_rc("restart_firewall");
 #ifdef RTCONFIG_EXTPHY_BCM84880
 					notify_rc("br_addif");
@@ -4951,6 +4953,9 @@ int validate_apply(webs_t wp, json_object *root)
 				}
 			}else if(fromapp_flag != 0) {
 				nvram_set("x_Setting", "1");
+#ifdef RTAXE7800
+				notify_rc("addif_extwan");
+#endif
 				notify_rc("restart_firewall");
 			}
 		}
@@ -11698,34 +11703,6 @@ static int ej_get_usb_info(int eid, webs_t wp, int argc, char_t **argv){
 	return 0;
 }
 
-static int ej_get_usb_phy_port(int eid, webs_t wp, int argc, char **argv){
-	struct json_object *usb_array = json_object_new_array();
-#if defined(RTCONFIG_NEW_PHYMAP)
-	int i;
-	char *label_name;
-	char max_rate[8] = {0};
-	struct json_object *usb_info = NULL;
-	phy_port_mapping port_mapping;
-	get_phy_port_mapping(&port_mapping);
-	for (i = 0; i < port_mapping.count; i++) {
-		if ((port_mapping.port[i].cap & PHY_PORT_CAP_USB) > 0) {
-			usb_info = json_object_new_object();
-			memset(max_rate, 0, sizeof(max_rate));
-			snprintf(max_rate, sizeof(max_rate), "%d", port_mapping.port[i].max_rate);
-			json_object_object_add(usb_info, "label_name", json_object_new_string(port_mapping.port[i].label_name));
-			json_object_object_add(usb_info, "max_rate", json_object_new_string(max_rate));
-			json_object_array_add(usb_array, usb_info);
-		}
-	}
-#endif
-	websWrite(wp, "%s", json_object_to_json_string(usb_array));
-
-	if(usb_array)
-		json_object_put(usb_array);
-
-	return 0;
-}
-
 static int ej_available_disk_names_and_sizes(int eid, webs_t wp, int argc, char_t **argv){
 	disk_info_t *disks_info, *follow_disk;
 	int first;
@@ -13404,14 +13381,24 @@ apply_cgi(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg,
 		prepare_restore(wp);
 		sys_default();
 
-		remove_all_uploaded_cert_from_jffs();
+#if defined(RTCONFIG_HTTPS) && defined(RTCONFIG_LETSENCRYPT)
+		if (f_exists(UPLOAD_CERT))
+			unlink(UPLOAD_CERT);
+		if (f_exists(UPLOAD_KEY))
+			unlink(UPLOAD_KEY);
+#endif
 	}
 	else if (!strcmp(action_mode, "restore_erase"))
 	{
 		prepare_restore(wp);
 		sys_default_erase();
 
-		remove_all_uploaded_cert_from_jffs();
+#if defined(RTCONFIG_HTTPS) && defined(RTCONFIG_LETSENCRYPT)
+		if (f_exists(UPLOAD_CERT))
+			unlink(UPLOAD_CERT);
+		if (f_exists(UPLOAD_KEY))
+			unlink(UPLOAD_KEY);
+#endif
 	}
 	else if (!strcmp(action_mode, "logout")) // but, every one can reset it by this call
 	{
@@ -13449,19 +13436,19 @@ apply_cgi(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg,
 		wave_app_flag = wave_handle_app_flag(action_mode, wave_app_flag);
 #endif
 		action_para = get_cgi_json("wps_band",root);
-		if(action_para && (safe_atoi(action_para) < 10))
+		if(action_para)
 			nvram_set("wps_band_x", action_para);
 		else goto wps_finish;
 
 		action_para = get_cgi_json("wps_enable",root);
-		if(action_para && (safe_atoi(action_para) <= 1)) {
+		if(action_para) {
 			nvram_set("wps_enable", action_para);
 			nvram_set("wps_enable_x", action_para);
 		}
 		else goto wps_finish;
 
 		action_para = get_cgi_json("wps_sta_pin",root);
-		if(action_para && (strlen(action_para) == 8) && isValid_digit_string(action_para))
+		if(action_para)
 			nvram_set("wps_sta_pin", action_para);
 		else goto wps_finish;
 #if defined(RTCONFIG_WPSMULTIBAND)
@@ -14785,6 +14772,9 @@ do_lang_post(char *url, FILE *stream, int len, char *boundary)
 			cprintf ("set x_Setting --> 1\n");
 			reg_default_final_token();
 			nvram_set("x_Setting", "1");
+#ifdef RTAXE7800
+			notify_rc("addif_extwan");
+#endif
 			notify_rc("restart_firewall");
 		}
 		cprintf ("!!!!!!!!!Commit new language settings.\n");
@@ -16834,210 +16824,12 @@ upload_cert_check_dir()
 	}
 }
 
-/* Return string of specified X509V3 extension by NID.
- * NOTE: Caller must to release return value if it's not NULL!
- * @x509:
- * @nid:	e.g. NID_basic_constraints, NID_authority_key_identifier
- * @return:	pointer to string or NULL if @nid not found, malloc failed, wrong parameter, etc.
- */
-static char *x509v3ext2str_by_nid(X509 *x509, int nid)
-{
-	char *ret = NULL;
-	BUF_MEM *bptr = NULL;
-	char *buf = NULL, *ptr;
-	int loc;
-	BIO *bio = NULL;
-	X509_EXTENSION *ex;
-
-	if (!x509)
-		return NULL;
-
-	loc = X509_get_ext_by_NID(x509, nid, -1);
-	ex = X509_get_ext(x509, loc);
-	if (!ex) {
-		goto err_x509v3ext2str_by_nid;
-	}
-	bio = BIO_new(BIO_s_mem());
-	if (!X509V3_EXT_print(bio, ex, 0, 0)) {
-		dbg("%s: X509V3_EXT_print() fail (nid %d)!\n", __func__, nid);
-		goto err_x509v3ext2str_by_nid;
-	}
-	BIO_flush(bio);
-	BIO_get_mem_ptr(bio, &bptr);
-	buf = malloc((bptr->length + 1) * sizeof(char));
-	if (!buf) {
-		goto err_x509v3ext2str_by_nid;
-	}
-	memcpy(buf, bptr->data, bptr->length);
-	buf[bptr->length] = '\0';
-	strtok_r(buf, "\r\n", &ptr);
-
-	ret = buf;
-
-err_x509v3ext2str_by_nid:
-	if (bio)
-		BIO_free(bio);
-
-	return ret;
-}
-
-/* If uploaded file is root/intermediate certificate, use it to sign end-entity
- * certificate instead using it as end-entity certificate directly.
- * NOTE: Don't change HTTPD_CERT in the function in all cases, otherwise,
- *       prepare_cert rc_service is not able to detect change of HTTPD_CERT.
- *       Because upload certificate and apply ddns settings are different button.
- * @return:
- * 	 0:	@cert_fn/@key_fn is root certificate
- * 	 1:	@cert_fn/@key_fn is intermediate certificate
- * 	 2:	@cert_fn/@key_fn is end-entity certificate
- * 	-1:	@cert_fn or @key_fn doesn't exist
- * 	<0:	error
- */
-static int set_uploaded_cert_as_cacert(const char *cert_fn, const char *key_fn)
-{
-	int ret = 0;
-	FILE *fp;
-	long ver;
-	X509 *x509_cert = NULL;
-	char *b_constr = NULL, *s_keyid = NULL, *a_keyid = NULL, *dnsname = NULL;
-	char ddns[64] = "", lan_ip[16] = "", wan0_ip[16] = "";
-#if defined(RTCONFIG_DUALWAN) || defined(RTCONFIG_USB_MODEM)
-	char wan1_ip[16] = "";
-#endif
-	char **p, *dns_chk_list[] = { ddns, "www.asusrouter.com", lan_ip, wan0_ip,
-#if defined(RTCONFIG_DUALWAN) || defined(RTCONFIG_USB_MODEM)
-		wan1_ip,
-#endif
-		NULL
-	};
-	char *type = "unknown", *cert_type[] = { "root", "intermediate", "end-entity" };
-
-	if (!cert_fn || !key_fn)
-		return -1;
-	if (!f_exists(cert_fn) || !f_exists(key_fn))
-		return -2;
-
-	if (!(fp = fopen(cert_fn, "r")))
-		return -3;
-
-	if (!PEM_read_X509(fp, &x509_cert, NULL, NULL)) {
-		fseek(fp, 0, SEEK_SET);
-		d2i_X509_fp(fp, &x509_cert);
-	}
-	fclose(fp);
-	if (!x509_cert) {
-		_dprintf("%s: Read certificate %s failed\n", __func__, cert_fn);
-		ret = -4;
-		goto err_set_uploaded_cert_as_cacert;
-	}
-
-	if ((ver = X509_get_version(x509_cert)) != 2) {
-		logmessage("httpd", "Uploaded certificate is not X509 V3!");
-		ret = -5;
-		goto err_set_uploaded_cert_as_cacert;
-	}
-
-	if (illegal_cert_and_key(cert_fn, key_fn)) {
-		_dprintf("%s: public key of cert and key mismatch.\n", __func__);
-		logmessage("httpd", "public key of cert and key mismatch.\n");
-		ret = -6;
-		goto err_set_uploaded_cert_as_cacert;
-	}
-
-	b_constr = x509v3ext2str_by_nid(x509_cert, NID_basic_constraints);
-	if (!b_constr) {
-		_dprintf("%s: Can't get basic constrain from %s\n", __func__, cert_fn);
-		logmessage("httpd", "Can't get basic constrain from %s", cert_fn);
-		ret = -7;
-		goto err_set_uploaded_cert_as_cacert;
-	}
-
-	s_keyid = x509v3ext2str_by_nid(x509_cert, NID_subject_key_identifier);
-	a_keyid = x509v3ext2str_by_nid(x509_cert, NID_authority_key_identifier);
-
-	if (!s_keyid || !a_keyid) {
-		_dprintf("%s: Can't get subject/authority key identifier. ([%.10s]/[%.10s])\n",
-			__func__, s_keyid? : "NULL", a_keyid? : "NULL");
-		logmessage("httpd", "Can't get subject/authority key identifier. ([%.10s]/[%.10s])\n",
-			s_keyid? : "NULL", a_keyid? : "NULL");
-		ret = -8;
-		goto err_set_uploaded_cert_as_cacert;
-	}
-
-	if (strstr(b_constr, "CA:TRUE")) {
-		/* root/intermediate certificate */
-		/* root cert.:			same subject/issuer key identifier
-		 * intermediate/endentity cert.:different subject/issuer key identifier
-		 */
-		if (!strstr(a_keyid, s_keyid))
-			ret = 1;
-	} else if (strstr(b_constr, "CA:FALSE")) {
-		/* end-entity certificate */
-		if (strstr(a_keyid, s_keyid)) {
-			_dprintf("%s: self-signed end-entity certificate, reject.\n", __func__);
-			logmessage("httpd", "self-signed end-entity certificate, reject.");
-			ret = -9;
-			goto err_set_uploaded_cert_as_cacert;
-		}
-
-		dnsname = x509v3ext2str_by_nid(x509_cert, NID_subject_alt_name);
-		if (!dnsname) {
-			_dprintf("%s: Subject alternative name is not defined in %s, reject.\n", __func__, cert_fn);
-			logmessage("httpd", "Subject alternative name is not defined in %s, reject.", cert_fn);
-			ret = -10;
-			goto err_set_uploaded_cert_as_cacert;
-		}
-		strlcpy(ddns, nvram_safe_get("ddns_hostname_x"), sizeof(ddns));
-		strlcpy(lan_ip, nvram_safe_get("lan_ipaddr"), sizeof(lan_ip));
-		strlcpy(wan0_ip, nvram_safe_get("wan0_ipaddr"), sizeof(wan0_ip));
-#if defined(RTCONFIG_DUALWAN) || defined(RTCONFIG_USB_MODEM)
-		if (get_dualwan_by_unit(WAN_UNIT_SECOND) != WANS_DUALWAN_IF_NONE) {
-			strlcpy(wan1_ip, nvram_safe_get("wan1_ipaddr"), sizeof(wan1_ip));
-		}
-#endif
-
-#if 0
-		for (p = &dns_chk_list[0]; p && *p; ++p) {
-			if (*p == '\0')
-				continue;
-			if (!strstr(dnsname, *p)) {
-				_dprintf("%s: [%s] is not defined in subject alternate name of certificate.\n",
-					__func__, *p);
-				logmessage("httpd", "[%s] is not defined in subject alternate name of certificate.", *p);
-			}
-		}
-#endif
-		ret = 2;
-	} else {
-		_dprintf("%s: CA is not defined in basic constrain [%s]\n", __func__, b_constr);
-		logmessage("httpd", "%s: CA is not defined in basic constrain [%s]\n", __func__, b_constr);
-		ret = -7;
-		goto err_set_uploaded_cert_as_cacert;
-	}
-
-	if (ret >= 0 && ret < ARRAY_SIZE(cert_type))
-		type = cert_type[ret];
-	_dprintf("%s: %s cert/key [%s]/[%s] seems okay\n", __func__, type, cert_fn, key_fn);
-
-err_set_uploaded_cert_as_cacert:
-	if (s_keyid)
-		free(s_keyid);
-	if (a_keyid)
-		free(a_keyid);
-	if (b_constr)
-		free(b_constr);
-	if (x509_cert)
-		X509_free(x509_cert);
-
-	return ret;
-}
-
 static void
 do_upload_cert_key(char *url, FILE *stream, int len, char *boundary)
 {
 	char upload_fifo[32];
 	FILE *fifo = NULL;
-	int ret = EINVAL, ch, r;
+	int ret = EINVAL, ch;
 	char *filename = NULL, *p = NULL;
 	char buf[1024] = {0};
 
@@ -17178,27 +16970,6 @@ do_upload_cert_key(char *url, FILE *stream, int len, char *boundary)
 	fclose(fifo);
 	fifo = NULL;
 
-	/* If uploaded file is root/intermediate certificate, use it to sign end-entity cert. instead.
-	 * Neither change HTTPD_CERT nor reload it here, otherwise, apply setting is executed via
-	 * connection with different encryption.
-	 */
-	r = set_uploaded_cert_as_cacert(UPLOAD_CERT, UPLOAD_KEY);
-	if (r == 0 || r == 1) {
-		/* root/intermediate cert. uploaded, use it to sign end-entity cert. */
-		eval("mv", "-f", UPLOAD_CERT, UPLOAD_CACERT);
-		eval("mv", "-f", UPLOAD_KEY, UPLOAD_CAKEY);
-		reset_last_cert_nvars();
-	} else if (r == 2) {
-		/* end-entity cert. uploaded, use it directly. */
-		if (f_exists(UPLOAD_CACERT))
-			unlink(UPLOAD_CACERT);
-		if (f_exists(UPLOAD_CAKEY))
-			unlink(UPLOAD_CAKEY);
-	} else {
-		logmessage("httpd", "Delete uploaded certificate");
-		remove_all_uploaded_cert_from_jffs();
-	}
-
 err:
 	if (fifo)
 		fclose(fifo);
@@ -17221,58 +16992,29 @@ do_upload_cert_key_cgi(char *url, FILE *stream)
 }
 #endif
 
-/* Export certificate and key in WAN -> DDNS. Currently using root/intermediate
- * cert. and key, and end-entity cert and key should in the archive.
- */
 static void
 do_download_cert_key_cgi(char *url, FILE *stream)//for DUT
 {
-	int i, len;
-	char **v, *argv[20] = { "tar", "chf", "/tmp/cert_key.tar", "-C", "/etc", "cert.pem", "key.pem", "cert.crt", NULL };
-	char *p, **f, *fn[] = { HTTPD_ROOTCA_CERT, HTTPD_ROOTCA_KEY, NULL };
-
-	for (i = 0, v = &argv[0]; i < ARRAY_SIZE(argv) && *v; ++v, ++i)
-		;
-
-	len = ARRAY_SIZE(argv) - i;
-	for (f = &fn[0]; f && *f && len > 0; ++f) {
-		if (!f_exists(*f))
-			continue;
-		if ((p = strrchr(*f, '/')) != NULL)
-			p++;
-		else
-			p = *f;
-
-		*v++ = p;
-		len--;
-	}
-
-	if (!len) {
-		_dprintf("%s: argv too small!\n", __func__);
-		return;
-	}
-
-	*v++ = NULL;
-	_eval(argv, NULL, 0 , NULL);
+	eval("tar", "cf",
+		"/tmp/cert_key.tar",
+		"-C",
+		"/etc",
+		"cert.pem",
+		"key.pem"
+		);
 	do_file("/tmp/cert_key.tar", stream);
 }
 
 static void
 do_download_cert_cgi(char *url, FILE *stream)//for browser
 {
-	eval("tar", "chf",
+	eval("tar", "cf",
 		"/tmp/cert.tar",
 		"-C",
 		"/etc",
 		"cert.crt"
 		);
 	do_file("/tmp/cert.tar", stream);
-}
-
-static void
-do_download_cacert_cgi(char *url, FILE *stream)
-{
-	do_file("/etc/cert.crt", stream);
 }
 
 // Viz 2010.08
@@ -17373,13 +17115,6 @@ prf_file(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg, char_t *url, cha
 #endif
 #if defined(RTCONFIG_JFFS2USERICON)
 		"usericon",
-#endif
-#ifdef RTCONFIG_HTTPS
-		"cert.tgz",	/* source of self-signed root,server certificate/key */
-		".cert",	/* source of uploaded certificate/key */
-#ifdef RTCONFIG_LETSENCRYPT
-		".le",		/* source of certificate/key signed by Let's encrypt */
-#endif
 #endif
 		NULL
 	};
@@ -17851,48 +17586,10 @@ do_clear_file_cgi(char *url, FILE *stream)
 	clear_file = websGetVar(wp, "clear_file_name", "");
 
 	/* using HTTPS_CA_JFFS define in httpd.h */
-	if(strcmp(clear_file, "cert.tgz") == 0 || !strcmp(clear_file, "server_certs")) {
-		int le_enable = nvram_get_int("le_enable");
-		if(check_if_file_exist(HTTPS_CA_JFFS)) {
-			unlink(HTTPS_CA_JFFS);
-		}
-		if (!strcmp(clear_file, "cert.tgz")) {
-			char **p, *fn[] = { HTTPD_ROOTCA_CERT, HTTPD_ROOTCA_KEY,
-				HTTPD_ROOTCA_GEN_CERT, HTTPD_ROOTCA_GEN_KEY, NULL
-			};
-
-#if defined(RTCONFIG_LETSENCRYPT)
-			if (!le_enable)
-#endif
-			{
-				for (p = &fn[0]; *p; ++p) {
-					if (f_exists(*p))
-						unlink(*p);
-				}
-				/* Generate new root certificate and backup.
-				 * Ask httpds to reload end-entity certificate after the current
-				 * session logout, user can download new root certificate first
-				 * without accepting end-entity certificate that is signed by it.
-				 */
-				GENCERT_SH_AND_BACKUP_RELOAD_AFTER_LOGOUT();
-			}
-		} else if (!strcmp(clear_file, "server_certs")) {
-			char **p, *fn[] = { HTTPD_CERT, HTTPD_KEY, HTTPD_GEN_CERT, HTTPD_GEN_KEY, NULL };
-
-			if (
-#if defined(RTCONFIG_LETSENCRYPT)
-			    !le_enable || (le_enable == 2 && f_exists(UPLOAD_CACERT) && f_exists(UPLOAD_CAKEY))
-#else
-			    !f_exists(UPLOAD_CERT) || !f_exists(UPLOAD_KEY)
-#endif
-			) {
-				for (p = &fn[0]; *p; ++p) {
-					if (f_exists(*p))
-						unlink(*p);
-				}
-				/* backup new certificate and ask httpds to reload certificates. */
-				GENCERT_SH_AND_BACKUP_RELOAD();
-			}
+	if(strcmp(clear_file, "cert.tgz") == 0) {
+		if(check_if_file_exist(HTTPS_CA_JFFS)){
+			eval("rm", HTTPS_CA_JFFS);
+			notify_rc_and_wait("restart_httpd");
 		}
 	}
 #ifdef RTCONFIG_IPSEC
@@ -25967,41 +25664,36 @@ static void do_dns_ping(char *url, FILE *stream) {
 
 #if defined(RTCONFIG_CD_IPERF)
 static void do_iperf(char *url, FILE *stream) {
-
-	char *nodeMac = NULL, *serverMac = NULL, *caller = NULL, *check_caller = NULL;
+	char *nodeMac = NULL;
+	char *serverMac = NULL;
+	char *caller = NULL;
 	char notify_cmd[128] = {0};
 
-	struct json_object *root = json_object_new_object();
+	serverMac = websGetVar(wp, "serverMac", "");
+	nodeMac = websGetVar(wp, "nodeMac", "");
+	caller = websGetVar(wp, "caller", "");
 
-	do_json_decode(root);
-
-	check_caller = caller = safe_get_cgi_json("caller", root);
-	serverMac = safe_get_cgi_json("serverMac", root);
-	nodeMac = safe_get_cgi_json("nodeMac", root);
-
-	if(!isValidMacAddress(serverMac) || (strcmp(nodeMac, "all") != 0 && !isValidMacAddress(nodeMac))){
+	if(!isValidMacAddress(serverMac) || !isValidMacAddress(nodeMac)){
 		websWrite(stream, "invalid mac");
 		return;
 	}
 
-	if(*check_caller == '\0' || strlen(check_caller) > 32){
+	if(*caller == '\0' || strlen(caller) > 32){
 		websWrite(stream, "invalid input");
 		return;
 	}
 
-	while(*check_caller) {
-		if (isalnum(*check_caller) != 0)
-			check_caller++;
+	while(*caller) {
+		if (isalnum(*caller) != 0)
+			caller++;
 		else{
 			websWrite(stream, "invalid input");
 			return;
 		}
 	}
 
-	eval("rc", "run_iperf", caller, serverMac, nodeMac);
-
-	if (root)
-		json_object_put(root);
+	snprintf(notify_cmd, sizeof(notify_cmd), "rc run_iperf %s %s %s", caller, serverMac, nodeMac);
+	system(notify_cmd);
 
 	websWrite(stream, "success");
 }
@@ -26305,6 +25997,9 @@ do_chpass_cgi(char *url, FILE *stream)
 		if(is_def_pwd){
 			reg_default_final_token();
 			nvram_set("x_Setting", "1");
+#ifdef RTAXE7800
+			notify_rc("addif_extwan");
+#endif
 			notify_rc("restart_firewall");
 #ifdef RTCONFIG_EXTPHY_BCM84880
 			notify_rc("br_addif");
@@ -26720,8 +26415,7 @@ do_del_wgsc_list_cgi(char *url, FILE *stream) {
 #endif /* RTCONFIG_IG_SITE2SITE */
 
 //2008.08 magic{
-struct mime_handler mime_handlers[] =
-{
+struct mime_handler mime_handlers[] = {
 	{ "Main_Login.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
 #ifdef RTCONFIG_CAPTCHA
 	{ "captcha.gif", "image/gif", no_cache_IE7, NULL, do_captcha_file, NULL },
@@ -26877,9 +26571,6 @@ struct mime_handler mime_handlers[] =
 #ifdef RTCONFIG_HTTPS
 	{ "upload_cert_key.cgi*", "text/html", no_cache_IE7, do_upload_cert_key, do_upload_cert_key_cgi, do_auth },
 #endif
-	/* No auth, allow user to download root certificate in HTTP to HTTPS redirection page of AA sku. */
-	{ "cert.crt", "application/x-x509-ca-cert", no_cache_IE7, NULL, do_download_cacert_cgi, NULL },
-
 	{ "cert_key.tar", "application/x-tar", NULL, do_html_post_and_get, do_download_cert_key_cgi, do_auth },
 	{ "cert.tar", "application/x-tar", NULL, do_html_post_and_get, do_download_cert_cgi, do_auth },
 #if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA) || defined(RTCONFIG_GOOGLE_ASST)
@@ -36485,15 +36176,10 @@ static char* _get_common_name(const char *src, char *dst, size_t len)
 	}
 
 	strlcpy(dst, cp+3, len);
-	while ((cp = strchr(dst, '/')) != NULL) {
-		if (!strncmp(cp, "/CN=", 4)) {
-			/* cascade value of all CN RDNs */
-			*cp = '\0';
-			strlcat(dst, ", ", len);
-			memmove(cp + 2, cp + 4, strlen(cp + 4) + 1);
-		} else {
-			*cp = '\0';
-		}
+
+	if((cp = strchr(dst, '/')) != NULL)
+	{
+		*cp = '\0';
 	}
 
 	return dst;
@@ -36538,43 +36224,38 @@ static void ASN1_TimeToTM(ASN1_TIME* time, struct tm *t)
 static int
 ej_httpd_cert_info(int eid, webs_t wp, int argc, char **argv)
 {
-	int ret = 0, done = 0;
 	FILE *fp;
-	X509 *x509data = NULL, *CAx509data = NULL;
-	char buf[256] = {0}, CAbuf[256] = "";
-	char issuer[64] = {0}, CAissuer[64] = "";
-	char subject[64] = {0}, CAsubject[64] = "";
-	char notBefore[64] = {0}, CAnotBefore[64] = "";
-	char notAfter[64] = {0}, CAnotAfter[64] = "";
-	struct tm tm, CAtm;
-	char cert_path[128] = {0}, *CA_cert_path = HTTPD_ROOTCA_CERT;
-
-#if defined(RTCONFIG_LETSENCRYPT)
+	X509 *x509data = NULL;
+	char buf[256] = {0};
+	char issuer[64] = {0};
+	char subject[64] = {0};
+	char notBefore[64] = {0};
+	char notAfter[64] = {0};
+	struct tm tm;
+	char cert_path[128] = {0};
+#ifdef RTCONFIG_LETSENCRYPT
 	int le_enable = nvram_get_int("le_enable");
+	int http_enable = nvram_get_int("http_enable");
 
-	if (le_enable == 1) {
-		/* Let's encrypt */
-		get_path_le_domain_cert(cert_path, sizeof(cert_path));
-		CA_cert_path = NULL;
-	} else if (le_enable == 2) {
-		/* uploaded cert. */
-		if (f_exists(UPLOAD_CACERT) && f_exists(UPLOAD_CAKEY)) {
-			CA_cert_path = UPLOAD_CACERT;
-			strlcpy(cert_path, UPLOAD_GEN_CERT, sizeof(cert_path));
-		} else if (f_exists(UPLOAD_CERT) && f_exists(UPLOAD_KEY)) {
-			CA_cert_path = NULL;
-			strlcpy(cert_path, UPLOAD_CERT, sizeof(cert_path));
-		}
-	} else {
+	if(http_enable == 0)	//http only
+	{
+		if(le_enable == 1)
+			get_path_le_domain_cert(cert_path, sizeof(cert_path));
+		else if(le_enable == 2)
+			snprintf(cert_path, sizeof(cert_path), "%s", UPLOAD_CERT);
+		else
+			snprintf(cert_path, sizeof(cert_path), "%s", HTTPD_CERT);
+	}
+	else //enable https, show current certificate content
 #endif
-		CA_cert_path = HTTPD_ROOTCA_GEN_CERT;
-		snprintf(cert_path, sizeof(cert_path), "%s", HTTPD_GEN_CERT);
+	{
+		snprintf(cert_path, sizeof(cert_path), "%s", HTTPD_CERT);
 	}
 
 	fp = fopen(cert_path, "r");
 	if (fp == NULL){
-		ret = -1;
-		goto err_ej_httpd_cert_info;
+		websWrite(wp, "{\"issueTo\":\"\",\"issueBy\":\"\",\"from\":\"\",\"expire\":\"\"}");
+		return FALSE;
 	}
 	if(!PEM_read_X509(fp, &x509data, NULL, NULL))
 	{
@@ -36583,26 +36264,10 @@ ej_httpd_cert_info(int eid, webs_t wp, int argc, char **argv)
 	}
 	fclose(fp);
 	if(x509data == NULL){
-		ret = -2;
-		goto err_ej_httpd_cert_info;
-	}
-	if (CA_cert_path != NULL) {
-		if (!(fp = fopen(CA_cert_path, "r"))) {
-			ret = -3;
-			goto err_ej_httpd_cert_info;
-		}
-		if (!PEM_read_X509(fp, &CAx509data, NULL, NULL)) {
-			fseek(fp, 0, SEEK_SET);
-			d2i_X509_fp(fp, &CAx509data);
-		}
-		fclose(fp);
-		if (CAx509data == NULL) {
-			ret = -4;
-			goto err_ej_httpd_cert_info;
-		}
+		websWrite(wp, "{\"issueTo\":\"\",\"issueBy\":\"\",\"from\":\"\",\"expire\":\"\"}");
+		return FALSE;
 	}
 
-	/* server certificate: auto-generated/uploaded/signed by Let's encrypt */
 	X509_NAME_oneline(X509_get_issuer_name(x509data), buf, sizeof(buf));
 	if (strstr(buf, "Let's Encrypt")) {
 		snprintf(issuer, sizeof(issuer), "Let's Encrypt");
@@ -36616,45 +36281,15 @@ ej_httpd_cert_info(int eid, webs_t wp, int argc, char **argv)
 	ASN1_TimeToTM(X509_getm_notAfter(x509data), &tm);
 	snprintf(notAfter, sizeof(notAfter), "%d/%d/%d", tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday);
 
-	/* root/intermediate certificate: auto-generated/upload, shouldn't be if Let's encrypt is chosen. */
-	if (CA_cert_path != NULL) {
-		X509_NAME_oneline(X509_get_issuer_name(CAx509data), CAbuf, sizeof(CAbuf));
-		_get_common_name(CAbuf, CAissuer, sizeof(CAissuer));
-		X509_NAME_oneline(X509_get_subject_name(CAx509data), CAbuf, sizeof(CAbuf));
-		_get_common_name(CAbuf, CAsubject, sizeof(CAsubject));
-		ASN1_TimeToTM(X509_getm_notBefore(CAx509data), &CAtm);
-		snprintf(CAnotBefore, sizeof(CAnotBefore), "%d/%d/%d",
-			CAtm.tm_year + 1900, CAtm.tm_mon + 1, CAtm.tm_mday);
-		ASN1_TimeToTM(X509_getm_notAfter(CAx509data), &CAtm);
-		snprintf(CAnotAfter, sizeof(CAnotAfter), "%d/%d/%d",
-			CAtm.tm_year + 1900, CAtm.tm_mon + 1, CAtm.tm_mday);
-	}
-
 	websWrite(wp, "{");
-	websWrite(wp, "\"CAissueTo\":\"%s\",", CAsubject);
-	websWrite(wp, "\"CAissueBy\":\"%s\",", CAissuer);
-	websWrite(wp, "\"CAfrom\":\"%s\",", CAnotBefore);
-	websWrite(wp, "\"CAexpire\":\"%s\",", CAnotAfter);
 	websWrite(wp, "\"issueTo\":\"%s\",", subject);
 	websWrite(wp, "\"issueBy\":\"%s\",", issuer);
 	websWrite(wp, "\"from\":\"%s\",", notBefore);
 	websWrite(wp, "\"expire\":\"%s\"", notAfter);
 	websWrite(wp, "}");
-	done = 1;
-	ret = 0;
-
-err_ej_httpd_cert_info:
-	if (!done) {
-		websWrite(wp, "{\"CAissueTo\":\"\",\"CAissueBy\":\"\",\"CAfrom\":\"\",\"CAexpire\":\"\",\"issueTo\":\"\",\"issueBy\":\"\",\"from\":\"\",\"expire\":\"\"}");
-		//dbg("%s: Empty cert info, ret = [%d]!\n", __func__, ret);
-		ret = FALSE;
-	}
-
 	if(x509data)
 		X509_free(x509data);
-	if(CAx509data)
-		X509_free(CAx509data);
-	return ret;
+	return 0;
 }
 #endif
 
@@ -38884,7 +38519,7 @@ ej_get_ethernet_wan_list(int eid, webs_t wp, int argc, char **argv) {
     json_object_object_add(eth_wan_setting, "extra_settings", extra_setting);
     json_object_object_add(eth_wan_setting, "wans_lanport", json_object_new_string("1"));
     json_object_object_add(eth_wan_list, "wan", eth_wan_setting);
-#elif defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U)
+#elif defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000)
     struct json_object *eth_wan_setting = json_object_new_object();
     struct json_object *extra_setting = json_object_new_object();
 
@@ -38908,30 +38543,6 @@ ej_get_ethernet_wan_list(int eid, webs_t wp, int argc, char **argv) {
     json_object_object_add(eth_wan_setting, "extra_settings", extra_setting);
     json_object_object_add(eth_wan_setting, "wans_lanport", json_object_new_string("1"));
     json_object_object_add(eth_wan_list, "2p5g", eth_wan_setting);
-#elif defined(TUFBE3600) || defined(RTBE58U)
-    struct json_object *eth_wan_setting = json_object_new_object();
-    struct json_object *extra_setting = json_object_new_object();
-
-    //2.5G WAN (default WAN)
-    json_object_object_add(eth_wan_setting, "wan_name", json_object_new_string("2.5G WAN"));
-    json_object_object_add(extra_setting, "wans_extwan", json_object_new_string("0"));
-#ifdef RTCONFIG_AUTO_WANPORT
-	json_object_object_add(extra_setting, "autowan_enable", json_object_new_string("0"));
-#endif
-    json_object_object_add(eth_wan_setting, "extra_settings", extra_setting);
-    json_object_object_add(eth_wan_list, "wan", eth_wan_setting);
-
-    //1G WAN
-    eth_wan_setting = json_object_new_object();
-    extra_setting = json_object_new_object();
-    json_object_object_add(eth_wan_setting, "wan_name", json_object_new_string("1G WAN/LAN1"));
-    json_object_object_add(extra_setting, "wans_extwan", json_object_new_string("1"));
-#ifdef RTCONFIG_AUTO_WANPORT
-	json_object_object_add(extra_setting, "autowan_enable", json_object_new_string("0"));
-#endif
-    json_object_object_add(eth_wan_setting, "extra_settings", extra_setting);
-    json_object_object_add(eth_wan_setting, "wans_lanport", json_object_new_string("1"));
-    json_object_object_add(eth_wan_list, "1g", eth_wan_setting);
 #elif defined(RTBE88U)
     struct json_object *eth_wan_setting = json_object_new_object();
     struct json_object *extra_setting = json_object_new_object();
@@ -39148,7 +38759,6 @@ int get_apg_wifi7_onoff(int sdn_idx)
 	return ret;
 }
 
-#ifdef RTCONFIG_SCHED_V2
 int get_apg_wifi_sched_on(struct json_object *apg_sched_obj)
 {
 	int i = 0, activeNow = 0, expireNow = 0, apg_timesched_t = 0;
@@ -39191,15 +38801,12 @@ int get_apg_wifi_sched_on(struct json_object *apg_sched_obj)
 	}
 	return 1;
 }
-#endif
 
 static int ej_apg_wifi_sched_on(int eid, webs_t wp, int argc, char **argv)
 {
 	struct json_object *apg_sched_obj = json_object_new_object();
 
-#ifdef RTCONFIG_SCHED_V2
 	get_apg_wifi_sched_on(apg_sched_obj);
-#endif
 
 	websWrite(wp, "%s", json_object_to_json_string(apg_sched_obj));
 
@@ -39249,9 +38856,7 @@ static int webapi_get_sdn_type(char *sdn_type, struct json_object *sdn_all_rl_js
 	struct json_object *sdn_profile = NULL, *sdn_all_rl = NULL, *apg_rl = NULL, *vlan_rl = NULL;
 	json_object *wifi_sched_on_obj = NULL;
 
-#ifdef RTCONFIG_SCHED_V2
 	get_apg_wifi_sched_on(apg_sched_obj);
-#endif
 
 	strlcpy(rl_buf, nvram_safe_get("sdn_rl"), sizeof(rl_buf));
 	strlcpy(vlan_rl_buf, nvram_safe_get("vlan_rl"), sizeof(vlan_rl_buf));
@@ -39749,7 +39354,6 @@ struct ej_handler ej_handlers[] = {
 	{ "initial_folder_var_file", ej_initial_folder_var_file},
 	{ "usb_port_stor_act", ej_usb_port_stor_act},
 	{ "get_usb_info", ej_get_usb_info},
-	{ "get_usb_phy_port", ej_get_usb_phy_port },
 #ifdef RTCONFIG_DISK_MONITOR
 	{ "apps_fsck_log", ej_apps_fsck_log},
 	{ "get_disk_format_log", ej_get_disk_format_log},
@@ -39881,10 +39485,8 @@ struct ej_handler ej_handlers[] = {
 	{ "wl_rate_5g_2", ej_wl_rate_5g_2},
 #endif
 #endif
-#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7)
 	{ "wl_rate_6g", ej_wl_rate_6g},
 	{ "wl_rate_6g_2", ej_wl_rate_6g_2},
-#endif	
 #ifdef CONFIG_BCMWL5
 	{ "wl_cap_2g", ej_wl_cap_2g },
 	{ "wl_cap_5g", ej_wl_cap_5g },

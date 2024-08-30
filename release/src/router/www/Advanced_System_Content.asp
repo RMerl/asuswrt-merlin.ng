@@ -494,7 +494,7 @@ function initial(){
 		showhide("ntpd_redir_tr", 0);
 	}
 
-	$("#https_download_cert").css("display", (le_enable == "0" && orig_http_enable != "0")? "": "none");
+	$("#https_download_cert").css("display", (le_enable != "1" && orig_http_enable != "0")? "": "none");
 
 	$("#login_captcha_tr").css("display", captcha_support? "": "none");
 
@@ -1209,25 +1209,16 @@ function hide_https_lanport(_value){
 		$("#https_download_cert").css("display", "");
 		if(orig_http_enable == "0"){
 			$("#download_cert_btn").css("display", "none");
-			$("#clear_server_cert_btn").css("display", "none");
 			$("#clear_cert_btn").css("display", "none");
 			$("#download_cert_desc").css("display", "");
 		}
 		else{
-			if (le_enable == "0") {
-				$("#download_cert_btn").css("display", "");
-				$("#clear_server_cert_btn").css("display", "");
-				$("#clear_cert_btn").css("display", "");
-				if(top.webWrapper){
-					$("#clear_server_cert_btn").css({"margin-left":"8px","margin-right":"10px"});
-				}
-				$("#download_cert_desc").css("display", "");
-			} else {
-				$("#download_cert_btn").css("display", "none");
-				$("#clear_server_cert_btn").css("display", "none");
-				$("#clear_cert_btn").css("display", "none");
-				$("#download_cert_desc").css("display", "none");
+			$("#download_cert_btn").css("display", "");
+			$("#clear_cert_btn").css("display", "");
+			if(top.webWrapper){
+				$("#clear_server_cert_btn").css({"margin-left":"8px","margin-right":"10px"});
 			}
+			$("#download_cert_desc").css("display", "none");
 		}
 	}
 	else{
@@ -1871,44 +1862,14 @@ function myisPortConflict(_val, service){
 
 
 function save_cert_key(){
-	location.href = "cert.crt";
-}
-
-function clear_server_cert_key(){
-	$.ajax({url: "clear_file.cgi?clear_file_name=server_certs"})
-	showLoading();
-	setTimeout(function(){
-		setInterval(function(){
-			var http = new XMLHttpRequest
-			http.onreadystatechange=function(){
-				if(http.readyState==4 && http.status==200){
-					top.location.href="/Advanced_System_Content.asp"
-				}
-			},
-
-			http.open("GET","/httpd_check.xml",!0);
-			http.send(null);
-		}, 1000);
-	}, 1000)
+	location.href = "cert.tar";
 }
 
 function clear_cert_key(){
-	if(confirm(`<#DDNS_Install_Root_Cert_Desc#>`)){
+	if(confirm(stringSafeGet("<#Local_access_certificate_renewl#>"))){
 		$.ajax({url: "clear_file.cgi?clear_file_name=cert.tgz"})
 		showLoading();
-		setTimeout(function(){
-			setInterval(function(){
-				var http = new XMLHttpRequest
-				http.onreadystatechange=function(){
-					if(http.readyState==4 && http.status==200){
-						top.location.href="/Advanced_System_Content.asp"
-					}
-				},
-
-				http.open("GET","/httpd_check.xml",!0);
-				http.send(null);
-			}, 1000);
-		}, 1000)
+		setTimeout(refreshpage, 1000);
 	}
 }
 
@@ -2899,7 +2860,6 @@ function build_boostkey_options() {
 					<td>
 					    <div style="display: flex;">
                             <input id="download_cert_btn" class="button_gen buttonInTable" onclick="save_cert_key();" type="button" value="<#btn_Export#>" />
-                            <input id="clear_server_cert_btn" class="button_gen buttonInTable" style="margin-left:10px" onclick="clear_server_cert_key();" type="button" value="<#CTL_renew#> <#vpn_openvpn_KC_SA#>" />
                             <input id="clear_cert_btn" class="button_gen buttonInTable" style="margin-left:10px" onclick="clear_cert_key();" type="button" value="<#CTL_renew#>" />
                         </div>
 						<span id="download_cert_desc"><#Local_access_certificate_desc#></span><a id="creat_cert_link" href="" style="font-family:Lucida Console;text-decoration:underline;color:#FFCC00; margin-left: 5px;" target="_blank">FAQ</a>

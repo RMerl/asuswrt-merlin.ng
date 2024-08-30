@@ -54,7 +54,8 @@
 	margin-left: 2%;
 }
 .function_desc_container .help_icon,
-.profile_list_container .help_icon{
+.profile_list_container .help_icon,
+.profile_setting_item .help_icon{
 	background-image: url(/images/New_ui/SDN/dark_theme/Action/help_outline.svg);
 	width: 24px;
 	height: 24px;
@@ -175,17 +176,15 @@
 	transform: rotate(45deg);
 }
 .item_text_container .main_info{
+	font-weight: 600;
 	position: relative;
-	min-height: 24px;
-	height: auto;
+	height: 24px;
 }
 .main_info > .main_info_text{
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	width: 90%;
-	font-size: 16px;
-	font-weight: 500;
 }
 .item_text_container .main_info:before{
 	content: "";
@@ -917,7 +916,7 @@
 	background: rgba(127, 143, 164, 1);
 }
 .icon_switch.on{
-	background: #248DFF;
+	background: rgba(16, 185, 129, 1);
 }
 .icon_switch:before{
 	border-radius: 50%;

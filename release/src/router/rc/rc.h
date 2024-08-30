@@ -1184,7 +1184,7 @@ extern int hnd_boardid_cmp();
 #endif
 #if defined(RTCONFIG_MLO)
 extern int mld_ifnames_unset(char *index);
-extern int mld_ifnames_set(char *mld_group, char *subunit);
+extern int mld_ifnames_set(char *unit);
 extern int mlo_api(char *mode, char *interface, char *group, char *subunit);
 extern int mld_enable_chk();
 extern void init_mlo_config();
@@ -2022,7 +2022,7 @@ extern int ledbtn_main(int argc, char *argv[]);
 #ifdef GTAX6000
 extern int antled_main(int argc, char *argv[]);
 #endif
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U)
 extern int rtkmonitor_main(int argc, char *argv[]);
 #endif
 #if defined(RTCONFIG_NBR_RPT)
@@ -2282,7 +2282,7 @@ static inline void stop_cifs(void) {};
 extern int start_ledg(void);
 extern int stop_ledg(void);
 #endif
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U)
 extern int start_rtkmonitor(void);
 extern int stop_rtkmonitor(void);
 #endif
@@ -2683,11 +2683,6 @@ extern void stop_klogd(void);
 #endif
 extern int start_logger(void);
 extern void start_dfs(void);
-#if defined(RTCONFIG_HTTPS)
-extern int prepare_cert_in_etc(void);
-#else
-static inline int prepare_cert_in_etc(void) { return 0; }
-#endif
 extern void handle_notifications(void);
 #ifdef RTL_WTDOG
 extern void stop_rtl_watchdog(void);
@@ -3155,11 +3150,6 @@ extern int dump_powertable(void);
 #endif
 #ifdef RTCONFIG_TCPLUGIN
 extern void exec_tcplugin();
-#endif
-#ifdef RTCONFIG_GEARUPPLUGIN
-extern int exec_gu(int enable);
-extern void stop_gu_service(int status);
-extern void start_gu_service();
 #endif
 
 //speedtest.c
@@ -3777,7 +3767,7 @@ static inline int asus_ctrl_sku_write(char *asusctrl_sku) { return 0; }
 extern void asus_ctrl_sku_check();
 extern void asus_ctrl_sku_update();
 extern void fix_location_code(void);
-extern int asus_ctrl_nv(char *asusctrl, int do_rc);
+extern int asus_ctrl_nv(char *asusctrl);
 extern int asus_ctrl_nv_restore();
 extern int setting_SG_mode_wps();
 #endif

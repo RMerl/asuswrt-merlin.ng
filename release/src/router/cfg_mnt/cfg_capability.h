@@ -19,6 +19,21 @@ typedef struct _led_capability_ss {
 	unsigned int subtype;
 } led_capability_s;
 
+#ifdef RTCONFIG_MLO
+struct mlo_band_mapping_s {
+	int *all_band;
+	int *mlo_band;
+};
+
+static struct mlo_band_mapping_s mlo_band_mapping_list[] __attribute__ ((unused)) = {
+	{ WIFI_BAND_2G | WIFI_BAND_5GL | WIFI_BAND_5GH | WIFI_BAND_6G,	WIFI_BAND_2G | WIFI_BAND_5GH | WIFI_BAND_6G}, //2556, mlo:2/5-2/6
+	{ WIFI_BAND_2G | WIFI_BAND_5G | WIFI_BAND_6GL | WIFI_BAND_6GH,	WIFI_BAND_2G | WIFI_BAND_5G | WIFI_BAND_6GL}, //2566, mlo:2/5/6-1
+	{ WIFI_BAND_2G | WIFI_BAND_5G | WIFI_BAND_6G,					WIFI_BAND_2G | WIFI_BAND_5G | WIFI_BAND_6G}, //256, mlo:2/5/6
+	{ WIFI_BAND_2G | WIFI_BAND_5GL | WIFI_BAND_5GH,					WIFI_BAND_2G | WIFI_BAND_5GH}, //255, mlo:2/5-2
+	{ WIFI_BAND_2G | WIFI_BAND_5G,									WIFI_BAND_2G | WIFI_BAND_5G}, //25, mlo:2/5
+	{ -1, 		-1}
+};
+#endif
 
 extern json_object *cm_generateCapability(unsigned int role, capability_s *capablity);
 extern int cm_checkWifiAuthCap(char *mac, int capBandNum, int reBandNum, int type, char *name, char *outAuth, int outAuthLen);
@@ -142,8 +157,8 @@ enum capabilityType {
 #define CENTRAL_OPTMZ		BIT(17)
 #endif
 #ifdef RTCONFIG_MLO
-#define MLO		BIT(20)
-#define MLO_RE_BH_FH	BIT(21)
+#define MLO_BACKHAUL		BIT(20)
+#define MLO_FRONTHAUL		BIT(21)
 #endif
 #ifdef RTCONFIG_SMART_HOME_MASTER_UI
 #define SMART_HOME_MASTER_UI	BIT(22)

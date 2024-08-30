@@ -152,7 +152,7 @@
 	margin-top:10px;
 	font-size:12px;
 	font-family:Arial, Helvetica, sans-serif;
-	border: 1px solid #333;
+	border: 1px solid transparent;
 	border-collapse: collapse;
 }
 .FormTable_table th{
@@ -895,6 +895,11 @@ form{
 	background: url(images/New_ui/helpicon.png) no-repeat;
 }
 /* CSS Document */
+@font-face{
+	font-family: rog;
+	src: url(/fonts/ROG_Fonts-Regular.woff) format("woff"),
+	     url(./fonts/ROG_Fonts-Regular.otf) format("opentype");
+}
 body{
 color:#FFFFFF;
 font-family:Arial, Helvetica, sans-serif;
@@ -2333,7 +2338,4 @@ padding-top:1px;
 #asus_pp_EULA_modal {
 	border: 3px solid #5C0C0B;
 	background: #000b !important;
-}
-.dnslist_viewlist {
-	background-color:#000 !important;;
 }

@@ -87,23 +87,13 @@
 	border-radius: 0;
 	color: rgb(255, 255, 255);
 }
-.icon_switch{
-	border-radius: 0px;
-}
 .icon_switch.off{
-	background: #0B0B0B;
-	border: 2px solid #666666;
+	background: none;
+	border: 2px solid #4D4D4D;
 }
 .icon_switch.on{
-	background: #000;
-	border: 2px solid #FF3535;
-}
-.icon_switch.on:before{
-	background: #FF3535;
-}
-.icon_switch:before{
-	background: #666666;
-	border-radius: 0%;
+	background: none;
+	border: 2px solid #ff3535;
 }
 .accesstime_container{
 	background-color: transparent;

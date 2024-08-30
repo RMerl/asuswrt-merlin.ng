@@ -1816,15 +1816,13 @@ function popupEditBlock(clientObj){
 		}
 	
 		var setRadioIPBinding = function (state, mode, mac) {
-			const manually_dhcp_maximum  = (isSupport("MaxRule_extend_limit") == 0) ? 64: isSupport("MaxRule_extend_limit");
-			const parentctrl_maximum = (isSupport("MaxRule_parentctrl") == 0) ? 16 : isSupport("MaxRule_parentctrl");
 			switch (mode) {
 				case "ipBinding" :
 					$('#radio_IPBinding_enable').iphoneSwitch(state,
 						function(){
 							if(dhcp_staticlist_orig.search(mac) == -1) {
-								if(dhcp_staticlist_num >= manually_dhcp_maximum) {
-									if(confirm(stringSafeGet("<#Clientlist_IPMAC_Binding_max#>".replace("64", manually_dhcp_maximum)))) {
+								if(dhcp_staticlist_num == 64) {
+									if(confirm(stringSafeGet("<#Clientlist_IPMAC_Binding_max#>"))) {
 										location.href = "Advanced_DHCP_Content.asp" ;
 									}
 									else {
@@ -1847,8 +1845,8 @@ function popupEditBlock(clientObj){
 					$('#radio_BlockInternet_enable').iphoneSwitch(state,
 						function(){
 							if(MULTIFILTER_MAC_orig.search(mac) == -1) {
-								if(MULTIFILTER_num >= parentctrl_maximum) {
-									if(confirm(stringSafeGet("<#Clientlist_block_internet_max#>".replace("16", parentctrl_maximum)))) {
+								if(MULTIFILTER_num == 16) {
+									if(confirm(stringSafeGet("<#Clientlist_block_internet_max#>"))) {
 										location.href = "ParentalControl.asp" ;
 									}
 									else {
@@ -1871,8 +1869,8 @@ function popupEditBlock(clientObj){
 					$('#radio_TimeScheduling_enable').iphoneSwitch(state,
 						function(){
 							if(MULTIFILTER_MAC_orig.search(mac) == -1) {
-								if(MULTIFILTER_num >= parentctrl_maximum) {
-									if(confirm(stringSafeGet("<#Clientlist_block_internet_max#>".replace("16", parentctrl_maximum)))) {
+								if(MULTIFILTER_num == 16) {
+									if(confirm(stringSafeGet("<#Clientlist_block_internet_max#>"))) {
 										location.href = "ParentalControl.asp" ;
 									}
 									else {
@@ -2016,29 +2014,18 @@ function popupEditBlock(clientObj){
 }
 
 function check_usb3(){
-	if(based_modelid == "BRT-AC828") {
+	if(based_modelid == "DSL-AC68U" || based_modelid == "RT-AC3200" || based_modelid == "RT-AC87U" || based_modelid == "RT-AC68U" || based_modelid == "RT-AC68U_V4" || based_modelid == "RT-AC68A" || based_modelid == "RT-AC56S" || based_modelid == "RT-AC56U" || based_modelid == "RT-AC55U" || based_modelid == "RT-AC55UHP" || based_modelid == "RT-N18U" || based_modelid == "RT-AC88U" || based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900" || based_modelid == "RT-AC3100" || based_modelid == "RT-AC5300" || based_modelid == "RP-AC68U" || based_modelid == "RT-AC58U" || based_modelid == "RT-AC82U" ||
+	based_modelid == "MAP-AC3000" || based_modelid == "RT-AC85P" || based_modelid == "RT-AC85U" || based_modelid == "RT-AC65U" || based_modelid == "4G-AC68U" || based_modelid == "BLUECAVE" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "BT12" || based_modelid == "BT10" || based_modelid == "BQ16" || based_modelid == "BQ16_PRO" || based_modelid == "BM68" || based_modelid == "XT8_V2" || based_modelid == "RT-AXE95Q" || based_modelid == "ET8PRO" || based_modelid == "ET8_V2" || based_modelid == "RT-AX56_XD4" || based_modelid == "XD4PRO" || based_modelid == "CT-AX56_XD4" || based_modelid == "RT-AX58U" || based_modelid == "RT-AX58U_V2" || based_modelid == "BR63" || based_modelid == "RT-AX3000N" || based_modelid == "TUF-AX3000" || based_modelid == "TUF-AX3000_V2" || based_modelid == "TUF-AX5400" || based_modelid == "TUF-AX5400_V2" || based_modelid == "RT-AX5400" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX82U_V2" || based_modelid == "RT-AX56U" || based_modelid == "RT-ACRH26" || based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" || based_modelid == "PL-AX56_XP4" || based_modelid == "GT-AX6000" || based_modelid == "RT-AXE7800" || based_modelid == "GT10" || based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" || based_modelid == "RT-BE96U" || based_modelid == "XC5" || based_modelid == "GT-AX11000_PRO" || based_modelid == "GT-BE96" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" || based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U"){
+		document.getElementById('usb_text_1').innerHTML = "USB 3.0";
+	}
+	else if(based_modelid == "RT-AC88Q" || based_modelid == "RT-AX89U" || based_modelid == "RT-AD7200" || based_modelid == "RT-N65U" || based_modelid == "GT-AC5300" || based_modelid == "RT-AX88U" || based_modelid == "GT-AX11000" || based_modelid == "GT-AC9600" || based_modelid == "GT-AXY16000" || based_modelid == "GT-AXE11000"){
+		document.getElementById('usb_text_1').innerHTML = "USB 3.0";
+		document.getElementById('usb_text_2').innerHTML = "USB 3.0";
+	}
+	else if(based_modelid == "BRT-AC828") {
 		document.getElementById('usb_text_1').innerHTML = "USB 3.0";
 		document.getElementById('usb_text_2').innerHTML = "USB 3.0";
 		document.getElementById('usb_text_3').innerHTML = "M.2 SSD";
-	}
-	else{
-		const rate_map_USB = [
-			{value:"480",text:"USB 2.0"},
-			{value:"5000",text:"USB 3.0"},
-			{value:"10000",text:"USB 3.2"}
-		];
-		const get_usb_phy_port = (httpApi.hookGet("get_usb_phy_port") == undefined) ? [] : httpApi.hookGet("get_usb_phy_port");
-		$.each(get_usb_phy_port, function(index, usb_info){
-			const usb_text = rate_map_USB.find(function(item){
-				return (item.value == usb_info.max_rate);
-			});
-			if(usb_text != undefined){
-				const usb_idx = usb_info.label_name.substring(1,2);
-				if($(`#usb_text_${usb_idx}`).length > 0){
-					$(`#usb_text_${usb_idx}`).html(usb_text.text);
-				}
-			}
-		});
 	}
 }
 

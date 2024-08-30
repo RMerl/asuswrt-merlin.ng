@@ -13,9 +13,9 @@
 <title><#Web_Title#></title>
 <style>
 @font-face{
-	font-family: Xolonium;
-    src: url(/fonts/xolonium.regular.woff) format("woff"),
-         url(/fonts/xolonium.regular.otf) format("opentype");
+	font-family: ROG;
+	src: url(/fonts/ROG_Fonts-Regular.woff) format("woff"),
+	     url(/fonts/ROG_Fonts-Regular.otf) format("opentype");
 }
 body, .p1, .form-input{
 	color: #FFF;
@@ -69,9 +69,9 @@ body{
 }
 .model-name{
 	height: 100%;
-	font-size: 36px;
+	font-size: 48px;
 	font-weight: bold;
-	font-family: Xolonium;
+	font-family: ROG;
 	margin-left: 25px;
 }
 .login-bg, .login-bg-odm{
@@ -135,10 +135,6 @@ body{
 	margin: 20px 230px 0 0;
 	background: #141618;
 	border-radius: 8px;
-}
-.login-btn-bg.disabled{
-    filter: grayscale(100%) opacity(0.5);
-    pointer-events: none;
 }
 .login-btn-bg:hover{
 	border: 2px solid #AB0015;
@@ -581,21 +577,16 @@ function countdownfunc(){
 }
 
 function preLogin(){
-    if(document.querySelector('#button')?.classList.contains('disabled') || document.querySelector('.button')?.classList.contains('disabled')) return;
-    document.querySelector('#button')?.classList.add('disabled');
-    document.querySelector('.button')?.classList.add('disabled');
-    let id = randomString(10);
-    fetch('get_Nonce.cgi', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({id: id})
-    })
-    .then(response => response.json())
-    .then(data => {
-        const { nonce } = data;
-        login(id, nonce);
-    })
-    .catch(error => top.location.href='/Main_Login.asp');
+    let id = randomString(10)
+    let xhr = new XMLHttpRequest();
+    xhr.open("POST", "get_Nonce.cgi", true);
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            const { nonce } = JSON.parse(xhr.responseText);
+            login(id, nonce);
+        }
+    };
+    xhr.send(JSON.stringify({id: id}));
 }
 
 function login(id, nonce){

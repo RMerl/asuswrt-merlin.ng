@@ -16,7 +16,6 @@
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/js/jquery.js"></script>
-<script type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script><% wl_get_parameter(); %>
 $(function () {
@@ -79,34 +78,6 @@ function initial(){
 		document.getElementById("wps_band_tr").style.display = "";
 		if(!wps_multiband_support || document.form.wps_multiband.value == "0") {
 			document.getElementById("wps_band_word").innerHTML = get_band_str(document.form.wps_band.value);
-			var band = get_band_str(document.form.wps_band.value);
-			var band_prefix = '';
-			switch (band){
-				case "2.4 GHz":
-					band_prefix = '2g1';
-					break;
-
-				case "5 GHz-1":
-					band_prefix = '5g1';
-					break;
-					
-				case "5 GHz-2":
-					band_prefix = '5g2';
-					break;
-				
-				case "6 GHz-1": 
-					band_prefix = '6g1';
-					break;
-				
-				case "6 GHz-2": 
-					band_prefix = '6g2';
-					break;
-			}
-
-			var auth = httpApi.nvramGet([band_prefix + '_auth_mode_x'])[band_prefix + '_auth_mode_x'];	
-			if(auth == 'sae' || auth == 'wpa3' || auth == 'suite-b'){			
-				document.getElementById('wpa3_not_support_hint').style.display = "";
-			}
 		}
 
 		if((wps_multiband_support && document.form.wps_multiband.value == "1") 
@@ -121,13 +92,6 @@ function initial(){
 				band1 = "<del>" + band1 + "</del>";
 			
 			document.getElementById("wps_band_word").innerHTML = band0 + " / " + band1;
-			var auth = httpApi.nvramGet(['2g1_auth_mode_x', '5g1_auth_mode_x']);
-			var wl0_auth = auth['2g1_auth_mode_x'];
-			var wl1_auth = auth['5g1_auth_mode_x'];
-			if(wl0_auth == 'sae' || wl0_auth == 'wpa3' || wl0_auth == 'suite-b' 
-			|| wl1_auth == 'sae' || wl1_auth == 'wpa3' || wl1_auth == 'suite-b'){			
-				document.getElementById('wpa3_not_support_hint').style.display = "";
-			}
 		}
 	}
 
@@ -253,12 +217,6 @@ function enableWPS(){
 }
 
 function configCommand(){
-	var display = document.getElementById('wpa3_not_support_hint').style.display;
-	if(display != 'none'){
-		alert('WPS is not available on WPA3-Personal.');
-		return true;
-	}
-
 	if(lantiq_support && wave_ready != 1){
 		alert("Please wait a minute for wireless ready");
 		return false;
@@ -991,12 +949,11 @@ function checkWLReady(){
 				<th>
 			  	<span id="wps_method"><a class="hintstyle" href="javascript:void(0);" onclick="openHint(13,2);"><#WLANConfig11b_x_WPSMode_itemname#></a></span>
 			  </th>
-				<td>
-					<label><input type="radio" name="wps_method" onclick="changemethod(0);" value="0"><#WLANConfig11b_x_WPS_pushbtn#></label>
-					<label><input type="radio" name="wps_method" onclick="changemethod(1);" value="1"><#WLANConfig11b_x_WPSPIN_itemname#></label>
-					<input type="text" name="wps_sta_pin" id="wps_sta_pin" value="" size="9" maxlength="9" class="input_15_table" autocorrect="off" autocapitalize="off">
-					<div id="starBtn" style="margin-top:10px;"><input class="button_gen" type="button" style="margin-left:5px;" onClick="configCommand();" id="addEnrolleebtn_client" name="addEnrolleebtn"  value="<#wps_start_btn#>"></div>
-					<div style="color:#FC0;display:none" id="wpa3_not_support_hint">WPS is not available on WPA3-Personal. Please refer to FAQ</div>
+			  <td>
+					<input type="radio" name="wps_method" onclick="changemethod(0);" value="0"><#WLANConfig11b_x_WPS_pushbtn#>
+					<input type="radio" name="wps_method" onclick="changemethod(1);" value="1"><#WLANConfig11b_x_WPSPIN_itemname#>
+			  	<input type="text" name="wps_sta_pin" id="wps_sta_pin" value="" size="9" maxlength="9" class="input_15_table" autocorrect="off" autocapitalize="off">
+				  <div id="starBtn" style="margin-top:10px;"><input class="button_gen" type="button" style="margin-left:5px;" onClick="configCommand();" id="addEnrolleebtn_client" name="addEnrolleebtn"  value="<#wps_start_btn#>"></div>
 				</td>
 			</tr>
 

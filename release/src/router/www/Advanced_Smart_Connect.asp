@@ -306,10 +306,7 @@ var bsd_bounce_detect = '<% nvram_get("bsd_bounce_detect"); %>'.split(" ");	//[w
 
 var smart_connect_selif_x = '<% nvram_get("smart_connect_selif_x"); %>';
 if(smart_connect_v2_support && smart_connect_selif_x == '3') {
-	if(wl_info.wl_if_total > 2){
-		wl_info.wl_if_total--;
-	}
-	
+	wl_info.wl_if_total--;
 }
 
 function initial(){
@@ -559,92 +556,92 @@ function gen_bsd_if_select_div(){
 	code +="<thead><tr><td colspan=\"4\"><#smart_connect_ISQP#></td></tr></thead>";
 
 	code +='<tr id="target_band_text"><th width="20%"><#Interface_target#></th>';
-    if('<% nvram_get("smart_connect_x"); %>' != 2){
-		for(i = start_band_idx; i < wl_info.wl_if_total; i++){
-			code +='<td width="27%" style="padding:0px 0px 0px 0px;"><div><table><tr>';
-			code +='<td style="border:0px; padding:0px 0px 0px 3px;">1:</td>';
-			code +='<td style="border:0px; padding:0px 0px 0px 1px;">';
-			code +='<select class="input_option" name="wl'+i+'_bsd_if_select_policy_first" onChange="change_bsd_if_select(this);">';
-			code +='<option selected="" value="0" class="content_input_fd">';
-			if(i == 0){
-				if(band6g_support){
-					code +='5 GHz';
-				}
-				else{
-					code +='5GHz-1';
-				}		
-			}else if(i == 1){
-				if(band6g_support){
-					code +='6 GHz';
-				}
-				else{
-					code +='5GHz-2';
-				}
-			}else{
-				if(band6g_support){
-					code +='5 GHz';
-				}
-				else{
-					code +='5GHz-1';
-				}
+     if('<% nvram_get("smart_connect_x"); %>' != 2 && (wl_info.band5g_2_support || wl_info.band6g_support)){
+	for(i = start_band_idx; i < wl_info.wl_if_total; i++){
+		code +='<td width="27%" style="padding:0px 0px 0px 0px;"><div><table><tr>';
+		code +='<td style="border:0px; padding:0px 0px 0px 3px;">1:</td>';
+		code +='<td style="border:0px; padding:0px 0px 0px 1px;">';
+		code +='<select class="input_option" name="wl'+i+'_bsd_if_select_policy_first" onChange="change_bsd_if_select(this);">';
+		code +='<option selected="" value="0" class="content_input_fd">';
+		if(i == 0){
+			if(band6g_support){
+				code +='5 GHz';
 			}
-			code +='</option><option value="1" class="content_input_fd">';
-			if(i == 0){
-				if(band6g_support){
-					code +='6 GHz';
-				}
-				else{
-					code +='5GHz-2';
-				}
-			}else if(i == 1){
-				code +='2.4GHz';
-			}else{
-				code +='2.4GHz';
+			else{
+				code +='5GHz-1';
 			}		
-			code +='</option>';
-			code +='</select></td>';
-			code +='<td style="border:0px; padding:0px 0px 0px 7px;">2:</td>';
-			code +='<td style="border:0px; padding:0px 0px 0px 1px;">';
-			code +='<select class="input_option" name="wl'+i+'_bsd_if_select_policy_second" onChange="change_bsd_if_select(this);">';
-			code +='<option selected="" value="0" class="content_input_fd">';
-			if(i == 0){
-				if(band6g_support){
-					code +='5 GHz';
-				}
-				else{
-					code +='5GHz-1';
-				}
-			}else if(i == 1){
-				code +='2.4GHz';
-			}else{
-				if(band6g_support){
-					code +='5 GHz';
-				}
-				else{
-					code +='5GHz-1';
-				}
-			}	
-			code +='</option>';
-			code +='<option value="1" class="content_input_fd">';
-			if(i == 0){
-				if(band6g_support){
-					code +='6 GHz';
-				}
-				else{
-					code +='5GHz-2';
-				}
-			}else if(i == 1){
-				code +='2.4GHz';
-			}else{
-				code +='2.4GHz';
-			}		
-			code +='</option>';
-			code +='<option value="2" class="content_input_fd">';
-			code +='none';		
-			code +='</option>';
-			code +='</select></td></tr></table></div></td>';
+		}else if(i == 1){
+			if(band6g_support){
+				code +='6 GHz';
+			}
+			else{
+				code +='5GHz-2';
+			}
+		}else{
+			if(band6g_support){
+				code +='5 GHz';
+			}
+			else{
+				code +='5GHz-1';
+			}
 		}
-    }else if(!wl_info.band5g_2_support && !wl_info.band6g_support){
+		code +='</option><option value="1" class="content_input_fd">';
+		if(i == 0){
+			if(band6g_support){
+				code +='6 GHz';
+			}
+			else{
+				code +='5GHz-2';
+			}
+		}else if(i == 1){
+			code +='2.4GHz';
+		}else{
+			code +='2.4GHz';
+		}		
+		code +='</option>';
+		code +='</select></td>';
+		code +='<td style="border:0px; padding:0px 0px 0px 7px;">2:</td>';
+		code +='<td style="border:0px; padding:0px 0px 0px 1px;">';
+		code +='<select class="input_option" name="wl'+i+'_bsd_if_select_policy_second" onChange="change_bsd_if_select(this);">';
+		code +='<option selected="" value="0" class="content_input_fd">';
+		if(i == 0){
+			if(band6g_support){
+				code +='5 GHz';
+			}
+			else{
+				code +='5GHz-1';
+			}
+		}else if(i == 1){
+			code +='2.4GHz';
+		}else{
+			if(band6g_support){
+				code +='5 GHz';
+			}
+			else{
+				code +='5GHz-1';
+			}
+		}	
+		code +='</option>';
+		code +='<option value="1" class="content_input_fd">';
+		if(i == 0){
+			if(band6g_support){
+				code +='6 GHz';
+			}
+			else{
+				code +='5GHz-2';
+			}
+		}else if(i == 1){
+			code +='2.4GHz';
+		}else{
+			code +='2.4GHz';
+		}		
+		code +='</option>';
+		code +='<option value="2" class="content_input_fd">';
+		code +='none';		
+		code +='</option>';
+		code +='</select></td></tr></table></div></td>';
+	}
+     }else if(!wl_info.band5g_2_support && !wl_info.band6g_support){
 		code +='<td width="40%">5GHz</td><td width="40%">2.4GHz</td>'
 	}else{
 		if(band6g_support){
@@ -1085,7 +1082,7 @@ function register_event(){
 				based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || 
 				based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" ||
 				based_modelid == "RT-AX88U_PRO" || based_modelid == "RT-BE96U" || based_modelid == "GT-BE96" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" ||
-				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U"
+				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U"
 				)?1000:600,
 			value:1,
 			slide:function(event, ui){
@@ -1143,7 +1140,7 @@ function register_event(){
 				based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || 
 				based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" ||
 				based_modelid == "RT-AX88U_PRO" || based_modelid == "RT-BE96U" || based_modelid == "GT-BE96" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" ||
-				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U"
+				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U"
 				)?1000:600,
 			value:1,
 			slide:function(event, ui){
@@ -1201,7 +1198,7 @@ function register_event(){
 				based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || 
 				based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" ||
 				based_modelid == "RT-AX88U_PRO" || based_modelid == "RT-BE96U" || based_modelid == "GT-BE96" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" ||
-				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U"
+				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U"
 				)?2167:1300,
 			value:1,
 			slide:function(event, ui){
@@ -1259,7 +1256,7 @@ function register_event(){
 				based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || 
 				based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" ||
 				based_modelid == "RT-AX88U_PRO" || based_modelid == "RT-BE96U" || based_modelid == "GT-BE96" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" ||
-				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U"
+				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U"
 				)?2167:1300,
 			value:1,
 			slide:function(event, ui){
@@ -1375,7 +1372,7 @@ function register_event(){
 				based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || 
 				based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" ||
 				based_modelid == "RT-AX88U_PRO" || based_modelid == "RT-BE96U" || based_modelid == "GT-BE96" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" ||
-				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-E92U" || based_modelid == "RT-BE95U"
+				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U"
 				)?1000:600,
 			value:1,
 			slide:function(event, ui){
@@ -1433,7 +1430,7 @@ function register_event(){
 				based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || 
 				based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" ||
 				based_modelid == "RT-AX88U_PRO" || based_modelid == "RT-BE96U" || based_modelid == "GT-BE96" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" ||
-				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U"
+				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U"
 				)?1000:600,
 			value:1,
 			slide:function(event, ui){
@@ -1491,7 +1488,7 @@ function register_event(){
 				based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || 
 				based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" ||
 				based_modelid == "RT-AX88U_PRO" || based_modelid == "RT-BE96U" || based_modelid == "GT-BE96" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" ||
-				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U"
+				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U"
 				)?2167:1300,
 			value:1,
 			slide:function(event, ui){
@@ -1549,7 +1546,7 @@ function register_event(){
 				based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || 
 				based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" ||
 				based_modelid == "RT-AX88U_PRO" || based_modelid == "RT-BE96U" || based_modelid == "GT-BE96" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" ||
-				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U"
+				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U"
 				)?2167:1300,
 			value:1,
 			slide:function(event, ui){
@@ -1579,7 +1576,7 @@ function register_event(){
 				based_modelid == "GT-AXE11000" ||
 				based_modelid == "GT-AX6000" ||
 				based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" || based_modelid == "RT-BE96U" || based_modelid == "GT-BE96" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" ||
-				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U"
+				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U"
 				)?2167:1300,
 			value:1,
 			slide:function(event, ui){
@@ -1720,7 +1717,7 @@ function check_power(power_value,flag){
 			based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || 
 			based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" ||
 			based_modelid == "RT-AX88U_PRO" || based_modelid == "RT-BE96U" || based_modelid == "GT-BE96" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" ||
-			based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U"
+			based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U"
 			)
 			power_value_limit = 2167;
 		else
@@ -1787,7 +1784,7 @@ function set_lg_power(power_value,flag,idx){
 			based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || 
 			based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" ||
 			based_modelid == "RT-AX88U_PRO" || based_modelid == "RT-BE96U" || based_modelid == "GT-BE96" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" ||
-			based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U"
+			based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U"
 			)
 			divd = 10;
 		else
@@ -1837,7 +1834,7 @@ function set_lg_power(power_value,flag,idx){
 			based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || 
 			based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" ||
 			based_modelid == "RT-AX88U_PRO" || based_modelid == "RT-BE96U" || based_modelid == "GT-BE96" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" ||
-			based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U"
+			based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U"
 			)
 			divd = 21;
 		else

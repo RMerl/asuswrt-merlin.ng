@@ -70,10 +70,6 @@ body{
 	line-height:60px;
 	cursor:pointer;
 }
-.button.disabled{
-	filter: grayscale(100%) opacity(0.5);
-    pointer-events: none;
-}
 .form_input{
 	background-color:rgba(255,255,255,0.5);
 	/* background-color:#576D73\9; */
@@ -594,21 +590,16 @@ function countdownfunc(){
 }
 
 function preLogin(){
-    if(document.querySelector('#button')?.classList.contains('disabled') || document.querySelector('.button')?.classList.contains('disabled')) return;
-    document.querySelector('#button')?.classList.add('disabled');
-    document.querySelector('.button')?.classList.add('disabled');
-    let id = randomString(10);
-    fetch('get_Nonce.cgi', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({id: id})
-    })
-    .then(response => response.json())
-    .then(data => {
-        const { nonce } = data;
-        login(id, nonce);
-    })
-    .catch(error => top.location.href='/Main_Login.asp');
+    let id = randomString(10)
+    let xhr = new XMLHttpRequest();
+    xhr.open("POST", "get_Nonce.cgi", true);
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            const { nonce } = JSON.parse(xhr.responseText);
+            login(id, nonce);
+        }
+    };
+    xhr.send(JSON.stringify({id: id}));
 }
 
 function login(id, nonce){

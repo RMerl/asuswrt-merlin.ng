@@ -110,7 +110,7 @@ function isSupport(_ptn){
 }
 
 function initial(){
-	if(isSupport("ROG_UI") || isSupport("TS_UI") || isSupport("TUF_UI")){
+	if(isSupport("ROG_UI") || isSupport("TS_UI") || (('<% nvram_get("productid"); %>').substring(0,3).toUpperCase() == "TUF")){
 		$(".wrapper").css({"background-size":"cover"});
 	}
 	if(isAMeshRE) {	

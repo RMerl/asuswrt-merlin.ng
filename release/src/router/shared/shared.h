@@ -465,49 +465,6 @@ enum {
 	IPV6_PASSTHROUGH
 };
 
-#if !defined(BIT_XX)
-#define BIT_XX(x)  ((1 << x))
-#endif
-
-#define WIFI_BAND_2G    BIT_XX(0)
-#define WIFI_BAND_5G    BIT_XX(1)
-#define WIFI_BAND_5GL   BIT_XX(2)
-#define WIFI_BAND_5GH   BIT_XX(3)
-#define WIFI_BAND_6G    BIT_XX(4)
-#define WIFI_BAND_6GL	BIT_XX(5)
-#define WIFI_BAND_6GH	BIT_XX(6)
-
-#define WIFI_BAND_ARRAY_SIZE    7
-const static unsigned short WIFI_BAND_ARRAY[] = {
-    WIFI_BAND_2G, 
-    WIFI_BAND_5G, 
-    WIFI_BAND_5GL, 
-    WIFI_BAND_5GH, 
-    WIFI_BAND_6G, 
-	WIFI_BAND_6GL,
-	WIFI_BAND_6GH
-};
-
-#ifdef RTCONFIG_MLO
-struct mlo_band_mapping_s {
-	int all_band;
-	int mlo_band;
-};
-
-static struct mlo_band_mapping_s mlo_band_mapping_list[] __attribute__ ((unused)) = {
-	{ WIFI_BAND_2G | WIFI_BAND_5GL | WIFI_BAND_5GH | WIFI_BAND_6G,	WIFI_BAND_2G | WIFI_BAND_5GH | WIFI_BAND_6G}, //2556, mlo:2/5-2/6
-#if defined(RTCONFIG_MLO_CONFIG_566)
-	{ WIFI_BAND_2G | WIFI_BAND_5G | WIFI_BAND_6GL | WIFI_BAND_6GH,	WIFI_BAND_5G | WIFI_BAND_6GL | WIFI_BAND_6GH}, //2566, mlo:5/6-1/6-2
-#else
-	{ WIFI_BAND_2G | WIFI_BAND_5G | WIFI_BAND_6GL | WIFI_BAND_6GH,	WIFI_BAND_2G | WIFI_BAND_5G | WIFI_BAND_6GL}, //2566, mlo:2/5/6-1
-#endif
-	{ WIFI_BAND_2G | WIFI_BAND_5G | WIFI_BAND_6G,					WIFI_BAND_2G | WIFI_BAND_5G | WIFI_BAND_6G}, //256, mlo:2/5/6
-	{ WIFI_BAND_2G | WIFI_BAND_5GL | WIFI_BAND_5GH,					WIFI_BAND_2G | WIFI_BAND_5GL | WIFI_BAND_5GH}, //255, mlo:2/5/5-2
-	{ WIFI_BAND_2G | WIFI_BAND_5G,									WIFI_BAND_2G | WIFI_BAND_5G}, //25, mlo:2/5
-	{ -1, 		-1}
-};
-#endif
-
 #ifndef RTF_UP
 /* Keep this in sync with /usr/src/linux/include/linux/route.h */
 #define RTF_UP		0x0001  /* route usable			*/
@@ -1590,7 +1547,7 @@ static inline int max_no_mssid(void)
 {
 #if defined(BRTAC828)
 	int max_no_mssid = 8;
-#elif defined(RTCONFIG_PSR_GUEST) && !defined(RTCONFIG_HND_ROUTER_BE_4916)
+#elif defined(RTCONFIG_PSR_GUEST)
 	int max_no_mssid = 5;
 #else
 	int max_no_mssid = 4;
@@ -1659,11 +1616,6 @@ enum wl_band_id {
 	WL_5G_2_BAND = 0,
 	WL_6G_BAND = 0,
 	WL_5G_BAND = 1,
-	WL_2G_BAND = 2,
-#elif defined(RTBE95U)
-	WL_5G_BAND = 0,
-	WL_5G_2_BAND = 1,
-	WL_6G_BAND = 1,
 	WL_2G_BAND = 2,
 #elif defined(RTCONFIG_QCA) || defined(RTCONFIG_MTK)
 	WL_2G_BAND = 0,
@@ -2822,11 +2774,6 @@ extern int wl_get_bw_cap(int unit, int *bwcap);
 extern int get_bandnum_by_nband(int num);
 extern void check_wlx_nband_type();
 #ifdef RTCONFIG_MLO
-extern int gen_mlo_band();
-#if !defined(RTCONFIG_MLO_BH)
-extern void init_mld_enable();
-#endif
-extern void check_mlo_config();
 extern int is_mlo_dwb_mssid(char *ifname);
 extern int is_compatible_network(char *ifname);
 extern int isMloConnectionMode();
@@ -3094,9 +3041,9 @@ static inline void set_power_save_mode(void) { }
 extern int get_fa_rev(void);
 extern int get_fa_dump(void);
 #endif
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(EBG19) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(EBG19) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U)
 /* port statistic counter structure */
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE92U)
 unsigned int rtkswitch_serdes_status(void);
 typedef struct rtk_stat_port_cntr_s
 {
@@ -3275,13 +3222,13 @@ typedef struct rtk_stat_port_cntr_s
 #endif
 #endif
 #ifdef HND_ROUTER
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(EBG19) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(EBG19) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U)
 extern uint32_t rtk_get_phy_status(int port);
 extern uint32_t rtk_get_phy_speed(int port);
 extern uint32_t rtk_get_phy_duplex(int port);
 extern uint64_t rtk_get_phy_mib(int port, char *type);
 #endif
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U)
 extern int rtk_lan_phy_status();
 #endif
 #if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63)
@@ -3299,7 +3246,7 @@ extern uint32_t hnd_get_phy_status(int port);
 extern uint32_t hnd_get_phy_speed(int port);
 extern uint32_t hnd_get_phy_duplex(int port);
 extern uint64_t hnd_get_phy_mib(int port, char *type);
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U)
 extern int rtkswitch_port_speed(int port);
 extern int rtkswitch_port_duplex(int port);
 extern int rtkswitch_port_stat(int port);
@@ -3480,49 +3427,6 @@ extern int is_intf_up(const char* ifname);
 extern uint32_t crc_calc(uint32_t crc, const char *buf, int len);
 extern int illegal_ipv4_address(char *addr);
 extern int illegal_ipv4_netmask(char *netmask);
-
-#define HTTPS_CA_JFFS  "/jffs/cert.tgz"
-
-/* Same compile option for lan_ipaddr in shared/defaults.c */
-#if defined(RTN300) || defined(RTCONFIG_ALL_DEF_LAN50) || defined(RTN300)
-#define DEFAULT_LAN_IP_PARM	"-L", "192.168.50.1"
-#elif defined(RTCONFIG_WIFI_SON) || defined(RTCONFIG_LYRA_HIDE)
-#define DEFAULT_LAN_IP_PARM	"-L", "192.168.72.1"
-#else
-#define DEFAULT_LAN_IP_PARM	"-L", "192.168.1.1"
-#endif
-
-#define GENCERT_SH(args...)		({ char *argv[] = { "gencert.sh", DEFAULT_LAN_IP_PARM, ## args, NULL }; _eval(argv, NULL, 0, NULL); })
-#define GENCERT_SH_AND_RELOAD(args...)	({ char *argv[] = { "gencert.sh", DEFAULT_LAN_IP_PARM, "-l", ## args, NULL }; _eval(argv, NULL, 0, NULL); })
-#define GENCERT_SH_AND_BACKUP(args...)	({ char *argv[] = { "gencert.sh", DEFAULT_LAN_IP_PARM, "-b", ## args, NULL }; _eval(argv, NULL, 0, NULL); })
-#define GENCERT_SH_AND_BACKUP_RELOAD(args...)	({ char *argv[] = { "gencert.sh", DEFAULT_LAN_IP_PARM, "-b", "-l", ## args, NULL }; _eval(argv, NULL, 0, NULL); })
-#define GENCERT_SH_AND_BACKUP_RELOAD_AFTER_LOGOUT(args...)	({ char *argv[] = { "gencert.sh", DEFAULT_LAN_IP_PARM, "-b", "-l", "2", ## args, NULL }; _eval(argv, NULL, 0, NULL); })
-#if defined(RTCONFIG_HTTPS)
-extern void reset_last_cert_nvars(void);
-extern int restore_cert(void);
-extern void save_cert(void);
-extern void erase_cert(void);
-extern void remove_all_uploaded_cert_from_jffs(void);
-extern int illegal_cert_and_key(const char *cert_fn, const char *key_fn);
-extern void update_srv_cert_if_ddns_changed(void);
-extern void update_srv_cert_if_lan_ip_changed(void);
-extern void update_srv_cert_if_wan_ip_changed(int unit);
-#else
-static inline  void reset_last_cert_nvars(void) { }
-static inline int restore_cert(void) { return 0; }
-static inline void save_cert(void) { }
-static inline void erase_cert(void) { }
-static inline void remove_all_uploaded_cert_from_jffs(void) { }
-static inline int illegal_cert_and_key(char *cert_fn, char *key_fn) { return 0; }
-static inline void update_srv_cert_if_ddns_changed(void) { }
-static inline void update_srv_cert_if_lan_ip_changed(void) { }
-static inline void update_srv_cert_if_wan_ip_changed(int unit) { }
-#endif
-#if defined(RTCONFIG_HTTPS) && defined(RTCONFIG_IPV6)
-extern void update_srv_cert_if_wan_ipv6_changed(int unit);
-#else
-static inline void update_srv_cert_if_wan_ipv6_changed(int unit) { }
-#endif
 extern void convert_mac_string(char *mac);
 extern int test_and_get_free_uint_network(int t_class, uint32_t *exp_ip, uint32_t exp_cidr, uint32_t excl);
 extern int test_and_get_free_char_network(int t_class, char *ip_cidr_str, uint32_t excl);
@@ -4623,77 +4527,12 @@ extern int FindBrifByWlif(const char *wl_ifname, char *brif_name, int size);
 #endif
 
 #ifdef RTCONFIG_HTTPS
-/* auto-generated root certificate and key. */
-#define HTTPD_ROOTCA_GEN_CERT	"/etc/cacert_gen.pem"
-#define HTTPD_ROOTCA_GEN_KEY	"/etc/cakey_gen.pem"
-
-/* This certificate and key is used to sign end-entity certificate and key.
- * could be auto-generated root certificate and key, or uploaded root/intermediate
- * certificate and key.
- */
-#define HTTPD_ROOTCA_CERT	"/etc/cacert.pem"
-#define HTTPD_ROOTCA_KEY	"/etc/cakey.pem"
-
-/* auto-generated end-entity certificate and key. Signed by auto-generated
- * root certificate and key.
- */
-#define HTTPD_GEN_CERT		"/etc/cert_gen.pem"
-#define HTTPD_GEN_KEY		"/etc/key_gen.pem"
-
-/* Currently using end-entity certificate and key. It is used when
- * router mode: all httpds if le_enable == 0, or le_enable == 2 and uploaded
- *              certificate is root/intermediate ceritificate.
- * another mode, including AP/RP/MB/RE: all httpds, le_enable value is ignored.
- */
-#define HTTPD_CERT		"/etc/cert.pem"
-#define HTTPD_KEY		"/etc/key.pem"
-
-/* Overwrite HTTPD_CERT and HTTPD_KEY with end-entity certificate, which is
- * signed by Let's encrypt, in ACME_CERTHOME on all httpds when le_enable =1.
- * Modern browser reject the certificate, error code SSL_ERROR_BAD_CERT_DOMAIN,
- * when it connects to LAN side by domain name and IP address or when it
- * connects to WAN side by IP address. Because connection to WAN side https
- * port is redirected to port of LAN side https, and real URL is defined in HTTP
- * header, it's impossible to use different certificate based on destination in
- * URL respectively.
- * Created by prepare_cert_in_etc() at run-time by copying LE_FULLCHAIN and
- * LE_KEY to LE_HTTPD_CERT and LE_HTTPD_KEY respectively.
- */
-#define LE_HTTPD_CERT		HTTPD_CERT
-#define LE_HTTPD_KEY		HTTPD_KEY
-/* Use uploaded certificate on all httpds when le_enable = 2. If it's
- * root/intermediate certificate, it is used to sign end-entity a certificate at
- * run-time and saved in UPLOAD_GEN_KEY. If it's a end-entity certificate, use
- * it directly by overwrite HTTPD_CERT, user is incharge of fill DNS/IP for all
- * httpds to subjectAltName of the certificates, otherwise, the certificate is
- * rejected by modern browser, error code SSL_ERROR_BAD_CERT_DOMAIN. It is reject
- * if the end-entity certificate was signed by public key of itself. keyUsage of
- * root certificate must has keyCertSign, otherwise, SEC_ERROR_INADEQUATE_KEY_USAGE.
- * Created by prepare_cert_in_etc() at run-time by copying UPLOAD_GEN_CERT or
- * UPLOAD_CERT to UL_HTTPD_CERT respectively.
- */
-#define UL_HTTPD_CERT		HTTPD_CERT
-#define UL_HTTPD_KEY		HTTPD_KEY
-
-/* Used by tar via system()/eval() respectively, leading '/' shouldn't be added,
- * otherwise, it can't be used to extract specific files from tar-ball. It's is
- * used to backup cert. and key to /jffs, and will be restore to /etc, all possible
- * cert. and key should be backup.
- */
-#define HTTPD_CERTS_KEYS_STR	"etc/cacert.pem etc/cakey.pem etc/cert.pem etc/key.pem etc/cacert_gen.pem etc/cakey_gen.pem etc/cert_gen.pem etc/key_gen.pem"
-#define HTTPD_CERTS_KEYS_ARGS	"etc/cacert.pem", "etc/cakey.pem", "etc/cert.pem", "etc/key.pem", "etc/cacert_gen.pem", "etc/cakey_gen.pem", "etc/cert_gen.pem", "etc/key_gen.pem"
-
+#define HTTPD_CERT	"/etc/cert.pem"
+#define HTTPD_KEY	"/etc/key.pem"
 #define LIGHTTPD_CERTKEY	"/etc/server.pem"
 #define UPLOAD_CERT_FOLDER	"/jffs/.cert"
-/* Uploaded cert is root/intermediate. */
-#define UPLOAD_CACERT		"/jffs/.cert/cacert.pem"
-#define UPLOAD_CAKEY		"/jffs/.cert/cakey.pem"
-/* End-entity certificate that is signed by uploaded root/intermediate certificate. */
-#define UPLOAD_GEN_CERT		"/jffs/.cert/cert_gen.pem"
-#define UPLOAD_GEN_KEY		"/jffs/.cert/key_gen.pem"
-/* Uploaded end-entity cert or signed by uploaded root/intermediate certificate. */
-#define UPLOAD_CERT		"/jffs/.cert/cert.pem"
-#define UPLOAD_KEY		"/jffs/.cert/key.pem"
+#define UPLOAD_CERT	"/jffs/.cert/cert.pem"
+#define UPLOAD_KEY	"/jffs/.cert/key.pem"
 #ifdef RTCONFIG_LETSENCRYPT
 #define ACME_CERTHOME	"/jffs/.le"
 #endif
@@ -5046,7 +4885,7 @@ extern void firmware_downgrade_check(uint32_t sf);
 #define ANTLED_SCHEME_RSSI              2
 #endif
 
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) || defined(GTBE96) || defined(GTBE19000)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE92U)
 #define LEDG_OFF			0
 #define LEDG_STEADY_MODE		1
 #define LEDG_FADING_REVERSE_MODE	2
@@ -5192,21 +5031,11 @@ enum {
 	WLIF_5G1 = 0,
 	WLIF_5G2 = 1,
 	WLIF_6G  = 3,
-#elif defined(RTBE95U)
-	WLIF_2G  = 2,
-	WLIF_5G1 = 0,
-	WLIF_5G2 = 0,
-	WLIF_6G  = 1,
-#elif defined(RTCONFIG_QUADBAND) || defined(RTCONFIG_HAS_5G_2)
+#else
 	WLIF_2G	 = 0,
 	WLIF_5G1 = 1,
 	WLIF_5G2 = 2,
 	WLIF_6G	 = 3,
-#else  // dual-band or 2+5+6
-	WLIF_2G  = 0,
-	WLIF_5G1 = 1,
-	WLIF_5G2 = 1,
-	WLIF_6G  = 2,
 #endif
 	WLIF_MAX = 4
 };
@@ -5378,10 +5207,6 @@ extern int adjust_62_nv_list(char *name);
 
 extern char *get_ddns_macaddr(void);
 
-#if defined(RTCONFIG_PRESSURE_SENSOR)
-#define PRESSURE_LEN 		(16)
-#endif
-
 #ifdef RTCONFIG_UAC_TUNNEL
 #define UAC_TNL_STATUS_NONE 0
 #define UAC_TNL_STATUS_ACTIVE 1
@@ -5401,32 +5226,4 @@ static inline int can_run_router_boost(void)
 			);
 }
 #endif //RTCONFIG_ROUTERBOOST
-
-#ifdef RTCONFIG_GEARUPPLUGIN
-/* DEBUG DEFINE */
-#define GU_DEBUG             "/tmp/GU_DEBUG"
-#define GUDBG(fmt,args...) \
-        if(f_exists(GU_DEBUG) > 0) { \
-                printf("[GU][%s:(%d)] "fmt, __FUNCTION__, __LINE__, ##args); \
-        } \
-
-enum {
-	GU_HIDDEN          = 0,  // gu UI hidden
-	GU_VISIBLE         = 1,  // gu UI visible
-};
-
-enum {
-	GU_DISABLED        = 0,  // disable gu
-	GU_ENABLED         = 1,  // enable gu
-	GU_BLOCK           = 2   // block gu no matter enable or disable
-};
-
-enum {
-	GU_REASON_NONE        = 0,  // gu is working
-	GU_REASON_DISABLED    = 1,  // gu is disabled or forbidden
-	GU_REASON_NOT_RTMODE  = 2,  // gu is not under Router mode
-	GU_REASON_BLOCK       = 3   // gu is blocked
-};
-#endif
-
 #endif	/* !__SHARED_H__ */

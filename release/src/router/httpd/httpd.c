@@ -276,8 +276,6 @@ int http_port = 0;
 char *http_ifname = NULL;
 #ifdef RTCONFIG_IPV6
 int http_ipv6_only = 0;
-#else
-const int http_ipv6_only = 0;
 #endif
 time_t login_dt=0;
 char login_url[128];
@@ -1620,7 +1618,6 @@ handle_request(void)
 #if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA) || defined(RTCONFIG_GOOGLE_ASST)
 					&& !strstr(file, "asustitle.png")
 #endif
-					&& !strstr(file,"cert.crt")
 					&& !strstr(file,"cert_key.tar")
 					&& !strstr(file,"cert.tar")
 #ifdef RTCONFIG_OPENVPN
@@ -2548,6 +2545,11 @@ int main(int argc, char **argv)
 
 	alarm(20);
 
+#ifdef RTCONFIG_HTTPS
+	//if (do_ssl)
+		start_ssl(http_port);
+#endif
+
 	/* Initialize listen socket */
 	for (i = 0; i < ARRAY_SIZE(listen_fd); i++)
 		listen_fd[i] = -1;
@@ -2628,12 +2630,6 @@ int main(int argc, char **argv)
 		strlcpy(HTTPD_LOCK_NUM, "httpd_lock_num", sizeof(HTTPD_LOCK_NUM));
 	}
 
-#ifdef RTCONFIG_HTTPS
-reload_cert:
-	if (do_ssl)
-		start_ssl(http_port);
-#endif
-
 	/* Loop forever handling requests */
 	for (;;) {
 		const static struct timeval timeout = { .tv_sec = MAX_CONN_TIMEOUT, .tv_usec = 0 };
@@ -2666,23 +2662,6 @@ reload_cert:
 		tv = timeout;
 		while ((count = select(max_fd + 1, &rfds, NULL, NULL, &tv)) < 0 && errno == EINTR)
 			continue;
-#ifdef RTCONFIG_HTTPS
-		if (do_ssl) {
-			int reload_cert = 0;
-#if defined(RTCONFIG_IPV6)
-			if (http_ipv6_only)
-				reload_cert = nvram_get_int("httpds6_reload_cert");
-			else
-#endif
-				reload_cert = nvram_get_int("httpds_reload_cert");
-
-			if (reload_cert == 1
-			 || (reload_cert == 2 && *nvram_safe_get("login_ip") == '\0')) {
-				mssl_ctx_free();
-				goto reload_cert;
-			}
-		}
-#endif
 		if (count < 0) {
 			HTTPD_DBG("count = %d : return\n", count);
 			perror("select");
@@ -2805,6 +2784,18 @@ reload_cert:
 }
 
 #ifdef RTCONFIG_HTTPS
+void save_cert(void)
+{
+	eval("tar", "-C", "/", "-czf", HTTPS_CA_JFFS, "etc/cert.pem", "etc/key.pem");
+}
+
+void erase_cert(void)
+{
+	unlink("/etc/cert.pem");
+	unlink("/etc/key.pem");
+	nvram_set("https_crt_gen", "0");
+}
+
 void start_ssl(int http_port)
 {
 	int lock;
@@ -2827,11 +2818,9 @@ void start_ssl(int http_port)
 		}
 	}
 
-	if (f_exists(HTTPS_CA_JFFS) && (!f_exists(HTTPD_ROOTCA_CERT) || !f_exists(HTTPD_ROOTCA_KEY) || !f_exists(HTTPD_CERT) || !f_exists(HTTPD_KEY)))
-		restore_cert();
-
-	if (nvram_match("https_crt_gen", "1"))
+	if (nvram_match("https_crt_gen", "1")) {
 		erase_cert();
+	}
 
 	// the date of certificate is wrong, need to reload
 	if (nvram_get_int("reload_cert")) {
@@ -2845,15 +2834,35 @@ void start_ssl(int http_port)
 	while (1) {
 		save = nvram_match("https_crt_save", "1");
 
-		/* check selected key/cert pairs */
-		if (!f_exists(HTTPD_CERT) || !f_exists(HTTPD_KEY)
-		 || !mssl_cert_key_match(HTTPD_CERT, HTTPD_KEY)
+		/* check key/cert pairs */
+		if ((!f_exists("/etc/cert.pem")) || (!f_exists("/etc/key.pem"))
+#if !defined(RTCONFIG_ECC256)
+			|| !mssl_cert_key_match("/etc/cert.pem", "/etc/key.pem")
+#endif
 		) {
 			ok = 0;
 			if (save) {
-				logmessage("httpd", "Restore saved SSL certificate...%d", http_port);
-				if (restore_cert())
+				logmessage("httpd", "Save SSL certificate...%d", http_port);
+					if (eval("tar", "-xzf", HTTPS_CA_JFFS, "-C", "/", "etc/cert.pem", "etc/key.pem") == 0){
+						system("cat /etc/key.pem /etc/cert.pem > /etc/server.pem");
+						system("cp /etc/cert.pem /etc/cert.crt"); // openssl self-signed certificate for router.asus.com LAN access
+
+#if !defined(RTCONFIG_ECC256)
+						// check key and cert pair, if they are mismatched, regenerate key and cert
+						if (mssl_cert_key_match("/etc/cert.pem", "/etc/key.pem")) {
+							logmessage("httpd", "mssl_cert_key_match : PASS");
+							ok = 1;
+						}
+#else
+					_dprintf("httpd: skip check key and cert pair...\n");
 					ok = 1;
+#endif
+					}
+
+					int save_intermediate_crt = nvram_match("https_intermediate_crt_save", "1");
+					if(save_intermediate_crt){
+						eval("tar", "-xzf", HTTPS_CA_JFFS, "-C", "/", "etc/intermediate_cert.pem");
+					}
 			}
 			if (!ok) {
 				erase_cert();
@@ -2862,26 +2871,16 @@ void start_ssl(int http_port)
 				f_read("/dev/urandom", &sn, sizeof(sn));
 
 				snprintf(t, sizeof(t), "%llu", sn & 0x7FFFFFFFFFFFFFFFULL);
-				GENCERT_SH(t);
+				eval("gencert.sh", t);
 			}
 		}
 
-		if (mssl_init(HTTPD_CERT, HTTPD_KEY)) {
-			logmessage("httpd", "Succeed to init SSL certificate...%d", http_port);
-			/* Backup certificates if httpds initialization successful. */
-			if (save)
-				save_cert();
+		if ((save)) {
+			save_cert();
+		}
 
-			/* Unset reload flag if set */
-#if defined(RTCONFIG_IPV6)
-			if (!http_ipv6_only && nvram_get("httpds_reload_cert"))
-				nvram_unset("httpds_reload_cert");
-			else if (http_ipv6_only && nvram_get("httpds6_reload_cert"))
-				nvram_unset("httpds6_reload_cert");
-#else
-			if (nvram_get("httpds_reload_cert"))
-				nvram_unset("httpds_reload_cert");
-#endif
+		if (mssl_init("/etc/cert.pem", "/etc/key.pem")) {
+			logmessage("httpd", "Succeed to init SSL certificate...%d", http_port);
 			file_unlock(lock);
 			return;
 		}

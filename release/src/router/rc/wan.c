@@ -1364,19 +1364,19 @@ TRACE_PT("dbg: 2. wan_ifname=%s.\n", nvram_safe_get("wan0_ifname"));
 #endif
 
 	// workaround internal XPHY no Rx issue
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000)
 	strlcpy(wan_ifname, nvram_safe_get(strcat_r(prefix, "ifname", tmp)), sizeof(wan_ifname));
 	if (!strcmp(wan_ifname, "vlan4094") || ((get_wans_dualwan() & WANSCAP_LAN) && !strcmp(wan_ifname, "vlan2"))) {
 		nvram_set("freeze_duck", "5");
 		if (!strcmp(wan_ifname, "vlan4094"))
 			system("rtkswitch 11");
 		else if ((get_wans_dualwan() & WANSCAP_LAN) && !strcmp(wan_ifname, "vlan2") && (nvram_get_int("wans_lanport") >= 2) && (nvram_get_int("wans_lanport") <= 4))
-			doSystem("rtkswitch 13 %d", nvram_get_int("wans_lanport") - 1);
+			doSystem("rtkswitch 13 %d", nvram_get_int("wans_lanport"));
 		sleep(1);
 		if (!strcmp(wan_ifname, "vlan4094"))
 			system("rtkswitch 10");
 		else if ((get_wans_dualwan() & WANSCAP_LAN) && !strcmp(wan_ifname, "vlan2") && (nvram_get_int("wans_lanport") >= 2) && (nvram_get_int("wans_lanport") <= 4))
-			doSystem("rtkswitch 12 %d", nvram_get_int("wans_lanport") - 1);
+			doSystem("rtkswitch 12 %d", nvram_get_int("wans_lanport"));
 	}
 #endif
 
@@ -3643,13 +3643,6 @@ void wan6_up(const char *pwan_ifname)
 	start_httpd_ipv6();
 #endif
 
-#if defined(RTCONFIG_HTTPS)
-	/* Update WAN IP to server certificate if it changed and httpds is enabled on WAN. */
-	if (nvram_match("misc_http_x", "1")) {
-		update_srv_cert_if_wan_ipv6_changed(wan_unit);
-	}
-#endif
-
 #ifdef RTCONFIG_OPENVPN
 	stop_ovpn_serverall();
 	start_ovpn_serverall();
@@ -4361,13 +4354,6 @@ NOIP:
 #endif
 		refresh_ntpc();
 	}
-
-#if defined(RTCONFIG_HTTPS)
-	/* Update WAN IP to server certificate if it changed and httpds is enabled on WAN. */
-	if (nvram_match("misc_http_x", "1")) {
-		update_srv_cert_if_wan_ip_changed(wan_unit);
-	}
-#endif
 
 #if defined(RTCONFIG_VPN_FUSION) && !defined(RTCONFIG_VPN_FUSION_MERLIN)
 	vpnc_set_internet_policy(1);

@@ -252,12 +252,11 @@
 	background: rgba(145,7,31, .7);
 }
 .boost-text{
-	font-family: Xolonium;
 	transform: skew(30deg);
 }
 .rog-title{
-	font-family: Xolonium;
-	font-size: 20px;
+	font-family: ROG;
+	font-size: 26px;
 	color:#BFBFBF;
 }
 .event-cancel{
@@ -279,9 +278,6 @@
 }
 .light_effect_iframe .light_effect_bg {
 	height: 160px;
-}
-#wan_state, #sw_mode_desc {
-	font-family: Xolonium;
 }
 </style>
 <script>
@@ -1206,7 +1202,7 @@ function uuRegister(mac){
 											</div>
 											<div style="margin-top: 40px;text-align:center;color:#BFBFBF;">
 												<div class="rog-title" style="text-transform: uppercase;"><#Full_Clients#></div>
-												<div style="margin-top:15px;font-family: Xolonium;">
+												<div style="margin-top:15px;">
 													<span id="client_count" style="font-size: 20px;padding:0 10px;color:#57BDBA"></span>
 													<span style="font-size: 14px;color:#57BDBA;text-transform: uppercase;"><#Clientlist_Online#></span>
 												</div>	
@@ -1266,7 +1262,7 @@ function uuRegister(mac){
 												<polyline id="ping_graph" style="fill:none;stroke:#57BDBA;stroke-width:2;z-index:9999" points="0,250"></polyline>
 											</svg>
 										</div>
-										<div style="text-align: center;font-family: Xolonium;font-size:16px;margin:255px 40px;position:absolute;width:300px;color:#BFBFBF"><#Average_value#> : <span id="pingAvg" style="font-size:26px">0 ms</span></div>
+										<div style="text-align: center;font-family: rog;font-size:20px;margin:255px 40px;position:absolute;width:300px;color:#BFBFBF"><#Average_value#> : <span id="pingAvg" style="font-size:30px">0 ms</span></div>
 
 										<div class="rog-title" style="margin:45px 500px;position:absolute;width:200px;"><#ROG_PING_DEVIATION#></div>
 										<div id="svgJitterContainer" style="margin:85px 0px 0px 400px;position:absolute;background-color:#221712;"> 
@@ -1290,7 +1286,7 @@ function uuRegister(mac){
 												<polyline id="jitter_graph" style="fill:none;stroke:#BCBD4D;stroke-width:2;z-index:9999" points="0,250"></polyline>
 											</svg>
 										</div>
-										<div style="text-align: center;font-family: Xolonium;font-size:16px;margin:255px 420px;position:absolute;width:300px;color:#BFBFBF"><#Average_value#> : <span id="jitterAvg" style="font-size:26px">0 ms</span></div>
+										<div style="text-align: center;font-family: rog;font-size:20px;margin:255px 420px;position:absolute;width:300px;color:#BFBFBF"><#Average_value#> : <span id="jitterAvg" style="font-size:30px">0 ms</span></div>
 
 									</div>									
 									</div>

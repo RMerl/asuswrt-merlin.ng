@@ -75,9 +75,9 @@
 	border-radius: 5px;
 	z-index: 200;
 	background-color:#444f53;
-	margin-left: 10%;
-	margin-top: -1500px;
-	width: 80%;
+	margin-left: 140px;
+	margin-top: -920px;
+	width:950px;
 	height:auto;
 	box-shadow: 3px 3px 10px #000;
 	display:block;
@@ -186,12 +186,7 @@
 
 </style>
 <script>
-if(isSupport("BUSINESS")){
-	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component_WHITE.css">');
-}
-else if(isSupport("ROG_UI")){
-	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component_ROG.css">');
-}
+if(parent.webWrapper) $('link').last().after('<link group="SDN_need_file" rel="stylesheet" type="text/css" href="./RWD_UI/rwd_component_WHITE.css">');
 
 <% login_state_hook(); %>
 <% wan_get_parameter(); %>
@@ -243,7 +238,7 @@ if(wan_bonding_support){
 }
 
 if(dnspriv_support){
-	var dot_servers_array = [];
+	//var dot_servers_array = [];
 	var dnspriv_rulelist_array = '<% nvram_get("dnspriv_rulelist"); %>';
 }
 var default_reboot_time = parseInt("<% get_default_reboot_time(); %>") + 10;
@@ -373,17 +368,6 @@ function save_applyData(wan_unit){
 	if(orig_bond_wan != applyData["bond_wan"] == "1"){
 		applyData["rc_service"] = "reboot";
 	}
-
-	if((dnssec_support &&
-		(applyData["dnssec_enable"] != '<% nvram_get("dnssec_enable"); %>') ||
-		(applyData["dnssec_check_unsigned_x"] != '<% nvram_get("dnssec_check_unsigned_x"); %>')) ||
-		(dnspriv_support &&
-			(applyData["dns_priv_override"] == 0) &&
-			(applyData["dnspriv_enable"] != '<% nvram_get("dnspriv_enable"); %>')) ||
-			(applyData["dns_norebind"] != '<% nvram_get("dns_norebind"); %>') ||
-			(applyData["dns_priv_override"] != '<% nvram_get("dns_priv_override"); %>') ||
-			(applyData["dns_fwd_local"] != '<% nvram_get("dns_fwd_local"); %>'))
-		applyData["rc_service"] += ";restart_dnsmasq";
 
 	var autowan_conflict = false;
 	if(isSupport("autowan")){
@@ -769,70 +753,6 @@ function Get_Component_Setting_Profile(type){//internet, user_defined
 			return validator.isIPAddr(this, event);
 		});
 
-	if(type == "internet"){
-		var dns_fwd_local_parm = {"title":"<#WAN_Queries_Upstream_DNS#>", "type":"switch", "id":"dns_fwd_local", "openHint":"7_42"};
-		Get_Component_Switch(dns_fwd_local_parm).appendTo($dns_container)
-			.find("#" + dns_fwd_local_parm.id + "").click(function(e){
-				e = e || event;
-				e.stopPropagation();
-				if($(this).hasClass("on")){
-					applyData.dns_fwd_local = "1";
-				}
-				else{
-					applyData.dns_fwd_local = "0";
-				}
-			});
-
-		var dns_norebind_parm = {"title":"<#WAN_DNS_Rebind#>", "type":"switch", "id":"dns_norebind", "openHint":"7_43"};
-		Get_Component_Switch(dns_norebind_parm).appendTo($dns_container)
-			.find("#" + dns_norebind_parm.id + "").click(function(e){
-				e = e || event;
-				e.stopPropagation();
-				if($(this).hasClass("on")){
-					applyData.dns_norebind = "1";
-				}
-				else{
-					applyData.dns_norebind = "0";
-				}
-			});
-	}
-
-	if(dnssec_support && type == "internet"){
-		var dnssec_enabled_parm = {"title":"<#WAN_DNSSEC_Support#>", "type":"switch", "id":"dnssec_enable", "openHint":"7_44"};
-		Get_Component_Switch(dnssec_enabled_parm).appendTo($dns_container)
-			.find("#" + dnssec_enabled_parm.id + "").click(function(e){
-				e = e || event;
-				e.stopPropagation();
-				if($(this).hasClass("on")){
-					applyData.dnssec_enable = "1";
-					$("#dnssec_check_unsigned_container").show();
-				}
-				else{
-					applyData.dnssec_enable = "0";
-					$("#dnssec_check_unsigned_container").hide();
-				}
-			});
-
-		var dnssec_check_unsigned_parm = {"title":"<#WAN_Valid_Unsigned_DNSSEC#>", "type":"switch", "id":"dnssec_check_unsigned_x", "openHint":"7_45", "container_id":"dnssec_check_unsigned_container"};
-		Get_Component_Switch(dnssec_check_unsigned_parm).css("display", "none").appendTo($dns_container)
-			.find("#" + dnssec_check_unsigned_parm.id + "").click(function(e){
-				e = e || event;
-				e.stopPropagation();
-				if($(this).hasClass("on")){
-					applyData.dnssec_check_unsigned_x = "1";
-				}
-				else{
-					applyData.dnssec_check_unsigned_x = "0";
-				}
-			});
-	}
-
-	if(type == "internet"){
-		var dns_priv_override_options = [{"text":"<#Auto#>","value":"0"}, {"text":"<#checkbox_Yes#>","value":"1"}, {"text":"<#checkbox_No#>","value":"2"}];
-		var dns_priv_override_parm = {"title":"<#WAN_Prevent_DoH#>", "id":"dns_priv_override", "options": dns_priv_override_options, "set_value": "0", "openHint":"7_46"};
-		Get_Component_Custom_Select(dns_priv_override_parm).appendTo($dns_container);
-	}
-
 	if(dnspriv_support && type == "internet"){
 		var dnspriv_options = [{"text":"<#wl_securitylevel_0#>","value":"0"}, {"text":"DNS-over-TLS (DoT)","value":"1"}];
 		var dnspriv_parm = {"title":"<#WAN_DNS_Privacy#>", "id":"dnspriv_enable", "options": dnspriv_options, "set_value": "0", "openHint":"7_35"};
@@ -1150,19 +1070,12 @@ function load_profile_settings(wan_unit){
 							else
 								$("#dns_server_container").show();
 						}
-
-						if(id == "dnssec_enable"){
-							if($("#dnssec_enable").hasClass("on"))
-								$("#dnssec_check_unsigned_container").show();
-							else
-								$("#dnssec_check_unsigned_container").hide();
-						}
 					}
 					else if($(this).hasClass("textInput")){
 						$(this).val(nvram_val);
 					}
 					else if($(this).parent().hasClass("custom_select_container")){
-						set_value_Custom_Select($(".popup_container.popup_element"), id, nvram_val);
+						set_value_Custom_Select($(".popup_container.popup_element"), id, nvram_val);						
 					}
 
 					if(id == "wan_proto"){
@@ -1559,52 +1472,6 @@ function initial(){
 		else{
 			update_info(1);
 		}
-	}
-
-	if(dnspriv_support){
-                if (dnsfilter_support && "<% nvram_get("dnsfilter_enable_x"); %>" == "1")
-			document.getElementById("dnsfilter_hint_dnspriv").style.display = "";
-
-		$.getJSON("/dot-servers.json", function(local_data){
-			var gen_dotPresets = function(data){
-				$("#dotPresets").children().remove().end().append("<option value='-1'><#Select_menu_default#></option>");
-				Object.keys(data).forEach(function(dns_group, dns_group_idx) {
-					if(dns_group != "" && data[dns_group].length > 0) {
-						var $optGroup = $("<optgroup/>");
-						$optGroup.appendTo($("#dotPresets"));
-						$optGroup.attr("label",dns_group);
-						data[dns_group].forEach(function(item, index, array) {
-							var opt_idx = "opt_" + dns_group_idx + "_" + index;
-							dot_servers_array[opt_idx] = item;
-							var $opt = $("<option/>");
-							$opt.attr({"value": opt_idx}).text(item.dnspriv_label);
-							$opt.appendTo($optGroup);
-						});
-					}
-				});
-				if($("#dotPresets option").length > 1 && $("#dnspriv_enable").val() == "1")
-					$("#dot_presets_tr").show();
-				else
-					$("#dot_presets_tr").hide();
-			};
-			gen_dotPresets(local_data);
-/*
-			$.getJSON("https://nw-dlcdnet.asus.com/plugin/js/dot-servers.json",
-				function(cloud_data){
-					if(JSON.stringify(local_data) != JSON.stringify(cloud_data)){
-						if(Object.keys(cloud_data).length > 0){
-							gen_dotPresets(cloud_data);
-						}
-					}
-				}
-			);
-*/
-		});
-	}
-
-	if(dnssec_support){
-		document.getElementById("dnssec_tr").style.display = "";
-		showhide("dnssec_strict_tr", "<% nvram_get("dnssec_enable"); %>" == "1" ? 1 : 0);
 	}
 
 	display_upnp_options();
@@ -2680,8 +2547,6 @@ function change_dnspriv_enable(flag){
 		inputCtrl(document.form.dnspriv_profile[1], 1);
 		document.getElementById("DNSPrivacy").style.display = "";
 		document.getElementById("dnspriv_rulelist_Block").style.display = "";
-		if($("#dotPresets option").length > 1)
-			document.getElementById("dot_presets_tr").style.display = "";
 		show_dnspriv_rulelist();
 	}
 	else{
@@ -2689,7 +2554,6 @@ function change_dnspriv_enable(flag){
 		inputCtrl(document.form.dnspriv_profile[1], 0);
 		document.getElementById("DNSPrivacy").style.display = "none";
 		document.getElementById("dnspriv_rulelist_Block").style.display = "none";
-		document.getElementById("dot_presets_tr").style.display = "none";
 	}
 }
 
@@ -2967,13 +2831,13 @@ function Assign_DNS_service(){
 	if(parent.webWrapper){
 		divObj.className = "dnslist_viewlist_business";
 		document.body.appendChild(divObj);
-		// cal_panel_block("dns_list_Block", 0.045);
+		//cal_panel_block("dns_list_Block", 0.045);
 		
 	}
 	else{
 		divObj.className = "dnslist_viewlist";
 		document.body.appendChild(divObj);
-		// cal_panel_block("dns_list_Block", 0.045);
+		cal_panel_block("dns_list_Block", 0.045);
 	}
 	create_DNSlist_view();
 }
@@ -3381,20 +3245,6 @@ function get_default_wan_name(){
 
 	return default_wan_name;
 }
-
-function change_wizard(o, id){
-	if (id == "dotPresets") {
-		var i = o.value;
-		if (i == -1) return;
-		document.form.dnspriv_server_0.value = dot_servers_array[i].dnspriv_server;
-		document.form.dnspriv_port_0.value = dot_servers_array[i].dnspriv_port;
-		document.form.dnspriv_hostname_0.value = dot_servers_array[i].dnspriv_hostname;
-		document.form.dnspriv_spkipin_0.value = dot_servers_array[i].dnspriv_spkipin;
-
-		document.getElementById("dotPresets").selectedIndex = 0;
-	}
-}
-
 </script>
 </head>
 
@@ -3851,12 +3701,6 @@ function change_wizard(o, id){
 							<td>
 								<input type="radio" name="dnspriv_profile" class="input" value="1" onclick="return change_common_radio(this, 'IPConnection', 'dnspriv_profile', 1)" <% nvram_match("dnspriv_profile", "1", "checked"); %> /><#WAN_DNS_over_TLS_Strict#>
 								<input type="radio" name="dnspriv_profile" class="input" value="0" onclick="return change_common_radio(this, 'IPConnection', 'dnspriv_profile', 0)" <% nvram_match("dnspriv_profile", "0", "checked"); %> /><#WAN_DNS_over_TLS_Opportunistic#>
-							</td>
-						</tr>
-						<tr style="display:none" id="dot_presets_tr">
-							<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,41);"><div class="table_text"><#WAN_DNS_dot_presets#></a></th>
-							<td>
-								<select name="dotPresets" id="dotPresets" class="input_option" onchange="change_wizard(this, 'dotPresets');">
 							</td>
 						</tr>
 						</table>

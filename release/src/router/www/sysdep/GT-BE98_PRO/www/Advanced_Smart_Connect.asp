@@ -76,9 +76,6 @@ hook = httpApi.hookGet('wl_cap_2g', true);
 		if(based_modelid == 'GT-AXE16000' || based_modelid == 'GT-BE98' || based_modelid == 'GT-BE98_PRO' || based_modelid == 'BQ16_PRO'){		// wireless介面順序變換調整
 			shift = (i + 3) % 4;		// wireless unit ['1', '2', '3', '0']			
 		}
-		else if(based_modelid == 'BT10'){
-			shift = (i*2 + 2) % 3;		// wireless unit ['2', '1', '0']	
-		}
 		
 		variable['wl'+ i +'_bsd_steering_policy'] = nvram['wl'+ shift +'_bsd_steering_policy'];
 		variable['wl'+ i +'_bsd_sta_select_policy'] = nvram['wl'+ shift +'_bsd_sta_select_policy'];
@@ -97,27 +94,14 @@ hook = httpApi.hookGet('wl_cap_2g', true);
 	}
 
 	/* handle smart connect  */
-	smart_connect_array = [...wl_ifnames];	
+	smart_connect_array = [...wl_ifnames];
 	let smart_connect_mode = parseInt(nvram['smart_connect_selif_x']).toString(2);
-	if(based_modelid == 'BT10'){
-		while(smart_connect_mode.length < 4){
-			smart_connect_mode = '0' + smart_connect_mode;
-		}
+	while(smart_connect_mode.length < 5){
+		smart_connect_mode = '0' + smart_connect_mode;
 	}
-	else{
-		while(smart_connect_mode.length < 5){
-			smart_connect_mode = '0' + smart_connect_mode;
-		}
-	}	
 
-	let mode_reverse = smart_connect_mode.split('');
-	if(based_modelid == 'BT10'){
-		mode_reverse.splice(1,1);
-	}
-	else{
-		mode_reverse.splice(2,1);
-	}
-	
+	let mode_reverse = smart_connect_mode.split('')
+	mode_reverse.splice(2,1);
 	mode_reverse.reverse();
 	
 	// let mode_reverse = smart_connect_mode.reverse();
@@ -148,9 +132,8 @@ let phyRate = (function(){
 	if(based_modelid === 'GT-AXE16000' || based_modelid === 'GT-BE98' || based_modelid == 'GT-BE98_PRO' || based_modelid == 'BQ16_PRO'){
 		array = [1148, 4804, 4804, 4804];
 	}
-	else if(based_modelid == 'BT10'){
-		array = [1148, 2402, 4804];
-	}
+
+
 
 	return array;
 })();
@@ -718,9 +701,6 @@ function applyRule(){
 
 		if(based_modelid == 'GT-AXE16000' || based_modelid == 'GT-BE98' || based_modelid == 'GT-BE98_PRO' || based_modelid == 'BQ16_PRO'){		// wireless介面順序變換調整
 			shift = (i + 3) % 4;		// wireless unit ['1', '2', '3', '0']			
-		}
-		else if(based_modelid == 'BT10'){
-			shift = (i*2 + 2) % 3;		// wireless unit ['2', '1', '0']	
 		}
 		/*
 			Steering policy

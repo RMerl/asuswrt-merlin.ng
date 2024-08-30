@@ -682,7 +682,6 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 			static enum led_id blue_led[] = {
 				LED_WAN_RGB_BLUE,
 				LED_10G_RGB_BLUE,
-				LED_AFC,
 				LED_ID_MAX
 			};
 			all_led[LED_COLOR_WHITE] = white_led;
@@ -808,12 +807,10 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 			LED_WAN,
 			LED_ID_MAX
 		};
-#ifdef RTCONFIG_PRESSURE_SENSOR
 		static enum led_id blue_led[] = {
 			LED_AFC,
 			LED_ID_MAX
 		};
-#endif
 
 		all_led[LED_COLOR_WHITE] = white_led;
 		all_led[LED_COLOR_RED] = red_led;
@@ -963,39 +960,6 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 				eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 0, 0)), "ledbh", "7", "0");	// wl 2.4G
 				eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 1, 0)), "ledbh", "0", "21");// wl 5G
 				eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 2, 0)), "ledbh", "0", "21");// wl 6G
-			}
-		}
-		break;
-#endif
-
-#if defined(RTBE95U)
-	case MODEL_RTBE95U:
-		{
-			static enum led_id white_led[] = {
-				LED_POWER,
-				LED_WAN_NORMAL,
-				LED_LAN,
-				LED_ID_MAX
-			};
-			static enum led_id red_led[] = {
-				LED_WAN,
-				LED_ID_MAX
-			};
-			all_led[LED_COLOR_WHITE] = white_led;
-			all_led[LED_COLOR_RED] = red_led;
-
-			wan_phy_led_pinmux(1);
-			if (color == LED_COLOR_WHITE)
-			{
-				eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 0, 0)), "ledbh", "12", "1");// wl 5G
-				eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 1, 0)), "ledbh", "0", "1");	// wl 6G
-				eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 2, 0)), "ledbh", "0", "1");	// wl 2.4G
-			}
-			else
-			{
-				eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 0, 0)), "ledbh", "12", "0");// wl 5G
-				eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 1, 0)), "ledbh", "0", "21");// wl 6G
-				eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 2, 0)), "ledbh", "0", "21");// wl 2.4G
 			}
 		}
 		break;
@@ -3157,9 +3121,6 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 #if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
 		eval("touch", "/jffs/remove_hidden_flag");
 #endif
-#if defined(RTCONFIG_DHDAP) && defined(RTCONFIG_BCM_MFG)
-	system("rm -f /data/debug-*.tgz");
-#endif
 #ifndef HND_ROUTER
 		nvram_set("restore_defaults", "1");
 		nvram_set(ASUS_STOP_COMMIT, "1");
@@ -4192,40 +4153,6 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 		return 0;
 	}
 #endif
-
-#ifdef RTCONFIG_PRESSURE_SENSOR
-	else if (!strcmp(command, "Get_PressureOffset")) {
-		get_pressure_offset();
-		return 0;
-	}
-	else if (!strcmp(command, "Set_PressureOffset")) {
-		char *endptr;
-		errno = 0;
-
-		if (!value || strlen(value) > PRESSURE_LEN){
-			puts("ATE_ERROR");
-			return EINVAL;
-		}
-
-		strtod(value, &endptr);
-		if (*endptr != '\0' || errno != 0) {
-			puts("ATE_ERROR_INCORRECT_PARAMETER");
-			return EINVAL;
-		} 
-
-		if ( !set_pressure_offset(value) ){
-			puts("ATE_ERROR_INCORRECT_PARAMETER");
-			return EINVAL;
-		}
-		
-		return 0;
-	}
-	else if (!strcmp(command, "Get_CurPressure")) {
-		get_cur_pressure();
-		return 0;
-	}	
-#endif
-
 #ifdef CONFIG_BCMWL5
 	else if (!strcmp(command, "Get_SSID_2G")) {
 #if defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO)

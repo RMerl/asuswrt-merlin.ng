@@ -1,8 +1,7 @@
 /* main_login.css */
 @font-face{
-	font-family: Xolonium;
-	src: url(/fonts/xolonium.regular.woff) format("woff"),
-	url(/fonts/xolonium.regular.otf) format("opentype");
+	font-family: ROG;
+	src: url(/fonts/ROG_Fonts-Regular.otf) format("opentype");
 }
 
 body, .p1, .form-input{
@@ -25,6 +24,7 @@ body{
 .logo-container{
 	display: flex;
 	align-items: center;
+	margin-left: 150px;
 }
 .logo-container-odm{
 	display: flex;
@@ -58,12 +58,10 @@ body{
 }
 .model-name{
 	height: 100%;
-	font-size: 36px;
+	font-size: 48px;
 	font-weight: bold;
-	font-family: Xolonium;
-	margin-left: 50px;
-	word-break: break-word;
-	max-width: 500px;
+	font-family: ROG;
+	margin-left: 25px;
 }
 .login-bg, .login-bg-odm{
 	width: 887px;
@@ -126,10 +124,6 @@ body{
 	margin: 20px 230px 0 0;
 	background: #141618;
 	border-radius: 8px;
-}
-.login-btn-bg.disabled{
-	filter: grayscale(100%) opacity(0.5);
-	pointer-events: none;
 }
 .login-btn-bg:hover{
 	border: 2px solid #D0982C;

@@ -577,18 +577,18 @@ function submitForm(){
 	if(letsencrypt_support){
 		if(document.form.ddns_enable_x.value == "1" && $("input[name='le_enable']:checked").val() == "1"){
 			document.form.action_wait.value = "10";
-			document.form.action_script.value = "restart_ddns_le;prepare_cert";
+			document.form.action_script.value = "restart_ddns_le";
 		}
 		else if(http_enable != "0" && ($("input[name='le_enable']:checked").val() != orig_le_enable || httpd_restart == 1 )){
 			document.form.action_wait.value = "10";
 			if(orig_le_enable == "1")
-				document.form.action_script.value = "prepare_cert;restart_webdav;restart_ddns_le";
+				document.form.action_script.value = "restart_httpd;restart_webdav;restart_ddns_le";
 			else
-				document.form.action_script.value += ";prepare_cert;restart_webdav";
+				document.form.action_script.value += ";restart_httpd;restart_webdav";
 
 		}
 		if (('<% nvram_get("enable_ftp"); %>' == "1") && ('<% nvram_get("ftp_tls"); %>' == "1")) {
-			document.form.action_script.value += ";prepare_cert;restart_ftpd";
+			document.form.action_script.value += ";restart_ftpd";
 		}
 	}
 
@@ -679,6 +679,11 @@ function ddns_load_body(){
 	inputCtrl(document.form.ddns_refresh_x, 1);
 		show_ipv6update_setting();
         change_ddns_setting(document.form.ddns_server_x.value);
+        if(letsencrypt_support){
+            show_cert_settings(1);
+            change_cert_method(orig_le_enable);
+            show_cert_details();
+        }
 
 	    if(document.form.ddns_server_x.value == "WWW.ORAY.COM"){
 		    if(ddns_updated_t == "1"){
@@ -697,16 +702,11 @@ function ddns_load_body(){
         document.form.ddns_wildcard_x[1].disabled= 1;
 	inputCtrl(document.form.ddns_refresh_x, 0);
         showhide("wildcard_field",0);
+        if(letsencrypt_support)
+           show_cert_settings(0);
     }
 
-    if (HTTPS_support) {
-        show_cert_settings(1);
-		change_cert_method(orig_le_enable);
-		show_cert_details();
-	} else {
-        show_cert_settings(0);
-	}
-   
+
     hideLoading();
 
 	if(ddns_enable_x == "1" && !deregister_fail)
@@ -754,10 +754,6 @@ function applyRule(){
 	if(validForm()){
 		if(document.form.ddns_enable_x.value == "1" && (document.form.ddns_server_x.value.indexOf("WWW.ASUS.COM") != -1)){
 			document.form.ddns_hostname_x.value = document.form.DDNSName.value+$("#domain_text").text();
-		}
-
-		if (document.form.le_enable.value != orig_le_enable && document.form.le_enable.value == "0") {
-			alert(`<#DDNS_Install_Root_Cert_Desc2#>`);
 		}
 
 		if(document.form.ddns_hostname_x.value != ddns_hostname_x_t){
@@ -1130,8 +1126,10 @@ function change_cert_method(cert_method){
 			case "0":
 				document.getElementById("cert_desc").style.display = "none";
 				document.getElementById("cert_act").style.display = "none";
-				document.getElementById("CAcert_details").style.display = "";
-				document.getElementById("cert_details").style.display = "";
+				if(orig_le_enable != "0")
+					document.getElementById("cert_details").style.display = "";
+				else
+					document.getElementById("cert_details").style.display = "none";
 
 				break;
 
@@ -1149,8 +1147,10 @@ function change_cert_method(cert_method){
 				else
 					document.getElementById("cert_act").style.display = "none";
 
-				document.getElementById("CAcert_details").style.display = "none";
-				document.getElementById("cert_details").style.display = "";
+				if(orig_le_enable != "0")
+					document.getElementById("cert_details").style.display = "";
+				else
+					document.getElementById("cert_details").style.display = "none";
 
 				if(orig_le_enable == "1")
 					document.form.letsEncryptTerm_check.checked = true;
@@ -1162,8 +1162,10 @@ function change_cert_method(cert_method){
 				html_code += '<div style="display:table-cell"><input class="btn_subusage button_gen" onclick="open_upload_window();" type="button" value="<#CTL_upload#>"/><img id="loadingicon" style="margin-left:5px;display:none;" src="/images/InternetScan.gif"></div>';
 				document.getElementById("cert_act").innerHTML = html_code;
 				document.getElementById("cert_act").style.display = "";
-				document.getElementById("CAcert_details").style.display = "";
-				document.getElementById("cert_details").style.display = "";
+				if(orig_le_enable != "0")
+					document.getElementById("cert_details").style.display = "";
+				else
+					document.getElementById("cert_details").style.display = "none";
 
 				break;
 		}
@@ -1189,9 +1191,6 @@ function show_cert_details(){
 		}
 		else{
 			document.getElementById("cert_status").innerHTML = "<#Status_Active#>";
-			document.getElementById("CAissueTo").innerHTML = httpd_cert_info.CAissueTo;
-			document.getElementById("CAissueBy").innerHTML = httpd_cert_info.CAissueBy;
-			document.getElementById("CAexpireOn").innerHTML = httpd_cert_info.CAexpire;
 			document.getElementById("issueTo").innerHTML = httpd_cert_info.issueTo;
 			document.getElementById("issueBy").innerHTML = httpd_cert_info.issueBy;
 			document.getElementById("expireOn").innerHTML = httpd_cert_info.expire;
@@ -1610,7 +1609,7 @@ function clear_cert_key(){
 					</span>
 					<input type="radio" value="2" name="le_enable" onClick="change_cert_method(this.value);" <% nvram_match("le_enable", "2", "checked"); %>><#DDNS_https_cert_Import#>
 					<span id="self_signed" style="color:#FFF;">
-					<input type="radio" value="0" name="le_enable" onClick="change_cert_method(this.value);" <% nvram_match("le_enable", "0", "checked"); %>><#Auto#>
+					<input type="radio" value="0" name="le_enable" onClick="change_cert_method(this.value);" <% nvram_match("le_enable", "0", "checked"); %>><#wl_securitylevel_0#>
 					</span>	
 					<div id="cert_desc" style="color:#FFCC00; margin-top: 5px;">
 						<span id="le_desc"></span>
@@ -1622,23 +1621,6 @@ function clear_cert_key(){
 				</td>
 			</tr>
 
-			<tr id="CAcert_details" style="display:none;">
-				<th>Root Certificate/Intermediate Certificate</th>
-				<td>
-					<div style="display: flex;">
-						<div class="cert_status_title"><#vpn_openvpn_KC_to#> :</div>
-						<div id="CAissueTo" class="cert_status_val"></div>
-					</div>
-					<div style="display: flex;">
-						<div class="cert_status_title"><#vpn_openvpn_KC_by#> :</div>
-						<div id="CAissueBy" class="cert_status_val"></div>
-					</div>
-					<div style="display: flex;">
-						<div class="cert_status_title"><#vpn_openvpn_KC_expire#> :</div>
-						<div id="CAexpireOn" class="cert_status_val"></div>
-					</div>
-				</td>
-			</tr>
 			<tr id="cert_details" style="display:none;">
 				<th><#vpn_openvpn_KC_SA#></th>
 				<td>

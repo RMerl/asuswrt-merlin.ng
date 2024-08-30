@@ -207,9 +207,6 @@ else ifeq ($(BUILD_NAME), TUF-BE3600)
 else ifeq ($(BUILD_NAME), RT-BE92U)
 	install icon.rtbe92u.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.rtbe92u.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
-else ifeq ($(BUILD_NAME), RT-BE95U)
-	install icon.rtbe95u.ico $(INSTALLDIR)/usr/sbin/icon.ico
-	install icon.large.rtbe95u.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
 else
 	install icon.$(modelstr).ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.$(modelstr).ico $(INSTALLDIR)/usr/sbin/icon.large.ico

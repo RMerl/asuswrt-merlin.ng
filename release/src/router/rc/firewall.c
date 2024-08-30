@@ -3780,9 +3780,7 @@ static void _add_mtwan_filter_rules(
 #ifdef RTCONFIG_SOFTWIRE46
 			wan_proto == WAN_LW4O6 || wan_proto == WAN_MAPE || wan_proto == WAN_V6PLUS ||
 #endif
-			wan_proto == WAN_PPPOE || wan_proto == WAN_PPTP || wan_proto == WAN_L2TP
-			|| nvram_get_int("wan_mtu")
-			) {
+			wan_proto == WAN_PPPOE || wan_proto == WAN_PPTP || wan_proto == WAN_L2TP) {
 			fprintf(fp, "-A MTWANF -o %s -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n", wan_ifname);
 		}
 
@@ -5187,9 +5185,7 @@ TRACE_PT("writing Parental Control\n");
 #ifdef RTCONFIG_SOFTWIRE46
 	    wan_proto == WAN_LW4O6 || wan_proto == WAN_MAPE || wan_proto == WAN_V6PLUS || wan_proto == WAN_OCNVC || wan_proto == WAN_DSLITE ||
 #endif
-	    wan_proto == WAN_PPPOE || wan_proto == WAN_PPTP || wan_proto == WAN_L2TP
-	    || nvram_get_int("wan_mtu")
-	    ) {
+	    wan_proto == WAN_PPPOE || wan_proto == WAN_PPTP || wan_proto == WAN_L2TP) {
 		fprintf(fp, "-A FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n");
 	}
 #ifdef RTCONFIG_IPV6
@@ -5292,7 +5288,13 @@ TRACE_PT("writing Parental Control\n");
 #endif
 #endif
 
-#ifndef RTCONFIG_MULTILAN_CFG
+#ifdef RTCONFIG_MULTILAN_CFG
+	if (ipv6_enabled() && *wan6face) {
+		if (nvram_match("ipv6_fw_enable", "1")) {
+			fprintf(fp_ipv6, "-A FORWARD -o %s -i %s -j %s\n", wan6face, lan_if, logaccept);
+		}
+	}
+#else
 	if(nvram_match("wifison_ready", "1"))
 	{
 #ifdef RTCONFIG_WIFI_SON
@@ -5597,11 +5599,7 @@ TRACE_PT("writing Parental Control\n");
 #ifdef RTCONFIG_CAPTIVE_PORTAL
 	if (nvram_match("chilli_enable", "1") || nvram_match("hotss_enable", "1"))
 	{
-		#ifdef RTCONFIG_MULTILAN_CFG
-		
-		#else
-			fprintf(fp, "-I INPUT -i tun22 -m state --state NEW -j ACCEPT\n");
-		#endif
+		fprintf(fp, "-I INPUT -i tun22 -m state --state NEW -j ACCEPT\n");
 		fprintf(fp, "-I FORWARD -i tun22 -m state --state NEW -j ACCEPT\n");
 		fprintf(fp, "-I FORWARD -i tun22 -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n");
 	}
@@ -6833,9 +6831,7 @@ TRACE_PT("writing Parental Control\n");
 #ifdef RTCONFIG_SOFTWIRE46
 		    wan_proto == WAN_LW4O6 || wan_proto == WAN_MAPE || wan_proto == WAN_V6PLUS || wan_proto == WAN_OCNVC || wan_proto == WAN_DSLITE ||
 #endif
-		    wan_proto == WAN_PPPOE || wan_proto == WAN_PPTP || wan_proto == WAN_L2TP
-		    || nvram_get_int("wan_mtu")
-		    ) {
+		    wan_proto == WAN_PPPOE || wan_proto == WAN_PPTP || wan_proto == WAN_L2TP) {
 		clamp_mss:
 			fprintf(fp, "-A FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n");
 			break; // set one time

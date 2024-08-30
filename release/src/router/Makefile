@@ -3645,12 +3645,10 @@ ifeq ($(HND_ROUTER),y)
 	mkdir -p $(BCM_FSBUILD_DIR)/public/include/openssl
 	cp -u $(OPENSSL)/include/openssl/* $(BCM_FSBUILD_DIR)/public/include/openssl
 endif
-	install -D -m 0700 httpd/gencert.sh $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/gencert.sh
+	install -D -m 0500 httpd/gencert.sh $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/gencert.sh
 ifeq ($(RTCONFIG_ECC256),y)
-	sed -i -e "s,^ECC256=0,ECC256=1," $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/gencert.sh
+	install -D -m 0500 httpd/gencert_ecc.sh $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/gencert.sh
 endif
-	sed -i -e "s,^[ 	]*#[^!]*$$,," $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/gencert.sh
-	sed -i '/^$$/d' $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/gencert.sh
 endif
 
 openssl-stage:
@@ -3678,7 +3676,6 @@ openssl-1.1/Makefile:
 	-ffunction-sections -fdata-sections -Wl,--gc-sections \
 	shared $(OPENSSL_CIPHERS) no-err no-async --api=1.0.0 \
 	no-aria no-sm2 no-sm3 no-sm4 \
-	--with-rand-seed=devrandom \
 	$(if $(filter y,$(RTCONFIG_WTFAST)),-DRTCONFIG_WTFAST,) \
 	$(PRIORITY_CHACHA)
 	@$(MAKE) -C openssl-1.1 depend

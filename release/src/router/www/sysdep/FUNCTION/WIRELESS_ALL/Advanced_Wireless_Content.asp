@@ -60,13 +60,9 @@
             let nbandListArray = nvram["wlnband_list"].split("&#60");
             let systemManipulable = objectDeepCopy(system);
             document.addEventListener("DOMContentLoaded", function () {
-                let { isBRCMplatform } = systemManipulable;
                 show_menu();
                 generateMainField();
                 eventBind();
-                if (isBRCMplatform) {
-                    document.getElementById("smartcon_rule_link").style.display = "";
-                }
             });
             function eventBind() {
                 document.querySelectorAll(".setup_help_icon").forEach((element) => {
@@ -426,10 +422,6 @@
                 document.getElementById(`${prefix}_channel_bandwidth`).innerHTML = channelBandwidthSnippet;
                 if (systemManipulable.wlBandSeq[prefix]) {
                     systemManipulable.wlBandSeq[prefix].bw160Value = bw160Value;
-                    if (bw160Value === "0" && bandwidthValue === "5") {
-                        bandwidthValue = "0";
-                        systemManipulable.wlBandSeq[prefix].bandwidthValue = bandwidthValue;
-                    }
                 }
 
                 channelBandwidthChange(bandwidthValue, prefix);
@@ -481,7 +473,7 @@
                                 delete extensionChannelString["upper"];
                             }
 
-                            if (parseInt(chNumber) + 4 > channel.length) {
+                            if (parseInt(chNumber) + 4 >= channel.length) {
                                 delete extensionChannelString["lower"];
                             }
 
@@ -750,7 +742,7 @@
                     delete wpaEncryptStringObject["aes"];
                 }
 
-                if (!wifi7ModeEnabled || authMethodValue !== "sae") {
+                if (!wifi7ModeEnabled || authMethodValue.indexOf("sae") == -1) {
                     delete wpaEncryptStringObject["aes+gcmp256"];
                 } else {
                     delete wpaEncryptStringObject["aes"];
@@ -1091,18 +1083,18 @@
                     const { beSupport, wifi7ModeEnabled, authMethodValue: authMethodValueOri } = systemManipulable.wlBandSeq[prefixNvram];
                     systemManipulable.wlBandSeq[prefixNvram].authMethodValue = authMethodValue;
                     if (beSupport) {
-                        if (authMethodValue === "sae") {
+                        if (authMethodValue === "sae" || authMethodValue === "psk2sae") {
                             // systemManipulable.wlBandSeq[prefixNvram].wifi7ModeEnabled = true;
                         } else {
                             if (mloEnabled) {
                                 confirm_asus({
                                     title: "MLO Hint",
-                                    contentA: `<b><#WiFi7_mlo_adjust_hint#></b>`,
+                                    contentA:
+                                        "<b>Since MLO is currently enabled, any adjustments to these WiFi settings requires MLO to be turned off first.</b>",
                                     contentC: "",
                                     left_button: "<#CTL_Cancel#>",
                                     left_button_callback: function () {
-                                        confirm_cancel();
-                                        document.getElementById(`${prefix}_auth_method`).value = authMethodValueOri;
+                                        refreshpage();
                                         return false;
                                     },
                                     left_button_args: {},
@@ -1128,12 +1120,11 @@
                             ) {
                                 confirm_asus({
                                     title: "",
-                                    contentA: `<#WiFi7_disable_note#>`,
+                                    contentA: "Since WiFi7 mode is currently enabled, making this adjustment will disable WiFi 7 mode.",
                                     contentC: "",
                                     left_button: "<#checkbox_No#>",
                                     left_button_callback: function () {
-                                        confirm_cancel();
-                                        document.getElementById(`${prefix}_auth_method`).value = authMethodValueOri;
+                                        refreshpage();
                                         return false;
                                     },
                                     left_button_args: {},
@@ -1848,7 +1839,7 @@
                     delete wpaEncryptStringObject["aes"];
                 }
 
-                if (!wifi7ModeEnabled || authMethodValue !== "sae") {
+                if (!wifi7ModeEnabled || authMethodValue.indexOf("sae") == -1) {
                     delete wpaEncryptStringObject["aes+gcmp256"];
                 } else {
                     delete wpaEncryptStringObject["aes"];
@@ -2521,7 +2512,7 @@
                         authMethodValue === "wpa3" ||
                         authMethodValue === "suite-b" ||
                         authMethodValue === "wpawpa2" ||
-                        authMethodValue === "wpa2wpa3"
+                        authMethodValue === "wpa2pwa3"
                     ) {
                         postObject[`${key}_crypto`] = (() => {
                             if (smartConnectEnable && joinSmartConnect) {
@@ -2567,7 +2558,7 @@
                         authMethodValue === "wpa3" ||
                         authMethodValue === "suite-b" ||
                         authMethodValue === "wpawpa2" ||
-                        authMethodValue === "wpa2wpa3"
+                        authMethodValue === "wpa2pwa3"
                     ) {
                         postObject[`${key}_mfp`] = (() => {
                             if (smartConnectEnable && joinSmartConnect) {
@@ -2594,7 +2585,7 @@
                         authMethodValue === "wpa3" ||
                         authMethodValue === "suite-b" ||
                         authMethodValue === "wpawpa2" ||
-                        authMethodValue === "wpa2wpa3" ||
+                        authMethodValue === "wpa2pwa3" ||
                         authMethodValue === "radius"
                     ) {
                         postObject[`${key}_radius_ipaddr`] = (() => {
@@ -2788,7 +2779,7 @@
 
                     confirm_asus({
                         title: "MLO Hint",
-                        contentA: `<b><#WiFi7_mlo_adjust_hint#></b>`,
+                        contentA: `<b>Since MLO is currently enabled, any adjustments to these WiFi settings require MLO to be turned off first.</b>`,
                         contentC: "",
                         left_button: "<#CTL_Cancel#>",
                         left_button_callback: function () {
@@ -2894,11 +2885,7 @@
                                                             </div>
 
                                                             <div id="radio_smartcon_enable" class="left radio-smartcon-enable"></div>
-                                                            <div
-                                                                id="smartcon_rule_link"
-                                                                class="smart-connect-rule-link"
-                                                                style="display: none"
-                                                            >
+                                                            <div id="smartcon_rule_link" class="smart-connect-rule-link">
                                                                 <a href="Advanced_Smart_Connect.asp" class="a-hint-text"
                                                                     ><#smart_connect_rule#></a
                                                                 >

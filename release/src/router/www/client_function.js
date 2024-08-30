@@ -85,6 +85,7 @@ function get_wl_unit_by_band(_band){
 	var wl_nband = "";
 	switch(_band){
 		case "2G":
+		case "2G1":
 			wl_nband = "2";
 			break;
 		case "5G":
@@ -394,23 +395,6 @@ var setClientAttr = function(){
 	this.ROG = false;
 }
 
-const saveCloudAsusClientIcon = (mac, name) => {
-	fetch(`https://nw-dlcdnet.asus.com/plugin/productIcons/${name}.png`)
-		.then(response => {
-			if (response.status === 200) {
-				response.blob().then(blob => {
-					const reader = new FileReader();
-					reader.readAsDataURL(blob);
-					reader.onloadend = function () {
-						let nvramSet_obj = {"action_mode": "apply"};
-						nvramSet_obj["custom_usericon"] = `${mac.replace(/\:/g, "")}>${reader.result}`
-						httpApi.nvramSet(nvramSet_obj)
-					}
-				});
-			}
-		})
-}
-
 var clientList = new Array(0);
 function genClientList(){
 	clientList = [];
@@ -550,11 +534,6 @@ function genClientList(){
 			clientList[thisClientMacAddr].isUserUplaodImg = (uploadIconMacList.indexOf(thisClient.mac.toUpperCase().replace(/\:/g, "")) >= 0) ? true : false;
 			if(isSupport("mlo")){
 				clientList[thisClientMacAddr].mlo = (typeof thisClient.mlo == "undefined") ? false : (thisClient.mlo == "1" ? true : false);
-			}
-			clientList[thisClientMacAddr].isASUS = (thisClient.isASUS == "1");
-
-			if (clientList[thisClientMacAddr].type != '' && !clientList[thisClientMacAddr].isUserUplaodImg && clientList[thisClientMacAddr].isASUS && clientList[thisClientMacAddr].type == clientList[thisClientMacAddr].defaultType && clientList[thisClientMacAddr].name != "ASUS") {
-				saveCloudAsusClientIcon(clientList[thisClientMacAddr].mac, clientList[thisClientMacAddr].name);
 			}
 		}
 	}
@@ -1098,7 +1077,7 @@ function popClientListEditTable(event) {
 			if(clientInfo.isWL != 0 || (isSupport("mtlancfg") && clientInfo.sdn_idx > 0)){
 				var bandClass = (navigator.userAgent.toUpperCase().match(/CHROME\/([\d.]+)/)) ? "band_txt_chrome" : "band_txt";
 				let band_text = isWL_map[clientInfo.isWL]["text"];
-				if(isSupport("mlo") && (clientInfo.mlo == "1")) band_text = `MLO`;
+				if(isSupport("mlo") && clientInfo.mlo) band_text = `MLO`;
 				clientIconHtml += `<div class="band_block"><span class="${bandClass}" style="color:#000000;">${band_text}</span></div>`;
 			}
 			document.getElementById('card_client_interface').innerHTML = clientIconHtml;
@@ -1207,15 +1186,13 @@ function popClientListEditTable(event) {
 		});
 
 		var setRadioControl = function (state, mode, mac) {
-			const manually_dhcp_maximum  = (isSupport("MaxRule_extend_limit") == 0) ? 64: isSupport("MaxRule_extend_limit");
-			const parentctrl_maximum = (isSupport("MaxRule_parentctrl") == 0) ? 16 : isSupport("MaxRule_parentctrl");
 			switch (mode) {
 				case "ipBinding" :
 					$('#edit_client_block #card_radio_IPBinding_enable').iphoneSwitch(state,
 						function(){
 							if(card_client_variable.manual_dhcp_list[mac] == undefined) {
-								if(manual_dhcp_list_num >= manually_dhcp_maximum) {
-									if(confirm(stringSafeGet("<#Clientlist_IPMAC_Binding_max#>".replace("64", manually_dhcp_maximum)))) {
+								if(manual_dhcp_list_num == 64) {
+									if(confirm(stringSafeGet("<#Clientlist_IPMAC_Binding_max#>"))) {
 										location.href = "/Advanced_DHCP_Content.asp" ;
 									}
 									else {
@@ -1238,8 +1215,8 @@ function popClientListEditTable(event) {
 					$('#edit_client_block #card_radio_BlockInternet_enable').iphoneSwitch(state,
 						function(){
 							if(card_client_variable.MULTIFILTER_MAC.search(mac) == -1) {
-								if(client_MULTIFILTER_num >= parentctrl_maximum) {
-									if(confirm(stringSafeGet("<#Clientlist_block_internet_max#>".replace("16", parentctrl_maximum)))) {
+								if(client_MULTIFILTER_num == 16) {
+									if(confirm(stringSafeGet("<#Clientlist_block_internet_max#>"))) {
 										location.href = "/ParentalControl.asp" ;
 									}
 									else {
@@ -1262,8 +1239,8 @@ function popClientListEditTable(event) {
 					$('#edit_client_block #card_radio_TimeScheduling_enable').iphoneSwitch(state,
 						function(){
 							if(card_client_variable.MULTIFILTER_MAC.search(mac) == -1) {
-								if(client_MULTIFILTER_num >= parentctrl_maximum) {
-									if(confirm(stringSafeGet("<#Clientlist_block_internet_max#>".replace("16", parentctrl_maximum)))) {
+								if(client_MULTIFILTER_num == 16) {
+									if(confirm(stringSafeGet("<#Clientlist_block_internet_max#>"))) {
 										location.href = "/ParentalControl.asp" ;
 									}
 									else {
@@ -1988,66 +1965,43 @@ function card_select_custom_icon($obj){
 	card_client_variable.userIconBase64 = icon_url;
 	card_client_variable.userUploadFlag = false;
 }
-function select_image(clientObj, useDefaultType = false) {
-	function useTypeIcon(clientObj) {
-		let type = (useDefaultType) ? "type" + clientObj.defaultType : "type" + clientObj.type;
-		let vendor = clientObj.vendor;
-		$("#card_client_image").empty();
-		$("#card_client_image").empty();
-		$("#card_client_image").append($('<i>').addClass(type));
-		$("#card_client_image").removeClass().addClass("clientIcon_no_hover");
-		if (vendor != "" && type == "type0" && !isSupport("sfp4m")) {
-			var vendorIconClassName = getVendorIconClassName(vendor.toLowerCase());
-			if (vendorIconClassName != "") {
-				$("#card_client_image").empty();
-				$("#card_client_image").append($('<i>').addClass("vendor-icon").addClass(vendorIconClassName));
-				$("#card_client_image").removeClass().addClass("vendorIcon_no_hover");
-			}
-		}
-		let userImageFlag = false;
-		if (!card_client_variable.firstTimeOpenBlock) {
-			if (isSupport("usericon")) {
-				card_client_variable.userIconBase64 = getUploadIcon(clientObj.mac.replace(/\:/g, ""));
-				card_client_variable.userIconBase64_ori = card_client_variable.userIconBase64;
-				if (card_client_variable.userIconBase64 != "NoIcon") {
-					$("#card_client_image").empty();
-					if (clientObj.isUserUplaodImg) {
-						$('#card_client_image').append($('<img>').addClass('clientIcon_no_hover').attr('src', card_client_variable.userIconBase64));
-					} else {
-						$('#card_client_image').append($('<i>').addClass(type).attr('style', '--svg:url(' + card_client_variable.userIconBase64 + ');'));
-					}
-					userImageFlag = true;
-				}
-			}
-		}
-		if (!userImageFlag) {
-			card_client_variable.userIconBase64 = "NoIcon";
-			if (type == "type36")
-				$("#card_client_image").find("i").addClass("flash");
+function select_image(clientObj,useDefaultType=false) {
+	let type = (useDefaultType) ? "type" + clientObj.defaultType : "type" + clientObj.type;
+	let vendor =  clientObj.vendor;
+	$("#card_client_image").empty();
+	$("#card_client_image").empty();
+	$("#card_client_image").append($('<i>').addClass(type));
+	$("#card_client_image").removeClass().addClass("clientIcon_no_hover");
+	if(vendor != "" && type == "type0" && !isSupport("sfp4m")) {
+		var vendorIconClassName = getVendorIconClassName(vendor.toLowerCase());
+		if(vendorIconClassName != "") {
+			$("#card_client_image").empty();
+			$("#card_client_image").append($('<i>').addClass("vendor-icon").addClass(vendorIconClassName));
+			$("#card_client_image").removeClass().addClass("vendorIcon_no_hover");
 		}
 	}
-	if(useDefaultType && clientObj.isASUS && clientObj.name!=="ASUS"){
-		fetch(`https://nw-dlcdnet.asus.com/plugin/productIcons/${clientObj.name}.png`)
-			.then(response => {
-				if (response.status === 200) {
-					response.blob().then(blob => {
-						const reader = new FileReader();
-						reader.readAsDataURL(blob);
-						reader.onloadend = function () {
-							$("#card_client_image").empty();
-							$('#card_client_image').append($('<img>').addClass('clientIcon_no_hover').attr('src',reader.result));
-							card_client_variable.userIconBase64 = reader.result;
-							card_client_variable.userUploadFlag = true;
-						}
-					});
+
+	var userImageFlag = false;
+	if(!card_client_variable.firstTimeOpenBlock) {
+		if(isSupport("usericon")) {
+			card_client_variable.userIconBase64 = getUploadIcon(clientObj.mac.replace(/\:/g, ""));
+			card_client_variable.userIconBase64_ori = card_client_variable.userIconBase64 ;
+			if(card_client_variable.userIconBase64 != "NoIcon") {
+				$("#card_client_image").empty();
+				if(clientObj.isUserUplaodImg){
+					$('#card_client_image').append($('<img>').addClass('clientIcon_no_hover').attr('src',card_client_variable.userIconBase64));
+				}else{
+					$('#card_client_image').append($('<i>').addClass(type).attr('style','--svg:url('+card_client_variable.userIconBase64+');'));
 				}
-			})
-			.catch(error => {
-				console.error('Error:', error);
-				useTypeIcon(clientObj);
-			});
-	}else{
-		useTypeIcon(clientObj);
+				userImageFlag = true;
+			}
+		}
+	}
+
+	if(!userImageFlag) {
+		card_client_variable.userIconBase64 = "NoIcon";
+		if(type == "type36")
+			$("#card_client_image").find("i").addClass("flash");
 	}
 }
 
@@ -2963,31 +2917,21 @@ function create_clientlist_listview() {
 
 	//copy clientList to each sort array
 	genClientList();
-	for(let i = 0; i < clientList.length; i += 1) {
+	for(var i = 0; i < clientList.length; i += 1) {
 		if(clientList[clientList[i]].isOnline) {
-			let tempArray = [
-				clientList[clientList[i]].internetState,
-				clientList[clientList[i]].vendor || clientList[clientList[i]].vendor || `Loading manufacturer..`,
-				clientList[clientList[i]].nickName || clientList[clientList[i]].name,
-				clientList[clientList[i]].ip,
-				clientList[clientList[i]].mac,
-				clientList[clientList[i]].rssi,
-				clientList[clientList[i]].curTx,
-				clientList[clientList[i]].curRx,
-				clientList[clientList[i]].wlConnectTime,
-				clientList[clientList[i]].isWL,
-				clientList[clientList[i]].vendor,
-				clientList[clientList[i]].type,
-				clientList[clientList[i]].macRepeat,
-				clientList[clientList[i]].isGN,
-				clientList[clientList[i]].sdn_idx,
-				clientList[clientList[i]].isUserUplaodImg,
-				clientList[clientList[i]].ip6,
-				clientList[clientList[i]].ip6_prefix,
-				clientList[clientList[i]].mlo,
-				clientList[clientList[i]].isASUS
-			];
-
+			var deviceTypeName = "Loading manufacturer..";
+			if((clientList[clientList[i]].vendor != "" && clientList[clientList[i]].vendor != undefined)) { //Oui Vendor name
+				deviceTypeName = clientList[clientList[i]].vendor;
+			}		
+			if((clientList[clientList[i]].dpiDevice != "" && clientList[clientList[i]].dpiDevice != undefined)) { //BWDPI device
+				deviceTypeName = clientList[clientList[i]].dpiDevice;
+			}
+			var clientName = (clientList[clientList[i]].nickName == "") ? clientList[clientList[i]].name : clientList[clientList[i]].nickName;
+			var tempArray = [clientList[clientList[i]].internetState, deviceTypeName, clientName, clientList[clientList[i]].ip, 
+							clientList[clientList[i]].mac, clientList[clientList[i]].rssi, clientList[clientList[i]].curTx, clientList[clientList[i]].curRx, 
+							clientList[clientList[i]].wlConnectTime, clientList[clientList[i]].isWL, clientList[clientList[i]].vendor, clientList[clientList[i]].type,
+							clientList[clientList[i]].macRepeat, clientList[clientList[i]].isGN, clientList[clientList[i]].sdn_idx, clientList[clientList[i]].isUserUplaodImg,
+							clientList[clientList[i]].ip6, clientList[clientList[i]].ip6_prefix, clientList[clientList[i]].mlo];
 			switch (clienlistViewMode) {
 				case "All" :
 					all_list.push(tempArray);
@@ -3150,9 +3094,9 @@ function drawClientListBlock(objID) {
 				sortArray = gn_list[objID.substr(0, 3)];
 		}
 	}
-	const listViewProfile = function (_profile) {
+	var listViewProfile = function (_profile) {
 		if (_profile == null)
-			_profile = new Array(20).fill("");
+			_profile = new Array(16).fill("");
 
 		this.internetState = _profile[0];
 		this.deviceTypeName = _profile[1];
@@ -3173,7 +3117,6 @@ function drawClientListBlock(objID) {
 		this.ip6 = _profile[16];
 		this.ip6_prefix = _profile[17];
 		this.mlo = _profile[18];
-		this.isASUS = _profile[19];
 	}
 
 	if (document.getElementById("clientlist_" + objID + "_Block") != null) {
@@ -3240,7 +3183,7 @@ function drawClientListBlock(objID) {
 					clientInterfaceCode += `<div class='interface_container'><div class='${radioIcon_css} radio-${rssi_t}'></div>`;
 					if (clientlist_sort[j].isWL != 0 || (isSupport("mtlancfg") && clientlist_sort[j].sdn_idx > 0)) {
 						let band_text = isWL_map[clientlist_sort[j].isWL]["text"];
-						if (isSupport("mlo") && (clientlist_sort[j].mlo == "1")) band_text = `MLO`;
+						if (isSupport("mlo") && clientlist_sort[j].mlo) band_text = `MLO`;
 						clientInterfaceCode += `<div class='band_block'>${band_text}</div>`;
 					}
 					clientInterfaceCode += "</div>";
@@ -3269,16 +3212,16 @@ function drawClientListBlock(objID) {
 				}
 
 				if (listView_userIconBase64 != "NoIcon") {
-					clientIconCode += "<div title='" + clientlist_sort[j].deviceTypeName + "'>";
+					clientIconCode += "<div style='height:42px;width:42px;' title='" + clientlist_sort[j].deviceTypeName + "'>";
 					if (clientlist_sort[j].isUserUplaodImg) {
-						clientIconCode += '<img class="imgUserIcon" src="' + listView_userIconBase64 + '">';
+						clientIconCode += '<img class="imgUserIcon_viewlist" src="' + listView_userIconBase64 + '">';
 					} else {
-						clientIconCode += '<div class="imgUserIcon"><i class="type" style="--svg:url(' + listView_userIconBase64 + ')"></i></div>';
+						clientIconCode += '<div class="imgUserIcon_viewlist"><i class="type" style="--svg:url(' + listView_userIconBase64 + ')"></i></div>';
 					}
 					clientIconCode += "</div>";
 				} else if (clientlist_sort[j].type != "0" || clientlist_sort[j].vendor == "") {
 					var icon_type = "type" + clientlist_sort[j].type;
-					clientIconCode += "<div style='cursor:default;' class='clientIcon_no_hover' title='" + clientlist_sort[j].deviceTypeName + "'><i class='" + icon_type + "'></i>";
+					clientIconCode += "<div style='height:32px;width:32px;cursor:default;' class='clientIcon_no_hover' title='" + clientlist_sort[j].deviceTypeName + "'><i class='" + icon_type + "'></i>";
 					if (clientlist_sort[j].type == "36")
 						clientIconCode += "<div class='flash'></div>";
 					clientIconCode += "</div>";

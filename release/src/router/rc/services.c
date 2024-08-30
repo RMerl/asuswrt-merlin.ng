@@ -102,8 +102,6 @@ int mkdir_if_none(const char *path)
 #include <openssl/evp.h>
 #include <openssl/pem.h>
 #include <openssl/rsa.h>
-#include <openssl/x509.h>
-#include <openssl/x509v3.h>
 #endif
 
 #ifdef RTCONFIG_IPSEC
@@ -5972,7 +5970,7 @@ mcpd_conf(void)
 			proxy_ifname = "eth1.v0";
 		else
 			proxy_ifname = "eth0.v0";
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U)
 		/* Adjust mcast interface for bcm + rtkswtch */
 		if (nvram_get_int("switch_wan1tagid")) {
 			if(nvram_get_int("switch_stb_x") == 6)
@@ -6020,7 +6018,7 @@ mcpd_conf(void)
 	/* set downstream interface to vlan bridge to enable mcast traffic passthrough */
 	if (!nvram_match("switch_wantag", "") && nvram_get_int("switch_stb_x") > 0 &&
 		nvram_get_int("switch_stb_x") <= 6) {
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U)
 		/* Adjust snooping interface for bcm + rtkswtch */
 		if (nvram_get_int("switch_wan1tagid")) {
 			if (nvram_match("switch_wantag", "unifi_home"))
@@ -6040,7 +6038,7 @@ mcpd_conf(void)
 		fprintf(fp, "igmp-snooping-interfaces %s\n", nvram_safe_get("lan_ifname"));
 	if(nvram_match("switch_wantag", "movistar"))
 		fprintf(fp, "igmp-mcast-interfaces %s\n", is_router_mode() ? "vlan2" : "");
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U)
 	else if (nvram_match("switch_wantag", "unifi_home"))
 		fprintf(fp, "igmp-mcast-interfaces %s\n", is_router_mode() ? "eth0.600" : "");
 #endif
@@ -6352,35 +6350,6 @@ void start_asd(void)
 	xstart("asd");
 }
 #endif /* RTCONFIG_ASD */
-
-#ifdef RTCONFIG_GEARUPPLUGIN
-void stop_gu_service(int status)
-{
-	if (pids("guplugin_monitor.sh"))
-		doSystem("killall -9 guplugin_monitor.sh");
-
-	if (pids("guplugin"))
-		doSystem("killall -9 guplugin");
-
-	// remove binary when status is GU_BLOCK
-	if (status == GU_BLOCK && f_exists("/tmp/gu/guplugin"))
-		remove("/tmp/gu/guplugin");
-}
-
-void start_gu_service()
-{
-	int ret;
-	int status = gu_enable_status();
-
-	// forbidden case : force to killall gu services
-	if (status != GU_ENABLED)
-		stop_gu_service(status);
-
-	// exec_gu will check all conditions
-	ret = exec_gu(status);
-	if (ret) logmessage("GU", "GU is disabled, reason code=%d!", ret);
-}
-#endif
 
 void
 stop_misc(void)
@@ -6798,7 +6767,25 @@ start_httpd(void)
 	}
 
 #ifdef RTCONFIG_HTTPS
-	prepare_cert_in_etc();
+#ifdef RTCONFIG_LETSENCRYPT
+	if(nvram_match("le_enable", "1")) {
+		if(!is_le_cert(HTTPD_CERT) || !cert_key_match(HTTPD_CERT, HTTPD_KEY)) {
+			cp_le_cert(LE_FULLCHAIN, HTTPD_CERT);
+			cp_le_cert(LE_KEY, HTTPD_KEY);
+		}
+	}
+	else if(nvram_match("le_enable", "2")){
+		if(f_exists(UPLOAD_CERT) && f_exists(UPLOAD_KEY)){
+			eval("cp", UPLOAD_CERT, HTTPD_CERT);
+			eval("cp", UPLOAD_KEY, HTTPD_KEY);
+		}
+	}
+	else
+#endif
+	{ // generate cert/key in httpd
+		unlink(HTTPD_CERT);
+		unlink(HTTPD_KEY);
+	}
 
 	enable = nvram_get_int("http_enable");
 	if (enable != 0) {
@@ -6815,12 +6802,8 @@ start_httpd(void)
 			strlcat(https_argv_buf, https_argv[i],sizeof(https_argv_buf));
 		}
 
-		if (get_pid_by_process_name(https_argv_buf) == -1) {
-			if (nvram_get("httpds_reload_cert")) {
-				nvram_unset("httpds_reload_cert");
-			}
+		if(get_pid_by_process_name(https_argv_buf) == -1)
 			_eval(https_argv, NULL, 0, &pid);
-		}
 
 #ifdef RTCONFIG_IPV6
 		if (ipv6_enabled() && nvram_get_int("misc_http_x")
@@ -6837,11 +6820,8 @@ start_httpd(void)
 				strlcat(https_ipv6_argv_buf, https_ipv6_argv[i],sizeof(https_ipv6_argv_buf));
 			}
 
-			if (get_pid_by_process_name(https_ipv6_argv_buf) == -1) {
-				if (nvram_get("httpds6_reload_cert"))
-					nvram_unset("httpds6_reload_cert");
+			if(get_pid_by_process_name(https_ipv6_argv_buf) == -1)
 				_eval(https_ipv6_argv, NULL, 0, &pid);
-			}
 		}
 #endif
 #if defined(RTCONFIG_ALPINE) || defined(RTCONFIG_LANTIQ)
@@ -9607,8 +9587,8 @@ void chilli_config(void)
 	fprintf(fp, "tundev %s\n", "tun22");
 	fprintf(fp, "uamaliasip %d.%d.%d.%d\n", gw[0], gw[1], gw[2], gw[3]);
 	fprintf(fp, "redirssl\n");
-	fprintf(fp, "sslcertfile %s\n", HTTPD_CERT);
-	fprintf(fp, "sslkeyfile %s\n", HTTPD_KEY);
+	fprintf(fp, "sslcertfile %s\n", "/etc/cert.pem");
+	fprintf(fp, "sslkeyfile %s\n", "/etc/key.pem");
 	if((time=nvram_get_int("chilli_authtime")) > 0)
 		fprintf(fp, "challengetimeout2 %d\n", time);
 	tmp_str=nvram_safe_get("chilli_awaytime");
@@ -9793,8 +9773,8 @@ void chilli_config_CP(void)
 	fprintf(fp, "tundev %s\n", "tun23");
 	fprintf(fp, "uamaliasip %d.%d.%d.%d\n", gw[0], gw[1], gw[2], gw[3]);
 	fprintf(fp, "redirssl\n");
-	fprintf(fp, "sslcertfile %s\n", HTTPD_CERT);
-	fprintf(fp, "sslkeyfile %s\n", HTTPD_KEY);
+	fprintf(fp, "sslcertfile %s\n", "/etc/cert.pem");
+	fprintf(fp, "sslkeyfile %s\n", "/etc/key.pem");
 	if((time=nvram_get_int("cp_authtime")) > 0)
 		fprintf(fp, "challengetimeout2 %d\n", time);
 	tmp_str=nvram_safe_get("cp_awaytime");
@@ -12652,9 +12632,6 @@ start_services(void)
 #ifdef RTCONFIG_FSMD
 	system("fsmd");
 #endif
-#ifdef RTCONFIG_GEARUPPLUGIN
-	start_gu_service();
-#endif
 
 #ifdef RTCONFIG_MULTIWAN_IF
 	start_mtwanduck();
@@ -12954,7 +12931,7 @@ stop_services(void)
 #ifdef RTCONFIG_NEW_USER_LOW_RSSI
 	stop_roamast();
 #endif
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U)
 	stop_rtkmonitor();
 #endif
 #ifdef GTAX6000
@@ -13139,14 +13116,12 @@ stop_services_mfg(void)
 #ifdef BCM_ASPMD
 	stop_aspmd();
 #endif
-#if 0
 #if defined(RTCONFIG_DHDAP) || defined(RTCONFIG_HND_ROUTER_AX)
 	stop_dhd_monitor();
 #if defined(RTCONFIG_HND_ROUTER_AX)
 	killall_tk("debug_monitor");
 #else
 	killall_tk("dhd_monitor");
-#endif
 #endif
 #endif
 	stop_acsd();
@@ -13304,7 +13279,7 @@ stop_services_mfg(void)
 	if (pids("fsmd"))
 		killall_tk("fsmd");
 #endif
-//#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U)
+//#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U)
 #if 0
 	stop_rtkmonitor();
 	eval("ebtables", "-t", "broute", "-F");
@@ -13317,9 +13292,6 @@ stop_services_mfg(void)
 	if (pids("usbmuxd"))
 		killall_tk("usbmuxd");
 #endif
-#endif
-#ifdef RTCONFIG_GEARUPPLUGIN
-	stop_gu_service(gu_enable_status());
 #endif
 }
 
@@ -14246,7 +14218,7 @@ stop_ledbtn(void)
 }
 #endif
 
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U)
 int
 stop_rtkmonitor(void)
 {
@@ -14562,249 +14534,6 @@ static int select_upgrade_fw_order(char *fwpart[2])
 	return 0;
 }
 #endif
-
-#if defined(RTCONFIG_HTTPS)
-/* Return string of specified X509V3 extension by NID.
- * NOTE: Caller must to release return value if it's not NULL!
- * @x509:
- * @nid:	e.g. NID_basic_constraints, NID_authority_key_identifier
- * @return:	pointer to string or NULL if @nid not found, malloc failed, wrong parameter, etc.
- */
-static char *x509v3ext2str_by_nid(X509 *x509, int nid)
-{
-	char *ret = NULL;
-	BUF_MEM *bptr = NULL;
-	char *buf = NULL, *ptr;
-	int loc;
-	BIO *bio = NULL;
-	X509_EXTENSION *ex;
-
-	if (!x509)
-		return NULL;
-
-	loc = X509_get_ext_by_NID(x509, nid, -1);
-	ex = X509_get_ext(x509, loc);
-	if (!ex) {
-		goto err_x509v3ext2str_by_nid;
-	}
-	bio = BIO_new(BIO_s_mem());
-	if (!X509V3_EXT_print(bio, ex, 0, 0)) {
-		dbg("%s: nid %d X509V3_EXT_print() fail!\n", __func__, nid);
-		goto err_x509v3ext2str_by_nid;
-	}
-	BIO_flush(bio);
-	BIO_get_mem_ptr(bio, &bptr);
-	buf = malloc((bptr->length + 1) * sizeof(char));
-	if (!buf) {
-		goto err_x509v3ext2str_by_nid;
-	}
-	memcpy(buf, bptr->data, bptr->length);
-	buf[bptr->length] = '\0';
-	strtok_r(buf, "\r\n", &ptr);
-
-	ret = buf;
-
-err_x509v3ext2str_by_nid:
-	if (bio)
-		BIO_free(bio);
-
-	return ret;
-}
-
-/* Select source of root/intermediate certificate or end-entity certificate,
- * and copy it to /etc/cacert.pem and /etc/cakey.pem or /etc/cert.pem respectively.
- * To keep latest selected certificates, save_cert() should be executed.
- * The function can't be porting to libshared unless it links against with
- * libssl/libcrypt for functions of Let's encrypt.
- * NOTE: We can't verify a intermediate certificate or a end-entity certificate
- *       without root certificate (and intermediate certificate if need) with
- *       openssl/mssl functions.
- * @return:
- * 	0:	HTTPD_CERT doesn't change
- *     <0:	error
- *     >0:	HTTPD_CERT changed
- */
-int prepare_cert_in_etc(void)
-{
-	/* cert_ready = 1 if
-	 * a. root/intermediate certificate ready. end-entity certificate will be signed if need.
-	 * b. end-entity certificate ready if and only if uploaded certificate is end-entity certificate.
-	 */
-	int ret = 0, use_ca = 1, sign_srv_cert = 0, cert_ready = 0, first = 1, le_enable = 0;
-	char *ca_subject_keyid = NULL, *c_keyid = NULL, *srv_issuer_keyid = NULL, *s_keyid = NULL;
-	char o_md5[32 + 1] = "", n_md5[32 + 1] = "", cmd[sizeof("md5sum XXX" HTTPD_CERT)];
-	FILE *fp;
-	X509 *x509_ca = NULL, *x509_srv = NULL;
-
-	if (!is_router_mode()) {
-		/* always use self-generated cert. */
-		return 0;
-	}
-
-	snprintf(cmd, sizeof(cmd), "md5sum %s", HTTPD_CERT);
-	if (f_exists(HTTPD_CERT))
-		exec_and_return_string(cmd, NULL, o_md5, sizeof(o_md5));
-
-retry_prepare_cert_in_etc:
-#if defined(RTCONFIG_LETSENCRYPT)
-	le_enable = nvram_get_int("le_enable");
-#else
-	if ((f_exists(UPLOAD_CACERT) && f_exists(UPLOAD_CAKEY))
-	 || (f_exists(UPLOAD_CERT) && f_exists(UPLOAD_KEY)))
-		le_enable = 2;
-	else
-		le_enable = 0;
-#endif
-
-	if (le_enable ==1) {
-#if defined(RTCONFIG_LETSENCRYPT)
-		/* Let's encrypt */
-		if (!is_le_cert(LE_HTTPD_CERT) || !cert_key_match(LE_HTTPD_CERT, LE_HTTPD_KEY)) {
-			cp_le_cert(LE_FULLCHAIN, LE_HTTPD_CERT);
-			cp_le_cert(LE_KEY, LE_HTTPD_KEY);
-			use_ca = 0;
-		}
-		cert_ready = 1;
-#endif
-	} else if (le_enable == 2) {
-		/* Uploaded cert. */
-		if (f_exists(UPLOAD_CACERT) && f_exists(UPLOAD_CAKEY)) {
-			/* uploaded certificate is root/intermediate certificate */
-			if (!illegal_cert_and_key(UPLOAD_CACERT, UPLOAD_CAKEY)) {
-				eval("cp", UPLOAD_CACERT, HTTPD_ROOTCA_CERT);
-				eval("cp", UPLOAD_CAKEY, HTTPD_ROOTCA_KEY);
-				if (f_exists(UPLOAD_GEN_CERT))
-					eval("cp", UPLOAD_GEN_CERT, UL_HTTPD_CERT);
-				if (f_exists(UPLOAD_GEN_KEY))
-					eval("cp", UPLOAD_GEN_KEY, UL_HTTPD_KEY);
-				cert_ready = 1;
-
-				/* end-entity certificate will be signed by uploaded root/intermediate
-				 * certificate and keep in /jffs/cert.tgz
-				 */
-				if (f_exists(UPLOAD_CERT))
-					unlink(UPLOAD_CERT);
-				if (f_exists(UPLOAD_KEY))
-					unlink(UPLOAD_KEY);
-			}
-		} else if (f_exists(UPLOAD_CERT) && f_exists(UPLOAD_KEY)) {
-			/* uploaded certificate is end-entity certificate */
-			if (!illegal_cert_and_key(UPLOAD_CERT, UPLOAD_KEY)) {
-				eval("cp", UPLOAD_CERT, UL_HTTPD_CERT);
-				eval("cp", UPLOAD_KEY, UL_HTTPD_KEY);
-				if (f_exists(UPLOAD_CACERT))
-					unlink(UPLOAD_CACERT);
-				if (f_exists(UPLOAD_CAKEY))
-					unlink(UPLOAD_CAKEY);
-				use_ca = 0;
-				cert_ready = 1;
-			}
-		}
-	} else {
-		/* certificates that are generated by router itself. */
-		if (f_exists(HTTPD_ROOTCA_GEN_CERT) && f_exists(HTTPD_ROOTCA_GEN_KEY)) {
-			if (!illegal_cert_and_key(HTTPD_ROOTCA_GEN_CERT, HTTPD_ROOTCA_GEN_KEY)) {
-				eval("cp", HTTPD_ROOTCA_GEN_CERT, HTTPD_ROOTCA_CERT);
-				eval("cp", HTTPD_ROOTCA_GEN_KEY, HTTPD_ROOTCA_KEY);
-				if (f_exists(HTTPD_GEN_CERT))
-					eval("cp", HTTPD_GEN_CERT, HTTPD_CERT);
-				if (f_exists(HTTPD_GEN_KEY))
-					eval("cp", HTTPD_GEN_KEY, HTTPD_KEY);
-				cert_ready = 1;
-			}
-		}
-	}
-
-	if (!cert_ready) {
-		if (first && !nvram_match("le_enable", "0")) {
-			first = 0;
-			dbg("%s: No workable uploaded certificate, fallback to self-signed certificate.\n", __func__);
-			remove_all_uploaded_cert_from_jffs();
-			nvram_set("le_enable", "0");
-			goto retry_prepare_cert_in_etc;
-		} else {
-			dbg("%s: Still no workable certificate, generate again.\n", __func__);
-			sign_srv_cert = use_ca = 1;
-		}
-	}
-
-	if (use_ca) {
-		if (!sign_srv_cert && (!f_exists(HTTPD_CERT) || !f_exists(HTTPD_KEY)))
-			sign_srv_cert  = 1;
-
-		if (!sign_srv_cert) {
-			/* If issuer of HTTPD_KEY is not HTTPD_ROOT_CA, sign new HTTPD_KEY. */
-			if ((fp = fopen(HTTPD_ROOTCA_CERT, "r")) != NULL) {
-				if (!PEM_read_X509(fp, &x509_ca, NULL, NULL)) {
-					fseek(fp, 0, SEEK_SET);
-					d2i_X509_fp(fp, &x509_ca);
-				}
-				fclose(fp);
-				if (x509_ca) {
-					c_keyid = ca_subject_keyid =
-						x509v3ext2str_by_nid(x509_ca, NID_subject_key_identifier);
-					if (ca_subject_keyid && !strncmp(ca_subject_keyid, "keyid:", 6))
-						c_keyid = ca_subject_keyid + strlen("keyid:");
-				}
-			}
-			if ((fp = fopen(HTTPD_CERT, "r")) != NULL) {
-				if (!PEM_read_X509(fp, &x509_srv, NULL, NULL)) {
-					fseek(fp, 0, SEEK_SET);
-					d2i_X509_fp(fp, &x509_srv);
-				}
-				fclose(fp);
-				if (x509_srv) {
-					s_keyid = srv_issuer_keyid =
-						x509v3ext2str_by_nid(x509_srv, NID_authority_key_identifier);
-					if (srv_issuer_keyid && !strncmp(srv_issuer_keyid, "keyid:", 6))
-						s_keyid = srv_issuer_keyid + strlen("keyid:");
-				}
-			}
-
-			/* If issuer keyid of the end-entity certificate is not subject(=issuer) keyid
-			 * of the root/intermediate certificate, it must be signed again.
-			 */
-			if (!c_keyid || !s_keyid || strncmp(c_keyid, s_keyid, strlen(c_keyid)))
-				sign_srv_cert = 1;
-			if (ca_subject_keyid)
-				free(ca_subject_keyid);
-			if (srv_issuer_keyid)
-				free(srv_issuer_keyid);
-			if (x509_ca)
-				X509_free(x509_ca);
-			if (x509_srv)
-				X509_free(x509_srv);
-		}
-
-		if (sign_srv_cert) {
-			/* If latest HTTPD_CERT is not signed by HTTPD_ROOTCA_CERT, sign new one. */
-			GENCERT_SH();
-
-			/* If uploaded certificate is used to sign end-entity certificate,
-			 * copy it back to /jffs/.cert
-			 */
-			if (f_exists(UPLOAD_CACERT) && f_exists(UPLOAD_CAKEY)
-#if defined(RTCONFIG_LETSENCRYPT)
-			 && le_enable == 2
-#endif
-			) {
-				eval("cp", HTTPD_CERT, UPLOAD_GEN_CERT);
-				eval("cp", HTTPD_KEY, UPLOAD_GEN_KEY);
-			}
-		}
-	}
-
-	save_cert();
-	if (f_exists(HTTPD_CERT))
-		exec_and_return_string(cmd, NULL, n_md5, sizeof(n_md5));
-	if (*o_md5 == '\0' || *n_md5 == '\0' || strcmp(o_md5, n_md5)) {
-		dbg("%s: %s changed, MD5 [%s] -> [%s].\n", __func__, HTTPD_CERT, o_md5, n_md5);
-		ret = 1;
-	}
-
-	return ret;
-}
-#endif	/* RTCONFIG_HTTPS */
 
 void handle_notifications(void)
 {
@@ -16156,7 +15885,6 @@ script_allnet:
 		if(action & RC_SERVICE_START) {
 			//start_vlan();
 			start_lan();
-			update_srv_cert_if_lan_ip_changed();
 #ifdef RTCONFIG_MOCA
 			start_moca();
 #endif
@@ -16426,7 +16154,7 @@ script_allnet:
 #endif
 			stop_wan();
 			stop_lan();
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U)
 			reset_extwan();
 #endif
 #ifdef RTCONFIG_MOCA
@@ -16450,14 +16178,13 @@ script_allnet:
 			init_switch();
 #endif
 			//start_vlan();
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U)
 			config_extwan();
 #endif
 #if defined(CONFIG_BCMWL5) && defined(RTCONFIG_LACP)
 			config_lacp();
 #endif
 			start_lan();
-			update_srv_cert_if_lan_ip_changed();
 #ifdef RTCONFIG_MOCA
 			start_moca();
 #endif
@@ -18210,25 +17937,8 @@ check_ddr_done:
 				start_ddns(cmd[1]);
 			else
 				start_ddns(NULL);
-			update_srv_cert_if_ddns_changed();
 		}
 	}
-#if defined(RTCONFIG_HTTPS)
-	else if (!strcmp(script, "prepare_cert")) {
-		int r;
-
-		r = prepare_cert_in_etc();
-		if (r > 0) {
-			/* Load new certification after the current session logout. */
-			nvram_set("httpds_reload_cert", "2");
-#if defined(RTCONFIG_IPV6)
-			if (ipv6_enabled() && nvram_match("misc_http_x", "1")) {
-				nvram_set("httpds6_reload_cert", "2");
-			}
-#endif
-		}
-	}
-#endif
 	else if(strcmp(script, "asusddns_unregister") == 0)
 	{
 		asusddns_unregister();
@@ -18536,12 +18246,6 @@ check_ddr_done:
 		if(action & RC_SERVICE_START) start_aupnpc();
 	}
 #endif
-#if defined(RTCONFIG_MLO)
-	else if (strcmp(script, "init_mlo_config") == 0)
-	{
-		init_mlo_config();
-	}
-#endif
 	else if (strcmp(script, "qos") == 0)
 	{
 		nvram_set("restart_qo", "1");
@@ -18622,14 +18326,6 @@ check_ddr_done:
 	else if (strcmp(script, "mobile_game") == 0)
 	{
 		MobileDevMode_restart();
-	}
-#endif
-#ifdef RTCONFIG_GEARUPPLUGIN
-	else if (strcmp(script, "gu_service") == 0)
-	{
-		if(action & RC_SERVICE_STOP) stop_gu_service(gu_enable_status());
-		if(action & RC_SERVICE_START) start_gu_service();
-
 	}
 #endif
 #ifdef RTCONFIG_TRAFFIC_LIMITER
@@ -20552,12 +20248,20 @@ _dprintf("test 2. turn off the USB power during %d seconds.\n", reset_seconds[re
 #ifdef RTCONFIG_EXTPHY_BCM84880
 	else if (strcmp(script, "br_addif") == 0)
         {
-#if !(defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE92U)) || defined(RTBE95U)
+#if !(defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE92U))
 		if(!nvram_match("x_Setting", "0")) {
 			eval("brctl", "addif", nvram_safe_get("lan_ifname"), "eth5");
 		}
 #endif
         }
+#endif
+#ifdef RTAXE7800
+	else if (strcmp(script, "addif_extwan") == 0)
+	{
+#ifndef RTCONFIG_BCM_MFG
+		eval("brctl", "addif", nvram_safe_get("lan_ifname"), "eth1");
+#endif
+	}
 #endif
 #if defined(RTCONFIG_HND_ROUTER_AX)
 	else if (strcmp(script, "cable_media") == 0)

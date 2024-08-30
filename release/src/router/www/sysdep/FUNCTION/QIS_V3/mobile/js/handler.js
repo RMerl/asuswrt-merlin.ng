@@ -1122,21 +1122,38 @@ apply.wireless = function(){
 	scProfile.wpa_psk = $("#wireless_key_" + scProfile.baseBand).val();
 
 	for(var band=0; band<systemVariable.wirelessBand; band++){
-		if(qisPostData.hasOwnProperty(`wl${band}_ssid`) || isSupport("mloSetup")){
+		if(isSupport("mloSetup")){
+			qisPostData[`wl${band}_ssid`] = ($(`#wireless_ssid_${band}`).length) ? $(`#wireless_ssid_${band}`).val() : scProfile.ssid;
+			qisPostData[`wl${band}_wpa_psk`] = ($(`#wireless_key_${band}`).length) ? $(`#wireless_key_${band}`).val() : scProfile.wpa_psk;
+			qisPostData[`wl${band}_crypto`] = "aes+gcmp256";
+			qisPostData[`wl${band}_11be`] = "1";
+			qisPostData[`wl${band}_radio`] = "1";
+			qisPostData[`wl${band}_timesched`] = "0";
+
+			if(parseInt(get_wl_unit_by_band("6G1")) == band || parseInt(get_wl_unit_by_band("6G2")) == band){
+				qisPostData[`wl${band}_auth_mode_x`] = "sae";
+				qisPostData[`wl${band}_mfp`] = "2";
+			}
+			else{
+				qisPostData[`wl${band}_auth_mode_x`] = "psk2sae";
+				qisPostData[`wl${band}_mfp`] = "1";	
+			}
+		}
+		else if(qisPostData.hasOwnProperty(`wl${band}_ssid`)){
 			if($(`#wireless_ssid_${band}`).length){if(!wirelessValidator(band)) return false;}
 
 			qisPostData[`wl${band}_ssid`] = ($(`#wireless_ssid_${band}`).length) ? $(`#wireless_ssid_${band}`).val() : scProfile.ssid;
 			qisPostData[`wl${band}_wpa_psk`] = ($(`#wireless_key_${band}`).length) ? $(`#wireless_key_${band}`).val() : scProfile.wpa_psk;
 			qisPostData[`wl${band}_crypto`] = "aes";
 
-			if(parseInt(get_wl_unit_by_band("6G1")) == band || parseInt(get_wl_unit_by_band("6G2")) == band || isSupport("mloSetup")){
+			if(parseInt(get_wl_unit_by_band("6G1")) == band || parseInt(get_wl_unit_by_band("6G2")) == band){
 				// this unit is a 6G band
 				qisPostData[`wl${band}_auth_mode_x`] = "sae";
 				qisPostData[`wl${band}_mfp`] = "2";
 			}
 			else{
 				// this unit is a 2G or 5G band
-				qisPostData[`wl${band}_auth_mode_x`] = "psk2";
+				qisPostData[`wl${band}_auth_mode_x`] = isSupport("mlo") ? "psk2sae" : "psk2";
 
 				if(isJoinSmartConnect("6G1") || isJoinSmartConnect("6G2")){
 					// 6G is in smart connect band
@@ -1149,13 +1166,12 @@ apply.wireless = function(){
 			}
 		}
 
-		if(qisPostData[`wl${band}_auth_mode_x`] == "sae"){
+		if(qisPostData[`wl${band}_auth_mode_x`] == "sae" || qisPostData[`wl${band}_auth_mode_x`] == "psk2sae"){
 			const wifi7Nvram = httpApi.nvramGet([`wl${band}_crypto`, `wl${band}_11be`]);
 			if(wifi7Nvram[`wl${band}_11be`]){
 				if(wifi7Nvram[`wl${band}_11be`] == '1'){
 					qisPostData[`wl${band}_crypto`] = "aes+gcmp256";
 				}
-				
 			}
 		}			
 	}
@@ -1188,13 +1204,7 @@ apply.wireless = function(){
 
 	if(isSupport("mloSetup")){
 		postDataModel.insert(mloObj);
-		let band;
-		let len = systemVariable.wirelessBand;
-		for(band = 0; band < len; band++){
-			postDataModel.insert(wireless_11be_Obj[`wl${band}`]);
-			qisPostData[`wl${band}_11be`] = "1";
-			qisPostData[`wl${band}_crypto`] = "aes+gcmp256";
-		}
+		if(systemVariable.isDefault && isSupport("dis_mlo_qis")) postDataModel.remove(mloObj);
 	}
 
 	if(isSupport("11AX") && !isSupport("qis_hide_he_features")){

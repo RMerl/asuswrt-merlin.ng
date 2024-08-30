@@ -691,7 +691,6 @@ static int ERP_CHECK_MODEL_LIST()
 		|| model == MODEL_RTBE58U
 		|| model == MODEL_GTBE19000
 		|| model == MODEL_RTBE92U
-		|| model == MODEL_RTBE95U
 #endif
 	) {
 		ret = 1;
@@ -816,7 +815,6 @@ static void erp_standby_mode(int model)
 			eval("wl", "-i", "eth7", "down");
 			break;
 		case MODEL_RTBE92U:
-		case MODEL_RTBE95U:
 			eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 0, 0)), "down");
 			eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 1, 0)), "down");
 			eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 2, 0)), "down");

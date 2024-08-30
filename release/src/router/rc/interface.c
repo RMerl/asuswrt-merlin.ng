@@ -180,51 +180,11 @@ void gen_lan_ports(char *buf, const int sample[SWPORT_COUNT], int index, int ind
 
 #define sin_addr(s) (((struct sockaddr_in *)(s))->sin_addr)
 
-int get_wanX_mtu(const char *name)
-{
-        int i, unit, ret = 0;
-        char wan_ifname[16];
-        char tmp[100], prefix[32];
-
-        for(i=0; i<WAN_UNIT_MAX; ++i) {
-                snprintf(prefix, sizeof(prefix), "wan%d_", unit);
-		if (nvram_match(strcat_r(prefix, "ifname", tmp), name)) {
-                        ret = nvram_get_int(strcat_r(prefix, "mtu", tmp));
-                        break;
-                }
-        }
-
-        return ret;
-}
-
-void init_wanX_mtu(int wan_mtu)
-{
-        int i, unit;
-        char tmp[100], prefix[32], *mp;
-
-        for(i=0; i<WAN_UNIT_MAX; ++i) {
-                snprintf(prefix, sizeof(prefix), "wan%d_", unit);
-                if (strlen(strcat_r(prefix, "ifname", tmp))) {
-                        mp = nvram_get(strcat_r(prefix, "mtu", tmp));
-			if(!mp || !*mp) {
-				nvram_set_int(strcat_r(prefix, "mtu", tmp), wan_mtu);
-			}
-                }
-        }
-}
-
 int _ifconfig(const char *name, int flags, const char *addr, const char *netmask, const char *dstaddr, int mtu)
 {
 	int s, err, postup;
 	struct ifreq ifr;
 	struct in_addr in_addr, in_netmask, in_broadaddr;
-
-	_dprintf("%s:%s, mtu=%d\n", __func__, name, mtu);
-        if(!mtu) {
-                mtu = get_wanX_mtu(name);
-		if(mtu)
-			_dprintf("%s, reset mtu=%d\n", __func__, mtu);
-        }
 
 #ifdef RTCONFIG_LANTIQ
 	/* wlan0-wlan0.2, wlan2-wlan2.2 */
@@ -251,8 +211,8 @@ int _ifconfig(const char *name, int flags, const char *addr, const char *netmask
 	}
 #endif
 
-	_dprintf("%s: name=%s flags=%04x %s addr=%s netmask=%s, mtu=%d\n", __FUNCTION__, name ? : "", 
-		flags, (flags & IFUP) ? "IFUP" : "", addr ? : "", netmask ? : "", mtu);
+	_dprintf("%s: name=%s flags=%04x %s addr=%s netmask=%s\n", __FUNCTION__, name ? : "", 
+		flags, (flags & IFUP) ? "IFUP" : "", addr ? : "", netmask ? : "");
 
 	if (!name)
 		return -1;

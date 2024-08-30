@@ -27,10 +27,6 @@
 	font-size: 16px;
 	margin-left: 24px;
 }
-.profile_item_container.profile_list .bottom_info{
-	background-color: rgb(245 245 245 / 50%);
-	color: #666;
-}
 .item_text_container .main_info:before{
 	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-build.svg);
 }
@@ -96,55 +92,49 @@
 .item_tag_container > .item_tag.Timer:before{
 	background-image: url(/images/New_ui/SDN/white_theme/Image/timer.svg);
 }
-.item_text_container .bottom_info > div:not(:first-child):before{
-	border-right: 1px solid #DCDCDC;
+.item_text_container .sub_info span{
+	color: #006CE1;
 }
-.item_text_container .bottom_info span{
-	color: #181818;
+.item_text_container .sub_info .point_icon{
+	width: 4px;
+	height: 4px;
+	background-color: rgb(77 77 77 / 70%);
 }
-.item_text_container .clients_num > .icon_client{
+.item_text_container .sub_info .clients_num{
+	color: #006CE1;
+}
+.item_text_container .sub_info .clients_num:before{
 	background-image: url(/images/New_ui/SDN/white_theme/Devices/devices.svg);
 }
-.status_info .split_line{
-	background-color: #DCDCDC;
-}
-.status_info .conn_type.WiFi_offline{
+.sub_info .conn_type.WiFi_offline{
 	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_off.svg);
 }
-.status_info .conn_type.WiFi_2G{
+.sub_info .conn_type.WiFi_2G{
 	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_2g.svg);
 }
-.status_info .conn_type.WiFi_2G_lock{
+.sub_info .conn_type.WiFi_2G_lock{
 	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_2g_lock.svg);
 }
-.status_info .conn_type.WiFi_5G{
+.sub_info .conn_type.WiFi_5G{
 	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_5g.svg);
 }
-.status_info .conn_type.WiFi_5G_lock{
+.sub_info .conn_type.WiFi_5G_lock{
 	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_5g_lock.svg);
 }
-.status_info .conn_type.WiFi_6G{
+.sub_info .conn_type.WiFi_6G{
 	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_6g.svg);
 }
-.status_info .conn_type.WiFi_6G_lock{
+.sub_info .conn_type.WiFi_6G_lock{
 	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_6g_lock.svg);
 }
-.status_info .conn_type.WiFi_mlo{
+.sub_info .conn_type.WiFi_mlo{
 	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_mlo.svg);
 }
-.status_info .conn_type.WiFi_mlo_lock{
+.sub_info .conn_type.WiFi_mlo_lock{
 	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_mlo_lock.svg);
 }
-.status_info .conn_type.LAN{
+.sub_info .conn_type.LAN{
 	background-image: url(/images/New_ui/SDN/white_theme/Notification/LAN.svg);
-}
-.status_info .conn_type.WiFi,
-.status_info .conn_type.WiFi_offline,
-.status_info .conn_type.LAN{
-	background-color: #006CE1;
-}
-.status_info .conn_type.WiFi7{
-	background-color: #000;
 }
 .profile_setting.Get_Start{
 	display: flex;

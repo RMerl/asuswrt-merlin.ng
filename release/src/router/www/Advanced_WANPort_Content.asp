@@ -418,7 +418,7 @@ function is_original_eth_lan(port_val){//Check if the wan port is the original e
 	$.each(eth_wan_list, function(key){
 		if(key == port_val){
 			var wan_obj = eth_wan_list[key];
-			if(wan_obj.hasOwnProperty("wans_lanport")){
+			if(wan_obj["wan_name"].toUpperCase().indexOf("LAN") != -1 && wan_obj.hasOwnProperty("wans_lanport")){
 				is_original_eth_lan = true;
 				return false;
 			}
@@ -435,9 +435,14 @@ function get_default_wan(){
 		$.each(eth_wan_list, function(key) {
 			var wan_obj = eth_wan_list[key];
 
-			if(!wan_obj.hasOwnProperty("wans_lanport")){
-				default_wan = key;
-				return false;
+			if(wan_obj.hasOwnProperty("extra_settings")){
+				var extra_settings = wan_obj.extra_settings;
+				if(extra_settings.hasOwnProperty("wans_extwan")){
+					if(extra_settings["wans_extwan"] == "0"){
+						default_wan = key;
+						return false;
+					}
+				}
 			}
 		});
 	}
@@ -696,53 +701,27 @@ function applyRule(){
 						document.form.wans_lanport.value = primary_wan_ifname.substr(3, 1);
 				}
 				else{
-					if(is_original_eth_lan(primary_val)){
-						primary_val = "lan";
-						if(primary_obj.hasOwnProperty("wans_lanport"))
-							document.form.wans_lanport.value = primary_obj.wans_lanport;
-						else if(primary_wan_ifname != "")
-							document.form.wans_lanport.value = primary_wan_ifname.substr(3, 1);
-
-						secondary_val = "wan";
-						if(secondary_obj.hasOwnProperty("extra_settings")){
-							var extra_settings = secondary_obj.extra_settings;
-							$.each(extra_settings, function(key) {
-								if(document.getElementsByName(key).length > 0){
-									document.getElementsByName(key)[0].value = extra_settings[key];
-								}
-								else{
-									$('<input>').attr({
-										type: 'hidden',
-										name: key,
-										value: extra_settings[key]
-									}).appendTo('form');
-								}
-							});
-						}
+					primary_val = "wan";
+					if(primary_obj.hasOwnProperty("extra_settings")){
+						var extra_settings = primary_obj.extra_settings;
+						$.each(extra_settings, function(key) {
+							if(document.getElementsByName(key).length > 0){
+								document.getElementsByName(key)[0].value = extra_settings[key];
+							}
+							else{
+								$('<input>').attr({
+									type: 'hidden',
+									name: key,
+									value: extra_settings[key]
+								}).appendTo('form');
+							}
+						});
 					}
-					else{
-						primary_val = "wan";
-						if(primary_obj.hasOwnProperty("extra_settings")){
-							var extra_settings = primary_obj.extra_settings;
-							$.each(extra_settings, function(key) {
-								if(document.getElementsByName(key).length > 0){
-									document.getElementsByName(key)[0].value = extra_settings[key];
-								}
-								else{
-									$('<input>').attr({
-										type: 'hidden',
-										name: key,
-										value: extra_settings[key]
-									}).appendTo('form');
-								}
-							});
-						}
-						secondary_val = "lan";
-						if(secondary_obj.hasOwnProperty("wans_lanport"))
-							document.form.wans_lanport.value = secondary_obj.wans_lanport;
-						else if(second_wan_ifname != "")
-							document.form.wans_lanport.value = second_wan_ifname.substr(3, 1);
-					}
+					secondary_val = "lan";
+					if(secondary_obj.hasOwnProperty("wans_lanport"))
+						document.form.wans_lanport.value = secondary_obj.wans_lanport;
+					else if(second_wan_ifname != "")
+						document.form.wans_lanport.value = second_wan_ifname.substr(3, 1);
 				}
 			}
 			else if(is_eth_wan(document.form.wans_primary.value)){
@@ -1015,25 +994,23 @@ function applyRule(){
 			}
 		}
 		else{
-			if(switch_stb_x != "0"){
-				for(let i = 0; i < stbPortMappings.length; i++){
-					if(switch_stb_x == stbPortMappings[i].value){
-						if(stbPortMappings[i].comboport_value_list.split(" ").length < 2){
-							if((switch_stb_x == lan_port_num) || (switch_stb_x == wan_lanport_num)){
+			if(switch_stb_x != "0" && ((switch_stb_x == lan_port_num) || (switch_stb_x == wan_lanport_num))){
+				port_conflict = true;
+				if(switch_stb_x == lan_port_num)
+					conflict_lanport_text = "LAN" + lan_port_num;
+				else
+					conflict_lanport_text = "LAN" + wan_lanport_num;
+			}
+			else{
+				for(var i = 0; i < stbPortMappings.length; i++){
+					if(switch_stb_x == stbPortMappings[i].value && stbPortMappings[i].comboport_value_list.length != 0){
+						var value_list = stbPortMappings[i].comboport_value_list.split(" ");
+						for(var j = 0; j < value_list.length; j++){
+							if((lan_port_num == value_list[j]) || (wan_lanport_num == value_list[j])){
 								port_conflict = true;
-								conflict_lanport_text = "LAN" + switch_stb_x;
+								conflict_lanport_text = "LAN" + value_list[j];
 							}
 						}
-						else{
-							let value_list = stbPortMappings[i].comboport_value_list.split(" ");
-							for(let j = 0; j < value_list.length; j++){
-								if((lan_port_num == value_list[j]) || (wan_lanport_num == value_list[j])){
-									port_conflict = true;
-									conflict_lanport_text = "LAN" + value_list[j];
-								}
-							}
-						}
-						break;
 					}
 				}
 			}
@@ -1081,6 +1058,8 @@ function applyRule(){
 
 		if(document.form.wans_dualwan.value.indexOf("wan") != -1 && document.form.wans_extwan.value == "1"){ //Single WAN: 2.5G WAN/LAN1
 			if(switch_stb_x != "0" || orig_switch_wantag != "none"){
+				console.log("conflict_func.length = "+conflict_func.length);
+				console.log("conflict_func = "+conflict_func);
 				if(conflict_func.length == 0)
 					conflict_func = "IPTV";
 				else if(conflict_func.indexOf("IPTV") == -1)

@@ -131,7 +131,10 @@ function Get_Component_Feature_Desc(view_mode){
 	let $feature_desc_cntr = $("<div>").addClass("feature_desc_container").appendTo($popup_content_container);
 	$("<div>").addClass("title").html("<#NewFeatureDesc#>").appendTo($feature_desc_cntr);
 	$("<div>").addClass("feature_image").appendTo($feature_desc_cntr);
-	$("<div>").addClass("desc").html(`<#WiFi_mlo_Desc#>`).appendTo($feature_desc_cntr);
+	$("<div>").addClass("desc").html(
+		`MLO(Multi-Link Operation) allows devices to connect to multiple frequency channels across different bands simultaneously.
+		This boosts data rates, reduces latency, and improves reliability, resulting in faster and more stable WiFi connections.`/* untranslated */
+	).appendTo($feature_desc_cntr);
 
 	$("<div>").addClass("horizontal_line").appendTo($feature_desc_cntr);
 
@@ -163,10 +166,10 @@ function Get_Component_MLO_Introduce(view_mode){
 	let $feature_desc_cntr = $("<div>").addClass("feature_desc_container introduce").appendTo($popup_content_container);
 	$("<div>").addClass("feature_image introduce").appendTo($feature_desc_cntr);
 	$("<div>").addClass("desc").html(
-		`<#WiFi_mlo_Experience#>`
+		`Multi-Link Operation enables new wireless experiences`/* untranslated */
 	).appendTo($feature_desc_cntr);
 	$("<div>").addClass("introduce_hint").html(
-		`<#WiFi_mlo_Advantage#>`
+		`An Undeniable advantage`/* untranslated */
 	).appendTo($feature_desc_cntr);
 	if(is_Web_iframe){
 		if(!check_sdn_legacy_exists()){
@@ -197,7 +200,7 @@ function show_get_start_mlo(){
 		let $container = $("<div>");
 
 		if(view_mode == "popup"){
-			Get_Component_Popup_Profile_Title(`<#WiFi_mlo_Disable#>`).appendTo($container)
+			Get_Component_Popup_Profile_Title(`<#WLANConfig11b_WirelessCtrl_button1name#> MLO`).appendTo($container)
 				.find("#title_close_btn").unbind("click").click(function(e){
 					e = e || event;
 					e.stopPropagation();
@@ -205,15 +208,16 @@ function show_get_start_mlo(){
 				});
 		}
 		else
-			Get_Component_Profile_Title(`<#WiFi_mlo_Disable#>`).appendTo($container);
+			Get_Component_Profile_Title(`<#WLANConfig11b_WirelessCtrl_button1name#> MLO`).appendTo($container);
 
 		let $popup_content_container = $("<div>").addClass("popup_content_container");
 		$popup_content_container.appendTo($container);
 
 		let $feature_desc_cntr = $("<div>").addClass("feature_desc_container").appendTo($popup_content_container);
-		$("<div>").addClass("title").html(`<#WiFi_mlo_Upgrade#>`).appendTo($feature_desc_cntr);
+		$("<div>").addClass("title").html(`Upgrade your wireless network for Multi-Link Operation.`).appendTo($feature_desc_cntr);/* untranslated */
 		$("<div>").addClass("desc").html(
-			`<#WiFi_mlo_compatibility_Hint#>`
+			`Your existing wireless settings are incompatible with the MLO network. 
+			We'll assist in creating an MLO network that integrates with your main wireless settings and transition existing Wi-Fi setups to the IoT network to ensure compatibility with legacy devices.`/* untranslated */
 		).appendTo($feature_desc_cntr);
 		$("<div>").addClass("feature_image2").appendTo($feature_desc_cntr);
 		$("<div>").addClass("horizontal_line").appendTo($feature_desc_cntr);
@@ -394,9 +398,20 @@ function check_mlo_meet_conditions(){
 		}
 		return status;
 	})();
-	const wl_auth_wpa3 = (httpApi.nvramGet(["2g1_auth_mode_x"])["2g1_auth_mode_x"] == "sae") ? true : false;
+	const wl_auth_mlo = (()=>{
+		const auth_2g = httpApi.nvramGet(["2g1_auth_mode_x"])["2g1_auth_mode_x"];
+		const auth_6g = httpApi.nvramGet(["6g1_auth_mode_x"])["6g1_auth_mode_x"];
+		if(get_wl_unit_by_band("6G") != ""){
+			if(auth_2g == "sae") return true;//all band is sae
+			else if(auth_2g == "psk2sae" &&	auth_6g == "sae") return true;//2g5g is psk2sae, 6g is sae
+			else return false;
+		}
+		else{
+			return (auth_2g == "sae" || auth_2g == "psk2sae") ? true : false;//all band is sae or psk2sae
+		}
+	})();
 
-	return (sdn_legacy && smart_connect_all_band && wl_auth_wpa3);
+	return (sdn_legacy && smart_connect_all_band && wl_auth_mlo);
 
 	function getSelifValue(){
 		var val = 0;

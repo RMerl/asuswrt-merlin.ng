@@ -899,11 +899,11 @@ static int get_album_cover_image(sqlite3 *sql_minidlna, sqlite_int64 plAlbumArt,
 		//Cdbg(DBE, "get_album_cover_image, album cover path=%s", result2[1]);
 
 		char* album_cover_file = result2[1];
-		
-		if(!string_starts_with(album_cover_file, "/mnt") || strstr(album_cover_file, "../")){
-                        sqlite3_free_table(result2);
-                        return 0;
-                }
+
+		if(!string_starts_with(album_cover_file, "/mnt") ){
+			sqlite3_free_table(result2);
+			return 0;
+		}
 
 		FILE* fp = fopen(album_cover_file, "rb");
 		

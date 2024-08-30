@@ -76,15 +76,15 @@
 	border-radius: 0px;
 }
 .switch.off{
-	background: #0B0B0B;
-	border: 2px solid #666666;
+	background: none;
+	border: 2px solid #4d4d4d;
 }
 .switch.on{
-	background: #000;
+	background: none;
 	border: 2px solid #FF3535;
 }
 .switch:before{
-	background: #666666;
+	background: #999999;
 	border-radius: 0%;
 	height: 12px;
 	width: 12px;
@@ -186,10 +186,6 @@
 }
 .dropdown_select option{
 	background: rgb(40, 41, 49);
-}
-}
-.popup_bg{
-	background-color: rgba(38, 38, 38, 0.9);
 }
 .hidden_mask{
 	background: rgb(0, 0, 0);

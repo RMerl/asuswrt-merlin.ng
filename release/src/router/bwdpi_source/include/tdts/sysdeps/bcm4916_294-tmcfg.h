@@ -26,13 +26,13 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Tue May 16 17:42:12 2023
+ * Date: Thu Feb 15 16:59:14 2024
  */
 #ifndef __TMCFG__AUTOCONF_OUTPUT_H_
 #define __TMCFG__AUTOCONF_OUTPUT_H_
 
 #define TMCFG_BRAND "asus"
-#define TMCFG_MODEL "rt-be96u"
+#define TMCFG_MODEL "tuf-be3600"
 
 /*
  * Target device information
@@ -47,7 +47,7 @@
 #define TMCFG_ARCH_POWERPC 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_GPL_RT-BE96U_3.0.0.6.102.1162/release/src-rt-5.04behnd.4916/kernel/linux-4.19"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_GPL_TUF-BE3600_3.0.0.6.102.33710/release/src-rt-5.04behnd.4916/kernel/linux-4.19"
 #define TMCFG_KERN_ARCH "arm64"
 #define TMCFG_CPU_32BITS 0 // n
 #define TMCFG_CPU_64BITS 1 // y
@@ -72,7 +72,7 @@
 /*
  * (CAUTION) Shared CC flags. Do not change if u are not sure.
  */
-#define TMCFG_TC_EXTRA_CFLAGS "-fsigned-char -Wno-incompatible-pointer-types -mno-outline-atomics -I/opt/ASUS/asuswrt_GPL_RT-BE96U_3.0.0.6.102.1162/release/src-rt-5.04behnd.4916/kernel/bcmkernel/include"
+#define TMCFG_TC_EXTRA_CFLAGS "-fsigned-char -Wno-incompatible-pointer-types -mno-outline-atomics -I/opt/ASUS/asuswrt_GPL_TUF-BE3600_3.0.0.6.102.33710/release/src-rt-5.04behnd.4916/kernel/bcmkernel/include"
 #define TMCFG_TC_EXTRA_LDFLAGS ""
 #define TMCFG_TC_RUN_STRIP 1 // y
 
@@ -93,7 +93,7 @@
 /*
  * Engine
  */
-#define TMCFG_E_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_GPL_RT-BE96U_3.0.0.6.102.1162/release/src-rt-5.04behnd.4916/kernel/bcmkernel/include -I/opt/ASUS/asuswrt_GPL_RT-BE96U_3.0.0.6.102.1162/release/src-rt-5.04behnd.4916/bcmdrivers"
+#define TMCFG_E_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_GPL_TUF-BE3600_3.0.0.6.102.33710/release/src-rt-5.04behnd.4916/kernel/bcmkernel/include -I/opt/ASUS/asuswrt_GPL_TUF-BE3600_3.0.0.6.102.33710/release/src-rt-5.04behnd.4916/bcmdrivers"
 #define TMCFG_E_KMOD_NAME "tdts"
 #define TMCFG_E_KMOD_IOCTL_DEV_NAME "idp"
 #define TMCFG_E_KMOD_IOCTL_DEV_MAJ 190
@@ -227,7 +227,7 @@
 /*
  * Engine shell
  */
-#define TMCFG_E_SHELL_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_GPL_RT-BE96U_3.0.0.6.102.1162/release/src-rt-5.04behnd.4916/kernel/bcmkernel/include -I/opt/ASUS/asuswrt_GPL_RT-BE96U_3.0.0.6.102.1162/release/src-rt-5.04behnd.4916/bcmdrivers"
+#define TMCFG_E_SHELL_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_GPL_TUF-BE3600_3.0.0.6.102.33710/release/src-rt-5.04behnd.4916/kernel/bcmkernel/include -I/opt/ASUS/asuswrt_GPL_TUF-BE3600_3.0.0.6.102.33710/release/src-rt-5.04behnd.4916/bcmdrivers"
 #define TMCFG_E_SHELL_ATIMER 1 // y
 #define TMCFG_E_SHELL_DEPRECATED_PROCFS 1 // y
 

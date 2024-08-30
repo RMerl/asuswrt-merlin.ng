@@ -52,7 +52,7 @@ var app_control = {
 	})()
 }
 $('link[group="extend_css"]').remove();
-if(theme == "WHITE" || theme == "ROG" || theme == "TUF"){
+if(theme == "WHITE" || theme == "ROG"){
 	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component_' + theme + '.css">');
 	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/SDN/sdn_' + theme + '.css">');
 	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/SDN/mlo_' + theme + '.css">');
@@ -99,7 +99,7 @@ function initial(){
 					return (item.sdn_rl.sdn_name == "MLO" && item.sdn_rl.sdn_enable == "1" && item.apg_rl.mlo == "2")
 				});
 				if(sdn_mlo_enable.length > 0){
-					show_customize_confirm(`<#WiFi_mlo_disable_Hint#><br><#AiMesh_Are_U_Sure_Proceed#>`);
+					show_customize_confirm(`Turn off MLO feature will disable all of your MLO network.<br><#AiMesh_Are_U_Sure_Proceed#>`);/* untranslated */
 					const $confirm_obj = $(".popup_container.popup_customize_alert");
 					$confirm_obj.find("[data-btn=ok]")
 						.click(()=>{
@@ -272,7 +272,7 @@ function initial(){
 <div class="bg_rwd">
 	<div class="container no_highlights">
 		<div class="function_desc_container">
-			<div class="title"><#WiFi_mlo_title#></div>
+			<div class="title">MLO(Multi-Link Operation)</div>
 			<div class="help_icon"></div>
 		</div>
 		<div class="function_switch_container">

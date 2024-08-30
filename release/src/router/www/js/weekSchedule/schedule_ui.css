@@ -545,7 +545,7 @@
 	background: rgba(127, 143, 164, 1);
 }
 .icon_switch.on{
-	background: #248DFF;
+	background: rgba(16, 185, 129, 1);
 }
 .icon_switch:before{
 	border-radius: 50%;

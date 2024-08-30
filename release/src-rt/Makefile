@@ -4313,10 +4313,6 @@ define RouterOptions
 		sed -i "/RTCONFIG_UUPLUGIN/d" $(1); \
 		echo "RTCONFIG_UUPLUGIN=y" >>$(1); \
 	fi;
-	if [ "$(GEARUPPLUGIN)" = "y" ]; then \
-		sed -i "/RTCONFIG_GEARUPPLUGIN/d" $(1); \
-		echo "RTCONFIG_GEARUPPLUGIN=y" >>$(1); \
-	fi;
 	if [ "$(TCPLUGIN)" = "y" ]; then \
 		sed -i "/RTCONFIG_TCPLUGIN/d" $(1); \
 		echo "RTCONFIG_TCPLUGIN=y" >>$(1); \
@@ -4403,7 +4399,7 @@ define RouterOptions
 		sed -i "/RTCONFIG_SCHED_V2\>/d" $(1); \
 		echo "RTCONFIG_SCHED_V2=y" >>$(1); \
 	fi;
-	if [ "$(WL_SCHED_V3)" != "n" ]; then \
+	if [ "$(WL_SCHED_V3)" = "y" ]; then \
 		sed -i "/RTCONFIG_WL_SCHED_V2\>/d" $(1); \
 		echo "RTCONFIG_WL_SCHED_V2=y" >>$(1); \
 		sed -i "/RTCONFIG_WL_SCHED_V3\>/d" $(1); \
@@ -4478,21 +4474,18 @@ define RouterOptions
 			sed -i "/RTCONFIG_MLO_FH/d" $(1); \
 			echo "# RTCONFIG_MLO_FH is not set" >>$(1); \
 		fi; \
-		if [ "$(MLO_CONFIG_566)" = "y" ]; then \
-			sed -i "/RTCONFIG_MLO_CONFIG_566/d" $(1); \
-			echo "RTCONFIG_MLO_CONFIG_566=y" >>$(1); \
-		else \
-			sed -i "/RTCONFIG_MLO_CONFIG_566/d" $(1); \
-			echo "# RTCONFIG_MLO_CONFIG_566 is not set" >>$(1); \
-		fi; \
 	else \
 		sed -i "/RTCONFIG_MLO/d" $(1); \
 		echo "# RTCONFIG_MLO is not set" >>$(1); \
 		sed -i "/RTCONFIG_MLO_FH/d" $(1); \
 		echo "# RTCONFIG_MLO_FH is not set" >>$(1); \
-		sed -i "/RTCONFIG_MLO_CONFIG_566/d" $(1); \
-		echo "# RTCONFIG_MLO_CONFIG_566 is not set" >>$(1); \
 	fi;
+
+	if [ "$(DIS_MLO_QIS)" = "y" ]; then \
+		sed -i "/RTCONFIG_DIS_MLO_QIS/d" $(1); \
+		echo "RTCONFIG_DIS_MLO_QIS=y" >>$(1); \
+	fi;
+
 	if [ "$(WIFI7)" = "y" ]; then \
 		sed -i "/RTCONFIG_WIFI7/d" $(1); \
 		echo "RTCONFIG_WIFI7=y" >>$(1); \
@@ -4506,13 +4499,6 @@ define RouterOptions
 		else \
 			sed -i "/RTCONFIG_MLO_FH/d" $(1); \
 			echo "# RTCONFIG_MLO_FH is not set" >>$(1); \
-		fi; \
-		if [ "$(MLO_CONFIG_566)" = "y" ]; then \
-			sed -i "/RTCONFIG_MLO_CONFIG_566/d" $(1); \
-			echo "RTCONFIG_MLO_CONFIG_566=y" >>$(1); \
-		else \
-			sed -i "/RTCONFIG_MLO_CONFIG_566/d" $(1); \
-			echo "# RTCONFIG_MLO_CONFIG_566 is not set" >>$(1); \
 		fi; \
 	fi;
 	if [ "$(SAVE_WL_NVRAM_BOTH)" = "y" ]; then \
@@ -6450,6 +6436,38 @@ fi;
 		echo "# CONFIG_HFS_FS is not set" >>$(1); \
 		sed -i "/CONFIG_HFSPLUS_FS/d" $(1); \
 		echo "# CONFIG_HFSPLUS_FS is not set" >>$(1); \
+	fi;
+	#if [ "$(BUILD_NAME)" = "RT-BE92U" ]; then \
+		sed -i "/CONFIG_BCM_KF_VLA_REMOVAL_BACKPORT/d" $(1); \
+		echo "CONFIG_BCM_KF_VLA_REMOVAL_BACKPORT=y" >>$(1); \
+		sed -i "/CONFIG_BCM_KF_TINY_KCORE_SUPPORT/d" $(1); \
+		echo "CONFIG_BCM_KF_TINY_KCORE_SUPPORT=y" >>$(1); \
+		sed -i "/CONFIG_BRCM_CHIP_COMPAT_NAME/d" $(1); \
+		echo "CONFIG_BRCM_CHIP_COMPAT_NAME=\"\"" >>$(1); \
+		sed -i "/CONFIG_BCM_SW_GSO/d" $(1); \
+		echo "CONFIG_BCM_SW_GSO=y" >>$(1); \
+		sed -i "/CONFIG_BCM_SW_GSO_THREAD/d" $(1); \
+		echo "CONFIG_BCM_SW_GSO_THREAD=m" >>$(1); \
+		sed -i "/CONFIG_BCM_ARCHER_GSO/d" $(1); \
+		echo "# CONFIG_BCM_ARCHER_GSO is not set" >>$(1); \
+		sed -i "/CONFIG_BCM_CROSSBOW_FULL_OFFLOAD/d" $(1); \
+		echo "CONFIG_BCM_CROSSBOW_FULL_OFFLOAD=y" >>$(1); \
+		sed -i "/CONFIG_BCM_SPU_HW_OFFLOAD/d" $(1); \
+		echo "CONFIG_BCM_SPU_HW_OFFLOAD=y" >>$(1); \
+		sed -i "/CONFIG_BCM_GDX/d" $(1); \
+		echo "CONFIG_BCM_GDX=m" >>$(1); \
+		sed -i "/CONFIG_BCM_GDX_HW/d" $(1); \
+		echo "CONFIG_BCM_GDX_HW=y" >>$(1); \
+		sed -i "/CONFIG_BCM_GDX_IMPL/d" $(1); \
+		echo "CONFIG_BCM_GDX_IMPL=1" >>$(1); \
+		sed -i "/CONFIG_BCM_INGQOS_IMPL/d" $(1); \
+		echo "# CONFIG_BCM_INGQOS_IMPL is not set" >>$(1); \
+		sed -i "/CONFIG_BCM_INGQOS/d" $(1); \
+		echo "# CONFIG_BCM_INGQOS is not set" >>$(1); \
+		sed -i "/CONFIG_BCM_MPM/d" $(1); \
+		echo "CONFIG_BCM_MPM=m" >>$(1); \
+		sed -i "/CONFIG_BCM_MPM_IMPL/d" $(1); \
+		echo "CONFIG_BCM_MPM_IMPL=1" >>$(1); \
 	fi;
 	if [ "$(WIREGUARD)" = "y" ]; then \
 		sed -i "/CONFIG_WIREGUARD/d" $(1); \

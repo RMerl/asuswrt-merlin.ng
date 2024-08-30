@@ -39,11 +39,6 @@ ifeq ($(BRCM_CHIP),6855)
 export BWDPI_BCM6753 := y
 endif
 
-# BCM6813 : seperate bin / header / modules from bcm6764L/6765/6766
-ifeq ($(BRCM_CHIP),6813)
-export BWDPI_BCM6813 := y
-endif
-
 # MTK7621A + RTCONFIG_WLMODULE_MT7915D_AP
 ifeq ($(RTCONFIG_WLMODULE_MT7915D_AP),y)
 export BWDPI_MTK7621_NEW := y
@@ -140,15 +135,9 @@ else
 endif
 else ifeq ($(RTCONFIG_HND_ROUTER_BE_4916),y)
 ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20231126)
-ifeq ($(BWDPI_BCM6813), y)
 	@cp include/tdts/sysdeps/bcm4916_294-tmcfg.h include/tdts/tmcfg.h -f                 # bcm4916_294
 	@cp include/udb/sysdeps/bcm4916_294-tmcfg_udb.h include/udb/tmcfg_udb.h -f           # bcm4916_294
 	@cp bin/bcm4916_294/* bin/ -rf                                                       # bcm4916_294
-else
-	@cp include/tdts/sysdeps/bcm6765_294-tmcfg.h include/tdts/tmcfg.h -f                 # bcm6765_294
-	@cp include/udb/sysdeps/bcm6765_294-tmcfg_udb.h include/udb/tmcfg_udb.h -f           # bcm6765_294
-	@cp bin/bcm6765_294/* bin/ -rf                                                       # bcm6765_294
-endif # BWDPI_BCM6813
 else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20240103)
 	@cp include/tdts/sysdeps/bcm4916-tmcfg.h include/tdts/tmcfg.h -f                     # bcm4916
 	@cp include/udb/sysdeps/bcm4916-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # bcm4916
@@ -265,13 +254,8 @@ else
 endif
 else ifeq ($(RTCONFIG_HND_ROUTER_BE_4916),y)
 ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20231126)
-ifeq ($(BWDPI_BCM6813), y)
 	@cp include/tdts/sysdeps/bcm4916_294-tmcfg.h include/tdts/tmcfg.h -f                 # bcm4916_294
 	@cp include/udb/sysdeps/bcm4916_294-tmcfg_udb.h include/udb/tmcfg_udb.h -f           # bcm4916_294
-else
-	@cp include/tdts/sysdeps/bcm6765_294-tmcfg.h include/tdts/tmcfg.h -f                 # bcm6765_294
-	@cp include/udb/sysdeps/bcm6765_294-tmcfg_udb.h include/udb/tmcfg_udb.h -f           # bcm6765_294
-endif # BWDPI_BCM6813
 else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20240103)
 	@cp include/tdts/sysdeps/bcm4916-tmcfg.h include/tdts/tmcfg.h -f                     # bcm4916
 	@cp include/udb/sysdeps/bcm4916-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # bcm4916
@@ -389,11 +373,7 @@ else
 endif
 else ifeq ($(RTCONFIG_HND_ROUTER_BE_4916),y)
 ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20231126)
-ifeq ($(BWDPI_BCM6813), y)
 	@cp -f modules/bcm4916_294/* RC_INDEP/
-else
-	@cp -f modules/bcm6765_294/* RC_INDEP/
-endif # BWDPI_BCM6813
 else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20240103)
 	@cp -f modules/bcm4916/* RC_INDEP/
 else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20230426)

@@ -239,7 +239,6 @@ static const struct model_s model_list[] = {
 	{ "GT-BE19000",		MODEL_GTBE19000		},
 	{ "BT10",		MODEL_BT10		},
 	{ "RT-BE92U",		MODEL_RTBE92U		},
-	{ "RT-BE95U",		MODEL_RTBE95U		},
 #endif	/* !RTCONFIG_RALINK */
 	{ NULL, 0 },
 };

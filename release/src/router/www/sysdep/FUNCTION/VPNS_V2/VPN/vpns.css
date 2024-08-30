@@ -205,7 +205,7 @@
 	background: rgba(127, 143, 164, 1);
 }
 .switch.on{
-	background: #248DFF;
+	background: rgba(16, 185, 129, 1);
 }
 .switch:before{
 	border-radius: 50%;

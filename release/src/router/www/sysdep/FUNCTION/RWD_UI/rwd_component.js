@@ -690,7 +690,6 @@ function show_customize_alert(_text){
 	$(".popup_container .popup_customize_alert").empty();
 	$(".popup_container.popup_customize_alert").append(Get_Component_Customize_Alert(_text));
 	adjust_popup_container_top($(".popup_container.popup_customize_alert"), 100);
-
 }
 function show_customize_confirm(_text){
 	$(".popup_customize_alert").css("display", "flex");

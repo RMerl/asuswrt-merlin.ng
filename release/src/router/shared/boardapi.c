@@ -824,7 +824,7 @@ int set_pwr_usb(int boolOn) {
 		system("sw 0xff800554 0");
 		system("sw 0xff800558 0x4050");
 		system("sw 0xff80055c 0x21");
-#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U)
 		/* set pinmux of GPIO 67 as 4 to enable GPIO mode */
 		system("sw 0xff800554 0");
 		system("sw 0xff800558 0x4043");
@@ -1310,13 +1310,13 @@ int lanport_status(void)
 	foreach(word, nvram_safe_get("lan_ifnames"), next) {
 		if(!wl_probe(word))		// skip wireless interface
 			continue;
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U)
 		if (!strcmp(word, "eth1"))
 			continue;
 #endif
 		status |= hnd_get_phy_status(word);
 	}
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U)
 	status |= rtk_lan_phy_status();
 #endif
 	return status;
@@ -1428,7 +1428,7 @@ int lanport_ctrl(int ctrl)
 		system("/usr/bin/switch_cli GSW_MDIO_DATA_WRITE nAddressDev=5 nAddressReg=0 nData=0x1c00");
 	}
 	return 1;
-#elif defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(EBG19) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U)
+#elif defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(EBG19) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U)
 	if (ctrl)
 		rtkswitch_LanPort_linkUp();
 	else

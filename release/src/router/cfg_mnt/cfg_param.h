@@ -7,7 +7,7 @@
 #if defined(BIT_ULL)
 #undef BIT_ULL
 #endif
-#define BIT_ULL(x) (x + 1)
+#define BIT_ULL(x) (1ULL << x)
 
 /* feature */
 #define FT_WIRELESS		BIT_ULL(0)
@@ -176,7 +176,7 @@ static struct feature_mapping_s feature_mapping_list[] __attribute__ ((unused)) 
 #endif
 	{ "moca", 	FT_MOCA,	MOCA_SET_PRIVACY },
 	{ "privacy_policy",	FT_PRIVACY_POLICY,	NULL },
-#if defined(RTCONFIG_MLO)
+#if defined(RTCONFIG_MULTILAN_CFG)
 	{ "mlo", FT_MLO, RESTART_WIRELESS },
 #endif
 	{ NULL, 0, NULL }
@@ -652,14 +652,11 @@ enum {
 	SUBFT_RB_ENABLE,
 #endif
 
-#if defined(RTCONFIG_MLO)
+#ifdef RTCONFIG_MULTILAN_CFG
 	SUBFT_MLO,
-	SUBFT_MLD_ENABLE,
-#endif	// RTCONFIG_MLO
+#endif	// RTCONFIG_MULTILAN_CFG
 
 	SUBFT_PRIVACY_POLICY,
-	SUBFT_GENCERT,
-
 	SUBFT_MAX
 };
 
@@ -746,7 +743,6 @@ static struct subfeature_mapping_s subfeature_mapping_list[] __attribute__ ((unu
 	{ "log_server",		SUBFT_LOG_SERVER,	FT_LOGGER },
 	{ "location",		SUBFT_LOCATION,	FT_MISC },
 	{ "misc",		SUBFT_MISCELLANEOUS,	FT_MISC },
-	{ "rootcerts",	 	SUBFT_GENCERT,		FT_MISC },		/* fake nvram variable, use it to ask CAP to send root cert/key */
 	/* feedback and diagnostic */
 	{ "feedback",		SUBFT_FEEDBACK,		FT_FEEDBACK },
 	{ "diagnostic",		SUBFT_DIAGNOSTIC,	FT_DIAGNOSTIC},
@@ -1072,10 +1068,9 @@ static struct subfeature_mapping_s subfeature_mapping_list[] __attribute__ ((unu
 	{ "re_rb_enable", SUBFT_RB_ENABLE, FT_WIRELESS },
 #endif
 	{ "privacy_policy",	SUBFT_PRIVACY_POLICY,	FT_PRIVACY_POLICY },
-#if defined(RTCONFIG_MLO)
+#ifdef RTCONFIG_MULTILAN_CFG
 	{ "mlo", SUBFT_MLO, FT_MLO },
-	{ "mld", SUBFT_MLD_ENABLE, FT_MLO },
-#endif	// RTCONFIG_MLO
+#endif	// RTCONFIG_MULTILAN_CFG
 	/* END */
 	{ NULL, 0, 0}
 };
@@ -1631,7 +1626,6 @@ static struct param_mapping_s param_mapping_list[] __attribute__ ((unused)) = {
 	{ "cfg_alias", 	FT_MISC,		SUBFT_LOCATION,		""},
 	{ "apps_sq", 	FT_MISC,		SUBFT_MISCELLANEOUS,		""},
 	{ "preferred_lang",	FT_MISC,	SUBFT_MISCELLANEOUS,		"EN"},
-	{ "rootcerts",		FT_MISC,		SUBFT_GENCERT,		"" },
 	/* feedback */
 	{ "fb_transid",		FT_FEEDBACK,		SUBFT_FEEDBACK,		"123456789ABCDEF0"},
 	{ "fb_email_dbg", 	FT_FEEDBACK,		SUBFT_FEEDBACK,		""},
@@ -1958,6 +1952,7 @@ static struct param_mapping_s param_mapping_list[] __attribute__ ((unused)) = {
 	{ "sdn_rl", FT_SDN_RL, SUBFT_SDN_RL, "" },
 	{ "subnet_rl", FT_SUBNET_RL, SUBFT_SUBNET_RL, "" },
 	{ "vlan_trunk_rl", FT_VLAN_TRUNK_RL, SUBFT_VLAN_TRUNK_RL, "" },
+	{ "mlo_rl", FT_MLO, SUBFT_MLO, "" },
 	{ "radius_list", FT_RADIUS_LIST, SUBFT_RADIUS_LIST, "" },
 	// APG0
 	{ "apg0_enable", FT_APG_PARAM, SUBFT_APGROUP_PARAM_0, "0" },
@@ -3319,10 +3314,6 @@ static struct param_mapping_s param_mapping_list[] __attribute__ ((unused)) = {
 	{ "moca_epassword", FT_MOCA, SUBFT_MOCA,		"12345678901234567"},
 	{ "moca_sceu_mode", FT_MOCA, SUBFT_MOCA,		"7"},
 
-#if defined(RTCONFIG_MLO)
-	{ "mlo_rl", FT_MLO, SUBFT_MLO, "" },
-	{ "mld_enable", FT_MLO, SUBFT_MLD_ENABLE,		"0"},
-#endif
 	/* END */
 	{ NULL, 0, 0,		NULL}
 };

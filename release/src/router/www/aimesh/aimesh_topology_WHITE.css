@@ -290,7 +290,6 @@
 	border-right: 1px solid rgba(127, 143, 164, 0.4);
 }
 .client_tab_bg div.clicked{
-	color: #FFFFFF !important;
 	background-image: initial;
 	background-color: rgb(36 141 255);
 	outline: 1px solid rgb(36 141 255 / 20%);

@@ -453,6 +453,12 @@ extern int uaddr_is_localhost(uaddr *uip);
 extern int uaddr_is_equal(uaddr *a, uaddr *b);
 extern uaddr *uaddr_getpeer(webs_t wp, uaddr *uip);
 
+#if defined(RTCONFIG_ECC256)
+#define HTTPS_CA_JFFS  "/jffs/cert_ecdsa.tgz"
+#else
+#define HTTPS_CA_JFFS  "/jffs/cert.tgz"
+#endif
+
 /* web.c */
 extern int ej_lan_leases(int eid, webs_t wp, int argc, char_t **argv);
 extern int get_nat_vserver_table(int eid, webs_t wp, int argc, char_t **argv);

@@ -409,7 +409,7 @@ else
 	rm -f $(INSTALLDIR)/rom/etc/profile.hnd
 endif
 
-ifeq ($(RTCONFIG_HMA),y)
+ifeq ($(RTCONFIG_TPVPN),y)
 	mkdir -p $(INSTALLDIR)/rom/vpn
 	install -m 0644 vpn/HMA_TCP.JSON $(INSTALLDIR)/rom/vpn/HMA_TCP.JSON
 	install -m 0644 vpn/HMA_UDP.JSON $(INSTALLDIR)/rom/vpn/HMA_UDP.JSON
@@ -446,13 +446,6 @@ ifeq ($(BRCM_CHIP),63178)
 	cp -rf rom/etc/adsl1 $(INSTALLDIR)/rom/etc
 endif
 
-ifeq ($(RTCONFIG_HND_ROUTER_BE_4916),y)
-ifneq ($(wildcard $(SRCBASE)/../../../../../../opensource/net/enet/impl7/sf2_scripts),)
-	mkdir -p $(INSTALLDIR)/rom/etc/sf2
-	install -m 0755 $(SRCBASE)/../../../../../../opensource/net/enet/impl7/sf2_scripts/* $(INSTALLDIR)/rom/etc/sf2
-endif
-endif
-
 ifeq ($(BUILD_NAME), GT10)
 	install -m 0755 apps_scripts/$(BUILD_NAME)/ingress_filter_config.sh $(INSTALLDIR)/usr/sbin
 	install -m 0755 apps_scripts/$(BUILD_NAME)/ingress_filter_config_bridging.sh $(INSTALLDIR)/usr/sbin
@@ -460,10 +453,6 @@ endif
 
 ifeq ($(RTCONFIG_BCMARM),y)
 	install -m 0755 apps_scripts/brcmsysinfo.sh $(INSTALLDIR)/usr/sbin
-endif
-
-ifeq ($(RTCONFIG_GEARUPPLUGIN),y)
-	install -m 0755 gearup_script/guplugin_monitor.sh $(INSTALLDIR)/usr/sbin
 endif
 
 .PHONY: dummy

@@ -82,11 +82,11 @@ static void config_redirect_pc_time(FILE *fp) {
 	char *datestr[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 	int i;
 #endif
-	char *fftype = pcredirect;
+	char *fftype;
 	int pc_count;
 
 	follow_pc = get_all_pc_list(&pc_list);
-	if(follow_pc == NULL || follow_pc->events == NULL){
+	if(follow_pc == NULL){
 		_dprintf("Couldn't get the Parental-control rules correctly!\n");
 		return;
 	}
@@ -100,7 +100,7 @@ static void config_redirect_pc_time(FILE *fp) {
 
 	follow_pc = match_enabled_pc_list(pc_list, &enabled_list, 1);
 	free_pc_list(&pc_list);
-	if(follow_pc == NULL || follow_pc->events == NULL){
+	if(follow_pc == NULL){
 		_dprintf("Couldn't get the enabled rules of Parental-control correctly!\n");
 		return;
 	}

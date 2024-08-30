@@ -62,11 +62,11 @@
 	border-right: 2px solid rgb(0 0 0 / 0.2);
 }
 .checkbox, .checkbox.off{
-	box-shadow: 0 0 0 1.5px #006CE1;
+	box-shadow: 0 0 0 1.5px rgb(0, 108, 225);
 }
 .checkbox.on{
-	box-shadow: 0 0 0 1.5px #006CE1;
-	background-color: #006CE1;
+	box-shadow: 0 0 0 1.5px rgb(0, 108, 225);
+	background-color: rgb(0, 108, 225);
 }
 .profile_setting_item{
 	background: rgb(247, 249, 252);
@@ -146,19 +146,19 @@
 	background: rgb(255, 255, 255);
 }
 .action_container .btn_container{
-	background: #006CE1;
+	background: rgb(0, 108, 225);
 }
 .action_container .btn_container.valid_fail{
 	background: rgba(24, 24, 24, 0.6);
 }
 .action_container_hint{
-	color: #006CE1;
+	color: rgb(0, 108, 225);
 }
 .profile_title_item{
-	color: #006CE1;
+	color: rgb(0, 108, 225);
 }
 .popup_bg{
-	background-color: #f5f5f5f2 !important;
+	background: rgb(255 255 255 / 80%);
 }
 .hidden_mask{
 	background: rgb(255, 255, 255);
@@ -181,7 +181,7 @@
 	max-width: initial !important;
 }
 .feature_desc .title{
-	color: #006CE1;
+	color: rgb(0, 108, 225);
 }
 .feature_desc .desc{
 	color: rgba(24, 24, 24, 0.87);
@@ -194,7 +194,7 @@
 }
 .feature_desc .step_text:before{
 	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect_white.svg);
-	background-color: #006CE1;
+	background-color: rgb(0, 108, 225);
 }
 .customize_alert .desc{
 	color: rgb(24, 24, 24);
@@ -203,16 +203,16 @@
 	background: initial;
 }
 .vpn_type_maxi_hint, .item_hint, .text_yellow{
-	color: #006CE1;
+	color: rgb(0, 108, 225);
 }
 .client_list_content_container .client_container{
 	background: rgb(247, 249, 252);
 }
 .client_list_content_container .client_container.no_data{
-	color: #006CE1;
+	color: rgb(0, 108, 225);
 }
 .svr_item_text_container .svr_type_title{
-	color: #006CE1;
+	color: rgb(0, 108, 225);
 }
 .svr_item_text_container .svr_type_text{
 	color: rgb(24, 24, 24);
@@ -226,11 +226,11 @@
 	max-width: initial;
 }
 .client_content_bg .client_info_bg .status_icon{
-	background-color: #006CE1;
+	background-color: rgb(0, 108, 225);
 }
 .client_content_bg .detail_icon{
-	border: 2px solid #006CE1;
-	color: #006CE1;
+	border: 2px solid rgb(0, 108, 225);
+	color: rgb(0, 108, 225);
 }
 .client_content_bg .client_contorl_bg .contorl_btn{
 	background-color: rgb(247, 249, 252);
@@ -245,7 +245,7 @@
 .radio_options_container .radio_container.selected,
 .btn_options_container .btn_container.selected{
 	background-color: initial;
-	color: #006CE1;
+	color: rgb(0, 108, 225);
 }
 .profile_setting_item .title .key_icon{
 	display: none;
@@ -254,13 +254,13 @@
 	color: rgb(24, 24, 24);
 }
 .client_connect_info_container .connect_client_title{
-	color: #006CE1;
+	color: rgb(0, 108, 225);
 }
 .switch.on {
-	background: #006CE1;
+	background: rgb(16 185 129);
 }
 .switch.off {
-	background: #666666;
+	background: #818181;
 }
 .switch:before{
 	background: #FFFFFF;

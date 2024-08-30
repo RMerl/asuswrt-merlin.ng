@@ -19,13 +19,13 @@
 <script type="text/javascript" language="JavaScript" src="/js/table/table.js"></script>
 <style>
 	@font-face{
-		font-family: Xolonium;
-    		src: url(/fonts/xolonium.regular.woff) format("woff"),
-         	     url(/fonts/xolonium.regular.otf) format("opentype");
+		font-family: rog;
+		src: url(/fonts/ROG_Fonts-Regular.woff) format("woff"),
+		     url(/fonts/ROG_Fonts-Regular.otf) format("opentype");
 	}
 	.tableApi_table, .tableApi_table th{
-		font-family: Xolonium;
-		font-size: 16px;
+		font-family: rog;
+		font-size: 20px;
 	}
 	.tableApi_table th{
 		background: #0000;
@@ -61,7 +61,7 @@
 		border-radius: 5px;
 	}
 	.gameName{
-		font-family: Xolonium;
+		font-family: rog;
 		line-height: 10px;
 	}
 	#gameListWrap{

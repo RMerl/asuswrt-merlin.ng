@@ -2594,10 +2594,6 @@ config RTCONFIG_UUPLUGIN
 	bool "UU plugin support"
 	default n
 
-config RTCONFIG_GEARUPPLUGIN
-	bool "GearUP plugin support - UU international"
-	default n
-
 config RTCONFIG_TCPLUGIN
 	bool "Tencent plugin support"
 	default n
@@ -2764,6 +2760,10 @@ config RTCONFIG_WIFI7
 config RTCONFIG_MLO
         bool "MLO"
         default n
+
+config RTCONFIG_DIS_MLO_QIS
+	bool "MLO"
+	default n
 
 config RTCONFIG_MLO_FH
         bool "MLO FRONTHAUL"
@@ -3178,7 +3178,3 @@ config RTCONFIG_HND_GPIO
 config RTCONFIG_PRESSURE_SENSOR
 	bool "Pressure sensor"
 	default n
-
-config RTCONFIG_MLO_CONFIG_566
-        bool "MLO default config 566 in 2566 model"
-        default n

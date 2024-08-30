@@ -23,16 +23,16 @@
 	box-shadow: 0px 2px 4px rgb(0 0 0 / 10%), 0px 0px 1px rgb(0 0 0 / 5%);
 }
 .schedule_header_container .collapse_icon:before{
-	border-top: 2px solid #006CE1;
-	border-right: 2px solid #006CE1;
+	border-top: 2px solid #248DFF;
+	border-right: 2px solid #248DFF;
 	top: -2px;
 }
 .schedule_header_container .collapse_icon:hover{
 	border: 1px solid #B1B2B1;
 }
 .schedule_header_container .collapse_icon:hover:before{
-	border-top: 2px solid #006CE1;
-	border-right: 2px solid #006CE1;
+	border-top: 2px solid #248DFF;
+	border-right: 2px solid #248DFF;
 }
 .schedule_header_container .collapse_icon.expand:before{
 	top: 4px;
@@ -72,15 +72,15 @@
 	color: #006CE1;
 }
 .sche_action_container > div.sche_btn_save{
-	border: 1px solid #006CE1;
-	background: #006CE1;
+	border: 1px solid #248DFF;
+	background: #248DFF;
 }
 .sche_action_container > div.sche_btn_cancel{
 	border: 1px solid #B3B3B3;
 	color: #4D4D4D;
 }
 .schedule_timeset_container > .sche_btn_container{
-	background: #006CE1;
+	background: #248DFF;
 }
 .hr_mins_container .hr_mins_title{
 	color: #006CE1;
@@ -92,8 +92,8 @@
 	color: #4D4D4D;
 }
 .combination_input_select .combi_sel:before{
-	border-top: 2px solid #006CE1;
-	border-right: 2px solid #006CE1;
+	border-top: 2px solid #248DFF;
+	border-right: 2px solid #248DFF;
 }
 .combination_input_select .combi_sel_list{
 	background: #FFFFFF;
@@ -114,8 +114,8 @@
 	background: rgba(0, 133, 255, 0.1);
 }
 .all_day_component .cb_icon.clicked{
-	background-color: #006CE1;
-	border: 1px solid #006CE1;
+	background-color: #248DFF;
+	border: 1px solid #248DFF;
 }
 .all_day_component .cb_text{
 	color: #4D4D4D;
@@ -124,7 +124,7 @@
 	color: #262626;
 }
 .weekdayset_component > div.clicked{
-	background: #006CE1;
+	background: #248DFF;
 	color: #FFFFFF;
 }
 .add_new_component{
@@ -141,7 +141,7 @@
 	background-image: url(/images/New_ui/weekSchedule/white_theme/Content/add_circle_outline.svg);
 }
 .icon_switch.off{
-	background: #666666;
+	background: #818181;
 }
 .icon_switch:before{
 	background: #FFFFFF;
@@ -159,8 +159,8 @@
 	background: initial;
 }
 .quickset_component > div.clicked{
-	background: #006CE1;
-	border: 1px solid #006CE1;
+	background: #248DFF;
+	border: 1px solid #248DFF;
 	color: rgb(255, 255, 255) !important;
 }
 .quickset_component > div.custom{

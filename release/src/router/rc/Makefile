@@ -1122,7 +1122,7 @@ endif
 ifeq ($(GTAX6000),y)
 OBJS += antled.o
 endif
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT-BE98 GT-BE98_PRO GT-BE96 GT-BE19000 RT-BE58U TUF-BE3600 RT-BE92U RT-BE95U))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT-BE98 GT-BE98_PRO GT-BE96 GT-BE19000 RT-BE58U TUF-BE3600 RT-BE92U))
 OBJS += rtkmonitor.o
 endif
 
@@ -1396,10 +1396,10 @@ endif
 ifeq ($(or $(RTAX55),$(RTAX1800),$(RTAX58U_V2),$(RTAX3000N)),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc rtkswitch
 endif
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),BR63 GT-BE98 GT-BE98_PRO GT-BE96 RT-BE58U TUF-BE3600 GT-BE19000 RT-BE92U RT-BE95U))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),BR63 GT-BE98 GT-BE98_PRO GT-BE96 RT-BE58U TUF-BE3600 GT-BE19000 RT-BE92U))
 	@cd $(INSTALLDIR)/sbin && ln -sf rc rtkswitch
 endif
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT-BE98 GT-BE98_PRO GT-BE96 GT-BE19000 RT-BE58U TUF-BE3600 RT-BE92U RT-BE95U))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT-BE98 GT-BE98_PRO GT-BE96 GT-BE19000 RT-BE58U TUF-BE3600 RT-BE92U))
 	@cd $(INSTALLDIR)/sbin && ln -sf rc rtkmonitor
 endif
 ifeq ($(RTCONFIG_QCA),y)
@@ -1451,11 +1451,10 @@ ifeq ($(RTCONFIG_APP_PREINSTALLED)$(RTCONFIG_APP_NETINSTALLED),y)
 endif
 endif
 	@cd $(INSTALLDIR)/sbin && ln -sf rc restart_wireless
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX55 RT-AX1800 RT-AX58U_V2 RT-AX3000N BR63 GT-BE98 GT-BE98_PRO GT-BE96 RT-BE58U TUF-BE3600 GT-BE19000 RT-BE92U RT-BE95U))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX55 RT-AX1800 RT-AX58U_V2 RT-AX3000N BR63 GT-BE98 GT-BE98_PRO GT-BE96 RT-BE58U TUF-BE3600 GT-BE19000 RT-BE92U))
 	@cd $(INSTALLDIR)/sbin && ln -sf rc config_switch
 endif
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT-BE98 GT-BE98_PRO GT-BE96 RT-BE58U TUF-BE3600 GT-BE19000 RT-BE92U RT-BE95U))
-	@cd $(INSTALLDIR)/sbin && ln -sf rc config_extwan
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT-BE98 GT-BE98_PRO GT-BE96 RT-BE58U TUF-BE3600 GT-BE19000 RT-BE92U))
 	@cd $(INSTALLDIR)/sbin && ln -sf rc reset_extwan
 endif
 ifeq ($(RTCONFIG_HW_DOG), y)
@@ -2278,7 +2277,7 @@ ledg.o:
 	@-cp -f ./prebuild/ledg.o .
 endif
 endif
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT-BE98 GT-BE98_PRO GT-BE96 GT-BE19000 RT-BE58U TUF-BE3600 RT-BE92U RT-BE95U))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT-BE98 GT-BE98_PRO GT-BE96 GT-BE19000 RT-BE58U TUF-BE3600 RT-BE92U))
 ifneq ($(wildcard ./prebuild/rtkmonitor.o),)
 rtkmonitor.o:
 	@-cp -f ./prebuild/rtkmonitor.o .

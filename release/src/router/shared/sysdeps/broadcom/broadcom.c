@@ -527,6 +527,19 @@ void add_beacon_vsie_by_unit(int unit, int subunit, char *hexdata)
 }
 
 #if defined(RTCONFIG_MLO)
+int is_mlo_dwb_mssid(char *ifname)
+{
+    char word[100], *next;
+    char wl_prefix[] = "wlXXXXXXXXXXXXX_";
+    char mlo_ifnames[128] = { 0 }, ifnames[32] = { 0 };
+    int bh = -1, mlo_bh_idx = -1;
+
+    snprintf(wl_prefix, sizeof(wl_prefix), "wl%d.%d_ifname", nvram_get_int("dwb_band"), nvram_get_int("mlo_dwb_mssid_subunit"));
+    if(strcmp(nvram_safe_get(wl_prefix), ifname) == 0)
+        return 1;
+    return 0;
+}
+
 #define MLO_API_DEBUG   "/jffs/MLO_API_DEBUG"
 #define MLO_API_DBG(fmt,args...) \
 	if(f_exists(MLO_API_DEBUG) > 0) { \
@@ -737,7 +750,6 @@ void add_beacon_vsie_guest(char *hexdata)
             if ((is_intf_up(nvram_safe_get(buf)) != -1)  // interface exist
 #if defined(RTCONFIG_MLO)
                 && !is_mlo_dwb_mssid(nvram_safe_get(buf))
-                && !is_compatible_network(nvram_safe_get(buf))
 #endif
                 )
                 add_beacon_vsie_by_unit(unit, subunit, hexdata);
@@ -755,10 +767,6 @@ void add_beacon_vsie(char *hexdata)
 	int unit = 0;
 	char word[100], *next;
 	char wl_ifnames[32] = { 0 };
-#ifdef RTCONFIG_MLO
-	int subunit=0;
-	char iotFhIfname[32] = {0};
-#endif
 #endif
 
 	memset(value, 0, sizeof(value));
@@ -771,17 +779,6 @@ void add_beacon_vsie(char *hexdata)
 			wl_add_ie(unit, 0, pktflag, len, (uchar *) OUI_ASUS, value);
 			unit++;
 		}
-#ifdef RTCONFIG_MLO
-		if(get_compatible_network(-1, iotFhIfname, sizeof(iotFhIfname)) != NULL)
-		{
-			foreach (word, iotFhIfname, next) {
-				unit = subunit = -1;
-				sscanf(word, "wl%d.%d", &unit, &subunit);
-				if(subunit > 0)
-					add_beacon_vsie_by_unit(unit, subunit, hexdata);
-			}
-		}
-#endif
 #else
 		wl_add_ie(0, 0, pktflag, len, (uchar *) OUI_ASUS, value);
 #endif
@@ -824,7 +821,6 @@ void del_beacon_vsie_guest(char *hexdata)
             if ((is_intf_up(nvram_safe_get(buf)) != -1)  // interface exist
 #if defined(RTCONFIG_MLO)
                 && !is_mlo_dwb_mssid(nvram_safe_get(buf))
-                && !is_compatible_network(nvram_safe_get(buf))
 #endif
                 )
                 del_beacon_vsie_by_unit(unit, subunit, hexdata);
@@ -839,27 +835,12 @@ void del_beacon_vsie(char *hexdata)
 	int unit = 0;
 	char word[100], *next;
 	char wl_ifnames[32] = { 0 };
-#ifdef RTCONFIG_MLO
-	int subunit=0;
-	char iotFhIfname[32] = {0};
-#endif
 
 	strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
 	foreach (word, wl_ifnames, next) {
 		wl_del_ie_with_oui(unit, 0, (uchar *) OUI_ASUS);
 		unit++;
 	}
-#ifdef RTCONFIG_MLO
-	if(get_compatible_network(-1, iotFhIfname, sizeof(iotFhIfname)) != NULL)
-	{
-		foreach (word, iotFhIfname, next) {
-			unit = subunit = -1;
-			sscanf(word, "wl%d.%d", &unit, &subunit);
-			if(subunit > 0)
-				del_beacon_vsie_by_unit(unit, subunit, hexdata);
-		}
-	}
-#endif
 #else
 	wl_del_ie_with_oui(0, 0, (uchar *) OUI_ASUS);
 #endif
@@ -1148,7 +1129,7 @@ unsigned int test_get_uplinkports_linkrate(char *ifname)
 #define MAX_RTL_PORTS 4
 #endif
 
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U)
 unsigned int
 rtk_get_uplinkports_linkrate(char *ifname)
 {
@@ -1297,15 +1278,13 @@ get_uplinkports_linkrate(char *ifname)
 	char lanports_seq[64] = {"eth1 eth2 eth3 eth4 eth5 eth6"};   /* L1 L2 L3 L4 L5 L6 */
 #elif defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000)
         char lanports_seq[64] = {"vlan4094 eth1 eth1 eth1 eth2 eth3"};   /* L1 L2 L3 L4 L5 L6 */
-#elif defined(BQ16) || defined(BQ16_PRO)
-        char lanports_seq[64] = {"eth1 eth2 eth3 eth4"};   /* L1 L2 L3 L4 */
 #elif defined(ET12) || defined(XT12)
 	char lanports_seq[64] = {"eth1 eth2 eth3"};   /* L1 L2 L3 */
 #elif defined(RTBE88U)
 	char lanports_seq[64] = {"eth1 eth2 eth3 eth4 eth5 eth6 eth7 eth8 eth9"};   /* L1 L2 L3 L4 L5 L6 L7 L8 L9 */
 #elif defined(RTBE86U)
 	char lanports_seq[64] = {"eth1 eth2 eth3 eth4"};/* L1 L2 L3 L4 */
-#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U)
 	char lanports_seq[64] = {"vlan4094 eth1 eth1 eth1"};/* L1 L2 L3 L4 */
 #endif
 
@@ -1392,7 +1371,7 @@ get_uplinkports_linkrate(char *ifname)
 	len = strlen(out_buf);
 #if defined(GTAXE11000) || defined(GTAX6000) || defined(RTAX88U_PRO) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(ET12) || defined(XT12) \
 		|| defined(RTAX86U) || defined(RTAX68U) || defined(RTAX86U_PRO) || defined(RTBE96U) || defined(GTBE96) || defined(RTBE88U) || defined(RTBE86U) || defined(RTBE58U) || defined(TUFBE3600) \
-		|| defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(BQ16) || defined(BQ16_PRO)
+		|| defined(GTBE19000) || defined(RTBE92U)
 	foreach(word, lanports_seq, next)
 #else
 	foreach(word, nvram_safe_get("wired_ifnames"), next)
@@ -1406,7 +1385,7 @@ get_uplinkports_linkrate(char *ifname)
 			break;
 		}
 		sprintf(pif[i], "%s", word);	// here the report follows lan_ifnames
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U)
 		if (!strcmp(word, "eth1") || !strcmp(word, "vlan4094"))
 			ret = rtk_get_phy_status(i);
 		else
@@ -1416,7 +1395,7 @@ get_uplinkports_linkrate(char *ifname)
 			len += sprintf(out_buf + len, "L%d=X;", i);
 			lrate[i] = 0;
 		} else{
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U)
 			if (!strcmp(word, "eth1") || !strcmp(word, "vlan4094"))
 				ret = rtk_get_phy_speed(i);
 			else
@@ -2922,7 +2901,7 @@ void get_phy_port_mapping(phy_port_mapping *port_mapping)
 		.port[3] = { .phy_port_id = 3, .ext_port_id = 3, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth1", .flag = (0 | PHY_PORT_FLAG_BYPASS_CABLE_DIAG), .seq_no = -1, .ui_display = "LAN-3" },
 		.port[4] = { .phy_port_id = 4, .ext_port_id = 4, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth1", .flag = (0 | PHY_PORT_FLAG_BYPASS_CABLE_DIAG), .seq_no = -1, .ui_display = "LAN-4" },
 		.port[5] = { .phy_port_id = -1, .ext_port_id = -1, .label_name = "U1", .cap = PHY_PORT_CAP_USB, .max_rate = 5000, .ifname = NULL, .flag = 0, .seq_no = -1, .ui_display = NULL },
-#elif defined(RTBE92U) || defined(RTBE95U)
+#elif defined(RTBE92U)
 		.count = 6,
 		.port[0] = { .phy_port_id = 0, .ext_port_id = -1, .label_name = "W0", .cap = PHY_PORT_CAP_WAN | PHY_PORT_CAP_WANLAN, .max_rate = 10000, .ifname = "eth0", .flag = 0, .seq_no = -1, .ui_display = "10G WAN/LAN-1" },
 		.port[1] = { .phy_port_id = 1, .ext_port_id = 1, .label_name = "L1", .cap = PHY_PORT_CAP_LAN | PHY_PORT_CAP_WANLAN, .max_rate = 2500, .ifname = "vlan4094", .flag = (0 | PHY_PORT_FLAG_BYPASS_CABLE_DIAG), .seq_no = -1, .ui_display = "2.5G WAN/LAN-1" },

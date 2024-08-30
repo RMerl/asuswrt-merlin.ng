@@ -663,7 +663,7 @@ function client_gen_client_component(_dataArray, _node_info){
 			var $clientConnect = $("<div>");
 			if(nodeClientObj.isOnline){
 				$clientConnect.addClass("client_connect_icon");
-				if(isSupport("mlo") && (nodeClientObj.mlo == "1")){
+				if(isSupport("mlo") && nodeClientObj.mlo){
 					$clientConnect.addClass("mlo");
 				}
 				else{
@@ -2174,7 +2174,7 @@ function network_set_fronthaul_info(_node_info){
 		if(specific_data == "" || specific_data == undefined)
 			$("#network_block .fronthaul_content").find("#fronthaul_wl_" + item + "").remove();
 		else{
-			var ap_info = {"name":"", "mac":"", "ssid":"", "type":"", "is_dwb":false, "dwb_band":"-1", "radio_on":false};
+			var ap_info = {"name":"", "mac":"", "ssid":"", "type":"", "is_dwb":false, "radio_on":false};
 			ap_info["name"] = item;
 			ap_info["mac"] = function(){
 				var mac = "";
@@ -2196,8 +2196,6 @@ function network_set_fronthaul_info(_node_info){
 			ap_info["is_dwb"] = function(){
 				var result = false;
 				if(dwb_info.mode == "1"){
-					const dwb_band = (_node_info.dwb_band == undefined) ? dwb_info.band : _node_info.dwb_band;
-					ap_info["dwb_band"] = dwb_band;
 					var cur_ap_unit = "";
 					$.each(band_info, function(band_idx, band_item){
 						if(band_item.ap_name == item){
@@ -2208,8 +2206,8 @@ function network_set_fronthaul_info(_node_info){
 					if(cur_ap_unit === ""){
 						cur_ap_unit = ap_list_idx;
 					}
-					if(cur_ap_unit == dwb_band){
-						var wl_closed = httpApi.nvramGet(["wl" + dwb_band + "_closed"])["wl" + dwb_band + "_closed"];
+					if(cur_ap_unit == dwb_info.band){
+						var wl_closed = httpApi.nvramGet(["wl" + dwb_info.band + "_closed"])["wl" + dwb_info.band + "_closed"];
 						if(isSupport("amas_fronthaul_network")){
 							var fh_ap_enabled = httpApi.nvramGet(["fh_ap_enabled"]).fh_ap_enabled;
 							if(fh_ap_enabled == "0"){
@@ -2272,12 +2270,12 @@ function network_set_fronthaul_info(_node_info){
 			if(_ap_info.is_dwb){
 				_obj.find("#bh_info").show();
 				_obj.find("#fh_info").hide();
-				const dwb_hint = `* ${band_text} <#AiMesh_backhaul_band_5GHz-2_desc1#> ${(isReNode) ? "" : `<#AiMesh_backhaul_band_5GHz-2_desc2#>`}`;
+				var dwb_hint = "* "+ band_text + ' <#AiMesh_backhaul_band_5GHz-2_desc1#> <#AiMesh_backhaul_band_5GHz-2_desc2#>';
 				_obj.find("#bh_info #dwb_hint").html(dwb_hint);
 				_obj.find("#bh_info #dwb_hint").find(".faq-link").removeAttr("onclick").click(function(e){
 					e = e || event;
 					e.stopPropagation();
-					change_wl_unit_status(_ap_info.dwb_band);
+					change_wl_unit_status(dwb_info.band);
 				});
 			}
 			else{
@@ -3828,7 +3826,6 @@ function change_node(_node_info){
 	var isReNode = (_node_info.mac != cap_mac) ? true : false;
 	var hide_manage = true;
 	var hide_iperf = !isSupport("cd_iperf");
-
 	if(isReNode || isSupport("led_ctrl_cap"))
 		hide_manage = false;
 
@@ -4222,7 +4219,7 @@ function initial_AiMesh(){
 		$connect_line_info_bg.append(gen_line_info("", "disconnected", "<#Disconnected#>"));
 		var $faq = $("<div>");
 		$faq.addClass("faq_bg");
-		var faq_text = `<#AiMesh_Topology_FAQ#>`;
+		var faq_text = "<#AiMesh_Topology_FAQ#>";
 		faq_text += "<br>";
 		faq_text += "<a id='connect_line_info_faq' href='' target='_blank' class='text_link'>FAQ.</a>";
 		$faq.html(faq_text);

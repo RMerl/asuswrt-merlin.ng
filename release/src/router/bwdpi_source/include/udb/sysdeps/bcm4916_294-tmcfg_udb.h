@@ -25,7 +25,7 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Fri Jan 26 10:34:32 2024
+ * Date: Thu Feb 15 18:04:03 2024
  */
 #ifndef __TMCFG__UDB_AUTOCONF_OUTPUT_H_
 #define __TMCFG__UDB_AUTOCONF_OUTPUT_H_
@@ -93,8 +93,8 @@
 
 #define TMCFG_BRAND_ASUS 1 // y
 #define TMCFG_BRAND "asus"
-#define TMCFG_MODEL_RT_BE96U 1 // y
-#define TMCFG_MODEL "rt-be96u"
+#define TMCFG_MODEL_TUF_BE3600 1 // y
+#define TMCFG_MODEL "tuf-be3600"
 #define TMCFG_OEM_SRC 1 // y
 #define TMCFG_OEM_SRC_BRCM_FC_504L0X 1 // y
 
@@ -109,7 +109,7 @@
 #define TMCFG_CPU_64BITS 1 // y
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_GPL_RT-BE96U_3.0.0.6.102.1162/release/src-rt-5.04behnd.4916/kernel/linux-4.19"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_GPL_TUF-BE3600_3.0.0.6.102.33710/release/src-rt-5.04behnd.4916/kernel/linux-4.19"
 #define TMCFG_KERN_ARCH "arm64"
 
 /*
@@ -155,7 +155,7 @@
 #define TMCFG_E_UDB_CORE_REV_VER 20
 #define TMCFG_E_UDB_CORE_SHN_REV_NUM 0
 #define TMCFG_E_UDB_CORE_USE_KBUILD 1 // y
-#define TMCFG_E_UDB_CORE_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_GPL_RT-BE96U_3.0.0.6.102.1162/release/src-rt-5.04behnd.4916/kernel/bcmkernel/include -Wno-incompatible-pointer-types -I/opt/ASUS/asuswrt_GPL_RT-BE96U_3.0.0.6.102.1162/release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/include/bcm963xx -mno-outline-atomics"
+#define TMCFG_E_UDB_CORE_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_GPL_TUF-BE3600_3.0.0.6.102.33710/release/src-rt-5.04behnd.4916/kernel/bcmkernel/include -Wno-incompatible-pointer-types -I/opt/ASUS/asuswrt_GPL_TUF-BE3600_3.0.0.6.102.33710/release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/include/bcm963xx -mno-outline-atomics"
 #define TMCFG_E_UDB_CORE_CONN_EXTRA 1 // y
 #define TMCFG_E_UDB_CORE_RULE_FORMAT_V2 0 // n
 #define TMCFG_E_UDB_CORE_MESH 1 // y
@@ -213,10 +213,10 @@
 #define TMCFG_E_UDB_SHELL_CT_MARK_RSV 1 // y
 #define TMCFG_E_UDB_SHELL_CT_MARK_RSV_BITS 3
 #define TMCFG_E_UDB_SHELL_PROCFS 1 // y
-#define TMCFG_E_REL_PKG_MAJ_VER 2
+#define TMCFG_E_REL_PKG_MAJ_VER 1
 #define TMCFG_E_REL_PKG_MIN_VER 0
-#define TMCFG_E_REL_PKG_REV_VER 7
-#define TMCFG_E_REL_PKG_LOCAL_VER "No_GPL_b5e749f_RELS_0126"
+#define TMCFG_E_REL_PKG_REV_VER 1
+#define TMCFG_E_REL_PKG_LOCAL_VER "tuf-be3600_rc01_2024-02-15"
 
 /*
  * Accompany applications or modules
@@ -225,7 +225,7 @@
 /*
  * Kernel
  */
-#define TMCFG_APP_K_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_GPL_RT-BE96U_3.0.0.6.102.1162/release/src-rt-5.04behnd.4916/kernel/bcmkernel/include -I/opt/ASUS/asuswrt_GPL_RT-BE96U_3.0.0.6.102.1162/release/src-rt-5.04behnd.4916/shared/opensource/include/bcm963xx -I/opt/ASUS/asuswrt_GPL_RT-BE96U_3.0.0.6.102.1162/release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/include/bcm963xx -I/opt/ASUS/asuswrt_GPL_RT-BE96U_3.0.0.6.102.1162/release/src-rt-5.04behnd.4916/bcmdrivers/opensource/include/bcm963xx"
+#define TMCFG_APP_K_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_GPL_TUF-BE3600_3.0.0.6.102.33710/release/src-rt-5.04behnd.4916/kernel/bcmkernel/include -I/opt/ASUS/asuswrt_GPL_TUF-BE3600_3.0.0.6.102.33710/release/src-rt-5.04behnd.4916/shared/opensource/include/bcm963xx -I/opt/ASUS/asuswrt_GPL_TUF-BE3600_3.0.0.6.102.33710/release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/include/bcm963xx -I/opt/ASUS/asuswrt_GPL_TUF-BE3600_3.0.0.6.102.33710/release/src-rt-5.04behnd.4916/bcmdrivers/opensource/include/bcm963xx"
 #define TMCFG_APP_K_TDTS_NFFW 0 // n
 #define TMCFG_APP_K_TDTS_UDBFW 1 // y
 #define TMCFG_APP_K_TDTS_UDBFW_EXTRA_SYMBOLS ""

@@ -211,7 +211,7 @@ system.aMesh = (() => {
     object.aMeshSupport = isSupport("amas");
     object.aMeshRouterSupport = isSupport("amasRouter");
     object.aMeshPrelinkSupport = isSupport("prelink");
-    object.dwbMode = system.mloSupport ? "0" : dwb_mode;
+    object.dwbMode = object.dwbMode = system.mloEnabled ? "0" : dwb_mode;
     object.dwbBand = nBandArray[dwb_band];
     object.nodeList = (() => {
         let { aMeshSupport, aMeshRouterSupport } = object;

@@ -10,7 +10,7 @@ MODELS_HAVE_TRAFFIC_ANALYZER = RT-AC3200 RT-AC87U RT-AC88U RT-AX88U RT-AC86U GT-
 	RT-AX86U_PRO \
 	MAP-AC2200 MAP-AC2200V RT-AC95U \
 	RT-AXE7800 GT10 RT-AX9000 \
-	GT-AXE11000 4G-AC86U GT-AX11000_PRO 4G-AX56 ET12 XT12 GT-AXE16000 GT-BE98 GT-AX6000 RT-AX88U_PRO RT-BE96U GT-BE98_PRO XC5 GT-BE96 RT-BE88U RT-BE86U RT-BE58U TUF-BE3600 GT-BE19000 RT-BE92U RT-BE95U
+	GT-AXE11000 4G-AC86U GT-AX11000_PRO 4G-AX56 ET12 XT12 GT-AXE16000 GT-BE98 GT-AX6000 RT-AX88U_PRO RT-BE96U GT-BE98_PRO XC5 GT-BE96 RT-BE88U RT-BE86U RT-BE58U TUF-BE3600 GT-BE19000 RT-BE92U
 
 QIS_V2 = DSL-AC68U RT-AC88Q
 
@@ -107,11 +107,13 @@ ifneq ($(BUILD_NAME),DSL-AX82U)
 	rm -rf $(INSTALLDIR)/www/mobile/pages/PTM_manual_setting_page.html
 endif
 
-ifneq ($(RTCONFIG_WL_SCHED_V3), y)
-	cp $(TOP)/www/sysdep/FUNCTION/WL_SCHED_V1/Advanced_WAdvanced_Content.asp $(INSTALLDIR)/www/Advanced_WAdvanced_Content.asp
+ifeq ($(RTCONFIG_WL_SCHED_V2), y)
+ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT-AXE11000 RT-AXE95Q ET8PRO ET8_V2 RT-BE96U RT-BE88U RT-BE86U GT-BE96 GT-BE98 GT-BE98_PRO BT10 BQ16 BQ16_PRO RT-BE58U TUF-BE3600 GT-BE19000 RT-BE92U))
+	cp $(TOP)/www/sysdep/FUNCTION/WL_SCHED_V2/Advanced_WAdvanced_Content.asp $(INSTALLDIR)/www/Advanced_WAdvanced_Content.asp
 endif
-ifneq ($(RTCONFIG_PC_SCHED_V3), y)
-	cp $(TOP)/www/sysdep/FUNCTION/PC_SCHED_V1/ParentalControl.asp $(INSTALLDIR)/www/ParentalControl.asp
+endif
+ifeq ($(RTCONFIG_PC_SCHED_V3), y)
+	cp $(TOP)/www/sysdep/FUNCTION/PC_SCHED_V3/ParentalControl.asp $(INSTALLDIR)/www/ParentalControl.asp
 endif
 ifneq ($(or $(RTCONFIG_WL_SCHED_V2),$(RTCONFIG_PC_SCHED_V3)),y)
 	rm -rf $(INSTALLDIR)/www/js/weekSchedule
@@ -911,6 +913,8 @@ endif
 
 ifneq ($(RTCONFIG_ROG_UI),y)
 ifneq ($(RTCONFIG_TUF_UI),y)
+	rm -rf $(INSTALLDIR)/www/fonts/ROG_Fonts-Regular.otf
+	rm -rf $(INSTALLDIR)/www/fonts/ROG_Fonts-Regular.woff
 	rm -rf $(INSTALLDIR)/www/fonts/xolonium.regular.otf
 	rm -rf $(INSTALLDIR)/www/fonts/xolonium.regular.woff
 endif

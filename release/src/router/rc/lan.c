@@ -452,10 +452,6 @@ void start_wl(void)
 #ifdef RTCONFIG_MLO
 			bring_up_wifi_in_mlo_config();
 #endif
-#if defined(RTCONFIG_HND_ROUTER_BE_4916)
-			set_wltxpower();
-#endif
-
 		}
 	}
 	else if (strcmp(lan_ifname, "")) {
@@ -1359,9 +1355,9 @@ void start_lan(void)
 		fc_init();
 #endif /* HND_ROUTER */
 
-#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_PSR_GUEST) && !defined(RTCONFIG_HND_ROUTER_BE_4916)
+#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_PSR_GUEST)
 	update_wlx_psr_mbss();
-#endif	// #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_PSR_GUEST) && !defined(RTCONFIG_HND_ROUTER_BE_4916)
+#endif	// #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_PSR_GUEST)
 
 #ifdef RTCONFIG_TAGGED_BASED_VLAN
 	update_subnet_rulelist();
@@ -1659,7 +1655,7 @@ void start_lan(void)
 #ifdef RTAC87U
 		eval("brctl", "stp", lan_ifname, nvram_safe_get("lan_stp"));
 #else
-#if !defined(HND_ROUTER) || defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U)
+#if !defined(HND_ROUTER) || defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U)
 		if (is_routing_enabled())
 			eval("brctl", "stp", lan_ifname, nvram_safe_get("lan_stp"));
 		else
@@ -1962,8 +1958,10 @@ void start_lan(void)
 #endif
 #endif
 				}
-
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(RTAXE7800) && !defined(RTCONFIG_BCM_MFG)
+				if (!nvram_get_int("x_Setting") && !strcmp(ifname, "eth1")) continue;
+#endif
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U)
                                 if ((re_mode()) && !strcmp(ifname, "vlan4094")) continue;
 #endif
 				/* Set the logical bridge address to that of the first interface */
@@ -4666,7 +4664,6 @@ lan_up(char *lan_ifname)
 		}
 	}
 #endif
-	update_srv_cert_if_lan_ip_changed();
 #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_HND_ROUTER_AX)
 #if defined(XT8PRO) || defined(BT12) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(BM68) || defined(XT8_V2) || defined(ET8PRO) || defined(ET8_V2)
 	_dprintf("[%s][%d] skip (GPY211)\n", __FUNCTION__, __LINE__);
@@ -4704,7 +4701,6 @@ lan_down(char *lan_ifname)
 
 	update_lan_state(LAN_STATE_STOPPED, 0);
 
-	update_srv_cert_if_lan_ip_changed();
 #ifdef CONFIG_BCMWL5
 #if defined(RTCONFIG_WIRELESSREPEATER) || defined(RTCONFIG_PROXYSTA)
 #if defined(RTCONFIG_BCM4708) || defined(RTCONFIG_HND_ROUTER_AX)
@@ -5091,9 +5087,9 @@ void start_lan_wl(void)
 		fc_init();
 #endif /* HND_ROUTER */
 
-#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_PSR_GUEST) && !defined(RTCONFIG_HND_ROUTER_BE_4916)
+#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_PSR_GUEST)
 	update_wlx_psr_mbss();
-#endif	// #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_PSR_GUEST) && !defined(RTCONFIG_HND_ROUTER_BE_4916)
+#endif	// #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_PSR_GUEST)
 
 	if (sw_mode() == SW_MODE_REPEATER
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
@@ -5871,9 +5867,6 @@ void restart_wl(void)
 #ifdef RTCONFIG_MLO
 		bring_up_wifi_in_mlo_config();
 #endif
-#if defined(RTCONFIG_HND_ROUTER_BE_4916)
-		set_wltxpower();
-#endif
 	}
 
 #if 0
@@ -6106,7 +6099,7 @@ void lanaccess_wl(void)
 	/* this rule will flush ebtables broute table, so it must be the first function */
 	add_GN_WBL_EBTbrouteRule();
 #endif
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U)
 	start_rtkmonitor();
 #endif
 
@@ -6762,11 +6755,6 @@ void restart_wireless(void)
 	if (nvram_get_int("re_mode") == 1) {
 		if (killall("amas_lanctrl", SIGUSR1) != 0)
 			nvram_set_int("amas_recheck_bss", 1);
-
-		if (!nvram_contains_word("rc_support", "pwrctrl"))
-			dbG("\n\tDon't reset wltxpower!\n\n");
-		else
-			set_wltxpower();
 	}
 #endif
 #ifdef RTCONFIG_CFGSYNC

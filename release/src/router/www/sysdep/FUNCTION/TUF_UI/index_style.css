@@ -618,13 +618,13 @@ width:122px;
 
 .modelName_top{
 	text-align: left;
-	font-size: 28px;
+	font-size: 32px;
 	float:left;
-	margin: 20px 0 0 -210px;
+	margin: 5px 0 0 -210px;
 	text-shadow: 3px 2px #000;
 	font-weight: bold;
-	font-family: Xolonium;
-    word-break: break-word;
+	font-family: ROG;
+    word-break: break-all;
     width: 420px;
 }
 .cloud_main_radius{

@@ -358,6 +358,7 @@ function get_wl_unit_by_band(_band){
 	var wl_nband = "";
 	switch(_band){
 		case "2G":
+		case "2G1":
 			wl_nband = "2";
 			break;
 		case "5G":
@@ -1740,7 +1741,7 @@ var getRestartService = function(){
 		return "reboot";
 	}
 
-	if(isSupport("mlo") && qisPostData.hasOwnProperty("mld_enable")){
+	if(isSupport("mlo") && qisPostData.hasOwnProperty("mld_enable") && isSupport("bcmwifi")){
 		const wl_mlo_config = httpApi.nvramGet(["wl_mlo_config"]).wl_mlo_config;
 		if(wl_mlo_config == "") return "reboot";
 	}

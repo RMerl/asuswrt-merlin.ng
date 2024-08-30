@@ -23,8 +23,10 @@
 .profile_item_container.addnew{
 	margin-top: 10px;
 }
-.profile_item_container .item_text_container:before,
-.profile_item_container .item_text_container:after{
+.profile_item_container.addnew .item_text_container:before,
+.profile_item_container.addnew .item_text_container:after,
+.profile_item_container.wizard .item_text_container:before,
+.profile_item_container.wizard .item_text_container:after{
 	content: initial;
 }
 .profile_item_container.addnew .item_text_container,
@@ -54,31 +56,6 @@
 }
 .profile_item_container.wizard .item_text_container .main_info{
 	font-size: 16px;
-}
-.profile_item_container.profile_list .item_text_container{
-	width: 100%;
-	margin-left: 0;
-	min-height: 100px;
-}
-.profile_item_container.profile_list .main_info{
-	margin-left: 48px;
-	flex-grow: 1;
-	margin-top: 12px;
-}
-.profile_item_container.profile_list .main_info:before{
-	left: -32px;
-}
-.main_info > .main_info_text{
-	height: 30px;
-}
-.profile_item_container.profile_list .bottom_info{
-	min-height: 28px;
-	background-color: rgb(0 0 0 / 20%);
-	border-radius: 0px 0px 8px 8px;
-	padding-left: 48px;
-	display: flex;
-	align-items: center;
-	color: #B9C5D4;
 }
 .item_text_container .main_info:before{
 	background-image: url(/images/New_ui/SDN/dark_theme/Category/ic-build.svg);
@@ -322,127 +299,73 @@
 .item_tag_container > .item_tag.Timer:before{
 	background-image: url(/images/New_ui/SDN/dark_theme/Image/timer.svg);
 }
-.item_text_container .bottom_info > div:not(:first-child){
-	margin-left: 20px;
+.item_text_container .sub_info span{
+	color: #99CAFF;
 }
-.item_text_container .bottom_info > div:not(:first-child):before{
-	position: absolute;
-	content: "";
-	height: 60%;
-	border-right: 1px solid rgb(255 255 255 / 0.3);
-	top: 20%;
-	left: -10px;
+.item_text_container .sub_info .point_icon{
+	width: 6px;
+	height: 6px;
+	background-color: rgb(181 189 201);
+	border-radius: 50%;
+	margin: 0 10px;
 }
-.item_text_container .bottom_info span{
-	color: #FFF;
-	margin-left: 8px;
-}
-.item_text_container .bottom_info .clients_num{
+.item_text_container .sub_info .clients_num{
 	position: relative;
+	margin-left: 32px;
 	font-weight: 400;
 	font-size: 14px;
 	letter-spacing: 0.1px;
-	display: flex;
+	color: #99CAFF;
 }
-.item_text_container .clients_num > .icon_client{
+.item_text_container .sub_info .clients_num:before{
+	content: "";
+	position: absolute;
+	left: -30px;
+	top: -5px;
 	width: 24px;
 	height: 24px;
 	background-position: 50%;
 	background-image: url(/images/New_ui/SDN/dark_theme/Devices/devices.svg);
 	background-repeat: no-repeat;
 }
-.item_text_container .status_info{
-	display: flex;
-}
-.status_info .conn_type{
+.item_text_container .sub_info .conn_type{
 	width: 24px;
 	height: 24px;
 	background-repeat: no-repeat;
 	background-position: 50%;
 	background-size: contain;
-	margin-right: 8px;
+	margin-right: 2px;
 }
-.status_info .icon_switch{
-	margin-left: 12px;
+.sub_info .conn_type.WiFi_offline{
+	background-image: url(/images/New_ui/SDN/dark_theme/Notification/wifi_off.svg);
 }
-.status_info .split_line{
-	background-color: rgb(255 255 255 / 0.3);
-	width: 1px;
-	height: 80%;
-}
-.status_info > div{
-	flex-basis: 50%;
-	display: flex;
-	align-items: center;
-	position: relative;
-}
-.status_info > .left_cntr{
-	justify-content: flex-start;
-}
-.status_info > .left_cntr > div{
-	position: relative;
-	margin-right: 0 !important;
-}
-.status_info > .left_cntr > div:not(:first-child){
-	margin-left: 10px;
-}
-.status_info > .left_cntr .conn_type{
-	width: 20px;
-	height: 20px;
-}
-.status_info > .right_cntr{
-	justify-content: flex-end;
-	margin-right: 16px;
-}
-.status_info .conn_type.WiFi{
-	--svg: url("data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22iso-8859-1%22%3F%3E%0A%3C!DOCTYPE%20svg%20PUBLIC%20%22-%2F%2FW3C%2F%2FDTD%20SVG%201.1%2F%2FEN%22%20%22http%3A%2F%2Fwww.w3.org%2FGraphics%2FSVG%2F1.1%2FDTD%2Fsvg11.dtd%22%3E%0A%3Csvg%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20width%3D%2241%22%20height%3D%2232%22%20viewBox%3D%220%200%2041%2032%22%3E%0A%3Cpath%20fill%3D%22%23DBDBDB%22%20d%3D%22M20.308%2023.692c-2%200-3.615%201.692-3.615%203.846s1.615%203.846%203.615%203.846c2%200%203.615-1.692%203.615-3.846%200-2.077-1.615-3.846-3.615-3.846v0z%22%3E%3C%2Fpath%3E%0A%3Cpath%20fill%3D%22%23DBDBDB%22%20d%3D%22M39.692%2010.231c-4.846-6.077-11.923-9.615-19.385-9.615s-14.615%203.538-19.462%209.615c-0.615%200.846-0.538%202%200.231%202.692%200.308%200.308%200.769%200.462%201.154%200.462%200.538%200%201-0.231%201.385-0.692%204.231-5.231%2010.231-8.231%2016.692-8.231%206.385%200%2012.462%203%2016.615%208.231%200.385%200.462%200.846%200.692%201.385%200.692%200.385%200%200.846-0.154%201.154-0.462%200.846-0.615%200.923-1.846%200.231-2.692v0z%22%3E%3C%2Fpath%3E%0A%3Cpath%20fill%3D%22%23DBDBDB%22%20d%3D%22M20.308%208.308c-5.385%200-10.385%202.538-13.846%206.846-0.615%200.846-0.538%202%200.231%202.692%200.308%200.308%200.769%200.462%201.154%200.462%200.538%200%201-0.231%201.385-0.692%202.769-3.462%206.846-5.538%2011.077-5.538s8.308%202%2011.077%205.538c0.385%200.462%200.846%200.692%201.385%200.692%200.385%200%200.846-0.154%201.154-0.462%200.769-0.692%200.846-1.923%200.231-2.692-3.462-4.308-8.462-6.846-13.846-6.846v0z%22%3E%3C%2Fpath%3E%0A%3Cpath%20fill%3D%22%23DBDBDB%22%20d%3D%22M20.308%2016c-3.231%200-6.231%201.538-8.308%204.154-0.615%200.769-0.538%202%200.231%202.692%200.308%200.308%200.769%200.462%201.154%200.462%200.538%200%201-0.231%201.385-0.692%201.385-1.769%203.385-2.769%205.538-2.769s4.154%201%205.538%202.769c0.385%200.462%200.846%200.692%201.385%200.692%200.385%200%200.846-0.154%201.154-0.462%200.769-0.692%200.846-1.923%200.231-2.692-2.077-2.615-5.077-4.154-8.308-4.154v0z%22%3E%3C%2Fpath%3E%0A%3C%2Fsvg%3E");
-}
-.status_info .conn_type.WiFi_offline{
-	--svg: url(/images/New_ui/SDN/dark_theme/Notification/wifi_off.svg);
-}
-.status_info .conn_type.WiFi_2G{
+.sub_info .conn_type.WiFi_2G{
 	background-image: url(/images/New_ui/SDN/dark_theme/Notification/wifi_2g.svg);
 }
-.status_info .conn_type.WiFi_2G_lock{
+.sub_info .conn_type.WiFi_2G_lock{
 	background-image: url(/images/New_ui/SDN/dark_theme/Notification/wifi_2g_lock.svg);
 }
-.status_info .conn_type.WiFi_5G{
+.sub_info .conn_type.WiFi_5G{
 	background-image: url(/images/New_ui/SDN/dark_theme/Notification/wifi_5g.svg);
 }
-.status_info .conn_type.WiFi_5G_lock{
+.sub_info .conn_type.WiFi_5G_lock{
 	background-image: url(/images/New_ui/SDN/dark_theme/Notification/wifi_5g_lock.svg);
 }
-.status_info .conn_type.WiFi_6G{
+.sub_info .conn_type.WiFi_6G{
 	background-image: url(/images/New_ui/SDN/dark_theme/Notification/wifi_6g.svg);
 }
-.status_info .conn_type.WiFi_6G_lock{
+.sub_info .conn_type.WiFi_6G_lock{
 	background-image: url(/images/New_ui/SDN/dark_theme/Notification/wifi_6g_lock.svg);
 }
-.status_info .conn_type.WiFi_mlo{
+.sub_info .conn_type.WiFi_mlo{
 	background-image: url(/images/New_ui/SDN/dark_theme/Notification/wifi_mlo.svg);
 }
-.status_info .conn_type.WiFi_mlo_lock{
+.sub_info .conn_type.WiFi_mlo_lock{
 	background-image: url(/images/New_ui/SDN/dark_theme/Notification/wifi_mlo_lock.svg);
 }
-.status_info .conn_type.LAN{
-	--svg: url(/images/New_ui/SDN/dark_theme/Notification/LAN.svg);
-}
-.status_info .conn_type.WiFi,
-.status_info .conn_type.WiFi7,
-.status_info .conn_type.WiFi_offline,
-.status_info .conn_type.LAN{
-	-webkit-mask: var(--svg);
-	mask: var(--svg);
-	-webkit-mask-repeat: no-repeat;
-	-webkit-mask-position: center;
-	-webkit-mask-size: contain;
-	display: block;
-	background-color: #B9C5D4;
-}
-.status_info .conn_type.WiFi7{
-	width: 48px;
-	--svg: url(/images/New_ui/SDN/dark_theme/Notification/wifi7.svg);
-	background-color: #FFF;
+.sub_info .conn_type.LAN{
+	background-image: url(/images/New_ui/SDN/dark_theme/Notification/LAN.svg);
+	background-size: 110%;
 }
 .profile_setting.Get_Start > .title,
 .profile_setting.Scenarios > .title{
@@ -1369,15 +1292,22 @@
 	display: flex;
 	align-items: center;
 }
-.profile_setting_item.qrcode_item > .input_container{
+.profile_setting_item.qrcode_item > .input_container,
+.profile_setting_item.icon_item > .input_container{
 	display: flex;
 	align-items: center;
 }
-.profile_setting_item.qrcode_item .qrcode_btn{
+.profile_setting_item.qrcode_item .qrcode_btn,
+.profile_setting_item.icon_item .help_icon{
 	margin-left: 6px;
 	background-size: 110%;
 	min-width: 40px;
 	min-height: 40px;
+}
+.profile_setting_item.icon_item .help_icon{
+	min-width: 30px;
+	min-height: 30px;
+	background-size: cover;
 }
 .qrcode_btn{
 	min-width: 30px;

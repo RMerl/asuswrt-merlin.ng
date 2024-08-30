@@ -453,6 +453,20 @@ var wl_info = {
 	})()
 };
 
+function get_band_name_by_wl_unit(wl_unit){
+	var wlnband_list = `<% nvram_get("wlnband_list"); %>`.split("&#60");
+
+	var bandName_Mapping = {
+		"2g1": "2G",
+		"5g1": "5G1", 
+		"5g2": "5G2", 
+		"6g1": "6G1", 
+		"6g2": "6G2"
+	}
+
+	return bandName_Mapping[wlnband_list[wl_unit]];
+}
+
 function get_wl_unit_by_band(_band){
 	if(_band == undefined) return "";
 
@@ -461,6 +475,7 @@ function get_wl_unit_by_band(_band){
 
 	switch(_band){
 		case "2G":
+		case "2G1":
 			wl_nband = "2";
 			break;
 		case "5G":
@@ -2235,6 +2250,9 @@ var mouseClick = function(){
 
 const bandName = ["2G", "5G1", "5G2", "6G1", "6G2"];
 function isSmartConnectBand(band){
+	if(band == `2g1`) band = `2G`;
+	band = band.toUpperCase();
+
 	if(get_wl_unit_by_band(band) == "") return false;
 	var smart_connect_x = '<% nvram_get("smart_connect_x"); %>';
 	

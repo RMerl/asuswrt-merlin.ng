@@ -400,7 +400,7 @@
                     delete wpaEncryptStringObject["aes"];
                 }
 
-                if (!wifi7ModeEnabled || authMethodValue !== "sae") {
+                if (!wifi7ModeEnabled || authMethodValue.indexOf("sae") == -1) {
                     delete wpaEncryptStringObject["aes+gcmp256"];
                 } else {
                     delete wpaEncryptStringObject["aes"];
@@ -649,25 +649,25 @@
                 if (systemManipulable.wlBandSeq[prefixNvram]) {
                     systemManipulable.wlBandSeq[prefixNvram].authMethodValue = authMethodValue;
                     if (beSupport) {
-                        if (authMethodValue === "sae") {
+                        if (authMethodValue === "sae" || authMethodValue === "psk2sae") {
                             // systemManipulable.wlBandSeq[prefixNvram].wifi7ModeEnabled = true;
                         } else {
                             if (mloEnabled) {
                                 confirm_asus({
                                     title: "MLO Hint",
-                                    contentA: `<b><#WiFi7_mlo_adjust_hint#></b>`,
+                                    contentA:
+                                        "<b>Since MLO is currently enabled, any adjustments to these WiFi settings requires MLO to be turned off first.</b>",
                                     contentC: "",
                                     left_button: "<#CTL_Cancel#>",
                                     left_button_callback: function () {
-                                        confirm_cancel();
-                                        document.getElementById(`${prefix}_auth_method`).value = authMethodValueOri;
+                                        refreshpage();
                                         return false;
                                     },
                                     left_button_args: {},
                                     right_button: "<#btn_go#>",
                                     right_button_callback: function () {
                                         confirm_cancel();
-                                        location.href = "/MLO.asp";
+                                        top.location.href = "/MLO.asp";
                                     },
                                     right_button_args: {},
                                     iframe: "",
@@ -686,12 +686,11 @@
                             ) {
                                 confirm_asus({
                                     title: "",
-                                    contentA: `<#WiFi7_disable_note#>`,
+                                    contentA: "Since WiFi7 mode is currently enabled, making this adjustment will disable WiFi 7 mode.",
                                     contentC: "",
                                     left_button: "<#checkbox_No#>",
                                     left_button_callback: function () {
-                                        confirm_cancel();
-                                        document.getElementById(`${prefix}_auth_method`).value = authMethodValueOri;
+                                        refreshpage();
                                         return false;
                                     },
                                     left_button_args: {},
@@ -1144,7 +1143,7 @@
 
                     confirm_asus({
                         title: "MLO Hint",
-                        contentA: `<b><#WiFi7_mlo_adjust_hint#></b>`,
+                        contentA: `<b>Since MLO is currently enabled, any adjustments to these WiFi settings require MLO to be turned off first.</b>`,
                         contentC: "",
                         left_button: "<#CTL_Cancel#>",
                         left_button_callback: function () {

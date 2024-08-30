@@ -59,10 +59,6 @@ body{
 .button:hover{
 	cursor:pointer;
 }
-.button.disabled{
-	filter: grayscale(100%) opacity(0.5);
-    pointer-events: none;
-}
 .form_input{
 	background-color:rgba(255,255,255,0.2);
 	background-color:#576D73\9;
@@ -372,13 +368,8 @@ var isRouterMode = (htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to
 
 var header_info = [<% get_header_info(); %>][0];
 var ROUTERHOSTNAME = '<#Web_DOMAIN_NAME#>';
-const getQueryString = function(name){
-    var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
-    var r = window.location.search.substr(1).match(reg);
-    if (r != null) return unescape(r[2]); return null;
-};
 var domainNameUrl = header_info.protocol+"://"+ROUTERHOSTNAME+":"+header_info.port;
-var chdom = function(){if(getQueryString("redirct")!=="false")window.location.href=domainNameUrl};
+var chdom = function(){window.location.href=domainNameUrl};
 (function(){
 	if(ROUTERHOSTNAME !== header_info.host && ROUTERHOSTNAME != "" && isRouterMode){
 		setTimeout(function(){
@@ -403,7 +394,7 @@ var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=SG_
 function initial(){
 	top.name = "";/* reset cache of state.js win.name */
 
-	if(isSupport("ROG_UI") || isSupport("TS_UI") || isSupport("TUF_UI")){
+	if(isSupport("ROG_UI") || isSupport("TS_UI") || (('<% nvram_get("productid"); %>').substring(0,3).toUpperCase() == "TUF")){
 		$(".wrapper").css({"background-size":"cover"});
 	}
 	var flag = login_info.error_status;
@@ -514,7 +505,7 @@ function initial(){
 	else
 		document.getElementById("captcha_field").style.display = "none";
 
-	if(history.pushState != undefined) history.pushState("", document.title, window.location.pathname + window.location.search);
+	if(history.pushState != undefined) history.pushState("", document.title, window.location.pathname);
 }
 
 function countdownfunc(){
@@ -530,21 +521,16 @@ function countdownfunc(){
 }
 
 function preLogin(){
-    if(document.querySelector('#button')?.classList.contains('disabled') || document.querySelector('.button')?.classList.contains('disabled')) return;
-    document.querySelector('#button')?.classList.add('disabled');
-    document.querySelector('.button')?.classList.add('disabled');
-    let id = randomString(10);
-    fetch('get_Nonce.cgi', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({id: id})
-    })
-    .then(response => response.json())
-    .then(data => {
-        const { nonce } = data;
-        login(id, nonce);
-    })
-    .catch(error => top.location.href='/Main_Login.asp');
+    let id = randomString(10)
+    let xhr = new XMLHttpRequest();
+    xhr.open("POST", "get_Nonce.cgi", true);
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            const { nonce } = JSON.parse(xhr.responseText);
+            login(id, nonce);
+        }
+    };
+    xhr.send(JSON.stringify({id: id}));
 }
 
 function login(id, nonce){

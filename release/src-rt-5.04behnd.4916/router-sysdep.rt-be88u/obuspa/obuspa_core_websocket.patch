@@ -1,0 +1,117 @@
+diff -Naur obuspa_orig/src/core/wsclient.c obuspa_new/src/core/wsclient.c
+--- obuspa_orig/src/core/wsclient.c	2022-09-06 18:37:54.000000000 -0700
++++ obuspa_new/src/core/wsclient.c	2022-09-12 10:35:44.680827477 -0700
+@@ -92,6 +92,9 @@
+     kWebSockCloseReason_ConnParamsChanged,       // We forced the closure because the connection parameters changed
+     kWebSockCloseReason_BadUspRecord,            // We forced the closure, because we received a badly formed USP record
+     kWebSockCloseReason_MissingPong,             // We forced the closure, because too many pong heartbeat frames were missing
++#ifdef BDK_USP
++    kWebSockCloseReason_ClosedBeforeConn,        // Libwebsockets had an error to close before connecting
++#endif
+ 
+     kWebSockCloseReason_Max
+ } wsclient_close_reason_t;
+@@ -1040,6 +1043,19 @@
+ {
+     USP_LOG_Info("%s: Client connection parameters changed for controller.%d.MTP.%d", __FUNCTION__, scm->cont_instance, scm->mtp_instance);
+ 
++#ifdef BDK_USP
++    if (wc->ws_handle == NULL ||
++        scm->cont_endpoint_id == NULL || wc->cont_endpoint_id == NULL ||
++        scm->host == NULL || wc->host == NULL ||
++        scm->path == NULL || wc->path == NULL)
++    {
++        // Only call lws_set_timer_usecs when ws_handle is not NULL and
++        // return before strcmp on these variables when they are NULL
++        // to avoid crash that is reported in JIRA SWBCACPE-52074
++        return;
++    }
++#endif
++
+     // Copy new retry algorithm parameters. They will be used, the next time a retry is triggered
+     wc->retry_interval = scm->retry_interval;
+     wc->retry_multiplier = scm->retry_multiplier;
+@@ -1140,7 +1156,11 @@
+     info.host = wc->host;       // Needed for TLS
+     info.origin = wc->host;     // Needed for TLS
+     info.pwsi = &wc->ws_handle;     // Needed for TLS
++#ifdef BDK_USP
++    info.ssl_connection = (wc->enable_encryption) ? LCCSCF_USE_SSL|LCCSCF_ALLOW_SELFSIGNED|LCCSCF_SKIP_SERVER_CERT_HOSTNAME_CHECK : 0;
++#else
+     info.ssl_connection = (wc->enable_encryption) ? LCCSCF_USE_SSL : 0;
++#endif
+     info.protocol = WEBSOCKET_PROTOCOL_STR;
+     info.opaque_user_data = wc;
+ 
+@@ -1196,7 +1216,9 @@
+     {
+         // NOTE: No need to call ScheduleWsclientRetry() here, as it will have been handled by the LWS_CALLBACK_WSI_DESTROY event within the lws_client_connect_via_info() call
+         USP_LOG_Error("%s: lws_client_connect_via_info() failed", __FUNCTION__);
++#ifndef BDK_USP
+         USP_ASSERT(wc->state == kWebsockState_Retrying);
++#endif
+         return;
+     }
+ }
+@@ -1413,7 +1435,11 @@
+             break;
+ 
+         default:
++#ifdef BDK_USP
++            tr_event("WS client: event=%d", event);
++#else
+             tr_event("WS client: event=%d", __FUNCTION__, event);
++#endif
+             break;
+     }
+ 
+@@ -1517,7 +1543,19 @@
+     // Set the root cause of error, if none set yet
+     if (wc->close_reason == kWebSockCloseReason_Unknown)
+     {
++#ifdef BDK_USP
++        if (strcmp(err_msg, "Closed before conn"))
++        {
++            wc->close_reason = kWebSockCloseReason_LibWebSocketsError;
++        }
++        else
++        {
++            /* specify close_reason as "ClosedBeforeConn" */
++            wc->close_reason = kWebSockCloseReason_ClosedBeforeConn;
++        }
++#else
+         wc->close_reason = kWebSockCloseReason_LibWebSocketsError;
++#endif
+     }
+ 
+     return 0;
+@@ -1608,6 +1646,9 @@
+         case kWebSockCloseReason_InternalError:
+         case kWebSockCloseReason_BadUspRecord:
+         case kWebSockCloseReason_MissingPong:
++#ifdef BDK_SUP
++        case kWebSockCloseReason_ClosedBeforeConn:
++#endif
+             ScheduleWsclientRetry(wc);
+             break;
+ 
+@@ -2115,7 +2156,19 @@
+     // NOTE: libwebsockets will have automatically deallocated its handle, in the cases where this function is called
+     wc->state = kWebsockState_Retrying;
+     wc->ws_handle = NULL;
++#ifdef BDK_USP
++    if (wc->retry_count == 0 && wc->close_reason == kWebSockCloseReason_ClosedBeforeConn)
++    {
++        /* This should be bootup without WAN case. Do not increment retry_count */
++        USP_LOG_Info("%s: Bootup without WAN case", __FUNCTION__);
++    }
++    else
++    {
++        wc->retry_count++;
++    }
++#else
+     wc->retry_count++;
++#endif
+ 
+     // Calculate time until next retry
+     wait_time = RETRY_WAIT_Calculate(wc->retry_count, wc->retry_interval, wc->retry_multiplier);

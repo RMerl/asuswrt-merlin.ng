@@ -1,0 +1,28 @@
+diff --git a/source/TR-181/sbapi/wifi_monitor.c b/source/TR-181/sbapi/wifi_monitor.c
+index 91a27c7..d02ea9a 100644
+--- a/source/TR-181/sbapi/wifi_monitor.c
++++ b/source/TR-181/sbapi/wifi_monitor.c
+@@ -657,6 +657,7 @@ int upload_client_telemetry_data(void *arg)
+         // see if list has changed
+ #ifdef WIFI_HAL_VERSION_3
+         BOOL enableRadioDetailStats[MAX_NUM_RADIOS] = {FALSE};
++        unsigned int itr = 0;
+ #else
+         bool enable24detailstats = false;
+         bool enable5detailstats = false;
+@@ -690,12 +691,15 @@ int upload_client_telemetry_data(void *arg)
+                     case WIFI_FREQUENCY_2_4_BAND:
+                         wifi_dbg_print(1, "%s:%d: client detailed stats collection for 2.4GHz radio set to %s\n", __func__, __LINE__, 
+                                 radioIndex, (enableRadioDetailStats[radioIndex] == TRUE)?"enabled":"disabled");
++                        break;
+                     case WIFI_FREQUENCY_5_BAND:
+                         wifi_dbg_print(1, "%s:%d: client detailed stats collection for 5GHz radio set to %s\n", __func__, __LINE__, 
+                                 radioIndex, (enableRadioDetailStats[radioIndex] == TRUE)?"enabled":"disabled");
++                        break;
+                     case WIFI_FREQUENCY_6_BAND:
+                         wifi_dbg_print(1, "%s:%d: client detailed stats collection for 6GHz radio set to %s\n", __func__, __LINE__, 
+                                 radioIndex, (enableRadioDetailStats[radioIndex] == TRUE)?"enabled":"disabled");
++                        break;
+                     default:
+                         break;
+                 }

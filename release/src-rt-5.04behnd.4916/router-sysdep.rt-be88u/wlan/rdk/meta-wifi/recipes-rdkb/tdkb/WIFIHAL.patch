@@ -1,0 +1,113 @@
+diff --git a/WIFIHAL_stub/src/WIFIHAL.cpp b/WIFIHAL_stub/src/WIFIHAL.cpp
+index 0149f41..c598ec9 100644
+--- a/WIFIHAL_stub/src/WIFIHAL.cpp
++++ b/WIFIHAL_stub/src/WIFIHAL.cpp
+@@ -18,6 +18,88 @@
+ */
+ 
+ #include "WIFIHAL.h"
++
++#include <sys/socket.h>
++#include <netinet/in.h>
++#include <arpa/inet.h>
++#include <unistd.h>
++
++#define BCM_COMMON_WIFIHAL 1
++
++extern "C"
++{
++    INT wifi_init_hal(void);
++}
++
++#define WIFI_API_EVENT_UDP_SPORT  55010
++#define WIFI_API_EVENT_UDP_SIP  "127.0.0.1"
++
++#define isSockSetApi(api)  (strstr(api, "set") || strstr(api, "push") || strstr(api, "enable"))
++
++typedef struct {
++        char            api_name[1024];
++        int             radioIndex;
++        char            api_data[1024];
++} wifi_api_info_t;
++
++static int  wifi_api_socket = -1;
++
++static int wifi_api_send_msg( wifi_api_info_t *p_apiInfo )
++{
++        int err = -1;
++        struct sockaddr_in sockaddr;
++        int sentBytes = 0;
++
++        if (wifi_api_socket < 0) {
++                memset(&sockaddr, 0, sizeof(sockaddr));
++                sockaddr.sin_family = AF_INET;
++                sockaddr.sin_port = htons(WIFI_API_EVENT_UDP_SPORT);
++                if (inet_aton(WIFI_API_EVENT_UDP_SIP, &sockaddr.sin_addr) == 0) {
++                        printf("inet_aton() failed\n");
++                        return err;
++                }
++
++                if (( wifi_api_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
++                        printf("%s@%d Unable to create socket\n", __FUNCTION__, __LINE__ );
++                        return err;
++                }
++        }
++
++        sentBytes = sendto(wifi_api_socket, p_apiInfo, sizeof(wifi_api_info_t), 0,
++                (struct sockaddr *)&sockaddr, sizeof(struct sockaddr_in));
++
++        //printf("UDP pkt sent; sendingBytes[%d], sentBytes[%d]\n", sizeof(wifi_api_info_t), sentBytes);
++        if (sentBytes != sizeof(wifi_api_info_t)) {
++                printf("UDP send failed; sendingBytes[%d], sentBytes[%d]\n",
++                        sizeof(wifi_api_info_t), sentBytes);
++        }
++        else {
++                int ret = 0;
++                struct sockaddr_in from;
++                socklen_t sock_len = sizeof(from);
++
++                /* Get the execution result from socket */
++                if (recvfrom(wifi_api_socket, &ret, sizeof(ret), 0,
++                        (struct sockaddr *)&from, &sock_len) < 0) {
++                        printf("%s: %s recvfrom error %d!\n", __FUNCTION__,
++                                p_apiInfo->api_name, errno);
++                }
++                else {
++#if 0 /* Enable this for debugging */
++                        printf("%s: %s ret %d!\n", __FUNCTION__, p_apiInfo->api_name, ret);
++#endif
++                        err = ret;
++                }
++        }
++
++        //printf("%s@%d: Close socket\n", __FUNCTION__, __LINE__ );
++        close(wifi_api_socket);
++        wifi_api_socket = -1;
++
++        return err;
++}
++
++
+ /*******************************************************************************************
+  *
+  * Function Name        : ssp_WIFIHALApplySettings
+@@ -128,7 +210,7 @@ int ssp_WIFIHALGetOrSetParamBoolValue(int radioIndex, unsigned char *enable, cha
+         return_status = wifi_getRadioDfsSupport(radioIndex, enable);
+     else if(!strcmp(method, "getRadioDFSEnable"))
+         return_status = wifi_getRadioDfsEnable(radioIndex, enable);
+-    else if(!strcmp(method, "setRadioDfsEnable"))
++    else if(!strcmp(method, "setRadioDFSEnable"))
+         return_status = wifi_setRadioDfsEnable(radioIndex, *enable);
+     else if(!strcmp(method, "getAutoChannelRefreshPeriodSupported"))
+         return_status = wifi_getRadioAutoChannelRefreshPeriodSupported(radioIndex, enable);
+@@ -1021,6 +1103,10 @@ std::string WIFIHAL::testmodulepre_requisites()
+ 
+     if(SSP_SUCCESS == return_status)
+     {
++#if defined BCM_COMMON_WIFIHAL
++        return_status = wifi_init_hal();
++        DEBUG_PRINT(DEBUG_TRACE,"\nreturn value from wifi_init_hal is %d\n", return_status);
++#endif /* BCM_COMMON_WIFIHAL */
+         DEBUG_PRINT(DEBUG_TRACE,"\n testmodulepre_requisites ---> Initialize SUCCESS !!! \n");
+         DEBUG_PRINT(DEBUG_TRACE,"\n WIFIHAL testmodulepre_requisites --->Exit\n");
+         return "SUCCESS";

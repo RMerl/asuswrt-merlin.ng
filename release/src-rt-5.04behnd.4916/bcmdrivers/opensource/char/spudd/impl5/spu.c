@@ -97,7 +97,7 @@ void spum_dump_msg_hdr(u8 *buf, unsigned int buf_len)
 		packet_log("    Crypto Alg:%u Mode:%u Type:%u\n",
 			   cipher_alg, cipher_mode, cipher_type);
 		hash_alg = (cflags & HASH_ALG) >> HASH_ALG_SHIFT;
-		hash_mode = (cflags & HASH_MODE) >> HASH_MODE_SHIFT;
+		hash_mode = (cflags & SPU_HASH_MODE) >> SPU_HASH_MODE_SHIFT;
 		hash_type = (cflags & HASH_TYPE) >> HASH_TYPE_SHIFT;
 		packet_log("    Hash   Alg:%x Mode:%x Type:%x\n",
 			   hash_alg, hash_mode, hash_type);
@@ -291,7 +291,7 @@ void spum_dump_msg_hdr(u8 *buf, unsigned int buf_len)
 
 	/* ========== Decode BDESC ========== */
 	if (spuh->mh.flags & MH_BDESC_PRES) {
-#ifdef DEBUG
+#ifdef SPU_DEBUG
 		struct BDESC_HEADER *bdesc = (struct BDESC_HEADER *)ptr;
 #endif
 		packet_log("  BDESC[0] 0x%08x\n", be32_to_cpu(*((u32 *)ptr)));
@@ -315,7 +315,7 @@ void spum_dump_msg_hdr(u8 *buf, unsigned int buf_len)
 
 	/* ========== Decode BD ========== */
 	if (spuh->mh.flags & MH_BD_PRES) {
-#ifdef DEBUG
+#ifdef SPU_DEBUG
 		struct BD_HEADER *bd = (struct BD_HEADER *)ptr;
 #endif
 		packet_log("  BD[0] 0x%08x\n", be32_to_cpu(*((u32 *)ptr)));
@@ -542,7 +542,7 @@ u32 spum_assoc_resp_len(enum spu_cipher_mode cipher_mode,
  */
 u8 spum_aead_ivlen(enum spu_cipher_mode cipher_mode, u16 iv_len)
 {
-	return iv_len;
+	return 0;
 }
 
 /**
@@ -711,7 +711,7 @@ u32 spum_create_request(u8 *spu_hdr,
 
 	/* Set the auth parameters in the cipher.flags */
 	cipher_bits |= hash_parms->alg << HASH_ALG_SHIFT;
-	cipher_bits |= hash_parms->mode << HASH_MODE_SHIFT;
+	cipher_bits |= hash_parms->mode << SPU_HASH_MODE_SHIFT;
 	cipher_bits |= hash_parms->type << HASH_TYPE_SHIFT;
 
 	/*

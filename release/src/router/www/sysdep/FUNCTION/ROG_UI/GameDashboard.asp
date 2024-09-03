@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <html xmlns:v>
 <head>
@@ -26,7 +26,6 @@
 <script type="text/javascript" src="/client_function.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/html5kellycolorpicker.min.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
 <script type="text/javascript" src="/md5.js"></script>
 <style>
 .traffic_bar{
@@ -283,12 +282,11 @@
 #wan_state, #sw_mode_desc {
 	font-family: Xolonium;
 }
+.titledown, #ssidTitle{
+	visibility: hidden !important;
+}
 </style>
 <script>
-
-if (httpApi.privateEula.get("SIGNED").ASUS_PP_EULA == "0")
-    location.href = "/QIS_wizard.htm?flag=eulaPP";
-
 // disable auto log out
 AUTOLOGOUT_MAX_MINUTE = 0;
 var isDemoMode = ('<% nvram_get("demoMode"); %>' == 1) ? true : false;
@@ -384,7 +382,7 @@ function initial(){
 
 	if(isSupport("ledg")){
 		$("#aura_field").show();
-		$("#light_effect_bg").show();
+		$("#light_effect_container").show();
 		$("#aura_rgb_bg").hide();
 	}
 
@@ -500,10 +498,6 @@ function initial(){
 	$(".boost-function").hover(function(){
 		$("#boostKey_desc").html(boostKey[this.id].desc)
 	})
-
-	if(!ASUS_EULA.status("tm")){
-		ASUS_EULA.config(tm_agree, tm_disagree);
-	}
 
 	httpApi.nvramGetAsync({
 		data: ["ping_target"],
@@ -1031,9 +1025,11 @@ function handleBoostKey(obj){
 		return false;
 	}
 
-	var tm_status = httpApi.nvramGet(["TM_EULA", "TM_EULA_time"], true);
-	if(_id == 'boost_qos' && (tm_status.TM_EULA == "0" || tm_status.TM_EULA_time == "")){
-		ASUS_EULA.check("tm");
+	if(_id == 'boost_qos' && (policy_status.TM == "0" || policy_status.TM_time == "")){
+		const policyModal = new PolicyModalComponent({
+            policy: "TM"
+        });
+        policyModal.show();
 		return false;
 	}
 
@@ -1300,7 +1296,7 @@ function uuRegister(mac){
 										$("#pingMap").load("/cards/pingMap.html");
 									</script>
 									<div id="aura_field" style="width:345px;height:425px;margin:-360px 0 0 390px;display:none;position: relative">
-										<div id="light_effect_bg" style="width:100%;height:100%;">
+										<div id="light_effect_container" style="width:100%;height:100%;">
 											<iframe id="light_effect_iframe" class="light_effect_iframe" frameborder="0"></iframe>
 											<script>
 												if(isSupport("ledg")){

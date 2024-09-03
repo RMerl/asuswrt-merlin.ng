@@ -14,16 +14,17 @@
 <link rel="stylesheet" type="text/css" href="usp_style.css">
 <link rel="stylesheet" type="text/css" href="device-map/device-map.css">
 <link rel="stylesheet" type="text/css" href="css/gameBoost.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/help.js"></script>
-<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/form.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js"></script>
 <script type="text/javascript" src="/client_function.js"></script>
 <script type="text/javascript" src="/form.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
+<script type="text/javascript" src="/md5.js"></script>
 <script>
 window.onresize = function() {
 	cal_panel_block("gameList_block", 0.23);
@@ -34,6 +35,12 @@ var ctf_disable = '<% nvram_get("ctf_disable"); %>';
 var ctf_fa_mode = '<% nvram_get("ctf_fa_mode"); %>';
 var outfox_code = httpApi.nvramGet(["outfox_code"], true).outfox_code;
 var outfox_site = 'https://getoutfox.com/asus?code='+ outfox_code +'&utm_source=asus&utm_medium=affiliate&utm_campaign=' + support_site_modelid + '&utm_content=router_cta';
+
+var label_mac = <% get_label_mac(); %>.toLowerCase();
+var salt = "hb7pNSB6FTB72n6S1EqwM9fjYDiHuNhK";
+var ts = Date.now();
+var token = hexMD5(salt+label_mac+ts).toLowerCase();
+var gu_url = "https://router.booster.gearupportal.com/h5/acce?gwSn="+label_mac+"&type=asuswrt&ts="+ts+"&token="+token;
 
 function initial(){
 	show_menu();
@@ -79,8 +86,18 @@ function initial(){
 		$('#outfox_3').show();
 	}
 
-	if(!ASUS_EULA.status("tm"))
-		ASUS_EULA.config(eula_confirm, cancel);
+	if(isSupport("gu_accel")){
+		var orig_gearup_enable = httpApi.nvramGet(["gearup_enable"]).gearup_enable;
+		$("#FormTitle").find(".gearup").show();
+		if(orig_gearup_enable == '1'){
+			$("#gearup_enable").prop('checked', true);
+			$("#gearup_go_mask").hide();
+		}
+		else{
+			$("#gearup_enable").prop('checked', false);
+			$("#gearup_go_mask").show();
+		}
+	}
 
 	setTimeout("showDropdownClientList('setClientIP', 'mac', 'all', 'ClientList_Block_PC', 'pull_arrow', 'all');", 500);
 	genGameList();
@@ -136,10 +153,14 @@ function genGameList(){
 	code += '</tr>';
 	code += '<tr>';
 	code += '<td width="40%">';
-	code += '<input type="text" class="input_20_table" maxlength="17" id="client" style="margin-left:-12px;width:255px;" onKeyPress="return validator.isHWAddr(this,event)" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off" placeholder="ex: <% nvram_get("lan_hwaddr"); %>">';
-	code += '<img id="pull_arrow" height="14px;" src="/images/unfold_more.svg" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="<#select_MAC#>">';
-	code += '<div id="ClientList_Block_PC" class="clientlist_dropdown" style="margin-left:138px;"></div>';
-	code += '</td>';
+    code += '<div style="display: flex; justify-content: center">';
+    code += '<div class="clientlist_dropdown_main">';
+    code += '<input type="text" class="input_20_table" maxlength="17" id="client" onKeyPress="return validator.isHWAddr(this,event)" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off" placeholder="ex: <% nvram_get("lan_hwaddr"); %>">';
+    code += '<img id="pull_arrow" height="14px;" src="/images/unfold_more.svg" onclick="pullLANIPList(this);" title="<#select_MAC#>">';
+    code += '<div id="ClientList_Block_PC" class="clientlist_dropdown"></div>';
+    code += '</div>';
+    code += '</div>';
+    code += '</td>';
 	code += '<td width="10%">';
 	code += '<div><input type="button" class="add_btn" onClick="addGameList(64);"></div>';
 	code += '</td>';
@@ -268,9 +289,15 @@ function hideGameListField(){
 function enableGamePriority(){
 	if(adaptiveqos_support){
 		if(document.form.qos_enable.value == "0" && document.form.TM_EULA.value == "0"){
-			ASUS_EULA
-				.config(eula_confirm, cancel)
-				.show("tm");
+			if(policy_status.TM == 0 || policy_status.TM_time == ''){
+                const policyModal = new PolicyModalComponent({
+                    policy: "TM",
+                    agreeCallback: eula_confirm,
+                });
+                policyModal.show();
+            }else{
+                eula_confirm();
+            }
 		}
 		else{
 			if(document.getElementById("game_priority_enable").checked){
@@ -399,7 +426,8 @@ var siteInfo = [faq_fref,
 				'Advanced_WTFast_Content.asp',
 				'QoS_EZQoS.asp',
 				outfox_site,
-				wtfast_v2_go];
+				wtfast_v2_go,
+				gu_url];
 
 function redirectSite(url){
 	if(url == "wtfast"){
@@ -408,8 +436,43 @@ function redirectSite(url){
 		else if(wtfast_support)
 			url = siteInfo[1];
 	}
+	else if(url == "gearup")
+		url = siteInfo[5];
 
 	window.open(url, '_blank');
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const thirdpartyPolicy = 'WTFast'
+    document.getElementById("thirdparty_pp").innerHTML=`<#Thirdparty_PP_Desc1#>`.replace("%1$@", thirdpartyPolicy).replace("[aa]%2$@[/aa]", `<a onclick="showThirdPartyPolicy('${thirdpartyPolicy}')" style="text-decoration: underline;cursor: pointer;">AAA Internet Publishing Inc. PRIVACY POLICY</a>`);
+})
+
+function showThirdPartyPolicy(party){
+    const thirdPartyPolicyModal = new ThirdPartyPolicyModalComponent({
+        policy: 'THIRDPARTY_PP',
+        party: party
+    });
+    thirdPartyPolicyModal.show();
+}
+
+function enableGearUp(){
+	if($("#gearup_enable").is(":checked")){
+		$('<input>').attr({
+			type: 'hidden',
+			name: "gearup_enable",
+			value: "1"
+		}).appendTo('form');
+	}
+	else{
+		$('<input>').attr({
+			type: 'hidden',
+			name: "gearup_enable",
+			value: "0"
+		}).appendTo('form');
+	}
+
+	document.form.action_script.value = "restart_gu_service";
+	document.form.submit();
 }
 </script>
 </head>
@@ -428,7 +491,7 @@ function redirectSite(url){
 		<div style="width:28px;height:28px;background-image:url('images/New_ui/cancel.svg');cursor:pointer" onclick="hideGameListField();"></div>
 	</div>
 	
-	<table id="game_list" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table" style="margin-top:8px;"></table> 
+	<table id="game_list" width="99%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table" style="margin-top:8px;"></table>
 </div>
 <iframe name="hidden_frame" id="hidden_frame" width="0" height="0" frameborder="0" scrolling="no"></iframe>
 <form method="post" name="form" action="/start_apply.htm" target="hidden_frame">
@@ -614,7 +677,7 @@ function redirectSite(url){
 												</td>
 												<td style="width:400px;height:120px;">
 													<div class="gB_desc" style="margin-top: 10px;"><#Game_WTFast_desc#></div>
-													<div class="gB_desc" style="margin-top: 15px; margin-bottom: 10px;">*Please be aware this is a third-party service provided by WTFast®, and WTFast® is fully responsible for warranties and liabilities of this game server acceleration service.</div><!--untranslated-->
+													<div id="thirdparty_pp" class="gB_desc" style="margin-top: 15px; margin-bottom: 10px;"></div>
 												</td>
 												<td>
 													<div class="btn" style="margin:auto;width:100px;height:40px;text-align:center;line-height:40px;font-size:18px;cursor:pointer;border-radius:5px;" onclick="redirectSite('wtfast');"><#btn_go#></div>
@@ -668,6 +731,48 @@ function redirectSite(url){
 												</td>
 												<td>
 													<div class="btn" style="margin:auto;width:100px;height:40px;text-align:center;line-height:40px;font-size:18px;cursor:pointer;border-radius:5px;" onclick="redirectSite(outfox_site)"><#btn_go#></div>
+												</td>
+											</tr>
+											<!-- GearUp Accerlation-->
+											<tr style="display: none;" class="gearup">
+												<td style="width:200px">
+													<div style="padding: 5px 0;font-size:20px; text-transform:uppercase;"><#Game_Boost_internet#></div>
+												</td>
+												<td colspan="2">
+													<div style="padding: 5px 10px;font-size:20px;color:#FFCC66; text-transform:uppercase;"><#GearUP_Console_Booster#></div>
+												</td>
+											</tr>
+											<tr style="display: none;" class="gearup">
+												<td colspan="3">
+													<div style="width:100%;height:1px;background-color:#D30606"></div>
+												</td>
+											</tr>
+											<tr style="display: none;" class="gearup">
+												<td align="center">
+													<div style="width:158px;height: 78px;background-image: url('images/logo_GearUp_console@1x.png');background-size: 100%;"></div>
+												</td>
+												<td style="width:400px;height:120px;">
+													<div style="font-size:16px;color:#949393;padding-left:10px; margin: 15px 0;"><#GearUP_Desc#></div>
+												</td>
+												<td>
+													<div class="switch" style="margin:auto;width:100px;height:40px;text-align:center;line-height:40px;font-size:18px">
+														<input id="gearup_enable" type="checkbox" onclick="enableGearUp();">
+														<div class="container_gb" style="display:table;border-radius:5px;">
+															<div style="display:table-cell;width:50%;">
+																<div>ON</div>
+															</div>
+															<div style="display:table-cell">
+																<div>OFF</div>
+															</div>
+														</div>
+													</div>
+													<div class="btn" style="margin:10px auto auto auto; width:100px;height:40px;text-align:center;line-height:40px;font-size:18px;cursor:pointer;border-radius:5px;" onclick="redirectSite('gearup');"><#btn_go#></div>
+													<div id="gearup_go_mask" style="background-color: #000000; opacity: 0.5; position: relative; z-index: 999; width: 100px; height: 40px; border-radius: 5px; left: 98px; top: -40px;"></div>
+												</td>
+											</tr>
+											<tr style="display: none;" class="gearup">
+												<td colspan="3">
+													<div><#GearUP_PP_Hint#></div>
 												</td>
 											</tr>
 										</tbody>

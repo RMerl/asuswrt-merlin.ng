@@ -88,6 +88,140 @@ var htmlEnDeCode = (function() {
 	};
 })();
 
+if(typeof isSwMode != "function"){
+	function isSwMode(mode){
+		let ui_sw_mode = "rt";
+		let sw_mode = '<% nvram_get("sw_mode"); %>';
+		let wlc_psta = '<% nvram_get("wlc_psta"); %>' == '' ? 0 : '<% nvram_get("wlc_psta"); %>';
+		let wlc_express = '<% nvram_get("wlc_express"); %>' == '' ? 0 : '<% nvram_get("wlc_express"); %>';
+
+		if(((sw_mode == '2' && wlc_psta == '0') || (sw_mode == '3' && wlc_psta == '2')) && wlc_express == '0'){	// Repeater
+			ui_sw_mode = "re";
+		}
+		else if((sw_mode == '3' && wlc_psta == '0') || (sw_mode == '3' && wlc_psta == '')){	// Access Point
+			ui_sw_mode = "ap";
+		}
+		else if((sw_mode == '3' && wlc_psta == '1' && wlc_express == '0') || (sw_mode == '3' && wlc_psta == '3' && wlc_express == '0') || (sw_mode == '2' && wlc_psta == '1' && wlc_express == '0')){	// MediaBridge
+			ui_sw_mode = "mb";
+		}
+		else if(sw_mode == '2' && wlc_psta == '0' && wlc_express == '1'){	// Express Way 2G
+			ui_sw_mode = "ew2";
+		}
+		else if(sw_mode == '2' && wlc_psta == '0' && wlc_express == '2'){	// Express Way 5G
+			ui_sw_mode = "ew5";
+		}
+		else if(sw_mode == '5'){	// Hotspot
+			ui_sw_mode = 'hs';
+		}
+		else ui_sw_mode = "rt"; // Router
+
+		return (ui_sw_mode.search(mode) !== -1);
+	}
+}
+if(typeof isSupport != "function"){
+	function isSupport(_ptn){
+		let ui_support = [<% get_ui_support(); %>][0];
+		return (ui_support[_ptn]) ? ui_support[_ptn] : 0;
+	}
+}
+if(typeof isSmartConnectBand != "function"){
+	function isSmartConnectBand(band){
+		const smart_connect_version = isSupport("smart_connect_v2") ? "v2" : isSupport("smart_connect") || isSupport("bandstr") ? "v1" : "";
+		const bandName = ["2G", "5G1", "5G2", "6G1", "6G2"];
+		if(band == `2g1`) band = `2G`;
+		band = band.toUpperCase();
+
+		if(get_wl_unit_by_band(band) == "") return false;
+		const smart_connect_x = '<% nvram_get("smart_connect_x"); %>';
+
+		if(smart_connect_x == 0) return false;
+
+		if(smart_connect_version == "v1"){
+			if(smart_connect_x == 1){
+				return true;
+			}
+			else if(smart_connect_x == 2){
+				if(band == "5G1" || band == "5G2") return true;
+			}
+			else if(smart_connect_x == 3){
+				if(band == "2G" || band == "5G1") return true;
+			}
+		}
+
+		if(smart_connect_version == "v2"){
+			if(band == "6G") band = "6G1";
+			if(band == "5G") band = "5G1";
+
+			const zerosArray = Array(5).fill("0");
+			let smart_connect_selif_x = '<% nvram_get("smart_connect_selif_x"); %>';
+			let smart_connect_selif_band = parseInt(smart_connect_selif_x).toString(2).split("").reverse();
+			let smart_connect_band = smart_connect_selif_band.concat(zerosArray.slice(smart_connect_selif_band.length));
+			let result = false;
+
+			for(let i = 0; i < bandName.length; i++){
+				if(bandName[i] == band){
+					result = smart_connect_band[i] == "1";
+					break;
+				}
+			}
+
+			return result;
+		}
+
+		return false;
+	}
+}
+if(typeof get_wl_unit_by_band != "function"){
+	function get_wl_unit_by_band(_band){
+		if(_band == undefined) return "";
+
+		const wl_nband_array = "<% wl_nband_info(); %>".toArray();
+		_band = (_band).toString().toUpperCase();
+		let wl_nband = "";
+
+		switch(_band){
+			case "2G":
+			case "2G1":
+				wl_nband = "2";
+				break;
+			case "5G":
+			case "5G1":
+			case "5G2":
+				wl_nband = "1";
+				break;
+			case "6G":
+			case "6G1":
+			case "6G2":
+				wl_nband = "4";
+				break;
+			case "60G":
+				wl_nband = "6";
+				break;
+		}
+
+		if(wl_nband == "") return "";
+
+		let wl_unit = "";
+		let suffix_num = _band.substr(_band.indexOf("G") + 1);
+		let ordinal_num = (suffix_num == "") ? 1 : parseInt(suffix_num);
+		let count = 1;
+
+		for(let wlx = 0; wlx < wl_nband_array.length; wlx++){
+			if(wl_nband_array[wlx] == wl_nband){
+				if(count == ordinal_num){
+					wl_unit = wlx;
+					break;
+				}
+				else{
+					count+=1;
+				}
+			}
+		}
+
+		return wl_unit.toString();
+	}
+}
+
 function started_validating(){
 }
 
@@ -158,35 +292,6 @@ var makeRequest = {
 };
 
 function showWlHint(updateFlag){
-	var isSwMode = function(mode){
-		var ui_sw_mode = "rt";
-		var sw_mode = '<% nvram_get("sw_mode"); %>';
-		var wlc_psta = '<% nvram_get("wlc_psta"); %>';
-		var wlc_express = '<% nvram_get("wlc_express"); %>';
-
-		if(((sw_mode == '2' && wlc_psta == '0') || (sw_mode == '3' && wlc_psta == '2')) && wlc_express == '0'){ // Repeater
-			ui_sw_mode = "re";
-		}
-		else if((sw_mode == '3' && wlc_psta == '0') || (sw_mode == '3' && wlc_psta == '')){     // Access Point
-			ui_sw_mode = "ap";
-		}
-		else if((sw_mode == '3' && wlc_psta == '1' && wlc_express == '0') || (sw_mode == '3' && wlc_psta == '3' && wlc_express == '0') || (sw_mode == '2' && wlc_psta == '1' && wlc_express == '0')){   // MediaBridge
-			ui_sw_mode = "mb";
-		}
-		else if(sw_mode == '2' && wlc_psta == '0' && wlc_express == '1'){       // Express Way 2G
-			ui_sw_mode = "ew2";
-		}
-		else if(sw_mode == '2' && wlc_psta == '0' && wlc_express == '2'){       // Express Way 5G
-			ui_sw_mode = "ew5";
-		}
-		else if(sw_mode == '5'){        // Hotspot
-			ui_sw_mode = 'hs';
-		}
-		else ui_sw_mode = "rt"; // Router
-
-		return (ui_sw_mode.search(mode) !== -1);
-	}
-
 	if(!isSwMode('rt') && !isSwMode('ap')) return false;
 
 	var wl_nband_title = (function(){
@@ -231,146 +336,249 @@ function showWlHint(updateFlag){
 	})();
 
 	var genWlObj = (function(){
+		const smart_connect_version = isSupport("smart_connect_v2") ? "v2" : isSupport("smart_connect") || isSupport("bandstr") ? "v1" : "";
 		var smart_connect_nvram = '<% nvram_get("smart_connect_x"); %>';
 		var wlObj = [];
 		var odmpid = '<% nvram_get("odmpid"); %>';
-		var wlUnit = function(_band, _ssid, _key){
+		const wlUnit = function(_band, _ssid, _key, _band_name){
 			this.band = _band;
 			this.ssid = _ssid;
 			this.key = _key;
+			this.band_name = _band_name;
 		}
-		const wl_len = wl_nband_title.length;
-		var ssid_nvram = [
-			htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl0_ssid"); %>')),
-			htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl1_ssid"); %>')),
-			htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl2_ssid"); %>'))
-		];
-		if(wl_len >= 4)
-			ssid_nvram.push(htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl3_ssid"); %>')));
-
-		var auth_nvram = [
-			decodeURIComponent('<% nvram_char_to_ascii("", "wl0_auth_mode_x"); %>'),
-			decodeURIComponent('<% nvram_char_to_ascii("", "wl1_auth_mode_x"); %>'),
-			decodeURIComponent('<% nvram_char_to_ascii("", "wl2_auth_mode_x"); %>')
-		];
-		if(wl_len >= 4)
-			auth_nvram.push(decodeURIComponent('<% nvram_char_to_ascii("", "wl3_auth_mode_x"); %>'));
-
-		var key_nvram = [
-			htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl0_wpa_psk"); %>')),
-			htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl1_wpa_psk"); %>')),
-			htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl2_wpa_psk"); %>'))
-		];
-		if(wl_len >= 4)
-			key_nvram.push(decodeURIComponent('<% nvram_char_to_ascii("", "wl3_wpa_psk"); %>'));
-
-		var ssid_param = [
-			htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl0_ssid"); %>')),
-			htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl1_ssid"); %>')),
-			htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl2_ssid"); %>'))
-		];
-		if(wl_len >= 4)
-			ssid_param.push(htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl3_ssid"); %>')));
-
-		var auth_param = [
-			decodeURIComponent('<% get_ascii_parameter("wl0_auth_mode_x"); %>'),
-			decodeURIComponent('<% get_ascii_parameter("wl1_auth_mode_x"); %>'),
-			decodeURIComponent('<% get_ascii_parameter("wl2_auth_mode_x"); %>')
-		];
-		if(wl_len >= 4)
-			auth_param.push(decodeURIComponent('<% get_ascii_parameter("wl3_auth_mode_x"); %>'));
-
-		var key_param = [
-			htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl0_wpa_psk"); %>')),
-			htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl1_wpa_psk"); %>')),
-			htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl2_wpa_psk"); %>'))
-		];
-		if(wl_len >= 4)
-			key_param.push(htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl3_wpa_psk"); %>')));
-
-		var applyParam = {
-			unit: decodeURIComponent('<% get_ascii_parameter("wl_unit"); %>'),
-			ssid: htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl_ssid"); %>')),
-			auth: decodeURIComponent('<% get_ascii_parameter("wl_auth_mode_x"); %>'),
-			key: htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl_wpa_psk"); %>')),
-			smartConnect: decodeURIComponent('<% get_ascii_parameter("smart_connect_x"); %>')
-		}
-
-		// original profile
-		for(var i=0; i<wl_nband_title.length; i++){
-			wlObj.push(new wlUnit(wl_nband_title[i], ssid_nvram[i], (auth_nvram[i] == "open") ? "" : key_nvram[i]));
-		}
-
-		if(applyParam.ssid != ""){
-			// handle wl
-			wlObj[applyParam.unit].ssid = applyParam.ssid;
-			wlObj[applyParam.unit].key = (applyParam.auth == "open") ? "" : applyParam.key;				
+		if(isSupport("sdn_mainfh")){
+			const apmSSIDArray = [
+				"",
+				decodeURIComponent('<% nvram_char_to_ascii("", "apm1_ssid"); %>'),
+				decodeURIComponent('<% nvram_char_to_ascii("", "apm2_ssid"); %>'),
+				decodeURIComponent('<% nvram_char_to_ascii("", "apm3_ssid"); %>'),
+				decodeURIComponent('<% nvram_char_to_ascii("", "apm4_ssid"); %>'),
+				decodeURIComponent('<% nvram_char_to_ascii("", "apm5_ssid"); %>'),
+				decodeURIComponent('<% nvram_char_to_ascii("", "apm6_ssid"); %>'),
+				decodeURIComponent('<% nvram_char_to_ascii("", "apm7_ssid"); %>'),
+				decodeURIComponent('<% nvram_char_to_ascii("", "apm8_ssid"); %>')
+			];
+			const apmSecArray = [
+				"",
+				decodeURIComponent('<% nvram_char_to_ascii("", "apm1_security"); %>'),
+				decodeURIComponent('<% nvram_char_to_ascii("", "apm2_security"); %>'),
+				decodeURIComponent('<% nvram_char_to_ascii("", "apm3_security"); %>'),
+				decodeURIComponent('<% nvram_char_to_ascii("", "apm4_security"); %>'),
+				decodeURIComponent('<% nvram_char_to_ascii("", "apm5_security"); %>'),
+				decodeURIComponent('<% nvram_char_to_ascii("", "apm6_security"); %>'),
+				decodeURIComponent('<% nvram_char_to_ascii("", "apm7_security"); %>'),
+				decodeURIComponent('<% nvram_char_to_ascii("", "apm8_security"); %>')
+			];
+			const apmDutListArray = [
+				"",
+				decodeURIComponent('<% nvram_char_to_ascii("", "apm1_dut_list"); %>'),
+				decodeURIComponent('<% nvram_char_to_ascii("", "apm2_dut_list"); %>'),
+				decodeURIComponent('<% nvram_char_to_ascii("", "apm3_dut_list"); %>'),
+				decodeURIComponent('<% nvram_char_to_ascii("", "apm4_dut_list"); %>'),
+				decodeURIComponent('<% nvram_char_to_ascii("", "apm5_dut_list"); %>'),
+				decodeURIComponent('<% nvram_char_to_ascii("", "apm6_dut_list"); %>'),
+				decodeURIComponent('<% nvram_char_to_ascii("", "apm7_dut_list"); %>'),
+				decodeURIComponent('<% nvram_char_to_ascii("", "apm8_dut_list"); %>')
+			];
+			const bands_bit_mapping = [
+				{ bit: 1, band: "2G", text: "2.4 GHz" },
+				{ bit: 2, band: "5G", text: "5 GHz" },
+				{ bit: 4, band: "5G1", text: "5 GHz-1" },
+				{ bit: 8, band: "5G2", text: "5 GHz-2" },
+				{ bit: 16, band: "6G", text: "6 GHz" },
+				{ bit: 32, band: "6G1", text: "6 GHz-1" },
+				{ bit: 64, band: "6G2", text: "6 GHz-2" },
+			];
+			const dut_support_bands = (()=>{
+				let result = [];
+				if(isSupport("noWiFi")){
+					return result;
+				}
+				if(get_wl_unit_by_band("2G") != ""){
+					result = result.concat(bands_bit_mapping.find(el => el.bit === 1));
+				}
+				if(get_wl_unit_by_band("5G2") != ""){
+					result = result.concat(bands_bit_mapping.filter(el => [4, 8].includes(el.bit)));
+				}
+				else if(get_wl_unit_by_band("5G") != ""){
+					result = result.concat(bands_bit_mapping.find(el => el.bit === 2));
+				}
+				if(get_wl_unit_by_band("6G2") != ""){
+					result = result.concat(bands_bit_mapping.filter(el => [32, 64].includes(el.bit)));
+				}
+				else if(get_wl_unit_by_band("6G") != ""){
+					result = result.concat(bands_bit_mapping.find(el => el.bit === 16));
+				}
+				return result;
+			})();
+			const mainFH = decodeURIComponent('<% nvram_char_to_ascii("", "sdn_rl"); %>').split("<").filter(item => item.includes("MAINFH"));
+			mainFH.forEach(item=>{
+				if(item != ""){
+					const apmIdx = item.split(">")[5];
+					const apm_ssid = apmSSIDArray[apmIdx];
+					const apm_psk = (()=>{
+						if(apmSecArray[apmIdx] != undefined && apmSecArray[apmIdx] != ""){
+							return apmSecArray[apmIdx].split(">")[3];
+						}
+						else{
+							return "";
+						}
+					})();
+					const apm_band_bitwise = (()=>{
+						if(apmDutListArray[apmIdx] != undefined && apmDutListArray[apmIdx] != ""){
+							let band_bitwise = 0;
+							const dut_list_arr = apmDutListArray[apmIdx].split("<");
+							for(let i = 0; i < dut_list_arr.length; i++){
+								if(dut_list_arr[i] != ""){
+									const dut_info_arr = dut_list_arr[i].split(">");
+									band_bitwise = isNaN(parseInt(dut_info_arr[1])) ? 0 : parseInt(dut_info_arr[1]);
+									break;
+								}
+							}
+							return band_bitwise;
+						}
+						else{
+							return 0;
+						}
+					})();
+					const apm_band_info = (()=>{
+						let band_info = {"band":[], "band_name":[]};
+						bands_bit_mapping.forEach(({ bit, band, text}) => {
+							if((apm_band_bitwise & bit) && check_support_band_bit(bit)){
+								band_info.band.push(text);
+								band_info.band_name.push(band);
+							}
+						});
+						return band_info;
+					})();
+					wlObj.push(
+						new wlUnit(
+							apm_band_info.band.toString(),
+							apm_ssid,
+							apm_psk,
+							apm_band_info.band_name[0]
+						)
+					);
+				}
+			});
+			function check_support_band_bit(_band_bitwise){
+				return (dut_support_bands.find(wifi_option => wifi_option.bit & _band_bitwise)) ? true : false;
+			}
 		}
 		else{
-			// handle wlX
-			for(var i=0; i<wlObj.length; i++){
-				if(ssid_param[i] != ""){
-					wlObj[i].ssid = ssid_param[i];
-					wlObj[i].key = (auth_param[i] == "open") ? "" : key_param[i];
-				}
-			}			
-		}
+			const wl_len = wl_nband_title.length;
+			var ssid_nvram = [
+				htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl0_ssid"); %>')),
+				htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl1_ssid"); %>')),
+				htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl2_ssid"); %>'))
+			];
+			if(wl_len >= 4)
+				ssid_nvram.push(htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl3_ssid"); %>')));
 
-		// handle smart connect
-		if(applyParam.smartConnect == ""){
-			if(smart_connect_nvram == 1){
-				// Tri band steering
-				wlObj.length = 1;
-				if(parent.smart_connect_support){
-					if(parent.band5g2_support){
-						wlObj[0].band = "<#smart_connect_tri#>";
-					}
-					else{
-						wlObj[0].band = "<#smart_connect_dual#>";
-					}
-				}
+			var auth_nvram = [
+				decodeURIComponent('<% nvram_char_to_ascii("", "wl0_auth_mode_x"); %>'),
+				decodeURIComponent('<% nvram_char_to_ascii("", "wl1_auth_mode_x"); %>'),
+				decodeURIComponent('<% nvram_char_to_ascii("", "wl2_auth_mode_x"); %>')
+			];
+			if(wl_len >= 4)
+				auth_nvram.push(decodeURIComponent('<% nvram_char_to_ascii("", "wl3_auth_mode_x"); %>'));
+
+			var key_nvram = [
+				htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl0_wpa_psk"); %>')),
+				htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl1_wpa_psk"); %>')),
+				htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl2_wpa_psk"); %>'))
+			];
+			if(wl_len >= 4)
+				key_nvram.push(htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl3_wpa_psk"); %>')));
+
+			var ssid_param = [
+				htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl0_ssid"); %>')),
+				htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl1_ssid"); %>')),
+				htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl2_ssid"); %>'))
+			];
+			if(wl_len >= 4)
+				ssid_param.push(htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl3_ssid"); %>')));
+
+			var auth_param = [
+				decodeURIComponent('<% get_ascii_parameter("wl0_auth_mode_x"); %>'),
+				decodeURIComponent('<% get_ascii_parameter("wl1_auth_mode_x"); %>'),
+				decodeURIComponent('<% get_ascii_parameter("wl2_auth_mode_x"); %>')
+			];
+			if(wl_len >= 4)
+				auth_param.push(decodeURIComponent('<% get_ascii_parameter("wl3_auth_mode_x"); %>'));
+
+			var key_param = [
+				htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl0_wpa_psk"); %>')),
+				htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl1_wpa_psk"); %>')),
+				htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl2_wpa_psk"); %>'))
+			];
+			if(wl_len >= 4)
+				key_param.push(htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl3_wpa_psk"); %>')));
+
+			var applyParam = {
+				unit: decodeURIComponent('<% get_ascii_parameter("wl_unit"); %>'),
+				ssid: htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl_ssid"); %>')),
+				auth: decodeURIComponent('<% get_ascii_parameter("wl_auth_mode_x"); %>'),
+				key: htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl_wpa_psk"); %>')),
+				smartConnect: decodeURIComponent('<% get_ascii_parameter("smart_connect_x"); %>')
 			}
-			else if(smart_connect_nvram == 2){
-				// 5GHz band steering
-				var band_5g = 1;
+
+			// original profile
+			for(var i=0; i<wl_nband_title.length; i++){
+				wlObj.push(
+					new wlUnit(
+						wl_nband_title[i],
+						ssid_nvram[i],
+						(auth_nvram[i] == "open") ? "" : key_nvram[i],
+						(()=>{
+							let bandName = "";
+							if(wl_nband_title[i].indexOf("2.4") != -1){
+								bandName = "2G";
+							}
+							else{
+								bandName = wl_nband_title[i].replace(`GHz`,`G`).replace(/\s+/g, '');
+								bandName = (wl_nband_title[i].indexOf(`-`) != -1) ? (bandName.replace(`-`,``)) : (bandName + "1");
+							}
+							return bandName;
+						})()
+					)
+				);
+			}
+
+			if(applyParam.ssid != ""){
+				// handle wl
+				wlObj[applyParam.unit].ssid = applyParam.ssid;
+				wlObj[applyParam.unit].key = (applyParam.auth == "open") ? "" : applyParam.key;
+			}
+			else{
+				// handle wlX
 				for(var i=0; i<wlObj.length; i++){
-					if(wlObj[i].band.indexOf("5") != -1){
-						band_5g = i;
-						break;
+					if(ssid_param[i] != ""){
+						wlObj[i].ssid = ssid_param[i];
+						wlObj[i].key = (auth_param[i] == "open") ? "" : key_param[i];
 					}
 				}
-
-				wlObj[band_5g].band = "5 GHz Smart Connect";
-				wlObj.splice(band_5g+1, 1);
 			}
-		}
-		else if(applyParam.smartConnect == 1){
-			// Tri band steering
-			wlObj.length = 1;
-			if(parent.smart_connect_support){
-				if(parent.band5g2_support){
-					wlObj[0].band = "<#smart_connect_tri#>";
+			wlObj.sort((a,b) => (a.band > b.band) ? 1 : ((b.band > a.band) ? -1 : 0));
+
+			let wlObj_tmp = [];
+			let smartconnect_info = false;
+			wlObj.forEach((item)=>{
+				if(isSmartConnectBand(item.band_name)){
+					if(!smartconnect_info){
+						let sc_band = JSON.parse(JSON.stringify(item));
+						sc_band.band = `<#smart_connect#>`;
+						wlObj_tmp.push(sc_band);
+						smartconnect_info = true;
+					}
 				}
 				else{
-					wlObj[0].band = "<#smart_connect_dual#>";
+					wlObj_tmp.push(item);
 				}
-			}
-		}
-		else if(applyParam.smartConnect == 2){
-			// 5GHz band steering
-			var band_5g = 1;
-			for(var i=0; i<wlObj.length; i++){
-				if(wlObj[i].band.indexOf("5") != -1){
-					band_5g = i;
-					break;
-				}
-			}
+			});
 
-			wlObj[band_5g].band = "5 GHz Smart Connect";
-			wlObj.splice(band_5g+1, 1);
+			wlObj = wlObj_tmp;
 		}
-
-		wlObj.sort((a,b) => (a.band > b.band) ? 1 : ((b.band > a.band) ? -1 : 0));
 		return wlObj;
 	})();
 

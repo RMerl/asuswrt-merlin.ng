@@ -1,28 +1,22 @@
 /*
 <:copyright-BRCM:2019:DUAL/GPL:standard
 
-   Copyright (c) 2019 Broadcom
+   Copyright (c) 2019 Broadcom 
    All Rights Reserved
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
 :>
 */
@@ -65,6 +59,14 @@ enum vfbio_func_idx {
     VFBIO_FUNC_LVM_DEFRAGMENT,
     VFBIO_FUNC_LVM_DEFRAGMENT_INFO,
     VFBIO_FUNC_LVM_DEVICE_INFO,
+    VFBIO_FUNC_EMMC_STANDARD_INFO,
+    VFBIO_FUNC_EMMC_PROPRIETARY_INFO,
+    VFBIO_FUNC_GET_ATTRIBUTES,
+    VFBIO_FUNC_SET_ATTRIBUTES,
+    VFBIO_FUNC_RPMB_WRITE_KEY,
+    VFBIO_FUNC_RPMB_READ_CNT,
+    VFBIO_FUNC_RPMB_WRITE_DATA,
+    VFBIO_FUNC_RPMB_READ_DATA,
     VFBIO_FUNC_MAX
 };
 
@@ -147,8 +149,8 @@ static inline void vfbio_msg_set_exclusive(rpc_msg *msg, u8 v)
  */
 struct vfbio_lun_info {
     /*
-     * W0: |  31..8 |  7..0  |
-     *     |  RSVD  | BLK_SZ |
+     * W0: | 31..16 | 15..8 | 7..0   |
+     *     | RSVD   | FLAGS | BLK_SZ |
      *
      * W1: | 31..0  |
      *     | N_BLKS |
@@ -168,6 +170,7 @@ struct vfbio_lun_info {
     u8 flags;
 #define VFBIO_LUN_INFO_FLAG_READ_ONLY  0x01
 #define VFBIO_LUN_INFO_FLAG_DYNAMIC    0x02
+#define VFBIO_LUN_INFO_FLAG_ENCRYPTED  0x04
     u8 rsvd1[2];
     u32 n_blks;
     u8 name[VFBIO_LUN_INFO_NAME_MAX]; /* NULL-terminated ASCII string */
@@ -483,6 +486,7 @@ struct vfbio_lun_create_request
 {
     char lun_name[VFBIO_LUN_INFO_NAME_MAX];  /* Unique lun name */
     uint32_t lun_size;  /* Volume size in 4KB blocks (in Little Endian format) */
+    uint32_t lun_flags; /* LUN flags. See in vfbio_lvm.h */
 };
 
 /*
@@ -714,6 +718,43 @@ static inline uint32_t vfbio_lvm_msg_get_device_info_total_blocks(rpc_msg *msg)
 static inline uint32_t vfbio_lvm_msg_get_device_info_free_blocks(rpc_msg *msg)
 {
     return msg->data[2];
+}
+
+/*
+ * vfbio_rpmb_read, vfbio_rpmb_write vfbio_rmpb_get_cnt vfbio_rpmb_set_key
+ * request encoding
+ * W1: |       31..24     | 23...0 |
+ *     | DMA ADDR[39..32] | RSVD  |
+ *
+ * W2: |      31..0      |
+ *     | DMA ADDR[31..0] |
+ *
+ * W3: | 31..0 |
+ *     |  NFRM  |
+ *
+ * DMA ADDR[39..32]:    Upper 8 bits of 40-bit DMA address
+ * nfrm:                Number of rpmb frmane #
+ * DMA ADDR[31..0]:     Lower 32 bits of 40-bit DMA address
+ * size:                Message size (optional)
+ *
+ */
+static inline u64 vfbio_rpmb_msg_get_addr(rpc_msg *msg)
+{
+    return ((u64)(msg->data[0] & (0xff << 24)) << 8) | msg->data[1];
+}
+static inline void vfbio_rpmb_msg_set_addr(rpc_msg *msg, u64 v)
+{
+    msg->data[0] = (msg->data[0] & ~(0xff << 24)) |
+        (u32)((v >> 8) & (0xff << 24));
+    msg->data[1] = (u32)(v & 0xffffffff);
+}
+static inline u32 vfbio_rpmb_msg_get_n_frms(rpc_msg *msg)
+{
+    return msg->data[2] ;
+}
+static inline void vfbio_rpmb_msg_set_n_frms(rpc_msg *msg, u32 v)
+{
+    msg->data[2]  = v;
 }
 
 #endif

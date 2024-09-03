@@ -501,6 +501,7 @@ int send_pns_sendmsg_fcm_req(
 	const char* apilevel,
 	const char* modelname,
 	const char *msg,
+	int ispush,
 	PnsSendMsgFcm *pPsm
 );
 

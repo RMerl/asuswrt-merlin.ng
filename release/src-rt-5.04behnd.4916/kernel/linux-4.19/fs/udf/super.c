@@ -146,9 +146,12 @@ static struct inode *udf_alloc_inode(struct super_block *sb)
 
 	ei->i_unique = 0;
 	ei->i_lenExtents = 0;
+	ei->i_lenStreams = 0;
 	ei->i_next_alloc_block = 0;
 	ei->i_next_alloc_goal = 0;
 	ei->i_strat4096 = 0;
+	ei->i_streamdir = 0;
+	ei->i_hidden = 0;
 	init_rwsem(&ei->i_data_sem);
 	ei->cached_extent.lstart = -1;
 	spin_lock_init(&ei->i_extent_cache_lock);
@@ -172,7 +175,7 @@ static void init_once(void *foo)
 {
 	struct udf_inode_info *ei = (struct udf_inode_info *)foo;
 
-	ei->i_ext.i_data = NULL;
+	ei->i_data = NULL;
 	inode_init_once(&ei->vfs_inode);
 }
 
@@ -572,6 +575,11 @@ static int udf_parse_options(char *options, struct udf_options *uopt,
 			if (!remount) {
 				if (uopt->nls_map)
 					unload_nls(uopt->nls_map);
+				/*
+				 * load_nls() failure is handled later in
+				 * udf_fill_super() after all options are
+				 * parsed.
+				 */
 				uopt->nls_map = load_nls(args[0].from);
 				uopt->flags |= (1 << UDF_FLAG_NLS_MAP);
 			}
@@ -1200,7 +1208,7 @@ static int udf_load_vat(struct super_block *sb, int p_index, int type1_index)
 			vat20 = (struct virtualAllocationTable20 *)bh->b_data;
 		} else {
 			vat20 = (struct virtualAllocationTable20 *)
-							vati->i_ext.i_data;
+							vati->i_data;
 		}
 
 		map->s_type_specific.s_virtual.s_start_offset =

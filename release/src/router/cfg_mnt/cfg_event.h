@@ -5,6 +5,7 @@
 #define HTTPD_PREFIX	"httpd"
 #define RC_PREFIX		"rc"
 #define ETHEVENT_PREFIX	"ethevent"
+#define SMARTHAUL_PREFIX "SMARTHAUL"
 #define EVENT_ID	"eid"
 #define MAC_ADDR	"mac_addr"
 #define IF_NAME		"if_name"
@@ -113,6 +114,14 @@ enum rcEventType {
 enum rbEventType {
 	EID_RB_STA_CONN = 1,
 	EID_RB_STA_DISCONN
+};
+
+enum smartHaulEventType {
+	EID_SH_ADD = 1,
+	EID_SH_UPDATE,
+	EID_SH_DELETE,
+	EID_SET_TIDMAP,
+	EID_SH_MAX
 };
 
 #endif /* __CFG_EVENT_H__ */

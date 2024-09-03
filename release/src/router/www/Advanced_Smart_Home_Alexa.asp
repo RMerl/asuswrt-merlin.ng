@@ -11,13 +11,13 @@
 <title>Alexa & IFTTT</title>
 <link rel="stylesheet" type="text/css" href="index_style.css">
 <link rel="stylesheet" type="text/css" href="form_style.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/form.js"></script>
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js"></script>
 <style>
 .div_table{
 	display:table;
@@ -35,7 +35,6 @@
 
 .div_img {
 	padding: 30px 0px 50px 25px;
-	position: absolute;
 }
 
 .and_you_can{
@@ -103,6 +102,9 @@ var AAE_MAX_RETRY_NUM = 3;
 var flag = '<% get_parameter("flag"); %>';
 var realip_state = "";
 var oauth_auth_status = httpApi.nvramGet(["oauth_auth_status"],true).oauth_auth_status;
+
+var current_page = window.location.pathname.split("/").pop();
+var faq_index_tmp = get_faq_index(FAQ_List, current_page, 1);
 
 var StatusList = {
 	"NoInetrnet": "<#Alexa_Status_Disconnect#>",
@@ -209,10 +211,15 @@ function tag_control(){
 	if((obj = document.getElementById('remote_control_here')) != null){
 		obj.style="text-decoration: underline;cursor:pointer;";
 		obj.onclick=function(){
-			ASUS_EULA.config(enable_remote_control, function(){});
-			if(ASUS_EULA.check('asus')){
-				enable_remote_control();
-			}
+            if(policy_status.PP == 0 || policy_status.PP_time == ''){
+                const policyModal = new PolicyModalComponent({
+                    policy: "PP",
+                    agreeCallback: enable_remote_control,
+                });
+                policyModal.show();
+            }else{
+                enable_remote_control();
+            }
 		};
 	}
 }
@@ -285,9 +292,16 @@ function detcet_aae_state(){
 
 function get_activation_code(){
 	close_alert('alert_pin');
-	ASUS_EULA.config(get_activation_code, function(){});
-	if(ASUS_EULA.check("asus"))
-		gen_new_pincode();
+
+    if(policy_status.PP == 0 || policy_status.PP_time == ''){
+        const policyModal = new PolicyModalComponent({
+            policy: "PP",
+            agreeCallback: gen_new_pincode,
+        });
+        policyModal.show();
+    }else{
+        gen_new_pincode();
+    }
 }
 
 function gen_new_pincode(){
@@ -420,6 +434,20 @@ function show_account_state(){
 	if(RetStatus == StatusList.EnableRemoteCtrl)
 		tag_control();
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    const thirdpartyPolicy = 'Alexa'
+    document.getElementById("thirdparty_pp").innerHTML=`<#Thirdparty_PP_Desc1#>`.replace("%1$@", thirdpartyPolicy).replace("[aa]%2$@[/aa]", `<a onclick="showThirdPartyPolicy('${thirdpartyPolicy}')" style="text-decoration: underline;cursor: pointer;">Alexa Terms of Use</a>`);
+})
+
+function showThirdPartyPolicy(party){
+    const thirdPartyPolicyModal = new ThirdPartyPolicyModalComponent({
+        policy: 'THIRDPARTY_PP',
+        party: party
+    });
+    thirdPartyPolicyModal.show();
+}
+
 </script>
 </head>
 <body onload="initial();" onunLoad="return unload_body();" class="bg">
@@ -455,8 +483,11 @@ function show_account_state(){
 							<tbody>
 							<tr>
 								<td bgcolor="#4D595D" valign="top">
+								<div class="container">
+
 									<div>&nbsp;</div>
 									<div id="formfonttitle" class="formfonttitle">Alexa & IFTTT - <#Alexa_Title#></div>
+									<div class="formfonttitle_help"><i onclick="show_feature_desc(`<#HOWTOSETUP#>`)" class="icon_help"></i></div>
 									<div id="divSwitchMenu" style="margin-top:-40px;float:right;"><div style="width:150px;height:30px;float:left;border-top-left-radius:8px;border-bottom-left-radius:8px;" class="block_filter_pressed"><div class="tab_font_color" style="text-align:center;padding-top:5px;font-size:14px"><#Alexa_Title#></div></div><div style="width:110px;height:30px;float:left;border-top-right-radius:8px;border-bottom-right-radius:8px;" class="block_filter"><a href="Advanced_Smart_Home_IFTTT.asp"><div class="block_filter_name">IFTTT</div></a></div></div>
 									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									<div class="div_table">
@@ -573,9 +604,15 @@ function show_account_state(){
 															</tr>
 														</table>
 													</div>
+													<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
+													<div id="thirdparty_pp" style="padding:0px 40px"></div>
 												</div>
 											</div>
 									</div>
+
+									</div>	<!-- for .container  -->
+									<div class="popup_container popup_element_second"></div>
+
 								</td>
 							</tr>
 							</tbody>

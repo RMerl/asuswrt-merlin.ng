@@ -71,12 +71,12 @@
 	ports {
 		port_xphy {
 			phy-handle = <&phy_xphy>;
-			network-leds=<&led0 &led1 &led2>;
+			network-leds=<&led3 &led4 &led5>;
 			status = "okay";
 		};
 		port_sgmii {
 			phy-handle = <&phy_serdes>;
-			network-leds=<&led3 &led4 &led5>;
+			network-leds=<&led0 &led1 &led2>;
 			status = "okay";
 		};
 	};
@@ -93,42 +93,42 @@
 	pinctrl-0 = <&b_ser_led_clk_pin_17 &b_ser_led_data_pin_5 &b_ser_led_mask_pin_16>;
 	serial-shifters-installed = <1>;
 
-	led0: serial-port_0-led_0 {
+	led0: serial-port_5-led_2 {
 		active_high;
 		crossbar-output = <0>;
 		link = <(LED_SPEED_100|LED_SPEED_2500)>;
 		activity = <(LED_SPEED_100|LED_SPEED_2500)>;
 		status = "okay";
 	};
-	led1: serial-port_0-led_1 {
+	led1: serial-port_5-led_1 {
 		active_high;
 		crossbar-output = <1>;
 		link = <(LED_SPEED_1G|LED_SPEED_2500)>;
 		activity = <(LED_SPEED_1G|LED_SPEED_2500)>;
 		status = "okay";
 	};
-	led2: serial-port_0-led_2 {
+	led2: serial-port_5-led_0 {
 		active_high;
 		crossbar-output = <2>;
 		link = <(LED_SPEED_10G|LED_SPEED_2500)>;
 		activity = <(LED_SPEED_10G|LED_SPEED_2500)>;
 		status = "okay";
 	};
-	led3: serial-port_5-led_0 {
+	led3: serial-port_0-led_2 {
 		active_high;
 		crossbar-output = <3>;
 		link = <(LED_SPEED_100|LED_SPEED_2500)>;
 		activity = <(LED_SPEED_100|LED_SPEED_2500)>;
 		status = "okay";
 	};
-	led4: serial-port_5-led_1 {
+	led4: serial-port_0-led_1 {
 		active_high;
 		crossbar-output = <4>;
 		link = <(LED_SPEED_1G|LED_SPEED_2500)>;
 		activity = <(LED_SPEED_1G|LED_SPEED_2500)>;
 		status = "okay";
 	};
-	led5: serial-port_5-led_2 {
+	led5: serial-port_0-led_0 {
 		active_high;
 		crossbar-output = <5>;
 		link = <(LED_SPEED_10G|LED_SPEED_2500)>;
@@ -143,6 +143,7 @@
 		status = "okay";
 		label = "WiFi_1";
 	};
+
 	led7: sw_serial_led_7 {
 		active_high;
 		crossbar-output = <8>;
@@ -153,15 +154,13 @@
 	};
 
 	led8: sw_parallel_led_8 {
-		active_low; 
+		active_high;
 		pinctrl-0 = <&a_per_led_07_pin_7>;
-		crossbar-output = <7>;
 		brightness = <255>;
 		flash_rate = <0>;
 		status = "okay";
 		label = "WPS";
 	};
-
 };
 
 &hs_uart0 {

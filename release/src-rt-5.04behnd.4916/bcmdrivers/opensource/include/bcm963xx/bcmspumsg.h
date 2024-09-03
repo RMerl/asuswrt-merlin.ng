@@ -2,27 +2,21 @@
     Copyright 2020 Broadcom Corporation
 
     <:label-BRCM:2020:DUAL/GPL:standard
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
     :>
 */
 
@@ -87,8 +81,14 @@ typedef int (*spu_offload_cbk)(struct bcmspu_offload_resp *resp_info);
 
 #define MAX_SPU_OFFLOAD_SESSIONS   (MAX_SPU_OFFLOAD_US_SESSIONS + MAX_SPU_OFFLOAD_DS_SESSIONS)
 
+#define MAX_REPLAY_WIN_SIZE        512 /* limitation due to offload platform memory */
+#define MAX_SPU_OFFLOAD_BITMAP     (MAX_REPLAY_WIN_SIZE / 32)
+
 #define MAX_SPU_HEADER_SIZE        200
-#define OUTER_HEADER_SIZE          40
+#define OUTER_HEADER_SIZE          48
+#define GCM_RFC4106_IV_SIZE        8
+#define ESP_SPI_LEN                4
+#define GCM_IV_AAD2_SIZE           GCM_RFC4106_IV_SIZE + ESP_SPI_LEN
 
 struct bcmspu_offload_parm {
    uint32_t esp_spi;
@@ -102,25 +102,29 @@ struct bcmspu_offload_parm {
          uint8_t esp_o_udp   : 1;
          uint8_t data_limit  : 1;
          uint8_t long_bitmap : 1;
-         uint8_t reserved    : 3;
+         uint8_t is_gcm      : 1;
+         uint8_t null_enc    : 1;
+         uint8_t ipv6        : 1;
       };
       uint8_t u8_0;
    };
 
    uint8_t session_id;
-   union {
-      uint8_t fixed_hdr_size;
-      uint8_t outer_hdr_size;
-   };
+   uint8_t outer_hdr_size;
    uint8_t key_size;
    uint8_t digest_size;
    uint8_t iv_size;
+   uint8_t blk_size;
    uint8_t blog_chan_id;
+   uint32_t replay_size;
 
    uint64_t pkts;
    uint64_t bytes;
    uint8_t spu_header[MAX_SPU_HEADER_SIZE];
    uint8_t outer_header[OUTER_HEADER_SIZE];
+   uint8_t gcm_iv_aad2[GCM_IV_AAD2_SIZE];
+   uint32_t bitmap[MAX_SPU_OFFLOAD_BITMAP];
+   uint64_t limits[4];
 };
 
 struct spu_offload_parm_args {
@@ -129,6 +133,15 @@ struct spu_offload_parm_args {
    Blog_t *blog_p;
 #endif
    struct bcmspu_offload_parm *parm;
+};
+
+struct spu_offload_prephdr_args {
+    uint32_t session_id;
+#if defined(CONFIG_BLOG)
+    Blog_t *blog_p;
+#endif
+    uint8_t prepend_size;
+    uint8_t spu_prepend[MAX_SPU_HEADER_SIZE]; 
 };
 
 struct spu_offload_tracker {
@@ -141,8 +154,11 @@ struct spu_offload_tracker {
 };
 
 struct spu_offload_stats_args {
-    uint32_t session_id;
+    int session_id;
     struct spu_offload_tracker *stats;
+    uint32_t *bitmap;
+    uint32_t num_request;
+    uint32_t num_response;
 };
 
 

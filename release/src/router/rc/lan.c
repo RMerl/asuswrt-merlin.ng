@@ -280,11 +280,11 @@ start_emf(char *lan_ifname)
 		eval("bcmmcastctl", "mode", "-i",  "br0",  "-p", "2",  "-m", "1");
 		return;
 	}
-#ifdef RTCONFIG_PROXYSTA
+#if defined(RTCONFIG_PROXYSTA) || defined(RTCONFIG_NOWL)
 #define BCM_MCAST_SNOOPING_DISABLED_FLOOD	"0"	/* snooping is disabled, IP multicast is flooded */
 #define BCM_MCAST_SNOOPING_STANDARD_MODE	"1"	/* snoping is enabled, unsolicited IP multicast is flooded */
 #define BCM_MCAST_SNOOPING_BLOCKING_MODE	"2"	/* snoping is enabled, unsolicited IP mutlicast is dropped */
-#ifdef RTCONFIG_HND_ROUTER_AX
+#if defined(RTCONFIG_HND_ROUTER_AX) && !defined(RTCONFIG_NOWL)
 	int bcm_client_mode = psta_exist() || psr_exist();
 	int bcm_mcast_snooping_disabled = (sw_mode() == SW_MODE_AP) && !bcm_client_mode && !nvram_get_int("bcm_snooping");
 	eval("bcmmcastctl", "mode", "-i",  "br0",  "-p", "1",  "-m", bcm_mcast_snooping_disabled ? BCM_MCAST_SNOOPING_DISABLED_FLOOD : BCM_MCAST_SNOOPING_STANDARD_MODE);
@@ -428,9 +428,9 @@ void start_wl(void)
 				is_client |= wl_client(unit, subunit) && nvram_get_int(wl_nvname("radio", unit, 0));
 #ifdef CONFIG_BCMWL5
 				snprintf(prefix, sizeof(prefix), "wl%d_", unit);
-				if (nvram_match(strcat_r(prefix, "radio", tmp), "0")
+				if ((nvram_match(strcat_r(prefix, "radio", tmp), "0")
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
-					|| psta_exist_except(unit)
+					|| psta_exist_except(unit))
 #endif
 #ifdef RTCONFIG_MLO
 					&& !nvram_match("amesh_wps_enr", "1")
@@ -455,7 +455,6 @@ void start_wl(void)
 #if defined(RTCONFIG_HND_ROUTER_BE_4916)
 			set_wltxpower();
 #endif
-
 		}
 	}
 	else if (strcmp(lan_ifname, "")) {
@@ -588,7 +587,7 @@ chk_inlan(char *chk_ip)
         return ret;
 }
 
-static int
+extern int
 add_lan_routes(char *lan_ifname)
 {
 	return add_routes("lan_", "route", lan_ifname);
@@ -1508,6 +1507,23 @@ void start_lan(void)
 	eval("wl", "-i", "eth7", "ledbh", "13", "7");
 #endif
 
+#ifdef RTAX88U_PRO
+	// configure 6715 GPIO direction
+	if(nvram_match("wl0_radio", "0"))
+		eval("wl", "-i", "eth6", "gpioout", "0x2002", "0x0002");
+	else
+		eval("wl", "-i", "eth6", "gpioout", "0x2002", "0x2002");
+
+	if(nvram_match("wl1_radio", "0"))
+		eval("wl", "-i", "eth7", "gpioout", "0x2002", "0x0002");
+	else
+		eval("wl", "-i", "eth7", "gpioout", "0x2002", "0x2002");
+
+	eval("wl", "-i", "eth6", "ledbh", "13", "7");
+	eval("wl", "-i", "eth7", "ledbh", "13", "7");
+#endif
+
+
 #ifdef DSL_AX82U
 	if (nvram_match("wl0_radio", "0") && nvram_match("wl1_radio", "0"))
 		led_control(LED_WIFI, LED_OFF);
@@ -1659,7 +1675,7 @@ void start_lan(void)
 #ifdef RTAC87U
 		eval("brctl", "stp", lan_ifname, nvram_safe_get("lan_stp"));
 #else
-#if !defined(HND_ROUTER) || defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U)
+#if !defined(HND_ROUTER) || defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
 		if (is_routing_enabled())
 			eval("brctl", "stp", lan_ifname, nvram_safe_get("lan_stp"));
 		else
@@ -1884,12 +1900,12 @@ void start_lan(void)
 #ifdef HND_ROUTER
 				if (!strcmp(ifname, wan_if_eth()))
 					set_hwaddr(ifname, (const char *) get_lan_hwaddr());
-#if defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(BCM6750) && !defined(BCM63178)
+#if (defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(BCM6750) && !defined(BCM63178)) || defined(RTBE86U)
 				else if (!strncmp(ifname, "eth", 3) && (wl_probe(ifname) < 0))
 					set_hwaddr(ifname, (const char *) get_lan_hwaddr());
 #endif
 #endif
-#if defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4) || defined(XC5)
+#if defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4) || defined(XC5) || defined(RTBE86U)
 				if (!strcmp(ifname, "wl0"))
 					set_hwaddr(ifname, (const char *) nvram_safe_get("0:macaddr"));
 				if (!strcmp(ifname, "wl1"))
@@ -1963,7 +1979,7 @@ void start_lan(void)
 #endif
 				}
 
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE58U_PRO)
                                 if ((re_mode()) && !strcmp(ifname, "vlan4094")) continue;
 #endif
 				/* Set the logical bridge address to that of the first interface */
@@ -2170,7 +2186,7 @@ void start_lan(void)
 #endif
 	
 #if defined(RTCONFIG_MULTILAN_CFG)
-				if (apg_if_check_used(ifname))
+				if (!repeater_mode() && !mediabridge_mode() && apg_if_check_used(ifname))
 					match = 1;
 #endif
 
@@ -2213,7 +2229,7 @@ void start_lan(void)
 #endif
 							{
 #if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG)
-								if(nvram_get_int("autowan_enable") &&
+								if((is_auto_wanport_enabled() > 0) &&
 												(!strcmp(autowan_detected_ifname, ifname)
 														|| (!strcmp(autowan_detected_ifname, "") && strstr(nvram_safe_get("autowan_ifnames"), ifname))
 												)
@@ -2550,7 +2566,7 @@ gmac3_no_swbr:
 /* [MUST]: Need to discuss to add new mode for Media Bridge */
 	if(!(access_point_mode()) && !re_mode())
 #else
-#if defined(RPAX56) || defined(RPAX58)
+#if defined(RPAX56) || defined(RPAX58) || defined(RPBE58)
 	if(nvram_match("x_Setting", "0"))
 #else
 	if(sw_mode() != SW_MODE_AP)
@@ -5602,7 +5618,7 @@ void start_lan_wl(void)
 #endif
 
 #if defined(RTCONFIG_MULTILAN_CFG)
-				if (apg_if_check_used(ifname))
+				if (!repeater_mode() && !mediabridge_mode() && apg_if_check_used(ifname))
 					match = 1;
 #endif	
 
@@ -5847,9 +5863,9 @@ void restart_wl(void)
 			is_client |= wl_client(unit, subunit) && nvram_get_int(wl_nvname("radio", unit, 0));
 #ifdef CONFIG_BCMWL5
 			snprintf(prefix, sizeof(prefix), "wl%d_", unit);
-			if (nvram_match(strcat_r(prefix, "radio", tmp), "0")
+			if ((nvram_match(strcat_r(prefix, "radio", tmp), "0")
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
-				|| psta_exist_except(unit)
+				|| psta_exist_except(unit))
 #endif
 #ifdef RTCONFIG_MLO
 				&& !nvram_match("amesh_wps_enr", "1")
@@ -6106,7 +6122,7 @@ void lanaccess_wl(void)
 	/* this rule will flush ebtables broute table, so it must be the first function */
 	add_GN_WBL_EBTbrouteRule();
 #endif
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE58U_PRO)
 	start_rtkmonitor();
 #endif
 
@@ -6348,6 +6364,10 @@ void start_fbwifi_config()
 }
 #endif
 
+#if defined(RTBE86U) || defined(RTBE92U) || defined(RTBE58U) || defined(TUFBE3600)
+extern int restart_wireless_g;
+#endif
+
 void restart_wireless(void)
 {
 #ifdef RTCONFIG_WIRELESSREPEATER
@@ -6405,8 +6425,10 @@ void restart_wireless(void)
 #endif
 	}
 #ifdef CONFIG_BCMWL5
-	else
+	else {
 		nvram_set_int("obd_allow_scan", 0);
+		nvram_set_int("wlcscan", 0);
+	}
 #endif
 #endif
 #ifdef RTCONFIG_LANTIQ
@@ -6481,6 +6503,17 @@ void restart_wireless(void)
 		nvram_unset("wps_reset");
 		wl_defaults_wps();
 	}
+
+#if defined(RTBE86U) || defined(RTBE92U) || defined(RTBE58U) || defined(TUFBE3600)
+	if (!restart_wireless_g && nvram_get_int("x_Setting") && nvram_get_int("ed_thresh_reload") &&
+		 ((re_mode() && !is_CN_sku()) || (!re_mode() && (!is_CN_sku() || !nvram_match("location_code", "XX"))))) {
+		restart_wireless_g = 1;
+
+		unload_wl();
+		load_wl();
+	}
+#endif
+
 #ifndef CONFIG_BCMWL5
 	sleep(2);	// delay to avoid start interface on stoping.
 #endif
@@ -6509,7 +6542,7 @@ void restart_wireless(void)
 	nvram_unset("r_selected5gnctrlsb");
 #endif
 
-#ifdef RTCONFIG_MLO
+#if defined(RTCONFIG_MLO) && !defined(RTCONFIG_MULTILAN_MWL)
 	check_mlo_dwb_profile(nvram_get_int("mlo_dwb_mssid_subunit"),nvram_get_int("re_mode"));
 #endif
 
@@ -7217,7 +7250,7 @@ void set_onboarding_vif_status()
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 	}
 
-	if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "sae")) {
+	if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "sae") || nvram_match(strcat_r(prefix, "closed", tmp), "1")) {
 		snprintf(wl_radio, sizeof(wl_radio), "wl%d_radio", unit);
 		if (nvram_get_int(wl_radio)) //radio on
 			nvram_set_int("obvif_bss", 1);

@@ -46,6 +46,7 @@ Boston, MA 02111-1307, USA.
 #include "cipher.h"
 #include "util.h"
 #include "spu_blog.h"
+#include "linux/bcm_log.h"
 
 struct esp_skb_cb {
 	struct xfrm_skb_cb xfrm;
@@ -56,6 +57,44 @@ static int spu_blog_us_dev_xmit_args (pNBuff_t pNBuf, struct net_device *dev, Bl
 static int spu_blog_ds_dev_xmit_args (pNBuff_t pNBuf, struct net_device *dev, BlogFcArgs_t *args);
 
 #define ESP_SKB_CB(__skb) ((struct esp_skb_cb *)&((__skb)->cb[0]))
+
+/*
+ *------------------------------------------------------------------------------
+ * Function     : spu_blog_us_tx_dev_adjust
+ * Description  : Calculates the SPU ESP tx_dev_adjust value based on the 
+ *              : MTU, length of outgoing packet and the padding alignment.
+ * blog_p       : Pointer to the Blog_t object
+ * dev_p        : SPUU device
+ * blksize      : padding alignment
+ * pktlen       : packet length (without MAC header)
+ *------------------------------------------------------------------------------
+ */
+void spu_blog_us_tx_dev_adjust(Blog_t *blog_p, struct net_device *dev_p,
+       uint16_t blksize, uint16_t pktlen)
+{
+    int16_t len = pktlen;
+    int16_t mtu = dev_p->mtu;
+
+    if (len != dev_p->mtu)
+    {
+        if (len < dev_p->mtu)
+        {
+            while (len <= dev_p->mtu)
+                len += blksize;
+
+            blog_p->tx_dev_adjust = (len - blksize) - mtu;
+        }
+        else
+        {
+            while (len > dev_p->mtu)
+                len -= blksize;
+
+            blog_p->tx_dev_adjust = len - mtu;
+        }
+    }
+    else
+        blog_p->tx_dev_adjust = 0;
+}
 
 static u8 spu_blog_chan_id_lookup(u32 *bitmap)
 {
@@ -98,17 +137,13 @@ void spu_blog_ctx_add(struct iproc_ctx_s *ctx)
         list_add(&ctx->entry, &iproc_priv.ctxList[ctx->stream]);
         write_unlock(&iproc_priv.ctxListLock[ctx->stream]);
     }
-    flow_log("%s - ctx added stream %d spi 0x%x chan_id %d\n", __func__, ctx->stream, ctx->spi, ctx->blog_chan_id);
-}
-
-static void flush_notify_callback(void *data)
-{
-    kfree(data);
+    flow_log("%s - ctx added stream %d spi 0x%x(0x%x) chan_id %d\n", __func__,
+           ctx->stream, ctx->spi, ctx->xfrm->id.spi, ctx->blog_chan_id);
 }
 
 void spu_blog_evict(struct iproc_ctx_s *ctx)
 {
-    BlogFlushParams_t *params;
+    BlogFlushParams_t params = {};
     struct net_device *dev;
 
     if (ctx->stream == SPU_STREAM_US)
@@ -126,16 +161,13 @@ void spu_blog_evict(struct iproc_ctx_s *ctx)
         }
     }
 #endif
-    params = (BlogFlushParams_t *)kzalloc(sizeof(BlogFlushParams_t), GFP_KERNEL);
-    if (params == NULL) {
-        pr_err("failed to allocate params memory for evict\n");
-        return;
-    }
-    params->flush_dev = 1;
-    params->devid = dev->ifindex;
-    params->flush_chan = 1;
-    params->chan_id = ctx->blog_chan_id;
-    blog_notify_async(FLUSH, dev, (unsigned long)params, 0, flush_notify_callback, params);
+    params.flush_dev = 1;
+    params.devid = dev->ifindex;
+    params.flush_chan = 1;
+    params.chan_id = ctx->blog_chan_id;
+    blog_lock();
+    blog_notify(FLUSH, dev, (unsigned long)&params, 0);
+    blog_unlock();
 }
 
 void spu_blog_ctx_del(struct iproc_ctx_s *ctx)
@@ -196,13 +228,14 @@ int spu_blog_emit_aead_us(struct iproc_reqctx_s *rctx, int is_esn)
     struct net_device *skb_dev;
     unsigned char     *pdata;
     struct iphdr      *iph;
+    struct ipv6hdr    *ipv6h;
     struct ip_esp_hdr *esph;
     struct blog_t     *blog_p;
     BlogFcArgs_t       fcArgs={};
     unsigned char      nexthdr;
     int                esph_offset;
     int                esp_mode = BLOG_ESP_MODE_TUNNEL;
-    uint32_t           esp_spi, esp_over_udp = 0;
+    uint32_t           esp_spi, esp_over_udp = 0, seq_hi = 0;
     struct aead_request *req;
     struct crypto_aead *aead;
     struct xfrm_state *xfrm;
@@ -213,18 +246,17 @@ int spu_blog_emit_aead_us(struct iproc_reqctx_s *rctx, int is_esn)
     rctx->pNBuf = SKBUFF_2_PNBUFF(pSkb);
     xfrm = skb_dst(pSkb)->xfrm;
 
-    if ( pSkb->protocol != htons(ETH_P_IP) ||
-         !(rctx->ctx->cipher.mode == CIPHER_MODE_CBC ||
-           rctx->ctx->cipher.mode == CIPHER_MODE_GCM ||
-           rctx->ctx->cipher.mode == CIPHER_MODE_NONE))
+    if ( pSkb->protocol != htons(ETH_P_IP) &&
+         pSkb->protocol != htons(ETH_P_IPV6) )
     {
         blog_skip(pSkb, blog_skip_reason_spudd_check_failure);
         return 0;
     }
 
-    /* we will not be able to accelerate ESN for GCM flows */
-    if (rctx->ctx->cipher.mode == CIPHER_MODE_GCM && 
-        xfrm->props.flags & XFRM_STATE_ESN) {
+    if (!(rctx->ctx->cipher.mode == CIPHER_MODE_CBC ||
+          rctx->ctx->cipher.mode == CIPHER_MODE_GCM ||
+          rctx->ctx->cipher.mode == CIPHER_MODE_NONE))
+    {
         blog_skip(pSkb, blog_skip_reason_spudd_check_failure);
         return 0;
     }
@@ -249,18 +281,35 @@ int spu_blog_emit_aead_us(struct iproc_reqctx_s *rctx, int is_esn)
     {
         esp_over_udp = 1;
         flow_log("US: esp_over_udp<%d>\n", esp_over_udp);
+        if (pSkb->protocol == htons(ETH_P_IPV6))
+        {
+            flow_log("US: IPv6 esp_over_udp not supported\n");
+            blog_skip(pSkb, blog_skip_reason_spudd_check_failure);
+            return 0;
+        }
     }
 
     /* pSkb->data should point to the outer IP header */
     pdata = pSkb->data;
     nexthdr = pdata[pSkb->len - rctx->ctx->digestsize - 1];
-    // TODO: handle ipv6
+
     flow_log("*pdata 0x%x transport_mode %d nexthdr %d blog %px",
         *pdata, esp_mode, nexthdr, blog_ptr(pSkb));
-    if ( *pdata != 0x45 || (esp_mode != BLOG_ESP_MODE_TRANSPORT && nexthdr != IPPROTO_IPIP) )
+    if (pSkb->protocol == htons(ETH_P_IP))
     {
-        blog_skip(pSkb, blog_skip_reason_spudd_check_failure);
-        return 0;
+        if (*pdata != 0x45 || (esp_mode != BLOG_ESP_MODE_TRANSPORT && nexthdr != IPPROTO_IPIP))
+        {
+            blog_skip(pSkb, blog_skip_reason_spudd_check_failure);
+            return 0;
+        }
+    }
+    if (pSkb->protocol == htons(ETH_P_IPV6))
+    {
+        if (*pdata != 0x60 || (esp_mode != BLOG_ESP_MODE_TRANSPORT && nexthdr != BLOG_IPPROTO_IPV6))
+        {
+            blog_skip(pSkb, blog_skip_reason_spudd_check_failure);
+            return 0;
+        }
     }
 
     /* need to clone dst so that it can be used for packets that cannot be
@@ -285,14 +334,29 @@ int spu_blog_emit_aead_us(struct iproc_reqctx_s *rctx, int is_esn)
     }
 #endif
 
-    iph = (struct iphdr *)pdata;
-
-    if (iph->protocol == BLOG_IPPROTO_UDP)
-        esph_offset = BLOG_IPV4_HDR_LEN + BLOG_UDP_HDR_LEN;
-    else
+    if (pSkb->protocol == htons(ETH_P_IP))
+    {
+        iph = (struct iphdr *)pdata;
         esph_offset = BLOG_IPV4_HDR_LEN;
+    }
+    else
+    {
+        ipv6h = (struct ipv6hdr *)pdata;
+        esph_offset = BLOG_IPV6_HDR_LEN;
+    }
+
+    if (esp_over_udp)
+        esph_offset += BLOG_UDP_HDR_LEN;
 
     esph = (struct ip_esp_hdr *)(pdata + esph_offset);
+
+    if (rctx->ctx->cipher.mode == CIPHER_MODE_GCM && xfrm->props.flags & XFRM_STATE_ESN)
+    {
+        seq_hi = _read32_align16((uint16_t *)&esph->spi);
+        memcpy(&esph->spi, (uint8_t *)esph - BLOG_ESP_SPI_LEN, BLOG_ESP_SPI_LEN);
+        is_esn = 1;
+    }
+    rctx->ctx->esn = is_esn;
 
     esp_spi = _read32_align16((uint16_t *)&esph->spi);
 
@@ -312,31 +376,55 @@ int spu_blog_emit_aead_us(struct iproc_reqctx_s *rctx, int is_esn)
 
         memcpy(rctx->ctx->iv, req->iv, 8);
         *(__be64 *)(rctx->ctx->iv) ^= cpu_to_be64(seqno);
+        rctx->ctx->gcm = 1;
     }
 
     aead = crypto_aead_reqtfm(req);
 
-    iph->tot_len = htons(pSkb->len);
-    iph->check   = 0;
-    iph->check   = ip_fast_csum((unsigned char *)iph, iph->ihl);
-
-    /* fill the dst IP address needed by blog_emit_args */
+    /* fill the dst IP address needed by outer checksum and blog_emit_args */
     if (is_esn)
-        memcpy((uint8_t *)esph - BLOG_ESP_SEQNUM_HI_LEN, ESP_SKB_CB(pSkb)->tmp, BLOG_ESP_SEQNUM_HI_LEN);
+        memcpy((uint8_t *)esph - BLOG_ESP_SPI_LEN, ESP_SKB_CB(pSkb)->tmp, BLOG_ESP_SPI_LEN);
+
+    if (pSkb->protocol == htons(ETH_P_IP))
+    {
+        iph->tot_len = htons(pSkb->len);
+        iph->check   = 0;
+        iph->check   = ip_fast_csum((unsigned char *)iph, iph->ihl);
+    }
+    else
+    {
+        ipv6h->payload_len = htons(pSkb->len);
+    }
 
     if (esp_spi != rctx->ctx->spi)
     {
-        rctx->ctx->ipdaddr = _read32_align16((uint16_t *)&iph->daddr);
-        rctx->ctx->ipsaddr = _read32_align16((uint16_t *)&iph->saddr);
+        if (pSkb->protocol == htons(ETH_P_IP))
+        {
+            rctx->ctx->ipdaddr = _read32_align16((uint16_t *)&iph->daddr);
+            rctx->ctx->ipsaddr = _read32_align16((uint16_t *)&iph->saddr);
+            rctx->ctx->ipv6 = 0;
+            flow_log("upstream ips %x, ipd %x, spi %x, seq %x, nexthdr %d, flags %x esp_over_udp<%d>\n",
+                     ntohl(iph->saddr), ntohl(iph->daddr), ntohl(esph->spi),
+                     ntohl(esph->seq_no), nexthdr, rctx->parent->flags, rctx->ctx->esp_over_udp );
+        }
+        else
+        {
+            memcpy(&rctx->ctx->v6_saddr, &ipv6h->saddr, sizeof(struct in6_addr) * 2);
+            rctx->ctx->ipv6 = 1;
+            flow_log("upstream ipv6 ips " BLOG_IPV6_ADDR_FMT " ipd " BLOG_IPV6_ADDR_FMT " spi %x seq %x nexthdr %d "
+                     "flags %x esp_over_udp %d transport_mode %d",
+                     BLOG_IPV6_ADDR(ipv6h->saddr), BLOG_IPV6_ADDR(ipv6h->daddr), ntohl(esph->spi),
+                     ntohl(esph->seq_no), nexthdr, rctx->parent->flags,
+                     rctx->ctx->esp_over_udp, esp_mode);
+        }
         rctx->ctx->spi     = esp_spi;
+        rctx->ctx->xfrm = xfrm;
         rctx->ctx->stream = SPU_STREAM_US;
         rctx->ctx->esp_over_udp = esp_over_udp;
         rctx->ctx->esp_mode = esp_mode;
         rctx->ctx->iv_size = rctx->iv_ctr_len - rctx->ctx->salt_len;
+        rctx->ctx->blk_size = ALIGN(crypto_aead_blocksize(aead), 4);
         spu_blog_ctx_add(rctx->ctx);
-        flow_log("upstream ips %x, ipd %x, spi %x, seq %x, nexthdr %d, flags %x esp_over_udp<%d>\n",
-                 ntohl(iph->saddr), ntohl(iph->daddr), ntohl(esph->spi),
-                 ntohl(esph->seq_no), nexthdr, rctx->parent->flags, rctx->ctx->esp_over_udp );
     }
     /* skip learning the flow when no valid channel is allocated */
     if (rctx->ctx->blog_chan_id == BLOG_CHAN_IDX_UNDEF)
@@ -349,7 +437,7 @@ int spu_blog_emit_aead_us(struct iproc_reqctx_s *rctx, int is_esn)
     {
         fcArgs.esp_ivsize = rctx->ctx->iv_size;
         fcArgs.esp_icvsize = rctx->ctx->digestsize;
-        fcArgs.esp_blksize = ALIGN(crypto_aead_blocksize(aead), 4);
+        fcArgs.esp_blksize = rctx->ctx->blk_size;
         if (esp_over_udp)
         {
             fcArgs.esp_over_udp = esp_over_udp;
@@ -358,14 +446,21 @@ int spu_blog_emit_aead_us(struct iproc_reqctx_s *rctx, int is_esn)
         blog_p->use_xmit_args = 1;
 
         fcArgs.dev_xmit = (unsigned long)spu_blog_us_dev_xmit_args;
+        spu_blog_us_tx_dev_adjust(blog_p, iproc_priv.spu_dev_us, fcArgs.esp_blksize, pSkb->len);
         blog_emit_args(rctx->pNBuf, iproc_priv.spu_dev_us, TYPE_IP, rctx->ctx->blog_chan_id, BLOG_SPU_US, &fcArgs);
     }
     pSkb->dev = skb_dev;
 
 #if defined (CONFIG_BCM_SPU_HW_OFFLOAD)
-    if (esp_mode != BLOG_ESP_MODE_TRANSPORT)
     {
-        int session_id = spu_offload_get_us_id(rctx->ctx, _read32_align16((uint16_t *)&esph->spi), blog_p);
+        int session_id;
+        struct dst_entry *dst_p = NULL;
+
+	if (blog_p)
+		dst_p = blog_p->esptx.dst_p;
+
+        session_id = spu_offload_get_us_session_id(esp_spi, dst_p);
+
         if (session_id > 0)
         {
             uint32_t payloadlen;
@@ -387,12 +482,17 @@ int spu_blog_emit_aead_us(struct iproc_reqctx_s *rctx, int is_esn)
         }
     }
 #endif
+
 spu_blog_done_emit_us:
 
     /* blog did not take care of the packet
      * put back the ESP EPI in the dst IP address location for crypto/esp framework */
     if (is_esn)
-        memcpy((uint8_t *)esph - BLOG_ESP_SEQNUM_HI_LEN, &esp_spi, BLOG_ESP_SEQNUM_HI_LEN);
+    {
+        memcpy((uint8_t *)esph - BLOG_ESP_SPI_LEN, &esp_spi, BLOG_ESP_SPI_LEN);
+        if (rctx->ctx->cipher.mode == CIPHER_MODE_GCM)
+            _write32_align16((uint16_t *)&esph->spi, seq_hi);
+    }
 
     return 0;
 }
@@ -403,11 +503,12 @@ void spu_blog_emit_aead_ds(struct iproc_reqctx_s *rctx)
     struct net_device *skb_dev;
     unsigned char     *pdata;
     struct iphdr      *iph;
+    struct ipv6hdr    *ipv6h;
     struct ip_esp_hdr *esph;
     BlogFcArgs_t       fcArgs={};
     struct xfrm_state *xfrm;
     unsigned char      nexthdr;
-    uint32_t           esp_spi, esp_over_udp = 0, skip_blog = 0;
+    uint32_t           esp_spi, esp_over_udp = 0, skip_blog = 0, seq_hi = 0;
     int                esph_offset;
     int                esp_mode = BLOG_ESP_MODE_TUNNEL;
     struct sec_path    *sp;
@@ -425,10 +526,16 @@ void spu_blog_emit_aead_ds(struct iproc_reqctx_s *rctx)
         return;
     }
 
-    if ( pSkb->protocol != htons(ETH_P_IP) ||
-         !(rctx->ctx->cipher.mode == CIPHER_MODE_CBC ||
-           rctx->ctx->cipher.mode == CIPHER_MODE_GCM ||
-           rctx->ctx->cipher.mode == CIPHER_MODE_NONE))
+    if ( pSkb->protocol != htons(ETH_P_IP) &&
+         pSkb->protocol != htons(ETH_P_IPV6) )
+    {
+        blog_skip(pSkb, blog_skip_reason_spudd_check_failure);
+        return;
+    }
+
+    if (!(rctx->ctx->cipher.mode == CIPHER_MODE_CBC ||
+          rctx->ctx->cipher.mode == CIPHER_MODE_GCM ||
+          rctx->ctx->cipher.mode == CIPHER_MODE_NONE))
     {
         blog_skip(pSkb, blog_skip_reason_spudd_check_failure);
         return;
@@ -460,24 +567,24 @@ void spu_blog_emit_aead_ds(struct iproc_reqctx_s *rctx)
         return;
     }
 
-    if ((xfrm->props.flags & XFRM_STATE_ESN) && 
-        (rctx->ctx->cipher.mode == CIPHER_MODE_GCM))
-    {
-        blog_skip(pSkb, blog_skip_reason_spudd_check_failure);
-        return;
-    }
-
     if (xfrm->encap)
     {
         esp_over_udp = 1;
         flow_log("esp_over_udp<%d>\n", esp_over_udp);
+        if (pSkb->protocol == htons(ETH_P_IPV6))
+        {
+            flow_log("DS: IPV6 esp_over_udp\n");
+            blog_skip(pSkb, blog_skip_reason_spudd_check_failure);
+            return;
+        }
     }
 
-    // TODO: handle ipv6
-    if (esp_over_udp)
-        esph_offset = BLOG_IPV4_HDR_LEN + BLOG_UDP_HDR_LEN;
-    else
+    if (pSkb->protocol == htons(ETH_P_IP))
         esph_offset = BLOG_IPV4_HDR_LEN;
+    else
+        esph_offset = BLOG_IPV6_HDR_LEN;
+    if (esp_over_udp)
+        esph_offset += BLOG_UDP_HDR_LEN;
 
     /* skb->data will point to the ESP header, need to push data back
        to the outer IP header */
@@ -489,11 +596,23 @@ void spu_blog_emit_aead_ds(struct iproc_reqctx_s *rctx)
 
     flow_log("*pdata 0x%x transport_mode %d nexthdr %d blog %px esph_offset %d",
         *pdata, esp_mode, nexthdr, blog_ptr(pSkb), esph_offset);
-    if (*pdata != 0x45 || (esp_mode != BLOG_ESP_MODE_TRANSPORT && nexthdr != IPPROTO_IPIP))
+    if (pSkb->protocol == htons(ETH_P_IP))
     {
-        skb_pull(pSkb, esph_offset);
-        blog_skip(pSkb, blog_skip_reason_spudd_check_failure);
-        return;
+        if (*pdata != 0x45 || (esp_mode != BLOG_ESP_MODE_TRANSPORT && nexthdr != IPPROTO_IPIP))
+        {
+            skb_pull(pSkb, esph_offset);
+            blog_skip(pSkb, blog_skip_reason_spudd_check_failure);
+            return;
+        }
+    }
+    if (pSkb->protocol == htons(ETH_P_IPV6))
+    {
+        if (*pdata != 0x60 || (esp_mode != BLOG_ESP_MODE_TRANSPORT && nexthdr != BLOG_IPPROTO_IPV6))
+        {
+            skb_pull(pSkb, esph_offset);
+            blog_skip(pSkb, blog_skip_reason_spudd_check_failure);
+            return;
+        }
     }
 
     /* save the secpath so that it can be used to pass packets to the kernel
@@ -527,15 +646,7 @@ void spu_blog_emit_aead_ds(struct iproc_reqctx_s *rctx)
     skb_dev = pSkb->dev;
     pSkb->dev = iproc_priv.spu_dev_ds;
 
-    iph = (struct iphdr *)pdata;
-
-    if (xfrm->props.flags & XFRM_STATE_ESN)
-        memcpy(&iph->daddr, ESP_SKB_CB(pSkb)->tmp, BLOG_ESP_SEQNUM_HI_LEN);
-
-    if (esp_over_udp)
-        esph = (struct ip_esp_hdr *)(pdata + esph_offset);
-    else
-        esph = (struct ip_esp_hdr *)(pdata + BLOG_IPV4_HDR_LEN);
+    esph = (struct ip_esp_hdr *)(pdata + esph_offset);
 
     esp_spi = _read32_align16((uint16_t *)&esph->spi);
 
@@ -546,22 +657,60 @@ void spu_blog_emit_aead_ds(struct iproc_reqctx_s *rctx)
         skip_blog = 1;
     }
 
-    flow_log("skip_blog %d esp_spi 0x%xi ctx spi 0x%x", skip_blog, esp_spi, rctx->ctx->spi);
+    if (pSkb->protocol == htons(ETH_P_IP))
+        iph = (struct iphdr *)pdata;
+    else
+        ipv6h = (struct ipv6hdr *)pdata;
+
+    rctx->ctx->gcm = (rctx->ctx->cipher.mode == CIPHER_MODE_GCM);
+
+    /* copy daddr back to IP header for ESN case */
+    if (xfrm->props.flags & XFRM_STATE_ESN)
+    {
+        /* move the esph pointer to where it supposed to be in data packet */
+        esph = (struct ip_esp_hdr *)(pdata + esph_offset + BLOG_ESP_SEQNUM_HI_LEN);
+        /* copy the last 32 bit of ip address to packet data for blog */
+        memcpy((uint8_t *)esph - BLOG_ESP_SPI_LEN, ESP_SKB_CB(pSkb)->tmp, BLOG_ESP_SPI_LEN);
+        rctx->ctx->esn = 1;
+        if (rctx->ctx->gcm)
+        {
+            seq_hi = _read32_align16((uint16_t *)&esph->spi);
+            _write32_align16((uint16_t *)&esph->spi, esp_spi);
+        }
+    }
+
+    flow_log("skip_blog %d esp_spi 0x%x ctx spi 0x%x", skip_blog, esp_spi, rctx->ctx->spi);
     if (skip_blog == 0)
     {
         if (esp_spi != rctx->ctx->spi)
         {
-            rctx->ctx->ipdaddr = _read32_align16((uint16_t *)&iph->daddr);
-            rctx->ctx->ipsaddr = _read32_align16((uint16_t *)&iph->saddr);
-            rctx->ctx->spi     = _read32_align16((uint16_t *)&esph->spi);
+            if (pSkb->protocol == htons(ETH_P_IP))
+            {
+                rctx->ctx->ipdaddr = _read32_align16((uint16_t *)&iph->daddr);
+                rctx->ctx->ipsaddr = _read32_align16((uint16_t *)&iph->saddr);
+                rctx->ctx->ipv6 = 0;
+                flow_log("downstream ipv4 ips %x ipd %x spi %x seq %x nexthdr %d "
+                         "flags %x esp_over_udp %d transport_mode %d",
+                         ntohl(iph->saddr), ntohl(iph->daddr), ntohl(esp_spi),
+                         ntohl(esph->seq_no), nexthdr, rctx->parent->flags,
+                         rctx->ctx->esp_over_udp, esp_mode);
+            }
+            else
+            {
+                memcpy(&rctx->ctx->v6_saddr, &ipv6h->saddr,  sizeof(struct in6_addr) * 2);
+                rctx->ctx->ipv6 = 1;
+                flow_log("downstream ipv6 ips " BLOG_IPV6_ADDR_FMT " ipd " BLOG_IPV6_ADDR_FMT " spi %x seq %x nexthdr %d "
+                         "flags %x esp_over_udp %d transport_mode %d",
+                         BLOG_IPV6_ADDR(ipv6h->saddr), BLOG_IPV6_ADDR(ipv6h->daddr), ntohl(esp_spi),
+                         ntohl(esph->seq_no), nexthdr, rctx->parent->flags,
+                         rctx->ctx->esp_over_udp, esp_mode);
+            }
+            rctx->ctx->spi     = esp_spi;
+            rctx->ctx->esp_over_udp = esp_over_udp;
+            rctx->ctx->xfrm = xfrm;
             rctx->ctx->stream = SPU_STREAM_DS;
             rctx->ctx->iv_size = rctx->iv_ctr_len - rctx->ctx->salt_len;
             spu_blog_ctx_add(rctx->ctx);
-            flow_log("downstream ips %x ipd %x spi %x seq %x nexthdr %d "
-                     "flags %x esp_over_udp %d transport_mode %d",
-                     ntohl(iph->saddr), ntohl(iph->daddr), ntohl(esph->spi),
-                     ntohl(esph->seq_no), nexthdr, rctx->parent->flags,
-                     rctx->ctx->esp_over_udp, esp_mode);
         }
     
         flow_log("blog_chan_id %d", rctx->ctx->blog_chan_id);
@@ -582,6 +731,14 @@ void spu_blog_emit_aead_ds(struct iproc_reqctx_s *rctx)
         }
     }
 
+    if (xfrm->props.flags & XFRM_STATE_ESN)
+    {
+        /* copy the esp_spi back to the original position for Linux */
+        memcpy((uint8_t *)esph - BLOG_ESP_SPI_LEN, &esp_spi, BLOG_ESP_SPI_LEN);
+        if (rctx->ctx->gcm)
+            _write32_align16((uint16_t *)&esph->spi, seq_hi);
+    }
+
     skb_pull(pSkb, esph_offset);
     pSkb->dev = skb_dev;
 }
@@ -598,6 +755,10 @@ static void spu_blog_fc_crypt_done_us(struct bcmspu_message *mssg)
     int                    headroom;
     unsigned char         *pData;
     BlogFcArgs_t           fcArgs={};
+    struct iphdr          *iph;
+    struct ipv6hdr        *ipv6h;
+    struct ip_esp_hdr     *esph;
+    int                    esph_offset;
 
     flow_log("%s start\n", __func__);
 
@@ -641,6 +802,30 @@ static void spu_blog_fc_crypt_done_us(struct bcmspu_message *mssg)
         pData = skb->data;
         pktlen = skb->len;
         headroom = 0;
+        if (rctx->ctx->gcm && rctx->ctx->esn)
+        {
+            /* TODO: L2TP */
+            /* move SPI and IP dst addr for blog */
+            if (rctx->ctx->ipv6 == 0)
+            {
+                iph = (struct iphdr *)pData;
+                esph_offset = BLOG_IPV4_HDR_LEN;
+                if (iph->protocol == BLOG_IPPROTO_UDP)
+                    esph_offset += BLOG_UDP_HDR_LEN;
+
+                esph = (struct ip_esp_hdr *)(pData + esph_offset);
+                _write32_align16((uint16_t *)&iph->daddr, rctx->ctx->ipdaddr);
+                _write32_align16((uint16_t *)&esph->spi, rctx->ctx->spi);
+            }
+            else
+            {
+                ipv6h = (struct ipv6hdr *)pData;
+                esph = (struct ip_esp_hdr *)(pData + BLOG_IPV6_HDR_LEN);
+
+                memcpy(&ipv6h->daddr, &rctx->ctx->v6_daddr, sizeof(struct in6_addr));
+                _write32_align16((uint16_t *)&esph->spi, rctx->ctx->spi);
+            }
+        }
         blogAction = blog_sinit(skb, iproc_priv.spu_dev_us,
                                 TYPE_IP, 0, BLOG_SPU_US, &fcArgs);
     }
@@ -651,6 +836,29 @@ static void spu_blog_fc_crypt_done_us(struct bcmspu_message *mssg)
         pData = fkb->data;
         pktlen = fkb->len;
         skb = NULL;
+        if (rctx->ctx->gcm && rctx->ctx->esn)
+        {
+            if (rctx->ctx->ipv6 == 0)
+            {
+                iph = (struct iphdr *)pData;
+                esph_offset = BLOG_IPV4_HDR_LEN;
+                if (iph->protocol == BLOG_IPPROTO_UDP)
+                    esph_offset += BLOG_UDP_HDR_LEN;
+
+                esph = (struct ip_esp_hdr *)(pData + esph_offset);
+                _write32_align16((uint16_t *)&iph->daddr, rctx->ctx->ipdaddr);
+                _write32_align16((uint16_t *)&esph->spi, rctx->ctx->spi);
+            }
+            else
+            {
+                ipv6h = (struct ipv6hdr *)pData;
+                esph = (struct ip_esp_hdr *)(pData + BLOG_IPV6_HDR_LEN);
+
+                memcpy(&ipv6h->daddr, &rctx->ctx->v6_daddr, sizeof(struct in6_addr));
+                _write32_align16((uint16_t *)&esph->spi, rctx->ctx->spi);
+            }
+        }
+
         blogAction = blog_finit(fkb, iproc_priv.spu_dev_us,
                                 TYPE_IP, rctx->ctx->blog_chan_id, BLOG_SPU_US, &fcArgs);
     }
@@ -716,6 +924,7 @@ static void spu_blog_fc_crypt_done_ds(struct bcmspu_message *mssg)
     BlogFcArgs_t       fcArgs={};
     int                esph_offset;
     struct iphdr      *iph;
+    struct ipv6hdr    *ipv6h;
 
     dma_unmap_sg(dev, mssg->src, sg_nents(mssg->src), DMA_FROM_DEVICE);
     dma_unmap_sg(dev, mssg->dst, sg_nents(mssg->dst), DMA_FROM_DEVICE);
@@ -757,7 +966,6 @@ static void spu_blog_fc_crypt_done_ds(struct bcmspu_message *mssg)
     /* specify this flow is for inner IP packet only */
     fcArgs.esp_inner_pkt = 1;
     fcArgs.esp_spi = 0;
-    fcArgs.esp_over_udp = rctx->ctx->esp_over_udp;
     if (xfrm->props.mode == XFRM_MODE_TRANSPORT)
         fcArgs.esp_mode = BLOG_ESP_MODE_TRANSPORT;
 
@@ -774,12 +982,18 @@ static void spu_blog_fc_crypt_done_ds(struct bcmspu_message *mssg)
         pData = fkb->data;
     }
 
-    // TODO: handle ipv6
-    iph = (struct iphdr *)pData;
-    if (iph->protocol == BLOG_IPPROTO_UDP)
-        esph_offset = BLOG_IPV4_HDR_LEN + BLOG_UDP_HDR_LEN;
-    else
+    if (rctx->ctx->ipv6 == 0)
+    {
+        iph = (struct iphdr *)pData;
         esph_offset = BLOG_IPV4_HDR_LEN;
+        if (iph->protocol == BLOG_IPPROTO_UDP)
+            esph_offset += BLOG_UDP_HDR_LEN;
+    }
+    else
+    {
+        ipv6h = (struct ipv6hdr *)pData;
+        esph_offset = BLOG_IPV6_HDR_LEN;
+    }
 
     hlen = esph_offset + BLOG_ESP_SPI_LEN;
     seqno = _read32_align16((uint16_t *)&pData[hlen]);
@@ -799,17 +1013,25 @@ static void spu_blog_fc_crypt_done_ds(struct bcmspu_message *mssg)
         __skb_pull(skb, hlen);
         if (xfrm->props.mode == XFRM_MODE_TRANSPORT)
         {
-            short tot_len = ntohs(iph->tot_len);
+            if (rctx->ctx->ipv6 == 0)
+            {
+                short tot_len = ntohs(iph->tot_len);
 
-            flow_log("%s:%d transport mode, skb %px data %px len %d ip tot_len %d proto %d esph_offset %d nexthdr %d",
-                __func__, __LINE__, skb, skb->data, skb->len, tot_len, iph->protocol, esph_offset, nexthdr);
+                flow_log("%s:%d transport mode, skb %px data %px len %d ip tot_len %d proto %d esph_offset %d nexthdr %d",
+                    __func__, __LINE__, skb, skb->data, skb->len, tot_len, iph->protocol, esph_offset, nexthdr);
 
-            __skb_push(skb, BLOG_IPV4_HDR_LEN);
-            tot_len += (BLOG_IPV4_HDR_LEN - hlen - tlen);
-            iph->tot_len = htons(tot_len);
-            iph->protocol = nexthdr;
-            ip_send_check(iph);
-            memmove(skb->data, iph, BLOG_IPV4_HDR_LEN);
+                __skb_push(skb, BLOG_IPV4_HDR_LEN);
+                tot_len += (BLOG_IPV4_HDR_LEN - hlen - tlen);
+                iph->tot_len = htons(tot_len);
+                iph->protocol = nexthdr;
+                ip_send_check(iph);
+                memmove(skb->data, iph, BLOG_IPV4_HDR_LEN);
+            }
+            else
+            {
+                pr_err("ipv6 transport mode\n");
+                goto exit;
+            }
         }
         skb_reset_network_header(skb);
         skb_reset_mac_header(skb);
@@ -827,17 +1049,25 @@ static void spu_blog_fc_crypt_done_ds(struct bcmspu_message *mssg)
         _fkb_pull(fkb, hlen);
         if (xfrm->props.mode == XFRM_MODE_TRANSPORT)
         {
-            short tot_len = ntohs(iph->tot_len);
+            if (rctx->ctx->ipv6 == 0)
+            {
+                short tot_len = ntohs(iph->tot_len);
 
-            flow_log("%s:%d transport mode, fkb %px data %px len %d ip tot_len %d proto %d esph_offset %d nexthdr %d",
-                __func__, __LINE__, fkb, fkb->data, fkb->len, tot_len, iph->protocol, esph_offset, nexthdr);
+                flow_log("%s:%d transport mode, fkb %px data %px len %d ip tot_len %d proto %d esph_offset %d nexthdr %d",
+                    __func__, __LINE__, fkb, fkb->data, fkb->len, tot_len, iph->protocol, esph_offset, nexthdr);
 
-            _fkb_push(fkb, BLOG_IPV4_HDR_LEN);
-            tot_len += (BLOG_IPV4_HDR_LEN - hlen - tlen);
-            iph->tot_len = htons(tot_len);
-            iph->protocol = nexthdr;
-            ip_send_check(iph);
-            memmove(fkb->data, iph, BLOG_IPV4_HDR_LEN);
+                _fkb_push(fkb, BLOG_IPV4_HDR_LEN);
+                tot_len += (BLOG_IPV4_HDR_LEN - hlen - tlen);
+                iph->tot_len = htons(tot_len);
+                iph->protocol = nexthdr;
+                ip_send_check(iph);
+                memmove(fkb->data, iph, BLOG_IPV4_HDR_LEN);
+            }
+            else
+            {
+                pr_err("ipv6 transport mode\n");
+                goto exit;
+            }
         }
         headroom = (int)(fkb->data - PFKBUFF_TO_PHEAD(fkb));
 
@@ -900,7 +1130,10 @@ static void spu_blog_fc_crypt_done_ds(struct bcmspu_message *mssg)
         {
             skb_reset_network_header(skb);
             skb_reset_transport_header(skb);
-            __skb_pull(skb, BLOG_IPV4_HDR_LEN);      
+            if (rctx->ctx->ipv6 == 0)
+                __skb_pull(skb, BLOG_IPV4_HDR_LEN);
+            else
+                pr_err("ipv6 transport mode\n");
         }
         xfrm_input_resume(skb, nexthdr);
         rctx->pNBuf = NULL;
@@ -961,8 +1194,7 @@ static int spu_blog_us_dev_xmit_args (pNBuff_t pNBuf, struct net_device *dev, Bl
     int                    padlen;
     struct device *spu_dev = &iproc_priv.pdev->dev;
     int                    esph_offset;
-    struct iphdr          *iph;
-    int                   free_buf = 1;
+    int                    free_buf = 1;
 
     flow_log("%s\n", __func__);
 
@@ -993,27 +1225,44 @@ static int spu_blog_us_dev_xmit_args (pNBuff_t pNBuf, struct net_device *dev, Bl
         nbuflen = fkb->len;
         skb = NULL;
     }
-
-    // TODO: handle ipv6
-    iph = (struct iphdr *)pdata;
-    if (iph->protocol == BLOG_IPPROTO_UDP)
-        esph_offset = BLOG_IPV4_HDR_LEN + BLOG_UDP_HDR_LEN;
-    else
+    if (*pdata == 0x45)
+    {
+        struct iphdr *iph = (struct iphdr *)pdata;
         esph_offset = BLOG_IPV4_HDR_LEN;
+        if (iph->protocol == BLOG_IPPROTO_UDP)
+            esph_offset += BLOG_UDP_HDR_LEN;
+    }
+    else if (*pdata == 0x60)
+    {
+        struct ipv6hdr *iph = (struct ipv6hdr *)pdata;
+        esph_offset = BLOG_IPV6_HDR_LEN;
+        if (iph->nexthdr == BLOG_IPPROTO_UDP)
+        {
+            flow_log("unsupported esp over UDP in IPV6\n");
+            ret = -1;
+            goto exit;
+        }
+    }
+    else
+    {
+        flow_log("unsupported packet type 0x%x\n", *pdata);
+        ret = -1;
+        goto exit;
+    }
 
     spi = _read32_align16((uint16_t *)&pdata[esph_offset]);
 
     ctx = spu_blog_lookup_ctx(spi, SPU_STREAM_US);
     if ( NULL == ctx )
     {
-        flow_log("spu_blog_lookup_ctx failed: spi 0x%x\n", htonl(spi));
+        flow_log("spu_blog_lookup_ctx failed: spi 0x%x esph_offset %d\n", htonl(spi), esph_offset);
         ret = -100;
         goto exit;
     }
 
 #if defined (CONFIG_BCM_SPU_HW_OFFLOAD)
     {
-        int session_id = spu_offload_get_us_id(ctx, spi, NULL);
+        int session_id = spu_offload_get_us_session_id(spi, NULL);
         if (session_id > 0)
         {
             uint32_t payloadlen;
@@ -1109,6 +1358,12 @@ static int spu_blog_us_dev_xmit_args (pNBuff_t pNBuf, struct net_device *dev, Bl
 
     _write32_align16((uint16_t *)&pdata[esph_offset+BLOG_ESP_SPI_LEN], htonl(seqno));
 
+    if (ctx->gcm && ctx->esn)
+    {
+        _write32_align16((uint16_t *)&pdata[esph_offset - BLOG_ESP_SPI_LEN], spi);
+        _write32_align16((uint16_t *)&pdata[esph_offset], htonl(seqhi));
+    }
+
     /* allocate a transfer request - data is zeroed */
     ctx_buf = kmalloc(sizeof(struct iproc_reqctx_s) +
                       sizeof(struct scatterlist), GFP_ATOMIC);
@@ -1128,7 +1383,7 @@ static int spu_blog_us_dev_xmit_args (pNBuff_t pNBuf, struct net_device *dev, Bl
     rctx->gfp = GFP_ATOMIC;
     rctx->is_encrypt = true;
     rctx->bd_suppress = false;
-    rctx->total_todo = (datalen + padlen +
+    rctx->total_todo = (datalen + padlen + ctx->iv_size +
                             BLOG_ESP_PADLEN_LEN + BLOG_ESP_NEXT_PROTO_LEN);
     rctx->src_sent = 0;
     rctx->total_sent = 0;
@@ -1146,22 +1401,20 @@ static int spu_blog_us_dev_xmit_args (pNBuff_t pNBuf, struct net_device *dev, Bl
     rctx->assoc     = &sg[0];
     rctx->src_nents = 0;
     rctx->dst_nents = 0;
-    if (ctx->cipher.mode == CIPHER_MODE_CBC)
+    rctx->assoc_len = BLOG_ESP_SPI_LEN + BLOG_ESP_SEQNUM_LEN;
+    if (ctx->cipher.mode != CIPHER_MODE_CBC)
     {
-        rctx->assoc_len = BLOG_ESP_SPI_LEN + BLOG_ESP_SEQNUM_LEN;
-        rctx->src_skip  = rctx->assoc_len + rctx->iv_ctr_len;
-        rctx->dst_skip  = rctx->assoc_len;
+        rctx->assoc_len += ctx->iv_size;
+        if (ctx->gcm && ctx->esn)
+            rctx->assoc_len += BLOG_ESP_SEQNUM_HI_LEN;
+	rctx->total_todo -= ctx->iv_size;
     }
-    else
-    {
-        rctx->assoc_len = BLOG_ESP_SPI_LEN + BLOG_ESP_SEQNUM_LEN + ctx->iv_size;
-        rctx->src_skip  = rctx->assoc_len;
-        rctx->dst_skip  = rctx->assoc_len;
-    }
+    rctx->src_skip  = rctx->assoc_len;
+    rctx->dst_skip  = rctx->assoc_len;
 
-    sg_init_one(rctx->src_sg,
-                &pdata[esph_offset],
-		(rctx->total_todo + rctx->assoc_len + ctx->iv_size + ctx->digestsize));
+    sg_init_one(rctx->src_sg, &pdata[esph_offset -
+		    ((ctx->gcm && ctx->esn) ? BLOG_ESP_SEQNUM_HI_LEN : 0)],
+                    (rctx->total_todo + rctx->assoc_len + ctx->digestsize));
 
     if (rctx->iv_ctr_len)
     {
@@ -1192,7 +1445,7 @@ static int spu_blog_us_dev_xmit_args (pNBuff_t pNBuf, struct net_device *dev, Bl
     rctx->esn_spi = false;
     rctx->esn_hdr = false;
 
-    if (xfrm->props.flags & XFRM_STATE_ESN) {
+    if (xfrm->props.flags & XFRM_STATE_ESN && ctx->gcm == 0) {
         rctx->esn_hdr = true;
         rctx->seq_hi = seqhi;
     }
@@ -1255,7 +1508,6 @@ static int spu_blog_ds_dev_xmit_args (pNBuff_t pNBuf, struct net_device *dev, Bl
     int                    free_buf = 1;
     struct device *spu_dev = &iproc_priv.pdev->dev;
     int                    esph_offset;
-    struct iphdr          *iph;
 
     flow_log("%s\n", __func__);
 
@@ -1289,13 +1541,24 @@ static int spu_blog_ds_dev_xmit_args (pNBuff_t pNBuf, struct net_device *dev, Bl
         nbuflen = fkb->len;
         skb = NULL;
     }
-
-    // TODO: handle ipv6
-    iph = (struct iphdr *)pdata;
-    if (iph->protocol == BLOG_IPPROTO_UDP)
-        esph_offset = BLOG_IPV4_HDR_LEN + BLOG_UDP_HDR_LEN;
-    else
+    if (*pdata == 0x45)
+    {
+        struct iphdr *iph = (struct iphdr *)pdata;
         esph_offset = BLOG_IPV4_HDR_LEN;
+        if (iph->protocol == BLOG_IPPROTO_UDP)
+            esph_offset += BLOG_UDP_HDR_LEN;
+    }
+    else if (*pdata == 0x60)
+    {
+        struct ipv6hdr *iph = (struct ipv6hdr *)pdata;
+        esph_offset = BLOG_IPV6_HDR_LEN;
+        if (iph->nexthdr == BLOG_IPPROTO_UDP)
+        {
+            flow_log("Unsupported IPV6 esp over udp\n");
+            nbuff_free(pNBuf);
+            return -1;
+        }
+    }
 
     /* look up if the session is blogged */
     spi = _read32_align16((uint16_t *)&pdata[esph_offset]);
@@ -1420,15 +1683,29 @@ static int spu_blog_ds_dev_xmit_args (pNBuff_t pNBuf, struct net_device *dev, Bl
     rctx->assoc     = &sg[0];
     rctx->src_nents = 0;
     rctx->dst_nents = 0;
+
+    if (rctx->ctx->gcm && rctx->ctx->esn)
+        rctx->assoc_len += BLOG_ESP_SEQNUM_HI_LEN;
+
     rctx->src_skip  = rctx->assoc_len;
     rctx->dst_skip  = rctx->assoc_len;
-    sg_init_one(rctx->src_sg,
-                &pdata[esph_offset],
-                nbuflen - esph_offset);
+
+    if (rctx->ctx->gcm && rctx->ctx->esn) {
+        _write32_align16((uint16_t *)&pdata[esph_offset - BLOG_ESP_SEQNUM_HI_LEN], spi);
+        _write32_align16((uint16_t *)&pdata[esph_offset], htonl(xfrm_replay_seqhi(xfrm, seqno)));
+        sg_init_one(rctx->src_sg,
+                    &pdata[esph_offset - BLOG_ESP_SEQNUM_HI_LEN],
+                    nbuflen - (esph_offset - BLOG_ESP_SEQNUM_HI_LEN));
+
+    } else {
+        sg_init_one(rctx->src_sg,
+                    &pdata[esph_offset],
+                    nbuflen - esph_offset);
+    }
 
     rctx->esn_spi = false;
     rctx->esn_hdr = false;
-    if (xfrm->props.flags & XFRM_STATE_ESN) {
+    if (xfrm->props.flags & XFRM_STATE_ESN && !ctx->gcm) {
         rctx->esn_hdr = true;
         rctx->seq_hi = htonl(xfrm_replay_seqhi(xfrm, seqno));
     }
@@ -1468,6 +1745,26 @@ exit:
     return ret;
 }  /* spu_blog_xmit_ds */
 
+static int spu_blog_ctx_clean(void *x)
+{
+    struct xfrm_state *xfrm = (struct xfrm_state *)x;
+    uint32_t spi = xfrm->id.spi;
+    struct iproc_ctx_s *ctx = NULL;
+
+    if (xfrm->genid || xfrm->km.state == XFRM_STATE_DEAD)
+    {
+        ctx = spu_blog_lookup_ctx (spi, SPU_STREAM_DS);
+        if (ctx == NULL)
+            ctx = spu_blog_lookup_ctx (spi, SPU_STREAM_US);
+  
+        if (ctx)
+        {
+            spu_blog_evict(ctx);
+        }
+    }
+    return 0;
+} /* spu_blog_ctx_clean */
+
 static struct net_device *spu_blog_create_device(char *name, uint32_t dir)
 {
     int ret = 0;
@@ -1485,6 +1782,7 @@ static struct net_device *spu_blog_create_device(char *name, uint32_t dir)
 #endif
         /* Mark device as BCM */
         netdev_bcm_dev_set(dev);
+        netdev_path_set_hw_port_type(dev, dir==1 ? BLOG_SPU_US : BLOG_SPU_DS);
         netdev_dummy_dev_set(dev);
 #endif
         dev_alloc_name(dev, dev->name);
@@ -1582,6 +1880,7 @@ int spu_blog_register(void)
     }
     spu_blog_offload_register();
 #endif
+    bcmFun_reg(BCM_FUN_ID_SPU_SESSION_DELETE, spu_blog_ctx_clean);
 
     return 0;
 } /* spu_blog_register */
@@ -1589,6 +1888,8 @@ int spu_blog_register(void)
 void spu_blog_unregister(void)
 {
     flow_log("%s\n", __func__);
+
+    bcmFun_dereg(BCM_FUN_ID_SPU_SESSION_DELETE);
 
 #if defined (CONFIG_BCM_SPU_HW_OFFLOAD)
     spu_blog_offload_deregister();

@@ -3,27 +3,21 @@
    All Rights Reserved
 
     <:label-BRCM:2015:DUAL/GPL:standard
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
 :>
 */
 
@@ -623,6 +617,8 @@ bdmf_error_t ag_drv_bbh_tx_debug_counters_get(uint8_t bbh_id, bbh_tx_debug_count
     uint32_t reg_debug_counters_srampkt;
     uint32_t reg_debug_counters_ddrpkt;
     uint32_t reg_debug_counters_flushpkts;
+    uint32_t reg_debug_counters_ecnpkt;
+    uint32_t reg_debug_counters_ecnbytes;
 
 #ifdef VALIDATE_PARMS
     if (!debug_counters)
@@ -650,6 +646,8 @@ bdmf_error_t ag_drv_bbh_tx_debug_counters_get(uint8_t bbh_id, bbh_tx_debug_count
     RU_REG_READ(bbh_id, BBH_TX, DEBUG_COUNTERS_SRAMPKT, reg_debug_counters_srampkt);
     RU_REG_READ(bbh_id, BBH_TX, DEBUG_COUNTERS_DDRPKT, reg_debug_counters_ddrpkt);
     RU_REG_READ(bbh_id, BBH_TX, DEBUG_COUNTERS_FLUSHPKTS, reg_debug_counters_flushpkts);
+    RU_REG_READ(bbh_id, BBH_TX, DEBUG_COUNTERS_ECNPKT, reg_debug_counters_ecnpkt);
+    RU_REG_READ(bbh_id, BBH_TX, DEBUG_COUNTERS_ECNBYTES, reg_debug_counters_ecnbytes);
 
     debug_counters->srampd = RU_FIELD_GET(bbh_id, BBH_TX, DEBUG_COUNTERS_TXSRAMPD, SRAMPD, reg_debug_counters_txsrampd);
     debug_counters->ddrpd = RU_FIELD_GET(bbh_id, BBH_TX, DEBUG_COUNTERS_TXDDRPD, DDRPD, reg_debug_counters_txddrpd);
@@ -664,6 +662,8 @@ bdmf_error_t ag_drv_bbh_tx_debug_counters_get(uint8_t bbh_id, bbh_tx_debug_count
     debug_counters->srampkt = RU_FIELD_GET(bbh_id, BBH_TX, DEBUG_COUNTERS_SRAMPKT, SRAMPKT, reg_debug_counters_srampkt);
     debug_counters->ddrpkt = RU_FIELD_GET(bbh_id, BBH_TX, DEBUG_COUNTERS_DDRPKT, DDRPKT, reg_debug_counters_ddrpkt);
     debug_counters->flshpkts = RU_FIELD_GET(bbh_id, BBH_TX, DEBUG_COUNTERS_FLUSHPKTS, FLSHPKTS, reg_debug_counters_flushpkts);
+    debug_counters->ecnpkt = RU_FIELD_GET(bbh_id, BBH_TX, DEBUG_COUNTERS_ECNPKT, ECNPKT, reg_debug_counters_ecnpkt);
+    debug_counters->ecnbytes = RU_FIELD_GET(bbh_id, BBH_TX, DEBUG_COUNTERS_ECNBYTES, ECNBYTES, reg_debug_counters_ecnbytes);
 
     return BDMF_ERR_OK;
 }
@@ -4469,54 +4469,6 @@ bdmf_error_t ag_drv_bbh_tx_debug_counters_disgemdropbyte_get(uint8_t bbh_id, uin
     return BDMF_ERR_OK;
 }
 
-bdmf_error_t ag_drv_bbh_tx_debug_counters_ecnpkt_get(uint8_t bbh_id, uint32_t *ecnpkt)
-{
-    uint32_t reg_debug_counters_ecnpkt;
-
-#ifdef VALIDATE_PARMS
-    if (!ecnpkt)
-    {
-        bdmf_trace("ERROR driver %s:%u| err=%s (%d)\n", __FILE__, __LINE__, bdmf_strerror(BDMF_ERR_PARM), BDMF_ERR_PARM);
-        return BDMF_ERR_PARM;
-    }
-    if ((bbh_id >= BLOCK_ADDR_COUNT))
-    {
-        bdmf_trace("ERROR driver %s:%u| err=%s (%d)\n", __FILE__, __LINE__, bdmf_strerror(BDMF_ERR_RANGE), BDMF_ERR_RANGE);
-        return BDMF_ERR_RANGE;
-    }
-#endif
-
-    RU_REG_READ(bbh_id, BBH_TX, DEBUG_COUNTERS_ECNPKT, reg_debug_counters_ecnpkt);
-
-    *ecnpkt = RU_FIELD_GET(bbh_id, BBH_TX, DEBUG_COUNTERS_ECNPKT, ECNPKT, reg_debug_counters_ecnpkt);
-
-    return BDMF_ERR_OK;
-}
-
-bdmf_error_t ag_drv_bbh_tx_debug_counters_ecnbytes_get(uint8_t bbh_id, uint32_t *ecnbytes)
-{
-    uint32_t reg_debug_counters_ecnbytes;
-
-#ifdef VALIDATE_PARMS
-    if (!ecnbytes)
-    {
-        bdmf_trace("ERROR driver %s:%u| err=%s (%d)\n", __FILE__, __LINE__, bdmf_strerror(BDMF_ERR_PARM), BDMF_ERR_PARM);
-        return BDMF_ERR_PARM;
-    }
-    if ((bbh_id >= BLOCK_ADDR_COUNT))
-    {
-        bdmf_trace("ERROR driver %s:%u| err=%s (%d)\n", __FILE__, __LINE__, bdmf_strerror(BDMF_ERR_RANGE), BDMF_ERR_RANGE);
-        return BDMF_ERR_RANGE;
-    }
-#endif
-
-    RU_REG_READ(bbh_id, BBH_TX, DEBUG_COUNTERS_ECNBYTES, reg_debug_counters_ecnbytes);
-
-    *ecnbytes = RU_FIELD_GET(bbh_id, BBH_TX, DEBUG_COUNTERS_ECNBYTES, ECNBYTES, reg_debug_counters_ecnbytes);
-
-    return BDMF_ERR_OK;
-}
-
 bdmf_error_t ag_drv_bbh_tx_debug_counters_ecnmarkerr_get(uint8_t bbh_id, uint16_t *v1, uint16_t *v2)
 {
     uint32_t reg_debug_counters_ecnmarkerr;
@@ -5085,6 +5037,8 @@ int bcm_bbh_tx_cli_get(bdmf_session_handle session, const bdmfmon_cmd_parm_t par
         bdmf_session_print(session, "srampkt = %u = 0x%x\n", debug_counters.srampkt, debug_counters.srampkt);
         bdmf_session_print(session, "ddrpkt = %u = 0x%x\n", debug_counters.ddrpkt, debug_counters.ddrpkt);
         bdmf_session_print(session, "flshpkts = %u = 0x%x\n", debug_counters.flshpkts, debug_counters.flshpkts);
+        bdmf_session_print(session, "ecnpkt = %u = 0x%x\n", debug_counters.ecnpkt, debug_counters.ecnpkt);
+        bdmf_session_print(session, "ecnbytes = %u = 0x%x\n", debug_counters.ecnbytes, debug_counters.ecnbytes);
         break;
     }
     case cli_bbh_tx_common_configurations_sbpmcfg:
@@ -5897,20 +5851,6 @@ int bcm_bbh_tx_cli_get(bdmf_session_handle session, const bdmfmon_cmd_parm_t par
         bdmf_session_print(session, "dropbyte = %u = 0x%x\n", dropbyte, dropbyte);
         break;
     }
-    case cli_bbh_tx_debug_counters_ecnpkt:
-    {
-        uint32_t ecnpkt;
-        ag_err = ag_drv_bbh_tx_debug_counters_ecnpkt_get(parm[1].value.unumber, &ecnpkt);
-        bdmf_session_print(session, "ecnpkt = %u = 0x%x\n", ecnpkt, ecnpkt);
-        break;
-    }
-    case cli_bbh_tx_debug_counters_ecnbytes:
-    {
-        uint32_t ecnbytes;
-        ag_err = ag_drv_bbh_tx_debug_counters_ecnbytes_get(parm[1].value.unumber, &ecnbytes);
-        bdmf_session_print(session, "ecnbytes = %u = 0x%x\n", ecnbytes, ecnbytes);
-        break;
-    }
     case cli_bbh_tx_debug_counters_ecnmarkerr:
     {
         uint16_t v1;
@@ -6253,17 +6193,17 @@ static int ag_drv_bbh_tx_cli_test(bdmf_session_handle session, const bdmfmon_cmd
     }
 
     {
-        bbh_tx_debug_counters debug_counters = {.srampd = gtmv(m, 32), .ddrpd = gtmv(m, 32), .pddrop = gtmv(m, 16), .stscnt = gtmv(m, 32), .stsdrop = gtmv(m, 16), .msgcnt = gtmv(m, 32), .msgdrop = gtmv(m, 16), .getnextnull = gtmv(m, 16), .lenerr = gtmv(m, 16), .aggrlenerr = gtmv(m, 16), .srampkt = gtmv(m, 32), .ddrpkt = gtmv(m, 32), .flshpkts = gtmv(m, 16)};
+        bbh_tx_debug_counters debug_counters = {.srampd = gtmv(m, 32), .ddrpd = gtmv(m, 32), .pddrop = gtmv(m, 16), .stscnt = gtmv(m, 32), .stsdrop = gtmv(m, 16), .msgcnt = gtmv(m, 32), .msgdrop = gtmv(m, 16), .getnextnull = gtmv(m, 16), .lenerr = gtmv(m, 16), .aggrlenerr = gtmv(m, 16), .srampkt = gtmv(m, 32), .ddrpkt = gtmv(m, 32), .flshpkts = gtmv(m, 16), .ecnpkt = gtmv(m, 32), .ecnbytes = gtmv(m, 32)};
         if (!ag_err)
             ag_err = ag_drv_bbh_tx_debug_counters_get(bbh_id, &debug_counters);
 
         if (!ag_err)
         {
-            bdmf_session_print(session, "ag_drv_bbh_tx_debug_counters_get(%u %u %u %u %u %u %u %u %u %u %u %u %u %u)\n", bbh_id,
+            bdmf_session_print(session, "ag_drv_bbh_tx_debug_counters_get(%u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u)\n", bbh_id,
                 debug_counters.srampd, debug_counters.ddrpd, debug_counters.pddrop, debug_counters.stscnt, 
                 debug_counters.stsdrop, debug_counters.msgcnt, debug_counters.msgdrop, debug_counters.getnextnull, 
                 debug_counters.lenerr, debug_counters.aggrlenerr, debug_counters.srampkt, debug_counters.ddrpkt, 
-                debug_counters.flshpkts);
+                debug_counters.flshpkts, debug_counters.ecnpkt, debug_counters.ecnbytes);
         }
     }
 
@@ -8410,30 +8350,6 @@ static int ag_drv_bbh_tx_cli_test(bdmf_session_handle session, const bdmfmon_cmd
         {
             bdmf_session_print(session, "ag_drv_bbh_tx_debug_counters_disgemdropbyte_get(%u %u)\n", bbh_id,
                 dropbyte);
-        }
-    }
-
-    {
-        uint32_t ecnpkt = gtmv(m, 32);
-        if (!ag_err)
-            ag_err = ag_drv_bbh_tx_debug_counters_ecnpkt_get(bbh_id, &ecnpkt);
-
-        if (!ag_err)
-        {
-            bdmf_session_print(session, "ag_drv_bbh_tx_debug_counters_ecnpkt_get(%u %u)\n", bbh_id,
-                ecnpkt);
-        }
-    }
-
-    {
-        uint32_t ecnbytes = gtmv(m, 32);
-        if (!ag_err)
-            ag_err = ag_drv_bbh_tx_debug_counters_ecnbytes_get(bbh_id, &ecnbytes);
-
-        if (!ag_err)
-        {
-            bdmf_session_print(session, "ag_drv_bbh_tx_debug_counters_ecnbytes_get(%u %u)\n", bbh_id,
-                ecnbytes);
         }
     }
 
@@ -11308,8 +11224,6 @@ bdmfmon_handle_t ag_drv_bbh_tx_cli_init(bdmfmon_handle_t root_dir)
             { .name = "debug_counters_chksumbypddrbyte", .val = cli_bbh_tx_debug_counters_chksumbypddrbyte, .parms = get_default },
             { .name = "debug_counters_disgemdroppkt", .val = cli_bbh_tx_debug_counters_disgemdroppkt, .parms = get_default },
             { .name = "debug_counters_disgemdropbyte", .val = cli_bbh_tx_debug_counters_disgemdropbyte, .parms = get_default },
-            { .name = "debug_counters_ecnpkt", .val = cli_bbh_tx_debug_counters_ecnpkt, .parms = get_default },
-            { .name = "debug_counters_ecnbytes", .val = cli_bbh_tx_debug_counters_ecnbytes, .parms = get_default },
             { .name = "debug_counters_ecnmarkerr", .val = cli_bbh_tx_debug_counters_ecnmarkerr, .parms = get_default },
             { .name = "debug_counters_ecnlenerr", .val = cli_bbh_tx_debug_counters_ecnlenerr, .parms = get_default },
             BDMFMON_ENUM_LAST

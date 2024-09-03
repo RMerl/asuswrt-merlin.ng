@@ -492,6 +492,7 @@
 		ubus_sys: ubus_sys {
 			#address-cells = <2>;
 			#size-cells = <2>;
+			ranges;
 			#define UBUS_SYSTOP_OFFSET         0x0 0x83000000
 			#define UBUS_SYSTOP_SIZE           0x0 0x80
 			#define UBUS_REGISTRATION_OFFSET   0x0 0x83000200
@@ -578,6 +579,15 @@
 			sdhci-pll-baseclk-mhz = <4000>;
 			sdhci-pll-valid-op-mhz = <100 160 180 200>;
 		};
+
+#if defined (CONFIG_MMC_OOPS) || (CONFIG_MMC_OOPS_MODULE)
+		mmcoops {
+			#define MMC_OOPS_DUMP_OFFSET    1536 /* 768KB */
+			#define MMC_OOPS_DUMP_SIZE      512  /* 256KB */	
+			#define MMC_OOPS_DUMP_RECSIZE   128  /* 64KB  */
+			#include "../ip/bcm_mmc_oops.dtsi"
+		};
+#endif
 
 		rng: rng {
 			#define RNG200_OFFSET                   0x00000000 0xb80
@@ -793,6 +803,11 @@
 			#define SOTP_SIZE			0x0 0x500
 			#include "../ip/bcm_sotp_skp.dtsi"
 		};
+		i2s_clkmclk_syscon: i2s_clkmclk_syscon@0xFF802080 {
+			compatible = "brcm,i2s-audio-clkmclk-syscon", "syscon";
+			reg = <0x0 0x2080 0x0 0x80>;
+		};
+
 	};
 
 	legacy_leds: legacy_leds {
@@ -823,12 +838,6 @@
 };
 
 &clocks {
-	#address-cells = <0x2>;
-	#size-cells = <0x2>;
-	i2s_clkmclk_syscon: i2s_clkmclk_syscon@0xFF802080 {
-		compatible = "brcm,i2s-audio-clkmclk-syscon", "syscon";
-		reg = <0x0 0xFF802080 0x0 0x80>;
-	};
 	osc: oscillator {
 		#clock-cells = <0>;
 		compatible = "fixed-clock";

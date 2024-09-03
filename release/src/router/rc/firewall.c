@@ -1734,6 +1734,7 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 			char *nv, *nvp, *item, *nextp, *ptr;
 			char proto[16], *next;
 		case WAN_V6PLUS:
+		case WAN_V6OPTION:
 			if (nvram_pf_get_int(wan_prefix, "s46_hgw_case") <= S46_CASE_MAP_HGW_ON)
 				break;
 			fprintf(fp, "-A PREROUTING -i %s -d %s -j MAPE\n", lan_if, wan_ip);
@@ -1975,6 +1976,13 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 	/* Exposed station */
 	if (is_nat_enabled() && dmz_enabled()) {
 		fprintf(fp, "-A VSERVER -j LOCALSRV\n");
+#if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD)
+        if (nvram_get_int("pptpd_enable")) {
+            /* Allow packets of PPTP and GRE to pass through before being DNAT translated in VSERVER chain*/
+             fprintf(fp, "-A LOCALSRV -p tcp --dport 1723 -j ACCEPT\n");
+             fprintf(fp, "-A LOCALSRV -p gre -j ACCEPT\n");
+        }
+#endif
 
 #ifdef RTCONFIG_IPSEC
 		/* Accept stateless IPSec tunnel */
@@ -2054,6 +2062,7 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 				int offset, psidlen, psid;
 			case WAN_V6PLUS:
 			case WAN_OCNVC:
+			case WAN_V6OPTION:
 				if (nvram_pf_get_int(wan_prefix, "s46_hgw_case") == S46_CASE_MAP_HGW_ON)
 					break;
 			case WAN_LW4O6:
@@ -2236,7 +2245,11 @@ void nat_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)	//
 #endif
 
 	for(unit = WAN_UNIT_FIRST; unit < wan_max_unit; ++unit){
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+		if(!is_phy_connect2(unit))
+#else
 		if(!is_wan_connect(unit))
+#endif
 			continue;
 
 		snprintf(prefix, sizeof(prefix), "wan%d_", unit);
@@ -2461,7 +2474,11 @@ void nat_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)	//
 	/* Trigger port setting */
 	if (is_nat_enabled() && nvram_match("autofw_enable_x", "1"))
 	for(unit = WAN_UNIT_FIRST; unit < wan_max_unit; ++unit){
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+		if(!is_phy_connect2(unit))
+#else
 		if(!is_wan_connect(unit))
+#endif
 			continue;
 
 		wan_if = get_wan_ifname(unit);
@@ -2487,6 +2504,13 @@ void nat_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)	//
 	/* Exposed station */
 	if (is_nat_enabled() && dmz_enabled()) {
 		fprintf(fp, "-A VSERVER -j LOCALSRV\n");
+#if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD)
+         if(nvram_get_int("pptpd_enable")){
+             /* Allow packets of PPTP and GRE to pass through before being DNAT translated in VSERVER chain*/
+             fprintf(fp, "-A LOCALSRV -p tcp --dport 1723 -j ACCEPT\n");
+             fprintf(fp, "-A LOCALSRV -p gre -j ACCEPT\n");
+         }
+#endif
 
 #ifdef RTCONFIG_IPSEC
 		/* Accept stateless IPSec tunnel */
@@ -2588,7 +2612,11 @@ void nat_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)	//
 			}
 			else
 #endif
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+			if(!is_phy_connect2(unit))
+#else
 			if(!is_wan_connect(unit))
+#endif
 				continue;
 
 			snprintf(prefix, sizeof(prefix), "wan%d_", unit);
@@ -3778,7 +3806,7 @@ static void _add_mtwan_filter_rules(
 		//TCP MSS
 		if (nvram_get_int("jumbo_frame_enable") ||
 #ifdef RTCONFIG_SOFTWIRE46
-			wan_proto == WAN_LW4O6 || wan_proto == WAN_MAPE || wan_proto == WAN_V6PLUS ||
+			wan_proto == WAN_LW4O6 || wan_proto == WAN_MAPE || wan_proto == WAN_V6PLUS || wan_proto == WAN_V6OPTION ||
 #endif
 			wan_proto == WAN_PPPOE || wan_proto == WAN_PPTP || wan_proto == WAN_L2TP
 			|| nvram_get_int("wan_mtu")
@@ -3890,6 +3918,7 @@ static void _add_mtwan_ipv6_filter_rules(
 			case WAN_LW4O6:
 			case WAN_MAPE:
 			case WAN_V6PLUS:
+			case WAN_V6OPTION:
 				fprintf(fp, "-A MTWANI -i %s -p 4 -j ACCEPT\n", wan_ifname);
 				break;
 			}
@@ -4050,6 +4079,7 @@ static void _add_mtwan_nat_rules(
 				char *nv, *nvp, *item, *nextp, *ptr;
 				char proto[16], *next;
 			case WAN_V6PLUS:
+			case WAN_V6OPTION:
 				if (nvram_pf_get_int(wan_prefix, "s46_hgw_case") == S46_CASE_MAP_HGW_ON)
 					break;
 				fprintf(fp, "-A PREROUTING -d %s -j %s\n", wan_ipaddr, mape_chain);
@@ -4114,6 +4144,7 @@ static void _add_mtwan_nat_rules(
 					char proto[16], *next;
 					int offset, psidlen, psid;
 				case WAN_V6PLUS:
+				case WAN_V6OPTION:
 					if (nvram_pf_get_int(wan_prefix, "s46_hgw_case") == S46_CASE_MAP_HGW_ON)
 						break;
 				case WAN_LW4O6:
@@ -4878,6 +4909,7 @@ TRACE_PT("writing Parental Control\n");
 		case WAN_MAPE:
 		case WAN_V6PLUS:
 		case WAN_OCNVC:
+		case WAN_V6OPTION:
 		case WAN_DSLITE:
 #endif
 		case WAN_DISABLED:
@@ -5019,6 +5051,7 @@ TRACE_PT("writing Parental Control\n");
 			case WAN_MAPE:
 			case WAN_V6PLUS:
 			case WAN_OCNVC:
+			case WAN_V6OPTION:
 			case WAN_DSLITE:
 				fprintf(fp_ipv6, "-A INPUT -p 4 -j %s\n", "ACCEPT");
 				break;
@@ -5185,7 +5218,7 @@ TRACE_PT("writing Parental Control\n");
 	    dualwan_unit__usbif(wan_unit) ||
 #endif
 #ifdef RTCONFIG_SOFTWIRE46
-	    wan_proto == WAN_LW4O6 || wan_proto == WAN_MAPE || wan_proto == WAN_V6PLUS || wan_proto == WAN_OCNVC || wan_proto == WAN_DSLITE ||
+	    wan_proto == WAN_LW4O6 || wan_proto == WAN_MAPE || wan_proto == WAN_V6PLUS || wan_proto == WAN_OCNVC || wan_proto == WAN_V6OPTION || wan_proto == WAN_DSLITE ||
 #endif
 	    wan_proto == WAN_PPPOE || wan_proto == WAN_PPTP || wan_proto == WAN_L2TP
 	    || nvram_get_int("wan_mtu")
@@ -6357,7 +6390,11 @@ TRACE_PT("writing Parental Control\n");
 				fprintf(fp, "-A %s -p icmp -m policy --dir in --pol ipsec -j %s\n", "INPUT_PING", "RETURN");
 #endif
 			for (unit = WAN_UNIT_FIRST; unit < wan_max_unit; unit++) {
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+				if(!is_phy_connect2(unit))
+#else
 				if (!is_wan_connect(unit))
+#endif
 					continue;
 				wan_if = get_wan_ifname(unit);
 				fprintf(fp, "-A %s -i %s -p icmp -j %s\n", "INPUT_PING", wan_if, logdrop);
@@ -6375,7 +6412,11 @@ TRACE_PT("writing Parental Control\n");
 			int nat_t_port = nvram_get_int("ipsec_nat_t_port") ? : 4500;
 
 			for(unit = WAN_UNIT_FIRST; unit < wan_max_unit; ++unit){
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+				if(!is_phy_connect2(unit))
+#else
 				if(!is_wan_connect(unit))
+#endif
 					continue;
 
 				wan_if = get_wan_ifname(unit);
@@ -6517,7 +6558,11 @@ TRACE_PT("writing Parental Control\n");
 		 * of security, but it does not work otherwise (conntrack does not work) :-(
 		 */
 		for(unit = WAN_UNIT_FIRST; unit < wan_max_unit; ++unit){
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+			if(!is_phy_connect2(unit))
+#else
 			if(!is_wan_connect(unit))
+#endif
 				continue;
 
 			snprintf(prefix, sizeof(prefix), "wan%d_", unit);
@@ -6537,6 +6582,7 @@ TRACE_PT("writing Parental Control\n");
 			case WAN_MAPE:
 			case WAN_V6PLUS:
 			case WAN_OCNVC:
+			case WAN_V6OPTION:
 			case WAN_DSLITE:
 #endif
 			case WAN_DISABLED:
@@ -6631,7 +6677,11 @@ TRACE_PT("writing Parental Control\n");
 #if defined(RTCONFIG_SOC_IPQ8074) || \
     (defined(RTCONFIG_VPNC) || defined(RTCONFIG_VPN_FUSION))
 		for (unit = WAN_UNIT_FIRST; unit < wan_max_unit; ++unit) {
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+			if(!is_phy_connect2(unit))
+#else
 			if(!is_wan_connect(unit))
+#endif
 				continue;
 			enable_gre_for_ecm(unit, fp);
 		}
@@ -6655,6 +6705,7 @@ TRACE_PT("writing Parental Control\n");
 				case WAN_MAPE:
 				case WAN_V6PLUS:
 				case WAN_OCNVC:
+				case WAN_V6OPTION:
 				case WAN_DSLITE:
 					fprintf(fp_ipv6, "-A INPUT -p 4 -j %s\n", "ACCEPT");
 					break;
@@ -6821,7 +6872,11 @@ TRACE_PT("writing Parental Control\n");
 		goto clamp_mss;
 #endif
 	for (unit = WAN_UNIT_FIRST; unit < wan_max_unit; unit++) {
-		if (!is_wan_connect(unit))
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+		if(!is_phy_connect2(unit))
+#else
+		if(!is_wan_connect(unit))
+#endif
 			continue;
 
 		snprintf(prefix, sizeof(prefix), "wan%d_", unit);
@@ -6831,7 +6886,7 @@ TRACE_PT("writing Parental Control\n");
 		    dualwan_unit__usbif(unit) ||
 #endif
 #ifdef RTCONFIG_SOFTWIRE46
-		    wan_proto == WAN_LW4O6 || wan_proto == WAN_MAPE || wan_proto == WAN_V6PLUS || wan_proto == WAN_OCNVC || wan_proto == WAN_DSLITE ||
+		    wan_proto == WAN_LW4O6 || wan_proto == WAN_MAPE || wan_proto == WAN_V6PLUS || wan_proto == WAN_OCNVC || wan_proto == WAN_V6OPTION || wan_proto == WAN_DSLITE ||
 #endif
 		    wan_proto == WAN_PPPOE || wan_proto == WAN_PPTP || wan_proto == WAN_L2TP
 		    || nvram_get_int("wan_mtu")
@@ -6890,7 +6945,11 @@ TRACE_PT("writing Parental Control\n");
 				fprintf(fp, "-A FORWARD -o %s -i %s -j %s\n", "pptp+", word, "ACCEPT");
 			}
 			for(unit = WAN_UNIT_FIRST; unit < wan_max_unit; ++unit) {
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+				if(!is_phy_connect2(unit))
+#else
 				if(!is_wan_connect(unit))
+#endif
 					continue;
 				wan_if = get_wan_ifname(unit);
 				fprintf(fp, "-A FORWARD -i %s -o %s -j %s\n", "pptp+", wan_if, "ACCEPT");
@@ -6922,7 +6981,11 @@ TRACE_PT("writing Parental Control\n");
 #endif
 #if !defined(RTCONFIG_MULTILAN_CFG)
 	for(unit = WAN_UNIT_FIRST; unit < wan_max_unit; ++unit){
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+		if(!is_phy_connect2(unit))
+#else
 		if(!is_wan_connect(unit))
+#endif
 			continue;
 
 		snprintf(prefix, sizeof(prefix), "wan%d_", unit);
@@ -7099,7 +7162,11 @@ TRACE_PT("writing Parental Control\n");
 	/* DoS protection */
 	if (nvram_get_int("fw_enable_x") && nvram_get_int("fw_dos_x"))
 	for(unit = WAN_UNIT_FIRST; unit < wan_max_unit; ++unit){
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+		if(!is_phy_connect2(unit))
+#else
 		if(!is_wan_connect(unit))
+#endif
 			continue;
 
 		wan_if = get_wan_ifname(unit);
@@ -7158,7 +7225,11 @@ TRACE_PT("writing Parental Control\n");
 					if (srcip) v4v6_ok = ipt_addr_compact((*srcipbuf)?srcipbuf:srcip, v4v6_ok, (v4v6_ok == IPT_V4));
 					if (dstip) v4v6_ok = ipt_addr_compact((*dstipbuf)?dstipbuf:dstip, v4v6_ok, (v4v6_ok == IPT_V4));
 					for(unit = WAN_UNIT_FIRST; unit < wan_max_unit; ++unit){
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+						if(!is_phy_connect2(unit))
+#else
 						if(!is_wan_connect(unit))
+#endif
 							continue;
 
 						wan_if = get_wan_ifname(unit);
@@ -7197,7 +7268,11 @@ TRACE_PT("writing Parental Control\n");
 		foreach(ptr, nvram_safe_get("filter_lw_icmp_x"), icmplist)
 		{
 			for(unit = WAN_UNIT_FIRST; unit < wan_max_unit; ++unit){
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+				if(!is_phy_connect2(unit))
+#else
 				if(!is_wan_connect(unit))
+#endif
 					continue;
 
 				wan_if = get_wan_ifname(unit);
@@ -7229,7 +7304,11 @@ TRACE_PT("writing Parental Control\n");
 
 		// Default
 		for(unit = WAN_UNIT_FIRST; unit < wan_max_unit; ++unit){
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+			if(!is_phy_connect2(unit))
+#else
 			if(!is_wan_connect(unit))
+#endif
 				continue;
 
 			wan_if = get_wan_ifname(unit);
@@ -7246,7 +7325,11 @@ TRACE_PT("writing Parental Control\n");
 
 	// Block VPN traffic
 	for(unit = WAN_UNIT_FIRST; unit < wan_max_unit; ++unit){
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+		if(!is_phy_connect2(unit))
+#else
 		if(!is_wan_connect(unit))
+#endif
 			continue;
 
 		wan_if = get_wan_ifname(unit);
@@ -7325,7 +7408,11 @@ TRACE_PT("writing Parental Control\n");
 					if (srcip) v4v6_ok = ipt_addr_compact((*srcipbuf)?srcipbuf:srcip, v4v6_ok, (v4v6_ok == IPT_V4));
 					if (dstip) v4v6_ok = ipt_addr_compact((*dstipbuf)?dstipbuf:dstip, v4v6_ok, (v4v6_ok == IPT_V4));
 					for(unit = WAN_UNIT_FIRST; unit < wan_max_unit; ++unit){
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+						if(!is_phy_connect2(unit))
+#else
 						if(!is_wan_connect(unit))
+#endif
 							continue;
 
 						wan_if = get_wan_ifname(unit);
@@ -7353,7 +7440,11 @@ TRACE_PT("writing Parental Control\n");
 		foreach(ptr, nvram_safe_get("filter_wl_icmp_x"), icmplist)
 		{
  			for(unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit){
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+				if(!is_phy_connect2(unit))
+#else
 				if(!is_wan_connect(unit))
+#endif
 					continue;
 
 				wan_if = get_wan_ifname(unit);
@@ -7392,7 +7483,11 @@ TRACE_PT("write porttrigger\n");
 	/* Trigger port setting */
 	if (is_nat_enabled() && nvram_match("autofw_enable_x", "1"))
 	for(unit = WAN_UNIT_FIRST; unit < wan_max_unit; ++unit){
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+		if(!is_phy_connect2(unit))
+#else
 		if(!is_wan_connect(unit))
+#endif
 			continue;
 
 		wan_if = get_wan_ifname(unit);
@@ -7416,7 +7511,11 @@ TRACE_PT("write porttrigger\n");
 TRACE_PT("write wl filter\n");
 
 	for(unit = WAN_UNIT_FIRST; unit < wan_max_unit; ++unit){
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+		if(!is_phy_connect2(unit))
+#else
 		if(!is_wan_connect(unit))
+#endif
 			continue;
 		wan_if = get_wan_ifname(unit);
 
@@ -7424,7 +7523,11 @@ TRACE_PT("write wl filter\n");
 		{
 			// Default
 			for(unit = WAN_UNIT_FIRST; unit < wan_max_unit; ++unit){
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+				if(!is_phy_connect2(unit))
+#else
 				if(!is_wan_connect(unit))
+#endif
 					continue;
 
 				wan_if = get_wan_ifname(unit);
@@ -7548,7 +7651,11 @@ TRACE_PT("write wl filter\n");
 
 	// Allow LAN -> X after all (URL/Keyword/Network...) filter.
 	for (unit = WAN_UNIT_FIRST; unit < wan_max_unit; ++unit) {
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+		if(!is_phy_connect2(unit))
+#else
 		if(!is_wan_connect(unit))
+#endif
 			continue;
 
 #ifdef RTCONFIG_IPV6
@@ -7713,7 +7820,11 @@ mangle_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 #ifdef RTCONFIG_AMAS
             if(aimesh_re_node() == 0)
 #endif
-                eval("ip6tables", "-t", "mangle", "-A", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "QUEUE");
+#ifdef RTCONFIG_HNS
+		eval("iptables", "-t", "mangle", "-A", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "NFQUEUE", "--queue-num", "2357");
+#else
+		eval("iptables", "-t", "mangle", "-A", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "QUEUE");
+#endif
         }
 #endif
 
@@ -7732,7 +7843,11 @@ mangle_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 #ifdef RTCONFIG_AMAS
 	if(aimesh_re_node() == 0)
 #endif
+#ifdef RTCONFIG_HNS
+		eval("ip6tables", "-t", "mangle", "-A", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "NFQUEUE", "--queue-num", "2357");
+#else
 		eval("ip6tables", "-t", "mangle", "-A", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "QUEUE");
+#endif
 	}
 #endif //RTCONFIG_DNSQUERY_INTERCEPT
 #endif //RTCONFIG_IPV6
@@ -7929,6 +8044,7 @@ mangle_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 		case WAN_MAPE:
 		case WAN_V6PLUS:
 		case WAN_OCNVC:
+		case WAN_V6OPTION:
 		case WAN_DSLITE:
 #ifdef RTCONFIG_BCMARM
 #ifdef HND_ROUTER
@@ -7958,6 +8074,9 @@ mangle_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 #ifdef RTCONFIG_MULTI_PPP
 	set_mtppp_load_balance();
 #endif
+#ifdef RTCONFIG_IPTABLES1810
+	system("iptables -w -t mangle -N tcp-pureack-eth0; sleep 1; iptables -w -t mangle -A POSTROUTING -o eth0 -p tcp --tcp-pureack -j tcp-pureack-eth0");
+#endif
 }
 
 #if defined(RTCONFIG_DUALWAN) || defined(RTCONFIG_MULTICAST_IPTV) // RTCONFIG_DUALWAN || RTCONFIG_MULTICAST_IPTV
@@ -7981,7 +8100,11 @@ mangle_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
 
 	if(IS_NON_AQOS() || IS_ROG_QOS()){
 		for(unit = WAN_UNIT_FIRST; unit < wan_max_unit; ++unit){
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+			if(!is_phy_connect2(unit))
+#else
 			if(!is_wan_connect(unit))
+#endif
 				continue;
 
 			wan_if = get_wan_ifname(unit);
@@ -8006,7 +8129,11 @@ mangle_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
 #ifdef RTCONFIG_AMAS
             if(aimesh_re_node() == 0)
 #endif
-                eval("iptables", "-t", "mangle", "-A", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "QUEUE");
+#ifdef RTCONFIG_HNS
+		eval("iptables", "-t", "mangle", "-A", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "NFQUEUE", "--queue-num", "2357");
+#else
+		eval("iptables", "-t", "mangle", "-A", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "QUEUE");
+#endif
         }
 #endif
 
@@ -8059,8 +8186,12 @@ mangle_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
 #ifdef RTCONFIG_AMAS
             if(aimesh_re_node() == 0)
 #endif
-                eval("ip6tables", "-t", "mangle", "-I", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "QUEUE"); /*first rule*/
-        }
+#ifdef RTCONFIG_HNS
+		eval("ip6tables", "-t", "mangle", "-I", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "NFQUEUE", "--queue-num", "2357"); /*first rule*/
+#else
+		eval("ip6tables", "-t", "mangle", "-I", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "QUEUE"); /*first rule*/
+#endif
+	}
 #endif //RTCONFIG_DNSQUERY_INTERCEPT
 #endif //RTCONFIG_IPV6
 

@@ -263,7 +263,7 @@ int serdes_access_config(phy_dev_t *phy_dev, int enable)
     serdes_control.pd_cml_lcrefout = 1;
     serdes_control.iso_enable = 1;
 #endif
-#if defined(CONFIG_BCM96813) || defined(CONFIG_BCM96765)
+#if defined(CONFIG_BCM96813) || defined(CONFIG_BCM96765) || defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764)
     serdes_control.comclk_enable = 1;
 #endif
 #if defined(PHY_SHARED_REF_CLK)

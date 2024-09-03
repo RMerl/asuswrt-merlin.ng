@@ -1,7 +1,7 @@
 ;; BRCM PUBLISH
 
 //**************************************************************//
-// Attach script for BCM6813                                   //
+// Attach script for BCM6813                                    //
 //**************************************************************//
 
 AREA
@@ -9,11 +9,11 @@ AREA.CLEAR
 SYSTEM.RESET
 SYSTEM.JTAGCLOCK 20MHz
 
-; TDI->ARM(4)->MEMC(5)->DFT(16)->TDO
+; TDI->SYSTEM_LOCK(2)->ARM(4)->MEMC(5)->DFT(16)->TDO
 print "Full scan chain"
-SYStem.CONFIG.DAPIRPOST  0.
+SYStem.CONFIG.DAPIRPOST  2.
 SYStem.CONFIG.DAPIRPRE   21.
-SYStem.CONFIG.DAPDRPOST  0.
+SYStem.CONFIG.DAPDRPOST  1.
 SYStem.CONFIG.DAPDRPRE   2.
 
 

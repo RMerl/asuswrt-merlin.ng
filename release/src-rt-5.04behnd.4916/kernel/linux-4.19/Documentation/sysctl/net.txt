@@ -25,7 +25,6 @@ Table : Subdirectories in /proc/sys/net
  ethernet  Ethernet protocol   rose       X.25 PLP layer
  ipv4      IP version 4        x25        X.25 protocol
  ipx       IPX                 token-ring IBM token ring
- bridge    Bridging            decnet     DEC net
  ipv6      IP version 6        tipc       TIPC
 ..............................................................................
 

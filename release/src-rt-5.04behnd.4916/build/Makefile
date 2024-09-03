@@ -1099,7 +1099,7 @@ else
 endif
 endif
 ifneq ($(strip $(BUILD_LINUX_PERF)),)
-	-$(MAKE) -C $(KERNEL_DIR)/tools/perf clean
+	-$(MAKE) ARCH=$(PERF_ARCH) -C $(KERNEL_DIR)/tools/perf clean
 endif
 
 bcmdrivers_clean:
@@ -1300,7 +1300,6 @@ BUILD_OMCI                 \
 BUILD_UDHCP                \
 BUILD_UDHCP_RELAY          \
 BUILD_VCONFIG              \
-BUILD_SUPERDMZ             \
 BUILD_WLCTL                \
 BUILD_DHDCTL               \
 BUILD_ZEBRA                \

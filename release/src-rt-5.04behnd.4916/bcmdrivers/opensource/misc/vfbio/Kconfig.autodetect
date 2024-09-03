@@ -15,3 +15,9 @@ config BCM_VFBIO_MQ
 	default y
 	help
 	  Enable block device MQ support for VFBIO.
+
+config BCM_VFBIO_OOPS
+        tristate "Broadcom BCA VFBIO OOPS driver"
+        depends on BCM_VFBIO_DRV
+        help
+          Add the BCM BCA VFBIO OOPS support.

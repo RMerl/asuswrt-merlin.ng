@@ -60,7 +60,7 @@ include $(TOP_DIR)/make.rdp_sim_impl1
 endif
 endif
 
-ifneq ($(findstring __$(strip $(PROJECT))__,__DSL_63158__BCM63146__PON_6855_FC__BCM4912__BCM4912_FPI__BCM6813__BCM6813_FPI__PON_6888_FC__PON_6888_G9991__PON_6837_FC__PON_6888_B0_FC__),)
+ifneq ($(findstring __$(strip $(PROJECT))__,__DSL_63158__BCM63146__PON_6855_FC__BCM4912__BCM6813__BCM6813_FPI__PON_6888_FC__PON_6888_G9991__PON_6837_FC__PON_6888_B0_FC__),)
 include $(TOP_DIR)/make.rdp_sim_impl2
 endif
 
@@ -361,8 +361,8 @@ $(PROJ_FW_SRC_LIST): $(PROJ_FW_SRC_LIST_ORIG) project_prepare_dirs
 	rm -f $(PROJ_FW_SRC_LIST).temp
 
 $(PROJ_DRV_SRC_LIST): $(PROJ_DRV_SRC_LIST_ORIG) project_prepare_dirs
-	-m4 -I $(TOP_DIR) -I $(TOP_DIR)/projects $(PROJ_SRC_LIST_FLAGS) $(PROJ_DRV_SRC_LIST_ORIG) | grep -v "^#" | grep '*' | xargs -I __WILDCARD__ sh -c 'cd $(TOP_DIR) && find -L __WILDCARD__ -type f' >$(PROJ_DRV_SRC_LIST).temp
-	-m4 -I $(TOP_DIR) -I $(TOP_DIR)/projects $(PROJ_SRC_LIST_FLAGS) $(PROJ_DRV_SRC_LIST_ORIG) | grep -v "^#" | grep -v '*' >>$(PROJ_DRV_SRC_LIST).temp
+	m4 -I $(TOP_DIR) -I $(TOP_DIR)/projects $(PROJ_SRC_LIST_FLAGS) $(PROJ_DRV_SRC_LIST_ORIG) | grep -v "^#" | grep '*' | xargs -I __WILDCARD__ sh -c 'cd $(TOP_DIR) && find -L __WILDCARD__ -type f' >$(PROJ_DRV_SRC_LIST).temp
+	m4 -I $(TOP_DIR) -I $(TOP_DIR)/projects $(PROJ_SRC_LIST_FLAGS) $(PROJ_DRV_SRC_LIST_ORIG) | grep -v "^#" | grep -v '*' >>$(PROJ_DRV_SRC_LIST).temp
 	diff -q $(PROJ_DRV_SRC_LIST).temp $(PROJ_DRV_SRC_LIST) || mv $(PROJ_DRV_SRC_LIST).temp $(PROJ_DRV_SRC_LIST)
 	rm -f $(PROJ_DRV_SRC_LIST).temp
 

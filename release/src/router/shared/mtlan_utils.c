@@ -378,7 +378,7 @@ static MTLAN_T *__get_mtlan(MTLAN_T *nwlst, size_t *lst_sz, int is_rm)
 	char *vpnc_idx = NULL, *vpns_idx = NULL, *dnsf_idx = NULL, *urlf_idx = NULL, *nwf_idx = NULL;
 	char *cp_idx = NULL, *gre_idx = NULL, *fw_idx = NULL, *killsw_sw = NULL, *ahs_sw = NULL;
 	char *wan_idx = NULL, *ppprelay_sw = NULL, *wan6_idx = NULL, *createby= NULL, *mtwan_idx = NULL;
-	char *mswan_idx = NULL;
+	char *mswan_idx = NULL, *prio = NULL;
 
 	char idx[4], *next;
 
@@ -421,13 +421,13 @@ static MTLAN_T *__get_mtlan(MTLAN_T *nwlst, size_t *lst_sz, int is_rm)
 		vpnc_idx = vpns_idx = dnsf_idx = urlf_idx = nwf_idx = NULL;
 		cp_idx = gre_idx = fw_idx = killsw_sw = ahs_sw = NULL;
 		wan_idx = ppprelay_sw = wan6_idx = createby = mtwan_idx = NULL;
-		mswan_idx = NULL;
+		mswan_idx = prio = NULL;
 
 		if (vstrsep(b, ">", &sdn_idx, &sdn_name, &sdn_enable, &vlan_idx, &subnet_idx,
 				    &apg_idx, &vpnc_idx, &vpns_idx, &dnsf_idx,
 				    &urlf_idx, &nwf_idx, &cp_idx, &gre_idx, &fw_idx,
 				    &killsw_sw, &ahs_sw, &wan_idx, &ppprelay_sw, &wan6_idx,
-				    &createby, &mtwan_idx, &mswan_idx) < SDN_LIST_BASIC_PARAM)
+				    &createby, &mtwan_idx, &mswan_idx, &prio) < SDN_LIST_BASIC_PARAM)
 			continue;
 
 		if (cnt >= MTLAN_MAXINUM)
@@ -524,6 +524,8 @@ static MTLAN_T *__get_mtlan(MTLAN_T *nwlst, size_t *lst_sz, int is_rm)
 			nwlst[cnt].sdn_t.mtwan_idx = strtol(mtwan_idx, NULL, 10);
 		if (mswan_idx && *mswan_idx)
 			nwlst[cnt].sdn_t.mswan_idx = strtol(mswan_idx, NULL, 10);
+		if (prio && *prio)
+			nwlst[cnt].sdn_t.prio = strtol(prio, NULL, 10);
 		cnt++;
 	}
 
@@ -676,6 +678,11 @@ static MTLAN_T *__get_mtlan_by_idx(SDNFT_TYPE type, const unsigned int idx, MTLA
 			}
 		} else if (type == SDNFT_TYPE_MSWAN) {
 			if (pmtl[i].sdn_t.mswan_idx == idx) {
+				memcpy(&nwlst[r], &pmtl[i], sizeof(MTLAN_T));
+				r++;
+			}
+		} else if (type == SDNFT_TYPE_PRIORITY) {
+			if (pmtl[i].sdn_t.prio == idx) {
 				memcpy(&nwlst[r], &pmtl[i], sizeof(MTLAN_T));
 				r++;
 			}

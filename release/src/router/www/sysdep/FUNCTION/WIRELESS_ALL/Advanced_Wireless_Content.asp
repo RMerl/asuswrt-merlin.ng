@@ -64,9 +64,16 @@
                 show_menu();
                 generateMainField();
                 eventBind();
+
                 if (isBRCMplatform) {
                     document.getElementById("smartcon_rule_link").style.display = "";
                 }
+
+                if(isSupport("sdn_mainfh")){
+                    document.querySelectorAll('.frontHaulSetting').forEach(function(element){
+                        element.style.display = 'none';
+                    })
+                }                
             });
             function eventBind() {
                 document.querySelectorAll(".setup_help_icon").forEach((element) => {
@@ -266,6 +273,7 @@
                 systemManipulable.wlBandSeq[prefix].joinSmartConnect = check;
                 let { wlBandSeq, mloEnabled } = systemManipulable;
                 let { joinSmartConnect } = wlBandSeq[prefix];
+                let { smartConnectReferenceIndex } = systemManipulable.smartConnect;
                 if (mloEnabled) {
                     mloHint();
                 }
@@ -286,6 +294,11 @@
 
                 ssidHandler(prefix);
                 wirelessBackhaulHandler(prefix);
+
+                if (joinSmartConnect) {
+                    systemManipulable.wlBandSeq[prefix].wifi7ModeEnabled =
+                        systemManipulable.wlBandSeq[smartConnectReferenceIndex].wifi7ModeEnabled;
+                }
             }
 
             function smartConnectChange(v1Type) {
@@ -448,6 +461,10 @@
                 } else {
                     delete extensionChannelString["l"];
                     delete extensionChannelString["u"];
+                    if (prefix === "5g1" || prefix === "5g2" || prefix === "6g1" || prefix === "6g2") {
+                        delete extensionChannelString["lower"];
+                        delete extensionChannelString["upper"];
+                    }
                 }
 
                 if (channelValue === "0" || prefix === "5g1" || prefix === "5g2") {
@@ -579,20 +596,29 @@
                         // AUTO BANDWIDTH
                         if (ch320MHz[element]) {
                             chValue = element;
-                            chNumber = channelValue.split("/320")[0].slice(2);
+                            chNumber = channelValue;
+                            if (isBRCMplatform) {
+                                chNumber = channelValue.split("/320")[0].slice(2);
+                            }
                         } else if (ch160MHz[element] && ch160MHz[element].length !== 0 && bw160Value === "1") {
                             chValue = ch160MHz[element][0];
-                            if (prefix === "6g1" || prefix === "6g2") {
-                                chNumber = channelValue.split("/160")[0].slice(2);
-                            } else {
-                                chNumber = channelValue.split("/160")[0];
+                            chNumber = channelValue;
+                            if (isBRCMplatform) {
+                                if (prefix === "6g1" || prefix === "6g2") {
+                                    chNumber = channelValue.split("/160")[0].slice(2);
+                                } else {
+                                    chNumber = channelValue.split("/160")[0];
+                                }
                             }
                         } else if (ch80MHz[element]) {
                             chValue = ch80MHz[element][0];
-                            if (prefix === "6g1" || prefix === "6g2") {
-                                chNumber = channelValue.split("/80")[0].slice(2);
-                            } else {
-                                chNumber = channelValue.split("/80")[0];
+                            chNumber = channelValue;
+                            if (isBRCMplatform) {
+                                if (prefix === "6g1" || prefix === "6g2") {
+                                    chNumber = channelValue.split("/80")[0].slice(2);
+                                } else {
+                                    chNumber = channelValue.split("/80")[0];
+                                }
                             }
                         } else if (ch40MHz[element]) {
                             if (prefix === "2g1") {
@@ -600,10 +626,13 @@
                                 chNumber = channelValue.split("u")[0].split("l")[0];
                             } else {
                                 chValue = ch40MHz[element][0];
-                                if (prefix === "6g1" || prefix === "6g2") {
-                                    chNumber = channelValue.split("/40")[0].slice(2);
-                                } else {
-                                    chNumber = channelValue.split("u")[0].split("l")[0];
+                                chNumber = channelValue;
+                                if (isBRCMplatform) {
+                                    if (prefix === "6g1" || prefix === "6g2") {
+                                        chNumber = channelValue.split("/40")[0].slice(2);
+                                    } else {
+                                        chNumber = channelValue.split("u")[0].split("l")[0];
+                                    }
                                 }
                             }
                         } else {
@@ -617,7 +646,10 @@
                         }
 
                         chValue = element;
-                        chNumber = channelValue.split("/320")[0].slice(2);
+                        chNumber = channelValue;
+                        if (isBRCMplatform) {
+                            chNumber = channelValue.split("/320")[0].slice(2);
+                        }
                     } else if (bandwidthValue === "5") {
                         // 160 MHz
                         if (!ch160MHz[element]) {
@@ -625,10 +657,13 @@
                         }
 
                         chValue = ch160MHz[element][0];
-                        if (prefix === "6g1" || prefix === "6g2") {
-                            chNumber = channelValue.split("/160")[0].slice(2);
-                        } else {
-                            chNumber = channelValue.split("/160")[0];
+                        chNumber = channelValue;
+                        if (isBRCMplatform) {
+                            if (prefix === "6g1" || prefix === "6g2") {
+                                chNumber = channelValue.split("/160")[0].slice(2);
+                            } else {
+                                chNumber = channelValue.split("/160")[0];
+                            }
                         }
                     } else if (bandwidthValue === "3") {
                         // 80 MHz
@@ -637,10 +672,13 @@
                         }
 
                         chValue = ch80MHz[element][0];
-                        if (prefix === "6g1" || prefix === "6g2") {
-                            chNumber = channelValue.split("/80")[0].slice(2);
-                        } else {
-                            chNumber = channelValue.split("/80")[0];
+                        chNumber = channelValue;
+                        if (isBRCMplatform) {
+                            if (prefix === "6g1" || prefix === "6g2") {
+                                chNumber = channelValue.split("/80")[0].slice(2);
+                            } else {
+                                chNumber = channelValue.split("/80")[0];
+                            }
                         }
                     } else if (bandwidthValue === "2") {
                         // 40 MHz
@@ -653,10 +691,13 @@
                             chNumber = channelValue.split("u")[0].split("l")[0];
                         } else {
                             chValue = ch40MHz[element][0];
-                            if (prefix === "6g1" || prefix === "6g2") {
-                                chNumber = channelValue.split("/40")[0].slice(2);
-                            } else {
-                                chNumber = channelValue.split("u")[0].split("l")[0];
+                            chNumber = channelValue;
+                            if (isBRCMplatform) {
+                                if (prefix === "6g1" || prefix === "6g2") {
+                                    chNumber = channelValue.split("/40")[0].slice(2);
+                                } else {
+                                    chNumber = channelValue.split("u")[0].split("l")[0];
+                                }
                             }
                         }
                     } else if ((isBRCMplatform && bandwidthValue === "1") || (!isBRCMplatform && bandwidthValue === "0")) {
@@ -750,7 +791,7 @@
                     delete wpaEncryptStringObject["aes"];
                 }
 
-                if (!wifi7ModeEnabled || authMethodValue !== "sae") {
+                if (!wifi7ModeEnabled || authMethodValue.indexOf("sae") == -1) {
                     delete wpaEncryptStringObject["aes+gcmp256"];
                 } else {
                     delete wpaEncryptStringObject["aes"];
@@ -1091,7 +1132,7 @@
                     const { beSupport, wifi7ModeEnabled, authMethodValue: authMethodValueOri } = systemManipulable.wlBandSeq[prefixNvram];
                     systemManipulable.wlBandSeq[prefixNvram].authMethodValue = authMethodValue;
                     if (beSupport) {
-                        if (authMethodValue === "sae") {
+                        if (authMethodValue === "sae" || authMethodValue === "psk2sae") {
                             // systemManipulable.wlBandSeq[prefixNvram].wifi7ModeEnabled = true;
                         } else {
                             if (mloEnabled) {
@@ -1101,8 +1142,7 @@
                                     contentC: "",
                                     left_button: "<#CTL_Cancel#>",
                                     left_button_callback: function () {
-                                        confirm_cancel();
-                                        document.getElementById(`${prefix}_auth_method`).value = authMethodValueOri;
+                                        refreshpage();
                                         return false;
                                     },
                                     left_button_args: {},
@@ -1132,15 +1172,22 @@
                                     contentC: "",
                                     left_button: "<#checkbox_No#>",
                                     left_button_callback: function () {
-                                        confirm_cancel();
-                                        document.getElementById(`${prefix}_auth_method`).value = authMethodValueOri;
+                                        refreshpage();
                                         return false;
                                     },
                                     left_button_args: {},
                                     right_button: "<#checkbox_Yes#>",
                                     right_button_callback: function () {
                                         confirm_cancel();
-                                        systemManipulable.wlBandSeq[prefixNvram].wifi7ModeEnabled = false;
+                                        if (systemManipulable.smartConnect.smartConnectEnable) {
+                                            for (let [key, value] of Object.entries(systemManipulable.wlBandSeq)) {
+                                                if (value.joinSmartConnect) {
+                                                    systemManipulable.wlBandSeq[key].wifi7ModeEnabled = false;
+                                                }
+                                            }
+                                        } else {
+                                            systemManipulable.wlBandSeq[prefixNvram].wifi7ModeEnabled = false;
+                                        }
                                     },
                                     right_button_args: {},
                                     iframe: "",
@@ -1266,7 +1313,7 @@
                 })();
 
                 return `
-                    <tr id="${prefix}_ssid_field" style="display:${displayFlag}">
+                    <tr id="${prefix}_ssid_field" class="frontHaulSetting" style="display:${displayFlag}">
                         <th>
                             <a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 1);"><#QIS_finish_wireless_item1#></a>
                         </th>
@@ -1274,7 +1321,7 @@
                             <input id="${prefix}_ssid" type="text" maxlength="32" class="input_32_table" value="${ssidValue}" onkeypress="validator.isString(this, event)" autocorrect="off" autocapitalize="off">
                         </td>
                     </tr>
-                    <tr id="${prefix}_hide_ssid_field" style="display:${displayFlag}">
+                    <tr id="${prefix}_hide_ssid_field" class="frontHaulSetting" style="display:${displayFlag}">
                         <th>
                             <a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 2);"><#WLANConfig11b_x_BlockBCSSID_itemname#></a>
                         </th>
@@ -1386,7 +1433,8 @@
             }
 
             function generateControlChannel(prefix) {
-                let { wlBandSeq, smartConnect, psc6g, acs_dfs, acs_band3, acs_unii4, acs_ch13, language } = systemManipulable;
+                let { wlBandSeq, smartConnect, psc6g, acs_dfs, acs_band3, acs_unii4, acs_ch13, language, isBRCMplatform } =
+                    systemManipulable;
                 let { smartConnectEnable, v2Band, smartConnectReferenceIndex, radioSeqArray } = smartConnect;
                 let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
                 let {
@@ -1421,20 +1469,29 @@
                             chValue = element;
 
                             // to get channel number
-                            chNumber = channelValue.split("/320")[0].slice(2);
+                            chNumber = channelValue;
+                            if (isBRCMplatform) {
+                                chNumber = channelValue.split("/320")[0].slice(2);
+                            }
                         } else if (ch160MHz[element] && bw160Value === "1") {
                             chValue = ch160MHz[element][0];
-                            if (prefix === "6g1" || prefix === "6g2") {
-                                chNumber = channelValue.split("/160")[0].slice(2);
-                            } else {
-                                chNumber = channelValue.split("/160")[0];
+                            chNumber = channelValue;
+                            if (isBRCMplatform) {
+                                if (prefix === "6g1" || prefix === "6g2") {
+                                    chNumber = channelValue.split("/160")[0].slice(2);
+                                } else {
+                                    chNumber = channelValue.split("/160")[0];
+                                }
                             }
                         } else if (ch80MHz[element]) {
                             chValue = ch80MHz[element][0];
-                            if (prefix === "6g1" || prefix === "6g2") {
-                                chNumber = channelValue.split("/80")[0].slice(2);
-                            } else {
-                                chNumber = channelValue.split("/80")[0];
+                            chNumber = channelValue;
+                            if (isBRCMplatform) {
+                                if (prefix === "6g1" || prefix === "6g2") {
+                                    chNumber = channelValue.split("/80")[0].slice(2);
+                                } else {
+                                    chNumber = channelValue.split("/80")[0];
+                                }
                             }
                         } else if (ch40MHz[element]) {
                             if (prefix === "2g1") {
@@ -1443,10 +1500,13 @@
                                 chNumber = channelValue.split("u")[0].split("l")[0];
                             } else {
                                 chValue = ch40MHz[element][0];
-                                if (prefix === "6g1" || prefix === "6g2") {
-                                    chNumber = channelValue.split("/40")[0].slice(2);
-                                } else {
-                                    chNumber = channelValue.split("u")[0].split("l")[0];
+                                chNumber = channelValue;
+                                if (isBRCMplatform) {
+                                    if (prefix === "6g1" || prefix === "6g2") {
+                                        chNumber = channelValue.split("/40")[0].slice(2);
+                                    } else {
+                                        chNumber = channelValue.split("u")[0].split("l")[0];
+                                    }
                                 }
                             }
                         } else {
@@ -1460,7 +1520,10 @@
                         }
 
                         chValue = element;
-                        chNumber = channelValue.split("/320")[0].slice(2);
+                        chNumber = channelValue;
+                        if (isBRCMplatform) {
+                            chNumber = channelValue.split("/320")[0].slice(2);
+                        }
                     } else if (bandwidthValue === "5") {
                         // 160 MHz
                         if (!ch160MHz[element]) {
@@ -1468,10 +1531,13 @@
                         }
 
                         chValue = ch160MHz[element][0];
-                        if (prefix === "6g1" || prefix === "6g2") {
-                            chNumber = channelValue.split("/160")[0].slice(2);
-                        } else {
-                            chNumber = channelValue.split("/160")[0];
+                        chNumber = channelValue;
+                        if (isBRCMplatform) {
+                            if (prefix === "6g1" || prefix === "6g2") {
+                                chNumber = channelValue.split("/160")[0].slice(2);
+                            } else {
+                                chNumber = channelValue.split("/160")[0];
+                            }
                         }
                     } else if (bandwidthValue === "3") {
                         // 80 MHz
@@ -1480,10 +1546,13 @@
                         }
 
                         chValue = ch80MHz[element][0];
-                        if (prefix === "6g1" || prefix === "6g2") {
-                            chNumber = channelValue.split("/80")[0].slice(2);
-                        } else {
-                            chNumber = channelValue.split("/80")[0];
+                        chNumber = channelValue;
+                        if (isBRCMplatform) {
+                            if (prefix === "6g1" || prefix === "6g2") {
+                                chNumber = channelValue.split("/80")[0].slice(2);
+                            } else {
+                                chNumber = channelValue.split("/80")[0];
+                            }
                         }
                     } else if (bandwidthValue === "2") {
                         // 40 MHz
@@ -1498,10 +1567,13 @@
                         } else {
                             // 5 GHz, 6 GHz
                             chValue = ch40MHz[element][0];
-                            if (prefix === "6g1" || prefix === "6g2") {
-                                chNumber = channelValue.split("/40")[0].slice(2);
-                            } else {
-                                chNumber = channelValue.split("u")[0].split("l")[0];
+                            chNumber = channelValue;
+                            if (isBRCMplatform) {
+                                if (prefix === "6g1" || prefix === "6g2") {
+                                    chNumber = channelValue.split("/40")[0].slice(2);
+                                } else {
+                                    chNumber = channelValue.split("u")[0].split("l")[0];
+                                }
                             }
                         }
                     } else if (bandwidthValue === "1") {
@@ -1633,6 +1705,10 @@
                 } else {
                     delete extensionChannelString["l"];
                     delete extensionChannelString["u"];
+                    if (prefix === "5g1" || prefix === "5g2" || prefix === "6g1" || prefix === "6g2") {
+                        delete extensionChannelString["lower"];
+                        delete extensionChannelString["upper"];
+                    }
                 }
 
                 if (prefix !== "6g1" && prefix !== "6g2") {
@@ -1778,7 +1854,7 @@
                 }
 
                 return `
-                    <tr id="${prefix}_auth_method_field" style="display:${displayFlagAuthMethod}">
+                    <tr id="${prefix}_auth_method_field" class="frontHaulSetting" style="display:${displayFlagAuthMethod}">
                         <th>
                             <a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 5);"><#WLANConfig11b_AuthenticationMethod_itemname#></a>
                         </th>
@@ -1848,7 +1924,7 @@
                     delete wpaEncryptStringObject["aes"];
                 }
 
-                if (!wifi7ModeEnabled || authMethodValue !== "sae") {
+                if (!wifi7ModeEnabled || authMethodValue.indexOf("sae") == -1) {
                     delete wpaEncryptStringObject["aes+gcmp256"];
                 } else {
                     delete wpaEncryptStringObject["aes"];
@@ -1860,7 +1936,7 @@
                 }
 
                 return `
-                	<tr id="${prefix}_wpa_encrypt_field" style="display:${displayFlag}">
+                	<tr id="${prefix}_wpa_encrypt_field" class="frontHaulSetting" style="display:${displayFlag}">
                 		<th>
                 			<a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 6);"><#WLANConfig11b_WPAType_itemname#></a>
                 		</th>
@@ -1904,7 +1980,7 @@
                 })();
 
                 return `
-                    <tr id="${prefix}_wpa_key_field" style="display:${displayFlag}">
+                    <tr id="${prefix}_wpa_key_field" class="frontHaulSetting" style="display:${displayFlag}">
                         <th>
                         <a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 7);"><#WLANConfig11b_x_PSKKey_itemname#></a>
                         </th>
@@ -1977,7 +2053,7 @@
                 }
 
                 return `
-                    <tr id="${prefix}_mfp_field" style="display:${displayFlag}">
+                    <tr id="${prefix}_mfp_field" class="frontHaulSetting" style="display:${displayFlag}">
                         <th><#WLANConfig11b_x_mfp#></th>
                         <td>
                             <select class="input_option" id="${prefix}_mfp">${mfpSnipper}</select>
@@ -2027,7 +2103,7 @@
                 })();
 
                 return `
-                    <tr id="${prefix}_group_key_field" style="display:${displayFlag}">
+                    <tr id="${prefix}_group_key_field" class="frontHaulSetting" style="display:${displayFlag}">
                         <th>
                             <a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 11);"><#WLANConfig11b_x_Rekey_itemname#></a>
                         </th>
@@ -2082,7 +2158,7 @@
                 }
 
                 return `
-                    <tr id='${prefix}_wep_encrypt_field' style="display:${displayFlag}">
+                    <tr id="${prefix}_wep_encrypt_field" class="frontHaulSetting" style="display:${displayFlag}">
                         <th>
                             <a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 9);"><#WLANConfig11b_WEPType_itemname#></a>
                         </th>
@@ -2134,7 +2210,7 @@
                 })();
 
                 return `
-                    <tr id="${prefix}_wep_key_index_field" style="display:${displayFlag}">
+                    <tr id="${prefix}_wep_key_index_field" class="frontHaulSetting" style="display:${displayFlag}">
                         <th>
                             <a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 10);"><#WLANConfig11b_WEPDefaultKey_itemname#></a>
                         </th>
@@ -2147,7 +2223,7 @@
                             </select>
                         </td>
                     </tr>
-                    <tr id="${prefix}_wep_key1_field" style="display:${displayFlag}">
+                    <tr id="${prefix}_wep_key1_field" class="frontHaulSetting" style="display:${displayFlag}">
                         <th>
                             <a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 18);"><#WLANConfig11b_WEPKey1_itemname#></a>
                         </th>
@@ -2155,7 +2231,7 @@
                             <input id="${prefix}_key1" type="text" maxlength="32" class="input_32_table" value="${wepKey1Value}" onKeyUp="return change_wlkey(this, 'WLANConfig11b');" autocorrect="off" autocapitalize="off">
                         </td>
                     </tr>
-                    <tr id="${prefix}_wep_key2_field" style="display:${displayFlag}">
+                    <tr id="${prefix}_wep_key2_field" class="frontHaulSetting" style="display:${displayFlag}">
                         <th>
                             <a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 18);"><#WLANConfig11b_WEPKey2_itemname#></a>
                         </th>
@@ -2163,7 +2239,7 @@
                             <input id="${prefix}_key2" type="text" maxlength="32" class="input_32_table" value="${wepKey2Value}" onKeyUp="return change_wlkey(this, 'WLANConfig11b');" autocorrect="off" autocapitalize="off">
                         </td>
                     </tr>
-                    <tr id="${prefix}_wep_key3_field" style="display:${displayFlag}">
+                    <tr id="${prefix}_wep_key3_field" class="frontHaulSetting" style="display:${displayFlag}">
                         <th>
                             <a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 18);"><#WLANConfig11b_WEPKey3_itemname#></a>
                         </th>
@@ -2171,7 +2247,7 @@
                             <input id="${prefix}_key3" type="text" maxlength="32" class="input_32_table" value="${wepKey3Value}" onKeyUp="return change_wlkey(this, 'WLANConfig11b');" autocorrect="off" autocapitalize="off">
                         </td>
                     </tr>
-                    <tr id="${prefix}_wep_key4_field" style="display:${displayFlag}">
+                    <tr id="${prefix}_wep_key4_field" class="frontHaulSetting" style="display:${displayFlag}">
                         <th>
                             <a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 18);"><#WLANConfig11b_WEPKey4_itemname#></a>
                         </th>
@@ -2179,7 +2255,7 @@
                             <input id="${prefix}_key4" type="text" maxlength="32" class="input_32_table" value="${wepKey4Value}" onKeyUp="return change_wlkey(this, 'WLANConfig11b');" autocorrect="off" autocapitalize="off">
                         </td>
                     </tr>
-                    <tr id="${prefix}_pass_phrase_field" style="display:${displayFlag}">
+                    <tr id="${prefix}_pass_phrase_field" class="frontHaulSetting" style="display:${displayFlag}">
                         <th>
                             <a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 8);"><#WLANConfig11b_x_Phrase_itemname#></a>
                         </th>
@@ -2225,7 +2301,7 @@
                 })();
 
                 return `
-                    <tr id="${prefix}_radius_ip_field" style="display:${displayFlag}">
+                    <tr id="${prefix}_radius_ip_field" class="frontHaulSetting" style="display:${displayFlag}">
                         <th>
                             <a class="hintstyle" href="javascript:void(0);" onClick="openHint(2,1);"><#WLANAuthentication11a_ExAuthDBIPAddr_itemname#></a>
                         </th>
@@ -2233,7 +2309,7 @@
                             <input id="${prefix}_radius_ip" type="text" maxlength="39" class="input_32_table" value="${radiusIpValue}" onKeyPress="return validator.isIPAddr(this, event)" autocorrect="off" autocapitalize="off">
                         </td>
                     </tr>
-                    <tr id="${prefix}_radius_port_field" style="display:${displayFlag}">
+                    <tr id="${prefix}_radius_port_field" class="frontHaulSetting" style="display:${displayFlag}">
                         <th>
                             <a class="hintstyle" href="javascript:void(0);" onClick="openHint(2,2);"><#WLANAuthentication11a_ExAuthDBPortNumber_itemname#></a>
                         </th>
@@ -2241,7 +2317,7 @@
                             <input id="${prefix}_radius_port" type="text" maxlength="5" class="input_6_table" value="${radiusPortValue}" onkeypress="return validator.isNumber(this,event)" autocorrect="off" autocapitalize="off"/>
                         </td>
                     </tr>
-                    <tr id="${prefix}_radius_key_field" style="display:${displayFlag}">
+                    <tr id="${prefix}_radius_key_field" class="frontHaulSetting" style="display:${displayFlag}">
                         <th>
                             <a class="hintstyle" href="javascript:void(0);"  onClick="openHint(2,3);"><#WLANAuthentication11a_ExAuthDBPassword_itemname#></a>
                         </th>
@@ -2314,7 +2390,7 @@
                     ssid: "",
                     sameSsidCount: 0,
                     targetObject: "",
-                    sameSsidString: "The fronthaul SSID is the same as the backhaul SSID.",
+                    sameSsidString: `<#wireless_JS_dup_SSID#>`,
                 };
 
                 if (dwbMode === "1") {
@@ -2527,7 +2603,7 @@
                             if (smartConnectEnable && joinSmartConnect) {
                                 let wpaEncryption = document.getElementById("smart_connect_wpa_encrypt").value;
                                 if (key === "6g1" || key === "6g2") {
-                                    wpaEncryption = "aes";
+                                    wpaEncryption = wifi7ModeEnabled ? "aes+gcmp256" : "aes";
                                 }
 
                                 if (dwbMode === "1" && dwbBand === key) {
@@ -2764,6 +2840,26 @@
                     }
                 }
 
+                if(isSupport("sdn_mainfh")){
+                    // do not post following nvrams
+                    Object.keys(postObject).forEach(key => {
+                        if (
+                            key.includes("ssid") 
+                            || key.includes("11be")
+                            || key.includes("closed")
+                            || key.includes("auth_mode_x")
+                            || key.includes("wpa_psk")
+                            || key.includes("crypto")
+                            || key.includes("wpa_gtk_rekey")
+                            || key.includes("mfp")
+                            || key.includes("smart_connect_selif_x")
+                            || key.includes("smart_connect_x")
+                        ) {
+                            delete postObject[key];
+                        }
+                    });
+                }
+
                 httpApi.nvramSet(postObject, function () {
                     showLoading(restartTime);
                     setTimeout(function () {
@@ -2871,7 +2967,7 @@
                                                     cellpadding="4"
                                                     cellspacing="0"
                                                     id="WLgeneral"
-                                                    class="FormTable"
+                                                    class="FormTable frontHaulSetting"
                                                 >
                                                     <tr id="smartcon_enable_field">
                                                         <th width="30%">
@@ -2968,7 +3064,7 @@
                                                     cellpadding="4"
                                                     cellspacing="0"
                                                     bordercolor="#6b8fa3"
-                                                    class="FormTable"
+                                                    class="FormTable frontHaulSetting"
                                                 ></table>
                                                 <table
                                                     id="eachBandField"

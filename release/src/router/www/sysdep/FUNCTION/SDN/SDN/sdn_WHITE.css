@@ -28,7 +28,7 @@
 	margin-left: 24px;
 }
 .profile_item_container.profile_list .bottom_info{
-	background-color: rgb(245 245 245 / 50%);
+	background-color: rgb(245 245 245 / 70%);
 	color: #666;
 }
 .item_text_container .main_info:before{
@@ -77,6 +77,12 @@
 .profile_item_container.LEGACY .item_text_container .main_info:before{
 	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-legacy.svg);
 }
+.profile_item_container.Gaming .item_text_container .main_info:before{
+	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-gaming.svg);
+}
+.profile_item_container.MAINFH .item_text_container .main_info:before{
+	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-mainfh.svg);
+}
 .profile_item_container.feature_desc{
 	border: 1px solid #DCDCDC;
 	background: initial;
@@ -123,11 +129,35 @@
 .status_info .conn_type.WiFi_5G_lock{
 	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_5g_lock.svg);
 }
+.status_info .conn_type.WiFi_5G1{
+	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_5g1.svg);
+}
+.status_info .conn_type.WiFi_5G1_lock{
+	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_5g1_lock.svg);
+}
+.status_info .conn_type.WiFi_5G2{
+	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_5g2.svg);
+}
+.status_info .conn_type.WiFi_5G2_lock{
+	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_5g2_lock.svg);
+}
 .status_info .conn_type.WiFi_6G{
 	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_6g.svg);
 }
 .status_info .conn_type.WiFi_6G_lock{
 	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_6g_lock.svg);
+}
+.status_info .conn_type.WiFi_6G1{
+	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_6g1.svg);
+}
+.status_info .conn_type.WiFi_6G1_lock{
+	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_6g1_lock.svg);
+}
+.status_info .conn_type.WiFi_6G2{
+	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_6g2.svg);
+}
+.status_info .conn_type.WiFi_6G2_lock{
+	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_6g2_lock.svg);
 }
 .status_info .conn_type.WiFi_mlo{
 	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_mlo.svg);
@@ -172,7 +202,8 @@
 .bandwidth_item > .icon_upload{
 	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-upload-speed.svg);
 }
-.profile_setting_item.schedule_ui{
+.profile_setting_item.schedule_ui,
+.profile_setting_item.gaming_ui{
 	background: #F5F5F5 !important;
 }
 .setting_subtab_container{
@@ -229,7 +260,8 @@
 .profile_group > .profile_hint{
 	color: #ff0000;
 }
-.dns_list_container .category_title{
+.dns_list_container .category_title,
+.dns_list_container.ping .dns_title{
 	background: rgba(0, 133, 255, 0.1);
 	color: #262626;
 }
@@ -239,9 +271,18 @@
 .dns_list_container .item_container.dns_content{
 	color: #262626;
 }
+.dns_list_container.ping .item_container .service span{
+	color: #006CE1;
+}
 .dns_list_container .category_title:before,
 .dns_list_container .item_container:before{
 	border-bottom: 1px solid #DCDCDC;
+}
+.dns_ping_text_component .text-loading{
+	color: rgb(100 100 100 / 30%);
+}
+.dns_ping_text_component .text-loading:before{
+	color: #006CE1;
 }
 .bg_template_container::-webkit-scrollbar-track{
 	border: 4px solid #FFFFFF;
@@ -264,36 +305,46 @@
 .bg_template_container .bg_upload_image:hover:before{
 	color: #262626;
 }
-.VPN_list_container{
+.VPN_list_container,
+.macfilter_list_container{
 	background: #F5F5F5;
 }
-.VPN_list_container:before{
+.VPN_list_container:before,
+.macfilter_list_container:before{
 	border-bottom: 1px solid #DCDCDC;
 }
 .VPN_list_container .profile_group:not(:first-child):before{
 	border-top: 1px solid #DCDCDC;
 }
-.VPN_list_container .title{
+.VPN_list_container .title,
+.macfilter_list_container .title{
 	color: #006CE1;
 }
-.VPN_list_container .profile_container{
+.VPN_list_container .profile_container,
+.macfilter_list_container .macfilter_rule_container{
 	background: #FFF;
 }
 .VPN_list_container .profile_item:before{
 	border-bottom: 1px solid #DCDCDC;
 }
 .clientlist_container .client_container:before,
-.clientlist_container .no_client_hint:before{
+.clientlist_container .no_client_hint:before,
+.macfilter_list_container .no_rule_hint:before{
 	bottom: initial;
 	top: 0;
 	border-bottom: initial;
 }
 .clientlist_container .client_container:not(:first-child):before,
-.clientlist_container .no_client_hint:not(:first-child):before{
+.clientlist_container .no_client_hint:not(:first-child):before,
+.macfilter_list_container .no_rule_hint:before{
 	border-top: 1px solid #DCDCDC;
 }
-.clientlist_container .no_client_hint{
+.clientlist_container .no_client_hint,
+.macfilter_list_container .no_rule_hint{
 	color: #181818;
+}
+.macfilter_rule_container:before{
+	border-top: 1px solid #DCDCDC;
 }
 .client_content_container > .sub_info > div{
 	color: #4D4D4D;
@@ -306,15 +357,12 @@
 }
 .client_content_container .conn_type.LAN{
 	background-image: url(/images/New_ui/SDN/white_theme/Notification/LAN.svg);
-	background-position-y: -2px;
 }
 .client_content_container .conn_type.WiFi_2G{
 	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_2g.svg);
-	background-position-y: -2px;
 }
 .client_content_container .conn_type.WiFi_5G{
 	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_5g.svg);
-	background-position-y: -2px;
 }
 .client_content_container .conn_type.WiFi_6G{
 	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_6g.svg);
@@ -353,6 +401,32 @@
 }
 .btn_back_container{
 	color: #006CE1;
+}
+.gaming_action_container > div{
+	box-shadow: 0px 2px 3px 0px rgb(20 50 80 / 5%);
+	color: rgb(255, 255, 255);
+}
+.gaming_action_container > div.gaming_btn_cancel{
+	border: 1px solid #B3B3B3;
+	color: #4D4D4D;
+}
+.gaming_action_container > div.gaming_btn_save{
+	border: 1px solid #006CE1;
+	background: #006CE1;
+}
+.gaming_profile_list_title{
+	color: #4D4D4D;
+}
+.gaming_profile_list_cntr .profile_item_container{
+	background: #FFFFFF;
+	box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.05), 0px 1px 4px rgba(60, 60, 60, 0.1);
+}
+.gaming_profile_list_cntr .profile_info .profile_title,
+.gaming_profile_list_cntr .profile_info .profile_text{
+	color: #4D4D4D;
+}
+.gaming_profile_list_cntr .profile_info .profile_text{
+	color: #181818;
 }
 @media (max-width: 575px) {
 	.popup_container .setting_subtab_container{

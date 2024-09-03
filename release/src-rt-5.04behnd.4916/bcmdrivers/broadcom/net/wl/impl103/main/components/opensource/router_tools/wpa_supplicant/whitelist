@@ -1,0 +1,4 @@
+JIRA:BCAWLAN-260530 Pairwise cipher support between wpa_supplicant and PASN in ISTA mode
+JIRA:BCAWLAN-259998 SVT:AP:11az: 49428_43740,47722 : 2G20 mode AP-AP NTB Ranging unsuccessful with Status: -23(Unsupported), with WPA3-PASN enabled on both RSTA and ISTA
+JIRA:BCAWLAN-260855 [Mesh/MLO] In SmartMesh with MLO, there is an issue with WPS onboarding not functioning properly in the mesh agent.
+JIRA:BCAWLAN-261483 The MLO repeater does not continue scanning in the WPS PBC active state.

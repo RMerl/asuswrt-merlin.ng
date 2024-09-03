@@ -117,6 +117,10 @@ enum {
     #define FORCED_100MFD_CTRL  (CL45_REG_100M_SPEED|CL45_REG_DUPLEX_MODE)
     #define REGULAR_CTRL_REG0_VAL    (CL45_REG_1G100M_AN_ENABLED|CL45_REG_1G100M_AN_RESTART|CL45_REG_1000M_SPEED|CL45_REG_DUPLEX_MODE)
 
+#define CL45_REG_1G100M_STATUS     0x7ffe1
+    #define CL45_REG_CAP_10M_FD         (1<<12)
+    #define CL45_REG_CAP_10M_HD         (1<<11)
+
 #define CL45_REG_COP_AN     0x7ffe4
     #define CL45_REG_COP_AN_100M_ADV_MASK   (3<<7)
     #define CL45_REG_COP_AN_100M_FD_ADV     (2<<7)
@@ -124,6 +128,8 @@ enum {
     #define CL45_REG_COP_AN_100M_FHD_ADV    (3<<7)
     #define CL45_REG_COP_PAUSE              (1<<10)
     #define CL45_REG_COP_PAUSE_ASYM         (1<<11)
+    #define CL45_REG_COP_AN_10M_FD_ADV      (1<<6)
+    #define CL45_REG_COP_AN_10M_HD_ADV      (1<<5)
 
 #define CL45_REG_1G_CTL     0x7ffe9
     #define CL45_REG_1G_CTL_1G_ADV_MASK     (3<<8)

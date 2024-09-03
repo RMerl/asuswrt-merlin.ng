@@ -113,7 +113,11 @@ static inline int crypto_cbc_decrypt_inplace(
 	unsigned int bsize = crypto_skcipher_blocksize(tfm);
 	unsigned int nbytes = walk->nbytes;
 	u8 *src = walk->src.virt.addr;
+#if defined(CONFIG_BCM_KF_VLA_REMOVAL_BACKPORT)
+	u8 last_iv[MAX_CIPHER_BLOCKSIZE];
+#else
 	u8 last_iv[bsize];
+#endif
 
 	/* Start of the last block. */
 	src += nbytes - (nbytes & (bsize - 1)) - bsize;

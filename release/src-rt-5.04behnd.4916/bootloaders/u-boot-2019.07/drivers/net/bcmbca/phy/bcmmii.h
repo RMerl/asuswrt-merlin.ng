@@ -725,10 +725,10 @@ typedef struct {
 /****************************************************************************
    QOS : Page (0x30)
 ****************************************************************************/
-#if defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM96756) || defined(CONFIG_BCM96765)
-    #define QOS_REG_SHIFT       4   // reg 0x28 to 0x64 need to shift 4 bytes
-#else
+#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908)
     #define QOS_REG_SHIFT       0
+#else
+    #define QOS_REG_SHIFT       4   // reg 0x28 to 0x64 need to shift 4 bytes
 #endif
 
 #define PAGE_QOS                                          0x30
@@ -1028,7 +1028,7 @@ typedef struct {
 
 #define CTL_OVERIDE_REG(p)     (((p)==IMP_PORT_ID)?REG_CONTROL_MII1_PORT_STATE_OVERRIDE:REG_PORT_STATE+(p))
 
-#if defined (CONFIG_BCM963158) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM96756) || defined(CONFIG_BCM96765)
+#if !defined(CONFIG_BCM963138) && !defined(CONFIG_BCM963148) && !defined(CONFIG_BCM94908)
 /****************************************************************************
    63158 expanded page_control Registers
 ****************************************************************************/

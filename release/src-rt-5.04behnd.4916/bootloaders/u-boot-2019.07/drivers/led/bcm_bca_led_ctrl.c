@@ -365,9 +365,21 @@ int bca_led_set_flash_rate(unsigned int led_num, unsigned int value)
     return 0;
 }
 
+__weak void xphy_led_fixup(void)
+{
+
+}
+
+static void bca_led_fixup(void)
+{
+    xphy_led_fixup();
+}
+
 void bca_led_probe(void)
 {
     struct udevice *dev;
+
+    bca_led_fixup();
 
     for (uclass_first_device_check(UCLASS_LED, &dev); dev; uclass_next_device_check(&dev));
 }

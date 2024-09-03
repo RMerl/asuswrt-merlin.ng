@@ -4,25 +4,19 @@
 *    Copyright (c) 2016 Broadcom 
 *    All Rights Reserved
 * 
-* Unless you and Broadcom execute a separate written software license
-* agreement governing use of this software, this software is licensed
-* to you under the terms of the GNU General Public License version 2
-* (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-* with the following added to such license:
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License, version 2, as published by
+* the Free Software Foundation (the "GPL").
 * 
-*    As a special exception, the copyright holders of this software give
-*    you permission to link this software with independent modules, and
-*    to copy and distribute the resulting executable under terms of your
-*    choice, provided that you also meet, for each linked independent
-*    module, the terms and conditions of the license of that module.
-*    An independent module is a module which is not derived from this
-*    software.  The special exception does not apply to any modifications
-*    of the software.
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
 * 
-* Not withstanding the above, under no circumstances may you combine
-* this software in any way with any other Broadcom software provided
-* under a license other than the GPL, without Broadcom's express prior
-* written consent.
+* 
+* A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+* writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+* Boston, MA 02111-1307, USA.
 * 
 * :> 
 */
@@ -78,13 +72,11 @@ extern int g_ledInitialized;
 static PMAC_INFO g_pMacInfo = NULL;
 static DEFINE_SPINLOCK(macAddrLock);
 static PGPON_INFO g_pGponInfo = NULL;
-static unsigned long g_ulSdramSize;
+static unsigned long long g_ulSdramSize;
 
 #define MAX_PAYLOAD_LEN 64
 static struct sock *g_monitor_nl_sk;
 static int g_monitor_nl_pid = 0 ;
-
-static kerSysMacAddressNotifyHook_t kerSysMacAddressNotifyHook = NULL;
 
 #if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148)
 /*SATA Test module callback */
@@ -438,32 +430,6 @@ unsigned long kerSysGetMacAddressType( unsigned char *ifName )
     return macAddressType;
 }
 
-static inline void kerSysMacAddressNotify(unsigned char *pucaMacAddr, MAC_ADDRESS_OPERATION op)
-{
-    if(kerSysMacAddressNotifyHook)
-    {
-        kerSysMacAddressNotifyHook(pucaMacAddr, op);
-    }
-}
-
-int kerSysMacAddressNotifyBind(kerSysMacAddressNotifyHook_t hook)
-{
-    int nRet = 0;
-
-    if(hook && kerSysMacAddressNotifyHook)
-    {
-        printk("ERROR: kerSysMacAddressNotifyHook already registered! <0x%p>\n",
-               kerSysMacAddressNotifyHook);
-        nRet = -EINVAL;
-    }
-    else
-    {
-        kerSysMacAddressNotifyHook = hook;
-    }
-
-    return nRet;
-}
-
 static void getNthMacAddr( unsigned char *pucaMacAddr, unsigned long n)
 {
     unsigned long macsequence = 0;
@@ -610,7 +576,7 @@ void kerSysGetGponPassword( unsigned char *pGponPassword )
     pGponPassword[NVRAM_XGPON_PASSWORD_LEN - 1] = 0;
 }
 
-unsigned long kerSysGetSdramSize( void )
+unsigned long long kerSysGetSdramSize( void )
 {
     return( g_ulSdramSize );
 } /* kerSysGetSdramSize */
@@ -831,21 +797,6 @@ int kerSysBlParmsGetStr( char *name, char *pvalue, int size )
 
 
 /***************************************************************************
- * Function Name: kerSysGetUbusFreq
- * Description  : Chip specific computation.
- * Returns      : the UBUS frequency value in MHz.
- ***************************************************************************/
-unsigned int kerSysGetUbusFreq(unsigned int miscStrapBus)
-{
-   unsigned int ubus = UBUS_BASE_FREQUENCY_IN_MHZ;
-
-
-   return (ubus);
-
-}  /* kerSysGetUbusFreq */
-
-
-/***************************************************************************
  * Function Name: kerSysGetChipId
  * Description  : Map id read from device hardware to id of chip family
  *                consistent with  BRCM_CHIP
@@ -938,7 +889,7 @@ int board_ioctl_mem_access(BOARD_MEMACCESS_IOCTL_PARMS* parms, char* kbuf, int l
 
     switch(parms->space) {
         case BOARD_MEMACCESS_IOCTL_SPACE_REG:
-            va = ioremap((long)parms->address, len);
+            va = ioremap((phys_addr_t)parms->address, len);
             break;
         case BOARD_MEMACCESS_IOCTL_SPACE_KERN:
             va = (void*)(uintptr_t)parms->address;
@@ -947,7 +898,8 @@ int board_ioctl_mem_access(BOARD_MEMACCESS_IOCTL_PARMS* parms, char* kbuf, int l
             va = NULL;
             return EFAULT;
     }
-    // printk("memacecssioctl address started %08x mapped to %08x size is %d count is %d\n",(int)parms.address, (int)va,parms.size, parms.count);
+    //printk("memacecssioctl address started 0x%08llx mapped to 0x%px size is %d count is %d space %d, map len %d\n",
+    //  parms->address, va, parms->size, parms->count, parms->space, len);
     cp = (unsigned char *)va;
     sp = (unsigned short *)((long)va & ~1);
     ip = (unsigned int *)((long)va & ~3);
@@ -994,7 +946,7 @@ int board_ioctl_mem_access(BOARD_MEMACCESS_IOCTL_PARMS* parms, char* kbuf, int l
 
 void __init board_util_init(void)
 {
-    g_ulSdramSize = getMemorySize();
+    g_ulSdramSize = kerSysGetMemorySize();
     set_mac_info();
     set_gpon_info();
 

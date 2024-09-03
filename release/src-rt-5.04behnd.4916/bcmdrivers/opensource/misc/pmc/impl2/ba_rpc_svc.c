@@ -1,28 +1,22 @@
 /*
 <:copyright-BRCM:2022:DUAL/GPL:standard
 
-   Copyright (c) 2022 Broadcom
+   Copyright (c) 2022 Broadcom 
    All Rights Reserved
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
 :>
 */
@@ -97,7 +91,7 @@ int bcm_rpc_ba_notify_runner_load_sram_done(void)
 }
 EXPORT_SYMBOL(bcm_rpc_ba_notify_runner_load_sram_done);
 
-int bcm_rpc_ba_wol_intr_enable(void)
+int bcm_rpc_ba_setup_wake_trigger(wake_type_t wake_type, int param)
 {
     int ret = 0;
     struct ba_msg ba_msg;
@@ -107,7 +101,7 @@ int bcm_rpc_ba_wol_intr_enable(void)
     printk("%s:%d:DEBUG:\n",__FUNCTION__, __LINE__);
 #endif
 
-    rpc_msg_init(msg, RPC_SERVICE_BA, BA_SVC_WOL_INTR_EN, RPC_SERVICE_VER_BA_WOL_INTR_EN, 0, 0, 0);
+    rpc_msg_init(msg, RPC_SERVICE_BA, BA_SVC_SETUP_TRIGGER, RPC_SERVICE_VER_BA_SETUP_TRIGGER, 0, wake_type, param);
 
     ret = pmc_svc_request(msg, ba_svc_msg_get_retcode);
     if (ret)
@@ -118,7 +112,53 @@ int bcm_rpc_ba_wol_intr_enable(void)
 
     return ret;
 }
+EXPORT_SYMBOL(bcm_rpc_ba_setup_wake_trigger);
 
+int bcm_rpc_ba_setup_pwr_pin(uint32_t pin_number, uint32_t polarity)
+{
+    int ret = 0;
+    struct ba_msg ba_msg;
+    rpc_msg *msg = (rpc_msg *)&ba_msg;
+
+#ifdef DEBUG
+    printk("%s:%d:DEBUG:\n",__FUNCTION__, __LINE__);
+#endif
+
+    rpc_msg_init(msg, RPC_SERVICE_BA, BA_SVC_SETUP_PWR_PIN, RPC_SERVICE_VER_BA_SETUP_PWR_PIN, pin_number, polarity, 0);
+
+    ret = pmc_svc_request(msg, ba_svc_msg_get_retcode);
+    if (ret)
+    {
+        printk("%s:%d : ERROR: pmc_svc_request\n",__FUNCTION__, __LINE__);
+        return -1;
+    }
+
+    return ret;
+}
+EXPORT_SYMBOL(bcm_rpc_ba_setup_pwr_pin);
+
+int bcm_rpc_ba_deep_sleep(void)
+{
+    int ret = 0;
+    struct ba_msg ba_msg;
+    rpc_msg *msg = (rpc_msg *)&ba_msg;
+
+#ifdef DEBUG
+    printk("%s:%d:DEBUG:\n",__FUNCTION__, __LINE__);
+#endif
+
+    rpc_msg_init(msg, RPC_SERVICE_BA, BA_SVC_DEEP_SLEEP, RPC_SERVICE_VER_BA_DEEP_SLEEP, 0, 0, 0);
+
+    ret = pmc_svc_request(msg, ba_svc_msg_get_retcode);
+    if (ret)
+    {
+        printk("%s:%d : ERROR: pmc_svc_request\n",__FUNCTION__, __LINE__);
+        return -1;
+    }
+
+    return ret;
+}
+EXPORT_SYMBOL(bcm_rpc_ba_deep_sleep);
 
 int bcm_rpc_ba_get_smcbl_ver(smcbl_ver_t  *smcbl_ver)
 {

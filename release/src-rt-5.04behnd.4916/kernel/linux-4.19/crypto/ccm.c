@@ -50,7 +50,14 @@ struct crypto_ccm_req_priv_ctx {
 	u32 flags;
 	struct scatterlist src[3];
 	struct scatterlist dst[3];
+#if defined(CONFIG_BCM_KF_VLA_REMOVAL_BACKPORT)
+	union {
+		struct ahash_request ahreq;
+		struct skcipher_request skreq;
+	};
+#else
 	struct skcipher_request skreq;
+#endif
 };
 
 struct cbcmac_tfm_ctx {
@@ -181,7 +188,11 @@ static int crypto_ccm_auth(struct aead_request *req, struct scatterlist *plain,
 	struct crypto_ccm_req_priv_ctx *pctx = crypto_ccm_reqctx(req);
 	struct crypto_aead *aead = crypto_aead_reqtfm(req);
 	struct crypto_ccm_ctx *ctx = crypto_aead_ctx(aead);
+#if defined(CONFIG_BCM_KF_VLA_REMOVAL_BACKPORT)
+	struct ahash_request *ahreq = &pctx->ahreq;
+#else
 	AHASH_REQUEST_ON_STACK(ahreq, ctx->mac);
+#endif
 	unsigned int assoclen = req->assoclen;
 	struct scatterlist sg[3];
 	u8 *odata = pctx->odata;
@@ -427,7 +438,11 @@ static int crypto_ccm_init_tfm(struct crypto_aead *tfm)
 	crypto_aead_set_reqsize(
 		tfm,
 		align + sizeof(struct crypto_ccm_req_priv_ctx) +
+#if defined(CONFIG_BCM_KF_VLA_REMOVAL_BACKPORT)
+		max(crypto_ahash_reqsize(mac), crypto_skcipher_reqsize(ctr)));
+#else
 		crypto_skcipher_reqsize(ctr));
+#endif
 
 	return 0;
 

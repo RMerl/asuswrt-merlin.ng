@@ -102,19 +102,18 @@
 	cursor: pointer;	
 }
 </style>
-
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/confirm_block.js"></script>
 <script language="JavaScript" type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script language="JavaScript" type="text/javascript" src="/form.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
 <script language="JavaScript" type="text/javascript" src="/replaceisp.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js"></script>
 <!-- script language="JavaScript" type="text/javascript" src="/ajax/get_rbk_info.asp"></script -->
 <script>
 $(function () {
@@ -141,6 +140,9 @@ var Downloadlink = "";
 Downloadlink = get_Downloadlink();
 var faq_href1 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=131";
 var faq_href2 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=107";
+
+var current_page = window.location.pathname.split("/").pop();
+var faq_index_tmp = get_faq_index(FAQ_List, current_page, 1);
 
 var is_ISP_incompatible = (in_territory_code("CX/01") || in_territory_code("CX/02") || in_territory_code("CX/03") || in_territory_code("CX/05") || in_territory_code("CX/06")
 						|| in_territory_code("CT/01") || in_territory_code("CT/02") || in_territory_code("CT/03") || in_territory_code("CT/04") || in_territory_code("CT/05")
@@ -688,7 +690,6 @@ function initial(){
 	if(gobi_support && (usb_index != -1) && (sim_state != "")){
 		$("#modem_fw_upgrade").css("display", "");
 	}
-
 }
 
 function replace_isp_name(_str){
@@ -856,38 +857,19 @@ function cfgsync_firmware_upgrade(){
 }
 
 function detect_update(){
-	var download_info = 0;
-	if(sw_mode != "1" || (link_status == "2" && link_auxstatus == "0") || (link_status == "2" && link_auxstatus == "2")){
-		
-		download_info++;
-	}
-	else if(dualwan_enabled &&
-				((first_link_status == "2" && first_link_auxstatus == "0") || (first_link_status == "2" && first_link_auxstatus == "2")) ||
-				((secondary_link_status == "2" && secondary_link_auxstatus == "0") || (secondary_link_status == "2" && secondary_link_auxstatus == "2"))){
 
-		download_info++;
-	}		
+	document.getElementById('update_states').style.display="";
+	document.getElementById('update_states').innerHTML="Checking for available updates...";
+	document.getElementById('update_scan').style.display="";
+	document.getElementById('update').disabled = true;
+	if(cfg_sync_support){
+		cfgsync_firmware_check();
+	}
 	else{
-		document.getElementById('update_scan').style.display="none";
-		document.getElementById('update_states').style.display="";
-		document.getElementById('update_states').innerHTML="Unable to connect to the update server!";
-		return false;	
-	}
-
-	if(download_info > 0){
-		document.getElementById('update_states').style.display="";
-		document.getElementById('update_states').innerHTML="Checking for available updates...";
-		document.getElementById('update_scan').style.display="";
-		document.getElementById('update').disabled = true;
-		if(cfg_sync_support){
-			cfgsync_firmware_check();
-		}
-		else{
-			document.start_update.action_mode.value="apply";
-			document.start_update.webs_update_trigger.value="FWUG";
-			document.start_update.action_script.value="start_webs_update";
-			document.start_update.submit();
-		}
+		document.start_update.action_mode.value="apply";
+		document.start_update.webs_update_trigger.value="FWUG";
+		document.start_update.action_script.value="start_webs_update";
+		document.start_update.submit();
 	}
 }
 
@@ -1995,8 +1977,11 @@ function get_mobile_fw_upgrade_status(){
 		<tbody>
 		<tr>
 		  <td bgcolor="#4D595D" valign="top">
+		  <div class="container">
+
 		  <div>&nbsp;</div>
 		  <div class="formfonttitle"><#menu5_6#> - <#menu5_6_3#></div>
+		  <div class="formfonttitle_help"><i onclick="show_feature_desc(`<#HOWTOSETUP#>`)" class="icon_help"></i></div>
 		  <div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 		  <div class="formfontdesc"><strong><#FW_note#></strong>
 				<ol>
@@ -2022,17 +2007,24 @@ function get_mobile_fw_upgrade_status(){
 					<script type="text/javascript">
 					$('#switch_webs_update_enable').iphoneSwitch('<% nvram_get("webs_update_enable"); %>',
 						function(){
-							ASUS_EULA.config(function(){
-								hide_upgrade_opt(1);
-								save_update_enable('on');
-							},
-								refreshpage
-							)
-
-							if(!ASUS_EULA.check("asus_pp", "AUTOUPGRADE")) return false;
-
-							hide_upgrade_opt(1);
-							save_update_enable('on');
+							if(policy_status.PP==0||policy_status.PP_time==""){
+                                const policyModal = new PolicyModalComponent({
+                                    policy: "PP",
+                                    submit_reload: 1,
+                                    agreeCallback: ()=>{
+                                        hide_upgrade_opt(1);
+                                        save_update_enable('on');
+                                    },
+                                    disagreeCallback: ()=>{
+                                        alert(`<#ASUS_POLICY_Function_Confirm#>`);
+                                    }
+                                });
+                                policyModal.show();
+                                return false;
+							}else{
+                                hide_upgrade_opt(1);
+                                save_update_enable('on');
+							}
 						},
 						function(){
 							hide_upgrade_opt(0);
@@ -2072,12 +2064,23 @@ function get_mobile_fw_upgrade_status(){
 					<script type="text/javascript">
 					$('#switch_security_update_enable').iphoneSwitch(httpApi.securityUpdate.get(),
 						function(){
-							//on
-							ASUS_EULA.config(function(){httpApi.securityUpdate.set(1);},refreshpage)
-							if(!ASUS_EULA.check("asus_pp", "ASD")) return false;
-							if(!ASUS_EULA.check("asus_pp", "AHS")) return false;
-
-							httpApi.securityUpdate.set(1);
+                            //on
+							if(policy_status.PP==0||policy_status.PP_time==""){
+                                const policyModal = new PolicyModalComponent({
+                                    policy: "PP",
+                                    submit_reload: 1,
+                                    agreeCallback: ()=>{
+                                        httpApi.securityUpdate.set(1);
+                                    },
+                                    disagreeCallback: ()=>{
+                                        alert(`<#ASUS_POLICY_Function_Confirm#>`);
+                                    }
+                                });
+                                policyModal.show();
+                                return false;
+							}else{
+                                httpApi.securityUpdate.set(1);
+							}
 						},
 						function(){
 							//off
@@ -2214,6 +2217,10 @@ function get_mobile_fw_upgrade_status(){
 <input type="hidden" name="webs_update_beta" value="<% nvram_get("webs_update_beta"); %>">
 <input type="hidden" name="webs_update_ts" value="<% nvram_get("webs_update_ts"); %>">
 </form>		
+
+			</div>	<!-- for .container  -->
+			<div class="popup_container popup_element_second"></div>
+
 			  </td>
               </tr>
             </tbody>

@@ -224,12 +224,18 @@ static netdev_tx_t handle_ingress(struct sk_buff *skb, struct net_device *dev)
 
     u64_stats_update_begin(&dp->rsync);
     dp->rx_packets++;
-    dp->rx_bytes += skb->len;
+    if (skb_vlan_tag_present(skb))
+        dp->rx_bytes += skb->len + VLAN_HLEN;
+    else
+        dp->rx_bytes += skb->len;
 #if defined(CONFIG_BCM_KF_EXTSTATS)
     if (unlikely(is_multicast_ether_addr(dest)))
     {
         dp->multicast++;
-        dp->rx_multicast_bytes += skb->len;
+        if (skb_vlan_tag_present(skb))
+            dp->rx_multicast_bytes += skb->len + VLAN_HLEN;
+        else
+            dp->rx_multicast_bytes += skb->len;
     }
     if (unlikely(is_broadcast_ether_addr(dest)))
         dp->rx_broadcast_packets++;
@@ -277,12 +283,20 @@ static netdev_tx_t handle_egress(struct sk_buff *skb, struct net_device *dev)
 
     u64_stats_update_begin(&dp->tsync);
     dp->tx_packets++;
-    dp->tx_bytes += skb->len;
+
+    if (skb_vlan_tag_present(skb))
+        dp->tx_bytes += skb->len + VLAN_HLEN;
+    else
+        dp->tx_bytes += skb->len;
+
 #if defined(CONFIG_BCM_KF_EXTSTATS)
     if (unlikely(is_multicast_ether_addr(dest)))
     {
         dp->tx_multicast_packets++;
-        dp->tx_multicast_bytes+=skb->len;
+        if (skb_vlan_tag_present(skb))
+            dp->tx_multicast_bytes += skb->len + VLAN_HLEN;
+        else
+            dp->tx_multicast_bytes += skb->len;
     }
     if (unlikely(is_broadcast_ether_addr(dest)))
         dp->tx_broadcast_packets++;
@@ -402,6 +416,7 @@ static int vfrwd_newlink(struct net *src_net, struct net_device *dev,
     if (err)
         goto unregister_netdev;
 
+    netdev_vfrwd_lower_set(lowerdev);    
     list_add_tail_rcu(&dp->list, &lower_dev_list);
     netif_stacked_transfer_operstate(lowerdev, dev);
     linkwatch_fire_event(dev);
@@ -420,6 +435,7 @@ void vfrwd_dellink(struct net_device *dev, struct list_head *head)
     call_netdevice_notifiers(NETDEV_GOING_DOWN, dev);
     unregister_netdevice_queue(dev, head);
     netdev_upper_dev_unlink(dp->lowerdev, dev);
+    netdev_vfrwd_lower_unset(dp->lowerdev);    
 }
 
 static struct net *vfrwd_get_link_net(const struct net_device *dev)
@@ -446,6 +462,9 @@ static int vfrwd_device_event(struct notifier_block *unused,
     struct vfrwd_dev_private *dp;
     int flgs;
     LIST_HEAD(list_kill);
+
+    if (!is_netdev_vfrwd_lower(dev))
+        return NOTIFY_DONE;
 
     switch (event)
     {

@@ -4,25 +4,19 @@
    Copyright (c) 2019 Broadcom 
    All Rights Reserved
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
 :>
 
@@ -71,32 +65,14 @@ written consent.
 /* **NOTE** any change in CFG_BOOT_PMC_ADDR must be reflected in PMC makefiles */
 
 /* OPTEE reserved memory */
+#ifdef CONFIG_BRCM_SMC_BASED
+#define CFG_OPTEE_AREA_ADDR     0x4000000
+#else
 #define CFG_OPTEE_AREA_ADDR     (PMC_RESERVED_MEM_START + PMC_RESERVED_MEM_SIZE)
-#define CFG_OPTEE_CORE_SIZE     0x400000                          // Total OPTEE reserved memory size 4096KB
+#endif
+#define CFG_OPTEE_CORE_SIZE     0xE00000                          // Total OPTEE reserved memory size 14MB
 #define CFG_OPTEE_SHRM_SIZE     0x100000                          // Shared memory 1024KB between OPTEE and Linux
 #define CFG_OPTEE_SHRM_ADDR     (CFG_OPTEE_AREA_ADDR + CFG_OPTEE_CORE_SIZE)
 #define CFG_OPTEE_AREA_SIZE     (CFG_OPTEE_CORE_SIZE + CFG_OPTEE_SHRM_SIZE)
-
-#ifdef CONFIG_OPTEE
-#define CFG_MAX_RESV_AREA       (CFG_OPTEE_AREA_ADDR + CFG_OPTEE_AREA_SIZE)
-#else
-#define CFG_MAX_RESV_AREA       (PMC_RESERVED_MEM_START + PMC_RESERVED_MEM_SIZE)
-#endif
-
-#if ( CFG_MAX_RESV_AREA > 0x600000 )
-#error "Reserved memory exceeded the allowed (6MB) limit"
-#endif
-
-
-#if ( CFG_MAX_RESV_AREA != 0x100000 ) && ( CFG_MAX_RESV_AREA != 0x600000 )
-#error "Time to update kernel/linux-4.x/arch/armxx/Makefile"
-#endif
-
-#if defined(CONFIG_ARM64)
-#define LINUX_START_ADDR        CFG_MAX_RESV_AREA
-#else
-/* For 32 bit ARM, Linux needs extra 32K head room for MMU table */
-#define LINUX_START_ADDR        (CFG_MAX_RESV_AREA + 0x8000)
-#endif
 
 #endif /* _BCM_MEM_RESERVE_H */

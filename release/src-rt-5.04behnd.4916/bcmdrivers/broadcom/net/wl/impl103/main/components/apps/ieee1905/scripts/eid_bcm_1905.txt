@@ -1,0 +1,6 @@
+BEGIN
+  eid         = EID_1905
+  name        = ieee1905
+  flags       = EIF_MESSAGING_CAPABLE
+END
+

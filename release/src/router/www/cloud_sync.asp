@@ -11,6 +11,7 @@
 <title><#Web_Title#> - AiCloud 2.0</title>
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/help.js"></script>
@@ -18,7 +19,6 @@
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" src="/disk_functions.js"></script>
-<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/form.js"></script>
 <script type="text/javascript" src="js/oauth.js"></script>
@@ -1808,7 +1808,7 @@ function onDropBoxLogin(_parm){
 							</tr>	
 						<tr style="display:none;">
 							<th width="30%" style="font-family: Calibri;font-weight: bolder;">
-								<#Server_Name#>	<!-- Server Name -->
+								<#Server_Name#>
 							</th>			
 							<td>
 							  <input type="text" class="input_32_table" maxlength="32" style="height: 23px;" id="sambaclient_name" name="sambaclient_name" autocorrect="off" autocapitalize="off">
@@ -1835,7 +1835,7 @@ function onDropBoxLogin(_parm){
 
 						<tr style="display:none;">
 							<th width="30%" style="font-family: Calibri;font-weight: bolder;">
-								Server Name
+								<#Server_Name#>
 							</th>			
 							<td>
 							  <input type="text" class="input_32_table" maxlength="32" style="height: 23px;" id="usbclient_name" name="usbclient_name" autocorrect="off" autocapitalize="off">

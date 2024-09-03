@@ -4,6 +4,17 @@
     model = "968880XSV_USX";
 };
 
+/ {
+        memory_controller {
+                memcfg = <(BP1_DDR_MCBSEL_FORMAT_VER1   | \
+                           BP1_DDR_TYPE_LPDDR4         | \
+                           BP1_DDR_SPEED_2133_36_39_39 | \
+                           BP1_DDR_WIDTH_32BIT         | \
+                           BP1_DDR_TOTAL_SIZE_8Gb      | \
+                           BP1_DDR_SSC_CONFIG_1)>;
+        };
+};
+
 &ethphytop {
     xphy0-enabled;
     xphy1-enabled;
@@ -108,39 +119,30 @@
             status = "okay";
         };
         port_xgphy0 {
-            delayed-init;
             status = "okay";
         };
         port_xgphy1 {
-            delayed-init;
             status = "okay";
         };
         port_slan0 {
-            delayed-init;
             status = "okay";
         };
         port_slan1 {
-            delayed-init;
             status = "okay";
         };
         port_slan2 {
-            delayed-init;
             status = "okay";
         };
         port_slan3 {
-            delayed-init;
             status = "okay";
         };
         port_qlan0 {
-            delayed-init;
             status = "okay";
         };
         port_qlan2 {
-            delayed-init;
             status = "okay";
         };
         port_qlan3 {
-            delayed-init;
             status = "okay";
         };
         port_wan@fiber {

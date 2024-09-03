@@ -89,7 +89,15 @@ config BCM6766
 	select SUPPORT_TPL
 	select SYS_ARCH_TIMER
 	select CPU_V7A
-	select BCM63XX_HSSPI
+	select BCMBCA_HSSPI
+
+config BCM6764
+	bool "Broadcom BCM6764 family"
+	select SUPPORT_SPL
+	select SUPPORT_TPL
+	select SYS_ARCH_TIMER
+	select CPU_V7A
+	select BCMBCA_HSSPI
 
 config BCM6765
 	bool "Broadcom BCM6765 family"
@@ -167,6 +175,7 @@ config HAVE_SPI_CS_CTRL
 	default y if BCM6756
 	default y if BCM6765
 	default y if BCM6766
+	default y if BCM6764
 	default y if BCM6855
 	default y if BCM6813
 	default n
@@ -207,6 +216,7 @@ config OTP_V3
 	default y if BCM6888
 	default y if BCM6765
 	default y if BCM6766
+	default y if BCM6764
 	default n
 
 config OTP_LOCK
@@ -219,6 +229,7 @@ config OTP_LOCK
 	default y if BCM6756
 	default y if BCM6765
 	default y if BCM6766
+	default y if BCM6764
 	default y if BCM63146
 	default y if BCM6878
 	default y if BCM6855
@@ -247,6 +258,7 @@ config OTP_SKP
 	default y if BCM6888
 	default y if BCM6765
 	default y if BCM6766
+	default y if BCM6764
 	default n
 
 config OTP_SKO
@@ -268,6 +280,7 @@ config BCMBCA_UBUS4
 	default y if BCM6846
 	default y if BCM6765	
 	default y if BCM6766
+	default y if BCM6764
 	default y if BCM47622
 	default y if BCM63158
 	default y if BCM63178
@@ -288,6 +301,7 @@ config TPL_BCMBCA_UBUS4
 	default y if BCM6846 && TPL
 	default y if BCM6765 && TPL
 	default y if BCM6766 && TPL
+	default y if BCM6764 && TPL
 	default n
 
 config BCMBCA_UBUS4_DCM
@@ -298,6 +312,7 @@ config BCMBCA_UBUS4_DCM
 	default y if BCM6846
 	default y if BCM6765
 	default y if BCM6766
+	default y if BCM6764
 	default n
 
 config TPL_BCMBCA_UBUS4_DCM
@@ -308,6 +323,7 @@ config TPL_BCMBCA_UBUS4_DCM
 	default y if BCM6846 && TPL
 	default y if BCM6765 && TPL
 	default y if BCM6766 && TPL
+	default y if BCM6764 && TPL
 	default n
 
 config BCMBCA_PMC
@@ -332,8 +348,7 @@ config SWREG_ADJUSTMENT
 
 config BCMBCA_PMC_SWITCH
 	bool "Broadcom BCA PMC SWITCH Support"
-	default y if BCM63138 || BCM63148 || BCM63158 || BCM4908 || BCM63178 || BCM6756 || BCM6765 || BCM6766
-	default n
+	default y if BCM63138 || BCM63148 || BCM63158 || BCM4908 || BCM63178 || BCM6756 || BCM6765 || BCM6766 || BCM6764
 
 config BCMBCA_PMC_RDP
 	bool "Broadcom BCA PMC RDP Support"
@@ -411,17 +426,19 @@ config BCMBCA_DDR_SIMINIT
 	depends on BCMBCA_DDR_REGINIT
 	default n
 
-config BRCM_SPL_MEMC_SRAM
-	bool "Set SPL pagetables in MEMC SRAM"
+config BCMBCA_PGTBL_IN_MEMC_SRAM
+	bool "Set SPL page table in MEMC SRAM"
 	depends on SPL
-	default y if BCM6858
 	default y if BCM4908
+	default y if BCM4912
+	default y if BCM63146
+	default y if BCM6813
 	default y if BCM6856
-	default y if BCM6846
-	default y if BCM63178
-	default y if BCM47622
-	default y if BCM6756
+	default y if BCM6858
 	default n
+	help
+	  Use MEMC SRAM as the page table for SPL. Set to y only if SoC does
+	  not have enough other on-chip SRAM
 
 config BCMBCA_RNG
 	bool "Broadcom BCA RNG driver"
@@ -480,6 +497,8 @@ config BCMBCA_DDRC_SCRAMBLER
 	default y if BCM6855
 	default y if BCM6888
 	default y if BCM6765
+	default y if BCM6766
+	default y if BCM6764
 	default n
 
 config BCMBCA_DDRC_UNSCRAMBLING_ADDR
@@ -533,6 +552,7 @@ config BCMBCA_DDRC_DBGPRINT
 	default y if BCM6756
 	default y if BCM6765
 	default y if BCM6766
+	default y if BCM6764
 	default y if BCM63146
 	default y if BCM4912
 	default y if BCM6813
@@ -578,6 +598,7 @@ source "arch/arm/mach-bcmbca/bcm47622/Kconfig"
 source "arch/arm/mach-bcmbca/bcm6756/Kconfig"
 source "arch/arm/mach-bcmbca/bcm6765/Kconfig"
 source "arch/arm/mach-bcmbca/bcm6766/Kconfig"
+source "arch/arm/mach-bcmbca/bcm6764/Kconfig"
 source "arch/arm/mach-bcmbca/bcm63138/Kconfig"
 source "arch/arm/mach-bcmbca/bcm63148/Kconfig"
 source "arch/arm/mach-bcmbca/bcm63146/Kconfig"

@@ -16,10 +16,19 @@
 #define CFG_STR_ALIAS		"alias"
 #define CFG_STR_PAP2G		"pap2g"
 #define CFG_STR_PAP5G		"pap5g"
+#define CFG_STR_PAP5GL		"pap5gl"
+#define CFG_STR_PAP5GH		"pap5gh"
 #define CFG_STR_PAP6G		"pap6g"
+#define CFG_STR_PAP6GL		"pap6gl"
+#define CFG_STR_PAP6GH		"pap6gh"
+#define CFG_STR_PAPMLO		"papmlo"
 #define CFG_STR_RSSI2G		"rssi2g"
 #define CFG_STR_RSSI5G		"rssi5g"
+#define CFG_STR_RSSI5GL		"rssi5gl"
+#define CFG_STR_RSSI5GH		"rssi5gh"
 #define CFG_STR_RSSI6G		"rssi6g"
+#define CFG_STR_RSSI6GL		"rssi6gl"
+#define CFG_STR_RSSI6GH		"rssi6gh"
 #define CFG_STR_AP2G		"ap2g"
 #define CFG_STR_AP5G		"ap5g"
 #define CFG_STR_AP5G1		"ap5g1"
@@ -53,6 +62,7 @@
 #define CFG_STR_TYPE		"type"
 #define CFG_STR_STATUS		"status"
 #define CFG_STR_ID			"id"
+#define CFG_STR_MESH_KEY		"mesh_key"
 #define CFG_STR_RE_MAC		"re_mac"
 #define CFG_STR_NEW_RE_MAC	"new_re_mac"
 #define CFG_STR_MODEL_NAME	"model_name"
@@ -107,6 +117,7 @@
 #define CFG_STR_IS_RE	"is_re"
 #define CFG_STR_TRIBAND_RE	"triband_re"
 #define CFG_STR_DUAL_5G_RE	"dual_5g_re"
+#define CFG_STR_DUAL_6G_RE	"dual_6g_re"
 #define CFG_STR_REBOOT_TIME		"reboot_time"
 #define CFG_STR_CONN_TIMEOUT		"conn_timeout"
 #define CFG_STR_TRAFFIC_TIMEOUT	"traffic_timeout"
@@ -192,7 +203,7 @@
 #define CFG_TARGET_AP	"target_ap"
 #define CFG_STA_BINDING_LIST	"sta_binding_list"
 #define CFG_STR_BAND_NUM		"band_num"
-#ifdef RTCONFIG_FRONTHAUL_DWB
+#if defined(RTCONFIG_FRONTHAUL_DWB) || (defined(RTCONFIG_MLO) && !defined(RTCONFIG_MULTILAN_MWL))
 #define CFG_STR_BACKHUAL_STATUS "backhual_status"
 #endif
 #ifdef ONBOARDING_VIA_VIF
@@ -239,6 +250,9 @@
 #define CFG_STR_SDN_INDEX       "sdn_idx"
 #define CFG_STR_IFNAME      "ifname"
 #define CFG_STR_SDN_SUPPORT     "sdn_support"
+#ifdef RTCONFIG_MULTILAN_MWL
+#define CFG_STR_MWL_SUPPORT		"mwl_support"
+#endif	
 #endif
 #define CFG_STR_BAND		"band"
 #define CFG_STR_USE		"use"
@@ -281,4 +295,18 @@
 #define CFG_STR_SECURITY_MODE	"security_mode"
 #define CFG_STR_MOCA_STATUS "moca_status"
 #define CFG_STR_MLD_MAC "mld_mac"
+#define CFG_STR_MLO_STATUS		"mlo_status"
+#define CFG_STR_MLO_MSTA		"msta"
+#define CFG_STR_MAP_UNIT	 "map_unit"
+#define CFG_STR_PAP_BSSID		"pap_bssid"
+#define CFG_STR_MLO_LINK_INFO		"mlo_link_info"
+#define CFG_STR_TIDMAP		"tidmap"
+#define CFG_STR_TIDMAP_INFO		"tidmap_info"
+#define CFG_STR_DEVICE_INFO		"device_info"
+
+static char *papIndex[] __attribute__ ((unused)) = {CFG_STR_PAP2G, CFG_STR_PAP5G, CFG_STR_PAP5GL, CFG_STR_PAP5GH,
+			CFG_STR_PAP6G, CFG_STR_PAP6GL, CFG_STR_PAP6GH};
+static char *rssiIndex[] __attribute__ ((unused)) = {CFG_STR_RSSI2G, CFG_STR_RSSI5G, CFG_STR_RSSI5GL, CFG_STR_RSSI5GH,
+			CFG_STR_RSSI6G, CFG_STR_RSSI6GL, CFG_STR_RSSI6GH};
+
 #endif /* __CFG_STRING_H__ */

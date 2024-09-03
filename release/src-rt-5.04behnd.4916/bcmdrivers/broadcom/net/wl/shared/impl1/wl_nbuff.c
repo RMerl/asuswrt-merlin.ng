@@ -3,27 +3,21 @@
     All Rights Reserved
 
     <:label-BRCM:2017:DUAL/GPL:standard
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
     :>
 */
 
@@ -254,7 +248,7 @@ void inline nbuff_pkt_clear_tag(void *pkt)
 }
 
 
-#if defined(CC_BPM_MULT_BUF_SKB_ATTACH_BUILD) && defined(BCM_NBUFF_PKTPOOL_CACHE)
+#if defined(BCM_NBUFF_PKTPOOL_CACHE)
 /* Allocate an SKB from WLAN local pool (cache) allocated from BPM */
 void *
 nbuff_pktpoolget(osl_t *osh, int len)
@@ -289,7 +283,7 @@ nbuff_pktpoolget(osl_t *osh, int len)
 
 	return skb;
 }
-#else /* ! (CC_BPM_MULT_BUF_SKB_ATTACH_BUILD && BCM_NBUFF_PKTPOOL_CACHE) */
+#else /* ! BCM_NBUFF_PKTPOOL_CACHE */
 void *
 nbuff_pktpoolget(osl_t *osh, int len)
 {
@@ -308,6 +302,225 @@ nbuff_pktpoolget(osl_t *osh, int len)
 
 	return skb;
 }
-#endif /* ! (CC_BPM_MULT_BUF_SKB_ATTACH_BUILD && BCM_NBUFF_PKTPOOL_CACHE) */
+#endif /* ! BCM_NBUFF_PKTPOOL_CACHE */
+
+#ifdef PP_XPM
+/* PP_XPM allocates SKBs and Data buffers from pool like MPM/BPM */
+
+/* XXX: Current experiments shows that MPM buffers/SKBs have negative
+ * impact on throughput. So using BPM buffers/SKBs but retaining the
+ * SVN side cache optimization - deferring SKB linking to data bufs
+ * during rx processing (originally SKB linking was done during rxfill)
+ *
+ * TODO: Replace BPM buffers with MPM
+ */
+
+#ifdef BCM_NBUFF_PKTPOOL_CACHE_MAXPKTS
+#define PP_XPM_CACHE_MAXPKTS	    BCM_NBUFF_PKTPOOL_CACHE_MAXPKTS
+#else
+#define PP_XPM_CACHE_MAXPKTS	    64
+#endif
+
+typedef struct nbuff_pp_xpm {
+	struct sk_buff  * skb_cache;
+	/* Local cache of databufs allocated from BPM */
+	void		* datapool[PP_XPM_CACHE_MAXPKTS];
+	uint8		datapool_curidx;
+} nbuff_pp_xpm_t;
+
+/* Initialize local hw SKB/databuf pool */
+int
+nbuff_pp_xpm_init(osl_t *osh, bool *enab)
+{
+	osl_pubinfo_t	*osh_pub = (osl_pubinfo_t *)osh;
+	nbuff_pp_xpm_t	*pp_xpm;
+	char *var = NULL;
+	int ret = BCME_OK;
+	bool pp_xpm_enab = TRUE;
+
+	/* NVRAM to enable/disable pp_xpm feature. Default enabled.
+	 * Changing this configuration requires reboot
+	 */
+	var = getvar(NULL, "wl_pp_xpm");
+	if (var != NULL) {
+		pp_xpm_enab = bcm_strtoul(var, NULL, 0);
+	}
+
+	if (pp_xpm_enab == FALSE) {
+		*enab = FALSE;
+		return BCME_OK;
+	}
+
+	osh_pub->pp_xpm = MALLOCZ(osh, sizeof(nbuff_pp_xpm_t));
+	if (osh_pub->pp_xpm == NULL) {
+		ASSERT(osh_pub->pp_xpm == NULL);
+		ret = BCME_NOMEM;
+		goto done;
+	}
+
+	pp_xpm = (nbuff_pp_xpm_t *)osh_pub->pp_xpm;
+
+	/* set to max so that skb/data is fetched from bpm */
+	pp_xpm->datapool_curidx = PP_XPM_CACHE_MAXPKTS;
+
+done:
+	if (ret) {
+		nbuff_pp_xpm_deinit(osh);
+		*enab = FALSE;
+	} else {
+		*enab = TRUE;
+	}
+
+	printk("%s: USING BPM pktpool  initialization %s\n",
+		__FUNCTION__, (ret) ? "FAILED" : "SUCCESS");
+
+	return ret;
+} /* nbuff_pp_xpm_init */
+
+/* Deinitialize local hw skb/databuf pool */
+int
+nbuff_pp_xpm_deinit(osl_t *osh)
+{
+	osl_pubinfo_t	* osh_pub = (osl_pubinfo_t *)osh;
+	nbuff_pp_xpm_t * pp_xpm = (nbuff_pp_xpm_t *)osh_pub->pp_xpm;
+	struct sk_buff *skb;
+	uint32 npkts;
+
+	if (pp_xpm == NULL) {
+		return BCME_OK;
+	}
+
+	/* Freeup data buffers from local cache */
+	npkts = PP_XPM_CACHE_MAXPKTS - pp_xpm->datapool_curidx;
+	if (npkts) {
+	    gbpm_free_mult_buf(npkts, &pp_xpm->datapool[pp_xpm->datapool_curidx]);
+	}
+
+	npkts = 0;
+	/* Freeup SKBs from local cache */
+	while (pp_xpm->skb_cache) {
+		skb = pp_xpm->skb_cache;
+		pp_xpm->skb_cache = skb->next;
+		skb->next = NULL;
+		npkts++;
+		gbpm_free_skb(skb);
+	}
+
+	PKTACCOUNT(osh, npkts, FALSE);
+
+	MFREE(osh, osh_pub->pp_xpm, sizeof(nbuff_pp_xpm_t));
+	osh_pub->pp_xpm = NULL;
+
+	printk("%s: deinit SUCCESS\n", __FUNCTION__);
+
+	return BCME_OK;
+} /* nbuff_pp_xpm_deinit */
+
+/* Returns an SKB from WLAN local pool allocated from BPM/MPM */
+struct sk_buff *
+nbuff_pp_xpm_skb_get(osl_t *osh)
+{
+	osl_pubinfo_t *osh_pub = (osl_pubinfo_t *)osh;
+	nbuff_pp_xpm_t *pp_xpm = (nbuff_pp_xpm_t *)osh_pub->pp_xpm;
+	struct sk_buff *skb = NULL;
+
+	ASSERT(pp_xpm != NULL);
+
+	/* NOTE: Caching PP_XPM_CACHE_MAXPKTS skbs/databufs locally.
+	 * This should be fine if MPM HW is used, but will have
+	 * a toll on cache if we use BPM or other sw pool manager.
+	 * At a given point the no of buffs used is based on the no of pkts
+	 * available in dma ring. So fetching PP_XPM_CACHE_MAXPKTS
+	 * no of bufs will evict other addresses from cache line causing
+	 * additional overhead.
+	 *
+	 * TODO: May be we should check dma ring and fetch only those many
+	 * buffers that are available in dma ring.
+	 */
+
+	if (pp_xpm->skb_cache == NULL) {
+		pp_xpm->skb_cache = gbpm_alloc_mult_skb(PP_XPM_CACHE_MAXPKTS);
+		if (pp_xpm->skb_cache == NULL) {
+			goto done;
+		}
+		PKTACCOUNT(osh, BCM_NBUFF_PKTPOOL_CACHE_MAXPKTS, TRUE);
+	}
+
+	/* Allocate a packet from cache */
+	skb = pp_xpm->skb_cache;
+	pp_xpm->skb_cache = skb->next;
+	skb->next = NULL;
+
+	ASSERT(skb != NULL);
+
+done:
+	return skb;
+} /* nbuff_pp_xpm_skb_get */
+
+/* Freeup an SKB (No buffer attached) to HW pool */
+void
+nbuff_pp_xpm_skb_free(osl_t *osh, struct sk_buff *skb)
+{
+	ASSERT(((osl_pubinfo_t *)osh)->pp_xpm != NULL);
+	gbpm_free_skb(skb);
+	PKTACCOUNT(osh, 1, FALSE);
+}
+
+/* return a databuf from WLAN local pool allocated by HW (like MPM) */
+void *
+nbuff_pp_xpm_databuf_get(osl_t *osh, int len)
+{
+	osl_pubinfo_t *osh_pub = (osl_pubinfo_t *)osh;
+	nbuff_pp_xpm_t *pp_xpm = (nbuff_pp_xpm_t *)osh_pub->pp_xpm;
+	void *pdata = NULL;
+	int ret = 0;
+
+	ASSERT(pp_xpm != NULL);
+
+	if (pp_xpm->datapool_curidx == PP_XPM_CACHE_MAXPKTS) {
+		if (gbpm_alloc_mult_buf(PP_XPM_CACHE_MAXPKTS,
+			(void **)&pp_xpm->datapool[0]) == GBPM_ERROR) {
+			ret = BCME_ERROR;
+		}
+
+		if (ret < 0) {
+			goto done;
+		}
+
+		pp_xpm->datapool_curidx = 0;
+	}
+
+	pdata = pp_xpm->datapool[pp_xpm->datapool_curidx];
+	ASSERT(pdata != NULL);
+	pp_xpm->datapool_curidx++;
+
+done:
+	return pdata;
+} /* nbuff_pp_xpm_databuf_get */
+
+/* Freeup databuffer to HW pool */
+void
+nbuff_pp_xpm_databuf_free(osl_t *osh, void *pdata)
+{
+	ASSERT(((osl_pubinfo_t *)osh)->pp_xpm != NULL);
+	gbpm_free_buf(pdata);
+}
+
+/* Attach MPM SKB to MPM Data buffer */
+int
+nbuff_pp_xpm_attach_skb(osl_t *osh, struct sk_buff *skb, void *pdata,
+	uint32 headroom, uint32 len)
+{
+	gbpm_attach_skb(skb, pdata, (headroom + len));
+	skb_cb_zero(skb);
+
+	if (headroom) {
+		/* Pull out the headroom */
+		skb_pull(skb, headroom);
+	}
+
+	return BCME_OK;
+} /* nbuff_pp_xpm_attach_skb */
+#endif /* PP_XPM */
 
 #endif /* BCM_NBUFF */

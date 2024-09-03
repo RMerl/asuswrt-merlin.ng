@@ -1,0 +1,4 @@
+#include "96766RFDVT.dts"
+&phy_cascade1 {
+		shared-ref-clk-mhz = <80>;
+};

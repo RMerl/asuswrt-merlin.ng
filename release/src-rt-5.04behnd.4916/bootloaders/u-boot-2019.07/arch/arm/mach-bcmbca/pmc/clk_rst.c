@@ -13,7 +13,7 @@
 #define VCO0_FREQ	1200
 #define VCO2_FREQ	1600
 
-#if IS_BCMCHIP(6765)
+#if IS_BCMCHIP(6765) || IS_BCMCHIP(6766) || IS_BCMCHIP(6764)
 #define PLL_REFCLK	80
 #else
 #define PLL_REFCLK	50
@@ -228,7 +228,7 @@ int rdppll_ch_freq_get(unsigned int pll_addr, unsigned int ch, unsigned int *fre
 	IS_BCMCHIP(6846) || IS_BCMCHIP(63178) || IS_BCMCHIP(47622) || \
 	IS_BCMCHIP(6878) || IS_BCMCHIP(63146) || IS_BCMCHIP(4912) || \
 	IS_BCMCHIP(6855) || IS_BCMCHIP(6756)  || IS_BCMCHIP(6813) || IS_BCMCHIP(6888) || \
-    IS_BCMCHIP(6837) || IS_BCMCHIP(68880) || IS_BCMCHIP(6765) || IS_BCMCHIP(6766)
+    IS_BCMCHIP(6837) || IS_BCMCHIP(68880) || IS_BCMCHIP(6765) || IS_BCMCHIP(6766) || IS_BCMCHIP(6764)
 int pll_vco_freq_get(unsigned int pll_addr, unsigned int *fvco)
 {
 
@@ -257,7 +257,7 @@ int pll_vco_freq_get(unsigned int pll_addr, unsigned int *fvco)
 #if IS_BCMCHIP(63158) || IS_BCMCHIP(63178) || IS_BCMCHIP(47622) || \
 	IS_BCMCHIP(63146) || IS_BCMCHIP(4912) || IS_BCMCHIP(6855) || \
 	IS_BCMCHIP(6756)  || IS_BCMCHIP(6813) || IS_BCMCHIP(6888) || \
-	IS_BCMCHIP(6765) || IS_BCMCHIP(6766)
+	IS_BCMCHIP(6765) || IS_BCMCHIP(6766) || IS_BCMCHIP(6764)
 
 	PLL_NDIV_REG ndiv_reg;
 	PLL_PDIV_REG pdiv_reg;
@@ -279,7 +279,7 @@ int pll_vco_freq_get(unsigned int pll_addr, unsigned int *fvco)
 #if IS_BCMCHIP(63158) || IS_BCMCHIP(63178) || IS_BCMCHIP(47622) || \
 	IS_BCMCHIP(63146) || IS_BCMCHIP(4912) || IS_BCMCHIP(6855) || \
 	IS_BCMCHIP(6756)  || IS_BCMCHIP(6813) || IS_BCMCHIP(6888) || \
-	IS_BCMCHIP(6765) || IS_BCMCHIP(6766)
+	IS_BCMCHIP(6765) || IS_BCMCHIP(6766) || IS_BCMCHIP(6764)
 	if (!ReadBPCMRegister(pll_addr, PLLBPCMRegOffset(pdiv), &pdiv_reg.Reg32)
 	    && pdiv_reg.Bits.ndiv_pdiv_override
 	    && !ReadBPCMRegister(pll_addr, PLLBPCMRegOffset(ndiv),
@@ -495,9 +495,6 @@ int biu_ch_freq_get(unsigned int ch, unsigned int *freq)
 	return -1;
 #elif IS_BCMCHIP(68880) || IS_BCMCHIP(6837)
     return pll_4phase_ch_freq_get(PMB_ADDR_BIU_PLL, ch, freq);
-#elif IS_BCMCHIP(6766)
-	printf("biu_ch_freq_get not supported!\n");
-	return -1;//brcm anand todo
 #else
 	return pll_ch_freq_get(PMB_ADDR_BIU_PLL, ch, freq);
 #endif
@@ -593,7 +590,7 @@ unsigned long get_rdp_freq(unsigned int *rdp_freq)
 	IS_BCMCHIP(63158) || IS_BCMCHIP(63178) || IS_BCMCHIP(47622) || \
 	IS_BCMCHIP(6878) || IS_BCMCHIP(63146) || IS_BCMCHIP(4912) || \
 	IS_BCMCHIP(6855) || IS_BCMCHIP(6756) || IS_BCMCHIP(6888) || \
-	IS_BCMCHIP(6813) || IS_BCMCHIP(6765) || IS_BCMCHIP(6766)
+	IS_BCMCHIP(6813) || IS_BCMCHIP(6765) || IS_BCMCHIP(6766) || IS_BCMCHIP(6764)
 int pll_ch_reset(unsigned int pll_addr, unsigned int ch, unsigned int pll_reg_offset)
 {
 	int ret;

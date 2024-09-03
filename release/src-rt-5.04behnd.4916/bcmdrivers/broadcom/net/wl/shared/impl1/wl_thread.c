@@ -3,27 +3,21 @@
     All Rights Reserved
 
     <:label-BRCM:2017:DUAL/GPL:standard
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
     :>
 */
 
@@ -41,12 +35,33 @@
 #if defined(BCM_AWL)
 #include <wl_awl.h>
 #endif /* BCM_AWL */
+#include <wfd_dev.h>
 
 extern void wl_dpc_rxwork(struct wl_task *task);
 extern void wl_start_txqwork(wl_task_t * task);
 #if !defined(BCM_PKTFWD)
 extern void BCMFASTPATH wl_start_txchain_txqwork(pktc_info_t * pktci);
 #endif
+
+#ifdef CONFIG_BCM_WFD_WL_UNION
+static bool wl_pktfwd_has_rx_work(struct wl_info *wl)
+{
+	return wfd_has_rx_work(wl->wfd_idx);
+}
+
+static void wl_pktfwd_do_rx_work(struct wl_info *wl)
+{
+	wfd_do_rx_work(wl->wfd_idx);
+}
+#else
+static bool wl_pktfwd_has_rx_work(struct wl_info *wl)
+{
+	return false;
+}
+static void wl_pktfwd_do_rx_work(struct wl_info *wl)
+{
+}
+#endif /* CONFIG_BCM_WFD_WL_UNION */
 
 static int wl_worker_thread_func(void *data)
 {
@@ -55,6 +70,7 @@ static int wl_worker_thread_func(void *data)
 	while (1) {
 		wait_event_interruptible(wl->kthread_wqh,
 		    (wl->txq_dispatched || wl->rxq_dispatched ||
+		     wl_pktfwd_has_rx_work(wl) ||
 #if defined(PKTC_TBL)
 			wl->txq_txchain_dispatched ||
 #endif
@@ -66,6 +82,9 @@ static int wl_worker_thread_func(void *data)
 			printk(KERN_INFO "kthread_should_stop detected on wl%d\n", wl->unit);
 			break;
 		}
+
+		wl_pktfwd_do_rx_work(wl);
+
 		if (wl->rxq_dispatched)
 			wl_dpc_rxwork(&wl->wl_dpc_task);
 		if (wl->txq_dispatched)

@@ -1,29 +1,23 @@
 /*
    <:copyright-BRCM:2015:DUAL/GPL:standard
-
-      Copyright (c) 2015 Broadcom
+   
+      Copyright (c) 2015 Broadcom 
       All Rights Reserved
-
-   Unless you and Broadcom execute a separate written software license
-   agreement governing use of this software, this software is licensed
-   to you under the terms of the GNU General Public License version 2
-   (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-   with the following added to such license:
-
-      As a special exception, the copyright holders of this software give
-      you permission to link this software with independent modules, and
-      to copy and distribute the resulting executable under terms of your
-      choice, provided that you also meet, for each linked independent
-      module, the terms and conditions of the license of that module.
-      An independent module is a module which is not derived from this
-      software.  The special exception does not apply to any modifications
-      of the software.
-
-   Not withstanding the above, under no circumstances may you combine
-   this software in any way with any other Broadcom software provided
-   under a license other than the GPL, without Broadcom's express prior
-   written consent.
-
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License, version 2, as published by
+   the Free Software Foundation (the "GPL").
+   
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+   
+   
+   A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+   writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.
+   
    :>
  */
 
@@ -65,6 +59,7 @@ void extlh_link_change_handler(enetx_port_t *port, int linkstatus, int speed, in
 #include "phy_drv.h"
 #include "phy_drv_brcm.h"
 #include "phy_macsec_common.h"
+#include "clk_rst.h"
 
 
 extern int apd_enabled;
@@ -165,6 +160,42 @@ static void pm_eee_set(int enabled)
     }
 }
 #endif
+
+static int pm_lan_pwr_set_single(enetx_port_t *p, void *ctx)
+{
+    int enabled = (int)(uintptr_t)ctx;
+
+    if (PORT_ROLE_IS_WAN(p) || !p->dev)
+        return 0;
+
+    if (enabled)
+        dev_change_flags(p->dev, p->dev->flags | IFF_UP);
+    else
+        dev_change_flags(p->dev, p->dev->flags & ~IFF_UP);
+
+    return 0;
+}
+
+static void pm_lan_pwr_set(int enabled)
+{
+    port_traverse_ports(root_sw, pm_lan_pwr_set_single, PORT_CLASS_PORT, (void *)(uintptr_t)enabled);
+}
+
+static int pm_lan_pwr_get_single(enetx_port_t *p, void *ctx)
+{
+    if (PORT_ROLE_IS_WAN(p) || !p->dev)
+        return 0;
+
+    if (p->dev->flags & IFF_UP)
+        return 1;
+    
+    return 0;
+}
+
+static int pm_lan_pwr_get(void)
+{
+    return port_traverse_ports(root_sw, pm_lan_pwr_get_single, PORT_CLASS_PORT, NULL);
+}
 
 #if defined(CONFIG_BCM_PON)
 #define CONFIG_BCM_PHY_SPEED_LIMIT
@@ -1080,37 +1111,13 @@ static char *inter_phy_type_string(phy_dev_t *phy_dev, int inter_phy_type)
 {
     int configured_inter_type;
     static char buf[64];
-    static char *inter_phy_string[] = {
-        [INTER_PHY_TYPE_100BASE_FX] = "100Base-FX",
-        [INTER_PHY_TYPE_1000BASE_X] = "1000Base-X",
-        [INTER_PHY_TYPE_1GBASE_X]   = "1GBase-X",
-        [INTER_PHY_TYPE_1GBASE_R]   = "1GBase-R",
+    static char *serdes_inter_phy_string[] = { SERDES_INTER_TYPE_STRING };
 
-        [INTER_PHY_TYPE_2P5GBASE_X] = "2.5GBase-X",
-        [INTER_PHY_TYPE_2P5GBASE_R] = "2.5GBase-R",
-        [INTER_PHY_TYPE_2500BASE_X] = "2500Base-X",
-        [INTER_PHY_TYPE_2P5GIDLE]   = "2.5GIdle",
-
-        [INTER_PHY_TYPE_5GBASE_R]   = "5GBase-R",
-        [INTER_PHY_TYPE_5GBASE_X]   = "5GBase-X",
-        [INTER_PHY_TYPE_5000BASE_X] = "5000Base-X",
-        [INTER_PHY_TYPE_5GIDLE]     = "5GIdel",
-
-        [INTER_PHY_TYPE_10GBASE_R]  = "10GBase-R",
-        [INTER_PHY_TYPE_SGMII]      = "SGMII",
-        [INTER_PHY_TYPE_USXGMII]    = "USXGMII",
-        [INTER_PHY_TYPE_MLTI_SPEED_BASE_X_AN] = "MultiSpeedAN",
-
-        [INTER_PHY_TYPE_USXGMII_MP]    = "USXGMII_M",
-
-        [INTER_PHY_TYPE_UNKNOWN]    = "Uknown",
-    };
-
-    if (inter_phy_type >= ARRAY_SIZE(inter_phy_string))
+    if (inter_phy_type >= ARRAY_SIZE(serdes_inter_phy_string))
         inter_phy_type = INTER_PHY_TYPE_UNKNOWN;
 
     configured_inter_type = phy_dev_configured_current_inter_phy_type_get(phy_dev);
-    strncpy(buf, inter_phy_string[inter_phy_type],sizeof(buf)-1);
+    strncpy(buf, serdes_inter_phy_string[inter_phy_type],sizeof(buf)-1);
     buf[sizeof(buf)-1]='\0';
     if (phy_dev->an_enabled)
         strcat(buf, "_A");
@@ -1134,6 +1141,8 @@ static char *inter_phy_types_string(int inter_phy_types)
     /* Note: The order below matters, for matching the coding flag convention */
     if (inter_phy_types & INTER_PHY_TYPE_MLTI_SPEED_BASE_X_AN_M)
         n += snprintf(buf+n, sz-n, "A");
+    if (inter_phy_types & INTER_PHY_TYPE_SXGMII_M)
+        n += snprintf(buf+n, sz-n, "Q");
     if (inter_phy_types & INTER_PHY_TYPE_USXGMII_MP_M)
         n += snprintf(buf+n, sz-n, "M");
     if (inter_phy_types & INTER_PHY_TYPE_USXGMII_M)
@@ -1204,13 +1213,13 @@ char *get_inter_phy_types(phy_dev_t *phy_dev)
     if cascade_phy_get_next(phy_dev)
     {
         phy_dev_inter_phy_types_get(phy_dev, INTER_PHY_TYPE_DOWN, &inter_types);
-        current_type = phy_dev_current_inter_phy_types_get(phy_dev);
+        current_type = phy_dev_current_inter_phy_type_get(phy_dev);
         phy_dev_configured_inter_phy_types_get(phy_dev, &config_types);
     }
     else
     {
         phy_dev_inter_phy_types_get(phy_dev, INTER_PHY_TYPE_UP, &inter_types);
-        current_type = phy_dev_current_inter_phy_types_get(phy_dev);
+        current_type = phy_dev_current_inter_phy_type_get(phy_dev);
         phy_dev_configured_inter_phy_types_get(phy_dev, &config_types);
     }
 
@@ -1311,6 +1320,7 @@ static char *_print_phy_info(phy_dev_t *phy_dev, char *bf, int indent)
         [SERDES_FORCE_OFF] = "FrcDn",
     }; 
     int cascaded_phy = 0;
+    int eee_support, eee_config, eee_resolution, autogreeen;
 
     if (!phy_dev || (phy_dev->flag & PHY_FLAG_NOT_PRESENTED))
         return "";
@@ -1350,6 +1360,17 @@ static char *_print_phy_info(phy_dev_t *phy_dev, char *bf, int indent)
             cascaded_phy? 20: 8, PhyIsPortConnectedToExternalSwitch(phy_dev)? "2_EXTSW":
                 PhyIsFixedConnection(phy_dev)? "PHY_FIX": phy_dev_get_phy_name(phy_dev),
             print_phy_link(phy_dev));
+
+    phy_dev_eee_support(phy_dev, &eee_support);
+    if (eee_support)
+    {
+        phy_dev_eee_get(phy_dev, &eee_config);
+        phy_dev_eee_resolution_get(phy_dev, &eee_resolution);
+        phy_dev_eee_mode_get(phy_dev, &autogreeen);
+        n += snprintf(bf+n, sz-n, " EEE:%3s", eee_config == 0? "Dis": eee_resolution == 0? "Off": autogreeen? "Gre": "Ntv");
+    }
+    n += snprintf(bf+n, sz-n, " %04d/%04d", phy_dev->link_flaps, phy_dev->link_flaps_per_min);
+
     if (phy_dev->cascade_next)
         _print_phy_info(phy_dev->cascade_next, bf+n, indent);
 
@@ -1427,12 +1448,12 @@ int sw_get_mac_addresses(enetx_port_t *sw, char **buf, int *sz)
     }
 
     if (wan_mac)
-        cat_snprintf(buf, sz, "WAN MAC Address: %02X:%02X:%02X:%02X:%02X:%02X\n", 
+        cat_snprintf(buf, sz, "   WAN MAC Address : %02X:%02X:%02X:%02X:%02X:%02X\n", 
                 wan_mac[0], wan_mac[1], wan_mac[2],
                 wan_mac[3], wan_mac[4], wan_mac[5]);
 
     if (lan_mac)
-        cat_snprintf(buf, sz, "LAN MAC Address: %02X:%02X:%02X:%02X:%02X:%02X\n", 
+        cat_snprintf(buf, sz, "   LAN MAC Address : %02X:%02X:%02X:%02X:%02X:%02X\n", 
                 lan_mac[0], lan_mac[1], lan_mac[2],
                 lan_mac[3], lan_mac[4], lan_mac[5]);
 
@@ -1516,7 +1537,7 @@ static int sw_print_board_ver_mac_phy_info(enetx_port_t *sw, char **buf, int *sz
     char board_id[64];
 
     kerSysNvRamGetBoardId(board_id);
-    cat_snprintf(buf, sz, "Board ID       : %s\n", board_id);
+    cat_snprintf(buf, sz, "          Board ID : %s\n", board_id);
 #endif
     sw_print_mac_phy_info(sw, buf, sz);
     return *sz;
@@ -1739,10 +1760,19 @@ int eth_get_gpon_sfp_info(sfp_type_t *sfp_type)
     return 0;
 }
 
+#if defined(BCM_DEEP_SLEEP)
 extern int bcm_wake_on_lan(mac_dev_t *mac_dev, phy_dev_t *phy_dev, int is_internal, int is_lnk);
 extern int bcm_wake_on_button(void);
 extern int bcm_wake_on_timer(int minutes);
 extern int bcm_wake_on_wan(void);
+extern int bcm_deepsleep_start(void);
+#else
+static int bcm_wake_on_lan(mac_dev_t *mac_dev, phy_dev_t *phy_dev, int is_internal, int is_lnk) { return 0; }
+static int bcm_wake_on_button(void) { return 0; }
+static int bcm_wake_on_timer(int minutes) { return 0; }
+static int bcm_wake_on_wan(void) { return 0; }
+static int bcm_deepsleep_start(void) { return 0; }
+#endif
 
 int enet_ioctl_compat_ethctl(struct net_device *dev, struct ifreq *rq, int cmd)
 {
@@ -2140,10 +2170,12 @@ cd_end:
 
     case ETHPHYWAKEENABLE:
         {
-#if defined(BCM_DEEP_SLEEP)
             wol_params_t wol_params = {};
             mac_dev_t *mac_dev;
             int is_internal;
+
+            if (!ethctl->flags)
+                return bcm_deepsleep_start();
 
             if (ethctl->flags & ETHCTL_FLAG_WAKE_BTN_SET)
                 return bcm_wake_on_button();
@@ -2198,7 +2230,6 @@ cd_end:
                 ret = phy_dev_wol_enable(phy_dev, &wol_params);
 
             bcm_wake_on_lan(mac_dev, phy_dev, is_internal, wol_params.en_lnk);
-#endif
 
             return ret ? EFAULT : 0;
         }
@@ -3918,6 +3949,32 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
 
         return 0;
 #endif
+    case ETHSWLANPWR:
+        if (ethswctl->type == TYPE_GET)
+            ethswctl->val = pm_lan_pwr_get();
+        else
+            pm_lan_pwr_set(ethswctl->val);
+
+        ethswctl->ret_val = 1;
+        if (copy_to_user(rq->ifr_data , ethswctl, sizeof(struct ethswctl_data)))
+            return -EFAULT;
+
+        return 0;
+
+    case ETHSWXRDPDIV:
+        if (ethswctl->type == TYPE_GET)
+            ret = xrdp_div_get(&ethswctl->val);
+        else
+            ret = xrdp_div_set(ethswctl->val);
+
+        if (ret)
+            return -EFAULT;
+          
+        ethswctl->ret_val = 1;
+        if (copy_to_user(rq->ifr_data , ethswctl, sizeof(struct ethswctl_data)))
+            return -EFAULT;
+
+        return 0;
     }
 
     enet_dbgv(" dev=%s, cmd=%x(SIOCETHSWCTLOPS), unknown ops=%d u/p=%d/%d\n", NETDEV_PRIV(dev)->port->obj_name, cmd, ethswctl->op, ethswctl->unit, ethswctl->port);

@@ -58,7 +58,7 @@ typedef enum
 #define TRNG_DEBUG			0
 
 struct bcmbca_trng_platdata {
-	fdt_addr_t base;
+	void* base;
 };
 
 static int bcmbca_trng_waitrdy(struct udevice *dev)
@@ -221,7 +221,7 @@ static int bcmbca_trng_probe(struct udevice *dev)
 {
 	struct bcmbca_trng_platdata *priv = dev_get_platdata(dev);
 
-	priv->base = (uintptr_t)dev_remap_addr(dev);
+	priv->base = dev_remap_addr(dev);
 	if (!priv->base) {
 		dev_err(dev, "can't get rng regs !\n");
 		return -EINVAL;

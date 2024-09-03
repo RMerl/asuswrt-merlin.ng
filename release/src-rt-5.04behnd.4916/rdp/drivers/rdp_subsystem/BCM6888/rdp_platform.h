@@ -1,29 +1,23 @@
 /*
     <:copyright-BRCM:2015:DUAL/GPL:standard
-
-       Copyright (c) 2015 Broadcom
+    
+       Copyright (c) 2015 Broadcom 
        All Rights Reserved
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
     :>
 */
 
@@ -72,7 +66,18 @@ CNPL_PERIODIC_UPDATE_QUANTA_NS is 16,384 (16K) */
 #define IS_WAN_RX_PORT(bbh_id) (bbh_id == BBH_ID_PON)
 #define IS_SDMA(dma_id)  (dma_id > DMA0_ID)
 #define IS_DMA(dma_id)   (dma_id <= DMA0_ID)
-#define IS_PROCESSING_RUNNER_IMAGE(i)  ((rdp_core_to_image_map[i] == processing0_runner_image) || (rdp_core_to_image_map[i] == processing1_runner_image)|| (rdp_core_to_image_map[i] == processing2_runner_image) || (rdp_core_to_image_map[i] == processing3_runner_image) || (rdp_core_to_image_map[i] == processing4_runner_image) || (rdp_core_to_image_map[i] == processing5_runner_image) || (rdp_core_to_image_map[i] == processing6_runner_image) || (rdp_core_to_image_map[i] == processing7_runner_image) || (rdp_core_to_image_map[i] == processing8_runner_image) || (rdp_core_to_image_map[i] == processing9_runner_image))
+#define IS_PROCESSING_RUNNER_IMAGE(i)  ((rdp_core_to_image_map[i] == processing0_runner_image) || \
+                                        (rdp_core_to_image_map[i] == processing1_runner_image) || \
+                                        (rdp_core_to_image_map[i] == processing2_runner_image) || \
+                                        (rdp_core_to_image_map[i] == processing3_runner_image) || \
+                                        (rdp_core_to_image_map[i] == processing4_runner_image) || \
+                                        (rdp_core_to_image_map[i] == processing5_runner_image) || \
+                                        (rdp_core_to_image_map[i] == processing6_runner_image) || \
+                                        (rdp_core_to_image_map[i] == processing7_runner_image) || \
+                                        (rdp_core_to_image_map[i] == processing8_runner_image) || \
+                                        (rdp_core_to_image_map[i] == processing9_runner_image) || \
+                                        (rdp_core_to_image_map[i] == processing10_runner_image) || \
+                                        (rdp_core_to_image_map[i] == processing11_runner_image))
 #define IS_DS_TM_RUNNER_IMAGE(i)  ((rdp_core_to_image_map[i] == ds_tm_runner_image) || (rdp_core_to_image_map[i] == ds_tm_1_runner_image) || (rdp_core_to_image_map[i] == ds_tm_2_runner_image))
 #define IS_US_TM_RUNNER_IMAGE(i)  (rdp_core_to_image_map[i] == us_tm_runner_image)
 
@@ -85,7 +90,6 @@ CNPL_PERIODIC_UPDATE_QUANTA_NS is 16,384 (16K) */
 
 /* NATC */
 #define NATC_CACHE_ENTRIES_NUM   512
-#define HASH_MODE hash_mode_crc32_low
 
 /* DISP CONGESTION */
 #define DIS_REOR_LINKED_LIST_BUFFER_NUM   1024
@@ -321,10 +325,12 @@ typedef enum bbh_id_e
     
 } bbh_id_e;
 
+#define BB_ID_RX_BBH_AE BB_ID_RX_BBH_6
+
 typedef enum tm_identifier_e
 {
     TM_START = 0,
-    TM_PON_DSL = 0,
+    TM_PON_DSL_AE = 0,
     TM_ETH_START = 1,
     TM_ETH_PORTS_0 = TM_ETH_START,
     TM_ETH_PORTS_1 = 2,
@@ -332,6 +338,7 @@ typedef enum tm_identifier_e
     TM_ETH_END = TM_ETH_PORTS_2,
     TM_ETH_SQ = 4,
     TM_MAX = 4,
+    TM_MAX_GROUP = TM_ETH_END - TM_ETH_START + 1,
     TM_ERROR = 5,
     TM_NUM_OF_IDENTITY = 5
 } tm_identifier_e;
@@ -340,7 +347,7 @@ static inline int tm_get_core_for_tm(tm_identifier_e tm_identity)
 {
     switch (tm_identity)
     {
-    case TM_PON_DSL:
+    case TM_PON_DSL_AE:
         return drv_qm_get_tm_core_per_image(us_tm_runner_image);
 
     case TM_ETH_PORTS_0:
@@ -389,9 +396,9 @@ typedef enum rnr_quad_id_e
 #define DMA_RR_WEIGHT_RX_BBH_PON_VALUE    ( 0x0 )
 #define DMA_RR_WEIGHT_TX_BBH_PON_VALUE    ( 0x0 )
 
-
-#define DISP_REOR_VIQ_BBH_PON_RX_EXCL DISP_REOR_VIQ_BBH_RX10_EXCL
-#define DISP_REOR_VIQ_BBH_RX_MAX_NUM DISP_REOR_VIQ_BBH_RX10_NORMAL
+#define DISP_REOR_VIQ_BBH_PON_RX_EXCL DISP_REOR_VIQ_BBH_RX11_EXCL
+#define DISP_REOR_VIQ_BBH_PON_RX_NORMAL DISP_REOR_VIQ_BBH_RX11_NORMAL
+#define DISP_REOR_VIQ_BBH_RX_MAX_NUM DISP_REOR_VIQ_BBH_RX11_NORMAL
 
 typedef enum bac_if_id_e
 {

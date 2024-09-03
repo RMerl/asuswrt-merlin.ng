@@ -20,9 +20,10 @@
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
+<script type="text/javascript" src="/form.js"></script>
 <script type="text/javascript" src="/client_function.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js"></script>
 <style>
 *{
 	box-sizing: content-box;
@@ -36,6 +37,9 @@
 </style>
 <script>
 
+var current_page = window.location.pathname.split("/").pop();
+var faq_index_tmp = get_faq_index(FAQ_List, current_page, 1);
+
 function initial(){
 	show_menu();
 	if(document.form.bwdpi_wh_enable.value == 1){
@@ -47,9 +51,6 @@ function initial(){
 		document.getElementById("log_field").style.display = "none";
 	}
 
-	if(!ASUS_EULA.status("tm")){
-		ASUS_EULA.config(eula_confirm, cancel);
-	}	
 }
 
 var htmlEnDeCode = (function() {
@@ -303,10 +304,16 @@ function cancel(){
 function switch_control(_status){
 	if(_status) {
 		if(reset_wan_to_fo.check_status()) {
-			if(ASUS_EULA.check("tm")){
-				document.form.bwdpi_wh_enable.value = 1;
-				applyRule();
-			}
+			if(policy_status.TM == 0 || policy_status.TM_time == ''){
+                const policyModal = new PolicyModalComponent({
+                    policy: "TM",
+                    agreeCallback: eula_confirm,
+                    disagreeCallback: cancel
+                });
+                policyModal.show();
+            }else{
+                eula_confirm();
+            }
 		}
 		else
 			cancel();
@@ -474,8 +481,10 @@ function export_CSV(export_array) {
 						<table width="760px" border="0" cellpadding="5" cellspacing="0" bordercolor="#6b8fa3"  class="FormTitle" id="FormTitle">
 							<tr>
 								<td bgcolor="#4D595D" colspan="3" valign="top">
+									<div class="container">
 									<div>&nbsp;</div>
 									<div id="content_title" class="formfonttitle"><#menu5_3_2#> - <#Adaptive_History#></div>
+									<div class="formfonttitle_help"><i onclick="show_feature_desc(`<#HOWTOSETUP#>`)" class="icon_help"></i></div>
 									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									<div class="formfontdesc">
 										<#Adaptive_History_desc#>
@@ -516,6 +525,10 @@ function export_CSV(export_array) {
 											<input class="button_gen" onClick="exportWebHistoryLog()" type="button" value="<#btn_Export#>" >
 										</div>
 									</div>
+
+									</div>	<!-- for .container  -->
+									<div class="popup_container popup_element_second"></div>
+
 								</td>
 							</tr>
 						</table>

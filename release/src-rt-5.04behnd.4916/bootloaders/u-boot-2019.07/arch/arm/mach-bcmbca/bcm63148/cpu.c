@@ -6,6 +6,7 @@
 #include <common.h>
 #include <asm/arch/pmc.h>
 #include <asm/arch/cpu.h>
+#include <asm/arch/ddr.h>
 #include <spl.h>
 #if defined(CONFIG_BCMBCA_PMC)
 #include "pmc_drv.h"
@@ -125,6 +126,12 @@ int set_cpu_freq(int freqMHz)
 }
 #endif
 
+void bcmbca_disable_memc_sram(void)
+{
+	MEMC->SRAM_REMAP_CTRL = 0;
+	MEMC->SRAM_REMAP_CTRL;
+}
+
 int arch_cpu_init(void)
 {
 #if defined(CONFIG_BCMBCA_IKOS)
@@ -132,6 +139,9 @@ int arch_cpu_init(void)
 #endif  
 #if defined(CONFIG_SPL_BUILD) && !defined(CONFIG_TPL_BUILD)
 	u32 frq = COUNTER_FREQUENCY;
+
+	/* always disable memc sram first in case btrm keeps it enabled */
+	bcmbca_disable_memc_sram();
 
 	/* set arch timer frequency */
 	asm volatile("mcr p15, 0, %0, c14, c0, 0" : : "r" (frq));

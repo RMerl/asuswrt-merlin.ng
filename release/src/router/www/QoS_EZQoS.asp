@@ -26,7 +26,7 @@
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/form.js"></script>
 <script type="text/javascript" src="client_function.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js"></script>
 <style>
 *{
 	box-sizing: content-box;
@@ -316,7 +316,8 @@ var overhead_presets = [["1", "48", "0", "Conservative default"],
 			["2", "22", "0", "VDSL2 Bridged PTM"]
 			];
 
-var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=110";
+var current_page = window.location.pathname.split("/").pop();
+var faq_index_tmp = get_faq_index(FAQ_List, current_page, 1);
 
 if(geforceNow_support){
 	var orig_nvgfn_enable = httpApi.nvramGet(["nvgfn_enable"], true).nvgfn_enable;
@@ -416,7 +417,6 @@ if(pm_support) {
 
 function initial(){
 	show_menu();
-	document.getElementById("faq").href=faq_href;
 
 	if(downsize_4m_support || downsize_8m_support)
 		document.getElementById("guest_image").parentNode.style.display = "none";
@@ -958,9 +958,15 @@ function determineActionScript(){
 function submitQoS(){
 	if(validForm()){
 		if(document.form.qos_enable.value == "1" && document.form.qos_type.value == "1" && document.form.TM_EULA.value == "0"){
-			ASUS_EULA
-				.config(eula_confirm, cancel)
-				.show("tm")
+			if(policy_status.TM == 0 || policy_status.TM_time == ''){
+                const policyModal = new PolicyModalComponent({
+                    policy: "TM",
+                    agreeCallback: eula_confirm,
+                });
+                policyModal.show();
+            }else{
+                eula_confirm();
+            }
 		}
 		else{
 			if(	document.form.qos_enable.value == "1" && document.form.qos_type_orig.value != document.form.qos_type.value &&
@@ -1973,16 +1979,20 @@ function set_overhead(entry) {
 			<table width="95%" border="0" align="left" cellpadding="0" cellspacing="0" class="FormTitle" id="FormTitle" style="height:820px;">
 				<tr>
 					<td bgcolor="#4D595D" valign="top">
+						<div class="container">
+
 						<table width="760px" border="0" cellpadding="4" cellspacing="0">
 							<tr>
 								<td bgcolor="#4D595D" valign="top">
 									<table width="100%">
 										<tr style="height:30px;">
-											<td  class="formfonttitle" align="left">
+											<td class="formfonttitle" align="left">
+												<div>&nbsp;</div>
 												<div id="content_title"></div>
+												<div class="formfonttitle_help"><i onclick="show_feature_desc(`<#HOWTOSETUP#>`)" class="icon_help"></i></div>
 											</td>
-											<td align="right" >
-												<div>
+											<td align="right">
+												<div style="margin-right:44px;margin-top:18px;">
 													<select id="settingSelection" onchange="switchPage(this.options[this.selectedIndex].value)" class="input_option">
 														<option value="1"><#Adaptive_QoS_Conf#></option>
 													</select>
@@ -2014,11 +2024,8 @@ function set_overhead(entry) {
 															<li id="qos_desc"><#EzQoS_desc_Traditional#></li>
 															<li><#EzQoS_desc_Bandwidth_Limiter#></li>
 															<li id="cake_desc"><span style="font-weight:bolder;font-size:14px;">Cake</span> is an automatic queue management algorithm that takes care of ensuring fairness in traffic queueing without requiring manual configuration.</li>
-                            </ul>
+										     </ul>
 														<#EzQoS_desc_note#>
-													</div>
-													<div class="formfontdesc">
-														<a id="faq" href="" target="_blank" style="text-decoration:underline;">QoS FAQ</a>
 													</div>
 												</td>
 											</tr>
@@ -2257,9 +2264,13 @@ function set_overhead(entry) {
 								</td>
 							</tr>
 						</table>
+
+						</div>	<!-- for .container  -->
+						<div class="popup_container popup_element_second"></div>
 					</td>
 				</tr>
 			</table>
+			
 		<!--===================================End of Main Content===========================================-->
 		</td>
 	</tr>

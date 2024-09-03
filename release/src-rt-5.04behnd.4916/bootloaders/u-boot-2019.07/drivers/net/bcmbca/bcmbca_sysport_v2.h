@@ -2,7 +2,11 @@
 #include <common.h>
 
 /*====move this to a .h file===============================================*/
-#if defined(CONFIG_BCM6765)
+#if defined(CONFIG_BCM6756) || defined(CONFIG_BCM6765) || defined(CONFIG_BCM6766) || defined(CONFIG_BCM6764)
+#define SYSPORT_V2_1
+#endif
+
+#if defined(CONFIG_BCM6765) || defined(CONFIG_BCM6766) || defined(CONFIG_BCM6764)
 #define SYSPORT_NUM_RX_PKT_DESC_LOG2  (5)
 #else
 #define SYSPORT_NUM_RX_PKT_DESC_LOG2  (7)
@@ -59,7 +63,7 @@ typedef struct sys_port_topctrl {
 
 
 #define SYSPORT_RDMA_CTRL_RDMA_EN_M             FIELD_MASK(1,0)
-#if defined(CONFIG_BCM6756) || defined(CONFIG_BCM6765)
+#if defined(SYSPORT_V2_1)
 #define SYSPORT_RDMA_CTRL_RING_CFG_M            FIELD_MASK(2,1)
 #define SYSPORT_RDMA_CTRL_RING_CFG_bit0_M       FIELD_MASK(1,1)
 #define SYSPORT_RDMA_CTRL_RING_CFG_bit1_M       FIELD_MASK(1,2)
@@ -105,7 +109,7 @@ typedef struct sys_port_rdma {
 	uint32_t SYSTEMPORT_RDMA_DDR_DESC_RING_SIZE[8];
 	uint32_t SYSTEMPORT_RDMA_DDR_DESC_RING_CTRL[8];
 	uint32_t SYSTEMPORT_RDMA_DDR_DESC_RING_WR_PUSH_TIMER[8];
-#if defined(CONFIG_BCM6756) || defined(CONFIG_BCM6765)
+#if defined(SYSPORT_V2_1)
 	uint32_t SYSTEMPORT_RDMA_DISCARD_CNT[8];
 #endif
 	uint32_t SYSTEMPORT_RDMA_BP_STATUS;
@@ -115,7 +119,7 @@ typedef struct sys_port_rdma {
 	uint32_t SYSTEMPORT_RDMA_PSB_INTR_CFG;
 	uint32_t SYSTEMPORT_RDMA_PSB_ADDR_LO;
 	uint32_t SYSTEMPORT_RDMA_PSB_ADDR_HI;
-#if defined(CONFIG_BCM6756) || defined(CONFIG_BCM6765)
+#if defined(SYSPORT_V2_1)
 	uint32_t SYSTEMPORT_RDMA_MPM_CFG;
 #endif
 	uint32_t SYSTEMPORT_RDMA_TEST;
@@ -147,11 +151,6 @@ typedef struct sys_port_rbuf {
 	uint32_t SYSTEMPORT_RBUF_RBUF_ERROR_PACKET_COUNT;
 }sys_port_rbuf, SYSTEMPORT_RBUF;
 
-#if defined(CONFIG_BCM96765)
-#define SYSTEMPORT_TDMA_DESC_RING_MAX        32
-#else
-#define SYSTEMPORT_TDMA_DESC_RING_MAX        28
-#endif
 #define SYSTEMPORT_TDMA_LOCRAM_DESCRING_MAX  896
 
 #define SYSTEMPORT_TDMA_TIMEOUT_TICK_NSEC    1000 // tick = 1 usec (internal timer)
@@ -236,7 +235,7 @@ typedef struct sys_port_tdma {
 	uint32_t SYSTEMPORT_TDMA_DDR_DESC_RING_SIZE[32];
 	uint32_t SYSTEMPORT_TDMA_DDR_DESC_RING_CTRL[32];
 	uint32_t SYSTEMPORT_TDMA_DDR_DESC_RING_PUSH_TIMER[32];
-#if defined(CONFIG_BCM6756) || defined(CONFIG_BCM6765)
+#if defined(SYSPORT_V2_1)
 	uint32_t SYSTEMPORT_TDMA_LS_CFG[32];
 #endif
 	uint32_t SYSTEMPORT_TDMA_DESC_READ_CMD;
@@ -255,7 +254,7 @@ typedef struct sys_port_tdma {
 	uint32_t SYSTEMPORT_TDMA_CSB_ADDR_LO;
 	uint32_t SYSTEMPORT_TDMA_CSB_ADDR_HI;
 
-#if defined(CONFIG_BCM6756) || defined(CONFIG_BCM6765)
+#if defined(SYSPORT_V2_1)
 	uint32_t SYSTEMPORT_TDMA_MPM_CFG;
 	uint32_t SYSTEMPORT_TDMA_RRING_PRODUCER_INDEX;
 	uint32_t SYSTEMPORT_TDMA_RRING_CONSUMER_INDEX;

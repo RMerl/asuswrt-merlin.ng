@@ -213,6 +213,9 @@ struct macsec_tx_sc {
  */
 struct macsec_secy {
     struct net_device *netdev;
+#ifdef CONFIG_BCM_MACSEC_FIRELIGHT
+    u8 port_id;
+#endif
     unsigned int n_rx_sc;
     sci_t sci;
     u16 key_len;
@@ -241,7 +244,7 @@ struct macsec_context {
     struct macsec_rx_sc *rx_sc;
     struct {
         unsigned char assoc_num;
-        u8 key[MACSEC_KEYID_LEN];
+        u8 key[MACSEC_MAX_KEY_LEN];
         union {
             struct macsec_rx_sa *rx_sa;
             struct macsec_tx_sa *tx_sa;

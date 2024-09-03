@@ -4,25 +4,19 @@
        Copyright (c) 2015 Broadcom 
        All Rights Reserved
     
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
     
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
     
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
     
 :>
 */
@@ -35,6 +29,46 @@
 #include "rdd_defs.h"
 #include "rdp_platform.h"
 #include "rdpa_rate_limit.h"
+
+#if defined(BCM_DSL_XRDP)
+#define RDD_ETH_TM_AQM_QUEUE_TABLE_PTR                            RDD_DS_TM_AQM_QUEUE_TABLE_PTR
+#define RDD_ETH_TM_RATE_LIMITER_BUDGET_DESCRIPTOR_TABLE_PTR       RDD_DS_TM_RATE_LIMITER_BUDGET_DESCRIPTOR_TABLE_PTR
+#define RDD_ETH_TM_RATE_LIMITER_BUDGET_DESCRIPTOR_TABLE_SIZE      RDD_DS_TM_RATE_LIMITER_BUDGET_DESCRIPTOR_TABLE_SIZE
+#define RDD_ETH_TM_RATE_LIMITER_PARAMS_DESCRIPTOR_TABLE_PTR       RDD_DS_TM_RATE_LIMITER_PARAMS_DESCRIPTOR_TABLE_PTR
+#define RDD_ETH_TM_RATE_LIMITER_PARAMS_DESCRIPTOR_TABLE_SIZE      RDD_DS_TM_RATE_LIMITER_PARAMS_DESCRIPTOR_TABLE_SIZE
+#define RDD_ETH_TM_RATE_LIMITER_PROFILE_RESIDUE_TABLE_ADDRESS_ARR RDD_DS_TM_RATE_LIMITER_PROFILE_RESIDUE_TABLE_ADDRESS_ARR
+#define RDD_ETH_TM_RATE_LIMITER_PROFILE_TABLE_ADDRESS_ARR         RDD_DS_TM_RATE_LIMITER_PROFILE_TABLE_ADDRESS_ARR
+#define RDD_ETH_TM_RATE_LIMITER_PROFILE_TABLE_SIZE                RDD_DS_TM_RATE_LIMITER_PROFILE_TABLE_SIZE
+#define RDD_ETH_TM_RATE_LIMITER_VALID_PTR                         RDD_DS_TM_RATE_LIMITER_VALID_PTR
+#define RDD_ETH_TM_RATE_LIMITER_VALID_SIZE                        RDD_DS_TM_RATE_LIMITER_VALID_SIZE
+#define RDD_ETH_TM_RATE_LIMITER_BUDGET_VALID_PTR                  RDD_DS_TM_RATE_LIMITER_BUDGET_VALID_PTR
+#define RDD_ETH_TM_RATE_LIMITER_BUDGET_VALID_SIZE                 RDD_DS_TM_RATE_LIMITER_BUDGET_VALID_SIZE
+#define RDD_ETH_TM_SCHEDULER_POOL_PTR                             RDD_DS_TM_SCHEDULER_POOL_PTR
+#define RDD_ETH_TM_SCHEDULER_TABLE_PTR                            RDD_DS_TM_SCHEDULER_TABLE_PTR
+#define RDD_ETH_TM_SCHEDULER_TABLE_SIZE                           RDD_DS_TM_SCHEDULER_TABLE_SIZE
+#define RDD_ETH_TM_SCHEDULING_QUEUE_TABLE_PTR                     RDD_DS_TM_SCHEDULING_QUEUE_TABLE_PTR
+#define RDD_ETH_TM_SCHEDULING_QUEUE_TABLE_SIZE                    RDD_DS_TM_SCHEDULING_QUEUE_TABLE_SIZE
+#define RDD_ETH_TM_SECONDARY_SCHEDULER_TABLE_PTR                  RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_PTR
+#define RDD_ETH_TM_SECONDARY_SCHEDULER_TABLE_SIZE                 RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE
+#define RDD_PON_TM_AQM_QUEUE_TABLE_PTR                            RDD_US_TM_AQM_QUEUE_TABLE_PTR
+#define RDD_PON_TM_RATE_LIMITER_BUDGET_DESCRIPTOR_TABLE_PTR       RDD_US_TM_RATE_LIMITER_BUDGET_DESCRIPTOR_TABLE_PTR
+#define RDD_PON_TM_RATE_LIMITER_BUDGET_DESCRIPTOR_TABLE_SIZE      RDD_US_TM_RATE_LIMITER_BUDGET_DESCRIPTOR_TABLE_SIZE
+#define RDD_PON_TM_RATE_LIMITER_PARAMS_DESCRIPTOR_TABLE_PTR       RDD_US_TM_RATE_LIMITER_PARAMS_DESCRIPTOR_TABLE_PTR
+#define RDD_PON_TM_RATE_LIMITER_PARAMS_DESCRIPTOR_TABLE_SIZE      RDD_US_TM_RATE_LIMITER_PARAMS_DESCRIPTOR_TABLE_SIZE
+#define RDD_PON_TM_RATE_LIMITER_PROFILE_RESIDUE_TABLE_ADDRESS_ARR RDD_US_TM_RATE_LIMITER_PROFILE_RESIDUE_TABLE_ADDRESS_ARR
+#define RDD_PON_TM_RATE_LIMITER_PROFILE_TABLE_ADDRESS_ARR         RDD_US_TM_RATE_LIMITER_PROFILE_TABLE_ADDRESS_ARR
+#define RDD_PON_TM_RATE_LIMITER_VALID_PTR                         RDD_US_TM_RATE_LIMITER_VALID_PTR
+#define RDD_PON_TM_RATE_LIMITER_VALID_SIZE                        RDD_US_TM_RATE_LIMITER_VALID_SIZE
+#define RDD_PON_TM_RATE_LIMITER_BUDGET_VALID_PTR                  RDD_US_TM_RATE_LIMITER_BUDGET_VALID_PTR
+#define RDD_PON_TM_RATE_LIMITER_BUDGET_VALID_SIZE                 RDD_US_TM_RATE_LIMITER_BUDGET_VALID_SIZE
+#define RDD_PON_TM_SCHEDULER_POOL_PTR                             RDD_US_TM_SCHEDULER_POOL_PTR
+#define RDD_PON_TM_SCHEDULER_TABLE_PTR                            RDD_US_TM_SCHEDULER_TABLE_PTR
+#define RDD_PON_TM_SCHEDULER_TABLE_SIZE                           RDD_US_TM_SCHEDULER_TABLE_SIZE
+#define RDD_PON_TM_SCHEDULING_QUEUE_TABLE_PTR                     RDD_US_TM_SCHEDULING_QUEUE_TABLE_PTR
+#define RDD_PON_TM_SCHEDULING_QUEUE_TABLE_SIZE                    RDD_US_TM_SCHEDULING_QUEUE_TABLE_SIZE
+#define RDD_PON_TM_SECONDARY_SCHEDULER_TABLE_PTR                  RDD_US_TM_SECONDARY_SCHEDULER_TABLE_PTR
+#define RDD_PON_TM_SECONDARY_SCHEDULER_TABLE_SIZE                 RDD_US_TM_SECONDARY_SCHEDULER_TABLE_SIZE
+#endif
 
 /* A number representing the maximum number of schedulers per type. It is direction inclusive.
  * I.e.: MAX_NUM_SCHEDULERS_PER_TYPE > MAX(TOTAL PRIMARY SCHEDULERS in DS and US, TOTAL SECONDARY SCHEDULERS in DS and US)
@@ -96,8 +130,8 @@ typedef struct
     uint8_t *secondary_scheduler_table_p;
     uint32_t rl_params_table_size;
     uint8_t *rl_params_table_p;
-    uint32_t rl_valid_max;
-    uint8_t *rl_valid_table_p;
+    uint32_t rl_budget_valid_max;
+    uint8_t *rl_budget_valid_table_p;
     uint8_t *scheduler_pool_p;
     uint32_t rl_budget_desc_table_size;
     uint8_t *rl_budget_desc_table_p;
@@ -133,7 +167,8 @@ rdpa_rdd_sched_type_t scheduler_type, uint8_t queue_scheduler_index, rdpa_port_t
 bdmf_error_t rdd_scheduler_queue_wrr_set(tm_identifier_e tm_identity, uint16_t queue_index, uint8_t quantum_number);
 
 /* API to rate limiter module - still not implemented correct*/
-bdmf_error_t _rdd_rate_limiter_cfg(rdpa_tm_rl_rate_mode rl_rate_mode, tm_identifier_e tm_identity, int16_t rl_index, rdd_basic_rl_cfg_t *rl_cfg);
+bdmf_error_t _rdd_rate_limiter_cfg(const rdpa_tm_rl_cfg_t *rl_object, rdpa_tm_rl_rate_mode supported_rl_rate_mode, rdpa_tm_rl_rate_mode rl_rate_mode, tm_identifier_e tm_identity, 
+    int16_t rl_index, rdd_basic_rl_cfg_t *rl_cfg, int new_conf, uint8_t sir_pir);
 bdmf_error_t rdd_rate_limiter_remove(tm_identifier_e tm_identity, int16_t rl_index);
 
 bdmf_error_t rdd_rate_limiter_params_descriptor_set(tm_identifier_e tm_identity, uint8_t rl_index, RATE_LIMITER_PARAMS_DESCRIPTOR_STRUCT *rl_params_descriptor);
@@ -141,6 +176,7 @@ bdmf_error_t rdd_rate_limiter_params_descriptor_get(tm_identifier_e tm_identity,
 
 /* API to RDPA level */
 void rdd_set_queue_enable(uint32_t qm_queue_index, bdmf_boolean enable);
+void rdd_scheduler_aqm_stats_write(tm_identifier_e tm_identity, uint8_t scheduler_index, rdpa_rdd_sched_type_t scheduler_type, int enable);
 
 /* Internal RDD init function */
 /* init bbh queues */
@@ -166,7 +202,7 @@ static inline int channel_is_eth(tm_identifier_e tm_identity)
 
 static inline int channel_is_pon(tm_identifier_e tm_identity)
 {
-    return (tm_identity == TM_PON_DSL);
+    return (tm_identity == TM_PON_DSL_AE);
 }
 
 static inline int channel_is_eth_sq(tm_identifier_e tm_identity)

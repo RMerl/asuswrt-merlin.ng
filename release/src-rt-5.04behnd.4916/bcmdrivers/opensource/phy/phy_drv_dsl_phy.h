@@ -3,27 +3,21 @@
    All Rights Reserved
 
     <:label-BRCM:2015:DUAL/GPL:standard
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
 :>
 */
 
@@ -113,36 +107,6 @@ static inline int dsl_phy_leds_init(phy_dev_t *phy_dev, void *leds_info)
     return ephy_leds_init(leds_info);
 }
 
-/* Speed cap adjustment for USXGMII_M port aggregation */
-static inline int phy_usxgmii_m_speed_cap_adjust(phy_dev_t *phy_dev, int speed_caps)
-{
-    int highest_speed = phy_caps_to_max_speed(speed_caps & (~PHY_CAP_AUTONEG));
-
-    if (phy_dev->usxgmii_m_type == USXGMII_M_NONE)
-        return speed_caps;
-
-    switch (highest_speed)
-    {
-        case PHY_SPEED_10000:
-            switch (phy_dev->usxgmii_m_type)
-            {
-                case USXGMII_M_10G_Q:
-                    speed_caps &= ~(PHY_CAP_10000|PHY_CAP_5000);
-                    break;
-                case USXGMII_M_10G_D:
-                    speed_caps &= ~(PHY_CAP_10000);
-                    break;
-                default:
-                    BUG_CHECK("Driver not support yet for Serdes of %d USXGMII mode: %d\n", 
-                            phy_dev->addr, phy_dev->usxgmii_m_type);
-            }
-            break;
-        default:
-            BUG_CHECK("Driver not support yet for USXGMII mode at %d, max speed: %d\n", phy_dev->addr, highest_speed);
-    }
-    return speed_caps;
-}
-
 /* 
     The function is doing adjustment for PHYs that hardware speed caps does not reflect
     its real speed caps; those PHYs are doing adjustment inside PHY firmware during the link up.
@@ -152,6 +116,9 @@ static inline int phy_xfi_speed_cap_adjust(phy_dev_t *phy_dev, int speed_caps)
 {
     uint32_t inter_types;
     uint32_t supported_speed_caps;
+
+    if (phy_dev_is_mphy(phy_dev))
+        return inter_phy_supported_speed_caps[INTER_PHY_TYPE_USXGMII_MP]|PHY_CAP_AUTONEG;
 
     phy_dev_inter_phy_types_get(phy_dev, INTER_PHY_TYPE_UP, &inter_types);
     /* Remove multi speed XFI flags which do not give speed capability indication */

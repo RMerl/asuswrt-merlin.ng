@@ -4,25 +4,19 @@
    Copyright (c) 2013 Broadcom 
    All Rights Reserved
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
 :>
 */
@@ -139,6 +133,10 @@ enum {
     #define FORCED_100MFD_CTRL  (CL45_REG_100M_SPEED|CL45_REG_DUPLEX_MODE)
     #define REGULAR_CTRL_REG0_VAL    (CL45_REG_1G100M_AN_ENABLED|CL45_REG_1G100M_AN_RESTART|CL45_REG_1000M_SPEED|CL45_REG_DUPLEX_MODE)
 
+#define CL45_REG_1G100M_STATUS     0x7ffe1
+    #define CL45_REG_CAP_10M_FD         (1<<12)
+    #define CL45_REG_CAP_10M_HD         (1<<11)
+
 #define CL45_REG_COP_AN     0x7ffe4
     #define CL45_REG_COP_AN_100M_ADV_MASK   (3<<7)
     #define CL45_REG_COP_AN_100M_FD_ADV     (2<<7)
@@ -146,6 +144,8 @@ enum {
     #define CL45_REG_COP_AN_100M_FHD_ADV    (3<<7)
     #define CL45_REG_COP_PAUSE              (1<<10)
     #define CL45_REG_COP_PAUSE_ASYM         (1<<11)
+    #define CL45_REG_COP_AN_10M_FD_ADV      (1<<6)
+    #define CL45_REG_COP_AN_10M_HD_ADV      (1<<5)
 
 #define CL45_REG_1G_CTL     0x7ffe9
     #define CL45_REG_1G_CTL_1G_ADV_MASK     (3<<8)

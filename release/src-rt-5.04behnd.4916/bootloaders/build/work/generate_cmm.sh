@@ -95,11 +95,13 @@ do
 
 
 		if [ "x${CONFIG_BCMBCA_DPFE}" == "xy" ]; then 
-			# there is no dpfe for ddr3
 			DPFE_CHIP=${BRCM_CHIP}
-			if [ "${BRCM_CHIP}" == "6813" ]; then
-				DPFE_CHIP="4912"
+			# 6766 and 6764 share the mcb and dfpe with 6765
+			if [ "${BRCM_CHIP}" == "6766" -o "${BRCM_CHIP}" == "6764" ]; then
+				DPFE_CHIP="6765"
 			fi
+
+
 			for file in `ls build/work/dpfe/${DPFE_CHIP}/dpfe_${DPFE_CHIP}_* |grep -i ${i} 2> /dev/null` 
 			do
 				chmod +w ${cmm_out}/${file##*/}	2> /dev/null

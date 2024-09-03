@@ -3,27 +3,21 @@
    All Rights Reserved
 
     <:label-BRCM:2015:DUAL/GPL:standard
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
 :>
 */
 
@@ -40,6 +34,7 @@
 #include "wol.h"
 #include "bcmnet.h"
 #include "linux/time64.h"
+#include "bcm/bcmswapitypes.h"
 
 extern int apd_enabled;
 extern int eee_enabled;
@@ -79,6 +74,33 @@ typedef enum
     PHY_SPEED_10000     = 10000,
     PHY_SPEED_AUTO      = PHY_SPEED_UNKNOWN,
 } phy_speed_t;
+
+static inline phy_speed_t phy_speed_mbps_to_macro(int speed_mbps)
+{
+    switch(speed_mbps)
+    {
+        case 10:
+            return PHY_SPEED_10;
+            break;
+        case 100:
+            return PHY_SPEED_100;
+            break;
+        case 1000:
+            return PHY_SPEED_1000;
+            break;
+        case 2500:
+            return PHY_SPEED_2500;
+            break;
+        case 5000:
+            return PHY_SPEED_5000;
+            break;
+        case 10000:
+            return PHY_SPEED_10000;
+            break;
+        default:
+            return PHY_SPEED_UNKNOWN;
+    }
+}
 
 typedef enum
 {
@@ -128,33 +150,31 @@ typedef enum
 
 typedef void (*link_change_cb_t)(void *ctx);
 
-#define INTER_PHY_TYPE_MIN          0
-#define INTER_PHY_TYPE_UNKNOWN      INTER_PHY_TYPE_MIN
-#define INTER_PHY_TYPE_AUTO         INTER_PHY_TYPE_UNKNOWN
-#define INTER_PHY_TYPE_100BASE_FX   1
-#define INTER_PHY_TYPE_1000BASE_X   2
-#define INTER_PHY_TYPE_1GBASE_X     3
-
-#define INTER_PHY_TYPE_1GBASE_R     4
-#define INTER_PHY_TYPE_2P5GBASE_X   5
-#define INTER_PHY_TYPE_2P5GBASE_R   6
-#define INTER_PHY_TYPE_2500BASE_X   7
-
-#define INTER_PHY_TYPE_2P5GIDLE     8
-#define INTER_PHY_TYPE_5GBASE_R     9
-#define INTER_PHY_TYPE_5GBASE_X     10
-#define INTER_PHY_TYPE_5000BASE_X   11
-
-#define INTER_PHY_TYPE_5GIDLE       12
-#define INTER_PHY_TYPE_10GBASE_R    13
-#define INTER_PHY_TYPE_10GBASE_X    14
-#define INTER_PHY_TYPE_SGMII        15
-#define INTER_PHY_TYPE_USXGMII      16
-
-#define INTER_PHY_TYPE_USXGMII_MP   17
-#define INTER_PHY_TYPE_MLTI_SPEED_BASE_X_AN 18
-
-#define INTER_PHY_TYPE_MAX 19
+#define SERDES_INTER_TYPE_STRING \
+    [INTER_PHY_TYPE_100BASE_FX] = "100Base-FX", \
+    [INTER_PHY_TYPE_1000BASE_X] = "1000Base-X", \
+    [INTER_PHY_TYPE_1GBASE_X]   = "1GBase-X", \
+    [INTER_PHY_TYPE_1GBASE_R]   = "1GBase-R", \
+ \
+    [INTER_PHY_TYPE_2P5GBASE_X] = "2.5GBase-X", \
+    [INTER_PHY_TYPE_2P5GBASE_R] = "2.5GBase-R", \
+    [INTER_PHY_TYPE_2500BASE_X] = "2500Base-X", \
+    [INTER_PHY_TYPE_2P5GIDLE]   = "2.5GIdle", \
+ \
+    [INTER_PHY_TYPE_5GBASE_R]   = "5GBase-R", \
+    [INTER_PHY_TYPE_5GBASE_X]   = "5GBase-X", \
+    [INTER_PHY_TYPE_5000BASE_X] = "5000Base-X", \
+    [INTER_PHY_TYPE_5GIDLE]     = "5GIdel", \
+ \
+    [INTER_PHY_TYPE_10GBASE_R]  = "10GBase-R", \
+    [INTER_PHY_TYPE_SGMII]      = "SGMII", \
+    [INTER_PHY_TYPE_USXGMII]    = "USXGMII", \
+    [INTER_PHY_TYPE_MLTI_SPEED_BASE_X_AN] = "MultiSpeedAN", \
+ \
+    [INTER_PHY_TYPE_USXGMII_MP] = "USXGMII_M", \
+    [INTER_PHY_TYPE_SXGMII]     = "SXGMII", \
+ \
+    [INTER_PHY_TYPE_UNKNOWN]    = "Uknown",
 
 //USXGMII-M support
 typedef enum {
@@ -214,10 +234,6 @@ static inline int usxgmii_m_total_ports(usxgmii_m_type_t usxgmii_m_type)
 
 #define IS_USXGMII_MULTI_PORTS(phy_dev) (usxgmii_m_total_ports(phy_dev->usxgmii_m_type) > 1)
 
-#define PHY_CFG_AN_AUTO 0
-#define PHY_CFG_AN_OFF  1
-#define PHY_CFG_AN_ON   2
-
 /* Phy device */
 typedef struct phy_dev_s
 {
@@ -273,6 +289,12 @@ typedef struct phy_dev_s
     int txfir_reg_speed_idx; /* The speed of TXFIR values currently set in register */
     int shared_ref_clk_mhz;
     ethcd_t ethcd;
+    struct /* Link Flapping statistics */
+    {
+        uint32_t link_flaps;
+        uint32_t link_flaps_per_min;
+        uint64_t link_flaps_jiffies;
+    };
 } phy_dev_t;
 
 #define PHY_FLAG_NOT_PRESENTED                  (1<<0)      /* for SFP module indicating not inserted */
@@ -294,6 +316,8 @@ typedef struct phy_dev_s
 #define PHY_FLAG_FORCE_2P5G_10GVCO              (1<<16)
 #define PHY_FLAG_FORCE_2P5G_XGMII               (1<<17)
 #define PHY_FLAG_SHARED_REF_CLK_SET             (1<<18)
+#define PHY_FLAG_ON_MEZZANINE                   (1<<19)
+#define PHY_FLAG_SHARED_CLOCK_BOOTSTRAP         (1<<20)
 
 #define PhyIsPortConnectedToExternalSwitch(phy) (((phy)->flag & PHY_FLAG_TO_EXTSW)?1:0)
 #define PhyIsExtPhyId(phy)                      (((phy)->flag & PHY_FLAG_EXTPHY)?1:0)
@@ -301,6 +325,7 @@ typedef struct phy_dev_s
 #define PhyHasWakeOnLan(phy)                    (((phy)->flag & PHY_FLAG_WAKE_ON_LAN)?1:0)
 #define PhyIsForced2p5g10GVco(phy)              (((phy)->flag & PHY_FLAG_FORCE_2P5G_10GVCO)?1:0)
 #define PhyIsSharedRefClkSet(phy)               (((phy)->flag & PHY_FLAG_SHARED_REF_CLK_SET)?1:0)
+#define PhyIsPowerSetEnabled(phy)               (((phy)->flag & PHY_FLAG_POWER_SET_ENABLED)?1:0)
 #define PhySetSharedRefClk(phy)                 ((phy)->flag |= PHY_FLAG_SHARED_REF_CLK_SET)
 
 #define PHY_MAC_LINK_VALID  (1<<31)
@@ -310,7 +335,7 @@ typedef struct phy_dev_s
 #define CAPS_TYPE_LP_ADVERTISED  2
 
 static uint32_t inter_phy_supported_speed_caps[] = {
-    [INTER_PHY_TYPE_UNKNOWN] = PHY_CAP_100_FULL | PHY_CAP_1000_FULL | PHY_CAP_2500 | PHY_CAP_5000 | PHY_CAP_10000,
+    [INTER_PHY_TYPE_UNKNOWN] = PHY_CAP_10_HALF | PHY_CAP_10_FULL | PHY_CAP_100_HALF | PHY_CAP_100_FULL | PHY_CAP_1000_FULL | PHY_CAP_2500 | PHY_CAP_5000 | PHY_CAP_10000,
     [INTER_PHY_TYPE_100BASE_FX] = PHY_CAP_100_FULL,
     [INTER_PHY_TYPE_1000BASE_X] = PHY_CAP_1000_FULL,
     [INTER_PHY_TYPE_1GBASE_X]   = PHY_CAP_1000_FULL,
@@ -328,10 +353,11 @@ static uint32_t inter_phy_supported_speed_caps[] = {
     [INTER_PHY_TYPE_5GIDLE]     = PHY_CAP_5000,
     [INTER_PHY_TYPE_10GBASE_R]  = PHY_CAP_10000,
     [INTER_PHY_TYPE_10GBASE_X]  = PHY_CAP_10000,
-    [INTER_PHY_TYPE_SGMII]      = PHY_CAP_100_FULL | PHY_CAP_1000_FULL,
+    [INTER_PHY_TYPE_SGMII]      = PHY_CAP_10_FULL | PHY_CAP_100_FULL | PHY_CAP_1000_FULL,
     [INTER_PHY_TYPE_USXGMII]    = PHY_CAP_100_FULL | PHY_CAP_1000_FULL | PHY_CAP_2500 | PHY_CAP_5000 | PHY_CAP_10000,
 
-    [INTER_PHY_TYPE_USXGMII_MP] = PHY_CAP_100_FULL | PHY_CAP_1000_FULL | PHY_CAP_2500 | PHY_CAP_5000 | PHY_CAP_10000,
+    [INTER_PHY_TYPE_USXGMII_MP] = PHY_CAP_10_FULL | PHY_CAP_100_FULL | PHY_CAP_1000_FULL | PHY_CAP_2500,
+    [INTER_PHY_TYPE_SXGMII]     = PHY_CAP_10_FULL | PHY_CAP_100_FULL | PHY_CAP_1000_FULL | PHY_CAP_2500,
     [INTER_PHY_TYPE_MLTI_SPEED_BASE_X_AN] = PHY_CAP_100_FULL | PHY_CAP_1000_FULL | PHY_CAP_2500 | PHY_CAP_5000 | PHY_CAP_10000,
 };
 #define INTER_PHY_TYPE_AUTO_M           (1<<INTER_PHY_TYPE_AUTO)
@@ -358,10 +384,11 @@ static uint32_t inter_phy_supported_speed_caps[] = {
 #define INTER_PHY_TYPE_USXGMII_M        (1<<INTER_PHY_TYPE_USXGMII)
 
 #define INTER_PHY_TYPE_USXGMII_MP_M     (1<<INTER_PHY_TYPE_USXGMII_MP)
+#define INTER_PHY_TYPE_SXGMII_M         (1<<INTER_PHY_TYPE_SXGMII)
 
 #define INTER_PHY_TYPE_MULTI_SPEED_AN_MASK_M \
     (INTER_PHY_TYPE_SGMII_M | INTER_PHY_TYPE_USXGMII_M | \
-     INTER_PHY_TYPE_USXGMII_MP_M  )
+     INTER_PHY_TYPE_USXGMII_MP_M | INTER_PHY_TYPE_SXGMII_M )
 
 #define INTER_PHY_TYPE_IS_MULTI_SPEED_AN(inter_type) (((1<<inter_type) & INTER_PHY_TYPE_MULTI_SPEED_AN_MASK_M)>0)
 
@@ -426,7 +453,7 @@ static inline int phy_speed_to_inter_phy_speed_mask(phy_speed_t speed)
 }
 /*
     INTER_PHY_TYPES Naming rule:
-    o Top Letters before digits: S: SGMII; U: USXGMII-S; M: USXGMII-M; A: MultiSpeedAN
+    o Top Letters before digits: S: SGMII; U: USXGMII-S; M: USXGMII-M; A: MultiSpeedAN; Q: SXGMII(QuarterBaud of USXGMII)
     o Letters after first one is [SPEED] : 0, 1, 2, 5, 10 means 100M, 1G, 2.5G, 5G and 10G
     o Letters after [SPEED]: F: 100Base-FX; X: Base-X; I: Idle Stuffing; R: Base-R(Replicated) K: N000Base-X,
                            :
@@ -443,37 +470,39 @@ static inline int phy_speed_to_inter_phy_speed_mask(phy_speed_t speed)
 #define INTER_PHY_TYPES_S1K_M \
     ( INTER_PHY_TYPE_SGMII_M | INTER_PHY_TYPE_1000BASE_X_M )
 
+#define INTER_PHY_TYPES_S1K2X_M ( INTER_PHY_TYPES_S1K_M | INTER_PHY_TYPE_2P5GBASE_X_M )
+
 #define INTER_PHY_TYPES_S1K2K_M ( INTER_PHY_TYPES_S1K_M | INTER_PHY_TYPE_2500BASE_X_M )
 
 #define INTER_PHY_TYPES_S0F1K2K5R10R_M ( \
     INTER_PHY_TYPES_S0F1K2K_M | INTER_PHY_TYPE_5GBASE_R_M | INTER_PHY_TYPE_10GBASE_R_M )
 
-#define INTER_PHY_TYPES_S1K2KI5I_M ( \
-    INTER_PHY_TYPES_S1K_M | INTER_PHY_TYPE_2500BASE_X_M | \
+#define INTER_PHY_TYPES_S1K2XI5I_M ( \
+    INTER_PHY_TYPES_S1K_M | INTER_PHY_TYPE_2P5GBASE_X_M | \
     INTER_PHY_TYPE_2P5GIDLE_M | INTER_PHY_TYPE_5GIDLE_M )
 
-#define INTER_PHY_TYPES_S1K2KI5KI_M ( \
-    INTER_PHY_TYPES_S1K2KI5I_M | INTER_PHY_TYPE_5000BASE_X_M)
+#define INTER_PHY_TYPES_S1K2XI5KI_M ( \
+    INTER_PHY_TYPES_S1K2XI5I_M | INTER_PHY_TYPE_5000BASE_X_M)
 
-#define INTER_PHY_TYPES_US1K2KI5KI_M ( \
-    INTER_PHY_TYPE_USXGMII_M | INTER_PHY_TYPES_S1K2KI5KI_M )
+#define INTER_PHY_TYPES_US1K2XI5KI_M ( \
+    INTER_PHY_TYPE_USXGMII_M | INTER_PHY_TYPES_S1K2XI5KI_M )
 
-#define INTER_PHY_TYPES_US1K2KI5KI10R_M ( \
-    INTER_PHY_TYPES_US1K2KI5KI_M | INTER_PHY_TYPE_10GBASE_R_M )
+#define INTER_PHY_TYPES_US1K2XI5KI10R_M ( \
+    INTER_PHY_TYPES_US1K2XI5KI_M | INTER_PHY_TYPE_10GBASE_R_M )
 
-#define INTER_PHY_TYPES_US1K2KIR_M ( \
-    INTER_PHY_TYPE_USXGMII_M | INTER_PHY_TYPES_S1K2K_M | \
+#define INTER_PHY_TYPES_US1K2XIR_M ( \
+    INTER_PHY_TYPE_USXGMII_M | INTER_PHY_TYPES_S1K2X_M | \
     INTER_PHY_TYPE_2P5GIDLE_M | INTER_PHY_TYPE_2P5GBASE_R_M )
 
-#define INTER_PHY_TYPES_US1K2KIR5KIR_M ( \
-    INTER_PHY_TYPES_US1K2KIR_M | \
+#define INTER_PHY_TYPES_US1K2XIR5KIR_M ( \
+    INTER_PHY_TYPES_US1K2XIR_M | \
     INTER_PHY_TYPE_5000BASE_X_M | INTER_PHY_TYPE_5GIDLE_M | INTER_PHY_TYPE_5GBASE_R_M )
 
-#define INTER_PHY_TYPES_US1K2KIR5KIR10R_M ( \
-    INTER_PHY_TYPES_US1K2KIR5KIR_M | INTER_PHY_TYPE_10GBASE_R_M )
+#define INTER_PHY_TYPES_US1K2XIR5KIR10R_M ( \
+    INTER_PHY_TYPES_US1K2XIR5KIR_M | INTER_PHY_TYPE_10GBASE_R_M )
 
 #define INTER_PHY_TYPES_UMS1K2KIR5KIR10R_M ( \
-    INTER_PHY_TYPES_US1K2KIR5KIR10R_M | INTER_PHY_TYPE_USXGMII_MP_M )
+    INTER_PHY_TYPES_US1K2XIR5KIR10R_M | INTER_PHY_TYPE_USXGMII_MP_M )
 
 #define INTER_PHY_TYPES_US1KR2KXR_M ( \
     INTER_PHY_TYPE_USXGMII_M | INTER_PHY_TYPES_S1K2K_M | INTER_PHY_TYPE_1GBASE_R_M | \
@@ -481,6 +510,15 @@ static inline int phy_speed_to_inter_phy_speed_mask(phy_speed_t speed)
 
 #define INTER_PHY_TYPES_AUS1KR2KXR_M ( \
     INTER_PHY_TYPES_US1KR2KXR_M | INTER_PHY_TYPE_MLTI_SPEED_BASE_X_AN_M )
+
+#define INTER_PHY_TYPES_AQUS1KR2KXR_M ( \
+    INTER_PHY_TYPES_AUS1KR2KXR_M | INTER_PHY_TYPE_SXGMII_M )
+
+#define INTER_PHY_TYPES_AUS1KR2KXR5KXR_M ( \
+    INTER_PHY_TYPES_AUS1KR2KXR_M | INTER_PHY_TYPE_5000BASE_X_M | INTER_PHY_TYPE_5GBASE_X_M | INTER_PHY_TYPE_5GBASE_R_M)
+
+#define INTER_PHY_TYPES_AQUS1KR2KXR5KXR_M ( \
+    INTER_PHY_TYPES_AUS1KR2KXR5KXR_M | INTER_PHY_TYPE_SXGMII_M )
 
 #define INTER_PHY_TYPES_US1KR2KXR5KXR10R_M ( \
     INTER_PHY_TYPES_US1KR2KXR_M | INTER_PHY_TYPE_5000BASE_X_M | INTER_PHY_TYPE_5GBASE_X_M | \
@@ -496,11 +534,28 @@ static inline int phy_speed_to_inter_phy_speed_mask(phy_speed_t speed)
 #define INTER_PHY_TYPES_AUS1KR2KXR5KXR10R_M ( \
     INTER_PHY_TYPES_AUS1KR2KXR5KXR_M |INTER_PHY_TYPE_10GBASE_R_M)
 
+#define INTER_PHY_TYPES_AQUS1KR2KXR5KXR10R_M ( \
+    INTER_PHY_TYPES_AUS1KR2KXR5KXR10R_M | INTER_PHY_TYPE_SXGMII_M )
+
 #define INTER_PHY_TYPES_AMUS1KR2KXR5KXR10R_M ( \
     INTER_PHY_TYPES_AUS1KR2KXR5KXR10R_M | INTER_PHY_TYPE_USXGMII_MP_M )
 
 #define INTER_PHY_TYPES_S1K2KR5R_M (\
     INTER_PHY_TYPES_S1K2K_M|INTER_PHY_TYPE_5GBASE_R_M)
+
+#define INTER_PHY_TYPES_S1K2KR_M (\
+    INTER_PHY_TYPES_S1K2K_M|INTER_PHY_TYPE_2P5GBASE_R_M)
+
+#define INTER_PHY_TYPES_US1K2KR_M (\
+    INTER_PHY_TYPES_S1K2KR_M|INTER_PHY_TYPE_USXGMII)
+
+#define INTER_PHY_TYPES_QS1K2KXR_M ( \
+    INTER_PHY_TYPE_SXGMII_M | INTER_PHY_TYPE_SGMII_M | INTER_PHY_TYPE_1000BASE_X_M | \
+    INTER_PHY_TYPE_2500BASE_X_M | INTER_PHY_TYPE_2P5GBASE_X_M | INTER_PHY_TYPE_2P5GBASE_R_M )
+
+#define INTER_PHY_TYPES_QS1K2XR_M ( \
+    INTER_PHY_TYPE_SXGMII_M | INTER_PHY_TYPE_SGMII_M | INTER_PHY_TYPE_1000BASE_X_M | \
+    INTER_PHY_TYPE_2P5GBASE_X_M | INTER_PHY_TYPE_2P5GBASE_R_M )
 
 typedef enum {
     INTER_PHY_TYPE_UP,      /* interface type on upword toward MAC */
@@ -664,7 +719,6 @@ phy_dev_t *phy_dev_add(phy_type_t phy_type, uint32_t addr, void *priv);
 int phy_dev_del(phy_dev_t *phy_dev);
 
 int phy_drivers_set(void);
-int phy_drivers_init(void);
 int phy_driver_set(phy_drv_t *phy_drv);
 
 char *phy_dev_mii_type_to_str(phy_mii_type_t mii_type);
@@ -688,7 +742,7 @@ int phy_dev_queue_work(phy_dev_t *phy_dev, phy_dev_work_func_t func);
 phy_dev_t *phy_drv_find_device(dt_handle_t handle);
 void phy_dev_attach(phy_dev_t *phy_dev, uint32_t phy_mode, int delay_rx, int delay_tx, int instance);
 
-void phy_devices_shutdown(phy_dev_t *phy_dev);
+void phy_devices_shutdown(void);
 
 #define is_cascade_phy(phy) (phy->cascade_prev || phy->cascade_next)
 #define cascade_phy_get_next(phy)   ((phy->cascade_next && !(phy->cascade_next->flag & PHY_FLAG_NOT_PRESENTED))? phy->cascade_next : NULL)
@@ -1124,6 +1178,12 @@ static inline int phy_dev_eee_mode_get(phy_dev_t *phy_dev, int *autogreeen)
     return 0;
 }
 
+static inline int phy_dev_eee_support(phy_dev_t *phy_dev, int *eee_support)
+{
+    *eee_support = phy_dev->phy_drv->eee_set > 0;
+    return 0;
+}
+
 static inline int phy_dev_eee_mode_set(phy_dev_t *phy_dev, int autogreeen)
 {
     int enable;
@@ -1171,7 +1231,6 @@ static inline int phy_dev_enable_read_status(phy_dev_t *phy_dev, int enable)
 static inline int phy_dev_read_status(phy_dev_t *phy_dev)
 {
     int ret = 0;
-    phy_speed_t speed = phy_dev->speed;
 
     if (!(phy_dev->flag & PHY_FLAG_INITED))
         goto Exit;
@@ -1192,27 +1251,12 @@ static inline int phy_dev_read_status(phy_dev_t *phy_dev)
     }
 
 #if defined(DSL_DEVICES)
-    if (phy_is_pon_wan_ae_serdes(phy_dev->cascade_prev)) /* For PON Serdes + XGPHY handling */
-#endif
-    {
-    if (!phy_dev->cascade_prev)
-        goto Exit;
-
-    if (phy_dev->speed != speed && phy_dev->cascade_prev->phy_drv->speed_set)
-        phy_dev->cascade_prev->phy_drv->speed_set(phy_dev->cascade_prev, phy_dev->speed, phy_dev->duplex);
-
-    if (phy_dev->cascade_prev->phy_drv->read_status)
-        phy_dev->cascade_prev->phy_drv->read_status(phy_dev->cascade_prev);
-    }
-#if defined(DSL_DEVICES)
-    else    /* For DSL Serdes + XGPHY handling */
-    {
-        /* administratively force link down if ethernet phy is not in power enable state */
+    /* administratively force link down if ethernet phy is not in power enable state */
     if (phy_dev->phy_drv->phy_type != PHY_TYPE_PON &&
         !(phy_dev->flag & PHY_FLAG_POWER_SET_ENABLED) &&
-        !(phy_dev->flag & PHY_FLAG_TO_EXTSW)) {
+        !(phy_dev->flag & PHY_FLAG_TO_EXTSW))
+    {
         phy_dev->link = 0;
-    }
     }
 #endif
 
@@ -1445,7 +1489,7 @@ static inline int phy_dev_inter_phy_types_get(phy_dev_t *phy_dev, inter_phy_type
     return phy_dev_inter_phy_types_get_with_caps_type(phy_dev, if_dir, CAPS_TYPE_ADVERTISE, types);
 }
 
-static inline int phy_dev_current_inter_phy_types_get(phy_dev_t *phy_dev)
+static inline int phy_dev_current_inter_phy_type_get(phy_dev_t *phy_dev)
 {
     phy_drv_t *phy_drv = phy_dev->phy_drv;
 
@@ -1527,13 +1571,13 @@ static inline int phy_dev_is_xgmii_mode(phy_dev_t *phy_dev)
         return 0;
     }
 
-    mode = (1<<phy_dev_current_inter_phy_types_get(phy_dev));
+    mode = (1<<phy_dev_current_inter_phy_type_get(phy_dev));
     if (mode &
             (INTER_PHY_TYPE_100BASE_FX_M | INTER_PHY_TYPE_1000BASE_X_M | INTER_PHY_TYPE_SGMII_M |
              INTER_PHY_TYPE_2500BASE_X_M | INTER_PHY_TYPE_5000BASE_X_M))
         return 0;
 
-    if ((mode & (INTER_PHY_TYPE_USXGMII_M | INTER_PHY_TYPE_USXGMII_MP_M)) &&
+    if ((mode & (INTER_PHY_TYPE_USXGMII_M | INTER_PHY_TYPE_USXGMII_MP_M | INTER_PHY_TYPE_SXGMII_M)) &&
         phy_dev->speed <= PHY_SPEED_1000)
         return 0;
 
@@ -1627,6 +1671,22 @@ static inline int phy_dev_is_broadcom_phy(phy_dev_t *phy_dev)
     return ((phy_id & 0xffff0000) == 0xae020000 || (phy_id & 0xffff0000) == 0x35900000);
 }
 
+static inline int phy_drv_init(phy_drv_t *phy_drv)
+{
+    int rc = 0;
+
+    if (phy_drv->initialized)
+        return 0;
+
+    if (phy_drv->drv_init)
+        rc = phy_drv->drv_init(phy_drv);
+
+    if (rc == 0)
+        phy_drv->initialized = 1;
+
+    return rc;
+}
+
 static inline int phy_dev_init(phy_dev_t *first_phy)
 {
     int ret = 0;
@@ -1638,11 +1698,10 @@ static inline int phy_dev_init(phy_dev_t *first_phy)
         phy_dev->speed = PHY_SPEED_UNKNOWN;
         phy_dev->duplex = PHY_DUPLEX_UNKNOWN;
 
-        if (phy_dev->phy_drv->drv_init && !phy_dev->phy_drv->initialized)
-            ret |= phy_dev->phy_drv->drv_init(phy_dev->phy_drv);
-        else
-            phy_dev->phy_drv->initialized = 1;
-
+        if (!phy_dev || (phy_dev->flag & PHY_FLAG_ON_MEZZANINE && phy_dev->flag & PHY_FLAG_NOT_PRESENTED))
+            continue;
+        
+        ret |= phy_drv_init(phy_dev->phy_drv);
         if (phy_dev->phy_drv->init)
             ret |= phy_dev->phy_drv->init(phy_dev);
 
@@ -1802,7 +1861,10 @@ static inline int phy_get_best_inter_phy_configure_type(phy_dev_t *phy_dev, int 
     if (inter_types & INTER_PHY_TYPE_USXGMII_MP_M)
         return INTER_PHY_TYPE_USXGMII_MP;
 
-    if (inter_types & INTER_PHY_TYPE_USXGMII_M)
+    if (inter_types & INTER_PHY_TYPE_SXGMII_M)
+        return INTER_PHY_TYPE_SXGMII;
+
+    if (inter_types & INTER_PHY_TYPE_USXGMII_M && speed != PHY_SPEED_10)
         return INTER_PHY_TYPE_USXGMII;
 
     switch(speed)
@@ -1855,6 +1917,11 @@ static inline int phy_get_best_inter_phy_configure_type(phy_dev_t *phy_dev, int 
                 return INTER_PHY_TYPE_SGMII;
             if (inter_types & INTER_PHY_TYPE_100BASE_FX_M)
                 return INTER_PHY_TYPE_100BASE_FX;
+            break;
+        case PHY_SPEED_10:
+            /* Check 10M speed */
+            if (inter_types & INTER_PHY_TYPE_SGMII_M)
+                return INTER_PHY_TYPE_SGMII;
             break;
         default:
             break;

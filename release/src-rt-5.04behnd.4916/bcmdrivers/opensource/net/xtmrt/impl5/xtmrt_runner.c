@@ -4,25 +4,19 @@
    Copyright (c) 2011 Broadcom 
    All Rights Reserved
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
 :>
 */
@@ -232,10 +226,19 @@ static int runner_tx_queue_init(bdmf_object_handle xtm, int queueIdx)
 
    /* create egress tm for this xtmchannel */
    rc = rc? rc : rdpa_egress_tm_level_set(tm_attr, rdpa_tm_level_queue);
-   if (queueIdx == 0)
+   if (queueIdx == 0) {
       rc = rc? rc : bcmxapiex_dpi_egress_tm_rl_rate_mode_set(tm_attr,
                       rdpa_tm_rl_dual_rate);
-   rc = rc? rc : rdpa_egress_tm_mode_set(tm_attr, rdpa_tm_sched_disabled);
+#if IS_ENABLED(CONFIG_BCM_DPI) && defined(TM_C_CODE)
+      rc = rc? rc : rdpa_egress_tm_mode_set(tm_attr, rdpa_tm_sched_sp);
+      rc = rc? rc : rdpa_egress_tm_num_queues_set(tm_attr, 2);
+#else
+      rc = rc? rc : rdpa_egress_tm_mode_set(tm_attr, rdpa_tm_sched_disabled);
+#endif
+   }
+   else
+      rc = rc? rc : rdpa_egress_tm_mode_set(tm_attr, rdpa_tm_sched_disabled);
+
    rc = rc? rc : bdmf_new_and_set(rdpa_egress_tm_drv(), xtmchannel, tm_attr, &tm);
 
    if (rc) {
@@ -1142,7 +1145,12 @@ int bcmxapi_DoSetTxQueue(PBCMXTMRT_DEV_CONTEXT pDevCtx,
          BCM_XTM_NOTICE(" bcmxtmrt:  Tx Q(%d) Size = %d \n", queueIdx, pTxQId->usQueueSize) ;
          queue_cfg.drop_threshold = QUEUE_DROP_THRESHOLD(pTxQId->usQueueSize) ;
          queue_cfg.stat_enable    = 1;
+#if defined(TM_C_CODE)
+         /* best effort queues in TMC are implemented as subsidery egress tm, that why no need for best_effort bit set in the queue cfg */
+         queue_cfg.best_effort    = 0;
+#else
          queue_cfg.best_effort    = (queueIdx == 0);
+#endif
          BCM_XTM_NOTICE(" bcmxtmrt:  Tx Q(%d) CMBR = %d, Prio-%d \n", queueIdx, pTxQId->ulMBR,
                pTxQId->ucSubPriority);
          resvBuffers = (int) QUEUE_RESV_BUFFERS(pTxQId->ulMBR,pTxQId->ucSubPriority);
@@ -1193,9 +1201,16 @@ int bcmxapi_DoSetTxQueue(PBCMXTMRT_DEV_CONTEXT pDevCtx,
             goto _End;
          }
 
-         if (queue_cfg.best_effort) {
-            rc = bcmxapiex_dpi_add_best_effort_sub_queues(egress_tm,
-                            &queue_cfg, 0, rdpa_dir_us);
+         if (queueIdx == 0) {
+            int idx = 0;
+#ifdef TM_C_CODE
+            uint8_t max_queues;
+            rdpa_egress_tm_num_queues_get(egress_tm, &max_queues); 
+
+            /*  Subsidiary egress TM replaces one of queues of primary egress TM. Take the last one */
+            idx =  max_queues - 1;
+#endif
+            rc = bcmxapiex_dpi_add_best_effort_sub_queues(egress_tm, &queue_cfg, idx);
             if (rc) {
                BCM_XTM_ERROR(CARDNAME "DoSetTxQueue: bcmxapiex_dpi_add_best_effort_sub_queues error rc=%d", rc);
                goto _End;
@@ -1379,7 +1394,11 @@ void bcmxapi_StopTxQueue(PBCMXTMRT_DEV_CONTEXT pDevCtx,
       queue_cfg.low_class.min_threshold  = 0;
       queue_cfg.low_class.max_threshold  = 0;
       queue_cfg.reserved_packet_buffers  = 0;
+#ifdef TM_C_CODE
+      queue_cfg.best_effort              = 0;
+#else
       queue_cfg.best_effort              = (queueIdx == 0);
+#endif
 
       if ((rc = rdpa_egress_tm_queue_cfg_set(egress_tm, 0, &queue_cfg)))
       {
@@ -1425,7 +1444,11 @@ void bcmxapi_StartTxQueue(PBCMXTMRT_DEV_CONTEXT pDevCtx,
       BCM_XTM_NOTICE(" bcmxtmrt:  Start Tx Q(%d) Size = %d ", queueIdx, txdma->ulQueueSize) ;
       queue_cfg.drop_threshold = QUEUE_DROP_THRESHOLD(txdma->ulQueueSize) ;
       queue_cfg.stat_enable    = 1;
+#ifdef TM_C_CODE
+      queue_cfg.best_effort    = 0;
+#else
       queue_cfg.best_effort    = (queueIdx == 0);
+#endif
       BCM_XTM_NOTICE(" bcmxtmrt:  Tx Q(%d) CMBR = %d, Prio-%d \n", queueIdx, txdma->ulMBR,
             txdma->ulSubPriority);
       resvBuffers = (int) QUEUE_RESV_BUFFERS(txdma->ulMBR,txdma->ulSubPriority);

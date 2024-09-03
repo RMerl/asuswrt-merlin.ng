@@ -135,7 +135,7 @@ function Get_Component_Feature_Desc(view_mode){
 
 	$("<div>").addClass("horizontal_line").appendTo($feature_desc_cntr);
 
-	let $faq = $("<a/>").attr({"target":"_blank", "href":"https://www.asus.com/support/FAQ/1051272/"}).html(`WiFi7 Multi-link Operation (MLO)`);
+	let $faq = $("<a/>").attr({"target":"_blank", "href":"https://www.asus.com/support/FAQ/1051272/"}).html(`WiFi7 <#WiFi_mlo_title#>`);
 	$("<div>").addClass("faq hyperlink").append($faq).appendTo($feature_desc_cntr);
 
 	return $container;
@@ -160,8 +160,8 @@ function Get_Component_MLO_Introduce(view_mode){
 
 	let $popup_content_container = $("<div>").addClass("popup_content_container").appendTo($container);
 
-	let $feature_desc_cntr = $("<div>").addClass("feature_desc_container introduce").appendTo($popup_content_container);
-	$("<div>").addClass("feature_image introduce").appendTo($feature_desc_cntr);
+	let $feature_desc_cntr = $("<div>").addClass("feature_desc_container introduce mlo_image").appendTo($popup_content_container);
+	$("<div>").addClass("blank_component").appendTo($feature_desc_cntr);
 	$("<div>").addClass("desc").html(
 		`<#WiFi_mlo_Experience#>`
 	).appendTo($feature_desc_cntr);
@@ -197,7 +197,7 @@ function show_get_start_mlo(){
 		let $container = $("<div>");
 
 		if(view_mode == "popup"){
-			Get_Component_Popup_Profile_Title(`<#WiFi_mlo_Disable#>`).appendTo($container)
+			Get_Component_Popup_Profile_Title(`<#WLANConfig11b_WirelessCtrl_button1name#> MLO`).appendTo($container)
 				.find("#title_close_btn").unbind("click").click(function(e){
 					e = e || event;
 					e.stopPropagation();
@@ -205,7 +205,7 @@ function show_get_start_mlo(){
 				});
 		}
 		else
-			Get_Component_Profile_Title(`<#WiFi_mlo_Disable#>`).appendTo($container);
+			Get_Component_Profile_Title(`<#WLANConfig11b_WirelessCtrl_button1name#> MLO`).appendTo($container);
 
 		let $popup_content_container = $("<div>").addClass("popup_content_container");
 		$popup_content_container.appendTo($container);
@@ -368,6 +368,7 @@ function set_apply_btn_Backhaul(_obj){
 	}
 }
 function check_sdn_legacy_exists(){
+	return true;//Return true temporarily because isSupport("sdn_mwl")
 	let legacy_exist = false;
 	let sdn_rl_count = 0;
 	const each_sdn_rl = decodeURIComponent(httpApi.nvramCharToAscii(["sdn_rl"],true).sdn_rl).split("<");
@@ -386,6 +387,7 @@ function check_sdn_legacy_exists(){
 	return (legacy_exist || sdn_rl_is_full);
 }
 function check_mlo_meet_conditions(){
+	return true;//Return true temporarily because isSupport("sdn_mwl")
 	const sdn_legacy = check_sdn_legacy_exists();
 	const smart_connect_all_band = (()=>{
 		let status = (httpApi.nvramGet(["smart_connect_x"]).smart_connect_x == "1") ? true : false;
@@ -394,9 +396,20 @@ function check_mlo_meet_conditions(){
 		}
 		return status;
 	})();
-	const wl_auth_wpa3 = (httpApi.nvramGet(["2g1_auth_mode_x"])["2g1_auth_mode_x"] == "sae") ? true : false;
+	const wl_auth_mlo = (()=>{
+		const auth_2g = httpApi.nvramGet(["2g1_auth_mode_x"])["2g1_auth_mode_x"];
+		const auth_6g = httpApi.nvramGet(["6g1_auth_mode_x"])["6g1_auth_mode_x"];
+		if(get_wl_unit_by_band("6G") != ""){
+			if(auth_2g == "sae") return true;//all band is sae
+			else if(auth_2g == "psk2sae" &&	auth_6g == "sae") return true;//2g5g is psk2sae, 6g is sae
+			else return false;
+		}
+		else{
+			return (auth_2g == "sae" || auth_2g == "psk2sae") ? true : false;//all band is sae or psk2sae
+		}
+	})();
 
-	return (sdn_legacy && smart_connect_all_band && wl_auth_wpa3);
+	return (sdn_legacy && smart_connect_all_band && wl_auth_mlo);
 
 	function getSelifValue(){
 		var val = 0;

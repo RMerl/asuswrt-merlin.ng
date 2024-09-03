@@ -9,26 +9,45 @@
 #include <linux/types.h>
 #include "itc_rpc.h"
 
-enum ba_svc_func_idx {
-    BA_SVC_CPU_ID,
-    BA_SVC_CPU_NAME,
-    BA_SVC_RUN_STATE_ID,
-    BA_SVC_RUN_STATE_NAME,
-    BA_SVC_GET_RUN_STATE,
-    BA_SVC_NOTIFY_RUN_STATE,
-    BA_SVC_REQUEST_RUN_STATE,
-    BA_SVC_REQUEST_RUN_STATE_RESPONSE,
-    BA_SVC_SET_RUN_STATE,
-    BA_SVC_BOOT_FROM_ADDR,
-    BA_SVC_XPORT_SET_PWR,
-    BA_SVC_RNR_SRAM_DONE,  /* Not implemented yet */
-    BA_SVC_WOL_INTR_EN,    /* Not implemented yet */
+enum ba_svc_func_idx
+{
+    BA_ARMTF_UBOOT_BEGIN = 20,
+    BA_SVC_BOOT_FROM_ADDR = BA_ARMTF_UBOOT_BEGIN,
+
+    /* ATTENTION:
+     *
+     * All RPC commands shared between ARMTF and Uboot should be added above this line
+     * and synced with .../armtf/plat/bcm/itc_rpc/include/ba_svc.h
+     *
+     * */
+    BA_SEC_BEGIN = 30,
+    BA_SVC_GET_SEC_STATE = BA_SEC_BEGIN,
+    BA_SVC_GET_DEV_SPEC_KEY,
+    BA_SVC_SEC_HANDLE_CERTIFICATE,
+    BA_SVC_SEC_GET_SKS_STATS,
+    BA_SVC_SEC_RSA_SIG_VERIFY,
+    BA_SVC_SEC_AES_CRYPT,
+    BA_SVC_SEC_GET_KEY_SIZE,
+
+    /* ATTENTION:
+     *
+     * All Security related RPC commands should be added above this line
+     *
+     * */
+    BA_UBOOT_LINUX_BEGIN = 50,
+    BA_SVC_XPORT_SET_PWR = BA_UBOOT_LINUX_BEGIN,
     BA_SVC_GET_SMCBL_VER,
     BA_SVC_GET_SMCBL_VER_HASH,
     BA_SVC_GET_SMCOS_VER,
     BA_SVC_GET_SMCOS_VER_HASH,
     BA_SVC_RPRT_BOOT_SUCCESS,
-    BA_SVC_GET_BOOT_FAIL_CNT,
+
+    /* ATTENTION:
+     *
+     * All RPC commands shared between Uboot and Linux should be added above this line
+     * and synced with bcmdrivers/opensource/include/bcm683xx/ba_rpc_svc.h
+     *
+     * */
     BA_SVC_FUNC_MAX
 };
 
@@ -37,20 +56,6 @@ enum ba_req_rs_rsp {
 	BA_SVC_RESPONSE_BUSY,
 	BA_SVC_RESPONSE_MAX
 };
-
-#define BA_SVC_CPU_ALL		"ALL"
-#define BA_SVC_CPU_RG		"RG"
-#define BA_SVC_CPU_CM		"CM"
-#define BA_SVC_CPU_GFAP		"GFAP"
-#define BA_SVC_CPU_BNE		"BNE"
-#define BA_SVC_CPU_TPMI		"TPMI"
-
-extern uint32_t ba_cpu_all;
-extern uint32_t ba_cpu_rg;
-extern uint32_t ba_cpu_cm;
-extern uint32_t ba_cpu_gfap;
-extern uint32_t ba_cpu_bne;
-extern uint32_t ba_cpu_tpmi;
 
 #define BA_SVC_RS_OFF		"OFF"
 #define BA_SVC_RS_RESET		"RESET"
@@ -135,21 +140,78 @@ static inline void ba_svc_msg_set_retcode(rpc_msg *msg, uint8_t v)
 }
 
 /* ba svc functions */
-int ba_svc_cpu_id(char *cpu_name, uint32_t *cpu_id);
-int ba_svc_cpu_name(uint32_t cpu_id, char *cpu_name);
-int ba_svc_run_state_id(char *rs_name, uint32_t *rs_id);
-int ba_svc_run_state_name(uint32_t rs_id, char *rs_name);
-int ba_svc_get_run_state(uint32_t cpu_id, uint32_t *rs_id);
-int ba_svc_notify_run_state(uint32_t cpu_id, uint32_t rs_id);
-int ba_svc_request_run_state(uint32_t cpu_id, uint32_t rs_id, bool be_rude);
-int ba_svc_request_run_state_response(uint32_t cpu_id, uint32_t rs_id,
-	enum ba_req_rs_rsp response);
-int ba_svc_init(void);
 int ba_svc_boot_secondary(uint32_t cpu_mask, uint32_t vector);
 int ba_xport_set_state(uint8_t port_id, uint8_t enable);
 int ba_get_smcbl_ver(smcbl_ver_t  *smcbl_ver);
 int ba_get_smcos_ver(smcos_ver_t  *smcos_ver);
 int bcm_rpc_ba_report_boot_success(uint32_t flags);
-int bcm_rpc_ba_get_boot_fail_cnt(void);
+int bcm_rpc_ba_get_sec_state(void);
+int ba_get_dev_spec_key(void** dev_key, int* ek_size, int* iv_size);
+
+
+
+/* 
+    ba svc security functions 
+*/
+
+/**
+ * struct sks_stats - Secure Key Store Statistics
+ * 
+ * @version: Version of the Secure Key Store
+ * @entries: Quantity of Crypto Materials Entries
+ * @epoch: Security Epoch Level
+ */
+struct sks_stats {
+    uint32_t version;
+    uint32_t entries;
+    uint32_t epoch;
+} __attribute__ ((packed));
+
+/**
+ * struct sec_rsa_sig_verify_descriptor - RSA Signature Verification Request
+ *
+ * @key_name_hint: Key Name Hint
+ * @crypto_options: Options to be used for Crypto Operation
+ * @data_addr: Address of the Data Buffer to be verified
+ * @data_size: Size of the Data Buffer
+ * @signature_addr: Address of the Signature Buffer
+ * @signature_size: Size of the Signature Buffer
+ */
+struct sec_rsa_sig_verify_descriptor {
+    uint32_t key_name_hint;
+    uint32_t crypto_options;
+    uint64_t data_addr;
+    uint32_t data_size;
+    uint64_t signature_addr;
+    uint32_t signature_size;
+} __attribute__ ((packed));
+
+/**
+ * struct sec_aes_crypt_descriptor - AES Encryption/Decryption Crypto Request Descriptor
+ *
+ * @key_name_hint: Key Name Hint
+ * @crypto_options: Options to be used for Crypto Operation
+ * @data_src_addr: Address of the Data Buffer to be verified
+ * @data_dst_addr: Address of the Data Buffer to be verified
+ * @data_size: Size of the Data Buffer
+ */
+struct sec_aes_crypt_descriptor {
+    uint32_t key_name_hint;
+    uint32_t crypto_options;
+    uint64_t data_src_addr;
+    uint64_t data_dst_addr;
+    uint32_t data_size;
+} __attribute__ ((packed));
+
+enum sec_aes_crypto_options {
+    SEC_AES_CRYPT_DECRYPT       = (1 << 0),
+    SEC_AES_CRYPT_ENCRYPT       = (1 << 1),
+};
+
+int bcm_rpc_sec_handle_ksm_certificate(const uint8_t *certificate, uint32_t certificate_size);
+int bcm_rpc_sec_get_sks_stats(struct sks_stats *stats);
+int bcm_rpc_sec_rsa_sig_verify(struct sec_rsa_sig_verify_descriptor *crypto_desc);
+int bcm_rpc_sec_aes_crypt(struct sec_aes_crypt_descriptor *crypto_desc);
+int bcm_rpc_sec_get_key_size(uint32_t key, uint32_t *size);
 
 #endif

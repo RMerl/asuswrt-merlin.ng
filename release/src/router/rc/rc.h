@@ -656,7 +656,9 @@ extern int get_DateCode(void);
 extern int get_Annex();
 extern int set_Annex(const char* annex, const char* modulation);
 #endif
+extern void pre_wlc_connect(int band);
 extern void post_wlc_connected(int band);
+extern void set_wlc_auto_reconnect(int band, int enable);
 #ifdef RTCONFIG_HND_ROUTER_AX
 extern int hnd_boardid_cmp(const char *boardid);
 #endif
@@ -1058,7 +1060,7 @@ extern void update_cfe_ax82u();
 #ifdef GTAX6000
 extern void update_cfe_ax6000();
 #endif
-#if defined(RTAX58U_V2) || defined(GTAX6000) || defined(RTAX86U_PRO) || defined(RTAX3000N) || defined(BR63) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX88U_PRO) || defined(RTAX5400) || defined(RTBE86U)
+#if defined(RTAX58U_V2) || defined(GTAX6000) || defined(RTAX86U_PRO) || defined(RTAX3000N) || defined(BR63) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX88U_PRO) || defined(RTAX5400) || defined(RTBE86U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE58U_PRO)
 extern void wan_phy_led_pinmux(int force);
 #endif
 #if defined(TUFAX3000_V2) || defined(RTAXE7800) || defined(TUFAX5400_V2) || defined(RTAX5400) || defined(RTAX88U_PRO) || defined(RTBE86U)
@@ -1183,11 +1185,12 @@ extern void start_gpy211_monitor();
 extern int hnd_boardid_cmp();
 #endif
 #if defined(RTCONFIG_MLO)
-extern int mld_ifnames_unset(char *index);
+extern int mld_ifnames_unset(char *interface, char *mld_group, char *subunit);
 extern int mld_ifnames_set(char *mld_group, char *subunit);
 extern int mlo_api(char *mode, char *interface, char *group, char *subunit);
 extern int mld_enable_chk();
 extern void init_mlo_config();
+extern void set_mlo_config();
 #endif
 #if defined(RTCONFIG_MULTISERVICE_WAN)
 typedef struct {
@@ -1596,6 +1599,7 @@ extern void update_lan_state(int state, int reason);
 extern void set_et_qos_mode(void);
 extern void start_wl(void);
 extern void stop_wl(void);
+extern int add_lan_routes(char *lan_ifname);
 #if defined(RTCONFIG_QCA)||defined(RTCONFIG_RALINK)
 extern char *get_hwaddr(const char *ifname);
 #endif
@@ -2022,7 +2026,7 @@ extern int ledbtn_main(int argc, char *argv[]);
 #ifdef GTAX6000
 extern int antled_main(int argc, char *argv[]);
 #endif
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
 extern int rtkmonitor_main(int argc, char *argv[]);
 #endif
 #if defined(RTCONFIG_NBR_RPT)
@@ -2282,7 +2286,7 @@ static inline void stop_cifs(void) {};
 extern int start_ledg(void);
 extern int stop_ledg(void);
 #endif
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
 extern int start_rtkmonitor(void);
 extern int stop_rtkmonitor(void);
 #endif
@@ -2502,7 +2506,8 @@ extern void stop_ipv6_tunnel(void);
 #define S46_LOG_PATH	"/jffs/s46.log"
 #define S46_RETRY_TIME	3
 enum S46_SVRURL_TYPE {
-	GET_NTT_HGW_URL			= 0,
+	GET_JPIX_HGW_URL		= 0,
+	GET_BIGLOB_HGW_URL,
 	GET_V6PLUS_URL,
 	SET_V6PLUS_URL,
 	GET_OCNVC_URL
@@ -2537,9 +2542,10 @@ extern void restart_ocnvcd(int unit);
 extern void start_dslited(int unit);
 extern void stop_dslited(int unit);
 extern void restart_dslited(int unit);
-extern void start_auto46det(void);
+extern void start_auto46det(int mode, int force);
 extern void stop_auto46det(void);
 //s46comm.c
+extern void _restart_wan_if(const int unit);
 extern void s46print(const char *logpath, const char *format, ...);
 #define S46_DBG(fmt, args...) \
 	do { \
@@ -2562,12 +2568,12 @@ extern void fmrs2file(int unit);
 extern void init_wan46(void);
 // v6plusd.c
 #define V6PLUSD_PIDFILE "/var/run/v6plusd.%d.pid"
-extern char *s46_jpne_maprules(char *id, char *idbuf, size_t idlen, long *rsp_code);
+extern char *get_jpix_map(const int wan_unit, char *id, char *idbuf, size_t idlen, long *rsp_code);
 extern int check_v6plusd(int unit);
 extern int v6plusd_main(int argc, char **argv);
 // ocnvcd.c
 #define OCNVCD_PIDFILE "/var/run/ocnvcd.%d.pid"
-extern char *s46_ocn_maprules(char *v6perfix, int prefixlen, long *rsp_code);
+extern char *get_ocn_map(const int wan_unit, char *v6perfix, int prefixlen, long *rsp_code);
 extern int check_ocnvcd(int unit);
 extern int ocnvcd_main(int argc, char **argv);
 // dslited.c
@@ -3325,6 +3331,7 @@ extern int get_wifi_country_code_tmp(char *ori_countrycode, char *output, int le
 extern char* 	apg_ap_group_lan_ifnames(char *ret_ifnames, size_t ret_ifnames_bsize);
 extern char* 	apg_all_lan_ifnames(void);
 extern int 		apg_if_check_used(char *ifname);
+extern int is_sdn_enable(void);
 extern void 	apg_start(void);
 extern void 	apg_stop(void);
 extern void 	apg_hotplug_net(char *interface, int action /* 0:del, 1:add */);
@@ -3334,7 +3341,12 @@ extern int	 	apg_destory_wl_vlan(char *vlan_ifnames);
 extern int	 	apg_create_eth_vlan(int vid, char *ifnames, char *ret_ifnames, size_t ret_ifnames_bsize);
 extern int	 	apg_destory_eth_vlan(char *vlan_ifnames);
 extern void 	init_apg_subunit(void);
-extern void 	apg_init_settings(void);
+extern void init_apg(void);
+extern void apg_create_vlan_for_lan(void);
+extern void apg_destory_vlan_for_lan(void);
+#endif
+#ifdef RTCONFIG_MLO
+extern int check_SDN_MLO();
 #endif
 
 // traffic_limiter.c
@@ -3498,6 +3510,9 @@ extern void stop_awsiot(void);
 extern int start_dnsqd(void);
 extern void stop_dnsqd(void);
 extern void process_dns_dpi_nvram(void);
+extern int dns_dpi_check_main(int argc, char **argv);
+extern void stop_dns_dpi_check();
+extern void start_dns_dpi_check();
 #endif
 
 #ifdef RTCONFIG_ROUTERBOOST

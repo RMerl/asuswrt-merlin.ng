@@ -781,6 +781,9 @@ dtb-$(CONFIG_BCM6765) += \
 dtb-$(CONFIG_BCM6766) += \
 	bcm96766.dtb
 
+dtb-$(CONFIG_BCM6764) += \
+	bcm96764.dtb
+
 dtb-$(CONFIG_BCM4908) += \
 	bcm94908.dtb
 

@@ -393,7 +393,7 @@ ifneq ($(RTCONFIG_INADYN),y)
 endif
 ifeq ($(RTCONFIG_HND_ROUTER_AX),y)
 ifneq ($(BUILD_NAME), RP-AX56)
-	install -m 0755 apps_scripts/runin/$(BUILD_NAME)/stress_pkteng.sh $(INSTALLDIR)/usr/sbin
+	-install -m 0755 apps_scripts/runin/$(BUILD_NAME)/stress_pkteng.sh $(INSTALLDIR)/usr/sbin
 endif
 endif
 

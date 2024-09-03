@@ -4,25 +4,19 @@
    Copyright (c) 2020 Broadcom 
    All Rights Reserved
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
 :>
 */
@@ -83,7 +77,7 @@ static char * skp_base_ptr = NULL;
 static skp_hw_cmn_row_t sotp_rows[ ] = {															
 		{.feat = SKP_CONT_ID_FLD_ROE,          "ROE", .addr = (KSR_START_ROW_ADDR+0), .range = 8, .conf = {.perm = KSR_PORTAL_PGM_DESC_SRW_PERM, .op_type = SKP_HW_CMN_CTL_OTPCMD_ECC}},	
 		{.feat = SKP_CONT_ID_FLD_HMID,         "MID", .addr = (KSR_START_ROW_ADDR+1), .range = 8, .conf = {.perm = KSR_PORTAL_PGM_DESC_SRW_PERM, .op_type = SKP_HW_CMN_CTL_OTPCMD_ECC}},	
-#if defined(CONFIG_BCM96765)
+#if defined(CONFIG_BCM96765) || defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764)
 		{.feat = SKP_CONT_ID_FLD_ROE1,         "ROE (extended)", .addr = (KSR_START_ROW_ADDR+2), .range = 8, .conf = {.perm = (KSR_PORTAL_PGM_DESC_NRW_PERM), .op_type = SKP_HW_CMN_CTL_OTPCMD_ECC}},
 		{.feat = SKP_CONT_ID_KEY_DEV_SPECIFIC, "Device Specific Key", .addr = (KSR_START_ROW_ADDR+3), .range = 8, .conf = {.perm = (KSR_PORTAL_PGM_DESC_NRW_PERM), .op_type = SKP_HW_CMN_CTL_OTPCMD_ECC}},
 #else		
@@ -94,14 +88,14 @@ static skp_hw_cmn_row_t sotp_rows[ ] = {
 		{.feat = SKP_CONT_ID_KEY_SECT_2,       NULL, .addr = (KSR_START_ROW_ADDR+5), .range = 8, .conf = {.perm = (KSR_PORTAL_PGM_DESC_NRW_PERM), .op_type = SKP_HW_CMN_CTL_OTPCMD_ECC}},
 		{.feat = SKP_CONT_ID_ANTI_ROLLBACK,    "Anti-Rollback lvl", .addr = (FSR_START_ROW_ADDR+0), .range = 4, .conf = {.op_type = SKP_HW_CMN_CTL_CONF}},	
 		{.feat = SKP_CONT_ID_UNUSED_1,         NULL, .addr = (FSR_START_ROW_ADDR+1), .range = 4, .conf = {.op_type = SKP_HW_CMN_CTL_CONF}},	
-#if defined(CONFIG_BCM96765)
+#if defined(CONFIG_BCM96765) || defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764)
 		{.feat = SKP_CONT_ID_SER_NUM,          "Secure Serial Num", .addr = (FSR_START_ROW_ADDR+2), .range = 8, .conf = {.op_type = SKP_HW_CMN_CTL_OTPCMD_ECC}},	
 #else		
 		{.feat = SKP_CONT_ID_UNUSED_2,         NULL, .addr = (FSR_START_ROW_ADDR+2), .range = 8, .conf = {.op_type = SKP_HW_CMN_CTL_CONF}},	
 #endif		
 		{.feat = SKP_CONT_ID_UNUSED_3,         NULL, .addr = (FSR_START_ROW_ADDR+3), .range = 8, .conf = {.op_type = SKP_HW_CMN_CTL_CONF}},	
 		{.feat = SKP_CONT_ID_UNUSED_4,         NULL, .addr = (FSR_START_ROW_ADDR+4), .range = 2, .conf = {.op_type = SKP_HW_CMN_CTL_CONF}},	
-#if defined(CONFIG_BCM96765)
+#if defined(CONFIG_BCM96765) || defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764)
 		{.feat = SKP_CONT_ID_LIC_UNIQUE_ID,    "Unique Licensing ID", .addr = (FSR_START_ROW_ADDR+5), .range = 4, .conf = {.op_type = SKP_HW_CMN_CTL_CONF}},	
 #else		
 		{.feat = SKP_CONT_ID_UNUSED_5,         NULL, .addr = (FSR_START_ROW_ADDR+5), .range = 4, .conf = {.op_type = SKP_HW_CMN_CTL_CONF}},	

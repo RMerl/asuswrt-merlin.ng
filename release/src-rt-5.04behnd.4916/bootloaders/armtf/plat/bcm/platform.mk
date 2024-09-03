@@ -66,10 +66,10 @@ BL31_SOURCES		+=	lib/cpus/aarch64/cortex_a55.S \
 PLAT_INCLUDES		+=	-Iplat/bcm/itc_rpc/include
 include				lib/xlat_tables_v2/xlat_tables.mk
 else
-ERRATA_A53_819472	:= 1
-ERRATA_A53_824069	:= 1
-ERRATA_A53_826319	:= 1
-ERRATA_A53_827319	:= 1
+ERRATA_A53_819472	:= 0
+ERRATA_A53_824069	:= 0
+ERRATA_A53_826319	:= 0
+ERRATA_A53_827319	:= 0
 ERRATA_A53_835769	:= 1
 ERRATA_A53_843419	:= 1
 ERRATA_A53_1530924	:= 1
@@ -113,4 +113,12 @@ $(eval $(call add_define,PLATFORM_FLAVOR_${BRCM_CHIP}))
 $(eval $(call add_define,_BCM9${BRCM_CHIP}_))
 ifeq ($(strip $(KERNEL_ARCH)),arm)
 $(eval $(call add_define,AARCH32))
+endif
+
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_68880_6837_),)
+$(eval $(call add_define,CONFIG_BRCM_SMC_BASED))
+endif
+
+ifeq ($(strip $(BCM_OPTEE)),y)
+$(eval $(call add_define,SPD_OPTEE))
 endif

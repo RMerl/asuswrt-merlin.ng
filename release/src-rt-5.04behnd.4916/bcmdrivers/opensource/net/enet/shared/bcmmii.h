@@ -3,25 +3,19 @@
 
  <:label-BRCM:2011:DUAL/GPL:standard    
  
- Unless you and Broadcom execute a separate written software license
- agreement governing use of this software, this software is licensed
- to you under the terms of the GNU General Public License version 2
- (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
- with the following added to such license:
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License, version 2, as published by
+ the Free Software Foundation (the "GPL").
  
-    As a special exception, the copyright holders of this software give
-    you permission to link this software with independent modules, and
-    to copy and distribute the resulting executable under terms of your
-    choice, provided that you also meet, for each linked independent
-    module, the terms and conditions of the license of that module.
-    An independent module is a module which is not derived from this
-    software.  The special exception does not apply to any modifications
-    of the software.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
  
- Not withstanding the above, under no circumstances may you combine
- this software in any way with any other Broadcom software provided
- under a license other than the GPL, without Broadcom's express prior
- written consent.
+ 
+ A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+ writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ Boston, MA 02111-1307, USA.
  
  :>
 */
@@ -501,7 +495,7 @@ typedef struct {
         #define BRCM_HDR_EN_GMII_PORT_5                   0x02
         #define BRCM_HDR_EN_IMP_PORT                      0x01  /* Port8 */
 
-    #define REG_AGING_TIME_CTRL                           0x08
+    #define REG_AGING_TIME_CTRL                           0x06
 
         #define REG_AGE_CHANGE                            0x100000
         #define REG_AGE_TIME_MASK                         0x0FFFFF
@@ -601,6 +595,11 @@ typedef struct {
     #define REG_ARL_SRCH_MAC_LO_ENTRY                     0x34
     #define REG_ARL_SRCH_VID_MAC_HI_ENTRY                 0x38
     #define REG_ARL_SRCH_DATA_ENTRY                       0x3C
+    #define REG_ARL_MAC_LIMIT_OP                          0x4C      // 6765
+        #define MAC_LIMIT_OP_EN                             (1<<5)
+        #define MAC_LIMIT_OP_DEC                            (0<<4)
+        #define MAC_LIMIT_OP_INC                            (1<<4)
+        #define MAC_LIMIT_OP_PORTID_M                       (0xf)
     #define REG_VLAN_TBL_CTRL                             0x60
     #define REG_VLAN_TBL_INDX                             0x62
     #define REG_VLAN_TBL_ENTRY                            0x64
@@ -756,10 +755,10 @@ typedef struct {
 /****************************************************************************
    QOS : Page (0x30)
 ****************************************************************************/
-#if defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM96756) || defined(CONFIG_BCM96765)
-    #define QOS_REG_SHIFT       4   // reg 0x28 to 0x64 need to shift 4 bytes
-#else
+#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908)
     #define QOS_REG_SHIFT       0
+#else
+    #define QOS_REG_SHIFT       4   // reg 0x28 to 0x64 need to shift 4 bytes
 #endif
 
 #define PAGE_QOS                                          0x30
@@ -1061,7 +1060,7 @@ typedef struct {
 
 #define CTL_OVERIDE_REG(p)     (((p)==IMP_PORT_ID)?REG_CONTROL_MII1_PORT_STATE_OVERRIDE:REG_PORT_STATE+(p))
 
-#if defined (CONFIG_BCM963158) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM96756) || defined(CONFIG_BCM96765)
+#if !defined(CONFIG_BCM963138) && !defined(CONFIG_BCM963148) && !defined(CONFIG_BCM94908)
 /****************************************************************************
    63158 expanded page_control Registers
 ****************************************************************************/

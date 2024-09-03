@@ -66,13 +66,8 @@ int bcm_otp_get_ldo_trim(unsigned int* val);
 #endif
 
 int bcm_otp_is_rescal_enabled(unsigned int* val);
-#if defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM963146) || defined(CONFIG_BCM96765)
 int bcm_otp_auth_prog_mode(void);
-#endif
-
-#if defined(_BCM96856_) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96765)
 int bcm_otp_get_chipvar(unsigned int* val);
-#endif
 
 #endif  /* _BCM_OTP_H_ */
 

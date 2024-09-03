@@ -6,6 +6,7 @@ CFLAGS += $(if $(RTCONFIG_DEBUG),-g) -idirafter$(LINUXDIR)/include -I$(TOP)/shar
 CFLAGS += -I$(TOP)/curl/include
 CFLAGS += -I$(TOP)/openssl/include
 CFLAGS +=  -shared
+CFLAGS += -I$(TOP)/json-c
 
 ifeq ($(RTCONFIG_BCMARM),y)
 CFLAGS += -I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T
@@ -33,6 +34,7 @@ LDFLAGS += -L$(TOP_PLATFORM)/ethctl_lib -lethctl
 endif
 LDFLAGS += -L$(TOP)/curl/lib/.libs -lcurl -L$(TOP)/
 LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
+LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
 
 TARGET = libasc.so
 

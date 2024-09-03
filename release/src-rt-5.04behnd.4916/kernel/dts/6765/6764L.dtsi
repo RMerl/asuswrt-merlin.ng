@@ -1,0 +1,14 @@
+/dts-v1/;
+
+#include "6765.dtsi"
+
+#if 0 && (defined(CONFIG_BCM_FLEXRM) || defined(CONFIG_BCM_FLEXRM_MODULE)) && \
+	(defined(CONFIG_BCM_SPU) || defined(CONFIG_BCM_SPU_MODULE))
+&spu_flexrm {
+	status = "disabled";
+};
+&spu_crypto {
+	status = "disabled";
+};
+#endif
+

@@ -10,7 +10,6 @@
 <link rel="icon" href="images/favicon.png"><title><#Web_Title#> - <#Gear_Accelerator#></title>
 <link rel="stylesheet" type="text/css" href="index_style.css">
 <link rel="stylesheet" type="text/css" href="usp_style.css">
-<link rel="stylesheet" type="text/css" href="css/basic.css">
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="device-map/device-map.css">
 <style> 
@@ -94,318 +93,369 @@ body{
 	padding: 12px 18px;
 	overflow-y: auto;
 }
-</style> 
+</style>
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/help.js"></script>
-<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="/client_function.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" src="/form.js"></script>
-<script type="text/javascript" src="/js/asus_eula.js"></script>
-
+<script type="text/javascript" src="/js/asus_policy.js"></script>
 <script>
-var fc_disable_orig = '<% nvram_get("fc_disable"); %>';
-var runner_disable_orig = '<% nvram_get("runner_disable"); %>';
-var ctf_disable = '<% nvram_get("ctf_disable"); %>';
-var ctf_fa_mode = '<% nvram_get("ctf_fa_mode"); %>';
-function initial(){
-	show_menu();
+const nvram_get_param = httpApi.nvramGet([
+    "fc_disable", "runner_disable", "ctf_disable", "ctf_fa_mode",
+    "bwdpi_game_list", "rog_clientlist",
+    "qos_enable", "qos_type", "rog_enable", "qos_obw", "qos_ibw",
+    "lan_hwaddr",
+    "preferred_lang", "firmver"
+], true);
+const fc_disable_orig = nvram_get_param.fc_disable;
+const runner_disable_orig = nvram_get_param.runner_disable;
+const ctf_disable = nvram_get_param.ctf_disable;
+const ctf_fa_mode = nvram_get_param.ctf_fa_mode;
 
-	if(adaptiveqos_support){
-		if(document.form.qos_enable.value == '1' && document.form.qos_type.value == '1'){
-			document.getElementById("game_priority_enable").checked = true;
-		}
-		else{
-			document.getElementById("game_priority_enable").checked = false;
-		}
-	}
-	else{
-		if(document.form.rog_enable.value == '1' && document.form.qos_type.value == '0'){
-			document.getElementById("game_priority_enable").checked = true;
-		}
-		else{
-			document.getElementById("game_priority_enable").checked = false;
-		}
-	}
+function initial() {
+    show_menu();
 
-	setTimeout("showDropdownClientList('setClientIP', 'mac', 'all', 'ClientList_Block_PC', 'pull_arrow', 'all');", 500);
-	genGameList();
+    if (adaptiveqos_support) {
+        if (nvram_get_param.qos_enable == '1' && nvram_get_param.qos_type == '1') {
+            document.getElementById("game_priority_enable").checked = true;
+        } else {
+            document.getElementById("game_priority_enable").checked = false;
+        }
+    } else {
+        if (nvram_get_param.rog_enable == '1' && nvram_get_param.qos_type == '0') {
+            document.getElementById("game_priority_enable").checked = true;
+        } else {
+            document.getElementById("game_priority_enable").checked = false;
+        }
+    }
+
+    document.form.preferred_lang.value = nvram_get_param.preferred_lang;
+    document.form.firmver.value = nvram_get_param.firmver;
+    document.form.qos_enable.value = nvram_get_param.qos_enable;
+    document.form.qos_type.value = nvram_get_param.qos_type;
+    document.form.qos_obw.value = nvram_get_param.qos_obw;
+    document.form.qos_ibw.value = nvram_get_param.qos_ibw;
+    document.form.bwdpi_game_list.value = nvram_get_param.bwdpi_game_list;
+    document.form.rog_enable.value = nvram_get_param.rog_enable;
+
+    setTimeout("showDropdownClientList('setClientIP', 'mac', 'all', 'ClientList_Block_PC', 'pull_arrow', 'all');", 500);
+    genGameList();
 }
 
-function setClientIP(macaddr){
-	document.getElementById('client').value = macaddr;
-	hideClients_Block();
+function setClientIP(macaddr) {
+    document.getElementById('client').value = macaddr;
+    hideClients_Block();
 }
 
-function hideClients_Block(){
-	document.getElementById("pull_arrow").src = "/images/unfold_more.svg";
-	document.getElementById('ClientList_Block_PC').style.display='none';
+function hideClients_Block() {
+    document.getElementById("pull_arrow").src = "/images/unfold_more.svg";
+    document.getElementById('ClientList_Block_PC').style.display = 'none';
 }
 
-function pullLANIPList(obj){
-	var element = document.getElementById('ClientList_Block_PC');
-	var isMenuopen = element.offsetWidth > 0 || element.offsetHeight > 0;
+function pullLANIPList(obj) {
+    const element = document.getElementById('ClientList_Block_PC');
+    const isMenuopen = element.offsetWidth > 0 || element.offsetHeight > 0;
 
-	if(isMenuopen == 0){		
-		obj.src = "/images/unfold_less.svg"
-		element.style.display = 'block';		
-		document.getElementById('client').focus();		
-	}
-	else
-		hideClients_Block();
+    if (isMenuopen == 0) {
+        obj.src = "/images/unfold_less.svg"
+        element.style.display = 'block';
+        document.getElementById('client').focus();
+    } else
+        hideClients_Block();
 }
 
-if(adaptiveqos_support){
-	var gameList = '<% nvram_get("bwdpi_game_list"); %>'.replace(/&#60/g, "<");
-}
-else{
-	var gameList = '<% nvram_get("rog_clientlist"); %>'.replace(/&#60/g, "<");
-}
-
-function genGameList(){
-	var list_array = gameList.split('<');
-	var code = '';
-	code += '<thead><tr><td colspan="4"><#Gear_Accelerator_List#>&nbsp;(<#List_limit#>&nbsp;64)</td></tr></thead>';
-	code += '<tr>';
-	code += '<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,10);"><#Client_Name#> (<#PPPConnection_x_MacAddressForISP_itemname#>)</a></th>';
-	code += '<th><#list_add_delete#></th>';
-	code += '</tr>';
-	code += '<tr>';
-	code += '<td width="40%">';
-	code += '<input type="text" class="input_20_table" maxlength="17" id="client" style="margin-left:-12px;width:255px;" onKeyPress="return validator.isHWAddr(this,event)" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off" placeholder="ex: <% nvram_get("lan_hwaddr"); %>">';
-	code += '<img id="pull_arrow" height="14px;" src="/images/unfold_more.svg" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="<#select_MAC#>">';
-	code += '<div id="ClientList_Block_PC" class="clientlist_dropdown" style="margin-left:138px;"></div>';
-	code += '</td>';
-	code += '<td width="10%">';
-	code += '<div><input type="button" class="add_btn" onClick="addGameList(64);"></div>';
-	code += '</td>';
-	code += '</tr>';
-		
-	if(list_array == ''){
-		code += '<tr><td colspan="2" style="color:#FFCC00;">No data in table.</td></tr>';
-	}
-	else{
-		for(i=0; i<list_array.length; i++){
-			code += '<tr>';
-			code += '<td>';
-			code += '<div style="display:flex;align-items: center;justify-content: center;padding-left:30px;">';
-			code += '<div style="width:20%;"><div id="clientIcon_3497F683C346" class="clientIcon type34" ></div></div>';
-			code += '<div style="text-align: left;line-height: 18px;width:50%;">';
-			var mac = list_array[i];
-			var name = (clientList[mac] != undefined) ? clientList[mac].name : '';
-			var ip = (clientList[mac] != undefined) ? clientList[mac].ip : '';
-			code += '<div>'+ name +'</div>';		// NAME
-			code += '<div>'+ mac +'</div>';		// MAC
-			code += '<div>'+ ip +'</div>';		// IP
-			code += '</div>';
-			code += '</div>';
-			code += '</td>';
-			code += '<td width="10%">';
-			code += '<div><input type="button" class="remove_btn" onClick="delGameList(\''+ mac +'\')"></div>';
-			code += '</td>';
-			code += '</tr>';
-		}
-	}
-	
-	$('#game_list').html(code);
+let gameList = '';
+if (adaptiveqos_support) {
+    gameList = nvram_get_param.bwdpi_game_list.replace(/&#60/g, "<");
+} else {
+    gameList = nvram_get_param.rog_clientlist.replace(/&#60/g, "<");
 }
 
-function addGameList(){
-	var mac = $('#client').val();
-	var list_array = gameList.split('<');
-	var maximum = '64';
-	if(mac == ''){
-		alert("<#JS_fieldblank#>");
-		return false;
-	}
+function genGameList() {
+    const list_array = gameList.split('<');
+    let code = `
+	    <thead><tr><td colspan="4"><#Gear_Accelerator_List#> (<#List_limit#> 64)</td></tr></thead>
+	    <tr>
+	        <th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,10);"><#Client_Name#> (<#PPPConnection_x_MacAddressForISP_itemname#>)</a></th>
+	        <th><#list_add_delete#></th>
+	    </tr>
+	    <tr>
+	        <td width="40%">
+                <div style="display: flex; justify-content: center">
+                    <div class="clientlist_dropdown_main">
+	                    <input type="text" class="input_20_table" maxlength="17" id="client" onKeyPress="return validator.isHWAddr(this,event)" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off" placeholder="ex: ${nvram_get_param.lan_hwaddr}">
+	                    <img id="pull_arrow" height="14px;" src="/images/unfold_more.svg" onclick="pullLANIPList(this);" title="<#select_MAC#>">
+	                    <div id="ClientList_Block_PC" class="clientlist_dropdown"></div>
+                    </div>
+                </div>
+	        </td>
+	        <td width="10%">
+	            <div><input type="button" class="add_btn" onClick="addGameList(64);"></div>
+	        </td>
+	    </tr>`;
 
-	if(list_array.length > maximum){
-		alert("<#JS_itemlimit1#> " + maximum + " <#JS_itemlimit2#>");
-		return false;
-	}
+    if (list_array == '') {
+        code += `<tr><td colspan="2" style="color:#FFCC00;"><#IPConnection_VSList_Norule#></td></tr>`;
+    } else {
+        for (let i = 0; i < list_array.length; i++) {
+            const mac = list_array[i];
+            let userIconBase64 = "NoIcon";
+            let clientName, deviceType, deviceVendor, deviceIP;
+            let clientMac = mac.toUpperCase();
+            let clientIconID = "clientIcon_" + clientMac.replace(/\:/g, "");
+            if (clientList[clientMac]) {
+                clientName = (clientList[clientMac].nickName == "") ? clientList[clientMac].name : clientList[clientMac].nickName;
+                deviceType = clientList[clientMac].type;
+                deviceVendor = clientList[clientMac].vendor;
+                deviceIP = clientList[clientMac].ip;
+            } else {
+                clientName = "New device";
+                deviceType = 0;
+                deviceVendor = "";
+                deviceIP = "";
+            }
 
-	// check mac is whether in the list
-	for(i=1; i<list_array.length; i++){
-		if(list_array[i] == mac){
-			alert("<#JS_duplicate#>");
-			return false;
-		}
-	}
+            let iconCode = "";
 
-	if(gameList === ''){
-		gameList = mac;
-	}
-	else{
-		gameList += '<' + mac ;
-	}
-	
-	if(adaptiveqos_support){
-		genGameList();
-	}
-	else{
-		$.ajax({
-			url: '/rog_first_qos.cgi',
-			dataType: 'json',
-			data: {
-				rog_mac: mac,
-				action: 'add'
-			},
-			error: function(){},
-			success: function(response){
-				genGameList();
-			}
-		});
-	}
-	
-	setTimeout("showDropdownClientList('setClientIP', 'mac', 'all', 'ClientList_Block_PC', 'pull_arrow', 'all');", 500);
+            if (typeof clientList[mac] === 'undefined') {
+                iconCode += '<div id="' + clientIconID + '" class="clientIcon type0"></div>';
+            } else {
+                if (usericon_support) {
+                    userIconBase64 = getUploadIcon(clientMac.replace(/\:/g, ""));
+                }
+                if (userIconBase64 !== "NoIcon") {
+                    if (clientList[clientMac].isUserUplaodImg) {
+                        iconCode += `<div id="${clientIconID}" class="clientIcon"><img class="imgUserIcon_card" src="${userIconBase64}"></div>`;
+                    } else {
+                        iconCode += `<div id="${clientIconID}" class="clientIcon"><i class="type" style="--svg:url('${userIconBase64}')"></i></div>`;
+                    }
+                } else if (deviceType != "0" || deviceVendor == "") {
+                    iconCode += `<div id="${clientIconID}" class="clientIcon"><i class="type${deviceType}"></i></div>`;
+                } else if (deviceVendor != "") {
+                    const vendorIconClassName = getVendorIconClassName(deviceVendor.toLowerCase());
+                    if (vendorIconClassName != "" && !downsize_4m_support) {
+                        iconCode += `<div id="${clientIconID}" class="clientIcon"><i class="vendor-icon ${vendorIconClassName}"></i></div>`;
+                    } else {
+                        iconCode += `<div id="${clientIconID}" class="clientIcon"><i class="type${deviceType}"></i></div>`;
+                    }
+                }
+            }
+
+
+            code += `
+                <tr>
+			        <td>
+			            <div style="display:flex;align-items: center;justify-content: center;padding-left:30px;">
+			                <div style="width:20%;">${iconCode}</div>
+			                <div style="text-align: left;line-height: 18px;width:50%;">
+			                    <div>${clientName}</div>
+			                    <div>${clientName}</div>
+			                    <div>${deviceIP}</div>
+			                </div>
+			            </div>
+			        </td>
+			        <td width="10%">
+			            <div><input type="button" class="remove_btn" onClick="delGameList('${mac}')"></div>
+			        </td>
+			    </tr>`;
+        }
+    }
+
+    $('#game_list').html(code);
 }
 
-function delGameList(target){
-	var mac = target;
-	var list_array = gameList.split('<');
-	var temp = [];
-	for(i=0; i<list_array.length; i++){
-		if(list_array[i] != mac){
-			temp.push(list_array[i]);
-		}	
-	}
+function addGameList() {
+    const mac = document.querySelector('#client').value;
+    const list_array = gameList.split('<');
+    const maximum = '64';
+    if (mac === '') {
+        alert("<#JS_fieldblank#>");
+        return false;
+    }
 
-	gameList = temp.join('<');
-	if(adaptiveqos_support){
-		genGameList();
-	}
-	else{
-		$.ajax({
-			url: '/rog_first_qos.cgi',
-			dataType: 'json',
-			data: {
-				rog_mac: mac,
-				action: 'delete'
-			},
-			error: function(){},
-			success: function(response){
-				genGameList();
-			}
-		});
-	}
+    if (list_array.length > maximum) {
+        alert(`<#JS_itemlimit1#> ${maximum} <#JS_itemlimit2#>`);
+        return false;
+    }
 
-	setTimeout("showDropdownClientList('setClientIP', 'mac', 'all', 'ClientList_Block_PC', 'pull_arrow', 'all');", 500);
+    // check mac is whether in the list
+    for (let i = 1; i < list_array.length; i++) {
+        if (list_array[i] == mac) {
+            alert("<#JS_duplicate#>");
+            return false;
+        }
+    }
+
+    if (gameList === '') {
+        gameList = mac;
+    } else {
+        gameList += '<' + mac;
+    }
+
+    if (adaptiveqos_support) {
+        genGameList();
+    } else {
+        $.ajax({
+            url: '/rog_first_qos.cgi',
+            dataType: 'json',
+            data: {
+                rog_mac: mac,
+                action: 'add'
+            },
+            error: function () {
+            },
+            success: function (response) {
+                genGameList();
+            }
+        });
+    }
+
+    setTimeout("showDropdownClientList('setClientIP', 'mac', 'all', 'ClientList_Block_PC', 'pull_arrow', 'all');", 500);
 }
 
-function showGameListField(){
-	$('#gameList_block').show();
-	cal_panel_block("gameList_block", 0.23);
+function delGameList(target) {
+    const mac = target;
+    const list_array = gameList.split('<');
+    const temp = [];
+    for (let i = 0; i < list_array.length; i++) {
+        if (list_array[i] != mac) {
+            temp.push(list_array[i]);
+        }
+    }
+
+    gameList = temp.join('<');
+    if (adaptiveqos_support) {
+        genGameList();
+    } else {
+        $.ajax({
+            url: '/rog_first_qos.cgi',
+            dataType: 'json',
+            data: {
+                rog_mac: mac,
+                action: 'delete'
+            },
+            error: function () {
+            },
+            success: function (response) {
+                genGameList();
+            }
+        });
+    }
+
+    setTimeout("showDropdownClientList('setClientIP', 'mac', 'all', 'ClientList_Block_PC', 'pull_arrow', 'all');", 500);
 }
 
-function hideGameListField(){
-	$('#gameList_block').hide();
+function showGameListField() {
+    $('#gameList_block').show();
+    cal_panel_block("gameList_block", 0.23);
 }
 
-function enableGamePriority(){
-	if(adaptiveqos_support){
-		if(document.form.qos_enable.value == "0" && document.form.TM_EULA.value == "0"){
-			ASUS_EULA
-				.config(eula_confirm, cancel)
-				.show("tm");
-		}
-		else{
-			if(document.getElementById("game_priority_enable").checked){
-				document.form.qos_enable.value = '1';
-				document.form.qos_type.value = '1';	
-			}
-			else{
-				document.form.qos_enable.value = '0';
-			}
+function hideGameListField() {
+    $('#gameList_block').hide();
+}
 
-			if(ctf_disable == 1 || (fc_disable_orig != '' && runner_disable_orig != '')){
-				document.form.action_script.value = "restart_qos;restart_firewall";
-			}
-			else{
-				if(ctf_fa_mode == "2"){
-					FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
-				}
-				else{
-					document.form.action_script.value = "restart_qos;restart_firewall";		
-				}
-			}
+function enableGamePriority() {
+    const default_reboot_time = httpApi.hookGet("get_default_reboot_time");
+    if (adaptiveqos_support) {
+        if (document.form.qos_enable.value == "0" && (policy_status.TM == 0 || policy_status.TM_time == '')) {
+            const policyModal = new PolicyModalComponent({
+                policy: "TM",
+                agreeCallback: eula_confirm,
+                disagreeCallback: cancel
+            });
+            policyModal.show();
+        } else {
+            eula_confirm();
+        }
+    } else {
+        if (document.form.rog_enable.value == '0') {		// OFF -> ON
+            if (document.form.qos_obw.value == '0' || document.form.qos_obw.value == '') {
+                document.form.qos_obw.disabled = false;
+                document.form.qos_obw.value = '2048000';
+            }
 
-			if(reset_wan_to_fo.change_status)
-				reset_wan_to_fo.change_wan_mode(document.form);
+            if (document.form.qos_ibw.value == '0' || document.form.qos_ibw.value == '') {
+                document.form.qos_ibw.disabled = false;
+                document.form.qos_ibw.value = '1024000';
+            }
+        }
 
-			document.form.bwdpi_game_list.disabled = false;
-			document.form.bwdpi_game_list.value = gameList;	
-			document.form.submit();
-		}
-	}
-	else{
-		if(document.form.rog_enable.value == '0'){		// OFF -> ON
-			if(document.form.qos_obw.value == '0' || document.form.qos_obw.value == ''){
-				document.form.qos_obw.disabled = false;
-				document.form.qos_obw.value = '2048000';
-			}
+        if (document.getElementById("game_priority_enable").checked) {
+            document.form.rog_enable.value = '1';
+            // document.form.qos_enable.value = '0';
+            document.form.qos_type.value = '0';
+            document.form.action_script.value = 'reboot';
 
-			if(document.form.qos_ibw.value == '0' || document.form.qos_ibw.value == ''){
-				document.form.qos_ibw.disabled = false;
-				document.form.qos_ibw.value = '1024000';
-			}
-		}
-	
-		if(document.getElementById("game_priority_enable").checked){
-			document.form.rog_enable.value = '1';
-			// document.form.qos_enable.value = '0';
-			document.form.qos_type.value = '0';
-			document.form.action_script.value = 'reboot';
+            if (document.form.qos_type.value == 0 && !lantiq_support) {
+                FormActions("start_apply.htm", "apply", "reboot", default_reboot_time);
+            }
+        } else {
+            document.form.rog_enable.value = '0';
+        }
 
-			if(document.form.qos_type.value == 0 && !lantiq_support){
-				FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
-			}
-		}
-		else{
-			document.form.rog_enable.value = '0';
-		}
+        if (ctf_disable == 1 || (fc_disable_orig != '' && runner_disable_orig != '')) {
+            document.form.action_script.value = "restart_qos;restart_firewall";
+        } else {
+            if (ctf_fa_mode == "2") {
+                FormActions("start_apply.htm", "apply", "reboot", default_reboot_time);
+            } else {
+                if (document.form.qos_type.value == 0 && !lantiq_support) {
+                    FormActions("start_apply.htm", "apply", "reboot", default_reboot_time);
+                } else {
+                    document.form.action_script.value = "restart_qos;restart_firewall";
+                }
+            }
+        }
 
-		if(ctf_disable == 1 || (fc_disable_orig != '' && runner_disable_orig != '')){
-			document.form.action_script.value = "restart_qos;restart_firewall";
-		}
-		else{
-			if(ctf_fa_mode == "2"){
-				FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
-			}
-			else{
-				if(document.form.qos_type.value == 0 && !lantiq_support){
-					FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
-				}	
-				else{
-					document.form.action_script.value = "restart_qos;restart_firewall";
-				}
-			}
-		}
+        if (reset_wan_to_fo.change_status)
+            reset_wan_to_fo.change_wan_mode(document.form);
 
-		if(reset_wan_to_fo.change_status)
-			reset_wan_to_fo.change_wan_mode(document.form);
-
-		document.form.submit();
-	}
+        document.form.submit();
+    }
 }
 
 function eula_confirm(){
-	document.form.TM_EULA.value = 1;
-	enableGamePriority();
+    const default_reboot_time = httpApi.hookGet("get_default_reboot_time");
+	if (document.getElementById("game_priority_enable").checked) {
+        document.form.qos_enable.value = '1';
+        document.form.qos_type.value = '1';
+    } else {
+        document.form.qos_enable.value = '0';
+    }
+
+    if (ctf_disable == 1 || (fc_disable_orig != '' && runner_disable_orig != '')) {
+        document.form.action_script.value = "restart_qos;restart_firewall";
+    } else {
+        if (ctf_fa_mode == "2") {
+            FormActions("start_apply.htm", "apply", "reboot", default_reboot_time);
+        } else {
+            document.form.action_script.value = "restart_qos;restart_firewall";
+        }
+    }
+
+    if (reset_wan_to_fo.change_status)
+        reset_wan_to_fo.change_wan_mode(document.form);
+
+    document.form.bwdpi_game_list.disabled = false;
+    document.form.bwdpi_game_list.value = gameList;
+    document.form.submit();
 }
 
-function cancel(){
-	refreshpage();
+function cancel() {
+    refreshpage();
 }
 
-function applyRule(){
-	showLoading();
-	if(adaptiveqos_support){
-		document.form.bwdpi_game_list.disabled = false;
-		document.form.bwdpi_game_list.value = gameList;
-	}
-	document.form.submit();
+function applyRule() {
+    showLoading();
+    if (adaptiveqos_support) {
+        document.form.bwdpi_game_list.disabled = false;
+        document.form.bwdpi_game_list.value = gameList;
+    }
+    document.form.submit();
 }
 </script>
 </head>
@@ -425,21 +475,19 @@ function applyRule(){
 </div>
 <iframe name="hidden_frame" id="hidden_frame" width="0" height="0" frameborder="0" scrolling="no"></iframe>
 <form method="post" name="form" action="/start_apply.htm" target="hidden_frame">
-<input type="hidden" name="productid" value="<% nvram_get("productid"); %>">
-<input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
-<input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
+<input type="hidden" name="preferred_lang" id="preferred_lang" value="">
+<input type="hidden" name="firmver" value="">
 <input type="hidden" name="current_page" value="GearAccelerator.asp">
 <input type="hidden" name="next_page" value="GearAccelerator.asp">
 <input type="hidden" name="action_mode" value="apply">
 <input type="hidden" name="action_script" value="restart_qos;restart_firewall">
 <input type="hidden" name="action_wait" value="5">
-<input type="hidden" name="qos_enable" value="<% nvram_get("qos_enable"); %>">
-<input type="hidden" name="qos_type" value="<% nvram_get("qos_type"); %>">
-<input type="hidden" name="qos_obw" value="<% nvram_get("qos_obw"); %>" disabled>
-<input type="hidden" name="qos_ibw" value="<% nvram_get("qos_ibw"); %>" disabled>
-<input type="hidden" name="bwdpi_game_list" value="<% nvram_get("bwdpi_game_list"); %>" disabled>
-<input type="hidden" name="TM_EULA" value="<% nvram_get("TM_EULA"); %>">
-<input type="hidden" name="rog_enable" value="<% nvram_get("rog_enable"); %>">
+<input type="hidden" name="qos_enable" value="">
+<input type="hidden" name="qos_type" value="">
+<input type="hidden" name="qos_obw" value="" disabled>
+<input type="hidden" name="qos_ibw" value="" disabled>
+<input type="hidden" name="bwdpi_game_list" value="" disabled>
+<input type="hidden" name="rog_enable" value="">
 </form>
 
 <table class="content" align="center" cellspacing="0" style="margin:auto;">

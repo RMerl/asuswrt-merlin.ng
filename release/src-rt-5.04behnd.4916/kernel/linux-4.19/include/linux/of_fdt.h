@@ -46,6 +46,9 @@ extern char __dtb_end[];
 
 /* Other Prototypes */
 extern u64 of_flat_dt_translate_address(unsigned long node);
+#if defined(CONFIG_BCM_KF_FDT_ADDRESS)
+extern u64 of_flat_dt_translate_address_idx(unsigned long node, int index);
+#endif
 extern void of_fdt_limit_memory(int limit);
 #endif /* CONFIG_OF_FLATTREE */
 

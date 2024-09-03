@@ -1,29 +1,23 @@
 /*
    <:copyright-BRCM:2015:DUAL/GPL:standard
-
-      Copyright (c) 2015 Broadcom
+   
+      Copyright (c) 2015 Broadcom 
       All Rights Reserved
-
-   Unless you and Broadcom execute a separate written software license
-   agreement governing use of this software, this software is licensed
-   to you under the terms of the GNU General Public License version 2
-   (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-   with the following added to such license:
-
-      As a special exception, the copyright holders of this software give
-      you permission to link this software with independent modules, and
-      to copy and distribute the resulting executable under terms of your
-      choice, provided that you also meet, for each linked independent
-      module, the terms and conditions of the license of that module.
-      An independent module is a module which is not derived from this
-      software.  The special exception does not apply to any modifications
-      of the software.
-
-   Not withstanding the above, under no circumstances may you combine
-   this software in any way with any other Broadcom software provided
-   under a license other than the GPL, without Broadcom's express prior
-   written consent.
-
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License, version 2, as published by
+   the Free Software Foundation (the "GPL").
+   
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+   
+   
+   A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+   writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.
+   
    :>
  */
 
@@ -69,6 +63,7 @@
 // =========== global/static variables ====================
 enetx_port_t *sf2_sw;       /* 1st SF2 switch */
 enetx_port_t *sf2_sw_ext;   /* 2nd SF2 switch */
+enetx_port_t *nb_sw_ext;    /* external non-brcm switch */
 uint32_t sf2_unit_bmap;
 
 static int tr_all_portmap(enetx_port_t *port, void *_ctx)
@@ -344,13 +339,20 @@ static void _sf2_conf_que_thred(int unit)
 {
     int q, q1, t;
     int thredBase[FC_THRED_TOTAL_TYPES],
-        maxFrameLength = 4096, lastLanQue, lastWanQue, wanUpPorts, lanUpPorts;
+        maxFrameLength, lastLanQue, lastWanQue, wanUpPorts, lanUpPorts;
     int available_switch_buf = SF2_MAX_BUFFER_IN_PAGE;
     int impPortCnt;
     int acb_xoff = acb_port_xoff_threshold > acb_xoff_threshold? acb_port_xoff_threshold: acb_xoff_threshold;
 #if (defined(CONFIG_BCM96756) && defined(RTAX58U_V2)) || defined(RTAX3000N) || defined(BR63)
     uint8_t val8;
 #endif
+
+#if defined(CONFIG_BCM96765) || defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764)
+    if (ENET_MAX_MTU_SIZE > 8000)
+        maxFrameLength = 45 * SF2_BYTES_PER_PAGE;
+    else
+#endif
+    maxFrameLength = 4096;
 
 #if defined(SF2_DUAL)
     if (unit == 1)
@@ -608,7 +610,7 @@ static int tr_imp_ports_op(enetx_port_t *port, void *ctx)
         
         // enable link - port override register
         if (id == IMP_PORT_ID)
-#if defined(CONFIG_BCM96765)
+#if defined(CONFIG_BCM96765) || defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764)
             val16 = IMP_LINK_OVERRIDE_10GFDX;
 #else
             val16 = IMP_LINK_OVERRIDE_2000FDX;
@@ -696,6 +698,15 @@ static void _extsw_setup_imp_ports(int unit)
 static void _extsw_set_pbvlan(int unit, int port, uint16_t fwdMap)
 {
     SF2SW_WREG(unit, PAGE_PORT_BASED_VLAN, REG_VLAN_CTRL_P0 + (port * 2), (uint8_t *)&fwdMap, 2);
+}
+
+static void _extsw_or_pbvlan(int unit, int port, uint16_t fwdMap)
+{
+    uint16_t val16;
+
+    SF2SW_RREG(unit, PAGE_PORT_BASED_VLAN, REG_VLAN_CTRL_P0 + (port * 2), (uint8_t *)&val16, 2);
+    val16 |= fwdMap;
+    SF2SW_WREG(unit, PAGE_PORT_BASED_VLAN, REG_VLAN_CTRL_P0 + (port * 2), (uint8_t *)&val16, 2);
 }
 
 #if defined(CONFIG_BCM_ENET_MULTI_IMP_SUPPORT)
@@ -996,9 +1007,17 @@ void _sf2_conf_acb_conges_profile(int profile)
 #if defined(CONFIG_BCM963178)
     acb_xoff_threshold = 32;    // fixed threshold as 178 has limited number of buffers
     acb_port_xoff_threshold = acb_xoff_threshold * 3/2;     /* Scale up per port XOFF thread to 1.5 times of per queue */
-#elif defined(CONFIG_BCM96756) || defined(CONFIG_BCM96765)
+#elif defined(CONFIG_BCM96756)
     acb_xoff_threshold = 48;    // fixed threshold as 6756 has limited number of buffers
     acb_port_xoff_threshold = acb_xoff_threshold * 3/2;     /* Scale up per port XOFF thread to 1.5 times of per queue */
+#elif defined(CONFIG_BCM96765) || defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764)
+    if (ENET_MAX_MTU_SIZE > 8000) {
+        acb_xoff_threshold = 90;
+        acb_port_xoff_threshold = 339;
+    } else {
+        acb_xoff_threshold = 48;    // fixed threshold as 6756 has limited number of buffers
+        acb_port_xoff_threshold = acb_xoff_threshold * 3/2;     /* Scale up per port XOFF thread to 1.5 times of per queue */
+    }
 #else
     acb_xoff_threshold = (ENET_MAX_MTU_SIZE + SF2_BYTES_PER_PAGE - 1) / SF2_BYTES_PER_PAGE;  // get number of buffers needed
     acb_xoff_threshold = ((acb_xoff_threshold < 8) ? 8 : acb_xoff_threshold) * 2;   // need to be at least 2 times max packet
@@ -1056,7 +1075,7 @@ void _sf2_conf_acb_conges_profile(int profile)
 // =========== public ioctl functions =====================
 // ----------- SIOCETHSWCTLOPS ETHSWINFO functions ---
 typedef struct sw_info_s {
-    phy_dev_t *gphy;
+    phy_dev_t *phy;
     int pbmap;
 } sw_info_t;
 
@@ -1067,8 +1086,8 @@ static int tr_sw_info_get(enetx_port_t *port, void *ctx)
 
     if (port->has_interface)
         info->pbmap |= 1 << port->port_info.port;
-    if (!info->gphy && phy && phy->mii_type == PHY_MII_TYPE_GMII)
-        info->gphy = phy;
+    if (!info->phy && phy)
+        info->phy = phy;
     return 0;
 }
 
@@ -1078,8 +1097,6 @@ int ioctl_extsw_info(struct ethswctl_data *e)
     sw_info_t info;
     int bus_type;
     unsigned int vend_id = 0, dev_id = 0, rev_id = 0;
-    u16 v16;
-    phy_drv_t *phy_drv;
 
     if (!IS_UNIT_SF2(e->val))
         return -EFAULT;
@@ -1092,16 +1109,17 @@ int ioctl_extsw_info(struct ethswctl_data *e)
     bus_type = (sw == sf2_sw_ext) ? MBUS_MDIO : MBUS_MMAP;
 #endif
 
-    info.gphy = NULL; 
+    info.phy = NULL; 
     info.pbmap = 0;
     _port_traverse_ports(sw, tr_sw_info_get, PORT_CLASS_PORT, &info, 1);
 
-    if (info.gphy) {
-        phy_drv = info.gphy->phy_drv;
-        phy_bus_read(info.gphy, 2, &v16);
-        vend_id = v16; vend_id = __le32_to_cpu(vend_id);
-        phy_bus_read(info.gphy, 3, &v16);
-        dev_id = v16;  dev_id = __le32_to_cpu(dev_id);
+    if (info.phy) {
+        uint32_t phyid = 0;
+
+        phy_dev_phyid_get(info.phy, &phyid);
+        vend_id = phyid >> 16;      vend_id = __le32_to_cpu(vend_id);
+        dev_id = phyid & 0xffff;    dev_id = __le32_to_cpu(dev_id);;
+        
         enet_dbgv("vendor=%x dev=%x\n", vend_id, dev_id);
         if (dev_id >= 0xb000) {
             rev_id = dev_id & 0xf;
@@ -2149,7 +2167,7 @@ int ioctl_extsw_cos_priority_method_cfg(struct ethswctl_data *e)
     int i, enable_qos;
 
     reg_addr = SF2_REG_PORTN_TC_SELECT_TABLE + e->port * 2;
-#if defined(CONFIG_BCM96756) || defined(CONFIG_BCM96765)
+#if defined(SF2_DUAL)
     if (e->unit) reg_addr -= QOS_REG_SHIFT;   // external switch 
 #endif
     down(&sf2_sw->s.conf_sem);
@@ -2242,7 +2260,7 @@ int ioctl_extsw_pcp_to_priority_mapping(struct ethswctl_data *e)
         return BCM_E_ERROR;
     }
 
-#if defined(CONFIG_BCM96756) || defined(CONFIG_BCM96765)
+#if defined(SF2_DUAL)
     if (e->unit) adjust = -QOS_REG_SHIFT;   // external switch 
 #endif
 
@@ -2300,7 +2318,7 @@ int ioctl_extsw_pid_to_priority_mapping(struct ethswctl_data *e)
         enet_err("Invalid port number %02d \n", e->port);
         return BCM_E_ERROR;
     }
-#if defined(CONFIG_BCM96756) || defined(CONFIG_BCM96765)
+#if defined(SF2_DUAL)
     if (e->unit) reg_port_id_prio_map -= QOS_REG_SHIFT;   // external switch 
 #endif
     down(&sf2_sw->s.conf_sem);
@@ -2346,7 +2364,7 @@ int ioctl_extsw_dscp_to_priority_mapping(struct ethswctl_data *e)
         return BCM_E_ERROR;
     }
 
-#if defined(CONFIG_BCM96756) || defined(CONFIG_BCM96765)
+#if defined(SF2_DUAL)
     if (e->unit) reg_qos_dscp_prio_map0lo -= QOS_REG_SHIFT;   // external switch 
 #endif
     down(&sf2_sw->s.conf_sem);
@@ -2423,7 +2441,7 @@ int ioctl_extsw_port_erc_config(struct ethswctl_data *e)
         return BCM_E_ERROR;
 
     // get current shaper tick
-#if defined(CONFIG_BCM96756) || defined(CONFIG_BCM96765)
+#if defined(SF2_DUAL)
     if (e->unit == 0) {
         SF2SW_RREG(e->unit, PAGE_AVB_TICK_CTRL, SF2_REG_AVB_GLOBAL_TICK_CTRL, &tick, 4);
         SF2SW_RREG(e->unit, PAGE_AVB_TICK_CTRL, SF2_REG_AVB_TICK_CTRL_P0_OVERRIDE+e->port, &val32, 4);
@@ -2462,6 +2480,9 @@ int ioctl_extsw_port_erc_config(struct ethswctl_data *e)
         /* configure shaper burst size */
         val32 = 0; /* reset burst size by default */
         if (e->limit) { /* Only set burst size if shaper is getting enabled */
+            uint32_t min_burst = (ENET_MAX_MTU_SIZE > 4000) ? ENET_MAX_MTU_SIZE : 2*ENET_MAX_MTU_SIZE;
+            uint32_t min_val32 = DIVIDE_RU(min_burst * 9 /*bytes x 8bits x 1.125*/, 8*64);
+
             if (pkt_flag == SHAPER_PACKET_MODE) {
                 val32 = e->burst_size; /* shaper burst config in 1 packet units */
             }
@@ -2471,10 +2492,8 @@ int ioctl_extsw_port_erc_config(struct ethswctl_data *e)
                 else
                     val32 = DIVIDE_RU(e->burst_size /* Kbits */ * 1000, 8*64); /* shaper burst config in 64Byte units */
             }
-            if (!val32) {
-                val32 = 1;
-            }
-            val32 = val32 & SHAPER_RATE_BURST_VAL_MASK;
+            /* burst value need to be greater than min value */
+            val32 = ((val32 < min_val32)? min_val32 : val32) & SHAPER_RATE_BURST_VAL_MASK;
         }
         reg  =   pkt_flag == SHAPER_PACKET_MODE? SF2_REG_PN_SHAPER_BURST_SZ_PKT:
                                                   SF2_REG_PN_SHAPER_BURST_SZ_BYTE;
@@ -2945,7 +2964,7 @@ static int tr_fill_sysp_conf(enetx_port_t *port, void *ctxt)
         }
         ch->switch_id = 0;
         ch->nbr_of_queues = 8;
-#elif defined(CONFIG_BCM96756) || defined(CONFIG_BCM96765)
+#elif defined(SF2_DUAL)
         ch->sysport = 0;
         ch->switch_id = PORT_ON_ROOT_SW(port)?0:1;
         ch->port = port->port_info.port;
@@ -2989,10 +3008,23 @@ static int bcmenet_sysport_config(void)
     {
         conf.nbr_of_sysports = 1;
     }
-#elif defined(CONFIG_BCM96756) || defined(CONFIG_BCM96765)
+#elif defined(SF2_DUAL)
     conf.nbr_of_sysports = 1;
-    conf.sysport[0].mode =    (sf2_sw_ext) ? BCM_ENET_SYSPORT_MODE_STACKED_BRCM_SW : BCM_ENET_SYSPORT_MODE_INTERNAL_BRCM_SW;
-    conf.switch_parent_port = (sf2_sw_ext) ? sf2_sw_ext->s.parent_port->port_info.port : NO_EXT_SWITCH;
+    if (nb_sw_ext)
+    {
+        conf.sysport[0].mode = BCM_ENET_SYSPORT_MODE_STACKED_VLAN_SW;
+        conf.switch_parent_port = nb_sw_ext->s.parent_port->port_info.port;
+    }
+    else if (sf2_sw_ext)
+    {
+        conf.sysport[0].mode = sf2_sw_ext->s.parent_port->port_info.swtag_use_pvid ? BCM_ENET_SYSPORT_MODE_STACKED_VLAN_SW : BCM_ENET_SYSPORT_MODE_STACKED_BRCM_SW;
+        conf.switch_parent_port = sf2_sw_ext->s.parent_port->port_info.port;
+    }
+    else
+    {
+        conf.sysport[0].mode = BCM_ENET_SYSPORT_MODE_INTERNAL_BRCM_SW;
+        conf.switch_parent_port = NO_EXT_SWITCH;
+    }
     enet_dbgv(" sysport0 mode= internal_sw %s\n", (sf2_sw_ext)? "with external_sw":"");
     conf.ls_port_q_offset = (sf2_sw_ext) ? LS_PORT_TXQ_OFFSET : 0;
 #endif
@@ -3077,6 +3109,11 @@ static int tr_find_sf2_sw(enetx_port_t *sw, void *_ctx)
 {
     int unit = IS_ROOT_SW(sw)?0:1;
 
+    if (sw->port_type == PORT_TYPE_NONBRCM_SW)
+    {
+        nb_sw_ext = sw;
+        return 0;
+    }
     if (sw->port_type != PORT_TYPE_SF2_SW)
         return 0;
 
@@ -3262,23 +3299,33 @@ int port_sf2_sw_config_trunk(enetx_port_t *sw, enetx_port_t *port, int grp_no, i
     return sw_config_trunk_chnl_rx(sw, port, grp_no, add);
 }
 
+// if pmap == 0, init all set only IMP and itself so isolate each port
+// if pmap != 0, OR pmap
 int port_sf2_sw_update_pbvlan(enetx_port_t *sw, unsigned int pmap)
 {
     int unit = IS_ROOT_SW(sw)?0:1;
     int i;
+    unsigned int all_pmap = ((1<<(MAX_SWITCH_PORTS+1)) - 1) ^ DEFAULT_IMP_PBMAP;
 
-    if (pmap == 0) return 0;    //nothing to do
+    // pbvlan include port with external switch
+    if (pmap && sw == sf2_sw && sf2_sw_ext)
+        pmap |= 1 << (sf2_sw_ext->s.parent_port->port_info.port);
 
-    for (i=0; i < MAX_SWITCH_PORTS; i++ )
+    for (i=0; i <= MAX_SWITCH_PORTS; i++ )
     {
-        if (pmap & (1<<i))
+        if (pmap == 0) 
         {
+            if (DEFAULT_IMP_PBMAP & (1<<i))
+                _extsw_set_pbvlan(unit, i, (1 << i) | all_pmap);
+            else
 #if defined(CONFIG_BCM_ENET_MULTI_IMP_SUPPORT)
-            _extsw_set_pbvlan(unit, i, pmap | (1 << cur_port_imp_map[i]));
+                _extsw_set_pbvlan(unit, i, (1 << i) | (1 << cur_port_imp_map[i]));
 #else
-            _extsw_set_pbvlan(unit, i, pmap | (1 << platform_imp_port(unit)));
+                _extsw_set_pbvlan(unit, i, (1 << i) | (1 << platform_imp_port(unit)));
 #endif
-        }
+        } 
+        else if (pmap & (1<<i))
+            _extsw_or_pbvlan(unit, i, pmap);
     }
     return 0;
 }

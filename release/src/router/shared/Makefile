@@ -361,7 +361,9 @@ endif
 endif
 
 ifeq ($(RTCONFIG_BCMARM),y)
+ifneq ($(HND_ROUTER),y)
 OBJS += ifaddrs.o
+endif
 endif
 
 ifeq ($(RTCONFIG_QTN),y)
@@ -481,7 +483,7 @@ ifeq ($(RTCONFIG_HND_ROUTER_AX),y)
 OBJS += bcmxtlv.o bcmutils.o
 ifeq ($(or $(RTAX55),$(RTAX1800),$(RTAX58U_V2),$(RTAX3000N),$(BR63),$(RTCONFIG_EXT_RTL8367S)),y)
 OBJS += rtkswitch.o
-else ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT-BE98 GT-BE98_PRO GT-BE96 RT-BE58U TUF-BE3600 GT-BE19000 RT-BE92U RT-BE95U))
+else ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT-BE98 GT-BE98_PRO GT-BE96 RT-BE58U TUF-BE3600 GT-BE19000 RT-BE92U RT-BE95U RT-BE82U RT-BE58U_PRO))
 OBJS += rtkswitch.o
 endif
 ifeq ($(and $(BR63),$(NEW_SWITCH_ORDER)),y)

@@ -640,7 +640,13 @@ function applyRule(){var postObj = new Object();
 			"wl0_auth_mode_x": document.form.band0_auth_mode_x.value,
 			"wl1_auth_mode_x": document.form.band1_auth_mode_x.value,
 			"wl2_auth_mode_x": document.form.band2_auth_mode_x.value,
-			"wl1_bw_160": band1_enable_bw_160,
+			"wl1_bw_160": (function(){
+				if(based_modelid == 'ET8_V2'){
+					return '<% nvram_get("wl1_bw_160"); %>'
+				}
+				
+				return band1_enable_bw_160;
+			})(),
 			"wl2_bw_160": band2_enable_bw_160
 		}
 
@@ -747,7 +753,13 @@ function applyRule(){var postObj = new Object();
 				"wl0_auth_mode_x": document.form.band01_auth_mode_x.value,
 				"wl1_auth_mode_x": document.form.band01_auth_mode_x.value,
 				"wl2_auth_mode_x": document.form.band01_auth_mode_x.value,
-				"wl1_bw_160": band1_enable_bw_160,
+				"wl1_bw_160": (function(){
+					if(based_modelid == 'ET8_V2'){
+						return '<% nvram_get("wl1_bw_160"); %>'
+					}
+					
+					return band1_enable_bw_160;
+				})(),
 				"wl2_bw_160": band2_enable_bw_160
 			}
 
@@ -865,7 +877,14 @@ function applyRule(){var postObj = new Object();
 				"wl0_auth_mode_x": document.form.band01_auth_mode_x.value,
 				"wl1_auth_mode_x": document.form.band01_auth_mode_x.value,
 				"wl2_auth_mode_x": document.form.band2_auth_mode_x.value,
-				"wl1_bw_160": band1_enable_bw_160,
+				"wl1_bw_160": 
+				(function(){
+					if(based_modelid == 'ET8_V2'){
+						return '<% nvram_get("wl1_bw_160"); %>'
+					}
+					
+					return band1_enable_bw_160;
+				})(),
 				"wl2_bw_160": band2_enable_bw_160
 			}
 
@@ -965,7 +984,13 @@ function applyRule(){var postObj = new Object();
 				"wl0_auth_mode_x": document.form.band0_auth_mode_x.value,
 				"wl1_auth_mode_x": document.form.band01_auth_mode_x.value,
 				"wl2_auth_mode_x": document.form.band01_auth_mode_x.value,
-				"wl1_bw_160": band1_enable_bw_160,
+				"wl1_bw_160": (function(){
+					if(based_modelid == 'ET8_V2'){
+						return '<% nvram_get("wl1_bw_160"); %>'
+					}
+					
+					return band1_enable_bw_160;
+				})(),
 				"wl2_bw_160": band2_enable_bw_160
 			}
 
@@ -1476,7 +1501,7 @@ function validForm(){
 			ssid_array.push(httpApi.nvramGet(["wl2_ssid"]).wl2_ssid);
 		jsonPara["current_ssid"] = ssid_array;
 		if(!validator.dwb_check_wl_setting(jsonPara)) {
-			alert("The fronthaul SSID is the same as the backhaul SSID.");/* untranslated */
+			alert(`<#wireless_JS_dup_SSID#>`);
 			return false;
 		}
 	}
@@ -2061,7 +2086,13 @@ function he_frame_mode(obj) {
 	}
 }
 
-var band1_enable_bw_160 = '<% nvram_get("wl1_bw_160"); %>';
+var band1_enable_bw_160 = (function(){
+	if(!wl_info[1].bw_160_support){
+        return '0'
+    }
+
+	return '<% nvram_get("wl1_bw_160"); %>'
+})();
 var band2_enable_bw_160 = (function(){
 	var band2_bw_160 = '<% nvram_get("wl2_bw_160"); %>';
 	var band2_bw_320 = '<% nvram_get("wl2_bw_320"); %>';
@@ -2140,7 +2171,13 @@ function separateGenBWTable(unit){
 }
 function separateEnable_160MHz(obj){
 	if(obj.id == 'band1_160'){
-		band1_enable_bw_160 = obj.checked ? '1' : '0';
+		band1_enable_bw_160 = (function(){
+			if(!wl_info[1].bw_160_support){
+				return '0'
+			}
+
+			return obj.checked ? '1' : '0';
+		})();
 		separateGenBWTable('1');
 	}
 	else if(obj.id == 'band2_160'){
@@ -2538,8 +2575,7 @@ function separateGenChannel(unit, channel, bandwidth){
 									channel_5g_2_val[i] = "6g" + _cur_channel + "/160";
 								}
 								else{
-									channel_5g_2_val[i] = _cur_channel + "/160";
-									_wl_channel.push(_cur_channel.toString());
+									channel_5g_2_val[i] = _cur_channel + "/160";									
 								}
 								
 								continue loop_auto;
@@ -2554,8 +2590,7 @@ function separateGenChannel(unit, channel, bandwidth){
 								channel_5g_2_val[i] = "6g" + _cur_channel + "/80";
 							}
 							else{
-								channel_5g_2_val[i] = _cur_channel + "/80";
-								_wl_channel.push(_cur_channel.toString());
+								channel_5g_2_val[i] = _cur_channel + "/80";								
 							}
 							
 							continue loop_auto;
@@ -2568,8 +2603,7 @@ function separateGenChannel(unit, channel, bandwidth){
 								channel_5g_2_val[i] = "6g" + _cur_channel + "/40";
 							}
 							else{
-								channel_5g_2_val[i] = wlextchannel_fourty(_cur_channel);
-								_wl_channel.push(_cur_channel.toString());
+								channel_5g_2_val[i] = wlextchannel_fourty(_cur_channel);								
 							}
 							
 							continue loop_auto;
@@ -2583,15 +2617,12 @@ function separateGenChannel(unit, channel, bandwidth){
 							}
 							else{
 								channel_5g_2_val[i] = _cur_channel.toString();
-								_wl_channel.push(_cur_channel.toString());
 							}
 							
 							continue loop_auto;
 						}
 					}
 				}
-
-				channel_5g_2 = _wl_channel;
 			}			
 		}
 		else if(curBandwidth == '6'){

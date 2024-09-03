@@ -32,6 +32,13 @@
         status = "okay";
     };
     serdes00 {
+        pinctrl-names = "default";
+        pinctrl-0 = <&a_slan_sd_rx_los_pin_3 &a_slan_sd_mod_abs_pin_4>;
+        tx-disable = <&gpioc 6 GPIO_ACTIVE_HIGH>;
+        10000-Base-R;
+        5000-Base-R;
+        2500-Base-X;
+        1000-Base-X;
         status = "okay";
     };
     serdes10_xphy {

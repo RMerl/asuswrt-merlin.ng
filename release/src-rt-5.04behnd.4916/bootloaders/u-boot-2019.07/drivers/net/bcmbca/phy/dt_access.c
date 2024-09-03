@@ -104,7 +104,7 @@ dt_handle_t dt_dev_get_handle(dt_device_t *pdev)
 
 void *dt_dev_read_addr(dt_device_t *pdev, int index)
 {
-    return (void*)dev_read_addr_index(pdev, index);
+    return (void*)(uintptr_t)dev_read_addr_index(pdev, index);
 }
 
 void *dt_dev_remap(dt_device_t *pdev, int index)

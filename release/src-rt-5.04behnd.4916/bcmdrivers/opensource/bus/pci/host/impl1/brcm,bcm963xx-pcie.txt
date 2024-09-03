@@ -84,6 +84,16 @@ Broadcom 963xx specific properties
 
 - brcm,vreg-supply:      Optional property. To specify the regulator instance corresponding to the supply-names above
 
+- brcm,serdes:      Optional property. To specify the flags for phy serdes.
+  This is a bitmask with the following meaning
+  ------------------------------------------------------------------
+  | Bit# |       Name              |        Values                 |
+  ------------------------------------------------------------------
+  |  0   |  process type           |  (0: 28hfc, 1: 16ffc)         |
+  |  1   |  Analog core            |  (0: Viper, 1: Black shark)   |
+  |  2   |  Reference Clock/Xtal   |  (0: 50MHz, 1: 80MHz)         |
+  ------------------------------------------------------------------
+
 Broadcom Virtual PCIe Core (WLAN) specific properties
 -----------------------------------------------------
 - brcm,devid        : Optional property to specify the device id for the virutal PCIe core

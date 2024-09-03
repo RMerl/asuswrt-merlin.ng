@@ -166,6 +166,7 @@ const char* pns_sendmsg_fcm_template =
 "<deviceid>%s</deviceid>\r\n"
 "<deviceticket>%s</deviceticket>\r\n"
 "<message>%s</message>\r\n"
+"<ispush>%d</ispush>\r\n"
 "</pns_sendmsg_fcm>\r\n\r\n"
 ;
 

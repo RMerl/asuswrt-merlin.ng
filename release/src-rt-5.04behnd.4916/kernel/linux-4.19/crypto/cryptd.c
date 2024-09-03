@@ -76,7 +76,11 @@ struct cryptd_blkcipher_request_ctx {
 
 struct cryptd_skcipher_ctx {
 	atomic_t refcnt;
+#if defined(CONFIG_BCM_KF_VLA_REMOVAL_BACKPORT)
+	struct crypto_sync_skcipher *child;
+#else
 	struct crypto_skcipher *child;
+#endif
 };
 
 struct cryptd_skcipher_request_ctx {
@@ -449,6 +453,19 @@ static int cryptd_skcipher_setkey(struct crypto_skcipher *parent,
 				  const u8 *key, unsigned int keylen)
 {
 	struct cryptd_skcipher_ctx *ctx = crypto_skcipher_ctx(parent);
+#if defined(CONFIG_BCM_KF_VLA_REMOVAL_BACKPORT)
+	struct crypto_sync_skcipher *child = ctx->child;
+	int err;
+
+	crypto_sync_skcipher_clear_flags(child, CRYPTO_TFM_REQ_MASK);
+	crypto_sync_skcipher_set_flags(child,
+				       crypto_skcipher_get_flags(parent) &
+					 CRYPTO_TFM_REQ_MASK);
+	err = crypto_sync_skcipher_setkey(child, key, keylen);
+	crypto_skcipher_set_flags(parent,
+				  crypto_sync_skcipher_get_flags(child) &
+					  CRYPTO_TFM_RES_MASK);
+#else
 	struct crypto_skcipher *child = ctx->child;
 	int err;
 
@@ -458,6 +475,7 @@ static int cryptd_skcipher_setkey(struct crypto_skcipher *parent,
 	err = crypto_skcipher_setkey(child, key, keylen);
 	crypto_skcipher_set_flags(parent, crypto_skcipher_get_flags(child) &
 					  CRYPTO_TFM_RES_MASK);
+#endif
 	return err;
 }
 
@@ -483,13 +501,22 @@ static void cryptd_skcipher_encrypt(struct crypto_async_request *base,
 	struct cryptd_skcipher_request_ctx *rctx = skcipher_request_ctx(req);
 	struct crypto_skcipher *tfm = crypto_skcipher_reqtfm(req);
 	struct cryptd_skcipher_ctx *ctx = crypto_skcipher_ctx(tfm);
+#if defined(CONFIG_BCM_KF_VLA_REMOVAL_BACKPORT)
+	struct crypto_sync_skcipher *child = ctx->child;
+	SYNC_SKCIPHER_REQUEST_ON_STACK(subreq, child);
+#else
 	struct crypto_skcipher *child = ctx->child;
 	SKCIPHER_REQUEST_ON_STACK(subreq, child);
+#endif
 
 	if (unlikely(err == -EINPROGRESS))
 		goto out;
 
+#if defined(CONFIG_BCM_KF_VLA_REMOVAL_BACKPORT)
+	skcipher_request_set_sync_tfm(subreq, child);
+#else
 	skcipher_request_set_tfm(subreq, child);
+#endif
 	skcipher_request_set_callback(subreq, CRYPTO_TFM_REQ_MAY_SLEEP,
 				      NULL, NULL);
 	skcipher_request_set_crypt(subreq, req->src, req->dst, req->cryptlen,
@@ -511,13 +538,22 @@ static void cryptd_skcipher_decrypt(struct crypto_async_request *base,
 	struct cryptd_skcipher_request_ctx *rctx = skcipher_request_ctx(req);
 	struct crypto_skcipher *tfm = crypto_skcipher_reqtfm(req);
 	struct cryptd_skcipher_ctx *ctx = crypto_skcipher_ctx(tfm);
+#if defined(CONFIG_BCM_KF_VLA_REMOVAL_BACKPORT)
+	struct crypto_sync_skcipher *child = ctx->child;
+	SYNC_SKCIPHER_REQUEST_ON_STACK(subreq, child);
+#else
 	struct crypto_skcipher *child = ctx->child;
 	SKCIPHER_REQUEST_ON_STACK(subreq, child);
+#endif
 
 	if (unlikely(err == -EINPROGRESS))
 		goto out;
 
+#if defined(CONFIG_BCM_KF_VLA_REMOVAL_BACKPORT)
+	skcipher_request_set_sync_tfm(subreq, child);
+#else
 	skcipher_request_set_tfm(subreq, child);
+#endif
 	skcipher_request_set_callback(subreq, CRYPTO_TFM_REQ_MAY_SLEEP,
 				      NULL, NULL);
 	skcipher_request_set_crypt(subreq, req->src, req->dst, req->cryptlen,
@@ -568,7 +604,11 @@ static int cryptd_skcipher_init_tfm(struct crypto_skcipher *tfm)
 	if (IS_ERR(cipher))
 		return PTR_ERR(cipher);
 
+#if defined(CONFIG_BCM_KF_VLA_REMOVAL_BACKPORT)
+	ctx->child = (struct crypto_sync_skcipher *)cipher;
+#else
 	ctx->child = cipher;
+#endif
 	crypto_skcipher_set_reqsize(
 		tfm, sizeof(struct cryptd_skcipher_request_ctx));
 	return 0;
@@ -578,7 +618,11 @@ static void cryptd_skcipher_exit_tfm(struct crypto_skcipher *tfm)
 {
 	struct cryptd_skcipher_ctx *ctx = crypto_skcipher_ctx(tfm);
 
+#if defined(CONFIG_BCM_KF_VLA_REMOVAL_BACKPORT)
+	crypto_free_sync_skcipher(ctx->child);
+#else
 	crypto_free_skcipher(ctx->child);
+#endif
 }
 
 static void cryptd_skcipher_free(struct skcipher_instance *inst)
@@ -1244,7 +1288,11 @@ struct crypto_skcipher *cryptd_skcipher_child(struct cryptd_skcipher *tfm)
 {
 	struct cryptd_skcipher_ctx *ctx = crypto_skcipher_ctx(&tfm->base);
 
+#if defined(CONFIG_BCM_KF_VLA_REMOVAL_BACKPORT)
+	return &ctx->child->base;
+#else
 	return ctx->child;
+#endif
 }
 EXPORT_SYMBOL_GPL(cryptd_skcipher_child);
 

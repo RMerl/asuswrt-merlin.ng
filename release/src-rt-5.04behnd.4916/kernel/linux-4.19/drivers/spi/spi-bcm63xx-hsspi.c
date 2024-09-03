@@ -20,6 +20,8 @@
 #include <linux/spi/spi.h>
 #include <linux/mutex.h>
 #include <linux/of.h>
+#include <linux/reset.h>
+#include <linux/pm_runtime.h>
 #if defined(CONFIG_BCM_KF_SPI)
 #include <linux/spi/spi-mem.h>
 #include <linux/of_address.h>
@@ -379,6 +381,7 @@ static int bcm63xx_hsspi_do_txrx(struct spi_device *spi, struct spi_transfer *t)
 	int step_size = HSSPI_BUFFER_LEN;
 	const u8 *tx = t->tx_buf;
 	u8 *rx = t->rx_buf;
+	u32 val = 0;
 #if defined(CONFIG_BCM_KF_SPI)
 	u32 reg = 0;
 #endif
@@ -400,28 +403,18 @@ static int bcm63xx_hsspi_do_txrx(struct spi_device *spi, struct spi_transfer *t)
 	if (opcode != HSSPI_OP_READ)
 		step_size -= HSSPI_OPCODE_LEN;
 
-#if defined(CONFIG_BCM_KF_SPI)
 	if ((opcode == HSSPI_OP_READ && t->rx_nbits == SPI_NBITS_DUAL) ||
 	    (opcode == HSSPI_OP_WRITE && t->tx_nbits == SPI_NBITS_DUAL)) {
 		opcode |= HSSPI_OP_MULTIBIT;
 
 		if (t->rx_nbits == SPI_NBITS_DUAL)
-			reg |= 1 << MODE_CTRL_MULTIDATA_RD_SIZE_SHIFT;
+			val |= 1 << MODE_CTRL_MULTIDATA_RD_SIZE_SHIFT;
 		if (t->tx_nbits == SPI_NBITS_DUAL)
-			reg |= 1 << MODE_CTRL_MULTIDATA_WR_SIZE_SHIFT;
+			val |= 1 << MODE_CTRL_MULTIDATA_WR_SIZE_SHIFT;
 	}
 
-	__raw_writel(reg | 0xff,
+	__raw_writel(val | 0xff,
 		     bs->regs + HSSPI_PROFILE_MODE_CTRL_REG(chip_select));
-#else
-	if ((opcode == HSSPI_OP_READ && t->rx_nbits == SPI_NBITS_DUAL) ||
-	    (opcode == HSSPI_OP_WRITE && t->tx_nbits == SPI_NBITS_DUAL))
-		opcode |= HSSPI_OP_MULTIBIT;
-
-	__raw_writel(1 << MODE_CTRL_MULTIDATA_WR_SIZE_SHIFT |
-		     1 << MODE_CTRL_MULTIDATA_RD_SIZE_SHIFT | 0xff,
-		     bs->regs + HSSPI_PROFILE_MODE_CTRL_REG(chip_select));
-#endif
 
 	while (pending > 0) {
 		int curr_step = min_t(int, step_size, pending);
@@ -835,13 +828,17 @@ static int bcm63xx_hsspi_probe(struct platform_device *pdev)
 #if defined(CONFIG_BCM_KF_SPI)
 	}
 #endif
+	pm_runtime_enable(&pdev->dev);
+
 	/* register and we are done */
 	ret = devm_spi_register_master(dev, master);
 	if (ret)
-		goto out_put_master;
+		goto out_pm_disable;
 
 	return 0;
 
+out_pm_disable:
+	pm_runtime_disable(&pdev->dev);
 out_put_master:
 	spi_master_put(master);
 out_disable_pll_clk:

@@ -13,9 +13,9 @@
 #define BP_DDR_SPEED_1067_11_11_11	8	/* DDR3-2133K */
 #define BP_DDR_SPEED_1067_12_12_12	9	/* DDR3-2133L */
 #define BP_DDR_SPEED_1067_13_13_13	10	/* DDR3-2133M */
-#define BP_DDR_SPEED_1067_14_14_14	11	/* DDR3-2133N */ 
+#define BP_DDR_SPEED_1067_14_14_14	11	/* DDR3-2133N */
 #define BP_DDR_SPEED_933_10_10_10	12	/* DDR3-1866J */
-#define BP_DDR_SPEED_933_11_11_11	13	/* DDR3-1866K */ 
+#define BP_DDR_SPEED_933_11_11_11	13	/* DDR3-1866K */
 #define BP_DDR_SPEED_933_12_12_12	14	/* DDR3-1866L */
 #define BP_DDR_SPEED_933_13_13_13	15	/* DDR3-1866M */
 #define BP_DDR_SPEED_1067_15_15_15	16	/* DDR4-2133P */
@@ -76,6 +76,11 @@
 #define BP_DDR_MCBSEL_FORMAT_SHIFT      24
 #define BP_DDR_MCBSEL_FORMAT_VER0       (0 << BP_DDR_MCBSEL_FORMAT_SHIFT) /* DDR3/4 */
 #define BP_DDR_MCBSEL_FORMAT_VER1       (1 << BP_DDR_MCBSEL_FORMAT_SHIFT) /* LPDDR4/5 */
+
+#define BP_DDR_IS_DDR3(mcb_sel)     ((((mcb_sel)&BP_DDR_TYPE_MASK) == BP_DDR_TYPE_DDR3) && \
+                                     (((mcb_sel)&BP_DDR_MCBSEL_FORMAT_MASK) == BP_DDR_MCBSEL_FORMAT_VER0))
+#define BP_DDR_IS_DDR4(mcb_sel)     ((((mcb_sel)&BP_DDR_TYPE_MASK) == BP_DDR_TYPE_DDR4) && \
+                                     (((mcb_sel)&BP_DDR_MCBSEL_FORMAT_MASK) == BP_DDR_MCBSEL_FORMAT_VER0))
 
 /* Vtt termination settings. Vtt termination is required in the board design for
    Address and Control line to improve the signal integrity when it need to support
@@ -181,6 +186,13 @@
 #define BP1_DDR_MCBSEL_FORMAT_SHIFT 24
 #define BP1_DDR_MCBSEL_FORMAT_VER0  (0 << BP1_DDR_MCBSEL_FORMAT_SHIFT) /* DDR3/4 */
 #define BP1_DDR_MCBSEL_FORMAT_VER1  (1 << BP1_DDR_MCBSEL_FORMAT_SHIFT) /* LPDDR4/5 */
+
+#define BP1_DDR_IS_LPDDR4(mcb_sel)  ((((mcb_sel)&BP1_DDR_TYPE_MASK) == BP1_DDR_TYPE_LPDDR4) && \
+                                     (((mcb_sel)&BP1_DDR_MCBSEL_FORMAT_MASK) == BP1_DDR_MCBSEL_FORMAT_VER1))
+#define BP1_DDR_IS_LPDDR4X(mcb_sel) ((((mcb_sel)&BP1_DDR_TYPE_MASK) == BP1_DDR_TYPE_LPDDR4X) && \
+                                     (((mcb_sel)&BP1_DDR_MCBSEL_FORMAT_MASK) == BP1_DDR_MCBSEL_FORMAT_VER1))
+#define BP1_DDR_IS_LPDDR5(mcb_sel)  ((((mcb_sel)&BP1_DDR_TYPE_MASK) == BP1_DDR_TYPE_LPDDR5) && \
+                                     (((mcb_sel)&BP1_DDR_MCBSEL_FORMAT_MASK) == BP1_DDR_MCBSEL_FORMAT_VER1))
 
 /* bit 30 */
 #define BP1_DDR_CONFIG_DEBUG            BP_DDR_CONFIG_DEBUG

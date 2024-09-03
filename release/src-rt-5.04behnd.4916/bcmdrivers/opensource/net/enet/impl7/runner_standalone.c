@@ -4,25 +4,19 @@
       Copyright (c) 2015 Broadcom 
       All Rights Reserved
    
-   Unless you and Broadcom execute a separate written software license
-   agreement governing use of this software, this software is licensed
-   to you under the terms of the GNU General Public License version 2
-   (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-   with the following added to such license:
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License, version 2, as published by
+   the Free Software Foundation (the "GPL").
    
-      As a special exception, the copyright holders of this software give
-      you permission to link this software with independent modules, and
-      to copy and distribute the resulting executable under terms of your
-      choice, provided that you also meet, for each linked independent
-      module, the terms and conditions of the license of that module.
-      An independent module is a module which is not derived from this
-      software.  The special exception does not apply to any modifications
-      of the software.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
    
-   Not withstanding the above, under no circumstances may you combine
-   this software in any way with any other Broadcom software provided
-   under a license other than the GPL, without Broadcom's express prior
-   written consent.
+   
+   A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+   writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.
    
    :>
  */
@@ -286,7 +280,7 @@ int port_runner_dispatch_pkt_lan(dispatch_info_t *dispatch_info)
 
 #ifdef CONFIG_BCM_PTP_1588
     if (unlikely(is_pkt_ptp_1588(dispatch_info->pNBuff, &info, &ptp_offset)))
-        return ptp_1588_cpu_send_sysb((bdmf_sysb)dispatch_info->pNBuff, &info, ptp_offset, dispatch_info->port);
+        return ptp_1588_cpu_send_sysb((bdmf_sysb)dispatch_info->pNBuff, &info, ptp_offset, dispatch_info->port->p.mac->mac_id);
 #endif
 
 #if defined(CONFIG_BCM_FTTDP_G9991) && defined(XRDP)
@@ -303,7 +297,7 @@ static int dispatch_pkt_gbe_wan(dispatch_info_t *dispatch_info)
     rdpa_cpu_tx_info_init(dispatch_info, &info);
     info.x.wan.queue_id = dispatch_info->egress_queue;
 
-    enet_dbg_tx("rdpa_cpu_send: port %d queue %d\n", info.port, dispatch_info->egress_queue);
+    enet_dbg_tx("rdpa_cpu_send: port %d queue %d\n",  dispatch_info->port->port_info.port, dispatch_info->egress_queue);
 
 #if defined(CONFIG_BCM_FTTDP_G9991) && defined(XRDP)
     if (IS_SKBUFF_PTR(dispatch_info->pNBuff))

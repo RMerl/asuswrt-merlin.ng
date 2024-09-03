@@ -563,3 +563,6 @@
 .switch_mode_list_bg .mode_list_bg > div.antenna:hover {
 	background-image: url(/images/New_ui/light_effect/ic-antenna-active.svg);
 }
+.customize_alert .desc{
+	font-size: 18px !important;
+}

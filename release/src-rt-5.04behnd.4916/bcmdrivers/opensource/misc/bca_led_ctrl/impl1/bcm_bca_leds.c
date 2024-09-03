@@ -4,25 +4,19 @@
  *    Copyright (c) 2019 Broadcom 
  *    All Rights Reserved
  * 
- * Unless you and Broadcom execute a separate written software license
- * agreement governing use of this software, this software is licensed
- * to you under the terms of the GNU General Public License version 2
- * (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
- * with the following added to such license:
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License, version 2, as published by
+ * the Free Software Foundation (the "GPL").
  * 
- *    As a special exception, the copyright holders of this software give
- *    you permission to link this software with independent modules, and
- *    to copy and distribute the resulting executable under terms of your
- *    choice, provided that you also meet, for each linked independent
- *    module, the terms and conditions of the license of that module.
- *    An independent module is a module which is not derived from this
- *    software.  The special exception does not apply to any modifications
- *    of the software.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  * 
- * Not withstanding the above, under no circumstances may you combine
- * this software in any way with any other Broadcom software provided
- * under a license other than the GPL, without Broadcom's express prior
- * written consent.
+ * 
+ * A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+ * writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
  * 
  * :> 
  */
@@ -47,6 +41,7 @@ struct bca_led {
     struct led_classdev cdev;
     uint32_t pin;
     uint32_t dt_pin;
+    bool     is_hw;
     struct {
         spinlock_t lock;
         unsigned int stop;
@@ -59,6 +54,7 @@ struct bca_led {
 
 extern int bca_led_set_value(unsigned int led_num, unsigned int value);
 extern int bca_hw_led_set_value(unsigned int led_num, unsigned int value);
+extern int bca_led_get_brightness(unsigned int led_num, bool is_hw, unsigned int *value);
 extern int bca_led_set_brightness(unsigned int led_num, unsigned int value);
 extern int bca_led_set_flash_rate(unsigned int led_num, unsigned int value);
 extern int bca_led_setup_serial(unsigned int led_num, unsigned int polarity, unsigned int is_hw);
@@ -66,6 +62,7 @@ extern int bca_led_setup_parallel(unsigned int led_num, unsigned int polarity, u
 /*CLED controller APIs*/
 extern int bca_cled_set_value(unsigned int led_num, unsigned int value);
 extern int bca_hw_cled_set_value(unsigned int led_num, unsigned int value);
+extern int bca_cled_get_brightness(unsigned int led_num, bool is_hw, unsigned int *value);
 extern int bca_cled_set_brightness(unsigned int led_num, unsigned int value);
 extern int bca_cled_set_flash_rate(unsigned int led_num, unsigned int value);
 extern int bca_cled_setup_serial(unsigned int led_num, unsigned int polarity, unsigned int is_hw,
@@ -217,7 +214,29 @@ static int gpio_led_parse(struct device *dev, struct bca_led *led)
     return 0;
 }
 
-static void common_bca_led_set(struct led_classdev *led_cdev, enum led_brightness value, int is_cled, int is_hw)
+static enum led_brightness common_bca_led_get(struct led_classdev *led_cdev, int is_cled)
+{
+    struct bca_led *led = container_of(led_cdev, struct bca_led, cdev);
+    unsigned int ret;
+    unsigned int full_bright, real_bright = 0;
+
+    if (is_cled)
+    {
+        bca_cled_get_brightness(led->pin, led->is_hw, &real_bright); 
+        full_bright = 128;
+    }
+    else
+    {
+        bca_led_get_brightness(led->pin, led->is_hw, &real_bright); 
+        full_bright = 8;
+    }
+    
+    ret = (real_bright * LED_FULL)/full_bright;
+
+    return ret;
+}
+
+static void common_bca_led_set(struct led_classdev *led_cdev, enum led_brightness value, int is_cled)
 {
     int (* led_set_value)(unsigned int led_num, unsigned int value) = NULL;
     int (* led_set_brightness)(unsigned int led_num, unsigned int value) = NULL;
@@ -228,7 +247,7 @@ static void common_bca_led_set(struct led_classdev *led_cdev, enum led_brightnes
     if (is_cled)
     {
         led_set_value = bca_cled_set_value;
-        if(is_hw)
+        if(led->is_hw)
         {
             led_set_value = bca_hw_cled_set_value;
         }
@@ -239,7 +258,7 @@ static void common_bca_led_set(struct led_classdev *led_cdev, enum led_brightnes
     else
     {
         led_set_value = bca_led_set_value;
-        if(is_hw)
+        if(led->is_hw)
         {
             led_set_value = bca_hw_led_set_value;
         }
@@ -269,23 +288,24 @@ static void common_bca_led_set(struct led_classdev *led_cdev, enum led_brightnes
     }
 }
 
+static enum led_brightness bca_cled_get(struct led_classdev *led_cdev)
+{
+    return common_bca_led_get(led_cdev, 1);
+}
+
+static enum led_brightness bca_led_get(struct led_classdev *led_cdev)
+{
+    return common_bca_led_get(led_cdev, 0);
+}
+
 static void bca_cled_set(struct led_classdev *led_cdev, enum led_brightness value)
 {
-    common_bca_led_set(led_cdev, value, 1, 0);
+    common_bca_led_set(led_cdev, value, 1);
 }
 
 static void bca_led_set(struct led_classdev *led_cdev, enum led_brightness value)
 {
-    common_bca_led_set(led_cdev, value, 0, 0);
-}
-static void bca_hw_cled_set(struct led_classdev *led_cdev, enum led_brightness value)
-{
-    common_bca_led_set(led_cdev, value, 1, 1);
-}
-
-static void bca_hw_led_set(struct led_classdev *led_cdev, enum led_brightness value)
-{
-    common_bca_led_set(led_cdev, value, 0, 1);
+    common_bca_led_set(led_cdev, value, 0);
 }
 
 static unsigned int convert_ms_to_hz(unsigned int ms)
@@ -378,23 +398,24 @@ static int serial_led_parse(struct device *dev, struct bca_led *led)
         1 : init_brightness/31);
     bca_led_set_flash_rate(led_num, init_flash_rate & 0x7);
 
-    ret = of_property_read_u32(dev->of_node, "default_state", &default_state);
+    ret = of_property_read_u32(dev->of_node, "default-state", &default_state);
     if (!ret)
     {
         bca_led_set_value(led_num, default_state);
     }
 
     led->pin = led_num;
+    led->is_hw = is_hw;
     if (is_hw)
     {
-        led->cdev.brightness_set = bca_hw_led_set;
         led->cdev.blink_set = NULL;
     }
     else
     {
-        led->cdev.brightness_set = bca_led_set;
         led->cdev.blink_set = bca_blink_set;
     }
+    led->cdev.brightness_set = bca_led_set;
+    led->cdev.brightness_get = bca_led_get;
     led->cdev.name = of_get_property(dev->of_node, "label", NULL) ? : dev->of_node->name;
 
     return 0;
@@ -438,23 +459,24 @@ static int serial_cled_parse(struct device *dev, struct bca_led *led)
     bca_cled_set_brightness(led_num, init_brightness);
     bca_cled_set_flash_rate(led_num, init_flash_rate & 0x7);
 
-    ret = of_property_read_u32(dev->of_node, "default_state", &default_state);
+    ret = of_property_read_u32(dev->of_node, "default-state", &default_state);
     if (!ret)
     {
         bca_cled_set_value(led_num, default_state);
     }
 
     led->pin = led_num;
+    led->is_hw = is_hw;
     if (is_hw)
     {
-        led->cdev.brightness_set = bca_hw_cled_set;
         led->cdev.blink_set = NULL;
     }
     else
     {
-        led->cdev.brightness_set = bca_cled_set;
         led->cdev.blink_set = bca_c_blink_set;
     }
+    led->cdev.brightness_set = bca_cled_set;
+    led->cdev.brightness_get = bca_cled_get;
     led->cdev.name = of_get_property(dev->of_node, "label", NULL) ? : dev->of_node->name;
 
     return 0;
@@ -496,23 +518,24 @@ static int parallel_led_parse(struct device *dev, struct bca_led *led)
         1 : init_brightness/31);
     bca_led_set_flash_rate(led_num, init_flash_rate & 0x7);
 
-    ret = of_property_read_u32(dev->of_node, "default_state", &default_state);
+    ret = of_property_read_u32(dev->of_node, "default-state", &default_state);
     if (!ret)
     {
         bca_led_set_value(led_num, default_state);
     }
 
     led->pin = led_num;
+    led->is_hw = is_hw;
     if (is_hw)
     {
-        led->cdev.brightness_set = bca_hw_led_set;
         led->cdev.blink_set = NULL;
     }
     else
     {
-        led->cdev.brightness_set = bca_led_set;
         led->cdev.blink_set = bca_blink_set;
     }
+    led->cdev.brightness_set = bca_led_set;
+    led->cdev.brightness_get = bca_led_get;
     led->cdev.name = of_get_property(dev->of_node, "label", NULL) ? : dev->of_node->name;
 
     return 0;
@@ -555,23 +578,24 @@ static int parallel_cled_parse(struct device *dev, struct bca_led *led)
     bca_cled_set_brightness(led_num, init_brightness);
     bca_cled_set_flash_rate(led_num, init_flash_rate & 0x7);
 
-    ret = of_property_read_u32(dev->of_node, "default_state", &default_state);
+    ret = of_property_read_u32(dev->of_node, "default-state", &default_state);
     if (!ret)
     {
         bca_cled_set_value(led_num, default_state);
     }
 
     led->pin = led_num;
+    led->is_hw = is_hw;
     if (is_hw)
     {
-        led->cdev.brightness_set = bca_hw_cled_set;
         led->cdev.blink_set = NULL;
     }
     else
     {
-        led->cdev.brightness_set = bca_cled_set;
         led->cdev.blink_set = bca_c_blink_set;
     }
+    led->cdev.brightness_set = bca_cled_set;
+    led->cdev.brightness_get = bca_cled_get;
     led->cdev.name = of_get_property(dev->of_node, "label", NULL) ? : dev->of_node->name;
 
     return 0;

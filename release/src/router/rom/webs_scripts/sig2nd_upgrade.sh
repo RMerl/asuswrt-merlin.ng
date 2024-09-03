@@ -2,7 +2,7 @@
 
 IS_BCMHND=`nvram get rc_support|grep -i bcmhnd`
 
-wget_options="-q -t 2 -T 30 --no-check-certificate"
+wget_options="--ciphers='DEFAULT:@SECLEVEL=1:!CAMELLIA:!3DES' -q -t 2 -T 30 --no-check-certificate"
 
 nvram set sig_state_upgrade=0 # INITIALIZING
 nvram set sig_state_error=0
@@ -34,20 +34,20 @@ wget_result=0
 wget_result2=0
 if [ "$forsq" == "1" ]; then
 	echo "---- wget trf sq ----" >> /tmp/sig_upgrade.log
-	wget $wget_options https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/$sig_file -O /tmp/rule.trf
+	wget --ciphers='DEFAULT:@SECLEVEL=1:!CAMELLIA:!3DES' -t 2 -T 30  --no-check-certificate https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/$sig_file -O /tmp/rule.trf
 	wget_result=$?
 	echo "---- wget sig, exit code: ${wget_result} ----" >> /tmp/sig_upgrade.log
 
-	wget $wget_options https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/$sig_rsasign -O /tmp/rsasign.bin
+	wget --ciphers='DEFAULT:@SECLEVEL=1:!CAMELLIA:!3DES' -t 2 -T 30  --no-check-certificate https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/$sig_rsasign -O /tmp/rsasign.bin
 	wget_result2=$?
 	echo "---- wget rsa, exit code: ${wget_result2} ----" >> /tmp/sig_upgrade.log
 else
 	echo "---- wget trf Real ----" >> /tmp/sig_upgrade.log
-	wget $wget_options https://dlcdnets.asus.com/pub/ASUS/wireless/ASUSWRT/$sig_file -O /tmp/rule.trf
+	wget --ciphers='DEFAULT:@SECLEVEL=1:!CAMELLIA:!3DES' -t 2 -T 30  --no-check-certificate https://dlcdnets.asus.com/pub/ASUS/wireless/ASUSWRT/$sig_file -O /tmp/rule.trf
 	wget_result=$?
 	echo "---- wget sig, exit code: ${wget_result} ----" >> /tmp/sig_upgrade.log
 
-	wget $wget_options https://dlcdnets.asus.com/pub/ASUS/wireless/ASUSWRT/$sig_rsasign -O /tmp/rsasign.bin
+	wget --ciphers='DEFAULT:@SECLEVEL=1:!CAMELLIA:!3DES' -t 2 -T 30  --no-check-certificate https://dlcdnets.asus.com/pub/ASUS/wireless/ASUSWRT/$sig_rsasign -O /tmp/rsasign.bin
 	wget_result2=$?
 	echo "---- wget rsa, exit code: ${wget_result2} ----" >> /tmp/sig_upgrade.log
 fi	

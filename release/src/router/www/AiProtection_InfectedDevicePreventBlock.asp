@@ -293,7 +293,10 @@ function getIPSChart(type, date){
 			setTimeout("getIPSChart('cc', date);", 1000);
 		},
 		success: function(response){
-			collectChart(data, date);
+			if(data != ""){
+				data = JSON.parse(data);
+				collectChart(data, date);
+			}
 		}
 	});
 }

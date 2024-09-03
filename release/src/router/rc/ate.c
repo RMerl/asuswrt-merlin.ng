@@ -1001,6 +1001,67 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 		break;
 #endif
 
+#if defined(RTBE82U)
+	case MODEL_RTBE82U:
+		{
+			static enum led_id white_led[] = {
+				LED_POWER,
+				LED_WAN_NORMAL,
+				LED_LAN,
+				LED_ID_MAX
+			};
+			static enum led_id red_led[] = {
+				LED_WAN,
+				LED_ID_MAX
+			};
+			all_led[LED_COLOR_WHITE] = white_led;
+			all_led[LED_COLOR_RED] = red_led;
+
+			if (color == LED_COLOR_WHITE)
+			{
+				eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 0, 0)), "ledbh", "0", "1");	// wl 2.4G
+				eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 1, 0)), "ledbh", "0", "1");	// wl 5G
+			}
+			else
+			{
+				eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 0, 0)), "ledbh", "0", "21");// wl 2.4G
+				eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 1, 0)), "ledbh", "0", "21");// wl 5G
+			}
+		}
+		break;
+#endif
+
+#if defined(RTBE58U_PRO)
+	case MODEL_RTBE58U_PRO:
+		{
+			static enum led_id white_led[] = {
+				LED_POWER,
+				LED_WAN_NORMAL,
+				LED_LAN,
+				LED_ID_MAX
+			};
+			static enum led_id red_led[] = {
+				LED_WAN,
+				LED_ID_MAX
+			};
+			all_led[LED_COLOR_WHITE] = white_led;
+			all_led[LED_COLOR_RED] = red_led;
+
+			wan_phy_led_pinmux(1);
+			if (color == LED_COLOR_WHITE)
+			{
+				eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 0, 0)), "ledbh", "0", "1");	// wl 2.4G
+				eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 1, 0)), "ledbh", "0", "1");	// wl 5G
+			}
+			else
+			{
+				eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 0, 0)), "ledbh", "0", "21");// wl 2.4G
+				eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 1, 0)), "ledbh", "0", "21");// wl 5G
+			}
+		}
+		break;
+#endif
+
 #if defined(RTAX86U_PRO)
 	case MODEL_RTAX86U_PRO:
 		{
@@ -1256,7 +1317,42 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 		break;
 #endif
 
-#ifdef RPAX58
+#if defined(RPAX58) || defined(RPBE58)
+	case MODEL_RPBE58:
+		{
+			eval("sw", "0xff803010", "0x00110039");
+
+                        eval("sw", "0xff803020", "0");	// W
+                        eval("sw", "0xff803050", "0");		// R
+                        eval("sw", "0xff803060", "0");		// G
+                        eval("sw", "0xff803070", "0");		// Y
+                        eval("sw", "0xff803160", "0");		// B
+                        eval("sw", "0xFF80301c", "0x00110039");
+
+			switch(color) {
+				case LED_COLOR_RED:
+					eval("sw", "0xff803050", "0x3e000");
+					break;		
+				case LED_COLOR_GREEN:
+					eval("sw", "0xff803060", "0x3e000");
+					break;		
+				case LED_COLOR_BLUE:
+					eval("sw", "0xff803160", "0x3e000");
+					break;		
+				case LED_COLOR_WHITE:
+					eval("sw", "0xff803020", "0x3e000");	// W
+					break;		
+				case LED_COLOR_ORANGE:
+					eval("sw", "0xff803070", "0x3e000");
+					break;		
+				case LED_COLOR_PURPLE:
+					eval("sw", "0xff803050", "0x3e000");
+					eval("sw", "0xff803160", "0x3e000");
+					break;		
+			} 
+			eval("sw", "0xff80301c", "0x00110039");
+		}
+		break;
 	case MODEL_RPAX58:
 		{
 			eval("sw", "0xff803010", "0xd8a0");
@@ -2535,7 +2631,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 	else if (!strcmp(command, "Set_AllOrangeLedOn")) {
 		return setAllSpecificColorLedOn(LED_COLOR_ORANGE);
 	}
-#ifdef RPAX58
+#if defined(RPAX58) || defined(RPBE58)
 	else if (!strcmp(command, "Set_AllYellowLedOn"))  {
 		return setAllSpecificColorLedOn(LED_COLOR_ORANGE);
 	}
@@ -2570,7 +2666,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 		setAntennaGroupOn();
 		puts("1");
 		return 0;
-#elif !defined(GTAX11000_PRO) && !defined(GTAXE16000) && !defined(GTBE98) && !defined(GT10) && !defined(GTBE98_PRO) && !defined(GTBE96) && !defined(GTBE19000)
+#elif !defined(GTAX11000_PRO) && !defined(GTAXE16000) && !defined(GTBE98) && !defined(GT10) && !defined(GTBE98_PRO) && !defined(GTBE96)
 	} else if (!strcmp(command, "Set_Red4LedOn")) {
 		setAllLedOff();
 		cled_set(cled_gpio[9], CLED_BRIGHTNESS_ON, 0x0, 0x0, 0x0);
@@ -2606,7 +2702,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 		led_control(LED_GROUP3_GREEN, LED_ON);
 		puts("1");
 		return 0;
-#if !defined(GTAX11000_PRO) && !defined(GTAXE16000) && !defined(GTBE98) && !defined(GTAX6000) && !defined(GT10) && !defined(GTBE98_PRO) && !defined(GTBE96) && !defined(GTBE19000)
+#if !defined(GTAX11000_PRO) && !defined(GTAXE16000) && !defined(GTBE98) && !defined(GTAX6000) && !defined(GT10) && !defined(GTBE98_PRO) && !defined(GTBE96)
 	} else if (!strcmp(command, "Set_Green4LedOn")) {
 		setAllLedOff();
 		cled_set(cled_gpio[10], CLED_BRIGHTNESS_ON, 0x0, 0x0, 0x0);
@@ -2642,7 +2738,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 		led_control(LED_GROUP3_BLUE, LED_ON);
 		puts("1");
 		return 0;
-#if !defined(GTAX11000_PRO) && !defined(GTAXE16000) && !defined(GTBE98) && !defined(GTAX6000) && !defined(GT10) && !defined(GTBE98_PRO) && !defined(GTBE96) && !defined(GTBE19000)
+#if !defined(GTAX11000_PRO) && !defined(GTAXE16000) && !defined(GTBE98) && !defined(GTAX6000) && !defined(GT10) && !defined(GTBE98_PRO) && !defined(GTBE96)
 	} else if (!strcmp(command, "Set_Blue4LedOn")) {
 		setAllLedOff();
 		cled_set(cled_gpio[11], CLED_BRIGHTNESS_ON, 0x0, 0x0, 0x0);
@@ -3429,11 +3525,11 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 	else if (!strcmp(command, "Get_SSID_2G")) {
 #if defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO)
 		puts(nvram_safe_get("wl3_ssid"));
-#elif defined(BT10)
+#elif defined(BT10) || defined(BQ16) || defined(BQ16_PRO)
 		getSSID(WLIF_2G);
 #elif defined(GT10) || defined(RTAX9000)
 		puts(nvram_safe_get("wl2_ssid"));
-#elif defined(RPAX56) || defined(RPAX58)
+#elif defined(RPAX56) || defined(RPAX58) || defined(RPBE58)
 		if(nvram_match("wl0_mode", "wet"))
 			puts(nvram_safe_get("wl0.1_ssid"));
 		else
@@ -3444,7 +3540,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 		return 0;
 	}
 	else if (!strcmp(command, "Get_SSID_5G")) {
-#if defined(RPAX56) || defined(RPAX58)
+#if defined(RPAX56) || defined(RPAX58) || defined(RPBE58)
 		if(nvram_match("wl1_mode", "wet"))
 			puts(nvram_safe_get("wl1.1_ssid"));
 		else
@@ -4232,7 +4328,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 		getSSID(WLIF_2G);
 #elif defined(GT10) || defined(RTAX9000)
 		getSSID(2);
-#elif defined(RPAX56) || defined(RPAX58)
+#elif defined(RPAX56) || defined(RPAX58) || defined(RPBE58)
 		if(nvram_match("wl0_mode", "wet"))
 			puts(nvram_safe_get("wl0.1_ssid"));
 		else
@@ -4249,7 +4345,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 		getSSID(WLIF_5G1);
 #elif defined(GT10) || defined(RTAX9000)
 		getSSID(0);
-#elif defined(RPAX56) || defined(RPAX58)
+#elif defined(RPAX56) || defined(RPAX58) || defined(RPBE58)
 		if(nvram_match("wl1_mode", "wet"))
 			puts(nvram_safe_get("wl1.1_ssid"));
 		else
@@ -5074,7 +5170,7 @@ int ate_dev_status(void)
 #elif defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000)
 			(hnd_boardid_cmp("GT-BE98_BCM") == 0 && (ethctl_get_link_status("eth6") == -1)) ||
 			(hnd_boardid_cmp("GT-BE98_BCM") != 0 && ethctl_get_link_status("eth3") == -1)
-#elif defined(TUFAX3000_V2) || defined(RTAXE7800) || defined(GT10) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U)
+#elif defined(TUFAX3000_V2) || defined(RTAXE7800) || defined(GT10) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE58U_PRO)
 			ethctl_get_link_status("eth0") == -1
 #elif defined(RTAX9000)
 			ethctl_get_link_status("eth0") == -1 || ethctl_get_link_status("eth5") == -1
@@ -5267,7 +5363,6 @@ int init_pass_nvram(void)
 		}
 	}
 #endif
-
 	if (strcmp(nvram_safe_get("forget_it"), "") && !nvram_contains_word("rc_support", "defpass"))
 		add_rc_support("defpass");
 

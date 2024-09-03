@@ -14,12 +14,12 @@
 <title><#Web_Title#> - <#menu_feedback#></title>
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
-<script language="JavaScript" type="text/javascript" src="js/jquery.js"></script>
 <script type="text/javascript" src="js/oauth.js"></script>
 <script type="text/javascript" src="js/httpApi.js"></script>
 <style>
@@ -36,13 +36,6 @@
 .dblog_stop_text {
 	cursor: pointer;
 	text-decoration: underline;
-}
-.loadingIcon {
-	background: url('/images/InternetScan.gif') center no-repeat;
-	width: 33px;
-	height: 33px;
-	background-size: contain;
-	display: inline-block;
 }
 </style>
 <script>
@@ -210,8 +203,6 @@ function disbled_feedback_filed(status){
 	document.form.btn_send.disabled = true;
 	if(status == 0){
 		$(".dblog_disabled_status").find("input, textarea, button, select").attr("disabled", true);
-		$("#apply_button").css("display", "none");
-		$("#loadingIcon").css("display", "");
 	}
 	else if(status == 1){
 		document.getElementById("fb_desc_disconnect").style.display = "";

@@ -17,8 +17,12 @@
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
+<script type="text/javascript" src="/form.js"></script>
 <script>var qos_orates = '<% nvram_get("qos_orates"); %>';
 var qos_irates = '<% nvram_get("qos_irates"); %>';
+
+var current_page = window.location.pathname.split("/").pop();
+var faq_index_tmp = get_faq_index(FAQ_List, current_page, 1);
 
 function initial(){
 	show_menu();
@@ -238,16 +242,18 @@ function switchPage(page){
 			<table width="760px" border="0" cellpadding="4" cellspacing="0" class="FormTitle" id="FormTitle">
 				<tr>
 		  			<td bgcolor="#4D595D" valign="top">
+		  			<div class="container">
 						<table>
 						<tr>
 						<td>
-						<table width="100%" >
+						<table width="100%">
 						<tr >
 						<td  class="formfonttitle" align="left">								
-										<div id="content_title" style="margin-top:5px;"></div>
-									</td>
-						<td align="right" >	
-						<div style="margin-top:5px;">
+							<div id="content_title" style="margin-top:5px;"></div>
+							<div class="formfonttitle_help"><i onclick="show_feature_desc(`<#HOWTOSETUP#>`)" class="icon_help"></i></div>
+						</td>
+						<td align="right">
+						<div style="margin-right:44px;margin-top:16px;">
 							<select onchange="switchPage(this.options[this.selectedIndex].value)" class="input_option">
 								<!--option><#switchpage#></option-->
 								<option value="1"><#Adaptive_QoS_Conf#></option>
@@ -526,7 +532,12 @@ function switchPage(page){
 						</table>
 					</div>	
 					</td></tr>
-						</table>						
+						</table>
+
+
+						</div>	<!-- for .container  -->
+						<div class="popup_container popup_element_second"></div>
+
 					</td>
 				</tr>
 		

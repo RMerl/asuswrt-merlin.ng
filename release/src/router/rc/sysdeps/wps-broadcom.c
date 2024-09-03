@@ -388,7 +388,12 @@ start_wps_method(void)
 		dbg("wps_band(%d) for wps registrar\n", wps_band);
 	}
 #endif
-#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
+#if defined(RTCONFIG_MULTILAN_MWL)
+	if (nvram_get_int("w_Setting") && get_fh_if_prefix_by_unit(wps_band, prefix, sizeof(prefix))) {
+		trim_space(prefix);
+		strncat(prefix, "_", 1);
+	} else
+#elif defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
 	if (is_dpsr(wps_band)
 #ifdef RTCONFIG_DPSTA
 		|| is_dpsta(wps_band)
@@ -447,6 +452,9 @@ start_wps_method(void)
 			// in any single interface it can be stopped on other interfaces
 			kill_pidfile_s("/var/run/wps_pbcd.pid", SIGUSR1);
 
+			if (!pids("wps_pbcd"))
+				start_wps_pbcd();
+
 			foreach (word, nvram_safe_get("wl_ifnames"), next) {
 #if (defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G))
 				wl_ioctl(word, WLC_GET_BAND, &band, sizeof(band));
@@ -501,7 +509,7 @@ start_wps_method(void)
 		if (nvram_match("wps_version2", "enabled") && strlen(nvram_safe_get("wps_autho_sta_mac")))
 			len += sprintf(buf + len, "wps_autho_sta_mac=\"%s\" ", nvram_safe_get("wps_autho_sta_mac"));
 
-		if (strlen(wps_sta_pin))
+		if (strlen(wps_sta_pin) && strcmp(wps_sta_pin, "00000000") && (wl_wpsPincheck(wps_sta_pin) == 0))
 			len += sprintf(buf + len, "wps_sta_pin=\"%s\" ", wps_sta_pin);
 		else
 			len += sprintf(buf + len, "wps_sta_pin=\"00000000\" ");
@@ -670,6 +678,15 @@ int start_wps_enr(void)
 			break;
 		}
 
+#ifdef RTCONFIG_MLO
+		int isup = -1;
+		wl_ioctl((char *) ifname, WLC_GET_UP, &isup, sizeof(isup));
+		if (!isup) {
+			dbg("[%s] bss is down, bring it up before performing wps enrollee\n", ifname);
+			wl_ioctl((char *) ifname, WLC_UP, NULL, 0);
+			sleep(1);
+		}
+#endif
 		if (system(cmd) == 0) {
 			wps_config_command = WPS_UI_CMD_START;
 			wl_wlif_update_wps_ui(WLIF_WPS_UI_FIND_PBC_AP);
@@ -717,7 +734,7 @@ int is_wps_stopped(void)
 	if ((is_router_mode()
 #if defined(RTCONFIG_DPSTA) && defined(RTAC68U)
 		|| (is_dpsta_repeater() && dpsta_mode() && nvram_get_int("re_mode") == 0)
-#elif defined(RPAX56) || defined(RPAX58)
+#elif defined(RPAX56) || defined(RPAX58) || defined(RPBE58)
 		|| ((dpsta_mode()||rp_mode()||dpsr_mode()) && nvram_get_int("re_mode") == 0)
 #endif
 		) && !nvram_get_int("obd_Setting") && nvram_match("amesh_led", "1"))

@@ -3,25 +3,19 @@
 
     <:label-BRCM:2015:DUAL/GPL:standard
     
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
     
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
     
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
     
     :>
 */
@@ -99,7 +93,6 @@ extern "C" {
 #define BOARD_IOCTL_SPI_SLAVE_READ              _IOWR(BOARD_IOCTL_MAGIC, 39, BOARD_IOCTL_PARMS)
 #define BOARD_IOCTL_SPI_SLAVE_WRITE             _IOWR(BOARD_IOCTL_MAGIC, 40, BOARD_IOCTL_PARMS)
 #define BOARD_IOCTL_GET_NUM_VOIP_PORTS          _IOWR(BOARD_IOCTL_MAGIC, 43, BOARD_IOCTL_PARMS)
-#define BOARD_IOCTL_GET_EPON_GPIOS              _IOWR(BOARD_IOCTL_MAGIC, 46, BOARD_IOCTL_PARMS)
 #define BOARD_IOCTL_SPI_SLAVE_SET_BITS          _IOWR(BOARD_IOCTL_MAGIC, 47, BOARD_IOCTL_PARMS)
 #define BOARD_IOCTL_SPI_SLAVE_CLEAR_BITS        _IOWR(BOARD_IOCTL_MAGIC, 48, BOARD_IOCTL_PARMS)
 #define BOARD_IOCTL_SPI_SLAVE_WRITE_BUF         _IOWR(BOARD_IOCTL_MAGIC, 49, BOARD_IOCTL_PARMS)
@@ -191,13 +184,6 @@ typedef enum
     kLedPots,
     kLedDect,
     kLedGpon,
-    kLedEth0Duplex,
-    kLedEth0Spd100,
-    kLedEth0Spd1000,
-    kLedEth1Duplex,
-    kLedEth1Spd100,
-    kLedEth1Spd1000,
-#if defined(BCM_PON) || defined(CONFIG_BCM_PON) || defined(CONFIG_BCM963158)
     kLedOpticalLink,
     kLedUSB,
     kLedUSB1,
@@ -205,7 +191,6 @@ typedef enum
     kLedSim,
     kLedSimITMS,
     kLedEpon,
-#endif
     kLedWL0,
     kLedWL1,
     kLedEnd                             // NOTE: Insert the new led name before this one.
@@ -245,24 +230,6 @@ typedef struct cs_config_pars_tag
   int   hold_time;
 } cs_config_pars_t;
 
-typedef enum
-{
-    MAC_ADDRESS_OP_GET=0,
-    MAC_ADDRESS_OP_RELEASE,
-    MAC_ADDRESS_OP_MAX
-} MAC_ADDRESS_OPERATION;
-
-typedef enum
-{
-	USB_HOST_FUNC,
-	USB_DEVICE_FUNC,
-	USB_ALL_FUNC
-} USB_FUNCTION;
-
-
-typedef void (* kerSysMacAddressNotifyHook_t)(unsigned char *pucaMacAddr, MAC_ADDRESS_OPERATION op);
-
-#define UBUS_BASE_FREQUENCY_IN_MHZ  160
 
 #define IF_NAME_ETH    "eth"
 #define IF_NAME_USB    "usb"
@@ -371,14 +338,15 @@ extern int kerSysGetOpticalPowerValues(unsigned short *prxReading, unsigned shor
 extern int kerSysBlParmsGetInt( char *name, int *pvalue );
 extern int kerSysBlParmsGetStr( char *name, char *pvalue, int size );
 extern unsigned long kerSysGetMacAddressType( unsigned char *ifName );
-extern int kerSysMacAddressNotifyBind(kerSysMacAddressNotifyHook_t hook);
 extern int kerSysGetMacAddress( unsigned char *pucaAddr, unsigned long ulId );
 extern int kerSysReleaseMacAddress( unsigned char *pucaAddr );
 extern int kerSysGetMacAddresses( unsigned char *pucaMacAddr, unsigned int num_addresses, unsigned long ulId );
 extern int kerSysReleaseMacAddresses( unsigned char *pucaMacAddr, unsigned int num_addresses );
 extern void kerSysGetGponSerialNumber( unsigned char *pGponSerialNumber);
 extern void kerSysGetGponPassword( unsigned char *pGponPassword);
-extern unsigned long kerSysGetSdramSize( void );
+/* Legacy dram size API. Keep it here only for adsl driver. Repalced by kerSysGetMemorySize */
+extern unsigned long long kerSysGetSdramSize(void);
+extern unsigned long long kerSysGetMemorySize(void);
 extern void kerSysGetBootline(char *string, int strLen);
 extern void kerSysSetBootline(char *string, int strLen);
 extern void kerSysSoftReset(void);
@@ -430,11 +398,8 @@ extern int kerSysGetGpioValue(unsigned short bpGpio);
 // for the voice code, which has too many kernSysSetGpio to change
 #define kerSysSetGpio kerSysSetGpioState
 
-extern unsigned int kerSysGetUbusFreq(unsigned int miscStrapBus);
 extern int kerSysGetAfeId( unsigned int *afeId );
 #define __kerSysGetAfeId  kerSysGetAfeId
-
-extern unsigned int kerSysGetExtIntInfo(unsigned int irq);
 
 /* implement in arch dependent setup.c */
 extern void* kerSysGetDslPhyMemory(void);
@@ -442,6 +407,8 @@ extern void* kerSysGetDslPhyMemory(void);
 extern const unsigned char* bcm_get_blparms(void);
 unsigned int  bcm_get_blparms_size(void);
 
+#define RUNNER_PORTS_TM_0               "PortsTm0"
+#define RUNNER_PORTS_TM_1               "PortsTm1"
 #define RDPA_WAN_TYPE_PSP_KEY           "RdpaWanType"
 #define RDPA_EPON_SPEED_PSP_KEY         "EponSpeed"
 #define RDPA_WAN_RATE_PSP_KEY           "WanRate"
@@ -462,8 +429,6 @@ unsigned int  bcm_get_blparms_size(void);
 #define EPON_SPEED_NORMAL 	"Normal"
 #define EPON_SPEED_TURBO  	"Turbo"
 
-/* value sets for oemac */
-#define RDPA_WAN_OEMAC_VALUE_EPONMAC "EPONMAC"
 
 /* value sets for wan_type */
 #define RDPA_WAN_TYPE_VALUE_NONE    "NONE"
@@ -481,13 +446,6 @@ unsigned int  bcm_get_blparms_size(void);
 #define RDPA_WAN_RATE_2_5G			"25"
 #define RDPA_WAN_RATE_2G			"02"
 #define RDPA_WAN_RATE_1G			"01"
-
-/* 2ndWAN related defines : Format 0xAB; bit7=valid; bit6=unit; bit5-0=port */
-#define WAN_2nd_PORT_PSP_KEY            "2ndWAN"
-#define WAN_2nd_PORT_PSP_VALUE_LEN      4  
-#define WAN_2nd_PORT_IS_VALID(x)        ( ( (x) & (1<<7) ) >> 7 )
-#define WAN_2nd_PORT_GET_UNIT(x)        ( ( (x) & (1<<6) ) >> 6 )
-#define WAN_2nd_PORT_GET_PORT(x)        ( ( (x) & (0x3F<<0) ) >> 0 )
 
 extern int rdp_post_init(void);
 

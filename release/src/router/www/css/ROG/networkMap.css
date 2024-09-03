@@ -54,9 +54,10 @@ body{
 	background-color: rgb(207,10,44);
 }
 .unit-block{
-	background-color: rgb(62,3,13);
+	background-color: rgb(62,3,13,0.1);
 	padding: 8px 12px;
 	margin-bottom: 4px;
+	border: 1px solid #3E030D;
 }	
 .info-title{
 	margin: 4px 0;
@@ -93,7 +94,7 @@ body{
 }
 /* CPU */
 .bar-container{
-	background-color:#000000;
+	background-color:#333333;
 	width: 150px;
 	height: 8px;
 	border-radius: 6px;
@@ -358,6 +359,7 @@ input[type="text"], input[type="password"], .input_option{
 	line-height: 100%;
 	font-size: 11px;
 	margin-top: 4px;
+	width: 85%;
 }
 .port_status_icon_desc{
 	display: flex;

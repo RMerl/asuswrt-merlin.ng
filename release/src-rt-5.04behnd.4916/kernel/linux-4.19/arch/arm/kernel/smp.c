@@ -29,6 +29,9 @@
 #include <linux/completion.h>
 #include <linux/cpufreq.h>
 #include <linux/irq_work.h>
+#ifdef CONFIG_BCM_KF_TINY_KCORE_SUPPORT
+#include <linux/tiny_kcore.h>
+#endif
 
 #include <linux/atomic.h>
 #include <asm/bugs.h>
@@ -605,6 +608,9 @@ static void ipi_cpu_stop(unsigned int cpu)
 
 	set_cpu_online(cpu, false);
 
+#ifdef CONFIG_BCM_KF_TINY_KCORE_SUPPORT
+	tkcore_save_cpu_state(get_irq_regs(), cpu);
+#endif
 	local_fiq_disable();
 	local_irq_disable();
 

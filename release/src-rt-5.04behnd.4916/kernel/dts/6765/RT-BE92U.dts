@@ -98,17 +98,6 @@
     status = "okay";
 };
 
-&i2c0 {
-    pinctrl-names = "default";
-    pinctrl-0 = <&a_i2c_sda_pin_37 &a_i2c_scl_pin_36 >;
-    status = "okay";
-
-    icp201xx@63{ 
-        compatible = "invensense,icp201xx"; 
-        reg = <0x63>; 
-    }; 
-};
-
 &led_ctrl {
 	led0: parallel-port_0-led_0 {
 		active_low;

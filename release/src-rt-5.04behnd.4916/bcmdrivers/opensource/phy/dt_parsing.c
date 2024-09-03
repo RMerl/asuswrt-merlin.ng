@@ -3,27 +3,21 @@
    All Rights Reserved
 
     <:label-BRCM:2019:DUAL/GPL:standard
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
 :>
 */
 
@@ -344,10 +338,14 @@ static phy_dev_t *phy_dev_dt_probe(const dt_handle_t handle)
     phy_dev->flag |= dt_property_read_bool(handle, "phy-external") ? PHY_FLAG_EXTPHY : 0;
     phy_dev->flag |= dt_property_read_bool(handle, "phy-extswitch") ? PHY_FLAG_TO_EXTSW : 0;
     phy_dev->flag |= dt_property_read_bool(handle, "phy-fixed") ? PHY_FLAG_FIXED_CONN: 0;
+    phy_dev->flag |= dt_property_read_bool(handle, "on-mezzanine") ? PHY_FLAG_ON_MEZZANINE: 0;
     phy_dev->flag |= dt_property_read_bool(handle, "wake-on-lan") ? PHY_FLAG_WAKE_ON_LAN : 0;
     phy_dev->flag |= dt_property_read_bool(handle, "force-2p5g-10gvco") ? PHY_FLAG_FORCE_2P5G_10GVCO: 0;
 
-    phy_dev->shared_ref_clk_mhz = dt_property_read_u32_default(handle, "shared-ref-clk-mhz", 0);
+    if ((phy_dev->shared_ref_clk_mhz = dt_property_read_u32_default(handle, "shared-ref-clk-mhz-bootstrap", 0)))
+        phy_dev->flag |= PHY_FLAG_SHARED_CLOCK_BOOTSTRAP;
+    else 
+        phy_dev->shared_ref_clk_mhz = dt_property_read_u32_default(handle, "shared-ref-clk-mhz", 0);
 
     parse_gpio_parameters(phy_dev, handle);
     parse_serdes_parameters(phy_dev, handle);

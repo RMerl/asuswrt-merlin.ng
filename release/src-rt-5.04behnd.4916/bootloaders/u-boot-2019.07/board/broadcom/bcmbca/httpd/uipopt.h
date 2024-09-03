@@ -328,7 +328,7 @@ typedef unsigned short uip_stats_t;
  * \hideinitializer
  */
 //#define UIP_RECEIVE_WINDOW   32768
-#define UIP_RECEIVE_WINDOW   3000
+#define UIP_RECEIVE_WINDOW     3000
 
 /**
  * Determines if support for TCP urgent data notification should be

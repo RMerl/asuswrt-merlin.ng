@@ -160,7 +160,11 @@ static int __init fdt_translate_one(const void *blob, int parent,
  * that can be mapped to a cpu physical address). This is not really specified
  * that way, but this is traditionally the way IBM at least do things
  */
+#if defined(CONFIG_BCM_KF_FDT_ADDRESS)
+static u64 __init fdt_translate_address_idx(const void *blob, int node_offset, int index)
+#else
 static u64 __init fdt_translate_address(const void *blob, int node_offset)
+#endif
 {
 	int parent, len;
 	const struct of_bus *bus, *pbus;
@@ -192,6 +196,14 @@ static u64 __init fdt_translate_address(const void *blob, int node_offset)
 		       fdt_get_name(blob, node_offset, NULL));
 		goto bail;
 	}
+#if defined(CONFIG_BCM_KF_FDT_ADDRESS)
+	if (index < 0 || (index + 1) * (na+ns) * 4 > len) {
+		pr_err("invalid reg index %d, total len %d\n", index, len);
+		goto bail;
+	}
+
+	reg += (na+ns) * index;
+#endif
 	memcpy(addr, reg, na * 4);
 
 	pr_debug("bus (na=%d, ns=%d) on %s\n",
@@ -245,5 +257,21 @@ static u64 __init fdt_translate_address(const void *blob, int node_offset)
  */
 u64 __init of_flat_dt_translate_address(unsigned long node)
 {
+#if defined(CONFIG_BCM_KF_FDT_ADDRESS)
+	return fdt_translate_address_idx(initial_boot_params, node, 0);
+#else
 	return fdt_translate_address(initial_boot_params, node);
+#endif
 }
+
+#if defined(CONFIG_BCM_KF_FDT_ADDRESS)
+/**
+ * of_flat_dt_translate_address_idx - translate index DT addr into CPU phys addr
+ * @node: node in the flat blob
+ * @index: index to the addr tuple
+ */
+u64 __init of_flat_dt_translate_address_idx(unsigned long node, int index)
+{
+	return fdt_translate_address_idx(initial_boot_params, node, index);
+}
+#endif

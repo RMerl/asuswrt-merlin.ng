@@ -7,14 +7,14 @@ config MHS_VER
 	string "MHS version"
 	default "2p2" if BCM47622
 	default "4p3" if BCM63146
-	default "4p3p29" if BCM6765 || BCM6766
+	default "4p3p29" if BCM6765 || BCM6766 || BCM6764
 	default "5p3" if BCM4912 || BCM6813
 	default "5p4" if BCM6888 || BCM68880
 	default "5p5" if BCM6837
 
 config DPFE_SEGSIZE
 	hex "dpfe segment size"
-	default 0xa00c if BCM6765  || BCM6766
+	default 0xa00c if BCM6765  || BCM6766 || BCM6764
 	default 0x500c
 
 config MEMC_VER
@@ -24,9 +24,9 @@ config MEMC_VER
 	default "5p3" if BCM4912 || BCM6813
 	default "5p4" if BCM6888 || BCM68880
 	default "5p5" if BCM6837
-	default "5p6" if BCM6765  || BCM6766
+	default "5p6" if BCM6765  || BCM6766 || BCM6764
 
 config MEMC_PHY_WIDTH
 	int "MEMC PHY width"
 	default 32 if BCM47622 || BCM4912 || BCM6813 || BCM6888 || BCM68880 || BCM6837
-	default 16 if BCM63146 || BCM6765 || BCM6766
+	default 16 if BCM63146 || BCM6765 || BCM6766 || BCM6764

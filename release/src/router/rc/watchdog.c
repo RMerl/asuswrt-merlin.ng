@@ -117,6 +117,9 @@
 #if defined(RTCONFIG_SW_CTRL_ALLLED)
 extern int send_cfgmnt_event(char *msg);
 #endif
+#ifdef RTCONFIG_BCMWL6
+extern int restore_defaults_g;
+#endif
 
 #define BCM47XX_SOFTWARE_RESET	0x40		/* GPIO 6 */
 #define RESET_WAIT		2		/* seconds */
@@ -201,7 +204,7 @@ static int drop_caches = 0;
 #endif
 static int top_period = 0;
 static int top = 0;
-#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
 static int eth1_period = 60;
 static int eth1 = 59;
 static int eth1_count = 0;
@@ -3897,7 +3900,7 @@ void btn_check(void)
 		if (LED_status_on)
 #endif
 		{
-#if defined(RTAX86U_PRO) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(RTAX86U_PRO) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE86U) || defined(RTBE58U_PRO)
 			setAllLedNormal();
 #else
 			led_control(LED_POWER, LED_ON);
@@ -3905,7 +3908,7 @@ void btn_check(void)
 #if defined(RTAC3200) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
 #ifdef HND_ROUTER
 #ifndef GTAC2900
-#if defined(RTAX58U_V2) || defined(GTAX6000) || defined(RTAX3000N) || defined(BR63) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX5400) || defined(RTAX88U_PRO) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(RTAX58U_V2) || defined(GTAX6000) || defined(RTAX3000N) || defined(BR63) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX5400) || defined(RTAX88U_PRO) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE58U_PRO)
 			wan_phy_led_pinmux(0);
 #else
 			led_control(LED_WAN_NORMAL, LED_ON);
@@ -3970,7 +3973,7 @@ void btn_check(void)
 				eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 0, 0)), "ledbh", "7", "7");
 #elif defined(RTBE95U)
 				eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 0, 0)), "ledbh", "12", "7");
-#elif defined(RTBE58U) || defined(TUFBE3600)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE82U) || defined(RTBE58U_PRO)
 				eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 0, 0)), "ledbh", "0", "25");
 #elif defined(RTAX92U)
 				eval("wl", "-i", "eth5", "ledbh", "10", "7");
@@ -4064,7 +4067,7 @@ void btn_check(void)
 				eval("wl", "-i", "wl1", "ledbh", "12", "7");
 #elif defined(RTBE86U)
 				eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 1, 0)), "ledbh", "12", "7");
-#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
 				eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 1, 0)), "ledbh", "0", "25");
 #elif defined(RTAX82_XD6S)
 				eval("wl", "-i", "eth3", "ledbh", "15", "7");
@@ -4320,7 +4323,7 @@ void btn_check(void)
 						btn_count_setup_second = 0;
 					    if (wps_enable) {
 						nvram_set("wps_ign_btn", "1");
-#if defined(RPAX56) || defined(RPAX58)
+#if defined(RPAX56) || defined(RPAX58) || defined(RPBE58)
 						nvram_set("btn_wps", "1");
 #endif
 #ifdef RTCONFIG_WIFI_CLONE
@@ -5329,7 +5332,7 @@ void timecheck_v2(void)
 #else
 			snprintf(tmp, sizeof(tmp), "%d", unit);
 #endif
-			WL_SCHED_DBG("[wifi-scheduler] 3 uschedTime=%s, unit=%d, subunit=%d, activeNow2=%d\n", schedTime, unit, subunit, activeNow2);
+			WL_SCHED_DBG("[wifi-scheduler] 3 uschedTime=%s, unit=%d, subunit=%d, activeNow2=%d\n", schedTime2, unit, subunit, activeNow2);
 
 			if (vif_svcStatus[item][subunit] != activeNow2) {
 #ifdef RTCONFIG_QCA
@@ -5363,7 +5366,14 @@ void timecheck_v2(void)
 		
 			subunit++;
 		}
-#endif	
+#endif	// RTCONFIG_MULTILAN_CFG
+
+ // for MWL don't need to check wlX
+#ifdef RTCONFIG_MULTILAN_MWL
+		item++;
+		unit++;
+		continue;
+#endif
 
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_QCA)
@@ -5628,7 +5638,7 @@ unsigned long get_etlan_count()
 	char buf[256];
 	char *ifname, *p;
 	unsigned long counter=0;
-#if defined(GTAC5300) || defined(RTAX88U) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(XT8PRO) || defined(BT12) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56U) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4) || defined(RTAX86U) || defined(RTAX5700) || defined(RTAX68U) || defined(RTAX55) || defined(RTAX1800) || defined(GTAXE11000) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(RTAX3000N) || defined(RTAX88U_PRO) || defined(RTBE96U) || defined(XC5) || defined(RTAX9000) || defined(GTBE96) || defined(RTBE88U) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(GTAC5300) || defined(RTAX88U) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(XT8PRO) || defined(BT12) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56U) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4) || defined(RTAX86U) || defined(RTAX5700) || defined(RTAX68U) || defined(RTAX55) || defined(RTAX1800) || defined(GTAXE11000) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(RTAX3000N) || defined(RTAX88U_PRO) || defined(RTBE96U) || defined(XC5) || defined(RTAX9000) || defined(GTBE96) || defined(RTBE88U) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
 	unsigned long tmpcnt=0;
 #endif
 
@@ -5651,7 +5661,7 @@ unsigned long get_etlan_count()
 		if ((ifname = strrchr(buf, ' ')) == NULL) ifname = buf;
 		else ++ifname;
 
-#if defined(GTAC5300) || defined(RTAX88U) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(XT8PRO) || defined(BT12) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56U) || defined(RTAX68U) || defined(RTAX55) || defined(RTAX1800) || defined(GTAXE11000) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(RTAX3000N) || defined(RTAX88U_PRO) || defined(RTBE96U) || defined(GTBE98_PRO) || defined(RTAX9000) || defined(GTBE96) || defined(RTBE88U) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(GTAC5300) || defined(RTAX88U) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(XT8PRO) || defined(BT12) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56U) || defined(RTAX68U) || defined(RTAX55) || defined(RTAX1800) || defined(GTAXE11000) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(RTAX3000N) || defined(RTAX88U_PRO) || defined(RTBE96U) || defined(GTBE98_PRO) || defined(RTAX9000) || defined(GTBE96) || defined(RTBE88U) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
 		if (strcmp(ifname, "eth1")
 #if defined(GTAC5300) || defined(RTAX88U) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(XT8PRO) || defined(BT12) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56U) || defined(RTAX68U) || defined(GTAXE11000) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(RTAX88U_PRO) || defined(RTBE96U) || defined(RTAX9000) || defined(RTBE88U)
 			&& strcmp(ifname, "eth2") && strcmp(ifname, "eth3") && strcmp(ifname, "eth4")
@@ -5671,7 +5681,7 @@ unsigned long get_etlan_count()
 			&& (strcmp(ifname, "eth5") && !nvram_get_int("wans_extwan"))
 #endif
 		) continue;
-#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
 		if (!rtk_lan_phy_status())
 			continue;
 #endif
@@ -5808,7 +5818,7 @@ void fake_etlan_led(void)
 
 	if (nvram_get_int("etlan_led_reset")) {
 		nvram_set_int("etlan_led_reset", 0);
-#if !defined(RTAX55) && !defined(RTAX1800) && !defined(RTAX3000N) && !defined(BR63) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE92U) && !defined(RTBE95U)
+#if !defined(RTAX55) && !defined(RTAX1800) && !defined(RTAX3000N) && !defined(BR63) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(RTBE58U_PRO)
 		lstatus = 1;
 #endif
 		status = -1;
@@ -5822,7 +5832,7 @@ void fake_etlan_led(void)
 	return;
 #endif
 
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX3000N) || defined(BR63) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX3000N) || defined(BR63) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
 	phystatus = rtkswitch_lanPorts_phyStatus();
 	if (!phystatus) {
 		led_control(LED_LAN, LED_OFF);
@@ -6134,7 +6144,7 @@ void fake_sfpp_led(void)
 }
 #endif
 
-#ifdef RTAX9000
+#if defined(RTAX9000) || defined(RTBE82U) || defined(RTBE58U_PRO)
 unsigned long get_etwan_count()
 {
 	FILE *f;
@@ -6153,9 +6163,7 @@ unsigned long get_etwan_count()
 		*p = 0;
 		if ((ifname = strrchr(buf, ' ')) == NULL) ifname = buf;
 		else ++ifname;
-
 		if (strcmp(ifname, "eth0")) continue;
-
 		if (sscanf(p+1, "%lu", &tmpcnt) != 1) continue;
 		counter += tmpcnt;
 
@@ -6178,7 +6186,11 @@ void fake_etwan_led(void)
 	static int status_old;
 	int phystatus = 0;
 
+#if defined(RTBE82U) || defined(RTBE58U_PRO)
+	phystatus = hnd_get_phy_status("eth0");
+#else
 	phystatus = hnd_get_phy_status(0);
+#endif
 	if (!phystatus ) {
 		led_control(LED_WAN_NORMAL, LED_OFF);
 		status = -1;
@@ -6736,7 +6748,7 @@ void led_check(int sig)
 		kill_pidfile_s("/var/run/sw_devled.pid", SIGUSR2);
 #endif
 
-#if (defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_WPS_ALLLED_BTN) || defined(RTCONFIG_TURBO_BTN) || (!defined(RTCONFIG_WIFI_TOG_BTN) && !defined(RTCONFIG_QCA))) && !defined(GTAX6000) && !defined(TUFAX3000_V2) && !defined(RTAXE7800) && !defined(GT10) && !defined(RTAX9000) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE92U) && !defined(RTBE95U)
+#if (defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_WPS_ALLLED_BTN) || defined(RTCONFIG_TURBO_BTN) || (!defined(RTCONFIG_WIFI_TOG_BTN) && !defined(RTCONFIG_QCA))) && !defined(GTAX6000) && !defined(TUFAX3000_V2) && !defined(RTAXE7800) && !defined(GT10) && !defined(RTAX9000) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(RTBE58U_PRO)
 	int all_led;
 	int turnoff_counts = swled_alloff_counts?:3;
 
@@ -6798,7 +6810,7 @@ void led_check(int sig)
 #if defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(RTBE96U) || defined(GTBE96) || defined(RTBE88U) || defined(GTBE19000)
 	fake_etlan_led_extra();
 #endif
-#ifdef RTAX9000
+#if defined(RTAX9000) || defined(RTBE82U) || defined(RTBE58U_PRO)
 	fake_etwan_led();
 #endif
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_SFPP_LED)
@@ -7913,6 +7925,9 @@ void roamast_check()
 	char prefix[]="wlXXXXXX_", tmp[64];
 	char word[256], *next;
 	int unit = 0, rast = 0;
+#ifdef RTCONFIG_BCM_MFG
+	return;
+#endif
 #if defined(RTCONFIG_STA_AP_BAND_BIND) || defined(RTCONFIG_FORCE_ROAMING)
 	/* if sta_binding or force roaming is enabled, roamast always runs */
 	rast = 1;
@@ -8302,6 +8317,7 @@ static void auto_firmware_check()
 	static int period_retry = 0;
 	static int bootup_check_period = 3;	//wait 3 times(90s) to check
 	static int bootup_check = 1;
+	int live_update_pause = nvram_get_int("live_update_pause");
 #ifndef RTCONFIG_FW_JUMP
 	char *datestr[] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 	time_t now;
@@ -8320,6 +8336,16 @@ static void auto_firmware_check()
 	if (!nvram_get_int("ntp_ready")){
 		//FAUPGRADE_DBG("ntp_ready false");
 		return;
+	}
+
+	if(live_update_pause > 120)
+		live_update_pause = 120;
+
+	if (live_update_pause > 0) {
+		//dbg("live update check (%d) return\n", live_update_pause);
+		nvram_set_int("live_update_pause", --live_update_pause);
+		if (live_update_pause > 0)
+			return;
 	}
 
 	if(bootup_check_period > 0){	//bootup wait 90s to check
@@ -8361,13 +8387,6 @@ static void auto_firmware_check()
 #if defined(RTCONFIG_ASUSCTRL)
 		if (periodic_check)
 			asus_ctrl_sku_update();
-#endif
-#ifdef RTCONFIG_ASD
-		//notify asd to download version file
-		if (pids("asd") && (bootup_check || (periodic_check && period_retry == 0)))
-		{
-			killall("asd", SIGUSR1);
-		}
 #endif
 #ifdef RTCONFIG_HMA
 		if (bootup_check || (periodic_check && period_retry == 0))
@@ -9009,6 +9028,10 @@ void amas_ctl_check()
 	{
 #if defined(RTCONFIG_FRONTHAUL_DWB) || defined(RTCONFIG_VIF_ONBOARDING)
 #if !defined(RTCONFIG_NOWL)
+#if defined(RPBE58) && defined(RTCONFIG_BCM_MFG)
+		if (IS_ATE_FACTORY_MODE())
+			return;
+#endif
 		if (nvram_match("amas_lanctrl_service_ready", "1") && !pids("amas_lanctrl")) {
 			if (is_router_mode() || access_point_mode())
 				start_amas_lanctrl();
@@ -10321,7 +10344,7 @@ void udhcpc_check(void)
 }
 #endif
 
-#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
 void check_eth1_pause()
 {
 	if (eth1_period) {
@@ -10420,7 +10443,7 @@ void feedback_check(void)
 void watchdog(int sig)
 {
 	int period;
-#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
 	check_eth1_pause();
 #endif
 #ifdef RTL_WTDOG
@@ -10647,10 +10670,20 @@ void watchdog(int sig)
 		}
 	}
 #endif
+#ifdef RTCONFIG_BCMWL6
+	if (!restore_defaults_g && strlen(nvram_safe_get("acs_ifnames")) && nvram_get_int("wlready") &&
+		!mediabridge_mode() &&
+#ifdef RTCONFIG_HND_ROUTER_AX
+		!pids("acsd2")
+#else
+		!pids("acsd")
+#endif
+	)
+		notify_rc_and_wait_1min("restart_acsd");
+#endif
 #if defined(RTAX3000N) || defined(RPAX58)
 	parse_ptf();
 #endif
-
 	if (!no_need_to_start_wanduck() && !pids("wanduck")) {
 		wanduck_count = (wanduck_count + 1) % 4 ;
 		if (!wanduck_count) {
@@ -10942,18 +10975,22 @@ watchdog_main(int argc, char *argv[])
 	g_boost_status[BOOST_ACS_DFS_SW] = !!nvram_get_int("acs_dfs");
 	g_boost_status[BOOST_LED_SW] = !!nvram_get_int("AllLED");
 #endif
-#if defined(RPAX56) || defined(RPAX58)
+#if defined(RPAX56) || defined(RPAX58) || defined(RPBE58)
 	if(ATE_BRCM_FACTORY_MODE()) {
 		_dprintf("watchdog turn on factory mode led\n");
-#ifdef RPAX58
+#if defined(RPAX58)
                 eval("sw", "0xff803014", "0xd8a0");
+#elif defined(RPBE58)
+                eval("sw", "0xff803014", "0x00110039");
 #else
                 eval("sw", "0xff803014", "0xffffa75f");
 #endif
                 eval("sw", "0xff803018", "0x00001000");
 		_bcm_cled_ctrl(BCM_CLED_BLUE, BCM_CLED_STEADY_NOBLINK);
-#ifdef RPAX58
+#if defined(RPAX58)
                 eval("sw", "0xFF80301c", "0xd8a0");
+#elif defined(RPBE58)
+                eval("sw", "0xff80301c", "0x00110039");
 #else
                 eval("sw", "0xFF80301c", "0x58a0");
 #endif

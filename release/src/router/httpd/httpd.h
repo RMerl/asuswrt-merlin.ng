@@ -245,6 +245,11 @@ struct etag_filter_table {
 
 extern struct mime_referer mime_referers[];
 
+enum {
+    TOKEN_ACT_ADD,
+    TOKEN_ACT_DEL
+};
+
 typedef struct asus_token_table asus_token_t;
 struct asus_token_table{
 	char useragent[1024];
@@ -252,6 +257,7 @@ struct asus_token_table{
 	char ipaddr[16];
 	char login_timestampstr[32];
 	char host[64];
+	time_t last_login_timestamp;
 	asus_token_t *next;
 };
 
@@ -582,7 +588,7 @@ extern int change_location(char *lang);
 #ifdef RTCONFIG_WTF_REDEEM
 extern void wtfast_gen_partnercode(char *str, size_t size);
 #endif
-extern void update_wlan_log(int sig);
+extern void update_wlan_log(int *sig);
 extern void system_cmd_test(char *system_cmd, char *SystemCmd, int len);
 extern void do_feedback_mail_cgi(char *url, FILE *stream);
 extern void do_dfb_log_file(char *url, FILE *stream);

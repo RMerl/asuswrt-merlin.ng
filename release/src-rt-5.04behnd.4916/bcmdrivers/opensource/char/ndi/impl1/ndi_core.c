@@ -1,29 +1,23 @@
 /*
  * <:copyright-BRCM:2020:DUAL/GPL:standard
- *
- *    Copyright (c) 2020 Broadcom
+ * 
+ *    Copyright (c) 2020 Broadcom 
  *    All Rights Reserved
- *
- * Unless you and Broadcom execute a separate written software license
- * agreement governing use of this software, this software is licensed
- * to you under the terms of the GNU General Public License version 2
- * (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
- * with the following added to such license:
- *
- *    As a special exception, the copyright holders of this software give
- *    you permission to link this software with independent modules, and
- *    to copy and distribute the resulting executable under terms of your
- *    choice, provided that you also meet, for each linked independent
- *    module, the terms and conditions of the license of that module.
- *    An independent module is a module which is not derived from this
- *    software.  The special exception does not apply to any modifications
- *    of the software.
- *
- * Not withstanding the above, under no circumstances may you combine
- * this software in any way with any other Broadcom software provided
- * under a license other than the GPL, without Broadcom's express prior
- * written consent.
- *
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License, version 2, as published by
+ * the Free Software Foundation (the "GPL").
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * 
+ * A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+ * writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ * 
  * :>
  */
 
@@ -45,6 +39,7 @@
 #include <net/ipv6.h>
 #include <net/neighbour.h>
 #include <net/netfilter/nf_conntrack.h>
+#include <net/netfilter/nf_conntrack_acct.h>
 #include <net/xfrm.h>
 #include <linux/bcm_netlink.h>
 #if IS_ENABLED(CONFIG_BCM_DPI)
@@ -86,14 +81,24 @@ static int ndi_timer_delay = (PROBE_PERIOD_SEC * HZ);
 static struct timer_list ndi_timer;
 static struct dentry *pcap;
 
-DEFINE_SPINLOCK(lock);
+DEFINE_SPINLOCK(nl_bcast_lock);
 LIST_HEAD(nl_bcast_list);
 struct proc_dir_entry *ndi_dir;
+struct ndi_stats stats;
+
+static const int ndi_max_pkt = 3;
 
 /* ----- local functions ----- */
 static inline int ignore_packet(struct ndi_classify *p)
 {
+	enum ip_conntrack_info ctinfo;
+	struct ethhdr *h;
+
 	if (unlikely(!p->skb))
+		return 1;
+
+	p->ct = nf_ct_get(p->skb, &ctinfo);
+	if (p->ct && test_bit(NDI_FINISHED_BIT, &p->ct->bcm_ext.ndi.flags))
 		return 1;
 
 	if (unlikely(!p->skb->dev && !secpath_exists(p->skb))) {
@@ -101,30 +106,36 @@ static inline int ignore_packet(struct ndi_classify *p)
 		return 1;
 	}
 
-	switch (p->skb->protocol) {
-	case htons(ETH_P_IP):
-	case htons(ETH_P_ARP):
-	case htons(ETH_P_RARP):
-	case htons(ETH_P_IPV6):
-		return 0;
-	default:
+	if (p->skb->protocol != htons(ETH_P_IP) &&
+	    p->skb->protocol != htons(ETH_P_IPV6) &&
+	    p->skb->protocol != htons(ETH_P_ARP) &&
+	    p->skb->protocol != htons(ETH_P_RARP)) {
 		p->ignore_reason = IGN_INVAL_L3_PROTO;
 		return 1;
 	}
-}
 
-static inline int ignore_device(struct ndi_classify *p)
-{
-	struct sk_buff *skb	= p->skb;
-	struct ethhdr *h	= eth_hdr(skb);
+	if (is_netdev_wan(p->skb->dev) && !secpath_exists(p->skb)) {
+		p->ignore_reason = IGN_WAN_DEV;
+		return 1;
+	}
 
 	if (is_netdev_dummy_dev(p->skb->dev))
 		return 1;
 
-	if (!skb_mac_header_was_set(skb) || is_zero_ether_addr(h->h_source)) {
+
+	h = eth_hdr(p->skb);
+	if (!skb_mac_header_was_set(p->skb) ||
+	    is_zero_ether_addr(h->h_source)) {
 		p->ignore_reason = IGN_NO_MAC;
 		return 1;
 	}
+
+	return 0;
+}
+
+static inline int ignore_device(struct ndi_classify *p)
+{
+	struct sk_buff *skb = p->skb;
 
 	if (skb->protocol == htons(ETH_P_IP) &&
 	    (ipv4_is_multicast(ip_hdr(skb)->saddr) ||
@@ -144,6 +155,22 @@ static inline int ignore_device(struct ndi_classify *p)
 	return 0;
 }
 
+static u64 pkt_count(struct nf_conn *ct)
+{
+	struct nf_conn_acct *acct;
+	struct nf_conn_counter *ctr;
+
+	if (!ct)
+		return 0;
+
+	acct = nf_conn_acct_find(ct);
+	if (!acct)
+		return 0;
+
+	ctr = acct->counter;
+	return atomic64_read(&ctr[0].packets) + atomic64_read(&ctr[1].packets);
+}
+
 static void classify_secpath_device(struct ndi_classify *p)
 {
 #if IS_ENABLED(CONFIG_XFRM)
@@ -155,14 +182,14 @@ static void classify_secpath_device(struct ndi_classify *p)
 	dev = dev_find_or_new_for_secpath(p->skb->sp, p->dev);
 	if (dev != p->dev) {
 		p->dev = dev;
-		set_bit(UPDATED_BIT, &p->flags);
+		set_bit(UPDATED_BIT, &p->local_flags);
 	}
 #endif
 }
 
 static void classify_device(struct ndi_classify *p)
 {
-	struct ndi_ip *ip;
+	struct ndi_ip *ip = NULL;
 
 	if (p->dev || ignore_device(p))
 		return;
@@ -182,7 +209,7 @@ static void classify_device(struct ndi_classify *p)
 	}
 
 	if (p->dev && dev_ip_update(p->dev, p->skb))
-		set_bit(UPDATED_BIT, &p->flags);
+		set_bit(UPDATED_BIT, &p->local_flags);
 }
 
 static void save_classifications(struct ndi_classify *p)
@@ -202,18 +229,24 @@ static void classify_prepare(struct ndi_classify *p, struct sk_buff *skb,
 	p->hook	= state->hook;
 
 	/* populate classification data based on the conntrack entry */
-	if (p->ct)
+	if (p->ct) {
 		p->dev = p->ct->bcm_ext.ndi.dev;
+		p->flags = p->ct->bcm_ext.ndi.flags;
+	}
 
 	/* if the parent conntrack has classification data and we don't, copy
 	 * the classification data to the child */
 	ctm = p->ct ? p->ct->master : NULL;
-	if (ctm)
+	if (ctm) {
 		p->dev = p->dev ? : ctm->bcm_ext.ndi.dev;
+		p->flags = p->flags ? : ctm->bcm_ext.ndi.flags;
+	}
 }
 
 static void classify(struct ndi_classify *p)
 {
+	stats.scanned_pkts++;
+
 	if (is_dhcp(p->skb) || is_dhcp6(p->skb))
 		ndi_parse_dhcp(p);
 	if (is_arp(p->skb))
@@ -221,6 +254,9 @@ static void classify(struct ndi_classify *p)
 
 	classify_secpath_device(p);
 	classify_device(p);
+
+	if (pkt_count(p->ct) > ndi_max_pkt)
+		set_bit(NDI_FINISHED_BIT, &p->ct->bcm_ext.ndi.flags);
 }
 
 static void classify_post(struct ndi_classify *p)
@@ -231,9 +267,10 @@ static void classify_post(struct ndi_classify *p)
 	save_classifications(p);
 	probe_set_online(p);
 
-	if (test_bit(UPDATED_BIT, &p->flags)) {
+	if (test_bit(UPDATED_BIT, &p->local_flags)) {
 		pr_debug("%s NDI update of classification data\n",
 			 ndi_dev_name(p->dev));
+		stats.netlink_broadcasts++;
 		ndi_dev_nl_event(p->dev, NDINL_NEWDEVICE);
 	}
 }
@@ -272,6 +309,11 @@ ndi_nf_hook(void *priv, struct sk_buff *skb, const struct nf_hook_state *state)
 		.skb = skb
 	};
 
+	if (unlikely(!skb))
+		goto out;
+
+	stats.seen_pkts++;
+
 	if (ignore_packet(&p))
 		goto out;
 
@@ -288,8 +330,9 @@ out:
 static void
 update_dpi_device_info(struct dpi_dev *dpi)
 {
-	struct ndi_dev *ndi = dev_find_by_id(dpi->ndi_id);
+	struct ndi_dev *ndi;
 
+	ndi = dev_find_by_id(dpi->ndi_id);
 	if (!ndi) {
 		if (dpi->ndi_id != -1)
 			pr_err("[%pM] DPI update, but no NDI device with id %d found\n",
@@ -343,9 +386,9 @@ static int __net_init ndi_pernet_init(struct net *net)
 		goto err_unreg_nf_hooks;
 	}
 	entry->net = net;
-	spin_lock_bh(&lock);
+	spin_lock_bh(&nl_bcast_lock);
 	list_add(&entry->node, &nl_bcast_list);
-	spin_unlock_bh(&lock);
+	spin_unlock_bh(&nl_bcast_lock);
 
 	return 0;
 
@@ -361,7 +404,7 @@ static void __net_exit ndi_pernet_exit(struct net *net)
 {
 	struct nl_bcast_entry *entry, *tmp;
 
-	spin_lock_bh(&lock);
+	spin_lock_bh(&nl_bcast_lock);
 	list_for_each_entry_safe(entry, tmp, &nl_bcast_list, node) {
 		if (entry->net != net)
 			continue;
@@ -369,7 +412,7 @@ static void __net_exit ndi_pernet_exit(struct net *net)
 		list_del(&entry->node);
 		break;
 	}
-	spin_unlock_bh(&lock);
+	spin_unlock_bh(&nl_bcast_lock);
 
 	if (entry) {
 		netlink_kernel_release(entry->socket);
@@ -386,6 +429,9 @@ static struct pernet_operations ndi_net_ops = {
 
 static void probe_send_arp(struct ndi_dev *dev)
 {
+	if (!IS_ENABLED(CONFIG_BCM_SGS))
+		return;
+
 	if (dev->state != DEV_PROBING && dev->state != DEV_INACTIVE)
 		return;
 
@@ -398,6 +444,8 @@ static void probe_send_arp(struct ndi_dev *dev)
 			 dev->netdev, 0, NULL, dev->netdev->dev_addr, NULL);
 		pr_debug("%s state %d on %s [%pM]\n", ndi_dev_name(dev),
 			 dev->state, dev->netdev->name, dev->netdev->dev_addr);
+
+		stats.arp_probes++;
 	} else {
 		/* TODO: ipv6 supported to be added
 		 * for now, skip probing and inactive stages if the device
@@ -409,9 +457,13 @@ static void probe_send_arp(struct ndi_dev *dev)
 
 void probe_set_online(struct ndi_classify *p)
 {
-	struct ndi_dev		*dev = p->dev;
-	struct net_device	*netdev = NULL;
+	struct net_device *netdev = NULL;
+	struct ndi_dev *dev;
 
+	if (!IS_ENABLED(CONFIG_BCM_SGS))
+		return;
+
+	dev = p->dev;
 	if (!dev)
 		return;
 
@@ -421,34 +473,29 @@ void probe_set_online(struct ndi_classify *p)
 	if (!ether_addr_equal(dev->mac, eth_hdr(p->skb)->h_source))
 		return;
 
-	spin_lock_bh(&lock);
-
 	netdev = p->skb->bcm_ext.in_dev ? : p->skb->dev;
 	if (netdev != dev->netdev) {
 		if (dev->netdev)
 			dev_put(dev->netdev);
 		dev_hold(netdev);
-		dev->netdev =netdev;
-		set_bit(UPDATED_BIT, &p->flags);
+		dev->netdev = netdev;
+		set_bit(UPDATED_BIT, &p->local_flags);
 	}
 
 	if (!dev->netdev || dev->state == DEV_ONLINE)
-		goto done;
+		return;
 
 	if (dev->state == DEV_INACTIVE) {
-		pr_info("%s on %s was inactive for %d sec and is back online\n",
-			ndi_dev_name(dev), dev->netdev->name,
-			(dev->probe_count + 1) * PROBE_PERIOD_SEC);
+		pr_debug("%s on %s was inactive for %d sec and is back online\n",
+			 ndi_dev_name(dev), dev->netdev->name,
+			 (dev->probe_count + 1) * PROBE_PERIOD_SEC);
 	} else if (dev->state == DEV_OFFLINE) {
-		pr_info("%s on %s is now online\n", ndi_dev_name(dev),
-			dev->netdev->name);
+		pr_debug("%s on %s is now online\n", ndi_dev_name(dev),
+			 dev->netdev->name);
 	}
-	set_bit(UPDATED_BIT, &p->flags);
+	set_bit(UPDATED_BIT, &p->local_flags);
 	dev->state = DEV_ONLINE;
 	clear_bit(NDI_DEV_STALE_BIT, &dev->flags);
-
-done:
-	spin_unlock_bh(&lock);
 }
 
 static void probe_single_device(struct ndi_dev *dev)
@@ -512,11 +559,11 @@ static void probe_single_device(struct ndi_dev *dev)
 		if (dev->probe_count < DEV_INACTIVE_MAX)
 			break;
 		dev->state = DEV_OFFLINE;
-		pr_info("%s on %s is now offline\n", ndi_dev_name(dev),
+		pr_debug("%s on %s is now offline\n", ndi_dev_name(dev),
 			 dev->netdev->name);
 		dev_put(dev->netdev);
 		dev->netdev = NULL;
-		ndi_dev_nl_event_locked(dev, NDINL_NEWDEVICE);
+		ndi_dev_nl_event(dev, NDINL_NEWDEVICE);
 		break;
 	case DEV_OFFLINE:
 		pr_debug("%s is offline\n", ndi_dev_name(dev));
@@ -533,7 +580,10 @@ static void ndi_probe_devices(void)
 	struct hlist_node *tmp;
 	int bkt;
 
-	spin_lock_bh(&lock);
+	if (!IS_ENABLED(CONFIG_BCM_SGS))
+		return;
+
+	spin_lock_bh(&devices.lock);
 
 	ndi_devs_for_each_entry_safe(dev, tmp, bkt) {
 		if (should_ignore_ndi_dev(dev))
@@ -542,7 +592,7 @@ static void ndi_probe_devices(void)
 		probe_send_arp(dev);
 	}
 
-	spin_unlock_bh(&lock);
+	spin_unlock_bh(&devices.lock);
 }
 
 static void ndi_timer_cb(struct timer_list *t)
@@ -563,6 +613,8 @@ netdev_notify(struct notifier_block *nb, unsigned long event, void *ptr)
 	struct ndi_dev *dev;
 	struct netdev_hw_addr *ha;
 	int bkt;
+
+	stats.netdev_notify_events++;
 
 	/* set local hw addresses to ignore/unignore */
 	switch (event) {
@@ -589,7 +641,7 @@ netdev_notify(struct notifier_block *nb, unsigned long event, void *ptr)
 
 	/* if a netdev is unregistering, remove all references to it */
 	if (event == NETDEV_UNREGISTER) {
-		spin_lock_bh(&lock);
+		spin_lock_bh(&devices.lock);
 		ndi_devs_for_each_entry(dev, bkt) {
 			if (dev->netdev != netdev)
 				continue;
@@ -597,7 +649,7 @@ netdev_notify(struct notifier_block *nb, unsigned long event, void *ptr)
 			dev->netdev = NULL;
 			set_bit(NDI_DEV_STALE_BIT, &dev->flags);
 		}
-		spin_unlock_bh(&lock);
+		spin_unlock_bh(&devices.lock);
 	}
 
 	return NOTIFY_DONE;
@@ -612,8 +664,7 @@ xfrm_notify(struct xfrm_state *x, const struct km_event *c)
 {
 	struct ndi_sa *sa;
 
-	spin_lock_bh(&lock);
-
+	stats.xfrm_notify_events++;
 	switch (c->event) {
 	case XFRM_MSG_DELSA:
 		sa = sa_find(x);
@@ -632,8 +683,6 @@ xfrm_notify(struct xfrm_state *x, const struct km_event *c)
 		break;
 	}
 
-	spin_unlock_bh(&lock);
-
 	return 0;
 }
 
@@ -641,8 +690,31 @@ static struct xfrm_mgr ndi_xfrm_mgr __maybe_unused = {
 	.notify		= xfrm_notify,
 };
 
+static int ndi_stat_seq_show(struct seq_file *s, void *v)
+{
+	seq_printf(s, "        packets seen: %llu\n", stats.seen_pkts);
+	seq_printf(s, "     packets scanned: %llu\n", stats.scanned_pkts);
+	seq_printf(s, "          arp probes: %llu\n", stats.arp_probes);
+	seq_printf(s, "netdev notify events: %llu\n", stats.netdev_notify_events);
+	seq_printf(s, "  xfrm notify events: %llu\n", stats.xfrm_notify_events);
+	seq_printf(s, "  netlink broadcasts: %llu\n", stats.netlink_broadcasts);
+
+	return 0;
+}
+static int ndi_stat_open(struct inode *inode, struct file *file)
+{
+	return single_open(file, ndi_stat_seq_show, NULL);
+};
+static const struct file_operations ndi_stats_fops = {
+	.open		= ndi_stat_open,
+	.read		= seq_read,
+	.llseek		= seq_lseek,
+	.release	= single_release
+};
+
 static int __init ndi_init(void)
 {
+	struct proc_dir_entry *pde;
 	int ret = -EINVAL;
 
 	ndi_dir = proc_mkdir("ndi", NULL);
@@ -651,9 +723,16 @@ static int __init ndi_init(void)
 		goto err;
 	}
 
+	pde = proc_create("stats", 0440, ndi_dir, &ndi_stats_fops);
+	if (!pde) {
+		pr_err("couldn't create proc entry 'stats'\n");
+		ret = -EINVAL;
+		goto err;
+	}
+
 	ret = ndi_tables_init();
 	if (ret < 0)
-		goto err;
+		goto err_free_proc_stats;
 
 	ret = register_netdevice_notifier(&netdev_notifier);
 	if (ret < 0)
@@ -708,6 +787,8 @@ err_unregister_netdev_notifier:
 	unregister_netdevice_notifier(&netdev_notifier);
 err_free_tables:
 	ndi_tables_exit();
+err_free_proc_stats:
+	remove_proc_entry("stats", ndi_dir);
 err:
 	return ret;
 }

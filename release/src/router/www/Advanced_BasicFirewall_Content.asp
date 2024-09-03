@@ -11,13 +11,14 @@
 <title><#Web_Title#> - <#menu5_1_1#></title>
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" language="JavaScript" src="/help.js"></script>
 <script type="text/javascript" language="JavaScript" src="/validator.js"></script>
-<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
+<script type="text/javascript" src="/form.js"></script>
 <script>
 var firewall_enable = '<% nvram_get("fw_enable_x"); %>';
 var wItem = new Array(
@@ -39,11 +40,17 @@ var overlib_str1 = new Array();
 var overlib_str2 = new Array();
 var overlib_str3 = new Array();
 
-var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=104";
+var faq_href_1 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=104";
+
+var current_page = window.location.pathname.split("/").pop();
+var faq_index_tmp = get_faq_index(FAQ_List, current_page, 1);
 
 function initial(){
 	show_menu();
-	document.getElementById("faq").href=faq_href;
+	document.getElementById("faq").href=faq_href_1;
+
+	if(top.webWrapper){ $(".formfontdesc_1").css("max-width","95%"); }
+
 	loadAppOptions();
 	showipv4_fw_rulelist();
 	showipv6_fw_rulelist();
@@ -605,11 +612,14 @@ if(val < min || val > max) {		//is_in_range
 							<tbody>
 							<tr>
 								<td bgcolor="#4D595D" valign="top">
+								<div class="container">
+
 									<div>&nbsp;</div>
 									<div class="formfonttitle"><#menu5_5#></div>
+									<div class="formfonttitle_help"><i onclick="show_feature_desc(`Introduction of Firewall on ASUS router`)" class="icon_help"></i></div>
 									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									<div class="formfontdesc">
-										<div><#FirewallConfig_display2_sectiondesc#></div>
+										<div class="formfontdesc_1"><#FirewallConfig_display2_sectiondesc#></div>
 										<a id="faq" href="" target="_blank" style="font-family:Lucida Console;text-decoration:underline;">DoS Protection FAQ</a>
 									</div>
 									<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
@@ -800,7 +810,11 @@ if(val < min || val > max) {		//is_in_range
 									<!--end IPv6 firewall-->
 									<div class="apply_gen">
 										<input name="button" type="button" class="button_gen" onclick="applyRule();" value="<#CTL_apply#>"/>
-									</div>        					
+									</div>
+
+									</div>	<!-- for .container  -->
+									<div class="popup_container popup_element_second"></div>
+
 								</td>
 							</tr>
 					</tbody>	
@@ -808,7 +822,7 @@ if(val < min || val > max) {		//is_in_range
 					</td>
 </form>
 				</tr>
-			</table>				
+			</table>
 		<!--===================================Ending of Main Content===========================================-->		
 		</td>
 		

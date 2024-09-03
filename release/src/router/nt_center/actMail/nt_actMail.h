@@ -90,12 +90,24 @@ MAIL_INFO_T *SYS_WAN_MODEM_OFFLINE_EN_FUNC(MAIL_INFO_T *mInfo);
 MAIL_INFO_T *SYS_WAN_GOT_PROBLEMS_FROM_ISP_EN_FUNC(MAIL_INFO_T *mInfo);
 MAIL_INFO_T *SYS_WAN_UNPUBLIC_IP_EN_FUNC(MAIL_INFO_T *mInfo);
 MAIL_INFO_T *SYS_ALL_WIFI_TURN_OFF_EN_FUNC(MAIL_INFO_T *mInfo);
+MAIL_INFO_T *SYS_SCY_UNCONN_NOTICE_EN_FUNC(MAIL_INFO_T *mInfo);
+MAIL_INFO_T *SYS_SCY_CONN_NOTICE_EN_FUNC(MAIL_INFO_T *mInfo);
+MAIL_INFO_T *SYS_FW_UPGRADE_OK_EN_FUNC(MAIL_INFO_T *mInfo);
+MAIL_INFO_T *SYS_FW_UPGRADE_NOK_EN_FUNC(MAIL_INFO_T *mInfo);
+MAIL_INFO_T *SYS_REBOOT_OK_EN_FUNC(MAIL_INFO_T *mInfo);
+MAIL_INFO_T *SYS_REBOOT_NOK_EN_FUNC(MAIL_INFO_T *mInfo);
+MAIL_INFO_T *SYS_LAN_PORT_IN__EN_FUNC(MAIL_INFO_T *mInfo);
+MAIL_INFO_T *SYS_LAN_PORT_OUT_EN_FUNC(MAIL_INFO_T *mInfo);
+MAIL_INFO_T *SYS_AFC_COLD_REBOOT_EN_FUNC(MAIL_INFO_T *mInfo);
 /* ------------------------------
    ### Administration ###
 ---------------------------------*/
 MAIL_INFO_T *ADMIN_LOGIN_FAIL_LAN_WEB_EN_FUNC(MAIL_INFO_T *mInfo);
 MAIL_INFO_T *ADMIN_LOGIN_FAIL_SSH_EN_FUNC(MAIL_INFO_T *mInfo);
 MAIL_INFO_T *ADMIN_LOGIN_FAIL_TELNET_EN_FUNC(MAIL_INFO_T *mInfo);
+MAIL_INFO_T *ADMIN_REMOTE_LOGIN_EN_FUNC(MAIL_INFO_T *mInfo);
+MAIL_INFO_T *ADMIN_BOUND_DEV_EN_FUNC(MAIL_INFO_T *mInfo);
+MAIL_INFO_T *ADMIN_UNBOUND_DEV_EN_FUNC(MAIL_INFO_T *mInfo);
 /* ------------------------------
    ### Security ###
 ---------------------------------*/
@@ -107,6 +119,10 @@ MAIL_INFO_T *PROTECTION_INFECTED_DEVICE_EN_FUNC(MAIL_INFO_T *mInfo);
    ### USB Function ###
 ---------------------------------*/
 MAIL_INFO_T *USB_TETHERING_EN_FUNC(MAIL_INFO_T *mInfo);
+/* ------------------------------
+   ### AiMesh Function ###
+---------------------------------*/
+MAIL_INFO_T *AIMESH_ETH_OB_EN_FUNC(MAIL_INFO_T *mInfo);
 
 
 /* NOTIFY MAIL CONTENT CALLBACK FUNCTION TABLE
@@ -137,12 +153,24 @@ struct MAIL_CONTENT_T CONTENT_TABLE[] =
 	{"EN", SYS_WAN_GOT_PROBLEMS_FROM_ISP_EVENT,       (MAIL_INFO_T *) SYS_WAN_GOT_PROBLEMS_FROM_ISP_EN_FUNC},
 	{"EN", SYS_WAN_UNPUBLIC_IP_EVENT,                 (MAIL_INFO_T *) SYS_WAN_UNPUBLIC_IP_EN_FUNC},
 	{"EN", SYS_ALL_WIFI_TURN_OFF_EVENT,               (MAIL_INFO_T *) SYS_ALL_WIFI_TURN_OFF_EN_FUNC},
+	{"EN", SYS_SCY_UNCONN_NOTICE_EVENT,               (MAIL_INFO_T *) SYS_SCY_UNCONN_NOTICE_EN_FUNC},
+	{"EN", SYS_SCY_CONN_NOTICE_EVENT,                 (MAIL_INFO_T *) SYS_SCY_CONN_NOTICE_EN_FUNC},
+	{"EN", SYS_FW_UPGRADE_OK_EVENT,                   (MAIL_INFO_T *) SYS_FW_UPGRADE_OK_EN_FUNC},
+	{"EN", SYS_FW_UPGRADE_NOK_EVENT,                  (MAIL_INFO_T *) SYS_FW_UPGRADE_NOK_EN_FUNC},
+	{"EN", SYS_REBOOT_OK_EVENT,                       (MAIL_INFO_T *) SYS_REBOOT_OK_EN_FUNC},
+	{"EN", SYS_REBOOT_NOK_EVENT,                      (MAIL_INFO_T *) SYS_REBOOT_NOK_EN_FUNC},
+	{"EN", SYS_LAN_PORT_IN_EVENT,                     (MAIL_INFO_T *) SYS_LAN_PORT_IN__EN_FUNC},
+	{"EN", SYS_LAN_PORT_OUT_EVENT,                    (MAIL_INFO_T *) SYS_LAN_PORT_OUT_EN_FUNC},
+	{"EN", SYS_AFC_COLD_REBOOT_EVENT,                 (MAIL_INFO_T *) SYS_AFC_COLD_REBOOT_EN_FUNC},
 	/* ------------------------------
 	   ### Administration ###
 	---------------------------------*/
 	{"EN", ADMIN_LOGIN_FAIL_LAN_WEB_EVENT,            (MAIL_INFO_T *) ADMIN_LOGIN_FAIL_LAN_WEB_EN_FUNC},
 	{"EN", ADMIN_LOGIN_FAIL_SSH_EVENT,                (MAIL_INFO_T *) ADMIN_LOGIN_FAIL_SSH_EN_FUNC},
 	{"EN", ADMIN_LOGIN_FAIL_TELNET_EVENT,             (MAIL_INFO_T *) ADMIN_LOGIN_FAIL_TELNET_EN_FUNC},
+	{"EN", ADMIN_REMOTE_LOGIN_EVENT,                  (MAIL_INFO_T *) ADMIN_REMOTE_LOGIN_EN_FUNC},
+	{"EN", ADMIN_BOUND_DEV_EVENT,                     (MAIL_INFO_T *) ADMIN_BOUND_DEV_EN_FUNC},
+	{"EN", ADMIN_UNBOUND_DEV_EVENT,                   (MAIL_INFO_T *) ADMIN_UNBOUND_DEV_EN_FUNC},
 	/* ------------------------------
 	   ### Security ###
 	---------------------------------*/
@@ -154,6 +182,10 @@ struct MAIL_CONTENT_T CONTENT_TABLE[] =
 	   ### USB Function ###
 	---------------------------------*/
 	{"EN", USB_TETHERING_EVENT,                       (MAIL_INFO_T *) USB_TETHERING_EN_FUNC},
+	/* ------------------------------
+	   ### AiMesh Function ###
+	---------------------------------*/
+	{"EN", AIMESH_ETH_OB_EVENT,                       (MAIL_INFO_T *) AIMESH_ETH_OB_EN_FUNC},
 	/* The End */
 	{"",0,NULL}
 };

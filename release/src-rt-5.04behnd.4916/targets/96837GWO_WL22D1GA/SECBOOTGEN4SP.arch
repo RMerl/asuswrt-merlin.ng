@@ -1,0 +1,4 @@
+<PUBLISH>
+@@ -56 +56 @@
+-BCM_FLASH_LAYOUT_OPTIONS="options_6837"
++BCM_FLASH_LAYOUT_OPTIONS="options_6837_sec_gen4_splus"

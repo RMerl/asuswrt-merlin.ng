@@ -15,11 +15,11 @@
 	border:1px outset #999;
 	background-color:#576D73;
 	position:absolute;
-	*margin-top:26px;	
+	*margin-top:26px;
 	margin-left:2px;
 	*margin-left:-353px;
 	width:346px;
-	text-align:left;	
+	text-align:left;
 	height:auto;
 	overflow-y:auto;
 	z-index:200;
@@ -41,21 +41,26 @@
 	color:#FFF;
 	font-size:12px;
 	font-family:Arial, Helvetica, sans-serif;
-	text-decoration:none;	
+	text-decoration:none;
 }
 #ClientList_Block_PC div:hover{
 	background-color:#3366FF;
 	color:#FFFFFF;
 	cursor:default;
-}	
+}
 </style>
+<script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/form.js"></script>
 <script>
+
+var current_page = window.location.pathname.split("/").pop();
+var faq_index_tmp = get_faq_index(FAQ_List, current_page, 1);
+
 function initial(){
 	show_menu();
 	showLANIPList();
@@ -87,7 +92,7 @@ function updateOptions(){
 		document.form.destIP.value = AppListArray[0][1];
 	}
 
-	if(document.form.cmdMethod.value == "ping"){	
+	if(document.form.cmdMethod.value == "ping"){
 		if(document.form.pingCNT.value == ""){
 			document.form.pingCNT.value = 5;
 		}
@@ -255,8 +260,11 @@ function pullLANIPList(obj){
 						<table width="760px" border="0" cellpadding="5" cellspacing="0" bordercolor="#6b8fa3"  class="FormTitle" id="FormTitle">		
 							<tr>
 								<td bgcolor="#4D595D" colspan="3" valign="top">
+								<div class="container">
+
 									<div>&nbsp;</div>
 									<div class="formfonttitle"><#Network_Tools#> - <#Network_Analysis#></div>
+									<div class="formfonttitle_help"><i onclick="show_feature_desc(`How to use Network Analysis(Ping, Traceroute, Nsloopup) in ASUS Router?`)" class="icon_help"></i></div>
 									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									<div class="formfontdesc" id="cmdDesc"><#NetworkTools_Ping#></div>
 									<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
@@ -305,6 +313,10 @@ function pullLANIPList(obj){
 											<% nvram_dump("syscmd.log","syscmd.sh"); %>
 										</textarea>
 									</div>
+
+									</div>	<!-- for .container  -->
+									<div class="popup_container popup_element_second"></div>
+
 								</td>
 							</tr>
 						</table>

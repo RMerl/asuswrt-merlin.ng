@@ -133,8 +133,8 @@ static const struct {
 
 /**
  * iw_valid_channel - validate channel in regulatory domain
- * @reg_comain - regulatory domain
- * @channel - channel to validate
+ * @reg_domain: regulatory domain
+ * @channel: channel to validate
  *
  * Returns 0 if invalid in the specified regulatory domain, non-zero if valid.
  */
@@ -153,7 +153,7 @@ static int iw_valid_channel(int reg_domain, int channel)
 
 /**
  * iw_default_channel - get default channel for a regulatory domain
- * @reg_comain - regulatory domain
+ * @reg_domain: regulatory domain
  *
  * Returns the default channel for a regulatory domain
  */
@@ -236,6 +236,7 @@ static int wl3501_get_flash_mac_addr(struct wl3501_card *this)
 
 /**
  * wl3501_set_to_wla - Move 'size' bytes from PC to card
+ * @this: Card
  * @dest: Card addressing space
  * @src: PC addressing space
  * @size: Bytes to move
@@ -258,6 +259,7 @@ static void wl3501_set_to_wla(struct wl3501_card *this, u16 dest, void *src,
 
 /**
  * wl3501_get_from_wla - Move 'size' bytes from card to PC
+ * @this: Card
  * @src: Card addressing space
  * @dest: PC addressing space
  * @size: Bytes to move
@@ -454,12 +456,10 @@ out:
 
 /**
  * wl3501_send_pkt - Send a packet.
- * @this - card
- *
- * Send a packet.
- *
- * data = Ethernet raw frame.  (e.g. data[0] - data[5] is Dest MAC Addr,
+ * @this: Card
+ * @data: Ethernet raw frame.  (e.g. data[0] - data[5] is Dest MAC Addr,
  *                                   data[6] - data[11] is Src MAC Addr)
+ * @len: Packet length
  * Ref: IEEE 802.11
  */
 static int wl3501_send_pkt(struct wl3501_card *this, u8 *data, u16 len)
@@ -722,7 +722,7 @@ static void wl3501_mgmt_scan_confirm(struct wl3501_card *this, u16 addr)
 
 /**
  * wl3501_block_interrupt - Mask interrupt from SUTRO
- * @this - card
+ * @this: Card
  *
  * Mask interrupt from SUTRO. (i.e. SUTRO cannot interrupt the HOST)
  * Return: 1 if interrupt is originally enabled
@@ -739,7 +739,7 @@ static int wl3501_block_interrupt(struct wl3501_card *this)
 
 /**
  * wl3501_unblock_interrupt - Enable interrupt from SUTRO
- * @this - card
+ * @this: Card
  *
  * Enable interrupt from SUTRO. (i.e. SUTRO can interrupt the HOST)
  * Return: 1 if interrupt is originally enabled
@@ -1113,8 +1113,8 @@ static inline void wl3501_ack_interrupt(struct wl3501_card *this)
 
 /**
  * wl3501_interrupt - Hardware interrupt from card.
- * @irq - Interrupt number
- * @dev_id - net_device
+ * @irq: Interrupt number
+ * @dev_id: net_device
  *
  * We must acknowledge the interrupt as soon as possible, and block the
  * interrupt from the same card immediately to prevent re-entry.
@@ -1252,7 +1252,7 @@ static int wl3501_close(struct net_device *dev)
 
 /**
  * wl3501_reset - Reset the SUTRO.
- * @dev - network device
+ * @dev: network device
  *
  * It is almost the same as wl3501_open(). In fact, we may just wl3501_close()
  * and wl3501_open() again, but I wouldn't like to free_irq() when the driver
@@ -1329,7 +1329,7 @@ static netdev_tx_t wl3501_hard_start_xmit(struct sk_buff *skb,
 	} else {
 		++dev->stats.tx_packets;
 		dev->stats.tx_bytes += skb->len;
-		kfree_skb(skb);
+		dev_kfree_skb_irq(skb);
 
 		if (this->tx_buffer_cnt < 2)
 			netif_stop_queue(dev);
@@ -1415,7 +1415,7 @@ static struct iw_statistics *wl3501_get_wireless_stats(struct net_device *dev)
 
 /**
  * wl3501_detach - deletes a driver "instance"
- * @link - FILL_IN
+ * @link: FILL_IN
  *
  * This deletes a driver "instance". The device is de-registered with Card
  * Services. If it has been released, all local data structures are freed.
@@ -1436,9 +1436,7 @@ static void wl3501_detach(struct pcmcia_device *link)
 	wl3501_release(link);
 
 	unregister_netdev(dev);
-
-	if (link->priv)
-		free_netdev(link->priv);
+	free_netdev(dev);
 }
 
 static int wl3501_get_name(struct net_device *dev, struct iw_request_info *info,
@@ -1865,6 +1863,7 @@ static int wl3501_probe(struct pcmcia_device *p_dev)
 {
 	struct net_device *dev;
 	struct wl3501_card *this;
+	int ret;
 
 	/* The io structure describes IO port mapping */
 	p_dev->resource[0]->end	= 16;
@@ -1876,8 +1875,7 @@ static int wl3501_probe(struct pcmcia_device *p_dev)
 
 	dev = alloc_etherdev(sizeof(struct wl3501_card));
 	if (!dev)
-		goto out_link;
-
+		return -ENOMEM;
 
 	dev->netdev_ops		= &wl3501_netdev_ops;
 	dev->watchdog_timeo	= 5 * HZ;
@@ -1890,9 +1888,15 @@ static int wl3501_probe(struct pcmcia_device *p_dev)
 	netif_stop_queue(dev);
 	p_dev->priv = dev;
 
-	return wl3501_config(p_dev);
-out_link:
-	return -ENOMEM;
+	ret = wl3501_config(p_dev);
+	if (ret)
+		goto out_free_etherdev;
+
+	return 0;
+
+out_free_etherdev:
+	free_netdev(dev);
+	return ret;
 }
 
 static int wl3501_config(struct pcmcia_device *link)
@@ -1948,8 +1952,7 @@ static int wl3501_config(struct pcmcia_device *link)
 		goto failed;
 	}
 
-	for (i = 0; i < 6; i++)
-		dev->dev_addr[i] = ((char *)&this->mac_addr)[i];
+	eth_hw_addr_set(dev, this->mac_addr);
 
 	/* print probe information */
 	printk(KERN_INFO "%s: wl3501 @ 0x%3.3x, IRQ %d, "

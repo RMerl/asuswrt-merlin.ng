@@ -1,28 +1,22 @@
 /*
 <:copyright-BRCM:2019:DUAL/GPL:standard
 
-   Copyright (c) 2019 Broadcom
+   Copyright (c) 2019 Broadcom 
    All Rights Reserved
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
 :>
 */
@@ -40,6 +34,57 @@ written consent.
 #define VFBIO_LVM_MAX_NAME_SIZE         16      /* Max lun name size, excluding 0-terminatoir. DO NOT CHANGE! */
 #define VFBIO_LVM_LUN_ID_AUTOASSIGN     (-1)    /* Constant to be used in vfbuio_lun_create for automatic lun id assignment */
 #define VFBIO_LVM_MAX_ID_NAME_PAIRS     16      /* Max number of luns that can be renamed simultaneously */
+
+#define RPMB_BLOCK_SIZE                 (256)   /* Size of RPMB data */
+typedef enum
+{ 
+    VFBIO_RPMB_DMA_FROM_DEVICE,
+    VFBIO_RPMB_DMA_TO_DEVICE
+}vfbio_rpmb_dma_op; 
+
+typedef enum  {
+    VFBIO_RPMB_WRITE_KEY = 0x01,
+    VFBIO_RPMB_READ_CNT  = 0x02,
+    VFBIO_RPMB_WRITE     = 0x03,
+    VFBIO_RPMB_READ      = 0x04,
+}rpmb_cmd_type;
+
+
+/*
+ * This structure is shared with OP-TEE and the MMC ioctl layer.
+ * It is the "data frame for RPMB access" defined by JEDEC, minus the
+ * start and stop bits.
+ */
+typedef struct  
+{
+    uint8_t stuff_bytes[196];
+    uint8_t key_mac[32];
+
+    uint8_t data[RPMB_BLOCK_SIZE];
+
+    uint8_t nonce[16];
+    uint32_t write_counter;
+    uint16_t address;
+    uint16_t block_count;
+
+    uint16_t op_result;
+#define RPMB_RESULT_OK                              0x00
+#define RPMB_RESULT_GENERAL_FAILURE                 0x01
+#define RPMB_RESULT_AUTH_FAILURE                    0x02
+#define RPMB_RESULT_ADDRESS_FAILURE                 0x04
+#define RPMB_RESULT_AUTH_KEY_NOT_PROGRAMMED         0x07
+
+    uint16_t msg_type;
+#define VFBIO_RPMB_WRITE_KEY                        0x01
+#define VFBIO_RPMB_READ_CNT                         0x02
+#define VFBIO_RPMB_WRITE                            0x03
+#define VFBIO_RPMB_READ                             0x04
+#define VFBIO_RPMB_RESP                             0x05
+#define RPMB_MSG_TYPE_RESP_AUTH_KEY_PROGRAM         0x0100
+#define RPMB_MSG_TYPE_RESP_WRITE_COUNTER_VAL_READ   0x0200
+#define RPMB_MSG_TYPE_RESP_AUTH_DATA_WRITE          0x0300
+#define RPMB_MSG_TYPE_RESP_AUTH_DATA_READ           0x0400
+}rpmb_data_frame_t;
 
 /* vFlash errors */
 typedef enum
@@ -67,16 +112,23 @@ typedef enum
     VFBIO_ERROR_LVM_IS_NOT_SUPPORTED= -118, /* LVM is not supported */
 } vfbio_error;
 
+/* LUN flags */
+#define VFBIO_LUN_CREATE_FLAG_NONE       0x00
+#define VFBIO_LUN_CREATE_FLAG_READ_ONLY  0x01
+#define VFBIO_LUN_CREATE_FLAG_ENCRYPTED  0x04
+#define VFBIO_LUN_CREATE_FLAG_HIDDEN     0x08
+
 /* Get error text */
 const char *vfbio_error_str(vfbio_error err);
 
 /* Create a new dynamic lun
  * @param[in]  name         0-terminated name up to 16 bytes long, must be unique
  * @param[in]  size         size bytes
+ * @param[in]  lun_flags    LUN flags. A combination of VFBIO_LUN_CREATE_FLAG_XX constants
  * @param[out] lun_id       LUN id
  * @return 0 if successful or error code
  */
-int vfbio_lun_create(const char *name, uint64_t size, int *lun_id);
+int vfbio_lun_create(const char *name, uint64_t size, uint32_t lun_flags, int *lun_id);
 
 /* Delete dynamic lun created by vfbio_lun_create
  * @param[out] lun_id       LUN id
@@ -120,6 +172,7 @@ typedef struct vfbio_lun_descr {
     uint32_t size_in_blocks;
     int read_only;
     int dynamic;
+    int encrypted;
 } vfbio_lun_descr;
 
 /* Get lun info
@@ -161,6 +214,19 @@ int vfbio_lun_get_next(int prev, int *lun_id);
  * @return 0 if successful or error < 0
  */
 int vfbio_lun_write(int lun_id, void *data, uint32_t size);
+
+
+/* Write RPMB block into lun using a syncronous RPC.
+ * It is caller's responsibility to query the block size for the LUN in advance.
+ * @param[in]  data                 RPMB data
+ * @param[in]  data_size            size in bytes
+ * @param[in]  cmd                  RPMB command
+ * @param[in]  OP                   from/to LUN
+ * @param[in]  nfrm                 Number of the frame  
+ * @return 0 if successful or error < 0
+ */
+int vfbio_rpmb_transfer_data(void *data,  uint32_t data_size, rpmb_cmd_type cmd, vfbio_rpmb_dma_op dma_op, unsigned int nfrm);
+
 
 #endif
 

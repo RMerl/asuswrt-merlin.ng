@@ -26,7 +26,11 @@
 #include <linux/string.h>
 
 static DEFINE_MUTEX(crypto_default_null_skcipher_lock);
+#if defined(CONFIG_BCM_KF_VLA_REMOVAL_BACKPORT)
+static struct crypto_sync_skcipher *crypto_default_null_skcipher;
+#else
 static struct crypto_skcipher *crypto_default_null_skcipher;
+#endif
 static int crypto_default_null_skcipher_refcnt;
 
 static int null_compress(struct crypto_tfm *tfm, const u8 *src,
@@ -152,16 +156,26 @@ MODULE_ALIAS_CRYPTO("compress_null");
 MODULE_ALIAS_CRYPTO("digest_null");
 MODULE_ALIAS_CRYPTO("cipher_null");
 
+#if defined(CONFIG_BCM_KF_VLA_REMOVAL_BACKPORT)
+struct crypto_sync_skcipher *crypto_get_default_null_skcipher(void)
+{
+	struct crypto_sync_skcipher *tfm;
+#else
 struct crypto_skcipher *crypto_get_default_null_skcipher(void)
 {
 	struct crypto_skcipher *tfm;
+#endif
 
 	mutex_lock(&crypto_default_null_skcipher_lock);
 	tfm = crypto_default_null_skcipher;
 
 	if (!tfm) {
+#if defined(CONFIG_BCM_KF_VLA_REMOVAL_BACKPORT)
+		tfm = crypto_alloc_sync_skcipher("ecb(cipher_null)", 0, 0);
+#else
 		tfm = crypto_alloc_skcipher("ecb(cipher_null)",
 					    0, CRYPTO_ALG_ASYNC);
+#endif
 		if (IS_ERR(tfm))
 			goto unlock;
 
@@ -181,7 +195,11 @@ void crypto_put_default_null_skcipher(void)
 {
 	mutex_lock(&crypto_default_null_skcipher_lock);
 	if (!--crypto_default_null_skcipher_refcnt) {
+#if defined(CONFIG_BCM_KF_VLA_REMOVAL_BACKPORT)
+		crypto_free_sync_skcipher(crypto_default_null_skcipher);
+#else
 		crypto_free_skcipher(crypto_default_null_skcipher);
+#endif
 		crypto_default_null_skcipher = NULL;
 	}
 	mutex_unlock(&crypto_default_null_skcipher_lock);

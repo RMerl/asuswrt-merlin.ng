@@ -3,27 +3,21 @@
    All Rights Reserved
 
     <:label-BRCM:2015:DUAL/GPL:standard
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
 :>
 */
 
@@ -36,7 +30,6 @@
  * Phy drivers for 63138, 63148, 4908
  */
 #include "phy_drv_dsl_serdes.h"
-#include "bcmsfp.h"
 #include "trxbus.h"
 
 #define PHY_SPEED_HIGHEST_SUPPORT PHY_SPEED_10000
@@ -119,6 +112,44 @@ static int get_dt_config_xfi(phy_dev_t *phy_dev)
     return 0;
 }
 
+int phy_drv_serdes_adjust_speed(phy_dev_t *phy_dev, phy_speed_t max_speed)
+{
+    phy_serdes_t *phy_serdes = phy_dev->priv;
+    phy_speed_t speed;
+    int i;
+    static phy_speed_t speed_list[] = {PHY_SPEED_10, PHY_SPEED_100, PHY_SPEED_1000, PHY_SPEED_2500, PHY_SPEED_5000, PHY_SPEED_10000}; 
+    phy_speed_t current_max_speed = phy_caps_to_max_speed(phy_serdes->speed_caps);
+
+    if (max_speed == 0)
+    {
+        if ((max_speed = dt_property_read_u32(phy_serdes->handle, "max-speed-mbps")) == -1)
+            return -1;
+    }
+
+    if (max_speed == current_max_speed)
+        return 0;
+
+    for (i=0; i<ARRAY_SIZE(speed_list); i++)
+    {
+        speed = speed_list[i];
+
+        if (speed <= max_speed && speed <= current_max_speed)
+            continue;
+
+        if (speed > max_speed)
+        {
+            phy_serdes->speed_caps &= ~phy_speed_to_cap(speed, PHY_DUPLEX_FULL);
+            phy_serdes->inter_phy_types &= ~phy_speed_to_inter_phy_speed_mask(speed);
+        }
+        else
+        {
+            phy_serdes->speed_caps |= phy_speed_to_cap(speed, PHY_DUPLEX_FULL);
+            phy_serdes->inter_phy_types |= phy_speed_to_inter_phy_speed_mask(speed);
+        }
+    }
+    return 0;
+}
+
 static int get_dt_config_speed(phy_dev_t *phy_dev)
 {
     uint32_t speed;
@@ -134,21 +165,7 @@ static int get_dt_config_speed(phy_dev_t *phy_dev)
             printkwarn("\"config_speed\" in DT file is deprecated, please use \"config-speed\"");
     }
 
-    switch(speed)
-    {
-        case 1000:
-            phy_serdes->config_speed = PHY_SPEED_1000;
-            break;
-        case 2500:
-            phy_serdes->config_speed = PHY_SPEED_2500;
-            break;
-        case 5000:
-            phy_serdes->config_speed = PHY_SPEED_5000;
-            break;
-        case 10000:
-            phy_serdes->config_speed = PHY_SPEED_10000;
-            break;
-    }
+    phy_serdes->config_speed = phy_speed_mbps_to_macro(speed);
     return 0;
 }
 
@@ -229,30 +246,33 @@ int phy_dsl_serdes_init(phy_dev_t *phy_dev)
 {
     phy_serdes_t *phy_serdes = (phy_serdes_t *)phy_dev->priv;
     phy_dev_t *phy_next = phy_dev->cascade_next;
-    struct device *dev;
     int ret = 0;
     int bug = 0;
     long value;
-    int supported_caps;
+    int caps, supported_caps, xgphy_supported_caps;
 
     if ((serdes_index+1) > ARRAY_SIZE(serdes))
         BUG_CHECK("******** ERROR: Too many Serdeses number to support.\n");
 
     if (phy_next) /* For external Copper PHY, initialize it first */
     {
+        phy_drv_init(phy_next->phy_drv);
         phy_next->phy_drv->init(phy_next);
 
         /* Adjust usxgmii_m_type for single port definition to accept
             both USXGMII_S and USXGMII_M from device tree */
         if (phy_dev_is_mphy(phy_dev) && phy_next->usxgmii_m_type == USXGMII_S)
             phy_dev->usxgmii_m_type = USXGMII_S;
+
+        phy_dev_caps_get(phy_dev, CAPS_TYPE_SUPPORTED, &supported_caps);
+        phy_dev_caps_get(phy_next, CAPS_TYPE_SUPPORTED, &xgphy_supported_caps);
+        caps = supported_caps & xgphy_supported_caps;
+        phy_dev_caps_set(phy_next, caps);
     }
 
     serdes[serdes_index++] = phy_serdes;
     phy_dev->inter_phy_types = phy_serdes->inter_phy_types;
-
-    if (phy_dev_is_mphy(phy_dev))
-        phy_serdes->speed_caps = phy_usxgmii_m_speed_cap_adjust(phy_dev, phy_serdes->speed_caps);
+    phy_serdes->speed_caps = phy_xfi_speed_cap_adjust(phy_dev, phy_serdes->speed_caps);
 
     dsl_serdes_poll_timer_op(phy_dev, SPD_TMR_RESET);
     phy_serdes->highest_speed = phy_caps_to_max_speed(phy_serdes->speed_caps & (~PHY_CAP_AUTONEG));
@@ -266,6 +286,9 @@ int phy_dsl_serdes_init(phy_dev_t *phy_dev)
     phy_serdes->adv_caps = phy_serdes->config_speed == PHY_SPEED_AUTO? (supported_caps & PHY_CAP_PURE_SPEED_CAPS) :
         phy_speed_to_cap(phy_serdes->config_speed, PHY_DUPLEX_FULL);
     set_common_speed_range(phy_dev);
+        
+    if (phy_dev->shared_ref_clk_mhz)
+        phy_dev_shared_clock_set(phy_dev);
 
     if (PhyIsPortConnectedToExternalSwitch(phy_dev) || PhyIsFixedConnection(phy_dev))
     {
@@ -307,14 +330,11 @@ int phy_dsl_serdes_init(phy_dev_t *phy_dev)
     /* Check if SFP signal detect pin is defined or not*/
     phy_serdes->signal_detect_gpio = -1;
     if (phy_next && phy_serdes->sfp_module_type == SFP_NO_MODULE) {
-        dev = trxbus_get_dev(phy_next->addr);
-        if (dev) {
-            if (sfp_mon_read(dev, bcmsfp_mon_rxsd_pin, 0, &value) == 0) {
-                phy_serdes->signal_detect_gpio = (short)value;
-            }
-            /* turn on SFP tx power for AE/PON cage */
-            sfp_mon_write(dev, bcmsfp_mon_tx_enable, 0, 1);
+        if (trxbus_mon_read(phy_next->addr, bcmsfp_mon_rxsd_pin, 0, &value) == 0) {
+            phy_serdes->signal_detect_gpio = (short)value;
         }
+        /* turn on SFP tx power for AE/PON cage */
+        trxbus_mon_write(phy_next->addr, bcmsfp_mon_tx_enable, 0, 1);
 
         if (phy_serdes->signal_detect_gpio == -1) {
             printk("Error: ****** Loss Of Signal Detection pin not defined SFP on bus %d.\n",
@@ -528,7 +548,7 @@ int phy_dsl_serdes_post_init(phy_dev_t *phy_dev)
 #endif
 
         if (!PhyIsPortConnectedToExternalSwitch(phy_dev) && !PhyIsFixedConnection(phy_dev) &&
-            !IS_USXGMII_MULTI_PORTS(phy_dev) && !phy_dev_is_broadcom_phy(phy_dev->cascade_next))
+            !(phy_dev->configured_inter_phy_types & INTER_PHY_TYPE_MULTI_SPEED_AN_MASK_M) && !phy_dev_is_broadcom_phy(phy_dev->cascade_next))
         /* Work around for some non Broadcom PHYs not sync link status between Copper side and Serdes side */
         /* Exclude external switch connection from power down operation */
         {
@@ -1430,7 +1450,6 @@ static int dsl_sfp_module_detect(phy_dev_t *phy_dev)
     TRX_TYPE trx_type = TRX_TYPE_ETHERNET;
     phy_speed_t max_spd;
     phy_dev_t *phy_i2c = phy_dev->cascade_next;
-    struct device *dev;
 
     /* Don't do module detection for fixed connection desgin */
     if (phy_serdes->sfp_module_type == SFP_FIXED_PHY)
@@ -1467,9 +1486,7 @@ static int dsl_sfp_module_detect(phy_dev_t *phy_dev)
     if (trx_type == TRX_TYPE_XPON) {
         phy_serdes->sfp_module_type = SFP_GPON_MODULE;
         /* turn off SFP tx power for PON SFP to avoid rogue condition */
-        dev = trxbus_get_dev(phy_i2c->addr);
-        if (dev)
-            sfp_mon_write(dev, bcmsfp_mon_tx_enable, 0, 0);
+        trxbus_mon_write(phy_i2c->addr, bcmsfp_mon_tx_enable, 0, 0);
     }
     else
         phy_serdes->sfp_module_type = SFP_AE_MODULE;

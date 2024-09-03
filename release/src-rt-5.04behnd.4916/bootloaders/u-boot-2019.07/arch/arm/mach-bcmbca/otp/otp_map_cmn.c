@@ -174,8 +174,7 @@ static otp_map_cmn_err_t otp_map_cmn_read(otp_map_cmn_t *obj,
 		goto err;
 	}
 	_DPRT("%s: id:%d, range:%d, addr_type:%d, op_type:%d\n", __FUNCTION__, id, rows[id].range, rows[id].conf.addr_type, rows[id].conf.op_type);
-	p = rows[id].range > 1?
-			(u32*)(rows[id].pdata) : &rows[id].data;
+	p = (u32*)(rows[id].pdata);
 	if (!rows[id].valid) {
 		u32 range;
 		u32 read_sz;
@@ -197,7 +196,14 @@ static otp_map_cmn_err_t otp_map_cmn_read(otp_map_cmn_t *obj,
 		}
 		if (rows[id].mask) {
 			for (i = 0; i < rows[id].range ;i++ ) {
-				p[i] = ((p[i] >> rows[id].shift)&rows[id].mask);
+				if(rows[id].shift & OTP_HW_REG_SHIFT_LEFT_FLAG)
+				{
+					p[i] = ((p[i] << 
+						(rows[id].shift & ~OTP_HW_REG_SHIFT_LEFT_FLAG)
+						&rows[id].mask));
+				}
+				else
+					p[i] = ((p[i] >> rows[id].shift)&rows[id].mask);
 			}
 		}
 		rows[id].valid = 1;
@@ -240,13 +246,15 @@ static inline otp_map_cmn_err_t  initialize(otp_map_cmn_t* obj)
 	otp_hw_cmn_row_t* rows = obj->dev.rows;
 	otp_map_cmn_err_t rc = OTP_MAP_CMN_ERR_FAIL;
 	for (i = 0; i < obj->dev.row_max; i++ ) {
-		if (rows[i].range > 1) {
+		if (rows[i].range > 0) {
 			u8* p = otp_map_cmn_malloc(rows[i].range*sizeof(u32));
 			if (!p) {
 				_ETR(rc);
 				goto err;
 			}
 			rows[i].pdata = p;
+		} else {
+			goto err;
 		}
 	}
 	rc = OTP_MAP_CMN_OK;
@@ -254,7 +262,42 @@ err:
 	return rc;
 }
 
- 
+static inline otp_map_cmn_err_t deinitialize(otp_map_cmn_t* obj)
+{
+	u32 i;
+	otp_hw_cmn_row_t* rows = obj->dev.rows;
+	otp_map_cmn_err_t rc = OTP_MAP_CMN_ERR_FAIL;
+	for (i = 0; i < obj->dev.row_max; i++ ) {
+		/* 'rows' is declared static with global scope, this means that
+		 * all uninitialized members would be set to 0. So we only need
+		 * to check for any non-zero pdata to assume that it was mallocd */
+		if (rows[i].pdata) {
+			memset(rows[i].pdata, 0, (rows[i].range*sizeof(u32)));
+			free(rows[i].pdata);
+			rows[i].pdata = NULL;
+		}
+	}
+	rc = OTP_MAP_CMN_OK;
+	return rc;
+}
+
+otp_map_cmn_err_t otp_map_cmn_deinit(otp_map_cmn_t *map) 
+{
+	otp_map_cmn_err_t rc = OTP_MAP_CMN_ERR_FAIL;
+
+	if (deinitialize(map)) {
+		_ETR(rc);
+		goto err;
+	}
+	map->ctl = NULL;
+	map->write = NULL;
+	map->read = NULL;
+
+	rc = OTP_MAP_CMN_OK;
+err:
+	return rc;
+}
+
 otp_map_cmn_err_t otp_map_cmn_init(otp_map_cmn_t *map, 
 			otp_hw_cmn_init_t hw_init,
 			otp_hw_cmn_t* ext_drv)
@@ -277,6 +320,7 @@ otp_map_cmn_err_t otp_map_cmn_init(otp_map_cmn_t *map,
 	}
 	if (initialize(map)) {
 		_ETR(rc);
+		deinitialize(map);
 		goto err;
 	}
 	map->ctl = otp_map_cmn_ctl;
@@ -286,7 +330,7 @@ otp_map_cmn_err_t otp_map_cmn_init(otp_map_cmn_t *map,
 #if defined BCM_OTP_READ_MAP 
 	if(otp_map_cmn_read_map(map)) {
 		_ETR(rc);
-		/*goto err;*/
+		deinitialize(map);
 	}
 #endif
 	rc = OTP_MAP_CMN_OK;

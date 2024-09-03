@@ -24,17 +24,17 @@ __weak void arm_init_domains(void)
 }
 
 #ifdef CONFIG_ARMV7_LPAE
-void set_section_attr(int section, u64 virt, u64 attr)
+void set_section_attr(int section, phys_addr_t start, u64 attr)
 #else
-void set_section_attr(int section, u32 virt, u32 attr)
+void set_section_attr(int section, phys_addr_t start, u32 attr)
 #endif
 {
 #ifdef CONFIG_ARMV7_LPAE
 	u64 *page_table = (u64 *)gd->arch.tlb_addr;
-	u64 value = virt;
+	u64 value = start;
 #else
 	u32 *page_table = (u32 *)gd->arch.tlb_addr;
-	u32 value = virt;
+	u32 value = start;
 #endif
 	/* Add page attribute bits */
 	value |= attr;
@@ -125,6 +125,114 @@ __weak void dram_bank_mmu_setup(int bank)
 	}
 }
 
+static int is_addr_size_section_aligned(u32 va, phys_addr_t pa, u32 size)
+{
+  	if ((va & (MMU_SECTION_SIZE - 1)) || (pa & (MMU_SECTION_SIZE - 1)) ||
+		(size & (MMU_SECTION_SIZE - 1))) {
+		printf("va 0x%x, pa %pa or size 0x%x does not align to %d!\n", va, &pa, size, MMU_SECTION_SIZE);
+		return 0;
+	}
+
+	return 1;
+}
+
+#ifdef CONFIG_ARMV7_LPAE
+static void flush_section_tbl(u64* page_table, int num_sect)
+#else
+static void flush_section_tbl(u32* page_table, int num_sect)
+#endif
+{
+	unsigned long startpt, stoppt;
+
+  	startpt = (unsigned long)page_table;
+	startpt &= ~(CONFIG_SYS_CACHELINE_SIZE - 1);
+	stoppt = (unsigned long)(page_table + num_sect - 1);
+	stoppt = ALIGN(stoppt, CONFIG_SYS_CACHELINE_SIZE);
+	mmu_page_table_flush(startpt, stoppt);
+}
+/* 
+ * map memory/device region to virtul address space.  This is useful
+ * when need to map the upper physical memory (physical address above 4GB)
+ * to 32 bit virtual processor space. It is intended to be used dynamically
+ * at run time.  For static mapping, define the mapping in mmu_table.c
+ */
+#ifdef CONFIG_ARMV7_LPAE
+int map_section(u32 va, phys_addr_t pa, u32 size, u64 attr)
+#else
+int map_section(u32 va, phys_addr_t pa, u32 size, u32 attr)
+#endif
+{
+#ifdef CONFIG_ARMV7_LPAE
+	u64 *page_table = (u64 *)gd->arch.tlb_addr;
+	u64 entry;
+#else
+	u32 *page_table = (u32 *)gd->arch.tlb_addr;
+	u32 entry;
+#endif
+	int i = 0, section, num_sect;
+
+	if (!is_addr_size_section_aligned(va, pa, size))
+		return -1;
+
+	section = va >> MMU_SECTION_SHIFT;
+	num_sect = size >> MMU_SECTION_SHIFT;
+	page_table += section;
+	while (i < num_sect) {
+		entry = *(page_table+i);
+		if (entry) {
+			printf("mmu entry is in used 0x%llx for section %d for va 0x%x phy %pa\n",
+				   (u64)entry, section, va, &pa);
+			/* revert all the previous entries */
+			memset(page_table, 0x0, i*sizeof(entry));
+			return -1;
+		}
+
+		entry = pa|attr;
+		*(page_table+i) = entry;
+		pa += MMU_SECTION_SIZE;
+		i++;
+	}
+
+	flush_section_tbl(page_table, num_sect);
+	return 0;
+}
+
+int unmap_section(u32 va, phys_addr_t pa, u32 size)
+{
+#ifdef CONFIG_ARMV7_LPAE
+	u64 *page_table = (u64 *)gd->arch.tlb_addr;
+	u64 entry;
+	u64 pa_mask = (~(MMU_SECTION_SIZE-1)) & ((1ULL << 52)-1);
+#else
+	u32 *page_table = (u32 *)gd->arch.tlb_addr;
+	u32 entry;
+	u32 pa_mask = ~(MMU_SECTION_SIZE-1);
+#endif
+	int i = 0, section, num_sect;
+
+	if (!is_addr_size_section_aligned(va, pa, size))
+		return -1;
+
+	section = va >> MMU_SECTION_SHIFT;
+	num_sect = size >> MMU_SECTION_SHIFT;
+	page_table += section;
+	while (i < num_sect) {
+		entry = *(page_table+i);
+		if ((entry & pa_mask) != pa || entry == 0) {
+			/* fatal error */
+			panic("unmap sect mismatched pa 0x%llx <-> %pa or null entry for va 0x%x\n",
+			   (u64)(entry & pa_mask), &pa, va);
+		}
+		*(page_table+i) = 0x0;
+		pa += MMU_SECTION_SIZE;
+		i++;
+	}
+
+	flush_section_tbl(page_table, num_sect);
+
+	return 0;
+}
+
 /* to activate the MMU we need to set up virtual memory: use 1M areas */
 static inline void mmu_setup(void)
 {
@@ -181,6 +289,8 @@ static inline void mmu_setup(void)
 		/* Set MAIR */
 		asm volatile("mcr p15, 0, %0, c10, c2, 0"
 			: : "r" (MEMORY_ATTRIBUTES) : "memory");
+		asm volatile("mcr p15, 0, %0, c10, c2, 1"
+			: : "r" (MEMORY_ATTRIBUTES_1) : "memory");
 	}
 #elif defined(CONFIG_CPU_V7A)
 	if (is_hyp()) {
@@ -324,6 +434,11 @@ void dcache_disable (void)
 	return;
 }
 
+void dcache_sanitize_disable(uintptr_t sanitize_base_addr, unsigned long sanitize_size)
+{
+	return;
+}
+
 int dcache_status (void)
 {
 	return 0;					/* always off */
@@ -337,6 +452,25 @@ void dcache_enable(void)
 void dcache_disable(void)
 {
 	cache_disable(CR_C);
+}
+
+void dcache_sanitize_disable(uintptr_t sanitize_base_addr, unsigned long sanitize_size)
+{
+	uint32_t actlr;
+
+	actlr = get_actlr();
+
+	/* Disable write streaming so cache controller ALWAYS allocates and fill cache lines */
+	set_actlr(actlr|ACTLR_L1RADIS|ACTLR_L2RADIS);
+
+	/* Sanitize memory */
+	memset((void*)sanitize_base_addr, 0, sanitize_size);
+	
+	/* flush and disable dcache */
+	dcache_disable();
+
+	/* restore write streaming settings */
+	set_actlr(actlr);
 }
 
 int dcache_status(void)

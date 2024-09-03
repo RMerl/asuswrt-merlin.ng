@@ -7,8 +7,8 @@
 
 / {
 	/* arch */
-        #define MODEL "Broadcom BCM96766"
-        #define COMPATIBLE "brcm,bcm96766"
+	#define MODEL "Broadcom BCM96766"
+	#define COMPATIBLE "brcm,bcm96766"
 	#define PMU_CORE0_SPI	7
 	#define PMU_CORE1_SPI	8
 	#define PMU_CORE2_SPI	9
@@ -26,300 +26,450 @@
 
 	aliases {
 		serial0 = &uart0;
+		serial1 = &uart1;
+		serial3 = &uart3;
 		spi1 = &hsspi; /* 0 = legacy, 1 = high speed */
 		spinand0 = &spinand;
 		spinor0 = &spinor;
 		nand0 = &nand;
-		//hs_serial0 = &hs_uart0;
+		hs_serial0 = &hs_uart0;
 	};
 
 	chosen {
 		stdout-path = "serial0:115200n8";
 		/* increase coherent_pool size */
+#if defined(CONFIG_BCM_CROSSBOW_FULL_OFFLOAD)
+		bootargs = "coherent_pool=4M cpuidle_sysfs_switch pci=pcie_bus_safe console=ttyAMA0,115200 earlycon rootwait rng_core.default_quality=1024";
+#else
 		bootargs = "coherent_pool=4M cpuidle_sysfs_switch pci=pcie_bus_safe isolcpus=3 console=ttyAMA0,115200 earlycon rootwait rng_core.default_quality=1024";
-	};
-
-	/* memc */
-	memory_controller {
-		#define BP_DDR_6766_DEFAULT		BP_DDR_SSC_CONFIG_1
-		#define BP1_DDR_6766_DEFAULT		BP1_DDR_SSC_CONFIG_1
-
-		#include "../ip/memc.dtsi"
-	};
-
-	misc_io {
-		compatible = "brcm,misc-io";
-		misc-periph-chip-id-rev = <0xff800000 0x4>;
-		misc-periph-chip-id-mask = <0xfffff000>;
-		misc-periph-chip-id-shift = <12>;
-		misc-periph-chip-rev-mask = <0xfff>;
-	};
-
-	/* PMC */
-	pmc: pmc {
-		#define PMC_REG_OFFSET              0xffb01018
-		#define PMC_REG_SIZE                0x5080
-		#define PROCMON_REG_OFFSET          0xffb20000
-		#define PROCMON_REG_SIZE            0x240
-		#define MAESTRO_REG_OFFSET          0xffb00400
-		#define MAESTRO_REG_SIZE            0x5d0
-		#define MAESTRO_DTCM_REG_OFFSET     0xffb80000
-		#define MAESTRO_DTCM_REG_SIZE       0x1000
-		#define MAESTRO_ITCM_REG_OFFSET     0xffbc0000
-		#define MAESTRO_ITCM_REG_SIZE       0x4000
-		#include "../ip/bcm_pmc_3_2.dtsi"
-		interrupt-names = "pmc-temp-irq";
-		interrupts = <GIC_SPI 29 IRQ_TYPE_LEVEL_HIGH>;
-	};
-
-	/* usb */
-	usb_ctrl: usb_ctrl {
-		#define USB_CTRL_ADDR       0x800CF200
-		#define USB_CTRL_SIZE       0x128
-		#include "../ip/bcm_usb_ctrl.dtsi"
-	};
-
-	usb0_xhci: usb0_xhci {
-		#define USB_ADDR            0x800C0000
-		#define USB_SIZE            0x484
-		#define GBL_ADDR            0x800CC100
-		#define GBL_SIZE            0x544
-		#define USB_IRQ             73
-		#include "../ip/bcm_usb_xhci.dtsi"
-		xhci-no-companion;
-	};
-
-#if (defined(CONFIG_BCM_FLEXRM) || defined(CONFIG_BCM_FLEXRM_MODULE)) && \
-	(defined(CONFIG_BCM_SPU) || defined(CONFIG_BCM_SPU_MODULE))
-	/* spu */
-	#define SPU_DMA_ADDR        0x83800000
-	#define SPU_DMA_SIZE        0x400000
-	#define SPU_DMA_NUM_CHAN    4
-	#define SPU_DMA_NUM_AE      1
-	#define SPU_CRYPTO_ADDR     0x83800000
-	#define SPU_CRYPTO_SIZE     0x400000
-	#define SPU_GMAC_SPI        64
-	#include "../ip/bcm_spu.dtsi"
 #endif
-
-	sysport: systemport@0x80210000 {
-		compatible = "brcm,bcmbca-systemport-v2.0";
-		reg-names = "systemport-rbuf-base", "systemport-rdma-base",
-				"systemport-tdma-base",
-				"systemport-topctrl-base",
-				"systemport-ipa";
-		reg =	<0x80210400 0x14>,
-				<0x80212000 0x1268>,
-				<0x80214000 0xe60>,
-				<0x80210000 0x34>,
-				<0x80200b00 0x24>;
-		ethsw = <&switch0>;
 	};
 
-	crossbow {
-		compatible = "brcm,crossbow";
-		reg = <0x80200000 0x10000>,  /* CNP */
-                      <0x80230000 0xD0000>,  /* NATC */
-                      <0x80300000 0x100000>; /* CM7 */
-	};
-
-	sysport-blk {
-		compatible = "brcm,sysport-blk";
-		reg-names = "sysport-base";
-		reg = <0x80210000 0x10000>;
-		interrupt-names = "sysport-irq-0",
-                                  "sysport-irq-1",
-                                  "sysport-irq-2",
-                                  "sysport-irq-3",
-                                  "sysport-irq-4",
-                                  "sysport-irq-5",
-                                  "sysport-irq-6",
-                                  "sysport-irq-7",
-                                  "sysport-irq-8",
-                                  "sysport-irq-9";
-		interrupts = <GIC_SPI 76 IRQ_TYPE_LEVEL_HIGH>,
-                             <GIC_SPI 77 IRQ_TYPE_LEVEL_HIGH>,
-                             <GIC_SPI 78 IRQ_TYPE_LEVEL_HIGH>,
-                             <GIC_SPI 79 IRQ_TYPE_LEVEL_HIGH>,
-                             <GIC_SPI 80 IRQ_TYPE_LEVEL_HIGH>,
-                             <GIC_SPI 82 IRQ_TYPE_LEVEL_HIGH>,
-                             <GIC_SPI 83 IRQ_TYPE_LEVEL_HIGH>,
-                             <GIC_SPI 84 IRQ_TYPE_LEVEL_HIGH>,
-                             <GIC_SPI 85 IRQ_TYPE_LEVEL_HIGH>,
-                             <GIC_SPI 86 IRQ_TYPE_LEVEL_HIGH>;
-	};
-
-	mpm {
-		#define MPM_REG_OFFSET	0x80220000
-		#define MPM_REG_SIZE	0x4000
-		#include "../ip/bcm_mpm.dtsi"
-	};
-
-	ccb: ccb {
-		#define CCB_OFFSET                  0x81201000
-		#define CCB_SIZE                    0x80
-		#define SLAVEINTF_CPU_NUM           1
-		#include "../ip/bcm_ccb.dtsi"
-	};
-
-	ethphytop:ethphytop {
-		compatible = "brcm,eth-phy-top";
-		reg = <0x80481000 0x1000>;
-		xphy0-addr = <0x9>;
-		status = "disabled";
-	};
-
-	serdes {
-		compatible = "brcm,serdes1";
-		reg	= <0x80482000 0x1300>;	/* serdes_reg */
-	};
-
-	serdes_rescal {
-		compatible = "brcm,xphy-rescal";
-		reg	= <0xff85a018 0x4>;	/* TO_CONTROL_RESCAL_config */
-	};
-
-	swblks {
-		compatible = "brcm,swblks";
-		reg-names =	"switchcore-base",
-				"switchreg-base",
-				"switchmdio-base",
-				"switchacb-base";
-
-		reg	= <0x80400000 0x72724>,
-			<0x80474000 0x20>,
-			<0x80486000 0x10>,
-			<0x80474800 0x230>;
-	};
-
-	mdio_sf2: mdio_sf2 {
-		compatible = "simple-bus";
-		bus-type = "DSL_ETHSW";
-
-		#address-cells = <1>;
-		#size-cells = <0>;
-
-	   /* Port PHY mapping:
-			port_imp -8#0- port_xhy <----> phy_xphy
-				  # #
-				  ##5- port_sgmii <-> phy_serdes - phy_cascade
-		 */
-		phy_xphy:phy_xphy {
-			compatible = "brcm,bcaphy";
-			phy-type = "EXT3";
-			reg = <9>;
-			status = "disabled";
-
-			pinctrl-names = "default";
-			pinctrl-0 = <&eth_mdc_pin_62 &eth_mdio_pin_63>;
-		};
-		phy_cascade:phy_cascade {
-			compatible = "brcm,bcaphy";
-			phy-type = "EXT3";
-			reg = <21>;
-			status = "disabled";
-			phy-external;
-		};
-		phy_serdes:phy_serdes {
-			compatible = "brcm,bcaphy";
-			phy-type = "10GAE";
-			reg = <6>;
-			serdes-core = <0>;
-			serdes-lane = <0>;
-			status = "disabled";
-		};
-
-	};
-
-	switch0:sf2@80400000 {
-		compatible = "brcm,enet", "brcm,bcmbca-sf2";
-		label = "bcmsw";
-		sw-type = "SF2_SW";
-
-		reg-names = "switchcore-base",
-					"switchreg-base",
-					"switchmdio-base";
-
-		reg = <0x80400000 0x72724>,
-			<0x80474000 0x20>,
-			<0x80486000 0x10>;
-
-		ports {
-			#address-cells = <1>;
-			#size-cells = <0>;
-
-			port_xphy {
-				reg = <0>;
-				mac-type = "SF2MAC";
-				phy-handle = <&phy_xphy>;
-				phy-mode = "serdes";
-				status = "disabled";
-			};
-			port_sgmii {
-				phy-handle = <&phy_serdes>;
-				reg = <5>;
-				mac-type = "SF2MAC";
-				phy-mode = "serdes";
-				status = "disabled";
-			};
-			port_imp {
-				management;
-				reg = <8>;
-				mac-type = "SF2MAC";
-				phy-mode = "gmii";
-				gmii-direct;
-				status = "okay";
-			};
-		};
-	};
-
-	mdiosf2 {
-		compatible = "brcm,mdio-sf2";
-		reg = <0x80486000 0x10>,
-			<0x80480000 0x4>;
-	};
-
-	/* UBUS */
-	ubus: ubus {
+	ubus-bus {
 		compatible = "simple-bus";
 		#address-cells = <1>;
 		#size-cells = <1>;
-		ranges;
+#if defined(CONFIG_ARM_LPAE)
+		ranges = <0x0 0x0 0x80000000 0x70000000>;
+#else
+		ranges = <0x0 0x80000000 0x70000000>;
+#endif
 
-		ubus_sys: ubus_sys {
+		/* memc */
+		memory_controller {
+			#define BP_DDR_6766_DEFAULT		BP_DDR_SSC_CONFIG_1
+			#define BP1_DDR_6766_DEFAULT		BP1_DDR_SSC_CONFIG_1
+
+			#define MEMC_REG_NAMES	"phyctl_idle_pad_ctl",	\
+						"phyctl_idle_pad_en0",	\
+						"phyctl_idle_pad_en1",	\
+						"phybl0_idle_pad_ctl",	\
+						"phybl1_idle_pad_ctl",	\
+						"phybl0_clock_idle",	\
+						"phybl1_clock_idle",	\
+						"auto_self_refresh",	\
+						"glb_gcfg"
+
+			#define MEMC_REG	<0x60200 4>,	\
+						<0x60204 4>,	\
+						<0x60208 4>,	\
+						<0x60724 4>,	\
+						<0x60924 4>,	\
+						<0x60744 4>,	\
+						<0x60944 4>,	\
+						<0x4000C 4>,	\
+						<0x40008 4>
+
+			#include "../ip/memc.dtsi"
+		};
+
+		misc_io {
+			compatible = "brcm,misc-io";
+			misc-periph-int-ctrl = <0xff80260c 0x4>;
+			sdio-emmc-clk-sel-mask = <0x00010000>;
+			misc-emmc-cktap-ctrl = <0xff80264c 0x4>;
+			misc-periph-chip-id-rev = <0xff800000 0x4>;
+			misc-periph-chip-id-mask = <0xfffff000>;
+			misc-periph-chip-id-shift = <12>;
+			misc-periph-chip-rev-mask = <0xfff>;
+		};
+
+		/* usb */
+		usb_ctrl: usb_ctrl {
+			#define USB_CTRL_ADDR       0xCF200
+			#define USB_CTRL_SIZE       0x128
+			#include "../ip/bcm_usb_ctrl.dtsi"
+		};
+
+		usb0_xhci: usb0_xhci {
+			#define USB_ADDR            0xC0000
+			#define USB_SIZE            0x484
+			#define GBL_ADDR            0xCC100
+			#define GBL_SIZE            0x544
+			#define USB_IRQ             71
+			#include "../ip/bcm_usb_xhci.dtsi"
+			xhci-no-companion;
+		};
+
+#if (defined(CONFIG_BCM_FLEXRM) || defined(CONFIG_BCM_FLEXRM_MODULE)) && \
+	(defined(CONFIG_BCM_SPU) || defined(CONFIG_BCM_SPU_MODULE))
+		/* spu */
+		#define SPU_DMA_ADDR        0x3800000
+		#define SPU_DMA_SIZE        0x400000
+		#define SPU_DMA_NUM_CHAN    4
+		#define SPU_DMA_NUM_AE      1
+		#define SPU_CRYPTO_ADDR     0x3800000
+		#define SPU_CRYPTO_SIZE     0x400000
+		#define SPU_GMAC_SPI        64
+		#include "../ip/bcm_spu.dtsi"
+#endif
+
+		sysport: systemport@0x210000 {
+			compatible = "brcm,bcmbca-systemport-v2.0";
+			reg-names = "systemport-rbuf-base", "systemport-rdma-base",
+					"systemport-tdma-base",
+					"systemport-topctrl-base",
+					"systemport-ipa";
+			reg =	<0x210400 0x14>,
+					<0x212000 0x1268>,
+					<0x214000 0xe60>,
+					<0x210000 0x34>,
+					<0x200b00 0x24>;
+			ethsw = <&switch0>;
+		};
+
+		crossbow {
+			compatible = "brcm,crossbow";
+			reg = <0x200000 0x10000>,  /* CNP */
+				<0x230000 0xD0000>,  /* NATC */
+				<0x300000 0x100000>; /* CM7 */
+		};
+
+		sysport-blk {
+			compatible = "brcm,sysport-blk";
+			reg-names = "sysport-base";
+			reg = <0x210000 0x10000>;
+			interrupt-names = "sysport-irq-0",
+						"sysport-irq-1",
+						"sysport-irq-2",
+						"sysport-irq-3",
+						"sysport-irq-4",
+						"sysport-irq-5",
+						"sysport-irq-6",
+						"sysport-irq-7",
+						"sysport-irq-8",
+						"sysport-irq-9",
+						"sysport-irq-10",
+						"sysport-irq-11";
+			interrupts = <GIC_SPI 76 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 77 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 78 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 79 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 80 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 81 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 83 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 84 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 85 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 86 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 87 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 88 IRQ_TYPE_LEVEL_HIGH>;
+		};
+
+		mpm {
+			#define MPM_REG_OFFSET	0x220000
+			#define MPM_REG_SIZE	0x4000
+			#include "../ip/bcm_mpm.dtsi"
+		};
+
+		ccb: ccb {
+			#define CCB_OFFSET                  0x1201000
+			#define CCB_SIZE                    0x80
+			#define SLAVEINTF_CPU_NUM           1
+			#include "../ip/bcm_ccb.dtsi"
+		};
+
+		ethphytop:ethphytop {
+			compatible = "brcm,eth-phy-top";
+			reg = <0x480000 0x2000>;
+			status = "okay";
+		};
+
+		serdes {
+			compatible = "brcm,serdes1";
+			reg	= <0x482000 0x1300>;	/* serdes_reg */
+		};
+
+		swblks {
+			compatible = "brcm,swblks";
+			reg-names =	"switchcore-base",
+					"switchreg-base",
+					"switchmdio-base",
+					"switchacb-base",
+					"switchlfh-base",
+					"switchsib-base",
+					"sphy-ctrl";
+
+			reg	= <0x400000 0x72724>,
+				<0x474000 0x20>,
+				<0x486000 0x10>,
+				<0x474800 0x230>,
+				<0x474b00 0x100>,
+				<0x474c00 0x100>,
+				<0x481024 0x04>;
+			phy_base = <0x8>;
+		};
+
+		mdio_sf2: mdio_sf2 {
+			compatible = "simple-bus";
+			bus-type = "DSL_ETHSW";
+
 			#address-cells = <1>;
-			#size-cells = <1>;
-			#define UBUS_SYSTOP_OFFSET         0x83000000
-			#define UBUS_SYSTOP_SIZE           0x80
-			#define UBUS_REGISTRATION_OFFSET   0x83000200
-			#define UBUS_REGISTRATION_SIZE     0x80
-			#define UBUS_MODULE_XRDP           0x0
-			#include "../ip/bcm_ubus4.dtsi"
-			ubus_mst_sys: ubus_mst {
-				reg-names = "BIU", "PER", "PCIE0", "PCIE1",
-					"SPU", "USB", "CNPTOP", "CNPPHY",
-					"WIFI0", "WIFI1", "MLO0", "MLO1";
-				reg = <0x83020000 0x4000>,
-					<0x83010000 0x4000>,
-					<0x83030000 0x4000>,
-					<0x83038000 0x4000>,
-					<0x83040000 0x4000>,
-					<0x83048000 0x4000>,
-					<0x83050000 0x4000>,
-					<0x83058000 0x4000>,
-					<0x83060000 0x4000>,
-					<0x83068000 0x4000>,
-					<0x83070000 0x4000>,
-					<0x83078000 0x4000>;
+			#size-cells = <0>;
+
+			/* Port PHY mapping:
+    	        port_imp -8#0- port_gphy <----> phy_gphy
+        	              # 5- port_sgmii0 <--> phy_serdes0 - phy_cascade0
+            	          ##6- port_sgmii1 <--> phy_serdes1 - phy_cascade1
+			 */
+			phy_gphy:phy_gphy {
+				compatible = "brcm,bcaphy";
+				reg = <0x8>;
+				phy-type = "EGPHY";
+			};
+			phy_cascade0:phy_cascade0 {
+				compatible = "brcm,bcaphy";
+				phy-type = "EXT3";
+				reg = <20>;
+				status = "disabled";
+				phy-external;
+			};
+			phy_cascade1:phy_cascade1 {
+				compatible = "brcm,bcaphy";
+				phy-type = "EXT3";
+				reg = <21>;
+				status = "disabled";
+				phy-external;
+			};
+			phy_serdes0:phy_serdes0 {
+				compatible = "brcm,bcaphy";
+				phy-type = "10GAE";
+				reg = <6>;
+				serdes-core = <0>;
+				serdes-lane = <0>;
+				status = "disabled";
+			};
+			phy_serdes1:phy_serdes1 {
+				compatible = "brcm,bcaphy";
+				phy-type = "10GAE";
+				reg = <7>;
+				serdes-core = <1>;
+				serdes-lane = <0>;
+				status = "disabled";
 			};
 		};
 
-		ubus_dcm_sys: ubus_dcm_sys {
-			#define UBUS_DCM_CLK_OFFSET  0x83000080
-			#define UBUS_DCM_CLK_SIZE    0x80
-			#define UBUS_MODULE_XRDP     0x0
-			#include "../ip/bcm_ubus4_dcm.dtsi"
+		switch0:sf2@400000 {
+			compatible = "brcm,enet", "brcm,bcmbca-sf2";
+			label = "bcmsw";
+			sw-type = "SF2_SW";
+
+			phy_base = <0x8>;
+			phy_wkard_timeout = <25000>;
+			reg-names = "switchcore-base",
+						"switchreg-base",
+						"switchmdio-base",
+						"sphy-ctrl",
+						"phy-test-ctrl";
+
+			reg = <0x400000 0x72724>,
+				<0x474000 0x20>,
+				<0x486000 0x10>,
+				<0x481024 0x04>,
+				<0x481018 0x04>;
+
+			pinctrl-names = "default";
+			pinctrl-0 = <&eth_mdc_pin_62 &eth_mdio_pin_63>;
+
+			ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+
+				port_gphy {
+					phy-handle = <&phy_gphy>;
+					reg = <0>;
+					mac-type = "SF2MAC";
+					phy-mode = "gmii";
+					gmii-direct;
+					status = "disabled";
+				};
+				port_sgmii0 {
+					phy-handle = <&phy_serdes0>;
+					reg = <5>;
+					mac-type = "SF2MAC";
+					phy-mode = "serdes";
+					status = "disabled";
+				};
+				port_sgmii1 {
+					phy-handle = <&phy_serdes1>;
+					reg = <6>;
+					mac-type = "SF2MAC";
+					phy-mode = "serdes";
+					status = "disabled";
+				};
+				port_imp {
+					management;
+					reg = <8>;
+					mac-type = "SF2MAC";
+					phy-mode = "gmii";
+					gmii-direct;
+					status = "okay";
+				};
+			};
 		};
+
+		mdiosf2 {
+			compatible = "brcm,mdio-sf2";
+			reg = <0x486000 0x10>,
+				<0x480000 0x4>;
+		};
+
+		/* UBUS */
+		ubus: ubus {
+			compatible = "simple-bus";
+			#address-cells = <1>;
+			#size-cells = <1>;
+			ranges;
+
+			ubus_sys: ubus_sys {
+				#address-cells = <1>;
+				#size-cells = <1>;
+				ranges;
+				#define UBUS_SYSTOP_OFFSET         0x3000000
+				#define UBUS_SYSTOP_SIZE           0x80
+				#define UBUS_REGISTRATION_OFFSET   0x3000200
+				#define UBUS_REGISTRATION_SIZE     0x80
+				#define UBUS_MODULE_XRDP           0x0
+				#include "../ip/bcm_ubus4.dtsi"
+				ubus_mst_sys: ubus_mst {
+					reg-names = "BIU", "PER", "PCIE0", "PCIE1",
+						"SPU", "USB", "CNPTOP", "CNPPHY",
+						"WIFI0", "WIFI1", "MLO0", "MLO1";
+					reg = <0x3020000 0x4000>,
+						<0x3010000 0x4000>,
+						<0x3030000 0x4000>,
+						<0x3038000 0x4000>,
+						<0x3040000 0x4000>,
+						<0x3048000 0x4000>,
+						<0x3050000 0x4000>,
+						<0x3058000 0x4000>,
+						<0x3060000 0x4000>,
+						<0x3068000 0x4000>,
+						<0x3070000 0x4000>,
+						<0x3078000 0x4000>;
+				};
+			};
+
+			ubus_dcm_sys: ubus_dcm_sys {
+				#define UBUS_DCM_CLK_OFFSET  0x3000080
+				#define UBUS_DCM_CLK_SIZE    0x80
+				#define UBUS_MODULE_XRDP     0x0
+				#include "../ip/bcm_ubus4_dcm.dtsi"
+			};
+		};
+		ephyled {
+			compatible = "brcm,ephy-led";
+			led_reg_max = <7>;
+			reg-names = "aggregate_ctrl", "led_reg_0", "led_reg_1", "led_reg_2", \
+					"led_reg_3", "led_reg_4", "led_reg_5", "led_reg_6";
+			reg = <0x48017C 0x4>, <0x480108 0xc>, <0x480114 0xc>, <0x480120 0xc>, \
+					<0x48012C 0xc>, <0x480138 0xc>, <0x480144 0xc>, <0x480150 0xc>;
+		};
+
+		therm0: brcm-therm {
+			compatible = "brcm,therm";
+			reg-names="bac_cpu_therm_temp";
+			reg = <0x106037c 0x04>;
+			status = "okay";
+		};
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined (CONFIG_BCM_PCIE_HCD_MODULE)
+		/* pcie common */
+		pcie: pcie {
+			compatible = "brcm,bcm-pcie";
+			device_type = "cpci";
+			/* pcie 0 & 1 share same GEN3 clock */
+			brcm,pllclkid = <0x00>;
+			reg = <0x1061000 0x1000>;  /* CTMR_CTRL */
+		};
+
+		/* Internal WiFi Core 0 (virtual pcie with domain#0) */
+		vpcie0: vpcie@0 {
+			#define WIFI_COREID			0
+			#define WIFI_ADDR			0x10000000
+			#define WIFI_SIZE			0x08000000
+			#define WIFI_MLO_ADDR			0x000E0000
+			#define WIFI_MLO_SIZE			0x00000100
+			#define WIFI_DEVID			0x6039
+			#define WIFI_CCM_SPI		96
+			#define WIFI_D11MAC_SPI		97
+			#define WIFI_M2MDMA_SPI		98
+			#define WIFI_WDRST_SPI		101
+			#define WIFI_M2MDMA1_SPI	99
+			#define WIFI_MLC_SPI		100
+			#define WIFI_PHY_SPI		102
+			#define WIFI_THERM_HI_SPI	103
+			#define WIFI_THERM_LO_SPI	104
+			#define WIFI_THERM_SD_SPI	105
+			#include "../ip/bcm_wifi_core.dtsi"
+		};
+
+		/* Internal WiFi Core 1 (virtual pcie with domain#1) */
+		vpcie1: vpcie@1 {
+			#define WIFI_COREID			1
+			#define WIFI_ADDR			0x18000000
+			#define WIFI_SIZE			0x08000000
+			#define WIFI_MLO_ADDR			0x000F0000
+			#define WIFI_MLO_SIZE			0x00000100
+			#define WIFI_DEVID			0x6038
+			#define WIFI_CCM_SPI		106	
+			#define WIFI_D11MAC_SPI		107
+			#define WIFI_M2MDMA_SPI		108
+			#define WIFI_WDRST_SPI		111
+			#define WIFI_M2MDMA1_SPI	109
+			#define WIFI_MLC_SPI		110
+			#define WIFI_PHY_SPI		112
+			#define WIFI_THERM_HI_SPI	113
+			#define WIFI_THERM_LO_SPI	114
+			#define WIFI_THERM_SD_SPI	115
+			#include "../ip/bcm_wifi_core.dtsi"
+		};
+
+		/* pcie core 0, enable explicitly in board specific DT */
+		pcie0: pcie@0 {
+			#define PCIE_ID				0
+			#define PCIE_DOMAIN_ID		2
+			#define PCIE_SPI			74
+			#define PCIE_ADDR			0x00080000
+			#define PCIE_SIZE			0x0000B000
+			#define CPU_RANGE_ADDR		0x40000000
+			#define PCIE_RANGE_ADDR		0xC0000000
+			#define PCIE_RANGE_SIZE		0x10000000
+			#include "../ip/bcm_pcie_core.dtsi"
+		};
+
+		/* pcie core 1, enable explicitly in board specific DT */
+		pcie1: pcie@1 {
+			#define PCIE_ID				1
+			#define PCIE_DOMAIN_ID		3
+			#define PCIE_SPI			75
+			#define PCIE_ADDR			0x00090000
+			#define PCIE_SIZE			0x0000B000
+			#define CPU_RANGE_ADDR		0x50000000
+			#define PCIE_RANGE_ADDR		0xD0000000
+			#define PCIE_RANGE_SIZE		0x10000000
+			#include "../ip/bcm_pcie_core.dtsi"
+		};
+#endif
 	};
 
 	/* Legacy UBUS base */
@@ -327,8 +477,11 @@
 		compatible = "simple-bus";
 		#address-cells = <1>;
 		#size-cells = <1>;
-		ranges = <0x0 0xff800000 0x62000>;
-
+#if defined(CONFIG_ARM_LPAE)
+		ranges = <0x0 0x0 0xff800000 0x400000>;
+#else
+		ranges = <0x0 0xff800000 0x400000>;
+#endif
 		/* boot state */
 		boot_state: boot_state {
 			#define RESET_REASON_OFFSET	0x2628
@@ -354,26 +507,43 @@
 		sdhci: sdhci {
 			pinctrl-0 = <&emmc_ctrl_pins>;
 			pinctrl-names="default";
-			#define SDHCI_OFFSET			0x00000000 0x20000
-			#define SDHCI_SIZE			0x00000000 0x300
-			#define SDHCI_TOPCFG_OFFSET		0x00000000 0x20300
-			#define SDHCI_TOPCFG_SIZE		0x00000000 0x200
-			#define SDHCI_BOOT_OFFSET		0x00000000 0x20500
-			#define SDHCI_BOOT_SIZE			0x00000000 0x40
-			#define SDHCI_AHBSS_CTRL_OFFSET		0x00000000 0x10300
-			#define SDHCI_AHBSS_CTRL_SIZE		0x00000000 0x100
-			#define SDHCI_HS200_BASE_CLOCK_FREQ	180000000
+			#define SDHCI_AHBSS_CTRL_OFFSET		0x10300
+			#define SDHCI_AHBSS_CTRL_SIZE		0x100
+			#define SDHCI_OFFSET			0x20000
+			#define SDHCI_SIZE			0x100
+			#define SDHCI_CQ_OFFSET			0x20200	
+			#define SDHCI_CQ_SIZE			0x100
+			#define SDHCI_TOPCFG_OFFSET		0x20300
+			#define SDHCI_TOPCFG_SIZE		0x200
+			#define SDHCI_BOOT_OFFSET		0x20500
+			#define SDHCI_BOOT_SIZE			0x40
+			#define SDHCI_HS200_BASE_CLOCK_FREQ	200000000
 			#define SDIO_EMMC_SPI			39
 			#include "../ip/bcm_sdhci.dtsi"
 			mmc-ddr-3_3v;
-			sdhci-pll-baseclk-mhz = <4400>;
-			sdhci-pll-valid-op-mhz = <100 110 160 176 200>;
+			sdhci-pll-baseclk-mhz = <5000>;
+			sdhci-pll-valid-op-mhz = <100 125 156 185 200>;
 		};
 
+#if defined (CONFIG_MMC_OOPS) || (CONFIG_MMC_OOPS_MODULE)
+		mmcoops {
+			#define MMC_OOPS_DUMP_OFFSET    1536 /* 768KB */
+			#define MMC_OOPS_DUMP_SIZE      512  /* 256KB */	
+			#define MMC_OOPS_DUMP_RECSIZE   128  /* 64KB  */
+			#include "../ip/bcm_mmc_oops.dtsi"
+		};
+#endif
+
 		rng: rng {
-			#define RNG200_OFFSET                   0x00000000 0xb80
-			#define RNG200_SIZE                     0x00000000 0x30
+			#define RNG200_OFFSET                   0xb80
+			#define RNG200_SIZE                     0x30
 			#include "../ip/bcm_rng200.dtsi"
+		};
+
+		trng: trng {
+			#define TRNG_OFFSET                   0x3800
+			#define TRNG_SIZE                     0x0800
+			#include "../ip/bcm_trng.dtsi"
 		};
 
 		strap: strap {
@@ -465,14 +635,12 @@
 		};
 
 
-#if 0
 		hs_uart0: hs_serial0 {
 			#define UART_OFFSET			0x10400
 			#define UART_SIZE			0x1E0
 			#define UART_SPI			34
 			#include "../ip/bcm_hs_uart.dtsi"
 		};
-#endif
 
 		/* HS SPI */
 		hsspi: spi {
@@ -510,7 +678,7 @@
 		bcm63xx-apm-pcm {
 			compatible = "brcm,bcm63xx-apm-pcm";
 			reg = <0x60000 0x1c60>;
-			interrupts = <GIC_SPI 41 IRQ_TYPE_LEVEL_HIGH>;
+			interrupts = <GIC_SPI 42 IRQ_TYPE_LEVEL_HIGH>;
 		};
 
 		i2c0: i2c0 {
@@ -536,7 +704,7 @@
 		};
 
 		/* periph timers */
-		timers: timers {
+		ext_timers: ext_timers {
 			#define TIMERS_OFFSET		0x400
 			#define TIMERS__SIZE		0x48
 			#define TIMER0_SPI			11
@@ -602,6 +770,23 @@
 			#define SOTP_SIZE			0x500
 			#include "../ip/bcm_sotp_skp.dtsi"
 		};
+
+		/* PMC */
+		pmc: pmc {
+			#define PMC_REG_OFFSET              0x301018
+			#define PMC_REG_SIZE                0x5080
+			#define PROCMON_REG_OFFSET          0x320000
+			#define PROCMON_REG_SIZE            0x240
+			#define MAESTRO_REG_OFFSET          0x300400
+			#define MAESTRO_REG_SIZE            0x5d0
+			#define MAESTRO_DTCM_REG_OFFSET     0x380000
+			#define MAESTRO_DTCM_REG_SIZE       0x1000
+			#define MAESTRO_ITCM_REG_OFFSET     0x3c0000
+			#define MAESTRO_ITCM_REG_SIZE       0x4000
+			#include "../ip/bcm_pmc_3_2.dtsi"
+			interrupt-names = "pmc-temp-irq";
+			interrupts = <GIC_SPI 29 IRQ_TYPE_LEVEL_HIGH>;
+		};
 	};
 
 	legacy_leds: legacy_leds {
@@ -611,78 +796,6 @@
 	vreg_sync: vreg_sync {
 		compatible = "brcm,vreg-sync";
 	};
-
-#if defined(CONFIG_BCM_PCIE_HCD) || defined (CONFIG_BCM_PCIE_HCD_MODULE)
-	/* pcie common */
-	pcie: pcie {
-		compatible = "brcm,bcm-pcie";
-		device_type = "cpci";
-		brcm,pllclkid = <0x0>;
-	};
-
-	/* Internal WiFi Core 0 (virtual pcie with domain#0) */
-	vpcie0: vpcie@0 {
-		#define WIFI_COREID			0
-		#define WIFI_ADDR			0x90000000
-		#define WIFI_SIZE			0x08000000
-		#define WIFI_DEVID			0x6766
-		#define WIFI_CCM_SPI		96
-		#define WIFI_D11MAC_SPI		97
-		#define WIFI_M2MDMA_SPI		98
-		#define WIFI_WDRST_SPI		101
-		#define WIFI_M2MDMA1_SPI	99
-		#define WIFI_MLC_SPI		100
-		#define WIFI_PHY_SPI		102
-		#define WIFI_THERM_HI_SPI	103
-		#define WIFI_THERM_LO_SPI	104
-		#define WIFI_THERM_SD_SPI	105
-		#include "../ip/bcm_wifi_core.dtsi"
-	};
-
-	/* Internal WiFi Core 1 (virtual pcie with domain#1) */
-	vpcie1: vpcie@1 {
-		#define WIFI_COREID			1
-		#define WIFI_ADDR			0x98000000
-		#define WIFI_SIZE			0x08000000
-		#define WIFI_DEVID			0x6766
-		#define WIFI_CCM_SPI		106	
-		#define WIFI_D11MAC_SPI		107
-		#define WIFI_M2MDMA_SPI		108
-		#define WIFI_WDRST_SPI		111
-		#define WIFI_M2MDMA1_SPI	109
-		#define WIFI_MLC_SPI		110
-		#define WIFI_PHY_SPI		112
-		#define WIFI_THERM_HI_SPI	113
-		#define WIFI_THERM_LO_SPI	114
-		#define WIFI_THERM_SD_SPI	115
-		#include "../ip/bcm_wifi_core.dtsi"
-	};
-
-	/* pcie core 0, enable explicitly in board specific DT */
-	pcie0: pcie@0 {
-		#define PCIE_ID				0
-		#define PCIE_DOMAIN_ID		2
-		#define PCIE_SPI			74
-		#define PCIE_ADDR			0x80080000
-		#define PCIE_SIZE			0x0000B000
-		#define PCIE_RANGE_ADDR		0xC0000000
-		#define PCIE_RANGE_SIZE		0x10000000
-		#include "../ip/bcm_pcie_core.dtsi"
-	};
-
-	/* pcie core 1, enable explicitly in board specific DT */
-	pcie1: pcie@1 {
-		#define PCIE_ID				1
-		#define PCIE_DOMAIN_ID		3
-		#define PCIE_SPI			75
-		#define PCIE_ADDR			0x80090000
-		#define PCIE_SIZE			0x0000B000
-		#define PCIE_RANGE_ADDR		0xD0000000
-		#define PCIE_RANGE_SIZE		0x10000000
-		#include "../ip/bcm_pcie_core.dtsi"
-	};
-#endif
-
 };
 
 &nand {
@@ -735,4 +848,8 @@
 &CA7_3 {
 	cpu-release-addr = <0xFF800568>;
 	status = "okay";
+};
+
+/ {
+    /delete-node/ timer;
 };

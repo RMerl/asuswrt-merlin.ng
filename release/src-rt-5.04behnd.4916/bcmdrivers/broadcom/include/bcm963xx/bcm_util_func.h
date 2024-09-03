@@ -4,25 +4,19 @@
     Copyright (c) 2020 Broadcom 
     All Rights Reserved
  
- Unless you and Broadcom execute a separate written software license
- agreement governing use of this software, this software is licensed
- to you under the terms of the GNU General Public License version 2
- (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
- with the following added to such license:
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License, version 2, as published by
+ the Free Software Foundation (the "GPL").
  
-    As a special exception, the copyright holders of this software give
-    you permission to link this software with independent modules, and
-    to copy and distribute the resulting executable under terms of your
-    choice, provided that you also meet, for each linked independent
-    module, the terms and conditions of the license of that module.
-    An independent module is a module which is not derived from this
-    software.  The special exception does not apply to any modifications
-    of the software.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
  
- Not withstanding the above, under no circumstances may you combine
- this software in any way with any other Broadcom software provided
- under a license other than the GPL, without Broadcom's express prior
- written consent.
+ 
+ A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+ writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ Boston, MA 02111-1307, USA.
  
  :>
 */
@@ -46,6 +40,11 @@ static inline int __isEnetWanPort(Blog_t *blog_p, int is_rx)
     }
 
     return rdpa_blog_is_wan_port(blog_p, is_rx);
+}
+
+static inline int __isEnetBondedLanWanPort(uint32_t logicalPort)
+{
+   return 0;
 }
 
 static inline int __isWanPort(Blog_t *blog_p, int is_rx)
@@ -82,6 +81,24 @@ static inline int __isEnetWanPort(Blog_t *blog_p, int is_rx)
 
     is_wan_port = enet_is_wan_port_fun(ctx);
     return is_wan_port;
+}
+
+/* Returns TRUE if LAN/SF2-Port is bonded with Runner WAN port */
+static inline int __isEnetBondedLanWanPort(uint32_t logicalPort)
+{
+   int ret_val = FALSE;
+
+#if defined(CONFIG_BCM_DSL_RDP)
+  /* Only 63138/148/4908 support LAN/SF2-Port bonded to WAN */
+  bcmFun_t *enetFunc = bcmFun_get(BCM_FUN_ID_ENET_IS_BONDED_LAN_WAN_PORT);
+
+  if (enetFunc == NULL)
+      return FALSE;
+
+  ret_val = enetFunc(&logicalPort);
+#endif
+
+   return (ret_val);
 }
 
 static inline int __isWanPort(Blog_t *blog_p, int is_rx)
@@ -140,6 +157,11 @@ static inline int __isWanPort(Blog_t *blog_p, int is_rx)
 #else
 
 static inline int __isEnetWanPort(Blog_t *blog_p, int is_rx)
+{
+    return 0;
+}
+
+static inline int __isEnetBondedLanWanPort(uint32_t logicalPort)
 {
     return 0;
 }

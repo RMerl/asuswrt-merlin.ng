@@ -5,40 +5,28 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <common.h>
 #include "itc_rpc.h"
 #include "ba_svc.h"
 
-#define RPC_SERVICE_VER_BA_CPU_ID						0
-#define RPC_SERVICE_VER_BA_CPU_NAME						0
-#define RPC_SERVICE_VER_BA_RUN_STATE_ID					0
-#define RPC_SERVICE_VER_BA_RUN_STATE_NAME				0
-#define RPC_SERVICE_VER_BA_GET_RUN_STATE				0
-#define RPC_SERVICE_VER_BA_NOTIFY_RUN_STATE				0
-#define RPC_SERVICE_VER_BA_REQUEST_RUN_STATE			0
-#define RPC_SERVICE_VER_BA_REQUEST_RUN_STATE_RESPONSE	0
-#define RPC_SERVICE_VER_BA_SET_RUN_STATE				0
-#define RPC_SERVICE_VER_BA_XPORT_SET_PWR				0
-#define RPC_SERVICE_VER_BA_GET_SMCBL_VER        		0
-#define RPC_SERVICE_VER_BA_GET_SMCBL_VER_HASH   		0
-#define RPC_SERVICE_VER_BA_GET_SMCOS_VER        		0
-#define RPC_SERVICE_VER_BA_GET_SMCOS_VER_HASH   		0
+#define RPC_SERVICE_VER_BA_XPORT_SET_PWR                0
+#define RPC_SERVICE_VER_BA_GET_SMCBL_VER                0
+#define RPC_SERVICE_VER_BA_GET_SMCBL_VER_HASH           0
+#define RPC_SERVICE_VER_BA_GET_SMCOS_VER                0
+#define RPC_SERVICE_VER_BA_GET_SMCOS_VER_HASH           0
 #define RPC_SERVICE_VER_BA_RPRT_BOOT_SUCCESS            0
 #define RPC_SERVICE_VER_BA_SVC_GET_BOOT_FAIL_CNT        0
+#define RPC_SERVICE_VER_BA_SVC_GET_SEC_STATE            0
+#define RPC_SERVICE_VER_BA_SVC_SEC_HANDLE_CERTIFICATE   0
+#define RPC_SERVICE_VER_BA_SVC_SEC_GET_SKS_STATS        0
+#define RPC_SERVICE_VER_BA_SVC_SEC_AES_CRYPT            0
+#define RPC_SERVICE_VER_BA_SVC_SEC_RSA_SIG_VERIFY       0
+#define RPC_SERVICE_VER_BA_SVC_SEC_GET_KEY_SIZE         0
 
 #define BA_SVC_RPC_REQUEST_TIMEOUT	1 /* sec */
 
-uint32_t ba_cpu_all;
-uint32_t ba_cpu_rg;
-uint32_t ba_cpu_cm;
-uint32_t ba_cpu_gfap;
-uint32_t ba_cpu_bne;
-uint32_t ba_cpu_tpmi;
-uint32_t ba_rs_off;
-uint32_t ba_rs_reset;
-uint32_t ba_rs_boot;
-uint32_t ba_rs_shutdown;
-uint32_t ba_rs_running;
-uint32_t ba_rs_ready;
+#define SOTP_EXCHANGE_AREA_ADDR_START  0x00640000
+#define SOTP_EXCHANGE_AREA_ADDR_END    0x0067FFFF
 
 typedef uint8_t(*get_retcode_t)(rpc_msg *);
 
@@ -89,232 +77,7 @@ int ba_svc_boot_secondary(uint32_t cpu_mask, uint32_t vector)
 	return rc;
 }
 	
-/* BA service calls */
-int ba_svc_cpu_id(char *cpu_name, uint32_t *cpu_id)
-{
-	struct ba_msg ba_msg;
-	rpc_msg *msg = (rpc_msg *)&ba_msg;
-	int rc;
-
-	rpc_msg_init(msg, RPC_SERVICE_BA, BA_SVC_CPU_ID,
-			RPC_SERVICE_VER_BA_CPU_ID, 0, 0, 0);
-	strncpy(ba_msg.name, cpu_name, sizeof(ba_msg.name));
-	rc = ba_svc_request(msg, ba_svc_msg_get_retcode);
-	*cpu_id = ba_msg.cpu_id;
-	return rc;
-}
-
-int ba_svc_cpu_name(uint32_t cpu_id, char *cpu_name)
-{
-	struct ba_msg ba_msg;
-	rpc_msg *msg = (rpc_msg *)&ba_msg;
-	int rc;
-
-	if (cpu_id > 0xff)
-		return -1;
-	rpc_msg_init(msg, RPC_SERVICE_BA, BA_SVC_CPU_NAME,
-			RPC_SERVICE_VER_BA_CPU_NAME, cpu_id, 0, 0);
-	rc = ba_svc_request(msg, ba_svc_msg_get_retcode);
-	memcpy(cpu_name, ba_msg.name, sizeof(ba_msg.name));
-	return rc;
-}
-
-int ba_svc_run_state_id(char *rs_name, uint32_t *rs_id)
-{
-	struct ba_msg ba_msg;
-	rpc_msg *msg = (rpc_msg *)&ba_msg;
-	int rc;
-
-	rpc_msg_init(msg, RPC_SERVICE_BA, BA_SVC_RUN_STATE_ID,
-			RPC_SERVICE_VER_BA_RUN_STATE_ID, 0, 0, 0);
-	strncpy(ba_msg.name, rs_name, sizeof(ba_msg.name));
-	rc = ba_svc_request(msg, ba_svc_msg_get_retcode);
-	*rs_id = ba_msg.rs_id;
-	if (rc) {
-		printf("%s failure, retcode %d\n", __func__, rc);
-		rpc_dump_msg(msg);
-	}
-	return rc;
-}
-
-int ba_svc_run_state_name(uint32_t rs_id, char *rs_name)
-{
-	struct ba_msg ba_msg;
-	rpc_msg *msg = (rpc_msg *)&ba_msg;
-	int rc;
-
-	if (rs_id > 0xff)
-		return -1;
-	rpc_msg_init(msg, RPC_SERVICE_BA, BA_SVC_RUN_STATE_NAME,
-			RPC_SERVICE_VER_BA_RUN_STATE_NAME, rs_id, 0, 0);
-	rc = ba_svc_request(msg, ba_svc_msg_get_retcode);
-	memcpy(rs_name, ba_msg.name, sizeof(ba_msg.name));
-	if (rc) {
-		printf("%s failure, retcode %d\n", __func__, rc);
-		rpc_dump_msg(msg);
-	}
-	return rc;
-}
-
-int ba_svc_get_run_state(uint32_t cpu_id, uint32_t *rs_id)
-{
-	struct ba_msg ba_msg;
-	rpc_msg *msg = (rpc_msg *)&ba_msg;
-	int rc;
-
-	rpc_msg_init(msg, RPC_SERVICE_BA, BA_SVC_GET_RUN_STATE,
-			RPC_SERVICE_VER_BA_GET_RUN_STATE, cpu_id, 0, 0);
-	rc = ba_svc_request(msg, ba_svc_msg_get_retcode);
-	*rs_id = ba_msg.rs_id;
-	if (rc) {
-		printf("%s failure, retcode %d\n", __func__, rc);
-		rpc_dump_msg(msg);
-	}
-	return rc;
-}
-
-int ba_svc_notify_run_state(uint32_t cpu_id, uint32_t rs_id)
-{
-	struct ba_msg ba_msg;
-	rpc_msg *msg = (rpc_msg *)&ba_msg;
-	int rc;
-
-	if (cpu_id > 0xff || rs_id > 0xff)
-		return -1;
-	rpc_msg_init(msg, RPC_SERVICE_BA, BA_SVC_NOTIFY_RUN_STATE,
-			RPC_SERVICE_VER_BA_NOTIFY_RUN_STATE, 0, 0, 0);
-	ba_msg.rs_id = (uint8_t)rs_id;
-	ba_msg.cpu_id = (uint8_t)cpu_id;
-	rc = ba_svc_message(msg);
-	return rc;
-}
-
-int ba_svc_request_run_state(uint32_t cpu_id, uint32_t rs_id, bool be_rude)
-{
-	struct ba_msg ba_msg;
-	rpc_msg *msg = (rpc_msg *)&ba_msg;
-	int rc;
-
-	if (cpu_id > 0xff || rs_id > 0xff)
-		return -1;
-	rpc_msg_init(msg, RPC_SERVICE_BA, BA_SVC_REQUEST_RUN_STATE,
-			RPC_SERVICE_VER_BA_REQUEST_RUN_STATE, 0, 0, 0);
-	ba_msg.cpu_id = (uint8_t)cpu_id;
-	ba_msg.rs_id = (uint8_t)rs_id;
-	ba_msg.be_rude = be_rude ? 1 : 0;
-	rc = ba_svc_message(msg);
-	return rc;
-}
-
-int ba_svc_request_run_state_response(uint32_t cpu_id, uint32_t rs_id,
-	enum ba_req_rs_rsp response)
-{
-	struct ba_msg ba_msg;
-	rpc_msg *msg = (rpc_msg *)&ba_msg;
-	int rc;
-
-	rpc_msg_init(msg, RPC_SERVICE_BA, BA_SVC_REQUEST_RUN_STATE_RESPONSE,
-			RPC_SERVICE_VER_BA_REQUEST_RUN_STATE_RESPONSE, 0, 0, 0);
-	ba_msg.cpu_id = (uint8_t)cpu_id;
-	ba_msg.rs_id = (uint8_t)rs_id;
-	ba_msg.response = response;
-	rc = ba_svc_message(msg);
-	return rc;
-}
-
 /* BA service handlers */
-int ba_svc_run_state_notification(enum rpc_tunnel_idx tunnel, rpc_msg *msg)
-{
-	/* TODO: handle GFAP run state notification changes here */
-
-	return 0;
-}
-
-int ba_svc_run_state_requested(enum rpc_tunnel_idx tunnel, rpc_msg *msg)
-{
-	struct ba_msg *ba_msg = (struct ba_msg *)msg;
-
-	/* TODO: stop using resources of CPU that is rebooting first */
-
-	ba_svc_request_run_state_response(ba_msg->cpu_id,
-					  ba_msg->rs_id,
-					  BA_SVC_RESPONSE_READY);
-	return 0;
-}
-
-int ba_svc_set_run_state(enum rpc_tunnel_idx tunnel, rpc_msg *msg)
-{
-	struct ba_msg *ba_msg = (struct ba_msg *)msg;
-
-	/* TODO: send out each state below current until hit target state */
-
-	ba_svc_notify_run_state(ba_cpu_rg, ba_msg->rs_id);
-	return 0;
-}
-
-rpc_function ba_service_table[BA_SVC_FUNC_MAX] =
-{
-	{ NULL,					RPC_SERVICE_VER_BA_CPU_ID },
-	{ NULL,					RPC_SERVICE_VER_BA_CPU_NAME },
-	{ NULL,					RPC_SERVICE_VER_BA_RUN_STATE_ID },
-	{ NULL,					RPC_SERVICE_VER_BA_RUN_STATE_NAME },
-	{ NULL,					RPC_SERVICE_VER_BA_GET_RUN_STATE },
-	{ ba_svc_run_state_notification,	RPC_SERVICE_VER_BA_NOTIFY_RUN_STATE },
-	{ ba_svc_run_state_requested,		RPC_SERVICE_VER_BA_REQUEST_RUN_STATE },
-	{ NULL,					RPC_SERVICE_VER_BA_REQUEST_RUN_STATE_RESPONSE },
-	{ ba_svc_set_run_state,			RPC_SERVICE_VER_BA_SET_RUN_STATE },
-};
-
-int ba_svc_init(void)
-{
-	int rc = 0;
-
-	rc = rpc_register_functions(RPC_SERVICE_BA, ba_service_table,
-			       BA_SVC_FUNC_MAX);
-	if (rc) goto done;
-	rc = ba_svc_cpu_id(BA_SVC_CPU_ALL, &ba_cpu_all);
-	if (rc) {
-		printf("BA: Failure getting CPU ALL ID!\n");
-		goto done;
-	}
-	rc = ba_svc_cpu_id(BA_SVC_CPU_RG, &ba_cpu_rg);
-	if (rc) {
-		printf("BA: Failure getting RG ID!\n");
-		goto done;
-	}
-	rc = ba_svc_cpu_id(BA_SVC_CPU_CM, &ba_cpu_cm);
-	if (rc) ba_cpu_cm = INVALID_ID;
-	rc = ba_svc_cpu_id(BA_SVC_CPU_GFAP, &ba_cpu_gfap);
-	if (rc) {
-		printf("BA: Failure getting GFAP ID!\n");
-		goto done;
-	}
-	rc = ba_svc_cpu_id(BA_SVC_CPU_BNE, &ba_cpu_bne);
-	if (rc) ba_cpu_bne = INVALID_ID;
-	rc = ba_svc_cpu_id(BA_SVC_CPU_TPMI, &ba_cpu_tpmi);
-	if (rc) ba_cpu_tpmi = INVALID_ID;
-	rc = ba_svc_run_state_id(BA_SVC_RS_OFF, &ba_rs_off);
-	if (rc) goto done;
-	rc = ba_svc_run_state_id(BA_SVC_RS_RESET, &ba_rs_reset);
-	if (rc) goto done;
-	rc = ba_svc_run_state_id(BA_SVC_RS_BOOT, &ba_rs_boot);
-	if (rc) goto done;
-	rc = ba_svc_run_state_id(BA_SVC_RS_SHUTDOWN, &ba_rs_shutdown);
-	if (rc) goto done;
-	rc = ba_svc_run_state_id(BA_SVC_RS_RUNNING, &ba_rs_running);
-	if (rc) goto done;
-	rc = ba_svc_run_state_id(BA_SVC_RS_READY, &ba_rs_ready);
-	if (rc) goto done;
-
-	rc = ba_svc_notify_run_state(ba_cpu_rg, ba_rs_running);
-	if (rc) goto done;
-
-done:
-	if (rc)
-		printf("Failure initializing boot assist service!\n");
-	return rc;
-}
-
 int ba_xport_set_state( uint8_t port_id, uint8_t enable)
 {
 	int ret = 0;
@@ -439,13 +202,13 @@ int bcm_rpc_ba_report_boot_success(uint32_t flags)
     return ret;
 }
 
-int bcm_rpc_ba_get_boot_fail_cnt(void)
+int bcm_rpc_ba_get_sec_state(void)
 {
     int ret = 0;
     struct ba_msg ba_msg;
     rpc_msg *msg = (rpc_msg *)&ba_msg;
 
-    rpc_msg_init(msg, RPC_SERVICE_BA, BA_SVC_GET_BOOT_FAIL_CNT, RPC_SERVICE_VER_BA_SVC_GET_BOOT_FAIL_CNT, 0, 0, 0);
+    rpc_msg_init(msg, RPC_SERVICE_BA, BA_SVC_GET_SEC_STATE, RPC_SERVICE_VER_BA_SVC_GET_SEC_STATE, 0, 0, 0);
     ret = ba_svc_request(msg, NULL);
     if (ret)
     {
@@ -456,3 +219,146 @@ int bcm_rpc_ba_get_boot_fail_cnt(void)
     return msg->data[0];
 }
 
+int ba_get_dev_spec_key(void** dev_key, int* ek_size, int* iv_size)
+{
+    int ret = 0;
+    struct ba_msg ba_msg;
+    rpc_msg *msg = (rpc_msg *)&ba_msg;
+
+    rpc_msg_init(msg, RPC_SERVICE_BA, BA_SVC_GET_DEV_SPEC_KEY, 0, 0, 0, 0);
+
+    msg->data[0] = SOTP_EXCHANGE_AREA_ADDR_START;
+
+    invalidate_dcache_range((unsigned long)msg->data[0], (unsigned long)msg->data[0] + SOTP_EXCHANGE_AREA_ADDR_END);
+
+    ret = ba_svc_request(msg, NULL);
+    if (ret)
+    {
+        printf("%s:%d : ERROR: ba_svc_request\n",__FUNCTION__, __LINE__);
+        return -1;
+    }
+    *dev_key = (void*)SOTP_EXCHANGE_AREA_ADDR_START;
+    *ek_size = msg->data[1];
+    *iv_size = msg->data[2];
+
+    return 0;
+}
+
+int bcm_rpc_sec_handle_ksm_certificate(const uint8_t *certificate, uint32_t certificate_size)
+    {
+    int ret = 0;
+    rpc_msg msg;
+
+    rpc_msg_init(&msg, RPC_SERVICE_BA, BA_SVC_SEC_HANDLE_CERTIFICATE, RPC_SERVICE_VER_BA_SVC_SEC_HANDLE_CERTIFICATE, 0, 0, 0);
+    msg.data[0] = 0;
+    msg.data[1] = (unsigned long)certificate;
+    msg.data[2] = certificate_size;
+
+#if !defined (CONFIG_TPL_BUILD)
+    flush_dcache_range((unsigned long)certificate, (unsigned long)((uint8_t *)certificate + certificate_size));
+#endif // #if !defined (CONFIG_TPL_BUILD)
+
+    ret = ba_svc_request(&msg, NULL);
+    if (ret)
+    {
+        printf("%s:%d : ERROR: ba_svc_request\n",__FUNCTION__, __LINE__);
+        return -1;
+    }
+
+    return msg.data[0];
+}
+
+int bcm_rpc_sec_get_sks_stats(struct sks_stats *stats)
+{
+    int ret = 0;
+    rpc_msg msg;
+
+    rpc_msg_init(&msg, RPC_SERVICE_BA, BA_SVC_SEC_GET_SKS_STATS, RPC_SERVICE_VER_BA_SVC_SEC_GET_SKS_STATS, 0, 0, 0);
+    msg.data[0] = 0;
+    msg.data[1] = (unsigned long)stats;
+    msg.data[2] = sizeof(*stats);
+
+#if !defined (CONFIG_TPL_BUILD)
+    invalidate_dcache_range((unsigned long)stats, (unsigned long)((uint8_t *)stats + sizeof(*stats)));
+#endif // #if !defined (CONFIG_TPL_BUILD)
+
+    ret = ba_svc_request(&msg, NULL);
+    if (ret)
+    {
+        printf("%s:%d : ERROR: ba_svc_request\n",__FUNCTION__, __LINE__);
+        return -1;
+    }
+
+    return msg.data[0];
+}
+
+int bcm_rpc_sec_get_key_size(uint32_t key, uint32_t *size)
+{
+    int ret = 0;
+    rpc_msg msg;
+
+    rpc_msg_init(&msg, RPC_SERVICE_BA, BA_SVC_SEC_GET_KEY_SIZE, RPC_SERVICE_VER_BA_SVC_SEC_GET_KEY_SIZE, 0, 0, 0);
+
+    msg.data[0] = 0;
+    msg.data[1] = key;
+    msg.data[2] = 0;
+
+    ret = ba_svc_request(&msg, NULL);
+    if (ret)
+    {
+        printf("%s:%d : ERROR: ba_svc_request\n",__FUNCTION__, __LINE__);
+        return -1;
+    }
+
+    *size = msg.data[2];
+
+    return msg.data[0];
+}
+
+int bcm_rpc_sec_rsa_sig_verify(struct sec_rsa_sig_verify_descriptor *crypto_desc)
+{
+    int ret = 0;
+    rpc_msg msg;
+
+    rpc_msg_init(&msg, RPC_SERVICE_BA, BA_SVC_SEC_RSA_SIG_VERIFY, RPC_SERVICE_VER_BA_SVC_SEC_GET_SKS_STATS, 0, 0, 0);
+    msg.data[0] = 0;
+    msg.data[1] = (unsigned long)crypto_desc;
+    msg.data[2] = sizeof(*crypto_desc);
+
+#if !defined (CONFIG_TPL_BUILD)
+    flush_dcache_range((unsigned long)crypto_desc, (unsigned long)((uint8_t *)crypto_desc + sizeof(*crypto_desc)));
+#endif // #if !defined (CONFIG_TPL_BUILD)
+
+    ret = ba_svc_request(&msg, NULL);
+    if (ret)
+    {
+        printf("%s:%d : ERROR: ba_svc_request\n",__FUNCTION__, __LINE__);
+        return -1;
+    }
+
+    return msg.data[0];
+}
+
+int bcm_rpc_sec_aes_crypt(struct sec_aes_crypt_descriptor *crypto_desc)
+{
+    int ret = 0;
+    rpc_msg msg;
+
+    rpc_msg_init(&msg, RPC_SERVICE_BA, BA_SVC_SEC_AES_CRYPT, RPC_SERVICE_VER_BA_SVC_SEC_GET_SKS_STATS, 0, 0, 0);
+    msg.data[0] = 0;
+    msg.data[1] = (unsigned long)crypto_desc;
+    msg.data[2] = sizeof(*crypto_desc);
+
+#if !defined (CONFIG_TPL_BUILD)
+    flush_dcache_range((unsigned long)crypto_desc, (unsigned long)((uint8_t *)crypto_desc + sizeof(*crypto_desc)));
+#endif // #if !defined (CONFIG_TPL_BUILD)
+
+    ret = ba_svc_request(&msg, NULL);
+    if (ret)
+    {
+        printf("%s:%d : ERROR: ba_svc_request\n",__FUNCTION__, __LINE__);
+        return -1;
+    }
+
+	return msg.data[0];
+}

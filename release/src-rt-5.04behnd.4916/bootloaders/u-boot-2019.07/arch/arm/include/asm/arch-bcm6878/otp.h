@@ -22,14 +22,14 @@
 #define OTP_MFG_FOUNDRY_MASK            0xf
 
 /* row 8 */
-#define OTP_CPU_CORE_CFG_ROW            	8
-#define OTP_CPU_CORE_CFG_SHIFT          	28
-#define OTP_CPU_CORE_CFG_MASK           	0x3
+#define OTP_CPU_CORE_CFG_ROW                    8
+#define OTP_CPU_CORE_CFG_SHIFT                  28
+#define OTP_CPU_CORE_CFG_MASK                   0x3
 
 /* row 9 */
-#define OTP_CPU_CLOCK_FREQ_ROW          	9
-#define OTP_CPU_CLOCK_FREQ_SHIFT        	0
-#define OTP_CPU_CLOCK_FREQ_MASK         	0x7
+#define OTP_CPU_CLOCK_FREQ_ROW                  9
+#define OTP_CPU_CLOCK_FREQ_SHIFT                0
+#define OTP_CPU_CLOCK_FREQ_MASK                 0x7
 
 /* row 17 */
 #define OTP_BRCM_BTRM_BOOT_ENABLE_ROW           17
@@ -47,9 +47,14 @@
 #define OTP_CUST_MFG_MRKTID_MASK                0xffff
 
 /* row 17 */
-#define OTP_BRCM_ENFORCE_BINIT_ROW 		17
-#define OTP_BRCM_ENFORCE_BINIT_SHIFT		13
-#define OTP_BRCM_ENFORCE_BINIT_MASK		1
+#define OTP_BRCM_ENFORCE_BINIT_ROW              17
+#define OTP_BRCM_ENFORCE_BINIT_SHIFT            13
+#define OTP_BRCM_ENFORCE_BINIT_MASK             1
+
+/* row 20 */
+#define OTP_JTAG_SER_NUM_ROW                    20
+#define OTP_JTAG_SER_NUM_SHIFT                  0x0
+#define OTP_JTAG_SER_NUM_MASK                   0xFFFFFFFF
 
 /* A row initializer that maps actual row number with mask and shift to a feature name;
  * this allows to use features vs. rows for common functionality, 
@@ -66,6 +71,7 @@
 	{OTP_MAP_MFG_PROCESS, OTP_MFG_PROCESS_ROW, OTP_MFG_PROCESS_MASK, OTP_MFG_PROCESS_SHIFT, 1},				\
 	{OTP_MAP_MFG_SUBSTRATE, OTP_MFG_SUBSTRATE_ROW, OTP_MFG_SUBSTRATE_MASK, OTP_MFG_SUBSTRATE_SHIFT, 1},				\
 	{OTP_MAP_MFG_FOUNDRY, OTP_MFG_FOUNDRY_ROW, OTP_MFG_FOUNDRY_MASK, OTP_MFG_FOUNDRY_SHIFT, 1},				\
+        {OTP_MAP_CSEC_CHIPID, OTP_JTAG_SER_NUM_ROW, OTP_JTAG_SER_NUM_MASK, OTP_JTAG_SER_NUM_SHIFT, 1},                         \
 	}
 
 #endif

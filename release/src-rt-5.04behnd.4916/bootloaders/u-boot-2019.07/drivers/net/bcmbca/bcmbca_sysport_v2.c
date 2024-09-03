@@ -205,7 +205,7 @@ static int __sp_init(volatile sys_port_rbuf *sysport_rbuf, volatile sys_port_rdm
 	/* RDMA Consumer Index Register */
 	/* Initialize RX DMA consumer index - low 16 bit; High 16-bits are read-only */
 	sysport_rdma->SYSTEMPORT_RDMA_CINDEX[0]=0x0;
-#if !defined(CONFIG_BCM6765) //read only
+#if !(defined(CONFIG_BCM6765) || defined(CONFIG_BCM6766) || defined(CONFIG_BCM6764)) //read only
 	sysport_rdma->SYSTEMPORT_RDMA_PINDEX[0]=0x0;
 #endif
 
@@ -215,7 +215,7 @@ static int __sp_init(volatile sys_port_rbuf *sysport_rbuf, volatile sys_port_rdm
 	sysport_rdma->SYSTEMPORT_RDMA_DDR_DESC_RING_START[1]=0;
 
 
-	init_pkt_desc(sysport_rdma->SYSTEMPORT_RDMA_DESCRIPTOR, dma_buffer_addr);
+	init_pkt_desc(sysport_rdma->SYSTEMPORT_RDMA_DESCRIPTOR, dma_buffer_addr+NET_DMA_BUFSIZE*NUM_TX_DMA_BUFFERS);
 
 	/* RDMA DDR Desc Ring Register */
 	//sysport_rdma->SYSTEMPORT_RDMA_DDR_DESC_RING_START_LOW = 0;
@@ -575,7 +575,6 @@ int __sp_recv(volatile sys_port_rdma *sysport_rdma, uint8_t *buffer, uint32_t *l
 
 	if (*length < ENET_ZLEN || *length > MAX_PKT_LEN) {
 		// Print SPRE for System Port Read Error
-
 		rc = -1;
 		goto out;
 	}

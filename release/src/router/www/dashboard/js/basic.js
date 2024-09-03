@@ -495,7 +495,7 @@ function changeLanguage(lang) {
 function reboot() {
 	var rebootTime = httpApi.hookGet("get_default_reboot_time");
 	var FbState = httpApi.nvramGet(["fb_state"], true).fb_state;
-	var FbNote = "Feedback is ongoing. Rebooting may cause the program to terminate and the feedback cannot be completed.\nPlease reboot later.";/*untranslated*/
+	var FbNote = `<#feedback_note5#>`;
 
 	if (FbState == "0") {
 		alert(FbNote);
@@ -575,6 +575,9 @@ let oInactivityTimerId;
 const http_autologout = parseInt(httpApi.nvramGet(['http_autologout']).http_autologout);
 if (http_autologout != 0) {
     const resetInactivityTimer = () => {
+        //if is asusrouter app, do not auto logout
+        if(navigator.userAgent.search("asusrouter") != -1) return false;
+
         clearTimeout(oInactivityTimerId);
         oInactivityTimerId = setTimeout(() => {
             location.href = '/Logout.asp';

@@ -4,25 +4,19 @@
    Copyright (c) 2019 Broadcom 
    All Rights Reserved
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
 :>
 */
@@ -178,6 +172,22 @@ const mmap_region_t plat_arm_mmap[] = {
   MAP_REGION_FLAT(PMC_BASE,     PMC_SIZE,    MT_DEVICE | MT_RW | MT_SECURE),
   {0}
 };
+
+/* Customized BRCM specific PSCI call handler */
+#define CTMR_CTRL_STMR_WRITE 0x80000000
+unsigned long psci_brcm_system_control (unsigned long x1, unsigned long x2, unsigned long x3, unsigned long x4)
+{
+  	switch((uint32_t)x1){
+	case CTMR_CTRL_STMR_WRITE:
+#if defined (PLATFORM_FLAVOR_6766) || defined (PLATFORM_FLAVOR_6764)
+		*(uint32_t*)0x81061030 = (uint32_t)x2;
+#endif
+		break;
+	default:
+		return -1;
+	}
+	return 0;
+}
 
 
 #if defined(PL310_BASE)

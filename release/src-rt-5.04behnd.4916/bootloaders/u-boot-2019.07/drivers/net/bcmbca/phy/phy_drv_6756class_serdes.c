@@ -65,9 +65,9 @@ static phy_serdes_t serdes_6756class[1][2] =
     {
         {
             .phy_type = PHY_TYPE_6756CLASS_SERDES,
-            .bp_intf_type = BP_INTF_TYPE_SGMII,
-            .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL,
-            .inter_phy_types = INTER_PHY_TYPES_S1K2KR5R_M,
+			.bp_intf_type = BP_INTF_TYPE_SGMII,
+            .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
+            .inter_phy_types = INTER_PHY_TYPES_S1K2KR5R_M|INTER_PHY_TYPE_2P5GBASE_X_M,
             .link_stats = dsl_merlin28_serdes_link_stats,
             .config_speed = PHY_SPEED_AUTO,
             .power_mode = SERDES_BASIC_POWER_SAVING,
@@ -81,9 +81,9 @@ static phy_serdes_t serdes_6756class[1][2] =
         },
         {
             .phy_type = PHY_TYPE_6756CLASS_SERDES,
-            .bp_intf_type = BP_INTF_TYPE_SGMII,
-            .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL,
-            .inter_phy_types = INTER_PHY_TYPES_S1K2K_M,
+			.bp_intf_type = BP_INTF_TYPE_SGMII,
+            .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
+            .inter_phy_types = INTER_PHY_TYPES_S1K2K_M|INTER_PHY_TYPE_2P5GBASE_X_M,
             .link_stats = dsl_merlin28_serdes_link_stats,
             .config_speed = PHY_SPEED_AUTO,
             .power_mode = SERDES_BASIC_POWER_SAVING,

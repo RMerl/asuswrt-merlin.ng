@@ -49,8 +49,9 @@ Boston, MA 02111-1307, USA.
 #include "util.h"
 #include "spu_blog.h"
 #include "linux/bcm_log.h"
+#include <linux/timer.h>
 
-static rwlock_t spu_blog_offload_lock;
+static spinlock_t spu_blog_offload_lock;
 #define SESSION_ALLOCATED	0x1
 #define SESSION_DEFINED		0x2
 
@@ -58,6 +59,8 @@ struct spu_blog_offload_session {
 	atomic_t taken;
 	atomic_t ref_count;
 	atomic_t evict;
+	atomic_t evict_rdy;
+	unsigned long evict_time;
 	union {
 		struct sec_path *sp;
 		struct dst_entry *dst_p;
@@ -72,7 +75,9 @@ struct spu_blog_offload_session {
 struct spu_offload_state {
 	int next_ds;
 	int next_us;
-
+	atomic_t num_us;
+	atomic_t num_ds;
+	struct timer_list sched_timer;
 	wait_queue_head_t  evict_wqh;
 	struct task_struct *evict_thread;
 	atomic_t work_avail;
@@ -93,8 +98,6 @@ static inline struct iproc_ctx_s *spu_blog_lookup_ctx_byspi(uint32_t spi, enum s
 	struct iproc_ctx_s *ctx;
 	struct iproc_ctx_s *rctx = NULL;
 
-	flow_log("%s\n", __func__);
-
 	read_lock(&iproc_priv.ctxListLock[stream]);
 	list_for_each_entry(ctx, &iproc_priv.ctxList[stream], entry) 
 	{
@@ -105,38 +108,30 @@ static inline struct iproc_ctx_s *spu_blog_lookup_ctx_byspi(uint32_t spi, enum s
 		}
 	}
 	read_unlock(&iproc_priv.ctxListLock[stream]);
+	flow_log("%s spi 0x%08x dir %d rctx %px\n", __func__, spi, stream, rctx);
 	return rctx;
 }  /* spu_blog_lookup_ctx_byspi() */
 
-static inline struct xfrm_state *spu_lookup_offload_xfrm(uint32_t id)
+static inline struct iproc_ctx_s *spu_blog_lookup_ctx_bychanid(uint8_t chan_idx, enum spu_stream_type stream)
 {
-	struct xfrm_state *xfrm = NULL;
-	struct spu_blog_offload_session *session;
+	struct iproc_ctx_s *ctx;
+	struct iproc_ctx_s *rctx = NULL;
 
-	read_lock (&spu_blog_offload_lock);
-	session = &state_g.sessions[id];
-
-	if (atomic_read(&session->taken) != SESSION_DEFINED)
-		goto exit;
-
-	if (session->parm.is_enc == 0) {
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(5,15,0))
-		if (session->sp && (session->sp->len == 1))
-			xfrm = session->sp->xvec[session->sp->len-1];
-#else
-		xfrm = session->ptr;
-#endif
+	read_lock(&iproc_priv.ctxListLock[stream]);
+	list_for_each_entry(ctx, &iproc_priv.ctxList[stream], entry)
+	{
+		if (ctx->blog_chan_id == chan_idx)
+		{
+			rctx = ctx;
+			break;
+		}
 	}
-	else {
-		xfrm = session->dst_p->xfrm;
-	}
-exit:
-	read_unlock (&spu_blog_offload_lock);
-	return xfrm;
+	read_unlock(&iproc_priv.ctxListLock[stream]);
+	return rctx;
 }
 
-static int create_spu_header(uint8_t *hdr_buff, struct iproc_ctx_s *ctx, Blog_t *blog_p,
-			     uint8_t is_encrypt, bool is_esn, uint32_t seq_hi)
+static int create_spu_header(uint8_t *hdr_buff, struct iproc_ctx_s *ctx,
+			     uint8_t is_encrypt, bool is_esn, uint32_t seq_hi, bool is_transport_mode, bool ipv6)
 {
 	uint32_t hdr_size = 0;
 	struct spu_request_opts req_opts;
@@ -165,7 +160,7 @@ static int create_spu_header(uint8_t *hdr_buff, struct iproc_ctx_s *ctx, Blog_t 
 	cipher_parms.type = ctx->cipher_type;
 	cipher_parms.key_buf = ctx->enckey;
 	cipher_parms.key_len = ctx->enckeylen;
-	cipher_parms.iv_len = blog_p->esptx.ivsize;
+	cipher_parms.iv_len = ctx->iv_size + ctx->salt_len;
 
 	hash_parms.alg = ctx->auth.alg;
 	hash_parms.mode = ctx->auth.mode;
@@ -179,92 +174,107 @@ static int create_spu_header(uint8_t *hdr_buff, struct iproc_ctx_s *ctx, Blog_t 
 		hash_parms.key_len = SHA224_DIGEST_SIZE;
 
 	aead_parms.assoc_size = BLOG_ESP_SPI_LEN + BLOG_ESP_SEQNUM_LEN;
-	if (is_encrypt == 0)
-		aead_parms.assoc_size += blog_p->esptx.ivsize;
-	else
-		aead_parms.return_iv = true;
+	if (ctx->cipher.mode == CIPHER_MODE_CBC) {
+		if (is_encrypt == 0) {
+			aead_parms.assoc_size += ctx->iv_size;
+		} else {
+			aead_parms.return_iv = true;
+			aead_parms.ret_iv_len = cipher_parms.iv_len & 0xF;
+		}
+	} else if (ctx->cipher.mode == CIPHER_MODE_GCM) {
+		/* iv for GCM is seq number related, include that in the header */
+		if (ctx->esn) {
+			/* gcm esn seq hi is part of assoc */
+			aead_parms.assoc_size += BLOG_ESP_SEQNUM_HI_LEN;
+			/* do not return IV for ESN encrypt */
+		} else if (is_encrypt) {
+			aead_parms.return_iv = true;
+			aead_parms.ret_iv_len = ctx->iv_size;
+			aead_parms.ret_iv_off = ctx->salt_len;
+		}
+	}
+
+	aead_parms.iv_len = spu->spu_aead_ivlen(ctx->cipher.mode, ctx->alg->alg.aead.ivsize);
 
 	if (ctx->auth.alg == HASH_ALG_AES)
 		hash_parms.type = (enum hash_type)ctx->cipher_type;
 
 	hdr_size = spu->spu_create_request(hdr_buff, &req_opts,
 					   &cipher_parms, &hash_parms,
-					   &aead_parms, ctx->digestsize);
-	// NOTE: CSPU need to return AAD2 for US
-#if (defined(CONFIG_BCM_RDPA) || defined(CONFIG_BCM_RDPA_MODULE))
-	fmd->ctrl1 &= ~(SPU2_RETURN_MD | SPU2_RETURN_AAD2);
-#else
+					   &aead_parms, ctx->digestsize + ctx->salt_len);
+
 	fmd->ctrl1 &= ~(SPU2_RETURN_MD);
-	if (is_encrypt == 0)
+	if ((is_encrypt == 0) || (ctx->gcm && ctx->esn))
 		fmd->ctrl1 &= ~(SPU2_RETURN_AAD2);
-#endif
 
 	if (is_encrypt) {
 		/* when SPU interaction is offloaded to Runner,
 		 * the SPU HW is used for padding and IV generation as well */
 
 		/* enable padding */
-		fmd->ctrl0 |= (SPU2_CIPH_PAD_EN | ((uint64_t)4 << SPU2_CIPH_PAD_SHIFT));
+		if (is_transport_mode) {
+			fmd->ctrl0 |= (SPU2_CIPH_PAD_EN | ((uint64_t)BLOG_IPPROTO_UDP << SPU2_CIPH_PAD_SHIFT));
+		}
+		else {
+			if (ipv6)
+				fmd->ctrl0 |= (SPU2_CIPH_PAD_EN | ((uint64_t)BLOG_IPPROTO_IPV6 << SPU2_CIPH_PAD_SHIFT));
+			else
+				fmd->ctrl0 |= (SPU2_CIPH_PAD_EN | ((uint64_t)BLOG_IPPROTO_IPIP << SPU2_CIPH_PAD_SHIFT));
+		}
 		if (is_esn == false)
 			fmd->ctrl0 |= (SPU2_PROSEL_IPSEC << SPU2_PROTO_SEL_SHIFT);
-			
-		fmd->ctrl1 |= SPU2_GENIV; 
-		fmd->ctrl1 &= ~SPU2_IV_LEN;
+
+		if (ctx->cipher.mode == CIPHER_MODE_CBC) {
+			fmd->ctrl1 |= SPU2_GENIV; 
+			fmd->ctrl1 &= ~SPU2_IV_LEN;
+		}
+	}
+	/* for gcm offloading, put the salt after the keys */
+	if (ctx->cipher.mode == CIPHER_MODE_GCM) {
+		memcpy(&hdr_buff[hdr_size], ctx->salt, ctx->salt_len);
+		hdr_size += ctx->salt_len;
 	}
 	return hdr_size;
 }
 
-static int spu_offload_parm_ds(struct spu_offload_parm_args *a)
+static int spu_offload_get_ds_session_id(uint32_t spi)
 {
-	struct iproc_ctx_s *ctx = NULL;
-	Blog_t *blog_p = a->blog_p;
 	struct spu_blog_offload_session *session;
-
-	uint32_t spi = 0;
+	int i, hdr_size, offload_id, session_id = -1;
+	struct iproc_ctx_s *ctx = NULL;
 	struct xfrm_state *xfrm = NULL;
-	struct sec_path *secpath = NULL;
-	int session_id;
-	uint32_t hdr_size;
 	bool is_esn = false;
-	int i, ret = -1;
 
-	if ((flow_offload_enable & (1<<SPU_STREAM_DS)) == 0)
-		goto exit;
-
-	if  (!blog_p->esprx.secPath_p)
-		goto exit;
-
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(5,15,0))
-	secpath = secpath_get(blog_p->esprx.secPath_p);
-	if (secpath && (secpath->len == 1))
-		xfrm = secpath->xvec[secpath->len-1];
-#else
-	xfrm = blog_p->esprx.xfrm_st;
-#endif
-	spi = (RX_ESPoUDP(blog_p)) ? blog_p->esp_over_udp_spi : _read32_align16((uint16_t *)&blog_p->rx.tuple.esp_spi);
+	if ((flow_offload_enable & (1 << SPU_STREAM_DS)) == 0)
+		return -1;
 
 	ctx = spu_blog_lookup_ctx_byspi(spi, SPU_STREAM_DS);
+	if (ctx != NULL)
+		xfrm = ctx->xfrm;
 
-	if (!xfrm || !ctx || 
-	    (ctx->cipher.alg != CIPHER_ALG_AES) || (ctx->cipher.mode != CIPHER_MODE_CBC)) {
-		flow_log("unsupported xfrm or ctx\n");
-		secpath_put(secpath);
-		goto exit;
-	}
-
-	flow_log("secpath %p xfrm %p refcnt=%d\n",
-		secpath, xfrm, refcount_read(&xfrm->refcnt));
-
-	if (xfrm->genid || xfrm->km.dying || xfrm->km.state == XFRM_STATE_DEAD ||
+	if (xfrm == NULL || xfrm->genid || xfrm->km.dying || xfrm->km.state == XFRM_STATE_DEAD ||
 	    xfrm->lft.soft_use_expires_seconds || xfrm->lft.hard_use_expires_seconds) {
-		flow_log("offload not supported\n");
-		secpath_put(secpath);
-		goto exit;
+		flow_log("offload not supported for dying session spi 0x%x\n", spi);
+		return -1;
 	}
 
-	session = NULL;
+	/* sanity check, session should not have offloaded yet */
+	offload_id = atomic_read(&ctx->offload_id);
+	if (offload_id >= 0) {
+		pr_err("session has already been offloaded\n");
+		session = &state_g.sessions[offload_id];
+		if (atomic_read(&session->taken) == SESSION_DEFINED &&
+		    session->parm.esp_spi == spi)
+			session_id = offload_id;
+		return session_id;
+	}
 
-	write_lock (&spu_blog_offload_lock);
+	if (atomic_read(&state_g.num_ds) == MAX_SPU_OFFLOAD_SESSIONS/2)
+		return -1;
+
+	/* offload a new DS session */
+	session = NULL;
+	spin_lock_bh (&spu_blog_offload_lock);
 	/* bottom half of the sessions are dedicated for DS */
 	for (i = 0; i < MAX_SPU_OFFLOAD_SESSIONS/2; i++) {
 		if (atomic_read(&state_g.sessions[state_g.next_ds].taken) == 0) {
@@ -273,44 +283,37 @@ static int spu_offload_parm_ds(struct spu_offload_parm_args *a)
 			session->parm.esp_spi = spi;
 			session->parm.u8_0 = 0;
 			atomic_set(&session->taken, SESSION_ALLOCATED);
+			/* make sure the xfrm remain valid while session is offloaded */
+			xfrm_state_hold(xfrm);
 		}
 		state_g.next_ds = (state_g.next_ds + 1) & (MAX_SPU_OFFLOAD_SESSIONS/2 - 1);
 		if (session)
 			break;
 	}
-	write_unlock (&spu_blog_offload_lock);
-
 	if (session == NULL) {
-		secpath_put(secpath);
-		goto exit;
+		spin_unlock_bh (&spu_blog_offload_lock);
+		return -1;
 	}
 
-	if (xfrm->props.flags & XFRM_STATE_ESN)
-		is_esn = true;
+	/* SPU ESN mode does not support GCM */
+	if (xfrm->props.flags & XFRM_STATE_ESN) {
+		session->parm.is_esn = 1;
+		if (!ctx->gcm)
+			is_esn = true;
+	}
 
-	hdr_size = create_spu_header(session->parm.spu_header, ctx, blog_p, 0, is_esn, 0);
+	hdr_size = create_spu_header(session->parm.spu_header, ctx, 0, is_esn, 0, 0, ctx->ipv6);
 
 	if (hdr_size > MAX_SPU_HEADER_SIZE)
-	{
-		secpath_put(secpath);
 		goto exit_clean;
-	}
 
 	memset(&session->last_update, 0, sizeof(struct spu_offload_tracker));
 
 	session->parm.key_size = hdr_size - FMD_SIZE;
 
-	if (is_esn) {
-		session->parm.is_esn = 1;
+	if (is_esn)
 		session->parm.key_size -= BLOG_ESP_SEQNUM_HI_LEN;
-	}
 	session->parm.session_id = session_id;
-
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(5,15,0))
-	session->sp = secpath;
-#else
-	session->ptr = xfrm;
-#endif
 
 	if (xfrm->lft.soft_byte_limit != XFRM_INF || xfrm->lft.soft_packet_limit != XFRM_INF ||
 	    xfrm->lft.hard_byte_limit != XFRM_INF || xfrm->lft.hard_packet_limit != XFRM_INF)
@@ -334,232 +337,191 @@ static int spu_offload_parm_ds(struct spu_offload_parm_args *a)
 	session->last_update.seq_hi = session->parm.seq_hi;
 
 	session->parm.digest_size = ctx->digestsize;
+	session->parm.iv_size = ctx->iv_size;
+	session->parm.esp_o_udp = ctx->esp_over_udp;
+	if (ctx->cipher.mode == CIPHER_MODE_GCM)
+		session->parm.is_gcm = 1;
+	session->parm.ipv6 = ctx->ipv6;
+	if (ctx->ipv6)
+		session->parm.outer_hdr_size = BLOG_IPV6_HDR_LEN;
+	else
+		session->parm.outer_hdr_size = BLOG_IPV4_HDR_LEN;
+	if (ctx->esp_over_udp)
+		session->parm.outer_hdr_size += BLOG_UDP_HDR_LEN;
+
 	atomic_set(&session->evict, 0);
 
-	ret = spu_platform_offload_session_ds_parm(session_id, xfrm, &session->parm);
-	if (ret != 0)
+	if (spu_platform_offload_ds_session(session_id, xfrm, &session->parm) != 0)
 		goto exit_clean;
 
-	blog_p->spu.is_offload = 1;
+	atomic_inc(&state_g.num_ds);
+
 	atomic_set(&ctx->offload_id, session_id);
 
-	a->parm = &session->parm;
-
 	atomic_set(&session->taken, SESSION_DEFINED);
-	return 0;
+	spin_unlock_bh (&spu_blog_offload_lock);
+	return session_id;
 
 exit_clean:
-	write_lock (&spu_blog_offload_lock);
 	atomic_set(&session->taken, 0);
 	session->parm.esp_spi = 0;
-	write_unlock (&spu_blog_offload_lock);
-exit:
-	return ret;
-
+	spin_unlock_bh (&spu_blog_offload_lock);
+	return -1;
 }
 
-static int spu_offload_fill_us_parm(Blog_t *blog_p, uint32_t session_id)
+
+static void spu_offload_outer_hdr(uint8_t *hdr_p, Blog_t *blog_p, uint8_t ipv6)
 {
-	struct spu_blog_offload_session *session;
-	struct iproc_ctx_s *ctx = NULL;
-	struct dst_entry *dst;
+	uint8_t *data_p = hdr_p;
 
-	struct xfrm_state *xfrm = NULL;
-	uint32_t spi;
-	uint32_t seqhi = 0;
+	if(ipv6 == 0) {
+		uint16_t base_chksm;
+		BlogTuple_t *esptx_tuple_p = blog_p->esptx_tuple_p;
+		/* outer IPv4 header */
+		*((uint16_t *)data_p + 0) = htons(0x4500 | esptx_tuple_p->tos);
+		*((uint16_t *)data_p + 1) = 0; /* length to be filled */
+		*((uint16_t *)data_p + 2) = 0; /* id to be filled */
+		*((uint16_t *)data_p + 3) = htons(BLOG_IP_FLAG_DF);
 
-	uint32_t hdr_size;
-	uint8_t *data_p;
-	BlogTuple_t *esptx_tuple_p = blog_p->esptx_tuple_p;
-	bool is_esn = false;
-	uint16_t base_chksm;
+		if (TX_ESPoUDP(blog_p)) 
+			*((uint16_t *)data_p + 4) = htons((esptx_tuple_p->ttl << 8) | (BLOG_IPPROTO_UDP & 0xFF));
+		else
+			*((uint16_t *)data_p + 4) = htons((esptx_tuple_p->ttl << 8) | (BLOG_IPPROTO_ESP & 0xFF));
+		((BlogIpv4Hdr_t *)data_p)->chkSum = 0;
+		/* fill source IP, destination IP */
+		_u16cpy( (uint16_t*)&((BlogIpv4Hdr_t *)data_p)->sAddr, (uint16_t*)&esptx_tuple_p->saddr,
+			sizeof(esptx_tuple_p->saddr) + sizeof(esptx_tuple_p->daddr) );
 
-	if (esptx_tuple_p == NULL) {
-		flow_log("missing esptx_tuple in blog\n");
-		return -1;
+		base_chksm = ip_fast_csum(data_p, (BLOG_IPV4_HDR_LEN/4));
+		((BlogIpv4Hdr_t *)data_p)->chkSum = base_chksm;
+
+		data_p += BLOG_IPV4_HDR_LEN;
+
+		/* add the UDP header in case of ESP over UDP */
+		if (TX_ESPoUDP(blog_p)) {
+			*((uint16_t *)data_p + 0) = esptx_tuple_p->port.source;
+			*((uint16_t *)data_p + 1) = esptx_tuple_p->port.dest;
+			*((uint16_t *)data_p + 2) = 0;
+			*((uint16_t *)data_p + 3) = 0;
+		}
+	} else {
+		BlogTupleV6_t *esp6tx_tuple_p = blog_p->esp6tx_tuple_p;
+
+		/* outer IPv6 header */
+		_write32_align16(((uint16_t *)data_p + 0), esp6tx_tuple_p->word0);
+		((BlogIpv6Hdr_t*)data_p)->len = 0; /* length to be filled */
+		((BlogIpv6Hdr_t*)data_p)->hopLmt = esp6tx_tuple_p->tx_hop_limit;
+		if (TX_ESPoUDP(blog_p))
+			((BlogIpv6Hdr_t *)data_p)->nextHdr = BLOG_IPPROTO_UDP;
+		else
+			((BlogIpv6Hdr_t *)data_p)->nextHdr = BLOG_IPPROTO_ESP;
+		_u16cpy( (uint16_t *)&((BlogIpv6Hdr_t *)data_p)->sAddr,
+			(uint16_t*)&esp6tx_tuple_p->saddr, 2 * sizeof(ip6_addr_t));
 	}
-
-	spi = (TX_ESPoUDP(blog_p)) ? blog_p->esp_over_udp_spi : _read32_align16((uint16_t *)&blog_p->esptx_tuple_p->esp_spi);
-
-	ctx = spu_blog_lookup_ctx_byspi(spi, SPU_STREAM_US);
-
-	dst = blog_p->esptx.dst_p;
-	if (dst)
-		xfrm = dst->xfrm;
-	if (!ctx || xfrm == NULL || (ctx->cipher.alg != CIPHER_ALG_AES) || 
-	    (ctx->cipher.mode != CIPHER_MODE_CBC) || (blog_p->esptx.ivsize != CCM_AES_IV_SIZE)) {
-		flow_log("offload not supported\n");
-		return -1;
-	}
-	if (xfrm->props.flags & XFRM_STATE_ESN)
-		is_esn = true;
-
-	session = &state_g.sessions[session_id];
-	memset(&session->last_update, 0, sizeof(struct spu_offload_tracker));
-
-	if (xfrm->lft.soft_byte_limit != XFRM_INF || xfrm->lft.soft_packet_limit != XFRM_INF ||
-	    xfrm->lft.hard_byte_limit != XFRM_INF || xfrm->lft.hard_packet_limit != XFRM_INF)
-		session->parm.data_limit = 1;
-
-	spin_lock_bh(&xfrm->lock);
-	if (xfrm->replay_esn) {
-		session->parm.seq_lo = xfrm->replay_esn->oseq;
-		session->parm.seq_hi = xfrm->replay_esn->oseq_hi;
-	}
-	else {
-		session->parm.seq_lo = xfrm->replay.oseq;
-		session->parm.seq_hi = 0;
-	}
-	session->last_update.lft_pkts = xfrm->curlft.packets;
-	session->last_update.lft_bytes = xfrm->curlft.bytes;
-	spin_unlock_bh(&xfrm->lock);
-
-	session->last_update.seq_lo = session->parm.seq_lo;
-	session->last_update.seq_hi = session->parm.seq_hi;
-
-	seqhi = htonl(session->parm.seq_hi);
-	hdr_size = create_spu_header(session->parm.spu_header, ctx, blog_p, 1, is_esn, seqhi);
-
-	if (hdr_size > MAX_SPU_HEADER_SIZE)
-	{
-		return -1;
-	}
-	session->parm.is_esn = is_esn;
-	session->parm.key_size = hdr_size - FMD_SIZE;
-	if (is_esn)
-		session->parm.key_size -= BLOG_ESP_SEQNUM_HI_LEN;
-
-	/* add the outer IP header after the SPU header */
-	data_p = session->parm.outer_header;
-	*((uint16_t *)data_p + 0) = htons(0x4500 | esptx_tuple_p->tos);
-	*((uint16_t *)data_p + 1) = 0; /* length to be filled */
-	*((uint16_t *)data_p + 2) = 0; /* id to be filled */
-	*((uint16_t *)data_p + 3) = htons(BLOG_IP_FLAG_DF);
-
-	if (TX_ESPoUDP(blog_p)) 
-		*((uint16_t *)data_p + 4) = htons((esptx_tuple_p->ttl << 8) |
-					    (BLOG_IPPROTO_UDP & 0xFF));
-	else
-		*((uint16_t *)data_p + 4) = htons((esptx_tuple_p->ttl << 8) |
-					    (BLOG_IPPROTO_ESP & 0xFF));
-	((BlogIpv4Hdr_t *)data_p)->chkSum = 0;
-	/* fill source IP, destination IP */
-	_u16cpy( (uint16_t*)&((BlogIpv4Hdr_t *)data_p)->sAddr,
-              (uint16_t*)&esptx_tuple_p->saddr,
-              sizeof(esptx_tuple_p->saddr) + sizeof(esptx_tuple_p->daddr) );
-
-	base_chksm = ip_fast_csum(data_p, (BLOG_IPV4_HDR_LEN/4));
-	((BlogIpv4Hdr_t *)data_p)->chkSum = base_chksm;
-
-	data_p += BLOG_IPV4_HDR_LEN;
-	/* add the UDP header in case of ESP over UDP */
-	if (TX_ESPoUDP(blog_p)) {
-		*((uint16_t *)data_p + 0) = esptx_tuple_p->port.source;
-		*((uint16_t *)data_p + 1) = esptx_tuple_p->port.dest;
-		*((uint16_t *)data_p + 2) = 0;
-		*((uint16_t *)data_p + 3) = 0;
-		data_p += BLOG_UDP_HDR_LEN;
-
-		session->parm.esp_o_udp = 1;
-	}
-
-	session->parm.digest_size = ctx->digestsize;
-	session->parm.iv_size = blog_p->esptx.ivsize;
-	session->parm.blog_chan_id = ctx->blog_chan_id;
-	session->parm.esp_spi = spi;
-	session->parm.session_id = session_id;
-
-	return spu_platform_offload_session_us_parm(session_id, xfrm, &session->parm);
 }
 
-static int spu_offload_parm_us(struct spu_offload_parm_args *a)
-{
-	int session_id;
-	struct spu_blog_offload_session *session;
-	struct iproc_ctx_s *ctx;
-	Blog_t *blog_p = a->blog_p;
-
-	uint32_t spi = (TX_ESPoUDP(blog_p)) ? blog_p->esp_over_udp_spi : _read32_align16((uint16_t *)&blog_p->esptx_tuple_p->esp_spi);
-
-	ctx = spu_blog_lookup_ctx_byspi(spi, SPU_STREAM_US);
-	if (ctx == NULL)
-		return -1;
-	session_id = spu_offload_get_us_id(ctx, spi, blog_p);
-
-	if (session_id < 0)
-		return -1;
-
-	session = &state_g.sessions[session_id];
-	atomic_inc(&session->ref_count);
-	a->parm = &state_g.sessions[session_id].parm;
-
-	return 0;
-}
 
 void spu_offload_session_free(uint32_t session_id)
 {
 	struct spu_blog_offload_session *session;
 
 	session = &state_g.sessions[session_id];
+
+	spin_lock_bh (&spu_blog_offload_lock);
 	if (atomic_read(&session->taken)) {
 		atomic_inc(&session->evict);
+		atomic_set(&session->ref_count, 0);
+		atomic_set(&session->evict_rdy, 2);
 		atomic_inc(&state_g.work_avail);
 		SPU_WAKEUP_EVICTHDL();
 	}
+	spin_unlock_bh (&spu_blog_offload_lock);
 }
 
-static inline void spu_update_session_offload_stats (int session_id)
+#if defined(CC_CMD_PARM)
+static int spu_offload_parm_ds(struct spu_offload_parm_args *a)
 {
-	struct xfrm_state *xfrm = spu_lookup_offload_xfrm(session_id);
+	struct iproc_ctx_s *ctx = NULL;
+	Blog_t *blog_p = a->blog_p;
+	struct spu_blog_offload_session *session;
+	int session_id;
+	uint32_t spi = 0;
 
-	if (!xfrm)
-		return;
+	if (RX_IPV6(blog_p))
+		spi = (RX_ESPoUDP(blog_p)) ? blog_p->esp_over_udp_spi : _read32_align16((uint16_t *)&blog_p->tupleV6.esp_spi);
+	else
+		spi = (RX_ESPoUDP(blog_p)) ? blog_p->esp_over_udp_spi : _read32_align16((uint16_t *)&blog_p->rx.tuple.esp_spi);
 
-	read_lock (&spu_blog_offload_lock);
-	spu_update_xfrm_stats (session_id, xfrm, 0);
-	read_unlock (&spu_blog_offload_lock);
+	session_id = spu_offload_get_ds_session_id(spi);
+	if (session_id < 0)
+		return -1;
+
+	session = &state_g.sessions[session_id];
+	blog_p->spu.offload_ds = 1;
+	atomic_inc(&session->ref_count);
+#if IS_ENABLED(CONFIG_BCM_FPI)
+	flow_log("%s(): set blog esptx ivsize %d as ctx iv_size %d\n",
+			__func__, blog_p->esptx.ivsize, ctx->iv_size);
+	blog_p->esptx.ivsize = ctx->iv_size; 
+#endif
+	/* may not need this */
+	ctx = spu_blog_lookup_ctx_byspi(spi, SPU_STREAM_DS);
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5,15,0))
+	session->sp = secpath_get(blog_p->esprx.secPath_p);
+#else
+	session->ptr = ctx->xfrm;
+#endif
+	blog_p->spu.is_esn = session->parm.is_esn;
+	if (session->parm.is_esn && session->parm.is_gcm)
+		blog_p->spu.gcm_esn = 1;
+
+	a->session_id = session_id;
+	a->parm = &session->parm;
+	return 0;
+}
+
+static int spu_offload_parm_us(struct spu_offload_parm_args *a)
+{
+	int session_id;
+	uint32_t spi;
+	struct spu_blog_offload_session *session;
+	Blog_t *blog_p = a->blog_p;
+
+	if (RX_IPV6(blog_p)) {
+		spi = (TX_ESPoUDP(blog_p)) ? blog_p->esp_over_udp_spi : _read32_align16((uint16_t *)&blog_p->esp6tx_tuple_p->esp_spi);
+	} else {
+		spi = (TX_ESPoUDP(blog_p)) ? blog_p->esp_over_udp_spi : _read32_align16((uint16_t *)&blog_p->esptx_tuple_p->esp_spi);
+	}
+
+	session_id = spu_offload_get_us_session_id(spi, blog_p->esptx.dst_p);
+	if (session_id >= 0) {
+		session = &state_g.sessions[session_id];
+
+		spu_offload_outer_hdr(session->parm.outer_header, blog_p, session->parm.ipv6);
+
+		/* TODO: handle multiple outer headers */
+		if (atomic_read(&session->ref_count) == 0) {
+			if (spu_platform_offload_us_parm_set(&session->parm) != 0) {
+				pr_err("cannot offload session %d\n", session_id);
+				/* clean the offload session */
+				spu_offload_session_free(session_id);
+				return -1;
+			}
+		}
+
+		blog_p->spu.offload_us = 1;
+		atomic_inc(&session->ref_count);
+		a->session_id = session_id;
+		a->parm = &session->parm;
+		return 0;
+	}
+	return -1;
 }
 
 static int spu_offload_parm(void *x)
 {
-	struct spu_blog_offload_session *session;
 	struct spu_offload_parm_args *a = (struct spu_offload_parm_args *)x;
 	Blog_t *blog_p = a->blog_p;
-
-	if (flow_offload_enable == 0)
-		return -1;
-
-	/* flow delete is marked with blog_p set to NULL */
-	if (blog_p == NULL) {
-		uint32_t session_id = a->session_id;
-		if (a->parm != NULL)
-			return -1;
-
-		session = &state_g.sessions[session_id];
-		if (atomic_read(&session->taken) == SESSION_DEFINED)
-			spu_update_session_offload_stats(session_id);
-
-		if (atomic_read(&session->taken) != 0) {
-			struct iproc_ctx_s *ctx;
-
-			ctx = spu_blog_lookup_ctx_byspi(session->parm.esp_spi,
-							(session_id < MAX_SPU_OFFLOAD_SESSIONS/2) ? SPU_STREAM_DS : SPU_STREAM_US);
-
-			if (session->parm.is_enc == 0 || atomic_dec_and_test(&session->ref_count)) {
-				if (ctx)
-					atomic_set(&ctx->offload_id, -1);
-
-				flow_log("flow cleanup for session %d\n", session_id);
-				atomic_inc(&session->evict);
-				atomic_inc(&state_g.work_avail);
-				SPU_WAKEUP_EVICTHDL();
-			}
-		} else {
-			/* hightly likely the session already freed */
-			flow_log("session %d spi 0x%x should not be freed\n", session_id, session->parm.esp_spi); 
-		}
-		return -1;
-	}
 
 	if (blog_p->tx.info.phyHdrType == BLOG_SPU_DS) {
 		return spu_offload_parm_ds(a);
@@ -569,6 +531,101 @@ static int spu_offload_parm(void *x)
 	}
 	return -1;
 }
+#endif
+
+#if defined(CC_CMD_PREPEND)
+static int spu_offload_ds_prepend_hdr(struct spu_offload_prephdr_args *a)
+{
+	struct iproc_ctx_s *ctx = NULL;
+	Blog_t *blog_p = a->blog_p;
+	struct spu_blog_offload_session *session;
+	uint32_t spi;
+	int session_id;
+
+	a->prepend_size = 0;
+	if (RX_IPV6(blog_p))
+		spi = (RX_ESPoUDP(blog_p)) ? blog_p->esp_over_udp_spi : _read32_align16((uint16_t *)&blog_p->tupleV6.esp_spi);
+	else
+		spi = (RX_ESPoUDP(blog_p)) ? blog_p->esp_over_udp_spi : _read32_align16((uint16_t *)&blog_p->rx.tuple.esp_spi);
+
+	session_id = spu_offload_get_ds_session_id(spi);
+	if (session_id < 0)
+		return -1;
+
+	session = &state_g.sessions[session_id];
+	a->session_id = session_id;
+
+	blog_p->spu.offload_ds = 1;
+	atomic_inc(&session->ref_count);
+#if IS_ENABLED(CONFIG_BCM_FPI)
+	flow_log("%s(): set blog esptx ivsize %d as ctx iv_size %d\n",
+			__func__, blog_p->esptx.ivsize, ctx->iv_size);
+	blog_p->esptx.ivsize = ctx->iv_size; 
+#endif
+	/* TODO: may not need this */
+	ctx = spu_blog_lookup_ctx_byspi(spi, SPU_STREAM_DS);
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5,15,0))
+	session->sp = secpath_get(blog_p->esprx.secPath_p);
+#else
+	session->ptr = ctx->xfrm;
+#endif
+	blog_p->spu.is_esn = session->parm.is_esn;
+	if (session->parm.is_esn && session->parm.is_gcm)
+		blog_p->spu.gcm_esn = 1;
+
+	/* get the prepend header to put in cmdlist */
+	spu_platform_offload_ds_prepend(&session->parm, a);
+
+	return 0;
+}
+
+
+static int spu_offload_us_prepend_hdr(struct spu_offload_prephdr_args *a)
+{
+	struct spu_blog_offload_session *session;
+	Blog_t *blog_p = a->blog_p;
+	uint32_t spi;
+	int ret = -1;
+
+	if (RX_IPV6(blog_p)) {
+		spi = (TX_ESPoUDP(blog_p)) ? blog_p->esp_over_udp_spi : _read32_align16((uint16_t *)&blog_p->esp6tx_tuple_p->esp_spi);
+	} else {
+		spi = (TX_ESPoUDP(blog_p)) ? blog_p->esp_over_udp_spi : _read32_align16((uint16_t *)&blog_p->esptx_tuple_p->esp_spi);
+	}
+
+	ret = spu_offload_get_us_session_id(spi, blog_p->esptx.dst_p);
+
+	a->prepend_size = 0;
+	if (ret >= 0) {
+
+		spin_lock_bh(&spu_blog_offload_lock);
+		a->session_id = ret;
+		session = &state_g.sessions[ret];
+
+		spu_offload_outer_hdr(session->parm.outer_header, blog_p, session->parm.ipv6);
+
+		blog_p->spu.offload_us = 1;
+
+		spu_platform_offload_us_prepend(&session->parm, a);
+		atomic_inc(&session->ref_count);
+		ret = 0;
+		spin_unlock_bh(&spu_blog_offload_lock);
+	}
+
+	return ret;
+}
+
+static int spu_offload_prepend_hdr(void *x)
+{
+	struct spu_offload_prephdr_args *a = (struct spu_offload_prephdr_args *)x;
+	Blog_t *blog_p = a->blog_p;
+
+	if (blog_p->tx.info.phyHdrType == BLOG_SPU_US)
+		return spu_offload_us_prepend_hdr(a);
+	else
+		return spu_offload_ds_prepend_hdr(a);
+}
+#endif
 
 int spu_offload_get_rx_info(uint32_t session_id, struct spu_offload_rx_info *info)
 {
@@ -580,7 +637,7 @@ int spu_offload_get_rx_info(uint32_t session_id, struct spu_offload_rx_info *inf
 
 	info->ptr = NULL;
 
-	read_lock(&spu_blog_offload_lock);
+	spin_lock_bh(&spu_blog_offload_lock);
 	if (atomic_read(&session->taken) == SESSION_DEFINED) {
 		spi = session->parm.esp_spi;
 		if (session->parm.is_enc) {
@@ -597,7 +654,7 @@ int spu_offload_get_rx_info(uint32_t session_id, struct spu_offload_rx_info *inf
 			stream = SPU_STREAM_DS;
 		}
 	}
-	read_unlock(&spu_blog_offload_lock);
+	spin_unlock_bh(&spu_blog_offload_lock);
 
 	if (info->ptr) {
 		ctx = spu_blog_lookup_ctx_byspi(spi, stream);
@@ -607,24 +664,30 @@ int spu_offload_get_rx_info(uint32_t session_id, struct spu_offload_rx_info *inf
 			info->digestsize = ctx->digestsize;
 			info->blog_chan_id = ctx->blog_chan_id;
 			info->esp_over_udp = ctx->esp_over_udp;
+			info->ipv6 = ctx->ipv6;
 			ret = 0;
 		} else {
 			if (stream == SPU_STREAM_US)
 				dst_release(info->dst_p);
-			else
+			else {
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5,15,0))
 				secpath_put(info->sp);
+#else
+				xfrm_state_put(info->ptr);
+#endif
+			}
 		}
 	}
 	return ret;
 }
 
-static void spu_update_xfrm_stats(int i, struct xfrm_state *xfrm, int xlocked)
+static void spu_update_xfrm_stats(int id, struct xfrm_state *xfrm, int xlocked)
 {
 	struct spu_offload_tracker curr_stats = {};
 	uint32_t bitmap[MAX_REPLAY_WIN_SIZE/32];
-	struct spu_blog_offload_session *session = &state_g.sessions[i];
+	struct spu_blog_offload_session *session = &state_g.sessions[id];
 
-	spu_platform_offload_stats(i, &curr_stats, bitmap, session->parm.long_bitmap); 
+	spu_platform_offload_stats(id, &curr_stats, bitmap, session->parm.long_bitmap); 
 
 	if (curr_stats.lft_pkts == session->last_update.lft_pkts &&
 	    curr_stats.replay_window == session->last_update.replay_window &&
@@ -676,6 +739,7 @@ static int spu_offload_evict_handler(void *context)
 {
 	int i, done;
 	struct spu_blog_offload_session *session;
+	struct iproc_ctx_s *ctx = NULL;
 
 	while (1) {
 		wait_event_interruptible(state_g.evict_wqh,
@@ -693,25 +757,44 @@ static int spu_offload_evict_handler(void *context)
 			    atomic_read(&session->evict) == 0)
 				continue;
 
-			if (atomic_dec_and_test(&session->evict)) {
-				write_lock (&spu_blog_offload_lock);
-				spu_platform_offload_free_session(i);
-				atomic_set(&session->taken, 0);
+			ctx = spu_blog_lookup_ctx_byspi(session->parm.esp_spi, (i < MAX_SPU_OFFLOAD_SESSIONS/2) ? SPU_STREAM_DS : SPU_STREAM_US);
+			if (ctx == NULL) {
+				pr_err("failed to locate ctx session %d spi 0x%x taken %d\n",
+					i, session->parm.esp_spi, atomic_read(&session->taken));
+				continue;
+			}
 
-				if (session->parm.is_enc == 0) {
-					flow_log("cleaning ds session %d for spi 0x%x\n",
-						session->parm.session_id, session->parm.esp_spi);
-					secpath_put(session->sp);
+			spin_lock_bh (&spu_blog_offload_lock);
+			if (atomic_read(&session->evict_rdy) == 2) {
+				/* make sure we get the last bit of the offload stats */
+				spu_update_xfrm_stats(i, ctx->xfrm, 0);
+				if (atomic_read(&session->ref_count)) {
+					pr_err("session %d 0x%x should not be cleaned\n",
+						i, session->parm.esp_spi);
 				} else {
-					flow_log("cleaning us session %d for spi 0x%x ref %d taken %d\n",
-						session->parm.session_id, session->parm.esp_spi,
-						atomic_read(&session->ref_count), atomic_read(&session->taken));
-					dst_release(session->dst_p);
+					if (session->parm.is_enc == 0) {
+						flow_log("cleaning ds session %d for spi 0x%x\n",
+							session->parm.session_id, session->parm.esp_spi);
+						atomic_dec(&state_g.num_ds);
+						secpath_put(session->sp);
+					} else {
+						flow_log("cleaning us session %d for spi 0x%x ref %d taken %d\n",
+							session->parm.session_id, session->parm.esp_spi,
+							atomic_read(&session->ref_count), atomic_read(&session->taken));
+						atomic_dec(&state_g.num_us);
+						dst_release(session->dst_p);
+					}
+					spu_platform_offload_free_session(i);
+					xfrm_state_put(ctx->xfrm);
+					atomic_set(&ctx->offload_id, -1);
+					atomic_set(&session->evict, 0);
+					atomic_set(&session->evict_rdy, 0);
+					atomic_set(&session->taken, 0);
+					session->parm.esp_spi = 0;
+					session->ptr = NULL;
 				}
-				session->parm.esp_spi = 0;
-				session->ptr = NULL;
-				write_unlock(&spu_blog_offload_lock);
-			} 
+			}
+			spin_unlock_bh (&spu_blog_offload_lock);
 
 			atomic_dec(&state_g.work_avail);
 			done = 0;
@@ -730,7 +813,7 @@ int spu_update_xfrm_offload_stats(void *x)
 	uint32_t spi = xfrm->id.spi;
 
 	/* look for offloaded xfrm */
-	read_lock(&spu_blog_offload_lock);
+	spin_lock_bh(&spu_blog_offload_lock);
 	for (i = 0; i < MAX_SPU_OFFLOAD_SESSIONS; i++) {
 		session = &state_g.sessions[i];
 		if (atomic_read(&session->taken) == SESSION_DEFINED && session->parm.esp_spi == spi) {
@@ -739,7 +822,7 @@ int spu_update_xfrm_offload_stats(void *x)
 			break;
 		}
 	}
-	read_unlock(&spu_blog_offload_lock);
+	spin_unlock_bh(&spu_blog_offload_lock);
 
 	/* end offloading for a dead tunnel */
 	if (session_id != -1 && (xfrm->genid || xfrm->km.state == XFRM_STATE_DEAD)) {
@@ -755,58 +838,86 @@ int spu_update_xfrm_offload_stats(void *x)
 	return 0;
 }
 
-int spu_offload_get_us_id(struct iproc_ctx_s *ctx, uint32_t spi, Blog_t *blog_p)
+int spu_offload_get_us_session_id(uint32_t spi, struct dst_entry *dst_p)
 {
-	int i, session_id = -1, ret = -1;
+	struct iproc_ctx_s *ctx;
 	struct spu_blog_offload_session *session;
-	struct dst_entry *dst;
-	struct xfrm_state *xfrm = NULL;
+	struct xfrm_state *xfrm;
+	int ret = -1, session_id, i, hdr_size;
+	bool is_esn = false;
+	bool is_transport_mode = false;
+	uint32_t seqhi;
 
 	if ((flow_offload_enable & (1<<SPU_STREAM_US)) == 0)
 		return -1;
 
+	ctx = spu_blog_lookup_ctx_byspi(spi, SPU_STREAM_US);
+	if (ctx == NULL)
+		return -1;
+
 	/* check if the session is already offloaded */
+	spin_lock_bh (&spu_blog_offload_lock);
 	session_id = atomic_read(&ctx->offload_id);
 	if (session_id != -1) {
-		read_lock (&spu_blog_offload_lock);
 		session = &state_g.sessions[session_id];
-		if (atomic_read(&session->taken) == SESSION_DEFINED) {
-			if (session->parm.esp_spi == spi)
+		if (session->parm.esp_spi == spi) {
+			int valid, evict_num = atomic_read(&session->evict);
+
+			xfrm = ctx->xfrm;
+			valid = 1;
+			if(evict_num != 0) {
+				if (xfrm->genid || xfrm->km.dying || xfrm->km.state == XFRM_STATE_DEAD) {
+					valid = 0;
+				} else {
+					flow_log("new flows for us 0x%x pending evict %d taken %d\n",
+						spi, evict_num, atomic_read(&session->taken));
+					atomic_set(&session->evict, 0);
+					atomic_set(&session->evict_rdy, 0);
+				}
+			}
+			if (valid)
 				ret = session_id;
+		} else {
+			pr_err("ctx offload session does not match 0x%x != 0x%x\n",
+				session->parm.esp_spi, spi);
 		}
-		read_unlock (&spu_blog_offload_lock);
 	}
 
-	if (session_id > 0 || blog_p == NULL || blog_p->esptx.dst_p == NULL) {
-		/* a new session cannot be created when blog_p is NULL
-		 * so we have to skip even a matching session is not found */
-		goto exit;
+	if (ret >= 0) {
+		if (dst_p && (session->dst_p == NULL))
+			session->dst_p = dst_clone(dst_p);
+		spin_unlock_bh (&spu_blog_offload_lock);
+		return ret;
 	}
-	dst = blog_p->esptx.dst_p;
-	xfrm = dst->xfrm;
-	if (xfrm == NULL || xfrm->props.mode == XFRM_MODE_TRANSPORT ||
-	    xfrm->genid || xfrm->km.dying || xfrm->km.state == XFRM_STATE_DEAD ||
+
+	xfrm = ctx->xfrm;
+
+#if !defined(CONFIG_BCM_FPI)
+	/* we do not support offloading session without dst entry for non FPI loads
+	 * this is because encrypted packet by offload engine will have no
+	 * destination if not provided */
+	if (dst_p == NULL) {
+		spin_unlock_bh(&spu_blog_offload_lock);
+		return -1;
+	}
+#endif
+
+	/* session not offloaded, allocate a new session */
+	if (xfrm == NULL || xfrm->genid || xfrm->km.dying || xfrm->km.state == XFRM_STATE_DEAD ||
 	    xfrm->lft.soft_use_expires_seconds || xfrm->lft.hard_use_expires_seconds) {
+		spin_unlock_bh (&spu_blog_offload_lock);
 		/* missing xfrm structure, or it is a dying session, or this session has limited use time, skip */
-		goto exit;
+		return -1;
+	}
+
+	if (atomic_read(&state_g.num_us) == MAX_SPU_OFFLOAD_SESSIONS/2) {
+		spin_unlock_bh (&spu_blog_offload_lock);
+		return -1;
 	}
 
 	/* need a new session, reserve a spot for it */
 	/* US flows can only take session id 32 onwards */
 	session = NULL;
-	ret = -1;
-
-	write_lock(&spu_blog_offload_lock);
-	/* recheck if a new session has already be created */
-	for (i = MAX_SPU_OFFLOAD_SESSIONS/2; i < MAX_SPU_OFFLOAD_SESSIONS; i++) {
-		if (atomic_read(&state_g.sessions[i].taken) == SESSION_ALLOCATED &&
-		    state_g.sessions[i].parm.esp_spi == spi) {
-			/* session allocated by another CPU, break here */		
-			write_unlock(&spu_blog_offload_lock);
-			return i;
-		}
-	}
-	/* really need to define a new session */
 	for (i = 0; i < MAX_SPU_OFFLOAD_SESSIONS/2; i++) {
 		int taken = atomic_read(&state_g.sessions[state_g.next_us + MAX_SPU_OFFLOAD_SESSIONS/2].taken);
 		if (taken == 0) {
@@ -818,6 +929,9 @@ int spu_offload_get_us_id(struct iproc_ctx_s *ctx, uint32_t spi, Blog_t *blog_p)
 			atomic_set(&session->evict, 0);
 			atomic_set(&session->taken, SESSION_ALLOCATED);
 			atomic_set(&session->ref_count, 0);
+
+			/* make sure the xfrm remain valid while session is offloaded */
+			xfrm_state_hold(xfrm);
 		}
 		state_g.next_us = (state_g.next_us + 1) & (MAX_SPU_OFFLOAD_SESSIONS/2 - 1);
 		if (session)
@@ -825,44 +939,114 @@ int spu_offload_get_us_id(struct iproc_ctx_s *ctx, uint32_t spi, Blog_t *blog_p)
 	}
 
 	if (session == NULL) {
-		write_unlock(&spu_blog_offload_lock);
-		goto exit;
+		spin_unlock_bh (&spu_blog_offload_lock);
+		return -1;
 	}
+	memset(&session->last_update, 0, sizeof(struct spu_offload_tracker));
 
-	ret = spu_offload_fill_us_parm(blog_p, session_id);
+	if (xfrm->lft.soft_byte_limit != XFRM_INF || xfrm->lft.soft_packet_limit != XFRM_INF ||
+	    xfrm->lft.hard_byte_limit != XFRM_INF || xfrm->lft.hard_packet_limit != XFRM_INF)
+		session->parm.data_limit = 1;
 
-	if (ret == 0) {
-		int ctx_id = atomic_read(&ctx->offload_id);
+	spin_lock_bh(&xfrm->lock);
+	if (xfrm->replay_esn) {
+		session->parm.seq_lo = xfrm->replay_esn->oseq;
+		session->parm.seq_hi = xfrm->replay_esn->oseq_hi;
+	}
+	else {
+		session->parm.seq_lo = xfrm->replay.oseq;
+		session->parm.seq_hi = 0;
+	}
+	if (xfrm->props.mode == XFRM_MODE_TRANSPORT) {
+		is_transport_mode = true;
+	}
+	session->last_update.lft_pkts = xfrm->curlft.packets;
+	session->last_update.lft_bytes = xfrm->curlft.bytes;
+	spin_unlock_bh(&xfrm->lock);
 
-		atomic_set(&session->taken, SESSION_DEFINED);
-		if (ctx_id != -1 && ctx_id != session_id)
-			printk("ctx already has offload session %d new session %d\n", ctx_id, session_id);
+	session->last_update.seq_lo = session->parm.seq_lo;
+	session->last_update.seq_hi = session->parm.seq_hi;
 
-		atomic_set(&ctx->offload_id, session_id);
-		session->dst_p = dst_clone(dst);
-		blog_p->spu.is_offload = 1;
-		ret = session_id;
+	if (ctx->cipher.mode == CIPHER_MODE_GCM) {
+		uint8_t *data_p;
+		memcpy(session->parm.gcm_iv_aad2, ctx->iv, ctx->iv_size);
+		data_p = &session->parm.gcm_iv_aad2[ctx->iv_size];
+		*((uint32_t *)data_p) = spi;
+		session->parm.is_gcm = 1;
+	}
+	/* SPU HW cannot handle GCM ESN mode */
+	if (xfrm->props.flags & XFRM_STATE_ESN && !ctx->gcm)
+		is_esn = true;
+
+	seqhi = htonl(session->parm.seq_hi);
+	hdr_size = create_spu_header(session->parm.spu_header, ctx, 1, is_esn, seqhi, is_transport_mode, ctx->ipv6);
+
+	if (hdr_size > MAX_SPU_HEADER_SIZE) {
+		spin_unlock_bh (&spu_blog_offload_lock);
+		flow_log("hdr_size too large %d (max %x)\n", hdr_size, MAX_SPU_HEADER_SIZE);
+		return -1;
+	}
+	session->parm.key_size = hdr_size - FMD_SIZE;
+	if (is_esn)
+		session->parm.key_size -= BLOG_ESP_SEQNUM_HI_LEN;
+
+	session->parm.is_esn = ctx->esn;
+	session->parm.blk_size = ctx->blk_size;
+	session->parm.ipv6 = ctx->ipv6;
+	session->parm.digest_size = ctx->digestsize;
+	session->parm.iv_size = ctx->iv_size;
+	session->parm.blog_chan_id = ctx->blog_chan_id;
+	session->parm.esp_spi = spi;
+	session->parm.session_id = session_id;
+	if (ctx->ipv6 == 0) {
+		session->parm.outer_hdr_size = BLOG_IPV4_HDR_LEN;
+		if (xfrm->encap) {
+			session->parm.esp_o_udp = 1;
+			session->parm.outer_hdr_size += BLOG_UDP_HDR_LEN;
+		}
 	} else {
-		atomic_set(&session->taken, 0);
-		session->parm.esp_spi = 0;
+		session->parm.outer_hdr_size = BLOG_IPV6_HDR_LEN;
 	}
-	write_unlock(&spu_blog_offload_lock);
-exit:
-	return ret;
+	if (dst_p && (session->dst_p == NULL))
+		session->dst_p = dst_clone(dst_p);
+
+	spu_platform_offload_us_session(session_id, xfrm, &session->parm);
+
+	atomic_set(&session->taken, SESSION_DEFINED);
+	atomic_set(&ctx->offload_id, session_id);
+	atomic_inc(&state_g.num_us);
+
+	spin_unlock_bh (&spu_blog_offload_lock);
+	return session_id;
 }
 
-void spu_offload_get_fixed_hdr(int session_id, uint32_t *hdr_offset, uint8_t *size, uint8_t **hdr)
+void spu_offload_prep_us_ingress(uint32_t session_id, uint8_t *data_p, struct spu_offload_prephdr_args *a, uint32_t *hdr_offset)
 {
 	struct spu_blog_offload_session *session;
 
-	*hdr_offset = BLOG_IPV4_HDR_LEN + CCM_AES_IV_SIZE + BLOG_ESP_SPI_LEN + BLOG_ESP_SEQNUM_LEN;
+	a->prepend_size = 0;
 
+	spin_lock_bh (&spu_blog_offload_lock);
 	session = &state_g.sessions[session_id];
-	if (session->parm.esp_o_udp)
-		*hdr_offset += BLOG_UDP_HDR_LEN;
+	if (atomic_read(&session->taken) == SESSION_DEFINED) {
 
-	*size = session->parm.fixed_hdr_size;
-	*hdr = session->parm.spu_header;
+		if (session->parm.ipv6 == 0)
+		{
+			uint16_t base_chksm;
+
+			((BlogIpv4Hdr_t*)data_p)->chkSum = 0;
+			((BlogIpv4Hdr_t*)data_p)->id = 0;
+			((BlogIpv4Hdr_t*)data_p)->len = 0;
+			base_chksm = ip_fast_csum(data_p, (BLOG_IPV4_HDR_LEN/4));
+			((BlogIpv4Hdr_t *)data_p)->chkSum = base_chksm;
+		}
+
+		memcpy(session->parm.outer_header, data_p, session->parm.outer_hdr_size);
+
+		*hdr_offset = session->parm.outer_hdr_size + session->parm.iv_size + BLOG_ESP_SPI_LEN + BLOG_ESP_SEQNUM_LEN;
+		spu_platform_offload_us_prepend(&session->parm, a);
+	}
+	spin_unlock_bh (&spu_blog_offload_lock);
 }
 
 void spu_offload_handle_exception(uint32_t session_id, uint8_t data_limit, uint8_t overflow)
@@ -876,14 +1060,10 @@ void spu_offload_handle_exception(uint32_t session_id, uint8_t data_limit, uint8
 		flow_log("session %d not taken, cannot handle exception\n", session_id);
 		return;
 	}
-	xfrm = spu_lookup_offload_xfrm (session_id);
 	ctx = spu_blog_lookup_ctx_byspi(session->parm.esp_spi, (session_id < MAX_SPU_OFFLOAD_SESSIONS/2) ? SPU_STREAM_DS : SPU_STREAM_US);
+	xfrm = ctx->xfrm;
 
-	if (!xfrm && ctx) {
-		spu_blog_evict(ctx);
-		return;
-	}
-	read_lock (&spu_blog_offload_lock);
+	spin_lock_bh (&spu_blog_offload_lock);
 	/* update the session stats */
 	spu_update_xfrm_stats (session_id, xfrm, 0);
 	ret = 0;
@@ -897,7 +1077,7 @@ void spu_offload_handle_exception(uint32_t session_id, uint8_t data_limit, uint8
 #endif
 	if (ret && ctx)
 		spu_blog_evict(ctx);
-	read_unlock (&spu_blog_offload_lock);
+	spin_unlock_bh (&spu_blog_offload_lock);
 }
 
 ssize_t spu_offload_debug_info(char *buf, ssize_t out_count)
@@ -905,32 +1085,62 @@ ssize_t spu_offload_debug_info(char *buf, ssize_t out_count)
 	int i;
 	ssize_t out_offset = 0;
 	struct spu_blog_offload_session *session;
+	uint32_t req, cmpl;
+
+	spu_platform_offloaded(&req, &cmpl);
+	out_offset += scnprintf(buf + out_offset, out_count - out_offset,
+				"Total offloaded reqquest %d cmpl %d\n", req, cmpl);
 
 	out_offset += scnprintf(buf + out_offset, out_count - out_offset,
-				"offload evict_work %d \nDS offload sessions....(next_ds %d)\n",
-				atomic_read(&state_g.work_avail), state_g.next_ds);
+				"offload evict_work %d \n%d DS offload sessions....(next_ds %d)\n",
+				atomic_read(&state_g.work_avail), atomic_read(&state_g.num_ds), state_g.next_ds);
 
-	read_lock (&spu_blog_offload_lock);
+	spin_lock_bh (&spu_blog_offload_lock);
 	for (i = 0; i < MAX_SPU_OFFLOAD_SESSIONS/2; i++) {
 		session = &state_g.sessions[i];
 		if (atomic_read(&session->taken) == 0)
 			continue;
 		out_offset += scnprintf(buf + out_offset, out_count - out_offset,
-				"session %d spi 0x%x evict %d\n", i, session->parm.esp_spi, atomic_read(&session->evict));
+				"session %d spi 0x%x taken %d ref_count %d evict %d rdy %d\n", i, session->parm.esp_spi,
+				atomic_read(&session->taken), atomic_read(&session->ref_count),
+				atomic_read(&session->evict), atomic_read(&session->evict_rdy));
 	}
 
 	out_offset += scnprintf(buf + out_offset, out_count - out_offset,
-				"US offload sessions....(next_us %d)\n", state_g.next_us);
+				"%d US offload sessions....(next_us %d)\n", atomic_read(&state_g.num_us), state_g.next_us);
 	for (i = MAX_SPU_OFFLOAD_SESSIONS/2; i < MAX_SPU_OFFLOAD_SESSIONS; i++) {
 		session = &state_g.sessions[i];
 		if (atomic_read(&session->taken) == 0)
 			continue;
 		out_offset += scnprintf(buf + out_offset, out_count - out_offset,
-				"session %d spi 0x%x taken %d ref_count %d evict %d\n", i, session->parm.esp_spi,
-				atomic_read(&session->taken), atomic_read(&session->ref_count), atomic_read(&session->evict));
+				"session %d spi 0x%x taken %d ref_count %d evict %d rdy %d\n", i, session->parm.esp_spi,
+				atomic_read(&session->taken), atomic_read(&session->ref_count),
+				atomic_read(&session->evict), atomic_read(&session->evict_rdy));
 	}
-	read_unlock (&spu_blog_offload_lock);
+	spin_unlock_bh (&spu_blog_offload_lock);
 	return out_offset;
+}
+
+static void evict_sched_timer (struct timer_list *t)
+{
+	int i, flag = 0;
+	struct spu_blog_offload_session *session;
+
+	spin_lock_bh (&spu_blog_offload_lock);
+	for (i = MAX_SPU_OFFLOAD_SESSIONS/2; i < MAX_SPU_OFFLOAD_SESSIONS; i++) {
+		session = &state_g.sessions[i];
+		if (atomic_read(&session->evict_rdy) == 1) {
+			if (jiffies != session->evict_time) {
+				atomic_set(&session->evict_rdy, 2);
+				atomic_inc(&state_g.work_avail);
+				flag = 1;
+			}
+		}
+	}
+	spin_unlock_bh (&spu_blog_offload_lock);
+
+	if (flag)
+		SPU_WAKEUP_EVICTHDL();
 }
 
 int spu_offload_init(void)
@@ -938,9 +1148,11 @@ int spu_offload_init(void)
 	char threadname[15] = {0};
 	struct task_struct *thread;
 
-	spu_blog_offload_lock = __RW_LOCK_UNLOCKED (spu_blog_offload_lock);
+	spin_lock_init(&spu_blog_offload_lock);
 
 	memset(&state_g, 0, sizeof(struct spu_offload_state));
+
+	timer_setup(&state_g.sched_timer, evict_sched_timer, 0);
 
 	init_waitqueue_head(&state_g.evict_wqh);
 	sprintf(threadname, "spu_evict_hdl");
@@ -951,31 +1163,107 @@ int spu_offload_init(void)
 		return -1;
 	}
 	atomic_set(&state_g.work_avail, 0);
+	atomic_set(&state_g.num_us, 0);
+	atomic_set(&state_g.num_ds, 0);
 	state_g.evict_thread = thread;
 	wake_up_process(thread);
 
 	return spu_platform_offload_init();
 }
 
+static int spu_blog_offload_flowevent(struct notifier_block *nb, unsigned long event, void *info)
+{
+	enum spu_stream_type stream;
+	BlogFlowEventInfo_t *einfo = info;
+	struct iproc_ctx_s *ctx = NULL;
+	int offload_id = -1;
+	struct spu_blog_offload_session *session;
+
+	if (einfo->spu_offload_us) {
+		stream = SPU_STREAM_US;
+	} else if (einfo->spu_offload_ds) {
+		stream = SPU_STREAM_DS;
+	} else {
+		flow_log("not spu offload flows, no action required\n");
+		goto notify_done;
+	}
+
+	if (event == FLOW_EVENT_DEACTIVATE && einfo->flow_event_type == FLOW_EVENT_TYPE_HW) {
+		ctx = spu_blog_lookup_ctx_bychanid(einfo->tx_channel, stream);
+		if (ctx)
+			offload_id = atomic_read(&ctx->offload_id);
+		if (ctx == NULL || offload_id == -1) {
+			flow_log("ctx for channel %d invalid or not offloaded\n", einfo->tx_channel);
+			goto notify_done;
+		}
+
+		session = &state_g.sessions[offload_id];
+
+		spin_lock_bh (&spu_blog_offload_lock);
+		if (atomic_read(&session->taken) != 0) {
+			int old_ref;
+
+			old_ref = atomic_read(&session->ref_count);
+
+			atomic_dec_if_positive(&session->ref_count);
+			if (old_ref && atomic_read(&session->ref_count) == 0) {
+				atomic_inc(&session->evict);
+				if (session->parm.is_enc == 0) {
+					atomic_set(&session->evict_rdy, 2);
+					atomic_inc(&state_g.work_avail);
+					SPU_WAKEUP_EVICTHDL();
+				} else {
+					atomic_set(&session->evict_rdy, 1);
+					session->evict_time = jiffies;
+					mod_timer(&state_g.sched_timer,
+						jiffies + 2);
+				}
+			}
+		} else {
+			pr_err("session %d spi 0x%x is not taken, cannot be freed\n",
+				offload_id, session->parm.esp_spi);
+		}
+		spin_unlock_bh (&spu_blog_offload_lock);
+	}
+notify_done:
+	return NOTIFY_OK;
+}
+
+static struct notifier_block _spu_blog_offload_notifier = {
+	.notifier_call = spu_blog_offload_flowevent,
+};
+
 void spu_blog_offload_register(void)
 {
 	spu_platform_offload_register();
+	blog_flowevent_register_notifier(&_spu_blog_offload_notifier);
 	bcmFun_reg(BCM_FUN_ID_SPUOFFLOAD_STATS_UPDATE, spu_update_xfrm_offload_stats);
+#if defined(CC_CMD_PARM)
 	bcmFun_reg(BCM_FUN_ID_SPUOFFLOAD_SESSION_PARM, spu_offload_parm);
+#endif
+#if defined(CC_CMD_PREPEND)
+	bcmFun_reg(BCM_FUN_ID_SPU_PREPEND_HDR, spu_offload_prepend_hdr);
+#endif
 }
 
 void spu_blog_offload_deregister(void)
 {
 	int i;
 
+	blog_flowevent_unregister_notifier(&_spu_blog_offload_notifier);
 	/* sanity check, we should have no more offload sessions */
 	for (i=0; i < MAX_SPU_OFFLOAD_SESSIONS; i++)
 	{
 		if (atomic_read(&state_g.sessions[i].taken))
-			printk("spu offload active session %d spi 0x%x\n",
+			pr_err("spu offload active session %d spi 0x%x\n",
 				i, state_g.sessions[i].parm.esp_spi);
 	}
 	bcmFun_dereg(BCM_FUN_ID_SPUOFFLOAD_STATS_UPDATE);
+#if defined(CC_CMD_PARM)
 	bcmFun_dereg(BCM_FUN_ID_SPUOFFLOAD_SESSION_PARM);
+#endif
+#if defined(CC_CMD_PREPEND)
+	bcmFun_dereg(BCM_FUN_ID_SPU_PREPEND_HDR);
+#endif
 	spu_platform_offload_deregister();
 }

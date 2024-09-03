@@ -11,20 +11,26 @@
 <title><#Web_Title#> - <#menu5_1_5#></title>
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
-<script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/form.js"></script>
 <script>
 <% wl_get_parameter(); %>
+
+var current_page = window.location.pathname.split("/").pop();
+var faq_index_tmp = get_faq_index(FAQ_List, current_page, 1);
 
 function initial(){
 	show_menu();
 	var desc_tmp = `<#WLANAuthentication11a_display1_sectiondesc#>`;
 	desc_tmp = (isSupport('wpa3'))? desc_tmp.replace("/ WPA2-Enterprise", "/ WPA2-Enterprise / WPA3-Enterprise"):desc_tmp;
-	$(".RADIUS_Auth_desc").html(desc_tmp);
+	var $desc_tmp_div = (top.webWrapper)? "<div style='max-width:95%'>"+desc_tmp+"</div>" : desc_tmp;
+	$(".RADIUS_Auth_desc").html($desc_tmp_div);
+
 	if(lantiq_support){
 		checkWLReady();
 	}
@@ -58,7 +64,7 @@ function initial(){
 
 function applyRule(){
 	if(lantiq_support && wave_ready != 1){
-		alert("Please wait a minute for wireless ready");
+		alert(`<#Wireless_ready#>`);
 		return false;
 	}
 	
@@ -178,8 +184,11 @@ function checkWLReady(){
 <tbody>
 		<tr>
 		  <td bgcolor="#4D595D" valign="top"  >
+		  <div class="container">
+
 		  <div>&nbsp;</div>
 		  <div class="formfonttitle"><#menu5_1#> - <#menu5_1_5#></div>
+		  <div class="formfonttitle_help"><i onclick="show_feature_desc(`<#HOWTOSETUP#>`)" class="icon_help"></i></div>
 		  <div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 		  <div class="formfontdesc RADIUS_Auth_desc"></div>
 		  <div id="lantiq_ready" style="display:none;color:#FC0;margin-left:5px;font-size:13px;">Wireless is setting...</div>
@@ -232,7 +241,9 @@ function checkWLReady(){
 				<input class="button_gen" onclick="applyRule()" type="button" value="<#CTL_apply#>"/>
 			</div>
 		
-		
+		</div>	<!-- for .container  -->
+		<div class="popup_container popup_element_second"></div>
+
 		</td>
 	</tr>
 </tbody>

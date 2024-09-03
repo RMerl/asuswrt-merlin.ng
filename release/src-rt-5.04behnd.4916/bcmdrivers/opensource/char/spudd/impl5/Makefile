@@ -11,9 +11,11 @@ endif
 ifneq ($(strip $(CONFIG_BCM_SPU_HW_OFFLOAD)),)
 bcmspu-objs += spu_blog_offload.o
 ifneq ($(strip $(CONFIG_BCM_RDPA)),)
+EXTRA_CFLAGS += -DCC_CMD_PREPEND
 bcmspu-objs += spu_offload_xrdp.o
 endif
 ifneq ($(strip $(CONFIG_BCM_CROSSBOW_FULL_OFFLOAD)),)
+EXTRA_CFLAGS += -DCC_CMD_PARM
 bcmspu-objs += spu_offload_cspu.o
 endif
 endif

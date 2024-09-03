@@ -10,7 +10,7 @@
 #if defined(CONFIG_BCM63148) || defined(CONFIG_BCM4908) || defined(CONFIG_BCM6858) || defined(CONFIG_BCM63158) || \
     defined(CONFIG_BCM6846)  || defined(CONFIG_BCM6856) || defined(CONFIG_BCM63178) || \
     defined(CONFIG_BCM47622) || defined(CONFIG_BCM6878) || defined(CONFIG_BCM6756) || \
-    defined(CONFIG_BCM6765) || defined(CONFIG_BCM6766)
+    defined(CONFIG_BCM6765) || defined(CONFIG_BCM6766) || defined(CONFIG_BCM6764)
 
 #define BCM_DCACHE_LINE_LEN	64ul
 #define BCM_DCACHE_ALIGN_LEN	63ul

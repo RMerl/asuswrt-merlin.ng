@@ -13,17 +13,17 @@
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="other.css">
 <link rel="stylesheet" type="text/css" href="app_installation.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" src="/disk_functions.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/form.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js"></script>
 <style>
 .MainContent{
 	background-color: #4D595D;
@@ -65,10 +65,16 @@ function initial(){
 
 	$("#FormTitle").css("display", "");
 
-	ASUS_EULA.config(applyRule, refreshpage);
-	if(orig_tencent_download_enable == "1"){
-		ASUS_EULA.check('asus');
-	}
+	if(policy_status.PP == 0 || policy_status.PP_time == ''){
+        const policyModal = new PolicyModalComponent({
+            policy: "PP",
+            agreeCallback: applyRule,
+            disagreeCallback: refreshpage
+        });
+        policyModal.show();
+    }else{
+        applyRule();
+    }
 
 	if(orig_tencent_download_device != '')
 		document.getElementById("downloadPath").innerHTML = '/mnt/'+ orig_tencent_download_device;
@@ -171,7 +177,7 @@ function setPart(_part, _avail, _total, _get){
 }
 
 function apply_eula_check(){
-	if(document.form.tencent_download_enable.value == "1" && !ASUS_EULA.check("asus")){
+	if(document.form.tencent_download_enable.value == "1" && (policy_status.PP == 0 || policy_status.PP_time == ''){
 		return false;
 	}
 

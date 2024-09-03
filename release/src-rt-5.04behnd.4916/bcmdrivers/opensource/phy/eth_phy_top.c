@@ -3,27 +3,21 @@
    All Rights Reserved
 
     <:label-BRCM:2016:DUAL/GPL:standard
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
 :>
 */
 
@@ -61,6 +55,9 @@ static dt_device_t *dt_dev;
 static dt_handle_t dt_handle;
 static int xphy0_enabled, xphy1_enabled;
 static int xphy0_addr, xphy1_addr;
+#if IS_BCMCHIP(68880) || IS_BCMCHIP(6837) 
+static int power_down_xphy = 1;
+#endif
 
 #define ETH_PHY_TOP_BASE                                    eth_phy_top_base
 #if defined(CONFIG_BCM96765)
@@ -69,6 +66,8 @@ static int xphy0_addr, xphy1_addr;
 #define ETH_PHY_TOP_REG_XPHY_TEST_CNTRL_1                   0x0010
 #define ETH_PHY_TOP_REG_XPHY_MUX_SEL_CNTRL                  0x0024
 #define ETH_PHY_TOP_REG_XPHY_CNTRL_1                        0xffff
+#elif defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764)
+#define ETH_PHY_TOP_REG_R2PMI_LP_BCAST_MODE_CNTRL           0x01b0  /* Note, 6766 needs to have lower real PHY_TOP_BASE in dtsi, but not XPHY base like other chip */
 #else
 #define ETH_PHY_TOP_REG_R2PMI_LP_BCAST_MODE_CNTRL           0x0000
 #define ETH_PHY_TOP_REG_XPHY_TEST_CNTRL_0                   0x0234
@@ -203,8 +202,10 @@ static int eth_phy_top_init(void)
     xphy1_addr = dt_property_read_u32_default(dt_handle, "xphy1-addr", 0xa);
 
 	/* Select the source of XPHY LED signal to LED controller */
+#if defined(ETH_PHY_TOP_REG_XPHY_MUX_SEL_CNTRL)
     val = 1;
     WRITE_32(ETH_PHY_TOP_BASE + ETH_PHY_TOP_REG_XPHY_MUX_SEL_CNTRL, val);
+#endif
 
     /* Enable XPHY0 */
     if (xphy0_enabled)
@@ -274,7 +275,7 @@ static int bcm_bca_extintr_request_and_mask(void *_dev, struct device_node *np, 
 
     *irq = bcm_bca_extintr_get_hwirq(virq);
 
-    return periph_intr_mask_set(1, *irq, 1);
+    return periph_intr_mask_set(3, *irq, 1);
 }
 
 static irqreturn_t dummy_isr(int irq, void *context)
@@ -282,12 +283,29 @@ static irqreturn_t dummy_isr(int irq, void *context)
     return IRQ_HANDLED;
 }
 
+static void power_gpio_off(const char *name)
+{
+    dt_gpio_desc gpiod_power = NULL;
+    dt_gpio_request_by_name(dt_handle, name, 0, name, &gpiod_power, 0);
+
+    if (gpiod_power)
+    {
+        printk("power_gpio_off: %s\n", name);
+        dt_gpio_put(gpiod_power);
+    }
+}
+
+extern int phy_speed_max;
+
 int bcm_wake_on_lan(mac_dev_t *mac_dev, phy_dev_t *phy_dev, int is_internal, int is_lnk)
 {
     int rc = 0;
     wake_type_t wake_type = WAKE_NONE;
     int wake_param = 0;
     eth_xphy_serdes_intrl2_cpu_t intr_bits = {};
+    mac_cfg_t mac_cfg = {};
+    phy_speed_t phy_speed = PHY_SPEED_100;
+    mac_speed_t mac_speed = MAC_SPEED_100;
 
     if (mac_dev->mac_drv->mac_type != MAC_TYPE_XPORT)
         return -1;
@@ -315,6 +333,9 @@ int bcm_wake_on_lan(mac_dev_t *mac_dev, phy_dev_t *phy_dev, int is_internal, int
 
             /* Enable the interrupts for internal XPHY link up events */
             intr_bits.xphy_link_up_intr_mask =  MASK_BIT(xphy_num);
+#else
+            printk("bcm_wake_on_lan() xport does not support link up interrupt\n");
+            return -1;
 #endif
         }
         else
@@ -327,6 +348,9 @@ int bcm_wake_on_lan(mac_dev_t *mac_dev, phy_dev_t *phy_dev, int is_internal, int
         WRITE_32(ETH_PHY_TOP_BASE + ETH_XPHY_SERDES_INTRL2_CPU_CLEAR, intr_bits);
         WRITE_32(ETH_PHY_TOP_BASE + ETH_XPHY_SERDES_INTRL2_CPU_MASK_CLEAR, intr_bits);
 #endif
+        if (xport_num == 0)
+            power_down_xphy = 0;
+
         wake_type = WAKE_XPORT;
         wake_param = xport_num;
     }
@@ -334,10 +358,17 @@ int bcm_wake_on_lan(mac_dev_t *mac_dev, phy_dev_t *phy_dev, int is_internal, int
     {
         int irq = 0;
 
+        if (!dt_is_valid(phy_dev->dt_handle))
+        {
+            printk("[%s:%d] Error\n",__FUNCTION__, __LINE__);
+            rc = -1;
+            goto Exit;
+        }
+
         /* Enable the interrupts for external PHY MPD and link up events */
         if (is_lnk)
         {
-            rc = bcm_bca_extintr_request_and_mask(&dt_dev->dev, dt_handle, "phy-link", dummy_isr,
+            rc = bcm_bca_extintr_request_and_mask(&dt_dev->dev, phy_dev->dt_handle, "phy-link", dummy_isr,
                 NULL, "PHY link up", NULL, &irq);
 
             if (rc)
@@ -348,7 +379,7 @@ int bcm_wake_on_lan(mac_dev_t *mac_dev, phy_dev_t *phy_dev, int is_internal, int
         }
         else
         {
-            rc = bcm_bca_extintr_request_and_mask(&dt_dev->dev, dt_handle, "phy-mpd", dummy_isr,
+            rc = bcm_bca_extintr_request_and_mask(&dt_dev->dev, phy_dev->dt_handle, "phy-magic", dummy_isr,
                 NULL, "PHY MPD", NULL, &irq);
 
             if (rc)
@@ -358,41 +389,73 @@ int bcm_wake_on_lan(mac_dev_t *mac_dev, phy_dev_t *phy_dev, int is_internal, int
             }
         }
 
-        wake_type = WAKE_IRQ;
+        wake_type = WAKE_IRQ_WOL;
         wake_param = irq;
     }
 
-    if ((rc = periph_intr_mask_set(1, XPORT_0_IRQ, 1)))
+    phy_dev_link_change_unregister(NULL);
+    phy_speed_max = PHY_SPEED_AUTO;
+
+    if (phy_dev->phy_drv->phy_type != PHY_TYPE_EXT3)
+    {
+        uint32_t caps;
+
+        if ((rc = phy_dev_caps_get(phy_dev, CAPS_TYPE_ADVERTISE, &caps)))
+            goto Exit;
+
+        phy_speed = phy_caps_to_max_speed(caps);
+        mac_speed = phy_speed;
+    }
+
+    msleep(200);
+    printk("setting phy speed to %dMbps\n", phy_speed);
+    cascade_phy_dev_power_set(phy_dev, 1);
+    cascade_phy_dev_speed_set(phy_dev, phy_speed, PHY_DUPLEX_FULL);
+    phy_dev->link = -1;
+    phy_dev->speed = phy_speed;
+    phy_dev->duplex = PHY_DUPLEX_FULL;
+
+    msleep(200);
+    printk("setting mac speed to %dMbps\n", mac_speed);
+    mac_dev_disable(mac_dev);
+    mac_dev_cfg_get(mac_dev, &mac_cfg);
+    mac_cfg.speed = mac_speed;
+    mac_cfg.duplex = MAC_DUPLEX_FULL;
+    mac_cfg.flag |= phy_dev_is_xgmii_mode(phy_dev) ? MAC_FLAG_XGMII : 0;
+    mac_dev_cfg_set(mac_dev, &mac_cfg);
+    mac_dev_enable(mac_dev);
+
+    if ((rc = periph_intr_mask_set(3, XPORT_0_IRQ, 1)))
     {
         printk("[%s:%d] Error\n",__FUNCTION__, __LINE__);
         goto Exit;
     }
 
-    if ((rc = periph_intr_mask_set(1, XPORT_1_IRQ, 1)))
+    if ((rc = periph_intr_mask_set(3, XPORT_1_IRQ, 1)))
     {
         printk("[%s:%d] Error\n",__FUNCTION__, __LINE__);
         goto Exit;
     }
 
-    if ((rc = periph_intr_mask_set(1, XPORT_2_IRQ, 1)))
+    if ((rc = periph_intr_mask_set(3, XPORT_2_IRQ, 1)))
     {
         printk("[%s:%d] Error\n",__FUNCTION__, __LINE__);
         goto Exit;
     }
 
-    if ((rc = periph_intr_mask_set(1, ETH_PHY_TOP_0_IRQ, 1)))
+    if ((rc = periph_intr_mask_set(3, ETH_PHY_TOP_0_IRQ, 1)))
     {
         printk("[%s:%d] Error\n",__FUNCTION__, __LINE__);
         goto Exit;
     }
 
-    if ((rc = periph_intr_mask_set(1, ETH_PHY_TOP_1_IRQ, 1)))
+    if ((rc = periph_intr_mask_set(3, ETH_PHY_TOP_1_IRQ, 1)))
     {
         printk("[%s:%d] Error\n",__FUNCTION__, __LINE__);
         goto Exit;
     }
 
-    if ((rc = periph_intr_mask_set(1, ETH_PHY_TOP_2_IRQ, 1)))
+    if ((rc = periph_intr_mask_set(3, ETH_PHY_TOP_2_IRQ, 1)))
     {
         printk("[%s:%d] Error\n",__FUNCTION__, __LINE__);
         goto Exit;
@@ -400,9 +463,7 @@ int bcm_wake_on_lan(mac_dev_t *mac_dev, phy_dev_t *phy_dev, int is_internal, int
 
     /* Enable the wake function required to reset the chip and then shut down
      * all the blocks except for SMC and the blocks waiting for wake signals (for example: XPORT) */
-    phy_devices_shutdown(phy_dev);
-
-    rc = pmc_shutdown(wake_type, wake_param);
+    rc = pmc_setup_wake_trig(wake_type, wake_param);
 
 Exit:
     return rc;
@@ -412,8 +473,12 @@ EXPORT_SYMBOL(bcm_wake_on_lan);
 int bcm_wake_on_button(void)
 {
     int irq = 0, rc = 0;
+    static int wake_initialized = 0;
 
-    rc = bcm_bca_extintr_request_and_mask(&dt_dev->dev, dt_handle, "button", dummy_isr,
+    if (wake_initialized)
+        return 0;
+
+    rc = bcm_bca_extintr_request_and_mask(&dt_dev->dev, dt_handle, "wakeup-trigger-pin", dummy_isr,
         NULL, "Wake button", NULL, &irq);
 
     if (rc)
@@ -422,9 +487,10 @@ int bcm_wake_on_button(void)
         goto Exit;
     }
 
-    phy_devices_shutdown(NULL);
+    rc = pmc_setup_wake_trig(WAKE_IRQ, irq);
 
-    rc = pmc_shutdown(WAKE_IRQ, irq);
+    if (!rc)
+        wake_initialized = 1;
 
 Exit:
     return rc;
@@ -433,9 +499,7 @@ EXPORT_SYMBOL(bcm_wake_on_button);
 
 int bcm_wake_on_timer(int minutes)
 {
-    phy_devices_shutdown(NULL);
-
-    return pmc_shutdown(WAKE_TIMER, minutes);
+    return pmc_setup_wake_trig(WAKE_TIMER, minutes);
 }
 EXPORT_SYMBOL(bcm_wake_on_timer);
 
@@ -445,4 +509,28 @@ int bcm_wake_on_wan(void)
     return 0;
 }
 EXPORT_SYMBOL(bcm_wake_on_wan);
+
+int bcm_deepsleep_start(void)
+{
+    printk("activating deep sleep mode\n");
+
+    /* Power down all PHYs power supplies except for the one waiting for wake signal */
+    phy_devices_shutdown();
+
+    /* Power down the WAN power supplies */
+    power_gpio_off("power-wan-1");
+    power_gpio_off("power-wan-2");
+
+    /* Power down the XPHY power supplies if not required to for wake signal */
+    if (power_down_xphy)
+    {
+        power_gpio_off("power-xphy-1");
+        power_gpio_off("power-xphy-2");
+    }
+
+    pmc_deep_sleep();
+
+    return 0;
+}
+EXPORT_SYMBOL(bcm_deepsleep_start);
 #endif

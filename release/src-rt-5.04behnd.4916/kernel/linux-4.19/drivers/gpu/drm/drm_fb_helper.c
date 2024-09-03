@@ -2233,6 +2233,9 @@ static bool drm_target_cloned(struct drm_fb_helper *fb_helper,
 	can_clone = true;
 	dmt_mode = drm_mode_find_dmt(fb_helper->dev, 1024, 768, 60, false);
 
+	if (!dmt_mode)
+		goto fail;
+
 	drm_fb_helper_for_each_connector(fb_helper, i) {
 		if (!enabled[i])
 			continue;
@@ -2249,11 +2252,13 @@ static bool drm_target_cloned(struct drm_fb_helper *fb_helper,
 		if (!modes[i])
 			can_clone = false;
 	}
+	kfree(dmt_mode);
 
 	if (can_clone) {
 		DRM_DEBUG_KMS("can clone using 1024x768\n");
 		return true;
 	}
+fail:
 	DRM_INFO("kms: can't enable cloning when we probably wanted to.\n");
 	return false;
 }

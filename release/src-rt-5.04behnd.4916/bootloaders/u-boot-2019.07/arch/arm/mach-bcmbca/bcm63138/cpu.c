@@ -6,6 +6,7 @@
 #include <common.h>
 #include <asm/arch/pmc.h>
 #include <asm/arch/cpu.h>
+#include <asm/arch/ddr.h>
 #include <asm/arch/misc.h>
 #include <spl.h>
 #include "bcmbca-dtsetup.h"
@@ -210,12 +211,21 @@ void boot_secondary_cpu(unsigned long vector)
 }
 #endif
 
+void bcmbca_disable_memc_sram(void)
+{
+	MEMC->SRAM_REMAP_CTRL = 0;
+	MEMC->SRAM_REMAP_CTRL;
+}
+
 int arch_cpu_init(void)
 {
 #if defined(CONFIG_BCMBCA_IKOS)
 	icache_enable();
 #endif  
 #if defined(CONFIG_SPL_BUILD) && !defined(CONFIG_TPL_BUILD)
+	/* always disable memc sram first in case btrm keeps it enabled */
+	bcmbca_disable_memc_sram();
+
 	enable_ubus_fast_ack();
 	/* enable unalgined access */
 	set_cr(get_cr() & ~CR_A);

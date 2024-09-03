@@ -89,7 +89,7 @@ endif
 		exit 1; \
 	else \
 		pyver=`python3 --version | cut -d " " -f2 | sed 's/[^0-9]*//g'`; \
-		if [[ pyver -lt 360 ]]; then \
+		if [[ pyver -lt 370 ]]; then \
 			echo "ERROR: python3 version must be 3.7.0 or greater "; \
 			exit 1; \
 		fi; \
@@ -122,6 +122,10 @@ endif
 	fi
 	@if ! gawk --version 2>/dev/null; then \
 		echo "ERROR: gawk is required for build quagga           "; \
+		exit 1; \
+	fi
+	@if ! rsync --version 2>/dev/null; then \
+		echo "ERROR: rsync is required for build "; \
 		exit 1; \
 	fi
 	@echo "Checking openssl version"

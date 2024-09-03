@@ -111,6 +111,12 @@ typedef enum _bcm_sec_states {
 
 #define SEC_STATE_SECURE (SEC_STATE_GEN3_MFG|SEC_STATE_GEN3_FLD)
 
+typedef enum _bcm_smc_sec_state {
+	SMC_SEC_STATE_UNSEC = 0x1,
+	SMC_SEC_STATE_MFG = 0x2,
+	SMC_SEC_STATE_FLD = 0x4
+} bcm_smc_sec_state_t;
+
 /* Security runtime context */
 typedef enum _bcm_sec_ctx { 
 	SEC_NONE = 0x0,
@@ -217,7 +223,7 @@ u8* bcm_sec_set_active_pub_key(u8 * key);
 
 u8* bcm_sec_get_root_pub_key(void);
 void bcm_sec_get_root_aes_key(u8** key);
-int bcm_sec_delg_process_sdr( u8 * psdr, u8 * hdr_end, u32 * sdr_plus_sig_size);
+int bcm_sec_delg_process_sdr(const u8 * fit, u8 * psdr, u8 * hdr_end, u32 * sdr_plus_sig_size);
 int bcm_sec_delg_process_sec_node(u8 * fit);
 int bcm_sec_delg_post_process_sw_restrictions( u8 * fit_hdr );
 bcm_sec_delg_cfg * bcm_sec_get_delg_cfg(void);
@@ -251,5 +257,34 @@ u8* bcm_util_env_var2bin(const char* id, u32 data_len );
 u8* bcm_util_get_fdt_prop_data(void* fdt, char* path, char *prop, int* len);
 int bcm_util_hex2u32(const char* s, u8*  d);
 
+#if defined(CONFIG_SMC_BASED)
+
+#define SEC_RC_OK 0
+#define SEC_RC_KSM_NOP 529
+
+#define SEC_FIT_NODE_PATH "/brcm_sec_fit/sec_fit"
+#define SEC_FIT_NODE_ROT "key-name-hint-sign"
+#define SEC_FIT_NODE_ROE "key-name-hint-cypher"
+
+#define SEC_KSM_NODE_PATH "/brcm_sec_ksm/sec_ksm"
+#define SEC_KSM_NODE_DATA "data"
+
+int bcm_sec_smc_boot_state(bcm_sec_state_t* sec_state);
+
+void bcm_sec_smc_get_root_aes_key_name_hint(const u8 * fit, u8** key);
+u8* bcm_sec_smc_get_root_pub_key_name_hint(const u8 * fit);
+
+void bcm_sec_smc_get_active_pub_key_info(const u8 * fit, u8** key, u32 *len);
+bool bcm_sec_smc_is_active_pub_key_name_hint(void);
+
+int bcm_sec_smc_rsa_verify(const u8 *obj, u32 obj_len, const u8* sig, const u8 *pub);
+int bcm_sec_smc_aes_encrypt(const u8 *src, u8 *dst, u32 length, const u8 *key);
+int bcm_sec_smc_aes_decrypt(const u8 *src, u8 *dst, u32 length, const u8 *key);
+int bcm_sec_smc_get_key_size(const u8 *key, u32 *size);
+int bcm_sec_smc_handle_ksm_certificate(const u8 *data, u32 size);
+
+int bcm_sec_smc_get_key_store_stats(u32 *version, u32 *entries, u32 *epoch);
+
+#endif // #if defined(CONFIG_SMC_BASED)
 
 #endif

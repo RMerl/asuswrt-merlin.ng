@@ -159,7 +159,7 @@ bcmkernel_headers_install:
 ifeq ($(strip $(CONFIG_ARM)),y)
 # always use LINUX_START_ADDR defined in bcm_mem_reserve.h
 ifeq ($(CONFIG_OPTEE),y)
-KERNEL_TEXT_OFFSET := 0x00608000
+KERNEL_TEXT_OFFSET := 0x01008000
 else
 KERNEL_TEXT_OFFSET := 0x00108000
 endif

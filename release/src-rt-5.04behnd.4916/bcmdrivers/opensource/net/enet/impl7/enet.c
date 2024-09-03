@@ -1,29 +1,23 @@
 /*
    <:copyright-BRCM:2015:DUAL/GPL:standard
-
+   
       Copyright (c) 2015 Broadcom 
       All Rights Reserved
-
-   Unless you and Broadcom execute a separate written software license
-   agreement governing use of this software, this software is licensed
-   to you under the terms of the GNU General Public License version 2
-   (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-   with the following added to such license:
-
-      As a special exception, the copyright holders of this software give
-      you permission to link this software with independent modules, and
-      to copy and distribute the resulting executable under terms of your
-      choice, provided that you also meet, for each linked independent
-      module, the terms and conditions of the license of that module.
-      An independent module is a module which is not derived from this
-      software.  The special exception does not apply to any modifications
-      of the software.
-
-   Not withstanding the above, under no circumstances may you combine
-   this software in any way with any other Broadcom software provided
-   under a license other than the GPL, without Broadcom's express prior
-   written consent.
-
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License, version 2, as published by
+   the Free Software Foundation (the "GPL").
+   
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+   
+   
+   A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+   writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.
+   
    :>
  */
 
@@ -131,17 +125,42 @@ uint32_t g_qemu_test_rx_pkt;
 
 enetx_port_t *root_sw;
 
+
+/* The lock to replace rtnl_lock used between delayed init and enet_ioctl.
+** The delayed init work may take a long time(4s+) because of PHY FW loading.
+** The rtnl_lock is a very big lock, holding it in a long time will block any other  
+** access to the Linux network stack from other threads.
+*/
+static struct semaphore enet_init_sem;
+bool enet_init_done = false;
+EXPORT_SYMBOL(enet_init_done);
+
+void wait_enet_ready(void)
+{
+    /* In non delay case, there could be multiple paths calling to here from the main insmod thread and cause dead lock loop;
+        filtering out such calls here in center place will remove all these dead lock loops from different sources */
+#if defined(ENET_DELAYED_INIT)
+    if (!enet_init_done)
+    {
+        /* block here until init done */
+        pr_notice_once("%s ...\n", __FUNCTION__); /* always prints out this to to avoid silent wait */
+        down(&enet_init_sem);
+        up(&enet_init_sem);
+        pr_notice_once("%s done\n", __FUNCTION__);
+    }
+#endif
+}
+
 static void enetx_work_cb(struct work_struct *work)
 {
     enetx_work_t *enetx_work = container_of(work, enetx_work_t, base_work);
-    enetx_port_t *port = enetx_work->port;
     enetx_work_func_t func = enetx_work->func;
 
-    func(port); 
+    func(enetx_work->arg1, enetx_work->arg2); 
     kfree(enetx_work);
 }
 
-int enetx_queue_work(enetx_port_t *port, enetx_work_func_t func)
+int enetx_queue_work(enetx_work_func_t func, void *arg1, int arg2)
 {
     enetx_work_t *enetx_work = kmalloc(sizeof(enetx_work_t), GFP_ATOMIC);
     if (!enetx_work)
@@ -151,7 +170,8 @@ int enetx_queue_work(enetx_port_t *port, enetx_work_func_t func)
     }
 
     INIT_WORK(&enetx_work->base_work, enetx_work_cb);
-    enetx_work->port = port;
+    enetx_work->arg1 = arg1;
+    enetx_work->arg2 = arg2;
     enetx_work->func = func;
 
     queue_work(system_unbound_wq, &enetx_work->base_work);
@@ -211,6 +231,11 @@ void set_mac_eee_by_phy(enetx_port_t *p)
     mac_dev_eee_set(mac_dev, enabled);
 }
 
+static void _set_mac_eee_by_phy(void *p, int a)
+{
+    set_mac_eee_by_phy((enetx_port_t *)p);
+}
+
 static void synce_eth_link_change_cb(phy_dev_t *phy_dev)
 {
     void (*cb)(phy_dev_t *) = (void (*)(phy_dev_t *))bcmFun_get(BCM_FUN_ID_SYNCE_ETH_LINK_CHANGE);
@@ -224,6 +249,7 @@ void phy_link_change_cb(void *ctx) /* ctx is a PORT_CLASS_PORT enetx_port_t */
     enetx_port_t *p = ctx;
 
     p->p.phy_last_change = (jiffies * 100) / HZ;
+    phy_dev_status_propagate(p->p.phy);
 
     if (p->p.mac)
     {
@@ -231,7 +257,7 @@ void phy_link_change_cb(void *ctx) /* ctx is a PORT_CLASS_PORT enetx_port_t */
         set_mac_cfg_by_phy(p);
 
         /* Update mac eee according to phy */
-        enetx_queue_work(p, set_mac_eee_by_phy);
+        enetx_queue_work(_set_mac_eee_by_phy, p, 0);
     }
 
     if (p->dev)
@@ -302,9 +328,12 @@ inline int enetx_rx_isr(enetx_channel *chan)
 
 
 extern struct sk_buff *skb_header_alloc(void);
-extern struct hwtstamp_config stmpconf;
 
+#if defined(CONFIG_ENET_RX_BLOG_THREAD)
+int rx_skb(FkBuff_t *fkb, enetx_port_t *port, enetx_rx_info_t *rx_info)
+#else
 static inline int rx_skb(FkBuff_t *fkb, enetx_port_t *port, enetx_rx_info_t *rx_info)
+#endif
 {
     struct net_device *dev = port->dev;
     struct sk_buff *skb;
@@ -328,6 +357,9 @@ static inline int rx_skb(FkBuff_t *fkb, enetx_port_t *port, enetx_rx_info_t *rx_
 
     ETH_GBPM_TRACK_SKB( skb, GBPM_VAL_ALLOC, 0);
     ETH_GBPM_TRACK_SKB( skb, GBPM_VAL_RX, 0);
+
+    if (port->p.ops->rx_pkt_swtag_mod)
+        port->p.ops->rx_pkt_swtag_mod(port, skb);
 
     skb_trim(skb,fkb->len);
 
@@ -360,10 +392,14 @@ static inline int rx_skb(FkBuff_t *fkb, enetx_port_t *port, enetx_rx_info_t *rx_
 #endif
 
 #if defined(CONFIG_BCM_PTP_1588) && defined(CONFIG_BCM_PON_XRDP)
-    /* If the packet is 1588, ts32 should be extracted from the headroom */
-    if (unlikely((stmpconf.rx_filter == HWTSTAMP_FILTER_ALL) ||
-                 ((stmpconf.rx_filter == HWTSTAMP_FILTER_PTP_V2_EVENT) /* && (rx_info->ptp_index == 1) */ )))
-        ptp_1588_cpu_rx(skb, ntohl((uint32_t)*((uint32_t*)(fkb->data - PTP_RX_TS_LEN))));
+    if (unlikely(rx_info->ptp_index && hwts_rx_en))
+    {
+        /* 32bit TS is stored before the packet data. swap bytes required due to runner */
+        /* beware: fbk->data != skb->data */
+        uint32_t *mac_ts32 = (uint32_t *)(fkb->data - PTP_RX_TS_LEN);
+
+        ptp_1588_cpu_rx(skb, ntohl(*mac_ts32));
+    }
 #endif
 
     ETH_GBPM_TRACK_SKB( skb, GBPM_VAL_EXIT, 0 );
@@ -412,6 +448,14 @@ static inline int rx_pkt_from_q(int hw_q_id, int budget)
 
     do
     {
+#if defined(CONFIG_ENET_RX_BLOG_THREAD)
+        rc = enet_rx_blog_is_full();
+        if (unlikely(rc))
+        {
+            count = budget; // force yield
+            continue;
+        }
+#endif
         rc = enetxapi_rx_pkt(hw_q_id, &fkb, &rx_info);
         if (unlikely(rc))
         { 
@@ -505,10 +549,22 @@ static inline int rx_pkt_from_q(int hw_q_id, int budget)
 #endif
 
 
+#if defined(CONFIG_ENET_RX_BLOG_THREAD)
+      rc = enet_rx_blog_enqueue(fkb, port, &rx_info, &count);
+      if (unlikely(rc<0)) { // bypass
+        rc=0;
+#endif // !CONFIG_ENET_RX_BLOG_THREAD
 #if defined(CONFIG_BLOG)
         /* Copy over multicast forwarding exception indication to flow-cache */
         fc_args.group_fwd_exception = rx_info.is_group_fwd_exception;
         fc_args.fc_ctxt = rx_info.fc_ctxt;
+
+#if IS_ENABLED(CONFIG_BCM_HW_FIREWALL)
+        fc_args.rx_hwf_flags = 0;
+        if (rx_info.reason == rdpa_cpu_rx_reason_hw_firewall_miss)
+            fc_args.is_rx_ddos_q = 1;
+#endif
+
         blog_action = blog_finit(fkb, dev, TYPE_ETH, port->n.set_channel_in_mark ? rx_info.flow_id :
             port->n.blog_chnl_rx, port->n.blog_phy, &fc_args);
         if (unlikely(blog_action == PKT_DROP))
@@ -533,6 +589,9 @@ static inline int rx_pkt_from_q(int hw_q_id, int budget)
         count++;
 unlock:
         rcu_read_unlock();
+#if defined(CONFIG_ENET_RX_BLOG_THREAD)
+      }
+#endif // CONFIG_ENET_RX_BLOG_THREAD
     }
     while (count < budget && likely(!rc));
 
@@ -640,6 +699,7 @@ static int enet_open(struct net_device *dev)
     enetx_channel *chan = enetx_channels;
     enetx_port_t *port = ((enetx_netdev *)netdev_priv(dev))->port;
 
+    wait_enet_ready();
     enet_opened++;
     if (port->port_class == PORT_CLASS_SW)
         return 0;
@@ -884,7 +944,13 @@ static inline netdev_tx_t __enet_xmit(pNBuff_t pNBuff, struct net_device *dev)
                 BlogAction_t blog_action;
 
                 if(PNBUFF_2_SKBUFF(pNBuff)->blog_p)
+                {
                     PNBUFF_2_SKBUFF(pNBuff)->blog_p->lag_port = dispatch_info.lag_port;
+#ifdef CONFIG_BCM_MACSEC_FIRELIGHT
+                    if (port->p.macsec_dev.sv_tag)
+                        PNBUFF_2_SKBUFF(pNBuff)->blog_p->svtag = port->p.macsec_dev.sv_tag;
+#endif
+                }
 
                 blog_action = blog_emit(pNBuff, dev, TYPE_ETH, port->n.set_channel_in_mark ? dispatch_info.channel : port->n.blog_chnl, port->n.blog_phy);
                 if (unlikely(blog_action == PKT_DROP))
@@ -999,6 +1065,21 @@ netdev_tx_t ___enet_xmit(pNBuff_t pNBuff, struct net_device *dev)
 
 netdev_tx_t enet_xmit(pNBuff_t pNBuff, struct net_device *dev)
 {
+    enetx_port_t *port = NETDEV_PRIV(dev)->port;
+
+    if (port->p.ops->tx_pkt_swtag_mod)
+    {
+        int ret;
+        ret = port->p.ops->tx_pkt_swtag_mod(port, pNBuff);
+        if (ret)
+        {
+            nbuff_free(pNBuff);
+            INC_STAT_TX_DROP(port,tx_dropped_dispatch);
+            enet_err("swtag insert error=%x\n", ret);
+            return ret;
+        }
+    }
+
 #if defined(CONFIG_BCM_SW_GSO) && (!defined(CONFIG_BCM_ARCHER_GSO))
     if (IS_SKBUFF_PTR(pNBuff) && (NETDEV_PRIV(dev)->priv_feat & BCMENET_PRIV_FEAT_SW_GSO))
     {
@@ -1062,6 +1143,7 @@ static int enet_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
 {
     int rc;
 
+    wait_enet_ready();
     switch (cmd)
     {
         case SIOCGMIIPHY:
@@ -1193,6 +1275,23 @@ static int tr_rm_wan_map(enetx_port_t *port, void *_ctx)
     return (*portMap == 0);
 }
 
+static void dev_update_bridge_port_map(enetx_port_t *sw, struct net_device *dev, uint32_t *portMap_p)
+{
+    enetx_port_t *port;
+
+    if (bonding_update_br_pbvlan(sw, dev, portMap_p))
+        return;
+
+    if (!netdev_path_is_root(dev))
+        dev_update_bridge_port_map(sw, netdev_path_next_dev(dev), portMap_p);
+
+    if (port_by_netdev(dev, &port)==0)
+    {
+        if (port->p.parent_sw == sw)
+            *portMap_p |= 1 <<port->port_info.port;
+    }
+}
+
 static int tr_sw_update_br_pbvlan(enetx_port_t *sw, void *_ctx)
 {
     struct net_device *brDev = (struct net_device *)_ctx;
@@ -1204,25 +1303,23 @@ static int tr_sw_update_br_pbvlan(enetx_port_t *sw, void *_ctx)
     if (sw->s.ops->update_pbvlan == NULL)
         return 0;
 
+    if (!brDev)    // clear existing pmap
+    {
+        sw->s.ops->update_pbvlan(sw, 0);
+        return 0;
+    }
+
     netdev_for_each_lower_dev(brDev, dev, iter)
     {
-        enetx_port_t *port;
-        if (!netif_is_bridge_port(dev))
-            continue;
-
-        dev = netdev_path_get_root(dev);
-        if (!bonding_update_br_pbvlan(sw, dev, &portMap))
-        {
-            if (port_by_netdev(dev, &port)==0)
-            {
-                if (port->p.parent_sw == sw)
-                    portMap |= 1 <<port->port_info.port;
-            }
-        }
+        if (netif_is_bridge_port(dev))
+            dev_update_bridge_port_map(sw, dev, &portMap);
     }
 
     /* Remove wanPort from portmap --- These ports are always isolated */
     _port_traverse_ports(sw, tr_rm_wan_map, PORT_CLASS_PORT, &portMap, 1);
+
+    if (!portMap)
+        return 0;
 
 #if defined(CONFIG_BCM_OVS)
     // when OVS is compiled in don't adjust switch port PBVLAN during configuration
@@ -1241,12 +1338,18 @@ static void bridge_update_pbvlan(struct net_device *br_dev)
 void update_pbvlan_all_bridge(void)
 {
     struct net_device *dev = NULL;
+    int init = 1;
     
     rcu_read_lock();
     for_each_netdev_rcu(&init_net, dev) 
     {
         if (dev->priv_flags & IFF_EBRIDGE)
         {
+            if (init)
+            {
+                init =0;
+                bridge_update_pbvlan(NULL);
+            }
             bridge_update_pbvlan(dev);
         }
     }
@@ -1711,6 +1814,7 @@ int enet_create_netdevice(enetx_port_t *p)
 
 void enet_remove_netdevice(enetx_port_t *p)
 {
+    bool self_lock = false;
 #ifdef CONFIG_BCM_NFT_OFFLOAD
     enetx_netdev * ndev = netdev_priv(p->dev);
     nft_uninit(ndev->fm_nft_ctx); 
@@ -1721,31 +1825,48 @@ void enet_remove_netdevice(enetx_port_t *p)
 
     enet_dev_mac_set(p, 0);
 
+    if (!rtnl_is_locked())
+    {
+        /* This may be called under workqueue context(delayed_init_work_cb), where rtnl_lock is not already held, so hold it */
+        rtnl_lock();
+        self_lock = true;
+    }
+
     /* XXX: Should syncronize_net even when one port is removed ? */
     unregister_netdevice(p->dev);
+
+    if (self_lock)
+    {
+        rtnl_unlock();
+    }
 
     p->dev = NULL;
 }
 
 static int enet_netdev_event(struct notifier_block *this, unsigned long event, void *ptr)
 {
+    struct netdev_notifier_changeupper_info *info = (struct netdev_notifier_changeupper_info *)ptr;
     struct net_device *dev = netdev_notifier_info_to_dev(ptr);
 
     switch (event) 
     {
-        case NETDEV_CHANGEUPPER:
-            if (bonding_netdev_event(event, dev))
-                return NOTIFY_BAD;
+    case NETDEV_CHANGEUPPER:
+        {
+            struct net_device *upper_dev = info->upper_dev;
+
+            if (netif_is_bond_master(upper_dev) && netif_is_bond_slave(dev))
+                return bonding_change_event(dev, upper_dev, info->linking) ? NOTIFY_BAD : NOTIFY_DONE;
 
             if (netif_is_bridge_port(dev))
             {
                 struct net_device *br_dev = changeupper_get_upper(dev, ptr);
-                if (br_dev && netif_is_bridge_master(br_dev))
+                if (br_dev && info->linking)
                     bridge_update_pbvlan(br_dev);
-                else if (!br_dev)
+                else
                     update_pbvlan_all_bridge();
             }
             break;
+        }
     }
     return NOTIFY_DONE;
 }
@@ -1781,8 +1902,13 @@ static void bcm_enet_exit(void)
     sw_free(&root_sw);
     rtnl_unlock();
 
+#if defined(CONFIG_ENET_RX_BLOG_THREAD)
+    enet_rx_blog_thread_destory();
+#endif
+
     enet_err("ENET system destructed...\n");
 }
+
 
 int port_mac_phy_init(enetx_port_t *port);
 
@@ -1798,35 +1924,25 @@ static int tr_port_delayed_init(enetx_port_t *p, void *_ctx)
     return 0;
 }
 
-static void delayed_ports_work_cb(struct work_struct *work)
+static void delayed_init_work_cb(void *p, int v)
 {
-    msleep(15000);
-    rtnl_lock();
     port_traverse_ports(root_sw, tr_port_delayed_init, PORT_CLASS_PORT, NULL);
-    rtnl_unlock();
+    enetxapi_post_config();
+    enet_init_done = true;
+    up(&enet_init_sem);
 }
-
-DECLARE_WORK(delayed_work, delayed_ports_work_cb);
 
 int bcm_enet_init_post(void)
 {
     int rc;
+
+    sema_init(&enet_init_sem, 0);
 
     enetxapi_post_parse();
 
     rc = crossbar_finalize();
     if (rc)
         goto exit;
-
-#if defined(DSL_DEVICES)
-    rc = mac_drivers_init();
-    if (rc)
-        goto exit;
-
-    rc = phy_drivers_init();
-    if (rc)
-        goto exit;
-#endif
 
 #if defined(CONFIG_BCM_RUNNER_GSO)
     /* Check BP3 license and print message once */
@@ -1847,8 +1963,6 @@ int bcm_enet_init_post(void)
     rc = enetxapi_queues_init(&enetx_channels);
     if (rc)
         goto exit;
-
-    enetxapi_post_config();
 
     _enet_init_dg_skbp();
     /* Set up dying gasp handler */
@@ -1878,8 +1992,13 @@ int bcm_enet_init_post(void)
     flctl_init();
 #endif
 
-    schedule_work(&delayed_work);
+#if defined(CONFIG_ENET_RX_BLOG_THREAD)
+    rc = enet_rx_blog_thread_create();
+    if (rc)
+        goto exit;
+#endif
 
+     rc = enetx_queue_work(delayed_init_work_cb, 0, 0);
 exit:
     if (rc)
     {

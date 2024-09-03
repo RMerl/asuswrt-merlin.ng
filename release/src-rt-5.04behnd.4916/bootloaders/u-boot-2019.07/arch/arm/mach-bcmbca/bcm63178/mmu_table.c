@@ -25,26 +25,12 @@ static struct mm_region broadcom_bcm963178_mem_map[] = {
 		.size = SZ_1M,
 		.attrs = SECTION_ATTR_CACHED_MEM,
 	},
-	/* STD Mem  */
-	{
-		.virt = CONFIG_SYS_INIT_STD_32K_ADDR,
-		.phys = CONFIG_SYS_INIT_STD_32K_ADDR,
-		.size = SZ_32K,
-		.attrs = SECTION_ATTR_DEVICE, 
-	},
 #else
 	/* TPL table */
 	/* 
 	 * uboot ddr entries for cached memory will be set in ram_bank_mmu_setup 
 	 * based on actual size 
          */
-	/* STD Mem  */
-	{
-		.virt = CONFIG_SYS_INIT_STD_32K_ADDR,
-		.phys = CONFIG_SYS_INIT_STD_32K_ADDR,
-		.size = SZ_32K,
-		.attrs = SECTION_ATTR_DEVICE, 
-	},
 #endif
 #else
 	/* u-boot table */
@@ -106,14 +92,14 @@ static struct mm_region broadcom_bcm963178_mem_map[] = {
 		/* SoC peripheral */
 		.virt = 0xff800000,
 		.phys = 0xff800000,
-                .size = SZ_1M,
+		.size = SZ_1M,
 		.attrs = SECTION_ATTR_DEVICE,
 	},
 	{
 		/* BLUT */
 		.virt = 0xfff00000,
 		.phys = 0xfff00000,
-                .size = SZ_1M,
+		.size = SZ_1M,
 		.attrs = SECTION_ATTR_DEVICE,
 	}, 
 	{

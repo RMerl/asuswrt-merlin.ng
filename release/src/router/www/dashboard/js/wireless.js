@@ -10,7 +10,7 @@ setTimeout(function () {
 
     for (var i = 0; i < array.length; i++) {
         var key = array[i];
-        var wl_unit = wlBandSeq[key].wl_unit;
+        var wl_unit = wlBandSeq[key].wlUnit;
         var postfixHook = wlBandSeq[key].postfixHook;
         var nvram = httpApi.nvramGet([
             "wl" + wl_unit + "_ssid",
@@ -45,24 +45,26 @@ setTimeout(function () {
         })();
 
         // generate channels for 20/40/80/160 MHz
-        wireless[key].chanspecs.forEach(function (element) {
-            if (
-                element.indexOf("u") !== -1 || // 40 MHz
-                element.indexOf("l") !== -1 ||
-                element.indexOf("/40") != -1
-            ) {
-                wireless[key].channel40MHz.push(element);
-            } else if (element.indexOf("/80") != -1) {
-                // 80 MHz
-                wireless[key].channel80MHz.push(element);
-            } else if (element.indexOf("/160") != -1) {
-                // 160 MHz
-                wireless[key].channel160MHz.push(element);
-            } else {
-                // 20 MHz
-                wireless[key].channel20MHz.push(element);
-            }
-        });
+        if (Array.isArray(wireless[key].chanspecs)) {
+            wireless[key].chanspecs.forEach(function (element) {
+                if (
+                    element.indexOf("u") !== -1 || // 40 MHz
+                    element.indexOf("l") !== -1 ||
+                    element.indexOf("/40") != -1
+                ) {
+                    wireless[key].channel40MHz.push(element);
+                } else if (element.indexOf("/80") != -1) {
+                    // 80 MHz
+                    wireless[key].channel80MHz.push(element);
+                } else if (element.indexOf("/160") != -1) {
+                    // 160 MHz
+                    wireless[key].channel160MHz.push(element);
+                } else {
+                    // 20 MHz
+                    wireless[key].channel20MHz.push(element);
+                }
+            });    
+        }
 
         wireless[key].axSupport = (function () {
             var tmp = wireless[key].capability.find((element) => element === "11ax");
@@ -89,6 +91,11 @@ setTimeout(function () {
 
         wireless[key].bw160Enabled = nvram["wl" + wl_unit + "_bw_160"] === "1" ? true : false;
 
-        wireless[key].dfsSupport = wireless[key].channel.some((element) => element === "56" || element === "100");
+        if (Array.isArray(wireless[key].channel)) {
+            wireless[key].dfsSupport = wireless[key].channel.some((element) => element === "56" || element === "100");
+        }
+        else{
+            wireless[key].dfsSupport = false;
+        }
     }
 }, 100);

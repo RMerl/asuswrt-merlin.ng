@@ -1,29 +1,23 @@
 /*
     <:copyright-BRCM:2015:DUAL/GPL:standard
-
-       Copyright (c) 2015 Broadcom
+    
+       Copyright (c) 2015 Broadcom 
        All Rights Reserved
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
     :>
 */
 
@@ -61,25 +55,36 @@ typedef enum
     ACCESS_LOG_OP_SLEEP,
     ACCESS_LOG_OP_SET_CORE_ADDR,
     ACCESS_LOG_OP_STOP,
-	ACCESS_LOG_OP_MEMSET_ADAPTIVE_32,
-	ACCESS_LOG_OP_WRITE_6BYTE_ADDR,
-    ACCESS_LOG_OP_MEMSET_8,
-
+    ACCESS_LOG_OP_MEMSET_ADAPTIVE_32,
+    ACCESS_LOG_OP_WRITE_6BYTE_ADDR,
+    ACCESS_LOG_OP_POLL,
+    ACCESS_LOG_OP_MEMSET_8
 } access_log_op_t;
 
+typedef enum
+{
+    ACCESS_LOG_POLL_MODE_CLR,
+    ACCESS_LOG_POLL_MODE_SET
+} access_log_poll_mode_t;
+    
 
 typedef union os_size_st_union {
-	uint32_t value;
-	struct {
-		uint32_t addr:24;
-		uint32_t op_code : 4;
-		uint32_t size : 4;
-	};
+    uint32_t value;
+    struct {
+        uint32_t addr : 24;
+        uint32_t op_code : 4;
+        uint32_t size : 4;
+    };
+    struct {
+        uint32_t addr_1 : 24;
+        uint32_t op_code_1 : 4;
+        uint32_t poll_mode : 4;
+    };
 } addr_op_size_st;
 
 typedef struct access_log_tuple
 {
-	uint32_t addr_op_size;
+    uint32_t addr_op_size;
     uint32_t value;
 } access_log_tuple_t;
 
@@ -105,34 +110,31 @@ static inline int access_log_enable_get(void)
 
 static inline void access_log_log(access_log_op_t op, uint32_t addr, uint32_t value, uint32_t size)
 {
-	addr_op_size_st addr_op_size;
-	addr_op_size.value = 0;
+    addr_op_size_st addr_op_size;
+    addr_op_size.value = 0;
 
     if (access_log_enable_get())
     {
-    	if ((op!= ACCESS_LOG_OP_MEMSET) && (op!= ACCESS_LOG_OP_MEMSET_32) && (op!= ACCESS_LOG_OP_MEMSET_ADAPTIVE_32))
-    	{
-    		/* not memset */
-    		if  (((op ==  ACCESS_LOG_OP_WRITE) || (op ==  ACCESS_LOG_OP_MWRITE)) && (addr < 0x82000000))
-    		{
-    			op = ACCESS_LOG_OP_WRITE_6BYTE_ADDR;
-    		}
-    		addr_op_size.addr = addr & 0xFFFFFF;
-			addr_op_size.op_code =  (op & 0xf);
-			addr_op_size.size = (size & 0xf);
+        if ((op!= ACCESS_LOG_OP_MEMSET) && (op!= ACCESS_LOG_OP_MEMSET_32) && (op!= ACCESS_LOG_OP_MEMSET_ADAPTIVE_32))
+        {
+            /* not memset */
+            if  (((op ==  ACCESS_LOG_OP_WRITE) || (op ==  ACCESS_LOG_OP_MWRITE)) && (addr < 0x82000000))
+                op = ACCESS_LOG_OP_WRITE_6BYTE_ADDR;
+
+            addr_op_size.addr = addr & 0xFFFFFF;
+            addr_op_size.op_code = (op & 0xf);
+            addr_op_size.size = (size & 0xf);
 
             ACCESS_LOG_PRINT(addr_op_size.value, value);
-    	}
-    	else
-    	{
+        } else {
             /* memset is represented in 2 lines
              * first line op code + size
              * second line address + value
              */
-    		addr_op_size.op_code = (op & 0xF);
-    		ACCESS_LOG_PRINT(addr_op_size.value, size);
-    		ACCESS_LOG_PRINT(addr, value);
-    	}
+            addr_op_size.op_code = (op & 0xF);
+            ACCESS_LOG_PRINT(addr_op_size.value, size);
+            ACCESS_LOG_PRINT(addr, value);
+        }
     }
 }
 
@@ -158,6 +160,26 @@ static inline void access_log_log(access_log_op_t op, uint32_t addr, uint32_t va
         ACCESS_LOG(ACCESS_LOG_OP_SLEEP, 0, _d, 0); \
         udelay(_d); \
     } while(0)
+
+#define ACCESS_LOG_POLL(_addr, _mask, _mode) \
+    if (access_log_enable_get()) { \
+        uint32_t check_val = 0; \
+        if (_mode == ACCESS_LOG_POLL_MODE_SET) \
+            check_val = _mask; \
+        ACCESS_LOG(ACCESS_LOG_OP_POLL, _addr, _mask, _mode); \
+        ACCESS_LOG_ENABLE_SET(0); \
+        while ((*(volatile uint32_t *)((uintptr_t)_addr) & _mask) != check_val) { \
+            udelay(1); \
+        }; \
+        ACCESS_LOG_ENABLE_SET(1); \
+    } else { \
+        uint32_t check_val = 0; \
+        if (_mode == ACCESS_LOG_POLL_MODE_SET) \
+            check_val = _mask; \
+        while ((*(volatile uint32_t *)((uintptr_t)_addr) & _mask) != check_val) { \
+            udelay(1); \
+        }; \
+    }
 
 #endif /* #ifdef _CFE_ || __UBOOT__ */
 

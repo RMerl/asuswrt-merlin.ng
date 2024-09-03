@@ -83,35 +83,56 @@ function initial(){
 		show_feature_desc_mlo();
 	});
 
+
+	if(isSupport("sdn_mwl")){
+		$("#wifi_set_container").hide();
+	}
+
 	const is_Web_iframe = (($(parent.document).find("#mainMenu").length > 0) || (top.webWrapper)) ? true : false;
 	if(is_Web_iframe){
-		$(".function_switch_container [data-component=wifi_set]").unbind("click").click(function(e){
+		$("[data-container=mlo_config] [data-component=wifi_set]").unbind("click").click(function(e){
 			e = e || event;
 			e.stopPropagation();
 			top.location.href = "/Advanced_Wireless_Content.asp";
 		});
-		$(".function_switch_container [data-component=mlo_switch]").unbind("click").click(function(e){
+		$("[data-container=mlo_config] [data-component=mlo_switch]").unbind("click").click(function(e){
 			e = e || event;
 			e.stopPropagation();
-			let nvramSet_obj = {"action_mode": "apply", "rc_service": "restart_wireless;", "mld_enable": "1"};
-			if($(this).hasClass("on")){
+			const $mlo_switch = $(this);
+			let nvramSet_obj = {"action_mode": "apply", "rc_service": "reboot;", "mld_enable": "1"};
+			if($mlo_switch.hasClass("on")){
 				const sdn_mlo_enable = sdn_all_rl_json.filter((item)=>{
-					return (item.sdn_rl.sdn_name == "MLO" && item.sdn_rl.sdn_enable == "1" && item.apg_rl.mlo == "2")
+					return (item.sdn_rl.sdn_enable == "1" && item.apg_rl.mlo == "2")
 				});
+				let mlo_hint = `${(sdn_mlo_enable.length > 0) ? `<#WiFi_mlo_disable_Hint#><br>` : ""}
+				${isSupport("bcmwifi") ? `<#AiMesh_System_Reboot_Hint#>` : `<#WiFi_change_settings#><br><#AiMesh_Are_U_Sure_Proceed#>`}`;
+				show_customize_confirm(mlo_hint);
+				const $confirm_obj = $(".popup_container.popup_customize_alert");
 				if(sdn_mlo_enable.length > 0){
-					show_customize_confirm(`<#WiFi_mlo_disable_Hint#><br><#AiMesh_Are_U_Sure_Proceed#>`);
-					const $confirm_obj = $(".popup_container.popup_customize_alert");
 					$confirm_obj.find("[data-btn=ok]")
 						.click(()=>{
-							$(this).toggleClass("off on");
+							$mlo_switch.toggleClass("off on");
 							nvramSet_obj["mld_enable"] = "0";
+							nvramSet_obj[`rc_service`] = get_rc_service();
 							let rc_sdn = "";
 							$.each(sdn_all_rl_json, function(index, sdn_all_rl){
-								if(sdn_all_rl.sdn_rl.sdn_name == "MLO" && sdn_all_rl.sdn_rl.sdn_enable == "1" && sdn_all_rl.apg_rl.mlo == "2"){
+								if(sdn_all_rl.sdn_rl.sdn_enable == "1" && sdn_all_rl.apg_rl.mlo == "2"){
 									const sdn_idx = sdn_all_rl.sdn_rl.idx;
 									const apg_idx = sdn_all_rl.apg_rl.apg_idx;
-									sdn_all_rl.sdn_rl.sdn_enable = "0";
-									nvramSet_obj[`apg${apg_idx}_enable`] = "0";
+									const ap_prefix = (sdn_all_rl.sdn_rl.sdn_name == "MAINFH" || sdn_all_rl.sdn_rl.sdn_name == "MAINBH") ? "apm" : "apg";
+									if(ap_prefix == "apm"){
+										nvramSet_obj[`apm${apg_idx}_mlo`] = "0";
+										const profile_band_bitwise = sdn_all_rl_json.find(item => item.sdn_rl.sdn_name === "MAINFH" && item.sdn_rl.idx === sdn_idx).mainfh_smart_connect.band_bitwise;
+										let wifi_band_bitwise = 0;
+										wifi_band_options_cb.forEach(item => {
+											wifi_band_bitwise += (item.value & profile_band_bitwise) ? (parseInt(item.value) || 0) : 0;
+										});
+										nvramSet_obj[`apm${apg_idx}_dut_list`] = get_mainfh_dut_list(wifi_band_bitwise, false);
+									}
+									else{
+										sdn_all_rl.sdn_rl.sdn_enable = "0";
+										nvramSet_obj[`apg${apg_idx}_enable`] = "0";
+									}
 									if(rc_sdn == "")
 										rc_sdn = `restart_sdn ${sdn_all_rl.sdn_rl.idx}`;
 									else
@@ -123,50 +144,83 @@ function initial(){
 								let sdn_all_rl_tmp = JSON.parse(JSON.stringify(sdn_all_rl_json));
 								let sdn_rl = parse_JSONToStr_sdn_all_list({"sdn_all_rl":sdn_all_rl_tmp}).sdn_rl;
 								nvramSet_obj[`sdn_rl`] = sdn_rl;
-								nvramSet_obj[`rc_service`] += rc_sdn;
+								if(!isSupport("bcmwifi")) nvramSet_obj[`rc_service`] += rc_sdn;
 							}
 							apply_mlo_switch();
 						});
 				}
 				else{
-					$(this).toggleClass("off on");
-					nvramSet_obj["mld_enable"] = "0";
-					apply_mlo_switch();
+					$confirm_obj.find("[data-btn=ok]")
+						.click(()=>{
+							$mlo_switch.toggleClass("off on");
+							nvramSet_obj["mld_enable"] = "0";
+							nvramSet_obj[`rc_service`] = get_rc_service();
+							apply_mlo_switch();
+						});
 				}
 			}
 			else{
 				if(check_sdn_legacy_exists()){
-					$(this).toggleClass("off on");
+					let mlo_hint = ``;
+					let wifi_radio_hint = check_wl_band_radio_off();
+					let wifi_schedule_hint = check_wl_timesched_on();
+					if(wifi_radio_hint != "" || wifi_schedule_hint != ""){
+						mlo_hint += `To enable MLO, these WiFi settings should be adjusted :`;
+						mlo_hint += `<ul style='margin:12px -10px;'>`;
+						if(wifi_radio_hint != "")
+							mlo_hint += `<li><#WLANConfig11b_WirelessCtrl_button1name#> ${wifi_radio_hint} <#Wireless_Radio#></li>`;
+						if(wifi_schedule_hint != "")
+							mlo_hint += `<li><#WLANConfig11b_WirelessCtrl_buttonname#> ${wifi_schedule_hint} <#menu5_1#> <#Time_Scheduling#></li>`;
+						mlo_hint += `</ul>`;
+					}
+					mlo_hint += isSupport("bcmwifi") ? `<#AiMesh_System_Reboot_Hint#>` : `<#WiFi_change_settings#>`;
+					mlo_hint += `<br><#AiMesh_Are_U_Sure_Proceed#>`;
+					show_customize_confirm(mlo_hint);
+					const $confirm_obj = $(".popup_container.popup_customize_alert");
 					if(check_mlo_meet_conditions()){
-						nvramSet_obj["mld_enable"] = "1";
-						if(get_wl_unit_by_band("2G") != ""){
-							nvramSet_obj[`2g1_11be`] = "1";
-							nvramSet_obj[`2g1_crypto`] = "aes+gcmp256";
-						}
-						if(get_wl_unit_by_band("5G1") != ""){
-							nvramSet_obj[`5g1_11be`] = "1";
-							nvramSet_obj[`5g1_crypto`] = "aes+gcmp256";
-						}
-						if(get_wl_unit_by_band("5G2") != ""){
-							nvramSet_obj[`5g2_11be`] = "1";
-							nvramSet_obj[`5g2_crypto`] = "aes+gcmp256";
-						}
-						if(get_wl_unit_by_band("6G1") != ""){
-							nvramSet_obj[`6g1_11be`] = "1";
-							nvramSet_obj[`6g1_crypto`] = "aes+gcmp256";
-						}
-						if(get_wl_unit_by_band("6G2") != ""){
-							nvramSet_obj[`6g2_11be`] = "1";
-							nvramSet_obj[`6g2_crypto`] = "aes+gcmp256";
-						}
-						const wl_mlo_config = httpApi.nvramGet(["wl_mlo_config"]).wl_mlo_config;
-						if(wl_mlo_config == ""){
-							nvramSet_obj["rc_service"] = "reboot";
-						}
-						apply_mlo_switch();
+						$confirm_obj.find("[data-btn=ok]")
+							.click(()=>{
+								$mlo_switch.toggleClass("off on");
+								nvramSet_obj["mld_enable"] = "1";
+								if(get_wl_unit_by_band("2G") != ""){
+									nvramSet_obj[`2g1_11be`] = "1";
+									nvramSet_obj[`2g1_crypto`] = "aes+gcmp256";
+									nvramSet_obj[`2g1_radio`] = "1";
+									nvramSet_obj[`2g1_timesched`] = "0";
+								}
+								if(get_wl_unit_by_band("5G1") != ""){
+									nvramSet_obj[`5g1_11be`] = "1";
+									nvramSet_obj[`5g1_crypto`] = "aes+gcmp256";
+									nvramSet_obj[`5g1_radio`] = "1";
+									nvramSet_obj[`5g1_timesched`] = "0";
+								}
+								if(get_wl_unit_by_band("5G2") != ""){
+									nvramSet_obj[`5g2_11be`] = "1";
+									nvramSet_obj[`5g2_crypto`] = "aes+gcmp256";
+									nvramSet_obj[`5g2_radio`] = "1";
+									nvramSet_obj[`5g2_timesched`] = "0";
+								}
+								if(get_wl_unit_by_band("6G1") != ""){
+									nvramSet_obj[`6g1_11be`] = "1";
+									nvramSet_obj[`6g1_crypto`] = "aes+gcmp256";
+									nvramSet_obj[`6g1_radio`] = "1";
+									nvramSet_obj[`6g1_timesched`] = "0";
+								}
+								if(get_wl_unit_by_band("6G2") != ""){
+									nvramSet_obj[`6g2_11be`] = "1";
+									nvramSet_obj[`6g2_crypto`] = "aes+gcmp256";
+									nvramSet_obj[`6g2_radio`] = "1";
+									nvramSet_obj[`6g2_timesched`] = "0";
+								}
+								nvramSet_obj[`rc_service`] = get_rc_service();
+								apply_mlo_switch();
+						});
 					}
 					else{
-						top.location.href = "/QIS_wizard.htm?flag=mlo";
+						$confirm_obj.find("[data-btn=ok]")
+							.click(()=>{
+								top.location.href = "/QIS_wizard.htm?flag=mlo";
+							});
 					}
 				}
 				else{
@@ -201,13 +255,73 @@ function initial(){
 					}
 				});
 			}
+			function get_rc_service(){
+				if(isSupport("bcmwifi")) return "reboot;";
+				else return "restart_wireless;";
+			}
 		})
 		.removeClass("off on").addClass(()=>{
 			return (httpApi.nvramGet(["mld_enable"]).mld_enable == "1") ? "on" : "off";
 		});
+
+		if(isSupport("mlo_bh_band")){
+			let $bh_band_comp = $("[data-container=mlo_config] [data-component=bh_band]").change(function(){
+				const $sel_bh_band = $(this);
+				if(httpApi.nvramGet(["mld_enable"]).mld_enable == "1"){
+					show_customize_confirm(`${isSupport("bcmwifi") ? `<#AiMesh_System_Reboot_Hint#>` : `<#WiFi_change_settings#>`}<br><#AiMesh_Are_U_Sure_Proceed#>`);
+					const $confirm_obj = $(".popup_container.popup_customize_alert");
+					$confirm_obj.find("[data-btn=ok]")
+						.click(()=>{
+							const loading_time = httpApi.hookGet("get_default_reboot_time");
+							let nvramSet_obj = {"action_mode": "apply", "rc_service": "reboot", "mlo_bh_band": ""};
+							nvramSet_obj["mlo_bh_band"] = $sel_bh_band.val();
+							showLoading();
+							httpApi.nvramSet(nvramSet_obj, function(){
+								showLoading(loading_time);
+								if(isWLclient()){
+									setTimeout(()=>{
+										showWlHintContainer();
+									}, loading_time*1000);
+								}
+								check_isAlive_and_redirect({"page": "MLO.asp", "time": loading_time});
+							});
+						});
+					$confirm_obj.find("[data-btn=cancel]")
+						.click(()=>{
+							$bh_band_comp.val($sel_bh_band.attr("data-bh_band"));
+						});
+				}
+				else{
+					let nvramSet_obj = {"action_mode": "apply", "mlo_bh_band": ""};
+					nvramSet_obj["mlo_bh_band"] = $sel_bh_band.val();
+					httpApi.nvramSet(nvramSet_obj);
+				}
+			});
+			let bh_band_options = [
+				{"text":`5GHz, 6GHz-1 and 6GHz-2 (<#CTL_Default#>)`,"value":"98"},
+				{"text":`2GHz, 5GHz and 6GHz`,"value":"35"}
+			];
+			$.each(bh_band_options, function(index, item){
+				$bh_band_comp.append($('<option>', {
+					value: item.value,
+					text: item.text,
+				}));
+			});
+			const mlo_bh_band = httpApi.nvramGet(["mlo_bh_band"]).mlo_bh_band;
+			if(mlo_bh_band != ""){
+				$bh_band_comp.val(mlo_bh_band).attr({"data-bh_band":mlo_bh_band});
+			}
+			else{
+				const first_option = $("#sel_bh_band option:first").val();
+				if(first_option != undefined) $bh_band_comp.val(first_option).attr({"data-bh_band":first_option});
+			}
+		}
+		else{
+			$("[data-container=mlo_config] [data-container=mlo_bh_band]").remove();
+		}
 	}
 	else{
-		$(".function_switch_container").remove();
+		$("[data-container=mlo_config]").remove();
 	}
 
 	var delay_load = (app_control.type == "") ? 100 : 0;
@@ -257,8 +371,58 @@ function initial(){
 		if(isSwMode("rt")){
 			Get_DNS_List_DB();
 		}
-
 	}, delay_load);
+
+	function check_wl_band_radio_off(){
+		let result = "";
+		const wl_band_arr = ["2g1", "5g1", "5g2", "6g1", "6g2"];
+		$.each(wl_band_arr, function(index, item){
+			const wl_unit_by_band = (item == "2g1") ? "2g" : item;
+			const wl_band = item;
+			if(get_wl_unit_by_band(wl_unit_by_band) != ""){
+				const nvram_str = `${wl_band}_radio`;
+				if(httpApi.nvramGet([nvram_str])[nvram_str] != "1"){
+					if(result != "") result += `, `;
+					let wl_band_text = "";
+					if(wl_band == "2g1") wl_band_text += `2.4 Ghz`;
+					else if(wl_band.substring(2,3) == "1"){//5g1,6g1
+						wl_band_text += `${wl_band.substring(0,1)} GHz`;
+						if(get_wl_unit_by_band(`${wl_band.substring(0,2)}2`) != "") wl_band_text += `-1`;
+					}
+					else{//5g2,6g2
+						wl_band_text += `${wl_band.substring(0,1)} GHz-2`;
+					}
+					result += wl_band_text;
+				}
+			}
+		});
+		return result;
+	}
+	function check_wl_timesched_on(){
+		let result = "";
+		const wl_band_arr = ["2g1", "5g1", "5g2", "6g1", "6g2"];
+		$.each(wl_band_arr, function(index, item){
+			const wl_unit_by_band = (item == "2g1") ? "2g" : item;
+			const wl_band = item;
+			if(get_wl_unit_by_band(wl_unit_by_band) != ""){
+				const nvram_str = `${wl_band}_timesched`;
+				if(httpApi.nvramGet([nvram_str])[nvram_str] == "1"){
+					if(result != "") result += `, `;
+					let wl_band_text = "";
+					if(wl_band == "2g1") wl_band_text += `2.4 Ghz`;
+					else if(wl_band.substring(2,3) == "1"){//5g1,6g1
+						wl_band_text += `${wl_band.substring(0,1)} GHz`;
+						if(get_wl_unit_by_band(`${wl_band.substring(0,2)}2`) != "") wl_band_text += `-1`;
+					}
+					else{//5g2,6g2
+						wl_band_text += `${wl_band.substring(0,1)} GHz-2`;
+					}
+					result += wl_band_text;
+				}
+			}
+		});
+		return result;
+	}
 }
 </script>
 <body class="body_rwd">
@@ -275,11 +439,24 @@ function initial(){
 			<div class="title"><#WiFi_mlo_title#></div>
 			<div class="help_icon"></div>
 		</div>
-		<div class="function_switch_container">
-			<div class="title">MLO</div>
-			<div class="input_container">
-				<div data-component="wifi_set" class="profile_btn_container"><#QKSet_wireless_webtitle#></div>
-				<div data-component="mlo_switch" class="icon_switch off"></div>
+		<div data-container="mlo_config" class="mlo_config_container">
+			<div class="config_item_container">
+				<div class="title"><#WLANConfig11b_WirelessCtrl_button1name#> MLO</div>
+				<div class="input_container">
+					<div data-component="mlo_switch" class="icon_switch off"></div>
+				</div>
+			</div>
+			<div data-container="mlo_bh_band" class="config_item_container">
+				<div class="title">Backhaul Bands</div>
+				<div class="input_container">
+					<select data-component="bh_band" id="sel_bh_band" class="dropdown_select"></select>
+				</div>
+			</div>
+			<div class="config_item_container" id="wifi_set_container">
+				<div class="title"><#QKSet_wireless_webtitle#></div>
+				<div class="input_container">
+					<div data-component="wifi_set" class="profile_btn_container"><#btn_go#></div>
+				</div>
 			</div>
 		</div>
 		<div class="content_container">

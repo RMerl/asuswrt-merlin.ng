@@ -83,7 +83,7 @@ static void bcm_ethsw_init(struct udevice *dev)
 	gphy_powerup(priv->phy_base, priv->phy_wkard_timeout, priv->sphy_ctrl, priv->qphy_ctrl, priv->phy_test_ctrl);
 #endif
 
-#if !(defined(CONFIG_BCM6756) || defined(CONFIG_BCM6765))
+#if !(defined(CONFIG_BCM6756) || defined(CONFIG_BCM6765) || defined(CONFIG_BCM6766) || defined(CONFIG_BCM6764))
 	// BCM6756 switch has reverse logic port will be reset disabled
 	if (ETHSW_CORE)
 	{
@@ -123,7 +123,7 @@ static void bcm_ethsw_init(struct udevice *dev)
 		ETHSW_CORE->switch_ctrl = (ETHSW_CORE->switch_ctrl & 0xffb0) |
 	    	ETHSW_SC_MII_DUMP_FORWARDING_EN | ETHSW_SC_MII2_VOL_SEL;
 
-#if defined(CONFIG_BCM6765)
+#if defined(CONFIG_BCM6765) || defined(CONFIG_BCM6766) || defined(CONFIG_BCM6764)
 		ETHSW_CORE->imp_port_state = 
 		    ETHSW_IPS_XGMII_MODE | ETHSW_IPS_USE_REG_CONTENTS |
 		    ETHSW_IPS_TXFLOW_PAUSE_CAPABLE | ETHSW_IPS_RXFLOW_PAUSE_CAPABLE |
@@ -227,7 +227,7 @@ static void bcm_ethsw_close(struct udevice *dev)
 	}
 }
 
-#if defined(CONFIG_BCM6756) || defined(CONFIG_BCM63178) || defined(CONFIG_BCM4908) || defined(CONFIG_BCM6765)
+#if defined(CONFIG_BCM6756) || defined(CONFIG_BCM63178) || defined(CONFIG_BCM4908) || defined(CONFIG_BCM6765) || defined(CONFIG_BCM6766) || defined(CONFIG_BCM6764)
 void sf2_base_init(uintptr_t reg_base, uintptr_t core_base);
 #endif
 
@@ -242,6 +242,10 @@ static int sf2_eth_probe(struct udevice *dev)
 	const char *phy_mode;
 #if defined(MANUAL_LED_INIT)
 	int port_index=0;
+#endif
+#if defined(BUS_MDIO_V1) || defined(MAC_SF2) || defined(MAC_SF2_DUAL)
+	struct udevice *mdio_dev;
+	uclass_get_device_by_driver(UCLASS_MISC, DM_GET_DRIVER(brcm_mdio), &mdio_dev);
 #endif
 
     priv->ops.init  = bcm_ethsw_init;
@@ -258,7 +262,7 @@ static int sf2_eth_probe(struct udevice *dev)
 	ret = dev_read_resource_byname(dev, "switchcore-base", &res);
 	if (!ret) {
 		priv->switch_core = devm_ioremap(dev, res.start, resource_size(&res));
-#if defined(CONFIG_BCM6756) || defined(CONFIG_BCM63178) || defined(CONFIG_BCM4908) || defined(CONFIG_BCM6765)
+#if defined(CONFIG_BCM6756) || defined(CONFIG_BCM63178) || defined(CONFIG_BCM4908) || defined(CONFIG_BCM6765) || defined(CONFIG_BCM6766) || defined(CONFIG_BCM6764)
 	}
 	ret = dev_read_resource_byname(dev, "switchreg-base", &res);
 	if (!ret) {

@@ -30,12 +30,24 @@ struct pnsInfo mapPushInfo[] =
 	{SYS_WAN_GOT_PROBLEMS_FROM_ISP_EVENT         ,"Your ISP appears to have problems."                      ,"" },
 	{SYS_WAN_UNPUBLIC_IP_EVENT                   ,"External IP service is unavailable."                     ,"" },
 	{SYS_ALL_WIFI_TURN_OFF_EVENT                 ,"All your WiFi is turned off"                             ,"" },
+	{SYS_SCY_UNCONN_NOTICE_EVENT                 ,"Security Notice"                                         ,"" },
+	{SYS_SCY_CONN_NOTICE_EVENT                   ,"Security Notice"                                         ,"" },
+	{SYS_FW_UPGRADE_OK_EVENT                     ,"Firmware upgrade successed"                              ,"" },
+	{SYS_FW_UPGRADE_NOK_EVENT                    ,"Firmware upgrade failed"                                 ,"" },
+	{SYS_REBOOT_OK_EVENT                         ,"Device reboot successed"                                 ,"" },
+	{SYS_REBOOT_NOK_EVENT                        ,"Device reboot failed"                                    ,"" },
+	{SYS_LAN_PORT_IN_EVENT                       ,"LAN port plug-in"                                        ,"" },
+	{SYS_LAN_PORT_OUT_EVENT                      ,"LAN port plug-out"                                       ,"" },
+	{SYS_AFC_COLD_REBOOT_EVENT                   ,"AFC Cold reboot"                                         ,"" },
 	/* ------------------------------
 	   ### Administration ###
 	---------------------------------*/
 	{ADMIN_LOGIN_FAIL_LAN_WEB_EVENT              ,"Unusual Router Sign-In"                                  ,"" },
 	{ADMIN_LOGIN_FAIL_SSH_EVENT                  ,"Unusual Router Sign-In"                                  ,"" },
 	{ADMIN_LOGIN_FAIL_TELNET_EVENT               ,"Unusual Router Sign-In"                                  ,"" },
+	{ADMIN_REMOTE_LOGIN_EVENT                    ,"Login successed"                                         ,"" },
+	{ADMIN_BOUND_DEV_EVENT                       ,"Device Bound"                                            ,"" },
+	{ADMIN_UNBOUND_DEV_EVENT                     ,"Device Unbound"                                          ,"" },
 	/* ------------------------------
 	   ### Security ###
 	---------------------------------*/
@@ -61,6 +73,10 @@ struct pnsInfo mapPushInfo[] =
 	{GENERAL_DEV_ACCESS_CHANGE                   ,"DeviceNetworkAccessChange"                               ,"" },
 	{GENERAL_QOS_UPDATE                          ,"QosModeUpdate"                                           ,"" },
 	{GENERAL_TOGGLE_STATES_UPDATE                ,"ToggleStateUpdate"                                       ,"" },
+	/* ------------------------------
+	    ### AiMesh Event  ###
+	---------------------------------*/
+	{AIMESH_ETH_OB_EVENT                         ,"AiMesh Node Ethenet Auto Setup"                          ,"" },
 	/* The End */
 	{0,0,0,0}
 };

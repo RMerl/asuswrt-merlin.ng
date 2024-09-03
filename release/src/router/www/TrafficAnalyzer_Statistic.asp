@@ -24,7 +24,7 @@
 <script type="text/javascript" src="/client_function.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js"></script>
 <style>
 *{
 	box-sizing: content-box;
@@ -122,8 +122,6 @@ function initial(){
 
 	$('#traffic_unit').val(getTrafficUnit());
 
-	if(!ASUS_EULA.status("tm"))
-		ASUS_EULA.config(eula_confirm, cancel);
 }
 
 var date_string = "";
@@ -1467,8 +1465,9 @@ function cal_panel_block(obj){
 	else if(winWidth <=1050){
 		blockmarginLeft= (winWidth)*0.2 + document.body.scrollLeft;
 	}
-
-	document.getElementById(obj).style.marginLeft = blockmarginLeft+"px";
+    if(document.getElementById(obj)!==null){
+	    document.getElementById(obj).style.marginLeft = blockmarginLeft+"px";
+    }
 }
 
 function eula_confirm(){
@@ -1495,23 +1494,25 @@ function cancel(){
 }
 function switch_control(_status){
 	if(_status) {
-              if(!dns_dpi_support){
-		if(reset_wan_to_fo.check_status()) {
-			if(ASUS_EULA.check("tm")){
-				document.form.bwdpi_db_enable.value = 1;
-				document.form.dns_dpi_trf_analysis.value = 1; //align user experience
-				applyRule();
-			}
-		}
-		else
-			cancel();
-               }
-              else {
-
-				document.form.bwdpi_db_enable.value = 1; // align user experience
-				document.form.dns_dpi_trf_analysis.value = 1;
-				applyRule();
-               }
+        if(!dns_dpi_support){
+            if(reset_wan_to_fo.check_status()) {
+                if(policy_status.TM == 0 || policy_status.TM_time == ''){
+                    const policyModal = new PolicyModalComponent({
+                        policy: "TM",
+                        agreeCallback: eula_confirm,
+                        disagreeCallback: cancel
+                    });
+                    policyModal.show();
+                }else{
+                    eula_confirm();
+                }
+            }else
+                cancel();
+        }else {
+            document.form.bwdpi_db_enable.value = 1; // align user experience
+            document.form.dns_dpi_trf_analysis.value = 1;
+            applyRule();
+        }
 	}
 	else {
 		if(!dns_dpi_support) {

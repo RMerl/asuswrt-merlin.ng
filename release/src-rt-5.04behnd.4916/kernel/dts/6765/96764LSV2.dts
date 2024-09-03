@@ -1,0 +1,14 @@
+#include "96764LSV1.dts"
+
+/ {
+
+	memory_controller {
+		memcfg = <(BP_DDR_TYPE_DDR3       | \
+			BP_DDR_SPEED_1067_14_14_14    | \
+			BP_DDR_TOTAL_SIZE_512MB      | \
+			BP_DDR_DEVICE_WIDTH_16        | \
+			BP_DDR_TOTAL_WIDTH_16BIT      | \
+			BP_DDR_6765_DEFAULT           | \
+			BP_DDR_CONFIG_DEBUG)>;
+	};
+};

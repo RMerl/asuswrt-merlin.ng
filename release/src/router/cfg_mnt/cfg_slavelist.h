@@ -41,6 +41,7 @@ typedef struct _CM_CLIENT_TABLE {
 	unsigned char pap2g[CFG_CLIENT_NUM][MAC_LEN];
 	unsigned char pap5g[CFG_CLIENT_NUM][MAC_LEN];
 	unsigned char pap6g[CFG_CLIENT_NUM][MAC_LEN];
+	unsigned char papmlo[CFG_CLIENT_NUM][MAC_LEN];
 	char pap2g_ssid[CFG_CLIENT_NUM][SSID_LEN];
 	char pap5g_ssid[CFG_CLIENT_NUM][SSID_LEN];
 	char pap6g_ssid[CFG_CLIENT_NUM][SSID_LEN];
@@ -90,7 +91,7 @@ typedef struct _CM_CLIENT_TABLE {
 	int count;
     char lldp_wlc_stat[CFG_CLIENT_NUM][LLDP_STAT_LEN];
     char lldp_eth_stat[CFG_CLIENT_NUM][LLDP_STAT_LEN];
-#ifdef RTCONFIG_FRONTHAUL_DWB
+#if defined(RTCONFIG_FRONTHAUL_DWB) || (defined(RTCONFIG_MLO) && !defined(RTCONFIG_MULTILAN_MWL))
 	int BackhualStatus[CFG_CLIENT_NUM]; // bits 0(update or not) 0(reserved) 0(reserved) 0(used or not)
 #endif
 #ifdef RTCONFIG_BHCOST_OPT
@@ -135,7 +136,12 @@ extern void cm_updateReObList(char *reMac, int action, int commit);
 extern void cm_updateReInfo(CM_CLIENT_TABLE *clientTbl, char *reMac);
 extern int cm_deleteReInfo(char *reMac);
 extern void cm_updateReInfoToClientTbl(CM_CLIENT_TABLE *clientTbl);
+extern void cm_updateReMloInfo(CM_CLIENT_TABLE *clientTbl, char *reMac, int clientIndex, json_object *mloStatus);
 extern void cm_sortReLevel(json_object *reListObj, json_object *sortedReListObj);
+extern int cm_checkReKeyListExist(char *mac);
+extern void cm_updateReKeyList(char *mac, int action);
+extern int cm_checkJoinData(unsigned char *msg, int role);
+extern int cm_checkKeyData(unsigned char *msg, char *key);
 
 #endif /* __CFG_SLAVELIST_H__ */
 /* End of cfg_slavelist.h */

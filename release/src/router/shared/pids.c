@@ -388,6 +388,8 @@ pid_t* find_pid_by_name(const char *procName)
 	procps_status_t* p = NULL;
 
 	pidList = calloc(1, sizeof(*pidList));
+	if(!pidList)
+		return NULL;
 	while ((p = procps_scan(p, PSSCAN_PID|PSSCAN_COMM|PSSCAN_ARGVN))) {
 		if (comm_match(p, procName)
 		/* or we require argv0 to match (essential for matching reexeced /proc/self/exe)*/
@@ -408,17 +410,23 @@ pid_t* find_pid_by_name(const char *procName)
 
 int pids_main(char *appname)
 {
-	pid_t *pidList;
+	pid_t *pidList = NULL;
 	pid_t *pl;
 	int count = 0;
 
 	pidList = find_pid_by_name(appname);
+	if(!pidList)
+	{
+		fprintf(stderr, "pid count: 0\n", count);
+		return 0;
+	}
 	for (pl = pidList; *pl; pl++) {
 		count++;
 		fprintf(stderr, "%u ", (unsigned)*pl);
 	}
 	if (count) fprintf(stderr, "\n");
-	free(pidList);
+	if(pidList)
+		free(pidList);
 
 	fprintf(stderr, "pid count: %d\n", count);
 
@@ -427,15 +435,18 @@ int pids_main(char *appname)
 
 int pids(char *appname)
 {
-	pid_t *pidList;
+	pid_t *pidList = NULL;
 	pid_t *pl;
 	int count = 0;
 
 	pidList = find_pid_by_name(appname);
+	if(!pidList)
+		return 0;
 	for (pl = pidList; *pl; pl++) {
 		count++;
 	}
-	free(pidList);
+	if(pidList)
+		free(pidList);
 
 	if (count)
 		return 1;

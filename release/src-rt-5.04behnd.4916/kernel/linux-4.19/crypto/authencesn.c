@@ -36,7 +36,11 @@ struct crypto_authenc_esn_ctx {
 	unsigned int reqoff;
 	struct crypto_ahash *auth;
 	struct crypto_skcipher *enc;
+#if defined(CONFIG_BCM_KF_VLA_REMOVAL_BACKPORT)
+	struct crypto_sync_skcipher *null;
+#else
 	struct crypto_skcipher *null;
+#endif
 };
 
 struct authenc_esn_request_ctx {
@@ -183,9 +187,15 @@ static int crypto_authenc_esn_copy(struct aead_request *req, unsigned int len)
 {
 	struct crypto_aead *authenc_esn = crypto_aead_reqtfm(req);
 	struct crypto_authenc_esn_ctx *ctx = crypto_aead_ctx(authenc_esn);
+#if defined(CONFIG_BCM_KF_VLA_REMOVAL_BACKPORT)
+	SYNC_SKCIPHER_REQUEST_ON_STACK(skreq, ctx->null);
+
+	skcipher_request_set_sync_tfm(skreq, ctx->null);
+#else
 	SKCIPHER_REQUEST_ON_STACK(skreq, ctx->null);
 
 	skcipher_request_set_tfm(skreq, ctx->null);
+#endif
 	skcipher_request_set_callback(skreq, aead_request_flags(req),
 				      NULL, NULL);
 	skcipher_request_set_crypt(skreq, req->src, req->dst, len, NULL);
@@ -341,7 +351,11 @@ static int crypto_authenc_esn_init_tfm(struct crypto_aead *tfm)
 	struct crypto_authenc_esn_ctx *ctx = crypto_aead_ctx(tfm);
 	struct crypto_ahash *auth;
 	struct crypto_skcipher *enc;
+#if defined(CONFIG_BCM_KF_VLA_REMOVAL_BACKPORT)
+	struct crypto_sync_skcipher *null;
+#else
 	struct crypto_skcipher *null;
+#endif
 	int err;
 
 	auth = crypto_spawn_ahash(&ictx->auth);

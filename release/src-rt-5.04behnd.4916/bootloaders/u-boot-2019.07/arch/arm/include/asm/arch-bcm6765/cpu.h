@@ -9,6 +9,21 @@
 #define BOOTLUT_BASE					0xffff0000
 #define BIUCFG_BASE						0x81060000
 #define UBUS4CCB_RANGE_CHK_SETUP_BASE	0x81203000
+#define UBUSCCB_AXI_CFG_REG_CCB_BASE			0x81201000
+#define ENABLE_CCB					0x1
+
+typedef struct UBUSCCB_AXI_CFG_REG_CCB {
+	uint32_t module_id; /* 0x00 */
+	uint32_t redid; /* 0x04 */
+	uint32_t spare_1; /* 0x08 */
+	uint32_t spare_2; /* 0x0c */
+	uint32_t axi_config_0; /* 0x10 */
+	uint32_t axi_config_1; /* 0x14 */
+	uint32_t axi_max_outstanding; /* 0x18 */
+}UBUSCCB_AXI_CFG_REG_CCB;
+
+#define UBUS4CCB_AXI_CFG_REGS                ((volatile UBUSCCB_AXI_CFG_REG_CCB * const) UBUSCCB_AXI_CFG_REG_CCB_BASE)
+
 
 typedef struct UBUS4CCB_RANGE_CHK_CFG {
 	uint32_t control;	/* 0x00 */

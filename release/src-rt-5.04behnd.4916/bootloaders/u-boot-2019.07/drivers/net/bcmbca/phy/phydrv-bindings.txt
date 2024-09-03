@@ -39,7 +39,9 @@ Optional Properties:
 
 - force-2p5g-10gvco: bool, indicate the 6756 Serdes to 53134/53135 VCO needs to be 10G in 2.5G link speed
 
-- config_speed: the fixed configuration speed for Serdes to external switch.
+- config-speed: the fixed configuration speed for Serdes to external switch.
+
+- max-speed-mbps: maximum speed in mbps allowed on this port
 
 - usxgmii-m-type: USXGMII_M type
 
@@ -49,6 +51,7 @@ Optional Properties:
 - phy-xfi-tx-polarity-inverse: XFI TX Polarity inverse
 
 - shared-ref-clk-mhz: Serdes shares reference clock to the external XGPHY
+- shared-ref-clk-mhz-bootstrap: Serdes shares reference clock to the external XGPHY with bootstrapping configuration
 
 Port LAN/WAN Properties:
 ========================

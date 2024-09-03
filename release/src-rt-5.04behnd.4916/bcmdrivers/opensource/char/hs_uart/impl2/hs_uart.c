@@ -63,6 +63,9 @@ volatile uint32_t* prog_out_reg = NULL;
 #define HS_UART_DUMP_REGS         0
 #define HS_UART_API_DEBUG         0
 #define HS_UART_MIN_BAUD          9600     /* Arbitrary value, this can be as low as 9600 */
+#define HS_UART_MIN_HIGHRATE_BAUD 3125000
+#define HS_UART_MAX_HIGHRATE_BAUD 6250000
+#define HS_UART_MIN_HIGHRATE_UART_CLK_PER_BIT 8 /* We need a minimum of 8 sampling clocks in highrate mode */
 #define HS_UART_CALCULATE_DLHBR   1        /* 1 - Calculate dl/hbr values for any baudrates, 0 - use predefined values */
 
 #define HS_UART_LOOPBACK_ENABLE   0
@@ -101,7 +104,7 @@ static void hs_uart_enable_ms( struct uart_port * port );
 static void hs_uart_break_ctl( struct uart_port * port, int break_state );
 static int hs_uart_startup( struct uart_port * port );
 static void hs_uart_shutdown( struct uart_port * port );
-static int hs_uart_set_baud_rate( struct uart_port *port, int baud );
+static int hs_uart_set_baud_rate( struct uart_port *port, int baud, struct ktermios *termios );
 static void hs_uart_set_termios( struct uart_port * port, struct ktermios *termios, struct ktermios *old );
 static const char * hs_uart_type( struct uart_port * port );
 static void hs_uart_release_port( struct uart_port * port );
@@ -554,46 +557,77 @@ static unsigned int hs_uart_tx_empty(struct uart_port *port)
 /*
  * Set hs uart baudrate registers
  */
-static int hs_uart_set_baud_rate( struct uart_port *port, int baud )
+static int hs_uart_set_baud_rate( struct uart_port *port, int baud, struct ktermios *termios)
 {
 #if HS_UART_CALCULATE_DLHBR
-   unsigned int extraCyc;
-   unsigned int intDiv;
-
-   HS_UART_DEBUG("%s: requested baud: %d\n", __FUNCTION__, baud);
-   intDiv = port->uartclk / (16 * baud);
-   if (0 == intDiv)
+   int ret = 0;
+   if ( baud <= HS_UART_MAX_HIGHRATE_BAUD )
    {
-      /* Calculate the integer divider */
-      printk(KERN_WARNING "%s: Unable to set baudrate to: %d\n", __FUNCTION__, baud);
-   }
-   else
-   {
-      /* Calculate the integer divider */
-      HS_UART_REG(port)->dlbr = 256 - intDiv;
-      HS_UART_REG(port)->MCR &= ~HS_UART_MCR_HIGH_RATE;
-
-      /* Calculate the extra cycles of uartclk required to full-  *
-       * -fill the bit timing requirements for required baudrate  */
-      extraCyc =  ( ( (port->uartclk * 10) / baud ) - (intDiv*16*10) + 5 ) / 10;
-      if( extraCyc )
+      if( baud >= HS_UART_MIN_HIGHRATE_BAUD )
       {
-         /* Equally distribute the extraCycles at the start and end of bit interval */
-         HS_UART_REG(port)->dhbr = ( extraCyc/2 | (extraCyc/2) << 4 ) + extraCyc % 2;
+         unsigned int uart_clks_per_bit;
+
+         /* Use HIGHRATE mode */
+         uart_clks_per_bit = port->uartclk / baud;
+         if( uart_clks_per_bit >= HS_UART_MIN_HIGHRATE_UART_CLK_PER_BIT )
+         {
+            HS_UART_REG(port)->dlbr = 256 - uart_clks_per_bit;
+            HS_UART_REG(port)->dhbr = 0;
+            HS_UART_REG(port)->MCR |= HS_UART_MCR_HIGH_RATE;
+
+            /* Must set 2 stop bits when operating at highest baudrate */
+            if( uart_clks_per_bit == HS_UART_MIN_HIGHRATE_UART_CLK_PER_BIT )
+            {
+               if( !(termios->c_cflag & CSTOPB) )
+               {
+                  printk(KERN_WARNING "%s: Must set 2 stop bits for baudrate of %d!",
+                      __FUNCTION__, baud);
+               }
+            }
+         }
+         else
+         {
+            printk(KERN_WARNING "%s: Unable to set baudrate to: %d, Invalid clks per bit: %d\n", 
+               __FUNCTION__, baud, uart_clks_per_bit);
+            ret = -EINVAL;
+         }
       }
       else
       {
-         HS_UART_REG(port)->dhbr = 0;
+         unsigned int extraCyc;
+         unsigned int intDiv;
+
+         /* Calculate the integer divider */
+         intDiv = port->uartclk / (16 * baud);
+         HS_UART_REG(port)->dlbr = 256 - intDiv;
+         HS_UART_REG(port)->MCR &= ~HS_UART_MCR_HIGH_RATE;
+
+         /* Calculate the extra cycles of uartclk required to full-  *
+          * -fill the bit timing requirements for required baudrate  */
+         extraCyc =  ( ( (port->uartclk * 10) / baud ) - (intDiv*16*10) + 5 ) / 10;
+         if( extraCyc )
+         {
+            /* Equally distribute the extraCycles at the start and end of bit interval */
+            HS_UART_REG(port)->dhbr = ( extraCyc/2 | (extraCyc/2) << 4 ) + extraCyc % 2;
+         }
+         else
+         {
+            HS_UART_REG(port)->dhbr = 0;
+         }
+
+         if( extraCyc > 16 )
+         {
+            printk(KERN_WARNING "hs_uart_set_baud_rate: Cannot set required extra cycles %d ", extraCyc);
+            ret = -EINVAL;
+         }
       }
 
-      if( extraCyc > 16 )
+      if( !ret )
       {
-         printk(KERN_WARNING "hs_uart_set_baud_rate: Cannot set required extra cycles %d ", extraCyc);
+         HS_UART_DEBUG("dlbr: 0x%08x, dhbr: 0x%08x\n", (unsigned int)HS_UART_REG(port)->dlbr,
+                                                       (unsigned int)HS_UART_REG(port)->dhbr);
+         HS_UART_DEBUG("%s: Setting baudrate to: %d\n", __FUNCTION__, baud);
       }
-
-      HS_UART_DEBUG("dlbr: 0x%08x, dhbr: 0x%08x\n", (unsigned int)HS_UART_REG(port)->dlbr,
-                                                    (unsigned int)HS_UART_REG(port)->dhbr);
-      HS_UART_DEBUG("%s: Setting baudrate to: %d\n", __FUNCTION__, baud);
    }
 
 #else
@@ -638,13 +672,17 @@ static void hs_uart_set_termios(struct uart_port *port,
    baud = uart_get_baud_rate(port, termios, old, HS_UART_MIN_BAUD, port->uartclk/8);
 
    /* Set baud rate registers */
-   hs_uart_set_baud_rate(port, baud);
+   hs_uart_set_baud_rate(port, baud, termios);
 
    /* Set stop bits */
    if (termios->c_cflag & CSTOPB)
+   {
       HS_UART_REG(port)->LCR |= HS_UART_LCR_STB;
+   }
    else
+   {
       HS_UART_REG(port)->LCR &= ~(HS_UART_LCR_STB);
+   }
 
    /* Set Parity */
    if (termios->c_cflag & PARENB)
@@ -718,7 +756,7 @@ static int init_hs_uart_port( struct uart_port * port )
    /* Assign HC data */
    HS_UART_REG(port)->ptu_hc = HS_UART_PTU_HC_DATA;
 
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148)
+#if defined(CONFIG_BCM963138)
    /* Route hsuart signals out on uart2 pins */
    *prog_out_reg |= ARMUARTEN;
 #endif

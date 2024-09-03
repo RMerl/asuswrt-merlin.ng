@@ -26,8 +26,6 @@ firmware/common/rdd/xrdp/rdd_common.c
 firmware/common/rdd/xrdp/rdd_common.h
 firmware/common/rdd/xrdp/rdd_platform.h
 firmware/common/rdd/xrdp/rdd_shell.c
-firmware/common/rdd/xrdp/rdd_iptv_processing.c
-firmware/common/rdd/xrdp/rdd_iptv_processing.h
 firmware/common/rdd/xrdp/rdd_tuple_lkp.h
 firmware/common/rdd/xrdp/rdd_tuple_lkp.c
 firmware/common/rdd/xrdp/rdd_ic_common.c
@@ -36,12 +34,9 @@ firmware/classification/rdd/xrdp/rdd_tcam_ic_c.c
 firmware/classification/rdd/xrdp/rdd_tcam_ic.h
 firmware/classification/rdd/xrdp/rdd_natc.c
 firmware/classification/rdd/xrdp/rdd_natc.h
-firmware/classification/rdd/xrdp/rdd_ucast.c
-firmware/classification/rdd/xrdp/rdd_ucast.h
 firmware/classification/rdd/xrdp/rdd_iptv.h
 firmware/classification/rdd/xrdp/rdd_iptv.c
 firmware/cpu/rdd/xrdp/*
-firmware/service_queues/rdd/xrdp/*
 firmware/spdsvc/rdd/xrdp/*
 firmware/tunneling/rdd/xrdp/*
 firmware/mirroring/rdd/xrdp/*
@@ -66,8 +61,6 @@ projects/BCM63146/drivers/rdd/auto/rdd_runner_reg_dump.c
 projects/BCM63146/drivers/rdd/auto/rdd_runner_reg_dump.h
 projects/BCM63146/drivers/rdd/auto/rdd_runner_reg_dump_addrs.c
 projects/BCM63146/drivers/rdd/auto/rdd_runner_reg_dump_addrs.h
-projects/BCM63146/drivers/rdd/rdd_scheduling.c
-projects/BCM63146/drivers/rdd/rdd_scheduling.h
 projects/BCM63146/drivers/rdd/auto/rdd_runner_tasks_auto.h
 projects/BCM63146/drivers/rdd/auto/rdd_runner_tasks_auto.c
 drivers/rdp_drv/rdp_drv_proj_cntr.h
@@ -76,6 +69,8 @@ projects/BCM63146/drivers/rdd/auto/rdd_ag_us_tm.h
 projects/BCM63146/drivers/rdd/auto/rdd_ag_us_tm.c
 projects/BCM63146/drivers/rdd/auto/rdd_ag_ds_tm.h
 projects/BCM63146/drivers/rdd/auto/rdd_ag_ds_tm.c
+projects/BCM63146/drivers/rdd/auto/rdd_ag_update_fifo.h
+projects/BCM63146/drivers/rdd/auto/rdd_ag_update_fifo.c
 projects/BCM63146/drivers/rdd/auto/rdd_ag_cpu_rx.h
 projects/BCM63146/drivers/rdd/auto/rdd_ag_cpu_rx.c
 projects/BCM63146/drivers/rdd/auto/rdd_ag_cpu_tx.h
@@ -92,20 +87,11 @@ projects/BCM63146/drivers/rdd/auto/rdd_debug_c_strings.h
 projects/BCM63146/drivers/rdd/auto/rdd_debug_strings.h
 
 firmware/tm/rdd/xrdp/rdd_ghost_reporting.h
-firmware/tm/rdd/xrdp/asm/rdd_complex_scheduler.c
-firmware/tm/rdd/xrdp/asm/rdd_complex_scheduler.h
-firmware/tm/rdd/xrdp/asm/rdd_basic_scheduler.c
-firmware/tm/rdd/xrdp/asm/rdd_basic_scheduler.h
-firmware/tm/rdd/xrdp/asm/rdd_basic_rate_limiter.c
-firmware/tm/rdd/xrdp/asm/rdd_basic_rate_limiter.h
-firmware/tm/rdd/xrdp/asm/rdd_complex_rate_limiter.c
-firmware/tm/rdd/xrdp/asm/rdd_complex_rate_limiter.h
-firmware/tm/rdd/xrdp/asm/rdd_overall_rate_limiter.c
-firmware/tm/rdd/xrdp/asm/rdd_overall_rate_limiter.h
+firmware/tm/rdd/xrdp/c/rdd_scheduling.c
+firmware/tm/rdd/xrdp/c/rdd_scheduling.h
 firmware/tm/rdd/xrdp/rdd_codel.h
 firmware/tm/rdd/xrdp/rdd_codel.c
 firmware/tm/rdd/xrdp/rdd_codel_shell.c
-firmware/tm/rdd/xrdp/rdd_aqm_shell.c
 firmware/tm/rdd/xrdp/rdd_pi2.h
 firmware/tm/rdd/xrdp/rdd_pi2.c
 firmware/tm/rdd/xrdp/rdd_pi2_shell.c
@@ -332,9 +318,8 @@ drivers/rdpa/rdpa_ingress_class.c
 drivers/rdpa/rdpa_ingress_class_int.h
 drivers/rdpa/xrdp/rdpa_ingress_class_ex.c
 drivers/rdpa/xrdp/rdpa_egress_tm_ex.c
-drivers/rdpa/xrdp/asm/rdpa_egress_tm_scheduler.c
+drivers/rdpa/xrdp/c/rdpa_egress_tm_scheduler.c
 drivers/rdpa/rdpa_int.h
-drivers/rdpa/rdpa_tunnel.c
 drivers/rdpa/rdpa_module.c
 drivers/rdpa/rdpa_emu_module.c
 drivers/rdpa/rdpa_module_fini.c
@@ -416,7 +401,6 @@ drivers/rdpa/rdpa_spdtest_common_ex.h
 drivers/rdpa/xrdp/rdpa_spdtest_common_ex.c
 drivers/rdpa/rdpa_udpspdtest.c
 drivers/rdpa/rdpa_udpspdtest_ex.h
-drivers/rdpa/rdp/rdpa_udpspdtest_ex.c
 drivers/rdpa/xrdp/rdpa_udpspdtest_ex.c
 drivers/rdpa/rdpa_ct.c
 
@@ -434,7 +418,6 @@ drivers/rdpa_gpl/include/rdpa_filter.h
 drivers/rdpa_gpl/include/rdpa_gem.h
 drivers/rdpa_gpl/include/rdpa_ingress_class.h
 drivers/rdpa_gpl/include/rdpa_ingress_class_basic.h
-drivers/rdpa_gpl/include/rdpa_tunnel.h
 drivers/rdpa_gpl/include/rdpa_ip_class_basic.h
 drivers/rdpa_gpl/include/rdpa_l2_common.h
 drivers/rdpa_gpl/include/rdpa_l2_ucast.h

@@ -59,6 +59,7 @@ endif
 #SHARE_STATIC=y
 
 all: $(PROGS)
+	echo PROGS=$(PROGS)
 
 #libdisk.so: $(OBJS) $(TOP)/shared/shutils.o
 libdisk.so: $(OBJS)

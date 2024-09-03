@@ -13,21 +13,28 @@
 #include <shared.h>
 #include "shutils.h"
 
+#if defined(RTCONFIG_MULTILAN_MWL)
+#define MTLAN_BH_FH_MAXINUM       ((1+4) * 2)
+#define MTLAN_MWL_MAXINUM         MTLAN_BH_FH_MAXINUM
+#else
+#define MTLAN_BH_FH_MAXINUM       0
+#endif
+
 #ifdef RTCONFIG_MAX_MTLAN
-#define MTLAN_MAXINUM  (RTCONFIG_MAX_MTLAN+1)
+#define MTLAN_MAXINUM  (RTCONFIG_MAX_MTLAN + MTLAN_BH_FH_MAXINUM + 1)
 #else  	//RTCONFIG_MAX_MTLAN
-#define MTLAN_MAXINUM             17 /* 1 (Default) + 16 */
+#define MTLAN_MAXINUM             (16 + MTLAN_BH_FH_MAXINUM + 1) /* 16 + 1(BH) + 4(FH) + 1 (Default) */
 #endif 	//RTCONFIG_MAX_MTLAN
 
 #define MTLAN_VPNS_MAXINUM        16
 #define MTLAN_GRE_MAXINUM         8
 #define SDN_LIST_BASIC_PARAM      6
-#define SDN_LIST_MAX_PARAM        22
+#define SDN_LIST_MAX_PARAM        23
 #define VLAN_LIST_BASIC_PARAM     2
 #define VLAN_LIST_MAX_PARAM       3
 #define SUBNET_LIST_BASIC_PARAM   13
 #define SUBNET_LIST_MAX_PARAM     21
-#define CPLAN_MAXINUM             4 
+#define CPLAN_MAXINUM             4
 
 enum {
 	MTLAN_IFUNIT_BASE=50,
@@ -52,6 +59,7 @@ typedef enum {
 	SDNFT_TYPE_WAN6,
 	SDNFT_TYPE_MTWAN,
 	SDNFT_TYPE_MSWAN,
+	SDNFT_TYPE_PRIORITY,
 	SDNFT_TYPE_MAX
 } SDNFT_TYPE;
 
@@ -110,6 +118,7 @@ typedef struct __sdn_feature_t__
 	int wan6_idx;
 	int mtwan_idx; /* Multiple Wan */
 	int mswan_idx; /* Multi-Service Wan (bridge) */
+	int prio; /* SDN Priority */
 } SDNFT_T;
 
 

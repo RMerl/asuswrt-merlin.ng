@@ -1814,6 +1814,12 @@ static int macsec_add_rxsa(struct sk_buff *skb, struct genl_info *info)
     if (tb_sa[MACSEC_SA_ATTR_ACTIVE])
         rx_sa->active = !!nla_get_u8(tb_sa[MACSEC_SA_ATTR_ACTIVE]);
 
+    if (secy->xpn) {
+        rx_sa->ssci = nla_get_ssci(tb_sa[MACSEC_SA_ATTR_SSCI]);
+        nla_memcpy(rx_sa->key.salt.bytes, tb_sa[MACSEC_SA_ATTR_SALT],
+               MACSEC_SALT_LEN);
+    }
+
     rx_sa->sc = rx_sc;
 
     /* If h/w offloading is available, propagate to the device */
@@ -1831,17 +1837,12 @@ static int macsec_add_rxsa(struct sk_buff *skb, struct genl_info *info)
         ctx.sa.rx_sa = rx_sa;
         ctx.secy = secy;
         memcpy(ctx.sa.key, nla_data(tb_sa[MACSEC_SA_ATTR_KEY]),
-               MACSEC_KEYID_LEN);
+               secy->key_len);
 
         err = macsec_offload(ops->mdo_add_rxsa, &ctx);
+        memzero_explicit(ctx.sa.key, secy->key_len);
         if (err)
             goto cleanup;
-    }
-
-    if (secy->xpn) {
-        rx_sa->ssci = nla_get_ssci(tb_sa[MACSEC_SA_ATTR_SSCI]);
-        nla_memcpy(rx_sa->key.salt.bytes, tb_sa[MACSEC_SA_ATTR_SALT],
-               MACSEC_SALT_LEN);
     }
 
     nla_memcpy(rx_sa->key.id, tb_sa[MACSEC_SA_ATTR_KEYID], MACSEC_KEYID_LEN);
@@ -2058,6 +2059,12 @@ static int macsec_add_txsa(struct sk_buff *skb, struct genl_info *info)
     if (assoc_num == tx_sc->encoding_sa && tx_sa->active)
         secy->operational = true;
 
+    if (secy->xpn) {
+        tx_sa->ssci = nla_get_ssci(tb_sa[MACSEC_SA_ATTR_SSCI]);
+        nla_memcpy(tx_sa->key.salt.bytes, tb_sa[MACSEC_SA_ATTR_SALT],
+               MACSEC_SALT_LEN);
+    }
+
     /* If h/w offloading is available, propagate to the device */
     if (macsec_is_offloaded(netdev_priv(dev))) {
         const struct macsec_ops *ops;
@@ -2073,17 +2080,12 @@ static int macsec_add_txsa(struct sk_buff *skb, struct genl_info *info)
         ctx.sa.tx_sa = tx_sa;
         ctx.secy = secy;
         memcpy(ctx.sa.key, nla_data(tb_sa[MACSEC_SA_ATTR_KEY]),
-               MACSEC_KEYID_LEN);
+               secy->key_len);
 
         err = macsec_offload(ops->mdo_add_txsa, &ctx);
+        memzero_explicit(ctx.sa.key, secy->key_len);
         if (err)
             goto cleanup;
-    }
-
-    if (secy->xpn) {
-        tx_sa->ssci = nla_get_ssci(tb_sa[MACSEC_SA_ATTR_SSCI]);
-        nla_memcpy(tx_sa->key.salt.bytes, tb_sa[MACSEC_SA_ATTR_SALT],
-               MACSEC_SALT_LEN);
     }
 
     nla_memcpy(tx_sa->key.id, tb_sa[MACSEC_SA_ATTR_KEYID], MACSEC_KEYID_LEN);
@@ -3385,6 +3387,15 @@ static netdev_tx_t macsec_start_xmit(struct sk_buff *skb,
     int ret, len;
 
     if (macsec_is_offloaded(netdev_priv(dev))) {
+#if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
+#ifdef CONFIG_BCM_MACSEC_FIRELIGHT
+        /*
+         * blog_link() is needed so that when macsec device goes down FC will be able to remove the flows 
+         */
+        if (blog_ptr(skb))
+            blog_link(IF_DEVICE, blog_ptr(skb), (void*)skb->dev, DIR_TX, skb->len);
+#endif
+#endif /* defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG) */
         skb->dev = macsec->real_dev;
         return dev_queue_xmit(skb);
     }

@@ -290,7 +290,7 @@ static const struct led_btn_table_s {
 	{ "led_sig2_gpio",		&led_gpio_table[LED_SIG2] },
 	{ "led_purple_gpio",		&led_gpio_table[LED_PURPLE] },
 #endif		
-#if defined(RPAX56) || defined(RPAX58)
+#if defined(RPAX56) || defined(RPAX58) || defined(RPBE58)
 	{ "led_red_gpio",       &led_gpio_table[LED_RED_GPIO] },
 	{ "led_green_gpio",     &led_gpio_table[LED_GREEN_GPIO] },
 	{ "led_blue_gpio",      &led_gpio_table[LED_BLUE_GPIO] },
@@ -530,7 +530,7 @@ int init_gpio(void)
 		, "led_pwr_red_gpio"
 		, "led_wifi_gpio", "led_sig1_gpio", "led_sig2_gpio", "led_purple_gpio"
 #endif
-#if defined(RPAX56) || defined(RPAX58)
+#if defined(RPAX56) || defined(RPAX58) || defined(RPBE58)
 		, "led_red_gpio", "led_green_gpio", "led_blue_gpio", "led_white_gpio", "led_yellow_gpio", "led_purple_gpio"
 #endif
 #ifdef BLUECAVE
@@ -824,7 +824,7 @@ int set_pwr_usb(int boolOn) {
 		system("sw 0xff800554 0");
 		system("sw 0xff800558 0x4050");
 		system("sw 0xff80055c 0x21");
-#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
 		/* set pinmux of GPIO 67 as 4 to enable GPIO mode */
 		system("sw 0xff800554 0");
 		system("sw 0xff800558 0x4043");
@@ -1068,9 +1068,13 @@ int do_led_control(int which, int mode)
 	}
 #endif
 
-#if defined(RTAX9000) && !defined(RTCONFIG_BCM_MFG)
+#if (defined(RTAX9000) || defined(RTBE82U) || defined(RTBE58U_PRO)) && !defined(RTCONFIG_BCM_MFG)
 	if ((which == LED_WAN_NORMAL) && (mode == LED_ON)) {
+#if defined(RTBE82U) || defined(RTBE58U_PRO)
+		if (hnd_get_phy_status("eth0") == 0)
+#else
 		if (hnd_get_phy_status(0) == 0)
+#endif
 			return 0;
 	}
 #endif
@@ -1249,7 +1253,7 @@ int ethctl_set_phy(char *ifname, int ctrl)
 
 int wanport_ctrl(int ctrl)
 {
-#if defined(RPAX56) || defined(RPAX58)
+#if defined(RPAX56) || defined(RPAX58) || defined(RPBE58)
 	return ethctl_set_phy("eth0", ctrl);
 #endif
 #ifdef RTCONFIG_RALINK
@@ -1310,13 +1314,13 @@ int lanport_status(void)
 	foreach(word, nvram_safe_get("lan_ifnames"), next) {
 		if(!wl_probe(word))		// skip wireless interface
 			continue;
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
 		if (!strcmp(word, "eth1"))
 			continue;
 #endif
 		status |= hnd_get_phy_status(word);
 	}
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
 	status |= rtk_lan_phy_status();
 #endif
 	return status;
@@ -1365,7 +1369,7 @@ static int bootup_skip = 1;
 #endif
 int lanport_ctrl(int ctrl)
 {
-#if defined(RPAX56) || defined(RPAX58)
+#if defined(RPAX56) || defined(RPAX58) || defined(RPBE58)
 	return ethctl_set_phy("eth0", ctrl);
 #endif
 	// no general way for ralink platform, so individual api for each kind of switch are used
@@ -1428,7 +1432,7 @@ int lanport_ctrl(int ctrl)
 		system("/usr/bin/switch_cli GSW_MDIO_DATA_WRITE nAddressDev=5 nAddressReg=0 nData=0x1c00");
 	}
 	return 1;
-#elif defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(EBG19) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U)
+#elif defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(EBG19) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
 	if (ctrl)
 		rtkswitch_LanPort_linkUp();
 	else

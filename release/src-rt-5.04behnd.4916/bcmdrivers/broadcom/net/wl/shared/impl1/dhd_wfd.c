@@ -3,27 +3,21 @@
     All Rights Reserved
 
     <:label-BRCM:2017:DUAL/GPL:standard
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
     :>
 */
 
@@ -56,6 +50,10 @@
 #if defined(BCM_AWL)
 #include <dhd_awl.h>
 #endif /* BCM_AWL */
+
+#if defined(BCM_WLAN_FPI)
+#include <fpi_wlan.h>
+#endif /* BCM_WLAN_FPI */
 
 #if defined(BCM_DHD_RUNNER)
 /* compare two ethernet addresses - assumes the pointers can be referenced as shorts */
@@ -274,6 +272,149 @@ dhd_handle_wfd_blog(dhd_pub_t * dhdp, struct net_device *net, int ifidx,
 
 	return ret;
 }
+
+
+#if defined(BCM_WLAN_FPI)
+/*
+ * Get WiFi (DHD) metadata for flow provisioning interface driver
+ *
+ * Input:
+ *  net:  net device,
+ *  sa:   source mac address (not used),
+ *  da:   destination mac address (associated station or endpoint behind
+ *        AP/repeater)
+ *  prio: priority (0-7)
+ *  data: metadata pointer to fill
+ *
+ * Return:
+ *   0:    Success, 'data' will be updated with valid metadata
+ *  <0:    Failure, 'data' will be 0
+ */
+int dhd_wfd_get_fpi_metadata(struct net_device *net, u8 *sa, u8 *da, u8 prio,
+	u32 *data)
+{
+	fpi_wl_metadata_t metadata;
+	int rc;
+	dhd_pub_t *dhdp = dhd_dev_get_dhdpub(net);
+	int ifidx = dhd_dev_get_ifidx(net);
+	uint16 flowid = 0;
+	flow_ring_node_t *flow_ring_node;
+	uint32 pktfwd_key = 0;
+
+	metadata.wl = 0;
+	*data = metadata.wl;
+
+	/*
+	 * Input parameter validation
+	 */
+	/* Check if priority parameter is valid */
+	if (prio >= PKTFWD_PRIO_MAX) {
+		DHD_ERROR(("%s: Invalid prio (%d)\n", __FUNCTION__, prio));
+		return BCME_ERROR;
+	}
+
+	/* Check if dhd public context  is valid */
+	if (!dhdp) {
+		DHD_ERROR(("%s: net device (0x%px) dhdp is NULL\n", __FUNCTION__, net));
+		return BCME_ERROR;
+	}
+
+	/* Check if interface index is in range */
+	if (ifidx >= DHD_MAX_IFS) {
+		DHD_ERROR(("%s: Invalid net device (0x%px) invalid ifidx (%d)\n",
+			__FUNCTION__, net, ifidx));
+		return BCME_ERROR;
+	}
+
+	DHD_INFO(("wl[%d.%d]: %s(0x%px, "MACDBG", "MACDBG" , %d)\n", dhdp->unit,
+		ifidx, __FUNCTION__, net, MAC2STRDBG(sa), MAC2STRDBG(da), prio));
+
+	/* Broadcast/multicast DA is not supported */
+	if (ETHER_ISMULTI(da)) {
+		DHD_ERROR(("%s: ["MACDBG"] is not unicast address\n",
+			__FUNCTION__, MAC2STRDBG(da)));
+		return BCME_UNSUPPORTED;
+	}
+
+	/*
+	 * dhd_get_flowid will do a lookup for existing flow-ring, if not
+	 * create a new one if station is associated
+	 */
+	DHD_LOCK(dhdp);
+	rc = dhd_get_flowid(dhdp, ifidx, prio, sa, da, &flowid);
+	DHD_UNLOCK(dhdp);
+	if (rc != BCME_OK) {
+		DHD_ERROR(("wl[%d.%d]: Failed to get flow ring id, rc = (%d)\n",
+			dhdp->unit, ifidx, rc));
+		return BCME_NOTASSOCIATED;
+	}
+
+	flow_ring_node = &(((flow_ring_node_t *) (dhdp->flow_ring_table))[flowid]);
+
+#if defined(BCM_DHD_OFFLOAD) || defined(BCM_DHD_RUNNER)
+	if (DHD_FLOWRING_RNR_OFFL(flow_ring_node)) {
+
+		/* Hardware accelerated and Offloaded */
+		metadata.hwo.is_tx_hw_acc_en = 1;
+		metadata.hwo.is_wfd = 0;
+		metadata.hwo.flowring_idx = flowid;
+		metadata.hwo.ssid = ifidx;
+		metadata.hwo.priority = prio;
+		metadata.hwo.radio_idx = dhdp->unit;
+
+		metadata.hwo.flow_prio = ((prio2ac[prio] == AC_VI) ||
+			(prio2ac[prio] == AC_VO)) ? flow_prio_exclusive : flow_prio_normal;
+		metadata.hwo.llcsnap_flag = DHDHDR_SUPPORT(dhdp) ? 1 : 0;
+
+		goto valid_metadata;
+	}
+#endif /* BCM_DHD_OFFLOAD || BCM_DHD_RUNNER */
+
+	if (WLAN_WFD_ENABLED(dhdp->wfd_idx)) {
+
+		/* Hardware accelerated */
+		/* Insert D3lut element first */
+		DHD_LOCK(dhdp);
+		pktfwd_key = dhd_pktc_req_hook(PKTC_TBL_UPDATE,
+			(unsigned long)da, (unsigned long)net, (unsigned long)TRUE);
+		DHD_UNLOCK(dhdp);
+		if (pktfwd_key == DHD_PKTFWD_KEY_INVALID_UL) {
+			DHD_ERROR(("wl[%d.%d]: %s PKTFWD key is invalid\n", dhdp->unit,
+				ifidx, __FUNCTION__));
+			return BCME_NORESOURCE;
+		}
+		dhd_pktfwd_set_keymap(dhdp->unit, pktfwd_key, flowid, prio);
+	}
+
+	if (pktfwd_key != 0) {
+		metadata.wfd.dhd_ucast.is_tx_hw_acc_en = 1;
+		metadata.wfd.dhd_ucast.is_wfd = 1;
+		metadata.wfd.dhd_ucast.wfd_idx = dhdp->wfd_idx;
+		metadata.wfd.dhd_ucast.flowring_idx = flowid;
+		metadata.wfd.dhd_ucast.is_chain = 0;
+		metadata.wfd.dhd_ucast.priority = prio;
+		metadata.wfd.dhd_ucast.ssid = ifidx;
+		/* fixing wfd_prio to normal */
+		metadata.wfd.dhd_ucast.wfd_prio = 0;
+
+		goto valid_metadata;
+	} else {
+		DHD_ERROR(("wl[%d.%d]: %s nonDoL, nonWFD mode not supported\n",
+				dhdp->unit, ifidx, __FUNCTION__));
+		/* non-DoL, non-WFD software acceleration is not supported */
+		return BCME_UNSUPPORTED;
+	}
+
+valid_metadata:
+	*data = metadata.wl;
+
+	DHD_ERROR(("wl[%d.%d]: %s(0x%px, "MACDBG" , "MACDBG" , %d) = 0x%x\n",
+		dhdp->unit, ifidx, __FUNCTION__, net, MAC2STRDBG(sa), MAC2STRDBG(da),
+		prio, *data));
+
+	return BCME_OK;
+}
+#endif /* BCM_WLAN_FPI */
 
 #ifndef BCM_PKTFWD
 static int BCMFASTPATH
@@ -583,6 +724,10 @@ int dhd_wfd_bind(struct net_device *net, unsigned int unit)
 		wfd_idx = WLAN_WFD_INVALID_IDX;
 	} else {
 		dhd_pktfwd_wfd_ins(net, wfd_idx, unit);
+#if defined(BCM_WLAN_FPI)
+		/* Register DHD with flow provisioning interface (fpi) driver */
+		fpi_register_dhd_get_metadata(dhd_wfd_get_fpi_metadata);
+#endif /* BCM_WLAN_FPI */
 	}
 
 dhd_wfd_bind_failure:
@@ -596,6 +741,11 @@ void dhd_wfd_unbind(int wfd_idx, int unit)
 		/* Nothing to do */
 		return;
 	}
+
+#if defined(BCM_WLAN_FPI)
+	fpi_register_dhd_get_metadata(NULL);
+#endif /* BCM_WLAN_FPI */
+
 #if defined(BCM_AWL)
 	dhd_awl_wfd_unbind(unit);
 #else

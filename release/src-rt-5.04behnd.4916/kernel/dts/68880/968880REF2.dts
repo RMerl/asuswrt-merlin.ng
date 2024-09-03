@@ -316,8 +316,7 @@
 &ethphytop {
     xphy0-enabled;
     xphy1-enabled;
-    phy-mpd = <&bca_extintr 51 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
-    phy-link = <&bca_extintr 49 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+    wakeup-trigger-pin = <&bca_extintr 57 GPIO_ACTIVE_LOW (BCA_EXTINTR_SHARED_GPIO | BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
     status = "okay";
 };
 
@@ -342,6 +341,8 @@
         USXGMII-M;
         phy-power = <&gpioc 48 GPIO_ACTIVE_LOW>;
         phy-reset = <&gpioc 47 GPIO_ACTIVE_LOW>;
+        phy-magic = <&bca_extintr 51 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+        phy-link  = <&bca_extintr 49 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
         status = "okay";
     };
     serdes01_xphy {

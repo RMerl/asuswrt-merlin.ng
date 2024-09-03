@@ -16,6 +16,7 @@
 <link rel="stylesheet" type="text/css" href="pwdmeter.css">
 <link rel="stylesheet" type="text/css" href="other.css">
 <link rel="stylesheet" type="text/css" href="css/confirm_block.css">
+<script type="text/javaScript" src="js/jquery.js"></script>
 <script type="text/javascript" src="/js/confirm_block.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/help.js"></script>
@@ -23,7 +24,6 @@
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/md5.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
-<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <style>
@@ -733,7 +733,7 @@ function applyRule(){
 	var confirm_flag = 0;
 	var confirm_content = "";
 	if(lantiq_support && wave_ready != 1){
-		alert("Please wait a minute for wireless ready");
+		alert(`<#Wireless_ready#>`);
 		return false;
 	}
 
@@ -1292,7 +1292,7 @@ function validForm(){
 			ssid_array.push(httpApi.nvramGet(["wl2_ssid"]).wl2_ssid);
 		jsonPara["current_ssid"] = ssid_array;
 		if(!validator.dwb_check_wl_setting(jsonPara)) {
-			alert("The fronthaul SSID is the same as the backhaul SSID.");/* untranslated */
+			alert(`<#wireless_JS_dup_SSID#>`);
 			return false;
 		}
 	}
@@ -3427,8 +3427,8 @@ function handleAcsDfs(channel){
 							<option value="1" <% nvram_match("wl_mfp", "1", "selected"); %>><#WLANConfig11b_x_mfp_opt1#></option>
 							<option value="2" <% nvram_match("wl_mfp", "2", "selected"); %>><#WLANConfig11b_x_mfp_opt2#></option>
 				  		</select>
-						<span id="mbo_notice_wpa3" style="display:none">*If the Authentication Method is WPA3-Personal, the Protected Management Frames will be Required.</span>
-						<span id="mbo_notice_combo" style="display:none">*If the Authentication Method is WPA2/WPA3-Personal, the Protected Management Frames will be Capable.</span>
+						<span id="mbo_notice_wpa3" style="display:none"><#WLANConfig11b_AgileMultiband_note_wpa3#></span>
+						<span id="mbo_notice_combo" style="display:none"><#WLANConfig11b_AgileMultiband_note_combo#></span>
 						<span id="mbo_notice" style="display:none"><#WLANConfig11b_AgileMultiband_note#></span>
 					</td>
 			  	</tr>
@@ -3558,8 +3558,8 @@ function handleAcsDfs(channel){
 							<option value="1" <% nvram_match("wl0_mfp", "1", "selected"); %>><#WLANConfig11b_x_mfp_opt1#></option>
 							<option value="2" <% nvram_match("wl0_mfp", "2", "selected"); %>><#WLANConfig11b_x_mfp_opt2#></option>
 				  		</select>
-						<span id="band01_mbo_notice_wpa3" style="display:none">*If the Authentication Method is WPA3-Personal, the Protected Management Frames will be Required.</span>
-						<span id="band01_mbo_notice_combo" style="display:none">*If the Authentication Method is WPA2/WPA3-Personal, the Protected Management Frames will be Capable.</span>
+						<span id="band01_mbo_notice_wpa3" style="display:none"><#WLANConfig11b_AgileMultiband_note_wpa3#></span>
+						<span id="band01_mbo_notice_combo" style="display:none"><#WLANConfig11b_AgileMultiband_note_combo#></span>
 						<span id="band01_mbo_notice" style="display:none"><#WLANConfig11b_AgileMultiband_note#></span>
 					</td>
 			  	</tr>
@@ -3804,8 +3804,8 @@ function handleAcsDfs(channel){
 							<option value="1" <% nvram_match("wl0_mfp", "1", "selected"); %>><#WLANConfig11b_x_mfp_opt1#></option>
 							<option value="2" <% nvram_match("wl0_mfp", "2", "selected"); %>><#WLANConfig11b_x_mfp_opt2#></option>
 				  		</select>
-						<span id="band0_mbo_notice_wpa3" style="display:none">*If the Authentication Method is WPA3-Personal, the Protected Management Frames will be Required.</span>
-						<span id="band0_mbo_notice_combo" style="display:none">*If the Authentication Method is WPA2/WPA3-Personal, the Protected Management Frames will be Capable.</span>
+						<span id="band0_mbo_notice_wpa3" style="display:none"><#WLANConfig11b_AgileMultiband_note_wpa3#></span>
+						<span id="band0_mbo_notice_combo" style="display:none"><#WLANConfig11b_AgileMultiband_note_combo#></span>
 						<span id="band0_mbo_notice" style="display:none"><#WLANConfig11b_AgileMultiband_note#></span>
 					</td>
 			  	</tr>
@@ -4052,8 +4052,8 @@ function handleAcsDfs(channel){
 							<option value="1" <% nvram_match("wl1_mfp", "1", "selected"); %>><#WLANConfig11b_x_mfp_opt1#></option>
 							<option value="2" <% nvram_match("wl1_mfp", "2", "selected"); %>><#WLANConfig11b_x_mfp_opt2#></option>
 				  		</select>
-						<span id="band1_mbo_notice_wpa3" style="display:none">*If the Authentication Method is WPA3-Personal, the Protected Management Frames will be Required.</span>
-						<span id="band1_mbo_notice_combo" style="display:none">*If the Authentication Method is WPA2/WPA3-Personal, the Protected Management Frames will be Capable.</span>
+						<span id="band1_mbo_notice_wpa3" style="display:none"><#WLANConfig11b_AgileMultiband_note_wpa3#></span>
+						<span id="band1_mbo_notice_combo" style="display:none"><#WLANConfig11b_AgileMultiband_note_combo#></span>
 						<span id="band1_mbo_notice" style="display:none"><#WLANConfig11b_AgileMultiband_note#></span>
 					</td>
 			  	</tr>

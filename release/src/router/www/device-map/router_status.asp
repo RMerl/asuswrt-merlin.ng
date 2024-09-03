@@ -84,6 +84,16 @@ $(document).ready(function(){
 		$("#hw_information_field").hide()
 		$("#yadns_field").hide()
 	}
+
+	if(isSupport("sdn_mainfh")){
+		$("#wireless_tab").hide();
+	}
+
+	setTimeout(function(){
+		if($('.tab-block:visible').length == 1){
+			$('.tab-block').hide();
+		}
+	}, 1);	
 });
 
 var model=httpApi.nvramGet(['productid']).productid;
@@ -203,7 +213,7 @@ function genElement(){
 }
 
 function register_event(){
-	$(function() {
+
 		$( "#slider" ).slider({
 			orientation: "horizontal",
 			range: "min",
@@ -219,7 +229,7 @@ function register_event(){
 				set_led(ui.value);	  
 			}
 		}); 
-	});
+
 }
 
 function set_led(value){

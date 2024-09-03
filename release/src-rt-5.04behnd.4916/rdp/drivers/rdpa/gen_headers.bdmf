@@ -40,6 +40,7 @@
 /bdmf/code/gen mllid AG_INC_DIR/rdpa_ag_mllid.h rdpa what_generate:1 children:yes action_mask:0x3e
 /bdmf/code/gen buffer AG_INC_DIR/rdpa_ag_buffer.h rdpa what_generate:1 children:yes action_mask:0x3e
 /bdmf/code/gen ct_class AG_INC_DIR/rdpa_ag_ct_class.h rdpa what_generate:1 children:yes action_mask:0x3e
+/bdmf/code/gen fpi AG_INC_DIR/rdpa_ag_fpi.h rdpa what_generate:1 children:yes action_mask:0x3e
 
 # Generate GPL layer
 /bdmf/code/gen system AG_GPL_DIR/rdpa_gpl_system.c rdpa what_generate:2 children:no action_mask:0x3e
@@ -82,6 +83,7 @@
 /bdmf/code/gen mllid AG_GPL_DIR/rdpa_gpl_mllid.c rdpa what_generate:2 children:yes action_mask:0x3e
 /bdmf/code/gen buffer AG_GPL_DIR/rdpa_gpl_buffer.c rdpa what_generate:2 children:yes action_mask:0x3e
 /bdmf/code/gen ct_class AG_GPL_DIR/rdpa_gpl_ct_class.c rdpa what_generate:2 children:yes action_mask:0x3e
+/bdmf/code/gen fpi AG_GPL_DIR/rdpa_gpl_fpi.c rdpa what_generate:2 children:yes action_mask:0x3e
 
 # Generate User-space APIs
 /bdmf/code/gen system AG_USR_DIR/rdpa_system_user_ag.h rdpa what_generate:4 children:no action_mask:0x3e
@@ -114,6 +116,7 @@
 /bdmf/code/gen xtm AG_USR_DIR/rdpa_xtm_user_ag.h rdpa what_generate:4 children:no action_mask:0x3e
 /bdmf/code/gen xtmchannel AG_USR_DIR/rdpa_xtmchannel_user_ag.h rdpa what_generate:4 children:yes action_mask:0x3e
 /bdmf/code/gen xtmflow AG_USR_DIR/rdpa_xtmflow_user_ag.h rdpa what_generate:4 children:yes action_mask:0x3e
+/bdmf/code/gen fpi AG_USR_DIR/rdpa_fpi_user_ag.h rdpa what_generate:4 children:yes action_mask:0x3e
 
 # Generate Python classes
 /bdmf/code/py UT_PY_DIR rdpa_ debug

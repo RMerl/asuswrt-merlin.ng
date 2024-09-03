@@ -633,7 +633,7 @@ int bcm_tcp_blog_emit(struct sk_buff *skb, struct sock *sk)
 		skb->blog_p->hw_cso = 1;
 		if (is_netdev_accel_gdx_tx(blogtcp_local_dev))
 		{
-			blog_emit_generic(skb, blogtcp_local_dev, BLOG_GENPHY);
+			blog_emit_generic(skb, blogtcp_local_dev, 0, BLOG_GENPHY);
 		}
 		else
 		{

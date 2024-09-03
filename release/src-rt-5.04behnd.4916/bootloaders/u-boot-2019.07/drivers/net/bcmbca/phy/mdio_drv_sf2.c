@@ -17,6 +17,7 @@
 
 #include "mdio_drv_sf2.h"
 #include "dt_access.h"
+#include "pmc_switch.h"
 
 #if defined(spin_lock_bh)
 #undef spin_lock_bh
@@ -44,7 +45,7 @@ static int mdio_probe(dt_device_t *pdev)
     dt_handle_t dt_handle = dt_dev_get_handle(pdev);
 
     slow_clock_divider = dt_property_read_u32_default(dt_handle, "clock-divider", 12);
-    fast_clock_divider = dt_property_read_u32_default(dt_handle, "clock-divider-fast", 4);
+    fast_clock_divider = dt_property_read_u32_default(dt_handle, "clock-divider-fast", FAST_CLOCK_DIVIDER);
 
     switch_mdio_base = dt_dev_remap_resource(pdev, 0);
     if (IS_ERR(switch_mdio_base))
@@ -70,6 +71,9 @@ static int mdio_probe(dt_device_t *pdev)
 
     dev_info(&pdev->dev, "registered\n");
 
+#if defined(CONFIG_BCMBCA_PMC_SWITCH)
+    pmc_switch_power_up();
+#endif
     ret += mdio_cfg_set(SWITCH_MDIO_BASE + 4, 0, slow_clock_divider);
 
 Exit:

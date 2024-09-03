@@ -4,25 +4,19 @@
  *    Copyright (c) 2019 Broadcom 
  *    All Rights Reserved
  * 
- * Unless you and Broadcom execute a separate written software license
- * agreement governing use of this software, this software is licensed
- * to you under the terms of the GNU General Public License version 2
- * (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
- * with the following added to such license:
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License, version 2, as published by
+ * the Free Software Foundation (the "GPL").
  * 
- *    As a special exception, the copyright holders of this software give
- *    you permission to link this software with independent modules, and
- *    to copy and distribute the resulting executable under terms of your
- *    choice, provided that you also meet, for each linked independent
- *    module, the terms and conditions of the license of that module.
- *    An independent module is a module which is not derived from this
- *    software.  The special exception does not apply to any modifications
- *    of the software.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  * 
- * Not withstanding the above, under no circumstances may you combine
- * this software in any way with any other Broadcom software provided
- * under a license other than the GPL, without Broadcom's express prior
- * written consent.
+ * 
+ * A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+ * writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
  * 
  * :> 
  */
@@ -41,6 +35,12 @@
 #include <linux/bcm_log.h>
 #include "bcm_ext_timer.h"
 #include "bcm_timer.h"
+#if defined(CONFIG_BCM_CROSSBOW)
+#include "crossbow_gpl.h"
+#if defined(CC_CROSSBOW_TIMER)
+#define CC_HW_TIMER_CROSSBOW
+#endif
+#endif
 
 /*****************************************************************************
  * Private Functions
@@ -80,13 +80,46 @@ static DEFINE_SPINLOCK(bcm_timer_lock_g);
 
 typedef struct {
     volatile int64_t jiffies_64;
-    EXT_TIMER_NUMBER ext_timer_number;
+    int hw_timer_number;
     Dll_t list;
 } bcm_timer_t;
 
 static bcm_timer_t bcm_timer_g;
 
+#if defined(CC_HW_TIMER_CROSSBOW)
+
+#define HW_TIMER_MODE_ONESHOT     0
+#define CROSSBOW_HW_TIMER_NUMBER  0
+
+static crossbow_timer_hooks_t hw_timer_hooks_g;
+
+static inline int hw_timer_alloc(int unused, crossbow_timer_handler_t handler,
+                                 unsigned long param)
+{
+    return hw_timer_hooks_g.timer_attach(CROSSBOW_HW_TIMER_NUMBER, handler, param);
+}
+
+#define hw_timer_stop hw_timer_hooks_g.timer_stop
+#define hw_timer_start hw_timer_hooks_g.timer_start
+#define hw_timer_set_period hw_timer_hooks_g.timer_set_period
+#define hw_timer_set_mode(_timer_index, _mode) 0
+#define hw_timer_set_affinity(_timer_index, _cpu_id, _force) 0
+
+#else /* !CC_HW_TIMER_CROSSBOW */
+
+#define HW_TIMER_MODE_ONESHOT EXT_TIMER_MODE_ONESHOT
+#define hw_timer_alloc ext_timer_alloc_only
+#define hw_timer_stop ext_timer_stop
+#define hw_timer_start ext_timer_start
+#define hw_timer_set_period ext_timer_set_period
+#define hw_timer_set_mode ext_timer_set_mode
+#define hw_timer_set_affinity ext_timer_set_affinity
+
+#endif /* CC_HW_TIMER_CROSSBOW */
+
 #if defined(CC_BCM_TIMER_TEST)
+#define BCM_TIMER_TEST_JIFFIES  (1000000 / BCM_TIMER_PERIOD_uSEC)
+
 static bcm_timer_user_t test_timer;
 
 static void bcm_timer_test_handler(void *arg_p)
@@ -95,12 +128,7 @@ static void bcm_timer_test_handler(void *arg_p)
 
     __print("\tTimer Test: %d\n", count++);
 
-    if(count < 32)
-    {
-        bcm_timer_add(&test_timer, bcm_timer_jiffies() + BCM_TIMER_HZ);
-        bcm_timer_add(&test_timer, bcm_timer_jiffies() + BCM_TIMER_HZ);
-    }
-    else
+    if(count == 100)
     {
         bcm_timer_delete(&test_timer);
     }
@@ -108,9 +136,12 @@ static void bcm_timer_test_handler(void *arg_p)
 
 static void bcm_timer_test_run(void)
 {
-    bcm_timer_init(&test_timer, bcm_timer_test_handler, NULL);
+    uint32_t jiffies = bcm_timer_jiffies() + BCM_TIMER_TEST_JIFFIES;
 
-    bcm_timer_add(&test_timer, bcm_timer_jiffies() + BCM_TIMER_HZ);
+    bcm_timer_init(&test_timer, BCM_TIMER_MODE_PERIODIC,
+                   BCM_TIMER_TEST_JIFFIES, bcm_timer_test_handler, NULL);
+
+    bcm_timer_add(&test_timer, jiffies);
 }
 #endif
 
@@ -118,9 +149,9 @@ static inline void bcm_timer_list_check(void)
 {
     if(dll_empty(&bcm_timer_g.list))
     {
-        if(ext_timer_stop(bcm_timer_g.ext_timer_number))
+        if(hw_timer_stop(bcm_timer_g.hw_timer_number))
         {
-            __error("Could not ext_timer_stop");
+            __error("Could not hw_timer_stop");
         }
     }
 }
@@ -167,7 +198,7 @@ static inline bcm_timer_user_t *bcm_timer_next_user(uint32_t jiffies_32)
     return NULL;
 }
 
-static void ext_timer_handler(unsigned long param)
+static void hw_timer_handler(unsigned long param)
 {
     bcm_timer_user_t *user_p;
     uint32_t jiffies_32;
@@ -245,9 +276,9 @@ int bcm_timer_add(bcm_timer_user_t *user_p, uint32_t expiration)
 
         if(dll_empty(&bcm_timer_g.list))
         {
-            if(ext_timer_start(bcm_timer_g.ext_timer_number))
+            if(hw_timer_start(bcm_timer_g.hw_timer_number))
             {
-                __error("Could not ext_timer_start");
+                __error("Could not hw_timer_start");
             }
         }
 
@@ -286,7 +317,7 @@ uint32_t bcm_timer_jiffies(void)
  * Module
  *****************************************************************************/
 
-int bcm_timer_construct(void)
+static int __bcm_timer_construct(void)
 {
     int ret;
 
@@ -296,36 +327,36 @@ int bcm_timer_construct(void)
 
     /* Allocate and configure the EXT timer */
 
-    bcm_timer_g.ext_timer_number = ext_timer_alloc_only(-1, ext_timer_handler, 0);
-    if(bcm_timer_g.ext_timer_number < 0)
+    bcm_timer_g.hw_timer_number = hw_timer_alloc(-1, hw_timer_handler, 0);
+    if(bcm_timer_g.hw_timer_number < 0)
     {
-        __error("Could not ext_timer_alloc_only");
+        __error("Could not hw_timer_alloc");
 
         return -1;
     }
 
-    __print("Allocated EXT_TIMER number %u\n", bcm_timer_g.ext_timer_number);
+    __print("Allocated HW_TIMER number %u\n", bcm_timer_g.hw_timer_number);
 
-    ret = ext_timer_set_period(bcm_timer_g.ext_timer_number, BCM_TIMER_PERIOD_uSEC);
+    ret = hw_timer_set_period(bcm_timer_g.hw_timer_number, BCM_TIMER_PERIOD_uSEC);
     if(ret)
     {
-        __error("Could not ext_timer_set_period: %u usec", BCM_TIMER_PERIOD_uSEC);
+        __error("Could not hw_timer_set_period: %u usec", BCM_TIMER_PERIOD_uSEC);
 
         return ret;
     }
 
-    ret = ext_timer_set_mode(bcm_timer_g.ext_timer_number, EXT_TIMER_MODE_ONESHOT);
+    ret = hw_timer_set_mode(bcm_timer_g.hw_timer_number, HW_TIMER_MODE_ONESHOT);
     if(ret)
     {
-        __error("Could not ext_timer_set_mode: EXT_TIMER_MODE_ONESHOT");
+        __error("Could not hw_timer_set_mode: HW_TIMER_MODE_ONESHOT");
 
         return ret;
     }
 
-    ret = ext_timer_set_affinity(bcm_timer_g.ext_timer_number, BCM_TIMER_CPU_ID, false);
+    ret = hw_timer_set_affinity(bcm_timer_g.hw_timer_number, BCM_TIMER_CPU_ID, false);
     if(ret)
     {
-        __error("Could not ext_timer_set_affinity: cpuId %u", BCM_TIMER_CPU_ID);
+        __error("Could not hw_timer_set_affinity: cpuId %u", BCM_TIMER_CPU_ID);
 
         return ret;
     }
@@ -338,6 +369,30 @@ int bcm_timer_construct(void)
 
     return 0;
 }
+
+#if defined(CC_HW_TIMER_CROSSBOW)
+
+int bcm_timer_hw_bind(void *hooks_p)
+{
+    hw_timer_hooks_g = *((crossbow_timer_hooks_t *)(hooks_p));
+
+    return __bcm_timer_construct();
+}
+EXPORT_SYMBOL(bcm_timer_hw_bind);
+
+int bcm_timer_construct(void)
+{
+    return 0;
+}
+
+#else  /* !CC_HW_TIMER_CROSSBOW */
+
+int bcm_timer_construct(void)
+{
+    return __bcm_timer_construct();
+}
+
+#endif /* CC_HW_TIMER_CROSSBOW */
 
 EXPORT_SYMBOL(bcm_timer_init);
 EXPORT_SYMBOL(bcm_timer_add);

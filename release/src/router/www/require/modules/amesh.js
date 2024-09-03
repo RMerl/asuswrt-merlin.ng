@@ -64,7 +64,7 @@ function check_wl_auth_support(_obj, _wl_unit) {
 	}
 	if(!support_flag) {
 		if((based_modelid === 'GT-AXE16000' || based_modelid === 'GT-BE98' || based_modelid === 'GT-BE98_PRO')
-		&& (typeof _smart_connect_enable !== undefined && _smart_connect_enable === '1')
+		&& (typeof _smart_connect_enable !== 'undefined' && _smart_connect_enable === '1')
 		&& smart_connect_mode[0] === '1'
 		&& auth_text === 'WPA2/WPA3-Personal'){
 			return support_flag;

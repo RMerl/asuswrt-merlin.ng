@@ -3,27 +3,21 @@
    All Rights Reserved
 
     <:label-BRCM:2017:DUAL/GPL:standard
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
 :>
 */
 /*
@@ -36,7 +30,7 @@
 #include <linux/bitops.h>
 #include "bcm_intr.h"
 #include "ru.h"
-#include "bcm6888_xport_intr_ag.h"
+#include "xport_ag.h"
 #include "xport_defs.h"
 #include "xport_intr.h"
 
@@ -190,11 +184,11 @@ int xport_intr_init(int irq0, int irq1, int irq2)
     RU_REG_WRITE(0, XPORT_INTR, CPU_MASK_CLEAR, clr);
     RU_REG_WRITE(1, XPORT_INTR, CPU_MASK_CLEAR, clr);
     RU_REG_WRITE(2, XPORT_INTR, CPU_MASK_CLEAR, clr);
-    if ((res = BcmHalMapInterrupt((FN_HANDLER)xport_isr, (void *)0, irq0)))
+    if ((res = BcmHalMapInterrupt((FN_HANDLER)xport_isr, "brcm_xport", (void *)0, irq0)))
         return res;
-    if ((res = BcmHalMapInterrupt((FN_HANDLER)xport_isr, (void *)1, irq1)))
+    if ((res = BcmHalMapInterrupt((FN_HANDLER)xport_isr, "brcm_xport", (void *)1, irq1)))
         return res;
-    if ((res = BcmHalMapInterrupt((FN_HANDLER)xport_isr, (void *)2, irq2)))
+    if ((res = BcmHalMapInterrupt((FN_HANDLER)xport_isr, "brcm_xport", (void *)2, irq2)))
         return res;
 
     return 0;
@@ -231,6 +225,7 @@ void xport_intr_unregister(XPORT_INTR_ID intr_id, uint32_t entity_id, uint32_t r
     intr_enable_op[intr_handler->register_num][INTR_DISABLE](intr_handler->mask);
     intr_handler->isr_cb = NULL;
 }
+EXPORT_SYMBOL(xport_intr_unregister);
 
 void xport_intr_enable(XPORT_INTR_ID intr_id, uint32_t entity_id, int enable, uint32_t register_num)
 {

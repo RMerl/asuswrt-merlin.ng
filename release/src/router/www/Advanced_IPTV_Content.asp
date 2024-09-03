@@ -12,14 +12,15 @@
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="other.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="state.js"></script>
 <script type="text/javascript" src="general.js"></script>
 <script type="text/javascript" src="popup.js"></script>
 <script type="text/javascript" src="help.js"></script>
 <script type="text/javascript" src="validator.js"></script>
-<script type="text/javaScript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
+<script type="text/javascript" src="/form.js"></script>
 
 <style>
 .contentM_connection{
@@ -54,6 +55,7 @@
 	width: 480px;
 	height: 330px;
 	background: url('images/model_port.png') no-repeat center;
+	background-size: contain;
 }
 
 .port_plugin_img{
@@ -61,7 +63,7 @@
 	width: 480px;
 	height: 330px;
 	background: url('images/wanport_plugin.png') no-repeat center;
-	left: 135px;
+	background-size: contain;
 }
 </style>
 
@@ -110,6 +112,53 @@ for(var i = 1; i < MSWAN_List_Pri.length; i++){
 }
 
 var autowan_enable = httpApi.nvramGet(["autowan_enable"], true).autowan_enable;
+
+var current_page = window.location.pathname.split("/").pop();
+var faq_index_tmp = get_faq_index(FAQ_List, current_page, 1);
+
+var vlan_port_list = {"access": [], "trunk": []};
+
+function get_vlan_portlist(){
+	let sdn_maximum = ((isSupport("MaxRule_SDN") == "0") ? 6 : (parseInt(isSupport("MaxRule_SDN")) - 1));//default is sdn 0
+	let nvram_name = "";
+	let label_mac = httpApi.nvramGet(["label_mac"], true)["label_mac"];
+
+	/* Get access port list */
+	for(let i = 0; i  < sdn_maximum ; i++ ){
+		nvram_name = "apg" + i + "_enable";
+		let apg_enable = httpApi.nvramGet([nvram_name], true)[nvram_name];
+		if(apg_enable == "1"){
+			nvram_name = "apg" + i + "_dut_list";
+			let dut_list = decodeURIComponent(httpApi.nvramCharToAscii([nvram_name], true)[nvram_name]);
+
+			if(dut_list != ""){
+				let dut_array = dut_list.split("<");
+				$.each(dut_array, function(index){
+					if(dut_array[index] != ""){
+						let dut_info = dut_array[index].split(">");
+						if(dut_info[0] == label_mac){
+							if(dut_info[2] != ""){
+								let port_array = dut_info[2].split(",");
+								$.each(port_array, function(port_index){
+									vlan_port_list.access.push(port_array[port_index].substr(1,1));
+								});
+							}
+						}
+					}
+				});
+			}
+		}
+	}
+
+	/* Get trunk port list */
+	let vlan_trunk_array = decodeURIComponent(httpApi.nvramCharToAscii(["vlan_trunk_rl"], true)["vlan_trunk_rl"]).split("<");
+	$.each(vlan_trunk_array, function(index){
+		if(vlan_trunk_array[index] != ""){
+			let trunk_info = vlan_trunk_array[index].split(">");
+			vlan_port_list.trunk.push(trunk_info[0]);
+		}
+	});
+}
 
 function initial(){
 	show_menu();
@@ -592,10 +641,12 @@ function validForm(){
 }
 
 function check_port_conflicts(){
-	var wan_port_conflict = false;
-	var lacp_port_conflict = false;
-	var iptv_port = document.form.switch_stb_x.value;
-	var iptv_port_settings = document.form.iptv_port_settings.value;
+	let wan_port_conflict = false;
+	let lacp_port_conflict = false;
+	let vlan_port_conflict = false;
+	let iptv_port = document.form.switch_stb_x.value;
+	let iptv_port_settings = document.form.iptv_port_settings.value;
+	let selected_stb_option = $('#switch_stb_x0 :selected').text();
 
 	if(dualWAN_support){	// dualwan LAN port should not be equal to IPTV port
 		var tmp_pri_if = wans_dualwan_orig.split(" ")[0].toUpperCase();
@@ -651,9 +702,7 @@ function check_port_conflicts(){
 		}
 	}
 
-	if(lacp_enabled && document.form.switch_wantag.value == "none"){
-		var selected_stb_option = $('#switch_stb_x0 :selected').text();;
-
+	if(lacp_support && lacp_enabled && document.form.switch_wantag.value == "none"){
 		bonding_port_settings.forEach(function(bonding_value){
 			var bonding_port = bonding_value.text;
 			if(selected_stb_option.indexOf(bonding_port) != -1 || bonding_port.indexOf(selected_stb_option) != -1)
@@ -661,7 +710,30 @@ function check_port_conflicts(){
 		});
 	}
 
-	if(wan_port_conflict || lacp_port_conflict){
+	if(isSupport("mtlancfg")){
+		get_vlan_portlist();
+		if(vlan_port_list.access.length > 0){
+			$.each(vlan_port_list.access, function(index){
+				let vlan_port_text = "LAN" + vlan_port_list.access[index];
+				if(selected_stb_option.indexOf(vlan_port_text) != -1){
+					vlan_port_conflict = true;
+					return false;
+				}
+			});
+		}
+
+		if(vlan_port_list.trunk.length > 0){
+			$.each(vlan_port_list.trunk, function(index){
+				let vlan_port_text = "LAN" + vlan_port_list.trunk[index];
+				if(selected_stb_option.indexOf(vlan_port_text) != -1){
+					vlan_port_conflict = true;
+					return false;
+				}
+			});
+		}
+	}
+
+	if(wan_port_conflict || lacp_port_conflict || vlan_port_conflict){
 		var hint_str1 = "<#PortConflict_SamePort_Hint#>";
 		var hint_str2 = "<#ChooseOthers_Hint#>";
 		var alert_msg = "";
@@ -669,8 +741,11 @@ function check_port_conflicts(){
 		if(wan_port_conflict){
 			alert_msg = hint_str1.replace("%1$@", "WAN").replace("%2$@", "IPTV") + " " + hint_str2;
 		}
-		else{
+		else if(lacp_port_conflict){
 			alert_msg = hint_str1.replace("%1$@", "<#NAT_lacp#>").replace("%2$@", "IPTV") + " " + hint_str2;
+		}
+		else if(vlan_port_conflict){
+			alert_msg = hint_str1.replace("%1$@", "VLAN").replace("%2$@", "IPTV") + " " + hint_str2;
 		}
 
 		alert(alert_msg);
@@ -1896,9 +1971,12 @@ function get_default_wan_name(){
   <table width="760px" border="0" cellpadding="5" cellspacing="0" class="FormTitle" id="FormTitle">
 	<tbody>
 	<tr>
-		<td bgcolor="#4D595D" valign="top"  >
+		<td bgcolor="#4D595D" valign="top">
+		<div class="container">
+
 			<div>&nbsp;</div>
 			<div class="formfonttitle"><#menu5_2#> - IPTV</div>
+			<div class="formfonttitle_help"><i onclick="show_feature_desc(`<#HOWTOSETUP#>`)" class="icon_help"></i></div>
 			<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 			<div id="IPTV_desc" class="formfontdesc" style="display:none;"><#LANHostConfig_displayIPTV_sectiondesc#></div>
 			<div id="IPTV_desc_DualWAN" class="formfontdesc" style="display:none;"><#LANHostConfig_displayIPTV_sectiondesc2#></div>
@@ -2070,6 +2148,9 @@ function get_default_wan_name(){
 		<div class="apply_gen">
 			<input class="button_gen" onclick="applyRule()" type="button" value="<#CTL_apply#>"/>
 		</div>
+
+		</div>	<!-- for .container  -->
+		<div class="popup_container popup_element_second"></div>
 		
 	  </td>
 	</tr>
@@ -2080,7 +2161,7 @@ function get_default_wan_name(){
 		</td>
 	</form>					
 				</tr>
-			</table>				
+			</table>
 			<!--===================================End of Main Content===========================================-->
 </td>
 

@@ -758,6 +758,8 @@ static int qcom_pcie_get_resources_2_4_0(struct qcom_pcie *pcie)
 	if (IS_ERR(res->phy_ahb_reset))
 		return PTR_ERR(res->phy_ahb_reset);
 
+	dw_pcie_dbi_ro_wr_dis(pci);
+
 	return 0;
 }
 

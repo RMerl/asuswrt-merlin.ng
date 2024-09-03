@@ -213,13 +213,15 @@
 				"switchreg-base",
 				"switchmdio-base",
 				"switchacb-base",
-				"switchlfh-base";
+				"switchlfh-base",
+				"switchsib-base";
 
 		reg	= <0x0 0x80400000 0x0 0x72724>,
 			<0x0 0x80474000 0x0 0x20>,
 			<0x0 0x80486000 0x0 0x10>,
 			<0x0 0x80474800 0x0 0x230>,
-			<0x0 0x80474b00 0x0 0x100>;
+			<0x0 0x80474b00 0x0 0x100>,
+			<0x0 0x80474c00 0x0 0x100>;
 	};
 
 	mdio_sf2: mdio_sf2 {
@@ -319,6 +321,7 @@
 		ubus_sys: ubus_sys {
 			#address-cells = <2>;
 			#size-cells = <2>;
+			ranges;
 			#define UBUS_SYSTOP_OFFSET         0x0 0x83000000
 			#define UBUS_SYSTOP_SIZE           0x0 0x80
 			#define UBUS_REGISTRATION_OFFSET   0x0 0x83000200
@@ -401,6 +404,15 @@
 			sdhci-pll-baseclk-mhz = <5000>;
 			sdhci-pll-valid-op-mhz = <100 125 156 185 200>;
 		};
+
+#if defined (CONFIG_MMC_OOPS) || (CONFIG_MMC_OOPS_MODULE)
+		mmcoops {
+			#define MMC_OOPS_DUMP_OFFSET    1536 /* 768KB */
+			#define MMC_OOPS_DUMP_SIZE      512  /* 256KB */	
+			#define MMC_OOPS_DUMP_RECSIZE   128  /* 64KB  */
+			#include "../ip/bcm_mmc_oops.dtsi"
+		};
+#endif
 
 		rng: rng {
 			#define RNG200_OFFSET                   0x00000000 0xb80
@@ -654,7 +666,9 @@
 	pcie: pcie {
 		compatible = "brcm,bcm-pcie";
 		device_type = "cpci";
-		brcm,pllclkid = <0x10>;
+		/* pcie 0 & 1 share same GEN3 clock */
+		brcm,pllclkid = <0x00>;
+		reg = <0x0 0x81061000 0x0 0x1000>;  /* CTMR_CTRL */
 	};
 
 	/* Internal WiFi Core 0 (virtual pcie with domain#0) */
@@ -662,6 +676,8 @@
 		#define WIFI_COREID			0
 		#define WIFI_ADDR			0x90000000
 		#define WIFI_SIZE			0x08000000
+		#define WIFI_MLO_ADDR		0x800E0000
+		#define WIFI_MLO_SIZE		0x00000100
 		#define WIFI_DEVID			0x6765
 		#define WIFI_CCM_SPI		96
 		#define WIFI_D11MAC_SPI		97
@@ -681,6 +697,8 @@
 		#define WIFI_COREID			1
 		#define WIFI_ADDR			0x98000000
 		#define WIFI_SIZE			0x08000000
+		#define WIFI_MLO_ADDR		0x800F0000
+		#define WIFI_MLO_SIZE		0x00000100
 		#define WIFI_DEVID			0x6765
 		#define WIFI_CCM_SPI		106	
 		#define WIFI_D11MAC_SPI		107
@@ -727,6 +745,13 @@
 				"led_reg_3", "led_reg_4", "led_reg_5"; 
 			reg = <0 0x8048017C 0 0x4>, <0 0x80480108 0 0xc>, <0 0x80480114 0 0xc>, <0 0x80480120 0 0xc>, \
 				<0 0x8048012C 0 0xc>, <0 0x80480138 0 0xc>, <0 0x80480144 0 0xc>;
+	};
+
+	therm0: brcm-therm {
+		compatible = "brcm,therm";
+		reg-names="bac_cpu_therm_temp";
+		reg = <0 0x8106037c 0 0x04>;
+		status = "okay";
 	};
 };
 

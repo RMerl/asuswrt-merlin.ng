@@ -1,29 +1,23 @@
 /*
 * <:copyright-BRCM:2013:DUAL/GPL:standard
-*
-*    Copyright (c) 2013 Broadcom
+* 
+*    Copyright (c) 2013 Broadcom 
 *    All Rights Reserved
-*
-* Unless you and Broadcom execute a separate written software license
-* agreement governing use of this software, this software is licensed
-* to you under the terms of the GNU General Public License version 2
-* (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-* with the following added to such license:
-*
-*    As a special exception, the copyright holders of this software give
-*    you permission to link this software with independent modules, and
-*    to copy and distribute the resulting executable under terms of your
-*    choice, provided that you also meet, for each linked independent
-*    module, the terms and conditions of the license of that module.
-*    An independent module is a module which is not derived from this
-*    software.  The special exception does not apply to any modifications
-*    of the software.
-*
-* Not withstanding the above, under no circumstances may you combine
-* this software in any way with any other Broadcom software provided
-* under a license other than the GPL, without Broadcom's express prior
-* written consent.
-*
+* 
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License, version 2, as published by
+* the Free Software Foundation (the "GPL").
+* 
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+* 
+* 
+* A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+* writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+* Boston, MA 02111-1307, USA.
+* 
 * :>
 */
 
@@ -99,6 +93,7 @@ static int rdpa_get_init_system_dt_params(rdpa_system_init_cfg_t  *init_cfg)
                 port_index = be32_to_cpup(port_reg);
 
                 if (of_property_read_bool(child_p, "management")) continue;
+                if (strstr((char *)of_node_full_name(child_p), "fiber")) continue;
 
                 emac_map |= 1 << port_index;
                 if (of_parse_phandle(child_p, "link", 0))
@@ -130,7 +125,111 @@ static int rdpa_get_init_system_dt_params(rdpa_system_init_cfg_t  *init_cfg)
     printk("rdpa_get_init_system_dt_params: emac_map=%x ext_sw_pid=%d usxgmiim_cnt=%d\n", emac_map, ext_sw_pid, init_cfg->usxgmiim_port_cfg);
     return rc;
 }
+
+#if defined(TM_CORE_LOAD_BALANCING)
+#ifndef CONFIG_BRCM_QEMU
+static uint32_t two_digit_atoi(char *digits)
+{
+    if (digits[0] >= '0' && digits[0] <= '9')
+    {
+        if (digits[1] >= '0' && digits[1] <= '9')
+            return (digits[0] - '0') * 10 + (digits[1] - '0');
+        else
+            return digits[0] - '0';
+    }
+    return 100; /* out of range */
+}
 #endif
+
+static void rdpa_get_init_system_tm_core_port_map(rdpa_tm_core_emac_map *tm_core_emac_map_p,
+    char *ports_tm_0_p, char *ports_tm_1_p)
+{
+#ifndef CONFIG_BRCM_QEMU
+    uint32_t enabled_map_copy = tm_core_emac_map_p->enabled_map;
+    uint32_t ports_mapped = 0;
+    uint32_t port_index;
+    uint8_t *p;
+    int i, j;
+
+    for (i = 0; i < 2; i++)
+    {
+        /* PSP PortsTm0 and PortsTm1 format example: P0,P1,P10 */
+        p = (i == 0) ? ports_tm_0_p : ports_tm_1_p;
+        while (*p)
+        {
+            while (*p != 'P' && *p != 'p' && *p != '\0')
+                p++;
+            if (*p == 'P' || *p == 'p')
+            {
+                p++;
+                port_index = two_digit_atoi(p);
+
+                /* the user configured port number must be less than the maximum port number,
+                 * exist in the device tree port configuration and must have not already
+                 * been configured */
+                if ((port_index < TM_CORE_EMAC_MAP_MAX_PORTS) &&
+                     ((1 << port_index) & tm_core_emac_map_p->enabled_map) &&
+                    !((1 << port_index) & ports_mapped))
+                {
+                    if (i == 1)
+                       tm_core_emac_map_p->core_map |= (1 << port_index);
+                    else
+                       tm_core_emac_map_p->core_map &= ~(1 << port_index);
+
+                    enabled_map_copy &= ~(1 << port_index);
+                    ports_mapped |= (1 << port_index);
+                }
+                else
+                {
+                    printk("RUNNER TM PORT MAPPING: Error in TmPorts%cs string, Valid ports are: ", (i == 0) ? 'D' : 'U');
+                    for (j = 0; j < TM_CORE_EMAC_MAP_MAX_PORTS; j++)
+                    {
+                        if ((1 << j) & tm_core_emac_map_p->enabled_map)
+                            printk("P%d ", j);
+                    }
+                    printk("RUNNER TM PORT MAPPING: switching to automatic port mapping\n");
+                    tm_core_emac_map_p->core_map = 0;
+                    return;
+                }
+            }
+            else /* end of string */
+                break;
+        }
+    }
+
+    if (enabled_map_copy)
+    {
+        printk("RUNNER TM PORT MAPPING: Error, these ports are not assigned in PortsTm0 or PortsTm1: ");
+        for (i = 0; i < TM_CORE_EMAC_MAP_MAX_PORTS; i++)
+        {
+            if ((1 << i) & enabled_map_copy)
+                printk("P%d ", i);
+        }
+        printk("RUNNER TM PORT MAPPING: switching to automatic port mapping\n");
+        tm_core_emac_map_p->core_map = 0;
+        return;
+    }
+
+    printk("RUNNER TM PORT MAPPING: Using TM port mapping from PortsTm0:\n");
+    for (i = 0; i < TM_CORE_EMAC_MAP_MAX_PORTS; i++)
+    {
+        if (((1 << i) & tm_core_emac_map_p->enabled_map) && !((1 << i) & tm_core_emac_map_p->core_map))
+            printk("P%d ", i);
+    }
+
+    printk("RUNNER TM PORT MAPPING: Using TM port mapping from PortsTm1:\n");
+    for (i = 0; i < TM_CORE_EMAC_MAP_MAX_PORTS; i++)
+    {
+        if (((1 << i) & tm_core_emac_map_p->enabled_map) && ((1 << i) & tm_core_emac_map_p->core_map))
+            printk("P%d ", i);
+    }
+    
+    tm_core_emac_map_p->tm_core_port_map_enable = 1;
+
+#endif // !QEMU
+}
+#endif /* TM_CORE_LOAD_BALANCING */
+#endif /* !CONFIG_BCM_PON */
 
 #if !defined(CONFIG_BCM963138) && !defined(CONFIG_BCM963148) && !defined(CONFIG_BCM94908)
 typedef enum
@@ -203,12 +302,25 @@ int operation_mode_get(rdpa_operation_mode *operation_mode)
 
 static int nvram_runner_key_get(int key_id, char *buff, int len)
 {
+#ifndef CONFIG_BRCM_QEMU
+    char val_str[NVRAM_RNR_RES_STR_LEN];
+#endif /* CONFIG_BRCM_QEMU */
     char *key_str = NULL;
 
     if (key_id >= NVRAM_RNR_MAX_KEYS)
         return 0;
 
-    key_str = nvram_k_get(runner_key_fmt_str[key_id]);
+#ifndef CONFIG_BRCM_QEMU
+    /* Read uboot environment first */
+    memset(val_str, 0, sizeof(val_str));
+    if (eNvramGet(runner_key_fmt_str[key_id], val_str, NVRAM_RNR_RES_STR_LEN) > 0) {
+        key_str = val_str;
+    }
+    else
+#endif /* CONFIG_BRCM_QEMU */
+    {
+        key_str = nvram_k_get(runner_key_fmt_str[key_id]);
+    }
 
     if (key_str)
     {
@@ -627,6 +739,11 @@ int rdpa_init_system(void)
     int rc;
     int dhd_offload_bitmask = 0;
     rdpa_system_init_cfg_t sys_init_cfg = {};
+#if defined(TM_CORE_LOAD_BALANCING)
+    rdpa_tm_core_emac_map tm_core_emac_map = {};
+    char ports_tm_0[48]={};
+    char ports_tm_1[48]={};
+#endif
 
     rdpa_system_cfg_t sys_cfg = {};
 #if defined(XRDP) && !defined(BUFMNG_HW_RUNNER_SUPPORT)
@@ -645,6 +762,17 @@ int rdpa_init_system(void)
     bdmf_history_buff_size_config();
 
     rc = rdpa_get_init_system_dt_params(&sys_init_cfg);
+
+#if defined(TM_CORE_LOAD_BALANCING)
+    tm_core_emac_map.enabled_map = (uint32_t)(emac_map & ((1 << TM_CORE_EMAC_MAP_MAX_PORTS) - 1));
+    if (!rc && kerSysScratchPadGet(RUNNER_PORTS_TM_0, ports_tm_0, sizeof(ports_tm_0)) > 0 &&
+        kerSysScratchPadGet(RUNNER_PORTS_TM_1, ports_tm_1, sizeof(ports_tm_1)) > 0)
+    {
+        rdpa_get_init_system_tm_core_port_map(&tm_core_emac_map, ports_tm_0, ports_tm_1);
+    }
+    emac_map = (int)*(uint32_t *)&tm_core_emac_map;
+#endif
+
     if (rc)
         goto exit;
 

@@ -4,25 +4,19 @@
    Copyright (c) 2013 Broadcom 
    All Rights Reserved
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
 :>
 */
@@ -83,10 +77,13 @@ written consent.
 
 #if defined(CONFIG_BRCM_SMC_BOOT)
 #include "vfbio_lvm.h"
-#endif
-
+#else
 static int nandEraseBlk( struct mtd_info *mtd, int blk_addr );
 static int nandWriteBlk(struct mtd_info *mtd, int blk_addr, int data_len, char *data_ptr, bool write_JFFS2_clean_marker);
+static void kerSysNvRamMirrorWrite(const PNVRAM_DATA nv);
+static int nandNvramSet(const char *nvramString );
+static int nandNvramSetEx(const char *nvramString, int block, int offset);
+#endif
 
 
 
@@ -154,10 +151,6 @@ void sync_nvram_with_flash(void)
 
 static int setScratchPad(char *buf, int len);
 static char *getScratchPad(int len);
-static int nandNvramSet(const char *nvramString );
-
-static void kerSysNvRamMirrorWrite(const PNVRAM_DATA nv);
-static int nandNvramSetEx(const char *nvramString, int block, int offset);
 
 // Variables not used in the simplified API used for the IKOS target
 #if !defined(CONFIG_BRCM_IKOS)
@@ -456,7 +449,6 @@ void __init kerSysEarlyFlashInit( void )
 int kerSysNvRamSet(const char *string, int strLen, int offset)
 {
     int sts = -1;  // initialize to failure
-    char *pBuf = NULL;
 
     if(offset != 0) {
         printk("************************************\n");
@@ -472,8 +464,11 @@ int kerSysNvRamSet(const char *string, int strLen, int offset)
 
     switch (flash_type) 
     {
+#if !defined(CONFIG_BRCM_SMC_BOOT)
         case FLASH_IFC_SPI:
         case FLASH_IFC_HS_SPI:
+	{
+            char *pBuf = NULL;
             if ((pBuf = getSharedBlks(NVRAM_SECTOR, 1)) == NULL)
                 return sts;
 
@@ -484,6 +479,7 @@ int kerSysNvRamSet(const char *string, int strLen, int offset)
 
             retriedKfree(pBuf);       
             break;
+	}
 
         case FLASH_IFC_NAND:
         case FLASH_IFC_SPINAND:
@@ -495,6 +491,7 @@ int kerSysNvRamSet(const char *string, int strLen, int offset)
             sts =  kerSysFsFileSet(EMMC_NVRAM_DEV_NAME, (char*)string, strLen);
             break;
 
+#endif //#if !defined(CONFIG_BRCM_SMC_BOOT)
         default:
             printk("ERROR: %s:Unknown flash type\n", __FUNCTION__);
             break;
@@ -532,6 +529,7 @@ void kerSysNvRamGet(char *string, int strLen, int offset)
     return;
 }
 
+#if !defined(CONFIG_BRCM_SMC_BOOT)
 #define MAX_NVRAM_MIRROR_LOOKUP_OFFSET 20*1024*1024
 /* bcm_ubi requires mapping getCrc32 to our local impl (in board_image.c) */
 #define getCrc32 genCrc32
@@ -638,7 +636,6 @@ void kerSysNvRamLoad(void * mtd_ptr)
     return;
 }
 
-
 /** Erase entire nvram area.
  *
  * Currently there are no callers of this function.  THe return value is
@@ -689,7 +686,6 @@ int kerSysEraseNvRam(void)
 }
 
 
-#if !defined(CONFIG_BRCM_SMC_BOOT)
 static int write_to_flash_at_offset(const char *input_data, int input_data_length, int address  )
 {
     /* Image contains CFE ROM boot loader. */
@@ -1456,6 +1452,7 @@ int kerSysSyslogSet(char *string, int strLen, int offset)
     return sts;
 }
 
+#if !defined(CONFIG_BRCM_SMC_BOOT)
 /* Erase the specified NAND flash block. */
 static int nandEraseBlk( struct mtd_info *mtd, int blk_addr )
 {
@@ -1576,6 +1573,7 @@ static int nandNvramSet(const char *nvramString)
 {
     return nandNvramSetEx(nvramString, 0, NVRAM_DATA_OFFSET);
 }
+#endif //#if !defined(CONFIG_BRCM_SMC_BOOT)
 
 /*******************************************************************************
  * SP functions
@@ -2136,6 +2134,7 @@ int kerSysScratchPadClearAll(void)
 }
 
 
+#if !defined(CONFIG_BRCM_SMC_BOOT)
 static unsigned int getPartitionSize(char * dev_name)
 {
     // Open file
@@ -2167,15 +2166,19 @@ static unsigned int getPartitionSize(char * dev_name)
 
     return num_512b_blocks * 512;
 }
+#endif //if !defined(CONFIG_BRCM_SMC_BOOT)
 
 #define SPI_NOR_FLASH_NAME "spi-nor.0"
 int kerSysFlashSizeGet(void)
 {
     int ret = 0;
+#if !defined(CONFIG_BRCM_SMC_BOOT)
     struct mtd_info *mtd;
+#endif //#if !defined(CONFIG_BRCM_SMC_BOOT)
 
     switch (flash_type) 
     {
+#if !defined(CONFIG_BRCM_SMC_BOOT)
         case FLASH_IFC_UNSUP_EMMC:
             ret += getPartitionSize(EMMC_DEV_PNAME_CFE);
             ret += getPartitionSize(EMMC_DEV_PNAME_BOOTFS(1));
@@ -2190,6 +2193,7 @@ int kerSysFlashSizeGet(void)
                 put_mtd_device(mtd);
             }
             break;
+#endif //#if !defined(CONFIG_BRCM_SMC_BOOT)
 
         case FLASH_IFC_SPI:
         case FLASH_IFC_HS_SPI:

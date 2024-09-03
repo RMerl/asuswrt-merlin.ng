@@ -3,27 +3,21 @@
    All Rights Reserved
 
     <:label-BRCM:2016:DUAL/GPL:standard
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
 :>
 */
 
@@ -54,6 +48,8 @@
 static int core_enabled[SHASTA_CORES];
 static serdes_mode_t lane_mode[SHASTA_CORES][LANES_PER_CORE];
 static serdes_mode_t configured_mode[SHASTA_CORES][LANES_PER_CORE];
+
+extern int phy_speed_max;
 
 static inline int is_inter_phy_type_supported(phy_dev_t *phy_dev, int inter_phy_type)
 {
@@ -377,6 +373,9 @@ static int _phy_speed_set(phy_dev_t *phy_dev, phy_speed_t speed, phy_duplex_t du
     uint8_t core_id = phy_dev->core_index - SHASTA_BASE_CORE;
     uint8_t lane_id = phy_dev->lane_index;
 
+    if (!phy_dev->cascade_next && phy_speed_max != PHY_SPEED_AUTO)
+        return 0;
+
     if (speed == PHY_SPEED_UNKNOWN)
     {
         serdes_mode = SERDES_MODE_UNKNOWN;
@@ -451,7 +450,7 @@ static int _serdes_enable(phy_dev_t *phy_dev, int8_t module_detect)
 #endif
     }
 
-    if (!(phy_dev->flag & PHY_FLAG_POWER_SET_ENABLED))
+    if (!PhyIsPowerSetEnabled(phy_dev))
         serdes_mode = SERDES_MODE_UNKNOWN;
 
     _phy_init_mode(phy_dev, serdes_mode);
@@ -505,7 +504,7 @@ static int _phy_power_get(phy_dev_t *phy_dev, int *enable)
 {
     int ret = 0;
 
-    *enable = phy_dev->flag & PHY_FLAG_POWER_SET_ENABLED ? 1 : 0;
+    *enable = PhyIsPowerSetEnabled(phy_dev);
 
     return ret;
 }

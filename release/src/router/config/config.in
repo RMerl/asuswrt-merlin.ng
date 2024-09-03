@@ -87,6 +87,11 @@ config RTCONFIG_WLTEST
 	depends on RTCONFIG_BCMARM && RTCONFIG_BCMWL6
 	default n
 
+config RTCONFIG_FW_CHK_BOARDID
+	bool "check boardid before writing new firmwarewltest mode"
+	depends on RTCONFIG_HND_ROUTER_BE_4916 || RTCONFIG_HND_ROUTER_AX_6756
+	default n
+
 config RTCONFIG_HND_ROUTER_AX
 	bool "Bcm hnd 11ax bsp"
 	default n
@@ -164,7 +169,7 @@ config RTCONFIG_DHDAP
 
 config RTCONFIG_BW160M
 	bool "Bandwidth 160MHz support"
-	depends on RTCONFIG_DHDAP || RTCONFIG_QCA || RTCONFIG_MT798X
+	depends on RTCONFIG_DHDAP || RTCONFIG_HND_ROUTER_AX_6756 || RTCONFIG_HND_ROUTER_BE_4916 || RTCONFIG_QCA || RTCONFIG_MT798X
 	default n
 
 config RTCONFIG_BW320M
@@ -1518,10 +1523,23 @@ config RTCONFIG_SMART_HOME_MASTER_UI
 	bool "Smart Home Master UI of SDN"
 	default n
 
+config RTCONFIG_SDN_PRIORITY
+	bool "SDN Priority or Gaming UI of SDN"
+	default n
+
 config RTCONFIG_MAX_MTLAN
     int "Support the maximum number of SDN"
     depends on RTCONFIG_MULTILAN_CFG
     default 16
+
+config RTCONFIG_MULTILAN_MWL
+	bool "Support Main BH & BH of SDN"
+	depends on RTCONFIG_MULTILAN_CFG
+	default n
+
+config RTCONFIG_SDN_PRIORITY
+	bool "SDN Priority or Gaming UI of SDN"
+	default n
 
 config RTCONFIG_TFTP_SERVER
 	bool "TFTP daemon"
@@ -1690,6 +1708,10 @@ config RTCONFIG_DEMOUI
 
 config RTCONFIG_TS_UI
     bool "TS theme support"
+    default n
+
+config RTCONFIG_ADGUARDDNS
+    bool "Enable AdGuard DNS"
     default n
 
 config RTCONFIG_ROG
@@ -1961,6 +1983,11 @@ config RTCONFIG_SOFTWIRE46
 
 config RTCONFIG_OCNVC
 	bool "IPoE - OCN Virtual Connect support"
+	depends on RTCONFIG_SOFTWIRE46
+	default n
+
+config RTCONFIG_V6OPTION
+	bool "IPoE - v6 Option (BIGLOB) support"
 	depends on RTCONFIG_SOFTWIRE46
 	default n
 
@@ -2650,6 +2677,10 @@ config RTCONFIG_OOKLA_LITE
 	bool "speedtest function powered by Ookla - lite version to store in memory"
 	default n
 
+config RTCONFIG_ETH_MONITOR
+	bool "enhance ookla speedtest can't reach peak performance due to CPU / ethernet bottleneck, detect wan traffic to transfer peak throughput"
+	default n
+
 config RTCONFIG_QCA_MCSD
 	bool "Use qca-mcs for multicast packets"
 	default n
@@ -2761,13 +2792,34 @@ config RTCONFIG_WIFI7
 	bool "WiFi 7"
 	default n
 
-config RTCONFIG_MLO
-        bool "MLO"
+config RTCONFIG_QOSR1
+        bool "QOSR1"
         default n
 
-config RTCONFIG_MLO_FH
-        bool "MLO FRONTHAUL"
+config RTCONFIG_IPTABLES1810
+        bool "iptables-1.8.10"
         default n
+
+config RTCONFIG_MLO
+    bool "MLO"
+    default n
+
+config RTCONFIG_DIS_MLO_QIS
+	bool "MLO"
+	default n
+
+config RTCONFIG_DIS_MLO_QIS
+	bool "MLO"
+	default n
+
+config RTCONFIG_MLO_FH
+    bool "MLO FRONTHAUL"
+    default n
+
+config RTCONFIG_MLO_BH
+	depends on RTCONFIG_MLO
+    bool "MLO BACKHAUL"
+    default n
 
 config RTCONFIG_SYSCLASSGPIO
 	bool "enable sys class gpio"
@@ -3179,6 +3231,22 @@ config RTCONFIG_PRESSURE_SENSOR
 	bool "Pressure sensor"
 	default n
 
+config RTCONFIG_SMARTHAUL
+        bool "Smart haul"
+        default n
+
+config RTCONFIG_MLO_BH_BAND
+	bool "MLO backhaul band"
+	default n
+
+config RTCONFIG_DOWNGRADE_CHECK
+	bool "firmware downgrade check"
+	default n
+
 config RTCONFIG_MLO_CONFIG_566
         bool "MLO default config 566 in 2566 model"
+        default n
+
+config RTCONFIG_MLO_DEFAULT_ACTIVE
+        bool "Enable MLO in default"
         default n

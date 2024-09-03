@@ -136,6 +136,7 @@ unsigned int get_root_type(void)
 		case MODEL_RTAX56U:
 		case MODEL_RPAX56:
 		case MODEL_RPAX58:	// need to chk if still ubifs
+		case MODEL_RPBE58:
 		case MODEL_GTAXE11000:
 		case MODEL_GTAX6000:
 		case MODEL_GTAX11000_PRO:

@@ -220,14 +220,31 @@ struct iproc_ctx_s {
 
 #if defined(CONFIG_BLOG)
 	struct list_head     entry;
-	unsigned int         ipsaddr;
-	unsigned int         ipdaddr;
 	unsigned int         spi;
 	enum spu_stream_type stream;
+	struct xfrm_state    *xfrm;
+	union {
+		unsigned int         ipsaddr;
+		struct in6_addr      v6_saddr;
+	};
+	union {
+		unsigned int         ipdaddr;
+		struct in6_addr      v6_daddr;
+	};
 	u8                   iv_size;
+	u8                   blk_size;
 	u8                   blog_chan_id;
-	u8                   esp_over_udp; /* esp_over_udp=1, esp_over_ipv4=0 */
-	u8                   esp_mode; /* tunnel=0, transport=1 */
+	union {
+		struct {
+			u8           esp_over_udp : 1; /* esp_over_udp=1, esp_over_ipv4=0 */
+			u8           esp_mode     : 1; /* tunnel=0, transport=1 */
+			u8           ipv6         : 1;
+			u8           gcm          : 1;
+			u8           esn          : 1;
+			u8           reserved     : 3;
+		};
+		u8                   u8_0;
+	};
 	atomic_t             offload_id;
 #endif
 
@@ -475,7 +492,9 @@ struct spu_hw {
 	int (*spu_send_data)(int chan, struct bcmspu_message *msg);
 	int (*spu_select_channel)(void);
 	int (*spu_get_max_channel)(void);
-#if defined(SPU_TEST_RAW_PERF)
+	int (*spu_and_dma_runtime_on)(void);
+	int (*spu_and_dma_runtime_off)(void);
+#if defined(CONFIG_BCM_SPU2_TEST_VEC)
 	void (*spu_test_raw_perf)(long long num);
 	int (*spu_get_test_vectors)(struct spu_test_vector_t **test_vectors_ptr);
 	u32 (*spu_ops_in_transit)(int chan);
@@ -496,6 +515,9 @@ struct spu_hw {
 
 	/* The number of SPU channels on this platform */
 	u32 num_chan;
+
+	/* SPU static pwr mode */
+	atomic_t static_pwr;
 };
 
 struct device_private {
@@ -531,7 +553,7 @@ struct device_private {
 
 	struct dentry *debugfs_dir;
 	struct dentry *debugfs_stats;
-#if defined(SPU_TEST_RAW_PERF)
+#if defined(CONFIG_BCM_SPU2_TEST_VEC)
 	struct dentry *debugfs_test_dir;
 	struct dentry *debugfs_test_start;
 	struct dentry *debugfs_test_vector;

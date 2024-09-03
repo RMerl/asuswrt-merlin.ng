@@ -97,6 +97,11 @@ int dt_gpio_exists(dt_gpio_desc desc)
     return !!desc;
 }
 
+void dt_gpio_put(dt_gpio_desc desc)
+{
+    gpiod_put(desc);
+}
+
 dt_handle_t dt_dev_get_handle(dt_device_t *pdev)
 {
     return pdev->dev.of_node;
@@ -109,7 +114,7 @@ void *dt_dev_read_addr(dt_device_t *pdev, int index)
     if (!(res = platform_get_resource(pdev, IORESOURCE_MEM, index)))
         return NULL;
 
-    return (void *)res->start;
+    return (void *)(uintptr_t)res->start;
 }
 
 void *dt_dev_remap(dt_device_t *pdev, int index)

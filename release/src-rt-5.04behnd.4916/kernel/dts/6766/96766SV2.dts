@@ -1,0 +1,22 @@
+#include "96766SV1.dts"
+
+/ {
+
+	memory_controller {
+		memcfg = <(BP_DDR_TYPE_DDR4       | \
+			BP_DDR_SPEED_1600_22_22_22    | \
+			BP_DDR_TOTAL_SIZE_2048MB      | \
+			BP_DDR_DEVICE_WIDTH_16        | \
+			BP_DDR_TOTAL_WIDTH_16BIT      | \
+			BP_DDR_6766_DEFAULT           | \
+			BP_DDR_CONFIG_DEBUG)>;
+	};
+};
+
+/* 
+ * For BT Coex 
+ */
+&pincontroller {
+    pinctrl-names = "default";
+    pinctrl-0 = <&wifi1_seci_in_pin_30 &wifi1_seci_out_pin_25>; /* SECI */
+};

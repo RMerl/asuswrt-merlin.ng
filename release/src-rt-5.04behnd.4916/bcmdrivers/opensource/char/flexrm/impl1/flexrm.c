@@ -1,28 +1,22 @@
 /*
 <:copyright-BRCM:2018:DUAL/GPL:standard
 
-   Copyright (c) 2018 Broadcom
+   Copyright (c) 2018 Broadcom 
    All Rights Reserved
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
 :>
 */
@@ -430,6 +424,8 @@ written consent.
 #define NUM_OFFLOAD_RESERVED	0
 #endif
 
+#define CS_OFF 0
+#define CS_ON  1
 /* ====== FlexRM data structures ===== */
 
 struct flexrm_ring {
@@ -475,6 +471,12 @@ struct flexrm_ring {
 	u32 cmpl_read_offset;
 };
 
+struct flexrm_power_t {
+	spinlock_t lock;
+	atomic_t in_progress;
+	SPU_PWR_STATUS status;
+};
+
 struct flexrm_global {
 	struct device *dev;
 	void __iomem *regs;
@@ -482,7 +484,6 @@ struct flexrm_global {
 	u32 num_rings;
 	u32 num_aes;
 	atomic_t next_chan;
-	spinlock_t lock;
 	u32 irq_mask;
 	struct flexrm_ring *rings;
 	struct dma_pool *bd_pool;
@@ -490,6 +491,7 @@ struct flexrm_global {
 	struct dentry *root;
 	struct dentry *config;
 	struct dentry *stats;
+	struct flexrm_power_t power_ctrl;
 };
 
 struct flexrm_global *flexrm_g = NULL;
@@ -925,7 +927,13 @@ u32 flexrm_ops_in_transit(int chan)
 EXPORT_SYMBOL(flexrm_ops_in_transit);
 
 /* ====== FlexRM Debugfs callbacks ====== */
-
+/**
+ * @brief 
+ * @note must be disabled while SPU is off
+ * @param file 
+ * @param offset 
+ * @return int 
+ */
 static int flexrm_debugfs_conf_show(struct seq_file *file, void *offset)
 {
 	/* Write config in file */
@@ -939,8 +947,8 @@ static int flexrm_debugfs_conf_show(struct seq_file *file, void *offset)
 
 	for (i = 0; i < flexrm_g->num_rings; i++) {
 		ring = &flexrm_g->rings[i];
-		if (readl(ring->regs + RING_CONTROL) &
-		    BIT(CONTROL_ACTIVE_SHIFT))
+		if ((ring->regs) && /* preventing crash when SPU is off */
+		    (readl(ring->regs + RING_CONTROL) & BIT(CONTROL_ACTIVE_SHIFT)))
 			state = "active";
 		else
 			state = "inactive";
@@ -954,14 +962,20 @@ static int flexrm_debugfs_conf_show(struct seq_file *file, void *offset)
 	}
 	return 0;
 }
-
+/**
+ * @brief 
+ * @note should be desabled while SPU is off
+ * @param file 
+ * @param offset 
+ * @return int 
+ */
 static int flexrm_debugfs_stats_show(struct seq_file *file, void *offset)
 {
 	/* Write stats in file */
 	int i, j;
 	u32 val, bd_read_offset;
 	struct flexrm_ring *ring;
-	u32 sent, compl;
+	u32 sent, compl, bd_write;
 
 	seq_printf(file, "%-5s %-18s %-10s %-10s %-10s %-10s %-10s %-11s %-11s %-11s %-11s %-11s",
 		   "Ring#", "BD_DMA_BASE", "BD_Read", "BD_Read_SW", "BD_Write",
@@ -972,12 +986,19 @@ static int flexrm_debugfs_stats_show(struct seq_file *file, void *offset)
 	seq_printf(file, "\n");
 
 	for (i = 0; i < flexrm_g->num_rings; i++) {
+
+		bd_write = 0;
 		ring = &flexrm_g->rings[i];
-		bd_read_offset = readl_relaxed(ring->regs + RING_BD_READ_PTR);
-		val = readl_relaxed(ring->regs + RING_BD_START_ADDR);
-		bd_read_offset *= RING_DESC_SIZE;
-		bd_read_offset += (u32)(BD_START_ADDR_DECODE(val) -
-					ring->bd_dma_base);
+		if (ring->regs) {
+
+			bd_read_offset = readl_relaxed(ring->regs + RING_BD_READ_PTR);
+			val = readl_relaxed(ring->regs + RING_BD_START_ADDR);
+			bd_read_offset *= RING_DESC_SIZE;
+			bd_read_offset += (u32)(BD_START_ADDR_DECODE(val) -
+						ring->bd_dma_base);
+
+			bd_write = readl_relaxed(ring->regs + RING_CMPL_WRITE_PTR) * RING_DESC_SIZE;
+		}
 		sent = (u32)atomic_read(&ring->msg_send_count);
 #if defined (FLEXRM_OFFLOAD)
 		/* work around for good looking stats:
@@ -992,7 +1013,7 @@ static int flexrm_debugfs_stats_show(struct seq_file *file, void *offset)
 			   (u32)ring->bd_read_offset,
 			   (u32)ring->bd_write_offset,
 			   (u32)ring->cmpl_read_offset,
-			   (u32)(readl_relaxed(ring->regs + RING_CMPL_WRITE_PTR) * RING_DESC_SIZE),
+			   bd_write,
 			   sent, compl, sent - compl,
 			   (u32)atomic_read(&ring->irq_count),
 			   (u32)atomic_read(&ring->batch_watermark));
@@ -1381,9 +1402,11 @@ static int flexrm_offload_prefill_resp_bds (struct flexrm_ring *ring)
 	u64 d;
 	u32 off;
 
-	/* channel reserved for runner offloading */
-	ring->resp_base = dma_alloc_coherent(flexrm_g->dev, RING_OFFLOAD_MAX_REQ * MEM_OFFLOAD_RESPONSE + STATE_MEMORY_SHARED,
-					     &ring->resp_dma_base, GFP_KERNEL);
+	if (!ring->resp_base) {
+		/* channel reserved for runner offloading */
+		ring->resp_base = dma_alloc_coherent(flexrm_g->dev, RING_OFFLOAD_MAX_REQ * MEM_OFFLOAD_RESPONSE + STATE_MEMORY_SHARED,
+							&ring->resp_dma_base, GFP_KERNEL);
+	}
 	if (!ring->resp_base) {
 		dev_err(flexrm_g->dev, "can't allocate response data memory for ring%d\n",
 			ring->num);
@@ -1490,7 +1513,8 @@ static int flexrm_ring_startup(int chan)
 	ring->cmpl_read_offset = 0;
 
 	/* assign an unique thread name to each ring */
-	if ((ring->name = kzalloc(strlen(FLEXRM_MODNAME) + 3, GFP_ATOMIC)) == NULL) {
+	if ((!ring->name) && 
+	    (ring->name = kzalloc(strlen(FLEXRM_MODNAME) + 3, GFP_ATOMIC)) == NULL) {
 		dev_err(flexrm_g->dev,
 			"can't allocate memory for naming ring%d\n",
 			ring->num);
@@ -1499,8 +1523,10 @@ static int flexrm_ring_startup(int chan)
 	sprintf(ring->name, "%s-%d", FLEXRM_MODNAME, ring->num);
 
 	/* Allocate BD memory */
-	ring->bd_base = dma_pool_alloc(flexrm_g->bd_pool,
-				       GFP_KERNEL, &ring->bd_dma_base);
+	if (!ring->bd_base) {
+		ring->bd_base = dma_pool_alloc(flexrm_g->bd_pool,
+						GFP_KERNEL, &ring->bd_dma_base);
+	}
 	if (!ring->bd_base) {
 		dev_err(flexrm_g->dev,
 			"can't allocate BD memory for ring%d\n",
@@ -1515,8 +1541,10 @@ static int flexrm_ring_startup(int chan)
 	}
 
 	/* Allocate completion memory */
-	ring->cmpl_base = dma_pool_zalloc(flexrm_g->cmpl_pool,
-					 GFP_KERNEL, &ring->cmpl_dma_base);
+	if (!ring->cmpl_base) {
+		ring->cmpl_base = dma_pool_zalloc(flexrm_g->cmpl_pool,
+						GFP_KERNEL, &ring->cmpl_dma_base);
+	}
 	if (!ring->cmpl_base) {
 		dev_err(flexrm_g->dev,
 			"can't allocate completion memory for ring%d\n",
@@ -1540,15 +1568,16 @@ static int flexrm_ring_startup(int chan)
 		dev_err(flexrm_g->dev,
 			"failed to request IRQ# %d for ring #%d\n", ring->irq, ring->num);
 		goto fail_free_cmpl_memory;
-	} else {
-		dev_info(flexrm_g->dev,
-			 "IRQ# %d requested for ring #%d\n", ring->irq, ring->num);
-	}
+	} 
 	ring->irq_requested = true;
 
 	/* Set IRQ affinity hint */
+#if defined(CONFIG_BRCM_IKOS)
+	cpumask = (ring->num % num_online_cpus());
+#else
 	/* since bcmsw_rx is bound to CPU0, hint ring0->CPU1, ring1->CPU2, etc.*/
 	cpumask = (ring->num % (num_online_cpus() - 1)) + 1;
+#endif
 	cpumask_set_cpu(cpumask, &ring->irq_aff_hint);
 	ret = irq_set_affinity_hint(ring->irq, &ring->irq_aff_hint);
 	if (ret) {
@@ -1556,11 +1585,7 @@ static int flexrm_ring_startup(int chan)
 			"failed to set IRQ affinity hint for ring%d\n",
 			ring->num);
 		goto fail_free_irq;
-	} else {
-		dev_info(flexrm_g->dev,
-			"CPU mask and IRQ affinity for ring%d are set to %x\n",
-			ring->num, cpumask);
-	}
+	} 
 #ifdef CONFIG_BCM_FLEXRM_V2_IRQ
 	writel_relaxed(BIT(chan), flexrm_g->regs + CPUIF_MASKSET);
 #else
@@ -1683,6 +1708,7 @@ fail_free_cmpl_memory:
 	dma_pool_free(flexrm_g->cmpl_pool,
 		      ring->cmpl_base, ring->cmpl_dma_base);
 	ring->cmpl_base = NULL;
+	ring->cmpl_dma_base = 0;
 fail_free_resp_memory:
 
 #if defined (FLEXRM_OFFLOAD)
@@ -1692,12 +1718,15 @@ fail_free_resp_memory:
 	}
 #endif
 	ring->resp_base = NULL;
+	ring->resp_dma_base = 0;
 fail_free_bd_memory:
 	dma_pool_free(flexrm_g->bd_pool,
 		      ring->bd_base, ring->bd_dma_base);
 	ring->bd_base = NULL;
 fail:
-	kfree(ring->name);
+	if (ring->name)
+		kfree(ring->name);
+	ring->name = NULL;
 	return ret;
 }
 
@@ -1708,8 +1737,14 @@ static void flexrm_ring_shutdown(int chan)
 	struct bcmspu_message *msg;
 	struct flexrm_ring *ring = &flexrm_g->rings[chan];
 
+	/* Avoid double shutdown eventually causing crash */
+	if (!ring || !ring->regs)
+		return;
+
+	spin_lock(&ring->lock);
 	/* Disable/inactivate ring */
 	writel_relaxed(0x0, ring->regs + RING_CONTROL);
+	spin_unlock(&ring->lock);
 
 	/* Set ring flush state */
 	timeout = 1000; /* timeout of 1s */
@@ -1768,6 +1803,7 @@ static void flexrm_ring_shutdown(int chan)
 		dma_pool_free(flexrm_g->cmpl_pool,
 			      ring->cmpl_base, ring->cmpl_dma_base);
 		ring->cmpl_base = NULL;
+		ring->cmpl_dma_base = 0;
 	}
 
 	/* Free-up BD descriptor ring */
@@ -1775,6 +1811,7 @@ static void flexrm_ring_shutdown(int chan)
 		dma_pool_free(flexrm_g->bd_pool,
 			      ring->bd_base, ring->bd_dma_base);
 		ring->bd_base = NULL;
+		ring->bd_dma_base = 0;
 	}
 
 	if (ring->resp_base) {
@@ -1783,10 +1820,16 @@ static void flexrm_ring_shutdown(int chan)
 				  ring->resp_base, ring->resp_dma_base);
 #endif
 		ring->resp_base = NULL;
+		ring->resp_dma_base = 0;
 	}
 
 	/* Free-up memory allocated for naming the IRQ thread */
-	kfree(ring->name);
+	if (ring->name)
+		kfree(ring->name);
+	ring->name = NULL;
+
+	/* Avoid double shutdown, reasigned in flexrm_ring_startup */
+	ring->regs = NULL;
 }
 
 #if defined (FLEXRM_OFFLOAD)
@@ -1797,100 +1840,71 @@ void flexrm_register_offload_callback (spu_offload_cbk callback)
 EXPORT_SYMBOL (flexrm_register_offload_callback);
 #endif
 
-/* ====== FlexRM platform driver ===== */
-
-static int flexrm_probe(struct platform_device *pdev)
+/**
+ * @brief releases memory allocated for DMA pools
+ * 
+ */
+static void clean_dma_pools(void)
 {
-	int index, ret = 0;
-	void __iomem *regs_end;
-	struct resource *iomem;
-	struct device *dev = &pdev->dev;
-	const void *dt_val_ptr;
+	if (flexrm_g->cmpl_pool)
+		dma_pool_destroy(flexrm_g->cmpl_pool);
+	flexrm_g->cmpl_pool = NULL;
+	if (flexrm_g->bd_pool)
+		dma_pool_destroy(flexrm_g->bd_pool);
+	flexrm_g->bd_pool = NULL;
+}
+
+/**
+ * @brief update SPU power status
+ * @param status 
+ */
+static void flexrm_pwr_status_set(const SPU_PWR_STATUS status)
+{
+	flexrm_g->power_ctrl.status = status;
+}
+
+/**
+ * @brief get SPU pwr mode status
+ * @return SPU_PWR_STATUS 
+ */
+SPU_PWR_STATUS flexrm_pwr_status_get(void)
+{
+	return flexrm_g->power_ctrl.status;
+}
+
+EXPORT_SYMBOL(flexrm_pwr_status_get);
+
+/**
+ * @brief turns SPU power on, configures the latter and turns related DMA rings on
+ * @return int 0 for success, negative error code otherwise 
+ */
+int flexrm_spu_and_rings_on(void)
+{
+	int index, ret = -1;
+	struct device *dev = flexrm_g->dev;
 	u32 val;
-	struct timespec64 ts;
+	struct timespec64 ts;	
 
-	dev_info(dev, "FlexRM probing...");
+	spin_lock(&flexrm_g->power_ctrl.lock);
+	while(CS_ON == atomic_read(&flexrm_g->power_ctrl.in_progress)) {
 
-	if (!of_device_is_available(dev->of_node)) {
-		dev_crit(dev, "FlexRM device not available");
-		ret = -ENODEV;
-		goto fail;
+		spin_unlock(&flexrm_g->power_ctrl.lock);
+		udelay(1);
+		spin_lock(&flexrm_g->power_ctrl.lock);
+	}
+	atomic_set(&flexrm_g->power_ctrl.in_progress, CS_ON);
+	spin_unlock(&flexrm_g->power_ctrl.lock);
+
+	/* things might change while you're asleep */
+	if (SPU_PWR_STATUS_ON == flexrm_pwr_status_get()) {
+		atomic_set(&flexrm_g->power_ctrl.in_progress, CS_OFF);
+		return 0;
 	}
 
 	ret = pmc_spu_power_up();
 	if (ret) {
 		dev_crit(dev, "FlexRM device failed to power up. Error %d.", ret);
 		ret = -ENODEV;
-		goto fail;
-	}
-
-	/* Allocate driver struct */
-	flexrm_g = devm_kzalloc(dev, sizeof(*flexrm_g), GFP_KERNEL);
-	if (!flexrm_g) {
-		ret = -ENOMEM;
-		goto fail;
-	}
-	flexrm_g->dev = dev;
-	platform_set_drvdata(pdev, flexrm_g);
-
-	/* Get resource for registers */
-	iomem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-	if (!iomem ) {
-		ret = -ENODEV;
-		goto fail;
-	}
-
-	/* Map registers of all rings */
-	flexrm_g->phyaddr_base = iomem->start;
-	flexrm_g->regs = devm_ioremap_resource(&pdev->dev, iomem);
-	if (IS_ERR(flexrm_g->regs)) {
-		ret = PTR_ERR(flexrm_g->regs);
-		dev_err(dev, "Failed to remap regs: %d\n", ret);
-		goto fail;
-	}
-	regs_end = flexrm_g->regs + resource_size(iomem);
-
-	/* Scan and count available rings and AEs */
-	dt_val_ptr = of_get_property(dev->of_node, "brcm,num_chan", NULL);
-	if (!dt_val_ptr) {
-		dev_crit(dev,
-			"%s failed to get num_chan from device tree",
-			__func__);
-		flexrm_g->num_rings = 1; /* assume one channel */
-	} else {
-		flexrm_g->num_rings = be32_to_cpup(dt_val_ptr);
-		dev_info(dev, "Device tree specified %d rings",
-			flexrm_g->num_rings);
-		if (flexrm_g->num_rings > RING_MAX_COUNT) {
-			dev_crit(dev, "Driver can support at most has %d ring.",
-				RING_MAX_COUNT);
-			dev_crit(dev, "Default to 1 ring");
-			flexrm_g->num_rings = 1;
-		}
-	}
-	atomic_set(&flexrm_g->next_chan, -1);
-
-	dt_val_ptr = of_get_property(dev->of_node, "brcm,num_ae", NULL);
-	if (!dt_val_ptr) {
-		dev_crit(dev,
-			"%s failed to get num_ae from device tree",
-			__func__);
-		flexrm_g->num_aes = 1; /* assume one AE */
-	} else {
-		flexrm_g->num_aes = be32_to_cpup(dt_val_ptr);
-		dev_info(dev, "Device tree specified %d AEs",
-			flexrm_g->num_aes);
-		if (flexrm_g->num_aes > AE_MAX_COUNT) {
-			dev_crit(dev, "Driver can support at most %d AEs.",
-				AE_MAX_COUNT);
-			dev_crit(dev, "Default to 1 AE");
-			flexrm_g->num_aes = 1;
-		}
-	}
-
-	ret = dma_set_mask_and_coherent(dev, DMA_BIT_MASK(64));
-	if (ret) {
-		dev_info(dev, "DMA bit mask 64 failed");
 		goto fail;
 	}
 
@@ -1904,76 +1918,33 @@ static int flexrm_probe(struct platform_device *pdev)
 	if (CTRLREGS_STATUS__SECURE != val) {
 		ret = -ENODEV;
 		goto fail;
-	} else {
-		dev_info(dev, "in secured transaction mode");
-	}
+	} 
 
 	/* check if block came out from reset state properly */
 	val = readl_relaxed(flexrm_g->regs + COMM_RM_MAIN_HW_INIT_DONE);
-	if (val & COMM_RM_MAIN_HW_INIT_DONE__HW_INIT_DONE_MASK) {
-		dev_info(dev, "HW_INIT_DONE detected");
-	} else {
+	if (!(val & COMM_RM_MAIN_HW_INIT_DONE__HW_INIT_DONE_MASK)) {
 		dev_crit(dev, "%s HW initialization failed!", __func__);
 		ret = -ENODEV;
 		goto fail;
 	}
 
 	/* Create DMA pool for ring BD memory */
-	flexrm_g->bd_pool = dma_pool_create("bd", dev, RING_BD_ALLOC_SIZE,
-					1 << RING_BD_ALIGN_ORDER, 0);
+	if (!flexrm_g->bd_pool)
+		flexrm_g->bd_pool = dma_pool_create("bd", dev, RING_BD_ALLOC_SIZE,
+						1 << RING_BD_ALIGN_ORDER, 0);
 	if (!flexrm_g->bd_pool) {
 		ret = -ENOMEM;
 		goto fail;
 	}
 
 	/* Create DMA pool for ring completion memory */
-	flexrm_g->cmpl_pool = dma_pool_create("cmpl", dev, RING_CMPL_SIZE,
-					  1 << RING_CMPL_ALIGN_ORDER, 0);
+	if (!flexrm_g->cmpl_pool)
+		flexrm_g->cmpl_pool = dma_pool_create("cmpl", dev, RING_CMPL_SIZE,
+						  1 << RING_CMPL_ALIGN_ORDER, 0);
 	if (!flexrm_g->cmpl_pool) {
 		ret = -ENOMEM;
-		goto fail_destroy_bd_pool;
+		goto fail;
 	}
-
-	/* Check availability of debugfs */
-	if (!debugfs_initialized())
-		goto skip_debugfs;
-
-	/* Create debugfs root entry */
-	flexrm_g->root = debugfs_create_dir(KBUILD_MODNAME, NULL);
-	if (IS_ERR_OR_NULL(flexrm_g->root)) {
-		ret = PTR_ERR_OR_ZERO(flexrm_g->root);
-		goto fail_destroy_cmpl_pool;
-	}
-
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(5,15,0))
-	/* Create debugfs config entry */
-	flexrm_g->config = debugfs_create_devm_seqfile(flexrm_g->dev,
-						   "config", flexrm_g->root,
-						   flexrm_debugfs_conf_show);
-	if (IS_ERR_OR_NULL(flexrm_g->config)) {
-		ret = PTR_ERR_OR_ZERO(flexrm_g->config);
-		goto fail_free_debugfs_root;
-	}
-
-	/* Create debugfs stats entry */
-	flexrm_g->stats = debugfs_create_devm_seqfile(flexrm_g->dev,
-						  "stats", flexrm_g->root,
-						  flexrm_debugfs_stats_show);
-	if (IS_ERR_OR_NULL(flexrm_g->stats)) {
-		ret = PTR_ERR_OR_ZERO(flexrm_g->stats);
-		goto fail_free_debugfs_root;
-	}
-#else
-	debugfs_create_devm_seqfile(flexrm_g->dev, "config", flexrm_g->root,
-						   flexrm_debugfs_conf_show);
-	debugfs_create_devm_seqfile(flexrm_g->dev, "stats", flexrm_g->root,
-						  flexrm_debugfs_stats_show);
-
-#endif
-skip_debugfs:
-
-	/* spinlock for irq mask */
-	spin_lock_init(&flexrm_g->lock);
 
 	/* Set timer configuration */
 	writel_relaxed(0x01380271, flexrm_g->regs + COMM_RM_RING_TIMER_CONTROL_0);
@@ -2032,6 +2003,191 @@ skip_debugfs:
 			flexrm_g->regs + SPUx_IVGEN_KEY0(index) + (4*index));
 	}
 
+	for (index = 0; index < flexrm_g->num_rings; index++) {
+		ret = flexrm_ring_startup(index);
+		if (ret)
+			goto fail;
+	}
+	
+	flexrm_pwr_status_set(SPU_PWR_STATUS_ON);
+	atomic_set(&flexrm_g->power_ctrl.in_progress, CS_OFF);
+	return 0;
+
+fail:
+	dev_err(dev, "Failed!");
+	clean_dma_pools();
+	{
+		int rc;
+		if (0 != (rc = pmc_spu_power_down())) {
+			dev_crit(flexrm_g->dev, "FlexRM device failed to power down. Error %d.", rc);
+		}
+	}
+
+	flexrm_pwr_status_set(SPU_PWR_STATUS_OFF);
+	atomic_set(&flexrm_g->power_ctrl.in_progress, CS_OFF);
+	return ret;
+}
+EXPORT_SYMBOL(flexrm_spu_and_rings_on);
+
+/**
+ * @brief shuts dowm DMA rings, cleans DMA pools and  shuts the SPU power down 
+ * @return int 
+ */
+int flexrm_spu_and_rings_shutdown(void)
+{
+	int index, ret = 0;
+
+	spin_lock(&flexrm_g->power_ctrl.lock);
+	while(CS_ON == atomic_read(&flexrm_g->power_ctrl.in_progress)) {
+		spin_unlock(&flexrm_g->power_ctrl.lock);
+		udelay(1);
+		spin_lock(&flexrm_g->power_ctrl.lock);
+	}
+	atomic_set(&flexrm_g->power_ctrl.in_progress, CS_ON);
+	spin_unlock(&flexrm_g->power_ctrl.lock);
+
+	/* things might change while you're asleep */
+	if (SPU_PWR_STATUS_ON == flexrm_pwr_status_get()) {
+
+		for (index = 0; index < flexrm_g->num_rings; index++) {
+			flexrm_ring_shutdown(index);
+		}
+		clean_dma_pools();
+		if (0 != (ret = pmc_spu_power_down())) {
+			dev_crit(flexrm_g->dev, "FlexRM device failed to power down. Error %d.", ret);
+		}
+		flexrm_pwr_status_set(SPU_PWR_STATUS_OFF);
+	}
+	atomic_set(&flexrm_g->power_ctrl.in_progress, CS_OFF);
+
+	return ret;
+}
+
+EXPORT_SYMBOL(flexrm_spu_and_rings_shutdown);
+
+/* ====== FlexRM platform driver ===== */
+static int flexrm_probe(struct platform_device *pdev)
+{
+	int ret = 0;
+	struct resource *iomem;
+	struct device *dev = &pdev->dev;
+	const void *dt_val_ptr;
+
+	dev_info(dev, "FlexRM probing...");
+
+	if (!of_device_is_available(dev->of_node)) {
+		dev_crit(dev, "FlexRM device not available");
+		ret = -ENODEV;
+		goto fail;
+	}
+
+	/* Allocate driver struct */
+	flexrm_g = devm_kzalloc(dev, sizeof(*flexrm_g), GFP_KERNEL);
+	if (!flexrm_g) {
+		ret = -ENOMEM;
+		goto fail;
+	}
+	flexrm_g->dev = dev;
+	platform_set_drvdata(pdev, flexrm_g);
+
+	/* Get resource for registers */
+	iomem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+	if (!iomem ) {
+		ret = -ENODEV;
+		goto fail;
+	}
+
+	/* Map registers of all rings */
+	flexrm_g->phyaddr_base = iomem->start;
+	flexrm_g->regs = devm_ioremap_resource(&pdev->dev, iomem);
+	if (IS_ERR(flexrm_g->regs)) {
+		ret = PTR_ERR(flexrm_g->regs);
+		dev_err(dev, "Failed to remap regs: %d\n", ret);
+		goto fail;
+	}
+
+	/* Scan and count available rings and AEs */
+	dt_val_ptr = of_get_property(dev->of_node, "brcm,num_chan", NULL);
+	if (!dt_val_ptr) {
+		dev_crit(dev,
+			"%s failed to get num_chan from device tree",
+			__func__);
+		flexrm_g->num_rings = 1; /* assume one channel */
+	} else {
+		flexrm_g->num_rings = be32_to_cpup(dt_val_ptr);
+		dev_info(dev, "Device tree specified %d rings",
+			flexrm_g->num_rings);
+		if (flexrm_g->num_rings > RING_MAX_COUNT) {
+			dev_crit(dev, "Driver can support at most has %d ring.",
+				RING_MAX_COUNT);
+			dev_crit(dev, "Default to 1 ring");
+			flexrm_g->num_rings = 1;
+		}
+	}
+	atomic_set(&flexrm_g->next_chan, -1);
+
+	dt_val_ptr = of_get_property(dev->of_node, "brcm,num_ae", NULL);
+	if (!dt_val_ptr) {
+		dev_crit(dev,
+			"%s failed to get num_ae from device tree",
+			__func__);
+		flexrm_g->num_aes = 1; /* assume one AE */
+	} else {
+		flexrm_g->num_aes = be32_to_cpup(dt_val_ptr);
+		dev_info(dev, "Device tree specified %d AEs",
+			flexrm_g->num_aes);
+		if (flexrm_g->num_aes > AE_MAX_COUNT) {
+			dev_crit(dev, "Driver can support at most %d AEs.",
+				AE_MAX_COUNT);
+			dev_crit(dev, "Default to 1 AE");
+			flexrm_g->num_aes = 1;
+		}
+	}
+
+	ret = dma_set_mask_and_coherent(dev, DMA_BIT_MASK(64));
+	if (ret) {
+		dev_info(dev, "DMA bit mask 64 failed");
+		goto fail;
+	}
+	
+	/* Check availability of debugfs */
+	if (!debugfs_initialized())
+		goto skip_debugfs;
+
+	/* Create debugfs root entry */
+	flexrm_g->root = debugfs_create_dir(KBUILD_MODNAME, NULL);
+	if (IS_ERR_OR_NULL(flexrm_g->root)) {
+		ret = PTR_ERR_OR_ZERO(flexrm_g->root);
+		goto fail;
+	}
+
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5,15,0))
+	/* Create debugfs config entry */
+	flexrm_g->config = debugfs_create_devm_seqfile(flexrm_g->dev,
+						   "config", flexrm_g->root,
+						   flexrm_debugfs_conf_show);
+	if (IS_ERR_OR_NULL(flexrm_g->config)) {
+		ret = PTR_ERR_OR_ZERO(flexrm_g->config);
+		goto fail_free_debugfs_root;
+	}
+
+	/* Create debugfs stats entry */
+	flexrm_g->stats = debugfs_create_devm_seqfile(flexrm_g->dev,
+						  "stats", flexrm_g->root,
+						  flexrm_debugfs_stats_show);
+	if (IS_ERR_OR_NULL(flexrm_g->stats)) {
+		ret = PTR_ERR_OR_ZERO(flexrm_g->stats);
+		goto fail_free_debugfs_root;
+	}
+#else
+	debugfs_create_devm_seqfile(flexrm_g->dev, "config", flexrm_g->root,
+						   flexrm_debugfs_conf_show);
+	debugfs_create_devm_seqfile(flexrm_g->dev, "stats", flexrm_g->root,
+						  flexrm_debugfs_stats_show);
+
+#endif
+skip_debugfs:
+
 	/* Initialize rings  */
 	flexrm_g->rings = devm_kcalloc(dev, flexrm_g->num_rings,
 				sizeof(*flexrm_g->rings), GFP_KERNEL);
@@ -2040,29 +2196,29 @@ skip_debugfs:
 		goto fail_free_debugfs_root;
 	}
 #if defined(FLEXRM_OFFLOAD)
-	/* reserve Runner Offload rings, from the last */
-	for (index = 0; index < NUM_OFFLOAD_RESERVED; index++) {
-		flexrm_g->rings[flexrm_g->num_rings-1-index].ring_config = OFFLOAD_RESERVED;
+	{
+		int index;
+		/* reserve Runner Offload rings, from the last */
+		for (index = 0; index < NUM_OFFLOAD_RESERVED; index++) {
+			flexrm_g->rings[flexrm_g->num_rings-1-index].ring_config = OFFLOAD_RESERVED;
 #if defined(SPU_RESP_ON_RUNNER)
-		flexrm_g->rings[flexrm_g->num_rings-1-index].ring_config |= RESP_OFFLOAD;
+			flexrm_g->rings[flexrm_g->num_rings-1-index].ring_config |= RESP_OFFLOAD;
 #endif
+		}
 	}
 #endif
-	for (index = 0; index < flexrm_g->num_rings; index++) {
-		ret = flexrm_ring_startup(index);
-		if (ret)
-			goto fail_free_debugfs_root;
-	}
 
+	spin_lock_init(&flexrm_g->power_ctrl.lock);
+	atomic_set(&flexrm_g->power_ctrl.in_progress, CS_OFF);
+	flexrm_pwr_status_set(SPU_PWR_STATUS_OFF);
 	dev_info(dev, "loaded successfully!");
 	return 0;
 
 fail_free_debugfs_root:
-	debugfs_remove_recursive(flexrm_g->root);
-fail_destroy_cmpl_pool:
-	dma_pool_destroy(flexrm_g->cmpl_pool);
-fail_destroy_bd_pool:
-	dma_pool_destroy(flexrm_g->bd_pool);
+	if (flexrm_g->root)
+		debugfs_remove_recursive(flexrm_g->root);
+	flexrm_g->root = NULL;
+
 fail:
 	dev_err(dev, "probe failed!");
 	return ret;
@@ -2070,17 +2226,9 @@ fail:
 
 static int flexrm_remove(struct platform_device *pdev)
 {
-	int index, ret;
-	for (index = 0; index < flexrm_g->num_rings; index++) {
-		flexrm_ring_shutdown(index);
-	}
-	debugfs_remove_recursive(flexrm_g->root);
-	dma_pool_destroy(flexrm_g->cmpl_pool);
-	dma_pool_destroy(flexrm_g->bd_pool);
-
-	if (0 != (ret = pmc_spu_power_down())) {
-		dev_crit(&pdev->dev, "FlexRM device failed to power down. Error %d.", ret);
-	}
+	if (flexrm_g->root)
+		debugfs_remove_recursive(flexrm_g->root);
+	flexrm_spu_and_rings_shutdown();
 
 	return 0;
 }

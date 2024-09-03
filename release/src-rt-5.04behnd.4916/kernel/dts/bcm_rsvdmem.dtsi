@@ -37,8 +37,10 @@
 #if CONFIG_BCM_CHIP_NUMBER==63146 || CONFIG_BCM_CHIP_NUMBER==4912 || CONFIG_BCM_CHIP_NUMBER==6813
 #ifdef CONFIG_BCM_GLB_COHERENCY
 #define	 DT_RESERVED_RNRMEM_IN_CACHED_DEV
+#define	 DT_RESERVED_DDOSMEM_IN_CACHED_DEV
 #else
 #define	 DT_RESERVED_RNRMEM_IN_UNCACHED_DEV
+#define	 DT_RESERVED_DDOSMEM_IN_UNCACHED_DEV
 #endif
 #elif (CONFIG_BCM_CHIP_NUMBER==63158) && defined(CONFIG_BCM_GLB_COHERENCY)
 #define	 DT_RESERVED_RDP2_IN_CACHED_DEV
@@ -123,7 +125,7 @@
 #define RDP_PKT_BUFFER_MEM_SIZE		0x1000000	/*  16MB */
 #define RDP_FLOW_TABLE_MEM_SIZE		0x0000000	/*   0MB */
 #elif defined(CONFIG_BCM_CROSSBOW_FULL_OFFLOAD)
-#define RDP_PKT_BUFFER_MEM_SIZE		0x8000000	/* 128MB */
+#define RDP_PKT_BUFFER_MEM_SIZE		0x10000000	/* 256MB */
 #define RDP_FLOW_TABLE_MEM_SIZE		0x0D00000	/*  13MB */
 #else
 #define RDP_PKT_BUFFER_MEM_SIZE		0x0000000	/*	0MB */
@@ -134,6 +136,11 @@
 #define RDP_PARAM2_DEF_DDR_SIZE RDP_FLOW_TABLE_MEM_SIZE
 #define BUFMEM_DEF_DDR_SIZE RDP_PKT_BUFFER_MEM_SIZE
 #define RNRMEM_DEF_DDR_SIZE RDP_FLOW_TABLE_MEM_SIZE
+#if (defined(CONFIG_BCM_HW_FIREWALL) || defined(CONFIG_BCM_HW_FIREWALL_MODULE))
+#define DDOSMEM_DEF_DDR_SIZE     0x400000    /* 4MB */
+#else
+#define DDOSMEM_DEF_DDR_SIZE     0x0000000   /* 0MB */
+#endif
 
 #if defined(CONFIG_BCM_DHD_ARCHER) || defined(CONFIG_BCM_DHD_ARCHER_MODULE)
 #define DHD_PARAM0_DDR_SIZE 0
@@ -147,7 +154,7 @@
 #define DHD_PARAM3_DDR_SIZE 0
 #endif
 
-#if defined(CONFIG_ARM64) 
+#if defined(CONFIG_ARM64) || defined(CONFIG_ARM_LPAE)
 #define CELLS_NUM 2
 #define RSVDMEM_CMA_ADDR 0x0 0x0
 #define RSVDMEM_CMA_SIZE 0x0 0x0
@@ -222,6 +229,12 @@ plat_rsvmem_cached_device {
 	};
 #endif
 
+#ifdef DT_RESERVED_DDOSMEM_IN_CACHED_DEV
+	dt_reserved_ddosmem: dt_reserved_ddosmem {
+		rsvd-size = <DDOSMEM_DEF_DDR_SIZE>;
+};
+#endif
+
 };
 
 plat_rsvmem_uncached_device {
@@ -259,6 +272,12 @@ plat_rsvmem_uncached_device {
 #ifdef DT_RESERVED_RNRMEM_IN_UNCACHED_DEV
 	dt_reserved_rnrmem: dt_reserved_rnrmem {
 		rsvd-size = <RNRMEM_DEF_DDR_SIZE>;
+	};
+#endif
+
+#ifdef DT_RESERVED_DDOSMEM_IN_UNCACHED_DEV
+	dt_reserved_ddosmem: dt_reserved_ddosmem {
+		rsvd-size = <DDOSMEM_DEF_DDR_SIZE>;
 	};
 #endif
 

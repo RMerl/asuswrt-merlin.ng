@@ -5,11 +5,6 @@
     model = "968572DV_XFP";
 };
 
-&ethphytop {
-    phy-mpd = <&bca_extintr 82 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
-    phy-link = <&bca_extintr 83 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
-};
-
 &wdt {
 	status = "okay";
 };

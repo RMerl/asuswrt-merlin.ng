@@ -1,0 +1,25 @@
+#include "63146PREF1D_2X8.dts"
+
+/* BCM963146PREF1D_2X8_M2 Daughter board for GPIO regulators */
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+/**********************************************************************/
+/* GPIO: Add one define per GPIO (individual or shared) regulator     */
+/*       - Skip if no GPIO regulators in use                          */
+/**********************************************************************/
+#define PCIE0_REG_GPIO   18    /* EN_6G_PWR (PCIE0) */
+#define PCIE1_REG_GPIO   24    /* EN_5G_PWR (PCIE1)*/
+#define PCIE2_REG_GPIO   31    /* EN_2G_PWR (PCIE2)*/
+
+#include "../bcm_wlan_regulator.dtsi"
+
+/**********************************************************************/
+/* Shared: Add brcm,supply-names = "vreg-pcieX" for shared PCIe nodes */
+/*         - Skip if not using shared GPIO regulators                 */
+/**********************************************************************/
+
+/**********************************************************************/
+/* PCIe: Add status = "okay" for each PCIe slots of this boiard       */
+/*       - Skip if this is a derivative board (already done in base)  */
+/**********************************************************************/
+#endif //#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)

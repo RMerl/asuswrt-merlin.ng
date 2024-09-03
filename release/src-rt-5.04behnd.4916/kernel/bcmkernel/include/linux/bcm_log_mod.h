@@ -4,25 +4,19 @@
 *    Copyright (c) 2010 Broadcom 
 *    All Rights Reserved
 * 
-* Unless you and Broadcom execute a separate written software license
-* agreement governing use of this software, this software is licensed
-* to you under the terms of the GNU General Public License version 2
-* (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-* with the following added to such license:
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License, version 2, as published by
+* the Free Software Foundation (the "GPL").
 * 
-*    As a special exception, the copyright holders of this software give
-*    you permission to link this software with independent modules, and
-*    to copy and distribute the resulting executable under terms of your
-*    choice, provided that you also meet, for each linked independent
-*    module, the terms and conditions of the license of that module.
-*    An independent module is a module which is not derived from this
-*    software.  The special exception does not apply to any modifications
-*    of the software.
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
 * 
-* Not withstanding the above, under no circumstances may you combine
-* this software in any way with any other Broadcom software provided
-* under a license other than the GPL, without Broadcom's express prior
-* written consent.
+* 
+* A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+* writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+* Boston, MA 02111-1307, USA.
 * 
 * :>
 
@@ -83,6 +77,7 @@ typedef enum {
     BCM_LOG_ID_MPM,
     BCM_LOG_ID_BP3,
     BCM_LOG_ID_FPI,
+    BCM_LOG_ID_HWF,
     BCM_LOG_ID_MAX
 } bcmLogId_t;
 
@@ -127,6 +122,7 @@ typedef enum {
         {.logId = BCM_LOG_ID_MPM, .name = "mpm", .logLevel = BCM_LOG_LEVEL_ERROR}, \
         {.logId = BCM_LOG_ID_BP3, .name = "bp3", .logLevel = BCM_LOG_LEVEL_DEBUG}, \
         {.logId = BCM_LOG_ID_FPI, .name = "fpi", .logLevel = BCM_LOG_LEVEL_DEBUG}, \
+        {.logId = BCM_LOG_ID_HWF, .name = "hwf", .logLevel = BCM_LOG_LEVEL_DEBUG}, \
     }
 
 /* To support a new registered function,
@@ -180,12 +176,14 @@ typedef enum {
     BCM_FUN_ID_ARCHER_DHD_INIT_CFG_SET,
     BCM_FUN_ID_ARCHER_DHD_FLUSH_SET,
     BCM_FUN_ID_ARCHER_DHD_FLOW_RING_ENABLE_SET,
+    BCM_FUN_ID_ARCHER_DHD_FLOW_RING_UPDATE_SET,
     BCM_FUN_ID_ARCHER_DHD_RX_POST_INIT,
     BCM_FUN_ID_ARCHER_DHD_RX_POST_UNINIT,
     BCM_FUN_ID_ARCHER_DHD_RX_POST_REINIT,
     BCM_FUN_ID_ARCHER_DHD_CPU_GET,
     BCM_FUN_ID_ARCHER_DHD_CPU_NUM_QUEUES_GET,
     BCM_FUN_ID_ARCHER_DHD_CPU_RXQ_CFG_SET,
+    BCM_FUN_ID_ARCHER_DHD_CPU_RXQ_EMPTY,
     BCM_FUN_ID_ARCHER_DHD_CPU_INDEX_GET,
     BCM_FUN_ID_ARCHER_DHD_CPU_INT_ENABLE,
     BCM_FUN_ID_ARCHER_DHD_CPU_INT_DISABLE,
@@ -198,6 +196,7 @@ typedef enum {
     BCM_FUN_ID_ARCHER_DHD_COMPLETE_MESSAGE_GET,
     BCM_FUN_ID_ARCHER_DHD_COMPLETE_WAKEUP,
     BCM_FUN_ID_ARCHER_DHD_BDMF_SYSB_RECYCLE,
+    BCM_FUN_ID_ARCHER_DHD_BDMF_SYSB_DATABUF_FREE,
     BCM_FUN_ID_VLAN_LOOKUP_DP,
     /* WLAN Hooks */
     BCM_FUN_ID_WLAN_QUERY_BRIDGEFDB,
@@ -212,6 +211,7 @@ typedef enum {
     BCM_FUN_ID_WAN_SERDES_TYPE_GET,
     BCM_FUN_ID_NETLINK_INVOKE_SERDES_JOB_WITH_OUTPUT,
     BCM_FUN_ID_NETLINK_INVOKE_SERDES_JOB,
+    BCM_FUN_ID_EYESCOPE_MSG,
     BCM_FUN_ID_SYNCE_ETH_LINK_CHANGE,
     BCM_FUN_ID_WAN_SERDES_RESET_TXFIFO,
     BCM_FUN_ID_WAN_SERDES_SYNC_LOSS,
@@ -232,6 +232,11 @@ typedef enum {
     BCM_FUN_ID_ARCHER_CRYPTO_US_SEND,
     BCM_FUN_ID_ARCHER_CRYPTO_OFFLOAD_BIND,
     BCM_FUN_ID_ARCHER_CRYPTO_OFFLOAD_UNBIND,
+    /* hooks for Flow Stats */
+    BCM_FUN_ID_FLOW_STAT_NF_UPDATE_SLOW,
+    /* SPU session cleanup */
+    BCM_FUN_ID_SPU_SESSION_DELETE,
+    BCM_FUN_ID_SPU_PREPEND_HDR,
     BCM_FUN_ID_MAX
 } bcmFunId_t;
 
@@ -293,15 +298,15 @@ typedef struct {
     uint8_t enable; /* enable/disable the clock */
 }BCM_CmfFfeClk_t;
 
-#define BCM_HW_ACCEL_PREPEND_SIZE_MAX  100 /* Changing the size of the prepend data buffer will require
-                                            recompiling the cmdlist driver files released as binary */
+#define BCM_HW_ACCEL_PREPEND_SIZE_MAX  120  /* Changing the size of the prepend data buffer will require
+                                             recompiling the cmdlist driver files released as binary */
 
 typedef struct {
     void *blog_p;      /* INPUT: Pointer to the Blog_t structure that triggered the Runner flow creation */
     uint8_t data[BCM_HW_ACCEL_PREPEND_SIZE_MAX]; /* INPUT: The data that will be be prepended to all packets
                                                   forwarded by Runner that match the given Blog/Flow.
                                                   The data must be stored in NETWWORK BYTE ORDER */
-    unsigned int size; /* OUTPUT: Size of the prepend data, up to 100 bytes long.
+    unsigned int size; /* OUTPUT: Size of the prepend data, up to 120 bytes long.
                           When no data is to be prepended, specify size = 0 */
     union
     {
@@ -331,6 +336,7 @@ typedef enum {
     BCM_ENET_SYSPORT_MODE_INTERNAL_BRCM_SW,
     BCM_ENET_SYSPORT_MODE_EXTERNAL_BRCM_SW,
     BCM_ENET_SYSPORT_MODE_STACKED_BRCM_SW,
+    BCM_ENET_SYSPORT_MODE_STACKED_VLAN_SW,
     BCM_ENET_SYSPORT_MODE_MAX
 } bcmSysport_Mode_t;
 
@@ -396,6 +402,7 @@ typedef struct {
     int (* gdx_acc_send_pkt)(void *arg_p);
     int (* gdx_miss_pkt_handler_cb)(void *arg_p);
     int (* gdx_hit_pkt_handler_cb)(void *arg_p, uint32_t val32);
+    int (* gdx_fwd_pkt_done_cb)(void);
 } gdx_acc_bind_arg_t;
 #endif /* _BCM_LOG_MODULES_ */
 

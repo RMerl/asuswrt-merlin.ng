@@ -37,7 +37,7 @@
 #define MAX_JUMBO_MTU_PAYLOAD_SIZE  (4000)  /* restrict by FPM_buf_size 512*8=4k, set to 1k for 8k MTU or 2k for 9k MTU*/
 #elif defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813)
 #define MAX_JUMBO_MTU_PAYLOAD_SIZE  (10240) /* set rdp1 token size from 40 to 320 */
-#elif defined(CONFIG_BCM947622)
+#elif defined(CONFIG_BCM947622) || defined(CONFIG_BCM96764)
 #define MAX_JUMBO_MTU_PAYLOAD_SIZE  (9216)
 #elif defined(CONFIG_BCM94908)
 #define MAX_JUMBO_MTU_PAYLOAD_SIZE  (4000)  /* mini jumbo */
@@ -179,7 +179,11 @@
  linux_osl.h */
 #define BCM_MAX_PKT_LEN               GREATER(2048, ((BCM_MAX_MTU_EXTRA_SIZE + BCM_MAX_MTU_PAYLOAD_SIZE + 63) & ~63))
 
+#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) ||defined(CONFIG_BCM963158) ||defined(CONFIG_BCM94908)
+#define BCM_MAX_PKT_LEN_MTU_BASED  (BCM_MAX_MTU_EXTRA_SIZE + BCM_MAX_MTU_PAYLOAD_SIZE + 4)  // runner + SF2 has 4 byte BRCM Tag
+#else
 #define BCM_MAX_PKT_LEN_MTU_BASED  (BCM_MAX_MTU_EXTRA_SIZE + BCM_MAX_MTU_PAYLOAD_SIZE)
+#endif
 
 /* ############ Toatal buf size i.e BCM_MAX_PKT_LEN + metadata(fkb,skb_sharedinfo etc..) ############ */
 /* BCM_FKB_INPLACE, BCM_PKT_HEADROOM are always to be at cache-aligned boundaries */
@@ -190,6 +194,9 @@
                                                 BCM_SKB_TAILROOM)       + \
                                                 BCM_SKB_SHAREDINFO)
 #endif
+/* Constant offset of skb_shared_info from pData in a BPM managed buffer */
+#define BPM_BUF_TO_END_OFFSET \
+    BCM_DCACHE_ALIGN(BCM_MAX_PKT_LEN + BCM_SKB_TAILROOM)
 /* ############ other common defines ############ */
 
 #define ENET_MIN_MTU_SIZE       60            /* Without FCS */

@@ -1,0 +1,4 @@
+<PUBLISH>
+@@ -56 +56 @@
+-BCM_FLASH_LAYOUT_OPTIONS="options_68880"
++BCM_FLASH_LAYOUT_OPTIONS="options_68880_sec_gen4_bcompat"

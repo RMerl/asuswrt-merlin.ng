@@ -20,17 +20,23 @@ sub f2v {
 }
 
 sub build_pub_pem {
-    my $mod = shift;
+    my $mod     = shift;
     my $key_len = shift;
-    if (!$key_len) {
-	$key_len = 256;
-    } 	
-    my %pub_hdr = (256=>'30820122300d06092a864886f70d01010105000382010f003082010a0282010100',
-      		   386=>'308201a2300d06092a864886f70d01010105000382018f003082018a0282018100',
-      		   512=>'30820222300d06092a864886f70d01010105000382020f003082020a0282020100');
+    if ( !$key_len ) {
+        $key_len = 256;
+    }
+    my %pub_hdr = (
+        256 =>
+          '30820122300d06092a864886f70d01010105000382010f003082010a0282010100',
+        384 =>
+          '308201a2300d06092a864886f70d01010105000382018f003082018a0282018100',
+        512 =>
+          '30820222300d06092a864886f70d01010105000382020f003082020a0282020100'
+    );
     my $pub_type_exp = '0203010001';
     my $pub_path     = "/tmp/__key-pub.$$";
-    my $pub = pack( "H*", $pub_hdr{$key_len} ) . $mod . pack( "H*", $pub_type_exp );
+    my $pub =
+      pack( "H*", $pub_hdr{$key_len} ) . $mod . pack( "H*", $pub_type_exp );
     fdump( $pub_path, $pub );
     system(
 "openssl pkey -inform der -outform pem -pubin -in $pub_path -out $pub_path.pem"
@@ -54,8 +60,8 @@ sub openssl_rsa_der_modulo_verify {
     my $sig_path = shift;
     my $obj_path = shift;
     my $mod      = shift;
-    my $mod_len     = shift;
-    openssl_rsa_verify( $sig_path, $obj_path, build_pub_pem($mod, $mod_len) );
+    my $mod_len  = shift;
+    openssl_rsa_verify( $sig_path, $obj_path, build_pub_pem( $mod, $mod_len ) );
 }
 
 sub c_rsa_verify {
@@ -199,81 +205,104 @@ sub validate_cot_art {
     return 1;
 }
 
-
 sub parse_license {
-    my $img = shift;
+    my $img  = shift;
     my $offs = shift;
-    my $lic = shift;
-    my %sig = ( 0 => '256', 1 => '512' );
-    $lic->{'ver'} = unpack( "I<", substr( $img, 4 ) ),
-    $lic->{'len'} = unpack( "I<", substr( $img, 8 ) ),
-    printf("ver %d len %d size %d\n", $lic->{ver}, $lic->{len}, length($img));	
-    $lic->{obj} = unpack( "a*", substr( $img, 12, $lic->{len} - ($sig{$lic->{ver}} + 12) ));
-    $lic->{sig} = unpack( "a*", substr( $img,  $lic->{len} - $sig{$lic->{ver}} , $sig{$lic->{ver}} ));
+    my $lic  = shift;
+    my %sig  = ( 0 => '256', 1 => '512' );
+    $lic->{'ver'}   = unpack( "I<", substr( $img, 4 ) ),
+      $lic->{'len'} = unpack( "I<", substr( $img, 8 ) ),
+      printf( "ver %d len %d size %d\n",
+        $lic->{ver}, $lic->{len}, length($img) );
+    $lic->{obj} =
+      unpack( "a*",
+        substr( $img, 12, $lic->{len} - ( $sig{ $lic->{ver} } + 12 ) ) );
+    $lic->{sig} = unpack( "a*",
+        substr( $img, $lic->{len} - $sig{ $lic->{ver} }, $sig{ $lic->{ver} } )
+    );
     $lic->{validate} = \&validate_license;
-    print "license len ", $lic->{len},"\n";
+    print "license len ", $lic->{len}, "\n";
     return $lic->{'len'};
 }
 
 sub validate_license {
-    my $img  = shift;
-    my $lic = shift;
-    my $path  = $args{sanity};
-    my @dir  = split( / /, $path );
-    my $lic_key =  { '256' => $dir[0] ."/lic/Krsa-lic-pub.bin", '512' => $dir[0] . "/lic/Krsa-lic-pub-512.bin" };
-    #my $magic = "CIL3";
-    #while ( $img =~ m/$magic/g ) {
-        #printf( "Got candidate  \n"); 
-        #    substr( $img, pos($img) - length($kmagic), length($kmagic) ), pos($img) );
-        #my $lic = parse_license(
-        #    substr( $img, pos($img) - length($magic), length($img) - pos($img) ) );
-        if ( $lic ) {
-            printf ("\tFound License sig len %d %s\n\t",length($lic->{sig}), $lic_key->{length($lic->{sig})});
-            if ( ! -e $lic_key->{length($lic->{sig})} ) {
-			print "\t Failed to load public key: License can't be athenticated\n\t"; 
-	    }
-            if ( $lic->{sig} ) {
-                my $sig  = "/tmp/licsig.$$";
-                my $obj = "/tmp/licobj.$$";
-                fdump( $sig, $lic->{sig} );
-                fdump( $obj, $lic->{obj} );
-                print "\tVerifying License Signature\n\t";
-                #if ( $key->{pem} ) {
-                #    openssl_rsa_verify( $sig, $obj, $key->{pem} );
-                #}
-                #if ( $key->{bin} ) {
-                #    openssl_rsa_der_modulo_verify( $sig, $obj, $key->{bin} );
-                #}
-                openssl_rsa_der_modulo_verify( $sig, $obj, f2v($lic_key->{length($lic->{sig})}),length($lic->{sig}) );
-                system("rm -f $sig $obj");
-            }
-            return;
+    my $img     = shift;
+    my $lic     = shift;
+    my $path    = $args{sanity};
+    my @dir     = split( / /, $path );
+    my $lic_key = {
+        '256' => $dir[0] . "/lic/Krsa-lic-pub.bin",
+        '512' => $dir[0] . "/lic/Krsa-lic-pub-512.bin"
+    };
+
+ #my $magic = "CIL3";
+ #while ( $img =~ m/$magic/g ) {
+ #printf( "Got candidate  \n");
+ #    substr( $img, pos($img) - length($kmagic), length($kmagic) ), pos($img) );
+ #my $lic = parse_license(
+ #    substr( $img, pos($img) - length($magic), length($img) - pos($img) ) );
+    if ($lic) {
+        printf(
+            "\tFound License sig len %d %s\n\t",
+            length( $lic->{sig} ),
+            $lic_key->{ length( $lic->{sig} ) }
+        );
+        if ( !-e $lic_key->{ length( $lic->{sig} ) } ) {
+            print
+              "\t Failed to load public key: License can't be athenticated\n\t";
         }
-    
+        if ( $lic->{sig} ) {
+            my $sig = "/tmp/licsig.$$";
+            my $obj = "/tmp/licobj.$$";
+            fdump( $sig, $lic->{sig} );
+            fdump( $obj, $lic->{obj} );
+            print "\tVerifying License Signature\n\t";
+
+            #if ( $key->{pem} ) {
+            #    openssl_rsa_verify( $sig, $obj, $key->{pem} );
+            #}
+            #if ( $key->{bin} ) {
+            #    openssl_rsa_der_modulo_verify( $sig, $obj, $key->{bin} );
+            #}
+            openssl_rsa_der_modulo_verify(
+                $sig, $obj,
+                f2v( $lic_key->{ length( $lic->{sig} ) } ),
+                length( $lic->{sig} )
+            );
+            system("rm -f $sig $obj");
+        }
+        return;
+    }
+
 }
 
 sub parse_keystore {
     my $kstore_bin = shift;
-    my $offs = shift;
-    my $kstore = shift;	
+    my $offs       = shift;
+    my $kstore     = shift;
+    my $sbi_ver    = shift;
     my %req        = ( 0 => 'none', 4 => 'mfg', 5 => 'fld' );
-    $kstore->{'arch'} =  unpack( "I<", substr( $kstore_bin, 12, 4 ) );
-    $kstore->{'req'} = unpack( "I<", substr( $kstore_bin, 16, 4 ) );
+    $kstore->{'arch'}          = unpack( "I<", substr( $kstore_bin, 12, 4 ) );
+    $kstore->{'req'}           = unpack( "I<", substr( $kstore_bin, 16, 4 ) );
     $kstore->{'abort_timeout'} = unpack( "I<", substr( $kstore_bin, 20, 4 ) );
-    $kstore->{'kinfo_length'} = unpack( "I<", substr( $kstore_bin, 24, 4 ) );
+    $kstore->{'kinfo_length'}  = unpack( "I<", substr( $kstore_bin, 24, 4 ) );
     if ( !$req{ $kstore->{req} } ) {
         return 0;
     }
     my $hdr_crc = unpack( "I<", substr( $kstore_bin, 28, 4 ) );
-    if (crc32(substr( $kstore_bin, 0, 28 )) != $hdr_crc ) {
-	print "key store crc failed\n";
+    if ( crc32( substr( $kstore_bin, 0, 28 ) ) != $hdr_crc ) {
+        print "key store crc failed\n";
         return 0;
     }
+    printf( "keyinfo sig len %d\n", $sbi_ver->{auth_len} );
     $kstore->{kinfo_crc} = unpack( "I<", substr( $kstore_bin, 32, 4 ) );
     if ( $req{ $kstore->{req} } eq 'fld' ) {
-        $kstore->{kinfo_sig} = substr( $kstore_bin, 36, 256 );
-        $kstore->{kinfo} =
-          substr( $kstore_bin, 292, $kstore->{kinfo_length} - 260 );
+        $kstore->{kinfo_sig} = substr( $kstore_bin, 36, $sbi_ver->{auth_len} );
+        $kstore->{kinfo} = substr(
+            $kstore_bin,
+            $sbi_ver->{auth_len} + 36,
+            $kstore->{kinfo_length} - ( $sbi_ver->{auth_len} + 4 )
+        );
 
 #printf("\nsig %s\n\n info %s\n",unpack("H*",$kstore->{kinfo_sig}),unpack("H*",$kstore->{kinfo}));
     }
@@ -281,50 +310,65 @@ sub parse_keystore {
         $kstore->{kinfo} =
           substr( $kstore_bin, 36, $kstore->{kinfo_length} - 4 );
     }
-    $kstore->{req} = $req{ $kstore->{req} };
+    $kstore->{req}      = $req{ $kstore->{req} };
     $kstore->{validate} = \&validate_keystore;
     return $kstore->{kinfo_length};
 }
 
 sub validate_keystore {
-    my $image  = shift;
+    my $image   = shift;
     my $kstore  = shift;
+    my $sbi_ver = shift;
     my $mfg_pem = $args{mfg};
-    my @dir  = split( / /, $args{sanity} );
-    my $key =  { 'pem' => $mfg_pem, 'bin' => f2v($dir[0] . "/Krsa-mfg-pub.bin") };
-        if ( !$kstore ) {
-             return; 
+    my @dir     = split( / /, $args{sanity} );
+    if ( $sbi_ver->{ver} == 0x2 ) {
+        $dir[0] .= "/v2";
+    }
+    elsif ( $sbi_ver->{ver} == 0x3 ) {
+        $dir[0] .= "/v3";
+    }
+
+    #printf("\ndir .. %s \n",$dir[0]);
+    my $key =
+      { 'pem' => $mfg_pem, 'bin' => f2v( $dir[0] . "/Krsa-mfg-pub.bin" ) };
+    if ( !$kstore ) {
+        return;
+    }
+    print "\tFound TK store\n\t";
+    foreach ( keys %{$kstore} ) {
+        if ( $_ !~ m/(kinfo|kinfo_sig)/ ) {
+            print $_, " : ", $kstore->{$_}, "\n\t";
         }
-        print "\tFound TK store\n\t";
-        foreach ( keys %{$kstore} ) {
-            if ( $_ !~ m/(kinfo|kinfo_sig)/ ) {
-                 print $_, " : ", $kstore->{$_}, "\n\t";
-            }
-         }
-            if ( $kstore->{kinfo_sig} ) {
-                my $tsig  = "/tmp/tksig.$$";
-                my $tinfo = "/tmp/keyinf.$$";
-                fdump( $tsig,  $kstore->{kinfo_sig} );
-                fdump( $tinfo, $kstore->{kinfo} );
-                print "Verifying keystore signature\n\t";
-                if ( $key->{pem} ) {
-                    openssl_rsa_verify( $tsig, $tinfo, $key->{pem} );
-                }
-                if ( $key->{bin} ) {
-                    openssl_rsa_der_modulo_verify( $tsig, $tinfo, $key->{bin} );
-                }
-                system("rm -f $tsig $tinfo");
-            }
-            else {
-                my $crc;
-                print "\tVerifying TK key info CRC ";
-                $crc = crc32( $kstore->{kinfo} );
-                print( ( $crc == $kstore->{kinfo_crc} )
-                    ? "OK\n\t"
-                    : "FAILED\n\t" );
-            }
-            return;
-   
+    }
+    if ( $kstore->{kinfo_sig} ) {
+        my $tsig    = "/tmp/tksig.$$";
+        my $tinfo   = "/tmp/keyinf.$$";
+        my $sig_len = length $kstore->{kinfo_sig};
+        fdump( $tsig,  $kstore->{kinfo_sig} );
+        fdump( $tinfo, $kstore->{kinfo} );
+        print "Verifying keystore signature\n\t";
+        if ( $key->{pem} ) {
+            openssl_rsa_verify( $tsig, $tinfo, $key->{pem} );
+        }
+        if ( $key->{bin} ) {
+
+#openssl_rsa_der_modulo_verify( $tsig, $tinfo, $key->{bin}, $sig_len);#$sbi_ver->{auth_len} );
+            openssl_rsa_der_modulo_verify( $tsig, $tinfo, $key->{bin},
+                $sbi_ver->{auth_len} );
+        }
+        system("rm -f $tsig $tinfo");
+    }
+    else {
+        my $crc;
+        print "\tVerifying TK key info CRC ";
+        $crc = crc32( $kstore->{kinfo} );
+        print(
+            ( $crc == $kstore->{kinfo_crc} )
+            ? "OK\n\t"
+            : "FAILED\n\t"
+        );
+    }
+    return;
 }
 
 sub validate_cot {
@@ -345,10 +389,11 @@ sub verify_cot {
     my $sbi  = shift;
     my $auth = $sbi->{auth};
     my @dir  = split( / /, $path );
-    if ($sbi->{auth}->{ver} == 0x2) {
-	    $dir[0] .= "/v2";	
-    } elsif ($sbi->{auth}->{ver} == 0x3) {
-	    $dir[0] .= "/v3";	
+    if ( $sbi->{auth}->{ver} == 0x2 ) {
+        $dir[0] .= "/v2";
+    }
+    elsif ( $sbi->{auth}->{ver} == 0x3 ) {
+        $dir[0] .= "/v3";
     }
     if ( $auth->{mfgRoeCot} ) {
         print "\tmfgRoeCot\n";
@@ -415,17 +460,18 @@ sub parse_sbi {
     #   uint32_t     fldRotCotOfs;
     #   uint32_t     fldOemCotOfs;
     #} __attribute__((packed)) SbiAuthHdrBeginning
-    my $image = shift;
-    my $offs  = shift;
-    my $sbi   = shift;
-    my $sig_len = 256;
+    my $image        = shift;
+    my $offs         = shift;
+    my $sbi          = shift;
+    my $sig_len      = 256;
     my $sig_auth_len = 256;
-    my %unauth = ();
-    my %auth   = ();
+    my %unauth       = ();
+    my %auth         = ();
     (
         $unauth{magic_1}, $unauth{magic_2}, $unauth{ver}, $unauth{modeElegible},
         $unauth{hdrLen}, $unauth{sbiSize}, $unauth{crc}
     ) = unpack( "(IIIIIII)<", substr( $image, 0, 28 ) );
+
     #return 1024
     #  unless ( $unauth{magic_1} == $GEN3_MAGIC1
     #    && $unauth{magic_2} == $GEN3_MAGIC2 );
@@ -438,15 +484,17 @@ sub parse_sbi {
             $auth{fldOemCotOfs}
         ) = unpack( "IIIIIII<", substr( $image, 28, 28 ) );
         if ( ( $auth{ver} == 0x2 ) ) {
-	    $sig_len = 512;
-	    $sig_auth_len = 386;
-        } elsif  (( $auth{ver} == 0x3 ) ) {
-	    $sig_len = 512;
-	    $sig_auth_len = 386;
-	}
-        $sbi->{offs}     = $unauth{hdrLen};
-        $sbi->{size}     = $unauth{sbiSize} - $unauth{hdrLen} - (($sig_len*2)+4);
-        $sbi->{sig_offs} = $unauth{sbiSize} - (($sig_len*2)+4);
+            $sig_len      = 512;
+            $sig_auth_len = 384;
+        }
+        elsif ( ( $auth{ver} == 0x3 ) ) {
+            $sig_len      = 512;
+            $sig_auth_len = 512;
+        }
+        $sbi->{offs} = $unauth{hdrLen};
+        $sbi->{size} =
+          $unauth{sbiSize} - $unauth{hdrLen} - ( $sig_len * 2 + 4 );
+        $sbi->{sig_offs} = $unauth{sbiSize} - ( $sig_len * 2 + 4 );
         $sbi->{crc_offs} = $unauth{sbiSize} - 4;
         $sbi->{auth}     = \%auth;
         $sbi->{unauth}   = \%unauth;
@@ -462,190 +510,254 @@ sub parse_sbi {
             $auth{fldOemCot} =
               auth_cot( $image, $auth{fldOemCotOfs}, $auth{hdrLen} );
         }
-	$sbi->{validate} = \&validate_sbi; 
-	$sbi->{img_offs} = $offs; 
+        $sbi->{validate} = \&validate_sbi;
+        $sbi->{img_offs} = $offs;
         $sbi->{offs}     += $offs;
         $sbi->{sig_offs} += $offs;
         $sbi->{crc_offs} += $offs;
+
         #printf( "sbi offs %d sig_offs %d\n", $sbi->{offs}, $sbi->{sig_offs} );
     }
     return $unauth{sbiSize};
 }
 
 sub validate_sbi {
-    my  $image = shift;
-    my  $sbi = shift;
-    my $sig_len = 256;
+    my $image        = shift;
+    my $sbi          = shift;
+    my $sig_len      = 256;
     my $sig_auth_len = 256;
-    my @elig2str = (
+    my @elig2str     = (
         "None", "USBT",
         "MSBT", "Dual USBT/MSBT",
         "FSBT", "Dual USBT/FSBT",
         "Dual MSBT/FSBT"
     );
     my $mfg_pem = $args{mfg};
-    my $fld_pem  = $args{fld};
+    my $fld_pem = $args{fld};
+
     #if ( ! defined $sbi->{sig_offs} ) {
-    # 	return; 
+    # 	return;
     #}
     printf(
-                "Found %s image at 0x%x size %u\n",
-                $elig2str[ $sbi->{unauth}->{modeElegible} ],
-                $sbi->{img_offs}, $sbi->{size}
-            );
+        "Found %s image at 0x%x size %u\n",
+        $elig2str[ $sbi->{unauth}->{modeElegible} ],
+        $sbi->{img_offs}, $sbi->{size}
+    );
 
 #printf( "-- USBT/MFG/FLD Elegible(0x%x) --  \n\t SBI size 0x%x unauth hdr len 0x%x auth hdr len 0x%x Auth len 0x%x crc 0x%x\n",
 #		$sbi->{unauth}->{modeElegible}, $sbi->{unauth}->{sbiSize}, $sbi->{unauth}->{hdrLen},
 #		$sbi->{auth}->{hdrLen},         $sbi->{auth}->{authLen},  $sbi->{unauth}->{crc});
-            if ( $args{sanity} ) {
-                verify_cot( $args{sanity}, $sbi );
-            }
+    if ( $args{sanity} ) {
+        verify_cot( $args{sanity}, $sbi );
+    }
 
-            #print " -- " . $sbi . " -- \n";
-            #$sbi->{offs}     += $img_offs;
-            #$sbi->{sig_offs} += $img_offs;
-            #$sbi->{crc_offs} += $img_offs;
+    #print " -- " . $sbi . " -- \n";
+    #$sbi->{offs}     += $img_offs;
+    #$sbi->{sig_offs} += $img_offs;
+    #$sbi->{crc_offs} += $img_offs;
 
-            #dump signatures
-            #dump sbi with header
-            #verify for both FLD and MFG
-            my $data = substr( $image, $sbi->{offs}, $sbi->{size} );
-            if ( ( $sbi->{unauth}->{modeElegible} & 0x1 ) ) {
+    #dump signatures
+    #dump sbi with header
+    #verify for both FLD and MFG
+    if ( ( $sbi->{auth}->{ver} == 0x3 ) ) {
+        $sig_len      = 512;
+        $sig_auth_len = 512;
+    }
+    elsif ( $sbi->{auth}->{ver} == 0x2 ) {
+        $sig_len      = 512;
+        $sig_auth_len = 384;
+    }
 
-                my $crc_hdr = crc32( substr( $image, $sbi->{img_offs}, 24 ) );
-                printf( "\tVerifying Unauth Header CRC 0x%x 0x%x ",
-                    $sbi->{unauth}->{crc}, $crc_hdr );
-                print( ( $crc_hdr == $sbi->{unauth}->{crc} )
-                    ? " ... OK\n"
-                    : " ... FAILED\n" );
-                my $crc = crc32($data);
-                my $sbi_crc =
-                  unpack( "I<", substr( $image, $sbi->{crc_offs}, 4 ) );
-		#printf("  0x%x 0x%x crc offset %d\n",length($data),unpack("H8",substr($data,0,8)),unpack("H8",substr($data,length($data)-8, 8)),$sbi->{crc_offs});
-                printf( "\tVerifying UBI CRC 0x%x 0x%x ", $sbi_crc, $crc );
-                print( ( $crc == $sbi_crc ) ? " ... OK\n" : " ... FAILED\n" );
+    my $data;
+    if ( ( $sbi->{unauth}->{modeElegible} & 0x1 ) ) {
+        printf( "mode Eligible %d \n", $sbi->{unauth}->{modeElegible} );
+        $data = substr(
+            $image,
+            $sbi->{offs},
+            $sbi->{size} + (
+                (
+                    ( $sbi->{unauth}->{modeElegible} & 0x3 )
+                      && $sbi->{auth}->{ver} > 1
+                ) ? $sig_len : 0
+            )
+        );
 
-            }
-            my $sig_mfg_path  = "/tmp/__sbiAuTh.mfg.sig.$$";
-            my $sig_fld_path  = "/tmp/__sbiAuTh.fld.sig.$$";
-            my $auth_obj_path = "/tmp/__sbiAuTh.$$";
-            printf("Sec HDR Version %d\n", $sbi->{auth}->{ver});
-            if ( ( $sbi->{auth}->{ver} == 0x3 ) ) {
-		$sig_len = 512;
-		$sig_auth_len = 512;
-            } elsif ($sbi->{auth}->{ver} == 0x2) {
-		$sig_len = 512;#386;
-		$sig_auth_len = 386;
-            }
-            fdump( $auth_obj_path, $data );
-            $data = substr( $image, $sbi->{sig_offs}, $sig_len );
-            fdump( $sig_fld_path, $data );
-            $data = substr( $image, $sbi->{sig_offs} + $sig_len, $sig_len );
-            fdump( $sig_mfg_path, $data );
+        #$data = substr( $image, $sbi->{offs}, $sbi->{size} );
+        my $crc_hdr = crc32( substr( $image, $sbi->{img_offs}, 24 ) );
+        printf( "\tVerifying Unauth Header CRC 0x%x 0x%x ",
+            $sbi->{unauth}->{crc}, $crc_hdr );
+        print(
+            ( $crc_hdr == $sbi->{unauth}->{crc} )
+            ? " ... OK\n"
+            : " ... FAILED\n"
+        );
 
-            if ( ( $sbi->{unauth}->{modeElegible} & 0x2 ) ) {
-                if ($mfg_pem) {
-                    printf( "\tVerifying MFG signature with  %s\n\t\t",
-                        $mfg_pem );
-                    openssl_rsa_verify( $sig_mfg_path, $auth_obj_path,
-                        $mfg_pem );
-                }
-                if ( $sbi->{"Krsa-mfg-pub.bin"} ) {
+        #+ ($unauth{modeEligible} & 0x3)?($sig_len*2) : 0;
+        my $crc = crc32($data);
+        my $sbi_crc =
+          unpack( "I<", substr( $image, $sbi->{crc_offs}, 4 ) );
+
+#printf("  0x%x 0x%x crc offset %d\n",length($data),unpack("H8",substr($data,0,8)),unpack("H8",substr($data,length($data)-8, 8)),$sbi->{crc_offs});
+#printf("F 0x%x L 0x%x\n",unpack("I<",substr($data,0,4)),unpack("I<", substr($data,length($data)-4, 4) ));
+        printf( "\tVerifying UBI CRC 0x%x 0x%x ", $sbi_crc, $crc );
+        print( ( $crc == $sbi_crc ) ? " ... OK\n" : " ... FAILED\n" );
+    }
+    $data = substr( $image, $sbi->{offs}, $sbi->{size} );
+    my $sig_mfg_path  = "/tmp/__sbiAuTh.mfg.sig.$$";
+    my $sig_fld_path  = "/tmp/__sbiAuTh.fld.sig.$$";
+    my $auth_obj_path = "/tmp/__sbiAuTh.$$";
+    printf( "Sec HDR Version %d\n", $sbi->{auth}->{ver} );
+    fdump( $auth_obj_path, $data );
+    $data = substr( $image, $sbi->{sig_offs}, $sig_len );
+    fdump( $sig_fld_path, $data );
+    $data = substr( $image, $sbi->{sig_offs} + $sig_len, $sig_len );
+    fdump( $sig_mfg_path, $data );
+
+    if ( ( $sbi->{unauth}->{modeElegible} & 0x2 ) ) {
+        if ($mfg_pem) {
+            printf( "\tVerifying MFG signature with  %s\n\t\t", $mfg_pem );
+            openssl_rsa_verify( $sig_mfg_path, $auth_obj_path, $mfg_pem );
+        }
+        if ( $sbi->{"Krsa-mfg-pub.bin"} ) {
 
       #c_rsa_verify ($sig_mfg_path, $auth_obj_path, $sbi->{"Krsa-mfg-pub.bin"});
-                    printf(
+            printf(
 "\tVerfying MFG signature with modulus extracted from image header\n\t\t"
-                    );
-                    openssl_rsa_der_modulo_verify( $sig_mfg_path,
-                        $auth_obj_path, $sbi->{"Krsa-mfg-pub.bin"}, $sig_auth_len );
-                }
-            }
-            if ( ( $sbi->{unauth}->{modeElegible} & 0x4 ) ) {
-                if ($fld_pem) {
-                    printf( "\tVerifying FLD signature with %s\n\t\t",
-                        $fld_pem );
-                    openssl_rsa_verify( $sig_fld_path, $auth_obj_path,
-                        $fld_pem );
-                }
-                if ( $sbi->{"Krot-fld-pub.bin"} ) {
+            );
+            openssl_rsa_der_modulo_verify(
+                $sig_mfg_path,              $auth_obj_path,
+                $sbi->{"Krsa-mfg-pub.bin"}, $sig_auth_len
+            );
+        }
+    }
+    if ( ( $sbi->{unauth}->{modeElegible} & 0x4 ) ) {
+        if ($fld_pem) {
+            printf( "\tVerifying FLD signature with %s\n\t\t", $fld_pem );
+            openssl_rsa_verify( $sig_fld_path, $auth_obj_path, $fld_pem );
+        }
+        if ( $sbi->{"Krot-fld-pub.bin"} ) {
 
       #c_rsa_verify ($sig_fld_path, $auth_obj_path, $sbi->{"Krot-fld-pub.bin"});
-                    printf(
+            printf(
 "\tVerfying FLD signature with modulus extracted from image header\n\t\t"
-                    );
-                    openssl_rsa_der_modulo_verify( $sig_fld_path,
-                        $auth_obj_path, $sbi->{"Krot-fld-pub.bin"},$sig_auth_len );
-                }
-            }
+            );
+            openssl_rsa_der_modulo_verify(
+                $sig_fld_path,              $auth_obj_path,
+                $sbi->{"Krot-fld-pub.bin"}, $sig_auth_len
+            );
+        }
+    }
 
-            verify_image(substr($image, ($sbi->{offs}+($sbi->{size}/2 < 0x8000? 0 : $sbi->{size}/2)), $sbi->{size}), 0, { "BRCMKEYSTORE" => \&parse_keystore }, ($sbi->{size} & ~255), $sbi->{size});  
-            $sbi->{"Krsa-mfg-pub.bin"} = undef unless (!$sbi->{"Krsa-mfg-pub.bin"});
-            $sbi->{"Krsa-fld-pub.bin"} = undef unless (!$sbi->{"Krsa-fld-pub.bin"});
+    verify_image(
+        substr(
+            $image,
+            (
+                $sbi->{offs} +
+                  ( $sbi->{size} / 2 < 0x8000 ? 0 : $sbi->{size} / 2 )
+            ),
+            $sbi->{size}
+        ),
+        0,
+        { "BRCMKEYSTORE" => \&parse_keystore },
+        ( $sbi->{size} & ~255 ),
+        $sbi->{size},
+        {
+            "ver"      => $sbi->{auth}->{ver},
+            "sig_len"  => $sig_len,
+            "auth_len" => $sig_auth_len
+        }
+    );
+    $sbi->{"Krsa-mfg-pub.bin"} = undef unless ( !$sbi->{"Krsa-mfg-pub.bin"} );
+    $sbi->{"Krsa-fld-pub.bin"} = undef unless ( !$sbi->{"Krsa-fld-pub.bin"} );
 }
 
 sub parse_image {
-     my $image = shift;
-     my $offs = shift;
-     my $obj = shift;
-     my $mgc = shift;
-     my $align = shift;
-     my $img_len = shift;
-     foreach (keys (%{$mgc}))  {
-         my @magic_int = unpack( "(II)<", $image);
-       # printf("... %x ... %x\n", $magic_int[0],$magic_int[1]);
-         if (ref ($mgc->{$_}) eq 'ARRAY' ) {
-	     if ($magic_int[0] == $mgc->{$_}[0][0] && 
-                       $magic_int[1] == $mgc->{$_}[0][1])  {
-	         printf("\n\tmagic: %08x %08x\n", $mgc->{$_}[0][0],$mgc->{$_}[0][1]);
-	         return $mgc->{$_}[1]($image, $offs, $obj);
-             }
-	 } else {
-     	     my $img = substr($image, 0, defined($img_len)? $img_len : length($_) );
-             my $psn = 0;
-             while ($img =~ m/$_/g) {
-                 $psn += pos($img); 
-	         $align = $mgc->{$_}(substr($image, $psn-length($_)), $offs, $obj);
-                 if ($align > 0) {
-	             printf("\n\tmagic: %s size %d offs %d\n", substr($img, pos($img)-length($_),length($_)), $align, $psn+$offs);
-                     $align += $psn;
-                     return $align;
-                 }
-     	         $img = substr($img, pos($img), length($img)-pos($img)); 
-             }
-         }
-   }
-   return $align;
+    my $image   = shift;
+    my $offs    = shift;
+    my $obj     = shift;
+    my $mgc     = shift;
+    my $align   = shift;
+    my $img_len = shift;
+    my $sbi_ver = shift;
+    foreach ( keys( %{$mgc} ) ) {
+        my @magic_int = unpack( "(II)<", $image );
+
+        # printf("... %x ... %x\n", $magic_int[0],$magic_int[1]);
+        if ( ref( $mgc->{$_} ) eq 'ARRAY' ) {
+            if (   $magic_int[0] == $mgc->{$_}[0][0]
+                && $magic_int[1] == $mgc->{$_}[0][1] )
+            {
+                printf(
+                    "\n\tmagic: %08x %08x\n",
+                    $mgc->{$_}[0][0],
+                    $mgc->{$_}[0][1]
+                );
+                return $mgc->{$_}[1]( $image, $offs, $obj, $sbi_ver );
+            }
+        }
+        else {
+            my $img =
+              substr( $image, 0, defined($img_len) ? $img_len : length($_) );
+            my $psn = 0;
+            while ( $img =~ m/$_/g ) {
+                $psn += pos($img);
+                $align = $mgc->{$_}(
+                    substr( $image, $psn - length($_) ),
+                    $offs, $obj, $sbi_ver
+                );
+                if ( $align > 0 ) {
+                    printf(
+                        "\n\tmagic: %s size %d offs %d\n",
+                        substr( $img, pos($img) - length($_), length($_) ),
+                        $align, $psn + $offs
+                    );
+                    $align += $psn;
+                    return $align;
+                }
+                $img = substr( $img, pos($img), length($img) - pos($img) );
+            }
+        }
+    }
+    return $align;
 }
 
 sub verify_image {
-    my $image = shift;
-    my $offs = shift;
-    my $mgc = shift;
-    my $align = shift;
+    my $image     = shift;
+    my $offs      = shift;
+    my $mgc       = shift;
+    my $align     = shift;
     my $image_len = shift;
+    my $sbi_ver   = shift;
     while ( $offs < length($image) ) {
         my $obj = {};
-        $offs += ((parse_image(substr($image, $offs), $offs, $obj, $mgc, $align, $image_len)+($align-1))&~($align-1));
-        if (  defined $obj->{validate}) {
-		$obj->{validate}($image, $obj);
-	} 
+        $offs += (
+            (
+                parse_image( substr( $image, $offs ),
+                    $offs, $obj, $mgc, $align, $image_len, $sbi_ver ) +
+                  ( $align - 1 )
+            ) & ~( $align - 1 )
+        );
+        if ( defined $obj->{validate} ) {
+            $obj->{validate}( $image, $obj, $sbi_ver );
+        }
 
     }
 }
 
 sub verify {
-    my $image    = shift;
-    my $sbi_mgc = [0x0002ce92, 0x00023769];
-    my $mgc = { 
-        $sbi_mgc=> [$sbi_mgc, \&parse_sbi],
-       	"BRCMKEYSTORE" => \&parse_keystore,
-     	"CIL3" => \&parse_license,
+    my $image   = shift;
+    my $sbi_mgc = [ 0x0002ce92, 0x00023769 ];
+    my $mgc     = {
+        $sbi_mgc       => [ $sbi_mgc, \&parse_sbi ],
+        "BRCMKEYSTORE" => \&parse_keystore,
+        "CIL3"         => \&parse_license,
     };
-    verify_image($image, 0, $mgc, 1024);  
+    verify_image( $image, 0, $mgc, 1024 );
 }
 
-verify ($blob);
+verify($blob);
 1;
+
 #, $args{fld}, $args{mfg} );
 
 #"-prverify $fld_pem -signature /tmp/__sbiAuTh.fld.sig.$$ /tmp/__sbiAuTh.$$");

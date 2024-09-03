@@ -130,7 +130,9 @@ void bcm_cpufreq_set_freq_max(unsigned maxdiv)
 #define BROADCOM_THERMAL_HIGH_TEMPERATURE_COMPENSATION_2_MILLICELSIUS  125000
 #endif
 
-#if defined(CONFIG_BCM947622) || defined(CONFIG_BCM96756) || defined(CONFIG_BCM94912)
+#if defined(CONFIG_BCM947622) || defined(CONFIG_BCM96756) || \
+	defined(CONFIG_BCM94912) || defined(CONFIG_BCM96764) || \
+	defined(CONFIG_BCM96765) || defined(CONFIG_BCM96766)
 #define IS_WIFI_SILICON	1
 #define BROADCOM_THERMAL_HIGH_TEMPERATURE_COMPENSATION_1_MILLICELSIUS  110000
 #define BROADCOM_THERMAL_HIGH_TEMPERATURE_COMPENSATION_2_MILLICELSIUS  115000
@@ -239,16 +241,18 @@ static void brcm_cpu_present(unsigned int cpu)
 
 int broadcom_cpu_cooling_set_cur_state(struct thermal_cooling_device *dev, unsigned long state)
 {
-  int cpuIndex, rc;
+  int cpuIndex, rc, cpuLast;
 
   switch (state)
   {
     case 0:
-#if defined (CONFIG_BCM947622) || defined (CONFIG_BCM963178) || defined (CONFIG_BCM96756)
-      for (cpuIndex = 0; cpuIndex < num_possible_cpus() - 1; cpuIndex++) {
+#if defined (CONFIG_BCM947622) || defined (CONFIG_BCM963178) || \
+    defined (CONFIG_BCM96756) || defined(CONFIG_BCM96764) || defined(CONFIG_BCM96764L)
+      cpuLast = num_possible_cpus() - 1;
 #else
-      for (cpuIndex = 1; cpuIndex < num_possible_cpus(); cpuIndex++) {
+      cpuLast = num_possible_cpus();
 #endif
+      for (cpuIndex = 1; cpuIndex < cpuLast; cpuIndex++) {
           if (!cpu_online(cpuIndex)) {
             dev_crit(&dev->device,"take CPU#%d online\n", cpuIndex);
 	  brcm_cpu_present(cpuIndex); // mark present before cpu_up
@@ -260,7 +264,8 @@ int broadcom_cpu_cooling_set_cur_state(struct thermal_cooling_device *dev, unsig
     case 1:
       break;
     case 2:
-#if defined (CONFIG_BCM947622) || defined (CONFIG_BCM963178) || defined (CONFIG_BCM96756)
+#if defined (CONFIG_BCM947622) || defined (CONFIG_BCM963178) || \
+    defined (CONFIG_BCM96756) || defined(CONFIG_BCM96764) || defined(CONFIG_BCM96764L)
       // Take the second to last possible CPU offline
       cpuIndex = num_possible_cpus() - 2;
 #else
@@ -278,12 +283,13 @@ int broadcom_cpu_cooling_set_cur_state(struct thermal_cooling_device *dev, unsig
       }
       break;
     case 3:
-#if defined (CONFIG_BCM947622) || defined (CONFIG_BCM963178) || defined (CONFIG_BCM96756)
-      // Keep the last possible CPU online
-      for (cpuIndex = 0; cpuIndex < num_possible_cpus() - 1; cpuIndex++) {
+#if defined (CONFIG_BCM947622) || defined (CONFIG_BCM963178) || \
+    defined (CONFIG_BCM96756) || defined(CONFIG_BCM96764) || defined(CONFIG_BCM96764L)
+      cpuLast = num_possible_cpus() - 1;
 #else
-      for (cpuIndex = 1; cpuIndex < num_possible_cpus(); cpuIndex++) {
+      cpuLast = num_possible_cpus();
 #endif
+      for (cpuIndex = 1; cpuIndex < cpuLast; cpuIndex++) {
           if (cpu_online(cpuIndex)) {
             dev_crit(&dev->device,"take CPU#%d offline\n", cpuIndex);
 #if defined(CONFIG_HOTPLUG_CPU)
@@ -411,8 +417,7 @@ static int get_temperature(struct thermal_zone_device *thermDev, tempmc_t *tempM
 {
 #ifdef DEBUG_TEMPERATURE
   *tempMillicelsius = (dbg_temperature > -999 ? dbg_temperature : 40) * 1000;
-#elif defined (CONFIG_BCM963158) || defined (CONFIG_BCM947622) || defined (CONFIG_BCM963178) || defined (CONFIG_BCM96756) || \
-  defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM_PON)
+#elif defined(IS_DSL_SILICON) || defined(IS_WIFI_SILICON) || defined(CONFIG_BCM_PON)
   int ret, adc = -1;
 
   ret = GetPVTKH2(kTEMPERATURE, 0, &adc);

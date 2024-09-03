@@ -7,6 +7,16 @@
 
 #ifdef CONFIG_ARM64
 
+#if defined(CONFIG_BCM6888) || defined(CONFIG_BCM68880) || defined(CONFIG_BCM6837)
+#ifndef CORTEX_A55
+#define CORTEX_A55	1
+#endif
+#else
+#ifndef CORTEX_A53
+#define CORTEX_A53	1
+#endif
+#endif
+
 /*
  * SCTLR_EL1/SCTLR_EL2/SCTLR_EL3 bits definitions
  */
@@ -108,6 +118,23 @@
 #define SCTLR_EL1_ALIGN_DIS	(0 << 1)  /* Alignment check disabled         */
 #define SCTLR_EL1_MMU_DIS	(0)       /* MMU disabled                     */
 
+#if defined(CORTEX_A55)
+/* A55 */
+/*
+ * CPUECTLR_EL1 bits definitions
+ */
+#define CPUECTLR_EL1_L3WSCTL	(3 << 29) /* Disable L3 streaming */
+#define CPUECTLR_EL1_L2WSCTL	(3 << 27) /* Disable L2 streaming */
+#define CPUECTLR_EL1_L1WSCTL	(3 << 25) /* Disable L1 streaming */
+#elif defined(CORTEX_A53)
+/* A53 */ 
+/*
+ * CPUACTLR_EL1 bits definitions
+ */
+#define CPUACTLR_EL1_RADIS	(3 << 27) /* Disable L1/L2 streaming */
+#define CPUACTLR_EL1_L1RADIS	(3 << 25) /* Disable L1 streaming */
+#endif
+
 #ifndef __ASSEMBLY__
 
 u64 get_page_table_size(void);
@@ -136,6 +163,60 @@ static inline unsigned int current_el(void)
 	asm volatile("mrs %0, CurrentEL" : "=r" (el) : : "cc");
 	return el >> 2;
 }
+
+#if defined(CORTEX_A55)
+/* A55 */
+static inline unsigned int get_cpuectlr(void)
+{
+	unsigned int el; 
+	unsigned long val;
+
+	el = current_el();
+	if (el >= 1)
+		asm volatile("mrs %0, S3_0_c15_c1_4" : "=r" (val) : : "cc");
+	else 
+		val = 0;
+
+	return val;
+}
+
+static inline void set_cpuectlr(unsigned long val)
+{
+	unsigned int el;
+
+	el = current_el();
+	if (el >= 1)
+		asm volatile("msr S3_0_c15_c1_4, %0" : : "r" (val) : "cc");
+
+	asm volatile("isb");
+}
+#elif defined(CORTEX_A53)
+/* A53 */
+static inline unsigned int get_cpuactlr(void)
+{
+	unsigned int el; 
+	unsigned long val;
+
+	el = current_el();
+	if (el >= 1)
+		asm volatile("mrs %0, S3_1_c15_c2_0" : "=r" (val) : : "cc");
+	else 
+		val = 0;
+
+	return val;
+}
+
+static inline void set_cpuactlr(unsigned long val)
+{
+	unsigned int el;
+
+	el = current_el();
+	if (el >= 1)
+		asm volatile("msr S3_1_c15_c2_0, %0" : : "r" (val) : "cc");
+
+	asm volatile("isb");
+}
+#endif /* */
 
 static inline unsigned int get_sctlr(void)
 {
@@ -271,6 +352,20 @@ void psci_arch_init(void);
 
 #else /* CONFIG_ARM64 */
 
+#if defined(CONFIG_BCM963148)
+#ifndef CORTEX_A15
+#define CORTEX_A15	1
+#endif
+#elif defined(CONFIG_BCM63138)
+#ifndef CORTEX_A9
+#define CORTEX_A9	1
+#endif
+#else
+#ifndef CORTEX_A7
+#define CORTEX_A7	1
+#endif
+#endif
+
 #ifdef __KERNEL__
 
 #define CPU_ARCH_UNKNOWN	0
@@ -314,6 +409,23 @@ void psci_arch_init(void);
 #define CR_TRE	(1 << 28)	/* TEX remap enable			*/
 #define CR_AFE	(1 << 29)	/* Access flag enable			*/
 #define CR_TE	(1 << 30)	/* Thumb exception enable		*/
+
+/*
+ * ACTLR bits definitions
+ */
+#if defined(CORTEX_A15)
+/* A15 */
+#define ACTLR_L2RADIS	(3 << 27) /* Disable L1/L2 streaming */
+#define ACTLR_L1RADIS	(3 << 25) /* Disable L1 streaming */
+#elif defined(CORTEX_A9)
+/* A9 */
+#define ACTLR_L2RADIS	0
+#define ACTLR_L1RADIS	0
+#elif defined(CORTEX_A7)
+/* A7 */
+#define ACTLR_L1RADIS	(1 << 12) /* Disable L1 streaming */
+#define ACTLR_L2RADIS	(1 << 11) /* Disable L2 streaming */
+#endif
 
 #if defined(CONFIG_ARMV7_LPAE) && !defined(PGTABLE_SIZE)
 #define PGTABLE_SIZE		(4096 * 5)
@@ -414,6 +526,20 @@ static inline void set_dacr(unsigned int val)
 	isb();
 }
 
+static inline unsigned int get_actlr(void)
+{
+	unsigned int val;
+	asm("mrc p15, 0, %0, c1, c0, 1	@ get ACTLR" : "=r" (val) : : "cc");
+	return val;
+}
+
+static inline void set_actlr(unsigned int val)
+{
+	asm volatile("mcr p15, 0, %0, c1, c0, 1	@ set ACTLR"
+	  : : "r" (val) : "cc");
+	isb();
+}
+
 #ifdef CONFIG_ARMV7_LPAE
 /* Long-Descriptor Translation Table Level 1/2 Bits */
 #define TTB_SECT_XN_MASK	(1ULL << 54)
@@ -452,6 +578,8 @@ static inline void set_dacr(unsigned int val)
  */
 #define MEMORY_ATTRIBUTES	((0x00 << (0 * 8)) | (0x88 << (1 * 8)) | \
 				 (0xcc << (2 * 8)) | (0xff << (3 * 8)))
+#define MEMORY_ATTRIBUTES_1	((0x44 << (0 * 8)) | (0x04 << (1 * 8)) | \
+				 (0x00 << (2 * 8)) | (0x00 << (3 * 8)))
 
 /* options available for data cache on each page */
 enum dcache_option {

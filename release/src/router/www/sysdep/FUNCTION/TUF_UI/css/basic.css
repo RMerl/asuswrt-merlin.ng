@@ -11,6 +11,9 @@
 *{
     /*box-sizing: border-box;*/
 }
+.display-none{
+    display: none;
+}
 .flexbox{
     display: flex;
 }

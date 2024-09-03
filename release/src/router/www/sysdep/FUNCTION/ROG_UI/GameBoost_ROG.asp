@@ -23,7 +23,7 @@
 <script type="text/javascript" src="/calendar/jquery-ui.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/form.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js"></script>
 <style type="text/css">
 .appIcons{
 	width:36px;
@@ -1167,7 +1167,10 @@ function update_apps_tarffic(mac, obj, new_element) {
     },
     success: function(response){
 		render_apps(array_traffic, obj, new_element);
-		apps_time_flag = setTimeout((function (mac,obj,new_element){ return function (){ update_apps_tarffic(mac,obj,new_element); } })(mac,obj,new_element), detect_interval*1000);
+
+		apps_time_flag = setTimeout(function(){
+			update_apps_tarffic(mac,obj,new_element)
+		}, detect_interval*1000);
     }
   });
 }
@@ -1180,7 +1183,10 @@ function update_apps_tarffic_Dns(mac, obj, new_element) {
     },
     success: function(response){
 		render_apps(array_traffic, obj, new_element);
-		apps_time_flag = setTimeout((function (mac,obj,new_element){ return function (){ update_apps_tarffic_Dns(mac,obj,new_element); } })(mac,obj,new_element), detect_interval*1000);
+
+		apps_time_flag = setTimeout(function(){
+			update_apps_tarffic_Dns(mac,obj,new_element)
+		}, detect_interval*1000);
     }
   });
 }
@@ -1289,6 +1295,36 @@ function cancel(){
 		$('#iphone_switch').animate({backgroundPosition: -37}, "slow", function() {});
 	}
 }
+
+function switch_control(_status){
+	if(_status) {
+        if(!dns_dpi_support){
+            if(reset_wan_to_fo.check_status()) {
+                if(policy_status.TM == 0 || policy_status.TM_time == ''){
+                    const policyModal = new PolicyModalComponent({
+                        policy: "TM",
+                        agreeCallback: eula_confirm,
+                        disagreeCallback: cancel
+                    });
+                    policyModal.show();
+                }else{
+                    eula_confirm();
+                }
+            }else
+                cancel();
+        }else {
+            document.form.apps_analysis.value = 1;
+            document.form.dns_dpi_apps_analysis.value = 1;
+            applyRule();
+        }
+	}
+	else {
+		document.form.apps_analysis.value = 0;
+		if(dns_dpi_support)
+			document.form.dns_dpi_apps_analysis.value = 0;
+		applyRule();
+	}
+}
 </script>
 </head>
 
@@ -1358,29 +1394,21 @@ function cancel(){
                               {  
 																$('#apps_analysis_enable').iphoneSwitch('<% nvram_get("dns_dpi_apps_analysis"); %>',
 																	function(){
-																		document.form._flag.value = "dns_dpi_apps_analysis";
-																		eula_confirm();
-																	},
-																	function(){
-																		document.form.dns_dpi_apps_analysis.value = 0;
-																		applyRule();
-																	}
+                                                                        switch_control(1);
+                                                                    },
+                                                                    function(){
+                                                                        switch_control(0);
+                                                                    }
 																);
                               } else 
                               {
-                                $('#apps_analysis_enable').iphoneSwitch('<% nvram_get("apps_analysis"); %>',
+                                                                $('#apps_analysis_enable').iphoneSwitch('<% nvram_get("apps_analysis"); %>',
 																	function(){
-																		ASUS_EULA.config(eula_confirm, cancel);
-																		document.form._flag.value = "apps_analysis";
-
-																		if(ASUS_EULA.check("tm")){
-																			eula_confirm()
-																		}
-																	},
-																	function(){
-																		document.form.apps_analysis.value = 0;
-																		applyRule();
-																	}
+                                                                        switch_control(1);
+                                                                    },
+                                                                    function(){
+                                                                        switch_control(0);
+                                                                    }
 																);
                               }
 															</script>
@@ -1440,12 +1468,16 @@ function cancel(){
 													<script type="text/javascript">
 														$('#radio_gameBoost_enable').iphoneSwitch(enable_GameBoost,
 															function(){
-																ASUS_EULA.config(eula_confirm, cancel);
 																document.form._flag.value = "game";
-
-																if(ASUS_EULA.check("tm")){
-																	eula_confirm();
-																}
+                                                                if(policy_status.TM == 0 || policy_status.TM_time == ''){
+                                                                    const policyModal = new PolicyModalComponent({
+                                                                        policy: "TM",
+                                                                        agreeCallback: eula_confirm,
+                                                                    });
+                                                                    policyModal.show();
+                                                                }else{
+                                                                    eula_confirm();
+                                                                }
 															},
 															function(){
 																document.form.qos_enable.value = '0';

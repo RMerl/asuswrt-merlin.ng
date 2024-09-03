@@ -32,4 +32,10 @@ int32_t mdio_cmd_write_45(uint32_t *p, uint32_t addr, uint32_t dev, uint16_t reg
 int32_t mdio_comp_read_c45_register(uint32_t addr, uint32_t dev, uint16_t reg, uint16_t *val, int regIn[], int regOut[]);
 int32_t mdio_comp_write_c45_register(uint32_t addr, uint32_t dev, uint16_t reg, uint16_t val, int regIn[], int RegOut[]);
 
+#if defined(DSL_DEVICES)
+#define FAST_CLOCK_DIVIDER 9
+#else
+#define FAST_CLOCK_DIVIDER 4
+#endif
+
 #endif

@@ -974,7 +974,7 @@ void set_referer_host(void)
 			memset(referer_host, 0, sizeof(referer_host));
 			snprintf(referer_host,sizeof(referer_host),"%s:%d",lan_ipaddr, port);
 		}
-#if defined(RTAC68U) || defined(RPAX56) || defined(RPAX58)
+#if defined(RTAC68U) || defined(RPAX56) || defined(RPAX58) || defined(RPBE58)
 	} else if (is_dpsta_repeater() && nvram_get_int("re_mode") == 0
 		&& !strncmp("repeater.asus.com", host_name, strlen("repeater.asus.com")) && *(host_name + strlen("repeater.asus.com")) == ':' && (port = atoi(host_name + strlen("repeater.asus.com") + 1)) > 0 && port < 65536){//transfer https domain to ip
 		if(port == 80)
@@ -986,7 +986,7 @@ void set_referer_host(void)
 #endif
 	}else if(!strcmp(DUT_DOMAIN_NAME, host_name))	//transfer http domain to ip
 		strlcpy(referer_host, lan_ipaddr, sizeof(referer_host));
-#if defined(RTAC68U) || defined(RPAX56) || defined(RPAX58)
+#if defined(RTAC68U) || defined(RPAX56) || defined(RPAX58) || defined(RPBE58)
 	else if (is_dpsta_repeater() && nvram_get_int("re_mode") == 0
 		&& !strcmp("repeater.asus.com", host_name))   //transfer http domain to ip
 		strlcpy(referer_host, lan_ipaddr, sizeof(referer_host));
@@ -1389,8 +1389,10 @@ handle_request(void)
 		strlcpy(request_content_range, "", sizeof(request_content_range));
 
 	memset(user_agent, 0, sizeof(user_agent));
-	if(useragent != NULL)
+	if(useragent != NULL){
+		trimNL(useragent);
 		strlcpy(user_agent, useragent, sizeof(user_agent));
+	}
 	else
 		strlcpy(user_agent, "", sizeof(user_agent));
 
@@ -1964,19 +1966,17 @@ void http_logout(uaddr *uip, char *cookies, int fromapp_flag)
 		nvram_set("login_ip", ""); /* IPv6 compat */
 		nvram_set("login_ip_str", "");
 		nvram_set("login_timestamp", "");
-		memset(referer_host, 0, sizeof(referer_host));
+		//memset(referer_host, 0, sizeof(referer_host));
 		delete_logout_from_list(cookies);
-// 2008.03 James. {
+
 		if (change_passwd == 1) {
 			change_passwd = 0;
 		}
-// 2008.03 James. }
+
 	}else if(fromapp_flag != 0){
 		delete_logout_from_list(cookies);
+	}
 }
-}
-//2008 magic}
-//
 
 int is_firsttime(void)
 {

@@ -4,25 +4,19 @@
 * 
 <:label-BRCM:2015:DUAL/GPL:standard
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
 :>
 */
@@ -808,69 +802,75 @@ int bcm_mcast_igmp_should_deliver(bcm_mcast_ifdata *pif,
 {
    t_igmp_grp_entry  *dst;
    struct hlist_head *head = NULL;
-   int                should_deliver;
+   int                should_deliver=0;
+   int                grp_match=0;
 
    if (0 == bcm_mcast_igmp_control_filter(pip->daddr))
    {
       /* accept packet */
-        __logDebug("source device %s, dst device %s control filter applied", src_dev->name, dst_dev->name);
+      /*__logDebug("IGMP Control filter Accept pkt: src %s, dst %s "
+                   "dstip %x", src_dev->name, dst_dev->name, ntohl(pip->daddr));*/
       return 1;
    }
 
-   /* drop traffic by default when snooping is enabled
-      in blocking mode */
-   if (BCM_MCAST_SNOOPING_BLOCKING_MODE == pif->igmp_snooping)
-   {
-      should_deliver = 0;
-   }
-   else if ((BCM_MCAST_SNOOPING_DISABLED_FLOOD == pif->igmp_snooping) && 
-            (BCM_MCAST_SNOOPING_DISABLED_HOSTCTL_ENABLED == pif->igmp_hostctl)) 
-   {  /* In this mode snoop entries are not created via join 
-         but the userspace application like EPON OAM create 
-         the snoop entries via bcm_mcast_api() calls.*/
-      should_deliver = 0;
-   }
-   else
-   {
-      should_deliver = 1;
-   }
+   /* 
+    * Forward logic is simplified as below.
+    *
+    * should_deliver is initially set to 0 for all the snooping modes (dont forward) until we get one of
+    * the conditions below to enable forward.
+    * 1) Matching group/member found.
+    * 2) standard snooping mode & no mcast group exists.
+    * 3) snooping disabled & host control is not enabled. ( in the case snoop disabled & host ctl enabled modes, snoop entries are not created 
+    *    via join but the userspace application like EPON OAM create the snoop entries via bcm_mcast_api() calls.
+    */
 
-   /* adhere to forwarding entries regardless of snooping mode */
+
+   /* Adhere to forwarding entries regardless of snooping mode */
 
    spin_lock_bh(&pif->mc_igmp_lock);
    head = &pif->mc_ipv4_hash[bcm_mcast_igmp_hash(pip->daddr)];
+
    hlist_for_each_entry(dst, head, hlist)
    {
-      if ( (dst->txGrp.s_addr != pip->daddr) ||
-           (dst->dst_dev != dst_dev) )
+      if (dst->txGrp.s_addr == pip->daddr)
       {
-         continue;
-      }
+         if ((dst->src_entry.filt_mode != MCAST_INCLUDE) /* ASM, Exclude filter - exclude source not supported for now. Ref- RFC4607/5771 */
+               ||
+             ((dst->src_entry.filt_mode == MCAST_INCLUDE) &&
+              (pip->saddr == dst->src_entry.src.s_addr))) /* SSM, if this is an include entry source must match */
+         {
+            grp_match = 1 ;
+         }
 
-      /* Forward as long as the snooping entry matches the group info for now.
-         TODO: The plan is to have the snooping entries maintain a list of
+         if ((dst->dst_dev == dst_dev) && (grp_match == 1))
+         {
+            /* Forward as long as the snooping entry matches the group info for now.
+               TODO: The plan is to have the snooping entries maintain a list of
                allowed source interfaces received from mcpd.conf. ANY would be one
                of the options in mcpd.conf which would enable the multicast driver
-               to allow all different source interfaces */
+               to allow all different source interfaces. */
 
-      /* if this is an include entry source must match */
-      if(dst->src_entry.filt_mode == MCAST_INCLUDE)
-      {
-         if (pip->saddr == dst->src_entry.src.s_addr)
-         {
-            /* matching entry */
-            should_deliver = 1;
-            break;
-         }
-      }
-      else
-      {
-         /* exclude filter - exclude source not supported RFC4607/5771 */
-         should_deliver = 1;
-         break;
-      }
+             should_deliver = 1;
+             break;
+         } /* if dst_dev match && grp_match is set */
+      } /* if group match */
+   } /* hlist scan across groups */
+
+   if (!should_deliver && (BCM_MCAST_SNOOPING_BLOCKING_MODE != pif->igmp_snooping))
+   {
+      if (((BCM_MCAST_SNOOPING_STANDARD_MODE == pif->igmp_snooping) && (grp_match == 0))
+            ||
+           ((BCM_MCAST_SNOOPING_DISABLED_FLOOD == pif->igmp_snooping)
+            &&
+            (BCM_MCAST_SNOOPING_DISABLED_HOSTCTL_ENABLED != pif->igmp_hostctl)))
+          should_deliver = 1 ;
    }
+
    spin_unlock_bh(&pif->mc_igmp_lock);
+
+   __logDebug("source device %s, dst device %s dstip %x forward: %s", 
+              src_dev->name, dst_dev->name, ntohl(pip->daddr), should_deliver ? "Yes":"No");
+
    return should_deliver;
 }
 

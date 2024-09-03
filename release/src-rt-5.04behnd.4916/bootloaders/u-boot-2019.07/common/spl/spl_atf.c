@@ -14,6 +14,8 @@
 #include <errno.h>
 #include <spl.h>
 
+DECLARE_GLOBAL_DATA_PTR;
+
 static struct bl2_to_bl31_params_mem bl31_params_mem;
 static struct bl31_params *bl2_to_bl31_params;
 
@@ -102,14 +104,18 @@ static void bl31_entry(uintptr_t bl31_entry, uintptr_t bl33_entry,
 	bl31_params = bl2_plat_get_bl31_params(bl33_entry);
 
 	raw_write_daif(SPSR_EXCEPTION_MASK);
-	dcache_disable();
+
+	/* Sanitize the heap and dcache, disable dcache before ATF handoff */ 
+	dcache_sanitize_disable(gd->malloc_base, gd->malloc_limit);
+
+	/* WARNING: NO HEAP ACCESS AFTER THIS POINT */
 
 	atf_entry((void *)bl31_params, (void *)fdt_addr);
 }
 
 static int spl_fit_images_find_uboot(void *blob)
 {
-	int parent, node, ndepth;
+	int parent, node, ndepth = 0;
 	const void *data;
 
 	if (!blob)

@@ -1,0 +1,8 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="0.6" y="-0.6" width="18.8" height="18.8" transform="matrix(1 0 0 -1 2 20.8)" stroke="#EBEBEB" stroke-width="1.2"/>
+<path d="M5.75 17.625V18.375H5V17.625H5.75ZM18.25 17.625H19V18.375H18.25V17.625ZM5.75 10.125H5V9.375H5.75V10.125ZM8.25 10.125H9V10.875H8.25V10.125ZM8.25 7.1249H7.5V6.3749H8.25V7.1249ZM15.75 7.1249V6.3749H16.5V7.1249H15.75ZM15.75 10.125V10.875H15V10.125H15.75ZM18.25 10.125V9.375H19V10.125H18.25ZM5.75 16.875H18.25V18.375H5.75V16.875ZM6.5 10.125V17.625H5V10.125H6.5ZM8.25 10.875H5.75V9.375H8.25V10.875ZM9 7.1249V10.125H7.5V7.1249H9ZM15.75 7.8749H8.25V6.3749H15.75V7.8749ZM15 10.125V7.1249H16.5V10.125H15ZM18.25 10.875H15.75V9.375H18.25V10.875ZM17.5 17.625V10.125H19V17.625H17.5Z" fill="#EBEBEB"/>
+<path d="M8.25 17.625V14.825" stroke="#EBEBEB" stroke-width="1.2" stroke-linecap="square" stroke-linejoin="round"/>
+<path d="M10.4902 17.625V14.825" stroke="#EBEBEB" stroke-width="1.2" stroke-linecap="square" stroke-linejoin="round"/>
+<path d="M12.7305 17.625V14.825" stroke="#EBEBEB" stroke-width="1.2" stroke-linecap="square" stroke-linejoin="round"/>
+<path d="M14.9697 17.625V14.825" stroke="#EBEBEB" stroke-width="1.2" stroke-linecap="square" stroke-linejoin="round"/>
+</svg>

@@ -3,27 +3,21 @@
    All Rights Reserved
 
    <:label-BRCM:2017:DUAL/GPL:standard
-
-   Unless you and Broadcom execute a separate written software license
-   agreement governing use of this software, this software is licensed
-   to you under the terms of the GNU General Public License version 2
-   (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-   with the following added to such license:
-
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
-
-   Not withstanding the above, under no circumstances may you combine
-   this software in any way with any other Broadcom software provided
-   under a license other than the GPL, without Broadcom's express prior
-   written consent.
-
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License, version 2, as published by
+   the Free Software Foundation (the "GPL").
+   
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+   
+   
+   A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+   writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.
+   
    :>
  */
 
@@ -1604,12 +1598,13 @@ static int merlin28_get_current_inter_phy_type(phy_dev_t *phy_dev)
 
 void merlin28_chk_lane_link_status(phy_dev_t *phy_dev)
 {
-    uint32 rd_data;
+    uint32 rd_data, rd_data2;
     uint32 rd_addr;
     uint32 CoreNum = phy_dev->core_index;
     uint32 LaneNum = phy_dev->lane_index;
     int i;
     int old_link = phy_dev->link;
+    static char *serdes_inter_phy_string[] = { SERDES_INTER_TYPE_STRING };
 
     rd_data = 0;
     rd_addr = (CoreNum<<8) + MERLIN_STATUS;
@@ -1663,35 +1658,68 @@ void merlin28_chk_lane_link_status(phy_dev_t *phy_dev)
 
     /* If it first time link up and the speed is 5G or 10G, we do intensive check
         to filter out false link up */
-    if (!old_link && phy_dev->speed == PHY_SPEED_5000)
+    if (!old_link)
     {
-        /* Read to clear latch bit; then wait 500ms */
-        rd_data = merlin28_pmi_read16(CoreNum, LaneNum, 3, 0xc466);
-        msleep(500);
-        rd_data = merlin28_pmi_read16(CoreNum, LaneNum, 3, 0xc466);
-
-        // Checking BAD_R_TYPE, R_TYPE_E, Latched_RX_E or current RX_E
-        if ((rd_data & (1<<7)) || (rd_data&0x7) == 4
-                || ((rd_data>>12) & 0xf) == 0xf || ((rd_data>>12) & 0xf) == 0 )
+        if (phy_dsl_serdes_is_cl49_pcs(phy_dev))
         {
-            phy_dev->link = 0;
-            printk("Serdes %d False Link Up with Error Symbol 0x%04x at 3.c466h at speed %dMbps\n",
-                    phy_dev->addr, rd_data, phy_dev->speed);
-            goto end;
+            /* Read to clear latch bit; then wait 500ms */
+            rd_data = merlin28_pmi_read16(CoreNum, LaneNum, 3, 0xc466);
+            msleep(500);
+            rd_data = merlin28_pmi_read16(CoreNum, LaneNum, 3, 0xc466);
+
+            // Checking BAD_R_TYPE, R_TYPE_E, Latched_RX_E or current RX_E
+            if ((rd_data & (1<<7)) || (rd_data&0x7) == 4
+                    || ((rd_data>>12) & 0xf) == 0xf || ((rd_data>>12) & 0xf) == 0 )
+            {
+                phy_dev->link = 0;
+                printk("Serdes %d False Link Up with Error Symbol 0x%04x at 3.c466h at speed %dMbps mode %s\n",
+                        phy_dev->addr, rd_data, phy_dev->speed, serdes_inter_phy_string[phy_dev_current_inter_phy_type_get(phy_dev)]);
+                goto end;
+            }
+
+            /* Checking missing RX_C. This was observed in 5GBase-R to 2500Base-X mis-linkup */
+            rd_data2 = merlin28_pmi_read16(CoreNum, LaneNum, 3, 0xc466);
+            if (((rd_data|rd_data2) & (1<<4)) == 0 && (rd_data & 7) != 1 && (rd_data2 & 7) != 1)
+            {
+                phy_dev->link = 0;
+                printk("Serdes %d False Link Up with No RX_C Symbols 0x%04x,0x%04x at 3.c466h at speed %dMbps mode %s\n",
+                        phy_dev->addr, rd_data, rd_data2, phy_dev->speed, 
+                        serdes_inter_phy_string[phy_dev_current_inter_phy_type_get(phy_dev)]);
+                goto end;
+            }
+        }
+        else /* For CL36 mode */
+        {
+            rd_data = merlin28_pmi_read16(CoreNum, LaneNum, 3, 0xc46d); /* Status1, Read to clear first */
+            rd_data = merlin28_pmi_read16(CoreNum, LaneNum, 3, 0xc46d);
+            msleep(500);
+            rd_data2 = merlin28_pmi_read16(CoreNum, LaneNum, 3, 0xc46d);
+            if (rd_data != rd_data2) {
+                phy_dev->link = 0;
+                printk("Serdes %d False Link Up with 3.c46dh changed from 0x%04x to 0x%04x at speed %dMbps mode %s\n",
+                        phy_dev->addr, rd_data, rd_data2, phy_dev->speed, 
+                        serdes_inter_phy_string[phy_dev_current_inter_phy_type_get(phy_dev)]);
+                goto end;
+            }
+        }
+    }
+    else /* during link up */
+    {
+        if (phy_dsl_serdes_is_cl49_pcs(phy_dev))
+        {
+            /* Checking missing RX_C. This was observed in 5GBase-R to 2500Base-X mis-linkup */
+            rd_data = merlin28_pmi_read16(CoreNum, LaneNum, 3, 0xc466);
+            if ((rd_data & (1<<4)) == 0 && (rd_data & 7) != 1)
+            {
+                phy_dev->link = 0;
+                printk("Serdes %d False Link Up with No RX_C Symbols 0x%04x at 3.c466h at speed %dMbps mode %s\n",
+                        phy_dev->addr, rd_data, phy_dev->speed, 
+                        serdes_inter_phy_string[phy_dev_current_inter_phy_type_get(phy_dev)]);
+                goto end;
+            }
         }
     }
 
-    /* Check the mis-link up between our 1000Base-X vs. SGMII */
-    if (phy_dev->current_inter_phy_type == INTER_PHY_TYPE_1000BASE_X)
-    {
-        rd_data = merlin28_pmi_read16(CoreNum, LaneNum, 3, 0xc46d); /* Status1 */
-        if (rd_data == 0x1fff) {
-            phy_dev->link = 0;
-            printk("Serdes %d 1000Base-X False Link Up with 3.c46dh = 0x%04x\n",
-                    phy_dev->addr, rd_data);
-            goto end;
-        }
-    }
 
 end:
     return;
@@ -1716,10 +1744,21 @@ static int phy_speed_to_merlin28_speed(phy_dev_t *phy_dev)
                 phy_serdes->serdes_speed_mode = MLN_SPD_AN_SGMII_SLAVE;
             else    /* Copper PHY, no AN support */
             {
-                if (phy_serdes->config_speed == PHY_SPEED_100)
-                    phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_100M;
-                else
-                    phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_1G;
+                switch ( phy_serdes->config_speed)
+                {
+                    case PHY_SPEED_1000:
+                        phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_1G;
+                        break;
+                    case PHY_SPEED_100:
+                        phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_100M;
+                        break;
+                    case PHY_SPEED_10:
+                        phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_10M;
+                        break;
+                    default:
+                        printk(" Invalid speed setting on SGMII: addr: %d, config_speed: %d\n",
+                            phy_dev->addr, phy_serdes->config_speed);
+                }
             }
             break;
 
@@ -1738,6 +1777,7 @@ static int phy_speed_to_merlin28_speed(phy_dev_t *phy_dev)
             break;
 
         case INTER_PHY_TYPE_2500BASE_X:
+        case INTER_PHY_TYPE_2P5GBASE_X:
             if (phy_dev->an_enabled == 1)
                 return -1;
             else
@@ -1795,9 +1835,9 @@ static int merlin28_get_vco(phy_dev_t *phy_dev)
     int vco;
     phy_serdes_t *phy_serdes = phy_dev->priv;
 
-    if ((phy_dev->lane_index == 0 || (phy_lane0 &&
+    if (((phy_dev->lane_index == 0 || phy_lane0) &&
          (phy_lane0->current_inter_phy_type == INTER_PHY_TYPE_5GBASE_R ||
-          phy_lane0->current_inter_phy_type == INTER_PHY_TYPE_2P5GBASE_R))) ||
+          phy_lane0->current_inter_phy_type == INTER_PHY_TYPE_2P5GBASE_R)) ||
         (phy_serdes->config_speed == PHY_SPEED_2500 && PhyIsForced2p5g10GVco(phy_dev)))
         vco = VCO_10G;
     else
@@ -1820,7 +1860,6 @@ static int merlin28_speed_set_core(phy_dev_t *phy_dev)
     print_log("%s(): Step 7 Config Speed to %d\n", __func__, phy_serdes->serdes_speed_mode);
 
     vco = merlin28_get_vco(phy_dev);
-
 
     merlin28_set_status_for_speed_change(phy_dev);
     restore_regs_lane(CoreNum, phy_dev->lane_index);

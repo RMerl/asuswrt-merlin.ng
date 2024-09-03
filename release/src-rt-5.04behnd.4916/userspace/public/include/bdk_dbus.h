@@ -4,27 +4,21 @@
  * All Rights Reserved
  *
  * <:label-BRCM:2019:DUAL/GPL:standard
- *
- * Unless you and Broadcom execute a separate written software license
- * agreement governing use of this software, this software is licensed
- * to you under the terms of the GNU General Public License version 2
- * (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
- * with the following added to such license:
- *
- *    As a special exception, the copyright holders of this software give
- *    you permission to link this software with independent modules, and
- *    to copy and distribute the resulting executable under terms of your
- *    choice, provided that you also meet, for each linked independent
- *    module, the terms and conditions of the license of that module.
- *    An independent module is a module which is not derived from this
- *    software.  The special exception does not apply to any modifications
- *    of the software.
- *
- * Not withstanding the above, under no circumstances may you combine
- * this software in any way with any other Broadcom software provided
- * under a license other than the GPL, without Broadcom's express prior
- * written consent.
- *
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License, version 2, as published by
+ * the Free Software Foundation (the "GPL").
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * 
+ * A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+ * writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ * 
  * :>
  *
  ************************************************************************/
@@ -34,6 +28,9 @@
 *    Description:
 *
 *      BDK DBUS header file.
+*
+* This is also used in UBus compiles, so a more appropriate name for this
+* file would be bdk_zbus.h (or maybe just fold it all into bdk.h?)
 *
 *****************************************************************************/
 #ifndef BDK_DBUS_H
@@ -92,6 +89,12 @@
 #define SYSMGMT_MD_INTERFACE_NAME      "com.broadcom.sysmgmt_md"
 #define SYSMGMT_MD_OBJECT_PATH         "/com/broadcom/sysmgmt_md"
 
+/* non-blocking bus server in sysmgmt */
+#define SYSMGMT_NB_BUS_SVR_BUS_NAME        "com.broadcom.sysmgmt_nb_bus_svr"
+#define SYSMGMT_NB_BUS_SVR_INTERFACE_NAME  "com.broadcom.sysmgmt_nb_bus_svr"
+#define SYSMGMT_NB_BUS_SVR_OBJECT_PATH     "/com/broadcom/sysmgmt_nb_bus_svr"
+
+
 #define OPENPLAT_MD_BUS_NAME             "com.broadcom.openplat_md"
 #define OPENPLAT_MD_STRPROTO_INTERFACE   "com.broadcom.openplat_md_strproto"
 #define OPENPLAT_MD_OBJECT_PATH          "/com/broadcom/openplat_md"
@@ -136,5 +139,9 @@
 #define APIBDK_SD_OBJECT_PATH          "neutron.apibdk"
 /*no interface concept in ubus context. anyway, define it here */
 #define APIBDK_SD_INTERFACE            "neutron.apibdk"
+
+#define AUDIO_MD_BUS_NAME               "com.broadcom.audio_md"
+#define AUDIO_MD_INTERFACE_NAME         "com.broadcom.audio_md"
+#define AUDIO_MD_OBJECT_PATH            "/com/broadcom/audio_md"
 
 #endif /* BDK_DBUS_H */

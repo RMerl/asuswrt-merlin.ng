@@ -1,0 +1,13 @@
+#include "96766REF1.dts"
+/ {
+	/* hack the ssc custom bit for this special ck0 swap 2 x8 mcb */
+	memory_controller {
+		memcfg = <(BP_DDR_TYPE_DDR4       | \
+			BP_DDR_SPEED_1600_22_22_22    | \
+			BP_DDR_TOTAL_SIZE_4096MB      | \
+			BP_DDR_DEVICE_WIDTH_8         | \
+			BP_DDR_TOTAL_WIDTH_16BIT      | \
+			BP_DDR_SSC_CONFIG_CUSTOM      | \
+			BP_DDR_CONFIG_DEBUG)>;
+	};
+};

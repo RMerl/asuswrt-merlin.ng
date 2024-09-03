@@ -14,13 +14,13 @@
 #if defined(CONFIG_BCMBCA_ITC_RPC) && !defined(CONFIG_BCMBCA_IKOS)
 #include "itc_rpc.h"
 #endif
+#include "bca_common.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 
-
 void spl_board_deinit(void);
 
-__weak void arch_cpu_deinit()
+__weak void arch_cpu_deinit(void)
 {
 
 }
@@ -33,29 +33,12 @@ __weak void spl_ddrinit_prepare(void)
 {
 }
 
-__weak void enable_memc_sram(void)
-{
-#if defined(CONFIG_BRCM_SPL_MEMC_SRAM)
-	/* enable 64KB sram in MEMC controller for MMU table */
-	MEMC->SRAM_REMAP_CTRL = (CONFIG_SYS_PAGETBL_BASE | 0x00000040);
-	MEMC->SRAM_REMAP_CTRL |= 0x2;
-	MEMC->SRAM_REMAP_CTRL;
-#endif
-}
-
-__weak void disable_memc_sram(void)
-{
-#if defined(CONFIG_BRCM_SPL_MEMC_SRAM)
-	/* disable 64KB sram in MEMC controller for MMU table */
-	MEMC->SRAM_REMAP_CTRL = 0;
-	MEMC->SRAM_REMAP_CTRL;
-#endif	
-}
-
 #if !CONFIG_IS_ENABLED(SYS_DCACHE_OFF)
 int reserve_mmu(void)
 {
-	enable_memc_sram();
+#ifdef CONFIG_BCMBCA_PGTBL_IN_MEMC_SRAM
+	bcmbca_enable_memc_sram(CONFIG_SYS_PAGETBL_BASE, CONFIG_SYS_PAGETBL_SIZE);
+#endif
 	gd->arch.tlb_addr = CONFIG_SYS_PAGETBL_BASE;
 	gd->arch.tlb_size = CONFIG_SYS_PAGETBL_SIZE;
 
@@ -63,8 +46,8 @@ int reserve_mmu(void)
 }
 #endif
 
-extern int sec_tk();
-extern void sec_tk_find_keystore();
+extern int sec_tk(void);
+extern void sec_tk_find_keystore(void);
 void board_init_f(ulong dummy)
 {
 #if defined(CONFIG_ARCH_CPU_INIT)
@@ -98,11 +81,9 @@ void spl_board_deinit(void)
 
 	arch_cpu_deinit();
 
-#if defined(CONFIG_BRCM_SPL_MEMC_SRAM)
-	/* disable 64KB sram in MEMC controller for MMU table */
-	MEMC->SRAM_REMAP_CTRL = 0;
-	MEMC->SRAM_REMAP_CTRL;
-#endif	
+#ifdef CONFIG_BCMBCA_PGTBL_IN_MEMC_SRAM
+	bcmbca_disable_memc_sram();
+#endif
 }
 
 void spl_board_init(void)

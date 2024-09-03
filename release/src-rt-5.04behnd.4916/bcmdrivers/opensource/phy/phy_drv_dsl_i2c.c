@@ -3,27 +3,21 @@
    All Rights Reserved
 
     <:label-BRCM:2015:DUAL/GPL:standard
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
 :>
 */
 
@@ -37,7 +31,6 @@
  */
 
 #include "phy_drv_dsl_serdes.h"
-#include "bcmsfp.h"
 #include "trxbus.h"
 
 DEFINE_MUTEX(i2c_mutex);
@@ -268,14 +261,10 @@ static int phy_i2c_get_speed_caps(phy_dev_t *phy_dev, int caps_type, uint32_t *c
     uint32_t speed_caps = 0;
     phy_i2c_priv_t *phy_i2c_priv = phy_dev->priv;
     long val = 0;
-    struct device *dev;
-
-    if ((dev = trxbus_get_dev(phy_dev->addr)) == NULL)
-        return -1;
 
     if (phy_i2c_priv->speed_caps == 0)
     {
-        sfp_mon_read(dev, bcmsfp_mon_trx_compliance, 0, &val);
+        trxbus_mon_read(phy_dev->addr, bcmsfp_mon_trx_compliance, 0, &val);
         if (val & BCM_SFF8472_CC_10GBASE_R)
             speed_caps |= PHY_CAP_10000|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL;
 

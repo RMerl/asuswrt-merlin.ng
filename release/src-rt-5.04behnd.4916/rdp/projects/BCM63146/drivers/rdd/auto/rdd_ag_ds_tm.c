@@ -3,27 +3,21 @@
    All Rights Reserved
 
     <:label-BRCM:2015:DUAL/GPL:standard
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
 :>
 */
 
@@ -36,130 +30,110 @@
 
 #include "rdd_ag_ds_tm.h"
 
-int rdd_ag_ds_tm_codel_drop_descriptor_get(rdd_codel_drop_descriptor_t *codel_drop_descriptor)
+int rdd_ag_ds_tm_mirroring_truncate_entry_get(uint32_t _entry, rdd_mirroring_truncate_entry_t *mirroring_truncate_entry)
 {
-    RDD_CODEL_DROP_DESCRIPTOR_MAX_SEQ_DROPS_READ_G(codel_drop_descriptor->max_seq_drops, RDD_DS_TM_CODEL_DROP_DESCRIPTOR_ADDRESS_ARR, 0);
-    RDD_CODEL_DROP_DESCRIPTOR_FLUSH_TASK_WAKEUP_VALUE_READ_G(codel_drop_descriptor->flush_task_wakeup_value, RDD_DS_TM_CODEL_DROP_DESCRIPTOR_ADDRESS_ARR, 0);
-    RDD_CODEL_DROP_DESCRIPTOR_FLUSH_CFG_PTR_READ_G(codel_drop_descriptor->flush_cfg_ptr, RDD_DS_TM_CODEL_DROP_DESCRIPTOR_ADDRESS_ARR, 0);
-    RDD_CODEL_DROP_DESCRIPTOR_FLUSH_ENABLE_PTR_READ_G(codel_drop_descriptor->flush_enable_ptr, RDD_DS_TM_CODEL_DROP_DESCRIPTOR_ADDRESS_ARR, 0);
-    RDD_CODEL_DROP_DESCRIPTOR_FLUSH_PACKET_COUNTER_READ_G(codel_drop_descriptor->flush_packet_counter, RDD_DS_TM_CODEL_DROP_DESCRIPTOR_ADDRESS_ARR, 0);
-    RDD_CODEL_DROP_DESCRIPTOR_FLUSH_ENABLE_READ_G(codel_drop_descriptor->flush_enable, RDD_DS_TM_CODEL_DROP_DESCRIPTOR_ADDRESS_ARR, 0);
-    RDD_CODEL_DROP_DESCRIPTOR_SCRATCHPAD_1_READ_G(codel_drop_descriptor->scratchpad_1, RDD_DS_TM_CODEL_DROP_DESCRIPTOR_ADDRESS_ARR, 0);
-    RDD_CODEL_DROP_DESCRIPTOR_SCRATCHPAD_2_READ_G(codel_drop_descriptor->scratchpad_2, RDD_DS_TM_CODEL_DROP_DESCRIPTOR_ADDRESS_ARR, 0);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_ds_tm_codel_drop_descriptor_set(rdd_codel_drop_descriptor_t *codel_drop_descriptor)
-{
-    RDD_CODEL_DROP_DESCRIPTOR_MAX_SEQ_DROPS_WRITE_G(codel_drop_descriptor->max_seq_drops, RDD_DS_TM_CODEL_DROP_DESCRIPTOR_ADDRESS_ARR, 0);
-    RDD_CODEL_DROP_DESCRIPTOR_FLUSH_TASK_WAKEUP_VALUE_WRITE_G(codel_drop_descriptor->flush_task_wakeup_value, RDD_DS_TM_CODEL_DROP_DESCRIPTOR_ADDRESS_ARR, 0);
-    RDD_CODEL_DROP_DESCRIPTOR_FLUSH_CFG_PTR_WRITE_G(codel_drop_descriptor->flush_cfg_ptr, RDD_DS_TM_CODEL_DROP_DESCRIPTOR_ADDRESS_ARR, 0);
-    RDD_CODEL_DROP_DESCRIPTOR_FLUSH_ENABLE_PTR_WRITE_G(codel_drop_descriptor->flush_enable_ptr, RDD_DS_TM_CODEL_DROP_DESCRIPTOR_ADDRESS_ARR, 0);
-    RDD_CODEL_DROP_DESCRIPTOR_FLUSH_PACKET_COUNTER_WRITE_G(codel_drop_descriptor->flush_packet_counter, RDD_DS_TM_CODEL_DROP_DESCRIPTOR_ADDRESS_ARR, 0);
-    RDD_CODEL_DROP_DESCRIPTOR_FLUSH_ENABLE_WRITE_G(codel_drop_descriptor->flush_enable, RDD_DS_TM_CODEL_DROP_DESCRIPTOR_ADDRESS_ARR, 0);
-    RDD_CODEL_DROP_DESCRIPTOR_SCRATCHPAD_1_WRITE_G(codel_drop_descriptor->scratchpad_1, RDD_DS_TM_CODEL_DROP_DESCRIPTOR_ADDRESS_ARR, 0);
-    RDD_CODEL_DROP_DESCRIPTOR_SCRATCHPAD_2_WRITE_G(codel_drop_descriptor->scratchpad_2, RDD_DS_TM_CODEL_DROP_DESCRIPTOR_ADDRESS_ARR, 0);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_ds_tm_codel_drop_descriptor_get_core(rdd_codel_drop_descriptor_t *codel_drop_descriptor, int core_id)
-{
-    RDD_CODEL_DROP_DESCRIPTOR_MAX_SEQ_DROPS_READ_CORE(codel_drop_descriptor->max_seq_drops, RDD_DS_TM_CODEL_DROP_DESCRIPTOR_ADDRESS_ARR, 0, core_id);
-    RDD_CODEL_DROP_DESCRIPTOR_FLUSH_TASK_WAKEUP_VALUE_READ_CORE(codel_drop_descriptor->flush_task_wakeup_value, RDD_DS_TM_CODEL_DROP_DESCRIPTOR_ADDRESS_ARR, 0, core_id);
-    RDD_CODEL_DROP_DESCRIPTOR_FLUSH_CFG_PTR_READ_CORE(codel_drop_descriptor->flush_cfg_ptr, RDD_DS_TM_CODEL_DROP_DESCRIPTOR_ADDRESS_ARR, 0, core_id);
-    RDD_CODEL_DROP_DESCRIPTOR_FLUSH_ENABLE_PTR_READ_CORE(codel_drop_descriptor->flush_enable_ptr, RDD_DS_TM_CODEL_DROP_DESCRIPTOR_ADDRESS_ARR, 0, core_id);
-    RDD_CODEL_DROP_DESCRIPTOR_FLUSH_PACKET_COUNTER_READ_CORE(codel_drop_descriptor->flush_packet_counter, RDD_DS_TM_CODEL_DROP_DESCRIPTOR_ADDRESS_ARR, 0, core_id);
-    RDD_CODEL_DROP_DESCRIPTOR_FLUSH_ENABLE_READ_CORE(codel_drop_descriptor->flush_enable, RDD_DS_TM_CODEL_DROP_DESCRIPTOR_ADDRESS_ARR, 0, core_id);
-    RDD_CODEL_DROP_DESCRIPTOR_SCRATCHPAD_1_READ_CORE(codel_drop_descriptor->scratchpad_1, RDD_DS_TM_CODEL_DROP_DESCRIPTOR_ADDRESS_ARR, 0, core_id);
-    RDD_CODEL_DROP_DESCRIPTOR_SCRATCHPAD_2_READ_CORE(codel_drop_descriptor->scratchpad_2, RDD_DS_TM_CODEL_DROP_DESCRIPTOR_ADDRESS_ARR, 0, core_id);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_ds_tm_codel_drop_descriptor_set_core(rdd_codel_drop_descriptor_t *codel_drop_descriptor, int core_id)
-{
-    RDD_CODEL_DROP_DESCRIPTOR_MAX_SEQ_DROPS_WRITE_CORE(codel_drop_descriptor->max_seq_drops, RDD_DS_TM_CODEL_DROP_DESCRIPTOR_ADDRESS_ARR, 0, core_id);
-    RDD_CODEL_DROP_DESCRIPTOR_FLUSH_TASK_WAKEUP_VALUE_WRITE_CORE(codel_drop_descriptor->flush_task_wakeup_value, RDD_DS_TM_CODEL_DROP_DESCRIPTOR_ADDRESS_ARR, 0, core_id);
-    RDD_CODEL_DROP_DESCRIPTOR_FLUSH_CFG_PTR_WRITE_CORE(codel_drop_descriptor->flush_cfg_ptr, RDD_DS_TM_CODEL_DROP_DESCRIPTOR_ADDRESS_ARR, 0, core_id);
-    RDD_CODEL_DROP_DESCRIPTOR_FLUSH_ENABLE_PTR_WRITE_CORE(codel_drop_descriptor->flush_enable_ptr, RDD_DS_TM_CODEL_DROP_DESCRIPTOR_ADDRESS_ARR, 0, core_id);
-    RDD_CODEL_DROP_DESCRIPTOR_FLUSH_PACKET_COUNTER_WRITE_CORE(codel_drop_descriptor->flush_packet_counter, RDD_DS_TM_CODEL_DROP_DESCRIPTOR_ADDRESS_ARR, 0, core_id);
-    RDD_CODEL_DROP_DESCRIPTOR_FLUSH_ENABLE_WRITE_CORE(codel_drop_descriptor->flush_enable, RDD_DS_TM_CODEL_DROP_DESCRIPTOR_ADDRESS_ARR, 0, core_id);
-    RDD_CODEL_DROP_DESCRIPTOR_SCRATCHPAD_1_WRITE_CORE(codel_drop_descriptor->scratchpad_1, RDD_DS_TM_CODEL_DROP_DESCRIPTOR_ADDRESS_ARR, 0, core_id);
-    RDD_CODEL_DROP_DESCRIPTOR_SCRATCHPAD_2_WRITE_CORE(codel_drop_descriptor->scratchpad_2, RDD_DS_TM_CODEL_DROP_DESCRIPTOR_ADDRESS_ARR, 0, core_id);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_ds_tm_scheduling_queue_descriptor_get(uint32_t _entry, rdd_scheduling_queue_descriptor_t *scheduling_queue_descriptor)
-{
-    if(!scheduling_queue_descriptor || _entry >= RDD_DS_TM_SCHEDULING_QUEUE_TABLE_SIZE)
+    if(!mirroring_truncate_entry || _entry >= RDD_ETH_TM_TX_TRUNCATE_MIRRORING_TABLE_SIZE)
          return BDMF_ERR_PARM;
 
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_BBH_QUEUE_INDEX_READ_G(scheduling_queue_descriptor->bbh_queue_index, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry);
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_BLOCK_TYPE_READ_G(scheduling_queue_descriptor->block_type, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry);
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_CODEL_ENABLE_READ_G(scheduling_queue_descriptor->codel_enable, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry);
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_PI2_ENABLE_READ_G(scheduling_queue_descriptor->pi2_enable, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry);
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_AQM_ENABLE_READ_G(scheduling_queue_descriptor->aqm_enable, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry);
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_LAQM_ENABLE_READ_G(scheduling_queue_descriptor->laqm_enable, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry);
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_CODEL_DROPPING_READ_G(scheduling_queue_descriptor->codel_dropping, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry);
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_SCHEDULER_INDEX_READ_G(scheduling_queue_descriptor->scheduler_index, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry);
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_QUEUE_BIT_MASK_READ_G(scheduling_queue_descriptor->queue_bit_mask, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry);
+    RDD_MIRRORING_TRUNCATE_ENTRY_TRUNCATE_OFFSET_READ_G(mirroring_truncate_entry->truncate_offset, RDD_ETH_TM_TX_TRUNCATE_MIRRORING_TABLE_ADDRESS_ARR, _entry);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_ds_tm_scheduling_queue_descriptor_set(uint32_t _entry, rdd_scheduling_queue_descriptor_t *scheduling_queue_descriptor)
+int rdd_ag_ds_tm_mirroring_truncate_entry_set(uint32_t _entry, rdd_mirroring_truncate_entry_t *mirroring_truncate_entry)
 {
-    if(!scheduling_queue_descriptor || _entry >= RDD_DS_TM_SCHEDULING_QUEUE_TABLE_SIZE || scheduling_queue_descriptor->bbh_queue_index >= 64 || scheduling_queue_descriptor->scheduler_index >= 128)
-          return BDMF_ERR_PARM;
-
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_BBH_QUEUE_INDEX_WRITE_G(scheduling_queue_descriptor->bbh_queue_index, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry);
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_BLOCK_TYPE_WRITE_G(scheduling_queue_descriptor->block_type, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry);
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_CODEL_ENABLE_WRITE_G(scheduling_queue_descriptor->codel_enable, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry);
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_PI2_ENABLE_WRITE_G(scheduling_queue_descriptor->pi2_enable, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry);
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_AQM_ENABLE_WRITE_G(scheduling_queue_descriptor->aqm_enable, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry);
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_LAQM_ENABLE_WRITE_G(scheduling_queue_descriptor->laqm_enable, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry);
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_CODEL_DROPPING_WRITE_G(scheduling_queue_descriptor->codel_dropping, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry);
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_SCHEDULER_INDEX_WRITE_G(scheduling_queue_descriptor->scheduler_index, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry);
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_QUEUE_BIT_MASK_WRITE_G(scheduling_queue_descriptor->queue_bit_mask, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_ds_tm_scheduling_queue_descriptor_get_core(uint32_t _entry, rdd_scheduling_queue_descriptor_t *scheduling_queue_descriptor, int core_id)
-{
-    if(!scheduling_queue_descriptor || _entry >= RDD_DS_TM_SCHEDULING_QUEUE_TABLE_SIZE)
+    if(!mirroring_truncate_entry || _entry >= RDD_ETH_TM_TX_TRUNCATE_MIRRORING_TABLE_SIZE)
          return BDMF_ERR_PARM;
 
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_BBH_QUEUE_INDEX_READ_CORE(scheduling_queue_descriptor->bbh_queue_index, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry, core_id);
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_BLOCK_TYPE_READ_CORE(scheduling_queue_descriptor->block_type, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry, core_id);
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_CODEL_ENABLE_READ_CORE(scheduling_queue_descriptor->codel_enable, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry, core_id);
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_PI2_ENABLE_READ_CORE(scheduling_queue_descriptor->pi2_enable, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry, core_id);
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_AQM_ENABLE_READ_CORE(scheduling_queue_descriptor->aqm_enable, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry, core_id);
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_LAQM_ENABLE_READ_CORE(scheduling_queue_descriptor->laqm_enable, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry, core_id);
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_CODEL_DROPPING_READ_CORE(scheduling_queue_descriptor->codel_dropping, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry, core_id);
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_SCHEDULER_INDEX_READ_CORE(scheduling_queue_descriptor->scheduler_index, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry, core_id);
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_QUEUE_BIT_MASK_READ_CORE(scheduling_queue_descriptor->queue_bit_mask, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_MIRRORING_TRUNCATE_ENTRY_TRUNCATE_OFFSET_WRITE_G(mirroring_truncate_entry->truncate_offset, RDD_ETH_TM_TX_TRUNCATE_MIRRORING_TABLE_ADDRESS_ARR, _entry);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_ds_tm_scheduling_queue_descriptor_set_core(uint32_t _entry, rdd_scheduling_queue_descriptor_t *scheduling_queue_descriptor, int core_id)
+int rdd_ag_ds_tm_mirroring_truncate_entry_get_core(uint32_t _entry, rdd_mirroring_truncate_entry_t *mirroring_truncate_entry, int core_id)
 {
-    if(!scheduling_queue_descriptor || _entry >= RDD_DS_TM_SCHEDULING_QUEUE_TABLE_SIZE || scheduling_queue_descriptor->bbh_queue_index >= 64 || scheduling_queue_descriptor->scheduler_index >= 128)
+    if(!mirroring_truncate_entry || _entry >= RDD_ETH_TM_TX_TRUNCATE_MIRRORING_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_MIRRORING_TRUNCATE_ENTRY_TRUNCATE_OFFSET_READ_CORE(mirroring_truncate_entry->truncate_offset, RDD_ETH_TM_TX_TRUNCATE_MIRRORING_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_mirroring_truncate_entry_set_core(uint32_t _entry, rdd_mirroring_truncate_entry_t *mirroring_truncate_entry, int core_id)
+{
+    if(!mirroring_truncate_entry || _entry >= RDD_ETH_TM_TX_TRUNCATE_MIRRORING_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_MIRRORING_TRUNCATE_ENTRY_TRUNCATE_OFFSET_WRITE_CORE(mirroring_truncate_entry->truncate_offset, RDD_ETH_TM_TX_TRUNCATE_MIRRORING_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_aqm_enable_table_set(uint32_t _entry, uint32_t bits)
+{
+    if(_entry >= RDD_AQM_ENABLE_TABLE_SIZE)
           return BDMF_ERR_PARM;
 
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_BBH_QUEUE_INDEX_WRITE_CORE(scheduling_queue_descriptor->bbh_queue_index, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry, core_id);
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_BLOCK_TYPE_WRITE_CORE(scheduling_queue_descriptor->block_type, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry, core_id);
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_CODEL_ENABLE_WRITE_CORE(scheduling_queue_descriptor->codel_enable, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry, core_id);
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_PI2_ENABLE_WRITE_CORE(scheduling_queue_descriptor->pi2_enable, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry, core_id);
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_AQM_ENABLE_WRITE_CORE(scheduling_queue_descriptor->aqm_enable, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry, core_id);
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_LAQM_ENABLE_WRITE_CORE(scheduling_queue_descriptor->laqm_enable, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry, core_id);
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_CODEL_DROPPING_WRITE_CORE(scheduling_queue_descriptor->codel_dropping, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry, core_id);
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_SCHEDULER_INDEX_WRITE_CORE(scheduling_queue_descriptor->scheduler_index, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry, core_id);
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_QUEUE_BIT_MASK_WRITE_CORE(scheduling_queue_descriptor->queue_bit_mask, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_BYTES_4_BITS_WRITE_G(bits, RDD_AQM_ENABLE_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_aqm_enable_table_set_core(uint32_t _entry, uint32_t bits, int core_id)
+{
+    if(_entry >= RDD_AQM_ENABLE_TABLE_SIZE)
+          return BDMF_ERR_PARM;
+
+    RDD_BYTES_4_BITS_WRITE_CORE(bits, RDD_AQM_ENABLE_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_aqm_enable_table_get(uint32_t _entry, uint32_t *bits)
+{
+    if(_entry >= RDD_AQM_ENABLE_TABLE_SIZE)
+          return BDMF_ERR_PARM;
+
+    RDD_BYTES_4_BITS_READ_G(*bits, RDD_AQM_ENABLE_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_aqm_enable_table_get_core(uint32_t _entry, uint32_t *bits, int core_id)
+{
+    if(_entry >= RDD_AQM_ENABLE_TABLE_SIZE)
+          return BDMF_ERR_PARM;
+
+    RDD_BYTES_4_BITS_READ_CORE(*bits, RDD_AQM_ENABLE_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_aqm_num_queues_set(uint16_t bits)
+{
+    RDD_BYTES_2_BITS_WRITE_G(bits, RDD_AQM_NUM_QUEUES_ADDRESS_ARR, 0);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_aqm_num_queues_set_core(uint16_t bits, int core_id)
+{
+    RDD_BYTES_2_BITS_WRITE_CORE(bits, RDD_AQM_NUM_QUEUES_ADDRESS_ARR, 0, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_aqm_num_queues_get(uint16_t *bits)
+{
+    RDD_BYTES_2_BITS_READ_G(*bits, RDD_AQM_NUM_QUEUES_ADDRESS_ARR, 0);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_aqm_num_queues_get_core(uint16_t *bits, int core_id)
+{
+    RDD_BYTES_2_BITS_READ_CORE(*bits, RDD_AQM_NUM_QUEUES_ADDRESS_ARR, 0, core_id);
 
     return BDMF_ERR_OK;
 }
@@ -612,6 +586,294 @@ int rdd_ag_ds_tm_flush_cfg_fw_table_hw_flush_en_get_core(bdmf_boolean *hw_flush_
     return BDMF_ERR_OK;
 }
 
+int rdd_ag_ds_tm_scheduler_table_set(uint32_t _entry, bdmf_boolean is_positive_budget, uint8_t sir_dwrr_offset, uint8_t pir_dwrr_offset, bdmf_boolean rate_limit_enable, uint8_t rate_limiter_index, uint8_t last_served_block, uint16_t queue_offset, uint8_t bbh_queue_desc_id, bdmf_boolean aqm_stats_enable, uint32_t status_bit_vector, uint32_t slot_budget_bit_vector_0, uint32_t slot_budget_bit_vector_1, uint32_t secondary_scheduler_vector)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULER_TABLE_SIZE || sir_dwrr_offset >= 8 || pir_dwrr_offset >= 8 || rate_limiter_index >= 128 || last_served_block >= 128 || queue_offset >= 512 || bbh_queue_desc_id >= 64)
+          return BDMF_ERR_PARM;
+
+    RDD_SCHEDULER_DESCRIPTOR_IS_POSITIVE_BUDGET_WRITE_G(is_positive_budget, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SCHEDULER_DESCRIPTOR_SIR_DWRR_OFFSET_WRITE_G(sir_dwrr_offset, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SCHEDULER_DESCRIPTOR_PIR_DWRR_OFFSET_WRITE_G(pir_dwrr_offset, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SCHEDULER_DESCRIPTOR_RATE_LIMIT_ENABLE_WRITE_G(rate_limit_enable, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SCHEDULER_DESCRIPTOR_RATE_LIMITER_INDEX_WRITE_G(rate_limiter_index, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SCHEDULER_DESCRIPTOR_LAST_SERVED_BLOCK_WRITE_G(last_served_block, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SCHEDULER_DESCRIPTOR_QUEUE_OFFSET_WRITE_G(queue_offset, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SCHEDULER_DESCRIPTOR_BBH_QUEUE_DESC_ID_WRITE_G(bbh_queue_desc_id, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SCHEDULER_DESCRIPTOR_AQM_STATS_ENABLE_WRITE_G(aqm_stats_enable, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SCHEDULER_DESCRIPTOR_STATUS_BIT_VECTOR_WRITE_G(status_bit_vector, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SCHEDULER_DESCRIPTOR_SLOT_BUDGET_BIT_VECTOR_0_WRITE_G(slot_budget_bit_vector_0, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SCHEDULER_DESCRIPTOR_SLOT_BUDGET_BIT_VECTOR_1_WRITE_G(slot_budget_bit_vector_1, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SCHEDULER_DESCRIPTOR_SECONDARY_SCHEDULER_VECTOR_WRITE_G(secondary_scheduler_vector, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduler_table_set_core(uint32_t _entry, bdmf_boolean is_positive_budget, uint8_t sir_dwrr_offset, uint8_t pir_dwrr_offset, bdmf_boolean rate_limit_enable, uint8_t rate_limiter_index, uint8_t last_served_block, uint16_t queue_offset, uint8_t bbh_queue_desc_id, bdmf_boolean aqm_stats_enable, uint32_t status_bit_vector, uint32_t slot_budget_bit_vector_0, uint32_t slot_budget_bit_vector_1, uint32_t secondary_scheduler_vector, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULER_TABLE_SIZE || sir_dwrr_offset >= 8 || pir_dwrr_offset >= 8 || rate_limiter_index >= 128 || last_served_block >= 128 || queue_offset >= 512 || bbh_queue_desc_id >= 64)
+          return BDMF_ERR_PARM;
+
+    RDD_SCHEDULER_DESCRIPTOR_IS_POSITIVE_BUDGET_WRITE_CORE(is_positive_budget, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SCHEDULER_DESCRIPTOR_SIR_DWRR_OFFSET_WRITE_CORE(sir_dwrr_offset, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SCHEDULER_DESCRIPTOR_PIR_DWRR_OFFSET_WRITE_CORE(pir_dwrr_offset, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SCHEDULER_DESCRIPTOR_RATE_LIMIT_ENABLE_WRITE_CORE(rate_limit_enable, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SCHEDULER_DESCRIPTOR_RATE_LIMITER_INDEX_WRITE_CORE(rate_limiter_index, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SCHEDULER_DESCRIPTOR_LAST_SERVED_BLOCK_WRITE_CORE(last_served_block, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SCHEDULER_DESCRIPTOR_QUEUE_OFFSET_WRITE_CORE(queue_offset, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SCHEDULER_DESCRIPTOR_BBH_QUEUE_DESC_ID_WRITE_CORE(bbh_queue_desc_id, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SCHEDULER_DESCRIPTOR_AQM_STATS_ENABLE_WRITE_CORE(aqm_stats_enable, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SCHEDULER_DESCRIPTOR_STATUS_BIT_VECTOR_WRITE_CORE(status_bit_vector, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SCHEDULER_DESCRIPTOR_SLOT_BUDGET_BIT_VECTOR_0_WRITE_CORE(slot_budget_bit_vector_0, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SCHEDULER_DESCRIPTOR_SLOT_BUDGET_BIT_VECTOR_1_WRITE_CORE(slot_budget_bit_vector_1, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SCHEDULER_DESCRIPTOR_SECONDARY_SCHEDULER_VECTOR_WRITE_CORE(secondary_scheduler_vector, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduler_table_get(uint32_t _entry, bdmf_boolean *is_positive_budget, uint8_t *sir_dwrr_offset, uint8_t *pir_dwrr_offset, bdmf_boolean *rate_limit_enable, uint8_t *rate_limiter_index, uint8_t *last_served_block, uint16_t *queue_offset, uint8_t *bbh_queue_desc_id, bdmf_boolean *aqm_stats_enable, uint32_t *status_bit_vector, uint32_t *slot_budget_bit_vector_0, uint32_t *slot_budget_bit_vector_1, uint32_t *secondary_scheduler_vector)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULER_TABLE_SIZE)
+          return BDMF_ERR_PARM;
+
+    RDD_SCHEDULER_DESCRIPTOR_IS_POSITIVE_BUDGET_READ_G(*is_positive_budget, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SCHEDULER_DESCRIPTOR_SIR_DWRR_OFFSET_READ_G(*sir_dwrr_offset, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SCHEDULER_DESCRIPTOR_PIR_DWRR_OFFSET_READ_G(*pir_dwrr_offset, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SCHEDULER_DESCRIPTOR_RATE_LIMIT_ENABLE_READ_G(*rate_limit_enable, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SCHEDULER_DESCRIPTOR_RATE_LIMITER_INDEX_READ_G(*rate_limiter_index, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SCHEDULER_DESCRIPTOR_LAST_SERVED_BLOCK_READ_G(*last_served_block, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SCHEDULER_DESCRIPTOR_QUEUE_OFFSET_READ_G(*queue_offset, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SCHEDULER_DESCRIPTOR_BBH_QUEUE_DESC_ID_READ_G(*bbh_queue_desc_id, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SCHEDULER_DESCRIPTOR_AQM_STATS_ENABLE_READ_G(*aqm_stats_enable, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SCHEDULER_DESCRIPTOR_STATUS_BIT_VECTOR_READ_G(*status_bit_vector, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SCHEDULER_DESCRIPTOR_SLOT_BUDGET_BIT_VECTOR_0_READ_G(*slot_budget_bit_vector_0, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SCHEDULER_DESCRIPTOR_SLOT_BUDGET_BIT_VECTOR_1_READ_G(*slot_budget_bit_vector_1, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SCHEDULER_DESCRIPTOR_SECONDARY_SCHEDULER_VECTOR_READ_G(*secondary_scheduler_vector, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduler_table_get_core(uint32_t _entry, bdmf_boolean *is_positive_budget, uint8_t *sir_dwrr_offset, uint8_t *pir_dwrr_offset, bdmf_boolean *rate_limit_enable, uint8_t *rate_limiter_index, uint8_t *last_served_block, uint16_t *queue_offset, uint8_t *bbh_queue_desc_id, bdmf_boolean *aqm_stats_enable, uint32_t *status_bit_vector, uint32_t *slot_budget_bit_vector_0, uint32_t *slot_budget_bit_vector_1, uint32_t *secondary_scheduler_vector, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULER_TABLE_SIZE)
+          return BDMF_ERR_PARM;
+
+    RDD_SCHEDULER_DESCRIPTOR_IS_POSITIVE_BUDGET_READ_CORE(*is_positive_budget, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SCHEDULER_DESCRIPTOR_SIR_DWRR_OFFSET_READ_CORE(*sir_dwrr_offset, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SCHEDULER_DESCRIPTOR_PIR_DWRR_OFFSET_READ_CORE(*pir_dwrr_offset, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SCHEDULER_DESCRIPTOR_RATE_LIMIT_ENABLE_READ_CORE(*rate_limit_enable, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SCHEDULER_DESCRIPTOR_RATE_LIMITER_INDEX_READ_CORE(*rate_limiter_index, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SCHEDULER_DESCRIPTOR_LAST_SERVED_BLOCK_READ_CORE(*last_served_block, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SCHEDULER_DESCRIPTOR_QUEUE_OFFSET_READ_CORE(*queue_offset, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SCHEDULER_DESCRIPTOR_BBH_QUEUE_DESC_ID_READ_CORE(*bbh_queue_desc_id, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SCHEDULER_DESCRIPTOR_AQM_STATS_ENABLE_READ_CORE(*aqm_stats_enable, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SCHEDULER_DESCRIPTOR_STATUS_BIT_VECTOR_READ_CORE(*status_bit_vector, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SCHEDULER_DESCRIPTOR_SLOT_BUDGET_BIT_VECTOR_0_READ_CORE(*slot_budget_bit_vector_0, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SCHEDULER_DESCRIPTOR_SLOT_BUDGET_BIT_VECTOR_1_READ_CORE(*slot_budget_bit_vector_1, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SCHEDULER_DESCRIPTOR_SECONDARY_SCHEDULER_VECTOR_READ_CORE(*secondary_scheduler_vector, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduler_table_sir_dwrr_offset_set(uint32_t _entry, uint8_t sir_dwrr_offset)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULER_TABLE_SIZE || sir_dwrr_offset >= 8)
+          return BDMF_ERR_PARM;
+
+    RDD_SCHEDULER_DESCRIPTOR_SIR_DWRR_OFFSET_WRITE_G(sir_dwrr_offset, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduler_table_sir_dwrr_offset_set_core(uint32_t _entry, uint8_t sir_dwrr_offset, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULER_TABLE_SIZE || sir_dwrr_offset >= 8)
+          return BDMF_ERR_PARM;
+
+    RDD_SCHEDULER_DESCRIPTOR_SIR_DWRR_OFFSET_WRITE_CORE(sir_dwrr_offset, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduler_table_sir_dwrr_offset_get(uint32_t _entry, uint8_t *sir_dwrr_offset)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULER_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SCHEDULER_DESCRIPTOR_SIR_DWRR_OFFSET_READ_G(*sir_dwrr_offset, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduler_table_sir_dwrr_offset_get_core(uint32_t _entry, uint8_t *sir_dwrr_offset, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULER_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SCHEDULER_DESCRIPTOR_SIR_DWRR_OFFSET_READ_CORE(*sir_dwrr_offset, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduler_table_pir_dwrr_offset_set(uint32_t _entry, uint8_t pir_dwrr_offset)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULER_TABLE_SIZE || pir_dwrr_offset >= 8)
+          return BDMF_ERR_PARM;
+
+    RDD_SCHEDULER_DESCRIPTOR_PIR_DWRR_OFFSET_WRITE_G(pir_dwrr_offset, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduler_table_pir_dwrr_offset_set_core(uint32_t _entry, uint8_t pir_dwrr_offset, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULER_TABLE_SIZE || pir_dwrr_offset >= 8)
+          return BDMF_ERR_PARM;
+
+    RDD_SCHEDULER_DESCRIPTOR_PIR_DWRR_OFFSET_WRITE_CORE(pir_dwrr_offset, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduler_table_pir_dwrr_offset_get(uint32_t _entry, uint8_t *pir_dwrr_offset)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULER_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SCHEDULER_DESCRIPTOR_PIR_DWRR_OFFSET_READ_G(*pir_dwrr_offset, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduler_table_pir_dwrr_offset_get_core(uint32_t _entry, uint8_t *pir_dwrr_offset, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULER_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SCHEDULER_DESCRIPTOR_PIR_DWRR_OFFSET_READ_CORE(*pir_dwrr_offset, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduler_table_queue_offset_set(uint32_t _entry, uint16_t queue_offset)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULER_TABLE_SIZE || queue_offset >= 512)
+          return BDMF_ERR_PARM;
+
+    RDD_SCHEDULER_DESCRIPTOR_QUEUE_OFFSET_WRITE_G(queue_offset, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduler_table_queue_offset_set_core(uint32_t _entry, uint16_t queue_offset, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULER_TABLE_SIZE || queue_offset >= 512)
+          return BDMF_ERR_PARM;
+
+    RDD_SCHEDULER_DESCRIPTOR_QUEUE_OFFSET_WRITE_CORE(queue_offset, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduler_table_queue_offset_get(uint32_t _entry, uint16_t *queue_offset)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULER_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SCHEDULER_DESCRIPTOR_QUEUE_OFFSET_READ_G(*queue_offset, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduler_table_queue_offset_get_core(uint32_t _entry, uint16_t *queue_offset, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULER_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SCHEDULER_DESCRIPTOR_QUEUE_OFFSET_READ_CORE(*queue_offset, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduler_table_slot_budget_bit_vector_0_set(uint32_t _entry, uint32_t slot_budget_bit_vector_0)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULER_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SCHEDULER_DESCRIPTOR_SLOT_BUDGET_BIT_VECTOR_0_WRITE_G(slot_budget_bit_vector_0, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduler_table_slot_budget_bit_vector_0_set_core(uint32_t _entry, uint32_t slot_budget_bit_vector_0, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULER_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SCHEDULER_DESCRIPTOR_SLOT_BUDGET_BIT_VECTOR_0_WRITE_CORE(slot_budget_bit_vector_0, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduler_table_slot_budget_bit_vector_0_get(uint32_t _entry, uint32_t *slot_budget_bit_vector_0)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULER_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SCHEDULER_DESCRIPTOR_SLOT_BUDGET_BIT_VECTOR_0_READ_G(*slot_budget_bit_vector_0, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduler_table_slot_budget_bit_vector_0_get_core(uint32_t _entry, uint32_t *slot_budget_bit_vector_0, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULER_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SCHEDULER_DESCRIPTOR_SLOT_BUDGET_BIT_VECTOR_0_READ_CORE(*slot_budget_bit_vector_0, RDD_DS_TM_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduling_queue_table_bbh_queue_index_set(uint32_t _entry, uint8_t bbh_queue_index)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULING_QUEUE_TABLE_SIZE || bbh_queue_index >= 64)
+          return BDMF_ERR_PARM;
+
+    RDD_SCHEDULING_QUEUE_DESCRIPTOR_BBH_QUEUE_INDEX_WRITE_G(bbh_queue_index, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduling_queue_table_bbh_queue_index_set_core(uint32_t _entry, uint8_t bbh_queue_index, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULING_QUEUE_TABLE_SIZE || bbh_queue_index >= 64)
+          return BDMF_ERR_PARM;
+
+    RDD_SCHEDULING_QUEUE_DESCRIPTOR_BBH_QUEUE_INDEX_WRITE_CORE(bbh_queue_index, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduling_queue_table_bbh_queue_index_get(uint32_t _entry, uint8_t *bbh_queue_index)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULING_QUEUE_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SCHEDULING_QUEUE_DESCRIPTOR_BBH_QUEUE_INDEX_READ_G(*bbh_queue_index, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduling_queue_table_bbh_queue_index_get_core(uint32_t _entry, uint8_t *bbh_queue_index, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULING_QUEUE_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SCHEDULING_QUEUE_DESCRIPTOR_BBH_QUEUE_INDEX_READ_CORE(*bbh_queue_index, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
 int rdd_ag_ds_tm_scheduling_queue_table_enable_set(uint32_t _entry, bdmf_boolean enable)
 {
     if(_entry >= RDD_DS_TM_SCHEDULING_QUEUE_TABLE_SIZE)
@@ -892,42 +1154,162 @@ int rdd_ag_ds_tm_scheduling_queue_table_codel_dropping_get_core(uint32_t _entry,
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_ds_tm_scheduling_queue_table_rate_limiter_index_set(uint32_t _entry, uint8_t rate_limiter_index)
+int rdd_ag_ds_tm_scheduling_queue_table_scheduler_index_set(uint32_t _entry, uint8_t scheduler_index)
 {
-    if(_entry >= RDD_DS_TM_SCHEDULING_QUEUE_TABLE_SIZE)
-         return BDMF_ERR_PARM;
+    if(_entry >= RDD_DS_TM_SCHEDULING_QUEUE_TABLE_SIZE || scheduler_index >= 128)
+          return BDMF_ERR_PARM;
 
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_RATE_LIMITER_INDEX_WRITE_G(rate_limiter_index, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry);
+    RDD_SCHEDULING_QUEUE_DESCRIPTOR_SCHEDULER_INDEX_WRITE_G(scheduler_index, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_ds_tm_scheduling_queue_table_rate_limiter_index_set_core(uint32_t _entry, uint8_t rate_limiter_index, int core_id)
+int rdd_ag_ds_tm_scheduling_queue_table_scheduler_index_set_core(uint32_t _entry, uint8_t scheduler_index, int core_id)
 {
-    if(_entry >= RDD_DS_TM_SCHEDULING_QUEUE_TABLE_SIZE)
-         return BDMF_ERR_PARM;
+    if(_entry >= RDD_DS_TM_SCHEDULING_QUEUE_TABLE_SIZE || scheduler_index >= 128)
+          return BDMF_ERR_PARM;
 
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_RATE_LIMITER_INDEX_WRITE_CORE(rate_limiter_index, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SCHEDULING_QUEUE_DESCRIPTOR_SCHEDULER_INDEX_WRITE_CORE(scheduler_index, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry, core_id);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_ds_tm_scheduling_queue_table_rate_limiter_index_get(uint32_t _entry, uint8_t *rate_limiter_index)
+int rdd_ag_ds_tm_scheduling_queue_table_scheduler_index_get(uint32_t _entry, uint8_t *scheduler_index)
 {
     if(_entry >= RDD_DS_TM_SCHEDULING_QUEUE_TABLE_SIZE)
          return BDMF_ERR_PARM;
 
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_RATE_LIMITER_INDEX_READ_G(*rate_limiter_index, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry);
+    RDD_SCHEDULING_QUEUE_DESCRIPTOR_SCHEDULER_INDEX_READ_G(*scheduler_index, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_ds_tm_scheduling_queue_table_rate_limiter_index_get_core(uint32_t _entry, uint8_t *rate_limiter_index, int core_id)
+int rdd_ag_ds_tm_scheduling_queue_table_scheduler_index_get_core(uint32_t _entry, uint8_t *scheduler_index, int core_id)
 {
     if(_entry >= RDD_DS_TM_SCHEDULING_QUEUE_TABLE_SIZE)
          return BDMF_ERR_PARM;
 
-    RDD_SCHEDULING_QUEUE_DESCRIPTOR_RATE_LIMITER_INDEX_READ_CORE(*rate_limiter_index, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SCHEDULING_QUEUE_DESCRIPTOR_SCHEDULER_INDEX_READ_CORE(*scheduler_index, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduling_queue_table_sir_rate_limit_enable_set(uint32_t _entry, bdmf_boolean sir_rate_limit_enable)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULING_QUEUE_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SCHEDULING_QUEUE_DESCRIPTOR_SIR_RATE_LIMIT_ENABLE_WRITE_G(sir_rate_limit_enable, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduling_queue_table_sir_rate_limit_enable_set_core(uint32_t _entry, bdmf_boolean sir_rate_limit_enable, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULING_QUEUE_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SCHEDULING_QUEUE_DESCRIPTOR_SIR_RATE_LIMIT_ENABLE_WRITE_CORE(sir_rate_limit_enable, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduling_queue_table_sir_rate_limit_enable_get(uint32_t _entry, bdmf_boolean *sir_rate_limit_enable)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULING_QUEUE_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SCHEDULING_QUEUE_DESCRIPTOR_SIR_RATE_LIMIT_ENABLE_READ_G(*sir_rate_limit_enable, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduling_queue_table_sir_rate_limit_enable_get_core(uint32_t _entry, bdmf_boolean *sir_rate_limit_enable, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULING_QUEUE_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SCHEDULING_QUEUE_DESCRIPTOR_SIR_RATE_LIMIT_ENABLE_READ_CORE(*sir_rate_limit_enable, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduling_queue_table_pir_rate_limit_enable_set(uint32_t _entry, bdmf_boolean pir_rate_limit_enable)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULING_QUEUE_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SCHEDULING_QUEUE_DESCRIPTOR_PIR_RATE_LIMIT_ENABLE_WRITE_G(pir_rate_limit_enable, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduling_queue_table_pir_rate_limit_enable_set_core(uint32_t _entry, bdmf_boolean pir_rate_limit_enable, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULING_QUEUE_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SCHEDULING_QUEUE_DESCRIPTOR_PIR_RATE_LIMIT_ENABLE_WRITE_CORE(pir_rate_limit_enable, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduling_queue_table_pir_rate_limit_enable_get(uint32_t _entry, bdmf_boolean *pir_rate_limit_enable)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULING_QUEUE_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SCHEDULING_QUEUE_DESCRIPTOR_PIR_RATE_LIMIT_ENABLE_READ_G(*pir_rate_limit_enable, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduling_queue_table_pir_rate_limit_enable_get_core(uint32_t _entry, bdmf_boolean *pir_rate_limit_enable, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULING_QUEUE_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SCHEDULING_QUEUE_DESCRIPTOR_PIR_RATE_LIMIT_ENABLE_READ_CORE(*pir_rate_limit_enable, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduling_queue_table_sir_rate_limiter_index_set(uint32_t _entry, uint8_t sir_rate_limiter_index)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULING_QUEUE_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SCHEDULING_QUEUE_DESCRIPTOR_SIR_RATE_LIMITER_INDEX_WRITE_G(sir_rate_limiter_index, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduling_queue_table_sir_rate_limiter_index_set_core(uint32_t _entry, uint8_t sir_rate_limiter_index, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULING_QUEUE_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SCHEDULING_QUEUE_DESCRIPTOR_SIR_RATE_LIMITER_INDEX_WRITE_CORE(sir_rate_limiter_index, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduling_queue_table_sir_rate_limiter_index_get(uint32_t _entry, uint8_t *sir_rate_limiter_index)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULING_QUEUE_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SCHEDULING_QUEUE_DESCRIPTOR_SIR_RATE_LIMITER_INDEX_READ_G(*sir_rate_limiter_index, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduling_queue_table_sir_rate_limiter_index_get_core(uint32_t _entry, uint8_t *sir_rate_limiter_index, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULING_QUEUE_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SCHEDULING_QUEUE_DESCRIPTOR_SIR_RATE_LIMITER_INDEX_READ_CORE(*sir_rate_limiter_index, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry, core_id);
 
     return BDMF_ERR_OK;
 }
@@ -968,6 +1350,458 @@ int rdd_ag_ds_tm_scheduling_queue_table_quantum_number_get_core(uint32_t _entry,
          return BDMF_ERR_PARM;
 
     RDD_SCHEDULING_QUEUE_DESCRIPTOR_QUANTUM_NUMBER_READ_CORE(*quantum_number, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduling_queue_table_pir_rate_limiter_index_set(uint32_t _entry, uint8_t pir_rate_limiter_index)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULING_QUEUE_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SCHEDULING_QUEUE_DESCRIPTOR_PIR_RATE_LIMITER_INDEX_WRITE_G(pir_rate_limiter_index, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduling_queue_table_pir_rate_limiter_index_set_core(uint32_t _entry, uint8_t pir_rate_limiter_index, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULING_QUEUE_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SCHEDULING_QUEUE_DESCRIPTOR_PIR_RATE_LIMITER_INDEX_WRITE_CORE(pir_rate_limiter_index, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduling_queue_table_pir_rate_limiter_index_get(uint32_t _entry, uint8_t *pir_rate_limiter_index)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULING_QUEUE_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SCHEDULING_QUEUE_DESCRIPTOR_PIR_RATE_LIMITER_INDEX_READ_G(*pir_rate_limiter_index, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_scheduling_queue_table_pir_rate_limiter_index_get_core(uint32_t _entry, uint8_t *pir_rate_limiter_index, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SCHEDULING_QUEUE_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SCHEDULING_QUEUE_DESCRIPTOR_PIR_RATE_LIMITER_INDEX_READ_CORE(*pir_rate_limiter_index, RDD_DS_TM_SCHEDULING_QUEUE_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_secondary_scheduler_table_set(uint32_t _entry, bdmf_boolean is_positive_budget, uint8_t sir_dwrr_offset, uint8_t pir_dwrr_offset, bdmf_boolean rate_limit_enable, uint8_t rate_limiter_index, uint8_t last_served_block, uint16_t queue_offset, uint16_t deficit_counter, uint8_t quantum_number, uint8_t pir_rate_limiter_index, uint8_t status_bit_vector, uint8_t primary_scheduler_slot_index, bdmf_boolean pir_rate_limit_enable, uint8_t primary_scheduler_index)
+{
+    if(_entry >= RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE || sir_dwrr_offset >= 8 || pir_dwrr_offset >= 8 || rate_limiter_index >= 128 || last_served_block >= 128 || queue_offset >= 512 || status_bit_vector >= 16 || primary_scheduler_slot_index >= 32 || primary_scheduler_index >= 128)
+          return BDMF_ERR_PARM;
+
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_IS_POSITIVE_BUDGET_WRITE_G(is_positive_budget, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_SIR_DWRR_OFFSET_WRITE_G(sir_dwrr_offset, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PIR_DWRR_OFFSET_WRITE_G(pir_dwrr_offset, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_RATE_LIMIT_ENABLE_WRITE_G(rate_limit_enable, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_RATE_LIMITER_INDEX_WRITE_G(rate_limiter_index, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_LAST_SERVED_BLOCK_WRITE_G(last_served_block, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_QUEUE_OFFSET_WRITE_G(queue_offset, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_DEFICIT_COUNTER_WRITE_G(deficit_counter, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_QUANTUM_NUMBER_WRITE_G(quantum_number, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PIR_RATE_LIMITER_INDEX_WRITE_G(pir_rate_limiter_index, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_STATUS_BIT_VECTOR_WRITE_G(status_bit_vector, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PRIMARY_SCHEDULER_SLOT_INDEX_WRITE_G(primary_scheduler_slot_index, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PIR_RATE_LIMIT_ENABLE_WRITE_G(pir_rate_limit_enable, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PRIMARY_SCHEDULER_INDEX_WRITE_G(primary_scheduler_index, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_secondary_scheduler_table_set_core(uint32_t _entry, bdmf_boolean is_positive_budget, uint8_t sir_dwrr_offset, uint8_t pir_dwrr_offset, bdmf_boolean rate_limit_enable, uint8_t rate_limiter_index, uint8_t last_served_block, uint16_t queue_offset, uint16_t deficit_counter, uint8_t quantum_number, uint8_t pir_rate_limiter_index, uint8_t status_bit_vector, uint8_t primary_scheduler_slot_index, bdmf_boolean pir_rate_limit_enable, uint8_t primary_scheduler_index, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE || sir_dwrr_offset >= 8 || pir_dwrr_offset >= 8 || rate_limiter_index >= 128 || last_served_block >= 128 || queue_offset >= 512 || status_bit_vector >= 16 || primary_scheduler_slot_index >= 32 || primary_scheduler_index >= 128)
+          return BDMF_ERR_PARM;
+
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_IS_POSITIVE_BUDGET_WRITE_CORE(is_positive_budget, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_SIR_DWRR_OFFSET_WRITE_CORE(sir_dwrr_offset, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PIR_DWRR_OFFSET_WRITE_CORE(pir_dwrr_offset, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_RATE_LIMIT_ENABLE_WRITE_CORE(rate_limit_enable, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_RATE_LIMITER_INDEX_WRITE_CORE(rate_limiter_index, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_LAST_SERVED_BLOCK_WRITE_CORE(last_served_block, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_QUEUE_OFFSET_WRITE_CORE(queue_offset, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_DEFICIT_COUNTER_WRITE_CORE(deficit_counter, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_QUANTUM_NUMBER_WRITE_CORE(quantum_number, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PIR_RATE_LIMITER_INDEX_WRITE_CORE(pir_rate_limiter_index, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_STATUS_BIT_VECTOR_WRITE_CORE(status_bit_vector, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PRIMARY_SCHEDULER_SLOT_INDEX_WRITE_CORE(primary_scheduler_slot_index, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PIR_RATE_LIMIT_ENABLE_WRITE_CORE(pir_rate_limit_enable, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PRIMARY_SCHEDULER_INDEX_WRITE_CORE(primary_scheduler_index, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_secondary_scheduler_table_get(uint32_t _entry, bdmf_boolean *is_positive_budget, uint8_t *sir_dwrr_offset, uint8_t *pir_dwrr_offset, bdmf_boolean *rate_limit_enable, uint8_t *rate_limiter_index, uint8_t *last_served_block, uint16_t *queue_offset, uint16_t *deficit_counter, uint8_t *quantum_number, uint8_t *pir_rate_limiter_index, uint8_t *status_bit_vector, uint8_t *primary_scheduler_slot_index, bdmf_boolean *pir_rate_limit_enable, uint8_t *primary_scheduler_index)
+{
+    if(_entry >= RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE)
+          return BDMF_ERR_PARM;
+
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_IS_POSITIVE_BUDGET_READ_G(*is_positive_budget, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_SIR_DWRR_OFFSET_READ_G(*sir_dwrr_offset, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PIR_DWRR_OFFSET_READ_G(*pir_dwrr_offset, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_RATE_LIMIT_ENABLE_READ_G(*rate_limit_enable, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_RATE_LIMITER_INDEX_READ_G(*rate_limiter_index, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_LAST_SERVED_BLOCK_READ_G(*last_served_block, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_QUEUE_OFFSET_READ_G(*queue_offset, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_DEFICIT_COUNTER_READ_G(*deficit_counter, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_QUANTUM_NUMBER_READ_G(*quantum_number, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PIR_RATE_LIMITER_INDEX_READ_G(*pir_rate_limiter_index, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_STATUS_BIT_VECTOR_READ_G(*status_bit_vector, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PRIMARY_SCHEDULER_SLOT_INDEX_READ_G(*primary_scheduler_slot_index, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PIR_RATE_LIMIT_ENABLE_READ_G(*pir_rate_limit_enable, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PRIMARY_SCHEDULER_INDEX_READ_G(*primary_scheduler_index, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_secondary_scheduler_table_get_core(uint32_t _entry, bdmf_boolean *is_positive_budget, uint8_t *sir_dwrr_offset, uint8_t *pir_dwrr_offset, bdmf_boolean *rate_limit_enable, uint8_t *rate_limiter_index, uint8_t *last_served_block, uint16_t *queue_offset, uint16_t *deficit_counter, uint8_t *quantum_number, uint8_t *pir_rate_limiter_index, uint8_t *status_bit_vector, uint8_t *primary_scheduler_slot_index, bdmf_boolean *pir_rate_limit_enable, uint8_t *primary_scheduler_index, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE)
+          return BDMF_ERR_PARM;
+
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_IS_POSITIVE_BUDGET_READ_CORE(*is_positive_budget, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_SIR_DWRR_OFFSET_READ_CORE(*sir_dwrr_offset, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PIR_DWRR_OFFSET_READ_CORE(*pir_dwrr_offset, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_RATE_LIMIT_ENABLE_READ_CORE(*rate_limit_enable, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_RATE_LIMITER_INDEX_READ_CORE(*rate_limiter_index, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_LAST_SERVED_BLOCK_READ_CORE(*last_served_block, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_QUEUE_OFFSET_READ_CORE(*queue_offset, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_DEFICIT_COUNTER_READ_CORE(*deficit_counter, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_QUANTUM_NUMBER_READ_CORE(*quantum_number, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PIR_RATE_LIMITER_INDEX_READ_CORE(*pir_rate_limiter_index, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_STATUS_BIT_VECTOR_READ_CORE(*status_bit_vector, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PRIMARY_SCHEDULER_SLOT_INDEX_READ_CORE(*primary_scheduler_slot_index, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PIR_RATE_LIMIT_ENABLE_READ_CORE(*pir_rate_limit_enable, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PRIMARY_SCHEDULER_INDEX_READ_CORE(*primary_scheduler_index, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_secondary_scheduler_table_sir_dwrr_offset_set(uint32_t _entry, uint8_t sir_dwrr_offset)
+{
+    if(_entry >= RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE || sir_dwrr_offset >= 8)
+          return BDMF_ERR_PARM;
+
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_SIR_DWRR_OFFSET_WRITE_G(sir_dwrr_offset, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_secondary_scheduler_table_sir_dwrr_offset_set_core(uint32_t _entry, uint8_t sir_dwrr_offset, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE || sir_dwrr_offset >= 8)
+          return BDMF_ERR_PARM;
+
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_SIR_DWRR_OFFSET_WRITE_CORE(sir_dwrr_offset, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_secondary_scheduler_table_sir_dwrr_offset_get(uint32_t _entry, uint8_t *sir_dwrr_offset)
+{
+    if(_entry >= RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_SIR_DWRR_OFFSET_READ_G(*sir_dwrr_offset, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_secondary_scheduler_table_sir_dwrr_offset_get_core(uint32_t _entry, uint8_t *sir_dwrr_offset, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_SIR_DWRR_OFFSET_READ_CORE(*sir_dwrr_offset, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_secondary_scheduler_table_pir_dwrr_offset_set(uint32_t _entry, uint8_t pir_dwrr_offset)
+{
+    if(_entry >= RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE || pir_dwrr_offset >= 8)
+          return BDMF_ERR_PARM;
+
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PIR_DWRR_OFFSET_WRITE_G(pir_dwrr_offset, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_secondary_scheduler_table_pir_dwrr_offset_set_core(uint32_t _entry, uint8_t pir_dwrr_offset, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE || pir_dwrr_offset >= 8)
+          return BDMF_ERR_PARM;
+
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PIR_DWRR_OFFSET_WRITE_CORE(pir_dwrr_offset, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_secondary_scheduler_table_pir_dwrr_offset_get(uint32_t _entry, uint8_t *pir_dwrr_offset)
+{
+    if(_entry >= RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PIR_DWRR_OFFSET_READ_G(*pir_dwrr_offset, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_secondary_scheduler_table_pir_dwrr_offset_get_core(uint32_t _entry, uint8_t *pir_dwrr_offset, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PIR_DWRR_OFFSET_READ_CORE(*pir_dwrr_offset, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_secondary_scheduler_table_queue_offset_set(uint32_t _entry, uint16_t queue_offset)
+{
+    if(_entry >= RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE || queue_offset >= 512)
+          return BDMF_ERR_PARM;
+
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_QUEUE_OFFSET_WRITE_G(queue_offset, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_secondary_scheduler_table_queue_offset_set_core(uint32_t _entry, uint16_t queue_offset, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE || queue_offset >= 512)
+          return BDMF_ERR_PARM;
+
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_QUEUE_OFFSET_WRITE_CORE(queue_offset, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_secondary_scheduler_table_queue_offset_get(uint32_t _entry, uint16_t *queue_offset)
+{
+    if(_entry >= RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_QUEUE_OFFSET_READ_G(*queue_offset, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_secondary_scheduler_table_queue_offset_get_core(uint32_t _entry, uint16_t *queue_offset, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_QUEUE_OFFSET_READ_CORE(*queue_offset, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_secondary_scheduler_table_quantum_number_set(uint32_t _entry, uint8_t quantum_number)
+{
+    if(_entry >= RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_QUANTUM_NUMBER_WRITE_G(quantum_number, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_secondary_scheduler_table_quantum_number_set_core(uint32_t _entry, uint8_t quantum_number, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_QUANTUM_NUMBER_WRITE_CORE(quantum_number, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_secondary_scheduler_table_quantum_number_get(uint32_t _entry, uint8_t *quantum_number)
+{
+    if(_entry >= RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_QUANTUM_NUMBER_READ_G(*quantum_number, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_secondary_scheduler_table_quantum_number_get_core(uint32_t _entry, uint8_t *quantum_number, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_QUANTUM_NUMBER_READ_CORE(*quantum_number, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_secondary_scheduler_table_pir_rate_limiter_index_set(uint32_t _entry, uint8_t pir_rate_limiter_index)
+{
+    if(_entry >= RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PIR_RATE_LIMITER_INDEX_WRITE_G(pir_rate_limiter_index, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_secondary_scheduler_table_pir_rate_limiter_index_set_core(uint32_t _entry, uint8_t pir_rate_limiter_index, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PIR_RATE_LIMITER_INDEX_WRITE_CORE(pir_rate_limiter_index, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_secondary_scheduler_table_pir_rate_limiter_index_get(uint32_t _entry, uint8_t *pir_rate_limiter_index)
+{
+    if(_entry >= RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PIR_RATE_LIMITER_INDEX_READ_G(*pir_rate_limiter_index, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_secondary_scheduler_table_pir_rate_limiter_index_get_core(uint32_t _entry, uint8_t *pir_rate_limiter_index, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PIR_RATE_LIMITER_INDEX_READ_CORE(*pir_rate_limiter_index, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_secondary_scheduler_table_primary_scheduler_slot_index_set(uint32_t _entry, uint8_t primary_scheduler_slot_index)
+{
+    if(_entry >= RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE || primary_scheduler_slot_index >= 32)
+          return BDMF_ERR_PARM;
+
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PRIMARY_SCHEDULER_SLOT_INDEX_WRITE_G(primary_scheduler_slot_index, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_secondary_scheduler_table_primary_scheduler_slot_index_set_core(uint32_t _entry, uint8_t primary_scheduler_slot_index, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE || primary_scheduler_slot_index >= 32)
+          return BDMF_ERR_PARM;
+
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PRIMARY_SCHEDULER_SLOT_INDEX_WRITE_CORE(primary_scheduler_slot_index, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_secondary_scheduler_table_primary_scheduler_slot_index_get(uint32_t _entry, uint8_t *primary_scheduler_slot_index)
+{
+    if(_entry >= RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PRIMARY_SCHEDULER_SLOT_INDEX_READ_G(*primary_scheduler_slot_index, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_secondary_scheduler_table_primary_scheduler_slot_index_get_core(uint32_t _entry, uint8_t *primary_scheduler_slot_index, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PRIMARY_SCHEDULER_SLOT_INDEX_READ_CORE(*primary_scheduler_slot_index, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_secondary_scheduler_table_pir_rate_limit_enable_set(uint32_t _entry, bdmf_boolean pir_rate_limit_enable)
+{
+    if(_entry >= RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PIR_RATE_LIMIT_ENABLE_WRITE_G(pir_rate_limit_enable, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_secondary_scheduler_table_pir_rate_limit_enable_set_core(uint32_t _entry, bdmf_boolean pir_rate_limit_enable, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PIR_RATE_LIMIT_ENABLE_WRITE_CORE(pir_rate_limit_enable, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_secondary_scheduler_table_pir_rate_limit_enable_get(uint32_t _entry, bdmf_boolean *pir_rate_limit_enable)
+{
+    if(_entry >= RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PIR_RATE_LIMIT_ENABLE_READ_G(*pir_rate_limit_enable, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_secondary_scheduler_table_pir_rate_limit_enable_get_core(uint32_t _entry, bdmf_boolean *pir_rate_limit_enable, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PIR_RATE_LIMIT_ENABLE_READ_CORE(*pir_rate_limit_enable, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_secondary_scheduler_table_primary_scheduler_index_set(uint32_t _entry, uint8_t primary_scheduler_index)
+{
+    if(_entry >= RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE || primary_scheduler_index >= 128)
+          return BDMF_ERR_PARM;
+
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PRIMARY_SCHEDULER_INDEX_WRITE_G(primary_scheduler_index, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_secondary_scheduler_table_primary_scheduler_index_set_core(uint32_t _entry, uint8_t primary_scheduler_index, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE || primary_scheduler_index >= 128)
+          return BDMF_ERR_PARM;
+
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PRIMARY_SCHEDULER_INDEX_WRITE_CORE(primary_scheduler_index, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_secondary_scheduler_table_primary_scheduler_index_get(uint32_t _entry, uint8_t *primary_scheduler_index)
+{
+    if(_entry >= RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PRIMARY_SCHEDULER_INDEX_READ_G(*primary_scheduler_index, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_secondary_scheduler_table_primary_scheduler_index_get_core(uint32_t _entry, uint8_t *primary_scheduler_index, int core_id)
+{
+    if(_entry >= RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_SECONDARY_SCHEDULER_DESCRIPTOR_PRIMARY_SCHEDULER_INDEX_READ_CORE(*primary_scheduler_index, RDD_DS_TM_SECONDARY_SCHEDULER_TABLE_ADDRESS_ARR, _entry, core_id);
 
     return BDMF_ERR_OK;
 }
@@ -1096,6 +1930,46 @@ int rdd_ag_ds_tm_tx_queue_drop_table_bytes_get_core(uint32_t _entry, uint32_t *b
     return BDMF_ERR_OK;
 }
 
+int rdd_ag_ds_tm_tx_truncate_mirroring_table_truncate_offset_set(uint32_t _entry, uint16_t truncate_offset)
+{
+    if(_entry >= RDD_ETH_TM_TX_TRUNCATE_MIRRORING_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_MIRRORING_TRUNCATE_ENTRY_TRUNCATE_OFFSET_WRITE_G(truncate_offset, RDD_ETH_TM_TX_TRUNCATE_MIRRORING_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_tx_truncate_mirroring_table_truncate_offset_set_core(uint32_t _entry, uint16_t truncate_offset, int core_id)
+{
+    if(_entry >= RDD_ETH_TM_TX_TRUNCATE_MIRRORING_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_MIRRORING_TRUNCATE_ENTRY_TRUNCATE_OFFSET_WRITE_CORE(truncate_offset, RDD_ETH_TM_TX_TRUNCATE_MIRRORING_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_tx_truncate_mirroring_table_truncate_offset_get(uint32_t _entry, uint16_t *truncate_offset)
+{
+    if(_entry >= RDD_ETH_TM_TX_TRUNCATE_MIRRORING_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_MIRRORING_TRUNCATE_ENTRY_TRUNCATE_OFFSET_READ_G(*truncate_offset, RDD_ETH_TM_TX_TRUNCATE_MIRRORING_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_ds_tm_tx_truncate_mirroring_table_truncate_offset_get_core(uint32_t _entry, uint16_t *truncate_offset, int core_id)
+{
+    if(_entry >= RDD_ETH_TM_TX_TRUNCATE_MIRRORING_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_MIRRORING_TRUNCATE_ENTRY_TRUNCATE_OFFSET_READ_CORE(*truncate_offset, RDD_ETH_TM_TX_TRUNCATE_MIRRORING_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
 int rdd_ag_ds_tm_vport_to_rl_overhead_table_set(uint32_t _entry, uint8_t rl_overhead)
 {
     if(_entry >= RDD_VPORT_TO_RL_OVERHEAD_TABLE_SIZE)
@@ -1172,262 +2046,6 @@ int rdd_ag_ds_tm_vport_to_rl_overhead_table_rl_overhead_get_core(uint32_t _entry
          return BDMF_ERR_PARM;
 
     RDD_VPORT_TO_RL_OVERHEAD_ENTRY_RL_OVERHEAD_READ_CORE(*rl_overhead, RDD_VPORT_TO_RL_OVERHEAD_TABLE_ADDRESS_ARR, _entry, core_id);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_ds_tm_basic_scheduler_table_ds_quantum_number_set(uint32_t _entry, uint8_t quantum_number)
-{
-    if(_entry >= RDD_BASIC_SCHEDULER_TABLE_DS_SIZE)
-         return BDMF_ERR_PARM;
-
-    RDD_BASIC_SCHEDULER_DESCRIPTOR_QUANTUM_NUMBER_WRITE_G(quantum_number, RDD_BASIC_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_ds_tm_basic_scheduler_table_ds_quantum_number_set_core(uint32_t _entry, uint8_t quantum_number, int core_id)
-{
-    if(_entry >= RDD_BASIC_SCHEDULER_TABLE_DS_SIZE)
-         return BDMF_ERR_PARM;
-
-    RDD_BASIC_SCHEDULER_DESCRIPTOR_QUANTUM_NUMBER_WRITE_CORE(quantum_number, RDD_BASIC_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry, core_id);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_ds_tm_basic_scheduler_table_ds_quantum_number_get(uint32_t _entry, uint8_t *quantum_number)
-{
-    if(_entry >= RDD_BASIC_SCHEDULER_TABLE_DS_SIZE)
-         return BDMF_ERR_PARM;
-
-    RDD_BASIC_SCHEDULER_DESCRIPTOR_QUANTUM_NUMBER_READ_G(*quantum_number, RDD_BASIC_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_ds_tm_basic_scheduler_table_ds_quantum_number_get_core(uint32_t _entry, uint8_t *quantum_number, int core_id)
-{
-    if(_entry >= RDD_BASIC_SCHEDULER_TABLE_DS_SIZE)
-         return BDMF_ERR_PARM;
-
-    RDD_BASIC_SCHEDULER_DESCRIPTOR_QUANTUM_NUMBER_READ_CORE(*quantum_number, RDD_BASIC_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry, core_id);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_ds_tm_complex_scheduler_rl_cfg_get(uint32_t _entry, rdd_complex_scheduler_rl_cfg_t *complex_scheduler_rl_cfg)
-{
-    if(!complex_scheduler_rl_cfg || _entry >= RDD_COMPLEX_SCHEDULER_TABLE_DS_SIZE)
-         return BDMF_ERR_PARM;
-
-    RDD_COMPLEX_SCHEDULER_DESCRIPTOR_IS_POSITIVE_BUDGET_READ_G(complex_scheduler_rl_cfg->is_positive_budget, RDD_COMPLEX_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry);
-    RDD_COMPLEX_SCHEDULER_DESCRIPTOR_RATE_LIMITER_INDEX_READ_G(complex_scheduler_rl_cfg->rate_limiter_index, RDD_COMPLEX_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry);
-    RDD_COMPLEX_SCHEDULER_DESCRIPTOR_RATE_LIMIT_ENABLE_READ_G(complex_scheduler_rl_cfg->rate_limit_enable, RDD_COMPLEX_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry);
-    RDD_COMPLEX_SCHEDULER_DESCRIPTOR_DEFICIT_COUNTER_READ_G(complex_scheduler_rl_cfg->deficit_counter, RDD_COMPLEX_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry);
-    RDD_COMPLEX_SCHEDULER_DESCRIPTOR_QUANTUM_NUMBER_READ_G(complex_scheduler_rl_cfg->quantum_number, RDD_COMPLEX_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_ds_tm_complex_scheduler_rl_cfg_set(uint32_t _entry, rdd_complex_scheduler_rl_cfg_t *complex_scheduler_rl_cfg)
-{
-    if(!complex_scheduler_rl_cfg || _entry >= RDD_COMPLEX_SCHEDULER_TABLE_DS_SIZE || complex_scheduler_rl_cfg->rate_limiter_index >= 128)
-          return BDMF_ERR_PARM;
-
-    RDD_COMPLEX_SCHEDULER_DESCRIPTOR_IS_POSITIVE_BUDGET_WRITE_G(complex_scheduler_rl_cfg->is_positive_budget, RDD_COMPLEX_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry);
-    RDD_COMPLEX_SCHEDULER_DESCRIPTOR_RATE_LIMITER_INDEX_WRITE_G(complex_scheduler_rl_cfg->rate_limiter_index, RDD_COMPLEX_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry);
-    RDD_COMPLEX_SCHEDULER_DESCRIPTOR_RATE_LIMIT_ENABLE_WRITE_G(complex_scheduler_rl_cfg->rate_limit_enable, RDD_COMPLEX_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry);
-    RDD_COMPLEX_SCHEDULER_DESCRIPTOR_DEFICIT_COUNTER_WRITE_G(complex_scheduler_rl_cfg->deficit_counter, RDD_COMPLEX_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry);
-    RDD_COMPLEX_SCHEDULER_DESCRIPTOR_QUANTUM_NUMBER_WRITE_G(complex_scheduler_rl_cfg->quantum_number, RDD_COMPLEX_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_ds_tm_complex_scheduler_rl_cfg_get_core(uint32_t _entry, rdd_complex_scheduler_rl_cfg_t *complex_scheduler_rl_cfg, int core_id)
-{
-    if(!complex_scheduler_rl_cfg || _entry >= RDD_COMPLEX_SCHEDULER_TABLE_DS_SIZE)
-         return BDMF_ERR_PARM;
-
-    RDD_COMPLEX_SCHEDULER_DESCRIPTOR_IS_POSITIVE_BUDGET_READ_CORE(complex_scheduler_rl_cfg->is_positive_budget, RDD_COMPLEX_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry, core_id);
-    RDD_COMPLEX_SCHEDULER_DESCRIPTOR_RATE_LIMITER_INDEX_READ_CORE(complex_scheduler_rl_cfg->rate_limiter_index, RDD_COMPLEX_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry, core_id);
-    RDD_COMPLEX_SCHEDULER_DESCRIPTOR_RATE_LIMIT_ENABLE_READ_CORE(complex_scheduler_rl_cfg->rate_limit_enable, RDD_COMPLEX_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry, core_id);
-    RDD_COMPLEX_SCHEDULER_DESCRIPTOR_DEFICIT_COUNTER_READ_CORE(complex_scheduler_rl_cfg->deficit_counter, RDD_COMPLEX_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry, core_id);
-    RDD_COMPLEX_SCHEDULER_DESCRIPTOR_QUANTUM_NUMBER_READ_CORE(complex_scheduler_rl_cfg->quantum_number, RDD_COMPLEX_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry, core_id);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_ds_tm_complex_scheduler_rl_cfg_set_core(uint32_t _entry, rdd_complex_scheduler_rl_cfg_t *complex_scheduler_rl_cfg, int core_id)
-{
-    if(!complex_scheduler_rl_cfg || _entry >= RDD_COMPLEX_SCHEDULER_TABLE_DS_SIZE || complex_scheduler_rl_cfg->rate_limiter_index >= 128)
-          return BDMF_ERR_PARM;
-
-    RDD_COMPLEX_SCHEDULER_DESCRIPTOR_IS_POSITIVE_BUDGET_WRITE_CORE(complex_scheduler_rl_cfg->is_positive_budget, RDD_COMPLEX_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry, core_id);
-    RDD_COMPLEX_SCHEDULER_DESCRIPTOR_RATE_LIMITER_INDEX_WRITE_CORE(complex_scheduler_rl_cfg->rate_limiter_index, RDD_COMPLEX_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry, core_id);
-    RDD_COMPLEX_SCHEDULER_DESCRIPTOR_RATE_LIMIT_ENABLE_WRITE_CORE(complex_scheduler_rl_cfg->rate_limit_enable, RDD_COMPLEX_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry, core_id);
-    RDD_COMPLEX_SCHEDULER_DESCRIPTOR_DEFICIT_COUNTER_WRITE_CORE(complex_scheduler_rl_cfg->deficit_counter, RDD_COMPLEX_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry, core_id);
-    RDD_COMPLEX_SCHEDULER_DESCRIPTOR_QUANTUM_NUMBER_WRITE_CORE(complex_scheduler_rl_cfg->quantum_number, RDD_COMPLEX_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry, core_id);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_ds_tm_complex_scheduler_table_ds_dwrr_offset_pir_set(uint32_t _entry, uint8_t dwrr_offset_pir)
-{
-    if(_entry >= RDD_COMPLEX_SCHEDULER_TABLE_DS_SIZE || dwrr_offset_pir >= 8)
-          return BDMF_ERR_PARM;
-
-    RDD_COMPLEX_SCHEDULER_DESCRIPTOR_DWRR_OFFSET_PIR_WRITE_G(dwrr_offset_pir, RDD_COMPLEX_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_ds_tm_complex_scheduler_table_ds_dwrr_offset_pir_set_core(uint32_t _entry, uint8_t dwrr_offset_pir, int core_id)
-{
-    if(_entry >= RDD_COMPLEX_SCHEDULER_TABLE_DS_SIZE || dwrr_offset_pir >= 8)
-          return BDMF_ERR_PARM;
-
-    RDD_COMPLEX_SCHEDULER_DESCRIPTOR_DWRR_OFFSET_PIR_WRITE_CORE(dwrr_offset_pir, RDD_COMPLEX_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry, core_id);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_ds_tm_complex_scheduler_table_ds_dwrr_offset_pir_get(uint32_t _entry, uint8_t *dwrr_offset_pir)
-{
-    if(_entry >= RDD_COMPLEX_SCHEDULER_TABLE_DS_SIZE)
-         return BDMF_ERR_PARM;
-
-    RDD_COMPLEX_SCHEDULER_DESCRIPTOR_DWRR_OFFSET_PIR_READ_G(*dwrr_offset_pir, RDD_COMPLEX_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_ds_tm_complex_scheduler_table_ds_dwrr_offset_pir_get_core(uint32_t _entry, uint8_t *dwrr_offset_pir, int core_id)
-{
-    if(_entry >= RDD_COMPLEX_SCHEDULER_TABLE_DS_SIZE)
-         return BDMF_ERR_PARM;
-
-    RDD_COMPLEX_SCHEDULER_DESCRIPTOR_DWRR_OFFSET_PIR_READ_CORE(*dwrr_offset_pir, RDD_COMPLEX_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry, core_id);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_ds_tm_complex_scheduler_table_ds_dwrr_offset_sir_set(uint32_t _entry, uint8_t dwrr_offset_sir)
-{
-    if(_entry >= RDD_COMPLEX_SCHEDULER_TABLE_DS_SIZE || dwrr_offset_sir >= 8)
-          return BDMF_ERR_PARM;
-
-    RDD_COMPLEX_SCHEDULER_DESCRIPTOR_DWRR_OFFSET_SIR_WRITE_G(dwrr_offset_sir, RDD_COMPLEX_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_ds_tm_complex_scheduler_table_ds_dwrr_offset_sir_set_core(uint32_t _entry, uint8_t dwrr_offset_sir, int core_id)
-{
-    if(_entry >= RDD_COMPLEX_SCHEDULER_TABLE_DS_SIZE || dwrr_offset_sir >= 8)
-          return BDMF_ERR_PARM;
-
-    RDD_COMPLEX_SCHEDULER_DESCRIPTOR_DWRR_OFFSET_SIR_WRITE_CORE(dwrr_offset_sir, RDD_COMPLEX_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry, core_id);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_ds_tm_complex_scheduler_table_ds_dwrr_offset_sir_get(uint32_t _entry, uint8_t *dwrr_offset_sir)
-{
-    if(_entry >= RDD_COMPLEX_SCHEDULER_TABLE_DS_SIZE)
-         return BDMF_ERR_PARM;
-
-    RDD_COMPLEX_SCHEDULER_DESCRIPTOR_DWRR_OFFSET_SIR_READ_G(*dwrr_offset_sir, RDD_COMPLEX_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_ds_tm_complex_scheduler_table_ds_dwrr_offset_sir_get_core(uint32_t _entry, uint8_t *dwrr_offset_sir, int core_id)
-{
-    if(_entry >= RDD_COMPLEX_SCHEDULER_TABLE_DS_SIZE)
-         return BDMF_ERR_PARM;
-
-    RDD_COMPLEX_SCHEDULER_DESCRIPTOR_DWRR_OFFSET_SIR_READ_CORE(*dwrr_offset_sir, RDD_COMPLEX_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry, core_id);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_ds_tm_complex_scheduler_table_ds_slot_budget_bit_vector_0_set(uint32_t _entry, uint32_t slot_budget_bit_vector_0)
-{
-    if(_entry >= RDD_COMPLEX_SCHEDULER_TABLE_DS_SIZE)
-         return BDMF_ERR_PARM;
-
-    RDD_COMPLEX_SCHEDULER_DESCRIPTOR_SLOT_BUDGET_BIT_VECTOR_0_WRITE_G(slot_budget_bit_vector_0, RDD_COMPLEX_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_ds_tm_complex_scheduler_table_ds_slot_budget_bit_vector_0_set_core(uint32_t _entry, uint32_t slot_budget_bit_vector_0, int core_id)
-{
-    if(_entry >= RDD_COMPLEX_SCHEDULER_TABLE_DS_SIZE)
-         return BDMF_ERR_PARM;
-
-    RDD_COMPLEX_SCHEDULER_DESCRIPTOR_SLOT_BUDGET_BIT_VECTOR_0_WRITE_CORE(slot_budget_bit_vector_0, RDD_COMPLEX_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry, core_id);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_ds_tm_complex_scheduler_table_ds_slot_budget_bit_vector_0_get(uint32_t _entry, uint32_t *slot_budget_bit_vector_0)
-{
-    if(_entry >= RDD_COMPLEX_SCHEDULER_TABLE_DS_SIZE)
-         return BDMF_ERR_PARM;
-
-    RDD_COMPLEX_SCHEDULER_DESCRIPTOR_SLOT_BUDGET_BIT_VECTOR_0_READ_G(*slot_budget_bit_vector_0, RDD_COMPLEX_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_ds_tm_complex_scheduler_table_ds_slot_budget_bit_vector_0_get_core(uint32_t _entry, uint32_t *slot_budget_bit_vector_0, int core_id)
-{
-    if(_entry >= RDD_COMPLEX_SCHEDULER_TABLE_DS_SIZE)
-         return BDMF_ERR_PARM;
-
-    RDD_COMPLEX_SCHEDULER_DESCRIPTOR_SLOT_BUDGET_BIT_VECTOR_0_READ_CORE(*slot_budget_bit_vector_0, RDD_COMPLEX_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry, core_id);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_ds_tm_complex_scheduler_table_ds_quantum_number_set(uint32_t _entry, uint8_t quantum_number)
-{
-    if(_entry >= RDD_COMPLEX_SCHEDULER_TABLE_DS_SIZE)
-         return BDMF_ERR_PARM;
-
-    RDD_COMPLEX_SCHEDULER_DESCRIPTOR_QUANTUM_NUMBER_WRITE_G(quantum_number, RDD_COMPLEX_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_ds_tm_complex_scheduler_table_ds_quantum_number_set_core(uint32_t _entry, uint8_t quantum_number, int core_id)
-{
-    if(_entry >= RDD_COMPLEX_SCHEDULER_TABLE_DS_SIZE)
-         return BDMF_ERR_PARM;
-
-    RDD_COMPLEX_SCHEDULER_DESCRIPTOR_QUANTUM_NUMBER_WRITE_CORE(quantum_number, RDD_COMPLEX_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry, core_id);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_ds_tm_complex_scheduler_table_ds_quantum_number_get(uint32_t _entry, uint8_t *quantum_number)
-{
-    if(_entry >= RDD_COMPLEX_SCHEDULER_TABLE_DS_SIZE)
-         return BDMF_ERR_PARM;
-
-    RDD_COMPLEX_SCHEDULER_DESCRIPTOR_QUANTUM_NUMBER_READ_G(*quantum_number, RDD_COMPLEX_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_ds_tm_complex_scheduler_table_ds_quantum_number_get_core(uint32_t _entry, uint8_t *quantum_number, int core_id)
-{
-    if(_entry >= RDD_COMPLEX_SCHEDULER_TABLE_DS_SIZE)
-         return BDMF_ERR_PARM;
-
-    RDD_COMPLEX_SCHEDULER_DESCRIPTOR_QUANTUM_NUMBER_READ_CORE(*quantum_number, RDD_COMPLEX_SCHEDULER_TABLE_DS_ADDRESS_ARR, _entry, core_id);
 
     return BDMF_ERR_OK;
 }

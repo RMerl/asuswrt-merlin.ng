@@ -2,16 +2,17 @@
 
 #
 # Usage: 
-#   ./gen4_sign_openssl_simple.sh <key_map> <key_name_hint> <file_to_sign> <file_to_store_signature>
+#   ./gen4_sign_openssl_simple.sh <key_map> <options: pss|pkcs1> <key_name_hint> <file_to_sign> <file_to_store_signature>
 #
 # Description:
 #	This a reference Bash shell script, designed to obtain from user input for the parameters required to perform RSA signing using OpenSSL.
 #	User should provide:
 #		1. Path to Key Map Configuration File (Key Name Hint to Key Material )
-#		2. RSA Key Name Hint
+#		2. RSA Signature Scheme
+#		3. RSA Key Name Hint
 #			This hint could be utilized to retrieve the RSA private key from a secure location or to provide additional context to the user about the key being used.
-#		3. Path to the file that the user intends to sign.
-#		4. Path to the file where the resulting digital signature should be stored after the signing operation.
+#		4. Path to the file that the user intends to sign.
+#		5. Path to the file where the resulting digital signature should be stored after the signing operation.
 #
 
 #for arg in "$@"; do
@@ -19,11 +20,12 @@
 #done
 
 source $1
-signing_key_hint=$2
-file_to_sign=$3
-file_to_store_signature=$4
+signature_scheme=$2
+signing_key_hint=$3
+file_to_sign=$4
+file_to_store_signature=$5
 
-if [[ $# != 4 ]]; then
+if [[ $# != 5 ]]; then
 	exit -1
 fi
 
@@ -52,7 +54,11 @@ else
 fi
 
 echo "gen4 signer - fin:$file_to_sign, fout:$file_to_store_signature, k:$key_file, sha:$sha"
-openssl dgst -$sha -sign $key_file -keyform pem -sigopt rsa_padding_mode:pkcs1 -out $file_to_store_signature $file_to_sign
+if [ "$signature_scheme" == "pss" ]; then
+	openssl dgst -$sha -sign $key_file -keyform pem -sigopt rsa_padding_mode:pss -sigopt rsa_pss_saltlen:-1 -out $file_to_store_signature $file_to_sign
+else
+	openssl dgst -$sha -sign $key_file -keyform pem -sigopt rsa_padding_mode:pkcs1 -out $file_to_store_signature $file_to_sign
+fi
 
 if [ $? -ne 0 ]; then
 	exit -1

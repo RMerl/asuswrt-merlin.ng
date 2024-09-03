@@ -3,27 +3,21 @@
    All Rights Reserved
 
    <:label-BRCM:2019:DUAL/GPL:standard
-
-   Unless you and Broadcom execute a separate written software license
-   agreement governing use of this software, this software is licensed
-   to you under the terms of the GNU General Public License version 2
-   (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-   with the following added to such license:
-
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
-
-   Not withstanding the above, under no circumstances may you combine
-   this software in any way with any other Broadcom software provided
-   under a license other than the GPL, without Broadcom's express prior
-   written consent.
-
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License, version 2, as published by
+   the Free Software Foundation (the "GPL").
+   
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+   
+   
+   A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+   writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.
+   
    :>
  */
 #include <linux/kernel.h>
@@ -44,6 +38,7 @@
 #include <linux/irqchip/chained_irq.h>
 #include <linux/irqdomain.h>
 #include <linux/msi.h>
+#include <linux/arm-smccc.h>
 
 /* brcm bsp */
 #if defined(CONFIG_BRCM_IKOS) || defined(CONFIG_BCM_PCIE_PMC_BRD_STUBS)
@@ -101,6 +96,31 @@
 
 /* Local Error Codes */
 #define EHCD_SCAN_DEFER                     EPROBE_DEFER
+
+/* Satellite Timer Section */
+/* CTMR_CTRL registers */
+#define CTMR_CTRL_GET_H_OFFSET              (0x000C)
+#define CTMR_CTRL_STMR_EN_OFFSET            (0x0030)
+#define CTMR_CTRL_GET_L0_OFFSET             (0x0080)
+#define CTMR_CTRL_GET_L1_OFFSET             (0x0084)
+#define CTMR_CTRL_GET_L2_OFFSET             (0x0088)
+#define CTMR_CTRL_GET_L3_OFFSET             (0x008C)
+
+/* CTMR Satellite Timer ID: 0-pcie0, 1-pcie1, 2-WiFi0, 3-WiFi1 */
+#define CTMR_CTRL_STMR(core)                \
+	(((core) < NUM_PCORES) ? (core) : ((core) - NUM_PCORES + 2))
+#define CTMR_CTRL_GET_L_OFFSET(core)        \
+	(CTMR_CTRL_GET_L0_OFFSET + CTMR_CTRL_STMR((core)) * 4)
+
+/* SAT_TIMER: Satellite Timer Registers */
+#define SAT_TIMER_CTRL_OFFSET                (0x0000)
+#define SAT_TIMER_SET_L_OFFSET               (0x000C)
+#define SAT_TIMER_SET_H_OFFSET               (0x0010)
+#define SAT_TIMER_INC_L_OFFSET               (0x0014)
+#define SAT_TIMER_INC_H_OFFSET               (0x0018)
+
+#define PSCI_BRCM_SYSTEM_CONTROL             0x8400001F
+#define CTMR_CTRL_STMR_WRITE_CMD             0x80000000
 
 /*
  * +-----------------------------------------------------
@@ -445,7 +465,7 @@ static void __exit pcie_hcd_exit(void);
 /* platform */
 static void pcie_hcd_plt_dev_release(struct device *dev);
 static int __init pcie_hcd_plt_init(void);
-static void __init pcie_hcd_plt_deinit(void);
+static void __exit pcie_hcd_plt_deinit(void);
 
 /*
  * +-----------------------------------------------------
@@ -1020,6 +1040,29 @@ static inline int pcie_hcd_deferred_scan_trigger(struct platform_device *pdev) {
 	return 0;
 }
 
+static inline int pcie_hcd_stmr_en(struct pcie_hcd *pdrv) {
+	struct pcie_hc_core *phc = &pdrv->core;
+	u32 stmr_id = CTMR_CTRL_STMR(phc->info.id);
+	u32 reg_data;
+	struct arm_smccc_res res;
+
+	/*
+	 * Clear the enable for satellite timer by writing a '0' in bit-x
+	 * (but keep the other bits in range 7:0 as a '1')
+	 * It is not necessary to write a '1' back into bit-x.
+	 * It would be ignored.
+	 */
+	reg_data = readl(phc->info.ctmr + CTMR_CTRL_STMR_EN_OFFSET);
+	reg_data &= 0xFF;
+	reg_data |= 0xACCE5500;
+	reg_data &= (~(1 << stmr_id));
+
+	arm_smccc_smc(PSCI_BRCM_SYSTEM_CONTROL, CTMR_CTRL_STMR_WRITE_CMD, reg_data,
+	        0, 0, 0, 0, 0, &res);
+
+	return 0;
+}
+
 /*
  * +-----------------------------------------------------
  *  External exported Functions
@@ -1039,6 +1082,64 @@ static inline int pcie_hcd_deferred_scan_trigger(struct platform_device *pdev) {
 struct pci_bus *pcie_hcd_get_rootbus(struct pcie_hcd *pdrv)
 {
 	return pdrv->bus;
+}
+
+/*
+ * Function pcie_hcd_sync_stmr (pdrv)
+ *
+ *   Parameters:
+ *    pdrv ... pointer to pcie core hcd data structure
+ *    stmr ... pointer to mapped satellite timer sub-block registers
+ *
+ *   Description:
+ *    Synchronize pcie local timers with Central Timers. Applicable for both
+ *    physical and virtual (WiFi) cores that support Central Timer block
+ *
+ *   Return: 0: on success, -ve on failure
+ */
+int pcie_hcd_sync_stmr(struct pcie_hcd *pdrv, void __iomem *stmr)
+{
+	struct pcie_hc_core *phc = &pdrv->core;
+	u64 ctmr_cntr64;
+	u32 reg_data;
+	u32 l_offset = CTMR_CTRL_GET_L_OFFSET(phc->info.id);
+
+	HCD_FN_ENT();
+
+	if ((phc->info.ctmr == NULL) || (stmr == NULL)) {
+	    /*
+	     * SoC doesn't support CTMR, or (v)PCIe doesn't support Satellite
+	     * Timers. Nothing to do.
+	     */
+	    HCD_FN_RET_VAL(0);
+	}
+
+	if (pcie_hcd_stmr_en(pdrv) == -EALREADY) {
+	    /* Satellite timer already enabled, nothing to do */
+	    HCD_FN_RET_VAL(0);
+	}
+
+	/* Read Central Timer counter (low first and then high) */
+	ctmr_cntr64 = readl(phc->info.ctmr + l_offset);
+	ctmr_cntr64 |=
+	((u64)readl(phc->info.ctmr + CTMR_CTRL_GET_H_OFFSET) << 32);
+
+	/* for perfect alignment between central and satellite timer */
+	ctmr_cntr64 += 2;
+
+	/*
+	 * Configure PCIe satellite timer with central timer counter
+	 * (low first and then high)
+	 */
+	reg_data = ctmr_cntr64 & 0xFFFFFFFF;
+	writel(reg_data, stmr + SAT_TIMER_INC_L_OFFSET);
+	reg_data = (ctmr_cntr64 >> 32) & 0xFFFFFFFF;
+	writel(reg_data, stmr + SAT_TIMER_INC_H_OFFSET);
+
+	HCD_LOG("Core [%d] Synchronized the Satellite Timer with 0x%llx\n",
+	    phc->info.id, ctmr_cntr64);
+
+	HCD_FN_RET_VAL(0);
 }
 
 /*
@@ -2917,6 +3018,12 @@ static int pcie_hcd_parse_dt(struct pcie_hcd *pdrv)
 	    }
 	    HCD_WARN_ON_DT_ERROR("brcm,epuperstb", err);
 
+	    /* PCIe phy serdes flags */
+	    err = of_property_read_u32(np, "brcm,serdes", &dt_val);
+	    if (err == 0) {
+	        pdrv->core.cfg.serdes = dt_val;
+	    }
+	    HCD_WARN_ON_DT_ERROR("brcm,serdes", err);
 	} else {
 	    for (win = OWIN0; win < MAX_NUM_OUTGOING_WINDOWS; win++) {
 	        pdrv->owin[win].pci_addr = pres->owin[win].start;
@@ -3400,6 +3507,7 @@ static int  pcie_hcd_remove(struct platform_device *pdev)
 	HCD_FN_RET_VAL(0);
 }
 
+extern bool enet_init_done;
 /*
  * +-----------------------------------------------------
  *  Global Functions
@@ -3425,6 +3533,11 @@ static int __init pcie_hcd_init(void)
 	HCD_FN_ENT();
 
 	printk("Broadcom PCIe Host Controller Driver (impl%d)\r\n", CONFIG_BCM_PCIE_HCD_IMPL);
+
+    while (!enet_init_done) {
+        mdelay(1000);
+    }
+    mdelay(1000);
 
 #if defined(MODULE)
 	if ((ret = pcie_hcd_nvram_init()) != 0) {
@@ -3682,7 +3795,7 @@ static int __init pcie_hcd_plt_init(void)
  *
  *   Return: None
  */
-static void __init pcie_hcd_plt_deinit(void)
+static void __exit pcie_hcd_plt_deinit(void)
 {
 	int i, core;
 	struct platform_device  *pdev = NULL;

@@ -22,7 +22,7 @@ static otp_hw_cmn_row_t __VV__[ ] = {															\
 		{.feat = SOTP_MAP_SER_NUM,          .addr = (FSR_START_ROW_ADDR+2), .range = 8, .conf = {.op_type = OTP_HW_CMN_CTL_OTPCMD_ECC}},\
 		{.feat = SOTP_MAP_UNUSED_3,         .addr = (FSR_START_ROW_ADDR+3), .range = 8, .conf = {.op_type = OTP_HW_CMN_CTL_CONF}},	\
 		{.feat = SOTP_MAP_UNUSED_4,         .addr = (FSR_START_ROW_ADDR+4), .range = 2, .conf = {.op_type = OTP_HW_CMN_CTL_CONF}},	\
-		{.feat = SOTP_MAP_LIC_UNIQUE_ID,    .addr = (FSR_START_ROW_ADDR+5), .range = 4, .conf = {.op_type = OTP_HW_CMN_CTL_CONF}},	\
+		{.feat = SOTP_MAP_LIC_UNIQUE_ID,    .addr = (FSR_START_ROW_ADDR+5), .range = 4, .conf = {.op_type = OTP_HW_CMN_CTL_OTPCMD_ECC}},	\
 		{.feat = SOTP_MAP_UNUSED_6,         .addr = (FSR_START_ROW_ADDR+6), .range = 4, .conf = {.op_type = OTP_HW_CMN_CTL_CONF}},	\
 		{.feat = SOTP_MAP_UNUSED_7,         .addr = (FSR_START_ROW_ADDR+7), .range = 2, .conf = {.op_type = OTP_HW_CMN_CTL_CONF}},	\
 	};

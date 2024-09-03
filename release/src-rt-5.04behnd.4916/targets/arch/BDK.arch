@@ -34,7 +34,6 @@
 +# BUILD_MODSW_CLI is not set
 +# EE Selection 
 +# BUILD_MODSW_EXAMPLEEE_PREINSTALL is not set
-+# BUILD_MODSW_DOCKEREE is not set
 +# BUILD_MODSW_OSGIEE is not set
 +# DU Selection 
 +# BUILD_BRCM_HOSTEE_SPTESTSUITE_PREINSTALL is not set

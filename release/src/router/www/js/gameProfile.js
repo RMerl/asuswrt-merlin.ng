@@ -315,6 +315,7 @@
 {"title":"WWE 2K17","port":"80,443,1935,3478:3480","protocol":"BOTH","platform":"PS4","class":"wwe2k17","id":"wwe2k17"},
 {"title":"WWE 2K17","port":"3074","protocol":"BOTH","platform":"XBOX360","class":"wwe2k17","id":"wwe2k17"},
 {"title":"WWE 2K17","port":"53,80,88,500,3074,3544,4500","protocol":"BOTH","platform":"XBOXONE","class":"wwe2k17","id":"wwe2k17"},
+{"title":"NVIDIA GameStream","port":"7,9,35043,47984,47989,47991:47992,47995:47996,47998:48000,48010","protocol":"BOTH","platform":"PC","class":"nvidiaGameStream","id":"nvidiaGameStream"},
 ]}
 
 

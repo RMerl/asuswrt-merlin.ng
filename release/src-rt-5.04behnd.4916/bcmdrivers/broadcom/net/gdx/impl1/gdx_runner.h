@@ -4,25 +4,19 @@
    Copyright (c) 2023 Broadcom 
    All Rights Reserved
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
 :>
 */
@@ -1459,14 +1453,14 @@ static inline pNBuff_t gdx_single_packet_read_and_handle(gdx_dev_group_t *dev_gr
         skb = gdx_hwacc_get_lpbk_skb(dev_group_p, info);
         spin_unlock_bh(&gdx_hwacc_priv.skb_idx_lock);
 
-        if ((dev_idx < 0))
+        if ((dev_idx < 0) || (gendev_info_p == NULL))
         {
             dev_group_p->cpu_rxq_lpbk_no_dev++;
-            goto gdx_single_packet_read_and_handle_err_no_rx_dev;
+            dev_kfree_skb_thread(skb);
+            return NULL;
         }
 
         gendev_info_p->dev_stats.cpu_rxq_lpbk_pkts++;
-
         if (unlikely(!skb))
         {
             GDX_INCR_QUEUE_STATS(qid, cpu_rxq_no_skbs);
@@ -1488,7 +1482,15 @@ static inline pNBuff_t gdx_single_packet_read_and_handle(gdx_dev_group_t *dev_gr
         *rc = GDX_ERR_INV_DEV_IDX;
         goto gdx_single_packet_read_and_handle_err;
     }
+    gendev_info_p = gdx_gendev_info_pp[dev_idx];
 
+    if (gendev_info_p == NULL)
+    {
+        GDX_PRINT_INFO("GDX is disabled on this device");
+        dev_group_p->cpu_rxq_tx_no_dev++;
+        gdx_hwacc_databuf_free(info->data, 0); 
+        return NULL;
+    }
     info->dev_idx = dev_idx;
     /* get dev_p from devid framework */
     info->tx_dev = bcm_get_netdev_by_id_nohold(info->dest_ifid); 
@@ -1507,7 +1509,7 @@ static inline pNBuff_t gdx_single_packet_read_and_handle(gdx_dev_group_t *dev_gr
         g_fill_info.prepend_data = info->data + info->data_offset;
         prepend_size = gdx_prepend_fill_info_fn(&g_fill_info);
         if (prepend_size == (uint32_t)-1)
-            goto gdx_single_packet_read_and_handle_err_no_rx_dev;
+            goto gdx_single_packet_read_and_handle_err;
     }
     else
     {
@@ -1531,14 +1533,13 @@ static inline pNBuff_t gdx_single_packet_read_and_handle(gdx_dev_group_t *dev_gr
         nbuff_p = SKBUFF_2_PNBUFF(skb);
     }
 
-    GDX_PRINT_DBG("mark %lu priority %d", g_fill_info.prep_info.mark, g_fill_info.prep_info.priority);
-    nbuff_set_mark(nbuff_p, g_fill_info.prep_info.mark);
+    GDX_PRINT_INFO("mark %08x priority %d", g_fill_info.prep_info.mark, g_fill_info.prep_info.priority);
+    nbuff_set_mark(nbuff_p, SKBMARK_CLEAR_SQ_MARK(g_fill_info.prep_info.mark));
     nbuff_set_priority(nbuff_p, g_fill_info.prep_info.priority);
     return nbuff_p;
 gdx_single_packet_read_and_handle_err_no_mem:
     GDX_INCR_QUEUE_STATS(qid, cpu_rxq_no_skbs);
     *rc = GDX_ERR_NOMEM;
-gdx_single_packet_read_and_handle_err_no_rx_dev:
     if (likely(skb))
         dev_kfree_skb_thread(skb);
 
@@ -1635,7 +1636,7 @@ static int gdx_thread_handler(void *context)
                Even bits correspond to low priority queues
                Hence get the last bit set */
             qidx = __fls(qMask);
-            mutex_lock(&dev_group_p->group_lock);
+            spin_lock(&dev_group_p->group_lock);
 
             while (qMask)
             {
@@ -1655,7 +1656,9 @@ static int gdx_thread_handler(void *context)
                     {
                         gdx_hwacc_misc_processing(dev_group_p);
 
+                        spin_unlock(&dev_group_p->group_lock);
                         yield();
+                        spin_lock(&dev_group_p->group_lock);
                     }
                     /* else do nothing. Queue is not empty. Do not clear
                      * work avail flag. Let the thread complete processing the
@@ -1675,7 +1678,7 @@ static int gdx_thread_handler(void *context)
                 qidx--;
             } /*for queue*/
 
-            mutex_unlock(&dev_group_p->group_lock);
+            spin_unlock(&dev_group_p->group_lock);
         } /* gdx_hwacc_priv.rx_work_avail */
 
         bcm_fro_tcp_complete();
@@ -1732,7 +1735,7 @@ static inline int gdx_hwacc_dev_group_init(gdx_dev_group_t *dev_group_p,
                 &gdx_skb_idx_used_thresh, gdx_skb_idx_used_thresh);
 
         spin_lock_init(&gdx_hwacc_priv.skb_idx_lock);
-        mutex_init(&dev_group_p->group_lock);
+        spin_lock_init(&dev_group_p->group_lock);
         gdx_hwacc_priv.rx_work_avail  = 0;
         sprintf(threadname,"gdx%d-thrd", group_idx);
 

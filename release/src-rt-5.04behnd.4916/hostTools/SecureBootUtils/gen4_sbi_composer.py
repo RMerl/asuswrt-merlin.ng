@@ -99,6 +99,7 @@ def prepare_arguments():
     parser.add_argument('--blob', type=str, help='Path to the payload file, ARM BL or Key Store Blob when composing Security Switch SBI')
     parser.add_argument('--encryptor', type=str, help='Path to BASH script, invoked by this utility to encrypt content')
     parser.add_argument('--signer', type=str, help='Path to BASH script, invoked by this utility to sign content')
+    parser.add_argument('--signature_scheme', type=str, help='Signature Scheme, one of the following: pkcs1 / pss')
     parser.add_argument('--output', type=str, help='Result file, full path including the folders')
     parser.add_argument('--build_dir', type=str, help='Path to build directory, used by this utility to store intermediate data and computations')
     parser.add_argument('--crc_calculator', type=str, help='Path to CRC Calculator')
@@ -357,7 +358,7 @@ def create_sbi_trailer(args, sbi_auth_hdr_sbi_payload):
     # Prepare MFG Signature if needed, add/place padding if needed
     mfg_signature = bytes()
     if (args.mfg_rot):
-        result = subprocess.run([args.signer, args.key_map, args.mfg_rot, sandbox_file, signature_file], capture_output=True, text=True)
+        result = subprocess.run([args.signer, args.key_map, args.signature_scheme, args.mfg_rot, sandbox_file, signature_file], capture_output=True, text=True)
         if (result.returncode):
             print("Gen4 SBI Composer: utility failure - ", result.stderr)
             exit(1)
@@ -372,7 +373,7 @@ def create_sbi_trailer(args, sbi_auth_hdr_sbi_payload):
     # Prepare FLD Signature if needed, add/place padding if needed
     fld_signature = bytes()
     if (args.fld_rot):
-        result = subprocess.run([args.signer, args.key_map, args.fld_rot, sandbox_file, signature_file], capture_output=True, text=True)
+        result = subprocess.run([args.signer, args.key_map, args.signature_scheme, args.fld_rot, sandbox_file, signature_file], capture_output=True, text=True)
         if (result.returncode):
             print("Gen4 SBI Composer: utility failure - ", result.stderr)
             exit(1)

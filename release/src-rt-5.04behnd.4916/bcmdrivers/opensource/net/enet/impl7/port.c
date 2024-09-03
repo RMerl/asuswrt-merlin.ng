@@ -4,25 +4,19 @@
       Copyright (c) 2015 Broadcom 
       All Rights Reserved
    
-   Unless you and Broadcom execute a separate written software license
-   agreement governing use of this software, this software is licensed
-   to you under the terms of the GNU General Public License version 2
-   (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-   with the following added to such license:
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License, version 2, as published by
+   the Free Software Foundation (the "GPL").
    
-      As a special exception, the copyright holders of this software give
-      you permission to link this software with independent modules, and
-      to copy and distribute the resulting executable under terms of your
-      choice, provided that you also meet, for each linked independent
-      module, the terms and conditions of the license of that module.
-      An independent module is a module which is not derived from this
-      software.  The special exception does not apply to any modifications
-      of the software.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
    
-   Not withstanding the above, under no circumstances may you combine
-   this software in any way with any other Broadcom software provided
-   under a license other than the GPL, without Broadcom's express prior
-   written consent.
+   
+   A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+   writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.
    
    :>
  */
@@ -310,9 +304,38 @@ void sw_free(enetx_port_t **_p)
 
 void phy_link_change_cb(void *ctx);
 
+#if defined(CONFIG_BCM_MACSEC)
+static void port_macsec_init(enetx_port_t *port)
+{
+#if defined(CONFIG_BCM_MACSEC_FIRELIGHT)
+    if (port->port_info.is_macsec >= 0)
+    {
+        port->p.macsec_dev.macsec_ops = bcm_macsec_get_ops();
+        port->p.macsec_dev.priv = (void *)((unsigned long)port->port_info.is_macsec);
+        bcm_macsec_port_set(port->port_info.is_macsec, port->p.mac->mac_id);
+        enet_dbg("MACSEC port %d mac port %d\n", port->port_info.is_macsec, port->p.mac->mac_id);
+    }
+    else
+#endif
+    if (port->p.phy->macsec_ops)
+    {
+        port->p.macsec_dev.macsec_ops = (struct bcm_macsec_ops *)(port->p.phy->macsec_ops);
+        port->p.macsec_dev.priv = port->p.phy;
+    }
+
+    if (port->p.macsec_dev.macsec_ops)
+    {
+        printk("BCMENET: %s supports MACSec HW Offloading\n", port->obj_name);
+        port->dev->macsec_ops = &enet_macsec_ops;
+        port->dev->features |= NETIF_F_HW_MACSEC;
+    }
+}
+#endif
+
 int port_mac_phy_init(enetx_port_t *port)
 {
     int rc = 0;
+    mac_cfg_t mac_cfg = {0};
 
     if (port->p.delayed_mac)
     {
@@ -329,6 +352,11 @@ int port_mac_phy_init(enetx_port_t *port)
         {
             enet_err("failed to initialize mac for port: %s\n", port->obj_name);
             goto exit;
+        }
+
+        if(port->has_interface) {
+            mac_dev_disable(port->p.mac);   /* Clear MAC status from any old status carried over from uboot */
+            mac_dev_cfg_set(port->p.mac, &mac_cfg);
         }
 
         if ((rc = mac_dev_mtu_set(port->p.mac, ENET_MAX_MTU_PAYLOAD_SIZE + ENET_MAX_MTU_EXTRA_SIZE)))
@@ -368,19 +396,10 @@ int port_mac_phy_init(enetx_port_t *port)
 #endif
                 phy_dev_link_change_register(port->p.phy, phy_link_change_cb, port);
         }
+
 #if defined(CONFIG_BCM_MACSEC)
-        if (port->p.phy->macsec_ops)
-        {
-            port->p.macsec_dev.macsec_ops = (struct bcm_macsec_ops *)(port->p.phy->macsec_ops);
-            port->p.macsec_dev.priv = port->p.phy;
-        }
-        if (port->p.macsec_dev.macsec_ops)
-        {
-            printk("BCMENET: %s supports MACSec HW Offloading\n", port->obj_name);
-            port->dev->macsec_ops = &enet_macsec_ops;
-            port->dev->features |= NETIF_F_HW_MACSEC;
-        }
-#endif      
+        port_macsec_init(port);
+#endif
     }
 
 exit:
@@ -429,7 +448,7 @@ int port_init(enetx_port_t *port)
     }
     else
     {
-        port_link_change(port, !port->p.phy);
+        port_link_change(port, !(port->p.delayed_phy || port->p.phy));
     }
 
     if (!port->p.delayed_mac)
@@ -785,7 +804,6 @@ void port_generic_stats_get(enetx_port_t *self, struct rtnl_link_stats64 *net_st
         return;
 
     mac_stats = &(self->p.mac->stats);
-    memset(mac_stats, 0, sizeof(*mac_stats));
 
     if ((rc = mac_dev_stats_get(self->p.mac, mac_stats)))
     {

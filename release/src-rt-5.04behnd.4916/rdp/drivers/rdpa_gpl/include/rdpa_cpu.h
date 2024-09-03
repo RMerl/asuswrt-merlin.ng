@@ -1,29 +1,23 @@
 /*
 * <:copyright-BRCM:2013:DUAL/GPL:standard
-*
-*    Copyright (c) 2013 Broadcom
+* 
+*    Copyright (c) 2013 Broadcom 
 *    All Rights Reserved
-*
-* Unless you and Broadcom execute a separate written software license
-* agreement governing use of this software, this software is licensed
-* to you under the terms of the GNU General Public License version 2
-* (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-* with the following added to such license:
-*
-*    As a special exception, the copyright holders of this software give
-*    you permission to link this software with independent modules, and
-*    to copy and distribute the resulting executable under terms of your
-*    choice, provided that you also meet, for each linked independent
-*    module, the terms and conditions of the license of that module.
-*    An independent module is a module which is not derived from this
-*    software.  The special exception does not apply to any modifications
-*    of the software.
-*
-* Not withstanding the above, under no circumstances may you combine
-* this software in any way with any other Broadcom software provided
-* under a license other than the GPL, without Broadcom's express prior
-* written consent.
-*
+* 
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License, version 2, as published by
+* the Free Software Foundation (the "GPL").
+* 
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+* 
+* 
+* A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+* writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+* Boston, MA 02111-1307, USA.
+* 
 * :>
 */
 
@@ -247,9 +241,18 @@ typedef void (*extern_rxq_stat_callback)(int qid, extern_rxq_stat_t *stat, bdmf_
 
 typedef void (*reason_stat_extern_callback_t)(uint32_t *stat, rdpa_cpu_reason_index_t *rindex);
 
-#define RDPA_CPU_QUEUE_MAX_SIZE  1024       /**< Maximal Host queue size */
 #define RDPA_CPU_QUEUE_MIN_SIZE  64         /**< Minimal Host queue size */
+#if defined(CONFIG_BCM_WFD_WL_UNION)
+#define RDPA_CPU_QUEUE_MAX_SIZE  2048       /**< Maximal Host queue size */
+#define RDPA_CPU_WLAN_QUEUE_MAX_SIZE  2048  /**< Maximal WFD queue size */
+#else
+#define RDPA_CPU_QUEUE_MAX_SIZE  1024       /**< Maximal Host queue size */
+#if defined(BCM_DSL_XRDP) && defined(RDP_UFC)
+#define RDPA_CPU_WLAN_QUEUE_MAX_SIZE  (8 * 1024)  /**< Maximal WFD queue size */
+#else
 #define RDPA_CPU_WLAN_QUEUE_MAX_SIZE  1024  /**< Maximal WFD queue size */
+#endif
+#endif
 #define RDPA_CPU_GDX_QUEUE_MAX_SIZE   (16 * 1024)  /**< Maximal GDX queue size */
 #if !defined(CONFIG_CPU_RX_FROM_XPM)
 #define RDPA_FEED_QUEUE_MAX_SIZE  (1024 * 32)  /**< Maximal FEED queue size */
@@ -290,6 +293,9 @@ typedef struct {
     extern_rxq_stat_callback rxq_stat; /**< Optional internal statistics callback */
     long unsigned int irq_affinity_mask; /**< Queue ISR affinity mask - every bit represents CPU */
     uint32_t  ring_prio;         /**< Queue Priority - used for buffer allocation request \RDP_LIMITED  */
+#if defined(CONFIG_RNR_SKB_SHARED_INFO_RESET)
+    int8_t buf_type; /**< Host buffer type (data only or shared info to memset) \XRDP_LIMITED */
+#endif
 } rdpa_cpu_rxq_cfg_t;
 
 /** Receive statistics.
@@ -511,11 +517,15 @@ void rdpa_cpu_rx_dump_packet(char *name, rdpa_cpu_port port,
 /** Platform buffer */
 typedef void *bdmf_pbuf_t;
 
-static inline void bdmf_pbuf_init(uint32_t size, uint32_t offset)
+static inline void bdmf_pbuf_init(uint32_t size __attribute__ ((unused)), 
+                                  uint32_t offset __attribute__ ((unused)))
 {}
-static inline void bdmf_pbuf_free(bdmf_pbuf_t *pbuf)
+static inline void bdmf_pbuf_free(bdmf_pbuf_t *pbuf __attribute__ ((unused)))
 {}
-static inline int bdmf_pbuf_alloc(void *data, uint32_t length, uint16_t source, bdmf_pbuf_t *pbuf)
+static inline int bdmf_pbuf_alloc(void *data __attribute__ ((unused)),
+                                  uint32_t length __attribute__ ((unused)),
+                                  uint16_t source __attribute__ ((unused)),
+                                  bdmf_pbuf_t *pbuf __attribute__ ((unused)))
 {
     return 0;
 }

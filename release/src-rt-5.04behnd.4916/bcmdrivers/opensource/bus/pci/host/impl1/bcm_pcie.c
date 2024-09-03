@@ -3,27 +3,21 @@
    All Rights Reserved
 
    <:label-BRCM:2022:DUAL/GPL:standard
-
-   Unless you and Broadcom execute a separate written software license
-   agreement governing use of this software, this software is licensed
-   to you under the terms of the GNU General Public License version 2
-   (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-   with the following added to such license:
-
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
-
-   Not withstanding the above, under no circumstances may you combine
-   this software in any way with any other Broadcom software provided
-   under a license other than the GPL, without Broadcom's express prior
-   written consent.
-
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License, version 2, as published by
+   the Free Software Foundation (the "GPL").
+   
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+   
+   
+   A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+   writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.
+   
    :>
  */
 
@@ -476,6 +470,14 @@ int bcm_pcie_config_bar_addr(struct pci_dev *pdev, int bar, phys_addr_t addr,
 	    swm = &bpcie_cb.swa_mgr.swm[map_id];
 	    rc = ubus_master_decode_pcie_wnd_cfg(phc->info.id, map_id,
 	        swm->pci_addr, swm->sys_addr, swm->size);
+
+	    if (rc < 0) {
+	        HCD_ERROR("bpcie%d: Error UBUS SWAM [%d] Add PCI "
+	            HCD_ADDR_SIZE_LOG_FMT " System Addr: 0x%llx\n",
+	            phc->info.id, map_id,
+	            HCD_ADDR_SIZE_LOG(swm->pci_addr, swm->size), swm->sys_addr);
+	        return -EPERM;
+	    }
 
 	    HCD_LOG("bpcie%d: UBUS SWAM [%d] Add PCI " HCD_ADDR_SIZE_LOG_FMT
 	        " System Addr: 0x%llx\n",

@@ -31,7 +31,7 @@
 #define PMD_DEV 1
 #define UCODE_MAX_SIZE (84*1024)
 
-typedef struct {char *reg_desc; int dev_addr; int reg_addr; int data_bitEn; int data;} prog_seq_tbl;
+typedef struct {char *reg_desc; int dev_addr; int reg_addr; int data_bitEn; int data; int flag;} prog_seq_tbl;
 typedef struct {char *reg_desc; int dev_addr; int non_reserved_mask; int writeable_mask; int reg_addr; int def_val;} prog_seq_tbl_read;
 
 static inline err_code_t _merlin16_shortfin_delay_us(srds_access_t *sa__, uint32_t delay_us)
@@ -53,8 +53,10 @@ static inline void timeout_ns(uint32_t ns)
         mdelay(ns/1000/1000);
 }
 
-#if defined(CONFIG_BCM96765)
+#if defined(CONFIG_BCM96765) || defined(CONFIG_BCM96766)
 #define ETH_PHYS_TOP_BASE         0x80480000UL  //TODO_PROBE:
+#elif defined(CONFIG_BCM96764)
+#define ETH_PHYS_TOP_BASE         0x80280000UL  //TODO_PROBE:
 #else
 #define ETH_PHYS_TOP_BASE         0x83400000UL  //TODO_PROBE:
 #endif
@@ -198,6 +200,7 @@ int phy_drv_serdes146_get_total_cores(void);
 #define MLN_SPD_AN_USXGMII_MASTER        0x0109  //
 #define MLN_SPD_AN_USXGMII_SLAVE         0x0108  //
 #define MLN_SPD_AN_USXGMII_MP_SLAVE      0x1108  //
+#define MLN_SPD_AN_SXGMII_SLAVE          0x1208
 
 #endif //MERLIN_H
 

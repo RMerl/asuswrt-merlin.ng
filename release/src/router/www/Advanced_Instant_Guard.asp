@@ -13,15 +13,16 @@
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="other.css">
 <link rel="stylesheet" type="text/css" href="/js/table/table.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/help.js"></script>
-<script type="text/javascript" src="js/jquery.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
 <script language="JavaScript" type="text/javascript" src="switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" language="JavaScript" src="/js/table/table.js"></script>
+<script type="text/javascript" src="/form.js"></script>
 <style>
 .ipsec_view_log_panel {
 	width: 720px;
@@ -68,6 +69,11 @@ var tableStruct = {
 		}
 	]
 };
+
+var current_page = window.location.pathname.split("/").pop();
+var faq_index_tmp = get_faq_index(FAQ_List, current_page, 1);
+var faq_index_tmp2 = get_faq_index(FAQ_List, current_page, 2);
+
 function initial(){
 	show_menu();
 	tableApi.genTableAPI(tableStruct);
@@ -225,8 +231,11 @@ function vpnServerClientAccess(){
 						<tbody>
 							<tr>
 								<td bgcolor="#4D595D" valign="top">
+								<div class="container">
+
 									<div>&nbsp;</div>
 									<div class="formfonttitle"><#Instant_Guard_title#></div>
+									<div class="formfonttitle_help"><i onclick="show_feature_desc(`<#HOWTOSETUP#>`, `How to share secure connection to friends or family via Instant Guard app?`)" class="icon_help"></i></div>
 									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									<div class="formfontdesc"><#Instant_Guard_desc#></div>
 									<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
@@ -280,6 +289,11 @@ function vpnServerClientAccess(){
 										</tr>
 									</table>
 									 <div id="tableContainer"></div>
+
+
+									 </div>	<!-- for .container  -->
+									 <div class="popup_container popup_element_second"></div>
+
 								</td>
 							</tr>
 						</tbody>

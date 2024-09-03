@@ -19,7 +19,7 @@ void vfbio_init(void);
  * 	size - LUN size in bytes (alligned to block size if needed)
  * 	Returns 0 if succeeded or -1 if error
  ***********************************************************************/
-int vfbio_lun_create(char *name, unsigned int size, int *id);
+int vfbio_lun_create(char *name, uint64_t size, uint32_t flags, int *id);
 
 /************************************************************************
  * vfbio_delete_lun - call to create LUN by name, by ID, or by both
@@ -57,7 +57,7 @@ const char *vfbio_lun_get_name(int id);
  * 	size(OUT) - LUN size in bytes
  * 	Returns 0 if succeeded or -1 if error
  ***********************************************************************/
-int vfbio_lun_get_size(int id, unsigned int *size);
+int vfbio_lun_get_size(int id, uint64_t *size);
 
 /************************************************************************
  * vfbio_get_lun_blk_size - get LUN block size by ID
@@ -82,7 +82,7 @@ int vfbio_lun_get_blk_num(int id, unsigned int *num);
  * 	Returns 0 if succeeded or -1 if error,
  * 	 -2 if inconsistent (could be corrected by reset)
  ***********************************************************************/
-int vfbio_lun_resize(int id, unsigned int size);
+int vfbio_lun_resize(int id, uint64_t size);
 
 /************************************************************************
  * vfbio_rename_lun - atomically renames a number of LUNS

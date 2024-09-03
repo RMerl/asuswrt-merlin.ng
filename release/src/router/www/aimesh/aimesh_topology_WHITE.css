@@ -85,6 +85,16 @@
 .item_bg.category{
 	background-color: #B3B3B3;
 }
+.rssi_title{
+	color: #181818;
+}
+.rssi_container .rssi_component{
+	background-color: #F5F5F5;
+	color: #262626;
+}
+.rssi_container .rssi_component > span{
+	color: #006CE1;
+}
 .bubble_icon{
 	background: url(/images/New_ui/amesh/white_theme/cards_usage.svg) no-repeat;
 }
@@ -427,6 +437,9 @@
 .jstree-anchor.moca:before {
 	background-image: url(/images/New_ui/amesh/white_theme/topology_connect_quality_moca.svg);
 }
+.jstree-anchor.mlo:before {
+	background-image: url(/images/New_ui/amesh/white_theme/topology_connect_quality_mlo.svg);
+}
 .jstree-default .jstree-hovered {
 	background: initial;
 	box-shadow: initial;
@@ -447,6 +460,9 @@
 }
 .jstree-default .jstree-node.moca:before{
 	background: url(/images/New_ui/amesh/white_theme/topology_connect_quality_moca.svg);
+}
+.jstree-default .jstree-node.mlo:before{
+	background: url(/images/New_ui/amesh/white_theme/topology_connect_quality_mlo_1.svg);
 }
 .topology_node_info > div{
 	color: #262626;
@@ -487,6 +503,9 @@
 }
 .connect_line_info_bg .connect_line.moca:before{
 	background-image: url(/images/New_ui/amesh/white_theme/topology_connect_quality_moca.svg);
+}
+.connect_line_info_bg .connect_line.mlo:before{
+	background-image: url(/images/New_ui/amesh/white_theme/topology_connect_quality_mlo.svg);
 }
 .aimesh_tab{
 	color: #111827;

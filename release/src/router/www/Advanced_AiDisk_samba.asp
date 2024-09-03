@@ -12,15 +12,16 @@
 <link rel="stylesheet" type="text/css" href="/index_style.css">
 <link rel="stylesheet" type="text/css" href="/form_style.css">
 <link rel="stylesheet" type="text/css" href="/aidisk/AiDisk_style.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" src="/disk_functions.js"></script>
-<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
+<script type="text/javascript" src="/form.js"></script>
 <style>
 .charToUpperCase{
 	text-transform: uppercase;
@@ -54,7 +55,10 @@ var changedPermissions = new Array();
 
 var folderlist = new Array();
 
-var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=103";
+var faq_href0 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=103";
+
+var current_page = window.location.pathname.split("/").pop();
+var faq_index_tmp = get_faq_index(FAQ_List, current_page, 1);
 
 function initial(){
 	if(re_mode == "1"){
@@ -62,7 +66,6 @@ function initial(){
 		show_loading_obj();
 	}
 	else{
-		console.log("else");
 		$("#content_table").addClass("content");
 		$("#FormTitle").addClass("FormTitle content_bg");
 		$("#apply_btn").addClass("apply_gen");
@@ -85,7 +88,7 @@ function initial(){
 		//complete SMBv1_FAQ link
 		document.getElementById('SMBv1_FAQ').target="_blank";
 		document.getElementById('SMBv1_FAQ').style.textDecoration="underline";
-		document.getElementById("SMBv1_FAQ").href=faq_href;
+		document.getElementById("SMBv1_FAQ").href=faq_href0;
 	}
 
 	if(is_KR_sku){
@@ -150,6 +153,13 @@ function initial(){
 		document.getElementById("loginMethod").innerHTML = "<#AiDisk_SAMBA_hint_1#>";
 		document.getElementById("accountMask").style.display = "block";
 		$("#accountMask").css("height", ($("#shareStatus").height() + $(".AiDiskTable").height()));
+	}
+
+	if(top.webWrapper){
+		$(".icon_help").css({"top":"54px", "right":"22px"});
+	}
+	else{
+		$(".icon_help").css({"top":"30px", "right":"72px"});
 	}
 }
 
@@ -736,7 +746,7 @@ function applyRule(){
 function validForm(){
 	
 	if(document.form.computer_name.value.length > 0){
-		var alert_str = validator.samba_name(document.form.computer_name);
+		var alert_str = validator.samba_name(document.form.computer_name, "computer_name");
 		if(alert_str != ""){
 			showtext(document.getElementById("alert_msg1"), alert_str);
 			document.getElementById("alert_msg1").style.display = "";
@@ -834,6 +844,8 @@ function switchUserType(flag){
 	  <div id="tabMenu" class="submenuBlock"></div>
 	  <!--=====Beginning of Main Content=====-->
 <div id="FormTitle" align="left" border="0" cellpadding="0" cellspacing="0" style="width: 760px; display: none;">
+
+<div class="container">
 <table border="0" cellpadding="5" cellspacing="0" style="width: 100%;">
 	<tbody>
 		<tr>
@@ -843,6 +855,7 @@ function switchUserType(flag){
 				<span id="returnBtn" class="returnBtn">
 					<img onclick="go_setting('/APP_Installation.asp')" align="right" title="<#Menu_usb_application#>" src="/images/backprev.png" onMouseOver="this.src='/images/backprevclick.png'" onMouseOut="this.src='/images/backprev.png'">
 				</span>
+				<div class="formfonttitle_help"><i onclick="show_feature_desc(`<#HOWTOSETUP#>`)" class="icon_help"></i></div>
 			</div>
 			<div id="splitLine" class="splitLine"></div>
 			<div class="formfontdesc" style="margin-top: 10px;"><#Samba_desc#></div>
@@ -892,7 +905,7 @@ function switchUserType(flag){
 				</tr>
 				<tr>
 					<th>
-						<a class="hintstyle" href="javascript:void(0);" onClick="openHint(17,2);"><#ShareNode_DeviceName_itemname#></a>
+						<a class="hintstyle" href="javascript:void(0);" onClick="openHint(17,10);"><#ShareNode_DeviceName_itemname#></a>
 					</th>
 					<td>
 						<div><input type="text" name="computer_name" id="computer_name" class="input_20_table charToUpperCase" maxlength="15" value="<% nvram_get("computer_name"); %>" autocorrect="off" autocapitalize="on"><br/>
@@ -1042,8 +1055,11 @@ function switchUserType(flag){
 		</tr>
 	</tbody>
 </table>
-</div>
 
+</div>	<!-- for .container  -->
+<div class="popup_container popup_element_second"></div>
+
+</div>
 			</td>
     <td width="10" align="center" valign="top">&nbsp;</td>
 </tr>

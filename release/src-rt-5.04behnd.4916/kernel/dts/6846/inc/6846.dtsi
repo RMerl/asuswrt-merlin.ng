@@ -121,6 +121,7 @@
 		ubus_sys: ubus_sys {
 			#address-cells = <1>;
 			#size-cells = <1>;
+			ranges;
 			#define UBUS_SYSTOP_OFFSET         0x83000000
 			#define UBUS_SYSTOP_SIZE           0x80
 			#define UBUS_REGISTRATION_OFFSET   0x83000200

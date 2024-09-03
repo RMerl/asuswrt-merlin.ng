@@ -68,12 +68,12 @@
 	font:13px Arial, Helvetica, sans-serif;
 }
 </style>
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
-<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" language="JavaScript" src="/js/table/table.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
@@ -128,13 +128,97 @@ var orig_autowan_enable = '<% nvram_get("autowan_enable"); %>';
 var orig_switch_wantag = '<% nvram_get("switch_wantag"); %>';
 const bonding_port_settings = get_bonding_ports(based_modelid);
 
+var vlan_port_list = {"access": [], "trunk": []};
+
+function get_vlan_portlist(){
+	let sdn_maximum = ((isSupport("MaxRule_SDN") == "0") ? 6 : (parseInt(isSupport("MaxRule_SDN")) - 1));//default is sdn 0
+	let nvram_name = "";
+	let label_mac = httpApi.nvramGet(["label_mac"], true)["label_mac"];
+
+	/* Get access port list */
+	for(let i = 0; i  < sdn_maximum ; i++ ){
+		nvram_name = "apg" + i + "_enable";
+		let apg_enable = httpApi.nvramGet([nvram_name], true)[nvram_name];
+		if(apg_enable == "1"){
+			nvram_name = "apg" + i + "_dut_list";
+			let dut_list = decodeURIComponent(httpApi.nvramCharToAscii([nvram_name], true)[nvram_name]);
+
+			if(dut_list != ""){
+				let dut_array = dut_list.split("<");
+				$.each(dut_array, function(index){
+					if(dut_array[index] != ""){
+						let dut_info = dut_array[index].split(">");
+						if(dut_info[0] == label_mac){
+							if(dut_info[2] != ""){
+								let port_array = dut_info[2].split(",");
+								$.each(port_array, function(port_index){
+									vlan_port_list.access.push(port_array[port_index].substr(1,1));
+								});
+							}
+						}
+					}
+				});
+			}
+		}
+	}
+
+	/* Get trunk port list */
+	let vlan_trunk_array = decodeURIComponent(httpApi.nvramCharToAscii(["vlan_trunk_rl"], true)["vlan_trunk_rl"]).split("<");
+	$.each(vlan_trunk_array, function(index){
+		if(vlan_trunk_array[index] != ""){
+			let trunk_info = vlan_trunk_array[index].split(">");
+			vlan_port_list.trunk.push(trunk_info[0]);
+		}
+	});
+}
+
+let lanport_list = {"text_arr": [], "value_arr": []};
+function get_lanport_list(){
+	if(isSupport("NEW_PHYMAP")){
+		var cap_mac = (httpApi.hookGet('get_lan_hwaddr')) ? httpApi.hookGet('get_lan_hwaddr') : '';
+		httpApi.get_port_status(cap_mac, function(port_status){
+			var port_info = port_status["port_info"][cap_mac];
+			var text_arr = new Array(), value_arr = new Array();
+			$.each(port_info, function(index){
+				var label = index.substr(0,1);
+				var label_idx = index.substr(1,1);
+				if(label == "L"){
+					if(port_info[index].cap_support.WANLAN)
+						return;
+
+					if(Object.prototype.hasOwnProperty.call(port_info[index], 'ui_display') && port_info[index].ui_display.length > 0){
+						lanport_list.text_arr.push(port_info[index].ui_display);
+					}
+					else{
+						if(port_info[index].max_rate == "2500"){
+							if(parseInt(label_idx) > 0)
+								lanport_list.text_arr.push("2.5G/1G LAN" + label_idx);
+							else
+								lanport_list.text_arr.push("2.5G/1G LAN");
+						}
+						else if(port_info[index].max_rate == "10000"){
+							if(parseInt(label_idx) > 0)
+								lanport_list.text_arr.push("10G LAN" + label_idx);
+							else
+								lanport_list.text_arr.push("10G LAN");
+						}
+						else
+							lanport_list.text_arr.push("LAN Port " + label_idx);
+					}
+					lanport_list.value_arr.push(label_idx);
+				}
+			});
+		});
+	}
+}
+
 function initial(){
 	show_menu();
 	wans_flag = (wans_dualwan_orig.search("none") != -1 || !dualWAN_support) ? 0 : 1;
 	if(wan_bonding_support){
 		if(orig_bond_wan == 1 && (based_modelid == "RT-AX89U" || based_modelid == "GT-AXY16000")){
 			// Remove 10G base-T if it's aggregated w/ WAN port
-			var i = wans_caps.split(" ").indexOf("wan2");
+			let i = wans_caps.split(" ").indexOf("wan2");
 			if(i != -1 && wanports_bond.split(" ").indexOf("30") != -1){
 				var new_wans_cap = wans_caps.split(" ");
 				new_wans_cap.splice(i, 1);
@@ -158,12 +242,30 @@ function initial(){
 	wans_caps_primary = wans_caps;
 	wans_caps_secondary = wans_caps;
 	
-	addWANOption(document.form.wans_primary, wans_caps_primary.split(" "));
-	addWANOption(document.form.wans_second, wans_caps_secondary.split(" "));
+	if(isSupport("NEW_PHYMAP")){
+		get_lanport_list();
+		setTimeout(function(){
+			addWANOption(document.form.wans_primary, wans_caps_primary.split(" "));
+			addWANOption(document.form.wans_second, wans_caps_secondary.split(" "));
+			form_show(wans_flag);
+			if(lanport_list.text_arr.length > 0){
+				add_options_x2(document.form.wans_lanport1, lanport_list.text_arr, lanport_list.value_arr, wans_lanport_orig);
+				add_options_x2(document.form.wans_lanport2, lanport_list.text_arr, lanport_list.value_arr, wans_lanport_orig);
+			}
+			else{
+				$("#wans_primary option[value='lan']").remove();
+				$("#wans_second option[value='lan']").remove();
+			}
+		}, 500);
+	}
+	else{
+		addWANOption(document.form.wans_primary, wans_caps_primary.split(" "));
+		addWANOption(document.form.wans_second, wans_caps_secondary.split(" "));
+		form_show(wans_flag);
+	}
 
 	document.getElementById("dualwan_faq").href=faq_href1;
 	document.getElementById("network_detect_faq").href=faq_href2;
-
    	document.form.wans_mode.value = wans_mode_orig;
 
    	//parse nvram to array
@@ -185,58 +287,8 @@ function initial(){
 	};
 
 	wans_routing_rulelist_array = parseNvramToArray();
-	form_show(wans_flag);
 	updatDNSListOnline();
 	setTimeout("create_DNSlist_view();", 1000);
-
-	if(isSupport("NEW_PHYMAP")){
-		var cap_mac = (httpApi.hookGet('get_lan_hwaddr')) ? httpApi.hookGet('get_lan_hwaddr') : '';
-		httpApi.get_port_status(cap_mac, function(port_status){
-			var port_info = port_status["port_info"][cap_mac];
-			var text_arr = new Array(), value_arr = new Array();
-
-			$.each(port_info, function(index){
-				var label = index.substr(0,1);
-				var label_idx = index.substr(1,1);
-				if(label == "L"){
-					var lan_wan_port = false;
-					$.each(eth_wan_list, function(key) {
-						if(eth_wan_list[key].hasOwnProperty("wans_lanport") && eth_wan_list[key]["wans_lanport"] == label_idx){
-							lan_wan_port = true;
-							return false;
-						}
-					});
-
-					if(lan_wan_port)
-						return;
-
-					if(Object.prototype.hasOwnProperty.call(port_info[index], 'ui_display') && port_info[index].ui_display.length > 0){
-						text_arr.push(port_info[index].ui_display);
-					}
-					else{
-						if(port_info[index].max_rate == "2500"){
-							if(parseInt(label_idx) > 0)
-								text_arr.push("2.5G/1G LAN" + label_idx);
-							else
-								text_arr.push("2.5G/1G LAN");
-						}
-						else if(port_info[index].max_rate == "10000"){
-							if(parseInt(label_idx) > 0)
-								text_arr.push("10G LAN" + label_idx);
-							else
-								text_arr.push("10G LAN");
-						}
-						else
-							text_arr.push("LAN Port " + label_idx);
-					}
-					value_arr.push(label_idx);
-				}
-			});
-
-			add_options_x2(document.form.wans_lanport1, text_arr, value_arr, wans_lanport_orig);
-			add_options_x2(document.form.wans_lanport2, text_arr, value_arr, wans_lanport_orig);
-		});
-	}
 
 	if(based_modelid == "RT-AC87U" || based_modelid == "TUF-AX3000_V2"){ //MODELDEP: RT-AC87 : Quantenna port
 		if($("#wans_lanport1 option[value='1']").length > 0) //Primary LAN1
@@ -277,7 +329,7 @@ function initial(){
 	}
 
 	if(based_modelid == "RT-AC88Q" || based_modelid == "BRT-AC828" || based_modelid == "RT-AD7200") {
-		var i;
+		let i;
 		var arr = new Array(), varr = new Array();
 		for(i=5;i<=8;i++)
 		{
@@ -501,6 +553,8 @@ function form_show(v, change_primary_wan){
 				})).prependTo("#wans_primary");
 			}
 		}
+
+		$("#primary_tr").show();
 	}
 	else{ //DualWAN enabled
 		if(wans_dualwan_array[0] == "wan" && wan_value != ""){
@@ -519,9 +573,7 @@ function form_show(v, change_primary_wan){
 		}
 
 		if(wans_dualwan_array[1] == "none"){
-
 			if(wans_dualwan_array[0] == "dsl"){
-				
 				if(wans_caps.search("wan") >= 0)
 					document.form.wans_second.value = "wan";
 				else if(wans_caps.search("wan2") >= 0)
@@ -540,8 +592,18 @@ function form_show(v, change_primary_wan){
 					document.form.wans_second.value = "sfp+";
 				else if(wans_caps.search("usb") >= 0)
 					document.form.wans_second.value = "usb";
-				else
-					document.form.wans_second.value = "lan";
+				else{
+					if(isSupport("NEW_PHYMAP") && lanport_list.text_arr.length == 0){
+						$.each(eth_wan_list, function(key) {
+							if(key != document.form.wans_primary.value){
+								document.form.wans_second.value = key;
+								return false;
+							}
+						});
+					}
+					else
+						document.form.wans_second.value = "lan";
+				}
 			}
 			else if((wans_dualwan_array[0] == "wan" && document.form.wans_extwan.value == "1") ||
 					(wans_dualwan_array[0] == "lan" && document.form.wans_lanport.value == "5")){
@@ -597,6 +659,9 @@ function form_show(v, change_primary_wan){
 		if(usb_bk_support){
 			$("#usb_tethering_tr").hide();
 		}
+
+		$("#primary_tr").show();
+		$("#second_tr").show();
 	}
 }
 
@@ -800,7 +865,9 @@ function applyRule(){
 					return false;
 
 			if(wans_mode_orig != "lb" && check_bwdpi_engine_status()) {
-				var confirm_flag = confirm("<#dualwan_lb_dpi_conflict#>");
+				var confirm_str_lb_dpi_conflict = `<#dualwan_lb_dpi_conflict_new#>`;
+				confirm_str_lb_dpi_conflict = confirm_str_lb_dpi_conflict.replace('%@', `<#AiProtection_title#>`);	
+				var confirm_flag = confirm(confirm_str_lb_dpi_conflict);
 				if(confirm_flag) {
 					document.form.action_script.value = "dpi_disable;reboot;";
 				}
@@ -912,13 +979,14 @@ function applyRule(){
 		document.form.wans_lanport.disabled = true;
 	}
 
-	var conflict_func = "";
-	var conflict_ports = "";
+	/* Port Conflict Check */
+	let conflict_func = "";
+	let conflict_ports = "";
 	if(isSupport("autowan") && $('#wans_primary').find(":selected").val() == "auto"){
 		if(wan_bonding_support && orig_bond_wan == "1")
 			conflict_func = "<#WANAggregation#>";
 
-		if(lacp_enabled == "1"){
+		if(lacp_support && lacp_enabled == "1"){
 			if(conflict_func.length > 0){
 				conflict_func = conflict_func + ", <#NAT_lacp#>";
 			}
@@ -933,7 +1001,6 @@ function applyRule(){
 			else
 				conflict_func = "IPTV";
 		}
-	}
 
 	if(conflict_func.length > 0){
 		var hint_str = "To ensure that there are no conflicts, when you enable %1$@, the %2$@ will be disabled. Are you sure to continue?"
@@ -965,13 +1032,13 @@ function applyRule(){
 		else
 			return false;
 	}
+	}
 
-	var conflict_lanport_text = "";
 	if (document.form.wans_dualwan.value.indexOf("lan") != -1 ||
 		((based_modelid == "GT10" || based_modelid == "TUF-AX3000_V2") && document.form.wans_extwan.value == "1")){
-		var conflict_lanport_text = "";
-		var port_conflict = false;
-		var lan_port_num = document.form.wans_lanport.value;
+		let port_conflict = false;
+		let lan_port_num = document.form.wans_lanport.value;
+
 		if((based_modelid == "GT10" || based_modelid == "TUF-AX3000_V2") && document.form.wans_extwan.value == "1")
 			var wan_lanport_num = "1";
 		else
@@ -982,35 +1049,35 @@ function applyRule(){
 			if(iptv_port_settings == "56"){// LAN Port 5 (switch_stb_x: 3)  LAN Port 6 (switch_stb_x: 4)
 				if(lan_port_num == "4" && switch_stb_x == "3"){
 					port_conflict = true;
-					conflict_lanport_text = "LAN5";
+					conflict_ports = "LAN5";
 				}
 				else if(lan_port_num == "3" && switch_stb_x == "4"){
 					port_conflict = true;
-					conflict_lanport_text = "LAN6";
+					conflict_ports = "LAN6";
 				}
 				else if((switch_stb_x == "6" || switch_stb_x == "8") && (lan_port_num == '4' || lan_port_num == "3")){
 					port_conflict = true;
 					if(lan_port_num == '4')
-						conflict_lanport_text = "LAN5";
+						conflict_ports = "LAN5";
 					else
-						conflict_lanport_text = "LAN6";
+						conflict_ports = "LAN6";
 				}
 			}
 			else{// LAN Port 1 (switch_stb_x: 3)  LAN Port 2 (switch_stb_x: 4)
 				if(lan_port_num == "2" && switch_stb_x == "3"){ //LAN1
 					port_conflict = true;
-					conflict_lanport_text = "LAN1";
+					conflict_ports = "LAN1";
 				}
 				else if(lan_port_num == "1" && switch_stb_x == "4"){ //LAN2
 					port_conflict = true;
-					conflict_lanport_text = "LAN2";
+					conflict_ports = "LAN2";
 				}
 				else if((switch_stb_x == "6" || switch_stb_x == "8") && (lan_port_num == "2" || lan_port_num == "1")){
 					port_conflict = true;
 					if(lan_port_num == "2")
-						conflict_lanport_text = "LAN1";
+						conflict_ports = "LAN1";
 					else
-						conflict_lanport_text = "LAN2";
+						conflict_ports = "LAN2";
 				}
 			}
 		}
@@ -1021,7 +1088,7 @@ function applyRule(){
 						if(stbPortMappings[i].comboport_value_list.split(" ").length < 2){
 							if((switch_stb_x == lan_port_num) || (switch_stb_x == wan_lanport_num)){
 								port_conflict = true;
-								conflict_lanport_text = "LAN" + switch_stb_x;
+								conflict_ports = "LAN" + switch_stb_x;
 							}
 						}
 						else{
@@ -1029,7 +1096,7 @@ function applyRule(){
 							for(let j = 0; j < value_list.length; j++){
 								if((lan_port_num == value_list[j]) || (wan_lanport_num == value_list[j])){
 									port_conflict = true;
-									conflict_lanport_text = "LAN" + value_list[j];
+									conflict_ports = "LAN" + value_list[j];
 								}
 							}
 						}
@@ -1048,19 +1115,15 @@ function applyRule(){
 		}
 
 		// Check Bonding port conflict
+		conflict_ports = "";
 		if(lacp_support && lacp_enabled == "1"){
-			for(var i = 0; i < bonding_port_settings.length; i++){
+			for(let i = 0; i < bonding_port_settings.length; i++){
 				if((document.form.wans_dualwan.value.indexOf("lan") != -1 && lan_port_num == bonding_port_settings[i].val) || (wan_lanport_num == bonding_port_settings[i].val)){
-					conflict_lanport_text = bonding_port_settings[i].text.toUpperCase();
+					conflict_func = "<#NAT_lacp#>";
+					conflict_ports = bonding_port_settings[i].text.toUpperCase();
 				}
 			}
 		}
-	}
-
-	conflict_func = "";
-	if(conflict_lanport_text != ""){
-		conflict_func = "<#NAT_lacp#>";
-		conflict_ports = conflict_lanport_text;
 	}
 
 	if(is_GTBE_series){
@@ -1069,12 +1132,12 @@ function applyRule(){
 			if(lacp_support && lacp_enabled == "1" && lacp_ifnames_x == "eth0 eth3"){
 				if(conflict_func.length == 0)
 					conflict_func = "<#NAT_lacp#>";
-				else if(conflict_func.length > 0 && conflict_func.indexOf("<#NAT_lacp#>") == -1)
+				else if(conflict_func.indexOf("<#NAT_lacp#>") == -1)
 					conflict_func += ", <#NAT_lacp#>";
 
 				if(conflict_ports.length == 0)
 					conflict_ports = "10G WAN/LAN1";
-				else if(conflict_ports.length > 0 && conflict_ports.indexOf("10G WAN") == -1)
+				else if(conflict_ports.indexOf("10G WAN") == -1)
 					conflict_ports = "10G WAN/LAN1, " + conflict_ports;
 			}
 		}
@@ -1119,6 +1182,46 @@ function applyRule(){
 		}
 		else{
 			return false;
+		}
+	}
+
+	/* VLAN Port Check */
+	if(isSupport("mtlancfg")){
+		get_vlan_portlist();
+		if(document.form.wans_dualwan.value.indexOf("lan") != -1){
+			let vlan_port_conflict = false;
+			let lan_port_num = document.form.wans_lanport.value;
+			conflict_ports = "";
+
+			if(vlan_port_list.access.length > 0){
+				$.each(vlan_port_list.access, function(index){
+					let vlan_port_num = vlan_port_list.access[index];
+					if(vlan_port_num == lan_port_num){
+						vlan_port_conflict = true;
+						conflict_ports = "LAN" + vlan_port_num;
+						return false;
+					}
+				});
+			}
+
+			if(vlan_port_list.trunk.length > 0){
+				$.each(vlan_port_list.trunk, function(index){
+					let vlan_port_num = vlan_port_list.trunk[index];
+					if(vlan_port_num == lan_port_num){
+						vlan_port_conflict = true;
+						conflict_ports = "LAN" + vlan_port_num;
+						return false;
+					}
+				});
+			}
+
+			if(vlan_port_conflict){
+				let hint_str1 = "<#PortConflict_SamePort_Hint#>";
+				let note_str = "";
+				note_str = hint_str1.replace("%1$@", "WAN").replace("%2$@", "VLAN");
+				alert(note_str);
+				return;
+			}
 		}
 	}
 
@@ -1222,6 +1325,11 @@ function addWANOption(obj, wanscapItem){
 			obj.options[i] = new Option(wanscapName, wanscapItem[i]);
 		}
 	}
+
+	if(isSupport("NEW_PHYMAP") && lanport_list.text_arr.length == 0){
+		$("#wans_primary option[value='lan']").remove();
+		$("#wans_second option[value='lan']").remove();
+	}
 }
 
 function changeWANProto(obj){
@@ -1249,8 +1357,18 @@ function changeWANProto(obj){
 						document.form.wans_second.value = "sfp+";
 					else if(wans_caps.search("usb") >= 0)
 						document.form.wans_second.value = "usb";
-					else
-						document.form.wans_second.value = "lan";
+					else{
+						if(isSupport("NEW_PHYMAP") && lanport_list.text_arr.length == 0){
+							$.each(eth_wan_list, function(key) {
+								if(key != obj.value){
+									document.form.wans_second.value = key;
+									return false;
+								}
+							});
+						}
+						else
+							document.form.wans_second.value = "lan";
+					}
 				}
 				else if(obj.value == "wan2"){
 					if(wans_caps.search("dsl") >= 0)
@@ -1327,8 +1445,18 @@ function changeWANProto(obj){
 						document.form.wans_primary.value = "sfp+";
 					else if(wans_caps.search("usb") >= 0)
 						document.form.wans_primary.value = "usb";
-					else
-						document.form.wans_primary.value = "lan";
+					else{
+						if(isSupport("NEW_PHYMAP") && lanport_list.text_arr.length == 0){
+							$.each(eth_wan_list, function(key) {
+								if(key != obj.value){
+									document.form.wans_primary.value = key;
+									return false;
+								}
+							});
+						}
+						else
+							document.form.wans_second.value = "lan";
+					}
 				}
 				else if(obj.value == "wan2"){
 					if(wans_caps.search("dsl") >= 0)
@@ -1644,7 +1772,7 @@ function show_wans_rules(){
 function save_table(){
 	//parse array to nvram
 	var tmp_value = "";
-	for(var i = 0; i < wans_routing_rulelist_array.length; i += 1) {
+	for(let i = 0; i < wans_routing_rulelist_array.length; i += 1) {
 		if(wans_routing_rulelist_array[i].length != 0) {
 			tmp_value += "<";
 			for(var j = 0; j < wans_routing_rulelist_array[i].length; j += 1) {
@@ -1736,7 +1864,7 @@ var isPingListOpen = 0;
 function create_DNSlist_view(){
 	//count ping_target
 	var array_ping=[], array_ping_CN=[];
-	for(var i=0;i<DNSService.length;i++){
+	for(let i=0;i<DNSService.length;i++){
 		//"ping_target" : "Yes"|"CN"|"No"
 		switch (DNSService[i].ping_target){
 			case "Yes":
@@ -1834,7 +1962,7 @@ function add_option_count(obj, obj_t, selected_flag){
 		}
 
 		free_options(obj_t);
-		for(var i = start; i <= end; i++){
+		for(let i = start; i <= end; i++){
 			if(based_modelid.substring(0,3) == "4G-" && obj_t.name != "wandog_fb_count")
 				str0= i;
 			else
@@ -2087,7 +2215,7 @@ function remain_origins(){
 											</td>
 										</tr>
 
-										<tr>
+										<tr id="primary_tr" style="display: none;">
 											<th><#dualwan_primary#></th>
 											<td>
 												<select id="wans_primary" name="wans_primary" class="input_option" onchange="changeWANProto(this);"></select>
@@ -2099,7 +2227,7 @@ function remain_origins(){
 												</select>
 											</td>
 									  	</tr>
-										<tr>
+										<tr id="second_tr" style="display: none;">
 											<th><#dualwan_secondary#></th>
 											<td>
 												<select id="wans_second" name="wans_second" class="input_option" onchange="changeWANProto(this);"></select>
@@ -2121,7 +2249,7 @@ function remain_origins(){
 												<span id="usb_tethering_hint" style="display: none;"><#dualwan_usb_backup_hint#></span>
 											</td>
 										</tr>
-										<tr id="wans_mode_tr">
+										<tr id="wans_mode_tr" style="display: none;">
 											<th><#dualwan_mode#></th>
 											<td>
 												<input type="hidden" name="wans_mode" value=''>
@@ -2152,8 +2280,8 @@ function remain_origins(){
 								</td>
 							</tr>	
 
-			          		<tr>
-			            		<th><#dualwan_mode_lb_setting#></th>
+							<tr style="display: none;">
+								<th><#dualwan_mode_lb_setting#></th>
 			            		<td>
 									<input type="text" maxlength="1" class="short_input input_3_table" name="wans_lb_ratio_0" value="" onkeypress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off"/>
 									&nbsp; : &nbsp;
@@ -2164,7 +2292,7 @@ function remain_origins(){
 			          		<tr class="ISPProfile">
 			          			<th><#dualwan_isp_rules#></th>
 			          			<td>
-			          				<input type="radio" value="0" name="wans_isp_unit" class="content_input_fd" onClick="change_isp_unit(this.value);">None
+									<input type="radio" value="0" name="wans_isp_unit" class="content_input_fd" onClick="change_isp_unit(this.value);"><#wl_securitylevel_0#>
 									<input type="radio" value="1" name="wans_isp_unit" class="content_input_fd" onClick="change_isp_unit(this.value);"><#dualwan_primary#>
 									<input type="radio" value="2" name="wans_isp_unit" class="content_input_fd" onClick="change_isp_unit(this.value);"><#dualwan_secondary#>
 			          			</td>	

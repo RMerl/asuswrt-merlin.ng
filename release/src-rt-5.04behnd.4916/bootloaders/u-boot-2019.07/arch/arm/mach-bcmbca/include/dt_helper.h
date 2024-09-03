@@ -12,6 +12,7 @@
 #define CMA_PAD_BASE_ADDR_STR		"pad0"
 #define BUFMEM_BASE_ADDR_STR		"bufmem"
 #define RNRMEM_BASE_ADDR_STR		"rnrmem"
+#define DDOSMEM_BASE_ADDR_STR		"ddosmem"
 #define B15_MEGA_BARRIER		"b15_mega_br"
 #define DT_RSVD_PREFIX_STR		"dt_reserved_"
 #define DT_RSVD_NODE_STR		"reserved-memory"

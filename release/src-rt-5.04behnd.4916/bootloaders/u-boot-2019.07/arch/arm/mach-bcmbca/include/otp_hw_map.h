@@ -11,12 +11,6 @@
  * */
 #if defined (CONFIG_OTP_V1)
 
-#define OTP_JTAG_SER_NUM_ROW_1          	19          // Row19[25:20] = CSEC_CHIPID[5:0]
-#define OTP_JTAG_SER_NUM_MASK_1         	0x0000003F
-#define OTP_JTAG_SER_NUM_REG_SHIFT_1    	20
-#define OTP_JTAG_SER_NUM_ROW_2          	20          // Row20[25:0]  = CSEC_CHIPID[31:6]
-#define OTP_JTAG_SER_NUM_MASK_2         	0x03FFFFFF
-#define OTP_JTAG_SER_NUM_SHIFT_2        	6
 #define OTP_JTAG_PWD_ROW_1              	21          // Row21[25:0]  = CSEC_PWD[25:0]
 #define OTP_JTAG_PWD_ROW_2              	22          // Row22[25:0]  = CSEC_PWD[51:26]
 #define OTP_JTAG_PWD_ROW_3              	23          // Row23[11:0]  = CSEC_PWD[63:52]
@@ -49,10 +43,6 @@
 #define OTP_JTAG_MODE_LOCK              0x38
 #define OTP_JTAG_MODE_PERMALOCK         0x3F
 #define OTP_JTAG_MODE_MASK              0x3F
-
-#define OTP_JTAG_SER_NUM_ROW            20          // Row20 = CSEC_CHIPID
-#define OTP_JTAG_SER_NUM_SHIFT		0x0
-#define OTP_JTAG_SER_NUM_MASK		0xFFFFFFFF
 
 #define OTP_JTAG_PWD_ROW_1              21          // Row21 = CSEC_JTAGPWD[31:0]
 #define OTP_JTAG_PWD_SHIFT_1            0
@@ -88,11 +78,6 @@
 #define OTP_JTAG_MODE_MASK         		0x3
 #define OTP_JTAG_MODE_LOCK              	0x2
 #define OTP_JTAG_MODE_PERMALOCK         	0x3
-
-/* row 26 */
-#define OTP_JTAG_SER_NUM_ROW          		26          // Row26 = CSEC_JTAGID[31:0] (formerly CSEC_CHIPID) 
-#define OTP_JTAG_SER_NUM_SHIFT			0x0
-#define OTP_JTAG_SER_NUM_MASK			0xFFFFFFFF
 
 /* row 27 */
 #define OTP_JTAG_PWD_ROW_1              	27          // Row27 = CSEC_JTAGPWD[31:0]

@@ -1,29 +1,23 @@
 /* 
    <:copyright-BRCM:2011:DUAL/GPL:standard
-
-   Copyright (c) 2011 Broadcom 
-   All Rights Reserved
-
-   Unless you and Broadcom execute a separate written software license
-   agreement governing use of this software, this software is licensed
-   to you under the terms of the GNU General Public License version 2
-   (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-   with the following added to such license:
-
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
-
-   Not withstanding the above, under no circumstances may you combine
-   this software in any way with any other Broadcom software provided
-   under a license other than the GPL, without Broadcom's express prior
-   written consent.
-
+   
+      Copyright (c) 2011 Broadcom 
+      All Rights Reserved
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License, version 2, as published by
+   the Free Software Foundation (the "GPL").
+   
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+   
+   
+   A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+   writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.
+   
    :>
  */
 
@@ -41,7 +35,7 @@
 #include "bcm_otp.h"
 #include "shared_utils.h"
 
-extern struct device *otp_dev;
+extern struct platform_device *pdev_plat;
 
 //#define OTP_DEBUG
 
@@ -96,6 +90,7 @@ enum
 #define k_FIELD_STR_SECBOOT             "SECBOOT"
 #define k_FIELD_STR_CUST_KEYS           "CUSTKEYS"
 #define k_FIELD_STR_LEDS                "LEDS"
+#define k_FIELD_STR_UART_EN             "UARTEN"
 
 #define OTP_MFG_SECURE_MASK             0x1
 #define OTP_FLD_SECURE_MASK             0x2
@@ -133,6 +128,7 @@ static bcm_otp_feat_info otp_feat_info[] = {
 	{ .feat = OTP_MAP_DBG_MODE, .fld_name = k_FIELD_STR_DBG_MODE, .fld_size = 4 },
 	{ .feat = OTP_MAP_JU_MODE, .fld_name = k_FIELD_STR_JU_MODE, .fld_size = 4 },
 	{ .feat = OTP_MAP_LEDS, .fld_name = k_FIELD_STR_LEDS, .fld_size = 5},
+	{ .feat = OTP_MAP_UART_EN, .fld_name = k_FIELD_STR_UART_EN, .fld_size = 4},
 };
 //
 // OTP RPC access helpers
@@ -283,45 +279,45 @@ u32 otp_feat_info_get_size(otp_map_feat_t otp_feat)
 static otp_map_cmn_err_t bcm_otp_field_read(const char *fld_name, u32 *data, u32 fld_size)
 {
     otp_map_cmn_err_t rc;
-	dma_addr_t dma_addr = 0;
+    dma_addr_t dma_addr = 0;
 
     // Prepare Request
-	dma_addr = dma_map_single(otp_dev, data, fld_size, DMA_FROM_DEVICE);
-	if (dma_mapping_error(otp_dev, dma_addr)) {
-		pr_err("Failed to map buffer for DMA use");
-		rc = (-ENOMEM);
-		return rc;
-	}
+    dma_addr = dma_map_single(&pdev_plat->dev, data, fld_size, DMA_FROM_DEVICE);
+    if (dma_mapping_error(&pdev_plat->dev, dma_addr)) {
+        pr_err("Failed to map buffer for DMA use");
+        rc = (-ENOMEM);
+        return rc;
+    }
 
     rc = _otp_rpc_field_get(fld_name, (unsigned char*)dma_addr);
 
-	OTP_DBG("fld=%s size=%u rc=%d\n", fld_name, fld_size,  rc);
+    OTP_DBG("fld=%s size=%u rc=%d\n", fld_name, fld_size,  rc);
     OTP_HEXDUMP("data:", data, fld_size);
 
-    dma_unmap_single(otp_dev, dma_addr, fld_size, DMA_FROM_DEVICE);
+    dma_unmap_single(&pdev_plat->dev, dma_addr, fld_size, DMA_FROM_DEVICE);
 
-	return rc;
+    return rc;
 }
 
 /* OTP write helper */
 static otp_map_cmn_err_t bcm_otp_field_write(const char *fld_name, u32 *data, u32 fld_size)
 {
     otp_map_cmn_err_t rc;
-	dma_addr_t dma_addr = 0;
+    dma_addr_t dma_addr = 0;
 
-	// Prepare Request
-	dma_addr = dma_map_single(otp_dev, data, fld_size, DMA_TO_DEVICE);
-	if (dma_mapping_error(otp_dev, dma_addr)) {
-		pr_err("Failed to map buffer for DMA use");
-		rc = (-ENOMEM);
-		return rc;
-	}
+    // Prepare Request
+    dma_addr = dma_map_single(&pdev_plat->dev, data, fld_size, DMA_TO_DEVICE);
+    if (dma_mapping_error(&pdev_plat->dev, dma_addr)) {
+        pr_err("Failed to map buffer for DMA use");
+        rc = (-ENOMEM);
+        return rc;
+    }
 
     rc = _otp_rpc_field_set(fld_name, (unsigned char*)dma_addr, fld_size);
     OTP_DBG("fld=%s size=%u rc=%d\n", fld_name, fld_size, rc);
     OTP_HEXDUMP("data:", data, fld_size);
 
-	dma_unmap_single(otp_dev, dma_addr, fld_size, DMA_TO_DEVICE);
+    dma_unmap_single(&pdev_plat->dev, dma_addr, fld_size, DMA_TO_DEVICE);
 
     return rc;
 }

@@ -4,25 +4,19 @@
  *    Copyright (c) 2020 Broadcom 
  *    All Rights Reserved
  * 
- * Unless you and Broadcom execute a separate written software license
- * agreement governing use of this software, this software is licensed
- * to you under the terms of the GNU General Public License version 2
- * (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
- * with the following added to such license:
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License, version 2, as published by
+ * the Free Software Foundation (the "GPL").
  * 
- *    As a special exception, the copyright holders of this software give
- *    you permission to link this software with independent modules, and
- *    to copy and distribute the resulting executable under terms of your
- *    choice, provided that you also meet, for each linked independent
- *    module, the terms and conditions of the license of that module.
- *    An independent module is a module which is not derived from this
- *    software.  The special exception does not apply to any modifications
- *    of the software.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  * 
- * Not withstanding the above, under no circumstances may you combine
- * this software in any way with any other Broadcom software provided
- * under a license other than the GPL, without Broadcom's express prior
- * written consent.
+ * 
+ * A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+ * writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
  * 
  * :>
  */
@@ -41,6 +35,10 @@
 #undef pr_fmt
 #define pr_fmt(fmt)		"NDI " fmt
 
+#define DEV_TABLE_BITS		5
+#define IP_TABLE_BITS		3
+#define SA_TABLE_BITS		2
+
 struct sk_buff;
 struct nf_conn;
 struct ndi_dev;
@@ -52,6 +50,7 @@ enum {
 	IGN_NO_MAC = 3,
 	IGN_IP4_MULTICAST = 4,
 	IGN_IP6_MULTICAST = 5,
+	IGN_WAN_DEV = 6,
 };
 
 struct ndi_classify {
@@ -60,6 +59,7 @@ struct ndi_classify {
 	struct ndi_dev		*dev;
 	unsigned int		hook;
 	unsigned long		flags;
+	unsigned long		local_flags;
 	unsigned int		ignore_reason;
 };
 
@@ -98,8 +98,35 @@ struct nl_bcast_entry {
 	struct list_head	node;
 };
 
+struct ndi_stats {
+	u64 seen_pkts;
+	u64 scanned_pkts;
+	u64 arp_probes;
+	u64 netdev_notify_events;
+	u64 netlink_broadcasts;
+	u64 xfrm_notify_events;
+};
+
+#define DECLARE_NDI_TABLE(name, bits) \
+	struct name##_table { \
+		DECLARE_HASHTABLE(table, bits); \
+		struct kmem_cache *cache; \
+		unsigned long size; \
+		struct spinlock lock; \
+	}; \
+	extern struct name##_table name
+
+#define DEFINE_NDI_TABLE(name) \
+	struct name##_table name = { \
+		.lock = __SPIN_LOCK_UNLOCKED(name.lock), \
+	}
+
+DECLARE_NDI_TABLE(devices,	DEV_TABLE_BITS);
+DECLARE_NDI_TABLE(ips,		IP_TABLE_BITS);
+DECLARE_NDI_TABLE(sas,		SA_TABLE_BITS);
+
 /* core */
-extern spinlock_t lock;
+extern spinlock_t nl_bcast_lock;
 extern struct list_head nl_bcast_list;
 extern struct proc_dir_entry *ndi_dir;
 void probe_set_online(struct ndi_classify *p);
@@ -118,10 +145,8 @@ struct ndi_dev *dev_find_or_new_ignored(u8 *mac, struct sk_buff *skb);
 struct ndi_dev *dev_find_or_new_for_secpath(struct sec_path *sp,
 					    struct ndi_dev *ct_dev);
 int dev_ip_update(struct ndi_dev *dev, struct sk_buff *skb);
-int devs_bucket_count(void);
 void dev_sa_get(struct ndi_dev *dev);
 void dev_sa_put(struct ndi_dev *dev);
-struct hlist_head *devs_get_bucket(int i);
 struct ndi_ip *ip_find(void *ip, int l3proto);
 struct ndi_ip *ip_find_by_skb(struct sk_buff *skb);
 void ip_free(struct ndi_ip *entry);
@@ -135,7 +160,6 @@ void __exit ndi_tables_exit(void);
 
 /* netlink */
 void ndi_nl_rcv(struct sk_buff *skb);
-int ndi_dev_nl_event_locked(struct ndi_dev *dev, int type);
 int ndi_dev_nl_event(struct ndi_dev *dev, int type);
 int ndi_dev_nl_init(void);
 void ndi_dev_nl_exit(void);
@@ -164,12 +188,10 @@ void ndi_dev_nl_exit(void);
 	})
 
 #define ndi_devs_for_each_entry(dev, bkt) \
-	for (bkt = 0; bkt < devs_bucket_count(); bkt++) \
-		hlist_for_each_entry(dev, devs_get_bucket(bkt), node)
+	hash_for_each(devices.table, bkt, dev, node)
 
 #define ndi_devs_for_each_entry_safe(dev, tmp, bkt) \
-	for (bkt = 0; bkt < devs_bucket_count(); bkt++) \
-		hlist_for_each_entry_safe(dev, tmp, devs_get_bucket(bkt), node)
+	hash_for_each_safe(devices.table, bkt, tmp, dev, node)
 
 static inline int should_ignore_ndi_dev(struct ndi_dev *dev)
 {

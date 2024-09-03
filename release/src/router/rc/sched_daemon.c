@@ -53,6 +53,10 @@ extern char *__progname;
 	SCHED_DAEMON_DBG_SYSLOG(fmt,##args) \
 } while(0)
 
+#ifndef RTCONFIG_AVOID_TZ_ENV
+static char time_zone_t[32]={0};
+#endif
+
 
 #ifdef USE_TIMERUTIL
 ///////////////////////////////////// task prototype /////////////////////////////////////
@@ -69,6 +73,9 @@ static void task_pc_time_quota(struct timer_entry *timer, void *data);
 #endif
 #ifdef RTCONFIG_MULTIWAN_PROFILE
 static void task_mtwan_schedule(struct timer_entry *timer, void *data);
+#endif
+#ifndef RTCONFIG_AVOID_TZ_ENV
+static void task_timezone_checking(struct timer_entry *timer, void *data);
 #endif
 ///////////////////////////////////// task prototype /////////////////////////////////////
 
@@ -94,6 +101,7 @@ static struct task_table sd_task_t[] =
 #ifdef RTCONFIG_MULTIWAN_PROFILE
         {SIGALRM, 0, task_mtwan_schedule, 0, PERIOD_30_SEC},
 #endif
+        {SIGALRM, 0, task_timezone_checking, 0, PERIOD_10_SEC},
         {SIGUSR1, 0, sched_daemon_sigusr1, 0, 0},
         {SIGUSR2, 0, sched_daemon_sigusr2, 0, 0},
         {SIGTERM, 0, sched_daemon_exit, 0, 0},
@@ -128,6 +136,9 @@ static void task_pc_time_quota(void);
 #endif
 #ifdef RTCONFIG_MULTIWAN_PROFILE
 static void task_mtwan_schedule(void);
+#endif
+#ifndef RTCONFIG_AVOID_TZ_ENV
+static void task_timezone_checking(void);
 #endif
 ///////////////////////////////////// task prototype /////////////////////////////////////
 
@@ -226,6 +237,7 @@ alarmtimer(unsigned long sec, unsigned long usec)
 static void sched_daemon(int sig)
 {
 	//SCHED_DAEMON_DBG("sig=(%d)", sig);
+	period_10_sec = (period_10_sec + 1) % 10;
 	period_30_sec = (period_30_sec + 1) % 30;
 	period_3600_sec = (period_3600_sec + 1) % 3600;
 	period_86400_sec = (period_86400_sec + 1) % 86400;
@@ -237,6 +249,14 @@ static void sched_daemon(int sig)
 		return;
 
 	task_pc_time_quota();
+#endif
+
+/*======== The following is for period 10 seconds ========*/
+	if (period_10_sec)
+		return;
+
+#ifndef RTCONFIG_AVOID_TZ_ENV
+	task_timezone_checking();
 #endif
 
 /*======== The following is for period 30 seconds ========*/
@@ -396,8 +416,8 @@ void wl_sched_v1(void)
 #else
 #if defined(RTCONFIG_MULTILAN_CFG)
 extern wifi_band_cap_st band_cap[MAX_BAND_CAP_LIST_SIZE];
-extern band_cap_total;
-extern is_reserved_if(int unit, int subunit);
+extern int band_cap_total;
+extern int is_reserved_if(int unit, int subunit);
 #endif
 
 void wl_sched_v2(void)
@@ -521,7 +541,7 @@ void wl_sched_v2(void)
 #else
 			snprintf(tmp, sizeof(tmp), "%d", unit);
 #endif
-			SCHED_DAEMON_DBG("[wifi-scheduler] 3 uschedTime=%s, unit=%d, subunit=%d, activeNow2=%d\n", schedTime, unit, subunit, activeNow2);
+			SCHED_DAEMON_DBG("[wifi-scheduler] 3 uschedTime=%s, unit=%d, subunit=%d, activeNow2=%d\n", schedTime2, unit, subunit, activeNow2);
 
 			if (vif_svcStatus[item][subunit] != activeNow2) {
 #ifdef RTCONFIG_QCA
@@ -555,7 +575,14 @@ void wl_sched_v2(void)
 		
 			subunit++;
 		}
-#endif	
+#endif	// RTCONFIG_MULTILAN_CFG
+
+ // for MWL don't need to check wlX
+#ifdef RTCONFIG_MULTILAN_MWL
+		item++;
+		unit++;
+		continue;
+#endif
 		
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_QCA)
@@ -864,6 +891,27 @@ static void task_mtwan_schedule(void)
 #endif
 }
 #endif //RTCONFIG_MULTIWAN_PROFILE
+
+#ifndef RTCONFIG_AVOID_TZ_ENV
+#ifdef USE_TIMERUTIL
+static void task_timezone_checking(struct timer_entry *timer, void *data)
+#else
+static void task_timezone_checking(void)
+#endif
+{
+	if(strcmp(nvram_safe_get("time_zone_x"), time_zone_t)){
+		SCHED_DAEMON_DBG("update time zone from %s to %s\n", time_zone_t, nvram_safe_get("time_zone_x"));
+		//logmessage("sched_daemon", "update time zone from %s to %s", time_zone_t, nvram_safe_get("time_zone_x"));
+		strlcpy(time_zone_t, nvram_safe_get("time_zone_x"), sizeof(time_zone_t));
+		setenv("TZ", nvram_safe_get("time_zone_x"), 1);
+		tzset();
+	}
+
+#ifdef USE_TIMERUTIL
+	mod_timer(timer, PERIOD_10_SEC);
+#endif
+}
+#endif	/* RTCONFIG_AVOID_TZ_ENV */
 
 #ifdef USE_TIMERUTIL
 static void sched_daemon_sigusr1(struct timer_entry *timer, void *data)

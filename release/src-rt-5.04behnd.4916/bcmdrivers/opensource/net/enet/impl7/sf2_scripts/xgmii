@@ -83,8 +83,14 @@ sf2_xgmii() { #sf2_xgmii <unit>
     then echo "device has no (connected) sf2 switch!!"; return;
     fi
 
-    if [ $chip != 6765 ] 
+    if [ $chip != 6765 ] && [ $chip != 6766 ] && [ $chip != 6764 ]
     then echo "xgmii is only available for 6765 device!!"; return;
+    fi
+
+    if [ $chip == 6764 ]
+    then
+        sib_base=0x80274c00;
+        lfh_base=0x80274b00;
     fi
 
     if [ $sf2_reg_base != 0 ]
@@ -109,8 +115,14 @@ sf2_xgmii() { #sf2_xgmii <unit>
         echo ""
         
         echo " === LFH XGMII link fault handling"
-        dump_port_lfh 0
-        dump_port_lfh 5
+        if [ $chip == 6765 ]
+        then
+            dump_port_lfh 0
+            dump_port_lfh 5
+        else
+            dump_port_lfh 5
+            dump_port_lfh 6
+        fi    
     fi
     
     

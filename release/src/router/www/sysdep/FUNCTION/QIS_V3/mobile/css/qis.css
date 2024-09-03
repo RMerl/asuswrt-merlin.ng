@@ -1,4 +1,17 @@
-﻿body{
+﻿html::-webkit-scrollbar{
+    display: block;
+    width: 4px;
+    height: 4px;
+    padding: 2px;
+}
+html::-webkit-scrollbar-thumb{
+    background-color: #248DFF !important;   
+    border-radius: 50px;
+}
+html::-webkit-scrollbar-track{
+    background-color: #192229 !important;
+}
+body{
 	background:url('./qis_background_downsize.png') repeat;
 	background-color: #111 !important;
 /*
@@ -195,6 +208,10 @@ a{
 	border-radius: 35px;
 	color: #007AFF;
 	background: #FFF;
+}
+#asus_pp_eula_scroll {
+	height: 55vh !important;
+	font-size: 1.5em;
 }
 .labelContainer{
 	margin-left: 25px;
@@ -546,12 +563,10 @@ a{
 .footHeight{
 	height: 100px;
 }
-#wlInputField{
-	margin-bottom: -30px;
-}
 #noWanContainer{
-    padding: 17%;
     height: 504px;
+	display: flex;
+	justify-content: center;
 }
 #noWanPic{
 	position: absolute;
@@ -577,14 +592,14 @@ a{
 	position: absolute;
 	width: 480px;
 	height: 330px;
-	background: url('../../images/GT-BExx_port.png') no-repeat center;
+	background: url('../../images/model_port.png') no-repeat center;
 }
 
 .port_plugin_img{
 	position: absolute;
 	width: 480px;
 	height: 330px;
-	background: url('../../images/GT-BExx_plugin.png') no-repeat center;
+	background: url('../../images/wanport_plugin.png') no-repeat center;
 	right: 215px;
 }
 
@@ -851,6 +866,9 @@ a{
 .bandStreeringSupport{
 	display: none;
 }
+.checkboxUnderTextInput{
+	margin-top: -30px;
+}
 .titleMain{
 	font-size: 60px;
 	font-weight: bold;
@@ -1052,14 +1070,24 @@ a{
 	}
 }
 
+#eulaConfirmInfo {
+	border: 1px solid #ddd;
+	padding: 10px;
+	border-radius: 5px;
+	background-color: unset!important;
+	font-size: 1.2em!important;
+}
+
+#eulaConfirmContainer label {
+	color: #FFFFFF;
+	border: unset!important;
+	font-size: 1.5em;
+}
+
 /*for Desktop*/
 @media screen and (min-aspect-ratio: 11/13){
 	.pageDesc{
 		font-size: 1.8em;
-	}
-	#noWanContainer{
-    	padding: 50px;
-		margin-left: 80px;
 	}
 	.tableContainer{
 		width: 90%;
@@ -1081,6 +1109,16 @@ a{
 		align-items: center;
 		justify-content: center;
 		margin-top:50px;
+	}
+	#asus_pp_eula_scroll {
+		height: 45vh !important;
+		font-size: 1em;
+	}
+	#eulaConfirmContainer label {
+		font-size: 1em;
+	}
+	#eulaConfirmInfo {
+		font-size: 14px!important;
 	}
 	.desktop_sort{
 		display:table-cell;
@@ -1188,7 +1226,7 @@ a{
 	.defpass_guideline_container .desc_container{
 		font-size: 1.6em !important;
 	}
-	@media screen and (max-height: 1000px){
+	@media screen and (max-height: 1200px){
 		.tableContainerIndex{ 
 			transform: scale(0.8, 0.8);
 			transform-origin: top;
@@ -1816,11 +1854,6 @@ a{
 	flex-basis: 35%;
 	font-size: 2em;
 }
-
-#asus_pp_eula_scroll {
-	height: 45vh !important;
-}
-
 #eulaButtonContainer {
 	display: none !important;
 	height: 0px !important;
@@ -1828,11 +1861,6 @@ a{
 
 #asusEulaContainer {
 	color: #FFFFFF;
-}
-
-#eulaConfirmContainer label {
-	color: #FFFFFF;
-	border: unset!important;
 }
 
 #eulaPopupButtonContainer{
@@ -1892,41 +1920,42 @@ a{
 	cursor: not-allowed;
 	color: #FFFFFF;
 }
-
 .mobileAbort.disabled .mobile_abortBtn{
 	color: #FFFFFF;
 }
 
-#eulaConfirmInfo {
-	font-size: 14px!important;
-	border: 1px solid #ddd;
-	padding: 10px;
-	border-radius: 5px;
-	background-color: unset!important;
-}
-.lds-dual-ring {
-	display: inline-block;
-	width: 66px;
-	height: 66px;
-}
-.lds-dual-ring:after {
-	content: " ";
-	display: block;
-	width: 30px;
-	height: 30px;
-	margin: 13px;
-	border-radius: 50%;
-	border: 6px solid #fff;
-	border-color: #fff transparent #fff transparent;
-	animation: lds-dual-ring 1.2s linear infinite;
-}
-@keyframes lds-dual-ring {
+@keyframes spinner-two-alt {
 	0% {
-		transform: rotate(0deg);
+		transform: rotate(0deg)
 	}
-	100% {
-		transform: rotate(360deg);
+	to {
+		transform: rotate(359deg)
 	}
+}
+
+.gg-spinner-two-alt, .gg-spinner-two-alt::before {
+	box-sizing: border-box;
+	display: block;
+	width: 20px;
+	height: 20px
+}
+
+.gg-spinner-two-alt {
+	transform: scale(1.5);
+	display: inline-block;
+}
+
+.gg-spinner-two-alt::before {
+	content: "";
+	position: absolute;
+	border-radius: 100px;
+	animation: spinner-two-alt 1s cubic-bezier(.6, 0, .4, 1) infinite;
+	border: 3px solid transparent;
+	border-bottom-color: currentColor;
+	border-top-color: currentColor
+}
+.wispMode {
+	display: none;
 }
 .moreBold{
 	font-weight: bolder;

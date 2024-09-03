@@ -1,6 +1,6 @@
 #!/bin/sh
 
-wget_options="-q -t 2 -T 30 --no-check-certificate"
+wget_options="--ciphers='DEFAULT:@SECLEVEL=1:!CAMELLIA:!3DES' -q -t 2 -T 30 --no-check-certificate"
 
 nvram set sig_state_update=0 # INITIALIZING
 nvram set sig_state_flag=0   # 0: Don't do upgrade  1: Do upgrade	
@@ -34,10 +34,10 @@ fi
 echo "---- sig update start: ----" > /tmp/sig_upgrade.log
 if [ "$forsq" == "1" ]; then
 	echo "---- sig update sq normal----" >> /tmp/sig_upgrade.log
-	wget $wget_options https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/sig2nd_update.zip -O /tmp/sig_update.txt		
+	wget --ciphers='DEFAULT:@SECLEVEL=1:!CAMELLIA:!3DES' -t 2 -T 30  --no-check-certificate https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/sig2nd_update.zip -O /tmp/sig_update.txt		
 else
 	echo "---- sig update real normal----" >> /tmp/sig_upgrade.log
-	wget $wget_options https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/sig2nd_update.zip -O /tmp/sig_update.txt
+	wget --ciphers='DEFAULT:@SECLEVEL=1:!CAMELLIA:!3DES' -t 2 -T 30  --no-check-certificate https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/sig2nd_update.zip -O /tmp/sig_update.txt
 fi
 dlinfo="$?"
 echo "---- sig wget exit : $dlinfo ----" >> /tmp/sig_upgrade.log

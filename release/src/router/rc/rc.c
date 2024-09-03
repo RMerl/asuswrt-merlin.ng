@@ -479,11 +479,35 @@ static int rctest_main(int argc, char *argv[])
 	else if (strcmp(argv[1], "apg_stop")==0) {
 		apg_stop();
 	}
-	else if (strcmp(argv[1], "apg_init_settings")==0) {
-		apg_init_settings();
+	else if (strcmp(argv[1], "init_apg")==0) {
+		init_apg();
 	}
 	else if (strcmp(argv[1], "sync_apgx_to_wlunit")==0) {
 		sync_apgx_to_wlunit();	
+	}
+	else if (strcmp(argv[1], "checkMLOConnSupport")==0) {
+		const struct MLO_Combination *mlo_list = &supportedCombinations[0];
+		if(atoi(argv[2]) < 0)
+		{
+			for (mlo_list = &supportedCombinations[0]; mlo_list->AP_MLO != -1; mlo_list++) {
+				if(isMLOConnectionSupported(mlo_list->AP_MLO, mlo_list->STA_MLO))
+					_dprintf("AP GROUP(%9s)(%2d) with STA GROUP(%9s)(%2d) MLO connection supported(O)\n", mlo_list->AP_GROUP, mlo_list->AP_MLO, mlo_list->STA_GROUP, mlo_list->STA_MLO);
+				else
+					_dprintf("AP GROUP(%9s)(%2d) with STA GROUP(%9s)(%2d) MLO connection supported(X)\n", mlo_list->AP_GROUP, mlo_list->AP_MLO, mlo_list->STA_GROUP, mlo_list->STA_MLO);
+			}
+		}
+		else
+		{
+			for (mlo_list = &supportedCombinations[0]; mlo_list->AP_MLO != -1; mlo_list++) {
+				if(mlo_list->AP_MLO == atoi(argv[2]) && mlo_list->STA_MLO == atoi(argv[3]))
+				{
+					if(isMLOConnectionSupported(mlo_list->AP_MLO, mlo_list->STA_MLO))
+						_dprintf("AP GROUP(%9s)(%2d) with STA GROUP(%9s)(%2d) MLO connection supported(O)\n", mlo_list->AP_GROUP, mlo_list->AP_MLO, mlo_list->STA_GROUP, mlo_list->STA_MLO);
+					else
+						_dprintf("AP GROUP(%9s)(%2d) with STA GROUP(%9s)(%2d) MLO connection supported(X)\n", mlo_list->AP_GROUP, mlo_list->AP_MLO, mlo_list->STA_GROUP, mlo_list->STA_MLO);
+				}
+			}
+		}
 	}
 	else if (strcmp(argv[1], "check_sdn_ifcap")==0) {
 		create_sdn_ifcap();
@@ -676,7 +700,7 @@ static int rctest_main(int argc, char *argv[])
 		led = atoi(argv[2]);
 		mode = atoi(argv[3]);
 		_dprintf("Set Cled %d as %d\n", led, mode);
-#if defined(RPAX56) || defined(RPAX58)
+#if defined(RPAX56) || defined(RPAX58) || defined(RPBE58)
 		rc_bcm_cled_ctrl(led, mode);
 #else
 		bcm_cled_ctrl(led, mode);
@@ -813,7 +837,7 @@ static int rctest_main(int argc, char *argv[])
 		gen_bcmbsd_def_policy(selif_val);
 	}
 #endif
-#if defined(RPAX56) || defined(RPAX58)
+#if defined(RPAX56) || defined(RPAX58) || defined(RPBE58)
 	else if (strcmp(argv[1], "is_client") == 0) {
 		printf("client_mode=%d\n", client_mode());
 	}
@@ -1890,6 +1914,13 @@ static int rctest_main(int argc, char *argv[])
 			printf("%d\n", get_gpio(atoi(argv[2])));
 		}
 #endif
+		else if (strcmp(argv[1], "get_psta_status") == 0) {
+			printf("ret = %d\n", get_psta_status(atoi(argv[2])));
+		}
+		else if (strcmp(argv[1], "get_pap_bssid") == 0) {
+			char pap_bssid[] = "XX:XX:XX:XX:XX:XX\0";
+			printf("ret = %s\n", get_pap_bssid(atoi(argv[2]), pap_bssid));
+		}
 		else {
 			printf("what?\n");
 		}
@@ -2658,7 +2689,7 @@ static const applets_t applets[] = {
 	{ "ocnvcd", 			ocnvcd_main			},
 	{ "dslited", 			dslited_main			},
 #endif
-#if defined(RTCONFIG_RALINK) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(RTCONFIG_RALINK) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
 	{ "rtkswitch",			config_rtkswitch		},
 #if defined(RTAC53) || defined(RTAC51UP)
 	{ "mtkswitch",			config_mtkswitch		},
@@ -2725,7 +2756,7 @@ static const applets_t applets[] = {
 #if defined(GTAX6000)
 	{ "antled",			antled_main			},
 #endif
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
 	{ "rtkmonitor",			rtkmonitor_main			},
 #endif
 #ifdef BUILD_READMEM
@@ -2757,6 +2788,9 @@ static const applets_t applets[] = {
 	{ "bwdpi_db_10",		bwdpi_db_10_main		},
 	{ "rsasign_sig_check",		rsasign_sig_check_main		},
 	{ "hour_monitor",		hour_monitor_main		},
+#endif
+#if defined(RTCONFIG_DNSQUERY_INTERCEPT)
+	{ "dns_dpi_check",		dns_dpi_check_main		},
 #endif
 #ifdef RTCONFIG_AMAS
 	{ "amas_lib",		        amas_lib_main			},
@@ -2902,13 +2936,6 @@ int check_wifi_band_cap()
 
 	char s[81];
 
-/*
-	if (!capability || strlen(capability) <= 0)
-		goto check_wifi_band_cap_exit;
-
-	if (!(in = json_tokener_parse(capability)))
-		goto check_wifi_band_cap_exit;
-*/
 	if (nvram_get_int("re_mode") == 1)
 		create_sdn_ifcap();
 
@@ -2978,9 +3005,7 @@ int check_wifi_band_cap()
 			if (unit < 0 || sunit < 1)
 				goto check_wifi_band_cap_exit;
 
-			memset(s, 0, sizeof(s));
-			snprintf(s, sizeof(s), "wl%d.%d_ifname", unit, sunit);
-			if (strcmp(k2, nvram_safe_get(s)))
+			if (strcmp(k2, json_object_get_string(prefixObj)))
 				goto check_wifi_band_cap_exit;
 
 			if (json_object_get_int(band) == WIFI_BAND_2G) {
@@ -3091,17 +3116,13 @@ int check_lan_port_cap()
 		lanInfoObj = v1;
 		if (json_object_object_get_ex(lanInfoObj, "ifname", &ifnameObj) == FALSE)
 			goto check_lan_port_cap_exit;
-		
+
 		for (found=0, i=0; i<port_mapping.count; i++) {
 			if (!(port = &port_mapping.port[i]))
 				continue;
-
-			if (!port->ifname || strlen(port->ifname)<=0)
+			if (!port->label_name || strlen(port->label_name)<2)
 				continue;
-			
-			index = (port->ext_port_id > -1) ? port->ext_port_id : port->phy_port_id;
-			found = (index == json_object_get_int(ifnameObj)) ? 1 : 0;
-			if (found)
+			if ((found = (strcmp(port->label_name+1, json_object_get_string(ifnameObj))==0)))
 				break;
 		}
 
@@ -3191,6 +3212,7 @@ static print_mtlan(MTLAN_T *pmtl, size_t mtl_sz)
 	int i, j;
 	for (i = 0; i < mtl_sz; i++) {
 		printf("|-enable:[%d]\n", pmtl[i].enable);
+		printf("|-prio:[%d]\n", pmtl[i].sdn_t.prio);
 		printf("|-vid:[%d]\n", pmtl[i].vid);
 		printf("|-port_isolation:[%d]\n", pmtl[i].port_isolation);
 		printf("|-name:[%s]\n", pmtl[i].name);
@@ -3261,7 +3283,7 @@ static print_mtlan(MTLAN_T *pmtl, size_t mtl_sz)
 void print_mtlan_by_idx_usage(const char *name)
 {
 	printf("Invalid!!!\n");
-	printf("Usage: %s [sdn|apg|vpnc|vpns|urlf|nwf|gre|fw|killsw|ahs|wan|ppprelay|wan6|mtwan|mswan] [idx/switch]\n", name);
+	printf("Usage: %s [sdn|apg|vpnc|vpns|urlf|nwf|gre|fw|killsw|ahs|wan|ppprelay|wan6|mtwan|mswan|prio] [idx/switch]\n", name);
 	return;
 }
 
@@ -3300,6 +3322,8 @@ void __rc_get_mtlan_by_idx(const char *idx_name, const int idx, const int is_rm)
 		type = SDNFT_TYPE_MTWAN;
 	} else if (!strcmp(idx_name, "mswan")) {
 		type = SDNFT_TYPE_MSWAN;
+	} else if (!strcmp(idx_name, "prio")) {
+		type = SDNFT_TYPE_PRIORITY;
 	} else {
 		if (!is_rm)
 			print_mtlan_by_idx_usage("get_mtlan_by_idx");
@@ -3809,13 +3833,13 @@ int main(int argc, char **argv)
 		restart_wireless();
 		return 0;
 	}
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
 	else if (!strcmp(base, "config_switch")) {
 		config_switch();
 		return 0;
 	}
 #endif
-#if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG) && (defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U)) || defined(RTBE95U)
+#if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG) && (defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U)) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
 	else if (!strcmp(base, "config_extwan")) {
 		config_extwan();
 		return 0;
@@ -4779,8 +4803,10 @@ _dprintf("LED_NOMOBILE=%d, LED_2G_YELLOW=%d, LED_3G_BLUE=%d, LED_4G_WHITE=%d.\n"
 			wan_proto = WAN_LW4O6;
 		else if (!strcmp(argv[2], "v6plus"))
 			wan_proto = WAN_V6PLUS;
-		else
+		else if (!strcmp(argv[2], "ocnvc"))
 			wan_proto = WAN_OCNVC;
+		else
+			wan_proto = WAN_V6OPTION;
 
 		while (fgets(rules, sizeof(rules), stdin) != NULL) {
 			if (s46_mapcalc(0, wan_proto, rules, peerbuf, sizeof(peerbuf), addr6buf, sizeof(addr6buf),

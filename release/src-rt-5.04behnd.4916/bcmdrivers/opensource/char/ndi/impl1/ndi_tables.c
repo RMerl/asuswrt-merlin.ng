@@ -4,25 +4,19 @@
  *    Copyright (c) 2020 Broadcom 
  *    All Rights Reserved
  * 
- * Unless you and Broadcom execute a separate written software license
- * agreement governing use of this software, this software is licensed
- * to you under the terms of the GNU General Public License version 2
- * (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
- * with the following added to such license:
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License, version 2, as published by
+ * the Free Software Foundation (the "GPL").
  * 
- *    As a special exception, the copyright holders of this software give
- *    you permission to link this software with independent modules, and
- *    to copy and distribute the resulting executable under terms of your
- *    choice, provided that you also meet, for each linked independent
- *    module, the terms and conditions of the license of that module.
- *    An independent module is a module which is not derived from this
- *    software.  The special exception does not apply to any modifications
- *    of the software.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  * 
- * Not withstanding the above, under no circumstances may you combine
- * this software in any way with any other Broadcom software provided
- * under a license other than the GPL, without Broadcom's express prior
- * written consent.
+ * 
+ * A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+ * writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
  * 
  * :>
  */
@@ -40,22 +34,12 @@
 #include "ndi_local.h"
 #include <linux/inetdevice.h>
 
-#define DEV_TABLE_BITS		5
-#define IP_TABLE_BITS		3
-#define SA_TABLE_BITS		2
-
 /* --- variables --- */
-#define DEFINE_NDI_TABLE(name, bits) \
-	struct name##_table { \
-		DECLARE_HASHTABLE(table, bits); \
-		struct kmem_cache *cache; \
-		unsigned long size; \
-	}; \
-	static struct name##_table name
-DEFINE_NDI_TABLE(devices,	DEV_TABLE_BITS);
-DEFINE_NDI_TABLE(ips,		IP_TABLE_BITS);
-DEFINE_NDI_TABLE(sas,		SA_TABLE_BITS);
-static u32 dev_id;
+static u32 global_dev_id;
+
+DEFINE_NDI_TABLE(devices);
+DEFINE_NDI_TABLE(ips);
+DEFINE_NDI_TABLE(sas);
 
 /* --- functions --- */
 static u32 dev_key(u8 *mac)
@@ -68,9 +52,11 @@ struct ndi_dev *dev_find_by_mac(u8 *mac)
 	struct ndi_dev *dev;
 	u32 key = dev_key(mac);
 
+	spin_lock_bh(&devices.lock);
 	hash_for_each_possible(devices.table, dev, node, key)
 		if (ether_addr_equal(dev->mac, mac))
 			break;
+	spin_unlock_bh(&devices.lock);
 
 	return dev;
 }
@@ -80,12 +66,20 @@ struct ndi_dev *dev_find_by_id(u32 id)
 	struct ndi_dev *dev;
 	int bkt;
 
+	spin_lock_bh(&devices.lock);
 	hash_for_each(devices.table, bkt, dev, node)
 		if (dev->id == id)
 			break;
+	spin_unlock_bh(&devices.lock);
 
 	return dev;
 }
+
+struct ndi_dev *ndi_dev_find_by_id(u32 id)
+{
+	return dev_find_by_id(id);
+}
+EXPORT_SYMBOL(ndi_dev_find_by_id);
 
 static struct ndi_dev *__dev_alloc_init(u8 *mac)
 {
@@ -100,14 +94,15 @@ static struct ndi_dev *__dev_alloc_init(u8 *mac)
 	if (mac)
 		memcpy(dev->mac, mac, sizeof(dev->mac));
 	INIT_HLIST_NODE(&dev->node);
-	dev->id = dev_id++;
+	dev->id = global_dev_id++;
 	dev->state = DEV_OFFLINE;
 
 out:
 	return dev;
 }
 
-struct ndi_dev *__dev_find_or_new(u8 *mac, struct sk_buff *skb, int ignore)
+static struct ndi_dev
+*__dev_find_or_new(u8 *mac, struct sk_buff *skb, int ignore)
 {
 	struct ndi_dev *dev;
 	u32 key = dev_key(mac);
@@ -127,7 +122,9 @@ struct ndi_dev *__dev_find_or_new(u8 *mac, struct sk_buff *skb, int ignore)
 		set_bit(NDI_DEV_IGNORE_BIT, &dev->flags);
 	dev_ip_update(dev, skb);
 
+	spin_lock_bh(&devices.lock);
 	hash_add(devices.table, &dev->node, key);
+	spin_unlock_bh(&devices.lock);
 	pr_debug("%s new device\n", ndi_dev_name(dev));
 	ndi_dev_nl_event(dev, NDINL_NEWDEVICE);
 
@@ -150,6 +147,9 @@ struct ndi_dev
 {
 	struct ndi_dev *dev = NULL;
 	struct ndi_sa *sa;
+
+	if (!sp)
+		goto out;
 
 	sa = sa_find_first(sp);
 	if (!sa)
@@ -177,7 +177,9 @@ struct ndi_dev
 
 		set_bit(NDI_DEV_IS_XFRM_BIT, &dev->flags);
 
+		spin_lock_bh(&devices.lock);
 		hash_add(devices.table, &dev->node, 0);
+		spin_unlock_bh(&devices.lock);
 		pr_debug("%s new XFRM device\n", ndi_dev_name(dev));
 		ndi_dev_nl_event(dev, NDINL_NEWDEVICE);
 	}
@@ -225,15 +227,6 @@ out:
 	return updated;
 }
 
-int devs_bucket_count(void)
-{
-	return HASH_SIZE(devices.table);
-}
-struct hlist_head *devs_get_bucket(int i)
-{
-	return &devices.table[i];
-}
-
 static void dev_delete_helper(struct ndi_dev *dev)
 {
 	if (dev->netdev)
@@ -249,7 +242,7 @@ void dev_sa_get(struct ndi_dev *dev)
 		clear_bit(NDI_DEV_STALE_BIT, &dev->flags);
 		pr_debug("%s is online over ipsec\n", ndi_dev_name(dev));
 		dev->state = DEV_ONLINE;
-		ndi_dev_nl_event_locked(dev, NDINL_NEWDEVICE);
+		ndi_dev_nl_event(dev, NDINL_NEWDEVICE);
 	}
 }
 
@@ -262,7 +255,7 @@ void dev_sa_put(struct ndi_dev *dev)
 		set_bit(NDI_DEV_STALE_BIT, &dev->flags);
 		pr_debug("%s is offline\n", ndi_dev_name(dev));
 		dev->state = DEV_OFFLINE;
-		ndi_dev_nl_event_locked(dev, NDINL_NEWDEVICE);
+		ndi_dev_nl_event(dev, NDINL_NEWDEVICE);
 	}
 }
 
@@ -288,6 +281,7 @@ struct ndi_ip *ip_find(void *ip, int l3proto)
 	u32 key;
 
 	key = ip_hash(ip, l3proto);
+	spin_lock_bh(&ips.lock);
 	hash_for_each_possible(ips.table, entry, node, key) {
 		if (entry->l3proto != l3proto)
 			continue;
@@ -298,6 +292,7 @@ struct ndi_ip *ip_find(void *ip, int l3proto)
 		    ipv6_addr_equal(&entry->ip6, ip))
 			break;
 	}
+	spin_unlock_bh(&ips.lock);
 
 	return entry;
 }
@@ -312,11 +307,18 @@ struct ndi_ip *ip_find_by_skb(struct sk_buff *skb)
 	return NULL;
 }
 
-void ip_free(struct ndi_ip *entry)
+static void __ip_free(struct ndi_ip *entry)
 {
 	hash_del(&entry->node);
 	kmem_cache_free(ips.cache, entry);
 	ips.size--;
+}
+
+void ip_free(struct ndi_ip *entry)
+{
+	spin_lock_bh(&ips.lock);
+	__ip_free(entry);
+	spin_unlock_bh(&ips.lock);
 }
 
 struct ndi_ip *ip_find_or_new(void *ip, int l3proto, u8 *mac)
@@ -351,7 +353,9 @@ struct ndi_ip *ip_find_or_new(void *ip, int l3proto, u8 *mac)
 	/* add entry to hlist */
 	INIT_HLIST_NODE(&entry->node);
 	h = &ips.table[ip_hash((u32*)ip, l3proto)];
+	spin_lock_bh(&ips.lock);
 	hlist_add_head(&entry->node, h);
+	spin_unlock_bh(&ips.lock);
 	ips.size++;
 
 check_duplicate_macs:
@@ -360,13 +364,15 @@ check_duplicate_macs:
 
 	/* Remove other entries that match the same mac as the new entry. This
 	 * covers cases where a LAN client changes IP addresses. */
+	spin_lock_bh(&ips.lock);
 	hash_for_each_safe(ips.table, bkt, n, entry, node) {
 		if (entry == new_entry)
 			continue;
 		if (ether_addr_equal(entry->mac, mac) &&
 		    entry->l3proto == l3proto)
-			ip_free(entry);
+			__ip_free(entry);
 	}
+	spin_unlock_bh(&ips.lock);
 
 out:
 	return entry;
@@ -383,11 +389,16 @@ struct ndi_sa *sa_find(struct xfrm_state *x)
 {
 	struct ndi_sa *sa;
 
-	hash_for_each_possible(sas.table, sa, node, sa_key(x))
+	spin_lock_bh(&sas.lock);
+	hash_for_each_possible(sas.table, sa, node, sa_key(x)) {
 		if (sa->x == x)
-			return sa;
+			goto out;
+	}
+	sa = NULL;
 
-	return NULL;
+out:
+	spin_unlock_bh(&sas.lock);
+	return sa;
 }
 
 struct ndi_sa *sa_find_first(struct sec_path *sp)
@@ -427,7 +438,9 @@ struct ndi_sa *sa_find_or_new(struct xfrm_state *x)
 	sa->x = x;
 
 	INIT_HLIST_NODE(&sa->node);
+	spin_lock_bh(&sas.lock);
 	hash_add(sas.table, &sa->node, sa_key(x));
+	spin_unlock_bh(&sas.lock);
 
 out:
 	return sa;
@@ -451,7 +464,9 @@ void sa_delete(struct ndi_sa *sa)
 
 	sa_delete_helper(sa);
 
+	spin_lock_bh(&sas.lock);
 	hash_del(&sa->node);
+	spin_unlock_bh(&sas.lock);
 	kmem_cache_free(sas.cache, sa);
 }
 
@@ -492,9 +507,11 @@ void sa_delete(struct ndi_sa *sa)
 		} \
 		\
 		/* print each entry in the bucket */ \
+		spin_lock_bh(&_table.lock); \
 		hlist_for_each_entry(entry, h, node) \
 			if (!show_fun(s, entry)) \
 				seq_printf(s, "\n"); \
+		spin_unlock_bh(&_table.lock); \
 		return 0; \
 	} \
 	static const struct seq_operations ndi_##name##_seq_ops = { \
@@ -655,11 +672,13 @@ err:
 		type *__item; \
 		int __i; \
 		\
+		spin_lock_bh(&name.lock); \
 		hash_for_each_safe(name.table, __i, __tmp, __item, node) { \
 			cb(__item); \
 			kmem_cache_free(name.cache, __item); \
 		} \
 		kmem_cache_destroy(name.cache); \
+		spin_unlock_bh(&name.lock); \
 	} while (0)
 
 void __exit ndi_tables_exit(void)
@@ -669,9 +688,7 @@ void __exit ndi_tables_exit(void)
 	remove_proc_entry("ips", ndi_dir);
 	remove_proc_entry("sas", ndi_dir);
 
-	spin_lock_bh(&lock);
 	cleanup_table(sas, struct ndi_sa, sa_delete_helper);
 	cleanup_table(ips, struct ndi_ip, ip_delete_helper);
 	cleanup_table(devices, struct ndi_dev, dev_delete_helper);
-	spin_unlock_bh(&lock);
 }

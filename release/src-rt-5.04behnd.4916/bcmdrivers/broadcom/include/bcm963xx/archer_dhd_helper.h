@@ -4,25 +4,19 @@
 
     <:label-BRCM:2021:DUAL/GPL:standard
     
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
     
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
     
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
     
     :>
 */
@@ -116,7 +110,11 @@ typedef enum {
 
 #define RDPA_DHD_HELPER_CPU_QUEUE_SIZE (1024)
 
-#define RDPA_MAX_DHD_OFFL_RADIOS 3
+#if IS_ENABLED(CONFIG_BCM_DHD_CROSSBOW)
+#define RDPA_MAX_DHD_OFFL_RADIOS  2
+#else
+#define RDPA_MAX_DHD_OFFL_RADIOS  3
+#endif
 
 #define RDPA_DHD_TX_POST_SKB_BUFFER_VALUE    0 /* 00: possible value in tx complete only */
 #define RDPA_DHD_TX_POST_HOST_BUFFER_VALUE   1 /* 01: possible value in tx post and tx complete */
@@ -230,6 +228,26 @@ typedef struct
     uint32_t dhd_tx_drop_packets; /**< DHD RX total dropped packets packets */
 } rdpa_dhd_data_stat_t;
 
+#if IS_ENABLED(CONFIG_BCM_DHD_CROSSBOW)
+
+typedef struct rdpa_dhd_flring_cache
+{
+    void *base_ptr;
+    uint32_t base_addr_low;
+    uint32_t base_addr_high;
+    uint16_t items; /* Number of descriptors in flow ring (including backup queue if exist) */
+#define FLOW_RING_FLAG_DISABLED_HTONS  __constant_htons((uint16_t)(FLOW_RING_FLAG_DISABLED))
+#define FLOW_RING_FLAG_DISABLED   (1 << 1)
+#define FLOW_RING_FLAG_SSID_SHIFT (8)
+#define FLOW_RING_FLAG_SSID_MASK  (0xF << FLOW_RING_FLAG_SSID_SHIFT)
+    uint16_t flags;
+#ifdef RDPA_DHD_HELPER_FEATURE_BACKUP_QUEUE_SUPPORT
+    uint16_t phy_ring_size;  /* Number of descriptors in physical flow ring */
+#endif
+} rdpa_dhd_flring_cache_t;
+
+#else /* !CONFIG_BCM_DHD_CROSSBOW */
+
 #ifdef RDPA_DHD_HELPER_FEATURE_BACKUP_QUEUE_SUPPORT
 typedef struct archer_dhd_backup_queue_entry {
     uint8_t *data_ptr;
@@ -274,6 +292,8 @@ typedef struct rdpa_dhd_flring_cache
 #endif
     uint16_t rd_idx;
 } rdpa_dhd_flring_cache_t;
+
+#endif /* CONFIG_BCM_DHD_CROSSBOW */
 
 typedef struct rdpa_dhd_complete_data
 {
@@ -523,10 +543,20 @@ static inline int rdpa_dhd_helper_flow_ring_enable_set(bdmf_object_handle mo_,
     return hook(&arg);
 }
 
+typedef struct {
+    bdmf_object_handle mo_;
+    rdpa_dhd_msg_data_t data;
+} rdpa_dhd_helper_flow_ring_update_set_arg_t;
+    
 static inline int rdpa_dhd_helper_flow_ring_update_set(bdmf_object_handle mo_,
                                                        bdmf_number flow_ring_update)
 {
-    return 0;
+    rdpa_dhd_helper_flow_ring_update_set_arg_t arg = { .mo_ = mo_,
+                                                       .data.u32 = flow_ring_update };
+
+    bcmFun_t *hook = bcmFun_get(BCM_FUN_ID_ARCHER_DHD_FLOW_RING_UPDATE_SET);
+
+    return hook(&arg);
 }
 
 static inline int rdpa_dhd_helper_rx_post_init(bdmf_object_handle mo_)
@@ -622,6 +652,20 @@ typedef struct {
     int queue;
 } rdpa_cpu_int_arg_t;
 
+#define CC_CROSSBOW_SWBCACPE_60718
+
+#if defined(CONFIG_BCM_DHD_CROSSBOW) && defined(CC_CROSSBOW_SWBCACPE_60718)
+static inline int rdpa_cpu_rxq_empty(uint32_t radio_idx, int queue)
+{
+    rdpa_cpu_int_arg_t arg = { .radio_idx = radio_idx,
+                               .queue = queue };
+
+    bcmFun_t *hook = bcmFun_get(BCM_FUN_ID_ARCHER_DHD_CPU_RXQ_EMPTY);
+
+    return hook(&arg);
+}
+#endif
+
 static inline void rdpa_cpu_int_enable(uint32_t radio_idx, int queue)
 {
     rdpa_cpu_int_arg_t arg = { .radio_idx = radio_idx,
@@ -698,6 +742,14 @@ static inline int rdpa_dhd_helper_dhd_complete_ring_destroy(uint32_t radio_idx, 
     return hook(&arg);
 }
 
+#if IS_ENABLED(CONFIG_BCM_DHD_CROSSBOW)
+static inline void bdmf_sysb_databuf_free(void *datap, unsigned long context)
+{
+    bcmFun_t *hook = bcmFun_get(BCM_FUN_ID_ARCHER_DHD_BDMF_SYSB_DATABUF_FREE);
+
+    hook(datap);
+}
+#else /* !CONFIG_BCM_DHD_CROSSBOW */
 static inline void *archer_dhd_buffer_alloc(void)
 {
     return gbpm_alloc_buf();
@@ -712,6 +764,7 @@ static inline void bdmf_sysb_databuf_free(void *datap, unsigned long context)
 {
     archer_dhd_buffer_free(datap);
 }
+#endif /* CONFIG_BCM_DHD_CROSSBOW */
 
 void archer_dhd_helper_construct(void);
 

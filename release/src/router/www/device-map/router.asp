@@ -1535,7 +1535,7 @@ function validateInput(){
 
 				jsonPara["current_ssid"] = ssid_array;
 				if(!validator.dwb_check_wl_setting(jsonPara)) {
-					alert("The fronthaul SSID is the same as the backhaul SSID.");/* untranslated */
+					alert(`<#wireless_JS_dup_SSID#>`);
 					obj.focus();
 					return false;
 				}

@@ -125,6 +125,12 @@
   <parameter name="X_BROADCOM_COM_L2_Mode" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
     <description source="BROADCOM">Indicates if this VxLAN Tunnel Interface is a Bridged service.</description>
 
+  <parameter name="X_BROADCOM_COM_ZeroCsumTx" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM"> Skip UDP checksum calculation for transmitted packets over IPv6. </description>
+
+  <parameter name="X_BROADCOM_COM_ZeroCsumRx" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM"> Allow incoming UDP packets over IPv6 with zero checksum field. </description>
+
 
 <object name="InternetGatewayDevice.Device.VXLAN.Tunnel.{i}.Interface.{i}.Stats."  shortObjectName="Dev2VxlanTunnelInterfaceStatsObject" specSource="TR181" profile="Device2_VXLANBasic:1" supportLevel="Present" pruneWriteToConfigFile="true" />
   <description source="TRx"> Statistics for this VXLAN tunnel interface, i.e. all traffic that has passed through the interface. The device MUST reset the interface's Stats parameters (unless otherwise stated in individual object or parameter descriptions) either when the interface becomes operationally down due to a previous administrative down (i.e., the interface's Status parameter transitions to a down state after the interface has been disabled) or when the interface becomes administratively up (i.e. the Enable parameter transitioned from {{false}} to {{true}}). </description>

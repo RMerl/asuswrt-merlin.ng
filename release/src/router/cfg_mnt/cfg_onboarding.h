@@ -8,6 +8,7 @@
 #define GUEST_VSIE_PATH	"/tmp/guest_vsie"
 #ifdef RTCONFIG_MLO
 #define DWB_VSIE_PATH	"/tmp/dwb_vsie"
+#define FH_VSIE_PATH	"/tmp/fh_vsie"
 #endif
 #define WPS_CHECK_TIME		5
 #define WPS_TIMEOUT		120		//  minutes
@@ -24,6 +25,9 @@
 #ifdef ONBOARDING_VIA_VIF
 #define TIMEOUT_FOR_VIF_CHECK		60	//sec
 #define TIMEOUT_CONFIG_SYNC		60	//sec
+#endif
+#ifdef BCM_BSD
+#define STOP_BSD_STATUS_PATH	"/tmp/bsdstatus"
 #endif
 
 enum onboardingType {

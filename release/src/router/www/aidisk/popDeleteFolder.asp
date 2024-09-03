@@ -8,8 +8,8 @@
 <link rel="icon" href="images/favicon.png">
 <title>Del Folder</title>
 <link rel="stylesheet" href="../form_style.css"  type="text/css">
-<script type="text/javascript" src="../state.js"></script>
 <script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="../state.js"></script>
 <script type="text/javascript">
 <% get_AiDisk_status(); %>
 

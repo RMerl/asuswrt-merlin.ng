@@ -20,6 +20,7 @@
 4912/dpfe_4912_hpk1_32_ddr4_7.bin      87
 6837/dpfe_6837_hpm1_ddr4_0.bin    0
 6837/dpfe_6837_hpm1_ddr4_1.bin    81
+# 6765 and 6766 use same dpfe
 6765/dpfe_6765_hpm1_ddr4_0.bin    0
 6765/dpfe_6765_hpm1_ddr4_1.bin    81
 6813/dpfe_6813_hpk1_32_ddr4_0.bin      0

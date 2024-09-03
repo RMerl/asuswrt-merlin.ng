@@ -188,6 +188,9 @@ enum {
 	IFLA_NEW_IFINDEX,
 	IFLA_MIN_MTU,
 	IFLA_MAX_MTU,
+#if defined(CONFIG_BCM_KF_NETFILTER)
+	IFLA_BCM_EXT,
+#endif
 	__IFLA_MAX
 };
 
@@ -199,6 +202,20 @@ enum {
 #define IFLA_RTA(r)  ((struct rtattr*)(((char*)(r)) + NLMSG_ALIGN(sizeof(struct ifinfomsg))))
 #define IFLA_PAYLOAD(n) NLMSG_PAYLOAD(n,sizeof(struct ifinfomsg))
 #endif
+
+#if defined(CONFIG_BCM_KF_NETFILTER) || !defined(CONFIG_BCM_IN_KERNEL)
+struct rtnl_link_bcm_ext {
+	__u32 lbe_flags;
+};
+
+enum {
+	IFLA_BCM_EXT_UNSPEC,
+	IFLA_BCM_EXT_FLAGS,
+	__IFLA_BCM_EXT_MAX,
+};
+
+#define IFLA_BCM_EXT_MAX (__IFLA_BCM_EXT_MAX - 1)
+#endif /* CONFIG_BCM_KF_NETFILTER */
 
 enum {
 	IFLA_INET_UNSPEC,

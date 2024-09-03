@@ -31,7 +31,7 @@
 #define ETH_PHY_TOP_1_IRQ   75
 #define ETH_PHY_TOP_2_IRQ   76
 
-static void __iomem *eth_phy_top_base;
+static void __iomem *eth_phy_top_base = NULL;
 static dt_device_t *dt_dev; 
 static dt_handle_t dt_handle;
 static int xphy0_enabled, xphy1_enabled;
@@ -177,7 +177,7 @@ static int eth_phy_top_init(void)
     xphy0_addr = dt_property_read_u32_default(dt_handle, "xphy0-addr", 0x9);
     xphy1_addr = dt_property_read_u32_default(dt_handle, "xphy1-addr", 0xa);
 
-	/* Select the source of XPHY LED signal to LED controller */
+    /* Select the source of XPHY LED signal to LED controller */
     val = 1;
     WRITE_32(ETH_PHY_TOP_BASE + ETH_PHY_TOP_REG_XPHY_MUX_SEL_CNTRL, val);
 
@@ -239,3 +239,28 @@ U_BOOT_DRIVER(brcm_eth_phy_top) = {
     .probe = eth_phy_top_probe,
 };
 
+/*
+ * 10G integrated phy(XPHY) has incorrect default led source that
+ * can result into incorrect default state when led driver starts. The LED
+ * will stay on until network driver starts and update the led source even
+ * when network cable is not plugged in. This fixup correct the source and
+ * will be called before the led driver starts.
+ */
+void xphy_led_fixup(void)
+{
+#if defined(XPHY_LED_FIXUP)
+    u32 val = 1;
+    ofnode node;
+
+    if (!eth_phy_top_base) {
+        node = ofnode_by_compatible(ofnode_null(), "brcm,eth-phy-top");
+        if (ofnode_valid(node))
+            eth_phy_top_base = (void __iomem *)ofnode_get_addr(node);
+        else
+            return;
+    }
+
+    /* Select the source of XPHY LED signal to LED controller */
+    WRITE_32(ETH_PHY_TOP_BASE + ETH_PHY_TOP_REG_XPHY_MUX_SEL_CNTRL, val);
+#endif
+}

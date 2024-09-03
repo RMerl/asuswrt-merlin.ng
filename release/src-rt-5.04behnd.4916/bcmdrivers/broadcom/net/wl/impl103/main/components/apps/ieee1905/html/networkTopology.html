@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<!--[if lte IE 9]>
+<p style="background-color:red; color:white"><b>Sorry your version of Internet Explorer does not support web sockets.  Web page may not display properly.</b></p>
+<![endif]-->
+
+<head>
+    <title>Home Topology</title>
+    <link href="css/ui-darkness/jquery-ui-1.10.4.custom.css" rel="stylesheet" />
+    <link href="css/jquery.qtip.css" rel="stylesheet" />
+    <style>
+        body {
+            background-color: white;
+        }
+
+        #graph {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            margin-left: 60px;
+        }
+
+        #output {
+            position: absolute;
+            top: 10px;
+            left: 30px;
+            z-index: 1;
+            font-family: Segoe UI,Arial,sans-serif;
+            color: red;
+        }
+
+        .zoom {
+            position: absolute;
+            top: 480px;
+            font-size: 2em;
+            width: 50px;
+        }
+
+        .one-char {
+            z-index: 2;           
+        }
+
+            .one-char .ui-button-text {
+                width: 48px !important;
+                height: 48px !important;
+                padding: 0px !important;
+            }
+    </style>
+    <script type="text/javascript"> 
+       <!-- hide
+       var sessionKey=<%ejGetOther(sessionKey)%>;
+       // done hiding -->
+    </script>
+    <script src="js/jquery-1.10.2.js"></script>
+    <script src="js/jquery-ui-1.10.4.custom.js"></script>
+    <script src="js/jquery.json-2.3.js"></script>
+    <script src="js/jquery.websocket.js"></script>
+    <script src="js/sigma.concat.js"></script>
+    <script src="js/sigma.forceatlas2.js"></script>
+    <script src="js/jquery.qtip.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/topology.js"></script>
+    <meta name="viewport" content="minimal-ui">
+</head>
+<body>
+    <div id="graph">
+        <div id="output">
+            Connecting...
+        </div>
+    </div>
+    <div class="zoom">
+        <button id="zoomIn" class="one-char" style="cursor: -webkit-zoom-in; ">+</button>
+        <button id="zoomOut" class="one-char" style="cursor: -webkit-zoom-out; ">-</button>
+        <button id="toggleNeighbors" class="one-char" title="Show or Hide Neighbors; ">&#x260D;</button>
+        <button id="refresh" class="one-char" title="Refresh">&#x21bb;</button>
+    </div>
+</body>
+
+</html>

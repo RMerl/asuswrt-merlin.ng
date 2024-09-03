@@ -9,7 +9,6 @@
  *	- Andrew D. Balsa (code cleanup).
  */
 #include <linux/init.h>
-#include <linux/utsname.h>
 #include <linux/cpu.h>
 #include <linux/module.h>
 #include <linux/nospec.h>
@@ -25,9 +24,7 @@
 #include <asm/msr.h>
 #include <asm/vmx.h>
 #include <asm/paravirt.h>
-#include <asm/alternative.h>
 #include <asm/pgtable.h>
-#include <asm/set_memory.h>
 #include <asm/intel-family.h>
 #include <asm/e820/api.h>
 #include <asm/hypervisor.h>
@@ -47,6 +44,7 @@ static void __init md_clear_select_mitigation(void);
 static void __init taa_select_mitigation(void);
 static void __init mmio_select_mitigation(void);
 static void __init srbds_select_mitigation(void);
+static void __init gds_select_mitigation(void);
 
 /* The base value of the SPEC_CTRL MSR without task-specific bits set */
 u64 x86_spec_ctrl_base;
@@ -115,28 +113,23 @@ EXPORT_SYMBOL_GPL(mds_idle_clear);
 DEFINE_STATIC_KEY_FALSE(mmio_stale_data_clear);
 EXPORT_SYMBOL_GPL(mmio_stale_data_clear);
 
-void __init check_bugs(void)
+void __init cpu_select_mitigations(void)
 {
-	identify_boot_cpu();
-
-	/*
-	 * identify_boot_cpu() initialized SMT support information, let the
-	 * core code know.
-	 */
-	cpu_smt_check_topology();
-
-	if (!IS_ENABLED(CONFIG_SMP)) {
-		pr_info("CPU: ");
-		print_cpu_info(&boot_cpu_data);
-	}
-
 	/*
 	 * Read the SPEC_CTRL MSR to account for reserved bits which may
 	 * have unknown values. AMD64_LS_CFG MSR is cached in the early AMD
 	 * init code as it is not enumerated and depends on the family.
 	 */
-	if (boot_cpu_has(X86_FEATURE_MSR_SPEC_CTRL))
+	if (cpu_feature_enabled(X86_FEATURE_MSR_SPEC_CTRL)) {
 		rdmsrl(MSR_IA32_SPEC_CTRL, x86_spec_ctrl_base);
+
+		/*
+		 * Previously running kernel (kexec), may have some controls
+		 * turned ON. Clear them and let the mitigations setup below
+		 * rediscover them based on configuration.
+		 */
+		x86_spec_ctrl_base &= ~SPEC_CTRL_MITIGATIONS_MASK;
+	}
 
 	/* Select the proper CPU mitigations before patching alternatives: */
 	spectre_v1_select_mitigation();
@@ -157,39 +150,7 @@ void __init check_bugs(void)
 	l1tf_select_mitigation();
 	md_clear_select_mitigation();
 	srbds_select_mitigation();
-
-	arch_smt_update();
-
-#ifdef CONFIG_X86_32
-	/*
-	 * Check whether we are able to run this kernel safely on SMP.
-	 *
-	 * - i386 is no longer supported.
-	 * - In order to run on anything without a TSC, we need to be
-	 *   compiled for a i486.
-	 */
-	if (boot_cpu_data.x86 < 4)
-		panic("Kernel requires i486+ for 'invlpg' and other features");
-
-	init_utsname()->machine[1] =
-		'0' + (boot_cpu_data.x86 > 6 ? 6 : boot_cpu_data.x86);
-	alternative_instructions();
-
-	fpu__init_check_bugs();
-#else /* CONFIG_X86_64 */
-	alternative_instructions();
-
-	/*
-	 * Make sure the first 2MB area is not mapped by huge pages
-	 * There are typically fixed size MTRRs in there and overlapping
-	 * MTRRs into large pages causes slow downs.
-	 *
-	 * Right now we don't do that with gbpages because there seems
-	 * very little benefit for that case.
-	 */
-	if (!direct_gbpages)
-		set_memory_4k((unsigned long)__va(0), 1);
-#endif
+	gds_select_mitigation();
 }
 
 /*
@@ -641,6 +602,149 @@ static int __init srbds_parse_cmdline(char *str)
 early_param("srbds", srbds_parse_cmdline);
 
 #undef pr_fmt
+#define pr_fmt(fmt)	"GDS: " fmt
+
+enum gds_mitigations {
+	GDS_MITIGATION_OFF,
+	GDS_MITIGATION_UCODE_NEEDED,
+	GDS_MITIGATION_FORCE,
+	GDS_MITIGATION_FULL,
+	GDS_MITIGATION_FULL_LOCKED,
+	GDS_MITIGATION_HYPERVISOR,
+};
+
+#if IS_ENABLED(CONFIG_GDS_FORCE_MITIGATION)
+static enum gds_mitigations gds_mitigation __ro_after_init = GDS_MITIGATION_FORCE;
+#else
+static enum gds_mitigations gds_mitigation __ro_after_init = GDS_MITIGATION_FULL;
+#endif
+
+static const char * const gds_strings[] = {
+	[GDS_MITIGATION_OFF]		= "Vulnerable",
+	[GDS_MITIGATION_UCODE_NEEDED]	= "Vulnerable: No microcode",
+	[GDS_MITIGATION_FORCE]		= "Mitigation: AVX disabled, no microcode",
+	[GDS_MITIGATION_FULL]		= "Mitigation: Microcode",
+	[GDS_MITIGATION_FULL_LOCKED]	= "Mitigation: Microcode (locked)",
+	[GDS_MITIGATION_HYPERVISOR]	= "Unknown: Dependent on hypervisor status",
+};
+
+bool gds_ucode_mitigated(void)
+{
+	return (gds_mitigation == GDS_MITIGATION_FULL ||
+		gds_mitigation == GDS_MITIGATION_FULL_LOCKED);
+}
+EXPORT_SYMBOL_GPL(gds_ucode_mitigated);
+
+void update_gds_msr(void)
+{
+	u64 mcu_ctrl_after;
+	u64 mcu_ctrl;
+
+	switch (gds_mitigation) {
+	case GDS_MITIGATION_OFF:
+		rdmsrl(MSR_IA32_MCU_OPT_CTRL, mcu_ctrl);
+		mcu_ctrl |= GDS_MITG_DIS;
+		break;
+	case GDS_MITIGATION_FULL_LOCKED:
+		/*
+		 * The LOCKED state comes from the boot CPU. APs might not have
+		 * the same state. Make sure the mitigation is enabled on all
+		 * CPUs.
+		 */
+	case GDS_MITIGATION_FULL:
+		rdmsrl(MSR_IA32_MCU_OPT_CTRL, mcu_ctrl);
+		mcu_ctrl &= ~GDS_MITG_DIS;
+		break;
+	case GDS_MITIGATION_FORCE:
+	case GDS_MITIGATION_UCODE_NEEDED:
+	case GDS_MITIGATION_HYPERVISOR:
+		return;
+	};
+
+	wrmsrl(MSR_IA32_MCU_OPT_CTRL, mcu_ctrl);
+
+	/*
+	 * Check to make sure that the WRMSR value was not ignored. Writes to
+	 * GDS_MITG_DIS will be ignored if this processor is locked but the boot
+	 * processor was not.
+	 */
+	rdmsrl(MSR_IA32_MCU_OPT_CTRL, mcu_ctrl_after);
+	WARN_ON_ONCE(mcu_ctrl != mcu_ctrl_after);
+}
+
+static void __init gds_select_mitigation(void)
+{
+	u64 mcu_ctrl;
+
+	if (!boot_cpu_has_bug(X86_BUG_GDS))
+		return;
+
+	if (boot_cpu_has(X86_FEATURE_HYPERVISOR)) {
+		gds_mitigation = GDS_MITIGATION_HYPERVISOR;
+		goto out;
+	}
+
+	if (cpu_mitigations_off())
+		gds_mitigation = GDS_MITIGATION_OFF;
+	/* Will verify below that mitigation _can_ be disabled */
+
+	/* No microcode */
+	if (!(x86_read_arch_cap_msr() & ARCH_CAP_GDS_CTRL)) {
+		if (gds_mitigation == GDS_MITIGATION_FORCE) {
+			/*
+			 * This only needs to be done on the boot CPU so do it
+			 * here rather than in update_gds_msr()
+			 */
+			setup_clear_cpu_cap(X86_FEATURE_AVX);
+			pr_warn("Microcode update needed! Disabling AVX as mitigation.\n");
+		} else {
+			gds_mitigation = GDS_MITIGATION_UCODE_NEEDED;
+		}
+		goto out;
+	}
+
+	/* Microcode has mitigation, use it */
+	if (gds_mitigation == GDS_MITIGATION_FORCE)
+		gds_mitigation = GDS_MITIGATION_FULL;
+
+	rdmsrl(MSR_IA32_MCU_OPT_CTRL, mcu_ctrl);
+	if (mcu_ctrl & GDS_MITG_LOCKED) {
+		if (gds_mitigation == GDS_MITIGATION_OFF)
+			pr_warn("Mitigation locked. Disable failed.\n");
+
+		/*
+		 * The mitigation is selected from the boot CPU. All other CPUs
+		 * _should_ have the same state. If the boot CPU isn't locked
+		 * but others are then update_gds_msr() will WARN() of the state
+		 * mismatch. If the boot CPU is locked update_gds_msr() will
+		 * ensure the other CPUs have the mitigation enabled.
+		 */
+		gds_mitigation = GDS_MITIGATION_FULL_LOCKED;
+	}
+
+	update_gds_msr();
+out:
+	pr_info("%s\n", gds_strings[gds_mitigation]);
+}
+
+static int __init gds_parse_cmdline(char *str)
+{
+	if (!str)
+		return -EINVAL;
+
+	if (!boot_cpu_has_bug(X86_BUG_GDS))
+		return 0;
+
+	if (!strcmp(str, "off"))
+		gds_mitigation = GDS_MITIGATION_OFF;
+	else if (!strcmp(str, "force"))
+		gds_mitigation = GDS_MITIGATION_FORCE;
+
+	return 0;
+}
+early_param("gather_data_sampling", gds_parse_cmdline);
+
+#undef pr_fmt
 #define pr_fmt(fmt)     "Spectre V1 : " fmt
 
 enum spectre_v1_mitigation {
@@ -975,12 +1079,16 @@ spectre_v2_parse_user_cmdline(void)
 	return SPECTRE_V2_USER_CMD_AUTO;
 }
 
-static inline bool spectre_v2_in_ibrs_mode(enum spectre_v2_mitigation mode)
+static inline bool spectre_v2_in_eibrs_mode(enum spectre_v2_mitigation mode)
 {
-	return mode == SPECTRE_V2_IBRS ||
-	       mode == SPECTRE_V2_EIBRS ||
+	return mode == SPECTRE_V2_EIBRS ||
 	       mode == SPECTRE_V2_EIBRS_RETPOLINE ||
 	       mode == SPECTRE_V2_EIBRS_LFENCE;
+}
+
+static inline bool spectre_v2_in_ibrs_mode(enum spectre_v2_mitigation mode)
+{
+	return spectre_v2_in_eibrs_mode(mode) || mode == SPECTRE_V2_IBRS;
 }
 
 static void __init
@@ -1045,12 +1153,19 @@ spectre_v2_user_select_mitigation(void)
 	}
 
 	/*
-	 * If no STIBP, IBRS or enhanced IBRS is enabled, or SMT impossible,
-	 * STIBP is not required.
+	 * If no STIBP, enhanced IBRS is enabled, or SMT impossible, STIBP
+	 * is not required.
+	 *
+	 * Enhanced IBRS also protects against cross-thread branch target
+	 * injection in user-mode as the IBRS bit remains always set which
+	 * implicitly enables cross-thread protections.  However, in legacy IBRS
+	 * mode, the IBRS bit is set only on kernel entry and cleared on return
+	 * to userspace. This disables the implicit cross-thread protection,
+	 * so allow for STIBP to be selected in that case.
 	 */
 	if (!boot_cpu_has(X86_FEATURE_STIBP) ||
 	    !smt_possible ||
-	    spectre_v2_in_ibrs_mode(spectre_v2_enabled))
+	    spectre_v2_in_eibrs_mode(spectre_v2_enabled))
 		return;
 
 	/*
@@ -2102,7 +2217,7 @@ static ssize_t mmio_stale_data_show_state(char *buf)
 
 static char *stibp_state(void)
 {
-	if (spectre_v2_in_ibrs_mode(spectre_v2_enabled))
+	if (spectre_v2_in_eibrs_mode(spectre_v2_enabled))
 		return "";
 
 	switch (spectre_v2_user_stibp) {
@@ -2177,6 +2292,11 @@ static ssize_t retbleed_show_state(char *buf)
 	return sprintf(buf, "%s\n", retbleed_strings[retbleed_mitigation]);
 }
 
+static ssize_t gds_show_state(char *buf)
+{
+	return sysfs_emit(buf, "%s\n", gds_strings[gds_mitigation]);
+}
+
 static ssize_t cpu_show_common(struct device *dev, struct device_attribute *attr,
 			       char *buf, unsigned int bug)
 {
@@ -2225,6 +2345,9 @@ static ssize_t cpu_show_common(struct device *dev, struct device_attribute *attr
 
 	case X86_BUG_RETBLEED:
 		return retbleed_show_state(buf);
+
+	case X86_BUG_GDS:
+		return gds_show_state(buf);
 
 	default:
 		break;
@@ -2289,5 +2412,10 @@ ssize_t cpu_show_mmio_stale_data(struct device *dev, struct device_attribute *at
 ssize_t cpu_show_retbleed(struct device *dev, struct device_attribute *attr, char *buf)
 {
 	return cpu_show_common(dev, attr, buf, X86_BUG_RETBLEED);
+}
+
+ssize_t cpu_show_gds(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return cpu_show_common(dev, attr, buf, X86_BUG_GDS);
 }
 #endif

@@ -97,6 +97,44 @@ static int get_dt_config_xfi(phy_dev_t *phy_dev)
     return 0;
 }
 
+int phy_drv_serdes_adjust_speed(phy_dev_t *phy_dev, phy_speed_t max_speed)
+{
+    phy_serdes_t *phy_serdes = phy_dev->priv;
+    phy_speed_t speed;
+    int i;
+    static phy_speed_t speed_list[] = {PHY_SPEED_10, PHY_SPEED_100, PHY_SPEED_1000, PHY_SPEED_2500, PHY_SPEED_5000, PHY_SPEED_10000}; 
+    phy_speed_t current_max_speed = phy_caps_to_max_speed(phy_serdes->speed_caps);
+
+    if (max_speed == 0)
+    {
+        if ((max_speed = dt_property_read_u32(phy_serdes->handle, "max-speed-mbps")) == -1)
+            return -1;
+    }
+
+    if (max_speed == current_max_speed)
+        return 0;
+
+    for (i=0; i<ARRAY_SIZE(speed_list); i++)
+    {
+        speed = speed_list[i];
+
+        if (speed <= max_speed && speed <= current_max_speed)
+            continue;
+
+        if (speed > max_speed)
+        {
+            phy_serdes->speed_caps &= ~phy_speed_to_cap(speed, PHY_DUPLEX_FULL);
+            phy_serdes->inter_phy_types &= ~phy_speed_to_inter_phy_speed_mask(speed);
+        }
+        else
+        {
+            phy_serdes->speed_caps |= phy_speed_to_cap(speed, PHY_DUPLEX_FULL);
+            phy_serdes->inter_phy_types |= phy_speed_to_inter_phy_speed_mask(speed);
+        }
+    }
+    return 0;
+}
+
 static int get_dt_config_speed(phy_dev_t *phy_dev)
 {
     uint32_t speed;
@@ -113,21 +151,7 @@ static int get_dt_config_speed(phy_dev_t *phy_dev)
             printkwarn("\"config_speed\" in DT file is deprecated, please use \"config-speed\"");
     }
 
-    switch(speed)
-    {
-        case 1000:
-            phy_serdes->config_speed = PHY_SPEED_1000;
-            break;
-        case 2500:
-            phy_serdes->config_speed = PHY_SPEED_2500;
-            break;
-        case 5000:
-            phy_serdes->config_speed = PHY_SPEED_5000;
-            break;
-        case 10000:
-            phy_serdes->config_speed = PHY_SPEED_10000;
-            break;
-    }
+    phy_serdes->config_speed = phy_speed_mbps_to_macro(speed);
     return 0;
 }
 
@@ -138,6 +162,7 @@ int phy_dsl_serdes_init(phy_dev_t *phy_dev)
     phy_dev_t *phy_next = phy_dev->cascade_next;
     int ret = 0;
     int bug = 0;
+    uint32_t caps, supported_caps, xgphy_supported_caps;
 
     if ((serdes_index+1) > ARRAY_SIZE(serdes))
         BUG_CHECK("******** ERROR: Too many Serdeses number to support.\n");
@@ -150,13 +175,16 @@ int phy_dsl_serdes_init(phy_dev_t *phy_dev)
             both USXGMII_S and USXGMII_M from device tree */
         if (phy_dev_is_mphy(phy_dev) && phy_next->usxgmii_m_type == USXGMII_S)
             phy_dev->usxgmii_m_type = USXGMII_S;
+
+        phy_dev_caps_get(phy_dev, CAPS_TYPE_SUPPORTED, &supported_caps);
+        phy_dev_caps_get(phy_next, CAPS_TYPE_SUPPORTED, &xgphy_supported_caps);
+        caps = supported_caps & xgphy_supported_caps;
+        phy_dev_caps_set(phy_next, caps);
     }
 
     serdes[serdes_index++] = phy_serdes;
     phy_dev->inter_phy_types = phy_serdes->inter_phy_types;
-
-    if (phy_dev_is_mphy(phy_dev))
-        phy_serdes->speed_caps = phy_usxgmii_m_speed_cap_adjust(phy_dev, phy_serdes->speed_caps);
+    phy_serdes->speed_caps = phy_xfi_speed_cap_adjust(phy_dev, phy_serdes->speed_caps);
 
     phy_serdes->highest_speed = phy_caps_to_max_speed(phy_serdes->speed_caps & (~PHY_CAP_AUTONEG));
     phy_serdes->lowest_speed = phy_caps_to_min_speed(phy_serdes->speed_caps & (~PHY_CAP_AUTONEG));
@@ -164,6 +192,9 @@ int phy_dsl_serdes_init(phy_dev_t *phy_dev)
     phy_serdes->lowest_speed_cap = phy_speed_to_cap(phy_serdes->lowest_speed, PHY_DUPLEX_FULL);
     phy_serdes->usxgmii_m_index = phy_dev->usxgmii_m_index;
     set_common_speed_range(phy_dev);
+
+    if (phy_dev->shared_ref_clk_mhz)
+        phy_dev_shared_clock_set(phy_dev);
 
     if (PhyIsPortConnectedToExternalSwitch(phy_dev) || PhyIsFixedConnection(phy_dev))
     {
@@ -174,9 +205,8 @@ int phy_dsl_serdes_init(phy_dev_t *phy_dev)
 
         if (get_dt_config_xfi(phy_dev) == 0)
         {
-            uint32_t supported_speed_caps;
-            get_inter_phy_supported_speed_caps(phy_dev->configured_inter_phy_types, &supported_speed_caps);
-            phy_serdes->current_speed = phy_serdes->config_speed = phy_caps_to_max_speed(supported_speed_caps);
+            get_inter_phy_supported_speed_caps(phy_dev->configured_inter_phy_types, &supported_caps);
+            phy_serdes->current_speed = phy_serdes->config_speed = phy_caps_to_max_speed(supported_caps);
         }
 
         if (phy_serdes->config_speed == PHY_SPEED_UNKNOWN)
@@ -325,7 +355,7 @@ int phy_dsl_serdes_post_init(phy_dev_t *phy_dev)
             BUG_CHECK("No common INTER PHY Capablities found between Serdes and PHY! Wrong board design.\n");
 
         if (!PhyIsPortConnectedToExternalSwitch(phy_dev) && !PhyIsFixedConnection(phy_dev) &&
-            !IS_USXGMII_MULTI_PORTS(phy_dev) && !phy_dev_is_broadcom_phy(phy_dev->cascade_next))
+            !(phy_dev->configured_inter_phy_types & INTER_PHY_TYPE_MULTI_SPEED_AN_MASK_M) && !phy_dev_is_broadcom_phy(phy_dev->cascade_next))
         /* Work around for some non Broadcom PHYs not sync link status between Copper side and Serdes side */
         /* Exclude external switch connection from power down operation */
         {
@@ -461,7 +491,7 @@ static void link_status_check(phy_dev_t *phy_dev)
             !dsl_serdes_silent_start_supported(phy_dev) || phy_dev->link)
     {
         phy_serdes->link_stats(phy_dev);
-        return;
+            return;
     }
 
     if (!dsl_serdes_silent_start_light_detected(phy_dev))
@@ -705,6 +735,11 @@ int dsl_serdes_cfg_speed_set(phy_dev_t *phy_dev, phy_speed_t speed, phy_duplex_t
 
         dsl_powerup_serdes(phy_dev);
 
+        if (INTER_PHY_TYPE_AN_SUPPORT(phy_dev->current_inter_phy_type))
+            phy_dev->an_enabled = 1;
+        else
+            phy_dev->an_enabled = 0;
+
         rc = dsl_serdes_single_speed_set(phy_dev, speed, duplex);
         if (IS_USER_CONFIG())
             phy_serdes->link_changed = 1;
@@ -713,20 +748,20 @@ int dsl_serdes_cfg_speed_set(phy_dev_t *phy_dev, phy_speed_t speed, phy_duplex_t
                for MAC configuration timing */
             if(copper_phy && copper_phy->link)
             {
-                for (i=0; i<20; i++)
-        {
+                for (i=0; i<3; i++)
+                {
                     phy_serdes->link_stats(phy_dev);
                     if (phy_dev->link)
                         break;
-                    msleep(10);
-        }
+                    msleep(100);
+                }
 
                 if (!phy_dev->link)
-                    printkwarn("Warning: Serdes at %d link does not go up following external copper PHY at %d.",
-                        phy_dev->addr, copper_phy->addr);
-        }
+                    printkwarn("Warning: Serdes at %d link does not go up following external copper PHY at %d temporarily.",
+                            phy_dev->addr, copper_phy->addr);
+            }
             else
-        {
+            {
                 phy_dev->link = 0;
 
                 if( phy_serdes->power_mode == SERDES_ADVANCED_POWER_SAVING)

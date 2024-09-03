@@ -4,25 +4,19 @@
    Copyright (c) 2018 Broadcom 
    All Rights Reserved
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
 :>
 */
@@ -39,8 +33,8 @@ written consent.
 
 #if defined(CONFIG_BRCM_SMC_BOOT)
 #include <bp3_license.h>
-#include <pmc_wan.h>
 #endif
+#include <pmc_wan.h>
 
 static int get_optics_type(uint16_t *optics_type);
 static int get_supported_wan_type_bm(SUPPORTED_WAN_TYPES_BITMAP *wan_type_bm);
@@ -579,38 +573,50 @@ static int configure_pmd_wan_type(uint16_t optics_type, PMD_WAN_TYPES new_pmd_wa
 static int power_wan_type(SUPPORTED_WAN_TYPES_BITMAP wan_type, int enabled)
 {
 #if defined(CONFIG_BRCM_SMC_BOOT)
-    int bp3_feature, wan_intf;
+    int bp3_feature;
+#endif
+    int wan_intf;
 
     switch (wan_type) {
     case SUPPORTED_WAN_TYPES_BIT_GPON:
     {
+#if defined(CONFIG_BRCM_SMC_BOOT)
         bp3_feature = BP3_FEATURE_GPON;
+#endif
         wan_intf = WAN_INTF_GPON;
         break;
     }
     case SUPPORTED_WAN_TYPES_BIT_TURBO_EPON_2_1:
     case SUPPORTED_WAN_TYPES_BIT_EPON_1_1:
     {
+#if defined(CONFIG_BRCM_SMC_BOOT)
         bp3_feature = BP3_FEATURE_EPON;
+#endif
         wan_intf = WAN_INTF_EPON;
         break;
     }
     case SUPPORTED_WAN_TYPES_BIT_AE_1_1:
     {
+#if defined(CONFIG_BRCM_SMC_BOOT)
         bp3_feature = BP3_FEATURE_ACTIVE_ETH_2_5;
+#endif
         wan_intf = WAN_INTF_AE;
         break;
     }
     case SUPPORTED_WAN_TYPES_BIT_EPON_10_10:
     case SUPPORTED_WAN_TYPES_BIT_EPON_10_1:
     {
+#if defined(CONFIG_BRCM_SMC_BOOT)
         bp3_feature = BP3_FEATURE_10G_EPON;
+#endif
         wan_intf = WAN_INTF_10GEPON;
         break;
     }
     case SUPPORTED_WAN_TYPES_BIT_AE_10_10:
     {
+#if defined(CONFIG_BRCM_SMC_BOOT)
         bp3_feature = BP3_FEATURE_ACTIVE_ETH_10;
+#endif
         wan_intf = WAN_INTF_AE;
         break;
     }
@@ -619,7 +625,9 @@ static int power_wan_type(SUPPORTED_WAN_TYPES_BITMAP wan_type, int enabled)
     case SUPPORTED_WAN_TYPES_BIT_NGPON2_10_10:
     case SUPPORTED_WAN_TYPES_BIT_XGSPON:
     {
+#if defined(CONFIG_BRCM_SMC_BOOT)
         bp3_feature = BP3_FEATURE_10G_GPON;
+#endif
         wan_intf = WAN_INTF_XGPON;
         break;
     }
@@ -627,12 +635,13 @@ static int power_wan_type(SUPPORTED_WAN_TYPES_BITMAP wan_type, int enabled)
         return -1;
     }
 
+#if defined(CONFIG_BRCM_SMC_BOOT)
     if (bcm_license_check_msg(bp3_feature) <= 0)
         return -1;
+#endif
 
     if (pmc_wan_interface_power_control(wan_intf, enabled))
         return -1;
-#endif
 
     return 0;
 }

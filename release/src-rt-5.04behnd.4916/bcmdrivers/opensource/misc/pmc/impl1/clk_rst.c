@@ -4,25 +4,19 @@
    Copyright (c) 2013 Broadcom 
    All Rights Reserved
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
 :> 
 */
@@ -35,7 +29,7 @@ written consent.
 #define VCO0_FREQ	1200
 #define VCO2_FREQ	1600
 
-#if IS_BCMCHIP(6765)
+#if IS_BCMCHIP(6765) || IS_BCMCHIP(6766) || IS_BCMCHIP(6764)
 #define PLL_REFCLK	80
 #else
 #define PLL_REFCLK	50
@@ -86,10 +80,14 @@ int pll_vco_config(unsigned int pll_addr, unsigned int ndivider, unsigned int pd
 }
 #endif
 
-#if IS_BCMCHIP(6856)
-#define PLL_BPCM_REG_OFFSET PLLCLASSICBPCMRegOffset
+#if IS_BCMCHIP(6856) 
+#define PLL_BPCM_REG_OFFSET(pll_addr, reg) PLLCLASSICBPCMRegOffset(reg)
+#elif IS_BCMCHIP(6846)
+#define PLL_BPCM_REG_OFFSET(pll_addr, reg) (pll_addr==PMB_ADDR_BIU_PLL) ? PLLCLASSICBPCMRegOffset(reg) : PLLBPCMRegOffset(reg)
+#elif IS_BCMCHIP(6878)
+#define PLL_BPCM_REG_OFFSET(pll_addr, reg) (pll_addr==PMB_ADDR_BIU_PLL) ? PLLBPCMRegOffset(reg) : PLLCLASSICBPCMRegOffset(reg)
 #else
-#define PLL_BPCM_REG_OFFSET PLLBPCMRegOffset
+#define PLL_BPCM_REG_OFFSET(pll_addr, reg) PLLBPCMRegOffset(reg)
 #endif
 
 #if IS_BCMCHIP(63146) || IS_BCMCHIP(4912) || IS_BCMCHIP(6813) || IS_BCMCHIP(6888)
@@ -248,7 +246,8 @@ int rdppll_ch_freq_get(unsigned int pll_addr, unsigned int ch, unsigned int *fre
 	IS_BCMCHIP(6846) || IS_BCMCHIP(63178) || IS_BCMCHIP(47622) || \
 	IS_BCMCHIP(6878) || IS_BCMCHIP(63146) || IS_BCMCHIP(6855) || \
 	IS_BCMCHIP(4912) || IS_BCMCHIP(6813)  || IS_BCMCHIP(6756) || \
-	IS_BCMCHIP(6888) || IS_BCMCHIP(6765)
+	IS_BCMCHIP(6888) || IS_BCMCHIP(6765) || IS_BCMCHIP(6766) || \
+	IS_BCMCHIP(6764)
 int pll_vco_freq_get(unsigned int pll_addr, unsigned int *fvco)
 {
 	int ret = 0;
@@ -256,16 +255,17 @@ int pll_vco_freq_get(unsigned int pll_addr, unsigned int *fvco)
 	PLL_DECPDIV_REG pll_decpdiv;
 #if IS_BCMCHIP(63158) || IS_BCMCHIP(63178) || IS_BCMCHIP(47622) || \
 	IS_BCMCHIP(63146) || IS_BCMCHIP(6855) || IS_BCMCHIP(4912) || IS_BCMCHIP(6813) || \
-	IS_BCMCHIP(6756) || IS_BCMCHIP(6888) || IS_BCMCHIP(6765)
+	IS_BCMCHIP(6756) || IS_BCMCHIP(6888) || IS_BCMCHIP(6765) || IS_BCMCHIP(6766) || \
+	IS_BCMCHIP(6764)
 	PLL_NDIV_REG ndiv_reg;
 	PLL_PDIV_REG pdiv_reg;
 #endif
 
 	ret =
-	    ReadBPCMRegister(pll_addr, PLL_BPCM_REG_OFFSET(decndiv),
+	    ReadBPCMRegister(pll_addr, PLL_BPCM_REG_OFFSET(pll_addr, decndiv),
 			     &pll_decndiv.Reg32);
 	ret |=
-	    ReadBPCMRegister(pll_addr, PLL_BPCM_REG_OFFSET(decpdiv),
+	    ReadBPCMRegister(pll_addr, PLL_BPCM_REG_OFFSET(pll_addr, decpdiv),
 			     &pll_decpdiv.Reg32);
 	if (ret != 0)
 		return -1;
@@ -276,7 +276,8 @@ int pll_vco_freq_get(unsigned int pll_addr, unsigned int *fvco)
 
 #if IS_BCMCHIP(63158) || IS_BCMCHIP(63178) || IS_BCMCHIP(47622) || \
 	IS_BCMCHIP(63146)  || IS_BCMCHIP(6855) || IS_BCMCHIP(4912) || IS_BCMCHIP(6813) ||  \
-	IS_BCMCHIP(6756) || IS_BCMCHIP(6888) || IS_BCMCHIP(6765)
+	IS_BCMCHIP(6756) || IS_BCMCHIP(6888) || IS_BCMCHIP(6765) || IS_BCMCHIP(6766) || \
+	IS_BCMCHIP(6764)
 	if (!ReadBPCMRegister(pll_addr, PLLBPCMRegOffset(pdiv), &pdiv_reg.Reg32)
 	    && pdiv_reg.Bits.ndiv_pdiv_override
 	    && !ReadBPCMRegister(pll_addr, PLLBPCMRegOffset(ndiv),
@@ -311,7 +312,7 @@ static int pll_ch_freq_get(unsigned int pll_addr, unsigned int ch, unsigned int 
 	case 0:
 		ret =
 		    ReadBPCMRegister(pll_addr,
-				     PLL_BPCM_REG_OFFSET(ch01_cfg),
+				     PLL_BPCM_REG_OFFSET(pll_addr, ch01_cfg),
 				     &ch_cfg.Reg32);
 		/* Check if default value is overitten */
 		if (ch_cfg.Bits.mdiv_override0)
@@ -319,7 +320,7 @@ static int pll_ch_freq_get(unsigned int pll_addr, unsigned int ch, unsigned int 
 		else {		/* If not, read from the default */
 			ret =
 			    ReadBPCMRegister(pll_addr,
-					     PLL_BPCM_REG_OFFSET(decpdiv),
+					     PLL_BPCM_REG_OFFSET(pll_addr, decpdiv),
 					     &pll_decpdiv.Reg32);
 			mdiv = pll_decpdiv.Bits.mdiv0;
 		}
@@ -327,14 +328,14 @@ static int pll_ch_freq_get(unsigned int pll_addr, unsigned int ch, unsigned int 
 	case 1:
 		ret =
 		    ReadBPCMRegister(pll_addr,
-				     PLL_BPCM_REG_OFFSET(ch01_cfg),
+				     PLL_BPCM_REG_OFFSET(pll_addr, ch01_cfg),
 				     &ch_cfg.Reg32);
 		if (ch_cfg.Bits.mdiv_override1)
 			mdiv = ch_cfg.Bits.mdiv1;
 		else {
 			ret =
 			    ReadBPCMRegister(pll_addr,
-					     PLL_BPCM_REG_OFFSET(decpdiv),
+					     PLL_BPCM_REG_OFFSET(pll_addr, decpdiv),
 					     &pll_decpdiv.Reg32);
 			mdiv = pll_decpdiv.Bits.mdiv1;
 		}
@@ -342,14 +343,14 @@ static int pll_ch_freq_get(unsigned int pll_addr, unsigned int ch, unsigned int 
 	case 2:
 		ret =
 		    ReadBPCMRegister(pll_addr,
-				     PLL_BPCM_REG_OFFSET(ch23_cfg),
+				     PLL_BPCM_REG_OFFSET(pll_addr, ch23_cfg),
 				     &ch_cfg.Reg32);
 		if (ch_cfg.Bits.mdiv_override0)
 			mdiv = ch_cfg.Bits.mdiv0;
 		else {
 			ret =
 			    ReadBPCMRegister(pll_addr,
-					     PLL_BPCM_REG_OFFSET(decch25),
+					     PLL_BPCM_REG_OFFSET(pll_addr, decch25),
 					     &pll_decch25.Reg32);
 			mdiv = pll_decch25.Bits.mdiv2;
 		}
@@ -357,14 +358,14 @@ static int pll_ch_freq_get(unsigned int pll_addr, unsigned int ch, unsigned int 
 	case 3:
 		ret =
 		    ReadBPCMRegister(pll_addr,
-				     PLL_BPCM_REG_OFFSET(ch23_cfg),
+				     PLL_BPCM_REG_OFFSET(pll_addr, ch23_cfg),
 				     &ch_cfg.Reg32);
 		if (ch_cfg.Bits.mdiv_override1)
 			mdiv = ch_cfg.Bits.mdiv1;
 		else {
 			ret =
 			    ReadBPCMRegister(pll_addr,
-					     PLL_BPCM_REG_OFFSET(decch25),
+					     PLL_BPCM_REG_OFFSET(pll_addr, decch25),
 					     &pll_decch25.Reg32);
 			mdiv = pll_decch25.Bits.mdiv3;
 		}
@@ -372,14 +373,14 @@ static int pll_ch_freq_get(unsigned int pll_addr, unsigned int ch, unsigned int 
 	case 4:
 		ret =
 		    ReadBPCMRegister(pll_addr,
-				     PLL_BPCM_REG_OFFSET(ch45_cfg),
+				     PLL_BPCM_REG_OFFSET(pll_addr, ch45_cfg),
 				     &ch_cfg.Reg32);
 		if (ch_cfg.Bits.mdiv_override0)
 			mdiv = ch_cfg.Bits.mdiv0;
 		else {
 			ret =
 			    ReadBPCMRegister(pll_addr,
-					     PLL_BPCM_REG_OFFSET(decch25),
+					     PLL_BPCM_REG_OFFSET(pll_addr, decch25),
 					     &pll_decch25.Reg32);
 			mdiv = pll_decch25.Bits.mdiv4;
 		}
@@ -387,14 +388,14 @@ static int pll_ch_freq_get(unsigned int pll_addr, unsigned int ch, unsigned int 
 	case 5:
 		ret =
 		    ReadBPCMRegister(pll_addr,
-				     PLL_BPCM_REG_OFFSET(ch45_cfg),
+				     PLL_BPCM_REG_OFFSET(pll_addr, ch45_cfg),
 				     &ch_cfg.Reg32);
 		if (ch_cfg.Bits.mdiv_override1)
 			mdiv = ch_cfg.Bits.mdiv1;
 		else {
 			ret =
 			    ReadBPCMRegister(pll_addr,
-					     PLL_BPCM_REG_OFFSET(decch25),
+					     PLL_BPCM_REG_OFFSET(pll_addr, decch25),
 					     &pll_decch25.Reg32);
 			mdiv = pll_decch25.Bits.mdiv5;			
 		}
@@ -750,7 +751,7 @@ EXPORT_SYMBOL(bcm_disable_xtal_clk);
 
 void set_vreg_clk(void)
 {
-#if IS_BCMCHIP(63178) || IS_BCMCHIP(63146) || IS_BCMCHIP(4912) || IS_BCMCHIP(6813) || IS_BCMCHIP(6765)
+#if IS_BCMCHIP(63178) || IS_BCMCHIP(63146) || IS_BCMCHIP(4912) || IS_BCMCHIP(6813) || IS_BCMCHIP(6765) || IS_BCMCHIP(6766)
 	int ret;
 	BPCM_CLKRST_VREG_CONTROL vreg_control_reg;
 
@@ -758,7 +759,7 @@ void set_vreg_clk(void)
 	vreg_control_reg.Bits.counter = 0x24;
 #if IS_BCMCHIP(63146) || IS_BCMCHIP(4912) || IS_BCMCHIP(6813)
 	vreg_control_reg.Bits.counter = 0x32;
-#elif IS_BCMCHIP(6765)
+#elif IS_BCMCHIP(6765) || IS_BCMCHIP(6766)
 	vreg_control_reg.Bits.counter = 0x3c;
 #endif
 	ret = WriteBPCMRegister(PMB_ADDR_CHIP_CLKRST,
@@ -847,9 +848,9 @@ void set_b15_mdiv(unsigned int value)
 void bcm_set_vreg_sync(void)
 {
 #if !defined(CONFIG_BRCM_QEMU)
-#if defined(CONFIG_BCM963178) || defined(CONFIG_BCM963146) ||  defined(CONFIG_BCM94912) || IS_BCMCHIP(6813) || defined(CONFIG_BCM96765)
+#if IS_BCMCHIP(63178) || IS_BCMCHIP(63146) || IS_BCMCHIP(4912) || IS_BCMCHIP(6813) || IS_BCMCHIP(6765) || IS_BCMCHIP(6766)
     set_vreg_clk();
-#elif defined(CONFIG_BCM963158)
+#elif IS_BCMCHIP(63158)
     /* Power on WAN block to access the VR divider reg.  Must set this register before
        we can enable pinmux for vreg pin */
 #define VREG_CFG_VREG_CLK_BYPASS_SHIFT 9
@@ -892,3 +893,257 @@ void set_spike_mitigation(unsigned int spike_us)
 	while (pmc->ctrl.gpTmr0Ctl & (1 << 31));
 #endif
 }
+
+#if IS_BCMCHIP(6858) || IS_BCMCHIP(63158) || IS_BCMCHIP(6856) || IS_BCMCHIP(6855) || IS_BCMCHIP(6878) || \
+	IS_BCMCHIP(6846) || IS_BCMCHIP(63146) || IS_BCMCHIP(4912) || IS_BCMCHIP(6813) || IS_BCMCHIP(6888)
+int pll_ch_mdiv_get(unsigned int pll_addr, unsigned int ch, unsigned int *pmdiv)
+{
+	int ret, mdiv;
+	PLL_DECPDIV_REG pll_decpdiv;
+	PLL_DECCH25_REG pll_decch25;
+	PLL_CHCFG_REG ch_cfg;
+
+	// The pll may include up to 6 channels.
+	switch (ch) {
+	case 0:
+		ret =
+		    ReadBPCMRegister(pll_addr,
+				     PLL_BPCM_REG_OFFSET(pll_addr, ch01_cfg),
+				     &ch_cfg.Reg32);
+		/* Check if default value is overitten */
+		if (ch_cfg.Bits.mdiv_override0)
+			mdiv = ch_cfg.Bits.mdiv0;	/* Use the new value */
+		else {		/* If not, read from the default */
+			ret =
+			    ReadBPCMRegister(pll_addr,
+					     PLL_BPCM_REG_OFFSET(pll_addr, decpdiv),
+					     &pll_decpdiv.Reg32);
+			mdiv = pll_decpdiv.Bits.mdiv0;
+		}
+		break;
+	case 1:
+		ret =
+		    ReadBPCMRegister(pll_addr,
+				     PLL_BPCM_REG_OFFSET(pll_addr, ch01_cfg),
+				     &ch_cfg.Reg32);
+		if (ch_cfg.Bits.mdiv_override1)
+			mdiv = ch_cfg.Bits.mdiv1;
+		else {
+			ret =
+			    ReadBPCMRegister(pll_addr,
+					     PLL_BPCM_REG_OFFSET(pll_addr, decpdiv),
+					     &pll_decpdiv.Reg32);
+			mdiv = pll_decpdiv.Bits.mdiv1;
+		}
+		break;
+	case 2:
+		ret =
+		    ReadBPCMRegister(pll_addr,
+				     PLL_BPCM_REG_OFFSET(pll_addr, ch23_cfg),
+				     &ch_cfg.Reg32);
+		if (ch_cfg.Bits.mdiv_override0)
+			mdiv = ch_cfg.Bits.mdiv0;
+		else {
+			ret =
+			    ReadBPCMRegister(pll_addr,
+					     PLL_BPCM_REG_OFFSET(pll_addr, decch25),
+					     &pll_decch25.Reg32);
+			mdiv = pll_decch25.Bits.mdiv2;
+		}
+		break;
+	case 3:
+		ret =
+		    ReadBPCMRegister(pll_addr,
+				     PLL_BPCM_REG_OFFSET(pll_addr, ch23_cfg),
+				     &ch_cfg.Reg32);
+		if (ch_cfg.Bits.mdiv_override1)
+			mdiv = ch_cfg.Bits.mdiv1;
+		else {
+			ret =
+			    ReadBPCMRegister(pll_addr,
+					     PLL_BPCM_REG_OFFSET(pll_addr, decch25),
+					     &pll_decch25.Reg32);
+			mdiv = pll_decch25.Bits.mdiv3;
+		}
+		break;
+	case 4:
+		ret =
+		    ReadBPCMRegister(pll_addr,
+				     PLL_BPCM_REG_OFFSET(pll_addr, ch45_cfg),
+				     &ch_cfg.Reg32);
+		if (ch_cfg.Bits.mdiv_override0)
+			mdiv = ch_cfg.Bits.mdiv0;
+		else {
+			ret =
+			    ReadBPCMRegister(pll_addr,
+					     PLL_BPCM_REG_OFFSET(pll_addr, decch25),
+					     &pll_decch25.Reg32);
+			mdiv = pll_decch25.Bits.mdiv4;
+		}
+		break;
+	case 5:
+		ret =
+		    ReadBPCMRegister(pll_addr,
+				     PLL_BPCM_REG_OFFSET(pll_addr, ch45_cfg),
+				     &ch_cfg.Reg32);
+		if (ch_cfg.Bits.mdiv_override1)
+			mdiv = ch_cfg.Bits.mdiv1;
+		else {
+			ret =
+			    ReadBPCMRegister(pll_addr,
+					     PLL_BPCM_REG_OFFSET(pll_addr, decch25),
+					     &pll_decch25.Reg32);
+			mdiv = pll_decch25.Bits.mdiv5;			
+		}
+		break;
+	default:
+		return -1;
+	};
+
+	if (ret != 0)
+		return -1;
+
+	*pmdiv = mdiv;
+
+	return 0;
+}
+
+int pll_ch_mdiv_set(unsigned int pll_addr, unsigned int ch, unsigned int mdiv)
+{
+	int ret;
+	PLL_CHCFG_REG ch_cfg;
+
+	// The pll may include up to 6 channels.
+	switch (ch) {
+	case 0:
+		ret =
+		    ReadBPCMRegister(pll_addr, PLL_BPCM_REG_OFFSET(pll_addr, ch01_cfg),
+				     &ch_cfg.Reg32);
+		ch_cfg.Bits.mdiv0 = mdiv;
+		ch_cfg.Bits.mdiv_override0 = 1;
+		ret |=
+		    WriteBPCMRegister(pll_addr, PLL_BPCM_REG_OFFSET(pll_addr, ch01_cfg),
+				      ch_cfg.Reg32);
+		break;
+	case 1:
+		ret =
+		    ReadBPCMRegister(pll_addr, PLL_BPCM_REG_OFFSET(pll_addr, ch01_cfg),
+				     &ch_cfg.Reg32);
+		ch_cfg.Bits.mdiv1 = mdiv;
+		ch_cfg.Bits.mdiv_override1 = 1;
+		ret |=
+		    WriteBPCMRegister(pll_addr, PLL_BPCM_REG_OFFSET(pll_addr, ch01_cfg),
+				      ch_cfg.Reg32);
+		break;
+	case 2:
+		ret =
+		    ReadBPCMRegister(pll_addr, PLL_BPCM_REG_OFFSET(pll_addr, ch23_cfg),
+				     &ch_cfg.Reg32);
+		ch_cfg.Bits.mdiv0 = mdiv;
+		ch_cfg.Bits.mdiv_override0 = 1;
+		ret |=
+		    WriteBPCMRegister(pll_addr, PLL_BPCM_REG_OFFSET(pll_addr, ch23_cfg),
+				      ch_cfg.Reg32);
+		break;
+	case 3:
+		ret =
+		    ReadBPCMRegister(pll_addr, PLL_BPCM_REG_OFFSET(pll_addr, ch23_cfg),
+				     &ch_cfg.Reg32);
+		ch_cfg.Bits.mdiv1 = mdiv;
+		ch_cfg.Bits.mdiv_override1 = 1;
+		ret |=
+		    WriteBPCMRegister(pll_addr, PLL_BPCM_REG_OFFSET(pll_addr, ch23_cfg),
+				      ch_cfg.Reg32);
+		break;
+	case 4:
+		ret =
+		    ReadBPCMRegister(pll_addr, PLL_BPCM_REG_OFFSET(pll_addr, ch45_cfg),
+				     &ch_cfg.Reg32);
+		ch_cfg.Bits.mdiv0 = mdiv;
+		ch_cfg.Bits.mdiv_override0 = 1;
+		ret |=
+		    WriteBPCMRegister(pll_addr, PLL_BPCM_REG_OFFSET(pll_addr, ch45_cfg),
+				      ch_cfg.Reg32);
+		break;
+	case 5:
+		ret =
+		    ReadBPCMRegister(pll_addr, PLL_BPCM_REG_OFFSET(pll_addr, ch45_cfg),
+				     &ch_cfg.Reg32);
+		ch_cfg.Bits.mdiv1 = mdiv;
+		ch_cfg.Bits.mdiv_override1 = 1;
+		ret |=
+		    WriteBPCMRegister(pll_addr, PLL_BPCM_REG_OFFSET(pll_addr, ch45_cfg),
+				      ch_cfg.Reg32);
+		break;
+	default:
+		return -1;
+	};
+
+	return ret;
+}
+#endif
+
+static int _xrdp_div_get(unsigned int *div)
+{
+    int ret = -1;
+
+#if IS_BCMCHIP(6858) || IS_BCMCHIP(63158) || IS_BCMCHIP(6856) || \
+	IS_BCMCHIP(6846) || IS_BCMCHIP(63146) || IS_BCMCHIP(4912) || IS_BCMCHIP(6813) || IS_BCMCHIP(6888)
+    ret = pll_ch_mdiv_get(PMB_ADDR_RDPPLL, XRDPPLL_RUNNER_CHANNEL, div);
+#elif IS_BCMCHIP(6855)
+    ret = pll_ch_mdiv_get(PMB_ADDR_SYSPLL, XRDPPLL_RUNNER_CHANNEL, div);
+#elif IS_BCMCHIP(6878)
+    ret = pll_ch_mdiv_get(PMB_ADDR_SYSPLL, SYSPLL_RUNNER_CHANNEL, div);
+#endif
+
+    return ret;
+}
+
+static int _xrdp_div_set(unsigned int div)
+{
+    int ret = -1;
+
+#if IS_BCMCHIP(6858) || IS_BCMCHIP(63158) || IS_BCMCHIP(6856) || \
+	IS_BCMCHIP(6846) || IS_BCMCHIP(63146) || IS_BCMCHIP(4912) || IS_BCMCHIP(6813) || IS_BCMCHIP(6888)
+    ret = pll_ch_mdiv_set(PMB_ADDR_RDPPLL, XRDPPLL_RUNNER_CHANNEL, div);
+#elif IS_BCMCHIP(6855)
+    ret = pll_ch_mdiv_set(PMB_ADDR_SYSPLL, XRDPPLL_RUNNER_CHANNEL, div);
+#elif IS_BCMCHIP(6878)
+    ret = pll_ch_mdiv_set(PMB_ADDR_SYSPLL, SYSPLL_RUNNER_CHANNEL, div);
+#endif
+
+    return ret;
+}
+
+static unsigned int xrdp_divider;
+
+int xrdp_div_get(int *enable)
+{
+    unsigned int _xrdp_divider = 0;
+
+    if (!xrdp_divider)
+        _xrdp_div_get(&xrdp_divider);
+
+    if (_xrdp_div_get(&_xrdp_divider))
+        return -1;
+
+    *enable = (_xrdp_divider != xrdp_divider);
+
+    return 0;
+}
+EXPORT_SYMBOL(xrdp_div_get);
+
+int xrdp_div_set(int enable)
+{
+    unsigned int _xrdp_divider;
+
+    if (!xrdp_divider)
+        _xrdp_div_get(&xrdp_divider);
+
+    _xrdp_divider = enable ? xrdp_divider * 4 : xrdp_divider;
+    if (_xrdp_div_set(_xrdp_divider))
+        return -1;
+
+    return 0;
+}
+EXPORT_SYMBOL(xrdp_div_set);

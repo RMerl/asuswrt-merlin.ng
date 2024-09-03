@@ -4,25 +4,19 @@
    Copyright (c) 2020 Broadcom 
    All Rights Reserved
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
 :>
 */
@@ -33,7 +27,7 @@ written consent.
 #include "trx_descr.h"
 #include "trx_descr_gen.h"
 #include "trx_descr_usr.h"
-#include "bcmsfp.h"
+#include "trxbus.h"
 
 static TRX_DESCRIPTOR default_pluggable_trx =
 {
@@ -133,13 +127,14 @@ static TRX_DESCRIPTOR *match_descriptor(TRX_DESCRIPTOR trx_db[], int size, char 
     return NULL;
 }
 
-static void *detect(struct device *trx_dev, int is_pmd)
+static void *detect(int bus)
 {
     TRX_DESCRIPTOR *trx = NULL;
     unsigned long trx_ff;
     int ret, match = 1, v_name_len, v_pn_len, v_rev_len;
     char *v_name, *v_pn, *v_rev;
-
+    int is_pmd = trxbus_is_pmd(bus);
+    
     if (is_pmd)
     {
         printk("Opticaldet: PMD found\n");
@@ -150,18 +145,15 @@ static void *detect(struct device *trx_dev, int is_pmd)
         return trx;
     }
 
-    if (!trx_dev)
-        return NULL;
-
-    ret = sfp_mon_read(trx_dev, bcmsfp_mon_id_phys_id, 0, &trx_ff);
+    ret = trxbus_mon_read(bus, bcmsfp_mon_id_phys_id, 0, &trx_ff);
     switch (trx_ff)
     {
         case TRX_SFF:
         case TRX_SFP:
         case TRX_XFP:
-            sfp_mon_read_buf(trx_dev, bcmsfp_mon_id_vendor_name, 0, &v_name, &v_name_len);
-            sfp_mon_read_buf(trx_dev, bcmsfp_mon_id_vendor_pn, 0, &v_pn, &v_pn_len);
-            sfp_mon_read_buf(trx_dev, bcmsfp_mon_id_vendor_rev, 0, &v_rev, &v_rev_len);
+            trxbus_mon_read_buf(bus, bcmsfp_mon_id_vendor_name, 0, &v_name, &v_name_len);
+            trxbus_mon_read_buf(bus, bcmsfp_mon_id_vendor_pn, 0, &v_pn, &v_pn_len);
+            trxbus_mon_read_buf(bus, bcmsfp_mon_id_vendor_rev, 0, &v_rev, &v_rev_len);
 
             trx = match_descriptor(trx_usr, sizeof(trx_usr) / sizeof(TRX_DESCRIPTOR), v_name, v_pn);
             if (!trx)
@@ -186,28 +178,28 @@ static void *detect(struct device *trx_dev, int is_pmd)
     return trx;
 }
 
-static void trx_activate(TRX_DESCRIPTOR *desc, struct device *dev)
+static void trx_activate(TRX_DESCRIPTOR *desc, int bus)
 {
-    if (dev && desc && desc->activation_func)
-        desc->activation_func(dev);
+    if (desc && desc->activation_func)
+        desc->activation_func(bus);
 }
 
-static void trx_fixup(TRX_DESCRIPTOR *desc, struct device *dev)
+static void trx_fixup(TRX_DESCRIPTOR *desc, int bus)
 {
     if (desc->tx_pwr_down_cfg_req)
     {
-        sfp_mon_write(dev, bcmsfp_mon_tx_power_down, 0, TRX_ACTIVE_HIGH == desc->tx_pwr_down_polarity);
+        trxbus_mon_write(bus, bcmsfp_mon_tx_power_down, 0, TRX_ACTIVE_HIGH == desc->tx_pwr_down_polarity);
     }
 }
 
-void *opticaldet_trx_register(struct device *dev, int is_pmd) 
+void *opticaldet_trx_register(int bus) 
 {
     TRX_DESCRIPTOR *desc;
 
-    if (!(desc = detect(dev, is_pmd)))
+    if (!(desc = detect(bus)))
         return NULL;
 
-    trx_fixup(desc, dev);
-    trx_activate(desc, dev);
+    trx_fixup(desc, bus);
+    trx_activate(desc, bus);
     return desc;
 }

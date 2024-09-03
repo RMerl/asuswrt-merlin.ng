@@ -1,29 +1,23 @@
 /*
  * <:copyright-BRCM:2019:DUAL/GPL:standard
- *
- *    Copyright (c) 2019 Broadcom
+ * 
+ *    Copyright (c) 2019 Broadcom 
  *    All Rights Reserved
- *
- * Unless you and Broadcom execute a separate written software license
- * agreement governing use of this software, this software is licensed
- * to you under the terms of the GNU General Public License version 2
- * (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
- * with the following added to such license:
- *
- *    As a special exception, the copyright holders of this software give
- *    you permission to link this software with independent modules, and
- *    to copy and distribute the resulting executable under terms of your
- *    choice, provided that you also meet, for each linked independent
- *    module, the terms and conditions of the license of that module.
- *    An independent module is a module which is not derived from this
- *    software.  The special exception does not apply to any modifications
- *    of the software.
- *
- * Not withstanding the above, under no circumstances may you combine
- * this software in any way with any other Broadcom software provided
- * under a license other than the GPL, without Broadcom's express prior
- * written consent.
- *
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License, version 2, as published by
+ * the Free Software Foundation (the "GPL").
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * 
+ * A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+ * writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ * 
  * :>
  */
 
@@ -435,11 +429,60 @@ uint32_t rdd_rx_default_flow_cntr_id_get(uint32_t flow_index)
 }
 #endif
 
-void rdd_rx_mirroring_cfg(rdd_rdd_vport vport, bdmf_boolean control)
+void rdd_rx_mirroring_cfg(rdd_rdd_vport vport, bdmf_boolean enable, uint16_t rx_truncate_size)
 {
-    RDD_BTRACE("vport = %d, control = %d\n", vport, control);
+    RDD_BTRACE("vport = %d, enable = %d, rx_truncate_size = %d\n", vport, enable, rx_truncate_size);
 #if !defined(BCM_DSL_XRDP) || CHIP_VER >= RDP_GEN_60
-    RDD_VPORT_CFG_EX_ENTRY_MIRRORING_EN_WRITE_G(control, RDD_VPORT_CFG_EX_TABLE_ADDRESS_ARR, vport);
+    RDD_VPORT_CFG_EX_ENTRY_MIRRORING_EN_WRITE_G(enable, RDD_VPORT_CFG_EX_TABLE_ADDRESS_ARR, vport);
+#ifdef CONFIG_MIRROR_MAX_PKT_SIZE
+    if (!rx_truncate_size)
+        rx_truncate_size = MIRRORING_DEF_DISABLE_TRUNCATION_SIZE; /* disable value */
+    RDD_MIRRORING_TRUNCATE_ENTRY_TRUNCATE_OFFSET_WRITE_G(rx_truncate_size, RDD_RX_MIRRORING_TABLE_ADDRESS_ARR, vport);
+#endif
+#endif
+}
+
+void rdd_tx_mirroring_cfg(rdd_mirroring_cfg_t *rdd_mirroring_cfg, rdd_rdd_vport vport, bdmf_boolean enable, uint16_t tx_truncate_size)
+{
+#if !defined(BCM_DSL_XRDP) || CHIP_VER >= RDP_GEN_60
+    RDD_BTRACE("vport = %d, enable = %d, tx_truncate_size = %d\n", vport, enable, tx_truncate_size);
+    if (!enable)
+        tx_truncate_size = 0;  /* dont mirror. checked in processing */
+#ifdef CONFIG_MIRROR_MAX_PKT_SIZE
+    else if (!tx_truncate_size)
+        tx_truncate_size = MIRRORING_DEF_DISABLE_TRUNCATION_SIZE; /* dont truncate */
+#endif
+
+    switch (rdd_mirroring_cfg->tx_mirror_type)
+    {
+#ifdef CONFIG_MIRROR_MAX_PKT_SIZE
+        case MIRROR_OF_LAN:
+            RDD_MIRRORING_TRUNCATE_ENTRY_TRUNCATE_OFFSET_WRITE_G(tx_truncate_size, RDD_ETH_TM_TX_TRUNCATE_MIRRORING_TABLE_ADDRESS_ARR, vport);
+#if defined(TM_CORE_LOAD_BALANCING)
+            RDD_MIRRORING_TRUNCATE_ENTRY_TRUNCATE_OFFSET_WRITE_G(tx_truncate_size, RDD_PON_TM_TX_TRUNCATE_MIRRORING_TABLE_ADDRESS_ARR, vport);
+#endif
+            break;
+
+        case MIRROR_OF_WAN:
+            if (PROJ_DEFS_NUMBER_OF_US_CORE_PORTS == 1)
+            {
+                RDD_MIRRORING_TRUNCATE_ENTRY_TRUNCATE_OFFSET_WRITE_G(tx_truncate_size, RDD_PON_TM_TX_TRUNCATE_MIRRORING_TABLE_ADDRESS_ARR, 0);
+            }
+            else
+            {
+                RDD_MIRRORING_TRUNCATE_ENTRY_TRUNCATE_OFFSET_WRITE_G(tx_truncate_size, RDD_PON_TM_TX_TRUNCATE_MIRRORING_TABLE_ADDRESS_ARR, vport);
+            }
+            break;  
+#else
+        /* to avoid compilation error, check all types even if not supported*/
+        case MIRROR_OF_LAN:
+        case MIRROR_OF_WAN:
+            break;
+#endif
+        case MIRROR_OF_WLAN:
+            RDD_MIRRORING_TRUNCATE_ENTRY_TRUNCATE_OFFSET_WRITE_G(tx_truncate_size, RDD_HOST_TX_TRUNCATE_MIRRORING_TABLE_ADDRESS_ARR, vport);
+            break;   
+    }
 #endif
 }
 
@@ -539,25 +582,35 @@ void rdd_tm_flow_cntr_cfg(uint32_t cntr_entry, uint32_t cntr_id)
 {
     RDD_BTRACE("cntr_entry = %d, cntr_id = %d\n", cntr_entry, cntr_id);
 
-#if !defined(BCM_PON_XRDP) && !defined(BCM4912)
-#if defined(CONFIG_BCM_TCONT) || defined(EPON)
-    if (RDD_IS_TM_PON_FLOW_ID(cntr_entry))
-        RDD_TM_FLOW_CNTR_ENTRY_CNTR_ID_WRITE_G(cntr_id, RDD_US_TM_PON_TM_FLOW_CNTR_TABLE_ADDRESS_ARR, RDD_TX_PON_FLOW_ID(cntr_entry));
-    else
-#endif
-#ifdef CONFIG_RNR_DSL_INTF_SUPPORT
-    if (RDD_IS_TM_DSL_FLOW_ID(cntr_entry))
-        RDD_TM_FLOW_CNTR_ENTRY_CNTR_ID_WRITE_G(cntr_id, RDD_US_TM_DSL_TM_FLOW_CNTR_TABLE_ADDRESS_ARR, RDD_TX_DSL_FLOW_ID(cntr_entry));
-    else
-#endif
-    if (cntr_entry < RDD_TM_FLOW_CNTR_TABLE_SIZE)
-        RDD_TM_FLOW_CNTR_ENTRY_CNTR_ID_WRITE_G(cntr_id, RDD_US_TM_ETH_TM_FLOW_CNTR_TABLE_ADDRESS_ARR, RDD_TX_US_ETH_FLOW_CNTR_ID(cntr_entry));
-#else
+#if defined(BCM_PON_XRDP) || defined(BCM4912)
     if (cntr_entry < RDD_TM_FLOW_CNTR_TABLE_SIZE)
         RDD_TM_FLOW_CNTR_ENTRY_CNTR_ID_WRITE_G(cntr_id, RDD_US_TM_TM_FLOW_CNTR_TABLE_ADDRESS_ARR, cntr_entry);
-#endif
     else if (cntr_entry-RDD_TM_FLOW_CNTR_TABLE_SIZE < RDD_DS_TM_FLOW_CNTR_TABLE_SIZE)
         RDD_TM_FLOW_CNTR_ENTRY_CNTR_ID_WRITE_G(cntr_id, RDD_DS_TM_TM_FLOW_CNTR_TABLE_ADDRESS_ARR, cntr_entry-RDD_TM_FLOW_CNTR_TABLE_SIZE);
+#elif defined(BCM6813)
+    if (RDD_IS_TM_PON_FLOW_ID(cntr_entry))
+        RDD_TM_FLOW_CNTR_ENTRY_CNTR_ID_WRITE_G(cntr_id, RDD_US_TM_PON_TM_FLOW_CNTR_TABLE_ADDRESS_ARR, RDD_TX_PON_FLOW_ID(cntr_entry));
+    else if (cntr_entry < RDD_TM_FLOW_CNTR_TABLE_SIZE)
+        RDD_TM_FLOW_CNTR_ENTRY_CNTR_ID_WRITE_G(cntr_id, RDD_US_TM_TM_FLOW_CNTR_TABLE_ADDRESS_ARR, RDD_TX_US_ETH_FLOW_CNTR_ID(cntr_entry));
+    else if (cntr_entry-RDD_TM_FLOW_CNTR_TABLE_SIZE < RDD_DS_TM_FLOW_CNTR_TABLE_SIZE)
+        RDD_TM_FLOW_CNTR_ENTRY_CNTR_ID_WRITE_G(cntr_id, RDD_DS_TM_TM_FLOW_CNTR_TABLE_ADDRESS_ARR, cntr_entry-RDD_TM_FLOW_CNTR_TABLE_SIZE);
+#elif defined(BCM63146)
+    if (RDD_IS_TM_DSL_FLOW_ID(cntr_entry))
+        RDD_TM_FLOW_CNTR_ENTRY_CNTR_ID_WRITE_G(cntr_id, RDD_US_TM_DSL_TM_FLOW_CNTR_TABLE_ADDRESS_ARR, RDD_TX_DSL_FLOW_ID(cntr_entry));
+    else if (cntr_entry < RDD_TM_FLOW_CNTR_TABLE_SIZE)
+        RDD_TM_FLOW_CNTR_ENTRY_CNTR_ID_WRITE_G(cntr_id, RDD_US_TM_TM_FLOW_CNTR_TABLE_ADDRESS_ARR, RDD_TX_US_ETH_FLOW_CNTR_ID(cntr_entry));
+    else if (cntr_entry-RDD_TM_FLOW_CNTR_TABLE_SIZE < RDD_DS_TM_FLOW_CNTR_TABLE_SIZE)
+        RDD_TM_FLOW_CNTR_ENTRY_CNTR_ID_WRITE_G(cntr_id, RDD_DS_TM_TM_FLOW_CNTR_TABLE_ADDRESS_ARR, cntr_entry-RDD_TM_FLOW_CNTR_TABLE_SIZE);
+#elif defined(BCM63158)
+    if (RDD_IS_TM_PON_FLOW_ID(cntr_entry))
+        RDD_TM_FLOW_CNTR_ENTRY_CNTR_ID_READ_G(cntr_id, RDD_US_TM_PON_TM_FLOW_CNTR_TABLE_ADDRESS_ARR, RDD_TX_PON_FLOW_ID(cntr_entry));
+    else if (RDD_IS_TM_DSL_FLOW_ID(cntr_entry))
+        RDD_TM_FLOW_CNTR_ENTRY_CNTR_ID_WRITE_G(cntr_id, RDD_US_TM_DSL_TM_FLOW_CNTR_TABLE_ADDRESS_ARR, RDD_TX_DSL_FLOW_ID(cntr_entry));
+    else if (cntr_entry < RDD_TM_FLOW_CNTR_TABLE_SIZE)
+        RDD_TM_FLOW_CNTR_ENTRY_CNTR_ID_WRITE_G(cntr_id, RDD_US_TM_ETH_TM_FLOW_CNTR_TABLE_ADDRESS_ARR, RDD_TX_US_ETH_FLOW_CNTR_ID(cntr_entry));
+    else if (cntr_entry-RDD_TM_FLOW_CNTR_TABLE_SIZE < RDD_DS_TM_FLOW_CNTR_TABLE_SIZE)
+        RDD_TM_FLOW_CNTR_ENTRY_CNTR_ID_WRITE_G(cntr_id, RDD_DS_TM_TM_FLOW_CNTR_TABLE_ADDRESS_ARR, cntr_entry-RDD_TM_FLOW_CNTR_TABLE_SIZE);
+#endif
 }
 
 uint32_t rdd_tm_flow_cntr_id_get(uint32_t cntr_entry)
@@ -565,25 +618,38 @@ uint32_t rdd_tm_flow_cntr_id_get(uint32_t cntr_entry)
     uint32_t cntr_id = TX_FLOW_CNTR_GROUP_INVLID_CNTR;
 
     /*RDD_BTRACE("cntr_entry = %d\n", cntr_entry);*/
-#if !defined(BCM_PON_XRDP) && !defined(BCM4912)
-#if defined(CONFIG_BCM_TCONT) || defined(EPON)
-    if (RDD_IS_TM_PON_FLOW_ID(cntr_entry))
-        RDD_TM_FLOW_CNTR_ENTRY_CNTR_ID_READ_G(cntr_id, RDD_US_TM_PON_TM_FLOW_CNTR_TABLE_ADDRESS_ARR, RDD_TX_PON_FLOW_ID(cntr_entry));
-    else
-#endif
-#ifdef CONFIG_RNR_DSL_INTF_SUPPORT
-    if (RDD_IS_TM_DSL_FLOW_ID(cntr_entry))
-        RDD_TM_FLOW_CNTR_ENTRY_CNTR_ID_READ_G(cntr_id, RDD_US_TM_DSL_TM_FLOW_CNTR_TABLE_ADDRESS_ARR, RDD_TX_DSL_FLOW_ID(cntr_entry));
-    else
-#endif
-    if (cntr_entry < RDD_TM_FLOW_CNTR_TABLE_SIZE)
-        RDD_TM_FLOW_CNTR_ENTRY_CNTR_ID_READ_G(cntr_id, RDD_US_TM_ETH_TM_FLOW_CNTR_TABLE_ADDRESS_ARR, RDD_TX_US_ETH_FLOW_CNTR_ID(cntr_entry));
-#else
+
+
+#if defined(BCM_PON_XRDP) || defined(BCM4912)
     if (cntr_entry < RDD_TM_FLOW_CNTR_TABLE_SIZE)
         RDD_TM_FLOW_CNTR_ENTRY_CNTR_ID_READ_G(cntr_id, RDD_US_TM_TM_FLOW_CNTR_TABLE_ADDRESS_ARR, cntr_entry);
-#endif
     else if (cntr_entry-RDD_TM_FLOW_CNTR_TABLE_SIZE < RDD_DS_TM_FLOW_CNTR_TABLE_SIZE)
         RDD_TM_FLOW_CNTR_ENTRY_CNTR_ID_READ_G(cntr_id, RDD_DS_TM_TM_FLOW_CNTR_TABLE_ADDRESS_ARR, cntr_entry-RDD_TM_FLOW_CNTR_TABLE_SIZE);
+#elif defined(BCM6813)
+    if (RDD_IS_TM_PON_FLOW_ID(cntr_entry))
+        RDD_TM_FLOW_CNTR_ENTRY_CNTR_ID_READ_G(cntr_id, RDD_US_TM_PON_TM_FLOW_CNTR_TABLE_ADDRESS_ARR, RDD_TX_PON_FLOW_ID(cntr_entry));
+    else if (cntr_entry < RDD_TM_FLOW_CNTR_TABLE_SIZE)
+        RDD_TM_FLOW_CNTR_ENTRY_CNTR_ID_READ_G(cntr_id, RDD_US_TM_TM_FLOW_CNTR_TABLE_ADDRESS_ARR, RDD_TX_US_ETH_FLOW_CNTR_ID(cntr_entry));
+    else if (cntr_entry-RDD_TM_FLOW_CNTR_TABLE_SIZE < RDD_DS_TM_FLOW_CNTR_TABLE_SIZE)
+        RDD_TM_FLOW_CNTR_ENTRY_CNTR_ID_READ_G(cntr_id, RDD_DS_TM_TM_FLOW_CNTR_TABLE_ADDRESS_ARR, cntr_entry-RDD_TM_FLOW_CNTR_TABLE_SIZE);
+#elif defined(BCM63146)
+    if (RDD_IS_TM_DSL_FLOW_ID(cntr_entry))
+        RDD_TM_FLOW_CNTR_ENTRY_CNTR_ID_READ_G(cntr_id, RDD_US_TM_DSL_TM_FLOW_CNTR_TABLE_ADDRESS_ARR, RDD_TX_DSL_FLOW_ID(cntr_entry));
+    else if (cntr_entry < RDD_TM_FLOW_CNTR_TABLE_SIZE)
+        RDD_TM_FLOW_CNTR_ENTRY_CNTR_ID_READ_G(cntr_id, RDD_US_TM_TM_FLOW_CNTR_TABLE_ADDRESS_ARR, RDD_TX_US_ETH_FLOW_CNTR_ID(cntr_entry));
+    else if (cntr_entry-RDD_TM_FLOW_CNTR_TABLE_SIZE < RDD_DS_TM_FLOW_CNTR_TABLE_SIZE)
+        RDD_TM_FLOW_CNTR_ENTRY_CNTR_ID_READ_G(cntr_id, RDD_DS_TM_TM_FLOW_CNTR_TABLE_ADDRESS_ARR, cntr_entry-RDD_TM_FLOW_CNTR_TABLE_SIZE);
+#elif defined(BCM63158)
+    if (RDD_IS_TM_PON_FLOW_ID(cntr_entry))
+        RDD_TM_FLOW_CNTR_ENTRY_CNTR_ID_READ_G(cntr_id, RDD_US_TM_PON_TM_FLOW_CNTR_TABLE_ADDRESS_ARR, RDD_TX_PON_FLOW_ID(cntr_entry));
+    else if (RDD_IS_TM_DSL_FLOW_ID(cntr_entry))
+        RDD_TM_FLOW_CNTR_ENTRY_CNTR_ID_READ_G(cntr_id, RDD_US_TM_DSL_TM_FLOW_CNTR_TABLE_ADDRESS_ARR, RDD_TX_DSL_FLOW_ID(cntr_entry));
+    else if (cntr_entry < RDD_TM_FLOW_CNTR_TABLE_SIZE)
+        RDD_TM_FLOW_CNTR_ENTRY_CNTR_ID_READ_G(cntr_id, RDD_US_TM_ETH_TM_FLOW_CNTR_TABLE_ADDRESS_ARR, RDD_TX_US_ETH_FLOW_CNTR_ID(cntr_entry));
+    else if (cntr_entry-RDD_TM_FLOW_CNTR_TABLE_SIZE < RDD_DS_TM_FLOW_CNTR_TABLE_SIZE)
+        RDD_TM_FLOW_CNTR_ENTRY_CNTR_ID_READ_G(cntr_id, RDD_DS_TM_TM_FLOW_CNTR_TABLE_ADDRESS_ARR, cntr_entry-RDD_TM_FLOW_CNTR_TABLE_SIZE);
+#endif
+
     return cntr_id;
 }
 
@@ -616,7 +682,7 @@ int rdd_port_or_wan_flow_to_tx_flow_and_table_ptr(uint16_t port_or_wan_flow,
         if (port_or_wan_flow >= RDD_VPORT_TX_FLOW_TABLE_SIZE)
         {
             BDMF_TRACE_ERR("port_or_wan_flow %d is over supported VPORT range %d",
-                            port_or_wan_flow, RDD_IMAGE_1_VPORT_TX_FLOW_TABLE_SIZE);
+                            port_or_wan_flow, RDD_IMAGE_WAN_VPORT_TX_FLOW_TABLE_SIZE);
             return -1;
         }
         tx_flow = port_or_wan_flow;
@@ -650,11 +716,7 @@ void rdd_tx_flow_enable(uint16_t port_or_wan_flow, rdpa_traffic_dir dir, bdmf_bo
 #endif
 }
 
-#ifndef TM_C_CODE
 void rdd_qm_queue_to_tx_flow_tbl_cfg(uint16_t qm_queue, rdpa_traffic_dir dir, rdpa_port_type wan_type)
-#else
-void rdd_qm_queue_to_tx_flow_tbl_cfg(uint16_t qm_queue, tm_identifier_e tm_identity, rdpa_port_type wan_type)
-#endif
 {
 #if defined(BCM_DSL_XRDP)
 /* TODO! improve this!!
@@ -670,8 +732,8 @@ void rdd_qm_queue_to_tx_flow_tbl_cfg(uint16_t qm_queue, tm_identifier_e tm_ident
         qm_queue_to_tx_flow_first_time = 0;
         /* TODO: if we decide to improve tx_flow_check for all processing_images,
          * then the folloing needs to be improved */
-        for (i = 0; i < RDD_IMAGE_2_QM_QUEUE_TO_TX_FLOW_TABLE_PTR_TABLE_SIZE; i++)
-            RDD_BYTES_2_BITS_WRITE_G(IMAGE_2_VPORT_TX_FLOW_TABLE_ADDRESS, RDD_QM_QUEUE_TO_TX_FLOW_TABLE_PTR_TABLE_ADDRESS_ARR, i);
+        for (i = 0; i < RDD_IMAGE_CPU_TX_QM_QUEUE_TO_TX_FLOW_TABLE_PTR_TABLE_SIZE; i++)
+            RDD_BYTES_2_BITS_WRITE_G(IMAGE_CPU_TX_VPORT_TX_FLOW_TABLE_ADDRESS, RDD_QM_QUEUE_TO_TX_FLOW_TABLE_PTR_TABLE_ADDRESS_ARR, i);
     }
 
     if (qm_queue >= RDD_QM_QUEUE_TO_TX_FLOW_TABLE_PTR_TABLE_SIZE)
@@ -681,15 +743,15 @@ void rdd_qm_queue_to_tx_flow_tbl_cfg(uint16_t qm_queue, tm_identifier_e tm_ident
      * then the folloing needs to be improved */
 #ifdef CONFIG_RNR_DSL_INTF_SUPPORT
     if ((dir == rdpa_dir_us) && (wan_type == rdpa_port_dsl))
-        tx_flow_table_addr = IMAGE_2_DSL_TX_FLOW_TABLE_ADDRESS;
+        tx_flow_table_addr = IMAGE_CPU_TX_DSL_TX_FLOW_TABLE_ADDRESS;
     else
 #endif
 #if defined(CONFIG_BCM_TCONT) || defined(EPON)
     if ((dir == rdpa_dir_us) && (wan_type >= rdpa_port_gpon) && (wan_type <= rdpa_port_xepon))
-        tx_flow_table_addr = IMAGE_2_PON_TX_FLOW_TABLE_ADDRESS;
+        tx_flow_table_addr = IMAGE_CPU_TX_PON_TX_FLOW_TABLE_ADDRESS;
     else
 #endif
-    tx_flow_table_addr = IMAGE_2_VPORT_TX_FLOW_TABLE_ADDRESS;
+    tx_flow_table_addr = IMAGE_CPU_TX_VPORT_TX_FLOW_TABLE_ADDRESS;
 
     RDD_BYTES_2_BITS_WRITE_G(tx_flow_table_addr, RDD_QM_QUEUE_TO_TX_FLOW_TABLE_PTR_TABLE_ADDRESS_ARR, qm_queue);
 #endif
@@ -958,8 +1020,8 @@ void rdd_mcast_min_tasks_limit_cfg(uint16_t mcast_min_tasks_limit)
     /* will be set with the max value */
     RDD_BYTES_2_BITS_WRITE_G(mcast_min_tasks_limit, RDD_MCAST_BBH_OVERRUN_MIN_TASKS_LIMIT_ADDRESS_ARR, 0);
 }
-#endif
-#if defined(MULTIPLE_BBH_TX_LAN)
+#endif 
+#if defined(TM_C_CODE)
 static uint8_t ds_bbh_queue_mapping_vector[RDD_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_ENTRY_INDEX_NUMBER] = {};
 
 void bbh_queue_to_bbh_queue_desc_mapping_init(void)
@@ -981,16 +1043,19 @@ void bbh_queue_to_bbh_queue_desc_mapping_init(void)
     }
 }
 
-uint8_t rdd_bbh_queue_to_bbh_queue_desc_mapping_set(rdpa_port_type type, uint32_t index, uint8_t bbh_queue, rdpa_traffic_dir dir)
+uint8_t rdd_bbh_queue_to_bbh_queue_desc_mapping_set(rdpa_port_type type, uint32_t index, uint8_t bbh_queue)
 {
     static uint8_t first_time = 1;
     uint8_t core_index = port_mapping_tx_runner_core_get(type, index);
     uint8_t tm_index = port_mapping_tm_ds_index_get(type, index);
     DS_TM_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_TABLE_STRUCT *ds_entry;
     US_TM_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_TABLE_STRUCT *us_entry;
-#if defined(MULTIPLE_TM_ON_RNR_CORE)
+    rdpa_traffic_dir dir;
+#if defined(MULTIPLE_TM_ON_RNR_CORE) && !defined(TM_CORE_LOAD_BALANCING)
     uint8_t i;
 #endif
+
+    dir = port_mapping_tm_index_get(type, index);
 
 #if !defined(MULTIPLE_TM_ON_RNR_CORE)
     /* tm per core (index should be zero) */
@@ -1006,13 +1071,37 @@ uint8_t rdd_bbh_queue_to_bbh_queue_desc_mapping_set(rdpa_port_type type, uint32_
     {
         us_entry = RDD_US_TM_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_TABLE_PTR(core_index);
         /*us_entry->entry.index[bbh_queue] = bbh_queue;*/
-        RDD_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_ENTRY_INDEX_WRITE(bbh_queue, &us_entry->entry, bbh_queue);
-        return bbh_queue; 
+#if defined(TM_CORE_LOAD_BALANCING)
+        if (type == rdpa_port_emac)
+        {
+            /* The queue descriptor mapping index needs to be unique across BBH_TX_LAN and BBH_TX_LAN_1.
+             * It also needs to account for a relative offset when LAN and WAN are sharing the same TM BBH
+             * queue table. */
+            index = port_mapping_channel_get(type, index);
+            RDD_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_ENTRY_INDEX_WRITE(index, &us_entry->entry[tm_index], bbh_queue);
+            return index; 
+        }
+        else
+        {
+            RDD_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_ENTRY_INDEX_WRITE(bbh_queue, &us_entry->entry[TM_INDEX_DSL_OR_PON],
+                bbh_queue - port_mapping_channel_get(type, index));
+            return bbh_queue; 
+        }
+#else
+        {
+            RDD_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_ENTRY_INDEX_WRITE(bbh_queue, &us_entry->entry, bbh_queue);
+            return bbh_queue; 
+        }
+#endif
     }
 
     ds_entry = RDD_DS_TM_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_TABLE_PTR(core_index);
 
-#if !defined(MULTIPLE_TM_ON_RNR_CORE)
+#if defined(TM_CORE_LOAD_BALANCING)
+    /* value (index) needs to be unique across BBH_TX_LAN and BBH_TX_LAN_1 */
+    RDD_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_ENTRY_INDEX_WRITE(index, &ds_entry->entry[tm_index], bbh_queue);
+    return index; 
+#elif !defined(MULTIPLE_TM_ON_RNR_CORE)
     /* 6888 each tm has seperate core */
     RDD_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_ENTRY_INDEX_WRITE(bbh_queue, &ds_entry->entry[tm_index], bbh_queue);
     return bbh_queue; 
@@ -1032,13 +1121,15 @@ uint8_t rdd_bbh_queue_to_bbh_queue_desc_mapping_set(rdpa_port_type type, uint32_
 #endif
 }
 
-uint8_t rdd_bbh_queue_to_bbh_queue_desc_mapping_get(rdpa_port_type type, uint32_t channel_id, uint8_t bbh_queue, rdpa_traffic_dir dir)
+uint8_t rdd_bbh_queue_to_bbh_queue_desc_mapping_get(rdpa_port_type type, uint32_t channel_id, uint8_t bbh_queue)
 {
     uint8_t core_index = port_mapping_tx_runner_core_get(type, channel_id);
     uint8_t tm_index = port_mapping_get_tm_index_by_channel_id(type, channel_id);
     DS_TM_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_TABLE_STRUCT *ds_entry;
     US_TM_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_TABLE_STRUCT *us_entry;
     uint8_t val;
+    rdpa_traffic_dir dir;
+    dir = port_mapping_tm_index_get(type, channel_id);
 
     if (dir == rdpa_dir_us)
     {
@@ -1085,3 +1176,13 @@ void rdd_bbh_queue_to_bbh_queue_desc_mapping_clr(uint8_t tm_index, uint8_t bbh_q
     return;
 }
 #endif
+
+#ifdef DBG_TASK_ENTRY_POINT
+void rdd_dbg_power_measure_mode_set(int enable)
+{
+    RDD_BTRACE("rdd_dbg_power_measure_mode_set = %d\n", enable);
+
+    RDD_SYSTEM_CONFIGURATION_ENTRY_DBG_POWER_MEASURE_MODE_WRITE_G(enable, RDD_SYSTEM_CONFIGURATION_ADDRESS_ARR, 0);
+}
+#endif
+

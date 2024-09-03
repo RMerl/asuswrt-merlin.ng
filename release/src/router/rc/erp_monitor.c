@@ -130,6 +130,37 @@ static int erp_check_wl_stat(int model)
 }
 
 #if defined(RTCONFIG_QCA)
+static void erp_brcm_radio_down(int model)
+{
+	return;
+}
+#else
+static void erp_brcm_radio_down(int model)
+{
+	int i = 0;
+	char wl[32] = {0}, *next = NULL;
+
+	/* check each radio and make it down */
+	foreach(wl, nvram_safe_get("wl_ifnames"), next) {
+		SKIP_ABSENT_BAND_AND_INC_UNIT(i);
+		eval("wl", "-i", wl, "down");
+		ERP_DBG("wl = %s\n", wl);
+		i++;
+	}
+
+	/* TODO : special mode to shut down wireless radio */
+	if (model == MODEL_RTAC87U) {
+		eval("qcsapi_sockrpc", "pm", "suspend");
+		eval("qcsapi_sockrpc", "pm", "idle");
+	}
+
+	if (model == MODEL_DSLAC68U) {
+		eval("req_dsl_drv", "dslenable", "off"); //turn off DSL
+	}
+}
+#endif
+
+#if defined(RTCONFIG_QCA)
 /* Helper of erp_check_wl_auth_stat()
  * @src:	pointer to WLANCONFIG_LIST
  * @arg:
@@ -382,6 +413,54 @@ check_end:
 	return ret;
 }
 
+int Parse_GPhyStats(char *buf, int model)
+{
+	char *token = strtok(buf, ";");
+	char nv[16] = {0};
+	int no_link = 1;
+	int wan_link = 0;
+	char *key = NULL;
+	char *value = NULL;
+
+	while (token != NULL) {
+		ERP_DBG("token=%s\n", token);
+		strlcpy(nv, token, sizeof(nv));
+
+		char *tmp = strchr(nv, '=');
+		if (tmp != NULL) {
+			*tmp = '\0';
+			key = nv;
+			value = tmp + 1;
+			ERP_DBG("key=%s, value=%s\n", key, value);
+		}
+
+		/* ignore DSL wan connection */
+		if (model == MODEL_DSLAC68U && (!strcmp(key, "W0"))) goto LOOP;
+
+		/* WAN has connection */
+		if ((!strcmp(key, "W0") || !strcmp(key, "W1")) && (strcmp(value, "X") != 0)) {
+			wan_link = 1;
+		}
+
+		/* WAN or LAN has connection */
+		if (strcmp(value, "X") != 0) {
+			no_link = 0;
+		}
+
+LOOP:
+		token = strtok(NULL, ";");
+	}
+
+	ERP_DBG("wan_link=%d, no_link=%d\n", wan_link, no_link);
+	if (wan_link) {
+		return 2;
+	} else if (no_link) {
+		return 0;
+	} else {
+		return 1;
+	}
+}
+
 static int erp_check_gphy_stat(int model)
 {
 	/*
@@ -419,94 +498,17 @@ static int erp_check_gphy_stat(int model)
 
 	FILE *fp = NULL;
 	int ret = 1;
-	char v0[2], v1[2], v2[2], v3[2], v4[2], v5[2], v6[2], v7[2], v8[2];
-	char buf[80];
+	char buf[100] = {0};
 
 	doSystem("ATE Get_WanLanStatus > %s", ERP_GPHY);
 
 	if ((fp = fopen(ERP_GPHY, "r")) != NULL)
 	{
-		while (fgets(buf, sizeof(buf), fp))
-		{
-			memset(v0, 0, sizeof(v0));
-			memset(v1, 0, sizeof(v1));
-			memset(v2, 0, sizeof(v2));
-			memset(v3, 0, sizeof(v3));
-			memset(v4, 0, sizeof(v4));
-			memset(v5, 0, sizeof(v5));
-			memset(v6, 0, sizeof(v6));
-			memset(v7, 0, sizeof(v7));
-			memset(v8, 0, sizeof(v8));
-
-			int len = strlen(buf);
-			ERP_DBG("len = %d\n", len);
-			if (len == 46) {
-				sscanf(buf, "W0=%[^;];L1=%[^;];L2=%[^;];L3=%[^;];L4=%[^;];L5=%[^;];L6=%[^;];L7=%[^;];L8=%[^;];", v0, v1, v2, v3, v4, v5, v6, v7, v8);
-				if ( (!strcmp(v0, "X") || (model==MODEL_DSLAC68U)) /* DSL-AC68U v0 always = "M" */
-					&& !strcmp(v1, "X") && !strcmp(v2, "X") && !strcmp(v3, "X") && !strcmp(v4, "X")
-					&& !strcmp(v5, "X") && !strcmp(v6, "X") && !strcmp(v7, "X") && !strcmp(v8, "X"))
-				{
-					ret = 0;
-				}
-				else if (strcmp(v0, "X") && (model!=MODEL_DSLAC68U)) /* no DSL-model */
-				{
-					ret = 2;
-				}
-			}
-			else if(len == 36) {
-				sscanf(buf, "W0=%[^;];L1=%[^;];L2=%[^;];L3=%[^;];L4=%[^;];L5=%[^;];L6=%[^;];", v0, v1, v2, v3, v4, v5, v6);
-				if ( (!strcmp(v0, "X") || (model==MODEL_DSLAC68U)) /* DSL-AC68U v0 always = "M" */
-					&& !strcmp(v1, "X") && !strcmp(v2, "X") && !strcmp(v3, "X")
-					&& !strcmp(v4, "X") && !strcmp(v5, "X") && !strcmp(v6, "X"))
-				{
-					ret = 0;
-				}
-				else if (strcmp(v0, "X") && (model!=MODEL_DSLAC68U)) /* no DSL-model */
-				{
-					ret = 2;
-				}
-			}
-			else if(len == 31) {
-				sscanf(buf, "W0=%[^;];L1=%[^;];L2=%[^;];L3=%[^;];L4=%[^;];L5=%[^;];", v0, v1, v2, v3, v4, v5);
-				if ( (!strcmp(v0, "X") || (model==MODEL_DSLAC68U)) /* DSL-AC68U v0 always = "M" */
-					&& !strcmp(v1, "X") && !strcmp(v2, "X") && !strcmp(v3, "X") && !strcmp(v4, "X") && !strcmp(v5, "X"))
-				{
-					ret = 0;
-				}
-				else if (strcmp(v0, "X") && (model!=MODEL_DSLAC68U)) /* no DSL-model */
-				{
-					ret = 2;
-				}
-			}
-			else if(len == 26) {
-				sscanf(buf, "W0=%[^;];L1=%[^;];L2=%[^;];L3=%[^;];L4=%[^;];", v0, v1, v2, v3, v4);
-				if ( (!strcmp(v0, "X") || (model==MODEL_DSLAC68U)) /* DSL-AC68U v0 always = "M" */
-					&& !strcmp(v1, "X") && !strcmp(v2, "X") && !strcmp(v3, "X") && !strcmp(v4, "X"))
-				{
-					ret = 0;
-				}
-				else if (strcmp(v0, "X") && (model!=MODEL_DSLAC68U)) /* no DSL-model */
-				{
-					ret = 2;
-				}
-			}
-			else if(len == 21) {
-				sscanf(buf, "W0=%[^;];L1=%[^;];L2=%[^;];L3=%[^;];", v0, v1, v2, v3);
-				if ( (!strcmp(v0, "X") || (model==MODEL_DSLAC68U)) /* DSL-AC68U v0 always = "M" */
-					&& !strcmp(v1, "X") && !strcmp(v2, "X") && !strcmp(v3, "X"))
-				{
-					ret = 0;
-				}
-				else if (strcmp(v0, "X") && (model!=MODEL_DSLAC68U)) /* no DSL-model */
-				{
-					ret = 2;
-				}
-			}
-		}
+		fgets(buf, sizeof(buf), fp);
+		ret = Parse_GPhyStats(buf, model);
 		fclose(fp);
 	}
-
-	ERP_DBG("v0=%s, v1=%s, v2=%s, v3=%s, v4=%s, v5=%s, v6=%s, v7=%s, v8=%s, ret=%d\n", v0, v1, v2, v3, v4, v5, v6, v7, v8, ret);
+	ERP_DBG("ret=%d\n", ret);
 	return ret;
 #endif
 }
@@ -674,6 +676,7 @@ static int ERP_CHECK_MODEL_LIST()
 		|| model == MODEL_RTAX56U
 		|| model == MODEL_RPAX56
 		|| model == MODEL_RPAX58
+		|| model == MODEL_RPBE58
 		|| model == MODEL_GTAXE11000
 		|| model == MODEL_GTAX6000
 		|| model == MODEL_GTAX11000_PRO
@@ -692,6 +695,8 @@ static int ERP_CHECK_MODEL_LIST()
 		|| model == MODEL_GTBE19000
 		|| model == MODEL_RTBE92U
 		|| model == MODEL_RTBE95U
+		|| model == MODEL_RTBE82U
+		|| model == MODEL_RTBE58U_PRO
 #endif
 	) {
 		ret = 1;
@@ -726,236 +731,7 @@ static void erp_standby_mode(int model)
 #if defined(RTCONFIG_QCA)
 	pre_erp_standby_mode(model);
 #else
-	switch(model) {
-		case MODEL_RTAC87U:
-			eval("wl", "-i", "eth1", "down");
-			break;
-		case MODEL_GTAC5300:
-		case MODEL_GTAX11000:
-		case MODEL_RTAX92U:
-		case MODEL_GTAXE11000:
-			eval("wl", "-i", "eth6", "down");
-			eval("wl", "-i", "eth7", "down"); // turn off 5g radio
-			break;
-		case MODEL_GTAX6000:
-		case MODEL_GTAX11000_PRO:
-		case MODEL_RTAX86U_PRO:
-		case MODEL_RTAX88U_PRO:
-			eval("wl", "-i", "eth6", "down");
-			eval("wl", "-i", "eth7", "down"); // turn off 5g radio
-			break;
-		case MODEL_GTAXE16000:
-			eval("wl", "-i", "eth10", "down");
-			eval("wl", "-i", "eth7", "down"); // turn off 5g radio
-			break;
-		case MODEL_GTBE98:
-		case MODEL_GTBE98_PRO:
-			eval("wl", "-i", nvram_safe_get("wl3_ifname"), "down");
-			eval("wl", "-i", nvram_safe_get("wl0_ifname"), "down"); // turn off 5g radio
-			break;
-		case MODEL_RTAX95Q:
-		case MODEL_XT8PRO:
-		case MODEL_BM68:
-		case MODEL_XT8_V2:
-		case MODEL_RTAXE95Q:
-		case MODEL_ET8PRO:
-		case MODEL_ET8_V2:
-		case MODEL_ET12:
-		case MODEL_XT12:
-			eval("wl", "-i", "eth4", "down");
-			eval("wl", "-i", "eth5", "down"); // turn off 5g radio
-			break;
-		case MODEL_BT10:
-			eval("wl", "-i", WL_2G_IFNAME, "down");
-			eval("wl", "-i", WL_5G_IFNAME, "down"); // turn off 5g radio
-			break;
-		case MODEL_BT12:
-		case MODEL_RTBE96U:
-		case MODEL_GTBE96:
-		case MODEL_GTBE19000:
-			eval("wl", "-i", "wl0", "down");
-			eval("wl", "-i", "wl1", "down"); // turn off 5g radio
-			break;
-		case MODEL_BQ16:
-		case MODEL_BQ16_PRO:
-			eval("wl", "-i", "wl3", "down"); // turn off 2.4g radio
-			eval("wl", "-i", "wl0", "down"); // turn off 5g radio
-			break;
-		case MODEL_RTAX56_XD4:
-		case MODEL_XD4PRO:
-		case MODEL_XC5:
-		case MODEL_CTAX56_XD4:
-		case MODEL_EBA63:
-			eval("wl", "-i", "wl0", "down");
-			eval("wl", "-i", "wl1", "down"); // turn off 5g radio
-			break;
-		case MODEL_GT10:
-			eval("wl", "-i", "eth4", "down");
-			eval("wl", "-i", "eth5", "down");
-			eval("wl", "-i", "eth6", "down");
-			break;
-		case MODEL_RTAX9000:
-			eval("wl", "-i", "eth6", "down");
-			eval("wl", "-i", "eth7", "down");
-			eval("wl", "-i", "eth8", "down");
-			break;
-		case MODEL_RTAX58U:
-		case MODEL_TUFAX3000_V2:
-		case MODEL_RTAX82U_V2:
-		case MODEL_TUFAX5400_V2:
-		case MODEL_RTAX5400:
-		case MODEL_XD6_V2:
-		case MODEL_RTBE86U:
-		case MODEL_RTBE58U:
-			eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 0, 0)), "down");
-			eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 1, 0)), "down"); // turn off 5g radio
-			break;
-		case MODEL_RTAXE7800:
-			eval("wl", "-i", "eth5", "down");
-			eval("wl", "-i", "eth6", "down");
-			eval("wl", "-i", "eth7", "down");
-			break;
-		case MODEL_RTBE92U:
-		case MODEL_RTBE95U:
-			eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 0, 0)), "down");
-			eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 1, 0)), "down");
-			eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 2, 0)), "down");
-			break;
-		case MODEL_RTAX55:
-		case MODEL_RTAX58U_V2:
-		case MODEL_RTAX82_XD6S:
-		case MODEL_RTAX3000N:
-		case MODEL_BR63:
-			eval("wl", "-i", "eth2", "down");
-			eval("wl", "-i", "eth3", "down"); // turn off 5g radio
-			break;
-		case MODEL_RTAX56U:
-			eval("wl", "-i", "eth5", "down");
-			eval("wl", "-i", "eth6", "down"); // turn off 5g radio
-			break;
-		case MODEL_RPAX56:
-		case MODEL_RPAX58:
-			eval("wl", "-i", "eth1", "down");
-			eval("wl", "-i", "eth2", "down"); // turn off 5g radio
-			break;
-		case MODEL_RTAX88U:
-			eval("wl", "-i", "eth6", "down");
-			eval("wl", "-i", "eth7", "down"); // turn off 5g radio
-			break;
-		case MODEL_RTBE88U:
-			eval("wl", "-i", "wl0", "down");
-			eval("wl", "-i", "wl1", "down"); // turn off 5g radio
-			break;
-		default:
-			eval("wl", "-i", "eth1", "down");
-			eval("wl", "-i", "eth2", "down"); // turn off 5g radio
-			break;
-	}
-
-	/* TODO : add different platform or model case here */
-	if (model == MODEL_RTAC87U) {
-		eval("qcsapi_sockrpc", "pm", "suspend");
-		eval("qcsapi_sockrpc", "pm", "idle");
-	}
-
-	if (model == MODEL_RTAC5300 || model == MODEL_RTAC3200)
-	{
-		// triple band
-		eval("wl", "-i", "eth3", "down"); // turn off 5g-2 radio
-	}
-
-	if (model == MODEL_GTAC5300 || model == MODEL_GTAX11000 || model == MODEL_GTAXE11000) {
-		// triple band
-		eval("wl", "-i", "eth8", "down"); // turn off 5g-2 radio
-	}
-
-	if (model == MODEL_GTAX11000_PRO) {
-		// triple band
-		eval("wl", "-i", "eth8", "down"); // turn off 5g-2 radio
-	}
-
-	if (model == MODEL_RTBE96U || model == MODEL_GTBE19000) {
-		// triple band
-		eval("wl", "-i", "wl2", "down"); // turn off 5g-2 radio
-	}
-
-	if (model == MODEL_GTAXE16000) {
-		// triple band
-		eval("wl", "-i", "eth8", "down"); // turn off 5g-2 radio
-		eval("wl", "-i", "eth9", "down"); // turn off 6g radio
-	}
-
-#if defined(GTBE98)	/* avoid compile error for non WL_6G_BAND WIFI7 model */
-	if (model == MODEL_GTBE98) {
-		char nv_wlif[12]; 
-		snprintf(nv_wlif, sizeof(nv_wlif), "wl%d_ifname", WL_5G_2_BAND);
-		eval("wl", "-i", nvram_safe_get(nv_wlif), "down");	// turn off 5g-2 radio
-#ifdef RTCONFIG_WIFI7
-		snprintf(nv_wlif, sizeof(nv_wlif), "wl%d_ifname", WL_6G_BAND);
-		eval("wl", "-i", nvram_safe_get(nv_wlif), "down");	// turn off 6g radio
-#endif
-	}
-#endif
-
-#if defined(GTBE98_PRO)	/* avoid compile error for non WL_6G_BAND WIFI7 model */
-	if (model == MODEL_GTBE98_PRO) {
-		char nv_wlif[12]; 
-		snprintf(nv_wlif, sizeof(nv_wlif), "wl%d_ifname", WL_5G_BAND);
-		eval("wl", "-i", nvram_safe_get(nv_wlif), "down");	// turn off 5g radio
-#ifdef RTCONFIG_WIFI7
-		snprintf(nv_wlif, sizeof(nv_wlif), "wl%d_ifname", WL_6G_BAND);
-		eval("wl", "-i", nvram_safe_get(nv_wlif), "down");	// turn off 6g-1 radio
-#endif
-	}
-#endif
-
-	if (model == MODEL_ET12 || model == MODEL_XT12) {
-		// triple band
-		eval("wl", "-i", "eth6", "down"); // turn off 5g-2 radio
-	}
-
-	if (model == MODEL_RTAX92U) {
-		// triple band
-		eval("wl", "-i", "eth5", "down"); // turn off 2g radio
-	}
-
-	if (model == MODEL_RTAX95Q || model == MODEL_XT8PRO || model == MODEL_BM68 || model == MODEL_XT8_V2 || model == MODEL_RTAXE95Q || model == MODEL_ET8PRO || model == MODEL_ET8_V2) {
-		// triple band
-		eval("wl", "-i", "eth4", "down"); // turn off 2g radio
-	}
-
-	if (model == MODEL_BT10) {
-		// triple band
-		eval("wl", "-i", WL_2G_IFNAME, "down"); // turn off 2g radio
-	}
-
-	if (model == MODEL_BT12 || model == MODEL_GTBE96) {
-		// triple band
-		eval("wl", "-i", "wl0", "down"); // turn off 2g radio
-	}
-
-	if (model == MODEL_BQ16 || model == MODEL_BQ16_PRO) {
-		// triple band
-		eval("wl", "-i", "wl3", "down"); // turn off 2g radio
-	}
-
-	if (model == MODEL_RTAX56_XD4 || model == MODEL_XD4PRO || model == MODEL_CTAX56_XD4 || model == MODEL_XC5 || model == MODEL_EBA63) {
-		// triple band
-		eval("wl", "-i", "wl0", "down"); // turn off 2g radio
-	}
-
-	if (model == MODEL_RTAX56U) {
-		// triple band
-		eval("wl", "-i", "eth5", "down"); // turn off 2g radio
-	}
-
-	if (model == MODEL_RPAX56 || model == MODEL_RPAX58) {
-		eval("wl", "-i", "eth1", "down"); // turn off 2g radio
-	}
-
-	if (model == MODEL_DSLAC68U) {
-		eval("req_dsl_drv", "dslenable", "off"); //turn off DSL
-	}
+	erp_brcm_radio_down(model);
 #endif
 
 	// step2. remove wireless driver module

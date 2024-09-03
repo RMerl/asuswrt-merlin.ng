@@ -4,25 +4,19 @@
    Copyright (c) 2018 Broadcom 
    All Rights Reserved
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
 :>
 */
@@ -236,7 +230,7 @@ int bcmxapiex_dpi_egress_tm_rl_rate_mode_set(bdmf_object_handle tm_attr,
 }
 
 int bcmxapiex_dpi_add_best_effort_sub_queues(bdmf_object_handle owner,
-                rdpa_tm_queue_cfg_t *parent_queue, bdmf_index idx, rdpa_traffic_dir dir)
+                rdpa_tm_queue_cfg_t *parent_queue, bdmf_index idx)
 {
    return 0;
 }
@@ -396,11 +390,11 @@ static int configure_dpi_best_effort_sub_queues(bdmf_object_handle egress_tm,
 #endif // #if IS_ENABLED(CONFIG_BCM_DPI)
 
 int bcmxapiex_dpi_add_best_effort_sub_queues(bdmf_object_handle owner,
-                rdpa_tm_queue_cfg_t *parent_queue, bdmf_index idx, rdpa_traffic_dir dir)
+                rdpa_tm_queue_cfg_t *parent_queue, bdmf_index idx)
 {
    int ret = BDMF_ERR_OK;
 #if IS_ENABLED(CONFIG_BCM_DPI)
-   rdpa_tm_service_queue_t service_queue = {.enable = 1};
+   rdpa_tm_service_queue_t service_queue = {.enable = RDPA_TM_SECONDARY_SERVICE_QUEUE_ENABLE};
    bdmf_object_handle egress_tm;
    bdmf_mattr_handle mattr;
 
@@ -423,14 +417,25 @@ int bcmxapiex_dpi_add_best_effort_sub_queues(bdmf_object_handle owner,
 } while (0)
 
    /* create queues */
-   run_or_err(rdpa_egress_tm_level_set(mattr, rdpa_tm_level_queue), err_free_mattr);
-   run_or_err(rdpa_egress_tm_mode_set(mattr, rdpa_tm_sched_sp_wrr), err_free_mattr);
+   run_or_err(rdpa_egress_tm_level_set(mattr, RDPA_TM_SECONDARY_LEVEL), err_free_mattr);
+   run_or_err(rdpa_egress_tm_mode_set(mattr, RDPA_TM_SECONDARY_SCHEDULER_MODE), err_free_mattr);
    run_or_err(rdpa_egress_tm_service_queue_set(mattr, &service_queue), err_free_mattr);
    run_or_err(rdpa_egress_tm_overall_rl_set(mattr, FALSE), err_free_mattr);
-   run_or_err(rdpa_egress_tm_num_queues_set(mattr, 8), err_free_mattr);
-   run_or_err(rdpa_egress_tm_num_sp_elements_set(mattr, 8), err_free_mattr);
+   run_or_err(rdpa_egress_tm_num_queues_set(mattr, RDPA_TM_SECONDARY_NUM_QUEUES), err_free_mattr);
+   if (parent_queue->weight)
+   {
+      run_or_err(rdpa_egress_tm_weight_set(mattr, parent_queue->weight), err_free_mattr);
+   }
+   else
+   {
+      run_or_err(rdpa_egress_tm_weight_set(mattr, RDPA_TM_SECONDARY_DEFAULT_WEIGHT), err_free_mattr);
+   }
+
+#ifdef RDPA_TM_SECONDARY_SP_ELEMENTS 
+   run_or_err(rdpa_egress_tm_num_sp_elements_set(mattr, RDPA_TM_SECONDARY_SP_ELEMENTS), err_free_mattr);
+#endif
    run_or_err(rdpa_egress_tm_rl_rate_mode_set(mattr, rdpa_tm_rl_dual_rate), err_free_mattr);
-   run_or_err(rdpa_egress_tm_weight_set(mattr, parent_queue->weight), err_free_mattr);
+
    run_or_err(bdmf_new_and_set(rdpa_egress_tm_drv(), owner, mattr, &egress_tm), err_free_mattr);
 
    run_or_err(rdpa_egress_tm_subsidiary_set(owner, idx, egress_tm), err_free_sched);

@@ -11,10 +11,10 @@
 <title>Tencent Game Acceleration</title>
 <link rel="stylesheet" type="text/css" href="index_style.css">
 <link rel="stylesheet" type="text/css" href="form_style.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
-<script type="text/javascript" src="/js/jquery.js"></script>
 <script>
 $(document).ready(function(){
 	initial();

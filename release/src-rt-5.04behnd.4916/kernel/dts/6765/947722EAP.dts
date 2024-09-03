@@ -175,7 +175,6 @@
 			phy-handle = <&phy_serdes>;
 			link = <&switch_sf2_ext>;
 			shrink-ipg;
-			network-leds=<&led5 &led6 &led7>;
 			status = "okay";
 		};
 	};
@@ -223,6 +222,13 @@
 	};
 };
 
+/* 
+ * For BT Coex 
+ */
+&pincontroller {
+    pinctrl-names = "default";
+    pinctrl-0 = <&wifi1_seci_in_pin_22 &wifi1_seci_out_pin_30>; /* SECI */
+};
 
 &led_ctrl {
 	led1: sw_parallel_led_9 {
@@ -237,7 +243,6 @@
 	led2: parallel-port_0-led_0 {
 		active_low;
 		pinctrl-0 = <&a_per_led_10_pin_10>;
-		crossbar-output = <0>;
 		link = <(LED_SPEED_100|LED_SPEED_2500)>;
 		activity = <(LED_SPEED_100|LED_SPEED_2500)>;
 		status="okay";
@@ -245,7 +250,6 @@
 	led3: parallel-port_0-led_1 {
 		active_low;
 		pinctrl-0 = <&b_per_led_06_pin_39>;
-		crossbar-output = <1>;
 		link = <(LED_SPEED_1G)>;
 		activity = <(LED_SPEED_1G)>;
 		status="okay";
@@ -253,37 +257,12 @@
 	led4: parallel-port_0-led_2 {
 		active_low;
 		pinctrl-0 = <&a_per_led_12_pin_12>;
-		crossbar-output = <2>;
 		link = <(LED_SPEED_2500|LED_SPEED_10G)>;
 		activity = <(LED_SPEED_2500|LED_SPEED_10G)>;
 		status="okay";
 	};
 
-	led5: parallel-port_5-led_0 {
-		active_low;
-		pinctrl-0 = <&b_per_led_11_pin_44>;
-		crossbar-output = <3>;
-		link = <(LED_SPEED_100|LED_SPEED_2500)>;
-		activity = <(LED_SPEED_100|LED_SPEED_2500)>;
-		status="okay";
-	};
-	led6: parallel-port_5-led_1 {
-		active_low;
-		pinctrl-0 = <&a_per_led_23_pin_23>;
-		crossbar-output = <4>;
-		link = <(LED_SPEED_1G)>;
-		activity = <(LED_SPEED_1G)>;
-		status="okay";
-	};
-	led7: parallel-port_5-led_2 {
-		active_low;
-		pinctrl-0 = <&b_per_led_00_pin_33>;
-		crossbar-output = <5>;
-		link = <(LED_SPEED_2500|LED_SPEED_10G)>;
-		activity = <(LED_SPEED_2500|LED_SPEED_10G)>;
-		status="okay";
-	};
-	led8: sw_parallel_led_18 {
+	led5: sw_parallel_led_18 {
 		active_low; 
 		pinctrl-0 = <&a_per_led_18_pin_18>;
 		brightness = <255>;
@@ -291,7 +270,7 @@
 		status = "okay";
 		label = "WiFi_1";
 	};
-	led10: sw_parallel_led_38 {
+	led6: sw_parallel_led_19 {
 		active_low; 
 		brightness = <255>;
 		pinctrl-0 = <&b_per_led_05_pin_38>;
@@ -299,13 +278,12 @@
 		status = "okay";
 		label = "WiFi_0";
 	};
-
 };
 
 &legacy_leds {
 	wl-sess-led = <&led1>;
-	wl0-led = <&led10>;
-	wl1-led = <&led8>;
+	wl0-led = <&led6>;
+	wl1-led = <&led5>;
 };
 
 / {

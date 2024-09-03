@@ -4,25 +4,19 @@
 *    Copyright (c) 2016 Broadcom 
 *    All Rights Reserved
 * 
-* Unless you and Broadcom execute a separate written software license
-* agreement governing use of this software, this software is licensed
-* to you under the terms of the GNU General Public License version 2
-* (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-* with the following added to such license:
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License, version 2, as published by
+* the Free Software Foundation (the "GPL").
 * 
-*    As a special exception, the copyright holders of this software give
-*    you permission to link this software with independent modules, and
-*    to copy and distribute the resulting executable under terms of your
-*    choice, provided that you also meet, for each linked independent
-*    module, the terms and conditions of the license of that module.
-*    An independent module is a module which is not derived from this
-*    software.  The special exception does not apply to any modifications
-*    of the software.
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
 * 
-* Not withstanding the above, under no circumstances may you combine
-* this software in any way with any other Broadcom software provided
-* under a license other than the GPL, without Broadcom's express prior
-* written consent.
+* 
+* A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+* writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+* Boston, MA 02111-1307, USA.
 * 
 * :> 
 */
@@ -60,6 +54,9 @@ static ssize_t proc_get_wl_mtdname(struct file * file, char * buff, size_t len, 
 #endif
 #endif
 
+int bcm_memc_get_spd_mhz(unsigned int *spd_mhz);
+int bcm_memc_get_ddr_size(unsigned int *size);
+
 static ssize_t proc_get_param_string(struct file *, char *, size_t, loff_t *);
 static ssize_t proc_set_param(struct file *, const char *, size_t, loff_t *);
 static ssize_t proc_set_led(struct file *, const char *, size_t, loff_t *);
@@ -76,6 +73,7 @@ static ssize_t __proc_get_socinfo(char *buf, int cnt)
     struct device *cpu_dev;
     struct clk *cpu_clk;
     unsigned long freq = 0;
+    unsigned int spd_mhz;
 
     kerSysGetChipName( socname, strlen(socname));
 
@@ -93,6 +91,7 @@ static ssize_t __proc_get_socinfo(char *buf, int cnt)
 
     cpu = get_cpu();
     cpu_dev = get_cpu_device(cpu);
+    put_cpu();
     cpu_clk = clk_get(cpu_dev, NULL);
     if (!IS_ERR(cpu_clk)) {
         freq = clk_get_rate(cpu_clk)/1000000;
@@ -103,8 +102,12 @@ static ssize_t __proc_get_socinfo(char *buf, int cnt)
         biu_ch_freq_get(0, (unsigned int*)&freq);
 #endif
     }
-    put_cpu();
+
     n += sprintf(buf+n, "CPU Clock       :%ldMHz\n", freq);
+    bcm_memc_get_spd_mhz(&spd_mhz);
+    n += sprintf(buf+n, "DDR Clock       :%dMhz\n", spd_mhz);
+    bcm_memc_get_ddr_size(&spd_mhz);
+    n += sprintf(buf+n, "DDR Size        :%dMB\n", spd_mhz);
 
     return n;
 }

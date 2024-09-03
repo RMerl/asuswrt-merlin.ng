@@ -20,7 +20,7 @@ struct bcmbca_ohci {
 
 static int ohci_usb_probe (struct udevice *dev)
 {
-    struct ohci_regs *regs = (struct ohci_regs *)devfdt_get_addr(dev);
+	struct ohci_regs *regs = (struct ohci_regs *)(uintptr_t)devfdt_get_addr(dev);
 	struct udevice *ctrl_dev;
 
 	uclass_get_device_by_driver(UCLASS_NOP, DM_GET_DRIVER(ctrl_bcmbca_drv), &ctrl_dev);

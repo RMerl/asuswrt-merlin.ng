@@ -342,9 +342,6 @@ void __init bl_xparms_setup(const unsigned char* blparms, unsigned int size)
 #endif
 }
 
-#ifdef CONFIG_BCM_CFE_XARGS_EARLY
-EXPORT_SYMBOL(bl_xparms_setup);
-#endif
 
 static int __init bl_xparms_setup_proc(struct proc_dir_entry *pentry)
 {
@@ -392,4 +389,3 @@ int __init bcm_blxparms_init(struct proc_dir_entry *pentry)
 
 #endif
 
-EXPORT_SYMBOL(bcm_blxparms_init);

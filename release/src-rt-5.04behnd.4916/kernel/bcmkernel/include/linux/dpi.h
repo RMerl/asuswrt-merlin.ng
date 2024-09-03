@@ -5,26 +5,21 @@
 #include <linux/if_ether.h>
 #include <linux/list.h>
 #include <linux/if.h>
+#include <linux/in.h>
 
-#define DPI_APPID_ONGOING_BIT		0
-#define DPI_APPID_IDENTIFIED_BIT	1
-#define DPI_APPID_FINAL_BIT		2
-#define DPI_APPID_STOP_CLASSIFY_BIT	3
-#define DPI_APPID_RESYNC_BIT		4
-#define DPI_DEVID_ONGOING_BIT		5
-#define DPI_DEVID_IDENTIFIED_BIT	6
-#define DPI_DEVID_FINAL_BIT		7
-#define DPI_DEVID_STOP_CLASSIFY_BIT	8
-#define DPI_URL_STOP_CLASSIFY_BIT	9
-#define DPI_CLASSIFICATION_STOP_BIT	14
-#define DPI_CT_INIT_FROM_WAN_BIT	15
+#define DPI_APPID_IDENTIFIED_BIT	0
+#define DPI_APPID_FINAL_BIT		1
+#define DPI_APPID_STOP_CLASSIFY_BIT	2
+#define DPI_DEVID_STOP_CLASSIFY_BIT	3
+#define DPI_URL_STOP_CLASSIFY_BIT	4
+#define DPI_CLASSIFICATION_STOP_BIT	5
+#define DPI_CT_INIT_FROM_WAN_BIT	6
 #define DPI_CT_DS_BYPASS_BIT		29
 #define DPI_CT_US_BYPASS_BIT		30
 #define DPI_CT_BLOCK_BIT		31
 
 #define DPI_NL_CHANGE_MASK		(1 << DPI_CT_BLOCK_BIT)
 
-#define DPI_URLINFO_MAX_HOST_LEN	64
 /* 256 was chosen as the max length of a hostname in a DHCP packet is 255. */
 #define DPI_HOSTNAME_MAX_LEN		256
 
@@ -37,7 +32,7 @@ struct dpi_ct_stats {
 };
 
 struct dpi_app {
-	u32			app_id;
+	u64			app_id;
 	atomic_t		refcount;
 	struct hlist_node	node;
 };
@@ -76,9 +71,23 @@ struct dpi_appinst {
 
 struct dpi_url {
 	u32			len;
-	char			hostname[DPI_URLINFO_MAX_HOST_LEN];
+	char			hostname[DPI_HOSTNAME_MAX_LEN];
+	u64			app_id;
+	u64			hits;
 	atomic_t		refcount;
 	struct hlist_node	node;
+};
+
+struct dpi_ip {
+	union {
+		struct in_addr	ip;
+		struct in6_addr	ip6;
+	};
+	u8			l3proto;
+	u64			app_id;
+	atomic_t		refcount;
+	struct hlist_node	node;
+	struct list_head	lru_node;
 };
 
 struct dpi_info {
@@ -86,6 +95,7 @@ struct dpi_info {
 	struct dpi_app		*app;
 	struct dpi_appinst	*appinst;
 	struct dpi_url		*url;
+	struct dpi_ip		*ip;
 	unsigned long		flags;
 	u8			eg_prio;
 	struct net_device	*net_dev;

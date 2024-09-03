@@ -42,7 +42,7 @@
 #include "md5.h"
 #include "sha1.h"
 
-#ifdef BCMARM
+#ifndef HND_ROUTER
 #include "ifaddrs.c"
 #endif
 #ifdef ASUSWRT

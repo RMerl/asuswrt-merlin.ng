@@ -1,28 +1,22 @@
 /*
 <:copyright-BRCM:2019:DUAL/GPL:standard
 
-   Copyright (c) 2019 Broadcom
+   Copyright (c) 2019 Broadcom 
    All Rights Reserved
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
 :>
 */
@@ -43,6 +37,7 @@ written consent.
 #include "vfbio_priv.h"
 #include "vfbio_proc.h"
 #include "blk.h"
+#include "bcm_dgasp.h"
 
 #define MODULE_NAME    "brcm-vfbio"
 #define MODULE_VER    "1.0"
@@ -703,8 +698,15 @@ static blk_status_t vfbio_request(struct blk_mq_hw_ctx *hctx,
             sects, (u64)sect);
         status = vfbio_async_discard(vfbio, req);
         break;
-    case REQ_OP_READ:
     case REQ_OP_WRITE:
+        if (kerSysIsDyingGaspTriggered())
+        {
+            /* In case Dying Gasp triggered do not allow the write requests to be stared.*/
+            status = -EBUSY;
+            break;
+        }
+        /* Pass trough */
+    case REQ_OP_READ:
         dev_dbg(dev, "%s %d sectors @ %lld\n",
             op == REQ_OP_READ ? "Read" : "Write",
             sects, (u64)sect);
@@ -1589,22 +1591,24 @@ static int __init vfbio_init(void)
          * this struct size is an integral multiple of cache lines
          * this will ensure that the struct is cache line aligned.
          */
-        entry = kzalloc(sizeof(struct vfbio_sgls_entry), GFP_KERNEL);
+        entry = (void *)__get_free_pages(GFP_DMA32, get_order(sizeof(struct vfbio_sgls_entry)));
         if (!entry) {
             pr_err(RED("Unable to allocate sgls entry.\n"));
             status = -ENOMEM;
             spin_unlock_irq(&vfbio_sgls_lock);
             goto err_free_sgls;
         }
+        memset(entry, 0, sizeof(struct vfbio_sgls_entry));
         list_add_tail(&entry->list, &vfbio_sgls);
     }
     spin_unlock_irq(&vfbio_sgls_lock);
-    vfbio_crash_hw_sgl = kzalloc(sizeof(struct vfbio_hw_sgl), GFP_KERNEL);
+    vfbio_crash_hw_sgl = (void *)__get_free_pages(GFP_DMA32, get_order(sizeof(struct vfbio_hw_sgl)));
     if (!vfbio_crash_hw_sgl) {
         pr_err(RED("Unable to allocate vfbio_crash_hw_sgl.\n"));
         status = -ENOMEM;
         goto err_free_sgls;
     }
+    memset(vfbio_crash_hw_sgl, 0, sizeof(struct vfbio_hw_sgl));
     io_timeout = VFBIO_IO_TIMEOUT_DEFAULT;
     retry_delay = VFBIO_RETRY_DELAY_DEFAULT;
 
@@ -1651,11 +1655,11 @@ err_unreg_blkdev:
     unregister_blkdev(vfbio_major, "vflash");
 err_free_sgls:
     if (vfbio_crash_hw_sgl)
-        kfree(vfbio_crash_hw_sgl);
+        free_pages((unsigned long)vfbio_crash_hw_sgl, get_order(sizeof(struct vfbio_hw_sgl)));
     spin_lock_irq(&vfbio_sgls_lock);
     list_for_each(pos, &vfbio_sgls) {
         entry = list_entry(pos, struct vfbio_sgls_entry, list);
-        kfree(entry);
+        free_pages((unsigned long)entry, get_order(sizeof(struct vfbio_sgls_entry)));
         list_del(pos);
     }
     spin_unlock_irq(&vfbio_sgls_lock);
@@ -1677,11 +1681,11 @@ static void vfbio_exit(void)
     rpc_unregister_functions(RPC_SERVICE_VFBIO);
     unregister_blkdev(vfbio_major, "vflash");
     if (vfbio_crash_hw_sgl)
-        kfree(vfbio_crash_hw_sgl);
+        free_pages((unsigned long)vfbio_crash_hw_sgl, get_order(sizeof(struct vfbio_hw_sgl)));
     spin_lock_irq(&vfbio_sgls_lock);
     list_for_each(pos, &vfbio_sgls) {
         entry = list_entry(pos, struct vfbio_sgls_entry, list);
-        kfree(entry);
+        free_pages((unsigned long)entry, get_order(sizeof(struct vfbio_sgls_entry)));
         list_del(pos);
     }
     spin_unlock_irq(&vfbio_sgls_lock);

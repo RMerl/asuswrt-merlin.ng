@@ -4,25 +4,20 @@
    Copyright (c) 2022 Broadcom 
    All Rights Reserved
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
+
 :> 
 */
 #include <linux/kthread.h>
@@ -213,6 +208,12 @@ static int spu_offload_rdpa_init(void)
 	}
 	
 	rdpa_cpu_int_enable(rdpa_cpu_spu, 0);
+
+	if (cpu_spu_attrs)
+		BDMF_MATTR_FREE(cpu_spu_attrs);
+	if (rdpa_port_attrs)
+		BDMF_MATTR_FREE(rdpa_port_attrs);
+
 	return 0;
 
 exit_err:
@@ -226,6 +227,12 @@ exit_err:
 		bdmf_put(rdpa_cpu_obj);
 		bdmf_destroy(rdpa_cpu_obj);
 	}
+
+	if (cpu_spu_attrs)
+		BDMF_MATTR_FREE(cpu_spu_attrs);
+	if (rdpa_port_attrs)
+		BDMF_MATTR_FREE(rdpa_port_attrs);
+
 	return -1;
 }
 
@@ -278,6 +285,8 @@ static inline int rx_pkt_from_q(int budget)
 		fkb->recycle_hook = (RecycleFuncP)bdmf_sysb_recycle;
 		fkb->recycle_context = 0;
 
+		flow_log("%s(): fkb %px spu_session_id %d\n",
+				__func__, fkb, info.spu_session_id);
 		if (info.spu_session_id < MAX_SPU_OFFLOAD_SESSIONS/2) {
 			/* DS */
 			fcArgs.esp_inner_pkt = 1;
@@ -327,7 +336,10 @@ static inline int rx_pkt_from_q(int budget)
 #endif
 				skb->dev = iproc_priv.spu_dev_ds;
 				skb_shinfo(skb)->dirty_p = datap + info.size;
-				skb->protocol = 8;
+				if (s_info.ipv6)
+					skb->protocol = htons(ETH_P_IPV6);
+				else
+					skb->protocol = htons(ETH_P_IP);
 				gro_cells_receive(&spu_offload_inst.gro_cells, skb);
 			} else {
 				skb_dst_set(skb, dst_clone(s_info.dst_p));
@@ -482,56 +494,48 @@ int spu_offload_priv_info_get(struct net_device *dev, bcm_netdev_priv_info_type_
 
 int spu_offload_insert_us_pkt(pNBuff_t pNBuf, int session_id, uint32_t digestsize, uint32_t *payloadlen)
 {
-	uint8_t *datap, *hdr, *pdata;
-	uint8_t hdr_size;
+	uint8_t *pdata;
 	uint32_t padlen, hdr_offset;
 	int rc = 0;
+	struct sk_buff *skb = NULL;
+	FkBuff_t *fkb = NULL;
+	struct spu_offload_prephdr_args prep = {};
 	rdpa_cpu_tx_info_t info = {};
 
-	spu_offload_get_fixed_hdr(session_id, &hdr_offset, &hdr_size, &hdr);
-
-	/* revert the outer IP header and padding done by the Blog layer
-	 * Runner will handle that */
-        if (IS_SKBUFF_PTR(pNBuf))
-        {	
-		struct sk_buff *skb = (struct sk_buff *)PNBUFF_2_PBUF(pNBuf);
-
+	if (IS_SKBUFF_PTR(pNBuf))
+	{
+		skb = (struct sk_buff *)PNBUFF_2_PBUF(pNBuf);
 		pdata = skb->data;
-		padlen  = pdata[skb->len - digestsize - 2];
-
-		skb->data = &pdata[hdr_offset];
-		skb->len -= (hdr_offset + padlen + BLOG_ESP_PADLEN_LEN + BLOG_ESP_NEXT_PROTO_LEN + digestsize);
-		*payloadlen = skb->len;
-        }
-        else
-        {
-		FkBuff_t *fkb = (FkBuff_t *)PNBUFF_2_PBUF(pNBuf);
+		padlen = pdata[skb->len - digestsize - 2];
+	}
+	else
+	{
+		fkb = (FkBuff_t *)PNBUFF_2_PBUF(pNBuf);
 
 		pdata = fkb->data;
-		padlen  = pdata[fkb->len - digestsize - 2];
-
-		fkb->data = &pdata[hdr_offset];
-		fkb->len -= (hdr_offset + padlen + BLOG_ESP_PADLEN_LEN + BLOG_ESP_NEXT_PROTO_LEN + digestsize);
-		*payloadlen = fkb->len;
-        }
-
-
-	/* insert the fixed header in the header, mimic the flow match handling in Runner */
-	if (IS_SKBUFF_PTR(pNBuf)) {
-		struct sk_buff *skb = (struct sk_buff *)PNBUFF_2_PBUF(pNBuf);
-		datap = skb->data - hdr_size;
-		skb->data = datap;
-		skb->len += hdr_size;
-
-		memcpy(datap, hdr, hdr_size);
+		padlen = pdata[fkb->len - digestsize - 2];
 	}
-	else {
-		FkBuff_t *fkb = (FkBuff_t *)PNBUFF_2_PBUF(pNBuf);
-		datap = fkb->data - hdr_size;
-		fkb->data = datap;
-		fkb->len += hdr_size;
 
-		memcpy(datap, hdr, hdr_size);
+	spu_offload_prep_us_ingress(session_id, pdata, &prep, &hdr_offset);
+	if (prep.prepend_size == 0)
+		return -1;
+
+	pdata += hdr_offset;
+	pdata -= prep.prepend_size;
+
+	memcpy(pdata, prep.spu_prepend, prep.prepend_size);
+
+        if (IS_SKBUFF_PTR(pNBuf))
+        {
+		skb->data = pdata;
+		skb->len += (prep.prepend_size - (hdr_offset + padlen + BLOG_ESP_PADLEN_LEN + BLOG_ESP_NEXT_PROTO_LEN + digestsize));
+		*payloadlen = skb->len - prep.prepend_size;
+	}
+	else
+	{
+		fkb->data = pdata;
+		fkb->len += (prep.prepend_size - (hdr_offset + padlen + BLOG_ESP_PADLEN_LEN + BLOG_ESP_NEXT_PROTO_LEN + digestsize));
+		*payloadlen = fkb->len - prep.prepend_size;
 	}
 
 	/* found an offload session */
@@ -587,8 +591,8 @@ void spu_platform_offload_stats(uint32_t session_id, struct spu_offload_tracker 
 	}
 }
 
-int spu_platform_offload_session_ds_parm(int session_id, struct xfrm_state *xfrm,
-					  struct bcmspu_offload_parm *parm)
+int spu_platform_offload_ds_session(int session_id, struct xfrm_state *xfrm,
+				    struct bcmspu_offload_parm *parm)
 {
 	rdpa_crypto_session_info_t info = {};
 	uint32_t type = 0, replay_window, limit = MAX_REPLAY_WIN_SIZE;
@@ -601,14 +605,19 @@ int spu_platform_offload_session_ds_parm(int session_id, struct xfrm_state *xfrm
 	/* for Runner platforms, the key buffers located in DDR separately */
 	memcpy(session->key_bufp, &parm->spu_header[FMD_SIZE], parm->key_size);
 
-	/* parm->fixed_hdr_size is platform specific */
-	parm->fixed_hdr_size = FMD_SIZE;
+	if (xfrm->props.mode == XFRM_MODE_TRANSPORT) {
+		type |= 1 << SPU_TRANSPORT_MODE_BIT;
+		info.transport_mode = BLOG_ESP_MODE_TRANSPORT;
+	}
 	if (parm->is_esn) {
-		parm->fixed_hdr_size += BLOG_ESP_SEQNUM_HI_LEN;
-		memset(&parm->spu_header[FMD_SIZE], 0xFFFFFFFF, 4);
 		type |= 1 << SPU_ESN_BIT;
 		info.is_esn = 1;
+		/* make use of end of filler as scratch for assoc for GCM ESN case */
+		if (parm->is_gcm)
+			session->offload_seq->filler[RDD_CRYPTO_SESSION_SEQ_INFO_FILLER_NUMBER - 2] = parm->esp_spi;
 	}
+	info.is_gcm = parm->is_gcm;
+
 	bitmap = &session->offload_seq->bitmap_1;
 	session->offload_seq->last_seqno_lo = cpu_to_be32(parm->seq_lo);
 	session->offload_seq->last_seqno_hi = cpu_to_be32(parm->seq_hi);
@@ -658,23 +667,30 @@ int spu_platform_offload_session_ds_parm(int session_id, struct xfrm_state *xfrm
 	info.key_size = parm->key_size;
 	info.digest_size = parm->digest_size;
 	info.key_buf_dma_addr = session->key_buf_dma_addr;
+	info.iv_size = parm->iv_size;
 	rdpa_crypto_session_info_set(&info);
-
 	return 0;
 }
 
-int spu_platform_offload_session_us_parm(int session_id, struct xfrm_state *xfrm,
-					  struct bcmspu_offload_parm *parm)
+
+void spu_platform_offload_ds_prepend(struct bcmspu_offload_parm *parm, struct spu_offload_prephdr_args *a)
+{
+	uint8_t *data_p = a->spu_prepend;
+
+	/* create the prepend header XRDP FW needs */
+	memcpy(data_p, parm->spu_header, FMD_SIZE);
+	a->prepend_size = FMD_SIZE;
+}
+
+void spu_platform_offload_us_session(int session_id, struct xfrm_state *xfrm,
+					struct bcmspu_offload_parm *parm)
 {
 	rdpa_crypto_session_info_t info = {};
-	uint32_t type = 0;
-	uint16_t base_chksm;
-	uint8_t *data_p;
-
+	uint32_t type = 0, checksum_offset = 0;
 	struct spu_xrdp_session_info *session = &spu_xrdp_state_g.session_mem[session_id];
 
 	session->taken = 1;
-	/* clear the seqence number memory */
+	/* clear the sequence number memory */
 	memset(session->offload_seq, 0, sizeof(CRYPTO_SESSION_SEQ_INFO_STRUCT));
 
 	/* for Runner platforms, the key buffers located in DDR separately */
@@ -682,59 +698,60 @@ int spu_platform_offload_session_us_parm(int session_id, struct xfrm_state *xfrm
 	info.key_buf_dma_addr = session->key_buf_dma_addr;
 
 	if (parm->is_esn) {
-		CRYPTO_SESSION_SEQ_HI_INFO_STRUCT *seqhi_info = (CRYPTO_SESSION_SEQ_HI_INFO_STRUCT *)&session->offload_seq->seq_hi_info;
+		/* GCM ESN is not handled by SPU HW, do not need to toggle the key buffer */
+		if (parm->is_gcm == 0) {
+			CRYPTO_SESSION_SEQ_HI_INFO_STRUCT *seqhi_info =
+				(CRYPTO_SESSION_SEQ_HI_INFO_STRUCT *)&session->offload_seq->filler[RDD_CRYPTO_SESSION_SEQ_INFO_FILLER_NUMBER - (sizeof(CRYPTO_SESSION_SEQ_HI_INFO_STRUCT) / 4)];
 
-		seqhi_info->key_size = cpu_to_be32(parm->key_size);
-		/* copy keys to hi buffer as well, note seqhi is after the keys */
-		memcpy(&session->key_bufp[parm->key_size], &parm->spu_header[FMD_SIZE + parm->key_size], BLOG_ESP_SEQNUM_HI_LEN);
+			seqhi_info->key_size = cpu_to_be32(parm->key_size);
+			/* copy keys to hi buffer as well, note seqhi is after the keys */
+			memcpy(&session->key_bufp[parm->key_size], &parm->spu_header[FMD_SIZE + parm->key_size], BLOG_ESP_SEQNUM_HI_LEN);
 
-		/* adjust the parm->keysize to include seqhi, for SPU PD */
-		parm->key_size += BLOG_ESP_SEQNUM_HI_LEN;
-		memcpy(&session->key_bufp[MAX_OFFLOAD_KEY_SIZE], session->key_bufp, parm->key_size);
-		if (parm->seq_hi & 1) {
-			info.key_buf_dma_addr = session->key_buf_dma_addr + MAX_OFFLOAD_KEY_SIZE;
+			/* adjust the parm->keysize to include seqhi, for SPU PD */
+			parm->key_size += BLOG_ESP_SEQNUM_HI_LEN;
+			memcpy(&session->key_bufp[MAX_OFFLOAD_KEY_SIZE], session->key_bufp, parm->key_size);
+			if (parm->seq_hi & 1) {
+				info.key_buf_dma_addr = session->key_buf_dma_addr + MAX_OFFLOAD_KEY_SIZE;
+			}
+			seqhi_info->key_buff_lo0 = (uint32_t)(session->key_buf_dma_addr);
+			seqhi_info->key_buff_lo1 = (uint32_t)(session->key_buf_dma_addr + MAX_OFFLOAD_KEY_SIZE);
+			seqhi_info->key_buff_hi = cpu_to_be32((uint32_t)(session->key_buf_dma_addr >> 32));
 		}
-		seqhi_info->key_buff_lo0 = (uint32_t)(session->key_buf_dma_addr);
-		seqhi_info->key_buff_lo1 = (uint32_t)(session->key_buf_dma_addr + MAX_OFFLOAD_KEY_SIZE);
-		seqhi_info->key_buff_hi = cpu_to_be32((uint32_t)(session->key_buf_dma_addr >> 32));
-
 		info.is_esn = 1;
 		type |= (1 << SPU_ESN_BIT);
 		session->offload_seq->oseq_hi = cpu_to_be32(parm->seq_hi);
 	}
 	session->offload_seq->oseq_lo = cpu_to_be32(parm->seq_lo);
 
-	/* parm->fixed_hdr_size is platform specific */
-	parm->fixed_hdr_size = FMD_SIZE + BLOG_IPV4_HDR_LEN + BLOG_ESP_SPI_LEN + BLOG_ESP_SEQNUM_LEN + parm->iv_size;
-
-	/* shuffle the rest of the SPU header for XRDP FW needs, outer header is right after FMD */
-	data_p = &parm->spu_header[FMD_SIZE];
-	memcpy(data_p, &parm->outer_header, BLOG_IPV4_HDR_LEN);
-	base_chksm = ((BlogIpv4Hdr_t *)data_p)->chkSum;
-	((BlogIpv4Hdr_t *)data_p)->chkSum = 0;
-
-	data_p += BLOG_IPV4_HDR_LEN;
-	if (parm->esp_o_udp) {
-		SPU_ESPOUDP_SCRATCH_STRUCT *espoudp_scratch = (SPU_ESPOUDP_SCRATCH_STRUCT *)&session->offload_seq->filler[RDD_CRYPTO_SESSION_SEQ_INFO_FILLER_NUMBER - 3];
-
-		memcpy(data_p, &parm->outer_header[BLOG_IPV4_HDR_LEN], BLOG_UDP_HDR_LEN);
-		data_p += BLOG_UDP_HDR_LEN;
-		info.esp_o_udp = 1;
-		parm->fixed_hdr_size += BLOG_UDP_HDR_LEN;
-
-		espoudp_scratch->spi = parm->esp_spi;
+	if (xfrm->props.mode == XFRM_MODE_TRANSPORT) {
+		info.transport_mode = BLOG_ESP_MODE_TRANSPORT;
 	}
-	/* add the ESP header after the Outer header */
-	*((uint32_t *)data_p) = parm->esp_spi;
-        data_p += BLOG_ESP_SPI_LEN;
-	*((uint32_t *)data_p) = 0;
-	data_p += BLOG_ESP_SEQNUM_LEN;
-	/* leave empty space for IV generation */
-        memset(data_p, 0, parm->iv_size);
+
+	checksum_offset = FMD_SIZE + BLOG_ESP_SPI_LEN + BLOG_ESP_SEQNUM_LEN;
+
+	if (parm->is_gcm) {
+		/* store the seqno correlated IV and SPI in the filler space */
+		memcpy(session->offload_seq->filler, parm->gcm_iv_aad2, (parm->iv_size + BLOG_ESP_SPI_LEN));
+		checksum_offset += parm->iv_size;
+		if (parm->is_esn)
+			checksum_offset += BLOG_ESP_SEQNUM_HI_LEN;
+	}
+	else {
+		session->offload_seq->filler[0] = parm->esp_spi;
+	}
+
+	if (parm->ipv6 == 0)
+		info.chksm_offset = checksum_offset + 10;
+
+	session->offload_seq->block_size = cpu_to_be32((uint32_t)parm->blk_size);
 
 	info.digest_size = parm->digest_size;
 	info.session_id = session_id;
 	info.key_size = parm->key_size;
+	info.iv_size = parm->iv_size;
+	info.is_gcm = parm->is_gcm;
+	info.ipv6 = parm->ipv6;
+	info.esp_o_udp = parm->esp_o_udp;
 
 	/* if this is a data limiting session */
 	spin_lock_bh(&xfrm->lock);
@@ -755,13 +772,48 @@ int spu_platform_offload_session_us_parm(int session_id, struct xfrm_state *xfrm
 	session->offload_seq->curlft_pkts_hi = cpu_to_be32(xfrm->curlft.packets >> 32);
 	session->offload_seq->curlft_pkts_lo = cpu_to_be32((uint32_t)xfrm->curlft.packets);
 	spin_unlock_bh(&xfrm->lock);
-
-	session->offload_seq->type_chksm = cpu_to_be32(type | cpu_to_be16(base_chksm));
+	session->offload_seq->type = cpu_to_be32(type);
 
 	rdpa_crypto_session_info_set(&info);
-
-	return 0;
 }
+
+void spu_platform_offload_us_prepend(struct bcmspu_offload_parm *parm, struct spu_offload_prephdr_args *a)
+{
+	uint8_t *data_p = a->spu_prepend;
+
+	a->prepend_size = 0;
+
+	/* create the prepend header XRDP FW needs */
+	memcpy(data_p, parm->spu_header, FMD_SIZE);
+
+	data_p += FMD_SIZE;
+	a->prepend_size = FMD_SIZE;
+	/* reserve space for IV and AAD2 for GCM case */
+	if (parm->is_gcm) {
+		memset(data_p, 0, (parm->iv_size + BLOG_ESP_SPI_LEN + BLOG_ESP_SEQNUM_LEN));
+		data_p += (parm->iv_size + BLOG_ESP_SPI_LEN + BLOG_ESP_SEQNUM_LEN);
+		a->prepend_size += (parm->iv_size + BLOG_ESP_SPI_LEN + BLOG_ESP_SEQNUM_LEN);
+
+		if (parm->is_esn) {
+			/* GCM ESN case, seqhi is after the SPI, part of the assoc */
+			a->prepend_size += BLOG_ESP_SEQNUM_HI_LEN;
+			data_p += BLOG_ESP_SEQNUM_HI_LEN;
+		}
+	} else {
+		memset(data_p, 0, (BLOG_ESP_SPI_LEN + BLOG_ESP_SEQNUM_LEN));
+		data_p += (BLOG_ESP_SPI_LEN + BLOG_ESP_SEQNUM_LEN);
+		a->prepend_size += (BLOG_ESP_SPI_LEN + BLOG_ESP_SEQNUM_LEN);
+	}
+	/* outer IP header goes right after, note the outer IP header will not be part of SPU request */
+	memcpy(data_p, &parm->outer_header, parm->outer_hdr_size);
+	a->prepend_size += parm->outer_hdr_size;
+	data_p += parm->outer_hdr_size;
+
+	/* leave empty space for SPU to return AAD2 and iv */
+	memset(data_p, 0, (BLOG_ESP_SPI_LEN + BLOG_ESP_SEQNUM_LEN + parm->iv_size));
+	a->prepend_size += (BLOG_ESP_SPI_LEN + BLOG_ESP_SEQNUM_LEN + parm->iv_size);
+}
+
 
 void spu_platform_offload_free_session(uint32_t session_id)
 {
@@ -770,6 +822,11 @@ void spu_platform_offload_free_session(uint32_t session_id)
 	if (!session->taken)
 		flow_log("session %u is not taken\n", session_id);
 	session->taken = 0;
+}
+
+void spu_platform_offloaded(uint32_t * req, uint32_t * cmpl)
+{
+	rdpa_spu_offload_pkt(req, cmpl);
 }
 
 void spu_platform_offload_register(void)

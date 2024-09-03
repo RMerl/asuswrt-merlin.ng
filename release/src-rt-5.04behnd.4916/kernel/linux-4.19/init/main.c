@@ -91,10 +91,8 @@
 #include <linux/cache.h>
 #include <linux/rodata_test.h>
 #include <linux/jump_label.h>
-#include <linux/mem_encrypt.h>
 
 #include <asm/io.h>
-#include <asm/bugs.h>
 #include <asm/setup.h>
 #include <asm/sections.h>
 #include <asm/cacheflush.h>
@@ -526,8 +524,6 @@ void __init __weak thread_stack_cache_init(void)
 }
 #endif
 
-void __init __weak mem_encrypt_init(void) { }
-
 bool initcall_debug;
 core_param(initcall_debug, initcall_debug, bool, 0644);
 
@@ -711,14 +707,6 @@ asmlinkage __visible void __init start_kernel(void)
 	 */
 	locking_selftest();
 
-	/*
-	 * This needs to be called before any devices perform DMA
-	 * operations that might use the SWIOTLB bounce buffers. It will
-	 * mark the bounce buffers as decrypted so that their usage will
-	 * not cause "plain-text" data to be decrypted when accessed.
-	 */
-	mem_encrypt_init();
-
 #ifdef CONFIG_BLK_DEV_INITRD
 	if (initrd_start && !initrd_below_start_ok &&
 	    page_to_pfn(virt_to_page((void *)initrd_start)) < min_low_pfn) {
@@ -737,6 +725,9 @@ asmlinkage __visible void __init start_kernel(void)
 		late_time_init();
 	sched_clock_init();
 	calibrate_delay();
+
+	arch_cpu_finalize_init();
+
 	pid_idr_init();
 	anon_vma_init();
 #ifdef CONFIG_X86
@@ -763,7 +754,6 @@ asmlinkage __visible void __init start_kernel(void)
 	taskstats_init_early();
 	delayacct_init();
 
-	check_bugs();
 
 	acpi_subsystem_init();
 	arch_post_acpi_subsys_init();

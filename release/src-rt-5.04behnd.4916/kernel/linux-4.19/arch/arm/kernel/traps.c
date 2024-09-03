@@ -29,6 +29,9 @@
 #include <linux/sched/debug.h>
 #include <linux/sched/task_stack.h>
 #include <linux/irq.h>
+#ifdef CONFIG_BCM_KF_TINY_KCORE_SUPPORT
+#include <linux/tiny_kcore.h>
+#endif
 
 #include <linux/atomic.h>
 #include <asm/cacheflush.h>
@@ -339,6 +342,10 @@ static void oops_end(unsigned long flags, struct pt_regs *regs, int signr)
 	raw_local_irq_restore(flags);
 	oops_exit();
 
+#ifdef CONFIG_BCM_KF_TINY_KCORE_SUPPORT
+	if (in_interrupt() || panic_on_oops)
+		tkcore_save_cpu_state(regs, smp_processor_id());
+#endif
 	if (in_interrupt())
 		panic("Fatal exception in interrupt");
 	if (panic_on_oops)

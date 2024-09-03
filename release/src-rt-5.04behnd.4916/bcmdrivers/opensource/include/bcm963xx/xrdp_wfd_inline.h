@@ -4,28 +4,23 @@
 /*
 <:copyright-BRCM:2016:DUAL/GPL:standard
 
-   Copyright (c) 2016 Broadcom
+   Copyright (c) 2016 Broadcom 
    All Rights Reserved
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
+
 :>
 
 Author: kosta.sopov@broadcom.com
@@ -90,7 +85,7 @@ typedef union {
     uint32_t word;
 } wl_metadata_nic_t;
 
-static struct proc_dir_entry *proc_wfd_rx_fastpath;   /* /proc/wfd/rx_fastpath */
+static struct proc_dir_entry *proc_wfd_rx_fastpath;   /* /proc/wfd/wlan_rx_fastpath */
 
 const rdpa_filter default_lan_ingress_filters[] = {
         RDPA_FILTER_DHCP,
@@ -105,6 +100,7 @@ const rdpa_filter default_lan_ingress_filters[] = {
 };
 
 #define WFD_PLATFORM_PROC
+#define WFD_PATH_DELAY_MEASURE
 
 #define WFD_WLAN_QUEUE_MAX_SIZE (RDPA_CPU_WLAN_QUEUE_MAX_SIZE)
 #define WFD_NIC_WLAN_PRIORITY_START_IN_WORD (21)
@@ -258,6 +254,12 @@ static inline int wfd_config_rx_queue(int wfd_idx, int qid, uint32_t qsize,
     rxq_cfg.ic_cfg.ic_timeout_us = WFD_INTERRUPT_COALESCING_TIMEOUT_US;
     rxq_cfg.ic_cfg.ic_max_pktcnt = WFD_INTERRUPT_COALESCING_MAX_PKT_CNT;
     rxq_cfg.rxq_stat = NULL;
+#if defined(CONFIG_RNR_SKB_SHARED_INFO_RESET)
+    if (eFwdHookType == WFD_WL_FWD_HOOKTYPE_SKB)
+        rxq_cfg.buf_type = CPU_RXQ_BUF_DATA_SKB;
+    else
+        rxq_cfg.buf_type = CPU_RXQ_BUF_DATA_ONLY;
+#endif
 
     rc = rdpa_cpu_rxq_cfg_set(rdpa_cpu_obj, qid, &rxq_cfg);
 
@@ -379,7 +381,7 @@ static struct sk_buff *__skb_alloc(rdpa_cpu_rx_info_t *info)
 }
 
 /* Allocate a sk_buff from BPM or kmem skbuff_head_cache */
-static struct sk_buff *skb_alloc(rdpa_cpu_rx_info_t *info)
+static struct sk_buff *skb_alloc(rdpa_cpu_rx_info_t *info, wfd_object_t *wfd_p)
 {
     struct sk_buff *skb;
 
@@ -395,10 +397,23 @@ static struct sk_buff *skb_alloc(rdpa_cpu_rx_info_t *info)
     else
 #endif
     {
-        skb = (struct sk_buff *)bdmf_attach_skb_bpm(info->data,
-            info->data_offset + info->size);
+        if (!wfd_p->skbs)
+                wfd_p->skbs = gbpm_alloc_mult_skb(NUM_PACKETS_TO_READ_MAX);
+
+        if (wfd_p->skbs) {
+            skb = wfd_p->skbs;
+            wfd_p->skbs = skb->next;
+            skb->next = NULL;
+        }
+
         if (likely(skb))
         {
+#if defined(CONFIG_RNR_SKB_SHARED_INFO_RESET)
+            gbpm_attach_skb_no_shinfo_reset(skb, info->data, info->data_offset + info->size);
+#else
+            gbpm_attach_skb(skb, info->data, info->data_offset + info->size);
+#endif
+            skb->recycle_hook = (RecycleFuncP) bdmf_sysb_recycle_skb;
             __skb_pull(skb, info->data_offset);
         }
     }
@@ -735,7 +750,7 @@ static inline struct sk_buff *single_packet_read_and_handle(wfd_ctx_t *wfd_ctx, 
 
     wl_nic.word = info.wl_metadata;
 #ifdef CONFIG_BCM_WFD_RATE_LIMITER
-    if (!info.is_exception && info.is_ucast)
+    if (wfd_rl_enabled && !info.is_exception && info.is_ucast)
     {
         int ssid = wfd_pktfwd_key_2_ssid(wl_nic.chain_id);
         if ((ssid != -1) && rl_should_drop(wfd_ctx->wfd_p->wfd_idx, ssid, RL_DIR_TX, info.size))
@@ -766,7 +781,7 @@ static inline struct sk_buff *single_packet_read_and_handle(wfd_ctx_t *wfd_ctx, 
         *tx_prio = wl_nic.tx_prio;                  /* No IQPRIO */
         *tx_dest = PKTLIST_DEST(wl_nic.chain_id);
 #ifdef WFD_FLCTL
-       if (ucast_should_drop_skb(wfd_ctx, wl_nic.tx_prio, *tx_dest))
+       if (wfd_enable_flctl && ucast_should_drop_skb(wfd_ctx, wl_nic.tx_prio, *tx_dest))
        {
            if (++wfd_ctx->drop_credits >= WFD_FLCTL_DROP_CREDITS)
                --wfd_ctx->budget;
@@ -782,7 +797,7 @@ static inline struct sk_buff *single_packet_read_and_handle(wfd_ctx_t *wfd_ctx, 
         *tx_dest = PKTLIST_MCAST_ELEM; /* last col in 2d pktlist */
     }
 
-    skb = skb_alloc(&info); /* skb: bpm, kmem */
+    skb = skb_alloc(&info, wfd_ctx->wfd_p); /* skb: bpm, kmem */
     if (unlikely(!skb))
     {
         gs_count_no_skbs[wfd_get_qidx(wfd_ctx->wfd_p->wfd_idx, wfd_ctx->qid)]++;
@@ -848,6 +863,87 @@ wfd_pktfwd_xfer(pktlist_context_t *wfd_pktlist_context,
 
 }   /* wfd_pktfwd_xfer() */
 
+#ifdef WFD_PATH_DELAY_MEASURE
+#define WFD_PATH_DELAY_HIST_NBINS  40
+#define WFD_PATH_DELAY_HIST_UNIT_NS 50000   /* 50000ns per step */
+#define WFD_PATH_DELAY_HIST_UNIT_US 50      /* 50us per step */
+
+/*
+   Full WFD datapath (WFD->PKTFWD->WLAN) delay should be measured per packet
+   However packet lists are destroyed after packets enqueued to WLAN by PKTFWD
+   so PKTFWD->WLAN logic only can measure single batch process delay not per packet
+*/
+typedef enum wfd_sub_path_type
+{
+    WFD_PKTFWD_SUB_PATH    = 0,
+    PKTFWD_WLAN_SUB_PATH    = 1
+} wfd_sub_path_type_t;
+
+typedef struct 
+{
+    uint32 hist[WFD_PATH_DELAY_HIST_NBINS];
+    uint32 extra_hist;
+    uint32 extra_delay_sum;
+    uint32 extra_delay_max;
+    uint32 count;
+} wfd_path_delay_stats_t;
+
+typedef struct 
+{
+    wfd_path_delay_stats_t wfd_pktfwd;
+    wfd_path_delay_stats_t pktfwd_wlan;
+    
+}wfd_delay_stats_t;
+
+static wfd_delay_stats_t wfd_delay_stats;
+
+static inline void xrdp_wfd_path_delay_sum(wfd_path_delay_stats_t *stat, int step)
+{
+    if (step < WFD_PATH_DELAY_HIST_NBINS)
+    {
+        stat->hist[step]++;
+    }
+    else
+    {
+        stat->extra_hist++;
+        stat->extra_delay_sum += step;
+        if (step > stat->extra_delay_max)
+            stat->extra_delay_max = step;
+    }
+}
+
+static void xrdp_wfd_path_delay_calc(struct sk_buff *head, int len, int sub_path)
+{
+    u64 ts_delta_ns = 0;
+    int step = 0;
+    u64 cur_ts_ns =  ktime_get_ns();
+    static u64 prev_ts_ns = 0;
+    
+    if (sub_path == WFD_PKTFWD_SUB_PATH)
+    {
+        wfd_delay_stats.wfd_pktfwd.count += len;
+        while ((len--) && (head != NULL)) {
+            if (cur_ts_ns > head->tstamp)
+            {
+                ts_delta_ns = cur_ts_ns - head->tstamp;
+                step = div_u64(ts_delta_ns, WFD_PATH_DELAY_HIST_UNIT_NS);
+                xrdp_wfd_path_delay_sum(&wfd_delay_stats.wfd_pktfwd, step);
+            }
+            head = head->prev;
+        }
+    }
+    else if (prev_ts_ns != 0)
+    {
+        /* PKTFWD_WLAN_SUB_PATH */
+        wfd_delay_stats.pktfwd_wlan.count++;
+        ts_delta_ns = cur_ts_ns - prev_ts_ns;
+        step = div_u64(ts_delta_ns, WFD_PATH_DELAY_HIST_UNIT_NS);
+        xrdp_wfd_path_delay_sum(&wfd_delay_stats.pktfwd_wlan, step);
+    }
+    prev_ts_ns = cur_ts_ns;
+}
+#endif
+
 static uint32_t wfd_bulk_skb_get(unsigned long qid, unsigned long budget, void *priv)
 {
     wfd_ctx_t ctx = {
@@ -863,6 +959,9 @@ static uint32_t wfd_bulk_skb_get(unsigned long qid, unsigned long budget, void *
 #endif
 #endif
     };
+#ifdef WFD_PATH_DELAY_MEASURE
+    u64 cur_ts_ns = ktime_get_ns();
+#endif
 
     while (ctx.budget > 0)
     {
@@ -877,6 +976,9 @@ static uint32_t wfd_bulk_skb_get(unsigned long qid, unsigned long budget, void *
                 break;
             continue; // exception handled or allocation failure
         }
+#ifdef WFD_PATH_DELAY_MEASURE
+        skb->tstamp = cur_ts_ns;
+#endif
 
         PKTFWD_ASSERT(pktlist_prio == LINUX_GET_PRIO_MARK(skb->mark));
         PKTFWD_ASSERT(pktlist_dest <= PKTLIST_MCAST_ELEM);
@@ -887,7 +989,7 @@ static uint32_t wfd_bulk_skb_get(unsigned long qid, unsigned long budget, void *
                 skb->wl.ucast.nic.wl_chainidx, skb, SKBUFF_PTR); /* mcast chain_id audit? */
         // FGOMES FIXME pass is_ucast and remove chain_id audit ...
 #if defined(BCM_PKTFWD_FLCTL)
-        if (likely(ctx.wfd_p->pktlist_context_p->fctable != PKTLIST_FCTABLE_NULL))
+        if (wfd_enable_flctl && likely(ctx.wfd_p->pktlist_context_p->fctable != PKTLIST_FCTABLE_NULL))
         {
             /* Decreament avail credits for pktlist */
             __pktlist_fctable_dec_credits(ctx.wfd_p->pktlist_context_p,
@@ -939,7 +1041,7 @@ static inline struct sk_buff *single_packet_read_and_handle(wfd_object_t *wfd_p,
         return NULL;
     }
 
-    skb = skb_alloc(&info); /* skb: bpm or kmem */
+    skb = skb_alloc(&info, wfd_p); /* skb: bpm or kmem */
     if (unlikely(!skb))
     {
         gs_count_no_skbs[wfd_get_qidx(wfd_p->wfd_idx, qid)]++;
@@ -1178,6 +1280,94 @@ static int wfd_runner_tx(struct sk_buff *skb)
     return wfd_runner_nbuff_tx(skb, skb->dev);
 }
 
+#ifdef WFD_PATH_DELAY_MEASURE
+void wfd_path_delay_dump(wfd_path_delay_stats_t *stat)
+{
+    uint32_t i = 0, delay_avg_time = 0;
+    uint64_t delay_sum = 0;
+        
+    for (i = 0; i < WFD_PATH_DELAY_HIST_NBINS; i++)
+    {
+        delay_sum += stat->hist[i]*(i+1);
+    }
+    delay_sum += stat->extra_delay_sum;
+    delay_avg_time = mul_u64_u32_div(delay_sum, WFD_PATH_DELAY_HIST_UNIT_US, stat->count);
+    
+    printk("Delay stats in usec (avg/extra_max): %d %d, total count %d\n", delay_avg_time, 
+        stat->extra_delay_max * WFD_PATH_DELAY_HIST_UNIT_US, stat->count);
+    printk("Delay histogram (unit 50usec):\n");
+    for (i = 0; i < WFD_PATH_DELAY_HIST_NBINS; i++)
+    {
+        printk(KERN_CONT "%d(%d%%) ", stat->hist[i], (stat->hist[i]*100)/stat->count);
+        if ((i % 10) == 9)
+            printk("\n");
+    } 
+    printk("extra %d(%d\%%)\n", stat->extra_hist, (stat->extra_hist*100)/stat->count);
+}
+
+static ssize_t wfd_path_delay_read_proc(struct file *file, char *buff, size_t len, loff_t *offset)
+{
+    if (*offset)
+        return 0;
+
+    printk("\nWFD->PKTWFD path delay summary (packet based)\n");
+    wfd_path_delay_dump(&wfd_delay_stats.wfd_pktfwd);
+    printk("\nPKTWFD->WLAN path delay summary (batch based)\n");
+    wfd_path_delay_dump(&wfd_delay_stats.pktfwd_wlan);
+
+    return *offset;
+}
+
+static ssize_t wfd_path_delay_write_proc(struct file *file, const char *buff, size_t len, loff_t *offset)
+{
+    char input[2];
+    uint32_t val;
+
+    if (copy_from_user(input, buff, sizeof(input)) != 0)
+        return -EFAULT;
+
+    if (sscanf(input, "%u", &val) < 1)
+    {
+        printk("Current status %s\n", (wfd_path_delay_calc == NULL) ? "disabled":"enabled");
+        return len;
+    }
+
+    switch (val)
+    {
+        case 0:
+            wfd_path_delay_calc = NULL;
+            printk("Path delay stats disabled\n");
+            break;
+        case 1:
+            wfd_path_delay_calc = xrdp_wfd_path_delay_calc;
+            printk("Path delay stats enabled\n");
+            break;
+        case 2:
+            memset(&wfd_delay_stats, 0, sizeof(wfd_delay_stats));
+            printk("Path delay stats cleared\n");
+            break;
+        default:
+            break;
+    }
+
+    return len;
+}
+
+static struct proc_dir_entry *proc_wfd_path_delay;   /* /proc/wfd/path_delay_stats */
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 15, 0))
+static const struct file_operations path_delay_fops = {
+    .owner  = THIS_MODULE,
+    .read   = wfd_path_delay_read_proc,
+    .write  = wfd_path_delay_write_proc
+};
+#else
+static const struct proc_ops path_delay_fops = {
+    .proc_read   = wfd_path_delay_read_proc,
+    .proc_write  = wfd_path_delay_write_proc
+};
+#endif
+#endif
+
 static ssize_t wfd_rx_fastpath_read_proc(struct file *file, char *buff, size_t len, loff_t *offset)
 {
     if (*offset)
@@ -1220,13 +1410,22 @@ static const struct proc_ops rx_fastpath_fops = {
 
 static int wfd_plat_proc_init(void)
 {
-   if (!(proc_wfd_rx_fastpath = proc_create("wfd/wlan_rx_fastpath", 0644, NULL, &rx_fastpath_fops)))
+    if (!(proc_wfd_rx_fastpath = proc_create("wfd/wlan_rx_fastpath", 0644, NULL, &rx_fastpath_fops)))
        return -1;
+ 
+#ifdef WFD_PATH_DELAY_MEASURE
+    if (!(proc_wfd_path_delay = proc_create("wfd/path_delay_stats", 0644, NULL, &path_delay_fops)))
+       return -1;
+#endif  
+   
    return 0;
 }
 
 static void wfd_plat_proc_uninit(struct proc_dir_entry *dir)
 {
     remove_proc_entry("wlan_rx_fastpath", dir);
+#ifdef WFD_PATH_DELAY_MEASURE
+    remove_proc_entry("path_delay_stats", dir);
+#endif
 }
 #endif /* __XRDP_WFD_INLINE_H_INCLUDED__ */

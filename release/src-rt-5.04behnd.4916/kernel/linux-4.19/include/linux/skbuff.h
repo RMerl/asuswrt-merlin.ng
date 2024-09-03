@@ -316,9 +316,18 @@ extern int sysctl_max_skb_frags;
 typedef struct skb_frag_struct skb_frag_t;
 
 struct skb_frag_struct {
+#if defined(CONFIG_BCM_KF_WL_SPC_V2)
+	union {
+		struct {
+			struct page *p;
+		} page;
+		void *data;
+	};
+#else
 	struct {
 		struct page *p;
 	} page;
+#endif
 #if (BITS_PER_LONG > 32) || (PAGE_SIZE >= 65536)
 	__u32 page_offset;
 	__u32 size;

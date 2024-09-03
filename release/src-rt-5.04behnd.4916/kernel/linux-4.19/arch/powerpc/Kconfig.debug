@@ -232,7 +232,7 @@ config PPC_EARLY_DEBUG_40x
 
 config PPC_EARLY_DEBUG_CPM
 	bool "Early serial debugging for Freescale CPM-based serial ports"
-	depends on SERIAL_CPM
+	depends on SERIAL_CPM=y
 	help
 	  Select this to enable early debugging for Freescale chips
 	  using a CPM-based serial port.  This assumes that the bootwrapper
@@ -367,10 +367,6 @@ config PPC_PTDUMP
 	  not a good idea to enable this feature in a production kernel.
 
 	  If you are unsure, say N.
-
-config PPC_HTDUMP
-	def_bool y
-	depends on PPC_PTDUMP && PPC_BOOK3S_64
 
 config PPC_FAST_ENDIAN_SWITCH
 	bool "Deprecated fast endian-switch syscall"

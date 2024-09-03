@@ -200,15 +200,29 @@ unsigned int BcmHalMapInterruptExThreaded(FN_HANDLER pfunc, void* param,
 }
 EXPORT_SYMBOL(BcmHalMapInterruptExThreaded);
 
-unsigned int BcmHalMapInterrupt(FN_HANDLER pfunc, void* param, unsigned int irq)
+unsigned int BcmHalMapInterrupt(FN_HANDLER pfunc, const char *name, void* param, unsigned int irq)
 {
     char devname[INTR_NAME_MAX_LENGTH];
 
-    sprintf(devname, "brcm_%d", irq);
+    if(name != NULL)
+        snprintf(devname, INTR_NAME_MAX_LENGTH-1, "%s", name);
+    else
+    {
+        printk(KERN_WARNING "Using generic itnerrupt name, please consider using a specific name\n");
+        sprintf(devname, "brcm_%d", irq);
+    }
     return BcmHalMapInterruptEx(pfunc, param, irq, devname, INTR_REARM_YES,
         INTR_AFFINITY_DEFAULT);
 }
 EXPORT_SYMBOL(BcmHalMapInterrupt);
+
+void BcmHalMapInterruptFree(void* param, unsigned int irq)
+{
+    const char *devname = free_irq(irq, param);
+
+    kfree(devname);
+}
+EXPORT_SYMBOL(BcmHalMapInterruptFree);
 
 unsigned int BcmHalMapInterruptThreaded(FN_HANDLER pfunc, void* param, unsigned int irq, irq_handler_t thread_fn)
 {

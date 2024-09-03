@@ -30,6 +30,9 @@ struct tcf_skbedit_params {
 	u16 queue_mapping;
 	u16 ptype;
 	struct rcu_head rcu;
+#ifdef CONFIG_BCM_KF_ENHANCED_TC
+	u32 fsmark_id;
+#endif /* CONFIG_BCM_KF_ENHANCED_TC */
 };
 
 struct tcf_skbedit {

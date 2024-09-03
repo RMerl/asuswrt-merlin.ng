@@ -347,6 +347,15 @@
 			#include "../ip/bcm_sdhci.dtsi"
 		};
 
+#if defined (CONFIG_MMC_OOPS) || (CONFIG_MMC_OOPS_MODULE)
+		mmcoops {
+			#define MMC_OOPS_DUMP_OFFSET    1536 /* 768KB */
+			#define MMC_OOPS_DUMP_SIZE      512  /* 256KB */	
+			#define MMC_OOPS_DUMP_RECSIZE   128  /* 64KB  */
+			#include "../ip/bcm_mmc_oops.dtsi"
+		};
+#endif
+
 		/* boot state */
 		boot_state: boot_state {
 			#define RESET_STATUS_OFFSET		0x0 0x438

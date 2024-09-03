@@ -1,6 +1,5 @@
 clocks: clocks {
 	compatible = "simple-bus";
-	ranges;
 	u-boot,dm-pre-reloc;
 
 	periph_osc: periph-osc {

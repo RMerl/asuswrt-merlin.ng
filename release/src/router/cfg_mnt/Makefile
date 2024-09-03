@@ -261,6 +261,11 @@ CFLAGS += -I$(TOP)/ateed/
 LDFLAGS += -L$(TOP)/ateed/ -latee
 endif
 
+ifeq ($(RTCONFIG_SMARTHAUL),y)
+CFLAGS += -DSMARTHAUL
+COMMON_OBJS += cfg_smarthaul.o
+endif
+
 ifeq ($(wildcard $(SRCBASE)/router/cfg_mnt/*.c),)
 all:
 	-cp -f prebuild/$(BUILD_NAME)/cfg_server cfg_server

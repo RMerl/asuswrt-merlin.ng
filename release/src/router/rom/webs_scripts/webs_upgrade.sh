@@ -4,7 +4,7 @@ IS_BCMHND=`nvram get rc_support|grep -i bcmhnd`
 
 wget_timeout=`nvram get apps_wget_timeout`
 #wget_options="-nv -t 2 -T $wget_timeout --dns-timeout=120"
-wget_options="-q -t 2 -T $wget_timeout"
+wget_options="--ciphers='DEFAULT:@SECLEVEL=1:!CAMELLIA' -q -t 2 -T $wget_timeout"
 
 nvram set webs_state_upgrade=0 # INITIALIZING
 nvram set webs_state_error=0

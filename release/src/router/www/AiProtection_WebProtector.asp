@@ -21,7 +21,7 @@
 <script type="text/javascript" src="form.js"></script>
 <script type="text/javascript" src="switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="client_function.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js"></script>
 <style>
 *{
 	box-sizing: content-box;
@@ -81,8 +81,6 @@ function initial(){
 
 	showDropdownClientList('setClientIP', 'mac', 'all', 'ClientList_Block_PC', 'pull_arrow', 'all');
 
-	if(!ASUS_EULA.status("tm"))
-		ASUS_EULA.config(eula_confirm, cancel);
 }
 
 function pullLANIPList(obj){
@@ -799,11 +797,16 @@ function eula_confirm(){
 function switch_control(_status){
 	if(_status) {
 		if(reset_wan_to_fo.check_status()) {
-			if(ASUS_EULA.check("tm")){
-				document.form.wrs_enable.value = 1;
-				document.form.wrs_app_enable.value = 1;
-				applyRule();
-			}
+            if(policy_status.TM == 0 || policy_status.TM_time == ''){
+                const policyModal = new PolicyModalComponent({
+                    policy: "TM",
+                    agreeCallback: eula_confirm,
+                    disagreeCallback: cancel
+                });
+                policyModal.show();
+            }else{
+                eula_confirm();
+            }
 		}
 		else
 			cancel();

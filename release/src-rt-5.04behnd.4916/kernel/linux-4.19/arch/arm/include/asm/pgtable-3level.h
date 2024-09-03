@@ -80,7 +80,11 @@
 #define L_PTE_VALID		(_AT(pteval_t, 1) << 0)		/* Valid */
 #define L_PTE_PRESENT		(_AT(pteval_t, 3) << 0)		/* Present */
 #define L_PTE_USER		(_AT(pteval_t, 1) << 6)		/* AP[1] */
+#if defined(CONFIG_BCM_KF_GLB_COHERENCY) && defined(CONFIG_BCM_GLB_COHERENCY)
+#define L_PTE_SHARED		(_AT(pteval_t, 2) << 8)		/* SH[1:0], outer shareable */
+#else
 #define L_PTE_SHARED		(_AT(pteval_t, 3) << 8)		/* SH[1:0], inner shareable */
+#endif
 #define L_PTE_YOUNG		(_AT(pteval_t, 1) << 10)	/* AF */
 #define L_PTE_XN		(_AT(pteval_t, 1) << 54)	/* XN */
 #define L_PTE_DIRTY		(_AT(pteval_t, 1) << 55)

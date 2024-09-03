@@ -4,9 +4,15 @@
     model = "968572SV_PVT1";
 };
 
-&ethphytop {
-    phy-mpd = <&bca_extintr 82 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
-    phy-link = <&bca_extintr 83 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+/ {
+    memory_controller {
+        memcfg = <(BP_DDR_TYPE_DDR4        | \
+                BP_DDR_SPEED_1600_22_22_22 | \
+                BP_DDR_DEVICE_WIDTH_16     | \
+                BP_DDR_TOTAL_WIDTH_32BIT   | \
+                BP_DDR_TOTAL_SIZE_2048MB   | \
+                BP_DDR_SSC_CONFIG_1      )>;
+    };
 };
 
 &wdt {

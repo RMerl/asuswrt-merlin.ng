@@ -1,4 +1,4 @@
-if ( !Element.prototype.scrollIntoViewIfNeeded ) {
+﻿if ( !Element.prototype.scrollIntoViewIfNeeded ) {
 	Element.prototype.scrollIntoViewIfNeeded = function ( centerIfNeeded = true ) {
 		const el = this;
 		new IntersectionObserver( function( [entry] ) {
@@ -309,6 +309,116 @@ function Get_Component_Input_And_Btn(_parm){
 
 	return $container;
 }
+function Get_Component_Hint_And_Btn(_parm){
+	let $container = $("<div>").addClass("profile_setting_two_item nowrap hint_btn");
+
+	let $cntr_1 = $("<div>").addClass("cntr_1").appendTo($container);
+	let hint_text = "";
+	if(_parm.hint != undefined) hint_text = _parm.hint;
+	$("<div>").addClass("title").html(htmlEnDeCode.htmlEncode(hint_text)).appendTo($cntr_1);
+
+	let $cntr_2 = $("<div>").addClass("cntr_2").appendTo($container);
+	let btn_text = "";
+	if(_parm.text != undefined) btn_text = _parm.text;
+	let $btn_cntr = $("<div>").addClass("profile_btn_container").appendTo($cntr_2);
+	if(_parm.id != undefined) $btn_cntr.attr("id", _parm.id);
+	$("<div>").html(htmlEnDeCode.htmlEncode(btn_text)).appendTo($btn_cntr);
+	$("<div>").addClass("icon_arrow_right").appendTo($btn_cntr);
+
+	return $container;
+}
+function Get_Component_Input_With_Select(_parm){
+	const maxlength = (_parm && (_parm.maxlength)) || 64;
+
+	let $container = $("<div>").addClass("profile_setting_item");
+	if(_parm && _parm.container_id != undefined)
+		$container.attr("id", _parm.container_id);
+
+	// title
+	if(_parm && _parm.openHint != undefined){
+		let hint_array = _parm.openHint.split("_");
+		$("<a>").addClass("hintstyle").attr({"href":"javascript:void(0);"})
+			.html(htmlEnDeCode.htmlEncode((_parm && _parm.title) || ""))
+			.unbind("click").click(function(){
+				openHint(hint_array[0], hint_array[1], "rwd_vpns");
+			}).appendTo($("<div>").addClass("title").appendTo($container));
+	}
+	else
+		$("<div>").addClass("title").html(htmlEnDeCode.htmlEncode((_parm && _parm.title) || "")).appendTo($container);
+
+	// input field
+	let $input_cntr = $("<div>").addClass("input_container").appendTo($container);
+	if(_parm && (_parm.title == "" || _parm.title == undefined)){
+		$container.css("justify-content", "center");
+		$input_cntr.css({"flex": "0 0 96%", "margin-left":"unset", "max-width": "unset"});
+	}
+	let $custom_select_cntr = $("<div>").addClass("custom_select_container").appendTo($input_cntr);
+	$custom_select_cntr
+		.unbind("click").click(function(e){
+			e = e || event;
+			e.stopPropagation();
+			if(_parm.options.length == 0)
+				return;
+			if($(this).attr("temp_disable") == "disabled")
+				return;
+			$(this).toggleClass("arrow_up");
+			$(this).children(".select_options_container").toggleClass("container_hide");
+		})
+		.unbind("mouseleave").mouseleave(function(e){
+			e = e || event;
+			e.stopPropagation();
+			if($(this).children(".select_options_container").css("display") == "block"){
+				$(this).closest(".custom_select_container").toggleClass("arrow_up");
+				$(this).children(".select_options_container").toggleClass("container_hide");
+			}
+		});
+
+	$("<input/>")
+		.addClass("textInput inside_custom_select")
+		.attr({"id":_parm.id, "type":_parm.type, "maxlength":maxlength, "autocomplete":"off","autocorrect":"off","autocapitalize":"off","spellcheck":"false"})
+		.val("")
+		.unbind("blur").blur(function(e){
+			e = e || event;
+			e.stopPropagation();
+		})
+		.on('click', function (e) {
+			e = e || event;
+			e.stopPropagation();
+			let target = this;
+			setTimeout(function(){
+				target.scrollIntoViewIfNeeded();//for mobile view
+			},400);
+			const $custom_select_cntr = $(this).closest(".custom_select_container");
+			if($custom_select_cntr.children(".select_options_container").css("display") == "block"){
+				$custom_select_cntr.toggleClass("arrow_up");
+				$custom_select_cntr.children(".select_options_container").toggleClass("container_hide");
+			}
+		})
+		.appendTo($custom_select_cntr);
+
+	// space
+	$("<div>").css("height", "42px").appendTo($custom_select_cntr);
+	// select options
+	let $select_options_cntr = $("<div>").attr("id", "select_" + _parm.id).addClass("select_options_container container_hide").appendTo($custom_select_cntr);
+	_parm.options.forEach(function(item){
+		let $option = $("<div>").attr({"value": item.value, "title": item.value}).html(htmlEnDeCode.htmlEncode(item.text))
+			.unbind("click").click(function(e){
+				e = e || event;
+				e.stopPropagation();
+				if($(this).attr("data-disabled") == "true")
+					return false;
+				let option_value = $(this).attr("value");
+				$(this).closest(".select_options_container").toggleClass("container_hide");
+				$(this).closest(".custom_select_container")
+					.children("#" + _parm.id + "").val(htmlEnDeCode.htmlEncode(option_value))
+					.end()
+					.toggleClass("arrow_up");
+			})
+			.appendTo($select_options_cntr);
+	});
+
+	return $container;
+}
 function Get_Component_Textarea(_parm){
 	var rows = 8;
 	if(_parm.rows != undefined)
@@ -359,6 +469,10 @@ function Get_Component_Custom_Select(_parm){
 
 	// input field
 	var $input_container = $("<div>").addClass("input_container").appendTo($container);
+	if(_parm.title == ""){
+		$container.css("justify-content", "center");
+		$input_container.css({"flex": "0 0 96%", "margin-left":"unset", "max-width": "unset"});
+	}
 	var $custom_select_container = $("<div>").addClass("custom_select_container").appendTo($input_container);
 	$custom_select_container.unbind("click").click(function(e){
 		e = e || event;
@@ -387,6 +501,7 @@ function Get_Component_Custom_Select(_parm){
 		specific_option = _parm.options.filter(function(item, index, array){
 			return (item.value == _parm.set_value);
 		})[0];
+		if(specific_option == undefined) specific_option = _parm.options[0];
 	}
 
 	var selected_text = "<#Setting_factorydefault_value#>";
@@ -414,11 +529,127 @@ function Get_Component_Custom_Select(_parm){
 					if(specific_option != undefined){
 						$(this).closest(".select_options_container").children().removeClass("selected");
 						$(this).closest(".select_options_container").children("[value='" + specific_option.value + "']").addClass("selected");
-						$(this).closest(".custom_select_container").children("#" + _parm.id + "").html(htmlEnDeCode.htmlEncode(specific_option.text));
+						let sel_text = specific_option.text;
+						if(specific_option.text.length > 50)
+							sel_text = sel_text.substring(0, 47) + "...";
+						$(this).closest(".custom_select_container").children("#" + _parm.id + "").html(htmlEnDeCode.htmlEncode(sel_text));
 						$(this).closest(".custom_select_container").toggleClass("arrow_up");
 					}
 				})
 				.appendTo($select_options_container);
+
+		if(item.value == specific_option.value)
+			$option.addClass("selected");
+	});
+
+	return $container;
+}
+function Get_Component_Custom_Select_And_Search(_parm){
+	let $container = $("<div>").addClass("profile_setting_item");
+	if(_parm.container_id != undefined)
+		$container.attr("id", _parm.container_id);
+
+	// title
+	if(_parm.openHint != undefined){
+		let hint_array = _parm.openHint.split("_");
+		$("<a>").addClass("hintstyle").attr({"href":"javascript:void(0);"}).html(htmlEnDeCode.htmlEncode(_parm.title)).unbind("click").click(function(){
+			openHint(hint_array[0], hint_array[1], "rwd_vpns");
+		}).appendTo($("<div>").addClass("title").appendTo($container));
+	}
+	else
+		$("<div>").addClass("title").html(htmlEnDeCode.htmlEncode(_parm.title)).appendTo($container);
+
+	// input field
+	let $input_container = $("<div>").addClass("input_container").appendTo($container);
+	let $custom_select_container = $("<div>").addClass("custom_select_container").appendTo($input_container);
+	$custom_select_container.unbind("click").click(function(e){
+		e = e || event;
+		e.stopPropagation();
+		if(_parm.options.length == 0)
+			return;
+		if($(this).attr("temp_disable") == "disabled")
+			return;
+		$(this).toggleClass("arrow_up");
+		$(this).find("[data-container=select_and_search_cntr]").toggleClass("container_hide");
+		if($(this).hasClass("arrow_up"))
+			$(this).find("[data-component=search]").val("").keyup();
+	});
+	$custom_select_container.unbind("mouseleave").mouseleave(function(e){
+		e = e || event;
+		e.stopPropagation();
+		if($(this).children("[data-container=select_and_search_cntr]").css("display") == "block"){
+			$(this).closest(".custom_select_container").toggleClass("arrow_up");
+			$(this).children("[data-container=select_and_search_cntr]").toggleClass("container_hide");
+		}
+	});
+	// selected text
+	let specific_option = [];
+	if(_parm.set_value == undefined || _parm.set_value == ""){
+		specific_option = _parm.options[0];
+	}
+	else{
+		specific_option = _parm.options.filter(function(item, index, array){
+			return (item.value == _parm.set_value);
+		})[0];
+		if(specific_option == undefined) specific_option = _parm.options[0];
+	}
+
+	let selected_text = "<#Setting_factorydefault_value#>";
+	if(specific_option != undefined)
+		selected_text = specific_option.text;
+	let $selected_text = $("<div>").attr("id", _parm.id).addClass("sel_text").appendTo($custom_select_container).html(htmlEnDeCode.htmlEncode(selected_text));
+	// space
+	$("<div>").css("height", "3px").appendTo($custom_select_container);
+	// select options
+	let $select_search_cntr = $("<div>").attr({"data-container":"select_and_search_cntr"}).addClass("select_and_search_container container_hide").appendTo($custom_select_container);
+	let $search_cntr = $("<div>").addClass("search_container").appendTo($select_search_cntr);
+	$("<div>").addClass("icon_search").appendTo($search_cntr);
+	$("<input/>")
+		.addClass("textInput")
+		.attr({"data-component":"search","type":"text", "autocomplete":"off","autocorrect":"off","autocapitalize":"off","spellcheck":"false", "placeholder":`<#CTL_search#>`})
+		.on('click', function(e){
+			e = e || event;
+			e.stopPropagation();
+			let target = this;
+			setTimeout(function(){
+				target.scrollIntoViewIfNeeded();//for mobile view
+			},400);
+		})
+		.unbind("keyup").keyup(function(){
+			const search_str = $(this).val().toLowerCase();
+			if(search_str.length > 1){
+				$select_options_cntr.children().hide().filter(`[data-text*="${search_str}"]`).show();
+			}
+			else
+				$select_options_cntr.children().show();
+		})
+		.appendTo($search_cntr);
+	let $select_options_cntr = $("<div>").attr("id", "select_" + _parm.id).addClass("select_options_container").appendTo($select_search_cntr);
+
+	_parm.options.forEach(function(item){
+		const game_profile_text = htmlEnDeCode.htmlEncode(item.text);
+		let $option = $("<div>").attr({"value": item.value, "data-text": game_profile_text.toLowerCase()}).html(game_profile_text)
+				.unbind("click").click(function(e){
+					e = e || event;
+					e.stopPropagation();
+					if($(this).attr("data-disabled") == "true")
+						return false;
+					let option_value = $(this).attr("value");
+					$(this).closest("[data-container=select_and_search_cntr]").toggleClass("container_hide");
+					let specific_option = _parm.options.filter(function(item, index, array){
+						return (item.value == option_value);
+					})[0];
+					if(specific_option != undefined){
+						$(this).closest(".select_options_container").children().removeClass("selected");
+						$(this).closest(".select_options_container").children("[value='" + specific_option.value + "']").addClass("selected");
+						let sel_text = specific_option.text;
+						if(specific_option.text.length > 50)
+							sel_text = sel_text.substring(0, 47) + "...";
+						$(this).closest(".custom_select_container").children("#" + _parm.id + "").html(htmlEnDeCode.htmlEncode(sel_text));
+						$(this).closest(".custom_select_container").toggleClass("arrow_up");
+					}
+				})
+				.appendTo($select_options_cntr);
 
 		if(item.value == specific_option.value)
 			$option.addClass("selected");
@@ -578,6 +809,63 @@ function Get_Component_Switch_Text(_parm){
 
 	return $container;
 }
+function Get_Component_CheckBoxList(_parm){
+	let $container = $("<div>").addClass("profile_setting_item checkboxlist");
+	if(_parm.container_id != undefined)
+		$container.attr("id", _parm.container_id);
+
+	if(_parm.openHint != undefined){
+		let hint_array = _parm.openHint.split("_");
+		$("<a>").addClass("hintstyle").attr({"href":"javascript:void(0);"}).html(htmlEnDeCode.htmlEncode(_parm.title)).unbind("click").click(function(){
+			openHint(hint_array[0], hint_array[1], "rwd_vpns");
+		}).appendTo($("<div>").addClass("title").appendTo($container));
+	}
+	else
+		$("<div>").addClass("title").html(htmlEnDeCode.htmlEncode(_parm.title)).appendTo($container);
+
+	let $input_container = $("<div>").addClass("input_container").appendTo($container);
+	const set_value = _parm.set_value ? parseInt(_parm.set_value) || 0 : 0;
+	let $cbl_cntr = $("<div>").attr({"id":`checkbox_${_parm.id}`}).attr({"data-container":"checkboxlist"}).addClass("checkboxlist_container").appendTo($input_container);
+	_parm.options.forEach(item => {
+		let $option = $("<div>").attr({"data-container":"checkbox_option"}).addClass("checkbox_option").appendTo($cbl_cntr);
+		const html = `
+			<div data-component='checkbox_val' class='icon_checkbox ${(item.value == set_value)?"clicked":""}' value="${item.value}"></div>
+			<div class='option_text'>${item.text}</div>`;
+		$option.append(html).unbind("click").click(function(e){
+			e = e || event;
+			e.stopPropagation();
+			if($(this).closest("[data-container='checkboxlist']").attr("data-disabled") == "true")
+				return false;
+			if($(this).find("[data-component='checkbox_val']").hasClass("disabled"))
+				return false;
+			$(this).find("[data-component='checkbox_val']").toggleClass("clicked");
+		});
+	});
+	if($cbl_cntr.find("[data-component=checkbox_val].clicked").length == 0){
+		$cbl_cntr.find("[data-component=checkbox_val]:first").addClass("clicked");
+	}
+
+	return $container;
+}
+function Get_Component_AddIcon(_parm){
+	let $container = $("<div>").addClass("profile_setting_item nowrap add_item");
+	if(_parm.container_id != undefined)
+		$container.attr("id", _parm.container_id);
+
+	if(_parm.openHint != undefined){
+		let hint_array = _parm.openHint.split("_");
+		$("<a>").addClass("hintstyle").attr({"href":"javascript:void(0);"}).html(htmlEnDeCode.htmlEncode(_parm.title)).unbind("click").click(function(){
+			openHint(hint_array[0], hint_array[1], "rwd_vpns");
+		}).appendTo($("<div>").addClass("title").appendTo($container));
+	}
+	else
+		$("<div>").addClass("title").html(htmlEnDeCode.htmlEncode(_parm.title)).appendTo($container);
+
+	let $input_container = $("<div>").addClass("input_container").appendTo($container);
+	let $icon_add = $("<div>").attr("id", _parm.id).addClass("icon_add").appendTo($input_container);
+
+	return $container;
+}
 function Get_Component_Category_Slide_Title(_parm) {
 	var $container = $("<div>").addClass("category_slide_title");
 	if(_parm.id != undefined){
@@ -647,6 +935,51 @@ function Get_Component_Error_Hint(_parm){
 	});
 	return $container
 }
+
+/*
+	_parm:
+		example: 
+			_parm = {"title": "RSA Encryption", "id": "vpn_server_tls_keysize", "options": _options_list, "openHint":"32_8", "display_type": "horizontal"};
+			_options_list = [{"text":"1024 bit","value":"0"},{"text":"2048 bit","value":"1"}];   
+*/
+function RWD_Get_Component_Radio(_parm){
+	var display_type = "horizontal";
+	if(_parm.display_type != undefined)
+		display_type = _parm.display_type;
+
+	var $container = $("<div>").addClass("profile_setting_item radio_item " + display_type + "");
+	if(_parm.container_id != undefined)
+		$container.attr("id", _parm.container_id);
+
+	if(_parm.openHint != undefined){
+		var hint_array = _parm.openHint.split("_");
+		$("<a>").addClass("hintstyle").attr({"href":"javascript:void(0);"}).html(htmlEnDeCode.htmlEncode(_parm.title)).unbind("click").click(function(){
+			openHint(hint_array[0], hint_array[1], "rwd_vpns");
+		}).appendTo($("<div>").addClass("title").appendTo($container));
+	}
+	else
+		$("<div>").addClass("title").html(htmlEnDeCode.htmlEncode(_parm.title)).appendTo($container);
+
+	var $input_container = $("<div>").addClass("input_container").attr("id", _parm.id).appendTo($container);
+	var $radio_options_container = $("<div>").addClass("rwd_radio_options_container " + display_type + "").appendTo($input_container);
+	_parm.options.forEach(function(item, index){
+		var $radio_container = $("<div>").addClass("rwd_radio_container").attr({"value":item.value}).appendTo($radio_options_container)
+			.unbind("click").click(function(e){
+				e = e || event;
+				e.stopPropagation();
+				$(this).closest(".rwd_radio_options_container").find(".rwd_radio_container").removeClass("selected");
+				$(this).addClass("selected");
+			});
+		if(index == 0)
+			$radio_container.addClass("selected");
+
+		$("<div>").addClass("rwd_icon_radio").appendTo($radio_container);
+		$("<div>").html(htmlEnDeCode.htmlEncode(item.text)).appendTo($radio_container);
+	});
+
+	return $container;
+}
+
 function set_value_Custom_Select(_obj, _id, _value){
 	var $items = $(_obj).find("#" + _id + ", #select_" + _id + "");
 	var $text = $items.eq(0);
@@ -690,7 +1023,6 @@ function show_customize_alert(_text){
 	$(".popup_container .popup_customize_alert").empty();
 	$(".popup_container.popup_customize_alert").append(Get_Component_Customize_Alert(_text));
 	adjust_popup_container_top($(".popup_container.popup_customize_alert"), 100);
-
 }
 function show_customize_confirm(_text){
 	$(".popup_customize_alert").css("display", "flex");

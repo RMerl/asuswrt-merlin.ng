@@ -1,29 +1,23 @@
 /*
     <:copyright-BRCM:2014:DUAL/GPL:standard
-
-       Copyright (c) 2014 Broadcom
+    
+       Copyright (c) 2014 Broadcom 
        All Rights Reserved
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
 :>
 */
 
@@ -32,10 +26,10 @@
 
 #include "rdd_defs.h"
 #include "rdd.h"
-#include "rdd_ag_processing.h"
 #include "rdd_runner_reg_dump.h"
 #include "rdd_runner_reg_dump_addrs.h"
 #include "rdp_platform.h"
+#include "rdd_mirroring.h"
 
 typedef enum
 {
@@ -176,7 +170,8 @@ void rdd_rx_default_flow_context_get(uint32_t flow_index, RULE_BASED_CONTEXT_ENT
 uint32_t rdd_rx_default_flow_cntr_id_get(uint32_t entry_index);
 #endif
 void rdd_vport_cfg_exception_cfg(rdd_rdd_vport vport, bdmf_boolean port_exception);
-void rdd_rx_mirroring_cfg(rdd_rdd_vport vport, bdmf_boolean control);
+void rdd_rx_mirroring_cfg(rdd_rdd_vport vport, bdmf_boolean enable, uint16_t rx_truncate_size);
+void rdd_tx_mirroring_cfg(rdd_mirroring_cfg_t *rdd_mirroring_cfg, rdd_rdd_vport vport, bdmf_boolean enable, uint16_t tx_truncate_size);
 void rdd_rx_mirroring_direct_cfg(bdmf_boolean control);
 #if defined(XRDP) || defined(RDP_UFC)
 void rdd_lookup_ports_mapping_table_init(void);
@@ -213,11 +208,7 @@ void rdd_mac_type_cfg(rdd_mac_type wan_mac_type);
 void rdd_tx_flow_enable(uint16_t port_or_wan_flow, rdpa_traffic_dir dir, bdmf_boolean enable);
 int rdd_port_or_wan_flow_to_tx_flow_and_table_ptr(uint16_t port_or_wan_flow, rdpa_traffic_dir dir, uint32_t **table_arr_ptr);
 
-#ifndef TM_C_CODE
 void rdd_qm_queue_to_tx_flow_tbl_cfg(uint16_t qm_queue, rdpa_traffic_dir dir, rdpa_port_type wan_type);
-#else
-void rdd_qm_queue_to_tx_flow_tbl_cfg(uint16_t qm_queue, tm_identifier_e tm_identity, rdpa_port_type wan_type);
-#endif
 
 void rdd_system_congestion_ctrl_enable(bdmf_boolean enable);
 bdmf_boolean rdd_system_congestion_ctrl_get(void);
@@ -226,10 +217,12 @@ void rdd_mcast_max_tasks_limit_cfg(uint16_t mcast_max_tasks_limit);
 void rdd_mcast_min_tasks_limit_cfg(uint16_t mcast_min_tasks_limit);
 #endif
 
-#if defined(MULTIPLE_BBH_TX_LAN)
-uint8_t rdd_bbh_queue_to_bbh_queue_desc_mapping_set(rdpa_port_type type, uint32_t index, uint8_t bbh_queue, rdpa_traffic_dir dir);
-uint8_t rdd_bbh_queue_to_bbh_queue_desc_mapping_get(rdpa_port_type type, uint32_t channel_id, uint8_t bbh_queue, rdpa_traffic_dir dir);
+#if defined(TM_C_CODE)
+uint8_t rdd_bbh_queue_to_bbh_queue_desc_mapping_set(rdpa_port_type type, uint32_t index, uint8_t bbh_queue);
+uint8_t rdd_bbh_queue_to_bbh_queue_desc_mapping_get(rdpa_port_type type, uint32_t channel_id, uint8_t bbh_queue);
 void rdd_bbh_queue_to_bbh_queue_desc_mapping_clr(uint8_t tm_index, uint8_t bbh_queue, rdpa_traffic_dir dir);
 #endif
+
+void rdd_dbg_power_measure_mode_set(int enable);
 
 #endif /* _RDD_COMMON_H */

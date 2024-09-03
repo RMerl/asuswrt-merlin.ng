@@ -243,6 +243,21 @@ void get_wgsc_subnet(char *buf, size_t len)
 }
 #endif
 
+int ipv6_prefix_len(const char *ifname)
+{
+	const char *value;
+
+	value = getifaddr(ifname, AF_INET6, /*GIF_PREFIX |*/ GIF_PREFIXLEN);
+	if (value == NULL)
+		return 0;
+
+	value = strchr(value, '/');
+	if (value)
+		return atoi(value + 1);
+
+	return 128;
+}
+
 int main(int argc, char *argv[])
 {
 	FILE *fp;
@@ -283,6 +298,10 @@ int main(int argc, char *argv[])
 	spnego = 1;
 #endif
 #endif
+	char br0_ll[64], br0_ll_str[64];
+	char br0_unicast[64], br0_unicast_str[64];
+	char br0_ll_allow[64];
+	char br0_unicast_prefix[64], br0_unicast_allow[64];
 
 	if (access(SAMBA_CONF, F_OK) == 0)
 		unlink(SAMBA_CONF);
@@ -459,7 +478,21 @@ int main(int argc, char *argv[])
 //	fprintf(fp, "mangling method = hash2\n");	// ASUS add
 	fprintf(fp, "wide links = no\n"); 		// ASUS add
 	fprintf(fp, "bind interfaces only = yes\n");	// ASUS add
-	fprintf(fp, "interfaces = lo br0 %s/%s %s\n", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"), (is_routing_enabled() && nvram_get_int("smbd_wanac")) ? nvram_safe_get("wan0_ifname") : "");
+
+	snprintf(br0_ll, "%s", getifaddr(nvram_safe_get("lan_ifname"), AF_INET6, GIF_LINKLOCAL) ? : "");
+	snprintf(br0_unicast, "%s", getifaddr(nvram_safe_get("lan_ifname"), AF_INET6, 0) ? : "");
+
+	if (strlen(br0_ll))
+		snprintf(br0_ll_str, sizeof(br0_ll_str), "%s%%%s/%d", br0_ll, nvram_safe_get("lan_ifname"), ipv6_prefix_len(nvram_safe_get("lan_ifname")));
+	else
+		br0_ll_str[0] = '\0';
+
+	if (strlen(br0_unicast))
+		snprintf(br0_unicast_str, sizeof(br0_unicast_str), "%s%%%s/%d", br0_unicast, nvram_safe_get("lan_ifname"), ipv6_prefix_len(nvram_safe_get("lan_ifname")));
+	else
+		br0_unicast_str[0] = '\0';
+
+	fprintf(fp, "interfaces = lo br0 %s/%s %s %s %s\n", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"), (is_routing_enabled() && nvram_get_int("smbd_wanac")) ? nvram_safe_get("wan0_ifname") : "", br0_ll_str, br0_unicast_str);
 #if 0
 //#if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD) || defined(RTCONFIG_OPENVPN) || defined(RTCONFIG_IPSEC)
 	int ip[5];
@@ -489,9 +522,21 @@ int main(int argc, char *argv[])
 		get_wgsc_subnet(wgsc_subnet, sizeof(wgsc_subnet));
 #endif /* RTCONFIG_IPSEC */
 	}
+
+	if (getifaddr(nvram_safe_get("lan_ifname"), AF_INET6, GIF_LINKLOCAL))
+		sprintf(br0_ll_allow, "fe80::/%d", ipv6_prefix_len(nvram_safe_get("lan_ifname")));
+	else
+		br0_ll_allow[0] = '\0';
+
+	snprintf(br0_unicast_prefix, "%s", getifaddr(nvram_safe_get("lan_ifname"), AF_INET6, GIF_PREFIX) ? : "");
+	if (strlen(br0_unicast_prefix))
+		sprintf(br0_unicast_allow, "%s/%d", br0_unicast_prefix, ipv6_prefix_len(nvram_safe_get("lan_ifname")));
+	else
+		br0_unicast_allow[0] = '\0';
+
 	if(nvram_invmatch("re_mode", "1"))
 	{
-		fprintf(fp, "hosts allow = 127.0.0.1 %s/%s", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"));
+		fprintf(fp, "hosts allow = 127.0.0.1 %s/%s %s %s", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"), br0_ll_allow, br0_unicast_allow);
 #if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD)
 		if (pptpd_subnet[0])
 			fprintf(fp, " %s", pptpd_subnet);
@@ -547,9 +592,9 @@ int main(int argc, char *argv[])
 #if !defined(RTCONFIG_SAMBA36X) && !defined(RTCONFIG_SAMBA4)
 		fprintf(fp, "[ipc$]\n");
 #if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD) || defined(RTCONFIG_OPENVPN) || defined(RTCONFIG_IPSEC)
-		fprintf(fp, "hosts allow = 127.0.0.1 %s/%s %s %s %s\n", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"), pptpd_subnet, openvpn_subnet, ipsec_subnet);
+		fprintf(fp, "hosts allow = 127.0.0.1 %s/%s %s %s %s %s %s\n", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"), pptpd_subnet, openvpn_subnet, ipsec_subnet, br0_ll_allow, br0_unicast_allow);
 #else
-		fprintf(fp, "hosts allow = 127.0.0.1 %s/%s\n", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"));
+		fprintf(fp, "hosts allow = 127.0.0.1 %s/%s %s %s\n", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"), br0_ll_allow, br0_unicast_allow);
 #endif
 		fprintf(fp, "hosts deny = 0.0.0.0/0\n");
 #endif

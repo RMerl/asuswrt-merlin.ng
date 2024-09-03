@@ -28,7 +28,7 @@
 
 #include "xfrm_hash.h"
 
-#if defined(CONFIG_BCM_KF_SPU) && (defined (CONFIG_BCM_LOG) && defined(CONFIG_BCM_SPU_HW_OFFLOAD))
+#if defined(CONFIG_BCM_KF_SPU) && defined (CONFIG_BCM_LOG)
 #include <linux/bcm_log.h>
 #endif
 
@@ -631,6 +631,14 @@ int __xfrm_state_delete(struct xfrm_state *x)
 			bcmFun_t *bcm_spuoffload_stats_update = bcmFun_get(BCM_FUN_ID_SPUOFFLOAD_STATS_UPDATE);
 			if (bcm_spuoffload_stats_update != NULL) {
 				bcm_spuoffload_stats_update((void *)x);
+			}
+		}
+#endif
+#if defined(CONFIG_BCM_KF_SPU) && defined (CONFIG_BCM_LOG)
+		{
+			bcmFun_t *bcm_spu_session_del = bcmFun_get(BCM_FUN_ID_SPU_SESSION_DELETE);
+			if (bcm_spu_session_del != NULL) {
+				bcm_spu_session_del((void *)x);
 			}
 		}
 #endif

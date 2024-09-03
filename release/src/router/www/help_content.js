@@ -232,7 +232,8 @@ helpcontent[17] = new Array("",
 							"<#JS_basiconfig8#>",
 							"<#ShareNode_Seeding_itemdesc#>",
 							"<#ShareNode_MaxUpload_itemdesc#>",
-							"<#ShareNode_FTPLANG_itemdesc#>");
+							"<#ShareNode_FTPLANG_itemdesc#>",
+							`<#JS_storageright_1#>`);
 // MAC filter
 helpcontent[18] = new Array("",
 							"<#FirewallConfig_MFMethod_itemdesc#>",

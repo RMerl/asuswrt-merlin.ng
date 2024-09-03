@@ -74,7 +74,21 @@ static void jffs2_erase_block(struct jffs2_sb_info *c,
 		struct mtd_oob_ops ops;
 		loff_t page_offset;
 		int i, dirty = 0;
-		unsigned char buf[c->mtd->writesize + c->mtd->oobsize];
+		unsigned char* buf;
+
+		buf = kmalloc(c->mtd->writesize + c->mtd->oobsize, GFP_KERNEL);
+		if (!buf) {
+			pr_warn("kmalloc for tmp buf in jffs2_erase_block failed. Refiling block for later\n");
+			mutex_lock(&c->erase_free_sem);
+			spin_lock(&c->erase_completion_lock);
+			list_move(&jeb->list, &c->erase_pending_list);
+			c->erasing_size -= c->sector_size;
+			c->dirty_size += c->sector_size;
+			jeb->dirty_size = c->sector_size;
+			spin_unlock(&c->erase_completion_lock);
+			mutex_unlock(&c->erase_free_sem);
+			return;
+		}
 
 		for (page_offset = 0; !dirty && (page_offset < c->mtd->erasesize); page_offset += c->mtd->writesize)
 		{ // check to see that ECC is empty to determine if page is erased
@@ -94,6 +108,8 @@ static void jffs2_erase_block(struct jffs2_sb_info *c,
 				if (buf[i] != 0xFF)
 					dirty = 1;
 		}
+
+		kfree(buf);
 		if (!dirty)
 		{
 			jffs2_erase_succeeded(c, jeb);
@@ -441,7 +457,7 @@ static void jffs2_mark_erased_block(struct jffs2_sb_info *c, struct jffs2_eraseb
 {
 	size_t retlen;
 	int ret;
-	uint32_t uninitialized_var(bad_offset);
+	uint32_t bad_offset;
 
 	switch (jffs2_block_check_erase(c, jeb, &bad_offset)) {
 	case -EAGAIN:	goto refile;

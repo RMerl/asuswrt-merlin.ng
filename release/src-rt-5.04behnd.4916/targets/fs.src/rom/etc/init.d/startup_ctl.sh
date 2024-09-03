@@ -4,11 +4,11 @@
 ###################### BDK start sequence #######################
 #             mcpd, ssl, dbus or ubus, save-dmesg  (in parallel)
 #                          |
-#                    sys_directory
-#                          |
-# devinfo_md, diag_md, epon_md, gpon_md, dsl_md, wifi_md, tr69_md, voice_md (in parallel)
-#                          |
-#                      sysmgmt_md
+#                    sys_directory --------------------------------------------------------
+#                          |                                                              |
+# devinfo_md, diag_md, epon_md, gpon_md, dsl_md, tr69_md, voice_md (in parallel)          |
+#                          |                                                              |
+#                      sysmgmt_md                                                      wifi_md
 
 bootflag_prefix_start=/tmp/bcm_bootflag_start
 
@@ -23,11 +23,11 @@ is_start_done()
     while true; do
       if [ ! -f ${bootflag_in_starting} ]; then
         break
-      elif [ $k -gt 1500 ]; then
+      elif [ $k -gt 3000 ]; then
         echo "ERR: Waiting for ${proc} ready, timeout!"
         exit 1
       else
-        usleep 200000
+        usleep 100000
       fi
       let k+=1
     done

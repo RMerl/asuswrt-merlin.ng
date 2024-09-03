@@ -15,12 +15,6 @@
 
 struct sec_path;
 
-enum {
-	NDI_DEV_IGNORE_BIT = 0,
-	NDI_DEV_STALE_BIT,
-	NDI_DEV_IS_XFRM_BIT,
-};
-
 struct ndi_dev {
 	u32			id;
 	struct in_addr		ip4;
@@ -40,11 +34,24 @@ struct ndi_dev {
 	struct hlist_node	node;
 };
 
-struct ndi_info {
-	struct ndi_dev		*dev;
+enum {
+	NDI_FINISHED_BIT = 0,
 };
 
+struct ndi_info {
+	struct ndi_dev		*dev;
+	unsigned long		flags;
+};
+
+struct ndi_dev *ndi_dev_find_by_id(u32 id);
+
 #endif /* CONFIG_BCM_KF_NDI */
+
+enum {
+	NDI_DEV_IGNORE_BIT = 0,
+	NDI_DEV_STALE_BIT,
+	NDI_DEV_IS_XFRM_BIT,
+};
 
 enum {
 	NDINLGRP_NONE,

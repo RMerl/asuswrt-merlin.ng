@@ -3277,7 +3277,7 @@ function del_exception_list_confirm(_parArray) {
 					<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable" style="margin-top:15px;">
 						<thead>
 						<tr>
-							<td colspan="2">Advanced Settings - <#vpn_ipsec_Phase_1_Negotiations#></td>
+							<td colspan="2"><#menu5#> - <#vpn_ipsec_Phase_1_Negotiations#></td>
 						</tr>
 						</thead>
 						<tr id="tr_adv_ike_version">
@@ -3373,7 +3373,7 @@ function del_exception_list_confirm(_parArray) {
 					<table id="tb_adv_phase2" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable" style="margin-top:15px;">
 						<thead>
 						<tr>
-							<td colspan="2">Advanced Settings - <#vpn_ipsec_Phase_2_Negotiations#></td>
+							<td colspan="2"><#menu5#> - <#vpn_ipsec_Phase_2_Negotiations#></td>
 						</tr>
 						</thead>
 						<tr id="tr_adv_encryption_p2">

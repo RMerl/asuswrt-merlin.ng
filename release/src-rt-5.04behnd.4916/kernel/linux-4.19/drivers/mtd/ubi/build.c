@@ -53,11 +53,6 @@
 /* Maximum value for the number of bad PEBs per 1024 PEBs */
 #define MAX_MTD_UBI_BEB_LIMIT 768
 
-#if defined(CONFIG_BCM_KF_UBI)
-/* Minimum Bad Erase Blocks per MTD partition */
-#define  BRCM_MIN_BEB_PER_MTDPART 4
-#endif
-
 #ifdef CONFIG_MTD_UBI_MODULE
 #define ubi_is_module() 1
 #else
@@ -485,6 +480,7 @@ static int uif_init(struct ubi_device *ubi)
 			err = ubi_add_volume(ubi, ubi->volumes[i]);
 			if (err) {
 				ubi_err(ubi, "cannot add volume %d", i);
+				ubi->volumes[i] = NULL;
 				goto out_volumes;
 			}
 		}
@@ -549,20 +545,6 @@ static int get_bad_peb_limit(const struct ubi_device *ubi, int max_beb_per1024)
 		return limit;
 	}
 
-#if defined(CONFIG_BCM_KF_UBI)
-	/*
-	 * Here we are using size of just the MTD partition
-	 * because we believe that it is highly unlikely that 
-	 * all of the bad eraseblocks in a chip will end up 
-	 * in any one partition. Instead we are saying that the
-	 * larger the partition, the more likely it has a higher
-	 * percentage of bad eraseblocks. We therefore scale the
-	 * reserved peb limit based upon the partition size,
-	 * while enforcing a minimum of BRCM_MIN_BEB_PER_MTDPART
-	 * for smaller partitions.
-	 */
-	device_size = ubi->mtd->size;
-#else	
 	/*
 	 * Here we are using size of the entire flash chip and
 	 * not just the MTD partition size because the maximum
@@ -573,7 +555,6 @@ static int get_bad_peb_limit(const struct ubi_device *ubi, int max_beb_per1024)
 	 * the MTD partition we are attaching (ubi->mtd).
 	 */
 	device_size = mtd_get_device_size(ubi->mtd);
-#endif
 	device_pebs = mtd_div_by_eb(device_size, ubi->mtd);
 	limit = mult_frac(device_pebs, max_beb_per1024, 1024);
 
@@ -581,11 +562,7 @@ static int get_bad_peb_limit(const struct ubi_device *ubi, int max_beb_per1024)
 	if (mult_frac(limit, 1024, max_beb_per1024) < device_pebs)
 		limit += 1;
 
-#if defined(CONFIG_BCM_KF_UBI)
-	return max(BRCM_MIN_BEB_PER_MTDPART, limit);
-#else		
 	return limit;
-#endif
 }
 
 /**
@@ -695,6 +672,21 @@ static int io_init(struct ubi_device *ubi, int max_beb_per1024)
 						~(ubi->hdrs_min_io_size - 1);
 		ubi->vid_hdr_shift = ubi->vid_hdr_offset -
 						ubi->vid_hdr_aloffset;
+	}
+
+	/*
+	 * Memory allocation for VID header is ubi->vid_hdr_alsize
+	 * which is described in comments in io.c.
+	 * Make sure VID header shift + UBI_VID_HDR_SIZE not exceeds
+	 * ubi->vid_hdr_alsize, so that all vid header operations
+	 * won't access memory out of bounds.
+	 */
+	if ((ubi->vid_hdr_shift + UBI_VID_HDR_SIZE) > ubi->vid_hdr_alsize) {
+		ubi_err(ubi, "Invalid VID header offset %d, VID header shift(%d)"
+			" + VID header size(%zu) > VID header aligned size(%d).",
+			ubi->vid_hdr_offset, ubi->vid_hdr_shift,
+			UBI_VID_HDR_SIZE, ubi->vid_hdr_alsize);
+		return -EINVAL;
 	}
 
 	/* Similar for the data offset */

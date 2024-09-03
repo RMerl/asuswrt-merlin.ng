@@ -4,25 +4,19 @@
    Copyright (c) 2004 Broadcom 
    All Rights Reserved
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
 :>
 */
@@ -282,8 +276,14 @@ typedef struct {
 #define	DIAG_BONDING_LDSTRDB				1
 
 #define	DIAG_DEBUG_CMD_READ_MEM				1
-#define	CMDID_READ_MEM_CHIPID				1
+ #define	CMDID_READ_MEM_8BITS        0
+ #define	CMDID_READ_MEM_CHIPID       1
+ #define	CMDID_READ_MEM_16BITS       2
+ #define	CMDID_READ_MEM_32BITS       3
 #define	DIAG_DEBUG_CMD_SET_MEM				2
+ #define	CMDID_SET_MEM_32BITS        0
+ #define	CMDID_SET_MEM_8BITS         1
+ #define	CMDID_SET_MEM_16BITS        2
 #define	DIAG_DEBUG_CMD_RESET_CONNECTION		3
 #define	DIAG_DEBUG_CMD_RESET_PHY			4
 #define	DIAG_DEBUG_CMD_RESET_CHIP			5
@@ -355,7 +355,9 @@ typedef struct {
 #define	DIAG_DEBUG_CMD_SECT_OFF				58  /* offsets of the variables used in section dump */
 #define DIAG_DEBUG_CMD_READ_AFEPLL_ChCfg	59	/* param1-chanId(0 - ch01, 1 - ch23, 2 - ch45) to read */
 #define DIAG_DEBUG_CMD_WRITE_AFEPLL_ChCfg	60	/* param1-chanId(0 - ch01, 1 - ch23, 2 - ch45) to write; param2-value to be written */
-
+#define DIAG_DEBUG_CMD_TDD_GPIO_CTRL		61	/* param1-0/1 ==> de-activate/activate */
+#define DIAG_DEBUG_CMD_PWRBOOST_GPIO_CTRL	62	/* param1-0/1 ==> de-activate/activate */
+#define DIAG_DEBUG_CMD_RELAY_GPIO_CTRL		63	/* param1-0/1 ==> de-activate/activate */
 
 typedef struct {
 	unsigned short	cmd;

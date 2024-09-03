@@ -9,7 +9,11 @@
 #define NULL_DIGEST_SIZE	0
 #define NULL_IV_SIZE		0
 
+#if defined(CONFIG_BCM_KF_VLA_REMOVAL_BACKPORT)
+struct crypto_sync_skcipher *crypto_get_default_null_skcipher(void);
+#else
 struct crypto_skcipher *crypto_get_default_null_skcipher(void);
+#endif
 void crypto_put_default_null_skcipher(void);
 
 #endif

@@ -441,7 +441,6 @@ static uint32_t bcmbca_get_boot_failed_count_v2 (void)
 	return rc;
 }
 
-#if defined(CONFIG_BRCM_SMC_BOOT)
 static uint32_t bcmbca_get_old_boot_reason_v2(void)
 {
 	uint32_t rc=-1;
@@ -449,11 +448,17 @@ static uint32_t bcmbca_get_old_boot_reason_v2(void)
 	//boot reason is only good in case of sw reset
 	if((b_state_data.reset_reason != NULL && b_state_data.reset_status != NULL))
 	{
-		rc=(*b_state_data.reset_status & SW_RESET_STATUS) != 0 ? (*b_state_data.reset_reason & 0xffff0000) >> 16:-1;
+		if ((*b_state_data.reset_status & SW_RESET_STATUS) != 0)
+		{
+#if defined(CONFIG_BRCM_SMC_BOOT)
+			rc=(*b_state_data.reset_reason & 0xffff0000) >> 16;
+#else
+			rc=(*b_state_data.reset_reason & BCM_RESET_REASON_FULL_MASK) >> BCM_RESET_REASON_BITS;
+#endif
+		}
 	}
 	return rc;
 }
-#endif
 
 static uint32_t bcmbca_get_sel_img_id_v2 (void)
 {
@@ -694,9 +699,7 @@ static int bootstate_v2_probe(struct platform_device *pdev)
 	b_state_data.clear_boot_reason = bcmbca_clear_boot_reason_v2;
 	b_state_data.set_boot_reason = bcmbca_set_boot_reason_v2;
 	b_state_data.get_boot_reason = bcmbca_get_boot_reason_v2;
-#if defined(CONFIG_BRCM_SMC_BOOT)
 	b_state_data.get_old_boot_reason = bcmbca_get_old_boot_reason_v2;
-#endif
 
 
 	b_state_data.clear_boot_failed_count = bcmbca_clear_boot_failed_count_v2;
@@ -889,7 +892,7 @@ bootstate_module_init(void)
 {
 	int rc;
 
-        rc = platform_driver_register(&bcm_bootstate_driver);
+	rc = platform_driver_register(&bcm_bootstate_driver);
 
 	if (rc < 0)
 	{

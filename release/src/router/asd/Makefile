@@ -1,6 +1,6 @@
 include ../common.mak
 
-OBJ = main.o download.o shared_func.o protect_name.o
+OBJ = main.o download.o shared_func.o protect_name.o verification.o
 LIB_OBJ = feature_def.o signature.o utility.o protect_name.o libasd.o misc.o monitorproc.o shared_func.o chknvram.o blockfile.o event_queue.o blockdnsip.o
 
 CFLAGS += $(if $(RTCONFIG_DEBUG),-g) -idirafter$(LINUXDIR)/include -I$(TOP)/shared  -I$(SRCBASE)/include

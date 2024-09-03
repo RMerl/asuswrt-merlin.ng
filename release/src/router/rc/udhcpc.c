@@ -340,6 +340,10 @@ bound(int renew)
 	size_t mtl_sz = 0;
 	int i, conflict = 0;
 #endif
+
+	ifunit = wan_prefix(wan_ifname, wanprefix);
+_dprintf("%s(%d): ifunit=%d, if=%s.\n", __func__, getpid(), ifunit, wan_ifname);
+
 #if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG)
 	char lan_ifname[16], lan_ip[16], lan_net[16];
 	char autowan_detected_ifname[8];
@@ -347,7 +351,9 @@ bound(int renew)
 	int br_no;
 	char if_name[16];
 
-	if(is_auto_wanport_enabled() == 1){
+	if(is_auto_wanport_enabled() == 1
+			&& !strcmp(wan_ifname, "br0")
+			){
 		strlcpy(autowan_detected_ifname, nvram_safe_get("autowan_detected_ifname"), sizeof(autowan_detected_ifname));
 
 		if(strcmp(autowan_detected_ifname, "") && strcmp(autowan_detected_ifname, wan_ifname)){
@@ -376,6 +382,9 @@ bound(int renew)
 				_dprintf("%s(%lu): auto_wanport: Fail to get gateway_mac & restore the LAN IP of router.\n", __func__, getpid());
 				ifconfig(lan_ifname, IFUP, "0.0.0.0", NULL);
 				ifconfig(lan_ifname, IFUP, lan_ip, lan_net);
+
+				add_lan_routes(lan_ifname);
+
 				return -1;
 			}
 			_dprintf("%s(%lu): auto_wanport: Got gateway's MAC %s.\n", __func__, getpid(), gateway_mac);
@@ -385,6 +394,9 @@ bound(int renew)
 				_dprintf("%s(%lu): auto_wanport: Canot get gateway's br_no.\n", __func__, getpid());
 				ifconfig(lan_ifname, IFUP, "0.0.0.0", NULL);
 				ifconfig(lan_ifname, IFUP, lan_ip, lan_net);
+
+				add_lan_routes(lan_ifname);
+
 				return -1;
 			}
 
@@ -396,6 +408,8 @@ bound(int renew)
 			_dprintf("%s(%lu): auto_wanport: restore the LAN IP of router.\n", __func__, getpid());
 			ifconfig(lan_ifname, IFUP, "0.0.0.0", NULL);
 			ifconfig(lan_ifname, IFUP, lan_ip, lan_net);
+
+			add_lan_routes(lan_ifname);
 
 			_dprintf("%s(%lu): auto_wanport: Choose the WAN interface %s because of DHCP.\n", __func__, getpid(), wan_ifname);
 			set_auto_wanport(wan_ifname, 1);
@@ -409,7 +423,7 @@ bound(int renew)
 	else
 #endif
 	/* Figure out nvram variable name prefix for this i/f */
-	if ((ifunit = wan_prefix(wan_ifname, wanprefix)) < 0)
+	if (ifunit < 0)
 		return -1;
 
 	if ((unit = wan_ifunit(wan_ifname)) < 0
@@ -1445,6 +1459,7 @@ deconfig6(char *wan_ifname, const int mode)
 		break;
 	case WAN_V6PLUS:
 	case WAN_OCNVC:
+	case WAN_V6OPTION:
 		if (nvram_pf_get_int(wan_prefix, "s46_hgw_case") != S46_CASE_MAP_HGW_ON) {
 			stop_s46_tunnel(unit, 1);
 			S46_DBG("STOP_S46_TUNNEL\n");
@@ -1642,6 +1657,7 @@ int s46_mapcalc(int wan_unit, int wan_proto, char *rules, char *peerbuf, size_t 
 				break;
 			case WAN_V6PLUS:
 			case WAN_OCNVC:
+			case WAN_V6OPTION:
 				if (nvram_invmatch(ipv6_nvname_by_unit("ipv6_prefix", wan_unit), "") &&
 				    nvram_invmatch(ipv6_nvname_by_unit("ipv6_prefix_length", wan_unit), "")) {
 					snprintf(addrbuf, sizeof(addrbuf), "%s/%d",
@@ -1830,6 +1846,7 @@ bound6(char *wan_ifname, int bound)
 	case WAN_DSLITE:
 	case WAN_V6PLUS:
 	case WAN_OCNVC:
+	case WAN_V6OPTION:
 		i = 0;
 		S46_DBG("[wan_if]:[%s], [bound]:[%d]\n", wan_ifname, bound);
 		while(environ[i] != NULL) {
@@ -2010,6 +2027,9 @@ skip:
 #ifdef RTCONFIG_WIREGUARD
 		update_wgs_client_ep();
 #endif
+#if defined(RTCONFIG_SAMBASRV) || defined(RTCONFIG_TUXERA_SMBD)
+		notify_rc("restart_samba");
+#endif
 	}
 
 #ifdef RTCONFIG_SOFTWIRE46
@@ -2040,6 +2060,7 @@ skip:
 		goto s46_mapcalc;
 	case WAN_V6PLUS:
 	case WAN_OCNVC:
+	case WAN_V6OPTION:
 		draft = 1;
 	case WAN_DSLITE:
 		/* Workaround for system boot case. */
@@ -2064,7 +2085,7 @@ skip:
 		//FIXME: wait for DNS
 		sleep(5);
 
-		if (wan_proto == WAN_V6PLUS) {
+		if (wan_proto == WAN_V6PLUS || wan_proto == WAN_V6OPTION) {
 			if (check_v6plusd(wan_unit))
 				S46_DBG("[START] v6plusd\n");
 			else {
@@ -2317,6 +2338,7 @@ start_dhcp6c(void)
 		break;
 	case WAN_MAPE:
 	case WAN_V6PLUS:
+	case WAN_V6OPTION:
 		dhcp6c_argv[index++] = "-r94";	/* S46_CONT_MAPE */
 		break;
 	case WAN_OCNVC:

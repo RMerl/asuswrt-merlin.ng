@@ -37,7 +37,7 @@ Boston, MA 02111-1307, USA.
 
 #include <board.h>
 
-extern unsigned long memsize;
+extern unsigned long long memsize;
 extern void check_if_rootfs_is_set(char *cmdline);
 #ifdef CONFIG_BCM_CFE_XARGS_EARLY
 extern void __init bl_xparms_setup(const unsigned char* blparms, unsigned int size);
@@ -104,7 +104,6 @@ int __init bcm_get_root_propdata( const char * prop_name, char * data, int prop_
         return -1;
     }
 }
-EXPORT_SYMBOL(bcm_get_root_propdata);
 
 /* This function will retrieve a specific data blob will return the pointer  */
 int __init bcm_get_root_propdata_raw( const char * prop_name, char ** data, int *prop_size )
@@ -123,7 +122,6 @@ int __init bcm_get_root_propdata_raw( const char * prop_name, char ** data, int 
     }
     return -1;
 }
-EXPORT_SYMBOL(bcm_get_root_propdata_raw);
 
 
 /* This function scan through the device tree blob for any system related node.

@@ -16,6 +16,7 @@
 <link rel="stylesheet" type="text/css" href="pwdmeter.css">
 <link rel="stylesheet" type="text/css" href="other.css">
 <link rel="stylesheet" type="text/css" href="css/confirm_block.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/js/confirm_block.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/help.js"></script>
@@ -23,7 +24,6 @@
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/md5.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
-<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <style>
@@ -70,8 +70,8 @@ var acs_ch13_support = (function(){
     
     return false;
 })();
-var wl_unit_value = '<% nvram_get("wl_unit"); %>';
-var wl_subunit_value = '<% nvram_get("wl_subunit"); %>';
+var wl_unit_value = httpApi.nvramGet(["wl_unit"]).wl_unit;;
+var wl_subunit_value = httpApi.nvramGet(["wl_subunit"]).wl_subunit;
 var wlc_band_value = '<% nvram_get("wlc_band"); %>';
 var cur_control_channel = [<% wl_control_channel(); %>][0];
 var cur_edmg_channel = [<% wl_edmg_channel(); %>][0];
@@ -428,6 +428,15 @@ function initial(){
 			$("#twt_field").show();
 		}
 	}
+
+	if(isSupport("noWiFi")){
+		$("#wl_mode_field").hide();
+		$("#mbo_field").hide();
+		$("#wl_bw_field").hide();
+		$("#wl_channel_field").hide();
+		inputCtrl(document.form.wl_wpa_gtk_rekey, 0);
+		inputCtrl(document.form.wl_mfp, 0);
+	}
 }
 
 function genBWTable(_unit){
@@ -652,7 +661,7 @@ function applyRule(){
 	var confirm_flag = 0;
 	var confirm_content = "";
 	if(lantiq_support && wave_ready != 1){
-		alert("Please wait a minute for wireless ready");
+		alert(`<#Wireless_ready#>`);
 		return false;
 	}
 
@@ -932,7 +941,7 @@ function validForm(){
 			ssid_array.push(httpApi.nvramGet(["wl2_ssid"]).wl2_ssid);
 		jsonPara["current_ssid"] = ssid_array;
 		if(!validator.dwb_check_wl_setting(jsonPara)) {
-			alert("The fronthaul SSID is the same as the backhaul SSID.");/* untranslated */
+			alert(`<#wireless_JS_dup_SSID#>`);
 			return false;
 		}
 	}
@@ -1573,7 +1582,7 @@ function handleMFP(){
 					</td>					
 				</tr>
 					  
-			  <tr>
+			  <tr id="wl_mode_field">
 					<th><a id="wl_mode_desc" class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 4);"><#WLANConfig11b_x_Mode_itemname#></a></th>
 					<td>									
 						<select name="wl_nmode_x" class="input_option" onChange="wireless_mode_change(this);">
@@ -1802,8 +1811,8 @@ function handleMFP(){
 							<option value="1" <% nvram_match("wl_mfp", "1", "selected"); %>><#WLANConfig11b_x_mfp_opt1#></option>
 							<option value="2" <% nvram_match("wl_mfp", "2", "selected"); %>><#WLANConfig11b_x_mfp_opt2#></option>
 				  		</select>
-						<span id="mbo_notice_wpa3" style="display:none">*If the Authentication Method is WPA3-Personal, the Protected Management Frames will be Required.</span>
-						<span id="mbo_notice_combo" style="display:none">*If the Authentication Method is WPA2/WPA3-Personal, the Protected Management Frames will be Capable.</span>
+						<span id="mbo_notice_wpa3" style="display:none"><#WLANConfig11b_AgileMultiband_note_wpa3#></span>
+						<span id="mbo_notice_combo" style="display:none"><#WLANConfig11b_AgileMultiband_note_combo#></span>
 						<span id="mbo_notice" style="display:none"><#WLANConfig11b_AgileMultiband_note#></span>
 					</td>
 			  	</tr>

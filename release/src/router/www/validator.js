@@ -115,9 +115,9 @@ var validator = {
 			return true;
 		}
 		else if(nc==190 || nc==32 || nc==110 || nc==46){
-			;
+			//Nothing
 		}else if((nc==37 || nc==8) && s==""){
-			;
+			//Nothing
 		}	
 		else{
 			nc=0;
@@ -349,12 +349,13 @@ var validator = {
 			return "<#Login_Name_Rule#>";
 	},
 
-	samba_name: function(obj){
-		var re = new RegExp(/^[a-z0-9][a-z0-9-_]*$/i);
+	samba_name: function(obj, flag){
+		let re = (flag == "computer_name") ? new RegExp(/^[a-z0-9][a-z0-9-]*$/i) : new RegExp(/^[a-z0-9][a-z0-9-_]*$/i);
+		let hint = (flag == "computer_name") ? `<#JS_valid_host_name_1#> <#JS_valid_host_name_first_char_1#>` : `<#JS_valid_host_name#> <#JS_valid_host_name_first_char#>`;
 		if(re.test(obj.value))
 			return "";
 		else
-			return "<#JS_valid_host_name#> <#JS_valid_host_name_first_char#>";
+			return hint;
 	},
 
 	friendly_name: function(obj){
@@ -1097,7 +1098,7 @@ var validator = {
 			}
 			else{
 				if(num < 0 || num > 255 || c != '.'){
-					if(v == 'wl_radius_ipaddr' && typeof(noAlert) != undefined && noAlert == 1){
+					if(v == 'wl_radius_ipaddr' && typeof(noAlert) != 'undefined' && noAlert == 1){
 						return false;
 					}
 					else{
@@ -1124,7 +1125,7 @@ var validator = {
 		}
 		
 		if(pos!=3 || num<0 || num>255){
-			if(v == 'wl_radius_ipaddr' && typeof(noAlert) != undefined && noAlert == 1){
+			if(v == 'wl_radius_ipaddr' && typeof(noAlert) != 'undefined' && noAlert == 1){
 				return false;
 			}
 			else{
@@ -1148,7 +1149,7 @@ var validator = {
 				v == 'dhcp_dns1_x' || v == 'dhcp_gateway_x' || v == 'dhcp_wins_x' ||
 				v == 'sip_server'){
 			if((v!='wan_ipaddr_x')&& (v1==255||v4==255||v1==0||v4==0||v1==127||v1==224)){
-				if(v == 'wl_radius_ipaddr' && typeof(noAlert) != undefined && noAlert == 1){
+				if(v == 'wl_radius_ipaddr' && typeof(noAlert) != 'undefined' && noAlert == 1){
 					return false;
 				}
 				else{

@@ -19,6 +19,7 @@ struct nvram_config guestnetwork_conf[] = {
 	{"wl_crypto" , NULL},
 	{"wl_wpa_psk", NULL},
 	{"wl_expire", NULL},
+	{"wl_expiretime", NULL},
 	{"wl_lanaccess", NULL},
 	{"wl_mbss", NULL},
 	{"wl_macmode", NULL},

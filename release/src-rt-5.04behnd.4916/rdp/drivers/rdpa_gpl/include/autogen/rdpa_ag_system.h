@@ -3,25 +3,19 @@
 //    Copyright (c) 2013 Broadcom 
 //    All Rights Reserved
 // 
-// Unless you and Broadcom execute a separate written software license
-// agreement governing use of this software, this software is licensed
-// to you under the terms of the GNU General Public License version 2
-// (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-// with the following added to such license:
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License, version 2, as published by
+// the Free Software Foundation (the "GPL").
 // 
-//    As a special exception, the copyright holders of this software give
-//    you permission to link this software with independent modules, and
-//    to copy and distribute the resulting executable under terms of your
-//    choice, provided that you also meet, for each linked independent
-//    module, the terms and conditions of the license of that module.
-//    An independent module is a module which is not derived from this
-//    software.  The special exception does not apply to any modifications
-//    of the software.
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
 // 
-// Not withstanding the above, under no circumstances may you combine
-// this software in any way with any other Broadcom software provided
-// under a license other than the GPL, without Broadcom's express prior
-// written consent.
+// 
+// A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+// writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+// Boston, MA 02111-1307, USA.
 // 
 // :>
 /*
@@ -58,20 +52,18 @@ typedef enum {
     rdpa_system_attr_ipv4_host_address_table = 10, /* ipv4_host_address_table : RWADF : ipv4[] : IPv4 Host Address Table Entry */
     rdpa_system_attr_ipv6_host_address_table = 11, /* ipv6_host_address_table : RWADF : ipv6[] : IPv6 Host Address Table Entry */
     rdpa_system_attr_qm_cfg = 12, /* qm_cfg : RI : aggregate system_qm_config(rdpa_qm_cfg_t) : Configuration for dynamic Queue allocation */
-    rdpa_system_attr_packet_buffer_cfg = 13, /* packet_buffer_cfg : RW : aggregate system_packet_buffer_cfg(rdpa_packet_buffer_cfg_t) : FPM packet buffer configuration for Us */
-    rdpa_system_attr_high_prio_tc_threshold = 14, /* high_prio_tc_threshold : RI : enum : TC threshold for high priority traffic (TC7 - highest TC) */
-    rdpa_system_attr_counter_cfg = 15, /* counter_cfg : RI : aggregate system_counter_cfg(rdpa_counter_cfg_t) : Define the counter configuration and get available count */
-    rdpa_system_attr_fpm_isr_delay_timer_period = 16, /* fpm_isr_delay_timer_period : RW : number : FPM ISR delay timer period (msec) */
-    rdpa_system_attr_natc_counter = 17, /* natc_counter : RWF : aggregate[] natc_cntr(rdpa_natc_cntr_t) : NAT Cache counters */
-    rdpa_system_attr_ih_cong_threshold = 18, /* ih_cong_threshold : RW : number : IH Buffer threshold for congestion state (congested when IH buffer is below the configured v */
-    rdpa_system_attr_ingress_congestion_ctrl = 19, /* ingress_congestion_ctrl : RW : bool : Enable/Disable ingress congestion control */
-    rdpa_system_attr_parser_cfg = 20, /* parser_cfg : RW : aggregate parser_config(rdpa_parser_cfg_t) : Parser Configuration */
-    rdpa_system_attr_dos_attack_reason = 21, /* dos_attack_reason : RW : enum_mask : Vector of DOS attack reasons */
-    rdpa_system_attr_system_resources = 22, /* system_resources : R : aggregate system_resources(rdpa_system_resources_t) : Return system resources */
-    rdpa_system_attr_fpm_resources = 23, /* fpm_resources : R : aggregate fpm_resources(rdp_fpm_resources_t) : FPM resources */
-    rdpa_system_attr_host_mac_address_table = 24, /* host_mac_address_table : RWADF : ether_addr[] : Host MAC Address Table Entry */
-    rdpa_system_attr_fpi_mode = 25, /* fpi_mode : RW : enum : Flow Provisioning Interface Mode */
-    rdpa_system_attr_fpi_default_priority = 26, /* fpi_default_priority : RW : number : Flow Provisioning Interface Default Priority */
+    rdpa_system_attr_packet_buffer_cfg = 14, /* packet_buffer_cfg : RW : aggregate system_packet_buffer_cfg(rdpa_packet_buffer_cfg_t) : FPM packet buffer configuration for Us */
+    rdpa_system_attr_high_prio_tc_threshold = 15, /* high_prio_tc_threshold : RI : enum : TC threshold for high priority traffic (TC7 - highest TC) */
+    rdpa_system_attr_counter_cfg = 16, /* counter_cfg : RI : aggregate system_counter_cfg(rdpa_counter_cfg_t) : Define the counter configuration and get available count */
+    rdpa_system_attr_fpm_isr_delay_timer_period = 17, /* fpm_isr_delay_timer_period : RW : number : FPM ISR delay timer period (msec) */
+    rdpa_system_attr_natc_counter = 18, /* natc_counter : RWF : aggregate[] natc_cntr(rdpa_natc_cntr_t) : NAT Cache counters */
+    rdpa_system_attr_ih_cong_threshold = 19, /* ih_cong_threshold : RW : number : IH Buffer threshold for congestion state (congested when IH buffer is below the configured v */
+    rdpa_system_attr_ingress_congestion_ctrl = 20, /* ingress_congestion_ctrl : RW : bool : Enable/Disable ingress congestion control */
+    rdpa_system_attr_parser_cfg = 21, /* parser_cfg : RW : aggregate parser_config(rdpa_parser_cfg_t) : Parser Configuration */
+    rdpa_system_attr_dos_attack_reason = 22, /* dos_attack_reason : RW : enum_mask : Vector of DOS attack reasons */
+    rdpa_system_attr_system_resources = 23, /* system_resources : R : aggregate system_resources(rdpa_system_resources_t) : Return system resources */
+    rdpa_system_attr_fpm_resources = 24, /* fpm_resources : R : aggregate fpm_resources(rdp_fpm_resources_t) : FPM resources */
+    rdpa_system_attr_host_mac_address_table = 25, /* host_mac_address_table : RWADF : ether_addr[] : Host MAC Address Table Entry */
 } rdpa_system_attr_types;
 
 extern int (*f_rdpa_system_get)(bdmf_object_handle *pmo);
@@ -874,70 +866,6 @@ static inline int rdpa_system_host_mac_address_table_find(bdmf_object_handle mo_
     int rc;
     rc = bdmf_attrelem_find(mo_, rdpa_system_attr_host_mac_address_table, (bdmf_index *)ai_, host_mac_address_table_, sizeof(*host_mac_address_table_));
     return rc;
-}
-
-
-/** Get system/fpi_mode attribute.
- *
- * Get Flow Provisioning Interface Mode.
- * \param[in]   mo_ system object handle or mattr transaction handle
- * \param[out]  fpi_mode_ Attribute value
- * \return 0 or error code < 0
- * The function can be called in task context only.
- */
-static inline int rdpa_system_fpi_mode_get(bdmf_object_handle mo_, rdpa_fpi_mode_t *fpi_mode_)
-{
-    bdmf_number _nn_;
-    int _rc_;
-    _rc_ = bdmf_attr_get_as_num(mo_, rdpa_system_attr_fpi_mode, &_nn_);
-    *fpi_mode_ = (rdpa_fpi_mode_t)_nn_;
-    return _rc_;
-}
-
-
-/** Set system/fpi_mode attribute.
- *
- * Set Flow Provisioning Interface Mode.
- * \param[in]   mo_ system object handle or mattr transaction handle
- * \param[in]   fpi_mode_ Attribute value
- * \return 0 or error code < 0
- * The function can be called in task context only.
- */
-static inline int rdpa_system_fpi_mode_set(bdmf_object_handle mo_, rdpa_fpi_mode_t fpi_mode_)
-{
-    return bdmf_attr_set_as_num(mo_, rdpa_system_attr_fpi_mode, fpi_mode_);
-}
-
-
-/** Get system/fpi_default_priority attribute.
- *
- * Get Flow Provisioning Interface Default Priority.
- * \param[in]   mo_ system object handle or mattr transaction handle
- * \param[out]  fpi_default_priority_ Attribute value
- * \return 0 or error code < 0
- * The function can be called in task context only.
- */
-static inline int rdpa_system_fpi_default_priority_get(bdmf_object_handle mo_, bdmf_number *fpi_default_priority_)
-{
-    bdmf_number _nn_;
-    int _rc_;
-    _rc_ = bdmf_attr_get_as_num(mo_, rdpa_system_attr_fpi_default_priority, &_nn_);
-    *fpi_default_priority_ = (bdmf_number)_nn_;
-    return _rc_;
-}
-
-
-/** Set system/fpi_default_priority attribute.
- *
- * Set Flow Provisioning Interface Default Priority.
- * \param[in]   mo_ system object handle or mattr transaction handle
- * \param[in]   fpi_default_priority_ Attribute value
- * \return 0 or error code < 0
- * The function can be called in task context only.
- */
-static inline int rdpa_system_fpi_default_priority_set(bdmf_object_handle mo_, bdmf_number fpi_default_priority_)
-{
-    return bdmf_attr_set_as_num(mo_, rdpa_system_attr_fpi_default_priority, fpi_default_priority_);
 }
 
 /** @} end of system Doxygen group */

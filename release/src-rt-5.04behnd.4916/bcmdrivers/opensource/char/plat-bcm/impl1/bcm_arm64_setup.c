@@ -40,6 +40,10 @@ Boston, MA 02111-1307, USA.
 #endif
 #include <bcm_pinmux.h>
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0))
+#include <linux/panic_notifier.h>
+#endif
+
 #if defined(CONFIG_BCM_BOOTSTATE)
 #include <bcm_bootstate.h>
 #endif
@@ -73,15 +77,39 @@ static int _reset_restart_handler(struct notifier_block *nb,
 #if defined(CONFIG_BCM_BOOTSTATE)
 static int reboot_handler(struct notifier_block *self, unsigned long val, void*data)
 {
-
+    /*
+     * Do not overwrite the BCM_BOOT_REASON_ACTIVATE reason.
+     */
     if((bcmbca_get_boot_reason() & BCM_BOOT_REASON_ACTIVATE) == 0)
     {
-        bcmbca_set_boot_reason(0);
+        bcmbca_set_boot_reason(BCM_BOOT_REASON_REBOOT);
     }
-    return 0;
+    return NOTIFY_DONE;
 }
+
 static struct notifier_block reboot_notifier = {
      .notifier_call = reboot_handler,
+};
+
+static int panic_handler(struct notifier_block *this, unsigned long event, void *ptr)
+{
+    uint32_t previous = bcmbca_get_boot_reason();
+
+    /*
+     * 1, Do not overwrite the BCM_BOOT_REASON_ACTIVATE reason.
+     * 2, Do not set BCM_BOOT_REASON_PANIC before phase BCM_BOOT_PHASE_LINUX_RUN.
+     *    This is for uboot auto fall back feature.
+     */
+    if(((previous & BCM_BOOT_REASON_ACTIVATE) == 0) &&
+        ((previous & BCM_BOOT_PHASE_MASK) == BCM_BOOT_PHASE_LINUX_RUN))
+    {
+        bcmbca_set_boot_reason(BCM_BOOT_REASON_PANIC);
+    }
+    return NOTIFY_DONE;
+}
+
+static struct notifier_block panic_notifier = {
+    .notifier_call = panic_handler,
 };
 #endif
 
@@ -94,6 +122,7 @@ static int __init bcm_arch_early_init(void)
 
 #if defined(CONFIG_BCM_BOOTSTATE)
     register_reboot_notifier(&reboot_notifier);
+    atomic_notifier_chain_register(&panic_notifier_list, &panic_notifier);
 #endif
 
 

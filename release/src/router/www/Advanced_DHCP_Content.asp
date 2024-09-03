@@ -45,13 +45,60 @@ $(function () {
 		addNewScript('/require/modules/amesh.js');
 	}
 });
-
-var vpnc_dev_policy_list_array = [];
-var vpnc_dev_policy_list_array_ori = [];
-
-var dhcp_staticlist_array = '<% nvram_get("dhcp_staticlist"); %>';
-var manually_dhcp_list_array = new Array();
-var manually_dhcp_list_array_ori = new Array();
+const dhcp_manual_and_vpnc_policy_attr = function(){
+	this.activate = "";
+	this.mac = "";
+	this.ip = "";
+	this.dest_ip = "";
+	this.vpnc_idx = "";
+	this.dns = "";
+	this.hostname = "";
+	this.brifname = "";
+};
+let dhcp_manual_and_vpnc_policy = [];
+let dhcp_manual_and_vpnc_policy_ori_data = {};
+function init_dhcp_manual_and_vpnc_policy(){
+	dhcp_manual_and_vpnc_policy = [];
+	const dhcp_staticlist = decodeURIComponent(httpApi.nvramCharToAscii(["dhcp_staticlist"], true).dhcp_staticlist);
+	dhcp_manual_and_vpnc_policy_ori_data.dhcp_staticlist = dhcp_staticlist;
+	if(dhcp_staticlist != "") {
+		const dhcp_staticlist_row = decodeURIComponent(dhcp_staticlist).split("<");
+		let i, len = dhcp_staticlist_row.length
+		for(i = 1; i < len; i += 1) {
+			const dhcp_staticlist_col = dhcp_staticlist_row[i].split('>');
+			let profile = new dhcp_manual_and_vpnc_policy_attr();
+			profile.mac = dhcp_staticlist_col[0].toUpperCase();
+			profile.ip = dhcp_staticlist_col[1];
+			profile.dns = (dhcp_staticlist_col[2] == undefined) ? "" : dhcp_staticlist_col[2];
+			profile.hostname = (dhcp_staticlist_col[3] == undefined) ? "" : dhcp_staticlist_col[3];
+			dhcp_manual_and_vpnc_policy.push(JSON.parse(JSON.stringify(profile)));
+		}
+	}
+	if(isSupport("vpn_fusion")){
+		const vpnc_dev_policy_list = decodeURIComponent(httpApi.nvramCharToAscii(["vpnc_dev_policy_list"], true).vpnc_dev_policy_list);
+		dhcp_manual_and_vpnc_policy_ori_data.vpnc_dev_policy_list = vpnc_dev_policy_list;
+		const each_profile = vpnc_dev_policy_list.split("<");
+		$.each(each_profile, function(index, value){
+			if(value != ""){
+				const profile_data = value.split(">");
+				if(profile_data.length >= 4){
+					const ip = profile_data[1];
+					const specific_profile = dhcp_manual_and_vpnc_policy.find(item => item.ip == ip);
+					if((specific_profile != undefined) || (profile_data[4] == "br1" || profile_data[4] == "br2")){
+						let profile = (specific_profile == undefined) ? new dhcp_manual_and_vpnc_policy_attr() : specific_profile;
+						profile.activate = profile_data[0];
+						profile.ip = profile_data[1];
+						profile.dest_ip = profile_data[2];
+						profile.vpnc_idx = profile_data[3];
+						profile.brifname = ((profile_data[4] == undefined) ? "" : profile_data[4]);
+						if(specific_profile == undefined)
+							dhcp_manual_and_vpnc_policy.push(JSON.parse(JSON.stringify(profile)));
+					}
+				}
+			}
+		});
+	}
+}
 if(pptpd_support){
 	var pptpd_clients = '<% nvram_get("pptpd_clients"); %>';
 	var pptpd_clients_subnet = pptpd_clients.split(".")[0]+"."
@@ -73,23 +120,10 @@ var static_enable = '<% nvram_get("dhcp_static_x"); %>';
 var dhcp_staticlists = '<% nvram_get("dhcp_staticlist"); %>';
 var staticclist_row = dhcp_staticlists.split('&#60');
 
-var lan_domain_ori = '<% nvram_get("lan_domain"); %>';
-var dhcp_gateway_ori = '<% nvram_get("dhcp_gateway_x"); %>';
-var dhcp_dns1_ori = '<% nvram_get("dhcp_dns1_x"); %>';
-var dhcp_wins_ori = '<% nvram_get("dhcp_wins_x"); %>';
-
 if(yadns_support){
 	var yadns_enable = '<% nvram_get("yadns_enable_x"); %>';
 	var yadns_mode = '<% nvram_get("yadns_mode"); %>';
 }
-
-var backup_mac = "";
-var backup_ip = "";
-var backup_dns = "";
-var backup_name = "";
-var sortfield, sortdir;
-var sorted_array = Array();
-
 var ipv6_proto_orig = httpApi.nvramGet(["ipv6_service"]).ipv6_service;
 var MaxRule_extend_limit = ((isSupport("MaxRule_extend_limit") != "") ? isSupport("MaxRule_extend_limit") : 64);
 var manually_dhcp_sort_type = 0;//0:increase, 1:decrease
@@ -101,18 +135,6 @@ vpn_fusion_support = false;
 function initial(){
 	show_menu();
 	document.getElementById("faq").href=faq_href;
-
-	var dhcp_staticlist_row = dhcp_staticlist_array.split('&#60');
-	for(var i = 1; i < dhcp_staticlist_row.length; i += 1) {
-		var dhcp_staticlist_col = dhcp_staticlist_row[i].split('&#62');
-		var item_para = {"mac" : dhcp_staticlist_col[0].toUpperCase(),
-		                 "dns" : (dhcp_staticlist_col[2] == undefined) ? "" : dhcp_staticlist_col[2],
-		                 "hostname" : (dhcp_staticlist_col[3] == undefined) ? "" : dhcp_staticlist_col[3],
-		                 "ip" : dhcp_staticlist_col[1]	// For sorting purposes
-		};
-		manually_dhcp_list_array[dhcp_staticlist_col[1]] = item_para;
-		manually_dhcp_list_array_ori[dhcp_staticlist_col[1]] = item_para;
-	}
 
 	//Viz 2011.10{ for LAN ip in DHCP pool or Static list
 	showtext(document.getElementById("LANIP"), '<% nvram_get("lan_ipaddr"); %>');
@@ -127,16 +149,6 @@ function initial(){
 			}
 	}
 	//}Viz 2011.10
-	
-	if (((sortfield = cookie.get('dhcp_sortcol')) != null) && ((sortdir = cookie.get('dhcp_sortmet')) != null)) {
-		sortfield = parseInt(sortfield);
-		sortdir = parseInt(sortdir) * -1;
-	} else {
-		sortfield = 1;
-		sortdir = -1;
-	}
-	sortlist(sortfield);
-	
 	setTimeout("showdhcp_staticlist();", 100);
 	setTimeout("showDropdownClientList('setClientIP', 'mac>ip', 'all', 'ClientList_Block_PC', 'pull_arrow', 'all');", 1000);
 	
@@ -167,17 +179,12 @@ function initial(){
 		document.form.ipv6_dns1_x.parentNode.parentNode.style.display = "none";	
 	}
 
-
-	if(vpn_fusion_support) {
-		vpnc_dev_policy_list_array = parse_vpnc_dev_policy_list('<% nvram_char_to_ascii("","vpnc_dev_policy_list"); %>');
-		vpnc_dev_policy_list_array_ori = vpnc_dev_policy_list_array.slice();
-	}
-
 	if(lyra_hide_support){
 		$("#dhcpEnable").hide();
 	}
-
 	$("#GWStatic").html("<#LANHostConfig_ManualDHCPList_groupitemdesc#>&nbsp;(<#List_limit#>&nbsp;"+MaxRule_extend_limit+")");
+
+	init_dhcp_manual_and_vpnc_policy();
 }
 
 function addRow_Group(){
@@ -186,11 +193,11 @@ function addRow_Group(){
 	if(static_enable != "1")
 		document.form.dhcp_static_x[0].checked = true;
 		
-	var rule_num = Object.keys(manually_dhcp_list_array).length;
+	const rule_num = dhcp_manual_and_vpnc_policy.filter(item => item.mac !== "" && item.ip !== "").length;
 	if(rule_num >= MaxRule_extend_limit){
 		alert("<#JS_itemlimit1#> " + MaxRule_extend_limit + " <#JS_itemlimit2#>");
-		return false;
-	}
+		return false;	
+	}			
 		
 	if(document.form.dhcp_staticmac_x_0.value==""){
 		alert("<#JS_fieldblank#>");
@@ -202,11 +209,6 @@ function addRow_Group(){
 		document.form.dhcp_staticip_x_0.focus();
 		document.form.dhcp_staticip_x_0.select();
 		return false;
-	}else if ((document.form.dhcp_hostname_x_0.value != "") && ((alert_str = validator.host_name(document.form.dhcp_hostname_x_0)) != "")){
-		alert(alert_str);
-		document.form.dhcp_hostname_x_0.focus();
-		document.form.dhcp_hostname_x_0.select();
-		return false;
 	}else if(check_macaddr(document.form.dhcp_staticmac_x_0, check_hwaddr_flag(document.form.dhcp_staticmac_x_0, 'inner')) == true &&
 		 validator.validIPForm(document.form.dhcp_staticip_x_0,0) == true &&
 		 validate_dhcp_range(document.form.dhcp_staticip_x_0) == true){
@@ -216,28 +218,21 @@ function addRow_Group(){
 				return false;
 		}
 		//match(ip or mac) is not accepted
-		var match_flag = false;
-		for(var key in manually_dhcp_list_array) {
-			if(manually_dhcp_list_array.hasOwnProperty(key)){
-				var exist_ip = key;
-				var exist_mac = manually_dhcp_list_array[exist_ip].mac;
-				if(exist_mac == document.form.dhcp_staticmac_x_0.value.toUpperCase()) {
-					alert("<#JS_duplicate#>");
-					document.form.dhcp_staticmac_x_0.focus();
-					document.form.dhcp_staticmac_x_0.select();
-					match_flag = true;
-					break;
-				}
-				if(exist_ip == document.form.dhcp_staticip_x_0.value) {
-					alert("<#JS_duplicate#>");
-					document.form.dhcp_staticip_x_0.focus();
-					document.form.dhcp_staticip_x_0.select();
-					match_flag = true;
-					break;
-				}
-			}
+
+		const specific_mac = dhcp_manual_and_vpnc_policy.find(item => item.mac == document.form.dhcp_staticmac_x_0.value.toUpperCase());
+		const specific_ip = dhcp_manual_and_vpnc_policy.find(item => item.ip == document.form.dhcp_staticip_x_0.value);
+		if(specific_mac != undefined){
+			alert("<#JS_duplicate#>");
+			document.form.dhcp_staticmac_x_0.focus();
+			document.form.dhcp_staticmac_x_0.select();
+			return false;
 		}
-		if(match_flag) return false;
+		if(specific_ip != undefined){
+			alert("<#JS_duplicate#>");
+			document.form.dhcp_staticip_x_0.focus();
+			document.form.dhcp_staticip_x_0.select();
+			return false;
+		}
 
 		var alert_str = "";
 		if(document.form.dhcp_hostname_x_0.value.length > 0)
@@ -249,124 +244,77 @@ function addRow_Group(){
 			return false;
 		}
 
-		var item_para = {
-			"mac" : document.form.dhcp_staticmac_x_0.value.toUpperCase(),
-			"dns" : document.form.dhcp_dnsip_x_0.value,
-			"hostname" : document.form.dhcp_hostname_x_0.value,
-			"ip" : document.form.dhcp_staticip_x_0.value
-		};
-
-		manually_dhcp_list_array[document.form.dhcp_staticip_x_0.value.toUpperCase()] = item_para;
+		let profile = new dhcp_manual_and_vpnc_policy_attr();
+		profile.mac = document.form.dhcp_staticmac_x_0.value.toUpperCase();
+		profile.ip = document.form.dhcp_staticip_x_0.value.toUpperCase();
+		profile.dns = document.form.dhcp_dnsip_x_0.value;
+		profile.hostname = document.form.dhcp_hostname_x_0.value;
+		dhcp_manual_and_vpnc_policy.push(JSON.parse(JSON.stringify(profile)));
 
 		document.form.dhcp_staticip_x_0.value = "";
 		document.form.dhcp_staticmac_x_0.value = "";
 		document.form.dhcp_dnsip_x_0.value = "";
 		document.form.dhcp_hostname_x_0.value = "";
-
-		sortdir = sortdir * -1;	/* sortlist() will switch order back */
-		sortlist(sortfield);
 		showdhcp_staticlist();		
-
-		if (backup_mac != "") {
-			backup_mac = "";
-			backup_ip = "";
-			backup_dns = "";
-			backup_name = "";
-			document.getElementById('dhcp_staticlist_table').rows[rule_num-1].scrollIntoView();
-		}
 	}else{
 		return false;
 	}	
 }
 
-function del_Row(r){
-	var i = r.parentNode.parentNode.rowIndex;
-	var delIP = document.getElementById('dhcp_staticlist_table').rows[i].cells[1].innerHTML;
-
+function del_Row(obj){
+	const mac = $(obj).attr("data-mac");
+	let del_profile = dhcp_manual_and_vpnc_policy.find(item => item.mac == mac);
 	if(vpn_fusion_support) {
-		var policy_flag = false;
-		$.each(vpnc_dev_policy_list_array_ori, function(index, value){
-			if(value[0] == delIP){
-				policy_flag = true;
-				return false;
-			}
-		});
-
+		const policy_flag = (dhcp_manual_and_vpnc_policy_ori_data.vpnc_dev_policy_list.indexOf(del_profile.ip) >= 0) ? true : false;
 		if(policy_flag){
 			if(!confirm(stringSafeGet("<#VPN_Fusion_IP_Binding_Delete_And_Exception_Policy#>")))
 				return false;
 		}
 	}
 
-	delete manually_dhcp_list_array[delIP];
-	document.getElementById('dhcp_staticlist_table').deleteRow(i);
-
-	if(Object.keys(manually_dhcp_list_array).length == 0)
+	dhcp_manual_and_vpnc_policy = dhcp_manual_and_vpnc_policy.filter(item => item.mac != mac);
+	$("#dhcp_staticlist_table").find(`[data-component='tr_${mac}']`).remove();
+	const dhcp_manual_profile = dhcp_manual_and_vpnc_policy.filter(item => item.mac !== "" && item.ip !== "");
+	if(dhcp_manual_profile.length == 0)
 		showdhcp_staticlist();
-
-	if(vpn_fusion_support) {
-		for(var i = 0; i < vpnc_dev_policy_list_array.length; i += 1) {
-			var tmp_array = [];
-			for(var i in vpnc_dev_policy_list_array){
-				if (vpnc_dev_policy_list_array.hasOwnProperty(i)) {
-					if(vpnc_dev_policy_list_array[i][0] != delIP) {
-						tmp_array.push(vpnc_dev_policy_list_array[i]);
-					}
-				}
-			}
-			vpnc_dev_policy_list_array = tmp_array;
-		}
-	}
-
 }
 
-function edit_Row(r){ 	
-	cancel_Edit();
-	
-	var i=r.parentNode.parentNode.rowIndex;
-	document.form.dhcp_staticmac_x_0.value = document.getElementById('dhcp_staticlist_table').rows[i].cells[0].title;
-	document.form.dhcp_staticip_x_0.value = document.getElementById('dhcp_staticlist_table').rows[i].cells[1].innerHTML;
-	if(validator.ipv4_addr(document.getElementById('dhcp_staticlist_table').rows[i].cells[2].innerHTML, 'dhcp_dns1_x'))
-		document.form.dhcp_dnsip_x_0.value = document.getElementById('dhcp_staticlist_table').rows[i].cells[2].innerHTML;
-	document.form.dhcp_hostname_x_0.value = document.getElementById('dhcp_staticlist_table').rows[i].cells[3].title;
-	backup_mac = document.form.dhcp_staticmac_x_0.value;
-	backup_ip = document.form.dhcp_staticip_x_0.value;
-	backup_dns = document.form.dhcp_dnsip_x_0.value;
-	backup_name = document.form.dhcp_hostname_x_0.value;
-	del_Row(r);
-  	document.form.dhcp_staticmac_x_0.focus();
-}
-
-function cancel_Edit(){
-	if (backup_mac != "") {
-		document.form.dhcp_staticmac_x_0.value = backup_mac;
-		document.form.dhcp_staticip_x_0.value = backup_ip;
-		document.form.dhcp_dnsip_x_0.value = backup_dns;
-		document.form.dhcp_hostname_x_0.value = backup_name;
-		addRow_Group(64);
-	}
+function edit_Row(obj){
+	const mac = $(obj).attr("data-mac");
+	const edit_profile = dhcp_manual_and_vpnc_policy.find(item => item.mac == mac);
+	$("#edit_dhcp_manual_profile").find("#edit_dhcp_staticmac").val(edit_profile.mac);
+	$("#edit_dhcp_manual_profile").find("#edit_dhcp_staticip").val(edit_profile.ip);
+	$("#edit_dhcp_manual_profile").find("#edit_dhcp_dnsip").val(edit_profile.dns);
+	$("#edit_dhcp_manual_profile").find("#edit_dhcp_hostname").val(edit_profile.hostname);
+	$("#edit_dhcp_manual_profile").attr({"data-edit_mac":edit_profile.mac})
+	$("#edit_dhcp_manual_profile").css({"top": ((top.webWrapper) ? "-110px": "40px")}).fadeIn(300);
 }
 
 function showdhcp_staticlist(){
 	var code = "";
 	var clientListEventData = [];
+	const dhcp_manual_profile = dhcp_manual_and_vpnc_policy.filter(item => item.mac !== "" && item.ip !== "");
 	code += '<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="dhcp_staticlist_table">';
-	if(Object.keys(manually_dhcp_list_array).length == 0)
+	if(dhcp_manual_profile.length == 0)
 		code += '<tr><td style="color:#FFCC00;"><#IPConnection_VSList_Norule#></td></tr>';
 	else {
 		//user icon
 		var userIconBase64 = "NoIcon";
 		var clientName, deviceType, deviceVendor;
-
-		for(var i = 0; i < sorted_array.length; i++){
-			var key = sorted_array[i].ip;
-			var clientIP = key;
-			var clientMac = manually_dhcp_list_array[clientIP]["mac"].toUpperCase();
-			var clientDNS = manually_dhcp_list_array[clientIP]["dns"];
-			if(clientDNS == "")
-				clientDNS = "<#Setting_factorydefault_value#>";
-			var clientHostname = manually_dhcp_list_array[clientIP]["hostname"];
-			var clientIconID = "clientIcon_" + clientMac.replace(/\:/g, "");
+		const sortData = dhcp_manual_profile.sort(
+			function(a, b){
+				if(manually_dhcp_sort_type == 0)
+					return inet_network(a.ip) - inet_network(b.ip);
+				else if(manually_dhcp_sort_type == 1)
+					return inet_network(b.ip) - inet_network(a.ip);
+			}
+		);
+		$.each(sortData, function( index, value ) {
+			const clientIP = value.ip;
+			const clientMac = value.mac.toUpperCase();
+			const clientDNS = (value.dns == "") ? `<#Setting_factorydefault_value#>` : value.dns;
+			const clientHostname = value.hostname;
+			const clientIconID = "clientIcon_" + clientMac.replace(/\:/g, "");
 			if(clientList[clientMac]) {
 				clientName = (clientList[clientMac].nickName == "") ? clientList[clientMac].name : clientList[clientMac].nickName;
 				deviceType = clientList[clientMac].type;
@@ -377,57 +325,53 @@ function showdhcp_staticlist(){
 				deviceType = 0;
 				deviceVendor = "";
 			}
-			if (manually_dhcp_list_array[clientIP] != undefined)
-				var clientHostname = manually_dhcp_list_array[clientIP].hostname;
-			else
-				var clientHostname = "";
-
-			code += '<tr><td width="32%" align="center" title="' + clientMac +'">';
-			code += '<table style="width:100%;"><tr><td style="width:40%;height:56px;border:0px;">';
+			code += `<tr data-component='tr_${clientMac}'><td width="30%" align="center">`;
+			code += '<table style="width:100%;"><tr><td style="width:35%;height:56px;border:0px;">';
 			if(clientList[clientMac] == undefined) {
-				code += '<div id="' + clientIconID + '" class="clientIcon type0"></div>';
+				code += '<div id="' + clientIconID + '" class="clientIcon"><i class="type0"></i></div>';
 			}
 			else {
 				if(usericon_support) {
 					userIconBase64 = getUploadIcon(clientMac.replace(/\:/g, ""));
 				}
 				if(userIconBase64 != "NoIcon") {
-					if(clientList[clientMac].isUserUplaodImg){
-						code += '<div id="' + clientIconID + '" class="clientIcon"><img class="imgUserIcon_card" src="' + userIconBase64 + '"></div>';
-					}else{
-						code += '<div id="' + clientIconID + '" class="clientIcon"><i class="type" style="--svg:url(' + userIconBase64 + ')"></i></div>';
-					}
-				}
-				else if(deviceType != "0" || deviceVendor == "") {
-					code += '<div id="' + clientIconID + '" class="clientIcon"><i class="type'+deviceType+'"></i></div>';
-				}
-				else if(deviceVendor != "" ) {
-					var vendorIconClassName = getVendorIconClassName(deviceVendor.toLowerCase());
-					if(vendorIconClassName != "" && !downsize_4m_support) {
-						code += '<div id="' + clientIconID + '" class="clientIcon"><i class="vendor-icon '+ vendorIconClassName +'"></i></div>';
-					}
-					else {
-						code += '<div id="' + clientIconID + '" class="clientIcon"><i class="type' + deviceType + '"></i></div>';
-					}
-				}
+                    if(clientList[clientMac].isUserUplaodImg){
+                        code += '<div id="' + clientIconID + '" class="clientIcon"><img class="imgUserIcon_card" src="' + userIconBase64 + '"></div>';
+                    }else{
+                        code += '<div id="' + clientIconID + '" class="clientIcon"><i class="type" style="--svg:url(' + userIconBase64 + ')"></i></div>';
+                    }
+                }
+                else if(deviceType != "0" || deviceVendor == "") {
+                    code += '<div id="' + clientIconID + '" class="clientIcon"><i class="type'+deviceType+'"></i></div>';
+                }
+                else if(deviceVendor != "" ) {
+                    var vendorIconClassName = getVendorIconClassName(deviceVendor.toLowerCase());
+                    if(vendorIconClassName != "" && !downsize_4m_support) {
+                        code += '<div id="' + clientIconID + '" class="clientIcon"><i class="vendor-icon '+ vendorIconClassName +'"></i></div>';
+                    }
+                    else {
+                        code += '<div id="' + clientIconID + '" class="clientIcon"><i class="type' + deviceType + '"></i></div>';
+                    }
+                }
 			}
-			code += '</td><td style="width:60%;border:0px;">';
+			code += '</td><td style="width:65%;border:0px;">';
 			code += '<div>' + clientName + '</div>';
 			code += '<div>' + clientMac + '</div>';
 			code += '</td></tr></table>';
 			code += '</td>';
-			code += '<td width="19%">'+ clientIP +'</td>';
-			code += '<td width="19%">'+ clientDNS +'</td>';
-			if (clientHostname.length > 21)
-				code += '<td width="23%" title="'+ clientHostname +'">' + clientHostname.substring(0,18) +'...</td>';
-			else
-				code += '<td width="23%" title="'+ clientHostname +'">'+ clientHostname +'</td>';
-			code += '<td width="7%">';
-			code += '<input class="edit_btn" onclick="edit_Row(this);" value=""/>';
-			code += '<input class="remove_btn" onclick="del_Row(this);" value=""/></td></tr>';
+			code += '<td width="20%">'+ clientIP +'</td>';
+			code += '<td width="20%">'+ clientDNS +'</td>';
+			code += '<td width="20%" style="word-break:break-all;">'+ clientHostname +'</td>';
+			code += '<td width="10%">';
+			const css_max_width = (top.webWrapper) ? "100%" : "66px";
+			code += `<div style='display:flex;max-width:${css_max_width};min-width:66px;justify-content:center;'>
+					<div class="edit_btn" onclick="edit_Row(this);" data-mac='${clientMac}'></div>
+					<div class="remove_btn" onclick="del_Row(this);" data-mac='${clientMac}'></div>
+				</div>`;
+			code += '</td></tr>';
 			if(validator.mac_addr(clientMac))
 				clientListEventData.push({"mac" : clientMac, "name" : clientName, "ip" : clientIP, "callBack" : "DHCP"});
-		}
+		});
 	}
 	code += '</table>';
 	document.getElementById("dhcp_staticlist_Block").innerHTML = code;
@@ -441,54 +385,29 @@ function showdhcp_staticlist(){
 }
 
 function applyRule(){
-	cancel_Edit();
-
 	if(validForm()){
-		dhcp_staticlist_array = "";
-		Object.keys(manually_dhcp_list_array).forEach(function(key) {
-			dhcp_staticlist_array += "<" + manually_dhcp_list_array[key].mac + ">"  + key + ">" + manually_dhcp_list_array[key].dns + ">" + manually_dhcp_list_array[key].hostname;
+		let dhcp_staticlist = "";
+		$.each(dhcp_manual_and_vpnc_policy, function(index, item){
+			if(item.mac != "" && item.ip != "")
+				dhcp_staticlist += "<" + item.mac + ">"  + item.ip + ">" + item.dns + ">" + item.hostname;
 		});
-		document.form.dhcp_staticlist.value = dhcp_staticlist_array;
-
-		// Only restart the whole network if needed
-		if ((document.form.dhcp_wins_x.value != dhcp_wins_ori) ||
-		    (document.form.dhcp_dns1_x.value != dhcp_dns1_ori) ||
-		    (document.form.dhcp_gateway_x.value != dhcp_gateway_ori) ||
-		    (document.form.lan_domain.value != lan_domain_ori)) {
-
-			document.form.action_script.value = "restart_net_and_phy";
-
-		} else {
-			document.form.action_script.value = "restart_dnsmasq";
-			document.form.action_wait.value = 5;
-		}
+		document.form.dhcp_staticlist.value = dhcp_staticlist;
 
 		if(vpn_fusion_support) {
-			if(vpnc_dev_policy_list_array.toString() != vpnc_dev_policy_list_array_ori.toString()) {
+			let vpnc_dev_policy_list = "";
+			$.each(dhcp_manual_and_vpnc_policy, function(index, item){
+				if(item.vpnc_idx != "" || (item.brifname == "br1" || item.brifname == "br2")){
+					if(vpnc_dev_policy_list != "") vpnc_dev_policy_list += "<";
+					vpnc_dev_policy_list += `${item.activate}>${item.ip}>${item.dest_ip}>${item.vpnc_idx}>${item.brifname}`;
+				}
+			});
+			if(vpnc_dev_policy_list != dhcp_manual_and_vpnc_policy_ori_data.vpnc_dev_policy_list) {
 				var action_script_tmp = "restart_vpnc_dev_policy;" + document.form.action_script.value;
 				document.form.action_script.value = action_script_tmp;
-
-				var parseArrayToStr_vpnc_dev_policy_list = function(_array) {
-					var vpnc_dev_policy_list = "";
-					for(var i = 0; i < _array.length; i += 1) {
-						if(_array[i].length != 0) {
-							if(i != 0)
-								vpnc_dev_policy_list += "<";
-
-							var temp_ipaddr = _array[i][0];
-							var temp_vpnc_idx = _array[i][1];
-							var temp_active = _array[i][2];
-							var temp_destination_ip = "";
-							vpnc_dev_policy_list += temp_active + ">" + temp_ipaddr + ">" + temp_destination_ip + ">" + temp_vpnc_idx;
-						}
-					}
-					return vpnc_dev_policy_list;
-				};
-
 				document.form.vpnc_dev_policy_list.disabled = false;
 				document.form.vpnc_dev_policy_list_tmp.disabled = false;
-				document.form.vpnc_dev_policy_list_tmp.value = parseArrayToStr_vpnc_dev_policy_list(vpnc_dev_policy_list_array_ori);
-				document.form.vpnc_dev_policy_list.value = parseArrayToStr_vpnc_dev_policy_list(vpnc_dev_policy_list_array);
+				document.form.vpnc_dev_policy_list_tmp.value = dhcp_manual_and_vpnc_policy_ori_data.vpnc_dev_policy_list
+				document.form.vpnc_dev_policy_list.value = vpnc_dev_policy_list;
 			}
 		}
 
@@ -667,7 +586,7 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 	if(flag == 1){		
 		var childsel=document.createElement("div");
 		childsel.setAttribute("id","check_mac");
-		childsel.style.color="#FFCC00";
+		childsel.style.color = (top.webWrapper) ? "#ED4444" : "#FFCC00";
 		obj.parentNode.appendChild(childsel);
 		document.getElementById("check_mac").innerHTML="<#LANHostConfig_ManualDHCPMacaddr_itemdesc#>";		
 		document.getElementById("check_mac").style.display = "";
@@ -677,7 +596,7 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 	}else if(flag == 2){
 		var childsel=document.createElement("div");
 		childsel.setAttribute("id","check_mac");
-		childsel.style.color="#FFCC00";
+		childsel.style.color = (top.webWrapper) ? "#ED4444" : "#FFCC00";
 		obj.parentNode.appendChild(childsel);
 		document.getElementById("check_mac").innerHTML="<#IPConnection_x_illegal_mac#>";
 		document.getElementById("check_mac").style.display = "";
@@ -688,84 +607,6 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 		document.getElementById("check_mac") ? document.getElementById("check_mac").style.display="none" : true;
 		return true;
 	}	
-}
-
-
-function sortlist(field){
-	document.getElementById('col' + sortfield).style.boxShadow = "";
-
-	if (field == sortfield)
-		sortdir = sortdir * -1;
-	else
-		sortfield = field;
-
-	document.getElementById('col' + sortfield).style.boxShadow = "rgb(255, 204, 0) 0px " + (sortdir == 1 ? "1" : "-1") + "px 0px 0px inset";
-	cookie.set('dhcp_sortcol', field);
-	cookie.set('dhcp_sortmet', sortdir);
-
-	sorted_array = Array();
-	Object.keys(manually_dhcp_list_array).forEach(function(key) {
-		sorted_array.push(manually_dhcp_list_array[key]);
-	});
-	sorted_array.sort(table_sort);
-}
-
-function table_sort(a, b){
-	var aa, bb, resulta, resultb;
-	var isIP = 0;
-
-	switch (sortfield) {
-		case 0:
-			if(clientList[a.mac])
-				aa = (clientList[a.mac].nickName == "") ? clientList[a.mac].name : clientList[a.mac].nickName;
-			else
-				aa = "";
-			if(clientList[b.mac])
-				bb = (clientList[b.mac].nickName == "") ? clientList[b.mac].name : clientList[b.mac].nickName;
-			else
-				bb = "";
-			isIP = 0;
-			break;
-		case 1:
-			aa = a.ip.split(".");
-			bb = b.ip.split(".");
-			isIP = 1;
-			break;
-		case 3:
-			aa = a.dns.split(".");
-			bb = b.dns.split(".");
-			if (aa.length != 4)
-				aa = [0,0,0,0];
-			if (bb.length != 4)
-				bb = [0,0,0,0];
-			isIP = 1;
-			break;
-		case 2:
-			aa = a.hostname;
-			bb = b.hostname;
-			isIP = 0;
-			break;
-		default:	// IP
-			aa = a.ip.split(".");
-			bb = b.ip.split(".");
-			isIP = 1;
-			break;
-		}
-
-	if (isIP) {
-		resulta = aa[0]*0x1000000 + aa[1]*0x10000 + aa[2]*0x100 + aa[3]*1;
-		resultb = bb[0]*0x1000000 + bb[1]*0x10000 + bb[2]*0x100 + bb[3]*1;
-		return (sortdir * (resulta - resultb));
-	} else {
-		resulta = aa.toUpperCase();
-		resultb = bb.toUpperCase();
-		if (resulta > resultb)
-			return (sortdir * 1);
-		else if (resulta < resultb)
-			return (sortdir * -1);
-		else
-			return 0;
-	}
 }
 
 function check_vpn(){		//true: (DHCP ip pool & static ip ) conflict with VPN clients
@@ -796,26 +637,6 @@ function check_vpn(){		//true: (DHCP ip pool & static ip ) conflict with VPN cli
 
 	return false;	
 }
-function parse_vpnc_dev_policy_list(_oriNvram) {
-	var parseArray = [];
-	var oriNvramRow = decodeURIComponent(_oriNvram).split('<');
-	for(var i = 0; i < oriNvramRow.length; i += 1) {
-		if(oriNvramRow[i] != "") {
-			var oriNvramCol = oriNvramRow[i].split('>');
-			var eachRuleArray = new Array();
-			if(oriNvramCol.length == 4) {
-				var temp_ipaddr = oriNvramCol[1];
-				var temp_vpnc_idx =  oriNvramCol[3];
-				var temp_active = oriNvramCol[0];
-				eachRuleArray.push(temp_ipaddr);
-				eachRuleArray.push(temp_vpnc_idx);
-				eachRuleArray.push(temp_active);
-			}
-			parseArray.push(eachRuleArray);
-		}
-	}
-	return parseArray;
-}
 function sortClientIP(){
 	manually_dhcp_sort_type
 	if($(".sort_border").hasClass("decrease")){
@@ -828,6 +649,79 @@ function sortClientIP(){
 	}
 
 	showdhcp_staticlist();
+}
+function edit_dhcp_manual_cancel(){
+	$("#edit_dhcp_manual_profile").fadeOut(300);
+
+}
+function edit_dhcp_manual_ok(){
+	const edit_mac = $("#edit_dhcp_manual_profile").attr("data-edit_mac");
+	let edit_profile = dhcp_manual_and_vpnc_policy.find(item => item.mac == edit_mac);
+	const not_edit_profile_list = dhcp_manual_and_vpnc_policy.filter(item => item.mac != edit_mac);
+
+	const $dhcpMac = $("#edit_dhcp_staticmac");
+	const $dhcpIP = $("#edit_dhcp_staticip");
+	const $dhcpDNS = $("#edit_dhcp_dnsip");
+	const $dhcpHostName = $("#edit_dhcp_hostname");
+
+	if($dhcpMac.val() == ""){
+		alert("<#JS_fieldblank#>");
+		$dhcpMac.focus().select();
+		return false;
+	}
+
+	if($dhcpIP.val() == ""){
+		alert("<#JS_fieldblank#>");
+		$dhcpIP.focus().select();
+		return false;
+	}
+
+	if($dhcpDNS.val() !== ""){
+		if(!validator.ipAddrFinal($dhcpDNS[0], 'dhcp_dns1_x')){
+			return false;
+		}
+	}
+
+	if($dhcpHostName.val().trim().length > 0){
+		const alert_str = validator.host_name($dhcpHostName[0]);
+		if(alert_str !== ""){
+			alert(alert_str);
+			$dhcpHostName.focus().select();
+			return false;
+		}
+	}
+
+	if(check_macaddr($dhcpMac[0], check_hwaddr_flag($dhcpMac[0], 'inner')) == true &&
+		 validator.validIPForm($dhcpIP[0],0) == true &&
+		 validate_dhcp_range($dhcpIP[0]) == true){
+
+		const specific_mac = not_edit_profile_list.find(item => item.mac == $dhcpMac.val().toUpperCase());
+		const specific_ip = not_edit_profile_list.find(item => item.ip == $dhcpIP.val());
+		if(specific_mac != undefined){
+			alert("<#JS_duplicate#>");
+			$dhcpMac.focus();
+			$dhcpMac.select();
+			return false;
+		}
+		if(specific_ip != undefined){
+			alert("<#JS_duplicate#>");
+			$dhcpIP.focus();
+			$dhcpIP.select();
+			return false;
+		}
+
+		edit_profile.mac = $dhcpMac.val().toUpperCase();
+		edit_profile.ip = $dhcpIP.val().toUpperCase();
+		edit_profile.dns = $dhcpDNS.val();
+		edit_profile.hostname = $dhcpHostName.val();
+
+		showdhcp_staticlist();
+		edit_dhcp_manual_cancel();
+	}
+	else{
+		return false;
+	}
+	
 }
 </script>
 </head>
@@ -900,19 +794,14 @@ function sortClientIP(){
 				  <input type="radio" value="0" name="dhcp_enable_x" class="content_input_fd" onClick="return change_common_radio(this, 'LANHostConfig', 'dhcp_enable_x', '0')" <% nvram_match("dhcp_enable_x", "0", "checked"); %>><#checkbox_No#>
 				</td>
 			  </tr>
-			  <tr>
-				<th>Hide DHCP/RA queries</th>
-				<td>
-				  <input type="radio" value="0" name="dhcpd_querylog" class="content_input_fd" onClick="return change_common_radio(this, 'LANHostConfig', 'dhcpd_querylog', '0')" <% nvram_match("dhcpd_querylog", "0", "checked"); %>><#checkbox_Yes#>
-				  <input type="radio" value="1" name="dhcpd_querylog" class="content_input_fd" onClick="return change_common_radio(this, 'LANHostConfig', 'dhcpd_querylog', '1')" <% nvram_match("dhcpd_querylog", "1", "checked"); %>><#checkbox_No#>
-				</td>
-			  </tr>
+			  
 			  <tr>
 				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,2);"><#LANHostConfig_DomainName_itemname#></a></th>
 				<td>
 				  <input type="text" maxlength="32" class="input_25_table" name="lan_domain" value="<% nvram_get("lan_domain"); %>" autocorrect="off" autocapitalize="off">
 				</td>
 			  </tr>
+			  
 			  <tr>
 			  <th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,3);"><#LANHostConfig_MinAddress_itemname#></a></th>
 			  <td>
@@ -962,26 +851,26 @@ function sortClientIP(){
 				  <div id="yadns_hint" style="display:none;"></div>
 				</td>
 			  </tr>
-			  <tr>
+			<tr>
 				<th width="200"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,7);"><#LANHostConfig_x_LDNSServer1_itemname#> 2</a></th>
 				<td>
-				  <input type="text" maxlength="15" class="input_15_table" name="dhcp_dns2_x" value="<% nvram_get("dhcp_dns2_x"); %>" onKeyPress="return validator.isIPAddr(this,event)">
+					<input type="text" maxlength="15" class="input_15_table" name="dhcp_dns2_x" value="<% nvram_get("dhcp_dns2_x"); %>" onKeyPress="return validator.isIPAddr(this,event)">
 				</td>
-			  </tr>
-                          <tr>
-				<th><#LAN_Advertise_Router_IP_DNS#></th>
-                                <td>
-                                  <input type="radio" value="1" name="dhcpd_dns_router" class="content_input_fd" onClick="return change_common_radio(this, 'LANHostConfig', 'dhcpd_dns_router', '1')" <% nvram_match("dhcpd_dns_router", "1", "checked"); %>><#checkbox_Yes#>
-                                  <input type="radio" value="0" name="dhcpd_dns_router" class="content_input_fd" onClick="return change_common_radio(this, 'LANHostConfig', 'dhcpd_dns_router', '0')" <% nvram_match("dhcpd_dns_router", "0", "checked"); %>><#checkbox_No#>
-                                </td>
-			<tr>
+			</tr>
 			<tr style="display:none;">
 				<th width="200"><#ipv6_dns_serv#></th>
 				<td>
 					<input type="text" maxlength="39" class="input_32_table" name="ipv6_dns1_x" value="<% nvram_get("ipv6_dns1_x"); %>" autocorrect="off" autocapitalize="off">
 				</td>
 			</tr>
-			  <tr>
+			<tr>
+				<th><#LAN_Advertise_Router_IP_DNS#></th>
+				<td>
+					<input type="radio" value="1" name="dhcpd_dns_router" class="content_input_fd" onClick="return change_common_radio(this, 'LANHostConfig', 'dhcpd_dns_router', '1')" <% nvram_match("dhcpd_dns_router", "1", "checked"); %>><#checkbox_Yes#>
+					<input type="radio" value="0" name="dhcpd_dns_router" class="content_input_fd" onClick="return change_common_radio(this, 'LANHostConfig', 'dhcpd_dns_router', '0')" <% nvram_match("dhcpd_dns_router", "0", "checked"); %>><#checkbox_No#>
+				</td>
+			</tr>
+			<tr>
 				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,8);"><#LANHostConfig_x_WINSServer_itemname#></a></th>
 				<td>
 				  <input type="text" maxlength="15" class="input_15_table" name="dhcp_wins_x" value="<% nvram_get("dhcp_wins_x"); %>" onkeypress="return validator.isIPAddr(this,event)" autocorrect="off" autocapitalize="off"/>
@@ -1005,44 +894,84 @@ function sortClientIP(){
 			  </tr>
 			</table>
 
-			<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table" style="margin-top:8px;">
-				<thead>
+			<div style="position: relative;">
+				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table" style="margin-top:8px;position: relative;">
+					<thead>
+						<tr>
+							<td colspan="5" id="GWStatic"></td>
+						</tr>
+					</thead>
 					<tr>
-						<td colspan="5" id="GWStatic"></td>
+						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,10);"><#Client_Name#> (<#PPPConnection_x_MacAddressForISP_itemname#>)</a></th>
+						<th class="sort_border"  onClick="sortClientIP()"><#IPConnection_ExternalIPAddress_itemname#></th>
+						<th><#LANHostConfig_x_LDNSServer1_itemname#> (Optional)</th>
+						<th><#LANHostConfig_x_DDNSHostNames_itemname#> (Optional)</th>
+						<th><#list_add_delete#></th>
 					</tr>
-				</thead>
+					<tr>
+						<!-- client info -->
+						<td width="30%">
+							<input type="text" class="input_20_table" maxlength="17" name="dhcp_staticmac_x_0" style="margin-left:-20px;width:190px;" onKeyPress="return validator.isHWAddr(this,event)" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off" placeholder="ex: <% nvram_get("lan_hwaddr"); %>">
+							<img id="pull_arrow" height="14px;" src="/images/unfold_more.svg" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="<#select_MAC#>">
+							<div id="ClientList_Block_PC" class="clientlist_dropdown" style="margin-left:-1px;"></div>
+						</td>
+						<td width="20%">
+							<input type="text" class="input_15_table" maxlength="15" name="dhcp_staticip_x_0" onkeypress="return validator.isIPAddr(this,event)" autocorrect="off" autocapitalize="off">
+						</td>
+						<td width="20%">
+							<input type="text" class="input_15_table" maxlength="15" name="dhcp_dnsip_x_0" onkeypress="return validator.isIPAddr(this,event)" autocorrect="off" autocapitalize="off">
+						</td>
+						<td width="20%">
+							<input type="text" class="input_15_table" maxlength="32" name="dhcp_hostname_x_0" onkeypress="return validator.isString(this, event)" autocorrect="off" autocapitalize="off">
+						</td>
+						<td width="10%">
+							<div>
+								<input type="button" class="add_btn" onClick="addRow_Group();" value="">
+							</div>
+						</td>
+					</tr>
+				</table>
 
-				<tr>
-					<th id="col0" style="cursor: pointer;" onclick="sortlist(0); showdhcp_staticlist();"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,10);"><#Client_Name#> (<#PPPConnection_x_MacAddressForISP_itemname#>)</a></th>
-					<th id="col1" style="cursor: pointer;" onclick="sortlist(1); showdhcp_staticlist();"><#IPConnection_ExternalIPAddress_itemname#></th>
-					<th id="col3" style="cursor: pointer;" onclick="sortlist(3); showdhcp_staticlist();"><#LANHostConfig_x_LDNSServer1_itemname#> (Optional)</th>
-					<th id="col2" style="cursor: pointer;" onclick="sortlist(2); showdhcp_staticlist();"><#LANHostConfig_x_DDNSHostNames_itemname#> (Optional)</th>
-					<th>Edit</th>
-				</tr>
-				<tr>
-					<!-- client info -->
-					<td width="32%">
-						<input type="text" class="input_20_table" maxlength="17" name="dhcp_staticmac_x_0" style="margin-left:-12px;width:170px;" onKeyPress="return validator.isHWAddr(this,event)" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off" placeholder="ex: <% nvram_get("lan_hwaddr"); %>">
-						<img id="pull_arrow" height="14px;" src="/images/unfold_more.svg" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="<#select_MAC#>">
-						<div id="ClientList_Block_PC" class="clientlist_dropdown" style="margin-left:9px;"></div>
-					</td>
-					<td width="19%">
-						<input type="text" class="input_15_table" maxlength="15" name="dhcp_staticip_x_0" onkeypress="return validator.isIPAddr(this,event)" autocorrect="off" autocapitalize="off">
-					</td>
-					<td width="19%">
-						<input type="text" class="input_15_table" maxlength="15" name="dhcp_dnsip_x_0" onkeypress="return validator.isIPAddr(this,event)" autocorrect="off" autocapitalize="off">
-					</td>
-					<td width="23%">
-						<input type="text" class="input_15_table" maxlenght="30" onKeyPress="return validator.isString(this, event);" name="dhcp_hostname_x_0" autocorrect="off" autocapitalize="off">
-					</td>	
-					<td width="7%">
-						<div>
-							<input type="button" class="add_btn" onClick="addRow_Group();" value="">
-						</div>
-					</td>
-			  	</tr>	 			  
-			  </table>        			
-        			
+				<div id="edit_dhcp_manual_profile"  class="pop_div_bg pop_div_container">
+					<table width="95%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable" style="margin-top:8px;">
+						<thead>
+							<tr>
+								<td colspan="2"><#VPN_Fusion_Editor#></td>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<th width="30%"><#PPPConnection_x_MacAddressForISP_itemname#></th>
+								<td>
+									<input type="text" class="input_20_table" maxlength="17" id="edit_dhcp_staticmac" onKeyPress="return validator.isHWAddr(this,event)" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off" placeholder="ex: <% nvram_get("lan_hwaddr"); %>">
+								</td>
+							</tr>
+							<tr>
+								<th width="30%"><#IPConnection_ExternalIPAddress_itemname#></th>
+								<td>
+									<input type="text" class="input_20_table" maxlength="15" id="edit_dhcp_staticip" onkeypress="return validator.isIPAddr(this,event)" autocorrect="off" autocapitalize="off">
+								</td>
+							</tr>
+							<tr>
+								<th width="30%"><#LANHostConfig_x_LDNSServer1_itemname#> (Optional)</th>
+								<td>
+									<input type="text" class="input_20_table" maxlength="15" id="edit_dhcp_dnsip" onkeypress="return validator.isIPAddr(this,event)" autocorrect="off" autocapitalize="off">
+								</td>
+							</tr>
+							<tr>
+								<th width="30%"><#LANHostConfig_x_DDNSHostNames_itemname#> (Optional)</th>
+								<td>
+									<input type="text" class="input_20_table" maxlength="32" id="edit_dhcp_hostname" onkeypress="return validator.isString(this, event)" autocorrect="off" autocapitalize="off">
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<div style="margin:10px 0;text-align:center;display:flex;justify-content: space-evenly;">
+						<input class="button_gen" type="button" onclick="edit_dhcp_manual_cancel();" value="Cancel">
+						<input class="button_gen" type="button" onclick="edit_dhcp_manual_ok();" value="OK">
+					</div>
+				</div>
+			</div>
 			  <div id="dhcp_staticlist_Block"></div>
         			
         	<!-- manually assigned the DHCP List end-->		

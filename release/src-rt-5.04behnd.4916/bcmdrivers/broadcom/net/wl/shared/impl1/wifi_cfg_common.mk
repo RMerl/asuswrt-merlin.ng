@@ -82,8 +82,13 @@ EXTRA_CFLAGS += -DBCM_PKTFWD_LINK_UPDATE
 # BAR Configuration API by PCIe driver
 EXTRA_CFLAGS += -DBCM_PCIE_BARCFG
 
-# backward compatible w/ old archer APIs
-CL474762 = $(shell grep 'archer_wlan_rx_send' $(BRCMDRIVERS_DIR)/broadcom/include/bcm963xx/bcm_archer.h | grep void_p)
-ifneq ($(CL474762),)
-EXTRA_CFLAGS += -DCL474762
+ifneq ($(strip $(CONFIG_BCM_FPI)),)
+EXTRA_CFLAGS += -DBCM_WLAN_FPI
+endif
+
+# Enable only for the SoC platforms
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6765_6766_6764_47722),)
+ifneq ($(strip $(CONFIG_BCM_BPM)),)
+PP_XPM := 1
+endif
 endif

@@ -26,7 +26,11 @@ my %keyring;
 my $mapper;
 my $nohash;
 my $smc;
+my $sign;
+my $cypher;
+my $ksm;
 my $uentry = "0x1000000";
+my $oentry = "0x0100000";
 my $hashnode = q{
 			hash-1 {
 				algo = "sha256";
@@ -44,7 +48,7 @@ my $usage = q[
 Usage: generate_linux_its [--simple] --dir=direcotry_with_dtbs --arch=arch [--armtf] [--optee] --chip=chipid
    [--pmcfw_code_addr=caddr] [--pmcfw_data_addr=daddr] [--sha=rootfs_path] [--support_fallback=<support_fallback>]
    [--securitydefs=file] [--security_policy=file] [ --keyring=keyring_file ... ]
-   [--mapper=file] [--nohash] [--smc]
+   [--mapper=file] [--nohash] [--smc] [--sign=<key-name-hint>] [--cypher=<key-name-hint>] [--ksm=file]
 ];
 
 GetOptions(
@@ -62,8 +66,11 @@ GetOptions(
     "kernel_compression:s", \$kcompression,
     "mapper=s",             \$mapper,
     "nohash",               \$nohash,
-    "support_fallback=s",     \$support_fallback,
+    "support_fallback=s",   \$support_fallback,
     "smc",                  \$smc,
+    "sign=s",               \$sign,
+    "cypher=s",             \$cypher,
+    "ksm=s",                \$ksm,
     "sha=s" => \$shapath
 ) or die("$usage");
 
@@ -110,17 +117,18 @@ $loadables = join( ",", map( qq["$_"], @loadables ) );
 if ( $arch eq "aarch64" ) {
     $arch = "arm64";
     if ($smc) {
-        $kentry = "0x4000000";
-        $uentry = "0x4000000";
+        $kentry = $optee ? "0x4F00000" : "0x4000000";
+	$oentry = $optee ? "0x4000000" : $oentry;
+	$uentry = "0x6000000";
     }
     else {
-        $kentry = $optee ? "0x600000" : "0x200000";
+        $kentry = $optee ? "0x1000000" : "0x200000";
         $uentry = "0x1000000";
     }
 }
 elsif ( $arch eq "arm" ) {
     $arch = "arm";
-    $kentry = $optee ? "0x608000" : "0x108000";
+    $kentry = $optee ? "0x1008000" : "0x108000";
     $uentry = "0x1000000";
 }
 
@@ -210,6 +218,31 @@ if ($mapper) {
        ];
 }
 
+if ($sign && $cypher) {
+    $fitout .= "brcm_sec_fit {\n";
+    $fitout .= qq[
+        sec_fit {
+            description = "Secured FIT";
+            key-name-hint-sign = "$sign";
+            key-name-hint-cypher = "$cypher";
+        };
+       \n];
+
+    $fitout .= "};\n";
+}
+
+if ($ksm) {
+    $fitout .= "brcm_sec_ksm {\n";
+    $fitout .= qq[
+        sec_ksm {
+            description = "Secured KSM";
+            data = /incbin/("$ksm");
+        };
+       \n];
+
+    $fitout .= "};\n";
+}
+
 if ($shapath) {
     $fitout .= "brcm_sec_hashes {\n";
 
@@ -291,9 +324,9 @@ $fitout .= q[
 			os = "tee";
 			arch = "$arch";
 			compression = "none";
-			load = <0x100000>;
-			entry = <0x100000>;
-			$hashnode		
+			load = <$oentry>;
+			entry = <$oentry>;
+			$hashnode
 		};
 ]
     : ""

@@ -22,6 +22,7 @@
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
+<script type="text/javascript" src="/form.js"></script>
 <style>
 #pull_arrow{
  	float:center;
@@ -42,6 +43,10 @@ var wl_maclist_x_array = '<% nvram_get("wl_maclist_x"); %>';
 var manually_maclist_list_array = new Array();
 var manually_maclist_list_ori_array = new Array();
 var wl_macmode_ori = ('<% nvram_get("wl_macmode"); %>' == "disabled") ? "allow" : '<% nvram_get("wl_macmode"); %>';
+
+var current_page = window.location.pathname.split("/").pop();
+var faq_index_tmp = get_faq_index(FAQ_List, current_page, 1);
+
 function initial(){
 	if(isSwMode("re") && concurrep_support){
 		document.form.wl_subunit.value = 1;
@@ -270,7 +275,7 @@ function addRow(obj, upper){
 
 function applyRule(){
 	if(lantiq_support && wave_ready != 1){
-		alert("Please wait a minute for wireless ready");
+		alert(`<#Wireless_ready#>`);
 		return false;
 	}
 	
@@ -463,8 +468,11 @@ function change_wl_macmode(){
 		<tbody>
 			<tr>
 				<td bgcolor="#4D595D" valign="top">
+				<div class="container">
+
 					<div>&nbsp;</div>
 					<div class="formfonttitle"><#menu5_1#> - <#menu5_1_4#></div>
+					<div class="formfonttitle_help"><i onclick="show_feature_desc(`<#HOWTOSETUP#>`)" class="icon_help"></i></div>
 					<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 					<div class="formfontdesc"><#DeviceSecurity11a_display1_sectiondesc#></div>
 					<div id="lantiq_ready" style="display:none;color:#FC0;margin-left:5px;font-size:13px;">Wireless is setting...</div>
@@ -532,7 +540,12 @@ function change_wl_macmode(){
 						<div id="wl_maclist_x_Block"></div>			
 						<div id="submitBtn" class="apply_gen">
 							<input class="button_gen" onclick="applyRule()" type="button" value="<#CTL_apply#>"/>
-						</div>				
+						</div>
+
+
+					</div>	<!-- for .container  -->
+					<div class="popup_container popup_element_second"></div>
+
 				</td>
 			</tr>
 		</tbody>
@@ -540,7 +553,7 @@ function change_wl_macmode(){
 		</td>
 </form>
         </tr>
-      </table>				
+      </table>
 		<!--===================================Ending of Main Content===========================================-->		
 	</td>	
     <td width="10" align="center" valign="top">&nbsp;</td>

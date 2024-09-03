@@ -4,25 +4,19 @@
  *    Copyright (c) 2020 Broadcom 
  *    All Rights Reserved
  * 
- * Unless you and Broadcom execute a separate written software license
- * agreement governing use of this software, this software is licensed
- * to you under the terms of the GNU General Public License version 2
- * (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
- * with the following added to such license:
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License, version 2, as published by
+ * the Free Software Foundation (the "GPL").
  * 
- *    As a special exception, the copyright holders of this software give
- *    you permission to link this software with independent modules, and
- *    to copy and distribute the resulting executable under terms of your
- *    choice, provided that you also meet, for each linked independent
- *    module, the terms and conditions of the license of that module.
- *    An independent module is a module which is not derived from this
- *    software.  The special exception does not apply to any modifications
- *    of the software.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  * 
- * Not withstanding the above, under no circumstances may you combine
- * this software in any way with any other Broadcom software provided
- * under a license other than the GPL, without Broadcom's express prior
- * written consent.
+ * 
+ * A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+ * writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
  * 
  * :>
  */
@@ -52,6 +46,7 @@ struct ndi_event {
 static struct kmem_cache *event_cache;
 static DECLARE_WORK(event_work, ndi_dev_nl_process_events);
 static LIST_HEAD(events);
+static DEFINE_SPINLOCK(event_lock);
 
 /* --- functions --- */
 #define ndia_fill_object(skb, portid, seq, event, cb, arg) \
@@ -128,10 +123,10 @@ static int ndia_dump_devices(struct sk_buff *skb, struct netlink_callback *cb)
 	int i = cb->args[0];
 	int err;
 
-	spin_lock_bh(&lock);
+	spin_lock_bh(&devices.lock);
 
-	for (; i < devs_bucket_count(); i++) {
-		hlist_for_each_entry_safe(e, tmp, devs_get_bucket(i), node) {
+	for (; i < HASH_SIZE(devices.table); i++) {
+		hlist_for_each_entry_safe(e, tmp, &devices.table[i], node) {
 			if (cb->args[1]) {
 				if (e != last)
 					continue;
@@ -159,12 +154,12 @@ next:
 	}
 
 out:
-	spin_unlock_bh(&lock);
+	spin_unlock_bh(&devices.lock);
 	cb->args[0] = i;
 	return err;
 }
 
-int ndi_dev_nl_event_locked(struct ndi_dev *dev, int type)
+int ndi_dev_nl_event(struct ndi_dev *dev, int type)
 {
 	struct ndi_event *e;
 
@@ -180,7 +175,9 @@ int ndi_dev_nl_event_locked(struct ndi_dev *dev, int type)
 	e->type	= type;
 	e->dev	= dev;
 	INIT_LIST_HEAD(&e->node);
+	spin_lock_bh(&event_lock);
 	list_add_tail(&e->node, &events);
+	spin_unlock_bh(&event_lock);
 
 	schedule_work(&event_work);
 	return 0;
@@ -190,17 +187,6 @@ err:
 	return -ENOMEM;
 }
 
-int ndi_dev_nl_event(struct ndi_dev *dev, int type)
-{
-	int err;
-
-	spin_lock_bh(&lock);
-	err = ndi_dev_nl_event_locked(dev, type);
-	spin_unlock_bh(&lock);
-
-	return err;
-}
-
 static void ndi_dev_nl_process_events(struct work_struct *w)
 {
 	struct nl_bcast_entry *entry;
@@ -208,15 +194,19 @@ static void ndi_dev_nl_process_events(struct work_struct *w)
 	struct ndi_event *e, *tmp;
 	int err = -ENOMEM;
 
-	spin_lock_bh(&lock);
+	spin_lock_bh(&event_lock);
 
 	list_for_each_entry_safe(e, tmp, &events, node) {
+		spin_lock_bh(&nl_bcast_lock);
 		list_for_each_entry(entry, &nl_bcast_list, node) {
 			skb = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_ATOMIC);
-			if (!skb)
+			if (!skb) {
+				spin_unlock_bh(&nl_bcast_lock);
 				goto err;
+			}
 			if (ndia_fill_object(skb, 0, 0, e->type, ndia_dump_dev,
 					     e->dev)) {
+				spin_unlock_bh(&nl_bcast_lock);
 				pr_debug("ndia_fill_object failed\n");
 				goto nlmsg_failure;
 			}
@@ -224,10 +214,12 @@ static void ndi_dev_nl_process_events(struct work_struct *w)
 			err = nlmsg_notify(entry->socket, skb, 0, NDINLGRP_DEV,
 					   0, GFP_ATOMIC);
 			if (err == -ENOBUFS || err == -EAGAIN) {
+				spin_unlock_bh(&nl_bcast_lock);
 				pr_debug("nlmsg_notify returned %d\n", err);
 				goto nlmsg_failure;
 			}
 		}
+		spin_unlock_bh(&nl_bcast_lock);
 		list_del(&e->node);
 		kmem_cache_free(event_cache, e);
 	}
@@ -238,7 +230,7 @@ nlmsg_failure:
 err:
 	netlink_set_err(entry->socket, 0, NDINLGRP_DEV, err);
 out:
-	spin_unlock_bh(&lock);
+	spin_unlock_bh(&event_lock);
 }
 
 int ndi_dev_nl_init(void)
@@ -260,12 +252,12 @@ void ndi_dev_nl_exit(void)
 {
 	struct ndi_event *e, *tmp;
 
-	spin_lock_bh(&lock);
+	spin_lock_bh(&event_lock);
 	list_for_each_entry_safe(e, tmp, &events, node) {
 		list_del(&e->node);
 		kmem_cache_free(event_cache, e);
 	}
-	spin_unlock_bh(&lock);
+	spin_unlock_bh(&event_lock);
 
 	kmem_cache_destroy(event_cache);
 }

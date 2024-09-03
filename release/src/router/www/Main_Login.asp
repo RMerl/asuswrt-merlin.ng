@@ -12,6 +12,19 @@
 <script type="text/javascript" src="/js/https_redirect/https_redirect.js"></script>
 <title>ASUS Login</title>
 <style>
+html::-webkit-scrollbar{
+    display: block;
+    width: 4px;
+    height: 4px;
+    padding: 2px;
+}
+html::-webkit-scrollbar-thumb{
+    background-color: #248DFF !important;   
+    border-radius: 50px;
+}
+html::-webkit-scrollbar-track{
+    background-color: #192229 !important;
+}
 body{
 	font-family: Arial, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
 }
@@ -366,26 +379,35 @@ var remaining_time_sec;
 var remaining_time_show;
 var countdownid, rtime_obj;
 var redirect_page = login_info.page;
-
-if ('<% nvram_get("http_dut_redir"); %>' == '1') {
 var isRouterMode = (htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("","sw_mode"); %>')) == '1') ? true : false;
 
+const getQueryString = function(name){
+	var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+	var r = window.location.search.substr(1).match(reg);
+	if (r != null) return unescape(r[2]); return null;
+};
+function loadScript(src, timeout = 2000) {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = () => resolve(script);
+        script.onerror = () => reject(new Error(`Failed to load script ${src}`));
+        document.head.appendChild(script);
+        setTimeout(() => {
+			loadScriptTimeout = true;
+            reject(new Error(`Loading script ${src} timed out`));
+        }, timeout);
+    });
+}
+var loadScriptTimeout = false;
 var header_info = [<% get_header_info(); %>][0];
 var ROUTERHOSTNAME = '<#Web_DOMAIN_NAME#>';
-const getQueryString = function(name){
-    var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
-    var r = window.location.search.substr(1).match(reg);
-    if (r != null) return unescape(r[2]); return null;
-};
-var domainNameUrl = header_info.protocol+"://"+ROUTERHOSTNAME+":"+header_info.port;
-var chdom = function(){if(getQueryString("redirct")!=="false")window.location.href=domainNameUrl};
-(function(){
-	if(ROUTERHOSTNAME !== header_info.host && ROUTERHOSTNAME != "" && isRouterMode){
-		setTimeout(function(){
-			var s=document.createElement("script");s.type="text/javascript";s.src=domainNameUrl+"/chdom.json?hostname="+header_info.host;var h=document.getElementsByTagName("script")[0];h.parentNode.insertBefore(s,h);
-		}, 1);
-	}
-})();
+var domainNameUrl = `${header_info.protocol}://${ROUTERHOSTNAME}:${header_info.port}`;
+var chdom = function(){if(getQueryString("redirct")!=="false" && !loadScriptTimeout)window.location.href=domainNameUrl};
+if(ROUTERHOSTNAME !== header_info.host && ROUTERHOSTNAME != "" && isRouterMode){
+	setTimeout(() => {
+		loadScript(`${domainNameUrl}/chdom.json?hostname=${header_info.host}`).catch(error => {console.error(error.message);});
+	}, 100);
 }
 
 function isSupport(_ptn){

@@ -103,6 +103,8 @@ config BCMBCA_PHY
 	default y if BCM6756
 	default y if BCM6813
 	default y if BCM6765
+	default y if BCM6766
+	default y if BCM6764
 	default n
 	help
 	   This driver supports PHY framework
@@ -166,6 +168,11 @@ config BCM_PHY_KAUAI_A0
 	depends on BCM_SELECTIVE_PHYS
 	default n
 
+config BCM_PHY_LANAI_A0
+	bool "Lanai A0 support"
+	depends on BCM_SELECTIVE_PHYS
+	default n
+
 config BCM_PHY_XPHY
 	bool "XPHY support"
 	depends on BCM_SELECTIVE_PHYS
@@ -184,6 +191,8 @@ config BCMBCA_SYSPORT_V2
 	default y if BCM47622
 	default y if BCM6756
 	default y if BCM6765
+	default y if BCM6766
+	default y if BCM6764
 	default n
 	help
 	   This driver supports BCM System port v2.0
@@ -197,6 +206,8 @@ config BCMBCA_SWITCH
 	default y if BCM4908
 	default y if BCM6756
 	default y if BCM6765
+	default y if BCM6766
+	default y if BCM6764
 	default n
 	help
 	   This driver supports BCMBCA Switch
@@ -213,6 +224,8 @@ config BCMBCA_EXT_SWITCH
 	default y if BCM47622
 	default y if BCM6756
 	default y if BCM6765
+	default y if BCM6766
+	default y if BCM6764
 	default n
 	help
 	   This driver supports BCMBCA External Switch

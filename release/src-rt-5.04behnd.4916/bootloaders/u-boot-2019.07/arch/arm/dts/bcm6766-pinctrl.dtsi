@@ -39,5 +39,16 @@
             pins = <68 69>;
             function = <1>;
         };
+
+        eth_mdc_pin_62: eth_mdc_pinmux {
+            pins = <62>;
+            function = <1>;
+        };
+
+        eth_mdio_pin_63: eth_mdio_pinmux {
+            pins = <63>;
+            function = <1>;
+        };
+
 	};
 };

@@ -51,6 +51,10 @@ struct vfbio_lun_create_request
 {
     char lun_name[VFBIO_LUN_INFO_NAME_MAX];  /* Unique lun name */
     uint32_t lun_size;  /* Volume size in 4KB blocks (in Little Endian format) */
+    uint32_t lun_flags; /* LUN flags */
+#define VFBIO_LUN_CREATE_FLAG_READ_ONLY  0x01
+#define VFBIO_LUN_CREATE_FLAG_ENCRYPTED  0x04
+#define VFBIO_LUN_CREATE_FLAG_HIDDEN     0x08
 };
 
 /*
@@ -105,6 +109,7 @@ struct __vfbio_lun_info {
 	u8 flags;
 #define VFBIO_LUN_INFO_FLAG_READ_ONLY  0x01
 #define VFBIO_LUN_INFO_FLAG_DYNAMIC    0x02
+#define VFBIO_LUN_INFO_FLAG_ENCRYPTED  0x04
 	uint8_t rsvd1[2];
 	uint32_t n_blks;
 	uint8_t name[VFBIO_LUN_INFO_NAME_MAX]; /* NULL-terminated ASCII string */
@@ -264,8 +269,9 @@ int vfbio_rpc_lun_info(int lun, struct vfbio_lun_info *info)
 	info->name[VFBIO_LUN_INFO_NAME_MAX - 1] = '\0';
 	info->blk_sz = (1 << vfbio_lun_info_get_blk_sz(lun_info)) << 9;
 	info->n_blks = lun_info->n_blks;
-        info->read_only = (lun_info->flags & VFBIO_LUN_INFO_FLAG_READ_ONLY) != 0;
-        info->dynamic = (lun_info->flags & VFBIO_LUN_INFO_FLAG_DYNAMIC) != 0;
+	info->read_only = (lun_info->flags & VFBIO_LUN_INFO_FLAG_READ_ONLY) != 0;
+	info->dynamic = (lun_info->flags & VFBIO_LUN_INFO_FLAG_DYNAMIC) != 0;
+	info->encrypted = (lun_info->flags & VFBIO_LUN_INFO_FLAG_ENCRYPTED) != 0;
 
 done:
 	return rc;
@@ -279,7 +285,7 @@ int vfbio_rpc_finish_first_boot(void)
 	return vfbio_request(&msg);
 }
 
-int vfbio_rpc_lun_create( int lun, const char *name, uint32_t size)
+int vfbio_rpc_lun_create( int lun, const char *name, uint32_t size, uint32_t flags)
 {
 	ALLOC_CACHE_ALIGN_BUFFER(struct vfbio_lun_create_request, req, 1);
 	rpc_msg msg;
@@ -303,8 +309,8 @@ int vfbio_rpc_lun_create( int lun, const char *name, uint32_t size)
 		strncpy(req->lun_name, name, VFBIO_LUN_INFO_NAME_MAX);
 	}
 	req->lun_name[VFBIO_LUN_INFO_NAME_MAX - 1] = 0;
-
 	req->lun_size = (size + VFBIO_LVM_ALLOC_BLOCK_SIZE - 1)/VFBIO_LVM_ALLOC_BLOCK_SIZE;
+	req->lun_flags = flags;
     
 	rpc_msg_init(&msg, RPC_SERVICE_FLASH_BIO, VFBIO_LVM_LUN_CREATE, 0, 0, 0, 0);
 	vfbio_msg_set_addr(&msg, (ulong)req);

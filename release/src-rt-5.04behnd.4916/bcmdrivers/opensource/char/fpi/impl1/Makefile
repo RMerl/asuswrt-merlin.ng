@@ -4,6 +4,12 @@
 #
 
 bcm_fpi-objs := fpi.o
+ifneq ($(strip $(CONFIG_XFRM)),)
+ifneq ($(strip $(CONFIG_BCM_SPU_HW_OFFLOAD)),)
+bcm_fpi-objs += fpi_spu.o
+endif
+endif
+
 bcm_fpi_blog-objs := fpi_blog.o
 
 obj-$(CONFIG_BCM_FPI) += bcm_fpi.o

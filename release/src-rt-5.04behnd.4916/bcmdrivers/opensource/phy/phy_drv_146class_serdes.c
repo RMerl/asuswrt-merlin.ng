@@ -3,27 +3,21 @@
    All Rights Reserved
 
    <:label-BRCM:2017:DUAL/GPL:standard
-
-   Unless you and Broadcom execute a separate written software license
-   agreement governing use of this software, this software is licensed
-   to you under the terms of the GNU General Public License version 2
-   (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-   with the following added to such license:
-
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
-
-   Not withstanding the above, under no circumstances may you combine
-   this software in any way with any other Broadcom software provided
-   under a license other than the GPL, without Broadcom's express prior
-   written consent.
-
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License, version 2, as published by
+   the Free Software Foundation (the "GPL").
+   
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+   
+   
+   A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+   writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.
+   
    :>
  */
 
@@ -58,11 +52,17 @@ static phy_serdes_t serdes_146class[MAX_146CORES][MAX_146USXGMII_PORTS] =
     {{
         .phy_type = PHY_TYPE_146CLASS_SERDES,
 #if defined(CONFIG_BCM963146)
-        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL,
+        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
         .inter_phy_types = INTER_PHY_TYPES_AUS1KR2KXR_M,
 #elif defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM96765)
-        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_10000|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL,
+        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_10000|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
         .inter_phy_types = INTER_PHY_TYPES_AUS1KR2KXR5KXR10R_M,
+#elif defined(CONFIG_BCM96766)
+        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_10000|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
+        .inter_phy_types = INTER_PHY_TYPES_AQUS1KR2KXR5KXR10R_M,
+#elif defined(CONFIG_BCM96764)
+        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
+        .inter_phy_types = INTER_PHY_TYPES_AQUS1KR2KXR5KXR_M,
 #endif
         .link_stats = dsl_merlin16_serdes_link_stats,
         .config_speed = PHY_SPEED_AUTO,
@@ -81,17 +81,23 @@ static phy_serdes_t serdes_146class[MAX_146CORES][MAX_146USXGMII_PORTS] =
 #if defined(CONFIG_BCM963146)
 #define CONFIG_BCM963146_TESTING
 #if defined(CONFIG_BCM963146_TESTING)
-        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL,
+        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
         .inter_phy_types = INTER_PHY_TYPES_AMUS1KR2KXR5KXR_M,
 #else
-        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL,
+        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
         .inter_phy_types = INTER_PHY_TYPES_AUS1KR2KXR_M,
 #endif
 #elif defined(CONFIG_BCM94912)
-        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_10000|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL,
+        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_10000|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
         .inter_phy_types = INTER_PHY_TYPES_AUS1KR2KXR5KXR10R_M,
+#elif defined(CONFIG_BCM96766)
+        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_10000|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
+        .inter_phy_types = INTER_PHY_TYPES_AQUS1KR2KXR5KXR10R_M,
+#elif defined(CONFIG_BCM96764)
+        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
+        .inter_phy_types = INTER_PHY_TYPES_AQUS1KR2KXR_M,
 #elif defined(CONFIG_BCM96813)
-        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_10000|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL,
+        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_10000|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
         .inter_phy_types = INTER_PHY_TYPES_AMUS1KR2KXR5KXR10R_M,
 #endif
         .link_stats = dsl_merlin16_serdes_link_stats,
@@ -108,7 +114,7 @@ static phy_serdes_t serdes_146class[MAX_146CORES][MAX_146USXGMII_PORTS] =
     }},
     {{
         .phy_type = PHY_TYPE_146CLASS_SERDES,
-        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_10000|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL,
+        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_10000|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
         .inter_phy_types = INTER_PHY_TYPES_AMUS1KR2KXR5KXR10R_M,
         .link_stats = dsl_merlin16_serdes_link_stats,
         .config_speed = PHY_SPEED_AUTO,
@@ -169,6 +175,8 @@ static int phy_drv_serdes_146class_init_lock(phy_dev_t *phy_dev)
     phy_serdes->handle = phy_dev->priv;
     phy_dev->priv = phy_serdes;
 
+    phy_drv_serdes_adjust_speed(phy_dev, 0);
+
     phy_serdes->phy_dev = phy_dev;
     printk("\n" NtcClr "=== Start of 10G Active Ethernet Initialization for core %d port %d ===" DflClr "\n",
         phy_serdes->core_num, phy_dev->usxgmii_m_index);
@@ -188,7 +196,8 @@ static int phy_drv_serdes_146class_init_lock(phy_dev_t *phy_dev)
 
     phy_dsl_serdes_post_init(phy_dev);
 
-    phy_serdes->inited = 2;
+    if (phy_serdes->inited == 1)
+        phy_serdes->inited = 2;
     printk(NtcClr "=== End of 10G Active Ethernet Initialization for core %d port %d ===" DflClr "\n",
         phy_serdes->core_num, phy_dev->usxgmii_m_index);
 
@@ -301,10 +310,17 @@ static int _phy_shared_clock_set(phy_dev_t *phy_dev)
 {
     phy_dev_t *phy_next = cascade_phy_get_next(phy_dev);
 
-    if (!phy_next || !phy_next->shared_ref_clk_mhz)
+    if (PhyIsSharedRefClkSet(phy_dev))
         return 0;
 
-    phy_dev->shared_ref_clk_mhz = phy_next->shared_ref_clk_mhz;
+    if (!phy_dev->shared_ref_clk_mhz)
+    {
+        if (phy_next)
+            phy_dev->shared_ref_clk_mhz = phy_next->shared_ref_clk_mhz;
+        else
+            return 0;
+    }
+
 	PhySetSharedRefClk(phy_dev);
     printk("Set Serdes at address %d shared reference clock %dMHz.\n", phy_dev->addr, phy_dev->shared_ref_clk_mhz);
     return merlin16_shortfin_set_shared_clock(phy_dev);

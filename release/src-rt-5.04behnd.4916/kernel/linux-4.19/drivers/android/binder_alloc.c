@@ -1033,6 +1033,12 @@ static struct shrinker binder_shrinker = {
 	.seeks = DEFAULT_SEEKS,
 };
 
+void binder_alloc_shrinker_exit(void)
+{
+	unregister_shrinker(&binder_shrinker);
+	list_lru_destroy(&binder_alloc_lru);
+}
+
 /**
  * binder_alloc_init() - called by binder_open() for per-proc initialization
  * @alloc: binder_alloc for this proc

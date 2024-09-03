@@ -276,6 +276,9 @@ extern const char SDN_NAT_POSTROUTING[];
 
 static void _add_sdn_iptables_wan_rules(FILE* fp, const char* wan_ifname, const MTLAN_T *pmtl, const char *logdrop, const char *logaccept)
 {
+	if (!fp || !wan_ifname || !*wan_ifname || !pmtl || !logdrop || !logaccept)
+		return;
+
 	// SDN to WAN
 	fprintf(fp, "-I %s -i %s -o %s -j %s\n", SDN_FILTER_FORWARD_CHAIN, pmtl->nw_t.ifname, wan_ifname, logaccept);
 
@@ -434,7 +437,11 @@ int update_SDN_iptables(const MTLAN_T *pmtl, const char *logdrop, const char *lo
 				) {
 					for (i = WAN_UNIT_FIRST; i < wan_max_unit; ++i)
 					{
-						if (!is_wan_connect(i))
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+						if(!is_phy_connect2(i))
+#else
+						if(!is_wan_connect(i))
+#endif
 							continue;
 
 						strlcpy(wan_ifname, get_wan_ifname(i), sizeof(wan_ifname));

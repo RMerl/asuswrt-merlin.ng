@@ -2,28 +2,22 @@
  *
 <:copyright-BRCM:2009:DUAL/GPL:standard
 
-   Copyright (c) 2009 Broadcom
+   Copyright (c) 2009 Broadcom 
    All Rights Reserved
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
 :>
 */
@@ -138,12 +132,30 @@ void gbpm_attach_skb_stub(void *skbp, void *data, uint32_t datalen)
 {
 }
 
+void gbpm_attach_skb_hw_buf_stub(void *skbp, void *data, uint32_t datalen, uint32_t dataoffset, bool good_sharedinfo)
+{
+}
+
+void gbpm_recycle_skb_hw_buf_stub(void *skbp, unsigned long context,
+			   uint32_t recycle_action)
+{
+}
+
+void gbpm_attach_skb_no_shinfo_reset_stub(void *skbp, void *data, uint32_t datalen)
+{
+}
+
 void *gbpm_alloc_skb_stub(void)
 {
 	return NULL;
 }
 
 void *gbpm_alloc_buf_skb_attach_stub(uint32_t datalen)
+{
+	return NULL;
+}
+
+void *gbpm_alloc_mult_buf_skb_attach_stub(uint32_t num, uint32_t datalen, uint32_t prio)
 {
 	return NULL;
 }
@@ -157,8 +169,8 @@ void gbpm_free_skb_stub(void *skbp)
 {
 }
 
-void gbpm_free_skblist_stub(void *head, void *tail, uint32_t num,
-			    void **bufp_arr)
+void gbpm_free_skblist_stub(void *head, void *tail, uint32_t skbnum,
+			    uint32_t bufnum, void **bufp_arr)
 {
 }
 
@@ -176,6 +188,15 @@ void gbpm_recycle_skb_stub(void *skbp, unsigned long context,
 void gbpm_recycle_pNBuff_stub(void *pNBuff, unsigned long context,
 			      uint32_t recycle_action)
 {
+}
+
+void gbpm_free_mult_skb_and_buf_stub(void *skbp, uint32_t list_len)
+{
+}
+
+bool gbpm_is_skb_with_hw_buf_stub(void *skbp)
+{
+   return false;
 }
 
 /* --- BPM Get Accessors --- */

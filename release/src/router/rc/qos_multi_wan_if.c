@@ -97,6 +97,7 @@ static void add_iptables_AMAS_WGN(FILE *fn, const char *action)
 {
 	/* Setup guest network's ebtables rules */
 	int  guest_mark = GUEST_INIT_MARKNUM;
+	int  g_mark = guest_mark_calc(guest_mark);
 	char wl[128] = {0}, wlv[128] = {0}, tmp[128] = {0}, *next = NULL, *next2 = NULL;
 	char prefix[32] = {0};
 	char mssid_mark[4] = {0};
@@ -118,7 +119,7 @@ static void add_iptables_AMAS_WGN(FILE *fn, const char *action)
 			if(nvram_get_int(strcat_r(wlv, "_bss_enabled", tmp)) && 
 			   nvram_get_int(strcat_r(wlv, "_bw_enabled" , tmp))) {
 				wl_vif_to_subnet(wlv, net, sizeof(net)); // shared/misc.c
-				snprintf(mssid_mark, sizeof(mssid_mark), "%d", guest_mark);
+				snprintf(mssid_mark, sizeof(mssid_mark), "%d", g_mark);
 				if (!strcmp(net, "")) continue;
 				fprintf(fn, "-A PREROUTING -s %s -j %s %s\n", net, action, mssid_mark);
 				fprintf(fn, "-A PREROUTING -s %s -j RETURN\n", net);
@@ -469,6 +470,7 @@ void add_EbtablesRules_BW()
 
 	/* Setup guest network's ebtables rules */
 	int  guest_mark = GUEST_INIT_MARKNUM;
+	int  g_mark = guest_mark_calc(guest_mark);
 	char wl[128], wlv[128], tmp[128], *next, *next2;
 	char prefix[32];
 	char mssid_mark[4];
@@ -485,7 +487,7 @@ void add_EbtablesRules_BW()
 			   nvram_get_int(strcat_r(wlv, "_bw_enabled" , tmp))) {
 				WGN_ifname(i, j, wl_if);
 				if (!strcmp(wl_if, "")) continue;
-				snprintf(mssid_mark, sizeof(mssid_mark), "%d", guest_mark);
+				snprintf(mssid_mark, sizeof(mssid_mark), "%d", g_mark);
 				eval("ebtables", "-t", "nat", "-D", "PREROUTING",  "-i", wl_if, "-j", "mark", "--set-mark", mssid_mark, "--mark-target", "ACCEPT");
 				eval("ebtables", "-t", "nat", "-D", "POSTROUTING", "-o", wl_if, "-j", "mark", "--set-mark", mssid_mark, "--mark-target", "ACCEPT");
 				eval("ebtables", "-t", "nat", "-A", "PREROUTING",  "-i", wl_if, "-j", "mark", "--set-mark", mssid_mark, "--mark-target", "ACCEPT");
@@ -1232,7 +1234,7 @@ static int start_tqos(int wan_unit)
 			fprintf(f, "# ingress %d: %u%%\n", i, rate);
 			fprintf(f,"\t$TCADL parent 2:1 classid 2:%d htb rate %ukbit %s prio %d quantum %u\n", x, calc(bw, rate), burst_leaf, (i >= 6) ? 7 : (i + 1), mtu);
 			fprintf(f,"\t$TQADL parent 2:%d handle %d: $SCH\n", x, x);
-			fprintf(f,"\t$TFADL parent 2: prio %d protocol ip u32 match mark %d 0x%x flowid 2:%d\n", x, i + 1, QOS_MASK, x);
+			fprintf(f,"\t$TFADL parent 2: prio %d u32 match mark %d 0x%x flowid 2:%d\n", x, i + 1, QOS_MASK, x);
 #else
 			x = i + 1;
 			fprintf(f,
@@ -1314,6 +1316,7 @@ static int add_bandwidth_limiter_rules(char *pcWANIF)
 	char fpath[128] = {0};
 	char lan_ipaddr[INET_ADDRSTRLEN] = {0};
 	char lan_netmask[INET_ADDRSTRLEN] = {0};
+	int class = 0;
 
 	QOSDBG("[BWLIT][unit %d] pcWANIF=%s\n", wan_unit, pcWANIF);
 
@@ -1393,13 +1396,18 @@ static int add_bandwidth_limiter_rules(char *pcWANIF)
 		memset(addr_new, 0, sizeof(addr_new));
 		address_format_checker(&addr_type, addr, addr_new, sizeof(addr_new));
 		QOSDBG("[BWLIT] addr_type=%d, addr=%s, add_new=%s, lan_addr=%s\n", addr_type, addr, addr_new, lan_addr);
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+		class = (safe_atoi(prio) + INITIAL_MARKNUM) << SHIFT_BIT;
+#else
+		class = safe_atoi(prio) + INITIAL_MARKNUM;
+#endif
 
 		if (addr_type == TYPE_IP){
 			fprintf(fn,
 				"-A POSTROUTING ! -s %s -d %s -j %s %d\n"
 				"-A PREROUTING -s %s ! -d %s -j %s %d\n"
-				, lan_addr, addr_new, action, safe_atoi(prio)+INITIAL_MARKNUM
-				, addr_new, lan_addr, action, safe_atoi(prio)+INITIAL_MARKNUM
+				, lan_addr, addr_new, action, class
+				, addr_new, lan_addr, action, class
 				);
 			if(manual_return){
 			fprintf(fn,
@@ -1412,7 +1420,7 @@ static int add_bandwidth_limiter_rules(char *pcWANIF)
 		else if (addr_type == TYPE_MAC){
 			fprintf(fn,
 				"-A PREROUTING -m mac --mac-source %s ! -d %s  -j %s %d\n"
-				, addr_new, lan_addr, action, safe_atoi(prio)+INITIAL_MARKNUM
+				, addr_new, lan_addr, action, class
 				);
 			if(manual_return){
 			fprintf(fn,
@@ -1425,8 +1433,8 @@ static int add_bandwidth_limiter_rules(char *pcWANIF)
 			fprintf(fn,
 				"-A POSTROUTING ! -s %s -m iprange --dst-range %s -j %s %d\n"
 				"-A PREROUTING -m iprange --src-range %s ! -d %s -j %s %d\n"
-				, lan_addr, addr_new, action, safe_atoi(prio)+INITIAL_MARKNUM
-				, addr_new, lan_addr, action, safe_atoi(prio)+INITIAL_MARKNUM
+				, lan_addr, addr_new, action, class
+				, addr_new, lan_addr, action, class
 				);
 			if(manual_return){
 			fprintf(fn,
@@ -1552,7 +1560,11 @@ static int start_bandwidth_limiter(int wan_unit)
 		if (!strcmp(enable, "0")) continue;
 
 		address_format_checker(&addr_type, addr, addr_new, sizeof(addr_new));
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+		class = (safe_atoi(prio) + INITIAL_MARKNUM) << SHIFT_BIT;
+#else
 		class = safe_atoi(prio) + INITIAL_MARKNUM;
+#endif
 		if (addr_type == TYPE_MAC)
 		{
 			sscanf(addr_new, "%02X:%02X:%02X:%02X:%02X:%02X",&s[0],&s[1],&s[2],&s[3],&s[4],&s[5]);
@@ -1599,6 +1611,7 @@ static int start_bandwidth_limiter(int wan_unit)
 	// init guest 3: ~ 14: (12 guestnetwork), start number = 3
 	guest = 3;
 	int  guest_mark = GUEST_INIT_MARKNUM;
+	int  g_mark = guest_mark_calc(guest_mark);
 	char wl[128], wlv[128], tmp[128], *next, *next2;
 	char prefix[32];
 	char *wl_if = wl_ifname;
@@ -1631,11 +1644,7 @@ static int start_bandwidth_limiter(int wan_unit)
 					"\tTCA%d%d=\"tc class add dev $GUEST%d%d\"\n"
 					"\tTFA%d%d=\"tc filter add dev $GUEST%d%d\"\n" // 5
 					"\n"
-#if defined(RTCONFIG_QCA)
 					"\t$TQA%d%d root handle %d: htb default %d\n"
-#else
-					"\t$TQA%d%d root handle %d: htb\n"
-#endif
 					"\t$TCA%d%d parent %d: classid %d:1 htb rate %skbit\n" // 7
 					"\n"
 					"\t$TCA%d%d parent %d:1 classid %d:%d htb rate 1kbit ceil %skbit prio %d\n"
@@ -1650,20 +1659,16 @@ static int start_bandwidth_limiter(int wan_unit)
 					, i, j, i, j
 					, i, j, i, j
 					, i, j, i, j // 5
-#if defined(RTCONFIG_QCA)
-					, i, j, guest, guest_mark
-#else
-					, i, j, guest
-#endif
+					, i, j, guest, g_mark
 					, i, j, guest, guest, nvram_safe_get(strcat_r(wlv, "_bw_dl", tmp)) //7
-					, i, j, guest, guest, guest_mark, nvram_safe_get(strcat_r(wlv, "_bw_dl", tmp)), guest_mark
-					, i, j, guest, guest_mark, guest_mark
-					, i, j, guest, guest_mark, guest_mark, guest, guest_mark // 10
-					, guest_mark, nvram_safe_get(strcat_r(wlv, "_bw_ul", tmp)), guest_mark
-					, guest_mark, guest_mark
-					, guest_mark, guest_mark, guest_mark //13
+					, i, j, guest, guest, g_mark, nvram_safe_get(strcat_r(wlv, "_bw_dl", tmp)), gmark
+					, i, j, guest, g_mark, g_mark
+					, i, j, guest, g_mark, g_mark, guest, g_mark // 10
+					, g_mark, nvram_safe_get(strcat_r(wlv, "_bw_ul", tmp)), g_mark
+					, g_mark, g_mark
+					, g_mark, g_mark, g_mark //13
 				);
-				QOSDBG("[BWLIT_GUEST][unit %d] create %s bandwidth limiter, qdisc=%d, class=%d\n", wan_unit, wl_if, guest, guest_mark);
+				QOSDBG("[BWLIT_GUEST][unit %d] create %s bandwidth limiter, qdisc=%d, class=%d\n", wan_unit, wl_if, guest, g_mark);
 				guest++; // add guest 3: ~ 14: (12 guestnetwork)
 				guest_mark++;
 			} //bss_enabled
@@ -1760,6 +1765,7 @@ static int start_bandwidth_limiter_AMAS_WGN()
 	// init guest 3: ~ 14: (12 guestnetwork), start number = 3
 	guest = 3;
 	int  guest_mark = GUEST_INIT_MARKNUM;
+	int  g_mark = guest_mark_calc(guest_mark);
 	char wl[128], wlv[128], tmp[128], *next, *next2;
 	char prefix[32];
 	char *wl_if = wl_ifname;
@@ -1787,13 +1793,13 @@ static int start_bandwidth_limiter_AMAS_WGN()
 			fprintf(f, "\tTCA%d%d=\"tc class add dev $GUEST%d%d\"\n", i, j, i, j);
 			fprintf(f, "\tTFA%d%d=\"tc filter add dev $GUEST%d%d\"\n", i, j, i, j); // 5
 			fprintf(f, "\n"
-				   "\t$TQA%d%d root handle %d: htb default %d\n", i, j, guest, guest_mark);
+				   "\t$TQA%d%d root handle %d: htb default %d\n", i, j, guest, g_mark);
 			fprintf(f, "\t$TCA%d%d parent %d: classid %d:1 htb rate %skbit\n", i, j, guest, guest, nvram_pf_safe_get(wlv, "_bw_dl")); //7
 			fprintf(f, "\n"
-				   "\t$TCA%d%d parent %d:1 classid %d:%d htb rate 1kbit ceil %skbit prio %d\n", i, j, guest, guest, guest_mark, nvram_pf_safe_get(wlv, "_bw_dl"), guest_mark);
-			fprintf(f, "\t$TQA%d%d parent %d:%d handle %d: $SFQ\n", i, j, guest, guest_mark, guest_mark);
-			fprintf(f, "\t$TFA%d%d parent %d: prio %d protocol ip u32 match mark %d 0x%x flowid %d:%d\n", i, j, guest, guest_mark, guest_mark, QOS_MASK, guest, guest_mark); // 10
-			QOSDBG("[BWLIT_GUEST] create %s bandwidth limiter, qdisc=%d, class=%d\n", wl_if, guest, guest_mark);
+				   "\t$TCA%d%d parent %d:1 classid %d:%d htb rate 1kbit ceil %skbit prio %d\n", i, j, guest, guest, g_mark, nvram_pf_safe_get(wlv, "_bw_dl"), g_mark);
+			fprintf(f, "\t$TQA%d%d parent %d:%d handle %d: $SFQ\n", i, j, guest, g_mark, g_mark);
+			fprintf(f, "\t$TFA%d%d parent %d: prio %d protocol ip u32 match mark %d 0x%x flowid %d:%d\n", i, j, guest, g_mark, g_mark, QOS_MASK, guest, g_mark); // 10
+			QOSDBG("[BWLIT_GUEST] create %s bandwidth limiter, qdisc=%d, class=%d\n", wl_if, guest, g_mark);
 
 			guest++; // add guest 3: ~ 14: (12 guestnetwork)
 			guest_mark++;

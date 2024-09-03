@@ -206,7 +206,7 @@ function addRow(obj, upper){
 
 function applyRule(){
 	if(lantiq_support && wave_ready != 1){
-		alert("Please wait a minute for wireless ready");
+		alert(`<#Wireless_ready#>`);
 		return false;
 	}
 	

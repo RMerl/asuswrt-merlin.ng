@@ -3,27 +3,21 @@
    All Rights Reserved
 
     <:label-BRCM:2016:DUAL/GPL:standard
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
 :>
 */
 
@@ -56,6 +50,8 @@ static int core_enabled[SHORTFIN_CORES];
 static serdes_mode_t lane_mode[SHORTFIN_CORES];
 static serdes_mode_t port_mode[SHORTFIN_CORES][PORTS_PER_CORE];
 static serdes_mode_t configured_mode[SHORTFIN_CORES][PORTS_PER_CORE];
+
+extern int phy_speed_max;
 
 static inline int is_inter_phy_type_supported(phy_dev_t *phy_dev, int inter_phy_type)
 {
@@ -145,11 +141,13 @@ static int _serdes_lane_uc_cfg(phy_dev_t *phy_dev, serdes_mode_t serdes_mode)
     case SERDES_MODE_FORCE_2P5G_USXGMII_MP:
     case SERDES_MODE_FORCE_1G_USXGMII_MP:
     case SERDES_MODE_FORCE_100M_USXGMII_MP:
+    case SERDES_MODE_FORCE_10M_USXGMII_MP:
     case SERDES_MODE_FORCE_10G_USXGMII:
     case SERDES_MODE_FORCE_5G_USXGMII:
     case SERDES_MODE_FORCE_2P5G_USXGMII:
     case SERDES_MODE_FORCE_1G_USXGMII:
     case SERDES_MODE_FORCE_100M_USXGMII:
+    case SERDES_MODE_FORCE_10M_USXGMII:
     case SERDES_MODE_FORCE_10G_R:
     case SERDES_MODE_FORCE_5G_R:
     case SERDES_MODE_FORCE_2P5G_R:
@@ -184,11 +182,13 @@ static int _serdes_lane_txfir_cfg(phy_dev_t *phy_dev, serdes_mode_t serdes_mode)
     case SERDES_MODE_FORCE_2P5G_USXGMII_MP:
     case SERDES_MODE_FORCE_1G_USXGMII_MP:
     case SERDES_MODE_FORCE_100M_USXGMII_MP:
+    case SERDES_MODE_FORCE_10M_USXGMII_MP:
     case SERDES_MODE_FORCE_10G_USXGMII:
     case SERDES_MODE_FORCE_5G_USXGMII:
     case SERDES_MODE_FORCE_2P5G_USXGMII:
     case SERDES_MODE_FORCE_1G_USXGMII:
     case SERDES_MODE_FORCE_100M_USXGMII:
+    case SERDES_MODE_FORCE_10M_USXGMII:
     case SERDES_MODE_FORCE_10G_R:
         ret |= merlin16_shortfin_apply_txfir_cfg (phy_dev, 1, 38, 1, 0);
         ret |= merlin16_shortfin_config_tx_hpf(phy_dev, 3);
@@ -253,6 +253,9 @@ static int _serdes_lane_speed_cfg(phy_dev_t *phy_dev, serdes_mode_t serdes_mode)
     case SERDES_MODE_FORCE_100M_USXGMII_MP:
         ret |= phy_dev_prog_ext(phy_dev, usxgmii_force_speed_100m);
         break; 
+    case SERDES_MODE_FORCE_10M_USXGMII_MP:
+        ret |= phy_dev_prog_ext(phy_dev, usxgmii_force_speed_10m);
+        break; 
     case SERDES_MODE_FORCE_10G_USXGMII:
         ret |= phy_dev_prog_ext(phy_dev, force_speed_10g_usxgmii);
         break;
@@ -267,6 +270,9 @@ static int _serdes_lane_speed_cfg(phy_dev_t *phy_dev, serdes_mode_t serdes_mode)
         break; 
     case SERDES_MODE_FORCE_100M_USXGMII:
         ret |= phy_dev_prog_ext(phy_dev, force_speed_100m_usxgmii);
+        break; 
+    case SERDES_MODE_FORCE_10M_USXGMII:
+        ret |= 0; // TODO: phy_dev_prog_ext(phy_dev, force_speed_10m_usxgmii);
         break; 
     case SERDES_MODE_FORCE_10G_R:
         ret |= phy_dev_prog_ext(phy_dev, force_speed_10g_R);
@@ -463,6 +469,9 @@ static int _phy_speed_set(phy_dev_t *phy_dev, phy_speed_t speed, phy_duplex_t du
     uint8_t core_id = phy_dev->core_index - SHORTFIN_BASE_CORE;
     uint8_t port_id = phy_dev->lane_index;
 
+    if (!phy_dev->cascade_next && phy_speed_max != PHY_SPEED_AUTO)
+        return 0;
+
     if (speed == PHY_SPEED_UNKNOWN)
     {
         serdes_mode = SERDES_MODE_UNKNOWN;
@@ -479,6 +488,8 @@ static int _phy_speed_set(phy_dev_t *phy_dev, phy_speed_t speed, phy_duplex_t du
             serdes_mode = SERDES_MODE_FORCE_1G_USXGMII_MP;
         else if (speed == PHY_SPEED_100)
             serdes_mode = SERDES_MODE_FORCE_100M_USXGMII_MP;
+        else if (speed == PHY_SPEED_10)
+            serdes_mode = SERDES_MODE_FORCE_10M_USXGMII_MP;
     }
     else if (is_inter_phy_type_supported(phy_dev, INTER_PHY_TYPE_USXGMII))
     {
@@ -492,6 +503,8 @@ static int _phy_speed_set(phy_dev_t *phy_dev, phy_speed_t speed, phy_duplex_t du
             serdes_mode = SERDES_MODE_FORCE_1G_USXGMII;
         else if (speed == PHY_SPEED_100)
             serdes_mode = SERDES_MODE_FORCE_100M_USXGMII;
+        else if (speed == PHY_SPEED_10)
+            serdes_mode = SERDES_MODE_FORCE_10M_USXGMII;
     }
     else
     {
@@ -550,7 +563,7 @@ static int _serdes_enable(phy_dev_t *phy_dev, int8_t module_detect)
 #endif
     }
 
-    if (!(phy_dev->flag & PHY_FLAG_POWER_SET_ENABLED))
+    if (!PhyIsPowerSetEnabled(phy_dev))
         serdes_mode = SERDES_MODE_UNKNOWN;
 
     _phy_init_mode(phy_dev, serdes_mode);
@@ -605,7 +618,7 @@ static int _phy_power_get(phy_dev_t *phy_dev, int *enable)
 {
     int ret = 0;
 
-    *enable = phy_dev->flag & PHY_FLAG_POWER_SET_ENABLED ? 1 : 0;
+    *enable = PhyIsPowerSetEnabled(phy_dev);
 
     return ret;
 }
@@ -623,7 +636,7 @@ static int _phy_caps_get(phy_dev_t *phy_dev, int caps_type,  uint32_t *pcaps)
     *pcaps = PHY_CAP_AUTONEG | PHY_CAP_SYNCE;
 
     if (is_inter_phy_type_supported(phy_dev, INTER_PHY_TYPE_USXGMII) || is_inter_phy_type_supported(phy_dev, INTER_PHY_TYPE_USXGMII_MP))
-        *pcaps |= PHY_CAP_100_FULL | PHY_CAP_1000_FULL | PHY_CAP_2500 | PHY_CAP_5000 | PHY_CAP_10000;
+        *pcaps |= PHY_CAP_10_FULL | PHY_CAP_100_FULL | PHY_CAP_1000_FULL | PHY_CAP_2500 | PHY_CAP_5000 | PHY_CAP_10000;
     if (is_inter_phy_type_supported(phy_dev, INTER_PHY_TYPE_10GBASE_R))
         *pcaps |= PHY_CAP_10000;
     if (is_inter_phy_type_supported(phy_dev, INTER_PHY_TYPE_5GBASE_R) || is_inter_phy_type_supported(phy_dev, INTER_PHY_TYPE_5GBASE_X))
@@ -671,6 +684,8 @@ static int _phy_caps_set(phy_dev_t *phy_dev, uint32_t caps)
         _phy_speed_set(phy_dev, PHY_SPEED_1000, PHY_DUPLEX_FULL);
     else if (caps & PHY_CAP_100_FULL)
         _phy_speed_set(phy_dev, PHY_SPEED_100, PHY_DUPLEX_FULL);
+    else if (caps & PHY_CAP_10_FULL)
+        _phy_speed_set(phy_dev, PHY_SPEED_10, PHY_DUPLEX_FULL);
 
     return 0;
 }

@@ -120,7 +120,7 @@ int pmc_switch_power_down(void)
 #endif
 
 #if defined(CONFIG_BCM63158) || defined (CONFIG_BCM63178) || defined (CONFIG_BCM6756) ||\
-	defined(CONFIG_BCM6765)
+	defined(CONFIG_BCM6765) || IS_BCMCHIP(6766)  || IS_BCMCHIP(6764)
 void pmc_sysport_reset_system_port(int port)
 {
 	int status;

@@ -80,6 +80,8 @@ early_set_memory_decrypted(unsigned long vaddr, unsigned long size) { return 0; 
 static inline int __init
 early_set_memory_encrypted(unsigned long vaddr, unsigned long size) { return 0; }
 
+static inline void mem_encrypt_init(void) { }
+
 #define __bss_decrypted
 
 #endif	/* CONFIG_AMD_MEM_ENCRYPT */

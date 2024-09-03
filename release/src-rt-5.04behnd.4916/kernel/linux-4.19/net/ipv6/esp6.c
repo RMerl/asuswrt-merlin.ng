@@ -403,6 +403,13 @@ int esp6_output_tail(struct xfrm_state *x, struct sk_buff *skb, struct esp_info 
 	else
 		aead_request_set_callback(req, 0, esp_output_done, skb);
 
+#if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
+#if defined(CONFIG_BCM_KF_SPU) && (defined(CONFIG_BCM_SPU) || defined(CONFIG_BCM_SPU_MODULE))
+	if ( crypto_aead_tfm(aead)->__crt_alg->cra_flags & CRYPTO_ALG_BLOG ) {
+		req->base.flags |= CRYPTO_TFM_REQ_MAY_BLOG;
+	}
+#endif
+#endif
 	aead_request_set_crypt(req, sg, dsg, ivlen + esp->clen, iv);
 	aead_request_set_ad(req, assoclen);
 
@@ -455,7 +462,14 @@ static int esp6_output(struct xfrm_state *x, struct sk_buff *skb)
 	alen = crypto_aead_authsize(aead);
 
 #if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
-	blog_skip(skb, blog_skip_reason_unknown_proto_esp6);
+#if defined(CONFIG_BCM_KF_SPU) && (defined(CONFIG_BCM_SPU) || defined(CONFIG_BCM_SPU_MODULE))
+	if ( !(crypto_aead_tfm(aead)->__crt_alg->cra_flags & CRYPTO_ALG_BLOG) )
+	{
+		blog_skip(skb, blog_skip_reason_esp6_crypto_algo);
+	}
+#else
+	blog_skip(skb, blog_skip_reason_esp6_spu_disabled);
+#endif
 #endif
 
 	esp.tfclen = 0;
@@ -624,7 +638,14 @@ static int esp6_input(struct xfrm_state *x, struct sk_buff *skb)
 	struct scatterlist *sg;
 
 #if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
-	blog_skip(skb, blog_skip_reason_unknown_proto_esp6);
+#if defined(CONFIG_BCM_KF_SPU) && (defined(CONFIG_BCM_SPU) || defined(CONFIG_BCM_SPU_MODULE))
+	if ( !(crypto_aead_tfm(aead)->__crt_alg->cra_flags & CRYPTO_ALG_BLOG) )
+	{
+		blog_skip(skb, blog_skip_reason_esp6_crypto_algo);
+	}
+#else
+	blog_skip(skb, blog_skip_reason_esp6_spu_disabled);
+#endif
 #endif
 	if (!pskb_may_pull(skb, sizeof(*esph) + ivlen)) {
 		ret = -EINVAL;
@@ -691,6 +712,13 @@ skip_cow:
 	else
 		aead_request_set_callback(req, 0, esp_input_done, skb);
 
+#if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
+#if defined(CONFIG_BCM_KF_SPU) && (defined(CONFIG_BCM_SPU) || defined(CONFIG_BCM_SPU_MODULE))
+	if ( crypto_aead_tfm(aead)->__crt_alg->cra_flags & CRYPTO_ALG_BLOG ) {
+		req->base.flags |= CRYPTO_TFM_REQ_MAY_BLOG;
+	}
+#endif
+#endif
 	aead_request_set_crypt(req, sg, sg, elen + ivlen, iv);
 	aead_request_set_ad(req, assoclen);
 

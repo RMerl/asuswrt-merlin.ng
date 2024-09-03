@@ -227,6 +227,8 @@ ln -s /var/iproute2/rt_tables $ROOTFS/etc/iproute2/rt_tables
 #ln -s /var/tmp $ROOTFS/tmp
 ln -s /var/samba $ROOTFS/etc/samba
 
+date > $ROOTFS/etc/build_time
+
 echo "Setting $ROOTFS permissions ...."
 chmod 755 $ROOTFS
 
@@ -601,6 +603,24 @@ fi
 	cp $TARGETS_DIR/pakl/*$BUILD_NAME.bin $TARGETS_DIR/$ROOTFS/rom/etc/licenses
 	rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/fw/*a0*.bin
 	rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/fw/*b0*.bin
+fi
+
+if [ "$BCM_CHIP" == "6813" ]; then
+	mkdir -p $TARGETS_DIR/$ROOTFS/rom/etc/licenses
+	cp $TARGETS_DIR/pakl/*921*.bin $TARGETS_DIR/$ROOTFS/rom/etc/licenses
+	cp $TARGETS_DIR/pakl/*922*.bin $TARGETS_DIR/$ROOTFS/rom/etc/licenses
+	cp $TARGETS_DIR/pakl/*923*.bin $TARGETS_DIR/$ROOTFS/rom/etc/licenses
+fi
+
+if [ "$BCM_CHIP" == "6765" ]; then
+	mkdir -p $TARGETS_DIR/$ROOTFS/rom/etc/licenses
+	cp $TARGETS_DIR/pakl/*924*.bin $TARGETS_DIR/$ROOTFS/rom/etc/licenses
+	cp $TARGETS_DIR/pakl/*925*.bin $TARGETS_DIR/$ROOTFS/rom/etc/licenses
+fi
+
+if [ "$BCM_CHIP" == "6766" ]; then
+	mkdir -p $TARGETS_DIR/$ROOTFS/rom/etc/licenses
+	cp $TARGETS_DIR/pakl/*926*.bin $TARGETS_DIR/$ROOTFS/rom/etc/licenses
 fi
 
 # strip userspace binaries is sstrip is "enabled"

@@ -4,25 +4,19 @@
       Copyright (c) 2015 Broadcom 
       All Rights Reserved
    
-   Unless you and Broadcom execute a separate written software license
-   agreement governing use of this software, this software is licensed
-   to you under the terms of the GNU General Public License version 2
-   (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-   with the following added to such license:
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License, version 2, as published by
+   the Free Software Foundation (the "GPL").
    
-      As a special exception, the copyright holders of this software give
-      you permission to link this software with independent modules, and
-      to copy and distribute the resulting executable under terms of your
-      choice, provided that you also meet, for each linked independent
-      module, the terms and conditions of the license of that module.
-      An independent module is a module which is not derived from this
-      software.  The special exception does not apply to any modifications
-      of the software.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
    
-   Not withstanding the above, under no circumstances may you combine
-   this software in any way with any other Broadcom software provided
-   under a license other than the GPL, without Broadcom's express prior
-   written consent.
+   
+   A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+   writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.
    
    :>
  */
@@ -55,6 +49,10 @@
 
 #if defined(CONFIG_NET_SWITCHDEV)
 #include <net/switchdev.h>
+#endif
+
+#if !defined(DSL_DEVICES)
+#define ENET_DELAYED_INIT
 #endif
 
 typedef enum
@@ -188,18 +186,23 @@ typedef struct
 typedef struct port_info_t
 {
     int port;
-    int is_management;
-    int is_attached;
-    int is_detect;
-    int is_gpon;
-    int is_epon;
-    int is_epon_ae;
-    int is_undef;
-    int is_wan;
-    int is_wanconf_ae;
-    int is_wanconf_mux_ae;
-    int is_wanconf_mux_pon;
+    uint32_t is_management      :1;
+    uint32_t is_attached        :1;
+    uint32_t is_detect          :1;
+    uint32_t is_gpon            :1;
+    uint32_t is_epon            :1;
+    uint32_t is_epon_ae         :1;
+    uint32_t is_undef           :1;
+    uint32_t is_wan             :1;
+    uint32_t is_wanconf_ae      :1;
+    uint32_t is_wanconf_mux_ae  :1;
+    uint32_t is_wanconf_mux_pon :1;
+    uint32_t swtag_use_pvid     :1;
+    uint32_t reserved           :20;
+    int is_macsec;
 } port_info_t;
+
+#define EXT_SW_VLAN_TAG_PREFIX  1000
 
 typedef struct enetx_port_t
 {
@@ -213,6 +216,8 @@ typedef struct enetx_port_t
     char name[IFNAMSIZ];
     /* Set by port_init() function */
     int is_init;
+    /* Set by port_open() or port_stop() function */
+    int is_open;
 
     /* Name for debug */
     char obj_name[OBJIFNAMSIZ];
@@ -263,9 +268,9 @@ typedef struct enetx_port_t
 #if defined(CONFIG_BCM_BCA_LED)
             bca_leds_info_t leds_info[MAX_PHYS_PER_CROSSBAR_GROUP];
 #endif
-#if defined(CONFIG_BCM_MACSEC)  
+#if defined(CONFIG_BCM_MACSEC)
             struct bcm_macsec_dev macsec_dev;
-#endif            
+#endif
         } p;
         struct
         {
@@ -359,6 +364,10 @@ typedef struct port_ops_t
     int (*tx_pkt_mod)(enetx_port_t *port, pNBuff_t *pNBuff, uint8_t **data, uint32_t *len, unsigned int port_map);
     /* for SF2 based external switch removing BRCM tag when rx */
     int (*rx_pkt_mod)(enetx_port_t *port, struct sk_buff *skb);
+    /* for non-brcm external switch using pvid */
+    int (*tx_pkt_swtag_mod)(enetx_port_t *port, pNBuff_t pNBuff);
+    int (*rx_pkt_swtag_mod)(enetx_port_t *port, struct sk_buff *skb);
+
     int (*mib_dump)(enetx_port_t *self, int all);   /* ETHSWDUMPMIB */
     void (*print_status)(enetx_port_t *self);
     /* fast age ARL for port */
@@ -600,24 +609,28 @@ static inline int port_pause_set(enetx_port_t *port, int rx_enable, int tx_enabl
 
 static inline void port_open(enetx_port_t *self)
 {
-    if (self->port_class != PORT_CLASS_PORT)
+    if (self->port_class != PORT_CLASS_PORT || self->is_open)
         return;
 
     if (self->p.ops->open)
         self->p.ops->open(self);
     else
         port_generic_open(self);
+
+    self->is_open = 1;
 }
 
 static inline void port_stop(enetx_port_t *self)
 {
-    if (self->port_class != PORT_CLASS_PORT)
+    if (self->port_class != PORT_CLASS_PORT || !self->is_open)
         return;
 
     if (self->p.ops->stop)
         self->p.ops->stop(self);
     else
         port_generic_stop(self);
+
+    self->is_open = 0;
 }
     
 static inline int port_mtu_set(enetx_port_t *self, int mtu)

@@ -146,4 +146,8 @@ extern int is_cap_private_cfg(char *param);
 extern int set_security_update(char *security_update);
 extern int get_security_update(void);
 #endif
+extern int set_ASUS_EULA(char *ASUS_EULA);
+extern int set_ASUS_NEW_EULA(char *ASUS_NEW_EULA, char *from_service);
+extern int get_ASUS_privacy_policy_tbl(struct json_object *ASUS_privacy_policy_tbl);
+extern int get_ASUS_privacy_policy_info(struct json_object *ASUS_privacy_policy_info);
 #endif /* !__WEBAPI_H__ */

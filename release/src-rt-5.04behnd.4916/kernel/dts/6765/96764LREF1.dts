@@ -1,4 +1,4 @@
-#include "6765.dtsi"
+#include "6764L.dtsi"
 #include "../bcm_voice.dtsi"
 
 / {
@@ -207,7 +207,7 @@
 
 &led_ctrl {
 
-	led0: sw_parallel_led_38 {
+	led0: sw_parallel_led_10 {
 		active_low; 
 		brightness = <255>;
 		pinctrl-0 = <&a_per_led_10_pin_10>;
@@ -218,7 +218,6 @@
 	led1: parallel-port_0-led_0 {
 		active_low;
 		pinctrl-0 = <&a_per_led_22_pin_22>;
-		crossbar-output = <0>;
 		link = <(LED_SPEED_100|LED_SPEED_2500)>;
 		activity = <(LED_SPEED_100|LED_SPEED_2500)>;
 		status="okay";
@@ -226,12 +225,11 @@
 	led2: parallel-port_0-led_2 {
 		active_low;
 		pinctrl-0 = <&a_per_led_30_pin_30>;
-		crossbar-output = <2>;
 		link = <(LED_SPEED_2500|LED_SPEED_1G)>;
 		activity = <(LED_SPEED_2500|LED_SPEED_1G)>;
 		status="okay";
 	};
-	led3: sw_parallel_led_9 {
+	led3: sw_parallel_led_28 {
 		active_low; 
 		brightness = <255>;
 		flash_rate = <0>;
@@ -240,7 +238,7 @@
 		label = "WPS";
 	};
 
-	led4: sw_parallel_led_18 {
+	led4: sw_parallel_led_11 {
 		active_low; 
 		pinctrl-0 = <&b_per_led_05_pin_38>;
 		brightness = <255>;

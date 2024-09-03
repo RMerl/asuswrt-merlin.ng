@@ -1,28 +1,22 @@
 /*
 <:copyright-BRCM:2015:DUAL/GPL:standard
 
-   Copyright (c) 2015 Broadcom
+   Copyright (c) 2015 Broadcom 
    All Rights Reserved
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
 :>
 */
@@ -43,9 +37,8 @@ written consent.
 
 #if defined(CONFIG_BRCM_IKOS) || defined(CONFIG_BCM_PCIE_PMC_BRD_STUBS)
 #define USE_PMC_BRD_STUBS
-#else /* !CONFIG_BRCM_IKOS && !CONFIG_BCM_PCIE_PMC_BRD_STUBS */
-#include <board.h>
 #endif /* !CONFIG_BRCM_IKOS && !CONFIG_BCM_PCIE_PMC_BRD_STUBS */
+#include <board.h>
 #include <pmc_core_api.h>
 #include <pmc_pcie.h>
 #include <shared_utils.h>
@@ -76,10 +69,23 @@ written consent.
 #define PCIE_G3_PLL_LOCK_WAIT_TIMEOUT       100 /* milliseconds */
 
 /* PCIe SERDES */
-#define PCIE_SERDES_DEFAULT                 0
-#define PCIE_SERDES_28HPM_VIPER             0  /* Gen2 */
-#define PCIE_SERDES_16FFC_VIPER             1  /* Gen2 */
-#define PCIE_SERDES_16FFC_BLACKSHARK        2  /* Gen3 */
+#define PCIE_SERDES_28HPM                   (0 << 0)
+#define PCIE_SERDES_16FFC                   (1 << 0)
+#define PCIE_SERDES_PROCESS_MASK            (1 << 0)
+
+#define PCIE_SERDES_VIPER                   (0 << 1)
+#define PCIE_SERDES_BLACKSHARK              (1 << 1)
+#define PCIE_SERDES_ANALOG_MASK             (1 << 1)
+
+#define PCIE_SERDES_REFCLK_50MHZ            (0 << 2)
+#define PCIE_SERDES_XTAL_50MHZ              (0 << 2)
+#define PCIE_SERDES_REFCLK_80MHZ            (1 << 2)
+#define PCIE_SERDES_XTAL_80MHZ              (1 << 2)
+#define PCIE_SERDES_CLOCK_MASK              (1 << 2)
+
+#define PCIE_SERDES_INVALID                 0xFFFFFFFF
+#define PCIE_SERDES_DEFAULT                 \
+	(PCIE_SERDES_28HPM | PCIE_SERDES_VIPER | PCIE_SERDES_REFCLK_50MHZ)
 
 /* Base Address Register (BAR) assignments */
 #define BAR1                                1
@@ -141,10 +147,13 @@ written consent.
 	((IS_ENABLED(CONFIG_OF)) ? TRUE : FALSE)
 
 #define BCM963XX_PCIE_SERDES(phc)          ((struct bcm963xx_hc_cb *)(phc)->phc_cb)->phy.serdes
-#define PCIE_16FFC_SERDES(phc)              \
-	((BCM963XX_PCIE_SERDES((phc)) == PCIE_SERDES_16FFC_VIPER) || \
-	(BCM963XX_PCIE_SERDES((phc)) == PCIE_SERDES_16FFC_BLACKSHARK))
-
+#define PCIE_16FFC_SERDES(phc)             \
+	((BCM963XX_PCIE_SERDES((phc)) & PCIE_SERDES_PROCESS_MASK) == PCIE_SERDES_16FFC)
+#define PCIE_VIPER_SERDES(phc)             \
+	((BCM963XX_PCIE_SERDES((phc)) & PCIE_SERDES_ANALOG_MASK) == PCIE_SERDES_VIPER)
+#define PCIE_80MHZ_SERDES(phc)             \
+	((BCM963XX_PCIE_SERDES((phc)) & PCIE_SERDES_CLOCK_MASK) == PCIE_SERDES_REFCLK_80MHZ)
+	
 /* Register access */
 #define hcd_readl                          debug_hcd_readl
 #define hcd_writel                         debug_hcd_writel
@@ -199,6 +208,7 @@ struct bcm963xx_hc_msi {
  * TODO: Check errata# (same as above?)
  * @g3tcaerrata:     GEN3 Transmit Clock Alignment Errata (MCS4915-ESX00-R)
  * @rxsigdetflt:     RX Signal Detect Filter
+ * @ptmcapadv:       PTM Capability advertisement
  */
 struct bcm963xx_hc_war
 {
@@ -211,6 +221,7 @@ struct bcm963xx_hc_war
 	uint32 g2pllcoupling:1;
 	uint32 g3tcaerrata:1;
 	uint32 rxsigdetflt:1;
+	uint32 ptmcapadv:1;
 };
 
 /*
@@ -330,7 +341,6 @@ static void bcm963xx_hc_remove(struct pcie_hc_core *phc);
  *  external Function prototype
  * +-----------------------------------------------------
  */
-extern unsigned long getMemorySize(void);
 
 /*
  * +-----------------------------------------------------
@@ -1332,34 +1342,64 @@ void bcm963xx_hc_gen2_phy_config_ssc(struct pcie_hc_core *phc)
 	HCD_FN_ENT();
 
 	if (PCIE_16FFC_SERDES(phc)) {
-	    /*
-	     * Settings from SoC Design team
-	     *
-	     * mdio write 0x1f 0x2200  ' Set frequency setting to 99.99 to start
-	     * mdio write 0x00 0x5c63  ' INT[9:0]=0x63, FRAC[17:16]=0x3
-	     * mdio write 0x01 0xffff  ' FRAC[15:0]=0xffff
-	     *
-	     * mdio write 0x1f 0x2600  ' point to SSC control set
-	     * mdio write 0x01 0xf5c2  ' write ssc_limit[15:0]
-	     * mdio write 0x02 0x0001  ' write ssc_limit[18:16]
-	     * mdio write 0x03 0x0350  ' write ssc_step[15:0]
-	     */
+	    if (PCIE_80MHZ_SERDES(phc)) {
+	        /*
+	         * Settings from SoC Design team
+	         *
+	         * mdio write 0x1f 0x2300  ' Set frequency setting to 99.99 to start
+	         * mdio write 0x00 0x643e  ' INT[9:0]=0x3e, FRAC[17:16]=0x1
+	         * mdio write 0x01 0xf020  ' FRAC[15:0]=0xf020
+	         *
+	         * mdio write 0x1f 0x2600  ' point to SSC control set
+	         * mdio write 0x01 0x1db2  ' write ssc_limit[15:0]
+	         * mdio write 0x02 0x0001  ' write ssc_limit[18:16]
+	         * mdio write 0x03 0x0120  ' write ssc_step[15:0]
+	         */
 
-	    bcm963xx_hc_mdio_write(phc, 0, 0x1f, SERDES_PLL_AFE2_OFFSET);
-	    /* ctrl0: override_ana_reg     bits:15 */
-	    /* ctrl0: override_val         bits:14 */
-	    /* ctrl0: frac_mode_sel[01:00] bits:13-12 */
-	    /* ctrl0: pll_ndiv_frac[17:16] bits:11-10 */
-	    /* ctrl0: int_val[9:0]         bits:9-0 */
-	    bcm963xx_hc_mdio_write(phc, 0, 0x00, 0x5c63);
-	    /* ctrl1: pll_ndiv_frac[15-00] bits:15-0 */
-	    bcm963xx_hc_mdio_write(phc, 0, 0x01, 0xffff);
+	        bcm963xx_hc_mdio_write(phc, 0, 0x1f, SERDES_PLL_AFE3_OFFSET);
+	        /* ctrl0: override_ana_reg     bits:15 */
+	        /* ctrl0: override_val         bits:14 */
+	        /* ctrl0: frac_mode_sel[01:00] bits:13-12 */
+	        /* ctrl0: pll_ndiv_frac[17:16] bits:11-10 */
+	        /* ctrl0: int_val[9:0]         bits:9-0 */
+	        bcm963xx_hc_mdio_write(phc, 0, 0x00, 0x643e);
+	        /* ctrl1: pll_ndiv_frac[15-00] bits:15-0 */
+	        bcm963xx_hc_mdio_write(phc, 0, 0x01, 0xf020);
 
-	    bcm963xx_hc_mdio_write(phc, 0, 0x1f, SERDES_PLL_SSC_CTRL_OFFSET);
-	    bcm963xx_hc_mdio_write(phc, 0, 0x01, 0xf5c2);  /* ctrl1: i_ssc_limit[15-0] bits:15-0 */
-	    bcm963xx_hc_mdio_write(phc, 0, 0x02, 0x0001);  /* ctrl2: i_ssc_limit[18-16] bits: 2:0 */
-	    bcm963xx_hc_mdio_write(phc, 0, 0x03, 0x0350);  /* ctrl3: i_ssc_step bits:15-0 */
+	        bcm963xx_hc_mdio_write(phc, 0, 0x1f, SERDES_PLL_SSC_CTRL_OFFSET);
+	        bcm963xx_hc_mdio_write(phc, 0, 0x01, 0x1db2);  /* ctrl1: i_ssc_limit[15-0] bits:15-0 */
+	        bcm963xx_hc_mdio_write(phc, 0, 0x02, 0x0001);  /* ctrl2: i_ssc_limit[18-16] bits: 2:0 */
+	        bcm963xx_hc_mdio_write(phc, 0, 0x03, 0x0120);  /* ctrl3: i_ssc_step bits:15-0 */
 
+	    } else  {
+	        /*
+	         * Settings from SoC Design team
+	         *
+	         * mdio write 0x1f 0x2200  ' Set frequency setting to 99.99 to start
+	         * mdio write 0x00 0x5c63  ' INT[9:0]=0x63, FRAC[17:16]=0x3
+	         * mdio write 0x01 0xffff  ' FRAC[15:0]=0xffff
+	         *
+	         * mdio write 0x1f 0x2600  ' point to SSC control set
+	         * mdio write 0x01 0xf5c2  ' write ssc_limit[15:0]
+	         * mdio write 0x02 0x0001  ' write ssc_limit[18:16]
+	         * mdio write 0x03 0x0350  ' write ssc_step[15:0]
+	         */
+
+	        bcm963xx_hc_mdio_write(phc, 0, 0x1f, SERDES_PLL_AFE2_OFFSET);
+	        /* ctrl0: override_ana_reg     bits:15 */
+	        /* ctrl0: override_val         bits:14 */
+	        /* ctrl0: frac_mode_sel[01:00] bits:13-12 */
+	        /* ctrl0: pll_ndiv_frac[17:16] bits:11-10 */
+	        /* ctrl0: int_val[9:0]         bits:9-0 */
+	        bcm963xx_hc_mdio_write(phc, 0, 0x00, 0x5c63);
+	        /* ctrl1: pll_ndiv_frac[15-00] bits:15-0 */
+	        bcm963xx_hc_mdio_write(phc, 0, 0x01, 0xffff);
+
+	        bcm963xx_hc_mdio_write(phc, 0, 0x1f, SERDES_PLL_SSC_CTRL_OFFSET);
+	        bcm963xx_hc_mdio_write(phc, 0, 0x01, 0xf5c2);  /* ctrl1: i_ssc_limit[15-0] bits:15-0 */
+	        bcm963xx_hc_mdio_write(phc, 0, 0x02, 0x0001);  /* ctrl2: i_ssc_limit[18-16] bits: 2:0 */
+	        bcm963xx_hc_mdio_write(phc, 0, 0x03, 0x0350);  /* ctrl3: i_ssc_step bits:15-0 */
+	    }
 	} else {
 
 	    /* set the SSC parameters
@@ -1570,19 +1610,6 @@ static void bcm963xx_hc_gen3_phy_config_ssc(struct pcie_hc_core *phc)
 	HCD_FN_ENT();
 
 	if (PCIE_16FFC_SERDES(phc)) {
-	    uint32 xtal_freq;
-
-	    /*
-	     * xtal freq = (100 * PDIV * MDIV)/NDIV
-	     *
-	     * Where PDIV = 1, MDIV = 0x40, NDIV from PLL_LOOP_FREQ_NDIV_INT
-	     */
-	    rddata = hcd_readl(phc, G3_PLL_PLL_LOOP_FREQ_OFFSET);
-	    rddata &= G3_PLL_PLL_LOOP_FREQ_NDIV_INT_MASK;
-	    xtal_freq = (0x40 * 100)/rddata;
-	    HCD_LOG("Core [%d] Serdes Using GEN3 PLL XTAL Freq %d Mhz\n",
-	        phc->info.id, xtal_freq);
-
 	    /*
 	     * Settings from Design team
 	     *
@@ -1599,7 +1626,7 @@ static void bcm963xx_hc_gen3_phy_config_ssc(struct pcie_hc_core *phc)
 	     *   PCIE_3_G3_PLL.PLL_SSC_STEP.PLL_SSC_STEP=&h13c&
 	     *
 	     */
-	    if (xtal_freq == 80) {
+	    if (PCIE_80MHZ_SERDES(phc)) {
 	        wrdata = 0x6200; /* SSC Limit */
 	    } else {
 	        wrdata = 0x9c00; /* SSC Limit */
@@ -1608,7 +1635,7 @@ static void bcm963xx_hc_gen3_phy_config_ssc(struct pcie_hc_core *phc)
 	    wrdata |=  G3_PLL_PLL_SSC_LIMIT_SSC_MODE_DOWNSPREAD;
 	    hcd_writel(wrdata, phc, G3_16FF_PLL_PLL_SSC_LIMIT_SSC_MODE_OFFSET);
 
-	    if (xtal_freq == 80) {
+	    if (PCIE_80MHZ_SERDES(phc)) {
 	        wrdata = 0x013c; /* SSC Step */
 	    } else {
 	        wrdata = 0x0330; /* SSC Step */
@@ -3123,6 +3150,7 @@ static int bcm963xx_hc_core_unconfig(struct pcie_hc_core *phc)
  */
 static int bcm963xx_hc_core_config(struct pcie_hc_core *phc)
 {
+	struct bcm963xx_hc_cb *phc_cb = (struct bcm963xx_hc_cb *)(phc->phc_cb);
 	uint32 reg_data;
 	struct resource *owin;
 	int win;
@@ -3170,7 +3198,7 @@ static int bcm963xx_hc_core_config(struct pcie_hc_core *phc)
 
 	    /* Go through available BAR's and configure the DDR access */
 	    barnum = BAR_FIRST;
-	    ddr_sizekb = SZ2KB(getMemorySize());
+	    ddr_sizekb = SZ2KB(kerSysGetMemorySize());
 	    sizekb = SZ2KB(SZ_2G);
 	    base_lo = 0x00000000;
 	    base_hi = 0x00000000;
@@ -3255,6 +3283,21 @@ static int bcm963xx_hc_core_config(struct pcie_hc_core *phc)
 
 	/* If configured, enable PCIe SSC (enable = TRUE) */
 	bcm963xx_hc_enable_ssc(phc, TRUE);
+
+	/* Process PTM Capability Advertisement */
+	if (phc_cb->wars.ptmcapadv == 1) {
+	    reg_data = hcd_readl(phc, RC_CFG_PRIV1_ROOT_CAP_OFFSET);
+	    reg_data |= (RC_CFG_PRIV1_ROOT_CAP_EXT2_CAP_ENA_PTM_CAP);
+	    hcd_writel(reg_data, phc, RC_CFG_PRIV1_ROOT_CAP_OFFSET);
+	    HCD_LOG("Core [%d] Enabled PTM Capability Advertisement\n",
+	        phc->info.id);
+	}
+
+	/* Synchronize the Satellite Timer with the Router CPU Central Timer */
+	if ((phc->info.rev >= 0x406) && (phc->info.ctmr != NULL)) {
+	    pcie_hcd_sync_stmr(phc->pdrv,
+	        (phc->info.base+PCIE_SAT_TIMER_REGS_OFFSET));
+	}
 
 	HCD_FN_EXT();
 
@@ -3592,22 +3635,51 @@ static int bcm963xx_hc_setup_rev(struct pcie_hc_core *phc)
 	HCD_FN_ENT();
 
 	/* Determine the serdes type */
-	phc_cb->phy.serdes = PCIE_SERDES_DEFAULT;
-	if (phc->info.rev <= 0x402) {
-	    /* So far until 4.02, all SoC's are 28nm, and all are GEN2 ports */
-	    phc_cb->phy.serdes = PCIE_SERDES_28HPM_VIPER;
-	} else {
-	    /* 16FFC GEN2 is viper and GEN3 is blackshark */
-	    if (phc->info.gen == PCIE_LINK_SPEED_GEN3) {
-	        phc_cb->phy.serdes = PCIE_SERDES_16FFC_BLACKSHARK;
-	    } else {
-	        phc_cb->phy.serdes = PCIE_SERDES_16FFC_VIPER;
-	    }
-	}
-	HCD_LOG("Port [%d] using %s %s Serdes\n", phc->info.id, 
-	    PCIE_16FFC_SERDES(phc) ? "16FFC" : "28HPM",
-	    (phc->info.gen == PCIE_LINK_SPEED_GEN3) ? "Blackshark" : "Viper");
+	if (phc->cfg.serdes == PCIE_SERDES_INVALID) {
+	    phc_cb->phy.serdes = PCIE_SERDES_DEFAULT;
+    	if (phc->info.rev <= 0x402) {
+    	    /* So far until 4.02, all SoC's are 28nm, and all are GEN2 ports */
+    	    phc_cb->phy.serdes |= PCIE_SERDES_28HPM;
+    	    phc_cb->phy.serdes |= PCIE_SERDES_VIPER;
+    	} else {
+    	    phc_cb->phy.serdes |= PCIE_SERDES_16FFC;
+    	    /* 16FFC GEN2 is viper and GEN3 is blackshark */
+    	    if (phc->info.gen == PCIE_LINK_SPEED_GEN3) {
+    	        uint32 xtal_freq, rddata;
 
+    	        phc_cb->phy.serdes |= PCIE_SERDES_BLACKSHARK;
+
+    	        /*
+    	         * xtal freq = (100 * PDIV * MDIV)/NDIV
+    	         *
+    	         * Where PDIV = 1, MDIV = 0x40, NDIV from PLL_LOOP_FREQ_NDIV_INT
+    	         */
+    	        rddata = hcd_readl(phc, G3_PLL_PLL_LOOP_FREQ_OFFSET);
+    	        rddata &= G3_PLL_PLL_LOOP_FREQ_NDIV_INT_MASK;
+    	        xtal_freq = (0x40 * 100)/rddata;
+    	        if (xtal_freq == 80) {
+    	            phc_cb->phy.serdes |= PCIE_SERDES_XTAL_80MHZ;
+    	        } else {
+    	            phc_cb->phy.serdes |= PCIE_SERDES_XTAL_50MHZ;
+    	        }
+    	    } else {
+    	        phc_cb->phy.serdes |= PCIE_SERDES_VIPER;
+    	        if (phc->info.rev < 0x408) {
+    	            phc_cb->phy.serdes |= PCIE_SERDES_REFCLK_50MHZ;
+    	        } else {
+    	            /* Currently: BCM96764, need to use chip_id/rev later */
+    	            phc_cb->phy.serdes |= PCIE_SERDES_REFCLK_80MHZ;
+    	        }
+    	    }
+    	}
+	} else {
+	    phc_cb->phy.serdes = phc->cfg.serdes;
+	}
+
+	HCD_LOG("Port [%d] using %s-%s:%s Serdes\n", phc->info.id,
+	    PCIE_16FFC_SERDES(phc) ? "16ffc" : "28hpm",
+	    PCIE_VIPER_SERDES(phc) ? "Viper, RefClk" : "Blackshark, Xtal",
+	    PCIE_80MHZ_SERDES(phc) ? "80MHz" : "50MHz");
 
 	if (phc->info.rev < 0x303) {
 	    phc_cb->wars.g2defset = 1;
@@ -3696,6 +3768,16 @@ static int bcm963xx_hc_setup_rev(struct pcie_hc_core *phc)
 	    phc_cb->wars.rxsigdetflt = 0;
 	}
 
+	/*
+	 * Enable PTM Capability Advertisement (supported internally) for
+	 * 6765 A0/A1 SoC
+	 */
+	if ((chip_id == 0x6765) && (chip_rev <= 0xA1)) {
+	    phc_cb->wars.ptmcapadv = 1;
+	} else {
+	    phc_cb->wars.ptmcapadv = 0;
+	}
+
 	msi = &phc_cb->msi;
 	if (phc->info.rev >= 0x0303) {
 	    msi->intr_status = MSI_INTR2_CPU_STATUS_OFFSET;
@@ -3765,6 +3847,7 @@ static int bcm963xx_hc_probe(struct pcie_hc_core *phc)
 	phc->phc_cb = (void*)phc_cb;
 	phc->cfg.core_rev_offset = MISC_REVISION_OFFSET;
 	phc->cfg.core_rev_mask = 0xFFFFFF;
+	phc->cfg.serdes = PCIE_SERDES_INVALID;
 
 	/* only one device under the core */
 	phc->info.devs = 1;

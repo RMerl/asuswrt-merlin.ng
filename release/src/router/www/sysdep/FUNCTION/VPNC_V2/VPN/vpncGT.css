@@ -108,6 +108,9 @@
 .profile_setting_item{
 	background-color: rgba(0, 0, 0, 0.1);
 }
+.profile_setting_item.policy{
+	color: #b9c5d4 !important;
+}
 .profile_setting_item .title,
 .profile_setting_item .title a:link{
 	color: #b9c5d4;

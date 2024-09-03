@@ -306,6 +306,7 @@ typedef struct rast_bss_info {
 	char wlif_name[32];
 	char prefix[32];
 	int band;
+	int main_unit;
 	int user_low_rssi;
 	int32 rssi_cnt;
 	int32 idle_period;
@@ -449,6 +450,23 @@ struct roaming_list_entry{
 	time_t trigger_time;
 	struct roaming_list_entry *next;
 };
+
+int add_to_roaming_list(int idx,int vidx ,struct ether_addr *sta,int rssi);
+int remove_from_roaming_list(int idx,int vidx ,struct ether_addr *sta);
+
+#endif //RTCONFIG_RAST_NONMESH_KVONLY
+
+#define CONNDIAG_NOTNEW 0x1
+
+#ifdef RTCONFIG_ACCOUNT_BINDING
+#define EOS_PREFIX "EOS"
+#define EOS_ACTION_STARTAPRSSIQUERY "startaprssiquery"
+#define EOS_MAC "mac"
+#define EOS_APS "aps"
+#define EOS_CHANNEL "channel"
+#define EOS_BSSID "bssid"
+#endif
+
 struct report_list_entry {
 	struct ether_addr sta;
 	struct ether_addr bssid;
@@ -456,10 +474,5 @@ struct report_list_entry {
 	time_t recv_time;
 	struct report_list_entry *next;
 };
-int add_to_roaming_list(int idx,int vidx ,struct ether_addr *sta,int rssi);
-int remove_from_roaming_list(int idx,int vidx ,struct ether_addr *sta);
 
-#endif //RTCONFIG_RAST_NONMESH_KVONLY
-
-#define CONNDIAG_NOTNEW 0x1
 #endif	/* _ROAMAST_H_ */

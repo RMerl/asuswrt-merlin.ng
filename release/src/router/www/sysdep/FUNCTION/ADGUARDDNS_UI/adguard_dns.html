@@ -1,0 +1,1086 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<link rel="stylesheet" type="text/css" href="index_style.css">
+<link rel="stylesheet" type="text/css" href="form_style.css">
+<link rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component.css">
+<script type="text/javaScript" src="/js/jquery.js"></script>
+<script language="JavaScript" type="text/javascript" src="/state.js"></script>
+<script type="text/javascript" src="/popup.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
+<script language="JavaScript" type="text/javascript" src="/validator.js"></script>
+<script type="text/javascript" src="/RWD_UI/rwd_component.js"></script>
+<script type="text/javascript" src="/js/weekSchedule/schedule_ui.js"></script>
+<script type="text/javascript" src="/js/adGuard.js"></script>
+<style>
+
+
+</style>
+<script>
+if(based_modelid.substr(0,2) == "GT"){
+	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component_ROG.css">');
+	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/adguard_dns.css">');
+}
+else if(top.webWrapper){
+	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component_WHITE.css">');
+	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/adguard_dns_WHITE.css">');
+}
+else{
+	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/adguard_dns.css">');
+}
+
+var window_width = $(window).width();
+var applyData = {"action_mode": "apply", "rc_service": "restart_wan_if 0;restart_stubby"};
+var dnsList = [];
+var deviceList = [];
+var routerList = [];
+var accountLimits = {};
+var orig_dnspriv_rulelist = decodeURIComponent(httpApi.nvramCharToAscii(["dnspriv_rulelist"]).dnspriv_rulelist);
+var dnspriv_rulelist_array = (orig_dnspriv_rulelist.length == 0)? [""] : orig_dnspriv_rulelist.split('<');
+var orig_adguard_enable = false;
+var cur_device_id = "";
+var cur_dnspriv_rule_index = -1;
+
+var getUrlParameter = function getUrlParameter(param){
+	var url_parm = window.location.search.substring(1);
+	var parm_array = url_parm.split("&");
+	var key_value;
+
+	for(var i = 0; i < parm_array.length; i += 1){
+		key_value = parm_array[i].split("=");
+		if (key_value[0] == param) {
+			return typeof key_value[1] == "undefined" ? "" : decodeURIComponent(key_value[1]);
+		}
+	}
+	return "";
+};
+const theme = getUrlParameter("current_theme").toUpperCase();
+const flag = getUrlParameter("flag").toUpperCase();
+const subnet_idx = getUrlParameter("idx");
+if(theme == "SDN_PROFILE" || theme == "SDN_WIZARD"){
+	orig_dnspriv_rulelist = decodeURIComponent(httpApi.nvramCharToAscii(["dot" + subnet_idx + "_rl"], true)["dot" + subnet_idx + "_rl"]);
+	dnspriv_rulelist_array = (orig_dnspriv_rulelist.length == 0)? [""] : orig_dnspriv_rulelist.split('<');
+}
+
+if(top.webWrapper){
+	$('link').last().after('<link rel="stylesheet" type="text/css" href="/css/business-white.css">');
+}
+
+setTimeout(function(){
+	$("body").css({"visibility":"visible"})
+}, 100)
+
+$(document).ready(function(){
+	init();
+
+	var targetNode = document.querySelector('body');
+	var observerOptions = {childList: true, attributes: true, subtree: true};
+	var observer = new MutationObserver(reportContentHeight);
+	observer.observe(targetNode, observerOptions);
+});
+
+function reportContentHeight(mutationList, observer) {
+	mutationList.forEach((mutation) => {
+		var contentHeight = document.body.scrollHeight;
+		parent.postMessage({
+			messageType: 'contentHeight',
+			height: contentHeight
+		}, '*');
+	});
+}
+
+function adGuard_Get_Component_Radio(_parm){
+	var display_type = "horizontal";
+	if(_parm.display_type != undefined)
+		display_type = _parm.display_type;
+
+	var $container = $("<div>").addClass("profile_setting_item radio_item " + display_type + "");
+	if(_parm.container_id != undefined)
+		$container.attr("id", _parm.container_id);
+
+	if(_parm.openHint != undefined){
+		var hint_array = _parm.openHint.split("_");
+		$("<a>").addClass("hintstyle").attr({"href":"javascript:void(0);"}).html(htmlEnDeCode.htmlEncode(_parm.title)).unbind("click").click(function(){
+			openHint(hint_array[0], hint_array[1], "rwd_vpns");
+		}).appendTo($("<div>").addClass("title").appendTo($container));
+	}
+	else
+		$("<div>").addClass("title").html(htmlEnDeCode.htmlEncode(_parm.title)).appendTo($container);
+
+	var $input_container = $("<div>").addClass("input_container").attr("id", _parm.id).appendTo($container);
+	var $radio_options_container = $("<div>").addClass("rwd_radio_options_container " + display_type + "").appendTo($input_container);
+	_parm.options.forEach(function(item, index){
+		var $radio_container = $("<div>").addClass("rwd_radio_container").attr({"value":item.value}).appendTo($radio_options_container)
+			.unbind("click").click(function(e){
+				e = e || event;
+				e.stopPropagation();
+				$("#adGuard_settings_container").find(".rwd_radio_container").removeClass("selected");
+				$("#adGuard_settings_container").find(".dns_server_container").removeClass("server_selected");
+				$("#adGuard_settings_container").find(".server_selected_icon").css("display", "none");
+				$(this).closest(".dns_server_container").addClass("server_selected");
+				$(this).closest(".dns_server_container").find(".server_selected_icon").css("display", "flex");
+				$(this).addClass("selected");
+
+			});
+
+		$("<div>").addClass("rwd_icon_radio").appendTo($radio_container);
+		$("<div>").html(htmlEnDeCode.htmlEncode(item.text)).appendTo($radio_container);
+	});
+
+	return $container;
+}
+
+function openLink(url){
+	window.open(url, '_blank');
+}
+
+function init(){
+	if(window_width <= 940){
+		$(".adGuard_ad_pic").attr('src', 'https://nw-dlcdnet.asus.com/plugin/dns/img_adguard_w940.png')
+				.on('error', function() {
+					//fail to load image
+					$(this).attr("src", 'images/adGuard/img_adguard_w940.png');
+				});
+	}
+	else{
+		$(".adGuard_ad_pic").attr('src', 'https://nw-dlcdnet.asus.com/plugin/dns/img_adguard_w1580.png')
+				.on('error', function() {
+					//fail to load image
+					$(this).attr("src", 'images/adGuard/img_adguard_w1580.png');
+				});
+	}
+
+	if(theme == "SDN_PROFILE" || theme == "SDN_WIZARD"){
+		$(".function_title_container").hide();
+		$("#adguard_ad_container_top").remove();
+	}
+	else{
+		setTimeout(
+			function(){$("#adguard_ad_container_top").show();
+		}, 1000);
+	}
+
+	$.each(dnspriv_rulelist_array, function(rule_index){
+		if(dnspriv_rulelist_array[rule_index].indexOf("adguard-dns.com") != -1){
+			orig_adguard_enable = true;
+			return false;
+		}
+	});
+
+	$("#function_help").click(function(){
+		$(".hidden_mask").fadeIn(500);
+		$("#function_help_div").fadeIn(500);
+	});
+
+	$("#title_close_btn").click(function(){
+		$("#function_help_div").fadeOut(500);
+		$(".hidden_mask").fadeOut(500);
+	});
+
+	$("#adguard_privacy_policy").click(function(){
+		parent.window.scrollTo(0, 0);
+		$(".hidden_mask").fadeIn(500);
+		$("#privacy_policy_div").fadeIn(500);
+	});
+
+	$("#adguard_pp_close_btn").click(function(){
+		$("#privacy_policy_div").fadeOut(500);
+		$(".hidden_mask").fadeOut(500);
+	});
+
+	generate_setting_items();
+	setTimeout(load_settings, 100);
+}
+
+function load_settings(){
+	if(theme == "SDN_PROFILE" || theme == "SDN_WIZARD"){
+		$("#adguard_enable_div").removeClass("adGuard_enable_div");
+		$("#adguard_enable_div").css({"margin": "-5px"});
+		$(".profile_setting_item .title").css({"color":"#006CE1", "font-size":"12px"});
+	}
+	else{
+		$("#adguard_ad_container_bottom").remove();
+	}
+
+	if($("#adguard_enable").hasClass("on") || orig_adguard_enable || ((theme == "SDN_PROFILE" || theme == "SDN_WIZARD") && flag == "ENABLE")){
+		$("#account_container").show();
+
+		if(Session.get("adGuard_access_token") != undefined && Session.get("adGuard_access_token").length != 0 &&
+			Session.get("adGuard_account") != undefined && Session.get("adGuard_account").length != 0){
+			$("#auth_div").hide();
+			$("#logged_account").html(Session.get("adGuard_account"));
+			$("#account_info_container")
+				.css("display", "flex")
+				.hide()
+				.show();
+
+			get_account_dns_settings();
+			get_adGuard_DNS_list();
+			check_cur_adGuardTLS_exist();
+			check_account_limits();
+
+			if(theme == "SDN_PROFILE" || theme == "SDN_WIZARD")
+				$("#adguard_ad_container_bottom").hide();
+		}
+		else{
+			if(orig_adguard_enable)
+				show_login_hint(`<#DDNS_adGuard_stillwork_hint#>`);
+		}
+	}
+}
+
+function generate_setting_items(){
+	if(theme == ""  || theme == undefined){
+	var adguard_enabled_parm = {"title":"<#DDNS_adGuard_enable#>", "type":"switch", "id":"adguard_enable", "set_value": orig_adguard_enable? "on": "off"};
+	var $adguard_enabled_item = Get_Component_Switch(adguard_enabled_parm)
+		.appendTo($("#adguard_enable_div"))
+		.find("#" + adguard_enabled_parm.id + "").click(function(e){
+				e = e || event;
+				e.stopPropagation();
+				if($(this).hasClass("on")){
+					$("#auth_div").css("display", "flex");
+					$("#account_container").fadeIn(600);
+				}
+				else{
+					if(orig_adguard_enable){
+						var hint_msg = "All the existing AdGuard DNS rules will be cleared from router and related SDN profiles. Do you want to proceed?";//untranslated
+						if(confirm(hint_msg)){
+							var tmp_rulelist_array = [];
+							$("#account_container").fadeOut(100);
+							$.each(dnspriv_rulelist_array, function(rule_index){
+								if(dnspriv_rulelist_array[rule_index].indexOf("adguard-dns.com") == -1){
+									tmp_rulelist_array.push(dnspriv_rulelist_array[rule_index]);
+								}
+							});
+
+							Session.clear("adGuard_account");
+							Session.clear("adGuard_access_token");
+							Session.clear("adGuard_refresh_token");
+							applyData["dnspriv_rulelist"] = tmp_rulelist_array.join("<");
+							if(tmp_rulelist_array.length == 1)
+								applyData["dnspriv_enable"] = "0";
+							httpApi.nvramSet(applyData, function(){parent.showLoading(10);refreshpage();});
+						}
+						else{
+							if($(this).hasClass("off"))
+								$(this).removeClass("off").addClass("on");
+						}
+					}
+					else{
+						$("#account_container").hide();
+
+						if($("#adGuard_settings_container").length != 0)
+							$("#adGuard_settings_container").empty();
+
+						if(Session.get("adGuard_access_token") != undefined){
+							Session.clear("adGuard_account");
+							Session.clear("adGuard_access_token");
+							Session.clear("adGuard_refresh_token");
+							$("#login_username").val("");
+							$("#login_password").val("");
+							$("#account_info_container").hide();
+						}
+					}
+				}
+			})
+	}
+	/* generate login content */
+	var login_username_parm = {"type":"text", "id":"login_username", "maxlength": 255, "container_id": "login_username_div", "placeholder": "<#Username#>"};
+	Get_Component_Input(login_username_parm).appendTo($("#login_info_div"))
+		.find("#" + login_username_parm.id + "")
+		.unbind("keypress").keypress(function(){
+			return validator.isString(this,event);
+		})
+
+	var login_password_parm = {"type":"password", "id":"login_password", "maxlength": 255, "container_id": "login_password_div", "placeholder": "<#PPPConnection_Password_itemname#>"};
+	Get_Component_Input(login_password_parm).appendTo($("#login_info_div"))
+		.find("#" + login_password_parm.id + "")
+		.unbind("keypress").keypress(function(){
+			return validator.isString(this,event);
+		})
+
+	var $btn_container_login = $("<div>").attr({"id":"login_btn"}).addClass("applyBtn_adGuard").appendTo($("#login_action_container"));
+	$btn_container_login
+		.click(function(){
+			$("#login_text").hide();
+			$("#action_waiting").show();
+			if($("#login_username").val().length > 0 && $("#login_password").val().length > 0){
+				var retData = adGuard.getTokens({"username":$("#login_username").val(), "password":$("#login_password").val()});
+				if(retData.status == "ok"){
+					$("#auth_div").hide();
+					show_login_hint("");//hide login hint
+					$("#logged_account").html(Session.get("adGuard_account"));
+					$("#account_info_container")
+						.css("display", "flex")
+						.hide()
+						.fadeIn(500);
+					get_account_dns_settings();
+					get_adGuard_DNS_list();
+					check_cur_adGuardTLS_exist();
+					check_account_limits();
+					if($("#adguard_ad_container_bottom").length > 0)
+						$("#adguard_ad_container_bottom").hide();
+				}
+				else{
+					show_login_hint(retData.status);
+				}
+			}
+			else if($("#login_username").val().length == 0 || $("#login_password").val().length == 0){
+				show_login_hint("<#QKSet_account_empty#>");
+			}
+			$("#action_waiting").hide();
+			$("#login_text").fadeIn(100);
+		});
+
+	$("<div>")
+		.attr("id", "login_text")
+		.html("<#CTL_login#>")
+		.appendTo($btn_container_login)
+
+	$("<div>")
+		.attr("id", "action_waiting")
+		.css({
+			"display": "none",
+			"width": "20px",
+			"height": "20px",
+			"background-image": "url('/images/InternetScan.gif')",
+			"filter": "invert(1)"
+			})
+		.appendTo($btn_container_login);
+
+	$("#logout_action_container")
+		.click(function(){
+			var hint_msg = `<#DDNS_adGuard_logout_hint#>`;
+			if(confirm(hint_msg)){
+				Session.clear("adGuard_account");
+				Session.clear("adGuard_access_token");
+				Session.clear("adGuard_refresh_token");
+				refreshpage();
+			}
+		});
+
+	if((theme == "SDN_PROFILE" || theme == "SDN_WIZARD")&& flag == "ENABLE"){
+		$("#account_container").show();
+		$("#adguard_ad_container_bottom").show();
+	}
+}
+
+function get_account_dns_settings(){
+	if(Session.get("adGuard_access_token").length > 0){
+		var retData = adGuard.getDNSList();
+		if(retData.status == "ok"){
+			dnsList = retData.dnsList;
+		}
+
+		retData = adGuard.getDeviceList();
+		if(retData.status == "ok"){
+			deviceList = retData.deviceList;
+		}
+	}
+}
+
+function get_default_server_id(){
+	var default_dns_id = "";
+	$.each(dnsList, function(index){
+		if(dnsList[index].default == true){
+			default_dns_id = dnsList[index].id;
+			return false;
+		}
+	});
+
+	return default_dns_id;
+}
+
+function get_adGuard_DNS_list(){
+	if(Session.get("adGuard_access_token").length > 0){
+		var $dns_server_title_div = $("<div>")
+			.addClass("dns_server_title_div")
+			.appendTo($("#adGuard_settings_container"));
+
+		$("<div>")
+			.html(`<#IPConnection_x_DNS_List_adGuard#>`)
+			.addClass("dns_server_list_title")
+			.appendTo($dns_server_title_div);
+
+		$("<div>")
+			.attr("id", "show_hide_arrow")
+			.addClass("arrow_up_blue")
+			.appendTo($dns_server_title_div)
+			.click(function(){
+				if($(this).hasClass("arrow_down_blue")){
+					$(this).removeClass("arrow_down_blue").addClass("arrow_up_blue");
+					$("#adGuard_settings_container").find(".dns_server_container").show();
+					if($("#general_hint_text").html().length > 0)
+						$("#general_hint").show();
+				}
+				else{
+					$(this).removeClass("arrow_up_blue").addClass("arrow_down_blue");
+					$("#adGuard_settings_container").find(".dns_server_container").hide();
+					$("#general_hint").hide();
+				}
+			});
+
+		var $general_hint = $("<div>")
+			.attr("id", "general_hint")
+			.addClass("hint_div")
+			.appendTo($("#adGuard_settings_container"));
+
+		$("<div>")
+			.addClass("alert_icon")
+			.appendTo($general_hint);
+
+		$("<div>")
+			.attr("id", "general_hint_text")
+			.addClass("hint_text")
+			.appendTo($general_hint);
+
+		if(dnsList.length > 0){
+			$.each(dnsList, function(index){
+				create_dns_server_info(dnsList[index]);
+			});
+		}
+
+		var $adGuard_advanced_container = $("<div>")
+			.attr("id", "adGuard_advanced_container")
+			.appendTo($("#adGuard_settings_container"));
+
+		var $statistic_container = $("<div>")
+			.addClass("advanced_div")
+			.appendTo($adGuard_advanced_container);
+
+		$statistic_container.click(function(){
+			openLink('https://asus.click/AdGuardDNS_Statistics');
+		});
+
+		$("<div>")
+			.addClass("statistic_icon")
+			.appendTo($statistic_container);
+
+		var $statistic_desc_div = $("<div>")
+			.addClass("advanced_desc_div")
+			.appendTo($statistic_container)
+
+		$("<div>")
+			.addClass("advanced_title")
+			.html("<#Statistic#>")
+			.appendTo($statistic_desc_div)
+
+		$("<div>")
+			.addClass("advanced_desc")
+			.html("<#DDNS_adGuard_AdvSetting_ViewInstantRequests#>")
+			.appendTo($statistic_desc_div)
+
+		var $statistic_arrow_div = $("<div>")
+			.addClass("arrow_div")
+			.appendTo($statistic_container)
+
+		$("<div>")
+			.addClass("arrow_right_blue")
+			.appendTo($statistic_arrow_div)
+
+		var $advanced_container = $("<div>")
+			.addClass("advanced_div")
+			.css("margin-top", "16px")
+			.appendTo($adGuard_advanced_container);
+
+		$advanced_container.click(function(){
+			$(".hidden_mask").fadeIn(500);
+			if(theme == "SDN_PROFILE" || theme == "SDN_WIZARD")
+				$("html, body").scrollTop(0)
+			else
+				parent.window.scrollTo(0, 0);
+
+			$("#advanced_settingGuide_div").fadeIn(500);
+
+		});
+
+		$("#settingGuide_close_btn").click(function(){
+			$("#advanced_settingGuide_div").fadeOut(500);
+			$(".hidden_mask").fadeOut(500);
+		});
+
+		$("#go_advanced_setting_btn").click(function(){
+			openLink('https://asus.click/AdGuardDNS_Advanced');
+			$("#advanced_settingGuide_div").fadeOut(500);
+			$(".hidden_mask").fadeOut(500);
+		});
+
+		$("<div>")
+			.addClass("advanced_icon")
+			.appendTo($advanced_container)
+
+		var $advanced_desc_div = $("<div>")
+			.addClass("advanced_desc_div")
+			.appendTo($advanced_container)
+
+		$("<div>")
+			.addClass("advanced_title")
+			.html("<#menu5#>")
+			.appendTo($advanced_desc_div)
+
+		$("<div>")
+			.addClass("advanced_desc")
+			.html("<#DDNS_adGuard_AdvSetting_ExploreDeeper#>")
+			.appendTo($advanced_desc_div)
+
+		var $advanced_arrow_div = $("<div>")
+			.addClass("arrow_div")
+			.appendTo($advanced_container)
+
+		$("<div>")
+			.addClass("arrow_right_blue")
+			.appendTo($advanced_arrow_div)
+
+		if(theme != "SDN_WIZARD" && theme != "SDN_PROFILE"){
+			$("<div>")
+				.attr("id", "apply_btn")
+				.addClass("action_container")
+				.appendTo($("#adGuard_settings_container"));
+
+			var $btn_container_apply = $("<div>").addClass("btn_container apply").attr({"id":"apply_btn"}).appendTo($("#apply_btn")).html("<#CTL_apply1#>");
+			$btn_container_apply.click(function(){
+				apply_settings();
+			});
+		}
+
+		if(routerList.length == 0){
+			show_default_add_profile_container();
+			show_general_hint("The router profile you applied has been removed from AdGuard DNS, please add or select another one.");//untranslated
+		}
+	}
+}
+
+function show_default_add_profile_container(){
+	var default_server_id = get_default_server_id();
+	var $default_server_div =  $("#dns_server_"+default_server_id);
+
+	var $add_device_button_default = $default_server_div.find('.add_device_button');
+	if($add_device_button_default.hasClass("add_device_button_clicked") == false){
+		$add_device_button_default.addClass("add_device_button_clicked");
+		var $add_icon_default = $default_server_div.find('.icon_add');
+		$add_icon_default.addClass("icon_add add_device_button_clicked_icon");
+		$add_icon_default.click();
+		$default_server_div.find('.new_device_container').addClass("first_device_container");
+	}
+}
+
+function create_dns_server_info(server_info){
+	var connected_devices_num = 0;
+
+	var $adGuard_settings_container = $("#adGuard_settings_container");
+	var $dns_server_container = $("<div>")
+		.attr("id", "dns_server_"+server_info.id)
+		.addClass("dns_server_container")
+		.appendTo($adGuard_settings_container);
+
+	var $dns_name_container = $("<div>")
+		.addClass("dns_name_container")
+		.appendTo($dns_server_container);
+
+	var $name_title_div = $("<div>")
+		.addClass("dns_name_title")
+		.appendTo($dns_name_container);
+
+	$("<div>")
+		.html("<#Server_Name#>")
+		.css({"font-size": "14px"})
+		.appendTo($name_title_div);
+
+	$selected_div = $("<div>")
+						.addClass("server_selected_icon")
+						.appendTo($name_title_div);
+
+	$("<div>")
+		.addClass("checked_icon")
+		.appendTo($selected_div);
+
+	$("<div>")
+		.html("Selected")
+		.addClass("checked_text")
+		.appendTo($selected_div);
+
+	var $name_div = $("<div>")
+		.addClass("dns_name_text")
+		.appendTo($dns_name_container);
+
+	$("<div>")
+		.html(server_info.name)
+		.appendTo($name_div);
+
+	var $connected_devices_list = $("<div>")
+		.attr("id", "connected_devices_list_"+server_info.id)
+		.addClass("connected_devices_list")
+		.appendTo($dns_server_container);
+
+	var device_option_list = [];
+	$.each(server_info.device_ids, function(index){
+		var device_info = {};
+		var device_id = server_info.device_ids[index];
+
+		$.each(deviceList, function(device_index){
+			device_info = deviceList[device_index];
+			if(device_info.id == device_id && device_info.device_type == "ROUTER"){
+				device_option_list.push({"text": device_info.name, "value": device_info.id});
+				connected_devices_num++;
+				routerList.push(device_info);
+			}
+		});
+	});
+
+	if(connected_devices_num > 0){
+		var device_list_param = {"title": "<#DDNS_connected_profile#>", "id": "device_list_"+server_info.id, "options": device_option_list, "display_type": "vertical", "noDefault": true};
+		adGuard_Get_Component_Radio(device_list_param)
+			.appendTo($connected_devices_list)
+			.css("padding-bottom", "5px")
+
+			$.each(dnspriv_rulelist_array, function(rule_index){
+				var found = false;
+				$.each(device_option_list, function(device_index){
+					if(dnspriv_rulelist_array[rule_index].indexOf(device_option_list[device_index].value) != -1){
+						$("#adGuard_settings_container").find(".rwd_radio_container").removeClass("selected").filter("[value='"+device_option_list[device_index].value+"']").addClass("selected");
+						$dns_server_container.addClass("server_selected");
+						$selected_div.css("display", "flex");
+						cur_device_id = device_option_list[device_index].value;
+						cur_dnspriv_rule_index = rule_index;
+						found = true;
+						return false;
+					}
+				});
+
+				if(found)
+					return false;
+			});
+	}
+	else{
+		$("<div>")
+			.html("<#DDNS_connected_profile#>")
+			.addClass("profile_setting_item.radio_item .title")
+			.css({"margin-bottom": "8px"})
+			.appendTo($connected_devices_list);
+	}
+
+	$add_device_button = $("<div>")
+		.addClass("add_device_button")
+		.appendTo($connected_devices_list);
+
+	$add_device_button.click(function(){
+		$(this).addClass("add_device_button_clicked");
+		$(this).parent().find(".icon_add").addClass("add_device_button_clicked_icon");
+		if($(this).parent().find(".new_device_container").length == 0){
+			add_device(server_info.id);
+		}
+		else{
+			var new_device_container = $(this).parent().find(".new_device_container").first();
+
+			if(routerList.length != 0 && new_device_container.hasClass("first_device_container"))
+				new_device_container.removeClass("first_device_container");
+
+			new_device_container.show();
+		}
+	});
+
+	$("<div>")
+		.addClass("icon_add")
+		.css({"background-size": "cover"})
+		.appendTo($add_device_button);
+
+	$("<div>")
+		.html("<#vpnc_step1#>")
+		.css({"margin-left": "8px"})
+		.appendTo($add_device_button);
+}
+
+function show_login_hint(hint_str){
+	if(hint_str != ""){
+		$("#login_hint").html(hint_str);
+		$("#login_hint_div").css("display", "flex");
+	}
+	else
+		$("#login_hint_div").hide();
+}
+
+function show_general_hint(hint_str){
+	$("#general_hint_text").html(hint_str);
+	$("#general_hint").css("display", "flex");
+}
+
+function check_account_limits(){
+	if(Session.get("adGuard_access_token").length > 0){
+		accountLimits = adGuard.getAccountLimits();
+		setTimeout(function(){
+						if(accountLimits.devices.used == accountLimits.devices.limit){
+							if($("#adGuard_settings_container").find(".add_device_button").hasClass("add_device_button_clicked") == false){
+								$("#adGuard_settings_container").find(".add_device_button").addClass("add_device_button_clicked");
+								$("#adGuard_settings_container").find(".add_device_button").find(".icon_add").addClass("add_device_button_clicked_icon");
+							}
+
+							$("#adGuard_settings_container").find(".add_device_button").unbind("click").click(function(){
+								alert("<#DDNS_limmited_profile#> <#DDNS_remove_profile#>");
+								});
+						}
+					}, 1500);
+	}
+}
+
+function check_cur_adGuardTLS_exist(){
+	var adguard_used = false;
+	var tls_exist = false;
+
+	$.each(dnspriv_rulelist_array, function(rule_index){
+		var dns_settings = dnspriv_rulelist_array[rule_index].split('>');
+		if(dns_settings[0] == "94.140.14.49" || dns_settings[0] == "94.140.14.59"){
+			var hostname = dns_settings[2];
+			adguard_used = true;
+
+			$.each(routerList, function(index){
+				var dns_over_tls_url = routerList[index].dns_addresses.dns_over_tls_url;
+				if(dns_over_tls_url.indexOf(hostname) != -1){
+					tls_exist = true;
+					return false;
+				}
+			});
+		}
+	});
+
+	if(!adguard_used){
+		show_general_hint("<#DDNS_adGuard_apply_hint#>");
+	}
+	else if(adguard_used && !tls_exist){
+		show_general_hint("The router profile you applied has been removed from AdGuard DNS, please add or select another one.");//untranslated
+	}
+
+}
+
+function is_duplicate_device_name(device_name){
+	var duplicate_name = false;
+
+	$.each(routerList, function(index){
+			if(routerList[index].name == device_name){
+				duplicate_name = true;
+				return false;
+			}
+		});
+
+	return  duplicate_name;
+}
+
+function show_device_hint(server_id, hint_str){
+	$("#hint_text_"+server_id).html(hint_str);
+	$("#add_device_hint_"+server_id).css("display", "flex");
+}
+
+function hide_device_hint(server_id){
+	$("#add_device_hint_"+server_id).css("display", "none");
+}
+
+function add_device(server_id){
+	var connected_devices_list_id = "connected_devices_list_"+server_id;
+
+	$new_device = $("<div>")
+		.addClass("new_device_container")
+		.appendTo($("#"+connected_devices_list_id));
+
+	$new_device_title = $("<div>")
+		.addClass("new_device_title")
+		.appendTo($new_device);
+
+	$("<div>")
+		.html("<#New_Router_Profile#>")
+		.css({ "font-weight": "bolder", "font-size": "18px"})
+		.appendTo($new_device_title);
+
+	$new_device_content = $("<div>")
+		.addClass("new_device_content")
+		.appendTo($new_device);
+
+	$("<div>")
+		.html("<#vpn_ipsec_Profile_Name#>")
+		.css({"font-size": "14px", "height": "22px", "line-height": "22px"})
+		.appendTo($new_device_content);
+
+	$new_device_action_container = $("<div>")
+		.addClass("new_device_action_container")
+		.appendTo($new_device_content);
+
+	$("<input>")
+		.attr("id", "new_device_"+server_id)
+		.addClass("new_device_name")
+		.appendTo($new_device_action_container)
+		.change(function(){
+			var this_server_id = this.id.replace("new_device_", "");
+			show_device_hint(this_server_id, "<#New_Router_Profile_hint#>");
+		});
+
+	$action_button_container = $("<div>")
+		.addClass("action_button_container")
+		.appendTo($new_device_action_container);
+
+	$("<div>")
+		.html("Discard")
+		.addClass("discard_btn")
+		.appendTo($action_button_container)
+		.click(function(){
+			$("#"+connected_devices_list_id).find(".add_device_button").removeClass("add_device_button_clicked");
+			$("#"+connected_devices_list_id).find(".icon_add").removeClass("add_device_button_clicked_icon");
+			$("#"+connected_devices_list_id).find(".new_device_container").hide();
+			$("#"+connected_devices_list_id).find(".hint_div").hide();
+		});
+
+	$("<div>")
+		.html("<#CTL_onlysave#>")
+		.addClass("save_btn")
+		.attr("id", "save_btn"+server_id)
+		.appendTo($action_button_container)
+		.click(function(){
+			var this_server_id = this.id.replace("save_btn", "");
+			var new_device_name = $("#new_device_"+this_server_id).val();
+
+			if(new_device_name == ""){
+				show_device_hint(this_server_id, "<#JS_fieldblank#>");
+			}
+			else{
+				if(!is_duplicate_device_name(new_device_name)){
+					if(theme == ""  || theme == undefined)
+					parent.showLoading(10);
+					hide_device_hint(this_server_id)
+					setTimeout(function(){
+								var retData = adGuard.createNewDevice("ROUTER", $("#new_device_"+this_server_id).val(), this_server_id);
+									if(retData.status == "ok"){
+										$("#"+connected_devices_list_id).find(".add_device_button").removeClass("add_device_button_clicked");
+										$("#"+connected_devices_list_id).find(".icon_add").removeClass("add_device_button_clicked_icon");
+										$("#"+connected_devices_list_id).find(".new_device_container").hide();
+										apply_new_device_settings(retData.id, retData.dns_ipaddress, retData.dns_over_tls_url);
+									}
+									else{
+										show_device_hint(this_server_id, retData.status);
+									}
+								}, 100);
+				}
+				else{
+					show_device_hint(this_server_id, "This value is already used");
+					$("#new_device_"+this_server_id).select();
+				}
+			}
+		});
+
+
+	$add_device_hint = $("<div>")
+		.attr("id", "add_device_hint_"+server_id)
+		.addClass("hint_div")
+		.css("background", "unset")
+		.appendTo($new_device_content);
+
+	$("<div>")
+		.addClass("alert_icon")
+		.appendTo($add_device_hint);
+
+	$("<div>")
+		.attr("id", "hint_text_"+server_id)
+		.addClass("hint_text")
+		.appendTo($add_device_hint);
+}
+
+function apply_new_device_settings(device_id, dns_ipaddress, dns_over_tls_url){
+	var new_rule = dns_ipaddress+">853>"+dns_over_tls_url+">";
+
+	if(cur_device_id != "" && cur_device_id != device_id){
+		dnspriv_rulelist_array.splice(cur_dnspriv_rule_index, 1);
+	}
+	dnspriv_rulelist_array.push(new_rule);
+	applyData["dnspriv_enable"] = "1";
+	applyData["dnspriv_rulelist"] = dnspriv_rulelist_array.join("<");
+
+	httpApi.nvramSet(applyData, function(){refreshpage();});
+}
+
+function update_device_list(server_id){
+	var $connected_devices_list = $("#connected_devices_list_"+server_id);
+	var device_option_list = [];
+	var connected_devices_num = 0;
+
+	$connected_devices_list.find('.profile_setting_item').first().remove();
+	$.each(routerList, function(index){
+		var device_info = routerList[index];
+		if(device_info.dns_server_id == server_id){
+			device_option_list.push({"text": device_info.name, "value": device_info.id});
+			connected_devices_num++;
+		}
+	});
+
+	if(connected_devices_num > 0){
+		var device_list_param = {"title": "<#DDNS_connected_profile#>", "id": "device_list_"+server_id, "options": device_option_list, "display_type": "vertical", "noDefault": true};
+		adGuard_Get_Component_Radio(device_list_param)
+			.prependTo($connected_devices_list)
+			.css("padding-bottom", "5px")
+
+			$.each(dnspriv_rulelist_array, function(rule_index){
+				$.each(device_option_list, function(device_index){
+					if(dnspriv_rulelist_array[rule_index].indexOf(device_option_list[device_index].value) != -1){
+						$("#adGuard_settings_container").find(".rwd_radio_container").removeClass("selected").filter("[value='"+device_option_list[device_index].value+"']").addClass("selected");
+						cur_device_id = device_option_list[device_index].value;
+						cur_dnspriv_rule_index = rule_index;
+					}
+				});
+			});
+	}
+	else{
+		$("<div>")
+			.html("<#DDNS_connected_profile#>")
+			.addClass("profile_setting_item.radio_item .title")
+			.css({"margin-bottom": "8px"})
+			.prependTo($connected_devices_list);
+	}
+}
+
+function apply_settings(){
+	var settings_changed = false;
+	var has_device_selected = false;
+
+	$("#adGuard_settings_container").find(".rwd_radio_container").each(function(){
+		if($(this).hasClass("selected")){
+			if(theme == ""  || theme == undefined)
+				parent.showLoading(10);
+			var selected_device_id = $(this).attr("value");
+			if(cur_device_id != selected_device_id){
+				settings_changed = true;
+				if(cur_device_id != "")
+					dnspriv_rulelist_array.splice(cur_dnspriv_rule_index, 1);
+
+				$.each(routerList, function(index){
+					if(routerList[index].id == selected_device_id){
+						var dns_over_tls_url = routerList[index].dns_addresses.dns_over_tls_url.replace('tls://', '');
+						var dns_ipaddress = "94.140.14.59";
+						var ip_addresses_list = routerList[index].dns_addresses.ip_addresses;
+						$.each(ip_addresses_list, function(ipaddress_index){
+							if(ip_addresses_list[ipaddress_index].type == "V4"){
+								dns_ipaddress = ip_addresses_list[ipaddress_index].ip_address;
+								return false;
+							}
+						});
+						var new_rule = dns_ipaddress+">853>"+dns_over_tls_url+">";
+						dnspriv_rulelist_array.push(new_rule);
+						if(theme == "SDN_PROFILE" || theme == "SDN_WIZARD"){
+							applyData["dot_idx"] = subnet_idx;
+							applyData["dot" + subnet_idx + "_rl"] = dnspriv_rulelist_array.join("<");
+						}
+						else{
+							applyData["dnspriv_enable"] = "1";
+							applyData["dnspriv_rulelist"] = dnspriv_rulelist_array.join("<");
+						}
+
+						return false;
+					}
+				});
+			}
+
+			has_device_selected = true;
+			return false;
+		}
+	});
+
+	if(!has_device_selected){
+		if(theme == "SDN_PROFILE" || theme == "SDN_WIZARD")
+			parent.alert("<#DDNS_adGuard_apply_hint#>");
+		else
+			alert("<#DDNS_adGuard_apply_hint#>");
+		return;
+	}
+
+	if((theme == "" || theme == undefined) && settings_changed)
+		httpApi.nvramSet(applyData, function(){refreshpage();});
+	else
+		return;
+}
+</script>
+<body style="visibility: hidden; background: transparent; width: 96%;">
+<div class="hidden_mask popup_element"></div>
+<div id="function_help_div" class="popup_container">
+	<div class="popup_title_container"><div class="title">About Feature</div><div id="title_close_btn" class="close_btn"></div></div>
+		<div class="adGuard_popup_content_container">
+			<div style="border-bottom: 1px solid #DCDCDC;">
+				<div style="font-size: 13px; font-weight: 600; color: #0051A8; text-transform: uppercase;"><#NewFeatureDesc#></div>
+				<div class="adGuard_help_text"><#DDNS_adGuard_About_deac1#></div>
+			</div>
+			<div style="border-bottom: 1px solid #DCDCDC;">
+				<div style="font-size: 13px; font-weight: 600; color: #0051A8; text-transform: uppercase; padding-top: 16px;">FAQ</div>
+				<div style="font-size: 16px; font-weight: 500; line-height: 28px; margin-top: 18px; padding-bottom: 16px;"><a target='_blank' href='https://asus.click/AdGuardFAQ'>How to set up ADGUARD DNS on ASUS router?</a></div><!--untranslated-->
+			</div>
+		</div>
+	</div>
+</div>
+<div id="advanced_settingGuide_div" class="popup_container">
+	<div class="popup_title_container"><div class="title">Setting Guide</div><div id="settingGuide_close_btn" class="close_btn"></div></div>
+		<div class="adGuard_popup_content_container" style="padding-bottom: 0px;">
+			<div style="padding: 16px; border-radius: 10px; border: 1px solid #B3B3B3;">
+				<div style="font-size: 16px;"><#DDNS_adGuard_AdvSetting_desc#></div>
+			</div>
+			<div style="border-radius: 10px; margin-top: 8px;  padding: 16px 16px 0 16px;">
+				<div style="height: 60px; display: flex; align-items: center;">
+					<div class="logo_ADGUARD"></div>
+				</div>
+				<div style="display:flex; height: 60px; align-items: center; border-bottom: 1px solid #DCDCDC;">
+					<div class="step_number">1</div>
+					<div class="step_text"><#DDNS_adGuard_AdvSetting_step1#></div>
+				</div>
+				<div style="display:flex; height: 60px; align-items: center;  border-bottom: 1px solid #DCDCDC;">
+					<div class="step_number">2</div>
+					<div class="step_text"><#DDNS_adGuard_AdvSetting_step2#></div>
+				</div>
+				<div style="display:flex; height: 60px; align-items: center;">
+					<div class="step_number">3</div>
+					<div class="step_text"><#DDNS_adGuard_AdvSetting_step3#></div>
+				</div>
+			</div>
+			<div class="action_container"><div id="go_advanced_setting_btn" class="btn_container apply">Go</div></div><!--untranslated-->
+		</div>
+	</div>
+</div>
+<div id="privacy_policy_div" class="popup_container">
+	<div class="popup_title_container"><div class="title"></div><div id="adguard_pp_close_btn" class="close_btn"></div></div>
+		<div class="adGuard_popup_content_container">
+			<div style="border-bottom: 1px solid #DCDCDC;">
+				<div class="adGuard_help_text" style="margin-top: unset;">
+					<p><#DDNS_adGuard_pp0#>&nbsp;<a style='color:#0051A8;' target='_blank' href='https://adguard-dns.io/zh_tw/privacy.html'><#DDNS_adGuard_pp_title#></a>&nbsp;<#DDNS_adGuard_pp1#></p>
+					<p style="text-indent: 2em; margin-top: 12px;"><#DDNS_adGuard_pp2#></p>
+					<p style="text-indent: 2em; margin-top: 12px;"><#DDNS_adGuard_pp3#></p>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div id="content_container">
+	<div class="function_title_container"><div class="function_title">AdGuard</div><div id = "function_help" class="help_icon"></div></div>
+	<div id="adguard_ad_container_top" class="adGuard_ad_container" onclick="openLink('https://adguard-dns.io/?aid=33478');"><img class="adGuard_ad_pic"></img></div>
+	<div id = "adguard_enable_div" class = "adGuard_enable_div"></div>
+	<div id = "account_container" style="display: none; justify-content: center; align-items: flex-start; height: auto;">
+		<div style="height: 38px; display: flex; align-items: center; border-left: 6px solid #006CE1; padding-left: 16px; margin: 10px 0px; font-size: 18px;">ADGUARD Account</div>
+		<div id="login_hint_div" class="hint_div">
+			<div class="alert_icon"></div>
+			<div id="login_hint" class="hint_text"></div>
+		</div>
+		<div id="auth_div" class="auth_div">
+			<div class = "login_title">
+				<div class = "login_title_text">Login</div>
+				<div class="logo_ADGUARD"></div>
+			</div>
+			<div id="login_container" class="login_container">
+				<div class= "login_main_div" class="login_main_div">
+					<div id= "login_info_div" class="login_info_div"></div>
+					<div id="login_action_container" class="login_action_container"></div>
+				</div>
+				<div style="font-size: 16px; height: 48px; display: flex; align-items: center;"><div>Don't have an account?</div><a style='color:#FC0; padding-left: 10px;' target='_blank' href='https://adguard-dns.io/?aid=33478'>Sign Up</a></div><!--untranslated-->
+			</div>
+		</div>
+		<div id = "account_info_container" style="display: none;">
+			<div class="logged_account_container">
+				<div class="logged_account_title"><#feedback_tech_account_id#></div>
+				<div id="logged_account" class="logged_account"></div>
+			</div>
+			<div id="logout_action_container" class="logout_btn"><#t1Logout#></div>
+		</div>
+	</div>
+	<div id="adGuard_settings_container"></div>
+	<div id="adguard_ad_container_bottom" class="adGuard_ad_container" style="margin-top: 16px;" onclick="openLink('https://adguard-dns.io/?aid=33478');"><img class="adGuard_ad_pic" style="width:100%;"></img></div>
+	<div class="adguard_pp_container"><div><#DDNS_adGuard_pp0#>&nbsp;</div><div id="adguard_privacy_policy"><#DDNS_adGuard_pp_title#><#DDNS_adGuard_pp1#></div></div>
+</div>
+</body>

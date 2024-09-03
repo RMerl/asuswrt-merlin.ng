@@ -48,6 +48,10 @@ int SendCommand(int cmdID, int devAddr, int zone, int island, uint32_t word2,
 #include "pmc_firmware_63146.h"
 #elif IS_BCMCHIP(6765)
 #include "pmc_firmware_6765.h"
+#elif IS_BCMCHIP(6766)
+#include "pmc_firmware_6766.h"
+#elif IS_BCMCHIP(6764)
+#include "pmc_firmware_6764.h"
 #elif IS_BCMCHIP(4912)
 #include "pmc_firmware_4912.h"
 #elif IS_BCMCHIP(6813)
@@ -360,7 +364,7 @@ static void pmc_boot(void)
 
 		len = sizeof(pmcdata);
 		memcpy((void *)CFG_BOOT_PMC3_DATA_ADDR, pmcdata, len);
-        if(env_get("print_avs_log"))
+        if(g_pmc->print_avs_log)
             pmc_log_start = (void *)CFG_BOOT_PMC3_DATA_ADDR;
     }
 #endif

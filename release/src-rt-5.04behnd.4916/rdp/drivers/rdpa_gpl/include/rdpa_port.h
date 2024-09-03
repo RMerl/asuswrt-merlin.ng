@@ -4,25 +4,19 @@
 *    Copyright (c) 2013 Broadcom 
 *    All Rights Reserved
 * 
-* Unless you and Broadcom execute a separate written software license
-* agreement governing use of this software, this software is licensed
-* to you under the terms of the GNU General Public License version 2
-* (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-* with the following added to such license:
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License, version 2, as published by
+* the Free Software Foundation (the "GPL").
 * 
-*    As a special exception, the copyright holders of this software give
-*    you permission to link this software with independent modules, and
-*    to copy and distribute the resulting executable under terms of your
-*    choice, provided that you also meet, for each linked independent
-*    module, the terms and conditions of the license of that module.
-*    An independent module is a module which is not derived from this
-*    software.  The special exception does not apply to any modifications
-*    of the software.
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
 * 
-* Not withstanding the above, under no circumstances may you combine
-* this software in any way with any other Broadcom software provided
-* under a license other than the GPL, without Broadcom's express prior
-* written consent.
+* 
+* A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+* writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+* Boston, MA 02111-1307, USA.
 * 
 * :> 
 */
@@ -68,6 +62,7 @@ typedef struct
     bdmf_boolean  skip_mcast_whitelist_lkp; /**< Skip MCAST whitelist lookup, (READ ONLY) \XRDP_LIMITED */
     bdmf_boolean dos_attack_drop_disable; /**< Enable DOS attack prevention \XRDP_LIMITED */
     bdmf_boolean prop_tag_enable;  /**< Enable proprietary tag */
+    bdmf_boolean bbh_rx_crc_omit_disable;  /**< Enable proprietary tag \XRDP_LIMITED */
 } rdpa_port_dp_cfg_t;
 
 
@@ -126,6 +121,10 @@ typedef struct {
     uint32_t tx_unicast_pkt;             /**< FTTdp only: Sent unicast Packets, applicable for WAN port only */
     uint32_t rx_frag_discard;            /**< FTTdp only: G.9991 RX fragments reassembly drop counter */
     uint32_t tx_discard_prev;            /**< Internal. Previous TX discarded packets from TX queue full case */
+    uint32_t tx_ecn_pkt;                 /**< ECN remarked packet counter */
+    uint32_t tx_ecn_bytes;               /**< ECN remarked bytes counter */
+    uint32_t tx_ecn_mark_err;            /**< ECN mark error counter */
+    uint32_t tx_ecn_plen_err;            /**< ECN packet length error counter */
 } rdpa_port_stat_t;
 
 /** Port Debug statistics */
@@ -196,6 +195,8 @@ typedef enum
 typedef struct {
     bdmf_object_handle rx_dst_port; /**< Destination port for rx traffic */
     bdmf_object_handle tx_dst_port; /**< Destination port for tx traffic */
+    uint16_t rx_truncate_size;      /**< cut off size for mirrored rx packets */
+    uint16_t tx_truncate_size;      /**< cut off size for mirrored tx packets */
     uint32_t is_cntrl_disable;  /**< flag to dissable mirroring of GPON/EPON control pkts */
 } rdpa_port_mirror_cfg_t;
 

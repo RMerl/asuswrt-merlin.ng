@@ -1,29 +1,23 @@
 /*
  * <:copyright-BRCM:2013:DUAL/GPL:standard
- *
- *    Copyright (c) 2013 Broadcom
+ * 
+ *    Copyright (c) 2013 Broadcom 
  *    All Rights Reserved
- *
- * Unless you and Broadcom execute a separate written software license
- * agreement governing use of this software, this software is licensed
- * to you under the terms of the GNU General Public License version 2
- * (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
- * with the following added to such license:
- *
- *    As a special exception, the copyright holders of this software give
- *    you permission to link this software with independent modules, and
- *    to copy and distribute the resulting executable under terms of your
- *    choice, provided that you also meet, for each linked independent
- *    module, the terms and conditions of the license of that module.
- *    An independent module is a module which is not derived from this
- *    software.  The special exception does not apply to any modifications
- *    of the software.
- *
- * Not withstanding the above, under no circumstances may you combine
- * this software in any way with any other Broadcom software provided
- * under a license other than the GPL, without Broadcom's express prior
- * written consent.
- *
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License, version 2, as published by
+ * the Free Software Foundation (the "GPL").
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * 
+ * A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+ * writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ * 
  * :>
  */
 
@@ -605,6 +599,45 @@ typedef enum {
     rdpa_port_meter_num,
 } rdpa_port_meter_t;
 
+/** Port ID used for TM map */
+typedef enum
+{
+    rdpa_tm_map_port_pon,
+    rdpa_tm_map_port_dsl,
+    rdpa_tm_map_port_emac0,
+    rdpa_tm_map_port_emac1,
+    rdpa_tm_map_port_emac2,
+    rdpa_tm_map_port_emac3,
+    rdpa_tm_map_port_emac4,
+    rdpa_tm_map_port_emac5,
+    rdpa_tm_map_port_emac6,
+    rdpa_tm_map_port_emac7,
+#if defined(BCM6888) || defined(BCM4912) || defined(BCM6813) || defined(BCM6837)
+    rdpa_tm_map_port_emac8,
+    rdpa_tm_map_port_emac9,
+    rdpa_tm_map_port_emac10,
+#if defined(BCM6888) || defined(BCM6837)
+    rdpa_tm_map_port_emac11,
+    rdpa_tm_map_port_emac12,
+#if defined(BCM6888)
+    rdpa_tm_map_port_emac13,
+    rdpa_tm_map_port_emac14,
+    rdpa_tm_map_port_emac15,
+#endif
+#endif
+#endif
+#if defined(SF2_SUPPORT)
+    rdpa_tm_map_port_sf2_emac0,
+    rdpa_tm_map_port_sf2_emac1,
+    rdpa_tm_map_port_sf2_emac2,
+    rdpa_tm_map_port_sf2_emac3,
+    rdpa_tm_map_port_sf2_emac4,
+    rdpa_tm_map_port_sf2_emac5,
+    rdpa_tm_map_port_sf2_emac6,
+#endif
+    rdpa_tm_map_port__num_of
+} rdpa_system_tm_map_port;
+
 /** @} end of types Doxygen group */
 
 typedef struct
@@ -664,11 +697,18 @@ typedef enum
 
 typedef enum
 {
-    rdpa_fpi_mode_l2_bridge,
     rdpa_fpi_mode_l2,
     rdpa_fpi_mode_l3l4,
-    rdpa_fpi_mode_fallback,
 } rdpa_fpi_mode_t;
+
+#define TM_CORE_EMAC_MAP_MAX_PORTS 15
+typedef struct
+{
+    uint32_t tm_core_port_map_enable:1; /**< enable using PortsTm0 and PortsTm1 port map from PSP */
+    uint32_t core_map:15;               /**< 0 = PortsTm0, 1 = PortsTm1, used only if tm_core_port_map_enable == 1 */
+    uint32_t reserved:1;
+    uint32_t enabled_map:15;            /**< port bitmap */
+} rdpa_tm_core_emac_map; 
 
 typedef struct
 {

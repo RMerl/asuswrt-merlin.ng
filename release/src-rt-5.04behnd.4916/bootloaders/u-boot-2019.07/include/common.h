@@ -306,6 +306,7 @@ void	icache_disable(void);
 int	dcache_status (void);
 void	dcache_enable (void);
 void	dcache_disable(void);
+void	dcache_sanitize_disable(uintptr_t sanitize_base_addr, unsigned long sanitize_size);
 void	mmu_disable(void);
 #if defined(CONFIG_ARM)
 void	relocate_code(ulong);

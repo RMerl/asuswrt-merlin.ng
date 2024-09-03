@@ -4,25 +4,19 @@
  *    Copyright (c) 2019 Broadcom 
  *    All Rights Reserved
  * 
- * Unless you and Broadcom execute a separate written software license
- * agreement governing use of this software, this software is licensed
- * to you under the terms of the GNU General Public License version 2
- * (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
- * with the following added to such license:
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License, version 2, as published by
+ * the Free Software Foundation (the "GPL").
  * 
- *    As a special exception, the copyright holders of this software give
- *    you permission to link this software with independent modules, and
- *    to copy and distribute the resulting executable under terms of your
- *    choice, provided that you also meet, for each linked independent
- *    module, the terms and conditions of the license of that module.
- *    An independent module is a module which is not derived from this
- *    software.  The special exception does not apply to any modifications
- *    of the software.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  * 
- * Not withstanding the above, under no circumstances may you combine
- * this software in any way with any other Broadcom software provided
- * under a license other than the GPL, without Broadcom's express prior
- * written consent.
+ * 
+ * A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+ * writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
  * 
  * :> 
  */
@@ -56,6 +50,7 @@ enum LP_CLED_REGS {
 struct bcm_bca_cled_ops {
     void (*sw_led_set)(int led_num);
     void (*sw_led_clr)(int led_num);
+    int  (*sw_led_get)(int led_num);
 };
 
 struct bcm_bca_cled_reg_map {
@@ -96,6 +91,13 @@ static void cled_sw_led_clr(int led_num)
     *(volatile uint32_t *)(bca_cled->led_regs[CLED_SW_CLEAR]) = led_mask;
 }
 
+static int cled_sw_led_get(int led_num)
+{
+    uint32_t led_mask = 1 << led_num;
+    
+    return (*(volatile uint32_t *)(bca_cled->led_regs[CLED_SW_STATUS]) & led_mask) ? 1 : 0;
+}
+
 static void cled_legacy_sw_led_set(int led_num)
 {
     uint32_t led_mask = 1 << led_num;
@@ -106,6 +108,12 @@ static void cled_legacy_sw_led_clr(int led_num)
 {
     uint32_t led_mask = 1 << led_num;
     *(volatile uint32_t *)(bca_cled->led_regs[CLED_SW_SET]) &= ~led_mask;
+}
+
+static int cled_legacy_sw_led_get(int led_num)
+{
+    uint32_t led_mask = 1 << led_num;
+    return (*(volatile uint32_t *)(bca_cled->led_regs[CLED_SW_SET]) & led_mask) ? 1 : 0;
 }
 
 static struct bcm_bca_cled_reg_map cled_reg_map[] = {
@@ -142,11 +150,13 @@ static struct bcm_bca_cled_reg_map cled_legacy_reg_map[] = {
 static struct bcm_bca_cled_ops ops = {
     .sw_led_set = cled_sw_led_set,
     .sw_led_clr = cled_sw_led_clr,
+    .sw_led_get = cled_sw_led_get,
 }; 
 
 static struct bcm_bca_cled_ops legacy_ops = {
     .sw_led_set = cled_legacy_sw_led_set,
     .sw_led_clr = cled_legacy_sw_led_clr,
+    .sw_led_get = cled_legacy_sw_led_get,
 }; 
 
 static struct bcm_bca_cled_params_set cled_set_v2 = {
@@ -623,11 +633,43 @@ int bca_hw_cled_set_value(unsigned int led_num, unsigned int value)
     return 0;
 }
 
+int bca_cled_get_brightness(unsigned int led_num, bool is_hw, unsigned int *value)
+{
+    volatile struct cled_cfg *led_config;
+    uint32_t val;
+
+    if(!bca_cled)
+        return -ENODEV;
+
+    if (led_num > bca_cled->max_supported_leds)
+    {
+        dev_err(&bca_cled->pdev->dev,"requested LED %d is out of supported range(%d)\n", led_num,
+            bca_cled->max_supported_leds);
+        return -EINVAL;
+    }
+
+    led_config = (volatile struct cled_cfg *)(bca_cled->led_regs[CLED_XX_CONFIG]);
+
+    val = led_config[led_num].cfg0.Bits.bright_ctrl;
+
+    if (!is_hw)
+    {
+        *value = bca_cled->ops->sw_led_get(led_num) ? val : 0;
+    }
+    else
+    {
+        *value = val;
+    }
+
+    return 0;
+}
+
 int bca_cled_set_brightness(unsigned int led_num, unsigned int value)
 {
     unsigned long flags;
     uint32_t led_mask = 1 << led_num;
     volatile struct cled_cfg *led_config;
+    volatile uint32_t count;
 
     if(!bca_cled)
         return -ENODEV;
@@ -644,9 +686,13 @@ int bca_cled_set_brightness(unsigned int led_num, unsigned int value)
     spin_lock_irqsave(&bca_cled->lock, flags);
     led_config[led_num].cfg0.Bits.bright_ctrl = value;
     *(volatile uint32_t *)(bca_cled->led_regs[CLED_CH_ACT]) = led_mask;
-
     spin_unlock_irqrestore(&bca_cled->lock, flags);
-    
+
+    /* Wait till activate commad is complete */
+    count = 1000;
+    while (count && ((*(volatile uint32_t *)(bca_cled->led_regs[CLED_CH_ACT]) & led_mask) == led_mask))
+        count--;
+
     return 0;
 }
 
@@ -655,6 +701,7 @@ int bca_cled_set_flash_rate(unsigned int led_num, unsigned int value)
     unsigned long flags;
     uint32_t led_mask = 1 << led_num;
     volatile struct cled_cfg *led_config;
+    volatile uint32_t count;
 
     if(!bca_cled)
         return -ENODEV;
@@ -671,8 +718,13 @@ int bca_cled_set_flash_rate(unsigned int led_num, unsigned int value)
     spin_lock_irqsave(&bca_cled->lock, flags);
     led_config[led_num].cfg0.Bits.flash_ctrl = value;
     *(volatile uint32_t *)(bca_cled->led_regs[CLED_CH_ACT]) = led_mask;
-
     spin_unlock_irqrestore(&bca_cled->lock, flags);
+
+    /* Wait till activate commad is complete */
+    count = 1000;
+    while (count && ((*(volatile uint32_t *)(bca_cled->led_regs[CLED_CH_ACT]) & led_mask) == led_mask))
+        count--;
+
     
     return 0;
 }
@@ -681,6 +733,7 @@ EXPORT_SYMBOL(bca_cled_setup_serial);
 EXPORT_SYMBOL(bca_cled_setup_parallel);
 EXPORT_SYMBOL(bca_cled_set_value);
 EXPORT_SYMBOL(bca_hw_cled_set_value);
+EXPORT_SYMBOL(bca_cled_get_brightness);
 EXPORT_SYMBOL(bca_cled_set_brightness);
 EXPORT_SYMBOL(bca_cled_set_flash_rate);
     

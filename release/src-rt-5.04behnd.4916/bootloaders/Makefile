@@ -64,6 +64,10 @@ else
 LOADER_BUILD_TAG="$(LOADER_BUILD_TAG)"
 endif
 
+ifeq ($(wildcard ../targets/config.in),)
+CONSUMER_BUILD=1
+endif
+
 -include build/configs/$(OPTIONS).conf
 
 KCFL="KCFLAGS=-Werror"
@@ -78,6 +82,9 @@ FSBL_INTERIM	= $(splobjdir)/spl/u-boot-spl.bin
 BL = spl
 endif
 
+# extra config arch from kernel
+bcm_extra_arch ?=
+bcm_extra_spl_arch ?=
 
 ubootobjdir := $(mdir)/obj/$(bcm_uboot_uboot_prefix)uboot
 
@@ -153,11 +160,15 @@ ifeq ($(BRCM_CHIP),)
 BRCM_CHIP=$(strip $(shell build/work/get_from_last_profile BRCM_CHIP))
 endif
 
+ifeq ($(strip $(BLD_LPAE)),y)
+bcm_extra_arch := $(bcm_extra_arch) lpae
+endif
+
 splobjdir := $(mdir)/obj/$(bcm_uboot_spl_prefix)spl
 
 # generate configs for SPL
 splconfig := $(UBOOT_CONFIG)
-ifneq ($strip $(bcm_uboot_spl_arch)),)
+ifneq ($(strip $(bcm_uboot_spl_arch)$(bcm_extra_spl_arch)),)
 
 splconfig := tmp_$(bcm_uboot_spl_prefix)_$(UBOOT_CONFIG)
 
@@ -169,13 +180,12 @@ $(UB)/configs/$(splconfig) : $(UB)/configs/$(UBOOT_CONFIG)
 	cat $< > $@
 	for i in $(bcm_uboot_spl_arch) ; do perl ./build/configs/$$i.arch $@; done 
 	for i in $(STANDALONE_CONFIGS) ; do perl ./build/configs/$$i.arch $@; done
-
+	for i in $(bcm_extra_spl_arch) ; do perl ./build/configs/$$i.arch $@; done
 endif
 
 ubootconfig := $(UBOOT_CONFIG)
 
-ifneq ($(strip $(bcm_uboot_arch)),)
-
+ifneq ($(strip $(bcm_uboot_arch)$(bcm_extra_arch)),)
 ubootconfig := tmp_$(bcm_uboot_uboot_prefix)$(UBOOT_CONFIG)
 
 tmpconfig: $(UB)/configs/$(ubootconfig) 
@@ -184,8 +194,8 @@ tmpconfig: $(UB)/configs/$(ubootconfig)
 
 $(UB)/configs/$(ubootconfig) : $(UB)/configs/$(UBOOT_CONFIG)
 	cat $< > $@
-	for i in $(bcm_uboot_arch) ; do perl ./build/configs/$$i.arch $@; done 
-
+	for i in $(bcm_uboot_arch) ; do perl ./build/configs/$$i.arch $@; done
+	for i in $(bcm_extra_arch) ; do perl ./build/configs/$$i.arch $@; done
 endif
 
 ifneq ($(strip $(SEC_ARCH)),XIP)
@@ -262,7 +272,8 @@ configure: $(ubootobjdir)/.config gen_html_headers rt_ver
 ifeq ($(strip $(BLD_COMMON)),y)
 	-rm -f $(ubootobjdir)/include/generated/hashtable.h
 endif
-	@cp -ar $(objdir).$(shell echo $(BUILD_NAME) | tr A-Z a-z)/* $(objdir)/
+#	@cp -ar $(objdir).$(shell echo $(BUILD_NAME) | tr A-Z a-z)/* $(objdir)/
+	@cp -ar $(objdir).$(shell echo $(BUILD_NAME) | tr A-Z a-z)/* $(UB)/
 
 configure_spl: $(splobjdir)/.config
 	-rm -f $(splobjdir)/include/generated/hashtable.h
@@ -398,8 +409,9 @@ $(objdir)/%/.config : $(UB)/configs/%_$(UBOOT_CONFIG) | unpack changed_check
 
 $(UB)/configs/%_$(UBOOT_CONFIG): | unpack changed_check
 	cat $(UB)/configs/$(UBOOT_CONFIG) > $@
-ifneq ($strip $(bcm_uboot_spl_arch)),)
+ifneq ($strip $(bcm_uboot_spl_arch)$(bcm_extra_spl_arch)),)
 	for i in $(bcm_uboot_spl_arch) ; do perl ./build/configs/$$i.arch $@; done
+	for i in $(bcm_extra_spl_arch) ; do perl ./build/configs/$$i.arch $@; done
 endif
 # apply the static DDR3/4 configuration
 	DDR=$(subst _$(UBOOT_CONFIG),,$(notdir $@)) ; \
@@ -538,7 +550,9 @@ endif
 
 ifneq ($(strip $(bcm_uboot_tkmfg_mid)),)
 
+ifeq ($(CONSUMER_BUILD),)
 loader_extra_deps += $(objdir)/binaries/tkprog-spl.mfg
+endif
 
 bcm_uboot_tkmfg_keystore := $(mdir)/../$(strip $(bcm_uboot_tkmfg_keystore))
 
@@ -550,6 +564,7 @@ tkprog_nontk := $(tkobjdir)/tkprog-spl.nontk
 $(UB)/configs/$(tkconfig) : $(UB)/configs/$(UBOOT_CONFIG)
 	cat $< > $@
 	perl ./build/configs/tkprog.arch $@ $(bcm_sech_arch_ver) 
+	cat $(UB)/arch/arm/mach-bcmbca/include/otp_map.h > $(HOSTTOOLS_DIR)/SecureBootUtils/otp_map 
 	# for i in $(bcm_uboot_spl_arch) ; do perl ./build/configs/$$i.arch $@; done 
 
 $(objdir)/binaries/tkprog-spl.bin_headered: build_tkprog 
@@ -585,9 +600,9 @@ $(objdir)/binaries/keyinfo.encrypted:
 
 ##generate signable from encrypted 
 $(objdir)/binaries/keyinfo.signable: $(objdir)/binaries/keyinfo.encrypted
-	cat $<|head -c 32 > $(objdir)/binaries/fld_roe_ek.enc
-	cat $<|tail -c 32 > $(objdir)/binaries/fld_roe_iv.enc
-	PERL5LIB=$(HOSTTOOLS_DIR)/PerlLib/ $(HOSTTOOLS_DIR)/SecureBootUtils/genkeyst \
+	head -c 32 $< > $(objdir)/binaries/fld_roe_ek.enc
+	tail -c 32 $< > $(objdir)/binaries/fld_roe_iv.enc
+	PERL5LIB=$(HOSTTOOLS_DIR)/PerlLib/:$(HOSTTOOLS_DIR)/local_install/Perl $(HOSTTOOLS_DIR)/SecureBootUtils/genkeyst \
 		$(strip $(bcm_uboot_tkmfg_args))                                     \
 		--args ek=$(objdir)/binaries/fld_roe_ek.enc                          \
 		--args iv=$(objdir)/binaries/fld_roe_iv.enc                          \
@@ -602,7 +617,7 @@ $(objdir)/binaries/keyinfo.sig: $(objdir)/binaries/keyinfo.signable
 	cat $@ $< > $(objdir)/binaries/keyinfo.signed
 
 $(bcm_uboot_tkmfg_keystore): $(objdir)/binaries/keyinfo.sig
-	PERL5LIB=$(HOSTTOOLS_DIR)/PerlLib/ $(HOSTTOOLS_DIR)/SecureBootUtils/genkeyst \
+	PERL5LIB=$(HOSTTOOLS_DIR)/PerlLib/:$(HOSTTOOLS_DIR)/local_install/Perl $(HOSTTOOLS_DIR)/SecureBootUtils/genkeyst \
 		$(bcm_uboot_tkmfg_args)                                              \
 		--args keystore=$(objdir)/binaries/keyinfo.signed                    \
 		--args out=$(bcm_uboot_tkmfg_keystore)
@@ -619,7 +634,7 @@ build_tkprog: $(tkprog_nontk)
 
 endif
 
-encrypt_tpl:
+encrypt_tpl: tpl
 ifneq ($(strip $(findstring smc,$(bcm_uboot_spl_prefix))),smc)
 ifneq ($(and $(strip $(bcm_uboot_tpl_encrypt)),$(strip $(bcm_uboot_spl_encryptor))),)
 	mv -vf $(ubootobjdir)/tpl/u-boot-tpl.bin  $(ubootobjdir)/tpl/u-boot-tpl.bin.unenc
@@ -726,7 +741,11 @@ endif
 		$(if $(bcm_uboot_delg_sec_pol),--security_policy=../$(bcm_uboot_delg_sec_pol)) \
 		$(if $(bcm_uboot_fit_security),--securitydefs=$(bcm_uboot_fit_security)) \
 		$(if $(strip $(findstring smc,$(bcm_uboot_spl_prefix))),--smc) \
-		--arch=$(ARCH) $(if $(INC_ATF),--armtf) $(if $(INC_OPTEE),--optee) $(if $(BLD_IKOS),--nohash) > obj/binaries/brcm_simple.its
+		--arch=$(ARCH) $(if $(INC_ATF),--armtf) $(if $(INC_OPTEE),--optee) $(if $(BLD_IKOS),--nohash) \
+		$(if $(bcm_sec_uboot_fit_sign),--sign=$(bcm_sec_uboot_fit_sign)) \
+		$(if $(bcm_sec_uboot_fit_cypher),--cypher=$(bcm_sec_uboot_fit_cypher)) \
+		$(if $(bcm_sec_ksm),--ksm=$(topbuilddir)/$(bcm_sec_ksm)) \
+		> obj/binaries/brcm_simple.its
 	./obj/uboot/tools/mkimage -f obj/binaries/brcm_simple.its -E obj/binaries/tmp_$(BOOTSTRAPFIT);\
 	fitpad2len=`build/work/fit_header_tool --hex --pad $(FITPAD)  obj/binaries/tmp_$(BOOTSTRAPFIT)` ; \
 		./obj/uboot/tools/mkimage -p $$fitpad2len -f obj/binaries/brcm_simple.its -E obj/binaries/$(BOOTSTRAPFIT) 
@@ -734,6 +753,8 @@ endif
 		dd if=obj/binaries/$(BOOTSTRAPFIT) of=obj/binaries/$(BOOTSTRAPFIT)_signable bs=$$fithdrlen count=1
 ifneq ($(and $(strip $(bcm_uboot_fit_sign)),$(strip $(bcm_uboot_fit_signer))),)
 	build/scripts/$(bcm_uboot_fit_signer) obj/binaries/$(BOOTSTRAPFIT)_signable obj/binaries/$(BOOTSTRAPFIT).sig $(bcm_uboot_fit_sign)
+else ifneq ($(and $(strip $(bcm_sec_uboot_fit_sign)),$(strip $(bcm_sec_signer))),)
+	$(topbuilddir)/$(bcm_sec_signer) $(topbuilddir)/$(bcm_sec_key_map) pkcs1 $(bcm_sec_uboot_fit_sign) obj/binaries/$(BOOTSTRAPFIT)_signable obj/binaries/$(BOOTSTRAPFIT).sig
 endif
 
 # Bootstrap images for emmc		
@@ -828,6 +849,9 @@ endif
 		$(if $(bcm_uboot_pmcfw_data_addr),--pmcfw_data_addr=$(bcm_uboot_pmcfw_data_addr)) \
 		$(if $(strip $(findstring smc,$(bcm_uboot_spl_prefix))),--smc) \
 		--arch=$(ARCH) $(if $(INC_ATF),--armtf) $(if $(INC_OPTEE),--optee) $(if $(BLD_IKOS),--nohash) \
+		$(if $(bcm_sec_uboot_fit_sign),--sign=$(bcm_sec_uboot_fit_sign)) \
+		$(if $(bcm_sec_uboot_fit_cypher),--cypher=$(bcm_sec_uboot_fit_cypher)) \
+		$(if $(bcm_sec_ksm),--ksm=$(topbuilddir)/$(bcm_sec_ksm)) \
 		> obj/binaries/brcm_full_linux.its
 	./obj/uboot/tools/mkimage -f obj/binaries/brcm_full_linux.its -E obj/binaries/tmp_fit.itb 
 	fitpad2len=`build/work/fit_header_tool --hex --pad 1280  obj/binaries/tmp_fit.itb` ; \
@@ -836,6 +860,8 @@ endif
 		dd if=obj/binaries/$(LINUXFIT) of=obj/binaries/$(LINUXFIT)_signable bs=$$fithdrlen count=1
 ifneq ($(and $(strip $(bcm_uboot_fit_sign)),$(strip $(bcm_uboot_fit_signer))),)
 	build/scripts/$(bcm_uboot_fit_signer) obj/binaries/$(LINUXFIT)_signable  obj/binaries/$(LINUXFIT).sig  $(bcm_uboot_fit_sign)
+else ifneq ($(and $(strip $(bcm_sec_uboot_fit_sign)),$(strip $(bcm_sec_signer))),)
+	$(topbuilddir)/$(bcm_sec_signer) $(topbuilddir)/$(bcm_sec_key_map) pkcs1 $(bcm_sec_uboot_fit_sign) obj/binaries/$(LINUXFIT)_signable obj/binaries/$(LINUXFIT).sig
 endif
 	dd if=/dev/zero of=obj/binaries/test_metadata.bin_headered bs=1M count=1 ; \
 	echo "COMMITTED=1\nVALID=1\n" | $(ubootobjdir)/tools/mkenvimage --metadata -s 1024 -o $(objdir)/binaries/test_metadata.bin_headered; 
@@ -1228,13 +1254,14 @@ $(objdir)/LPDDR5/spl/$(DDRMOD) : prebuilt/$(BRCM_CHIP)/LPDDR5_$(notdir $(DDRMOD)
 endif
 
 gen4_sec_switch: tpl
+ifeq ($(CONSUMER_BUILD),)
 ifeq ($(strip $(SEC_ARCH)),GEN4)
 ifneq ($(and $(strip $(bcm_sec_switch_certificate)),$(strip $(bcm_sec_switch_rot)),$(strip $(bcm_sec_switch_roe_ek)),$(strip $(bcm_sec_switch_roe_iv)),$(strip $(bcm_sec_switch_ksb)),$(strip $(bcm_sec_encryptor)),$(strip $(bcm_sec_signer))),)
 	$(HOSTTOOLS_DIR)/SecureBootUtils/gen4_sbi_composer.py \
-		--key_map=$(topbuilddir)/$(bcm_sec_dir)/$(bcm_sec_key_map) \
+		--key_map=$(topbuilddir)/$(bcm_sec_key_map) \
 		--eligibility=MODE_UNSECURE \
 		--action=MOVE_TO_FLD \
-		--certificate=$(topbuilddir)/$(bcm_sec_dir)/$(bcm_sec_switch_certificate) \
+		--certificate=$(topbuilddir)/$(bcm_sec_switch_certificate) \
 		--mfg_rot=$(bcm_sec_switch_rot) \
 		--mfg_encryptor_args="-aes-256-cbc -salt" \
 		--mfg_roe_ek=$(bcm_sec_switch_roe_ek) \
@@ -1243,21 +1270,24 @@ ifneq ($(and $(strip $(bcm_sec_switch_certificate)),$(strip $(bcm_sec_switch_rot
 		--fld_encryptor_args="" \
 		--fld_roe_ek="" \
 		--fld_roe_iv="" \
-		--blob=$(topbuilddir)/$(bcm_sec_dir)/$(bcm_sec_switch_ksb) \
+		--blob=$(topbuilddir)/$(bcm_sec_switch_ksb) \
 		--encryptor=$(topbuilddir)/$(bcm_sec_encryptor) \
 		--signer=$(topbuilddir)/$(bcm_sec_signer) \
+		--signature_scheme="pkcs1" \
 		--output=$(objdir)/binaries/gen4-sec-switch.bin_headered \
 		--build_dir=$(objdir) \
 		--crc_calculator=$(topbuilddir)/hostTools/gencrc32
 endif
 endif
+endif
 .PHONY: gen4_sec_switch
 
 gen4_sec_tpl: tpl
+ifeq ($(CONSUMER_BUILD),)
 ifeq ($(strip $(SEC_ARCH)),GEN4)
 ifneq ($(and $(strip $(bcm_sec_tpl_rot)),$(strip $(bcm_sec_tpl_roe_options)),$(strip $(bcm_sec_tpl_roe_ek)),$(strip $(bcm_sec_tpl_roe_iv)),$(strip $(bcm_sec_encryptor)),$(strip $(bcm_sec_signer))),)
 	$(HOSTTOOLS_DIR)/SecureBootUtils/gen4_sbi_composer.py \
-		--key_map=$(topbuilddir)/$(bcm_sec_dir)/$(bcm_sec_key_map) \
+		--key_map=$(topbuilddir)/$(bcm_sec_key_map) \
 		--eligibility=MODE_FLD_SECURE \
 		--action=NO_ACTION \
 		--certificate="" \
@@ -1272,9 +1302,11 @@ ifneq ($(and $(strip $(bcm_sec_tpl_rot)),$(strip $(bcm_sec_tpl_roe_options)),$(s
 		--blob=$(FSBL_INTERIM) \
 		--encryptor=$(topbuilddir)/$(bcm_sec_encryptor) \
 		--signer=$(topbuilddir)/$(bcm_sec_signer) \
+		--signature_scheme="pkcs1" \
 		--output=$(objdir)/binaries/gen4-sec-u-boot-tpl.bin_headered \
 		--build_dir=$(objdir) \
 		--crc_calculator=$(topbuilddir)/hostTools/gencrc32
+endif
 endif
 endif
 .PHONY: gen4_sec_tpl

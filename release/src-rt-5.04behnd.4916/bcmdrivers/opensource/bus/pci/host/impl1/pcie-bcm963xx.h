@@ -1,28 +1,22 @@
 /*
 <:copyright-BRCM:2015:DUAL/GPL:standard
 
-   Copyright (c) 2015 Broadcom
+   Copyright (c) 2015 Broadcom 
    All Rights Reserved
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
 :>
 */
@@ -65,6 +59,8 @@ extern "C" {
 #define PCIE_IPI_L2_INTR_CTRL_REGS_OFFSET          0x9200
 #define PCIE_PCIE_INTR1_REGS_OFFSET                0x9300
 #define PCIE_CPU_INTR1_REGS_OFFSET                 0x9400
+#define PCIE_STAT_REGS_OFFSET                      0x9500
+#define PCIE_SAT_TIMER_REGS_OFFSET                 0x9800
 #define PCIE_G3_PLL_REGS_OFFSET                    0xA010
 
 /* RC_CFG_TYPE1 */
@@ -81,13 +77,18 @@ extern "C" {
 #define RC_CFG_PCIE_LINK_CTRL_TGT_LINK_SPEED_MASK  0x00000003
 
 /* RC_CFG_PRIV1 */
-#define RC_CFG_PRIV1_ID_VAL3_OFFSET                (PCIE_BLK_428_REGS_OFFSET+0x0014)
+#define RC_CFG_PRIV1_ID_VAL3_OFFSET                (0x043C)
 #define RC_CFG_PRIV1_ID_VAL3_REVISION_ID_MASK      0xff000000
-#define RC_CFG_PRIV1_DEVICE_CAPABILITY_OFFSET      (PCIE_BLK_428_REGS_OFFSET+0x00AC)
-#define RC_CFG_PRIV1_LINK_CAPABILITY_OFFSET        (PCIE_BLK_428_REGS_OFFSET+0x00B4)
+#define RC_CFG_PRIV1_DEVICE_CAPABILITY_OFFSET      (0x04D4)
+#define RC_CFG_PRIV1_LINK_CAPABILITY_OFFSET        (0x04DC)
 #define RC_CFG_PRIV1_LINK_CAP_MAX_LINK_WIDTH_SHIFT 4
 #define RC_CFG_PRIV1_LINK_CAP_MAX_LINK_WIDTH_MASK  0x000001F0
 #define RC_CFG_PRIV1_LINK_CAP_LINK_SPEED_MASK      0x0000000F
+#define RC_CFG_PRIV1_ROOT_CAP_OFFSET               (0x04F8)
+#define RC_CFG_PRIV1_ROOT_CAP_EXT2_CAP_ENA_MASK    0x000000F8
+#define RC_CFG_PRIV1_ROOT_CAP_EXT2_CAP_ENA_L1SUB   0x00000008
+#define RC_CFG_PRIV1_ROOT_CAP_EXT2_CAP_ENA_SEC_CAP 0x00000010
+#define RC_CFG_PRIV1_ROOT_CAP_EXT2_CAP_ENA_PTM_CAP 0x00000020
 
 /* RC_TL */
 #define RC_TL_FCIMM_NP_LIMIT_OFFSET                (PCIE_BLK_800_REGS_OFFSET+0x0210)
@@ -320,6 +321,13 @@ extern "C" {
 #define CPU_INTR1_PCIE_NMI_CPU_INTR                (1 << 6)
 #define CPU_INTR1_PCIE_UBUS_CPU_INTR               (1 << 7)
 #define CPU_INTR1_PCIE_MSI_INTR_CPU_INTR           (1 << 9)
+
+/* SAT_TIMER: PCIe Precision Timing Management Satellite Timer Registers */
+#define SAT_TIMER_CTRL_OFFSET                      (PCIE_SAT_TIMER_REGS_OFFSET+0x0000)
+#define SAT_TIMER_SET_L_OFFSET                     (PCIE_SAT_TIMER_REGS_OFFSET+0x000C)
+#define SAT_TIMER_SET_H_OFFSET                     (PCIE_SAT_TIMER_REGS_OFFSET+0x0010)
+#define SAT_TIMER_INC_L_OFFSET                     (PCIE_SAT_TIMER_REGS_OFFSET+0x0014)
+#define SAT_TIMER_INC_H_OFFSET                     (PCIE_SAT_TIMER_REGS_OFFSET+0x0018)
 
 /* UBUS_G3_PLL: PCIE GEN3 PLL Control Registers */
 #define G3_PLL_PLL_RESETS_OFFSET                   (PCIE_G3_PLL_REGS_OFFSET+0x0000)

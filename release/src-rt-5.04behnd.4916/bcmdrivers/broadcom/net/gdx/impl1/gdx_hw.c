@@ -4,25 +4,19 @@
       Copyright (c) 2021 Broadcom 
       All Rights Reserved
    
-   Unless you and Broadcom execute a separate written software license
-   agreement governing use of this software, this software is licensed
-   to you under the terms of the GNU General Public License version 2
-   (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-   with the following added to such license:
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License, version 2, as published by
+   the Free Software Foundation (the "GPL").
    
-      As a special exception, the copyright holders of this software give
-      you permission to link this software with independent modules, and
-      to copy and distribute the resulting executable under terms of your
-      choice, provided that you also meet, for each linked independent
-      module, the terms and conditions of the license of that module.
-      An independent module is a module which is not derived from this
-      software.  The special exception does not apply to any modifications
-      of the software.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
    
-   Not withstanding the above, under no circumstances may you combine
-   this software in any way with any other Broadcom software provided
-   under a license other than the GPL, without Broadcom's express prior
-   written consent.
+   
+   A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+   writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.
    
    :>
  */
@@ -104,9 +98,13 @@ static inline void gdx_initialize_skb(struct sk_buff *skb, gdx_hwacc_rx_info_t *
 static inline struct sk_buff *gdx_skb_alloc(gdx_hwacc_rx_info_t *info, int prepend_size);
 
 extern int gdx_print_lvl;
+extern int gdx_dbg_mask;
+extern int gdx_dbg_force_l3_pkts;
+extern int gdx_dbg_nonlinear_hdrlen;
+extern int gdx_dbg_force_nonlinear_pkts;
 
 extern void bcm_fro_tcp_complete(void);
-extern void gdx_dev_xmit(pNBuff_t nbuff, void *dev, BlogFcArgs_t *args);
+extern int gdx_dev_xmit(pNBuff_t nbuff, void *dev, BlogFcArgs_t *args);
 
 /****************************************************************************/
 /***************************** Module parameters*****************************/
@@ -138,9 +136,10 @@ typedef struct gdx_queue_stats gdx_queue_stats_t;
 /* Generic Device stats */
 struct gdx_dev_stats
 {
-    unsigned int dev_rx_pkts;
-    unsigned int dev_tx_pkts;               /* fwd/accelerated pkts received from CPU-RX */
-    unsigned int cpu_rxq_lpbk_pkts;         /* exception pkts received from CPU-RX */
+    unsigned int dev_rx_pkts;               /* pkts received from igress gdx device */
+    unsigned int dev_tx_pkts;               /* fwd/accelerated pkts received from hwacc */
+    unsigned int dev_tx_pkts_dropped;       /* fwd/accelerated pkts dropped */
+    unsigned int cpu_rxq_lpbk_pkts;         /* exception pkts received from hwacc */
     unsigned int cpu_rxq_lpbk_no_dev_pkts;  /* no matching dev found for exception pkts*/
 };
 typedef struct gdx_dev_stats gdx_dev_stats_t;
@@ -161,11 +160,11 @@ struct gdx_dev_group
     int16_t             gendev_count;
 
     unsigned int        dev_rx_total_pkts;  /* # of RX pkts callback from Linux stack */
-    unsigned int        dev_rx_pkts;        /* # of RX pkts received by dev (and TX to CPU-TX) */
+    unsigned int        dev_rx_pkts;        /* # of RX pkts received by GDX dev (and TX to ACC) */
     unsigned int        dev_rx_no_dev;      /* # of RX pkts dropped because of no matching dev */
-    unsigned int        dev_rx_error;       /* # of RX pkts dropped because of rx error */
+    unsigned int        dev_rx_error;       /* # of RX pkts dropped because of error in sending it to ACC*/
 
-    unsigned int        dev_tx_pkts;        /* # of TX pkts sent by the dev */
+    unsigned int        dev_tx_pkts;        /* # of TX pkts sent by the GDX to egress device */
 
     unsigned int        cpu_rxq_total_pkts;       /* # pkts read from the CPU-RX queue */
     unsigned int        cpu_rxq_valid_pkts;       /* # valid pkts finally received from CPU-RX queue */
@@ -174,7 +173,7 @@ struct gdx_dev_group
     unsigned int        cpu_rxq_tx_pkts;          /* valid tx pkts received from CPU-RX queue */
     unsigned int        cpu_rxq_tx_no_dev;        /* no matching dev for tx pkts */
 
-    struct mutex        group_lock;
+    spinlock_t          group_lock;
     char                dev_name[IFNAMSIZ];
 } ____cacheline_aligned;
 
@@ -382,6 +381,7 @@ static inline int gdx_exception_packet_handle(struct sk_buff *skb, gdx_hwacc_rx_
 
 static inline void gdx_forward_packet_handle(gdx_dev_group_t *dev_group_p, gdx_hwacc_rx_info_t *info, pNBuff_t nbuff_p)
 {
+    int ret = 0;
     gdx_dev_stats_t *dev_stats_p;
     gdx_gendev_info_t *gendev_info_p;
     gdx_pkt_dump("GDX_TX: ", nbuff_p);
@@ -400,14 +400,19 @@ static inline void gdx_forward_packet_handle(gdx_dev_group_t *dev_group_p, gdx_h
     {
         GDX_PRINT_INFO("%s is_ipv4 %d use_tcplocal_xmit %d tx_flags 0x%x\n", __func__, g_fill_info.prep_info.fc_args.tx_is_ipv4, 
                       g_fill_info.prep_info.fc_args.use_tcplocal_xmit_enq_fn, g_fill_info.prep_info.fc_args.tx_flags);
-        gdx_dev_xmit(nbuff_p, info->tx_dev, &g_fill_info.prep_info.fc_args);
+        ret = gdx_dev_xmit(nbuff_p, info->tx_dev, &g_fill_info.prep_info.fc_args);
     }
     else
     {
-        gdx_dev_xmit(nbuff_p, info->tx_dev, NULL);
+        ret = gdx_dev_xmit(nbuff_p, info->tx_dev, NULL);
     }
-    dev_group_p->dev_tx_pkts++;
-    dev_stats_p->dev_tx_pkts++;
+    if (likely(ret == 0))
+    {
+        dev_group_p->dev_tx_pkts++;
+        dev_stats_p->dev_tx_pkts++;
+    }
+    else
+        dev_stats_p->dev_tx_pkts_dropped++;
     GDX_PRINT_DBG1("GDX_TX: Done. =========\n");
 }
 
@@ -520,7 +525,7 @@ int gdx_add_gendev(int group_idx, struct net_device *dev_p)
     memset(gendev_info_p, 0, allocation_size);
 
     /* Caution!!! reach here only if a free entry was found */
-    mutex_lock(&dev_group_p->group_lock);
+    spin_lock(&dev_group_p->group_lock);
     udevid = bcm_netdev_ext_field_get(dev_p, devid);
     if (bcm_get_netdev_by_id(udevid) == dev_p)
     {
@@ -534,7 +539,7 @@ int gdx_add_gendev(int group_idx, struct net_device *dev_p)
                                             dev_p->name);
         /* bcm_put_netdev_by_id will do a dev_put */
         bcm_put_netdev_by_id(udevid);
-        mutex_unlock(&dev_group_p->group_lock);
+        spin_unlock(&dev_group_p->group_lock);
         kfree(gendev_info_p);
         goto gdx_add_gendev_failure;
     }
@@ -548,7 +553,7 @@ int gdx_add_gendev(int group_idx, struct net_device *dev_p)
     GDX_PRINT("\033[1m\033[34m GDX: group_idx %d: Dev %s added at dev_idx %d gdx_dev_id %d\033[0m",
         group_idx, dev_p->name, dev_idx, gendev_info_p->gdx_dev_id);
 
-    mutex_unlock(&dev_group_p->group_lock);
+    spin_unlock(&dev_group_p->group_lock);
     return (int)dev_idx;
 
 gdx_add_gendev_failure:
@@ -599,7 +604,7 @@ int gdx_delete_gendev(struct net_device *dev_p)
     GDX_PRINT("\033[1m\033[34m GDX: group_idx %d: Dev %s deleted @dev_idx %d\033[0m",
         group_idx, bcm_get_netdev_name_by_id(gendev_info_p->gdx_dev_id), dev_idx);
 
-    mutex_lock(&dev_group_p->group_lock);
+    spin_lock(&dev_group_p->group_lock);
     /* bcm_put_netdev_by_id will do a dev_put */
     bcm_put_netdev_by_id(gendev_info_p->gdx_dev_id);
     kfree(gendev_info_p);
@@ -618,7 +623,7 @@ int gdx_delete_gendev(struct net_device *dev_p)
     }
 
 gdx_delete_gendev_exit:
-    mutex_unlock(&dev_group_p->group_lock);
+    spin_unlock(&dev_group_p->group_lock);
 
     return dev_idx;
 }
@@ -957,6 +962,7 @@ static int gdx_stats_file_show_proc(struct seq_file *m, void *v)
                         seq_printf(m, "\n\nGDX Dev[%d]: %s", dev_idx, bcm_get_netdev_name_by_id(gendev_info_p->gdx_dev_id));
                         seq_printf(m, "\ndev_rx_pkts               = %u", dev_stats_p->dev_rx_pkts);
                         seq_printf(m, "\ndev_tx_pkts               = %u", dev_stats_p->dev_tx_pkts);
+                        seq_printf(m, "\ndev_tx_pkts_dropped       = %u", dev_stats_p->dev_tx_pkts_dropped);
 
                         seq_printf(m, "\n\ncpu_rxq_lpbk_pkts         = %u", dev_stats_p->cpu_rxq_lpbk_pkts);
                         seq_printf(m, "\ncpu_rxq_lpbk_no_dev_pkts  = %u", dev_stats_p->cpu_rxq_lpbk_no_dev_pkts);
@@ -1069,6 +1075,68 @@ static int gdx_dev_file_show_proc(struct seq_file *m, void *v)
     return 0;
 }
 
+#define GDX_DBG_FORCE_NONLINEAR_PKTS_MASK 0x0001
+#define GDX_DBG_FORCE_L3_PKTS_MASK 0x0002
+#define GDX_DBG_MASK_NONLINEAR_HDRLEN_OFFSET 16
+#define GDX_DBG_MASK_NONLINEAR_HDRLEN_MASK   0xFF
+
+static int gdx_dbg_mask_show(struct seq_file *s, void *v)
+{
+   seq_printf(s, "Force non-linear packets mask : 0x1\n");
+   seq_printf(s, "Force layer 3 packets mask    : 0x2\n");
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0))
+   seq_printf(s, "0x%08x\n", gdx_dbg_mask);
+   return 0;
+#else
+   return seq_printf(s, "0x%08x\n", gdx_dbg_mask);
+#endif
+}
+
+static int gdx_dbg_mask_open(struct inode *inode, struct file *file)
+{
+   return single_open(file, gdx_dbg_mask_show, NULL);
+}
+
+static ssize_t gdx_dbg_mask_write(struct file *file, const char __user *buf, size_t len, loff_t *offset)
+{
+   unsigned int val = 0;
+   ssize_t ret;
+
+   ret = kstrtouint_from_user(buf, len, 16, &val);
+   if(ret < 0)
+      return ret;
+
+   gdx_dbg_mask = val;
+   gdx_dbg_force_nonlinear_pkts = gdx_dbg_mask & GDX_DBG_FORCE_NONLINEAR_PKTS_MASK;
+   gdx_dbg_force_l3_pkts        = gdx_dbg_mask & GDX_DBG_FORCE_L3_PKTS_MASK;
+   gdx_dbg_nonlinear_hdrlen     = ((gdx_dbg_mask >> GDX_DBG_MASK_NONLINEAR_HDRLEN_OFFSET) \
+                                  & GDX_DBG_MASK_NONLINEAR_HDRLEN_MASK);
+
+   GDX_PRINT_INFO("gdx_dbg_mask:%08x",gdx_dbg_mask); 
+   GDX_PRINT_INFO("gdx_dbg_force_nonlinear_pkts:%u",gdx_dbg_force_nonlinear_pkts); 
+   GDX_PRINT_INFO("gdx_dbg_force_l3_pkts:%u",gdx_dbg_force_l3_pkts); 
+   GDX_PRINT_INFO("gdx_dbg_nonlinear_hdrlen:%u",gdx_dbg_nonlinear_hdrlen); 
+   return len;
+}
+
+#if (LINUX_VERSION_CODE > KERNEL_VERSION(5,10,0))
+static const struct proc_ops gdx_dbg_mask_proc_fops = {
+   .proc_open    = gdx_dbg_mask_open,
+   .proc_read    = seq_read,
+   .proc_lseek   = seq_lseek,
+   .proc_write   = gdx_dbg_mask_write,
+   .proc_release = single_release
+};
+#else
+static const struct file_operations gdx_dbg_mask_proc_fops = {
+   .open         = gdx_dbg_mask_open,
+   .read         = seq_read,
+   .llseek       = seq_lseek,
+   .write        = gdx_dbg_mask_write,
+   .release      = single_release
+};
+#endif
+
 
 /****************************************************************************/
 /**                                                                        **/
@@ -1094,7 +1162,9 @@ static int gdx_proc_init(void)
 {
     if (!(proc_gdx_dir = proc_mkdir("gdx", NULL))) 
         goto fail;
-
+    if (!proc_create("dbg", 0644, proc_gdx_dir, &gdx_dbg_mask_proc_fops))
+        goto fail;
+    
     if (!proc_create_single("dev", 0644, proc_gdx_dir, gdx_dev_file_show_proc))
         goto fail;
              
@@ -1114,6 +1184,7 @@ fail:
 
 static inline void gdx_proc_uninit(void)
 {
+    remove_proc_entry("dbg", proc_gdx_dir);
     remove_proc_entry("stats", proc_gdx_dir);
     remove_proc_entry("dev", proc_gdx_dir);
     gdx_hwacc_proc_uninit(proc_gdx_dir); /* remove platform-specific procs */

@@ -248,7 +248,7 @@ static unsigned int nf_dyndscp_in(void *priv,
 			DEBUG_DSCP1((KERN_INFO "%s: changing tos in pkt to %x \n",__FUNCTION__,
                 ct->bcm_ext.dyndscp.dscp[CTINFO2DIR(ctinfo)]));
 
-			if (!skb_ensure_writable(skb, sizeof(struct iphdr)))
+			if (skb_ensure_writable(skb, sizeof(struct iphdr)))
 				 return NF_DROP;
 
 			ipv4_change_dsfield(ip_hdr(skb), (__u8)(~DYNDSCP_DSCP_MASK),
@@ -275,7 +275,7 @@ static unsigned int nf_dyndscp_in(void *priv,
 
 				 if(pktDscp != DYNDSCP_LAN2WAN_DEFAULT_DSCP) {
 
-						if (!skb_ensure_writable(skb, sizeof(struct iphdr)))
+						if (skb_ensure_writable(skb, sizeof(struct iphdr)))
 							 return NF_DROP;
 
 						ipv4_change_dsfield(ip_hdr(skb), (__u8)(~DYNDSCP_DSCP_MASK),
@@ -286,7 +286,7 @@ static unsigned int nf_dyndscp_in(void *priv,
 				 /* WAN -> LAN packet */
 
 				 DEBUG_DSCP1(("%s: initializing case wan->lan packet \n",__FUNCTION__));
-				 if (!skb_ensure_writable(skb, sizeof(struct iphdr)))
+				 if (skb_ensure_writable(skb, sizeof(struct iphdr)))
 						return NF_DROP;
 
 				 /* inherit tos from packet */
@@ -373,7 +373,7 @@ static unsigned int nf_dyndscp_local(void *priv,
 
 	 if(ct->bcm_ext.dyndscp.status == DYNDSCP_INHERITED) {
 
-			if (!skb_ensure_writable(skb, sizeof(struct iphdr)))
+			if (skb_ensure_writable(skb, sizeof(struct iphdr)))
 				 return NF_DROP;
 
 			/* LOCAL -> WAN packet */
@@ -417,7 +417,7 @@ static unsigned int nf_dyndscp_in6(void *priv,
 			DEBUG_DSCP1((KERN_INFO "%s: changing tos in pkt to %x \n",__FUNCTION__,
                 ct->bcm_ext.dyndscp.dscp[CTINFO2DIR(ctinfo)]));
 
-			if (!skb_ensure_writable(skb, sizeof(struct ipv6hdr)))
+			if (skb_ensure_writable(skb, sizeof(struct ipv6hdr)))
 				 return NF_DROP;
 
 			set_ipv6_dsfield(skb, ipv6_hdr(skb), (__u8)(~DYNDSCP_DSCP_MASK),
@@ -446,7 +446,7 @@ static unsigned int nf_dyndscp_in6(void *priv,
 
 				 if(pktDscp != DYNDSCP_LAN2WAN_DEFAULT_DSCP) {
 
-						if (!skb_ensure_writable(skb, sizeof(struct ipv6hdr)))
+						if (skb_ensure_writable(skb, sizeof(struct ipv6hdr)))
 							 return NF_DROP;
 
 						set_ipv6_dsfield(skb, ipv6_hdr(skb), (__u8)(~DYNDSCP_DSCP_MASK),
@@ -457,7 +457,7 @@ static unsigned int nf_dyndscp_in6(void *priv,
 				 /* WAN -> LAN packet */
 
 				 DEBUG_DSCP1(("%s: initializing case wan->lan packet \n",__FUNCTION__));
-				 if (!skb_ensure_writable(skb, sizeof(struct ipv6hdr)))
+				 if (skb_ensure_writable(skb, sizeof(struct ipv6hdr)))
 						return NF_DROP;
 
 				 /* inherit tos from packet */
@@ -545,7 +545,7 @@ static unsigned int nf_dyndscp_local6(void *priv,
 
 	 if(ct->bcm_ext.dyndscp.status == DYNDSCP_INHERITED) {
 
-			if (!skb_ensure_writable(skb, sizeof(struct ipv6hdr)))
+			if (skb_ensure_writable(skb, sizeof(struct ipv6hdr)))
 				 return NF_DROP;
 
 			/* LOCAL -> WAN packet */
@@ -724,15 +724,15 @@ static int __net_init nf_dyndscp_proc_init(struct net *net)
 	 proc_set_size(dyndscp_proc_file, 80);
 	 proc_set_user(dyndscp_proc_file, KUIDT_INIT(0), KGIDT_INIT(0));
 
-	 printk(KERN_INFO "/proc/net/netfilter/%s created\n", DYNDSCP_PROC_TRANSTBL_FILENAME);
+	 printk(KERN_DEBUG "/proc/net/netfilter/%s created\n", DYNDSCP_PROC_TRANSTBL_FILENAME);
 
 	 return 0; /* success */
 }
 
 static void __net_exit nf_dyndscp_proc_fini(struct net *net)
 {
-	 remove_proc_entry(DYNDSCP_PROC_TRANSTBL_FILENAME, net->proc_net);
-	 printk(KERN_INFO "/proc/net/netfilter/%s removed\n", DYNDSCP_PROC_TRANSTBL_FILENAME);
+	 remove_proc_entry(DYNDSCP_PROC_TRANSTBL_FILENAME, net->nf.proc_netfilter);
+	 printk(KERN_DEBUG "/proc/net/netfilter/%s removed\n", DYNDSCP_PROC_TRANSTBL_FILENAME);
 }
 
 static struct pernet_operations nf_dyndscp_net_ops = {

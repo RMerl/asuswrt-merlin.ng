@@ -4,25 +4,19 @@
       Copyright (c) 2015 Broadcom 
       All Rights Reserved
    
-   Unless you and Broadcom execute a separate written software license
-   agreement governing use of this software, this software is licensed
-   to you under the terms of the GNU General Public License version 2
-   (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-   with the following added to such license:
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License, version 2, as published by
+   the Free Software Foundation (the "GPL").
    
-      As a special exception, the copyright holders of this software give
-      you permission to link this software with independent modules, and
-      to copy and distribute the resulting executable under terms of your
-      choice, provided that you also meet, for each linked independent
-      module, the terms and conditions of the license of that module.
-      An independent module is a module which is not derived from this
-      software.  The special exception does not apply to any modifications
-      of the software.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
    
-   Not withstanding the above, under no circumstances may you combine
-   this software in any way with any other Broadcom software provided
-   under a license other than the GPL, without Broadcom's express prior
-   written consent.
+   
+   A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+   writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.
    
    :>
  */
@@ -72,6 +66,10 @@ extern port_ops_t port_sysp_port;
 extern port_ops_t port_sysp_port_mac;
 #endif 
 
+#if defined(SF2_DUAL)
+extern sw_ops_t port_nonbrcm_sw;
+extern port_ops_t port_nonbrcm_port;
+#endif 
 
 static int dbg_port_count, dbg_sw_count;
 
@@ -125,6 +123,16 @@ int _assign_port_class(enetx_port_t *port, port_type_t port_type)
             break;
         case PORT_TYPE_SYSP_MAC:
             port_ops = &port_sysp_port_mac;
+            port_class = PORT_CLASS_PORT;
+            break;
+#endif
+#if defined(SF2_DUAL)
+        case PORT_TYPE_NONBRCM_SW:
+            sw_ops = &port_nonbrcm_sw;
+            port_class = PORT_CLASS_SW;
+            break;
+        case PORT_TYPE_NONBRCM_PORT:
+            port_ops = &port_nonbrcm_port;
             port_class = PORT_CLASS_PORT;
             break;
 #endif

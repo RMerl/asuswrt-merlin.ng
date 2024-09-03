@@ -430,7 +430,7 @@ static phy_serdes_t serdes_138class[] =
 #endif
             ,
 #if !defined(PHY_138CLASS_SERDES_NO_2P5G)
-        .inter_phy_types = INTER_PHY_TYPES_S0F1K2K_M,
+        .inter_phy_types = INTER_PHY_TYPES_S0F1K2K_M|INTER_PHY_TYPE_2P5GBASE_X_M,
         .current_speed = PHY_SPEED_2500,
 #else
         .inter_phy_types = INTER_PHY_TYPES_S0F1K_M,

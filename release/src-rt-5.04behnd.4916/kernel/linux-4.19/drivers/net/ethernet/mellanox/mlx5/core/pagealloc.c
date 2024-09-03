@@ -164,7 +164,8 @@ static int alloc_4k(struct mlx5_core_dev *dev, u64 *addr)
 	fp = list_entry(dev->priv.free_list.next, struct fw_page, list);
 	n = find_first_bit(&fp->bitmask, 8 * sizeof(fp->bitmask));
 	if (n >= MLX5_NUM_4K_IN_PAGE) {
-		mlx5_core_warn(dev, "alloc 4k bug\n");
+		mlx5_core_warn(dev, "alloc 4k bug: fw page = 0x%llx, n = %u, bitmask: %lu, max num of 4K pages: %d\n",
+			       fp->addr, n, fp->bitmask,  MLX5_NUM_4K_IN_PAGE);
 		return -ENOENT;
 	}
 	clear_bit(n, &fp->bitmask);
@@ -470,8 +471,8 @@ void mlx5_core_req_pages_handler(struct mlx5_core_dev *dev, u16 func_id,
 
 int mlx5_satisfy_startup_pages(struct mlx5_core_dev *dev, int boot)
 {
-	u16 uninitialized_var(func_id);
-	s32 uninitialized_var(npages);
+	u16 func_id;
+	s32 npages;
 	int err;
 
 	err = mlx5_cmd_query_pages(dev, &func_id, &npages, boot);

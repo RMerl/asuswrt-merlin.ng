@@ -1,29 +1,23 @@
 /*
 * <:copyright-BRCM:2013:DUAL/GPL:standard
-*
-*    Copyright (c) 2013 Broadcom
+* 
+*    Copyright (c) 2013 Broadcom 
 *    All Rights Reserved
-*
-* Unless you and Broadcom execute a separate written software license
-* agreement governing use of this software, this software is licensed
-* to you under the terms of the GNU General Public License version 2
-* (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-* with the following added to such license:
-*
-*    As a special exception, the copyright holders of this software give
-*    you permission to link this software with independent modules, and
-*    to copy and distribute the resulting executable under terms of your
-*    choice, provided that you also meet, for each linked independent
-*    module, the terms and conditions of the license of that module.
-*    An independent module is a module which is not derived from this
-*    software.  The special exception does not apply to any modifications
-*    of the software.
-*
-* Not withstanding the above, under no circumstances may you combine
-* this software in any way with any other Broadcom software provided
-* under a license other than the GPL, without Broadcom's express prior
-* written consent.
-*
+* 
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License, version 2, as published by
+* the Free Software Foundation (the "GPL").
+* 
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+* 
+* 
+* A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+* writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+* Boston, MA 02111-1307, USA.
+* 
 * :>
 */
 
@@ -72,6 +66,8 @@
 #include <rdpa_l2_common.h>
 #include <rdpa_l2_class.h>
 #include <rdpa_ag_l2_class.h>
+#include <rdpa_tunnel.h>
+#include <rdpa_ag_tunnel.h>
 #endif
 #endif
 
@@ -89,10 +85,6 @@
 #if defined(CONFIG_WLAN_MCAST)
 #include <rdpa_wlan_mcast.h>
 #include <rdpa_ag_wlan_mcast.h>
-#endif
-#if defined(XRDP)
-#include <rdpa_tunnel.h>
-#include <rdpa_ag_tunnel.h>
 #endif
 #include <rdpa_rate_limit.h>
 #include <rdpa_ag_rate_limit.h>
@@ -194,6 +186,10 @@
 #ifdef CONFIG_RNR_HW_FIREWALL
 #include <rdpa_ct.h>
 #include <rdpa_ag_ct_class.h>
+#endif
+
+#ifdef CONFIG_RUNNER_FPI
+#include <rdpa_ag_fpi.h>
 #endif
 
 #endif /* _RDPA_API_H_ */

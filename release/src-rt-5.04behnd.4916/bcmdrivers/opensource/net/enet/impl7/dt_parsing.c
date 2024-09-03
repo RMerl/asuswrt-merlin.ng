@@ -1,29 +1,23 @@
 /*
    <:copyright-BRCM:2019:DUAL/GPL:standard
-
+   
       Copyright (c) 2019 Broadcom 
       All Rights Reserved
-
-   Unless you and Broadcom execute a separate written software license
-   agreement governing use of this software, this software is licensed
-   to you under the terms of the GNU General Public License version 2
-   (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-   with the following added to such license:
-
-      As a special exception, the copyright holders of this software give
-      you permission to link this software with independent modules, and
-      to copy and distribute the resulting executable under terms of your
-      choice, provided that you also meet, for each linked independent
-      module, the terms and conditions of the license of that module.
-      An independent module is a module which is not derived from this
-      software.  The special exception does not apply to any modifications
-      of the software.
-
-   Not withstanding the above, under no circumstances may you combine
-   this software in any way with any other Broadcom software provided
-   under a license other than the GPL, without Broadcom's express prior
-   written consent.
-
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License, version 2, as published by
+   the Free Software Foundation (the "GPL").
+   
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+   
+   
+   A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+   writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.
+   
    :>
  */
 
@@ -313,11 +307,10 @@ extern int dt_get_port_speed(const dt_handle_t port_handle);
 
 static int of_port_probe(struct device *dev, enetx_port_t *sw, struct device_node *port_dn, int unit, int compat_port)
 {
-    struct device_node *phy_dn, *link_dn;
+    struct device_node *phy_dn, *link_dn, *macsec_dn;
     enetx_port_t *p = NULL;
     uint32_t is_management = of_property_read_bool(port_dn, "management"); // PORT_FLAG_MGMT, ATTACHED_FLAG_CONTROL
     uint32_t is_detect = of_property_read_bool(port_dn, "detect");
-    uint32_t is_delayed = of_property_read_bool(port_dn, "delayed-init");
     uint32_t is_wan = of_property_read_bool(port_dn, "is-wan");
     uint32_t is_attached = of_property_read_bool(port_dn, "error-sample"); // ATTACHED_FLAG_ES
     phy_mii_type_t mii_type;
@@ -342,6 +335,8 @@ static int of_port_probe(struct device *dev, enetx_port_t *sw, struct device_nod
         .is_wanconf_ae = of_property_read_bool(port_dn, "is-wanconf-ae"),
         .is_wanconf_mux_ae = of_property_read_bool(port_dn, "is-wanconf-mux-ae"),
         .is_wanconf_mux_pon = of_property_read_bool(port_dn, "is-wanconf-mux-pon"),
+        .swtag_use_pvid =  of_property_read_bool(port_dn, "extswtag-use-pvid"),
+        .is_macsec = (-1),
     };
 
     port_reg = of_get_property(port_dn, "reg", NULL);
@@ -368,6 +363,10 @@ static int of_port_probe(struct device *dev, enetx_port_t *sw, struct device_nod
     link_dn = of_parse_phandle(port_dn, "link", 0);
     if (link_dn) /* Used by G9991 lag */
         port_info.is_attached = 1;
+
+    macsec_dn = of_parse_phandle(port_dn, "macsec-handle", 0);
+    if (macsec_dn)
+        of_property_read_u32(macsec_dn, "index", &port_info.is_macsec);
 
     if (port_create(&port_info, sw, &p) > 0)
     {
@@ -470,16 +469,16 @@ static int of_port_probe(struct device *dev, enetx_port_t *sw, struct device_nod
     enet_port_license_check(port_index, speed);
 #endif
 
-    if (is_delayed)
-    {
-        p->p.delayed_mac = p->p.mac;
-        p->p.delayed_phy = p->p.phy;
-        p->p.mac = NULL;
-        p->p.phy = NULL;
-    }
-
     if (port_info.is_detect)
         goto done;
+
+#if defined(ENET_DELAYED_INIT)
+    /* enable parallel mac/phy init for non-detect ports */
+    p->p.delayed_mac = p->p.mac;
+    p->p.delayed_phy = p->p.phy;
+    p->p.mac = NULL;
+    p->p.phy = NULL;
+#endif /* ENET_DELAYED_INIT */
 
 #ifdef REMOVE_ME
 #if defined(DSL_DEVICES)
@@ -557,6 +556,9 @@ static int of_sw_probe(struct device *dev, struct device_node *np, enetx_port_t 
             unit = be32_to_cpup(unit_reg);
     }
 #endif
+
+    if (sw->s.parent_port && sw->s.parent_port->port_info.swtag_use_pvid)
+        sw->port_info.swtag_use_pvid = 1;
 
     for_each_available_child_of_node(np, child)
     {

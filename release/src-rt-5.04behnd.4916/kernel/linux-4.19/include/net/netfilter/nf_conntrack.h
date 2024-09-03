@@ -26,6 +26,9 @@
 #if defined(CONFIG_BCM_KF_PROTO_IPSEC) && \
 	(defined(CONFIG_NF_CONNTRACK_IPSEC) || defined(CONFIG_NF_CONNTRACK_IPSEC_MODULE))
 #include <linux/netfilter/nf_conntrack_ipsec.h>
+#endif
+#if defined(CONFIG_BCM_KF_PROTO_ESP) && \
+	(defined(CONFIG_NF_CT_PROTO_ESP) || defined(CONFIG_NF_CT_PROTO_ESP_MODULE))
 #include <linux/netfilter/nf_conntrack_proto_esp.h>
 #endif
 #include <net/netfilter/ipv6/nf_conntrack_icmpv6.h>

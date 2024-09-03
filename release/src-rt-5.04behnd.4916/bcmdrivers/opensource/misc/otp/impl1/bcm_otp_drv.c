@@ -4,25 +4,19 @@
  *    Copyright (c) 2013 Broadcom 
  *    All Rights Reserved
  * 
- * Unless you and Broadcom execute a separate written software license
- * agreement governing use of this software, this software is licensed
- * to you under the terms of the GNU General Public License version 2
- * (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
- * with the following added to such license:
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License, version 2, as published by
+ * the Free Software Foundation (the "GPL").
  * 
- *    As a special exception, the copyright holders of this software give
- *    you permission to link this software with independent modules, and
- *    to copy and distribute the resulting executable under terms of your
- *    choice, provided that you also meet, for each linked independent
- *    module, the terms and conditions of the license of that module.
- *    An independent module is a module which is not derived from this
- *    software.  The special exception does not apply to any modifications
- *    of the software.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  * 
- * Not withstanding the above, under no circumstances may you combine
- * this software in any way with any other Broadcom software provided
- * under a license other than the GPL, without Broadcom's express prior
- * written consent.
+ * 
+ * A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+ * writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
  * 
  * :>
  */
@@ -42,6 +36,7 @@
 #include <bcm_strap_drv.h>
 #include <linux/module.h>
 #include <linux/of_fdt.h>
+#include <linux/libfdt.h>
 
 static DEFINE_SPINLOCK(otp_spinlock);
 
@@ -465,17 +460,20 @@ int bcm_otp_is_usb3_disabled(unsigned int* val)
 }
 EXPORT_SYMBOL(bcm_otp_is_usb3_disabled);
 
-#if defined(CONFIG_BCM96856) || defined(CONFIG_BCM96765)
 int bcm_otp_get_chipvar(unsigned int* val)
 {
+#if defined(OTP_SEC_CHIPVAR_ROW)
     unsigned int row;
     int rval = bcm_otp_get_row(OTP_SEC_CHIPVAR_ROW, &row);
     *val = (row & OTP_SEC_CHIPVAR_MASK) >> OTP_SEC_CHIPVAR_SHIFT;
 
     return rval;
+#else
+    *val = 0;
+    return 0;
+#endif
 }
 EXPORT_SYMBOL(bcm_otp_get_chipvar);
-#endif
 
 #if defined(_BCM96858_) || defined(CONFIG_BCM96858)
 int bcm_otp_get_chipid(unsigned int* val)
@@ -719,11 +717,10 @@ static const struct of_device_id* fdt_match_node(unsigned long node, const struc
     return NULL;
 }
 
-static int __init fdt_get_memory_prop(unsigned long node, int index, uint64_t* base, uint64_t* size)
+static int __init fdt_get_reg_prop(unsigned long node, int index, uint64_t* base, uint64_t* size)
 {
-    const __be32 *endp;
-    const __be32 *reg;
-    int regsize;
+    const __be32 *endp, *reg, *as;
+    int regsize, offset, addr_cells, size_cells;
     int idx = 0;
     uint64_t value;
 
@@ -731,12 +728,26 @@ static int __init fdt_get_memory_prop(unsigned long node, int index, uint64_t* b
     if (reg == NULL)
         return -ENODEV;
     endp = reg + (regsize / sizeof(__be32));
-    while ((endp - reg) >= (dt_root_addr_cells + dt_root_size_cells))
+
+    offset = fdt_parent_offset(initial_boot_params, node);
+    as = of_get_flat_dt_prop(offset, "#size-cells", NULL);
+    if (as)
+        size_cells = be32_to_cpup(as);
+    else
+        size_cells = dt_root_size_cells;
+
+    as = of_get_flat_dt_prop(offset, "#address-cells", NULL);
+    if (as)
+        addr_cells = be32_to_cpup(as);
+    else
+        addr_cells = dt_root_addr_cells;
+
+    while ((endp - reg) >= (addr_cells + size_cells))
     {
-        value = dt_mem_next_cell(dt_root_addr_cells, &reg);
+        value = dt_mem_next_cell(addr_cells, &reg);
         if (base)
             *base = value;
-        value = dt_mem_next_cell(dt_root_size_cells, &reg);
+        value = dt_mem_next_cell(size_cells, &reg);
         if (size)
             *size = value;
         if (idx == index)
@@ -794,7 +805,7 @@ int __init bcm_otp_early_scan_dt(unsigned long node, const char *uname, int dept
         goto exit;
     }
 
-    ret = fdt_get_memory_prop(node, 0, &offset, &size);
+    ret = fdt_get_reg_prop(node, 0, &offset, &size);
     if (ret)
     {
         printk("Failed to find otp resource\n");

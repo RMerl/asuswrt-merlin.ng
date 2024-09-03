@@ -284,7 +284,18 @@ config BCM96766
 	select EMBEDDED
 	select COMMON_CLK
 	select BCM_CA7_SMP
+	select ZONE_DMA if ARM_LPAE
 
+config BCM96764
+	bool "96764"
+	depends on ARM
+	depends on BCM_KF_ARM_BCM963XX
+	select ARM_AMBA
+	select ARCH_MULTIPLATFORM
+	select EMBEDDED
+	select COMMON_CLK
+	select BCM_CA7_SMP
+	select ZONE_DMA if ARM_LPAE
 endchoice
 
 config BOARD_ZRELADDR
@@ -441,6 +452,13 @@ config BCM6766_SIM
 	help
 	  BCM6766 for simulation
 	  
+config BCM6764_SIM
+	bool "6764 SIM"
+	default n
+	depends on BCM96764
+	help
+	  BCM6764 for simulation
+
 config BCM_SCHED_RT_SHARE
 	bool "Allow RT threads to take time from other cores"
 
@@ -468,6 +486,13 @@ config BCM_SERIAL_CONSOLE
 	bool "Console on BCM63XX serial port"
 	depends on BCM_SERIAL=y
 	select SERIAL_CORE_CONSOLE
+
+config BCM_TINY_KCORE
+	bool "Support tiny coredump framework"
+	help
+	  Framework drivers can use to include kernel parts of interest
+	  in a coredump to keep it small so it can fit on a MTD partition
+	  where it can be stored persistently allowing post-mortem debug.
 
 config BCM_EXT_TIMER
 	bool "Support for external timer"
@@ -1043,7 +1068,7 @@ config BCM_WLAN_DPDCTL
 config BCM_WLAN_64BITPHYSADDR
 	bool "64 bit Physical Address for Wireless LAN"
 	default n
-	depends on BCM_CPEROUTER
+	depends on BCM_CPEROUTER && PHYS_ADDR_T_64BIT
 
 config BCM_WLAN_WLVISUALIZATION
 	bool "Enable wlan Visualization"
@@ -1094,6 +1119,7 @@ config BCM_PCI
 	select PCI_DOMAINS
 	select PCI_QUIRKS
 	select PCI_MSI
+	select PCIE_PTM
 
 # NOTE: the select PCI_DOMAINS line will cause problems with old kernel, but removing it
 #	will cause PCI_DOMAINS to be removed from the .config file for some unknown reason...
@@ -1431,7 +1457,8 @@ config BCM_MAX_MTU_SIZE
 	depends on BCM_JUMBO_FRAME
 	range 64 10240
 	default 10208 if (BCM94912 || BCM96813)
-	default 4014 if (BCM96756 || BCM96765)
+	default 9216 if (BCM_CROSSBOW_FULL_OFFLOAD)
+	default 4014 if (BCM96756 || BCM96765 || BCM96766 || BCM96764)
 	default 2048 if (BCM963178 || BCM947622)
 	default 2044 if (BCM963138 || BCM963148 || BCM94908 || BCM963158 || BCM963146)
 	default 1998 if (BCM96858 || BCM96846 || BCM96856 || BCM96878 || BCM96855 || BCM96888 || BCM968880 || BCM96837)
@@ -1576,6 +1603,11 @@ config BCM_WLAN_NIC_RX_RNR_ACCEL
 config BCM_WFD_RATE_LIMITER
 	bool 'Support rate limiter for Wifi forwarding driver'
 	depends on BCM_WIFI_FORWARDING_DRV
+	default n
+
+config BCM_WFD_WL_UNION
+	bool 'Unify WFD and WL kernel threads'
+	depends on BCM_WIFI_FORWARDING_DRV && BCM_SKIP_RTPOLICY
 	default n
 
 config BCM_WLAN_16BIT_STATION_CHAIN_IDX_SUPPORT
@@ -1734,11 +1766,6 @@ config BCM_ETHWAN
 config BCM_ENET_MULTI_IMP_SUPPORT
 	bool "Multiple IMP Ports towards Runner"
 	depends on (BCM94908 || BCM963158)
-
-config BCM_WAN_2_WAN_FWD_ENABLED
-	bool "Enable Packet Forwarding between two WAN Interfaces"
-	default false
-	depends on BCM_KF_WANDEV
 
 config BCM_ETHTOOL
 	bool "Enable ethtool command"
@@ -1972,6 +1999,13 @@ config NF_MSCS
 	  This option enables support for MSCS, i.e downstream priority will be derived from
 	  upstream of each connection when mscs mangle rule is set.
 
+config BCM_NF_FSMARK
+	tristate  "Flow Stat ID Marking support "
+	depends on BCM_KF_NETFILTER && !BRCM_IKOS
+	default y
+	help
+	  This option enables support for flowstat Id marking.
+
 config NF_CONNTRACK_RTSP
 	tristate "RTSP protocol support"
 	depends on NF_CONNTRACK && BCM_KF_NETFILTER
@@ -2066,6 +2100,16 @@ config BRIDGE_EBT_SKIPLOG_T
 	  acceleration.
 	  To compile it as a module, choose M here.  If unsure, say N.
 
+config BRIDGE_EBT_FSMARK_T
+	tristate "ebt: flow stat ID Marking target support"
+	depends on BRIDGE_NF_EBTABLES
+	depends on BCM_KF_NETFILTER
+	depends on BCM_NF_FSMARK
+	default y
+	help
+	  This option enables support for flowstat Id marking.
+	  To compile it as a module, choose M here.  If unsure, say N.
+
 config BRIDGE_EBT_WMM_MARK
 	tristate "ebt: Wireless Wi-Fi WMM marking support"
 	depends on BRIDGE_NF_EBTABLES
@@ -2091,6 +2135,14 @@ config BRIDGE_EBT_U32
 	help
 	  This option adds custom match, which allows any field whose length is 32 bits
 	  filtering.
+	  To compile it as a module, choose M here.  If unsure, say N.
+
+config BRIDGE_EBT_DSCP_T
+	tristate "ebt: dscp target support"
+	depends on BRIDGE_NF_EBTABLES
+	depends on BCM_KF_NETFILTER
+	help
+	  This option changes the dscp value in the IP header
 	  To compile it as a module, choose M here.  If unsure, say N.
 
 config BRIDGE_EBT_SKB_PRIORITY
@@ -2131,12 +2183,12 @@ config BCM_EAPFWD_IMPL
 
 config BCM_DISABLE_NOR_RAW_PARTITION
 	bool "Disable NOR flash raw partition"
-	depends on BCM963178 || BCM947622 || BCM94908 || BCM96756 || BCM96765 || BCM96766
+	depends on BCM963178 || BCM947622 || BCM94908 || BCM96756 || BCM96765 || BCM96766 || BCM96764
 	default n
 
 config BCM_IMAGE_OFFSET_ZERO
 	bool "Set image offset to 0"
-	depends on BCM963178 || BCM947622 || BCM96756 || BCM96765 || BCM96766
+	depends on BCM963178 || BCM947622 || BCM96756 || BCM96765 || BCM96766 || BCM96764
 	default n
 
 config BLOG
@@ -2216,6 +2268,10 @@ config BCM_FLEXRM_IMPL
 
 config BCM_SPU_HW_OFFLOAD
 	bool "Support for Crypto SPU Runner offloading"
+	default n
+
+config BCM_SPU2_TEST_VEC
+	bool "Include standalone SPU2 test vector"
 	default n
 
 config BCM_FLEXRM_V2_IRQ
@@ -2311,13 +2367,23 @@ config BCM_PHY_KAUAI_A0
 	depends on BCM_SELECTIVE_PHYS
 	default n
 
+config BCM_PHY_LANAI_A0
+	bool "Lanai A0 support"
+	depends on BCM_SELECTIVE_PHYS
+	default n
+
 config BCM_PHY_XPHY
 	bool "XPHY support"
 	depends on BCM_SELECTIVE_PHYS
 	default n
 
 config BCM_MACSEC
-	bool "MACsec HW offload Support "
+	bool "MACsec HW offload support"
+	default n
+
+config BCM_MACSEC_FIRELIGHT
+	bool "MACsec HW FIRELIGHT core support"
+	depends on BCM_MACSEC
 	default n
 
 config BCM_MPCS
@@ -2333,6 +2399,7 @@ config HAVE_SPI_CS_CTRL
 	default y if BCM96756
 	default y if BCM96765
 	default y if BCM96766
+	default y if BCM96764
 	default y if BCM96855
 	default y if BCM968880
 	default y if BCM96837
@@ -2352,7 +2419,24 @@ config BCM_FEED_RING_SUPPORT
 	bool "Allows feed ring data buffer usage"
         depends on BCM_XRDP
 	default y
-	
+
+config HAVE_ETH_HW_ADDR
+	bool "The kernel provides eth_hw_addr_set() function"
+	default y
+
+config BCM_PURE_LLC_ACCEL_SUPPORT
+	bool "Support pure LLC acceleration"
+	default n
+
+config HAVE_SKBUFF_WL_SPC_V2
+	bool "sk_buff supports necessary extensions for WL_SPC"
+	depends on (BCM_KF_WL_SPC_V2)
+	default y
+	help
+	  WL_SPC feature requires an extension in sk_buff and
+	  a union in skb_shared_info. This flag signals the
+	  availability of those in the SDK.
+
 menu "Autodetected Drivers"
 source "../../bcmdrivers/Kconfig.autogen"
 endmenu

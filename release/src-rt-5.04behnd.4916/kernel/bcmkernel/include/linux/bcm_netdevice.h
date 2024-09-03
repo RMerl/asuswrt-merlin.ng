@@ -8,25 +8,19 @@
    Copyright (c) 2013 Broadcom 
    All Rights Reserved
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
 :>
 */
@@ -47,7 +41,8 @@ written consent.
 #endif
 
 // only enable for these chips for now
-#if defined(CONFIG_BCM94912) || defined(CONFIG_BCM963146) || defined(CONFIG_BCM963158) 
+#if defined(CONFIG_BCM94912) || defined(CONFIG_BCM963146) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM96813) || \
+    defined(CONFIG_BCM96765) || defined(CONFIG_BM96766)
 #define CONFIG_FCACHE_TX_THREAD
 #endif
 #endif
@@ -78,6 +73,7 @@ typedef int (*HardStartXmitArgsFuncP) (void *pNBuff,
 #define BCM_IFF_ACCEL_TX_FKB (1 << 16)
 #define BCM_IFF_ACCEL_FC_TX_THREAD (1 << 17)
 #define BCM_IFF_DUMMY_DEV   (1 << 18)
+#define BCM_IFF_VFRWD_LOWER (1 << 19)
 
 /* ASUS defined */
 #define BCM_IFF_SDN_IGNORE   (1 << 19)
@@ -144,6 +140,10 @@ struct bcm_netdev_ext {
 #define netdev_vfrwd_set(_dev)        (_dev)->bcm_nd_ext.iff_flags |= BCM_IFF_VFRWD
 #define is_netdev_vfrwd(_dev)         ((_dev)->bcm_nd_ext.iff_flags & BCM_IFF_VFRWD)
 
+#define netdev_vfrwd_lower_set(_dev)        (_dev)->bcm_nd_ext.iff_flags |= BCM_IFF_VFRWD_LOWER
+#define netdev_vfrwd_lower_unset(_dev)      (_dev)->bcm_nd_ext.iff_flags &= ~BCM_IFF_VFRWD_LOWER
+#define is_netdev_vfrwd_lower(_dev)         ((_dev)->bcm_nd_ext.iff_flags & BCM_IFF_VFRWD_LOWER)
+
 #define netdev_vlan_set(_dev)        (_dev)->bcm_nd_ext.iff_flags |= BCM_IFF_VLAN
 #define is_netdev_vlan(_dev)         ((_dev)->bcm_nd_ext.iff_flags & BCM_IFF_VLAN)
 
@@ -195,18 +195,6 @@ struct bcm_netdev_ext {
 extern int (*bcm_netdev_gen_hwaccel_notfier_cb)(struct net_device *dev, 
 		int event, int group);
 
-static inline int bcm_netdev_gen_hwaccel_notfier(struct net_device *dev,
-		int event, int group)
-{
-	if(bcm_netdev_gen_hwaccel_notfier_cb)
-		return bcm_netdev_gen_hwaccel_notfier_cb(dev, event, group);
-	else {
-		printk(" Generic HW accel not supported \n");
-		return -1;
-	}
-
-	return 0;
-}               
 #define netdev_accel_gdx_debug_set(_dev)        (_dev)->bcm_nd_ext.iff_flags |= BCM_IFF_ACCEL_GDX_DEBUG
 #define netdev_accel_gdx_debug_unset(_dev)      (_dev)->bcm_nd_ext.iff_flags &= ~BCM_IFF_ACCEL_GDX_DEBUG
 #define is_netdev_accel_gdx_debug(_dev)         ((_dev)->bcm_nd_ext.iff_flags & BCM_IFF_ACCEL_GDX_DEBUG)

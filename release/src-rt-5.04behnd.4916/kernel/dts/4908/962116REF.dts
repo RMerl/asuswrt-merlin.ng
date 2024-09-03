@@ -36,6 +36,7 @@
 	};
 };
 
+#if defined(CONFIG_BCM_VOICE_SUPPORT)
 &bcm_voice{
 	sliclist = SLICSLAC_LIST_COMMON_FXO;
  };
@@ -61,6 +62,13 @@
 		spi-index = <1>;/* voice header index */
 	};
 };
+#else
+&hs_uart0 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&hs_uart_cts_pin_10 &hs_uart_rts_pin_11 &hs_uart_rxd_pin_12 &hs_uart_txd_pin_13>;
+};
+#endif
 
 &mdio_sf2 {
         /* Port PHY mapping:
@@ -174,8 +182,3 @@
 	status = "okay";
 };
 
-&hs_uart0 {
-	status = "okay";
-	pinctrl-names = "default";
-	pinctrl-0 = <&hs_uart_cts_pin_10 &hs_uart_rts_pin_11 &hs_uart_rxd_pin_12 &hs_uart_txd_pin_13>;
-};

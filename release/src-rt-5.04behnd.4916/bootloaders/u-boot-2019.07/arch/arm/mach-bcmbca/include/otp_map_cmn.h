@@ -39,6 +39,7 @@ otp_map_cmn_err_t otp_map_cmn_init(otp_map_cmn_t* map,
 			otp_hw_cmn_init_t hw_init,  
 			otp_hw_cmn_t* ext_drv);
 
+otp_map_cmn_err_t otp_map_cmn_deinit(otp_map_cmn_t* map);
 otp_hw_cmn_err_t otp_hw_cmn_init(otp_hw_cmn_t* dev);
 otp_hw_cmn_err_t sotp_hw_cmn_init(otp_hw_cmn_t* dev);
 

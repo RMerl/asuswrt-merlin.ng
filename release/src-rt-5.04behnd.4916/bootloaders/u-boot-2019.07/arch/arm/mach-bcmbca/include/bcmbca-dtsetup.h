@@ -15,6 +15,7 @@ void ft_update_cpu_nodes(void* dtb_ptr, bd_t *bd);
 #define ENV_DHD3			DHD_BASE_ADDR_STR_3
 #define ENV_BUFMEM			BUFMEM_BASE_ADDR_STR
 #define ENV_RNRMEM			RNRMEM_BASE_ADDR_STR
+#define ENV_DDOSMEM			DDOSMEM_BASE_ADDR_STR
 
 #define QUAD_CPUS 4
 #define DUAL_CPUS 2

@@ -19,6 +19,7 @@ Optional properties:
 
 - unit:             Used for ethswctl compatibility, default is 0 if not set (to be depricated).
 - switch-reset:     gpio, if set, used to take switch out of reset before switch initialization
+- extswtag-use-pvid indicate external switch uses vlan tag to identify ports on external switch.
 
 
 The ports container has the following properties
@@ -60,6 +61,8 @@ A user port has the following optional property:
 
 - error-sample: Create G999.1 error-sample netdev.
 
+- macsec-handle: phandle, specifies a reference to a node representing a 
+                 MACSEC firelight device connected to the port. 
 
 Port child nodes may also contain the following optional NON-standardised
 properties, described below:

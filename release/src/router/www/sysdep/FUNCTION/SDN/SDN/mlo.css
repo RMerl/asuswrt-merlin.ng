@@ -1,14 +1,12 @@
-﻿.feature_desc_container .feature_image{
+﻿.feature_desc_container.mlo_image{
 	background-image: url(/images/New_ui/SDN/dark_theme/Image/mlo_desc.svg);
 	background-repeat: no-repeat;
-	height: 200px;
 	background-size: contain;
-	background-position: 50%;
-	margin: 24px 0;
+	background-position: 50% 0;
 }
-.feature_desc_container.introduce .feature_image{
+.feature_desc_container.introduce .blank_component{
+	height: 200px;
 	margin-bottom: 24px;
-	margin-top: 0;
 }
 .feature_desc_container .feature_image2{
 	background-image: url(/images/New_ui/SDN/dark_theme/Image/mlo_desc2.svg);
@@ -57,36 +55,63 @@
 	margin-left: initial;
 	margin-top: 24px;
 }
-.function_switch_container{
+.mlo_config_container{
 	border-radius: 10px;
 	border: 1px solid #5B697C;
 	background: rgba(0, 0, 0, 0.10);
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	height: 50px;
-	padding: 0 16px;
 	margin: 12px 0 18px 0;
 }
-.function_switch_container .title{
-	font-size: 16px;
-	font-weight: 500;
-}
-.function_switch_container .input_container{
+.config_item_container{
 	display: flex;
 	align-items: center;
+	height: 50px;
+	position: relative;
 }
-.function_switch_container .input_container > div{
+.config_item_container:not(:first-child):before{
+	position: absolute;
+	content: "";
+	border-top: 1px solid #5B697C;
+	width: 100%;
+	top: 0;
+}
+.config_item_container .title{
+	font-size: 16px;
+	font-weight: 500;
+	flex-basis: 46%;
 	margin-left: 16px;
 }
-.function_switch_container .profile_btn_container{
+.config_item_container .input_container{
+	display: flex;
+	align-items: center;
+	flex-basis: 54%;
+}
+.config_item_container .profile_btn_container{
 	min-width: auto;
 	padding: 0 24px;
 	height: 32px;
-	flex: initial;
+	flex: none;
+	margin-left: initial;
+}
+.config_item_container .dropdown_select{
+	padding-left: 14px;
+	font-weight: 400;
+	font-size: 16px;
+	color: #FFF;
+	height: 40px;
+	line-height: 40px;
+	background: #455054;
+	border: 1px solid rgba(127, 143, 164, 0.4);
+	border-radius: 8px;
+	letter-spacing: 0.1px;
+	outline: none;
+	flex-grow: 1;
+	margin-right: 18px;
+}
+.config_item_container .dropdown_select > option{
+	height: 40px;
 }
 @media (max-width: 575px) {
-	.function_switch_container{
+	.mlo_config_container{
 		width: 80%;
 		min-width: 300px;
 		margin: auto;

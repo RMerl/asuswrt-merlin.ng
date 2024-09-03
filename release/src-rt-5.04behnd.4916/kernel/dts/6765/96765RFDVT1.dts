@@ -93,7 +93,6 @@
 	led0: parallel-port_0-led_0 {
 		active_low;
 		pinctrl-0 = <&a_per_led_24_pin_24>;
-		crossbar-output = <0>;
 		link = <(LED_SPEED_100|LED_SPEED_2500)>;
 		activity = <(LED_SPEED_100|LED_SPEED_2500)>;
 		status="okay";
@@ -101,7 +100,6 @@
 	led1: parallel-port_0-led_1 {
 		active_low;
 		pinctrl-0 = <&a_per_led_20_pin_20>;
-		crossbar-output = <1>;
 		link = <(LED_SPEED_1G)>;
 		activity = <(LED_SPEED_1G)>;
 		status="okay";
@@ -109,7 +107,6 @@
 	led2: parallel-port_0-led_2 {
 		active_low;
 		pinctrl-0 = <&a_per_led_00_pin_0>;
-		crossbar-output = <2>;
 		link = <(LED_SPEED_2500|LED_SPEED_10G)>;
 		activity = <(LED_SPEED_2500|LED_SPEED_10G)>;
 		status="okay";
@@ -117,7 +114,6 @@
 	led3: parallel-aggregate_activity {
 		active_low;
 		pinctrl-0 = <&a_per_led_08_pin_8>;
-		crossbar-output = <9>;
 		link = <(LED_SPEED_2500|LED_SPEED_10G)>;
 		activity = <(LED_SPEED_2500|LED_SPEED_10G)>;
 		status="okay";
@@ -125,12 +121,11 @@
 	led4: parallel-aggregate_link{
 		active_low;
 		pinctrl-0 = <&a_per_led_09_pin_9>;
-		crossbar-output = <10>;
 		link = <(LED_SPEED_2500|LED_SPEED_10G)>;
 		activity = <(LED_SPEED_2500|LED_SPEED_10G)>;
 		status="okay";
 	};
-	led5: sw_parallel_led_39 {
+	led5: sw_parallel_led_16 {
 		active_low; 
 		brightness = <255>;
 		pinctrl-0 = <&b_per_led_06_pin_39>;
@@ -138,7 +133,7 @@
 		status = "okay";
 		label = "WiFi_0";
 	};
-	led6: sw_parallel_led_39 {
+	led6: sw_parallel_led_17 {
 		active_low; 
 		brightness = <255>;
 		pinctrl-0 = <&a_per_led_12_pin_12>;
@@ -146,7 +141,7 @@
 		status = "okay";
 		label = "WiFi_1";
 	};
-	led7: sw_parallel_led_10 {
+	led7: sw_parallel_led_18 {
 		active_low; 
 		brightness = <255>;
 		pinctrl-0 = <&a_per_led_10_pin_10>;

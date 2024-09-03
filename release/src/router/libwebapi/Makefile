@@ -23,14 +23,18 @@ CFLAGS += -Os -Wall $(EXTRACFLAGS) -fPIC
 CFLAGS += -I. -I$(TOP)/shared -I$(SRCBASE)/include
 CFLAGS += -I$(TOP)/json-c
 
+ifeq ($(RTCONFIG_AIHOME_TUNNEL),y)
+CFLAGS  += -I$(TOP)/aaews
+endif
+
 ifeq ($(RTCONFIG_BWDPI),y)
 CFLAGS += -I$(TOP)/sqlite
 CFLAGS += -I$(TOP)/bwdpi_source/src/tdts_udb_sample
 CFLAGS += -I$(TOP)/bwdpi_source/src/tdts_udb_sample/linux
 CFLAGS += -I$(TOP)/bwdpi_source/include
 CFLAGS += -I$(TOP)/bwdpi_source/asus_include
-CFLAGS += -I$(TOP)/httpd
 endif
+CFLAGS += -I$(TOP)/httpd
 
 LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
 LDFLAGS += -L$(TOP)/shared -lshared
@@ -56,7 +60,7 @@ ifeq ($(HND_ROUTER_BE_4916), y)
 CFLAGS+= -fcommon
 endif
 
-all: libwebapi.so
+all: clean libwebapi.so
 
 # handle prebuilt object here
 ifneq ($(wildcard ./prebuild/$(BUILD_NAME)/priv_webapi.o),)
@@ -73,5 +77,5 @@ libwebapi.so: $(OBJS)
 .PHONY: clean
 clean:
 	@echo LINUXDIR=$(LINUXDIR)
-	-rm -rf libwebapi.so webapi.o $(OBJS)
+	rm -rf libwebapi.so *.o
 

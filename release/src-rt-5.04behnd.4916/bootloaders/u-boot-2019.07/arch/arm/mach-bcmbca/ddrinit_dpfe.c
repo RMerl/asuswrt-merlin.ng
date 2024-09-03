@@ -10,6 +10,12 @@
 #include "ddrinit_dpfe.h"
 #include "boot_blob.h"
 #include "tpl_params.h"
+#ifdef CONFIG_ARMV7_LPAE
+#include "mmu_map_v7.h"
+
+/* virtual testing address for the upper SDRAM */
+#define VIRT_SDRAM_2_ADDR 0xc0000000
+#endif
 
 typedef int (*load_dpfe_seg_fun)(dpfe_seg_param* param);
 
@@ -69,6 +75,9 @@ static int memc_alias_test(uint32_t memsize)
 	volatile uint32_t *test_addr;
 	uint64_t test_size, total_size;
 	uint32_t data;
+#ifdef CONFIG_ARMV7_LPAE
+	phys_addr_t pa;
+#endif
 	int ret = 0;
 
 	total_size = ((uint64_t) (memsize)) << 20;
@@ -81,10 +90,17 @@ static int memc_alias_test(uint32_t memsize)
 					  (uintptr_t) test_size);
 #if defined(PHYS_SDRAM_2)
 		/* if we are over the lower memory region from 0 to 2GB, we shift to the upper memory region */
-		if (test_size >= PHYS_SDRAM_1_SIZE)
+		if (test_size >= PHYS_SDRAM_1_SIZE) {
+#ifdef CONFIG_ARMV7_LPAE
+			pa = (phys_addr_t)(uintptr_t)base_addr + test_size + PHYS_SDRAM_1_SIZE;
+			test_addr = (volatile uint32_t *)VIRT_SDRAM_2_ADDR;
+			map_section((u32)test_addr, pa, MMU_SECTION_SIZE, SECTION_ATTR_DEVICE);
+#else
 			test_addr =
 			    (volatile uint32_t *)((uintptr_t) test_addr +
 						  PHYS_SDRAM_1_SIZE);
+#endif
+		}
 #endif
 
 		data = *test_addr;
@@ -93,16 +109,25 @@ static int memc_alias_test(uint32_t memsize)
 		if (*base_addr == *test_addr) {
 			printf("alias detected at 0x%p\n", test_addr);
 			ret = 1;
-			break;
 		}
+
 		/* check base addr and make sure it does not get overriden */
 		if (*base_addr != 0x0) {
 			printf("alias test at 0x%p corrupted base 0x%x 0x%x\n",
 			       test_addr, *base_addr, *test_addr);
 			ret = 1;
-			break;
 		}
 		*test_addr = data;
+
+#if defined(PHYS_SDRAM_2)
+		if (test_size >= PHYS_SDRAM_1_SIZE) {
+#ifdef CONFIG_ARMV7_LPAE
+			unmap_section((u32)test_addr, pa, MMU_SECTION_SIZE);
+#endif
+		}
+#endif
+		if (ret)
+			break;
 	}
 
 	return ret;
@@ -150,6 +175,9 @@ static int memc_memory_test(uint32_t memsize)
 	uint32_t *addr;
 	int ret = 0;
 	uint64_t total_size;
+#ifdef CONFIG_ARMV7_LPAE
+	phys_addr_t pa;
+#endif
 
 	total_size = ((uint64_t) (memsize)) << 20;
 
@@ -159,12 +187,25 @@ static int memc_memory_test(uint32_t memsize)
 	ret = memory_test_range(addr, SZ_4K);
 #if defined(PHYS_SDRAM_2)
 	if (total_size > PHYS_SDRAM_1_SIZE) {
+#ifdef CONFIG_ARMV7_LPAE
+		pa = PHYS_SDRAM_2;
+		addr = (uint32_t *)VIRT_SDRAM_2_ADDR;
+#else
 		addr = (uint32_t *)PHYS_SDRAM_2;
+#endif
 		total_size -= PHYS_SDRAM_1_SIZE;
 		while ((int64_t)total_size) {
+#ifdef CONFIG_ARMV7_LPAE
+			map_section((u32)addr, pa, MMU_SECTION_SIZE, SECTION_ATTR_DEVICE);
+#endif
 			ret |= memory_test_range(addr, SZ_4K);
 			total_size -= SZ_1G;
+#ifdef CONFIG_ARMV7_LPAE
+			unmap_section((u32)addr, pa, MMU_SECTION_SIZE);
+			pa += SZ_1G;
+#else
 			addr = (uint32_t*)((uintptr_t)addr + SZ_1G);
+#endif
 		}
 	}
 #endif
@@ -249,6 +290,7 @@ int ddr_init_dpfe(ddr_init_param * ddrinit_params)
 	/* make sure configure register write are really carried over to target block */
 	__asm__ __volatile__("dsb	sy");
 	__asm__ __volatile__("isb");
+
 
 	/* get the ddr size in mega bytes */
 	if (ddrinit_params->ddr_size != NULL)

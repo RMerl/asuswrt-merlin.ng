@@ -41,6 +41,9 @@
 #include <linux/of.h>
 #include <linux/irq_work.h>
 #include <linux/kexec.h>
+#ifdef CONFIG_BCM_KF_TINY_KCORE_SUPPORT
+#include <linux/tiny_kcore.h>
+#endif
 
 #include <asm/alternative.h>
 #include <asm/atomic.h>
@@ -820,6 +823,9 @@ static void ipi_cpu_stop(unsigned int cpu)
 {
 	set_cpu_online(cpu, false);
 
+#ifdef CONFIG_BCM_KF_TINY_KCORE_SUPPORT
+	tkcore_save_cpu_state(get_irq_regs(), cpu);
+#endif
 	local_daif_mask();
 	sdei_mask_local_cpu();
 

@@ -11,6 +11,10 @@
 #include <webapi.h>
 #if defined(RTCONFIG_BWDPI)
 #include <bwdpi.h>
+#else
+#include <signal.h>
+#include <time.h>
+#include <httpd.h>
 #endif
 #ifdef RTCONFIG_CFGSYNC
 #include <cfg_param.h>
@@ -332,6 +336,12 @@ static int get_sdn_rwd_cap_array(struct json_object *sdn_rwd_cap_array){
 #endif
 #if defined(RTCONFIG_MLO)
 		"MLO",
+#endif
+#if defined(RTCONFIG_OPEN_NAT) && defined(RTCONFIG_SDN_PRIORITY)
+		"Gaming",
+#endif
+#if defined(RTCONFIG_MULTILAN_MWL)
+		"MAINFH",
 #endif
 		"Guest", "IoT", "VPN",
 		NULL};
@@ -766,6 +776,7 @@ struct REPLACE_PRODUCTID_S replace_productid_t[] =
 	{"TUF-BE6500", "TUF GAMING 小旋风 Pro", "CN"},
 	{"TUF_3600", "TUF GAMING 小旋风", "CN"},
 	{"TUF_6500", "TUF GAMING 小旋风 Pro", "CN"},
+	{"ZenWiFi_BD4", "灵耀魔方 WiFi7 BE3600", "CN"},
 	{NULL, NULL, NULL}
 };
 

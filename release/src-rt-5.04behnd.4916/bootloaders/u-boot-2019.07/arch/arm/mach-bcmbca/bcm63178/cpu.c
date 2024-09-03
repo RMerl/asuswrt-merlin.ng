@@ -68,6 +68,12 @@ int set_cpu_freq(int freqMHz)
 }
 #endif
 
+void bcmbca_disable_memc_sram(void)
+{
+	MEMC->SRAM_REMAP_CTRL = 0;
+	MEMC->SRAM_REMAP_CTRL;
+}
+
 int arch_cpu_init(void)
 {
 #if defined(CONFIG_BCMBCA_IKOS)
@@ -76,6 +82,9 @@ int arch_cpu_init(void)
 #if defined(CONFIG_SPL_BUILD)
 #if !defined(CONFIG_TPL_BUILD) /* SPL */
 	u32 frq = COUNTER_FREQUENCY;
+
+	/* always disable memc sram first in case btrm keeps it enabled */
+	bcmbca_disable_memc_sram();
 
 	spl_ddrinit_prepare();
 

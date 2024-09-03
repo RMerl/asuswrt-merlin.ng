@@ -25,26 +25,12 @@ static struct mm_region broadcom_bcm947622_mem_map[] = {
 		.size = SZ_1M,
 		.attrs = SECTION_ATTR_CACHED_MEM,
 	},
-	/* STD Mem  */
-	{
-		.virt = CONFIG_SYS_INIT_STD_32K_ADDR,
-		.phys = CONFIG_SYS_INIT_STD_32K_ADDR,
-		.size = SZ_32K,
-		.attrs = SECTION_ATTR_DEVICE, 
-	},
 #else
 	/* TPL table */
 	/* 
 	 * uboot ddr entries for cached memory will be set in ram_bank_mmu_setup 
 	 * based on actual size 
-         */
-	/* STD Mem  */
-	{
-		.virt = CONFIG_SYS_INIT_STD_32K_ADDR,
-		.phys = CONFIG_SYS_INIT_STD_32K_ADDR,
-		.size = SZ_32K,
-		.attrs = SECTION_ATTR_DEVICE, 
-	},
+	 */
 #endif
 #else
 	/* u-boot table */

@@ -1,0 +1,307 @@
+#include "6764.dtsi"
+#include "../bcm_voice.dtsi"
+
+/ {
+
+	memory_controller {
+		memcfg = <(BP_DDR_TYPE_DDR4       | \
+			BP_DDR_SPEED_1600_22_22_22    | \ 
+			BP_DDR_TOTAL_SIZE_4096MB      | \
+			BP_DDR_DEVICE_WIDTH_8         | \
+			BP_DDR_TOTAL_WIDTH_16BIT      | \
+			BP_DDR_6764_DEFAULT           | \
+			BP_DDR_CONFIG_DEBUG)>;
+	};
+	buttons {
+		compatible = "brcm,buttons";
+		reset_button {
+			ext_irq = <&bca_extintr 39 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			press {
+				print = "Button Press -- Hold for 5s to do restore to default";
+			};
+			hold {
+				rst_to_dflt = <5>;
+			};
+			release {
+				reset = <0>;
+			};
+		};
+		ses_button {
+			ext_irq = <&bca_extintr 12 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			release {
+				ses_short_period = <0>;
+				ses_long_period = <3>;
+			};
+		};
+	};
+	switch_sf2_ext:0 {
+	};
+};
+
+&sysport {
+	ethsw_ext = <&switch_sf2_ext>;
+};
+&mdio_sf2 {
+	/* Port PHY mapping:
+        port_imp -8#0- port_gphy <----> phy_gphy
+                  ##5- port_sgmii0 <--> phy_serdes0 <--> port_ext_imp -8#0- port_ext_gphy0 <--> phy_ext_gphy0
+                                                                       # 1- port_ext_gphy1 <--> phy_ext_gphy1
+                                                                       # 2- port_ext_gphy2 <--> phy_ext_gphy2
+                                                                       ##3- port_ext_gphy3 <--> phy_ext_gphy3
+	 */
+	phy_gphy {
+		status = "okay";
+	};
+	phy_serdes0 {
+		phy-extswitch;
+		config-xfi="2500Base-X";
+		phy-xfi-tx-polarity-inverse;
+		phy-xfi-rx-polarity-inverse;
+		status = "okay";
+	};
+
+	/* PHYs on external SF2 switch */
+	phy_ext_gphy0:phy_ext_gphy0 {
+		compatible = "brcm,bcaphy";
+		phy-type = "EGPHY";
+		reg = <0>;
+		status = "okay";
+	};
+	phy_ext_gphy1:phy_ext_gphy1 {
+		compatible = "brcm,bcaphy";
+		phy-type = "EGPHY";
+		reg = <1>;
+		status = "okay";
+	};
+	phy_ext_gphy2:phy_ext_gphy2 {
+		compatible = "brcm,bcaphy";
+		phy-type = "EGPHY";
+		reg = <2>;
+		status = "okay";
+	};
+	phy_ext_gphy3:phy_ext_gphy3 {
+		compatible = "brcm,bcaphy";
+		phy-type = "EGPHY";
+		reg = <3>;
+		status = "okay";
+	};
+};
+
+&switch_sf2_ext {                       /* linux/uboot: external sf2 */
+	unit = <1>;
+	sw-type = "SF2_SW";
+
+	compatible = "brcm,bcmbca-extsw";
+	extswsgmii_addr = <0x6>;
+	switch-reset = <&gpioc 24 GPIO_ACTIVE_LOW>;
+
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		port_ext_gphy0 {
+			phy-handle = <&phy_ext_gphy0>;
+			reg = <0>;
+			mac-type = "SF2MAC";
+			phy-mode = "gmii";
+			gmii-direct;
+			status = "okay";
+		};
+		port_ext_gphy1 {
+			phy-handle = <&phy_ext_gphy1>;
+			reg = <1>;
+			mac-type = "SF2MAC";
+			phy-mode = "gmii";
+			gmii-direct;
+			status = "okay";
+		};
+		port_ext_gphy2 {
+			phy-handle = <&phy_ext_gphy2>;
+			reg = <2>;
+			mac-type = "SF2MAC";
+			phy-mode = "gmii";
+			gmii-direct;
+			status = "okay";
+		};
+		port_ext_gphy3 {
+			phy-handle = <&phy_ext_gphy3>;
+			reg = <3>;
+			mac-type = "SF2MAC";
+			phy-mode = "gmii";
+			gmii-direct;
+			status = "okay";
+		};
+		port_ext_imp {
+			management;                     /* sf2_ext.p8 <--> root.p5  when P8_SGMII_SEL=1 */
+			reg = <8>;
+			mac-type = "SF2MAC";
+			shrink-ipg;
+			phy-mode = "gmii";
+			gmii-direct;
+			status = "okay";
+		};
+	};
+};
+
+&switch0 {
+
+	ports {
+		port_gphy {
+			phy-handle = <&phy_gphy>;
+			network-leds = <&led0 &led1>;
+			status = "okay";
+		};
+		port_sgmii0 {
+			phy-handle = <&phy_serdes0>;
+			link = <&switch_sf2_ext>;
+			shrink-ipg;
+			status = "okay";
+		};
+	};
+};
+
+
+&vreg_sync {
+	pinctrl-0 = <&b_vreg_sync_pin_33 &a_vreg_sync_pin_44>;
+	pinctrl-names = "default";
+	status="okay";
+};
+
+&led_ctrl {
+
+	led0:parallel-port_0-led_0 {
+		active_low;
+		pinctrl-0 = <&b_per_led_01_pin_34>;
+		link = <(LED_SPEED_1G)>;
+		status="okay";
+	};
+	led1:parallel-port_0-led_2 {
+		active_low;
+		pinctrl-0 = <&a_per_led_03_pin_3>;
+		link = <(LED_SPEED_10|LED_SPEED_100|LED_SPEED_1G)>;
+		status="okay";
+	};
+	led2:parallel-port_5-led_0 {
+		active_low;
+		pinctrl-0 = <&a_per_led_15_pin_15>;
+		link = <(LED_SPEED_100|LED_SPEED_2500)>;
+		activity = <(LED_SPEED_100|LED_SPEED_2500)>;
+		status="okay";
+	};
+	led3:parallel-port_5-led_1 {
+		active_low;
+		pinctrl-0 = <&b_per_led_03_pin_36>;
+		link = <(LED_SPEED_1G)>;
+		activity = <(LED_SPEED_1G)>;
+		status="okay";
+	};
+	led4:parallel-port_5-led_2 {
+		active_low;
+		pinctrl-0 = <&b_per_led_04_pin_37>;
+		link = <(LED_SPEED_2500|LED_SPEED_10G)>;
+		activity = <(LED_SPEED_2500|LED_SPEED_10G)>;
+		status="okay";
+	};
+	led5: sw_parallel_led_5 {
+		active_low;
+		pinctrl-0 = <&a_per_led_10_pin_10>;
+		brightness = <255>;
+		flash_rate = <0>;
+		status = "okay";
+		label = "WiFi_1";
+	};
+	led6: sw_parallel_led_6 {
+		active_low;
+		pinctrl-0 = <&b_per_led_05_pin_38>;
+		brightness = <255>;
+		flash_rate = <0>;
+		status = "okay";
+		label = "WiFi_2";
+	};
+	led7: sw_parallel_led_7 {
+		active_low;
+		pinctrl-0 = <&a_per_led_28_pin_28>;
+		brightness = <255>;
+		flash_rate = <0>;
+		status = "okay";
+		label = "WPS";
+	};
+
+};
+
+&legacy_leds {
+	wl-sess-led = <&led7>;
+	wl0-led = <&led6>;
+	wl1-led = <&led5>;
+};
+
+&uart0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart0_sdin_pin_64 &uart0_sdout_pin_65>;
+	status = "okay";
+};
+
+&uart1 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&a_uart1_sin_pin_32 &a_uart1_sout_pin_2>;
+    status = "okay";
+};
+&hs_uart0 {
+	pinctrl-0 = <&a_uart2_cts_pin_14 &a_uart2_rts_pin_26 &a_uart2_sin_pin_11 &a_uart2_sout_pin_13>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+&usb_ctrl {
+	pinctrl-names="default";
+	pinctrl-0 = <&usb0_pwr_pins>;
+	status = "okay";
+	xhci-enable;
+	pwron-bias-pull-up;
+};
+
+&usb0_xhci {
+	status = "okay";
+};
+
+&hsspi {
+    	status = "okay";
+	bcmgps_spi: bcmgps_spi {
+		pinctrl-names = "default"; 
+		pinctrl-0 = <&a_spim_ss1_b_pin_15>;
+		status = "okay";
+		compatible = "rohm,dh2228fv";
+		reg = <2>;
+		spi-max-frequency = <25000000>;
+	};
+};
+
+/*
+ * For BT Coex
+ */
+&pincontroller {
+	pinctrl-names = "default";
+	pinctrl-0 = <&wifi1_seci_in_pin_22 &wifi1_seci_out_pin_30>; /* SECI */
+};
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+/**********************************************************************/
+/* GPIO: Add one define per GPIO (individual or shared) regulator     */
+/*       - Skip if no GPIO regulators in use                          */
+/**********************************************************************/
+#define PCIE0_REG_GPIO    27    /* PCIE_PWR_CTRL for vreg_pcie0 node */
+
+#include "../bcm_wlan_regulator.dtsi"
+
+/**********************************************************************/
+/* Shared: Add brcm,supply-names = "vreg-pcieX" for shared PCIe nodes */
+/*         - Skip if not using shared GPIO regulators                 */
+/**********************************************************************/
+
+/**********************************************************************/
+/* PCIe: Add status = "okay" for each PCIe slots of this boiard       */
+/*       - Skip if this is a derivative board (already done in base)  */
+/**********************************************************************/
+&pcie0 {
+	status = "okay";
+};
+#endif //#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)

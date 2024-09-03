@@ -90,6 +90,31 @@ index df11d86..1cfe0e2 100644
  	cortex_a53_reset_func, \
  	cortex_a53_core_pwr_dwn, \
  	cortex_a53_cluster_pwr_dwn
+diff --git a/lib/psci/psci_main.c b/lib/psci/psci_main.c
+index a631f3f..02afe39 100644
+--- a/lib/psci/psci_main.c
++++ b/lib/psci/psci_main.c
+@@ -387,6 +387,9 @@ u_register_t psci_smc_handler(uint32_t smc_fid,
+ 	if (is_caller_secure(flags))
+ 		return (u_register_t)SMC_UNK;
+ 
++	if (smc_fid == PSCI_BRCM_SYSTEM_CONTROL)
++		return psci_brcm_system_control(x1, x2, x3, x4);
++
+ 	/* Check the fid against the capabilities */
+ 	if ((psci_caps & define_psci_cap(smc_fid)) == 0U)
+ 		return (u_register_t)SMC_UNK;
+diff --git a/lib/psci/psci_private.h b/lib/psci/psci_private.h
+index 6ca9ef6..04a53e1 100644
+--- a/lib/psci/psci_private.h
++++ b/lib/psci/psci_private.h
+@@ -347,4 +347,6 @@ u_register_t psci_stat_count(u_register_t target_cpu,
+ u_register_t psci_mem_protect(unsigned int enable);
+ u_register_t psci_mem_chk_range(uintptr_t base, u_register_t length);
+ 
++#define PSCI_BRCM_SYSTEM_CONTROL 0x8400001F
++unsigned long psci_brcm_system_control (unsigned long x1, unsigned long x2, unsigned long x3, unsigned long x4);
+ #endif /* PSCI_PRIVATE_H */
 diff --git a/make_helpers/armv7-a-cpus.mk b/make_helpers/armv7-a-cpus.mk
 index eec85cc..2d194b1 100644
 --- a/make_helpers/armv7-a-cpus.mk

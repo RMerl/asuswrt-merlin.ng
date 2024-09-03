@@ -5,25 +5,19 @@
  *    Copyright (c) 2012 Broadcom 
  *    All Rights Reserved
  * 
- * Unless you and Broadcom execute a separate written software license
- * agreement governing use of this software, this software is licensed
- * to you under the terms of the GNU General Public License version 2
- * (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
- * with the following added to such license:
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License, version 2, as published by
+ * the Free Software Foundation (the "GPL").
  * 
- *    As a special exception, the copyright holders of this software give
- *    you permission to link this software with independent modules, and
- *    to copy and distribute the resulting executable under terms of your
- *    choice, provided that you also meet, for each linked independent
- *    module, the terms and conditions of the license of that module.
- *    An independent module is a module which is not derived from this
- *    software.  The special exception does not apply to any modifications
- *    of the software.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  * 
- * Not withstanding the above, under no circumstances may you combine
- * this software in any way with any other Broadcom software provided
- * under a license other than the GPL, without Broadcom's express prior
- * written consent.
+ * 
+ * A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+ * writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
  * 
  * :>
  */
@@ -35,7 +29,7 @@
 #include <linux/module.h>
 #include <linux/string.h>
 
-#if defined (CONFIG_BCM96858) || defined (CONFIG_BCM96856) || defined (CONFIG_BCM96765) 
+#if defined (CONFIG_BCM96858) || defined (CONFIG_BCM96856) || defined (CONFIG_BCM96765) || defined (CONFIG_BCM96764)
 #include "bcm_otp.h"
 #endif
 #include "board_dt.h"
@@ -166,7 +160,7 @@ char *UtilGetChipName(char *buf, int len) {
     unsigned int chipId;
     unsigned int revId;
     char *mktname = NULL;
-#if defined (CONFIG_BCM96765)
+#if defined (CONFIG_BCM96765) || defined (CONFIG_BCM96764)
     unsigned int chipvar;
 #endif
 
@@ -276,6 +270,10 @@ char *UtilGetChipName(char *buf, int len) {
     bcm_otp_get_chipvar(&chipvar);
     if ((chipId == 0x6765) && (chipvar == 1))
         mktname = "6764L";
+#elif defined (CONFIG_BCM96764)
+    bcm_otp_get_chipvar(&chipvar);
+    if ((chipId == 0x6764) && (chipvar == 5))
+        mktname = "47722L";
 #endif
 
     if (mktname == NULL) {

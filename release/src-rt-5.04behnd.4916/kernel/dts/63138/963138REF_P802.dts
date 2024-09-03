@@ -208,12 +208,6 @@
 	status = "okay";
 };
 
-&hs_uart0 {
-	status = "okay";
-	pinctrl-names = "default";
-	pinctrl-0 = <&uart2_cts_pin_3 &uart2_rts_pin_4 &uart2_sin_pin_5 &uart2_sout_pin_6>;
-};
-
 &usb_ctrl {
 	status = "okay";
 	xhci-enable;

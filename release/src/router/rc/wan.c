@@ -1233,7 +1233,6 @@ void restore_wan_ebtables_rules()
 void
 start_wan_if(int unit)
 {
-TRACE_PT("dbg: 1. wan_ifname=%s.\n", nvram_safe_get("wan0_ifname"));
 #if defined(RTCONFIG_DUALWAN) || defined(RTCONFIG_USB_MODEM)
 	int wan_type;
 #endif
@@ -1291,7 +1290,6 @@ TRACE_PT("dbg: 1. wan_ifname=%s.\n", nvram_safe_get("wan0_ifname"));
 		nvram_set("wan0_ifname", nvram_safe_get("autowan_detected_ifname"));
 	}
 #endif
-TRACE_PT("dbg: 2. wan_ifname=%s.\n", nvram_safe_get("wan0_ifname"));
 
 #ifdef RTCONFIG_MULTISERVICE_WAN
 	if(dualwan_unit__nonusbif(unit) && nvram_match("switch_wantag", "none"))
@@ -1364,7 +1362,7 @@ TRACE_PT("dbg: 2. wan_ifname=%s.\n", nvram_safe_get("wan0_ifname"));
 #endif
 
 	// workaround internal XPHY no Rx issue
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
 	strlcpy(wan_ifname, nvram_safe_get(strcat_r(prefix, "ifname", tmp)), sizeof(wan_ifname));
 	if (!strcmp(wan_ifname, "vlan4094") || ((get_wans_dualwan() & WANSCAP_LAN) && !strcmp(wan_ifname, "vlan2"))) {
 		nvram_set("freeze_duck", "5");
@@ -1384,6 +1382,7 @@ TRACE_PT("dbg: 2. wan_ifname=%s.\n", nvram_safe_get("wan0_ifname"));
 	switch (get_wan_proto(prefix)) {
 	case WAN_V6PLUS:
 	case WAN_OCNVC:
+	case WAN_V6OPTION:
 	case WAN_DSLITE:
 		snprintf(wan_ifname, sizeof(wan_ifname), "%s", nvram_safe_get(strcat_r(prefix, "ifname", tmp)));
 		if (strlen(wan_ifname) && strstr(wan_ifname, "eth") != NULL) {
@@ -1933,6 +1932,7 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 #ifdef RTCONFIG_SOFTWIRE46
 		if (wan_proto != WAN_V6PLUS ||
 		    wan_proto != WAN_OCNVC ||
+		    wan_proto != WAN_V6OPTION ||
 		    wan_proto != WAN_DSLITE) {
 			stop_v6plusd(unit);
 			stop_ocnvcd(unit);
@@ -1944,6 +1944,7 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 		case WAN_MAPE:
 		case WAN_V6PLUS:
 		case WAN_OCNVC:
+		case WAN_V6OPTION:
 			/* Enable mtkhnat to support map-e. */
 			system("echo 1 > /sys/kernel/debug/hnat/mape_toggle");
 			break;
@@ -2490,6 +2491,7 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 		}
 		case WAN_V6PLUS:
 		case WAN_OCNVC:
+		case WAN_V6OPTION:
 		case WAN_DSLITE:
 		{
 			nvram_pf_set_int(prefix, "s46_hgw_case", S46_CASE_INIT);
@@ -2497,6 +2499,7 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 			/* start wan46 daemon */
 			switch (wan_proto) {
 				case WAN_V6PLUS:
+				case WAN_V6OPTION:
 					restart_v6plusd(unit);
 					break;
 				case WAN_OCNVC:
@@ -2516,7 +2519,7 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 			start_auth(unit, 0);
 
 #if defined(RTCONFIG_RALINK)
-			if (wan_proto == WAN_V6PLUS || wan_proto == WAN_OCNVC) {
+			if (wan_proto == WAN_V6PLUS || wan_proto == WAN_OCNVC || wan_proto == WAN_V6OPTION) {
 				/* Enable mtkhnat to support map-e. */
 				system("echo 1 > /sys/kernel/debug/hnat/mape_toggle");
 			} else {
@@ -2693,6 +2696,7 @@ stop_wan_if(int unit)
 	case WAN_MAPE:
 	case WAN_V6PLUS:
 	case WAN_OCNVC:
+	case WAN_V6OPTION:
 	case WAN_DSLITE:
 		wan6_down(wan_ifname);
 		break;
@@ -3484,9 +3488,10 @@ void wan6_up(const char *pwan_ifname)
 			draft = 0;
 			goto s46_maprules;
 		case WAN_V6PLUS:
+		case WAN_V6OPTION:
 			draft = 1;
 			if (nvram_get_int(strcat_r(prefix, "dhcpenble_x", tmp))) {
-				rules = s46_jpne_maprules(NULL, NULL, 0, &rsp_code);
+				rules = get_jpix_map(wan_unit, NULL, NULL, 0, &rsp_code);
 				goto s46_mapcalc;
 			}
 			type = "map-e";
@@ -3496,7 +3501,7 @@ void wan6_up(const char *pwan_ifname)
 		case WAN_OCNVC:
 			draft = 1;
 			if (nvram_get_int(strcat_r(prefix, "dhcpenble_x", tmp))) {
-				rules = s46_ocn_maprules(nvram_safe_get("ipv6_ra_addr"), nvram_get_int("ipv6_ra_length"), &rsp_code);
+				rules = get_ocn_map(wan_unit, nvram_safe_get("ipv6_ra_addr"), nvram_get_int("ipv6_ra_length"), &rsp_code);
 				goto s46_mapcalc;
 			}
 			type = "map-e";
@@ -3924,6 +3929,7 @@ wan_up(const char *pwan_ifname)
 	switch (wan_proto) {
 		case WAN_V6PLUS:
 		case WAN_OCNVC:
+		case WAN_V6OPTION:
 		case WAN_DSLITE:
 			S46_DBG("Callby:[%s]\n", prc);
 		default:
@@ -3986,7 +3992,7 @@ wan_up(const char *pwan_ifname)
 #ifdef RTCONFIG_SOFTWIRE46
 				if (wan_proto == WAN_LW4O6 || wan_proto == WAN_MAPE ||
 				    wan_proto == WAN_V6PLUS || wan_proto == WAN_OCNVC ||
-				    wan_proto == WAN_DSLITE)
+				    wan_proto == WAN_V6OPTION || wan_proto == WAN_DSLITE)
 					break;
 #endif
 				/* fall through */
@@ -4033,10 +4039,10 @@ wan_up(const char *pwan_ifname)
 
 			/* the gateway is out of the local network */
 			if ((inet_addr(gateway) & mask) != (addr & mask))
-				route_add(wan_ifname, 2, gateway, NULL, "255.255.255.255");
+				route_add(wan_ifname, 3, gateway, NULL, "255.255.255.255");
 
 			/* default route via default gateway */
-			route_add(wan_ifname, 2, "0.0.0.0", gateway, "0.0.0.0");
+			route_add(wan_ifname, 3, "0.0.0.0", gateway, "0.0.0.0");
 
 			/* ... and to dns servers as well for demand ppp to work */
 			if (nvram_get_int(strcat_r(prefix, "dnsenable_x", tmp))) {
@@ -4044,7 +4050,7 @@ wan_up(const char *pwan_ifname)
 				foreach(word, dns, next) {
 					if ((inet_addr(word) != inet_addr(gateway)) &&
 					    (inet_addr(word) & mask) != (addr & mask))
-						route_add(wan_ifname, 2, word, gateway, "255.255.255.255");
+						route_add(wan_ifname, 3, word, gateway, "255.255.255.255");
 				}
 			}
 		}
@@ -4100,6 +4106,7 @@ wan_up(const char *pwan_ifname)
 	case WAN_MAPE:
 	case WAN_V6PLUS:
 	case WAN_OCNVC:
+	case WAN_V6OPTION:
 	case WAN_DSLITE:
 #endif
 		/* the gateway is in the local network */
@@ -4138,6 +4145,7 @@ wan_up(const char *pwan_ifname)
 	case WAN_MAPE:
 	case WAN_V6PLUS:
 	case WAN_OCNVC:
+	case WAN_V6OPTION:
 	case WAN_DSLITE:
 #endif
 		nvram_set(strcat_r(prefix, "xgateway", tmp), strlen(gateway) > 0 ? gateway : "0.0.0.0");
@@ -4191,7 +4199,7 @@ NOIP:
 #ifdef RTCONFIG_SOFTWIRE46
 			if (wan_proto == WAN_LW4O6 || wan_proto == WAN_MAPE ||
 			    wan_proto == WAN_V6PLUS || wan_proto == WAN_OCNVC ||
-			    wan_proto == WAN_DSLITE)
+			    wan_proto == WAN_V6OPTION || wan_proto == WAN_DSLITE)
 				break;
 #endif
 			/* fall through */
@@ -4214,7 +4222,7 @@ NOIP:
 #ifdef RTCONFIG_SOFTWIRE46
 			if (wan_proto == WAN_LW4O6 || wan_proto == WAN_MAPE ||
 			    wan_proto == WAN_V6PLUS || wan_proto == WAN_OCNVC ||
-			    wan_proto == WAN_DSLITE)
+			    wan_proto == WAN_V6OPTION || wan_proto == WAN_DSLITE)
 				break;
 #endif
 			/* fall through */
@@ -4801,6 +4809,7 @@ wan_down(char *wan_ifname)
 	case WAN_MAPE:
 	case WAN_V6PLUS:
 	case WAN_OCNVC:
+	case WAN_V6OPTION:
 	case WAN_DSLITE:
 #endif
 		ifconfig(wan_ifname, IFUP, NULL, NULL);
@@ -4879,6 +4888,7 @@ wan_ifunit(char *wan_ifname)
 		case WAN_MAPE:
 		case WAN_V6PLUS:
 		case WAN_OCNVC:
+		case WAN_V6OPTION:
 		case WAN_DSLITE:
 #endif
 			if (nvram_match(strcat_r(prefix, "ifname", tmp), wan_ifname))
@@ -4952,6 +4962,7 @@ wanx_ifunit(char *wan_ifname)
 		case WAN_MAPE:
 		case WAN_V6PLUS:
 		case WAN_OCNVC:
+		case WAN_V6OPTION:
 		case WAN_DSLITE:
 #endif
 			if (nvram_match(strcat_r(prefix, "ifname", tmp), wan_ifname))
@@ -5696,10 +5707,14 @@ int autodet_plc_main(int argc, char *argv[]){
 void init_wan46(void) {
 
 	int unit;
+	int debug = nvram_get_int("auto46det_debug");
 	char prefix[]="wan46detXXXXXX_", tmp[100];
 
 	/* JP Sku Only */
 	if (!strncmp(nvram_safe_get("territory_code"), "JP", 2)) {
+
+		if (debug) _dprintf("\n[%s(%d)]### Init wan46det ###\n\n", __FUNCTION__, __LINE__);
+
 		nvram_unset("wan46det_proceeding");
 		for (unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit) {
 			if (unit == WAN_UNIT_FIRST)
@@ -5715,6 +5730,7 @@ void init_wan46(void) {
 int auto46det_main(int argc, char *argv[]) {
 
 	int opt, unit, re = 0;
+	int debug = nvram_get_int("auto46det_debug");
 	char wired_link_nvram[16];
 	char prefix[]="wan46detXXXXXX_", tmp[100];
 
@@ -5728,8 +5744,10 @@ int auto46det_main(int argc, char *argv[]) {
 		}
 	}
 
-	if (nvram_get_int("wan46det_proceeding"))
+	if (nvram_get_int("wan46det_proceeding")) {
+		if (debug) _dprintf("\n[%s(%d)] ### In progress, exit.###\n\n", __FUNCTION__, __LINE__);
 		return 0;
+	}
 
 	nvram_set("wan46det_proceeding", "1");
 
@@ -5753,7 +5771,7 @@ int auto46det_main(int argc, char *argv[]) {
 			}
 
 			if (re) {
-				_dprintf("[%s(%d)] ### Aute Detect RESET ###\n", __FUNCTION__, __LINE__);
+				_dprintf("[%s(%d)] ### Auto Detect RESET ###\n", __FUNCTION__, __LINE__);
 				nvram_set_int(strcat_r(prefix, "state", tmp), WAN46DET_STATE_INITIALIZING);
 			}
 
@@ -5771,6 +5789,7 @@ int auto46det_main(int argc, char *argv[]) {
 				sleep(5);
 			}
 
+			if (debug) _dprintf("\n[%s(%d)] ### Start Detect... ###\n\n", __FUNCTION__, __LINE__);
 			nvram_set_int(strcat_r(prefix, "state", tmp), WAN46DET_STATE_INITIALIZING);
 			nvram_set_int(strcat_r(prefix, "state", tmp), wan46det(unit));
 		}

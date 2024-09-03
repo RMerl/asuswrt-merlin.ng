@@ -67,5 +67,5 @@ extern uint8_t *soc_base_address;
 #define configure_ubus_biu_fpm_decode() do {} while(0)
 void drv_sbpm_default_val_init(void);
 #define sim_wait(x) bdmf_usleep(x)
-#define RDPA_EPON_CONTROL_QUEUE_ID             101
+#define RDPA_EPON_CONTROL_QUEUE_ID             121
 #endif /* ACCESS_MACROS_SIM */

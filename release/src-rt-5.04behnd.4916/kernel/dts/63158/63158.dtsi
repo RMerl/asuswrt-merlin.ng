@@ -314,6 +314,7 @@
 		ubus_sys: ubus_sys {
 			#address-cells = <2>;
 			#size-cells = <2>;
+			ranges;
 			#define UBUS_SYSTOP_OFFSET         0x0 0x83000000
 			#define UBUS_SYSTOP_SIZE           0x0 0x80
 			#define UBUS_REGISTRATION_OFFSET   0x0 0x83000200
@@ -344,6 +345,7 @@
 		ubus_xrdp: ubus_xrdp {
 			#address-cells = <2>;
 			#size-cells = <2>;
+			ranges;
 			#define UBUS_SYSTOP_OFFSET        0x0 0x83400000
 			#define UBUS_SYSTOP_SIZE          0x0 0x80
 			#define UBUS_REGISTRATION_OFFSET  0x0 0x83400200
@@ -373,6 +375,25 @@
 			#define UBUS_MODULE_XRDP     0x1
 			#include "../ip/bcm_ubus4_dcm.dtsi"
 		};
+
+		i2s_clkrst_syscon: i2s_clkrst_syscon@0x80158000 {
+			compatible = "brcm,i2s-audio-clkrst-syscon", "syscon";
+			reg = <0x0 0x80158000 0x0 0x4>;
+		};
+		i2s_clknumerator_syscon: i2s_clknumerator_syscon@0x80158340 {
+			compatible = "brcm,i2s-audio-clknumerator-syscon", "syscon";
+			reg = <0x0 0x80158340 0x0 0x4>;
+		};
+		i2s_clkdenominator_syscon: i2s_clkdenominator_syscon@0x80158344 {
+			compatible = "brcm,i2s-audio-clkdenominator-syscon", "syscon";
+			reg = <0x0 0x80158344 0x0 0x4>;
+		};
+
+		pcm_endianness_syscon: pcm_endianness_syscon@0x83034600 {
+			compatible = "brcm,pcm-endian-syscon", "syscon";
+			reg = <0x0 0x83034600 0x0 0x01>;
+		};
+
 	};
 
 	periph {
@@ -450,7 +471,16 @@
 			#define SDIO_EMMC_SPI			95
 			#include "../ip/bcm_sdhci.dtsi"
 		};
-	
+
+#if defined (CONFIG_MMC_OOPS) || (CONFIG_MMC_OOPS_MODULE)
+		mmcoops {
+			#define MMC_OOPS_DUMP_OFFSET    1536 /* 768KB */
+			#define MMC_OOPS_DUMP_SIZE      512  /* 256KB */	
+			#define MMC_OOPS_DUMP_RECSIZE   128  /* 64KB  */
+			#include "../ip/bcm_mmc_oops.dtsi"
+		};
+#endif
+
 		/* boot state */
 		boot_state: boot_state {
 			#define RESET_REASON_OFFSET  0x0 0x2628
@@ -669,6 +699,16 @@
 			hw-polarity-quirk = <0xc0000000>;
 			#include "../ip/bcm_led_ctrl.dtsi"
 			#include "63158_leds.dtsi"
+		};
+
+		pcm_nco_syscon: pcm_nco_syscon@0xFF860C00 {
+			compatible = "brcm,pcm-audio-clknco-syscon", "syscon";
+			reg = <0x0 0x60C00 0x0 0x50>; /* temp setting here. to do: size should be re-cal for only we need.*/
+		};
+
+		i2s_clkmclk_syscon: i2s_clkmclk_syscon@0xFF802080 {
+			compatible = "brcm,i2s-audio-clkmclk-syscon", "syscon";
+			reg = <0x0 0x2080 0x0 0x7f>;
 		};
 	};
 
@@ -1144,24 +1184,6 @@
 };
 
 &clocks {
-	#address-cells = <2>;
-	#size-cells = <2>;
-	i2s_clkrst_syscon: i2s_clkrst_syscon@0x80158000 {
-		compatible = "brcm,i2s-audio-clkrst-syscon", "syscon";
-		reg = <0x0 0x80158000 0x0 0x4>;
-	};
-	i2s_clknumerator_syscon: i2s_clknumerator_syscon@0x80158340 {
-		compatible = "brcm,i2s-audio-clknumerator-syscon", "syscon";
-		reg = <0x0 0x80158340 0x0 0x4>;
-	};
-	i2s_clkdenominator_syscon: i2s_clkdenominator_syscon@0x80158344 {
-		compatible = "brcm,i2s-audio-clkdenominator-syscon", "syscon";
-		reg = <0x0 0x80158344 0x0 0x4>;
-	};
-	i2s_clkmclk_syscon: i2s_clkmclk_syscon@0xFF802080 {
-		compatible = "brcm,i2s-audio-clkmclk-syscon", "syscon";
-		reg = <0x0 0xFF802080 0x0 0x7f>;
-	};
 	osc: oscillator {
 		#clock-cells = <0>;
 		compatible = "fixed-clock";
@@ -1182,20 +1204,12 @@
 		clock-output-names     = "i2s_clk";		
 	};
 
-	pcm_nco_syscon: pcm_nco_syscon@0xFF860C00 {
-		compatible = "brcm,pcm-audio-clknco-syscon", "syscon";
-		reg = <0x0 0xFF860C00 0x0 0x50>; /* temp setting here. to do: size should be re-cal for only we need.*/
-	};
 	pcm_osc: pcm_osc {
 		#clock-cells = <0>;
 		compatible = "fixed-clock";
 		clock-frequency = <200000000>; /* 200.00MHz fixed output */
 	};
 
-	pcm_endianness_syscon: pcm_endianness_syscon@0x83034600 {
-		compatible = "brcm,pcm-endian-syscon", "syscon";
-		reg = <0x0 0x83034600 0x0 0x01>;
-	};
 
 	pcmclk: pcmclk@0xFF860C00 {
 		#clock-cells = <0>;

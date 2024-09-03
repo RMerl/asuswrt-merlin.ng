@@ -17,6 +17,19 @@
     src: url(/fonts/xolonium.regular.woff) format("woff"),
          url(/fonts/xolonium.regular.otf) format("opentype");
 }
+html::-webkit-scrollbar{
+    display: block;
+    width: 4px;
+    height: 4px;
+    padding: 2px;
+}
+html::-webkit-scrollbar-thumb{
+    background-color: #FF3535 !important;   
+    border-radius: 50px;
+}
+html::-webkit-scrollbar-track{
+    background-color: #192229 !important;
+}
 body, .p1, .form-input{
 	color: #FFF;
 }
@@ -377,19 +390,34 @@ var redirect_page = login_info.page;
 var cloud_file = '<% get_parameter("file"); %>';
 var isRouterMode = ('<% nvram_get("sw_mode"); %>' == '1') ? true : false;
 
+const getQueryString = function(name){
+	var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+	var r = window.location.search.substr(1).match(reg);
+	if (r != null) return unescape(r[2]); return null;
+};
+function loadScript(src, timeout = 2000) {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = () => resolve(script);
+        script.onerror = () => reject(new Error(`Failed to load script ${src}`));
+        document.head.appendChild(script);
+        setTimeout(() => {
+			loadScriptTimeout = true;
+            reject(new Error(`Loading script ${src} timed out`));
+        }, timeout);
+    });
+}
+var loadScriptTimeout = false;
 var header_info = [<% get_header_info(); %>][0];
 var ROUTERHOSTNAME = '<#Web_DOMAIN_NAME#>';
-var domainNameUrl = header_info.protocol+"://"+ROUTERHOSTNAME+":"+header_info.port;
-var chdom = function(){window.location.href=domainNameUrl};
-(function(){
-	if(ROUTERHOSTNAME !== header_info.host && ROUTERHOSTNAME != "" && isRouterMode){
-		setTimeout(function(){
-			var s=document.createElement("script");s.type="text/javascript";s.src=domainNameUrl+"/chdom.json?hostname="+header_info.host;var h=document.getElementsByTagName("script")[0];h.parentNode.insertBefore(s,h);
-		}, 1);
-	}
-})();
-
-<% login_state_hook(); %>
+var domainNameUrl = `${header_info.protocol}://${ROUTERHOSTNAME}:${header_info.port}`;
+var chdom = function(){if(getQueryString("redirct")!=="false" && !loadScriptTimeout)window.location.href=domainNameUrl};
+if(ROUTERHOSTNAME !== header_info.host && ROUTERHOSTNAME != "" && isRouterMode){
+	setTimeout(() => {
+		loadScript(`${domainNameUrl}/chdom.json?hostname=${header_info.host}`).catch(error => {console.error(error.message);});
+	}, 100);
+}
 
 function isSupport(_ptn){
 	var ui_support = [<% get_ui_support(); %>][0];

@@ -4,25 +4,19 @@
 *    Copyright (c) 2012 Broadcom 
 *    All Rights Reserved
 * 
-* Unless you and Broadcom execute a separate written software license
-* agreement governing use of this software, this software is licensed
-* to you under the terms of the GNU General Public License version 2
-* (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-* with the following added to such license:
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License, version 2, as published by
+* the Free Software Foundation (the "GPL").
 * 
-*    As a special exception, the copyright holders of this software give
-*    you permission to link this software with independent modules, and
-*    to copy and distribute the resulting executable under terms of your
-*    choice, provided that you also meet, for each linked independent
-*    module, the terms and conditions of the license of that module.
-*    An independent module is a module which is not derived from this
-*    software.  The special exception does not apply to any modifications
-*    of the software.
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
 * 
-* Not withstanding the above, under no circumstances may you combine
-* this software in any way with any other Broadcom software provided
-* under a license other than the GPL, without Broadcom's express prior
-* written consent.
+* 
+* A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+* writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+* Boston, MA 02111-1307, USA.
 * 
 * :> 
 */
@@ -161,7 +155,7 @@ static int map_hw_timer_interrupt(unsigned long interrupt_id)
 {
     printk("%s,%u: interrupt_id %ld\n", __FUNCTION__, __LINE__, interrupt_id);
 
-    if (BcmHalMapInterrupt((FN_HANDLER)ext_timer_isr, (void*)interrupt_id, interrupt_id))
+    if (BcmHalMapInterrupt((FN_HANDLER)ext_timer_isr, "brcm_timer", (void*)interrupt_id, interrupt_id))
     {
         __error("Could not BcmHalMapInterrupt: Interrupt ID %lu\n", interrupt_id);
         return -1;
@@ -523,6 +517,68 @@ int ext_timer_set_affinity(EXT_TIMER_NUMBER timer_num, unsigned int cpuId, int f
 }
 EXPORT_SYMBOL(ext_timer_set_affinity);
 
+#if defined(CONFIG_BCM96766)
+int ext_timer_early_init(struct device_node *np)
+{
+    int ret;
+    int i;
+    void __iomem *reg_base;
+    int res_irq;
+
+    if(initialized)
+        return -1;
+
+    reg_base = of_iomap(np, 0);
+    if (!reg_base) {
+        pr_err("%s: Missing reg description in Device Tree\n",  __func__);
+        return -ENXIO;
+    }
+    timers_reg = reg_base;
+
+    /* mask external timer interrupts */
+    TIMER->TimerMask = 0;
+
+    /* clear external timer interrupts */
+    TIMER->TimerInts |= EXT_TIMER_INT_MASK;
+
+    timers[0].timer_ctrl_reg = &(TIMER->TimerCtl0);
+    timers[1].timer_ctrl_reg = &(TIMER->TimerCtl1);
+    timers[2].timer_ctrl_reg = &(TIMER->TimerCtl2);
+    timers[3].timer_ctrl_reg = &(TIMER->TimerCtl3);
+
+    timers[0].timer_cnt_reg = &(TIMER->TimerCnt0);
+    timers[1].timer_cnt_reg = &(TIMER->TimerCnt1);
+    timers[2].timer_cnt_reg = &(TIMER->TimerCnt2);
+    timers[3].timer_cnt_reg = &(TIMER->TimerCnt3);
+
+    for (i=0; i<EXT_TIMER_NUM; i++)
+    {
+        timers[i].allocated = 0;
+        res_irq = irq_of_parse_and_map(np, i);
+        if (!res_irq) {
+            pr_err("%s: Missing interrupt description in Device Tree\n",  __func__);
+            return -EINVAL;
+        }
+
+        if((ret = map_hw_timer_interrupt(res_irq)))
+        {
+            return ret;
+        }
+        if (i==0)
+            timer_base_irq = res_irq;
+    }
+
+    timer_max_irq = res_irq;
+
+#if defined(CONFIG_BCM_TIMER)
+    bcm_timer_construct();
+#endif
+    initialized = 1;
+
+    return 0;
+}
+#endif
+
 static struct of_device_id const bcm_timer_match[] = {
     { .compatible = "brcm,bcm-timers" },
     {}
@@ -537,7 +593,7 @@ static int bcm_timer_probe(struct platform_device *pdev)
     const struct of_device_id *match;
 
     if(initialized)
-        return -1;
+        return 0;
 
     match = of_match_device(bcm_timer_match, &pdev->dev);
     if (!match)

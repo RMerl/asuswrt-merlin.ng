@@ -34,6 +34,10 @@ config BRCM_SEC_GEN3V
         bool "Bootrom SEC GEN3 version support. AES256/192 and RSA2048/3072/4096 are supported"
         default y
 
+config BCMBCA_CCB
+        bool "Enable CCB in u-boot"
+        default y if !SPL_BUILD
+
 source "board/broadcom/bcmbca/Kconfig"
 
 endif

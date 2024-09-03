@@ -20,14 +20,15 @@
 #include <drivers/console.h>
 #if defined PLATFORM_USING_SMC
 #include <itc_rpc.h>
+#include <ba_svc.h>
 #endif
 
 #define BL31_END (uintptr_t)(&__BL31_END__)
 
-#define MAP_BL31_TOTAL			MAP_REGION_FLAT(	                \
-							BL31_BASE,	        \
-							BL31_END - BL31_BASE,   \
-							MT_MEMORY | MT_RW | MT_SECURE)
+#define MAP_BL31_TOTAL			MAP_REGION_FLAT(			\
+						BL31_BASE,			\
+						BL31_END - BL31_BASE,		\
+						MT_MEMORY | MT_RW | MT_SECURE)
 
 #define ARM_MAP_BL_RO			MAP_REGION_FLAT(			\
 						BL_CODE_BASE,			\
@@ -75,6 +76,21 @@ const mmap_region_t plat_arm_mmap[] = {
   {0}
 };
 
+/* Customized BRCM specific PSCI call handler */
+#define CTMR_CTRL_STMR_WRITE 0x80000000
+unsigned long psci_brcm_system_control (unsigned long x1, unsigned long x2, unsigned long x3, unsigned long x4)
+{
+	switch((uint32_t)x1){
+	case CTMR_CTRL_STMR_WRITE:
+#if defined (PLATFORM_FLAVOR_6765)
+		*(uint32_t*)0x81061030 = (uint32_t)x2;
+#endif
+		break;
+	default:
+		return -1;
+	}
+	return 0;
+}
 
 /*******************************************************************************
  * Return a pointer to the 'entry_point_info' structure of the next image for the
@@ -256,7 +272,10 @@ void bl31_platform_setup(void)
 	arm_bl31_platform_setup();
 #if defined PLATFORM_USING_SMC
 	rpc_init();
-	rpc_tunnel_init(RPC_TUNNEL_ARM_SMC_NS, false);
+	rpc_tunnel_init(RPC_TUNNEL_ARMTF_SMC_SEC, true);
+#if defined SPD_OPTEE
+	ba_svc_enable_ddr_range_sec(CFG_OPTEE_AREA_ADDR, CFG_OPTEE_CORE_SIZE);
+#endif
 #endif
 }
 

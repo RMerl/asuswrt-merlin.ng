@@ -574,6 +574,19 @@ static void bcmnet_flush_dev(struct net_device *dev_p)
 static void bcmnet_flush_dev(struct net_device *dev_p) {}
 #endif
 
+static inline int bcm_netdev_gen_hwaccel_notfier(struct net_device *dev,
+		int event, int group)
+{
+	if(bcm_netdev_gen_hwaccel_notfier_cb)
+		return bcm_netdev_gen_hwaccel_notfier_cb(dev, event, group);
+	else {
+		printk(" Generic HW accel not supported \n");
+		return -1;
+	}
+
+	return 0;
+}               
+
 int bcmnet_configure_gdx_accel(struct net_device *dev, bcmnet_accel_t *accel_p)
 {
     int is_old_accel_hw = is_netdev_hw_accel_gdx(dev);

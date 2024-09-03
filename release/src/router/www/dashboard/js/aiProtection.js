@@ -595,8 +595,11 @@ $.ajax({
     dataType: "script",
     error: function (xhr) {},
     success: function (response) {
-        for (let item of data) {
-            ips.mals.chart = item.map((x) => x);
+        if (data != "") {
+            data = JSON.parse(data);
+            for (let item of data) {
+                ips.mals.chart = item.map((x) => x);
+            }
         }
     },
 });
@@ -605,9 +608,12 @@ $.ajax({
     dataType: "script",
     error: function (xhr) {},
     success: function (response) {
-        ips.vp.chart.high = data[0].map((x) => x);
-        ips.vp.chart.medium = data[1].map((x) => x);
-        ips.vp.chart.low = data[2].map((x) => x);
+        if (data != "") {
+            data = JSON.parse(data);
+            ips.vp.chart.high = data[0].map((x) => x);
+            ips.vp.chart.medium = data[1].map((x) => x);
+            ips.vp.chart.low = data[2].map((x) => x);
+        }
     },
 });
 $.ajax({
@@ -615,8 +621,11 @@ $.ajax({
     dataType: "script",
     error: function (xhr) {},
     success: function (response) {
-        for (let item of data) {
-            ips.cc.chart = item.map((x) => x);
+        if (data != "") {
+            data = JSON.parse(data);
+            for (let item of data) {
+                ips.cc.chart = item.map((x) => x);
+            }
         }
     },
 });
@@ -1788,84 +1797,49 @@ function transferTimeFormat(time) {
 }
 
 function showTMEula(type) {
-    let template = `
-        <div class="d-flex justify-content-center mt-5">
-            <div class="card-float">
-                <div class="card-header-float"><#lyra_TrendMicro_agreement#></div>
-                <div class="card-body-float">
-                    <div class="mb-3"><#TM_eula_desc1#></div>
+    const policyModal = new PolicyModalComponent({
+        policy: "TM",
+        agreeCallback: () => {
+            let applyObj = {
+                action_mode: "apply",
+                rc_service: "restart_wrs;restart_firewall",
+                wrs_protect_enable: "1",
+                TM_EULA: "1",
+                action_time: 4,
+            };
 
-                    <div class="mb-3"><#TM_eula_desc2#></div>
-                    <div><#TM_privacy_policy#></div>
-                    <div><#TM_data_collection#></div>
-                    
-                    <div class="mt-3"><#TM_eula_desc3#></div>
-                </div>
-                <div class="d-flex justify-content-end card-footer-float">
-                    <div class="text-center btn-regular" id="tm_eula_cancel">
-                        <div><#CTL_Cancel#></div>
-                    </div>
-                    <div class="text-center btn-confirm" id="tm_eula_confirm">
-                        <div><#CTL_ok#></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
+            let {ctf_disable, ctf_fa_mode} = _nvram;
+            if ((ctf_disable == 0 && ctf_fa_mode == 2) || system.modelName === "MAP-AC1750") {
+                applyObj.rc_service = "reboot";
+                applyObj.action_time = httpApi.hookGet("get_default_reboot_time");
+            }
 
-    let element = document.createElement("div");
-    element.className = "shadow-bg";
-    element.innerHTML = template;
-    document.body.appendChild(element);
-    document.getElementById("tm_eula_cancel").addEventListener("click", function () {
-        document.body.removeChild(element);
-        if (type === "mals") {
-            document.getElementById("mals_switch").checked = false;
-        } else if (type === "vp") {
-            document.getElementById("vp_switch").checked = false;
-        } else if (type === "cc") {
-            document.getElementById("cc_switch").checked = false;
+            applyLoading(applyObj.action_time);
+            if (type === "mals") {
+                applyObj["wrs_mals_enable"] = "1";
+            } else if (type === "vp") {
+                applyObj["wrs_vp_enable"] = "1";
+            } else if (type === "cc") {
+                applyObj["wrs_cc_enable"] = "1";
+            }
+
+            httpApi.nvramSet(applyObj, function () {
+                setTimeout(function () {
+                    location.reload();
+                }, applyObj.action_time * 1000);
+            });
+        },
+        disagreeCallback: () => {
+            if (type === "mals") {
+                document.getElementById("mals_switch").checked = false;
+            } else if (type === "vp") {
+                document.getElementById("vp_switch").checked = false;
+            } else if (type === "cc") {
+                document.getElementById("cc_switch").checked = false;
+            }
         }
     });
-    document.getElementById("tm_eula_confirm").addEventListener("click", function () {
-        let applyObj = {
-            action_mode: "apply",
-            rc_service: "restart_wrs;restart_firewall",
-            wrs_protect_enable: "1",
-            TM_EULA: "1",
-            action_time: 4,
-        };
-
-        let { ctf_disable, ctf_fa_mode } = _nvram;
-        if ((ctf_disable == 0 && ctf_fa_mode == 2) || system.modelName === "MAP-AC1750") {
-            applyObj.rc_service = "reboot";
-            applyObj.action_time = httpApi.hookGet("get_default_reboot_time");
-        }
-
-        document.body.removeChild(element);
-        applyLoading(applyObj.action_time);
-        if (type === "mals") {
-            applyObj["wrs_mals_enable"] = "1";
-        } else if (type === "vp") {
-            applyObj["wrs_vp_enable"] = "1";
-        } else if (type === "cc") {
-            applyObj["wrs_cc_enable"] = "1";
-        }
-
-        httpApi.nvramSet(applyObj, function () {
-            setTimeout(function () {
-                location.reload();
-            }, applyObj.action_time * 1000);
-        });
-    });
-
-    let tm_eula = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=TMeula&lang=" + system.language.currentLang + "&kw=&num=",
-        tm_privacy = "https://nw-dlcdnet.asus.com/trend/tm_privacy",
-        tm_data_collection = "https://nw-dlcdnet.asus.com/trend/tm_pdcd";
-
-    // document.getElementById("eula_url").setAttribute("href", tm_eula);
-    document.getElementById("tm_eula_url").setAttribute("href", tm_privacy);
-    document.getElementById("tm_disclosure_url").setAttribute("href", tm_data_collection);
+    policyModal.show();
 }
 
 function applyLoading(time, callback) {

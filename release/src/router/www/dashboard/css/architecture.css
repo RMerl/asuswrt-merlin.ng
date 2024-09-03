@@ -626,7 +626,7 @@ main {
 .iframeInCard {
 	width: 90%;
     max-width: 450px;
-	height: 300px !important;
+	height: 310px !important;
 	margin: 0 auto;
 }
 /* Navigation-main */
@@ -732,6 +732,7 @@ main {
 
 .modal-backdrop {
     backdrop-filter: blur(5px) !important;
+    -webkit-backdrop-filter: blur(5px) !important;
     background: unset !important;
     opacity: 1 !important;
 }

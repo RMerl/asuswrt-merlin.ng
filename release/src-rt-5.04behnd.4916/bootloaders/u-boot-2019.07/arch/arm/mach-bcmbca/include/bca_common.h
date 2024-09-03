@@ -18,15 +18,17 @@ int bcmbca_is_nand_detected(void);
 int bcmbca_is_spinand_detected(void);
 int bcmbca_is_spinor_detected(void);
 int bcmbca_is_emmc_detected(void);
+u32 bcmbca_get_chipid(void);
+u32 bcmbca_get_chiprev(void);
+void bcmbca_enable_memc_sram(u64 addr, u64 size);
+void bcmbca_disable_memc_sram(void);
 
 void print_chipinfo(void);
 void boost_cpu_clock(void);
 int set_cpu_freq(int freqMHz);
-u32 bcmbca_get_chipid(void);
-u32 bcmbca_get_chiprev(void);
 
 int bcm_board_boot_fit_fdt_fixup(void* fdt);
-int bcm_board_boot_fdt_fixup(void* fdt);
+int bcm_board_boot_fdt_fixup_from_fit(void* fit_img_ptr);
 int get_binary_from_bundle(ulong bundle, const char *conf_name, const char *name, char **bin_name, ulong *addr, ulong *size);
 void init_cli_cb_arr(void);
 void register_cli_job_cb(unsigned long time_period, void (*job_cb)(void));

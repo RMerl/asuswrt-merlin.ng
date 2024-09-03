@@ -4,30 +4,24 @@
  */
 /*
    <:copyright-BRCM:2013:DUAL/GPL:standard
-
-   Copyright (c) 2013 Broadcom 
-   All Rights Reserved
-
-   Unless you and Broadcom execute a separate written software license
-   agreement governing use of this software, this software is licensed
-   to you under the terms of the GNU General Public License version 2
-   (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-   with the following added to such license:
-
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
-
-   Not withstanding the above, under no circumstances may you combine
-   this software in any way with any other Broadcom software provided
-   under a license other than the GPL, without Broadcom's express prior
-   written consent.
-
+   
+      Copyright (c) 2013 Broadcom 
+      All Rights Reserved
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License, version 2, as published by
+   the Free Software Foundation (the "GPL").
+   
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+   
+   
+   A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+   writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.
+   
    :>
  */
 
@@ -106,7 +100,7 @@ static struct of_device_id const bcm_strap_of_match[] = {
 MODULE_DEVICE_TABLE(of, bcm_strap_of_match);
 
 static const struct of_device_id* fdt_match_node(unsigned long node, const struct of_device_id * match_table);
-static int __init fdt_get_memory_prop(unsigned long node, int index, uint64_t* base, uint64_t* size);
+static int __init fdt_get_reg_prop(unsigned long node, int index, uint64_t* base, uint64_t* size);
 
 
 static int bcm_strap_drv_probe(struct platform_device *pdev)
@@ -146,7 +140,7 @@ static __init uint32_t bcm_early_strap_get_val(void)
         printk("Failed to find strap resources\n");
         return 0xFFFFFFFF;
     }
-    if (fdt_get_memory_prop(strap_node, 0, NULL, &size))
+    if (fdt_get_reg_prop(strap_node, 0, NULL, &size))
         return 0xFFFFFFFF;
 
     reg = ioremap(base, size);
@@ -504,11 +498,10 @@ static const struct of_device_id* fdt_match_node(unsigned long node, const struc
     return NULL;
 }
 
-static int __init fdt_get_memory_prop(unsigned long node, int index, uint64_t* base, uint64_t* size)
+static int __init fdt_get_reg_prop(unsigned long node, int index, uint64_t* base, uint64_t* size)
 {
-    const __be32 *endp;
-    const __be32 *reg;
-    int regsize;
+    const __be32 *endp, *reg, *as;
+    int regsize, offset, addr_cells, size_cells;
     int idx = 0;
     uint64_t value;
 
@@ -516,12 +509,26 @@ static int __init fdt_get_memory_prop(unsigned long node, int index, uint64_t* b
     if (reg == NULL)
         return -ENODEV;
     endp = reg + (regsize / sizeof(__be32));
-    while ((endp - reg) >= (dt_root_addr_cells + dt_root_size_cells))
+
+    offset = fdt_parent_offset(initial_boot_params, node);
+    as = of_get_flat_dt_prop(offset, "#size-cells", NULL);
+    if (as)
+        size_cells = be32_to_cpup(as);
+    else
+        size_cells = dt_root_size_cells;
+
+    as = of_get_flat_dt_prop(offset, "#address-cells", NULL);
+    if (as)
+        addr_cells = be32_to_cpup(as);
+    else
+        addr_cells = dt_root_addr_cells;
+
+    while ((endp - reg) >= (addr_cells + size_cells))
     {
-        value = dt_mem_next_cell(dt_root_addr_cells, &reg);
+        value = dt_mem_next_cell(addr_cells, &reg);
         if (base)
             *base = value;
-        value = dt_mem_next_cell(dt_root_size_cells, &reg);
+        value = dt_mem_next_cell(size_cells, &reg);
         if (size)
             *size = value;
         if (idx == index)
@@ -557,7 +564,7 @@ int __init bcm_strap_early_scan_dt(unsigned long node, const char *uname, int de
         ret = -ENXIO;
         goto exit;
     }
-    ret = fdt_get_memory_prop(node, 0, NULL, &size);
+    ret = fdt_get_reg_prop(node, 0, NULL, &size);
     if (ret)
     {
         printk("Failed to find strap resource\n");

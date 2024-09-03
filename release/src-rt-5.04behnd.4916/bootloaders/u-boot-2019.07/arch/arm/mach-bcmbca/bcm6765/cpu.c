@@ -22,33 +22,17 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
-#if defined(CONFIG_SPL_BUILD)
-void disable_memc_sram(void)
+#if !defined(CONFIG_SPL_BUILD) && defined(CONFIG_BCMBCA_CCB)
+static void enable_ccb(void)
 {
-	uint32_t *reg = (uint32_t *)(MEMC_BASE + mc2_afx_sram_match_cfg_sram_start_addr_hi);
-	
-	writel(readl(reg)&~mc2_afx_sram_match_cfg_sram_start_addr_hi_enable_MASK, reg);
+	volatile unsigned  int axi_val;
+
+	axi_val=readl_relaxed((uint32_t*)&UBUS4CCB_AXI_CFG_REGS->axi_config_0) | ENABLE_CCB;
+	writel_relaxed(axi_val, (uint32_t*)&UBUS4CCB_AXI_CFG_REGS->axi_config_0); 
 }
-
-void enable_memc_sram(void)
-{
-#if defined(CONFIG_BRCM_SPL_MEMC_SRAM)
-	uint32_t *reg;
-	uint64_t addr;
-
-	reg  = (uint32_t *)(MEMC_BASE + mc2_afx_sram_match_cfg_sram_end_addr_lo);
-	addr = CONFIG_SYS_PAGETBL_BASE + CONFIG_SYS_PAGETBL_SIZE - 1;
-	writel((uint32_t)addr, reg);
-	reg  = (uint32_t *)(MEMC_BASE + mc2_afx_sram_match_cfg_sram_end_addr_hi);
-	writel((uint32_t)(addr>>32), reg);
-
-	reg  = (uint32_t *)(MEMC_BASE + mc2_afx_sram_match_cfg_sram_start_addr_lo);
-	addr = CONFIG_SYS_PAGETBL_BASE;
-	writel((uint32_t)addr, reg);
-	reg  = (uint32_t *)(MEMC_BASE + mc2_afx_sram_match_cfg_sram_start_addr_hi);
-	writel(((uint32_t)(addr>>32))|mc2_afx_sram_match_cfg_sram_start_addr_hi_enable_MASK, reg);
 #endif
-}
+
+#if defined(CONFIG_SPL_BUILD)
 
 #if !defined(CONFIG_TPL_BUILD)
 static void enable_ts0_couner(void)
@@ -106,14 +90,13 @@ int pll_ch_freq_set(unsigned int pll_addr, unsigned int ch, unsigned int mdiv);
 
 void boost_cpu_clock(void)
 {
-#if defined(CONFIG_BCMBCA_IKOS)
-	/* 6765 IKOS db already setup cpu clock to 2GHz and AXI to 800MHz
-	 * Just need to set dcm bypass mode so ubus runs at 625MHz
-	 */
 #if defined(CONFIG_BCMBCA_UBUS4_DCM)
+	/* IKOS: IKOS db already setup cpu clock to 2GHz and AXI to 800MHz
+	 * For the silicone and emulation set dcm ubus bypass mode to run at 625MHz
+	 */
 	bcm_ubus4_dcm_clk_bypass(1);
 #endif
-#else
+#if !defined(CONFIG_BCMBCA_IKOS)
 	printf("set cpu freq to 2000MHz\n");
 	set_cpu_freq(2000);
 	pll_ch_freq_set(PMB_ADDR_BIU_PLL, 1, 4000/800); // raise AXI/ACEBIU clock rate to 800 MHz
@@ -154,6 +137,30 @@ void print_chipinfo(void)
 }
 #endif
 
+void bcmbca_enable_memc_sram(u64 addr, u64 size)
+{
+	uint32_t *reg;
+	uint64_t end_addr;
+
+	reg  = (uint32_t *)(MEMC_BASE + mc2_afx_sram_match_cfg_sram_end_addr_lo);
+	end_addr = addr + size - 1;
+	writel((uint32_t)end_addr, reg);
+	reg  = (uint32_t *)(MEMC_BASE + mc2_afx_sram_match_cfg_sram_end_addr_hi);
+	writel((uint32_t)(end_addr>>32), reg);
+
+	reg  = (uint32_t *)(MEMC_BASE + mc2_afx_sram_match_cfg_sram_start_addr_lo);
+	writel((uint32_t)addr, reg);
+	reg  = (uint32_t *)(MEMC_BASE + mc2_afx_sram_match_cfg_sram_start_addr_hi);
+	writel(((uint32_t)(addr>>32))|mc2_afx_sram_match_cfg_sram_start_addr_hi_enable_MASK, reg);
+}
+
+void bcmbca_disable_memc_sram(void)
+{
+	uint32_t *reg = (uint32_t *)(MEMC_BASE + mc2_afx_sram_match_cfg_sram_start_addr_hi);
+	
+	writel(readl(reg)&~mc2_afx_sram_match_cfg_sram_start_addr_hi_enable_MASK, reg);
+}
+
 int arch_cpu_init(void)
 {
 #if defined(CONFIG_BCMBCA_IKOS)
@@ -161,10 +168,12 @@ int arch_cpu_init(void)
 #endif
 
 #if defined(CONFIG_SPL_BUILD) && !defined(CONFIG_TPL_BUILD)
+	/* always disable memc sram first in case btrm keeps it enabled */
+	bcmbca_disable_memc_sram();
+
 	enable_ts0_couner();
 #if defined(CONFIG_BCMBCA_DDRC)
 	spl_ddrinit_prepare();
-	disable_memc_sram();
 #endif
 	/* enable unalgined access */
 	set_sctlr(get_sctlr() & ~CR_A);
@@ -180,6 +189,11 @@ int arch_cpu_init(void)
 #endif
 #ifdef CONFIG_SILENT_CONSOLE
 	gd->flags |= GD_FLG_SILENT;
+#endif
+
+#if !defined(CONFIG_SPL_BUILD) && defined(CONFIG_BCMBCA_CCB)
+	/* Enable CCB even before any of the caches enabled */
+	enable_ccb();
 #endif
 
     return 0;

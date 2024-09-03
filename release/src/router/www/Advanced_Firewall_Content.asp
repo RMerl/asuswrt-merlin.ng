@@ -17,17 +17,24 @@
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
+<script type="text/javascript" src="/form.js"></script>
 <script>
 var filter_lwlist_array = '<% nvram_get("filter_lwlist"); %>';
 
+var current_page = window.location.pathname.split("/").pop();
+var faq_index_tmp = get_faq_index(FAQ_List, current_page, 1);
+
 function initial(){
 	show_menu();
+
+	if(top.webWrapper){ $(".formfontdesc_1").css("max-width","95%"); }
+	
 	showfilter_lwlist();
 	init_setting();
 	check_Timefield_checkbox();
 	if(svc_ready == "0")
 		document.getElementById('svc_hint_div').style.display = "";	
-	corrected_timezone();	
+	corrected_timezone();
 }
 
 function init_setting(){
@@ -494,13 +501,18 @@ function updateDateTime(){
 				<tbody>
 				<tr>
 					<td bgcolor="#4D595D" valign="top">
+					<div class="container">
+
 		  				<div>&nbsp;</div>
 		  				<div class="formfonttitle"><#menu5_5#> - <#menu5_5_4#></div>
+		  				<div class="formfonttitle_help"><i onclick="show_feature_desc(`<#HOWTOSETUP#>`)" class="icon_help"></i></div>
 		  				<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 		  				<div class="formfontdesc">
-							<div><#FirewallConfig_display1_sectiondesc#></div>
-							<div class="formfontdesc">The IP address can be a simple IP (1.2.3.4), or use the CIDR format (1.2.3.4/24) to handle a whole subnet.</div>
-		  					<div><#FirewallConfig_display3_sectiondesc#></div>
+							<div class="formfontdesc_1">
+								<#FirewallConfig_display1_sectiondesc#><br>
+								The IP address can be a simple IP (1.2.3.4), or use the CIDR format (1.2.3.4/24) to handle a whole subnet.<br>
+								<#FirewallConfig_display3_sectiondesc#>
+							</div>
 						</div>
 
 		  				<div class="formfontdesc hint-color" style="color:#FFCC00;"><#FirewallConfig_display4_sectiondesc#></div>	
@@ -630,6 +642,8 @@ function updateDateTime(){
             					<input name="button" type="button" class="button_gen" onclick="applyRule()" value="<#CTL_apply#>"/>
             				</div>
 
+            				</div>	<!-- for .container  -->
+							<div class="popup_container popup_element_second"></div>
 						
 					</td>
 				</tr>		
@@ -639,7 +653,7 @@ function updateDateTime(){
 			</td>
 		</form>
 		</tr>
-      </table>				
+      </table>
 		<!--===================================Ending of Main Content===========================================-->		
 	</td>
 		

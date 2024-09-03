@@ -2983,7 +2983,7 @@ void init_basic_data() {
         snprintf(awsiot_endpoint, sizeof(awsiot_endpoint), "%s", nvram_safe_get("awsiotendpoint"));
         snprintf(awsiot_clientid, sizeof(awsiot_clientid), "%s", nvram_safe_get("awsiotclientid"));
 
-        if( (strlen(awsiot_endpoint) > 2) &&  (strlen(awsiot_clientid) > 2) ) {
+        if( (strlen(awsiot_endpoint) > 2) &&  (strlen(awsiot_clientid) > 2) && ((nvram_get_int("ASUS_EULA") == 1) || (get_ASUS_privacy_policy_state(ASUS_PP_ACCOUNT_BINDING) == 1)) ) {
             Cdbg(APP_DBG, "Get awsiot_endpoint -> %s, awsiot_clientid -> %s", awsiot_endpoint, awsiot_clientid);
             break;
         } 

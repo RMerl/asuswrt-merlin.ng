@@ -1,7 +1,7 @@
 config BCM_FPI
 	tristate "Support for Broadcom Flow Provisioning Interface"
 	depends on BCM_ACCEL && !BCM_PKFLOW
-	depends on BCM94912 || BCM96813
+	depends on BCM96813 || BCM96765
 
 config BCM_FPI_IMPL
 	int "BCM Flow Provisioning Interface Implementation Selection"

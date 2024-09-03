@@ -180,6 +180,8 @@ var diagnosticApi = {
 
 var faq_href1 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=137";
 var faq_href2 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=138";
+var faq_href3 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=125";	//[AiMesh] How to setup
+var current_page = window.location.pathname.split("/").pop();
 
 /* String replace &#39; with ' for dict */
 function stringSafeGet(str){
@@ -1653,7 +1655,7 @@ function get_connect_quality(_node_info){
 	var _re_path = handle_re_path(_node_info.re_path);
 	var _quality_info = "";
 	//_re_path, 1:wired, 2:2G, 4:5G, 8:5G2, 6:2G+5G, 10:2G+5G2
-	var result = {"type":"wired", "quality":0, "css":"wired disconnected", "type_text":"<#wan_ethernet#>", "quality_text":"<#Disconnected#>", "type_mode":""};
+	var result = {"type":"wired", "quality":0, "css":"wired disconnected", "type_text":"<#wan_ethernet#>", "quality_text":"<#Disconnected#>", "type_mode":"", "rssi_info":[]};
 	//result.quality, 0:disconnected, 1:weak, 2:ok, 3:great
 	if(_re_path <= 0 && _re_online == "1")
 		return result;
@@ -1764,13 +1766,15 @@ function get_connect_quality(_node_info){
 			}
 		}
 		else if(_re_path == "2"){
-			_quality_info = _node_info.rssi2g
+			_quality_info = _node_info.rssi2g;
 			result.type = "wireless";
 			result.type_text = "<#menu5_1#> - 2.4GHz";
 			if(_re_online == "1"){
+				const rssi = parseInt(_quality_info);
 				result.quality = 1;
 				result.css = "wl_2g weak";
 				result.quality_text = "<#AiMesh_Conn_Quality_Weak#>";
+				result.rssi_info.push({"title":`2.4 GHz`, "rssi":rssi});
 			}
 			else{
 				result.quality = 0;
@@ -1779,7 +1783,7 @@ function get_connect_quality(_node_info){
 			}
 		}
 		else if(_re_path == "128"){
-			_quality_info = _node_info.rssi6g
+			_quality_info = _node_info.rssi6g;
 			result.type = "wireless";
 			result.type_text = "<#menu5_1#> - 6GHz";
 			if(_re_online == "1"){
@@ -1788,6 +1792,7 @@ function get_connect_quality(_node_info){
 				result.quality = 1;
 				result.css = "wl_6g " + css;
 				result.quality_text = "<#AiMesh_Conn_Quality_Weak#>";
+				result.rssi_info.push({"title":`6 GHz`, "rssi":rssi});
 				if(!isNaN(rssi)){
 					if(rssi > -70){
 						result.quality = 3;
@@ -1813,8 +1818,51 @@ function get_connect_quality(_node_info){
 				result.quality_text = "<#Disconnected#>";
 			}
 		}
+		else if(_re_path == "512"){
+			_quality_info = get_mlo_quality(_node_info);
+			result.type = "mlo";
+			result.type_text = `<#menu5_1#> - MLO`;
+			if(_re_online == "1"){
+				let rssi = parseInt(_quality_info);
+				let css = "weak";
+				result.quality = 1;
+				result.css = "mlo " + css;
+				result.quality_text = "<#AiMesh_Conn_Quality_Weak#>";
+				result.rssi = rssi;
+				$.each(_node_info.mlo_status, function(item, value){
+					if(item.substring(0,4) == "rssi"){
+						const wl_band = item.replace("rssi", "").replace("l", "-1").replace("h", "-2").toUpperCase().replace("G", " GHz");
+						if(value == "") value = `--`;
+						result.rssi_info.push({"title":wl_band, "rssi":value});
+					}
+				});
+				if(!isNaN(rssi)){
+					if(rssi > -70){
+						result.quality = 3;
+						css = "great";
+						result.quality_text = "<#AiMesh_Conn_Quality_Great#>";
+					}
+					else if(rssi <= -70 && rssi >= -80){
+						result.quality = 2;
+						css = "ok";
+						result.quality_text = "<#AiMesh_Conn_Quality_OK#>";
+					}
+					else if(rssi < -80){
+						result.quality = 1;
+						css = "weak";
+						result.quality_text = "<#AiMesh_Conn_Quality_Weak#>";
+					}
+					result.css = "mlo " + css;
+				}
+			}
+			else{
+				result.quality = 0;
+				result.css = "disconnected";
+				result.quality_text = "<#Disconnected#>";
+			}
+		}
 		else{
-			_quality_info = _node_info.rssi5g
+			_quality_info = _node_info.rssi5g;
 			result.type = "wireless";
 			result.type_text = "<#menu5_1#> - 5GHz";
 			if(_re_online == "1"){
@@ -1823,6 +1871,7 @@ function get_connect_quality(_node_info){
 				result.quality = 1;
 				result.css = "wl_5g " + css;
 				result.quality_text = "<#AiMesh_Conn_Quality_Weak#>";
+				result.rssi_info.push({"title":`5 GHz`, "rssi":rssi});
 				if(!isNaN(rssi)){
 					if(rssi > -70){
 						result.quality = 3;
@@ -1862,7 +1911,58 @@ function get_connect_quality(_node_info){
 				result.quality_text = "<#Disconnected#>";
 			}
 		}
+
+		if(result.rssi_info.length > 1){
+			result.rssi_info.sort(function(a, b){
+				return (a["title"] > b["title"]) ? 1 : ((a["title"] < b["title"]) ? -1 : 0);
+			});
+		}
 		return result;
+	}
+
+	function get_mlo_quality(_node_info){
+		const mlo_status = _node_info.mlo_status;
+		const product_id = _node_info.product_id;
+		let mlo_rssi = "";
+		if(product_id == "BQ16_PRO"){
+			if(mlo_status.rssi6gl != undefined && mlo_status.rssi5g != undefined && mlo_status.rssi6gh != undefined){//6G-1 > 5G > 6G-2
+				if(mlo_status.rssi6gl != "") mlo_rssi = mlo_status.rssi6gl;
+				else if(mlo_status.rssi5g != "") mlo_rssi = mlo_status.rssi5g;
+				else if(mlo_status.rssi6gh != "") mlo_rssi = mlo_status.rssi6gh;
+			}
+			else if(mlo_status.rssi5g != undefined && mlo_status.rssi6gl != undefined && mlo_status.rssi2g != undefined){//5G > 6G-1 > 2G
+				if(mlo_status.rssi5g != "") mlo_rssi = mlo_status.rssi5g;
+				else if(mlo_status.rssi6gl != "") mlo_rssi = mlo_status.rssi6gl;
+				else if(mlo_status.rssi2g != "") mlo_rssi = mlo_status.rssi2g;
+			}
+		}
+		else{
+			if(mlo_status.rssi5gh != undefined && mlo_status.rssi6g != undefined && mlo_status.rssi2g != undefined){//5G-2 > 6G > 2G
+				if(mlo_status.rssi5gh != "") mlo_rssi = mlo_status.rssi5gh;
+				else if(mlo_status.rssi6g != "") mlo_rssi = mlo_status.rssi6g;
+				else if(mlo_status.rssi2g != "") mlo_rssi = mlo_status.rssi2g;
+			}
+			else if(mlo_status.rssi5g != undefined && mlo_status.rssi6gl != undefined && mlo_status.rssi6gh != undefined){//5G > 6G-1 > 6G-2
+				if(mlo_status.rssi5g != "") mlo_rssi = mlo_status.rssi5g;
+				else if(mlo_status.rssi6gl != "") mlo_rssi = mlo_status.rssi6gl;
+				else if(mlo_status.rssi6gh != "") mlo_rssi = mlo_status.rssi6gh;
+			}
+			else if(mlo_status.rssi5g != undefined && mlo_status.rssi6g != undefined && mlo_status.rssi2g != undefined){//5G > 6G > 2G
+				if(mlo_status.rssi5g != "") mlo_rssi = mlo_status.rssi5g;
+				else if(mlo_status.rssi6g != "") mlo_rssi = mlo_status.rssi6g;
+				else if(mlo_status.rssi2g != "") mlo_rssi = mlo_status.rssi2g;
+			}
+			else if(mlo_status.rssi5gh != undefined && mlo_status.rssi5gl != undefined && mlo_status.rssi2g != undefined){//5G-2 > 5G-1 > 2G
+				if(mlo_status.rssi5gh != "") mlo_rssi = mlo_status.rssi5gh;
+				else if(mlo_status.rssi5gl != "") mlo_rssi = mlo_status.rssi5gl;
+				else if(mlo_status.rssi2g != "") mlo_rssi = mlo_status.rssi2g;
+			}
+			else if(mlo_status.rssi5g != undefined && mlo_status.rssi2g != undefined){//5G > 2G
+				if(mlo_status.rssi5g != "") mlo_rssi = mlo_status.rssi5g;
+				else if(mlo_status.rssi2g != "") mlo_rssi = mlo_status.rssi2g;
+			}
+		}
+		return mlo_rssi;
 	}
 }
 function gen_real_port_type(_node_info){
@@ -1976,6 +2076,27 @@ function network_set_backhaul_info(_node_info, _signal_quality){
 		backhaul_parm.band = "6G";
 		backhaul_parm.sta_mac = _node_info.sta6g;
 	}
+	else if(re_path == "512"){
+		backhaul_parm.css = "mlo";
+		backhaul_parm.band_text = "<#menu5_1#> - MLO";
+		backhaul_parm.mac = _node_info.papmlo;
+		$.each(_node_info.mlo_status, function(item, value){
+			if(item.substring(0,3) == "pap"){
+				if(value != ""){
+					const pap_mac = value;
+					const wl_band = item.replace("pap", "");
+					const papObj = aimesh_data.cfg_clientlist.find(function(node_item){
+						return (node_item[`ap${wl_band}_fh`] == pap_mac);
+					});
+					if(papObj != undefined)
+						backhaul_parm.ssid = papObj[`ap${wl_band}_ssid_fh`];
+					return false;
+				}
+			}
+		});
+		backhaul_parm.band = "MLO";
+		backhaul_parm.sta_mac = _node_info.mlo_status.msta;
+	}
 	else if(re_path <= 0){
 		backhaul_parm.css = "wired";
 		backhaul_parm.band_text = "<#wan_ethernet#>";
@@ -2010,8 +2131,12 @@ function network_set_backhaul_info(_node_info, _signal_quality){
 			_obj.find("#backhaul_mac_title").html("<#MAC_Address#>");
 		}
 		else{
-			_obj.find(".wired_hide").show();
-			_obj.find("#backhaul_mac_title").html("MAC (BSSID)");
+			if(backhaul_parm.band == "MLO")
+				_obj.find(".wired_hide").hide();
+			else
+				_obj.find(".wired_hide").show();
+			const bh_mac_title = (backhaul_parm.band == "MLO") ? `<#MAC_Address#>` : `MAC (BSSID)`;
+			_obj.find("#backhaul_mac_title").html(bh_mac_title);
 			if(backhaul_parm.ssid != ""){
 				_obj.find("#backhaul_ssid").html(htmlEnDeCode.htmlEncode(backhaul_parm.ssid));
 				_obj.find(".bubble_icon").hide();
@@ -2045,24 +2170,24 @@ function network_set_backhaul_info(_node_info, _signal_quality){
 				}
 				else{
 					traffic_data_rate = diagnosticApi.get_backhaul_traffic(backhaul_parm.mac, backhaul_parm.band, backhaul_parm.sta_mac, _node_info.online, _data);
-					_obj.find("#phy_rate_tx").html(traffic_data_rate.phy.tx);
-					_obj.find("#phy_rate_rx").html(traffic_data_rate.phy.rx);
+					_obj.find("#phy_rate_tx").html(traffic_data_rate.phy.rx);
+					_obj.find("#phy_rate_rx").html(traffic_data_rate.phy.tx);
 				}
-				var data_rate_cur_tx = diagnosticApi.transform_unit(traffic_data_rate.data.tx);
-				_obj.find("#data_rate_cur_tx").html(data_rate_cur_tx.rate);
-				_obj.find("#data_rate_cur_tx").next(".transmit_unit").html(data_rate_cur_tx.unit);
+				const data_rate_cur_rx = diagnosticApi.transform_unit(traffic_data_rate.data.rx);
+				_obj.find("#data_rate_cur_tx").html(data_rate_cur_rx.rate);
+				_obj.find("#data_rate_cur_tx").next(".transmit_unit").html(data_rate_cur_rx.unit);
 
-				var data_rate_avg_tx = diagnosticApi.transform_unit(traffic_data_rate.data.avg_tx);
-				_obj.find("#data_rate_avg_tx").html(data_rate_avg_tx.rate);
-				_obj.find("#data_rate_avg_tx").next(".transmit_unit").html(data_rate_avg_tx.unit);
+				const data_rate_avg_rx = diagnosticApi.transform_unit(traffic_data_rate.data.avg_rx);
+				_obj.find("#data_rate_avg_tx").html(data_rate_avg_rx.rate);
+				_obj.find("#data_rate_avg_tx").next(".transmit_unit").html(data_rate_avg_rx.unit);
 
-				var data_rate_cur_rx = diagnosticApi.transform_unit(traffic_data_rate.data.rx);
-				_obj.find("#data_rate_cur_rx").html(data_rate_cur_rx.rate);
-				_obj.find("#data_rate_cur_rx").next(".transmit_unit").html(data_rate_cur_rx.unit);
+				const data_rate_cur_tx = diagnosticApi.transform_unit(traffic_data_rate.data.tx);
+				_obj.find("#data_rate_cur_rx").html(data_rate_cur_tx.rate);
+				_obj.find("#data_rate_cur_rx").next(".transmit_unit").html(data_rate_cur_tx.unit);
 
-				var data_rate_avg_rx = diagnosticApi.transform_unit(traffic_data_rate.data.avg_rx);
-				_obj.find("#data_rate_avg_rx").html(data_rate_avg_rx.rate);
-				_obj.find("#data_rate_avg_rx").next(".transmit_unit").html(data_rate_avg_rx.unit);
+				const data_rate_avg_tx = diagnosticApi.transform_unit(traffic_data_rate.data.avg_tx);
+				_obj.find("#data_rate_avg_rx").html(data_rate_avg_tx.rate);
+				_obj.find("#data_rate_avg_rx").next(".transmit_unit").html(data_rate_avg_tx.unit);
 			};
 
 			if(re_path == "1" || re_path == "16" || re_path == "32" || re_path == "64" || re_path <= 0)
@@ -2186,15 +2311,26 @@ function network_set_fronthaul_info(_node_info){
 			}();
 			ap_info["type"] = item.substr(2,2);
 			ap_info["ssid"] = function(){
-				var ssid = "";
-				if(_node_info[item + "_ssid_fh"] != undefined && _node_info[item + "_ssid_fh"] != "")
-					ssid = _node_info[item + "_ssid_fh"];
-				else if(_node_info[item + "_ssid"] != undefined && _node_info[item + "_ssid"] != "")
-					ssid = _node_info[item + "_ssid"];
+				let ssid = "";
+				const ssid_fh = _node_info[item + "_ssid_fh"];
+				const ssid_default = _node_info[item + "_ssid"];
+				if(ssid_fh !== undefined && ssid_fh !== ""){
+					ssid = ssid_fh;
+					if(isSupport("sdn_mainfh")){
+						if(_node_info["apdwb"] == ap_info["mac"]){//for 388 FW, not show dwb band
+							ssid = "";
+						}
+					}
+				}
+				else if (!isSupport("sdn_mainfh") && ssid_default !== undefined && ssid_default !== ""){
+					ssid = ssid_default;
+				}
 				return htmlEnDeCode.htmlEncode(ssid);
 			}();
 			ap_info["is_dwb"] = function(){
 				var result = false;
+				if(isSupport("sdn_mainfh"))
+					return false;
 				if(dwb_info.mode == "1"){
 					const dwb_band = (_node_info.dwb_band == undefined) ? dwb_info.band : _node_info.dwb_band;
 					ap_info["dwb_band"] = dwb_band;
@@ -2302,17 +2438,25 @@ function network_set_fronthaul_info(_node_info){
 	};
 	$.each(ap_info_list, function(index, value){
 		var ap_info = value;
-		var $fronthaul_wl_obj = $("#network_block .fronthaul_content").find("#fronthaul_wl_" + ap_info.name + "");
+		let $fronthaul_wl_obj = $("#network_block .fronthaul_content").find("#fronthaul_wl_" + ap_info.name + "");
+		if($fronthaul_wl_obj.length > 0 && $fronthaul_wl_obj.attr("data-node_mac") != _node_info.mac){
+			$fronthaul_wl_obj.remove();
+			$fronthaul_wl_obj = $("#network_block .fronthaul_content").find("#fronthaul_wl_" + ap_info.name + "");
+		}
+
 		if($fronthaul_wl_obj.length > 0)
 			set_fronthaul_data_wl($fronthaul_wl_obj, ap_info);
 		else{
 			var $fronthaulBg = $("<div>");
 			$fronthaulBg.addClass("fronthaul_bg");
-			$fronthaulBg.attr({"id":"fronthaul_wl_" + ap_info.name + ""});
+			$fronthaulBg.attr({"id":"fronthaul_wl_" + ap_info.name + "", "data-node_mac":_node_info.mac});
 			$fronthaulBg.load("/aimesh/aimesh_fronthaul.html", function(){
 				set_fronthaul_data_wl($(this), ap_info);
 			});
 			$("#network_block .fronthaul_content").append($fronthaulBg);
+		}
+		if(isSupport("sdn_mainfh") && ap_info.ssid == ""){
+			$("#network_block .fronthaul_content").find("#fronthaul_wl_" + ap_info.name + "").remove();
 		}
 	});
 
@@ -2358,8 +2502,10 @@ function network_set_fronthaul_info(_node_info){
 			}
 		}
 		cfg_clientlist_ap_list.forEach(function(item, index, array){
-			if(_node_info[item] != "" && _node_info[item] != undefined)
-				diagnosticApi.get_DB(_node_info.mac, _node_info[item], item, "fronthaul", "", set_fronthaul_traffic_wl);
+			if(_node_info[item] != "" && _node_info[item] != undefined) {
+				const ap_mac = isSupport("sdn_mainfh") ? _node_info[item + "_fh"] : _node_info[item];
+				diagnosticApi.get_DB(_node_info.mac, ap_mac, item, "fronthaul", "", set_fronthaul_traffic_wl);
+			}
 		});
 	}
 }
@@ -3551,6 +3697,15 @@ function set_primary_info(_node_info){
 		$(".primary_info_bg #signal_quality").html(_signal_quality.quality_text);
 		$(".primary_info_bg #signal_quality").attr("title", _signal_quality.quality_text);
 		$(".primary_info_bg #signal_quality").removeClass().addClass("signal_text_bg signal " + _signal_quality.css + "");
+		$(".primary_info_bg").find(".item_bg.signal [data-container=rssi_info]").remove();
+		if(_node_info.online == "1" && _signal_quality.rssi_info.length > 0){
+			let $rssi_info = $("<div>").attr({"data-container":"rssi_info"}).appendTo($(".primary_info_bg").find(".item_bg.signal"));
+			$("<div>").addClass("rssi_title").html(`RSSI (dBm)`).appendTo($rssi_info);
+			let $rssi_cntr = $("<div>").addClass("rssi_container").appendTo($rssi_info);
+			$.each(_signal_quality.rssi_info, function(index, item){
+				$("<div>").addClass("rssi_component").html(`${item.title} : <span>${item.rssi}</span>`).appendTo($rssi_cntr);
+			});
+		}
 		if(_signal_quality.quality == 0 || _signal_quality.quality == 1){
 			switch(_signal_quality.quality){
 				case 0 :
@@ -3802,6 +3957,14 @@ function get_topology_data(){
 						if(papObj != undefined)
 							return papObj.mac;
 					}
+					else if(re_path == 512){
+						const papmlo = item.papmlo;
+						const papObj = aimesh_data.cfg_clientlist.find(function(item){
+							return (item.mac == papmlo);
+						});
+						if(papObj != undefined)
+							return papObj.mac;
+					}
 					else{
 						var pap5g = item.pap5g;
 						var papObj = aimesh_data.cfg_clientlist.filter(function(item, index, array){
@@ -3952,7 +4115,7 @@ function initial_AiMesh(){
 				var specific_node_data = aimesh_data.cfg_clientlist.filter(function(item, index, _array){
 					return (item.mac == node_mac);
 				})[0];
-				var num = 0;//online+1, 2.4G+1, 5G+2, 6G+3, wired+4
+				var num = 0;//online+1, 2.4G+1, 5G+2, 6G+3, wired+4, mlo+5
 				var node_online = specific_node_data.online;
 				var re_path = handle_re_path(specific_node_data.re_path);
 				if((node_mac != cap_mac) && re_path <= 0)
@@ -3968,6 +4131,8 @@ function initial_AiMesh(){
 							num += 1;
 						else if(re_path == "128")//6G
 							num += 3;
+						else if(re_path == "512")//mlo
+							num += 5;
 						else//5G
 							num += 2;
 					}
@@ -4023,6 +4188,12 @@ function initial_AiMesh(){
 				else if(re_path == "128"){
 					$node_connect_type.addClass("wireless wl_6g");
 					$(el).attr("custom_connect_type", "wireless");
+					if(node.parent != "#")
+						all_node_is_eth_backhaul = false;
+				}
+				else if(re_path == "512"){
+					$node_connect_type.addClass(_signal_quality.type);
+					$(el).attr("custom_connect_type", (_signal_quality.type));
 					if(node.parent != "#")
 						all_node_is_eth_backhaul = false;
 				}
@@ -4193,8 +4364,11 @@ function initial_AiMesh(){
 		}, 5000);
 	});
 
-	$(".connect_line_info_icon").unbind("click");
-	$(".connect_line_info_icon").click(function(e){
+	$(".faq_info_icon").unbind("click");
+	if(top.webWrapper){
+		$(".faq_info_icon").addClass("business");
+	}
+	$(".faq_info_icon").click(function(e){
 		closeAllSelect();
 		e = e || event;
 		e.stopPropagation();
@@ -4219,17 +4393,27 @@ function initial_AiMesh(){
 		$connect_line_info_bg.append(gen_line_info("plc", "weak", stringSafeGet("<#AiMesh_Topology_PowerLine_Weak#>")));
 		$connect_line_info_bg.append(gen_line_info("moca", "great", stringSafeGet("<#AiMesh_Topology_Moca_Great#>")));
 		$connect_line_info_bg.append(gen_line_info("moca", "weak", stringSafeGet("<#AiMesh_Topology_Moca_Weak#>")));
+		$connect_line_info_bg.append(gen_line_info("mlo", "great", stringSafeGet("<#AiMesh_Topology_Moca_Great#>".replace("MoCA", "MLO"))));
+		$connect_line_info_bg.append(gen_line_info("mlo", "weak", stringSafeGet("<#AiMesh_Topology_Moca_Weak#>".replace("MoCA", "MLO"))));
 		$connect_line_info_bg.append(gen_line_info("", "disconnected", "<#Disconnected#>"));
 		var $faq = $("<div>");
 		$faq.addClass("faq_bg");
-		var faq_text = `<#AiMesh_Topology_FAQ#>`;
-		faq_text += "<br>";
-		faq_text += "<a id='connect_line_info_faq' href='' target='_blank' class='text_link'>FAQ.</a>";
+		var faq_text = `<#AiMesh_Topology_FAQ#><br>`;
+		faq_text += "<div class='aimesh_setup_info' style='margin-left:0px'>FAQ</div><br>";
+		faq_text += "<a id='connect_line_info_faq' href='' target='_blank' class='faq_link'><#HOWTOSETUP#></a>";
 		$faq.html(faq_text);
 		$connect_line_info_bg.append($faq);
-		$("#aimesh_hint_msg").empty().append(popup_hint_api.get_component_text()).append(popup_hint_api.get_component_action());
+		$("#aimesh_hint_msg").empty().append(popup_hint_api.get_component_title()).append(popup_hint_api.get_component_text()).append(popup_hint_api.get_component_action());
+		$("#aimesh_hint_msg .hint_title").html(`<#NewFeatureAbout#>`);
 		$("#aimesh_hint_msg .hint_text").html($connect_line_info_bg).promise().done(function(){
-			$("#aimesh_hint_msg .hint_text #connect_line_info_faq").attr("href", faq_href2);
+			$("#Intro_AiMesh").attr({
+				"href":faq_href2,
+				"target":"_blank"
+			}).css({
+				"color":"#FFCC00",
+				"text-decoration": "underline"
+			})
+			$("#aimesh_hint_msg .hint_text #connect_line_info_faq").attr("href", faq_href3);
 		});
 		$("#aimesh_hint_msg #action_canacl").hide();
 		$("#aimesh_hint_msg #action_ok").show().unbind("click").click(function(e){
@@ -4518,6 +4702,9 @@ function handle_re_path(_re_path){
 	return ((isNaN(result)) ? 0 : result);
 }
 var popup_hint_api = {
+	"get_component_title": function(){
+		return $("<div>").addClass("hint_title");
+	},
 	"get_component_text": function(){
 		return $("<div>").addClass("hint_text");
 	},
@@ -4740,7 +4927,7 @@ $(document).ready(initial_AiMesh);
 	</div>
 	<div id="jstree"></div>
 	<div class="connect_info_bg">
-		<div class="connect_line_info_icon"></div>
+		<div class="faq_info_icon"></div>
 		<div class="aimesh_introduction">
 			<div class="aimesh_intro_text">
 				<div>ASUS AiMesh WiFi System</div>

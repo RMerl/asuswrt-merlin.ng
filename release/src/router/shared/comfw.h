@@ -18,6 +18,7 @@ CF_RTAX58U       // w
 CF_RTAX58U_V2    // pkgtb           
 CF_RPAX56        // w               
 CF_RPAX58        // pkgtb              
+CF_RPBE58        // pkgtb              
 CF_RTAX82_XD6    // w           
 CF_RTAX82_XD6S   // w	
 CF_TUFAX3000     // w                
@@ -58,6 +59,7 @@ CF_XD6_V2        // pkgtb
      MODELID(CF_XD6_V2),                      \
      MODELID(CF_GSAX3000),                   \
      MODELID(CF_GSAX5400),                   \
+     MODELID(CF_RPBE58),                        \
      MODELID(MAX_FTYPE),                           \
 }
 

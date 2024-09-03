@@ -4,25 +4,19 @@
       Copyright (c) 2021 Broadcom 
       All Rights Reserved
    
-   Unless you and Broadcom execute a separate written software license
-   agreement governing use of this software, this software is licensed
-   to you under the terms of the GNU General Public License version 2
-   (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-   with the following added to such license:
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License, version 2, as published by
+   the Free Software Foundation (the "GPL").
    
-      As a special exception, the copyright holders of this software give
-      you permission to link this software with independent modules, and
-      to copy and distribute the resulting executable under terms of your
-      choice, provided that you also meet, for each linked independent
-      module, the terms and conditions of the license of that module.
-      An independent module is a module which is not derived from this
-      software.  The special exception does not apply to any modifications
-      of the software.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
    
-   Not withstanding the above, under no circumstances may you combine
-   this software in any way with any other Broadcom software provided
-   under a license other than the GPL, without Broadcom's express prior
-   written consent.
+   
+   A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+   writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.
    
    :>
  */
@@ -56,6 +50,16 @@ extern void gdx_priv_uninit(void);
 int (*gdx_hw_accel_loopbk_fn)(struct sk_buff *skb, bool l3_packet) = NULL;
 
 int gdx_print_lvl = GDX_PRINT_LVL_ERROR;
+
+/* GDX debug mask 
+ * bit[0] - force nonlinear packets to the GDX 
+ * bit[1] - force l3 packets to the GDX 
+ * bit[24:16] - hdrlen in case of nonlinear packet, this hdrlen will be in
+ * skb->data reset will be in frags */
+int gdx_dbg_mask = 0;
+int gdx_dbg_force_nonlinear_pkts = 0;
+int gdx_dbg_nonlinear_hdrlen     = 0;
+int gdx_dbg_force_l3_pkts        = 0;
 
 #if !defined(CONFIG_BCM_GDX_HW)
 /* GDX HW Acceleration not supported. Declare dummy functions */
@@ -122,6 +126,7 @@ int gdx_skb_offset_check(gdx_skb_field_offset_t *skb_field_offset_p)
     GDX_CHECK_SKB_OFFSET_RET(skb_field_offset_p, dev);
     GDX_CHECK_SKB_OFFSET_RET(skb_field_offset_p, bcm_ext);
     GDX_CHECK_SKBEXT_OFFSET_RET(skb_field_offset_p, flags);
+    GDX_CHECK_SKB_OFFSET_RET(skb_field_offset_p, truesize);
     return 0;
 }
 

@@ -56,6 +56,7 @@ class WirelessAttribute {
         this.pscChannel = [];
         this.chanspecs = [];
         this.ch320MHz = {};
+        this.ch240MHz = {};
         this.ch160MHz = {};
         this.ch80_80MHz = {};
         this.ch80MHz = {};
@@ -78,6 +79,7 @@ class WirelessAttribute {
         this.bw80MHzSupport = false;
         this.bw80_80MHzSupport = false;
         this.bw160MHzSupport = false;
+        this.bw240MHzSupport = false;
         this.bw320MHzSupport = false;
 
         // this.acsBand1Support = false;
@@ -247,6 +249,45 @@ system.aMesh = (() => {
 
     return object;
 })();
+system.currentOPMode = (() => {
+    const opModeObject = {
+        rt: { id: "RT", desc: "<#wireless_router#>" },
+        ap: { id: "AP", desc: "<#OP_AP_item#>" },
+        re: { id: "RE", desc: "<#OP_RE_item#>" },
+        mb: { id: "MB", desc: "<#OP_MB_item#>" },
+        ew2: { id: "EW2", desc: "<#OP_RE2G_item#>" },
+        ew5: { id: "EW5", desc: "<#OP_RE5G_item#>" },
+        hs: { id: "HS", desc: "Hotspot" },
+    };
+
+    let { sw_mode, wlc_psta, wlc_express } = nvram;
+    let _index = "";
+    if (sw_mode === "1") {
+        _index = "rt";
+    } else if (sw_mode === "3" && wlc_psta === "0") {
+        _index = "ap";
+    } else if ((sw_mode === "2" && wlc_psta === "0") || (sw_mode === "3" && wlc_psta === "2")) {
+        _index = "re";
+    } else if (
+        (sw_mode === "3" && wlc_psta === "1" && wlc_express === "0") ||
+        (sw_mode === "3" && wlc_psta === "3" && wlc_express === "0") ||
+        (sw_mode === "2" && wlc_psta === "1" && wlc_express === "0")
+    ) {
+        /*	Media Bridge
+            Broadcom: sw_mode = 3 & wlc_psta = 1, sw_mode = 3 & wlc_psta = 3
+            MTK/QCA: sw_mode = 2 & wlc_psta = 1
+        */
+        _index = "mb";
+    } else if (sw_mode === "2" && wlc_psta === "0" && wlc_express === "1") {
+        _index = "ew2";
+    } else if (sw_mode === "2" && wlc_psta === "0" && wlc_express === "2") {
+        _index = "ew5";
+    } else if (sw_mode === "5") {
+        _index = "hs";
+    }
+
+    return opModeObject[_index];
+})();
 
 // Smart Connect
 system.smartConnect = (() => {
@@ -263,16 +304,16 @@ system.smartConnect = (() => {
             bandArray.unshift("0");
         }
 
-        return bandArray;
+        return (isSupport("sdn_mainfh")) ? ["1", "1", "1", "1", "1", "1", "1", "1"] : bandArray;
     })();
 
     object.radioSeqArray = referenceArray;
-    object.smartConnectEnable = smart_connect_x !== "0";
-    object.v1Type = smart_connect_x;
+    object.smartConnectEnable = (isSupport("sdn_mainfh")) ? "1" : smart_connect_x !== "0";
+    object.v1Type = (isSupport("sdn_mainfh")) ? "1" : smart_connect_x;
     object.smartConnectReferenceIndex = (() => {
         if (object.version === "v2") {
             let _index = object.v2Band.findLastIndex((element) => element === "1");
-            return referenceArray[_index];
+            return referenceArray[_index] || `2g1`;
         } else {
             if (object.v1Type === "1" || object.v1Type === "3") {
                 return "2g1";
@@ -309,6 +350,7 @@ system.wlBandSeq = (() => {
 
     for (let i = 0; i < nBandArray.length; i++) {
         let wlIfIndex = nBandArray[i];
+        let wlFronthaulIndex = system.currentOPMode.id == "RE" && nvram.wlc_band == i ? `${wlIfIndex}.1` : wlIfIndex;
         let postfixIndex = "";
         let _nvram = httpApi.nvramGet([
             `${wlIfIndex}_nmode_x`,
@@ -317,9 +359,9 @@ system.wlBandSeq = (() => {
             `${wlIfIndex}_chanspec`,
             `${wlIfIndex}_channel`,
             `${wlIfIndex}_nctrlsb`,
-            `${wlIfIndex}_auth_mode_x`,
-            `${wlIfIndex}_crypto`,
-            `${wlIfIndex}_mfp`,
+            `${wlFronthaulIndex}_auth_mode_x`,
+            `${wlFronthaulIndex}_crypto`,
+            `${wlFronthaulIndex}_mfp`,
             `${wlIfIndex}_wpa_gtk_rekey`,
             `${wlIfIndex}_radius_ipaddr`,
             `${wlIfIndex}_radius_port`,
@@ -335,7 +377,7 @@ system.wlBandSeq = (() => {
             `${wlIfIndex}_11be`,
         ]);
 
-        let _nvramAscii = httpApi.nvramCharToAscii([`${wlIfIndex}_ssid`, `${wlIfIndex}_wpa_psk`]);
+        let _nvramAscii = httpApi.nvramCharToAscii([`${wlFronthaulIndex}_ssid`, `${wlFronthaulIndex}_wpa_psk`]);
         postfixIndex = wlPostfixIndexTransform[wlIfIndex];
         wlObj[wlIfIndex] = new WirelessAttribute();
         wlObj[wlIfIndex].wlUnit = i;
@@ -356,17 +398,17 @@ system.wlBandSeq = (() => {
             let _cap = httpApi.hookGet(`wl_cap_${postfixIndex}`);
             return _cap ? _cap.trim().split(" ") : [];
         })();
-        wlObj[wlIfIndex].ssidValue = decodeURIComponent(_nvramAscii[`${wlIfIndex}_ssid`]);
+        wlObj[wlIfIndex].ssidValue = decodeURIComponent(_nvramAscii[`${wlFronthaulIndex}_ssid`]);
         wlObj[wlIfIndex].hideSSIDValue = _nvram[`${wlIfIndex}_closed`];
         wlObj[wlIfIndex].wlModeValue = _nvram[`${wlIfIndex}_nmode_x`];
         wlObj[wlIfIndex].bandwidthValue = _nvram[`${wlIfIndex}_bw`];
         wlObj[wlIfIndex].bw160Value = _nvram[`${wlIfIndex}_bw_160`];
         wlObj[wlIfIndex].channelValue = isBRCMplatform ? _nvram[`${wlIfIndex}_chanspec`] : _nvram[`${wlIfIndex}_channel`];
         wlObj[wlIfIndex].extChannelValue = _nvram[`${wlIfIndex}_nctrlsb`];
-        wlObj[wlIfIndex].authMethodValue = _nvram[`${wlIfIndex}_auth_mode_x`];
-        wlObj[wlIfIndex].wpaEncryptValue = _nvram[`${wlIfIndex}_crypto`];
-        wlObj[wlIfIndex].wpaKeyValue = decodeURIComponent(_nvramAscii[`${wlIfIndex}_wpa_psk`]);
-        wlObj[wlIfIndex].protectManageFrameValue = _nvram[`${wlIfIndex}_mfp`];
+        wlObj[wlIfIndex].authMethodValue = _nvram[`${wlFronthaulIndex}_auth_mode_x`];
+        wlObj[wlIfIndex].wpaEncryptValue = _nvram[`${wlFronthaulIndex}_crypto`];
+        wlObj[wlIfIndex].wpaKeyValue = decodeURIComponent(_nvramAscii[`${wlFronthaulIndex}_wpa_psk`]);
+        wlObj[wlIfIndex].protectManageFrameValue = _nvram[`${wlFronthaulIndex}_mfp`];
         wlObj[wlIfIndex].wpaGroupKeyIntervalValue = _nvram[`${wlIfIndex}_wpa_gtk_rekey`];
         wlObj[wlIfIndex].radiusIpValue = _nvram[`${wlIfIndex}_radius_ipaddr`];
         wlObj[wlIfIndex].radiusPortValue = _nvram[`${wlIfIndex}_radius_port`];
@@ -374,7 +416,7 @@ system.wlBandSeq = (() => {
         wlObj[wlIfIndex].channel = (() => {
             let _channel = [];
             let { channel } = aMesh;
-            if (dwb_mode === "1") {
+            if (dwb_mode === "1" && system.aMesh.channel[wlIfIndex]?.auto?.chanlist?.length > 1) {
                 _channel = (() => {
                     let chanlist = (() => (channel[wlIfIndex].chan_20m ? channel[wlIfIndex].chan_20m.chanlist : []))();
                     if (chanlist[0] === "0") {
@@ -629,10 +671,51 @@ system.wlBandSeq = (() => {
                         wlObj[wlIfIndex].ch160MHz[element].push(element);
                     }
                 }
+
+                // 240 MHz
+                if (wlIfIndex === "5g1" || wlIfIndex === "5g2") {
+                    let chanspecs = httpApi.hookGet(`chanspecs_${postfixIndex}`);
+                    chanspecs.forEach((element) => {
+                        let _ch = element.split("u")[0].split("l")[0].split("/")[0];
+                        if (_ch.indexOf("6g") !== -1) {
+                            _ch = _ch.split("6g")[1];
+                        }
+
+                        if (element.indexOf("/240") !== -1) {
+                            if (wlObj[wlIfIndex].ch240MHz[_ch] === undefined) {
+                                wlObj[wlIfIndex].ch240MHz[_ch] = [];
+                            }
+
+                            wlObj[wlIfIndex].ch240MHz[_ch].push(element);
+                        }
+                    });
+                }
+
+                // 320 MHz
+                let bw320MHzSupport = isSupport("wifi7");
+                if (bw320MHzSupport) {
+                    if (wlIfIndex === "6g1" || wlIfIndex === "6g2") {
+                        let chanspecs = httpApi.hookGet(`chanspecs_${postfixIndex}`);
+                        chanspecs.forEach((element) => {
+                            let _ch = element.split("u")[0].split("l")[0].split("/")[0];
+                            if (_ch.indexOf("6g") !== -1) {
+                                _ch = _ch.split("6g")[1];
+                            }
+
+                            if (element.indexOf("/320") !== -1) {
+                                if (wlObj[wlIfIndex].ch320MHz[_ch] === undefined) {
+                                    wlObj[wlIfIndex].ch320MHz[_ch] = [];
+                                }
+
+                                wlObj[wlIfIndex].ch320MHz[_ch].push(element);
+                            }
+                        });
+                    }
+                }
             }
 
             // wait for QCA/MTK sample
-            wlObj[wlIfIndex].ch320MHz = {};
+            // wlObj[wlIfIndex].ch320MHz = {};
         }
 
         wlObj[wlIfIndex].pscChannel = (() => {
@@ -693,7 +776,15 @@ system.wlBandSeq = (() => {
         })();
         wlObj[wlIfIndex].bw80_80MHzSupport = isSupport("vht80_80");
         wlObj[wlIfIndex].bw160MHzSupport = (() => {
+            if (productId === "ET8_V2" && wlIfIndex === "5g1") {
+                return false;
+            }
+
             let chObj = wlObj[wlIfIndex].ch160MHz;
+            return Object.keys(chObj).length !== 0;
+        })();
+        wlObj[wlIfIndex].bw240MHzSupport = (() => {
+            let chObj = wlObj[wlIfIndex].ch240MHz;
             return Object.keys(chObj).length !== 0;
         })();
         wlObj[wlIfIndex].bw320MHzSupport = (() => {
@@ -962,45 +1053,6 @@ system.mfpObject = {
 };
 
 system.wepEncryptObject = { 0: "<#wl_securitylevel_0#>", 1: "WEP-64bits", 2: "WEP-128bits" };
-system.currentOPMode = (() => {
-    const opModeObject = {
-        rt: { id: "RT", desc: "<#wireless_router#>" },
-        ap: { id: "AP", desc: "<#OP_AP_item#>" },
-        re: { id: "RE", desc: "<#OP_RE_item#>" },
-        mb: { id: "MB", desc: "<#OP_MB_item#>" },
-        ew2: { id: "EW2", desc: "<#OP_RE2G_item#>" },
-        ew5: { id: "EW5", desc: "<#OP_RE5G_item#>" },
-        hs: { id: "HS", desc: "Hotspot" },
-    };
-
-    let { sw_mode, wlc_psta, wlc_express } = nvram;
-    let _index = "";
-    if (sw_mode === "1") {
-        _index = "rt";
-    } else if (sw_mode === "3" && wlc_psta === "0") {
-        _index = "ap";
-    } else if ((sw_mode === "2" && wlc_psta === "0") || (sw_mode === "3" && wlc_psta === "2")) {
-        _index = "re";
-    } else if (
-        (sw_mode === "3" && wlc_psta === "1" && wlc_express === "0") ||
-        (sw_mode === "3" && wlc_psta === "3" && wlc_express === "0") ||
-        (sw_mode === "2" && wlc_psta === "1" && wlc_express === "0")
-    ) {
-        /*	Media Bridge
-            Broadcom: sw_mode = 3 & wlc_psta = 1, sw_mode = 3 & wlc_psta = 3
-            MTK/QCA: sw_mode = 2 & wlc_psta = 1
-        */
-        _index = "mb";
-    } else if (sw_mode === "2" && wlc_psta === "0" && wlc_express === "1") {
-        _index = "ew2";
-    } else if (sw_mode === "2" && wlc_psta === "0" && wlc_express === "2") {
-        _index = "ew5";
-    } else if (sw_mode === "5") {
-        _index = "hs";
-    }
-
-    return opModeObject[_index];
-})();
 
 system.firmwareVer = (() => {
     let { firmver, buildno, extendno, swpjverno } = nvram;

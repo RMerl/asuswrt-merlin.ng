@@ -347,6 +347,7 @@ int pmc_xrdp_init(void)
         PRINTK("failed Toggle reset of XRDP core to 0xffffffff...\n");
         return status;
     }
+    udelay(10);
 #else
     PRINTK("%s is not implemented in platform yet!\n", __FUNCTION__);
 #endif

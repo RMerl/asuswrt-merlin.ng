@@ -34,19 +34,20 @@ extern int packet_debug_logging;
 extern int debug_logging_sleep;
 extern int flow_offload_enable;
 
-//#define DEBUG
+//#define SPU_DEBUG
 
-/* SPU_TEST_RAW_PERF enables the standalone performance testing capability.
+/* CONFIG_BCM_SPU2_TEST_VEC enables the standalone performance testing capability.
  * Only SPU2 equipped SoCs support standalone performance testing. The driver
  * will compile properly even if this flag is defined in SPU1 devices but those
  * testing related debugfs will not be exposed */
-//#define SPU_TEST_RAW_PERF
 
-#ifdef DEBUG
+#ifdef SPU_DEBUG
 #define flow_log(fmt, ...)	                \
 	do {	                              \
 		if (flow_debug_logging) {	        \
-			printk("cpu%d:%pSR->%s:%d " fmt, smp_processor_id(), __builtin_return_address(0), __func__, __LINE__, ##__VA_ARGS__);	          \
+			printk("cpu%d:%pSR->%s:%d " fmt, smp_processor_id(),   \
+				__builtin_return_address(0),__func__,__LINE__, \
+				## __VA_ARGS__);                               \
 			if (debug_logging_sleep)	      \
 				msleep(debug_logging_sleep);	\
 		}	                                \
@@ -83,7 +84,7 @@ void __dump_sg(struct scatterlist *sg, unsigned int skip, unsigned int len);
 
 #define dump_sg(sg, skip, len)     __dump_sg(sg, skip, len)
 
-#else /* !DEBUG_ON */
+#else /* !SPU_DEBUG */
 
 #define flow_log(...) do {} while (0)
 #define flow_dump(msg, var, var_len) do {} while (0)
@@ -92,9 +93,9 @@ void __dump_sg(struct scatterlist *sg, unsigned int skip, unsigned int len);
 
 #define dump_sg(sg, skip, len) do {} while (0)
 
-#endif /* DEBUG_ON */
+#endif /* SPU_DEBUG */
 
-#ifdef SPU_TEST_RAW_PERF
+#if defined(CONFIG_BCM_SPU2_TEST_VEC)
 struct spu_test_vector_t {
 	char *name;
 	uint8_t inbound;

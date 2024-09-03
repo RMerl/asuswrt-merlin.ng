@@ -3,27 +3,21 @@
    All Rights Reserved
 
     <:label-BRCM:2015:DUAL/GPL:standard
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
 :>
 */
 
@@ -520,7 +514,7 @@ typedef union
         uint32_t	v6_dest_opt           	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	v6_route              	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	v6_hop                	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-        uint8_t	tcp_flags             	;
+        uint32_t	tcp_flags             	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint8_t	layer3_offset         	;
         uint8_t	layer4_offset         	;
         uint16_t	outer_vlan            	;
@@ -534,23 +528,23 @@ typedef union
         uint32_t	tpid_vlan_1           	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	da_filter_number      	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	unused                	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-        uint8_t	layer2_offset         	;
+        uint32_t	layer2_offset         	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	ip_filter_match       	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	ip_filter_num         	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	unused1               	:5	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	ipv6                  	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-        uint8_t	protocol              	;
-        uint8_t	fragment_header_offset	;
+        uint32_t	protocol              	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+        uint32_t	fragment_header_offset	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	unused3               	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	dos_attack_reason     	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint8_t	icmpv6_type           	;
-        uint8_t	ip_ttl                	;
+        uint32_t	ip_ttl                	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint16_t	ip_length             	;
         uint32_t	not_written           	;
 #else
         uint8_t	layer4_offset         	;
         uint8_t	layer3_offset         	;
-        uint8_t	tcp_flags             	;
+        uint32_t	tcp_flags             	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	v6_hop                	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	v6_route              	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	v6_dest_opt           	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
@@ -558,7 +552,7 @@ typedef union
         uint32_t	l4_protocol           	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /*defined by rdd_parser_l4_protocol enumeration*/
         uint16_t	inner_vlan            	;
         uint16_t	outer_vlan            	;
-        uint8_t	layer2_offset         	;
+        uint32_t	layer2_offset         	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	unused                	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	da_filter_number      	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	tpid_vlan_1           	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
@@ -570,14 +564,14 @@ typedef union
         uint32_t	ethenrnet_version     	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	dos_attack_reason     	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	unused3               	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-        uint8_t	fragment_header_offset	;
-        uint8_t	protocol              	;
+        uint32_t	fragment_header_offset	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+        uint32_t	protocol              	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	ipv6                  	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	unused1               	:5	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	ip_filter_num         	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	ip_filter_match       	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint16_t	ip_length             	;
-        uint8_t	ip_ttl                	;
+        uint32_t	ip_ttl                	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint8_t	icmpv6_type           	;
         uint32_t	not_written           	;
 #endif
@@ -791,7 +785,7 @@ typedef union
         uint32_t	da_crc        	;
         uint32_t	sa_crc        	;
         uint32_t	vlan_etype_crc	;
-        uint8_t	tos           	;
+        uint32_t	tos           	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	lookup_port   	:5	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	vlans_num     	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	valid         	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
@@ -812,7 +806,7 @@ typedef union
         uint32_t	valid         	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	vlans_num     	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	lookup_port   	:5	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-        uint8_t	tos           	;
+        uint32_t	tos           	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 #endif
     } __PACKING_ATTRIBUTE_STRUCT_END__ ;
     } __attribute__((aligned(8))) PARSER_L2_LKP_ENTRY_STRUCT;
@@ -930,7 +924,7 @@ typedef union
 		};
 		/* Sub Union 1 */
 		struct{
-        uint8_t	tos                           	; /* Member of L3_LKP_TOS union */
+        uint32_t	tos                           	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of L3_LKP_TOS union */
         uint32_t	lookup_port                   	:5	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of L3_LKP_TOS union */
         uint32_t	vlans_num                     	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of L3_LKP_TOS union */
         uint32_t	valid                         	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of L3_LKP_TOS union */
@@ -991,7 +985,7 @@ typedef union
         uint32_t	valid                         	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of L3_LKP_TOS union */
         uint32_t	vlans_num                     	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of L3_LKP_TOS union */
         uint32_t	lookup_port                   	:5	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of L3_LKP_TOS union */
-        uint8_t	tos                           	; /* Member of L3_LKP_TOS union */
+        uint32_t	tos                           	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of L3_LKP_TOS union */
 		};
 		/* Sub Union 2 */
 		struct{
@@ -1158,7 +1152,7 @@ typedef union
 		/* Sub Union 0 */
 		struct{
         uint16_t	ethernet_type	;
-        uint8_t	protocol     	;
+        uint32_t	protocol     	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	tpid_vlan_0  	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	tpid_vlan_1  	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	ipv6         	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
@@ -1181,7 +1175,7 @@ typedef union
 	union{
 		/* Sub Union 0 */
 		struct{
-        uint8_t	tos          	;
+        uint32_t	tos          	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	lookup_port  	:5	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	vlans_num    	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	mc_l3        	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
@@ -1189,11 +1183,11 @@ typedef union
         uint32_t	mc           	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	network_layer	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	reserved3    	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-        uint8_t	gem_ssid     	; /* This is a field union */
+        uint32_t	gem_ssid     	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* This is a field union */
 		};
 		/* Sub Union 1 */
 		struct{
-        uint8_t	reservedSU1_tos        	;
+        uint32_t	reservedSU1_tos        	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	reservedSU1_lookup_port	:5	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	reservedSU1_vlans_num  	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	reservedSU1_mc_l3      	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
@@ -1201,11 +1195,11 @@ typedef union
         uint32_t	reservedSU1_mc         	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	reservedSU1_network_layer	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	reservedSU1_reserved3  	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-        uint8_t	gem                    	; /* Member of gem_ssid union */
+        uint32_t	gem                    	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of gem_ssid union */
 		};
 		/* Sub Union 2 */
 		struct{
-        uint8_t	reservedSU2_tos        	;
+        uint32_t	reservedSU2_tos        	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	reservedSU2_lookup_port	:5	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	reservedSU2_vlans_num  	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	reservedSU2_mc_l3      	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
@@ -1262,7 +1256,7 @@ typedef union
         uint32_t	ipv6         	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	tpid_vlan_1  	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	tpid_vlan_0  	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-        uint8_t	protocol     	;
+        uint32_t	protocol     	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint16_t	ethernet_type	;
 		};
 	};
@@ -1282,7 +1276,7 @@ typedef union
 	union{
 		/* Sub Union 0 */
 		struct{
-        uint8_t	gem_ssid     	; /* This is a field union */
+        uint32_t	gem_ssid     	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* This is a field union */
         uint32_t	reserved3    	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	network_layer	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	mc           	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
@@ -1290,11 +1284,11 @@ typedef union
         uint32_t	mc_l3        	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	vlans_num    	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	lookup_port  	:5	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-        uint8_t	tos          	;
+        uint32_t	tos          	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 		};
 		/* Sub Union 1 */
 		struct{
-        uint8_t	gem                    	; /* Member of gem_ssid union */
+        uint32_t	gem                    	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of gem_ssid union */
         uint32_t	reservedSU1_reserved3  	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	reservedSU1_network_layer	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	reservedSU1_mc         	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
@@ -1302,7 +1296,7 @@ typedef union
         uint32_t	reservedSU1_mc_l3      	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	reservedSU1_vlans_num  	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	reservedSU1_lookup_port	:5	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-        uint8_t	reservedSU1_tos        	;
+        uint32_t	reservedSU1_tos        	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 		};
 		/* Sub Union 2 */
 		struct{
@@ -1315,7 +1309,7 @@ typedef union
         uint32_t	reservedSU2_mc_l3      	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	reservedSU2_vlans_num  	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	reservedSU2_lookup_port	:5	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-        uint8_t	reservedSU2_tos        	;
+        uint32_t	reservedSU2_tos        	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 		};
 	};
 #endif
@@ -2975,7 +2969,7 @@ typedef union
 	union{
 		/* Sub Union 0 */
 		struct{
-        uint8_t	host_buffer_data_ptr_hi 	;
+        uint32_t	host_buffer_data_ptr_hi 	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	reserved1               	:7	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	abs                     	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	plen                    	:14	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
@@ -3094,7 +3088,7 @@ typedef union
         uint32_t	plen                    	:14	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	abs                     	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	reserved1               	:7	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-        uint8_t	host_buffer_data_ptr_hi 	;
+        uint32_t	host_buffer_data_ptr_hi 	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 		};
 	};
 	/* Union WORD 2 */
@@ -3364,10 +3358,10 @@ typedef union
         uint32_t	ptr_low   	;
         uint32_t	reserved0 	:23	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	type      	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-        uint8_t	ptr_hi    	;
+        uint32_t	ptr_hi    	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 #else
         uint32_t	ptr_low   	;
-        uint8_t	ptr_hi    	;
+        uint32_t	ptr_hi    	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	type      	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	reserved0 	:23	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 #endif
@@ -4116,12 +4110,12 @@ typedef union
     uint64_t dword_64[1];
         struct {
 #ifndef FIRMWARE_LITTLE_ENDIAN
-        uint8_t	counter   	;
+        uint32_t	counter   	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	reserved0 	:24	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	reserved1 	;
 #else
         uint32_t	reserved0 	:24	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-        uint8_t	counter   	;
+        uint32_t	counter   	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	reserved1 	;
 #endif
     } __PACKING_ATTRIBUTE_STRUCT_END__ ;
@@ -4186,7 +4180,7 @@ typedef union
         uint32_t	g9991_tci_eof               	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of pd_info union */
         uint32_t	g9991_tci_const             	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of pd_info union */
         uint32_t	g9991_tci_sid_1_0           	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of pd_info union */
-        uint8_t	g9991_tci_sid_9_2           	; /* Member of pd_info union */
+        uint32_t	g9991_tci_sid_9_2           	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of pd_info union */
         uint16_t	g9991_length_time           	; /* Member of pd_info union */
 		};
 		/* Sub Union 4 */
@@ -4316,7 +4310,7 @@ typedef union
 		/* Sub Union 3 */
 		struct{
         uint16_t	g9991_length_time           	; /* Member of pd_info union */
-        uint8_t	g9991_tci_sid_9_2           	; /* Member of pd_info union */
+        uint32_t	g9991_tci_sid_9_2           	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of pd_info union */
         uint32_t	g9991_tci_sid_1_0           	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of pd_info union */
         uint32_t	g9991_tci_const             	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of pd_info union */
         uint32_t	g9991_tci_eof               	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of pd_info union */
@@ -4772,7 +4766,7 @@ typedef union
         uint32_t	eof           	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	g9991_const   	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	sid_1_0       	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-        uint8_t	sid_9_2       	;
+        uint32_t	sid_9_2       	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint16_t	frag_length   	;
 		};
 	};
@@ -4861,7 +4855,7 @@ typedef union
 		/* Sub Union 0 */
 		struct{
         uint16_t	frag_length   	;
-        uint8_t	sid_9_2       	;
+        uint32_t	sid_9_2       	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	sid_1_0       	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	g9991_const   	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint32_t	eof           	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
@@ -5480,9 +5474,9 @@ typedef union
         uint16_t	flow_dest   	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint16_t	exception   	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint16_t	reserved    	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-        uint8_t	cntr_id     	;
+        uint16_t	cntr_id     	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 #else
-        uint8_t	cntr_id     	;
+        uint16_t	cntr_id     	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint16_t	reserved    	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint16_t	exception   	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
         uint16_t	flow_dest   	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;

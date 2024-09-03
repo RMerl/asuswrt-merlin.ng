@@ -206,7 +206,9 @@ struct ftrace_likely_data {
  */
 #define __pure			__attribute__((pure))
 #define __aligned(x)		__attribute__((aligned(x)))
+#if !defined(CONFIG_BCM_KF_VLA_REMOVAL_BACKPORT)
 #define __aligned_largest	__attribute__((aligned))
+#endif
 #define __printf(a, b)		__attribute__((format(printf, a, b)))
 #define __scanf(a, b)		__attribute__((format(scanf, a, b)))
 #define __maybe_unused		__attribute__((unused))

@@ -293,7 +293,7 @@ void add_usb_host_modules(void)
 
 #ifdef RTCONFIG_HND_ROUTER_AX
 	eval("insmod",
-#if defined(BCM4912) || defined(BCM6756) || defined(BCM6855) || defined(BCM6813) || defined(BCM6765) || defined(BT10)
+#if defined(BCM4912) || defined(BCM6756) || defined(BCM6855) || defined(BCM6813) || defined(BCM6765) || defined(BCM6766)
 		"bcm_bca_usb"
 #else
 		"bcm_usb"
@@ -320,7 +320,7 @@ void add_usb_host_modules(void)
 #elif defined(RTCONFIG_ALPINE)
 	modprobe(USB30_MOD);
 #else
-#if !defined(BCM4912) && !defined(BCM6756) && !defined(BCM6855) && !defined(BCM4906_504) && !defined(BCM6813) && !defined(BCM6765)
+#if !defined(BCM4912) && !defined(BCM6756) && !defined(BCM6855) && !defined(BCM4906_504) && !defined(BCM6813) && !defined(BCM6765) && !defined(BCM6766)
 	if (nvram_get_int("usb_usb3") == 1)
 #endif
 	{

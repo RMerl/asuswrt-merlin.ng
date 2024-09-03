@@ -1,0 +1,19 @@
+External Power Supplies Control co-driver for Deep Sleep.
+=========================================================
+
+As part of board deep sleep mode, the customer could require to shut down the external power supplies.
+
+This could be done by dedicated GPIOs routed to an external power supplier's enable pin.
+To specify the dedicated GPIOs, the ext_pwr_ctrl node should be extended at the board-level dts file.
+
+&ext_pwr_ctrl {
+    pwr-ctrl-gpios = <&gpioc gpio_num GPIO_ACTIVE_HIGH>,
+                     <&gpioc gpio_num GPIO_ACTIVE_LOW>,
+                     ...
+                     <&gpioc gpio_num GPIO_ACTIVE_LOW>;
+};
+
+During the entering into deep sleep mode, the system will set the logical GPIO value to 0 
+to turn off the power suppliers according to appearance sequence.
+
+

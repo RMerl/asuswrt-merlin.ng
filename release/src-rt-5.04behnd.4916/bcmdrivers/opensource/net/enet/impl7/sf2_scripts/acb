@@ -80,7 +80,7 @@ sf2_acb() { #sf2_acb <unit>
             do
                 echo $port $queue $(read_acb_reg $(((port*8+queue)*4+8))) $(read_acb_reg $(((port*8+queue)*4+0x108))) | awk '{ p=$1; q=$2; c=$3; pif=$4;
                     printf "p%dq%d %08x@%03x|%s %4x  %s   %s %3x   %s   %3x  |%03x@%03x%s", p, q, 
-                        c, 8+p*0x20+q*4, rshift(c,31)? "E":"_", and(rshift(c,25),0x3f), and(rshift(c,24),1)?"E":"_", and(rshift(c,23),1)?"E":"_", and(rshift(c,12),0x3ff), and(rshift(c,1),1)?"E":"_", and(c,0x3f),
+                        c, 8+p*0x20+q*4, rshift(c,31)? "E":"_", and(rshift(c,25),0x3f), and(rshift(c,24),1)?"E":"_", and(rshift(c,23),1)?"E":"_", and(rshift(c,12),0x3ff), and(rshift(c,1),1)?"E":"_", and(c,0x7ff),
                         pif, 0x108+p*0x20+q*4,
                         (q%2)?"\n":"   ";
                     }'

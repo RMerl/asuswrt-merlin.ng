@@ -37,8 +37,8 @@ p{
 }
 
 </style>
-<script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <script type="text/javascript" src="/help.js"></script>
@@ -206,7 +206,19 @@ function drawClientList(tab){
 		else {
 			clientHtmlTd += '</td></tr><tr><td style="height:20px;">';
 		}
-		clientHtmlTd += (clientObj.isWebServer) ? '<a class="link" href="http://' + clientObj.ip + '" target="_blank">' + clientObj.ip + '</a>' : clientObj.ip;
+
+        const truncateString = (str, maxLength) => {
+          if (str.length <= maxLength + 3) {
+            return str;
+          } else {
+            return str.substring(0, maxLength) + '...';
+          }
+        }
+
+        const clientIpCode = (clientObj.ip != "0.0.0.0") ? `<div title="${clientObj.ip}">${clientObj.ip}</div>` : `<div title="${clientObj.ip6}">${truncateString(clientObj.ip6,17)}</div>`;
+        const clientIpLinkCode = (clientObj.ip != "0.0.0.0") ? `${clientObj.ip}` : `[${clientObj.ip6}]`;
+
+		clientHtmlTd += (clientObj.isWebServer) ? `<a class="link" href="http://${clientIpLinkCode}" target="_blank">${clientIpCode}}</a>` : `${clientIpCode}`;
 
 		clientHtmlTd += '</td><td>';
 		var rssi_t = 0;
@@ -243,7 +255,7 @@ function drawClientList(tab){
 		if(parent.sw_mode != 4) {
 			clientHtmlTd += '<div style="height:28px;width:28px;float:right;margin-right:5px;margin-bottom:-20px;">';
 			var radioIcon_css = "radioIcon";
-			if((clientObj.isGN != "" && clientObj.isGN != undefined) || (isSupport("mtlancfg") && clientObj.sdn_idx > 0))
+			if(clientObj.isGN != "" && clientObj.isGN != undefined)
 				radioIcon_css += " GN";
 			clientHtmlTd += '<div class="' + radioIcon_css + ' radio_' + rssi_t +'" title="' + connectModeTip + '"></div>';
 			if(clientObj.isWL != 0 || (isSupport("mtlancfg") && clientObj.sdn_idx > 0)) {

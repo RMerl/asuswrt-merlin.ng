@@ -218,8 +218,6 @@ struct spu_aead_parms {
 static __always_inline  bool spu_req_incl_icv(enum spu_cipher_mode cipher_mode,
 					      bool is_encrypt)
 {
-	if ((cipher_mode == CIPHER_MODE_GCM) && !is_encrypt)
-		return true;
 	if ((cipher_mode == CIPHER_MODE_CCM) && !is_encrypt)
 		return true;
 

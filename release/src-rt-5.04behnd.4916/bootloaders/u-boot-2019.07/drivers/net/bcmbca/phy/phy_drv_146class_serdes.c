@@ -19,8 +19,10 @@
 #include "serdes_access.h"
 #define BP_INTF_TYPE_SGMII          5       
 
-#if defined(CONFIG_BCM96765)
+#if defined(CONFIG_BCM96765) || defined(CONFIG_BCM96766)
 #define ETH_SERDES_0_MISC_BASE          0x80482000
+#elif defined(CONFIG_BCM96764)
+#define ETH_SERDES_0_MISC_BASE          0x80282000
 #else
 #define ETH_SERDES_0_MISC_BASE          0x837ff500
 #endif
@@ -52,11 +54,17 @@ static phy_serdes_t serdes_146class[MAX_146CORES][MAX_146USXGMII_PORTS] =
     {{
         .phy_type = PHY_TYPE_146CLASS_SERDES,
 #if defined(CONFIG_BCM963146)
-        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL,
+        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
         .inter_phy_types = INTER_PHY_TYPES_AUS1KR2KXR_M,
 #elif defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM96765)
-        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_10000|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL,
+        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_10000|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
         .inter_phy_types = INTER_PHY_TYPES_AUS1KR2KXR5KXR10R_M,
+#elif defined(CONFIG_BCM96766)
+        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_10000|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
+        .inter_phy_types = INTER_PHY_TYPES_AQUS1KR2KXR5KXR10R_M,
+#elif defined(CONFIG_BCM96764)
+        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
+        .inter_phy_types = INTER_PHY_TYPES_AQUS1KR2KXR5KXR_M,
 #endif
         .link_stats = dsl_merlin16_serdes_link_stats,
         .config_speed = PHY_SPEED_AUTO,
@@ -73,17 +81,23 @@ static phy_serdes_t serdes_146class[MAX_146CORES][MAX_146USXGMII_PORTS] =
 #if defined(CONFIG_BCM963146)
 #define CONFIG_BCM963146_TESTING
 #if defined(CONFIG_BCM963146_TESTING)
-        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL,
+        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
         .inter_phy_types = INTER_PHY_TYPES_AMUS1KR2KXR5KXR_M,
 #else
-        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL,
+        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
         .inter_phy_types = INTER_PHY_TYPES_AUS1KR2KXR_M,
 #endif
 #elif defined(CONFIG_BCM94912)
-        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_10000|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL,
+        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_10000|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
         .inter_phy_types = INTER_PHY_TYPES_AUS1KR2KXR5KXR10R_M,
+#elif defined(CONFIG_BCM96766)
+        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_10000|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
+        .inter_phy_types = INTER_PHY_TYPES_AQUS1KR2KXR5KXR10R_M,
+#elif defined(CONFIG_BCM96764)
+        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
+        .inter_phy_types = INTER_PHY_TYPES_AQUS1KR2KXR_M,
 #elif defined(CONFIG_BCM96813)
-        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_10000|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL,
+        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_10000|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
         .inter_phy_types = INTER_PHY_TYPES_AMUS1KR2KXR5KXR10R_M,
 #endif
         .link_stats = dsl_merlin16_serdes_link_stats,
@@ -98,7 +112,7 @@ static phy_serdes_t serdes_146class[MAX_146CORES][MAX_146USXGMII_PORTS] =
     }},
     {{
         .phy_type = PHY_TYPE_146CLASS_SERDES,
-        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_10000|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL,
+        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_10000|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
         .inter_phy_types = INTER_PHY_TYPES_AMUS1KR2KXR5KXR10R_M,
         .link_stats = dsl_merlin16_serdes_link_stats,
         .config_speed = PHY_SPEED_AUTO,
@@ -158,6 +172,8 @@ static int phy_drv_serdes_146class_init_lock(phy_dev_t *phy_dev)
     phy_serdes->handle.np = (void *) (phy_dev->priv);
     phy_dev->priv = phy_serdes;
 
+    phy_drv_serdes_adjust_speed(phy_dev, 0);
+
     phy_serdes->phy_dev = phy_dev;
     printk("\n" NtcClr "=== Start of 10G Active Ethernet Initialization for core %d port %d ===" DflClr "\n",
         phy_serdes->core_num, phy_dev->usxgmii_m_index);
@@ -183,7 +199,8 @@ static int phy_drv_serdes_146class_init_lock(phy_dev_t *phy_dev)
 
     phy_dsl_serdes_post_init(phy_dev);
 
-    phy_serdes->inited = 2;
+    if (phy_serdes->inited == 1)
+    	phy_serdes->inited = 2;
     printk(NtcClr "=== End of 10G Active Ethernet Initialization for core %d port %d ===" DflClr "\n",
         phy_serdes->core_num, phy_dev->usxgmii_m_index);
 
@@ -263,10 +280,17 @@ static int _phy_shared_clock_set(phy_dev_t *phy_dev)
 {
     phy_dev_t *phy_next = cascade_phy_get_next(phy_dev);
 
-    if (!phy_next || !phy_next->shared_ref_clk_mhz)
+    if (PhyIsSharedRefClkSet(phy_dev))
         return 0;
 
-    phy_dev->shared_ref_clk_mhz = phy_next->shared_ref_clk_mhz;
+    if (!phy_dev->shared_ref_clk_mhz)
+    {
+        if (phy_next)
+            phy_dev->shared_ref_clk_mhz = phy_next->shared_ref_clk_mhz;
+        else
+            return 0;
+    }
+
 	PhySetSharedRefClk(phy_dev);
     printk("Set Serdes at address %d shared reference clock %dMHz.\n", phy_dev->addr, phy_dev->shared_ref_clk_mhz);
     return merlin16_shortfin_set_shared_clock(phy_dev);
@@ -289,7 +313,7 @@ phy_drv_t phy_drv_serdes_146class =
     .get_phy_name = dsl_serdes_get_phy_name,
     .dev_add = phy_dsl_serdes_dev_add_lock,
     .dt_priv = phy_dsl_serdes_dt_priv,
-    .leds_init = dsl_phy_leds_init,	
+    .leds_init = dsl_phy_leds_init,
     .diag = _phy_diag_lock,
     .c45_read = serdes_access_read,
     .c45_write = serdes_access_write,
@@ -345,18 +369,18 @@ static void merlin_set_msbus_clk_source(phy_dev_t *phy_dev, int power_level)
             power_level1 = 0;
     }
 
-    v32 = *ETH_PHY_TOP_XPORT0_CLK_CNTRL; 
+    v32 = *ETH_PHY_TOP_XPORT0_CLK_CNTRL;
     cur_source = v32 & ETHSW_XPORT0_CLK_CNTRL_MSBUS_CLK_SEL;
 
-    /* We want to set MSBUS clock source to external XGPHY if both are available because 
+    /* We want to set MSBUS clock source to external XGPHY if both are available because
         SFP module needs to scan different speedand will constantly affect peer Serdes */
-    if (power_level0 && power_level1 && 
+    if (power_level0 && power_level1 &&
         ((phy_serdes0->sfp_module_type == SFP_FIXED_PHY && phy_serdes1->sfp_module_type != SFP_FIXED_PHY) ||
         (phy_serdes1->sfp_module_type == SFP_FIXED_PHY && phy_serdes0->sfp_module_type != SFP_FIXED_PHY)) &&
         ((cur_source == 0 && phy_serdes0->sfp_module_type != SFP_FIXED_PHY) ||
         (cur_source == 1 && phy_serdes1->sfp_module_type != SFP_FIXED_PHY)))
         goto flip;
-        
+
     if ((cur_source && power_level1) || (!cur_source && power_level0) || (!power_level0 && !power_level1))
         return;
 
@@ -367,17 +391,17 @@ flip:
     else
         v32 |= ETHSW_XPORT0_CLK_CNTRL_MSBUS_CLK_SEL;
 
-    *ETH_PHY_TOP_XPORT0_CLK_CNTRL = v32; 
+    *ETH_PHY_TOP_XPORT0_CLK_CNTRL = v32;
 #endif
 }
 
 static int _merlin_core_power_op(phy_dev_t *phy_dev, int power_level)
 {
     int ret;
-    /* 
+    /*
         For USXGMII-M mode, we will let cascading PHY do the power down and keep
         Serdes on all the time, because Serdes is the aggregation of four ports of
-        cascaded Copper PHY, while cascaded Copper PHY has separate four ports 
+        cascaded Copper PHY, while cascaded Copper PHY has separate four ports
     */
     if (phy_dev_is_mphy(phy_dev))
     {

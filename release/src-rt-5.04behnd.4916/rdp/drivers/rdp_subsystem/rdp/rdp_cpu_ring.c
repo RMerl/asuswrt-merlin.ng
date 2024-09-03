@@ -1,29 +1,23 @@
 /*
    <:copyright-BRCM:2013:DUAL/GPL:standard
-
-   Copyright (c) 2013 Broadcom 
-   All Rights Reserved
-
-   Unless you and Broadcom execute a separate written software license
-   agreement governing use of this software, this software is licensed
-   to you under the terms of the GNU General Public License version 2
-   (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-   with the following added to such license:
-
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
-
-   Not withstanding the above, under no circumstances may you combine
-   this software in any way with any other Broadcom software provided
-   under a license other than the GPL, without Broadcom's express prior
-   written consent.
-
+   
+      Copyright (c) 2013 Broadcom 
+      All Rights Reserved
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License, version 2, as published by
+   the Free Software Foundation (the "GPL").
+   
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+   
+   
+   A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+   writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.
+   
    :>
  */
 
@@ -97,7 +91,6 @@ int cpu_ring_shell_list_rings(void *shell_priv, int start_from)
         shell_print(shell_priv, "\tCPU %s Ring Queue id= %d\n",ring_type, host_ring[cntr].ring_id );
         shell_print(shell_priv, "\tNumber of entries = %d\n", host_ring[cntr].num_of_entries );
         shell_print(shell_priv, "\tSize of entry = %d bytes\n", host_ring[cntr].size_of_entry );
-        shell_print(shell_priv, "\tAllocated Packet size = %d bytes\n", host_ring[cntr].packet_size );
         shell_print(shell_priv, "\tRing Base address = 0x%px\n", host_ring[cntr].base );
         shell_print(shell_priv, "\tRing Head address = 0x%px\n", host_ring[cntr].head );
         shell_print(shell_priv, "\tRing Head position = %ld\n",
@@ -274,11 +267,10 @@ int	rdp_cpu_ring_create_ring(uint32_t ring_id,
     uint8_t ring_type,
     uint32_t entries,
     bdmf_phys_addr_t* ring_head,
-    uint32_t packetSize,
     RING_CB_FUNC* ringCb,
     uint32_t ring_prio)
 {
-    return rdp_cpu_ring_create_ring_ex(ring_id, ring_type, entries, ring_head, NULL, packetSize, ringCb, ring_prio);
+    return rdp_cpu_ring_create_ring_ex(ring_id, ring_type, entries, ring_head, NULL, ringCb, ring_prio);
 }
 EXPORT_SYMBOL(rdp_cpu_ring_create_ring);
 
@@ -290,7 +282,6 @@ int	rdp_cpu_ring_create_ring_ex(uint32_t ring_id,
     uint32_t entries,
     bdmf_phys_addr_t* ring_head,
     bdmf_phys_addr_t* rw_idx_addr,
-    uint32_t packetSize,
     RING_CB_FUNC* ringCb,
     uint32_t ring_prio)
 {
@@ -329,7 +320,6 @@ int	rdp_cpu_ring_create_ring_ex(uint32_t ring_id,
         ring_id, entries, pDescriptor, pDescriptor->size_of_entry);
 
     pDescriptor->buff_cache_cnt = 0;
-    pDescriptor->packet_size = packetSize;
     pDescriptor->type = ring_type;
 
     pDescriptor->databuf_alloc  = rdp_databuf_alloc;
@@ -427,11 +417,6 @@ void rdp_cpu_reason_stat_cb(uint32_t *stat, rdpa_cpu_reason_index_t *rindex)
 }
 EXPORT_SYMBOL(rdp_cpu_reason_stat_cb);
 
-
-int	rdp_cpu_ring_get_queue_size(uint32_t ring_idx)
-{
-    return host_ring[ ring_idx ].num_of_entries;
-}
 
 /*this function if for debug purposes and should not be called during runtime*/
 /*TODO:Add mutex to protect when reading while packets read from another context*/
@@ -574,50 +559,6 @@ void rdp_databuf_free(void *pBuf, uint32_t context, RING_DESCTIPTOR *pDescriptor
     bdmf_sysb_databuf_free(pBuf, context);
 }
 EXPORT_SYMBOL(rdp_databuf_free);
-
-/* Kmem_Cache */
-
-void* rdp_databuf_alloc_cache(RING_DESCTIPTOR *pDescriptor)
-{
-    if (likely(pDescriptor->buff_cache_cnt))
-    {
-        return (void *)(pDescriptor->buff_cache[--pDescriptor->buff_cache_cnt]);
-    }
-    else
-    {
-        uint32_t alloc_cnt = 0;
-        int i;
-
-        /* refill the local cache from global pool */
-        for (i=0; i<MAX_BUFS_IN_CACHE; i++, alloc_cnt++)
-        {
-            uint8_t *datap;
-
-            /* allocate from kernel directly */
-            datap = kmem_cache_alloc((struct kmem_cache*)(pDescriptor->buff_mem_context), GFP_ATOMIC);
-
-            /* do a cache invalidate of the buffer */
-            bdmf_dcache_inv((unsigned long)datap, pDescriptor->packet_size );
-
-            pDescriptor->buff_cache[i] = datap;
-        }
-
-        if (alloc_cnt)
-        {
-            pDescriptor->buff_cache_cnt = alloc_cnt;
-            return (void *)(pDescriptor->buff_cache[--pDescriptor->buff_cache_cnt]);
-        }
-    }
-    return NULL;
-}
-EXPORT_SYMBOL(rdp_databuf_alloc_cache);
-
-
-void rdp_databuf_free_cache(void *pBuf, uint32_t context, RING_DESCTIPTOR *pDescriptor)
-{
-    kmem_cache_free((struct kmem_cache*)(pDescriptor->buff_mem_context), pBuf);
-}
-EXPORT_SYMBOL(rdp_databuf_free_cache);
 
 void rdp_cpu_ring_read_idx_ddr_sync(uint32_t ring_id)
 {

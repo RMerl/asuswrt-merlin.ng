@@ -28,7 +28,12 @@ read_chip() { #read_chip <unit>
         0x631460) chip=63146 ;;
         0x067560|0x067570) 
                   chip=6756;;
-        0x067650|0x477220) chip=6765;;
+        0x067650|0x477220|0x067651|0x477221) 
+                  chip=6765;;
+        0x067660) 
+                  chip=6766;;
+        0x067640|0x067645) 
+                  chip=6764;;
         *) echo unknown $ochip@fffe8000 $chip@ff800000; return;;
         esac
     esac
@@ -49,6 +54,16 @@ read_chip() { #read_chip <unit>
             if [ $# -ne 0 ]  && [ $1 == 1 ] 
             then                sf2_unit=1; sf2_ports='0 1 2 3   5     8';
             else                sf2_unit=0; sf2_ports='0         5     8'; sf2_reg_base=0x80474000; sf2_ovr_page=0xe4; sf2_acb=3; ext_spd=1; qos_shift=4;
+            fi ;;
+     6766) 
+            if [ $# -ne 0 ]  && [ $1 == 1 ] 
+            then                sf2_unit=1; sf2_ports='0 1 2 3   5     8';
+            else                sf2_unit=0; sf2_ports='0         5 6   8'; sf2_reg_base=0x80474000; sf2_ovr_page=0xe4; sf2_acb=3; ext_spd=1; qos_shift=4;
+            fi ;;
+     6764) 
+            if [ $# -ne 0 ]  && [ $1 == 1 ] 
+            then                sf2_unit=1; sf2_ports='0 1 2 3   5     8';
+            else                sf2_unit=0; sf2_ports='0         5 6   8'; sf2_reg_base=0x80274000; sf2_ovr_page=0xe4; sf2_acb=3; ext_spd=1; qos_shift=4;
             fi ;;
     esac
     
@@ -85,7 +100,7 @@ print_page_hdr() { # print_page_hdr <page> <desc>
     if [ $sf2_reg_base == 0x800c0000 ]
     then
         echo $1 $2 | awk '{p=$1; printf "----PAGE_%s(0x%x)=0x8%07x+(offset)<<2\n", $2, p, p*0x400+0x80000;}'  
-    elif [ $sf2_reg_base == 0x80480000 ]
+    elif [ $sf2_reg_base == 0x80480000 ] || [ $sf2_reg_base == 0x80474000 ]
     then 
         echo $1 $2 | awk '{p=$1; printf "----PAGE_%s(0x%x)=0x8%07x+(offset)<<3\n", $2, p, p*0x800+0x400000;}'  
     else 

@@ -6,25 +6,19 @@
  *    Copyright (c) 2019 Broadcom 
  *    All Rights Reserved
  * 
- * Unless you and Broadcom execute a separate written software license
- * agreement governing use of this software, this software is licensed
- * to you under the terms of the GNU General Public License version 2
- * (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
- * with the following added to such license:
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License, version 2, as published by
+ * the Free Software Foundation (the "GPL").
  * 
- *    As a special exception, the copyright holders of this software give
- *    you permission to link this software with independent modules, and
- *    to copy and distribute the resulting executable under terms of your
- *    choice, provided that you also meet, for each linked independent
- *    module, the terms and conditions of the license of that module.
- *    An independent module is a module which is not derived from this
- *    software.  The special exception does not apply to any modifications
- *    of the software.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  * 
- * Not withstanding the above, under no circumstances may you combine
- * this software in any way with any other Broadcom software provided
- * under a license other than the GPL, without Broadcom's express prior
- * written consent.
+ * 
+ * A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+ * writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
  * 
  * :>
  */
@@ -38,6 +32,7 @@
 #define DPI_RESET_APP_BIT	1
 #define DPI_RESET_DEV_BIT	2
 #define DPI_RESET_URL_BIT	3
+#define DPI_RESET_IP_BIT	4
 
 #define DPI_DEV_MSCS_BIT	0
 
@@ -88,6 +83,7 @@ enum {
 	DQA_AI_EG_PRIO,
 	DQA_AI_US_TID,
 	DQA_AI_DS_TID,
+	DQA_AI_PAD,
 	__DQA_AI_MAX
 };
 #define DQA_AI_MAX	(__DQA_AI_MAX - 1)
@@ -133,19 +129,19 @@ enum {
 #define EG_PRIO_MAX		(__EG_PRIO_MAX - 1)
 
 /* --- common functions --- */
-static inline __u32 dpi_make_app_id(__u8 cat_id, __u16 app_id, __u8 beh_id)
+static inline __u64 dpi_make_app_id(__u8 cat_id, __u16 app_id, __u8 beh_id)
 {
 	return ((cat_id << 24) | (app_id << 8) | beh_id);
 }
-static inline __u8 dpi_get_cat_id(__u32 app_id)
+static inline __u8 dpi_get_cat_id(__u64 app_id)
 {
 	return (__u8)(app_id >> 24);
 }
-static inline __u16 dpi_get_app_id(__u32 app_id)
+static inline __u16 dpi_get_app_id(__u64 app_id)
 {
 	return (__u16)((app_id >> 8) & 0xFFFF);
 }
-static inline __u8 dpi_get_beh_id(__u32 app_id)
+static inline __u8 dpi_get_beh_id(__u64 app_id)
 {
 	return (__u8)(app_id & 0xFF);
 }

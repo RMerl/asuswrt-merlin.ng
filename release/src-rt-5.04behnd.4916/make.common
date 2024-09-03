@@ -187,10 +187,14 @@ endif
 
 # Define variables for Alternate toolchain if configured
 ifeq ($(strip $(BRCM_USE_ALT_TOOLCHAIN)),y)
-  ifneq ($(strip $(BRCM_ALT_TOOLCHAIN_BASE)),"")
-    ALT_TOOLCHAIN_BASE  := $(subst $\",,$(strip $(BRCM_ALT_TOOLCHAIN_BASE)))
-  else
+  ifndef BRCM_ALT_TOOLCHAIN_BASE
     ALT_TOOLCHAIN_BASE = $(TOOLCHAIN_BASE)
+  else
+    ifneq ($(strip $(BRCM_ALT_TOOLCHAIN_BASE)),"")
+      ALT_TOOLCHAIN_BASE  := $(subst $\",,$(strip $(BRCM_ALT_TOOLCHAIN_BASE)))
+    else
+      ALT_TOOLCHAIN_BASE = $(TOOLCHAIN_BASE)
+    endif
   endif
 
   ALT_ARM_TOOLCHAIN_TOPDIR := $(subst $\",,$(strip $(BRCM_ALT_ARM_TOOLCHAIN_TOPDIR)))
@@ -316,12 +320,21 @@ endif
 # for AARCH64, Linux 4.19
 ifeq ($(strip $(RDK_BUILD)),y)
   #RDK build, using BRCM toolchain for kernel space in specified location
-  DEFAULT_TOOLCHAIN_LINUX_4_19_0_AARCH64        := $(BRCM_TOOLCHAIN_BASE)/crosstools-aarch64-gcc-10.3-linux-4.19-glibc-2.32-binutils-2.36.1
-  DEFAULT_TOOLCHAIN_VER_LINUX_4_19_0_AARCH64    := 10.3.0
-  TOOLCHAIN_PREFIX_LINUX_4_19_0_AARCH64         := aarch64-buildroot-linux-gnu
-  TOOLCHAIN_LIBDIR_LINUX_4_19_0_AARCH64         := $(TOOLCHAIN_PREFIX_LINUX_4_19_0_AARCH64)/sysroot/lib
-  TOOLCHAIN_INCDIR_LINUX_4_19_0_AARCH64         := $(TOOLCHAIN_PREFIX_LINUX_4_19_0_AARCH64)/sysroot/usr/include
+  #In RDK 64bit
+  #AARCH64 - RDK toolchain for userspace
+  #AARCH64_2 - BRCM toolchain for kernel
 
+  DEFAULT_TOOLCHAIN_LINUX_4_19_0_AARCH64        := $(ALT_AARCH64_TOOLCHAIN_TOP)
+  DEFAULT_TOOLCHAIN_VER_LINUX_4_19_0_AARCH64    := 10.3.0
+  TOOLCHAIN_PREFIX_LINUX_4_19_0_AARCH64         := $(ALT_AARCH64_TOOLCHAIN_PREFIX)
+  TOOLCHAIN_LIBDIR_LINUX_4_19_0_AARCH64         := usr/lib
+  TOOLCHAIN_INCDIR_LINUX_4_19_0_AARCH64         := usr/include
+
+  DEFAULT_TOOLCHAIN_LINUX_4_19_0_AARCH64_2       := $(BRCM_TOOLCHAIN_BASE)/crosstools-aarch64-gcc-10.3-linux-4.19-glibc-2.32-binutils-2.36.1
+  DEFAULT_TOOLCHAIN_VER_LINUX_4_19_0_AARCH64_2    := 10.3.0
+  TOOLCHAIN_PREFIX_LINUX_4_19_0_AARCH64_2         := aarch64-buildroot-linux-gnu
+  TOOLCHAIN_LIBDIR_LINUX_4_19_0_AARCH64_2         := $(TOOLCHAIN_PREFIX_LINUX_4_19_0_AARCH64)/sysroot/lib
+  TOOLCHAIN_INCDIR_LINUX_4_19_0_AARCH64_2         := $(TOOLCHAIN_PREFIX_LINUX_4_19_0_AARCH64)/sysroot/usr/include
 else
 
   DEFAULT_TOOLCHAIN_LINUX_4_19_0_AARCH64        := $(TOOLCHAIN_BASE)/crosstools-aarch64-gcc-10.3-linux-4.19-glibc-2.32-binutils-2.36.1
@@ -334,7 +347,7 @@ endif
 
 LINUX_ZIP_FILE_LINUX_4_19_0         := src-linux-4.19.tar.gz
 LINUX_SUB_DIR_LINUX_4_19_0          := linux-4.19
-LINUX_VER_STR_LINUX_4_19_0          := 4.19.275
+LINUX_VER_STR_LINUX_4_19_0          := 4.19.294
 
 
 # for ARM, Linux 5.15
@@ -505,7 +518,11 @@ ifeq ($(strip $(PROFILE_KARCH)),arm)
 endif
 
 ifeq ($(strip $(PROFILE_KARCH)),aarch64)
-  KARCHCAP := AARCH64
+  ifeq ($(strip $(RDK_BUILD)),)
+	KARCHCAP := AARCH64
+  else
+	KARCHCAP := AARCH64_2
+  endif
   # Linux Kernel names 64-bit as arm64 instead of aarch64
   KARCH := arm64
   KERNEL_ARCH := aarch64
@@ -699,7 +716,6 @@ export BRCM_VOICE_BOARD_ID BRCM_MAIN_TP_NUM
 export BUILD_HND_MFG BUILD_HND_NIC BUILD_HND_EAP BUILD_BRCM_CPEROUTER BUILD_BRCM_AIRIQ BUILD_HND_EAP_AP1 BUILD_BRCM_HOSTAPD
 export BUILD_BRCM_CMS BUILD_BRCM_BDK
 export BRCM_INCREMENTAL_IMAGE_LOAD
-export BUILD_BCM_WLMLO
 export SECURE_BOOT_ARCH SECURE_BOOT_KEY_DIR SECURE_BOOT_TURNKEY SECURE_BOOT_TK_ABORT_TIMEOUT SECURE_BOOT_TK_REQ_FLD SECURE_BOOT_TK_MODE_REQ SECURE_BOOT_TK_MID SECURE_BOOT_TK_KS_OFFS SECURE_BOOT_TK_OID BUILD_SBI_NOHDR BUILD_SBI_SIGN BUILD_SBI_NOHDR_MFG AVS_IMAGE_MAX_SIZE AVS_IMAGE_PATH
 export BUILD_RDPA
 
@@ -794,11 +810,7 @@ ifeq ($(strip $(BRCM_CHIP)),63146)
 endif
 
 ifeq ($(strip $(BRCM_CHIP)),4912)
-    ifneq ($(strip $(BRCM_DRIVER_FPI)),)
-        RDP_PROJECT=BCM4912_FPI
-    else
-        RDP_PROJECT=BCM4912
-    endif
+    RDP_PROJECT=BCM4912
 endif
 
 ifeq ($(strip $(BRCM_CHIP)),6856)
@@ -1284,7 +1296,11 @@ endif
 ##################################################################
 
 # Common utility libs
-BCM_COMMON_LIBS := -lbcm_flashutil -lbcm_boardctl -lbcm_util -lsys_util -lgen_util -lcrypt
+BCM_COMMON_LIBS := -lbcm_util -lsys_util -lgen_util -lcrypt
+
+# libs for flash and device ioctl operations.  Many apps do not want the
+# complication of compiling and linking with these.
+BCM_FLASH_LIBS := -lbcm_flashutil -lbcm_boardctl
 
 
 ifeq ($(strip $(DESKTOP_LINUX)),y)
@@ -1372,7 +1388,7 @@ ifneq ($(strip $(BUILD_BRCM_CMS))$(strip $(BUILD_BRCM_BDK)),)
 # mdm_db uses dlopen, so in theory, -ldl should go after mdm_db.  However, the
 # linaro toolchain seems to require -ld *before* mdm_db, so add -ldl in both
 # places to make everyone happy.
-CMS_CORE_LIBS := -lcms_core -lcms_msg -ldl -lmdm_db -ldl -lcms_qdm -lnanoxml -ljson-c
+CMS_CORE_LIBS := -lcms_core -lcms_msg -ldl -lmdm_db -ldl $(BCM_FLASH_LIBS) -lcms_qdm -lnanoxml -ljson-c
 
 # libcms_core needs libjson-c
 BUILD_LIBJSONC=y
@@ -2489,6 +2505,15 @@ ifneq ($(strip $(BUILD_OPS_BAS)),)
 CMS_DMP_FLAGS += -DSUPPORT_OPS_BAS
 endif
 
+ifneq ($(strip $(BUILD_BREAKPAD)),)
+BUILD_ZLIB=y
+endif
+
+ifneq ($(strip $(BUILD_MINICOREDUMPER)),)
+BUILD_ZLIB=y
+BUILD_ELFUTILS=y
+endif
+
 ifneq ($(strip $(BUILD_USP)),)
 CMS_DMP_FLAGS += -DDMP_X_BROADCOM_COM_USP_1 -DDMP_DEVICE2_STOMPCONN_1 -DDMP_DEVICE2_STOMPHEARTBEAT_1
 CMS_DMP_FLAGS += -DDMP_DEVICE2_LOCALAGENT_1 -DDMP_DEVICE2_STOMPAGENT_1
@@ -2546,6 +2571,10 @@ endif
 
 ifneq ($(filter y,$(BUILD_EPONWAN) $(BUILD_GPON)),)
 CMS_DMP_FLAGS += -DDMP_X_BROADCOM_COM_XPON_1
+
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_6856_6846_6878_6855_6837_68880_),)
+CMS_DMP_FLAGS += -DDMP_X_BROADCOM_COM_RPSRFS_1
+endif
 endif
 
 
@@ -2642,6 +2671,11 @@ ifneq ($(strip $(BUILD_HASHED_PASSWORDS)),)
 CMS_DMP_FLAGS += -DSUPPORT_HASHED_PASSWORDS
 endif
 
+ifneq ($(strip $(BUILD_NETAPP_RESTRICT)),)
+CMS_DMP_FLAGS += -DSUPPORT_NETAPP_RESTRICT
+export BUILD_NETAPP_RESTRICT
+endif
+
 ifneq ($(strip $(BUILD_DDNSD)),)
 CMS_DMP_FLAGS += -DSUPPORT_DDNSD -DDMP_X_BROADCOM_COM_DYNAMICDNS_1
 endif
@@ -2669,10 +2703,6 @@ ifneq ($(strip $(BUILD_DNSMASQWITHDOT)),)
 CMS_DMP_FLAGS += -DSUPPORT_DNSMASQWITHDOT
 endif
 
-ifneq ($(strip $(BUILD_SUPERDMZ)),)
-CMS_DMP_FLAGS += -DSUPPORT_ADVANCED_DMZ
-endif
-
 ifneq ($(strip $(BUILD_IPPD)),)
 CMS_DMP_FLAGS += -DSUPPORT_IPP -DDMP_X_BROADCOM_COM_IPPRINTING_1
 endif
@@ -2697,6 +2727,7 @@ CMS_DMP_FLAGS += -DSUPPORT_BLOGCTL
 endif
 
 ifneq ($(strip $(BUILD_FCCTL)),)
+CMS_CORE_LIBS += -lfcctl
 CMS_DMP_FLAGS += -DSUPPORT_FCCTL
 export BUILD_FCCTL
 endif
@@ -3444,6 +3475,9 @@ endif
 
 ifneq ($(strip $(BUILD_BRCM_BDK)),)
 CMS_COMPILE_FLAGS += -DBRCM_BDK_BUILD
+ifneq ($(strip $(BUILD_BDK_SYSTEM_MANAGEMENT)),)
+CMS_COMPILE_FLAGS += -DSUPPORT_BDK_SYSTEM_MANAGEMENT
+endif
 endif
 
 

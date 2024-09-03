@@ -4,25 +4,19 @@
  *    Copyright (c) 2017 Broadcom 
  *    All Rights Reserved
  * 
- * Unless you and Broadcom execute a separate written software license
- * agreement governing use of this software, this software is licensed
- * to you under the terms of the GNU General Public License version 2
- * (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
- * with the following added to such license:
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License, version 2, as published by
+ * the Free Software Foundation (the "GPL").
  * 
- *    As a special exception, the copyright holders of this software give
- *    you permission to link this software with independent modules, and
- *    to copy and distribute the resulting executable under terms of your
- *    choice, provided that you also meet, for each linked independent
- *    module, the terms and conditions of the license of that module.
- *    An independent module is a module which is not derived from this
- *    software.  The special exception does not apply to any modifications
- *    of the software.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  * 
- * Not withstanding the above, under no circumstances may you combine
- * this software in any way with any other Broadcom software provided
- * under a license other than the GPL, without Broadcom's express prior
- * written consent.
+ * 
+ * A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+ * writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
  * 
  * :>
  */
@@ -51,6 +45,8 @@
 #ifdef CONFIG_BCM_UBUS_DECODE_REMAP
 #define DECODE_WIN0 0
 #define DECODE_WIN1 1
+#define DECODE_WIN2 2
+#define DECODE_WIN3 3
 #define CACHE_BIT_OFF 0
 #define CACHE_BIT_ON 1
 /* SOC phys address of 2GB starting from 4G because of the IO reg space */
@@ -71,8 +67,6 @@
 #define BP_DDR_SPEED_IS_800(spd)        ((spd) == BP_DDR_SPEED_800_10_10_10 ||\
 					(spd) == BP_DDR_SPEED_800_11_11_11)
 
-
-extern unsigned long getMemorySize(void);
 #define MST_START_DDR_ADDR              0
 
 #include <linux/module.h>
@@ -131,7 +125,7 @@ void ubus_cong_threshold_wr(int port_id, unsigned int val)
 }
 
 // XXX  Dima To check
-int log2_32 (unsigned long value)
+int log2_32 (unsigned long long value)
 {
     unsigned int result = 0;
     if( value < 1)
@@ -168,6 +162,9 @@ EXPORT_SYMBOL(ubus_master_decode_cfg_set_ctrl);
 
 #if defined(CONFIG_BCM_UBUS_DECODE_REMAP)
 #define MAX_PCIE_CORES  4
+#ifndef UBUS_PORT_ID_VPB
+#define UBUS_PORT_ID_VPB    UBUS_PORT_ID_RQ0 //RQ_0 VPB REG
+#endif
 unsigned int ubus_pcie_core_vs_portid[MAX_PCIE_CORES] = {
 #if defined(UBUS_PORT_ID_PCIE0)
     UBUS_PORT_ID_PCIE0,
@@ -176,7 +173,7 @@ unsigned int ubus_pcie_core_vs_portid[MAX_PCIE_CORES] = {
 #endif
 #if defined(UBUS_PORT_ID_PCIE1)
     UBUS_PORT_ID_PCIE1,
-#elif IS_BCMCHIP(63158)
+#elif IS_BCMCHIP(63158) || IS_BCMCHIP(6856) || IS_BCMCHIP(6858)
     UBUS_PORT_ID_PCIE0,
 #else
     0,
@@ -222,6 +219,36 @@ int ubus_master_decode_pcie_wnd_cfg(int core, int win, phys_addr_t base_addr, ph
         return -1;
     }
 
+    if (master_port_id == port_id) {
+        /* Can not support decode window for bifurcated single lane ports */
+        printk("\x1b[35m Can not support UBUS decode widow for Bifurcated Single lane ports\x1b[0m\n");
+        return -1;
+    }
+
+#if IS_BCMCHIP(6856)
+    /*
+     * For 6856 WIN0 is already in use for DDR. shift 0,1,2 => 1,2,3 as
+     * 6856 has only 3 PCIe cores and caller never uses DECODE_WIN3
+     */
+    win += 1;
+
+    /* Enable Credits for the specified port */
+    ubus_master_set_token_credits(master_port_id, port_id, 1);
+#endif
+
+#if IS_BCMCHIP(6858)
+    /*
+     * For 6858 WIN0/1 is already in use for DDR. map 0,2 => 3,2 as
+     * 6858 has only 2 PCIe cores and caller never uses DECODE_WIN3/DECODE_WIN1
+     */
+    if (win == DECODE_WIN0) {
+        win = DECODE_WIN3;
+    }
+
+    /* Enable Credits for the specified port */
+    ubus_master_set_token_credits(master_port_id, port_id, 1);
+#endif
+
     /* Convert size to the power of 2 */
     size >>= 1;
     while (size) {
@@ -237,6 +264,10 @@ int ubus_master_decode_pcie_wnd_cfg(int core, int win, phys_addr_t base_addr, ph
 
     master_addr = bcm_get_ubus_mst_addr(master_port_id);
     if((master_addr) && (size_power_of_2)) {
+
+        UBUS_REMAP_DEBUG_LOG("\x1b[35m port[%d] win[%d] phys_addr[0x%x] power_of_2[%d] port_id[%d] cache_bit[%d]\x1b[0m\n", 
+            master_port_id, win, (u32)base_addr, size_power_of_2, port_id,
+            attributes ? 1 : 0);
 
         attributes |= port_id;
         attributes |= (size_power_of_2 << DECODE_CFG_SIZE_SHIFT);
@@ -290,7 +321,7 @@ static int ubus_master_decode_wnd_cfg(int master_port_id, int win, phys_addr_t p
     if(master_addr)
     {
 #if IS_BCMCHIP(63158) || IS_BCMCHIP(63178) || IS_BCMCHIP(47622) || IS_BCMCHIP(63146) || \
-    IS_BCMCHIP(6756) || IS_BCMCHIP(6765) || IS_BCMCHIP(6766)  || IS_BCMCHIP(6855) || IS_BCMCHIP(6888) || \
+    IS_BCMCHIP(6756) || IS_BCMCHIP(6765) || IS_BCMCHIP(6766) || IS_BCMCHIP(6764) || IS_BCMCHIP(6855) || IS_BCMCHIP(6888) || \
     IS_BCMCHIP(6813) || IS_BCMCHIP(68880) || IS_BCMCHIP(6837)
         /* 63158 has the all the master connected to the CCI as default so no need to
            configure the map. Just turn on the cache configuration */
@@ -298,7 +329,7 @@ static int ubus_master_decode_wnd_cfg(int master_port_id, int win, phys_addr_t p
         {
             master_addr->decode_cfg.cache_cfg = 0x1;
             master_addr->decode_cfg.ctrl &= ~DECODE_CFG_CTRL_CACHE_SEL_MASK;
-            master_addr->decode_cfg.ctrl |= DECODE_CFG_CTRL_CACHE_SEL_CFG_REG;  
+            master_addr->decode_cfg.ctrl |= DECODE_CFG_CTRL_CACHE_SEL_CFG_REG;
         }
         else
         {
@@ -328,7 +359,7 @@ static int ubus_master_decode_wnd_cfg(int master_port_id, int win, phys_addr_t p
 
             phys_addr = SOC_PHYADDR_4GB;
             win = 0;
-            size_remain  = getMemorySize() - SZ_4G;
+            size_remain  = kerSysGetMemorySize() - SZ_4G;
 
             while( (int64_t)size_remain > 0 && win < 4 )
             {
@@ -419,7 +450,7 @@ int ubus_remap_to_biu_cfg_wlu_srcpid(int srcpid, int enable)
 }
 #endif
 
-#if !IS_BCMCHIP(63158) && !IS_BCMCHIP(63178) && !IS_BCMCHIP(47622) && !IS_BCMCHIP(63146) && !IS_BCMCHIP(6756) && !IS_BCMCHIP(6765) && !IS_BCMCHIP(6766)
+#if !IS_BCMCHIP(63158) && !IS_BCMCHIP(63178) && !IS_BCMCHIP(47622) && !IS_BCMCHIP(63146) && !IS_BCMCHIP(6756) && !IS_BCMCHIP(6765) && !IS_BCMCHIP(6766) && !IS_BCMCHIP(6764)
 #if !IS_BCMCHIP(4912) && !IS_BCMCHIP(6813) && !IS_BCMCHIP(68880) && !IS_BCMCHIP(6837)
 static int ubus_remap_to_biu_cfg_queue_srcpid(unsigned long lut_idx, unsigned int *p_srcpid_queus_value)
 {
@@ -474,7 +505,7 @@ static int ubus_remap_to_biu_cfg_queue_thresh(unsigned long q_thresh_idx, unsign
                                            ((p_thresh_queus_value [1] & 0xffff) << THRESH_TO_QUEUE_1_BITS_SHIFT));
                     
     UBUS_REMAP_DEBUG_LOG("\x1b[35m reg_addr[0x%p] reg_value[0x%x]\x1b[0m\n",
-                         (unsigned int*)&(CohPortCfg->cbs_thresh[q_thresh_idx]), CohPortCfg->cbs_thresh[q_thresh_idx]); 
+                         (unsigned int*)&(cpcfg_reg->cbs_thresh[q_thresh_idx]), cpcfg_reg->cbs_thresh[q_thresh_idx]); 
 
     return 0;                        
 }
@@ -492,7 +523,7 @@ static int ubus_remap_to_biu_cfg_cir_incr(unsigned long q_cirinc_idx, unsigned i
                                          ((p_cirinc_queus_value [3] & 0xff) << CIR_INCR_TO_QUEUE_3_BITS_SHIFT));
 
     UBUS_REMAP_DEBUG_LOG("\x1b[35m reg_addr[0x%p] reg_value[0x%x]\x1b[0m\n",
-                         (unsigned int*)&(CohPortCfg->cir_incr[q_cirinc_idx]), CohPortCfg->cir_incr[q_cirinc_idx]); 
+                         (unsigned int*)&(cpcfg_reg->cir_incr[q_cirinc_idx]), cpcfg_reg->cir_incr[q_cirinc_idx]); 
 
     return 0;                        
 }
@@ -514,7 +545,7 @@ static int ubus_remap_to_biu_cfg_ref_cnt(unsigned long q_ref_cnt_idx, unsigned i
                                          ((p_ref_cnt_value[7] & 0xf) << REF_CNT_7_BITS_SHIFT));
                     
     UBUS_REMAP_DEBUG_LOG("\x1b[35m  reg_addr[0x%p] reg_value[0x%x]\x1b[0m\n",
-                         (unsigned int*)&(CohPortCfg->ref_cnt[q_ref_cnt_idx]), CohPortCfg->ref_cnt[q_ref_cnt_idx]); 
+                         (unsigned int*)&(cpcfg_reg->ref_cnt[q_ref_cnt_idx]), cpcfg_reg->ref_cnt[q_ref_cnt_idx]); 
     
     return 0;                        
 }
@@ -1335,29 +1366,40 @@ static int ubus_decode_show(struct seq_file *m, void *v)
 {
     int i = 0;
 
-    seq_printf(m, "Master Port (addr)   | Base     | Remap    | Size  | PortId | Cache:Enable:CD:Strict\n");
-    seq_printf(m, "------------------------------------------------------------------------------------\n");
+    seq_printf(m, "Master Port (addr)   | Win  | Base     | Remap    | Size  | PortId | Cache:Enable:CD:Strict\n");
+    seq_printf(m, "-------------------------------------------------------------------------------------------\n");
 
     while (ub_mst_addr_map_tbl[i].port_id != -1)
     {
         MstPortNode *master_reg = bcm_get_ubus_mst_addr(ub_mst_addr_map_tbl[i].port_id);
         int win;
 
+        if (!master_reg)
+            continue;
+
+        /* always print the default setting */
+        seq_printf(m, "%-9s (%08x) | %4s | %8s | %8s | %5s |  %3s   | %x:%x:%s:%s\n",
+            ubus_port_id_to_name(ub_mst_addr_map_tbl[i].port_id),
+            (uint32_t)ub_mst_addr_map_tbl[i].phys_base, "-", "-", "-", "-", "-",
+            master_reg->decode_cfg.ctrl,
+            master_reg->decode_cfg.cache_cfg,
+            "-", "-");
+		
         for (win = 0; win < 4; win++)
         {
             char dest_port[16];
             uint32_t *attr = &master_reg->decode_cfg.window[win].attributes;
 
-            if (!GET_FIELD(*attr, DECODE_CFG_ENABLE))
+            if (!GET_FIELD(*attr, DECODE_CFG_ENABLE) || *attr == 0xdeafdeaf)
                 continue;
 
             strncpy(dest_port, 
                 ubus_port_id_to_name(GET_FIELD(*attr, DECODE_CFG_PORT_ID))
                 ? : "-", sizeof(dest_port));
 
-            seq_printf(m, "%-9s (%px) | %08x | %08x | %5s |  %3s   | %x:%x:%x:%x\n", 
+            seq_printf(m, "%-9s (%08x) | %4d | %08x | %08x | %5s |  %3s   | %x:%x:%x:%x\n",
                 ubus_port_id_to_name(ub_mst_addr_map_tbl[i].port_id),
-                master_reg, 
+                (uint32_t)ub_mst_addr_map_tbl[i].phys_base, win,
                 master_reg->decode_cfg.window[win].base_addr, 
                 master_reg->decode_cfg.window[win].remap_addr,
                 size_by_exponent_to_str(GET_FIELD(*attr, DECODE_CFG_SIZE)),
@@ -1466,7 +1508,7 @@ int remap_ubus_masters_biu(void)
     unsigned int i = 0;
 
     /* Calculate board size of power 2 */
-    g_board_size_power_of_2 = log2_32(getMemorySize());
+    g_board_size_power_of_2 = log2_32(kerSysGetMemorySize());
 
 #if defined(CONFIG_BCM_FPM_COHERENCY_EXCLUDE)
     rc = BcmMemReserveGetByName(FPMPOOL_BASE_ADDR_STR, NULL, (phys_addr_t*)&fpm_pool_addr, &fpm_pool_size);
@@ -1479,8 +1521,8 @@ int remap_ubus_masters_biu(void)
     fpm_pool_size = log2_32(fpm_pool_size);
 #endif /* CONFIG_BCM_FPM_COHERENCY_EXCLUDE */
 
-    UBUS_REMAP_DEBUG_LOG("\x1b[35m board_sdram_size[0x%lx] board_size_power_of_2[%d]\x1b[0m\n",
-        getMemorySize(), g_board_size_power_of_2);
+    UBUS_REMAP_DEBUG_LOG("\x1b[35m board_sdram_size[0x%llx] board_size_power_of_2[%d]\x1b[0m\n",
+        kerSysGetMemorySize(), g_board_size_power_of_2);
 
     while(ub_mst_addr_map_tbl[i].port_id != -1)
     {

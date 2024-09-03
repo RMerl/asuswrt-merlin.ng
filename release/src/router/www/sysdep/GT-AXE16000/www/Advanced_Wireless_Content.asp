@@ -420,7 +420,7 @@ function genBWTable(_unit){
 				based_modelid == "RT-AC66U" || 
 				based_modelid == "RT-AC3200" || 
 				based_modelid == "RT-AC3100" || based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900" ||
-				based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "BT12" || based_modelid == "BT10" || based_modelid == "BQ16" || based_modelid == "BQ16_PRO" || based_modelid == "BM68" || based_modelid == "XT8_V2" || based_modelid == "RT-AX56_XD4" || based_modelid == "XD4PRO" || based_modelid == "CT-AX56_XD4" || based_modelid == "RT-AX58U" || based_modelid == "RT-AX58U_V2" || based_modelid == "BR63" || based_modelid == "RT-AX3000N" || based_modelid == "TUF-AX3000" || based_modelid == "TUF-AX3000_V2" || based_modelid == "TUF-AX5400" || based_modelid == "TUF-AX5400_V2" || based_modelid == "DSL-AX82U" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX82U_V2"  || based_modelid == "RT-AX56U" || based_modelid == "GT-AXE11000" || based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" || based_modelid == "GT-AX6000" || based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == 'GT-BE98_PRO' || based_modelid == "RT-AXE7800" || based_modelid == "GT10" || based_modelid == "RT-AX9000" || based_modelid == "RT-AC53U" || based_modelid == "RT-BE96U" || based_modelid == "XC5" || based_modelid == "GT-BE96" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" || based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U") && document.form.wl_nmode_x.value == 1){		//N only
+				based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "BT12" || based_modelid == "BT10" || based_modelid == "BQ16" || based_modelid == "BQ16_PRO" || based_modelid == "BM68" || based_modelid == "XT8_V2" || based_modelid == "RT-AX56_XD4" || based_modelid == "XD4PRO" || based_modelid == "CT-AX56_XD4" || based_modelid == "RT-AX58U" || based_modelid == "RT-AX58U_V2" || based_modelid == "BR63" || based_modelid == "RT-AX3000N" || based_modelid == "TUF-AX3000" || based_modelid == "TUF-AX3000_V2" || based_modelid == "TUF-AX5400" || based_modelid == "TUF-AX5400_V2" || based_modelid == "DSL-AX82U" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX82U_V2"  || based_modelid == "RT-AX56U" || based_modelid == "GT-AXE11000" || based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" || based_modelid == "GT-AX6000" || based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == 'GT-BE98_PRO' || based_modelid == "RT-AXE7800" || based_modelid == "GT10" || based_modelid == "RT-AX9000" || based_modelid == "RT-AC53U" || based_modelid == "RT-BE96U" || based_modelid == "XC5" || based_modelid == "GT-BE96" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" || based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U" || based_modelid == "RT-BE82U" || based_modelid == "RT-BE58U_PRO") && document.form.wl_nmode_x.value == 1){		//N only
 				bws = [0, 1, 2];
 				bwsDesc = ["20/40 MHz", "20 MHz", "40 MHz"];
 				
@@ -711,7 +711,7 @@ function applyRule(){var postObj = new Object();
 		if(_smart_connect_enable == 1 && smart_connect_mode[1] == '1'){		// 5 GHz-2
 			if(dwb_info.mode == '1' && dwb_info.band == '1'){
 				if(document.form.band2_ssid.value == document.form.band01_ssid.value){
-					alert("The fronthaul SSID is the same as the backhaul SSID.");
+					alert(`<#wireless_JS_dup_SSID#>`);
 					return false;
 				}
 
@@ -804,7 +804,7 @@ function applyRule(){var postObj = new Object();
 		if(_smart_connect_enable == 1 && smart_connect_mode[2] == '1'){		// 5 GHz-1
 			if(dwb_info.mode == '1' && dwb_info.band == '0'){
 				if(document.form.band1_ssid.value == document.form.band01_ssid.value){
-					alert("The fronthaul SSID is the same as the backhaul SSID.");
+					alert(`<#wireless_JS_dup_SSID#>`);
 					return false;
 				}
 
@@ -1554,7 +1554,7 @@ function validForm(){
 			ssid_array.push(httpApi.nvramGet(["wl2_ssid"]).wl2_ssid);
 		jsonPara["current_ssid"] = ssid_array;
 		if(!validator.dwb_check_wl_setting(jsonPara)) {
-			alert("The fronthaul SSID is the same as the backhaul SSID.");/* untranslated */
+			alert(`<#wireless_JS_dup_SSID#>`);
 			return false;
 		}
 	}
@@ -2140,7 +2140,13 @@ function he_frame_mode(obj) {
 	}
 }
 
-var band1_enable_bw_160 = '<% nvram_get("wl0_bw_160"); %>';
+var band1_enable_bw_160 = (function(){
+	if(!wl_info['1'].bw_160_support){
+        return '0'
+    }
+
+	return '<% nvram_get("wl0_bw_160"); %>';
+})();
 var band2_enable_bw_160 = '<% nvram_get("wl1_bw_160"); %>';
 var band3_enable_bw_160 = '<% nvram_get("wl2_bw_160"); %>';
 function separateGenBWTable(unit){
@@ -2253,7 +2259,13 @@ function separateGenBWTable(unit){
 }
 function separateEnable_160MHz(obj){
 	if(obj.id == 'band1_160'){
-		band1_enable_bw_160 = obj.checked ? '1' : '0';
+		band1_enable_bw_160 = (function(){
+			if(!wl_info['1'].bw_160_support){
+				return '0'
+			}
+
+			return obj.checked ? '1' : '0';
+		})();
 		separateGenBWTable('1');
 	}
 	else if(obj.id == 'band2_160'){

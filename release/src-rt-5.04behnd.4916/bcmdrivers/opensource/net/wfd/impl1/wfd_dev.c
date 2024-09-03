@@ -4,25 +4,19 @@
       Copyright (c) 2015 Broadcom 
       All Rights Reserved
    
-   Unless you and Broadcom execute a separate written software license
-   agreement governing use of this software, this software is licensed
-   to you under the terms of the GNU General Public License version 2
-   (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-   with the following added to such license:
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License, version 2, as published by
+   the Free Software Foundation (the "GPL").
    
-      As a special exception, the copyright holders of this software give
-      you permission to link this software with independent modules, and
-      to copy and distribute the resulting executable under terms of your
-      choice, provided that you also meet, for each linked independent
-      module, the terms and conditions of the license of that module.
-      An independent module is a module which is not derived from this
-      software.  The special exception does not apply to any modifications
-      of the software.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
    
-   Not withstanding the above, under no circumstances may you combine
-   this software in any way with any other Broadcom software provided
-   under a license other than the GPL, without Broadcom's express prior
-   written consent.
+   
+   A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+   writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.
    
    :>
  */
@@ -97,8 +91,6 @@ static const char *version = "Wifi Forwarding Driver";
 #define WFD_INTERRUPT_COALESCING_TIMEOUT_US 500
 #define WFD_INTERRUPT_COALESCING_MAX_PKT_CNT 32
 #endif
-#define WFD_BRIDGED_OBJECT_IDX 2
-#define WFD_BRIDGED_QUEUE_IDX 2
 
 #if defined(BCM_PKTFWD)
 #define WFD_FLCTL /* BPM PktPool Availability based WFD Ingress throttle */
@@ -119,6 +111,8 @@ static struct proc_dir_entry *proc_wfd_dir;          /* /proc/wfd */
 static struct proc_dir_entry *proc_wfd_stats_file;   /* /proc/wfd/stats */
 #if defined(WFD_FLCTL)
 static struct proc_dir_entry *proc_wfd_flctl_file;   /* /proc/wfd/flctl */
+static struct proc_dir_entry *proc_wfd_enable_flctl_file;   /* /proc/wfd/flctl_enable */
+static int wfd_enable_flctl = 1;
 #endif
 
 extern void replace_upper_layer_packet_destination( void * cb, void * napi_cb );
@@ -127,13 +121,17 @@ extern void unreplace_upper_layer_packet_destination( void );
 #if (defined(CONFIG_BCM_MCAST) || defined(CONFIG_BCM_MCAST_MODULE))
 extern void   bcm_mcast_if_handle_dev_up_or_down(void *net, bool dev_up);
 #endif
-static int wfd_tasklet_handler(void  *context);
 
 /****************************************************************************/
 /***************************** Module parameters*****************************/
 /****************************************************************************/
 /* Number of packets to read in each tasklet iteration */
+#if defined(CONFIG_BCM_WFD_WL_UNION)
+#define NUM_PACKETS_TO_READ_MAX 256
+#else
 #define NUM_PACKETS_TO_READ_MAX 128
+#endif
+
 static int num_packets_to_read = NUM_PACKETS_TO_READ_MAX;
 module_param (num_packets_to_read, int, 0);
 /* wifi Broadcom prefix */
@@ -259,6 +257,7 @@ typedef struct wfd_swqueue wfd_swqueue_t;
 
 struct wfd_object
 {
+    struct sk_buff      *skbs;
     unsigned long       wfd_rx_work_avail;
     unsigned int        wfd_idx;
     int                 wfd_queue_mask;
@@ -281,6 +280,7 @@ struct wfd_object
     HOOK3PARM           wfd_mcastHook;
     HOOK3PARM           wfd_mcastHook_rx; /* for runner-based NIC mc rx */
     wait_queue_head_t   wfd_rx_thread_wqh;
+    wait_queue_head_t   *wfd_real_rx_wqh;
     struct task_struct *wfd_rx_thread;
     void               *wfd_acc_info_p;
     struct net_device  *wl_if_dev[WIFI_MW_MAX_NUM_IF];
@@ -315,7 +315,7 @@ static spinlock_t wfd_irq_lock[WFD_MAX_OBJECTS];
 #define WFD_IRQ_UNLOCK(wfdLockIdx, flags) spin_unlock_irqrestore(&wfd_irq_lock[wfdLockIdx], flags)
 
 #define WFD_WAKEUP_RXWORKER(wfdIdx) do { \
-            wake_up_interruptible(&wfd_objects[wfdIdx].wfd_rx_thread_wqh); \
+            wake_up_interruptible(wfd_objects[wfdIdx].wfd_real_rx_wqh); \
           } while (0)
 
 int (*send_packet_to_upper_layer)(struct sk_buff *skb) = netif_rx;
@@ -326,6 +326,8 @@ int (*send_nbuff_to_wfd)(pNBuff_t pNBuff, struct net_device * dev) = NULL;
 EXPORT_SYMBOL(send_nbuff_to_wfd);
 int inject_to_fastpath = 0;
 EXPORT_SYMBOL(inject_to_fastpath);
+void (*wfd_path_delay_calc)(struct sk_buff *head, int len, int type) = NULL;
+EXPORT_SYMBOL(wfd_path_delay_calc);
 
 static void wfd_dump(void);
 
@@ -349,133 +351,78 @@ void (*wfd_dump_fn)(void) = NULL;
 #define wfd_plat_proc_uninit(p) 
 #endif
 
-/****************************************************************************/
-/**                                                                        **/
-/** Name:                                                                  **/
-/**                                                                        **/
-/**   wfd_tasklet_handler.                                                 **/
-/**                                                                        **/
-/** Title:                                                                 **/
-/**                                                                        **/
-/**   wlan accelerator - tasklet handler                                   **/
-/**                                                                        **/
-/** Abstract:                                                              **/
-/**                                                                        **/
-/**   Reads all the packets from the Rx queue and send it to the wifi      **/
-/**   interface.                                                           **/
-/**                                                                        **/
-/** Input:                                                                 **/
-/**                                                                        **/
-/** Output:                                                                **/
-/**                                                                        **/
-/**                                                                        **/
-/****************************************************************************/
-static int wfd_tasklet_handler(void *context)
-{
-    int wfdIdx = (int)(long)context;
-    int rx_pktcnt = 0;
-    int qid, qidx = 0;
-    wfd_object_t * wfd_p = &wfd_objects[wfdIdx];
-    uint32_t qMask = 0;
+static void wfd_process_rx_work(wfd_object_t *wfd_p) {
+    uint32_t qMask = wfd_p->wfd_rx_work_avail;
+    int qidx = __fls(qMask);
 
-#if defined(WFD_SWQUEUE)
-    wfd_swqueue_t * wfd_swqueue = wfd_p->wfd_swqueue;
-#endif /* WFD_SWQUEUE */
-
-    printk("Instantiating WFD %d thread\n", wfdIdx);
-    while (1)
+    /* Read from High priority queues first if it's bit is on
+       Odd bits correspond to high priority queues
+       Even bits correspond to low priority queues
+       Hence get the last bit set */
+    while (qMask)
     {
-        wait_event_interruptible(wfd_p->wfd_rx_thread_wqh,
-                                 wfd_p->wfd_rx_work_avail ||
-#if defined(WFD_SWQUEUE)
-                                 wfd_swqueue->swq_schedule ||
-#endif /* WFD_SWQUEUE */
-                                 kthread_should_stop());
+        /* qidx is WFD global queue index across WFD devs
+           qid is real hardware queue id per WFD dev
+           qidx->qid mapping is platform specific
+        */
+        int qid = wfd_get_qid(qidx);
 
-        if (kthread_should_stop())
-        {
-            printk(KERN_INFO "kthread_should_stop detected in wfd\n");
-            break;
-        }
+        /* Note: keep num_packets_to_read <= NUM_PACKETS_TO_READ_MAX */
+        int rx_pktcnt = wfd_p->wfd_bulk_get(qid, num_packets_to_read, wfd_p);
 
-        if (wfd_p->wfd_rx_work_avail)
+        gs_count_rx_pkt[qidx] += rx_pktcnt;
+        gs_max_rx_pkt[qidx] = gs_max_rx_pkt[qidx] > rx_pktcnt ?
+                                        gs_max_rx_pkt[qidx] : rx_pktcnt;
+
+        /* NOTE: wfd_queue_not_empty() function clears the hw dqm
+         * interrupt for FAP platforms and must be always executed on
+         * every iteration
+         */
+        if (wfd_queue_not_empty(wfd_p->wl_radio_idx, qid, qidx))
         {
-            qMask = wfd_p->wfd_rx_work_avail;
-            /* Read from High priority queues first if it's bit is on
-               Odd bits correspond to high priority queues
-               Even bits correspond to low priority queues
-               Hence get the last bit set */
-            qidx = __fls(qMask);
-            while (qMask)
+            if (rx_pktcnt >= num_packets_to_read)
             {
-                /* qidx is WFD global queue index across WFD devs
-                   qid is real hardware queue id per WFD dev
-                   qidx->qid mapping is platform specific
-                */
-                qid = wfd_get_qid(qidx);
-
-                /* Note: keep num_packets_to_read <= NUM_PACKETS_TO_READ_MAX */
-                rx_pktcnt = wfd_p->wfd_bulk_get(qid, num_packets_to_read, wfd_p);
-
-                gs_count_rx_pkt[qidx] += rx_pktcnt;
-                gs_max_rx_pkt[qidx] = gs_max_rx_pkt[qidx] > rx_pktcnt ?
-                                                gs_max_rx_pkt[qidx] : rx_pktcnt;
-
-                /* NOTE: wfd_queue_not_empty() function clears the hw dqm
-                 * interrupt for FAP platforms and must be always executed on
-                 * every iteration
-                 */
-                if (wfd_queue_not_empty(wfd_p->wl_radio_idx, qid, qidx))
-                {
-                    if (rx_pktcnt >= num_packets_to_read)
-                    {
 #ifndef CONFIG_BCM_SKIP_RTPOLICY
-                        schedule();
+                schedule();
 #endif
-                    }
-                    /* else do nothing. Queue is not empty. Do not clear
-                     * work avail flag. Let the thread complete processing the
-                     * rest of the packets.
-                     */
-                }
-                else
-                {
-                    /* Queue is empty: no more packets,
-                     * clear bit atomically and enable interrupts
-                     */
-                    clear_bit(qidx, &wfd_p->wfd_rx_work_avail);
-                    wfd_int_enable(wfd_p->wl_radio_idx, qid, qidx);
-                }
-
-                qMask &= ~(1 << qidx);
-                qidx--;
             }
-        } /* wfd_p->wfd_rx_work_avail */
-
-#if defined(WFD_SWQUEUE)
-        /* Budget has doubled due to SWq */
-        if (wfd_swqueue->swq_schedule)
-        {
-            wfd_swqueue_xmit_fn_t  swq_xmit;
-            swq_xmit = wfd_swqueue->swq_xmit_fn;
-
-            /* Transmit packets from SW queue */
-            wfd_swqueue->pkts_count += swq_xmit(wfd_p, num_packets_to_read);
-
-            wfd_swqueue->dispatches++;
-            wfd_swqueue->complete_cnt++;
-            if (wfd_swqueue->pktqueue.len == 0U)
-            {
-                /* SW Queue is empty, clear swq_schedule state */
-                wfd_swqueue->swq_schedule = 0U;
-            }
+            /* else do nothing. Queue is not empty. Do not clear
+             * work avail flag. Let the thread complete processing the
+             * rest of the packets.
+             */
         }
-#endif /* WFD_SWQUEUE */
+        else
+        {
+            /* Queue is empty: no more packets,
+             * clear bit atomically and enable interrupts
+             */
+            clear_bit(qidx, &wfd_p->wfd_rx_work_avail);
+            wfd_int_enable(wfd_p->wl_radio_idx, qid, qidx);
+        }
 
+        qMask &= ~(1 << qidx);
+        qidx--;
     }
-
-    return 0;
 }
+
+#ifdef CONFIG_BCM_WFD_WL_UNION
+void wfd_set_rx_wait_queue(int wfd_idx, wait_queue_head_t *wqh) {
+    wfd_objects[wfd_idx].wfd_real_rx_wqh = wqh;
+}
+EXPORT_SYMBOL(wfd_set_rx_wait_queue);
+
+bool wfd_has_rx_work(int wfd_idx) {
+    return wfd_objects[wfd_idx].wfd_rx_work_avail;
+}
+EXPORT_SYMBOL(wfd_has_rx_work);
+
+void wfd_do_rx_work(int wfd_idx) {
+    if (wfd_objects[wfd_idx].wfd_bulk_get)
+        wfd_process_rx_work(&wfd_objects[wfd_idx]);
+}
+
+EXPORT_SYMBOL(wfd_do_rx_work);
+#endif
 
 struct net_device *wfd_dev_by_id_get(uint32_t radio_id, uint32_t if_id)
 {
@@ -829,6 +776,26 @@ Exit:
     return len;
 }
 
+static ssize_t wfd_flctl_enable_file_read_proc(struct file *file, char *buff, size_t len, loff_t *offset)
+{
+    if (*offset)
+        return 0;
+
+    *offset += snprintf(buff, len, "%d\n", wfd_enable_flctl);
+    return *offset;
+}
+
+static ssize_t wfd_flctl_enable_file_write_proc(struct file *file, const char *buff, size_t len, loff_t *offset)
+{
+    char input[WFD_FLCTL_PROC_CMD_MAX_LEN];
+
+    if (copy_from_user(input, buff, len) != 0)
+        return -EFAULT;
+
+    sscanf(input, "%d", &wfd_enable_flctl);
+    return len;
+}
+
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 15, 0))
 static const struct file_operations flctl_fops = {
     .owner  = THIS_MODULE,
@@ -841,6 +808,20 @@ static const struct proc_ops flctl_fops = {
     .proc_write  = wfd_flctl_file_write_proc,
 };
 #endif
+
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 15, 0))
+static const struct file_operations flctl_enable_fops = {
+    .owner  = THIS_MODULE,
+    .read   = wfd_flctl_enable_file_read_proc,
+    .write  = wfd_flctl_enable_file_write_proc,
+};
+#else
+static const struct proc_ops flctl_enable_fops = {
+    .proc_read   = wfd_flctl_enable_file_read_proc,
+    .proc_write  = wfd_flctl_enable_file_write_proc,
+};
+#endif
+
 #endif
 
 
@@ -874,6 +855,8 @@ static int wifi_proc_init(void)
 
 #if defined(WFD_FLCTL)
     if (!(proc_wfd_flctl_file = proc_create("wfd/flctl", 0644, NULL, &flctl_fops)))
+        goto fail;
+    if (!(proc_wfd_enable_flctl_file = proc_create("wfd/flctl_enable", 0644, NULL, &flctl_enable_fops)))
         goto fail;
 #endif
     if (wfd_plat_proc_init()) /* platform specific procs */
@@ -959,6 +942,7 @@ static void wfd_dev_close(void)
 #endif
 #if defined(WFD_FLCTL)
     remove_proc_entry("flctl", proc_wfd_dir);
+    remove_proc_entry("flctl_enable", proc_wfd_dir);
 #endif
     remove_proc_entry("stats", proc_wfd_dir);
     wfd_plat_proc_uninit(proc_wfd_dir); /* remove platform-specific procs */
@@ -1087,6 +1071,94 @@ int wfd_priv_info_get(struct net_device *dev, bcm_netdev_priv_info_type_t info_t
     return rc;
 }
 
+/****************************************************************************/
+/**                                                                        **/
+/** Name:                                                                  **/
+/**                                                                        **/
+/**   wfd_tasklet_handler.                                                 **/
+/**                                                                        **/
+/** Title:                                                                 **/
+/**                                                                        **/
+/**   wlan accelerator - tasklet handler                                   **/
+/**                                                                        **/
+/** Abstract:                                                              **/
+/**                                                                        **/
+/**   Reads all the packets from the Rx queue and send it to the wifi      **/
+/**   interface.                                                           **/
+/**                                                                        **/
+/** Input:                                                                 **/
+/**                                                                        **/
+/** Output:                                                                **/
+/**                                                                        **/
+/**                                                                        **/
+/****************************************************************************/
+static int wfd_tasklet_handler(void *context)
+{
+    int wfdIdx = (int)(long)context;
+    wfd_object_t * wfd_p = &wfd_objects[wfdIdx];
+
+#if defined(WFD_SWQUEUE)
+    wfd_swqueue_t * wfd_swqueue = wfd_p->wfd_swqueue;
+#endif /* WFD_SWQUEUE */
+
+    printk("Instantiating WFD %d thread\n", wfdIdx);
+    while (1)
+    {
+        wait_event_interruptible(wfd_p->wfd_rx_thread_wqh,
+                                 wfd_p->wfd_rx_work_avail ||
+#if defined(WFD_SWQUEUE)
+                                 wfd_swqueue->swq_schedule ||
+#endif /* WFD_SWQUEUE */
+                                 kthread_should_stop());
+
+        if (kthread_should_stop())
+        {
+            printk(KERN_INFO "kthread_should_stop detected in wfd\n");
+            break;
+        }
+
+        wfd_process_rx_work(wfd_p);
+
+#if defined(WFD_SWQUEUE)
+        /* Budget has doubled due to SWq */
+        if (wfd_swqueue->swq_schedule)
+        {
+            wfd_swqueue_xmit_fn_t  swq_xmit;
+            swq_xmit = wfd_swqueue->swq_xmit_fn;
+
+            /* Transmit packets from SW queue */
+            wfd_swqueue->pkts_count += swq_xmit(wfd_p, num_packets_to_read);
+
+            wfd_swqueue->dispatches++;
+            wfd_swqueue->complete_cnt++;
+            if (wfd_swqueue->pktqueue.len == 0U)
+            {
+                /* SW Queue is empty, clear swq_schedule state */
+                wfd_swqueue->swq_schedule = 0U;
+            }
+        }
+#endif /* WFD_SWQUEUE */
+
+    }
+
+    return 0;
+}
+
+static int wfd_kthread_create(unsigned long tmp_idx, const char *threadname) {
+    struct task_struct *rx_thread = kthread_create(wfd_tasklet_handler, (void *)tmp_idx, threadname);
+    if (IS_ERR(rx_thread)) 
+    {
+        return (int)PTR_ERR(rx_thread);
+    }
+
+    wfd_objects[tmp_idx].wfd_rx_thread = rx_thread;
+
+    /* wlmngr manages the logic to bind the WFD threads to specific CPUs depending on platform
+       Look at function wlmngr_setupTPs() for more details */
+    //kthread_bind(wfd_objects[tmp_idx].wfd_rx_thread, tmp_idx);
+    wake_up_process(wfd_objects[tmp_idx].wfd_rx_thread);
+    return 0;
+}
 
 /****************************************************************************/
 /**                                                                        **/
@@ -1123,12 +1195,9 @@ int wfd_bind(struct net_device *wl_dev_p,
     char threadname[15]={0};
     int minQIdx;
     int maxQIdx;
-    int wfd_max_objects;
     unsigned long tmp_idx;
-    struct task_struct *rx_thread;
 
-    wfd_max_objects = WFD_MAX_OBJECTS;
-    if (wfd_objects_num > wfd_max_objects)
+    if (wfd_objects_num > WFD_MAX_OBJECTS)
     {
         WFD_ERROR("ERROR. WFD_MAX_OBJECTS(%d) limit reached\n", WFD_MAX_OBJECTS);
         rc = WFD_NOT_SUPPORTED;
@@ -1139,8 +1208,8 @@ int wfd_bind(struct net_device *wl_dev_p,
 #if defined(CONFIG_BCM_WLAN_DPDCTL)
         /* Use radio_idx as wfd idx as well */
         tmp_idx = wl_radio_idx;
-        if (tmp_idx >= wfd_max_objects) {
-            WFD_ERROR("%s ERROR. WFD_OBJECT(%d) > MAX(%d)\n", __FUNCTION__, wl_radio_idx, wfd_max_objects);
+        if (tmp_idx >= WFD_MAX_OBJECTS) {
+            WFD_ERROR("%s ERROR. WFD_OBJECT(%d) > MAX(%d)\n", __FUNCTION__, wl_radio_idx, WFD_MAX_OBJECTS);
             rc = WFD_NOT_SUPPORTED;
             goto wfd_bind_failure;
         }
@@ -1152,7 +1221,7 @@ int wfd_bind(struct net_device *wl_dev_p,
         }
 #else  /* !CONFIG_BCM_WLAN_DPDCTL */
         /* Find available slot. */
-        for (tmp_idx = 0; tmp_idx < wfd_max_objects; tmp_idx++)
+        for (tmp_idx = 0; tmp_idx < WFD_MAX_OBJECTS; tmp_idx++)
         {
             if (!wfd_objects[tmp_idx].wfd_bulk_get) /* This callback must be set for registered object */
                 break;
@@ -1297,18 +1366,21 @@ int wfd_bind(struct net_device *wl_dev_p,
 
         /* Create WFD Thread */
         init_waitqueue_head(&wfd_objects[tmp_idx].wfd_rx_thread_wqh);
-        rx_thread = kthread_create(wfd_tasklet_handler, (void *)tmp_idx, threadname);
-        if (IS_ERR(rx_thread)) 
-        {
-            return (int)PTR_ERR(rx_thread);
+        wfd_objects[tmp_idx].wfd_real_rx_wqh = &wfd_objects[tmp_idx].wfd_rx_thread_wqh;
+
+#if defined(CONFIG_BCM_WFD_WL_UNION)
+        /* WFD_WL_FWD_HOOKTYPE_FKB is used in dhd and still needs the thread */
+        rc = (eFwdHookType == WFD_WL_FWD_HOOKTYPE_SKB)
+                    ? 0 : wfd_kthread_create(tmp_idx, threadname);
+#else
+        rc = wfd_kthread_create(tmp_idx, threadname);
+#endif
+        if (rc) {
+            WFD_ERROR("WFD [%d] kthread create failure (%d)\n",
+                      (int)tmp_idx, rc);
+            goto wfd_bind_failure;
         }
 
-        wfd_objects[tmp_idx].wfd_rx_thread = rx_thread;
-
-        /* wlmngr manages the logic to bind the WFD threads to specific CPUs depending on platform
-           Look at function wlmngr_setupTPs() for more details */
-        //kthread_bind(wfd_objects[tmp_idx].wfd_rx_thread, tmp_idx);
-        wake_up_process(wfd_objects[tmp_idx].wfd_rx_thread);
         
         /* Set Interrupt */
         for (qidx = minQIdx; qidx <= maxQIdx; qidx++)
@@ -1333,10 +1405,7 @@ int wfd_bind(struct net_device *wl_dev_p,
                   (int)WFD_NUM_QUEUE_SUPPORTED);
     }
 
-#if defined(CONFIG_BCM_PON)
-    if (tmp_idx != WFD_BRIDGED_OBJECT_IDX)
-#endif
-        wfd_objects_num++;
+    wfd_objects_num++;
     return (int)tmp_idx;
 
 wfd_bind_failure:
@@ -1397,6 +1466,16 @@ void wfd_unbind(int wfdIdx, enumWFD_WlFwdHookType hook_type)
         pktlist_context_dump(pktlist_context_p, true, true);
         /* Free pktlist_context resources using pktlist_context_fini() */
         pktlist_context_fini(pktlist_context_p);
+    }
+
+    {
+        struct sk_buff *skb = wfd_objects[wfdIdx].skbs;
+        while (skb) {
+            struct sk_buff *tmp = skb->next;
+            gbpm_free_skb(skb);
+            skb = tmp;
+        }
+        /* wfd_objects[wfdIdx].skbs is being set to NULL by the memset below */
     }
 #endif /* BCM_PKTFWD */
 

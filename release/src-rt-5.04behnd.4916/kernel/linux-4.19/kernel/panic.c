@@ -23,6 +23,9 @@
 #include <linux/kexec.h>
 #include <linux/sched.h>
 #include <linux/sysrq.h>
+#ifdef CONFIG_BCM_KF_TINY_KCORE_SUPPORT
+#include <linux/tiny_kcore.h>
+#endif
 #include <linux/init.h>
 #include <linux/nmi.h>
 #include <linux/console.h>
@@ -234,9 +237,15 @@ void panic(const char *fmt, ...)
 	this_cpu = raw_smp_processor_id();
 	old_cpu  = atomic_cmpxchg(&panic_cpu, PANIC_CPU_INVALID, this_cpu);
 
+#ifdef CONFIG_BCM_KF_TINY_KCORE_SUPPORT
+	if (old_cpu != PANIC_CPU_INVALID && old_cpu != this_cpu) {
+		tkcore_save_cpu_state(NULL, this_cpu);
+		panic_smp_self_stop();
+	}
+#else
 	if (old_cpu != PANIC_CPU_INVALID && old_cpu != this_cpu)
 		panic_smp_self_stop();
-
+#endif
 	console_verbose();
 	bust_spinlocks(1);
 	va_start(args, fmt);

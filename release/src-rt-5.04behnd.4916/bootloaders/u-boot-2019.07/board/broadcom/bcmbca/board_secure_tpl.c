@@ -28,6 +28,7 @@
 #include "mini-gmp/mini-gmp.h"
 #include "mini-gmp/mini-mpq.h"
 #include "tpl_common.h"
+#include "ba_svc.h"
 
 /* This corresponds to the min_tpl_compatibility parameter in the security policy */
 #define THIS_TPL_COMPAT_VERSION		0x3
@@ -230,7 +231,18 @@ static int sec_get_export_item( char * item_id, u8 ** data, u32 * size )
 		i++;
 	}
 	if( exp_item_otp_map[i].otp_feat != OTP_MAP_MAX )
+	{
+#ifdef CONFIG_SMC_BASED
+		int ek_size, iv_size;
+		if(exp_item_otp_map[i].otp_feat == SOTP_MAP_KEY_DEV_SPECIFIC)
+		{
+			rc = ba_get_dev_spec_key((void**)data, &ek_size, &iv_size);
+			*size = ek_size + iv_size;
+		}
+#else
 		rc = bcm_otp_read(exp_item_otp_map[i].otp_feat, (u32**)data, size);
+#endif
+	}
 
 	/* If slot was empty */
 	if( rc == OTP_HW_CMN_ERR_KEY_EMPTY )
@@ -332,7 +344,11 @@ static int sec_salt_hash_item( u8 * fdt, u8 * item_src, int size_src,
 		}
 		bcm_sec_digest((u8*)temp_buff, hash_data_size, (u8*)dst_ptr, "sha256");
 	}
+
+	/* Wipe temp_buff */
+	memset(temp_buff, 0, hash_data_size);
 	free(temp_buff);
+	temp_buff = NULL;
 	return 0;
 }
 
@@ -637,6 +653,10 @@ static int sec_key_ctrl(bcm_sec_t *sec, bcm_sec_ctrl_t ctrl, void * arg)
 							DELG_EXPORT_PERMNONSEC, sec_arg->enc_key[i].exp_flag);
 					}
 				}
+
+				/* Wipe temp key_data */
+				memset(key_data, 0, 
+					sec_arg->enc_key[i].size_enc > sec_arg->enc_key[i].size ? sec_arg->enc_key[i].size_enc : sec_arg->enc_key[i].size);
 				free(key_data);
 				key_data = NULL;
 			}
@@ -665,7 +685,9 @@ static int sec_key_ctrl(bcm_sec_t *sec, bcm_sec_ctrl_t ctrl, void * arg)
 		memset((void*)bcm_secbt_args(),0, sizeof(bcm_secbt_args_t));
 		break;
         case SEC_CTRL_KEY_CLEAN_ALL:
+		/* Wipe secure SRAM */
 		bcm_sec_clean_secmem(sec);
+		/* Wipe credentials in memory */
 		bcm_sec_clean_keys(sec);
 		break;
 	default:
@@ -1972,7 +1994,12 @@ static int bcm_sec_delg_process_policy(u8 * policy_fdt, u8 * fit_hdr )
 	u8* iv;
 
 	/* retrieve root key */
+#if defined(CONFIG_SMC_BASED)
+	bcm_sec_smc_get_root_aes_key_name_hint(fit_hdr, &root_aes_key);
+	(void) iv;
+#else
 	bcm_sec_get_root_aes_key(&root_aes_key);
+#endif // #if defined(CONFIG_SMC_BASED)
 	if(!root_aes_key) {
 		printf("ERROR: Could not retrieve root aes key!\n");
 		return -1;
@@ -1988,17 +2015,24 @@ static int bcm_sec_delg_process_policy(u8 * policy_fdt, u8 * fit_hdr )
 	memcpy(key_data, (u8*)value, key_len); 
 
 	/* Decrypt delegated encryption key */
+#if defined(CONFIG_SMC_BASED)
+	bcm_sec_smc_aes_decrypt(key_data, key_data, key_len, root_aes_key);
+#else
 	bcm_sec_aes_cbc128(root_aes_key, iv, key_data, key_len,0);
+#endif // #if defined(CONFIG_SMC_BASED)
 
 	/* Copy key to our delg config */
 	memcpy(delg_cfg->aes_ek, (void*)key_data, 
 			BCM_SECBT_AES_CBC128_EK_LEN); 
 	memcpy(delg_cfg->aes_ek + BCM_SECBT_AES_CBC128_EK_LEN,  
 		(void*)(key_data+BCM_SECBT_AES_CBC128_EK_LEN), BCM_SECBT_AES_CBC128_EK_LEN);
+
+	/* Wipe temp key_data */
+	memset(key_data, 0, key_len);
 	free(key_data);
 	key_data = NULL;
 
-#if BCM_SEC_EXPOSE_SECRET_KEYS	
+#if BCM_SEC_EXPOSE_SECRET_KEYS
 	/* ### WARNING: ENABLING THIS DEBUG WILL EXPOSE DECRYPTED DELG AES KEYS ### */
 	printf("INFO: Decrypted AES_EK: 0x%08x AES_IV: 0x%08x\n",
 		*(u32*)delg_cfg->aes_ek, 
@@ -2020,7 +2054,7 @@ static int bcm_sec_delg_process_policy(u8 * policy_fdt, u8 * fit_hdr )
 		}
 	}
 	printf("\n");
-#endif	
+#endif
 
 	bcm_sec_set_active_aes_key(delg_cfg->aes_ek);
 
@@ -2044,9 +2078,15 @@ int bcm_sec_delg_process_sec_node(u8 * fit)
 	u8 * sig_sec_fit_delg = NULL;
 	int sig_len = 0;
 	int ret = -1;
-	u8* krot_pub = bcm_sec_get_root_pub_key();
+	u8* krot_pub = 0;
 	struct image_sign_info im;
-	
+
+#if defined(CONFIG_SMC_BASED)
+	krot_pub = bcm_sec_smc_get_root_pub_key_name_hint(fit);
+#else
+	krot_pub = bcm_sec_get_root_pub_key();
+#endif // #if defined(CONFIG_SMC_BASED)
+
 	/* Setup signing structures */
 	im.checksum = image_get_checksum_algo("sha256,");
 	if (!im.checksum) {
@@ -2079,11 +2119,17 @@ int bcm_sec_delg_process_sec_node(u8 * fit)
 	printf("INFO: Found potential Security Node: Policy:0x%08x Sig:0x%08x Size:%d\n",
 		*(u32*)sec_policy_ptr, *(u32*)sig_sec_fit_delg, (u32)size);
 
+#if defined(CONFIG_SMC_BASED)
+	ret = bcm_sec_smc_rsa_verify((u8*)sec_policy_ptr, 
+				size, 
+				sig_sec_fit_delg, 
+				krot_pub);
+#else
 	ret = bcm_sec_rsa_verify((u8*)sec_policy_ptr, 
 				size, 
 				sig_sec_fit_delg,  
 				RSA2048_BYTES, krot_pub, &im );
-
+#endif // #if defined(CONFIG_SMC_BASED)
 	if( ret == 0 ) {
 		printf("INFO: Security Node Authentication Successfull!\n");
 		/* Process policy */
@@ -2096,7 +2142,7 @@ int bcm_sec_delg_process_sec_node(u8 * fit)
 
 }
 
-int bcm_sec_delg_process_sdr( u8 * psdr, u8 * hdr_end, u32 * sdr_plus_sig_size)
+int bcm_sec_delg_process_sdr(const u8 * fit, u8 * psdr, u8 * hdr_end, u32 * sdr_plus_sig_size)
 {
 	int rc = -1;
 	u32 lvl = 0;
@@ -2106,10 +2152,19 @@ int bcm_sec_delg_process_sdr( u8 * psdr, u8 * hdr_end, u32 * sdr_plus_sig_size)
 	unsigned long long sdr_size = 0;
 	u8* sig_sec_rec_delg = NULL;
 	u8* krsa_delg_pub = NULL;
-	u8* krot_pub = bcm_sec_get_root_pub_key();
+	u8* krot_pub = 0;
 	struct image_sign_info im;
 	bcm_sec_delg_cfg * delg_cfg = NULL;
-	
+#if defined(CONFIG_SMC_BASED)
+	// Aligned to 4 bytes and support upto RSA2048 key/signature depth
+	u32 sig[BCM_SECBT_RSA_MOD_MAX_LEN / sizeof(u32)];
+
+	krot_pub = bcm_sec_smc_get_root_pub_key_name_hint(fit);
+#else
+	(void)fit;
+	krot_pub = bcm_sec_get_root_pub_key();
+#endif // #if defined(CONFIG_SMC_BASED)
+
 	/* Setup signing structures */
 	im.checksum = image_get_checksum_algo("sha256,");
 	if (!im.checksum) {
@@ -2144,6 +2199,11 @@ int bcm_sec_delg_process_sdr( u8 * psdr, u8 * hdr_end, u32 * sdr_plus_sig_size)
 	sdr_size = (unsigned long long )(psdr - sdr_start); // Check this
 	*sdr_plus_sig_size = sdr_size + RSA2048_BYTES;
 
+#if defined(CONFIG_SMC_BASED)
+	memcpy(sig, sig_sec_rec_delg, RSA2048_BYTES);
+	sig_sec_rec_delg = (u8*)sig;
+#endif // #if defined(CONFIG_SMC_BASED)
+
 	printf("INFO: Found potential SDR: delg_id:%d maxrollbck:%d size:%llu\n", 
 		delegateId, max_anti_rollback_lvl, sdr_size);
 
@@ -2168,10 +2228,17 @@ int bcm_sec_delg_process_sdr( u8 * psdr, u8 * hdr_end, u32 * sdr_plus_sig_size)
 	
 	
 	/* Authenticate sdr signature */
+#if defined(CONFIG_SMC_BASED)
+	rc = bcm_sec_smc_rsa_verify(sdr_start, 
+				sdr_size, 
+				sig_sec_rec_delg, 
+				krot_pub);
+#else
 	rc = bcm_sec_rsa_verify(sdr_start, 
 				sdr_size, 
 				sig_sec_rec_delg,  
 				RSA2048_BYTES, krot_pub, &im );
+#endif // #if defined(CONFIG_SMC_BASED)
 	if( rc == 0 ) {
 		printf("INFO: SDR Authentication Successfull!\n");
 		/* Commit all fields to our structures */
@@ -2503,6 +2570,8 @@ trust/aes1-key = hex-string ==> use original AES key to decrypt this string, wip
  	* 1- second and so on.for both s_ctrl and k_ctrl 		
  	*/
 	karg->arg[0].ctrl = SEC_CTRL_KEY_CHAIN_RSA;
+
+	/* Wipe all copies of keys from DDR and secure SRAM when key processing is finished */
 	karg->arg[3].ctrl = SEC_CTRL_KEY_CLEAN_ALL;
 	
 	if( delg_cfg && delg_cfg->delg_id ) {

@@ -5,7 +5,7 @@ obj-$(CONFIG_BCM_VFBIO_DRV)  := vfbio.o
 obj-$(CONFIG_BCM_VFBIO_OOPS) := vfbio_oops.o
 
 vfbio-y += vfbio_core.o vfbio_proc.o
-vfbio-y += vfbio_lvm.o vfbio_lvm_ioctl.o
+vfbio-y += vfbio_lvm.o vfbio_lvm_ioctl.o vfbio_rpmb.o
 
 EXTRA_CFLAGS += -Werror -Wfatal-errors
 EXTRA_CFLAGS += -I. -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD)  -I$(INC_BRCMDRIVER_PRIV_PATH)/$(BRCM_BOARD)  -I$(INC_BRCMSHARED_PUB_PATH)/$(BRCM_BOARD)  -I$(INC_BRCMSHARED_PRIV_PATH)/$(BRCM_BOARD)

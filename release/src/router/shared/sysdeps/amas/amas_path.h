@@ -11,6 +11,7 @@
 #define ETH_4		0x40	//ethernet_4
 #define WL_6G		0x80	//6G
 #define WL_6G_1		0x100	//6G-1
+#define WL_MLO		0x200	//MLO
 
 
 #define CH_SYNC_INIT_STATE	0
@@ -160,6 +161,8 @@ enum { AIMESH_ALG_DEFAULT = 0, AIMESH_ALG_COST = 1, AIMESH_ALG_RSSISCORE = 2};
 #define WL5G1_U				(WL_U_BASE << 1)
 #define WL5G2_U				(WL_U_BASE << 2)
 #define WL6G_U				(WL_U_BASE << 3)
+#define WL6G2_U				(WL_U_BASE << 4)
+#define WL_MLO_U			(WL_U_BASE << 5)
 #define WL_MAX_BASE			(WL_U_BASE << 14) // Reserved 32th bits for singned value.
 
 /*COST Verify
@@ -258,6 +261,7 @@ enum {
 	CHANNEL_PLAN_ON = 1,
 	CHANNEL_PLAN_MANUAL = 2,
 	CHANNEL_PLAN_CENTRAL = 3,
+	CHANNEL_PLAN_INDEPENDENT = 4,
 	CHANNEL_PLAN_MAX
 };
 #endif

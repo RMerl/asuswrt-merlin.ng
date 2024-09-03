@@ -1,29 +1,23 @@
 /*
 * <:copyright-BRCM:2021:DUAL/GPL:standard
-*
-*    Copyright (c) 2021 Broadcom
+* 
+*    Copyright (c) 2021 Broadcom 
 *    All Rights Reserved
-*
-* Unless you and Broadcom execute a separate written software license
-* agreement governing use of this software, this software is licensed
-* to you under the terms of the GNU General Public License version 2
-* (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-* with the following added to such license:
-*
-*    As a special exception, the copyright holders of this software give
-*    you permission to link this software with independent modules, and
-*    to copy and distribute the resulting executable under terms of your
-*    choice, provided that you also meet, for each linked independent
-*    module, the terms and conditions of the license of that module.
-*    An independent module is a module which is not derived from this
-*    software.  The special exception does not apply to any modifications
-*    of the software.
-*
-* Not withstanding the above, under no circumstances may you combine
-* this software in any way with any other Broadcom software provided
-* under a license other than the GPL, without Broadcom's express prior
-* written consent.
-*
+* 
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License, version 2, as published by
+* the Free Software Foundation (the "GPL").
+* 
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+* 
+* 
+* A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+* writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+* Boston, MA 02111-1307, USA.
+* 
 * :>
 */
 
@@ -893,6 +887,24 @@ static struct synce_holdover_data *synce_holdover_data_init(struct device *dev)
     return psynce_holdover;
 }
 
+static void synce_holdover_data_uninit(struct device *dev)
+{
+    if (!data.initialized)
+        return;
+
+    send_message_to_pon_drv_task(msg_synce_register_handlers, NULL, NULL, NULL, NULL,
+        NULL, NULL, NULL, NULL);
+
+    del_timer(&data.synce_holdover_timer_A5);
+    del_timer(&data.synce_holdover_timer_B1);
+    del_timer(&data.synce_holdover_timer_C5);
+
+    cancel_work_sync((struct work_struct *)&block_C_work);
+    cancel_delayed_work_sync((struct delayed_work *)&ae_linkup_work);
+    destroy_workqueue(synce_workqueue);
+    data.initialized = FALSE;
+}
+
 static const struct of_device_id of_platform_synce_holdover_table[] = {
     { .compatible = "brcm,synce_holdover", },
     { /* end of list */ },
@@ -952,6 +964,12 @@ static int probe_init(void)
     return 0;
 }
 
+static void probe_uninit(void)
+{
+    synce_holdover_data_uninit(NULL);
+    iounmap(synce_virt_address);
+}
+
 static int __init detect_init(void)
 {
     return probe_init();
@@ -960,8 +978,8 @@ module_init(detect_init);
 
 static void __exit detect_exit(void)
 {
-    data.initialized = 0;
     PRINTK("synce_holdover driver unloading.");
+    probe_uninit();
 }
 module_exit(detect_exit);
 

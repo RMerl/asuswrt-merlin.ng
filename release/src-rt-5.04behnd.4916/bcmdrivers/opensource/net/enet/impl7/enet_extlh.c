@@ -1,29 +1,23 @@
 ﻿/*
    <:copyright-BRCM:2015:DUAL/GPL:standard
-
-      Copyright (c) 2015 Broadcom
+   
+      Copyright (c) 2015 Broadcom 
       All Rights Reserved
-
-   Unless you and Broadcom execute a separate written software license
-   agreement governing use of this software, this software is licensed
-   to you under the terms of the GNU General Public License version 2
-   (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-   with the following added to such license:
-
-      As a special exception, the copyright holders of this software give
-      you permission to link this software with independent modules, and
-      to copy and distribute the resulting executable under terms of your
-      choice, provided that you also meet, for each linked independent
-      module, the terms and conditions of the license of that module.
-      An independent module is a module which is not derived from this
-      software.  The special exception does not apply to any modifications
-      of the software.
-
-   Not withstanding the above, under no circumstances may you combine
-   this software in any way with any other Broadcom software provided
-   under a license other than the GPL, without Broadcom's express prior
-   written consent.
-
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License, version 2, as published by
+   the Free Software Foundation (the "GPL").
+   
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+   
+   
+   A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+   writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.
+   
    :>
  */
 
@@ -78,7 +72,7 @@ void set_mac_eee_by_phy_active(enetx_port_t *p)
     int enabled = 0;
     int autogreeen;
 
-    if (!end_phy) return;
+    if (!end_phy || !end_phy->phy_drv || end_phy->phy_drv->phy_type == PHY_TYPE_MAC2MAC) return;
 
     phy_dev_eee_mode_get(phy_dev, &autogreeen);
     if (phy_dev->link && !autogreeen)
@@ -93,6 +87,11 @@ void set_mac_eee_by_phy_active(enetx_port_t *p)
     }
 #endif
     mac_dev_eee_set(mac_dev, enabled);
+}
+
+void _set_mac_eee_by_phy_active(void *p, int a)
+{
+    set_mac_eee_by_phy_active((enetx_port_t *)p);
 }
 
 #if defined(SF2_DEVICE)
@@ -341,7 +340,7 @@ void extlh_link_change_handler(enetx_port_t *port, int linkstatus, int speed, in
         printk(cd_result);
 end:
     /* update EEE settings based on link status */
-    enetx_queue_work(port, set_mac_eee_by_phy_active);
+    enetx_queue_work(_set_mac_eee_by_phy_active, (void *)port, 0);
 
     up(&bcm_link_handler_config);
 }
@@ -399,7 +398,7 @@ void extlh_phy_link_change_cb(void *ctx)
         phy_dev_macsec_oper(active_end_phy, &data);
     }
 
-    if (p->dev)
+    if (p->dev || p->port_info.swtag_use_pvid)
     {
         /* Print new status to console */
         extlh_link_change_handler(p, active_end_phy->link,
@@ -413,8 +412,12 @@ void extlh_phy_link_change_cb(void *ctx)
     processing = 0;
 }
 
-int port_set_wan_role_link(enetx_port_t *port, port_netdev_role_t role)
+static int _port_set_wan_role_link(void *_port, int _role)
 {
+    enetx_port_t *port = _port; 
+    port_netdev_role_t role = _role;
+
+    wait_enet_ready();
     if (role > PORT_NETDEV_ROLE_WAN)
         return 0;
 
@@ -442,6 +445,14 @@ int port_set_wan_role_link(enetx_port_t *port, port_netdev_role_t role)
     phy_dev_force_link_reset(port->p.phy);
 
     return 0;
+}
+
+int port_set_wan_role_link(enetx_port_t *port, port_netdev_role_t role)
+{
+    if (!port->p.phy)   /* We are in the delayed PHY init stage */
+        return enetx_queue_work((enetx_work_func_t)_port_set_wan_role_link, (void *)port, (int)role);
+    else
+        return _port_set_wan_role_link((void *)port, (int)role);
 }
 
 int enetxapi_post_parse(void)

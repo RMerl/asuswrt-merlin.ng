@@ -8,6 +8,7 @@
 #include <blk.h>
 #include <spl.h>
 #include "boot_flash.h"
+#include "bcm_secure.h"
 #include <fsl_esdhc.h>
 #if defined(CONFIG_SPL_SPI_FLASH_SUPPORT)
 #include <dm.h>
@@ -38,7 +39,7 @@ int boot_flash_init(void)
 	ret = mmc_initialize(NULL);
 	if(ret)	{
 		printf("MMC Initialization Failed!!\n");
-		hang();
+		bcm_sec_abort();
 	}
 
 	mmc = find_mmc_device(MMC_DEV_NUM);
@@ -62,13 +63,13 @@ int boot_flash_init(void)
 	ret = uclass_get_device_by_driver(UCLASS_SPI_FLASH, DM_GET_DRIVER(spi_flash_std), &dev);
 	if (ret){
 		debug("SPI NOR failed to initialize. (error %d)\n", ret);
-		hang();
+		bcm_sec_abort();
 	}
 	mtd = get_mtd_device_nm(SPIFLASH_MTDNAME);
 	if (IS_ERR_OR_NULL(mtd)){
 		printf("%s:MTD device %s not found, ret %ld\n",__func__, SPIFLASH_MTDNAME,
 		   PTR_ERR(mtd));
-		hang();
+		bcm_sec_abort();
 	}
 	else
 		flash_dev = mtd;

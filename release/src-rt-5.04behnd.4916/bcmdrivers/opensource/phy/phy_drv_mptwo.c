@@ -3,27 +3,21 @@
    All Rights Reserved
 
     <:label-BRCM:2016:DUAL/GPL:standard
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
 :>
 */
 
@@ -532,7 +526,7 @@ static int _serdes_enable(phy_dev_t *phy_dev, int enable, int8_t module_detect)
         quit = 0;
 #endif
 
-    if (enable == (phy_dev->flag & PHY_FLAG_POWER_SET_ENABLED))
+    if (enable == PhyIsPowerSetEnabled(phy_dev))
         quit = 0;
 
     if (quit)
@@ -591,13 +585,20 @@ static int _phy_power_get(phy_dev_t *phy_dev, int *enable)
 {
     int ret = 0;
 
-    *enable = phy_dev->flag & PHY_FLAG_POWER_SET_ENABLED ? 1 : 0;
+    *enable = PhyIsPowerSetEnabled(phy_dev);
 
     return ret;
 }
 
 static int _phy_power_set(phy_dev_t *phy_dev, int enable)
 {
+    if (!phy_dev->cascade_next && dt_gpio_exists(phy_dev->gpiod_phy_power))
+    {
+        printk("%s power for SFP at address 0x%x\n", enable ? "Enable" : "Disable", phy_dev->addr);
+        dt_gpio_set_value(phy_dev->gpiod_phy_power, enable);
+        mdelay(10);
+    }
+
     return 0;
 }
 

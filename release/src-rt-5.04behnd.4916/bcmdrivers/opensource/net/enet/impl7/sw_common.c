@@ -1,29 +1,23 @@
 /*
    <:copyright-BRCM:2018:DUAL/GPL:standard
-
-      Copyright (c) 2018 Broadcom
+   
+      Copyright (c) 2018 Broadcom 
       All Rights Reserved
-
-   Unless you and Broadcom execute a separate written software license
-   agreement governing use of this software, this software is licensed
-   to you under the terms of the GNU General Public License version 2
-   (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-   with the following added to such license:
-
-      As a special exception, the copyright holders of this software give
-      you permission to link this software with independent modules, and
-      to copy and distribute the resulting executable under terms of your
-      choice, provided that you also meet, for each linked independent
-      module, the terms and conditions of the license of that module.
-      An independent module is a module which is not derived from this
-      software.  The special exception does not apply to any modifications
-      of the software.
-
-   Not withstanding the above, under no circumstances may you combine
-   this software in any way with any other Broadcom software provided
-   under a license other than the GPL, without Broadcom's express prior
-   written consent.
-
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License, version 2, as published by
+   the Free Software Foundation (the "GPL").
+   
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+   
+   
+   A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+   writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.
+   
    :>
  */
 
@@ -679,10 +673,11 @@ int ioctl_extsw_vlan(struct ethswctl_data *e)
 static inline int enet_arl_remove(char *mac) {return 0;}
 
 // based on bcmsw.h
-int _enet_arl_search_ext(int unit, uint8_t *mac, uint32_t *vid, uint32_t *val, int op);
-#define _enet_arl_dump_ext(u) _enet_arl_search_ext(u, 0, 0, 0, TYPE_DUMP)
-#define _enet_arl_read_ext(u, mc, vd, vl) _enet_arl_search_ext(u, mc, vd, vl, TYPE_GET)
-#define _enet_arl_remove_ext(u, mc) _enet_arl_search_ext(u, mc, 0, 0, TYPE_SET)
+int _enet_arl_search_ext(int unit, uint8_t *mac, uint32_t *vid, uint32_t *val, int op, uint8_t mlo);
+#define _enet_arl_dump_ext(u) _enet_arl_search_ext(u, 0, 0, 0, TYPE_DUMP, 0)
+#define _enet_arl_read_ext(u, mc, vd, vl) _enet_arl_search_ext(u, mc, vd, vl, TYPE_GET, 0)
+#define _enet_arl_remove_ext(u, mc)                 _enet_arl_search_ext(u, mc, 0, 0, TYPE_SET, 0)
+#define _enet_arl_remove_ext_mac_lmt(u, mc, mlo)    _enet_arl_search_ext(u, mc, 0, 0, TYPE_SET, mlo)
 
 
 static int _enet_arl_access_reg_op(int unit, uint8_t v8)
@@ -707,7 +702,7 @@ static int _enet_arl_access_reg_op(int unit, uint8_t v8)
 
 /* v32: b31 is raw bit,
     If raw: register format; etherwise: b15 is Valid bit */
-int extsw_arl_write_ext(int unit, uint8_t *mac, uint16_t vid, uint32_t v32)
+int extsw_arl_write_ext_mlo(int unit, uint8_t *mac, uint16_t vid, uint32_t v32, uint8_t mac_lmt_op)
 {
     uint8_t mac_vid[8];
     uint32_t cur_v32;
@@ -754,6 +749,9 @@ int extsw_arl_write_ext(int unit, uint8_t *mac, uint16_t vid, uint32_t v32)
         SF2SW_WREG(unit, PAGE_AVTBL_ACCESS, REG_ARL_DATA_ENTRY + bin*0x10,(uint8_t *)&v32, 4);
 
         /* Initiate a write transaction */
+        if (mac_lmt_op) {
+            SF2SW_WREG(unit, PAGE_AVTBL_ACCESS, REG_ARL_MAC_LIMIT_OP, &mac_lmt_op, 1);
+        }
         if (!_enet_arl_access_reg_op(unit, ARL_TBL_CTRL_START_DONE)) return 0;
         return 1;
     }
@@ -761,7 +759,12 @@ int extsw_arl_write_ext(int unit, uint8_t *mac, uint16_t vid, uint32_t v32)
     return 0;
 }
 
-int _enet_arl_entry_op(int unit, uint8_t *mac, uint32_t *vid, uint32_t *val, int op, int *count, u8 *mac_vid, u32 data)
+int extsw_arl_write_ext(int unit, uint8_t *mac, uint16_t vid, uint32_t v32)
+{
+    return extsw_arl_write_ext_mlo(unit, mac, vid, v32, 0);
+}
+
+int _enet_arl_entry_op(int unit, uint8_t *mac, uint32_t *vid, uint32_t *val, int op, int *count, u8 *mac_vid, u32 data, uint8_t mlo)
 {
     switch(op)
     {
@@ -780,7 +783,7 @@ int _enet_arl_entry_op(int unit, uint8_t *mac, uint32_t *vid, uint32_t *val, int
         case TYPE_SET:
             if (memcmp(&mac[0], &mac_vid[2], 6) == 0)
             {
-                extsw_arl_write_ext(unit, mac, *(u16*)mac_vid, 0);
+                extsw_arl_write_ext_mlo(unit, mac, *(u16*)mac_vid, 0, mlo);
                 (*count)++;
             }
             break;
@@ -806,7 +809,7 @@ int _enet_arl_entry_op(int unit, uint8_t *mac, uint32_t *vid, uint32_t *val, int
     return FALSE;
 }
 
-int _enet_arl_search_ext(int unit, uint8_t *mac, uint32_t *vid, uint32_t *val, int op)
+int _enet_arl_search_ext(int unit, uint8_t *mac, uint32_t *vid, uint32_t *val, int op, uint8_t mlo)
 {
     int timeout = 1000, count = 0, hash_ent;
     uint32_t cur_data;
@@ -841,7 +844,7 @@ int _enet_arl_search_ext(int unit, uint8_t *mac, uint32_t *vid, uint32_t *val, i
 
             if ((cur_data & ARL_DATA_ENTRY_VALID_531xx))
             {
-                if (_enet_arl_entry_op(unit, mac, vid, val, op, &count, mac_vid, cur_data)) return TRUE;
+                if (_enet_arl_entry_op(unit, mac, vid, val, op, &count, mac_vid, cur_data, mlo)) return TRUE;
             }
         }
     }
@@ -1058,10 +1061,26 @@ int remove_arl_entry_wrapper(void *ptr)
 
             SF2SW_RREG(sw_unit, PAGE_SA_LIMIT, REG_SA_LIMIT_EN, &val, 4);
             if (val & 1<<port) { // port mac limit enable, use port fast ageing so mac learn counter is correct
+#if defined(CONFIG_BCM96765) || defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764)
+                if (sw_unit==0) { // 6765A0 or later support decrement of MAC counter
+                    uint32_t age;
+                    // disable aging while removing mac with mac limit counter adjustment
+                    SF2SW_RREG(sw_unit, PAGE_MANAGEMENT, REG_AGING_TIME_CTRL, &age, 4);
+                    val = 0 | REG_AGE_CHANGE;
+                    SF2SW_WREG(sw_unit, PAGE_MANAGEMENT, REG_AGING_TIME_CTRL, &val, 4);
+
+                    ret |= _enet_arl_remove_ext_mac_lmt(sw_unit, ptr, port | MAC_LIMIT_OP_EN | MAC_LIMIT_OP_DEC);
+
+                    age |= REG_AGE_CHANGE;
+                    SF2SW_WREG(sw_unit, PAGE_MANAGEMENT, REG_AGING_TIME_CTRL, &age, 4);  // restore previous aging config
+                } else
+#endif
+              {
                 uint8_t ctrl;
                 SF2SW_WREG(sw_unit, PAGE_CONTROL, REG_FAST_AGING_PORT, &port, 1);
                 ctrl = FAST_AGE_START_DONE | FAST_AGE_DYNAMIC | FAST_AGE_PORT;
                 _fast_age_start_done_ext(sw_unit, ctrl);
+              }
             } else {							// otherwise delete entry
                 ret |= _enet_arl_remove_ext(sw_unit, ptr);
             }
@@ -1205,7 +1224,7 @@ int ioctl_extsw_port_irc_set(struct ethswctl_data *e)
         {
             rf = rf / 1000 + 27;
         }
-#if !(defined(CONFIG_BCM96756) || defined(CONFIG_BCM96765))
+#if !(defined(CONFIG_BCM96756) || defined(CONFIG_BCM96765) || defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764))
         else
         {
             rf = rf / 1000 / 8 + 115;
@@ -1387,6 +1406,7 @@ int ioctl_extsw_dos_ctrl(struct ethswctl_data *e)
     return BCM_E_NONE;
 }
 
+#define RDBIT(n)    ((v32>>(n))&1)
 // ----------- SIOCETHSWCTLOPS ETHSWSNOOPCTRL functions ---
 int ioctl_extsw_snoop_ctrl(struct ethswctl_data *e, char *buf, int usz)
 {
@@ -1401,16 +1421,38 @@ int ioctl_extsw_snoop_ctrl(struct ethswctl_data *e, char *buf, int usz)
     {
         SF2SW_RREG(e->unit, PAGE_MANAGEMENT, REG_HL_PRTC_CTRL, (uint8 *)&v32, 4);
         e->snoopCtrl.val = v32;
+#if defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764)
+      if (e->unit == 0)
+        sprintf(buf,"    protocol:enable/mode(1=cpuOnly;0=L2result+cpu)\n"
+                    "        arp:%d/%d rarp:%d/%d dhcp:%d/%d icmpv4:%d/%d icmpv6:%d/%d\n"
+                    "        dns:%d/%d https:%d/%d\n"
+                    "        igmp] dip:%d/- report_leave:%d/%d query:%d/%d unknown:%d/%d\n"
+                    "        mld ] report_done:%d/%d query:%d/%d\n",
+            RDBIT(0),RDBIT(20),  RDBIT(1),RDBIT(21), RDBIT(2),RDBIT(22),  RDBIT(3),RDBIT(23), RDBIT(4),RDBIT(5),
+            RDBIT(24),RDBIT(25), RDBIT(26),RDBIT(27),
+            RDBIT(8),            RDBIT(9),RDBIT(10), RDBIT(11),RDBIT(12), RDBIT(13),RDBIT(14),
+            RDBIT(15),RDBIT(16), RDBIT(17),RDBIT(18));
+      else
+#endif
         sprintf(buf,"    protocol:enable/mode(1=cpuOnly;0=L2result+cpu)\n"
                     "        arp:%d/- rarp:%d/- dhcp:%d/- icmpv4:%d/- icmpv6:%d/%d\n"
                     "        igmp] dip:%d/- report_leave:%d/%d query:%d/%d unknown:%d/%d\n"
                     "        mld ] report_done:%d/%d query:%d/%d\n",
-            v32&1, v32>>1&1, v32>>2&1, v32>>3&1, v32>>4&1, v32>>5&1,
-            v32>>8&1, v32>>9&1, v32>>10&1, v32>>11&1, v32>>12&1, v32>>13&1, v32>>14&1,
-            v32>>15&1, v32>>16&1, v32>>17&1, v32>>18&1);
+            RDBIT(0),            RDBIT(1),           RDBIT(2),            RDBIT(3),           RDBIT(4),RDBIT(5),
+            RDBIT(8),            RDBIT(9),RDBIT(10), RDBIT(11),RDBIT(12), RDBIT(13),RDBIT(14),
+            RDBIT(15),RDBIT(16), RDBIT(17),RDBIT(18));
     }
     else if (e->type == TYPE_HELP)
     {
+#if defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764)
+      if (e->unit == 0)
+        strcat(buf, "               protocol:en_bit/mode_bit(1=cpuOnly;0=L2result+cpu)\n"
+                    "     <value> = arp:0/20 rarp:1/21 dhcp:2/22 icmpv4:3/23 icmpv6:4/5\n"
+                    "               dns:24/25 https:26/27\n"
+                    "               igmp] dip:8/- report_leave:9/10 query:11/12 unknown:13/14\n"
+                    "               mld ] report_done:15/16 query:17/18\n");
+      else
+#endif
         strcat(buf, "               protocol:en_bit/mode_bit(1=cpuOnly;0=L2result+cpu)\n"
                     "     <value> = arp:0/- rarp:1/- dhcp:2/- icmpv4:3/- icmpv6:4/5\n"
                     "               igmp] dip:8/- report_leave:9/10 query:11/12 unknown:13/14\n"
@@ -1589,22 +1631,25 @@ int port_sw_port_role_set(enetx_port_t *self, port_netdev_role_t role)
 
     self->n.port_netdev_role = role;
 
-   /* Configure WAN port */
-    SF2SW_RREG(unit, PAGE_CONTROL, REG_WAN_PORT_MAP, &wan_port_map, sizeof(wan_port_map));
-
-    if (role == PORT_NETDEV_ROLE_LAN)
+    if (!self->port_info.swtag_use_pvid || role == PORT_NETDEV_ROLE_NONE)
     {
-        wan_port_map &= ~(1<<self->port_info.port); /* remove the WAN port in the port map */
-    }
-    else
-    {
-        wan_port_map |= (1<<self->port_info.port); /* Add the WAN port in the port map */
-    }
-    SF2SW_WREG(unit, PAGE_CONTROL, REG_WAN_PORT_MAP, &wan_port_map, sizeof(wan_port_map));
+       /* Configure WAN port */
+        SF2SW_RREG(unit, PAGE_CONTROL, REG_WAN_PORT_MAP, &wan_port_map, sizeof(wan_port_map));
 
-    enet_dbg(" %s port %s as WAN; wan_pmap <0x%02x>\n", (role!=PORT_NETDEV_ROLE_LAN)?"Add":"Remove", self->obj_name, wan_port_map);
-    /* Disable learning */
-    SF2SW_WREG(unit, PAGE_CONTROL, REG_DISABLE_LEARNING, &wan_port_map, sizeof(wan_port_map));
+        if (role == PORT_NETDEV_ROLE_LAN)
+        {
+            wan_port_map &= ~(1<<self->port_info.port); /* remove the WAN port in the port map */
+        }
+        else
+        {
+            wan_port_map |= (1<<self->port_info.port); /* Add the WAN port in the port map */
+        }
+        SF2SW_WREG(unit, PAGE_CONTROL, REG_WAN_PORT_MAP, &wan_port_map, sizeof(wan_port_map));
+
+        enet_dbg(" %s port %s as WAN; wan_pmap <0x%02x>\n", (role!=PORT_NETDEV_ROLE_LAN)?"Add":"Remove", self->obj_name, wan_port_map);
+        /* Disable learning */
+        SF2SW_WREG(unit, PAGE_CONTROL, REG_DISABLE_LEARNING, &wan_port_map, sizeof(wan_port_map));
+    }
 
     /* NOTE : No need to change the PBVLAN map -- switch logic does not care about pbvlan when the port is WAN */
 
@@ -1617,7 +1662,7 @@ int port_sw_port_role_set(enetx_port_t *self, port_netdev_role_t role)
     {
         BCM_EnetPortRole_t port_role;
 
-#if defined(CONFIG_BCM96756) || defined(CONFIG_BCM96765)
+#if defined(SF2_DUAL)
         port_role.sysport = 0;
         port_role.switch_id = unit;
 #else
@@ -1633,7 +1678,8 @@ int port_sw_port_role_set(enetx_port_t *self, port_netdev_role_t role)
 #endif
     }
 
-    port_set_wan_role_link(self, role);
+    if (!self->port_info.swtag_use_pvid)
+        port_set_wan_role_link(self, role);
 
     return 0;
 }

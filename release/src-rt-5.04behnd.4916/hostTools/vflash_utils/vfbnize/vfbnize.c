@@ -1,28 +1,22 @@
 /*
 <:copyright-BRCM:2019:DUAL/GPL:standard
 
-   Copyright (c) 2019 Broadcom
+   Copyright (c) 2019 Broadcom 
    All Rights Reserved
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
 :>
 
@@ -54,6 +48,8 @@ written consent.
 #define VF_LUN_FLAG_VALID        0x00000001
 #define VF_LUN_FLAG_DYNAMIC      0x00000002
 #define VF_LUN_FLAG_READ_ONLY    0x00000010
+#define VF_LUN_FLAG_ENCRYPTED    0x00000040     /* Transparent LUN encryption */
+#define VF_LUN_FLAG_HIDDEN       0x00000080     /* LUN is visible only to the SMC */
 
 static const struct option long_options[] = {
     { .name = "device",         .has_arg = 1, .flag = NULL, .val = 'd' },
@@ -320,8 +316,30 @@ static int read_section(const char *sname)
         if (!strcasecmp(p, "yes"))
             lun.flags |= VF_LUN_FLAG_READ_ONLY;
         else if (strcasecmp(p, "no"))
-            return PRINT_ERR("Expected read_only=yes|no in section \"%s\" is not unique\n", sname);
+            return PRINT_ERR("Expected read_only=yes|no in section \"%s\". %s value is invalid\n", sname, p);
         PRINT_VERBOSE("\tread_only=%s\n", p);
+    }
+
+    /* Fetch encrypted flag, if any */
+    sprintf(buf, "%s:encrypted", sname);
+    p = iniparser_getstring(cmd_args.dict, buf, NULL);
+    if (p != NULL) {
+        if (!strcasecmp(p, "yes"))
+            lun.flags |= VF_LUN_FLAG_ENCRYPTED;
+        else if (strcasecmp(p, "no"))
+            return PRINT_ERR("Expected encrypted=yes|no in section \"%s\". %s value is invalid\n", sname, p);
+        PRINT_VERBOSE("\tencrypted=%s\n", p);
+    }
+
+    /* Fetch 'hidden' flag, if any */
+    sprintf(buf, "%s:hidden", sname);
+    p = iniparser_getstring(cmd_args.dict, buf, NULL);
+    if (p != NULL) {
+        if (!strcasecmp(p, "yes"))
+            lun.flags |= VF_LUN_FLAG_HIDDEN;
+        else if (strcasecmp(p, "no"))
+            return PRINT_ERR("Expected hidden=yes|no in section \"%s\". %s value is invalid\n", sname, p);
+        PRINT_VERBOSE("\thidden=%s\n", p);
     }
 
     /* Final validation */

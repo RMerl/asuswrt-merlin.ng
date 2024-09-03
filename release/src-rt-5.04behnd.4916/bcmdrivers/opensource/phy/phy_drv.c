@@ -3,27 +3,21 @@
    All Rights Reserved
 
     <:label-BRCM:2015:DUAL/GPL:standard
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
 :>
 */
 
@@ -104,28 +98,6 @@ int phy_driver_set(phy_drv_t *phy_drv)
 }
 EXPORT_SYMBOL(phy_driver_set);
 
-static int phy_drv_init(phy_drv_t *phy_drv)
-{
-    if (phy_drv->initialized)
-        return 0;
-
-    if (!phy_drv->drv_init)
-        return 0;
-
-    return phy_drv->drv_init(phy_drv);
-}
-
-int phy_driver_init(phy_type_t phy_type)
-{
-    phy_drv_t *phy_drv;
-
-    if (!(phy_drv = phy_drivers[phy_type]))
-        return 0;
-
-    return phy_drv_init(phy_drv);
-}
-EXPORT_SYMBOL(phy_driver_init);
-
 int phy_drivers_set(void)
 {
     int ret = 0;
@@ -185,29 +157,6 @@ int phy_drivers_set(void)
     return ret;
 }
 EXPORT_SYMBOL(phy_drivers_set);
-
-int phy_drivers_init(void)
-{
-    int ret = 0;
-
-#ifndef CONFIG_BRCM_QEMU
-    ret |= phy_driver_init(PHY_TYPE_EGPHY);
-    ret |= phy_driver_init(PHY_TYPE_DSL_GPHY);
-    ret |= phy_driver_init(PHY_TYPE_SGMII);
-    ret |= phy_driver_init(PHY_TYPE_EXT1);
-    ret |= phy_driver_init(PHY_TYPE_EXT2);
-    ret |= phy_driver_init(PHY_TYPE_EXT3);
-    ret |= phy_driver_init(PHY_TYPE_MPTWO);
-    ret |= phy_driver_init(PHY_TYPE_SHORTFIN);
-    ret |= phy_driver_init(PHY_TYPE_SHASTA);
-    ret |= phy_driver_init(PHY_TYPE_WAN_AE);
-    ret |= phy_driver_init(PHY_TYPE_CROSSBAR);
-    ret |= phy_driver_init(PHY_TYPE_MAC2MAC);
-    ret |= phy_driver_init(PHY_TYPE_PON);
-#endif
-    return ret;
-}
-EXPORT_SYMBOL(phy_drivers_init);
 
 int phy_dev_prog(phy_dev_t *phy_dev, prog_entry_t *prog_entry)
 {
@@ -553,9 +502,17 @@ void phy_dev_link_change_notify(phy_dev_t *phy_dev)
     if (old_link && phy_dev->link && (old_speed != phy_dev->speed || old_duplex != phy_dev->duplex))
         phy_dev->link = 0;
 
-    if (phy_dev->link != old_link && phy_dev->link_change_cb)
+    if (phy_dev->link != old_link)
     {
-        phy_dev->link_change_cb(phy_dev->link_change_ctx);
+        if (phy_dev->link)
+        {
+            phy_dev->link_flaps++;
+            phy_dev->link_flaps_per_min = (phy_dev->link_flaps_per_min + 1*60/(jiffies_to_msecs(jiffies - phy_dev->link_flaps_jiffies)/1000))/2;
+            phy_dev->link_flaps_jiffies = jiffies;
+        }
+
+        if (phy_dev->link_change_cb)
+            phy_dev->link_change_cb(phy_dev->link_change_ctx);
     }
 }
 EXPORT_SYMBOL(phy_dev_link_change_notify);
@@ -592,13 +549,21 @@ static void phy_devices_link_change_notify(void)
     }
 }
 
+static int stop_link_timer = 0;
 static struct timer_list phy_link_timer;
 static int phy_link_timer_refs = 0;
 
 static void phy_link_work_cb(struct work_struct *work)
 {
-    phy_devices_link_change_notify();
-    mod_timer(&phy_link_timer, jiffies + msecs_to_jiffies(1000));
+    if (stop_link_timer)
+    {
+        del_timer(&phy_link_timer);
+    }
+    else
+    {
+        mod_timer(&phy_link_timer, jiffies + msecs_to_jiffies(1000));
+        phy_devices_link_change_notify();
+    }
 }
 
 DECLARE_WORK(_work, phy_link_work_cb);
@@ -617,7 +582,7 @@ static void phy_link_timer_start(void)
 
 static void phy_link_timer_stop(void)
 {
-    del_timer(&phy_link_timer);
+    stop_link_timer = 1;
 }
 
 void phy_dev_link_change_register(phy_dev_t *phy_dev, link_change_cb_t cb, void *ctx)
@@ -643,6 +608,12 @@ EXPORT_SYMBOL(phy_dev_link_change_register);
 
 void phy_dev_link_change_unregister(phy_dev_t *phy_dev)
 {
+    if (!phy_dev)
+    {
+        phy_link_timer_stop();
+        return;
+    }
+
     if (phy_dev->link_change_cb == NULL)
         return;
 
@@ -1674,29 +1645,42 @@ int logger_write(int message_verbose_level, const char *format, ...)
     return r;
 }
 
-/* power down all PHYs through GPIO if exist, except for the given _phy_dev) */
-void phy_devices_shutdown(phy_dev_t *_phy_dev)
+/* power down all PHYs through GPIO if exist, except for those who are used for wake signals */
+void phy_devices_shutdown(void)
 {
-    uint32_t i;
+    uint32_t i, j;
 
+    /* mark all ports of USXGMII-M PHY for skip if one port should be kept up */
+    for (i = 0; i < MAX_PHY_DEVS; i++)
+    {
+        phy_dev_t *phy_dev_i = &phy_devices[i];
+
+        if (!phy_dev_i->link)
+            continue;
+
+        for (j = 0; j < MAX_PHY_DEVS; j++)
+        {
+            phy_dev_t *phy_dev_j = &phy_devices[j];
+
+            if (phy_dev_i->inter_phy_types & INTER_PHY_TYPE_USXGMII_MP_M &&
+                phy_dev_j->inter_phy_types & INTER_PHY_TYPE_USXGMII_MP_M)
+            {
+                phy_dev_j->link = -1;
+            }
+        }
+    }
+
+    /* shut down unused PHYs */
     for (i = 0; i < MAX_PHY_DEVS; i++)
     {
         phy_dev_t *phy_dev = &phy_devices[i];
 
-        if (!_phy_dev)
-            goto power_down;
-
-        if (phy_dev == _phy_dev)
-            continue;
-
-        if (_phy_dev->inter_phy_types & INTER_PHY_TYPE_USXGMII_MP_M &&
-            phy_dev->inter_phy_types & INTER_PHY_TYPE_USXGMII_MP_M)
+        if (phy_dev->link < 0)
         {
-            printk("phy_devices_shutdown: skipping USXGMII-M port 0x%x\n", phy_dev->addr);
+            printk("phy_devices_shutdown: skipping PHY 0x%x\n", phy_dev->addr);
             continue;
         }
 
-power_down:
         if (dt_gpio_exists(phy_dev->gpiod_phy_reset))
         {
             printk("phy_devices_shutdown: PHY reset 0x%x\n", phy_dev->addr);

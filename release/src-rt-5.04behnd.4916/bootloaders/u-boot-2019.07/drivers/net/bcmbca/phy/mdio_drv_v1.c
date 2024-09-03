@@ -34,7 +34,7 @@ static int mdio_probe(dt_device_t *pdev)
     dt_handle_t dt_handle = dt_dev_get_handle(pdev);
 
     slow_clock_divider = dt_property_read_u32_default(dt_handle, "clock-divider", 12);
-    fast_clock_divider = dt_property_read_u32_default(dt_handle, "clock-divider-fast", 4);
+    fast_clock_divider = dt_property_read_u32_default(dt_handle, "clock-divider-fast", FAST_CLOCK_DIVIDER);
 
     mdio_base = dt_dev_remap(pdev, 0);
     if (IS_ERR(mdio_base))

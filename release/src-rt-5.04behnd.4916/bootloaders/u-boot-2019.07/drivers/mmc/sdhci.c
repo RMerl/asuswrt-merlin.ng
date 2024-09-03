@@ -22,6 +22,16 @@ void *aligned_buffer;
 static void sdhci_reset(struct sdhci_host *host, u8 mask)
 {
 	unsigned long timeout;
+	u16 clk = 0;
+
+	if(!(mask & SDHCI_RESET_ALL)) {
+		/* Workaround for clk gated CMD/DAT resets in 5.1 controller. Internal 
+		 * Clk enable must be set for reset logic to clear reset bits
+		 */
+		clk = sdhci_readw(host, SDHCI_CLOCK_CONTROL);
+		if(!(clk & SDHCI_CLOCK_INT_EN))
+			sdhci_writew(host, clk|SDHCI_CLOCK_INT_EN, SDHCI_CLOCK_CONTROL);
+	}
 
 	/* Wait max 100 ms */
 	timeout = 100;
@@ -30,10 +40,17 @@ static void sdhci_reset(struct sdhci_host *host, u8 mask)
 		if (timeout == 0) {
 			printf("%s: Reset 0x%x never completed.\n",
 			       __func__, (int)mask);
-			return;
+			goto sdhci_reset_return;
 		}
 		timeout--;
 		udelay(1000);
+	}
+
+sdhci_reset_return:
+	if(!(mask & SDHCI_RESET_ALL)) {
+		/* Restore clock settings if overridden and not doing a total core reset */
+		if(!(clk & SDHCI_CLOCK_INT_EN))
+			sdhci_writew(host, clk, SDHCI_CLOCK_CONTROL);
 	}
 }
 

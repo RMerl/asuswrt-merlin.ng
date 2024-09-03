@@ -4,25 +4,19 @@
       Copyright (c) 2015 Broadcom 
       All Rights Reserved
    
-   Unless you and Broadcom execute a separate written software license
-   agreement governing use of this software, this software is licensed
-   to you under the terms of the GNU General Public License version 2
-   (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-   with the following added to such license:
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License, version 2, as published by
+   the Free Software Foundation (the "GPL").
    
-      As a special exception, the copyright holders of this software give
-      you permission to link this software with independent modules, and
-      to copy and distribute the resulting executable under terms of your
-      choice, provided that you also meet, for each linked independent
-      module, the terms and conditions of the license of that module.
-      An independent module is a module which is not derived from this
-      software.  The special exception does not apply to any modifications
-      of the software.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
    
-   Not withstanding the above, under no circumstances may you combine
-   this software in any way with any other Broadcom software provided
-   under a license other than the GPL, without Broadcom's express prior
-   written consent.
+   
+   A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+   writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.
    
    :>
  */
@@ -50,14 +44,22 @@ inline void platform_set_imp_speed(enetx_port_t *self)
 #if defined(SF2_EXTERNAL) || defined(SF2_DUAL)
     int unit = IS_ROOT_SW(self)?0:1;
     uint32 val32;
+    phy_dev_t *phy_dev;
+    phy_drv_t *phy_drv;
+
     // if sf2 connect thru serdes program SGMII sequences
-#if defined(CONFIG_BCM96756)
-    if (self->s.parent_port && self->s.parent_port->p.phy->phy_drv->phy_type == PHY_TYPE_6756CLASS_SERDES) {
-#elif defined(CONFIG_BCM96765)
-    if (self->s.parent_port && self->s.parent_port->p.phy->phy_drv->phy_type == PHY_TYPE_146CLASS_SERDES) {
-#elif defined(CONFIG_BCM947622)
-    if (self->s.parent_port && self->s.parent_port->p.phy->phy_drv->phy_type == PHY_TYPE_138CLASS_SERDES) {
-#endif
+    if (!self->s.parent_port)
+        return;
+
+    phy_dev = self->s.parent_port->p.phy? self->s.parent_port->p.phy : self->s.parent_port->p.delayed_phy;
+    if (!phy_dev)
+        return;
+    phy_drv = phy_dev->phy_drv;
+
+    if (phy_drv->phy_type == PHY_TYPE_6756CLASS_SERDES ||
+        phy_drv->phy_type == PHY_TYPE_146CLASS_SERDES ||
+        phy_drv->phy_type == PHY_TYPE_138CLASS_SERDES)
+    {
         // program 53134 IMP SMGII force 2.5G fiber (sequence provided by 53134 AE)
         val32 = 0x0001; SF2SW_WREG(unit, 0xe6, 0x00, &val32, 1);
         val32 = 0x8000; SF2SW_WREG(unit, 0x14, 0x3e, &val32, 2);  // BLK0 Block Address
@@ -94,6 +96,9 @@ inline void platform_set_imp_speed(enetx_port_t *self)
 #endif
     *sw_ctrl_reg = val32;
 #endif //!SF2_EXTERNAL
+
+    if (SWITCH_ETH_MISC_BASE)
+        *SWITCH_ETH_MISC_CLKRST_CNTRL |= ETH_MISC_CLKRST_CNTRL_IMP_CLK_SEL;
 }
 
 inline void platform_enable_p8_rdp_sel(void)
@@ -305,6 +310,15 @@ static int port_imp_emac_map[MAX_SWITCH_PORTS+1] = {[0 ... MAX_SWITCH_PORTS] = -
 #if !defined(CONFIG_BCM_HND_EAP)
     #define PORT_WITH_8TXQ          0
 #endif
+// ============================================================================
+#elif defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764)
+    #define DEFAULT_IMP_PBMAP       (PBMAP_MIPS)
+    
+    //  28 tx queues  
+    //      max use case p0_WAN 8q + p5_sw_4p 4x4q + p6 4q (total 28)
+#if !defined(CONFIG_BCM_HND_EAP)
+    #define PORT_WITH_8TXQ          0
+#endif
 #endif
 
 /************************************************************
@@ -312,9 +326,9 @@ static int port_imp_emac_map[MAX_SWITCH_PORTS+1] = {[0 ... MAX_SWITCH_PORTS] = -
  ************************************************************/
 #if defined(CONFIG_BCM963178)
     #define SF2_MAX_BUFFER_IN_PAGE          0x200   // 128K buffers
-#elif defined(CONFIG_BCM96756)
+#elif defined(CONFIG_BCM96756) || defined(CONFIG_BCM96764)
     #define SF2_MAX_BUFFER_IN_PAGE          0x300   // 192k buffers
-#elif defined(CONFIG_BCM96765)
+#elif defined(CONFIG_BCM96765) || defined(CONFIG_BCM96766)
     #define SF2_MAX_BUFFER_IN_PAGE          0x400   // 256k buffers
 #else 
     #define SF2_MAX_BUFFER_IN_PAGE          0x600   // 384k buffers

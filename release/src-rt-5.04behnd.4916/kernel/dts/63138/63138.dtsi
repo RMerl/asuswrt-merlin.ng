@@ -258,11 +258,20 @@
 			#include "../ip/bcm_sdhci.dtsi"
 		};
 
+#if defined (CONFIG_MMC_OOPS) || (CONFIG_MMC_OOPS_MODULE)
+		mmcoops {
+			#define MMC_OOPS_DUMP_OFFSET    1536 /* 768KB */
+			#define MMC_OOPS_DUMP_SIZE      512  /* 256KB */	
+			#define MMC_OOPS_DUMP_RECSIZE   128  /* 64KB  */
+			#include "../ip/bcm_mmc_oops.dtsi"
+		};
+#endif
+
 		hs_uart0: hs_serial0 {
 			#define UART_OFFSET			0x4400
 			#define UART_SIZE			0x1E0
-			#define PROG_OUT_OFFSET		0x8628
-			#define PROG_OUT_SIZE		4
+			#define PROG_OUT_OFFSET			0x0628
+			#define PROG_OUT_SIZE			4
 			#define UART_SPI			34
 			#include "../ip/bcm_hs_uart.dtsi"
 		};

@@ -4,25 +4,19 @@
 
 <:label-BRCM:2017:DUAL/GPL:standard
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
 :>
 */
@@ -58,9 +52,12 @@ written consent.
 
 #define ARCHER_IFNAMSIZ  16
 
-#if defined(CHIP_6765) || defined(CONFIG_BCM96765)
+#if defined(CHIP_6765) || defined(CONFIG_BCM96765) || \
+    defined(CHIP_6766) || defined(CONFIG_BCM96766)
 #define HW_TXQ_SHAPER
 #define HW_SVQ_SHAPER
+#elif defined(CHIP_6764) || defined(CONFIG_BCM96764)
+#define HW_TXQ_SHAPER
 #endif
 
 /*
@@ -109,6 +106,10 @@ typedef enum {
     ARCHER_DECL(ARCHER_IOC_XTMTXQSTATS_GET)
     ARCHER_DECL(ARCHER_IOC_WLFLCTLCFG_SET)
     ARCHER_DECL(ARCHER_IOC_WLFLCTLCFG_GET)
+    ARCHER_DECL(ARCHER_IOC_SOCKET_BUDGET_GET)
+    ARCHER_DECL(ARCHER_IOC_SOCKET_BUDGET_SET)
+    ARCHER_DECL(ARCHER_IOC_SOCKET_RXQ_CFG_GET)
+    ARCHER_DECL(ARCHER_IOC_SOCKET_RXQ_CFG_SET)
     ARCHER_DECL(ARCHER_IOC_MAX)
 } archer_ioctl_cmd_t;
 
@@ -248,6 +249,7 @@ typedef enum {
     ARCHER_SQ_CMD_QUEUE_MAP,
     ARCHER_SQ_CMD_QUEUE_SET,
     ARCHER_SQ_CMD_QUEUE_GET,
+    ARCHER_SQ_CMD_QUEUE_STATS_GET,
     ARCHER_SQ_CMD_GROUP_ENABLE,
     ARCHER_SQ_CMD_GROUP_SET,
     ARCHER_SQ_CMD_GROUP_GET,
@@ -279,6 +281,8 @@ typedef struct {
     unsigned int queue_index;
     int min_kbps;
     int max_kbps;
+    unsigned int tx_pkts, tx_bytes;
+    unsigned int dropped_pkts, dropped_bytes;
 } archer_dpi_arg_t;
 
 typedef enum {
@@ -312,6 +316,18 @@ typedef struct {
     unsigned int queue_id;
     archer_drop_config_t config;
 } archer_drop_ioctl_t;
+
+typedef struct {
+    int socket;
+    int budget;
+    uint8_t fwq;
+} archer_socket_budget_ioctl_t;
+
+typedef struct {
+    int socket;
+    int max_pkts;
+    int budget;
+} archer_socket_rxq_cfg_ioctl_t;
 
 typedef enum {
     ARCHER_SYSPORT_CMD_REG_DUMP,

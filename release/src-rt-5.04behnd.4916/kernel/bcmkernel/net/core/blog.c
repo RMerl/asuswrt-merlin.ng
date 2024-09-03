@@ -5,25 +5,19 @@
 *
 <:label-BRCM:2012:DUAL/GPL:standard
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
 :>
 */
@@ -45,10 +39,11 @@ written consent.
 #include <linux/blog_net.h>
 #include <linux/nbuff.h>
 #include <linux/skbuff.h>
-#include <linux/proc_fs.h>
 #include <linux/bcm_skb_defines.h>
 #include <linux/notifier.h>
+#if defined(CC_BLOG_SUPPORT_DBG_PKT_FILTER)
 #include <linux/inet.h>
+#endif
 #include <net/netevent.h>
 #if defined(CONFIG_XFRM)
 #include <net/xfrm.h>
@@ -74,7 +69,6 @@ written consent.
 
 #include <net/dsfield.h>
 #include <linux/netfilter/xt_dscp.h>
-#include <linux/inetdevice.h>
 #include <blog_ioctl.h>
 #include "blog_inline.h"
 
@@ -117,588 +111,6 @@ static uint8_t blog_tos_tbl[BLOG_MAX_TOS_TBLSZ];
  * {ack priority, length priority, dscp value, tos value}
  */
 static uint32_t blog_mangl_params[BLOG_MAX_FEATURES];
-
-#if IS_ENABLED(CONFIG_WIREGUARD)
-static void blog_procfs_init(void);
-#define PROCFS_BLOG	"blog"
-
-static ssize_t skip_wg_port_proc_read(struct file *file,
-    char __user *buf, size_t cnt, loff_t *offset);
-static ssize_t skip_wg_port_proc_write(struct file *file,
-    const char __user *buf, size_t cnt, loff_t *data);
-
-static ssize_t skip_wg_network_proc_read(struct file *file,
-    char __user *buf, size_t cnt, loff_t *offset);
-static ssize_t skip_wg_network_proc_write(struct file *file,
-    const char __user *buf, size_t cnt, loff_t *data);
-
-static const struct file_operations skip_wg_port_proc_fops = {
-    .read  = skip_wg_port_proc_read,
-    .write = skip_wg_port_proc_write,
-};
-
-static const struct file_operations skip_wg_network_proc_fops = {
-    .read  = skip_wg_network_proc_read,
-    .write = skip_wg_network_proc_write,
-};
-
-enum match_type {
-    MATCH_NONE,
-    MATCH_DEST,
-    MATCH_SRC,
-    MATCH_EITHER,
-};
-
-char *match_type_str[] = { "none", "dport", "sport", "either" };
-
-struct wg_port {
-    uint16_t port;
-    enum match_type match_type;
-};
-
-struct wg_network {
-    struct in_addr ip;
-    uint16_t prefixlen;
-};
-
-struct wg_network_ip6 {
-    struct in6_addr ip;
-    uint16_t prefixlen;
-};
-
-#define WG_PORT_TBL_SZ 8
-struct wg_port wg_port[WG_PORT_TBL_SZ];
-uint16_t wg_port_cnt;
-
-#define WG_NETWORK_TBL_SZ 64
-struct wg_network wg_network[WG_NETWORK_TBL_SZ];
-uint16_t wg_network_cnt;
-
-struct wg_network_ip6 wg_network_ip6[WG_NETWORK_TBL_SZ];
-uint16_t wg_network_ip6_cnt;
-
-static void
-blog_procfs_init(void)
-{
-    struct proc_dir_entry *entry;
-
-    proc_mkdir( PROCFS_BLOG, NULL );
-
-    entry = proc_create_data( PROCFS_BLOG "/skip_wireguard_port", S_IRUGO,
-        NULL, &skip_wg_port_proc_fops, NULL );
-    if ( !entry )
-    {
-        printk( CLRerr "%s Unable to create proc entry for skip_wireguard_port"
-            CLRnl, __FUNCTION__);
-    }
-
-    entry = proc_create_data( PROCFS_BLOG "/skip_wireguard_network", S_IRUGO,
-        NULL, &skip_wg_network_proc_fops, NULL );
-    if ( !entry )
-    {
-        printk( CLRerr "%s Unable to create proc entry for skip_wireguard_network"
-            CLRnl, __FUNCTION__);
-    }
-}
-
-static ssize_t
-skip_wg_port_proc_read(struct file *file, char __user *buf, size_t cnt,
-    loff_t *offset)
-{
-    int len = 0;
-    int i;
-
-    if ( *offset != 0 )
-    {
-        return 0;
-    }
-
-    for ( i = 0; i < WG_PORT_TBL_SZ; i++ )
-    {
-        if ( wg_port[i].port != 0 && wg_port[i].match_type != MATCH_NONE )
-        {
-            len += sprintf( buf + len, "%u %s\n",
-                wg_port[i].port, match_type_str[wg_port[i].match_type] );
-        }
-    }
-
-    *offset = len;
-
-    return len;
-}
-
-static int
-find_wg_port(uint16_t port)
-{
-    int i;
-
-    for ( i = 0; i < WG_PORT_TBL_SZ; i++ )
-    {
-        if ( wg_port[i].port == port )
-        {
-            return i;
-        }
-    }
-
-    return -1;
-}
-
-static int
-find_empty_wg_port(void)
-{
-    return find_wg_port( 0 );
-}
-
-static void
-update_wg_port_cnt(void)
-{
-    int i;
-
-    wg_port_cnt = 0;
-
-    for ( i = 0; i < WG_PORT_TBL_SZ; i++ )
-    {
-        if ( wg_port[i].port )
-        {
-            wg_port_cnt++;
-        }
-    }
-}
-
-static ssize_t
-skip_wg_port_proc_write(struct file *file, const char __user *buf, size_t cnt,
-    loff_t *data)
-{
-    char proc_data[128];
-    char *pdata;
-    char *token;
-    char *cmdstr = NULL;
-    char *portstr = NULL;
-    char *matchstr = NULL;
-
-    bool add;
-    uint32_t port;
-    enum match_type match_type;
-    int entry;
-
-    copy_from_user( proc_data, buf, cnt );
-    pdata = proc_data;
-
-    while ( (token = strsep(&pdata, " ")) != NULL )
-    {
-        if ( strlen(token) > 0 )
-        {
-            if ( cmdstr == NULL )
-            {
-                cmdstr = token;
-            }
-            else if ( portstr == NULL )
-            {
-                portstr = token;
-            }
-            else if ( matchstr == NULL )
-            {
-                matchstr = token;
-                break;
-            }
-        }
-    }
-
-    if ( cmdstr == NULL || portstr == NULL )
-    {
-        return -EINVAL;
-    }
-
-    if ( !strncmp(cmdstr, "add", 3) )
-    {
-        add = true;
-    }
-    else if ( !strncmp(cmdstr, "del", 3) )
-    {
-        add = false;
-    }
-    else
-    {
-        return -EINVAL;
-    }
-
-    port = simple_strtoul( portstr, NULL, 10 );
-    if ( port == 0 || port > 65535 )
-    {
-        return -EINVAL;
-    }
-
-    if ( add )
-    {
-        if ( matchstr == NULL )
-        {
-            return -EINVAL;
-        }
-
-        if ( !strncmp(matchstr, "dport", 5) )
-        {
-            match_type = MATCH_DEST;
-        }
-        else if ( !strncmp(matchstr, "sport", 5) )
-        {
-            match_type = MATCH_SRC;
-        }
-        else if ( !strncmp(matchstr, "either", 6) )
-        {
-            match_type = MATCH_EITHER;
-        }
-        else
-        {
-            return -EINVAL;
-        }
-    }
-
-    blog_print( "%s %u %s", add? "ADD": "DEL", port, add? match_type_str[match_type]: "" );
-
-    BLOG_LOCK_TBL();
-
-    entry = find_wg_port( port );
-
-    if ( add )
-    {
-        /* duplicate entry */
-        if ( entry >= 0 && entry < WG_PORT_TBL_SZ )
-        {
-            BLOG_UNLOCK_TBL();
-            return -EINVAL;
-        }
-
-        entry = find_empty_wg_port();
-        if ( entry < 0 || entry >= WG_PORT_TBL_SZ )
-        {
-            BLOG_UNLOCK_TBL();
-            return -EINVAL;
-        }
-
-        wg_port[entry].port = port;
-        wg_port[entry].match_type = match_type;
-    }
-    else
-    {
-        /* cannot find input entry */
-        if ( entry < 0 || entry >= WG_PORT_TBL_SZ )
-        {
-            BLOG_UNLOCK_TBL();
-            return -EINVAL;
-        }
-
-        wg_port[entry].port = 0;
-        wg_port[entry].match_type = MATCH_NONE;
-    }
-
-    update_wg_port_cnt();
-
-    BLOG_UNLOCK_TBL();
-
-    return cnt;
-}
-
-static ssize_t
-skip_wg_network_proc_read(struct file *file, char __user *buf, size_t cnt,
-    loff_t *offset)
-{
-    int len = 0;
-    int i;
-
-    if ( *offset != 0 )
-    {
-        return 0;
-    }
-
-    for ( i = 0; i < WG_NETWORK_TBL_SZ; i++ )
-    {
-        if ( wg_network[i].prefixlen != 0 )
-        {
-            len += sprintf( buf + len, "%u.%u.%u.%u/%u\n",
-                BLOG_IPV4_ADDR(wg_network[i].ip), wg_network[i].prefixlen );
-        }
-    }
-
-    for ( i = 0; i < WG_NETWORK_TBL_SZ; i++ )
-    {
-        if ( wg_network_ip6[i].prefixlen != 0 )
-        {
-            len += sprintf( buf + len, "%x:%x:%x:%x:%x:%x:%x:%x/%u\n",
-                BLOG_IPV6_ADDR(wg_network_ip6[i].ip), wg_network_ip6[i].prefixlen );
-        }
-    }
-
-    *offset = len;
-
-    return len;
-}
-
-static int
-find_wg_network(void *ipaddr, int family, uint16_t prefixlen)
-{
-    struct in_addr *ip;
-    struct in6_addr *ip6;
-    int i;
-
-    if ( !ipaddr )
-    {
-        return -1;
-    }
-
-    if ( family == AF_INET )
-    {
-        ip = (struct in_addr *)ipaddr;
-
-        for ( i = 0; i < WG_NETWORK_TBL_SZ; i++ )
-        {
-            if ( ( wg_network[i].prefixlen == prefixlen ) &&
-                ( wg_network[i].ip.s_addr == ip->s_addr ) )
-            {
-                return i;
-            }
-        }
-    }
-    else if ( family == AF_INET6 )
-    {
-        ip6 = (struct in6_addr *)ipaddr;
-
-        for ( i = 0; i < WG_NETWORK_TBL_SZ; i++ )
-        {
-            if ( ( wg_network_ip6[i].prefixlen == prefixlen ) &&
-                ipv6_addr_equal(&wg_network_ip6[i].ip, ip6) )
-            {
-                return i;
-            }
-        }
-    }
-
-    return -1;
-}
-
-static int
-find_empty_wg_network(int family)
-{
-    int i;
-
-    if ( family == AF_INET )
-    {
-        for ( i = 0; i < WG_NETWORK_TBL_SZ; i++ )
-        {
-            if ( wg_network[i].prefixlen == 0 )
-            {
-                return i;
-            }
-        }
-    }
-    else if ( family == AF_INET6 )
-    {
-        for ( i = 0; i < WG_NETWORK_TBL_SZ; i++ )
-        {
-            if ( wg_network_ip6[i].prefixlen == 0 )
-            {
-                return i;
-            }
-        }
-    }
-
-    return -1;
-}
-
-static void
-update_wg_network_cnt(int family)
-{
-    int i;
-
-    if ( family == AF_INET )
-    {
-        wg_network_cnt = 0;
-
-        for ( i = 0; i < WG_NETWORK_TBL_SZ; i++ )
-        {
-            if ( wg_network[i].prefixlen )
-            {
-                wg_network_cnt++;
-            }
-        }
-    }
-    else if ( family == AF_INET6 )
-    {
-        wg_network_ip6_cnt = 0;
-
-        for ( i = 0; i < WG_NETWORK_TBL_SZ; i++ )
-        {
-            if ( wg_network_ip6[i].prefixlen )
-            {
-                wg_network_ip6_cnt++;
-            }
-        }
-    }
-}
-
-static ssize_t
-skip_wg_network_proc_write(struct file *file, const char __user *buf, size_t cnt,
-    loff_t *data)
-{
-    char proc_data[128];
-    char *pdata;
-    char *token;
-    char *cmdstr = NULL;
-    char *ipstr = NULL;
-    char *prefixlenstr = NULL;
-    char *slash;
-
-    bool add;
-    struct in_addr ip;
-    struct in6_addr ip6;
-    int family;
-    uint32_t prefixlen;
-    int entry;
-
-    copy_from_user( proc_data, buf, cnt );
-    pdata = proc_data;
-
-    while ( (token = strsep(&pdata, " ")) != NULL )
-    {
-        if ( strlen(token) > 0 )
-        {
-            if ( cmdstr == NULL )
-            {
-                cmdstr = token;
-            }
-            else if ( ipstr == NULL )
-            {
-                ipstr = token;
-                break;
-            }
-        }
-    }
-
-    if ( cmdstr == NULL || ipstr == NULL )
-    {
-        return -EINVAL;
-    }
-
-    if ( !strncmp(cmdstr, "add", 3) )
-    {
-        add = true;
-    }
-    else if ( !strncmp(cmdstr, "del", 3) )
-    {
-        add = false;
-    }
-    else
-    {
-        return -EINVAL;
-    }
-
-    slash = strchr( ipstr, '/' );
-    if ( !slash )
-    {
-        return -EINVAL;
-    }
-
-    *slash = '\0';
-    prefixlenstr = slash + 1;
-
-    if ( strchr(ipstr, ':') )
-    {
-        family = AF_INET6;
-        if ( in6_pton(ipstr, -1, (u8 *)&ip6, -1, NULL) == 0 )
-        {
-            return -EINVAL;
-        }
-    }
-    else
-    {
-        family = AF_INET;
-        if ( in4_pton(ipstr, -1, (u8 *)&ip, -1, NULL) == 0 )
-        {
-            return -EINVAL;
-        }
-    }
-
-    prefixlen = simple_strtoul( prefixlenstr, NULL, 10 );
-    if ( (prefixlen == 0) ||
-        ((family == AF_INET) && (prefixlen > 32)) ||
-        ((family == AF_INET6) && (prefixlen > 128)) )
-    {
-        return -EINVAL;
-    }
-
-    if ( family == AF_INET )
-    {
-        ip.s_addr = ip.s_addr & inet_make_mask( prefixlen );
-    }
-
-    if ( family == AF_INET )
-    {
-        blog_print( "%s %u.%u.%u.%u/%u", add? "ADD": "DEL",
-            BLOG_IPV4_ADDR(ip), prefixlen );
-    }
-    else
-    {
-        blog_print( "%s %x:%x:%x:%x:%x:%x:%x:%x/%u", add? "ADD": "DEL",
-            BLOG_IPV6_ADDR(ip6), prefixlen );
-    }
-
-    BLOG_LOCK_TBL();
-
-    entry = find_wg_network( (family == AF_INET)? (void*)&ip: (void*)&ip6,
-        family, prefixlen );
-
-    if ( add )
-    {
-        /* duplicate entry */
-        if ( entry >= 0 && entry < WG_NETWORK_TBL_SZ )
-        {
-            BLOG_UNLOCK_TBL();
-            return -EINVAL;
-        }
-
-        entry = find_empty_wg_network( family );
-        if ( entry < 0 || entry >= WG_NETWORK_TBL_SZ )
-        {
-            BLOG_UNLOCK_TBL();
-            return -EINVAL;
-        }
-
-        if ( family == AF_INET )
-        {
-            wg_network[entry].ip.s_addr = ip.s_addr;
-            wg_network[entry].prefixlen = prefixlen;
-        }
-        else
-        {
-            wg_network_ip6[entry].ip = ip6;
-            wg_network_ip6[entry].prefixlen = prefixlen;
-        }
-    }
-    else
-    {
-        /* cannot find input entry */
-        if ( entry < 0 || entry >= WG_NETWORK_TBL_SZ )
-        {
-            BLOG_UNLOCK_TBL();
-            return -EINVAL;
-        }
-
-        if ( family == AF_INET )
-        {
-            wg_network[entry].prefixlen = 0;
-        }
-        else
-        {
-            wg_network_ip6[entry].prefixlen = 0;
-        }
-    }
-
-    update_wg_network_cnt( family );
-
-    BLOG_UNLOCK_TBL();
-
-    return cnt;
-}
-#endif
 
 extern netdev_tx_t bcm_skb_direct_xmit_args(pNBuff_t nbuff, struct net_device *dev, BlogFcArgs_t *args);
 
@@ -782,10 +194,13 @@ void blog_support_accel_mode(int accel_mode)
     blog_support_accel_mode_g = accel_mode;
 }
 
+int (*blog_hwf_fn)(void *arg1, void *arg2, void *arg3) = NULL;
+EXPORT_SYMBOL(blog_hwf_fn);
+
 /*TCP ACK Multi-Flow */
 blog_tcp_ack_mflows_set_t blog_tcp_ack_mflows_set_fn = NULL;
 
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908) || defined(CONFIG_BCM_XRDP) || defined(CONFIG_BCM_ARCHER) || defined(CONFIG_BCM_ARCHER_MODULE)
+#if !IS_ENABLED(CONFIG_BCM_FPI)
 int blog_support_tcp_ack_mflows_g = 1;
 #else
 int blog_support_tcp_ack_mflows_g = 0;
@@ -801,7 +216,7 @@ int blog_support_get_tcp_ack_mflows(void)
  */
 void blog_support_set_tcp_ack_mflows(int enable)
 {
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908) || defined(CONFIG_BCM_XRDP) || defined(CONFIG_BCM_ARCHER) || defined(CONFIG_BCM_ARCHER_MODULE)
+#if !IS_ENABLED(CONFIG_BCM_FPI)
     if (blog_tcp_ack_mflows_set_fn)
         blog_tcp_ack_mflows_set_fn( enable );
 
@@ -814,7 +229,7 @@ void blog_support_set_tcp_ack_mflows(int enable)
 /*ToS Multi-Flow */
 blog_tos_mflows_set_t blog_tos_mflows_set_fn = NULL;
 
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96858) || defined(CONFIG_BCM96878)
+#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96858) || defined(CONFIG_BCM96878)
 int blog_support_tos_mflows_g = 0;
 #else
 int blog_support_tos_mflows_g = 1;
@@ -830,7 +245,7 @@ int blog_support_get_tos_mflows(void)
  */
 void blog_support_set_tos_mflows(int enable)
 {
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96858) || defined(CONFIG_BCM96878)
+#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96858) || defined(CONFIG_BCM96878)
     printk(KERN_ERR "ToS Multi-Flow is not supported \n");
 #else
     if (blog_tos_mflows_set_fn)
@@ -839,6 +254,18 @@ void blog_support_set_tos_mflows(int enable)
     blog_support_tos_mflows_g = enable;
     printk("ToS Multi-Flow status<%d>\n", enable);
 #endif
+}
+
+/* ToS retry for speed test */
+int blog_support_spdtest_retry_tos_g = 0;
+
+/*
+ * Exported blog_support_spdtest_retry_tos() may be used to set blog_support_spdtest_retry_tos_g.
+ */
+void blog_support_spdtest_retry_tos(int enable)
+{
+    blog_support_spdtest_retry_tos_g = enable;
+    pr_debug("Speed test ToS retry status<%d>\n", enable);
 }
 
 /* TODO: This will be enabled for PON platforms after regression testing */
@@ -868,6 +295,31 @@ void blog_support_set_unknown_ucast(int enable)
  */
 int blog_support_mcast_g = CC_BLOG_SUPPORT_MCAST;
 void blog_support_mcast(int config) { blog_support_mcast_g = config; }
+
+/* Pure LLC acceleration support */
+blog_pure_llc_set_t blog_pure_llc_set_fn = NULL;
+int blog_support_pure_llc_g = 0;
+
+int blog_support_get_pure_llc(void) 
+{ 
+    return blog_support_pure_llc_g;
+}
+
+/*
+ * Exported blog_support_set_pure_llc() may be used to set blog_support_pure_llc_g.
+ */
+void blog_support_set_pure_llc(int enable)
+{
+#if !defined(CONFIG_BCM_PURE_LLC_ACCEL_SUPPORT)
+    printk(KERN_ERR "Pure LLC acceleration is not supported \n");
+#else
+    if (blog_pure_llc_set_fn)
+        blog_pure_llc_set_fn( enable );
+
+    blog_support_pure_llc_g = enable;
+    printk("Pure LLC status<%d>\n", enable);
+#endif
+}
 
 /*
  * blog_support_ipv6_g is by default enabled and no more depends on CC_BLOG_SUPPORT_IPV6
@@ -899,169 +351,6 @@ void blog_support_gre(int config)
 
 int blog_rcv_chk_gre(struct fkbuff *fkb_p, uint32_t h_proto, uint16_t *gflags_p);
 int blog_xmit_chk_gre(struct sk_buff *skb_p, uint32_t h_proto); 
-
-#if IS_ENABLED(CONFIG_WIREGUARD)
-static inline bool
-match_wg_network(void *src_ipaddr, void *dst_ipaddr, int family)
-{
-    struct in_addr *src_ip, *dst_ip, mask;
-    struct in6_addr *src_ip6, *dst_ip6;
-    int i;
-    bool match = false;
-
-    if ( !src_ipaddr || !dst_ipaddr )
-    {
-        return false;
-    }
-
-    if ( family == AF_INET )
-    {
-        src_ip = (struct in_addr *)src_ipaddr;
-        dst_ip = (struct in_addr *)dst_ipaddr;
-
-        for ( i = 0; i < WG_NETWORK_TBL_SZ; i++ )
-        {
-            if ( wg_network[i].prefixlen == 0 )
-                continue;
-
-            mask.s_addr = inet_make_mask(wg_network[i].prefixlen);
-
-            if ( ((src_ip->s_addr & mask.s_addr) == wg_network[i].ip.s_addr) ||
-                 ((dst_ip->s_addr & mask.s_addr) == wg_network[i].ip.s_addr) )
-            {
-                match = true;
-                break;
-            }
-        }
-    }
-    else if ( family == AF_INET6 )
-    {
-        src_ip6 = (struct in6_addr *)src_ipaddr;
-        dst_ip6 = (struct in6_addr *)dst_ipaddr;
-
-        for ( i = 0; i < WG_NETWORK_TBL_SZ; i++ )
-        {
-            if ( wg_network_ip6[i].prefixlen == 0 )
-                continue;
-
-            if ( ipv6_prefix_equal(src_ip6, &wg_network_ip6[i].ip,
-                    wg_network_ip6[i].prefixlen) ||
-                 ipv6_prefix_equal(dst_ip6, &wg_network_ip6[i].ip,
-                    wg_network_ip6[i].prefixlen) )
-            {
-                match = true;
-                break;
-            }
-        }
-    }
-
-    return match;
-}
-
-static inline bool
-match_wg_port( uint16_t sport, uint16_t dport )
-{
-    bool match = false;
-    int i;
-
-    for ( i = 0; i < WG_PORT_TBL_SZ; i++)
-    {
-        if ( wg_port[i].port != 0 )
-        {
-            switch (wg_port[i].match_type) {
-            case MATCH_DEST:    if (dport == wg_port[i].port) match = true; break;
-            case MATCH_SRC:     if (sport == wg_port[i].port) match = true; break;
-            case MATCH_EITHER:  if ((dport == wg_port[i].port) || (sport == wg_port[i].port)) match = true; break;
-            default:            break;
-            }
-        }
-    }
-
-    return match;
-}
-
-bool blog_skip_wg_enabled(void) 
-{
-    return ( (wg_port_cnt != 0) || (wg_network_cnt != 0) || (wg_network_ip6_cnt != 0) );
-}
-
-extern BlogIpv4Hdr_t * blog_parse_l2hdr( struct fkbuff *fkb_p, uint32_t h_proto );
-int blog_rcv_chk_wg(struct fkbuff *fkb_p, uint32_t h_proto) 
-{
-    BlogIpv4Hdr_t* ip_p;
-    BlogUdpHdr_t * udp_p;
-    int ver;
-    char * hdr_p;
-    uint32_t ip_proto;
-
-    ip_p = blog_parse_l2hdr( fkb_p, h_proto );
-    if ( ip_p != NULL )
-    {
-        ver = (*(uint8_t*)ip_p) >> 4;
-
-        blog_print( "Rcv Check Wireguard" );
-
-        if ( ver == 4 )
-        {
-            struct in_addr src_ip, dst_ip;
-
-            hdr_p = (char *)ip_p;
-            hdr_p += BLOG_IPV4_HDR_LEN;
-
-            if ( unlikely(*(uint8_t*)ip_p != 0x45) )
-            {
-                blog_print( "ABORT IP ver<%d> len<%d>", ip_p->ver, ip_p->ihl );
-                return 0;
-            }
-
-            ip_proto = ip_p->proto;
-
-            src_ip.s_addr = blog_read32_align16( (uint16_t *)&ip_p->sAddr );
-            dst_ip.s_addr = blog_read32_align16( (uint16_t *)&ip_p->dAddr );
-
-            if ( match_wg_network((void *)&src_ip, (void *)&dst_ip, AF_INET) )
-            {
-                return 1;
-            }
-        }
-        else if ( ver == 6 )
-        {
-            struct in6_addr src_ip6, dst_ip6;
-
-            hdr_p = (char *)ip_p;
-            hdr_p += BLOG_IPV6_HDR_LEN;
-
-            /*  Support extension headers? */
-            ip_proto = ((BlogIpv6Hdr_t*)ip_p)->nextHdr;
-            if ( ip_proto == BLOG_IPPROTO_DSTOPTS )
-            {
-                ip_proto = ((BlogIpv6ExtHdr_t*)hdr_p)->nextHdr;
-                hdr_p += BLOG_IPV6EXT_HDR_LEN;
-            }
-
-            src_ip6 = ((struct ipv6hdr *)ip_p)->saddr;
-            dst_ip6 = ((struct ipv6hdr *)ip_p)->daddr;
-
-            if ( match_wg_network((void *)&src_ip6, (void *)&dst_ip6, AF_INET6) )
-            {
-                return 1;
-            }
-        }
-
-        if ( ip_proto == BLOG_IPPROTO_UDP )
-        {
-            udp_p = (BlogUdpHdr_t *)hdr_p;
-
-            if ( match_wg_port( ntohs(udp_p->sPort), ntohs(udp_p->dPort) ) )
-            {
-                return 1;
-            }
-        }
-    }
-
-    return 0;
-}
-#endif
 
 /*
  * blog_support_l2tp_g inherits the default value from CC_BLOG_SUPPORT_L2TP
@@ -1166,6 +455,9 @@ const char * strBlogQuery[BLOG_QUERY_MAX] =
     BLOG_ARY_INIT(QUERY_BRIDGEFDB)
     BLOG_ARY_INIT(QUERY_FLOWTRACK_STATS)
     BLOG_ARY_INIT(QUERY_GET_HW_ACCEL)
+    BLOG_ARY_INIT(QUERY_GET_FLOWID)
+    BLOG_ARY_INIT(QUERY_GET_FLOWINFO)
+    BLOG_ARY_INIT(QUERY_GET_FLOWSTATS)
 };
 
 const char * strBlogRequest[BLOG_REQUEST_MAX] =
@@ -1370,6 +662,8 @@ const char *str_blog_skip_reason[blog_skip_reason_max] =
     BLOG_ARY_INIT(blog_skip_reason_unknown_proto_esp6)
     BLOG_ARY_INIT(blog_skip_reason_esp4_crypto_algo)
     BLOG_ARY_INIT(blog_skip_reason_esp4_spu_disabled)
+    BLOG_ARY_INIT(blog_skip_reason_esp6_crypto_algo)
+    BLOG_ARY_INIT(blog_skip_reason_esp6_spu_disabled)
     BLOG_ARY_INIT(blog_skip_reason_spudd_check_failure)
     BLOG_ARY_INIT(blog_skip_reason_dpi)
     BLOG_ARY_INIT(blog_skip_reason_sgs)
@@ -1400,7 +694,8 @@ const char *str_blog_free_reason[blog_free_reason_max] =
 blog_ctx_t blog_ctx_g, *blog_ctx_p = &blog_ctx_g;
 EXPORT_SYMBOL(blog_ctx_p);
 
-BlogAction_t (*blog_emit_gdx_fn)(void * nbuff_p, void * dev_p, uint32_t phyHdr)=NULL;
+BlogAction_t (*blog_emit_gdx_fn)(void * nbuff_p, void * dev_p,
+                                 uint32_t channel, uint32_t phyHdr)=NULL;
 EXPORT_SYMBOL(blog_emit_gdx_fn);
 
 int (*blog_sinit_gdx_fn)(struct sk_buff *skb, int *ret) = NULL;
@@ -2171,14 +1466,18 @@ void blog_free_shared_info(blog_shared_info_t *shared_info_p)
     }
 }
 
-void blog_print_blog_shared_info(const char *func, uint32_t line, char *dev_name, blog_shared_info_t *shared_info_p)
+void blog_print_blog_shared_info(const char *func, uint32_t line, char *dev_name, Blog_t *blog_p)
 {
+    blog_shared_info_t *shared_info_p = blog_p->shared_info_p;
+
     if (shared_info_p)
     {
-        printk("[%s: %d] tx_dev<%s> ref_count<%d> emit_count<%d> clone_count<%d> known_exception_client_count<%d>\n", 
-            func, line, dev_name,
+        printk("[%s: %d] tx_dev<%s> join_id<%u> ref_count<%d> emit_count<%d> client_count<%d> "
+               "clone_count<%d> known_exception_client_count<%d>\n", 
+            func, line, dev_name, blog_p->join_id,
             atomic_read(&shared_info_p->ref_count),
             atomic_read(&shared_info_p->emit_count),
+            atomic_read(&shared_info_p->client_count),
             atomic_read(&shared_info_p->clone_count),
             atomic_read(&shared_info_p->known_exception_client_count));
 
@@ -2194,7 +1493,7 @@ void blog_print_shared_info(const char *func, uint32_t line, struct sk_buff *skb
 {
     if (skb->blog_p && skb->blog_p->shared_info_p)
     {
-        blog_print_blog_shared_info(func, line, skb->dev->name, skb->blog_p->shared_info_p);
+        blog_print_blog_shared_info(func, line, skb->dev->name, skb->blog_p);
     }
 }
 
@@ -2733,21 +2032,6 @@ int blog_iq( const struct sk_buff * skb_p )
     return prio;
 }
 
-int blog_check_wlan_stats_compatibility(void *dev_p, uint8_t phyHdrType)
-{
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)) 
-     return 1;
-#else
-#if defined(CONFIG_BCM_WLAN_MODULE) 
-    /*back compatible implemenation for wifi counter, if put_stats not set
-     *it use new counter implementation, return 1 */
-    return  ((phyHdrType != BLOG_WLANPHY)|| !(((struct net_device *)dev_p)->put_stats));
-#else
-    return 1;
-#endif
-#endif
-}
-
 void *blog_realloc(void* old_ptr, size_t old_size, size_t new_size)
 {
     void *buf;
@@ -2771,7 +2055,7 @@ void *blog_realloc(void* old_ptr, size_t old_size, size_t new_size)
  */
 void *blog_group_dev_realloc(Blog_t *mblog_p, uint8_t new)
 {
-    blog_master_virt_dev_info_t *virt_dev_info_tbl_p;
+    blog_virt_dev_info_t *virt_dev_info_tbl_p;
     group_dev_info_t *gdev_info_p;
     uint16_t max_dev;
 
@@ -2782,11 +2066,11 @@ void *blog_group_dev_realloc(Blog_t *mblog_p, uint8_t new)
     blog_print("mblog_p<%px> max_dev<%d> new<%d>\n", mblog_p, max_dev, new);
 
    /* realloc the requested # of virtual device */
-    virt_dev_info_tbl_p = blog_realloc(gdev_info_p->virt_dev_info_tbl_p, sizeof(blog_master_virt_dev_info_t) * max_dev,
-            sizeof(blog_master_virt_dev_info_t) * (max_dev + new));
+    virt_dev_info_tbl_p = blog_realloc(gdev_info_p->virt_dev_info_tbl_p, sizeof(blog_virt_dev_info_t) * max_dev,
+            sizeof(blog_virt_dev_info_t) * (max_dev + new));
     if (virt_dev_info_tbl_p != NULL)
     {
-        memset(&virt_dev_info_tbl_p[max_dev], 0, sizeof(blog_master_virt_dev_info_t) * new);
+        memset(&virt_dev_info_tbl_p[max_dev], 0, sizeof(blog_virt_dev_info_t) * new);
         gdev_info_p->virt_dev_info_tbl_p = virt_dev_info_tbl_p;
         gdev_info_p->max_dev += new;
         return virt_dev_info_tbl_p;
@@ -2827,7 +2111,7 @@ static inline int _blog_group_find_free_dev_entry(Blog_t *mblog_p, int start_idx
 {
     int idx;
     group_dev_info_t *gdev_info_p = mblog_p->group_dev_info_p;
-    blog_master_virt_dev_info_t *virt_dev_info_p;
+    blog_virt_dev_info_t *virt_dev_info_p;
 
     for (idx = start_idx; (idx < gdev_info_p->max_dev); idx++)
     {
@@ -2860,7 +2144,7 @@ static inline void _blog_group_adjust_dn_last_dev_idx(Blog_t *mblog_p)
 {
     int idx;
     group_dev_info_t *gdev_info_p;
-    blog_master_virt_dev_info_t *virt_dev_info_p;
+    blog_virt_dev_info_t *virt_dev_info_p;
 
     blog_assertv( (mblog_p != BLOG_NULL) );
 
@@ -2889,7 +2173,7 @@ int blog_group_find_matching_master_dev(Blog_t *mblog_p, void *dev_p, int8_t del
 {
     int idx;
     group_dev_info_t *gdev_info_p = mblog_p->group_dev_info_p;
-    blog_master_virt_dev_info_t *virt_dev_info_p;
+    blog_virt_dev_info_t *virt_dev_info_p;
 
     blog_print( "mblog_p<%px> dev_p<%px> delta<%d>\n", mblog_p, dev_p, delta);
     for (idx = 0; idx <= gdev_info_p->last_dev_idx; idx++)
@@ -2920,7 +2204,7 @@ static int blog_group_add_client_dev(Blog_t *mblog_p, void *dev_p, int8_t delta)
 {
     int idx;
     group_dev_info_t *gdev_info_p = mblog_p->group_dev_info_p;
-    blog_master_virt_dev_info_t *virt_dev_info_p;
+    blog_virt_dev_info_t *virt_dev_info_p;
     
     blog_print("mblog_p<%px> dev_p<%px> delta<%d>\n", mblog_p, dev_p, delta);
     idx = blog_group_find_matching_master_dev(mblog_p, dev_p, delta);
@@ -2984,7 +2268,7 @@ static int blog_group_del_client_dev(Blog_t *mblog_p, void *dev_p, int8_t delta)
 {
     int idx;
     group_dev_info_t *gdev_info_p = mblog_p->group_dev_info_p;
-    blog_master_virt_dev_info_t *virt_dev_info_p;
+    blog_virt_dev_info_t *virt_dev_info_p;
 
     blog_print( "mblog_p<%px> dev_p<%px> delta<%d>\n", mblog_p, dev_p, delta);
 
@@ -2994,9 +2278,7 @@ static int blog_group_del_client_dev(Blog_t *mblog_p, void *dev_p, int8_t delta)
     if ((idx != -1) && (virt_dev_info_p->ref_cnt > 0))
     {
         BlogDir_t dir;
-        struct net_device *detach_dev_p;
 
-        detach_dev_p = (struct net_device *) DEVP_DETACH_DIR(virt_dev_info_p->dev_p);
         dir = IS_RX_DIR( virt_dev_info_p->dev_p) ? DIR_RX : DIR_TX;
 
         /* delete bridge_dev base stats if it is the last bridge device */
@@ -3047,8 +2329,7 @@ int blog_group_add_rx_dev(Blog_t *mblog_p, Blog_t *cblog_p)
     gdev_info_p = mblog_p->group_dev_info_p;
     dev_p = DEVP_APPEND_DIR(cblog_p->rx_dev_p,DIR_RX);
 
-    if (cblog_p->rx_dev_p &&
-            blog_check_wlan_stats_compatibility(cblog_p->rx_dev_p,cblog_p->rx.info.phyHdrType))
+    if (cblog_p->rx_dev_p)
     {
         if (blog_group_add_client_dev(mblog_p, dev_p, delta) == -1)
             goto blog_group_add_rx_dev_phy_err;
@@ -3059,9 +2340,9 @@ int blog_group_add_rx_dev(Blog_t *mblog_p, Blog_t *cblog_p)
         vdev_info_p = &cblog_p->virt_dev_info[i];
         dir_dev_p = vdev_info_p->dev_p;
 
-        if ( dir_dev_p == (void *)NULL ) continue;
-
         detach_dev_p = DEVP_DETACH_DIR( dir_dev_p );
+        if ( detach_dev_p == (void *)NULL ) break; /* End of list */
+
         dir = IS_RX_DIR( dir_dev_p ) ? DIR_RX : DIR_TX;
 
         /* when TX device is accessed, we are done for RX devices */ 
@@ -3083,9 +2364,9 @@ blog_group_add_rx_dev_err:
         vdev_info_p = &cblog_p->virt_dev_info[i];
         dir_dev_p = vdev_info_p->dev_p;
 
-        if ( dir_dev_p == (void *)NULL ) continue;
-
         detach_dev_p = DEVP_DETACH_DIR( dir_dev_p );
+        if ( detach_dev_p == (void *)NULL ) break; /* End of list */
+
         dir = IS_RX_DIR( dir_dev_p ) ? DIR_RX : DIR_TX;
 
         blog_group_del_client_dev(mblog_p, vdev_info_p->dev_p, vdev_info_p->delta);
@@ -3118,8 +2399,7 @@ void blog_group_del_rx_dev(Blog_t *mblog_p, Blog_t *cblog_p)
     blog_assertv( (cblog_p != BLOG_NULL) );
     blog_print( "mblog_p<%px> cblog_p<%px>", mblog_p, cblog_p);
 
-    if (cblog_p->rx_dev_p &&
-            blog_check_wlan_stats_compatibility(cblog_p->rx_dev_p,cblog_p->rx.info.phyHdrType))
+    if (cblog_p->rx_dev_p)
     {
         void *dev_p = DEVP_APPEND_DIR(cblog_p->rx_dev_p,DIR_RX);
         int8_t delta = 0;
@@ -3132,9 +2412,9 @@ void blog_group_del_rx_dev(Blog_t *mblog_p, Blog_t *cblog_p)
         vdev_info_p = &cblog_p->virt_dev_info[i];
         dir_dev_p = vdev_info_p->dev_p;
 
-        if ( dir_dev_p == (void *)NULL ) continue;
-
         detach_dev_p = DEVP_DETACH_DIR( dir_dev_p );
+        if ( detach_dev_p == (void *)NULL ) break; /* End of list */
+
         dir = IS_RX_DIR( dir_dev_p ) ? DIR_RX : DIR_TX;
 
         /* when TX device is accessed, we are done for RX devices */ 
@@ -3183,9 +2463,9 @@ int blog_group_add_tx_dev(Blog_t *mblog_p, Blog_t *cblog_p)
         vdev_info_p = &cblog_p->virt_dev_info[i];
         dir_dev_p = vdev_info_p->dev_p;
 
-        if ( dir_dev_p == (void *)NULL ) continue;
-
         detach_dev_p = DEVP_DETACH_DIR( dir_dev_p );
+        if ( detach_dev_p == (void *)NULL ) break; /* End of list */
+
         dir = IS_RX_DIR( dir_dev_p ) ? DIR_RX : DIR_TX;
 
         /* Adding TX devices only */
@@ -3196,8 +2476,7 @@ int blog_group_add_tx_dev(Blog_t *mblog_p, Blog_t *cblog_p)
             goto blog_group_add_tx_dev_err;
     }
 
-    if (cblog_p->tx_dev_p &&
-            blog_check_wlan_stats_compatibility(cblog_p->tx_dev_p,cblog_p->tx.info.phyHdrType))
+    if (cblog_p->tx_dev_p)
     {
         if (blog_group_add_client_dev(mblog_p, dev_p, delta) == -1)
             goto blog_group_add_tx_dev_phy_err;
@@ -3217,9 +2496,9 @@ blog_group_add_tx_dev_err:
         vdev_info_p = &cblog_p->virt_dev_info[i];
         dir_dev_p = vdev_info_p->dev_p;
 
-        if ( dir_dev_p == (void *)NULL ) continue;
-
         detach_dev_p = DEVP_DETACH_DIR( dir_dev_p );
+        if ( detach_dev_p == (void *)NULL ) break; /* End of list */
+
         dir = IS_RX_DIR( dir_dev_p ) ? DIR_RX : DIR_TX;
 
         /* Remove TX devices only */
@@ -3263,9 +2542,9 @@ void blog_group_del_tx_dev(Blog_t *mblog_p, Blog_t *cblog_p)
         vdev_info_p = &cblog_p->virt_dev_info[i];
         dir_dev_p = vdev_info_p->dev_p;
 
-        if ( dir_dev_p == (void *)NULL ) continue;
-
         detach_dev_p = DEVP_DETACH_DIR( dir_dev_p );
+        if ( detach_dev_p == (void *)NULL ) break; /* End of list */
+
         dir = IS_RX_DIR( dir_dev_p ) ? DIR_RX : DIR_TX;
 
         /* Deleteing TX devices only */
@@ -3275,8 +2554,7 @@ void blog_group_del_tx_dev(Blog_t *mblog_p, Blog_t *cblog_p)
         blog_group_del_client_dev(mblog_p, vdev_info_p->dev_p, vdev_info_p->delta);
     }
 
-    if (cblog_p->tx_dev_p &&
-            blog_check_wlan_stats_compatibility(cblog_p->tx_dev_p,cblog_p->tx.info.phyHdrType))
+    if (cblog_p->tx_dev_p)
     {
         void *dev_p = DEVP_APPEND_DIR(cblog_p->tx_dev_p,DIR_TX);
         int8_t delta = cblog_p->tx_dev_delta;
@@ -3314,9 +2592,9 @@ int blog_set_bridge_tx_dev(Blog_t *cblog_p)
         virt_dev_info_p = &cblog_p->virt_dev_info[i];
         dir_dev_p = virt_dev_info_p->dev_p;
 
-        if ( dir_dev_p == (void *)NULL ) continue;
-
         detach_dev_p = DEVP_DETACH_DIR( dir_dev_p );
+        if ( detach_dev_p == (void *)NULL ) break; /* End of list */
+
         dir = IS_RX_DIR( dir_dev_p ) ? DIR_RX : DIR_TX;
 
         if (dir == DIR_RX)
@@ -3493,7 +2771,7 @@ void blog_group_del_all_devs(Blog_t *mblog_p)
     int8_t delta;
     int idx;
     group_dev_info_t *gdev_info_p;
-    blog_master_virt_dev_info_t *virt_dev_info_p;
+    blog_virt_dev_info_t *virt_dev_info_p;
 
     blog_assertv( (mblog_p != BLOG_NULL) );
     blog_print( "mblog_p<%px>", mblog_p);
@@ -3512,9 +2790,9 @@ void blog_group_del_all_devs(Blog_t *mblog_p)
             delta = virt_dev_info_p->delta;
             dir_dev_p = dev_p = virt_dev_info_p->dev_p;
 
-            if ( dir_dev_p == (void *)NULL ) continue;
-
             detach_dev_p = DEVP_DETACH_DIR( dir_dev_p );
+            if ( detach_dev_p == (void *)NULL ) continue;
+
             dir = IS_RX_DIR( dir_dev_p ) ? DIR_RX : DIR_TX;
 
             blog_group_del_client_dev(mblog_p, dev_p, delta);
@@ -3541,7 +2819,7 @@ void blog_group_dump_all_devs(Blog_t *mblog_p)
     int8_t delta;
     int idx;
     group_dev_info_t *gdev_info_p;
-    blog_master_virt_dev_info_t *virt_dev_info_p;
+    blog_virt_dev_info_t *virt_dev_info_p;
 
     blog_assertv( (mblog_p != BLOG_NULL) );
 
@@ -3558,9 +2836,9 @@ void blog_group_dump_all_devs(Blog_t *mblog_p)
             dir_dev_p = dev_p = (struct net_device *) virt_dev_info_p->dev_p;
             delta = virt_dev_info_p->delta;
 
-            if ( dir_dev_p == (void *)NULL ) continue;
-
             detach_dev_p = DEVP_DETACH_DIR( dir_dev_p );
+            if ( detach_dev_p == (void *)NULL ) continue;
+
             dir = IS_RX_DIR( dir_dev_p ) ? DIR_RX : DIR_TX;
 
             pr_cont("<%d><%px: %s: %d: %d : %d: %d> ", 
@@ -3619,7 +2897,7 @@ inline int blog_l2tp_tunnel_accelerated( void )
 
 /*
  *------------------------------------------------------------------------------
- * Function     : blog_link
+ * Function     : blog_link2
  * Description  : Associate a network entity with an skb's blog object
  * Parameters   :
  *  entity_type : Network entity type
@@ -3627,11 +2905,11 @@ inline int blog_l2tp_tunnel_accelerated( void )
  *  net_p       : Pointer to a network stack entity 
  *  param1      : optional parameter 1
  *  param2      : optional parameter 2
- * PreRequisite : acquire blog_lock_g before calling blog_link()
+ * PreRequisite : acquire blog_lock_g before calling blog_link2()
  *------------------------------------------------------------------------------
  */
-void blog_link( BlogNetEntity_t entity_type, Blog_t * blog_p,
-                void * net_p, uint32_t param1, uint32_t param2 )
+void blog_link2( BlogNetEntity_t entity_type, Blog_t * blog_p,
+                void * net_p, uint32_t param1, uint32_t param2, uint32_t param3 )
 {
     if ( unlikely(blog_p == BLOG_NULL) )
         return;
@@ -3730,8 +3008,21 @@ void blog_link( BlogNetEntity_t entity_type, Blog_t * blog_p,
         case IF_DEVICE_MCAST:
         {
             int i;
+            struct net_device *dev_p = (struct net_device *) net_p;
 
             blog_assertv( (param1 < BLOG_DIR_MAX) );
+
+            if (!dev_p)
+            {
+                blog_error("bad dev_p<%px>", dev_p);
+                break;
+            }
+            else if (param1 >= BLOG_DIR_MAX)
+            {
+                blog_error("bad dir<%d> for dev_p<%px: %s>",
+                       param1, dev_p, dev_p ? dev_p->name : " ");
+                break;
+            }
 
             for (i=0; i<MAX_VIRT_DEV; i++)
             {
@@ -3749,12 +3040,17 @@ void blog_link( BlogNetEntity_t entity_type, Blog_t * blog_p,
                     {
                        blog_p->virt_dev_info[i].delta = (param2 - blog_p->tx.pktlen) & 0xFF;
                     }
-                    break;
+                    blog_p->virt_dev_info[i].adjust = (param3 & 0xFF);
+                    return;
                 }
             }
 
+            if (i >= MAX_VIRT_DEV)
+                blog_error("virt_dev[]: i<%d> no free entry for dev_p<%px: %s>",
+                        i, dev_p, dev_p ? dev_p->name : " ");
+
             blog_assertv( (i != MAX_VIRT_DEV) );
-            break;
+            return;
         }
 
         case GRE_TUNL:
@@ -4417,6 +3713,10 @@ unsigned long blog_request( BlogRequest_t request, void * net_p,
                     info.is_upstream = is_netdev_wan((struct net_device *)blog_p->tx_dev_p) ? 1 : 0;
 
                 info.is_tr471_flow = blog_p->is_tr471_flow;
+                info.rx_channel = blog_p->rx.info.channel;
+                info.tx_channel = blog_p->tx.info.channel;
+                info.spu_offload_us = blog_p->spu.offload_us;
+                info.spu_offload_ds = blog_p->spu.offload_ds;
                 info.ct_count = blog_p->ct_count;
                 for (idx=0; idx < blog_p->ct_count; idx++)
                 {
@@ -5497,14 +4797,6 @@ BlogAction_t _blog_finit( struct fkbuff * fkb_p, void * dev_p,
     }
 #endif
 
-#if IS_ENABLED(CONFIG_WIREGUARD)
-    if ( blog_skip_wg_enabled() && blog_rcv_chk_wg (fkb_p, encap) )
-    {
-        action = PKT_NORM;
-        fkb_release_blog( fkb_p );
-        goto bypass;
-    }
-#endif
 #if IS_ENABLED(CONFIG_NET_IPGRE) || IS_ENABLED(CONFIG_ACCEL_PPTP)
     gre_rcv_version = blog_rcv_chk_gre (fkb_p, encap, &flags);     
 #endif           
@@ -5786,11 +5078,11 @@ bypass:
 }
 
 BlogAction_t blog_emit_generic(void * nbuff_p, void * dev_p, 
-                               uint32_t phyHdr)
+                               uint32_t channel, uint32_t phyHdr)
 {
     if (blog_emit_gdx_fn)
     {
-        return blog_emit_gdx_fn(nbuff_p, dev_p, phyHdr);
+        return blog_emit_gdx_fn(nbuff_p, dev_p, channel, phyHdr);
     }
     return PKT_NORM;
 }
@@ -6029,6 +5321,48 @@ int blog_get_hw_accel(void)
 
     blog_query(QUERY_GET_HW_ACCEL, (void*)&hw_accel, 0, 0, 0);
     return hw_accel;
+}
+
+int blog_flow_get_flowid(blog_flow_get_flowid_t *get_flowid_p)
+{
+    int ret = -1; 
+
+    if (!get_flowid_p || !get_flowid_p->flowid_p || (get_flowid_p->flow_count == 0))
+        return -1;
+
+    blog_lock();
+    ret = blog_query(QUERY_GET_FLOWID, get_flowid_p, 0, 0, 0);
+    blog_unlock();
+
+    return ret;
+}
+
+int blog_flow_get_flowinfo(blog_flow_get_flowinfo_t *get_flowinfo_p)
+{
+    int ret = -1; 
+
+    if (!get_flowinfo_p || !get_flowinfo_p->flowid_p || (get_flowinfo_p->flow_count == 0))
+        return -1;
+
+    blog_lock();
+    ret = blog_query(QUERY_GET_FLOWINFO, get_flowinfo_p, 0, 0, 0);
+    blog_unlock();
+
+    return ret;
+}
+
+int blog_flow_get_flowstats(blog_flow_get_flowstats_t *get_flowstats_p)
+{
+    int ret = -1; 
+
+    if (!get_flowstats_p || !get_flowstats_p->flowid_p || (get_flowstats_p->flow_count == 0))
+        return -1;
+
+    blog_lock();
+    ret = blog_query(QUERY_GET_FLOWSTATS, get_flowstats_p, 0, 0, 0);
+    blog_unlock();
+
+    return ret;
 }
 
 /*
@@ -6449,22 +5783,49 @@ void blog_vxlan_dump(Blog_t *blog_p)
     pr_cont("]\n");
 }
 
+void blog_phydev_dump( Blog_t * blog_p )
+{
+    int delta = 0;
+    int adjust = 0;
+    struct net_device *dev_p = NULL;
+
+    printk( "    PhyDev: ");
+
+    dev_p = (struct net_device *)blog_p->rx_dev_p;
+    delta = 0;
+    if (dev_p != (void *)NULL)
+        pr_cont("RX<%px: %s: %d: %d: %d: %d> ", dev_p, dev_p ? dev_p->name : " ", 0, dev_p->mtu, delta, adjust);
+
+    dev_p = (struct net_device *)blog_p->tx_dev_p;
+    delta = blog_p->tx_dev_delta;
+    adjust = blog_p->tx_dev_adjust;
+    if (dev_p != (void *)NULL)
+        pr_cont("TX<%px: %s: %d: %d: %d: %d>", dev_p, dev_p ? dev_p->name : " ", 1, dev_p->mtu, delta, adjust);
+
+    pr_cont("\n");
+}
+
 void blog_virtdev_dump( Blog_t * blog_p )
 {
     int i;
     int dev_dir;
+    int delta;
+    int adjust;
+    struct net_device *dev_p;
 
     printk( "    VirtDev: ");
 
     for (i=0; i<MAX_VIRT_DEV; i++)
     {
-        struct net_device *dev_p = (struct net_device *) blog_p->virt_dev_info[i].dev_p;
-
-        if ( dev_p == (void *)NULL ) continue;
+        dev_p = (struct net_device *) blog_p->virt_dev_info[i].dev_p;
+        delta = blog_p->virt_dev_info[i].delta;
+        adjust = blog_p->virt_dev_info[i].adjust;
 
         dev_dir = DEV_DIR(dev_p);
         dev_p = DEVP_DETACH_DIR( dev_p );
-        pr_cont("<%px: %s: %d: %d> ", dev_p, dev_p ? dev_p->name : " ", dev_dir, dev_p->mtu);
+        if ( dev_p == (void *)NULL ) break; /* End of list */
+
+        pr_cont("<%px: %s: %d: %d: %d: %d> ", dev_p, dev_p ? dev_p->name : " ", dev_dir, dev_p->mtu, delta, adjust);
     }
 
     pr_cont("\n");
@@ -6555,11 +5916,12 @@ static void blog_esp_rx_dump( Blog_t *blog_p )
 {
     BlogEsp_t *esp_rx_p = &blog_p->esprx; 
 
-    printk( "    ESP RX: u32<%08x> u16<%02x> spi<%08x> ivsize<%u> icvsize<%u>\n"
+    printk( "    ESP RX: u32<%08x> u16<%02x> spi<%08x> ivsize<%u> icvsize<%u> blksize<%u>\n"
             "            ipv4<%u> ipv6<%u> fragflag<%u> pmtudiscen<%u> ipid<%04x>\n",
             esp_rx_p->u32, esp_rx_p->u16, 
-            ntohl((RX_ESPoUDP(blog_p)) ? blog_p->esp_over_udp_spi : blog_p->rx.tuple.esp_spi),   
-            esp_rx_p->ivsize, esp_rx_p->icvsize, esp_rx_p->ipv4,
+            ntohl((RX_ESPoUDP(blog_p)) ? blog_p->esp_over_udp_spi : 
+            (blog_p->esp6rx_tuple_p ? blog_p->esp6rx_tuple_p->esp_spi : blog_p->rx.tuple.esp_spi)),   
+            esp_rx_p->ivsize, esp_rx_p->icvsize, esp_rx_p->blksize, esp_rx_p->ipv4,
             esp_rx_p->ipv6, esp_rx_p->fragflag, esp_rx_p->pmtudiscen, ntohs(esp_rx_p->ipid));
 }
 
@@ -6574,11 +5936,12 @@ static void blog_esp_tx_dump( Blog_t *blog_p )
 {
     BlogEsp_t *esp_tx_p = &blog_p->esptx; 
 
-    printk( "    ESP TX: u32<%08x> u16<%02x> spi<%08x> ivsize<%u> icvsize<%u>\n"
+    printk( "    ESP TX: u32<%08x> u16<%02x> spi<%08x> ivsize<%u> icvsize<%u> blksize<%u>\n"
             "            ipv4<%u> ipv6<%u> fragflag<%u> pmtudiscen<%u> ipid<%04x>\n",
             esp_tx_p->u32, esp_tx_p->u16, 
-            ntohl((TX_ESPoUDP(blog_p)) ? blog_p->esp_over_udp_spi : blog_p->tx.tuple.esp_spi),   
-            esp_tx_p->ivsize, esp_tx_p->icvsize, esp_tx_p->ipv4,
+            ntohl((TX_ESPoUDP(blog_p)) ? blog_p->esp_over_udp_spi : 
+            (blog_p->esp6tx_tuple_p ? blog_p->esp6tx_tuple_p->esp_spi : blog_p->tx.tuple.esp_spi)),   
+            esp_tx_p->ivsize, esp_tx_p->icvsize, esp_tx_p->blksize, esp_tx_p->ipv4,
             esp_tx_p->ipv6, esp_tx_p->fragflag, esp_tx_p->pmtudiscen, ntohs(esp_tx_p->ipid));
 }
 
@@ -6702,10 +6065,12 @@ static void blog_group_shared_info_dump(Blog_t *blog_p)
     {
         if (shared_info_p)
         {
-            pr_cont("  ref_count<%d> emit_count<%d> client_count<%d>\n", 
+            pr_cont("  join_id<%u> ref_count<%d> emit_count<%d> client_count<%d> clone_count<%d>\n", 
+                blog_p->join_id,
                 atomic_read(&shared_info_p->ref_count),
                 atomic_read(&shared_info_p->emit_count),
-                atomic_read(&shared_info_p->client_count));
+                atomic_read(&shared_info_p->client_count),
+                atomic_read(&shared_info_p->clone_count));
 
             pr_cont("  host_client_count<%d> wlan_client_count<%d> wlan_intf_count<%d> wlan_clone_count<%d>\n", 
                 atomic_read(&shared_info_p->host_client_count),
@@ -6732,15 +6097,16 @@ void blog_dump( Blog_t * blog_p )
 
     blog_assertv( (_IS_BPTR_(blog_p)) );
 
-    printk( "\nBLOG <%px> owner<%px> flags<0x%08x> flags2<0x%08x> tos_mode<%u:%u> fwd_and_trap<%u>\n"
+    printk( "\nBLOG <%px> owner<%px> flags<0x%08x> flags2<0x%08x> flags3<0x%08x> tos_mode<%u:%u> fwd_and_trap<%u>\n"
             "\tL1 channel<%u> phyLen<%u> phy<%u> <%s> match<0x%08x> esp_over_udp_spi<0x%08x>\n"
-            "\thash<0x%08x> prot<%u> wl<0x%08x> wlinfo<0x%04x>\n"
-            "\tprio<0x%08x> mark<0x%08x> tx_max_pktlen<%u> tuple_offset<%u> client_type<%u> client_id<%u>\n"
+            "\thash<0x%08x> prot<%u> wl<0x%08x> wlinfo<0x%04x> client_type<%u> client_id<%u>\n"
+            "\tprio<0x%08x> mark<0x%08x> mtu_adj<%d> tuple_offset<%u>\n"
+            "\trx_max_pktlen_fcs<%u> rx_max_pktlen<%u> tx_max_pktlen<%u> rx_max_pktlen_new<%u> rx_max_pktlen_old<%u>\n"
             "\thdr_count<%u> eth_type<0x%04x> ct_count<%u>\n"
-            "\tvtag_num<%u> vtag[0]<0x%08x> vtag[1]<0x%08x>\n"
+            "\tvtag_num<%u> vtag[0]<0x%08x> vtag[1]<0x%08x> vtag_tx_num<%u>\n"
             "\touter_vtag_num<%u> outer_vtag[0]<0x%08x> outer_vtag[1]<0x%08x>\n"
             "\tucast_vtag_num<%d> ucast_vtag<0x%08x>\n",
-            blog_p, blog_p->skb_p, blog_p->flags, blog_p->flags2,
+            blog_p, blog_p->skb_p, blog_p->flags, blog_p->flags2, blog_p->flags3,
             (int)blog_p->tos_mode_us, (int)blog_p->tos_mode_ds, 
             blog_p->fwd_and_trap,
             blog_p->key.l1_tuple.channel,
@@ -6749,10 +6115,12 @@ void blog_dump( Blog_t * blog_p )
             strBlogPhy[blog_p->key.l1_tuple.phyType], blog_p->key.match,
             ntohl(blog_p->esp_over_udp_spi),
             blog_p->hash, blog_p->key.protocol, blog_p->wl, blog_p->wlinfo,
-            blog_p->priority, (uint32_t)blog_p->mark, blog_p->tx_max_pktlen, 
-            blog_p->tuple_offset, blog_p->client_type, blog_p->client_id,
+            blog_p->client_type, blog_p->client_id,
+            blog_p->priority, (uint32_t)blog_p->mark, blog_p->mtu_adj, blog_p->tuple_offset,
+            blog_p->rx_max_pktlen_fcs, blog_p->rx_max_pktlen, blog_p->tx_max_pktlen,
+            blog_p->rx_max_pktlen_new, blog_p->rx_max_pktlen_old,
             blog_p->hdr_count, ntohs(blog_p->eth_type), blog_p->ct_count,
-            blog_p->vtag_num, ntohl(blog_p->vtag[0]), ntohl(blog_p->vtag[1]),
+            blog_p->vtag_num, ntohl(blog_p->vtag[0]), ntohl(blog_p->vtag[1]), blog_p->vtag_tx_num,
             blog_p->outer_vtag_num, ntohl(blog_p->outer_vtag[0]), ntohl(blog_p->outer_vtag[1]),
             blog_p->ucast_vtag_num, ntohl(blog_p->ucast_vtag));
     
@@ -6779,10 +6147,15 @@ void blog_dump( Blog_t * blog_p )
             blog_p->rx.llc_snap.len_offset,
             blog_p->rx.llc_snap.frame_len);
 
+    if ( blog_p->rx_dev_p )
+        blog_netdev_dump( blog_p->rx_dev_p );
+
     blog_l2_dump( &blog_p->rx );
 
     printk("    Del Tuple:\n" );
-    if ( blog_p->rx.info.bmap.DEL_IPv4 )
+    if (T6in4DN(blog_p))
+        blog_tuple_dump( &blog_p->rx.tuple );
+    else if ( blog_p->rx.info.bmap.DEL_IPv4 )
         blog_tuple_dump( &blog_p->delrx_tuple );
     else if ( blog_p->rx.info.bmap.DEL_IPv6 )
     {
@@ -6835,11 +6208,13 @@ void blog_dump( Blog_t * blog_p )
     blog_l2_dump( &blog_p->tx );
 
     printk("    Del Tuple:\n" );
-    if ( blog_p->tx.info.bmap.DEL_IPv4 )
+    if (T6in4UP(blog_p))
+        blog_tuple_dump( &blog_p->tx.tuple );
+    else if ( blog_p->tx.info.bmap.DEL_IPv4 )
         blog_tuple_dump( &blog_p->deltx_tuple );
     else if ( blog_p->tx.info.bmap.DEL_IPv6 )
     {
-        if ( blog_p->tx.info.bmap.GRE )
+        if ( blog_p->tx.info.bmap.GRE || blog_p->tx.info.bmap.ESP )
             blog_tupleV6_dump( &blog_p->del_tupleV6 );
         else
             blog_tupleV6_dump( &blog_p->tupleV6 );
@@ -6869,6 +6244,10 @@ void blog_dump( Blog_t * blog_p )
     if ( blog_p->tx.info.bmap.ESP )
         blog_esp_tx_dump( blog_p );
 
+    if ( blog_p->svtag )
+        printk("  SVTag: 0x%08X\n", ntohl(blog_p->svtag));
+
+    blog_phydev_dump( blog_p );
     blog_virtdev_dump( blog_p );
     blog_group_client_bitmap_dump(blog_p);
 
@@ -7067,11 +6446,11 @@ uint16_t blog_getTxMtu(Blog_t * blog_p)
     for (i = 0; i < MAX_VIRT_DEV; i++)
     {
         dir_dev_p = blog_p->virt_dev_info[i].dev_p;
-        if ( dir_dev_p == (void *)NULL ) 
-            continue;
+        dev_p = (struct net_device *)DEVP_DETACH_DIR(dir_dev_p);
+        if ( dev_p == (void *)NULL ) break; /* End of list */
         if ( IS_RX_DIR(dir_dev_p) )
             continue;
-        dev_p = (struct net_device *)DEVP_DETACH_DIR(dir_dev_p);
+
 #ifdef CONFIG_BCM_IGNORE_BRIDGE_MTU
         /* Exclude Bridge device - bridge always has the least MTU of all attached interfaces -
          * irrespective of this specific flow path */
@@ -7090,6 +6469,173 @@ uint16_t blog_getTxMtu(Blog_t * blog_p)
     blog_print( "minMtu <%d>", (int)minMtu );
 
     return minMtu;
+}
+
+/*
+ *------------------------------------------------------------------------------
+ * Function     : blog_spu_us_tx_dev_delta
+ * Description  : Calculates the SPUU tx_dev_delta based on the inserted headers in 
+ *              : outgoing packet and previous device delta
+ * blog_p       : Pointer to the Blog_t object
+ *------------------------------------------------------------------------------
+ */
+void blog_spu_us_tx_dev_delta(Blog_t *blog_p)
+{
+    int i;
+    void *dir_dev_p; 
+    struct net_device *dev_p;
+    int prev_dev_delta = 0;
+    int inserted_hdr_len = blog_p->esptx.icvsize + BLOG_ESP_PADLEN_LEN + BLOG_ESP_NEXT_PROTO_LEN;
+
+    /* find the delta of the previous dev before SPUU PHY dev */
+    for (i = 0; i < MAX_VIRT_DEV; i++) 
+    {
+        dir_dev_p = blog_p->virt_dev_info[i].dev_p;
+        if (dir_dev_p == (void *)NULL) 
+            break;
+
+        dev_p = (struct net_device *)DEVP_DETACH_DIR(dir_dev_p);
+        if (dev_p == NULL)
+            break;
+
+        prev_dev_delta = blog_p->virt_dev_info[i].delta;
+    }
+
+    if (TX_L2TP(blog_p) && TX_ESP(blog_p) && !TX_ESPoUDP(blog_p))
+    { /* L2TP over ESP UpStream */
+        inserted_hdr_len += BLOG_ESP4_L2TP_TXHDR_LEN(blog_p);
+    }
+    else if (CHK246oG4oE4UP(blog_p))
+    {   /* GRE4oESP4 upstream, payload IPv4/6 */
+        inserted_hdr_len += BLOG_ESP4_GRE4_TXHDR_LEN(blog_p);
+    }
+    else if (!RX_ESP(blog_p) && TX_ESP(blog_p))
+    {
+        if (TX_IPV4_DEL(blog_p))
+            inserted_hdr_len += BLOG_ESP4_TXHDR_LEN(blog_p);
+        else if (TX_IPV6_DEL(blog_p))
+            inserted_hdr_len += BLOG_ESP6_TXHDR_LEN(blog_p);
+    }
+
+    if (TX_ESPoUDP(blog_p))
+        inserted_hdr_len += BLOG_UDP_HDR_LEN;
+
+    blog_p->tx_dev_delta = inserted_hdr_len + prev_dev_delta;
+}
+
+/*
+ *------------------------------------------------------------------------------
+ * Function     : blog_get_max_unfragment_pktlen
+ * Description  : Gets min of max rx & tx pktlen that should be accelerated without frag.
+ *              : Also calculates the headroom needed.
+ * blog_p       : Pointer to the Blog_t object
+ * rx_max_pktlen_p : Pointer to rx_max_pktlen
+ * tx_max_pktlen_p : Pointer to tx_max_pktlen
+ * headroom_p   : Pointer to headroom
+ *------------------------------------------------------------------------------
+ */
+int blog_get_max_unfragment_pktlen(Blog_t *blog_p, uint16_t *rx_max_pktlen_p, uint16_t *tx_max_pktlen_p, int *headroom_p)
+{
+    int     i;
+    int     headroom = 0; /* final headroom needed after modifications */
+    void    *dir_dev_p; 
+    struct net_device *dev_p;
+    int     dev_pktlen;
+    int     rx_max_pktlen = 0; /* max rx pktlen */
+    int     tx_max_pktlen = 0; /* max tx pktlen used for fragmentation */
+    int     l2_overhead = 0;
+    int     adjust = 0;
+    int     delta = 0;
+    int     max_delta = 0;      /* current delta */
+    int     max_adjust = 0;     /* current adjust needed for MTU calc */
+    int     max_rx_pktlen = 0;  /* current max rx pktlen */
+    struct net_device *max_dev_p;
+
+    max_rx_pktlen = 0xFFFF;
+
+    /* dev_p == NULL means no more virt_dev */
+    for (i = 0; i < MAX_VIRT_DEV; i++) {
+        dir_dev_p = blog_p->virt_dev_info[i].dev_p;
+        if (dir_dev_p == (void *)NULL) 
+            continue;
+        if (IS_RX_DIR(dir_dev_p))
+            continue;
+
+        dev_p = (struct net_device *)DEVP_DETACH_DIR(dir_dev_p);
+        if (dev_p == NULL)
+            break;
+
+        adjust = blog_p->virt_dev_info[i].adjust;
+        delta = blog_p->virt_dev_info[i].delta;
+        dev_pktlen = dev_p->mtu - delta + adjust;
+
+        blog_print("[%d] <%s> mtu<%d> delta<%d> adjust<%d> dev_pktlen<%d> max_rx_pktlen<%d>\n",
+            i, dev_p->name, dev_p->mtu, delta, adjust, dev_pktlen, max_rx_pktlen);
+
+#ifdef CONFIG_BCM_IGNORE_BRIDGE_MTU
+        /* Exclude Bridge device - bridge always has the least MTU of all attached interfaces -
+         * irrespective of this specific flow path */
+        if (!(dev_p->priv_flags&IFF_EBRIDGE) && max_rx_pktlen > dev_pktlen)
+#else
+        if (max_rx_pktlen > dev_pktlen)
+#endif
+        {
+            max_adjust = adjust;
+            max_delta = delta;
+            max_rx_pktlen = dev_pktlen;
+            max_dev_p = dev_p;
+
+            blog_print("[%d] NEW <%s> mtu<%d> delta<%d> max_adjust<%d> dev_pktlen<%d> max_rx_pktlen<%d>\n",
+                i, dev_p->name, dev_p->mtu, delta, max_adjust, dev_pktlen, max_rx_pktlen);
+        }
+    }
+
+    /* TX PHY dev */
+    {
+        dev_p = (struct net_device *)blog_p->tx_dev_p;
+
+        adjust = blog_p->tx_dev_adjust;
+        delta = blog_p->tx_dev_delta;
+        headroom -= (delta + blog_p->vtag_tx_num * 4);
+        dev_pktlen = dev_p->mtu - delta + adjust + blog_p->vtag_tx_num * 4;
+
+        blog_print("PHY <%s> mtu<%d> delta<%d> adjust<%d> dev_pktlen<%d> max_rx_pktlen<%d>\n",
+            dev_p->name, dev_p->mtu, delta, adjust, dev_pktlen, max_rx_pktlen);
+
+#ifdef CONFIG_BCM_IGNORE_BRIDGE_MTU
+        /* Exclude Bridge device - bridge always has the least MTU of all attached interfaces -
+         * irrespective of this specific flow path */
+        if (!(dev_p->priv_flags&IFF_EBRIDGE) && max_rx_pktlen > dev_pktlen)
+#else
+        if (max_rx_pktlen > dev_pktlen)
+#endif
+        {
+            max_adjust = adjust;
+            max_delta = delta;
+            max_rx_pktlen = dev_pktlen;
+            max_dev_p = dev_p;
+
+            blog_print("PHY NEW <%s> mtu<%d> delta<%d> max_adjust<%d> max_rx_pktlen<%d>\n",
+                dev_p->name, dev_p->mtu, delta, max_adjust, max_rx_pktlen);
+        }
+    }
+
+    blog_print("=>max dev: <%s> mtu<%d> delta<%d> adjust<%d> max_rx_pktlen<%d>\n",
+        max_dev_p->name, max_dev_p->mtu, max_delta, max_adjust, max_rx_pktlen);
+
+    /* Is the TX Ethernet? */ 
+    if (blog_p->tx.info.bmap.ETH_802x)
+        l2_overhead += ETH_HLEN;
+
+    rx_max_pktlen = max_rx_pktlen + l2_overhead;
+    tx_max_pktlen = rx_max_pktlen + blog_p->tx_dev_delta;
+    blog_print("==>Done: rx_max_pktlen<%d> max_rx_pktlen<%d> l2_overhead<%d> tx_max_pktlen<%d> headroom<%d>\n\n",
+           rx_max_pktlen, max_rx_pktlen, l2_overhead, tx_max_pktlen, headroom);
+
+    *headroom_p = headroom;
+    *tx_max_pktlen_p = tx_max_pktlen;
+    *rx_max_pktlen_p = rx_max_pktlen;
+    return 0;
 }
 
 /*
@@ -7240,31 +6786,6 @@ int blog_clr_tos_tbl()
     BLOG_UNLOCK_TBL();
     return 0;
 }
-
-#if IS_ENABLED(CONFIG_WIREGUARD)
-/*
- *------------------------------------------------------------------------------
- * Function     : blog_clr_wg_tbl
- * Description  : Clear the table for Wireguard
- * Returns      :
- *  Zero        : Success
- *  Non-zero    : Fail
- *------------------------------------------------------------------------------
- */
-int blog_clr_wg_tbl(void)
-{
-    BLOG_LOCK_TBL();
-
-    wg_port_cnt = wg_network_cnt = wg_network_ip6_cnt = 0;
-
-    memset( wg_port, 0, sizeof(struct wg_port) * WG_PORT_TBL_SZ );
-    memset( wg_network, 0, sizeof(struct wg_network) * WG_NETWORK_TBL_SZ );
-    memset( wg_network_ip6, 0, sizeof(struct wg_network_ip6) * WG_NETWORK_TBL_SZ );
-
-    BLOG_UNLOCK_TBL();
-    return 0;
-}
-#endif
 
 /*
  *------------------------------------------------------------------------------
@@ -7539,7 +7060,6 @@ void blog_reset_stats(void)
     memset(&blog_ctx_g.blog_free_stats_table, 0, sizeof(uint32_t) * blog_free_reason_max);
 }
 
-
 /*
  *------------------------------------------------------------------------------
  * Function Name: blog_drv_ioctl
@@ -7649,10 +7169,6 @@ static int __init __init_blog( void )
     blog_clr_tos_tbl();
     blog_reset_stats();
 
-#if IS_ENABLED(CONFIG_WIREGUARD)
-    blog_clr_wg_tbl();
-#endif
-
     if (blog_dstentry_id_tbl_init() != 0)
     {
         printk( CLRerr "BLOG %s Unable to create dstentry tbl" CLRnl,
@@ -7689,11 +7205,6 @@ static int __init __init_blog( void )
     register_netevent_notifier(&net_nb);
 
     printk( CLRb "BLOG %s Initialized" CLRnl, BLOG_VERSION );
-
-#if IS_ENABLED(CONFIG_WIREGUARD)
-    blog_procfs_init();
-#endif
-
     return 0;
 }
 
@@ -7782,8 +7293,8 @@ void  blog_inc_wlan_mcast_client_count(struct sk_buff *skb) { return; }
 int blog_iq( const struct sk_buff * skb_p ) { return BLOG_IQ_PRIO_LOW; }
 int blog_fc_enabled(void) { return 0; };
 
-void     blog_link( BlogNetEntity_t entity_type, Blog_t * blog_p,
-                    void * net_p, uint32_t param1, uint32_t param2 ) { return; }
+void     blog_link2( BlogNetEntity_t entity_type, Blog_t * blog_p,
+                    void * net_p, uint32_t param1, uint32_t param2, uint32_t param3 ) { return; }
 
 void     blog_notify( BlogNotify_t event, void * net_p,
                       unsigned long param1, unsigned long param2 ) { return; }
@@ -7850,6 +7361,8 @@ void     blog_unlock(void) {return; }
 void blog_hw_formatted_dump( Blog_t * blog_p );
 
 uint16_t   blog_getTxMtu(Blog_t * blog_p) {return 0;}
+void blog_spu_us_tx_dev_delta(Blog_t *blog_p);
+int blog_get_max_unfragment_pktlen(Blog_t *blog_p, int *rx_max_pktlen_p, int *tx_max_pktlen_p, int *headroom_p) { return 0;}
 
 uint32_t blog_activate( Blog_t * blog_p, BlogTraffic_t traffic ) { return 0; }
 
@@ -7879,6 +7392,8 @@ EXPORT_SYMBOL(blog_support_set_tcp_ack_mflows);
 EXPORT_SYMBOL(blog_support_get_tcp_ack_mflows);
 EXPORT_SYMBOL(blog_tcp_ack_mflows_set_fn);
 EXPORT_SYMBOL(blog_support_tos_mflows_g);
+EXPORT_SYMBOL(blog_support_spdtest_retry_tos);
+EXPORT_SYMBOL(blog_support_spdtest_retry_tos_g);
 EXPORT_SYMBOL(blog_support_set_tos_mflows);
 EXPORT_SYMBOL(blog_support_get_tos_mflows);
 EXPORT_SYMBOL(blog_tos_mflows_set_fn);
@@ -7887,7 +7402,10 @@ EXPORT_SYMBOL(blog_support_unknown_ucast_g);
 EXPORT_SYMBOL(blog_support_set_unknown_ucast);
 EXPORT_SYMBOL(blog_support_get_unknown_ucast);
 #endif
-
+EXPORT_SYMBOL(blog_support_pure_llc_g);
+EXPORT_SYMBOL(blog_support_set_pure_llc);
+EXPORT_SYMBOL(blog_support_get_pure_llc);
+EXPORT_SYMBOL(blog_pure_llc_set_fn);
 EXPORT_SYMBOL(blog_ct_get_stats);
 EXPORT_SYMBOL(blog_support_mcast_g);
 EXPORT_SYMBOL(blog_support_mcast);
@@ -7936,7 +7454,7 @@ EXPORT_SYMBOL(blog_print_shared_info);
 EXPORT_SYMBOL(blog_iq);
 EXPORT_SYMBOL(blog_fc_enabled);
 EXPORT_SYMBOL(blog_gre_tunnel_accelerated);
-EXPORT_SYMBOL(blog_link);
+EXPORT_SYMBOL(blog_link2);
 EXPORT_SYMBOL(blog_notify);
 EXPORT_SYMBOL(blog_notify_async);
 EXPORT_SYMBOL(blog_notify_async_wait);
@@ -7958,6 +7476,8 @@ EXPORT_SYMBOL(blog_flowevent_unregister_notifier);
 EXPORT_SYMBOL(blog_bind_packet_accelerator);
 EXPORT_SYMBOL(blog_iq_prio);
 EXPORT_SYMBOL(blog_getTxMtu);
+EXPORT_SYMBOL(blog_spu_us_tx_dev_delta);
+EXPORT_SYMBOL(blog_get_max_unfragment_pktlen);
 EXPORT_SYMBOL(blog_hw_formatted_dump);
 EXPORT_SYMBOL(blog_activate);
 EXPORT_SYMBOL(blog_deactivate);
@@ -7967,5 +7487,8 @@ EXPORT_SYMBOL(blog_dhd_flow_update_fn);
 EXPORT_SYMBOL(blog_is_config_netdev_mac);
 EXPORT_SYMBOL(blog_get_hw_accel);
 EXPORT_SYMBOL(blog_hw_accel_force_disable);
+EXPORT_SYMBOL(blog_flow_get_flowid);
+EXPORT_SYMBOL(blog_flow_get_flowinfo);
+EXPORT_SYMBOL(blog_flow_get_flowstats);
 EXPORT_SYMBOL(blog);
 

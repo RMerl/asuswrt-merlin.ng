@@ -455,9 +455,6 @@ static rx_handler_result_t macvlan_handle_frame(struct sk_buff **pskb)
 	if (unlikely(skb->pkt_type == PACKET_LOOPBACK))
 		return RX_HANDLER_PASS;
 		
-#if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
-        blog_link( IF_DEVICE, blog_ptr(skb), (void*)skb->dev, DIR_RX, skb->len );
-#endif
 
 	port = macvlan_port_get_rcu(skb->dev);
 	if (is_multicast_ether_addr(eth->h_dest)) {
@@ -515,6 +512,10 @@ static rx_handler_result_t macvlan_handle_frame(struct sk_buff **pskb)
 
 	ret = NET_RX_SUCCESS;
 	handle_res = RX_HANDLER_ANOTHER;
+
+#if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
+	blog_link(IF_DEVICE, blog_ptr(skb), (void*)skb->dev, DIR_RX, len);
+#endif
 out:
 	macvlan_count_rx(vlan, len, ret == NET_RX_SUCCESS, false);
 	return handle_res;

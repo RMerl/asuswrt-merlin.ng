@@ -23,6 +23,10 @@
     xphy1-enabled;
 };
 
+&macsec {
+    status = "okay";
+};
+
 &mdio_bus {
     egphy0 {
         status = "okay";

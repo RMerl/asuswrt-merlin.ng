@@ -24,7 +24,7 @@
 <script type="text/javascript" src="/md5.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
 <script src="/js/qrcode/jquery.qrcode.min.js"></script>
-
+<script type="text/javascript" src="/form.js"></script>
 <style>
 </style>
 <script>
@@ -63,6 +63,10 @@ var captive_portal_used_wl_array = new Array();
 
 var manually_maclist_list_array = new Array();
 var all_gn_status = [];
+
+var current_page = window.location.pathname.split("/").pop();
+var faq_index_tmp = get_faq_index(FAQ_List, current_page, 1);
+
 function initial(){
 	show_menu();	
 
@@ -1713,8 +1717,11 @@ function hide_qr_code(unit) {
 				<tbody>
 				<tr>
 					<td bgcolor="#4D595D" valign="top" id="table_height"  >
+					<div class="container">
+
 						<div>&nbsp;</div>
 						<div class="formfonttitle"><#Guest_Network#></div>
+						<div class="formfonttitle_help"><i onclick="show_feature_desc(`<#HOWTOSETUP#>`)" class="icon_help"></i></div>
 						<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 						<div>
 							<table width="650px" style="margin:25px;">
@@ -2037,7 +2044,11 @@ function hide_qr_code(unit) {
 						<div class="apply_gen gn_set_table_bg" id="applyButton" style="display:none;margin-top:20px">
 							<input type="button" class="button_gen" value="<#CTL_Cancel#>" onclick="guest_divctrl(0);">
 							<input type="button" class="button_gen" value="<#CTL_apply#>" onclick="applyRule();">
-						</div>			  	
+						</div>
+
+						</div>	<!-- for .container  -->
+						<div class="popup_container popup_element_second"></div>
+
 					</td>
 				</tr>
 				</tbody>		

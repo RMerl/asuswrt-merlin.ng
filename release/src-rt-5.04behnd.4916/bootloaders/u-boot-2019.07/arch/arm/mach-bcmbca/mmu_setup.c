@@ -19,9 +19,11 @@ int __attribute__((section(".data"))) reg_mmu_init = 0;
 
 void arm_init_domains(void)
 {
+#ifndef CONFIG_ARMV7_LPAE
 	/* Set the access control to client so AP is checked with tlb entry */
 	asm volatile("mcr p15, 0, %0, c3, c0, 0"
 		     : : "r" (0x55555555));
+#endif
 }
 
 /* 
@@ -34,16 +36,21 @@ void dram_bank_mmu_setup(int bank)
 	bd_t *bd = gd->bd;
 	int i, j, section, num_sec;
 #ifndef CONFIG_BCMBCA_IKOS_SKIP_PGTBL_CLEAN
+#ifdef CONFIG_ARMV7_LPAE
+	u64 *page_table = (u64 *)gd->arch.tlb_addr;
+	u64 pa;
+#else
 	uint32_t *page_table = (u32 *)gd->arch.tlb_addr;
-	uint32_t pgt_size = gd->arch.tlb_size;
+	uint32_t pa;
 #endif
-	uint32_t virt;
+#endif
+	uint32_t pgt_size = gd->arch.tlb_size;
 
 	/* zereod out the entire table so undefined region is not accessible */
 	if (reg_mmu_init == 0) {
 #ifndef CONFIG_BCMBCA_IKOS_SKIP_PGTBL_CLEAN
 		memset((void*)page_table, 0x0, pgt_size);
-#endif		
+#endif
 	}
 
 	if (bd && bd->bi_dram[bank].size) {
@@ -59,11 +66,17 @@ void dram_bank_mmu_setup(int bank)
 		return;
 
 	for (i = 0; mem_map[i].size; i++) {
-		section = mem_map[i].phys >> MMU_SECTION_SHIFT;
+		if (mem_map[i].size & ((1 << MMU_SECTION_SHIFT) - 1)) {
+			printf("Fix MMU entry for %pa! Size must be multiple of 0x%x!\n",
+				   &mem_map[i].phys, MMU_SECTION_SIZE);
+			continue;
+		}
+
+		section = mem_map[i].virt >> MMU_SECTION_SHIFT;
 		num_sec = mem_map[i].size >> MMU_SECTION_SHIFT;
-		virt = mem_map[i].virt >> MMU_SECTION_SHIFT;
+		pa = mem_map[i].phys >> MMU_SECTION_SHIFT;
 		for( j = 0; j < num_sec; j++)
-			set_section_attr(section+j, (virt+j)<<MMU_SECTION_SHIFT, mem_map[i].attrs);
+			set_section_attr(section+j, (pa+j)<<MMU_SECTION_SHIFT, mem_map[i].attrs);
 	}
 	reg_mmu_init = 1;
 

@@ -285,7 +285,7 @@ static char* get_operations_symbol(operation_type_e operation_type)
 static int is_valid_text(const char* input) 
 {
 	int i,len;
-	char whitelist[] = ":.-,=/_ []()%";
+	char whitelist[] = ":.-,=/_ []()%|";
 	char tmp[2] = {0};
 	
 	if(!input) {

@@ -14,16 +14,16 @@
 <link rel="stylesheet" type="text/css" href="pwdmeter.css">
 <link rel="stylesheet" type="text/css" href="device-map/device-map.css">
 <link rel="stylesheet" type="text/css" href="css/icon.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script language="JavaScript" type="text/javascript" src="/md5.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
+<script type="text/javascript" src="/form.js"></script>
 <style>
 .cancel{
 	border: 2px solid #898989;
@@ -230,6 +230,9 @@ function show_boostkey_desc(id) {
 	if (desc[id] != undefined)
 		document.getElementById("boostkey_desc").innerHTML = "<span>" + desc[id] + "</span>";
 }
+
+var current_page = window.location.pathname.split("/").pop();
+var faq_index_tmp = get_faq_index(FAQ_List, current_page, 1);
 
 function initial(){	
 	//parse nvram to array
@@ -787,6 +790,11 @@ function applyRule(){
 			document.form.submit();
 		}
 	}
+
+	if(isSupport("noWiFi")){
+		$("#pincode").parent().parent().hide();
+		$("#btn_ez_radiotoggle_tr").hide();
+	}
 }
 
 function validForm(){
@@ -1018,8 +1026,8 @@ var timezones = [
 	["EBST3",	"(GMT-03:00) <#TZ21#>"],	//EBST3DST_1
 	["UTC3",	"(GMT-03:00) <#TZ22#>"],
 	["UTC3DST",     "(GMT-03:00) <#TZ87#>"],        //UTC2DST
-	["UTC2_1",	"(GMT-02:00) <#TZ23#>"],	//EBST3DST_2
 	["UTC2",	"(GMT-02:00) <#TZ24#>"],
+	["UTC2DST_1",  "(GMT-02:00) <#TZ23#>"],    //UTC2_1 //EBST3DST_2
 	["EUT1DST",	"(GMT-01:00) <#TZ25#>"],
 	["UTC1",	"(GMT-01:00) <#TZ26#>"],
 	["GMT0",	"(GMT) <#TZ27#>"],
@@ -1059,12 +1067,12 @@ var timezones = [
 	["UTC-4.30",	"(GMT+04:30) <#TZ52#>"],
 	["UTC-5",	"(GMT+05:00) <#TZ54#>"],
 	["UTC-5_1",	"(GMT+05:00) <#TZ53#>"],
+	["UTC-5_2",   "(GMT+05:00) <#TZ60#>, <#TZ58_2#>"],	//RFT-6
 	["UTC-5.30_2",	"(GMT+05:30) <#TZ55#>"],
 	["UTC-5.30_1",	"(GMT+05:30) <#TZ56#>"],
 	["UTC-5.30",	"(GMT+05:30) <#TZ59#>"],
 	["UTC-5.45",	"(GMT+05:45) <#TZ57#>"],
-	["RFT-6",	"(GMT+06:00) <#TZ60#>"],
-	["UTC-6",	"(GMT+06:00) <#TZ58#>"],
+	["UTC-6",	"(GMT+06:00) <#TZ58_1#>"],
 	["UTC-6.30",	"(GMT+06:30) <#TZ61#>"],
 	["UTC-7",	"(GMT+07:00) <#TZ62#>"],
 	["UTC-7_2",	"(GMT+07:00) <#TZ63#>"],
@@ -2188,6 +2196,8 @@ function change_passwd(){
 			}
 	}
 
+    showLoading();
+
 	postData.cur_passwd = $("#http_passwd_cur").val();
 	postData.new_passwd = $("#http_passwd_new").val();
 	change_result = httpApi.chpass(postData);
@@ -2385,6 +2395,8 @@ function build_boostkey_options() {
 	<tbody>
 	<tr>
 		<td bgcolor="#4D595D" valign="top">
+		<div class="container">
+
 			<div>&nbsp;</div>
 			<div class="formfonttitle"><#menu5_6#> - <#menu5_6_2#></div>
 			<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
@@ -2775,7 +2787,12 @@ function build_boostkey_options() {
 					</tr>
 				</thead>
 				<tr id="telnet_tr" style="display:none;">
-					<th><#Enable_Telnet#></th>
+					<th width="40%">
+						<div>
+							<#Enable_Telnet#>
+							<i onclick="show_feature_desc(`<#HOWTOSETUP#>`)" class="icon_th_help"></i>
+						</div>
+					</th>
 					<td>
 						<input type="radio" name="telnetd_enable" value="1" onchange="telnet_enable(this.value);" <% nvram_match_x("LANHostConfig", "telnetd_enable", "1", "checked"); %>><#checkbox_Yes#>
 						<input type="radio" name="telnetd_enable" value="0" onchange="telnet_enable(this.value);" <% nvram_match_x("LANHostConfig", "telnetd_enable", "0", "checked"); %>><#checkbox_No#>
@@ -2980,6 +2997,10 @@ function build_boostkey_options() {
 			<div class="apply_gen">
 				<input name="button" type="button" class="button_gen" onclick="applyRule();" value="<#CTL_apply#>"/>
 			</div>
+
+			</div>	<!-- for .container  -->
+			<div class="popup_container popup_element_second"></div>
+
 		</td>
 	</tr>
 </tbody>

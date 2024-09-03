@@ -29,15 +29,30 @@
 #define TTB_RGN_OC_WBWA	(1 << 10)
 #define TTB_RGN_OC_WT	(2 << 10)
 #define TTB_RGN_OC_WB	(3 << 10)
+#if defined(CONFIG_BCM_KF_GLB_COHERENCY) && defined(CONFIG_BCM_GLB_COHERENCY)
+#define TTB_S		(2 << 12)	
+#else	
 #define TTB_S		(3 << 12)
+#endif
 #define TTB_EAE		(1 << 31)
 
+#if defined(CONFIG_BCM_KF_GLB_COHERENCY) && defined(CONFIG_BCM_GLB_COHERENCY)
+/* PTWs cacheable, outer WB shareable */
+#define TTB_FLAGS_UP	(TTB_IRGN_WB|TTB_S|TTB_RGN_OC_WB)
+#define PMD_FLAGS_UP	(PMD_SECT_WB|PMD_SECT_S)
+#else
 /* PTWs cacheable, inner WB not shareable, outer WB not shareable */
 #define TTB_FLAGS_UP	(TTB_IRGN_WB|TTB_RGN_OC_WB)
 #define PMD_FLAGS_UP	(PMD_SECT_WB)
+#endif
 
+#if defined(CONFIG_BCM_KF_GLB_COHERENCY) && defined(CONFIG_BCM_GLB_COHERENCY)
+/* PTWs cacheable, outer WBWA shareable */
+#define TTB_FLAGS_SMP	(TTB_IRGN_WBWA|TTB_S|TTB_RGN_OC_WBWA)
+#else
 /* PTWs cacheable, inner WBWA shareable, outer WBWA not shareable */
 #define TTB_FLAGS_SMP	(TTB_IRGN_WBWA|TTB_S|TTB_RGN_OC_WBWA)
+#endif
 #define PMD_FLAGS_SMP	(PMD_SECT_WBWA|PMD_SECT_S)
 
 #ifndef __ARMEB__

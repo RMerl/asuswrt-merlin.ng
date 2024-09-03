@@ -44,6 +44,18 @@
     wl1-led = <&led4>;
 };
 
+// For ICP-20100 pressure sensor
+&i2c1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c_2_scl_pin_8 &i2c_2_sda_pin_9>;
+	status = "okay";
+
+	icp201xx@63{
+		compatible = "invensense,icp201xx";
+		reg = <0x63>;
+	};
+};
+
 &led_ctrl {
     pinctrl-names = "default";
 

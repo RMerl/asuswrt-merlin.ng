@@ -248,6 +248,7 @@
 		ubus_sys: ubus_sys {
 			#address-cells = <1>;
 			#size-cells = <1>;
+			ranges;
 			#define UBUS_SYSTOP_OFFSET         0x83000000
 			#define UBUS_SYSTOP_SIZE           0x80
 			#define UBUS_REGISTRATION_OFFSET   0x83000200
@@ -279,6 +280,12 @@
 			#define UBUS_MODULE_XRDP     0x0
 			#include "../ip/bcm_ubus4_dcm.dtsi"
 		};
+
+		pcm_endianness_syscon: pcm_endianness_syscon@0x83010a00 {
+			compatible = "brcm,pcm-endian-syscon", "syscon";
+			reg = <0x83010a00 0x01>;
+		};
+
 	};
 
 	periph {
@@ -357,6 +364,15 @@
 			sdhci-pll-baseclk-mhz = <3400>;
 			sdhci-pll-valid-op-mhz = <100 136 170 200>;
 		};
+
+#if defined (CONFIG_MMC_OOPS) || (CONFIG_MMC_OOPS_MODULE)
+		mmcoops {
+			#define MMC_OOPS_DUMP_OFFSET    1536 /* 768KB */
+			#define MMC_OOPS_DUMP_SIZE      512  /* 256KB */	
+			#define MMC_OOPS_DUMP_RECSIZE   128  /* 64KB  */
+			#include "../ip/bcm_mmc_oops.dtsi"
+		};
+#endif
 
 		hs_uart0: hs_serial0 {
 			pinctrl-0 = <&hs_uart_cts_pin_3 &hs_uart_rts_pin_4 &hs_uart_sin_pin_5 &hs_uart_sout_pin_6>;
@@ -583,6 +599,16 @@
 			clocks = <&pcmclk>, <&pcm_osc>;
 			clock-names = "pcmclk","pcmosc"; 
 		};
+
+		i2s_clkmclk_syscon: i2s_clkmclk_syscon@0xFF802080 {
+			compatible = "brcm,i2s-audio-clkmclk-syscon", "syscon";
+			reg = <0x2080 0x80>;
+		};
+		pcm_nco_syscon: pcm_nco_syscon@0xFF860C00 {
+			compatible = "brcm,pcm-audio-clknco-syscon", "syscon";
+			reg = <0x60C00 0x50>; /* temp setting here. to do: size should be re-cal for only we need.*/
+		};
+
 	};
 
 	legacy_leds: legacy_leds {
@@ -797,12 +823,7 @@
 
 
 &clocks {
-	#address-cells = <0x1>;
-	#size-cells = <0x1>;
-	i2s_clkmclk_syscon: i2s_clkmclk_syscon@0xFF802080 {
-		compatible = "brcm,i2s-audio-clkmclk-syscon", "syscon";
-		reg = <0xFF802080 0x80>;
-	};
+
 
 	osc: oscillator {
 		#clock-cells = <0>;
@@ -826,10 +847,6 @@
 		clock-rx-output-names  = "i2s_rx_clk";	
 	};
 
-	pcm_nco_syscon: pcm_nco_syscon@0xFF860C00 {
-		compatible = "brcm,pcm-audio-clknco-syscon", "syscon";
-		reg = <0xFF860C00 0x50>; /* temp setting here. to do: size should be re-cal for only we need.*/
-	};
 
 	pcm_osc: pcm_osc {
 		#clock-cells = <0>;
@@ -837,10 +854,6 @@
 		clock-frequency = <200000000>; /* 200.00MHz fixed output */
 	};
 
-	pcm_endianness_syscon: pcm_endianness_syscon@0x83010a00 {
-		compatible = "brcm,pcm-endian-syscon", "syscon";
-		reg = <0x83010a00 0x01>;
-	};
 
 	pcmclk: pcmclk@0xFF860C00 {
 		#clock-cells = <0>;

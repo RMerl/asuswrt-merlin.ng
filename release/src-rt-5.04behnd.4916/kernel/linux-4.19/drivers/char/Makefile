@@ -64,3 +64,6 @@ endif
 ifeq ($(MODEL),$(filter $(MODEL),GTBE98 GTBE98_PRO GTBE96 GTBE19000 RTBE92U RTBE95U))
 obj-m				+= rtl8372/
 endif
+ifeq ($(MODEL),$(filter $(MODEL),RTBE82U RTBE58U_PRO))
+obj-m				+= rtl8366u/
+endif

@@ -16,6 +16,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 typedef enum
 {
+	AMAS_RESULT_GEN_RANDOM_BACKHAUL_SECURITY_FAILED		= -26,
 	AMAS_RESULT_SET_MISC_INFO_FAILED		= -25,
 	AMAS_RESULT_GET_MISC_INFO_FAILED          = -24,
 #ifdef RTCONFIG_VIF_ONBOARDING
@@ -199,6 +200,7 @@ AMAS_FUNC AMAS_RESULT AMAS_API amas_prelink_band_sync_bypass(int unit, int *resu
 #ifdef RTCONFIG_VIF_ONBOARDING
 AMAS_FUNC AMAS_RESULT AMAS_API amas_gen_onboarding_vif_security(char *ssid, int ssid_len, char *psk, int psk_len);
 #endif	/* RTCONFIG_VIF_ONBOARDING */
+AMAS_FUNC AMAS_RESULT AMAS_API amas_gen_random_backhaul_security(char *input, char *ssid, int ssid_len, char *psk, int psk_len);
 AMAS_FUNC AMAS_RESULT AMAS_API amas_set_eth_role(char *input_eth_role);
 AMAS_FUNC AMAS_RESULT AMAS_API amas_get_dest_eth_role(char *ifname, int *eth_role);
 AMAS_FUNC AMAS_RESULT AMAS_API amas_set_misc_info(int index, char *value);

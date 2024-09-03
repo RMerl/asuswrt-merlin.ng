@@ -128,12 +128,14 @@ static int ebt_vlan_mt_check(const struct xt_mtchk_param *par)
 					 info->id);
 				return -EINVAL;
 			}
+#if !defined(CONFIG_BCM_KF_NETFILTER) // don't skip vlan-prio matching when vlan id is non-zero
 			/* Note: This is valid VLAN-tagged frame point.
 			 * Any value of user_priority are acceptable,
 			 * but should be ignored according to 802.1Q Std.
 			 * So we just drop the prio flag.
 			 */
 			info->bitmask &= ~EBT_VLAN_PRIO;
+#endif
 		}
 		/* Else, id=0 (null VLAN ID)  => user_priority range (any?) */
 	}

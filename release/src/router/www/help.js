@@ -1452,7 +1452,7 @@ function nd(time) {
 	if (olLoaded && !isExclusive()) {
 		hideDelay(time);  // delay popup close if time specified
 
-		if (o3_removecounter >= 1) { o3_showingsticky = 0 };
+		if (o3_removecounter >= 1) { o3_showingsticky = 0 }
 		
 		if (o3_showingsticky == 0) {
 			o3_allowmove = 0;

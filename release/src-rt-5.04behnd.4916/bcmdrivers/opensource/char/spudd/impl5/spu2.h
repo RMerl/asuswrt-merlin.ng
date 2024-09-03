@@ -242,7 +242,7 @@ void spu2_ccm_update_iv(unsigned int digestsize,
 			unsigned int assoclen, unsigned int chunksize,
 			bool is_encrypt, bool is_esp);
 u32 spu2_wordalign_padlen(u32 data_size);
-#if defined(SPU_TEST_RAW_PERF)
+#if defined(CONFIG_BCM_SPU2_TEST_VEC)
 void spu2_test_raw_perf(long long test_size);
 int spu2_test_get_vectors(struct spu_test_vector_t **test_vectors_ptr);
 #endif

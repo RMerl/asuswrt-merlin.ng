@@ -214,6 +214,11 @@ if( $mcbout ) {
         $mcb_chip = "47622";
     }
 
+    if( $mcb_chip eq "6766" || $mcb_chip eq "6764" ) {
+        $mcb_chip = "6765";
+    }
+
+
     while ( my $l = <F> ) {
         if ( $l =~ /^($mcb_chip\/mcb_$mcb_chip\D+_\S+\.bin)\s+(\w+)\s*$/ ) {
             print "got $1 and $2\n" if $debug;
@@ -259,6 +264,11 @@ if( $mcbout ) {
 }
 
 my $dpfe_chip = $chip;
+
+if( $dpfe_chip eq "6766" || $dpfe_chip eq "6764" ) {
+    $dpfe_chip = "6765";
+}
+
 
 foreach my $dpfeout (@dpfes) {
     if ( $dpfeout =~ /(LPDDR[4|5])/ ) {

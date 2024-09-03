@@ -1774,6 +1774,7 @@ int get_wan_proto(char *prefix)
 		{ "v6plus",	WAN_V6PLUS },
 		{ "ocnvc",	WAN_OCNVC },
 		{ "dslite",	WAN_DSLITE },
+		{ "v6opt",	WAN_V6OPTION },
 #endif
 		{ NULL }
 	};
@@ -1811,6 +1812,7 @@ int is_s46_service_by_unit(int unit)
 	case WAN_MAPE:
 	case WAN_V6PLUS:
 	case WAN_OCNVC:
+	case WAN_V6OPTION:
 	case WAN_DSLITE:
 		ret = 1;
 		break;
@@ -6253,8 +6255,58 @@ int get_discovery_ssid(char *ssid_g, int size)
 #endif
 	{
 #if defined(RTCONFIG_WIRELESSREPEATER) || defined(RTCONFIG_PROXYSTA)
+#ifdef RTCONFIG_MULTILAN_MWL
+		int nband = 0;
+		int wlunit = 0;
+		char wlword[80], *wlnext;
+		int num5g = 0, num6g = 0;
+		char ssid_2g_fh[32] = {0}, ssid_5g_fh[32] = {0}, ssid_5g1_fh[32] = {0};
+		char ssid_6g_fh[32] = {0}, ssid_6g1_fh[32] = {0};
+
+		/* get ssid of 2g & 5g & 5g1 & 6g & 6g1*/
+		foreach (wlword, nvram_safe_get("wl_ifnames"), wlnext) {
+			SKIP_ABSENT_BAND_AND_INC_UNIT(wlunit);
+			snprintf(prefix, sizeof(prefix), "wl%d_", wlunit);
+			nband = nvram_get_int(strlcat_r(prefix, "nband", tmp, sizeof(tmp)));
+			if (nband == 2) {
+				strlcpy(ssid_2g_fh, get_fh_ap_ssid_by_unit(wlunit), sizeof(ssid_2g_fh));
+			} else if (nband == 1) {
+				num5g++;
+				if(num5g == 1) {
+					strlcpy(ssid_5g_fh, get_fh_ap_ssid_by_unit(wlunit), sizeof(ssid_5g_fh));
+				} else if (num5g == 2) {
+					strlcpy(ssid_5g1_fh, get_fh_ap_ssid_by_unit(wlunit), sizeof(ssid_5g1_fh));
+				}
+			} else if (nband == 4) {
+				num6g++;
+				if(num6g == 1) {
+					strlcpy(ssid_6g_fh, get_fh_ap_ssid_by_unit(wlunit), sizeof(ssid_6g_fh));
+				} else if (num6g == 2) {
+					strlcpy(ssid_6g1_fh, get_fh_ap_ssid_by_unit(wlunit), sizeof(ssid_6g1_fh));
+				}
+			}
+			wlunit++;
+		}
+
+		// show ssid_fh : priority [ 2g > 5g > 5g1 > 6g > 6g1 > default 2g ]
+		if(strlen(ssid_2g_fh) > 0) {
+			strlcpy(ssid_g, ssid_2g_fh, size);
+		} else if(strlen(ssid_5g_fh) > 0) {
+			strlcpy(ssid_g, ssid_5g_fh, size);
+		} else if(strlen(ssid_5g1_fh) > 0) {
+			strlcpy(ssid_g, ssid_5g1_fh, size);
+		} else if(strlen(ssid_6g_fh) > 0) {
+			strlcpy(ssid_g, ssid_6g_fh, size);
+		} else if(strlen(ssid_6g1_fh) > 0) {
+			strlcpy(ssid_g, ssid_6g1_fh, size);
+		} else {
+			snprintf(prefix, sizeof(prefix), "wl%d_", WL_2G_BAND);
+			strlcpy(ssid_g, nvram_safe_get(strlcat_r(prefix, "ssid", tmp, sizeof(tmp))), size);
+		}
+#else
 		snprintf(prefix, sizeof(prefix), "wl%d_", WL_2G_BAND);
 		strlcpy(ssid_g, nvram_safe_get(strlcat_r(prefix, "ssid", tmp, sizeof(tmp))), size);
+#endif
 #endif
 	}
 
@@ -7499,4 +7551,33 @@ int validate_rc_service(char *value)
 		}
 	}
 	return 1;
+}
+
+/*
+ * BRCM4916 needs to shift qos bit to use mark[10:5], avoid to using mark[4:0]
+ * */
+int guest_mark_calc(int guest_mark)
+{
+	int mark = 0;
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+	mark = guest_mark << SHIFT_BIT;
+#else
+	mark = guest_mark;
+#endif
+	return mark;
+}
+
+char *
+rfctime(const time_t *timep, char *ts_string, int len)
+{
+	struct tm tm;
+
+#ifndef RTCONFIG_AVOID_TZ_ENV
+	if(setenv("TZ", nvram_safe_get("time_zone_x"), 1)==0)
+		tzset();
+#endif
+
+	localtime_r(timep, &tm);
+	strftime(ts_string, len, "%a, %d %b %Y %H:%M:%S %z", &tm);
+	return ts_string;
 }

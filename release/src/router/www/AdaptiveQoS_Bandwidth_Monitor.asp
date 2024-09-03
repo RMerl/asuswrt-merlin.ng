@@ -24,7 +24,7 @@
 <script type="text/javascript" src="/client_function.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/form.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js"></script>
 <style type="text/css">
 *{
 	box-sizing: content-box;
@@ -107,6 +107,9 @@
 }
 .speed-meter-100{
 	background-image:url('images/New_ui/speedmeter.png');
+}
+.splitLine_BandwithMonitor{
+	width: auto !important;
 }
 </style>
 <script>
@@ -204,9 +207,6 @@ function initial(){
 	}
 	else
 		show_clients();
-
-	if(!ASUS_EULA.status("tm"))
-		ASUS_EULA.config(eula_confirm, cancel);
 }
 
 
@@ -533,7 +533,7 @@ function show_clients(priority_type){
 		code += '</tr>';
 		code += '</table></div></td>';
 		code += '</tr></table>';
-		code += '<div class="splitLine"></div>';
+		code += '<div class="splitLine splitLine_BandwithMonitor"></div>';
 		code += '</div>';
 	}
 
@@ -699,79 +699,101 @@ function cancel_previous_device_apps(obj){
 }
 
 function render_apps(apps_array, obj_icon, apps_field){
-	var code = "";
-	var img = "";
-	var unit = getTrafficUnit();
-	var scale = 'Kb';
+	let code = "";
+	let unit = getTrafficUnit();
+	let scale = 'Kb';
 	if(unit == '1'){
 		scale = 'Mb';
 	}
 
 	apps_array.sort();	//sort apps' name
-	for(i=0;i<apps_array.length;i++){
-		code +='<tr>';
-		code +='<td style="width:70px;">';
-		img = new Image();
-		/* force to use default app icon since app-catalog id need further re-map */
-		//if(!dns_dpi_support) {
-			img.src = 'https://nw-dlcdnet.asus.com/plugin/app_icons/'+ apps_array[i][3] +'-'+ apps_array[i][4] +'-0.png';	// to check image file exist
-		//}
-		//if(dns_dpi_support || img.height == 0){	//default image, if image file doesn't exist
-		if(img.height == 0){	//default image, if image file doesn't exist
-			code +='<div class="appIcons"></div>';
-		}
-		else{
-			code +='<div class="appIcons" style="background-image:url(\'https://nw-dlcdnet.asus.com/plugin/app_icons/'+ apps_array[i][3] +'-'+ apps_array[i][4] +'-0.png\')"></div>';
-		}
-		
-		code +='</td>';
-		code +='<td style="width:230px;border-top:1px dotted #333;">';
-		code +='<div id="'+ apps_array[i][0] +'" style="font-family:monospace, Courier New, Courier">'+apps_array[i][0]+'</div>';
-		code +='</td>';
+	for(let i = 0; i < apps_array.length; i++){
+        const icon = document.querySelector('.appIcons[data-type="'+apps_array[i][3]+'-'+apps_array[i][4]+'"]');
+        let iconCode = '';
+        if(icon){
+            if(icon.classList.contains('cloudIcon')){
+                iconCode += icon.outerHTML;
+            }else{
+                iconCode += `<div class="appIcons noCloudIcon" data-type="${apps_array[i][3]}-${apps_array[i][4]}"></div>`;
+            }
+        }else{
+            iconCode += `<div class="appIcons" data-type="${apps_array[i][3]}-${apps_array[i][4]}"></div>`;
+        }
 
-		code +='<td style="border-top:1px dotted #333;">';
-		code +='<div style="margin-left:15px;">';
-		code +='<table>';
-		code +='<tr>';
-		code +='<td style="width:305px">';
-		code +='<div style="height:6px;padding:3px;background-color:#000;border-radius:10px;">';
-		code +='<div id="'+apps_array[i][0]+'_upload_bar" style="width:0%;background-color:#93E7FF;height:6px;black;border-radius:5px;"></div>';
-		code +='</div>';
-		code +='</td>';
-		code +='<td style="text-align:right;">';
-		code +='<div id="'+apps_array[i][0]+'_upload">0.00</div>';
-		code +=	'</td>';
-		code +='<td style="width:30px;">';
-		code +='<div id="'+apps_array[i][0]+'_upload_unit">'+ scale +'</div>';
-		code +='</td>';
-		code +='</tr>';
-
-		code +='<tr>';
-		code +='<td>';
-		code +='<div style="height:6px;padding:3px;background-color:#000;border-radius:10px;">';
-		code +='<div id="'+apps_array[i][0]+'_download_bar" style="width:0%;background-color:#93E7FF;height:6px;black;border-radius:5px;"></div>';
-		code +='</div>';
-		code +='</td>';
-		code +='<td style="text-align:right;">';
-		code +='<div id="'+apps_array[i][0]+'_download">0.00</div>';
-		code +='</td>';
-		code +='<td style="width:30px;">';
-		code +='<div id="'+apps_array[i][0]+'_download_unit">'+ scale +'</div>';
-		code +='</td>';
-		code +='</tr>';
-		code +='</table>';
-		code +='</div>';
-		code +='</td>';
-		code +='</tr>';
+        code += `
+            <tr>
+                <td style="width:70px;">${iconCode}</td>
+                <td style="width:230px;border-top:1px dotted #333;">
+                    <div id="${apps_array[i][0]}" style="font-family:monospace, Courier New, Courier">${apps_array[i][0]}</div>
+                </td>
+		        <td style="border-top:1px dotted #333;">
+		            <div style="margin-left:15px;">
+                        <table>
+                            <tr>
+                                <td style="width:305px">
+                                    <div style="height:8px;background-color:#000;border-radius:10px;">
+                                    <div id="${apps_array[i][0]}_upload_bar" style="width:0%;background-color:#93E7FF;height:8px;black;border-radius:5px;"></div>
+                                    </div>
+                                </td>
+                                <td style="text-align:right;">
+                                    <div id="${apps_array[i][0]}_upload">0.00</div>
+                                </td>
+                                <td style="width:30px;">
+                                    <div id="${apps_array[i][0]}_upload_unit">${scale}</div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div style="height:8px;background-color:#000;border-radius:10px;">
+                                        <div id="${apps_array[i][0]}_download_bar" style="width:0%;background-color:#93E7FF;height:8px;black;border-radius:5px;"></div>
+                                    </div>
+                                </td>
+                                <td style="text-align:right;">
+                                    <div id="${apps_array[i][0]}_download">0.00</div>
+                                </td>
+                                <td style="width:30px;">
+                                    <div id="${apps_array[i][0]}_download_unit">${scale}</div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </td>
+            </tr>`;
 	}
 
 	if(code == ""){
-		code = "<tr><td colspan='3' style='text-align:center;color:#FFCC00'><div style='padding:5px 0px;border-top:solid 1px #333;'><#Bandwidth_monitor_noList#></div></td></tr>";
+		code = `<tr><td colspan='3' style='text-align:center;color:#FFCC00'><div style='padding:5px 0px;border-top:solid 1px #333;'><#Bandwidth_monitor_noList#></div></td></tr>`;
 	}
 
 	$(apps_field).empty();
 	$(apps_field).append(code);
 	calculate_apps_traffic(apps_array);
+}
+
+function render_app_icon(apps_array){
+	apps_array.sort();	//sort apps' name
+	for(let i = 0; i < apps_array.length; i++){
+        const icon = document.querySelector('.appIcons[data-type="'+apps_array[i][3]+'-'+apps_array[i][4]+'"]');
+        if(icon){
+            if(!icon.classList.contains('cloudIcon') && !icon.classList.contains('noCloudIcon')){
+                fetch('https://nw-dlcdnet.asus.com/plugin/app_icons/'+ apps_array[i][3] +'-'+ apps_array[i][4] +'-0.png')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.blob();
+                    })
+                    .then(blob => {
+                        const imageUrl = URL.createObjectURL(blob)
+                        icon.style.backgroundImage = `url(${imageUrl})`;
+                        icon.classList.add('cloudIcon');
+                    })
+                    .catch(error => {
+                        //
+                    })
+            }
+        }
+    }
 }
 
 client_traffic_old = new Array();
@@ -1473,6 +1495,7 @@ function update_apps_tarffic(mac, obj, new_element) {
     },
     success: function(response){
 		render_apps(array_traffic, obj, new_element);
+		render_app_icon(array_traffic);
 		apps_time_flag = setTimeout((function (mac,obj,new_element){ return function (){ update_apps_tarffic(mac,obj,new_element); } })(mac,obj,new_element), detect_interval*1000);
     }
   });
@@ -1487,6 +1510,7 @@ function update_apps_tarffic_Dns(mac, obj, new_element) {
     },
     success: function(response){
 		render_apps(array_traffic, obj, new_element);
+		render_app_icon(array_traffic);
 		apps_time_flag = setTimeout((function (mac,obj,new_element){ return function (){ update_apps_tarffic_Dns(mac,obj,new_element); } })(mac,obj,new_element), detect_interval*1000);
     }
   });
@@ -1572,16 +1596,19 @@ function switch_control(_status){
 	if(_status) {
         if(!dns_dpi_support){
             if(reset_wan_to_fo.check_status()) {
-                if(ASUS_EULA.check("tm")){
-                    document.form.apps_analysis.value = 1;
-                    if(dns_dpi_support)
-                        document.form.dns_dpi_apps_analysis.value = 1;
-                    applyRule();
+                if(policy_status.TM == 0 || policy_status.TM_time == ''){
+                    const policyModal = new PolicyModalComponent({
+                        policy: "TM",
+                        agreeCallback: eula_confirm,
+                        disagreeCallback: cancel
+                    });
+                    policyModal.show();
+                }else{
+                    eula_confirm();
                 }
-            }
-            else
+            }else
                 cancel();
-        }else{
+        }else {
             document.form.apps_analysis.value = 1;
             document.form.dns_dpi_apps_analysis.value = 1;
             applyRule();
@@ -1872,7 +1899,7 @@ function getTrafficUnit(){
 
 						<tr>
 							<td>
-								<div colspan="2" class="monitor_qos_bg" style="width:99%;height:510px;border-radius:4px;margin-left:4px;overflow:auto;">
+								<div colspan="2" class="monitor_qos_bg" style="width:96%;height:510px;border-radius:4px;margin:0 2%;overflow:auto;">
 									<div id="sortable" style="padding-top:5px;">
 										<div style="width: 100%;text-align: center;margin-top: 50px;">
 											<img src="/images/InternetScan.gif" style="width: 50px;">

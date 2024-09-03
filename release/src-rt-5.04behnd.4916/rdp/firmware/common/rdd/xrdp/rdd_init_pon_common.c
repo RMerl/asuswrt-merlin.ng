@@ -4,25 +4,19 @@
       Copyright (c) 2014-2016 Broadcom 
       All Rights Reserved
    
-   Unless you and Broadcom execute a separate written software license
-   agreement governing use of this software, this software is licensed
-   to you under the terms of the GNU General Public License version 2
-   (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-   with the following added to such license:
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License, version 2, as published by
+   the Free Software Foundation (the "GPL").
    
-      As a special exception, the copyright holders of this software give
-      you permission to link this software with independent modules, and
-      to copy and distribute the resulting executable under terms of your
-      choice, provided that you also meet, for each linked independent
-      module, the terms and conditions of the license of that module.
-      An independent module is a module which is not derived from this
-      software.  The special exception does not apply to any modifications
-      of the software.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
    
-   Not withstanding the above, under no circumstances may you combine
-   this software in any way with any other Broadcom software provided
-   under a license other than the GPL, without Broadcom's express prior
-   written consent.
+   
+   A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+   writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.
    
 :>
 */
@@ -183,6 +177,25 @@ static rdd_module_t tcam_ic_ip_flow_miss_module =
 };
 #endif /* defined(OPERATION_MODE_PRV) */
 
+#if defined(GENERIC_CLASS_EXTRA_LKP)
+static rdd_tcam_table_parm_t tcam_ic_generic_class_extra_lkp_params =
+{
+    .module_id = TCAM_IC_MODULE_GENERIC_CLASS_EXTRA_LKP,
+    .scratch_offset = offsetof(PACKET_BUFFER_STRUCT, scratch) + TCAM_IC_SCRATCH_KEY_OFFSET,
+};
+
+static rdd_module_t tcam_ic_generic_class_extra_lkp_module =
+{
+    .context_offset = offsetof(PACKET_BUFFER_STRUCT, classification_contexts_list) +
+        offsetof(FLOW_BASED_CONTEXT_STRUCT, tcam_ip_flow_result),
+    .res_offset = (offsetof(PACKET_BUFFER_STRUCT, classification_results) +
+        (CLASSIFICATION_RESULT_INDEX_TCAM_IC_IP_FLOW * 4)),
+    .cfg_ptr = RDD_TCAM_IC_CFG_TABLE_ADDRESS_ARR,  /* Instance offset will be added at init time */
+    .init = rdd_tcam_module_init,
+    .params = &tcam_ic_generic_class_extra_lkp_params
+};
+#endif
+
 static rdd_module_t ingress_filter_module =
 {
     .res_offset = (offsetof(PACKET_BUFFER_STRUCT, classification_results) +
@@ -329,6 +342,10 @@ void rdd_proj_init(rdd_init_params_t *init_params)
 #else
     _rdd_module_init(&tcam_ic_ip_flow_module);
     _rdd_module_init(&tcam_ic_ip_flow_miss_module);
+#endif
+
+#if defined(GENERIC_CLASS_EXTRA_LKP)
+    _rdd_module_init(&tcam_ic_generic_class_extra_lkp_module);
 #endif
 
     _rdd_module_init(&ingress_filter_module);

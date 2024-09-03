@@ -530,12 +530,14 @@ static int _gen_sdn_dnsmasq_conf(const MTLAN_T *pmtl, char *config_file, const s
 	if (!pmtl || !config_file)
 		return -1;
 
+#ifdef RTCONFIG_VPN_FUSION
 	if(pmtl->sdn_t.vpnc_idx != 0)
 	{
 		snprintf(resolv_path, sizeof(resolv_path), vpnc_resolv_path, pmtl->sdn_t.vpnc_idx);
 		if (!access(resolv_path, F_OK))
 			resolv_flag = 1;
 	}
+#endif
 
 #ifdef RTCONFIG_MULTIWAN_IF
 	if(!resolv_flag)
@@ -1141,6 +1143,7 @@ static int _handle_sdn_wan(const MTLAN_T *pmtl, const char *logdrop, const char 
 
 #ifdef RTCONFIG_IPV6
 		_remove_sdn_routing_rule(pmtl, 1);
+#ifdef RTCONFIG_VPN_FUSION
 		if(ipv6_enabled() && pmtl->nw_t.v6_enable)
 		{
 			VPNC_PROTO proto;
@@ -1149,6 +1152,7 @@ static int _handle_sdn_wan(const MTLAN_T *pmtl, const char *logdrop, const char 
 			if (proto == VPNC_PROTO_OVPN || proto == VPNC_PROTO_WG)
 				eval("ip", "-6", "rule", "add", "iif", (char*)pmtl->nw_t.ifname, "table", table, "pref", pref);
 		}
+#endif
 #endif
 	}
 
@@ -1222,7 +1226,7 @@ static int _handle_sdn_wan(const MTLAN_T *pmtl, const char *logdrop, const char 
 			snprintf(table, sizeof(table), "%d", IP_ROUTE_TABLE_ID_VPNC_BASE + vpnc_default_wan);
 			snprintf(pref, sizeof(pref), "%d", IP_RULE_PREF_DEFAULT_CONN);
 			eval("ip", "rule", "add", "iif", (char*)pmtl->nw_t.ifname, "table", table, "pref", pref);
-#ifdef RTCONFIG_IPV6
+#if defined(RTCONFIG_IPV6) && defined(RTCONFIG_VPN_FUSION)
 			if(ipv6_enabled() && pmtl->nw_t.v6_enable)
 			{
 				VPNC_PROTO proto;

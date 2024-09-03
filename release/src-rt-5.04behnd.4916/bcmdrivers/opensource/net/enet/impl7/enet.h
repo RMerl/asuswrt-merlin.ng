@@ -4,25 +4,19 @@
       Copyright (c) 2015 Broadcom 
       All Rights Reserved
    
-   Unless you and Broadcom execute a separate written software license
-   agreement governing use of this software, this software is licensed
-   to you under the terms of the GNU General Public License version 2
-   (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-   with the following added to such license:
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License, version 2, as published by
+   the Free Software Foundation (the "GPL").
    
-      As a special exception, the copyright holders of this software give
-      you permission to link this software with independent modules, and
-      to copy and distribute the resulting executable under terms of your
-      choice, provided that you also meet, for each linked independent
-      module, the terms and conditions of the license of that module.
-      An independent module is a module which is not derived from this
-      software.  The special exception does not apply to any modifications
-      of the software.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
    
-   Not withstanding the above, under no circumstances may you combine
-   this software in any way with any other Broadcom software provided
-   under a license other than the GPL, without Broadcom's express prior
-   written consent.
+   
+   A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+   writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.
    
    :>
  */
@@ -56,6 +50,23 @@
 
 #define ENET_ASSERT(exp)        BCM_ASSERT_A(exp)
 
+#if defined(CONFIG_BLOG)
+#if defined(CONFIG_BCM94912)
+#define CONFIG_ENET_RX_BLOG_THREAD  
+#endif /* 4912 */
+#endif /* BLOG */
+
+#if defined(CONFIG_ENET_RX_BLOG_THREAD)
+int enet_rx_blog_thread_create(void);
+void enet_rx_blog_thread_destory(void);
+int enet_rx_blog_is_full(void);
+int enet_rx_blog_enqueue(struct fkbuff * fkb_p, enetx_port_t  *port, enetx_rx_info_t *rx_info_p, int *count_p);
+
+int enet_rx_blog_dump(int argc, char *argv[]);
+int enet_rx_blog_en(int argc, char *argv[]);
+
+int rx_skb(FkBuff_t *fkb, enetx_port_t *port, enetx_rx_info_t *rx_info);
+#endif
 
 #define RXQ_MAX 8
 typedef struct _enetx_channel {
@@ -99,21 +110,22 @@ typedef struct
 
 } enetx_netdev;
 
-typedef void (*enetx_work_func_t)(enetx_port_t *port);
-
+typedef void (*enetx_work_func_t)(void *arg1, int arg2);
 typedef struct
 {
     struct work_struct base_work;
-    enetx_port_t *port;
+    void *arg1; 
+    int arg2;
     enetx_work_func_t func;
 } enetx_work_t;
 
-int enetx_queue_work(enetx_port_t *port, enetx_work_func_t func);
+int enetx_queue_work(enetx_work_func_t func, void *arg1, int arg2);
 
 #define NETDEV_PRIV(dev)  ((enetx_netdev *)netdev_priv(dev))
 
 /* Called from platform ISR implementation */
 int enetx_rx_isr(enetx_channel *chan);
+void wait_enet_ready(void);
 
 /* Called from port init */
 int enet_create_netdevice(enetx_port_t *p);

@@ -146,6 +146,7 @@ OBJS_WPS_PBCD += $(if $(wildcard sysdeps/broadcom/hostapd_config_6e.c),hostapd_c
 endif
 ifeq ($(HND_ROUTER_BE_4916),y)
 CFLAGS += -DCONFIG_DRIVER_BRCM_MLO
+CFLAGS += -DCONFIG_PASN
 endif
 ifeq ($(RTCONFIG_AMAS_WGN), y)
 OBJS_WPS_PBCD += $(if $(wildcard amas_wgn.c),amas_wgn.o,prebuild/amas_wgn.o)
@@ -689,13 +690,14 @@ OBJS += vpnc_fusion.o
 ifeq ($(RTCONFIG_VPN_FUSION_MERLIN),y)
 OBJS += vpnc_legacy.o
 endif
-ifeq ($(RTCONFIG_MULTILAN_CFG),y)
-OBJS += sdn.o
-OBJS += firewall_sdn.o
-endif
 else
 OBJS += vpnc.o
 endif
+endif
+
+ifeq ($(RTCONFIG_MULTILAN_CFG),y)
+OBJS += sdn.o
+OBJS += firewall_sdn.o
 endif
 
 ifeq ($(or $(HND_ROUTER_AX_6756),$(HND_ROUTER_BE_4916)),y)
@@ -754,6 +756,10 @@ OBJS += bwdpi_wred_alive.o
 OBJS += bwdpi_db_10.o
 
 OBJS += hour_monitor.o
+endif
+
+ifeq ($(RTCONFIG_DNSQUERY_INTERCEPT),y)
+OBJS += dns_dpi_check.o
 endif
 
 ifeq ($(RTCONFIG_AMAS),y)
@@ -1122,7 +1128,7 @@ endif
 ifeq ($(GTAX6000),y)
 OBJS += antled.o
 endif
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT-BE98 GT-BE98_PRO GT-BE96 GT-BE19000 RT-BE58U TUF-BE3600 RT-BE92U RT-BE95U))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT-BE98 GT-BE98_PRO GT-BE96 GT-BE19000 RT-BE58U TUF-BE3600 RT-BE92U RT-BE95U RT-BE82U RT-BE58U_PRO))
 OBJS += rtkmonitor.o
 endif
 
@@ -1396,10 +1402,10 @@ endif
 ifeq ($(or $(RTAX55),$(RTAX1800),$(RTAX58U_V2),$(RTAX3000N)),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc rtkswitch
 endif
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),BR63 GT-BE98 GT-BE98_PRO GT-BE96 RT-BE58U TUF-BE3600 GT-BE19000 RT-BE92U RT-BE95U))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),BR63 GT-BE98 GT-BE98_PRO GT-BE96 RT-BE58U TUF-BE3600 GT-BE19000 RT-BE92U RT-BE95U RT-BE82U RT-BE58U_PRO))
 	@cd $(INSTALLDIR)/sbin && ln -sf rc rtkswitch
 endif
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT-BE98 GT-BE98_PRO GT-BE96 GT-BE19000 RT-BE58U TUF-BE3600 RT-BE92U RT-BE95U))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT-BE98 GT-BE98_PRO GT-BE96 GT-BE19000 RT-BE58U TUF-BE3600 RT-BE92U RT-BE95U RT-BE82U RT-BE58U_PRO))
 	@cd $(INSTALLDIR)/sbin && ln -sf rc rtkmonitor
 endif
 ifeq ($(RTCONFIG_QCA),y)
@@ -1451,10 +1457,10 @@ ifeq ($(RTCONFIG_APP_PREINSTALLED)$(RTCONFIG_APP_NETINSTALLED),y)
 endif
 endif
 	@cd $(INSTALLDIR)/sbin && ln -sf rc restart_wireless
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX55 RT-AX1800 RT-AX58U_V2 RT-AX3000N BR63 GT-BE98 GT-BE98_PRO GT-BE96 RT-BE58U TUF-BE3600 GT-BE19000 RT-BE92U RT-BE95U))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX55 RT-AX1800 RT-AX58U_V2 RT-AX3000N BR63 GT-BE98 GT-BE98_PRO GT-BE96 RT-BE58U TUF-BE3600 GT-BE19000 RT-BE92U RT-BE95U RT-BE82U RT-BE58U_PRO))
 	@cd $(INSTALLDIR)/sbin && ln -sf rc config_switch
 endif
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT-BE98 GT-BE98_PRO GT-BE96 RT-BE58U TUF-BE3600 GT-BE19000 RT-BE92U RT-BE95U))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT-BE98 GT-BE98_PRO GT-BE96 RT-BE58U TUF-BE3600 GT-BE19000 RT-BE92U RT-BE95U RT-BE82U RT-BE58U_PRO))
 	@cd $(INSTALLDIR)/sbin && ln -sf rc config_extwan
 	@cd $(INSTALLDIR)/sbin && ln -sf rc reset_extwan
 endif
@@ -1612,6 +1618,9 @@ ifeq ($(RTCONFIG_BWDPI),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc bwdpi_check
 	@cd $(INSTALLDIR)/sbin && ln -sf rc bwdpi_wred_alive
 	@cd $(INSTALLDIR)/sbin && ln -sf rc bwdpi_db_10
+endif
+ifeq ($(RTCONFIG_DNSQUERY_INTERCEPT),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc dns_dpi_check
 endif
 ifeq ($(RTCONFIG_AMAS),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc amas_lib
@@ -1878,6 +1887,13 @@ bwdpi_db_10.o:
 	@-cp -f ./prebuild/bwdpi_db_10.o .
 bwdpi_wred_alive.o:
 	@-cp -f ./prebuild/bwdpi_wred_alive.o .
+endif
+
+ifeq ($(RTCONFIG_DNSQUERY_INTERCEPT),y)
+ifneq ($(wildcard ./prebuild/dns_dpi_check.o),)
+dns_dpi_check.o:
+	@-cp -f ./prebuild/dns_dpi_check.o .
+endif
 endif
 
 ifneq ($(wildcard ./prebuild/nt_mail.o),)
@@ -2278,7 +2294,7 @@ ledg.o:
 	@-cp -f ./prebuild/ledg.o .
 endif
 endif
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT-BE98 GT-BE98_PRO GT-BE96 GT-BE19000 RT-BE58U TUF-BE3600 RT-BE92U RT-BE95U))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT-BE98 GT-BE98_PRO GT-BE96 GT-BE19000 RT-BE58U TUF-BE3600 RT-BE92U RT-BE95U RT-BE82U RT-BE58U_PRO))
 ifneq ($(wildcard ./prebuild/rtkmonitor.o),)
 rtkmonitor.o:
 	@-cp -f ./prebuild/rtkmonitor.o .

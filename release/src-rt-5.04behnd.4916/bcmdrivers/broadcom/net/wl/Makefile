@@ -162,7 +162,7 @@ clean:
 	rm -f $(SROM_MAP_PATH)/*.bin
 
 # srommap/nvramvars builds only for 11ac/11n chips
-FW_MKFILE=$(ALLSRCBASE)/main/components/router/Makefile.fw.be_369_1808
+FW_MKFILE=$(ALLSRCBASE)/main/components/router/Makefile.fw.be
 11AC_11N_CHIPS = $(shell grep '4366' $(FW_MKFILE))
 ifneq ($(11AC_11N_CHIPS),)
 version_info: check_prebuilt build_srom_map build_nvramvars_map

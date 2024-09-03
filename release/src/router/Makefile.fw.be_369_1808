@@ -234,7 +234,7 @@ ifeq ($(CONFIG_STBAP),y)
 else
 	ifeq ($(BUILD_WLAN_TESTBED_AP),y)
 		fw_options := $(fw_options)_testbedap
-	else ifeq ($(CONFIG_AIRIQ),y)
+	else ifeq ($(BUILD_BRCM_AIRIQ),y)
 		fw_options := $(fw_options)_airiq
 	endif
 

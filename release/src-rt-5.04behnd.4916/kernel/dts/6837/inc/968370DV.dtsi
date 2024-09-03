@@ -55,6 +55,7 @@
 };
 
 &ethphytop {
+    wakeup-trigger-pin = <&bca_extintr 55 GPIO_ACTIVE_LOW (BCA_EXTINTR_SHARED_GPIO | BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
     status = "okay";
 };
 
@@ -158,3 +159,11 @@
                 spi-index = <0>;
         };
 };
+
+&mdio_bus {
+    serdes00_xphy {
+        phy-magic = <&bca_extintr 82 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+        phy-link  = <&bca_extintr 83 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+    };
+};
+

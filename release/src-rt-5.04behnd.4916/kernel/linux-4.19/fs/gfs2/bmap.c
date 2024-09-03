@@ -72,9 +72,6 @@ static int gfs2_unstuffer_page(struct gfs2_inode *ip, struct buffer_head *dibh,
 		void *kaddr = kmap(page);
 		u64 dsize = i_size_read(inode);
  
-		if (dsize > gfs2_max_stuffed_size(ip))
-			dsize = gfs2_max_stuffed_size(ip);
-
 		memcpy(kaddr, dibh->b_data + sizeof(struct gfs2_dinode), dsize);
 		memset(kaddr + dsize, 0, PAGE_SIZE - dsize);
 		kunmap(page);
@@ -1757,7 +1754,7 @@ static int punch_hole(struct gfs2_inode *ip, u64 offset, u64 length)
 	u64 lblock = (offset + (1 << bsize_shift) - 1) >> bsize_shift;
 	__u16 start_list[GFS2_MAX_META_HEIGHT];
 	__u16 __end_list[GFS2_MAX_META_HEIGHT], *end_list = NULL;
-	unsigned int start_aligned, uninitialized_var(end_aligned);
+	unsigned int start_aligned, end_aligned;
 	unsigned int strip_h = ip->i_height - 1;
 	u32 btotal = 0;
 	int ret, state;

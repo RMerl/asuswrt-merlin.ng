@@ -13,10 +13,12 @@ use strict;
 use warnings;
 
 my $recurse;
+my $check;
 my $outdir = "out";
 
-my $usage = "$0 [--recursive] [--outdir dir] file.pkgtb";
-GetOptions( "outdir=s", \$outdir, "recursive", \$recurse ) or die($usage);
+my $usage = "$0 [--recursive] [--check] [--outdir dir] file.pkgtb";
+GetOptions( "outdir=s", \$outdir, "recursive", \$recurse, "check", \$check )
+  or die($usage);
 my $pkgtb = shift @ARGV or die($usage);
 
 unpack_image( $pkgtb, $outdir, $recurse );
@@ -41,9 +43,11 @@ sub unpack_image {
     }
     my $len = $a[1];
     $len = ( $len + 3 ) & ~3;
-    mkdir($outdir);
-    if ( !-d $outdir ) {
-        die("cant create $outdir");
+    if ( !$check ) {
+        mkdir($outdir);
+        if ( !-d $outdir ) {
+            die("cant create $outdir");
+        }
     }
     open( D, "$fdtget -p $dtb /security data 2>/dev/null|" );
     my @props = <D>;
@@ -63,6 +67,11 @@ sub unpack_image {
         my $dataposition =
           `$fdtget -t u $dtb /images/$image data-position 2>/dev/null`;
         my $datasize = `$fdtget -t u $dtb /images/$image data-size`;
+        my $datahash = `$fdtget -t bx $dtb /images/$image/hash-1 value`;
+        $datahash = " $datahash ";
+        $datahash =~ s/\s(\S)\s/ 0$1 /g;
+        $datahash =~ s/\s+//g;
+
         if ($dataposition) {
             $soff = $dataposition;
         }
@@ -70,12 +79,22 @@ sub unpack_image {
             $soff = $len + $dataoffset;
         }
         my $fnam = "$outdir/file_$image.bin";
-        open( O, ">$fnam" );
-        print O substr( $img, $soff, $datasize );
-        close(O);
-        print "created $fnam of size $datasize\n";
-        if ($recurse) {
-            unpack_image( $fnam, "$outdir/$image", $recurse );
+        if ($check) {
+            print "hash should be:  " . $datahash . "\n";
+            my $calculated = sha256_hex( substr( $img, $soff, $datasize ) );
+            print "hash calculated: $calculated\n";
+            if ( $datahash ne $calculated ) {
+                die("pkgtb corrupted");
+            }
+        }
+        else {
+            open( O, ">$fnam" );
+            print O substr( $img, $soff, $datasize );
+            close(O);
+            print "created $fnam of size $datasize\n";
+            if ($recurse) {
+                unpack_image( $fnam, "$outdir/$image", $recurse );
+            }
         }
     }
 

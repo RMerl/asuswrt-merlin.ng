@@ -11,9 +11,6 @@
 #include <nand.h>
 #include "spl_ddrinit.h"
 #include <asm/arch/misc.h>
-#if defined(CONFIG_BCMBCA_DDRC)
-#include "asm/arch/ddr.h"
-#endif
 #include "boot_blob.h"
 #include "boot_flash.h"
 #include "tpl_params.h"
@@ -93,9 +90,9 @@ __weak void start_tpl(tpl_params *parms)
 		image_entry((void *)new_params);
 	}
 
-	/* disable mmu/dcache to enable loading of uboot to memory by jtag if needed */
-	dcache_disable();
-	hang();
+#if !defined(CONFIG_BCMBCA_IKOS) 
+	bcm_sec_abort();		
+#endif
 }
 
 __weak void arch_cpu_deinit(void)
@@ -113,29 +110,12 @@ u32 spl_boot_device(void)
 	return BOOT_DEVICE_NONE;
 }
 
-__weak void enable_memc_sram(void)
-{
-#if defined(CONFIG_BRCM_SPL_MEMC_SRAM)
-	/* enable 64KB sram in MEMC controller for MMU table */
-	MEMC->SRAM_REMAP_CTRL = (CONFIG_SYS_PAGETBL_BASE | 0x00000040);
-	MEMC->SRAM_REMAP_CTRL |= 0x2;
-	MEMC->SRAM_REMAP_CTRL;
-#endif
-}
-
-__weak void disable_memc_sram(void)
-{
-#if defined(CONFIG_BRCM_SPL_MEMC_SRAM)
-	/* disable 64KB sram in MEMC controller for MMU table */
-	MEMC->SRAM_REMAP_CTRL = 0;
-	MEMC->SRAM_REMAP_CTRL;
-#endif	
-}
-
 #if !CONFIG_IS_ENABLED(SYS_DCACHE_OFF)
 int reserve_mmu(void)
 {
-	enable_memc_sram();
+#ifdef CONFIG_BCMBCA_PGTBL_IN_MEMC_SRAM
+	bcmbca_enable_memc_sram(CONFIG_SYS_PAGETBL_BASE, CONFIG_SYS_PAGETBL_SIZE);
+#endif
 	gd->arch.tlb_addr = CONFIG_SYS_PAGETBL_BASE;
 	gd->arch.tlb_size = CONFIG_SYS_PAGETBL_SIZE;
 
@@ -424,7 +404,9 @@ void board_init_f(ulong dummy)
 	timer_init();
 #endif
 	if (spl_early_init())
-		hang();
+#if !defined(CONFIG_BCMBCA_IKOS) 
+		bcm_sec_abort();
+#endif
 
 	/* UART clocks enabled and gd valid - init serial console */
 	preloader_console_init();
@@ -440,7 +422,9 @@ void board_init_f(ulong dummy)
 
 #if  defined(CONFIG_BCMBCA_OTP)
 	if (bcm_otp_init()) {
-		hang();
+#if !defined(CONFIG_BCMBCA_IKOS) 
+		bcm_sec_abort();
+#endif
 	}
 #endif
 	bcm_sec_init();
@@ -480,7 +464,16 @@ void board_init_f(ulong dummy)
 void spl_board_deinit(void)
 {
 #if defined(CONFIG_BCMBCA_DISABLE_SECURE_VERIFY)
+	/* Lock SOTP, wipe keys in SRAM and locally in .data */
 	bcm_sec_deinit();		
+#else
+	/* Just wipe keys stored locally in .data */
+	bcm_sec_clean_keys(bcm_sec());
+#endif
+
+#if defined(CONFIG_BCMBCA_OTP)
+	/* Wipe temp SOTP items */
+	bcm_otp_deinit();
 #endif
 	/* 
 	 * even thought the name says linux but it does everything needed for
@@ -490,7 +483,9 @@ void spl_board_deinit(void)
 
 	arch_cpu_deinit();
 
-	disable_memc_sram();
+#ifdef CONFIG_BCMBCA_PGTBL_IN_MEMC_SRAM
+	bcmbca_disable_memc_sram();
+#endif
 }
 
 void spl_board_ddrinit(early_abort_t* ea_info)

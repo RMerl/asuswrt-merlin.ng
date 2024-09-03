@@ -11,6 +11,10 @@
 *{
     /*box-sizing: border-box;*/
 }
+
+.display-none{
+    display: none;
+}
 .flexbox{
     display: flex;
 }
@@ -35,7 +39,9 @@
 .flex-j-end{
     justify-content: flex-end;
 }
-
+.ms-6{
+    margin-left: 16px;
+}
 .border-container{
     width: 769px; 
     position: relative;

@@ -19,7 +19,12 @@
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
+<script type="text/javascript" src="/form.js"></script>
 <script>
+
+var current_page = window.location.pathname.split("/").pop();
+var faq_index_tmp = get_faq_index(FAQ_List, current_page, 1);
+
 function init(){
 	show_menu();
 	showDropdownClientList('setClientIP', 'ip', 'all', 'ClientList_Block_PC', 'pull_arrow', 'online');
@@ -137,7 +142,11 @@ function setClientIP(ipaddr){
 							<tr>
 								<td bgcolor="#4D595D" colspan="3" valign="top">
 									<div>&nbsp;</div>
+								<div class="container">
+
+									<div>&nbsp;</div>
 									<div class="formfonttitle"><#Network_Tools#> - Netstat</div>
+									<div class="formfonttitle_help"><i onclick="show_feature_desc(`<#HOWTOSETUP#>`)" class="icon_help"></i></div>
 									<div style="margin: 10px 0 10px 5px;" class="splitLine"></div>
 									<div class="formfontdesc" id="cmdDesc"><#NetworkTools_Info#></div>
 									<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
@@ -225,6 +234,10 @@ function setClientIP(ipaddr){
 									<div style="margin-top:8px" id="logArea">
 										<textarea cols="63" rows="27" wrap="off" readonly="readonly" id="textarea" class="textarea_ssh_table" style="width:99%;font-family:Courier New, Courier, mono; font-size:11px;"><% nvram_dump("syscmd.log","syscmd.sh"); %></textarea>
 									</div>
+
+									</div>  <!-- for .container  -->
+                                    <div class="popup_container popup_element_second"></div>
+
 								</td>
 							</tr>
 						</table>

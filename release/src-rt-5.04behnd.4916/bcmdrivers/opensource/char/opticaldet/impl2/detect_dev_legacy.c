@@ -4,25 +4,19 @@
    Copyright (c) 2020 Broadcom 
    All Rights Reserved
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
 :>
 */
@@ -31,7 +25,6 @@ written consent.
 #include <linux/string.h>
 #include <linux/device.h>
 #include "trx_descr.h"
-#include "bcmsfp.h"
 #include "trxbus.h"
 
 #define TRX_DESC(p) (p)
@@ -139,7 +132,6 @@ int trx_get_full_info(int bus, TRX_INFOMATION *trx_info)
     int len;
     char *str;
     unsigned long wavelen;
-    struct device *dev;
     TRX_DEFINE;
     TRX_GET_RET;
 
@@ -152,25 +144,22 @@ int trx_get_full_info(int bus, TRX_INFOMATION *trx_info)
     }
     else
     {
-        if (!(dev = trxbus_get_dev(bus)))
-            return OPTICALDET_NOSFP;
-
-        sfp_mon_read_buf(dev, bcmsfp_mon_id_vendor_name, 0, &str, &len);
+        trxbus_mon_read_buf(bus, bcmsfp_mon_id_vendor_name, 0, &str, &len);
         strncpy(trx_info->vendor_name, str, MIN(len, sizeof(trx_info->vendor_name)));
 
-        sfp_mon_read_buf(dev, bcmsfp_mon_id_vendor_pn, 0, &str, &len);
+        trxbus_mon_read_buf(bus, bcmsfp_mon_id_vendor_pn, 0, &str, &len);
         strncpy(trx_info->vendor_pn, str, MIN(len, sizeof(trx_info->vendor_pn)));
 
-        sfp_mon_read_buf(dev, bcmsfp_mon_id_vendor_sn, 0, &str, &len);
+        trxbus_mon_read_buf(bus, bcmsfp_mon_id_vendor_sn, 0, &str, &len);
         strncpy(trx_info->vendor_sn, str, MIN(len, sizeof(trx_info->vendor_sn)));
 
-        sfp_mon_read_buf(dev, bcmsfp_mon_id_date_code, 0, &str, &len);
+        trxbus_mon_read_buf(bus, bcmsfp_mon_id_date_code, 0, &str, &len);
         strncpy(trx_info->date_code, str, MIN(len, sizeof(trx_info->date_code)));
 
-        sfp_mon_read_buf(dev, bcmsfp_mon_id_vendor_rev, 0, &str, &len);
+        trxbus_mon_read_buf(bus, bcmsfp_mon_id_vendor_rev, 0, &str, &len);
         strncpy(trx_info->vendor_rev, str, MIN(len, sizeof(trx_info->vendor_rev)));
 
-        sfp_mon_read(dev, bcmsfp_mon_id_optical_wavelength, 0, &wavelen);
+        trxbus_mon_read(bus, bcmsfp_mon_id_optical_wavelength, 0, &wavelen);
         trx_info->tx_wavlen = wavelen;
     }
 
@@ -196,13 +185,7 @@ EXPORT_SYMBOL(trx_get_lbe_polarity);
 
 int trx_get_los(int bus, unsigned long *los_p)
 {
-    struct device *dev;
-    TRX_DEFINE;
-    TRX_GET_RET;
-
-    if (!(dev = trxbus_get_dev(bus)))
-        return OPTICALDET_NOSFP;
-    sfp_mon_read(dev, bcmsfp_mon_los, 0, los_p);
+    trxbus_mon_read(bus, bcmsfp_mon_los, 0, los_p);
     return OPTICALDET_SUCCESS;
 }
 EXPORT_SYMBOL(trx_get_los);

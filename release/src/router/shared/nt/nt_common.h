@@ -124,13 +124,25 @@
 #define SYS_WAN_MODEM_OFFLINE_EVENT                0x1001A
 #define SYS_WAN_GOT_PROBLEMS_FROM_ISP_EVENT        0x1001B
 #define SYS_WAN_UNPUBLIC_IP_EVENT                  0x1001C
-#define SYS_ALL_WIFI_TURN_OFF_EVENT                0x1001F /* <-- last */
+#define SYS_ALL_WIFI_TURN_OFF_EVENT                0x1001F
+#define SYS_SCY_UNCONN_NOTICE_EVENT                0x10020
+#define SYS_SCY_CONN_NOTICE_EVENT                  0x10021
+#define SYS_FW_UPGRADE_OK_EVENT                    0x10022
+#define SYS_FW_UPGRADE_NOK_EVENT                   0x10023
+#define SYS_REBOOT_OK_EVENT                        0x10024
+#define SYS_REBOOT_NOK_EVENT                       0x10025
+#define SYS_LAN_PORT_IN_EVENT                      0x10026
+#define SYS_LAN_PORT_OUT_EVENT                     0x10027
+#define SYS_AFC_COLD_REBOOT_EVENT                  0x10028 /* <-- last */
 /* ------------------------------
     ### Administration ###
 ---------------------------------*/
 #define ADMIN_LOGIN_FAIL_LAN_WEB_EVENT             0x20001
 #define ADMIN_LOGIN_FAIL_SSH_EVENT                 0x20003
 #define ADMIN_LOGIN_FAIL_TELNET_EVENT              0x20004
+#define ADMIN_REMOTE_LOGIN_EVENT                   0x20005
+#define ADMIN_BOUND_DEV_EVENT                      0x20006
+#define ADMIN_UNBOUND_DEV_EVENT                    0x20007
 /* ------------------------------
     ### Security ###
 ---------------------------------*/
@@ -157,6 +169,10 @@
 #define GENERAL_DEV_ACCESS_CHANGE                  0x70009
 #define GENERAL_QOS_UPDATE                         0x7000A
 #define GENERAL_TOGGLE_STATES_UPDATE               0x7000B
+/* ------------------------------
+    ### AiMesh Event  ###
+---------------------------------*/
+#define AIMESH_ETH_OB_EVENT                        0x80001
 /* EVENT DEFINE END
 ---------------------------------*/
 

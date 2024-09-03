@@ -1,29 +1,23 @@
 /*
    <:copyright-BRCM:2015:DUAL/GPL:standard
-
+   
       Copyright (c) 2015 Broadcom 
       All Rights Reserved
-
-   Unless you and Broadcom execute a separate written software license
-   agreement governing use of this software, this software is licensed
-   to you under the terms of the GNU General Public License version 2
-   (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-   with the following added to such license:
-
-      As a special exception, the copyright holders of this software give
-      you permission to link this software with independent modules, and
-      to copy and distribute the resulting executable under terms of your
-      choice, provided that you also meet, for each linked independent
-      module, the terms and conditions of the license of that module.
-      An independent module is a module which is not derived from this
-      software.  The special exception does not apply to any modifications
-      of the software.
-
-   Not withstanding the above, under no circumstances may you combine
-   this software in any way with any other Broadcom software provided
-   under a license other than the GPL, without Broadcom's express prior
-   written consent.
-
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License, version 2, as published by
+   the Free Software Foundation (the "GPL").
+   
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+   
+   
+   A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+   writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.
+   
    :>
  */
 
@@ -148,9 +142,11 @@ Exit:
 static int port_g9991_port_init(enetx_port_t *self)
 {
     bdmf_error_t rc;
+    struct enetx_port_t *parent_port;
     void *priv;
 
-    priv = (void *)(unsigned long)self->p.parent_sw->s.parent_port->p.phy;
+    parent_port = self->p.parent_sw->s.parent_port;
+    priv = (void *)(unsigned long)(parent_port->p.phy ? parent_port->p.phy : parent_port->p.delayed_phy);
     if (self->p.port_cap == PORT_CAP_MGMT)
         priv = (void *)((unsigned long)priv | 0x1);
     else
@@ -197,6 +193,17 @@ static int port_g9991_port_uninit(enetx_port_t *self)
     return _rdpa_destroy_object((bdmf_object_handle *)&self->priv);
 }
 
+static void port_g9991_port_open(enetx_port_t *self)
+{
+    if (self->p.parent_sw->s.parent_port)
+    {
+        /* port is on external switch, also enable connected runner/sysp port */
+        port_open(self->p.parent_sw->s.parent_port);
+    }
+
+    port_generic_open(self); 
+}
+
 static enetx_port_t *__create_port(int port_id, char *devname, char *errorname, enetx_port_t *sw)
 {
     enetx_port_t *p;
@@ -234,6 +241,8 @@ static int _create_error_sampling_port(enetx_port_t *self)
 
 static int port_g9991_sw_init(enetx_port_t *self)
 {
+    phy_dev_t *phy_dev = NULL;
+
     if (_create_error_sampling_port(self))
         return -1;
 
@@ -246,9 +255,8 @@ static int port_g9991_sw_init(enetx_port_t *self)
     /* RX Pause should be disabled; MAC should not parse G.999.1 frames which might look like pause packets
      * W/A on LPORT, which does not update pause capability flag; later copied to MAC configuration,
      * to enable TX pause */
-    self->s.parent_port->p.phy->pause_tx = 1;
-
-    port_open(self->s.parent_port);
+    phy_dev = self->s.parent_port->p.phy ? self->s.parent_port->p.phy : self->s.parent_port->p.delayed_phy;
+    phy_dev->pause_tx = 1;
 
     return 0;
 }
@@ -335,7 +343,7 @@ port_ops_t port_g9991_port =
     .init = port_g9991_port_init,
     .post_init = port_g9991_port_post_init,
     .uninit = port_g9991_port_uninit,
-
+    .open = port_g9991_port_open,
     .dispatch_pkt = dispatch_pkt_lan_bridge,
     .stats_get = port_g9991_port_stats_get,
     .stats_clear = port_g9991_port_stats_clear,

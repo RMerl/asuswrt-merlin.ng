@@ -1,29 +1,23 @@
 /*
    <:copyright-BRCM:2016:DUAL/GPL:standard
-
-      Copyright (c) 2016 Broadcom
+   
+      Copyright (c) 2016 Broadcom 
       All Rights Reserved
-
-   Unless you and Broadcom execute a separate written software license
-   agreement governing use of this software, this software is licensed
-   to you under the terms of the GNU General Public License version 2
-   (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-   with the following added to such license:
-
-      As a special exception, the copyright holders of this software give
-      you permission to link this software with independent modules, and
-      to copy and distribute the resulting executable under terms of your
-      choice, provided that you also meet, for each linked independent
-      module, the terms and conditions of the license of that module.
-      An independent module is a module which is not derived from this
-      software.  The special exception does not apply to any modifications
-      of the software.
-
-   Not withstanding the above, under no circumstances may you combine
-   this software in any way with any other Broadcom software provided
-   under a license other than the GPL, without Broadcom's express prior
-   written consent.
-
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License, version 2, as published by
+   the Free Software Foundation (the "GPL").
+   
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+   
+   
+   A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+   writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.
+   
    :>
  */
 
@@ -55,7 +49,6 @@ extern int mdio_write_c22_register(uint32_t addr, uint16_t reg, uint16_t val);
 #define MDIO_RD  mdio_read_c22_register
 #define MDIO_WR  mdio_write_c22_register
 static DEFINE_SPINLOCK(sf2_reg_access);
-static DEFINE_SPINLOCK(sf2_stat_access);
 DEFINE_SPINLOCK(extsw_reg_config);
 EXPORT_SYMBOL(extsw_reg_config);
 
@@ -419,7 +412,7 @@ static int port_sf2mac_pause_set(mac_dev_t *mac_dev, int rx_enable, int tx_enabl
     return 0;
 }
 
-#if defined(CONFIG_BCM96756) || defined(CONFIG_BCM96765)
+#if defined(MAC_SF2_DUAL)
 #define HIGH_SPEED_STATE    1       // chips support speed state > 1G
 #endif
 
@@ -529,6 +522,7 @@ static int port_sf2mac_cfg_set(mac_dev_t *mac_dev, mac_cfg_t *mac_cfg)
 #else
     case MAC_SPEED_2500:    v16 |= REG_PORT_STATE_1000 | REG_PORT_GMII_SPEED_UP_2G; break;
 #endif
+    case MAC_SPEED_UNKNOWN: v16 &= ~REG_PORT_STATE_LNK;
     default: break;
     }
     
@@ -727,15 +721,15 @@ static int port_sf2mac_stats_read(mac_dev_t *mac_dev, mac_stats_t *mac_stats, in
 }
 static int port_sf2mac_stats_get(mac_dev_t *mac_dev, mac_stats_t *mac_stats)
 {
-    static mac_stats_t scratch_stats;
     sf2_mac_dev_priv_data_t *p_priv = (sf2_mac_dev_priv_data_t*)mac_dev->priv;
     int is_40b = (p_priv->priv_flags & SF2MAC_DRV_PRIV_FLAG_64_40BIT_MIB)? 1 : 0;
-    spin_lock_bh(&sf2_stat_access);
-    if (port_sf2mac_stats_read(mac_dev,&scratch_stats, is_40b) == 0) {
-        port_sf2mac_fold_stats(&p_priv->mac_stats, &p_priv->last_mac_stats, &scratch_stats, is_40b);
+    spin_lock_bh(&mac_dev->stats_lock);
+    if (port_sf2mac_stats_read(mac_dev,&p_priv->scratch_stats, is_40b) == 0) {
+        port_sf2mac_fold_stats(&p_priv->mac_stats, &p_priv->last_mac_stats, &p_priv->scratch_stats, is_40b);
     }
     memcpy(mac_stats, &p_priv->mac_stats, sizeof(*mac_stats));
-    spin_unlock_bh(&sf2_stat_access);
+    spin_unlock_bh(&mac_dev->stats_lock);
+
     return 0;
 }
 static int port_sf2mac_stats_clear(mac_dev_t *mac_dev)
@@ -743,7 +737,7 @@ static int port_sf2mac_stats_clear(mac_dev_t *mac_dev)
     uint32_t global_cfg, rst_mib_en;
     sf2_mac_dev_priv_data_t *p_priv = (sf2_mac_dev_priv_data_t*)mac_dev->priv;
 
-    spin_lock_bh(&extsw_reg_config);
+    spin_lock_bh(&mac_dev->stats_lock);
     // read reset mib enable mask
     sf2_rreg(PAGE_MANAGEMENT, REG_RST_MIB_CNT_EN, (uint8_t*)&rst_mib_en, 4);
     rst_mib_en = (rst_mib_en & ~REG_RST_MIB_CNT_EN_PORT_M) | 1 << mac_dev->mac_id;
@@ -756,11 +750,11 @@ static int port_sf2mac_stats_clear(mac_dev_t *mac_dev)
     sf2_wreg(PAGE_MANAGEMENT, REG_GLOBAL_CONFIG, (uint8_t*)&global_cfg, 4);
     global_cfg &= ~GLOBAL_CFG_RESET_MIB;
     sf2_wreg(PAGE_MANAGEMENT, REG_GLOBAL_CONFIG, (uint8_t*)&global_cfg, 4);
-    spin_unlock_bh(&extsw_reg_config);
 
     udelay(50);  // hw need time to clear mibs
     memset(&p_priv->mac_stats, 0, sizeof(p_priv->mac_stats));
     memset(&p_priv->last_mac_stats, 0, sizeof(p_priv->last_mac_stats));
+    spin_unlock_bh(&mac_dev->stats_lock);
     return 0;
 }
 
@@ -769,12 +763,17 @@ static int port_sf2mac_mtu_set(mac_dev_t *mac_dev, int mtu)
     uint32_t mask, max;
     
 #if defined(CONFIG_BCM_JUMBO_FRAME)
+#if defined(ARCHER_DEVICE)
+    /* Archer based devices need switch to enforce dropping of oversize packets */
+    max = mtu;
+#else
     /* 
        Set MIB values for jumbo frames to reflect our maximum frame size.
        Need to set size to hardware max size, otherwise byte counter and
        frame counters in hardware will be inconsistent
      */
     max = MAX_HW_JUMBO_FRAME_SIZE;
+#endif
     sf2_wreg(PAGE_JUMBO, REG_JUMBO_FRAME_SIZE, (uint8_t *)&max, 4);
 #else
     sf2_rreg(PAGE_JUMBO, REG_JUMBO_FRAME_SIZE, (uint8_t *)&max, 4);
@@ -907,7 +906,6 @@ static int port_sf2mac_drv_init(mac_drv_t *mac_drv)
     sf2_mmap_wreg(PAGE_EEE, REG_EEE_WAKE_TIMER_G+6*2, (uint8_t*)&wake_delay, 2);
 #endif
 
-    mac_drv->initialized = 1;
     return 0;
 }
 
@@ -959,3 +957,68 @@ mac_drv_t mac_drv_sf2 =
     .drv_init = port_sf2mac_drv_init,
     .dt_priv = port_sf2mac_dt_priv,
 };
+
+#if defined(MAC_SF2_DUAL)
+
+typedef struct
+{
+    unsigned long priv_flags;
+    mac_cfg_t cfg;
+    mac_status_t st;
+} nonbrcm_mac_dev_priv_data_t;
+
+static int port_nbmac_dev_add(mac_dev_t *mac_dev)
+{
+    /* allocate the private data */
+    nonbrcm_mac_dev_priv_data_t *p_priv = kmalloc(sizeof(nonbrcm_mac_dev_priv_data_t), GFP_ATOMIC);;
+    /* set private data members - priv_flags are passed in priv pointer */
+    p_priv->priv_flags = (unsigned long)mac_dev->priv;
+    memset(&p_priv->st, 0, sizeof(mac_status_t));
+
+    /* assign private data */
+    mac_dev->priv = p_priv;
+    return 0;
+}
+
+static int port_nbmac_dev_del(mac_dev_t *mac_dev)
+{
+    /* Release allocated memory */
+    kfree(mac_dev->priv);
+    mac_dev->priv = NULL;
+    return 0;
+}
+
+static int port_nbmac_read_status(mac_dev_t *mac_dev, mac_status_t *mac_status)
+{
+    nonbrcm_mac_dev_priv_data_t *p_priv = (nonbrcm_mac_dev_priv_data_t*)mac_dev->priv;
+    *mac_status = p_priv->st;
+    
+    return 0;
+}
+
+static int port_nbmac_cfg_set(mac_dev_t *mac_dev, mac_cfg_t *mac_cfg)
+{
+    nonbrcm_mac_dev_priv_data_t *p_priv = (nonbrcm_mac_dev_priv_data_t*)mac_dev->priv;
+    p_priv->cfg = *mac_cfg;
+    return 0;
+}
+
+
+static int port_nbmac_cfg_get(mac_dev_t *mac_dev, mac_cfg_t *mac_cfg)
+{
+    nonbrcm_mac_dev_priv_data_t *p_priv = (nonbrcm_mac_dev_priv_data_t*)mac_dev->priv;
+    *mac_cfg = p_priv->cfg;
+    return 0;
+}
+
+mac_drv_t mac_drv_nonbrcm =
+{
+    .mac_type = MAC_TYPE_NONBRCM,
+    .name = "NONBRCM",
+    .dev_add = port_nbmac_dev_add,
+    .dev_del = port_nbmac_dev_del,
+    .read_status = port_nbmac_read_status,
+    .cfg_get = port_nbmac_cfg_get,
+    .cfg_set = port_nbmac_cfg_set,
+};
+#endif //MAC_SF2_DUAL

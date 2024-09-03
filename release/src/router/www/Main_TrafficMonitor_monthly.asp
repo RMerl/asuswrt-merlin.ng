@@ -12,6 +12,7 @@
 <link rel="stylesheet" type="text/css" href="tmmenu.css">
 <link rel="shortcut icon" href="images/favicon.png">
 <link rel="icon" href="images/favicon.png">
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/chart.min.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/help.js"></script>
@@ -19,7 +20,6 @@
 <script language="JavaScript" type="text/javascript" src="/tmmenu.js"></script>
 <script language="JavaScript" type="text/javascript" src="/tmhist.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
 
 <script type='text/javascript'>

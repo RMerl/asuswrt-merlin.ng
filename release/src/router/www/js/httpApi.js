@@ -221,7 +221,7 @@ var httpApi ={
 		return reult;
 	},
 
-	"nvramSet": function(postData, handler){
+	"nvramSet": function(postData, handler, async = true){
 		delete postData.isError;
 
 		if(this.app_dataHandler){
@@ -234,6 +234,7 @@ var httpApi ={
 				dataType: 'json',
 				data: encodeURIComponent(JSON.stringify(postData)),
 				type: 'POST',
+				async: async,
 				error: function(){},
 				success: function(response){
 					if(handler) handler.call(response);
@@ -896,7 +897,7 @@ var httpApi ={
 	},
 
 	"isConnected": function(_index){
-		var sw_mode = httpApi.nvramGet(["sw_mode"], true).sw_mode;
+		var sw_mode = httpApi.nvramGet(["sw_mode"]).sw_mode;
 		var wan_index = (_index == undefined) ? 0 : _index;
 		var wanInfo = httpApi.nvramGet(["wan" + wan_index + "_state_t", "wan" + wan_index + "_sbstate_t", "wan" + wan_index + "_auxstate_t", "link_internet"], true);
 		return (sw_mode != "1")? (wanInfo.link_internet == "2"):(
@@ -1016,73 +1017,88 @@ var httpApi ={
 		});
 	},
 
+	"newEula": {
+		"set": (enable, callback) => {
+			$.ajax({
+				url: '/set_ASUS_NEW_EULA.cgi',
+				data: {
+					"ASUS_NEW_EULA": enable
+				},
+				dataType: 'json',
+				success: callback
+			});
+		},
+		"get": () => {
+			return new Promise((resolve, reject) => {
+				const res = httpApi.nvramGet(["ASUS_NEW_EULA", "ASUS_NEW_EULA_time"], true)
+				resolve(res);
+			});
+		}
+	},
+
 	"privateEula": {
 		"set": function(enable, callback){
-			window.localStorage.setItem("PP", enable)
-			window.localStorage.setItem("PP_time", Date.now())
-
 			$.ajax({
 				url: '/set_ASUS_privacy_policy.cgi',
 				data: {
 					"ASUS_privacy_policy": enable
 				},
+				async: false,
 				dataType: 'json',
 				success: callback
 			});
 		},
 
 		"get": function(feature){
-			if(feature == undefined || feature == "") feature = "ASUS_privacy_policy";
+			return new Promise((resolve, reject) =>{
+				if (feature == undefined || feature == "") feature = "ASUS_privacy_policy";
 
-			var retData = {
-				ASUS_PP_EULA: window.localStorage["PP"],
-				ASUS_PP_EULA_time: window.localStorage["PP_time"]
-			};
+				let retData = {
+					ASUS_PP: 0,
+					ASUS_PP_time: ""
+				};
 
-			$.ajax({
-				url: '/get_ASUS_privacy_policy.cgi',
-				dataType: 'json',
-				async: false,
-				success: function(resp){
-					var ASUS_privacy_policy = resp.ASUS_privacy_policy;
-					var ASUS_privacy_policy_time = resp.ASUS_privacy_policy_time;
+				$.ajax({
+					url: '/get_ASUS_privacy_policy.cgi',
+					dataType: 'json',
+					async: false,
+					success: function (resp) {
+						var ASUS_privacy_policy = resp.ASUS_privacy_policy;
+						var ASUS_privacy_policy_time = resp.ASUS_privacy_policy_time;
 
-					if(feature == "SIGNED"){
-						var securityUpdate = httpApi.securityUpdate.get()
-						var audoUpgrade = httpApi.nvramGet(["webs_update_enable"]).webs_update_enable == "1";
+						if (feature == "SIGNED") {
+							var securityUpdate = httpApi.securityUpdate.get()
+							var audoUpgrade = httpApi.nvramGet(["webs_update_enable"]).webs_update_enable == "1";
 
-						if(ASUS_privacy_policy == "0" && ASUS_privacy_policy_time != ""){
-							retData.ASUS_PP_EULA = "1";
-							retData.ASUS_PP_EULA_time = "";
-						}
-						else if(
-							ASUS_privacy_policy_time == "" ||
-							ASUS_privacy_policy_time == undefined
-						){
-							retData.ASUS_PP_EULA = "0";
-							retData.ASUS_PP_EULA_time = "";
-						}
-						else if(
-							(ASUS_privacy_policy > "0" && resp.AHS > ASUS_privacy_policy && securityUpdate) ||
-							(ASUS_privacy_policy > "0" && resp.ASD > ASUS_privacy_policy && securityUpdate) ||
-							(ASUS_privacy_policy > "0" && resp.AUTOUPGRADE > ASUS_privacy_policy && audoUpgrade)
-						){
-							retData.ASUS_PP_EULA = "0";
-							retData.ASUS_PP_EULA_time = ASUS_privacy_policy_time;
-						}
-						else{
-							retData.ASUS_PP_EULA = "1";
-							retData.ASUS_PP_EULA_time = ASUS_privacy_policy_time;
+							if (ASUS_privacy_policy == "0" && ASUS_privacy_policy_time != "") {
+								retData.ASUS_PP = "1";
+								retData.ASUS_PP_time = "";
+							} else if (
+								ASUS_privacy_policy_time == "" ||
+								ASUS_privacy_policy_time == undefined
+							) {
+								retData.ASUS_PP = "0";
+								retData.ASUS_PP_time = "";
+							} else if (
+								(ASUS_privacy_policy > "1" && resp.AHS > ASUS_privacy_policy && securityUpdate) ||
+								(ASUS_privacy_policy > "1" && resp.ASD > ASUS_privacy_policy && securityUpdate) ||
+								(ASUS_privacy_policy > "1" && resp.AUTOUPGRADE > ASUS_privacy_policy && audoUpgrade)
+							) {
+								retData.ASUS_PP = "0";
+								retData.ASUS_PP_time = ASUS_privacy_policy_time;
+							} else {
+								retData.ASUS_PP = "1";
+								retData.ASUS_PP_time = ASUS_privacy_policy_time;
+							}
+						} else {
+							retData.ASUS_PP = ASUS_privacy_policy;
+							retData.ASUS_PP_time = ASUS_privacy_policy_time;
 						}
 					}
-					else{
-						retData.ASUS_PP_EULA = ((resp[feature] > ASUS_privacy_policy) || resp[feature] == 0 || resp[feature] == "") ? 0 : 1;
-						retData.ASUS_PP_EULA_time = ASUS_privacy_policy_time;
-					}
-				}
+				});
+
+				resolve(retData);
 			});
-
-			return retData;
 		}
 	},
 
@@ -1090,6 +1106,7 @@ var httpApi ={
 		"set": function(enable, callback){
 			$.ajax({
 				url: '/set_security_update.cgi?' + 'security_update=' + enable,
+				async: false,
 				success: callback
 			});
 		},
@@ -2306,7 +2323,7 @@ var httpApi ={
 			if(typeof window.localStorage[key] !== "function" && key !== "length"){
 				logContentArray.push([key, window.localStorage[key]])
 			}
-		};
+		}
 
 		logContentArray.sort(function(a, b){
 			return a[0] - b[0];
@@ -2423,9 +2440,13 @@ var httpApi ={
 	},
 
 	"diag_ping": {
-		"start": function(){
+		"start": function(postData){
 			$.ajax({
 				url: '/dns_ping.cgi',
+				type: "POST",
+				dataType: 'json',
+				data: JSON.stringify(postData),
+				async: true,
 				success: function(response){
 					console.log(response)
 				}

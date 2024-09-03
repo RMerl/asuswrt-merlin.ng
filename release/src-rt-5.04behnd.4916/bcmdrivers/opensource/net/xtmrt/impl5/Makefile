@@ -49,6 +49,10 @@ ifeq "$(BRCM_PHY_LOOPBACK)" "y"
 EXTRA_CFLAGS += -DPHY_LOOPBACK
 endif
 
+ifneq ($(strip $(BCM_RDPA_TM_C)),)
+CFLAGS += -DTM_C_CODE
+endif
+
 EXTRA_CFLAGS += -DDUMP_DATA -DDFRAGMENT_ALIGNMENT_32BIT_DEBUG
 
 #Uncomment the below line to enable XTM_DEBUG_PHY_VECTOR_PKTS

@@ -45,4 +45,8 @@ typedef struct Rng {
 
 #define RNG ((volatile Rng * const) RNG_BASE)
 
+#ifndef ENABLE_DUAL_NONSEC_RNG
+#define ENABLE_DUAL_NONSEC_RNG  0
+#endif
+
 #endif

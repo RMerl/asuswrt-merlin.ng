@@ -10,16 +10,16 @@
  *  Description:
  *      Code for PMC Linux device tree parsing
  *****************************************************************************/
-
-#include "pmc_drv.h"
-#include "asm/arch/BPCM.h"
-#include "asm/arch/misc.h"
+#include <common.h>
 #include <asm/u-boot.h>
 #include <asm/global_data.h>
 #include <linux/compat.h>
 #include <linux/io.h>
 #include <linux/ioport.h>
 #include <dm.h>
+#include "pmc_drv.h"
+#include "asm/arch/BPCM.h"
+#include "asm/arch/misc.h"
 
 struct g_pmc_t pmc;
 
@@ -188,6 +188,7 @@ static int dt_parse_3_x(struct udevice *dev)
     pmc_printk("ITCM 0x%x 0x%p 0x%x\n", (uint32_t)res.start, g_pmc->itcm_base, (uint32_t)resource_size(&res));
 #endif
 
+    g_pmc->print_avs_log = dev_read_bool(dev, "print_avs_log");
     return 0;
 }
 

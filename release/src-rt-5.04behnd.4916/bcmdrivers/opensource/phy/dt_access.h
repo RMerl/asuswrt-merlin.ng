@@ -32,6 +32,7 @@ const char *dt_get_name(const dt_handle_t handle);
 int dt_gpio_request_by_name(const dt_handle_t handle, const char *propname, int index, const char *label, dt_gpio_desc *desc, int value);
 void dt_gpio_set_value(dt_gpio_desc desc, int value);
 int dt_gpio_exists(dt_gpio_desc desc);
+void dt_gpio_put(dt_gpio_desc desc);
 
 dt_handle_t dt_dev_get_handle(dt_device_t *pdev);
 void *dt_dev_read_addr(dt_device_t *pdev, int index);

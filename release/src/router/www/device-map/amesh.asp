@@ -543,6 +543,9 @@ function gen_current_onboardinglist(_onboardingList, _wclientlist, _wiredclientl
 					wireless_band = 2;
 					wireless_rssi = client_convRSSI(rssi6g);
 				}
+				else if(connect_type == "512") {
+					wireless_rssi = client_convRSSI(get_mlo_quality(_onboardingList[idx]));
+				}
 				else if(connect_type <= 0) {
 					online = 0;
 					wireless_rssi = "wired";
@@ -594,7 +597,8 @@ function gen_current_onboardinglist(_onboardingList, _wclientlist, _wiredclientl
 									code += "<div class='radioIcon radio_" + wireless_rssi + "'></div>";
 									if(connect_type != "1" && connect_type != "16" && connect_type != "32" && connect_type != "64") {
 										var bandClass = (navigator.userAgent.toUpperCase().match(/CHROME\/([\d.]+)/)) ? "band_txt_chrome" : "band_txt";
-										code += "<div class='band_block'><span class=" + bandClass + ">" + wireless_band_array[wireless_band] + "</span></div>";
+										const wl_band_text = (connect_type == "512") ? "MLO" : wireless_band_array[wireless_band];
+										code += `<div class='band_block'><span class=${bandClass}>${wl_band_text}</span></div>`;
 									}
 									code += "</div>";
 								}
@@ -2540,12 +2544,17 @@ function get_connect_type(_node_info) {
 				wireless_band = 2;
 				wireless_rssi = client_convRSSI(_node_info.rssi6g);
 			}
+			else if(_node_info.re_path == "512") {
+				component.text = `MLO`;
+				wireless_rssi = client_convRSSI(get_mlo_quality(_node_info));
+			}
 			else {
 				wireless_band = 1;
 				wireless_rssi = client_convRSSI(_node_info.rssi5g);
 			}
 			component.icon = "<div class='radioIcon radio_" + wireless_rssi +"'></div>";
-			component.icon += "<div class='band_block'><span class=" + bandClass + ">" + wireless_band_array[wireless_band]  + "</span></div>";
+			const wl_band_text = (_node_info.re_path == "512") ? "MLO" : wireless_band_array[wireless_band];
+			component.icon += `<div class='band_block'><span class=${bandClass}>${wl_band_text}</span></div>`;
 		}
 	}
 	else{
@@ -2732,6 +2741,50 @@ function gen_conn_priority_select_option(_node_info, _eap_flag){
 function handle_re_path(_re_path){
 	var result = parseInt(_re_path);
 	return ((isNaN(result)) ? 0 : result);
+}
+function get_mlo_quality(_node_info){
+	const mlo_status = _node_info.mlo_status;
+	const product_id = _node_info.product_id;
+	let mlo_rssi = "";
+	if(product_id == "BQ16_PRO"){
+		if(mlo_status.rssi6gl != undefined && mlo_status.rssi5g != undefined && mlo_status.rssi6gh != undefined){//6G-1 > 5G > 6G-2
+			if(mlo_status.rssi6gl != "") mlo_rssi = mlo_status.rssi6gl;
+			else if(mlo_status.rssi5g != "") mlo_rssi = mlo_status.rssi5g;
+			else if(mlo_status.rssi6gh != "") mlo_rssi = mlo_status.rssi6gh;
+		}
+		else if(mlo_status.rssi5g != undefined && mlo_status.rssi6gl != undefined && mlo_status.rssi2g != undefined){//5G > 6G-1 > 2G
+			if(mlo_status.rssi5g != "") mlo_rssi = mlo_status.rssi5g;
+			else if(mlo_status.rssi6gl != "") mlo_rssi = mlo_status.rssi6gl;
+			else if(mlo_status.rssi2g != "") mlo_rssi = mlo_status.rssi2g;
+		}
+	}
+	else{
+		if(mlo_status.rssi5gh != undefined && mlo_status.rssi6g != undefined && mlo_status.rssi2g != undefined){//5G-2 > 6G > 2G
+			if(mlo_status.rssi5gh != "") mlo_rssi = mlo_status.rssi5gh;
+			else if(mlo_status.rssi6g != "") mlo_rssi = mlo_status.rssi6g;
+			else if(mlo_status.rssi2g != "") mlo_rssi = mlo_status.rssi2g;
+		}
+		else if(mlo_status.rssi5g != undefined && mlo_status.rssi6gl != undefined && mlo_status.rssi6gh != undefined){//5G > 6G-1 > 6G-2
+			if(mlo_status.rssi5g != "") mlo_rssi = mlo_status.rssi5g;
+			else if(mlo_status.rssi6gl != "") mlo_rssi = mlo_status.rssi6gl;
+			else if(mlo_status.rssi6gh != "") mlo_rssi = mlo_status.rssi6gh;
+		}
+		else if(mlo_status.rssi5g != undefined && mlo_status.rssi6g != undefined && mlo_status.rssi2g != undefined){//5G > 6G > 2G
+			if(mlo_status.rssi5g != "") mlo_rssi = mlo_status.rssi5g;
+			else if(mlo_status.rssi6g != "") mlo_rssi = mlo_status.rssi6g;
+			else if(mlo_status.rssi2g != "") mlo_rssi = mlo_status.rssi2g;
+		}
+		else if(mlo_status.rssi5gh != undefined && mlo_status.rssi5gl != undefined && mlo_status.rssi2g != undefined){//5G-2 > 5G-1 > 2G
+			if(mlo_status.rssi5gh != "") mlo_rssi = mlo_status.rssi5gh;
+			else if(mlo_status.rssi5gl != "") mlo_rssi = mlo_status.rssi5gl;
+			else if(mlo_status.rssi2g != "") mlo_rssi = mlo_status.rssi2g;
+		}
+		else if(mlo_status.rssi5g != undefined && mlo_status.rssi2g != undefined){//5G > 2G
+			if(mlo_status.rssi5g != "") mlo_rssi = mlo_status.rssi5g;
+			else if(mlo_status.rssi2g != "") mlo_rssi = mlo_status.rssi2g;
+		}
+	}
+	return mlo_rssi;
 }
 </script>
 </head>

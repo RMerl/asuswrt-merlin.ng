@@ -92,6 +92,7 @@
 	width: 480px;
 	height: 330px;
 	background: url('images/model_port.png') no-repeat center;
+	background-size: contain;
 }
 
 .port_plugin_img{
@@ -99,16 +100,18 @@
 	width: 480px;
 	height: 330px;
 	background: url('images/wanport_plugin.png') no-repeat center;
+	background-size: contain;
 }
 </style>
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
-<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="/js/searchIspNameProfile.js"></script>
+<script type="text/javascript" src="/form.js"></script>
 <script>
 
 var wans_dualwan = '<% nvram_get("wans_dualwan"); %>';
@@ -165,6 +168,9 @@ if(dnspriv_support){
 	var dot_servers_array = [];
 	var dnspriv_rulelist_array = '<% nvram_get("dnspriv_rulelist"); %>';
 }
+
+var current_page = window.location.pathname.split("/").pop();
+var faq_index_tmp = get_faq_index(FAQ_List, current_page, 1);
 
 if(dslite_support){
 	var s46_dslite_svc_str = httpApi.nvramGet(["wan0_s46_dslite_svc"], true).wan0_s46_dslite_svc;
@@ -505,10 +511,8 @@ function change_wan_unit(obj){
 	
 	if(obj.options[obj.selectedIndex].text == "USB") {
 		document.form.current_page.value = "Advanced_Modem_Content.asp";
-	}else if(obj.options[obj.selectedIndex].text == "WAN" 
-			|| obj.options[obj.selectedIndex].text == "WAN2"
-			|| obj.options[obj.selectedIndex].text == "Ethernet LAN"
-			|| obj.options[obj.selectedIndex].text == "Ethernet WAN"){
+	}else if(obj.options[obj.selectedIndex].text.indexOf("WAN") != -1
+			|| obj.options[obj.selectedIndex].text.indexOf("LAN") != -1){
 		if((wans_dualwan == "wan lan" || wans_dualwan == "lan wan")
 				 || (wans_dualwan == "wan2 wan" || wans_dualwan == "wan wan2")
 				 || (wans_dualwan == "wan2 lan" || wans_dualwan == "lan wan2")){
@@ -761,7 +765,10 @@ function applyRule(){
 		if(isSupport("autowan") && autowan_conflict){
 			var hint_str = "To ensure that there are no conflicts, when you enable %1$@, the WAN port will be change to %2$@ only. Please make sure that your WAN cable is correctly plugged into the %2$@. Are you sure to continue?"
 			var msg = "";
-			msg = hint_str.replace("%1$@", "<#WANAggregation#>").replaceAll("%2$@", get_default_wan_name());
+			if(wan_bonding_support && document.form.bond_wan_radio.value == "1")
+				msg = hint_str.replace("%1$@", "<#WANAggregation#>").replaceAll("%2$@", get_default_wan_name());
+			else
+				msg = hint_str.replace("%1$@", document.form.wan_proto.options[document.form.wan_proto.selectedIndex].text).replaceAll("%2$@", get_default_wan_name());
 
 			$("#autowan_hint").html(msg);
 			$("#autowan_hint_div").show();
@@ -2285,6 +2292,10 @@ function close_autowan_hint(){
 }
 
 function confirm_autowan_change(){
+	let wan_obj = eth_wan_list["wan"];
+	let extra_setting_name = "";
+	let extra_setting_val = "";
+
 	$("#autowan_hint_div").hide();
 
 	$('<input>').attr({
@@ -2293,16 +2304,30 @@ function confirm_autowan_change(){
 		value: "0"
 	}).appendTo('form');
 
-	$('<input>').attr({
-			type: 'hidden',
-			name: "wans_extwan",
-			value: "0"
-	}).appendTo('form');
+	if(wan_obj.hasOwnProperty("extra_settings")){
+		let extra_settings = wan_obj.extra_settings;
+		$.each(extra_settings, function(key) {
+			if(document.getElementsByName(key).length > 0){
+				document.getElementsByName(key)[0].value = extra_settings[key];
+			}
+			else{
+				extra_setting_name = key;
+				extra_setting_val = extra_settings[key];
+				$('<input>').attr({
+					type: 'hidden',
+					name: key,
+					value: extra_settings[key]
+				}).appendTo('form');
+			}
+		});
+	}
 
 	setTimeout(function(){
 			if($(".popup_edit_profile_container").is(":visible")){
 				applyData["autowan_enable"] = "0";
-				applyData["wans_extwan"] = "0";
+				if(extra_setting_name != "")
+					applyData[extra_setting_name] = extra_setting_val;
+				applyData["rc_service"] = "reboot";
 				showLoading();
 				httpApi.nvramSet(applyData, function(){
 						setTimeout(function(){
@@ -2312,24 +2337,13 @@ function confirm_autowan_change(){
 					});
 			}
 			else{
-				if(reboot_confirm == 1){
-					if(confirm("<#AiMesh_Node_Reboot#>")){
-						if((wan_proto_orig != "v6plus" && document.form.wan_proto.value == "v6plus") ||
-							(wan_proto_orig != "ocnvc" && document.form.wan_proto.value == "ocnvc")){
-							s46reset();	//map-e changed
-						}
-
-						FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
-						showLoading();
-						document.form.submit();
-					}
-				}
-				else{
+				if(confirm("<#AiMesh_Node_Reboot#>")){
 					if((wan_proto_orig != "v6plus" && document.form.wan_proto.value == "v6plus") ||
 						(wan_proto_orig != "ocnvc" && document.form.wan_proto.value == "ocnvc")){
 						s46reset();	//map-e changed
 					}
 
+					FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
 					showLoading();
 					document.form.submit();
 				}
@@ -2441,8 +2455,11 @@ function get_default_wan_name(){
 				<tbody>
 				<tr>
 	  			<td bgcolor="#4D595D" valign="top">
+				<div class="container">
+
 		  			<div>&nbsp;</div>
 		  			<div class="formfonttitle"><#menu5_3#> - <#menu5_3_1#></div>
+					<div class="formfonttitle_help"><i onclick="show_feature_desc(`<#HOWTOSETUP#>`)" class="icon_help"></i></div>
 		  			<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 		  			<div id="page_title" class="formfontdesc" style="margin-bottom:0px;"><#Layer3Forwarding_x_ConnectionType_sectiondesc#></div>
 
@@ -3064,6 +3081,10 @@ function get_default_wan_name(){
 			<input class="button_gen" id="apply_btn" onclick="applyRule();" type="button" value="<#CTL_apply#>"/>
 		</div>
 
+
+		</div>  <!-- for .container  -->
+		<div class="popup_container popup_element_second"></div>
+
                     </td>
                     </tr>
 
@@ -3075,9 +3096,9 @@ function get_default_wan_name(){
 </form>
 				</tr>
 			</table>
-
-		</td>
 		<!--===================================Ending of Main Content===========================================-->
+		</td>
+		
     <td width="10" align="center" valign="top">&nbsp;</td>
 	</tr>
 </table>

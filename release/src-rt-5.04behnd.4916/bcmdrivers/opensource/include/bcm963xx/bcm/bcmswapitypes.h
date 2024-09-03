@@ -4,25 +4,19 @@
 *    Copyright (c) 2011 Broadcom 
 *    All Rights Reserved
 * 
-* Unless you and Broadcom execute a separate written software license
-* agreement governing use of this software, this software is licensed
-* to you under the terms of the GNU General Public License version 2
-* (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-* with the following added to such license:
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License, version 2, as published by
+* the Free Software Foundation (the "GPL").
 * 
-*    As a special exception, the copyright holders of this software give
-*    you permission to link this software with independent modules, and
-*    to copy and distribute the resulting executable under terms of your
-*    choice, provided that you also meet, for each linked independent
-*    module, the terms and conditions of the license of that module.
-*    An independent module is a module which is not derived from this
-*    software.  The special exception does not apply to any modifications
-*    of the software.
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
 * 
-* Not withstanding the above, under no circumstances may you combine
-* this software in any way with any other Broadcom software provided
-* under a license other than the GPL, without Broadcom's express prior
-* written consent.
+* 
+* A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+* writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+* Boston, MA 02111-1307, USA.
 * 
 * :>
 */
@@ -152,9 +146,9 @@ enum ethsw_op {
     ETHSWPORTTXQSTATE,          //!<                                 \n API- bcm_port_txq_set()
     ETHSWPORTSERDESNAME,
     ETHSWPHYSPEED,
+    ETHSWLANPWR,
+    ETHSWXRDPDIV,
     ETHSWGETOBJNAME,            //!<                                 \n API- bcm_port_obj_name_get
-
-
     // add by Andrew
     ETHSWARLDUMP = 201,
     ETHSWMIBDUMP,
@@ -340,8 +334,9 @@ enum {
 };
     
 #if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908) || defined(CONFIG_BCM963158) || \
-    defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM963146) || defined(CONFIG_BCM96756) || defined(CONFIG_BCM96765) || \
-    defined(CHIP_63138) || defined(CHIP_63148) || defined(CHIP_4908) || defined(CHIP_63158) || defined(CHIP_63178)  || defined(CHIP_47622) || defined(CHIP_63146) || defined(CHIP_6756) || defined(CHIP_6765)
+    defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM963146) || defined(CONFIG_BCM96756) || defined(CONFIG_BCM96765) || defined(CONFIG_BCM96766) || \
+    defined(CHIP_63138) || defined(CHIP_63148) || defined(CHIP_4908) || defined(CHIP_63158) || defined(CHIP_63178)  || defined(CHIP_47622) || defined(CHIP_63146) || defined(CHIP_6756) || defined(CHIP_6765) || defined(CHIP_6766) || \
+    defined(CONFIG_BCM96764) || defined(CHIP_6764)
 #define BCM_COS_COUNT  8
 #else
 #define BCM_COS_COUNT  4
@@ -355,13 +350,6 @@ enum {
     QOS_QUEUE_SHAPER_CAP    = 1 << 5,
 };
 
-/* 
-    The definitions below need to match kernel driver definitions in phy/phy_drv.h
-    If they do not match, the kernel compilation will fail. The match requests
-    litery matching including any spaces in the middle of macro definition 
-    although they are value, ex. (1<<0) and (1 << 0) do not match.
-*/
-/********************************************************************************/
 #define PHY_CAP_10_HALF         (1 << 0)
 #define PHY_CAP_10_FULL         (1 << 1)
 #define PHY_CAP_100_HALF        (1 << 2)
@@ -433,17 +421,17 @@ typedef struct ethsw_port_stats_s {
 #define INTER_PHY_TYPE_10GBASE_R    13
 #define INTER_PHY_TYPE_10GBASE_X    14
 #define INTER_PHY_TYPE_SGMII        15
+
 #define INTER_PHY_TYPE_USXGMII      16
+#define INTER_PHY_TYPE_SXGMII       17
+#define INTER_PHY_TYPE_USXGMII_MP   18
+#define INTER_PHY_TYPE_MLTI_SPEED_BASE_X_AN 19
 
-#define INTER_PHY_TYPE_USXGMII_MP   17
-#define INTER_PHY_TYPE_MLTI_SPEED_BASE_X_AN 18
-
-#define INTER_PHY_TYPE_MAX 19
+#define INTER_PHY_TYPE_MAX (INTER_PHY_TYPE_MLTI_SPEED_BASE_X_AN + 1)
 
 #define PHY_CFG_AN_AUTO 0
 #define PHY_CFG_AN_OFF  1
 #define PHY_CFG_AN_ON   2
-/********************************************************************************/
 
 static inline int phy_speed_mbps_to_cap(int speed_mbps, int duplex)
 {
@@ -501,10 +489,6 @@ struct ethswctl_data
     union
     {
         cfpArg_t cfpArgs;
-
-        ethsw_mac_table mac_table;  // add by Andrew
-		ethsw_port_stats port_stats; // add by Andrew
-
         struct
         {
 #define TYPE_SUBSET  0
@@ -770,6 +754,10 @@ struct ethswctl_data
             int pfc_timer[8];
         };
         net_port_t net_port;
+
+        ethsw_mac_table mac_table;  // add by Andrew
+		ethsw_port_stats port_stats; // add by Andrew
+
     };  /* Union */
 };
 
@@ -915,8 +903,9 @@ typedef struct {
 #define BCM_COSQ_COMBO   2
 #define BCM_COSQ_SP      0
 
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM963146) || defined(CONFIG_BCM96756) || defined(CONFIG_BCM96765) \
-    || defined(CHIP_63138) || defined(CHIP_63148) || defined(CHIP_4908) || defined(CHIP_63158) || defined(CHIP_63178) || defined(CHIP_63146) || defined(CHIP_6756) || defined(CHIP_6765)
+#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM963146) || defined(CONFIG_BCM96756) || defined(CONFIG_BCM96765) || defined(CONFIG_BCM96766) \
+    || defined(CHIP_63138) || defined(CHIP_63148) || defined(CHIP_4908) || defined(CHIP_63158) || defined(CHIP_63178) || defined(CHIP_63146) || defined(CHIP_6756) || defined(CHIP_6765) || defined(CHIP_6766) \
+    || defined(CONFIG_BCM96764) || defined(CHIP_6764)
 #define NUM_EGRESS_QUEUES  8
 #else
 #define NUM_EGRESS_QUEUES  4

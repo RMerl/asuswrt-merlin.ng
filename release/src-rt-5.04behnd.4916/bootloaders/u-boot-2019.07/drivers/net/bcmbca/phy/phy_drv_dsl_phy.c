@@ -44,7 +44,14 @@ U_BOOT_DRIVER(brcm_swblks) = {
     .probe = swblks_probe,
 };
 
-#if defined(CONFIG_BCM947622)
+#if defined(CONFIG_BCM96766)
+#define SPHY_CNTRL  (volatile uint32_t *) 0x80481024
+
+#elif defined(CONFIG_BCM96764)
+#define SPHY_CNTRL  (volatile uint32_t *) 0x80281024
+#define ETHSW_SPHY_CTRL_REF_CLK_SHIFT       15
+
+#elif defined(CONFIG_BCM947622)
 #define SPHY_CNTRL  (volatile uint32_t *) 0x804110c0
 #define ETHSW_SPHY_CTRL_REF_CLK_SHIFT       15
 
@@ -374,7 +381,7 @@ static void dsl_phy_afe_pll_setup(phy_dev_t *phy_dev)
         qphy_afe_pll_done = 1;
 }
 
-#elif defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813)
+#elif defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764)
 
 static void _phy_run_cal(phy_dev_t *phy_dev, u16 *rcalnewcode11_p)
 {
@@ -482,31 +489,36 @@ static void _phy_afe_cfg(phy_dev_t *phy_dev, u16 rcalnewcode11)
 static void dsl_phy_afe_pll_setup(phy_dev_t *phy_dev)
 {
     u16 rcalnewcode11;
+#if defined(QPHY_CNTRL)
     int i;
+#endif
     static int qphy_afe_pll_done = 0;
 
     if (!IS_QPHY(phy_dev) && !IS_SPHY(phy_dev))
         return;
-    if (IS_QPHY(phy_dev)) {
-        if (qphy_afe_pll_done) 
+    if (IS_QPHY(phy_dev) && qphy_afe_pll_done) 
             return;
-    }
     
     // reset PHY
     if (IS_SPHY(phy_dev))
         phy_bus_write(phy_dev, MII_CONTROL, MII_CONTROL_RESET|MII_CONTROL_AN_ENABLE|MII_CONTROL_DUPLEX_MODE|MII_CONTROL_SPEED_SEL6);
+#if defined(QPHY_CNTRL)
     else
         for (i=0; i<4; i++)
             if (qphy_devs[i])
                 phy_bus_write(qphy_devs[i], MII_CONTROL, MII_CONTROL_RESET|MII_CONTROL_AN_ENABLE|MII_CONTROL_DUPLEX_MODE|MII_CONTROL_SPEED_SEL6);
+#endif
     // reset AFE and PLL
     if (IS_SPHY(phy_dev))
         _phy_afe_reset(phy_dev)
+#if defined(QPHY_CNTRL)
     else
         for (i=0; i<4; i++)
             if (qphy_devs[i])
                 _phy_afe_reset(qphy_devs[i])
+#endif
 
+#if !(defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764))
     i = (IS_QPHY(phy_dev) && (phy_dev->addr != QPHY0_ADDR)) ? phy_dev->addr : 0;
     if (i) phy_dev->addr = QPHY0_ADDR;         // need to do following  QPHY init using base addr
     
@@ -521,15 +533,19 @@ static void dsl_phy_afe_pll_setup(phy_dev_t *phy_dev)
     brcm_misc_write(phy_dev, 0x33, 0, 0x0002); // bypass code - default, vcoclk enabled
     brcm_misc_write(phy_dev, 0x30, 2, 0x01c0); // LDOs at default settings
     brcm_misc_write(phy_dev, 0x30, 1, 0x0001); // release PLL reset
+#endif
     // AFE_BG_CONFIG
     brcm_misc_write(phy_dev, 0x38, 0, 0x0010); // Bandgap curvature correction to correct default -- Erol
     //RCAL and RCCAL
     _phy_run_cal(phy_dev, &rcalnewcode11);
 
+#if defined(QPHY_CNTRL)
     if (i) phy_dev->addr = i;                  // restore back to current addr
+#endif
 
     if (IS_SPHY(phy_dev))
         _phy_afe_cfg(phy_dev, rcalnewcode11);
+#if defined(QPHY_CNTRL)
     else
         for (i=0; i<4; i++)
             if (qphy_devs[i])
@@ -537,6 +553,7 @@ static void dsl_phy_afe_pll_setup(phy_dev_t *phy_dev)
 
     if (!IS_SPHY(phy_dev))
         qphy_afe_pll_done = 1;
+#endif
 }
 
 #else
@@ -716,7 +733,7 @@ static void sphy_ctrl_adjust(uint32_t ext_pwr_down)
 #endif
 
     phy_ctrl = (*SPHY_CNTRL) & ~(ETHSW_SPHY_CTRL_RESET_MASK | ETHSW_SPHY_CTRL_IDDQ_BIAS_MASK| ETHSW_SPHY_CTRL_EXT_PWR_DOWN_MASK | 
-            ETHSW_SPHY_CTRL_IDDQ_GLOBAL_PWR_MASK | ETHSW_SPHY_CTRL_CK25_DIS_MASK);
+            ETHSW_SPHY_CTRL_IDDQ_GLOBAL_PWR_MASK | ETHSW_SPHY_CTRL_CK25_DIS_MASK | ETHSW_SPHY_CTRL_PHYAD_MASK);
     phy_ctrl |= SPHY_ADDR << ETHSW_SPHY_CTRL_PHYAD_SHIFT;
 #if defined(ETHSW_SPHY_CTRL_REF_CLK_50MHZ)
     phy_ctrl |= ETHSW_SPHY_CTRL_REF_CLK_50MHZ;
@@ -781,6 +798,11 @@ static int _phy_dev_add(phy_dev_t *phy_dev)
     if (ba == 4) sphy_dev = phy_dev;
 #endif
 #endif
+    if (dt_gpio_exists(phy_dev->gpiod_phy_reset))
+    {
+        printk("Lift PHY out of reset at address 0x%x\n", phy_dev->addr);
+        dt_gpio_set_value(phy_dev->gpiod_phy_reset, 0);
+    }
     return 0;
 }
 
@@ -847,8 +869,17 @@ void phy_bus_probe(bus_drv_t *bus_drv)
         if ((bus_drv->c45_read(i, 0x1, 0x0002, &phyid1)) || (bus_drv->c45_read(i, 0x1, 0x0003, &phyid2)))
         {
             if (phy_dev)
-                printk("   PHY defined in DT at address %2d PHY Type: %d is not detected!!\n", 
-                        i, phy_dev->phy_drv->phy_type);
+            {
+                if (phy_dev->flag & PHY_FLAG_ON_MEZZANINE)
+                {
+                    printkwarn("   Mezzanine card: PHY at address %2d PHY Type: %d is not populated!!", 
+                            i, phy_dev->phy_drv->phy_type);
+                    phy_dev->flag |= PHY_FLAG_NOT_PRESENTED;
+                }
+                else
+                    printk("   PHY defined in DT at address %2d PHY Type: %d is not detected!!\n", 
+                            i, phy_dev->phy_drv->phy_type);
+            }
             continue;
         }
 

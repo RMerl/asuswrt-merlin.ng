@@ -1,29 +1,23 @@
 /*
   <:copyright-BRCM:2023:DUAL/GPL:standard
-
-  Copyright (c) 2023 Broadcom 
-  All Rights Reserved
-
-  Unless you and Broadcom execute a separate written software license
-  agreement governing use of this software, this software is licensed
-  to you under the terms of the GNU General Public License version 2
-  (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-  with the following added to such license:
-
-  As a special exception, the copyright holders of this software give
-  you permission to link this software with independent modules, and
-  to copy and distribute the resulting executable under terms of your
-  choice, provided that you also meet, for each linked independent
-  module, the terms and conditions of the license of that module.
-  An independent module is a module which is not derived from this
-  software.  The special exception does not apply to any modifications
-  of the software.
-
-  Not withstanding the above, under no circumstances may you combine
-  this software in any way with any other Broadcom software provided
-  under a license other than the GPL, without Broadcom's express prior
-  written consent.
-
+  
+     Copyright (c) 2023 Broadcom 
+     All Rights Reserved
+  
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License, version 2, as published by
+  the Free Software Foundation (the "GPL").
+  
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+  
+  
+  A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+  writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+  Boston, MA 02111-1307, USA.
+  
   :>
 */
 
@@ -39,12 +33,17 @@
 
 #include <linux/nbuff.h>
 
+#if defined(CONFIG_BCM96766)
+#define CC_CROSSBOW_TIMER
+#endif
+
 #define CROSSBOW_RXQ_MAX  2
 
-#if defined(CONFIG_BCM96765)
-#define CROSSBOW_ACQ_MAX  7
-#define CROSSBOW_STQ_MAX  CROSSBOW_ACQ_MAX
-#define CROSSBOW_FWQ_MAX  CROSSBOW_ACQ_MAX
+#if defined(CONFIG_BCM96765) || defined(CONFIG_BCM96766)
+#define CROSSBOW_ACQ_MAX    7
+#define CROSSBOW_STQ_MAX    CROSSBOW_ACQ_MAX
+#define CROSSBOW_FWQ_MAX    CROSSBOW_ACQ_MAX
+#define CROSSBOW_TIMER_MAX  2
 #endif
 
 typedef struct {
@@ -121,6 +120,23 @@ typedef struct {
 } crossbow_enet_hooks_t;
 
 extern crossbow_enet_hooks_t crossbow_gpl_hooks_g;
+
+#if defined(CC_CROSSBOW_TIMER)
+
+typedef void (*crossbow_timer_handler_t)(unsigned long param);
+
+typedef struct {
+    int (* timer_attach)(unsigned int timer_index, crossbow_timer_handler_t handler,
+                         unsigned long param);
+    int (* timer_detach)(unsigned int timer_index);
+    int (* timer_stop)(unsigned int timer_index);
+    int (* timer_start)(unsigned int timer_index);
+    int (* timer_set_period)(unsigned int timer_index, unsigned int period);
+} crossbow_timer_hooks_t;
+
+extern crossbow_timer_hooks_t crossbow_gpl_timer_hooks_g;
+
+#endif /* CC_CROSSBOW_TIMER */
 
 static inline int crossbow_gpl_rxq_read(int rxq_index,
                                         crossbow_gpl_rxq_entry_t *entry_p)
@@ -214,6 +230,44 @@ static inline void crossbow_gpl_enet_stats_dump(void)
 }
 
 int crossbow_gpl_enet_bind(crossbow_enet_hooks_t *hooks_p);
+
+// Timers
+
+#if defined(CC_CROSSBOW_TIMER)
+
+static inline int crossbow_gpl_timer_attach(unsigned int timer_index,
+                                            crossbow_timer_handler_t handler,
+                                            unsigned long param)
+{
+    return crossbow_gpl_timer_hooks_g.timer_attach(timer_index, handler, param);
+}
+
+static inline int crossbow_gpl_timer_detach(unsigned int timer_index)
+{
+    return crossbow_gpl_timer_hooks_g.timer_detach(timer_index);
+}
+
+static inline int crossbow_gpl_timer_stop(unsigned int timer_index)
+{
+    return crossbow_gpl_timer_hooks_g.timer_stop(timer_index);
+}
+
+static inline int crossbow_gpl_timer_start(unsigned int timer_index)
+{
+    return crossbow_gpl_timer_hooks_g.timer_start(timer_index);
+}
+
+static inline int crossbow_gpl_timer_set_period(unsigned int timer_index,
+                                                unsigned int period)
+{
+    return crossbow_gpl_timer_hooks_g.timer_set_period(timer_index, period);
+}
+
+int crossbow_gpl_timer_bind(crossbow_timer_hooks_t *hooks_p);
+
+#endif /* CC_CROSSBOW_TIMER */
+
+// Miscellaneous
 
 int crossbow_gpl_flow_memory_get(crossbow_gpl_flow_memory_t *table_mem_p);
 

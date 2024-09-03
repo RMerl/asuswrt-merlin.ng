@@ -67,8 +67,6 @@
 &ethphytop {
     xphy0-enabled;
     xphy1-enabled;
-    phy-mpd = <&bca_extintr 51 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
-    phy-link = <&bca_extintr 49 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
     status = "okay";
 };
 
@@ -100,23 +98,9 @@
         status = "okay";
     };
     serdes00 {
-        pinctrl-names = "default";
-        pinctrl-0 = <&a_slan_sd_rx_los_pin_3 &a_slan_sd_mod_abs_pin_4>;
-        tx-disable = <&gpioc 6 GPIO_ACTIVE_HIGH>;
-        10000-Base-R;
-        5000-Base-R;
-        2500-Base-X;
-        1000-Base-X;
         status = "okay";
     };
     serdes13_xphy {
-        reg = <0x1c>;
-        enet-phy-lane-swap;
-        caps-no-10000;
-        caps-no-5000;
-        USXGMII-S;
-        phy-power = <&gpioc 48 GPIO_ACTIVE_HIGH>;
-        phy-reset = <&gpioc 47 GPIO_ACTIVE_LOW>;
         status = "okay";
     };
     serdes13 {

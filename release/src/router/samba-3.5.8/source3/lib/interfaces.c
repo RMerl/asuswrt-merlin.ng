@@ -131,10 +131,14 @@ static int _get_interfaces(TALLOC_CTX *mem_ctx, struct iface_struct **pifaces)
 	int count;
 	int total = 0;
 	size_t copy_size;
+#ifdef HND_ROUTER
+	if (getifaddrs(&iflist) < 0) {
+#else
 #ifndef HAVE_GETIFADDRS
 	if (getifaddrs_local(&iflist) < 0) {
 #else
 	if (getifaddrs(&iflist) < 0) {
+#endif
 #endif
 		return -1;
 	}

@@ -11,8 +11,13 @@
 model = MODEL;
 compatible = COMPATIBLE;
 interrupt-parent = <&gic>;
+#if defined(CONFIG_ARM_LPAE)
+#address-cells = <2>;
+#size-cells = <2>;
+#else
 #address-cells = <1>;
 #size-cells = <1>;
+#endif
 
 #if defined (CONFIG_BCM_PSCI)
 psci {
@@ -79,8 +84,13 @@ gic: interrupt-controller@81000000 {
 	#interrupt-cells = <3>;
 	#address-cells = <0>;
 	interrupt-controller;
+#ifdef CONFIG_ARM_LPAE
+	reg = <0x0 GIC_DIST_BASE 0x0 0x1000>,
+	      <0x0 GIC_CPUI_BASE 0x0 0x2000>;
+#else
 	reg = <GIC_DIST_BASE 0x1000>,
 	      <GIC_CPUI_BASE 0x2000>;
+#endif
 };
 
 timer {
@@ -108,6 +118,10 @@ brcm-legacy {
 
 memory@00000000 {
 	device_type = "memory";
-	reg = <0x0 0x8000000>; 
+#ifdef CONFIG_ARM_LPAE
+	reg = <0x0 0x0 0x0 0x8000000>;
+#else
+	reg = <0x0 0x8000000>;
+#endif
 };
 

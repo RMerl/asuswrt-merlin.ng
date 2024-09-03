@@ -2,7 +2,7 @@
 #
 # Makefile for the HW Firewall module
 #
-bcm_hwf-objs := hwf.o
+bcm_hwf-objs := hwf.o hwf_limit.o hwf_ioctl.o
 obj-$(CONFIG_BCM_HW_FIREWALL) += bcm_hwf.o
 
 EXTRA_CFLAGS += -I. -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD) -I$(INC_BRCMDRIVER_PRIV_PATH)/$(BRCM_BOARD) -I$(INC_BRCMSHARED_PUB_PATH)/$(BRCM_BOARD) 

@@ -1,29 +1,23 @@
 /*
     <:copyright-BRCM:2013:DUAL/GPL:standard
-
-       Copyright (c) 2013 Broadcom
-   All Rights Reserved
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+       Copyright (c) 2013 Broadcom 
+       All Rights Reserved
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
     :>
 */
 
@@ -131,7 +125,7 @@ int rdp_cpu_ring_read_packet_refill(uint32_t ring_id, rdpa_cpu_rx_info_t *info);
 int rdp_cpu_ring_create_ring(uint32_t ring_id,
                              uint8_t ring_type,
                              uint32_t entries,
-                             bdmf_phys_addr_t *ring_head, uint32_t packetSize,
+                             bdmf_phys_addr_t *ring_head,
                              RING_CB_FUNC *cbFunc,
                              uint32_t prio);
 
@@ -140,13 +134,10 @@ int	rdp_cpu_ring_create_ring_ex(uint32_t ring_id,
                                 uint32_t entries,
                                 bdmf_phys_addr_t* ring_head,
                                 bdmf_phys_addr_t* rw_idx_addr,
-                                uint32_t packetSize,
                                 RING_CB_FUNC* ringCb,
                                 uint32_t prio);
 
 int rdp_cpu_ring_delete_ring(uint32_t ringId);
-
-int rdp_cpu_ring_get_queue_size(uint32_t ringId);
 
 int rdp_cpu_ring_get_queued(uint32_t ringId);
 
@@ -171,12 +162,6 @@ void rdp_packet_dump(uint32_t ringId, rdpa_cpu_rx_info_t *info);
 void* rdp_databuf_alloc(RING_DESCTIPTOR *pDescriptor);
 
 void rdp_databuf_free(void *pBuf, uint32_t context, RING_DESCTIPTOR *pDescriptor);
-
-/* Kmem_Cache */
-
-void* rdp_databuf_alloc_cache(RING_DESCTIPTOR *pDescriptor);
-
-void rdp_databuf_free_cache(void *pBuf, uint32_t context, RING_DESCTIPTOR *pDescriptor);
 
 void rdp_cpu_ring_read_idx_ddr_sync(uint32_t ring_id);
 

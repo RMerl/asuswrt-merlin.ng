@@ -10,3 +10,45 @@
                            BP1_DDR_CONFIG_DEBUG)>;
         };
 };
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+/ {
+    /* PCIE0_WiFi_PWR_DIS=1 disables power for PCIe0 Slot */
+    vreg_pcie0: vreg-pcie0 {
+          compatible = "regulator-fixed";
+          regulator-name = "vreg-pcie0";
+          regulator-min-microvolt = <5000000>;
+          regulator-max-microvolt = <5000000>;
+          gpio = <&gpioc 53 GPIO_ACTIVE_LOW>;
+          enable-active-low;
+          regulator-boot-off;
+    };
+
+    /* PCIE13_WiFi_PWR_DIS=1 disables power for PCIe1 and PCIe3 Slots */
+    vreg_pcie13: vreg-pcie13 {
+          compatible = "regulator-fixed";
+          regulator-name = "vreg-pcie13";
+          regulator-min-microvolt = <5000000>;
+          regulator-max-microvolt = <5000000>;
+          gpio = <&gpioc 11 GPIO_ACTIVE_LOW>;
+          enable-active-low;
+          regulator-boot-off;
+    };
+};
+
+&pcie0 {
+      brcm,supply-names = "vreg-pcie0";
+      brcm,vreg-supply = <&vreg_pcie0>;
+};
+
+&pcie1 {
+      brcm,supply-names = "vreg-pcie13";
+      brcm,vreg-supply = <&vreg_pcie13>;
+};
+
+&pcie3 {
+      brcm,supply-names = "vreg-pcie13";
+      brcm,vreg-supply = <&vreg_pcie13>;
+};
+#endif // defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+

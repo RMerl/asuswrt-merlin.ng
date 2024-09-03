@@ -14,11 +14,11 @@ EXTRA_CFLAGS += -I$(srctree)/arch/$(ARCH)/mach-bcmbca/pmc
 ifndef CONFIG_SPL_BUILD
 # u-boot proper
 CFLAGS_board.o := $(if $(BUILD_TAG),-DBUILD_TAG='"$(BUILD_TAG)"')
-obj-y += board.o
+obj-y += $(if $(wildcard $(srctree)/board/broadcom/bcmbca/board.c),board.o,board_preb.o)
 ifndef CONFIG_BCMBCA_VFBIO
 obj-y += spl_env.o
 endif
-obj-$(CONFIG_BCMBCA_BOARD_SDK) += board_sdk.o
+obj-y += $(if $(wildcard $(srctree)/board/broadcom/bcmbca/board_sdk.c),board_sdk.o,board_sdk_preb.o)
 obj-y += bca_common.o
 obj-$(CONFIG_BCMBCA_BOARD_SDK) += sdk_test_commands.o
 
@@ -30,6 +30,7 @@ obj-$(CONFIG_BCM_THERMAL) += bcm_thermal.o
 obj-$(CONFIG_BCMBCA_BOARD_SDK) += board_secure.o
 obj-$(CONFIG_BCMBCA_BOARD_SDK) += board_secure_sdk.o
 obj-$(CONFIG_BCMBCA_BOARD_SDK) += board_secure_utils.o
+obj-$(CONFIG_BCMBCA_BOARD_SDK) += board_secure_smc.o
 ifndef CONFIG_BCMBCA_DISABLE_SECURE_VERIFY
 obj-$(CONFIG_BCMBCA_BOARD_SDK) += board_secure_fit.o
 endif
@@ -49,6 +50,7 @@ CFLAGS_board_spl.o := $(if $(BUILD_TAG),-DBUILD_TAG='"$(BUILD_TAG)"')
 obj-$(CONFIG_SPL_BUILD)	+= spl_env.o
 obj-$(CONFIG_SPL_BUILD)	+= early_abort.o
 obj-$(CONFIG_SPL_BUILD) += board_secure.o
+obj-$(CONFIG_SPL_BUILD) += board_secure_smc.o
 obj-$(CONFIG_SPL_BUILD) += board_secure_spl.o
 else
 # TK SPL
@@ -77,5 +79,12 @@ obj-$(CONFIG_TPL_BUILD) += board_secure_tpl.o
 obj-$(CONFIG_TPL_BUILD) += board_secure_fit.o
 endif
 obj-$(CONFIG_TPL_BUILD) += board_secure_utils.o
+obj-$(CONFIG_TPL_BUILD) += board_secure_smc.o
 obj-$(CONFIG_TPL_BUILD) += mini-gmp/
 endif
+
+$(obj)/board_preb.o:
+	cp $(srctree)/board/broadcom/bcmbca/board.o $(obj)/board_preb.o
+
+$(obj)/board_sdk_preb.o:
+	cp $(srctree)/board/broadcom/bcmbca/board_sdk.o $(obj)/board_sdk_preb.o

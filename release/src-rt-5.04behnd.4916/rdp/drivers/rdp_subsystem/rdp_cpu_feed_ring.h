@@ -1,29 +1,23 @@
 /*
 * <:copyright-BRCM:2022:DUAL/GPL:standard
-*
-*    Copyright (c) 2022 Broadcom
+* 
+*    Copyright (c) 2022 Broadcom 
 *    All Rights Reserved
-*
-* Unless you and Broadcom execute a separate written software license
-* agreement governing use of this software, this software is licensed
-* to you under the terms of the GNU General Public License version 2
-* (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-* with the following added to such license:
-*
-*    As a special exception, the copyright holders of this software give
-*    you permission to link this software with independent modules, and
-*    to copy and distribute the resulting executable under terms of your
-*    choice, provided that you also meet, for each linked independent
-*    module, the terms and conditions of the license of that module.
-*    An independent module is a module which is not derived from this
-*    software.  The special exception does not apply to any modifications
-*    of the software.
-*
-* Not withstanding the above, under no circumstances may you combine
-* this software in any way with any other Broadcom software provided
-* under a license other than the GPL, without Broadcom's express prior
-* written consent.
-*
+* 
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License, version 2, as published by
+* the Free Software Foundation (the "GPL").
+* 
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+* 
+* 
+* A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+* writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+* Boston, MA 02111-1307, USA.
+* 
 * :>
 */
 
@@ -37,8 +31,6 @@
 #include "rdpa_types.h"
 #include "rdpa_cpu_basic.h"
 #include "rdd.h"
-#include "rdp_cpu_ring_defs.h"
-#include "rdp_cpu_ring.h"
 
 
 #include "rdpa_cpu.h"
@@ -47,15 +39,12 @@
 #include "bdmf_shell.h"
 #include "bdmf_dev.h"
 
-
 extern ring_descriptor_t host_ring[D_NUM_OF_RING_DESCRIPTORS];
 #define FEED_RING_SIZE     (DEF_DATA_RING_SIZE * RDD_CPU_RING_DESCRIPTORS_TABLE_SIZE)
 
-int rdp_cpu_fill_feed_ring(int budget);
 extern bdmf_fastlock feed_ring_lock;
-uint32_t rdp_cpu_feed_ring_get_queued(void);
 int bdmf_cpu_ring_shell_print_pd(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
-void rdp_cpu_feed_pd_print_fields(void *shell_priv, CPU_FEED_DESCRIPTOR *pdPtr);
+void rdp_cpu_feed_pd_print_fields(void *shell_priv, CPU_FEED_DESCRIPTOR_STRUCT *pdPtr);
 extern uint32_t feed_ring_max_buffers;
 #if defined(CONFIG_BCM_RUNNER_FEED_RING_DYNAMIC)
 extern atomic_t allocated_buffers;
@@ -70,14 +59,36 @@ static inline int rdp_cpu_get_feed_read_idx(uint32_t ring_id, uint16_t *read_idx
 
     return rc;
 }
+static inline void __rdp_prepare_feed_desc(void *pdata_buf, CPU_FEED_DESCRIPTOR_STRUCT *src, CPU_FEED_DESCRIPTOR_STRUCT *dst)
+{
+    uintptr_t phys_addr = RDD_VIRT_TO_PHYS(pdata_buf);
+    GET_ADDR_HIGH_LOW(src->ptr_hi, src->ptr_low, phys_addr);
+
+    src->type = ABS_TYPE;
+
+#if defined(CONFIG_DEBUG_FEED_DATA)
+    src->valid_flag_0 = 0xA5B5;
+    src->valid_flag_1 = 5;
+#else
+    src->valid_flag_0 = 0;
+    src->valid_flag_1 = 0;
+#endif
+
+#ifdef CONFIG_ARM64
+    *((uint64_t *)&dst->word_32[0]) = swap4bytes64(*((uint64_t*)&src->word_32[0]));
+#else
+    dst->word_32[0] = swap4bytes(src->word_32[0]);
+    dst->word_32[1] = swap4bytes(src->word_32[1]);
+#endif
+}
+
 static inline int __rdp_recycle_buf_to_feed(void *pdata_buf)
 {
     ring_descriptor_t *feed_ring_descr = &host_ring[FEED_RING_ID];
     uint16_t write_idx = feed_ring_descr->shadow_write_idx;
     uint16_t read_idx = feed_ring_descr->shadow_read_idx;
-    uintptr_t phys_addr;
-    CPU_FEED_DESCRIPTOR *cpu_feed_descr = NULL;
-    CPU_FEED_DESCRIPTOR feed_descr;
+    CPU_FEED_DESCRIPTOR_STRUCT feed_descr;
+
     if ((write_idx + 1) % feed_ring_descr->num_of_entries == read_idx)
     {
         rdp_cpu_get_feed_read_idx(FEED_RING_ID,  &read_idx);
@@ -99,20 +110,7 @@ static inline int __rdp_recycle_buf_to_feed(void *pdata_buf)
         else
             feed_ring_descr->shadow_read_idx = read_idx;
     }
-
-    phys_addr = RDD_VIRT_TO_PHYS(pdata_buf);
-    GET_ADDR_HIGH_LOW(feed_descr.abs.host_buffer_data_ptr_hi, feed_descr.abs.host_buffer_data_ptr_low, phys_addr);
-
-    feed_descr.abs.abs = 1;
-
-    cpu_feed_descr = &((CPU_FEED_DESCRIPTOR *)feed_ring_descr->base)[write_idx];
-
-#ifdef CONFIG_ARM64
-    *((uint64_t *)&cpu_feed_descr->word0) = swap4bytes64(*((uint64_t*)&feed_descr.word0));
-#else
-    cpu_feed_descr->word0 = swap4bytes(feed_descr.word0);
-    cpu_feed_descr->word1 = swap4bytes(feed_descr.word1);
-#endif
+    __rdp_prepare_feed_desc(pdata_buf, &feed_descr, &((CPU_FEED_DESCRIPTOR_STRUCT *)feed_ring_descr->base)[write_idx]);
 
     feed_ring_descr->shadow_write_idx = (++write_idx)%feed_ring_descr->num_of_entries;
 
@@ -124,9 +122,7 @@ static inline int alloc_and_assign_packet_to_feed_ring(void)
     ring_descriptor_t *feed_ring_descr = &host_ring[FEED_RING_ID];
     uint32_t read_idx = feed_ring_descr->shadow_read_idx;
     uint32_t write_idx = feed_ring_descr->shadow_write_idx;
-    uintptr_t phys_addr;
-    CPU_FEED_DESCRIPTOR *cpu_feed_descr = NULL;
-    CPU_FEED_DESCRIPTOR feed_descr;
+    CPU_FEED_DESCRIPTOR_STRUCT feed_descr;
     void *buf;
 
 
@@ -147,21 +143,7 @@ static inline int alloc_and_assign_packet_to_feed_ring(void)
         return BDMF_ERR_NOMEM;
     }
 
-    phys_addr = RDD_VIRT_TO_PHYS(buf);
-    GET_ADDR_HIGH_LOW(feed_descr.abs.host_buffer_data_ptr_hi, feed_descr.abs.host_buffer_data_ptr_low, phys_addr);
-
-    feed_descr.abs.abs = 1;
-
-
-    cpu_feed_descr = &((CPU_FEED_DESCRIPTOR *)feed_ring_descr->base)[write_idx];
-
-#ifdef CONFIG_ARM64
-    /*access to uncached DDR is very long, do single 64bit transaction instead of 2x32bit */
-    *((uint64_t *)&cpu_feed_descr->word0) = swap4bytes64(*((uint64_t *)&feed_descr.word0));
-#else
-    cpu_feed_descr->word0 = swap4bytes(feed_descr.word0);
-    cpu_feed_descr->word1 = swap4bytes(feed_descr.word1);
-#endif
+    __rdp_prepare_feed_desc(buf, &feed_descr, &((CPU_FEED_DESCRIPTOR_STRUCT *)feed_ring_descr->base)[write_idx]);
 
     feed_ring_descr->shadow_write_idx = (++write_idx)%feed_ring_descr->num_of_entries;
     return 0;
@@ -212,9 +194,7 @@ static inline int assign_packets_to_feed_ring(int num)
 {
     ring_descriptor_t *feed_ring_descr = &host_ring[FEED_RING_ID];
     uint32_t write_idx = feed_ring_descr->shadow_write_idx;
-    uintptr_t phys_addr;
-    CPU_FEED_DESCRIPTOR *cpu_feed_descr = NULL;
-    CPU_FEED_DESCRIPTOR feed_descr;
+    CPU_FEED_DESCRIPTOR_STRUCT feed_descr;
     void *buf;
     int i = 0, alloc_num = 0;
     alloc_num = feed_ring_max_buffers - atomic_read(&allocated_buffers);
@@ -234,20 +214,8 @@ static inline int assign_packets_to_feed_ring(int num)
             break;
         }
         /* track_alloc(buf); */
-        phys_addr = RDD_VIRT_TO_PHYS(buf);
-        GET_ADDR_HIGH_LOW(feed_descr.abs.host_buffer_data_ptr_hi, feed_descr.abs.host_buffer_data_ptr_low, phys_addr);
+        __rdp_prepare_feed_desc(buf, &feed_descr, &((CPU_FEED_DESCRIPTOR_STRUCT *)feed_ring_descr->base)[write_idx++]);
 
-        feed_descr.abs.abs = 1;
-
-        cpu_feed_descr = &((CPU_FEED_DESCRIPTOR *)feed_ring_descr->base)[write_idx++];
-
-#ifdef CONFIG_ARM64
-        /*access to uncached DDR is very long, do single 64bit transaction instead of 2x32bit */
-        *((uint64_t *)&cpu_feed_descr->word0) = swap4bytes64(*((uint64_t *)&feed_descr.word0));
-#else
-        cpu_feed_descr->word0 = swap4bytes(feed_descr.word0);
-        cpu_feed_descr->word1 = swap4bytes(feed_descr.word1);
-#endif
         write_idx = (write_idx)%feed_ring_descr->num_of_entries;
     }
     feed_ring_descr->shadow_write_idx = (write_idx);

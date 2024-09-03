@@ -104,15 +104,24 @@ static int ddr_gen_scramber_seed(uint32_t * seed)
 #if !defined(CONFIG_BCMBCA_DDR_REGINIT)
 static int load_mcb(uint32_t selector, uint8_t * mcb, int* len)
 {
-	int ret = load_boot_blob(MCB_TABLE_MAGIC, selector, mcb, len);	
+	int ret = load_boot_blob(MCB_TABLE_MAGIC, selector, mcb, len);
 
-	if (BP_DDR_IS_DDR3(selector) || BP_DDR_IS_DDR4(selector))
-	{
-		if ((ret == BOOT_BLOB_NOT_IN_HASTTBL)
-	   		&& (selector&BP_DDR_TEMP_MASK) == BP_DDR_TEMP_NORMAL) {
-			/* If normal temperature mcb not found, try the ASR mcb. It works for normal T too */
-			ret = load_boot_blob(MCB_TABLE_MAGIC, selector|BP_DDR_TEMP_EXTENDED_ASR, mcb, len);
+	if (ret == BOOT_BLOB_NOT_IN_HASTTBL) {
+		if (BP_DDR_IS_DDR3(selector) || BP_DDR_IS_DDR4(selector)) {
+			if ((selector&BP_DDR_TEMP_MASK) == BP_DDR_TEMP_NORMAL) {
+				/* If normal temperature mcb not found, try the ASR mcb. It works for normal T too */
+				ret = load_boot_blob(MCB_TABLE_MAGIC, selector|BP_DDR_TEMP_EXTENDED_ASR, mcb, len);
+			}
 		}
+
+#if defined(CONFIG_BCMBCA_LPDDR4)		
+		if (BP1_DDR_IS_LPDDR4(selector) || BP1_DDR_IS_LPDDR4X(selector)) {
+			if (selector&BP1_DDR_EXT_TEMP_MASK){
+				/* If it is hight temperature mcb, mask off the HT bits. MCB is same as normal T */
+				ret = load_boot_blob(MCB_TABLE_MAGIC, selector & (~BP1_DDR_EXT_TEMP_MASK), mcb, len);
+			}
+		}
+#endif
 	}
 
 	return ret;

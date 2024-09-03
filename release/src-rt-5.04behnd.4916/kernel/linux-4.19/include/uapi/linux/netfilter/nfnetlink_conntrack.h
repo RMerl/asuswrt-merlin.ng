@@ -289,6 +289,7 @@ enum ctattr_dpi {
 	CTA_DPI_MAC,
 	CTA_DPI_STATUS,
 	CTA_DPI_URL,
+	CTA_DPI_PAD,
 	__CTA_DPI_MAX,
 };
 #define CTA_DPI_MAX (__CTA_DPI_MAX - 1)

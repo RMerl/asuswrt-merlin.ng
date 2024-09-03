@@ -69,23 +69,23 @@
         brcm,pllclkid = <0x3210>;
     };
 
-    /* pcie core 0 */
+    /* pcie core 0 GEN3 */
     pcie0: pcie@0 {
         #define PCIE_ID         0
         #define PCIE_SPI        79
         #define PCIE_ADDR       0x80080000
-        #define PCIE_SIZE       0x0000A000
+        #define PCIE_SIZE       0x0000B000
         #define PCIE_RANGE_ADDR 0xC0000000
         #define PCIE_RANGE_SIZE 0x10000000
         #include "../../ip/bcm_pcie_core.dtsi"
     };
 
-    /* pcie core 1 */
+    /* pcie core 1 GEN3 */
     pcie1: pcie@1 {
         #define PCIE_ID         1
         #define PCIE_SPI        80
         #define PCIE_ADDR       0x80090000
-        #define PCIE_SIZE       0x0000A000
+        #define PCIE_SIZE       0x0000B000
         #define PCIE_RANGE_ADDR 0xD0000000
         #define PCIE_RANGE_SIZE 0x10000000
         #include "../../ip/bcm_pcie_core.dtsi"
@@ -95,18 +95,18 @@
         compatible = "brcm,otp";
     };
 
-    /* pcie core 2 */
+    /* pcie core 2 GEN3 */
     pcie2: pcie@2 {
         #define PCIE_ID         2
         #define PCIE_SPI        81
         #define PCIE_ADDR       0x800A0000
-        #define PCIE_SIZE       0x0000A000
+        #define PCIE_SIZE       0x0000B000
         #define PCIE_RANGE_ADDR 0xE0000000
         #define PCIE_RANGE_SIZE 0x10000000
         #include "../../ip/bcm_pcie_core.dtsi"
     };
 
-    /* pcie core 4 */
+    /* pcie core 4 GEN3 */
     pcie3: pcie@3 {
         #define PCIE_ID         3
         #define PCIE_SPI        82
@@ -121,7 +121,7 @@
     boot_state: boot_state {
         #define RESET_REASON_OFFSET                 0x0 0xFF802628
         #define RESET_REASON_SIZE                   0x0 0x4
-        #define RESET_STATUS_OFFSET                 0x0 0x842100C0
+        #define RESET_STATUS_OFFSET                 0x0 0xFF802624
         #define RESET_STATUS_SIZE                   0x0 0x4
         #include "../../ip/bcm_boot_state_v2.dtsi"
     };
@@ -449,6 +449,12 @@
             #include "../../ip/bcm_cled_v2_ctrl.dtsi"
             #include "68880_leds.dtsi"
         };
+
+	i2s_clkmclk_syscon: i2s_clkmclk_syscon {
+		compatible			= "brcm,i2s-audio-clkmclk-syscon", "syscon";
+		reg					= <0x0 0x2080 0x0 0x4>;
+	};
+
 	};
 
     legacy_leds: legacy_leds {
@@ -470,6 +476,10 @@
               <0 0x837FF1BC 0 0xc>;
         status = "okay";
 	};
+
+    ext_pwr_ctrl: ext_pwr_ctrl {
+        compatible = "brcm,ext_pwr_ctrl";
+    };
 };
 
 #ifdef CONFIG_BCM_PMC_AUX
@@ -485,10 +495,6 @@
 #endif
 
 &clocks {
-	i2s_clkmclk_syscon: i2s_clkmclk_syscon{
-		compatible			= "brcm,i2s-audio-clkmclk-syscon", "syscon";
-		reg					= <0x0 0xFF802080 0x0 0x4>;
-	};
 	osc: oscillator {
 		#clock-cells		= <0>;
 		compatible			= "fixed-clock";
@@ -507,10 +513,10 @@
 
 / {
 	 /* arch */
-	#define PMU_CORE0_SPI	9
-	#define PMU_CORE1_SPI	10
-	#define PMU_CORE2_SPI	11
-	#define PMU_CORE3_SPI	12
+	#define PMU_CORE0_SPI	7
+	#define PMU_CORE1_SPI	8
+	#define PMU_CORE2_SPI	9
+	#define PMU_CORE3_SPI	10
 
         #include "../../ip/bcm_b55_quad.dtsi"
 };
@@ -569,6 +575,25 @@
         reg = <0x0 0x80104000 0x0 0x100
                0x0 0x80100000 0x0 0x10>;
         status = "disabled";
+    };
+
+    macsec:macsec {
+		compatible = "brcm,xflow-macsec-firelight";
+        reg = <0x0 0x83700000 0x0 0xFFE00>;
+        version = <0x800a011>;
+        status = "disabled";
+
+        macsec0:macsec0 {
+            index = <0>;
+        };
+
+        macsec1:macsec1 {
+            index = <1>;
+        };
+
+        macsec2:macsec2 {
+            index = <2>;
+        };
     };
 
     mdio_bus: mdio_bus {
@@ -762,6 +787,8 @@
              phy-type = "EXT3";
              reg = <0x1b>;
              caps-no-hdx;
+             caps-no-100;
+             caps-no-10;
              status = "disabled";
         };
 
@@ -833,6 +860,7 @@
                 reg = <5>;
                 mac-type = "XPORT";
                 mac-index = <0>;
+                macsec-handle = <&macsec0>;
                 phy-handle = <&xphy0>;
                 phy-mode = "xfi";
                 status = "disabled";
@@ -842,6 +870,7 @@
                 reg = <6>;
                 mac-type = "XPORT";
                 mac-index = <1>;
+                macsec-handle = <&macsec1>;
                 phy-handle = <&wan_ae>;
                 phy-mode = "xfi";
                 detect;
@@ -853,6 +882,7 @@
                 reg = <7>;
                 mac-type = "XPORT";
                 mac-index = <2>;
+                macsec-handle = <&macsec2>;
                 phy-handle = <&xphy1>;
                 phy-mode = "xfi";
                 status = "disabled";

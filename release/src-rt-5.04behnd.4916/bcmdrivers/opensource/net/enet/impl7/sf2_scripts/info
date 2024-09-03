@@ -37,7 +37,7 @@ source /etc/sf2/_util
 #  rstMibCntEn 001@02-54|p0
 #    imp0PortId 08@02-01|id=8                imp1PortId 05@02-02|id=5
 #   brcmHdrCtrl 07@02-03|p7=1 p5=1 p8=1     brcmHdrCtl2 00@02-0a|
-#   ipgShrnk 08800@00-00|p5-4b p7-4b
+#   ipgShrnk 08800@02-0c|p5-4b p7-4b
 # 
 #  mirrorCtrl 0204@02-10|en=0 capPort=4 blk!mir=0
 #   rxMirCtrl 0000@02-12|all @every 1 pkts rxPort=
@@ -103,7 +103,7 @@ sf2_info() { #sf2_info <unit>
                     split("0-variable 1-250Mhz/2G 2-300Mhz/2.4G 3-500Mhz/4G",imp_spd_s);
                     printf "  swCtrl %08x@0000|clk)rgmii=%s switch=%s sysport=%s p8=%s\n", v, and(rshift(v,30),1)?"0-250Mhz":"1-variable",
                         sw_spd_s[and(rshift(v,27),3)+1], sw_spd_s[and(rshift(v,24),3)+1], imp_spd_s[and(rshift(v,3),3)+1];}';;
-        6756|6765)   
+        6756|6765|6766|6764)   
                 read_sf2_reg 0 | awk '{v=$1; printf "  swCtrl %08x@0000|\n", v;}';;
         esac
         read_sf2_reg 0x10 | awk '{ v=$1; printf "   swRev %08x@0010|sf2=%04x swTop=%04x", v, rshift(v,16), and(v,0xffff);}'
@@ -197,8 +197,13 @@ sf2_info() { #sf2_info <unit>
     read_sf2 0 0x3c | awk '{v=$1; 
         printf "     !learn %04x@00-3c|", v; for (i=0; i<9; i++) if (and(rshift(v,i),1)) printf "%d ",i; printf "\n"}'
     read_sf2 0 0xde | awk '{v=$1; split("12.5 6.25 4.17 3.125", d_s);
-        printf "   lpwrCtrl %04x@00-de|lpwr=%d)%sMhz !swTmr=%d !swCoreClk=%d sleep[p4=%d p5=%d p8=%d]\n\n", 
+        printf "   lpwrCtrl %04x@00-de|lpwr=%d)%sMhz !swTmr=%d !swCoreClk=%d sleep[p4=%d p5=%d p8=%d]\n", 
         v, and(rshift(v,4),1), d_s[and(rshift(v,0),3)+1], and(rshift(v,5),1), and(rshift(v,6),1), and(rshift(v,11),1), and(rshift(v,12),1), and(rshift(v,15),1)}'
+    if [ $ext_spd == 1 ] 
+    then
+        read_sf2 0 0xec | awk '{v=$1; 
+            printf "litestk %08x@00-ec|en=%d master=%d port0=%d", v, and(v,1), and(rshift(v,1),1), and(rshift(v,8),7); printf "\n"}'
+    fi
 
     local lnkSts=$(read_sf2 1 0)
     local lnkStsChg=$(read_sf2 1 2)
@@ -206,7 +211,7 @@ sf2_info() { #sf2_info <unit>
     local dupxSts=$(read_sf2 1 8)
     local pauseSts=$(read_sf2 1 10)
     echo $lnkSts $lnkStsChg $portSpeed $dupxSts $pauseSts | awk '{lnkSts=$1; lnkStsChg=$2; portSpeed=$3; dupxSts=$4; pauseSts=$5;
-        printf "## status decode in <port_status> below\n";
+        printf "\n## status decode in <port_status> below\n";
         printf "     lnkSts %04x@01-00|                   lnkStsChg %04x@01-02|\n", lnkSts, lnkStsChg;
         printf "  portSpeed %04x@01-04|                     dupxSts %04x@01-08|\n", and(portSpeed,0xffff), dupxSts;
         printf "  pauseSts %05x@01-0a|\n", pauseSts; }'
@@ -219,7 +224,7 @@ sf2_info() { #sf2_info <unit>
             echo $newSpdSts | awk '{newSpdSts=$1;
                 printf "  newSpd %07x@01-94|\n", newSpdSts; }'
         fi
-        if [ $chip == 6765 ] 
+        if [ $chip == 6765 ] || [ $chip == 6766 ] || [ $chip == 6764 ]
         then
             local newSpdSts=$(read_sf2 1 0x94)
             local xgmsts=$(read_sf2 1 0x98)
@@ -243,7 +248,7 @@ sf2_info() { #sf2_info <unit>
     read_sf2 2 0xa | awk '{v=$1; 
         printf "  brcmHdrCtl2 %02x@02-0a|", v; for (i=0; i<7; i++) if (and(rshift(v,i),1)) printf "p%d ",i; printf "\n"}'
     read_sf2 2 0xc | awk '{v=$1; shrink_s[0]=""; shrink_s[1]="1b"; shrink_s[2]="4b"; shrink_s[3]="5b";
-        printf "  ipgShrnk %05x@%02x-%02x|", v; for (i=0; i<9; i++) if (and(rshift(v,i*2),3)) printf "p%d-%s ",i, shrink_s[and(rshift(v,i*2),3)]; printf "\n\n"}'
+        printf "  ipgShrnk %05x@02-0c|", v; for (i=0; i<9; i++) if (and(rshift(v,i*2),3)) printf "p%d-%s ",i, shrink_s[and(rshift(v,i*2),3)]; printf "\n\n"}'
 
     read_sf2 2 0x10 | awk '{v=$1; 
         printf " mirrorCtrl %04x@02-10|en=%d capPort=%d blk!mir=%d\n", v, and(rshift(v,15),1), and(rshift(v,0),0xff), and(rshift(v,14),1)}'
@@ -371,6 +376,19 @@ sf2_info() { #sf2_info <unit>
             and(rshift(vh,24),0xff), and(rshift(vh,16),0xff), and(rshift(vh,8),0xff), and(rshift(vh,0),0xff),
             and(rshift(vl,24),0xff), and(rshift(vl,16),0xff), and(rshift(vl,8),0xff), and(rshift(vl,0),0xff);}'
     done
+
+    echo ""
+    print_page_hdr 0x40 JUMBO
+    read_sf2 0x40 1 | awk '{v=$1;
+        printf "pMask %06x@01| En_10_100_JUMBO[%d] ", v, and(rshift(v,24),1);
+        for (i=0; i<9; i++) if (and(rshift(v,i),1)) printf "%d ",i; printf "\n"}'
+    read_sf2 0x40 5 | awk '{v=$1;
+        printf "GdMaxSz %04x@05| %d bytes\n", v, v}'
+    if ([ $chip == 6765 ] || [ $chip == 6766 ] || [ $chip == 6764 ]) && [ $sf2_unit == 0 ]
+    then
+        read_sf2 0x40 7 | awk '{v=$1;
+            printf "  MaxSz %04x@07| %d bytes\n", v, v}'
+    fi
     echo ""
 }
 

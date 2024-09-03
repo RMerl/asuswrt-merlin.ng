@@ -58,7 +58,7 @@
     };
 
     cpufreq: cpufreq {
-        #define OP_MODE "avs"
+        #define OP_MODE "dfs"
         #include "../../ip/bcm_cpufreq.dtsi"
     };
 
@@ -69,40 +69,40 @@
         brcm,pllclkid = <0x3210>;
     };
 
-    /* pcie core 0 */
+    /* pcie core 0 (GEN3) */
     pcie0: pcie@0 {
         #define PCIE_ID         0
         #define PCIE_SPI        79
         #define PCIE_ADDR       0x80080000
-        #define PCIE_SIZE       0x0000A000
+        #define PCIE_SIZE       0x0000B000
         #define PCIE_RANGE_ADDR 0xC0000000
         #define PCIE_RANGE_SIZE 0x10000000
         #include "../../ip/bcm_pcie_core.dtsi"
     };
 
-    /* pcie core 1 */
+    /* pcie core 1 (GEN3) */
     pcie1: pcie@1 {
         #define PCIE_ID         1
         #define PCIE_SPI        80
         #define PCIE_ADDR       0x80090000
-        #define PCIE_SIZE       0x0000A000
+        #define PCIE_SIZE       0x0000B000
         #define PCIE_RANGE_ADDR 0xD0000000
         #define PCIE_RANGE_SIZE 0x10000000
         #include "../../ip/bcm_pcie_core.dtsi"
     };
 
-    /* pcie core 2 */
+    /* pcie core 2 (GEN3) */
     pcie2: pcie@2 {
         #define PCIE_ID         2
         #define PCIE_SPI        81
         #define PCIE_ADDR       0x800A0000
-        #define PCIE_SIZE       0x0000A000
+        #define PCIE_SIZE       0x0000B000
         #define PCIE_RANGE_ADDR 0xE0000000
         #define PCIE_RANGE_SIZE 0x10000000
         #include "../../ip/bcm_pcie_core.dtsi"
     };
 
-    /* pcie core 4 */
+    /* pcie core 4 (GEN3) */
     pcie3: pcie@3 {
         #define PCIE_ID         3
         #define PCIE_SPI        82
@@ -117,7 +117,7 @@
     boot_state: boot_state {
         #define RESET_REASON_OFFSET                 0x0 0xFF802628
         #define RESET_REASON_SIZE                   0x0 0x4
-        #define RESET_STATUS_OFFSET                 0x0 0x842100C0
+        #define RESET_STATUS_OFFSET                 0x0 0xFF802624
         #define RESET_STATUS_SIZE                   0x0 0x4
         #include "../../ip/bcm_boot_state_v2.dtsi"
     };
@@ -433,6 +433,12 @@
             #include "../../ip/bcm_cled_v2_ctrl.dtsi"
             #include "6837_leds.dtsi"
         };
+
+	i2s_clkmclk_syscon: i2s_clkmclk_syscon{
+		compatible			= "brcm,i2s-audio-clkmclk-syscon", "syscon";
+		reg				= <0x0 0x2080 0x0 0x4>;
+	};
+
 	};
 
     legacy_leds: legacy_leds {
@@ -454,6 +460,10 @@
               <0 0x837FF1BC 0 0xc>;
         status = "okay";
 	};
+
+    ext_pwr_ctrl: ext_pwr_ctrl {
+        compatible = "brcm,ext_pwr_ctrl";
+    };
 };
 
 #ifndef CONFIG_BRCM_SMC_BOOT
@@ -463,10 +473,6 @@
 #endif
 
 &clocks {
-	i2s_clkmclk_syscon: i2s_clkmclk_syscon{
-		compatible			= "brcm,i2s-audio-clkmclk-syscon", "syscon";
-		reg					= <0x0 0xFF802080 0x0 0x4>;
-	};
 	osc: oscillator {
 		#clock-cells		= <0>;
 		compatible			= "fixed-clock";
@@ -488,6 +494,9 @@
         compatible = "brcm,xport";
         reg = <0x0 0x837f0000 0x0 0xc000>,
               <0x0 0x828b2000 0x0 0x1800>;
+        interrupts = <GIC_SPI 71 IRQ_TYPE_LEVEL_HIGH>,
+                     <GIC_SPI 72 IRQ_TYPE_LEVEL_HIGH>,
+                     <GIC_SPI 73 IRQ_TYPE_LEVEL_HIGH>;
         status = "disabled";
     };
 
@@ -708,6 +717,8 @@
              phy-type = "EXT3";
              reg = <0x1b>;
              caps-no-hdx;
+             caps-no-100;
+             caps-no-10;
              status = "disabled";
         };
 

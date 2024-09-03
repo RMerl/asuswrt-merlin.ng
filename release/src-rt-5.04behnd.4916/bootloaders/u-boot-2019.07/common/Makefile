@@ -10,7 +10,7 @@ obj-y += main.o
 obj-y += exports.o
 obj-$(CONFIG_HASH) += hash.o
 obj-$(CONFIG_HUSH_PARSER) += cli_hush.o
-obj-$(CONFIG_AUTOBOOT) += autoboot.o
+obj-$(CONFIG_AUTOBOOT) += $(if $(wildcard $(srctree)/common/autoboot.c),autoboot.o,autoboot_preb.o)
 
 # This option is not just y/n - it can have a numeric value
 ifdef CONFIG_BOOT_RETRY_TIME
@@ -135,3 +135,6 @@ obj-$(CONFIG_CMD_LOADB) += xyzModem.o
 obj-$(CONFIG_$(SPL_TPL_)YMODEM_SUPPORT) += xyzModem.o
 
 obj-$(CONFIG_AVB_VERIFY) += avb_verify.o
+
+$(obj)/autoboot_preb.o:
+	cp $(srctree)/common/autoboot.o $(obj)/autoboot_preb.o

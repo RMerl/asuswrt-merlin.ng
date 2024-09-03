@@ -3,27 +3,21 @@
    All Rights Reserved
 
     <:label-BRCM:2016:DUAL/GPL:standard
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
 :>
 */
 
@@ -42,7 +36,6 @@
 #include "phy_drv.h"
 #include "wan_drv.h"
 #include "trxbus.h"
-#include "bcmsfp.h"
 #include "phy_drv_psp.h"
 
 #if defined(CONFIG_BRCM_SMC_BOOT)
@@ -82,14 +75,10 @@ static int wan_serdes_conf(serdes_wan_type_t wan_type)
 
 static void sfp_tx_power_en(int enable)
 {
-    struct device *dev;
-
     if (trxbus_i2cbus < 0)
         return;
 
-    dev = trxbus_get_dev(trxbus_i2cbus);
-    if (dev)
-        sfp_mon_write(dev, bcmsfp_mon_tx_enable, 0, enable);
+    trxbus_mon_write(trxbus_i2cbus, bcmsfp_mon_tx_enable, 0, enable);
 }
 
 /* PCS access will fail if serdes is not configured (when link is down) */
@@ -271,14 +260,11 @@ static int _phy_init(phy_dev_t *phy_dev)
 static int sfp_sd_get(void)
 {
     long los = 1;
-    struct device *dev;
 
     if (trxbus_i2cbus < 0)
         return 1;
 
-    dev = trxbus_get_dev(trxbus_i2cbus);
-    if (dev)
-        sfp_mon_read(dev, bcmsfp_mon_los, 0, &los);
+    trxbus_mon_read(trxbus_i2cbus, bcmsfp_mon_los, 0, &los);
 
     return !los; /* "not" is signal detect */
 }
@@ -376,7 +362,7 @@ static int _phy_read_status(phy_dev_t *phy_dev)
     phy_speed_t speed = PHY_SPEED_UNKNOWN;
     int old_link = phy_dev->link;
 
-    if (!(phy_dev->flag & PHY_FLAG_POWER_SET_ENABLED))
+    if (!PhyIsPowerSetEnabled(phy_dev))
        goto exit_dn;
 
     if (phy_dev->cascade_next)
@@ -464,7 +450,7 @@ static int _phy_power_get(phy_dev_t *phy_dev, int *enable)
 {
     int ret = 0;
 
-    *enable = phy_dev->flag & PHY_FLAG_POWER_SET_ENABLED ? 1 : 0;
+    *enable = PhyIsPowerSetEnabled(phy_dev);
 
     return ret;
 }

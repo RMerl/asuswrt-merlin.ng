@@ -92,10 +92,14 @@ else
 ifdef BCM_KF # defined(CONFIG_BCM_KF_MISC_MAKEFILE)
 # always use LINUX_START_ADDR defined in bcm_mem_reserve.h
 ifeq ($(CONFIG_SMC_BASED),y)
+ifeq ($(CONFIG_OPTEE),y)
+TEXT_OFFSET := 0x04F00000
+else
 TEXT_OFFSET := 0x04000000
+endif
 else
 ifeq ($(CONFIG_OPTEE),y)
-TEXT_OFFSET := 0x00600000
+TEXT_OFFSET := 0x01000000
 else
 TEXT_OFFSET := 0x00200000
 endif

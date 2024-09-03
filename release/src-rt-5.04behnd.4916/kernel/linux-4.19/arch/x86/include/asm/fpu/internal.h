@@ -42,7 +42,7 @@ extern int  dump_fpu(struct pt_regs *ptregs, struct user_i387_struct *fpstate);
 extern void fpu__init_cpu(void);
 extern void fpu__init_system_xstate(void);
 extern void fpu__init_cpu_xstate(void);
-extern void fpu__init_system(struct cpuinfo_x86 *c);
+extern void fpu__init_system(void);
 extern void fpu__init_check_bugs(void);
 extern void fpu__resume_cpu(void);
 extern u64 fpu__get_supported_xfeatures_mask(void);

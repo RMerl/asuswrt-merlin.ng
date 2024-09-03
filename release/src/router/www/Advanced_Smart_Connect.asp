@@ -13,7 +13,6 @@
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="/device-map/device-map.css">
 <script type="text/javascript" src="/js/jquery.js"></script>
-<script type="text/javascript" src="/calendar/jquery-ui.js"></script> 
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/general.js"></script>
@@ -21,164 +20,8 @@
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" src="/client_function.js"></script>
+<script type="text/javascript" src="/js/asus_clientlist.js"></script>
 <style>
-.ui-slider {
-	position: relative;
-	text-align: left;
-}
-.ui-slider .ui-slider-handle {
-	position: absolute;
-	width: 7px;
-	height: 15px;
-}
-.ui-slider .ui-slider-range {
-	position: absolute;
-}
-.ui-slider-horizontal {
-	height: 6px;
-}
-
-.ui-widget-content {
-	border: 1px inset #636e75;
-	background-color:#666666;
-}
-.ui-state-default,
-.ui-widget-content .ui-state-default,
-.ui-widget-header .ui-state-default {
-	border: 1px solid ;
-	background: #9a9a9a;
-	margin-top:-5px;
-	margin-left:-4px;
-}
-
-/* Corner radius */
-
-.ui-corner-all,
-.ui-corner-top,
-.ui-corner-left,
-.ui-corner-tl {
-	border-top-left-radius: 4px;
-	border-top-right-radius: 4px;
-	border-bottom-left-radius: 4px;
-	border-bottom-right-radius: 4px;
-}
-
-.ui-slider-horizontal .ui-slider-range {
-	top: 0;
-	height: 100%;
-}
-
-#slider_wl0_bsd_steering_bandutil .ui-slider-range,
-#slider_wl1_bsd_steering_bandutil .ui-slider-range,
-#slider_wl2_bsd_steering_bandutil .ui-slider-range {
-	background: #0084d9; 
-
-	border-top-left-radius: 3px;
-	border-top-right-radius: 1px;
-	border-bottom-left-radius: 3px;
-	border-bottom-right-radius: 1px;
-
-}
-#slider_wl0_bsd_steering_bandutil .ui-slider-handle,
-#slider_wl1_bsd_steering_bandutil .ui-slider-handle,
-#slider_wl2_bsd_steering_bandutil .ui-slider-handle
- { border-color: #414141; }
-
-#slider_wl0_bsd_steering_phy_l .ui-slider-handle,
-#slider_wl1_bsd_steering_phy_l .ui-slider-handle,
-#slider_wl2_bsd_steering_phy_l .ui-slider-handle
- { border-color: #414141; }
-
-#slider_wl0_bsd_steering_phy_l .ui-slider-range,
-#slider_wl1_bsd_steering_phy_l .ui-slider-range,
-#slider_wl2_bsd_steering_phy_l .ui-slider-range
- {
-	background: #0084d9; 
-
-	border-top-left-radius: 3px;
-	border-top-right-radius: 1px;
-	border-bottom-left-radius: 3px;
-	border-bottom-right-radius: 1px;
-}
-
-#slider_wl0_bsd_steering_phy_g .ui-slider-range,
-#slider_wl1_bsd_steering_phy_g .ui-slider-range,
-#slider_wl2_bsd_steering_phy_g .ui-slider-range {
-	background: #0084d9; 
-
-	border-top-left-radius: 3px;
-	border-top-right-radius: 1px;
-	border-bottom-left-radius: 3px;
-	border-bottom-right-radius: 1px;
-}
-#slider_wl0_bsd_steering_phy_g .ui-slider-handle,
-#slider_wl1_bsd_steering_phy_g .ui-slider-handle,
-#slider_wl2_bsd_steering_phy_g .ui-slider-handle
- { border-color: #414141; }
-
-#slider_wl0_bsd_sta_select_policy_phy_l .ui-slider-range,
-#slider_wl1_bsd_sta_select_policy_phy_l .ui-slider-range,
-#slider_wl2_bsd_sta_select_policy_phy_l .ui-slider-range {
-	background: #0084d9; 
-
-	border-top-left-radius: 3px;
-	border-top-right-radius: 1px;
-	border-bottom-left-radius: 3px;
-	border-bottom-right-radius: 1px;
-}
-#slider_wl0_bsd_sta_select_policy_phy_l .ui-slider-handle,
-#slider_wl1_bsd_sta_select_policy_phy_l .ui-slider-handle,
-#slider_wl2_bsd_sta_select_policy_phy_l .ui-slider-handle
- { border-color: #414141; }
-
-#slider_wl0_bsd_sta_select_policy_phy_g .ui-slider-range,
-#slider_wl1_bsd_sta_select_policy_phy_g .ui-slider-range,
-#slider_wl2_bsd_sta_select_policy_phy_g .ui-slider-range {
-	background: #0084d9; 
-
-	border-top-left-radius: 3px;
-	border-top-right-radius: 1px;
-	border-bottom-left-radius: 3px;
-	border-bottom-right-radius: 1px;
-}
-#slider_wl0_bsd_sta_select_policy_phy_g .ui-slider-handle,
-#slider_wl1_bsd_sta_select_policy_phy_g .ui-slider-handle,
-#slider_wl2_bsd_sta_select_policy_phy_g .ui-slider-handle
- { border-color: #414141; }
-
-#slider_wl0_bsd_if_qualify_policy .ui-slider-range,
-#slider_wl1_bsd_if_qualify_policy .ui-slider-range,
-#slider_wl2_bsd_if_qualify_policy .ui-slider-range {
-	background: #0084d9; 
-
-	border-top-left-radius: 3px;
-	border-top-right-radius: 1px;
-	border-bottom-left-radius: 3px;
-	border-bottom-right-radius: 1px;
-}
-#slider_wl0_bsd_if_qualify_policy .ui-slider-handle,
-#slider_wl1_bsd_if_qualify_policy .ui-slider-handle,
-#slider_wl2_bsd_if_qualify_policy .ui-slider-handle
- { border-color: #414141; }
-
-.bsd_greater {
-	cursor:pointer;
-	width:60px;
-	height:23px;
-}
-
-.bsd_less {
-	cursor:pointer;
-	width:60px;
-	height:23px;
-}
-
-.bsd_block_filter_name{
-		text-align:center;
-		color:#CCCCCC;
-		font-size:12px
-} 
-
 .FormTable th{
 	width:20%;
 }
@@ -187,1676 +30,888 @@
 	color:#FFFFFF;
 }
 
-.steering_off_0, .steering_off_1, .steering_off_2{
-	display: none;
-}
-
-.steering_on_0, .steering_on_1, .steering_on_2{
-	display: block;
-	color:#FFFFFF;
-}
-
-.steering_unuse_off_0, .steering_unuse_off_1, .steering_unuse_off_2{
-	display: none;
-}
-
-.steering_unuse_on_0, .steering_unuse_on_1, .steering_unuse_on_2{
-	display: block;
-	color:#FFFFFF;
-	text-align:center;
-}
 </style>
 <script>
 
-<% wl_get_parameter(); %>
+let nvram = {},
+	variable = {};
 
-var wl0_names = new Array();
-var wl1_names = new Array();
-var wl2_names = new Array();
-var wl_name = new Array();
-var wl0_names = ['5GHz-1','5GHz-2','none'];
-var wl1_names = ['5GHz-2','2.4GHz','none'];
-var wl2_names = ['5GHz-1','2.4GHz','none'];
-var wl_name = ['2.4GHz','5GHz-1','5GHz-2'];
-if(band6g_support){
-	wl0_names = ['5 GHz','6 GHz','none'];
-	wl1_names = ['6 GHz','2.4 GHz','none'];
-	wl2_names = ['5 GHz','2.4 GHz','none'];
-	wl_name = ['2.4 GHz','5 GHz','6 GHz'];
-}
+let bsd_steering_policy_array = [],
+	bsd_sta_select_policy_array = [],
+	bsd_if_select_policy_array = [],
+	bsd_if_qualify_policy_array = [];
 
-var wl_names = [wl0_names,wl1_names,wl2_names];
+let bsd_steering_policy_binary = [],
+	bsd_sta_select_policy_binary = [],
+	bsd_if_qualify_policy_binary = [];
 
-var wl_ifnames = '<% nvram_get("wl_ifnames"); %>'.split(" ");
+let getMainFhSubunit = (function(){
+	function isNumber(value){return !isNaN(parseFloat(value))&&isFinite(value);}
+    var nvram = httpApi.nvramGet(["sdn_rl", "ap_wifi_rl"]);
+    var mainFH = nvram.sdn_rl.split("&#62MAINFH")[0].split("&#60").reverse()[0];
+    var mainFHsubUnit = nvram.ap_wifi_rl.split(`&#62${mainFH}`)[0].split(".").reverse()[0];
+	return isNumber(mainFHsubUnit) ? mainFHsubUnit : "1";
+})()
 
-var start_band_idx=0;
+let subUnit = isSupport("sdn_mainfh") ? `.${getMainFhSubunit}` : ``;
 
-if('<% nvram_get("smart_connect_x"); %>' == 2){
-start_band_idx = 1;
-/* [bsd_steering_policy] */
-var bsd_steering_policy = ['<% nvram_get("wl0_bsd_steering_policy"); %>'.split(" "),
-			   '<% nvram_get("wl1_bsd_steering_policy_x"); %>'.split(" "),
-			   '<% nvram_get("wl2_bsd_steering_policy_x"); %>'.split(" ")];
-
-var bsd_steering_policy_bin = [reverse_bin(createBinaryString(parseInt(bsd_steering_policy[0][6]))),
-			       reverse_bin(createBinaryString(parseInt(bsd_steering_policy[1][6]))),
-			       reverse_bin(createBinaryString(parseInt(bsd_steering_policy[2][6])))];
-
-/* [bsd_sta_select_policy] */
-var bsd_sta_select_policy = ['<% nvram_get("wl0_bsd_sta_select_policy"); %>'.split(" "),
-			     '<% nvram_get("wl1_bsd_sta_select_policy_x"); %>'.split(" "),
-			     '<% nvram_get("wl2_bsd_sta_select_policy_x"); %>'.split(" ")];
-
-var bsd_sta_select_policy_bin = [reverse_bin(createBinaryString(parseInt(bsd_sta_select_policy[0][10]))),
-				 reverse_bin(createBinaryString(parseInt(bsd_sta_select_policy[1][10]))),
-				 reverse_bin(createBinaryString(parseInt(bsd_sta_select_policy[2][10])))];
-
-/* [Interface Select and Qualify Procedures] */
-var bsd_if_select_policy = ['<% nvram_get("wl0_bsd_if_select_policy"); %>'.split(" "),
-			    '<% nvram_get("wl1_bsd_if_select_policy_x"); %>'.split(" "),
-			    '<% nvram_get("wl2_bsd_if_select_policy_x"); %>'.split(" ")]
-
-var bsd_if_qualify_policy = ['<% nvram_get("wl0_bsd_if_qualify_policy"); %>'.split(" "),
-			     '<% nvram_get("wl1_bsd_if_qualify_policy_x"); %>'.split(" "),
-			     '<% nvram_get("wl2_bsd_if_qualify_policy_x"); %>'.split(" ")]
-
-var bsd_if_qualify_policy_bin = [reverse_bin(createBinaryString(parseInt(bsd_if_qualify_policy[0][1]))),
-				 reverse_bin(createBinaryString(parseInt(bsd_if_qualify_policy[1][1]))),
-				 reverse_bin(createBinaryString(parseInt(bsd_if_qualify_policy[2][1])))]
-
-/*[bounce detect] */
-var bsd_bounce_detect = '<% nvram_get("bsd_bounce_detect_x"); %>'.split(" "); //[windows time in sec, counts, dwell time in sec]
-}else{
-/* [bsd_steering_policy] */  
-//[bw util%, x, x, RSSI threshold, phy rate, flag]
-var bsd_steering_policy = ['<% nvram_get("wl0_bsd_steering_policy"); %>'.split(" "),
-			   '<% nvram_get("wl1_bsd_steering_policy"); %>'.split(" "),
-			   '<% nvram_get("wl2_bsd_steering_policy"); %>'.split(" ")];
-
-//[OP, RSSI, VHT, NONVHT, N_RF, PHYRATE, L_BALANCE,...]
-var bsd_steering_policy_bin = [reverse_bin(createBinaryString(parseInt(bsd_steering_policy[0][6]))),
-                               reverse_bin(createBinaryString(parseInt(bsd_steering_policy[1][6]))),
-                               reverse_bin(createBinaryString(parseInt(bsd_steering_policy[2][6])))];
-
-/* [bsd_sta_select_policy] */
-var bsd_sta_select_policy = ['<% nvram_get("wl0_bsd_sta_select_policy"); %>'.split(" "),
-			     '<% nvram_get("wl1_bsd_sta_select_policy"); %>'.split(" "),
-			     '<% nvram_get("wl2_bsd_sta_select_policy"); %>'.split(" ")];
-
-var bsd_sta_select_policy_bin = [reverse_bin(createBinaryString(parseInt(bsd_sta_select_policy[0][10]))),
-				 reverse_bin(createBinaryString(parseInt(bsd_sta_select_policy[1][10]))),
-				 reverse_bin(createBinaryString(parseInt(bsd_sta_select_policy[2][10])))];
-
-/* [Interface Select and Qualify Procedures] */
-var bsd_if_select_policy = ['<% nvram_get("wl0_bsd_if_select_policy"); %>'.split(" "),
-			    '<% nvram_get("wl1_bsd_if_select_policy"); %>'.split(" "),
-			    '<% nvram_get("wl2_bsd_if_select_policy"); %>'.split(" ")]
-
-var bsd_if_qualify_policy = ['<% nvram_get("wl0_bsd_if_qualify_policy"); %>'.split(" "),
-			     '<% nvram_get("wl1_bsd_if_qualify_policy"); %>'.split(" "),
-			     '<% nvram_get("wl2_bsd_if_qualify_policy"); %>'.split(" ")]
-
-var bsd_if_qualify_policy_bin = [reverse_bin(createBinaryString(parseInt(bsd_if_qualify_policy[0][1]))),
-				 reverse_bin(createBinaryString(parseInt(bsd_if_qualify_policy[1][1]))),
-				 reverse_bin(createBinaryString(parseInt(bsd_if_qualify_policy[2][1])))]
-
-/*[bounce detect] */
-var bsd_bounce_detect = '<% nvram_get("bsd_bounce_detect"); %>'.split(" ");	//[windows time in sec, counts, dwell time in sec]
-}
-
-var smart_connect_selif_x = '<% nvram_get("smart_connect_selif_x"); %>';
-if(smart_connect_v2_support && smart_connect_selif_x == '3') {
-	if(wl_info.wl_if_total > 2){
-		wl_info.wl_if_total--;
+var bandList = [];
+for(var i=0; i<bandName.length; i++){
+	if(get_wl_unit_by_band(bandName[i]) != ""){
+		bandList.push(bandName[i]);
 	}
-	
 }
+
+(function(){
+	let array = ['bsd_bounce_detect', 'smart_connect_x', 'smart_connect_selif_x'];
+
+	function renameKey(obj, oldKey, newKey) {
+		if(oldKey == newKey) return false;
+		
+		if (obj.hasOwnProperty(oldKey)) {
+			obj[newKey] = obj[oldKey];
+			delete obj[oldKey];
+		}
+	}
+
+	for(let i=0; i<wl_info.wl_if_total; i++){
+		let temp = [
+			`wl${i}${subUnit}_bsd_sta_select_policy`,
+			`wl${i}${subUnit}_bsd_if_select_policy`,
+			`wl${i}_bsd_steering_policy`,
+			`wl${i}_bsd_if_qualify_policy`,
+			`wl${i}_txchain`
+		];
+
+		array.push(...temp);
+	}	
+	
+	nvram = httpApi.nvramGet(array);
+	Object.assign(variable, nvram);
+
+	/* recorrect wlreless interface name */
+	for(let i=0; i< wl_info.wl_if_total; i++){
+		let shift = get_wl_unit_by_band(bandList[i]);
+		
+		variable['wl'+ i +'_bsd_steering_policy'] = nvram['wl'+ shift +'_bsd_steering_policy'];
+		variable[`wl${i}${subUnit}_bsd_sta_select_policy`] = nvram[`wl${shift}${subUnit}_bsd_sta_select_policy`];
+		variable[`wl${i}${subUnit}_bsd_if_select_policy`] = nvram[`wl${shift}${subUnit}_bsd_if_select_policy`];
+		variable['wl'+ i +'_bsd_if_qualify_policy'] = nvram['wl'+ shift +'_bsd_if_qualify_policy'];
+		variable['wl'+ i +'_txchain'] = nvram['wl'+ i +'_txchain'];
+
+		bsd_steering_policy_array[i] = variable['wl'+ i +'_bsd_steering_policy'].split(' ');
+		bsd_sta_select_policy_array[i] = variable[`wl${i}${subUnit}_bsd_sta_select_policy`].split(' ');
+		bsd_if_select_policy_array[i] = variable[`wl${i}${subUnit}_bsd_if_select_policy`].split(' ');
+		bsd_if_qualify_policy_array[i] = variable['wl'+ i +'_bsd_if_qualify_policy'].split(' ');
+
+		bsd_steering_policy_binary[i] = parseInt(bsd_steering_policy_array[i][6], 16).toString(2);
+		bsd_sta_select_policy_binary[i] = parseInt(bsd_sta_select_policy_array[i][10], 16).toString(2);
+		bsd_if_qualify_policy_binary[i] = parseInt(bsd_if_qualify_policy_array[i][1], 16).toString(2);
+	}
+})();
+
+let spatialStreams = (function(){
+	let array = [];
+	for(let i=0; i<wl_info.wl_if_total; i++){
+		let count = 0;
+		let string = variable['wl'+ i +'_txchain'];
+		string = parseInt(string).toString(2).split('');
+		string.forEach(element => {
+			(element === '1') ? count++ : '';
+		});
+		array.push(count);
+	}
+
+	return array;
+})();
+
+let phyRate = [1148, 4804, 4804, 4804];
 
 function initial(){
 	show_menu();
-	gen_bsd_steering_div();
-	gen_bsd_sta_select_div();
-	gen_bsd_if_select_div();
-	register_event();
-	handle_bsd_nvram();
-	bsd_disable('<% nvram_get("smart_connect_x"); %>');
+	genBand();
+	genSteerLoadBalance();
+	genSteerBWUtilization();		// Steering Trigger BW Utilization
+	genStreerRSSI();
+	genSteerPhyRateLess();
+	genSteerPhyRateGreat();
+	genSteerCapability();
+
+	genStaRSSI();
+	genStaPhyRateLess();
+	genStaPhyRateGreat();
+	genStaCapability();
+
+	genIfSelectBand();
+	genIfQualityBWUtilization();
+	genIfQualityaCapability();
+
+	genBounceDetect();
 }
 
-function bsd_disable(val){
-	if(val == '2'){
-		document.form.wl1_bsd_steering_policy_x.disabled = false;
-		document.form.wl2_bsd_steering_policy_x.disabled = false;
-		document.form.wl1_bsd_sta_select_policy_x.disabled = false;
-		document.form.wl2_bsd_sta_select_policy_x.disabled = false;
-		//document.form.wl1_bsd_if_select_policy_x.disabled = false;
-		//document.form.wl2_bsd_if_select_policy_x.disabled = false;
-		document.form.wl1_bsd_if_qualify_policy_x.disabled = false;
-		document.form.wl2_bsd_if_qualify_policy_x.disabled = false;
-		document.form.bsd_bounce_detect_x.disabled = false;
-		document.form.bsd_ifnames_x.disabled = false;
-	}else{
-		document.form.wl0_bsd_steering_policy.disabled = false;
-		document.form.wl1_bsd_steering_policy.disabled = false;
-		document.form.wl2_bsd_steering_policy.disabled = false;
-		document.form.wl0_bsd_sta_select_policy.disabled = false;
-		document.form.wl1_bsd_sta_select_policy.disabled = false;
-		document.form.wl2_bsd_sta_select_policy.disabled = false;
-		document.form.wl0_bsd_if_select_policy.disabled = false;
-		document.form.wl1_bsd_if_select_policy.disabled = false;
-		document.form.wl2_bsd_if_select_policy.disabled = false;
-		document.form.wl0_bsd_if_qualify_policy.disabled = false;
-		document.form.wl1_bsd_if_qualify_policy.disabled = false;
-		document.form.wl2_bsd_if_qualify_policy.disabled = false;
-		document.form.bsd_bounce_detect.disabled = false;
-		if(!(wl_info.band2g_support && wl_info.band5g_support && (!wl_info.band5g_2_support && !wl_info.band6g_support))) //dual band
-			document.form.bsd_ifnames.disabled = false;
-	}
-}
-
-function change_lb(val,idx){
-	if(val == 1){
-		var obj_steer_class = document.getElementsByClassName('steering_on_'+idx);
-		var obj_steer_unset_class = document.getElementsByClassName('steering_unuse_off_'+idx);
-		for(x=obj_steer_class.length-1;x>=0;x--){
-			obj_steer_class[x].className='steering_off_'+idx;
-		}
-		for(x=obj_steer_unset_class.length-1;x>=0;x--){
-			obj_steer_unset_class[x].className='steering_unuse_on_'+idx;
-		}
-	}else{
-		var obj_steer_class = document.getElementsByClassName('steering_off_'+idx);
-		var obj_steer_unset_class = document.getElementsByClassName('steering_unuse_on_'+idx);
-		for(x=obj_steer_unset_class.length-1;x>=0;x--){
-			obj_steer_unset_class[x].className='steering_unuse_off_'+idx;
-		}			
-		for(x=obj_steer_class.length-1;x>=0;x--){
-			obj_steer_class[x].className='steering_on_'+idx;
-		}				
-	}
-}
-
-function gen_bsd_steering_div(flag){
+function isSmartConnectSelifBand(band){
+	if(get_wl_unit_by_band(band) == "") return false;
 	
-	var code = "";
+	if(band == `2g1`) band = `2G`;
+	band = band.toUpperCase();
+	
+	if(smart_connect_v2_support){
+		if(band == "6G") band = "6G1";
+		if(band == "5G") band = "5G1";
 
-	code +='<table cellspacing="0" cellpadding="4" bordercolor="#6b8fa3" border="1" align="center" width="100%" class="FormTable" id="MainTable1">';
-	code +='<thead><tr><td colspan="4"><#smart_connect_Steering#></td></tr></thead>';
-	code +='<tr id="band_text"><th width="20%"><#Interface#></th>';
-	if(start_band_idx == '1'){
-		if(band6g_support){
-			code +='<td width="40%" align="center" >5 GHz</td><td width="40%" align="center" >6 GHz</td>';
+		const zerosArray = Array(5).fill("0");
+		var smart_connect_selif_x = httpApi.nvramGet(["smart_connect_selif_x"]).smart_connect_selif_x;
+		var smart_connect_selif_band = parseInt(smart_connect_selif_x).toString(2).split("").reverse();
+		var smart_connect_band = smart_connect_selif_band.concat(zerosArray.slice(smart_connect_selif_band.length));
+		var result = false;
+
+		for(var i = 0; i < bandName.length; i++){
+			if(bandName[i] == band){
+				result = smart_connect_band[i] == "1";
+				break;
+			}
 		}
-		else{
-			code +='<td width="40%" align="center" >5GHz-1</td><td width="40%" align="center" >5GHz-2</td>';
-		}
+
+		return result;
 	}
-	else if(!wl_info.band5g_2_support && !wl_info.band6g_support
-	 || (smart_connect_v2_support && smart_connect_selif_x == '3'))
-		code +='<td width="40%" align="center" >2.4GHz</td><td width="40%" align="center" >5GHz</td>';
-	else{
-		if(band6g_support){
-			code +='<td width="27%" align="center" >2.4 GHz</td><td width="27%" align="center" >5 GHz</td><td width="27%" align="center" >6 GHz</td>';
-		}
-		else{
-			code +='<td width="27%" align="center" >2.4GHz</td><td width="27%" align="center" >5GHz-1</td><td width="27%" align="center" >5GHz-2</td>';
-		}		
+
+	return false;
+}
+
+function genBand(){
+	let code = '<th style="width:20%"><#Interface#></th>';
+
+	for(let i=0; i<bandList.length; i++){
+		code += `<td align="center" style="width:${80/parseInt(bandList.length)}%">${wl_nband_title[get_wl_unit_by_band(bandList[i])]}</td>`;
 	}
+
+	document.querySelector('#band_field').innerHTML = code;
+}
+
+function genSteerLoadBalance(){
+	let code = '<th><#enable_Load_Balance#></th>';
+	for(let i=0; i<wl_info.wl_if_total; i++){
+		let _array = bsd_steering_policy_binary[i].split('');
+		let flag = false;
+		if(_array[_array.length-7] && _array[_array.length-7] == '1'){
+			flag = true;
+		}
+
+		code += '<td align="center">';
+		if(!isSmartConnectSelifBand(bandList[i])){
+			code += '- -';
+			continue;
+		}
 		
-
-	code +='</tr>';
-
-	code +='<tr><th><#enable_Load_Balance#></th>';
-	for(i = start_band_idx; i < wl_info.wl_if_total; i++){
-		code +='<td>';
-		code +='<input onclick="change_lb(1,'+i+');" type="radio" name="wl'+i+'_bsd_steering_balance" value="1"><#checkbox_Yes#>';
-		code +='<input onclick="change_lb(0,'+i+');" type="radio" name="wl'+i+'_bsd_steering_balance" value="0"><#checkbox_No#>';
-		code +='</td>';
+		if(flag){
+			code += '<input type="radio" value="1" id="wl'+ i +'_bsd_steering_balance_yes" name="wl'+ i +'_bsd_steering_balance" onchange="loadBalanceChange('+ i +', this)" checked><#checkbox_Yes#>';
+			code += '<input type="radio" value="0" id="wl'+ i +'_bsd_steering_balance_no" name="wl'+ i +'_bsd_steering_balance" onchange="loadBalanceChange('+ i +', this)"><#checkbox_No#>';
+		}
+		else{
+			code += '<input type="radio" value="1" id="wl'+ i +'_bsd_steering_balance_yes" name="wl'+ i +'_bsd_steering_balance" onchange="loadBalanceChange('+ i +', this)"><#checkbox_Yes#>';
+			code += '<input type="radio" value="0" id="wl'+ i +'_bsd_steering_balance_no" name="wl'+ i +'_bsd_steering_balance" onchange="loadBalanceChange('+ i +', this)" checked><#checkbox_No#>';
+		}
+		
+		code += '</td>';
 	}
-	code +='</tr>';
 
-		code +='<tr><th><#smart_connect_Bandwidth#></th>';
-	for(i = start_band_idx; i < wl_info.wl_if_total; i++){	
-		code +='<td><span class="steering_on_'+i+'"><div><table><tr>';
-		code +='<td style="border:0px;width:35px; padding-left:0px">';
-		code +='<div id="slider_wl'+i+'_bsd_steering_bandutil" style="width:80px;"></div></td>';
-		code +='<td style="border:0px;">';
-		code +='<span id="wl'+i+'_bsd_steering_bandutil_t" name="wl0_bsd_steering_bandutil_t" style="color:white"></span>%';
-		code +='</td></tr></table></div></span><span class="steering_unuse_off_'+i+'">- -</span></td>';
-	}
-	code +='</tr>';
+	document.querySelector('#steering_load_balance_field').innerHTML = code;	
+}
 
-	code +='<tr><th>RSSI</th>';
-	for(i = start_band_idx; i < wl_info.wl_if_total; i++){
-		code +='<td><span class="steering_on_'+i+'"><div><table><tr><td style="border:0px; padding-left:0px">';
-		code +='<select class="input_option" name="wl'+i+'_bsd_steering_rssi_s">';
-		code +='<option selected="" value="0" class="content_input_fd"><#option_less#></option>';
-		code +='<option value="1" class="content_input_fd"><#option_greater#></option>';
-		code +='</select></td>';
-		code +='<td style="border:0px; padding-left:0px">';
-		code +='<input type="text" onkeypress="return validator.isNegativeNumber(this,event)" value="100" class="input_3_table" id="wl'+i+'_bsd_steering_rssi" name="wl'+i+'_bsd_steering_rssi" maxlength="4">';
-		code +='<label style="margin-left:5px;">dBm</label></td></tr></table></div></span><span class="steering_unuse_off_'+i+'">- -</span></td>';
-	}
-	code +='</tr>';
-		code +='<tr><th><#PHY_Rate_Less#></th>';
-	for(i = start_band_idx; i < wl_info.wl_if_total; i++){
-		code +='<td><span class="steering_on_'+i+'"><div><table><tr><td style="border:0px;width:35px; padding-left:0px">';
-		code +='<div id="slider_wl'+i+'_bsd_steering_phy_l" style="width:80px;"></div></td>';
-		code +='<td style="border:0px">';
-		code +='<div id="wl'+i+'_bsd_steering_phy_l0_t">< <span style="color:white;" name="wl'+i+'_bsd_steering_phy_l_t" id="wl'+i+'_bsd_steering_phy_l_t">300</span> Mbps</div>';
-		code +='<div id="wl'+i+'_bsd_steering_phy_ld_t" style="display:none;"><#btn_disable#></div>';
-		code +='</td></tr></table></div></span><span class="steering_unuse_off_'+i+'">- -</span></td>';
-	}
-	code +='</tr>';
+function genSteerBWUtilization(){
+	let code = '<th><#smart_connect_Bandwidth#></th>';
+	for(let i=0; i< wl_info.wl_if_total; i++){
+		if(!isSmartConnectSelifBand(bandList[i])){
+			code += '<td style="width:20%" align="center">- -</td>';
+			continue;
+		}
 
-	code +='<tr><th><#PHY_Rate_Greater#></th>';
-	for(i = start_band_idx; i < wl_info.wl_if_total; i++){
-		code +='<td><span class="steering_on_'+i+'"><div><table><tr>';
-		code +='<td style="border:0px;width:35px; padding-left:0px">';
-		code +='<div id="slider_wl'+i+'_bsd_steering_phy_g" style="width:80px;"></div>';
-		code +='</td>';
-		code +='<td style="border:0px">';
-		code +='<div id="wl'+i+'_bsd_steering_phy_g0_t">> <span style="color:white;" name="wl'+i+'_bsd_steering_phy_g_t" id="wl'+i+'_bsd_steering_phy_g_t">300</span> Mbps</div>';
-		code +='<div id="wl'+i+'_bsd_steering_phy_gd_t" style="display:none;"><#btn_disable#></div>';
-		code +='</td></tr></table></div></span><span class="steering_unuse_off_'+i+'">- -</span></td>';
+		code += '<td align="center">';
+		code += '<div style="display:flex;justify-content:center;">';
+		code += '<input type="range" min="0" max="100" value="'+ bsd_steering_policy_array[i][0] +'" step="1"  id="wl'+ i +'_bsd_steering_bandutil_t"  oninput="bandwidthUtiliChange(this)" style="width:80px;">';
+		code += '<span style="width:50px;">'+ bsd_steering_policy_array[i][0] +' %</span>';
+		code += '</div>';
+		code += '</td>';
 	}
-	code +='</tr>';
 
-	code +='<tr><th>VHT</th>';
-	for(i = start_band_idx; i < wl_info.wl_if_total; i++){
-		code +='<td style="padding-left:12px"><span class="steering_on_'+i+'">';
-		code +='<select class="input_option" name="wl'+i+'_bsd_steering_vht_s">';
-		code +='<option selected="" value="0" class="content_input_fd"><#All#></option>';
-		code +='<option value="1" class="content_input_fd">AC only</option>';
-		code +='<option value="2" class="content_input_fd">not-allowed</option>';
-		code +='</select></span><span class="steering_unuse_off_'+i+'">- -</span></td>';
+	document.querySelector('#steering_bw_field').innerHTML = code;
+}
+
+function genStreerRSSI(){
+	let code = '<th style="width:20%">RSSI</th>';
+	for(let i=0; i<wl_info.wl_if_total; i++){
+
+		if(!isSmartConnectSelifBand(bandList[i])){
+			code += '<td style="width:20%" align="center">- -</td>';
+			continue;
+		}
+
+		code += '<td align="center">';
+		code += '<select class="input_option" id="wl'+ i +'_bsd_steering_rssi_s" name="wl'+ i +'_bsd_steering_rssi_s">';
+		code += '<option value="0" class="content_input_fd"><#option_less#></option>';
+		code += '<option value="1" class="content_input_fd"><#option_greater#></option>';
+		code += '</select>';
+		code += '<input type="text" onkeypress="return validator.isNegativeNumber(this,event)" value="'+ bsd_steering_policy_array[i][3] +'" class="input_3_table" id="wl'+ i +'_bsd_steering_rssi" name="wl'+ i +'_bsd_steering_rssi" maxlength="4"> dBm';
+		code += '</td>';
 	}
-	code +='</tr>';
-	code +='</table>';
 
-	document.getElementById("bsd_steering_div").innerHTML = code;
-	if(isSupport("triband") && dwb_info.mode) {
-		$("#bsd_steering_div").find("#MainTable1 > tbody > tr").each(function() {
-			$(this).children('td').eq(dwb_info.band).css("display", "none");
-			$(this).children('td').css("width", "40%");
-		});
-		$("#bsd_steering_div").find("#band_text > td").eq(0).html("2.4GHz");
-		$("#bsd_steering_div").find("#band_text > td").eq(1).html("5GHz");
+	document.querySelector('#steering_rssi_field').innerHTML = code;
+
+	for(let i=0; i<wl_info.wl_if_total; i++){
+		if(!isSmartConnectSelifBand(bandList[i])){
+			continue;
+		}
+
+		let _array = bsd_steering_policy_binary[i].split('');
+		document.querySelector('#wl'+ i +'_bsd_steering_rssi_s').value = _array[_array.length-2];
 	}
 }
 
-function gen_bsd_sta_select_div(){
-	var code = "";
+function genSteerPhyRateLess(){
+	let code = '<th><#PHY_Rate_Less#></th>';
+	for(let i=0; i<wl_info.wl_if_total; i++){
+		if(!isSmartConnectSelifBand(bandList[i])){
+			code += '<td style="width:20%" align="center">- -</td>';
+			continue;
+		}
 
-	code +='<table cellspacing="0" cellpadding="4" bordercolor="#6b8fa3" border="1" align="center" width="100%" class="FormTable" id="MainTable2" style="margin-top:10px">';
-	code +='<thead><tr><td colspan="4"><#smart_connect_STA#></td></tr></thead>';
+		code += '<td align="center">';
+		code += '<div style="display:flex;justify-content:center;">';
+		code += '<input type="range" min="0" max="'+ phyRate[i] +'" value="'+ bsd_steering_policy_array[i][4] +'" step="1"  id="wl'+ i +'_bsd_steering_phy_l_t"  oninput="phyRateChange(this)" style="width:60px;">';
+		code += '<span style="width:70px;">'+ bsd_steering_policy_array[i][4] +' Mbps</span> ';
+		code += '</div>';
+		code += '</td>';
+	}
+
+	document.querySelector('#steering_phy_rate_less_field').innerHTML = code;
+}
+
+function genSteerPhyRateGreat(){
+	let code = '<th><#PHY_Rate_Greater#></th>';
+	for(let i=0; i<wl_info.wl_if_total; i++){
+		if(!isSmartConnectSelifBand(bandList[i])){
+			code += '<td style="width:20%" align="center">- -</td>';
+			continue;
+		}
+
+		code += '<td align="center">';
+		code += '<div style="display:flex;justify-content:center;">';
+		code += '<input type="range" min="0" max="'+ phyRate[i] +'" value="'+ bsd_steering_policy_array[i][5] +'" step="1"  id="wl'+ i +'_bsd_steering_phy_g_t"  oninput="phyRateChange(this)" style="width:60px;">';
+		code += '<span style="width:70px;">'+ bsd_steering_policy_array[i][5] +' Mbps</span>';
+		code += '</div>';
+		code += '</td>';
+	}
+
+	document.querySelector('#steering_phy_rate_great_field').innerHTML = code;
+}
+
+function genSteerCapability(){
+	let code = '<th><#Capability#></th>';
+	for(let i=0; i<wl_info.wl_if_total; i++){
+		if(!isSmartConnectSelifBand(bandList[i])){
+			code += '<td style="width:20%" align="center">- -</td>';
+			continue;
+		}
+
+		code += '<td align="center">';
+		code += '<select class="input_option" id="wl'+ i +'_bsd_steering_vht_s" name="wl'+ i +'_bsd_steering_vht_s">';
+		code += '<option value="0" class="content_input_fd"><#All#></option>';
+		code += '<option value="1" class="content_input_fd">802.11ac/ax only</option>';
+		code += '<option value="2" class="content_input_fd">802.11a/b/g/n</option>';
+		code += '<option value="3" class="content_input_fd">802.11ax only</option>';
+		code += '<option value="4" class="content_input_fd">802.11a/b/g/n/ac</option>';
+		code += '</select>';
+		code += '</td>';
+	}
+
+	document.querySelector('#steering_capability_field').innerHTML = code;
+
+	for(let i=0; i<wl_info.wl_if_total; i++){
+		if(!isSmartConnectSelifBand(bandList[i])){
+			continue;
+		}
+
+		let _array = bsd_steering_policy_binary[i].split('');
+		if(_array[_array.length-12] && _array[_array.length-12] == '1'){
+			document.querySelector('#wl'+ i +'_bsd_steering_vht_s').value = '3';
+		}
+		else if(_array[_array.length-11] && _array[_array.length-11] == '1'){
+			document.querySelector('#wl'+ i +'_bsd_steering_vht_s').value = '4';
+		}
+		else if(_array[_array.length-4] && _array[_array.length-4] == '1'){
+			document.querySelector('#wl'+ i +'_bsd_steering_vht_s').value = '1';
+		}
+		else if(_array[_array.length-3] && _array[_array.length-3] == '1'){
+			document.querySelector('#wl'+ i +'_bsd_steering_vht_s').value = '2';
+		}
+	}
+}
+
+function genStaRSSI(){
+	let code = '<th>RSSI</th>';
+	for(let i=0; i<wl_info.wl_if_total; i++){
+		if(!isSmartConnectSelifBand(bandList[i])){
+			code += '<td style="width:20%" align="center">- -</td>';
+			continue;
+		}
+
+		code += `<td  style="width:${80/parseInt(bandList.length)}%" align="center">`;
+		code += '<select class="input_option" id="wl'+ i +'_bsd_sta_select_policy_rssi_s" name="wl'+ i +'_bsd_sta_select_policy_rssi_s">';
+		code += '<option value="0" class="content_input_fd"><#option_less#></option>';
+		code += '<option value="1" class="content_input_fd"><#option_greater#></option>';
+		code += '</select>';
+		code += '<input type="text" onkeypress="return validator.isNegativeNumber(this,event)" value="'+ bsd_sta_select_policy_array[i][1] +'" class="input_3_table" id="wl'+ i +'_bsd_sta_select_policy_rssi" name="wl'+ i +'_bsd_sta_select_policy_rssi" maxlength="4">dBm';
+		code += '</td>';
+	}
+
+	document.querySelector('#sta_rssi_field').innerHTML = code;
+
+	for(let i=0; i<wl_info.wl_if_total; i++){
+		if(!isSmartConnectSelifBand(bandList[i])){
+			continue;
+		}
+
+		let _array = bsd_sta_select_policy_binary[i].split('');
+		document.querySelector('#wl'+ i +'_bsd_sta_select_policy_rssi_s').value = _array[_array.length-2];
+	}
+}
+
+function genStaPhyRateLess(){
+	let code = '<th style="width:20%"><#PHY_Rate_Less#></th>';
+	for(let i=0; i<wl_info.wl_if_total; i++){
+		if(!isSmartConnectSelifBand(bandList[i])){
+			code += '<td style="width:20%" align="center">- -</td>';
+			continue;
+		}
+
+		code += `<td style="width:${80/parseInt(bandList.length)}%" align="center">`;
+		code += '<div style="display:flex;justify-content:center;">';
+		code += '<input type="range" min="0" max="'+ phyRate[i] +'" value="'+ bsd_sta_select_policy_array[i][2] +'" step="1"  id="wl'+ i +'_bsd_sta_select_policy_phy_l_t"  oninput="phyRateChange(this)" style="width:60px;">';
+		code += '<span style="width:70px;">'+ bsd_sta_select_policy_array[i][2] +' Mbps</span>';
+		code += '</div>';
+		code += '</td>';
+	}
+
+	document.querySelector('#sta_phy_rate_less_field').innerHTML = code;
+}
+
+function genStaPhyRateGreat(){
+	let code = '<th style="width:20%"><#PHY_Rate_Greater#></th>';
+	for(let i=0; i<wl_info.wl_if_total; i++){
+		if(!isSmartConnectSelifBand(bandList[i])){
+			code += '<td align="center" style="width:20%">- -</td>';
+			continue;
+		}
+
+		code += `<td style="width:${80/parseInt(bandList.length)}%" align="center">`;
+		code += '<div style="display:flex;justify-content:center;">';
+		code += '<input type="range" min="0" max="'+ phyRate[i] +'" value="'+ bsd_sta_select_policy_array[i][3] +'" step="1"  id="wl'+ i +'_bsd_sta_select_policy_phy_g_t"  oninput="phyRateChange(this)" style="width:60px;">';
+		code += '<span style="width:70px;">'+ bsd_sta_select_policy_array[i][3] +' Mbps</span>';
+		code += '</div>';
+		code += '</td>';
+	}
+
+	document.querySelector('#sta_phy_rate_great_field').innerHTML = code;
+}
+
+function genStaCapability(){
+	let code = '<th style="width:20%"><#Capability#></th>';
+	for(let i=0; i<wl_info.wl_if_total; i++){
+		if(!isSmartConnectSelifBand(bandList[i])){
+			code += '<td style="width:20%" align="center">- -</td>';
+			continue;
+		}
+
+		code += `<td style="width:${80/parseInt(bandList.length)}%" align="center">`;
+		code += '<select class="input_option" id="wl'+ i +'_bsd_sta_select_policy_vht_s" name="wl'+ i +'_bsd_sta_select_policy_vht_s">';
+		code += '<option value="0" class="content_input_fd"><#All#></option>';
+		code += '<option value="1" class="content_input_fd">802.11ac/ax only</option>';
+		code += '<option value="2" class="content_input_fd">802.11a/b/g/n</option>';
+		code += '<option value="3" class="content_input_fd">802.11ax only</option>';
+		code += '<option value="4" class="content_input_fd">802.11a/b/g/n/ac</option>';
+		code += '</select>';
+		code += '</td>';
+	}
+
+	document.querySelector('#sta_capability_field').innerHTML = code;
+
+	for(let i=0; i<wl_info.wl_if_total; i++){
+		if(!isSmartConnectSelifBand(bandList[i])){
+			continue;
+		}
+
+		let _array = bsd_sta_select_policy_binary[get_wl_unit_by_band(bandList[i])].split('');
+		if(_array[_array.length-16] && _array[_array.length-16] == '1'){
+			document.querySelector('#wl'+ i +'_bsd_sta_select_policy_vht_s').value = '3';
+		}
+		else if(_array[_array.length-15] && _array[_array.length-15] == '1'){
+			document.querySelector('#wl'+ i +'_bsd_sta_select_policy_vht_s').value = '4';
+		}
+		else if(_array[_array.length-4] && _array[_array.length-4] == '1'){
+			document.querySelector('#wl'+ i +'_bsd_sta_select_policy_vht_s').value = '1';
+		}
+		else if(_array[_array.length-3] && _array[_array.length-3] == '1'){
+			document.querySelector('#wl'+ i +'_bsd_sta_select_policy_vht_s').value = '2';
+		}
+	}
+}
+
+function genIfQualityBWUtilization(){
+	let code = '<th><#smart_connect_Bandwidth#></th>';
+	for(let i=0; i< wl_info.wl_if_total; i++){
+		if(!isSmartConnectSelifBand(bandList[i])){
+			code += '<td style="width:20%" align="center">- -</td>';
+			continue;
+		}
+
+		code += '<td align="center">';
+		code += '<div style="display:flex;justify-content:center;">';
+		code += '<input type="range" min="0" max="100" value="'+ bsd_if_qualify_policy_array[i][0] +'" step="1"  id="wl'+ i +'_bsd_if_qualify_policy_t"  oninput="bandwidthUtiliChange(this)" style="width:80px;">';
+		code += '<span style="width:50px;">'+ bsd_if_qualify_policy_array[i][0] +' %</span>';
+		code += '</div>';
+		code += '</td>';
+	}
+
+	document.querySelector('#if_quality_bw_field').innerHTML = code;
+}
+
+function genIfQualityaCapability(){
+	let code = '<th style="width:20%"><#Capability#></th>';
+	for(let i=0; i<wl_info.wl_if_total; i++){
+		if(!isSmartConnectSelifBand(bandList[i])){
+			code += '<td style="width:20%" align="center">- -</td>';
+			continue;
+		}
+
+		code += `<td style="width:${80/parseInt(bandList.length)}%" align="center">`;
+		code += '<select class="input_option" id="wl'+ i +'_bsd_if_qualify_policy_vht_s" name="wl'+ i +'_bsd_if_qualify_policy_vht_s" onchange="ifCapabilityChange('+ i +', this)">';
+		code += '<option value="0" class="content_input_fd"><#All#></option>';
+		code += '<option value="1" class="content_input_fd">802.11ac/ax only</option>';
+		code += '<option value="2" class="content_input_fd">802.11a/b/g/n</option>';
+		code += '<option value="3" class="content_input_fd">802.11ax only</option>';
+		code += '<option value="4" class="content_input_fd">802.11a/b/g/n/ac</option>';
+		code += '</select>';
+		code += '</td>';
+	}
+
+	document.querySelector('#if_quality_capability_field').innerHTML = code;
+
+	for(let i=0; i<wl_info.wl_if_total; i++){
+		if(!isSmartConnectSelifBand(bandList[i])){
+			continue;
+		}
+
+		let _array = bsd_if_qualify_policy_binary[i].split('');
+		if(_array[_array.length-12] && _array[_array.length-12] == '1'){
+			document.querySelector('#wl'+ i +'_bsd_if_qualify_policy_vht_s').value = '3';
+		}
+		else if(_array[_array.length-11] && _array[_array.length-11] == '1'){
+			document.querySelector('#wl'+ i +'_bsd_if_qualify_policy_vht_s').value = '4';
+		}
+		else if(_array[_array.length-3] && _array[_array.length-3] == '1'){
+			document.querySelector('#wl'+ i +'_bsd_if_qualify_policy_vht_s').value = '1';
+		}
+		else if(_array[_array.length-2] && _array[_array.length-2] == '1'){
+			document.querySelector('#wl'+ i +'_bsd_if_qualify_policy_vht_s').value = '2';
+		}
+	}
+}
+
+let if_name_array = [];
+for(let i=0; i<bandList.length; i++){
+	if(isSmartConnectSelifBand(bandList[i])){
+		var wlUnit = get_wl_unit_by_band(bandList[i]);
+		if_name_array[i] = [`wl${wlUnit}${subUnit}`, wl_nband_title[wlUnit]];
+	}
+	else{
+		if_name_array[i] = [];
+	}
+}
+
+function genIfSelectBand(){
+	let code = '<th style="width:20%"><#Interface_target#></th>';
+	for(let i=0; i< wl_info.wl_if_total; i++){
+		if(!isSmartConnectSelifBand(bandList[i])){
+			code += `<td style="width:${80/parseInt(bandList.length)}%;" align="center">- -</td>`;
+			continue;
+		}
+
+		let targetArray = [...if_name_array], flag_none = '';
+		targetArray.splice(i, 1);
+
+		code += `<td style="width:${80/parseInt(bandList.length)}%;" align="center">`;
+		code += '<div>';
+
+		for(let j=1; j<if_name_array.length; j++){
+			code += '<div style="margin: 3px 0;">' + j +': ';
+			code += `<select class="input_option" id="wl${i}_bsd_if_select_policy_${j}" name="wl${i}_bsd_if_select_policy_${j}" onChange="targetBandChange(${i},${j})">`;
+			
+			flag_none = 'selected';
+			for(let k=0; k<targetArray.length; k++){
+				let flag = '';
+				if(targetArray[k].length == 0) continue;
+
+				if(bsd_if_select_policy_array[i][j-1] === targetArray[k][0]){
+					flag = 'selected';
+					flag_none = '';
+				}
+
+				code += '<option value="'+ targetArray[k][0] +'" class="content_input_fd" '+ flag +'>'+ targetArray[k][1] +'</option>';
+			}
+
+			if(j !== 1){
+		 		code += '<option value="none" class="content_input_fd" '+ flag_none +'>none</option>';
+		 	}
+
+			code += '</select>';
+			code += '</div>';
+		}
+
+		code += '</div>';
+		code += '</td>';
+	}
+
+	document.querySelector('#if_select_band_field').innerHTML = code;
+}
+
+function genBounceDetect(){
+	let bounce_detect_array = variable['bsd_bounce_detect'].split(' ');
+	let code = '<thead><tr><td colspan="2"><#smart_connect_BD#></td></tr></thead>';
 	
-	code +='<tr><th width="20%">RSSI</th>';
-	for(i = start_band_idx; i < wl_info.wl_if_total; i++){
-		if('<% nvram_get("smart_connect_x"); %>' == '2' || (!wl_info.band5g_2_support && !wl_info.band6g_support))
-			code +='<td width="40%"><div><table><tr>';
-		else
-			code +='<td width="27%"><div><table><tr>';
-		code +='<td style="border:0px; padding-left:0px;">';
-		code +='<select class="input_option" name="wl'+i+'_bsd_sta_select_policy_rssi_s">';
-		code +='<option selected="" value="0" class="content_input_fd"><#option_less#></option>';
-		code +='<option value="1" class="content_input_fd"><#option_greater#></option>';
-		code +='</select></td>';
-		code +='<td style="border:0px; padding-left:0px">';
-		code +='<input type="text" onkeypress="return validator.isNegativeNumber(this,event)" value="100" class="input_3_table" id="wl'+i+'_bsd_sta_select_policy_rssi" name="wl'+i+'_bsd_sta_select_policy_rssi" maxlength="4">';
-		code +='<label style="margin-left:5px;">dBm</label>';
-		code +='</td></tr></table></div></td>';
-	}
-	code +='</tr>';
+	/* Windows Time */
+	code += '<tr>';
+	code += '<th width="20%"><#smart_connect_STA_window#></th>';
+	code += '<td>';
+	code += '<input type="text" onkeypress="return validator.isNumber(this,event)" value="'+ bounce_detect_array[0] +'" class="input_6_table" id="windows_time_sec" name="windows_time_sec" maxlength="4" autocorrect="off" autocapitalize="off"> <#Second#>';
+	code += '</td>';
+	code += '</tr>';
 
-	code +='<tr><th><#PHY_Rate_Less#></th>';
-	for(i = start_band_idx; i < wl_info.wl_if_total; i++){
-		code +='<td><div><table><tr>';
-		code +='<td style="border:0px;width:35px; padding-left:0px">';
-		code +='<div id="slider_wl'+i+'_bsd_sta_select_policy_phy_l" style="width:80px;"></div>';
-		code +='</td><td style="border:0px;">';
-		code +='<div id="wl'+i+'_bsd_sta_select_policy_phy_l0_t">< <span style="color:white;" name="wl'+i+'_bsd_sta_select_policy_phy_l_t" id="wl'+i+'_bsd_sta_select_policy_phy_l_t">300</span> Mbps</div>';
-		code +='<div id="wl'+i+'_bsd_sta_select_policy_phy_ld_t" style="display:none;"><#btn_disable#></div>';
-		code +='</td></tr></table></div></td>';
-	}
-	code +='</tr>';
+	/* Counts */
+	code += '<tr>';
+	code += '<th><#smart_connect_STA_counts#></th>';
+	code += '<td>';
+	code += '<input type="text" onkeypress="return validator.isNumber(this,event)" value="'+ bounce_detect_array[1] +'" class="input_6_table" id="bsd_counts" name="bsd_counts" maxlength="4" autocorrect="off" autocapitalize="off">';
+	code += '</td>';
+	code += '</tr>';
 
-	code +='<tr><th><#PHY_Rate_Greater#></th>';
-	for(i = start_band_idx; i < wl_info.wl_if_total; i++){
-		code +='<td><div><table><tr>';
-		code +='<td style="border:0px;width:35px; padding-left:0px">';
-		code +='<div id="slider_wl'+i+'_bsd_sta_select_policy_phy_g" style="width:80px;"></div>';
-		code +='</td><td style="border:0px;">';
-		code +='<div id="wl'+i+'_bsd_sta_select_policy_phy_g0_t">> <span style="color:white;" name="wl'+i+'_bsd_sta_select_policy_phy_g_t" id="wl'+i+'_bsd_sta_select_policy_phy_g_t">300</span> Mbps</div>';
-		code +='<div id="wl'+i+'_bsd_sta_select_policy_phy_gd_t" style="display:none;"><#btn_disable#></div>';
-		code +='</td></tr></table></div></td>';
-	}
-	code +='</tr>';
+	/* Dwell Time */
+	code += '<tr>';
+	code += '<th><#smart_connect_STA_dwell#></th>';
+	code += '<td>';
+	code += '<input type="text" onkeypress="return validator.isNumber(this,event)" value="'+ bounce_detect_array[2] +'" class="input_6_table" id="dwell_time_sec" name="dwell_time_sec" maxlength="4" autocorrect="off" autocapitalize="off"> <#Second#>';
+	code += '</td>';
+	code += '</tr>';
 
-	code +='<tr><th>VHT</th>';
-	for(i = start_band_idx; i < wl_info.wl_if_total; i++){
-		code +='<td style="padding-left:12px">';
-		code +='<select class="input_option" name="wl'+i+'_bsd_sta_select_policy_vht_s">';
-		code +='<option selected="" value="0" class="content_input_fd"><#All#></option>';
-		code +='<option value="1" class="content_input_fd">AC only</option>';
-		code +='<option value="2" class="content_input_fd">not-allowed</option>';
-		code +='</select></td>';
-	}
-	code +='</tr></table>';
-
-	document.getElementById("bsd_sta_select_div").innerHTML = code;
-	if(isSupport("triband") && dwb_info.mode) {
-		$("#bsd_sta_select_div").find("#MainTable2 > tbody > tr").each(function() {
-			$(this).children('td').eq(dwb_info.band).css("display", "none");
-			$(this).children('td').css("width", "40%");
-		});
-	}
+	document.querySelector('#bounce_detect_field').innerHTML = code;
 }
 
-function gen_bsd_if_select_div(){
-	var code="";
+function phyRateChange(obj){
+	var target = obj.nextElementSibling;
+	var obj_value = obj.value;
+	target.innerHTML = (obj_value == '0') ? 'Disable' : obj_value + ' Mbps'; 		
+}
 
-	code +='<table cellspacing="0" cellpadding="4" bordercolor="#6b8fa3" border="1" align="center" width="100%" class="FormTable" id="MainTable2" style="margin-top:10px">';
-	code +="<thead><tr><td colspan=\"4\"><#smart_connect_ISQP#></td></tr></thead>";
+function bandwidthUtiliChange(obj){
+	var target = obj.nextElementSibling;
+	var obj_value = obj.value;
+	target.innerHTML = obj_value + ' %';
+}
 
-	code +='<tr id="target_band_text"><th width="20%"><#Interface_target#></th>';
-    if('<% nvram_get("smart_connect_x"); %>' != 2){
-		for(i = start_band_idx; i < wl_info.wl_if_total; i++){
-			code +='<td width="27%" style="padding:0px 0px 0px 0px;"><div><table><tr>';
-			code +='<td style="border:0px; padding:0px 0px 0px 3px;">1:</td>';
-			code +='<td style="border:0px; padding:0px 0px 0px 1px;">';
-			code +='<select class="input_option" name="wl'+i+'_bsd_if_select_policy_first" onChange="change_bsd_if_select(this);">';
-			code +='<option selected="" value="0" class="content_input_fd">';
-			if(i == 0){
-				if(band6g_support){
-					code +='5 GHz';
-				}
-				else{
-					code +='5GHz-1';
-				}		
-			}else if(i == 1){
-				if(band6g_support){
-					code +='6 GHz';
-				}
-				else{
-					code +='5GHz-2';
-				}
-			}else{
-				if(band6g_support){
-					code +='5 GHz';
-				}
-				else{
-					code +='5GHz-1';
+function targetBandChange(band, sequence){
+	let selected_value = document.querySelector('#wl'+ band +'_bsd_if_select_policy_'+ sequence).value;
+	let sequence_ori = [...bsd_if_select_policy_array[band]];
+	let	sequence_changed = new Array(sequence_ori.length).fill('');
+	sequence_changed[sequence-1] = selected_value;
+	let _array = [...if_name_array];
+	_array.splice(band, 1);
+	for(let i=0; i<=sequence_ori.length; i++){
+		if(sequence_ori[i] !== 'none' && sequence_ori[i] === selected_value){
+			sequence_ori[i] = (i === 0) ? '' : 'none'	
+			break;
+		}
+	}
+
+	for(let i=0; i<=sequence_ori.length; i++){
+		if(sequence_ori[i] !== '' && sequence_changed[i] === ''){
+			sequence_changed[i] = sequence_ori[i];
+		}
+	}
+
+	for(let i=0; i<sequence_changed.length; i++){
+		if(sequence_changed[i] === ''){
+			for(let j=0; j<_array.length; j++){
+				let _value = _array[j][0];
+				if(sequence_changed.indexOf(_value) === -1){
+					sequence_changed[i] = _value;
+					break;
 				}
 			}
-			code +='</option><option value="1" class="content_input_fd">';
-			if(i == 0){
-				if(band6g_support){
-					code +='6 GHz';
-				}
-				else{
-					code +='5GHz-2';
-				}
-			}else if(i == 1){
-				code +='2.4GHz';
-			}else{
-				code +='2.4GHz';
-			}		
-			code +='</option>';
-			code +='</select></td>';
-			code +='<td style="border:0px; padding:0px 0px 0px 7px;">2:</td>';
-			code +='<td style="border:0px; padding:0px 0px 0px 1px;">';
-			code +='<select class="input_option" name="wl'+i+'_bsd_if_select_policy_second" onChange="change_bsd_if_select(this);">';
-			code +='<option selected="" value="0" class="content_input_fd">';
-			if(i == 0){
-				if(band6g_support){
-					code +='5 GHz';
-				}
-				else{
-					code +='5GHz-1';
-				}
-			}else if(i == 1){
-				code +='2.4GHz';
-			}else{
-				if(band6g_support){
-					code +='5 GHz';
-				}
-				else{
-					code +='5GHz-1';
-				}
-			}	
-			code +='</option>';
-			code +='<option value="1" class="content_input_fd">';
-			if(i == 0){
-				if(band6g_support){
-					code +='6 GHz';
-				}
-				else{
-					code +='5GHz-2';
-				}
-			}else if(i == 1){
-				code +='2.4GHz';
-			}else{
-				code +='2.4GHz';
-			}		
-			code +='</option>';
-			code +='<option value="2" class="content_input_fd">';
-			code +='none';		
-			code +='</option>';
-			code +='</select></td></tr></table></div></td>';
 		}
-    }else if(!wl_info.band5g_2_support && !wl_info.band6g_support){
-		code +='<td width="40%">5GHz</td><td width="40%">2.4GHz</td>'
-	}else{
-		if(band6g_support){
-			code +='<td width="40%">6 GHz</td><td width="40%">5 GHz</td>';
-		}
-		else{
-			code +='<td width="40%">5GHz-2</td><td width="40%">5GHz-1</td>';
-		}
-	}		
-	code +='</tr>';
-
-	code +='<tr><th><#smart_connect_Bandwidth#></th>';
-	for(i = start_band_idx; i < wl_info.wl_if_total; i++){
-		code +='<td><div><table><tr>';
-		code +='<td style="border:0px;width:35px; padding-left:0px">';
-		code +='<div id="slider_wl'+i+'_bsd_if_qualify_policy" style="width:80px;"></div>';
-		code +='</td><td style="border:0px;">';
-		code +='<span id="wl'+i+'_bsd_if_qualify_policy_t" name="wl'+i+'_bsd_if_qualify_policy_t" style="color:white"></span>%';
-		code +='</td></tr></table></div></td>';
 	}
-	code +='</tr>';
 
-	code +='<tr><th>VHT</th>';
-	for(i = start_band_idx; i < wl_info.wl_if_total; i++){
-		code +='<td style="padding-left:12px">';
-		code +='<select onchange="check_vht(this,'+i+');" class="input_option" name="wl'+i+'_bsd_if_qualify_policy_vht_s">';
-		code +='<option selected="" value="0" class="content_input_fd"><#All#></option>';
-		code +='<option value="1" class="content_input_fd">AC only</option>';
-		code +='</select></td>';
+	for(let i=0; i<sequence_changed.length; i++){
+		if(sequence_changed[i] === undefined){
+			continue;
+		}
+		
+		let index = i + 1;
+		document.querySelector('#wl'+ band +'_bsd_if_select_policy_'+ index).value = sequence_changed[i];		
+	}
+	
+	bsd_if_select_policy_array[band] = [...sequence_changed];
+}
+
+function loadBalanceChange(band, obj){
+	let enable = (obj.value === '1') ? true : false;
+	if(enable){
+		document.querySelector('#wl'+ band +'_bsd_steering_bandutil_t').disabled = true;
+		document.querySelector('#wl'+ band +'_bsd_steering_rssi_s').disabled = true;
+		document.querySelector('#wl'+ band +'_bsd_steering_rssi').disabled = true;
+		document.querySelector('#wl'+ band +'_bsd_steering_phy_l_t').disabled = true;
+		document.querySelector('#wl'+ band +'_bsd_steering_phy_g_t').disabled = true;
+		document.querySelector('#wl'+ band +'_bsd_steering_vht_s').disabled = true;
+	}
+	else{
+		document.querySelector('#wl'+ band +'_bsd_steering_bandutil_t').disabled = false;
+		document.querySelector('#wl'+ band +'_bsd_steering_rssi_s').disabled = false;
+		document.querySelector('#wl'+ band +'_bsd_steering_rssi').disabled = false;
+		document.querySelector('#wl'+ band +'_bsd_steering_phy_l_t').disabled = false;
+		document.querySelector('#wl'+ band +'_bsd_steering_phy_g_t').disabled = false;
+		document.querySelector('#wl'+ band +'_bsd_steering_vht_s').disabled = false;
 	}	
-	code +='</tr></table>';
-
-	document.getElementById("bsd_if_select_div").innerHTML = code;
-	if(isSupport("triband") && dwb_info.mode) {
-		$("#bsd_if_select_div").find("#target_band_text > td").eq(0).html("5GHz");
-		$("#bsd_if_select_div").find("#target_band_text > td").eq(1).html("2.4GHz");
-		$("#bsd_if_select_div").find("#target_band_text > td").css("padding-left","10px");
-		$("#bsd_if_select_div").find("#MainTable2 > tbody > tr").each(function() {
-			$(this).children('td').eq(dwb_info.band).css("display", "none");
-			$(this).children('td').css("width", "40%");
-		});
-	}
-
-	if(smart_connect_v2_support){
-		if(smart_connect_selif_x == '11'){
-			setTimeout(function(){
-				document.form.wl1_bsd_if_select_policy_first.remove(0)
-				document.form.wl1_bsd_if_select_policy_second.remove(0);
-				document.form.wl2_bsd_if_select_policy_first.remove(0);
-				document.form.wl2_bsd_if_select_policy_second.remove(0);
-			},10);
-		}
-		else if(smart_connect_selif_x == '3'){
-			setTimeout(function(){
-				document.form.wl0_bsd_if_select_policy_first.remove(1)
-				document.form.wl0_bsd_if_select_policy_second.remove(0);
-				document.form.wl1_bsd_if_select_policy_first.remove(0);
-				document.form.wl1_bsd_if_select_policy_second.remove(0);
-			},10);
-		}
-	}
-
 }
 
-function check_vht(obj,idx){
-	var vht_desc = new Array();
-	var vht_value = new Array();
-	var obj_name = 'document.form.wl'+idx+'_bsd_steering_vht_s';
-	var obj_name1 = 'document.form.wl'+idx+'_bsd_sta_select_policy_vht_s';
-	var obj_value;
-	var obj_value1;
-
-	if(bsd_steering_policy_bin[idx][2] == 0 && bsd_steering_policy_bin[idx][3] == 0)	//all
-		obj_value = 0;
-	else if(bsd_steering_policy_bin[idx][2] == 0 && bsd_steering_policy_bin[idx][3] == 1)	//ac only
-		obj_value = 1;
-	else if(bsd_steering_policy_bin[idx][2] == 1 && bsd_steering_policy_bin[idx][3] == 0)	//legacy
-		obj_value = 2;	
-
-	if(bsd_sta_select_policy_bin[idx][2] == 0 && bsd_sta_select_policy_bin[idx][3] == 0)	//all
-		obj_value1 = 0;
-	else if(bsd_sta_select_policy_bin[idx][2] == 0 && bsd_sta_select_policy_bin[idx][3] == 1)	//ac only
-		obj_value1 = 1;
-	else if(bsd_sta_select_policy_bin[idx][2] == 1 && bsd_sta_select_policy_bin[idx][3] == 0)	//legacy
-		obj_value1 = 2;	
-
-	if(obj.value == 1){
-		vht_desc = ["AC only"];
-		vht_value = [1];
-		add_options_x2(eval(obj_name), vht_desc, vht_value, 1);
-		add_options_x2(eval(obj_name1), vht_desc, vht_value, 1);
-	}else if(obj.value == 0){
-		vht_desc = ["<#All#>","AC only","not-allowed"];
-		vht_value = [0,1,2];
-		add_options_x2(eval(obj_name), vht_desc, vht_value, obj_value);
-		add_options_x2(eval(obj_name1), vht_desc, vht_value, obj_value1);
+function ifCapabilityChange(band, obj){
+	let cap_value = obj.value;
+	if(cap_value !== '0'){
+		document.querySelector('#wl'+ band +'_bsd_steering_vht_s').value = cap_value;
+		document.querySelector('#wl'+ band +'_bsd_steering_vht_s').disabled = true;
+		document.querySelector('#wl'+ band +'_bsd_sta_select_policy_vht_s').value = cap_value;
+		document.querySelector('#wl'+ band +'_bsd_sta_select_policy_vht_s').disabled = true;
 	}
-}
-
-function handle_bsd_nvram(){
-
-	var bsd_if_select_policy_idx = [];
-
-  for(i = start_band_idx; i < wl_info.wl_if_total; i++){
-	/* [bsd_steering_policy] - bsd_steering_policy setting */
-	set_bandutil_qualify_power(bsd_steering_policy[i][0],'wl'+i+'_bsd_steering_bandutil');
-	if(bsd_steering_policy_bin[i][6] == 0){
-		document.form['wl'+i+'_bsd_steering_balance'][1].checked = true;
-		change_lb(0,i);
-	}else{
-		document.form['wl'+i+'_bsd_steering_balance'][0].checked = true;
-		change_lb(1,i);
+	else{
+		document.querySelector('#wl'+ band +'_bsd_steering_vht_s').disabled = false;
+		document.querySelector('#wl'+ band +'_bsd_sta_select_policy_vht_s').disabled = false;
 	}
-	document.getElementById('wl'+i+'_bsd_steering_rssi').value = bsd_steering_policy[i][3];
-	document.form['wl'+i+'_bsd_steering_rssi_s'].value  = bsd_steering_policy_bin[i][1];
-	set_lg_power(bsd_steering_policy[i][4],'wl'+i+'_bsd_steering_phy_l',i);
-	document.getElementById('wl'+i+'_bsd_steering_phy_l').value = bsd_steering_policy[i][4];	
-	set_lg_power(bsd_steering_policy[i][5],'wl'+i+'_bsd_steering_phy_g',i);
-	document.getElementById('wl'+i+'_bsd_steering_phy_g').value = bsd_steering_policy[i][5];
-	if(bsd_steering_policy_bin[i][2] == 0 && bsd_steering_policy_bin[i][3] == 0)	//all
-		document.form['wl'+i+'_bsd_steering_vht_s'].value = 0;
-	else if(bsd_steering_policy_bin[i][2] == 0 && bsd_steering_policy_bin[i][3] == 1)	//ac only
-		document.form['wl'+i+'_bsd_steering_vht_s'].value = 1;
-	else if(bsd_steering_policy_bin[i][2] == 1 && bsd_steering_policy_bin[i][3] == 0)	//legacy
-		document.form['wl'+i+'_bsd_steering_vht_s'].value = 2;	
-
-	/* [bsd_sta_select_policy] - bsd_sta_select_policy setting */
-	document.getElementById('wl'+i+'_bsd_sta_select_policy_rssi').value = bsd_sta_select_policy[i][1];
-	document.form['wl'+i+'_bsd_sta_select_policy_rssi_s'].value  = bsd_sta_select_policy_bin[i][1];
-
-	set_lg_power(bsd_sta_select_policy[i][2],'wl'+i+'_bsd_sta_select_policy_phy_l',i);
-	document.getElementById('wl'+i+'_bsd_sta_select_policy_phy_l').value = bsd_sta_select_policy[i][2];
-	set_lg_power(bsd_sta_select_policy[i][3],'wl'+i+'_bsd_sta_select_policy_phy_g',i);
-	document.getElementById('wl'+i+'_bsd_sta_select_policy_phy_g').value = bsd_sta_select_policy[i][3];
-
-	if(bsd_sta_select_policy_bin[i][2] == 0 && bsd_sta_select_policy_bin[i][3] == 0)	//all
-		document.form['wl'+i+'_bsd_sta_select_policy_vht_s'].value = 0;
-	else if(bsd_sta_select_policy_bin[i][2] == 0 && bsd_sta_select_policy_bin[i][3] == 1)	//ac only
-		document.form['wl'+i+'_bsd_sta_select_policy_vht_s'].value = 1;
-	else if(bsd_sta_select_policy_bin[i][2] == 1 && bsd_sta_select_policy_bin[i][3] == 0)	//legacy
-		document.form['wl'+i+'_bsd_sta_select_policy_vht_s'].value = 2;	
-
-	if('<% nvram_get("smart_connect_x"); %>' != 2 && (wl_info.band5g_2_support || wl_info.band6g_support) && isSupport("triband") && !dwb_info.mode){
-		/* [Interface Select and Qualify Procedures] - bsd_if_qualify_policy setting*/
-		var bsd_if_select_policy_1st = wl_name[wl_ifnames.indexOf(bsd_if_select_policy[i][0])]; 
-		var bsd_if_select_policy_2nd = wl_name[wl_ifnames.indexOf(bsd_if_select_policy[i][1])]; 
-		bsd_if_select_policy_idx[i] = [bsd_if_select_policy_1st,bsd_if_select_policy_2nd];
-		document.form['wl'+i+'_bsd_if_select_policy_first'].value = wl_names[i].indexOf(bsd_if_select_policy_idx[i][0]);
-		document.form['wl'+i+'_bsd_if_select_policy_second'].value = (wl_names[i].indexOf(bsd_if_select_policy_idx[i][1]) == -1 ? 2:wl_names[i].indexOf(bsd_if_select_policy_idx[i][1]));
-		change_bsd_if_select(eval(document.form['wl'+i+'_bsd_if_select_policy_first']));
-	}
-	set_bandutil_qualify_power(bsd_if_qualify_policy[i][0],'wl'+i+'_bsd_if_qualify_policy');
-	document.getElementById('wl'+i+'_bsd_if_qualify_policy').value = bsd_if_qualify_policy[i][0];	
-
-	if(bsd_if_qualify_policy_bin[i][1] == 0 && bsd_if_qualify_policy_bin[i][2] == 0){	//all
-		document.form['wl'+i+'_bsd_if_qualify_policy_vht_s'].value = 0;
-		check_vht(eval(document.form['wl'+i+'_bsd_if_qualify_policy_vht_s']),i);
-	}else if(bsd_if_qualify_policy_bin[i][1] == 0 && bsd_if_qualify_policy_bin[i][2] == 1){	//ac only
-		document.form['wl'+i+'_bsd_if_qualify_policy_vht_s'].value = 1;
-		check_vht(eval(document.form['wl'+i+'_bsd_if_qualify_policy_vht_s']),i);
-	}
-  }		
-	/* [bounce detect] */
-	document.form.windows_time_sec.value = bsd_bounce_detect[0];
-	document.form.bsd_counts.value = bsd_bounce_detect[1];
-	document.form.dwell_time_sec.value = bsd_bounce_detect[2];
-
-}
-
-function change_bsd_if_select(obj){
-	var bws = new Array();
-	var bwsDesc = new Array();
-	bws = [0, 1, 2];
-	if(obj == document.form.wl0_bsd_if_select_policy_first){
-		if(band6g_support){
-			bwsDesc = ['5 GHz','6 GHz','none'];
-		}
-		else{
-			bwsDesc = ['5GHz-1','5GHz-2','none'];
-		}
-		
-		bws.splice(obj.value, 1);
-		bwsDesc.splice(obj.value, 1);
-		add_options_x2(document.form.wl0_bsd_if_select_policy_second, bwsDesc, bws, document.form.wl0_bsd_if_select_policy_second.value);
-	}else if(obj == document.form.wl1_bsd_if_select_policy_first){
-		if(band6g_support){
-			bwsDesc = ['6 GHz','2.4 GHz','none'];
-		}
-		else{
-			bwsDesc = ['5GHz-2','2.4GHz','none'];
-		}
-			
-		bws.splice(obj.value, 1);
-		bwsDesc.splice(obj.value, 1);
-		add_options_x2(document.form.wl1_bsd_if_select_policy_second, bwsDesc, bws, document.form.wl1_bsd_if_select_policy_second.value);		
-	}else if(obj == document.form.wl2_bsd_if_select_policy_first){
-		if(band6g_support){
-			bwsDesc = ['5 GHz','2.4 GHz','none'];
-		}
-		else{
-			bwsDesc = ['5GHz-1','2.4GHz','none'];
-		}
-		
-		bws.splice(obj.value, 1);
-		bwsDesc.splice(obj.value, 1);
-		add_options_x2(document.form.wl2_bsd_if_select_policy_second, bwsDesc, bws, document.form.wl2_bsd_if_select_policy_second.value);		
-	}
-}
-
-function reverse_bin(s){
-    return s.split("").reverse().join("");
-}
-
-function createBinaryString (nMask) {
-  // nMask must be between -2147483648 and 2147483647
-  for (var nFlag = 0, nShifted = nMask, sMask = ""; nFlag < 32;
-       nFlag++, sMask += String(nShifted >>> 31), nShifted <<= 1);
-  return sMask;
 }
 
 function applyRule(){
-	var bsd_steering_policy_bin_t = [];
-	var bsd_sta_select_policy_bin_t = [];
-	var bsd_if_qualify_policy_bin_t = [];
-  for(i = start_band_idx; i < wl_info.wl_if_total; i++){
-	/* [bsd_steering_policy] - [bw util%, x, x, RSSI threshold, phy rate, flag] */
-	bsd_steering_policy_bin_t[i] = bsd_steering_policy_bin[i].split("");
-	bsd_steering_policy[i][0] = document.form['wl'+i+'_bsd_steering_bandutil'].value;
-	bsd_steering_policy[i][3] = document.form['wl'+i+'_bsd_steering_rssi'].value;
-	bsd_steering_policy[i][4] = document.form['wl'+i+'_bsd_steering_phy_l'].value;
-	bsd_steering_policy[i][5] = document.form['wl'+i+'_bsd_steering_phy_g'].value;
-	bsd_steering_policy_bin_t[i][1] = document.form['wl'+i+'_bsd_steering_rssi_s'].value; 
-	bsd_steering_policy_bin_t[i][6] = document.form['wl'+i+'_bsd_steering_balance'].value;
-	if(document.form['wl'+i+'_bsd_steering_vht_s'].value == 0){
-		bsd_steering_policy_bin_t[i][2] = 0;
-		bsd_steering_policy_bin_t[i][3] = 0;
-	}else if(document.form['wl'+i+'_bsd_steering_vht_s'].value == 1){
-		bsd_steering_policy_bin_t[i][2] = 0;
-		bsd_steering_policy_bin_t[i][3] = 1;
-	}else if(document.form['wl'+i+'_bsd_steering_vht_s'].value == 2){
-		bsd_steering_policy_bin_t[i][2] = 1;
-		bsd_steering_policy_bin_t[i][3] = 0;
-	}
-
-	bsd_steering_policy[i][6] = '0x' + (parseInt(reverse_bin(bsd_steering_policy_bin_t[i].join("")),2)).toString(16);
-	if('<% nvram_get("smart_connect_x"); %>' != '2')
-		document.form['wl'+i+'_bsd_steering_policy'].value = bsd_steering_policy[i].toString().replace(/,/g,' ');
-	else
-		document.form['wl'+i+'_bsd_steering_policy_x'].value = bsd_steering_policy[i].toString().replace(/,/g,' ');
-
-	/* [bsd_sta_select_policy] - [x, RSSI, phy rate, x, x, x, x, x, x, flag] */
-	bsd_sta_select_policy_bin_t[i] = bsd_sta_select_policy_bin[i].split("");
-	bsd_sta_select_policy[i][1] = document.form['wl'+i+'_bsd_sta_select_policy_rssi'].value;
-	bsd_sta_select_policy[i][2] = document.form['wl'+i+'_bsd_sta_select_policy_phy_l'].value;
-	bsd_sta_select_policy[i][3] = document.form['wl'+i+'_bsd_sta_select_policy_phy_g'].value;
-	bsd_sta_select_policy_bin_t[i][1] = document.form['wl'+i+'_bsd_sta_select_policy_rssi_s'].value;
-	bsd_sta_select_policy_bin_t[i][6] = document.form['wl'+i+'_bsd_steering_balance'].value;
-
-	if(document.form['wl'+i+'_bsd_sta_select_policy_vht_s'].value == 0){
-		bsd_sta_select_policy_bin_t[i][2] = 0;
-		bsd_sta_select_policy_bin_t[i][3] = 0;
-	}else if(document.form['wl'+i+'_bsd_sta_select_policy_vht_s'].value == 1){
-		bsd_sta_select_policy_bin_t[i][2] = 0;
-		bsd_sta_select_policy_bin_t[i][3] = 1;
-	}else if(document.form['wl'+i+'_bsd_sta_select_policy_vht_s'].value == 2){
-		bsd_sta_select_policy_bin_t[i][2] = 1;
-		bsd_sta_select_policy_bin_t[i][3] = 0;
-	}
-
-	bsd_sta_select_policy[i][10] = '0x' + (parseInt(reverse_bin(bsd_sta_select_policy_bin_t[i].join("")),2)).toString(16);
-	if('<% nvram_get("smart_connect_x"); %>' != '2')
-		document.form['wl'+i+'_bsd_sta_select_policy'].value = bsd_sta_select_policy[i].toString().replace(/,/g,' ');	
-	else
-		document.form['wl'+i+'_bsd_sta_select_policy_x'].value = bsd_sta_select_policy[i].toString().replace(/,/g,' ');			
-
-	/* [Interface Select and Qualify Procedures] */
-	bsd_if_qualify_policy[i][0] = document.form['wl'+i+'_bsd_if_qualify_policy'].value;
-	bsd_if_qualify_policy_bin_t[i] = bsd_if_qualify_policy_bin[i].split("");
-	if(document.form['wl'+i+'_bsd_if_qualify_policy_vht_s'].value == 0){
-		bsd_if_qualify_policy_bin_t[i][1] = 0;
-		bsd_if_qualify_policy_bin_t[i][2] = 0;
-	}else if(document.form['wl'+i+'_bsd_if_qualify_policy_vht_s'].value == 1){
-		bsd_if_qualify_policy_bin_t[i][1] = 0;
-		bsd_if_qualify_policy_bin_t[i][2] = 1;
-  	}	
-  	bsd_if_qualify_policy[i][1] = '0x' + (parseInt(reverse_bin(bsd_if_qualify_policy_bin_t[i].join("")),2)).toString(16);
-  	if('<% nvram_get("smart_connect_x"); %>' != '2'){
-		document.form['wl'+i+'_bsd_if_qualify_policy'].value = bsd_if_qualify_policy[i].toString().replace(/,/g,' ');
-		if(isSupport("triband") && dwb_info.mode) {
-			document.form.wl0_bsd_if_select_policy.value = '<% nvram_default_get("wl0_bsd_if_select_policy"); %>';
-			document.form.wl1_bsd_if_select_policy.value = '<% nvram_default_get("wl1_bsd_if_select_policy"); %>';
-			document.form.wl2_bsd_if_select_policy.value = '<% nvram_default_get("wl2_bsd_if_select_policy"); %>';
+	for(let i=0; i<wl_info.wl_if_total; i++){
+		if(!isSmartConnectSelifBand(bandList[i])){
+			continue;
 		}
-		else {
-			if(wl_info.band5g_2_support || wl_info.band6g_support){
-				bsd_if_select_policy[i][0] = wl_ifnames[wl_name.indexOf(wl_names[i][document.form['wl'+i+'_bsd_if_select_policy_first'].value])];
-				bsd_if_select_policy[i][1] = wl_ifnames[wl_name.indexOf(wl_names[i][document.form['wl'+i+'_bsd_if_select_policy_second'].value])];
-				document.form['wl'+i+'_bsd_if_select_policy'].value = bsd_if_select_policy[i].toString().replace(/,/g,' ');
-			}else if(wl_info.band2g_support && wl_info.band5g_support && (!wl_info.band5g_2_support && !wl_info.band6g_support)){ //dual wan
-				document.form.wl0_bsd_if_select_policy.value = '<% nvram_default_get("wl0_bsd_if_select_policy"); %>';
-				document.form.wl1_bsd_if_select_policy.value = '<% nvram_default_get("wl1_bsd_if_select_policy"); %>';
+
+		let shift = get_wl_unit_by_band(bandList[i]);
+		/*
+			Steering policy
+			['Bandwidth Utilization', 'X', 'X', 'RSSI value', 'PHY rate less', 'PHY rate great', 'binary string']
+		*/
+		let bsd_steering_policy = variable['wl'+ i +'_bsd_steering_policy'].split(' ');
+		let load_balance_enable = document.querySelectorAll('[name=wl'+ i +'_bsd_steering_balance]')[0].checked;
+		if(!load_balance_enable){
+			bsd_steering_policy[0] = document.querySelector('#wl'+ i +'_bsd_steering_bandutil_t').value;
+			bsd_steering_policy[3] = document.querySelector('#wl'+ i +'_bsd_steering_rssi').value;
+			bsd_steering_policy[4] = document.querySelector('#wl'+ i +'_bsd_steering_phy_l_t').value;
+			bsd_steering_policy[5] = document.querySelector('#wl'+ i +'_bsd_steering_phy_g_t').value;
+		}
+		
+		bsd_steering_policy[6] = (function(){
+			let binary = parseInt(bsd_steering_policy[6], 16).toString(2);
+			while(binary.length<32){
+				binary = '0' + binary;
+			}
+
+			let binary_array = binary.split('');
+			let length = binary_array.length;
+			
+			if(load_balance_enable){
+				binary_array[length-7] = '1';
+			}
+			else{
+				binary_array[length-2] = document.querySelector('#wl'+ i +'_bsd_steering_rssi_s').value;	// RSSI
+				let cap_value = document.querySelector('#wl'+ i +'_bsd_steering_vht_s').value;
+				if(cap_value === '3'){
+					binary_array[length-12] = '1';
+				}
+				else if(cap_value === '4'){
+					binary_array[length-11] = '1';
+				}
+				else if(cap_value === '1'){
+					binary_array[length-4] = '1';
+				}
+				else if(cap_value === '2'){
+					binary_array[length-3] = '1';
+				}
+				else if(cap_value === '0'){
+					binary_array[length-12] = '0';
+					binary_array[length-11] = '0';
+					binary_array[length-4] = '0';
+					binary_array[length-3] = '0';
+				}
+			}
+
+			binary = binary_array.join('');
+			return '0x' + parseInt(binary, 2).toString(16);
+		})();
+
+		variable['wl'+ shift +'_bsd_steering_policy'] = bsd_steering_policy.join(' ');
+
+		/*
+			STA Selection Policy
+			['X', 'RSSI value', 'PHY rate less', 'PHY rate great', 'X', 'X', 'X', 'X', 'X', 'X', 'binary string']
+		*/
+		let bsd_sta_select_policy = variable[`wl${i}${subUnit}_bsd_sta_select_policy`].split(' ');
+		bsd_sta_select_policy[1] = document.querySelector('#wl'+ i +'_bsd_sta_select_policy_rssi').value;
+		bsd_sta_select_policy[2] = document.querySelector('#wl'+ i +'_bsd_sta_select_policy_phy_l_t').value;
+		bsd_sta_select_policy[3] = document.querySelector('#wl'+ i +'_bsd_sta_select_policy_phy_g_t').value;
+		bsd_sta_select_policy[10] = (function(){
+			let binary = parseInt(bsd_sta_select_policy[10], 16).toString(2);
+			while(binary.length<32){
+				binary = '0' + binary;
+			}
+
+			let binary_array = binary.split('');
+			let length = binary_array.length;
+
+			binary_array[length-2] = document.querySelector('#wl'+ i +'_bsd_sta_select_policy_rssi_s').value;	// RSSI
+			let cap_value = document.querySelector('#wl'+ i +'_bsd_sta_select_policy_vht_s').value;
+			if(cap_value === '3'){
+				binary_array[length-16] = '1';
+			}
+			else if(cap_value === '4'){
+				binary_array[length-15] = '1';
+			}
+			else if(cap_value === '1'){
+				binary_array[length-4] = '1';
+			}
+			else if(cap_value === '2'){
+				binary_array[length-3] = '1';
+			}
+			else if(cap_value === '0'){
+				binary_array[length-16] = '0';
+				binary_array[length-15] = '0';
+				binary_array[length-4] = '0';
+				binary_array[length-3] = '0';
+			}
+
+			binary = binary_array.join('');
+			return '0x' + parseInt(binary, 2).toString(16);
+		})();
+
+		variable[`wl${shift}${subUnit}_bsd_sta_select_policy`] = bsd_sta_select_policy.join(' ');
+		
+		/*
+			Interface Quality
+			['Bandwidth Utilization', 'binary', 'X']
+		*/
+		let bsd_if_qualify_policy = variable['wl'+ i +'_bsd_if_qualify_policy'].split(' ');
+		bsd_if_qualify_policy[0] =  document.querySelector('#wl'+ i +'_bsd_if_qualify_policy_t').value;
+		bsd_if_qualify_policy[1] =  (function(){
+			let binary = parseInt(bsd_if_qualify_policy[1], 16).toString(2);
+			while(binary.length<32){
+				binary = '0' + binary;
+			}
+
+			let binary_array = binary.split('');
+			let length = binary_array.length;
+
+			let cap_value = document.querySelector('#wl'+ i +'_bsd_if_qualify_policy_vht_s').value;
+			if(cap_value === '3'){				
+				binary_array[length-12] = '1';
+			}
+			else if(cap_value === '4'){
+				binary_array[length-11] = '1';
+			}
+			else if(cap_value === '1'){
+				binary_array[length-3] = '1';
+			}
+			else if(cap_value === '2'){
+				binary_array[length-2] = '1';
+			}
+			else if(cap_value === '0'){
+				binary_array[length-11] = '0';
+				binary_array[length-10] = '0';
+				binary_array[length-3] = '0';
+				binary_array[length-2] = '0';
+			}
+			
+			binary = binary_array.join('');
+			return '0x' + parseInt(binary, 2).toString(16);
+		})();
+
+		variable['wl'+ shift +'_bsd_if_qualify_policy'] = bsd_if_qualify_policy.join(' ');
+
+		let if_array = [];
+		if(isSmartConnectSelifBand(bandList[i])){
+			for(let j=1; j<wl_info.wl_if_total; j++){
+				if(document.querySelector('#wl'+ i +'_bsd_if_select_policy_'+ j) === null){
+					continue;
+				}
+
+				let string = document.querySelector('#wl'+ i +'_bsd_if_select_policy_'+ j).value;
+				if(string === 'none'){
+					continue;
+				}
+
+				if_array.push(string);
 			}
 		}
-	}else
-		document.form['wl'+i+'_bsd_if_qualify_policy_x'].value = bsd_if_qualify_policy[i].toString().replace(/,/g,' ');
+		
+		variable[`wl${shift}${subUnit}_bsd_if_select_policy`] = if_array.join(' ');
 
-  }
+		/*
+			Bounce Detect 
+			[Window Time, Counts, Dwell Time]
+		*/
+		let bounce_array = [document.querySelector('#windows_time_sec').value,
+							document.querySelector('#bsd_counts').value,
+							document.querySelector('#dwell_time_sec').value];
 
-	bsd_bounce_detect[0] = document.form.windows_time_sec.value;
-	bsd_bounce_detect[1] = document.form.bsd_counts.value;
-	bsd_bounce_detect[2] = document.form.dwell_time_sec.value;
-	if('<% nvram_get("smart_connect_x"); %>' != '2')
-		document.form.bsd_bounce_detect.value = bsd_bounce_detect.toString().replace(/,/g,' ');
-	else
-		document.form.bsd_bounce_detect_x.value = bsd_bounce_detect.toString().replace(/,/g,' ');
-
-	document.form.submit();
-
-}
-
-function restoreRule(){
-	if('<% nvram_get("smart_connect_x"); %>' == '2'){
-		document.form.wl1_bsd_steering_policy_x.value = '<% nvram_default_get("wl1_bsd_steering_policy_x"); %>';
-		document.form.wl2_bsd_steering_policy_x.value = '<% nvram_default_get("wl2_bsd_steering_policy_x"); %>';
-		document.form.wl1_bsd_sta_select_policy_x.value = '<% nvram_default_get("wl1_bsd_sta_select_policy_x"); %>';
-		document.form.wl2_bsd_sta_select_policy_x.value = '<% nvram_default_get("wl2_bsd_sta_select_policy_x"); %>';
-		document.form.wl1_bsd_if_select_policy_x.value = '<% nvram_default_get("wl1_bsd_if_select_policy_x"); %>';
-		document.form.wl2_bsd_if_select_policy_x.value = '<% nvram_default_get("wl2_bsd_if_select_policy_x"); %>';
-		document.form.wl1_bsd_if_qualify_policy_x.value = '<% nvram_default_get("wl1_bsd_if_qualify_policy_x"); %>';
-		document.form.wl2_bsd_if_qualify_policy_x.value = '<% nvram_default_get("wl2_bsd_if_qualify_policy_x"); %>';
-		document.form.bsd_bounce_detect_x.value = '<% nvram_default_get("bsd_bounce_detect_x"); %>';
-		document.form.bsd_ifnames_x.value = '<% nvram_default_get("bsd_ifnames_x"); %>';
-	}else{
-		document.form.wl0_bsd_steering_policy.value = '<% nvram_default_get("wl0_bsd_steering_policy"); %>';
-		document.form.wl1_bsd_steering_policy.value = '<% nvram_default_get("wl1_bsd_steering_policy"); %>';
-		document.form.wl2_bsd_steering_policy.value = '<% nvram_default_get("wl2_bsd_steering_policy"); %>';
-		document.form.wl0_bsd_sta_select_policy.value = '<% nvram_default_get("wl0_bsd_sta_select_policy"); %>';
-		document.form.wl1_bsd_sta_select_policy.value = '<% nvram_default_get("wl1_bsd_sta_select_policy"); %>';	
-		document.form.wl2_bsd_sta_select_policy.value = '<% nvram_default_get("wl2_bsd_sta_select_policy"); %>';
-		document.form.wl0_bsd_if_select_policy.value = '<% nvram_default_get("wl0_bsd_if_select_policy"); %>';
-		document.form.wl1_bsd_if_select_policy.value = '<% nvram_default_get("wl1_bsd_if_select_policy"); %>';
-		document.form.wl2_bsd_if_select_policy.value = '<% nvram_default_get("wl2_bsd_if_select_policy"); %>';
-		document.form.wl0_bsd_if_qualify_policy.value = '<% nvram_default_get("wl0_bsd_if_qualify_policy"); %>';
-		document.form.wl1_bsd_if_qualify_policy.value = '<% nvram_default_get("wl1_bsd_if_qualify_policy"); %>';
-		document.form.wl2_bsd_if_qualify_policy.value = '<% nvram_default_get("wl2_bsd_if_qualify_policy"); %>';
-		document.form.bsd_bounce_detect.value = '<% nvram_default_get("bsd_bounce_detect"); %>';
-		document.form.bsd_ifnames.value = '<% nvram_default_get("bsd_ifnames"); %>';
+		variable['bsd_bounce_detect'] = bounce_array.join(' ');
 	}
-	document.form.submit();
-}
 
-function register_event(){
-	$(function() {
-		$( "#slider_wl0_bsd_steering_bandutil" ).slider({
-			orientation: "horizontal",
-			range: "min",
-			min:0,
-			max: 100,
-			value:100,
-			slide:function(event, ui){
-				document.getElementById('wl0_bsd_steering_bandutil').value = ui.value; 
-				document.getElementById('wl0_bsd_steering_bandutil_t').innerHTML = ui.value;
-			},
-			stop:function(event, ui){
-				set_bandutil_qualify_power(ui.value,'wl0_bsd_steering_bandutil',0);	  
-			}
-		}); 		
-		$( "#slider_wl1_bsd_steering_bandutil" ).slider({
-			orientation: "horizontal",
-			range: "min",
-			min:0,
-			max: 100,
-			value:100,
-			slide:function(event, ui){
-				document.getElementById('wl1_bsd_steering_bandutil').value = ui.value; 
-				document.getElementById('wl1_bsd_steering_bandutil_t').innerHTML = ui.value;
-			},
-			stop:function(event, ui){
-				set_bandutil_qualify_power(ui.value,'wl1_bsd_steering_bandutil',1);  
-			}
-		}); 
-		$( "#slider_wl2_bsd_steering_bandutil" ).slider({
-			orientation: "horizontal",
-			range: "min",
-			min:0,
-			max: 100,
-			value:100,
-			slide:function(event, ui){
-				document.getElementById('wl2_bsd_steering_bandutil').value = ui.value; 
-				document.getElementById('wl2_bsd_steering_bandutil_t').innerHTML = ui.value;
-			},
-			stop:function(event, ui){
-				set_bandutil_qualify_power(ui.value,'wl2_bsd_steering_bandutil',0);  
-			}
-		}); 	
-		$( "#slider_wl0_bsd_steering_phy_l" ).slider({
-			orientation: "horizontal",
-			range: "min",
-			min:0,
-			max: (based_modelid == "RT-AC5300" || 
-				based_modelid == "GT-AC5300" || 
-				based_modelid == "RT-AC88U" ||
- 				based_modelid == "RT-AX88U" ||
-				based_modelid == "RT-AC3100" ||
-				based_modelid == "GT-AX11000" ||
-				based_modelid == "RT-AX92U" ||
-				based_modelid == "RT-AX95Q" ||
-				based_modelid == "XT8PRO" || based_modelid == "BT12" || based_modelid == "BT10" || based_modelid == "BQ16" || based_modelid == "BQ16_PRO" ||
-				based_modelid == "BM68" ||
-				based_modelid == "XT8_V2" ||
-				based_modelid == "RT-AXE95Q" ||
-				based_modelid == "ET8PRO" ||
-				based_modelid == "ET8_V2" ||
-				based_modelid == "RT-AX56_XD4" ||
-				based_modelid == "XD4PRO" ||
-                                based_modelid == "XC5" ||
-				based_modelid == "CT-AX56_XD4" ||
-				based_modelid == "EBA63" ||
-				based_modelid == "RT-AX58U" ||
-				based_modelid == "RT-AX58U_V2" ||
-				based_modelid == "BR63" ||
-				based_modelid == "RT-AX3000N" ||
-				based_modelid == "TUF-AX3000" ||
-				based_modelid == "TUF-AX3000_V2" ||
-				based_modelid == "TUF-AX5400" ||
-				based_modelid == "TUF-AX5400_V2" ||
-				based_modelid == "RT-AX5400" ||
-				based_modelid == "DSL-AX82U" ||
-				based_modelid == "RT-AX82U" ||
-				based_modelid == "RT-AX82U_V2" ||
-				based_modelid == "RT-AX56U" || 
-				based_modelid == "RT-AX86U" || based_modelid == "RT-AX68U" || based_modelid == "RT-AC68U_V4" ||
-				based_modelid == "RT-AX86U_PRO" ||
-				based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" ||
-				based_modelid == "RT-AXE7800" || based_modelid == "GT10" || based_modelid == "RT-AX9000" ||
-				based_modelid == "GT-AXE11000" ||
-				based_modelid == "GT-AX6000" ||
-				based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || 
-				based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" ||
-				based_modelid == "RT-AX88U_PRO" || based_modelid == "RT-BE96U" || based_modelid == "GT-BE96" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" ||
-				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U"
-				)?1000:600,
-			value:1,
-			slide:function(event, ui){
-				document.getElementById('wl0_bsd_steering_phy_l').value = ui.value; 
-				document.getElementById('wl0_bsd_steering_phy_l_t').innerHTML = ui.value; 
-			},
-			stop:function(event, ui){
-				set_lg_power(ui.value,'wl0_bsd_steering_phy_l',0);	  
-			}
-		}); 	
-		$( "#slider_wl0_bsd_steering_phy_g" ).slider({
-			orientation: "horizontal",
-			range: "min",
-			min:0,
-			max: (based_modelid == "RT-AC5300" || 
-				based_modelid == "GT-AC5300" || 
-				based_modelid == "RT-AC88U" ||
-				based_modelid == "RT-AX88U" ||
-				based_modelid == "RT-AC86U" ||
-				based_modelid == "GT-AC2900" ||
-				based_modelid == "RT-AC3100" ||
-				based_modelid == "GT-AX11000" ||
-				based_modelid == "RT-AX92U" ||
-				based_modelid == "RT-AX95Q" ||
-				based_modelid == "XT8PRO" || based_modelid == "BT12" || based_modelid == "BT10" || based_modelid == "BQ16" || based_modelid == "BQ16_PRO" ||
-				based_modelid == "BM68" ||
-				based_modelid == "XT8_V2" ||
-				based_modelid == "RT-AXE95Q" ||
-				based_modelid == "ET8PRO" ||
-				based_modelid == "ET8_V2" ||
-				based_modelid == "RT-AX56_XD4" ||
-				based_modelid == "XD4PRO" ||
-                                based_modelid == "XC5" ||
-				based_modelid == "CT-AX56_XD4" ||
-				based_modelid == "EBA63" ||
-				based_modelid == "RT-AX58U" ||
-				based_modelid == "RT-AX58U_V2" ||
-				based_modelid == "BR63" ||
-				based_modelid == "RT-AX3000N" ||
-				based_modelid == "TUF-AX3000" ||
-				based_modelid == "TUF-AX3000_V2" ||
-				based_modelid == "TUF-AX5400" ||
-				based_modelid == "TUF-AX5400_V2" ||
-				based_modelid == "RT-AX5400" ||
-				based_modelid == "DSL-AX82U" ||
-				based_modelid == "RT-AX82U" ||
-				based_modelid == "RT-AX82U_V2" ||
-				based_modelid == "RT-AX56U" ||
-				based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" ||
-				based_modelid == "RT-AX86U" || based_modelid == "RT-AX68U" || based_modelid == "RT-AC68U_V4" ||
-				based_modelid == "RT-AXE7800" || based_modelid == "GT10" || based_modelid == "RT-AX9000" ||
-				based_modelid == "RT-AX86U_PRO" ||
-				based_modelid == "GT-AXE11000" ||
-				based_modelid == "GT-AX6000" ||
-				based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || 
-				based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" ||
-				based_modelid == "RT-AX88U_PRO" || based_modelid == "RT-BE96U" || based_modelid == "GT-BE96" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" ||
-				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U"
-				)?1000:600,
-			value:1,
-			slide:function(event, ui){
-				document.getElementById('wl0_bsd_steering_phy_g').value = ui.value; 
-				document.getElementById('wl0_bsd_steering_phy_g_t').innerHTML = ui.value; 
-			},
-			stop:function(event, ui){
-				set_lg_power(ui.value,'wl0_bsd_steering_phy_g',0);	  
-			}
-		}); 			
-		$( "#slider_wl1_bsd_steering_phy_l" ).slider({
-			orientation: "horizontal",
-			range: "min",
-			min:0,
-			max: (based_modelid == "RT-AC5300" || 
-				based_modelid == "GT-AC5300" || 
-				based_modelid == "RT-AC88U" ||
-				based_modelid == "RT-AX88U" ||
-				based_modelid == "RT-AC86U" ||
-				based_modelid == "GT-AC2900" ||
-				based_modelid == "RT-AC3100" ||
-				based_modelid == "GT-AX11000" ||
-				based_modelid == "RT-AX92U" ||
-				based_modelid == "RT-AX95Q" ||
-				based_modelid == "XT8PRO" || based_modelid == "BT12" || based_modelid == "BT10" || based_modelid == "BQ16" || based_modelid == "BQ16_PRO" ||
-				based_modelid == "BM68" ||
-				based_modelid == "XT8_V2" ||
-				based_modelid == "RT-AXE95Q" ||
-				based_modelid == "ET8PRO" ||
-				based_modelid == "ET8_V2" ||
-				based_modelid == "RT-AX56_XD4" ||
-				based_modelid == "XD4PRO" ||
-                                based_modelid == "XC5" ||
-				based_modelid == "CT-AX56_XD4" ||
-				based_modelid == "EBA63" ||
-				based_modelid == "RT-AX58U" ||
-				based_modelid == "RT-AX58U_V2" ||
-				based_modelid == "BR63" ||
-				based_modelid == "RT-AX3000N" ||
-				based_modelid == "TUF-AX3000" ||
-				based_modelid == "TUF-AX3000_V2" ||
-				based_modelid == "TUF-AX5400" ||
-				based_modelid == "TUF-AX5400_V2" ||
-				based_modelid == "RT-AX5400" ||
-				based_modelid == "DSL-AX82U" ||
-				based_modelid == "RT-AX82U" ||
-				based_modelid == "RT-AX82U_V2" ||
-				based_modelid == "RT-AX56U"	||
-				based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" ||
-				based_modelid == "RT-AX86U" || based_modelid == "RT-AX68U" || based_modelid == "RT-AC68U_V4" ||
-				based_modelid == "RT-AXE7800" || based_modelid == "GT10" || based_modelid == "RT-AX9000" ||
-				based_modelid == "RT-AX86U_PRO" ||
-				based_modelid == "GT-AXE11000" ||
-				based_modelid == "GT-AX6000" ||
-				based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || 
-				based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" ||
-				based_modelid == "RT-AX88U_PRO" || based_modelid == "RT-BE96U" || based_modelid == "GT-BE96" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" ||
-				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U"
-				)?2167:1300,
-			value:1,
-			slide:function(event, ui){
-				document.getElementById('wl1_bsd_steering_phy_l').value = ui.value; 
-				document.getElementById('wl1_bsd_steering_phy_l_t').innerHTML = ui.value; 
-			},
-			stop:function(event, ui){
-				set_lg_power(ui.value,'wl1_bsd_steering_phy_l',1);	  
-			}
-		}); 	
-		$( "#slider_wl1_bsd_steering_phy_g" ).slider({
-			orientation: "horizontal",
-			range: "min",
-			min:0,
-			max: (based_modelid == "RT-AC5300" || 
-				based_modelid == "GT-AC5300" || 
-				based_modelid == "RT-AC88U" ||
-				based_modelid == "RT-AX88U" ||
-				based_modelid == "RT-AC86U" ||
-				based_modelid == "GT-AC2900" ||
-				based_modelid == "RT-AC3100" ||
-				based_modelid == "GT-AX11000" ||
-				based_modelid == "RT-AX92U" ||
-				based_modelid == "RT-AX95Q" ||
-				based_modelid == "XT8PRO" || based_modelid == "BT12" || based_modelid == "BT10" || based_modelid == "BQ16" || based_modelid == "BQ16_PRO" ||
-				based_modelid == "BM68" ||
-				based_modelid == "XT8_V2" ||
-				based_modelid == "RT-AXE95Q" ||
-				based_modelid == "ET8PRO" ||
-				based_modelid == "ET8_V2" ||
-				based_modelid == "RT-AX56_XD4" ||
-				based_modelid == "XD4PRO" ||
-                                based_modelid == "XC5" ||
-				based_modelid == "CT-AX56_XD4" ||
-				based_modelid == "EBA63" ||
-				based_modelid == "RT-AX58U" ||
-				based_modelid == "RT-AX58U_V2" ||
-				based_modelid == "BR63" ||
-				based_modelid == "RT-AX3000N" ||
-				based_modelid == "TUF-AX3000" ||
-				based_modelid == "TUF-AX3000_V2" ||
-				based_modelid == "TUF-AX5400" ||
-				based_modelid == "TUF-AX5400_V2" ||
-				based_modelid == "RT-AX5400" ||
-				based_modelid == "DSL-AX82U" ||
-				based_modelid == "RT-AX82U" ||
-				based_modelid == "RT-AX82U_V2" ||
-				based_modelid == "RT-AX56U"	||
-				based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" ||
-				based_modelid == "RT-AX86U" || based_modelid == "RT-AX68U" || based_modelid == "RT-AC68U_V4" ||
-				based_modelid == "RT-AXE7800" || based_modelid == "GT10" || based_modelid == "RT-AX9000" ||
-				based_modelid == "RT-AX86U_PRO" ||
-				based_modelid == "GT-AXE11000" ||
-				based_modelid == "GT-AX6000" ||
-				based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || 
-				based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" ||
-				based_modelid == "RT-AX88U_PRO" || based_modelid == "RT-BE96U" || based_modelid == "GT-BE96" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" ||
-				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U"
-				)?2167:1300,
-			value:1,
-			slide:function(event, ui){
-				document.getElementById('wl1_bsd_steering_phy_g').value = ui.value; 
-				document.getElementById('wl1_bsd_steering_phy_g_t').innerHTML = ui.value; 
-			},
-			stop:function(event, ui){
-				set_lg_power(ui.value,'wl1_bsd_steering_phy_g',1);	  
-			}
-		}); 		
-		$( "#slider_wl2_bsd_steering_phy_l" ).slider({
-			orientation: "horizontal",
-			range: "min",
-			min:0,
-			max: (based_modelid == "RT-AC5300" || 
-				based_modelid == "GT-AC5300" || 
-				based_modelid == "RT-AC88U" ||
-				based_modelid == "RT-AX88U" ||
-				based_modelid == "RT-AC86U" ||
-				based_modelid == "GT-AC2900" ||
-				based_modelid == "RT-AC3100" ||
-				based_modelid == "GT-AX11000" ||
-				based_modelid == "RT-AX92U" ||
-				based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "BT12" || based_modelid == "BT10" || based_modelid == "BQ16" || based_modelid == "BQ16_PRO" || based_modelid == "BM68" || based_modelid == "XT8_V2" || based_modelid == "RT-AXE95Q" || based_modelid == "ET8PRO" || based_modelid == "ET8_V2"
-				|| based_modelid == "RT-AX86U" || based_modelid == "RT-AX68U" || based_modelid == "RT-AC68U_V4" ||
-				based_modelid == "RT-AXE7800" || based_modelid == "GT10" || based_modelid == "RT-AX9000" ||
-				based_modelid == "GT-AXE11000" ||
-				based_modelid == "GT-AX6000" ||
-				based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" || based_modelid == "RT-BE96U" || based_modelid == "GT-BE96" || based_modelid == "GT-BE19000"
-				)?2167:1300,
-			value:1,
-			slide:function(event, ui){
-				document.getElementById('wl2_bsd_steering_phy_l').value = ui.value; 
-				document.getElementById('wl2_bsd_steering_phy_l_t').innerHTML = ui.value; 
-			},
-			stop:function(event, ui){
-				set_lg_power(ui.value,'wl2_bsd_steering_phy_l',2);	  
-			}
-		}); 	
-		$( "#slider_wl2_bsd_steering_phy_g" ).slider({
-			orientation: "horizontal",
-			range: "min",
-			min:0,
-			max: (based_modelid == "RT-AC5300" || 
-				based_modelid == "GT-AC5300" || 
-				based_modelid == "RT-AC88U" ||
-				based_modelid == "RT-AX88U" ||
-				based_modelid == "RT-AC86U" ||
-				based_modelid == "GT-AC2900" ||
-				based_modelid == "RT-AC3100" ||
-				based_modelid == "GT-AX11000" ||
-				based_modelid == "RT-AX92U" ||
-				based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "BT12" || based_modelid == "BT10" || based_modelid == "BQ16" || based_modelid == "BQ16_PRO" || based_modelid == "BM68" || based_modelid == "XT8_V2" || based_modelid == "RT-AXE95Q" || based_modelid == "ET8PRO" || based_modelid == "ET8_V2"
-				|| based_modelid == "RT-AX86U" || based_modelid == "RT-AX68U" || based_modelid == "RT-AC68U_V4" ||
-				based_modelid == "RT-AXE7800" || based_modelid == "GT10" || based_modelid == "RT-AX9000" ||
-				based_modelid == "GT-AXE11000" ||
-				based_modelid == "GT-AX6000" ||
-				based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" || based_modelid == "RT-BE96U" || based_modelid == "GT-BE96" || based_modelid == "GT-BE19000"
-				)?2167:1300,
-			value:1,
-			slide:function(event, ui){
-				document.getElementById('wl2_bsd_steering_phy_g').value = ui.value; 
-				document.getElementById('wl2_bsd_steering_phy_g_t').innerHTML = ui.value; 
-			},
-			stop:function(event, ui){
-				set_lg_power(ui.value,'wl2_bsd_steering_phy_g',2);	  
-			}
-		}); 			
-		$( "#slider_wl0_bsd_sta_select_policy_phy_l" ).slider({
-			orientation: "horizontal",
-			range: "min",
-			min:0,
-			max: (based_modelid == "RT-AC5300" || 
-				based_modelid == "GT-AC5300" || 
-				based_modelid == "RT-AC88U" ||
-				based_modelid == "RT-AX88U" ||
-				based_modelid == "RT-AC86U" ||
-				based_modelid == "GT-AC2900" ||
-				based_modelid == "RT-AC3100" ||
-				based_modelid == "GT-AX11000" ||
-				based_modelid == "RT-AX92U" ||
-				based_modelid == "RT-AX95Q" ||
-				based_modelid == "XT8PRO" || based_modelid == "BT12" || based_modelid == "BT10" || based_modelid == "BQ16" || based_modelid == "BQ16_PRO" ||
-				based_modelid == "BM68" ||
-				based_modelid == "XT8_V2" ||
-				based_modelid == "RT-AXE95Q" ||
-				based_modelid == "ET8PRO" ||
-				based_modelid == "ET8_V2" ||
-				based_modelid == "RT-AX56_XD4" ||
-				based_modelid == "XD4PRO" ||
-                                based_modelid == "XC5" ||
-				based_modelid == "CT-AX56_XD4" ||
-				based_modelid == "EBA63" ||
-				based_modelid == "RT-AX58U" ||
-				based_modelid == "RT-AX58U_V2" ||
-				based_modelid == "BR63" ||
-				based_modelid == "RT-AX3000N" ||
-				based_modelid == "TUF-AX3000" ||
-				based_modelid == "TUF-AX3000_V2" ||
-				based_modelid == "TUF-AX5400" ||
-				based_modelid == "TUF-AX5400_V2" ||
-				based_modelid == "RT-AX5400" ||
-				based_modelid == "DSL-AX82U" ||
-				based_modelid == "RT-AX82U" ||
-				based_modelid == "RT-AX82U_V2" ||
-				based_modelid == "RT-AX56U"	||
-				based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" ||
-				based_modelid == "RT-AX86U" || based_modelid == "RT-AX68U" || based_modelid == "RT-AC68U_V4" ||
-				based_modelid == "RT-AXE7800" || based_modelid == "GT10" || based_modelid == "RT-AX9000" ||
-				based_modelid == "RT-AX86U_PRO" ||
-				based_modelid == "GT-AXE11000" ||
-				based_modelid == "GT-AX6000" ||
-				based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || 
-				based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" ||
-				based_modelid == "RT-AX88U_PRO" || based_modelid == "RT-BE96U" || based_modelid == "GT-BE96" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" ||
-				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-E92U" || based_modelid == "RT-BE95U"
-				)?1000:600,
-			value:1,
-			slide:function(event, ui){
-				document.getElementById('wl0_bsd_sta_select_policy_phy_l').value = ui.value; 
-				document.getElementById('wl0_bsd_sta_select_policy_phy_l_t').innerHTML = ui.value; 
-			},
-			stop:function(event, ui){
-				set_lg_power(ui.value,'wl0_bsd_sta_select_policy_phy_l',0);	  
-			}
-		}); 
-		$( "#slider_wl0_bsd_sta_select_policy_phy_g" ).slider({
-			orientation: "horizontal",
-			range: "min",
-			min:0,
-			max: (based_modelid == "RT-AC5300" || 
-				based_modelid == "GT-AC5300" || 
-				based_modelid == "RT-AC88U" ||
-				based_modelid == "RT-AX88U" ||
-				based_modelid == "RT-AC86U" ||
-				based_modelid == "GT-AC2900" ||
-				based_modelid == "RT-AC3100" ||
-				based_modelid == "GT-AX11000" ||
-				based_modelid == "RT-AX92U" ||
-				based_modelid == "RT-AX95Q" ||
-				based_modelid == "XT8PRO" || based_modelid == "BT12" || based_modelid == "BT10" || based_modelid == "BQ16" || based_modelid == "BQ16_PRO" ||
-				based_modelid == "BM68" ||
-				based_modelid == "XT8_V2" ||
-				based_modelid == "RT-AXE95Q" ||
-				based_modelid == "ET8PRO" ||
-				based_modelid == "ET8_V2" ||
-				based_modelid == "RT-AX56_XD4" ||
-				based_modelid == "XD4PRO" ||
-                                based_modelid == "XC5" ||
-				based_modelid == "CT-AX56_XD4" ||
-				based_modelid == "EBA63" ||
-				based_modelid == "RT-AX58U" ||
-				based_modelid == "RT-AX58U_V2" ||
-				based_modelid == "BR63" ||
-				based_modelid == "RT-AX3000N" ||
-				based_modelid == "TUF-AX3000" ||
-				based_modelid == "TUF-AX3000_V2" ||
-				based_modelid == "TUF-AX5400" ||
-				based_modelid == "TUF-AX5400_V2" ||
-				based_modelid == "RT-AX5400" ||
-				based_modelid == "DSL-AX82U" ||
-				based_modelid == "RT-AX82U" ||
-				based_modelid == "RT-AX82U_V2" ||
-				based_modelid == "RT-AX56U"	||
-				based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" ||
-				based_modelid == "RT-AX86U" || based_modelid == "RT-AX68U" || based_modelid == "RT-AC68U_V4" ||
-				based_modelid == "RT-AXE7800" || based_modelid == "GT10" || based_modelid == "RT-AX9000" ||
-				based_modelid == "RT-AX86U_PRO" ||
-				based_modelid == "GT-AXE11000" ||
-				based_modelid == "GT-AX6000" ||
-				based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || 
-				based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" ||
-				based_modelid == "RT-AX88U_PRO" || based_modelid == "RT-BE96U" || based_modelid == "GT-BE96" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" ||
-				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U"
-				)?1000:600,
-			value:1,
-			slide:function(event, ui){
-				document.getElementById('wl0_bsd_sta_select_policy_phy_g').value = ui.value; 
-				document.getElementById('wl0_bsd_sta_select_policy_phy_g_t').innerHTML = ui.value; 
-			},
-			stop:function(event, ui){
-				set_lg_power(ui.value,'wl0_bsd_sta_select_policy_phy_g',0);	  
-			}
-		}); 		
-		$( "#slider_wl1_bsd_sta_select_policy_phy_l" ).slider({
-			orientation: "horizontal",
-			range: "min",
-			min:0,
-			max: (based_modelid == "RT-AC5300" || 
-				based_modelid == "GT-AC5300" || 
-				based_modelid == "RT-AC88U" ||
-				based_modelid == "RT-AX88U" ||
-				based_modelid == "RT-AC86U" ||
-				based_modelid == "GT-AC2900" ||
-				based_modelid == "RT-AC3100" ||
-				based_modelid == "GT-AX11000" ||
-				based_modelid == "RT-AX92U" ||
-				based_modelid == "RT-AX95Q" ||
-				based_modelid == "XT8PRO" || based_modelid == "BT12" || based_modelid == "BT10" || based_modelid == "BQ16" || based_modelid == "BQ16_PRO" ||
-				based_modelid == "BM68" ||
-				based_modelid == "XT8_V2" ||
-				based_modelid == "RT-AXE95Q" ||
-				based_modelid == "ET8PRO" ||
-				based_modelid == "ET8_V2" ||
-				based_modelid == "RT-AX56_XD4" ||
-				based_modelid == "XD4PRO" ||
-                                based_modelid == "XC5" ||
-				based_modelid == "CT-AX56_XD4" ||
-				based_modelid == "EBA63" ||
-				based_modelid == "RT-AX58U" ||
-				based_modelid == "RT-AX58U_V2" ||
-				based_modelid == "BR63" ||
-				based_modelid == "RT-AX3000N" ||
-				based_modelid == "TUF-AX3000" ||
-				based_modelid == "TUF-AX3000_V2" ||
-				based_modelid == "TUF-AX5400" ||
-				based_modelid == "TUF-AX5400_V2" ||
-				based_modelid == "RT-AX5400" ||
-				based_modelid == "DSL-AX82U" ||
-				based_modelid == "RT-AX82U" ||
-				based_modelid == "RT-AX82U_V2" ||
-				based_modelid == "RT-AX56U"	||
-				based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" ||
-				based_modelid == "RT-AX86U" || based_modelid == "RT-AX68U" || based_modelid == "RT-AC68U_V4" ||
-				based_modelid == "RT-AXE7800" || based_modelid == "GT10" || based_modelid == "RT-AX9000" ||
-				based_modelid == "RT-AX86U_PRO" ||
-				based_modelid == "GT-AXE11000" ||
-				based_modelid == "GT-AX6000" ||
-				based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || 
-				based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" ||
-				based_modelid == "RT-AX88U_PRO" || based_modelid == "RT-BE96U" || based_modelid == "GT-BE96" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" ||
-				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U"
-				)?2167:1300,
-			value:1,
-			slide:function(event, ui){
-				document.getElementById('wl1_bsd_sta_select_policy_phy_l').value = ui.value; 
-				document.getElementById('wl1_bsd_sta_select_policy_phy_l_t').innerHTML = ui.value; 
-			},
-			stop:function(event, ui){
-				set_lg_power(ui.value,'wl1_bsd_sta_select_policy_phy_l',1);	  
-			}
-		}); 		
-		$( "#slider_wl1_bsd_sta_select_policy_phy_g" ).slider({
-			orientation: "horizontal",
-			range: "min",
-			min:0,
-			max: (based_modelid == "RT-AC5300" || 
-				based_modelid == "GT-AC5300" || 
-				based_modelid == "RT-AC88U" ||
-				based_modelid == "RT-AX88U" ||
-				based_modelid == "RT-AC86U" ||
-				based_modelid == "GT-AC2900" ||
-				based_modelid == "RT-AC3100" ||
-				based_modelid == "GT-AX11000" ||
-				based_modelid == "RT-AX92U" ||
-				based_modelid == "RT-AX95Q" ||
-				based_modelid == "XT8PRO" || based_modelid == "BT12" || based_modelid == "BT10" || based_modelid == "BQ16" || based_modelid == "BQ16_PRO" ||
-				based_modelid == "BM68" ||
-				based_modelid == "XT8_V2" ||
-				based_modelid == "RT-AXE95Q" ||
-				based_modelid == "ET8PRO" ||
-				based_modelid == "ET8_V2" ||
-				based_modelid == "RT-AX56_XD4" ||
-				based_modelid == "XD4PRO" ||
-                                based_modelid == "XC5" ||
-				based_modelid == "CT-AX56_XD4" ||
-				based_modelid == "EBA63" ||
-				based_modelid == "RT-AX58U" ||
-				based_modelid == "RT-AX58U_V2" ||
-				based_modelid == "BR63" ||
-				based_modelid == "RT-AX3000N" ||
-				based_modelid == "TUF-AX3000" ||
-				based_modelid == "TUF-AX3000_V2" ||
-				based_modelid == "TUF-AX5400" ||
-				based_modelid == "TUF-AX5400_V2" ||
-				based_modelid == "RT-AX5400" ||
-				based_modelid == "DSL-AX82U" ||
-				based_modelid == "RT-AX82U" ||
-				based_modelid == "RT-AX82U_V2" ||
-				based_modelid == "RT-AX56U"	||
-				based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" ||
-				based_modelid == "RT-AX86U" || based_modelid == "RT-AX68U" || based_modelid == "RT-AC68U_V4" ||
-				based_modelid == "RT-AXE7800" || based_modelid == "GT10" || based_modelid == "RT-AX9000" ||
-				based_modelid == "RT-AX86U_PRO" ||
-				based_modelid == "GT-AXE11000" ||
-				based_modelid == "GT-AX6000" ||
-				based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || 
-				based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" ||
-				based_modelid == "RT-AX88U_PRO" || based_modelid == "RT-BE96U" || based_modelid == "GT-BE96" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" ||
-				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U"
-				)?2167:1300,
-			value:1,
-			slide:function(event, ui){
-				document.getElementById('wl1_bsd_sta_select_policy_phy_g').value = ui.value; 
-				document.getElementById('wl1_bsd_sta_select_policy_phy_g_t').innerHTML = ui.value; 
-			},
-			stop:function(event, ui){
-				set_lg_power(ui.value,'wl1_bsd_sta_select_policy_phy_g',1);	  
-			}
-		}); 				
-		$( "#slider_wl2_bsd_sta_select_policy_phy_l" ).slider({
-			orientation: "horizontal",
-			range: "min",
-			min:0,
-			max: (based_modelid == "RT-AC5300" || 
-				based_modelid == "GT-AC5300" || 
-				based_modelid == "RT-AC88U" ||
-				based_modelid == "RT-AX88U" ||
-				based_modelid == "RT-AC86U" ||
-				based_modelid == "GT-AC2900" ||
-				based_modelid == "RT-AC3100" ||
-				based_modelid == "GT-AX11000" ||
-				based_modelid == "RT-AX92U" ||
-				based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "BT12" || based_modelid == "BT10" || based_modelid == "BQ16" || based_modelid == "BQ16_PRO" || based_modelid == "BM68" || based_modelid == "XT8_V2" || based_modelid == "RT-AXE95Q" || based_modelid == "ET8PRO" || based_modelid == "ET8_V2"
-				|| based_modelid == "RT-AX86U" || based_modelid == "RT-AX68U" || based_modelid == "RT-AC68U_V4" ||
-				based_modelid == "RT-AXE7800" || based_modelid == "GT10" || based_modelid == "RT-AX9000" ||
-				based_modelid == "GT-AXE11000" ||
-				based_modelid == "GT-AX6000" ||
-				based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" || based_modelid == "RT-BE96U" || based_modelid == "GT-BE96" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" ||
-				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U"
-				)?2167:1300,
-			value:1,
-			slide:function(event, ui){
-				document.getElementById('wl2_bsd_sta_select_policy_phy_l').value = ui.value; 
-				document.getElementById('wl2_bsd_sta_select_policy_phy_l_t').innerHTML = ui.value; 
-			},
-			stop:function(event, ui){
-				set_lg_power(ui.value,'wl2_bsd_sta_select_policy_phy_l',2);	  
-			}
-		}); 	
-		$( "#slider_wl2_bsd_sta_select_policy_phy_g" ).slider({
-			orientation: "horizontal",
-			range: "min",
-			min:0,
-			max: (based_modelid == "RT-AC5300" || 
-				based_modelid == "GT-AC5300" || 
-				based_modelid == "RT-AC88U" ||
-				based_modelid == "RT-AX88U" ||
-				based_modelid == "RT-AC86U" ||
-				based_modelid == "GT-AC2900" ||
-				based_modelid == "RT-AC3100" ||
-				based_modelid == "GT-AX11000" ||
-				based_modelid == "RT-AX92U" ||
-				based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "BT12" || based_modelid == "BT10" || based_modelid == "BQ16" || based_modelid == "BQ16_PRO" || based_modelid == "BM68" || based_modelid == "XT8_V2" || based_modelid == "RT-AXE95Q" || based_modelid == "ET8PRO" || based_modelid == "ET8_V2"
-				|| based_modelid == "RT-AX86U" || based_modelid == "RT-AX68U" || based_modelid == "RT-AC68U_V4" ||
-				based_modelid == "RT-AXE7800" || based_modelid == "GT10" || based_modelid == "RT-AX9000" ||
-				based_modelid == "GT-AXE11000" ||
-				based_modelid == "GT-AX6000" ||
-				based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" || based_modelid == "RT-BE96U" || based_modelid == "GT-BE96" || based_modelid == "GT-BE19000"
-				)?2167:1300,
-			value:1,
-			slide:function(event, ui){
-				document.getElementById('wl2_bsd_sta_select_policy_phy_g').value = ui.value; 
-				document.getElementById('wl2_bsd_sta_select_policy_phy_g_t').innerHTML = ui.value; 
-			},
-			stop:function(event, ui){
-				set_lg_power(ui.value,'wl2_bsd_sta_select_policy_phy_g',2); 
-			}
-		}); 		
-		$( "#slider_wl0_bsd_if_qualify_policy" ).slider({
-			orientation: "horizontal",
-			range: "min",
-			min:0,
-			max: 100,
-			value:100,
-			slide:function(event, ui){
-				document.getElementById('wl0_bsd_if_qualify_policy').value = ui.value; 
-				document.getElementById('wl0_bsd_if_qualify_policy_t').innerHTML = ui.value; 
-			},
-			stop:function(event, ui){
-				set_bandutil_qualify_power(ui.value,'wl0_bsd_if_qualify_policy');	  
-			}
-		}); 	
-		$( "#slider_wl1_bsd_if_qualify_policy" ).slider({
-			orientation: "horizontal",
-			range: "min",
-			min:0,
-			max: 100,
-			value:100,
-			slide:function(event, ui){
-				document.getElementById('wl1_bsd_if_qualify_policy').value = ui.value; 
-				document.getElementById('wl1_bsd_if_qualify_policy_t').innerHTML = ui.value; 
-			},
-			stop:function(event, ui){
-				set_bandutil_qualify_power(ui.value,'wl1_bsd_if_qualify_policy');	  
-			}
-		}); 
-		$( "#slider_wl2_bsd_if_qualify_policy" ).slider({
-			orientation: "horizontal",
-			range: "min",
-			min:0,
-			max: 100,
-			value:100,
-			slide:function(event, ui){
-				document.getElementById('wl2_bsd_if_qualify_policy').value = ui.value; 
-				document.getElementById('wl2_bsd_if_qualify_policy_t').innerHTML = ui.value; 
-			},
-			stop:function(event, ui){
-				set_bandutil_qualify_power(ui.value,'wl2_bsd_if_qualify_policy');	  
-			}
-		}); 							
+	variable['action_mode'] = 'apply';
+	variable['rc_service'] = 'restart_wireless';
+	httpApi.nvramSet(variable, function(){
+		showLoading(10);
+		setTimeout(function(){
+			location.reload();
+		}, 10000);
+		
 	});
 }
 
-function check_power(power_value,flag){
+function restoreRule(){
+	let array = ['bsd_bounce_detect'];
+	let restoreData = [];
+	for(let i=0; i<wl_info.wl_if_total; i++){
+		let temp = [
+			`wl${i}${subUnit}_bsd_sta_select_policy`,
+			`wl${i}${subUnit}_bsd_if_select_policy`,
+			`wl${i}_bsd_steering_policy`,
+			`wl${i}_bsd_if_qualify_policy`,
+			`wl${i}_txchain`
+		];
 
-	if(power_value < 0){
-		power_value = 0;
-		alert("The minimun value of power is 0");
-	}
-	if(flag == 'per'){
-		if(power_value > 100){
-			power_value = 100;
-			alert("The maximun value of power is 100");
-		}
-	}else if(flag == 'phyrate'){
-		var power_value_limit;
-		if(based_modelid == "RT-AC5300" || 
-			based_modelid == "GT-AC5300" || 
-			based_modelid == "RT-AC88U" ||
-			based_modelid == "RT-AX88U" ||
-			based_modelid == "RT-AC86U" ||
-			based_modelid == "GT-AC2900" ||
-			based_modelid == "RT-AC3100" ||
-			based_modelid == "GT-AX11000" ||
-			based_modelid == "RT-AX92U" ||
-			based_modelid == "RT-AX95Q" ||
-			based_modelid == "XT8PRO" || based_modelid == "BT12" || based_modelid == "BT10" || based_modelid == "BQ16" || based_modelid == "BQ16_PRO" ||
-			based_modelid == "BM68" ||
-			based_modelid == "XT8_V2" ||
-			based_modelid == "RT-AXE95Q" ||
-			based_modelid == "ET8PRO" ||
-			based_modelid == "ET8_V2" ||
-			based_modelid == "RT-AX56_XD4" ||
-			based_modelid == "XD4PRO" ||
-                        based_modelid == "XC5" ||
-			based_modelid == "CT-AX56_XD4" ||
-			based_modelid == "EBA63" ||
-			based_modelid == "RT-AX58U" ||
-			based_modelid == "RT-AX58U_V2" ||
-			based_modelid == "BR63" ||
-			based_modelid == "RT-AX3000N" ||
-			based_modelid == "TUF-AX3000" ||
-			based_modelid == "TUF-AX3000_V2" ||
-			based_modelid == "TUF-AX5400" ||
-			based_modelid == "TUF-AX5400_V2" ||
-			based_modelid == "RT-AX5400" ||
-			based_modelid == "DSL-AX82U" ||
-			based_modelid == "RT-AX82U" ||
-			based_modelid == "RT-AX82U_V2" ||
-			based_modelid == "RT-AX56U"	||
-			based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" ||
-			based_modelid == "RT-AX86U" || based_modelid == "RT-AX68U" || based_modelid == "RT-AC68U_V4" ||
-			based_modelid == "RT-AXE7800" || based_modelid == "GT10" || based_modelid == "RT-AX9000" ||
-			based_modelid == "RT-AX86U_PRO" ||
-			based_modelid == "GT-AXE11000" ||
-			based_modelid == "GT-AX6000" ||
-			based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || 
-			based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" ||
-			based_modelid == "RT-AX88U_PRO" || based_modelid == "RT-BE96U" || based_modelid == "GT-BE96" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" ||
-			based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U"
-			)
-			power_value_limit = 2167;
-		else
-			power_value_limit = 1300;
-		if(power_value > power_value_limit){
-			power_value = power_value_limit;
-			alert("The maximun value of PHY rate is "+power_value_limit+" Mpbs");
-		}
-	}
+		array.push(...temp);
+	}	
+	
+	restoreData = httpApi.nvramDefaultGet(array);
+	restoreData['action_mode'] = 'apply';
+	restoreData['rc_service'] = 'restart_wireless';
+	httpApi.nvramSet(restoreData, function(){
+		showLoading(10);
+		setTimeout(function(){
+			location.reload();
+		}, 10000);
+		
+	});
 }
 
-function set_bandutil_qualify_power(power_value,flag){
-		document.getElementById('slider_'+flag).children[0].style.width = power_value + "%";
-		document.getElementById('slider_'+flag).children[1].style.left = power_value + "%";
-		document.form[flag].value = power_value;
-		document.getElementById(flag+'_t').innerHTML = power_value;
-		check_power(power_value,'per');
+function showClientlistModal(){
+	const clientlistModal = new ClientlistModel();
+	clientlistModal.show();
 }
-
-function set_lg_power(power_value,flag,idx){
-	var divd;
-	if(idx == 0){
-		if(based_modelid == "RT-AC5300" || 
-			based_modelid == "GT-AC5300" || 
-			based_modelid == "RT-AC88U" ||
-			based_modelid == "RT-AX88U" ||
-			based_modelid == "RT-AC86U" ||
-			based_modelid == "GT-AC2900" ||
-			based_modelid == "RT-AC3100" ||
-			based_modelid == "GT-AX11000" ||
-			based_modelid == "RT-AX92U" ||
-			based_modelid == "RT-AX92U" ||
-			based_modelid == "RT-AX95Q" ||
-			based_modelid == "XT8PRO" || based_modelid == "BT12" || based_modelid == "BT10" || based_modelid == "BQ16" || based_modelid == "BQ16_PRO" ||
-			based_modelid == "BM68" ||
-			based_modelid == "XT8_V2" ||
-			based_modelid == "RT-AXE95Q" ||
-			based_modelid == "ET8PRO" ||
-			based_modelid == "ET8_V2" ||
-			based_modelid == "RT-AX56_XD4" ||
-			based_modelid == "XD4PRO" ||
-                        based_modelid == "XC5" ||
-			based_modelid == "CT-AX56_XD4" ||
-			based_modelid == "EBA63" ||
-			based_modelid == "RT-AX58U" ||
-			based_modelid == "RT-AX58U_V2" ||
-			based_modelid == "BR63" ||
-			based_modelid == "RT-AX3000N" ||
-			based_modelid == "TUF-AX3000" ||
-			based_modelid == "TUF-AX3000_V2" ||
-			based_modelid == "TUF-AX5400" ||
-			based_modelid == "TUF-AX5400_V2" ||
-			based_modelid == "RT-AX5400" ||
-			based_modelid == "DSL-AX82U" ||
-			based_modelid == "RT-AX82U" ||
-			based_modelid == "RT-AX82U_V2" ||
-			based_modelid == "RT-AX56U"	||
-			based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" ||
-			based_modelid == "RT-AX86U" || based_modelid == "RT-AX68U" || based_modelid == "RT-AC68U_V4" ||
-			based_modelid == "RT-AXE7800" || based_modelid == "GT10" || based_modelid == "RT-AX9000" ||
-			based_modelid == "RT-AX86U_PRO" ||
-			based_modelid == "GT-AXE11000" ||
-			based_modelid == "GT-AX6000" ||
-			based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || 
-			based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" ||
-			based_modelid == "RT-AX88U_PRO" || based_modelid == "RT-BE96U" || based_modelid == "GT-BE96" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" ||
-			based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U"
-			)
-			divd = 10;
-		else
-			divd = 6;
-	}
-	else{
-		if(based_modelid == "RT-AC5300" || 
-			based_modelid == "GT-AC5300" || 
-			based_modelid == "RT-AC88U" ||
-			based_modelid == "RT-AX88U" ||
-			based_modelid == "RT-AC86U" ||
-			based_modelid == "GT-AC2900" ||
-			based_modelid == "RT-AC3100" ||
-			based_modelid == "GT-AX11000" ||
-			based_modelid == "RT-AX92U" ||
-			based_modelid == "RT-AX95Q" ||
-			based_modelid == "XT8PRO" || based_modelid == "BT12" || based_modelid == "BT10" || based_modelid == "BQ16" || based_modelid == "BQ16_PRO" ||
-			based_modelid == "BM68" ||
-			based_modelid == "XT8_V2" ||
-			based_modelid == "RT-AXE95Q" ||
-			based_modelid == "ET8PRO" ||
-			based_modelid == "ET8_V2" ||
-			based_modelid == "RT-AX56_XD4" ||
-			based_modelid == "XD4PRO" ||
-                        based_modelid == "XC5" ||
-			based_modelid == "CT-AX56_XD4" ||
-			based_modelid == "EBA63" ||
-			based_modelid == "RT-AX58U" ||
-			based_modelid == "RT-AX58U_V2" ||
-			based_modelid == "BR63" ||
-			based_modelid == "RT-AX3000N" ||
-			based_modelid == "TUF-AX3000" ||
-			based_modelid == "TUF-AX3000_V2" ||
-			based_modelid == "TUF-AX5400" ||
-			based_modelid == "TUF-AX5400_V2" ||
-			based_modelid == "RT-AX5400" ||
-			based_modelid == "DSL-AX82U" ||
-			based_modelid == "RT-AX82U" ||
-			based_modelid == "RT-AX82U_V2" ||
-			based_modelid == "RT-AX56U"	||
-			based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" ||
-			based_modelid == "RT-AX86U" || based_modelid == "RT-AX68U" || based_modelid == "RT-AC68U_V4" ||
-			based_modelid == "RT-AXE7800" || based_modelid == "GT10" || based_modelid == "RT-AX9000" ||
-			based_modelid == "RT-AX86U_PRO" ||
-			based_modelid == "GT-AXE11000" ||
-			based_modelid == "GT-AX6000" ||
-			based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || 
-			based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" ||
-			based_modelid == "RT-AX88U_PRO" || based_modelid == "RT-BE96U" || based_modelid == "GT-BE96" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" ||
-			based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "GT-BE19000" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U"
-			)
-			divd = 21;
-		else
-			divd = 13;
-	}
-	document.getElementById('slider_'+flag).children[0].style.width = power_value/divd + "%";
-	document.getElementById('slider_'+flag).children[1].style.left = power_value/divd + "%";
-	document.form[flag].value = power_value;
-	if(document.form[flag].value == 0){
-		document.getElementById(flag+'d_t').style.display = ""; 
-		document.getElementById(flag+'0_t').style.display = "none";
-	}else{
-		document.getElementById(flag+'d_t').style.display = "none";
-		document.getElementById(flag+'0_t').style.display = "";
-		document.getElementById(flag+'_t').innerHTML = power_value;
-	}
-	check_power(power_value,'phyrate');	
-}
-
 </script>
 </head>
 
@@ -1868,57 +923,13 @@ function set_lg_power(power_value,flag,idx){
 <iframe name="hidden_frame" id="hidden_frame" src="" width="0" height="0" frameborder="0"></iframe>
 <form method="post" name="form" id="ruleForm" action="/start_apply.htm" target="hidden_frame">
 <input type="hidden" name="productid" value="<% nvram_get("productid"); %>">
-<input type="hidden" name="wl_nmode_x" value="<% nvram_get("wl_nmode_x"); %>">
-<input type="hidden" name="wl_gmode_protection_x" value="<% nvram_get("wl_gmode_protection_x"); %>">
 <input type="hidden" name="current_page" value="Advanced_Smart_Connect.asp">
 <input type="hidden" name="next_page" value="Advanced_Smart_Connect.asp">
-<input type="hidden" name="group_id" value="">
-<input type="hidden" name="modified" value="0">
-<input type="hidden" name="first_time" value="">
 <input type="hidden" name="action_mode" value="apply_new">
 <input type="hidden" name="action_script" value="restart_wireless">
 <input type="hidden" name="action_wait" value="3">
 <input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
-<input type="hidden" name="bsd_ifnames" value="<% nvram_get("bsd_ifnames"); %>" disabled>
-<input type="hidden" name="wl0_bsd_steering_policy" value="" disabled>
-<input type="hidden" name="wl1_bsd_steering_policy" value="" disabled>
-<input type="hidden" name="wl2_bsd_steering_policy" value="" disabled>
-<input type="hidden" name="wl0_bsd_steering_bandutil" id="wl0_bsd_steering_bandutil" value="">
-<input type="hidden" name="wl1_bsd_steering_bandutil" id="wl1_bsd_steering_bandutil" value="">
-<input type="hidden" name="wl2_bsd_steering_bandutil" id="wl2_bsd_steering_bandutil" value="">
-<input type="hidden" name="wl0_bsd_steering_phy_l" id="wl0_bsd_steering_phy_l" value="">
-<input type="hidden" name="wl1_bsd_steering_phy_l" id="wl1_bsd_steering_phy_l" value="">
-<input type="hidden" name="wl2_bsd_steering_phy_l" id="wl2_bsd_steering_phy_l" value="">
-<input type="hidden" name="wl0_bsd_steering_phy_g" id="wl0_bsd_steering_phy_g" value="">
-<input type="hidden" name="wl1_bsd_steering_phy_g" id="wl1_bsd_steering_phy_g" value="">
-<input type="hidden" name="wl2_bsd_steering_phy_g" id="wl2_bsd_steering_phy_g" value="">
-<input type="hidden" name="wl0_bsd_sta_select_policy" value="" disabled>
-<input type="hidden" name="wl1_bsd_sta_select_policy" value="" disabled>
-<input type="hidden" name="wl2_bsd_sta_select_policy" value="" disabled>
-<input type="hidden" name="wl0_bsd_if_select_policy" value="" disabled>
-<input type="hidden" name="wl1_bsd_if_select_policy" value="" disabled>
-<input type="hidden" name="wl2_bsd_if_select_policy" value="" disabled>
-<input type="hidden" name="wl0_bsd_sta_select_policy_phy_l" id="wl0_bsd_sta_select_policy_phy_l" value="">
-<input type="hidden" name="wl1_bsd_sta_select_policy_phy_l" id="wl1_bsd_sta_select_policy_phy_l" value="">
-<input type="hidden" name="wl2_bsd_sta_select_policy_phy_l" id="wl2_bsd_sta_select_policy_phy_l" value="">
-<input type="hidden" name="wl0_bsd_sta_select_policy_phy_g" id="wl0_bsd_sta_select_policy_phy_g" value="">
-<input type="hidden" name="wl1_bsd_sta_select_policy_phy_g" id="wl1_bsd_sta_select_policy_phy_g" value="">
-<input type="hidden" name="wl2_bsd_sta_select_policy_phy_g" id="wl2_bsd_sta_select_policy_phy_g" value="">
-<input type="hidden" name="wl0_bsd_if_qualify_policy" id="wl0_bsd_if_qualify_policy" value="" disabled>
-<input type="hidden" name="wl1_bsd_if_qualify_policy" id="wl1_bsd_if_qualify_policy" value="" disabled>
-<input type="hidden" name="wl2_bsd_if_qualify_policy" id="wl2_bsd_if_qualify_policy" value="" disabled>
-<input type="hidden" name="bsd_bounce_detect" value=""  disabled>
-<input type="hidden" name="bsd_ifnames_x" value="<% nvram_get("bsd_ifnames_x"); %>" disabled>
-<input type="hidden" name="wl1_bsd_steering_policy_x" value="" disabled>
-<input type="hidden" name="wl2_bsd_steering_policy_x" value="" disabled>
-<input type="hidden" name="wl1_bsd_sta_select_policy_x" value="" disabled>
-<input type="hidden" name="wl2_bsd_sta_select_policy_x" value="" disabled>
-<input type="hidden" name="wl1_bsd_if_select_policy_x" value="<% nvram_get("wl1_bsd_if_select_policy_x"); %>" disabled>
-<input type="hidden" name="wl2_bsd_if_select_policy_x" value="<% nvram_get("wl2_bsd_if_select_policy_x"); %>" disabled>
-<input type="hidden" name="wl1_bsd_if_qualify_policy_x" id="wl1_bsd_if_qualify_policy_x" value="" disabled>
-<input type="hidden" name="wl2_bsd_if_qualify_policy_x" id="wl2_bsd_if_qualify_policy_x" value="" disabled>
-<input type="hidden" name="bsd_bounce_detect_x" value=""  disabled>
 <table class="content" align="center" cellpadding="0" cellspacing="0">
   <tr>
 	<td width="17">&nbsp;</td>
@@ -1939,49 +950,69 @@ function set_lg_power(power_value,flag,idx){
 	  <table width="760px" border="0" cellpadding="4" cellspacing="0" class="FormTitle" id="FormTitle">
 		<tbody>
 		<tr>
-		  <td bgcolor="#4D595D" valign="top">
-		  <div>&nbsp;</div>
-		  <div class="formfonttitle"><#menu5_1#> - <#smart_connect_rule#></div>
-     	 <div style="margin:10px 0 10px 5px;" class="splitLine"></div>
-      	  <div class="formfontdesc"><#smart_connect_hint#></div>
-		  <div style="text-align:right;margin-top:-36px;padding-bottom:3px;"><input type="button" class="button_gen" value="<#View_List#>" onClick="pop_clientlist_listview(true)"></div>
-		  <div id="bsd_steering_div"></div>
+		  	<td bgcolor="#4D595D" valign="top">
+			<div>&nbsp;</div>
+			<div class="formfonttitle"><#menu5_1#> - <#smart_connect_rule#></div>
+			<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
+			<div class="formfontdesc"><#smart_connect_hint#></div>
+			<div style="text-align:right;margin-top:-36px;padding-bottom:3px;"><input type="button" class="button_gen" value="<#View_List#>" onClick="showClientlistModal()"></div>
+			<div id="bsd_steering_div">
+				<table cellspacing="0" cellpadding="4" bordercolor="#6b8fa3" border="1" align="center" width="100%" class="FormTable" style="margin-top:10px">
+					<thead>
+						<tr>
+							<td colspan="5"><#smart_connect_Steering#></td>
+						</tr>
+					</thead>
+					<tr id="band_field"></tr>
+				
+					<tr id="steering_load_balance_field"></tr>
 
-		  <div id="bsd_sta_select_div"></div>
+					<tr id="steering_bw_field"></tr>
 
-		  <div id="bsd_if_select_div"></div>
+					<tr id="steering_rssi_field"></tr>
 
-		  	<table cellspacing="0" cellpadding="4" bordercolor="#6b8fa3" border="1" align="center" width="100%" class="FormTable" id="MainTable2" style="margin-top:10px">
-			<thead>
-				<tr>
-					<td colspan="2"><#smart_connect_BD#></td>
-				</tr>
-			</thead>	
-			<tr>
-				<th width="20%"><#smart_connect_STA_window#></th>
-					<td>
-						<input type="text" onkeypress="return validator.isNumber(this,event)" value="100" class="input_6_table" name="windows_time_sec" maxlength="4" autocorrect="off" autocapitalize="off"> <#Second#>
-					</td>								
-		  	</tr>	
-			<tr>
-				<th><#smart_connect_STA_counts#></th>
-					<td>
-						<input type="text" onkeypress="return validator.isNumber(this,event)" value="100" class="input_6_table" name="bsd_counts" maxlength="4" autocorrect="off" autocapitalize="off">
-					</td>									
-		  	</tr>
-			<tr>
-				<th><#smart_connect_STA_dwell#></th>
-					<td>
-						<input type="text" onkeypress="return validator.isNumber(this,event)" value="100" class="input_6_table" name="dwell_time_sec" maxlength="4" autocorrect="off" autocapitalize="off"> <#Second#>
-					</td>										
-		  	</tr>		  			  						  	  	
-		  	</table>			  	  	
-			  
+					<tr id="steering_phy_rate_less_field"></tr>
+
+					<tr id="steering_phy_rate_great_field"></tr>
+
+					<tr id="steering_capability_field"></tr>
+				</table>
+
+				<table cellspacing="0" cellpadding="4" bordercolor="#6b8fa3" border="1" align="center" width="100%" class="FormTable" style="margin-top:10px">
+					<thead>
+						<tr>
+							<td colspan="5"><#smart_connect_STA#></td>
+						</tr>
+					</thead>
+					<tr id="sta_rssi_field"></tr>
+					
+					<tr id="sta_phy_rate_less_field"></tr>
+		
+					<tr id="sta_phy_rate_great_field"></tr>
+
+					<tr id="sta_capability_field"></tr>				
+				</table>
+				<table cellspacing="0" cellpadding="4" bordercolor="#6b8fa3" border="1" align="center" width="100%" class="FormTable" style="margin-top:10px">
+					<thead>
+						<tr>
+							<td colspan="5"><#smart_connect_ISQP#></td>
+						</tr>
+					</thead>
+					<tr id="if_select_band_field"></tr>
+
+					<tr id="if_quality_bw_field"></tr>
+			
+					<tr id="if_quality_capability_field"></tr>
+				</table>
+
+				<table id="bounce_detect_field" cellspacing="0" cellpadding="4" bordercolor="#6b8fa3" border="1" align="center" width="100%" class="FormTable" style="margin-top:10px"></table>
+
 				<div class="apply_gen">
 					<input type="button" id="restoreButton" class="button_gen" value="<#Setting_factorydefault_value#>" onclick="restoreRule();">
 					<input type="button" id="applyButton" class="button_gen" value="<#CTL_apply#>" onclick="applyRule();">
-				</div>			  	
-			  	
+				</div>
+			</div>
+		  	
 		  	</td>
 		</tr>
 		</tbody>

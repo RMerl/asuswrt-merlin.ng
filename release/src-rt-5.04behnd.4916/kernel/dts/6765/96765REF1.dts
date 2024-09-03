@@ -161,7 +161,6 @@
 	led2: parallel-port_0-led_0 {
 		active_low;
 		pinctrl-0 = <&a_per_led_10_pin_10>;
-		crossbar-output = <0>;
 		link = <(LED_SPEED_100|LED_SPEED_2500)>;
 		activity = <(LED_SPEED_100|LED_SPEED_2500)>;
 		status="okay";
@@ -169,7 +168,6 @@
 	led3: parallel-port_0-led_1 {
 		active_low;
 		pinctrl-0 = <&b_per_led_06_pin_39>;
-		crossbar-output = <1>;
 		link = <(LED_SPEED_1G)>;
 		activity = <(LED_SPEED_1G)>;
 		status="okay";
@@ -177,7 +175,6 @@
 	led4: parallel-port_0-led_2 {
 		active_low;
 		pinctrl-0 = <&a_per_led_12_pin_12>;
-		crossbar-output = <2>;
 		link = <(LED_SPEED_2500|LED_SPEED_10G)>;
 		activity = <(LED_SPEED_2500|LED_SPEED_10G)>;
 		status="okay";
@@ -186,7 +183,6 @@
 	led5: parallel-port_5-led_0 {
 		active_low;
 		pinctrl-0 = <&b_per_led_11_pin_44>;
-		crossbar-output = <3>;
 		link = <(LED_SPEED_100|LED_SPEED_2500)>;
 		activity = <(LED_SPEED_100|LED_SPEED_2500)>;
 		status="okay";
@@ -194,7 +190,6 @@
 	led6: parallel-port_5-led_1 {
 		active_low;
 		pinctrl-0 = <&a_per_led_22_pin_22>;
-		crossbar-output = <4>;
 		link = <(LED_SPEED_1G)>;
 		activity = <(LED_SPEED_1G)>;
 		status="okay";
@@ -202,7 +197,6 @@
 	led7: parallel-port_5-led_2 {
 		active_low;
 		pinctrl-0 = <&a_per_led_30_pin_30>;
-		crossbar-output = <5>;
 		link = <(LED_SPEED_2500|LED_SPEED_10G)>;
 		activity = <(LED_SPEED_2500|LED_SPEED_10G)>;
 		status="okay";
@@ -223,7 +217,7 @@
 		status = "okay";
 		label = "VOIP_1";
 	};
-	led10: sw_parallel_led_38 {
+	led10: sw_parallel_led_29 {
 		active_low; 
 		brightness = <255>;
 		pinctrl-0 = <&b_per_led_05_pin_38>;

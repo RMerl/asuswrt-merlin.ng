@@ -3,27 +3,21 @@
    All Rights Reserved
 
    <:label-BRCM:2017:DUAL/GPL:standard
-
-   Unless you and Broadcom execute a separate written software license
-   agreement governing use of this software, this software is licensed
-   to you under the terms of the GNU General Public License version 2
-   (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-   with the following added to such license:
-
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
-
-   Not withstanding the above, under no circumstances may you combine
-   this software in any way with any other Broadcom software provided
-   under a license other than the GPL, without Broadcom's express prior
-   written consent.
-
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License, version 2, as published by
+   the Free Software Foundation (the "GPL").
+   
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+   
+   
+   A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+   writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.
+   
    :>
    */
 /*
@@ -242,7 +236,7 @@ static XPORT_PORT_RATE xport_speed_get(uint8_t portid)
     switch (speed_mode)
     {
     case XLMAC_PORT_SPEED_10MB: /* 10M */
-        xport_speed = XPORT_RATE_5G; /* Since we are reading LED register, 10M means 5G speed */
+        xport_speed = XPORT_RATE_10MB;
         break;
 
     case XLMAC_PORT_SPEED_100MB: /* 100Mbps */
@@ -384,6 +378,28 @@ static int xport_xlmac_release_reset(xport_xlmac_port_info_s *init_params)
     return rc;
 }
 
+#if defined(CONFIG_BCM_MACSEC_FIRELIGHT)
+extern int macsec_fl_port_init(int macsec_port);
+extern int macsec_fl_port_reset(int macsec_port);
+extern int macsec_fl_port_enabled(int xport_port_id);
+
+static int macsec_port_init(xport_xlmac_port_info_s *init_params)
+{
+    int rc = XPORT_ERR_OK;
+    rc = macsec_fl_port_init(init_params->xport_port_id);
+
+    return rc;
+}
+
+static int macsec_port_reset(xport_xlmac_port_info_s *init_params)
+{
+    int rc = XPORT_ERR_OK;
+    rc = macsec_fl_port_reset(init_params->xport_port_id);
+
+    return rc;
+}
+#endif
+
 #define LPORT_XLMAC_G9991_RSV_MASK (0x20058)
 
 static int xport_xlmac_init(xport_xlmac_port_info_s *init_params)
@@ -459,7 +475,11 @@ static int xport_xlmac_init(xport_xlmac_port_info_s *init_params)
 
     rc = rc ? rc : ag_drv_xport_xlmac_core_rx_ctrl_get(port_id, &rx_ctrl);
     rx_ctrl.rx_any_start = 0;
+#if defined(CONFIG_BCM_MACSEC_FIRELIGHT)
+    rx_ctrl.strip_crc = (macsec_fl_port_enabled(port_id) >= 0) ? 1 : 0; /* CRC will be removed if MACSEC is enabled */
+#else
     rx_ctrl.strip_crc = 0; /* CRC will be validated by the BBH */
+#endif
     rx_ctrl.strict_preamble = 0; /* Keep this disabled otherwise interop issue with some bad equipment */
     rx_ctrl.runt_threshold = 0x40;
     rx_ctrl.rx_pass_ctrl = 1;
@@ -572,6 +592,9 @@ static int xport_reset(xport_xlmac_port_info_s *init_params)
     int rc;
     rc = xport_msbus_reset(init_params);
     rc = rc ? rc : xport_xlmac_reset(init_params);
+#if defined(CONFIG_BCM_MACSEC_FIRELIGHT)
+    rc = rc ? rc : macsec_port_reset(init_params);
+#endif
     rc = rc ? rc : xport_xlif_reset(init_params);
     __xportInfo("rc = %d; port = %d spd = %s dup = %d\n",
                   rc, init_params->xport_port_id,
@@ -605,6 +628,9 @@ static int xport_init(xport_xlmac_port_info_s *init_params)
 #endif
 
     rc = rc ? rc : xport_xlif_release(init_params);
+#if defined(CONFIG_BCM_MACSEC_FIRELIGHT)
+    rc = rc ? rc : macsec_port_init(init_params);
+#endif
     rc = rc ? rc : xport_xlmac_init(init_params);
     rc = rc ? rc : xport_msbus_init(init_params);
 
@@ -642,45 +668,41 @@ static int xport_platform_init(xport_xlmac_port_info_s *init_params)
     int rc = 0;
     int xlmac_num = PID_XLMAC_NUM(init_params->xport_port_id);
     int xport_num = PID_XPORT_NUM(init_params->xport_port_id);
+    int port_id = init_params->xport_port_id;
+    uint8_t link_down_rst_en, enable_sm_run;
+    uint16_t tick_timer_ndiv;
+    xport_portreset_sig_en sig_en;
 
-    // do per port init 
-    if (xport_num == 0)
+    rc = ag_drv_xport_portreset_config_get(xlmac_num, &link_down_rst_en, &enable_sm_run, &tick_timer_ndiv);
+
+    sig_en.enable_xlmac_rx_disab = sig_en.enable_xlmac_tx_disab = sig_en.enable_xlmac_tx_discard = sig_en.enable_xlmac_soft_reset = 1;
+    sig_en.enable_mab_rx_port_init = sig_en.enable_mab_tx_port_init = sig_en.enable_mab_tx_credit_disab = sig_en.enable_mab_tx_fifo_init = 1;
+    sig_en.enable_port_is_under_reset = 1;
+    sig_en.enable_xlmac_ep_discard = 0;
+
+    switch (xport_num)
     {
-        uint8_t link_down_rst_en, enable_sm_run;
-        uint16_t tick_timer_ndiv;
-        xport_portreset_sig_en sig_en;
-
-        //reset SM setting
-        link_down_rst_en = 0x0; /* Disable HW automatic state machine reset to avoid link flipping failure */
-        enable_sm_run = 0; tick_timer_ndiv = 0;
-        rc = ag_drv_xport_portreset_config_set(xlmac_num, link_down_rst_en, enable_sm_run, tick_timer_ndiv);
-        UDELAY(1000);
-        tick_timer_ndiv = 0xfa;
-        rc = rc ? rc : ag_drv_xport_portreset_config_set(xlmac_num, link_down_rst_en, enable_sm_run, tick_timer_ndiv);
-
-        sig_en.enable_xlmac_rx_disab = sig_en.enable_xlmac_tx_disab = sig_en.enable_xlmac_tx_discard = sig_en.enable_xlmac_soft_reset = 1;
-        sig_en.enable_mab_rx_port_init = sig_en.enable_mab_tx_port_init = sig_en.enable_mab_tx_credit_disab = sig_en.enable_mab_tx_fifo_init = 1;
-        sig_en.enable_port_is_under_reset = 1;
-        sig_en.enable_xlmac_ep_discard = 0;
-        rc = rc ? rc : ag_drv_xport_portreset_p0_sig_en_set(xlmac_num, &sig_en);
-        rc = rc ? rc : ag_drv_xport_portreset_p1_sig_en_set(xlmac_num, &sig_en);
-        rc = rc ? rc : ag_drv_xport_portreset_p2_sig_en_set(xlmac_num, &sig_en);
-        rc = rc ? rc : ag_drv_xport_portreset_p3_sig_en_set(xlmac_num, &sig_en);
-        UDELAY(5000);
-
-        enable_sm_run = 0xf;
-        rc = rc ? rc : ag_drv_xport_portreset_config_set(xlmac_num, link_down_rst_en, enable_sm_run, tick_timer_ndiv);
+    case 0: rc = rc ? rc : ag_drv_xport_portreset_p0_sig_en_set(xlmac_num, &sig_en); break;
+    case 1: rc = rc ? rc : ag_drv_xport_portreset_p1_sig_en_set(xlmac_num, &sig_en); break;
+    case 2: rc = rc ? rc : ag_drv_xport_portreset_p2_sig_en_set(xlmac_num, &sig_en); break;
+    case 3: rc = rc ? rc : ag_drv_xport_portreset_p3_sig_en_set(xlmac_num, &sig_en); break;
     }
+
+    UDELAY(5000);
+    enable_sm_run |= (1 << xport_num);
+    rc = rc ? rc : ag_drv_xport_portreset_config_set(xlmac_num, link_down_rst_en, enable_sm_run, tick_timer_ndiv);
+    UDELAY(5000);
+
     // do per channel init
     {   xport_xlmac_core_rx_lss_ctrl rx_lss_ctrl;
-        rc = rc ? rc : ag_drv_xport_xlmac_core_rx_lss_ctrl_get(init_params->xport_port_id, &rx_lss_ctrl);
+        rc = rc ? rc : ag_drv_xport_xlmac_core_rx_lss_ctrl_get(port_id, &rx_lss_ctrl);
         rx_lss_ctrl.local_fault_disable = 1;
-        rc = rc ? rc : ag_drv_xport_xlmac_core_rx_lss_ctrl_set(init_params->xport_port_id, &rx_lss_ctrl);
+        rc = rc ? rc : ag_drv_xport_xlmac_core_rx_lss_ctrl_set(port_id, &rx_lss_ctrl);
     }
     {   uint32_t prog_tx_crc; uint8_t tx_crc_corruption_mode; uint8_t tx_crc_corrupt_en; uint8_t tx_err_corrupts_crc;
-        rc = rc ? rc : ag_drv_xport_xlmac_core_tx_crc_corrupt_ctrl_get(init_params->xport_port_id,&prog_tx_crc,&tx_crc_corruption_mode,&tx_crc_corrupt_en,&tx_err_corrupts_crc);
+        rc = rc ? rc : ag_drv_xport_xlmac_core_tx_crc_corrupt_ctrl_get(port_id,&prog_tx_crc,&tx_crc_corruption_mode,&tx_crc_corrupt_en,&tx_err_corrupts_crc);
         tx_crc_corrupt_en = 0; tx_err_corrupts_crc = 0;
-        rc = rc ? rc : ag_drv_xport_xlmac_core_tx_crc_corrupt_ctrl_set(init_params->xport_port_id, prog_tx_crc, tx_crc_corruption_mode, tx_crc_corrupt_en, tx_err_corrupts_crc);
+        rc = rc ? rc : ag_drv_xport_xlmac_core_tx_crc_corrupt_ctrl_set(port_id, prog_tx_crc, tx_crc_corruption_mode, tx_crc_corrupt_en, tx_err_corrupts_crc);
     }
 
     return rc;

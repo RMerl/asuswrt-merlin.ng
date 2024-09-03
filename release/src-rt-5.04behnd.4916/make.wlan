@@ -25,6 +25,8 @@ export BRCM_WLAN_DNGL_NUM_BSS
 export BUILD_SW_GSO_WLAN
 export BUILD_RDKWIFI
 export RDK_BUILD
+
+export BUILD_BCM_WLMLO
 export BUILD_BCM_WLAUX
 
 ifneq ($(strip $(BUILD_RDK_ONEWIFI)),)
@@ -47,7 +49,8 @@ ifneq ($(strip $(RDK_BUILD)),)
 export RDKB=y
 export EXTRA_CFLAGS += -DRDKB -DBCA_CPEROUTER_RDK
 export USR_CFLAGS += -DRDKB -DBCA_CPEROUTER_RDK
-export EXTRA_CFLAGS += -I${RDKB_BCALINUX_SYSROOT}/usr/include/json-c -I${RDKB_BCALINUX_SYSROOT}/usr/include/libnl3
+export RDKB_CFLAGS += -I${RDKB_BCALINUX_SYSROOT}/usr/include/json-c -I${RDKB_BCALINUX_SYSROOT}/usr/include/libnl3
+export EXTRA_CFLAGS += $(RDKB_CFLAGS)
 endif
 
 ifneq ($(strip $(BUILD_LIBNL)),)

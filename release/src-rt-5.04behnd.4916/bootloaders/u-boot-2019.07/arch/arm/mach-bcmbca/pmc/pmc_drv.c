@@ -951,20 +951,6 @@ void WaitPmc(int runState, void *pmc_log)
 		}
 #endif
 
-		if (pmc_log)
-		{
-			if (*(unsigned int *)(log_buffer_start - 4) == 0xc0ffee55) 
-			{
-				while(*log_buffer_itter && *log_buffer_itter != 0xff)
-				{
-					printf("%c", *log_buffer_itter);
-					log_buffer_itter++;
-					if(log_buffer_itter == (log_buffer_start + CFG_BOOT_PMC_LOG_SIZE))
-						log_buffer_itter = log_buffer_start;
-				}
-			}
-		}
-
 #else /* #ifdef PMC_IMPL_3_X */
 		cur >>= 24;
 		/* Check if PMC is failing */
@@ -976,6 +962,24 @@ void WaitPmc(int runState, void *pmc_log)
 		}
 #endif /* #ifdef PMC_IMPL_3_X */
 	} while ((cur & 7) != runState);
+
+#ifdef PMC_IMPL_3_X
+    if (pmc_log)
+    {
+        if (*(unsigned int *)(log_buffer_start - 4) == 0xc0ffee55) 
+        {
+            for (; log_buffer_itter < log_buffer_start + CFG_BOOT_PMC_LOG_SIZE; log_buffer_itter++)
+            {
+                if (*log_buffer_itter == 0xff)
+                    continue;
+                if (*log_buffer_itter == 0x0)
+                    break;
+                printk("%c", *log_buffer_itter);
+            }
+
+        }
+    }
+#endif /* #ifdef PMC_IMPL_3_X */
 
 	if (!failed) return;
 
@@ -1082,7 +1086,7 @@ void pmc_reset(void)
 int pmc_convert_pvtmon(int sel, int value)
 {
 #if IS_BCMCHIP(63146) || IS_BCMCHIP(4912) || IS_BCMCHIP(6813) || \
-	IS_BCMCHIP(6888) || IS_BCMCHIP(6765)
+	IS_BCMCHIP(6888) || IS_BCMCHIP(6765) || IS_BCMCHIP(6766)
 	switch (sel) {
 	case kTEMPERATURE:	// convert value to milli-degree Celsius
 		return (45000000 - 54956 * value) / 100;

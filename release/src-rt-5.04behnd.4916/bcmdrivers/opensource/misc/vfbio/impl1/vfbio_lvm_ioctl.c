@@ -1,28 +1,22 @@
 /*
 <:copyright-BRCM:2019:DUAL/GPL:standard
 
-   Copyright (c) 2019 Broadcom
+   Copyright (c) 2019 Broadcom 
    All Rights Reserved
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
 :>
 */
@@ -39,6 +33,7 @@ written consent.
 #include <linux/cdev.h>
 #include <vfbio_lvm_ioctl.h>
 #include "vfbio_priv.h"
+#include "vfbio_rpmb.h"
 
 static int chrdev_major;
 
@@ -48,19 +43,21 @@ static long vfbio_lvm_ioctl(struct file *filp, unsigned int cmd, unsigned long a
     vfbio_lvm_ioctl_param params;
 
     /* don't even decode wrong cmds: better returning  ENOTTY than EFAULT */
-    if (_IOC_TYPE(cmd) != VFBIO_LVM_IOCTL_MAGIC)
+    if (_IOC_TYPE(cmd) != VFBIO_LVM_IOCTL_MAGIC && _IOC_TYPE(cmd) != MMC_BLOCK_MAJOR)
         return -ENOTTY;
 
-    rc = copy_from_user((char *)&params, (char *)arg, sizeof(params));
-    if (rc < 0)
-        return rc;
-
+    if(_IOC_TYPE(cmd) == VFBIO_LVM_IOCTL_MAGIC)
+    {
+        rc = copy_from_user((char *)&params, (char *)arg, sizeof(params));
+        if (rc < 0)
+            return rc;
+    }
     switch (cmd)
     {
     case VFBIO_LVM_IOCTL_OP_CREATE:
         {
             params.rc = vfbio_lun_create(params.create.lun_name,
-                params.create.size, &params.create.lun_id);
+                params.create.size, params.create.lun_flags, &params.create.lun_id);
         }
         break;
 
@@ -118,14 +115,39 @@ static long vfbio_lvm_ioctl(struct file *filp, unsigned int cmd, unsigned long a
         }
         break;
 
+    case MMC_IOC_CMD:
+        {
+            struct mmc_ioc_cmd  *ic_ptr;
+            
+            /* Current the USER space application supported only multi cmd */
+            return -ENOTTY;
+
+            ic_ptr = (struct mmc_ioc_cmd *)arg;
+            rc = vfbio_rpmb_ioctl_cmd(ic_ptr);
+            if (rc < 0)
+                return rc;
+        }   
+        break;
+
+    case MMC_IOC_MULTI_CMD:
+        {
+            struct mmc_ioc_multi_cmd  *user = (struct mmc_ioc_multi_cmd  *)arg;
+            rc = vfbio_rpmb_ioctl_multi_cmd(user);
+            if (rc < 0)
+                return rc;
+        }
+        break;    
     default:
         params.rc = -EINVAL;
         break;
     }
 
-    rc = copy_to_user((char *)arg, (char *)&params, sizeof(params));
-    if (rc < 0)
-        return rc;
+    if(_IOC_TYPE(cmd) == VFBIO_LVM_IOCTL_MAGIC)
+    {
+        rc = copy_to_user((char *)arg, (char *)&params, sizeof(params));
+        if (rc < 0)
+            return rc;
+    }
 
     return 0;
 }

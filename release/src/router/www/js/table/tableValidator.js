@@ -120,7 +120,7 @@ var tableValidator = {
 	description : {
 		keyPress : function($obj,event) {
 			var keyPressed = event.keyCode ? event.keyCode : event.which;
-			if(keyPressed >= 0 && keyPressed <= 126) {;
+			if(keyPressed >= 0 && keyPressed <= 126) {
 				if(keyPressed == 60 || keyPressed == 62)
 					return false;
 				else 

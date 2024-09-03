@@ -5,9 +5,13 @@
 
 / {
 	compatible = "brcm,bcm6766", "brcm,bcmbca";
+#if defined(CONFIG_ARMV7_LPAE)
+	#address-cells = <2>;
+	#size-cells = <2>;
+#else
 	#address-cells = <0x1>;
 	#size-cells = <0x1>;
-
+#endif
 	clocks: clocks {
 		u-boot,dm-pre-reloc;
 
@@ -46,11 +50,15 @@
 		};
 	};
 
-	bus@ff800000 {
+	periph-bus@ff800000 {
 		compatible = "simple-bus";
 		#address-cells = <0x1>;
 		#size-cells = <0x1>;
+#if defined(CONFIG_ARMV7_LPAE)
+		ranges = <0x0 0x0 0xff800000 0x800000>;
+#else
 		ranges = <0x0 0xff800000 0x800000>;
+#endif
 		u-boot,dm-pre-reloc;
 
 		uart0: serial@12000 {	
@@ -135,12 +143,12 @@
 			status = "disabled";
 		};
 
-		sdhci: sdhci@10000 {
+		sdhci: sdhci@20000 {
 			compatible = "brcm,bcm63xx-sdhci",
 			             "brcm,sdhci-brcmbca";
 			reg-names = "sdhci-base", "sdhci-boot";
-			reg = <0x10000 0x100>,
-			      <0x10200 0x40>;
+			reg = <0x20000 0x100>,
+			      <0x20500 0x40>;
 			bus-width = <8>;
 			u-boot,dm-pre-reloc;
 		};
@@ -151,6 +159,12 @@
 			u-boot,dm-pre-reloc;
 		};
 		
+		trng: trng@3800 {
+			compatible = "brcm,bcmbca-trng";
+			reg = <0x3800 0x0800>;
+			u-boot,dm-pre-reloc;
+		};
+
 		boot_state@2628 {
 			u-boot,dm-pre-reloc;
 			compatible = "brcm,bcmbca-bootstate-v2";
@@ -163,6 +177,161 @@
 			compatible = "brcm,bcmbca-pinctrl";
 			reg = <0x554 0x14>;
 			gpio-mux = <4>;
+		};
+	};
+
+	ubus-bus {
+		u-boot,dm-pre-reloc;
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+#if defined(CONFIG_ARMV7_LPAE)
+		ranges = <0x0 0x0 0x80000000 0x40000000>;
+#else
+		ranges = <0x0 0x80000000 0x40000000>;
+#endif
+
+		ubus_sys: ubus_sys {
+			u-boot,dm-pre-reloc;
+			#address-cells = <1>;
+			#size-cells = <1>;
+			ranges;
+
+			compatible = "brcm,bca-ubus4";
+			reg = <0x3000000 0x80 0x3000200 0x80>;
+			reg-names = "ubus_systop", "ubus_registration";
+			flags = <0x0>;
+
+			ubus_mst_sys: ubus_mst {
+				u-boot,dm-pre-reloc;
+				reg-names = "BIU", "PER", "PCIE0", "PCIE1",
+					"SPU", "USB", "CNPTOP", "CNPPHY",
+					"WIFI0", "WIFI1", "MLO0", "MLO1";
+				reg = <0x3020000 0x4000>,
+						<0x3010000 0x4000>,
+						<0x3030000 0x4000>,
+						<0x3038000 0x4000>,
+						<0x3040000 0x4000>,
+						<0x3048000 0x4000>,
+						<0x3050000 0x4000>,
+						<0x3058000 0x4000>,
+						<0x3060000 0x4000>,
+						<0x3068000 0x4000>,
+						<0x3070000 0x4000>,
+						<0x3078000 0x4000>;
+			};
+		};
+
+		ubus_dcm_sys: ubus_dcm_sys {
+			u-boot,dm-pre-reloc;
+			compatible = "brcm,bca-ubus4-dcm";
+			reg = <0x3000080 0x80>;
+			reg-names = "ubus_dcm_clk";
+			flags = <0x0>;
+		};
+
+		sysport: systemport@0x210000 {
+			compatible = "brcm,bcmbca-systemport-v2.0";
+			reg-names = "systemport-rbuf-base", "systemport-rdma-base",
+					"systemport-tdma-base",
+					"systemport-topctrl-base",
+					"systemport-ipa";
+			reg =	<0x210400 0x14>,
+					<0x212000 0x1268>,
+					<0x214000 0xe60>,
+					<0x210000 0x34>,
+					<0x200b00 0x24>;
+			ethsw = <&switch0>;
+		};
+
+		swblks {
+			compatible = "brcm,swblks";
+			reg-names =	"switchcore-base",
+					"switchreg-base",
+					"switchmdio-base",
+					"switchacb-base",
+					"switchlfh-base",
+					"switchsib-base",
+					"sphy-ctrl";
+
+			reg	= <0x400000 0x72724>,
+				<0x474000 0x20>,
+				<0x486000 0x10>,
+				<0x474800 0x230>,
+				<0x474b00 0x100>,
+				<0x474c00 0x100>,
+				<0x481024 0x04>;
+			phy_base = <0x8>;
+		};
+
+		mdio_sf2: mdio_sf2 {
+			compatible = "simple-bus";
+			bus-type = "DSL_ETHSW";
+
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			/* Port PHY mapping:
+    	        port_imp -8#0- port_gphy <----> phy_gphy
+        	              # 5- 
+            	          ##6- 
+			 */
+			phy_gphy:phy_gphy {
+				compatible = "brcm,bcaphy";
+				reg = <0x8>;
+				phy-type = "EGPHY";
+			};
+		};
+
+		switch0:sf2@400000 {
+			compatible = "brcm,enet", "brcm,bcmbca-sf2";
+			label = "bcmsw";
+			sw-type = "SF2_SW";
+
+			phy_base = <0x8>;
+			phy_wkard_timeout = <25000>;
+			reg-names = "switchcore-base",
+						"switchreg-base",
+						"switchmdio-base",
+						"sphy-ctrl",
+						"phy-test-ctrl";
+
+			reg = <0x400000 0x72724>,
+				<0x474000 0x20>,
+				<0x486000 0x10>,
+				<0x481024 0x04>,
+				<0x481018 0x04>;
+
+			pinctrl-names = "default";
+			pinctrl-0 = <&eth_mdc_pin_62 &eth_mdio_pin_63>;
+
+			ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+
+				port_gphy {
+					phy-handle = <&phy_gphy>;
+					reg = <0>;
+					mac-type = "SF2MAC";
+					phy-mode = "gmii";
+					gmii-direct;
+					status = "okay";
+				};
+				port_imp {
+					management;
+					reg = <8>;
+					mac-type = "SF2MAC";
+					phy-mode = "gmii";
+					gmii-direct;
+					status = "okay";
+				};
+			};
+		};
+
+		mdiosf2 {
+			compatible = "brcm,mdio-sf2";
+			reg = <0x486000 0x10>,
+				<0x480000 0x4>;
 		};
 	};
 };

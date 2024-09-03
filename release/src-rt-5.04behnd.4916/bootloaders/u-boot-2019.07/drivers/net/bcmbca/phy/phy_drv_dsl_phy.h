@@ -110,37 +110,6 @@ static inline int dsl_phy_leds_init(phy_dev_t *phy_dev, void *leds_info)
     return ephy_leds_init(leds_info);
 }
 
-/* Speed cap adjustment for USXGMII_M port aggregation */
-static inline int phy_usxgmii_m_speed_cap_adjust(phy_dev_t *phy_dev, int speed_caps)
-{
-    int highest_speed = phy_caps_to_max_speed(speed_caps & (~PHY_CAP_AUTONEG));
-
-    if (phy_dev->usxgmii_m_type == USXGMII_M_NONE)
-        return speed_caps;
-
-    switch (highest_speed)
-    {
-        case PHY_SPEED_10000:
-            switch (phy_dev->usxgmii_m_type)
-            {
-                case USXGMII_M_10G_Q:
-                    speed_caps &= ~(PHY_CAP_10000|PHY_CAP_5000);
-                    break;
-                case USXGMII_M_10G_D:
-                    speed_caps &= ~(PHY_CAP_10000);
-                    break;
-                default:
-                    BUG_CHECK("Driver not support yet for Serdes of %d USXGMII mode: %d\n", 
-                            phy_dev->addr, phy_dev->usxgmii_m_type);
-            }
-            break;
-        default:
-            BUG_CHECK("Driver not support yet for USXGMII mode %d at address %d, max speed: %d\n", 
-                phy_dev->usxgmii_m_type, phy_dev->addr, highest_speed);
-    }
-    return speed_caps;
-}
-
 /* 
     The function is doing adjustment for PHYs that hardware speed caps does not reflect
     its real speed caps; those PHYs are doing adjustment inside PHY firmware during the link up.
@@ -150,6 +119,9 @@ static inline int phy_xfi_speed_cap_adjust(phy_dev_t *phy_dev, int speed_caps)
 {
     uint32_t inter_types;
     uint32_t supported_speed_caps;
+
+    if (phy_dev_is_mphy(phy_dev))
+        return inter_phy_supported_speed_caps[INTER_PHY_TYPE_USXGMII_MP]|PHY_CAP_AUTONEG;
 
     phy_dev_inter_phy_types_get(phy_dev, INTER_PHY_TYPE_UP, &inter_types);
     /* Remove multi speed XFI flags which do not give speed capability indication */

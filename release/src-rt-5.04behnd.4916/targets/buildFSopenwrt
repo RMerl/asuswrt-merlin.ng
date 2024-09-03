@@ -147,6 +147,10 @@ if [ "$BUILD_GPON" != "" ] ; then
   fi
 fi
 
+# Update mdev.conf for mtd ubi ignore entries, ash issue? rely on kernel update /dev/ubi0_*
+echo "Updating mdev.conf in fs"
+sed -i -E '/^(ubi|mtd)/s/^/# /' $ROOTFS/etc/mdev.conf
+
 # debugfs
 if [ "$BUILD_DEBUG_TOOLS" == "y" ] ; then
     chmod +w $ROOTFS/etc/fstab

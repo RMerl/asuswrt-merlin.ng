@@ -1,29 +1,23 @@
 /*
     <:copyright-BRCM:2015:DUAL/GPL:standard
-
-       Copyright (c) 2015 Broadcom
+    
+       Copyright (c) 2015 Broadcom 
        All Rights Reserved
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
     :>
 */
 
@@ -34,6 +28,8 @@
 extern "C"
 {
 #endif
+#include "rdd_map_auto.h"
+extern int drv_qm_get_tm_core_per_image(int image_index);
 
 #define RNR_FREQ_IN_MHZ 1000
 #define UBUS_SLV_FREQ_IN_MHZ 500
@@ -257,9 +253,37 @@ typedef enum bbh_id_e
     BBH_TX_ID_NULL = BBH_ID_NULL
 } bbh_id_e;
 
+typedef enum tm_identifier_e
+{
+    TM_START = 0,
+    TM_PON_DSL_AE = 0,
+    TM_ETH_START = 1,
+    TM_ETH_PORTS_0 = TM_ETH_START,
+    TM_ETH_END = TM_ETH_PORTS_0,
+    TM_ETH_SQ = 2,
+    TM_MAX = 2,
+    TM_MAX_GROUP = TM_ETH_END - TM_ETH_START + 1,
+    TM_ERROR = 3,
+    TM_NUM_OF_IDENTITY = 3
+} tm_identifier_e;
 
+static inline int tm_get_core_for_tm(tm_identifier_e tm_identity)
+{
+    switch (tm_identity)
+    {
+    case TM_PON_DSL_AE:
+        return drv_qm_get_tm_core_per_image(us_tm_runner_image);
 
-
+    case TM_ETH_PORTS_0:
+        return drv_qm_get_tm_core_per_image(ds_tm_runner_image);
+    
+    case TM_ETH_SQ:
+        return drv_qm_get_tm_core_per_image(service_queues_runner_image);
+   
+    default:
+        return -1;
+    }
+}
 typedef enum rnr_quad_id_e
 {
     RNR_QUAD0_ID = 0,
@@ -312,5 +336,7 @@ typedef enum bac_if_id_e
 #define SBPM_UG_MAP_LOW_INIT_VAL                       0x60000000
 #define SBPM_UG_MAP_HIGH_INIT_VAL                      0x80C00015
 #endif
+
+#define SERVICE_QUEUES_THREAD_NUMBER IMAGE_2_IMAGE_2_SERVICE_QUEUES_THREAD_NUMBER
 
 #endif

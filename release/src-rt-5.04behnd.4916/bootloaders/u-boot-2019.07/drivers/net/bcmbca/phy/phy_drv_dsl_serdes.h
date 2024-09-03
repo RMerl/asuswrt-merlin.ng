@@ -63,9 +63,9 @@ typedef struct phy_serdes_s {
     int (*silent_start_light_detected)(phy_dev_t *phy_dev);   /* For PON/AE dual role device */
     void (*lbe_op)(phy_dev_t *phy_dev, laser_op_t lbe_op);
     int flag;
-        #define FORCE_SPEED_SET_ON_SIG (1<<0)
-        #define LANE_STRUCTURE (1<<1)
-        #define CORE_STRUCTURE (1<<2)
+        #define FORCE_SPEED_SET_ON_SIG  (1<<0)
+        #define LANE_STRUCTURE          (1<<1)
+        #define CORE_STRUCTURE          (1<<2)
     int sgmii_mode;
     int sgmii_an_status;
     int serdes_speed_mode;
@@ -163,6 +163,7 @@ void serdes_work_around(phy_dev_t *phy_dev);
 #endif
 enum {SFP_MODULE_NOT_DETECTED, SFP_MODULE_DETECTED, SFP_MODULE_I2C_CONF_DETECTED};
 
+int phy_drv_serdes_adjust_speed(phy_dev_t *phy_dev, phy_speed_t max_speed);
 int phy_i2c_module_detect(phy_dev_t *phy_dev);
 void phy_i2c_module_type_detect(phy_dev_t *phy_dev);
 int phy_dev_sltstt_get(phy_dev_t *phy_dev, int *mode);
@@ -201,7 +202,7 @@ static inline int dsl_serdes_silent_start_light_detected(phy_dev_t *phy_dev)
     if (phy_serdes->sfp_module_type == SFP_FIXED_PHY || (phy_next->flag & PHY_FLAG_COPPER_SFP_TYPE) ||
         !dsl_serdes_is_silent_start_enabled(phy_dev))
         return 1;
-    
+
     if (!phy_serdes->silent_start_light_detected)
         return 1;
     return phy_serdes->silent_start_light_detected(phy_dev);
@@ -212,9 +213,9 @@ static inline int dsl_serdes_light_detected(phy_dev_t *phy_dev)
     phy_serdes_t *phy_serdes = (phy_serdes_t *)phy_dev->priv;
     phy_dev_t *phy_next = phy_dev->cascade_next;
 
-    if (phy_serdes->sfp_module_type == SFP_FIXED_PHY || (phy_next->flag & PHY_FLAG_COPPER_SFP_TYPE))   
+    if (phy_serdes->sfp_module_type == SFP_FIXED_PHY || (phy_next->flag & PHY_FLAG_COPPER_SFP_TYPE))
         return 1;
-    
+
     if (!phy_serdes->light_detected)
         return 1;
     return phy_serdes->light_detected(phy_dev);

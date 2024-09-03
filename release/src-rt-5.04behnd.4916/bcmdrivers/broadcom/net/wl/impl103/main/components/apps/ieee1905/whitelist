@@ -1,0 +1,2 @@
+JIRA:BCAWLAN-261307 fix wbd_slave crash due to null dereference
+JIRA:BCAWLAN-261771 IEEE1905: While extracting Affiliated STA Metrics TLV check for the minimum required length instead of whole length including reserved bytes

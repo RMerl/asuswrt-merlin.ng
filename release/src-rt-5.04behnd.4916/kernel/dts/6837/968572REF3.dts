@@ -163,8 +163,7 @@
 };
 
 &ethphytop {
-    phy-mpd = <&bca_extintr 7 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
-    phy-link = <&bca_extintr 3 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+    wakeup-trigger-pin = <&bca_extintr 91 GPIO_ACTIVE_LOW (BCA_EXTINTR_SHARED_GPIO | BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
     status = "okay";
 };
 
@@ -231,27 +230,184 @@
     };
 };
 
+&led_ctrl {
+    pinctrl-names = "default";
+    pinctrl-0 = <&a_ser_led_data_pin_0 &a_ser_led_clk_pin_1 &a_ser_led_mask_pin_2>;
+    serial-shifters-installed = <3>;
+
+    led0: serial-port_slan0-led_1 {
+        active_low;
+        crossbar-output = <2>;
+        activity = <(LED_SPEED_ALL)>;
+        status = "okay";
+    };
+
+    led1: serial-port_slan0-led_0 {
+        active_low;
+        crossbar-output = <3>;
+        link = <(LED_SPEED_ALL)>;
+        status = "okay";
+    };
+
+    led2: serial-port_slan1-led_1 {
+        active_low;
+        crossbar-output = <1>;
+        activity = <(LED_SPEED_ALL)>;
+        status = "okay";
+    };
+
+    led3: serial-port_slan1-led_0 {
+        active_low;
+        crossbar-output = <7>;
+        link = <(LED_SPEED_ALL)>;
+        status = "okay";
+    };
+
+    led4: serial-port_slan2-led_1 {
+        active_low;
+        crossbar-output = <14>;
+        activity = <(LED_SPEED_ALL)>;
+        status = "okay";
+    };
+
+    led5: serial-port_slan2-led_0 {
+        active_low;
+        crossbar-output = <0>;
+        link = <(LED_SPEED_ALL)>;
+        status = "okay";
+    };
+
+    led6: serial-port_slan3-led_1 {
+        active_low;
+        crossbar-output = <12>;
+        activity = <(LED_SPEED_ALL)>;
+        status = "okay";
+    };
+
+    led7: serial-port_slan3-led_0 {
+        active_low;
+        crossbar-output = <13>;
+        link = <(LED_SPEED_ALL)>;
+        status = "okay";
+    };
+
+    led8: serial-port_wan_ae-led_1 {
+        active_low;
+        crossbar-output = <11>;
+        activity = <(LED_SPEED_ALL)>;
+        status = "okay";
+    };
+
+    led9: serial-port_wan_ae-led_0 {
+        active_low;
+        crossbar-output = <15>;
+        link = <(LED_SPEED_ALL)>;
+        status = "okay";
+    };
+
+    led10: serial-port_qlan1-led_1 {
+        active_low;
+        crossbar-output = <9>;
+        activity = <(LED_SPEED_ALL)>;
+        status = "okay";
+    };
+
+    led11: serial-port_qlan1-led_0 {
+        active_low;
+        crossbar-output = <10>;
+        link = <(LED_SPEED_ALL)>;
+        status = "okay";
+    };
+
+
+    led14: sw_serial_led_31 {
+        active_low;
+        label = "WAN";
+        crossbar-output = <4>;
+        status = "okay";
+    };
+
+    led15: sw_serial_led_30 {
+        active_low;
+        label = "ALARM";
+        crossbar-output = <5>;
+        status = "okay";
+    };
+
+    led16: sw_serial_led_29 {
+        active_low;
+        label = "PON";
+        crossbar-output = <6>;
+        status = "okay";
+    };
+
+    led19: sw_serial_led_24 {
+        active_low;
+        crossbar-output = <18>;
+        label = "WPS";
+        status = "okay";
+    };
+
+    led20: sw_serial_led_23 {
+        active_low;
+        crossbar-output = <19>;
+        label = "VOIP2";
+        status = "okay";
+    };
+
+    led21: sw_serial_led_22 {
+        active_low;
+        crossbar-output = <20>;
+        label = "VOIP1";
+        status = "okay";
+    };
+
+    led22: sw_serial_led_21 {
+        active_low;
+        crossbar-output = <21>;
+        label = "USB0";
+        trigger-sources = <&usb_port1>;
+        linux,default-trigger = "usbport";
+        status = "okay";
+    };
+
+    led23: sw_serial_led_20 {
+        active_low;
+        crossbar-output = <22>;
+        label = "USB1";
+        trigger-sources = <&usb_port2>;
+        linux,default-trigger = "usbport";
+        status = "okay";
+    };
+};
+
 &switch0 {
     pinctrl-names = "default";
     pinctrl-0 = <&a_eth_mdc_pin_59 &a_eth_mdio_pin_60>;
 
     ports {
         port_wan@ae {
+            network-leds = <&led8 &led9>;
             status = "okay";
         };
         port_slan0 {
+            network-leds = <&led0 &led1>;
             status = "okay";
         };
         port_slan1 {
+            network-leds = <&led2 &led3>;
             status = "okay";
         };
         port_slan2 {
+            network-leds = <&led4 &led5>;
             status = "okay";
         };
         port_slan3 {
+            network-leds = <&led6 &led7>;
             status = "okay";
         };
         port_qlan1 {
+            network-leds = <&led10 &led11>;
             status = "okay";
         };
         port_wan@fiber {

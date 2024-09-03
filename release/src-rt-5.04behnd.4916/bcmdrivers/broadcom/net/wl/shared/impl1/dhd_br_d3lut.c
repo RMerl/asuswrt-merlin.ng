@@ -3,27 +3,21 @@
     All Rights Reserved
 
     <:label-BRCM:2019:DUAL/GPL:standard
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
     :>
 */
 
@@ -68,10 +62,6 @@ dhd_handle_br_d3lut(struct net_device *src_dev, struct net_device *dst_dev, stru
 {
 	struct net_device *root_src_dev, *root_dst_dev;
 	unsigned char *da = eth_hdr(skb)->h_dest;
-#ifdef BCM_BLOG
-	struct net_bridge_fdb_entry *dst;
-	bool is_local;
-#endif
 
 #if defined(PKTC_TBL) || defined(BCM_PKTFWD)
 	/* dhd module is not ready/loaded */
@@ -79,28 +69,11 @@ dhd_handle_br_d3lut(struct net_device *src_dev, struct net_device *dst_dev, stru
 		return;
 #endif
 
-	if (is_broadcast_ether_addr(da) || is_multicast_ether_addr(da))
+	if (skbuff_bcm_ext_br_flood_get(skb))
 		return;
 
-#ifdef BCM_BLOG
-	if (blog_fc_enabled()) {
-		if (!skb->blog_p)
-			return;
-
-		dst = (struct net_bridge_fdb_entry *)skb->blog_p->fdb[BLOG_PARAM1_DSTFDB];
-		if (!dst)
-			return;
-
-#if (LINUX_VERSION_CODE > KERNEL_VERSION(5, 10, 0))
-		is_local = test_bit(BR_FDB_LOCAL, &dst->flags);
-#else
-		is_local = dst->is_local;
-#endif
-		if (is_local || !dst->dst || (dst->dst->dev != dst_dev) ||
-			memcmp((uint8_t *)&skb->blog_p->dst_mac, da, ETH_ALEN))
-			return;
-	}
-#endif /* BCM_BLOG */
+	if (is_broadcast_ether_addr(da) || is_multicast_ether_addr(da))
+		return;
 
 	/* Get the root dest device and make sure that we
 	 * are always transmitting to a root device

@@ -29,6 +29,9 @@
 #endif
 #if defined(RTCONFIG_BCM_502L07P2)
 #include "ethernet.h"
+#elif defined(RTCONFIG_HND_ROUTER_BE_4916)
+#include "bcm_usched.h"
+#include "ethernet.h"
 #else
 #include "bcm_usched.h"
 #include "proto/ethernet.h"
@@ -381,4 +384,25 @@ double wl_get_txpwr_target_max(char *name);
 double get_wifi_maxpower(int target_unit);
 #endif
 #endif
+
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+#define QOSMGMT_LSA_API_VER 3u
+typedef struct qm_lsa_api_params {
+	uint16			version;
+	uint16			length;
+	struct ether_addr	ea;	/* sta mac */
+	uint8			pad1[2];
+	ll_api_dir_t		dir;	/* direction: DL */
+	uint8			tid;	/* TID: 0 - 7 */
+	bool			force;
+	uint8			pad2[2];
+	uint32			min_servintrvl;	/* minimum service interval (msec) */
+	uint32			max_servintrvl;	/* maximum service interval (msec) */
+	uint32			mean_datarate;	/* mean datarate in kbps */
+	ll_api_srcid_t		src_id;	/* Low Latency trigger source */
+	char			ifname[IFNAMSIZ];
+} qm_lsa_api_params_t;
+
+#endif
+
 #endif /* _wlif_utils_h_ */

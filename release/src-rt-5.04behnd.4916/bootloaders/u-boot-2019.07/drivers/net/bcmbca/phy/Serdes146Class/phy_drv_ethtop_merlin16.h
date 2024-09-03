@@ -41,7 +41,7 @@
 #define MERLIN_INDIR_ACC_ADDR  0x3ff504
 #define MERLIN_INDIR_ACC_MASK  0x3ff508
 
-#if defined(CONFIG_BCM96765)
+#if defined(CONFIG_BCM96765) || defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764)
 #define MERLIN_CTRL            0x200c
 #define MERLIN_STATUS          0x2010
 #define MERLIN_REVID           0x201c
@@ -137,7 +137,12 @@
 #define REG_MAB_0_TX_WRR_CTRL       0x3304
 
 
+#if defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764)
+#define ETH_PHY_TOP_REG_R2PMI_LP_BCAST_MODE_CNTRL 0x01b0
+#else
 #define ETH_PHY_TOP_REG_R2PMI_LP_BCAST_MODE_CNTRL 0x3ff000
+#endif
+
 //cross check with vlib/host_sim_model.v
 #define MERLIN_SERDES_CTRL_ISO_ENABLE_OFFSET   27
 #define MERLIN_SERDES_CTRL_TESTSEL_OFFSET      21

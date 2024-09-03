@@ -3,7 +3,7 @@
 IS_BCMHND=`nvram get rc_support|grep -i bcmhnd`
 betaupg_support=`nvram get rc_support|grep -i betaupg`
 
-wget_options="-q -t 2 -T 30 --no-check-certificate"
+wget_options="--ciphers='DEFAULT:@SECLEVEL=1:!CAMELLIA:!3DES' -q -t 2 -T 30 --no-check-certificate"
 
 dl_path_SQ="https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ"
 dl_path_SQ_beta="https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/app"
@@ -114,14 +114,14 @@ wget_result2=0
 if [ "$update_url" != "" ]; then
 	echo "---- wget fw nvram webs_state_url ${update_url}/$firmware_file ----" >> /tmp/webs_upgrade.log
 	logger -t AUTO_UPGRADE "wget fw nvram webs_state_url $firmware_file"
-	wget -t 2 -T 30 --no-check-certificate --output-file=/tmp/fwget_log ${update_url}/$firmware_file -O $firmware_path
+	wget --ciphers='DEFAULT:@SECLEVEL=1:!CAMELLIA:!3DES' -t 2 -T 30 --no-check-certificate --output-file=/tmp/fwget_log ${update_url}/$firmware_file -O $firmware_path
 	wget_result=$?
 	echo "---- wget fw nvram webs_state_url, exit code: ${wget_result} ----" >> /tmp/webs_upgrade.log
 	logger -t AUTO_UPGRADE "exit code: ${wget_result}"
 
 	echo "---- wget rsa nvram webs_state_url ${update_url}/$firmware_rsasign ----" >> /tmp/webs_upgrade.log
 	logger -t AUTO_UPGRADE "wget rsa nvram webs_state_url $firmware_rsasign"
-	wget $wget_options ${update_url}/$firmware_rsasign -O $rsa_path
+	wget --ciphers='DEFAULT:@SECLEVEL=1:!CAMELLIA:!3DES' -t 2 -T 30 --no-check-certificate ${update_url}/$firmware_rsasign -O $rsa_path
 	wget_result2=$?
 	echo "---- wget rsa nvram webs_state_url, exit code: ${wget_result2} ----" >> /tmp/webs_upgrade.log
 	logger -t AUTO_UPGRADE "exit code: ${wget_result2}"
@@ -129,14 +129,14 @@ if [ "$update_url" != "" ]; then
 elif [ "$betaupg_support" != "" ] && [ "$forbeta" == "1" ]; then
 	echo "---- wget fw beta ${dl_path_SQ}/$firmware_file ----" >> /tmp/webs_upgrade.log
 	logger -t AUTO_UPGRADE "wget fw beta $firmware_file"
-	wget -t 2 -T 30 --no-check-certificate --output-file=/tmp/fwget_log ${dl_path_SQ}/$firmware_file -O $firmware_path
+	wget --ciphers='DEFAULT:@SECLEVEL=1:!CAMELLIA:!3DES' -t 2 -T 30 --no-check-certificate --output-file=/tmp/fwget_log ${dl_path_SQ}/$firmware_file -O $firmware_path
 	wget_result=$?
 	echo "---- [LiveUpdate] wget fw, exit code: ${wget_result} ----" >> /tmp/webs_upgrade.log
 	logger -t AUTO_UPGRADE "exit code: ${wget_result}"
 
 	echo "---- wget fw beta ${dl_path_SQ}/$firmware_rsasign ----" >> /tmp/webs_upgrade.log
 	logger -t AUTO_UPGRADE "wget fw beta $firmware_rsasign"
-	wget $wget_options ${dl_path_SQ}/$firmware_rsasign -O $rsa_path
+	wget --ciphers='DEFAULT:@SECLEVEL=1:!CAMELLIA:!3DES' -t 2 -T 30 --no-check-certificate ${dl_path_SQ}/$firmware_rsasign -O $rsa_path
 	wget_result2=$?
 	echo "---- [LiveUpdate] wget rsa, exit code: ${wget_result2} ----" >> /tmp/webs_upgrade.log
 	logger -t AUTO_UPGRADE "exit code: ${wget_result2}"
@@ -144,14 +144,14 @@ elif [ "$betaupg_support" != "" ] && [ "$forbeta" == "1" ]; then
 elif [ "$forsq" -ge 2 ] && [ "$forsq" -le 9 ]; then
 	echo "---- wget fw sq beta_user ${dl_path_SQ_beta}${forsq}/$firmware_file ----" >> /tmp/webs_upgrade.log
 	logger -t AUTO_UPGRADE "wget fw sq beta_user ${forsq}/$firmware_file"
-	wget -t 2 -T 30 --no-check-certificate --output-file=/tmp/fwget_log ${dl_path_SQ_beta}${forsq}/$firmware_file -O $firmware_path
+	wget --ciphers='DEFAULT:@SECLEVEL=1:!CAMELLIA:!3DES' -t 2 -T 30 --no-check-certificate --output-file=/tmp/fwget_log ${dl_path_SQ_beta}${forsq}/$firmware_file -O $firmware_path
 	wget_result=$?
 	echo "---- [LiveUpdate] wget fw, exit code: ${wget_result} ----" >> /tmp/webs_upgrade.log
 	logger -t AUTO_UPGRADE "exit code: ${wget_result}"
 
 	echo "---- wget fw sq beta_user ${dl_path_SQ_beta}${forsq}/$firmware_rsasign ----" >> /tmp/webs_upgrade.log
 	logger -t AUTO_UPGRADE "wget fw sq beta_user ${forsq}/$firmware_rsasign"
-	wget $wget_options ${dl_path_SQ_beta}${forsq}/$firmware_rsasign -O $rsa_path
+	wget --ciphers='DEFAULT:@SECLEVEL=1:!CAMELLIA:!3DES' -t 2 -T 30 --no-check-certificate ${dl_path_SQ_beta}${forsq}/$firmware_rsasign -O $rsa_path
 	wget_result2=$?
 	echo "---- [LiveUpdate] wget rsa, exit code: ${wget_result2} ----" >> /tmp/webs_upgrade.log
 	logger -t AUTO_UPGRADE "exit code: ${wget_result2}"
@@ -159,14 +159,14 @@ elif [ "$forsq" -ge 2 ] && [ "$forsq" -le 9 ]; then
 elif [ "$forsq" == "1" ]; then
 	echo "---- wget fw sq ${dl_path_SQ}/$firmware_file ----" >> /tmp/webs_upgrade.log
 	logger -t AUTO_UPGRADE "wget fw sq $firmware_file"
-	wget -t 2 -T 30 --no-check-certificate --output-file=/tmp/fwget_log ${dl_path_SQ}/$firmware_file -O $firmware_path
+	wget --ciphers='DEFAULT:@SECLEVEL=1:!CAMELLIA:!3DES' -t 2 -T 30 --no-check-certificate --output-file=/tmp/fwget_log ${dl_path_SQ}/$firmware_file -O $firmware_path
 	wget_result=$?
 	echo "---- [LiveUpdate] wget fw, exit code: ${wget_result} ----" >> /tmp/webs_upgrade.log
 	logger -t AUTO_UPGRADE "exit code: ${wget_result}"
 
 	echo "---- wget fw sq ${dl_path_SQ}/$firmware_rsasign ----" >> /tmp/webs_upgrade.log
 	logger -t AUTO_UPGRADE "wget fw sq $firmware_rsasign"
-	wget $wget_options ${dl_path_SQ}/$firmware_rsasign -O $rsa_path
+	wget --ciphers='DEFAULT:@SECLEVEL=1:!CAMELLIA:!3DES' -t 2 -T 30 --no-check-certificate ${dl_path_SQ}/$firmware_rsasign -O $rsa_path
 	wget_result2=$?
 	echo "---- [LiveUpdate] wget rsa, exit code: ${wget_result2} ----" >> /tmp/webs_upgrade.log
 	logger -t AUTO_UPGRADE "exit code: ${wget_result2}"
@@ -174,14 +174,14 @@ elif [ "$forsq" == "1" ]; then
 elif [ "$urlpath" == "" ]; then
 	echo "---- wget fw Real ${dl_path_file}/$firmware_file ----" >> /tmp/webs_upgrade.log
 	logger -t AUTO_UPGRADE "wget fw Real $firmware_file"
-	wget -t 2 -T 30 --no-check-certificate --output-file=/tmp/fwget_log ${dl_path_file}/$firmware_file -O $firmware_path
+	wget --ciphers='DEFAULT:@SECLEVEL=1:!CAMELLIA:!3DES' -t 2 -T 30 --no-check-certificate --output-file=/tmp/fwget_log ${dl_path_file}/$firmware_file -O $firmware_path
 	wget_result=$?
 	echo "---- [LiveUpdate] wget fw, exit code: ${wget_result} ----" >> /tmp/webs_upgrade.log
 	logger -t AUTO_UPGRADE "exit code: ${wget_result}"
 
 	echo "---- wget fw Real ${dl_path_file}/$firmware_rsasign ----" >> /tmp/webs_upgrade.log
 	logger -t AUTO_UPGRADE "wget fw Real $firmware_rsasign"
-	wget $wget_options ${dl_path_file}/$firmware_rsasign -O $rsa_path
+	wget --ciphers='DEFAULT:@SECLEVEL=1:!CAMELLIA:!3DES' -t 2 -T 30 --no-check-certificate ${dl_path_file}/$firmware_rsasign -O $rsa_path
 	wget_result2=$?
 	echo "---- [LiveUpdate] wget rsa, exit code: ${wget_result2} ----" >> /tmp/webs_upgrade.log
 	logger -t AUTO_UPGRADE "exit code: ${wget_result2}"
@@ -189,14 +189,14 @@ elif [ "$urlpath" == "" ]; then
 else
 	echo "---- wget fw URL ----" >> /tmp/webs_upgrade.log
 	logger -t AUTO_UPGRADE "wget fw URL"
-	wget -t 2 -T 30 --no-check-certificate --output-file=/tmp/fwget_log $urlpath/$firmware_file -O $firmware_path
+	wget --ciphers='DEFAULT:@SECLEVEL=1:!CAMELLIA:!3DES' -t 2 -T 30 --no-check-certificate --output-file=/tmp/fwget_log $urlpath/$firmware_file -O $firmware_path
 	wget_result=$?
 	echo "---- [LiveUpdate] wget fw, exit code: ${wget_result} ----" >> /tmp/webs_upgrade.log
 	logger -t AUTO_UPGRADE "exit code: ${wget_result}"
 
 	echo "---- [LiveUpdate] wget rsa URL ----" >> /tmp/webs_upgrade.log
 	logger -t AUTO_UPGRADE "wget rsa URL"
-	wget $wget_options $urlpath/$firmware_rsasign -O $rsa_path
+	wget --ciphers='DEFAULT:@SECLEVEL=1:!CAMELLIA:!3DES' -t 2 -T 30 --no-check-certificate $urlpath/$firmware_rsasign -O $rsa_path
 	wget_result2=$?
 	echo "---- [LiveUpdate] wget rsa, exit code: ${wget_result2} ----" >> /tmp/webs_upgrade.log
 	logger -t AUTO_UPGRADE "exit code: ${wget_result2}"

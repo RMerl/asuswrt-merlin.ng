@@ -15,7 +15,11 @@ reg = <HI32 PCIE_ADDR HI32 PCIE_SIZE>;
 ranges = <PCIE_RANGE>;
 #else
 /*       <flags(32b)> <pci_addr(64b)>   <cpu_addr(64b)  > <size(64)>      */
+#if defined(CPU_RANGE_ADDR)
+ranges = <0x02000000  0 PCIE_RANGE_ADDR HI32 CPU_RANGE_ADDR 0 PCIE_RANGE_SIZE>;
+#else
 ranges = <0x02000000  0 PCIE_RANGE_ADDR HI32 PCIE_RANGE_ADDR 0 PCIE_RANGE_SIZE>;
+#endif
 #endif
 
 /* core error log interrupts */
@@ -44,5 +48,6 @@ status = "disabled";
 #undef PCIE_RANGE
 #undef PCIE_RANGE_ADDR
 #undef PCIE_RANGE_SIZE
+#undef CPU_RANGE_ADDR
 #undef HI32
 

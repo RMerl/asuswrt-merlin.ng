@@ -123,17 +123,14 @@
 	};
 
 #if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
-		/* pcie 1 & 3 share same clock */
-		#define PCIEC_PLLCLKID      0x1210
-		/* PCIe#1 GEN3 port (includes G3 PLL registers) */
-		#define PCIE1_REG_SIZE      0xB000
 
 	/* pcie common */
 	pcie: pciec {
 		compatible = "brcm,bcm-pcie";
 		device_type = "cpci";
 
-		brcm,pllclkid = <PCIEC_PLLCLKID>;
+		/* pcie 1, 2 & 3 share same GEN3 clock */
+		brcm,pllclkid = <0x1110>;
 	};
 
 	/* pcie core 0 */
@@ -151,7 +148,7 @@
 		#define PCIE_ID				1
 		#define PCIE_SPI			69
 		#define PCIE_ADDR			0x80090000
-		#define PCIE_SIZE			PCIE1_REG_SIZE
+		#define PCIE_SIZE			0x0000B000
 		#define PCIE_RANGE_ADDR		0xD0000000
 		#define PCIE_RANGE_SIZE		0x10000000
 		#include "../ip/bcm_pcie_core.dtsi"
@@ -161,7 +158,7 @@
 		#define PCIE_ID				2
 		#define PCIE_SPI			70
 		#define PCIE_ADDR			0x800A0000
-		#define PCIE_SIZE			0x0000A000
+		#define PCIE_SIZE			0x0000B000
 		#define PCIE_RANGE_ADDR		0xE0000000
 		#define PCIE_RANGE_SIZE		0x10000000
 		#include "../ip/bcm_pcie_core.dtsi"
@@ -541,6 +538,7 @@
 		ubus_sys: ubus_sys {
 			#address-cells = <2>;
 			#size-cells = <2>;
+			ranges;
 			#define UBUS_SYSTOP_OFFSET         0x0 0x83000000
 			#define UBUS_SYSTOP_SIZE           0x0 0x80
 			#define UBUS_REGISTRATION_OFFSET   0x0 0x83000200
@@ -620,13 +618,22 @@
 			#define SDHCI_BOOT_SIZE			0x00000000 0x40
 			#define SDHCI_AHBSS_CTRL_OFFSET		0x00000000 0x10300
 			#define SDHCI_AHBSS_CTRL_SIZE		0x00000000 0x100
-			#define SDHCI_HS200_BASE_CLOCK_FREQ	180000000
+			#define SDHCI_HS200_BASE_CLOCK_FREQ	176000000
 			#define SDIO_EMMC_SPI			38
 			#include "../ip/bcm_sdhci.dtsi"
 			mmc-ddr-3_3v;
 			sdhci-pll-baseclk-mhz = <4400>;
 			sdhci-pll-valid-op-mhz = <100 110 160 176 200>;
 		};
+
+#if defined (CONFIG_MMC_OOPS) || (CONFIG_MMC_OOPS_MODULE)
+		mmcoops {
+			#define MMC_OOPS_DUMP_OFFSET    1536 /* 768KB */
+			#define MMC_OOPS_DUMP_SIZE      512  /* 256KB */	
+			#define MMC_OOPS_DUMP_RECSIZE   128  /* 64KB  */
+			#include "../ip/bcm_mmc_oops.dtsi"
+		};
+#endif
 
 		rng: rng {
 			#define RNG200_OFFSET                   0x00000000 0xb80
@@ -850,6 +857,12 @@
 			#define SOTP_SIZE			0x0 0x500
 			#include "../ip/bcm_sotp_skp.dtsi"
 		};
+
+		i2s_clkmclk_syscon: i2s_clkmclk_syscon@0xFF802080 {
+			compatible = "brcm,i2s-audio-clkmclk-syscon", "syscon";
+			reg = <0x0 0x2080 0x0 0x80>;
+		};
+
 	};
 
 	legacy_leds: legacy_leds {
@@ -880,12 +893,6 @@
 };
 
 &clocks {
-	#address-cells = <0x2>;
-	#size-cells = <0x2>;
-	i2s_clkmclk_syscon: i2s_clkmclk_syscon@0xFF802080 {
-		compatible = "brcm,i2s-audio-clkmclk-syscon", "syscon";
-		reg = <0x0 0xFF802080 0x0 0x80>;
-	};
 	osc: oscillator {
 		#clock-cells = <0>;
 		compatible = "fixed-clock";

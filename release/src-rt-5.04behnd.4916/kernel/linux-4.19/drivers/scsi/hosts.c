@@ -178,6 +178,7 @@ void scsi_remove_host(struct Scsi_Host *shost)
 	scsi_forget_host(shost);
 	mutex_unlock(&shost->scan_mutex);
 	scsi_proc_host_rm(shost);
+	scsi_proc_hostdir_rm(shost->hostt);
 
 	spin_lock_irqsave(shost->host_lock, flags);
 	if (scsi_host_set_state(shost, SHOST_DEL))
@@ -329,7 +330,22 @@ static void scsi_host_dev_release(struct device *dev)
 	struct Scsi_Host *shost = dev_to_shost(dev);
 	struct device *parent = dev->parent;
 
+#if defined(CONFIG_BCM_KF_MISC_BACKPORTS)
+	/*  when this function gets called from usb-storage
+	 *  if more than 1 USB devices are plugged in only 1 entry
+	 *  is removed from /proc/scsci/usb-storage, that results
+	 *  kernel warning about removal of non-empty directory
+	*/
+	/*
+	    scsi: core: Fix a procfs host directory removal regression
+
+	    [ Upstream commit be03df3d4bfe7e8866d4aa43d62e648ffe884f5f ]
+	*/
+
+#else
+	/* In case scsi_remove_host() has not been called. */
 	scsi_proc_hostdir_rm(shost->hostt);
+#endif
 
 	/* Wait for functions invoked through call_rcu(&shost->rcu, ...) */
 	rcu_barrier();

@@ -730,7 +730,7 @@ function has_dfs_channel(chint){
 }
 
 function filter_5g_channel_by_bw(ch_ary, bw){
-	var del, ary;;
+	var del, ary;
 	if(bw == 160){
 		var ch=[36,100], cnt=[0,0], d = 28, nr_ch=8;
 	}else if(bw == 80){
@@ -760,7 +760,7 @@ function filter_5g_channel_by_bw(ch_ary, bw){
 }
 
 function filter_6g_channel_by_bw(ch_ary, bw){
-	var del, ary;;
+	var del, ary;
 	if(bw == 160){
 		var ch=[33,65,97,129,161,193], cnt=[0,0,0,0,0,0], d = 28, nr_ch=8;
 	}else if(bw == 80){
@@ -2212,38 +2212,21 @@ function check_is_merlin_fw(_fw) {
 		return false;
 }
 
+var wlnband_list_array = `<% nvram_get("wlnband_list"); %>`.split("&#60");
 function is_unit_24g(_unit) {
-	if (based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" || based_modelid == "BQ16" || based_modelid == "BQ16_PRO") {
-		if (_unit == 3) return true;
-	} else {
-		if (_unit == 0) return true;
-	}
-	return false;
+	return (!wlnband_list_array.hasOwnProperty(_unit)) ? false : wlnband_list_array[_unit].indexOf("2g") > -1;
 }
 
 function is_unit_5g(_unit) {
-	if (based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" || based_modelid == "BQ16" || based_modelid == "BQ16_PRO") {
-		if (_unit == 0) return true;
-	} else if (wl_info.band5g_support) {
-		if (_unit == 1) return true;
-	}
-	return false;
+	return (!wlnband_list_array.hasOwnProperty(_unit)) ? false : wlnband_list_array[_unit].indexOf("5g1") > -1;
 }
 
 function is_unit_5g_2(_unit) {
-	if (based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" || based_modelid == "BQ16" || based_modelid == "BQ16_PRO") {
-		if (_unit == 1) return true;
-	} else if (wl_info.band5g_2_support) {
-		if (_unit == 2) return true;
-	}
-	return false;
+	return (!wlnband_list_array.hasOwnProperty(_unit)) ? false : wlnband_list_array[_unit].indexOf("5g2") > -1;
 }
 
 function is_unit_6g(_unit) {
-	if (band6g_support) {
-		if (_unit == 2) return true;
-	}
-	return false;
+	return (!wlnband_list_array.hasOwnProperty(_unit)) ? false : wlnband_list_array[_unit].indexOf("6g") > -1;
 }
 
 function is_unit_60g(_unit){

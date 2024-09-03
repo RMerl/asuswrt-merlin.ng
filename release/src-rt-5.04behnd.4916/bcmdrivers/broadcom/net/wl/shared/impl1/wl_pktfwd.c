@@ -3,27 +3,21 @@
     All Rights Reserved
 
     <:label-BRCM:2017:DUAL/GPL:standard
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
     :>
 */
 
@@ -148,6 +142,10 @@ extern void bcm_dev_put(void *dev);
 #ifndef WLC_DUMP_INST
 #define WLC_DUMP_INST(_wl)	((_wl)->pub)
 #endif
+
+#ifndef WLHDR_SUPPORT
+#define WLHDR_SUPPORT(wl)	false
+#endif /* ! WLHDR_SUPPORT */
 
 /**
  * =============================================================================
@@ -298,7 +296,10 @@ wl_pktfwd_t wl_pktfwd_g = {
 #endif /* ! WL_PKTFWD_TXEVAL */
 
 /** System global lock macros mutual exclusive access */
-#if defined(CONFIG_SMP) || defined(CONFIG_PREEMPT)
+#if defined(CONFIG_BCM_WFD_WL_UNION)
+#define PKTFWD_LOCK()
+#define PKTFWD_UNLK()
+#elif defined(CONFIG_SMP) || defined(CONFIG_PREEMPT)
 #define PKTFWD_LOCK()       spin_lock_bh(&wl_pktfwd_g.lock)
 #define PKTFWD_UNLK()       spin_unlock_bh(&wl_pktfwd_g.lock)
 #else /* ! (CONFIG_SMP || CONFIG_PREEMPT) */
@@ -2121,6 +2122,11 @@ wl_pktfwd_dwds_scb_state_upd(void *ctx, scb_state_upd_data_t *data)
 		return;
 	}
 
+	if (BSSCFG_AP(cfg) && !SCB_WDS(scb)) {
+		/* DWDS AP to wait until wds interface is created */
+		return;
+	}
+
 	wlif = SCB_INTERFACE(scb);
 
 	/* hndl transition from disassoc to assoc */
@@ -3444,15 +3450,18 @@ wl_pktfwd_pktlist_cfp(wl_info_t * wl, struct net_device *net_device, wl_pktfwd_p
 		&pkttag, &wlanext);
 
 	while (skb != (struct sk_buff *)NULL) {
-		bcm_prefetch(PKTDATA(wl->osh, skb));	/* for llc snap insert */
+		if (!WLHDR_SUPPORT(wl)) {
+			bcm_prefetch(PKTDATA(wl->osh, skb));	/* for llc snap insert */
+		}
 
 		/* Copy pkttag, wlanext into skb */
 		*WLPKTTAG(skb) = pkttag;
 		skb->bcm_ext.wlan = wlanext;
 
 		bcm_prefetch(skb);
-
-		wl_pktfwd_llc_snap_insert(wl->osh, skb);
+		if (!WLHDR_SUPPORT(wl)) {
+			wl_pktfwd_llc_snap_insert(wl->osh, skb);
+		}
 
 		skb->dev = net_device;
 
@@ -3480,6 +3489,11 @@ wl_pktfwd_pktlist_pktc(wl_info_t * wl, struct net_device *net_device, wl_pktfwd_
 
 		skb->prev = skb->next = NULL;
 		skb_cb_zero(skb);	/* OPTIMIZE (redundant) as pktc takes wl_start path */
+
+		if (WLHDR_SUPPORT(wl)) {
+			WLPKTTAG(skb)->flags |= WLF_NON8023;
+		}
+
 		skb->dev = net_device;
 
 		PKTSETCHAINED(wl->osh, skb);
@@ -3516,6 +3530,11 @@ wl_pktfwd_pktlist_xmit_single_pkt(wl_info_t * wl, struct net_device *net_device,
 
 		skb->prev = skb->next = NULL;
 		skb_cb_zero(skb);
+
+		if (WLHDR_SUPPORT(wl)) {
+			WLPKTTAG(skb)->flags |= WLF_NON8023;
+		}
+
 		skb->dev = net_device;
 
 		/* increment counters for each pkt before it is forwarded to wl driver */
@@ -3585,6 +3604,11 @@ wl_pktfwd_pktlist_xmit(struct net_device *net_device, wl_pktfwd_pktlist_t * wl_p
 	d3fwd_wlif = __wlif_2_d3fwd_wlif(wlif);
 
 	pktlist_context = WL_PKTLIST_CONTEXT(wl->unit);
+#if defined(BCM_WFD) && defined(BCM_WLAN_NIC_RX_RNR_ACCEL)
+	if (unlikely(wfd_path_delay_calc != NULL)) {
+		wfd_path_delay_calc(wl_pktfwd_pktlist->head, wl_pktfwd_pktlist->len, 0);
+	}
+#endif
 
 #if defined(WLCFP)
 	/* Determine if CFP Tx is enabled and CFP INI is Established */
@@ -3652,9 +3676,12 @@ wl_pktfwd_pktlist_xmit(struct net_device *net_device, wl_pktfwd_pktlist_t * wl_p
 
 	/* All packets from pktlist are dispatched, RESET len = 0U */
 	wl_pktfwd_pktlist->len = 0;
-
+#if defined(BCM_WFD) && defined(BCM_WLAN_NIC_RX_RNR_ACCEL)
+	if (unlikely(wfd_path_delay_calc != NULL)) {
+		wfd_path_delay_calc(NULL, 0, 1);
+	}
+#endif
 	return;
-
 } /* wl_pktfwd_pktlist_xmit() */
 
 /** Dispatch all pending pktlists in d3fwd_wlif's ucast work lists */

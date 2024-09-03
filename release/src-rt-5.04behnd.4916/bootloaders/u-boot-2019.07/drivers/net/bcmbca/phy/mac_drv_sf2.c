@@ -418,7 +418,7 @@ static int port_sf2mac_pause_set(mac_dev_t *mac_dev, int rx_enable, int tx_enabl
     return 0;
 }
 
-#if defined(CONFIG_BCM96756) || defined(CONFIG_BCM96765)
+#if defined(MAC_SF2_DUAL)
 #define HIGH_SPEED_STATE    1       // chips support speed state > 1G
 #endif
 
@@ -523,6 +523,7 @@ static int port_sf2mac_cfg_set(mac_dev_t *mac_dev, mac_cfg_t *mac_cfg)
 #else
     case MAC_SPEED_2500:    v16 |= REG_PORT_STATE_1000 | REG_PORT_GMII_SPEED_UP_2G; break;
 #endif
+    case MAC_SPEED_UNKNOWN: v16 &= ~REG_PORT_STATE_LNK;
     default: break;
     }
     

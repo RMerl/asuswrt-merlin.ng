@@ -83,48 +83,70 @@ static int set_chip_info(void *blob)
 		return ret;
 	}
 
-	ret = bcm_otp_get_mfg_process(&val);
-	if (ret) {
-		/* for chip does not have mfg row definition, silently exit */
-		return 0;
-	}
-	ret = fdt_setprop_u32(blob, chip_node, "process", val);
-	if (ret) {
-		printf("fdt_setprop failed for mfg process %d\n", ret);
+#if defined(CONFIG_BCM6765)
+	/* workaround the OTP error on certain 6765 wafers */
+	if (bcm_otp_get(OTP_MAP_MFG_PROG, &val))
 		return ret;
+
+	if (val == 0x2e69) {
+		ret = fdt_setprop_u32(blob, chip_node, "process", 0x4);
+		ret |= fdt_setprop_u32(blob, chip_node, "substrate", 0x1);
+		ret |= fdt_setprop_u32(blob, chip_node, "foundry", 0x3);
+		return ret;
+	}
+#endif
+
+	/* Add chip serial number */
+	ret = bcm_otp_get_chip_ser_num(&val);
+	if (ret == 0) {
+		if(val) {
+			char value[64];
+			sprintf(value,"%08x", val);
+			ret = fdt_setprop_string(blob, chip_node, "serial-number", value);
+			if (ret) {
+				printf("fdt_setprop failed for serial-number %d\n", ret);
+				return ret;
+			}
+		}
+	}
+
+	ret = bcm_otp_get_mfg_process(&val);
+	if (ret == 0) {
+		ret = fdt_setprop_u32(blob, chip_node, "process", val);
+		if (ret) {
+			printf("fdt_setprop failed for mfg process %d\n", ret);
+			return ret;
+		}
 	}
 
 	ret = bcm_otp_get_mfg_substrate(&val);
-	if (ret) {
-		/* for chip does not have mfg row definition, silently exit */
-		return 0;
-	}
-	ret = fdt_setprop_u32(blob, chip_node, "substrate", val);
-	if (ret) {
-		printf("fdt_setprop failed for mfg substrate %d\n", ret);
-		return ret;
+	if (ret == 0) {
+		ret = fdt_setprop_u32(blob, chip_node, "substrate", val);
+		if (ret) {
+			printf("fdt_setprop failed for mfg substrate %d\n", ret);
+			return ret;
+		}
 	}
 
 	ret = bcm_otp_get_mfg_foundry(&val);
-	if (ret) {
-		/* for chip does not have mfg row definition, silently exit */
-		return 0;
-	}
-	ret = fdt_setprop_u32(blob, chip_node, "foundry", val);
-	if (ret) {
-		printf("fdt_setprop failed for mfg foundry %d\n", ret);
-		return ret;
+	if (ret == 0) {
+		ret = fdt_setprop_u32(blob, chip_node, "foundry", val);
+		if (ret) {
+			printf("fdt_setprop failed for mfg foundry %d\n", ret);
+			return ret;
+		}
 	}
 
-	return ret;
+	return 0;
 }
 
 static int set_loader_info(void *blob)
 {
 	int off_linux, ret=0;
 	int  len = 0;	
-	int loader_info_offs;
+	int loader_info_offs, chosen_offs;
 	int  compat_ver = 0;
+	int loader_img_idx = 0;
 	char * value = NULL;
 	int loader_info_node;
 
@@ -132,6 +154,12 @@ static int set_loader_info(void *blob)
 	if (off_linux < 0) {
 		return ret;
 	}
+
+ 	chosen_offs = fdt_path_offset(gd->fdt_blob, "/chosen");
+ 	if (chosen_offs < 0) {
+ 	        debug("INFO: Didnt find /chosen node in uboot DTB\n");
+ 	        return ret;
+ 	}
 
 	loader_info_offs = fdt_path_offset(gd->fdt_blob, "/chosen/loader_info");
 	if (loader_info_offs < 0) {
@@ -144,6 +172,14 @@ static int set_loader_info(void *blob)
 	if( loader_info_node < 0) {
 		printf("ERROR: Could not create %s node!\n", "loader_info");
 		return ret;
+	}
+
+	value = (char*)(fdt_getprop(gd->fdt_blob, chosen_offs, "active_image", &len));
+	if( value ) {
+		loader_img_idx = be32_to_cpu(*(int*)value);
+		ret = fdt_setprop_u32(blob, loader_info_node, "loader_img_idx", loader_img_idx);
+		if(ret != 0 )
+			printf("fdt_setprop failed for %s [%d]\n", "loader_img_idx", ret);
 	}
 
 	value = (char*)(fdt_getprop(gd->fdt_blob, loader_info_offs, "tpl_min_compat", &len));
@@ -509,6 +545,7 @@ static void set_reserved_memory(void *dtb_ptr, bd_t *bd)
 				 {0, 0, ADSL_BASE_ADDR_STR, NULL, 0},
 				 {0, 1, PARAM1_BASE_ADDR_STR, ENV_RDP1, 0}, {0, 1, PARAM2_BASE_ADDR_STR, ENV_RDP2, 0}, 
 				 {0, 1, BUFMEM_BASE_ADDR_STR, ENV_BUFMEM, 0}, {0, 1, RNRMEM_BASE_ADDR_STR, ENV_RNRMEM, 0},
+				 {0, 1, DDOSMEM_BASE_ADDR_STR, ENV_DDOSMEM, 0},
 				 {0, 1, DHD_BASE_ADDR_STR, ENV_DHD0, 0}, {0, 1, DHD_BASE_ADDR_STR_1, ENV_DHD1, 0},
 				 {0, 1, DHD_BASE_ADDR_STR_2, ENV_DHD2, 0}, {0, 1, DHD_BASE_ADDR_STR_3, ENV_DHD3, 0},
 				 {0, 1, NULL, NULL, 0}}, *params_ptr = params;
@@ -546,6 +583,11 @@ static void set_reserved_memory(void *dtb_ptr, bd_t *bd)
 		rsrv_mem_end = 1024 * SZ_1M;
 		hw_req = 1;
 	}
+#elif defined(CONFIG_BCM6766)
+	if (rsrv_mem_end > 768 * SZ_1M) {
+		rsrv_mem_end = 768 * SZ_1M;
+		hw_req = 1;
+	}
 #endif	
 
 	/* We support only alocation using CMA */
@@ -577,7 +619,7 @@ static void set_reserved_memory(void *dtb_ptr, bd_t *bd)
 #ifdef RTBE86U
 	env_set_ulong("dhd0", 0);
 #endif
-#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U)
+#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE82U) || defined(RTBE58U_PRO)
 	env_set_ulong("dhd0", 0);
 	env_set_ulong("dhd1", 0);
 #endif
@@ -745,11 +787,11 @@ static void set_avs_mode(void *dtb_ptr)
     }
     if (strcmp(env_var, "avs") == 0)
     {
-        fdt_setprop(dtb_ptr, offset, "compatible", "brcm,donotrun", strlen("brcm,donotrun"));
+        fdt_setprop_string(dtb_ptr, offset, "compatible", "brcm,donotrun");
     }
     else
     {
-        fdt_setprop(dtb_ptr, offset, "op-mode", env_var, strlen(env_var));
+        fdt_setprop_string(dtb_ptr, offset, "op-mode", env_var);
     }
 }
 #endif
@@ -900,7 +942,7 @@ void update_uboot_fdt(void *fdt_addr, tpl_params *tplp)
 {
 	int offset, regsize;
 	uint64_t total_size;
-#if defined(CONFIG_ARM64)
+#if defined(CONFIG_ARM64) || defined(CONFIG_ARMV7_LPAE)
 	uint64_t reg[4];
 	uint64_t split_size = PHYS_SDRAM_1_SIZE;
 #if defined(PHYS_SDRAM_2)	
@@ -918,7 +960,7 @@ void update_uboot_fdt(void *fdt_addr, tpl_params *tplp)
 	offset=fdt_path_offset (fdt_addr, "/memory");
 	if(offset >= 0)
 	{
-#if defined(CONFIG_ARM64)
+#if defined(CONFIG_ARM64) || defined(CONFIG_ARMV7_LPAE)
 		reg[0] = cpu_to_fdt64(0);
 		if (total_size <= split_size) {
 			reg[1] = cpu_to_fdt64(total_size);

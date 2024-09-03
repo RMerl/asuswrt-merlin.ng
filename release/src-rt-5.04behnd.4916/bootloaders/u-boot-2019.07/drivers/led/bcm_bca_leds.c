@@ -298,7 +298,7 @@ static int serial_led_parse(struct udevice *dev, struct bca_led *led)
         1 : init_brightness/31);
     bca_led_set_flash_rate(led_num, init_flash_rate & 0x7);
 
-    ret = dev_read_u32u(dev, "default_state", &default_state);
+    ret = dev_read_u32u(dev, "default-state", &default_state);
     if (!ret)
     {
         bca_led_set_value(led_num, default_state);
@@ -365,7 +365,7 @@ static int serial_cled_parse(struct udevice *dev, struct bca_led *led)
     bca_cled_set_brightness(led_num, init_brightness);
     bca_cled_set_flash_rate(led_num, init_flash_rate & 0x7);
 
-    ret = dev_read_u32u(dev, "default_state", &default_state);
+    ret = dev_read_u32u(dev, "default-state", &default_state);
     if (!ret)
     {
         bca_cled_set_value(led_num, default_state);
@@ -430,7 +430,7 @@ static int parallel_led_parse(struct udevice *dev, struct bca_led *led)
         1 : init_brightness/31);
     bca_led_set_flash_rate(led_num, init_flash_rate & 0x7);
 
-    ret = dev_read_u32u(dev, "default_state", &default_state);
+    ret = dev_read_u32u(dev, "default-state", &default_state);
     if (!ret)
     {
         bca_led_set_value(led_num, default_state);
@@ -497,7 +497,7 @@ static int parallel_cled_parse(struct udevice *dev, struct bca_led *led)
     bca_cled_set_brightness(led_num, init_brightness);
     bca_cled_set_flash_rate(led_num, init_flash_rate & 0x7);
 
-    ret = dev_read_u32u(dev, "default_state", &default_state);
+    ret = dev_read_u32u(dev, "default-state", &default_state);
     if (!ret)
     {
         bca_cled_set_value(led_num, default_state);

@@ -8,8 +8,12 @@
 #define PARAM2_BASE_ADDR_STR        "rdp2"
 #define BUFMEM_BASE_ADDR_STR        "bufmem"
 #define RNRMEM_BASE_ADDR_STR        "rnrmem"
+#define DDOSMEM_BASE_ADDR_STR       "ddosmem"
 #define TM_BASE_ADDR_STR            PARAM1_BASE_ADDR_STR
 #define TM_MC_BASE_ADDR_STR         PARAM2_BASE_ADDR_STR
+#if (defined(CONFIG_BCM_HW_FIREWALL) || defined(CONFIG_BCM_HW_FIREWALL_MODULE))
+#define DDOSTBLS_BASE_ADDR_STR      DDOSMEM_BASE_ADDR_STR
+#endif
 #if defined(CONFIG_BCM963146) || defined(_BCM963146_) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813)
 #define FPMPOOL_BASE_ADDR_STR       BUFMEM_BASE_ADDR_STR
 #define RNRTBLS_BASE_ADDR_STR       RNRMEM_BASE_ADDR_STR
@@ -32,6 +36,12 @@
 #define DT_CMA_CACHED_NODE_STR      "plat_rsvmem_cached_device"
 #define DT_CMA_UNCACHED_NODE_STR    "plat_rsvmem_uncached_device"
 #define DT_CMA_RSVSIZE_PROP_STR     "rsvd-size"
+
+#if (defined(CONFIG_BCM_HW_FIREWALL) || defined(CONFIG_BCM_HW_FIREWALL_MODULE))
+#define DDOS_RESERVE_MEM_NUM            1
+#else
+#define DDOS_RESERVE_MEM_NUM            0
+#endif
 
 #if defined(CONFIG_BCM_ADSL) || defined(CONFIG_BCM_ADSL_MODULE)
 #define ADSL_RESERVE_MEM_NUM            1
@@ -66,7 +76,7 @@
 
 /* one extra for CMA padding reserve memory */
 #define TOTAL_RESERVE_MEM_NUM           (ADSL_RESERVE_MEM_NUM+RDPA_RESERVE_MEM_NUM+DHD_RESERVE_MEM_NUM+\
-                                        OPTEE_RESERVE_MEM_NUM+MPM_RESERVE_MEM_NUM+1)
+                                        OPTEE_RESERVE_MEM_NUM+MPM_RESERVE_MEM_NUM+DDOS_RESERVE_MEM_NUM+1)
 
 #define MAX_RESREVE_MEM_NAME_SIZE       32
 

@@ -1333,7 +1333,7 @@ int mlx5_ib_resize_cq(struct ib_cq *ibcq, int entries, struct ib_udata *udata)
 	__be64 *pas;
 	int page_shift;
 	int inlen;
-	int uninitialized_var(cqe_size);
+	int cqe_size;
 	unsigned long flags;
 
 	if (!MLX5_CAP_GEN(dev->mdev, cq_resize)) {

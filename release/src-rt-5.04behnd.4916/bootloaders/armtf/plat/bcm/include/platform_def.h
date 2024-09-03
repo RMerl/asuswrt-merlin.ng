@@ -125,7 +125,12 @@
 #endif
 
 #undef TIMR_BASE
-#if defined (PLATFORM_FLAVOR_63158) || defined (PLATFORM_FLAVOR_63178) || defined (PLATFORM_FLAVOR_47622) || defined (PLATFORM_FLAVOR_6878) || defined (PLATFORM_FLAVOR_63146) || defined (PLATFORM_FLAVOR_4912) || defined (PLATFORM_FLAVOR_6813) || defined (PLATFORM_FLAVOR_6756) || defined (PLATFORM_FLAVOR_6855) || defined (PLATFORM_FLAVOR_6888) || defined (PLATFORM_FLAVOR_6765)
+#if defined (PLATFORM_FLAVOR_63158) || defined (PLATFORM_FLAVOR_63178) || \
+    defined (PLATFORM_FLAVOR_47622) || defined (PLATFORM_FLAVOR_6878)  || \
+    defined (PLATFORM_FLAVOR_63146) || defined (PLATFORM_FLAVOR_4912)  || \
+    defined (PLATFORM_FLAVOR_6813)  || defined (PLATFORM_FLAVOR_6756)  || \
+    defined (PLATFORM_FLAVOR_6855)  || defined (PLATFORM_FLAVOR_6888)  || \
+    defined (PLATFORM_FLAVOR_6765)  || defined (PLATFORM_FLAVOR_6766) || defined (PLATFORM_FLAVOR_6764)
 #define UART0_BASE			0xff812000
 #elif defined (PLATFORM_FLAVOR_6858) || defined (PLATFORM_FLAVOR_6856) || defined (PLATFORM_FLAVOR_4908) || defined (PLATFORM_FLAVOR_6846)
 #define UART0_BASE			0xff800000
@@ -344,7 +349,7 @@
 /*
  * System counter
  */
-#if defined (PLATFORM_FLAVOR_6765)
+#if defined (PLATFORM_FLAVOR_6765) || defined (PLATFORM_FLAVOR_6766) || defined (PLATFORM_FLAVOR_6764)
 #define SYS_COUNTER_FREQ_IN_TICKS	(80 * 1000 * 1000)
 #else
 #define SYS_COUNTER_FREQ_IN_TICKS	(50 * 1000 * 1000)

@@ -4,27 +4,21 @@
 *    Copyright (c) 2019 Broadcom 
 *    All Rights Reserved
 * 
-* Unless you and Broadcom execute a separate written software license
-* agreement governing use of this software, this software is licensed
-* to you under the terms of the GNU General Public License version 2
-* (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-* with the following added to such license:
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License, version 2, as published by
+* the Free Software Foundation (the "GPL").
 * 
-*    As a special exception, the copyright holders of this software give
-*    you permission to link this software with independent modules, and
-*    to copy and distribute the resulting executable under terms of your
-*    choice, provided that you also meet, for each linked independent
-*    module, the terms and conditions of the license of that module.
-*    An independent module is a module which is not derived from this
-*    software.  The special exception does not apply to any modifications
-*    of the software.
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
 * 
-* Not withstanding the above, under no circumstances may you combine
-* this software in any way with any other Broadcom software provided
-* under a license other than the GPL, without Broadcom's express prior
-* written consent.
 * 
-* :> 
+* A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+* writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+* Boston, MA 02111-1307, USA.
+* 
+* :>
 */
 
 #include <linux/io.h>
@@ -138,11 +132,11 @@ static int find_and_bind_gpio_to_extintr(unsigned int gpio, unsigned int interru
 
     data = readl(reg + EXT_IRQ_CTRL_REG);
     writel(data | value, reg + EXT_IRQ_CTRL_REG);
-    
+
     /* The old version of the controller) */
     data = readl(reg + EXT_IRQ_STATUS_REG);
     writel(data | (1 << (EI_MASK_SHFT + ext)), reg + EXT_IRQ_STATUS_REG);
-    
+
     spin_unlock_irqrestore(&bca_ext->lock, flags);
     dev_info(&bca_ext->pdev->dev, "GPIO %d is mapped to ExtIntr_%d [virq %d]\n", gpio, ext,
         extirq_to_irq(ext));
@@ -182,7 +176,7 @@ static int bcm_bca_extintr_probe(struct platform_device *pdev)
         goto error;
     }
 
-    if (of_property_read_u32(pdev->dev.of_node, "num_ext_intr", &num_intr)) 
+    if (of_property_read_u32(pdev->dev.of_node, "num_ext_intr", &num_intr))
     {
         dev_err(&pdev->dev, "Missing num_ext_intr OF property\n");
         ret = -EINVAL;
@@ -223,7 +217,7 @@ static int bcm_bca_extintr_probe(struct platform_device *pdev)
         oirq.args[1] = interrupts[i];
         bca_ext->map[i].hw_irq = interrupts[i];
         bca_ext->map[i].irq = irq_create_of_mapping(&oirq);
-        bca_ext->map[i].gpio = MAP_EXT_IRQ_TO_GPIO(i); 
+        bca_ext->map[i].gpio = MAP_EXT_IRQ_TO_GPIO(i);
         bca_ext->map[i].intr_name = NULL;
         dev_info(&pdev->dev, "Ext_Int_%d HWIrq %d virq %d\n", i, interrupts[i]+32, bca_ext->map[i].irq);
     }
@@ -262,7 +256,7 @@ static int bcm_bca_extintr_probe(struct platform_device *pdev)
             break;
 
         bca_ext->intset_base[i] = devm_ioremap_resource(dev, &res);
-    	if (IS_ERR(bca_ext->intset_base[i])) 
+    	if (IS_ERR(bca_ext->intset_base[i]))
         {
             ret = -ENXIO;
             goto error;
@@ -303,18 +297,18 @@ int bcm_bca_extintr_free(void *_dev, int irq, void *param)
 
     free_irq(irq, param);
     gpio_free(bca_ext->map[extirq].gpio);
-    
+
     devm_kfree(dev, bca_ext->map[extirq].intr_name);
     return 0;
 }
 
-int bcm_bca_extintr_request_ex(void *_dev, struct device_node *np, const char *consumer_name, irq_handler_t pfunc, void *param, 
+int bcm_bca_extintr_request_ex(void *_dev, struct device_node *np, const char *consumer_name, irq_handler_t pfunc, void *param,
     const char *interrupt_name, irq_handler_t thread_fn, unsigned int reserved_id)
 {
     return -ENOTSUPP;
 }
 
-int bcm_bca_extintr_request(void *_dev, struct device_node *np, const char *consumer_name, irq_handler_t pfunc, void *param, 
+int bcm_bca_extintr_request(void *_dev, struct device_node *np, const char *consumer_name, irq_handler_t pfunc, void *param,
     const char *interrupt_name, irq_handler_t thread_fn)
 {
     struct device *dev = (struct device *)_dev;
@@ -344,6 +338,13 @@ int bcm_bca_extintr_request(void *_dev, struct device_node *np, const char *cons
     gpio = params.args[0];
     interrupt_type = params.args[2];
 
+    /* Check if the GPIO is already registered */
+    irq = bcm_bca_extintr_get_virq_by_gpio(gpio);
+    if ((irq > 0) && (interrupt_type & BCA_EXTINTR_SHARE_GPIO_MASK))
+    {
+        goto exit;
+    }
+
     if (params.args[1] & GPIO_ACTIVE_LOW)
         gflags |= GPIOF_ACTIVE_LOW;
 
@@ -363,7 +364,6 @@ int bcm_bca_extintr_request(void *_dev, struct device_node *np, const char *cons
     }
 
     irq = extirq_to_irq(extirq);
-
     intr_name = devm_kzalloc(dev, INTR_NAME_MAX_LENGTH, GFP_KERNEL);
     if (!intr_name)
     {
@@ -372,10 +372,10 @@ int bcm_bca_extintr_request(void *_dev, struct device_node *np, const char *cons
         goto exit;
     }
     snprintf(intr_name, INTR_NAME_MAX_LENGTH, "%s", interrupt_name);
-   
+
     if (interrupt_type & BCA_EXTINTR_SHARED)
         irqflags |= IRQF_SHARED;
-    
+
     ret = request_threaded_irq(irq, pfunc, thread_fn, irqflags, intr_name, param);
     if (ret)
     {
@@ -412,8 +412,8 @@ void bcm_bca_extintr_clear(unsigned int irq)
 
     data = readl(reg + EXT_IRQ_CTRL_REG);
     writel(data & ~(1 << (EI_CLEAR_SHFT + ext_intr)), reg + EXT_IRQ_CTRL_REG);
-   
-    
+
+
     spin_unlock_irqrestore(&bca_ext->lock, flags);
 }
 
@@ -454,7 +454,7 @@ void bcm_bca_extintr_unmask(unsigned int irq)
     spin_lock_irqsave(&bca_ext->lock, flags);
 
     data = readl(reg + EXT_IRQ_STATUS_REG);
-    writel(data | (1 << (EI_MASK_SHFT + ext_intr)), reg + EXT_IRQ_STATUS_REG);  
+    writel(data | (1 << (EI_MASK_SHFT + ext_intr)), reg + EXT_IRQ_STATUS_REG);
 
     spin_unlock_irqrestore(&bca_ext->lock, flags);
 }
@@ -479,6 +479,19 @@ int bcm_bca_extintr_get_hwirq(int virq)
     while (bca_ext->map[i].irq != virq && i <bca_ext->num_ext_intr)
         i++;
     return i < bca_ext->num_ext_intr ? bca_ext->map[i].hw_irq : -1;
+}
+
+int bcm_bca_extintr_get_virq_by_gpio(int gpio)
+{
+    int i;
+
+    for (i = 0; i < bca_ext->num_ext_intr; i++)
+    {
+        if (bca_ext->map[i].gpio == gpio) // Found searched GPIO
+            return bca_ext->map[i].irq;
+    }
+
+    return -1;
 }
 
 int periph_intr_sense_read(unsigned int hw_irq)
@@ -636,7 +649,7 @@ int periph_intr_status_set(unsigned int mask_num, unsigned int hw_irq, bool do_s
     data &= ~(1 << int_shift);
     if (do_set)
         data |= (1 << int_shift);
-    
+
     writel(data, reg + INT_SET_IRQ_STATUSX_OFFSET(mask_num) + INT_SET_IRQ_INTERNAL_OFFSET(int_set));
     return 0;
 }
@@ -649,6 +662,7 @@ EXPORT_SYMBOL(bcm_bca_extintr_mask);
 EXPORT_SYMBOL(bcm_bca_extintr_unmask);
 EXPORT_SYMBOL(bcm_bca_extintr_get_gpiod);
 EXPORT_SYMBOL(bcm_bca_extintr_get_hwirq);
+EXPORT_SYMBOL(bcm_bca_extintr_get_virq_by_gpio);
 EXPORT_SYMBOL(periph_intr_sense_read);
 EXPORT_SYMBOL(periph_intr_sense_set);
 EXPORT_SYMBOL(periph_intr_mask_read);

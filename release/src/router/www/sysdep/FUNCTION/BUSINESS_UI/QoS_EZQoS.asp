@@ -25,7 +25,7 @@
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/form.js"></script>
 <script type="text/javascript" src="client_function.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js"></script>
 <style>
 *{
 	box-sizing: border-box;
@@ -880,9 +880,15 @@ function determineActionScript(){
 function submitQoS(){
 	if(validForm()){
 		if(document.form.qos_enable.value == "1" && document.form.qos_type.value == "1" && document.form.TM_EULA.value == "0"){
-			ASUS_EULA
-				.config(eula_confirm, cancel)
-				.show("tm")
+			if(policy_status.TM == 0 || policy_status.TM_time == ''){
+                const policyModal = new PolicyModalComponent({
+                    policy: "TM",
+                    agreeCallback: eula_confirm,
+                });
+                policyModal.show();
+            }else{
+                eula_confirm();
+            }
 		}
 		else{
 			if(	document.form.qos_enable.value == "1" && document.form.qos_type_orig.value != document.form.qos_type.value &&

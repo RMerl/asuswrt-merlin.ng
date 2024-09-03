@@ -102,7 +102,9 @@ int rtkswitch_ioctl(int val, int val2)
 	case 3953:	/* Reset ports accept type as untag-only */
 	case 396:	/* Dump all ports accept type */
 	case 397:	/* Set port frame type */
-	//case 398:	/* Get fwd/efid */
+	case 398:	/* en/disable rtk qos */
+	case 3980:	/* setup rtk qos */
+	case 3989:      /* dump port/queues descriptors/counters */
 	case 399:	/* Dump vlan untag,fwd, need to specify vlanid first, by 36 */
 	case 40:        /* set static is_singtel_mio */
 	case 401:       /* set static rtk_led_group */
@@ -171,12 +173,14 @@ int rtkswitch_ioctl(int val, int val2)
 	case 70:        /* Get TxDelay, RxDelay */
 	case 902:       /* Get phy testmode x(1, 4) */
 		p = NULL;
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
 		if (val == 44) {
 #if defined(RTBE58U) || defined(TUFBE3600)
 			f_write_string("/sys/class/leds/led_gpio_24/brightness", "255", 0, 0);
 #elif defined(RTBE92U) || defined(RTBE95U)
 			f_write_string("/sys/class/leds/led_gpio_11/brightness", "255", 0, 0);
+#elif defined(RTBE82U) || defined(RTBE58U_PRO)
+			f_write_string("/sys/class/leds/led_gpio_27/brightness", "255", 0, 0);
 #else
 			f_write_string("/sys/class/leds/led_gpio_14/brightness", "255", 0, 0);
 #endif
@@ -185,6 +189,8 @@ int rtkswitch_ioctl(int val, int val2)
 			f_write_string("/sys/class/leds/led_gpio_24/brightness", "0", 0, 0);
 #elif defined(RTBE92U) || defined(RTBE95U)
 			f_write_string("/sys/class/leds/led_gpio_11/brightness", "0", 0, 0);
+#elif defined(RTBE82U) || defined(RTBE58U_PRO)
+			f_write_string("/sys/class/leds/led_gpio_27/brightness", "0", 0, 0);
 #else
 			f_write_string("/sys/class/leds/led_gpio_14/brightness", "0", 0, 0);
 #endif
@@ -269,7 +275,7 @@ int rtkswitch_LanPort_linkDown(void)
 	return 0;
 }
 
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
 unsigned int rtkswitch_serdes_status(void)
 {
 	int fd;
@@ -324,7 +330,7 @@ int rtkswitch_port_speed(int port)
 		close(fd);
 	}
 
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
 	if ((port > 0) && (port < 5) && pS.link[port - 1])
 	{
 		switch (pS.speed[port - 1]) {
@@ -367,7 +373,7 @@ int rtkswitch_port_duplex(int port)
 		close(fd);
 	}
 
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
 	if ((port > 0) && (port < 5) && pS.link[port - 1])
 		return pS.duplex[port - 1];
 #else
@@ -380,7 +386,7 @@ int rtkswitch_port_duplex(int port)
 
 void show_port_stat(rtk_stat_port_cntr_t *pPort_cntrs)
 {
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
 	printf("ifInOctets_H: %d\n"
 		"ifInOctets_L %d\n"
 		"ifOutOctets_H %d\n"
@@ -722,8 +728,8 @@ int rtkswitch_port_stat(int port)
 	int fd;
 	int *p = NULL;
 	rtk_stat_port_cntr_t Port_cntrs;
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U)
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
 	if ((port < 1) || (port > 5))
 #else
 	if ((port < 1) || (port > 4))
@@ -737,7 +743,7 @@ int rtkswitch_port_stat(int port)
 	} else {
 		memset(&Port_cntrs, 0, sizeof(Port_cntrs));
 		p = (int *) &Port_cntrs;
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
 		*p = port - 1;
 #else
 		*p = port;
@@ -770,7 +776,7 @@ int rtkswitch_port_mactable(int port)
 	int *p = NULL;
 	mactable Port_mactable;
 
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
 	if ((port < 1) || (port > 4))
 		return -1;
 #endif
@@ -781,7 +787,7 @@ int rtkswitch_port_mactable(int port)
 	} else {
 		memset(&Port_mactable, 0, sizeof(Port_mactable));
 		p = (int *) &Port_mactable;
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
 		*p = port - 1;
 #else
 		*p = port;

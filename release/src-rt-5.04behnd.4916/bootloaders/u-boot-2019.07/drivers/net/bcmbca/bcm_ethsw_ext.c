@@ -185,7 +185,8 @@ static uint32_t sw_rreg(int page, int reg, int len)
     }
 
     if (i >= 20) {
-        printf("sf2_rreg: mdio timeout!\n");
+        printf("sf2_rreg: Pseduo PHY timeout! Addr:0x%x page:0x%x reg:0x%04x *data:0x%08x val:%04x\n", 
+            PSEUDO_PHY_ADDR, page, reg, *data, val);
         return data32;
     }
 
@@ -243,7 +244,10 @@ static void sw_wreg(int page, int reg, uint32_t data_in, int len)
     }
 
     if (i >= 20)
-        printf("sf2_wreg: mdio timeout!\n");
+    {
+        printf("sf2_rreg: Pseduo PHY timeout! Addr:0x%x page:0x%x reg:0x%04x *data:0x%08x val:%04x\n", 
+            PSEUDO_PHY_ADDR, page, reg, *data, val);
+    }
 }
 
 static void sw_reset(unsigned short configType)
@@ -525,6 +529,10 @@ static int extsw_probe(struct udevice *dev)
 	struct resource res;
 	struct bcmbca_extsw_priv *priv = dev_get_priv(dev);
 	struct gpio_desc reset_gpiod;
+#if defined(BUS_MDIO_V1) || defined(MAC_SF2_EXTERNAL) || defined(MAC_SF2_DUAL)
+	struct udevice *mdio_dev;
+	uclass_get_device_by_driver(UCLASS_MISC, DM_GET_DRIVER(brcm_mdio), &mdio_dev);
+#endif
 
 	priv->ops.init  = bcm_ethsw_ext_init;
 	priv->ops.open  = bcm_ethsw_ext_open;
@@ -580,7 +588,7 @@ static const struct udevice_id bcmbca_extsw_match_ids[] = {
 	{ }
 };
 
-#if defined(CONFIG_BCM6756) || defined(CONFIG_BCM6765)
+#if defined(CONFIG_BCM6756) || defined(CONFIG_BCM6765) || defined(CONFIG_BCM6766) || defined(CONFIG_BCM6764)
 U_BOOT_DRIVER(ethsw_ext) = {
 #else
 U_BOOT_DRIVER(ethsw) = {

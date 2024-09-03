@@ -49,7 +49,6 @@ int bcm_memc_get_of_memcfg(unsigned int *memcfg)
 
 	*memcfg = be32_to_cpup(val);
 	of_node_put(np);
-	pr_info("%s: of memcfg=0x%x\n", __func__, *memcfg);
 	return 0;
 }
 EXPORT_SYMBOL(bcm_memc_get_of_memcfg);
@@ -137,6 +136,42 @@ static int bcm_memc_get_spd_mhz_v1(unsigned int memcfg, unsigned int *spd_mhz)
 
 	return 0;
 }
+
+int bcm_memc_get_ddr_size(unsigned int *ddr_size)
+{
+	unsigned int memcfg, memcfg_version=0;
+	int ret=0; 
+
+	if (!ddr_size) {
+		pr_err("%s: Error - invalid input\n", __func__);
+		return -EINVAL;
+	}
+
+	ret = bcm_memc_get_of_memcfg(&memcfg);
+	if (ret) {
+		pr_err("%s: Error - failed to get memcfg from device tree, "
+			"ret=%d\n", __func__, ret);
+	}
+	else
+	{
+
+		memcfg_version = memcfg & BP_DDR_MCBSEL_FORMAT_MASK;
+		memcfg &= BP_DDR_TOTAL_SIZE_MASK;
+		memcfg >>= BP_DDR_TOTAL_SIZE_SHIFT;
+		switch (memcfg_version) {
+		case BP_DDR_MCBSEL_FORMAT_VER0:
+			*ddr_size=(1<< (memcfg+5)); //returns in MB, 1 = 64MB, 2 = 128MB
+			break;
+		case BP_DDR_MCBSEL_FORMAT_VER1:
+			*ddr_size=(1<< (memcfg+7)); //returns in MB, 1 = 256MB, 2 = 512MB 
+			break;
+		default:
+			*ddr_size=0; //invalid memcfg
+		}
+	}
+	return ret;
+}
+EXPORT_SYMBOL(bcm_memc_get_ddr_size);
 
 int bcm_memc_get_spd_mhz(unsigned int *spd_mhz)
 {

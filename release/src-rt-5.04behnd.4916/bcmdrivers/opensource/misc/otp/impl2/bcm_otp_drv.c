@@ -4,25 +4,19 @@
  *    Copyright (c) 2022 Broadcom 
  *    All Rights Reserved
  * 
- * Unless you and Broadcom execute a separate written software license
- * agreement governing use of this software, this software is licensed
- * to you under the terms of the GNU General Public License version 2
- * (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
- * with the following added to such license:
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License, version 2, as published by
+ * the Free Software Foundation (the "GPL").
  * 
- *    As a special exception, the copyright holders of this software give
- *    you permission to link this software with independent modules, and
- *    to copy and distribute the resulting executable under terms of your
- *    choice, provided that you also meet, for each linked independent
- *    module, the terms and conditions of the license of that module.
- *    An independent module is a module which is not derived from this
- *    software.  The special exception does not apply to any modifications
- *    of the software.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  * 
- * Not withstanding the above, under no circumstances may you combine
- * this software in any way with any other Broadcom software provided
- * under a license other than the GPL, without Broadcom's express prior
- * written consent.
+ * 
+ * A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+ * writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
  * 
  * :>
  */
@@ -45,6 +39,7 @@
 int otp_rpc_tunnel_id;
 struct device *otp_dev = NULL;
 struct class *otp_class = NULL;
+struct platform_device *pdev_plat = NULL;
 struct cdev otp_cdev;
 int otp_major = 0;
 
@@ -288,7 +283,13 @@ static int otp_ioctl(struct inode *inode, struct file *flip,
                 break;
             case OTP_LEDS_SETTINGS:
                 ret = bcm_otp_write(OTP_MAP_LEDS, (u32*)&val64, otp_feat_info_get_size(OTP_MAP_LEDS));
-	                break;
+                break;
+            case OTP_UART_EN:
+            {
+                val32 = 1;
+                ret = bcm_otp_write(OTP_MAP_UART_EN, (u32*)&val32, sizeof(u32));
+                break;
+            }
             case OTP_CU_LOCK:
             {
                 val32 = 1;
@@ -400,6 +401,8 @@ int bcm_otp_ioctl_init(struct platform_device *pdev)
                OTP_DEV_NAME, ret);
         goto fail_free_cdev;
     }
+
+    pdev_plat = pdev;
 
     return ret;
 

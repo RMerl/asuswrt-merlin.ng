@@ -8,7 +8,7 @@ bcm_spdsvc-objs += spdsvc.o spdsvc_cpu.o
 bcm_spdsvc-objs += spdsvc_procfs.o
 
 bcm_spdsvc-objs += spdsvc_tr471_offload.o spdsvc_tr471.o
-EXTRA_CFLAGS += -DTR471_TIME_DATA_DEBUG
+#EXTRA_CFLAGS += -DTR471_TIME_DATA_DEBUG
 
 ifneq ($(strip $(CONFIG_BCM_RDPA)),)
 bcm_spdsvc-objs += spdsvc_runner.o

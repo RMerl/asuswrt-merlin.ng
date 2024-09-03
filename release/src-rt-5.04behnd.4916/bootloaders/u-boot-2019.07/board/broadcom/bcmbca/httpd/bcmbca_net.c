@@ -205,6 +205,10 @@ STREAM_UPGRADE_STATUS http_get_upgrade_status(void)
 
 }
 
+#if defined(FW_CHK_BOARDID)
+int check_pkgtb_boardid(const char *ptr_pkgtb);
+#endif
+
 STREAM_TRANSFER_STATUS http_update_image(char *data, unsigned int len, STREAM_TRANSFER_STATE state)
 {
 	static char* upload_addr = NULL;
@@ -238,7 +242,15 @@ STREAM_TRANSFER_STATUS http_update_image(char *data, unsigned int len, STREAM_TR
 	if( state == TRANSFER_END )
 	{
 		int img_index = get_img_index_for_upgrade(0);
+#if defined(FW_CHK_BOARDID)
+		if(check_pkgtb_boardid((void*)orig_upload_addr) != -1 ){
+			ret = flash_upgrade_img_bundle((ulong)orig_upload_addr, img_index, NULL);
+		}else{
+			ret = CMD_RET_FAILURE; /* no valid boardid, upgrade fail */
+		}
+#else
 		ret = flash_upgrade_img_bundle((ulong)orig_upload_addr, img_index, NULL);
+#endif
 		upload_addr = NULL;
 		orig_upload_addr = NULL;
 

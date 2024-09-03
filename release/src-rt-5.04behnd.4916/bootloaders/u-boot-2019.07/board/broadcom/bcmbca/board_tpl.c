@@ -96,6 +96,14 @@ static void update_uboot_fdt_sdk(void *fdt_addr)
 #endif
 	}
 
+	offset=fdt_path_offset (fdt_addr, "/pmc");
+	if(offset >= 0)
+	{
+		char *print_avs_log = find_spl_env_val(tplparams->environment, "avslog");
+
+		if (print_avs_log)
+		fdt_setprop_empty(fdt_addr, offset, "print_avs_log");
+	}
 }
 #endif
 
@@ -134,6 +142,11 @@ void spl_perform_fixups(struct spl_image_info *spl_image)
 	update_uboot_fdt_sdk(spl_image->fdt_addr);
 	bcm_sec_state_to_fdt(spl_image->fdt_addr);
 	bcm_sec_delg_pre_launch_fixup((struct spl_image_info*)spl_image);
+#if defined(CONFIG_BCMBCA_OTP)
+	/* This is the last callback before handoff to next stage, clear all
+	 * otp related temporary memory and structures */
+	bcm_otp_deinit();
+#endif
 }
 #endif
 
@@ -287,7 +300,9 @@ void board_init_f(ulong dummy)
 #endif
 
 	if (spl_early_init())
-		hang();
+#if !defined(CONFIG_BCMBCA_IKOS) 
+		bcm_sec_abort();
+#endif
 
 	/* UART clocks enabled and gd valid - init serial console */
 	preloader_console_init();
@@ -309,13 +324,17 @@ void board_init_f(ulong dummy)
 	if (tplparams->environment != (void*)(TPL_ENV_ADDR)) {
 		printf("Invalid environment address 0x%p! Should be 0x%x.\n",
 			tplparams->environment, TPL_ENV_ADDR);
-		hang();
+#if !defined(CONFIG_BCMBCA_IKOS) 
+		bcm_sec_abort();
+#endif
 	}
 
 #if !defined(CONFIG_BCMBCA_IKOS)
 #if defined(CONFIG_BCMBCA_OTP)
 	if (bcm_otp_init()) {
-		hang();
+#if !defined(CONFIG_BCMBCA_IKOS) 
+		bcm_sec_abort();
+#endif
 	}
 #endif
 #if !defined(CONFIG_SMC_BASED)
@@ -638,7 +657,7 @@ int get_fit_load_vol_id(bcaspl_part_info *info)
 	 *  and for tapioca build , since it doesn't call bcmbca_bootstate_reached_uboot SWBCACPE-54619
          *  which resets the boot reason to 0 when stopped in uboot
 	 */
-	bcmbca_set_boot_reason((sdk_ctx.last_reset_reason << 16));
+	bcmbca_set_boot_reason((sdk_ctx.last_reset_reason << BCM_RESET_REASON_BITS));
 #endif
 #endif
 

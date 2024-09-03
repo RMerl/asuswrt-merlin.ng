@@ -4,25 +4,19 @@
    Copyright (c) 2013 Broadcom 
    All Rights Reserved
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
 :>
 */
@@ -43,7 +37,40 @@ written consent.
 #include "pmc_wan.h"
 #include "bcm_ubus4.h"
 
+#ifdef CONFIG_BCM_PON
+int pmc_wan_interface_power_control(WAN_INTF interface, int ctrl)
+{
+   int status = 0;
 
+#if defined(CONFIG_BCM96846) || defined(_BCM96846_) || defined(CONFIG_BCM96856) || defined(_BCM96856_)
+   switch (interface) {
+   case WAN_INTF_MAIN:
+       status += ctrl ? PowerOnZone(PMB_ADDR_WAN, 0) : PowerOffZone(PMB_ADDR_WAN, 0);
+       break;
+   case WAN_INTF_GPON:
+       status += ctrl ? PowerOnZone(PMB_ADDR_WAN, 1) : PowerOffZone(PMB_ADDR_WAN, 1);
+       break;
+   case WAN_INTF_EPON:
+       status += ctrl ? PowerOnZone(PMB_ADDR_WAN, 2) : PowerOffZone(PMB_ADDR_WAN, 2);
+       status += ctrl ? PowerOnZone(PMB_ADDR_WAN, 4) : PowerOffZone(PMB_ADDR_WAN, 4);
+       break;
+   case WAN_INTF_XGPON:
+       status += ctrl ? PowerOnZone(PMB_ADDR_WAN, 3) : PowerOffZone(PMB_ADDR_WAN, 3);
+       break;
+   case WAN_INTF_10GEPON:
+       status += ctrl ? PowerOnZone(PMB_ADDR_WAN, 2) : PowerOffZone(PMB_ADDR_WAN, 2);
+       status += ctrl ? PowerOnZone(PMB_ADDR_WAN, 5) : PowerOffZone(PMB_ADDR_WAN, 5);
+       break;
+   case WAN_INTF_AE:
+       break;
+   default:
+       break;
+   }
+#endif
+
+   return status;
+}
+#else
 static int wan_xpon_zones[] = XPON_POWER_ZONES;
 static int wan_xdsl_zones[] = XDSL_POWER_ZONES;
 static int wan_aeth_zones[] = AETH_POWER_ZONES;
@@ -119,7 +146,7 @@ int pmc_wan_interface_power_control(WAN_INTF interface, int ctrl)
       zones = wan_eth_zones;
       break;
    default:
-      status = -1;
+      break;
    }
 
    for (i = 0; zones && zones[i] != -1; i++){
@@ -128,9 +155,10 @@ int pmc_wan_interface_power_control(WAN_INTF interface, int ctrl)
 
    return status;
 }
+#endif
 EXPORT_SYMBOL(pmc_wan_interface_power_control);
 
-#if defined (CONFIG_BCM963158)
+#if defined(CONFIG_BCM963158)
 static int is_xpon_intf_exist(void)
 {
     int ret = 0;
@@ -234,7 +262,7 @@ int pmc_wan_init(void)
 {
     int status = 0;
 
-#if defined (CONFIG_BCM96858) || defined(_BCM96858_)
+#if defined(CONFIG_BCM96858) || defined(_BCM96858_)
     BPCM_SR_CONTROL sreset;
 #endif
 
@@ -246,10 +274,12 @@ int pmc_wan_init(void)
 #if !(defined(CONFIG_BCM963158) || defined(_BCM963158_))
     // To avoid glitch due to warm reboot, powerdown the block first.
     status  = PowerOffDevice(PMB_ADDR_WAN, 0);
+#if !defined(CONFIG_BCM96846) && !defined(_BCM96846_) && !defined(CONFIG_BCM96856) && !defined(_BCM96856_)
     status += PowerOnDevice(PMB_ADDR_WAN);
 #endif
+#endif
 
-#if defined (CONFIG_BCM96858) || defined(_BCM96858_)
+#if defined(CONFIG_BCM96858) || defined(_BCM96858_)
     ubus_register_port(UCB_NODE_ID_SLV_WAN);
 
     // take pins out of reset
@@ -275,7 +305,7 @@ int pmc_wan_init(void)
     status += WriteBPCMRegister(PMB_ADDR_WAN, BPCMRegOffset(sr_control), sreset.Reg32);
 #endif
 
-#if defined (CONFIG_BCM963158)
+#if defined(CONFIG_BCM963158)
     /* Power ON interfaces that this platform is configured with.
        Otherwise turn OFF the interfaces to save power */
     if (is_xpon_intf_exist())
@@ -322,7 +352,7 @@ static int pmc_wan_initcall(void)
 #endif
 }
 
-#if defined (CONFIG_BCM963158)
+#if defined(CONFIG_BCM963158)
 int pmc_wan_ae_reset(void)
 {
     BPCM_SR_CONTROL sreset;

@@ -6,7 +6,12 @@
 
 compatible = "brcm,bcm963xx-vpcie";
 device_type = "vpci";
+#if defined(WIFI_MLO_ADDR)
+reg = <HI32 WIFI_ADDR HI32 WIFI_SIZE>,
+      <HI32 WIFI_MLO_ADDR HI32 WIFI_MLO_SIZE>;
+#else
 reg = <HI32 WIFI_ADDR HI32 WIFI_SIZE>;
+#endif
 
 brcm,coreid = <WIFI_COREID>;                              /* VPCIe core ID */
 brcm,devid = <WIFI_DEVID>;                                /* VPCIe Device Id */
@@ -47,6 +52,8 @@ status = "okay";
 #undef WIFI_COREID
 #undef WIFI_ADDR
 #undef WIFI_SIZE
+#undef WIFI_MLO_ADDR
+#undef WIFI_MLO_SIZE
 #undef WIFI_DEVID
 #undef WIFI_CCM_SPI
 #undef WIFI_D11MAC_SPI

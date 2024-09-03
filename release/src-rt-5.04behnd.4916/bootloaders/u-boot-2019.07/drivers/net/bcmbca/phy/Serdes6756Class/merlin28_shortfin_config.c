@@ -1705,11 +1705,21 @@ static int phy_speed_to_merlin28_speed(phy_dev_t *phy_dev)
             }
             else    /* Copper PHY, no AN support */
             {
-                phy_dev->an_enabled = 0;
-                if (phy_serdes->config_speed == PHY_SPEED_100)
-                    phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_100M;
-                else
-                    phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_1G;
+                switch ( phy_serdes->config_speed)
+                {
+                    case PHY_SPEED_1000:
+                        phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_1G;
+                        break;
+                    case PHY_SPEED_100:
+                    	phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_100M;
+                        break;
+                    case PHY_SPEED_10:
+                        phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_10M;
+                        break;
+                    default:
+                        printk(" Invalid speed setting on SGMII: addr: %d, config_speed: %d\n",
+                            phy_dev->addr, phy_serdes->config_speed);
+                }
             }
             break;
 
@@ -1728,6 +1738,7 @@ static int phy_speed_to_merlin28_speed(phy_dev_t *phy_dev)
             break;
 
         case INTER_PHY_TYPE_2500BASE_X:
+		case INTER_PHY_TYPE_2P5GBASE_X:
             phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_2P5G;
             phy_dev->an_enabled = 0;
             break;
@@ -1780,9 +1791,9 @@ static int merlin28_get_vco(phy_dev_t *phy_dev)
     int vco;
     phy_serdes_t *phy_serdes = phy_dev->priv;
 
-    if ((phy_dev->lane_index == 0 || (phy_lane0 &&
+    if (((phy_dev->lane_index == 0 || phy_lane0) &&
          (phy_lane0->current_inter_phy_type == INTER_PHY_TYPE_5GBASE_R ||
-          phy_lane0->current_inter_phy_type == INTER_PHY_TYPE_2P5GBASE_R))) ||
+          phy_lane0->current_inter_phy_type == INTER_PHY_TYPE_2P5GBASE_R)) ||
         (phy_serdes->config_speed == PHY_SPEED_2500 && PhyIsForced2p5g10GVco(phy_dev)))
         vco = VCO_10G;
     else

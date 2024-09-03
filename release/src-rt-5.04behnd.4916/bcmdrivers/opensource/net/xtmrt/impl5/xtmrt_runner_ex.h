@@ -3,25 +3,19 @@
 
  <:label-BRCM:2018:DUAL/GPL:standard    
  
- Unless you and Broadcom execute a separate written software license
- agreement governing use of this software, this software is licensed
- to you under the terms of the GNU General Public License version 2
- (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
- with the following added to such license:
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License, version 2, as published by
+ the Free Software Foundation (the "GPL").
  
-    As a special exception, the copyright holders of this software give
-    you permission to link this software with independent modules, and
-    to copy and distribute the resulting executable under terms of your
-    choice, provided that you also meet, for each linked independent
-    module, the terms and conditions of the license of that module.
-    An independent module is a module which is not derived from this
-    software.  The special exception does not apply to any modifications
-    of the software.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
  
- Not withstanding the above, under no circumstances may you combine
- this software in any way with any other Broadcom software provided
- under a license other than the GPL, without Broadcom's express prior
- written consent.
+ 
+ A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+ writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ Boston, MA 02111-1307, USA.
  
  :>
 */
@@ -59,7 +53,7 @@
  * internally based on priority only for now.
  * We can have 16 queues for XTM at max.
  */
-#define QUEUE_RESV_BUFFERS(MBR,prio)    (MBR-((MAX_SUB_PRIORITIES-1-(prio/2))*25))
+#define QUEUE_RESV_BUFFERS(MBR,prio)    (MBR-((MAX_SUB_PRIORITIES-1-(prio/2))*50))
 
 #ifdef RDPA_XTM_CPU_HI_RX_QUEUE_ID
 #undef RDPA_XTM_CPU_HI_RX_QUEUE_ID
@@ -114,6 +108,21 @@
 #define XTM_RDPA_CPU_HW_FIREWALL_RX_QUEUE_IDX    (RDPA_XTM_CPU_HW_FIREWALL_RX_QUEUE_ID - RDPA_XTM_CPU_RX_QUEUE_ID_BASE)
 #endif
 
+#ifdef TM_C_CODE
+#define RDPA_TM_SECONDARY_SERVICE_QUEUE_ENABLE 0
+#define RDPA_TM_SECONDARY_LEVEL rdpa_tm_level_secondary
+#define RDPA_TM_SECONDARY_SCHEDULER_MODE rdpa_tm_sched_sp
+#define RDPA_TM_SECONDARY_NUM_QUEUES 4
+#undef RDPA_TM_SECONDARY_SP_ELEMENTS 
+#else
+#define RDPA_TM_SECONDARY_SERVICE_QUEUE_ENABLE 1
+#define RDPA_TM_SECONDARY_LEVEL rdpa_tm_level_queue
+#define RDPA_TM_SECONDARY_SCHEDULER_MODE rdpa_tm_sched_sp_wrr
+#define RDPA_TM_SECONDARY_NUM_QUEUES 8
+#define RDPA_TM_SECONDARY_SP_ELEMENTS 8
+#endif
+#define RDPA_TM_SECONDARY_DEFAULT_WEIGHT 1
+
 int bcmxapiex_cpu_object_get (bdmf_object_handle  *xtm_obj);
 int bcmxapiex_ring_create_delete(int q_id, int size, rdpa_cpu_rxq_cfg_t *rxq_cfg);
 int bcmxapiex_get_pkt_from_ring(int hw_q_id, FkBuff_t **ppFkb, rdpa_cpu_rx_info_t *info);
@@ -127,6 +136,6 @@ void bcmxapiex_ShutdownTxQueue (UINT32 queueIdx, bdmf_object_handle egress_tm);
 int bcmxapiex_dpi_egress_tm_rl_rate_mode_set(bdmf_object_handle tm_attr,
 		rdpa_tm_rl_rate_mode rl_rate_mode);
 int bcmxapiex_dpi_add_best_effort_sub_queues(bdmf_object_handle owner,
-                rdpa_tm_queue_cfg_t *parent_queue, bdmf_index idx, rdpa_traffic_dir dir);
+                rdpa_tm_queue_cfg_t *parent_queue, bdmf_index idx);
 
 #endif /* _BCMXTM_RUNNER_EX_H_ */

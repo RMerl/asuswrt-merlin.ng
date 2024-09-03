@@ -171,6 +171,12 @@
 .profile_setting_item{
 	background: rgb(247, 249, 252);
 }
+.profile_setting_item.policy{
+	color: rgb(24, 24, 24) !important;
+}
+.profile_setting_item.policy .text_content > a{
+	color: rgb(0, 110, 255);
+}
 .profile_setting_item .title{
 	color: rgb(26, 26, 26);
 	font-weight: normal;
@@ -182,7 +188,8 @@
 }
 .btn_item .btn_container .text.import_file:before,
 .btn_item .btn_container .text.create_account:before,
-.text.create_ssk_account:before{
+.text.create_ssk_account:before,
+.text.create_nord_account:before{
 	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect_white.svg);
 	background-position: 0px -163px;
 }

@@ -93,6 +93,10 @@ enum
 #define BRCTL_TABLE_PATH             "/tmp/nmp_brctl_table"
 #define ASUS_DEVICE_JSON_FILE        "/tmp/asus_device.json"
 
+#ifdef RTCONFIG_IPV6
+#define IP6_TABLE_PATH               "/tmp/nmp_ip6_table"
+#endif
+
 #define NCL_LIMIT		14336   //database limit to 14KB to avoid UI glitch
 
 #define IP_TABLE_PATH               "/tmp/nmp_ip_table"
@@ -219,6 +223,10 @@ typedef struct {
 	unsigned char	device_type[MAX_NR_CLIENT_LIST][32];
 	unsigned char	vendorClass[MAX_NR_CLIENT_LIST][32];
 	unsigned char	os_type[MAX_NR_CLIENT_LIST];
+#ifdef RTCONFIG_IPV6
+	char			ip6_addr[MAX_NR_CLIENT_LIST][40];
+	char			ip6_prefix[MAX_NR_CLIENT_LIST][50];
+#endif
 #ifdef RTCONFIG_MULTILAN_CFG
 	unsigned char	sdn_idx[MAX_NR_CLIENT_LIST];
 	unsigned char	sdn_type[MAX_NR_CLIENT_LIST][32];
@@ -339,6 +347,16 @@ void network_ip_scan();
 
 int json_checker(const char *json_str);
 
+int check_arp_table(const char *ipaddr);
+
 int check_brctl_macs(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab);
+
+#ifdef RTCONFIG_IPV6
+void check_ip6_addr(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab);
+
+int check_ip6_mac(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab, const char *mac, const char *ip6_addr);
+
+int check_clientlist_json(char *mac);
+#endif
 
 #endif  /*__NETWORKMAP_H__*/

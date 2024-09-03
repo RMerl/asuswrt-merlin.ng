@@ -38,7 +38,7 @@
 
 #define CONFIG_SYS_INIT_STD_32K_ADDR    0xfff80000 
 #define CONFIG_SYS_INIT_STD_32K_SIZE    0x8000 
-#define CONFIG_SYS_SEC_CRED_ADDR        ( (CONFIG_SYS_INIT_STD_32K_ADDR + CONFIG_SYS_INIT_STD_32K_SIZE) - 0x830)
+#define CONFIG_SYS_SEC_CRED_ADDR    	0x600000
 /* U-Boot */
 /* console configuration */
 #define CONFIG_SYS_CBSIZE               1024

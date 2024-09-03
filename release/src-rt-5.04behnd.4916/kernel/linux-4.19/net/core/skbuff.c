@@ -297,21 +297,12 @@ struct sk_buff *__alloc_skb(unsigned int size, gfp_t gfp_mask,
 	size = SKB_WITH_OVERHEAD(ksize(data));
 	prefetchw(data + size);
 
-#if defined(CONFIG_BCM_KF_NBUFF)
-	/*
-	 * Clearing all fields -- fields that were not cleared before
-	 * were moved to earlier locations in the structure, so just
-	 * zeroing them out (OK, since we overwrite them shortly:
-	 */
-	memset(skb, 0, offsetof(struct sk_buff, truesize));
-#else
 	/*
 	 * Only clear those fields we need to clear, not those that we will
 	 * actually initialise below. Hence, don't put any more fields after
 	 * the tail pointer in struct sk_buff!
 	 */
 	memset(skb, 0, offsetof(struct sk_buff, tail));
-#endif
 	/* Account for allocated memory : skb + skb->head */
 	skb->truesize = SKB_TRUESIZE(size);
 	skb->pfmemalloc = pfmemalloc;
@@ -4714,6 +4705,11 @@ void __skb_tstamp_tx(struct sk_buff *orig_skb,
 			skb = alloc_skb(0, GFP_ATOMIC);
 	} else {
 		skb = skb_clone(orig_skb, GFP_ATOMIC);
+
+		if (skb_orphan_frags_rx(skb, GFP_ATOMIC)) {
+			kfree_skb(skb);
+			return;
+		}
 	}
 	if (!skb)
 		return;
@@ -5252,21 +5248,6 @@ void skb_scrub_packet(struct sk_buff *skb, bool xnet)
 	skb->mark = 0;
 	skb->tstamp = 0;
 
-#if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
-/*
- *  when using containers in some network configurations, the packets
- *  will be treated as L2 flows while learning. Local aceleration
- *  is not supported for L2 flows so skip it.
- *
- *  note: we try to add containers MAC address to Host MAC table (using
- *  netdev_notfier) to treat flows terminating in containers as L3 flows,
- *  but this check helps to catch any unknown configurations
-*/
-    if(skb->blog_p && skb->blog_p->l2_mode)
-    {
-		blog_skip(skb, blog_skip_reason_scrub_pkt); /* No local accel in l2 mode */
-    }
-#endif
 }
 EXPORT_SYMBOL_GPL(skb_scrub_packet);
 

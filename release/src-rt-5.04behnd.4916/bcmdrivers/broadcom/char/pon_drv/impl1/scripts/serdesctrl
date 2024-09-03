@@ -3,16 +3,16 @@
 # Create by Fuguo Xu <fuguo.xu@broadcom.com>, 2016/01/08
 
 
-proc_entry_help="/proc/serdes/wan/help"
-proc_entry_reinit="/proc/serdes/wan/reinit" 
-proc_entry_reg="/proc/serdes/wan/reg"
-proc_entry_prbs="/proc/serdes/wan/prbs"    
-proc_entry_display="/proc/serdes/wan/display"
-proc_entry_pllsel="/proc/serdes/wan/pllsel"
-proc_entry_tx_amp="/proc/serdes/wan/tx_amp"
-proc_entry_tx_fir="/proc/serdes/wan/tx_fir"
-proc_entry_rmt_lpbk="/proc/serdes/wan/rmt_lpbk"
-proc_entry_eye_graph="/proc/serdes/wan/eye_graph"
+proc_entry_help="/proc/serdes_wan/help"
+proc_entry_reinit="/proc/serdes_wan/reinit" 
+proc_entry_reg="/proc/serdes_wan/reg"
+proc_entry_prbs="/proc/serdes_wan/prbs"    
+proc_entry_display="/proc/serdes_wan/display"
+proc_entry_pllsel="/proc/serdes_wan/pllsel"
+proc_entry_tx_amp="/proc/serdes_wan/tx_amp"
+proc_entry_tx_fir="/proc/serdes_wan/tx_fir"
+proc_entry_rmt_lpbk="/proc/serdes_wan/rmt_lpbk"
+proc_entry_eye_graph="/proc/serdes_wan/eye_graph"
 
 help_all()
 {

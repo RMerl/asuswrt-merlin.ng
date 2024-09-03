@@ -12,6 +12,9 @@
  *  reading the RTC at bootup, etc...
  */
 #include <linux/clk-provider.h>
+#ifdef CONFIG_BCM_KF_MISC_BACKPORTS
+#include <linux/clockchips.h>
+#endif /* #ifdef CONFIG_BCM_KF_MISC_BACKPORTS */
 #include <linux/clocksource.h>
 #include <linux/errno.h>
 #include <linux/export.h>
@@ -110,5 +113,8 @@ void __init time_init(void)
 		of_clk_init(NULL);
 #endif
 		timer_probe();
+#ifdef CONFIG_BCM_KF_MISC_BACKPORTS
+		tick_setup_hrtimer_broadcast();
+#endif /* #ifdef CONFIG_BCM_KF_MISC_BACKPORTS */
 	}
 }

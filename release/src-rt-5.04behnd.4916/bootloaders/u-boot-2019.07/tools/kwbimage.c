@@ -9,6 +9,8 @@
  * Not implemented: support for the register headers in v1 images
  */
 
+#define OPENSSL_API_COMPAT 0x10101000L
+
 #include "imagetool.h"
 #include <limits.h>
 #include <image.h>

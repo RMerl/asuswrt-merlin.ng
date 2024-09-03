@@ -1,29 +1,23 @@
 /*
    <:copyright-BRCM:2018:DUAL/GPL:standard
-
-      Copyright (c) 2018 Broadcom
+   
+      Copyright (c) 2018 Broadcom 
       All Rights Reserved
-
-   Unless you and Broadcom execute a separate written software license
-   agreement governing use of this software, this software is licensed
-   to you under the terms of the GNU General Public License version 2
-   (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-   with the following added to such license:
-
-      As a special exception, the copyright holders of this software give
-      you permission to link this software with independent modules, and
-      to copy and distribute the resulting executable under terms of your
-      choice, provided that you also meet, for each linked independent
-      module, the terms and conditions of the license of that module.
-      An independent module is a module which is not derived from this
-      software.  The special exception does not apply to any modifications
-      of the software.
-
-   Not withstanding the above, under no circumstances may you combine
-   this software in any way with any other Broadcom software provided
-   under a license other than the GPL, without Broadcom's express prior
-   written consent.
-
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License, version 2, as published by
+   the Free Software Foundation (the "GPL").
+   
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+   
+   
+   A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+   writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.
+   
    :>
  */
 
@@ -61,10 +55,13 @@ int port_sysp_port_init(enetx_port_t *self)
 
     enet_dbg("Initialized %s role %s\n", self->obj_name, (self->n.port_netdev_role==PORT_NETDEV_ROLE_WAN)?"wan":"lan" );
 
-    phy_dev = self->p.phy;
+    phy_dev = self->p.phy? self->p.phy : self->p.delayed_phy;
     if (phy_dev && (phy_dev->mii_type==PHY_MII_TYPE_RGMII))
     {
         // select crossbar RGMII endpoint
+        /* This structure is not using crossbar definition in DT but
+            use a short cut logic in 47622, 4755 that only two possible values for RGMII connection,
+            Logic needs to be changed if more possible values exit in future chip */
         *SWITCH_CROSSBAR_REG |= 1 << self->port_info.port;
         enet_dbgv("crossbar: %s - RGMII\n", self->obj_name);
     }

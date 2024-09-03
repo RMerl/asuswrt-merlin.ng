@@ -8,7 +8,7 @@ extern int igr_wlioctl;
 #define MAX_2G_CHANNEL_LIST_NUM	16
 #define MAX_5G_CHANNEL_LIST_NUM	32
 #if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7)
-#define MAX_6G_CHANNEL_LIST_NUM	64
+#define MAX_6G_CHANNEL_LIST_NUM	128
 #endif
 
 typedef struct _avbl_chanspec_t
@@ -23,7 +23,38 @@ typedef struct _avbl_chanspec_t
 #endif
 	unsigned int existTribandRe;
 	unsigned int existDual5gRe;
+	unsigned int existDual6gRe;
 }AVBL_CHANSPEC_T;
+
+struct wlcsuffix_mapping_s {
+	char *name;
+	char *converted_name;
+	int wlc_trans_to_wl;
+};
+
+static struct wlcsuffix_mapping_s wlcsuffix_mapping_list[] __attribute__ ((unused)) = {
+	{ "ssid",		NULL, 1 },
+	{ "wpa_psk",	NULL, 1 },
+	{ "crypto",	NULL, 1 },
+	{ "auth_mode_x",	"auth_mode", 1 },
+	{ "wep_x",		"wep", 1 },
+	{ "key",		NULL, 1 },
+	{ "key1",		NULL, 0 },
+	{ "key2",		NULL, 0 },
+	{ "key3",		NULL, 0 },
+	{ "key4",		NULL, 0 },
+	{ "macmode", NULL, 0 },
+	{ "maclist_x", NULL, 0 },
+	{ "closed", NULL, 0 },
+	{ "radius_ipaddr", NULL, 1 },
+	{ "radius_key", NULL, 1 },
+	{ "radius_port", NULL, 1 },
+	{ "ap_isolate", NULL, 0},
+#ifdef RTCONFIG_WIFI7
+	{ "11be",		NULL, 1 },
+#endif
+	{ NULL, 		NULL, 0 }
+};
 
 extern int send_cfgmnt_event(char *msg);
 extern int get_chanspec_info(AVBL_CHANSPEC_T *avblChannel);
@@ -40,6 +71,11 @@ extern int send_event_to_asusrbd(unsigned char *data, int len);
 #endif //RTCONFIG_ROUTERBOOST
 
 extern int cm_isCapSupported(char *reMac, int capType, int capSubtype);
+extern int get_unit_chanspc_by_bandtype (char *mac, char *bandtype);
+
+#ifdef RTCONFIG_MULTILAN_MWL
+extern int fix_mlo_dwb_for_bhfh(int dwb_subunit,int profile_type);
+#endif
 
 #endif /* __CFG_LIB_H__ */
 /* End of cfg_lib.h */

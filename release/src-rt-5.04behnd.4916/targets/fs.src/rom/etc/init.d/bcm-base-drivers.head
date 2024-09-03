@@ -17,25 +17,6 @@ else
 	mfg_nvram_mode=0
 fi
 
-MTDOOPS_PART=/proc/environment/mtdoops
-if [ -e $MTDOOPS_PART ]; then
-	mtdoops=$(cat $MTDOOPS_PART)
-	rec_size=65536
-	log_shift=$(gunzip -c /proc/config.gz | grep CONFIG_LOG_BUF_SHIFT | cut -d '=' -f 2)
-	rec_size=$((2**$log_shift))
-	mtdsize=$(cat /proc/mtd  | grep $mtdoops | cut -d ' ' -f3)
-	if [ "$mtdsize" != "" ]; then   
-		mtdsize=$((0x${mtdsize}))
-		if [ $rec_size -gt $mtdsize ]; then
-			rec_size=$mtdsize
-		fi
-	else
-		mtdoops=""
-	fi		
-else
-	mtdoops=""
-fi
-
 trap "" 2
 
 

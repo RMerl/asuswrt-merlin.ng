@@ -54,6 +54,7 @@ function genErrorHint(){
 } 
 
 if(parent.ISMOBILE){
+	//Nothing
 }
 else{
 	var cssNode = document.createElement('link');
@@ -70,8 +71,7 @@ function changeiuiBackground(loading){
 		document.getElementById("loadingIcon_iui").style.background = 'url(/images/InternetScan.gif) no-repeat right center';
 		document.getElementById("loadingIcon_iui").style.marginRight = '5px';
 	}
-	else{
-	}
+
 }
 
 function changeiuiBackground2(obj,loading){
@@ -81,8 +81,7 @@ function changeiuiBackground2(obj,loading){
 		document.getElementById(obj).style.background = 'url(/images/InternetScan.gif) no-repeat right center';
 		document.getElementById(obj).style.marginRight = '5px';
 	}
-	else{
-	}
+
 }
 
 function hideObjs(){

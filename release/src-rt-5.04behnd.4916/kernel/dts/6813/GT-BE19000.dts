@@ -154,6 +154,14 @@
                 init_high;
         };
 
+	/* RTL8372 Reset */
+	led52:led_gpio_52 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <52>;
+		active_low;
+	};
+
 	/* WPS LED */                                                                                                                                                                                       
 	led53:led_gpio_53 {
 		compatible = "brcm,gpio-led";
@@ -249,19 +257,6 @@
 		status="okay";
 		brightness = <0>;
 	};
-	led80:led_gpio_14 {
-		compatible = "brcm,gpio-led";
-		software_led;
-		pin = <14>;
-		active_low;
-	};
-
-	led81:led_gpio_62 {
-		compatible = "brcm,gpio-led";
-		software_led;
-		pin = <62>;
-		active_low;
-	};
 };
 
 // For ICP-20100 pressure sensor
@@ -295,7 +290,7 @@
 	/* Enable SerDes0 for RTL8372 */
 	phy_serdes0 {
 		phy-fixed;
-		phy-reset = <&gpioc 14 GPIO_ACTIVE_HIGH>;
+		phy-reset = <&gpioc 52 GPIO_ACTIVE_HIGH>;
 		config-xfi = "10GBase-R";	/* RTL8372: 10G/4x2.5G switch */
 		status = "okay";
 	};
@@ -349,7 +344,7 @@
 &usb0_xhci {
 	status = "okay";
 };
-
+/*
 &hsspi {
 	status = "okay";
 	bcmgps_spi: bcmgps_spi {
@@ -361,3 +356,4 @@
 		spi-max-frequency = <25000000>;
 	};
 };
+*/

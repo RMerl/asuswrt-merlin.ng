@@ -123,8 +123,8 @@ struct MHEADER {
 #define  UPDT_OFST              0x000000FF   /* offset of SCTX updateable fld */
 #define  HASH_TYPE              0x00000300   /* hash alg operation type */
 #define  HASH_TYPE_SHIFT                 8
-#define  HASH_MODE              0x00001C00   /* one of spu2_hash_mode */
-#define  HASH_MODE_SHIFT                10
+#define  SPU_HASH_MODE          0x00001C00   /* one of spu2_hash_mode */
+#define  SPU_HASH_MODE_SHIFT            10
 #define  HASH_ALG               0x0000E000   /* hash algorithm */
 #define  HASH_ALG_SHIFT                 13
 #define  CIPHER_TYPE            0x00030000   /* encryption operation type */

@@ -233,6 +233,7 @@
 		ubus_sys: ubus_sys {
 			#address-cells = <2>;
 			#size-cells = <2>;
+			ranges;
 			#define UBUS_SYSTOP_OFFSET         0x0 0x83000000
 			#define UBUS_SYSTOP_SIZE           0x0 0x80
 			#define UBUS_REGISTRATION_OFFSET   0x0 0x83000200
@@ -340,6 +341,15 @@
 			#define SDIO_EMMC_SPI			95
 			#include "../../ip/bcm_sdhci.dtsi"
 		};
+
+#if defined (CONFIG_MMC_OOPS) || (CONFIG_MMC_OOPS_MODULE)
+		mmcoops {
+			#define MMC_OOPS_DUMP_OFFSET    1536 /* 768KB */
+			#define MMC_OOPS_DUMP_SIZE      512  /* 256KB */	
+			#define MMC_OOPS_DUMP_RECSIZE   128  /* 64KB  */
+			#include "../../ip/bcm_mmc_oops.dtsi"
+		};
+#endif
 
 		hs_uart0: hs_serial0 {
 			#define UART_OFFSET			0x0 0x58400
@@ -809,14 +819,6 @@
 		reg = <0x0 0x82dac000 0x0 0x4000>;
 	};
 
-#if defined (CONFIG_MMC_OOPS) || (CONFIG_MMC_OOPS_MODULE)
-	mmcoops {
-		#define MMC_OOPS_DUMP_OFFSET	1536 /* 768KB */
-		#define MMC_OOPS_DUMP_SIZE	512  /* 256KB */	
-		#define MMC_OOPS_DUMP_RECSIZE	64   /* 32KB */	
-		#include "../../ip/bcm_mmc_oops.dtsi"
-	};
-#endif
 #if defined(CONFIG_BCM_CPUIDLE_CLK_DIVIDER)
 	biucfg {
 		compatible = "brcm,bcm-biucfg";

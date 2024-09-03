@@ -17,17 +17,21 @@
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
+<script type="text/javascript" src="/form.js"></script>
 <script>
 var keyword_rulelist_array = "<% nvram_char_to_ascii("","keyword_rulelist"); %>";
 var keyword_firewall_enable = "<% nvram_get("keyword_enable_x"); %>";
 
-var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=159";
+var faq_href_1 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=159";
+
+var current_page = window.location.pathname.split("/").pop();
+var faq_index_tmp = get_faq_index(FAQ_List, current_page, 1);
 
 function initial(){
 	show_menu();
 	show_keyword_rulelist();
 
-	$("#kwf_desc2 a").attr("href", faq_href);
+	$("#kwf_desc2 a").attr("href", faq_href_1);
 }
 
 function show_keyword_rulelist(){
@@ -164,9 +168,12 @@ function done_validating(action){
 						<table width="760px" border="0" cellpadding="4" cellspacing="0" class="FormTitle" id="FormTitle">
 							<tbody>
 							<tr>
-								<td bgcolor="#4D595D" valign="top"  >
+								<td bgcolor="#4D595D" valign="top">
+								<div class="container">
+
 									<div>&nbsp;</div>
 									<div class="formfonttitle"><#menu5_5#> - <#menu5_5_5#></div>
+									<div class="formfonttitle_help"><i onclick="show_feature_desc(`<#HOWTOSETUP#>`)" class="icon_help"></i></div>
 									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									<div class="formfontdesc"><#FirewallConfig_KeywordFilterEnable_sectiondesc#></div>
 									<div id="kwf_desc2" class="formfontdesc"><#FirewallConfig_KeywordFilterEnable_sectiondesc2#></div>	
@@ -206,7 +213,11 @@ function done_validating(action){
 									<div id="keyword_rulelist_Block"></div>
 									<div class="apply_gen">
 										<input type="button" class="button_gen" onclick="applyRule()" value="<#CTL_apply#>"/>
-									</div>        
+									</div>
+
+									</div>	<!-- for .container  -->
+									<div class="popup_container popup_element_second"></div>
+									
 								</td>
 							</tr>
 							</tbody>
@@ -214,7 +225,7 @@ function done_validating(action){
 					</td>
 </form>
 				</tr>
-			</table>				
+			</table>
 		<!--===================================Ending of Main Content===========================================-->		
 		</td>	
 		<td width="10" align="center" valign="top">&nbsp;</td>

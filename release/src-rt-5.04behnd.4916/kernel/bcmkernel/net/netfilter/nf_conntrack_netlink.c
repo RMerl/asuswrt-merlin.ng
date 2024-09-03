@@ -37,7 +37,7 @@ static int ctnetlink_dpi_size(const struct nf_conn *ct)
 {
 	int len = dpi_url_len(ct->bcm_ext.dpi.url);
 
-	return nla_total_size(sizeof(u_int32_t))	/* CTA_DPI_APP_ID */
+	return nla_total_size(sizeof(u_int64_t))	/* CTA_DPI_APP_ID */
 	       + 6 * nla_total_size(sizeof(u_int8_t))	/* CTA_DPI_MAC */
 	       + nla_total_size(sizeof(u_int32_t))	/* CTA_DPI_STATUS */
 	       + nla_total_size(sizeof(char) * len)	/* CTA_DPI_URL */
@@ -63,7 +63,7 @@ ctnetlink_dump_dpi(struct sk_buff *skb, const struct nf_conn *ct)
 	if (!nest_parms)
 		goto nla_put_failure;
 
-	if (nla_put_be32(skb, CTA_DPI_APP_ID, htonl(app_id)))
+	if (nla_put_be64(skb, CTA_DPI_APP_ID, cpu_to_be64(app_id), CTA_DPI_PAD))
 		goto nla_put_failure;
 	if (nla_put(skb, CTA_DPI_MAC, sizeof(empty_mac), mac))
 		goto nla_put_failure;
@@ -81,7 +81,7 @@ nla_put_failure:
 }
 
 static const struct nla_policy dpi_policy[CTA_DPI_MAX+1] = {
-	[CTA_DPI_APP_ID]	= { .type = NLA_U32 },
+	[CTA_DPI_APP_ID]	= { .type = NLA_U64 },
 	[CTA_DPI_MAC]		= { .type = NLA_BINARY,
 				    .len = 6 * sizeof(uint8_t) },
 	[CTA_DPI_STATUS]	= { .type = NLA_U32 },

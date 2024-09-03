@@ -19,6 +19,7 @@ typedef enum
     ACCESS_LOG_OP_STOP,
     ACCESS_LOG_OP_MEMSET_ADAPTIVE_32,
     ACCESS_LOG_OP_WRITE_6BYTE_ADDR,
+    ACCESS_LOG_OP_POLL,
 } access_log_op_t;
 
 typedef union os_size_st_union {
@@ -27,6 +28,11 @@ typedef union os_size_st_union {
         uint32_t addr:24;
         uint32_t op_code : 4;
         uint32_t size : 4;
+    };
+    struct {
+        uint32_t addr_1 : 24;
+        uint32_t op_code_1 : 4;
+        uint32_t poll_mode : 4;
     };
 } addr_op_size_st;
 

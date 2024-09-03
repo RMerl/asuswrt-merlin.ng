@@ -3,25 +3,19 @@
 
  <:label-BRCM:2011:DUAL/GPL:standard    
  
- Unless you and Broadcom execute a separate written software license
- agreement governing use of this software, this software is licensed
- to you under the terms of the GNU General Public License version 2
- (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
- with the following added to such license:
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License, version 2, as published by
+ the Free Software Foundation (the "GPL").
  
-    As a special exception, the copyright holders of this software give
-    you permission to link this software with independent modules, and
-    to copy and distribute the resulting executable under terms of your
-    choice, provided that you also meet, for each linked independent
-    module, the terms and conditions of the license of that module.
-    An independent module is a module which is not derived from this
-    software.  The special exception does not apply to any modifications
-    of the software.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
  
- Not withstanding the above, under no circumstances may you combine
- this software in any way with any other Broadcom software provided
- under a license other than the GPL, without Broadcom's express prior
- written consent.
+ 
+ A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+ writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ Boston, MA 02111-1307, USA.
  
  :>
 */
@@ -40,10 +34,12 @@ typedef struct {
     void *core_base_phy;
     volatile uint8_t *core_base;
     volatile uint8_t *swreg_base;
+    volatile uint8_t *sweth_misc;
     volatile uint8_t *mdio_base;
     volatile uint8_t *fcb_base;
     volatile uint8_t *acb_base;
     volatile uint8_t *lfh_base;
+    volatile uint8_t *sib_base;
     // following blocks can be in sf2 or runner based
     volatile uint8_t *xbar_ctrl;
     volatile uint8_t *qphy_ctrl;
@@ -59,27 +55,39 @@ extern sw_base_t sw_mmap_base;
 #define SWITCH_REG_BASE     sw_mmap_base.swreg_base
 #define SWITCH_PHYS_BASE    sw_mmap_base.core_base_phy
 #define SWITCH_LFH_BASE     sw_mmap_base.lfh_base
+#define SWITCH_SIB_BASE     sw_mmap_base.sib_base
+#define SWITCH_ETH_MISC_BASE     sw_mmap_base.sweth_misc
+
+/* For ETH_MISC_REG_MISC_CLKRST_CNTRL */
+#define SWITCH_ETH_MISC_CLKRST_CNTRL    ((volatile uint32_t *)(SWITCH_ETH_MISC_BASE + 0xc))
+#define ETH_MISC_CLKRST_CNTRL_IMP_CLK_SEL (1<<0)
 
 #define SWITCH_CROSSBAR_REG ((volatile uint32_t *)sw_mmap_base.xbar_ctrl)
 
 #define SWITCH_DIRECT_DATA_WR_REG   (SWITCH_REG_BASE + 0x00008UL)  
 #define SWITCH_DIRECT_DATA_RD_REG   (SWITCH_REG_BASE + 0x0000cUL)
 
-#if defined(CONFIG_BCM963178) || defined(CONFIG_BCM96756) || defined(CONFIG_BCM96765)
+#if defined(CONFIG_BCM963178) || defined(CONFIG_BCM96756) || defined(CONFIG_BCM96765) || defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764)
+#define ACB_PORT_CONFIG
+#endif
+
+#if defined(ACB_PORT_CONFIG)
 #define SF2_ACB_PORT0_CONFIG_REG    (SWITCH_ACB_BASE + 0x00208UL)
     #define SF2_ACB_PORT_XOFF_EN            (1<<11)
 #define SF2_ACB_CONTROL_QUE_MAP_0   (SWITCH_ACB_BASE + (0x0a28 - 0x0800))
 #define SF2_ACB_CONTROL_QUE_MAP_1   (SWITCH_ACB_BASE + (0x0a2c - 0x0800))
 #endif
 
-#if defined(CONFIG_BCM96756) || defined(CONFIG_BCM96765)
+#if defined(CONFIG_BCM96756) || defined(CONFIG_BCM96765) || defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764)
 #define SWITCH_CORE_ARLCTL_REG_SPARE0 (SWITCH_BASE + 0x2400)
 #endif
 
-#if defined(CONFIG_BCM96765)
+#if defined(CONFIG_BCM96765) || defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764) 
 #define SWITCH_LFH_PORT0_CONTROL_REG    (SWITCH_LFH_BASE)
     #define LFH_XGMII_SEL                       0x20
     #define LFH_XGMII_SEL_OVRD                  0x40
+#define SWITCH_SIB_TX_CONTROL_REG       (SWITCH_SIB_BASE + 0x4)
+    #define SIB_TX_CONTROL_REMOVE_CRC           0x1
 #endif
 
 #if defined(CONFIG_BCM963158)
@@ -170,14 +178,14 @@ extern sw_base_t sw_mmap_base;
     #define ETHSW_QPHY_CTRL_IDDQ_BIAS_MASK          (0x1<<ETHSW_QPHY_CTRL_IDDQ_BIAS_SHIFT)
 #endif
 
-#if defined(CONFIG_BCM963138)||defined(CONFIG_BCM963148)||defined(CONFIG_BCM94908)||defined(CONFIG_BCM963158)||defined(CONFIG_BCM947622)||defined(CONFIG_BCM963178)||defined(CONFIG_BCM96756)||defined(CONFIG_BCM963146)
+#if defined(CONFIG_BCM963138)||defined(CONFIG_BCM963148)||defined(CONFIG_BCM94908)||defined(CONFIG_BCM963158)||defined(CONFIG_BCM947622)||defined(CONFIG_BCM963178)||defined(CONFIG_BCM96756)||defined(CONFIG_BCM963146) || defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764)
     #define SPHY_CNTRL ((volatile uint32_t *)sw_mmap_base.sphy_ctrl)
 
  #if defined(CONFIG_BCM963146)
     #define ETHSW_SPHY_CTRL_REF_CLK_FREQ_SHIFT      13
     #define ETHSW_SPHY_CTRL_REF_CLK_FREQ_MASK       (3<<ETHSW_QPHY_CTRL_REF_CLK_FREQ_SHIFT)
     #define ETHSW_SPHY_CTRL_REF_CLK_50MHZ           (2<<ETHSW_QPHY_CTRL_REF_CLK_FREQ_SHIFT)
- #elif defined(CONFIG_BCM947622)
+ #elif defined(CONFIG_BCM947622) || defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764)
     #define ETHSW_SPHY_CTRL_PLL_CLK_SEL_SHIFT       17
     #define ETHSW_SPHY_CTRL_PLL_CLK_250_MASK        (1<<ETHSW_SPHY_CTRL_PLL_CLK_SEL_SHIFT)
  #elif defined(CONFIG_BCM96756)

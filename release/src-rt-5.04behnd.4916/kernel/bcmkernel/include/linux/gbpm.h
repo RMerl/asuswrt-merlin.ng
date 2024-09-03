@@ -2,28 +2,22 @@
  *
 <:copyright-BRCM:2007:DUAL/GPL:standard
 
-   Copyright (c) 2007 Broadcom
+   Copyright (c) 2007 Broadcom 
    All Rights Reserved
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
 :>
 */
@@ -45,7 +39,7 @@ written consent.
 #define GBPM_SUCCESS	 0
 
 #define GBPM_HIGH_PRIO_ALLOC	1
-#define GBPM_LOW_PRIO_ALLOC	0
+#define GBPM_LOW_PRIO_ALLOC     0
 
 #if defined(CONFIG_BCM_XTMCFG) || defined(CONFIG_BCM_XTMCFG_MODULE)
 #define GBPM_XTM_SUPPORT
@@ -136,33 +130,39 @@ typedef void (*gbpm_add_ref_hook_t) (void *, int);
 
 /* GBPM_DECL may be undef/define, for GBPM_BIND and GBPM_USER template usage */
 #define GBPM_BIND()				\
-	/* --- BPM BUF POOL --- */		\
-	GBPM_DECL(alloc_mult_buf)		\
-	GBPM_DECL(free_mult_buf)		\
-	GBPM_DECL(alloc_buf)			\
-	GBPM_DECL(free_buf)			\
-	/* --- BPM SKB POOL --- */		\
-	GBPM_DECL(total_skb)			\
-	GBPM_DECL(avail_skb)			\
-	GBPM_DECL(attach_skb)			\
-	GBPM_DECL(alloc_skb)			\
-	GBPM_DECL(alloc_buf_skb_attach)		\
-	GBPM_DECL(alloc_mult_skb)		\
-	GBPM_DECL(free_skb)			\
-	GBPM_DECL(free_skblist)			\
-	GBPM_DECL(invalidate_dirtyp)		\
-	GBPM_DECL(recycle_skb)			\
-	/* --- BPM pNBuff --- */		\
-	GBPM_DECL(recycle_pNBuff)		\
-	/* --- BPM Get Accessors --- */		\
-	GBPM_DECL(get_dyn_buf_lvl)		\
-	GBPM_DECL(get_total_bufs)		\
-	GBPM_DECL(get_avail_bufs)		\
-	GBPM_DECL(get_max_dyn_bufs)		\
-	/* --- BPM Runtime --- */		\
-	GBPM_DECL(is_buf_hw_recycle_capable)	\
-	GBPM_DECL(recycle_hw_buf)		\
-	GBPM_DECL(register_hw_pool_api)
+   /* --- BPM BUF POOL --- */		\
+   GBPM_DECL(alloc_mult_buf)		\
+   GBPM_DECL(free_mult_buf)		\
+   GBPM_DECL(alloc_buf)			\
+   GBPM_DECL(free_buf)			\
+   /* --- BPM SKB POOL --- */		\
+   GBPM_DECL(total_skb)			\
+   GBPM_DECL(avail_skb)			\
+   GBPM_DECL(attach_skb)			\
+   GBPM_DECL(attach_skb_no_shinfo_reset)	\
+   GBPM_DECL(alloc_skb)			\
+   GBPM_DECL(alloc_buf_skb_attach)		\
+   GBPM_DECL(alloc_mult_buf_skb_attach)		\
+   GBPM_DECL(alloc_mult_skb)		\
+   GBPM_DECL(free_skb)			\
+   GBPM_DECL(free_skblist)			\
+   GBPM_DECL(invalidate_dirtyp)		\
+   GBPM_DECL(recycle_skb)			\
+   GBPM_DECL(attach_skb_hw_buf)			\
+   GBPM_DECL(recycle_skb_hw_buf)			\
+   GBPM_DECL(free_mult_skb_and_buf)    \
+   GBPM_DECL(is_skb_with_hw_buf)    \
+   /* --- BPM pNBuff --- */		\
+   GBPM_DECL(recycle_pNBuff)		\
+   /* --- BPM Get Accessors --- */		\
+   GBPM_DECL(get_dyn_buf_lvl)		\
+   GBPM_DECL(get_total_bufs)		\
+   GBPM_DECL(get_avail_bufs)		\
+   GBPM_DECL(get_max_dyn_bufs)		\
+   /* --- BPM Runtime --- */		\
+   GBPM_DECL(is_buf_hw_recycle_capable)	\
+   GBPM_DECL(recycle_hw_buf)		\
+   GBPM_DECL(register_hw_pool_api)
 
 
 	/* --- BPM Users --- */
@@ -196,13 +196,19 @@ typedef void (*gbpm_recycle_pNBuff_hook_t)(void *, unsigned long, uint32_t);
 typedef uint32_t (*gbpm_total_skb_hook_t)(void);
 typedef uint32_t (*gbpm_avail_skb_hook_t)(void);
 typedef void (*gbpm_attach_skb_hook_t)(void *, void *, uint32_t);
+typedef void (*gbpm_attach_skb_no_shinfo_reset_hook_t)(void *, void *, uint32_t);
 typedef void *(*gbpm_alloc_skb_hook_t)(void);
 typedef void *(*gbpm_alloc_buf_skb_attach_hook_t)(uint32_t);
+typedef void *(*gbpm_alloc_mult_buf_skb_attach_hook_t)(uint32_t, uint32_t, uint32_t);
 typedef void *(*gbpm_alloc_mult_skb_hook_t)(uint32_t);
 typedef void (*gbpm_free_skb_hook_t)(void *);
-typedef void (*gbpm_free_skblist_hook_t)(void *, void *, uint32_t, void **);
+typedef void (*gbpm_free_skblist_hook_t)(void *, void *, uint32_t, uint32_t, void **);
 typedef void *(*gbpm_invalidate_dirtyp_hook_t)(void *);
 typedef void (*gbpm_recycle_skb_hook_t)(void *, unsigned long, uint32_t);
+typedef void (*gbpm_attach_skb_hw_buf_hook_t)(void *, void *, uint32_t, uint32_t, bool);
+typedef void (*gbpm_recycle_skb_hw_buf_hook_t)(void *, unsigned long, uint32_t);
+typedef void (*gbpm_free_mult_skb_and_buf_hook_t)(void *, uint32_t);
+typedef bool (*gbpm_is_skb_with_hw_buf_hook_t)(void *);
 
 /* --- BPM Get Accessors --- */
 typedef int (*gbpm_get_dyn_buf_lvl_hook_t)(void);
@@ -306,6 +312,12 @@ static inline void gbpm_attach_skb(void *skbp, void *data, uint32_t datalen)
 	gbpm_g.attach_skb(skbp, data, datalen);
 }
 
+static inline void gbpm_attach_skb_no_shinfo_reset(void *skbp, void *data, uint32_t datalen)
+{
+	gbpm_g.attach_skb_no_shinfo_reset(skbp, data, datalen);
+}
+
+
 static inline void *gbpm_alloc_skb(void)
 {
 	return gbpm_g.alloc_skb();
@@ -315,6 +327,12 @@ static inline void *gbpm_alloc_buf_skb_attach(uint32_t datalen)
 {
 	return gbpm_g.alloc_buf_skb_attach(datalen);
 }
+
+static inline void *gbpm_alloc_mult_buf_skb_attach(uint32_t num, uint32_t datalen, uint32_t prio)
+{
+	return gbpm_g.alloc_mult_buf_skb_attach(num, datalen, prio);
+}
+
 
 static inline void *gbpm_alloc_mult_skb(uint32_t num)
 {
@@ -326,10 +344,10 @@ static inline void gbpm_free_skb(void *skbp)
 	gbpm_g.free_skb(skbp);
 }
 
-static inline void gbpm_free_skblist(void *head, void *tail, uint32_t num,
+static inline void gbpm_free_skblist(void *head, void *tail, uint32_t skbnum, uint32_t bufnum,
 				     void **bufp_arr)
 {
-	gbpm_g.free_skblist(head, tail, num, bufp_arr);
+	gbpm_g.free_skblist(head, tail, skbnum, bufnum, bufp_arr);
 }
 
 static inline void *gbpm_invalidate_dirtyp(void *skb)
@@ -350,6 +368,27 @@ static inline void gbpm_recycle_pNBuff(void *pNBuff, unsigned long context,
 	gbpm_g.recycle_pNBuff(pNBuff, context, recycle_action);
 }
 
+
+static inline void gbpm_attach_skb_hw_buf(void *skbp, void *data, uint32_t datalen, uint32_t dataoffset, bool good_sharedinfo)
+{
+   gbpm_g.attach_skb_hw_buf(skbp, data, datalen, dataoffset, good_sharedinfo);
+}
+
+static inline void gbpm_recycle_skb_hw_buf(void *skbp, unsigned long context,
+				    uint32_t recycle_action)
+{
+   gbpm_g.recycle_skb_hw_buf(skbp, context, recycle_action);
+}
+
+static inline void gbpm_free_mult_skb_and_buf(void *skbp, uint32_t list_len)
+{
+   gbpm_g.free_mult_skb_and_buf(skbp, list_len);
+}
+
+static inline bool gbpm_is_skb_with_hw_buf(void *skbp)
+{
+   return gbpm_g.is_skb_with_hw_buf(skbp);
+}
 
 /* --- BPM Get Accessors --- */
 static inline int gbpm_get_dyn_buf_lvl(void)

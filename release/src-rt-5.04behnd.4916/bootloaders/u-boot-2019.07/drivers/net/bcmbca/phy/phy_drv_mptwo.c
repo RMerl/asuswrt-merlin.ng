@@ -577,6 +577,13 @@ static int _phy_power_get(phy_dev_t *phy_dev, int *enable)
 
 static int _phy_power_set(phy_dev_t *phy_dev, int enable)
 {
+    if (!phy_dev->cascade_next && dt_gpio_exists(phy_dev->gpiod_phy_power))
+    {
+        printk("%s power for SFP at address 0x%x\n", enable ? "Enable" : "Disable", phy_dev->addr);
+        dt_gpio_set_value(phy_dev->gpiod_phy_power, enable);
+        mdelay(10);
+    }
+
     return 0;
 }
 

@@ -3,27 +3,21 @@
    All Rights Reserved
 
     <:label-BRCM:2015:DUAL/GPL:standard
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
 :>
 */
 
@@ -53,53 +47,61 @@ static int swblks_probe(dt_device_t *pdev)
     if (!pdev) return 0;
 
     res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "switchcore-base");
-    if (res && !IS_ERR((void*)res->start)) {
-        sw_mmap_base.core_base_phy = (void *)res->start;
+    if (res && !IS_ERR((void*)(uintptr_t)res->start)) {
+        sw_mmap_base.core_base_phy = (void *)(uintptr_t)res->start;
         sw_mmap_base.core_base = devm_ioremap_resource(&pdev->dev, res);
     }
 
     res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "switchreg-base");
-    if (res && !IS_ERR((void*)res->start))
+    if (res && !IS_ERR((void*)(uintptr_t)res->start))
         sw_mmap_base.swreg_base = devm_ioremap_shared_resource (&pdev->dev, res);
 
+    res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "switch-eth-misc");
+    if (res && !IS_ERR((void*)(uintptr_t)res->start))
+        sw_mmap_base.sweth_misc = devm_ioremap_shared_resource (&pdev->dev, res);
+
     res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "switchmdio-base");
-    if (res && !IS_ERR((void*)res->start))
+    if (res && !IS_ERR((void*)(uintptr_t)res->start))
         sw_mmap_base.mdio_base = devm_ioremap_shared_resource (&pdev->dev, res);
         
     res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "switchfcb-base");
-    if (res && !IS_ERR((void*)res->start))
+    if (res && !IS_ERR((void*)(uintptr_t)res->start))
         sw_mmap_base.fcb_base = devm_ioremap_resource(&pdev->dev, res);
         
     res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "switchacb-base");
-    if (res && !IS_ERR((void*)res->start))
+    if (res && !IS_ERR((void*)(uintptr_t)res->start))
         sw_mmap_base.acb_base = devm_ioremap_resource(&pdev->dev, res);
         
     res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "switchlfh-base");
-    if (res && !IS_ERR((void*)res->start))
+    if (res && !IS_ERR((void*)(uintptr_t)res->start))
         sw_mmap_base.lfh_base = devm_ioremap_resource(&pdev->dev, res);
         
+    res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "switchsib-base");
+    if (res && !IS_ERR((void*)(uintptr_t)res->start))
+        sw_mmap_base.sib_base = devm_ioremap_resource(&pdev->dev, res);
+        
     res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "xbar-ctrl");
-    if (res && !IS_ERR((void*)res->start))
+    if (res && !IS_ERR((void*)(uintptr_t)res->start))
         sw_mmap_base.xbar_ctrl = devm_ioremap_resource(&pdev->dev, res);
 
     res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "phy-test-ctrl");
-    if (res && !IS_ERR((void*)res->start))
+    if (res && !IS_ERR((void*)(uintptr_t)res->start))
         sw_mmap_base.phy_test_ctrl = devm_ioremap_resource(&pdev->dev, res);
 
     res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "qphy-ctrl");
-    if (res && !IS_ERR((void*)res->start))
+    if (res && !IS_ERR((void*)(uintptr_t)res->start))
         sw_mmap_base.qphy_ctrl = devm_ioremap_resource(&pdev->dev, res);
 
     res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "xport0-clk-ctrl");
-    if (res && !IS_ERR((void*)res->start))
+    if (res && !IS_ERR((void*)(uintptr_t)res->start))
         sw_mmap_base.xport0_clk_ctrl = devm_ioremap_resource(&pdev->dev, res);
 
     res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "sphy-ctrl");
-    if (res && !IS_ERR((void*)res->start))
+    if (res && !IS_ERR((void*)(uintptr_t)res->start))
         sw_mmap_base.sphy_ctrl = devm_ioremap_resource(&pdev->dev, res);
 
     res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "bcast-ctrl");
-    if (res && !IS_ERR((void*)res->start))
+    if (res && !IS_ERR((void*)(uintptr_t)res->start))
     {
         void __iomem *bcast_ctrl = devm_ioremap_resource(&pdev->dev, res);
         uint32_t val = *((uint32_t *)bcast_ctrl);
@@ -149,6 +151,8 @@ module_platform_driver(of_platform_driver);
 #else
  #define IS_SPHY(phy_dev)    0
 #endif
+
+static phy_dev_t *extphy_dev;
 
 // QGPHYs and SPHY after reset will only advertise speed with full duplex
 // setup phy to advertise half duplex also.
@@ -381,7 +385,7 @@ static void dsl_phy_afe_pll_setup(phy_dev_t *phy_dev)
         qphy_afe_pll_done = 1;
 }
 
-#elif defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813)
+#elif defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764)
 
 static void _phy_run_cal(phy_dev_t *phy_dev, u16 *rcalnewcode11_p)
 {
@@ -490,26 +494,29 @@ static void _phy_afe_cfg(phy_dev_t *phy_dev, u16 rcalnewcode11)
 static void dsl_phy_afe_pll_setup(phy_dev_t *phy_dev)
 {
     u16 rcalnewcode11;
+#if defined(QPHY_CNTRL)
     int i;
+#endif
     static int qphy_afe_pll_done = 0;
 
     if (!IS_QPHY(phy_dev) && !IS_SPHY(phy_dev))
         return;
-    if (IS_QPHY(phy_dev)) {
-        if (qphy_afe_pll_done) 
-            return;
-    }
+    if (IS_QPHY(phy_dev) && qphy_afe_pll_done) 
+        return;
     
     // reset PHY
     if (IS_SPHY(phy_dev))
         phy_bus_write(phy_dev, MII_CONTROL, MII_CONTROL_RESET|MII_CONTROL_AN_ENABLE|MII_CONTROL_DUPLEX_MODE|MII_CONTROL_SPEED_SEL6);
+#if defined(QPHY_CNTRL)
     else
         for (i=0; i<4; i++)
             if (qphy_devs[i])
                 phy_bus_write(qphy_devs[i], MII_CONTROL, MII_CONTROL_RESET|MII_CONTROL_AN_ENABLE|MII_CONTROL_DUPLEX_MODE|MII_CONTROL_SPEED_SEL6);
+#endif
     // reset AFE and PLL
     if (IS_SPHY(phy_dev))
         _phy_afe_reset(phy_dev)
+#if defined(QPHY_CNTRL)
     else
         for (i=0; i<4; i++)
             if (qphy_devs[i])
@@ -517,7 +524,9 @@ static void dsl_phy_afe_pll_setup(phy_dev_t *phy_dev)
 
     i = (IS_QPHY(phy_dev) && (phy_dev->addr != QPHY0_ADDR)) ? phy_dev->addr : 0;
     if (i) phy_dev->addr = QPHY0_ADDR;         // need to do following  QPHY init using base addr
+#endif
     
+#if  !defined(CONFIG_BCM96766) && !defined(CONFIG_BCM96764)
     //Write PLL/AFE control registers
     brcm_misc_write(phy_dev, 0x30, 1, 0x0000); // reset PLL
     brcm_misc_write(phy_dev, 0x31, 0, 0x0050); // ndiv_integer
@@ -529,15 +538,19 @@ static void dsl_phy_afe_pll_setup(phy_dev_t *phy_dev)
     brcm_misc_write(phy_dev, 0x33, 0, 0x0002); // bypass code - default, vcoclk enabled
     brcm_misc_write(phy_dev, 0x30, 2, 0x01c0); // LDOs at default settings
     brcm_misc_write(phy_dev, 0x30, 1, 0x0001); // release PLL reset
+#endif
     // AFE_BG_CONFIG
     brcm_misc_write(phy_dev, 0x38, 0, 0x0010); // Bandgap curvature correction to correct default -- Erol
     //RCAL and RCCAL
     _phy_run_cal(phy_dev, &rcalnewcode11);
 
+#if defined(QPHY_CNTRL)
     if (i) phy_dev->addr = i;                  // restore back to current addr
+#endif
 
     if (IS_SPHY(phy_dev))
         _phy_afe_cfg(phy_dev, rcalnewcode11);
+#if defined(QPHY_CNTRL)
     else
         for (i=0; i<4; i++)
             if (qphy_devs[i])
@@ -545,6 +558,7 @@ static void dsl_phy_afe_pll_setup(phy_dev_t *phy_dev)
 
     if (!IS_SPHY(phy_dev))
         qphy_afe_pll_done = 1;
+#endif
 }
 
 #else
@@ -576,6 +590,13 @@ static int phy_init (phy_dev_t *phy_dev)
 #if defined(CONFIG_BCM_JUMBO_FRAME)
         brcm_shadow_18_ext_pkt_len_set(phy_dev, 1);
 #endif         
+        if (PhyIsPortConnectedToExternalSwitch(phy_dev) && phy_dev->mii_type == PHY_MII_TYPE_GMII)
+        {
+            brcm_egphy_rx_short_ipg_en(phy_dev);
+
+            if (extphy_dev)  // has external transceiver
+                brcm_egphy_rx_short_ipg_en(extphy_dev);
+        }
     }
     phy_dev->an_enabled = 1; /* We always use AN even for specific speed */
 
@@ -729,7 +750,7 @@ static void sphy_ctrl_adjust(uint32_t ext_pwr_down)
 #endif
 
     phy_ctrl = (*SPHY_CNTRL) & ~(ETHSW_SPHY_CTRL_RESET_MASK | ETHSW_SPHY_CTRL_IDDQ_BIAS_MASK| ETHSW_SPHY_CTRL_EXT_PWR_DOWN_MASK | 
-            ETHSW_SPHY_CTRL_IDDQ_GLOBAL_PWR_MASK | ETHSW_SPHY_CTRL_CK25_DIS_MASK);
+            ETHSW_SPHY_CTRL_IDDQ_GLOBAL_PWR_MASK | ETHSW_SPHY_CTRL_CK25_DIS_MASK | ETHSW_SPHY_CTRL_PHYAD_MASK);
     phy_ctrl |= SPHY_ADDR << ETHSW_SPHY_CTRL_PHYAD_SHIFT;
 #if defined(ETHSW_SPHY_CTRL_REF_CLK_50MHZ)
     phy_ctrl |= ETHSW_SPHY_CTRL_REF_CLK_50MHZ;
@@ -794,6 +815,14 @@ static int _phy_dev_add(phy_dev_t *phy_dev)
     if (ba == 4) sphy_dev = phy_dev;
 #endif
 #endif
+    if (dt_gpio_exists(phy_dev->gpiod_phy_reset))
+    {
+        printk("Lift PHY out of reset at address 0x%x\n", phy_dev->addr);
+        dt_gpio_set_value(phy_dev->gpiod_phy_reset, 0);
+
+        if (PhyIsExtPhyId(phy_dev))
+            extphy_dev = phy_dev;
+    }
     return 0;
 }
 
@@ -860,8 +889,17 @@ void phy_bus_probe(bus_drv_t *bus_drv)
         if ((bus_drv->c45_read(i, 0x1, 0x0002, &phyid1)) || (bus_drv->c45_read(i, 0x1, 0x0003, &phyid2)))
         {
             if (phy_dev)
-                printk("   PHY defined in DT at address %2d PHY Type: %d is not detected!!\n", 
-                        i, phy_dev->phy_drv->phy_type);
+            {
+                if (phy_dev->flag & PHY_FLAG_ON_MEZZANINE)
+                {
+                    printkwarn("   Mezzanine card: PHY at address %2d PHY Type: %d is not populated!!", 
+                            i, phy_dev->phy_drv->phy_type);
+                    phy_dev->flag |= PHY_FLAG_NOT_PRESENTED;
+                }
+                else
+                    printk("   PHY defined in DT at address %2d PHY Type: %d is not detected!!\n", 
+                            i, phy_dev->phy_drv->phy_type);
+            }
             continue;
         }
 

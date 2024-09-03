@@ -1,0 +1,164 @@
+#include "inc/68880.dtsi"
+
+/ {
+    model = "968880LTS_WAN1";
+};
+
+/ {
+        memory_controller {
+                memcfg = <(BP1_DDR_MCBSEL_FORMAT_VER1   | \
+                           BP1_DDR_TYPE_LPDDR4         | \
+                           BP1_DDR_SPEED_2133_36_39_39 | \
+                           BP1_DDR_WIDTH_32BIT         | \
+                           BP1_DDR_TOTAL_SIZE_16Gb      | \
+                           BP1_DDR_SSC_CONFIG_1        | \
+                           BP1_DDR_CONFIG_DEBUG)>;
+        };
+};
+
+&xport {
+    status = "okay";
+};
+
+&egphy {
+    status = "okay";
+};
+
+&unimac {
+    status = "okay";
+};
+
+&serdes {
+    status = "okay";
+};
+
+&ethphytop {
+    xphy0-enabled;
+    status = "okay";
+};
+
+&mpcs {
+    status = "okay";
+};
+
+&mdio {
+    status = "okay";
+};
+
+&mdio_bus {
+    egphy0 {
+        status = "okay";
+    };
+    xphy0 {
+        status = "okay";
+    };
+    serdes00 {
+        pinctrl-names = "default";
+        pinctrl-0 = <&a_slan_sd_rx_los_pin_3 &a_slan_sd_mod_abs_pin_4>;
+        tx-disable = <&gpioc 6 GPIO_ACTIVE_HIGH>;
+        10000-Base-R;
+        5000-Base-R;
+        2500-Base-X;
+        1000-Base-X;
+        status = "okay";
+    };
+    wan_ae {
+        trx = <&xfp_sfp>;
+        status = "okay";
+    };
+};
+
+&switch0 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&a_eth_mdc_pin_59 &a_eth_mdio_pin_60>;
+
+    ports {
+        port_gphy0 {
+            status = "okay";
+        };
+        port_xgphy0 {
+            status = "okay";
+        };
+        port_wan@ae {
+            status = "okay";
+        };
+        port_slan0 {
+            status = "okay";
+        };
+        port_wan@fiber {
+            status = "okay";
+        };
+    };
+};
+
+/ {
+    xfp_sfp: xfp_sfp {
+        pinctrl-names = "default", "tx-sd";
+        pinctrl-0 = <&pon_lbe_p_pin_30>;
+        pinctrl-1 = <&pon_lbe_p_pin_30 &rogue_onu_in_pin_27>;
+        compatible = "brcm,sfp";
+        i2c-bus = <&i2c0mux1>;
+        los-gpio = <&gpioc 26 GPIO_ACTIVE_HIGH>;
+        mod-def0 = <&bca_extintr 76 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_BOTH_EDGE | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+        tx-power-gpio = <&gpioc 55 GPIO_ACTIVE_HIGH>;
+    };
+
+    wan_serdes {
+        status = "okay";
+        trx = <&xfp_sfp>;
+    };
+
+    i2cmux:i2cmux {
+        compatible = "i2c-mux-gpio";
+        #address-cells = <1>;
+        #size-cells = <0>;
+        mux-gpios = <&gpioc 14 GPIO_ACTIVE_HIGH &gpioc 22 GPIO_ACTIVE_HIGH &gpioc 25 GPIO_ACTIVE_HIGH>;
+        i2c-parent = <&i2c0>;
+
+        i2c0mux1: i2c@1 {
+            reg = <0>;
+            #address-cells = <1>;
+            #size-cells = <0>;
+        };
+
+        i2c0mux2: i2c@2 {
+            reg = <5>;
+            #address-cells = <1>;
+            #size-cells = <0>;
+        };
+    };
+	
+    tod {
+        compatible = "brcm,tod";
+        pinctrl-names = "default";
+        pinctrl-0 = <&b_wan_nco_1pps_sig_pin_10 &b_wan_nco_8k_clk_pin_9>;
+    };  
+};
+
+&phy_wan_serdes {
+    status = "okay";
+};
+
+#ifndef CONFIG_BRCM_SMC_BOOT
+&nand {
+	status = "okay";
+};
+
+&sdhci {
+    status = "okay";
+};
+#endif
+
+&wdt {
+	status = "okay";
+};
+
+&uart0 {
+	status = "okay";
+};
+
+&i2c0 {
+	pinctrl-0 = <&i2c_scl_pin_28 &i2c_sda_pin_29>;
+	pinctrl-names = "default";
+	status = "okay";
+};

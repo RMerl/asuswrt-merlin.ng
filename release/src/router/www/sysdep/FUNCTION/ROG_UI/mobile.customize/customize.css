@@ -1,7 +1,20 @@
 ﻿@font-face{
 	font-family: Xolonium;
 	src: url(/fonts/xolonium.regular.woff) format("woff"),
-	     url(/fonts/xolonium.regular.otf) format("opentype");
+		 url(/fonts/xolonium.regular.otf) format("opentype");
+}
+html::-webkit-scrollbar{
+    display: block;
+    width: 4px;
+    height: 4px;
+    padding: 2px;
+}
+html::-webkit-scrollbar-thumb{
+    background-color: #FF3535 !important;   
+    border-radius: 50px;
+}
+html::-webkit-scrollbar-track{
+    background-color: #192229 !important;
 }
 #welcomeTitle{
 	font-family: Xolonium;

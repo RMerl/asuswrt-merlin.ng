@@ -1,29 +1,23 @@
 /*
     <:copyright-BRCM:2015-2016:DUAL/GPL:standard
-
-       Copyright (c) 2015-2016 Broadcom
+    
+       Copyright (c) 2015-2016 Broadcom 
        All Rights Reserved
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
 :>
 */
 
@@ -47,20 +41,20 @@
 #include "rdd_dhd_helper.h"
 #endif
 #include "rdd_debug.h"
-#if defined(XRDP_CODEL) || defined(XRDP_PI2)
-void rdd_aqm_shell_cmds_init(bdmfmon_handle_t rdd_dir);
-#endif
 #ifdef XRDP_CODEL
-void rdd_codel_shell_cmds_init(bdmfmon_handle_t rdd_dir);
+void rdd_codel_shell_cmds_init(bdmfmon_handle_t aqm_dir);
 #endif
 #ifdef XRDP_PI2
-void rdd_pi2_shell_cmds_init(bdmfmon_handle_t rdd_dir);
+void rdd_pi2_shell_cmds_init(bdmfmon_handle_t aqm_dir);
 #endif
 #ifdef BUFFER_CONGESTION_MGT
 void rdd_buffer_cong_mgt_shell_cmds_init(bdmfmon_handle_t rdd_dir);
 #endif
 #if defined(CONFIG_RUNNER_CPU_TX_FRAG_GATHER)
 #include "rdd_cpu_tx_sg.h"
+#endif
+#if defined(TM_C_CODE) && !defined(RDP_SIM)
+#include "rdpa_port_int.h"
 #endif
 
 #if defined(CONFIG_RUNNER_CSO)
@@ -81,6 +75,9 @@ static int rdd_print_sram_table_entries_all(bdmf_session_handle session, const b
 
 #ifdef TM_C_CODE
 static int rdd_print_non_empty_fifos(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
+#ifndef RDP_SIM
+static int rdd_tm_identity_of_port(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
+#endif
 #endif
 
 #ifdef EPON
@@ -93,9 +90,6 @@ static int rdd_set_runner_prints(bdmf_session_handle session, const bdmfmon_cmd_
 static int32_t rdd_start_runner_prints(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
 static int32_t rdd_stop_runner_prints(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
 #endif
-#endif
-#if defined(CONFIG_RNR_FEED_RING)
-static int rdd_set_feed_ring_threshold(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
 #endif
 static int rdd_set_recycle_ring_threshold(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
 static int rdd_interrupt_coalescing_stat(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
@@ -123,6 +117,10 @@ static int rdd_multicast_limit_cfg(bdmf_session_handle session, const bdmfmon_cm
 static int rdd_g9991_flow_control_print_debug(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
 #endif
 
+#ifdef DBG_TASK_ENTRY_POINT
+static int rdd_dbg_power_measure_mode(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
+#endif
+
 extern uintptr_t rdp_runner_core_addr[NUM_OF_RUNNER_CORES];
 uint32_t g_rdd_trace = 0;
 
@@ -141,6 +139,9 @@ uint32_t g_rdd_trace = 0;
 int rdd_make_shell_commands(void)
 {
     bdmfmon_handle_t driver_directory, rdd_directory;
+#if defined(XRDP_CODEL) || defined(XRDP_PI2)
+    bdmfmon_handle_t aqm_directory;
+#endif
 
     driver_directory = bdmfmon_dir_find(NULL, "driver");
 
@@ -156,6 +157,13 @@ int rdd_make_shell_commands(void)
 
     if (!rdd_directory)
         return BDMF_ERR_NOMEM;
+
+#if defined(XRDP_CODEL) || defined(XRDP_PI2)
+    aqm_directory = bdmfmon_dir_add(rdd_directory, "aqm", "Adaptive Queue Management", BDMF_ACCESS_ADMIN, NULL);
+
+    if (!aqm_directory)
+        return BDMF_ERR_NOMEM;
+#endif
 
 #ifdef EPON
     MAKE_BDMF_SHELL_CMD(rdd_directory, "prc",   "print US report counter", rdd_print_report_counter,
@@ -187,12 +195,10 @@ int rdd_make_shell_commands(void)
     MAKE_BDMF_SHELL_CMD(rdd_directory, "pnef",   "print non empty pds and update fifos", rdd_print_non_empty_fifos,
         BDMFMON_MAKE_PARM_ENUM("tm_id", "tm_id", tm_identifier_enum_table, 0),
         BDMFMON_MAKE_PARM("only_valid", "0 - print all, 1 - print only valid", BDMFMON_PARM_NUMBER, 0));
+#ifndef RDP_SIM
+    MAKE_BDMF_SHELL_CMD(rdd_directory, "portinfo",   "print port misc. information", rdd_tm_identity_of_port,
+        BDMFMON_MAKE_PARM("port", "port name", BDMFMON_PARM_STRING, 0));
 #endif
-
-
-#if defined(CONFIG_RNR_FEED_RING)
-    MAKE_BDMF_SHELL_CMD(rdd_directory, "sft",   "Set feed ring threshold", rdd_set_feed_ring_threshold,
-        BDMFMON_MAKE_PARM_RANGE("thr", "maximum threshold", BDMFMON_PARM_NUMBER, 0, 0, RING_INTERRUPT_THRESHOLD_MAX));
 #endif
     MAKE_BDMF_SHELL_CMD(rdd_directory, "srt",   "Set recycle ring threshold", rdd_set_recycle_ring_threshold,
         BDMFMON_MAKE_PARM_RANGE("thr", "maximum threshold", BDMFMON_PARM_NUMBER, 0, 0, RING_INTERRUPT_THRESHOLD_MAX));
@@ -247,20 +253,22 @@ int rdd_make_shell_commands(void)
     rdd_dhd_helper_shell_cmds_init(rdd_directory);
 #endif
 
-#if defined(XRDP_CODEL) || defined(XRDP_PI2)
-    rdd_aqm_shell_cmds_init(rdd_directory);
-#endif
-
 #ifdef XRDP_CODEL
-    rdd_codel_shell_cmds_init(rdd_directory);
+    rdd_codel_shell_cmds_init(aqm_directory);
 #endif
 
 #ifdef XRDP_PI2
-    rdd_pi2_shell_cmds_init(rdd_directory);
+    rdd_pi2_shell_cmds_init(aqm_directory);
 #endif
 
 #ifdef BUFFER_CONGESTION_MGT
     rdd_buffer_cong_mgt_shell_cmds_init(rdd_directory);
+#endif
+
+#ifdef DBG_TASK_ENTRY_POINT
+    MAKE_BDMF_SHELL_CMD(rdd_directory, "power_measure_mode",   "Enable/Disable power-measurement mode",
+        rdd_dbg_power_measure_mode,
+        BDMFMON_MAKE_PARM("enable", "0 - disable, 1 - enable", BDMFMON_PARM_NUMBER, 0));
 #endif
 
     return BDMF_ERR_OK;
@@ -520,7 +528,10 @@ static int32_t rdd_print_non_empty_fifos(bdmf_session_handle session, const bdmf
     uint16_t pd_fifo_write_ptr;
     uint16_t queue_number;
     PROCESSING_TX_DESCRIPTOR_STRUCT *pd;
+#if CHIP_VER >= RDP_GEN_62
     AGGREGATED_PD_DESCRIPTOR_STRUCT *agg_pd;
+    /* support nice print for 6855 as well TODO 6855_TMC */
+#endif
     PROCESSING_TX_DESCRIPTOR_STRUCT curr_pd;
     int pd_size;
     int ret;
@@ -605,6 +616,7 @@ static int32_t rdd_print_non_empty_fifos(bdmf_session_handle session, const bdmf
                 bdmf_session_print(session, "\e[1;34m");
             }
             bdmf_session_print(session, "PD #%d 0x%x 0x%x 0x%x 0x%x\n", i, curr_pd.word_32[0], curr_pd.word_32[1], curr_pd.word_32[2], curr_pd.word_32[3]);
+#if CHIP_VER >= RDP_GEN_62
             if (curr_pd.agg_pd)
             {
                 /* print aggregated pd*/
@@ -625,6 +637,9 @@ static int32_t rdd_print_non_empty_fifos(bdmf_session_handle session, const bdmf
                 bdmf_session_print(session, "target_mem_0=%d target_mem_1=%d ingress_port=%d ingress_cong=%d abs=%d\n", curr_pd.target_mem_0, curr_pd.target_mem_1, 
                     curr_pd.ingress_port, curr_pd.ingress_cong, curr_pd.abs);
             }
+#else
+/* TODO 6855_TMC */
+#endif
             bdmf_session_print(session, "\e[0m");
         }
         pd++;
@@ -633,6 +648,32 @@ static int32_t rdd_print_non_empty_fifos(bdmf_session_handle session, const bdmf
 
     return 0;
 }
+
+#ifndef RDP_SIM
+static int32_t rdd_tm_identity_of_port(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[],
+    uint16_t n_parms)
+{
+    const char *port_name = (const char *)parm[0].value.string;
+    bdmf_object_handle port_obj = NULL;
+    tm_identifier_e tm_identifier;
+    port_drv_priv_t *port_priv;
+    int rc;
+
+    /* TODO: calling RDPA from RDD isn't proper. This entire function should be removed by SWBCACPE-58376. Remove also the include of rdpa_port_int.h */
+    rc = rdpa_port_get(port_name, &port_obj);
+    if (rc || (port_obj == NULL))
+    {
+        BDMF_TRACE_ERR("can't get port %s\n", port_name);
+        return BDMF_ERR_PARM;
+    }
+
+    port_priv = (port_drv_priv_t *)bdmf_obj_data(port_obj);
+    tm_identifier = port_mapping_tm_identity_get(port_priv->type, port_priv->index);
+    bdmf_session_print(session, "port %s is associated with tm identity %d\n", port_name, tm_identifier);
+
+    return rc;
+}
+#endif
 #endif
 
 #ifdef EPON
@@ -710,16 +751,6 @@ static int32_t rdd_stop_runner_prints(bdmf_session_handle session, const bdmfmon
 #endif
 #endif
 
-#if defined(CONFIG_RNR_FEED_RING)
-static int32_t rdd_set_feed_ring_threshold(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[],
-    uint16_t n_parms)
-{
-    RDD_BYTES_2_BITS_WRITE_G(parm[0].value.unumber, RDD_CPU_FEED_RING_INTERRUPT_THRESHOLD_ADDRESS_ARR, 0);
-
-    return 0;
-}
-#endif
-
 static int rdd_set_recycle_ring_threshold(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[],
     uint16_t n_parms)
 {
@@ -774,7 +805,7 @@ static int rdd_interrupt_coalescing_stat(bdmf_session_handle session, const bdmf
 static int rdd_cso_stat(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[],
     uint16_t n_parms)
 {
-    uint32_t good_csum_packets, no_cso_support_packets, bad_ipv4_hdr_csum_packets, bad_tcp_udp_csum_packets;
+    uint32_t good_csum_packets = 0, no_cso_support_packets = 0, bad_ipv4_hdr_csum_packets = 0, bad_tcp_udp_csum_packets = 0, i, temp;
     uint16_t  val, cso_disable;
 #if defined(CONFIG_RUNNER_FWD_FLOW_CSO)
     uint32_t forward_cso_packets = 0, forward_cso_ver_error = 0;
@@ -794,14 +825,34 @@ static int rdd_cso_stat(bdmf_session_handle session, const bdmfmon_cmd_parm_t pa
         }
         else
         {
-            RDD_CSO_CONTEXT_ENTRY_GOOD_CSUM_PACKETS_READ_G(good_csum_packets, RDD_CSO_CONTEXT_TABLE_ADDRESS_ARR, 0);
-            RDD_CSO_CONTEXT_ENTRY_NO_CSO_SUPPORT_PACKETS_READ_G(no_cso_support_packets, RDD_CSO_CONTEXT_TABLE_ADDRESS_ARR, 0);
+            for (i = 0; i < NUM_OF_RUNNER_CORES; i++)
+            {
+                if (RDD_CSO_CONTEXT_TABLE_ADDRESS_ARR[i] != INVALID_TABLE_ADDRESS)
+                {
+                    RDD_CSO_CONTEXT_ENTRY_GOOD_CSUM_PACKETS_READ_CORE(temp, RDD_CSO_CONTEXT_TABLE_ADDRESS_ARR, 0, i);
+                    good_csum_packets += temp;
+                    RDD_CSO_CONTEXT_ENTRY_NO_CSO_SUPPORT_PACKETS_READ_CORE(temp, RDD_CSO_CONTEXT_TABLE_ADDRESS_ARR, 0, i);
+                    no_cso_support_packets += temp;
 #if defined(CONFIG_RUNNER_FWD_FLOW_CSO)
-            RDD_CSO_CONTEXT_ENTRY_FORWARD_CSO_PACKETS_READ_G(forward_cso_packets, RDD_CSO_CONTEXT_TABLE_ADDRESS_ARR, 0);
-            RDD_CSO_CONTEXT_ENTRY_FORWARD_CSO_VER_ERROR_READ_G(forward_cso_ver_error, RDD_CSO_CONTEXT_TABLE_ADDRESS_ARR, 0);
+                    RDD_CSO_CONTEXT_ENTRY_FORWARD_CSO_PACKETS_READ_CORE(temp, RDD_CSO_CONTEXT_TABLE_ADDRESS_ARR, 0, i);
+                    forward_cso_packets += temp;
+                    RDD_CSO_CONTEXT_ENTRY_FORWARD_CSO_VER_ERROR_READ_CORE(temp, RDD_CSO_CONTEXT_TABLE_ADDRESS_ARR, 0, i);
+                    forward_cso_ver_error += temp;
 #endif
-            RDD_CSO_CONTEXT_ENTRY_BAD_IPV4_HDR_CSUM_PACKETS_READ_G(bad_ipv4_hdr_csum_packets, RDD_CSO_CONTEXT_TABLE_ADDRESS_ARR, 0);
-            RDD_CSO_CONTEXT_ENTRY_BAD_TCP_UDP_CSUM_PACKETS_READ_G(bad_tcp_udp_csum_packets, RDD_CSO_CONTEXT_TABLE_ADDRESS_ARR, 0);
+                    RDD_CSO_CONTEXT_ENTRY_BAD_IPV4_HDR_CSUM_PACKETS_READ_CORE(temp, RDD_CSO_CONTEXT_TABLE_ADDRESS_ARR, 0, i);
+                    bad_ipv4_hdr_csum_packets += temp;
+
+                    RDD_CSO_CONTEXT_ENTRY_BAD_TCP_UDP_CSUM_PACKETS_READ_CORE(temp, RDD_CSO_CONTEXT_TABLE_ADDRESS_ARR, 0, i);
+                    bad_tcp_udp_csum_packets += temp;
+                }
+#if defined(RDP_UFC)
+                if (RDD_CSO_BAD_IPV4_HDR_CSUM_PACKETS_ADDRESS_ARR[i] != INVALID_TABLE_ADDRESS)
+                {
+                    RDD_BYTES_4_BITS_READ_CORE(temp,  RDD_CSO_BAD_IPV4_HDR_CSUM_PACKETS_ADDRESS_ARR, 0, i);
+                    bad_ipv4_hdr_csum_packets += temp;
+                }
+#endif
+            }
 
             bdmf_session_print(session, "\n\nCSO statistics\n");
             bdmf_session_print(session, "------------------------------------------------------\n");
@@ -936,10 +987,12 @@ static int rdd_print_iptv_ddr_ctx(bdmf_session_handle session, const bdmfmon_cmd
 
 static int rdd_miss_cache_enable(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms)
 {
+#if !defined(RDP_UFC)
     uint32_t tbl_idx = parm[0].value.unumber;
     uint32_t enable = parm[1].value.unumber;
 
     RDD_NATC_TBL_CONFIGURATION_MISS_CACHE_ENABLE_WRITE_G(enable, RDD_NATC_TBL_CFG_ADDRESS_ARR, tbl_idx);
+#endif
 
     return 0;
 }
@@ -1061,3 +1114,32 @@ static int rdd_g9991_flow_control_print_debug(bdmf_session_handle session, const
     return 0;
 }
 #endif
+
+#ifdef DBG_TASK_ENTRY_POINT
+static int rdd_dbg_power_measure_mode(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms)
+{
+    uint32_t enable;
+    uint32_t core_index;
+
+    enable = parm[0].value.unumber;
+    if (enable != 0 && enable != 1)
+    {
+        bdmf_session_print(session, "Bad argument %d (expected 0|1)\n", enable);
+        return BDMF_ERR_PARM;
+    }
+
+    bdmf_session_print(session, "%s power measurement mode\n", enable ? "Entering" : "Exiting");
+    rdd_dbg_power_measure_mode_set(enable);
+
+    /* Pass through all of the cores and for each core wakeup the first task */
+    for (core_index = 0; enable && core_index < NUM_OF_RUNNER_CORES; core_index++)
+    {
+        bdmf_session_print(session, "Waking up core %d, task %d\n", core_index, rnr_image_first_task[core_index]);
+        ag_drv_rnr_regs_cfg_cpu_wakeup_set(core_index, rnr_image_first_task[core_index]);
+    }
+
+    return 0;
+}
+#endif
+
+

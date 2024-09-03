@@ -2,8 +2,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta http-equiv="X-UA-Compatible" content="ie=edge">
-<link rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component.css">
-<link rel="stylesheet" type="text/css" href="/SDN/sdn.css">
+<link rel="stylesheet" type="text/css" href='/RWD_UI/rwd_component.css?v=<% nvram_char_to_ascii("", "extendno"); %>'>
+<link rel="stylesheet" type="text/css" href='/SDN/sdn.css?v=<% nvram_char_to_ascii("", "extendno"); %>'>
 <script type="text/javaScript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/calendar/jquery-ui.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
@@ -15,6 +15,7 @@
 </head>
 <script>
 const PAGE_CONTAINER = "sdn";
+
 var getUrlParameter = function getUrlParameter(param){
 	var url_parm = window.location.search.substring(1);
 	var parm_array = url_parm.split("&");
@@ -33,6 +34,8 @@ if(theme == "GT") theme = "ROG";
 var app_control = {
 	"type": (function(){
 		var sdn_type = getUrlParameter("wizard").toUpperCase();
+		if(isSupport("sdn_mwl") && sdn_type == "MAINFH") return "MAINFH";
+
 		var specific_type = wizard_type_text.filter(function(item, index, array){
 			return (item.type.toUpperCase() == sdn_type);
 		})[0];
@@ -50,7 +53,7 @@ var app_control = {
 	})()
 }
 $('link[group="extend_css"]').remove();
-if(theme == "WHITE" || theme == "ROG"){
+if(theme == "WHITE" || theme == "ROG" || theme == "TUF"){
 	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component_' + theme + '.css">');
 	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/SDN/sdn_' + theme + '.css">');
 }
@@ -90,7 +93,7 @@ function initial(){
 	else
 		$(".container").hide();
 
-	$(".function_desc_container .title").html(Guest_Network_naming);
+	$(".function_desc_container .title").html(isSupport("sdn_mwl") ? `<#Network#>` : Guest_Network_naming);
 	$(".function_desc_container .help_icon, .profile_list_container .help_icon").unbind("click").click(function(e){
 		e = e || event;
 		e.stopPropagation();
@@ -112,14 +115,19 @@ function initial(){
 		$('<script />', { type : 'text/javascript', src : "/validator.js"}).appendTo('head');
 		$('<script />', { type : 'text/javascript', src : "/popup.js"}).appendTo('head');
 		$('<script />', { type : 'text/javascript', src : "/js/weekSchedule/schedule_ui.js"}).appendTo('head');
-		$('<script />', { type : 'text/javascript', src : "/form.js"}).appendTo('head');
 		$('<script />', { type : 'text/javascript', src : "/client_function.js"}).appendTo('head');
 		$('<script />', { type : 'text/javascript', src : "/js/qrcode/jquery.qrcode.min.js"}).appendTo('head');
 		if(!is_Web_iframe)
 			showLoading = showLoading_RWD;//overwrite function
+		else{
+			$("#Loading").addClass("sdn_popup_bg");
+		}
 
 		if(isSwMode("rt")){
 			Get_VPNC_Profile();
+			if(app_control.type == "Gaming" && isSupport("open_nat") && isSupport("SDN_PRIORITY")){
+				Get_Game_Profile();
+			}
 		}
 
 		if(app_control.type != ""){
@@ -154,15 +162,57 @@ function initial(){
 				if(!isSupport("BUSINESS"))
 					Get_MessageBoard_template();
 			}
+			if(app_control.type != "Gaming" && isSupport("open_nat") && isSupport("SDN_PRIORITY")){
+				Get_Game_Profile();
+				const gaming_loading_cntr =
+					`<div class='gaming_svg_applying_cntr'>
+						<div data-container='gaming_applying' class='svg_animated_cntr applying'>
+							<object class='svg_animated_object' type='image/svg+xml' data='/images/New_ui/SDN/gaming/applying.svg'>
+							</object>
+						</div>
+						<div data-container='gaming_end' class='svg_animated_cntr'>
+							<object class='svg_animated_object gaming_end' type='image/svg+xml' data=''>
+							</object>
+						</div>
+						<div data-container='gaming_applying' class='gaming_svg_btn_cntr'>
+							<div class='svg_animated_cntr'>
+								<object class='svg_animated_object' type='image/svg+xml' data='/images/New_ui/SDN/gaming/btn_applying.svg'>
+								</object>
+								<div class='btn_text'><#Main_alert_proceeding_desc1#>...</div>
+							</div>
+						</div>
+					</div>`;
+				$("#gamingLoading").append(gaming_loading_cntr);
+			}
+			else{
+				$("#gamingLoading").remove();
+			}
 		}
 
 		if(isSupport("fbwifi_sdn"))
 			setTimeout(check_fbwifi2_id_secret, 100);
+
+		$("#adguard_iframe").on('load', function() {
+			setTimeout(function(){$("#adguard_iframe").height($("#adguard_iframe").contents().find("html").height()+50);}, 100);
+		});
 	}, delay_load);
+}
+
+if(isSupport("adguard_dns") && isSwMode("rt")){
+	window.addEventListener('message', function(event) {
+		if (event.source === document.getElementById('adguard_iframe').contentWindow) {
+			if (event.data.messageType === 'contentHeight') {
+				var height = event.data.height;
+				document.getElementById('container_adguard').style.height = height + 'px';
+				document.getElementById('adguard_iframe').style.height = height + 'px';
+			}
+		}
+	});
 }
 </script>
 <body class="body_rwd">
 <div id="Loading" class="popup_bg" style="visibility: hidden;"></div>
+<div id="gamingLoading" class="popup_bg" style="visibility: hidden;"></div>
 <div class="hidden_mask popup_element"></div>
 <div class="popup_container popup_element"></div>
 <div class="hidden_mask popup_element_second"></div>
@@ -177,10 +227,10 @@ function initial(){
 		</div>
 		<div class="content_container">
 			<div class="profile_list_container">
-				<div class="title_container">
+				<!--div class="title_container">
 					<div class="title_text"><#GuestNetwork_ProfileList#></div>
 					<div class="help_icon mobile"></div>
-				</div>
+				</div-->
 				<div id="profile_list_content"></div>
 			</div>
 			<div id="profile_setting_container" class="profile_setting_container"></div>
@@ -291,6 +341,10 @@ function initial(){
 		font-size: 0.75em;
 		text-align: center;
 		margin-bottom: 2vh;
+	}
+	.sdn_popup_bg #loadingBlock {
+		margin-left: 25% !important;
+		margin-top: 0px !important;
 	}
 </style>
 </div>

@@ -1,28 +1,22 @@
 /*
 <:copyright-BRCM:2019:DUAL/GPL:standard
 
-   Copyright (c) 2019 Broadcom
+   Copyright (c) 2019 Broadcom 
    All Rights Reserved
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
 :>
 */
@@ -39,8 +33,8 @@ written consent.
 #include "vfbio_priv.h"
 #include "vfbio_lvm.h"
 
-#define VFBIO_LVM_CONTROL0_DEV_NAME     "lvmctrlo"
-#define VFBIO_LVM_CONTROLB_DEV_NAME     "lvmctrlb"
+#define VFBIO_LVM_KNOWN_VOLUME_NAME1    "smcos1"
+#define VFBIO_LVM_KNOWN_VOLUME_NAME2    "smcos2"
 #define VFBIO_LVM_DEFAULT_NAME_FORMAT   "dynlun-%u"
 #define VFBIO_WRITE_BUFFER_SIZE         (128 * 1024)
 
@@ -62,23 +56,23 @@ static int vfbio_lun_delete_from_smc(struct vfbio_device *vfbio)
     return status;
 }
 
-static struct vfbio_device *vfbio_get_lvm_control(void)
+static struct vfbio_device *vfbio_get_known_volume(void)
 {
     struct vfbio_device *vfbio_lvm;
-    /* Find block device for LVM control. Dynamic devices will be created
+    /* Find block device that always exists. Dynamic devices will be created
        as "disks" sharing the same basic parameters (tunnel, blk_size) */
-    vfbio_lvm = vfbio_device_get_by_name(VFBIO_LVM_CONTROL0_DEV_NAME);
+    vfbio_lvm = vfbio_device_get_by_name(VFBIO_LVM_KNOWN_VOLUME_NAME1);
     if (!vfbio_lvm)
-        vfbio_lvm = vfbio_device_get_by_name(VFBIO_LVM_CONTROLB_DEV_NAME);
+        vfbio_lvm = vfbio_device_get_by_name(VFBIO_LVM_KNOWN_VOLUME_NAME2);
     if (!vfbio_lvm || !vfbio_lvm->pdev) {
-        printk(RED("LVM control device is not found. LVM support is off\n"));
+        printk(RED("Something is wrong. smcos1, smcos2 devices are not found. LVM support is off\n"));
         return NULL;
     }
     return vfbio_lvm;
 }
 
 /* Create a new dynamic lun */
-int vfbio_lun_create(const char *name, uint64_t size, int *lun_id)
+int vfbio_lun_create(const char *name, uint64_t size, uint32_t lun_flags, int *lun_id)
 {
     struct vfbio_device *vfbio_lvm;
     struct vfbio_device *vfbio=NULL;
@@ -91,12 +85,12 @@ int vfbio_lun_create(const char *name, uint64_t size, int *lun_id)
     int status;
 
     /* Validation */
-    if (!size || !lun_id || (*lun_id > 0xFF))
+    if (!size || !lun_id || (*lun_id >= 0xFF))
         return -EINVAL;
 
     /* Find block device for LVM control. Dynamic devices will be created
        as "disks" sharing the same basic parameters (tunnel, blk_size) */
-    vfbio_lvm = vfbio_get_lvm_control();
+    vfbio_lvm = vfbio_get_known_volume();
     if (!vfbio_lvm)
         return -ENOTSUPP;
 
@@ -142,7 +136,7 @@ int vfbio_lun_create(const char *name, uint64_t size, int *lun_id)
     vfbio->n_blks = rounded_size / vfbio->blk_sz;
 
     /* Try to create in SMC first */
-    create_request = kzalloc(sizeof(*create_request), GFP_KERNEL);
+    create_request = dma_alloc_coherent(dev, sizeof(struct vfbio_lun_create_request), &dma_addr, GFP_DMA32);
     if (create_request == NULL) {
         dev_err(dev, RED("Failed to allocate create request buffer\n"));
         status = -ENOMEM;
@@ -151,22 +145,15 @@ int vfbio_lun_create(const char *name, uint64_t size, int *lun_id)
 
     strncpy(create_request->lun_name, lun_name, sizeof(create_request->lun_name));
     create_request->lun_size = rounded_size / VFBIO_LVM_ALLOC_BLOCK_SIZE;
+    create_request->lun_flags = lun_flags;
     rpc_msg_init(&msg, RPC_SERVICE_VFBIO, VFBIO_FUNC_LVM_LUN_CREATE, 0, 0, 0, 0);
-    dma_addr = dma_map_single(dev, create_request, sizeof(*create_request), DMA_TO_DEVICE);
-    if (dma_mapping_error(dev, dma_addr)) {
-        dev_err(dev, RED("failure mapping LVM create request\n"));
-        kfree(create_request);
-        status = -ENOMEM;
-        goto vfbio_err;
-    }
     vfbio_lvm_msg_set_req_buf_addr(&msg, dma_addr);
 
     mutex_lock(&vfdevs_lock);
     /* Send create request to the SMC */
     status = vfbio_lun_request_timeout_msg(vfbio, &msg);
 
-    dma_unmap_single(dev, dma_addr, sizeof(*create_request), DMA_TO_DEVICE);
-    kfree(create_request);
+    dma_free_coherent(dev, sizeof(struct vfbio_lun_create_request), create_request, dma_addr);
     if (status) {
         dev_err(dev, RED("Create dynamic lun request failed. status='%s' (%d)\n"),
             (status==-EIO) ? "EIO" : vfbio_error_str(status), status);
@@ -201,7 +188,7 @@ vfbio_err:
 /* Delete dynamic lun created by vfbio_lun_create */
 int vfbio_lun_delete(int lun_id)
 {
-    struct vfbio_device *vfbio_lvm = vfbio_get_lvm_control();
+    struct vfbio_device *vfbio_lvm = vfbio_get_known_volume();
     struct vfbio_device *vfbio;
     int status;
 
@@ -286,13 +273,13 @@ int vfbio_lun_rename(uint8_t num_luns, struct vfbio_lun_id_name id_name[])
 
     /* Find block device for LVM control. Dynamic devices will be created
        as "disks" sharing the same basic parameters (tunnel, blk_size) */
-    vfbio_lvm = vfbio_get_lvm_control();
+    vfbio_lvm = vfbio_get_known_volume();
     if (!vfbio_lvm)
         return -ENOTSUPP;
     dev = &vfbio_lvm->pdev->dev;
 
     request_size = sizeof(*rename_request) + num_luns * sizeof(struct vfbio_idx_name);
-    rename_request = kzalloc(request_size, GFP_KERNEL);
+    rename_request = dma_alloc_coherent(dev, sizeof(struct vfbio_lun_rename_request), &dma_addr, GFP_DMA32);
     if (rename_request == NULL) {
         dev_err(dev, RED("Failed to allocate the request buffer\n"));
         status = -ENOMEM;
@@ -304,13 +291,6 @@ int vfbio_lun_rename(uint8_t num_luns, struct vfbio_lun_id_name id_name[])
         strncpy(rename_request->idx_name[i].lun_name, id_name[i].lun_name, VFBIO_LVM_MAX_NAME_SIZE);
     }
 
-    dma_addr = dma_map_single(dev, rename_request, request_size, DMA_TO_DEVICE);
-    if (dma_mapping_error(dev, dma_addr)) {
-        dev_err(dev, RED("failure mapping LUN info request\n"));
-        status = -ENOMEM;
-        goto vfbio_req_done;
-    }
-
     rpc_msg_init(&msg, RPC_SERVICE_VFBIO, VFBIO_FUNC_LVM_LUN_RENAME, 0, 0, 0, 0);
     vfbio_lvm_msg_set_req_buf_addr(&msg, dma_addr);
 
@@ -319,9 +299,7 @@ int vfbio_lun_rename(uint8_t num_luns, struct vfbio_lun_id_name id_name[])
 
 vfbio_req_done:
     if (rename_request != NULL) {
-        if (!dma_mapping_error(dev, dma_addr))
-            dma_unmap_single(dev, dma_addr, request_size, DMA_TO_DEVICE);
-        kfree(rename_request);
+        dma_free_coherent(dev, sizeof(struct vfbio_lun_rename_request), rename_request, dma_addr);
     }
     if (status) {
         dev_err(dev, RED("Rename request failed. status='%s' (%d)\n"),
@@ -368,19 +346,12 @@ int vfbio_get_info(struct vfbio_device *vfbio, struct vfbio_lun_descr *lun_descr
     rpc_msg msg;
     int status;
 
-    lun_info = kzalloc(sizeof(*lun_info), GFP_KERNEL);
+    lun_info = dma_alloc_coherent(dev, sizeof(struct vfbio_lun_info), &dma_addr, GFP_DMA32);
     if (lun_info == NULL) {
         dev_err(dev, RED("Failed to allocate info request buffer\n"));
         status = -ENOMEM;
         goto vfbio_req_done;
     }
-    dma_addr = dma_map_single(dev, lun_info, sizeof(*lun_info), DMA_FROM_DEVICE);
-    if (dma_mapping_error(dev, dma_addr)) {
-        dev_err(dev, RED("failure mapping LUN info request\n"));
-        status = -ENOMEM;
-        goto vfbio_req_done;
-    }
-
     rpc_msg_init(&msg, RPC_SERVICE_VFBIO, VFBIO_FUNC_LUN_INFO, 0, 0, 0, 0);
     vfbio_lvm_msg_set_req_buf_addr(&msg, dma_addr);
 
@@ -397,13 +368,12 @@ int vfbio_get_info(struct vfbio_device *vfbio, struct vfbio_lun_descr *lun_descr
         lun_descr->size_in_blocks = lun_info->n_blks;
         lun_descr->read_only = (lun_info->flags & VFBIO_LUN_INFO_FLAG_READ_ONLY) != 0;
         lun_descr->dynamic = (lun_info->flags & VFBIO_LUN_INFO_FLAG_DYNAMIC) != 0;
+        lun_descr->encrypted = (lun_info->flags & VFBIO_LUN_INFO_FLAG_ENCRYPTED) != 0;
     }
 
 vfbio_req_done:
     if (lun_info != NULL) {
-        if (!dma_mapping_error(dev, dma_addr))
-            dma_unmap_single(dev, dma_addr, sizeof(*lun_info), DMA_TO_DEVICE);
-        kfree(lun_info);
+        dma_free_coherent(dev, sizeof(struct vfbio_lun_info), lun_info, dma_addr);
     }
     if (status) {
         dev_err(dev, RED("Get lun info request failed. status='%s' (%d)\n"),
@@ -434,7 +404,7 @@ int vfbio_device_get_info(uint64_t *total_size, uint64_t *free_size)
     int status;
 
     /* Find block device for LVM control */
-    vfbio_lvm = vfbio_get_lvm_control();
+    vfbio_lvm = vfbio_get_known_volume();
     if (!vfbio_lvm)
         return -ENOTSUPP;
 
@@ -570,6 +540,88 @@ int vfbio_lun_write(int lun_id, void *data, uint32_t size)
     if(!kaddr)
         kfree(write_buf);
 
+    return status;
+}
+
+static int vfbio_rpmb_request_timeout_msg(struct vfbio_device *vfbio, rpc_msg *msg)
+{
+    int status = 0;
+    struct device *dev = &vfbio->pdev->dev;
+
+    BUG_ON(!vfbio);
+    BUG_ON(!msg);
+    /*
+     * Prevent block IO layer timeout on sync req by setting RPC
+     * timeout 1s shorter.
+     */
+    status = rpc_send_request_timeout(vfbio->tunnel, msg, 5);
+    if (unlikely(status)) 
+    {
+        dev_err(dev, RED("[%d]rpc_send_request failure (%d)\n"),__LINE__,status);
+        rpc_dump_msg(msg);
+        return status;
+    }
+    status = (int8_t)vfbio_msg_get_retcode(msg);
+
+    return status;
+}
+
+int vfbio_rpmb_transfer_data(void *data, uint32_t data_size, rpmb_cmd_type rpc_function, vfbio_rpmb_dma_op dma_op, unsigned int nfrm)
+{
+    dma_addr_t dma_addr;
+    int status = 0;
+    rpc_msg msg;
+    struct vfbio_device *vfbio_lvm;
+    struct vfbio_device *vfbio=NULL;
+    struct device *dev;
+    rpmb_data_frame_t *rpmb_req = NULL;
+
+    if (!data_size || !data )
+        return -EINVAL;
+
+    vfbio_lvm = vfbio_get_known_volume();
+    if (!vfbio_lvm)
+        return -ENOTSUPP;
+
+    dev = &vfbio_lvm->pdev->dev;
+    vfbio = devm_kzalloc(dev, sizeof(*vfbio), GFP_KERNEL);
+    if (!vfbio) 
+    {
+        dev_err(dev, RED("Unable to allocate vfbio\n"));
+        status = -ENOMEM;
+        return -1;
+    }
+
+    rpmb_req = dma_alloc_coherent(dev, (sizeof(rpmb_data_frame_t) * nfrm), &dma_addr, GFP_DMA32);
+    if (rpmb_req == NULL) 
+    {
+        dev_err(dev, RED("Failed to allocate create request buffer\n"));
+        status = -ENOMEM;
+        goto vfbio_rpmb_trans_err;
+    }
+    memcpy(rpmb_req, data, (sizeof(rpmb_data_frame_t) * nfrm));
+    rpc_msg_init(&msg, RPC_SERVICE_VFBIO, rpc_function, 0, 0, 0, 0);
+    vfbio_rpmb_msg_set_n_frms(&msg, nfrm);
+    vfbio_rpmb_msg_set_addr(&msg, dma_addr);
+    
+    status = vfbio_rpmb_request_timeout_msg(vfbio, (rpc_msg *)&msg);
+    if (status)
+    {
+        dev_err(dev, RED("[%s:%d]:rpc Transfer failure\n"), __FUNCTION__,__LINE__);
+    }
+
+    memcpy(data, rpmb_req, (sizeof(rpmb_data_frame_t) * nfrm));
+
+    dma_free_coherent(dev, sizeof(rpmb_data_frame_t), rpmb_req, dma_addr);
+    if (status) 
+    {
+        dev_err(dev, RED("[%s:%d]:vfbio_rpmb_transfer_data failed. status='%s' (%d)\n"),__FUNCTION__,__LINE__,
+            (status == -EIO) ? "EIO" : vfbio_error_str(status), status);
+    }
+
+vfbio_rpmb_trans_err:
+    if (vfbio)
+        devm_kfree(dev, vfbio);
     return status;
 }
 

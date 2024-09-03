@@ -19,7 +19,7 @@ skip_smc = False
 skip = False
 path = '.'
 
-files =   ["smc_bootl-6837A0.prodkey.hsm_signed.flash", "smc_os-6837A0.bin.prodkey.hsm_signed.flash", "bcm96837GO_ubootenv_lun.bin", "bcm96837GO_meminit_lun.bin", "bcm96837GO_armbl_lun.bin", "bcm96837GO_bstrap.pkgtb"]
+files =   ["smc_bootl-6837A0.prodkey.hsm_signed.flash", "smc_os-6837A0.bin.prodkey.hsm_signed.flash", "ubootenv_lun.bin", "bcm96837GO_meminit_lun.bin", "bcm96837GO_armbl_lun.bin", "bcm96837GO_bstrap.pkgtb"]
 emmc_offsets = [0x00000000,                                   0x00080000,                                   0x00000000,                     0x00040000,                    0x00140000,                  0x00440000] 
 nand128_offs = [0x00000000,                                   0x000C0000,                                   0x004C0000,                     0x00540000,                    0x00660000,                  0x009C0000] 
 nand256_offs = [0x00000000,                                   0x00100000,                                   0x00600000,                     0x00700000,                    0x00840000,                  0x00C00000] 

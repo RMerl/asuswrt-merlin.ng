@@ -170,7 +170,6 @@ i.icon-clone {
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/disk_functions.js"></script>
 <script language="JavaScript" type="text/javascript" src="/form.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
 <script type="text/javascript" src="/js/asus_clientlist.js"></script>
 <script>
 //if(usb_support) addNewScript("/disk_functions.js");
@@ -197,8 +196,6 @@ if(location.pathname == "/"){
 	}	
 	else if('<% nvram_get("w_Setting"); %>' == '0' && sw_mode != 2)
 		location.href = '/QIS_wizard.htm?flag=wireless';
-    else if (httpApi.privateEula.get("SIGNED").ASUS_PP_EULA == "0")
-        location.href = "/QIS_wizard.htm?flag=eulaPP";
 }
 
 // Live Update
@@ -316,8 +313,14 @@ function initial(){
 
 		show_middle_status(wl_auth_mode, wl_wep_x);
 	}
-	else
-		show_middle_status(document.form.wl_auth_mode_x.value, parseInt(document.form.wl_wep_x.value));
+	else{
+		if(isSupport("sdn_mainfh")){
+			const mainfh = get_sdn_main_fh_info();
+			show_middle_status(mainfh[0]["auth"], 0);
+		}
+		else
+			show_middle_status(document.form.wl_auth_mode_x.value, parseInt(document.form.wl_wep_x.value));
+	}
 
 	if(amesh_support && (isSwMode("rt") || isSwMode("ap")) && ameshRouter_support) {
 		var html = '<a id="clientStatusLink" href="device-map/amesh.asp" target="statusframe">';
@@ -534,7 +537,6 @@ function initial(){
 	}
 
 	orig_NM_container_height = parseInt($(".NM_radius_bottom_container").css("height"));
-	setTimeout(check_eula, 100);
 
 	if(!downsize_4m_support){
 		custom_icon_list_api.paramObj.container = $(".custom_icon_list_bg");
@@ -563,22 +565,7 @@ function initial(){
 	}
 }
 
-function check_eula(){
-	ASUS_EULA.config(check_eula, check_eula);
 
-	var asus_status = httpApi.nvramGet(["ASUS_EULA", "ASUS_EULA_time", "ddns_enable_x", "ddns_server_x"], true);
-	if( (asus_status.ASUS_EULA == "1" && asus_status.ASUS_EULA_time == "") ||
-		(asus_status.ASUS_EULA != "1" && asus_status.ddns_enable_x == "1" && asus_status.ddns_server_x == "WWW.ASUS.COM") ){
-		ASUS_EULA.check("asus");
-		return false;
-	}
-
-	var tm_status = httpApi.nvramGet(["TM_EULA", "TM_EULA_time"], true);
-	if(tm_status.TM_EULA == "1" &&  tm_status.TM_EULA_time == ""){
-		ASUS_EULA.check("tm");
-		return false;
-	}
-}
 
 function show_smart_connect_status(){
 	document.getElementById("SmartConnectName").style.display = "";
@@ -1104,7 +1091,9 @@ function showstausframe(page){
 			
 		page = "Internet";
 	}
-	
+	else if(page == "Router"){
+		page = isSupport("sdn_mainfh") ? `${page}_status` : page;
+	}
 	window.open("/device-map/"+page.toLowerCase()+".asp","statusframe");
 }
 
@@ -1725,7 +1714,7 @@ function popupEditBlock(clientObj){
 
 		if(sw_mode != 4){
 			var radioIcon_css = "radioIcon";
-			if((clientObj.isGN != "" && clientObj.isGN != undefined) || (isSupport("mtlancfg") && clientObj.sdn_idx > 0))
+			if(clientObj.isGN != "" && clientObj.isGN != undefined)
 				radioIcon_css += " GN";
 			clientIconHtml += '<div class="' + radioIcon_css + ' radio_' + rssi_t +'" title="' + connectModeTip + '"></div>';
 			if(clientObj.isWL != 0 || (isSupport("mtlancfg") && clientObj.sdn_idx > 0)){
@@ -1767,7 +1756,9 @@ function popupEditBlock(clientObj){
 		}
 		if(clientObj.sdn_idx > 0) {
 			document.getElementById('client_sdnIdx').style.display = "";
-			document.getElementById('client_sdnIdx').innerHTML = "SDN " + sdn_rl_for_clientlist[clientObj.sdn_idx].apg_rl.ssid;
+			const sdn_profile = sdn_rl_for_clientlist.find(item => item.sdn_rl.idx == clientObj.sdn_idx) || {};
+			const sdn_ssid = $.isEmptyObject(sdn_profile) ? "" : sdn_profile.apg_rl.ssid;
+			document.getElementById('client_sdnIdx').innerHTML = "SDN " + sdn_ssid;
             $('#tr_adv_setting').hide();
 		}else{
             $('#tr_adv_setting').show();
@@ -2678,7 +2669,7 @@ function showClientlistModal(){
 							<div class="icon-group-center">
                                 <div id="copyDdns" class="tooltip"><a onClick="copyDdnsName(this)" data-toggle="tooltip" data-title="Copied!"><i class="icon-clone"></i></a></div>
                                 <span id="ddns_fail_hint" class="notificationoff" onClick="show_ddns_fail_hint();" onMouseOut="nd();"></span>
-                                <span><img id="le_icon" src="images/New_ui/networkmap/LE_badge_color.svg" style="width:25px; height:25px;"></span>
+                                <span><img id="le_icon" title="Let's Encrypt" src="images/New_ui/networkmap/LE_badge_color.svg" style="width:25px; height:25px;"></span>
 							</div>
 						</div>
 						<div id="wlc_band_div" style="margin-top:5px;display:none">
@@ -2715,7 +2706,7 @@ function showClientlistModal(){
 				</tr>			
 				<tr>
 					<td align="right" bgcolor="#444f53" class="NM_radius_left" onclick="showstausframe('Router');" style="height:150px">
-						<a href="device-map/router.asp" target="statusframe"><div id="iconRouter" onclick="clickEvent(this);"></div></a>
+						<a id="iconRouterLink" href="device-map/router.asp" target="statusframe"><div id="iconRouter" onclick="clickEvent(this);"></div></a>
 					</td>
 					<td colspan="2" valign="middle" bgcolor="#444f53" class="NM_radius_right" onclick="showstausframe('Router');">
 						<div>
@@ -2800,17 +2791,18 @@ function showClientlistModal(){
 					<td valign="top">
 						<div class="statusTitle" id="statusTitle_NM">
 							<div id="helpname" style="padding-top:10px;font-size:16px;"></div>
-						</div>							
+						</div>
 						<div class="NM_radius_bottom_container">
 							<iframe id="statusframe" class="NM_radius_bottom" style="display:none;margin-left:0px;height:760px;width:320px;\9" name="statusframe" frameborder="0"></iframe>
 						</div>
-				
 						<script>
 							(function(){
+								var defaultRouterFrame = `/device-map/router${isSupport("sdn_mainfh")?"_status":""}.asp`;
+								document.getElementById("iconRouterLink").href = defaultRouterFrame;
 								setTimeout(function(){
-									document.getElementById("statusframe").src = "/device-map/router_status.asp";	
+									document.getElementById("statusframe").src = defaultRouterFrame;
 								}, 1);
-								
+
 								var $iframe = $("#statusframe");
 								$iframe.on("load", function(){
 									$iframe.show();
@@ -2820,8 +2812,7 @@ function showClientlistModal(){
 								});
 							})()
 						</script>
-
-					</td>	
+					</td>
 				</tr>
 			</table>
 			</div>

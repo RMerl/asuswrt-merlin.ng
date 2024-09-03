@@ -27,6 +27,7 @@
 #endif
 
 #include <common.h>
+#include <linux/io.h>
 
 #if defined(CONFIG_BCMBCA_IKOS) && !defined(CONFIG_BRCM_IKOS)
 #define CONFIG_BRCM_IKOS
@@ -50,6 +51,7 @@ struct g_pmc_t {
     uint32_t      itcm_size;
     void (*unmap)(struct g_pmc_t *);
     uint32_t strap;
+    bool print_avs_log;
 };
 
 extern struct g_pmc_t *g_pmc;
@@ -91,10 +93,6 @@ extern int is_pmcfw_data_loaded(void);
 #define cache_to_uncache(va) (va)
 
 #define console_status serial_tstc
-
-#ifndef phys_to_virt
-#define phys_to_virt(a) ((void*)a)
-#endif
 
 #endif // #ifndef _LANGUAGE_ASSEMBLY 
 

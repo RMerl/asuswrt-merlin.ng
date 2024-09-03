@@ -6,6 +6,7 @@
 #include <common.h>
 #include <asm/sections.h>
 #include <asm/arch/cpu.h>
+#include <asm/arch/ddr.h>
 #include <spl.h>
 #if defined(CONFIG_BCMBCA_PMC)
 #include "pmc_drv.h"
@@ -103,12 +104,40 @@ u32 bcmbca_get_chipid(void)
 	return chipId;
 }
 
+void bcmbca_enable_memc_sram(u64 addr, u64 size)
+{
+	/* only support support 4K to 64KB size */
+	if (size > SZ_64K || size < SZ_4K)
+		return;
+
+	/* upper 8 bit of the address */
+	MEMC->SRAM_REMAP_CTRL_UPPER = (u32)((addr >> 32) & 0xff);
+	/* 
+	 * lower 32 bit address with 4KB aligned 
+	 * size bit [6:4] encoding: 4K = 0, 8K = 1, 16K = 2, 32K =3, 64K = 4
+	 */
+	MEMC->SRAM_REMAP_CTRL = (((u32)addr) & (~0xfff)) | fls((u32)(size >> 13)) << 4;
+	/* enable the sram mapping */
+	MEMC->SRAM_REMAP_CTRL |= 0x2;
+	/* read back to ensure the setting takes effect */
+	MEMC->SRAM_REMAP_CTRL;
+}
+
+void bcmbca_disable_memc_sram(void)
+{
+	MEMC->SRAM_REMAP_CTRL = 0;
+	MEMC->SRAM_REMAP_CTRL;
+}
+
 int arch_cpu_init(void)
 {
 #if defined(CONFIG_BCMBCA_IKOS)
 	icache_enable();
 #endif  
 #if defined(CONFIG_SPL_BUILD) && !defined(CONFIG_TPL_BUILD)
+	/* always disable memc sram first in case btrm keeps it enabled */
+	bcmbca_disable_memc_sram();
+
 	enable_ubus_fast_write_ack();
 #if defined(CONFIG_BCMBCA_DDRC)
 	spl_ddrinit_prepare();

@@ -4,25 +4,19 @@
    Copyright (c) 2019 Broadcom 
    All Rights Reserved
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
 :>
 */
@@ -47,7 +41,6 @@ written consent.
 #if defined(CONFIG_BCM_ETHTOOL)
 #include <linux/ethtool.h>
 #endif
-#include "bcmsfp.h"
 #include "trxbus.h"
 
 struct sfp_eeprom_base
@@ -134,7 +127,7 @@ enum {
 #define SFP_I2C_PHY_ADDR 0x56
 #define XFP_I2C_ADDR 0x50
 
-enum
+typedef enum
 {
     GPIO_MODDEF0,
     GPIO_LOS,
@@ -142,8 +135,10 @@ enum
     GPIO_TX_DISABLE,
     GPIO_TX_POWER_DOWN,
     GPIO_TX_POWER,
+    GPIO_RX_POWER,
     GPIO_MAX,
-};
+}GPIOTypes;
+
 /**
  * @brief defines gpio component
  */
@@ -157,20 +152,6 @@ struct gpiod_component{
      */
     enum gpiod_flags flag;
 };
-/**
- * @brief list of gpio components resident in SFP
- */
-static const struct gpiod_component gpio_components[GPIO_MAX] = 
-{
-   { .name = "mod-def0",      .flag = GPIOD_IN  },  
-   { .name = "los",           .flag = GPIOD_IN  },
-   { .name = "tx-fault",      .flag = GPIOD_IN  },
-   { .name = "tx-disable",    .flag = GPIOD_ASIS},
-   { .name = "tx-power-down", .flag = GPIOD_ASIS},
-   { .name = "tx-power",      .flag = GPIOD_ASIS},
-};
-
-static unsigned long poll_jiffies;
 
 struct sfp_data
 {
@@ -180,7 +161,6 @@ struct sfp_data
     unsigned int (*get_present)(struct sfp_data *);
 
     struct gpio_desc *gpio[GPIO_MAX];
-    int gpio_int[GPIO_MAX];
     struct pinctrl_state *txsd_state;
     int rxsd_pin;
     int mod_state;
@@ -193,13 +173,48 @@ struct sfp_data
     struct mutex st_mutex;
     struct mutex sm_mutex;
 
-
     int has_fixed_attribues;
 
     int force_tx_power;
 };
 
 enum { sff_data, sfp_data };
+
+/************** F O R W A R D  D E C L A R A T I O N S ************/
+static int sfp_mon_read(struct sfp_data *psfp, enum bcmsfp_mon_attr attr, int channel, long *value);
+static int sfp_mon_read_buf(struct sfp_data *psfp, enum bcmsfp_mon_attr attr, int channel, char **buf, int *len);
+static int sfp_mon_write(struct sfp_data *psfp, enum bcmsfp_mon_attr attr, int channel, long value);
+static int sfp_mon_write_buf(struct sfp_data *psfp, enum bcmsfp_mon_attr attr, int channel, char *buf, int len);
+#if defined(CONFIG_BCM_ETHTOOL)
+static int bcmsfp_module_eeprom(struct sfp_data *psfp, struct ethtool_eeprom *ee, u8 *data);
+static int bcmsfp_module_info(struct sfp_data *psfp, struct ethtool_modinfo *modinfo);
+#endif /* CONFIG_BCM_ETHTOOL */
+
+/*********************** S T A T I C  D A T A *********************/
+/**
+ * @brief list of supported gpio components that may be resident in SFP
+ */
+static const struct gpiod_component gpio_components[GPIO_MAX] = 
+{
+   { .name = "mod-def0",      .flag = GPIOD_IN  },  
+   { .name = "los",           .flag = GPIOD_IN  },
+   { .name = "tx-fault",      .flag = GPIOD_IN  },
+   { .name = "tx-disable",    .flag = GPIOD_ASIS},
+   { .name = "tx-power-down", .flag = GPIOD_ASIS},
+   { .name = "tx-power",      .flag = GPIOD_ASIS},
+   { .name = "rx-power",      .flag = GPIOD_ASIS},
+};
+static unsigned long poll_jiffies;
+static struct bcmsfp_ops sfp_ops = {
+    .mon_read = sfp_mon_read,
+    .mon_read_buf = sfp_mon_read_buf,
+    .mon_write = sfp_mon_write,
+    .mon_write_buf = sfp_mon_write_buf,
+#if defined(CONFIG_BCM_ETHTOOL)
+    .module_eeprom = bcmsfp_module_eeprom,
+    .module_info = bcmsfp_module_info,
+#endif
+};
 
 static const struct of_device_id of_platform_sfp_table[] = {
     { .compatible = "brcm,sfp", .data = (void *)sfp_data, },
@@ -213,6 +228,7 @@ static const char * const event_strings[] = {
     [SFP_E_TIMEOUT] = "timeout",
 };
 
+/******************************************************************/
 static const char *event_to_str(unsigned short event)
 {
     if (event >= ARRAY_SIZE(event_strings))
@@ -308,13 +324,15 @@ static enum bcmsfp_mon_attr get_mon_ext_attr(struct device_attribute *attr)
     return (enum bcmsfp_mon_attr)container_of(attr, struct dev_ext_attribute, attr)->var;
 }
 
+static int sfp_mon_read_buf(struct sfp_data *psfp, enum bcmsfp_mon_attr attr, int channel, char **buf, int *len);
 static ssize_t _show_buf(struct device *dev, struct device_attribute *dev_attr, char *buf)
 {
     char *s;
     int ret, len = 0;
     enum bcmsfp_mon_attr attr = get_mon_ext_attr(dev_attr);
+    struct sfp_data *psfp = dev_get_drvdata(dev);
 
-    ret = sfp_mon_read_buf(dev, attr, 0, &s, &len);
+    ret = sfp_mon_read_buf(psfp, attr, 0, &s, &len);
     if (ret < 0)
         return ret;
 
@@ -328,41 +346,47 @@ static ssize_t _show_buf(struct device *dev, struct device_attribute *dev_attr, 
         return sprintf(buf, "%s\n", s);
 }
 
+static int sfp_mon_write_buf(struct sfp_data *psfp, enum bcmsfp_mon_attr attr, int channel, char *buf, int count);
 static ssize_t _store_buf(struct device *dev, struct device_attribute *dev_attr, const char *buf, size_t count)
 {
     int ret;
     enum bcmsfp_mon_attr attr = get_mon_ext_attr(dev_attr);
+    struct sfp_data *psfp = dev_get_drvdata(dev);
 
-    if ((ret = sfp_mon_write_buf(dev, attr, 0, (char *)buf, count)))
+    if ((ret = sfp_mon_write_buf(psfp, attr, 0, (char *)buf, count)))
         return ret;
 
     return count;
 }
 
+static int sfp_mon_read(struct sfp_data *psfp, enum bcmsfp_mon_attr attr, int channel, long *value);
 static ssize_t _show(struct device *dev, struct device_attribute *dev_attr, char *buf)
 {
     long v;
     int ret;
     enum bcmsfp_mon_attr attr = get_mon_ext_attr(dev_attr);
+    struct sfp_data *psfp = dev_get_drvdata(dev);
 
-    ret = sfp_mon_read(dev, attr, 0, &v);
+    ret = sfp_mon_read(psfp, attr, 0, &v);
     if (ret < 0)
         return ret;
 
     return sprintf(buf, "%ld\n", v) + 1;
 }
 
+static int sfp_mon_write(struct sfp_data *psfp, enum bcmsfp_mon_attr attr, int channel, long value);
 static ssize_t _store(struct device *dev, struct device_attribute *dev_attr, const char *buf, size_t count)
 {
     long v;
     int ret;
     enum bcmsfp_mon_attr attr = get_mon_ext_attr(dev_attr);
+    struct sfp_data *psfp = dev_get_drvdata(dev);
 
     ret = kstrtol(buf, 10, &v);
     if (ret)
         return ret;
 
-    if ((ret = sfp_mon_write(dev, attr, 0, v)) < 0)
+    if ((ret = sfp_mon_write(psfp, attr, 0, v)) < 0)
         return ret;
 
     return count;
@@ -381,6 +405,7 @@ DEVICE_SFP_MON_ATTR(rxsd_pin, 0644, bcmsfp_mon_rxsd_pin);
 DEVICE_SFP_MON_ATTR(present, 0644, bcmsfp_mon_present);
 DEVICE_SFP_MON_ATTR(los, 0644, bcmsfp_mon_los);
 DEVICE_SFP_MON_ATTR(tx_enable, 0644, bcmsfp_mon_tx_enable);
+DEVICE_SFP_MON_ATTR(rx_enable, 0644, bcmsfp_mon_rx_enable);
 DEVICE_SFP_MON_ATTR(tx_power_down, 0644, bcmsfp_mon_tx_power_down);
 DEVICE_SFP_MON_ATTR(force_tx_power, 0644, bcmsfp_mon_force_tx_power);
 DEVICE_SFP_MON_ATTR(trx_compliance, 0644, bcmsfp_mon_trx_compliance);
@@ -413,6 +438,7 @@ static struct attribute *sfp_fixed_attributes[] = {
     &dev_attr_present.attr.attr,
     &dev_attr_los.attr.attr,
     &dev_attr_tx_enable.attr.attr,
+    &dev_attr_rx_enable.attr.attr,
     &dev_attr_tx_power_down.attr.attr,
     &dev_attr_force_tx_power.attr.attr,
     &dev_attr_has_txsd.attr.attr,
@@ -588,10 +614,14 @@ static int sfp_module_tx_power_get(struct sfp_data *psfp)
 {
     return _sfp_module_gpio_get(psfp, GPIO_TX_POWER);
 }
-
-static void sfp_module_tx_power_set(struct sfp_data *psfp, int value)
+static int sfp_module_rx_power_get(struct sfp_data *psfp)
 {
-    _sfp_module_gpio_set(psfp, GPIO_TX_POWER, value);
+    return _sfp_module_gpio_get(psfp, GPIO_RX_POWER);
+}
+
+static void sfp_module_power_set(struct sfp_data *psfp, GPIOTypes type, int value)
+{
+    _sfp_module_gpio_set(psfp, type, value);
 }
 
 static void sfp_module_tx_disable_set(struct sfp_data *psfp, int value)
@@ -601,7 +631,7 @@ static void sfp_module_tx_disable_set(struct sfp_data *psfp, int value)
 
 static void sfp_sm_mod_present(struct sfp_data *psfp)
 {
-    trxbus_module_present(psfp->i2c->nr, 0);
+    trxbus_module_present(psfp->i2c->nr);
 }
 
 static void sfp_sm_mod_remove(struct sfp_data *psfp)
@@ -609,7 +639,7 @@ static void sfp_sm_mod_remove(struct sfp_data *psfp)
     sfp_mon_remove(psfp);
 
     if (!psfp->force_tx_power)
-        sfp_module_tx_power_set(psfp, 0);
+        sfp_module_power_set(psfp, GPIO_TX_POWER, 0);
 
     trxbus_module_removed(psfp->i2c->nr);
     memset(&psfp->eeprom, 0, sizeof(struct sfp_eeprom));
@@ -633,7 +663,7 @@ static void sfp_sm_event(struct sfp_data *psfp, int event)
             {
                 int val = probe_i2c(psfp);
 
-                trxbus_module_probe(psfp->i2c->nr, psfp->dev);
+                trxbus_module_probe(psfp->i2c->nr);
 
                 psfp->retries_left--;
                 if (val == 0)
@@ -671,6 +701,7 @@ static void sfp_sm_event(struct sfp_data *psfp, int event)
             {
                 psfp->retries_left = T_PROBE_RETRY_NUM;
                 dev_info(psfp->dev, "module inserted\n");
+                sfp_module_power_set(psfp, GPIO_RX_POWER, 1);
                 sfp_sm_next(psfp, SFP_MOD_PROBING, T_PROBE_INIT);
             }
             break;
@@ -781,7 +812,6 @@ static void sfp_cleanup(void *data)
 
     if (psfp->has_fixed_attribues)
         sysfs_remove_group(&psfp->dev->kobj, &bcmsfp_fixed_attribute_group);
-
     cancel_delayed_work_sync(&psfp->dwork);
     cancel_delayed_work_sync(&psfp->dwork_poll);
     cancel_delayed_work_sync(&psfp->dwork_irq);
@@ -908,12 +938,11 @@ static int _probe(struct platform_device *pdev)
                 goto label_unlock_return;
             }
 
-            psfp->gpio_int[i] = ret;
             psfp->gpio[i] = bcm_bca_extintr_get_gpiod(ret);
         }
     }
 
-    sfp_module_tx_power_set(psfp, 0);
+    sfp_module_power_set(psfp, GPIO_TX_POWER, 0);
     sfp_module_tx_disable_set(psfp, 1);
     psfp->mod_state = SFP_MOD_REMOVED;
 
@@ -953,7 +982,7 @@ static int _probe(struct platform_device *pdev)
     dev_info(psfp->dev, "registered: polling: %s present: %s\n", poll ? "true" : "false", mode);
     mutex_unlock(&psfp->st_mutex);
 
-    trxbus_module_init(psfp->i2c->nr, dev);
+    trxbus_module_init(psfp->i2c->nr, psfp, &sfp_ops, 0);
 
     if (poll)
         mod_delayed_work(system_wq, &psfp->dwork_poll, poll_jiffies);
@@ -970,7 +999,7 @@ label_unlock_return:
 static long bcmsfp_trx_compliance_get(struct sfp_data *psfp)
 {
     unsigned long compliance_bitmap = 0;
-    
+
     /* not decide copper rate at here */
     if (psfp->eeprom.base.connector == SFF8024_CONNECTOR_COPPER_PIGTAIL
         || psfp->eeprom.base.connector == SFF8024_CONNECTOR_RJ45)
@@ -1126,9 +1155,8 @@ static int sfp_mon_read_eeprom_xfp_vcc(struct sfp_data *psfp, long *value)
     return -EOPNOTSUPP;
 }
 
-static int _sfp_mon_read(struct device *dev, enum bcmsfp_mon_attr attr, int channel, long *value)
+static int sfp_mon_read(struct sfp_data *psfp, enum bcmsfp_mon_attr attr, int channel, long *value)
 {
-    struct sfp_data *psfp = dev_get_drvdata(dev);
     u8 byte = 0;
     int ret;
 
@@ -1211,15 +1239,16 @@ static int _sfp_mon_read(struct device *dev, enum bcmsfp_mon_attr attr, int chan
         case bcmsfp_mon_tx_enable:
             *value = (long)sfp_module_tx_power_get(psfp);
             return 0;
+        case bcmsfp_mon_rx_enable:
+            *value = (long)sfp_module_rx_power_get(psfp);
+            return 0;
         default:
             return -EOPNOTSUPP;
     }
 }
 
-static int _sfp_mon_read_buf(struct device *dev, enum bcmsfp_mon_attr attr, int channel, char **buf, int *len)
+static int sfp_mon_read_buf(struct sfp_data *psfp, enum bcmsfp_mon_attr attr, int channel, char **buf, int *len)
 {
-    struct sfp_data *psfp = dev_get_drvdata(dev);
-
     if (psfp->eeprom.base.phys_id == PHYS_ID_XFP)
     {
         switch (attr)
@@ -1264,10 +1293,8 @@ static int _sfp_mon_read_buf(struct device *dev, enum bcmsfp_mon_attr attr, int 
     }
 }
 
-static int _sfp_mon_write_buf(struct device *dev, enum bcmsfp_mon_attr attr, int channel, char *buf, int len)
+static int sfp_mon_write_buf(struct sfp_data *psfp, enum bcmsfp_mon_attr attr, int channel, char *buf, int len)
 {
-    struct sfp_data *psfp = dev_get_drvdata(dev);
-
     if (psfp->eeprom.base.phys_id == PHYS_ID_XFP)
     {
         switch (attr)
@@ -1294,9 +1321,8 @@ static int _sfp_mon_write_buf(struct device *dev, enum bcmsfp_mon_attr attr, int
     }
 }
     
-int _sfp_mon_write(struct device *dev, enum bcmsfp_mon_attr attr, int channel, long value)
+static int sfp_mon_write(struct sfp_data *psfp, enum bcmsfp_mon_attr attr, int channel, long value)
 {
-    struct sfp_data *psfp = dev_get_drvdata(dev);
     uint8_t byte = value;
 
     if (psfp->eeprom.base.phys_id == PHYS_ID_XFP)
@@ -1317,8 +1343,12 @@ int _sfp_mon_write(struct device *dev, enum bcmsfp_mon_attr attr, int channel, l
     switch (attr)
     {
     case bcmsfp_mon_tx_enable:
-        sfp_module_tx_power_set(psfp, value);
+        sfp_module_power_set(psfp, GPIO_TX_POWER, value);
         dev_dbg(psfp->dev, "tx %sable\n",  value ? "en" : "dis");
+        return 0;
+    case bcmsfp_mon_rx_enable:
+        sfp_module_power_set(psfp, GPIO_RX_POWER, value);
+        dev_dbg(psfp->dev, "rx %sable\n",  value ? "en" : "dis");
         return 0;
     case bcmsfp_mon_tx_power_down:
         _sfp_module_gpio_set(psfp, GPIO_TX_POWER_DOWN, value);
@@ -1328,7 +1358,7 @@ int _sfp_mon_write(struct device *dev, enum bcmsfp_mon_attr attr, int channel, l
         * order to read EEPROM.
         * XXX: note if set too late after insert interrupt, bcmsfp will fail detect sfp. */
         psfp->force_tx_power = value;
-        sfp_module_tx_power_set(psfp, value);
+        sfp_module_power_set(psfp, GPIO_TX_POWER, value);
         return 0;
     case bcmsfp_mon_phy_reg:
         return sfp_mon_write_phy_reg(psfp, channel, value);
@@ -1336,61 +1366,10 @@ int _sfp_mon_write(struct device *dev, enum bcmsfp_mon_attr attr, int channel, l
         return -EOPNOTSUPP;
     }
 }
-EXPORT_SYMBOL(_sfp_mon_write);
-
-int sfp_mon_read_buf(struct device *dev, enum bcmsfp_mon_attr attr, int channel, char **buf, int *len)
-{
-    int ret;
-    struct sfp_data *psfp = dev_get_drvdata(dev);
-
-    mutex_lock(&psfp->st_mutex);
-    ret = _sfp_mon_read_buf(dev, attr, channel, buf, len);
-    mutex_unlock(&psfp->st_mutex);
-    return ret;
-}
-EXPORT_SYMBOL(sfp_mon_read_buf);
-
-int sfp_mon_read(struct device *dev, enum bcmsfp_mon_attr attr, int channel, long *value)
-{
-    int ret;
-    struct sfp_data *psfp = dev_get_drvdata(dev);
-
-    mutex_lock(&psfp->st_mutex);
-    ret = _sfp_mon_read(dev, attr, channel, value);
-    mutex_unlock(&psfp->st_mutex);
-    return ret;
-}
-EXPORT_SYMBOL(sfp_mon_read);
-
-int sfp_mon_write(struct device *dev, enum bcmsfp_mon_attr attr, int channel, long value)
-{
-    int ret;
-    struct sfp_data *psfp = dev_get_drvdata(dev);
-    
-    mutex_lock(&psfp->st_mutex);
-    ret = _sfp_mon_write(dev, attr, channel, value);
-    mutex_unlock(&psfp->st_mutex);
-    return ret;
-}
-EXPORT_SYMBOL(sfp_mon_write);
-
-int sfp_mon_write_buf(struct device *dev, enum bcmsfp_mon_attr attr, int channel, char *buf, int count)
-{
-    int ret;
-    struct sfp_data *psfp = dev_get_drvdata(dev);
-
-    mutex_lock(&psfp->st_mutex);
-    ret = _sfp_mon_write_buf(dev, attr, channel, buf, count);
-    mutex_unlock(&psfp->st_mutex);
-    return ret;
-}
-EXPORT_SYMBOL(sfp_mon_write_buf);
 
 #if defined(CONFIG_BCM_ETHTOOL)
-int bcmsfp_module_info(struct device *dev, struct ethtool_modinfo *modinfo)
+static int bcmsfp_module_info(struct sfp_data *psfp, struct ethtool_modinfo *modinfo)
 {
-    struct sfp_data *psfp = dev_get_drvdata(dev);
-
     if (psfp->eeprom.ext.sff8472_compliance &&
         !(psfp->eeprom.ext.diagmon & SFP_DIAGMON_ADDRMODE)) {
         modinfo->type = ETH_MODULE_SFF_8472;
@@ -1401,13 +1380,11 @@ int bcmsfp_module_info(struct device *dev, struct ethtool_modinfo *modinfo)
     }
     return 0;
 }
-EXPORT_SYMBOL(bcmsfp_module_info);
 
-int bcmsfp_module_eeprom(struct device *dev, struct ethtool_eeprom *ee, u8 *data)
+static int bcmsfp_module_eeprom(struct sfp_data *psfp, struct ethtool_eeprom *ee, u8 *data)
 {
     unsigned int first, last, len;
     int ret;
-    struct sfp_data *psfp = dev_get_drvdata(dev);
 	u8* peeprom = (u8*)(&psfp->eeprom);
 	
     if (ee->len == 0)
@@ -1435,7 +1412,6 @@ int bcmsfp_module_eeprom(struct device *dev, struct ethtool_eeprom *ee, u8 *data
     }
     return 0;
 }
-EXPORT_SYMBOL(bcmsfp_module_eeprom);
 #endif
 
 module_init(bcm_sfp_init);

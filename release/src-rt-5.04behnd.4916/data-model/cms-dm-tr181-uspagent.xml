@@ -126,7 +126,7 @@
   <parameter name="EnableEncryption" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="true" bbfProtocol="cwmp" />
     <description source="TRx">When true, encryption MUST be used for all connections to this MTP instance. </description>
 
-  <parameter name="KeepAliveInterval" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" minValue="1" bbfProtocol="cwmp" />
+  <parameter name="KeepAliveInterval" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="60" minValue="1" bbfProtocol="cwmp" />
     <description source="TRx">The duration in seconds between when WebSocket ping control frames are transmitted by the Agent's WebSocket server to the Controller's WebSocket client.</description>
 
 

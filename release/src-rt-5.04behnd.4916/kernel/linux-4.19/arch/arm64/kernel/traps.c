@@ -35,6 +35,9 @@
 #include <linux/sizes.h>
 #include <linux/syscalls.h>
 #include <linux/mm_types.h>
+#ifdef CONFIG_BCM_KF_TINY_KCORE_SUPPORT
+#include <linux/tiny_kcore.h>
+#endif
 
 #include <asm/atomic.h>
 #include <asm/bug.h>
@@ -216,6 +219,10 @@ void die(const char *str, struct pt_regs *regs, int err)
 	add_taint(TAINT_DIE, LOCKDEP_NOW_UNRELIABLE);
 	oops_exit();
 
+#ifdef CONFIG_BCM_KF_TINY_KCORE_SUPPORT
+	if (in_interrupt() || panic_on_oops)
+		tkcore_save_cpu_state(regs, smp_processor_id());
+#endif
 	if (in_interrupt())
 		panic("Fatal exception in interrupt");
 	if (panic_on_oops)

@@ -1113,6 +1113,7 @@ TomatoGrid.prototype = {
 				e[0].focus();
 			}
 			catch (ex) {
+				//Nothing
 			}
 		}
 
@@ -1428,12 +1429,16 @@ function xmlHttpObj()
 		ob = new XMLHttpRequest();
 		if (ob) return ob;
 	}
-	catch (ex) { }
+	catch (ex) {
+		//Nothing
+	}
 	try {
 		ob = new ActiveXObject('Microsoft.XMLHTTP');
 		if (ob) return ob;
 	}
-	catch (ex) { }
+	catch (ex) {
+		//Nothing
+	}
 	return null;
 }
 
@@ -1493,6 +1498,7 @@ XmlHttp.prototype = {
 			this.xob.abort();
 		}
 		catch (ex) {
+			//Nothing
 		}
 	},
 
@@ -1766,7 +1772,7 @@ function _tabCreate(tabs)
 		if(arguments[i][0].indexOf("WIRELESS") != -1){
 			if(wireless_tabs.length > 1){
 				if(!wireless_tab){
-					buf.push('<li><a style="margin-right: 3px;" href="#" id="wireless_tabs"><#menu5_1#></a>');
+					buf.push(`<li><a style="margin-right: 3px;" href="#" id="wireless_tabs"><#menu5_1#></a>`);
 					buf.push('<ul>');
 					for(var j = 0; j < wireless_tabs.length; j++){
 						buf.push('<li><a href="javascript:tabSelect(\'' + wireless_tabs[j][0] +'\')" id="' + wireless_tabs[j][0] + '">' + wireless_tabs[j][1] + '</a></li>');

@@ -26,31 +26,6 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #if defined(CONFIG_SPL_BUILD)
 
-void disable_memc_sram(void)
-{
-	uint32_t *reg = (uint32_t *)(MEMC_BASE + mc2_afx_sram_match_cfg_sram_start_addr_hi);
-	
-	writel(readl(reg)&~0x80000000, reg);
-}
-
-void enable_memc_sram(void)
-{
-	uint32_t *reg;
-	uint64_t addr;
-
-	reg  = (uint32_t *)(MEMC_BASE + mc2_afx_sram_match_cfg_sram_end_addr_lo);
-	addr = CONFIG_SYS_PAGETBL_BASE + CONFIG_SYS_PAGETBL_SIZE - 1;
-	writel((uint32_t)addr, reg);
-	reg  = (uint32_t *)(MEMC_BASE + mc2_afx_sram_match_cfg_sram_end_addr_hi);
-	writel((uint32_t)(addr>>32), reg);
-
-	reg  = (uint32_t *)(MEMC_BASE + mc2_afx_sram_match_cfg_sram_start_addr_lo);
-	addr = CONFIG_SYS_PAGETBL_BASE;
-	writel((uint32_t)addr, reg);
-	reg  = (uint32_t *)(MEMC_BASE + mc2_afx_sram_match_cfg_sram_start_addr_hi);
-	writel(((uint32_t)(addr>>32))|0x80000000, reg);
-}
-
 #if !defined(CONFIG_TPL_BUILD)
 static void enable_ts0_couner(void)
 {
@@ -179,13 +154,39 @@ void reset_plls(void)
 	return;
 }
 
+void bcmbca_enable_memc_sram(u64 addr, u64 size)
+{
+	uint32_t *reg;
+	uint64_t end_addr;
+
+	reg  = (uint32_t *)(MEMC_BASE + mc2_afx_sram_match_cfg_sram_end_addr_lo);
+	end_addr = addr + size - 1;
+	writel((uint32_t)end_addr, reg);
+	reg  = (uint32_t *)(MEMC_BASE + mc2_afx_sram_match_cfg_sram_end_addr_hi);
+	writel((uint32_t)(end_addr>>32), reg);
+
+	reg  = (uint32_t *)(MEMC_BASE + mc2_afx_sram_match_cfg_sram_start_addr_lo);
+	writel((uint32_t)addr, reg);
+	reg  = (uint32_t *)(MEMC_BASE + mc2_afx_sram_match_cfg_sram_start_addr_hi);
+	writel(((uint32_t)(addr>>32))|mc2_afx_sram_match_cfg_sram_start_addr_hi_enable_MASK, reg);
+}
+
+void bcmbca_disable_memc_sram(void)
+{
+	uint32_t *reg = (uint32_t *)(MEMC_BASE + mc2_afx_sram_match_cfg_sram_start_addr_hi);
+	
+	writel(readl(reg)&~mc2_afx_sram_match_cfg_sram_start_addr_hi_enable_MASK, reg);
+}
+
 int arch_cpu_init(void)
 {
 #if defined(CONFIG_BCMBCA_IKOS)
 	icache_enable();
 #endif
 #if defined(CONFIG_SPL_BUILD) && !defined(CONFIG_TPL_BUILD)
-	disable_memc_sram();  
+	/* always disable memc sram first in case btrm keeps it enabled */
+	bcmbca_disable_memc_sram();
+
 	enable_ts0_couner();
 #if defined(CONFIG_BCMBCA_DDRC)
 	spl_ddrinit_prepare();
@@ -196,7 +197,6 @@ int arch_cpu_init(void)
 
 #if defined(CONFIG_TPL_BUILD)
 	enable_ns_access();
-	disable_memc_sram();
 	setup_ubus_rangechk();
 	cci500_enable();
 #endif

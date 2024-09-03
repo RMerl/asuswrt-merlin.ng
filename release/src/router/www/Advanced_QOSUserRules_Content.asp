@@ -20,6 +20,7 @@
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
+<script type="text/javascript" src="/form.js"></script>
 <style>
 .Portrange{
 	font-size: 12px;
@@ -32,7 +33,8 @@ var qos_rulelist_array = "<% nvram_char_to_ascii("","qos_rulelist"); %>";
 var overlib_str0 = new Array();	//Viz add 2011.06 for record longer qos rule desc
 var overlib_str = new Array();	//Viz add 2011.06 for record longer portrange value
 
-var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=110";
+var current_page = window.location.pathname.split("/").pop();
+var faq_index_tmp = get_faq_index(FAQ_List, current_page, 1);
 
 function key_event(evt){
 	if(evt.keyCode != 27 || isMenuopen == 0) 
@@ -42,7 +44,6 @@ function key_event(evt){
 
 function initial(){
 	show_menu();
-	document.getElementById("faq").href=faq_href;
 	if(bwdpi_support){
 		document.getElementById('content_title').innerHTML = "<#menu5_3_2#> - <#EzQoS_type_traditional#>";
 	}
@@ -725,16 +726,18 @@ function linkport(obj){
 
 				<tr>
 		  			<td bgcolor="#4D595D" valign="top">
+					<div class="container">
 						<table>
 						<tr>
 						<td>
-						<table width="100%" >
+						<table width="100%">
 						<tr >
 						<td  class="formfonttitle" align="left">								
 							<div id="content_title" style="margin-top:5px;"></div>
+							<div class="formfonttitle_help"><i onclick="show_feature_desc(`<#HOWTOSETUP#>`)" class="icon_help"></i></div>
 						</td>
 						<td align="right" >	
-						<div style="margin-top:5px;">
+						<div style="margin-right:44px;margin-top:16px;">
 							<select onchange="switchPage(this.options[this.selectedIndex].value)" class="input_option">
 								<!--option><#switchpage#></option-->
 								<option value="1"><#Adaptive_QoS_Conf#></option>
@@ -760,7 +763,6 @@ function linkport(obj){
 									<li><#UserQoSRule_desc_one#></li>
 							</ul>
 					</div>
-					<div class="formfontdesc"><a id="faq" href="" style="text-decoration:underline;" target="_blank">QoS FAQ</a></div>
 
 					</div>	
 					</td>
@@ -844,7 +846,11 @@ function linkport(obj){
 								<input name="button" type="button" class="button_gen" onClick="applyRule()" value="<#CTL_apply#>"/>
 							</div>
 						</td></tr>		
-						</table>			
+						</table>
+
+						</div>  <!-- for .container  -->
+						<div class="popup_container popup_element_second"></div>
+
 					</td>
 				</tr>
 

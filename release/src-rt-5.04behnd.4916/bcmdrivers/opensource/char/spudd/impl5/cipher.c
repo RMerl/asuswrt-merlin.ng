@@ -61,6 +61,11 @@ Boston, MA 02111-1307, USA.
 #include "spu_blog.h"
 #endif
 
+#if (defined(CONFIG_BCM_FLEXRM) || defined(CONFIG_BCM_FLEXRM_MODULE))
+#include "bcm/flexrmdefs.h"
+#endif
+
+
 #if (defined(CONFIG_BCM_PDC) || defined(CONFIG_BCM_PDC_MODULE))
 extern int pdc_send_data(int chan, struct bcmspu_message *msg);
 extern int pdc_select_channel(void);
@@ -72,6 +77,17 @@ extern int flexrm_select_channel(void);
 extern int flexrm_get_max_channel(void);
 extern u32 flexrm_ops_in_transit(int chan);
 extern void flexrm_register_offload_callback (spu_offload_cbk callback);
+extern int flexrm_spu_and_rings_on(void);
+extern int flexrm_spu_and_rings_shutdown(void);
+extern SPU_PWR_STATUS flexrm_pwr_status_get(void);
+
+ssize_t static_pwr_get(struct device *d, struct device_attribute *attr, char *buf);
+ssize_t static_pwr_set(struct device *d, struct device_attribute *attr, const char *buf, size_t count);
+
+static struct device_attribute  static_pwr_attribute = __ATTR(static_pwr,
+                                                              0644,
+                                                              static_pwr_get,
+                                                              static_pwr_set);
 #endif
 
 static void spu_rx_callback(struct bcmspu_message *msg);
@@ -135,6 +151,125 @@ static char BCMHEADER[] = { 0x60, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x28 };
 /* min and max time to sleep before retrying when mbox queue is full. usec */
 #define MBOX_SLEEP_MIN  800
 #define MBOX_SLEEP_MAX 1000
+
+/**
+ * @brief wraps a spu_and_dma_runtime_on call
+ * @param[i] ret 
+ * @return int 
+ */
+static inline int try_spu_and_dma_runtime_on(int ret)
+{
+	if (unlikely((1 == atomic_read(&iproc_priv.session_count)) && 
+				iproc_priv.spu.spu_and_dma_runtime_on))
+		ret = iproc_priv.spu.spu_and_dma_runtime_on();
+
+	return ret;
+}
+
+/**
+ * @brief wraps a spu_and_dma_runtime_off call 
+ */
+static inline void try_spu_and_dma_runtime_off(void)
+{
+	if (unlikely((0 == atomic_read(&iproc_priv.spu.static_pwr)) &&
+				(0 == atomic_read(&iproc_priv.session_count)) &&
+				(iproc_priv.spu.spu_and_dma_runtime_off)))
+		iproc_priv.spu.spu_and_dma_runtime_off();
+}
+#if (defined(CONFIG_BCM_PDC) || defined(CONFIG_BCM_PDC_MODULE))
+static int pdc_dma_dev_runtime_on (void)
+{
+	return 0;
+}
+static int pdc_dma_dev_runtime_off(void)
+{
+	return 0;
+}
+#endif
+#if (defined(CONFIG_BCM_FLEXRM) || defined(CONFIG_BCM_FLEXRM_MODULE))
+/**
+ * @brief turns SPU power on, configures the latter and turns related DMA rings on
+ * @return int 0 for success, negative error code otherwise 
+ */
+static int spu_dma_dev_runtime_on(void)
+{
+	int rc;
+	rc = flexrm_spu_and_rings_on();
+	return rc;
+}
+
+/**
+ * @brief shuts dowm DMA rings, cleans DMA pools and  shuts the SPU power down 
+ * @return int 
+ */
+static int spu_dma_dev_runtime_off(void)
+{
+	flexrm_spu_and_rings_shutdown();
+	return 0;
+}
+/**
+ * @brief gets current SPU static power mode status
+ * @param[i] d not in use
+ * @param[i] attr not in use
+ * @param[o] buf asci value of static_pwr
+ * @return ssize_t 
+ */
+ssize_t static_pwr_get(struct device *d __attribute__((unused)), 
+						struct device_attribute *attr __attribute__((unused)), 
+						char *buf)
+{
+	return sprintf(buf, "%d\n", atomic_read(&iproc_priv.spu.static_pwr)) + 1;
+}
+/**
+ * @brief sets spu static pwr mode and controls the SPU power status accordingly
+ * @param[i] d not in use
+ * @param[i] attr not in use 
+ * @param[i] buf '0' disable - use dynamic SPU activation, '1' enable - keep SPU always powered on
+ * @param[i] count 
+ * @return ssize_t on success: length of [i] buf (count)
+ *                 on error: -EINVAL - validation error;
+ *                           -EPERM  - unsupported power state
+ */
+ssize_t static_pwr_set(struct device *d __attribute__((unused)), 
+						struct device_attribute *attr __attribute__((unused)), 
+						const char *buf, size_t count)
+{
+	long enable;
+	ssize_t ret = -EPERM;
+
+	if (0 == count || kstrtol(buf, 10, &enable))
+		return -EINVAL;
+
+	enable = !!enable;
+
+	/* preventing an attempt to switch to same (current) mode */
+	if (0 == (atomic_read(&iproc_priv.spu.static_pwr) ^ enable))
+		return count;
+
+	switch (flexrm_pwr_status_get()) {
+		case SPU_PWR_STATUS_OFF:
+			ret = 0;
+			/* if disable - update the parameter,
+			 * if enable - try to set the SPU on and only then (after success) make an update */
+			if ((!enable) ||
+				(enable && iproc_priv.spu.spu_and_dma_runtime_on &&
+				(0 == (ret = iproc_priv.spu.spu_and_dma_runtime_on()))))
+				atomic_set(&iproc_priv.spu.static_pwr, enable);
+			break;
+		case SPU_PWR_STATUS_ON:
+			atomic_set(&iproc_priv.spu.static_pwr, enable);
+			if (!atomic_read(&iproc_priv.spu.static_pwr))
+				try_spu_and_dma_runtime_off();
+			ret = 0;
+			break;
+		default:
+			/* unsupported power state (should never happen) */
+			break;
+	}
+
+	return (ret) ? ret : count;
+}
+#endif
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(5,15,0))
 /**
@@ -1406,7 +1541,7 @@ static int ahash_req_done(struct iproc_reqctx_s *rctx)
 static void handle_ahash_resp(struct iproc_reqctx_s *rctx)
 {
 	struct iproc_ctx_s *ctx = rctx->ctx;
-#ifdef DEBUG
+#ifdef SPU_DEBUG
 	struct crypto_async_request *areq = rctx->parent;
 	struct ahash_request *req = ahash_request_cast(areq);
 	struct crypto_ahash *ahash = crypto_ahash_reqtfm(req);
@@ -1634,9 +1769,10 @@ static int spu_aead_tx_sg_create(struct bcmspu_message *mssg,
 	if ((chunksize > ctx->digestsize) && incl_icv)
 		datalen -= ctx->digestsize;
 	if (datalen) {
+		struct scatterlist *src_sg = rctx->src_sg;
 		u32 src_skip = rctx->src_skip;
 		/* For aead, a single msg should consume the entire src sg */
-		written = spu_msg_sg_add(&sg, &rctx->src_sg, &src_skip,
+		written = spu_msg_sg_add(&sg, &src_sg, &src_skip,
 					 rctx->src_nents, datalen);
 		if (written < datalen) {
 			pr_err("%s(): failed to copy src sg to mbox msg",
@@ -1766,10 +1902,6 @@ int handle_aead_req(struct iproc_reqctx_s *rctx)
 			aead_parms.ret_iv_off = GCM_ESP_SALT_SIZE;
 		}
 	}
-	if (rctx->is_encrypt && (ctx->cipher.mode != CIPHER_MODE_GCM) && (ctx->cipher.alg != CIPHER_ALG_NONE)) {
-		aead_parms.return_iv = true;
-		aead_parms.ret_iv_len = rctx->iv_ctr_len & 0xF;
-	}
 
 	/*
 	 * Count number of sg entries from the crypto API request that are to
@@ -1793,9 +1925,8 @@ int handle_aead_req(struct iproc_reqctx_s *rctx)
 				    rctx->is_encrypt))
 		rx_frag_num++;
 
-	if (rctx->is_encrypt)
-		aead_parms.iv_len = spu->spu_aead_ivlen(ctx->cipher.mode,
-							rctx->iv_ctr_len);
+	aead_parms.iv_len = spu->spu_aead_ivlen(ctx->cipher.mode,
+			rctx->iv_ctr_len);
 
 	if (ctx->auth.alg == HASH_ALG_AES)
 		hash_parms.type = (enum hash_type)ctx->cipher_type;
@@ -1856,8 +1987,7 @@ int handle_aead_req(struct iproc_reqctx_s *rctx)
 		tx_frag_num++;
 		/* Copy ICV from end of src scatterlist to digest buf */
 		sg_copy_part_to_buf(rctx->src_sg, rctx->msg_buf.digest, digestsize,
-				    rctx->assoc_len + rctx->total_sent -
-				    digestsize);
+				    rctx->total_sent - digestsize);
 	}
 
 	atomic64_add(chunksize, &iproc_priv.bytes_out);
@@ -1901,14 +2031,6 @@ int handle_aead_req(struct iproc_reqctx_s *rctx)
 	/* Create rx scatterlist to catch result */
 	rx_frag_num += rctx->dst_nents;
 	resp_len = chunksize;
-
-	/* for GCM, IV is returned in assoc already, not included in response */
-	if (rctx->is_encrypt && ctx->cipher.mode != CIPHER_MODE_GCM) {
-		if (!aead_parms.ret_iv_len)
-			resp_len += rctx->iv_ctr_len;
-		else
-			resp_len += aead_parms.ret_iv_len;
-	}
 
 	/*
 	 * Always catch ICV in separate buffer. Have to for GCM/CCM because of
@@ -2010,7 +2132,7 @@ void handle_aead_resp(struct iproc_reqctx_s *rctx)
 		result_len += ctx->digestsize;
 	}
 
-	packet_log("response data:  ");
+	packet_log("response data:  assoc_len %u result_len %u", rctx->assoc_len, result_len);
 	dump_sg(rctx->dst_sg, rctx->assoc_len, result_len);
 
 	atomic_inc(&iproc_priv.op_counts[SPU_OP_AEAD]);
@@ -2116,8 +2238,11 @@ static void spu_rx_callback(struct bcmspu_message *msg)
 		break;
 	case CRYPTO_ALG_TYPE_AEAD:
 #if defined(CONFIG_BLOG)
-		if (blog_enable && (rctx->parent->flags & CRYPTO_TFM_REQ_MAY_BLOG) &&
-		    !rctx->is_encrypt) {
+		if (unlikely(!blog_enable)) {
+			blog_skip(rctx->parent->data,
+					blog_skip_reason_spudd_check_failure);
+		} else if ((rctx->parent->flags & CRYPTO_TFM_REQ_MAY_BLOG) &&
+				!rctx->is_encrypt) {
 			spu_blog_emit_aead_ds(rctx);
 		}
 #endif
@@ -2554,7 +2679,9 @@ static int ahash_init(struct ahash_request *req)
 	return ret;
 
 err_shash:
-	kfree(ctx->shash);
+	if (ctx->shash)
+		kfree(ctx->shash);
+	ctx->shash = NULL;
 err_hash:
 	crypto_free_shash(hash);
 err:
@@ -2630,6 +2757,19 @@ static int __ahash_final(struct ahash_request *req)
 	return ahash_enqueue(req);
 }
 
+
+static int clean_shash(struct shash_desc **shash)
+{
+	if (*shash) {
+		if ((*shash)->tfm)
+			crypto_free_shash((*shash)->tfm);
+		(*shash)->tfm = NULL;
+		kfree(*shash);
+		*shash = NULL;
+	}
+	return 0;
+}
+
 static int ahash_final(struct ahash_request *req)
 {
 	struct crypto_ahash *tfm = crypto_ahash_reqtfm(req);
@@ -2645,8 +2785,7 @@ static int ahash_final(struct ahash_request *req)
 		ret = crypto_shash_final(ctx->shash, req->result);
 
 		/* Done with hash, can deallocate it now */
-		crypto_free_shash(ctx->shash->tfm);
-		kfree(ctx->shash);
+		clean_shash(&ctx->shash);
 
 	} else {
 		/* Otherwise call the internal function which uses SPU hw */
@@ -2677,7 +2816,7 @@ static int ahash_finup(struct ahash_request *req)
 	int ret;
 	int nents;
 	gfp_t gfp;
-
+	
 	if (spu_no_incr_hash(ctx)) {
 		/*
 		 * If we get an incremental hashing request and it's not
@@ -2718,8 +2857,7 @@ ahash_finup_free:
 
 ahash_finup_exit:
 	/* Done with hash, can deallocate it now */
-	crypto_free_shash(ctx->shash->tfm);
-	kfree(ctx->shash);
+	clean_shash(&ctx->shash);
 	return ret;
 }
 
@@ -2916,13 +3054,14 @@ static int ahash_hmac_init(struct ahash_request *req)
 	struct iproc_ctx_s *ctx = crypto_ahash_ctx(tfm);
 	unsigned int blocksize =
 			crypto_tfm_alg_blocksize(crypto_ahash_tfm(tfm));
+	int err;
 
 	flow_log("ahash_hmac_init()\n");
 
 	/* init the context as a hash */
-	ahash_init(req);
+	err = ahash_init(req);
 
-	if (!spu_no_incr_hash(ctx)) {
+	if (!err && !spu_no_incr_hash(ctx)) {
 		/* SPU-M can do incr hashing but needs sw for outer HMAC */
 		rctx->is_sw_hmac = true;
 		ctx->auth.mode = HASH_MODE_HASH;
@@ -2932,7 +3071,7 @@ static int ahash_hmac_init(struct ahash_request *req)
 		rctx->total_todo += blocksize;
 	}
 
-	return 0;
+	return err;
 }
 
 static int ahash_hmac_update(struct ahash_request *req)
@@ -3066,23 +3205,6 @@ static int aead_need_fallback(struct aead_request *req)
 		return payload_len > ctx->max_payload;
 }
 
-static void aead_complete(struct crypto_async_request *areq, int err)
-{
-	struct aead_request *req =
-	    container_of(areq, struct aead_request, base);
-	struct iproc_reqctx_s *rctx = aead_request_ctx(req);
-	struct crypto_aead *aead = crypto_aead_reqtfm(req);
-
-	flow_log("%s() err:%d\n", __func__, err);
-
-	areq->tfm = crypto_aead_tfm(aead);
-
-	areq->complete = rctx->old_complete;
-	areq->data = rctx->old_data;
-
-	areq->complete(areq, err);
-}
-
 static int aead_do_fallback(struct aead_request *req, bool is_encrypt)
 {
 	struct crypto_aead *aead = crypto_aead_reqtfm(req);
@@ -3090,37 +3212,23 @@ static int aead_do_fallback(struct aead_request *req, bool is_encrypt)
 	struct iproc_reqctx_s *rctx = aead_request_ctx(req);
 	struct iproc_ctx_s *ctx = crypto_tfm_ctx(tfm);
 	int err;
-	u32 req_flags;
 
 	flow_log("%s() enc:%u\n", __func__, is_encrypt);
 
 	if (ctx->fallback_cipher) {
-		/* Store the cipher tfm and then use the fallback tfm */
-		rctx->old_tfm = tfm;
-		aead_request_set_tfm(req, ctx->fallback_cipher);
-		/*
-		 * Save the callback and chain ourselves in, so we can restore
-		 * the tfm
-		 */
-		rctx->old_complete = req->base.complete;
-		rctx->old_data = req->base.data;
-		req_flags = aead_request_flags(req);
-		aead_request_set_callback(req, req_flags, aead_complete, req);
-		err = is_encrypt ? crypto_aead_encrypt(req) :
-		    crypto_aead_decrypt(req);
+		struct aead_request *fb_req;
+	       	fb_req	= aead_request_alloc(ctx->fallback_cipher, rctx->gfp);
+		if (!fb_req)
+			return -ENOMEM;
 
-		if (err == 0) {
-			/*
-			 * fallback was synchronous (did not return
-			 * -EINPROGRESS). So restore request state here.
-			 */
-			aead_request_set_callback(req, req_flags,
-						  rctx->old_complete, req);
-			req->base.data = rctx->old_data;
-			aead_request_set_tfm(req, aead);
-			flow_log("%s() fallback completed successfully\n\n",
-				 __func__);
-		}
+		aead_request_set_callback(fb_req, req->base.flags,
+				req->base.complete, req->base.data);
+		aead_request_set_crypt(fb_req, req->src, req->dst, req->cryptlen,
+				req->iv);
+		aead_request_set_ad(fb_req, req->assoclen);
+		err = is_encrypt ? crypto_aead_encrypt(fb_req) :
+			crypto_aead_decrypt(fb_req);
+		aead_request_free(fb_req);
 	} else {
 		err = -EINVAL;
 	}
@@ -3133,7 +3241,7 @@ static int aead_enqueue(struct aead_request *req, bool is_encrypt)
 	struct iproc_reqctx_s *rctx = aead_request_ctx(req);
 	struct crypto_aead *aead = crypto_aead_reqtfm(req);
 	struct iproc_ctx_s *ctx = crypto_aead_ctx(aead);
-	int err, src_adjust = 0;
+	int err;
 
 	flow_log("%s() enc:%u\n", __func__, is_encrypt);
 
@@ -3144,28 +3252,12 @@ static int aead_enqueue(struct aead_request *req, bool is_encrypt)
 		return -EINVAL;
 	}
 
-	if (ctx->cipher.mode == CIPHER_MODE_CBC ||
-	    ctx->cipher.mode == CIPHER_MODE_CTR ||
-	    ctx->cipher.mode == CIPHER_MODE_OFB ||
-	    ctx->cipher.mode == CIPHER_MODE_XTS ||
-	    ctx->cipher.mode == CIPHER_MODE_GCM) {
-		rctx->iv_ctr_len =
-			ctx->salt_len +
-			crypto_aead_ivsize(crypto_aead_reqtfm(req));
-	} else if (ctx->cipher.mode == CIPHER_MODE_CCM) {
-		rctx->iv_ctr_len = CCM_AES_IV_SIZE;
-	} else {
-		rctx->iv_ctr_len = 0;
-	}
-	if (is_encrypt && ctx->cipher.mode == CIPHER_MODE_CBC)
-		src_adjust = rctx->iv_ctr_len;
-
 	rctx->gfp = (req->base.flags & (CRYPTO_TFM_REQ_MAY_BACKLOG |
 		       CRYPTO_TFM_REQ_MAY_SLEEP)) ? GFP_KERNEL : GFP_ATOMIC;
 	rctx->parent = &req->base;
 	rctx->is_encrypt = is_encrypt;
 	rctx->bd_suppress = false;
-	rctx->total_todo = req->cryptlen - src_adjust;
+	rctx->total_todo = req->cryptlen;
 	rctx->src_sent = 0;
 	rctx->total_sent = 0;
 	rctx->total_received = 0;
@@ -3184,7 +3276,7 @@ static int aead_enqueue(struct aead_request *req, bool is_encrypt)
 	 * src_skip set to buffer offset where data begins. (Assoc data could
 	 * end in the middle of a buffer.)
 	 */
-	if (spu_sg_at_offset(req->src, rctx->assoc_len + src_adjust, &rctx->src_sg,
+	if (spu_sg_at_offset(req->src, rctx->assoc_len, &rctx->src_sg,
 			     &rctx->src_skip) < 0) {
 		pr_err("%s() Error: Unable to find start of src data\n",
 		       __func__);
@@ -3195,7 +3287,7 @@ static int aead_enqueue(struct aead_request *req, bool is_encrypt)
 	rctx->dst_nents = 0;
 	if (req->dst == req->src) {
 		rctx->dst_sg = rctx->src_sg;
-		rctx->dst_skip = rctx->src_skip - src_adjust;
+		rctx->dst_skip = rctx->src_skip;
 	} else {
 		/*
 		 * Expect req->dst to have room for assoc data followed by
@@ -3210,6 +3302,19 @@ static int aead_enqueue(struct aead_request *req, bool is_encrypt)
 		}
 	}
 
+	if (ctx->cipher.mode == CIPHER_MODE_CBC ||
+	    ctx->cipher.mode == CIPHER_MODE_CTR ||
+	    ctx->cipher.mode == CIPHER_MODE_OFB ||
+	    ctx->cipher.mode == CIPHER_MODE_XTS ||
+	    ctx->cipher.mode == CIPHER_MODE_GCM) {
+		rctx->iv_ctr_len =
+			ctx->salt_len +
+			crypto_aead_ivsize(crypto_aead_reqtfm(req));
+	} else if (ctx->cipher.mode == CIPHER_MODE_CCM) {
+		rctx->iv_ctr_len = CCM_AES_IV_SIZE;
+	} else {
+		rctx->iv_ctr_len = 0;
+	}
 
 	rctx->hash_carry_len = 0;
 
@@ -3605,7 +3710,7 @@ static int aead_esn_enqueue(struct aead_request *req, bool is_encrypt)
 	struct iproc_reqctx_s *rctx = aead_request_ctx(req);
 	struct crypto_aead *aead = crypto_aead_reqtfm(req);
 	struct iproc_ctx_s *ctx = crypto_aead_ctx(aead);
-	int err, src_adjust = 0;
+	int err;
 	u32 tmp[3];
 	uint32_t skip;
 
@@ -3618,28 +3723,12 @@ static int aead_esn_enqueue(struct aead_request *req, bool is_encrypt)
 		return -EINVAL;
 	}
 
-	if (ctx->cipher.mode == CIPHER_MODE_CBC ||
-	    ctx->cipher.mode == CIPHER_MODE_CTR ||
-	    ctx->cipher.mode == CIPHER_MODE_OFB ||
-	    ctx->cipher.mode == CIPHER_MODE_XTS ||
-	    ctx->cipher.mode == CIPHER_MODE_GCM) {
-		rctx->iv_ctr_len =
-			ctx->salt_len +
-			crypto_aead_ivsize(crypto_aead_reqtfm(req));
-	} else if (ctx->cipher.mode == CIPHER_MODE_CCM) {
-		rctx->iv_ctr_len = CCM_AES_IV_SIZE;
-	} else {
-		rctx->iv_ctr_len = 0;
-	}
-	if (is_encrypt && ctx->cipher.mode == CIPHER_MODE_CBC)
-		src_adjust = rctx->iv_ctr_len;
-
 	rctx->gfp = (req->base.flags & (CRYPTO_TFM_REQ_MAY_BACKLOG |
 		       CRYPTO_TFM_REQ_MAY_SLEEP)) ? GFP_KERNEL : GFP_ATOMIC;
 	rctx->parent = &req->base;
 	rctx->is_encrypt = is_encrypt;
 	rctx->bd_suppress = false;
-	rctx->total_todo = req->cryptlen - src_adjust;
+	rctx->total_todo = req->cryptlen;
 	rctx->src_sent = 0;
 	rctx->total_sent = 0;
 	rctx->total_received = 0;
@@ -3656,7 +3745,7 @@ static int aead_esn_enqueue(struct aead_request *req, bool is_encrypt)
 
 	rctx->assoc_len = req->assoclen - 4;
 
-	if (spu_sg_at_offset(req->src, req->assoclen + src_adjust, &rctx->src_sg,
+	if (spu_sg_at_offset(req->src, req->assoclen, &rctx->src_sg,
 			     &rctx->src_skip) < 0) {
 		pr_err("%s() Error: Unable to find start of src data\n",
 		       __func__);
@@ -3667,7 +3756,7 @@ static int aead_esn_enqueue(struct aead_request *req, bool is_encrypt)
 	rctx->dst_nents = 0;
 	if (req->dst == req->src) {
 		rctx->dst_sg = rctx->src_sg;
-		rctx->dst_skip = rctx->src_skip - src_adjust;
+		rctx->dst_skip = rctx->src_skip;
 	} else {
 		/*
 		 * Expect req->dst to have room for assoc data followed by
@@ -3683,6 +3772,20 @@ static int aead_esn_enqueue(struct aead_request *req, bool is_encrypt)
 			       __func__);
 			return -EINVAL;
 		}
+	}
+
+	if (ctx->cipher.mode == CIPHER_MODE_CBC ||
+	    ctx->cipher.mode == CIPHER_MODE_CTR ||
+	    ctx->cipher.mode == CIPHER_MODE_OFB ||
+	    ctx->cipher.mode == CIPHER_MODE_XTS ||
+	    ctx->cipher.mode == CIPHER_MODE_GCM) {
+		rctx->iv_ctr_len =
+			ctx->salt_len +
+			crypto_aead_ivsize(crypto_aead_reqtfm(req));
+	} else if (ctx->cipher.mode == CIPHER_MODE_CCM) {
+		rctx->iv_ctr_len = CCM_AES_IV_SIZE;
+	} else {
+		rctx->iv_ctr_len = 0;
 	}
 
 	rctx->hash_carry_len = 0;
@@ -3886,7 +3989,11 @@ static struct iproc_alg_s driver_algs[] = {
 		 .base = {
 			.cra_name = "authenc(hmac(md5),ecb(cipher_null))",
 			.cra_driver_name = "authenc-hmac-md5-ecb-null-iproc",
+#if !defined(CONFIG_BCM_SPU2_MODULO4_SUPPORT)
+			.cra_blocksize = 8,
+#else
 			.cra_blocksize = 1,
+#endif
 			.cra_flags = CRYPTO_ALG_NEED_FALLBACK | CRYPTO_ALG_ASYNC
 		 },
 		 .setkey = aead_authenc_setkey,
@@ -3909,7 +4016,11 @@ static struct iproc_alg_s driver_algs[] = {
 		 .base = {
 			.cra_name = "authenc(hmac(sha1),ecb(cipher_null))",
 			.cra_driver_name = "authenc-hmac-sha1-ecb-null-iproc",
+#if !defined(CONFIG_BCM_SPU2_MODULO4_SUPPORT)
+			.cra_blocksize = 8,
+#else
 			.cra_blocksize = 1,
+#endif
 			.cra_flags = CRYPTO_ALG_NEED_FALLBACK | CRYPTO_ALG_ASYNC
 		 },
 		 .setkey = aead_authenc_setkey,
@@ -3932,7 +4043,11 @@ static struct iproc_alg_s driver_algs[] = {
 		 .base = {
 			.cra_name = "authenc(hmac(sha224),ecb(cipher_null))",
 			.cra_driver_name = "authenc-hmac-sha224-ecb-null-iproc",
+#if !defined(CONFIG_BCM_SPU2_MODULO4_SUPPORT)
+			.cra_blocksize = 8,
+#else
 			.cra_blocksize = 1,
+#endif
 			.cra_flags = CRYPTO_ALG_NEED_FALLBACK | CRYPTO_ALG_ASYNC
 		 },
 		 .setkey = aead_authenc_setkey,
@@ -3955,7 +4070,11 @@ static struct iproc_alg_s driver_algs[] = {
 		 .base = {
 			.cra_name = "authenc(hmac(sha256),ecb(cipher_null))",
 			.cra_driver_name = "authenc-hmac-sha256-ecb-null-iproc",
+#if !defined(CONFIG_BCM_SPU2_MODULO4_SUPPORT)
+			.cra_blocksize = 8,
+#else
 			.cra_blocksize = 1,
+#endif
 			.cra_flags = CRYPTO_ALG_NEED_FALLBACK | CRYPTO_ALG_ASYNC
 		 },
 		 .setkey = aead_authenc_setkey,
@@ -3978,7 +4097,11 @@ static struct iproc_alg_s driver_algs[] = {
 		 .base = {
 			.cra_name = "authenc(hmac(sha384),ecb(cipher_null))",
 			.cra_driver_name = "authenc-hmac-sha384-ecb-null-iproc",
+#if !defined(CONFIG_BCM_SPU2_MODULO4_SUPPORT)
+			.cra_blocksize = 8,
+#else
 			.cra_blocksize = 1,
+#endif
 			.cra_flags = CRYPTO_ALG_NEED_FALLBACK | CRYPTO_ALG_ASYNC
 		 },
 		 .setkey = aead_authenc_setkey,
@@ -4001,7 +4124,11 @@ static struct iproc_alg_s driver_algs[] = {
 		 .base = {
 			.cra_name = "authenc(hmac(sha512),ecb(cipher_null))",
 			.cra_driver_name = "authenc-hmac-sha512-ecb-null-iproc",
+#if !defined(CONFIG_BCM_SPU2_MODULO4_SUPPORT)
+			.cra_blocksize = 8,
+#else
 			.cra_blocksize = 1,
+#endif
 			.cra_flags = CRYPTO_ALG_NEED_FALLBACK | CRYPTO_ALG_ASYNC
 		 },
 		 .setkey = aead_authenc_setkey,
@@ -4438,7 +4565,11 @@ static struct iproc_alg_s driver_algs[] = {
 		 .base = {
 			.cra_name = "authencesn(hmac(md5),ecb(cipher_null))",
 			.cra_driver_name = "authenc-hmac-md5-ecb-null-iproc",
+#if !defined(CONFIG_BCM_SPU2_MODULO4_SUPPORT)
+			.cra_blocksize = 8,
+#else
 			.cra_blocksize = 1,
+#endif
 			.cra_flags = CRYPTO_ALG_NEED_FALLBACK | CRYPTO_ALG_ASYNC | CRYPTO_ALG_ESN
 		 },
 		 .setkey = aead_authenc_setkey,
@@ -4461,7 +4592,11 @@ static struct iproc_alg_s driver_algs[] = {
 		 .base = {
 			.cra_name = "authencesn(hmac(sha1),ecb(cipher_null))",
 			.cra_driver_name = "authenc-hmac-sha1-ecb-null-iproc",
+#if !defined(CONFIG_BCM_SPU2_MODULO4_SUPPORT)
+			.cra_blocksize = 8,
+#else
 			.cra_blocksize = 1,
+#endif
 			.cra_flags = CRYPTO_ALG_NEED_FALLBACK | CRYPTO_ALG_ASYNC | CRYPTO_ALG_ESN
 		 },
 		 .setkey = aead_authenc_setkey,
@@ -4484,7 +4619,11 @@ static struct iproc_alg_s driver_algs[] = {
 		 .base = {
 			.cra_name = "authencesn(hmac(sha224),ecb(cipher_null))",
 			.cra_driver_name = "authenc-hmac-sha224-ecb-null-iproc",
+#if !defined(CONFIG_BCM_SPU2_MODULO4_SUPPORT)
+			.cra_blocksize = 8,
+#else
 			.cra_blocksize = 1,
+#endif
 			.cra_flags = CRYPTO_ALG_NEED_FALLBACK | CRYPTO_ALG_ASYNC | CRYPTO_ALG_ESN
 		 },
 		 .setkey = aead_authenc_setkey,
@@ -4507,7 +4646,11 @@ static struct iproc_alg_s driver_algs[] = {
 		 .base = {
 			.cra_name = "authencesn(hmac(sha256),ecb(cipher_null))",
 			.cra_driver_name = "authenc-hmac-sha256-ecb-null-iproc",
+#if !defined(CONFIG_BCM_SPU2_MODULO4_SUPPORT)
+			.cra_blocksize = 8,
+#else
 			.cra_blocksize = 1,
+#endif
 			.cra_flags = CRYPTO_ALG_NEED_FALLBACK | CRYPTO_ALG_ASYNC | CRYPTO_ALG_ESN
 		 },
 		 .setkey = aead_authenc_setkey,
@@ -4530,7 +4673,11 @@ static struct iproc_alg_s driver_algs[] = {
 		 .base = {
 			.cra_name = "authencesn(hmac(sha384),ecb(cipher_null))",
 			.cra_driver_name = "authenc-hmac-sha384-ecb-null-iproc",
+#if !defined(CONFIG_BCM_SPU2_MODULO4_SUPPORT)
+			.cra_blocksize = 8,
+#else
 			.cra_blocksize = 1,
+#endif
 			.cra_flags = CRYPTO_ALG_NEED_FALLBACK | CRYPTO_ALG_ASYNC | CRYPTO_ALG_ESN
 		 },
 		 .setkey = aead_authenc_setkey,
@@ -4553,7 +4700,11 @@ static struct iproc_alg_s driver_algs[] = {
 		 .base = {
 			.cra_name = "authencesn(hmac(sha512),ecb(cipher_null))",
 			.cra_driver_name = "authenc-hmac-sha512-ecb-null-iproc",
+#if !defined(CONFIG_BCM_SPU2_MODULO4_SUPPORT)
+			.cra_blocksize = 8,
+#else
 			.cra_blocksize = 1,
+#endif
 			.cra_flags = CRYPTO_ALG_NEED_FALLBACK | CRYPTO_ALG_ASYNC | CRYPTO_ALG_ESN
 		 },
 		 .setkey = aead_authenc_setkey,
@@ -5850,6 +6001,7 @@ static struct iproc_alg_s driver_algs[] = {
 static int generic_cra_init(struct crypto_tfm *tfm,
 			    struct iproc_alg_s *cipher_alg)
 {
+	int ret = 0;
 	struct spu_hw *spu = &iproc_priv.spu;
 	struct iproc_ctx_s *ctx = crypto_tfm_ctx(tfm);
 	unsigned int blocksize = crypto_tfm_alg_blocksize(tfm);
@@ -5872,7 +6024,7 @@ static int generic_cra_init(struct crypto_tfm *tfm,
 	atomic_inc(&iproc_priv.stream_count);
 	atomic_inc(&iproc_priv.session_count);
 
-	return 0;
+	return try_spu_and_dma_runtime_on(ret);
 }
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(5,15,0))
@@ -5936,7 +6088,7 @@ static int aead_cra_init(struct crypto_aead *aead)
 
 	if (!err) {
 		if (alg->cra_flags & CRYPTO_ALG_NEED_FALLBACK) {
-			flow_log("%s() creating fallback cipher\n", __func__);
+			flow_log("%s() creating fallback cipher cra_name %s\n", __func__, alg->cra_name);
 
 			ctx->fallback_cipher =
 			    crypto_alloc_aead(alg->cra_name, 0,
@@ -5956,6 +6108,15 @@ static int aead_cra_init(struct crypto_aead *aead)
 static void generic_cra_exit(struct crypto_tfm *tfm)
 {
 	atomic_dec(&iproc_priv.session_count);
+	try_spu_and_dma_runtime_off();
+}
+
+static void ahash_cra_exit(struct crypto_tfm *tfm)
+{
+	struct iproc_ctx_s *ctx = crypto_tfm_ctx(tfm);
+
+	generic_cra_exit(tfm);
+	clean_shash(&ctx->shash);
 }
 
 static void aead_cra_exit(struct crypto_aead *aead)
@@ -6013,7 +6174,7 @@ static void spu_functions_register(struct device *dev,
 			spu->spu_ctx_max_payload = spum_ns2_ctx_max_payload;
 		else
 			spu->spu_ctx_max_payload = spum_nsp_ctx_max_payload;
-#if defined(SPU_TEST_RAW_PERF)
+#if defined(CONFIG_BCM_SPU2_TEST_VEC)
 		spu->spu_test_raw_perf = NULL;
 		spu->spu_get_test_vectors = NULL;
 		spu->spu_ops_in_transit = NULL;
@@ -6040,7 +6201,7 @@ static void spu_functions_register(struct device *dev,
 		spu->spu_xts_tweak_in_payload = spu2_xts_tweak_in_payload;
 		spu->spu_ccm_update_iv = spu2_ccm_update_iv;
 		spu->spu_wordalign_padlen = spu2_wordalign_padlen;
-#if defined(SPU_TEST_RAW_PERF)
+#if defined(CONFIG_BCM_SPU2_TEST_VEC)
 		spu->spu_test_raw_perf = spu2_test_raw_perf;
 		spu->spu_get_test_vectors = spu2_test_get_vectors;
 #if (defined(CONFIG_BCM_FLEXRM) || defined(CONFIG_BCM_FLEXRM_MODULE))
@@ -6052,10 +6213,17 @@ static void spu_functions_register(struct device *dev,
 	spu->spu_send_data = pdc_send_data;
 	spu->spu_select_channel = pdc_select_channel;
 	spu->spu_get_max_channel = pdc_get_max_channel;
-#elif (defined(CONFIG_BCM_FLEXRM) || defined(CONFIG_BCM_FLEXRM_MODULE))
+	spu->spu_and_dma_runtime_on =  pdc_dma_dev_runtime_on;
+	spu->spu_and_dma_runtime_off = pdc_dma_dev_runtime_off;	
+#endif
+#if (defined(CONFIG_BCM_FLEXRM) || defined(CONFIG_BCM_FLEXRM_MODULE))
 	spu->spu_send_data = flexrm_send_data;
 	spu->spu_select_channel = flexrm_select_channel;
 	spu->spu_get_max_channel = flexrm_get_max_channel;
+	spu->spu_and_dma_runtime_on = spu_dma_dev_runtime_on;
+	spu->spu_and_dma_runtime_off = spu_dma_dev_runtime_off;
+
+	sysfs_create_file(&dev->kobj, &static_pwr_attribute.attr);
 #endif
 }
 
@@ -6390,7 +6558,7 @@ static int spu_register_ahash(struct iproc_alg_s *driver_alg)
 	hash->halg.base.cra_alignmask = 0;
 	hash->halg.base.cra_ctxsize = sizeof(struct iproc_ctx_s);
 	hash->halg.base.cra_init = ahash_cra_init;
-	hash->halg.base.cra_exit = generic_cra_exit;
+	hash->halg.base.cra_exit = ahash_cra_exit;
 	hash->halg.base.cra_flags = CRYPTO_ALG_ASYNC;
 	hash->halg.statesize = sizeof(struct spu_hash_export_s);
 
@@ -6633,6 +6801,8 @@ static int bcm_spu_probe(struct platform_device *pdev)
 	else if (spu->spu_type == SPU_TYPE_SPU2)
 		iproc_priv.bcm_hdr_len = 0;
 
+	atomic_set(&iproc_priv.spu.static_pwr, 0);
+
 	spu_functions_register(&pdev->dev, spu->spu_type, spu->spu_subtype);
 
 	spu_counters_init();
@@ -6657,7 +6827,9 @@ fail_reg:
 	spu_free_debugfs();
 failure:
 	dev_err(dev, "%s failed with error %d.\n", __func__, err);
-
+#if (defined(CONFIG_BCM_FLEXRM) || defined(CONFIG_BCM_FLEXRM_MODULE))
+	sysfs_remove_file(&dev->kobj, &static_pwr_attribute.attr);
+#endif
 	return err;
 }
 
@@ -6708,6 +6880,9 @@ static int bcm_spu_remove(struct platform_device *pdev)
 	spu_blog_unregister();
 #endif
 	spu_free_debugfs();
+#if (defined(CONFIG_BCM_FLEXRM) || defined(CONFIG_BCM_FLEXRM_MODULE))
+	sysfs_remove_file(&dev->kobj, &static_pwr_attribute.attr);
+#endif
 	return 0;
 }
 

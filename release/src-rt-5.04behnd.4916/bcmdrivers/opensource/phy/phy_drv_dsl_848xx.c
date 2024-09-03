@@ -3,27 +3,21 @@
    All Rights Reserved
 
     <:label-BRCM:2015:DUAL/GPL:standard
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
 :>
 */
 
@@ -47,6 +41,7 @@ typedef struct phy_cl45_s {
     void *descriptor;
     int forced_100m_fd;
     int (*read_status)(phy_dev_t *phy_dev);
+    int support_speed_caps; /* The hardware does not tell us correct thing, so need to guess and save here */
 } phy_cl45_t;
 
 #define PHY_SPEED_HIGHEST_SUPPORT PHY_SPEED_10000
@@ -158,6 +153,7 @@ int dsl_runner_ext3_phy_init(phy_dev_t *phy_dev)
     phy_cl45_t *phy_cl45;
     static phy_drv_t _phy_drv;
     uint32_t phy_id;
+    uint32_t caps, support_caps;
     int i, rc;
     u16 v16;
 
@@ -287,6 +283,12 @@ int dsl_runner_ext3_phy_init(phy_dev_t *phy_dev)
     phy_dev_xfi_rx_polarity_set(phy_dev, phy_dev->xfi_rx_polarity_inverse);
 
     phy_dev_wirespeed_set(phy_dev, 0);
+    
+    /* Correct default Speed Caps and Repeter bit by read caps and write it back */
+    phy_dev_caps_get(phy_dev, CAPS_TYPE_SUPPORTED, &support_caps);
+    caps = phy_xfi_speed_cap_adjust(phy_dev, support_caps);
+    caps |= support_caps & PHY_CAP_NON_SPEED_CAPS;
+    phy_dev_caps_set(phy_dev, caps);
 
     return 0;
 }
@@ -395,23 +397,25 @@ not_supported:
 static int dsl_cl45phy_caps_get(phy_dev_t *phy_dev, int caps_type, uint32_t *caps)
 {
     u16 v16;
+    phy_cl45_t *phy_cl45 = phy_dev->priv;
 
     *caps = 0;
     if (caps_type == CAPS_TYPE_SUPPORTED)
     {
-        phy_bus_c45_read32(phy_dev, CL45_REG_PMA_PMD_EXT_ABL, &v16);
+        if (phy_cl45->support_speed_caps)
+        {
+            *caps = phy_cl45->support_speed_caps;
+            return 0;
+        }
 
-        *caps = PHY_CAP_AUTONEG;
-        if (v16 & CL45_REG_CAP_5G)          *caps |= PHY_CAP_5000;
-        if (v16 & CL45_REG_CAP_2P5G)        *caps |= PHY_CAP_2500;
-        if (v16 & CL45_REG_CAP_100M)        *caps |= PHY_CAP_100_FULL|PHY_CAP_100_HALF;
-        if (v16 & CL45_REG_CAP_1G)          *caps |= PHY_CAP_1000_FULL|PHY_CAP_1000_HALF;
-        if (v16 & CL45_REG_CAP_10G)         *caps |= PHY_CAP_10000;
-        if (IsBrcm2P5GPhy(phy_dev))         *caps |= PHY_CAP_2500;
-        if (IsBrcm10GPhy(phy_dev))          *caps |= PHY_CAP_10000;
+        /* Use hardware power on advertisement caps as its support caps, since hw caps is not always correct in every chips */
+        dsl_cl45phy_caps_get(phy_dev, CAPS_TYPE_ADVERTISE, caps);
+
         *caps = phy_xfi_speed_cap_adjust(phy_dev, *caps);
-        *caps = phy_usxgmii_m_speed_cap_adjust(phy_dev, *caps);
         *caps |= PHY_CAP_PAUSE | PHY_CAP_PAUSE_ASYM | PHY_CAP_REPEATER;
+
+        phy_cl45->support_speed_caps = *caps;
+        return 0;
     }
     else if (caps_type == CAPS_TYPE_ADVERTISE)
     {
@@ -425,6 +429,8 @@ static int dsl_cl45phy_caps_get(phy_dev_t *phy_dev, int caps_type, uint32_t *cap
         if (v16 & CL45_REG_COP_PAUSE_ASYM)        *caps |= PHY_CAP_PAUSE_ASYM;
         if (v16 & CL45_REG_COP_AN_100M_HD_ADV)    *caps |= PHY_CAP_100_HALF;
         if (v16 & CL45_REG_COP_AN_100M_FD_ADV)    *caps |= PHY_CAP_100_FULL;
+        if (v16 & CL45_REG_COP_AN_10M_FD_ADV)     *caps |= PHY_CAP_10_FULL;
+        if (v16 & CL45_REG_COP_AN_10M_HD_ADV)     *caps |= PHY_CAP_10_HALF;
 
         /* 1000Base-T control */
         phy_bus_c45_read32(phy_dev, CL45_REG_1G_CTL, &v16);
@@ -623,6 +629,9 @@ ret:
         }
         phy_dev->speed = 0; /* For uboot trick borrowing NON DSL code */
     }
+
+    if (org_link ^ phy_dev->link)
+        phy_dev_configured_inter_phy_types_set(phy_dev, INTER_PHY_TYPE_UP, phy_dev->configured_inter_phy_types);
 
     return 0;
 }

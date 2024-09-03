@@ -34,9 +34,9 @@ void l2_cache_enable(void);
 void l2_cache_disable(void);
 void set_section_dcache(int section, enum dcache_option option);
 #ifdef CONFIG_ARMV7_LPAE
-void set_section_attr(int section, u64 virt, u64 attr);
+void set_section_attr(int section, phys_addr_t start, u64 attr);
 #else
-void set_section_attr(int section, u32 virt, u32 attr);
+void set_section_attr(int section, phys_addr_t start, u32 attr);
 #endif
 
 void arm_init_before_mmu(void);

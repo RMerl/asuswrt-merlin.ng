@@ -13,6 +13,7 @@
         <link rel="stylesheet" href="../css/networkMap.css" type="text/css" />
         <link rel="stylesheet" href="../pwdmeter.css" />
         <link rel="stylesheet" href="../css/confirm_block.css" />
+        <link rel="stylesheet" href="../css/basic.css" />
 
         <script src="../js/jquery.js"></script>
         <script src="../js/httpApi.js" t></script>
@@ -107,20 +108,25 @@
                 let code = "";
                 let radioBandSnippet = "";
                 if (version === "v2") {
-                    let displayFlag = smartConnectEnable ? "" : "none";
-
+                    let displayFlag = smartConnectEnable ? "flexbox" : "display-none";
+                    const wlBandCount = Object.keys(wlBandSeq).length;
+                    const bandLayoutWidth = "50%";
                     for (let { name, prefixNvram, joinSmartConnect } of Object.values(wlBandSeq)) {
-                        radioBandSnippet += `<input id="smart_connect_check_${prefixNvram}" type="checkbox" onchange="smartConnectRadioChange(this.checked,'${prefixNvram}')" ${
+                        radioBandSnippet += `<div style="width:${bandLayoutWidth}; margin:2px 0;" class="flexbox flex-a-center"><input id="smart_connect_check_${prefixNvram}" type="checkbox" onchange="smartConnectRadioChange(this.checked,'${prefixNvram}')" ${
                             joinSmartConnect ? "checked" : ""
-                        } />${name}`;
+                        } />${name}</div>`;
                     }
 
                     code += `
-                        <select class="input_option" id="smartConnectSwitch" onchange="enableSmartConnect(this.value)">
-                            <option value="1" ${smartConnectEnable ? "selected" : ""}><#CTL_Enabled#></option>
-                            <option value="0" ${!smartConnectEnable ? "selected" : ""}><#CTL_close#></option>
-                        </select>
-                        <div id="smart_connect_mode_field" style="display:${displayFlag}">${radioBandSnippet}</div>
+                        <div class="smartConnDiv">
+                            <div class="info-title"><#smart_connect#></div>
+                            <select class="input_option" id="smartConnectSwitch" onchange="enableSmartConnect(this.value)">
+                                <option value="1" ${smartConnectEnable ? "selected" : ""}><#CTL_Enabled#></option>
+                                <option value="0" ${!smartConnectEnable ? "selected" : ""}><#CTL_close#></option>
+                            </select>
+                        </div>
+                        <div id="smart_connect_mode_field" class="${displayFlag} flex-w-wrap ms-6">${radioBandSnippet}</div>
+
                     `;
                 } else {
                     // v1
@@ -139,15 +145,17 @@
                     }
 
                     code += `
-                        <select id="smart_connect_x" class="input_option" onchange="enableSmartConnect(this.value)">
-                            ${radioBandSnippet}
-                        </select>
+                        <div>
+                            <div class="info-title"><#smart_connect#></div>
+                            <select id="smart_connect_x" class="input_option" onchange="enableSmartConnect(this.value)">
+                                ${radioBandSnippet}
+                            </select>
+                        </div>
                     `;
                 }
 
                 document.querySelector("#smart_connect_field").innerHTML = `
-                    <div class="info-block">
-                        <div class="info-title"><#smart_connect#></div>
+                    <div class="info-block flexbox">
                         ${code}
                     </div>
                 `;
@@ -400,7 +408,7 @@
                     delete wpaEncryptStringObject["aes"];
                 }
 
-                if (!wifi7ModeEnabled || authMethodValue !== "sae") {
+                if (!wifi7ModeEnabled || authMethodValue.indexOf("sae") == -1) {
                     delete wpaEncryptStringObject["aes+gcmp256"];
                 } else {
                     delete wpaEncryptStringObject["aes"];
@@ -638,6 +646,7 @@
                     }
                 }
 
+                generateSmartConnect();
                 generateWireless();
             }
 
@@ -649,7 +658,7 @@
                 if (systemManipulable.wlBandSeq[prefixNvram]) {
                     systemManipulable.wlBandSeq[prefixNvram].authMethodValue = authMethodValue;
                     if (beSupport) {
-                        if (authMethodValue === "sae") {
+                        if (authMethodValue === "sae" || authMethodValue === "psk2sae") {
                             // systemManipulable.wlBandSeq[prefixNvram].wifi7ModeEnabled = true;
                         } else {
                             if (mloEnabled) {
@@ -659,15 +668,14 @@
                                     contentC: "",
                                     left_button: "<#CTL_Cancel#>",
                                     left_button_callback: function () {
-                                        confirm_cancel();
-                                        document.getElementById(`${prefix}_auth_method`).value = authMethodValueOri;
+                                        refreshpage();
                                         return false;
                                     },
                                     left_button_args: {},
                                     right_button: "<#btn_go#>",
                                     right_button_callback: function () {
                                         confirm_cancel();
-                                        location.href = "/MLO.asp";
+                                        top.location.href = "/MLO.asp";
                                     },
                                     right_button_args: {},
                                     iframe: "",
@@ -690,15 +698,22 @@
                                     contentC: "",
                                     left_button: "<#checkbox_No#>",
                                     left_button_callback: function () {
-                                        confirm_cancel();
-                                        document.getElementById(`${prefix}_auth_method`).value = authMethodValueOri;
+                                        refreshpage();
                                         return false;
                                     },
                                     left_button_args: {},
                                     right_button: "<#checkbox_Yes#>",
                                     right_button_callback: function () {
                                         confirm_cancel();
-                                        systemManipulable.wlBandSeq[prefixNvram].wifi7ModeEnabled = false;
+                                        if (systemManipulable.smartConnect.smartConnectEnable) {
+                                            for (let [key, value] of Object.entries(systemManipulable.wlBandSeq)) {
+                                                if (value.joinSmartConnect) {
+                                                    systemManipulable.wlBandSeq[key].wifi7ModeEnabled = false;
+                                                }
+                                            }
+                                        } else {
+                                            systemManipulable.wlBandSeq[prefixNvram].wifi7ModeEnabled = false;
+                                        }
                                     },
                                     right_button_args: {},
                                     iframe: "",
@@ -795,7 +810,7 @@
                     ssid: "",
                     sameSsidCount: 0,
                     targetObject: "",
-                    sameSsidString: "The fronthaul SSID is the same as the backhaul SSID.",
+                    sameSsidString: `<#wireless_JS_dup_SSID#>`,
                 };
 
                 if (dwbMode === "1") {
@@ -804,7 +819,7 @@
                 }
 
                 for (let [key, value] of Object.entries(wlBandSeq)) {
-                    let { joinSmartConnect, wlModeValue } = value;
+                    let { joinSmartConnect, wlModeValue, wifi7ModeEnabled, beSupport } = value;
 
                     //SSID
                     postObject[`${key}_ssid`] = (() => {
@@ -1024,6 +1039,13 @@
                                 postObject[`${key}_phrase_x`] = document.getElementById(`${key}_pass_phrase`).value;
                             }
                         }
+                    }
+
+                    // WiFi 7 mode
+                    if (beSupport) {
+                        postObject[`${key}_11be`] = (() => {
+                            return wifi7ModeEnabled ? "1" : "0";
+                        })();
                     }
                 }
 

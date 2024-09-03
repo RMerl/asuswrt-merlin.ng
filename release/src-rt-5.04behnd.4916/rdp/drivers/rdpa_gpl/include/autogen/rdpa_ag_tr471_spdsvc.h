@@ -3,25 +3,19 @@
 //    Copyright (c) 2013 Broadcom 
 //    All Rights Reserved
 // 
-// Unless you and Broadcom execute a separate written software license
-// agreement governing use of this software, this software is licensed
-// to you under the terms of the GNU General Public License version 2
-// (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-// with the following added to such license:
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License, version 2, as published by
+// the Free Software Foundation (the "GPL").
 // 
-//    As a special exception, the copyright holders of this software give
-//    you permission to link this software with independent modules, and
-//    to copy and distribute the resulting executable under terms of your
-//    choice, provided that you also meet, for each linked independent
-//    module, the terms and conditions of the license of that module.
-//    An independent module is a module which is not derived from this
-//    software.  The special exception does not apply to any modifications
-//    of the software.
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
 // 
-// Not withstanding the above, under no circumstances may you combine
-// this software in any way with any other Broadcom software provided
-// under a license other than the GPL, without Broadcom's express prior
-// written consent.
+// 
+// A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+// writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+// Boston, MA 02111-1307, USA.
 // 
 // :>
 /*
@@ -46,22 +40,56 @@ bdmf_type_handle rdpa_tr471_spdsvc_drv(void);
 
 /* tr471_spdsvc: Attribute types */
 typedef enum {
-    rdpa_tr471_spdsvc_attr_tx_start = 0, /* tx_start : RW : aggregate tr471_spdsvc_tx_start(rdpa_tr471_spdsvc_tx_start_t) : start Tx test */
-    rdpa_tr471_spdsvc_attr_is_tx_test_in_progress = 1, /* is_tx_test_in_progress : RW : bool : check if Tx test in progress */
-    rdpa_tr471_spdsvc_attr_tx_done = 2, /* tx_done : W : number : Tx Test is done */
-    rdpa_tr471_spdsvc_attr_rx_pkt_id = 3, /* rx_pkt_id : RW : aggregate tr471_spdsvc_rx_pkt_id(rdpa_tr471_spdsvc_rx_pkt_id_t) : Rx Packet Indentification Information */
-    rdpa_tr471_spdsvc_attr_tx_complete_cb = 4, /* tx_complete_cb : RI : pointer : callback function upon Tx test completion */
+    rdpa_tr471_spdsvc_attr_index = 0, /* index : KRI : number : stream index */
+    rdpa_tr471_spdsvc_attr_tx_start = 1, /* tx_start : RW : aggregate tr471_spdsvc_tx_start(rdpa_tr471_spdsvc_tx_start_t) : start Tx test */
+    rdpa_tr471_spdsvc_attr_is_tx_test_in_progress = 2, /* is_tx_test_in_progress : RW : bool : check if Tx test in progress */
+    rdpa_tr471_spdsvc_attr_tx_done = 3, /* tx_done : W : number : Tx Test is done */
+    rdpa_tr471_spdsvc_attr_rx_pkt_id = 4, /* rx_pkt_id : RW : aggregate tr471_spdsvc_rx_pkt_id(rdpa_tr471_spdsvc_rx_pkt_id_t) : Rx Packet Indentification Information */
+    rdpa_tr471_spdsvc_attr_tx_complete_cb = 5, /* tx_complete_cb : RI : pointer : callback function upon Tx test completion */
 } rdpa_tr471_spdsvc_attr_types;
 
-extern int (*f_rdpa_tr471_spdsvc_get)(bdmf_object_handle *pmo);
+extern int (*f_rdpa_tr471_spdsvc_get)(bdmf_number index_, bdmf_object_handle *pmo);
 
-/** Get tr471_spdsvc object.
+/** Get tr471_spdsvc object by key.
 
- * This function returns tr471_spdsvc object instance.
+ * This function returns tr471_spdsvc object instance by key.
+ * \param[in] index_    Object key
  * \param[out] tr471_spdsvc_obj    Object handle
  * \return    0=OK or error <0
  */
-int rdpa_tr471_spdsvc_get(bdmf_object_handle *tr471_spdsvc_obj);
+int rdpa_tr471_spdsvc_get(bdmf_number index_, bdmf_object_handle *tr471_spdsvc_obj);
+
+/** Get tr471_spdsvc/index attribute.
+ *
+ * Get stream index.
+ * \param[in]   mo_ tr471_spdsvc object handle or mattr transaction handle
+ * \param[out]  index_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task and softirq contexts.
+ */
+static inline int rdpa_tr471_spdsvc_index_get(bdmf_object_handle mo_, bdmf_number *index_)
+{
+    bdmf_number _nn_;
+    int _rc_;
+    _rc_ = bdmf_attr_get_as_num(mo_, rdpa_tr471_spdsvc_attr_index, &_nn_);
+    *index_ = (bdmf_number)_nn_;
+    return _rc_;
+}
+
+
+/** Set tr471_spdsvc/index attribute.
+ *
+ * Set stream index.
+ * \param[in]   mo_ tr471_spdsvc object handle or mattr transaction handle
+ * \param[in]   index_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task and softirq contexts.
+ */
+static inline int rdpa_tr471_spdsvc_index_set(bdmf_object_handle mo_, bdmf_number index_)
+{
+    return bdmf_attr_set_as_num(mo_, rdpa_tr471_spdsvc_attr_index, index_);
+}
+
 
 /** Get tr471_spdsvc/tx_start attribute.
  *

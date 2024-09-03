@@ -5,25 +5,19 @@
    Copyright (c) 2023 Broadcom 
    All Rights Reserved
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
 :>
 */
@@ -42,7 +36,7 @@ typedef struct {
     uint32_t fwq_count_pkt;
     uint32_t queue_mask;
     gdx_queue_stats_t queue_stats[GDX_NUM_QUEUES_PER_GDX_INST];
-    HOOKP hwacc_send_func;   
+    HOOKP hwacc_send_func;
 } gdx_xbow_priv_info_t;
 
 gdx_xbow_priv_info_t gdx_hwacc_priv = {.initialized = 0};
@@ -77,6 +71,7 @@ static int gdx_miss_packet_handler(void *void_p)
     pNBuff_t pNBuff;
     int group_idx;
     int dev_idx;
+    gdx_gendev_info_t *gendev_info_p;
     gdx_dev_group_t *dev_group_p;
     gdx_dev_stats_t *dev_stats_p;
     gdx_hwacc_rx_info_t info = {};
@@ -87,30 +82,46 @@ static int gdx_miss_packet_handler(void *void_p)
     gdx_get_pkt_info_from_nbuff(pNBuff, &info);
     skb = PNBUFF_2_SKBUFF(pNBuff);
     GDX_PRINT_DBG("dev<%s> skb<0x%px>", skb->dev->name, skb);
+    /*Todo: Support for multiple GDX groups */
+    dev_group_p = &gdx_dev_groups[0];
+    dev_group_p->cpu_rxq_total_pkts++;
     if (gdx_get_group_idx_and_dev_idx(skb->dev, &group_idx, &dev_idx) != GDX_SUCCESS)
     {
-        /* Need to recheck how we get the group_idx/dev_idx here for status
-         * updates */
+        dev_group_p->cpu_rxq_lpbk_no_dev++;
         GDX_PRINT_ERROR("no matching GDX intf skb<0x%px> dev<%s>", skb, skb->dev->name);
-        dev_kfree_skb_thread(skb);
-        return GDX_FAILURE;
+        goto drop_and_exit_miss_hdlr;
     }
-    dev_group_p = &gdx_dev_groups[group_idx];
-    dev_stats_p = &(gdx_gendev_info_pp[dev_idx]->dev_stats);
+    spin_lock(&dev_group_p->group_lock);
+    gendev_info_p = (gdx_gendev_info_pp[dev_idx]);
+    if (gendev_info_p == NULL)
+    {
+        GDX_PRINT_INFO("GDX disabled on the target device\n");
+        dev_group_p->cpu_rxq_lpbk_no_dev++;
+        goto drop_and_exit_miss_hdlr;
+    }
+    dev_stats_p = &gendev_info_p->dev_stats;
 
     /* Mark the packet as exception packet */
     info.is_exception = 1;
+    dev_group_p->cpu_rxq_valid_pkts++;
     dev_group_p->cpu_rxq_lpbk_pkts++;
     dev_stats_p->cpu_rxq_lpbk_pkts++;
     /* Packet is sent to linux for further processing */
     gdx_exception_packet_handle(skb, &info);
+    spin_unlock(&dev_group_p->group_lock);
     return GDX_SUCCESS;
+drop_and_exit_miss_hdlr:
+    spin_unlock(&dev_group_p->group_lock);
+    if (skb)
+        dev_kfree_skb_thread(skb);
+    return GDX_FAILURE;
 }
 
 static int gdx_forward_packet_handler(void *void_p, uint32_t user_value)
 {
     gdx_hwacc_rx_info_t info = {};
     gdx_dev_group_t *dev_group_p;
+    gdx_gendev_info_t *gendev_info_p;
     gdx_dev_stats_t *dev_stats_p;
     bcmFun_t *gdx_prepend_fill_info_fn = bcmFun_get(BCM_FUN_ID_PREPEND_FILL_INFO_FROM_BUF);
     pNBuff_t pNBuff = (pNBuff_t)void_p;
@@ -120,25 +131,33 @@ static int gdx_forward_packet_handler(void *void_p, uint32_t user_value)
     pNBuff_t pNBuff_tx = NULL;
 
     GDX_ASSERT((pNBuff != NULL));
-    GDX_INCR_QUEUE_STATS(0, cpu_rxq_rx_pkts);
+    /*Todo: Support for multiple GDX groups */
     /* Here group_idx is always 0 */
     dev_group_p = &gdx_dev_groups[0];
+    spin_lock(&dev_group_p->group_lock);
     gdx_get_pkt_info_from_nbuff(pNBuff, &info);
     info.gdx_pd_data  = (int)user_value;
     GDX_PRINT_INFO("gdx_pd_data:%d size:%d\n",info.gdx_pd_data, info.size);
+    dev_group_p->cpu_rxq_total_pkts++;
     info.dev_idx = gdx_get_dev_idx_from_gdx_dev_id(info.gdx_pd_data);
     if (info.dev_idx < 0)
     {
         GDX_PRINT_ERROR("dev_idx is not valid \n");
-        goto gdx_fwd_pkt_err_handle;
+        goto gdx_fwd_pkt_err_no_dev;
     }
 
-    dev_stats_p = &(gdx_gendev_info_pp[info.dev_idx]->dev_stats);
+    gendev_info_p = gdx_gendev_info_pp[info.dev_idx];
+    if (gendev_info_p == NULL)
+    {
+        GDX_PRINT_INFO("GDX disabled on the target device\n");
+        goto gdx_fwd_pkt_err_no_dev;
+    }
+    dev_stats_p = &gendev_info_p->dev_stats;
     info.tx_dev = bcm_get_netdev_by_id_nohold(info.gdx_pd_data);
     if (!gdx_is_dev_valid(info.tx_dev))
     {
         GDX_PRINT_ERROR("tx_dev is not valid \n");
-        goto gdx_fwd_pkt_err_handle;
+        goto gdx_fwd_pkt_err_no_dev;
     }
     GDX_PRINT_INFO("TX DEV:%s",bcm_get_netdev_name_by_id(info.gdx_pd_data));
 
@@ -149,13 +168,13 @@ static int gdx_forward_packet_handler(void *void_p, uint32_t user_value)
         if (prepend_size == (uint32_t)-1)
         {
             GDX_PRINT_ERROR("prepend_size is invalid \n");
-            goto gdx_fwd_pkt_err_handle;
+            goto gdx_fwd_pkt_err_drop;
         }
     }
     else
     {
         GDX_PRINT_ERROR("gdx_prepend_fill_info_fn NULL\n");
-        goto gdx_fwd_pkt_err_handle;
+        goto gdx_fwd_pkt_err_drop;
     }
 
     GDX_PRINT_INFO("prepend_size:%u",prepend_size);
@@ -169,7 +188,7 @@ static int gdx_forward_packet_handler(void *void_p, uint32_t user_value)
             fkb = PNBUFF_2_FKBUFF(pNBuff);
             if (unlikely(!fkb))
             {
-                goto gdx_fwd_pkt_initialize_err;
+                goto gdx_fwd_pkt_err_drop;
             }
             fkb_pull(fkb, (info.data_offset + prepend_size));
             pNBuff_tx = FKBUFF_2_PNBUFF(fkb);
@@ -179,7 +198,7 @@ static int gdx_forward_packet_handler(void *void_p, uint32_t user_value)
             skb = PNBUFF_2_SKBUFF(pNBuff);
             if (unlikely(!skb))
             {
-                goto gdx_fwd_pkt_initialize_err;
+                goto gdx_fwd_pkt_err_drop;
             }
             skb_pull(skb, (info.data_offset + prepend_size));
             pNBuff_tx = SKBUFF_2_PNBUFF(skb);
@@ -197,7 +216,7 @@ static int gdx_forward_packet_handler(void *void_p, uint32_t user_value)
             skb = fkb_xlate(fkb);
             if (unlikely(!skb))
             {
-                goto gdx_fwd_pkt_initialize_err;
+                goto gdx_fwd_pkt_err_drop;
             }
         }
         else
@@ -208,19 +227,27 @@ static int gdx_forward_packet_handler(void *void_p, uint32_t user_value)
         }
         pNBuff_tx = SKBUFF_2_PNBUFF(skb);
     }
-    GDX_PRINT_INFO("mark %lu priority %d", g_fill_info.prep_info.mark, g_fill_info.prep_info.priority);
-    nbuff_set_mark(pNBuff_tx, g_fill_info.prep_info.mark);
+    GDX_PRINT_INFO("mark %08x priority %d", g_fill_info.prep_info.mark, g_fill_info.prep_info.priority);
+    nbuff_set_mark(pNBuff_tx, SKBMARK_CLEAR_SQ_MARK(g_fill_info.prep_info.mark));
     nbuff_set_priority(pNBuff_tx, g_fill_info.prep_info.priority);
     /* forward packets to gdx TX device. */
+    dev_group_p->cpu_rxq_valid_pkts++;
     gdx_forward_packet_handle(dev_group_p, &info, pNBuff_tx);
+    spin_unlock(&dev_group_p->group_lock);
     return GDX_SUCCESS;
-gdx_fwd_pkt_initialize_err:
-    GDX_INCR_QUEUE_STATS(0, cpu_rxq_no_skbs);
-gdx_fwd_pkt_err_handle:
-    GDX_INCR_QUEUE_STATS(0, cpu_rxq_rx_no_dev);
+gdx_fwd_pkt_err_drop:
+    dev_stats_p->dev_tx_pkts_dropped++;
+gdx_fwd_pkt_err_no_dev:
     dev_group_p->cpu_rxq_tx_no_dev++;
+    spin_unlock(&dev_group_p->group_lock);
     nbuff_free(pNBuff);
     return GDX_FAILURE;
+}
+
+static int gdx_forward_done_handler(void)
+{
+    bcm_fro_tcp_complete();
+    return 0;
 }
 
 static inline int _gdx_hwacc_crossbow_tx(struct sk_buff *skb, bool l3_packet)
@@ -276,6 +303,7 @@ static int _gdx_hwacc_crossbow_init(int group_idx, const char *gdx_dev_name)
     int qidx;
     int ret = GDX_FAILURE;
     bcmFun_t *gdx_hwacc_bind_func = bcmFun_get(BCM_FUN_ID_HWACC_GDX_BIND);
+    gdx_dev_group_t *dev_group_p = &gdx_dev_groups[group_idx];
 
     if (group_idx > GDX_MAX_DEV_GROUPS)
     {
@@ -285,10 +313,12 @@ static int _gdx_hwacc_crossbow_init(int group_idx, const char *gdx_dev_name)
 
     if (!gdx_hwacc_priv.initialized)
     {
+        spin_lock_init(&dev_group_p->group_lock);
         if (gdx_hwacc_bind_func)
         {
             bind_arg.gdx_miss_pkt_handler_cb = gdx_miss_packet_handler;
-            bind_arg.gdx_hit_pkt_handler_cb = gdx_forward_packet_handler;
+            bind_arg.gdx_hit_pkt_handler_cb  = gdx_forward_packet_handler;
+            bind_arg.gdx_fwd_pkt_done_cb     = gdx_forward_done_handler;
             bind_arg.gdx_acc_send_pkt = NULL;
             bind_arg.initialized      = 0;
             ret = gdx_hwacc_bind_func(&bind_arg);

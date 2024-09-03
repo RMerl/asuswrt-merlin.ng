@@ -331,7 +331,11 @@ endif
 endif
 
 ifeq ($(HND_ROUTER_BE_4916),y)
+ifeq ($(RPBE58),y)
+export JFFS2_UBI_VOLUME_SIZE := 6
+else
 export JFFS2_UBI_VOLUME_SIZE := 50
+endif
 endif
 
 ifeq ($(HND_ROUTER),y)
@@ -558,6 +562,7 @@ ifeq ($(HND_ROUTER_AX),y)
 ifeq ($(RTCONFIG_BCM_MEVENTD),y)
 export CFLAGS += -DBCM_MEVENTD
 endif
+QOSMGMT_DIR := $(BASEDIR)/components/apps/qosmgmt
 ACSDV2_DIR := $(BASEDIR)/components/apps/acsdv2
 ifeq ($(RTCONFIG_BCM_CEVENTD),y)
 CEVENT_APP_DIR := $(BASEDIR)/components/apps/cevent_app
@@ -1001,10 +1006,19 @@ obj-$(RTCONFIG_DSL_HOST) += dsl_autodet
 
 ifneq ($(RTCONFIG_ALPINE)$(RTCONFIG_LANTIQ)$(RTL8198D),y)
 ifeq ($(KPATH_2636_OR_3X)$(RTACRH18)$(RT4GAC86U)$(RTAX53U)$(RTAX54)$(RT4GAX56)$(if $(filter $(BUILD_NAME),XD4S),y,),y)
+ifeq ($(RTCONFIG_IPTABLES1810),y)
+IPTABLES := iptables-1.8.10
+else
 IPTABLES := iptables-1.4.x
+endif
 IPTC_LIBDIR := $(TOP)/$(IPTABLES)/libiptc/.libs
+ifeq ($(RTCONFIG_IPTABLES1810),y)
+IPTC_LIBS := -lip4tc $(if $(RTCONFIG_IPV6),-lip6tc,)
+obj-y += iptables-1.8.10
+else
 IPTC_LIBS := -lip4tc $(if $(RTCONFIG_IPV6),-lip6tc,) -liptc
 obj-y += iptables-1.4.x
+endif	
 ifeq ($(HND_ROUTER),y)
 ifeq ($(or $(HND_ROUTER_AX_6756),$(HND_ROUTER_BE_4916)),y)
 obj-y += iproute2-5.11.0
@@ -1073,6 +1087,7 @@ obj-$(RTCONFIG_TRAFFIC_LIMITER) += traffic_limiter
 
 obj-$(RTCONFIG_OOKLA) += ookla_speedtest
 obj-$(RTCONFIG_OOKLA_LITE) += ookla_speedtest
+obj-$(RTCONFIG_ETH_MONITOR) += eth_monitor
 
 obj-$(RTCONFIG_LETSENCRYPT) += openssl
 obj-$(RTCONFIG_LETSENCRYPT) += acme.sh
@@ -1090,6 +1105,8 @@ obj-$(RTCONFIG_AHS) += json-c
 obj-$(RTCONFIG_AHS) += ahs
 
 obj-$(RTCONFIG_ASD) += asd
+obj-$(RTCONFIG_ASD) += onig-6.9.9
+obj-$(RTCONFIG_ASD) += jq-1.7.1
 
 obj-$(RTCONFIG_OPENVPN) += libovpn
 
@@ -1227,6 +1244,7 @@ obj-$(RTCONFIG_BCMARM) += et_arm$(EX7)
 endif
 ifeq ($(HND_ROUTER_AX),y)
 ifneq ($(RTCONFIG_NOWL),y)
+obj-y += qosmgmt
 obj-y += acsdv2
 endif
 obj-$(RTCONFIG_BCM_CEVENTD) += cevent_app
@@ -4352,6 +4370,84 @@ endif
 iptables-1.4.x-clean:
 	[ ! -f iptables-1.4.x/Makefile ] || $(MAKE) -C iptables-1.4.x KERNEL_DIR=$(LINUX_INC_DIR) distclean
 	@rm -f iptables-1.4.x/Makefile
+
+iptables-1.8.10/configure:
+	cd iptables-1.8.10 && ./autogen.sh
+
+iptables-1.8.10/Makefile: iptables-1.8.10/configure
+ifeq ($(HND_ROUTER),y)
+	cd iptables-1.8.10 && $(CONFIGURE) \
+		--prefix=/usr \
+		--bindir=/usr/sbin \
+		--libdir=/usr/lib \
+		--enable-ipv6 \
+		--disable-nftables \
+		--with-kbuild=$(TOOLCHAIN_INCLUDE_DIR) \
+		--target=arm-buildroot-linux-gnueabi \
+		--with-pfxmods="TCPMSS SKIPLOG addrtype blog mac_extend flowlabel u32 connlimit iprange CLASSIFY length limit standard conntrack tcp udp NFQUEUE time dscp DSCP tos TOS mac mark MARK scs mscs MARK_extend owner policy sctp MASQUERADE" \
+		--with-pf4mods="icmp LOG DNAT MASQUERADE REDIRECT SNAT" \
+		--with-pf6mods="ah dst eui64 frag hbh hl icmp6 ipv6header mh rt HL LOG REJECT SNPT DNPT MASQUERADE NETMAP" \
+		--with-xt-lock-name=/tmp/xtables.lock \
+		LDFLAGS=-L$(INSTALL_DIR)/lib \
+		CFLAGS="-Os $(BRCM_FLAG) -U CONFIG_NVRAM_SIZE -I$(SRCBASE)/kernel/bcmkernel/include/uapi/"
+else ifneq ($(or $(findstring linux-3.10,$(LINUXDIR))),)
+	cd iptables-1.8.10 && $(CONFIGURE) \
+		--prefix=/usr \
+		--bindir=/usr/sbin \
+		--libdir=/usr/lib \
+		--with-kernel=$(KDIR)/include \
+		$(if $(RTCONFIG_IPV6),--enable-ipv6,--disable-ipv6) \
+		CFLAGS="-Os $(EXTRACFLAGS) -U CONFIG_NVRAM_SIZEi -I$(KDIR)/include"
+else
+	cd iptables-1.8.10 && $(CONFIGURE) \
+		--prefix=/usr \
+		--bindir=/usr/sbin \
+		--libdir=/usr/lib \
+		--with-kernel=$(LINUXDIR) \
+		$(if $(RTCONFIG_IPV6),--enable-ipv6,--disable-ipv6) \
+		CFLAGS="-Os $(EXTRACFLAGS) -U CONFIG_NVRAM_SIZE"
+endif
+
+iptables-1.8.10: iptables-1.8.10/Makefile
+	@$(SEP)
+	$(MAKE) -C $@ KERNEL_DIR=$(LINUX_INC_DIR) COPT_FLAGS="-Os $(EXTRACFLAGS) -U CONFIG_NVRAM_SIZE"
+
+iptables-1.8.10-install: iptables-1.8.10
+	install -D iptables-1.8.10/iptables/.libs/xtables-legacy-multi $(INSTALLDIR)/iptables-1.8.10/usr/sbin/xtables-legacy-multi
+	cd $(INSTALLDIR)/iptables-1.8.10/usr/sbin && \
+		ln -sf xtables-legacy-multi iptables-restore && \
+		ln -sf xtables-legacy-multi iptables-save && \
+		ln -sf xtables-legacy-multi iptables
+	install -d $(INSTALLDIR)/iptables-1.8.10/usr/lib/xtables
+	# install -D iptables-1.8.10/libiptc/.libs/libiptc.so $(INSTALLDIR)/iptables-1.8.10/usr/lib/libiptc.so
+	install -D iptables-1.8.10/libiptc/.libs/libip4tc.so $(INSTALLDIR)/iptables-1.8.10/usr/lib/libip4tc.so
+	cd $(INSTALLDIR)/iptables-1.8.10/usr/lib && \
+		ln -sf libip4tc.so libip4tc.so.2 && \
+		ln -sf libip4tc.so libip4tc.so.2.0.0
+	install -D iptables-1.8.10/libxtables/.libs/lib*.so $(INSTALLDIR)/iptables-1.8.10/usr/lib/
+	cd $(INSTALLDIR)/iptables-1.8.10/usr/lib && \
+		ln -sf libxtables.so libxtables.so.12 && \
+		ln -sf libxtables.so libxtables.so.12.4.0
+	install -D iptables-1.8.10/extensions/*.so $(INSTALLDIR)/iptables-1.8.10/usr/lib/xtables
+
+ifeq ($(RTCONFIG_IPV6),y)
+	cd $(INSTALLDIR)/iptables-1.8.10/usr/sbin && \
+		ln -sf xtables-legacy-multi ip6tables-restore && \
+		ln -sf xtables-legacy-multi ip6tables-save && \
+		ln -sf xtables-legacy-multi ip6tables
+	install -D iptables-1.8.10/libiptc/.libs/libip6tc.so $(INSTALLDIR)/iptables-1.8.10/usr/lib/libip6tc.so
+	cd $(INSTALLDIR)/iptables-1.8.10/usr/lib && \
+		ln -sf libip6tc.so libip6tc.so.2 && \
+		ln -sf libip6tc.so libip6tc.so.2.0.0
+endif
+
+	$(STRIP) $(INSTALLDIR)/iptables-1.8.10/usr/sbin/xtables-legacy-multi
+	$(STRIP) $(INSTALLDIR)/iptables-1.8.10/usr/lib/*.so*
+	$(STRIP) $(INSTALLDIR)/iptables-1.8.10/usr/lib/xtables/*.so*
+
+iptables-1.8.10-clean:
+	[ ! -f iptables-1.8.10/Makefile ] || $(MAKE) -C iptables-1.8.10 KERNEL_DIR=$(LINUX_INC_DIR) distclean
+	@rm -f iptables-1.8.10/Makefile
 
 miniupnpd/config.h: shared/version.h
 ifeq ($(RTCONFIG_IGD2),y)
@@ -9587,7 +9683,42 @@ asd-install:
 asd-clean:
 	$(MAKE) -C asd clean
 
+onig-6.9.9:
+	cd onig-6.9.9 && \
+	autoreconf -i -f && \
+	./configure  --host=arm-linux LD=$(CROSS_COMPILE)ld --prefix=/usr --exec-prefix=/usr --bindir=/usr/bin --sbindir=/usr/sbin --libexecdir=/usr/lib && \
+	make
 
+onig-6.9.9-install:
+	install -D onig-6.9.9/src/.libs/libonig.so.5.4.0 $(INSTALLDIR)/usr/lib/libonig.so.5.4.0
+	$(STRIP) $(INSTALLDIR)/usr/lib/libonig.so.5.4.0
+	cd $(INSTALLDIR)/usr/lib && \
+		ln -sf libonig.so.5.4.0 libonig.so.5 && \
+		ln -sf libonig.so.5.4.0 libonig.so.4 && \
+		ln -sf libonig.so.5.4.0 libonig.so
+
+onig-6.9.9-clean:
+	cd onig-6.9.9 && \
+	make distclean
+
+jq-1.7.1:
+	cd jq-1.7.1 && \
+	autoreconf -i &&\
+	./configure --host=arm-linux --with-oniguruma=$(SRCBASE)/router/onig-6.9.9/src LD=$(CROSS_COMPILE)ld --prefix=/usr && \
+	make
+
+jq-1.7.1-install:
+	install -D  jq-1.7.1/.libs/libjq.so.1.0.4 $(INSTALLDIR)/jq-1.7.1/usr/lib/libjq.so.1.0.4
+	install -D  jq-1.7.1/jq $(INSTALLDIR)/jq-1.7.1/usr/bin/jq
+	$(STRIP) $(INSTALLDIR)/jq-1.7.1/usr/lib/libjq.so.1.0.4
+	$(STRIP) $(INSTALLDIR)/jq-1.7.1/usr/bin/jq
+	cd $(INSTALLDIR)/jq-1.7.1/usr/lib/ && \
+		ln -sf libjq.so.1.0.4 libjq.so.1 && \
+		ln -sf libjq.so.1.0.4 libjq.so
+
+jq-1.7.1-clean:
+	cd jq-1.7.1 && \
+	make distclean
 #
 # tunnel related
 #
@@ -9711,7 +9842,7 @@ dnsqd-install:
 dnsqd-clean:
 	cd dnsqd && make clean
 
-libnetfilter_queue: libnfnetlink-$(NETLINK_LIB_VER) ibmnl-1.0.4 libnetfilter_queue/Makefile
+libnetfilter_queue: libnfnetlink-$(NETLINK_LIB_VER) libmnl-1.0.4 libnetfilter_queue/Makefile
 	$(MAKE) -C libnetfilter_queue
 
 libnetfilter_queue/Makefile:
@@ -9967,6 +10098,22 @@ ifeq ($(RTCONFIG_VISUALIZATION),y)
 ifneq ($(wildcard $(VISDCON_DIR)),)
 	-$(MAKE) -C $(VISDCON_DIR) clean
 endif
+endif
+
+ifeq ($(HND_ROUTER_AX),y)
+qosmgmt:
+	@true
+ifeq ($(wildcard $(QOSMGMT_DIR)/prebuilt/acsd2),)
+	+$(MAKE) -C $(QOSMGMT_DIR) EXTRA_LDFLAGS=$(EXTRA_LDFLAGS) all
+endif
+qosmgmt-install: qosmgmt
+ifneq ($(wildcard $(QOSMGMT_DIR)/prebuilt/qosmgmtd),)
+	cp -f $(QOSMGMT_DIR)/prebuilt/qosmgmtd $(QOSMGMT_DIR)/
+	cp -f $(QOSMGMT_DIR)/prebuilt/qm_cli $(QOSMGMT_DIR)/
+endif
+	+$(MAKE) -C $(QOSMGMT_DIR) INSTALLDIR=$(INSTALLDIR)/qosmgmt install
+qosmgmt-clean:
+	+$(MAKE) -C $(QOSMGMT_DIR) EXTRA_LDFLAGS=$(EXTRA_LDFLAGS) clean
 endif
 
 ifeq ($(HND_ROUTER_AX),y)
@@ -10963,6 +11110,21 @@ ifeq ($(RTCONFIG_NOWL),y)
 	cd $(INSTALLDIR) && find ./ -name "wl" | xargs rm -f ;	
 	cd $(INSTALLDIR) && find ./ -name "acsd" | xargs rm -f ;
 	cd $(INSTALLDIR) && find ./ -name "ssd" | xargs rm -f ;
+endif
+ifeq ($(RPBE58),y)
+	cd $(INSTALLDIR)/.. && find ./ -name "dhd.ko" | xargs rm -f ;
+	cd $(INSTALLDIR) && rm -rf rom/etc/wlan/dhd ;
+	cd $(INSTALLDIR) && rm -f usr/sbin/dhd ;
+	cd $(INSTALLDIR) && find ./ -name "pki" | xargs rm -f ;
+	cd $(INSTALLDIR) && find ./ -name "pppd" | xargs rm -rf ;
+	cd $(INSTALLDIR) && find ./ -name "pptpctrl" | xargs rm -f ;
+	cd $(INSTALLDIR) && find ./ -name "pptpd" | xargs rm -rf ;
+	cd $(INSTALLDIR) && find ./ -name "l2tpd" | xargs rm -rf ;
+	cd $(INSTALLDIR) && find ./ -name "l2tp-control" | xargs rm -f ;
+	cd $(INSTALLDIR) && find ./ -name "ookla" | xargs rm -rf ;
+ifeq ($(RTCONFIG_BCM_MFG),y)
+	cd $(INSTALLDIR) && rm -f sbin/amas_* ;
+endif
 endif
 
 .PHONY : strips

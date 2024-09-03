@@ -3,7 +3,7 @@
 
 #if (defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM96846) || \
      defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855) || \
-     defined(CONFIG_BCM96756)) 
+     defined(CONFIG_BCM96756) || defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764)) 
 static inline void _bcm_prefetch(const void * addr)
 {
 	__asm__ __volatile__("pld\t%a0" : : "p"(addr) : "cc");

@@ -20,9 +20,8 @@ config BCM_PCIE_963XX_HC
 
 config BCM_PCIE_VCD
 	bool "Support for PCIe Virtual Core Device for internal WiFi devices"
-	depends on BCM_PCIE_HCD && BCM_WLAN
-	depends on BCM963178 || BCM947622 || BCM96878 || BCM96756 || BCM96855 || BCM96765
-	default y
+	depends on BCM_PCIE_HCD
+	default n
 
 config BCM_PCIE_PMC_BRD_STUBS
 	bool "Support for PCIe PMC and Board API Stubs for Virtual Core Device bring up"
@@ -39,5 +38,5 @@ config BCM_PCIE_SWAM
 	bool "Sub Window Address Manager to use only one BAR for WLAN (runner and MLO)"
 	depends on BCM_PCIE_963XX_HC && BCM_WLAN && PHYS_ADDR_T_64BIT
 	depends on BCM_WLAN_MLO
-	depends on BCM963158 || BCM94912
+	depends on BCM963158 || BCM94912 || BCM96856 || BCM96858 || BCM963146
 	default y

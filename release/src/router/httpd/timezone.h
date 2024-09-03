@@ -64,7 +64,7 @@ struct time_zone_list timezones_dst[] = {
 	{"-300", "UTC-5", NULL},
 	{"-330", "UTC-5.30_1", NULL},
 	{"-345", "UTC-5.45", NULL},
-	{"-360", "RFT-6", NULL},
+	{"-360", "UTC-6", NULL},
 	{"-390", "UTC-6.30", NULL},
 	{"-420", "UTC-7", NULL},
 	{"-480", "CCT-8", NULL},

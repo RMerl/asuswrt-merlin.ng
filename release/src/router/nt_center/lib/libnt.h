@@ -36,6 +36,7 @@ extern int eInfo_get_idx_by_evalue(int e);
 extern char *eInfo_get_eName(int e);
 extern int eInfo_get_eAppsid(int e);
 extern int eInfo_get_eType(int e);
+extern int eInfo_get_eIspush(int e);
 extern int eInfo_get_ePri(int e);
 extern int GetDebugValue(char *path);
 extern void SEND_NT_EVENT(int event, const char *msg);

@@ -4,27 +4,21 @@
 *    Copyright (c) 2019 Broadcom 
 *    All Rights Reserved
 * 
-* Unless you and Broadcom execute a separate written software license
-* agreement governing use of this software, this software is licensed
-* to you under the terms of the GNU General Public License version 2
-* (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-* with the following added to such license:
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License, version 2, as published by
+* the Free Software Foundation (the "GPL").
 * 
-*    As a special exception, the copyright holders of this software give
-*    you permission to link this software with independent modules, and
-*    to copy and distribute the resulting executable under terms of your
-*    choice, provided that you also meet, for each linked independent
-*    module, the terms and conditions of the license of that module.
-*    An independent module is a module which is not derived from this
-*    software.  The special exception does not apply to any modifications
-*    of the software.
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
 * 
-* Not withstanding the above, under no circumstances may you combine
-* this software in any way with any other Broadcom software provided
-* under a license other than the GPL, without Broadcom's express prior
-* written consent.
 * 
-* :> 
+* A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+* writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+* Boston, MA 02111-1307, USA.
+* 
+* :>
 */
 
 #include <linux/io.h>
@@ -136,7 +130,7 @@ static int find_and_bind_gpio_to_extintr(unsigned int gpio, unsigned int interru
             return -EINVAL;
         }
 
-        if ((bca_ext->map[reserved_ext_id].gpio != EXT_INT_RESERVED) && 
+        if ((bca_ext->map[reserved_ext_id].gpio != EXT_INT_RESERVED) &&
             (bca_ext->map[reserved_ext_id].gpio != EXT_INT_NOT_MAPPED))
         {
             spin_unlock_irqrestore(&bca_ext->lock, flags);
@@ -148,7 +142,7 @@ static int find_and_bind_gpio_to_extintr(unsigned int gpio, unsigned int interru
     }
     else
     {
-        while ((ext < bca_ext->num_ext_intr) && (bca_ext->map[ext].gpio != EXT_INT_NOT_MAPPED)) 
+        while ((ext < bca_ext->num_ext_intr) && (bca_ext->map[ext].gpio != EXT_INT_NOT_MAPPED))
             ext++;
     }
 
@@ -170,7 +164,7 @@ static int find_and_bind_gpio_to_extintr(unsigned int gpio, unsigned int interru
     data &= mask;
     data |= value;
     writel(data, reg + EXT_IRQ_MUX_SEL0_REG);
-    
+
     mask = ~(EXT_IRQ_MUX_SEL1_MASK<<(EXT_IRQ_MUX_SEL1_SHIFT * ext));
     value = sel1<<(EXT_IRQ_MUX_SEL1_SHIFT * ext);
     data = readl(reg + EXT_IRQ_MUX_SEL1_REG);
@@ -196,13 +190,13 @@ static int find_and_bind_gpio_to_extintr(unsigned int gpio, unsigned int interru
 
     data = readl(reg + EXT_IRQ_CTRL_REG);
     writel(data | value, reg + EXT_IRQ_CTRL_REG);
-    
+
     writel(1 << ext, reg + EXT_IRQ_MASK_SET_REG);
 
     spin_unlock_irqrestore(&bca_ext->lock, flags);
     dev_info(&bca_ext->pdev->dev, "GPIO %d is mapped to ExtIntr_%d [virq %d]\n",
         gpio, ext, extirq_to_irq(ext));
-    
+
     return ext;
 }
 
@@ -239,7 +233,7 @@ static int bcm_bca_extintr_probe(struct platform_device *pdev)
         goto error;
     }
 
-    if (of_property_read_u32(pdev->dev.of_node, "num_ext_intr", &num_intr)) 
+    if (of_property_read_u32(pdev->dev.of_node, "num_ext_intr", &num_intr))
     {
         dev_err(&pdev->dev, "Missing num_ext_intr OF property\n");
         ret = -EINVAL;
@@ -248,7 +242,7 @@ static int bcm_bca_extintr_probe(struct platform_device *pdev)
 
     bca_ext->num_ext_intr = num_intr;
 
-    bca_ext->clear_workarround = of_property_read_bool(pdev->dev.of_node, "clear_workarround"); 
+    bca_ext->clear_workarround = of_property_read_bool(pdev->dev.of_node, "clear_workarround");
 
     bca_ext->map = devm_kmalloc(dev, (sizeof(struct map_t) * num_intr), GFP_KERNEL);
 
@@ -345,7 +339,7 @@ static int bcm_bca_extintr_probe(struct platform_device *pdev)
             break;
 
         bca_ext->intset_base[i] = devm_ioremap_resource(dev, &res);
-    	if (IS_ERR(bca_ext->intset_base[i])) 
+    	if (IS_ERR(bca_ext->intset_base[i]))
         {
             ret = -ENXIO;
             goto error;
@@ -387,7 +381,7 @@ int bcm_bca_extintr_free(void *_dev, int irq, void *param)
 
     free_irq(irq, param);
     gpio_free(bca_ext->map[extirq].gpio);
-    
+
     spin_lock_irqsave(&bca_ext->lock, flags);
     bca_ext->map[extirq].gpio = EXT_INT_NOT_MAPPED;
     spin_unlock_irqrestore(&bca_ext->lock, flags);
@@ -395,14 +389,14 @@ int bcm_bca_extintr_free(void *_dev, int irq, void *param)
     return 0;
 }
 
-int bcm_bca_extintr_request(void *_dev, struct device_node *np, const char *consumer_name, irq_handler_t pfunc, void *param, 
+int bcm_bca_extintr_request(void *_dev, struct device_node *np, const char *consumer_name, irq_handler_t pfunc, void *param,
     const char *interrupt_name, irq_handler_t thread_fn)
 {
     return bcm_bca_extintr_request_ex(_dev, np, consumer_name, pfunc, param, interrupt_name, thread_fn,
         EXT_INT_NOT_MAPPED);
 }
 
-int bcm_bca_extintr_request_ex(void *_dev, struct device_node *np, const char *consumer_name, irq_handler_t pfunc, void *param, 
+int bcm_bca_extintr_request_ex(void *_dev, struct device_node *np, const char *consumer_name, irq_handler_t pfunc, void *param,
     const char *interrupt_name, irq_handler_t thread_fn, unsigned int reserved_ext_id)
 {
     struct device *dev = (struct device *)_dev;
@@ -432,17 +426,24 @@ int bcm_bca_extintr_request_ex(void *_dev, struct device_node *np, const char *c
     gpio = params.args[0];
     interrupt_type = params.args[2];
 
+    /* Check if the GPIO is already registered */
+        irq = bcm_bca_extintr_get_virq_by_gpio(gpio);
+    if ((irq > 0) && (interrupt_type & BCA_EXTINTR_SHARE_GPIO_MASK))
+    {
+        goto exit;
+    }
+
     if (params.args[1] & GPIO_ACTIVE_LOW)
         gflags |= GPIOF_ACTIVE_LOW;
 
     ret = gpio_request_one(gpio, gflags, consumer_name);
     if (ret)
     {
-        dev_err(dev, "Failed to request GPIO %d\n", gpio);
+        dev_err(dev, "Failed to request GPIO %d(ret = %d)\n", gpio, ret);
         goto exit;
     }
 
-    extirq = find_and_bind_gpio_to_extintr(gpio, interrupt_type, reserved_ext_id);
+        extirq = find_and_bind_gpio_to_extintr(gpio, interrupt_type, reserved_ext_id);
     if (extirq < 0)
     {
         dev_err(dev, "No free external interrupts left\n");
@@ -461,10 +462,10 @@ int bcm_bca_extintr_request_ex(void *_dev, struct device_node *np, const char *c
         goto exit;
     }
     snprintf(intr_name, INTR_NAME_MAX_LENGTH, "%s", interrupt_name);
-   
+
     if (interrupt_type & BCA_EXTINTR_SHARED)
         irqflags |= IRQF_SHARED;
-    
+
     ret = request_threaded_irq(irq, pfunc, thread_fn, irqflags, intr_name, param);
     if (ret)
     {
@@ -495,7 +496,7 @@ void bcm_bca_extintr_clear(unsigned int irq)
     ext = irq_to_extirq(irq);
 
     spin_lock_irqsave(&bca_ext->lock, flags);
-    
+
     if(bca_ext->clear_workarround)
     {
         do {
@@ -569,6 +570,19 @@ int bcm_bca_extintr_get_hwirq(int virq)
     return i < bca_ext->num_ext_intr ? bca_ext->map[i].hw_irq : -1;
 }
 
+int bcm_bca_extintr_get_virq_by_gpio(int gpio)
+{
+    int i;
+
+    for (i = 0; i < bca_ext->num_ext_intr; i++)
+    {
+        if (bca_ext->map[i].gpio == gpio) // Found searched GPIO
+            return bca_ext->map[i].irq;
+    }
+
+    return -1;
+}
+
 int periph_intr_sense_read(unsigned int hw_irq)
 {
     int set_num = hw_irq / 128;
@@ -614,7 +628,7 @@ int periph_intr_sense_set(unsigned int hw_irq, bool is_active_high)
         return -EINVAL;
 
     data = readl(reg + INT_SET_IRQ_SENSE_OFFSET + INT_SET_IRQ_INTERNAL_OFFSET(int_set));
-    
+
     data |= (1 << int_shift);
     if (is_active_high)
         data &= ~(1 << int_shift);
@@ -738,6 +752,7 @@ EXPORT_SYMBOL(bcm_bca_extintr_mask);
 EXPORT_SYMBOL(bcm_bca_extintr_unmask);
 EXPORT_SYMBOL(bcm_bca_extintr_get_gpiod);
 EXPORT_SYMBOL(bcm_bca_extintr_get_hwirq);
+EXPORT_SYMBOL(bcm_bca_extintr_get_virq_by_gpio);
 EXPORT_SYMBOL(periph_intr_sense_read);
 EXPORT_SYMBOL(periph_intr_sense_set);
 EXPORT_SYMBOL(periph_intr_mask_read);

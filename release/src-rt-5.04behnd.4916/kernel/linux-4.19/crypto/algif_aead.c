@@ -42,7 +42,11 @@
 
 struct aead_tfm {
 	struct crypto_aead *aead;
+#if defined(CONFIG_BCM_KF_VLA_REMOVAL_BACKPORT)
+	struct crypto_sync_skcipher *null_tfm;
+#else
 	struct crypto_skcipher *null_tfm;
+#endif
 };
 
 static inline bool aead_sufficient_data(struct sock *sk)
@@ -75,13 +79,23 @@ static int aead_sendmsg(struct socket *sock, struct msghdr *msg, size_t size)
 	return af_alg_sendmsg(sock, msg, size, ivsize);
 }
 
+#if defined(CONFIG_BCM_KF_VLA_REMOVAL_BACKPORT)
+static int crypto_aead_copy_sgl(struct crypto_sync_skcipher *null_tfm,
+#else
 static int crypto_aead_copy_sgl(struct crypto_skcipher *null_tfm,
+#endif
 				struct scatterlist *src,
 				struct scatterlist *dst, unsigned int len)
 {
+#if defined(CONFIG_BCM_KF_VLA_REMOVAL_BACKPORT)
+	SYNC_SKCIPHER_REQUEST_ON_STACK(skreq, null_tfm);
+
+	skcipher_request_set_sync_tfm(skreq, null_tfm);
+#else
 	SKCIPHER_REQUEST_ON_STACK(skreq, null_tfm);
 
 	skcipher_request_set_tfm(skreq, null_tfm);
+#endif
 	skcipher_request_set_callback(skreq, CRYPTO_TFM_REQ_MAY_SLEEP,
 				      NULL, NULL);
 	skcipher_request_set_crypt(skreq, src, dst, len, NULL);
@@ -99,7 +113,11 @@ static int _aead_recvmsg(struct socket *sock, struct msghdr *msg,
 	struct af_alg_ctx *ctx = ask->private;
 	struct aead_tfm *aeadc = pask->private;
 	struct crypto_aead *tfm = aeadc->aead;
+#if defined(CONFIG_BCM_KF_VLA_REMOVAL_BACKPORT)
+	struct crypto_sync_skcipher *null_tfm = aeadc->null_tfm;
+#else
 	struct crypto_skcipher *null_tfm = aeadc->null_tfm;
+#endif
 	unsigned int i, as = crypto_aead_authsize(tfm);
 	struct af_alg_async_req *areq;
 	struct af_alg_tsgl *tsgl, *tmp;
@@ -476,7 +494,11 @@ static void *aead_bind(const char *name, u32 type, u32 mask)
 {
 	struct aead_tfm *tfm;
 	struct crypto_aead *aead;
+#if defined(CONFIG_BCM_KF_VLA_REMOVAL_BACKPORT)
+	struct crypto_sync_skcipher *null_tfm;
+#else
 	struct crypto_skcipher *null_tfm;
+#endif
 
 	tfm = kzalloc(sizeof(*tfm), GFP_KERNEL);
 	if (!tfm)

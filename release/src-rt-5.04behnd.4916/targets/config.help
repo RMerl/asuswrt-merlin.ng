@@ -21,7 +21,7 @@ END
 BRCM_PHY_BONDING
 # Help text goes here
 END
- 
+
 BUILD_PHY_ADSL
 BUILD_PHY_MULTIMODE
 BUILD_PHY_VDSL
@@ -57,11 +57,11 @@ BCM_KERNEL_CMDLINE
    bootloader to formulate the full kernel command line.
 END
 
-BRCM_KERNEL_OVERLAYFS 
+BRCM_KERNEL_OVERLAYFS
    Enable Linux overlay filesystem support
 END
 
-BRCM_CMA_RSVMEM 
+BRCM_CMA_RSVMEM
    Enable Linux CMA based memory resevation
 END
 
@@ -100,9 +100,9 @@ BUILD_DM_DETECT
    selected objects from TR181: IPV6, Optical, and SoftwareModules.
    These TR181 features must still be enabled in their sections.  Root of
    Data Model is InternetGatewayDevice.
-   
+
    Pure181: Use TR181 (do not use TR98).  Root of Data Model is Device.
-   
+
    DM_Detect: compile both TR98 and TR181 objects.  Early in system bootup,
    use some external method to determine which data model the CPE should use,
    and use that data model.  Note that although both data models are compiled,
@@ -158,7 +158,7 @@ BUILD_SYSTEMD
 END
 
 RDK_BUILD
-  Build SDK in RDK configuration 
+  Build SDK in RDK configuration
 END
 
 MGMT_TR69C
@@ -190,7 +190,7 @@ BUILD_BACKUP_PSI_MIRROR_MODE
 BUILD_BACKUP_PSI_DEVICE_DEFAULT
     MIRROR_MODE: this is the original behavior of the backup PSI.  The backup
     PSI area contains an exact copy of the primary PSI.
-    
+
     DEVICE_DEFAULT: the backup PSI area contains a device-unique default
     config file which was programmed at the factory using a special command,
     psictl.  User configuration is written into the primary PSI only,
@@ -203,9 +203,9 @@ BCM_SPEEDYGET
 END
 
 BUILD_BRCM_UNFWLCFG
-   This is a new wireless management system leveraging BBF Data Model (TR181 on 5.02L06 release). 
-   This new management system uses single configuration (data model) repository by mapping wifi nvram to data model. 
-   Thus it does away the need in synchronizing multiple configuration domains. 
+   This is a new wireless management system leveraging BBF Data Model (TR181 on 5.02L06 release).
+   This new management system uses single configuration (data model) repository by mapping wifi nvram to data model.
+   Thus it does away the need in synchronizing multiple configuration domains.
    There is no wlcsm library and wlmngr anymore.
 END
 
@@ -270,26 +270,26 @@ BUILD_ROOTFS_SQUASHFS_HASH
 END
 
 BUILD_CFE_NONSEC_MFG_CONSOLE
-   Build CFERAM to provide recovery options in MFG-secure mode without exposing keys. (Drop priviledges) 
+   Build CFERAM to provide recovery options in MFG-secure mode without exposing keys. (Drop priviledges)
 END
 
 BUILD_CFE_NONSEC_FLD_CONSOLE
-   Build CFERAM to provide recovery options in FLD-secure mode without exposing keys. (Drop priviledges) 
+   Build CFERAM to provide recovery options in FLD-secure mode without exposing keys. (Drop priviledges)
 END
 
 BUILD_CFE_ALLOW_NONSEC_SOTP_ACCESS
-   Build CFERAM to permit nonsecure masters (like Linux) to access SOTP.  
+   Build CFERAM to permit nonsecure masters (like Linux) to access SOTP.
    This is used in secure boot environments where no TEE is used and Linux drivers access the OEM regions of
-   SOTP.  
+   SOTP.
 END
 BUILD_CFE_FAILSAFE_BOOT
-    Supported only for GEN3 Secure Boot architectures. Linux Kernel Watchdog must be configured and enabled. 
-    Once enabled CFEROM(first stage bootloader), CFERAM(second stage bootloader) and Linux Userspace  
+    Supported only for GEN3 Secure Boot architectures. Linux Kernel Watchdog must be configured and enabled.
+    Once enabled CFEROM(first stage bootloader), CFERAM(second stage bootloader) and Linux Userspace
     maintain Watchdog state across platform SoftReset. Upon booting to Linux userspace the Watchdog is stopped
-    as this is considered a successful boot. Otherwise, if system becomes unresponsive during the Watchdog tracking 
-    CFEROM on SoftReset determines the reason of the crash then switches to previously installed or fallback image. 
-    If fallback image is also crashed - CFEROM halts the system. 
-    Default Watchdog delays are - CFEROM CFERAM both are given 30s for Watchdog timer to exppire. Linux given 60s.  
+    as this is considered a successful boot. Otherwise, if system becomes unresponsive during the Watchdog tracking
+    CFEROM on SoftReset determines the reason of the crash then switches to previously installed or fallback image.
+    If fallback image is also crashed - CFEROM halts the system.
+    Default Watchdog delays are - CFEROM CFERAM both are given 30s for Watchdog timer to exppire. Linux given 60s.
     Linux Kernel till init script (S1) - 30s;  from S1 to S89 30s.
 END
 
@@ -312,7 +312,7 @@ BUILD_OPENWRT_NATIVE
     is commonly used for Retail routers.
 
     In Carrier mode (the default), use some BDK components (e.g. sys_directory, tr69c, DSL, GPON).
-    Uses Broadcom and BDK Wifi tools instead of native Openwrt wifi tools.  
+    Uses Broadcom and BDK Wifi tools instead of native Openwrt wifi tools.
     Includes Broadcom ATOM.
 BUILD_PRPL_FEEDS
     PrplOS Openwrt will use prpl foundation opensource packages for gateway and router,it still relies on Broadcom chip's common kernel BSP utils libs.
@@ -373,7 +373,7 @@ BRCM_DRIVER_SPDTEST
 END
 
 BUILD_DISABLE_PINMUXTEST
-   Disable building pinmux test 
+   Disable building pinmux test
 
 BRCM_REASON_TO_SKB_MARK
    Support trap reason to skb mark
@@ -385,7 +385,7 @@ BRCM_DW_CXC_DATA_MODE
 END
 
 BUILD_LIBMNL
-   A minimalistic user-space library oriented to Netlink developers 
+   A minimalistic user-space library oriented to Netlink developers
 END
 
 BUILD_LIBCBOR
@@ -393,15 +393,15 @@ BUILD_LIBCBOR
 END
 
 BUILD_IPSET
-   IP sets are a framework inside the Linux kernel, which can be administered 
-   by the ipset utility. Depending on the type, an IP set may store IP 
+   IP sets are a framework inside the Linux kernel, which can be administered
+   by the ipset utility. Depending on the type, an IP set may store IP
    addresses, networks, (TCP/UDP) port numbers, MAC addresses, interface names
    or combinations of them in a way, which ensures lightning speed when
-   matching an entry against a set 
+   matching an entry against a set
 END
 
 BRCM_BUILD_PWWRAP
-   Enables the pw_wrap wrapper that is called by the CLI before launching a 
+   Enables the pw_wrap wrapper that is called by the CLI before launching a
    shell.  pw_wrap can challenge the user for a  (usually device-specific)
    password.
 END
@@ -448,7 +448,7 @@ BUILD_BCM_WLCLED
    Enable WLAN CLED
 END
 
-BUILD_BCM_WLAN_ARM64_4GBDDR
+BUILD_BCM_WLAN_4GBDDR
    Build WLAN with 64 Bit DMA Address to support 4GB DDR memory size on arm64 platforms
 END
 
@@ -568,7 +568,7 @@ END
 
 BUILD_IMAGE_OFFSET_ZERO
   Set IMAGE_OFFSET to 0. 63178 and 47622 bootrom mode, image offset could start
-  from 0 to reuse first 64KB of flash. Now we set IMAGE_OFFSET as 0x10000 in 
+  from 0 to reuse first 64KB of flash. Now we set IMAGE_OFFSET as 0x10000 in
   bcm_hwdefs.h for NOR XIP and bootrom NAND flash.
 END
 
@@ -624,6 +624,10 @@ BCM_RUNNER_FRAG_GATHER
   Build support for fragmented data gather using Runner.
 END
 
+BRCM_HW_FIREWALL
+  Build support for firewall using XRDP Runner or other HW.
+END
+
 BRCM_RDPA_MCAST_SUPPORT
   Enable Multicast acceleration support in Runner (applicable only to 4908/62118 platforms).
   By default Multicast acceleration is enabled in Runner, so this could be used to disable it and save some memory.
@@ -639,6 +643,10 @@ END
 
 BRCM_WLAN_NIC_RX_RNR_ACCEL
   Enable BRCM WLAN-NIC RX Runner acceleration
+END
+
+BRCM_WFD_WL_UNION
+  Unify WFD and WL kernel threads
 END
 
 BRCM_DRIVER_DHD_RUNNER
@@ -753,7 +761,7 @@ END
 
 BUILD_BSTREAM_IQOS
   Build HND Broadstream iQos (TREND DPI + linux tc)
-END 
+END
 
 BRCM_USE_STD_TOOLCHAIN
 BRCM_USE_ALT_TOOLCHAIN
@@ -837,7 +845,7 @@ BUILD_DNSMASQWITHDNSSEC
 END
 
 BUILD_DNSMASQWITHDOH
-  Build dnsmasq + https_dns_proxy application for supporting DoH. 
+  Build dnsmasq + https_dns_proxy application for supporting DoH.
   e.g. DoH stands for Dns Over Https.
 END
 
@@ -860,7 +868,7 @@ BCM_PREBUILT_LOADER_PATH
   Use_prebuild_loader_binary: Use the loader binary specified in
   BCM_PREBUILD_LOADER_PATH to generate final image bundles.
 
-  No_loader_required: Do not compile the loader AND Do not include loader binary in 
+  No_loader_required: Do not compile the loader AND Do not include loader binary in
   final image bundles
 END
 
@@ -899,8 +907,14 @@ BRCM_BUILD_EBPF
   Enable eBPF support
 END
 
+BRCM_KERNEL_LPAE
+  Enable ARMv7 LPAE support for 4GB or more DDR. It is possible to enable
+  this feature on any v7 chip but only some v7 chips support 4GB DDR so only
+  these chips are allowed to enable this feature.
+END
+
 BRCM_BUILD_DATA_TRANSITION_TOOL
-  Include userspace tool to unpack transition data 
+  Include userspace tool to unpack transition data
 END
 
 BUILD_LIBGETDNS
@@ -926,18 +940,18 @@ ENABLE_APP_COREDUMPS
 END
 
 BRCM_CHECK_PKGTB_SIG
-  If enabled, the Linux image update functions will require the 
-  pkgtb binary package headers to be signed with an RSA signature 
-  or else they will be rejected. 
+  If enabled, the Linux image update functions will require the
+  pkgtb binary package headers to be signed with an RSA signature
+  or else they will be rejected.
   See targets/keys/demo/PKG/ for examples
 END
 
 PKGTB_KEY_DIR
-  The directory in which the authorized_pkg_keys directory exists 
-  and contains one or more .pem files with the public keys for 
+  The directory in which the authorized_pkg_keys directory exists
+  and contains one or more .pem files with the public keys for
   pkgtb header validation
 
-  The private key signing will be controlled by options file variables 
+  The private key signing will be controlled by options file variables
   such as
 
   bcm_uboot_pkgtb_sign = targets/keys/demo/PKG/pkg_private.pem
@@ -976,6 +990,9 @@ END
 BUILD_BCM_WLMLO
     If enabled, Build WLAN MLO firmwares
 
+BUILD_BCM_WLAUX
+    If enabled, Build WLAN AUX core module
+
 BRCM_VOICE_DSP_PROFILER
     (Broadcom internal use only) If enabled, build LDX profiler DPR
     module and related endpoint module, This feature also depends on Linux
@@ -984,10 +1001,6 @@ END
 
 BRCM_VOICE_DSP_16FXS
     If enabled, build LDX 16 FXS port image
-END
-
-BUILD_OPENSSL_VER3
-    If enabled, build the latest stable version 3.0 LTS series
 END
 
 BUILD_EMMC_REPART
@@ -999,4 +1012,16 @@ END
 BUILD_OPENTHREAD
     OpenThread implements the Thread networking protocol and is used by some
     Enterprise WLAN SOCs as part of their Bluetooth interface (4711).
+END
+
+BCM_TINY_COREDUMP
+    If enabled, the tiny kernel coredump feature is build into the linux kernel. Drivers can add
+    objects of interest through API functions. User-space can obtain the dump from /proc/tinykcore
+    and upon a kernel panic the dump is written onto a MTD partition if specified with the module
+    parameter "mtddev". For example, in uboot, you can set:
+    setenv bootargs_append "tkcore.mtddev=3"
+    saveenv
+    With the above a kernel panic will write the coredump to /dev/mtd3 and after reboot it can be
+    obtained using:
+    # dd bs=4096 count=1215 if=/dev/mtd3 | epi_ttcp -t <server_ipaddr>
 END

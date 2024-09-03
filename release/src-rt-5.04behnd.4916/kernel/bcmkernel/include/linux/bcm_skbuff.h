@@ -13,6 +13,8 @@ struct net_device;
 #define NULL_STMT		do { /* NULL BODY */ } while (0)
 #endif
 
+#include <linux/netfilter/xt_FSMARK.h>
+
 typedef void (*RecycleFuncP)(void *nbuff_p, unsigned long context, uint32_t flags);
 
 #define SKB_DATA_RECYCLE	(1 << 0)
@@ -64,7 +66,10 @@ extern void skb_cb_zero(struct sk_buff *skb);
 
 extern size_t skb_size(void);
 extern size_t skb_aligned_size(void);
-extern int skb_layout_test(int head_offset, int tail_offset, int end_offset);
+extern int skb_layout_test(int head_offset, int truesize_offset, int end_offset);
+unsigned char *bcm_skb_tail_pointer(const struct sk_buff *skb);
+void bcm_skb_reset_tail_pointer(struct sk_buff *skb);
+void bcm_skb_set_tail_pointer(struct sk_buff *skb, const int offset);
 
 #if defined(CONFIG_BCM_SW_GSO)
 extern __be16 bcm_sw_gso_skb_network_protocol(struct sk_buff *skb, int offset, __be16 type);
@@ -226,7 +231,8 @@ struct bcm_skb_ext {
 	union {
 		__u32 flags;
 		struct {
-			__u32	reserved:14;
+			__u32	reserved:13;
+			__u32	br_flood_pkt:1;/* forwarding by br_flood */
 			__u32	skb_fc_accel:1;/* fcache accelerated skb */
 			__u32	gdx_loopbk:1;/* loop back skb from HW accelerator */
 			__u32	gdx_encap:8; /* encap type for parsing */ 
@@ -244,6 +250,7 @@ struct bcm_skb_ext {
 	void*			sgs_conn; /* pointing to the sgs connection tracking object */
 	struct nf_queue_entry	*q_entry; /* sgs packet queue to reinject to the stack */
 	uint32_t fc_ctxt; 
+	fsmark_conds_t      fsmark_conds;
 };
 
 /* accessor macro */
@@ -260,6 +267,8 @@ struct bcm_skb_ext {
 #define skbuff_bcm_ext_sgs_conn_set(_skb, _val)	((_skb)->bcm_ext.sgs_conn = _val)
 #define skbuff_bcm_ext_q_entry_set(_skb, _val)	((_skb)->bcm_ext.q_entry = _val)
 #define skbuff_bcm_ext_fc_ctxt_set(_skb, _val)	((_skb)->bcm_ext.fc_ctxt = _val)
+#define skbuff_bcm_ext_br_flood_get(_skb)	((_skb)->bcm_ext.br_flood_pkt)
+#define skbuff_bcm_ext_br_flood_set(_skb, _val)	((_skb)->bcm_ext.br_flood_pkt = _val)
 
 void bcm_skbuff_copy_skb_header(struct sk_buff *new, const struct sk_buff *old);
 void bcm_skbuff_skb_clone(struct sk_buff *n, struct sk_buff *skb);
@@ -279,6 +288,8 @@ unsigned int skb_writable_headroom(const struct sk_buff *skb);
 void skb_clone_headers_set(struct sk_buff *skb, unsigned int len);
 void skb_header_free(struct sk_buff *skb);
 struct sk_buff *skb_header_alloc(void);
+struct sk_buff *skb_header_alloc_flags(gfp_t flags);
+int bcm_convert_linear_to_nonlinear_skb(struct sk_buff *skb, uint32_t hdrlen);
 
 void skb_shinforeset(struct skb_shared_info *skb_shinfo);
 
@@ -325,7 +336,21 @@ struct sk_buff {
 		u64		skb_mstamp;
 	};
 #if defined(CONFIG_BCM_KF_NBUFF)
-	__u32 unused;
+	/*
+	 * this structure is used by WL_SPC feature for more efficient and
+	 * faster forwarding performance. is_spc denotes the packet has been
+	 * marked to hold references to a full MPDU's worth of data buffers, and
+	 * spc_tot_len is the total length of the MPDU.
+	 *
+	 * !!!!! It is VERY IMPORTANT for this block to be in the very first
+	 * cache line of sk_buff for optimal tput. !!!!!!!
+	 */
+	struct {
+		unsigned int is_spc:1;
+		unsigned int spc_reserved:7;
+		unsigned int spc_tot_len:24;
+	};
+
 	union {
 		/* 3 bytes unused */
 		unsigned int recycle_and_rnr_flags;
@@ -384,6 +409,7 @@ struct sk_buff {
 			struct sk_buff	*next_free;
 			__u32       fpm_num;
 		};
+
 #ifdef CONFIG_64BIT
 	}  ____cacheline_aligned;
 	/*
@@ -558,19 +584,9 @@ struct sk_buff {
 	__u8			imq_flags:IMQ_F_BITS;
 #endif
 
-/*
- * ------------------------------- CAUTION!!! ---------------------------------
- * Do NOT add a new field or modify any existing field(except cb) before this 
- * line to the beginning of the struct sk_buff. Doing so will cause 
- * struct sk_buff to be incompatible with the compiled binaries and may cause 
- * the binary only modules to crash.
- * ---------------------------------------------------------------------------
- */
-
 	/* public: */
 
 	/* These elements must be at the end, see alloc_skb() for details.  */
-	sk_buff_data_t		tail;
 	sk_buff_data_t		end;
 #if defined(CONFIG_BCM_KF_NBUFF)
 	unsigned char		*head;
@@ -579,6 +595,18 @@ struct sk_buff {
 				*data;
 #endif
 	unsigned int		truesize;
+/*
+ * ------------------------------- CAUTION!!! ---------------------------------
+ * Do NOT add a new field or modify any existing fields before this 
+ * line to the beginning of the struct sk_buff. Doing so will cause 
+ * struct sk_buff to be incompatible with the compiled binaries and may cause 
+ * the binary only modules to crash.
+ * any custom fields that need to be initilazed to zero on allocation 
+ * should be added between truesize and tail
+ * binary modules should access any field after truesize via function calls
+ * ---------------------------------------------------------------------------
+ */
+	sk_buff_data_t		tail;
 	refcount_t		users;
 };
 
@@ -673,6 +701,10 @@ struct sk_buff {
 			struct sk_buff	*next_free;
 			__u32       fpm_num;
 		};
+
+#if IS_ENABLED(CONFIG_BCM_NF_FSMARK)
+		fsmark_conds_t      fsmark_conds;
+#endif
 #ifdef CONFIG_64BIT
 	}  ____cacheline_aligned;
 	/*
@@ -855,15 +887,6 @@ struct sk_buff {
 	 */
 	char			cb[BCM_SKB_CB_SIZE] __aligned(8);
 
-/*
- * ------------------------------- CAUTION!!! ---------------------------------
- * Do NOT add a new field or modify any existing field(except cb) before this 
- * line to the beginning of the struct sk_buff. Doing so will cause 
- * struct sk_buff to be incompatible with the compiled binaries and may cause 
- * the binary only modules to crash.
- * ---------------------------------------------------------------------------
- */
-
 	/* public: */
 	/* Android KABI preservation.
 	 *
@@ -887,7 +910,6 @@ struct sk_buff {
 	ANDROID_KABI_RESERVE(2);
 
 	/* These elements must be at the end, see alloc_skb() for details.  */
-	sk_buff_data_t		tail;
 	sk_buff_data_t		end;
 #if defined(CONFIG_BCM_KF_NBUFF)
 	unsigned char		*head;
@@ -895,7 +917,20 @@ struct sk_buff {
 	unsigned char		*head,
 				*data;
 #endif
+
 	unsigned int		truesize;
+/*
+ * ------------------------------- CAUTION!!! ---------------------------------
+ * Do NOT add a new field or modify any existing fields before this 
+ * line to the beginning of the struct sk_buff. Doing so will cause 
+ * struct sk_buff to be incompatible with the compiled binaries and may cause 
+ * the binary only modules to crash.
+ * any custom fields that need to be initilazed to zero on allocation 
+ * should be added between truesize and tail
+ * binary modules should access any field after truesize via function calls
+ * ---------------------------------------------------------------------------
+ */
+	sk_buff_data_t		tail;
 	refcount_t		users;
 
 	/* only useable after checking ->active_extensions != 0 */

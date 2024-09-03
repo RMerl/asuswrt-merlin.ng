@@ -38,7 +38,7 @@ Boston, MA 02111-1307, USA.
 #endif
 
 unsigned char g_blparms_buf[BLPARMS_SIZE];
-unsigned long memsize = SZ_16M;
+unsigned long long memsize = SZ_16M;
 int is_rootfs_set = 0;
 int is_ikosboot_set = 0;
 
@@ -128,11 +128,11 @@ int kerSysIsIkosBootSet(void)
 }
 EXPORT_SYMBOL(kerSysIsIkosBootSet);
 
-unsigned long getMemorySize(void)
+unsigned long long kerSysGetMemorySize(void)
 {
     return memsize;
 }
-EXPORT_SYMBOL(getMemorySize);
+EXPORT_SYMBOL(kerSysGetMemorySize);
 
 #if IS_ENABLED(CONFIG_BCM_ADSL)
 

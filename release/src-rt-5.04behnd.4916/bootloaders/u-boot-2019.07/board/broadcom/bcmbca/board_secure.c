@@ -16,6 +16,7 @@
 #include "bcm_secure.h"
 #include "bcm_otp.h"
 #include <watchdog.h>
+#include "ba_svc.h"
 
 
 /* callback can be called early in before relocation and 
@@ -89,10 +90,21 @@ int	bcm_sec_update_ctrl_arg(bcm_sec_ctrl_arg_t* arg,
 	return 0;
 }
 
-#if  defined(CONFIG_BCMBCA_OTP) 	
+#if defined(CONFIG_BCMBCA_OTP)
+
 /* based on the content of theotp field returns state - unsec, mfg or fld*/
 __weak int bcm_sec_boot_state(bcm_sec_state_t* sec_state)
 {
+    int rc = -1;
+#if defined(CONFIG_SMC_BASED)
+    rc = bcm_sec_smc_boot_state(sec_state);
+    if (SEC_STATE_GEN3_FLD == *sec_state) {
+        u32 version = 0, entries = 0, epoch = 0;
+        if (SEC_RC_OK == bcm_sec_smc_get_key_store_stats(&version, &entries, &epoch)) {
+            printf("Gen4 Secure Key Store version:%d, entries:%d, epoch:%d\n", version, entries, epoch);
+        }
+    }
+#else
 	otp_hw_ctl_data_t ctl_data = { 
 		.addr = SOTP_MAP_FLD_ROE,
 		.status = (OTP_HW_CMN_STATUS_ROW_DATA_VALID|OTP_HW_CMN_STATUS_ROW_RD_LOCKED)
@@ -102,7 +114,6 @@ __weak int bcm_sec_boot_state(bcm_sec_state_t* sec_state)
 		.data = (uintptr_t)&ctl_data, 
 		.size = sizeof(ctl_data)
 	};
-	int rc = -1;
 	u32 *btrm_en = NULL,
 		*btrm_cust_en = NULL,
 		*cust_mid = NULL, size = 0, res = 0;
@@ -147,9 +158,11 @@ __weak int bcm_sec_boot_state(bcm_sec_state_t* sec_state)
 done:
 	rc = 0;
 err:
+#endif // #if defined(CONFIG_SMC_BASED)
 	return rc;
 }
-#endif
+
+#endif // #if  defined(CONFIG_BCMBCA_OTP)
 
 int bcm_sec_set_sec_ser_num( char * ser_num, u32 ser_num_size)
 {
@@ -259,15 +272,19 @@ int bcm_sec_get_dev_spec_key( char * dev_spec_key, u32 dev_spec_key_size)
 
 #if  defined(CONFIG_BCMBCA_OTP) 	
 #define ANTI_ROLLBACK_LVL_NUMBITS	2
+#define ANTI_ROLLBACK_LVL_MAX		64
+#define ANTI_ROLLBACK_LVL_WORD		(sizeof(u32)*8/ANTI_ROLLBACK_LVL_NUMBITS)
+#define ANTI_ROLLBACK_WORDS_MAX		(ANTI_ROLLBACK_LVL_MAX/ANTI_ROLLBACK_LVL_WORD)
 #define ANTI_ROLLBACK_LVL_MASK		((1 << ANTI_ROLLBACK_LVL_NUMBITS)-1)
 #define ANTI_ROLLBACK_LVL_SHIFT		ANTI_ROLLBACK_LVL_NUMBITS
 static int bcm_sec_antirollback_lvl_ctl( u32 * lvl, int write )
 {
 	int rc = -1;
 	u32 * pdata = NULL;
+	u32 lvl_data[ANTI_ROLLBACK_WORDS_MAX] = {0};
 	u32 size = 0;
 	u32 current_lvl = 0;
-	u32 num_lvls_word = sizeof(u32)*8/ANTI_ROLLBACK_LVL_NUMBITS;
+	u32 num_lvls_word = ANTI_ROLLBACK_LVL_WORD;
 	u32 num_words = 0;
 	u32 i,j,tmp_lvl;
 
@@ -278,18 +295,22 @@ static int bcm_sec_antirollback_lvl_ctl( u32 * lvl, int write )
 			case OTP_MAP_CMN_ERR_UNSP:
 				/* ANTI-ROLLBACK not supported, return with level 0 */
 				printf("INFO: anti-rollback level not implemented. lvl = 0\n");
-			case OTP_HW_CMN_ERR_KEY_EMPTY:
 				rc = OTP_HW_CMN_OK;
+				break;
+			case OTP_HW_CMN_ERR_KEY_EMPTY:
+				if(write && *lvl) 
+					goto start_write;
+				else
+					rc = OTP_HW_CMN_OK;
 				break;
 			default:
 				printf("%s: ERROR! Failed to retrieve anti-rollback level data! rc:%d\n", __FUNCTION__, rc);
-				break;
 		}
 		*lvl = 0;
 		goto finish;
 	}
 
-	/* Calculate level */
+	/* Calculate retrieved level */
 	num_words = size/sizeof(u32);
 	for( i=0; i<num_words; i++ ){
 		for( j=0; j<num_lvls_word; j++) {
@@ -302,7 +323,16 @@ static int bcm_sec_antirollback_lvl_ctl( u32 * lvl, int write )
 	}
 
 finish_read:
+	/* Copy over data for further manipulation */
+	memcpy(lvl_data, pdata, size>ANTI_ROLLBACK_WORDS_MAX*sizeof(u32)?ANTI_ROLLBACK_WORDS_MAX*sizeof(u32):size);
+
+start_write:
 	if( write ) {
+		/* Reset size to maximum supported */
+		pdata = &lvl_data[0];
+		size = ANTI_ROLLBACK_WORDS_MAX*sizeof(u32);
+		num_words = ANTI_ROLLBACK_WORDS_MAX;
+
 		tmp_lvl = *lvl;
 		/* Do boundary checks on requested level */
 		if( tmp_lvl <= current_lvl ) {
@@ -310,8 +340,8 @@ finish_read:
 			rc = -1;
 			goto finish;
 		}
-		if( tmp_lvl > num_words * num_lvls_word ) { //FIXME BOUNDARY
-			printf("%s: ERROR! Requested anti-rollback level %d is higher than maximum %d\n", __FUNCTION__, tmp_lvl, num_words * num_lvls_word );
+		if( tmp_lvl > ANTI_ROLLBACK_LVL_MAX ) { 
+			printf("%s: ERROR! Requested anti-rollback level %d is higher than maximum %d\n", __FUNCTION__, tmp_lvl, ANTI_ROLLBACK_LVL_MAX);
 			rc = -1;
 			goto finish;
 		}
@@ -349,6 +379,13 @@ finish_read:
 			printf("%s: ERROR! Failed to commit anti-rollback level data! rc:%d\n", __FUNCTION__, rc);
 			goto finish;	
 		}
+#ifdef CONFIG_SMC_BASED
+		rc = bcm_otp_commit();
+		if(rc) {
+			printf("%s: ERROR! Failed to save anti-rollback level data! rc:%d\n", __FUNCTION__, rc);
+			goto finish;
+		}
+#endif
 	} else {
 		*lvl = current_lvl;
 	}
@@ -597,10 +634,36 @@ void bcm_sec_deinit(void)
 
 void bcm_sec_abort(void)
 {
+	/* Lock SOTP, wipe keys in SRAM and locally in .data */
 	bcm_sec_deinit();
-	WATCHDOG_RESET();
+#if defined(CONFIG_BCMBCA_OTP)
+	/* Wipe temp SOTP items */
+	bcm_otp_deinit();
+#endif
 	/* we never return if watchdog wasn't enabled */
-	hang();
+	WATCHDOG_RESET();
+
+#if !defined(CONFIG_SPL_BUILD) || \
+		(CONFIG_IS_ENABLED(LIBCOMMON_SUPPORT) && \
+		 CONFIG_IS_ENABLED(SERIAL_SUPPORT))
+	puts("### ERROR ### Boot Aborted. Please RESET the board ###\n");
+#endif
+	bootstage_error(BOOTSTAGE_ID_NEED_RESET);
+		
+	/* sanitize and disable mmu/dcache to enable loading of uboot to memory by jtag */
+#if defined (CONFIG_TPL_BUILD)	
+	/* TPL has a heap larger than L1 size, cleaning heap would effectively sanitize caches */
+	dcache_sanitize_disable(gd->malloc_base, gd->malloc_limit);
+#elif defined (CONFIG_SPL_BUILD)
+	/* SPL has a heap smaller than L1 size, we wipe the heap separately */
+	memset((void*)gd->malloc_base, 0, gd->malloc_limit);
+	/* Clean 32K of memmory to ensure caches are sanitized */
+	dcache_sanitize_disable(CONFIG_TPL_TEXT_BASE, SZ_32K);
+#endif	
+
+	/* Loop for ever */
+	for (;;)
+	;
 }
 
 

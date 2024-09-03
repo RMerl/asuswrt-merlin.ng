@@ -2,32 +2,29 @@
     Copyright 2000-2010 Broadcom Corporation
 
     <:label-BRCM:2011:DUAL/GPL:standard
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
     :>
 */
 
 #ifndef _WAN_DRV_H_
 #define _WAN_DRV_H_
+
+
+#if defined(__KERNEL__)
 
 #include <linux/types.h>
 
@@ -38,6 +35,10 @@
 #define wd_log_debug(fmt, ...)
 #endif
 
+#endif /* __KERNEL__ */
+
+
+/* For both kernel/user space */
 typedef enum
 {
     SERDES_WAN_TYPE_NONE,
@@ -60,6 +61,9 @@ typedef enum
     SERDES_WAN_TYPE_MAX,
 } serdes_wan_type_t;
 
+
+#if defined(__KERNEL__)
+
 typedef enum
 {
     DRV_SERDES_NO_ERROR, 
@@ -73,6 +77,7 @@ serdes_error_t;
 #define PMD_EWAKE_HOLD_TIME  0x2f
 
 int wan_serdes_config(serdes_wan_type_t wan_type);
+int wan_serdes_deconfig(void);
 serdes_wan_type_t wan_serdes_type_get(void);
 void wan_prbs_gen(uint32_t enable, int enable_host_tracking, int mode, serdes_wan_type_t wan_type, int *valid);
 void wan_prbs_status(int *valid, uint32_t *errors);
@@ -113,8 +118,12 @@ void wan_top_transmitter_control(enum transmitter_control mode);
 int ngpon_wan_post_init(uint32_t sync_frame_length);
 void ngpon_wan_top_reset_gearbox_rx(void);
 int wantop_bus_get(void);
-void wantop_resync(void);
+void wantop_resync(int cdr_relock, int tx_fifo_reset, int delay_in_msec);
 
 void pon_serdes_lof_fixup_irq(int lof);
+void pon_serdes_fixup_on_enable(void);
+void pon_serdes_fixup_on_disable(void);
+#endif /* __KERNEL__ */
+
 #endif
 

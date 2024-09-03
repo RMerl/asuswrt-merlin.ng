@@ -4,11 +4,22 @@
 	src: url(/fonts/xolonium.regular.woff) format("woff"),
 	url(/fonts/xolonium.regular.otf) format("opentype");
 }
-
+html::-webkit-scrollbar{
+    display: block;
+    width: 4px;
+    height: 4px;
+    padding: 2px;
+}
+html::-webkit-scrollbar-thumb{
+    background-color: rgb(255,165,35) !important;
+    border-radius: 50px;
+}
+html::-webkit-scrollbar-track{
+    background-color: #192229 !important;
+}
 body, .p1, .form-input{
 	color: #FFF;
 }
-
 body{
 	font-family: Roboto, Arial, STHeiti, Microsoft JhengHei, sans-serif;
 	background-color: rgb(0, 0, 0) !important;

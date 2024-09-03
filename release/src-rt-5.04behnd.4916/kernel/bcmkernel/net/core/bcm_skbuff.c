@@ -4,25 +4,19 @@
 *    Copyright (c) 2012 Broadcom 
 *    All Rights Reserved
 * 
-* Unless you and Broadcom execute a separate written software license
-* agreement governing use of this software, this software is licensed
-* to you under the terms of the GNU General Public License version 2
-* (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-* with the following added to such license:
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License, version 2, as published by
+* the Free Software Foundation (the "GPL").
 * 
-*    As a special exception, the copyright holders of this software give
-*    you permission to link this software with independent modules, and
-*    to copy and distribute the resulting executable under terms of your
-*    choice, provided that you also meet, for each linked independent
-*    module, the terms and conditions of the license of that module.
-*    An independent module is a module which is not derived from this
-*    software.  The special exception does not apply to any modifications
-*    of the software.
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
 * 
-* Not withstanding the above, under no circumstances may you combine
-* this software in any way with any other Broadcom software provided
-* under a license other than the GPL, without Broadcom's express prior
-* written consent.
+* 
+* A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+* writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+* Boston, MA 02111-1307, USA.
 * 
 :>
 */
@@ -32,6 +26,8 @@
 #include <linux/kernel.h>
 #include <linux/version.h>
 
+#include <linux/mm.h>
+#include <linux/highmem.h>
 #include <linux/in.h>
 #include <linux/inet.h>
 #include <linux/tcp.h>
@@ -70,11 +66,11 @@ size_t skb_aligned_size(void)
 }
 EXPORT_SYMBOL(skb_aligned_size);
 
-int skb_layout_test(int head_offset, int tail_offset, int end_offset)
+int skb_layout_test(int head_offset, int truesize_offset, int end_offset)
 {
 #define SKBOFFSETOF(member)	((size_t)&((struct sk_buff*)0)->member)
 	if ((SKBOFFSETOF(head) == head_offset) &&
-	    (SKBOFFSETOF(tail) == tail_offset) &&
+	    (SKBOFFSETOF(truesize) == truesize_offset) &&
 	    (SKBOFFSETOF(end) == end_offset))
 		return 1;
 	return 0;
@@ -111,7 +107,7 @@ EXPORT_SYMBOL(skb_data_pristine);
 
 static inline void _skb_headerreset(struct sk_buff *skb)
 {
-	memset(skb, 0, offsetof(struct sk_buff, truesize));
+	memset(skb, 0, offsetof(struct sk_buff, tail));
 }
 void skb_headerreset(struct sk_buff *skb)
 {
@@ -122,7 +118,7 @@ EXPORT_SYMBOL(skb_headerreset);
 
 static inline void _skb_shinforeset(struct skb_shared_info *skb_shinfo)
 {
-	memset(skb_shinfo, 0, offsetof(struct skb_shared_info, dataref));
+	memset(skb_shinfo, 0, offsetof(struct skb_shared_info, frags));
 }
 void skb_shinforeset(struct skb_shared_info *skb_shinfo)
 {
@@ -139,6 +135,41 @@ static inline void bcm_skb_set_end_pointer(struct sk_buff *skb, const int end_of
 	skb->end = skb->head + end_offset;
 #endif
 }
+
+/*below accesor functions are needed to maintain
+  skb compatibility in binary modules
+*/
+
+unsigned char *bcm_skb_tail_pointer(const struct sk_buff *skb)
+{
+#ifdef NET_SKBUFF_DATA_USES_OFFSET
+	return skb->head + skb->tail;
+#else
+	return skb->tail;
+#endif
+}
+EXPORT_SYMBOL(bcm_skb_tail_pointer);
+
+void bcm_skb_reset_tail_pointer(struct sk_buff *skb)
+{
+#ifdef NET_SKBUFF_DATA_USES_OFFSET
+	skb->tail = skb->data - skb->head;
+#else
+	skb->tail = skb->data;
+#endif
+}
+EXPORT_SYMBOL(bcm_skb_reset_tail_pointer);
+
+void bcm_skb_set_tail_pointer(struct sk_buff *skb, const int offset)
+{
+#ifdef NET_SKBUFF_DATA_USES_OFFSET
+	skb_reset_tail_pointer(skb);
+	skb->tail += offset;
+#else
+	skb->tail = skb->data + offset;
+#endif
+}
+EXPORT_SYMBOL(bcm_skb_set_tail_pointer);
 
 static void skb_headerinit_fields(unsigned int headroom, unsigned int datalen,
 		    struct sk_buff *skb, unsigned char *data,
@@ -222,7 +253,7 @@ void skb_headerinit(unsigned int headroom, unsigned int datalen,
 		    RecycleFuncP recycle_hook, unsigned long recycle_context,
 		    struct blog_t *blog_p)
 {
-	_skb_headerreset(skb); /* memset to truesize */
+	_skb_headerreset(skb); /* memset to tail */
 
 	skb_headerinit_fields(headroom, datalen, skb, data, recycle_hook,
 			      recycle_context, blog_p);
@@ -237,6 +268,12 @@ struct sk_buff *skb_header_alloc(void)
 	return kmem_cache_alloc(skbuff_head_cache, GFP_ATOMIC);
 }
 EXPORT_SYMBOL(skb_header_alloc);
+
+struct sk_buff *skb_header_alloc_flags(gfp_t flags)
+{
+	return kmem_cache_alloc(skbuff_head_cache, flags);
+}
+EXPORT_SYMBOL(skb_header_alloc_flags);
 
 
 int bcm_kfree_skbmem(struct sk_buff *skb)
@@ -324,7 +361,7 @@ struct sk_buff *skb_xlate_dp(struct fkbuff * fkb_p, uint8_t *dirty_p)
 		return skb_p;
 	skb_p->fclone = SKB_FCLONE_UNAVAILABLE;
 
-	memset(skb_p, 0, offsetof(struct sk_buff, truesize));
+	memset(skb_p, 0, offsetof(struct sk_buff, tail));
 
 	skb_p->data = fkb_p->data;
 	skb_p->head = (unsigned char *)(fkb_p + 1 );
@@ -637,6 +674,10 @@ void bcm_skbuff_skb_clone(struct sk_buff *n, struct sk_buff *skb)
 	/* Copy flags */
 	n->bcm_ext.flags = skb->bcm_ext.flags;
 
+	/* Reset spc fields */
+	n->is_spc = 0;
+	n->spc_tot_len = 0;
+
 	/* Copy over map_forward */
 	skbuff_bcm_ext_map_get(n, map_forward) = skbuff_bcm_ext_map_get(skb, map_forward);
 
@@ -645,6 +686,10 @@ void bcm_skbuff_skb_clone(struct sk_buff *n, struct sk_buff *skb)
 
 	/* Copy fc_ctxt */
 	n->bcm_ext.fc_ctxt = skb->bcm_ext.fc_ctxt;
+
+#if IS_ENABLED(CONFIG_BCM_NF_FSMARK)
+	n->bcm_ext.fsmark_conds = skb->bcm_ext.fsmark_conds;
+#endif
 	
 #if defined(CONFIG_BLOG)
 	if (n->blog_p) {
@@ -695,4 +740,52 @@ unsigned int skb_writable_headroom(const struct sk_buff *skb)
 }
 EXPORT_SYMBOL(skb_writable_headroom);
 
+/**
+ * bcm_convert_linear_to_nonlinear_skb - converts a linear skb to non-linear skb with atleast one frag page.
+ * @skb:    buffer to convert
+ * @hdrlen: length of data in the head skb and remaining will be in the frag page.
+ * Returns '0' on successfull conversion of linear to non-linear SKB, 
+ *         '-1' on failure to convert
+ */
+int bcm_convert_linear_to_nonlinear_skb(struct sk_buff *skb, uint32_t hdrlen)
+{
+    skb_frag_t *frag;
+    struct page *page_new;
+    unsigned char *vaddr;
+    struct skb_shared_info *sharedinfo = skb_shinfo(skb);
+    if (hdrlen > skb->len)
+    {
+        printk("hdrlen is greater than skb length \n");
+        return -1;
+    }
+    if (!skb_is_nonlinear(skb))
+    {
+        frag = &sharedinfo->frags[0];
+        page_new  = alloc_page(GFP_KERNEL);
+        if (page_new != NULL)
+        {
+            vaddr = kmap_atomic(page_new);
+            memcpy(vaddr,(skb->data + hdrlen),(skb->len - hdrlen));
+            kunmap_atomic(vaddr);
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5,15,0))
+            frag->page.p           = page_new;
+            frag->page_offset      = 0;
+            frag->size             = (skb->len - hdrlen);
+#else
+            frag->bv_page          = page_new;
+            frag->bv_offset        = 0;
+            frag->bv_len           = (skb->len - hdrlen);
+#endif
+            sharedinfo->nr_frags   = 1;
+            skb->data_len          = (skb->len - hdrlen);
 
+        }
+        else
+        {
+            printk("Failed to allocate frag page for creating non-linear skb");
+            return -1;
+        }
+    }
+    return 0;
+}
+EXPORT_SYMBOL(bcm_convert_linear_to_nonlinear_skb);

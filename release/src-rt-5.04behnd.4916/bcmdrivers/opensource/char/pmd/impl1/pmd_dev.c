@@ -5,25 +5,19 @@
    Copyright (c) 2013 Broadcom 
    All Rights Reserved
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
 :>
  ------------------------------------------------------------------------- */
@@ -882,7 +876,7 @@ static long pmd_dev_file_ioctl(struct file *file, unsigned int cmd, unsigned lon
         }
         case PMD_IOCTL_SET_WAN_TYPE:
         {
-            PMD_WAN_TYPES pmd_wan_type = PMD_AUTO_DETECT_WAN;
+            PMD_WAN_TYPES new_pmd_wan_type = PMD_AUTO_DETECT_WAN;
             pmd_params pmd_op;
             net_port_t net_port;
 
@@ -898,25 +892,25 @@ static long pmd_dev_file_ioctl(struct file *file, unsigned int cmd, unsigned lon
 
 #ifdef CONFIG_BCM963158
             /* 63158 supports GPON only */
-            pmd_wan_type = PMD_GPON_2_1_WAN;
+            new_pmd_wan_type = PMD_GPON_2_1_WAN;
 #else
             if (net_port.port == NET_PORT_EPON)
             {
                 if (net_port.speed == NET_PORT_SPEED_1001)
-                    pmd_wan_type = PMD_EPON_10_1_WAN;
+                    new_pmd_wan_type = PMD_EPON_10_1_WAN;
                 else if (net_port.speed == NET_PORT_SPEED_0201)
-                    pmd_wan_type = PMD_GPON_2_1_WAN;
+                    new_pmd_wan_type = PMD_GPON_2_1_WAN;
                 else if ((net_port.speed == NET_PORT_SPEED_0101) || (net_port.speed == NET_PORT_SPEED_NONE))
-                    pmd_wan_type = PMD_EPON_1_1_WAN;
+                    new_pmd_wan_type = PMD_EPON_1_1_WAN;
                 else
                     rc = -EFAULT;
             }
             else if (net_port.port == NET_PORT_AE && net_port.speed == NET_PORT_SPEED_0101)
-                pmd_wan_type = PMD_GBE_1_1_WAN;
+                new_pmd_wan_type = PMD_GBE_1_1_WAN;
             else if (net_port.port == NET_PORT_GPON && net_port.sub_type == NET_PORT_SUBTYPE_GPON)
-                pmd_wan_type = PMD_GPON_2_1_WAN;
+                new_pmd_wan_type = PMD_GPON_2_1_WAN;
             else if (net_port.port == NET_PORT_GPON && net_port.sub_type == NET_PORT_SUBTYPE_XGPON)
-                pmd_wan_type = PMD_XGPON1_10_2_WAN;
+                new_pmd_wan_type = PMD_XGPON1_10_2_WAN;
             else
             {
                 BCM_LOG_NOTICE(BCM_LOG_ID_PMD, "Error can't determine the PMD WAN type\n");
@@ -924,6 +918,12 @@ static long pmd_dev_file_ioctl(struct file *file, unsigned int cmd, unsigned lon
                 break;
             }
 #endif
+
+            if (new_pmd_wan_type == pmd_wan_type)
+            {
+                BCM_LOG_NOTICE(BCM_LOG_ID_PMD, "PMD WAN type not change, ignore\n");
+                break;
+            }
 
             if (pmd_op.buf)
             {
@@ -942,7 +942,7 @@ static long pmd_dev_file_ioctl(struct file *file, unsigned int cmd, unsigned lon
                 BCM_LOG_NOTICE(BCM_LOG_ID_PMD, "The PMD is not calibrated\n");
             }
 
-            rc = pmd_dev_reconfigure_wan_type_unlocked(pmd_wan_type, &static_calibration_parameters_from_json);
+            rc = pmd_dev_reconfigure_wan_type_unlocked(new_pmd_wan_type, &static_calibration_parameters_from_json);
             if (rc)
             {
 #ifdef CONFIG_BCM963158
@@ -954,7 +954,7 @@ static long pmd_dev_file_ioctl(struct file *file, unsigned int cmd, unsigned lon
                 rc = -EFAULT;
             }
             else
-                BCM_LOG_NOTICE(BCM_LOG_ID_PMD, "Reconfiguring PMD WAN type to %s\n", pmd_wan_type_string[pmd_wan_type]);
+                BCM_LOG_NOTICE(BCM_LOG_ID_PMD, "Reconfiguring PMD WAN type to %s\n", pmd_wan_type_string[new_pmd_wan_type]);
 
             break;
         }
@@ -2556,7 +2556,10 @@ static void pmd_dev_exit_steps(void)
 {
     BCM_LOG_DEBUG(BCM_LOG_ID_PMD, "\n");
 
-    del_timer(&periodic_timer);
+    if (periodic_timer.function)
+    {
+        del_timer(&periodic_timer);
+    }
 
     if (pmd_timer_thread)
     {
@@ -2857,6 +2860,8 @@ static int i2c_configure(struct device *dev, struct i2c_adapter **i2c, struct de
     return 0;
 }
 
+static struct bcmsfp_ops pmd_ops = { };
+
 static int pmd_probe(struct platform_device *pdev)
 {
     struct device *dev = &pdev->dev;
@@ -2896,8 +2901,6 @@ static int pmd_probe(struct platform_device *pdev)
         BCM_LOG_ERROR(BCM_LOG_ID_PMD, "Fail to enable xtal clock.\n");
         return -EINVAL;
     }
-
-    trxbus_module_present(i2c->nr, 1);
 
     pdata = devm_kzalloc(&pdev->dev, sizeof(*pdata), GFP_KERNEL);
     if (!pdata)
@@ -2943,8 +2946,25 @@ static int pmd_probe(struct platform_device *pdev)
     if (ret)
         dev_err(dev, "failed to register %d\n", ret);
     else
+    {
+        trxbus_module_init(i2c->nr, (struct sfp_data *)pdata, &pmd_ops, 1);
+        trxbus_module_present(i2c->nr);
         dev_info(dev, "registered\n");
+    }
+
     return ret ? -EINVAL : 0;
+}
+
+static int pmd_remove(struct platform_device *pdev)
+{
+    /* Here treat (g_pdata != NULL) as pmd probed */
+    if (g_pdata)
+    {
+        pmd_dev_exit();
+        msleep(1500);
+    }
+
+    return 0;
 }
 
 const struct of_device_id of_platform_pmd_table[] = {
@@ -2958,6 +2978,7 @@ struct platform_driver of_platform_pmd_driver = {
         .of_match_table = of_platform_pmd_table,
     },
     .probe = pmd_probe,
+    .remove = pmd_remove,
 };
 
 module_platform_driver(of_platform_pmd_driver);

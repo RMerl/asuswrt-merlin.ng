@@ -30,6 +30,10 @@
 #include <linux/tc_act/tc_skbedit.h>
 #include <net/tc_act/tc_skbedit.h>
 
+#ifdef CONFIG_BCM_KF_ENHANCED_TC
+#include <linux/netfilter/xt_FSMARK_sh.h>
+#endif /* CONFIG_BCM_KF_ENHANCED_TC */
+
 static unsigned int skbedit_net_id;
 static struct tc_action_ops act_skbedit_ops;
 
@@ -74,6 +78,10 @@ static int tcf_skbedit_act(struct sk_buff *skb, const struct tc_action *a,
 		skb->mark &= ~params->mask;
 		skb->mark |= params->mark & params->mask;
 	}
+#ifdef CONFIG_BCM_KF_ENHANCED_TC
+	if (params->flags & SKBEDIT_F_FSMARKID)
+	    fsmark_update(skb, params->fsmark_id);
+#endif /* CONFIG_BCM_KF_ENHANCED_TC */
 	if (params->flags & SKBEDIT_F_PTYPE)
 		skb->pkt_type = params->ptype;
 	return action;
@@ -90,6 +98,9 @@ static const struct nla_policy skbedit_policy[TCA_SKBEDIT_MAX + 1] = {
 	[TCA_SKBEDIT_MARK]		= { .len = sizeof(u32) },
 	[TCA_SKBEDIT_PTYPE]		= { .len = sizeof(u16) },
 	[TCA_SKBEDIT_MASK]		= { .len = sizeof(u32) },
+#ifdef CONFIG_BCM_KF_ENHANCED_TC
+	[TCA_SKBEDIT_FSMARKID]	= { .len = sizeof(u32) },
+#endif /* CONFIG_BCM_KF_ENHANCED_TC */
 	[TCA_SKBEDIT_FLAGS]		= { .len = sizeof(u64) },
 };
 
@@ -104,6 +115,9 @@ static int tcf_skbedit_init(struct net *net, struct nlattr *nla,
 	struct tc_skbedit *parm;
 	struct tcf_skbedit *d;
 	u32 flags = 0, *priority = NULL, *mark = NULL, *mask = NULL;
+#ifdef CONFIG_BCM_KF_ENHANCED_TC
+	u32 *fsmark_id = NULL;
+#endif /* CONFIG_BCM_KF_ENHANCED_TC */
 	u16 *queue_mapping = NULL, *ptype = NULL;
 	bool exists = false;
 	int ret = 0, err;
@@ -145,6 +159,13 @@ static int tcf_skbedit_init(struct net *net, struct nlattr *nla,
 		flags |= SKBEDIT_F_MASK;
 		mask = nla_data(tb[TCA_SKBEDIT_MASK]);
 	}
+
+#ifdef CONFIG_BCM_KF_ENHANCED_TC
+	if (tb[TCA_SKBEDIT_FSMARKID] != NULL) {
+		flags |= SKBEDIT_F_FSMARKID;
+		fsmark_id = nla_data(tb[TCA_SKBEDIT_FSMARKID]);
+	}
+#endif /* CONFIG_BCM_KF_ENHANCED_TC */
 
 	if (tb[TCA_SKBEDIT_FLAGS] != NULL) {
 		u64 *pure_flags = nla_data(tb[TCA_SKBEDIT_FLAGS]);
@@ -203,6 +224,10 @@ static int tcf_skbedit_init(struct net *net, struct nlattr *nla,
 		params_new->queue_mapping = *queue_mapping;
 	if (flags & SKBEDIT_F_MARK)
 		params_new->mark = *mark;
+#ifdef CONFIG_BCM_KF_ENHANCED_TC
+	if (flags & SKBEDIT_F_FSMARKID)
+		params_new->fsmark_id = *fsmark_id;
+#endif /* CONFIG_BCM_KF_ENHANCED_TC */
 	if (flags & SKBEDIT_F_PTYPE)
 		params_new->ptype = *ptype;
 	/* default behaviour is to use all the bits */
@@ -249,6 +274,11 @@ static int tcf_skbedit_dump(struct sk_buff *skb, struct tc_action *a,
 	if ((params->flags & SKBEDIT_F_MARK) &&
 	    nla_put_u32(skb, TCA_SKBEDIT_MARK, params->mark))
 		goto nla_put_failure;
+#ifdef CONFIG_BCM_KF_ENHANCED_TC
+	if ((params->flags & SKBEDIT_F_FSMARKID) &&
+	    nla_put_u32(skb, TCA_SKBEDIT_FSMARKID, params->fsmark_id))
+		goto nla_put_failure;
+#endif /* CONFIG_BCM_KF_ENHANCED_TC */
 	if ((params->flags & SKBEDIT_F_PTYPE) &&
 	    nla_put_u16(skb, TCA_SKBEDIT_PTYPE, params->ptype))
 		goto nla_put_failure;

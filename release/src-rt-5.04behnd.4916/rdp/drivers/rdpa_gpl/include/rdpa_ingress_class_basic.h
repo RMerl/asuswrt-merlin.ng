@@ -4,25 +4,19 @@
  *    Copyright (c) 2013 Broadcom 
  *    All Rights Reserved
  * 
- * Unless you and Broadcom execute a separate written software license
- * agreement governing use of this software, this software is licensed
- * to you under the terms of the GNU General Public License version 2
- * (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
- * with the following added to such license:
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License, version 2, as published by
+ * the Free Software Foundation (the "GPL").
  * 
- *    As a special exception, the copyright holders of this software give
- *    you permission to link this software with independent modules, and
- *    to copy and distribute the resulting executable under terms of your
- *    choice, provided that you also meet, for each linked independent
- *    module, the terms and conditions of the license of that module.
- *    An independent module is a module which is not derived from this
- *    software.  The special exception does not apply to any modifications
- *    of the software.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  * 
- * Not withstanding the above, under no circumstances may you combine
- * this software in any way with any other Broadcom software provided
- * under a license other than the GPL, without Broadcom's express prior
- * written consent.
+ * 
+ * A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+ * writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
  * 
  * :>
  */
@@ -87,15 +81,18 @@ typedef enum {
     RDPA_IC_L3_PROTOCOL, 
     RDPA_IC_GEM_FLOW,
     RDPA_IC_NETWORK_LAYER,
+#ifdef PARSER_BC_MC_SUPPORT
+    RDPA_IC_BC,
+    RDPA_IC_MC,
+    RDPA_IC_MC_L3,   
+#endif
     RDPA_IC_ANY,
 #if defined(XRDP) || defined(BCM_XRDP)
     RDPA_IC_OUTER_CFI,
     RDPA_IC_INNER_CFI,
 #endif
-#ifdef PARSER_BC_MC_SUPPORT
-    RDPA_IC_BC,
-    RDPA_IC_MC,
-    RDPA_IC_MC_L3,   
+#if defined(RDP_UFC) && defined(GENERIC_CLASS_EXTRA_LKP)
+    RDPA_IC_GENERIC_CLASS_EXTRA_LKP,
 #endif
     RDPA_IC_LAST_KEY,
 } rdpa_ic_value;
@@ -136,15 +133,18 @@ typedef enum
     RDPA_IC_MASK_L3_PROTOCOL     = (1ULL << RDPA_IC_L3_PROTOCOL),     /**< L3 Protocol (Other-0, IPv4-1, IPv6-2) */
     RDPA_IC_MASK_GEM_FLOW        = (1ULL << RDPA_IC_GEM_FLOW),        /**< GEM / LLID */
     RDPA_IC_MASK_NETWORK_LAYER   = (1ULL << RDPA_IC_NETWORK_LAYER),   /**< 1 do on L3 / 0 do on L2 */
+#ifdef PARSER_BC_MC_SUPPORT
+    RDPA_IC_MASK_BC             = (1ULL << RDPA_IC_BC),               /**< BC */
+    RDPA_IC_MASK_MC             = (1ULL << RDPA_IC_MC),               /**< MC */
+    RDPA_IC_MASK_MC_L3          = (1ULL << RDPA_IC_MC_L3),            /**< MC_L3 */
+#endif
     RDPA_IC_MASK_ANY             = (1ULL << RDPA_IC_ANY),             /**< Match All packets */
 #if defined(XRDP) || defined(BCM_XRDP)
     RDPA_IC_MASK_OUTER_CFI      = (1ULL << RDPA_IC_OUTER_CFI),        /**< Outer CFI */
     RDPA_IC_MASK_INNER_CFI      = (1ULL << RDPA_IC_INNER_CFI),        /**< Inner CFI */
 #endif
-#ifdef PARSER_BC_MC_SUPPORT
-    RDPA_IC_MASK_BC             = (1ULL << RDPA_IC_BC),               /**< BC */
-    RDPA_IC_MASK_MC             = (1ULL << RDPA_IC_MC),               /**< MC */
-    RDPA_IC_MASK_MC_L3          = (1ULL << RDPA_IC_MC_L3),            /**< MC_L3 */
+#if defined(RDP_UFC) && defined(GENERIC_CLASS_EXTRA_LKP)
+    RDPA_IC_MASK_GENERIC_CLASS_EXTRA_LKP = (1ULL << RDPA_IC_GENERIC_CLASS_EXTRA_LKP), /**< Generic classs extra lookup (internal use) */
 #endif
 } rdpa_ic_fields;
 
@@ -156,7 +156,12 @@ typedef enum
     RDPA_IC_TYPE_QOS,     /**< Classification type QoS */
     RDPA_IC_TYPE_GENERIC_FILTER, /**< Classification type Generic Filter */
     RDPA_IC_TYPE_IP_FLOW = RDPA_IC_TYPE_GENERIC_FILTER,
+#if defined(RDP_UFC)
     RDPA_IC_TYPE_NUM = RDPA_IC_TYPE_GENERIC_FILTER,
+#else
+    RDPA_IC_TYPE_GENERIC_CLASS_EXTRA_LKP,
+    RDPA_IC_TYPE_NUM = RDPA_IC_TYPE_GENERIC_CLASS_EXTRA_LKP,
+#endif
 } rdpa_ic_type;
 
 /** Ingress classification rule type */
@@ -195,7 +200,8 @@ typedef enum
 {
     RDPA_ALL_TRAFFIC = 0,          /**< All traffic */
     RDPA_FLOW_MISSED_TRAFFIC = 1,  /**< Only Flow missed traffic */
-    RDPA_NUM_OF_FILTER_LOCATIONS = 2
+    RDPA_ALL_TRAFFIC_RX = 2,       /**< All rx traffic */
+    RDPA_NUM_OF_FILTER_LOCATIONS = 3
 } rdpa_filter_location_t;
 
 /** Ingress classification flow key 
@@ -254,6 +260,9 @@ typedef struct
     rdpa_network_layer_type_t   network_layer;    /**< Run generic on l3 or l2 \XRDP_LIMITED */
 
     /**<Reserved fields for internal use by Runner FW */
+#if defined(RDP_UFC) && defined(GENERIC_CLASS_EXTRA_LKP)
+    uint8_t                     reserved_generic_class_extra_lkp;
+#endif
     uint32_t                    reserved_ingress_rdd_vport;
 } rdpa_ic_key_t;
 

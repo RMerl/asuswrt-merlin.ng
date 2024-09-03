@@ -73,7 +73,8 @@ typedef enum _ks_data_type {
         KS_DATA_TYPE_CUST_BROM_MODE=0xa,
         KS_DATA_TYPE_DEV_KEY_128=0xb,
         KS_DATA_TYPE_DEV_KEY_256=0xc,
-        KS_DATA_TYPE_MAX=0xd
+        KS_DATA_TYPE_4B = 0xd,
+        KS_DATA_TYPE_MAX=0xe
 } ks_data_type_t;
 
 typedef enum _ks_data_state {
@@ -92,9 +93,17 @@ typedef enum _ks_sec_ver {
         KS_ARCH_SEC_VERv2=0x3,
 } ks_arch_sec_ver_t;
 
-#define KS_STAT_MSK 0xff
-#define KS_DATA_GET_TYPE(d) (d&KS_STAT_MSK)
-#define KS_DATA_GET_STATE(d) ((d>>8)&KS_STAT_MSK)
+#define KS_STAT_MSK 0xf
+#define KS_TYPE_MSK 0xff
+#define KS_RID_MSK 0x3ff
+#define KS_ORD_MSK 0x3f
+#define KS_DATA_GET_TYPE(d) ((d)&KS_TYPE_MSK)
+#define KS_DATA_GET_STATE(d) (((d)>>8)&KS_STAT_MSK)
+#define KS_DATA_GET_TRANSIT_STATE(d) (((d)>>12)&KS_STAT_MSK)
+#define KS_DATA_GET_RID(d) (((d)>>16)&KS_RID_MSK)
+#define KS_DATA_GET_ORD(d) (((d)>>26)&KS_ORD_MSK)
+#define KS_DATA_SET_ORD(___d, __ord) \
+		do{ ___d = ((___d&~(KS_ORD_MSK<<26))|((__ord&KS_ORD_MSK)<<26)); } while(0);
 
 struct __attribute__((packed)) ks_req_info {
         /*This what was requested by build*/
@@ -112,8 +121,20 @@ struct __attribute__((packed)) ks_key_info {
 	/* must be multiple of u32*/
         u8 data[0];
 };
-
 typedef struct ks_key_info ks_key_info_t;
+
+struct __attribute__((packed)) ks_key_info_c {
+};
+
+typedef struct ks_key_info_c ks_key_info_c_t;
+
+struct __attribute__((packed)) ks_key_info_compat {
+	u32 size;
+	u32 type_state;
+	/* must be multiple of u32*/
+	u32 data;
+};
+typedef struct ks_key_info_compat ks_key_info_compat_t;
 
 typedef struct __attribute__((packed)) ks_key {
         /*crc of the data, sig and the key_info*/
@@ -153,53 +174,22 @@ ks_err_t ks_init(bcm_sec_state_t sec_state,
                 u32 sec_arch,
 		const u8* pub,
 		const u8* aes_cbc128);
-ks_err_t ks_get_data_info(ks_data_type_t type, 
-			ks_data_state_t state,
-			void* data);
 ks_err_t ks_get_req_info(ks_req_info_t* req_info);
-ks_err_t ks_type2size(ks_data_type_t data_type, u32 *size);
 ks_err_t ks_reset(void);
 
+ks_err_t ks_run_request(bcm_sec_state_t sec_state, int (*)(otp_map_feat_t, const u8*, u32));
 
-
-
-//#define DRY_RUN_FLD 1
-
-#ifdef DRY_RUN_MFG
-static int  __dbg_dr_mfg; 
-static inline int dbg_is_dr_mfg(void) {return __dbg_dr_mfg; }
-static inline void dbg_set_dr_mfg(void) {__dbg_dr_mfg = 1;}
-#define dbg_dr_mfg	dbg_is_dr_mfg() 
-#define dbg_dr_mfg_set	dbg_set_dr_mfg() 
-#else
-#define dbg_dr_mfg 0
-#define dbg_dr_mfg_set
-#endif
-
-#ifdef DRY_RUN_FLD
-static int  __dbg_dr_fld; 
-static inline int dbg_is_dr_fld(void) { return __dbg_dr_fld; }
-static inline void dbg_set_dr_fld(void) {__dbg_dr_fld = 1;}
-#define dbg_dr_fld	dbg_is_dr_fld() 
-#define dbg_dr_fld_set	dbg_set_dr_fld() 
-#else
-#define dbg_dr_fld  0 
-#define dbg_dr_fld_set
-#endif
-
-#if defined(DRY_RUN_MFG) || defined(DRY_RUN_FLD) 
-#define DRY_RUN
-#endif
+#define MAX_ORD  63 
 
 //#define DRY_RUN
+
 #ifdef DRY_RUN
 #define BRKPT	do {						\
 			*((volatile u32*)0xff800600)=0x6;	\
-			asm("1: b 1b"); }while(0)
+			asm("1: b 1b"); 			\
+		} while(0)
 #else
 #define BRKPT
 #endif
-
-#define dbg_dr (dbg_dr_fld || dbg_dr_mfg)
 
 #endif

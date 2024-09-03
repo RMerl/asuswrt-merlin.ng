@@ -239,7 +239,11 @@ static int hash_accept(struct socket *sock, struct socket *newsock, int flags,
 	struct alg_sock *ask = alg_sk(sk);
 	struct hash_ctx *ctx = ask->private;
 	struct ahash_request *req = &ctx->req;
+#if defined(CONFIG_BCM_KF_VLA_REMOVAL_BACKPORT)
+	char state[HASH_MAX_STATESIZE];
+#else
 	char state[crypto_ahash_statesize(crypto_ahash_reqtfm(req)) ? : 1];
+#endif
 	struct sock *sk2;
 	struct alg_sock *ask2;
 	struct hash_ctx *ctx2;

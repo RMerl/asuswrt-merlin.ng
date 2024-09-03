@@ -22,6 +22,7 @@
 #else
 #define ACCESS_LOG_DEBUG(_args...)
 #endif
+#define ACCESS_LOG_POLL_MAX	2000
 
 uintptr_t rdp_runner_core_addr[1];
 
@@ -37,6 +38,7 @@ extern int access_log_restore(const access_log_tuple_t *entry_array)
 	uint32_t op;
 	uint32_t size;
 	uint32_t value;
+	uint32_t poll_cnt = 0;
 	addr_op_size_st addr_op_size;
 
 	while (1) {
@@ -108,6 +110,17 @@ extern int access_log_restore(const access_log_tuple_t *entry_array)
 		}
 		else if (op == ACCESS_LOG_OP_STOP) {
 			break;
+		}
+		else if (op == ACCESS_LOG_OP_POLL) {
+			while (((*(volatile uint32_t *)((uintptr_t)addr) & entry->value) != entry->value) &&
+			       (poll_cnt < ACCESS_LOG_POLL_MAX)) {
+				poll_cnt++;
+				xrdp_usleep(1);
+			}
+			if (poll_cnt >= ACCESS_LOG_POLL_MAX) {
+				ACCESS_LOG_PRINT("!!!didn't complete polling. Reg_val = 0x%08x@addr=0x%08x\n",
+				       *(volatile uint32_t *)((uintptr_t)addr), addr);
+			}
 		}
 		else {
 			ACCESS_LOG_PRINT("!!!!!!! op=%d: invalid operation\n",

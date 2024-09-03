@@ -75,6 +75,23 @@ err:
 	return rc;
 }
 
+int bcm_otp_deinit()
+{
+	otp_map_cmn_err_t rc = OTP_MAP_CMN_OK;
+
+	if (s_bcm_otp) {
+		if (s_bcm_otp->map[BCM_OTP_MAP])
+			rc = otp_map_cmn_deinit(s_bcm_otp->map[BCM_OTP_MAP]);
+
+		if (s_bcm_otp->map[BCM_SOTP_MAP])
+			rc = otp_map_cmn_deinit(s_bcm_otp->map[BCM_SOTP_MAP]);
+
+		memset(s_bcm_otp, 0, sizeof(bcm_otp_t));
+		s_bcm_otp = NULL;
+	}
+	return rc;
+}
+
 otp_map_cmn_t* bcm_otp(otp_map_t id)
 {
 	return (id < BCM_OTP_MAP || id >= BCM_MAP_MAX || !s_bcm_otp)?  NULL : s_bcm_otp->map[id];
@@ -170,6 +187,21 @@ otp_map_cmn_err_t bcm_sotp_ctl_perm( otp_hw_cmn_ctl_t ctl,
 	
 err:
 	return rc;	
+}
+
+int bcm_otp_get_chip_ser_num(unsigned int* val)
+{
+    int ret = -1;
+    ret = bcm_otp_get(OTP_MAP_CSEC_CHIPID, val);
+#if defined (CONFIG_OTP_V1)
+    /* OTP Serial number is split into 2 fields. Extract both and then combine them */
+    if(!ret) {
+        unsigned int val_extra = 0;
+        ret = bcm_otp_get(OTP_MAP_CSEC_CHIPID_EXTRA, &val_extra);
+        *val |= val_extra;
+    }
+#endif    
+    return ret;
 }
 
 int bcm_otp_get_ldo_trim(unsigned int* val)

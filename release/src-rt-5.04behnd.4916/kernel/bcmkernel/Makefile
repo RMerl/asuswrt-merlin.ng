@@ -52,10 +52,12 @@ obj-$(CONFIG_BRIDGE_EBT_SKBVLAN)		+= net/netfilter/ebt_skbvlan_m.o
 obj-$(CONFIG_BRIDGE_EBT_SKIPLOG_T)		+= net/netfilter/ebt_skiplog.o
 obj-$(CONFIG_BRIDGE_EBT_TIME)			+= net/netfilter/ebt_time.o
 obj-$(CONFIG_BRIDGE_EBT_U32)			+= net/netfilter/ebt_u32.o
+obj-$(CONFIG_BRIDGE_EBT_DSCP_T)			+= net/netfilter/ebt_dscp_t.o
 obj-$(CONFIG_BRIDGE_EBT_SKB_PRIORITY)		+= net/netfilter/ebt_skb_priority.o
 obj-$(CONFIG_BRIDGE_EBT_VTAG)			+= net/netfilter/ebt_vtag.o
 obj-$(CONFIG_BRIDGE_EBT_WMM_MARK)		+= net/netfilter/ebt_wmm_mark.o
 obj-$(CONFIG_BRIDGE_EBT_REJECT)			+= net/netfilter/ebt_reject.o
+obj-$(CONFIG_BRIDGE_EBT_FSMARK_T)		+= net/netfilter/ebt_fsmark.o
 ifneq ($(CONFIG_NF_CONNTRACK),)
 obj-y						+= net/netfilter/bcm_nf_conntrack.o
 endif
@@ -68,6 +70,7 @@ obj-$(CONFIG_NF_CONNTRACK_RTSP)			+= net/netfilter/nf_conntrack_rtsp.o
 obj-$(CONFIG_NF_DYNDSCP)			+= net/netfilter/nf_dyndscp.o
 obj-$(CONFIG_BCM_NF_SCS)		 	+= net/netfilter/xt_scs.o
 obj-$(CONFIG_NF_MSCS)   			+= net/netfilter/xt_mscs.o
+obj-$(CONFIG_BCM_NF_FSMARK)		 	+= net/netfilter/xt_FSMARK.o
 obj-$(CONFIG_NF_NAT_IPSEC)			+= net/netfilter/nf_nat_ipsec.o
 obj-$(CONFIG_NF_NAT_PROTO_ESP)			+= net/netfilter/nf_nat_proto_esp.o
 obj-$(CONFIG_NF_NAT_PT)				+= net/netfilter/nf_nat_pt.o
@@ -80,3 +83,5 @@ obj-$(CONFIG_NETFILTER_XT_TARGET_SKIPLOG)	+= net/netfilter/xt_SKIPLOG.o
 obj-$(CONFIG_NFT_BCM_EXTEND)			+= net/netfilter/nft_bcm_extend.o
 obj-$(CONFIG_BCM_MACSEC)			+= drivers/net/macsec.o
 obj-$(subst m,y,$(CONFIG_BCM_WLAN))	+= src/bcm_pci_quirks.o
+obj-$(CONFIG_BCM_TINY_KCORE)			+= tkcore.o
+tkcore-y					+= src/tiny_kcore.o

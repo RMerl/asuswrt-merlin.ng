@@ -17,9 +17,14 @@
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
+<script type="text/javascript" src="/form.js"></script>
 <script>
 var url_rulelist_array = "<% nvram_char_to_ascii("","url_rulelist"); %>";
 var url_firewall_enable = '<% nvram_get("url_enable_x"); %>';
+
+var current_page = window.location.pathname.split("/").pop();
+var faq_index_tmp = get_faq_index(FAQ_List, current_page, 1);
+
 function initial(){
 	show_menu();
 	show_url_rulelist();
@@ -174,8 +179,11 @@ function done_validating(action){
 							<tbody>
 							<tr>
 								<td bgcolor="#4D595D" valign="top">
+								<div class="container">
+
 									<div>&nbsp;</div>
 									<div class="formfonttitle"><#menu5_5#> - <#menu5_5_2#></div>
+									<div class="formfonttitle_help"><i onclick="show_feature_desc(`<#HOWTOSETUP#>`)" class="icon_help"></i></div>
 									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									<div class="formfontdesc"><#FirewallConfig_UrlFilterEnable_sectiondesc#></div>
 									<!--div class="formfontdesc"><#FirewallConfig_KeywordFilterEnable_sectiondesc2#></div-->	
@@ -224,7 +232,11 @@ function done_validating(action){
 									<div id="url_rulelist_Block"></div>
 									<div class="apply_gen">
 										<input type="button" class="button_gen" onclick="applyRule()" value="<#CTL_apply#>"/>
-									</div>			
+									</div>
+
+									</div>	<!-- for .container  -->
+									<div class="popup_container popup_element_second"></div>
+
 								</td>
 							</tr>
 							</tbody>
@@ -232,7 +244,7 @@ function done_validating(action){
 					</td>
 </form>
 				</tr>
-			</table>				
+			</table>
 			<!--===================================Ending of Main Content===========================================-->		
 		</td>	
 		<td width="10" align="center" valign="top">&nbsp;</td>

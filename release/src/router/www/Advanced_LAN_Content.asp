@@ -19,6 +19,7 @@
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
+<script type="text/javascript" src="/form.js"></script>
 
 <script><% wanlink(); %>
 
@@ -44,6 +45,9 @@ if(tagged_based_vlan){
 
 var alert_sdn_conflict_str = "* Conflicting with one of your $feature$ profile LAN IP address, you will not be able to access the Internet. Please change to another IP address."; // Untranslated
 alert_sdn_conflict_str = stringSafeGet(alert_sdn_conflict_str.replace("$feature$", Guest_Network_naming));
+
+var current_page = window.location.pathname.split("/").pop();
+var faq_index_tmp = get_faq_index(FAQ_List, current_page, 1);
 
 function initial(){
 	show_menu();
@@ -460,8 +464,11 @@ function check_vpn(){		//true: lAN ip & VPN client ip conflict
 	<tbody>
 	<tr>
 		  <td bgcolor="#4D595D" valign="top">
+		  <div class="container">
+		  	
 		  <div>&nbsp;</div>
 		  <div class="formfonttitle"><#menu5_2#> - <#menu5_2_1#></div>
+		  <div class="formfonttitle_help"><i onclick="show_feature_desc(`<#HOWTOSETUP#>`)" class="icon_help"></i></div>
 		  <div style="margin:10px 0 10px 5px;" class="splitLine"></div>
       <div class="formfontdesc"><#LANHostConfig_display1_sectiondesc#></div>
       <div id="VPN_conflict" class="formfontdesc" style="color:#FFCC00;display:none;"><#LANHostConfig_display1_sectiondesc2#></div>
@@ -562,7 +569,8 @@ function check_vpn(){		//true: lAN ip & VPN client ip conflict
 			<input class="button_gen" onclick="applyRule()" type="button" value="<#CTL_apply#>"/>
 		</div>
 
-	
+		</div>	<!-- for .container  -->
+		<div class="popup_container popup_element_second"></div>
 		
 	  </td>
 	</tr>
@@ -573,7 +581,7 @@ function check_vpn(){		//true: lAN ip & VPN client ip conflict
 		</td>
 	</form>					
 				</tr>
-			</table>				
+			</table>
 			<!--===================================End of Main Content===========================================-->
 </td>
 

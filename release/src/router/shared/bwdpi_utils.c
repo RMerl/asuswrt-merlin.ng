@@ -308,7 +308,7 @@ int check_filesize_over(char *path, long int size)
 */
 time_t get_last_month_timestamp()
 {
-	struct tm local, t;
+	struct tm local;
 	time_t now, t_t = 0;
 			
 	// get timestamp and tm
@@ -316,15 +316,13 @@ time_t get_last_month_timestamp()
 	localtime_r(&now, &local);
 
 	// copy t from local
-	t.tm_year = local.tm_year;
-	t.tm_mon = local.tm_mon;
-	t.tm_mday = 1;
-	t.tm_hour = 0;
-	t.tm_min = 0;
-	t.tm_sec = 0;
+	local.tm_mday = 1;
+	local.tm_hour = 0;
+	local.tm_min = 0;
+	local.tm_sec = 0;
 
 	// transfer tm to timestamp
-	t_t = mktime(&t);
+	t_t = mktime(&local);
 
 	return t_t;
 }

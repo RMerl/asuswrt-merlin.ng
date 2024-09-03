@@ -3,27 +3,21 @@
     All Rights Reserved
 
     <:label-BRCM:2017:DUAL/GPL:standard
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
     :>
 */
 
@@ -65,6 +59,16 @@ extern void *nbuff_pkt_get_tag(void *pkt);
 extern int nbuff_pkttag_attach(void *osh, void *pkt);
 extern uint nbuff_pktflowid(void *pkt);
 extern void nbuff_pktsetflowid(void *pkt, uint x);
+#ifdef PP_XPM
+extern int nbuff_pp_xpm_init(osl_t *osh, bool *enab);
+extern int nbuff_pp_xpm_deinit(osl_t *osh);
+extern struct sk_buff *nbuff_pp_xpm_skb_get(osl_t *osh);
+extern void nbuff_pp_xpm_skb_free(osl_t *osh, struct sk_buff *skb);
+extern void *nbuff_pp_xpm_databuf_get(osl_t *osh, int len);
+extern void nbuff_pp_xpm_databuf_free(osl_t *osh, void *pdata);
+extern int nbuff_pp_xpm_attach_skb(osl_t *osh, struct sk_buff *skb, void *pdata,
+	uint32 headroom, uint32 len);
+#endif /* PP_XPM */
 
 /* packet primitives */
 
@@ -259,6 +263,18 @@ extern void nbuff_pktsetflowid(void *pkt, uint x);
 	nbuff_pkttag_attach((osh), (pkt))
 
 #endif /* NBUFF_IS_SKBUFF */
+
+#ifdef PP_XPM
+#define PP_XPM_INIT(osh, enab)			nbuff_pp_xpm_init((osh), (enab))
+#define PP_XPM_DEINIT(osh)			nbuff_pp_xpm_deinit((osh))
+#define PP_XPM_SKB_GET(osh)			nbuff_pp_xpm_skb_get((osh))
+#define PP_XPM_SKB_FREE(osh, skb)		nbuff_pp_xpm_skb_free((osh), (skb))
+#define PP_XPM_DATABUF_GET(osh, len)		nbuff_pp_xpm_databuf_get((osh), (len))
+#define PP_XPM_DATABUF_FREE(osh, pdata) 	nbuff_pp_xpm_databuf_free((osh), (pdata))
+#define PP_XPM_ATTACH_SKB(osh, skb, pdata, h, l)	\
+	nbuff_pp_xpm_attach_skb((osh), (skb), (pdata), (h), (l))
+#endif /* PP_XPM */
+
 
 /* MACROS NOT COMMON TO FKB and SKB */
 

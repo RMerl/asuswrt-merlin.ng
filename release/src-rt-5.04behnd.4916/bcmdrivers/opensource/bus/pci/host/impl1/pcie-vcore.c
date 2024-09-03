@@ -1,28 +1,22 @@
 /*
 <:copyright-BRCM:2015:DUAL/GPL:standard
 
-   Copyright (c) 2015 Broadcom
+   Copyright (c) 2015 Broadcom 
    All Rights Reserved
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
 :>
 */
@@ -58,6 +52,15 @@ written consent.
 #define BCMVPCIE_HC_REV_MASK                0x0000FFFF
 #define BCMVPCIE_HC_REV_OFFSET              0xb0
 
+/* SAT_TIMER: PCIe Precision Timing Management Satellite Timer Registers */
+#define MLO_SAT_TIMER_REGS_OFFSET           0x0080
+#define SAT_TIMER_CTRL_OFFSET               (MLO_SAT_TIMER_REGS_OFFSET+0x0000)
+#define SAT_TIMER_SET_L_OFFSET              (MLO_SAT_TIMER_REGS_OFFSET+0x000C)
+#define SAT_TIMER_SET_H_OFFSET              (MLO_SAT_TIMER_REGS_OFFSET+0x0010)
+#define SAT_TIMER_INC_L_OFFSET              (MLO_SAT_TIMER_REGS_OFFSET+0x0014)
+#define SAT_TIMER_INC_H_OFFSET              (MLO_SAT_TIMER_REGS_OFFSET+0x0018)
+
+
 /*
  * +-----------------------------------------------------
  *  Macros
@@ -71,8 +74,9 @@ written consent.
  */
 
 /*
- * PCIe Vitual Device control block
+ * PCIe Virtual Device control block
  *
+ * @mlo_reg     : WIFI_MLO register base
  * @cfg         : virtual device configuration
  * @active      : flag to specify device configuration exists
  * @enabled     : flag to specify powered and enabled
@@ -80,6 +84,7 @@ written consent.
  */
 struct bcmvpcie_vdev
 {
+	struct resource      mlo_reg;
 	struct bcmvpcie_vdev_cfg cfg;
 	bool                 active;
 	bool                 enabled;
@@ -87,7 +92,7 @@ struct bcmvpcie_vdev
 };
 
 /*
- * PCIe Vitual Core control block
+ * PCIe Virtual Core control block
  *
  * @vid      : virtual core id
  * @num_dev  : number of virtual devices per core
@@ -167,6 +172,41 @@ static u32 bcmvpcie_hc_core_reg[] = {
  *  Local inline functions
  * +-----------------------------------------------------
  */
+#if defined(CONFIG_BRCM_IKOS) || defined(CONFIG_BCM_PCIE_PMC_BRD_STUBS)
+static inline int bcmvpcie_pmc_power_up(int core) {
+	return 0;
+}
+static inline int bcmvpcie_pmc_power_down(int core) {
+	return 0;
+}
+static inline int bcmvpcie_get_chip_id(void) {
+	unsigned long chipid = 0;
+	int res;
+	char chipidstr[32];
+
+	snprintf(chipidstr, sizeof(chipidstr), "0x%d", CONFIG_BCM_CHIP_NUMBER);
+
+	res = kstrtoul(chipidstr, 0, &chipid);
+
+	if (res != 0) {
+	    HCD_ERROR("kstrtoul for 0x%d with [%s] returned res %d\r\n",
+	        CONFIG_BCM_CHIP_NUMBER, chipidstr, res);
+	}
+
+	return chipid;
+}
+#else /* !CONFIG_BRCM_IKOS && !CONFIG_BCM_PCIE_PMC_BRD_STUBS */
+static inline int bcmvpcie_pmc_power_up(int core) {
+	return pmc_wlan_power_up(core);
+}
+static inline int bcmvpcie_pmc_power_down(int core) {
+	return pmc_wlan_power_down(core);
+}
+static inline int bcmvpcie_get_chip_id(void) {
+	return kerSysGetChipId();
+}
+#endif /* !CONFIG_BRCM_IKOS && !CONFIG_BCM_PCIE_PMC_BRD_STUBS */
+
 static inline bool bcmvpcie_hc_access_valid(struct bcmvpcie_hc_cb *phc_cb,
 	uint32 bus, uint32 dev, uint32 func, uint *pidx)
 {
@@ -202,7 +242,7 @@ static inline int bcmvpcie_hc_pwrup_dev(struct pcie_hc_core *phc, int devidx)
 	struct bcmvpcie_hc_cb *phc_cb = (struct bcmvpcie_hc_cb*)(phc->phc_cb);
 
 	phc_cb->dev[devidx].enabled = FALSE;
-	rc = pmc_wlan_power_up(phc_cb->dev[devidx].cfg.slot);
+	rc = bcmvpcie_pmc_power_up(phc_cb->dev[devidx].cfg.slot);
 	if (rc == kPMC_NO_ERROR) {
 	    phc_cb->dev[devidx].enabled = TRUE;
 	    HCD_INFO("vcore [%d] vdev [%d] powered up\n", phc_cb->vid, devidx);
@@ -218,7 +258,7 @@ static inline void bcmvpcie_hc_pwrdn_dev(struct pcie_hc_core *phc, int devidx)
 {
 	struct bcmvpcie_hc_cb *phc_cb = (struct bcmvpcie_hc_cb*)(phc->phc_cb);
 
-	pmc_wlan_power_down(phc_cb->dev[devidx].cfg.slot);
+	bcmvpcie_pmc_power_down(phc_cb->dev[devidx].cfg.slot);
 
 	phc_cb->dev[devidx].enabled = FALSE;
 	HCD_INFO("vcore [%d] vdev [%d] powered down\n", phc_cb->vid, devidx);
@@ -541,10 +581,16 @@ static int bcmvpcie_hc_parse_slot_dt(struct pcie_hc_core *phc,
 	regs->subsystem_id_vendor_id = regs->device_vendor_id;
 
 	/* WIFI core register base */
-	err = of_address_to_resource(np, devidx, &base);
+	err = of_address_to_resource(np, 0, &base);
 	if (err != 0) {
 	    HCD_ERROR("No reg DT entry for core [%d] , skipping core\n", slot);
 	    return -EINVAL;
+	}
+
+	/* WIFI MLO core register base (optional) */
+	err = of_address_to_resource(np, 1, &pvdev->mlo_reg);
+	if (err == 0) {
+	    HCD_INFO("Using WIFI MLO register base for core [%d]\n", slot);
 	}
 
 	/* WIFI core interrupts */
@@ -699,15 +745,38 @@ static int bcmvpcie_hc_parse_dt(struct pcie_hc_core *phc)
 static int bcmvpcie_hc_core_config(struct pcie_hc_core *phc)
 {
 	struct bcmvpcie_hc_cb *phc_cb = (struct bcmvpcie_hc_cb*)(phc->phc_cb);
+	struct bcmvpcie_vdev *pvdev = NULL;
+	int devidx;
+
 	HCD_FN_ENT();
+
+	for (devidx = 0; devidx < MAX_NUM_VDEV; devidx++) {
+	    pvdev = &phc_cb->dev[devidx];
+
+	    if ((pvdev->mlo_reg.start != 0) && (phc->info.ctmr != NULL)) {
+	        void __iomem *mlo_base;
+
+	        /* Get access to registers */
+	        mlo_base = devm_ioremap_resource(&phc->pdev->dev, &pvdev->mlo_reg);
+	        if (IS_ERR(mlo_base)) {
+	            HCD_ERROR("Core [%d] Vcore [%d] get mlo base failure\n",
+	                phc->info.id, phc_cb->vid);
+	            HCD_FN_RET_VAL(PTR_ERR(mlo_base));
+	        }
+
+	        /* Synchronize satellite timer counters */
+	        pcie_hcd_sync_stmr(phc->pdrv, (mlo_base+MLO_SAT_TIMER_REGS_OFFSET));
+
+	        /* Release resources, no longer used by vpcie */
+	        devm_iounmap(&phc->pdev->dev, mlo_base);
+	    }
+	}
 
 	HCD_LOG("[%d] vcore [%d] initialized with [%d] device%s\r\n",
 	    phc->info.id, phc_cb->vid, phc_cb->num_dev,
 	    (phc_cb->num_dev > 1) ? "s" : "");
 
-	HCD_FN_EXT();
-
-	return 0;
+	HCD_FN_RET_VAL(0);
 }
 
 /*
@@ -768,7 +837,7 @@ static int bcmvpcie_hc_init_dev(struct pcie_hc_core *phc)
 	        uint32 class_rev = (PCI_CLASS_NETWORK_OTHER << 16);
 
 	        /* ChipId as device Id, vendor Broadcom */
-	        dev_vend |= ((kerSysGetChipId() & 0xFFFF) << 16);
+	        dev_vend |= ((bcmvpcie_get_chip_id() & 0xFFFF) << 16);
 	        pvdev->cfg.regs.device_vendor_id = dev_vend;
 	        pvdev->cfg.regs.subsystem_id_vendor_id = dev_vend;
 

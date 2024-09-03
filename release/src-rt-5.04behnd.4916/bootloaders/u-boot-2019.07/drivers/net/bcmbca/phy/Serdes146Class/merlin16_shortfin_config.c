@@ -152,7 +152,7 @@ static void merlin_core_init(phy_dev_t *phy_dev)
     phy_serdes_t *phy_serdes = phy_dev->priv;
     uint32 CoreNum = phy_dev->core_index;
     uint32 PortNum = phy_dev->usxgmii_m_index;
-#if !defined(CONFIG_BCM6765)
+#if !defined(CONFIG_BCM96765)
     uint32 wr_addr;
     wr_addr =  ETH_PHY_TOP_REG_R2PMI_LP_BCAST_MODE_CNTRL;
     host_reg_write(wr_addr, 0);   // Turn off broadcast
@@ -322,12 +322,13 @@ void merlin_reg_prog(prog_seq_tbl *prog_seq_tbl_ptr, uint32 CoreNum, uint32 Port
     int _log_level = log_level;
 
     log_level = 0;
-    for(;(SEQ_TYPE_GET(prog_seq_tbl_ptr->reg_desc) != SEQ_TYPE_REG) || strcmp(prog_seq_tbl_ptr->reg_desc, ""); prog_seq_tbl_ptr++) {
+    for(;prog_seq_tbl_ptr->reg_desc != 0; prog_seq_tbl_ptr++) {
         if(parse_sim_opts("-d VERBOSE")) {
-            print_log("MerlinSupport::%s():%s\n", __func__, prog_seq_tbl_ptr->reg_desc);
+            if (SEQ_TYPE_GET(prog_seq_tbl_ptr) == SEQ_TYPE_REG)
+                print_log("MerlinSupport::%s():%s\n", __func__, prog_seq_tbl_ptr->reg_desc);
         }
 
-        if (SEQ_TYPE_GET(prog_seq_tbl_ptr->reg_desc) == SEQ_TYPE_FUN) {
+        if (SEQ_TYPE_GET(prog_seq_tbl_ptr) == SEQ_TYPE_FUN) {
             fun0 = SEQ_TYPE_FUNC_GET(prog_seq_tbl_ptr->reg_desc, void (*)(void));
             switch(parse_seq_fun(prog_seq_tbl_ptr, CoreNum, PortNum, arg)) {
                 case 0:
@@ -353,7 +354,7 @@ void merlin_reg_prog(prog_seq_tbl *prog_seq_tbl_ptr, uint32 CoreNum, uint32 Port
             continue;
         }
 
-        if (SEQ_TYPE_GET(prog_seq_tbl_ptr->reg_desc) == SEQ_TYPE_NEST_SEQ) {
+        if (SEQ_TYPE_GET(prog_seq_tbl_ptr) == SEQ_TYPE_NEST_SEQ) {
             merlin_reg_prog(SEQ_TYPE_NSEQ_GET(prog_seq_tbl_ptr->reg_desc), CoreNum, PortNum);
             continue;
         }
@@ -652,6 +653,12 @@ static void merlin_lane_config_speed(uint32 CoreNum, uint32 PortNum, uint32 LNK_
         print_log("MerlinSupport::CONFIGURING FOR USXGMII AN SLAVE\n");
         merlin_reg_prog(usxgmii_an_slave, CoreNum, PortNum);
         merlin_reg_prog(set_usxgmii_an_enable, CoreNum, PortNum);
+    } else if (LNK_SPD == MLN_SPD_AN_SXGMII_SLAVE) {  // SXGMII AN SLAVE
+    	print_log("MerlinSupport::CONFIGURING FOR SXGMII AN SLAVE\n");
+        merlin_reg_prog(AN_speedup, CoreNum, PortNum);   //---- for simulation speed up -----
+        merlin_reg_prog(set_usxgmii_2p5g_baud, CoreNum, PortNum);
+        merlin_reg_prog(usxgmii_an_slave, CoreNum, PortNum);
+        merlin_reg_prog(set_usxgmii_an_enable, CoreNum, PortNum);
     } else if (LNK_SPD == MLN_SPD_AN_ALL_SPEEDS_IEEE_CL73) {
         merlin_reg_prog(auto_neg_ieee_cl73, CoreNum, PortNum);
         //merlin_reg_prog(auto_neg_10g_kr_cl73, CoreNum, PortNum);
@@ -874,13 +881,13 @@ void merlin_chk_lane_link_status(phy_dev_t *phy_dev)
 
     /* Should work for both USXGMII M and legacy, => PCS Link */
     rd_addr = (phy_serdes->core_num*0x100) + MERLIN_AN_LINK_STATUS;
-        for(i=0; i<10; i++) {  /* To filter out certain speed false link up */
+    for(i=0; i<10; i++) {  /* To filter out certain speed false link up */
         rd_data = host_reg_read(rd_addr);
         phy_dev->link = (rd_data & (0x1 << phy_serdes->usxgmii_m_index)) > 0;
-            if (phy_dev->link == 0)
-                break;
-            msleep(1);
-        }
+        if (phy_dev->link == 0)
+            break;
+        msleep(1);
+    }
 
     if (!phy_dev->link)
         goto end;
@@ -927,21 +934,21 @@ void merlin_chk_lane_link_status(phy_dev_t *phy_dev)
 
         for (i=0; i < TotalCheckCycles; i++)
         {
-        rd_data = merlin_pmi_read16(phy_serdes->core_num, 0x0, 3, 0xc466);
+        	rd_data = merlin_pmi_read16(phy_serdes->core_num, 0x0, 3, 0xc466);
 
-        // Checking BAD_R_TYPE, R_TYPE_E, Latched_RX_E or current RX_E
-        if ((rd_data & (1<<7)) || (rd_data&0x7) == 4
+        	// Checking BAD_R_TYPE, R_TYPE_E, Latched_RX_E or current RX_E
+        	if ((rd_data & (1<<7)) || (rd_data&0x7) == 4
                 || ((rd_data>>12) & 0xf) == 0xf || ((rd_data>>12) & 0xf) == 0 )
-        {
-                error_cnt++;
-                if (error_cnt >= ErrorCountLinkDown)
-                {
-            phy_dev->link = 0;
-                    printk("Serdes at %d False Link Up with 3.c466h = 0x%04x at speed %dMbps mode %d\n",
-                            phy_dev->addr, rd_data, phy_dev->speed, phy_dev->current_inter_phy_type);
-            goto end;
-        }
-    }
+        	{
+            	error_cnt++;
+            	if (error_cnt >= ErrorCountLinkDown)
+            	{
+            		phy_dev->link = 0;
+                	printk("Serdes at %d False Link Up with 3.c466h = 0x%04x at speed %dMbps mode %d\n",
+                    	phy_dev->addr, rd_data, phy_dev->speed, phy_dev->current_inter_phy_type);
+                	goto end;
+            	}
+        	}
             msleep(10);
         }
     }
@@ -984,83 +991,99 @@ static int phy_speed_to_merlin_speed(phy_dev_t *phy_dev)
 
     switch(phy_dev->current_inter_phy_type) {
         case INTER_PHY_TYPE_USXGMII:
-                phy_serdes->serdes_speed_mode = MLN_SPD_AN_USXGMII_SLAVE;
+            phy_serdes->serdes_speed_mode = MLN_SPD_AN_USXGMII_SLAVE;
             phy_dev->an_enabled = 1;
             break;
         case INTER_PHY_TYPE_USXGMII_MP:
-                phy_serdes->serdes_speed_mode = MLN_SPD_AN_USXGMII_MP_SLAVE;
+            phy_serdes->serdes_speed_mode = MLN_SPD_AN_USXGMII_MP_SLAVE;
             phy_dev->an_enabled = 1;
             break;
+        case INTER_PHY_TYPE_SXGMII:
+            if (phy_dev->an_enabled == 0)
+                return -1;
+            else
+                phy_serdes->serdes_speed_mode = MLN_SPD_AN_SXGMII_SLAVE;
+            break;
         case INTER_PHY_TYPE_MLTI_SPEED_BASE_X_AN:
-                phy_serdes->serdes_speed_mode = MLN_SPD_AN_ALL_SPEEDS_IEEE_CL73;
+            phy_serdes->serdes_speed_mode = MLN_SPD_AN_ALL_SPEEDS_IEEE_CL73;
             phy_dev->an_enabled = 1;
             break;
 
         case INTER_PHY_TYPE_SGMII:
             if (phy_serdes->sfp_module_type != SFP_FIXED_PHY) 
-                {
+            {
                 phy_serdes->serdes_speed_mode = MLN_SPD_AN_SGMII_SLAVE;
-                    phy_dev->an_enabled = 1;
-                }
+                phy_dev->an_enabled = 1;
+            }
             else    /* Copper PHY, no AN support */
             {
-                    phy_dev->an_enabled = 0;
-                if (phy_serdes->config_speed == PHY_SPEED_100)
-                    phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_100M;
-                else
-                    phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_1G;
+                switch ( phy_serdes->config_speed)
+                {
+                    case PHY_SPEED_1000:
+                        phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_1G;
+                        break;
+                    case PHY_SPEED_100:
+                    	phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_100M;
+                        break;
+                    case PHY_SPEED_10:
+                        phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_10M;
+                        break;
+                    default:
+                        printk(" Invalid speed setting on SGMII: addr: %d, config_speed: %d\n",
+                            phy_dev->addr, phy_serdes->config_speed);
+                }
             }
             break;
 
         case INTER_PHY_TYPE_10GBASE_R:
-                phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_10G_R;
+            phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_10G_R;
             phy_dev->an_enabled = 0;
             //phy_serdes->serdes_speed_mode = MLN_SPD_AN_10G_KR_IEEE_CL73_CL74;
             //phy_dev->an_enabled = 1;
             break;
 
         case INTER_PHY_TYPE_5000BASE_X:
-                phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_5G;
+            phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_5G;
             phy_dev->an_enabled = 0;
             break;
         case INTER_PHY_TYPE_5GBASE_X:
-                phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_5G_X;
+            phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_5G_X;
             phy_dev->an_enabled = 0;
             break;
         case INTER_PHY_TYPE_5GBASE_R:
-                phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_5G_R;
+            phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_5G_R;
             phy_dev->an_enabled = 0;
             //phy_serdes->serdes_speed_mode = MLN_SPD_AN_5G_KR_IEEE_CL73;
             //phy_dev->an_enabled = 1;
             break;
 
         case INTER_PHY_TYPE_2500BASE_X:
-                phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_2P5G;
+            phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_2P5G;
             phy_dev->an_enabled = 0;
             break;
         case INTER_PHY_TYPE_2P5GBASE_R:
-                phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_2P5G_R;
+            phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_2P5G_R;
             phy_dev->an_enabled = 0;
             break;
         case INTER_PHY_TYPE_2P5GBASE_X:
-                phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_2P5G_X;
+            phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_2P5G_X;
             phy_dev->an_enabled = 0;
             //phy_serdes->serdes_speed_mode = MLN_SPD_AN_2P5G_KX_IEEE_CL73;
             //phy_dev->an_enabled = 1;
             break;
 
         case INTER_PHY_TYPE_1000BASE_X:
-                phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_1G;
+            phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_1G;
             phy_dev->an_enabled = 0;
             //phy_serdes->serdes_speed_mode = MLN_SPD_AN_1G_IEEE_CL37;
             //phy_dev->an_enabled = 1;
             break;
         case INTER_PHY_TYPE_1GBASE_X:
-                phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_1G_X;
+            phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_1G_X;
             phy_dev->an_enabled = 0;
             break;
         case INTER_PHY_TYPE_1GBASE_R:
-                phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_1G_R;
+            phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_1G_R;
             phy_dev->an_enabled = 0;
             break;
 
@@ -1166,7 +1189,7 @@ static int merline_speed_set_core(phy_dev_t *phy_dev)
 #endif
     }
 
-#if defined(CONFIG_BCM96765)
+#if defined(CONFIG_BCM96765) || defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764)
     /* For 80MHZ reference clock */
     if (vco_12p5g)
     {

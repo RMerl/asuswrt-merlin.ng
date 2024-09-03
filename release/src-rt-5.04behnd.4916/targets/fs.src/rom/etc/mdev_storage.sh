@@ -1,7 +1,6 @@
 #!/bin/sh
 source /etc/profile
 
-if [ ! -x "/bin/send_cms_msg" ]; then exit 1; fi
 
 HINT_OF_CMS_STORAGE_INIT_DONE="/var/initStorageServiceDone"
 dev_name=$1
@@ -44,13 +43,33 @@ is_cms_storage_ready()
     echo "1"
 }
 
+send_cms_message()
+{
+    # This is for non-cms platforms, just return
+    if [ ! -x "/bin/send_cms_msg" ]; then return; fi
+
+    # local_msg_id is got from the parameter
+    local_msg_id=$1
+    # local_partition_id is 0 when partition is not set, $partition otherwise
+    if [ -z $partition ]; then
+        local_partition_id=0
+    else
+        local_partition_id=$partition
+    fi
+
+    # send the message to cms ssk
+    if [ $(is_cms_storage_ready) -eq 1 ]; then
+        send_cms_msg -e $local_msg_id $EID_SMD -D "$disk $local_partition_id $dev_name"
+        # echo "send_cms_msg message $local_msg_id eid $EID_SMD disk $disk partition $local_partition_id dev_name $dev_name" >> /tmp/hotplug.log
+    fi
+}
+
 case "$ACTION" in
     "add")
         if [ -z $partition ]; then
             echo 1024 > "/sys/block/$dev_name/queue/read_ahead_kb"
-            if [ $(is_cms_storage_ready) -eq 1 ]; then
-                send_cms_msg -e $CMS_MSG_STORAGE_ADD_PHYSICAL_MEDIUM $EID_SMD -D "$disk 0 $dev_name"
-            fi
+            send_cms_message $CMS_MSG_STORAGE_ADD_PHYSICAL_MEDIUM
+
             if [ -e "$dev_name"?"" ]; then
                 # echo "partition exist. Do mount in next run(ex, sda1)." >> /tmp/hotplug.log
                 exit 0
@@ -71,9 +90,7 @@ case "$ACTION" in
             ntfs-3g /dev/$dev_name $mnt -o use_ino,direct_io,big_writes
             rc=$?;
             if [ ${rc} -eq 0 ]; then
-               if [ $(is_cms_storage_ready) -eq 1 ]; then
-                   send_cms_msg -e $CMS_MSG_STORAGE_ADD_LOGICAL_VOLUME $EID_SMD -D "$disk $partition $dev_name"
-               fi
+               send_cms_message $CMS_MSG_STORAGE_ADD_LOGICAL_VOLUME
                # echo " - add $dev_name done ntfs-3g" >> /tmp/hotplug.log
                exit 0
             fi
@@ -82,17 +99,13 @@ case "$ACTION" in
           rm -r $mnt
           exit 1
         fi
-        if [ $(is_cms_storage_ready) -eq 1 ]; then
-            send_cms_msg -e $CMS_MSG_STORAGE_ADD_LOGICAL_VOLUME $EID_SMD -D "$disk $partition $dev_name"
-        fi
+        send_cms_message $CMS_MSG_STORAGE_ADD_LOGICAL_VOLUME
         # echo " - add $dev_name done" >> /tmp/hotplug.log
 
         ;;
     "remove")
         if [ -z $partition ]; then
-            if [ $(is_cms_storage_ready) -eq 1 ]; then
-                send_cms_msg -e $CMS_MSG_STORAGE_REMOVE_PHYSICAL_MEDIUM $EID_SMD -D "$disk 0 $dev_name"
-            fi
+            send_cms_message $CMS_MSG_STORAGE_REMOVE_PHYSICAL_MEDIUM
             if [ -e "$dev_name"?"" ]; then
                 # echo "partition exist." >> /tmp/hotplug.log
                 exit 0;
@@ -102,9 +115,7 @@ case "$ACTION" in
                 partition=0
             fi
         fi
-        if [ $(is_cms_storage_ready) -eq 1 ]; then
-            send_cms_msg -e $CMS_MSG_STORAGE_REMOVE_LOGICAL_VOLUME $EID_SMD -D "$disk $partition $dev_name"
-        fi
+        send_cms_message $CMS_MSG_STORAGE_REMOVE_LOGICAL_VOLUME
         umount -l $mnt
         rc=$?; if [ ${rc} -ne 0 ]; then exit 1;fi
         rm -r $mnt

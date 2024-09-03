@@ -165,7 +165,7 @@ int rdp_cpu_ring_read_packet_copy(uint32_t ringId, CPU_RX_PARAMS* rxParams);
 int rdp_cpu_ring_create_ring(uint32_t ring_id,
                              uint8_t ring_type,
                              uint32_t entries,
-                             bdmf_phys_addr_t *ring_head, uint32_t packetSize,
+                             bdmf_phys_addr_t *ring_head,
                              RING_CB_FUNC *cbFunc,
                              uint32_t prio);
 
@@ -174,7 +174,6 @@ int rdp_cpu_ring_create_ring_ex(uint32_t ring_id,
                                 uint32_t entries,
                                 bdmf_phys_addr_t* ring_head,
                                 bdmf_phys_addr_t* rw_idx_addr,
-                                uint32_t packetSize,
                                 RING_CB_FUNC* ringCb,
                                 uint32_t prio);
 
@@ -191,12 +190,6 @@ void rdp_packet_dump(uint32_t ringId, rdpa_cpu_rx_info_t *info);
 void* rdp_databuf_alloc(RING_DESCTIPTOR *pDescriptor);
 
 void rdp_databuf_free(void *pBuf, uint32_t context, RING_DESCTIPTOR *pDescriptor);
-
-/* Kmem_Cache */
-
-void* rdp_databuf_alloc_cache(RING_DESCTIPTOR *pDescriptor);
-
-void rdp_databuf_free_cache(void *pBuf, uint32_t context, RING_DESCTIPTOR *pDescriptor);
 
 extern bdmf_fastlock feed_ring_lock;
 

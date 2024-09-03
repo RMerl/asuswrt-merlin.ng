@@ -60,6 +60,10 @@ function switchTab(id){
 					})();
 					return (support_night_mode ? "530px" : $(this).css("height"));
 				})
+
+			if(isSupport("sdn_mainfh")){
+				$("#wireless_tab").hide();
+			}
 		</script>
 	</div>
 </body>

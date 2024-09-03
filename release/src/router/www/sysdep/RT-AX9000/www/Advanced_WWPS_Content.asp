@@ -11,11 +11,11 @@
 <title><#Web_Title#> - <#menu5_1_2#></title>
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
-<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script><% wl_get_parameter(); %>
 $(function () {
@@ -23,20 +23,24 @@ $(function () {
 		addNewScript('/require/modules/amesh.js');
 	}
 });
-var wsc_config_state_old = '<% nvram_get("wsc_config_state"); %>';
-var wps_enable_old = '<% nvram_get("wps_enable"); %>';
-var wl_wps_mode_old = '<% nvram_get("wl_wps_mode"); %>';
+
+const nvram = httpApi.nvramGet(["wsc_config_state", "wps_enable", "wps_band_x", "wl_wps_mode", "productid", "wl_closed", "wl0_radio", "wl1_radio"]);
+var wsc_config_state_old = nvram.wsc_config_state;
+var wps_enable_old = nvram.wps_enable;
+var wl_wps_mode_old = nvram.wl_wps_mode;
 var secs;
 var timerID = null;
 var timerRunning = false;
 var timeout = 2000;
 var delay = 1000;
-var productid='<% nvram_get("productid"); %>';
+var productid= nvram.productid;
 var wl_ssid_closed = "<% nvram_get("wl_closed"); %>";
-var curState = "<% nvram_get("wps_enable"); %>";
-var radio_2 = '<% nvram_get("wl0_radio"); %>';
-var radio_5 = '<% nvram_get("wl1_radio"); %>';
+let main_fh_status = {};
+var curState = nvram.wps_enable;
+var radio_2 = nvram.wl0_radio;
+var radio_5 = nvram.wl1_radio;
 var band_string = "";
+let cur_wps_band = nvram.wps_band_x;
 
 function reject_wps(auth_mode, wep){
 	return (auth_mode == "open" && wep != "0") || auth_mode == "shared" || auth_mode == "psk" || auth_mode == "wpa" || auth_mode == "wpa2" || auth_mode == "wpawpa2" || auth_mode == "radius";
@@ -71,7 +75,8 @@ function initial(){
 				document.getElementById("wps_opt2").remove();
 			}
 			
-			document.getElementById("wps_switch").style.display = "none";	
+			document.getElementById("wps_switch").style.display = "none";
+			document.form.wps_unit.value = cur_wps_band;
 			document.getElementById("wps_select").style.display = "";
 		}								
 		
@@ -111,8 +116,9 @@ function initial(){
 	loadXML();
 	document.getElementById('WPS_hideSSID_hint').innerHTML = "<#FW_note#> <#WPS_hideSSID_hint#>";
 	if("<% nvram_get("wl_closed"); %>" == 1){
-		document.getElementById('WPS_hideSSID_hint').style.display = "";	
-	}	
+		document.getElementById('WPS_hideSSID_hint').style.display = "";
+	}
+	main_fh_status = get_mainfh_by_wl_unit($('select[name="wps_unit"]').val());
 }
 
 function SwitchBand(){
@@ -218,7 +224,7 @@ function enableWPS(){
 
 function configCommand(){
 	if(lantiq_support && wave_ready != 1){
-		alert("Please wait a minute for wireless ready");
+		alert(`<#Wireless_ready#>`);
 		return false;
 	}
 
@@ -239,7 +245,7 @@ function configCommand(){
 
 function resetWPS(){
 	if(lantiq_support && wave_ready != 1){
-		alert("Please wait a minute for wireless ready");
+		alert(`<#Wireless_ready#>`);
 		return false;
 	}
 
@@ -722,6 +728,78 @@ function checkWLReady(){
 	    }
   	});
 }
+function get_mainfh_by_wl_unit(_wl_unit){
+	let mainfh_info = {};
+	if(isSupport("sdn_mainfh")){
+		const wifi_band_mainfh = (()=>{
+			const options = [
+				{"band":"2G","value":"1"},
+				{"band":"5G","value":"2"},
+				{"band":"5G1","value":"4"},
+				{"band":"5G2","value":"8"},
+				{"band":"6G","value":"16"},
+				{"band":"6G1","value":"32"},
+				{"band":"6G2","value":"64"}
+			];
+			let result = [];
+			if(isSupport("noWiFi")){
+				return result;
+			}
+			if(get_wl_unit_by_band("2G") != ""){
+				result = result.concat(options.find(el => el.value === "1"));
+			}
+			if(get_wl_unit_by_band("5G2") != ""){
+				result = result.concat(options.filter(el => ["4", "8"].includes(el.value)));
+			}
+			else if(get_wl_unit_by_band("5G") != ""){
+				result = result.concat(options.find(el => el.value === "2"));
+			}
+			if(get_wl_unit_by_band("6G2") != ""){
+				result = result.concat(options.filter(el => ["32", "64"].includes(el.value)));
+			}
+			else if(get_wl_unit_by_band("6G") != ""){
+				result = result.concat(options.find(el => el.value === "16"));
+			}
+			return result;
+		})();
+		let specific_mainfh_band = 0;
+		$.each(wifi_band_mainfh, function(index, item){
+			const wl_unit = get_wl_unit_by_band(item.band);
+			if(wl_unit == _wl_unit){
+				specific_mainfh_band = parseInt(item.value);
+				return false;
+			}
+		});
+		let mainfh_info_list = [];
+		const mainfh_sdn_rl = decodeURIComponent(httpApi.nvramCharToAscii(["sdn_rl"]).sdn_rl).split("<").filter(item => item.includes("MAINFH"));
+		mainfh_sdn_rl.forEach(item=>{
+			if(item != ""){
+				const apmIdx = item.split(">")[5];
+				const apm_ssid = decodeURIComponent(httpApi.nvramCharToAscii([`apm${apmIdx}_ssid`])[`apm${apmIdx}_ssid`]);
+				const apm_enable = decodeURIComponent(httpApi.nvramCharToAscii([`apm${apmIdx}_enable`])[`apm${apmIdx}_enable`]);
+				const apm_hide_ssid = decodeURIComponent(httpApi.nvramCharToAscii([`apm${apmIdx}_hide_ssid`])[`apm${apmIdx}_hide_ssid`]);
+				const apm_dut_list = decodeURIComponent(httpApi.nvramCharToAscii([`apm${apmIdx}_dut_list`])[`apm${apmIdx}_dut_list`]).split("<");
+				let apm_band = "0";
+				if(apm_dut_list[1] != undefined && apm_dut_list[1] != ""){
+					const dut_list_arr = apm_dut_list[1].split(">");
+					apm_band = dut_list_arr[1];
+				}
+				mainfh_info_list.push({"ssid":apm_ssid, "band":apm_band, "enable":apm_enable, "hide_ssid":apm_hide_ssid});
+			}
+		});
+		if(mainfh_info_list.length == 0){
+			mainfh_info_list = [{"ssid":"", "band":"", "enable":"0", "hide_ssid":"1"}];
+		}
+		$.each(mainfh_info_list, function(index, item){
+			const band = parseInt(item.band);
+			if(band & specific_mainfh_band){
+				mainfh_info = item;
+				return false;
+			}
+		});
+	}
+	return mainfh_info;
+}
 </script>
 </head>
 
@@ -795,14 +873,29 @@ function checkWLReady(){
 			    	<div class="left" style="width: 94px;" id="radio_wps_enable"></div>
 						<div class="clear"></div>					
 						<script type="text/javascript">
-							$('#radio_wps_enable').iphoneSwitch('<% nvram_get("wps_enable"); %>', 
-								 function() {
-									if(wl_ssid_closed == 1){
-										alert(band_string + " : <#note_hide_SSID_WPS#>");
+							$('#radio_wps_enable').iphoneSwitch(curState,
+								function() {
+									const show_wps_hint = (()=>{
+										if(isSupport("sdn_mainfh")){
+											if($.isEmptyObject(main_fh_status)){
+												return `${band_string} Main Network has not been established yet`;
+											}
+											else if(main_fh_status.hide_ssid == "1"){
+												return `${band_string} : <#note_hide_SSID_WPS#>`;
+											}
+											else
+												return "";
+										}
+										else{
+											return (wl_ssid_closed == 1) ? `${band_string} : <#note_hide_SSID_WPS#>` : "";
+										}
+									})();
+									if(show_wps_hint != ""){
+										alert(show_wps_hint);
 										$('#iphone_switch').animate({backgroundPosition: -37}, "slow", function() {});
 										return false;
 									}
-	
+
 									if(( wps_multiband_support && document.form.wps_multiband.value == "1")
 									  || document.form.wps_dualband.value == "1"){	//Ralink, Qualcomm Atheros, RT-AC87U WPS multiband case
 										if(	document.form.wl0_auth_mode_x.value == "shared" ||	document.form.wl1_auth_mode_x.value == "shared"

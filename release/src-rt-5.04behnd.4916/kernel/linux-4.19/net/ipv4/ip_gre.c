@@ -459,22 +459,21 @@ static void __gre_xmit(struct sk_buff *skb, struct net_device *dev,
         /* Push GRE header. */
         gre_build_header(skb, tunnel->tun_hlen,
                  flags, proto, tunnel->parms.o_key,
-                 ((flags & TUNNEL_SEQ) && !blog_gre_tunnel_accelerated()) ? htonl(tunnel->o_seqno++) : 0);
+                 ((flags & TUNNEL_SEQ) && !blog_gre_tunnel_accelerated()) ? htonl(atomic_fetch_inc(&tunnel->o_seqno)) : 0);
 #else
         /* Push GRE header. */
         gre_build_header(skb, tunnel->tun_hlen,
                  flags, proto, tunnel->parms.o_key,
-                 (flags & TUNNEL_SEQ) ? htonl(tunnel->o_seqno++) : 0);
+			 (flags & TUNNEL_SEQ) ? htonl(atomic_fetch_inc(&tunnel->o_seqno)) : 0);
 #endif
 
 
 #if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
-	blog_link(IF_DEVICE, blog_ptr(skb), (void*)dev, DIR_TX, skb->len);
+	blog_link2(IF_DEVICE, blog_ptr(skb), (void*)dev, DIR_TX, skb->len, tunnel->tun_hlen);
 	blog_link(GRE_TUNL, blog_ptr(skb), (void*)tunnel, DIR_TX, 0);
 	blog_link(TOS_MODE, blog_ptr(skb), tunnel, DIR_TX, tnl_params->tos);
 	
 	skb->bcm_ext.tunl = tunnel;
-	
 #endif   
 	ip_tunnel_xmit(skb, dev, tnl_params, tnl_params->protocol);
 }
@@ -580,7 +579,7 @@ static void gre_fb_xmit(struct sk_buff *skb, struct net_device *dev,
 		(TUNNEL_CSUM | TUNNEL_KEY | TUNNEL_SEQ);
 	gre_build_header(skb, tunnel_hlen, flags, proto,
 			 tunnel_id_to_key32(tun_info->key.tun_id),
-			 (flags & TUNNEL_SEQ) ? htonl(tunnel->o_seqno++) : 0);
+			 (flags & TUNNEL_SEQ) ? htonl(atomic_fetch_inc(&tunnel->o_seqno)) : 0);
 
 	df = key->tun_flags & TUNNEL_DONT_FRAGMENT ?  htons(IP_DF) : 0;
 
@@ -637,7 +636,7 @@ static void erspan_fb_xmit(struct sk_buff *skb, struct net_device *dev)
 		truncate = true;
 	}
 
-	nhoff = skb_network_header(skb) - skb_mac_header(skb);
+	nhoff = skb_network_offset(skb);
 	if (skb->protocol == htons(ETH_P_IP) &&
 	    (ntohs(ip_hdr(skb)->tot_len) > skb->len - nhoff))
 		truncate = true;
@@ -646,7 +645,7 @@ static void erspan_fb_xmit(struct sk_buff *skb, struct net_device *dev)
 		int thoff;
 
 		if (skb_transport_header_was_set(skb))
-			thoff = skb_transport_header(skb) - skb_mac_header(skb);
+			thoff = skb_transport_offset(skb);
 		else
 			thoff = nhoff + sizeof(struct ipv6hdr);
 		if (ntohs(ipv6_hdr(skb)->payload_len) > skb->len - thoff)
@@ -669,7 +668,7 @@ static void erspan_fb_xmit(struct sk_buff *skb, struct net_device *dev)
 	}
 
 	gre_build_header(skb, 8, TUNNEL_SEQ,
-			 proto, 0, htonl(tunnel->o_seqno++));
+			 proto, 0, htonl(atomic_fetch_inc(&tunnel->o_seqno)));
 
 	df = key->tun_flags & TUNNEL_DONT_FRAGMENT ?  htons(IP_DF) : 0;
 

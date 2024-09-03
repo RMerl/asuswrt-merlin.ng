@@ -29,6 +29,7 @@ otp_map_cmn_err_t bcm_otp_read(otp_map_feat_t, u32**, u32*);
 otp_map_cmn_err_t bcm_otp_write(otp_map_feat_t, const u32*, u32);
 otp_map_cmn_err_t bcm_otp_ctl(otp_map_t id, otp_hw_cmn_ctl_cmd_t *cmd, u32 *res);
 int bcm_otp_init(void);
+int bcm_otp_deinit(void);
 
 /* helper functions */
 otp_map_cmn_err_t bcm_sotp_ctl_perm( otp_hw_cmn_ctl_t ctl, u32 data, u32* res);
@@ -52,7 +53,7 @@ int bcm_otp_get_chipid(unsigned int* val);
 int bcm_otp_get_nr_cpus(u32* val);
 
 int bcm_otp_get_ldo_trim(unsigned int * val);
-
+int bcm_otp_get_chip_ser_num(unsigned int* val);
 int bcm_otp_get_mfg_process(u32* val);
 int bcm_otp_get_mfg_substrate(u32* val);
 int bcm_otp_get_mfg_foundry(u32* val);

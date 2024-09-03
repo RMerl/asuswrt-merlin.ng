@@ -299,9 +299,28 @@
                 .replace(/&#62/g, ">")
                 .replace(/&#60/g, "<");
             function init() {
+                let multiGroupWAN_enabled = false;
+
                 genAllClient();
                 getDnsPingData();
-                getWANInfo();
+                if(isSupport("max_multi_wan_num")){
+                    let mtwan_unit = httpApi.nvramGet(["mtwan_unit"])["mtwan_unit"];
+                    let nvram_name = "mtwan" + mtwan_unit + "_enable";
+                    let mtwan_enable = httpApi.nvramGet([nvram_name])[nvram_name];
+                    multiGroupWAN_enabled = httpApi.nvramGet([nvram_name])[nvram_name] === "1" ? true:false;
+                }
+
+                if(multiGroupWAN_enabled){
+                    let WANPort_Mapping = getWANMapping();
+                    setTimeout(
+                        function(){
+                            let multiGroupWANInfo = getMultiGroupWANInfo(WANPort_Mapping);
+                            genMultiGroupWAN(multiGroupWANInfo);
+                        }, 100);
+                }
+                else{
+                    getWANInfo();
+                }
                 // get CPU/RAM of default card
                 httpApi.get_diag_content_data(
                     {
@@ -2554,6 +2573,12 @@
 
                 let ddns_title = `DDNS`;
                 let ddns_code = isMultisiteApp()?`<div class="card-data-value"><a href="/index.html?url=settings&current_theme=white&page=Advanced_ASUSDDNS_Content.asp&mapp=true">GO</a></div>`:`<div class="card-data-value"><a href="/index.html?url=settings&current_theme=white&page=Advanced_ASUSDDNS_Content.asp">GO</a></div>`;
+                if (
+                    window.appInterface || // from Android app
+                    (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.appInterface) // for iOS app
+                ) {
+                    ddns_code = `<div class="card-data-value">-</div>`;
+                }
                 let show_ddns_hint = false;
                 const ddns_hint = `<div><div type="button" onClick="show_ddns_fail_hint(this);" data-bs-container="body" data-bs-toggle="popover" data-bs-placement="top"><i class="gg-danger ddns"></i></div></div>`;
                 let show_ddns_letsencrypt = false;
@@ -2730,6 +2755,256 @@
                         );
                     });
                 }
+            }
+
+            function getWANMapping(){
+                let wanPort_mapping = {};
+                let dut_mac = (httpApi.hookGet('get_lan_hwaddr')) ? httpApi.hookGet('get_lan_hwaddr') : '';
+                httpApi.get_port_status_array(dut_mac, function(port_info){
+                    let wan_array = port_info["WAN"];
+                    for(let i = 0; i < wan_array.length; i++){
+                        let port_name = "";
+                        if(wan_array[i].ui_display != undefined && wan_array[i].ui_display != ""){
+                            port_name = wan_array[i].ui_display;
+                        }
+                        else if(wan_array[i].special_port_name != ""){
+                            port_name = wan_array[i].special_port_name;
+                        }
+                        else{
+                            port_name = wan_array[i].label_port_name;
+                        }
+                        wanPort_mapping[wan_array[i].label + wan_array[i].label_idx] = port_name;
+                    }
+                });
+
+                return wanPort_mapping;
+            }
+
+            function getMultiGroupWANInfo(wanPortMapping){
+                var retData = {};
+                let nvram_name = "";
+                const mapping_wanType = {
+                    dhcp: "<#BOP_ctype_title1#>",
+                    static: "<#BOP_ctype_title5#>",
+                    pppoe: "PPPoE",
+                    pptp: "PPTP",
+                    l2tp: "L2TP"
+                };
+
+                let nvram = httpApi.nvramGet([
+                    "wans_mt_ioport",
+                    "mtwan_unit",
+                    "ddns_enable_x",
+                    "ddns_server_x",
+                    "ddns_hostname_x",
+                    "ddns_old_name",
+                    "ddns_return_code_chk",
+                    "ddns_updated",
+                    "le_enable",
+                    "le_state"
+                ]);
+
+                retData.wans_mt_ioport = nvram.wans_mt_ioport.split(" ");
+                retData.port_num = retData.wans_mt_ioport.length;
+                retData.mtwan_unit = nvram.mtwan_unit;
+                retData.ddnsEnale =  nvram.ddns_enable_x;
+                retData.ddnsServer = nvram.ddns_server_x;
+                retData.ddnsName = nvram.ddns_hostname_x;
+                retData.ddnsOldName = nvram.ddns_old_name;
+                retData.ddnsReturnCode = nvram.ddns_return_code_chk;
+                retData.ddnsUpdated = nvram.ddns_updated;
+                retData.leEnable = nvram.le_enable;
+                retData.leState = nvram.le_state;
+                nvram_name = "mtwan"+ nvram.mtwan_unit + "_wan_units";
+                retData.mtwan_wan_units = httpApi.nvramGet([nvram_name])[nvram_name].split(" ");
+                nvram_name = "mtwan"+ nvram.mtwan_unit + "_mt_group";
+                retData.mtwan_mt_group = httpApi.nvramGet([nvram_name])[nvram_name].split(" ");
+                for(let i = 0; i < retData.mtwan_wan_units.length; i++){
+                    let wanInfo = {};
+                    let wan_unit = retData.mtwan_wan_units[i];
+                    let wan_prefix = "wan" + wan_unit;
+                    wanInfo["wan_unit"] = wan_unit;
+                    wanInfo["port"] = wanPortMapping[retData.wans_mt_ioport[i]];
+                    wanInfo["group"] = retData.mtwan_mt_group[i] == "1"? "Primary WAN Group":"Secondary WAN Group";
+                    nvram_name = wan_prefix + "_enable";
+                    wanInfo["wan_enable"] = httpApi.nvramGet([nvram_name])[nvram_name];
+                    wanInfo.status = (function () {
+                        nvram_name = wan_prefix + "_state_t";
+                        let state_t = httpApi.nvramGet([nvram_name])[nvram_name];
+                        nvram_name = wan_prefix + "_sbstate_t";
+                        let sbstate_t = httpApi.nvramGet([nvram_name])[nvram_name];
+                        nvram_name = wan_prefix + "_auxstate_t";
+                        let auxstate_t = httpApi.nvramGet([nvram_name])[nvram_name];
+                        if (state_t === "2" && sbstate_t === "0" && auxstate_t === "0") {
+                            return "CONNECTED";
+                        }
+
+                        return "DISCONNECTED";
+                    })();
+                    nvram_name = wan_prefix + "_proto";
+                    wanInfo["proto"] =  (function () {
+                        let proto = httpApi.nvramGet([nvram_name])[nvram_name];;
+                        if (wanInfo["port"].indexOf("USB") != "-1") {
+                            return "USB Modem";
+                        }
+                        return mapping_wanType[proto];
+                    })();
+                    nvram_name = wan_prefix + "_ipaddr";
+                    wanInfo["ipaddr"] = httpApi.nvramGet([nvram_name])[nvram_name];
+                    nvram_name = wan_prefix + "_netmask";
+                    wanInfo["netmask"] = httpApi.nvramGet([nvram_name])[nvram_name];
+                    nvram_name = wan_prefix + "_gateway";
+                    wanInfo["gateway"] = httpApi.nvramGet([nvram_name])[nvram_name];
+                    nvram_name = wan_prefix + "_dns";
+                    wanInfo["dns"] = httpApi.nvramGet([nvram_name])[nvram_name];
+                    retData["wan"+wan_unit] = wanInfo;
+                }
+
+                return retData;
+            }
+
+            function genMultiGroupWAN(multiGroupWANInfo) {
+                const mainContainer = document.querySelectorAll(".row")[0];
+                const wan1_field = document.getElementById("wan1_field");
+
+                for(let i = 0; i < multiGroupWANInfo.mtwan_wan_units.length; i++){
+                    let wanInfo = multiGroupWANInfo["wan"+multiGroupWANInfo.mtwan_wan_units[i]];
+                    let element = document.createElement("div");
+                    element.id = "wan" + wanInfo.wan_unit + "_field";
+                    element.classList.add("col-12", "col-md-6", "col-xl-4", "mb-3");
+                    mainContainer.insertBefore(element, wan1_field);
+                    let wan_enable = wanInfo.wan_enable == "1" ? "checked" : "";
+                    let ddns_title = `DDNS`;
+                    let ddns_code = isMultisiteApp()?`<div class="card-data-value"><a href="/index.html?url=settings&current_theme=white&page=Advanced_ASUSDDNS_Content.asp&mapp=true">GO</a></div>`:`<div class="card-data-value"><a href="/index.html?url=settings&current_theme=white&page=Advanced_ASUSDDNS_Content.asp">GO</a></div>`;
+                    let show_ddns_hint = false;
+                    const ddns_hint = `<div><div type="button" onClick="show_ddns_fail_hint(this);" data-bs-container="body" data-bs-toggle="popover" data-bs-placement="top"><i class="gg-danger ddns"></i></div></div>`;
+                    let show_ddns_letsencrypt = false;
+                    const ddns_letsencrypt = `<div id="ddns_letsencrypt" style="padding-bottom: 8px;"><img width="24px" height="24px" src="images/letsencrypt.svg" alt="Lets Encrypt" title="Lets Encrypt"></div>`
+                    if (wanInfo.ddnsEnale == '1') {
+                        if(wanInfo.status !== "CONNECTED") //link down
+                            show_ddns_hint = true;
+
+                        if (wanInfo.ddnsServer == 'WWW.ASUS.COM') {
+                            if ((wanInfo.ddnsReturnCode.indexOf('200') == -1) && (wanInfo.ddnsReturnCode.indexOf('220') == -1) && (wanInfo.ddnsReturnCode.indexOf('230') == -1))
+                                show_ddns_hint = true;
+                        } else {
+                            if (wanInfo.ddnsUpdated != '1' || wanInfo.ddnsReturnCode == 'unknown_error' || wanInfo.ddnsReturnCode == "auth_fail")
+                                show_ddns_hint = true;
+                        }
+
+                        if (wanInfo.leEnable == "1" && wanInfo.leState == "1") {
+                            show_ddns_letsencrypt = true;
+                        }
+
+                        ddns_title += `<div class="d-sm-flex gap-2">
+                                        <div class="d-sm-flex align-items-center gap-1">
+                                            ${show_ddns_letsencrypt ? ddns_letsencrypt : ``}
+                                            ${show_ddns_hint ? ddns_hint : ``}
+                                        </div>
+                                    </div>`;
+
+                        ddns_code = `<div class="d-sm-flex align-items-center gap-1">
+                                        <div class="card-data-value text-break w-100">${wanInfo.ddnsName !== "" ? wanInfo.ddnsName : "-"}</div>
+                                        <div type="button" onClick="copyDdnsName(this)" data-bs-container="body" data-bs-toggle="popover" data-bs-placement="top" data-bs-content="Copied!"><div role="icon" class="icon-size-24 icon-clone ddns"></div></div>
+                                    </div>`
+                    }
+
+                    code = `
+                                <div class="card pt-2 h-100">
+                                    <h5 class="card-header">${wanInfo.group}</h5>
+                                    <div class="card-body">
+                                        <div class="d-sm-flex align-items-center">
+                                            <div class="w-100">
+                                                <div class="d-sm-flex align-items-center mb-3">
+                                                    <div class="card-data-title"><#menu5_3_1#></div>
+                                                    <div class="form-check form-switch ms-auto">
+                                                        <input class="form-check-input form-switch-large" type="checkbox" id="wan${wanInfo.wan_unit}_enable_btn" ${wan_enable} />
+                                                    </div>
+                                                </div>
+                                                <div class="d-sm-flex align-items-center mb-3">
+                                                    <div class="card-data-title"><#wan_port#></div>
+                                                    <div class="ms-auto card-data-value">${wanInfo.port}</div>
+                                                </div>
+                                                <div class="d-sm-flex align-items-center mb-3">
+                                                    <div class="card-data-title"><#Status_Str#></div>
+                                                    <div class="ms-auto card-data-value">${wanInfo.status}</div>
+                                                </div>
+                                                <div class="d-sm-flex align-items-center mb-3">
+                                                    <div class="card-data-title"><#Connection_Type#></div>
+                                                    <div class="ms-auto card-data-value">${
+                                                        wanInfo.status === "CONNECTED" ? wanInfo.proto : "-"
+                                                    }</div>
+                                                </div>
+                                                <div class="d-sm-flex align-items-center mb-3">
+                                                    <div class="card-data-title">WAN IP</div>
+                                                    <div class="ms-auto card-data-value">${
+                                                        wanInfo.status === "CONNECTED" ? wanInfo.ipaddr : "-"
+                                                    }</div>
+                                                </div>
+                                                <div class="d-sm-flex align-items-center mb-3">
+                                                    <div class="card-data-title"><#IPConnection_x_ExternalSubnetMask_itemname#></div>
+                                                    <div class="ms-auto card-data-value">${
+                                                        wanInfo.status === "CONNECTED" ? wanInfo.netmask : "-"
+                                                    }</div>
+                                                </div>
+                                                <div class="d-sm-flex align-items-center mb-3">
+                                                    <div class="card-data-title"><#RouterConfig_GWStaticGW_itemname#></div>
+                                                    <div class="ms-auto card-data-value">${
+                                                        wanInfo.status === "CONNECTED" ? wanInfo.gateway : "-"
+                                                    }</div>
+                                                </div>
+                                                <div class="d-sm-flex align-items-center mb-3">
+                                                    <div class="card-data-title">DNS</div>
+                                                    <div class="ms-auto card-data-value">${
+                                                        wanInfo.status === "CONNECTED" ? wanInfo.dns : "-"
+                                                    }</div>
+                                                </div>
+                                            `;
+
+                    if(wanInfo.wan_unit == "0"){
+                        code += `
+                                                <div class="d-sm-flex align-items-center mb-3 justify-content-between gap-2 flex-wrap">
+                                                    <div class="card-data-title d-flex align-items-center gap-3">${ddns_title}</div>
+                                                    ${ddns_code}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="businessUI card-footer d-flex">
+                                        <div role="icon" class="icon-size-24 icon-search-server me-3" onclick="showSpeedTest();"></div>
+                                    </div>
+                                </div>
+                            `;
+                    }
+                    else{
+                        code += `
+                                            </div>
+                                        </div>
+                                    </div>
+                               </div>
+                            `;
+                    }
+                    element.innerHTML = code;
+
+                    document.getElementById("wan"+wanInfo.wan_unit+"_enable_btn").addEventListener("click", function () {
+                    let wan_enable = this.checked;
+                    let restart_service = "restart_wan_if " + wanInfo.wan_unit;
+                    let postData = {};
+                    postData["wan" + wanInfo.wan_unit + "_enable"] = wan_enable ? "1" : "0";
+                    postData["action_mode"] = "apply";
+                    postData["rc_service"] = "restart_wan_if " + wanInfo.wan_unit;
+                    httpApi.nvramSet( postData,
+                            function () {
+                                setTimeout(function () {
+                                    location.reload();
+                                }, 5 * 1000);
+                            }
+                        );
+                    });
+                }
+
+                document.getElementById("wan0_field").remove();
+                wan1_field.remove();
             }
 
             function showSpeedTest() {

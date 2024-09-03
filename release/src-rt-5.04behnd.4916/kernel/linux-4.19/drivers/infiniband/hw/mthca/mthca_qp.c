@@ -1630,8 +1630,8 @@ int mthca_tavor_post_send(struct ib_qp *ibqp, const struct ib_send_wr *wr,
 	 * without initializing f0 and size0, and they are in fact
 	 * never used uninitialized.
 	 */
-	int uninitialized_var(size0);
-	u32 uninitialized_var(f0);
+	int size0;
+	u32 f0;
 	int ind;
 	u8 op0 = 0;
 
@@ -1831,7 +1831,7 @@ int mthca_tavor_post_receive(struct ib_qp *ibqp, const struct ib_recv_wr *wr,
 	 * without initializing size0, and it is in fact never used
 	 * uninitialized.
 	 */
-	int uninitialized_var(size0);
+	int size0;
 	int ind;
 	void *wqe;
 	void *prev_wqe;
@@ -1945,8 +1945,8 @@ int mthca_arbel_post_send(struct ib_qp *ibqp, const struct ib_send_wr *wr,
 	 * without initializing f0 and size0, and they are in fact
 	 * never used uninitialized.
 	 */
-	int uninitialized_var(size0);
-	u32 uninitialized_var(f0);
+	int size0;
+	u32 f0;
 	int ind;
 	u8 op0 = 0;
 

@@ -15,18 +15,6 @@
  * Phy driver for external 1G/2.5G/5G/10G phys: BCM8486x, BCM8488x, BCM8489x, BCM5499x
  */
 
-/*
- * PHY firmware versions:
- * MAKO A0          1.0.3
- * ORCA A0          1.1.2
- * ORCA B0          2.3.13
- * BLACKFIN A0      0.2.4
- * BLACKFIN B0      2.3.3
- * SHORTFIN B0      2.2.11
- * LONGFIN A0/B0    2.2.15
- * XPHY             0.0.12
- */
-
 #include <linux/delay.h>
 #include "phy_drv.h"
 #include "phy_drv_mii.h"
@@ -45,15 +33,11 @@
  * ORCA B0          2.3.13
  * BLACKFIN A0      0.2.04
  * BLACKFIN B0      2.3.03
- * SHORTFIN B0      2.2.11
+ * SHORTFIN B0      2.3.05
  * LONGFIN A0/B0    2.2.15
+ * LANAI_A0         0.2.00
  * KAUAI_A0         1.0.04
-#if defined(CONFIG_BCM96765)    // This is temporary urgent beta fix for 6765 XPHY only. Please remove this special
-                                   version when new official XPHY firmware is released next time
- * XPHY             30.0.04
-#else
- * XPHY             0.0.12
-#endif
+ * XPHY             0.0.13
  */
 
 typedef struct firmware_s firmware_t;
@@ -98,6 +82,7 @@ typedef struct loading_reg_s {
 #define CONFIG_BCM_PHY_SHORTFIN_B0
 #define CONFIG_BCM_PHY_KAUAI_A0
 #define CONFIG_BCM_PHY_XPHY
+#define CONFIG_BCM_PHY_LANAI_A0
 #endif
 
 #if defined(CONFIG_BCM_PHY_SHORTFIN_B0) || defined(CONFIG_BCM_PHY_KAUAI_A0)
@@ -118,6 +103,9 @@ static int load_shortfin(firmware_t *firmware);
 #endif
 #ifdef CONFIG_BCM_PHY_KAUAI_A0
 static int load_kauai(firmware_t *firmware);
+#endif
+#ifdef CONFIG_BCM_PHY_LANAI_A0
+static int load_lanai(firmware_t *firmware);
 #endif
 
 #ifdef CONFIG_BCM_PHY_MAKO_A0
@@ -151,15 +139,15 @@ firmware_t shortfin_b0 = { "shortfin_b0", shortfin_b0_firmware, sizeof(shortfin_
 #endif
 #ifdef CONFIG_BCM_PHY_XPHY
 #include "xphy_firmware.h"
-#if defined(CONFIG_BCM96765)    /* This is temporary urgent beta fix for 6765 XPHY only. Please remove this special */
-firmware_t xphy = { "xphy_6765", xphy_firmware, sizeof(xphy_firmware), &load_blackfin, 0 };
-#else
 firmware_t xphy = { "xphy", xphy_firmware, sizeof(xphy_firmware), &load_blackfin, 0 };
-#endif
 #endif
 #ifdef CONFIG_BCM_PHY_KAUAI_A0
 #include "kauai_a0_firmware.h"
 firmware_t kauai_a0 = { "kauai_a0", kauai_a0_firmware, sizeof(kauai_a0_firmware), &load_kauai, 0 };
+#endif
+#ifdef CONFIG_BCM_PHY_LANAI_A0
+#include "lanai_a0_firmware.h"
+firmware_t lanai_a0 = { "lanai_a0", lanai_a0_firmware, sizeof(lanai_a0_firmware), &load_lanai, 0 };
 #endif
 
 static firmware_t *firmware_list[] = {
@@ -190,72 +178,75 @@ static firmware_t *firmware_list[] = {
 #if defined(CONFIG_BCM_PHY_KAUAI_A0)
     &kauai_a0,
 #endif
+#if defined(CONFIG_BCM_PHY_LANAI_A0)
+    &lanai_a0,
+#endif
 };
 
 static phy_desc_t phy_desc[] = {
 #ifdef CONFIG_BCM_PHY_MAKO_A0
-    { 0xae02, 0x5048, "84860    A0", &mako_a0, INTER_PHY_TYPES_S1K2KI5I_M },
-    { 0xae02, 0x5040, "84861    A0", &mako_a0, INTER_PHY_TYPES_S1K2KI5I_M },
+    { 0xae02, 0x5048, "84860    A0", &mako_a0, INTER_PHY_TYPES_S1K2XI5I_M },
+    { 0xae02, 0x5040, "84861    A0", &mako_a0, INTER_PHY_TYPES_S1K2XI5I_M },
 #endif
 #ifdef CONFIG_BCM_PHY_ORCA_A0
-    { 0xae02, 0x5158, "84880    A0", &orca_a0, INTER_PHY_TYPES_US1K2KI5KI_M },
-    { 0xae02, 0x5150, "84881    A0", &orca_a0, INTER_PHY_TYPES_US1K2KI5KI10R_M },
-    { 0xae02, 0x5148, "84884    A0", &orca_a0, INTER_PHY_TYPES_US1K2KI5KI_M },
-    { 0xae02, 0x5168, "84884E   A0", &orca_a0, INTER_PHY_TYPES_US1K2KI5KI_M },
-    { 0xae02, 0x5178, "84885    A0", &orca_a0, INTER_PHY_TYPES_US1K2KI5KI_M },
-    { 0xae02, 0x5170, "84886    A0", &orca_a0, INTER_PHY_TYPES_US1K2KI5KI10R_M },
-    { 0xae02, 0x5144, "84887    A0", &orca_a0, INTER_PHY_TYPES_US1K2KI5KI10R_M },
-    { 0xae02, 0x5140, "84888    A0", &orca_a0, INTER_PHY_TYPES_US1K2KI5KI10R_M },
-    { 0xae02, 0x5160, "84888E   A0", &orca_a0, INTER_PHY_TYPES_US1K2KI5KI10R_M },
-    { 0xae02, 0x5174, "84888S   A0", &orca_a0, INTER_PHY_TYPES_US1K2KI5KI10R_M },
+    { 0xae02, 0x5158, "84880    A0", &orca_a0, INTER_PHY_TYPES_US1K2XI5KI_M },
+    { 0xae02, 0x5150, "84881    A0", &orca_a0, INTER_PHY_TYPES_US1K2XI5KI10R_M },
+    { 0xae02, 0x5148, "84884    A0", &orca_a0, INTER_PHY_TYPES_US1K2XI5KI_M },
+    { 0xae02, 0x5168, "84884E   A0", &orca_a0, INTER_PHY_TYPES_US1K2XI5KI_M },
+    { 0xae02, 0x5178, "84885    A0", &orca_a0, INTER_PHY_TYPES_US1K2XI5KI_M },
+    { 0xae02, 0x5170, "84886    A0", &orca_a0, INTER_PHY_TYPES_US1K2XI5KI10R_M },
+    { 0xae02, 0x5144, "84887    A0", &orca_a0, INTER_PHY_TYPES_US1K2XI5KI10R_M },
+    { 0xae02, 0x5140, "84888    A0", &orca_a0, INTER_PHY_TYPES_US1K2XI5KI10R_M },
+    { 0xae02, 0x5160, "84888E   A0", &orca_a0, INTER_PHY_TYPES_US1K2XI5KI10R_M },
+    { 0xae02, 0x5174, "84888S   A0", &orca_a0, INTER_PHY_TYPES_US1K2XI5KI10R_M },
 #endif
 #ifdef CONFIG_BCM_PHY_ORCA_B0
-    { 0xae02, 0x5159, "84880    B0", &orca_b0, INTER_PHY_TYPES_US1K2KI5KI_M },
-    { 0xae02, 0x5151, "84881    B0", &orca_b0, INTER_PHY_TYPES_US1K2KI5KI10R_M },
-    { 0xae02, 0x5149, "84884    B0", &orca_b0, INTER_PHY_TYPES_US1K2KI5KI_M },
-    { 0xae02, 0x5169, "84884E   B0", &orca_b0, INTER_PHY_TYPES_US1K2KI5KI_M },
-    { 0xae02, 0x5179, "84885    B0", &orca_b0, INTER_PHY_TYPES_US1K2KI5KI_M },
-    { 0xae02, 0x5171, "84886    B0", &orca_b0, INTER_PHY_TYPES_US1K2KI5KI10R_M },
-    { 0xae02, 0x5145, "84887    B0", &orca_b0, INTER_PHY_TYPES_US1K2KI5KI10R_M },
-    { 0xae02, 0x5141, "84888    B0", &orca_b0, INTER_PHY_TYPES_US1K2KI5KI10R_M },
-    { 0xae02, 0x5161, "84888E   B0", &orca_b0, INTER_PHY_TYPES_US1K2KI5KI10R_M },
-    { 0xae02, 0x5175, "84888S   B0", &orca_b0, INTER_PHY_TYPES_US1K2KI5KI10R_M },
+    { 0xae02, 0x5159, "84880    B0", &orca_b0, INTER_PHY_TYPES_US1K2XI5KI_M },
+    { 0xae02, 0x5151, "84881    B0", &orca_b0, INTER_PHY_TYPES_US1K2XI5KI10R_M },
+    { 0xae02, 0x5149, "84884    B0", &orca_b0, INTER_PHY_TYPES_US1K2XI5KI_M },
+    { 0xae02, 0x5169, "84884E   B0", &orca_b0, INTER_PHY_TYPES_US1K2XI5KI_M },
+    { 0xae02, 0x5179, "84885    B0", &orca_b0, INTER_PHY_TYPES_US1K2XI5KI_M },
+    { 0xae02, 0x5171, "84886    B0", &orca_b0, INTER_PHY_TYPES_US1K2XI5KI10R_M },
+    { 0xae02, 0x5145, "84887    B0", &orca_b0, INTER_PHY_TYPES_US1K2XI5KI10R_M },
+    { 0xae02, 0x5141, "84888    B0", &orca_b0, INTER_PHY_TYPES_US1K2XI5KI10R_M },
+    { 0xae02, 0x5161, "84888E   B0", &orca_b0, INTER_PHY_TYPES_US1K2XI5KI10R_M },
+    { 0xae02, 0x5175, "84888S   B0", &orca_b0, INTER_PHY_TYPES_US1K2XI5KI10R_M },
 #endif
 #ifdef CONFIG_BCM_PHY_BLACKFIN_A0
-    { 0x3590, 0x5090, "84891    A0", &blackfin_a0, INTER_PHY_TYPES_US1K2KIR5KIR10R_M },
-    { 0x3590, 0x5094, "54991    A0", &blackfin_a0, INTER_PHY_TYPES_US1K2KIR5KIR_M },
-    { 0x3590, 0x5098, "54991E   A0", &blackfin_a0, INTER_PHY_TYPES_US1K2KIR_M },
-    { 0x3590, 0x5080, "84891L   A0", &blackfin_a0, INTER_PHY_TYPES_US1K2KIR5KIR10R_M },
-    { 0x3590, 0x5084, "54991L   A0", &blackfin_a0, INTER_PHY_TYPES_US1K2KIR5KIR_M },
-    { 0x3590, 0x5088, "54991EL  A0", &blackfin_a0, INTER_PHY_TYPES_US1K2KIR_M },
-    { 0x3590, 0x50a0, "84892    A0", &blackfin_a0, INTER_PHY_TYPES_US1K2KIR5KIR10R_M },
-    { 0x3590, 0x50a4, "54992    A0", &blackfin_a0, INTER_PHY_TYPES_US1K2KIR5KIR_M },
-    { 0x3590, 0x50a8, "54992E   A0", &blackfin_a0, INTER_PHY_TYPES_US1K2KIR_M },
-    { 0x3590, 0x50b0, "84894    A0", &blackfin_a0, INTER_PHY_TYPES_US1K2KIR5KIR10R_M },
-    { 0x3590, 0x50b4, "54994    A0", &blackfin_a0, INTER_PHY_TYPES_US1K2KIR5KIR_M },
-    { 0x3590, 0x50b8, "54994E   A0", &blackfin_a0, INTER_PHY_TYPES_US1K2KIR_M },
-    { 0x3590, 0x50d0, "54991H   A0", &blackfin_a0, INTER_PHY_TYPES_US1K2KIR5KIR10R_M },
-    { 0x3590, 0x50f0, "54994H   A0", &blackfin_a0, INTER_PHY_TYPES_US1K2KIR5KIR10R_M },
-    { 0x3590, 0x50c8, "50991EL  A0", &blackfin_a0, INTER_PHY_TYPES_US1K2KIR_M },
-    { 0x3590, 0x50f8, "50994E   A0", &blackfin_a0, INTER_PHY_TYPES_US1K2KIR_M },
+    { 0x3590, 0x5090, "84891    A0", &blackfin_a0, INTER_PHY_TYPES_US1K2XIR5KIR10R_M },
+    { 0x3590, 0x5094, "54991    A0", &blackfin_a0, INTER_PHY_TYPES_US1K2XIR5KIR_M },
+    { 0x3590, 0x5098, "54991E   A0", &blackfin_a0, INTER_PHY_TYPES_US1K2XIR_M },
+    { 0x3590, 0x5080, "84891L   A0", &blackfin_a0, INTER_PHY_TYPES_US1K2XIR5KIR10R_M },
+    { 0x3590, 0x5084, "54991L   A0", &blackfin_a0, INTER_PHY_TYPES_US1K2XIR5KIR_M },
+    { 0x3590, 0x5088, "54991EL  A0", &blackfin_a0, INTER_PHY_TYPES_US1K2XIR_M },
+    { 0x3590, 0x50a0, "84892    A0", &blackfin_a0, INTER_PHY_TYPES_US1K2XIR5KIR10R_M },
+    { 0x3590, 0x50a4, "54992    A0", &blackfin_a0, INTER_PHY_TYPES_US1K2XIR5KIR_M },
+    { 0x3590, 0x50a8, "54992E   A0", &blackfin_a0, INTER_PHY_TYPES_US1K2XIR_M },
+    { 0x3590, 0x50b0, "84894    A0", &blackfin_a0, INTER_PHY_TYPES_US1K2XIR5KIR10R_M },
+    { 0x3590, 0x50b4, "54994    A0", &blackfin_a0, INTER_PHY_TYPES_US1K2XIR5KIR_M },
+    { 0x3590, 0x50b8, "54994E   A0", &blackfin_a0, INTER_PHY_TYPES_US1K2XIR_M },
+    { 0x3590, 0x50d0, "54991H   A0", &blackfin_a0, INTER_PHY_TYPES_US1K2XIR5KIR10R_M },
+    { 0x3590, 0x50f0, "54994H   A0", &blackfin_a0, INTER_PHY_TYPES_US1K2XIR5KIR10R_M },
+    { 0x3590, 0x50c8, "50991EL  A0", &blackfin_a0, INTER_PHY_TYPES_US1K2XIR_M },
+    { 0x3590, 0x50f8, "50994E   A0", &blackfin_a0, INTER_PHY_TYPES_US1K2XIR_M },
 #endif
 #ifdef CONFIG_BCM_PHY_BLACKFIN_B0
-    { 0x3590, 0x5091, "84891    B0", &blackfin_b0, INTER_PHY_TYPES_US1K2KIR5KIR10R_M },
-    { 0x3590, 0x5095, "54991    B0", &blackfin_b0, INTER_PHY_TYPES_US1K2KIR5KIR_M },
-    { 0x3590, 0x5099, "54991E   B0", &blackfin_b0, INTER_PHY_TYPES_US1K2KIR_M },
-    { 0x3590, 0x5081, "84891L   B0", &blackfin_b0, INTER_PHY_TYPES_US1K2KIR5KIR10R_M },
-    { 0x3590, 0x5085, "54991L   B0", &blackfin_b0, INTER_PHY_TYPES_US1K2KIR5KIR_M },
-    { 0x3590, 0x5089, "54991EL  B0", &blackfin_b0, INTER_PHY_TYPES_US1K2KIR_M },
-    { 0x3590, 0x50c9, "50991EL  B0", &blackfin_b0, INTER_PHY_TYPES_US1K2KIR_M },
-    { 0x3590, 0x50a1, "84892    B0", &blackfin_b0, INTER_PHY_TYPES_US1K2KIR5KIR10R_M },
-    { 0x3590, 0x50a5, "54992    B0", &blackfin_b0, INTER_PHY_TYPES_US1K2KIR5KIR_M },
-    { 0x3590, 0x50a9, "54992E   B0", &blackfin_b0, INTER_PHY_TYPES_US1K2KIR_M },
-    { 0x3590, 0x50b1, "84894    B0", &blackfin_b0, INTER_PHY_TYPES_US1K2KIR5KIR10R_M },
-    { 0x3590, 0x50b5, "54994    B0", &blackfin_b0, INTER_PHY_TYPES_US1K2KIR5KIR_M },
-    { 0x3590, 0x50b9, "54994E   B0", &blackfin_b0, INTER_PHY_TYPES_US1K2KIR_M },
-    { 0x3590, 0x50d1, "54991H   B0", &blackfin_b0, INTER_PHY_TYPES_US1K2KIR5KIR10R_M },
-    { 0x3590, 0x50f1, "54994H   B0", &blackfin_b0, INTER_PHY_TYPES_US1K2KIR5KIR10R_M },
-    { 0x3590, 0x50f9, "50994E   B0", &blackfin_b0, INTER_PHY_TYPES_US1K2KIR_M },
+    { 0x3590, 0x5091, "84891    B0", &blackfin_b0, INTER_PHY_TYPES_US1K2XIR5KIR10R_M },
+    { 0x3590, 0x5095, "54991    B0", &blackfin_b0, INTER_PHY_TYPES_US1K2XIR5KIR_M },
+    { 0x3590, 0x5099, "54991E   B0", &blackfin_b0, INTER_PHY_TYPES_US1K2XIR_M },
+    { 0x3590, 0x5081, "84891L   B0", &blackfin_b0, INTER_PHY_TYPES_US1K2XIR5KIR10R_M },
+    { 0x3590, 0x5085, "54991L   B0", &blackfin_b0, INTER_PHY_TYPES_US1K2XIR5KIR_M },
+    { 0x3590, 0x5089, "54991EL  B0", &blackfin_b0, INTER_PHY_TYPES_US1K2XIR_M },
+    { 0x3590, 0x50c9, "50991EL  B0", &blackfin_b0, INTER_PHY_TYPES_US1K2XIR_M },
+    { 0x3590, 0x50a1, "84892    B0", &blackfin_b0, INTER_PHY_TYPES_US1K2XIR5KIR10R_M },
+    { 0x3590, 0x50a5, "54992    B0", &blackfin_b0, INTER_PHY_TYPES_US1K2XIR5KIR_M },
+    { 0x3590, 0x50a9, "54992E   B0", &blackfin_b0, INTER_PHY_TYPES_US1K2XIR_M },
+    { 0x3590, 0x50b1, "84894    B0", &blackfin_b0, INTER_PHY_TYPES_US1K2XIR5KIR10R_M },
+    { 0x3590, 0x50b5, "54994    B0", &blackfin_b0, INTER_PHY_TYPES_US1K2XIR5KIR_M },
+    { 0x3590, 0x50b9, "54994E   B0", &blackfin_b0, INTER_PHY_TYPES_US1K2XIR_M },
+    { 0x3590, 0x50d1, "54991H   B0", &blackfin_b0, INTER_PHY_TYPES_US1K2XIR5KIR10R_M },
+    { 0x3590, 0x50f1, "54994H   B0", &blackfin_b0, INTER_PHY_TYPES_US1K2XIR5KIR10R_M },
+    { 0x3590, 0x50f9, "50994E   B0", &blackfin_b0, INTER_PHY_TYPES_US1K2XIR_M },
 #endif
 #ifdef CONFIG_BCM_PHY_SHORTFIN_B0
     { 0x3590, 0x5001, "84898    B0", &shortfin_b0, INTER_PHY_TYPE_USXGMII_MP_M },
@@ -267,49 +258,53 @@ static phy_desc_t phy_desc[] = {
     { 0x3590, 0x5019, "54994L   B0", &shortfin_b0, INTER_PHY_TYPE_USXGMII_MP_M },
     { 0x3590, 0x501d, "54994EL  B0", &shortfin_b0, INTER_PHY_TYPE_USXGMII_MP_M },
 #endif
-#ifdef CONFIG_BCM_PHY_LONGFIN_A0
-    { 0x3590, 0x5180, "84891LM  A0", &longfin_a0, INTER_PHY_TYPES_US1K2KIR5KIR10R_M },
-    { 0x3590, 0x5184, "54991LM  A0", &longfin_a0, INTER_PHY_TYPES_US1K2KIR5KIR10R_M },
-    { 0x3590, 0x5190, "84891M   A0", &longfin_a0, INTER_PHY_TYPES_US1K2KIR5KIR10R_M },
-    { 0x3590, 0x5194, "54991M   A0", &longfin_a0, INTER_PHY_TYPES_US1K2KIR5KIR_M },
-    { 0x3590, 0x5198, "54991EM  A0", &longfin_a0, INTER_PHY_TYPES_US1K2KIR_M },
-    { 0x3590, 0x5188, "54991ELM A0", &longfin_a0, INTER_PHY_TYPES_US1K2KIR_M },
-    { 0x3590, 0x51a0, "84892M   A0", &longfin_a0, INTER_PHY_TYPES_US1K2KIR5KIR10R_M },
-    { 0x3590, 0x51a4, "54992M   A0", &longfin_a0, INTER_PHY_TYPES_US1K2KIR5KIR_M },
-    { 0x3590, 0x51a8, "54992EM  A0", &longfin_a0, INTER_PHY_TYPES_US1K2KIR_M },
-    { 0x3590, 0x51b0, "84894M   A0", &longfin_a0, INTER_PHY_TYPES_US1K2KIR5KIR10R_M },
-    { 0x3590, 0x51b4, "54994M   A0", &longfin_a0, INTER_PHY_TYPES_US1K2KIR5KIR_M },
-    { 0x3590, 0x51b8, "54994EM  A0", &longfin_a0, INTER_PHY_TYPES_US1K2KIR_M },
-    { 0x3590, 0x51d0, "54991H   A0", &longfin_a0, INTER_PHY_TYPES_US1K2KIR5KIR10R_M },
-    { 0x3590, 0x51f0, "54994H   A0", &longfin_a0, INTER_PHY_TYPES_US1K2KIR5KIR10R_M },
-#endif
-#ifdef CONFIG_BCM_PHY_LONGFIN_B0
-    { 0x3590, 0x5181, "84891LM  B0", &longfin_a0, INTER_PHY_TYPES_US1K2KIR5KIR10R_M },
-    { 0x3590, 0x5185, "54991LM  B0", &longfin_a0, INTER_PHY_TYPES_US1K2KIR5KIR10R_M },
-    { 0x3590, 0x5191, "84891M   B0", &longfin_a0, INTER_PHY_TYPES_US1K2KIR5KIR10R_M },
-    { 0x3590, 0x5195, "54991M   B0", &longfin_a0, INTER_PHY_TYPES_US1K2KIR5KIR_M },
-    { 0x3590, 0x5199, "54991EM  B0", &longfin_a0, INTER_PHY_TYPES_US1K2KIR_M },
-    { 0x3590, 0x5189, "54991ELM B0", &longfin_a0, INTER_PHY_TYPES_US1K2KIR_M },
-    { 0x3590, 0x518d, "50991ELM B0", &longfin_a0, INTER_PHY_TYPES_US1K2KIR_M },
-    { 0x3590, 0x51a1, "84892M   B0", &longfin_a0, INTER_PHY_TYPES_US1K2KIR5KIR10R_M },
-    { 0x3590, 0x51a5, "54992M   B0", &longfin_a0, INTER_PHY_TYPES_US1K2KIR5KIR_M },
-    { 0x3590, 0x51a9, "54992EM  B0", &longfin_a0, INTER_PHY_TYPES_US1K2KIR_M },
-    { 0x3590, 0x51b1, "84894M   B0", &longfin_a0, INTER_PHY_TYPES_US1K2KIR5KIR10R_M },
-    { 0x3590, 0x51b5, "54994M   B0", &longfin_a0, INTER_PHY_TYPES_US1K2KIR5KIR_M },
-    { 0x3590, 0x51b9, "54994EM  B0", &longfin_a0, INTER_PHY_TYPES_US1K2KIR_M },
-    { 0x3590, 0x50c1, "49418      ", &longfin_a0,   INTER_PHY_TYPES_US1K2KIR5KIR_M },	// 4912 integrated XGPHY
-    { 0x3590, 0x51c1, "49418M     ", &longfin_a0, INTER_PHY_TYPES_US1K2KIR5KIR_M },	    // 4912 integrated XGPHY
-    { 0x3590, 0x50cd, "4912       ", &longfin_a0,   INTER_PHY_TYPES_US1K2KIR_M },	    // 4912 integrated XGPHY
-    { 0x3590, 0x51cd, "4912M      ", &longfin_a0, INTER_PHY_TYPES_US1K2KIR_M },	        // 4912 integrated XGPHY
-    { 0x3590, 0x51d1, "54991H   B0", &longfin_a0, INTER_PHY_TYPES_US1K2KIR5KIR10R_M },
-    { 0x3590, 0x51d5, "54991SK  B0", &longfin_a0, INTER_PHY_TYPES_US1K2KIR5KIR10R_M },
-    { 0x3590, 0x51f1, "54994H   B0", &longfin_a0, INTER_PHY_TYPES_US1K2KIR5KIR10R_M },
-    { 0x3590, 0x51f5, "54994SK  B0", &longfin_a0, INTER_PHY_TYPES_US1K2KIR5KIR10R_M },
-#endif
 #ifdef CONFIG_BCM_PHY_KAUAI_A0
     { 0x3590, 0x53c0, "54904EL  A0", &kauai_a0, INTER_PHY_TYPE_USXGMII_MP_M },
     { 0x3590, 0x53c1, "54904EL  A1", &kauai_a0, INTER_PHY_TYPE_USXGMII_MP_M, 0x002a, 0x0000 },
     { 0x3590, 0x53c1, "50904EL  A1", &kauai_a0, INTER_PHY_TYPE_USXGMII_MP_M, 0x003a, 0x0000 },
+#endif
+#ifdef CONFIG_BCM_PHY_LANAI_A0
+    { 0xf7a6, 0x1c14, "50901E   A0", &lanai_a0, INTER_PHY_TYPES_QS1K2XR_M },
+    { 0xf7a6, 0x1c10, "54901E   A0", &lanai_a0, INTER_PHY_TYPES_QS1K2XR_M },
+#endif
+#ifdef CONFIG_BCM_PHY_LONGFIN_A0
+    { 0x3590, 0x5180, "84891LM  A0", &longfin_a0, INTER_PHY_TYPES_US1K2XIR5KIR10R_M },
+    { 0x3590, 0x5184, "54991LM  A0", &longfin_a0, INTER_PHY_TYPES_US1K2XIR5KIR10R_M },
+    { 0x3590, 0x5190, "84891M   A0", &longfin_a0, INTER_PHY_TYPES_US1K2XIR5KIR10R_M },
+    { 0x3590, 0x5194, "54991M   A0", &longfin_a0, INTER_PHY_TYPES_US1K2XIR5KIR_M },
+    { 0x3590, 0x5198, "54991EM  A0", &longfin_a0, INTER_PHY_TYPES_US1K2XIR_M },
+    { 0x3590, 0x5188, "54991ELM A0", &longfin_a0, INTER_PHY_TYPES_US1K2XIR_M },
+    { 0x3590, 0x51a0, "84892M   A0", &longfin_a0, INTER_PHY_TYPES_US1K2XIR5KIR10R_M },
+    { 0x3590, 0x51a4, "54992M   A0", &longfin_a0, INTER_PHY_TYPES_US1K2XIR5KIR_M },
+    { 0x3590, 0x51a8, "54992EM  A0", &longfin_a0, INTER_PHY_TYPES_US1K2XIR_M },
+    { 0x3590, 0x51b0, "84894M   A0", &longfin_a0, INTER_PHY_TYPES_US1K2XIR5KIR10R_M },
+    { 0x3590, 0x51b4, "54994M   A0", &longfin_a0, INTER_PHY_TYPES_US1K2XIR5KIR_M },
+    { 0x3590, 0x51b8, "54994EM  A0", &longfin_a0, INTER_PHY_TYPES_US1K2XIR_M },
+    { 0x3590, 0x51d0, "54991H   A0", &longfin_a0, INTER_PHY_TYPES_US1K2XIR5KIR10R_M },
+    { 0x3590, 0x51f0, "54994H   A0", &longfin_a0, INTER_PHY_TYPES_US1K2XIR5KIR10R_M },
+#endif
+#ifdef CONFIG_BCM_PHY_LONGFIN_B0
+    { 0x3590, 0x5181, "84891LM  B0", &longfin_a0, INTER_PHY_TYPES_US1K2XIR5KIR10R_M },
+    { 0x3590, 0x5185, "54991LM  B0", &longfin_a0, INTER_PHY_TYPES_US1K2XIR5KIR10R_M },
+    { 0x3590, 0x5191, "84891M   B0", &longfin_a0, INTER_PHY_TYPES_US1K2XIR5KIR10R_M },
+    { 0x3590, 0x5195, "54991M   B0", &longfin_a0, INTER_PHY_TYPES_US1K2XIR5KIR_M },
+    { 0x3590, 0x5199, "54991EM  B0", &longfin_a0, INTER_PHY_TYPES_US1K2XIR_M },
+    { 0x3590, 0x5189, "54991ELM B0", &longfin_a0, INTER_PHY_TYPES_US1K2XIR_M },
+    { 0x3590, 0x518d, "50991ELM B0", &longfin_a0, INTER_PHY_TYPES_US1K2XIR_M },
+    { 0x3590, 0x51a1, "84892M   B0", &longfin_a0, INTER_PHY_TYPES_US1K2XIR5KIR10R_M },
+    { 0x3590, 0x51a5, "54992M   B0", &longfin_a0, INTER_PHY_TYPES_US1K2XIR5KIR_M },
+    { 0x3590, 0x51a9, "54992EM  B0", &longfin_a0, INTER_PHY_TYPES_US1K2XIR_M },
+    { 0x3590, 0x51b1, "84894M   B0", &longfin_a0, INTER_PHY_TYPES_US1K2XIR5KIR10R_M },
+    { 0x3590, 0x51b5, "54994M   B0", &longfin_a0, INTER_PHY_TYPES_US1K2XIR5KIR_M },
+    { 0x3590, 0x51b9, "54994EM  B0", &longfin_a0, INTER_PHY_TYPES_US1K2XIR_M },
+    { 0x3590, 0x50c1, "49418      ", &longfin_a0,   INTER_PHY_TYPES_US1K2XIR5KIR_M }, // 4912 integrated XGPHY
+    { 0x3590, 0x51c1, "49418M     ", &longfin_a0, INTER_PHY_TYPES_US1K2XIR5KIR_M }, // 4912 integrated XGPHY
+    { 0x3590, 0x50cd, "4912       ", &longfin_a0,   INTER_PHY_TYPES_US1K2XIR_M },     // 4912 integrated XGPHY
+    { 0x3590, 0x51cd, "4912M      ", &longfin_a0, INTER_PHY_TYPES_US1K2XIR_M },     // 4912 integrated XGPHY
+    { 0x3590, 0x51d1, "54991H   B0", &longfin_a0, INTER_PHY_TYPES_US1K2XIR5KIR10R_M },
+    { 0x3590, 0x51d5, "54991SK  B0", &longfin_a0, INTER_PHY_TYPES_US1K2XIR5KIR10R_M },
+    { 0x3590, 0x51f1, "54994H   B0", &longfin_a0, INTER_PHY_TYPES_US1K2XIR5KIR10R_M },
+    { 0x3590, 0x51f5, "54994SK  B0", &longfin_a0, INTER_PHY_TYPES_US1K2XIR5KIR10R_M },
 #endif
 #ifdef CONFIG_BCM_PHY_XPHY
     { 0x3590, 0x50c0, "XPHY6888_X A0", &xphy, 0 },                         // integrated XPHY
@@ -366,19 +361,19 @@ static phy_desc_t *_phy_get_ext3_desc_by_phyid(int phyid1, int phyid2, int pkgid
         if (phy_desc[i].phyid1 != phyid1 || phy_desc[i].phyid2 != phyid2)
             continue;
 
-		if (phy_desc[i].packageid1 || phy_desc[i].packageid2) 
-		{
-			if (phy_desc[i].packageid1 != pkgid1 || phy_desc[i].packageid2 != pkgid2)
-			{
-				if (i < ((int)ARRAY_SIZE(phy_desc) - 1)) /* If not last entry */
-				{
-					/* If next entry is still the same PHY ID, compare next entry */
-					if (phy_desc[i+1].phyid1 == phyid1 && phy_desc[i+1].phyid2 == phyid2)
-						continue;
-				}
-				/* if it is the last entry of the same PHY IDs, return the entry even package ID does not match */
-			}
-		}
+        if (phy_desc[i].packageid1 || phy_desc[i].packageid2) 
+        {
+            if (phy_desc[i].packageid1 != pkgid1 || phy_desc[i].packageid2 != pkgid2)
+            {
+                if (i < ((int)ARRAY_SIZE(phy_desc) - 1)) /* If not last entry */
+                {
+                    /* If next entry is still the same PHY ID, compare next entry */
+                    if (phy_desc[i+1].phyid1 == phyid1 && phy_desc[i+1].phyid2 == phyid2)
+                        continue;
+                }
+                /* if it is the last entry of the same PHY IDs, return the entry even package ID does not match */
+            }
+        }
 
         return &phy_desc[i];
     }
@@ -486,9 +481,11 @@ static inline int _phy_use_firmware(phy_dev_t *phy_dev, firmware_t *firmware)
 
 /* Fixups for 5499x phys */
 #define ID1_5499X                                   0x35900000
+#define ID1_50901E                                  0xf7a60000
 #define ID1_MASK                                    0xffff0000
 #define SUPER_I_DEFAULT                             (1<<15)
 #define SUPER_I_BLACKFIN                            (1<<8)
+#define SUPER_I_LANAI                               (1<<10)
 #define CHANGE_STRAP_STATUS                         (1<<1)
 
 static int _wait_for_cmd_ready(phy_dev_t *phy_dev)
@@ -710,7 +707,7 @@ Exit:
     return ret;
 }
 
-#if defined(CONFIG_BCM_PHY_SHORTFIN_B0) || defined(CONFIG_BCM_PHY_BLACKFIN_A0) || defined(CONFIG_BCM_PHY_BLACKFIN_B0)
+#if defined(CONFIG_BCM_PHY_SHORTFIN_B0) || defined(CONFIG_BCM_PHY_BLACKFIN_A0) || defined(CONFIG_BCM_PHY_BLACKFIN_B0) || defined(CONFIG_BCM_PHY_LANAI_A0)
 static int xfiRegIn[] = {0x1e, 0x4110, 0x2004, 0x1e, 0x4111, 0x2004, 0x1e, 0x4113, 0x2004, -1};
 static int xfiRegOut[] = {0x1e, 0x4110, 0x0001, 0x1e, 0x4111, 0x0001, 0x1e, 0x4113, 0x1002, -1};
 static void serdes_register_read(phy_dev_t *phy_dev, int dev, int reg, uint16_t *val)
@@ -868,6 +865,11 @@ static int _phy_inter_phy_types_set(phy_dev_t *phy_dev, int inter_phy_types)
     if (inter_phy_types & INTER_PHY_TYPE_5GIDLE_M)
         data2 = XFI_MODE_IDLE_STUFFING;
 
+#ifdef CONFIG_BCM_PHY_LANAI_A0
+    if (_phy_use_firmware(phy_dev, &lanai_a0))  /* Disable SGMII_AN for LANAI family */
+        data2 = 0;
+#endif
+
     /* Configure XFI modes for 2.5G and 5G */
     if ((ret = cmd_handler(phy_dev, CMD_SET_XFI_2P5G_5G_MODE, &data1, &data2, NULL, NULL, NULL)))
         goto Exit;
@@ -922,7 +924,7 @@ static int inter_phy_current_types_2p5g_5g_get(phy_dev_t *phy_dev, uint32_t *typ
             *types |= INTER_PHY_TYPE_2P5GIDLE_M;
             break;
         case 1:
-            *types |= INTER_PHY_TYPE_2500BASE_X_M;
+            *types |= INTER_PHY_TYPE_2P5GBASE_X_M;
             break;
         case 2:
             *types |= INTER_PHY_TYPE_2P5GBASE_R_M;
@@ -976,6 +978,8 @@ static int _phy_current_inter_phy_type_get(phy_dev_t *phy_dev)
         phy_dev_inter_phy_types_get(phy_dev, INTER_PHY_TYPE_UP, &types);
         if (types & INTER_PHY_TYPE_USXGMII_MP_M)
             return INTER_PHY_TYPE_USXGMII_MP;
+        else if (types & INTER_PHY_TYPE_SXGMII_M)
+            return INTER_PHY_TYPE_SXGMII;
         else
             return INTER_PHY_TYPE_USXGMII;
     }
@@ -991,6 +995,7 @@ static int _phy_current_inter_phy_type_get(phy_dev_t *phy_dev)
 
     switch(phy_dev->speed)
     {
+        case PHY_SPEED_10:
         case PHY_SPEED_100:
         case PHY_SPEED_1000:
             if (sw_types & INTER_PHY_TYPE_SGMII_M)
@@ -1000,8 +1005,8 @@ static int _phy_current_inter_phy_type_get(phy_dev_t *phy_dev)
         case PHY_SPEED_2500:
             if (hw_types & INTER_PHY_TYPE_2P5GBASE_R_M)
                 return INTER_PHY_TYPE_2P5GBASE_R;
-            if (hw_types & INTER_PHY_TYPE_2500BASE_X_M)
-                return INTER_PHY_TYPE_2500BASE_X;
+            if (hw_types & INTER_PHY_TYPE_2P5GBASE_X_M)
+                return INTER_PHY_TYPE_2P5GBASE_X;
             if (hw_types & INTER_PHY_TYPE_2P5GIDLE_M)
                 return INTER_PHY_TYPE_2P5GIDLE;
             return INTER_PHY_TYPE_UNKNOWN;  /* Bug */
@@ -1093,27 +1098,36 @@ static int inter_phy_type_usxgmii_set(phy_dev_t *phy_dev, inter_phy_types_dir_t 
     int rc = 0;
     uint16_t data1, data2, data3, data4, data5;
 
-    rc = cmd_handler(phy_dev, CMD_GET_USXGMII, &data1, &data2, &data3, &data4, &data5);
-    data1 = type == INTER_PHY_TYPE_USXGMII; /* Enable/Disable bit */
-    data2 = 1;  /* AN, only on */
-    data3 = data4 = data5 = 0;
-
-    if (data1)
+    data1 = data2 = data3 = data4 = data5 = 0;
+    if ((1<<type) & (INTER_PHY_TYPE_USXGMII_M | INTER_PHY_TYPE_SXGMII_M | INTER_PHY_TYPE_USXGMII_MP_M))
     {
-        switch (phy_dev->usxgmii_m_type)
+        data1 = 1;
+        switch (type)
         {
-            case USXGMII_S:
+            case INTER_PHY_TYPE_USXGMII:
+                data2 = 1;  /* AN, only on */
                 data3 = 4;
                 break;
-                /* data sheet values */
-            /* PLP script values */
-            case USXGMII_M_10G_Q:
-            case USXGMII_M_10G_D:
-            case USXGMII_M_10G_S:
-                return inter_phy_type_usxgmii_m_set(phy_dev, if_dir, type);
-            default:
-                printk("No supported USXGMII mode: %d\n", phy_dev->usxgmii_m_type);
-                return -1;
+
+            case INTER_PHY_TYPE_SXGMII:
+                data2 = 0x11;
+                data3 = 1;
+                break;
+
+            case INTER_PHY_TYPE_USXGMII_MP:
+                switch (phy_dev->usxgmii_m_type)
+                {
+                    /* data sheet values */
+                    /* PLP script values */
+                    case USXGMII_M_10G_Q:
+                    case USXGMII_M_10G_D:
+                    case USXGMII_M_10G_S:
+                        return inter_phy_type_usxgmii_m_set(phy_dev, if_dir, type);
+                    default:
+                        printk("No supported USXGMII mode: %d\n", phy_dev->usxgmii_m_type);
+                        return -1;
+                }
+                break;
         }
     }
 
@@ -1122,7 +1136,7 @@ static int inter_phy_type_usxgmii_set(phy_dev_t *phy_dev, inter_phy_types_dir_t 
     return rc;
 }
 
-static int inter_phy_type_2P5G5G_set(phy_dev_t *phy_dev, inter_phy_types_dir_t if_dir, int type)
+static int inter_phy_type_2p5g5g_set(phy_dev_t *phy_dev, inter_phy_types_dir_t if_dir, int type)
 {
     int rc = 0;
     uint16_t data1, data2;
@@ -1134,7 +1148,7 @@ static int inter_phy_type_2P5G5G_set(phy_dev_t *phy_dev, inter_phy_types_dir_t i
         case INTER_PHY_TYPE_2P5GIDLE:
             data1 = XFI_MODE_IDLE_STUFFING;
             break;
-        case INTER_PHY_TYPE_2500BASE_X:
+        case INTER_PHY_TYPE_2P5GBASE_X:
             data1 = XFI_MODE_BASE_X;
             break;
         case INTER_PHY_TYPE_2P5GBASE_R:
@@ -1154,6 +1168,11 @@ static int inter_phy_type_2P5G5G_set(phy_dev_t *phy_dev, inter_phy_types_dir_t i
             break;
     }
 
+#ifdef CONFIG_BCM_PHY_LANAI_A0
+    if (_phy_use_firmware(phy_dev, &lanai_a0))  /* Disable SGMII_AN for LANAI family */
+        data2 = 0;
+#endif
+
     rc += cmd_handler(phy_dev, CMD_SET_XFI_2P5G_5G_MODE, &data1, &data2, NULL, NULL, NULL);
 
     return rc;
@@ -1164,34 +1183,38 @@ static int _phy_configured_inter_phy_types_set(phy_dev_t *phy_dev, inter_phy_typ
 {
     int rc = 0;
     int best_type;
-    int disable_usxgmii;
 
-    best_type = phy_get_best_inter_phy_configure_type(phy_dev, types, PHY_SPEED_2500);
     phy_dev_configured_current_inter_phy_type_set(phy_dev, INTER_PHY_TYPE_AUTO);
-
-    if (best_type == INTER_PHY_TYPE_USXGMII || best_type == INTER_PHY_TYPE_USXGMII_MP)
+    if (phy_dev->link == 0)
     {
-        inter_phy_type_usxgmii_set(phy_dev, if_dir, INTER_PHY_TYPE_USXGMII);
+    	best_type = phy_get_best_inter_phy_configure_type(phy_dev, types, PHY_SPEED_2500);
+        /* USXGMII family as an AN protocol needs to be set before link up, or XFI will not link up */ 
+    	if (best_type == INTER_PHY_TYPE_USXGMII || best_type == INTER_PHY_TYPE_USXGMII_MP || best_type == INTER_PHY_TYPE_SXGMII)
+            goto end;
+
+        /* 2.5G */
+    	if (best_type != INTER_PHY_TYPE_UNKNOWN)
+            rc += inter_phy_type_2p5g5g_set(phy_dev, if_dir, best_type);
+
+    	best_type = phy_get_best_inter_phy_configure_type(phy_dev, types, PHY_SPEED_5000);
+    	if (best_type != INTER_PHY_TYPE_UNKNOWN)
+            rc += inter_phy_type_2p5g5g_set(phy_dev, if_dir, best_type);
+    }
+    else
+    {
+        best_type = phy_get_best_inter_phy_configure_type(phy_dev, types, phy_dev->speed);
+        if (best_type == phy_dev->current_inter_phy_type)
+            return 0;
+
+        if (best_type != INTER_PHY_TYPE_USXGMII && best_type != INTER_PHY_TYPE_USXGMII_MP && best_type != INTER_PHY_TYPE_SXGMII)
+            rc += inter_phy_type_2p5g5g_set(phy_dev, if_dir, best_type);
+    }
+end:
+    if (best_type != phy_dev->current_inter_phy_type)
+    {
         phy_dev_current_inter_phy_types_set(phy_dev, INTER_PHY_TYPE_UP, best_type);
-        return 0;
-    }
-
-    if (best_type != INTER_PHY_TYPE_UNKNOWN)
-    {
-        rc += inter_phy_type_2P5G5G_set(phy_dev, if_dir, best_type);
-        disable_usxgmii = 1;
-    }
-
-    best_type = phy_get_best_inter_phy_configure_type(phy_dev, types, PHY_SPEED_5000);
-    if (best_type != INTER_PHY_TYPE_UNKNOWN)
-    {
-        rc += inter_phy_type_2P5G5G_set(phy_dev, if_dir, best_type);
-        disable_usxgmii = 1;
-    }
-
-    if (disable_usxgmii)
         rc += inter_phy_type_usxgmii_set(phy_dev, if_dir, best_type);
-
+    }
     return rc;
 }
 
@@ -1213,7 +1236,7 @@ static int _phy_configured_speed_type(phy_dev_t *phy_dev, int adv_phy_caps, phy_
     else
     {
         rc += inter_phy_type_usxgmii_set(phy_dev, if_dir, type);
-        rc += inter_phy_type_2P5G5G_set(phy_dev, if_dir, type);
+        rc += inter_phy_type_2p5g5g_set(phy_dev, if_dir, type);
 
         if (adv_phy_caps == 0)
             speed = phy_type_to_single_speed(type);
@@ -1489,6 +1512,12 @@ static int _phy_eee_mode_set(phy_dev_t *phy_dev, uint32_t caps)
             return 0;
     }
 
+#ifdef CONFIG_BCM_PHY_LANAI_A0
+    /* 50901E/LANAI will flip link at 100M speed when EEE is on, disable EEE before the issue is fixed */ 
+    if (_phy_use_firmware(phy_dev, &lanai_a0))
+        caps = 0;
+#endif
+
     data1 = XFI_MODE_BASE_X;
     data2 = XFI_MODE_BASE_X;
 
@@ -1601,9 +1630,9 @@ static int _phy_read_status(phy_dev_t *phy_dev)
     {
         mode = ((val >> 8) & 0x7);
 
-        if (mode == 3 || mode == 6)
+        if (mode == 1 || mode == 3 || mode == 6)
             phy_dev->duplex = PHY_DUPLEX_HALF;
-        else if (mode == 5 || mode == 7)
+        else if (mode == 2 || mode == 5 || mode == 7)
             phy_dev->duplex = PHY_DUPLEX_FULL;
     }
 
@@ -1878,6 +1907,28 @@ Exit:
     return ret;
 }
 
+#ifdef CONFIG_BCM_PHY_LANAI_A0
+static int _phy_super_isolate_50901E(phy_dev_t *phy_dev, int isolate)
+{
+    int ret;
+    uint16_t data;
+
+    /* Read the status register */
+    PHY_READ(phy_dev, 0x1e, 0x401c, &data);
+
+    if (isolate)
+        data |= SUPER_I_LANAI;
+    else
+        data &= ~SUPER_I_LANAI;
+
+    PHY_WRITE(phy_dev, 0x1e, 0x401c, data);
+
+    return 0;
+Exit:
+    return ret;
+}
+#endif
+
 static int _phy_super_isolate_default(phy_dev_t *phy_dev, int isolate)
 {
     int ret;
@@ -1925,6 +1976,10 @@ static int _phy_super_isolate(phy_dev_t *phy_dev, int isolate)
 
     if ((phyid & ID1_MASK) == ID1_5499X)
         ret = _phy_super_isolate_5499x(phy_dev, isolate);
+#ifdef CONFIG_BCM_PHY_LANAI_A0
+    else if ((phyid & ID1_MASK) == ID1_50901E)
+        ret = _phy_super_isolate_50901E(phy_dev, isolate);
+#endif
     else
         ret = _phy_super_isolate_default(phy_dev, isolate);
 
@@ -1998,8 +2053,8 @@ static const struct udevice_id xphy_rescal_id[] = {
 };
 
 U_BOOT_DRIVER(xphy_rescal_drv) = {
-    .name	= "xphy-rescal",
-    .id	= UCLASS_MISC,
+    .name = "xphy-rescal",
+    .id = UCLASS_MISC,
     .of_match = xphy_rescal_id,
     .probe = xphy_rescal_probe,
 };
@@ -2114,6 +2169,9 @@ static int _phy_init(phy_dev_t *phy_dev)
 {
     int ret, i;
     uint16_t val;
+
+    if ((phy_dev->flag & PHY_FLAG_ON_MEZZANINE) && (phy_dev->flag & PHY_FLAG_NOT_PRESENTED))
+        return 0;
 
     phy_dev->autogreeen = 1;    /* By default, we use AutoGreeen mode for EEE */
 
@@ -2329,7 +2387,7 @@ static int load_mako(firmware_t *firmware)
     firmware_size = firmware->size;
 
     cnt = firmware_size / sizeof(uint32_t);
-    step = cnt / 100;
+    step = cnt / 10;
 
     /* 1. If more than one PHY, turn on broadcast mode to accept write operations for addr = base_phy_addr */
     if (phy_cnt > 1)
@@ -2423,7 +2481,7 @@ static int load_mako(firmware_t *firmware)
         BUS_WRITE(base_phy_addr, 0x01, 0xa81b, firmware_data[i] & 0xffff); /* lower 16 bits */
 
         if (i == i / step * step)
-            printk("\r%d%%", i / step);
+            printk("\r%d%%", i*10 / step);
     }
     bus_fast_mode(0);
     printk("\n");
@@ -2496,7 +2554,7 @@ static int load_orca(firmware_t *firmware)
     firmware_size = firmware->size;
 
     cnt = firmware_size / sizeof(uint32_t);
-    step = cnt / 100;
+    step = cnt / 10;
 
     /* 1. Halt the BCM8488X processors operation */
     printk("Halt the PHYs processors operation\n");
@@ -2540,7 +2598,7 @@ static int load_orca(firmware_t *firmware)
         BUS_WRITE(base_phy_addr, 0x01, 0xa81b, firmware_data[i] & 0xffff); /* lower 16 bits */
 
         if (i == i / step * step)
-            printk("\r%d%%", i / step);
+            printk("\r%d%%", i*10 / step);
     }
     bus_fast_mode(0);
     printk("\n");
@@ -2593,7 +2651,8 @@ Exit:
 }
 #endif
 
-#if defined(CONFIG_BCM_PHY_SHORTFIN_B0) || defined(CONFIG_BCM_PHY_KAUAI_A0)
+#if defined(CONFIG_BCM_PHY_KAUAI_A0) || defined(CONFIG_BCM_PHY_SHORTFIN_B0) || defined(CONFIG_BCM_PHY_BLACKFIN_A0) \
+    || defined(CONFIG_BCM_PHY_BLACKFIN_B0) || defined(CONFIG_BCM_PHY_LONGFIN_A0) || defined(CONFIG_BCM_PHY_LONGFIN_B0) || defined(CONFIG_BCM_PHY_XPHY) || defined(CONFIG_BCM_PHY_LANAI_A0)
 static loading_reg_t default_load_reg = {
     .ram_addr   = 0x00000000,
     .devid      = 0x01,
@@ -2604,6 +2663,67 @@ static loading_reg_t default_load_reg = {
     .data_low   = 0xa81b,
 };
 
+static int verify_firmware_file(int phy_addr, firmware_t *firmware, loading_reg_t *load_reg)
+{
+    uint32_t data, data_ram;
+    int errors = 0;
+    uint32_t *firmware_data, firmware_size;
+    int i, step, dword_size, ram_addr;
+    uint16_t data_hi, data_lo;
+
+    if (!load_reg)
+        load_reg = &default_load_reg;
+
+    ram_addr = load_reg->ram_addr;
+    firmware_data = firmware->data;
+    firmware_size = firmware->size;
+    dword_size = firmware_size / sizeof(uint32_t);
+    step = dword_size / 10;
+
+    printk("Verifying the firmware loaded in the PHY at %d, size=%d bytes, ram_addr=0x%08x\n",
+        phy_addr, firmware_size, ram_addr);
+
+    _bus_write(phy_addr, load_reg->devid, load_reg->ctrl, 0x0000);
+
+    _bus_write(phy_addr, load_reg->devid, load_reg->addr_low, 0 & 0xffff);
+    _bus_write(phy_addr, load_reg->devid, load_reg->addr_high, 0 >> 16);
+    _bus_write(phy_addr, load_reg->devid, load_reg->ctrl, 0x002a);
+
+    _bus_read(phy_addr, load_reg->devid, load_reg->data_high, &data_hi);
+    _bus_read(phy_addr, load_reg->devid, load_reg->data_low, &data_lo);
+    _bus_write(phy_addr, load_reg->devid, load_reg->ctrl, 0x0038);
+
+    for (i = 0; i < dword_size; i++)
+    {
+        data = firmware_data[i];
+
+        _bus_read(phy_addr, load_reg->devid, load_reg->data_high, &data_hi);
+        _bus_read(phy_addr, load_reg->devid, load_reg->data_low, &data_lo);
+
+        data_ram = (data_hi << 16) | data_lo;
+
+        if (data != data_ram && errors++ < 32)
+        {
+            printk("mismatching: ram_addr: *0x%08x = 0x%08x, firmware offset: *0x%08x = 0x%08x\n",
+                    ram_addr+i*4, data_ram, i*4, data);
+        }
+
+        if (i == i / step * step)
+            printk("\r%d%%", i*10 / step);
+    }
+    printk("\n");
+    _bus_write(phy_addr, load_reg->devid, load_reg->ctrl, 0x0000);
+
+    if (errors)
+        printk("Comparson failed with %d dword mismatching\n", errors);
+    else
+        printk("Comparson succeeded\n");
+
+    return errors;
+}
+#endif
+
+#if defined(CONFIG_BCM_PHY_SHORTFIN_B0) || defined(CONFIG_BCM_PHY_KAUAI_A0) || defined(CONFIG_BCM_PHY_LANAI_A0)
 static int load_firmware_file(int master_addr, firmware_t *firmware, loading_reg_t *load_reg)
 {
     int ret = 0;
@@ -2622,7 +2742,7 @@ static int load_firmware_file(int master_addr, firmware_t *firmware, loading_reg
     firmware_data = firmware->data;
     firmware_size = firmware->size;
     dword_size = firmware_size / sizeof(uint32_t);
-    step = dword_size / 100;
+    step = dword_size / 10;
 
     BUS_WRITE(master_addr, load_reg->devid, load_reg->addr_low, load_reg->ram_addr & 0xffff);
     BUS_WRITE(master_addr, load_reg->devid, load_reg->addr_high, (load_reg->ram_addr >> 16));
@@ -2635,7 +2755,7 @@ static int load_firmware_file(int master_addr, firmware_t *firmware, loading_reg
         BUS_WRITE(master_addr, load_reg->devid, load_reg->data_low, firmware_data[i] & 0xffff); /* lower 16 bits */
 
         if (i == i / step * step)
-            printk("\r%d%%", i / step);
+            printk("\r%d%%", i*10 / step);
     }
     bus_fast_mode(0);
     printk("\n");
@@ -2673,64 +2793,6 @@ static int bus_write_reg32_all(uint32_t phy_map, uint32_t reg, uint32_t val, uin
     return 0;
 }
 
-static int verify_firmware_file(int phy_addr, firmware_t *firmware, loading_reg_t *load_reg)
-{
-    uint32_t data, data_ram;
-    int errors = 0;
-    uint32_t *firmware_data, firmware_size;
-    int i, step, dword_size, ram_addr;
-    uint16_t data_hi, data_lo;
-
-    if (!load_reg)
-        load_reg = &default_load_reg;
-
-    ram_addr = load_reg->ram_addr;
-    firmware_data = firmware->data;
-    firmware_size = firmware->size;
-    dword_size = firmware_size / sizeof(uint32_t);
-    step = dword_size / 100;
-
-    printk("Verifying the firmware loaded in the PHY at %d, size=%d bytes, ram_addr=0x%08x\n",
-        phy_addr, firmware_size, ram_addr);
-
-    _bus_write(phy_addr, load_reg->devid, load_reg->ctrl, 0x0000);
-
-    _bus_write(phy_addr, load_reg->devid, load_reg->addr_low, 0 & 0xffff);
-    _bus_write(phy_addr, load_reg->devid, load_reg->addr_high, 0 >> 16);
-    _bus_write(phy_addr, load_reg->devid, load_reg->ctrl, 0x002a);
-
-    _bus_read(phy_addr, load_reg->devid, load_reg->data_high, &data_hi);
-    _bus_read(phy_addr, load_reg->devid, load_reg->data_low, &data_lo);
-    _bus_write(phy_addr, load_reg->devid, load_reg->ctrl, 0x0038);
-
-    for (i = 0; i < dword_size; i++)
-    {
-        data = firmware_data[i];
-
-        _bus_read(phy_addr, load_reg->devid, load_reg->data_high, &data_hi);
-        _bus_read(phy_addr, load_reg->devid, load_reg->data_low, &data_lo);
-
-        data_ram = (data_hi << 16) | data_lo;
-
-        if (data != data_ram && errors++ < 32)
-        {
-            printk("mismatching: ram_addr: *0x%08x = 0x%08x, firmware offset: *0x%08x = 0x%08x\n",
-                    ram_addr+i*4, data_ram, i*4, data);
-        }
-
-        if (i == i / step * step)
-            printk("\r%d%%", i / step);
-    }
-    printk("\n");
-    _bus_write(phy_addr, load_reg->devid, load_reg->ctrl, 0x0000);
-
-    if (errors)
-        printk("Comparson failed with %d dword mismatching\n", errors);
-    else
-        printk("Comparson succeeded\n");
-
-    return errors;
-}
 #endif
 
 #if defined(USXGMII_MP_PHY)
@@ -3021,7 +3083,7 @@ static int load_blackfin(firmware_t *firmware)
     firmware_size = firmware->size;
 
     cnt = firmware_size / sizeof(uint32_t);
-    step = cnt / 100;
+    step = cnt / 10;
 
     /* 1. Halt the BCM5499X processors operation */
     printk("Halt the PHYs processors operation\n");
@@ -3067,7 +3129,7 @@ static int load_blackfin(firmware_t *firmware)
         BUS_WRITE(base_phy_addr, 0x01, 0xa81b, firmware_data[i] & 0xffff); /* lower 16 bits */
 
         if (i == i / step * step)
-            printk("\r%d%%", i / step);
+            printk("\r%d%%", i*10 / step);
     }
     bus_fast_mode(0);
     printk("\n");
@@ -3130,6 +3192,121 @@ static int load_blackfin(firmware_t *firmware)
     print_firmware_version(base_phy_addr);
 
 Exit:
+    if (ret)
+        verify_firmware_file(base_phy_addr, firmware, 0);
+    return ret;
+}
+#endif
+
+#if defined(CONFIG_BCM_PHY_LANAI_A0) 
+static int load_lanai(firmware_t *firmware)
+{
+    /*
+        phy_map is the ports defined by DT which might not contain base port.
+        while phy_map_with_base contains missing base port if DT does not define it.
+    */
+    int i, ret, master_addr, phy_cnt;
+    uint32_t phy_map, mphy_base_map, phy_map_with_base, mphy_non_master_base_map;
+
+    static loading_reg_t load_reg = {
+        .ram_addr   = 0xf7900000,
+        .devid      = 0x1e,
+        .ctrl       = 0x4138,
+        .addr_low   = 0x413a,
+        .addr_high  = 0x413b,
+        .data_low   = 0x413c,
+        .data_high  = 0x413d,
+    };
+
+    phy_map = firmware->map;
+    mphy_base_map = phy_map;
+    phy_map_with_base = phy_map | mphy_base_map;
+    master_addr = get_base_phy_addr(phy_map_with_base); /* select the min PHY address for broadcast operation */
+    mphy_non_master_base_map = mphy_base_map &~(1<<master_addr);
+
+    phy_cnt = phy_count(phy_map_with_base);
+
+
+    printk("phy_map:%08x, mphy_base_map:%08x, phy_map_with_base:%08x, mphy_non_master_base_map:%08x, master_addr:%d, phy_cnt:%d\n",
+        phy_map, mphy_base_map, phy_map_with_base, mphy_non_master_base_map, master_addr, phy_cnt);
+
+    #if 0
+    printk("Step1. Set in Chip broadcast.\n");
+    BUS_WRITE_ALL(mphy_base_map, 0x1e, 0x8914, 0xffff); 
+    printk(" Set XGP table for mdio2arm_devad (for the the 1st port of each chip except the Master.\n");
+    BUS_WRITE_ALL(mphy_non_master_base_map, 0x1e, 0x4107, (0x0400|(master_addr & 0x1f) << 5) | (0x1e));
+    BUS_WRITE_ALL(mphy_non_master_base_map, 0x1e, 0x4117, 0xf001);
+    #endif
+
+    #if 0
+    printk("Step2. Reset and clear Watchdog timer and enable clocks.\n");
+    BUS_WRITE_ALL(mphy_base_map, 0x1e, 0x418c, 0x0000);
+    BUS_WRITE_ALL(mphy_base_map, 0x1e, 0x4188, 0x48f0);
+    #endif
+
+    printk("Step3. Put All CPUs in halt\n");
+    bus_write_reg32_all(mphy_base_map, 0xf0003000, 0x00000121, 9, &load_reg);
+
+    printk("Step4. Set 0x1e.88a6 to 0\n"); 
+    BUS_WRITE_ALL(phy_map_with_base, 0x1e, 0x88a6, 0);
+
+    printk("Step6. Issue soft reset on all ports\n");
+    BUS_WRITE_ALL(phy_map_with_base, 0x1, 0x0000, 0x8000);
+
+    printk("Step6.2. Clear TMUX_MODE to 0\n");
+    BUS_WRITE_ALL(phy_map_with_base, 0x1e, 0x8a81, 0x0000);
+
+    printk("Step7. Step7. Enable broadcast mode for device 1\n");
+    BUS_WRITE_ALL((phy_map_with_base & ~(1<<master_addr)), 0x1e, 0x4107, 0x0400|((master_addr & 0x1f)<<5)|0x1e);
+    BUS_WRITE_ALL((phy_map_with_base & ~(1<<master_addr)), 0x1e, 0x4117, 0xf001);
+
+    printk("Step8. Upload the firmware file content into the on-chip memory of the device\n");
+    if ((ret = load_firmware_file(master_addr, firmware, &load_reg)))
+        goto Exit;
+
+    printk("Step9. Step9. Disable broadcast mode for device 1\n");
+    BUS_WRITE_ALL((phy_map_with_base & ~(1<<master_addr)), 0x1e, 0x4107, 0x0000);
+    BUS_WRITE_ALL((phy_map_with_base & ~(1<<master_addr)), 0x1e, 0x4117, 0x0000);
+
+    printk("Step10. Bring CPU0 out of halt\n");
+    printk("Step11. Finished uploading Firmware, CORTEXR4 jumping to address 0x00000000.\n");
+    bus_write_reg32_all(mphy_base_map, 0xf0003000, 0x00000020, 9, &load_reg);
+
+
+    /* 6. Verify that the processors are running */
+    pr_cont("Verify that the processors are running: ");
+    i = 1000;
+    do
+    {
+        udelay(2000);
+        ret = _bus_read_all(phy_map_with_base, 0x01, 0x0000, 0x2040, 0xffff);
+    } while ((ret != phy_map_with_base) && i--);
+    pr_cont("%s\n", ret != phy_map_with_base ? "Failed" : "OK");
+
+    ret = ret != phy_map_with_base;
+    if (ret)
+        goto Exit;
+
+    /* 7. Verify that the firmware has been loaded into the on-chip memory with a good CRC */
+    printk("Verify that the firmware has been loaded with good CRC: ");
+    i = 8000;
+    do
+    {
+        udelay(2000);
+        ret = _bus_read_all(phy_map_with_base, 0x1e, 0x400d, 0x4000, 0xc000);
+    } while ((ret != phy_map_with_base) && i--);
+
+    pr_cont("%s\n", ret != phy_map_with_base ? "Failed" : "OK");
+
+    ret = ret != phy_map_with_base;
+    if (ret)
+        goto Exit;
+
+    print_firmware_version(master_addr);
+
+Exit:
+    if (ret)
+        verify_firmware_file(master_addr, firmware, &load_reg);
     return ret;
 }
 #endif
@@ -3152,18 +3329,21 @@ static void phy_reset_lift(phy_dev_t *phy_dev)
     }
 }
 
-static void phys_reset_lift(uint32_t phy_map)
+static void phys_reset_lift(uint32_t *phy_map)
 {
     int i;
     phy_dev_t *phy_dev;
 
     for (i = 0; i < 32; i++)
     {
-        if (!(phy_map & (1 << i)))
+        if (!(*phy_map & (1 << i)))
             continue;
 
         phy_dev = phy_dev_get(PHY_TYPE_EXT3, i);
-        phy_reset_lift(phy_dev);
+        if (!phy_dev || (phy_dev->flag & PHY_FLAG_ON_MEZZANINE && phy_dev->flag & PHY_FLAG_NOT_PRESENTED))
+            *phy_map &= ~ (1<<i);
+        else
+            phy_reset_lift(phy_dev);
     }
 }
 
@@ -3184,21 +3364,28 @@ static void phy_config_shared_ref_clk(phy_dev_t *phy_dev)
     if (!phy_dev->shared_ref_clk_mhz)
         return;
 
+    if (phy_dev->flag & PHY_FLAG_SHARED_CLOCK_BOOTSTRAP)
+    {
+        printk("%d MHZ clock sharing on XGPHY at address %d set by bootstrapping\n",
+            phy_dev->shared_ref_clk_mhz, phy_dev->addr);
+        return;
+    }
+
     phy_bus_c45_read(phy_dev, 0x1e, 0x80a8, &v16);
     switch(phy_dev->shared_ref_clk_mhz)
     {
-    	case 80:
+        case 80:
             v16 |= 1;
-    		phy_bus_c45_write(phy_dev, 0x1e, 0x80a8, v16);
-			break;
-    	default:
-    		printk("Error: Unknown REF CLK at address %d: %d\n", phy_dev->addr, phy_dev->shared_ref_clk_mhz);
-    		return;
-	}
+            phy_bus_c45_write(phy_dev, 0x1e, 0x80a8, v16);
+            break;
+        default:
+            printk("Error: Unknown REF CLK at address %d: %d\n", phy_dev->addr, phy_dev->shared_ref_clk_mhz);
+            return;
+    }
 
-	PhySetSharedRefClk(phy_dev);
+    PhySetSharedRefClk(phy_dev);
     printk("Set %d MHZ clock sharing on XGPHY at address %d\n",
-    	phy_dev->shared_ref_clk_mhz, phy_dev->addr);
+        phy_dev->shared_ref_clk_mhz, phy_dev->addr);
 }
 
 void phy_config_shared_ref_clk_map(int phy_map)
@@ -3281,12 +3468,12 @@ static int _phy_cfg(void)
     uint32_t phy_map;
     uint16_t rd_phyid1[32], rd_phyid2[32];
 
-    if (!enabled_phys)
-        return 0;
-
     printk("\nDetecting PHYs...\n");
 
-	phys_reset_lift(enabled_phys);
+    phys_reset_lift(&enabled_phys);
+
+    if (!enabled_phys)
+        return 0;
 
     for (i = 0; i < 32; i++)
     {

@@ -358,3 +358,9 @@
 [bgcolor="#444F53"]{
 	background: transparent;
 }
+.smartConnDiv{
+	width: 180px;
+}
+#smart_connect_mode_field {
+	width: 100%;
+}

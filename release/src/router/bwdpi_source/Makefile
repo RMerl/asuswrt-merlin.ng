@@ -30,7 +30,7 @@ export BWDPI_BCM4912 := y
 CFLAGS += -DBRCM_CHIP4912
 endif
 
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), EBG15 EBG19))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), EBG15 EBG19 EBG19P))
 export BWDPI_BCM4906 := y
 endif
 
@@ -44,6 +44,16 @@ ifeq ($(BRCM_CHIP),6813)
 export BWDPI_BCM6813 := y
 endif
 
+# BCM6766 : seperate bin / header / modules from bcm6764L/6765/6813
+ifeq ($(BRCM_CHIP),6766)
+export BWDPI_BCM6766 := y
+endif
+
+# BCM6764 : seperate bin / header / modules from bcm6766/6765/6813
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), RT-BE58U TUF-BE3600))
+export BWDPI_BCM6764 := y
+endif
+
 # MTK7621A + RTCONFIG_WLMODULE_MT7915D_AP
 ifeq ($(RTCONFIG_WLMODULE_MT7915D_AP),y)
 export BWDPI_MTK7621_NEW := y
@@ -55,6 +65,8 @@ export LITE_VERSION := y
 else ifeq ($(or $(RTCONFIG_QCA956X),$(RTCONFIG_QCN550X)),y)
 export LITE_VERSION := y
 else ifeq ($(or $(BWDPI_MTK7621_NEW)),y)
+export LITE_VERSION := y
+else ifeq ($(or $(RTCONFIG_SOC_MT7981)),y)
 export LITE_VERSION := y
 else ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AC85U RT-AC65U RT-AC56S RT-N18U))
 export PART_VERSION := y
@@ -89,6 +101,10 @@ else
 	@cp include/udb/sysdeps/ipq60xx-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # ipq60xx
 	@cp bin/ipq60xx/* bin/ -rf                                                           # ipq60xx
 endif
+else ifeq ($(RTCONFIG_SOC_IPQ53XX),y)
+	@cp include/tdts/sysdeps/ipq53xx-tmcfg.h include/tdts/tmcfg.h -f                     # ipq53xx
+	@cp include/udb/sysdeps/ipq53xx-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # ipq53xx
+	@cp bin/ipq53xx/* bin/ -rf                                                           # ipq53xx
 else ifeq ($(RTCONFIG_RALINK),y)
 ifeq ($(RTCONFIG_RALINK_MT7622),y)
 	@cp include/tdts/sysdeps/mtk7622-tmcfg.h include/tdts/tmcfg.h -f                     # mtk7622
@@ -144,6 +160,10 @@ ifeq ($(BWDPI_BCM6813), y)
 	@cp include/tdts/sysdeps/bcm4916_294-tmcfg.h include/tdts/tmcfg.h -f                 # bcm4916_294
 	@cp include/udb/sysdeps/bcm4916_294-tmcfg_udb.h include/udb/tmcfg_udb.h -f           # bcm4916_294
 	@cp bin/bcm4916_294/* bin/ -rf                                                       # bcm4916_294
+else ifeq ($(BWDPI_BCM6766), y)
+	@cp include/tdts/sysdeps/bcm6766-tmcfg.h include/tdts/tmcfg.h -f                     # bcm6766
+	@cp include/udb/sysdeps/bcm6766-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # bcm6766
+	@cp bin/bcm6766/* bin/ -rf                                                           # bcm6766
 else
 	@cp include/tdts/sysdeps/bcm6765_294-tmcfg.h include/tdts/tmcfg.h -f                 # bcm6765_294
 	@cp include/udb/sysdeps/bcm6765_294-tmcfg_udb.h include/udb/tmcfg_udb.h -f           # bcm6765_294
@@ -224,6 +244,9 @@ else
 	@cp include/tdts/sysdeps/ipq60xx-tmcfg.h include/tdts/tmcfg.h -f                     # ipq60xx
 	@cp include/udb/sysdeps/ipq60xx-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # ipq60xx
 endif
+else ifeq ($(RTCONFIG_SOC_IPQ53XX),y)
+	@cp include/tdts/sysdeps/ipq53xx-tmcfg.h include/tdts/tmcfg.h -f                     # ipq53xx
+	@cp include/udb/sysdeps/ipq53xx-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # ipq53xx
 else ifeq ($(RTCONFIG_RALINK),y)
 ifeq ($(RTCONFIG_RALINK_MT7622),y)
 	@cp include/tdts/sysdeps/mtk7622-tmcfg.h include/tdts/tmcfg.h -f                     # mtk7622
@@ -268,6 +291,9 @@ ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20231126)
 ifeq ($(BWDPI_BCM6813), y)
 	@cp include/tdts/sysdeps/bcm4916_294-tmcfg.h include/tdts/tmcfg.h -f                 # bcm4916_294
 	@cp include/udb/sysdeps/bcm4916_294-tmcfg_udb.h include/udb/tmcfg_udb.h -f           # bcm4916_294
+else ifeq ($(BWDPI_BCM6766), y)
+	@cp include/tdts/sysdeps/bcm6766-tmcfg.h include/tdts/tmcfg.h -f                     # bcm6766
+	@cp include/udb/sysdeps/bcm6766-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # bcm6766
 else
 	@cp include/tdts/sysdeps/bcm6765_294-tmcfg.h include/tdts/tmcfg.h -f                 # bcm6765_294
 	@cp include/udb/sysdeps/bcm6765_294-tmcfg_udb.h include/udb/tmcfg_udb.h -f           # bcm6765_294
@@ -347,7 +373,7 @@ ifeq ($(RTCONFIG_SOC_IPQ8064),y)
 	@cp -f modules/ipq806x/* RC_INDEP/
 else ifeq ($(RTCONFIG_SOC_IPQ8074),y)
 	@$(if $(RTCONFIG_SPF11_1_QSDK),cp -f modules/ipq807x_spf11.1/* RC_INDEP/)		# SPF11.1
-	@$(if $(RTCONFIG_SPF11_4_QSDK),cp -f modules/ipq807x_spf11.4/* RC_INDEP/)		# SPF11.4
+	@$(if $(RTCONFIG_SPF11_5_QSDK),cp -f modules/ipq807x_spf11.5/* RC_INDEP/)		# SPF11.5
 else ifeq ($(RTCONFIG_SOC_IPQ40XX),y)
 	@cp -f modules/dakota/* RC_INDEP/
 else ifeq ($(or $(RTCONFIG_QCA956X),$(RTCONFIG_QCN550X)),y)
@@ -358,6 +384,8 @@ ifeq ($(RTCONFIG_QCA_PLC2),y)
 else
 	@cp -f modules/ipq60xx/* RC_INDEP/
 endif
+else ifeq ($(RTCONFIG_SOC_IPQ53XX),y)
+	@cp -f modules/ipq53xx/* RC_INDEP/
 else ifeq ($(RTCONFIG_RALINK),y)
 ifeq ($(RTCONFIG_RALINK_MT7622),y)
 	@cp -f modules/mtk7622/* RC_INDEP/
@@ -391,6 +419,11 @@ else ifeq ($(RTCONFIG_HND_ROUTER_BE_4916),y)
 ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20231126)
 ifeq ($(BWDPI_BCM6813), y)
 	@cp -f modules/bcm4916_294/* RC_INDEP/
+else ifeq ($(BWDPI_BCM6766), y)
+	@cp -f modules/bcm6766/* RC_INDEP/
+else ifeq ($(BWDPI_BCM6764), y)
+	# only module need to separate
+	@cp -f modules/bcm6764/* RC_INDEP/
 else
 	@cp -f modules/bcm6765_294/* RC_INDEP/
 endif # BWDPI_BCM6813
@@ -426,6 +459,9 @@ else
 endif
 endif
 endif
+
+# workaround for ntdasus2014.cert
+	@cp -f bin/ntdasus2014.cert RC_INDEP/
 
 # signature version
 ifeq ($(LITE_VERSION),y)

@@ -2,8 +2,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta http-equiv="X-UA-Compatible" content="ie=edge">
 <link rel="stylesheet" type="text/css" href="css/internetSpeed.css">
-<script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script type="text/javaScript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <script>
 
@@ -128,8 +128,7 @@ $(document).ready(function(){
 	$(".bg_linkRate").hide();
 	$(".bg_internetSpeed").hide();
 	setTimeout(function(){
-		if(((is_speciel_model && (is_AA_sku || is_SG_sku)) || is_ispctrl)
-			&& is_linkRate_over_5G )
+		if(is_linkRate_over_5G && ((is_speciel_model && (is_AA_sku || is_SG_sku) && !eth_monitor_support) || is_ispctrl))
 		{
 			$(".bg_linkRate").show();
 			$(".bg_internetSpeed").hide();
@@ -399,7 +398,16 @@ function check_duplicate_result(result_obj){
 
 var LEVEL_ERR_MAX = 50;
 var level_err_cnt = 0;
+
+let eth_monitor_support = isSupport("eth_monitor");
+let eth_monitor_result = [];
+let get_eth_monitor_result = false;
+let eth_monitor_download = "";
+let eth_monitor_upload = "";
+let eth_monitor_threshold = httpApi.nvramGet(["eth_monitor_threshold"]).eth_monitor_threshold == ""? 260000000:parseInt(httpApi.nvramGet(["eth_monitor_threshold"]).eth_monitor_threshold);
+let change_to_eth_monitor_result = false;
 function get_speedTest_result(){
+	speedTest_result = [];
 	speedTest_result = httpApi.hookGet("ookla_speedtest_get_result", true);
 	var result_time = {};
 	var now = new Date();
@@ -439,10 +447,20 @@ function get_speedTest_result(){
 				$("#last_host").text(speedTest_result[i].server.name);
 				$("#last_location").text(speedTest_result[i].server.location);
 				$("#last_location").css("display", "block");
+				if(eth_monitor_support){
+					get_eth_monitor_result = true;
+					show_eth_monitor_result();
+				}
 			}
 			else if(speedTest_result[i].type == "download"){
-				var download_result = convert_Bps_to_Mbps(speedTest_result[i].download.bandwidth);
-				$("#download_test_result").text(download_result);
+				let ookla_download_bandwidth = parseInt(speedTest_result[i].download.bandwidth);
+				if(eth_monitor_support && (ookla_download_bandwidth > eth_monitor_threshold))
+					change_to_eth_monitor_result = true;
+
+				if(!eth_monitor_support || eth_monitor_result.length == 0 || !change_to_eth_monitor_result){
+					let download_result = convert_Bps_to_Mbps(ookla_download_bandwidth);
+					$("#download_test_result").text(download_result);
+				}
 			}
 			else if(speedTest_result[i].type == "upload"){
 				var upload_result = convert_Bps_to_Mbps(speedTest_result[i].upload.bandwidth);
@@ -455,8 +473,20 @@ function get_speedTest_result(){
 				$("#time_div").text(result_time.time);
 				$("#ping_result_latency").text(speedTest_result[i].ping.latency.toFixed(2));
 				$("#ping_result_jitter").text(speedTest_result[i].ping.jitter.toFixed(2));
-				$("#download_test_result2").text(convert_Bps_to_Mbps(speedTest_result[i].download.bandwidth));
-				$("#upload_test_result2").text(convert_Bps_to_Mbps(speedTest_result[i].upload.bandwidth));
+				if(eth_monitor_support){
+					get_eth_monitor_result = false;
+					if(change_to_eth_monitor_result){
+						$("#download_test_result2").text(convert_Bps_to_Mbps(eth_monitor_download));
+						//$("#upload_test_result2").text(convert_Bps_to_Mbps(eth_monitor_upload));
+						speedTest_result[i].download.bandwidth = eth_monitor_download;
+						//speedTest_result[i].upload.bandwidth = eth_monitor_upload;
+						change_to_eth_monitor_result = false;
+					}
+				}
+				else{
+					$("#download_test_result2").text(convert_Bps_to_Mbps(speedTest_result[i].download.bandwidth));
+					$("#upload_test_result2").text(convert_Bps_to_Mbps(speedTest_result[i].upload.bandwidth));
+				}
 				if(!internetSpeed_lite_support){
 					if(typeof speedTest_result[i].packetLoss != "undefined")
 						$("#packet_loss_result").text(speedTest_result[i].packetLoss.toFixed(2));
@@ -500,6 +530,28 @@ function get_speedTest_result(){
 	}
 }
 
+function show_eth_monitor_result(){
+	eth_monitor_result = [];
+	eth_monitor_result = httpApi.hookGet("speedtest_get_eth_monitor_result", true);
+
+	if(change_to_eth_monitor_result){
+		for(let i = 0; i < eth_monitor_result.length - 1; i++){
+			if(eth_monitor_result[i].type == "down"){
+				eth_monitor_download = eth_monitor_result[i].down.bandwidth;
+				$("#download_test_result").text(convert_Bps_to_Mbps(eth_monitor_download));
+			}
+			/*
+			else if(eth_monitor_result[i].type == "up"){
+				eth_monitor_upload = eth_monitor_result[i].up.bandwidth;
+				$("#upload_test_result").text(convert_Bps_to_Mbps(eth_monitor_upload));
+			}*/
+		}
+	}
+
+	if(get_eth_monitor_result)
+		setTimeout("show_eth_monitor_result();", 200);
+}
+
 function error_handling(error_status){//2: wan disconnected 3: timeout  4: error  5:unknown
 	var error_msg = "<#InternetSpeed_Failure_Hint#>"
 	set_ookla_state(error_status);
@@ -510,10 +562,19 @@ function error_handling(error_status){//2: wan disconnected 3: timeout  4: error
 }
 
 function convert_Bps_to_Mbps(bytes){
-	var Mbps;
+	let Mbps;
+	let ret;
 
 	Mbps = (bytes * 8) / (1000 * 1000);
-	return Mbps.toFixed(2);
+
+	if(parseInt(bytes) >= 12500000000)
+		ret = Mbps.toFixed(0);
+	else if(parseInt(bytes) >= 1250000000)
+		ret = Mbps.toFixed(1);
+	else
+		ret = Mbps.toFixed(2);
+
+	return ret;
 }
 
 function get_speedTest_history(){
@@ -1164,6 +1225,19 @@ function close_info(){
 	$(".function_desc").fadeOut(300);
 	$("#hiddenMask").css("display", "none");
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+	const thirdpartyPolicy = 'Speedtest'
+	document.getElementById("thirdparty_pp").innerHTML=`<#Thirdparty_PP_Desc1#>`.replace("%1$@", thirdpartyPolicy).replace("[aa]%2$@[/aa]", `<a onclick="showThirdPartyPolicy('${thirdpartyPolicy}')" style="text-decoration: underline;cursor: pointer;">Ookla PRIVACY POLICY</a>`);
+})
+
+function showThirdPartyPolicy(party){
+	const thirdPartyPolicyModal = new ThirdPartyPolicyModalComponent({
+		policy: 'THIRDPARTY_PP',
+		party: party
+	});
+	thirdPartyPolicyModal.show();
+}
 </script>
 <div id="hiddenMask" class="speed_level_mask"></div>
 
@@ -1209,7 +1283,7 @@ function close_info(){
 </div>
 
 <div class="bg_internetSpeed" style="display:none;">
-	<div class="container">
+	<div class="container info_content">
 		<div class="function_desc">
 			<div class="function_container">
 				<div class="function_title_pc"><div><#InternetSpeed#></div></div>
@@ -1218,14 +1292,6 @@ function close_info(){
 					<div class="info_title"><#diskUtility_information#></div>
 				</div>
 				<div class="split-Line"></div>
-				<div class="content_div info_content">
-					<div class="desc_div">
-						<div class="description-bar">
-							<div style="margin-bottom: 5px;"><#InternetSpeed_desc#></div>
-						</div>
-					</div>
-					<div class="speedtest_logo"></div>
-				</div>
 			</div>
 		</div>
 		<div class="normal_show">
@@ -1324,7 +1390,7 @@ function close_info(){
 				</div>
 			</div>
 		</div>
-		<div class="ookla_info"><div class="info_icon mobile_show" onclick="open_info();"></div><div><#InternetSpeed_ookla_mark#></div></div>
+		<div class="ookla_info"><div class="info_icon mobile_show" onclick="open_info();"></div><div><#InternetSpeed_ookla_mark#></div><div id="thirdparty_pp"></div></div>
 		<div id="speed_level_detail" class="speed_level_detail speedTest_div">
 			<div class="detail_speed_level">
 				<div class="last_test_container">

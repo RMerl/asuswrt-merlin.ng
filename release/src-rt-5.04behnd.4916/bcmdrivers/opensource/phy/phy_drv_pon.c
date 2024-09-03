@@ -3,27 +3,21 @@
    All Rights Reserved
 
     <:label-BRCM:2015:DUAL/GPL:standard
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
 :>
 */
 
@@ -37,11 +31,28 @@
  */
 
 #include "phy_drv.h"
+#include <linux/bcm_log.h>
+
+#define NETLINK_MSG_MAX_LEN 224
 
 static phy_dev_t *g_phy_dev = NULL;
 static int g_link;
 static phy_speed_t g_speed = PHY_SPEED_UNKNOWN;
 static phy_duplex_t g_duplex = PHY_DUPLEX_UNKNOWN;
+char msg[NETLINK_MSG_MAX_LEN] = {};
+
+static void _eyescope_link(int link)
+{
+#if defined (CONFIG_BCM_PON)
+    int (*cb)(const char *) = (int (*)(const char *))bcmFun_get(BCM_FUN_ID_EYESCOPE_MSG);
+
+    if (!cb)
+        return;
+
+    snprintf(msg, NETLINK_MSG_MAX_LEN, "link=%d", link);
+    cb(msg);
+#endif
+}
 
 phy_dev_t * enet_pon_phy_dev_get(void)
 {
@@ -58,6 +69,8 @@ void enet_pon_drv_link_change(int link)
 
     if (g_phy_dev)
         phy_dev_link_change_notify(g_phy_dev);
+
+    _eyescope_link(link);
 }
 EXPORT_SYMBOL(enet_pon_drv_link_change);
 

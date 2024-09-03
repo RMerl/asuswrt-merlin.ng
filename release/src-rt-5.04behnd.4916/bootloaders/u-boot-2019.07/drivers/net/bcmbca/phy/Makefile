@@ -47,7 +47,7 @@ ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_6756_),)
 endif
 
 # Merlin shortfin
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6888_68880_6837_63146_4912_6813_6765_),)
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6888_68880_6837_63146_4912_6813_6765_6766_6764_),)
 ifdef CONFIG_BCMBCA_SERDES
     EXTRA_CFLAGS += -DEXCLUDE_STD_HEADERS -DUINT16_MAX=0xFFFF
     EXTRA_CFLAGS += -include linux/kernel.h -include linux/types.h -include string.h -include vsprintf.h
@@ -66,14 +66,14 @@ ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6888_68880_6837_),)
     DRV_OBJS += merlin_shasta/serdes_wrapper.o
 endif
 
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_6846_6856_6878_6855_6888_68880_6837_4908_63178_47622_6756_63146_4912_6813_6765_),)
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_6846_6856_6878_6855_6888_68880_6837_4908_63178_47622_6756_63146_4912_6813_6765_6766_6764_),)
     DRV_OBJS += mac_drv.o
     DRV_OBJS += bus_drv.o
     DRV_OBJS += phy_drv.o
     DRV_OBJS += phy_drv_mii.o
     DRV_OBJS += phy_drv_brcm.o
     DRV_OBJS += dt_access.o
-    DRV_OBJS += dt_parsing.o
+    DRV_OBJS += $(if $(wildcard $(srctree)/drivers/net/bcmbca/phy/dt_parsing.c),dt_parsing.o,dt_parsing_preb.o)
 ifeq ($(strip ${BRCM_CHIP}),6858)
     DRV_OBJS += mdio_drv_common.o
     DRV_OBJS += mdio_drv_v1.o
@@ -305,7 +305,7 @@ ifeq ($(strip ${BRCM_CHIP}),6813)
     EXTRA_CFLAGS += -DBUS_MDIO_V1
     EXTRA_CFLAGS += -DDSL_DEVICES
     EXTRA_CFLAGS += -DMAC_UNIMAC -DBRCM_64B_UMAC_MIB -DMAC_XPORT
-    EXTRA_CFLAGS += -DPHY_DSL_GPHY -DEPHY_LED
+    EXTRA_CFLAGS += -DPHY_DSL_GPHY -DEPHY_LED -DXPHY_LED_FIXUP
     EXTRA_CFLAGS += -DPHY_146CLASS_SERDES -I$(BCMBCA_PATH)/phy/Serdes146Class -DEXCLUDE_STD_HEADERS
 ifdef CONFIG_BCMBCA_SERDES
     DRV_OBJS += serdes_access.o
@@ -334,7 +334,43 @@ ifeq ($(strip ${BRCM_CHIP}),6765)
     DRV_OBJS += phy_drv_dsl_phy.o
     EXTRA_CFLAGS += -DDSL_DEVICES
     EXTRA_CFLAGS += -DMAC_SF2_DUAL -DRESCAL_BY_XPHY -DPHY_SHARED_REF_CLK
-    EXTRA_CFLAGS += -DPHY_DSL_GPHY -DPHY_M2M -DPHY_EXT3 -DPHY_XPHY -DEPHY_LED
+    EXTRA_CFLAGS += -DPHY_DSL_GPHY -DPHY_M2M -DPHY_EXT3 -DPHY_XPHY -DEPHY_LED -DXPHY_LED_FIXUP
+    EXTRA_CFLAGS += -DPHY_146CLASS_SERDES -I$(BCMBCA_PATH)/phy/Serdes146Class -DEXCLUDE_STD_HEADERS
+endif
+ifeq ($(strip ${BRCM_CHIP}),6766)
+    DRV_OBJS += mdio_drv_common.o
+    DRV_OBJS += mdio_drv_sf2.o
+    DRV_OBJS += bus_drv_sf2.o
+    DRV_OBJS += mac_drv_sf2.o
+    DRV_OBJS += ephy_led_init.o
+    DRV_OBJS += phy_drv_ext3.o
+    DRV_OBJS += serdes_access.o
+    DRV_OBJS += Serdes146Class/merlin16_shortfin_config.o
+    DRV_OBJS += phy_drv_146class_serdes.o
+    DRV_OBJS += phy_drv_dsl_serdes.o
+    DRV_OBJS += phy_drv_dsl_848xx.o
+    DRV_OBJS += phy_drv_dsl_phy.o
+    EXTRA_CFLAGS += -DDSL_DEVICES
+    EXTRA_CFLAGS += -DMAC_SF2_DUAL -DPHY_SHARED_REF_CLK
+    EXTRA_CFLAGS += -DPHY_DSL_GPHY -DPHY_M2M -DPHY_EXT3 -DEPHY_LED
+    EXTRA_CFLAGS += -DPHY_146CLASS_SERDES -I$(BCMBCA_PATH)/phy/Serdes146Class -DEXCLUDE_STD_HEADERS
+endif
+ifeq ($(strip ${BRCM_CHIP}),6764)
+    DRV_OBJS += mdio_drv_common.o
+    DRV_OBJS += mdio_drv_sf2.o
+    DRV_OBJS += bus_drv_sf2.o
+    DRV_OBJS += mac_drv_sf2.o
+    DRV_OBJS += ephy_led_init.o
+    DRV_OBJS += phy_drv_ext3.o
+    DRV_OBJS += serdes_access.o
+    DRV_OBJS += Serdes146Class/merlin16_shortfin_config.o
+    DRV_OBJS += phy_drv_146class_serdes.o
+    DRV_OBJS += phy_drv_dsl_serdes.o
+    DRV_OBJS += phy_drv_dsl_848xx.o
+    DRV_OBJS += phy_drv_dsl_phy.o
+    EXTRA_CFLAGS += -DDSL_DEVICES
+    EXTRA_CFLAGS += -DMAC_SF2_DUAL -DPHY_SHARED_REF_CLK
+    EXTRA_CFLAGS += -DPHY_DSL_GPHY -DPHY_M2M -DPHY_EXT3 -DEPHY_LED
     EXTRA_CFLAGS += -DPHY_146CLASS_SERDES -I$(BCMBCA_PATH)/phy/Serdes146Class -DEXCLUDE_STD_HEADERS
 endif
 endif
@@ -351,3 +387,5 @@ endif
 
 obj-y += DRV_OBJS
 
+$(obj)/dt_parsing_preb.o:
+	cp $(srctree)/drivers/net/bcmbca/phy/dt_parsing.o $(obj)/dt_parsing_preb.o

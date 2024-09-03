@@ -3,27 +3,21 @@
     All Rights Reserved
 
     <:label-BRCM:2017:DUAL/GPL:standard
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
     :>
 */
 
@@ -138,6 +132,9 @@ static bcmFun_t *dhd_runner_spdsvc_transmit = NULL;
 #endif /* ULONGTOPHYSADDR */
 #endif /* !BCMDMA64OSL */
 
+#ifndef OSL_VIRT_TO_PHYSADDR
+#define OSL_VIRT_TO_PHYSADDR(osh, va, pa) ULONGTOPHYSADDR((ulong)VIRT_TO_PHYS((va)), (pa))
+#endif
 /*
  * +---------------------------------------------------------------------
  *           Section: Definitions added to handle dynamic rings
@@ -179,7 +176,7 @@ static bcmFun_t *dhd_runner_spdsvc_transmit = NULL;
 #	define ARCH_ALLOC_COHERENT_MEM(dhd, dma_buf)                       \
 	    dma_buf->va = (void *)dma_alloc_coherent(&dhd->bus->dev->dev,  \
 	        dma_buf->len, (dma_addr_t *) &dma_buf->pa,                 \
-	            in_interrupt() ? GFP_ATOMIC : GFP_KERNEL)
+	        (GFP_DMA32 | (in_interrupt() ? GFP_ATOMIC : GFP_KERNEL)))
 #	define ARCH_FREE_COHERENT_MEM(dhd, dma_buf)                        \
 	do {                                                               \
 	    unsigned long pa_addr;                                         \
@@ -189,7 +186,8 @@ static bcmFun_t *dhd_runner_spdsvc_transmit = NULL;
 	} while (0)
 #	define ARCH_SET_DMA_BUF_VA(dma_buf, addr) \
 	    (dma_buf)->va = (void*)(addr);
-#	define ARCH_VIRT_TO_PHYS(va) virt_to_phys(va)
+#	define ARCH_SET_DMA_BUF_PA(osh, dma_buf)       \
+	    OSL_VIRT_TO_PHYSADDR((osh), (dma_buf)->va, (dma_buf)->pa)
 #   define ARCH_FLUSH_COHERENT(addr, len)   do {} while (0)
 #	define RDPA_INIT_CFG_SET_PA(field, pa, off)                        \
 	do {                                                               \
@@ -197,30 +195,9 @@ static bcmFun_t *dhd_runner_spdsvc_transmit = NULL;
 	} while (0)
 #	define ARCH_WR_DMA_IDX(ptr, idx) *(volatile u16*)(ptr) = (idx); wmb()
 #	define ARCH_RD_DMA_IDX(ptr, idx) idx = LTOH16(*(ptr))
-#elif defined(__mips__)
-#	define ARCH_ALLOC_COHERENT_MEM(dhd, dma_buf)                       \
-	    dma_buf->va = DMA_ALLOC_CONSISTENT(dhd->osh, dma_buf->len,     \
-	        4, &alloced, &dma_buf->pa, &dma_buf->dmah);                \
-	    ARCH_SET_DMA_BUF_PA(dma_buf);                                  \
-	    dma_buf->va = (void*)OSL_UNCACHED(dma_buf->va)
-#	define ARCH_FREE_COHERENT_MEM(dhd, dma_buf)                        \
-	    dma_buf->va = (void*)OSL_CACHED(dma_buf->va);                  \
-	    DMA_FREE_CONSISTENT(dhd->osh, dma_buf->va, dma_buf->len,       \
-	        dma_buf->pa, dma_buf->dmah)
-#	define IO_ADDRESS(x)    (x)
-#	define ARCH_SET_DMA_BUF_VA(dma_buf, addr) \
-	    (dma_buf)->va = (void*)KSEG0ADDR(addr);
-#	define ARCH_VIRT_TO_PHYS(va) CPHYSADDR(va)
-#	define ARCH_FLUSH_COHERENT(addr, len) \
-	    OSL_CACHE_FLUSH((void *)(addr), (len))
-#	define RDPA_INIT_CFG_SET_PA(field, pa, off)    do { } while (0)
-#	define ARCH_WR_DMA_IDX(ptr, idx)      *ptr = HTOL16(idx)
-#	define ARCH_RD_DMA_IDX(ptr, idx)      idx = LTOH16(*(ptr));
-#else  /* ! __arm__ && ! CONFIG_ARM64 && ! __mips__ */
+#else  /* ! __arm__ && ! CONFIG_ARM64 */
 #	error "revisit memory management and endian handling support"
-#endif /* ! __arm__ && ! CONFIG_ARM64 && ! __mips__ */
-#	define ARCH_SET_DMA_BUF_PA(dma_buf) \
-	    ULONGTOPHYSADDR((ulong)ARCH_VIRT_TO_PHYS((dma_buf)->va), (dma_buf)->pa)
+#endif /* ! __arm__ && ! CONFIG_ARM64 */
 
 
 /*
@@ -1125,9 +1102,10 @@ dhd_runner_alloc_mem(dhd_runner_hlp_t *dhd_hlp, dhd_dma_buf_t *dma_buf,
 	        /* No Memory in the Local Coherent Pool */
 	        ARCH_ALLOC_COHERENT_MEM(dhd, dma_buf);
 
+	        /* Offload engine supports 32bit physical address only */
 	        if (PHYSADDRHI(dma_buf->pa)) {
 	            DHD_ERROR(("[COHERENT_POOL_%d] Allocated 0x%x size 0x%px, "
-	                "[0x%x-%x] 0x%px from upper 2GB\r\n",
+	                "[0x%x_%x] 0x%px from upper 2GB\r\n",
 	                dhd_hlp->dhd->unit, dma_buf->_alloced, dma_buf->va,
 	                (uint32)PHYSADDRHI(dma_buf->pa),
 	                (uint32)PHYSADDRLO(dma_buf->pa), coherent_pool->va));
@@ -1150,7 +1128,7 @@ dhd_runner_alloc_mem(dhd_runner_hlp_t *dhd_hlp, dhd_dma_buf_t *dma_buf,
 	    }
 	} else if (type == DHD_RNR_MEM_ALLOC_TYPE_KMALLOC) {
 	    dma_buf->va = kmalloc(dma_buf->len, GFP_ATOMIC | __GFP_ZERO | GFP_DMA);
-	    ARCH_SET_DMA_BUF_PA(dma_buf);
+	    ARCH_SET_DMA_BUF_PA(dhd->osh, dma_buf);
 	} else	{
 	    dma_buf->va = DMA_ALLOC_CONSISTENT(dhd->osh, dma_buf->len,
 	        4, &alloced, &dma_buf->pa, &dma_buf->dmah);
@@ -1634,6 +1612,9 @@ dhd_runner_process_all_cpu_queues(struct dhd_runner_hlp *dhd_hlp, bool resched)
 	/* Process max of rxbound RxComplete packets */
 	resched = dhd_runner_process_cpu_queue_rxpkt(dhd_hlp, dhd_rxbound);
 
+#if defined(CONFIG_BCM_DHD_CROSSBOW) && defined(CC_CROSSBOW_SWBCACPE_60718)
+	resched |= !rdpa_cpu_rxq_empty(dhd_hlp->cpu_port, dhd_hlp->cpu_queue_id);
+#endif
 	/* Process max of txbound TxComplete packets */
 	resched |= dhd_runner_process_cpu_queue_txcmpl(dhd_hlp, dhd_txbound);
 
@@ -3376,9 +3357,11 @@ dhd_runner_flowring_init(dhd_runner_flowmgr_t *flowmgr, uint16 flow_id)
 	     */
 #if IS_ENABLED(CONFIG_BCM_DHD_ARCHER)
 	        rdpa_cache->base_ptr = (void*)flowmgr->hw_mem_addr;
+#if !IS_ENABLED(CONFIG_BCM_DHD_CROSSBOW)
 	        rdpa_cache->wr_idx = 0;
 	        rdpa_cache->rd_idx = 0;
-#endif
+#endif /* !CONFIG_BCM_DHD_CROSSBOW */
+#endif /* CONFIG_BCM_DHD_ARCHER */
 	    rdpa_cache->base_addr_high = 0U;
 	    rdpa_cache->base_addr_low = (uint32)(RDD_RSV_VIRT_TO_PHYS(
 	        flowmgr->hw_mem_virt_base_addr, flowmgr->hw_mem_phys_base_addr,

@@ -19,10 +19,10 @@
 #include "bcm_secure.h"
 
 #define BCM_TAG_FIT_HDR_SEC_DELG_REC    0x44454c47 // DELG
-#define BCM_TAG_FIT_HDR_SEC_SIGNATURE	0x46495453 // FITS
-#define BCM_TAG_FIT_HDR_SEC_PUBKEY	0x46495450 // FITP
-#define BCM_FIT_HDR_MAX_RECORDS		4	
-#define BCM_FIT_HDR_MIN_HDR_SIZE	(BCM_SECBT_CRED_MOD_LEN+sizeof(u32))
+#define BCM_TAG_FIT_HDR_SEC_SIGNATURE   0x46495453 // FITS
+#define BCM_TAG_FIT_HDR_SEC_PUBKEY      0x46495450 // FITP
+#define BCM_FIT_HDR_MAX_RECORDS         4
+#define BCM_FIT_HDR_MIN_HDR_SIZE        (BCM_SECBT_CRED_MOD_LEN+sizeof(u32))
 
  
 int bcm_tag_fit_hdr_validate(const u8 *fit, u32 size,
@@ -30,10 +30,15 @@ int bcm_tag_fit_hdr_validate(const u8 *fit, u32 size,
 {
 	int rc = -1;
 	u32 tag = 0, cnt = 0;
+#if defined(CONFIG_SMC_BASED)
+	u8 sig[BCM_SECBT_RSA4096_MOD_LEN];
+	u8 key_buf[BCM_SECBT_RSA4096_MOD_LEN];
+#else
 	u8 sig[BCM_SECBT_RSA_MOD_MAX_LEN];
+	u8 key_buf[BCM_SECBT_RSA_MOD_MAX_LEN];
+#endif // #if defined(CONFIG_SMC_BASED)
 	u8 *p = (u8*)fit + size;
 	u8 *pmax = p; 
-	u8 key_buf[BCM_SECBT_RSA_MOD_MAX_LEN];
 	u8 *key = master_pub;
 	u32 master_pub_len = key_len; 
 	struct image_sign_info im;
@@ -41,12 +46,12 @@ int bcm_tag_fit_hdr_validate(const u8 *fit, u32 size,
 #if defined (CONFIG_TPL_BUILD)
 	u32 sdr_plus_sig_size = 0;
 	int sdr_verified = 0;
-#endif 	
+#endif
 
 	if (hdr_size < BCM_FIT_HDR_MIN_HDR_SIZE) {
 		goto err;
-	}	
-	
+	}
+
 	im.checksum = image_get_checksum_algo("sha256,");
 	if (!im.checksum) {
 		printf("ERROR: couldn't get checksum algo\n"); 
@@ -57,7 +62,7 @@ int bcm_tag_fit_hdr_validate(const u8 *fit, u32 size,
 		switch ( tag ) {
 #if defined (CONFIG_TPL_BUILD)
 			case BCM_TAG_FIT_HDR_SEC_DELG_REC:
-				rc = bcm_sec_delg_process_sdr(p, pmax+hdr_size-1, &sdr_plus_sig_size);
+				rc = bcm_sec_delg_process_sdr(fit, p, pmax+hdr_size-1, &sdr_plus_sig_size);
 				if( rc ) {
 					printf("ERROR: SDR verification failed!\n");
 					return rc;
@@ -74,10 +79,27 @@ int bcm_tag_fit_hdr_validate(const u8 *fit, u32 size,
 #endif /* defined (CONFIG_TPL_BUILD) */
 			case BCM_TAG_FIT_HDR_SEC_SIGNATURE:
 				memcpy(sig, p + sizeof(u32), key_len);
+#if defined(CONFIG_SMC_BASED)
+				//
+				// SMC Based SoC's running Gen4 Security Features currently utilizing Gen3 Delegation Mechanism.
+				// 	Support FIT Signature verification by Delegated RSA Public Key, performed by TPL SW.
+				//
+				if (bcm_sec_smc_is_active_pub_key_name_hint()) {
+					debug("\nVerifying Signature; 4 leading bytes 0x%x .. %x  verifying with key %c%c%c%c\n",
+						*(u32*)sig, *((u32*)(sig+key_len-4)), key[0], key[1], key[2], key[3]);
+					rc = bcm_sec_smc_rsa_verify(fit, size, sig, key);
+				} else {
+					debug("\nVerifying Signature; 4 leading bytes 0x%x .. %x  verifying with key 0x%x .. %x\n",
+						*(u32*)sig, *((u32*)(sig+key_len-4)), 
+						*(u32*)key, *((u32*)(key+key_len-4)));
+					rc = bcm_sec_rsa_verify(fit, size, sig,  key_len, key, &im );
+				}
+#else
 				debug("\nVerifying Signature; 4 leading bytes 0x%x .. %x  verifying with key 0x%x .. %x\n",
 					*(u32*)sig, *((u32*)(sig+key_len-4)), 
 					*(u32*)key, *((u32*)(key+key_len-4)));
 				rc = bcm_sec_rsa_verify(fit, size, sig,  key_len, key, &im );
+#endif // #if defined(CONFIG_SMC_BASED)
 				if( rc ) {
 					printf("ERROR: FIT header signature verification failed!\n");
 					return rc;
@@ -97,14 +119,18 @@ int bcm_tag_fit_hdr_validate(const u8 *fit, u32 size,
 			case BCM_TAG_FIT_HDR_SEC_PUBKEY:
 #if defined (CONFIG_TPL_BUILD)
 				if( !sdr_verified ) 
-#endif					
+#endif
 				{
 					memcpy(key_buf, p + sizeof(u32), master_pub_len );
 					memcpy(sig, p + sizeof(u32) + master_pub_len, master_pub_len );
 					debug("\nGot Key and Signature, 4 leading bytes: key 0x%x sig 0x%x\n", 
 							*(u32*)key_buf, *(u32*)sig);
-					if (!bcm_sec_rsa_verify(key_buf, master_pub_len, sig, 
-										master_pub_len , master_pub, &im )) {
+#if defined(CONFIG_SMC_BASED)
+					rc = bcm_sec_smc_rsa_verify(key_buf, master_pub_len, sig, master_pub);
+#else
+					rc = bcm_sec_rsa_verify(key_buf, master_pub_len, sig, master_pub_len , master_pub, &im);
+#endif // #if defined(CONFIG_SMC_BASED)
+					if (!rc) {
 						key = key_buf; 
 					} else {
 						printf("The key 0x%x can't be verified\n", *(u32*)key_buf);
@@ -136,7 +162,11 @@ int bcm_sec_validate_fit(void* fit, u32 max_image_size)
 		goto _die;
 	}
 
+#if defined(CONFIG_SMC_BASED)
+	bcm_sec_smc_get_active_pub_key_info(fit, &key, &key_len);
+#else
 	bcm_sec_get_active_pub_key_info(&key, &key_len);
+#endif // #if defined(CONFIG_SMC_BASED)
 	if (!key) {
 		if((st == SEC_STATE_UNSEC)) {
 			rc = 0;
@@ -149,8 +179,24 @@ int bcm_sec_validate_fit(void* fit, u32 max_image_size)
 	if (rc) {
 		goto _die;
 	}
-	rc = 0;
+
 	printf("FIT Header Authentication Successfull!\n");
+
+#if defined(CONFIG_SMC_BASED) && defined(CONFIG_TPL_BUILD)
+	const uint8_t *cert = bcm_util_get_fdt_prop_data((void *)fit, SEC_KSM_NODE_PATH, SEC_KSM_NODE_DATA, (int *)(&size));
+	if (cert) {
+		rc = bcm_sec_smc_handle_ksm_certificate(cert, size);
+		if (SEC_RC_OK != rc && SEC_RC_KSM_NOP != rc) {
+			printf("ERROR: KSM Certificate handler failed!\n");
+			goto _die;
+		} else if (SEC_RC_OK == rc) {
+			printf("KSM Certificate handler completed Successfully!\n");
+		}
+	}
+#endif // #if defined(CONFIG_SMC_BASED) && defined(CONFIG_TPL_BUILD)
+
+	rc = 0;
+
 _die:
 	if(rc ) {
 		printf("FAILED to authenticate FIT header!!! \n");

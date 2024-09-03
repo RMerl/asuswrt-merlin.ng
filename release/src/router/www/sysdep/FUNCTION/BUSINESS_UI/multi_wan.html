@@ -7,9 +7,9 @@
 <link rel="stylesheet" type="text/css" href="/js/weekSchedule/schedule_ui_WHITE.css">
 <link rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component.css">
 <link rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component_WHITE.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
-<script type="text/javaScript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" src="/RWD_UI/rwd_component.js"></script>
@@ -152,6 +152,18 @@
 
 .port_icon.usb.unplug{
 	background-position: 1px -290px;
+}
+
+.label_W_bg .port_icon:before{
+    position: absolute;
+    content: "";
+    width: 16px;
+    height: 16px;
+    background-image: url(/images/New_ui/amesh/port_status.svg);
+    background-size: 70px;
+    right: -5px;
+    bottom: -5px;
+    background-position: 0px -179px;
 }
 
 .port_name{
@@ -370,7 +382,18 @@ function get_wan_options(){
 		$.each(port_info, function(label){
 			$.each(port_info[label], function(index, port_item){
 					var option_obj = {};
-					option_obj.text = port_item.label_port_name;
+				let port_name = "";
+				if(port_item.ui_display != undefined && port_item.ui_display != ""){
+					port_name = port_item.ui_display;
+				}
+				else if(port_item.special_port_name != ""){
+					port_name = port_item.special_port_name;
+				}
+				else{
+					port_name = port_item.label_port_name;
+				}
+
+				option_obj.text = port_name;
 					option_obj.value = port_item.label + port_item.label_idx;
 					wan_options.push(option_obj);
 			});
@@ -514,6 +537,13 @@ function save_applyData(wan_group_index){//wan_items_div
 		primary_group.splice(1);
 		secondary_group.length = 0;
 		applyData["mtwan_enable"] = "0";
+		if(isSupport("usb_bk")){
+			const cur_wans_usb_bk_act = httpApi.nvramGet(["wans_usb_bk_act"]).wans_usb_bk_act;
+			if(cur_wans_usb_bk_act == "1"){
+				applyData["wans_usb_bk"] = "0";
+			}
+			applyData["wans_usb_bk_act"] = "0";
+		}
 	}
 
 	wans_mt_ioport_array.length = 0;
@@ -548,8 +578,14 @@ function save_applyData(wan_group_index){//wan_items_div
 	})
 
 	if(applyData["wans_mt_ioport"] != orig_wans_mt_ioport){
-		applyData["rc_service"] = "restart_mtwan_profile;restart_net_and_phy;";
-		showLoading_time = 25;
+		if(applyData["wans_mt_ioport"].indexOf("U") != -1){
+			applyData["rc_service"] = "reboot";
+			showLoading_time = httpApi.hookGet("get_default_reboot_time");
+		}
+		else{
+			applyData["rc_service"] = "stop_wan;restart_mtwan_profile;restart_net_and_phy;";
+			showLoading_time = 30;
+		}
 	}
 
 	parent.showLoading(showLoading_time);
@@ -623,7 +659,7 @@ function save_applyData(wan_group_index){//wan_items_div
 	}
 
 	applyData ["mtwan_mt_weight"] = mtwan_mt_weight_array.join(" ");
-	httpApi.nvramSet(applyData, function(){refreshpage();});
+	httpApi.nvramSet(applyData, function(){refreshpage(showLoading_time);});
 }
 
 function get_index_ingroup(group, id){//group: "primary", "secondary"
@@ -950,7 +986,7 @@ function generate_setting_items(){
 						var tmp_id = $item.id;
 						$("#"+tmp_id).show();
 					});
-					applyData["mtwan_enable "] = "1";
+					applyData["mtwan_enable"] = "1";
 				}
 				else{
 					change_wan_selection_layout(0);
@@ -959,7 +995,7 @@ function generate_setting_items(){
 						if(tmp_id.substr(tmp_id.indexOf("wan")+3, 1) != "1")
 							$("#"+tmp_id).hide();
 					});
-					applyData["mtwan_enable "] = "0";
+					applyData["mtwan_enable"] = "0";
 				}
 
 				resize_schedule_div();
@@ -1257,6 +1293,12 @@ function generate_setting_items(){
 		.find("#" + auto_usb_backup_parm.id + "").click(function(e){
 				e = e || event;
 				e.stopPropagation();
+				if($(this).hasClass("on")){
+					applyData["wans_usb_bk"] = "1";
+				}
+				else{
+					applyData["wans_usb_bk"] = "0";
+				}
 			});
 
 	var mode_options = [ {"text": "<#dualwan_mode_fo#>", "value": "0"}, {"text": "<#diskUtility_time#>", "value": "2"}];
@@ -1660,13 +1702,25 @@ function show_port_status(){
 
 		$.each(port_info, function(label){
 			$.each(port_info[label], function(index, port_item){
+				let port_idx = port_item.label_idx;
+				let port_name = "";
+				if(port_item.ui_display != undefined && port_item.ui_display != ""){
+					port_name = port_item.ui_display;
+				}
+				else if(port_item.special_port_name != ""){
+					port_name = port_item.special_port_name;
+				}
+				else{
+					port_name = port_item.label_port_name;
+				}
+
 				if(label == "WAN"){
 					var $port_container = $("<div>")
 						.addClass("port_container")
 						.appendTo($wan_usb_container);
 
 					var $port_icon_container = $("<div>")
-						.addClass("port_icon_container")
+						.addClass("label_W_bg port_icon_container")
 						.appendTo($port_container);
 
 					var $port_icon = $("<div>")
@@ -1678,21 +1732,20 @@ function show_port_status(){
 						.appendTo($port_icon_container);
 
 					$("<div>")
-						.addClass("wan_icon")
 						.appendTo($port_icon);
 
 					$("<div>")
-						.html(port_item.label_port_name)
+						.html(port_name)
 						.addClass("port_name")
 						.appendTo($port_container);
+
+					if(port_idx != "" && !port_item.cap_support.USB)
+						$("<div>").addClass("lan_idx").html(htmlEnDeCode.htmlEncode(port_idx)).appendTo($port_icon);
 				}
 				else if(label == "LAN"){
 					var $port_container = $("<div>")
 						.addClass("port_container");
 
-					//if(port_item.cap_support.USB)
-					//	$port_container.appendTo($wan_usb_container);
-					//else
 						$port_container.appendTo($wan_usb_container);
 
 					var $port_icon_container = $("<div>")
@@ -1713,10 +1766,9 @@ function show_port_status(){
 							.appendTo($port_icon);
 					}
 
-					//if(port_item.label != "L")
 					{
 						$("<div>")
-							.html(port_item.label_port_name)
+							.html(port_name)
 							.addClass("port_name")
 							.appendTo($port_container);
 					}

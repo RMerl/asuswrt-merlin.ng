@@ -3,28 +3,22 @@
 /*
 <:copyright-BRCM:2023:DUAL/GPL:standard
 
-   Copyright (c) 2023 Broadcom
+   Copyright (c) 2023 Broadcom 
    All Rights Reserved
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
 :>
 */
@@ -55,9 +49,13 @@ typedef enum {
 
 typedef enum {
 	fpictl_subsys_mode,
+	fpictl_subsys_def_prio,
 	fpictl_subsys_flow,
 	fpictl_subsys_stat,
 	fpictl_subsys_apmac,
+	fpictl_subsys_gre_mode,
+	fpictl_subsys_l2lkp_on_etype,
+	fpictl_subsys_lkp_enable,
 	fpictl_subsys_max
 } fpictl_subsys_t;
 
@@ -76,8 +74,12 @@ typedef struct {
 	fpictl_op_t op;
 	int rc;
 	fpi_mode_t mode;
+	uint8_t def_prio;
 	fpi_flow_t flow;
 	fpi_stat_t stat;
+	fpi_wlan_egress_info_t wl_info;
+	fpi_gre_mode_t gre_mode;
+	uint8_t enable;
 	uint32_t handle;
 	int next_idx;
 } fpictl_data_t;

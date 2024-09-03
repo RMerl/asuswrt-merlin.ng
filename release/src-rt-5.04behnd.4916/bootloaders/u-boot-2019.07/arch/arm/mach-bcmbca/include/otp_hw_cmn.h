@@ -5,6 +5,7 @@
 #ifndef _OTP_HW_CMN_H_
 #define _OTP_HW_CMN_H_
 
+#define OTP_HW_REG_SHIFT_LEFT_FLAG	0xFFFF0000
 
 /* Generic OTP controller Interface */
 
@@ -129,10 +130,7 @@ typedef struct otp_hw_cmn_row_s {
 	u32 shift;
 	u32 range;
 	otp_hw_cmn_row_conf_t conf;
-	union {
-		u8* pdata;
-		u32 data;
-	};
+	u8* pdata;
 	u32 valid;	
 } otp_hw_cmn_row_t;
 

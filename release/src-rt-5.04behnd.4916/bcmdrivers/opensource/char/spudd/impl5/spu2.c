@@ -985,7 +985,7 @@ u32 spu2_create_request(u8 *spu_hdr,
 	unsigned int cipher_offset = aead_parms->assoc_size +
 			aead_parms->aad_pad_len + aead_parms->iv_len;
 
-#ifdef DEBUG
+#ifdef SPU_DEBUG
 	/* total size of the data following OMD (without STAT word padding) */
 	unsigned int real_db_size = spu_real_db_size(aead_parms->assoc_size,
 						 aead_parms->iv_len,

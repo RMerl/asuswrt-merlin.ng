@@ -3,6 +3,8 @@
  * Copyright (c) 2013, Google Inc.
  */
 
+#define OPENSSL_API_COMPAT 0x10101000L
+
 #include "mkimage.h"
 #include <stdio.h>
 #include <string.h>

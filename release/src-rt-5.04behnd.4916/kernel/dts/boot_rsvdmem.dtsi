@@ -16,18 +16,17 @@
 //==============================================================
 
 #define ALWAYS_RESERVED	   0x100000
-
+#define OPTEE_RESERVED	   0x0
 //==============================================================
 //OPTIONAL RESERVATION FOR OPTEE IF DEFINED
 //==============================================================
-//	 0x00100000:0x00500000 4096	 to keep OPTEE Core
-//	 0x00500000:0x00600000 1024	 to keep OPTEE SHRM
+//	 0x00100000:0x00E00000 14336	 to keep OPTEE Core
+//	 0x00E00000:0x00F00000  1024	 to keep OPTEE SHRM
 //==============================================================
 
 #if defined(CONFIG_OPTEE)
-#define OPTEE_RESERVED	  0x500000
-#else
-#define OPTEE_RESERVED	  0x0
+#undef  OPTEE_RESERVED
+#define OPTEE_RESERVED	  0xF00000
 #endif
 
 //==============================================================
@@ -41,10 +40,10 @@
 
 #if defined(CONFIG_BRCM_SMC_BASED) && defined(CONFIG_BRCM_SMC_BOOT)
 //==============================================================
-//	 0x00000000:0x00600000  6144     see above
-//	 0x00600000:0x04000000  65536	 reserved by SMC   
+//	 0x00000000:0x01000000  16384     see above
+//	 0x01000000:0x04000000  49152	 reserved by SMC   
 //==============================================================
-#define BOOT_RESERVED	  0x4000000	
+#define BOOT_RESERVED	  (0x4000000 + OPTEE_RESERVED)
 #else
 #define BOOT_RESERVED	  (ALWAYS_RESERVED + OPTEE_RESERVED + ARM_MMU_TBL)	
 #endif

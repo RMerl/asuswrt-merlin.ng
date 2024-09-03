@@ -381,3 +381,9 @@
 	behavior: url(/PIE.htc);
 	min-height: 810px;
 }
+.smartConnDiv{
+	width: 180px;
+}
+#smart_connect_mode_field {
+	width: 100%;
+}

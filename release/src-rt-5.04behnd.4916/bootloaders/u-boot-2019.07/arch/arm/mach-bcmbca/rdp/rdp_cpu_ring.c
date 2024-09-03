@@ -86,11 +86,10 @@ int rdp_cpu_ring_create_ring(uint32_t ring_id,
 			     uint8_t ring_type,
 			     uint32_t entries,
 			     bdmf_phys_addr_t * ring_head,
-			     uint32_t packetSize,
 			     RING_CB_FUNC * ringCb, uint32_t ring_prio)
 {
 	return rdp_cpu_ring_create_ring_ex(ring_id, ring_type, entries,
-					   ring_head, NULL, packetSize, ringCb,
+					   ring_head, NULL, ringCb,
 					   ring_prio);
 }
 
@@ -102,7 +101,6 @@ int rdp_cpu_ring_create_ring_ex(uint32_t ring_id,
 				uint32_t entries,
 				bdmf_phys_addr_t * ring_head,
 				bdmf_phys_addr_t * rw_idx_addr,
-				uint32_t packetSize,
 				RING_CB_FUNC * ringCb, uint32_t ring_prio)
 {
 	RING_DESCTIPTOR *pDescriptor;
@@ -151,7 +149,6 @@ int rdp_cpu_ring_create_ring_ex(uint32_t ring_id,
 	     ring_id, entries, pDescriptor, pDescriptor->size_of_entry);
 
 	pDescriptor->buff_cache_cnt = 0;
-	pDescriptor->packet_size = packetSize;
 	pDescriptor->type = ring_type;
 
 	pDescriptor->databuf_alloc = rdp_databuf_alloc;

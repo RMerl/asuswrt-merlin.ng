@@ -245,7 +245,7 @@ static int bcmbca_rdp_eth_start(struct udevice *dev)
 
 	rc = rdp_cpu_ring_create_ring(BL_LILAC_RDD_CPU_RX_QUEUE_0,
 				      rdpa_ring_data, 32, &ring_head,
-				      BCM_PKTBUF_SIZE, NULL, 0);
+				      NULL, 0);
 	if (rc) {
 		printk("Error creating CPU Rx Ring rc %d\n", rc);
 		return rc;

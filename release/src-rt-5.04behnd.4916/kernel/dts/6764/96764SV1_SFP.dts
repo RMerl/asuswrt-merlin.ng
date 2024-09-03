@@ -1,0 +1,66 @@
+#include "96764SV1.dts"
+
+/ {
+
+	sfp: sfp {
+		compatible = "brcm,sfp";
+		pinctrl-name = "default";
+		pinctrl-0 = <&a_slan0_sd_rx_los_pin_4>;
+		mod-def0 = <&bca_extintr 24 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_BOTH_EDGE | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+		i2c-bus = <&i2c0>;
+		status = "okay";
+	};
+};
+
+&i2c0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&c_i2c_scl_pin_62 &c_i2c_sda_pin_63>;
+	status = "okay";
+};
+
+&mdio_sf2 {
+	/* Port PHY mapping:
+	        port_imp -8#0- port_gphy <----> phy_gphy
+	                  # 5- port_sgmii0 <--> phy_serdes0 - sfp
+	                  ##6- 
+	 */
+	phy_gphy {
+		status = "okay";
+	};
+	phy_serdes0 {
+		trx = <&sfp>;
+		/delete-property/ phy-handle;
+		status = "okay";
+	};
+	phy_cascade0 {
+		status = "disabled";
+	};
+	phy_cascade1 {
+		status = "disabled";
+	};
+	phy_serdes1 {
+		status = "disabled";
+	};
+
+
+};
+
+&switch0 {
+		/delete-property/ pinctrl-names;
+		/delete-property/ pinctrl-0;
+
+	ports {
+		port_gphy {
+			phy-handle = <&phy_gphy>;
+			status = "okay";
+		};
+		port_sgmii0 {
+			phy-handle = <&phy_serdes0>;
+			status = "okay";
+		};
+		port_sgmii1 {
+			status = "disabled";
+		};
+	};
+};
+

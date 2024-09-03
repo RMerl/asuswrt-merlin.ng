@@ -23,6 +23,7 @@
         postMessageToApp({ web_ready: "1" });
 
         const checkAuthInterval = setInterval(function () {
+            if(isSupport(`demoui`)) return false;
             let loadingFlag = false;
             const settingsWindow = document.querySelector('#settingsWindow');
             const loadingDivDom = settingsWindow?.contentDocument?.querySelector('#Loading');
@@ -100,14 +101,13 @@
             ) {
                 document.querySelector("header").classList.add("d-none");
                 document.querySelector("nav").classList.add("d-none");
-            } else {
-                if (httpApi.privateEula.get("SIGNED").ASUS_PP_EULA == "0") top.location.href = "/QIS_wizard.htm?flag=eulaPP";
             }
 
             if(urlParameter.get("mapp")==="true"){ // for Multisite App
                 document.querySelector("header").classList.add("d-none");
             }
 
+            checkPolicy();
         });
     </script>
     <script src="js/chart.min.js"></script>

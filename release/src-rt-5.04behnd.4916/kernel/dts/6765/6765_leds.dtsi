@@ -47,10 +47,10 @@ SW_CROSSBAR_SERIAL_BIT(sw_serial_led_30, 30);
 SW_CROSSBAR_SERIAL_BIT(sw_serial_led_31, 31);
 
 // Hardware Parallel LED options:
-HW_CROSSBAR_PARALLEL_PORT_LED_BIT(parallel-port_0-led_0, 0, 0,  0);
-HW_CROSSBAR_PARALLEL_PORT_LED_BIT(parallel-port_0-led_1, 0, 1,  1);
-HW_CROSSBAR_PARALLEL_PORT_LED_BIT(parallel-port_0-led_2, 0, 2,  2);
-HW_CROSSBAR_PARALLEL_PORT_LED_BIT(parallel-port_0-led_3, 3, 3, 3);
+HW_CROSSBAR_PARALLEL_PORT_LED_BIT(parallel-port_0-led_0, 0, 0, 0);
+HW_CROSSBAR_PARALLEL_PORT_LED_BIT(parallel-port_0-led_1, 0, 1, 1);
+HW_CROSSBAR_PARALLEL_PORT_LED_BIT(parallel-port_0-led_2, 0, 2, 2);
+HW_CROSSBAR_PARALLEL_PORT_LED_BIT(parallel-port_0-led_3, 0, 3, 3);
 HW_CROSSBAR_PARALLEL_PORT_LED_BIT(parallel-port_5-led_0, 5, 0, 4);
 HW_CROSSBAR_PARALLEL_PORT_LED_BIT(parallel-port_5-led_1, 5, 1, 5);
 HW_CROSSBAR_PARALLEL_PORT_LED_BIT(parallel-port_5-led_2, 5, 2, 6);

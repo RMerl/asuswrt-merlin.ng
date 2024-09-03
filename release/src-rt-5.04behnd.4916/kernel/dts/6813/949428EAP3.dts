@@ -51,19 +51,22 @@
 
 #if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
 
-#define PCIE2_REG_GPIO    1    /* SLEEP_2 for vreg_pcie2 node */
+#define PCIE0_REG_GPIO    1    /* SLEEP_2 shared GPIO for all pcie ports */
 #include "../bcm_wlan_regulator.dtsi"
 
 &pcie0 {
 	status = "okay";
 };
 &pcie1 {
+	brcm,supply-names = "vreg-pcie0";
 	status = "okay";
 };
 &pcie2 {
+	brcm,supply-names = "vreg-pcie0";
 	status = "okay";
 };
 &pcie3 {
+	brcm,supply-names = "vreg-pcie0";
 	status = "okay";
 };
 #endif //#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)

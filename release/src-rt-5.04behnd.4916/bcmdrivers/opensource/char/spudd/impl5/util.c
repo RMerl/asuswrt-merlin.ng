@@ -532,7 +532,6 @@ static ssize_t spu_debugfs_read(struct file *file, char __user *ubuf,
 				       "SPU %d output FIFO high water.....%u\n",
 				       i, fifo_len);
 		}
-
 	if (out_offset > out_count)
 		out_offset = out_count;
 
@@ -547,7 +546,7 @@ static const struct file_operations spu_debugfs_stats = {
 	.read = spu_debugfs_read,
 };
 
-#if defined(SPU_TEST_RAW_PERF)
+#if defined(CONFIG_BCM_SPU2_TEST_VEC)
 /*
  * "test_size" specifies how many crypto requests will be simulated
  * in each test run. If test_size is less than or equal to
@@ -1039,7 +1038,7 @@ void spu_setup_debugfs(void)
 		debugfs_create_file("stats", 0400, iproc_priv.debugfs_dir,
 				    &iproc_priv, &spu_debugfs_stats);
 
-#if defined(SPU_TEST_RAW_PERF)
+#if defined(CONFIG_BCM_SPU2_TEST_VEC)
 	if (iproc_priv.spu.spu_test_raw_perf)
 	{
 		if (!iproc_priv.debugfs_test_dir)

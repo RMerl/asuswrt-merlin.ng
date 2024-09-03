@@ -3,12 +3,27 @@
  * Copyright 2022 Broadcom Ltd.
  */
 
-#ifndef _6765_CPU_H
-#define _6765_CPU_H
+#ifndef _6766_CPU_H
+#define _6766_CPU_H
 
 #define BOOTLUT_BASE					0xffff0000
 #define BIUCFG_BASE						0x81060000
 #define UBUS4CCB_RANGE_CHK_SETUP_BASE	0x81203000
+#define UBUSCCB_AXI_CFG_REG_CCB_BASE			0x81201000
+#define ENABLE_CCB					0x1
+
+typedef struct UBUSCCB_AXI_CFG_REG_CCB {
+	uint32_t module_id; /* 0x00 */
+	uint32_t redid; /* 0x04 */
+	uint32_t spare_1; /* 0x08 */
+	uint32_t spare_2; /* 0x0c */
+	uint32_t axi_config_0; /* 0x10 */
+	uint32_t axi_config_1; /* 0x14 */
+	uint32_t axi_max_outstanding; /* 0x18 */
+}UBUSCCB_AXI_CFG_REG_CCB;
+
+#define UBUS4CCB_AXI_CFG_REGS                ((volatile UBUSCCB_AXI_CFG_REG_CCB * const) UBUSCCB_AXI_CFG_REG_CCB_BASE)
+
 
 typedef struct UBUS4CCB_RANGE_CHK_CFG {
 	uint32_t control;	/* 0x00 */
@@ -33,13 +48,12 @@ typedef struct UBUS4CCB_RANGE_CHK_SETUP {
 
 typedef struct BIUCFG_Access {
 	uint32_t permission;	/* 0x0 */
-	uint32_t sbox;		/* 0x4 */
+	uint32_t rsvd0;			/* 0x4 */
 	uint32_t cpu_defeature;	/* 0x8 */
 	uint32_t dbg_security;	/* 0xc */
-	uint32_t rsvd1[32];	/* 0x10 - 0x8f */
-	uint64_t violation[2];	/* 0x90 - 0x9f */
-	uint32_t ts_access[2];	/* 0xa0 - 0xa7 */
-	uint32_t rsvd2[22];	/* 0xa8 - 0xff */
+	uint32_t rsvd1[36];	/* 0x10 - 0x9f */
+	uint32_t ts_access;	/* 0xa0 - 0xa3 */
+	uint32_t rsvd2[23];	/* 0xa4 - 0xff */
 } BIUCFG_Access;
 
 typedef struct BIUCFG_Cluster {

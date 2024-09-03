@@ -1565,6 +1565,7 @@ int chk_proto(int wan_unit){
 
 	// PPPoE detect
 #if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG)
+#if 0
 	char *autowan_argv[] = {"autowan", NULL};
 
 	if(pids("autowan")){
@@ -1573,16 +1574,14 @@ int chk_proto(int wan_unit){
 	}
 
 	_eval(autowan_argv, NULL, 0, &pid);
-
-#ifdef RTCONFIG_SOFTWIRE46
-	if(isFirstUse){
-		char *auto46det_argv[] = {"auto46det", NULL};
-
-		_eval(auto46det_argv, NULL, 0, &pid);
-	}
+#else
+	if(wan_unit == WAN_UNIT_FIRST && (!strcmp(dualwan_wans, "wan none") || !strcmp(dualwan_wans, "wan usb")))
+		notify_rc_after_period_wait("restart_autowan", 1);
 #endif
+
 #else
 	if(isFirstUse){
+#ifndef RPBE58
 		char *autodet_argv[] = {"autodet", NULL};
 
 		_eval(autodet_argv, NULL, 0, &pid);
@@ -1590,6 +1589,7 @@ int chk_proto(int wan_unit){
 		char *auto46det_argv[] = {"auto46det", NULL};
 
 		_eval(auto46det_argv, NULL, 0, &pid);
+#endif
 #endif
 	}
 #endif

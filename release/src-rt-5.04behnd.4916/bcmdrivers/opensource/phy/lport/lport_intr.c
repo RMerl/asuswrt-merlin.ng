@@ -3,27 +3,21 @@
    All Rights Reserved
 
     <:label-BRCM:2015:DUAL/GPL:standard
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
 :>
 */
 /*
@@ -88,7 +82,7 @@ intr_handler_s
         .mask = (1U << (LPORT_INTR_1_CPU_STATUS_RX_REMOTE_FAULT_INTR_FIELD_SHIFT + 1))};
 
 intr_handler_s
-    tx_timesync_fifo_h = { .info = {.intr_id = LPORT_TIMESYNC_FIFO}, .register_num = 1, .mask = LPORT_INTR_0_CPU_SET_TX_TIMESYNC_FIFO_ENTRY_VALID_INTR_FIELD_MASK};
+    tx_timesync_fifo_h = { .info = {.intr_id = LPORT_TIMESYNC_FIFO}, .register_num = 0, .mask = LPORT_INTR_0_CPU_SET_TX_TIMESYNC_FIFO_ENTRY_VALID_INTR_FIELD_MASK};
 
 /* Interrupt info registry - 2 registers, 32 bits each */
 static intr_handler_s *bit_to_handler[2][32] =
@@ -227,7 +221,7 @@ static void do_intr_clear(intr_handler_s *intr_handler)
 int lport_intr_init(int irq0, int irq1)
 {
 #ifdef CONFIG_BCM_PTP_1588
-    uint32_t mask = 0x7f807fff; /* don't mask ts_fifo lport ints that were enabled by lport_intr_enable() */
+    uint32_t mask = 0x7f807fff; /* don't mask ts_fifo lport ints that were enabled by lport_intr_enable() (this function is called after 1588 enable) */
 #else
     uint32_t mask = 0x7fffffff;
 #endif
@@ -235,9 +229,9 @@ int lport_intr_init(int irq0, int irq1)
 
     RU_REG_WRITE(0, LPORT_INTR, 0_CPU_MASK_SET, mask);
     RU_REG_WRITE(0, LPORT_INTR, 1_CPU_MASK_SET, mask);
-    if ((res = BcmHalMapInterrupt((FN_HANDLER)lport_isr, (void *)0, irq0)))
+    if ((res = BcmHalMapInterrupt((FN_HANDLER)lport_isr, "lport", (void *)0, irq0)))
         return res;
-    if ((res = BcmHalMapInterrupt((FN_HANDLER)lport_isr, (void *)1, irq1)))
+    if ((res = BcmHalMapInterrupt((FN_HANDLER)lport_isr, "lport", (void *)1, irq1)))
         return res;
 
     return 0;
@@ -274,6 +268,7 @@ void lport_intr_unregister(LPORT_INTR_ID intr_id, uint32_t entity_id)
     intr_enable_op[intr_handler->register_num][INTR_DISABLE](intr_handler->mask);
     intr_handler->isr_cb = NULL;
 }
+EXPORT_SYMBOL(lport_intr_unregister);
 
 void lport_intr_enable(LPORT_INTR_ID intr_id, uint32_t entity_id, int enable)
 {

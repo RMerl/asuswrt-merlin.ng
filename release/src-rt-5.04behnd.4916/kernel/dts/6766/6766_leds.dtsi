@@ -1,16 +1,21 @@
 // TODO update for 6766
 // Hardware Serial LED options
-HW_CROSSBAR_SERIAL_PORT_LED_BIT(serial-port_0-led_0, 0, 0,  0);
-HW_CROSSBAR_SERIAL_PORT_LED_BIT(serial-port_0-led_1, 0, 1,  1);
-HW_CROSSBAR_SERIAL_PORT_LED_BIT(serial-port_0-led_2, 0, 2,  2);
-HW_CROSSBAR_SERIAL_PORT_LED_BIT(serial-port_0-led_3, 0, 3,  3);
-HW_CROSSBAR_SERIAL_PORT_LED_BIT(serial-port_5-led_0, 5, 0, 4);
-HW_CROSSBAR_SERIAL_PORT_LED_BIT(serial-port_5-led_1, 5, 1, 5);
-HW_CROSSBAR_SERIAL_PORT_LED_BIT(serial-port_5-led_2, 5, 2, 6);
-HW_CROSSBAR_SERIAL_PORT_LED_BIT(serial-port_5-led_3, 5, 3, 7);
-HW_CROSSBAR_SERIAL_AGGREGATE_BIT(serial-aggregate_activity, 9);
-HW_CROSSBAR_SERIAL_AGGREGATE_BIT(serial-aggregate_link, 10);
-HW_CROSSBAR_SERIAL_PORT_LED_BIT(serial_usb_0, 0, 0, 11);
+/* SGPHY */
+HW_CROSSBAR_SERIAL_PORT_LED_BIT(serial-port_0-led_0, 0, 0, 0);
+HW_CROSSBAR_SERIAL_PORT_LED_BIT(serial-port_0-led_1, 0, 1, 1);
+HW_CROSSBAR_SERIAL_PORT_LED_BIT(serial-port_0-led_2, 0, 2, 2);
+/* Merlin 0 and 1*/
+HW_CROSSBAR_SERIAL_PORT_LED_BIT(serial-port_5-led_0, 5, 0, 3);
+HW_CROSSBAR_SERIAL_PORT_LED_BIT(serial-port_5-led_1, 5, 1, 4);
+HW_CROSSBAR_SERIAL_PORT_LED_BIT(serial-port_5-led_2, 5, 2, 5);
+HW_CROSSBAR_SERIAL_PORT_LED_BIT(serial-port_5-led_3, 5, 3, 6);
+HW_CROSSBAR_SERIAL_PORT_LED_BIT(serial-port_6-led_0, 6, 0, 7);
+HW_CROSSBAR_SERIAL_PORT_LED_BIT(serial-port_6-led_1, 6, 1, 8);
+HW_CROSSBAR_SERIAL_PORT_LED_BIT(serial-port_6-led_2, 6, 2, 9);
+HW_CROSSBAR_SERIAL_PORT_LED_BIT(serial-port_6-led_3, 6, 3, 10);
+HW_CROSSBAR_SERIAL_AGGREGATE_BIT(serial-aggregate_activity, 11);
+HW_CROSSBAR_SERIAL_AGGREGATE_BIT(serial-aggregate_link, 12);
+HW_CROSSBAR_SERIAL_PORT_LED_BIT(serial_usb_0, 0, 0, 13);
 
 // Software Serial LED options
 SW_CROSSBAR_SERIAL_BIT(sw_serial_led_0 ,  0);
@@ -47,17 +52,22 @@ SW_CROSSBAR_SERIAL_BIT(sw_serial_led_30, 30);
 SW_CROSSBAR_SERIAL_BIT(sw_serial_led_31, 31);
 
 // Hardware Parallel LED options:
-HW_CROSSBAR_PARALLEL_PORT_LED_BIT(parallel-port_0-led_0, 0, 0,  0);
-HW_CROSSBAR_PARALLEL_PORT_LED_BIT(parallel-port_0-led_1, 0, 1,  1);
-HW_CROSSBAR_PARALLEL_PORT_LED_BIT(parallel-port_0-led_2, 0, 2,  2);
-HW_CROSSBAR_PARALLEL_PORT_LED_BIT(parallel-port_0-led_3, 3, 2, 3);
-HW_CROSSBAR_PARALLEL_PORT_LED_BIT(parallel-port_5-led_0, 5, 0, 4);
-HW_CROSSBAR_PARALLEL_PORT_LED_BIT(parallel-port_5-led_1, 5, 1, 5);
-HW_CROSSBAR_PARALLEL_PORT_LED_BIT(parallel-port_5-led_2, 5, 2, 6);
-HW_CROSSBAR_PARALLEL_PORT_LED_BIT(parallel-port_5-led_3, 5, 3, 7);
-HW_CROSSBAR_PARALLEL_AGGREGATE_BIT(parallel-aggregate_activity, 9);
-HW_CROSSBAR_PARALLEL_AGGREGATE_BIT(parallel-aggregate_link, 10);
-HW_CROSSBAR_PARALLEL_PORT_LED_BIT(usb-led-0, 0, 0, 11);
+/* SGPHY */
+HW_CROSSBAR_PARALLEL_PORT_LED_BIT(parallel-port_0-led_0, 0, 0, 0);
+HW_CROSSBAR_PARALLEL_PORT_LED_BIT(parallel-port_0-led_1, 0, 1, 1);
+HW_CROSSBAR_PARALLEL_PORT_LED_BIT(parallel-port_0-led_2, 0, 2, 2);
+/* Merlin 0 and 1*/
+HW_CROSSBAR_PARALLEL_PORT_LED_BIT(parallel-port_5-led_0, 5, 0, 3);
+HW_CROSSBAR_PARALLEL_PORT_LED_BIT(parallel-port_5-led_1, 5, 1, 4);
+HW_CROSSBAR_PARALLEL_PORT_LED_BIT(parallel-port_5-led_2, 5, 2, 5);
+HW_CROSSBAR_PARALLEL_PORT_LED_BIT(parallel-port_5-led_3, 5, 3, 6);
+HW_CROSSBAR_PARALLEL_PORT_LED_BIT(parallel-port_6-led_0, 6, 0, 7);
+HW_CROSSBAR_PARALLEL_PORT_LED_BIT(parallel-port_6-led_1, 6, 1, 8);
+HW_CROSSBAR_PARALLEL_PORT_LED_BIT(parallel-port_6-led_2, 6, 2, 9);
+HW_CROSSBAR_PARALLEL_PORT_LED_BIT(parallel-port_6-led_3, 6, 3, 10);
+HW_CROSSBAR_PARALLEL_AGGREGATE_BIT(parallel-aggregate_activity, 11);
+HW_CROSSBAR_PARALLEL_AGGREGATE_BIT(parallel-aggregate_link, 12);
+HW_CROSSBAR_PARALLEL_PORT_LED_BIT(usb-led-0, 0, 0, 13);
 
 // Software Parallel LED options:
 SW_CROSSBAR_PARALLEL_BIT(sw_parallel_led_0 ,  0);

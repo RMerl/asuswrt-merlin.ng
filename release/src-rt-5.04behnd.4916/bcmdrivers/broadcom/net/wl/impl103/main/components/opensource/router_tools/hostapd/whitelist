@@ -1,0 +1,2 @@
+JIRA:BCAWLAN-260531 Add Pairwise cipher between hostapd and PASN in RSTA mode
+JIRA:BCAWLAN-260544 SVT:AP:Pre-Cert:LOC-R2-6.1.1.1:47722_43720: Protection of Range value must be '0' in beacons, when APUT is configured with NTB Negotiation with WPA3 transition mode.

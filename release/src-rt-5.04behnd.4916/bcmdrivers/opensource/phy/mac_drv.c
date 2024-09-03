@@ -3,27 +3,21 @@
    All Rights Reserved
 
     <:label-BRCM:2015:DUAL/GPL:standard
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
 :>
 */
 
@@ -41,6 +35,9 @@ extern mac_drv_t mac_drv_lport;
 extern mac_drv_t mac_drv_sf2;
 #ifdef MAC_XPORT
 extern mac_drv_t mac_drv_xport;
+#endif
+#if defined(MAC_SF2_DUAL)
+extern mac_drv_t mac_drv_nonbrcm;
 #endif
 
 mac_drv_t *mac_drivers[MAC_TYPE_MAX] = {};
@@ -60,28 +57,6 @@ int mac_driver_set(mac_drv_t *mac_drv)
 }
 EXPORT_SYMBOL(mac_driver_set);
 
-static int mac_drv_init(mac_drv_t *mac_drv)
-{
-    if (mac_drv->initialized)
-        return 0;
-
-    if (!mac_drv->drv_init)
-        return 0;
-
-    return mac_drv->drv_init(mac_drv);
-}
-
-int mac_driver_init(mac_type_t mac_type)
-{
-    mac_drv_t *mac_drv;
-
-    if (!(mac_drv = mac_drivers[mac_type]))
-        return 0;
-
-    return mac_drv_init(mac_drv);
-}
-EXPORT_SYMBOL(mac_driver_init);
-
 int mac_drivers_set(void)
 {
     int ret = 0;
@@ -98,6 +73,9 @@ int mac_drivers_set(void)
 #ifdef MAC_XPORT
     ret |= mac_driver_set(&mac_drv_xport);
 #endif
+#if defined(MAC_SF2_DUAL)
+    ret |= mac_driver_set(&mac_drv_nonbrcm);
+#endif
 
     return ret;
 }
@@ -108,20 +86,6 @@ void mac_driver_unset(mac_type_t mac_type)
     mac_drivers[mac_type] = NULL;
 }
 EXPORT_SYMBOL(mac_driver_unset);
-
-int mac_drivers_init(void)
-{
-    int ret = 0;
-
-    ret |= mac_driver_init(MAC_TYPE_UNIMAC);
-    ret |= mac_driver_init(MAC_TYPE_LPORT);
-    ret |= mac_driver_init(MAC_TYPE_GMAC);
-    ret |= mac_driver_init(MAC_TYPE_SF2);
-    ret |= mac_driver_init(MAC_TYPE_XPORT);
-
-    return ret;
-}
-EXPORT_SYMBOL(mac_drivers_init);
 
 static mac_dev_t mac_devices[MAX_MAC_DEVS] = {};
 
@@ -193,6 +157,8 @@ mac_dev_t *mac_dev_add(mac_type_t mac_type, int mac_id, void *priv)
     mac_dev->mac_drv = mac_drv;
     mac_dev->mac_id = mac_id;
     mac_dev->priv = priv;
+
+    spin_lock_init(&mac_dev->stats_lock);
 
     if (mac_drv_dev_add(mac_dev))
     {

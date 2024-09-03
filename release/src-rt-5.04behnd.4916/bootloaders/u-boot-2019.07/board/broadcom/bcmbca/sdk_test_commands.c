@@ -220,7 +220,8 @@ static int flash_smcbl( ulong addr, ulong size, int img_index )
 {
 	// SMCBL should always be flashed into the 1st bank. SMC takes care of copying into the 2nd bank in a safe manner
 	char *name = "smcbl1";
-	uint blk_size = 0, lun_size = 0;
+	uint blk_size = 0;
+	uint64_t lun_size = 0;
 	int id, ret;
 
 	if (!addr || !size)
@@ -236,7 +237,7 @@ static int flash_smcbl( ulong addr, ulong size, int img_index )
 	vfbio_lun_get_size(id, &lun_size);
 	if(size > lun_size)
 	{
-		printf("Not enough space to burn %s image - available %u, needed %lu\n", name, lun_size, size);
+		printf("Not enough space to burn %s image - available %llu, needed %lu\n", name, lun_size, size);
 		return -1;
 	}
 	vfbio_lun_get_blk_size(id, &blk_size);
@@ -251,10 +252,11 @@ static int flash_smcbl( ulong addr, ulong size, int img_index )
 	return ret;
 }
 
-static int flash_lun_vfbio( ulong addr, ulong size, int img_index, int id, char *name_base )
+static int flash_lun_vfbio( ulong addr, ulong size, int img_index, int id, char *name_base, uint32_t flags)
 {
 	int ret;
-	uint blk_size = 0, lun_size = 0;
+	uint blk_size = 0;
+	uint64_t lun_size = 0;
 	uint64_t total_size = 0, free_size = 0;
 	char name[128];
 	int prev_id;
@@ -279,7 +281,7 @@ static int flash_lun_vfbio( ulong addr, ulong size, int img_index, int id, char 
 	if (id != -1) {
 		if (lun_size)
 			vfbio_lun_delete(prev_id);
-		ret = vfbio_lun_create(name, size, &id);
+		ret = vfbio_lun_create(name, size, flags, &id);
 	}
 	else
 	{
@@ -297,31 +299,31 @@ static int flash_lun_vfbio( ulong addr, ulong size, int img_index, int id, char 
 
 static int flash_meminit( ulong addr, ulong size, int img_index )
 {
-	return flash_lun_vfbio(addr, size, img_index, -1, "meminit");
+	return flash_lun_vfbio(addr, size, img_index, -1, "meminit", 0);
 }
 
 static int flash_smcos( ulong addr, ulong size, int img_index )
 {
-	return flash_lun_vfbio(addr, size, img_index, -1, "smcos");
+	return flash_lun_vfbio(addr, size, img_index, -1, "smcos", 0);
 }
 
 static int flash_armbl( ulong addr, ulong size, int img_index )
 {
-	return flash_lun_vfbio(addr, size, img_index, -1, "armbl");
+	return flash_lun_vfbio(addr, size, img_index, -1, "armbl", 0);
 }
 
 static int flash_bootfs_vfbio( ulong addr, ulong size, int img_index )
 {
 	int id = (img_index == 1? IMAGE_VOL_ID_1:IMAGE_VOL_ID_2);
-
-	return flash_lun_vfbio(addr, size, img_index, id, "bootfs");
+	/* TODO: add support for transparent encryption */
+	return flash_lun_vfbio(addr, size, img_index, id, "bootfs", 0);
 }
 
 static int flash_rootfs_vfbio( ulong addr, ulong size, int img_index )
 {
 	int id = (img_index == 1? IMAGE_VOL_ID_1:IMAGE_VOL_ID_2) + 1;
-
-	return flash_lun_vfbio(addr, size, img_index, id, "rootfs");
+	/* TODO: add support for transparent encryption */
+	return flash_lun_vfbio(addr, size, img_index, id, "rootfs", 0);
 }
 
 static int vfbio_load_bootfs( int img_index, uint32_t bootfs_load_addr )
@@ -350,7 +352,7 @@ static int vfbio_load_bootfs( int img_index, uint32_t bootfs_load_addr )
 		}
 
 		if (!fit_auth) {
-			bcm_board_boot_fdt_fixup((void *)(ulong)bootfs_load_addr);
+			bcm_board_boot_fdt_fixup_from_fit((void *)(ulong)bootfs_load_addr);
 		}
 	}
 
@@ -626,8 +628,7 @@ static int on_voiceBoardid(const char *name, const char *value, enum env_op op, 
 				/* is the string is found, save it and exit */
 				if (0 <= idx)
 				{
-					env_set("voiceboardid", value);
-					printf("-- saving env and reboot needeD\n");
+					printf("-- saving env and reboot needed\n");
 					return 0;
 				}
 				printf("%d: %s is not found. idx=%d\n", __LINE__, value, idx);
@@ -646,7 +647,6 @@ static int on_voiceBoardid(const char *name, const char *value, enum env_op op, 
 		}
 		return 1;
 	case env_op_delete:
-		env_set("voiceboardid", "");
 		printf("-- Saving env and reboot needed\n");
 		return 0;
 	default:
@@ -1096,7 +1096,7 @@ static int emmc_load_bootfs( int img_index, uint32_t bootfs_load_addr )
 		}
 
 		if (!fit_auth) {
-			bcm_board_boot_fdt_fixup((void*)(uintptr_t)bootfs_load_addr);
+			bcm_board_boot_fdt_fixup_from_fit((void*)(uintptr_t)bootfs_load_addr);
 		}
 	}
 	return ret;
@@ -1456,7 +1456,7 @@ static int nand_load_bootfs( int img_index, uint32_t bootfs_load_addr )
 		{
 			/* mapper has set up the whole thing */
 			if (!fit_auth) {
-				bcm_board_boot_fdt_fixup((void*)(uintptr_t)bootfs_load_addr);
+				bcm_board_boot_fdt_fixup_from_fit((void*)(uintptr_t)bootfs_load_addr);
 			}
 			return(0);
 		}
@@ -1480,7 +1480,7 @@ static int nand_load_bootfs( int img_index, uint32_t bootfs_load_addr )
 		}
 
 		if (!fit_auth &&  magic == SQUASHFS_MAGIC ) {
-			bcm_board_boot_fdt_fixup((void*)(uintptr_t)bootfs_load_addr);
+			bcm_board_boot_fdt_fixup_from_fit((void*)(uintptr_t)bootfs_load_addr);
 		}
 	}
 	return ret;
@@ -1544,7 +1544,7 @@ static unsigned int bcm_handle_mapper(void* fit, char *flash_device, char *flash
 			strcpy(work,cmd);
 		}
 	}
-	sprintf(cmd, "root=%s %s dm-mod.create=\"%s\"", dmdev, flash_opts, work);
+	sprintf(cmd, "root=%s %s dm-mod.create=\"%s\" dm-mod.waitfor=%s", dmdev, flash_opts, work, flash_device);
 	debug("rootfs_opts:%s\n", cmd);
 	env_set("rootfs_opts", cmd);
 	return(0);
@@ -1597,7 +1597,7 @@ static int spinor_load_bootfs(uint32_t bootfs_load_addr)
 	}
 
 	if (!fit_auth) {
-		bcm_board_boot_fdt_fixup((void*)(uintptr_t)bootfs_load_addr);
+		bcm_board_boot_fdt_fixup_from_fit((void*)(uintptr_t)bootfs_load_addr);
 	}
 
 	put_mtd_device(mtd);
@@ -2235,10 +2235,16 @@ int get_img_index_for_upgrade(int flag)
 static int load_linux_img( int flag, int argc, char *const argv[])
 {
 	char cmd[128];
-	char * board_id  = NULL;
+	const void* fdt = gd->fdt_blob;
+	char *board_id  = NULL;
 	int img_index = 0;
 	unsigned long bootfs_load_addr = load_addr + CONFIG_LOAD_FIT_OFFSET;
-	int ret = -1;
+	int ret = CMD_RET_FAILURE;
+
+	if (fdt_getprop_u32_default(fdt, "/chosen", "safemode", 0)) {
+		printf("Booting to Linux disabled in safe mode!!\n");
+		return CMD_RET_FAILURE;
+	}
 
 	if( argc == 1 ) {
 		img_index = get_active_img_idx();
@@ -2266,14 +2272,8 @@ static int load_linux_img( int flag, int argc, char *const argv[])
 
 	if( img_index < MIN_IMG_INDEX || img_index > MAX_IMG_INDEX ) {
 		printf("ERROR: Invalid Image Index specified!\n");
-		return CMD_RET_FAILURE;
+		return ret;
 	}
-
-#if defined(CONFIG_WDT)
-	/* Force reset the watchdog before flash access */
-	if (gd->watchdog_dev)
-		wdt_reset(gd->watchdog_dev);
-#endif
 
 	/* Load bootfs to load address */
 #ifdef CONFIG_BCMBCA_VFBIO
@@ -2337,41 +2337,7 @@ static int do_load(cmd_tbl_t * cmdtp, int flag, int argc,
 static int do_boot(cmd_tbl_t * cmdtp, int flag, int argc,
 			char *const argv[])
 {
-	const void* fdt = gd->fdt_blob;
 	int ret;
-
-#if defined(CONFIG_BCM_THERMAL)
-	if (!bcm_thermal_is_temperature_safe())
-	{
-		bcmbca_set_boot_reason(BCM_BOOT_REASON_ACTIVATE);
-		run_command("reset", 0);
-	}
-#endif
-
-#ifdef CONFIG_BCMBCA_XRDP_ETH
-	bcmbca_xrdp_eth_uninit();
-#endif
-
-	if (fdt_getprop_u32_default(fdt, "/chosen", "safemode", 0)) {
-		printf("Booting to Linux disabled in safe mode!!\n");
-		return CMD_RET_FAILURE;
-	}
-
-#if defined(CONFIG_BCM_BOOTSTATE)
-	if(!((bcmbca_get_boot_reason() >> BCM_RESET_REASON_BITS) & BCM_BOOT_REASON_ACTIVATE))
-	{
-		if( ((bcmbca_get_boot_reason() & BCM_BOOT_PHASE_MASK)) == BCM_BOOT_PHASE_FB_UBOOT )
-		{
-			printf("reset reason is set to BCM_BOOT_PHASE_FB_UBOOT by tpl, setting now to BCM_BOOT_PHASE_FB_LINUX_START\n");
-			bcmbca_set_boot_reason(BCM_BOOT_REASON_WATCHDOG | BCM_BOOT_PHASE_FB_LINUX_START | (bcmbca_get_boot_reason() & 0xffffff00));
-		}
-		else
-		{
-			printf("reset reason is set to BCM_BOOT_PHASE_UBOOT by tpl, setting now to BCM_BOOT_PHASE_LINUX_START\n");
-			bcmbca_set_boot_reason(BCM_BOOT_REASON_WATCHDOG | BCM_BOOT_PHASE_LINUX_START | (bcmbca_get_boot_reason() & 0xffffff00));
-		}
-	}
-#endif
 	if( load_linux_img( flag, argc, argv ) == 0 )
 		ret = run_command("bootm go\n", 0);
 	else {
@@ -2849,7 +2815,8 @@ static int do_restoredefault(cmd_tbl_t * cmdtp, int flag, int argc,
 	ret = vfbio_lun_get_id("data", &id);
 	if(!ret)
 	{
-		uint blk_size = 0, lun_size = 0;
+		uint blk_size = 0;
+		uint64_t lun_size = 0;
 
 		// overwrite lun data to avoid ext4 emulation in subsequently created lun 
 		vfbio_lun_get_size(id, &lun_size);
@@ -3261,7 +3228,7 @@ static void cmd_otp_feat_names(void)
 #define SDK_OTP_CMD_LEN 64
 enum cmd_otp_modes{CMD_OTP_GET,CMD_OTP_SET,CDM_OTP_SEC
 #ifdef CONFIG_SMC_BASED
-	, CMD_OTP_COMMIT, CMD_OTP_GET_SLICE, CMD_OTP_SET_SLICE, CMD_OTP_CU_LOCK
+	, CMD_OTP_COMMIT, CMD_OTP_GET_SLICE, CMD_OTP_SET_SLICE, CMD_OTP_CU_LOCK, CMD_OTP_UART_EN
 #endif
 };
 static enum cmd_otp_modes otp_cmd_lookup(char* id)
@@ -3269,7 +3236,7 @@ static enum cmd_otp_modes otp_cmd_lookup(char* id)
 	int i;
 	char *cmd2idx[]={"get", "set", "secure"
 #ifdef CONFIG_SMC_BASED
-		, "commit", "get_slice", "set_slice", "cu_lock"
+		, "commit", "get_slice", "set_slice", "cu_lock", "cu_lock_uart_en"
 #endif
 	};
 	for (i = 0; i < sizeof(cmd2idx)/sizeof(cmd2idx[0]); i++) {
@@ -3341,6 +3308,19 @@ static int cmd_otp_fuse_cu_lock(void)
 		goto err;
 	}
 	rc = bcm_otp_write(OTP_MAP_JU_MODE, (const u32*)&val, sizeof(u32));
+	if (rc) {
+		printf("ERROR writing otp\n");
+		goto err;
+	}
+err:
+	return rc;
+}
+
+static int cmd_otp_fuse_uart_en(void)
+{
+	int rc = 0;
+	u32 val = 1;
+	rc = bcm_otp_write(OTP_MAP_UART_EN, (const u32*)&val, sizeof(u32));
 	if (rc) {
 		printf("ERROR writing otp\n");
 		goto err;
@@ -3474,6 +3454,9 @@ static int do_otp_cmd(cmd_tbl_t * cmdtp, int flag, int argc,
 #ifdef CONFIG_SMC_BASED
 			} else if (otp_cmd_lookup(argv[2]) == CMD_OTP_CU_LOCK) {
 				cmd_otp_fuse_cu_lock();
+				break;
+			} else if (otp_cmd_lookup(argv[2]) == CMD_OTP_UART_EN) {
+				cmd_otp_fuse_uart_en();
 				break;
 			} else if (otp_cmd_lookup(argv[2]) == CMD_OTP_COMMIT) {
 				if (argc != 3) {
@@ -4050,7 +4033,7 @@ static void print_lun_info(int id)
 		vfbio_lun_get_blk_num(id, &blk_n);
 		vfbio_lun_get_blk_size(id, &blk_s);
 		printf("LUN %d (%s)\n", id, vfbio_lun_get_name(id));
-		printf("\t 0x%x(%u x %u)\n", blk_n * blk_s, blk_n, blk_s);
+		printf("\t 0x%llx(%u x %u)\n", (uint64_t)blk_n * blk_s, blk_n, blk_s);
 }
 
 static int do_vfbio(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
@@ -4102,17 +4085,28 @@ static int do_vfbio(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	}
 	else if (strncmp(argv[1], "create", 3) == 0) {
 		int id = -1;
-		unsigned int size;
+		uint64_t size;
+		uint32_t flags = 0;
 
 		if (argc < 4)
 			return CMD_RET_USAGE;
 
-		size = simple_strtoul(argv[2], NULL, 16);
+		size = simple_strtoull(argv[2], NULL, 16);
 		
 		if (argc >= 5)
-			id = simple_strtoul(argv[4], NULL, 10);
+		{
+			for (int i=4; i<argc; i++)
+			{
+				if (!strcmp(argv[i], "-ro"))
+					flags |= VFBIO_LUN_CREATE_FLAG_READ_ONLY;
+				else if (!strcmp(argv[i], "-e"))
+					flags |= VFBIO_LUN_CREATE_FLAG_ENCRYPTED;
+				else
+					id = simple_strtoul(argv[4], NULL, 10);
+			}
+		}
 		
-		if (vfbio_lun_create(argv[3], size, &id))
+		if (vfbio_lun_create(argv[3], size, flags, &id))
 		{
 			if (argc < 5)
 				printf("Cannot create LUN %s (size %sB)\n", argv[3], argv[2]);
@@ -4141,13 +4135,13 @@ static int do_vfbio(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		return CMD_RET_SUCCESS;
 	}
 	else if (strncmp(argv[1], "resize", 3) == 0) {
-		int id;
-		unsigned int size;
+		int id = -1;
+		uint64_t size;
 
 		if (argc < 4)
 			return CMD_RET_USAGE;
 
-		if(vfbio_lun_get_id(argv[2], &id))
+		if(vfbio_lun_get_id(argv[2], &id) && isdigit(*argv[2]))
 			id = simple_strtoul(argv[2], NULL, 10);
 		size = simple_strtoul(argv[3], NULL, 16);
 		
@@ -4171,7 +4165,14 @@ static int do_vfbio(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 			id_name[j].id = simple_strtoul(argv[i], NULL, 10);
 			strcpy(id_name[j].name, argv[i+1]);
 		}
-		return vfbio_lun_rename(j, id_name);
+		
+		if(vfbio_lun_rename(j, id_name))
+		{
+			printf("Atomic rename failed\n");
+			return CMD_RET_FAILURE;
+		}
+
+		return CMD_RET_SUCCESS;
 	}
 	else if (strncmp(argv[1], "read", 3) == 0) {
 		int id;
@@ -4427,6 +4428,8 @@ static char usage[] =
 	"                    All values are fused by 'otp set commit' command\n"
     "otp get_slice <feat_name> <offset> <size> reads the feat value from  OTP\n"
     "otp set commit      Commit all prior otp set requests to OTP. Warning! otp fuse operations are irreverisble\n"
+    "otp set cu_lock     Set CU lock bit in OTP\n"
+    "otp set cu_lock_uart_en  Set CU lock uart enable bit OTP\n"
 #endif
     "otp set secure      Achtung!!!! This command will turn board to MFG boot secure mode.\n"
     "                    On success the board will be halted and must be power cycled.\n"
@@ -4498,6 +4501,8 @@ static char sdk_usage[] =
 	"                    All values are fused by 'otp set commit' command\n"
     "otp get_slice <feat_name> <offset> <size> reads the feat value from  OTP\n"
     "otp set commit      Commit all prior otp set requests to OTP. Warning! otp fuse operations are irreverisble\n"
+    "otp set cu_lock     Set CU lock bit in OTP\n"
+    "otp set cu_lock_uart_en   Set CU lock uart enable bit OTP\n"
 #endif
     "otp set secure      Achtung!!!!! This command will turn board to MFG boot secure mode.\n"
     "                    On success the board will be halted and must be power cycled.\n"
@@ -4510,7 +4515,7 @@ static char sdk_usage[] =
 #endif
 #ifdef CONFIG_BCMBCA_VFBIO
     "vfbio info [name|dev] - show specific LUN, all available LUNs or vfbio device info\n"
-    "vfbio create size [name] [id] - create new LUN by name or by name and id\n"
+    "vfbio create size [name] [id] [-ro] [-e] - create new LUN by name or by name and id. -ro=read-only, -e=encrypted\n"
     "vfbio delete name|id - delete LUN\n"
     "vfbio resize name|id size - resize LUN\n"
     "vfbio rename id name [id name...] - atomically rename number of LUNs\n"

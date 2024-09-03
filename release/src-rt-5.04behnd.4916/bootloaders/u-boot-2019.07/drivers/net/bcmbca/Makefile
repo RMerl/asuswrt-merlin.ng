@@ -16,7 +16,7 @@ EXTRA_CFLAGS += -I$(srctree)/drivers/net/bcmbca/xrdp
 endif
 
 EXTRA_CFLAGS += -Werror
-obj-$(CONFIG_BCMBCA_XRDP_ETH) += bcmbca_xrdp_eth.o
+obj-$(CONFIG_BCMBCA_XRDP_ETH) += $(if $(wildcard $(srctree)/drivers/net/bcmbca/bcmbca_xrdp_eth.c),bcmbca_xrdp_eth.o,bcmbca_xrdp_eth_preb.o)
 obj-$(CONFIG_BCMBCA_LPORT) += lport/
 
 ifdef CONFIG_BCMBCA_XRDP_PON
@@ -95,7 +95,7 @@ UBOOTINCLUDE += -I$(srctree)/arch/$(ARCH)/mach-bcmbca/pmc
 obj-y += bcm_ethsw_ext.o bcm_ethsw_phy.o
 endif
 
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_4908_63178_47622_6756_63146_4912_6813_6765_),)
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_4908_63178_47622_6756_63146_4912_6813_6765_6766_6764_),)
 EXTRA_CFLAGS += -DDSL_DEVICES
 endif
 
@@ -107,7 +107,14 @@ ifeq ($(or $(GTBE98),$(GTBE98_PRO),$(GTBE96),$(GTBE19000),$(RTBE92U),$(RTBE95U))
 obj-y += rtl8372/
 endif
 
+ifeq ($(or $(RTBE82U),$(RTBE58U_PRO)),y)
+obj-y += rtl8366u/
+endif
+
 ifdef CONFIG_BCMBCA_PHY
 EXTRA_CFLAGS += -I$(srctree)/drivers/net/bcmbca/phy
 endif
 obj-$(CONFIG_BCMBCA_PHY) += phy/
+
+$(obj)/bcmbca_xrdp_eth_preb.o:
+	cp $(srctree)/drivers/net/bcmbca/bcmbca_xrdp_eth.o $(obj)/bcmbca_xrdp_eth_preb.o

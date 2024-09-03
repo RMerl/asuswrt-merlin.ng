@@ -51,10 +51,10 @@ define(function(){
 				]
 			},
 			{
-				menuName: Guest_Network_naming,
+				menuName: isSupport("sdn_mwl") ? `<#Network#>` : Guest_Network_naming,
 				index: "menu_GuestNetwork",
 				tab: [
-					{url: (isSupport("mtlancfg") ? "SDN.asp" : "Guest_network.asp"), tabName: Guest_Network_naming},
+					{url: (isSupport("mtlancfg") ? "SDN.asp" : "Guest_network.asp"), tabName: isSupport("sdn_mwl") ? `<#Network#>` : Guest_Network_naming},
 					{url: "Captive_Portal.asp", tabName: "Free WiFi"},
 					{url: "Captive_Portal_Advanced.asp", tabName: "<#Captive_Portal#>"},
 					{url: "Guest_network_fbwifi.asp", tabName: "Facebook WiFi"},
@@ -89,6 +89,7 @@ define(function(){
 					{url: "AiProtection_WebProtector.asp", tabName: "<#AiProtection_filter#>"},
 					{url: "ParentalControl.asp", tabName: "<#Time_Scheduling#>"},
 					{url: "YandexDNS.asp", tabName: "<#YandexDNS#>"},
+					{url: "adGuard_DNS.asp", tabName: "AdGuard"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				] 
 			},
@@ -135,12 +136,10 @@ define(function(){
 						{url: "Main_Spectrum_Content.asp", tabName: "<#Spectrum_title#>"},
 						{url: "Advanced_QOSUserPrio_Content.asp", tabName: "__INHERIT__"},
 						{url: "Advanced_QOSUserRules_Content.asp", tabName: "__INHERIT__"},
-						{url: "AdaptiveQoS_Adaptive.asp", tabName: "__INHERIT__"},
 						{url: "AdaptiveQoS_InternetSpeed.asp", tabName: "<#InternetSpeed#>"},
 						{url: "NULL", tabName: "__INHERIT__"}
 				]
 			},
-			
 			{
 				menuName: "<#Traffic_Analyzer#>",
 				index: "menu_TrafficAnalyzer",
@@ -351,18 +350,20 @@ define(function(){
 					retArray.push("menu_NewDashboard");
 				}
 
-				if(!bwdpi_support){
-					retArray.push("menu_AiProtection");
-					retArray.push("menu_TrafficAnalyzer");
-					retArray.push("menu_BandwidthMonitor");
-				}
-
-				if(!adaptiveqos_support){	
+				if(!isSupport("adaptive_qos") && !isSupport("bandwidth_monitor") && !isSupport("dns_dpi")){	
 					for(i=0; i<menuTree.list.length; i++){
 						if(menuTree.list[i].menuName == '<#Adaptive_QoS#>'){
 							menuTree.list[i].menuName = '<#menu5_3_2#>';
 						}
 					}
+				}
+
+				if(!isSupport("dpi_mals") && !isSupport("dpi_cc") && !isSupport("dpi_vp")){
+					retArray.push("menu_AiProtection");
+				}
+				
+				if(!isSupport("traffic_analyzer") && !isSupport("dns_dpi")){
+					retArray.push("menu_TrafficAnalyzer");
 				}
 
 				if(!usb_support){
@@ -489,23 +490,70 @@ define(function(){
 				var retArray = [];
 
 				/* By RC Support */
-				if(!bwdpi_support){
-					retArray.push("AdaptiveQoS_Bandwidth_Monitor.asp");
-					retArray.push("AdaptiveQoS_WebHistory.asp");
-					retArray.push("AdaptiveQoS_Adaptive.asp");
-					retArray.push("AiProtection_HomeSecurity.asp");
-					retArray.push("AiProtection_HomeProtection.asp");
+				if(!isSupport("dpi_mals")){
+					retArray.push("AiProtection_MaliciousSitesBlocking.asp");
+				}
+				
+				if(!isSupport("dpi_cc")){
+					retArray.push("AiProtection_InfectedDevicePreventBlock.asp");
+				}
+
+				if(!isSupport("dpi_vp")){
+					retArray.push("AiProtection_IntrusionPreventionSystem.asp");
+				}
+
+				if(!isSupport("webs_filter")){
 					retArray.push("AiProtection_WebProtector.asp");
-					retArray.push("AiProtection_AdBlock.asp");
-					retArray.push("AiProtection_Key_Guard.asp");
-					retArray.push("AiProtection_AdBlock.asp");
+					var index = -1;
+					for(i=0;i<menuTree.list.length;i++){
+						if(menuTree.list[i].menuName == '<#AiProtection_title#>'){
+							for(j=0;j<menuTree.list[i].tab.length;j++){	
+								if(menuTree.list[i].tab[j].url == 'AiProtection_WebProtector.asp'){
+									index = j;
+								}
+
+								if(menuTree.list[i].tab[j].url == 'ParentalControl.asp'){
+									menuTree.list[i].tab[j].tabName = '<#Parental_Control#>';
+									break;
+								}		
+							}
+
+							menuTree.list[i].tab.splice(index, 1);
+						}
+					}
 				}
 
-				if(!traffic_analyzer_support && !dns_dpi_support){
+				if(!isSupport("web_history")){
+					retArray.push("AdaptiveQoS_WebHistory.asp");
+				}
+				
+				if(!isSupport("bandwidth_monitor") && !isSupport("dns_dpi")){
+					retArray.push("AdaptiveQoS_Bandwidth_Monitor.asp");
+				}
+
+				if(!isSupport("traffic_analyzer") && !isSupport("dns_dpi")){
 					retArray.push("TrafficAnalyzer_Statistic.asp");		
+
+					for(i=0;i<menuTree.list.length;i++){
+						if(menuTree.list[i].menuName == '<#Adaptive_QoS#>'){
+							menuTree.list[i].menuName = '<#Menu_TrafficManager#>';
+							var index = menuTree.list[i].tab.length-1;
+							menuTree.list[i].tab[index] = {url: "Main_TrafficMonitor_realtime.asp", tabName: "<#traffic_monitor#>"};
+							menuTree.list[i].tab.push({url: "Main_TrafficMonitor_last24.asp", tabName: "__INHERIT__"});
+							menuTree.list[i].tab.push({url: "Main_TrafficMonitor_daily.asp", tabName: "__INHERIT__"});
+							menuTree.list[i].tab.push({url: "NULL", tabName: "__INHERIT__"});
+						}
+						else if(menuTree.list[i].menuName == '<#menu5_3_2#>'){
+							var index = menuTree.list[i].tab.length-1;
+							menuTree.list[i].tab[index] = {url: "Main_TrafficMonitor_realtime.asp", tabName: "<#traffic_monitor#>"};
+							menuTree.list[i].tab.push({url: "Main_TrafficMonitor_last24.asp", tabName: "__INHERIT__"});
+							menuTree.list[i].tab.push({url: "Main_TrafficMonitor_daily.asp", tabName: "__INHERIT__"});
+							menuTree.list[i].tab.push({url: "NULL", tabName: "__INHERIT__"});
+						}
+					}
 				}
 
-				if(!traffic_limiter_support){
+				if(!isSupport("traffic_limiter")){
 					retArray.push("AdaptiveQoS_TrafficLimiter.asp");		
 				}
 
@@ -531,6 +579,10 @@ define(function(){
 
 				if(!yadns_support){
 					retArray.push("YandexDNS.asp");
+				}
+
+				if(!isSupport("adguard_dns")){
+					retArray.push("adGuard_DNS.asp");
 				}
 
 				if(!frs_feedback_support) {
@@ -697,6 +749,10 @@ define(function(){
 
 				if(!isSupport("mtlancfg") || !isSupport("mlo")){
 					retArray.push("MLO.asp");
+				}
+				
+				if(isSupport("sdn_mainfh")){
+					retArray.push("Advanced_ACL_Content.asp");
 				}
 
 				if(isSupport("BUSINESS")){

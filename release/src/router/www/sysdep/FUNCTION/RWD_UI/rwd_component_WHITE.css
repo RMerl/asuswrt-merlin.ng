@@ -1,11 +1,15 @@
-﻿.body_rwd{
+﻿:root{
+	--icon-color: #4D4D4D;
+}
+.body_rwd{
 	color: #181818;
 }
 .bg_rwd{
 	color: #181818;
 }
 .function_desc_container .help_icon,
-.profile_list_container .help_icon{
+.profile_list_container .help_icon,
+.profile_setting_item .help_icon{
 	background-image: url(/images/New_ui/SDN/white_theme/Action/help_outline.svg);
 }
 .function_desc_container:before{
@@ -206,8 +210,12 @@
 	border-top: 2px solid #006CE1;
 	border-right: 2px solid #006CE1;
 }
-.custom_select_container .select_options_container{
+.custom_select_container .select_options_container,
+.custom_select_container .select_and_search_container{
 	background: #FFFFFF;
+}
+.select_and_search_container .search_container:before{
+	border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 .custom_select_container .select_options_container div.selected{
 	color: #006CE1;
@@ -234,6 +242,9 @@
 }
 .icon_add{
 	background-image: url(/images/New_ui/SDN/white_theme/Content/add_circle_outline.svg);
+}
+.icon_del{
+	background-image: url(/images/New_ui/SDN/white_theme/Action/delete.svg);
 }
 .icon_switch.off{
 	background: #666666;
@@ -288,6 +299,10 @@
 .icon_arrow_right{
 	color: #006CE1;
 }
+.icon_expand{
+	border-top: 3px solid #4D4D4D;
+	border-right: 3px solid #4D4D4D;
+}
 .icon_error_outline{
 	background-image: url(/images/New_ui/SDN/white_theme/Alert/error_outline.svg);
 }
@@ -296,6 +311,9 @@
 }
 .icon_print{
 	background-image: url(/images/New_ui/SDN/white_theme/Action/download.svg);
+}
+.icon_search{
+	color: #4D4D4D;
 }
 .validate_hint,
 .item_hint{
@@ -309,6 +327,23 @@
 	background-color: rgb(36 141 255);
 	border-color: rgb(36 141 255 / 20%);
 }
+
+.profile_setting_item.radio_item .title{
+	color: rgb(26, 26, 26);
+	font-weight: normal;
+	flex: 0 0 40%;
+	max-width: 32%;
+}
+
+.rwd_radio_container{
+	color: rgb(24, 24, 24);
+}
+
+.rwd_radio_options_container .rwd_radio_container.selected{
+	background-color: initial;
+	color: rgb(0, 108, 225);
+}
+
 @media (max-width: 575px) {
 	.profile_item_container,
 	.profile_item_container.selected{
@@ -333,7 +368,8 @@
 	.popup_container .popup_content_container{
 		background: #FBFBFB;
 	}
-	.popup_container .custom_select_container .select_options_container{
+	.popup_container .custom_select_container .select_options_container,
+	.popup_container .custom_select_container .select_and_search_container{
 		background: #FFFFFF;
 		box-shadow: 0px 3px 4px 0px rgb(0 0 0 / 14%), 0px 3px 3px -2px rgb(0 0 0 / 12%), 0px 1px 8px 0px rgb(0 0 0 / 20%);
 	}

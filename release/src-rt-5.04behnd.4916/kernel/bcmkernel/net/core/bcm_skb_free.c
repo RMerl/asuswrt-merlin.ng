@@ -1,29 +1,23 @@
 /*
 * <:copyright-BRCM:2012:DUAL/GPL:standard
-*
-*    Copyright (c) 2012 Broadcom
+* 
+*    Copyright (c) 2012 Broadcom 
 *    All Rights Reserved
-*
-* Unless you and Broadcom execute a separate written software license
-* agreement governing use of this software, this software is licensed
-* to you under the terms of the GNU General Public License version 2
-* (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-* with the following added to such license:
-*
-*    As a special exception, the copyright holders of this software give
-*    you permission to link this software with independent modules, and
-*    to copy and distribute the resulting executable under terms of your
-*    choice, provided that you also meet, for each linked independent
-*    module, the terms and conditions of the license of that module.
-*    An independent module is a module which is not derived from this
-*    software.  The special exception does not apply to any modifications
-*    of the software.
-*
-* Not withstanding the above, under no circumstances may you combine
-* this software in any way with any other Broadcom software provided
-* under a license other than the GPL, without Broadcom's express prior
-* written consent.
-*
+* 
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License, version 2, as published by
+* the Free Software Foundation (the "GPL").
+* 
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+* 
+* 
+* A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+* writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+* Boston, MA 02111-1307, USA.
+* 
 :>
 */
 
@@ -141,87 +135,97 @@ void dev_kfree_skb_thread_bulk(struct sk_buff *skb);
 
 static int skb_free_thread_func(void *thread_data)
 {
-	unsigned int budget;
-	struct sk_buff *skb;
-	struct sk_buff *free_list = NULL;
-	unsigned long flags;
+   unsigned int budget;
+   struct sk_buff *skb;
+   struct sk_buff *free_list = NULL;
+   unsigned long flags;
 #if defined(CONFIG_BCM_BPM_BULK_FREE)
-	skb_list_t bpm_freelist = { NULL, NULL, 0 };
-#if !defined(CONFIG_BCM_XRDP)
-	int idx = 0;
-#endif /* CONFIG_BCM_XRDP */
-	static void *bufp_arr[MAX_SKB_FREE_BUDGET];
+   skb_list_t bpm_freelist = { NULL, NULL, 0 };
+   int bufcnt = 0;
+   static void *bufp_arr[MAX_SKB_FREE_BUDGET];
 #endif /* CONFIG_BCM_BPM_BULK_FREE */
 
-	while (!kthread_should_stop()) {
-		budget = skbfree_free_budget;
+   while (!kthread_should_stop()) {
+      budget = skbfree_free_budget;
 
 update_list:
-		spin_lock_irqsave(&skbfree_lock, flags);
-		if (free_list == NULL) {
-			if (skb_completion_queue) {
-				free_list = skb_completion_queue;
-				skb_completion_queue = NULL;
-				skb_completion_queue_cnt = 0;
-			}
-		}
-		spin_unlock_irqrestore(&skbfree_lock, flags);
+      spin_lock_irqsave(&skbfree_lock, flags);
+      if (free_list == NULL) {
+         if (skb_completion_queue) {
+            free_list = skb_completion_queue;
+            skb_completion_queue = NULL;
+            skb_completion_queue_cnt = 0;
+         }
+      }
+      spin_unlock_irqrestore(&skbfree_lock, flags);
 
-		while (free_list && budget) {
-			skb = free_list;
-			free_list = free_list->next;
-			skb->next = NULL;
+      while (free_list && budget) {
+         skb = free_list;
+         free_list = free_list->next;
+         skb->next = NULL;
 #if defined(CONFIG_BCM_BPM_BULK_FREE)
-			if (SKB_FAST_RELEASE_TO_BPM(skb)) {
-#if defined(CONFIG_BCM_XRDP)
-				(*skb->recycle_hook)(skb, skb->recycle_context,
-						     SKB_DATA_RECYCLE);
-				skb->recycle_context &= ~SKB_DATA_RECYCLE;
-				skb->head = skb->data = NULL;
-				skb->recycle_hook = (RecycleFuncP)gbpm_recycle_skb;
+         if (SKB_FAST_RELEASE_TO_BPM(skb)) {
+#if defined(CONFIG_BCM_XRDP) 
+            (*skb->recycle_hook)(skb, skb->recycle_context,
+                  SKB_DATA_RECYCLE);
+            skb->head = skb->data = NULL;
+            skb->recycle_hook = (RecycleFuncP)gbpm_recycle_skb;
 #else
-				bufp_arr[idx++] = gbpm_invalidate_dirtyp(skb);
-#endif /* CONFIG_BCM_XRDP */
-				if (bpm_freelist.len != 0) {
-					bpm_freelist.tail->next = skb;
-					bpm_freelist.tail = skb;
-				} else
-					bpm_freelist.tail = bpm_freelist.head = skb;
+            if (gbpm_is_skb_with_hw_buf(skb))
+            {
+               /* Todo: free directly to hwpool */
+               (*skb->recycle_hook)(skb, skb->recycle_context,
+                     SKB_DATA_RECYCLE);
+               skb->head = skb->data = NULL;
+            }
+            else
+            {
+               bufp_arr[bufcnt++] = gbpm_invalidate_dirtyp(skb);
+            }
 
-				bpm_freelist.len++;
-			} else
+            /* Todo: update the skb HW recycle capable flags */
+            skb->recycle_hook = (RecycleFuncP)gbpm_recycle_skb;
+
+#endif /* CONFIG_BCM_XRDP */
+
+            if (bpm_freelist.len != 0) {
+               bpm_freelist.tail->next = skb;
+               bpm_freelist.tail = skb;
+            } else
+               bpm_freelist.tail = bpm_freelist.head = skb;
+
+            bpm_freelist.len++;
+         } else
 #endif /* CONFIG_BCM_BPM_BULK_FREE */
-				__kfree_skb(skb);
-			budget--;
-		}
+            __kfree_skb(skb);
+         budget--;
+      }
 
 #if defined(CONFIG_BCM_BPM_BULK_FREE)
-		if (bpm_freelist.len) {
-			gbpm_free_skblist(bpm_freelist.head, bpm_freelist.tail,
-					  bpm_freelist.len, bufp_arr);
-			bpm_freelist.head = bpm_freelist.tail = NULL;
-			bpm_freelist.len = 0;
-#if !defined(CONFIG_BCM_XRDP)
-			idx = 0;
-#endif /* CONFIG_BCM_XRDP */
-		}
+      if (bpm_freelist.len) {
+         gbpm_free_skblist(bpm_freelist.head, bpm_freelist.tail,
+               bpm_freelist.len, bufcnt, bufp_arr);
+         bpm_freelist.head = bpm_freelist.tail = NULL;
+         bpm_freelist.len = 0;
+         bufcnt = 0;
+      }
 #endif /* CONFIG_BCM_BPM_BULK_FREE */
 
-		if (free_list || skb_completion_queue) {
-			if (budget)
-				goto update_list;
+      if (free_list || skb_completion_queue) {
+         if (budget)
+            goto update_list;
 
-			/* we still have packets in Q, reschedule the task */
-			yield();
-		} else {
+         /* we still have packets in Q, reschedule the task */
+         yield();
+      } else {
 #if defined(CONFIG_BCM_BPM_BULK_FREE)
-			complete(&skb_free_complete);
+         complete(&skb_free_complete);
 #endif /* CONFIG_BCM_BPM_BULK_FREE */
-			set_current_state(TASK_INTERRUPTIBLE);
-			schedule_timeout(msecs_to_jiffies(skbfree_timer_period));
-		}
-	}
-	return 0;
+         set_current_state(TASK_INTERRUPTIBLE);
+         schedule_timeout(msecs_to_jiffies(skbfree_timer_period));
+      }
+   }
+   return 0;
 }
 
 /* proc files */
@@ -573,7 +577,7 @@ void bcm_skb_free_proc_exit(void)
 #define SZ_256M		0x10000000
 #endif
 
-struct task_struct *create_skb_free_task(void)
+struct task_struct * __init create_skb_free_task(void)
 {
 	struct task_struct *tsk;
 
@@ -663,7 +667,6 @@ EXPORT_SYMBOL(dev_kfree_skb_thread_wait);
 void dev_kfree_skb_thread_bulk(struct sk_buff *head, struct sk_buff *tail, uint32_t len)
 {
 	unsigned long flags;
-
 	/* Assumption here is all the skb's in list have same refcount
 	 *  TODO: check if this is ok in all cases
 	 */
@@ -682,9 +685,9 @@ void dev_kfree_skb_thread_bulk(struct sk_buff *head, struct sk_buff *tail, uint3
 #else
 void dev_kfree_skb_thread_bulk(struct sk_buff *skb)
 {
-	unsigned long flags;
 	struct sk_buff *skbfreelistend;
 	unsigned int skbcnt = 1;
+	unsigned long flags;
 
 	/* locate last skb of the supplied skb list */
 	skbfreelistend = skb;

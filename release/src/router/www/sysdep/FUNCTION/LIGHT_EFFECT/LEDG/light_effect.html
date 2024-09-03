@@ -11,6 +11,26 @@
 var ui_lang = httpApi.nvramGet(["preferred_lang"]).preferred_lang;
 var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=166";
 var model_info = httpApi.nvramGet(["productid", "CoBrand"]);
+const support_gaming = (isSupport("open_nat") && isSupport("SDN_PRIORITY")) ? true : false;
+const sdn_naming = (()=>{
+	if(typeof Guest_Network_naming != "string"){
+		if(isSupport("mtlancfg")){
+			if(isSupport("BUSINESS"))
+				return `<#GuestNetwork_SDN_title#>`;
+			else if(isSupport("SMART_HOME_MASTER_UI"))
+				return `<#Guest_Network#>`;
+			else
+				return `<#GuestNetwork_PRO_title#>`;
+		}
+		else{
+			return `<#Guest_Network#>`;
+		}
+	}
+	else{
+		return Guest_Network_naming;
+	}
+})();
+
 $(function(){
 	var getUrlParameter = function getUrlParameter(param){
 		var url_parm = window.location.search.substring(1);
@@ -37,6 +57,34 @@ $(function(){
 	}
 	if(model_info.productid.substr(0,2) == "GT"){
 		$("#light_effect_bg .light_effect_mask").addClass("rog");
+	}
+
+	if(support_gaming){
+		setTimeout(function(){
+			if(theme == "" && model_info.productid.substr(0,2) == "GT"){
+				theme = "ROG";
+			}
+			$('<script />', { type : 'text/javascript', src : "/RWD_UI/rwd_component.js"}).appendTo('head');
+			$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component.css">');
+			if(theme == "WHITE" || theme == "ROG"){
+				$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component_' + theme + '.css">');
+			}
+			$("#light_effect_bg").before(
+				`<div class="hidden_mask popup_customize_alert"></div>
+				<div class="popup_container popup_customize_alert"></div>`
+			);
+			if(window.self !== window.top){//inlcude at iframe
+				adjust_popup_container_top = (_obj, _offsetHeight)=>{
+					$(_obj).css({top: ""});
+					let scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+					let parent_scrollTop = 0;
+					let final_scrollTop = Math.max(scrollTop, parent_scrollTop);
+					if(final_scrollTop != 0){
+						$(_obj).css({top: (final_scrollTop + _offsetHeight)});
+					}
+				}
+			}
+		}, 1000);
 	}
 });
 var $light_effect_bg = $("#light_effect_bg");
@@ -108,17 +156,7 @@ function initial_led_control() {
 
 	if(!isMobile()) {
 		$hue_bar.mousedown(function(e) {
-			if($("#light_effect_setting .setting_hue").css("opacity") == "1") {
-				if(e.target.id == "hue_bar") {
-					hue_click = true;
-					set_hue_value(e);
-				}
-				else {
-					hue_click = true;
-					$hue_slider.addClass("active");
-				}
-				lightl_effect_animate.clear($light_effect_bg);
-			}
+			set_hue_bar_event(e);
 		});
 		$(document).mousemove(function(e) {
 			if(hue_click) {
@@ -134,18 +172,9 @@ function initial_led_control() {
 	else {
 		$("#light_effect_setting .setting_scheme").removeClass("support_hover");
 		$("#light_effect_setting .light_effect_setting_bg").addClass("no_highlights");
+		$("#light_effect_setting").addClass("no_highlights");
 		$hue_bar[0].addEventListener("touchstart", function (e) {
-			if($("#light_effect_setting .setting_hue").css("opacity") == "1") {
-				if(e.target.id == "hue_bar") {
-					hue_click = true;
-					set_hue_value(e);
-				}
-				else {
-					hue_click = true;
-					$hue_slider.addClass("active");
-				}
-				lightl_effect_animate.clear($light_effect_bg);
-			}
+			set_hue_bar_event(e);
 		});
 		document.addEventListener("touchmove", function (e) {
 			if(hue_click) {
@@ -207,76 +236,41 @@ function initial_led_control() {
 	$("#light_effect_setting .setting_scheme .scheme_bg").unbind("click").click(function(e){
 		e = e || event;
 		e.stopPropagation();
-		var id = e.currentTarget.id;
-		if(id == "") return;
-		lightl_effect_animate.clear($light_effect_bg);
-		$light_effect_bg.removeClass().addClass("light_effect_bg");
-		var mode = e.currentTarget.getAttribute("mode");
-		scheme_item_post.Mode = mode;
-		$("#light_effect_setting .setting_scheme .scheme_bg").removeClass("active");
-		$("#light_effect_setting .setting_scheme #" + id + "").addClass("active");
-		let rgb_parm = {};
-		let ledg_rgb = httpApi.nvramGet(["ledg_rgb" + mode + ""], true)["ledg_rgb" + mode + ""];
-		if(mode == "6"){
-			ledg_rgb = retune_wave_color({"ledg_group":ledg_group, "productid":model_info.productid, "CoBrand":model_info.CoBrands});
-		}
-		rgb_parm["ledg_rgb"] = ledg_rgb;
-		if(support_night_mode){
-			let ledg_night_rgb = httpApi.nvramGet(["ledg_night_rgb" + mode + ""], true)["ledg_night_rgb" + mode + ""];
-			if(mode == "6"){
-				ledg_night_rgb = retune_wave_color({"ledg_group":ledg_group, "productid":model_info.productid, "CoBrand":model_info.CoBrand, "night":scheme_item_post.Night_Mode})
-			}
-			rgb_parm["ledg_night_rgb"] = ledg_night_rgb;
-		}
-		set_scheme_item_post(rgb_parm);
-		set_scheme_mode();
-		var postData = {"ledg_scheme": scheme_item_post.Mode};
-		if(scheme_item_post.Mode == "1" || scheme_item_post.Mode == "2" || scheme_item_post.Mode == "3" || scheme_item_post.Mode == "7") {
-			var ledg_rgb_post = [];
-			Object.keys(scheme_item_post["LED_Set"]).forEach(function(group_idx) {
-				ledg_rgb_post.push(Math.ceil(scheme_item_post["LED_Set"][group_idx]["R"] / 2));
-				ledg_rgb_post.push(Math.ceil(scheme_item_post["LED_Set"][group_idx]["G"] / 2));
-				ledg_rgb_post.push(Math.ceil(scheme_item_post["LED_Set"][group_idx]["B"] / 2));
-			});
-			postData["ledg_rgb"] = ledg_rgb_post.join(',');
-			if(support_night_mode){
-				let ledg_night_rgb_post = [];
-				Object.keys(scheme_item_post["LED_Night_Set"]).forEach(function(group_idx) {
-					ledg_night_rgb_post.push(scheme_item_post["LED_Night_Set"][group_idx]["R"]);
-					ledg_night_rgb_post.push(scheme_item_post["LED_Night_Set"][group_idx]["G"]);
-					ledg_night_rgb_post.push(scheme_item_post["LED_Night_Set"][group_idx]["B"]);
-				});
-				postData["ledg_night_rgb"] = ledg_night_rgb_post.join(',');
+		if(support_gaming){
+			const ledg_sdn = (httpApi.nvramGet(["ledg_sdn"]).ledg_sdn).replace(/&#60/g, '<');
+			if(ledg_sdn.includes('1')){
+				show_customize_confirm(`This change will disable the special LED effect for the ${sdn_naming}.`);/* untranslated */
+				const $confirm_obj = $(".popup_container.popup_customize_alert");
+				$confirm_obj.find("[data-btn=ok]")
+					.click(()=>{
+						let nvramSet_obj = {"action_mode": "apply", "rc_service": "restart_ledg;", "ledg_sdn": "0<0<0"};
+						httpApi.nvramSet(nvramSet_obj, function(){
+							post_ledg();
+							httpApi.nvramGet(["ledg_sdn"],true);
+						});
+					});
+				return;
 			}
 		}
-		httpApi.set_ledg(postData);
-	});
-	$("#light_effect_setting .scheme_list_bg .boundary").unbind("click").click(function(e){
-		e = e || event;
-		e.stopPropagation();
-		var id = e.currentTarget.id.replace("boundary_", "");
-		if(id == "left")
-			scheme_page_idx = Math.max(1, (scheme_page_idx - 1));
-		else if(id == "right")
-			scheme_page_idx = Math.min(scheme_pages, (scheme_page_idx + 1));
-		control_scheme_list(scheme_page_idx);
-	});
-	$("#default_set").unbind("click").click(function(e){
-		e = e || event;
-		e.stopPropagation();
-		if($("#light_effect_setting .setting_hue").css("opacity") == "1"){
+		post_ledg();
+
+		function post_ledg(){
+			var id = e.currentTarget.id;
+			if(id == "") return;
 			lightl_effect_animate.clear($light_effect_bg);
 			$light_effect_bg.removeClass().addClass("light_effect_bg");
-			var mode = $("#light_effect_setting .scheme_list_bg .scheme_bg.active").attr("mode");
+			var mode = e.currentTarget.getAttribute("mode");
 			scheme_item_post.Mode = mode;
+			$("#light_effect_setting .setting_scheme .scheme_bg").removeClass("active");
+			$("#light_effect_setting .setting_scheme #" + id + "").addClass("active");
 			let rgb_parm = {};
-			let ledg_rgb = httpApi.nvramDefaultGet(["ledg_rgb" + mode + ""])["ledg_rgb" + mode + ""];
+			let ledg_rgb = httpApi.nvramGet(["ledg_rgb" + mode + ""], true)["ledg_rgb" + mode + ""];
 			if(mode == "6"){
-				ledg_rgb = retune_wave_color({"ledg_group":ledg_group, "productid":model_info.productid, "CoBrand":model_info.CoBrand});
+				ledg_rgb = retune_wave_color({"ledg_group":ledg_group, "productid":model_info.productid, "CoBrand":model_info.CoBrands});
 			}
 			rgb_parm["ledg_rgb"] = ledg_rgb;
 			if(support_night_mode){
-				let ledg_night_rgb = httpApi.nvramDefaultGet(["ledg_night_rgb" + mode + ""])["ledg_night_rgb" + mode + ""];
+				let ledg_night_rgb = httpApi.nvramGet(["ledg_night_rgb" + mode + ""], true)["ledg_night_rgb" + mode + ""];
 				if(mode == "6"){
 					ledg_night_rgb = retune_wave_color({"ledg_group":ledg_group, "productid":model_info.productid, "CoBrand":model_info.CoBrand, "night":scheme_item_post.Night_Mode})
 				}
@@ -304,6 +298,81 @@ function initial_led_control() {
 				}
 			}
 			httpApi.set_ledg(postData);
+		}
+	});
+	$("#light_effect_setting .scheme_list_bg .boundary").unbind("click").click(function(e){
+		e = e || event;
+		e.stopPropagation();
+		var id = e.currentTarget.id.replace("boundary_", "");
+		if(id == "left")
+			scheme_page_idx = Math.max(1, (scheme_page_idx - 1));
+		else if(id == "right")
+			scheme_page_idx = Math.min(scheme_pages, (scheme_page_idx + 1));
+		control_scheme_list(scheme_page_idx);
+	});
+	$("#default_set").unbind("click").click(function(e){
+		e = e || event;
+		e.stopPropagation();
+		if($("#light_effect_setting .setting_hue").css("opacity") == "1"){
+			if(support_gaming){
+				const ledg_sdn = (httpApi.nvramGet(["ledg_sdn"]).ledg_sdn).replace(/&#60/g, '<');
+				if(ledg_sdn.includes('1')){
+					show_customize_confirm(`This change will disable the special LED effect for the ${sdn_naming}.`);/* untranslated */
+					const $confirm_obj = $(".popup_container.popup_customize_alert");
+					$confirm_obj.find("[data-btn=ok]")
+						.click(()=>{
+							let nvramSet_obj = {"action_mode": "apply", "rc_service": "restart_ledg;", "ledg_sdn": "0<0<0"};
+							httpApi.nvramSet(nvramSet_obj, function(){
+								post_ledg();
+								httpApi.nvramGet(["ledg_sdn"],true);
+							});
+						});
+					return;
+				}
+			}
+			post_ledg();
+
+			function post_ledg(){
+				lightl_effect_animate.clear($light_effect_bg);
+				$light_effect_bg.removeClass().addClass("light_effect_bg");
+				var mode = $("#light_effect_setting .scheme_list_bg .scheme_bg.active").attr("mode");
+				scheme_item_post.Mode = mode;
+				let rgb_parm = {};
+				let ledg_rgb = httpApi.nvramDefaultGet(["ledg_rgb" + mode + ""])["ledg_rgb" + mode + ""];
+				if(mode == "6"){
+					ledg_rgb = retune_wave_color({"ledg_group":ledg_group, "productid":model_info.productid, "CoBrand":model_info.CoBrand});
+				}
+				rgb_parm["ledg_rgb"] = ledg_rgb;
+				if(support_night_mode){
+					let ledg_night_rgb = httpApi.nvramDefaultGet(["ledg_night_rgb" + mode + ""])["ledg_night_rgb" + mode + ""];
+					if(mode == "6"){
+						ledg_night_rgb = retune_wave_color({"ledg_group":ledg_group, "productid":model_info.productid, "CoBrand":model_info.CoBrand, "night":scheme_item_post.Night_Mode})
+					}
+					rgb_parm["ledg_night_rgb"] = ledg_night_rgb;
+				}
+				set_scheme_item_post(rgb_parm);
+				set_scheme_mode();
+				var postData = {"ledg_scheme": scheme_item_post.Mode};
+				if(scheme_item_post.Mode == "1" || scheme_item_post.Mode == "2" || scheme_item_post.Mode == "3" || scheme_item_post.Mode == "7") {
+					var ledg_rgb_post = [];
+					Object.keys(scheme_item_post["LED_Set"]).forEach(function(group_idx) {
+						ledg_rgb_post.push(Math.ceil(scheme_item_post["LED_Set"][group_idx]["R"] / 2));
+						ledg_rgb_post.push(Math.ceil(scheme_item_post["LED_Set"][group_idx]["G"] / 2));
+						ledg_rgb_post.push(Math.ceil(scheme_item_post["LED_Set"][group_idx]["B"] / 2));
+					});
+					postData["ledg_rgb"] = ledg_rgb_post.join(',');
+					if(support_night_mode){
+						let ledg_night_rgb_post = [];
+						Object.keys(scheme_item_post["LED_Night_Set"]).forEach(function(group_idx) {
+							ledg_night_rgb_post.push(scheme_item_post["LED_Night_Set"][group_idx]["R"]);
+							ledg_night_rgb_post.push(scheme_item_post["LED_Night_Set"][group_idx]["G"]);
+							ledg_night_rgb_post.push(scheme_item_post["LED_Night_Set"][group_idx]["B"]);
+						});
+						postData["ledg_night_rgb"] = ledg_night_rgb_post.join(',');
+					}
+				}
+				httpApi.set_ledg(postData);
+			}
 		}
 	});
 
@@ -578,6 +647,36 @@ function get_offset(element) {
 	var height = parseInt(element[0].offsetHeight);
 	var width = parseInt(element[0].offsetWidth);
 	return {"x": x, "y": y, "height": height, "width": width};
+}
+function set_hue_bar_event(e){
+	if($("#light_effect_setting .setting_hue").css("opacity") == "1") {
+		const ledg_sdn = (httpApi.nvramGet(["ledg_sdn"]).ledg_sdn).replace(/&#60/g, '<');
+		if(support_gaming){
+			if(ledg_sdn.includes('1')){
+				show_customize_confirm(`This change will disable the special LED effect for the ${sdn_naming}.`);/* untranslated */
+				const $confirm_obj = $(".popup_container.popup_customize_alert");
+				$confirm_obj.find("[data-btn=ok]")
+					.click(()=>{
+						let nvramSet_obj = {"action_mode": "apply", "rc_service": "restart_ledg;", "ledg_sdn": "0<0<0"};
+						httpApi.nvramSet(nvramSet_obj, function(){
+							httpApi.nvramGet(["ledg_sdn"],true);
+							set_hue_value(e);
+							set_light_effect();
+						});
+					});
+				return;
+			}
+		}
+		if(e.target.id == "hue_bar") {
+			hue_click = true;
+			set_hue_value(e);
+		}
+		else {
+			hue_click = true;
+			$hue_slider.addClass("active");
+		}
+		lightl_effect_animate.clear($light_effect_bg);
+	}
 }
 function set_hue_value(e) {
 	var x = 0;

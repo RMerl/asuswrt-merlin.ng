@@ -499,6 +499,31 @@ void dcache_disable(void)
 	__asm_invalidate_tlb_all();
 }
 
+void dcache_sanitize_disable(uintptr_t sanitize_base_addr, unsigned long sanitize_size)
+{
+	/* Disable write streaming so cache controller ALWAYS allocates and fill cache lines */
+#if defined(CORTEX_A55)
+	uint64_t cpuectlr = get_cpuectlr();
+	set_cpuectlr(cpuectlr|CPUECTLR_EL1_L3WSCTL|CPUECTLR_EL1_L2WSCTL|CPUECTLR_EL1_L1WSCTL);
+#elif defined(CORTEX_A53)
+	uint64_t cpuactlr = get_cpuactlr();
+	set_cpuactlr(cpuactlr|CPUACTLR_EL1_RADIS|CPUACTLR_EL1_L1RADIS);
+#endif
+
+	/* Sanitize memory */
+	memset((void*)sanitize_base_addr, 0, sanitize_size);
+	
+	/* flush and disable dcache */
+	dcache_disable();
+
+	/* restore write streaming settings */
+#if defined(CORTEX_A55)
+	set_cpuectlr(cpuectlr);
+#elif defined(CORTEX_A53)
+	set_cpuactlr(cpuactlr);
+#endif
+}
+
 int dcache_status(void)
 {
 	return (get_sctlr() & CR_C) != 0;
@@ -683,6 +708,10 @@ void dcache_enable(void)
 }
 
 void dcache_disable(void)
+{
+}
+
+void dcache_sanitize_disable(uintptr_t sanitize_base_addr, unsigned long sanitize_size)
 {
 }
 

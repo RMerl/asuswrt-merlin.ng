@@ -69,8 +69,6 @@ var wanObj = {
 		"wan_dnsenable_x": "",
 		"wan_pppoe_username": "",
 		"wan_pppoe_passwd": "",
-		"wan_dhcpenable_x": "",
-		"wan_dnsenable_x": "",
 		"wan_ipaddr_x": "",
 		"wan_netmask_x": "",
 		"wan_gateway_x": "",

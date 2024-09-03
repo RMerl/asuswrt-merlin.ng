@@ -66,7 +66,9 @@ static int sec_key_ctrl(bcm_sec_t *sec, bcm_sec_ctrl_t ctrl, void* arg)
 			}
 			break;
         	case SEC_CTRL_KEY_CLEAN_ALL:
+			/* Wipe secure SRAM */
 			bcm_sec_clean_secmem(sec);
+			/* Wipe credentials in memory */
 			bcm_sec_clean_keys(sec);
 			break;
 		default:

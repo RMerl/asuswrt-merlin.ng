@@ -4,25 +4,19 @@
 *    Copyright (c) 2013 Broadcom 
 *    All Rights Reserved
 * 
-* Unless you and Broadcom execute a separate written software license
-* agreement governing use of this software, this software is licensed
-* to you under the terms of the GNU General Public License version 2
-* (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-* with the following added to such license:
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License, version 2, as published by
+* the Free Software Foundation (the "GPL").
 * 
-*    As a special exception, the copyright holders of this software give
-*    you permission to link this software with independent modules, and
-*    to copy and distribute the resulting executable under terms of your
-*    choice, provided that you also meet, for each linked independent
-*    module, the terms and conditions of the license of that module.
-*    An independent module is a module which is not derived from this
-*    software.  The special exception does not apply to any modifications
-*    of the software.
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
 * 
-* Not withstanding the above, under no circumstances may you combine
-* this software in any way with any other Broadcom software provided
-* under a license other than the GPL, without Broadcom's express prior
-* written consent.
+* 
+* A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+* writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+* Boston, MA 02111-1307, USA.
 * 
 * :> 
 */
@@ -48,10 +42,20 @@ typedef enum
     rdpa_cpu_rx_reason_bcast               = 4, /**< Broadcast packet */
     rdpa_cpu_rx_reason_igmp                = 5, /**< IGMP packet */
     rdpa_cpu_rx_reason_icmpv6              = 6, /**< Icmpv6 packet */
+#if defined(RDP_UFC)
+    rdpa_cpu_rx_reason_hw_firewall_miss    = 7,
+    rdpa_cpu_rx_reason_reserv_1            = 8,
+#else
     rdpa_cpu_rx_reason_mac_trap_0          = 7,
     rdpa_cpu_rx_reason_mac_trap_1          = 8,
+#endif
+#if defined(XRDP)
+    rdpa_cpu_rx_reason_icmpv4              = 9,
+    rdpa_cpu_rx_reason_icmpv4_echo_reply   = 10,
+#else
     rdpa_cpu_rx_reason_mac_trap_2          = 9,
     rdpa_cpu_rx_reason_mac_trap_3          = 10,
+#endif
     rdpa_cpu_rx_reason_dhcp                = 11, /**< DHCP packet */
     rdpa_cpu_rx_reason_non_tcp_udp         = 12, /**< Packet is non TCP or UDP */
     rdpa_cpu_rx_reason_local_ip            = 13, /**< CPU ingress packet copy */
@@ -157,10 +161,6 @@ typedef enum
 
 #define RDPACTL_IC_TRAP_REASON_HIGH         (rdpa_cpu_rx_reason_ingqos - rdpa_cpu_rx_reason_udef_0)
 
-#ifdef CONFIG_RNR_HW_FIREWALL
-#define rdpa_cpu_rx_reason_hw_firewall_miss rdpa_cpu_rx_reason_udef_15
-#endif
-
 /** CPU port */
 typedef enum
 {
@@ -192,6 +192,9 @@ typedef enum
 } rdpa_cpu_port;
 
 #define RDPA_CPU_MAX_QUEUES 8 /**< Max number of RX queues per CPU port */
+
+#define CPU_PORT_IS_WLAN(_port)  ((_port->index == rdpa_cpu_wlan0) || (_port->index == rdpa_cpu_wlan1) || \
+                                  (_port->index == rdpa_cpu_wlan2) || (_port->index == rdpa_cpu_wlan3))
 
 #ifdef CONFIG_RNR_HW_FIREWALL
 #define RDPA_CPU_HW_FIREWALL_RSV_QUEUE 1

@@ -24,7 +24,11 @@
 
 	memory {
 		device_type = "memory";
+#if defined(CONFIG_ARMV7_LPAE)
+		reg = <0x0 0x0 0x0 0x08000000>;
+#else
 		reg = <0x0 0x08000000>;
+#endif
 	};
 
 };

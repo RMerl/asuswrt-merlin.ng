@@ -1,0 +1,15 @@
+#
+# This file listed Real-Time settings for IRQs.
+# You can adjust CPU affinity to the individual IRQs.
+# Note: here the "name" filed means the IRQ device name,
+# please refer to last column of the information in 
+# "/proc/interrupts" to determine the value for this field
+#
+
+# configuration example:
+#BEGIN
+#  name           = dsl  # irq device name
+#  flags          = RT_SET_IRQ
+#  irqCpuAffinity = 4  # CPU mask as a hexadecimal number
+#END
+

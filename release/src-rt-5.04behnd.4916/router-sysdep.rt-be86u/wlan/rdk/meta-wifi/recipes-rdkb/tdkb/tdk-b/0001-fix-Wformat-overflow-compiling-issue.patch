@@ -1,0 +1,13 @@
+diff --git a/ethsw_hal_stub/src/ethsw_stub_hal.cpp b/ethsw_hal_stub/src/ethsw_stub_hal.cpp
+index 90be2ed..f25b9eb 100644
+--- a/ethsw_hal_stub/src/ethsw_stub_hal.cpp
++++ b/ethsw_hal_stub/src/ethsw_stub_hal.cpp
+@@ -419,7 +419,7 @@ void ethsw_stub_hal::ethsw_stub_hal_Get_AssociatedDevice(IN const Json::Value& r
+ {
+     DEBUG_PRINT(DEBUG_TRACE,"Inside Function ethsw_stub_hal_Get_AssociatedDevice stub\n");
+     int isNegativeScenario = 0;
+-    char details[120] = {'\0'};
++    char details[160] = {'\0'};
+     eth_device_t *eth_device_conf_ptr = NULL;
+     unsigned long int array_size = 0;
+ 

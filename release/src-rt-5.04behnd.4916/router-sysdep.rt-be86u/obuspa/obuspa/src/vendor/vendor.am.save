@@ -1,0 +1,7 @@
+# Source files in vendor
+SOURCES += src/vendor/vendor.c \
+                  src/vendor/vendor_factory_reset_example.c
+
+# Add extra vendor specific CPP or LD flags below
+
+

@@ -1,0 +1,101 @@
+diff -Naur obuspa_orig/src/core/e2e_context.c obuspa_new/src/core/e2e_context.c
+--- obuspa_orig/src/core/e2e_context.c	2022-09-02 09:54:10.000000000 -0700
++++ obuspa_new/src/core/e2e_context.c	2022-10-04 17:35:36.963273952 -0700
+@@ -87,6 +87,16 @@
+ bool IsValidSessionId(uint64_t session_id);
+ unsigned ComputePayloadCapacity(UspRecord__Record *src_rec, unsigned max_record_size);
+ 
++#ifdef BDK_USP
++extern int DEVICE_CONTROLLER_FindInstanceByEndpointId(char *endpoint_id);
++// usp_conformance_3_11:
++// replace DEVICE_CONTROLLER_UpdateE2ESessionStateByInstance
++// with DEVICE_CONTROLLER_UpdateE2ESessionByInstance to update other
++// information beside of status
++extern int DEVICE_CONTROLLER_UpdateE2ESessionByInstance
++    (int instance, const e2e_session_t *e2e);
++#endif
++
+ /*********************************************************************//**
+ **
+ ** E2E_CONTEXT_QueueUspSessionRecord
+@@ -146,6 +156,10 @@
+         e2esession->last_sent_sequence_id = 0;
+         e2esession->last_recv_sequence_id = 0;
+         e2esession->status = kE2EStatus_Negotiating;
++#ifdef BDK_USP
++        int instance = DEVICE_CONTROLLER_FindInstanceByEndpointId(endpoint_id);
++        DEVICE_CONTROLLER_UpdateE2ESessionByInstance(instance, e2esession);
++#endif
+     }
+ 
+     usp_record__session_context_record__init(&ctxSession);
+@@ -493,6 +507,9 @@
+ 
+     // Clear the E2ESession state of the controller
+     ClearE2eSessionState(curr_e2e_session);
++#ifdef BDK_USP
++    DEVICE_CONTROLLER_UpdateE2ESessionByInstance(controller, curr_e2e_session);
++#endif
+ 
+     if (event == kE2EEvent_Termination || event == kE2EEvent_Restart)
+     {
+@@ -661,6 +678,10 @@
+     // Update the E2E Session Context
+     curr_e2e_session->last_recv_sequence_id = recv_seq_id;
+     curr_e2e_session->status = kE2EStatus_Up;
++#ifdef BDK_USP
++    DEVICE_CONTROLLER_UpdateE2ESessionByInstance
++       (MSG_HANDLER_GetMsgControllerInstance(), curr_e2e_session);
++#endif
+ 
+     // If an empty payload, skip the USP Message handling for that USP Record
+     if (recv_payload.len == 0)
+@@ -869,6 +890,33 @@
+         goto exit;
+     }
+ 
++#ifdef BDK_USP
++    if (ctx->session_id == curr_e2e_session->current_session_id)
++    {
++        uint64_t last_sent_expected_id = curr_e2e_session->last_recv_sequence_id + 1;
++
++        // usp_conformance_3_15: Ignoring duplicate E2E USP record
++        if (ctx->sequence_id == curr_e2e_session->last_sent_sequence_id &&
++            ctx->expected_id == curr_e2e_session->last_recv_sequence_id)
++        {
++            USP_ERR_SetMessage("%s: Ignoring duplicate E2E USP record with session_id %ld sequence_id %ld expected_id %ld)",
++                               __FUNCTION__, (long int)ctx->session_id, (long int)ctx->sequence_id, (long int)last_sent_expected_id);
++            E2E_CONTEXT_E2eSessionEvent(kE2EEvent_None, INVALID, ctrl_inst);
++            return USP_ERR_RECORD_FIELD_INVALID;
++        }
++
++        // usp_conformance_3_11: Ignoring E2E USP record with sequence_id
++        // is less than last_sent_expected_id in the same session_id
++        if (ctx->sequence_id < last_sent_expected_id)
++        {
++            USP_ERR_SetMessage("%s: Ignoring E2E USP record with sequence_id %ld is less than last_sent_expected_id %ld)",
++                               __FUNCTION__, (long int)ctx->sequence_id, (long int)last_sent_expected_id);
++            E2E_CONTEXT_E2eSessionEvent(kE2EEvent_None, INVALID, ctrl_inst);
++            return USP_ERR_RECORD_FIELD_INVALID;
++        }
++    }
++#endif
++
+ exit:
+     if (err != USP_ERR_OK)
+     {
+diff -Naur obuspa_orig/src/core/nu_macaddr.h obuspa_new/src/core/nu_macaddr.h
+--- obuspa_orig/src/core/nu_macaddr.h	2022-09-06 18:37:54.000000000 -0700
++++ obuspa_new/src/core/nu_macaddr.h	2022-09-12 10:35:44.678827301 -0700
+@@ -44,7 +44,11 @@
+ 
+ #include <net/ethernet.h>
+ 
++#ifdef BDK_USP
++#if !defined(MAC_ADDR_LEN)
+ #define MAC_ADDR_LEN  (ETHER_ADDR_LEN)  // from <net/ethernet.h>
++#endif
++#endif
+ 
+ //-------------------------------------------------------------------------------------------------------
+ // Network interface specified by the '-i' option

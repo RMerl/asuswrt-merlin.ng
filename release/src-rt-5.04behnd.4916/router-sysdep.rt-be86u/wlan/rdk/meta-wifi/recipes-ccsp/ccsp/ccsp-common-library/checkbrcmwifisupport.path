@@ -1,0 +1,9 @@
+[Unit]
+Description=Check Broadcom  Wifi Support Initialized Path
+
+[Path]
+PathExists=/tmp/pam_initialized
+Unit=checkbrcmwifisupport.service
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,71 @@
+diff --git a/source/Styles/xb3/jst/actionHandler/ajaxSet_wireless_network_configuration_redirection.jst b/source/Styles/xb3/jst/actionHandler/ajaxSet_wireless_network_configuration_redirection.jst
+index 7b57ddc4..b4c1efed 100644
+--- a/source/Styles/xb3/jst/actionHandler/ajaxSet_wireless_network_configuration_redirection.jst
++++ b/source/Styles/xb3/jst/actionHandler/ajaxSet_wireless_network_configuration_redirection.jst
+@@ -95,6 +95,20 @@ if($isCaptiveMode)
+ 			}/*p2j-array*/;
+ 		}
+ 		// this method for only restart a certain SSID
++		function MiniApplySSID($ssid) {
++			if(($ssid == 17) && ($OperatingChannelBandwidth == "6GHz"))
++			{
++				$apply_id = 17;	//radio 3 for 6GHz
++				$apply_rf = 3; //SSID 15 for private wifi for 6GHz
++			}	
++			else
++			{
++				$apply_id = (1 << intval($ssid)-1);
++				$apply_rf = (2  - intval($ssid)%2);
++			}
++			setStr("Device.WiFi.Radio."+$apply_rf+".X_CISCO_COM_ApplySettingSSID", $apply_id, false);
++			setStr("Device.WiFi.Radio."+$apply_rf+".X_CISCO_COM_ApplySetting", "true", true);
++		}
+ 		for($i = "1"; $i <= $RadioNumberOfEntries; $i++){
+ 			if(($i==3) && ($OperatingChannelBandwidth == "6GHz"))
+ 			{
+@@ -114,8 +128,7 @@ if($isCaptiveMode)
+ 			setStr("Device.WiFi.SSID."+$i+".SSID", $network_name_arr[$i], true);
+ 			setStr("Device.WiFi.AccessPoint."+$i+".Security.X_COMCAST-COM_KeyPassphrase", $network_pass_arr[$i], true);
+ 			// setStr("Device.WiFi.Radio."+$r+".X_CISCO_COM_ApplySetting", "true", true);
+-			setStr("Device.WiFi.ApplyAccessPointSettings", "true", true);
+-	                setStr("Device.WiFi.ApplyRadioSettings","true",true);
++			MiniApplySSID($i);
+ 		}
+ 		sleep(10);
+ 		$response = []/*p2j-array*/;
+diff --git a/source/Styles/xb6/jst/actionHandler/ajaxSet_wireless_network_configuration_edit.jst b/source/Styles/xb6/jst/actionHandler/ajaxSet_wireless_network_configuration_edit.jst
+index 635ef31c..d538e839 100644
+--- a/source/Styles/xb6/jst/actionHandler/ajaxSet_wireless_network_configuration_edit.jst
++++ b/source/Styles/xb6/jst/actionHandler/ajaxSet_wireless_network_configuration_edit.jst
+@@ -61,7 +61,20 @@ $Radio_3_Support_Modes = getStr("Device.WiFi.Radio.3.SupportedStandards");
+ 
+ if($i != 1 && $i != 2 && $i != 17) $Mesh_Mode = false;
+ // this method for only restart a certain SSID
+-
++function MiniApplySSID($ssid) {
++	if($ssid == 17)
++	{
++		$apply_id = 17;
++		$apply_rf = 3;
++	}
++	else
++	{
++		$apply_id = (1 << intval($ssid)-1);
++		$apply_rf = (2  - intval($ssid)%2);
++	}
++	setStr("Device.WiFi.Radio."+$apply_rf+".X_CISCO_COM_ApplySettingSSID", $apply_id, false);
++	setStr("Device.WiFi.Radio."+$apply_rf+".X_CISCO_COM_ApplySetting", "true", true);
++}
+ $response_message = '';
+ //ssid 1,2 for all
+ //ssid 3,4 for mso only
+@@ -225,8 +238,7 @@ if ($i == 1 || $i == 2 || $i == 17) {
+ 			}
+ 		}
+ 		// setStr("Device.WiFi.Radio."+$r+".X_CISCO_COM_ApplySetting", "true", true);
+-		setStr("Device.WiFi.ApplyAccessPointSettings", "true", true);
+-                setStr("Device.WiFi.ApplyRadioSettings","true",true);
++		MiniApplySSID($i);
+ 	}
+ }
+ if($response_message=='') {

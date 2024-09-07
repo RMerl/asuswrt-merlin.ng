@@ -1,0 +1,109 @@
+diff -Naur obuspa_orig/src/vendor/vendor_defs.h obuspa_new/src/vendor/vendor_defs.h
+--- obuspa_orig/src/vendor/vendor_defs.h	2022-10-31 11:07:04.646937497 -0700
++++ obuspa_new/src/vendor/vendor_defs.h	2022-11-01 16:51:15.758798430 -0700
+@@ -44,6 +44,10 @@
+ #ifndef VENDOR_DEFS_H
+ #define VENDOR_DEFS_H
+ 
++#define BDK_USP
++
++#define E2ESESSION_EXPERIMENTAL_USP_V_1_2
++
+ //------------------------------------------------------------------------------
+ // Definitions used to size static arrays
+ // You are unlikely to need to change these
+@@ -52,7 +56,7 @@
+ #define MAX_DM_VALUE_LEN (4096)     // Maximum number of characters in a data model parameter value
+ #define MAX_DM_SHORT_VALUE_LEN (MAX_DM_PATH) // Maximum number of characters in an (expected to be) short data model parameter value
+ #define MAX_PATH_SEGMENTS (32)      // Maximum number of segments (eg "Device, "LocalAgent") in a path. Does not include instance numbers.
+-#define MAX_COMPOUND_KEY_PARAMS 4   // Maximum number of parameters in a compound unique key
++#define MAX_COMPOUND_KEY_PARAMS 8   // Maximum number of parameters in a compound unique key
+ #define MAX_CONTROLLERS 5           // Maximum number of controllers which may be present in the DB (Device.LocalAgent.Controller.{i})
+ #define MAX_CONTROLLER_MTPS 3       // Maximum number of MTPs that a controller may have in the DB (Device.LocalAgent.Controller.{i}.MTP.{i})
+ #define MAX_AGENT_MTPS (MAX_CONTROLLERS)  // Maximum number of MTPs that an agent may have in the DB (Device.LocalAgent.MTP.{i})
+@@ -69,6 +73,8 @@
+ // Refer to the syslog documentation and its priority argument to know the possible values.
+ //#define SYSLOG_SEVERITY_OVERRIDE LOG_ERR
+ 
++#define MAX_CHALLENGES 4           // Maximum number of challenges which may be present in the DB (Device.LocalAgent.ControllerTrust.Challenge.{i})
++
+ // NB: If you change this, you must also change the SSL callback functions within mqtt.c
+ // This will compile fail if you do not
+ #define MAX_MQTT_CLIENTS (5)  // Maximum number of MQTT Client Connections (Device.MQTT.Client.{i})
+@@ -83,7 +89,7 @@
+ 
+ // Location of the database file to use, if none is specified on the command line when invoking this executable
+ // NOTE: As the database needs to be stored persistently, this should be changed to a directory which is not cleared on boot up
+-#define DEFAULT_DATABASE_FILE               OBUSPA_LOCAL_STATE_DIR "/usp.db"
++#define DEFAULT_DATABASE_FILE               "/var/usp.db"
+ 
+ // Location of unix domain stream file used for CLI communication between client and server
+ #define CLI_UNIX_DOMAIN_FILE                "/tmp/usp_cli"
+@@ -116,9 +122,9 @@
+ 
+ //-----------------------------------------------------------------------------------------
+ // Uncomment the following to remove code and features from the standard build
+-//#define REMOVE_DEVICE_INFO               // Removes DeviceInfo from the core data model. It must instead be provided by the vendor.
+-//#define REMOVE_DEVICE_TIME               // Removes Device.Time from the core data model. It must instead be provided by the vendor.
+-//#define REMOVE_SELF_TEST_DIAG_EXAMPLE    // Removes Self Test diagnostics example code
++#define REMOVE_DEVICE_INFO               // Removes DeviceInfo from the core data model. It must instead be provided by the vendor.
++#define REMOVE_DEVICE_TIME               // Removes Device.Time from the core data model. It must instead be provided by the vendor.
++#define REMOVE_SELF_TEST_DIAG_EXAMPLE    // Removes Self Test diagnostics example code
+ 
+ //#define DONT_SORT_GET_INSTANCES          // Disables the sorting of data model paths returned in a GetInstancesResponse. Useful for slow devices supporting large data models.
+ 
+@@ -132,7 +138,7 @@
+ // Comment out the following define if you want to let the Linux routing tables decide which network interface to use for USP connections
+ // Letting the Linux routing tables decide is better for devices that can connect to the STOMP server through either
+ // WiFi or ethernet, and either of these interfaces could be down at any one time
+-#define CONNECT_ONLY_OVER_WAN_INTERFACE
++//#define CONNECT_ONLY_OVER_WAN_INTERFACE
+ 
+ //-----------------------------------------------------------------------------------------
+ // OUI (Organization Unique Identifier) to use for this CPE. This code will be unique to the manufacturer
+@@ -177,6 +183,8 @@
+ // This may be overridden using the '-i' option
+ #define WEBSOCKET_LISTEN_INTERFACE "eth0"  /*"lo"*/
+ 
++#define WEBSOCKET_SERVER_KEEPALIVE 10
++
+ // Fallback QoS value for MQTT messages when not configured by TR-369 parameters.
+ #define MQTT_FALLBACK_QOS 0 /* 0, 1, 2 */
+ 
+@@ -218,11 +226,34 @@
+ } ctrust_role_t;
+ 
+ // Definitions of roles used
+-#define ROLE_NON_SSL       kCTrustRole_FullAccess  // Role to use, if SSL is not being used
++#define ROLE_NON_SSL       kCTrustRole_Untrusted   // Role to use, if SSL is not being used
+ #define ROLE_DEFAULT       kCTrustRole_FullAccess  // Default Role to use for controllers until determined from MTP certificate
+ 
+ 
++#ifdef BDK_USP
++// Role is used to match with Inherited Role, and Inherited Role
++// is depended on certificate, but not on encryption.
++// ROLE_NON_SSL is used when certificates are NOT imported.
++// But when encryption is disabled, certificates still can be
++// imported to connect with HTTP server through HTTPS.
++// So ROLE_UNKNOWN is defined, and should be used when encryption is disabled
++#define ROLE_UNKNOWN       kCTrustRole_Max  // Unknown Role to use as default role for connection without encryption
++// Definitions for SSL files
++#define USP_CLIENT_CERT_NAME             "usp-client"
++#define USP_ROOT_CA_CERT_NAME            "usp-root"
++#define USP_CNTRL_CERT_NAME              "usp-cntrl"
++#define USP_VAR_CERT_DIR                 "/var/cert"
++#define USP_CLIENT_CERT_TYPE             "cert"
++#define USP_CA_CERT_TYPE                 "cacert"
++#define USP_CLIENT_CERT_FILE             USP_VAR_CERT_DIR"/"USP_CLIENT_CERT_NAME"."USP_CLIENT_CERT_TYPE
++#define USP_ROOT_CA_CERT_FILE            USP_VAR_CERT_DIR"/"USP_ROOT_CA_CERT_NAME"."USP_CA_CERT_TYPE
++#define USP_TRUST_STORE_FILE             USP_VAR_CERT_DIR"/usp-trust.cert"
++#define USP_TEMP_CERT_FILE               USP_VAR_CERT_DIR"/usp-temp.cert" // It's used for AddCertificate command
++#define USP_CERTIFICATE_PREFIX           "usp"
++#define USP_CERTIFICATE_PREFIX_LEN       3
++#endif
+ 
+-
++#define TRUSTED_ROLE_FULL_PATH   "Device.LocalAgent.ControllerTrust.Role.1"
++#define UNTRUSTED_ROLE_FULL_PATH "Device.LocalAgent.ControllerTrust.Role.2"
+ 
+ #endif

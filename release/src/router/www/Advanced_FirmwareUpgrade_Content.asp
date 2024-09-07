@@ -2005,32 +2005,36 @@ function get_mobile_fw_upgrade_status(){
 				<td>
 					<div align="center" class="left" style="width:75px; float:left; cursor:pointer;" id="switch_webs_update_enable"></div>
 					<script type="text/javascript">
-					$('#switch_webs_update_enable').iphoneSwitch('<% nvram_get("webs_update_enable"); %>',
-						function(){
-							if(policy_status.PP==0||policy_status.PP_time==""){
-                                const policyModal = new PolicyModalComponent({
-                                    policy: "PP",
-                                    submit_reload: 1,
-                                    agreeCallback: ()=>{
-                                        hide_upgrade_opt(1);
-                                        save_update_enable('on');
-                                    },
-                                    disagreeCallback: ()=>{
-                                        alert(`<#ASUS_POLICY_Function_Confirm#>`);
-                                    }
-                                });
-                                policyModal.show();
-                                return false;
-							}else{
-                                hide_upgrade_opt(1);
-                                save_update_enable('on');
-							}
-						},
-						function(){
-							hide_upgrade_opt(0);
-							save_update_enable('off');
-						}
-					);
+						$('#switch_webs_update_enable').iphoneSwitch('<% nvram_get("webs_update_enable"); %>',
+								function () {
+									const policyStatus = PolicyStatus()
+											.then(data => {
+												if (data.PP == 0 || data.PP_time == "") {
+													const policyModal = new PolicyModalComponent({
+														policy: "PP",
+														policyStatus: data,
+														agreeCallback: () => {
+															hide_upgrade_opt(1);
+															save_update_enable('on');
+														},
+														knowRiskCallback: () => {
+															alert(`<#ASUS_POLICY_Function_Confirm#>`);
+															location.reload();
+														}
+													});
+													policyModal.show();
+													return false;
+												} else {
+													hide_upgrade_opt(1);
+													save_update_enable('on');
+												}
+											});
+								},
+								function () {
+									hide_upgrade_opt(0);
+									save_update_enable('off');
+								}
+						);
 					</script>
 				</td>	
 			</tr>
@@ -2062,31 +2066,35 @@ function get_mobile_fw_upgrade_status(){
 				<td>
 					<div align="center" class="left" style="width:75px; float:left; cursor:pointer;" id="switch_security_update_enable"></div>
 					<script type="text/javascript">
-					$('#switch_security_update_enable').iphoneSwitch(httpApi.securityUpdate.get(),
-						function(){
-                            //on
-							if(policy_status.PP==0||policy_status.PP_time==""){
-                                const policyModal = new PolicyModalComponent({
-                                    policy: "PP",
-                                    submit_reload: 1,
-                                    agreeCallback: ()=>{
-                                        httpApi.securityUpdate.set(1);
-                                    },
-                                    disagreeCallback: ()=>{
-                                        alert(`<#ASUS_POLICY_Function_Confirm#>`);
-                                    }
-                                });
-                                policyModal.show();
-                                return false;
-							}else{
-                                httpApi.securityUpdate.set(1);
-							}
-						},
-						function(){
-							//off
-							httpApi.securityUpdate.set(0);
-						}
-					);
+						$('#switch_security_update_enable').iphoneSwitch(httpApi.securityUpdate.get(),
+								function () {
+									//on
+									const policyStatus = PolicyStatus()
+											.then(data => {
+												if (data.PP == 0 || data.PP_time == "") {
+													const policyModal = new PolicyModalComponent({
+														policy: "PP",
+														policyStatus: data,
+														agreeCallback: () => {
+															httpApi.securityUpdate.set(1);
+														},
+														knowRiskCallback: () => {
+															alert(`<#ASUS_POLICY_Function_Confirm#>`);
+															location.reload();
+														}
+													});
+													policyModal.show();
+													return false;
+												} else {
+													httpApi.securityUpdate.set(1);
+												}
+											});
+								},
+								function () {
+									//off
+									httpApi.securityUpdate.set(0);
+								}
+						);
 					</script>
 				</td>	
 			</tr>

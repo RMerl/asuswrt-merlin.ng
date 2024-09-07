@@ -1437,7 +1437,7 @@ int chk_proto(int wan_unit){
 	int wan_sbstate = nvram_get_int(nvram_sbstate[wan_unit]);
 	char prefix_wan[8], nvram_name[16], wan_proto[16];
 	pid_t pid;
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION)
 	char buff[128];
 #ifdef RTCONFIG_USB_MODEM
 	unsigned long long total = get_wan_flow(wan_unit);
@@ -1451,7 +1451,7 @@ int chk_proto(int wan_unit){
 
 	snprintf(wan_proto, sizeof(wan_proto), "%s", nvram_safe_get(strcat_r(prefix_wan, "proto", nvram_name)));
 
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION)
 	// had detected the DATA limit before.
 	if(wan_sbstate == WAN_STOPPED_REASON_DATALIMIT){
 		if(nvram_get_int("modem_sms_limit") == 1 && nvram_get_int("modem_sms_limit_send") == 0){
@@ -1493,7 +1493,7 @@ int chk_proto(int wan_unit){
 #ifdef RTCONFIG_USB_MODEM
 	if (dualwan_unit__usbif(wan_unit)) {
 		int case_fail = (strcmp(wan_proto, "dhcp") == 0) ? CASE_DHCPFAIL : CASE_PPPFAIL;
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION)
 		unsigned long long alert, limit;
 
 		eval("/usr/sbin/modem_status.sh", "bytes");
@@ -1546,7 +1546,7 @@ int chk_proto(int wan_unit){
 			return DISCONN;
 		}
 		else if(current_state[wan_unit] == WAN_STATE_STOPPED){
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION)
 			if(wan_sbstate == WAN_STOPPED_REASON_DATALIMIT)
 				disconn_case[wan_unit] = CASE_DATALIMIT;
 			else
@@ -1626,7 +1626,7 @@ int chk_proto(int wan_unit){
 			return DISCONN;
 		}
 		else if(current_state[wan_unit] == WAN_STATE_STOPPED) {
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION)
 			if(wan_sbstate == WAN_STOPPED_REASON_DATALIMIT)
 				disconn_case[wan_unit] = CASE_DATALIMIT;
 			else
@@ -1681,7 +1681,7 @@ int chk_proto(int wan_unit){
 			return DISCONN;
 		}
 		else if(current_state[wan_unit] == WAN_STATE_STOPPED){
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION)
 			if(wan_sbstate == WAN_STOPPED_REASON_DATALIMIT)
 				disconn_case[wan_unit] = CASE_DATALIMIT;
 			else
@@ -2642,7 +2642,7 @@ void send_page(int wan_unit, int sfd, char *file_dest, char *url){
 #endif
 	}
 	else if(conn_changed_state[wan_unit] == C2D || conn_changed_state[wan_unit] == DISCONN){
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION)
 		if(disconn_case[wan_unit] == CASE_DATALIMIT)
 			snprintf(buf+strlen(buf), sizeof(buf)-strlen(buf), "%s%s%s%d%s", "Connection: close\r\n", redirection, "/blocking.asp?flag=", disconn_case[wan_unit], "\r\nContent-Type: text/html\r\n");
 		else
@@ -3153,7 +3153,7 @@ void record_conn_status(int wan_unit){
 			}
 #endif
 		}
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION)
 		else if(disconn_case[wan_unit] == CASE_DATALIMIT){
 			if(disconn_case_old[wan_unit] == CASE_DATALIMIT)
 				return;
@@ -3976,7 +3976,7 @@ _dprintf("wanduck(%d)(conn     ): %d...\n", wan_unit, conn_state[wan_unit]);
 if(test_log)
 _dprintf("wanduck(%d)(sbstate  ): %d...\n", wan_unit, wan_sbstate);
 
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION)
 				if(disconn_case_old[wan_unit] != CASE_DATALIMIT && wan_sbstate == WAN_STOPPED_REASON_DATALIMIT){
 					_dprintf("wanduck(%d)(lb): detect the data limit.\n", wan_unit);
 					conn_state[wan_unit] = DISCONN;
@@ -4035,7 +4035,7 @@ _dprintf("wanduck(%d): decide start_wan_if or stop_wan_if...\n", wan_unit);
 							set_disconn_count(wan_unit, max_disconn_count[wan_unit]);
 						else
 #endif
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION)
 						if(disconn_case[wan_unit] == CASE_DATALIMIT)
 							set_disconn_count(wan_unit, max_disconn_count[wan_unit]);
 						else
@@ -4171,7 +4171,7 @@ _dprintf("wanduck(%d)(fo   conn): state %d, state_old %d, changed %d, wan_state 
 					set_disconn_count(current_wan_unit, S_COUNT);
 				}
 			}
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION)
 			else if(wan_sbstate == WAN_STOPPED_REASON_DATALIMIT){
 				if(conn_state_old[current_wan_unit] == CONNED){
 					_dprintf("wanduck(%d)(fo): detect the data limit.\n", current_wan_unit);
@@ -4206,7 +4206,7 @@ _dprintf("wanduck(%d)(fo   conn): state %d, state_old %d, changed %d, wan_state 
 				set_disconn_count(current_wan_unit, S_IDLE);
 			}
 #if 0
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION)
 			else if(dualwan_unit__usbif(current_wan_unit) && wan_sbstate == WAN_STOPPED_REASON_DATALIMIT){
 				if(conn_state_old[current_wan_unit] == CONNED){
 					_dprintf("wanduck(%d)(fo): detect the data limit.\n", current_wan_unit);
@@ -4344,7 +4344,7 @@ _dprintf("wanduck(%d) fail-back: state %d, state_old %d, changed %d, wan_state %
 					set_disconn_count(current_wan_unit, S_COUNT);
 				}
 			}
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION)
 			else if(wan_sbstate == WAN_STOPPED_REASON_DATALIMIT){
 				if(conn_state_old[current_wan_unit] == CONNED){
 					_dprintf("wanduck(%d)(fb): detect the data limit.\n", current_wan_unit);
@@ -4379,7 +4379,7 @@ _dprintf("wanduck(%d) fail-back: state %d, state_old %d, changed %d, wan_state %
 				set_disconn_count(current_wan_unit, S_IDLE);
 			}
 #if 0
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION)
 			else if(dualwan_unit__usbif(current_wan_unit) && wan_sbstate == WAN_STOPPED_REASON_DATALIMIT){
 				if(conn_state_old[current_wan_unit] == CONNED){
 					_dprintf("wanduck(%d)(fb): detect the data limit.\n", current_wan_unit);
@@ -4540,7 +4540,7 @@ _dprintf("wanduck(%d)(conn): state %d, state_old %d, changed %d, wan_state %d.\n
 				}
 #endif
 			}
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION)
 			else if(wan_sbstate == WAN_STOPPED_REASON_DATALIMIT){
 				if(conn_state_old[current_wan_unit] == CONNED){
 					_dprintf("wanduck(usb): detect the data limit.\n");
@@ -4576,7 +4576,7 @@ _dprintf("wanduck(%d)(conn): state %d, state_old %d, changed %d, wan_state %d.\n
 				set_disconn_count(current_wan_unit, S_IDLE);
 			}
 #if 0
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION)
 			else if(dualwan_unit__usbif(current_wan_unit) && wan_sbstate == WAN_STOPPED_REASON_DATALIMIT){
 				if(conn_state_old[current_wan_unit] == CONNED){
 					_dprintf("wanduck(usb): detect the data limit.\n");

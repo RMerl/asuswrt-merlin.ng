@@ -365,6 +365,11 @@ ic_s *get_all_ic_list(ic_s **ic_list){
 
 	follow_ic_list = ic_list;
 	snprintf(buf, sizeof(buf), "%s", nvram_safe_get("ICFILTER_MAC"));
+	if (!strcmp(buf, "")) {
+		_dprintf("There is no ICFILTER_MAC rules!\n");
+		return NULL;
+	}
+
 	foreach_62_keep_empty_string(count, word, buf, next_word){
 		if(initial_ic(follow_ic_list) == NULL){
 			_dprintf("No memory!!(follow_ic_list)\n");
@@ -418,7 +423,8 @@ void print_ic_list(ic_s *ic_list){
 	}
 }
 
-static void clean_invalid_config(ic_s *ic_list) {
+static void clean_invalid_config(ic_s *ic_list)
+{
 	ic_s *follow_ic;
 	int rule_count = count_ic_rules(ic_list);
 	int clean_count = 0;
@@ -434,27 +440,27 @@ static void clean_invalid_config(ic_s *ic_list) {
 		clean_count++;
 	}
 
-	//_dprintf("INTERNETCTRL : rule_count=%d, clean_count=%d\n", rule_count, clean_count);
-	//_dprintf("INTERNETCTRL : MAC=%s\n", mac_buf);
-	//_dprintf("INTERNETCTRL : DAYTIME=%s\n", daytime_buf);
+	_dprintf("INTERNETCTRL : rule_count=%d, clean_count=%d\n", rule_count, clean_count);
+	_dprintf("INTERNETCTRL : MAC=%s\n", mac_buf);
+	_dprintf("INTERNETCTRL : DAYTIME=%s\n", daytime_buf);
 
 	if (rule_count != clean_count) {
+		pid_t pid;
+		char *commit[] = { "nvram", "commit", NULL };
 		nvram_set("ICFILTER_MAC", mac_buf);
 		nvram_set("ICFILTER_MACFILTER_DAYTIME", daytime_buf);
-		nvram_commit();
 	}
-
 }
 
 // Parental Control:
 // MAC address not in list -> ACCEPT.
 // MAC address in list and in time period -> ACCEPT.
 // MAC address in list and not in time period -> DROP.
-void config_ic_rule_string(ic_s *ic_list, FILE *fp, char *logaccept, char *logdrop, int temp){
+void config_ic_rule_string(ic_s *ic_list, FILE *fp, char *lan_if, char *logaccept, char *logdrop, int temp){
 
 	ic_s *follow_ic;
 	ic_event_s *follow_e;
-	char *lan_if = nvram_safe_get("lan_ifname");
+	//char *lan_if = nvram_safe_get("lan_ifname");
 #ifdef BLOCKLOCAL
 	char *ftype;
 #endif
@@ -479,17 +485,30 @@ void config_ic_rule_string(ic_s *ic_list, FILE *fp, char *logaccept, char *logdr
 			continue;
 
 #ifdef RTCONFIG_AMAS
-		if (strlen(follow_ic->mac) && amas_lib_device_ip_query(follow_ic->mac, follow_addr)) {
+		if (strlen(follow_ic->mac) && amas_lib_device_ip_query(follow_ic->mac, lan_if, follow_addr)) {
 			chk_type = iptables_chk_ip;
 			if (illegal_ipv4_address(follow_addr))
 				continue;
 		} else
 #endif
 		{
-			chk_type = iptables_chk_mac;
-			snprintf(follow_addr, sizeof(follow_addr), "%s", follow_ic->mac);
-			if (!isValidMacAddress(follow_addr))
-				continue;
+#ifdef RTCONFIG_CAPTIVE_PORTAL
+			if(check_chilli_ip(lan_if)) { // check if get ip from chilli needed
+				if (get_ip_from_chilli(follow_ic->mac, follow_addr, sizeof(follow_addr)) > 0) {
+					chk_type = iptables_chk_ip;
+					if (illegal_ipv4_address(follow_addr))
+						continue;
+				}
+				else
+					continue;
+			} else
+#endif
+			{
+				chk_type = iptables_chk_mac;
+				snprintf(follow_addr, sizeof(follow_addr), "%s", follow_ic->mac);
+				if (!isValidMacAddress(follow_addr))
+					continue;
+			}
 		}
 
 //_dprintf("[PC] mac=%s\n", follow_ic->mac);
@@ -557,6 +576,37 @@ int count_ic_rules(ic_s *ic_list/*, int enabled*/){
 
 	return count;
 }
+
+#ifdef RTCONFIG_MULTILAN_CFG
+void handle_sdn_config_ic_rule_string(ic_s *ic_list, FILE *fp, char *logaccept, char *logdrop, int temp) {
+
+	MTLAN_T *pmtl = NULL;
+	size_t mtl_sz = 0;
+	int i;
+	int br0_handled = 0;
+
+	if (!ic_list || !fp)
+		return;
+
+	pmtl = (MTLAN_T *)INIT_MTLAN(sizeof(MTLAN_T));
+	if (pmtl)
+	{
+		get_mtlan(pmtl, &mtl_sz);
+		for (i = 0; i < mtl_sz; ++i)
+		{
+			if (pmtl[i].nw_t.idx >= 0) { // include br0
+				if (pmtl[i].nw_t.idx == 0 && br0_handled)
+					continue;
+				config_ic_rule_string(ic_list, fp, pmtl[i].nw_t.ifname, logaccept, logdrop, temp);
+				_dprintf("\n[pc] SDN_INTERNET_CTRL_BLOCK_INTERNET name=[%s], br=[%s], if=[%s]\n", pmtl[i].name, pmtl[i].nw_t.br_ifname, pmtl[i].nw_t.ifname);
+				if (pmtl[i].nw_t.idx == 0)
+					br0_handled = 1;
+			}
+		}
+		FREE_MTLAN((void *)pmtl);
+	}
+}
+#endif
 
 int ic_main(int argc, char *argv[]){
 	ic_s *ic_list = NULL;

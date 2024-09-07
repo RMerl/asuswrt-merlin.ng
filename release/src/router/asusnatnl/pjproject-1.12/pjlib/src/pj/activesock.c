@@ -197,7 +197,7 @@ PJ_DEF(pj_status_t) pj_activesock_create( pj_pool_t *pool,
     pj_status_t status;
 
     PJ_ASSERT_RETURN(pool && ioqueue && cb && p_asock, PJ_EINVAL);
-    PJ_ASSERT_RETURN(sock!=0 && sock!=PJ_INVALID_SOCKET, PJ_EINVAL);
+    PJ_ASSERT_RETURN(sock>=0 && sock!=PJ_INVALID_SOCKET, PJ_EINVAL);
     PJ_ASSERT_RETURN(sock_type==pj_SOCK_STREAM() ||
 		     sock_type==pj_SOCK_DGRAM(), PJ_EINVAL);
     PJ_ASSERT_RETURN(!opt || opt->async_cnt >= 1, PJ_EINVAL);

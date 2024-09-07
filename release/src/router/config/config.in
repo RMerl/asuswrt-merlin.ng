@@ -226,7 +226,7 @@ config RTCONFIG_BRCM_NAND_JFFS2
 
 config RTCONFIG_JFFS_NVRAM
 	bool "NVRAM on JFFS support"
-	depends on RTCONFIG_BRCM_NAND_JFFS2 || RTCONFIG_UBIFS
+	depends on RTCONFIG_BRCM_NAND_JFFS2 || RTCONFIG_UBIFS || RTCONFIG_JFFS_PARTITION
 	default y
 
 config RTCONFIG_JFFS_NVRAM_HND_OLD
@@ -2167,7 +2167,7 @@ config RTCONFIG_DNSFILTER
 
 config RTCONFIG_LETSENCRYPT
 	bool "Let's Encrypt"
-	depends on RTCONFIG_HTTPS && (RTCONFIG_JFFS2 || RTCONFIG_BRCM_NAND_JFFS2 || RTCONFIG_UBIFS)
+	depends on RTCONFIG_HTTPS && (RTCONFIG_JFFS2 || RTCONFIG_BRCM_NAND_JFFS2 || RTCONFIG_UBIFS || RTCONFIG_JFFS_PARTITION)
 	default n
 
 config RTCONFIG_DETWAN
@@ -2792,6 +2792,14 @@ config RTCONFIG_WIFI7
 	bool "WiFi 7"
 	default n
 
+config RTCONFIG_DISWIFI7
+	bool "Disable WiFi7"
+	default n
+
+config RTCONFIG_UAWIFI
+	bool "UA WiFi"
+	default n
+
 config RTCONFIG_QOSR1
         bool "QOSR1"
         default n
@@ -2803,10 +2811,6 @@ config RTCONFIG_IPTABLES1810
 config RTCONFIG_MLO
     bool "MLO"
     default n
-
-config RTCONFIG_DIS_MLO_QIS
-	bool "MLO"
-	default n
 
 config RTCONFIG_DIS_MLO_QIS
 	bool "MLO"
@@ -3235,8 +3239,13 @@ config RTCONFIG_SMARTHAUL
         bool "Smart haul"
         default n
 
+config RTCONFIG_BRCM_SMARTHAUL
+        bool "BRCM Smart haul"
+        default n
+
 config RTCONFIG_MLO_BH_BAND
 	bool "MLO backhaul band"
+	depends on RTCONFIG_MLO
 	default n
 
 config RTCONFIG_DOWNGRADE_CHECK
@@ -3244,9 +3253,31 @@ config RTCONFIG_DOWNGRADE_CHECK
 	default n
 
 config RTCONFIG_MLO_CONFIG_566
-        bool "MLO default config 566 in 2566 model"
-        default n
+	bool "MLO default config 566 in 2566 model"
+	depends on RTCONFIG_MLO
+	default n
+
+config RTCONFIG_MLO_CONFIG_556
+	bool "MLO default config 556 in 2556 model"
+	depends on RTCONFIG_MLO
+	default n
 
 config RTCONFIG_MLO_DEFAULT_ACTIVE
         bool "Enable MLO in default"
         default n
+
+config RTCONFIG_FLASH_TYPE_EMMC
+	bool "eMMC flash type"
+	default n
+
+config RTCONFIG_JFFS_PARTITION
+	bool "jffs2 partition support"
+	default n
+
+config RTCONFIG_KNV_BACKUP
+	bool "kernel nvram backup file"
+	default n
+
+config RTCONFIG_NV_BACKUP2
+	bool "kernel nvram backup file plan 2"
+	default n

@@ -133,6 +133,7 @@ var hmacarray = [
 ];
 
 var wans_mode ='<% nvram_get("wans_mode"); %>';
+var wan0_proto = '<% nvram_get("wan0_proto"); %>';
 
 
 var faq_href_windows = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=119";
@@ -198,7 +199,7 @@ function initial(){
 	document.getElementById("faq_iPhone").href=faq_href_iPhone;
 	document.getElementById("faq_android").href=faq_href_android;
 
-	if((wan_proto == "v6plus" || wan_proto == "ocnvc") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
+	if((wan0_proto == "v6plus" || wan0_proto == "ocnvc" || wan0_proto == "v6opt") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
 		$(".setup_info_icon.basic").click(
 			function() {				
 				if($("#s46_ports_content").is(':visible'))
@@ -354,7 +355,7 @@ function applyRule(){
 			return false;
 		}
 
-			if((wan_proto == "v6plus" || wan_proto == "ocnvc") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
+		if((wan0_proto == "v6plus" || wan0_proto == "ocnvc" || wan0_proto == "v6opt") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
 			if (!validator.range_s46_ports(document.form.vpn_server_port, "none")){
 				if(!confirm(port_confirm)){
 					document.form.vpn_server_port_adv.focus();
@@ -918,7 +919,7 @@ function switchMode(mode){
 		}
 		document.getElementById("divAdvanced").style.display = "none";
 
-		if((wan_proto == "v6plus" || wan_proto == "ocnvc") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
+		if((wan0_proto == "v6plus" || wan0_proto == "ocnvc" || wan0_proto == "v6opt") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
 			if($("#s46_ports_content").is(':visible'))
 				$("#s46_ports_content").fadeOut();
 
@@ -933,7 +934,7 @@ function switchMode(mode){
 		$('*[data-group="cert_btn"]').hide();
 		document.getElementById("divAdvanced").style.display = "";
 
-		if((wan_proto == "v6plus" || wan_proto == "ocnvc") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
+		if((wan0_proto == "v6plus" || wan0_proto == "ocnvc" || wan0_proto == "v6opt") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
 			if($("#s46_ports_content").is(':visible'))
 				$("#s46_ports_content").fadeOut();
 			

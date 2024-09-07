@@ -387,7 +387,7 @@ function initial(){
 				inputCtrl(document.form.wl_turbo_qam, 0);
 			}
 			
-			$("#turbo_qam_title").html("<#WLANConfig11b_x_ModulationScheme#>");
+			$("#turbo_qam_title").html("<#WLANConfig11b_x_ModulationScheme#> (WiFi 5)");
 			if(QAM1024_support){
 				var desc = ["Up to MCS 9 (802.11ac)", "Up to MCS 11 (NitroQAM/1024-QAM)"];
 				var value = ["1", "2"];
@@ -440,7 +440,7 @@ function initial(){
 					inputCtrl(document.form.wl_turbo_qam, 0);
 				}
 				
-				$("#turbo_qam_title").html("<#WLANConfig11b_x_ModulationScheme#>");
+				$("#turbo_qam_title").html("<#WLANConfig11b_x_ModulationScheme#> (WiFi 5)");
 				if(QAM1024_support){
 					var desc = ["Up to MCS 7 (802.11n)", "Up to MCS 9 (TurboQAM/256-QAM)", "Up to MCS 11 (NitroQAM/1024-QAM)"];
 					var value = ["0", "1", "2"];

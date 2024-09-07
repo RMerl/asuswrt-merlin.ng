@@ -200,11 +200,14 @@ function initial(){
 
 if(isSupport("adguard_dns") && isSwMode("rt")){
 	window.addEventListener('message', function(event) {
-		if (event.source === document.getElementById('adguard_iframe').contentWindow) {
-			if (event.data.messageType === 'contentHeight') {
-				var height = event.data.height;
-				document.getElementById('container_adguard').style.height = height + 'px';
-				document.getElementById('adguard_iframe').style.height = height + 'px';
+		let adguard_iframe = document.getElementById('adguard_iframe');
+		if(adguard_iframe){
+			if (event.source === adguard_iframe.contentWindow) {
+				if (event.data.messageType === 'contentHeight') {
+					var height = event.data.height;
+					document.getElementById('container_adguard').style.height = height + 'px';
+					document.getElementById('adguard_iframe').style.height = height + 'px';
+				}
 			}
 		}
 	});

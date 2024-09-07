@@ -307,10 +307,12 @@ function tryParseJSON (jsonString){
             return o;
         }
     }
-    catch (e) { }
+    catch (e) {
+        // do something
+    }
 
     return false;
-};
+}
 
 var htmlEnDeCode = (function() {
 	var charToEntityRegex,
@@ -422,8 +424,14 @@ else
 	var captcha_on = false;
 
 var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=SG_TeleStand&lang=&kw=&num=";
+var ATEMODE = '<% nvram_get("ATEMODE"); %>';
+
 function initial(){
 	top.name = "";/* reset cache of state.js win.name */
+
+	if(ATEMODE == "1"){
+		$(".div_td.signin_hint").text("<#CTL_signin#>"+" (ATE MODE)");
+	}
 
 	if(isSupport("ROG_UI") || isSupport("TS_UI") || isSupport("TUF_UI")){
 		$(".wrapper").css({"background-size":"cover"});
@@ -722,7 +730,7 @@ const sha256 = function a(b){function c(a,b){return a>>>b|a<<32-b}for(var d,e,f=
 			<div class="div_td img_gap">
 				<div class="login_img"></div>
 			</div>
-			<div class="div_td"><#CTL_signin#></div>
+			<div class="div_td signin_hint"><#CTL_signin#></div>
 		</div>	
 		<div class="prod_madelName"><#Web_Title2#></div>
 

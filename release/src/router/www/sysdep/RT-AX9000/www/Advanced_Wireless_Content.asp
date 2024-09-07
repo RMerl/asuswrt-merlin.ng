@@ -2556,7 +2556,7 @@ function separateGenChannel(unit, channel, bandwidth){
 				for (i = 0; i < channel_5g_1.length; i++) {
 					var _cur_channel = parseInt(channel_5g_1[i]);
 					_wl_channel.push(_cur_channel.toString());
-					channel_5g_1_val.push(_cur_channel);;
+					channel_5g_1_val.push(_cur_channel);
 				}
 			}			
 		}

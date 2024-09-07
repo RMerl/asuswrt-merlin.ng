@@ -112,18 +112,18 @@ function initial(){
 		$(".dblog_support_class").remove();
 	}
 
-	if(fb_state == "2"){
+	if(fb_state == "0" || fb_state == "1" || fb_state == "2"){
 		$('html, body').hide();
 		redirect();
 	}
-	else if(fb_state == "0"){
+	/*else if(fb_state == "0"){
 		disbled_feedback_filed(0);
 		detect_fb_state();
-	}
+	}*/
 
 	if(false){
 		$("#fb_email_provider_field").show();
-		var fb_email_provider = '<% nvram_get("fb_email_provider"); %>';
+		var fb_email_provider = httpApi.nvramGet(["fb_email_provider"], true).fb_email_provider;
 		if(fb_email_provider=="" && default_provider!=""){
 			document.form.fb_email_provider.value = default_provider;	
 		}
@@ -157,7 +157,7 @@ function initial(){
 	}
 
 	if(reload_data==1){
-		document.form.fb_country.value = decodeURIComponent('<% nvram_char_to_ascii("", "fb_country"); %>');
+		//document.form.fb_country.value = decodeURIComponent('<% nvram_char_to_ascii("", "fb_country"); %>');
 		document.form.fb_ptype.value = decodeURIComponent('<% nvram_char_to_ascii("", "fb_ptype"); %>');
 		Reload_pdesc(document.form.fb_ptype);
 		document.form.fb_pdesc.value = decodeURIComponent('<% nvram_char_to_ascii("", "fb_pdesc"); %>');
@@ -166,8 +166,10 @@ function initial(){
 
 	var policy_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Policy&lang="+ui_lang+"&kw=&num=";
 	$("#eula_content").find($("a")).attr({"href": policy_href});
-	var call_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Call&lang="+ui_lang+"&kw=&num=";
-	$("#call_link").attr({"href": call_href});
+	//var call_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Call&lang="+ui_lang+"&kw=&num=";
+	//$("#call_link").attr({"href": call_href});
+	var support_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=asus_support&lang="+ui_lang+"&kw=&num=";
+	$("#site_link").attr({"href": support_href});	//#feedback_note6#
 }
 
 function gen_contact_sel(){
@@ -189,7 +191,7 @@ function gen_contact_sel(){
  */
 function disbled_feedback_filed(status){
 	document.form.eula_checkbox.disabled = true;
-	document.form.fb_country.disabled = true;
+	//document.form.fb_country.disabled = true;
 	document.form.fb_email.disabled = true;
 	document.form.fb_serviceno.disabled = true;
 		document.form.gen_tarball.disabled = true;
@@ -227,7 +229,7 @@ function check_wan_state(){
 	}
 	else{
 		document.getElementById("fb_desc_disconnect").style.display = "none";
-		document.form.fb_country.disabled = "";
+		//document.form.fb_country.disabled = "";
 		document.form.fb_email.disabled = "";
 		document.form.fb_serviceno.disabled = "";
 		document.form.gen_tarball.disabled = "";
@@ -918,18 +920,20 @@ function diag_change_dblog_status() {
 	var dblog_enable = getRadioValue($('form[name="form"]').children().find('input[name=dblog_enable]'));
 	if(dblog_enable == "1") {
 		$(".dblog_item_tr").css("display", "");
-		if(usb_support) {
-			if(allUsbStatus.search("storage") == "-1")
-				alert("<#feedback_capturing_note#>");
-			else {
-				if($("input[name=dblog_tousb_cb]").prop("checked"))
-					alert("<#feedback_capturing_note1#>");
-				else
+		if(!top.webWrapper){
+			if(usb_support) {
+				if(allUsbStatus.search("storage") == "-1")
 					alert("<#feedback_capturing_note#>");
+				else {
+					if($("input[name=dblog_tousb_cb]").prop("checked"))
+						alert("<#feedback_capturing_note1#>");
+					else
+						alert("<#feedback_capturing_note#>");
+				}
 			}
+			else
+				alert("<#feedback_capturing_note#>");
 		}
-		else
-			alert("<#feedback_capturing_note#>");
 	}
 	else {
 		$(".dblog_item_tr").css("display", "none");
@@ -1316,12 +1320,12 @@ function detect_fb_state(){
 <div id="fb_desc1" class="formfontdesc" style="display:none;"><#Feedback_desc1#></div>
 <div id="fb_desc_disconnect" class="formfontdesc hint-color" style="display:none;"><#Feedback_desc_disconnect#> <a class="hint-color" href="mailto:router_feedback@asus.com?Subject=<%nvram_get("productid");%>" target="_top">router_feedback@asus.com</a></div>
 <table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
-<tr>
+<!-- tr>
 <th width="30%"><#feedback_country#> *</th>
 <td>
 	<input type="text" name="fb_country" maxlength="30" class="input_25_table" value="" autocorrect="off" autocapitalize="off">
 </td>
-</tr>
+</tr -->
 <tr>
 <th><#feedback_isp#> *</th>
 <td>
@@ -1351,7 +1355,7 @@ function detect_fb_state(){
 	</td>
 	</tr>
 <tr>
-<th><#feedback_email#> *</th>
+<th><#feedback_email#> <span style="color:#FFCC00;">*</span></th>
 <td>
 	<input type="text" name="fb_email" maxlength="50" class="input_25_table" value="" autocorrect="off" autocapitalize="off">	
 </td>
@@ -1364,13 +1368,13 @@ function detect_fb_state(){
 </td>
 </tr>
 <tr>
-<th>Special options</th>
+<th><#feedback_special_option#></th>
 <td>
-	<input type="checkbox" class="input" name="gen_tarball" id="gen_tarball_id"><label for="gen_tarball_id">Generate downloadable logs as ASUS support requested<!--Untranslated--></label>&nbsp;&nbsp;&nbsp;
+	<input type="checkbox" class="input" name="gen_tarball" id="gen_tarball_id"><label for="gen_tarball_id"><#feedback_special_dblogs#></label>&nbsp;&nbsp;&nbsp;
 </td>
 </tr>
 <tr>
-<th><#feedback_extra_info#> *</th>
+<th><#feedback_extra_info#></th>
 <td>
 	<input type="checkbox" class="input" name="attach_syslog" id="attach_syslog_id"><label for="attach_syslog_id"><#System_Log#></label>&nbsp;&nbsp;&nbsp;
 	<input type="checkbox" class="input" name="attach_cfgfile" id="attach_cfgfile_id"><label for="attach_cfgfile_id"><#feedback_setting_file#></label>&nbsp;&nbsp;&nbsp;
@@ -1505,9 +1509,10 @@ function detect_fb_state(){
 </tr>
 
 <tr style="display:none;">
-<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(34,2);"><#ASUS_Service_No#></a></th>
+<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(34,2);"><#ASUS_Service_No#></a> <span style="color:#FFCC00;">*</span></th>
 <td>
-	<input type="text" name="fb_serviceno" maxlength="32" class="input_20_table" placeholder="E1234567890-1234" value="" autocorrect="off" autocapitalize="off">
+	<input type="text" name="fb_serviceno" maxlength="32" class="input_20_table" placeholder="ex. N2406021655-0002" value="" autocorrect="off" autocapitalize="off">
+	<span style="color:#FFCC00;">Please enter the order number.</span>
 </td>
 </tr>
 
@@ -1520,7 +1525,7 @@ function detect_fb_state(){
 
 <tr>
 	<th>
-		<#feedback_comments#> *
+		<#feedback_comments#>
 	</th>
 	<td>
 		<textarea name="fb_comment" maxlength="2000" cols="55" rows="8" class="textarea_ssh_table" style="font-family:'Courier New', Courier, mono; font-size:13px;" onKeyDown="textCounter(this,document.form.msglength,2000);" onKeyUp="textCounter(this,document.form.msglength,2000)"></textarea>
@@ -1546,7 +1551,7 @@ function detect_fb_state(){
 		<div class="warning_desc">
 		<strong class="warning_title"><#FW_note#></strong>
 		<ul>
-			<li><#feedback_note4#><br><a id="call_link" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">https://www.asus.com/support/CallUs/</a></li>
+			<li><#Feedback_desc0#>&nbsp;<#feedback_note6#>&nbsp;<#feedback_note7#></li>
 		</ul>
 	</div>
 	</td>

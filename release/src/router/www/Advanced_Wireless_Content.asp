@@ -1,1859 +1,3462 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<html xmlns:v>
-<head>
-<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta HTTP-EQUIV="Pragma" CONTENT="no-cache">
-<meta HTTP-EQUIV="Expires" CONTENT="-1">
-<link rel="shortcut icon" href="images/favicon.png">
-<link rel="icon" href="images/favicon.png">
-
-<title><#Web_Title#> - <#menu5_1_1#></title>
-<link rel="stylesheet" type="text/css" href="index_style.css"> 
-<link rel="stylesheet" type="text/css" href="form_style.css">
-<link rel="stylesheet" type="text/css" href="usp_style.css">
-<link rel="stylesheet" type="text/css" href="pwdmeter.css">
-<link rel="stylesheet" type="text/css" href="other.css">
-<link rel="stylesheet" type="text/css" href="css/confirm_block.css">
-<script type="text/javascript" src="/js/jquery.js"></script>
-<script type="text/javascript" src="/js/confirm_block.js"></script>
-<script type="text/javascript" src="/state.js"></script>
-<script type="text/javascript" src="/help.js"></script>
-<script type="text/javascript" src="/general.js"></script>
-<script type="text/javascript" src="/popup.js"></script>
-<script type="text/javascript" src="/md5.js"></script>
-<script type="text/javascript" src="/validator.js"></script>
-<script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
-<script type="text/javascript" src="/js/httpApi.js"></script>
-<style>
-.warning_msg{
-	color: #FC0;
-	margin: 2px 0 0 8px;
-}
-
-.wpa_psk_container{
-	display: flex;
-	align-items: center;
-}
-.wpa_psk_input{
-    width: 100% !important;
-}
-.pwdmeter_container{
-	margin-left: 5px;
-	outline: 0px;
-}
-
-.short_pwdmeter{
-	width: 110px;
-}
-</style>
-<script><% wl_get_parameter(); %>
-
-$(function () {
-	if(amesh_support && (isSwMode("rt") || isSwMode("ap")) && ameshRouter_support) {
-		addNewScript('/require/modules/amesh.js');
-	}
-});
-
-wl_channel_list_2g = '<% channel_list_2g(); %>';
-wl_channel_list_5g = '<% channel_list_5g(); %>';
-wl_channel_list_5g_2 = '<% channel_list_5g_2(); %>';
-wl_channel_list_60g = '<% channel_list_60g(); %>';
-var acs_ch13_support = (function(){
-    var ch_2g = JSON.parse(wl_channel_list_2g);
-    for(var element of ch_2g){
-        if(element > 11){
-            return true;
-        }
-    }
-    
-    return false;
-})();
-var wl_unit_value = httpApi.nvramGet(["wl_unit"]).wl_unit;;
-var wl_subunit_value = httpApi.nvramGet(["wl_subunit"]).wl_subunit;
-var wlc_band_value = '<% nvram_get("wlc_band"); %>';
-var cur_control_channel = [<% wl_control_channel(); %>][0];
-var cur_edmg_channel = [<% wl_edmg_channel(); %>][0];
-var wlc0_ssid = '<% nvram_get("wlc0_ssid"); %>';
-var wlc1_ssid = '<% nvram_get("wlc1_ssid"); %>';
-var wifison_ready = httpApi.nvramGet(["wifison_ready"]).wifison_ready;
-var wl_bw_160 = '<% nvram_get("wl_bw_160"); %>';
-var enable_bw_160 = (wl_bw_160 == 1) ? true : false;
-var wl_wpa_psk_org = decodeURIComponent("<% nvram_char_to_ascii("WLANConfig11b", "wl_wpa_psk"); %>");
-var faq_fref = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=150";
-var faq_href_hide_ssid = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=162";
-
-function initial(){
-	show_menu();
-	if (he_frame_support) {
-		$("#he_mode_field").show();
-		$("#he_mode_faq_link")  //for string tag: WLANConfig11b_HE_Frame_Mode_faq
-            .attr('target', '_blank')
-            .attr('style', 'color:#FC0;text-decoration:underline;')
-            .attr('href', faq_fref);
-	}
-
-	if(vht160_support){
-		$("#enable_160mhz").attr("checked", enable_bw_160);
-	}
-
-	if(mbo_support){
-		$('#mbo_field').show();
-	}
-
-	wireless_mode_change(document.form.wl_nmode_x);
-	regen_band(document.form.wl_unit);
-	regen_5G_mode(document.form.wl_nmode_x, wl_unit);
-	if(lantiq_support){
-		checkWLReady();
-	}
-	
-	if((isSwMode("re") || isSwMode("mb")) && (wl_unit_value == wlc_band_value) && wl_subunit_value != '1' && !concurrep_support){
-		_change_wl_unit(wl_unit_value);
-	}
-	
-	if(isSwMode("re") && concurrep_support && wl_subunit_value != '1'){
-		_change_wl_unit(wl_unit_value);
-	}
-	
-	if(isSwMode("ew")){
-		if(wlc_express == "1"){
-			document.form.wl_unit.innerHTML = '<option class="content_input_fd" value="1" selected="">5 GHz</option>';
-			if(wl_unit_value != 1) _change_wl_unit();
-		}
-		else if(wlc_express == "2"){
-			document.form.wl_unit.innerHTML = '<option class="content_input_fd" value="0" selected="">2.4 GHz</option>';
-			if(wl_unit_value != 0) _change_wl_unit();
-		}
-	}
-
-	if(band5g_support && band5g_11ac_support && document.form.wl_unit.value >= 1){
-		document.getElementById('wl_mode_desc').onclick=function(){return openHint(1, 5)};
-	}else if(band5g_support && document.form.wl_unit.value >= 1){
-		document.getElementById('wl_mode_desc').onclick=function(){return openHint(1, 4)};
-	}
-
-	if(!(band5g_support && band5g_11ac_support && document.form.wl_unit.value >= 1)){
-		document.form.wl_nmode_x.remove(3); //remove "N/AC Mixed" for NON-AC router and NOT in 5G
-	}
-
-	if(vht160_support && wl_unit_value != '0' && wl_unit_value != '3'){
-		document.getElementById('enable_160_field').style.display = "";
-	}
-
-	if('<% nvram_get("wl_nmode_x"); %>' == "2")
-			inputCtrl(document.form.wl_bw, 0);
-
-	if(wl_unit_value == '0')
-		check_channel_2g();
-	else if(wl_unit_value == '3')
-		insertChannelOption_60g();
-	else
-		insertExtChannelOption_5g();
-
-	if(isSwMode("re")){
-		if((wlc0_ssid != "" && wl_unit_value == "0") || (wlc1_ssid != "" && wl_unit_value == "1")){
-			document.getElementById('wl_bw_field').style.display = "none";
-			document.getElementById('wl_channel_field').style.display = "none";
-			document.getElementById('wl_nctrlsb_field').style.display = "none";
-		}
-	}
-
-	limit_auth_method();	
-	wl_auth_mode_change(1);
-
-	if(wpa3_support){
-		var confirm_flag = 0;
-		var confirm_content = "";
-		if(!band6g_support || wl_unit != '2'){	// not for 6 GHz
-			confirm_flag=1;
-			confirm_content += "<b>WPA3-Personal</b><br>";
-			confirm_content += "<#WLANConfig11b_AuthenticationMethod_wpa3#><br><br>";
-			confirm_content += "<b>WPA2/WPA3-Personal</b><br>";
-			confirm_content += "<#WLANConfig11b_AuthenticationMethod_wpa32#><br><br>";
-			confirm_content += "<b>WPA2-Personal</b><br>";
-			confirm_content += "<#WLANConfig11b_AuthenticationMethod_wpa2#><br><br>";
-			confirm_content += "<b>WPA-Auto-Personal</b><br>";
-			confirm_content += "<#WLANConfig11b_AuthenticationMethod_wpa21#>";
-
-			$(".setup_help_icon").show();
-			$(".setup_help_icon").click(
-				function() {
-					if(confirm_flag==1){
-						if($(".confirm_block").length > 0){
-							$(".confirm_block").remove();
-						}
-						if(window.scrollTo)
-							window.scrollTo(0,0);
-						htmlbodyforIE = document.getElementsByTagName("html");
-						htmlbodyforIE[0].style.overflow = "hidden";
-
-						$("#Loading").css('visibility', 'visible');
-						$("#loadingBlock").css('visibility', 'hidden');
-
-						confirm_asus({
-							title: "<#WLANConfig11b_AuthenticationMethod_itemname#>",
-							contentA: confirm_content,
-							contentC: "",
-							left_button: "Hidden",
-							left_button_callback: function(){
-							},
-							left_button_args: {},
-							right_button: "<#CTL_ok#>",
-							right_button_callback: function(){
-								confirm_cancel();
-								htmlbodyforIE = document.getElementsByTagName("html");
-								htmlbodyforIE[0].style.overflow = "";
-								$("#Loading").css('visibility', 'hidden');
-								return false;
-							},
-							right_button_args: {},
-							iframe: "",
-							margin: "100px 0px 0px 25px",
-							note_display_flag: 0
-						});
-
-						$(".confirm_block").css( "zIndex", 10001 );
-					}
-				}
-			);
-		}
-	}
-
-	//mbss_display_ctrl();
-	if(optimizeXbox_support){
-		document.getElementById("wl_optimizexbox_span").style.display = "";
-		document.form.wl_optimizexbox_ckb.checked = ('<% nvram_get("wl_optimizexbox"); %>' == 1) ? true : false;
-	}
-	
-	document.form.wl_ssid.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl_ssid"); %>');
-	document.form.wl_wpa_psk.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl_wpa_psk"); %>');
-	document.form.wl_key1.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl_key1"); %>');
-	document.form.wl_key2.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl_key2"); %>');
-	document.form.wl_key3.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl_key3"); %>');
-	document.form.wl_key4.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl_key4"); %>');
-	document.form.wl_phrase_x.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl_phrase_x"); %>');
-	document.form.wl_channel.value = document.form.wl_channel_orig.value;
-	if (band60g_support && document.form.wl_unit.value == '3')
-		document.form.wl_edmg_channel.value = document.form.wl_edmg_channel_orig.value;
-	
-	if(document.form.wl_wpa_psk.value.length <= 0)
-		document.form.wl_wpa_psk.value = "<#wireless_psk_fillin#>";
-
-	if(document.form.wl_unit[0].selected == true)
-		document.getElementById("wl_gmode_checkbox").style.display = "";
-
-	if(document.form.wl_nmode_x.value=='1'){
-		document.form.wl_gmode_check.checked = false;
-		document.getElementById("wl_gmode_check").disabled = true;
-	}
-	else{
-		document.form.wl_gmode_check.checked = true;
-		document.getElementById("wl_gmode_check").disabled = false;
-	}
-	if(is_unit_24g(wl_unit_value)){
-		if(document.form.wl_gmode_protection.value == "auto"){
-			document.form.wl_gmode_check.checked = true;
-		}
-		else{
-			document.form.wl_gmode_check.checked = false;
-		}
-
-		document.getElementById("wl_gmode_checkbox").style.display = "";
-
-		if(disable11b_support){
-			if(document.form.wl_rateset.value == "ofdm"){
-				document.form.wl_rateset_check.checked = true;
-			}
-			else{
-				document.form.wl_rateset_check.checked = false;
-			}
-
-			wl_mode_change(document.form.wl_nmode_x.value);
-		}
-	}
-
-	if(!band5g_support)	
-		document.getElementById("wl_unit_field").style.display = "none";
-
-	handle_11ac_80MHz();
-	genBWTable('<% nvram_get("wl_unit"); %>');
-
-	if(isSwMode("re") || isSwMode("mb"))
-		document.form.wl_subunit.value = (wl_unit_value == wlc_band_value) ? 1 : -1;	
-	
-	document.getElementById('WPS_hideSSID_hint').innerHTML = "<#WPS_hideSSID_hint#>";	
-	if("<% nvram_get("wl_closed"); %>" == 1 && (isSwMode("rt") || isSwMode("ap"))){
-		document.getElementById('WPS_hideSSID_hint').style.display = "";	
-	}
-
-	if(band60g_support && wl_unit_value == '3'){//60G, remove unsupported items and show wigig items
-		document.getElementById("wl_closed_field").style.display = "none";
-		inputCtrl(document.form.wl_nmode_x, 0);
-		inputCtrl(document.form.wl_nctrlsb, 0);
-		if(he_frame_support){
-			$("#he_mode_field").hide();
-		}	
-
-		document.getElementById("wl_edmg_field").style.display = "";
-
-		if (document.form.wl_edmg_channel.value == '0' && cur_edmg_channel && cur_edmg_channel[wl_unit_value] != '0'){
-			ajax_wl_edmg_channel();
-			document.getElementById("auto_edmg_channel").style.display = "";
-			document.getElementById("auto_edmg_channel").innerHTML = "Current EDMG channel: " + cur_edmg_channel[wl_unit_value];
-		}
-	}else{
-		document.getElementById("wl_edmg_field").style.display = "none";
-	}
-	
-	if(document.form.wl_channel.value == '0' && cur_control_channel){
-		ajax_wl_channel();
-		document.getElementById("auto_channel").style.display = "";
-		document.getElementById("auto_channel").innerHTML = "Current control channel: " + cur_control_channel[wl_unit_value];
-	}
-
-	if(concurrep_support && (isSwMode("re") || isSwMode("ew"))){
-		inputCtrl(document.form.wl_nmode_x, 0);
-		document.form.wl_subunit.disabled = false;
-		document.form.wl_subunit.value = 1;
-	}
-
-	var skip_channel_2g = '<% nvram_get("skip_channel_2g"); %>';
-	var skip_channel_5g = '<% nvram_get("skip_channel_5g"); %>';
-
-	if(acs_ch13_support && wl_unit_value == "0"){
-		document.getElementById("acs_ch13_checkbox").style = "";
-	}
-
-	if(skip_channel_5g == "band1" && wl_unit_value == "1"){
-		document.getElementById("acs_band1_checkbox").style = "";
-	}
-	else if(skip_channel_5g == "band3" && wl_unit_value == "1"){
-		document.getElementById("acs_band3_checkbox").style = "";
-	}
-	else if(skip_channel_5g == "band23" && wl_unit_value == "1"){
-		document.getElementById("dfs_checkbox").style = "";
-	}
-
-	if((Qcawifi_support || Rawifi_support ) && document.form.wl_channel.value  == '0'){
-		if((wl_unit == '1' && has_dfs_channel(wl_channel_list_5g)) || (wl_unit == '2' && has_dfs_channel(wl_channel_list_5g_2))){
-			document.getElementById('dfs_checkbox').style.display = "";
-			check_DFS_support(document.form.acs_dfs_checkbox);
-		}
-
-		if(amesh_support && httpApi.hasAiMeshNode() && !wl_info.band5g_2_support){
-			var _wl_channel_list_5g = '<% channel_list_5g(); %>';
-			if((wl_unit == '1' && has_dfs_channel(_wl_channel_list_5g))){
-				document.getElementById('dfs_checkbox').style.display = "";
-				check_DFS_support(document.form.acs_dfs_checkbox);
-			}
-
-		}
-	}
-
-	if(smart_connect_support && (isSwMode("rt") || isSwMode("ap"))){
-		var flag = '<% get_parameter("flag"); %>';		
-		var smart_connect_flag_t;
-		if(based_modelid.indexOf('EBG') == -1){
-			document.getElementById("smartcon_enable_field").style.display = "";
-		}
-		
-		if(flag == '')
-			smart_connect_flag_t = '<% nvram_get("smart_connect_x"); %>';
-		else
-			smart_connect_flag_t = flag;	
-
-		document.form.smart_connect_x.value = smart_connect_flag_t;
-		if(smart_connect_flag_t == 0)
-			document.form.smart_connect_t.value = 1;
-		else    
-			document.form.smart_connect_t.value = smart_connect_flag_t;
-
-		enableSmartCon(smart_connect_flag_t);
-	}
-
-	if(wifison_ready == "1")
-		document.getElementById("wl_unit_field").style.display = "none";
-
-	if(is_RU_sku){
-		var ch_orig = parseInt(document.form.wl_channel_orig.value);
-		var _ch = ch_orig;
-		var _array = [36, 44, 52, 60, 100, 108, 116, 124, 132, 140, 149, 157];
-		if(document.form.wl_nmode_x.value == 0 || document.form.wl_nmode_x.value == 8){    // Auto or N/AC mixed
-			if(document.form.wl_bw.value == 3){    // 80 MHz		
-				for(i=0; i<_array.length; i+=2){
-					if(ch_orig >= _array[i] && ch_orig <= (_array[i]+12)){
-						_ch = _array[i];
-					}
-				}
-			}
-			else if(document.form.wl_bw.value == 2){    // 40 MHz
-				for(i=0; i<_array.length; i++){
-					if(ch_orig >= _array[i] && ch_orig <= (_array[i]+4)){
-						_ch = _array[i];
-					}
-				}
-			}
-			
-			document.form.wl_channel.value = _ch;
-		}
-	}
-
-	controlHideSSIDHint();
-
-	$("<div>")
-		.attr({"id": "ssid_msg"})
-		.addClass("warning_msg")
-		.appendTo($("#ssid_setting"));
-
-	$("#wl_ssid").keyup(function(){
-		validator.ssidCheck($("#"+this.id), $("#ssid_msg"));
-	});
-
-	if(top.webWrapper){
-		$("input[name='wl_wpa_psk']").parent().css("flex-basis","60%");
-		$("input[name='wl_wpa_psk']").addClass("wpa_psk_input");
-	}
-	$("input[name='wl_wpa_psk']").parent().parent().append(Get_Component_PWD_Strength_Meter());
-	$("#scorebarBorder").addClass("pwdmeter_container short_pwdmeter");
-	$("#scorebarBorder *").addClass("short_pwdmeter");
-	chkPass(wl_wpa_psk_org, "");
-	$("input[name='wl_wpa_psk']").keyup(function(e){
-									chkPass(this.value, "");
-								})
-
-	if(band5g_11ax_support){
-		if(based_modelid != 'RT-AX92U' || (wl_unit != '0' && wl_unit != '1')){
-			$("#twt_field").show();
-		}
-	}
-
-	if(isSupport("noWiFi")){
-		$("#wl_mode_field").hide();
-		$("#mbo_field").hide();
-		$("#wl_bw_field").hide();
-		$("#wl_channel_field").hide();
-		inputCtrl(document.form.wl_wpa_gtk_rekey, 0);
-		inputCtrl(document.form.wl_mfp, 0);
-	}
-}
-
-function genBWTable(_unit){
-	if (!Rawifi_support && !Qcawifi_support && based_modelid != "BLUECAVE")
-		return;
-
-	cur = '<% nvram_get("wl_bw"); %>';
-	var bws = new Array();
-	var bwsDesc = new Array();
-	var array_80m = new Array();
-	var array_160m = new Array();
-
-	if(document.form.wl_nmode_x.value == 2){
-		if(based_modelid == "BLUECAVE"){
-			bws = [1];
-			bwsDesc = ["20 MHz"];
-		}
-		else{
-			bws = [0];
-			bwsDesc = ["20 MHz"];			
-		}
-
-		inputCtrl(document.form.wl_bw,1);
-		document.getElementById("wl_bw_field").style.display = "none";
-	}
-	else if(_unit == 0 || (_unit != 0 && document.form.wl_nmode_x.value == 1)){// 2G or 5G N only
-		if(based_modelid == "BLUECAVE"){
-			bws = [0, 1, 2];
-			bwsDesc = ["20/40 MHz", "20 MHz", "40 MHz"];
-		}
-		else{
-			bws = [1, 0, 2];
-			bwsDesc = ["20/40 MHz", "20 MHz", "40 MHz"];			
-		}
-
-		document.getElementById("wl_bw_field").style.display = "";
-	}
-	else if (band60g_support && _unit == 3){
-		var ary = [], auto = [1], autoDesc = ["2.16"];
-		var bws = [6], bwsDesc = ["2.16 GHz"];
-		var ch_list = eval('<% channel_list_60g(); %>');
-
-		/* Generate all possible bandwidth */
-		for (var i = 7; i <= max_band60g_wl_bw; ++i) {
-			if ((wigig_bw = wl_bw_to_wigig_bw(i)) <= 2160)
-				continue;
-			ary = filter_60g_edmg_channel_by_bw(ch_list, wigig_bw);
-			if (!ary.length)
-				continue;
-			bws.push(i);
-			bwsDesc.push((wigig_bw / 1000) + " GHz");
-			autoDesc[0] = autoDesc[0] + "/" + (wigig_bw / 1000);
-		}
-		autoDesc[0] += " GHz";
-		if (bws.length > 1) {
-			bws = auto.concat(bws);
-			bwsDesc = autoDesc.concat(bwsDesc);
-		}
-
-		if (bws.indexOf(parseInt(cur)) == -1)
-			cur = bws[0];
-		document.getElementById("wl_bw_field").style.display = "";
-	}
-	else{
-		if(based_modelid == "BLUECAVE"){
-			bws = [0, 1, 2, 3];
-			bwsDesc = ["20/40/80 MHz", "20 MHz", "40 MHz", "80 MHz"];
-		}
-		else{
-			bws = [1, 0, 2, 3];
-			bwsDesc = [document.form.wl_bw[0].text, "20 MHz", "40 MHz", "80 MHz"];
-		}
-
-		if(document.form.wl_nmode_x.value == 8 || (_unit != 0 && document.form.wl_nmode_x.value == 0)){// N/AC mixed or 5G Auto
-			var nband = "<% nvram_get("wl_nband"); %>";
-			if(isArray(wl_channel_list_5g)){
-				if(nband == "4"){
-					array_80m = filter_6g_channel_by_bw(wl_channel_list_5g, 80);
-					array_160m = filter_6g_channel_by_bw(wl_channel_list_5g, 160);
-				}else{
-					array_80m = filter_5g_channel_by_bw(wl_channel_list_5g, 80);
-					array_160m = filter_5g_channel_by_bw(wl_channel_list_5g, 160);
-				}
-			}else{
-				start = wl_channel_list_5g.lastIndexOf("[");
-				end = wl_channel_list_5g.indexOf("]");
-				if (end == -1)
-					end = wl_channel_list_5g.length;
-				ch = wl_channel_list_5g.slice(start + 1, end);
-				if(nband == "4"){
-					array_80m = filter_6g_channel_by_bw(ch.split(","), 80);
-					array_160m = filter_6g_channel_by_bw(ch.split(","), 160);
-				}else{
-					array_80m = filter_5g_channel_by_bw(ch.split(","), 80);
-					array_160m = filter_5g_channel_by_bw(ch.split(","), 160);
-				}
-			}
-			
-			if(vht80_80_support && array_80m.length/4 >= 2){
-				bws.push(4);
-				bwsDesc.push("80+80 MHz");
-			}
-		
-			if(vht160_support && array_160m.length/4 >= 1 && enable_bw_160){
-				bwsDesc[0] = "20/40/80/160 MHz";
-				bws.push(5);
-				bwsDesc.push("160 MHz");
-			}
-			else if(array_160m.length/4 < 1){
-				document.getElementById('enable_160_field').style.display = 'none';
-			}
-		}
-
-		document.getElementById("wl_bw_field").style.display = "";
-	}
-
-	add_options_x2(document.form.wl_bw, bwsDesc, bws, cur);
-	if (band60g_support && _unit == 3)
-		insertChannelOption_60g();
-}
-
-function check_channel_2g(){
-	var wmode = document.form.wl_nmode_x.value;
-	var CurrentCh = document.form.wl_channel_orig.value;
-	if(is_high_power && auto_channel == 1){
-		CurrentCh = document.form.wl_channel_orig.value = 0;
-	}
-	
-	wl_channel_list_2g = eval('<% channel_list_2g(); %>');
-	if(wl_channel_list_2g[0] != "<#Auto#>")
-  		wl_channel_list_2g.splice(0,0,"0");
-		
-	var ch_v2 = new Array();
-    for(var i=0; i<wl_channel_list_2g.length; i++){
-        ch_v2[i] = wl_channel_list_2g[i];
-    }
-	
-    if(ch_v2[0] == "0")
-        wl_channel_list_2g[0] = "<#Auto#>";	
-
-	add_options_x2(document.form.wl_channel, wl_channel_list_2g, ch_v2, CurrentCh);
-	var option_length = document.form.wl_channel.options.length;	
-	if(wmode == "0"||wmode == "1"){
-		if((lantiq_support && document.form.wl_bw.value != "1") || (!lantiq_support && document.form.wl_bw.value != "0")){
-			inputCtrl(document.form.wl_nctrlsb, 1);
-			var x = document.form.wl_nctrlsb;
-			var length = document.form.wl_nctrlsb.options.length;
-			if (length > 1){
-				x.selectedIndex = 1;
-				x.remove(x.selectedIndex);
-			}
-			
-			if ((CurrentCh >=1) && (CurrentCh <= 4)){
-				x.options[0].text = "<#WLANConfig11b_EChannelAbove#>";
-				x.options[0].value = "lower";
-			}
-			else if ((CurrentCh >= 5) && (CurrentCh <= 7)){
-				x.options[0].text = "<#WLANConfig11b_EChannelAbove#>";
-				x.options[0].value = "lower";
-				add_option(document.form.wl_nctrlsb, "<#WLANConfig11b_EChannelBelow#>", "upper");
-				if (document.form.wl_nctrlsb_old.value == "upper")
-					document.form.wl_nctrlsb.options.selectedIndex=1;
-					
-				if(is_high_power && CurrentCh == 5) // for high power model, Jieming added at 2013/08/19
-					document.form.wl_nctrlsb.remove(1);
-				else if(is_high_power && CurrentCh == 7)
-					document.form.wl_nctrlsb.remove(0);	
-			}
-			else if ((CurrentCh >= 8) && (CurrentCh <= 10)){
-				x.options[0].text = "<#WLANConfig11b_EChannelBelow#>";
-				x.options[0].value = "upper";
-				if (option_length >=14){
-					add_option(document.form.wl_nctrlsb, "<#WLANConfig11b_EChannelAbove#>", "lower");
-					if (document.form.wl_nctrlsb_old.value == "lower")
-						document.form.wl_nctrlsb.options.selectedIndex=1;
-				}
-			}
-			else if (CurrentCh >= 11){
-				x.options[0].text = "<#WLANConfig11b_EChannelBelow#>";
-				x.options[0].value = "upper";
-			}
-			else{
-				x.options[0].text = "<#Auto#>";
-				x.options[0].value = "1";
-			}
-		}
-		else{
-			inputCtrl(document.form.wl_nctrlsb, 0);
-		}
-	}
-	else{
-		inputCtrl(document.form.wl_nctrlsb, 0);
-	}
-}
-
-function mbss_display_ctrl(){
-	// generate options
-	if(multissid_support){
-		for(var i=1; i<multissid_count+1; i++)
-			add_options_value(document.form.wl_subunit, i, wl_subunit_value);
-	}	
-	else
-		document.getElementById("wl_subunit_field").style.display = "none";
-
-	if(document.form.wl_subunit.value != 0){
-		document.getElementById("wl_bw_field").style.display = "none";
-		document.getElementById("wl_channel_field").style.display = "none";
-		document.getElementById("wl_nctrlsb_field").style.display = "none";
-	}
-	else
-		document.getElementById("wl_bss_enabled_field").style.display = "none";
-}
-
-function add_options_value(o, arr, orig){
-	if(orig == arr)
-		add_option(o, "mbss_"+arr, arr, 1);
-	else
-		add_option(o, "mbss_"+arr, arr, 0);
-}
-
-function applyRule(){
-	var confirm_flag = 0;
-	var confirm_content = "";
-	if(lantiq_support && wave_ready != 1){
-		alert(`<#Wireless_ready#>`);
-		return false;
-	}
-
-	var auth_mode = document.form.wl_auth_mode_x.value;
-	if(document.form.wl_wpa_psk.value == "<#wireless_psk_fillin#>")
-		document.form.wl_wpa_psk.value = "";
-
-	if(validForm()){
-		if(amesh_support && (isSwMode("rt") || isSwMode("ap")) && ameshRouter_support) {
-			if(!check_wl_auth_support($("select[name=wl_auth_mode_x] option:selected"), wl_unit))
-				return false;
-			else {
-				var wl_parameter = {
-					"original" : {
-						"ssid" : decodeURIComponent('<% nvram_char_to_ascii("", "wl_ssid"); %>'),
-						"psk" : decodeURIComponent('<% nvram_char_to_ascii("", "wl_wpa_psk"); %>')
-					},
-					"current": {
-						"ssid" : document.form.wl_ssid.value,
-						"psk" : document.form.wl_wpa_psk.value
-					}
-				};
-				if(!AiMesh_confirm_msg("Wireless_SSID_PSK", wl_parameter))
-					return false;
-			}
-			var radio_value = (document.form.wl_closed[0].checked) ? 1 : 0;
-			if(document.form.wps_enable.value == 1) {
-				if(radio_value) {
-					//if(!AiMesh_confirm_msg("Wireless_Hide_WPS", radio_value))
-						//return false;
-					confirm_flag=7;
-					confirm_content="<#AiMesh_confirm_msg7#>";
-				}
-			}
-			else {
-				if(radio_value) {
-					//if(!AiMesh_confirm_msg("Wireless_Hide", radio_value))
-						//return false;
-					confirm_flag=6;
-					confirm_content="<#AiMesh_confirm_msg6#>";
-				}
-			}
-		}
-		else {
-			if(document.form.wl_closed[0].checked && document.form.wps_enable.value == 1 && (isSwMode("rt") || isSwMode("ap"))){
-				confirm_flag=1;
-				confirm_content="<#wireless_JS_Hide_SSID#>";
-			}
-		}
-
-		if(document.form.wps_enable.value == 1){		//disable WPS if choose WEP or WPA/TKIP Encryption
-			if(wps_multiband_support && (document.form.wps_multiband.value == 1	|| document.form.wps_band.value == wl_unit_value)){		//Ralink, Qualcomm Atheros
-				if(document.form.wl_auth_mode_x.value == "open" && document.form.wl_wep_x.value == "0"){
-					if(!confirm("<#wireless_JS_WPS_open#>"))
-						return false;		
-				}
-		
-				if( document.form.wl_auth_mode_x.value == "shared"
-				 ||	document.form.wl_auth_mode_x.value == "psk" || document.form.wl_auth_mode_x.value == "wpa"
-				 || document.form.wl_auth_mode_x.value == "open" && (document.form.wl_wep_x.value == "1" || document.form.wl_wep_x.value == "2")){		//open wep case			
-					if(confirm("<#wireless_JS_disable_WPS#>")){
-						document.form.wps_enable.value = "0";	
-					}
-					else{	
-						return false;	
-					}			
-				}
-			}
-			else{			//Broadcom 
-				if(document.form.wl_auth_mode_x.value == "open" && document.form.wl_wep_x.value == "0"){
-					if(!confirm("<#wireless_JS_WPS_open#>"))
-						return false;		
-				}
-		
-				if( document.form.wl_auth_mode_x.value == "shared"
-				 ||	document.form.wl_auth_mode_x.value == "psk" || document.form.wl_auth_mode_x.value == "wpa"
-				 || document.form.wl_auth_mode_x.value == "open" && (document.form.wl_wep_x.value == "1" || document.form.wl_wep_x.value == "2")){		//open wep case			
-					if(confirm("<#wireless_JS_disable_WPS#>")){
-						document.form.wps_enable.value = "0";	
-					}
-					else{	
-						return false;	
-					}			
-				} 
-			}
-		}
-
-		if(vht160_support){
-			document.form.wl_bw_160.value = $("#enable_160mhz").prop("checked") ? 1 : 0;
-		}
-
-		document.form.wps_config_state.value = "1";		
-		if((auth_mode == "shared" || auth_mode == "wpa" || auth_mode == "wpa2" || auth_mode == "wpawpa2" || auth_mode == "radius" ||
-				((auth_mode == "open") && !(document.form.wl_wep_x.value == "0")))
-				&& document.form.wps_mode.value == "enabled")
-			document.form.wps_mode.value = "disabled";
-		
-		if(auth_mode == "wpa" || auth_mode == "wpa2" || auth_mode == "wpawpa2" || auth_mode == "radius"){
-			if(based_modelid != "BRT-AC828"){
-				document.form.next_page.value = "/Advanced_WSecurity_Content.asp";
-			}
-		}
-
-		var mbo = document.form.wl_mbo_enable.value;
-		if(auth_mode == 'sae'){
-			document.form.wl_mfp.value = '2';
-		}
-		else if(auth_mode == 'psk2sae' && document.form.wl_mfp.value == '0'){
-			document.form.wl_mfp.value = '1';
-		}
-		else if(auth_mode == 'psk2' || auth_mode == 'pskpsk2' || auth_mode == 'wpa2' || auth_mode == 'wpawpa2'){
-			if(mbo_support && mbo == '1' && document.form.wl_mfp.value == '0'){
-				document.form.wl_mfp.value = '1';
-			}
-		}
-
-		if(Bcmwifi_support) {
-			if(document.form.wl_nmode_x.value != "2" && wl_unit_value == "0")
-				document.form.wl_gmode_protection.value = "auto";
-		}
-		else {
-			if(document.form.wl_nmode_x.value == "1" && wl_unit_value == "0")
-				document.form.wl_gmode_protection.value = "off";
-		}
-
-		/*  Viz 2012.08.15 seems ineeded
-		inputCtrl(document.form.wl_crypto, 1);
-		inputCtrl(document.form.wl_wpa_psk, 1);
-		inputCtrl(document.form.wl_wep_x, 1);
-		inputCtrl(document.form.wl_key, 1);
-		inputCtrl(document.form.wl_key1, 1);
-		inputCtrl(document.form.wl_key2, 1);
-		inputCtrl(document.form.wl_key3, 1);
-		inputCtrl(document.form.wl_key4, 1);
-		inputCtrl(document.form.wl_phrase_x, 1);
-		inputCtrl(document.form.wl_wpa_gtk_rekey, 1);*/
-		
-		if(isSwMode("re") || isSwMode("mb"))
-			document.form.action_wait.value = "5";
-
-		if (Qcawifi_support) {
-			document.form.action_wait.value = "30";
-		}
-		else if (Rawifi_support) {
-			document.form.action_wait.value = "20";
-		}
-
-		if(smart_connect_support && (isSwMode("rt") || isSwMode("ap")) && document.form.smart_connect_x.value == "1"){
-			if(isSupport("amas_fronthaul_network")){
-				if(isSupport("triband")){
-					if(smart_connect_flag_t != document.form.smart_connect_x.value){//SC change to 1
-						if(dwb_info.mode && wl_unit != dwb_info.band){//current wl_unit maybe is 0 or 1
-							var nvramSet_obj = {"action_mode":"apply"};
-							nvramSet_obj["wl"+dwb_info.band+"_closed"] = "1";
-							httpApi.nvramSet(nvramSet_obj);
-						}
-					}
-				}
-			}
-		}
-
-		if(confirm_flag==1 || confirm_flag==7 || confirm_flag==6){
-			if($(".confirm_block").length > 0){
-				$(".confirm_block").remove();
-			}
-			if(window.scrollTo)
-				window.scrollTo(0,0);
-			htmlbodyforIE = document.getElementsByTagName("html");
-			htmlbodyforIE[0].style.overflow = "hidden";
-
-			$("#Loading").css('visibility', 'visible');
-			$("#loadingBlock").css('visibility', 'hidden');
-
-			confirm_asus({
-				title: "<#WLANConfig11b_x_BlockBCSSID_itemname#>",
-				contentA: confirm_content+"<br><br><#AiMesh_confirm_msg13#> <#AiMesh_confirm_msg0#>",
-				contentC: "",
-				left_button: "<#CTL_ok#>",
-				left_button_callback: function(){
-					if(confirm_flag==1 || confirm_flag==7){
-						document.form.wps_enable.value = "0";
-					}
-					confirm_cancel();
-					htmlbodyforIE = document.getElementsByTagName("html");
-					htmlbodyforIE[0].style.overflow = "";
-					$("#loadingBlock").css('visibility', 'visible');
-					showLoading();
-					document.form.submit();
-				},
-				left_button_args: {},
-				right_button: "<#CTL_Cancel#>",
-				right_button_callback: function(){
-					confirm_cancel();
-					htmlbodyforIE = document.getElementsByTagName("html");
-					htmlbodyforIE[0].style.overflow = "";
-					$("#Loading").css('visibility', 'hidden');
-					return false;
-				},
-				right_button_args: {},
-				iframe: "",
-				margin: "100px 0px 0px 25px",
-				note_display_flag: 0
-			});
-			$(".confirm_block").css( "zIndex", 10001 );
-			$("#ssid_hide_faq").attr('target', '_blank')
-							.attr('style', 'color:#FFCC00;text-decoration:underline;')
-							.attr("href", faq_href_hide_ssid);
-
-		}
-		else{
-			showLoading();
-			document.form.submit();
-		}
-	}
-}
-
-function validForm(){
-	var auth_mode = document.form.wl_auth_mode_x.value;
-	
-	if(!validator.stringSSID(document.form.wl_ssid))
-		return false;
-	if(sw_mode != 2){
-		if(!check_NOnly_to_GN()){
-			autoFocus('wl_nmode_x');
-			return false;
-		}
-	}
-	
-	if(document.form.wl_wep_x.value != "0")
-		if(!validate_wlphrase('WLANConfig11b', 'wl_phrase_x', document.form.wl_phrase_x))
-			return false;	
-
-	if(auth_mode == "psk" || auth_mode == "psk2" || auth_mode == "pskpsk2" || auth_mode == "sae" || auth_mode == "psk2sae"){ //2008.08.04 lock modified
-		if(is_KR_sku){
-			if(!validator.psk_KR(document.form.wl_wpa_psk))
-				return false;
-		}
-		else{
-			if(!validator.psk(document.form.wl_wpa_psk))
-				return false;
-		}
-		
-		//confirm common string combination	#JS_common_passwd#
-		var is_common_string = check_common_string(document.form.wl_wpa_psk.value, "wpa_key");
-		if(is_common_string){
-			if(!confirm("<#JS_common_passwd#>")){
-				document.form.wl_wpa_psk.focus();
-				document.form.wl_wpa_psk.select();
-				return false;	
-			}	
-		}
-		
-		if(!validator.range(document.form.wl_wpa_gtk_rekey, 0, 2592000))
-			return false;
-	}
-	else if(auth_mode == "wpa" || auth_mode == "wpa2" || auth_mode == "wpawpa2"){
-		if(!validator.range(document.form.wl_wpa_gtk_rekey, 0, 2592000))
-			return false;
-	}
-	else{
-		var cur_wep_key = eval('document.form.wl_key'+document.form.wl_key.value);		
-		if(auth_mode != "radius" && !validator.wlKey(cur_wep_key))
-			return false;
-	}	
-
-	if(isSupport("triband") && dwb_info.mode) {
-		var jsonPara = {};
-		jsonPara["edit_wl_unit"] = wl_unit;
-		jsonPara["edit_wl_ssid"] = document.form.wl_ssid.value;
-		jsonPara["dwb_unit"] = dwb_info.band;
-		jsonPara["smart_connect"] = document.form.smart_connect_x.value;
-		var ssid_array = [];
-		ssid_array.push(httpApi.nvramGet(["wl0_ssid"]).wl0_ssid);
-		if(wl_info.band5g_support)
-			ssid_array.push(httpApi.nvramGet(["wl1_ssid"]).wl1_ssid);
-		if(wl_info.band5g_2_support || wl_info.band6g_support)
-			ssid_array.push(httpApi.nvramGet(["wl2_ssid"]).wl2_ssid);
-		jsonPara["current_ssid"] = ssid_array;
-		if(!validator.dwb_check_wl_setting(jsonPara)) {
-			alert(`<#wireless_JS_dup_SSID#>`);
-			return false;
-		}
-	}
-
-	return true;
-}
-
-function done_validating(action){
-	refreshpage();
-}
-
-function validate_wlphrase(s, v, obj){
-	if(!validator.string(obj)){
-		is_wlphrase(s, v, obj);
-		return(false);
-	}
-	return true;
-}
-
-function disableAdvFn(){
-	for(var i=18; i>=3; i--)
-		document.getElementById("WLgeneral").deleteRow(i);
-}
-
-function _change_wl_unit(val){
-	if (band60g_support && he_frame_support) {
-		if (document.form.wl_unit.value == '3') {
-			$("#he_mode_field").hide();
-		}
-		else {
-			$("#he_mode_field").show();
-		}
-	}
-	if(!concurrep_support && (isSwMode("re") || isSwMode("mb")) && val == wlc_band_value)
-		document.form.wl_subunit.value = 1;
-	else
-		document.form.wl_subunit.value = -1;
-
-	if(concurrep_support && (isSwMode("re") || isSwMode("mb") || isSwMode("ew")))
-		document.form.wl_subunit.value = 1;
-
-	change_wl_unit();
-}
-
-function clean_input(obj){
-	if(obj.value == "<#wireless_psk_fillin#>")
-			obj.value = "";
-}
-
-function check_NOnly_to_GN(){
-	//var gn_array_2g = [["1", "ASUS_Guest1", "psk", "tkip", "1234567890", "0", "1", "", "", "", "", "0", "off", "0"], ["1", "ASUS_Guest2", "shared", "aes", "", "1", "1", "55555", "", "", "", "0", "off", "0"], ["1", "ASUS_Guest3", "open", "aes", "", "2", "4", "", "", "", "1234567890123", "0", "off", "0"]];
-	//                    Y/N        mssid      auth    asyn    wpa_psk wl_wep_x wl_key k1	k2 k3 k4                                        
-	//var gn_array_5g = [["1", "ASUS_5G_Guest1", "open", "aes", "", "0", "1", "", "", "", "", "0", "off", "0"], ["0", "ASUS_5G_Guest2", "open", "aes", "", "0", "1", "", "", "", "", "0", "off", ""], ["0", "ASUS_5G_Guest3", "open", "aes", "", "0", "1", "", "", "", "", "0", "off", ""]];
-	// Viz add 2012.11.05 restriction for 'N Only' mode  ( start 	
-	if(document.form.wl_nmode_x.value == "0" || document.form.wl_nmode_x.value == "1"){
-		if(wl_unit_value == "1" || wl_unit_value == "2"){		//5G
-			for(var i=0;i<gn_array_5g.length;i++){
-				if(gn_array_5g[i][0] == "1" && (gn_array_5g[i][3] == "tkip" || gn_array_5g[i][5] == "1" || gn_array_5g[i][5] == "2")){
-					if(document.form.wl_nmode_x.value == "0")
-						document.getElementById('wl_NOnly_note').innerHTML = '<br>* <#WLANConfig11n_Auto_note#>';
-					else{
-						document.getElementById('wl_NOnly_note').innerHTML = '<br>* <#WLANConfig11n_NOnly_note#>';
-					}	
-						
-					document.getElementById('wl_NOnly_note').style.display = "";
-					return false;
-				}
-			}		
-		}
-		else if(wl_unit_value == "0"){		//2.4G
-			for(var i=0;i<gn_array_2g.length;i++){
-				if(gn_array_2g[i][0] == "1" && (gn_array_2g[i][3] == "tkip" || gn_array_2g[i][5] == "1" || gn_array_2g[i][5] == "2")){
-					if(document.form.wl_nmode_x.value == "0")
-						document.getElementById('wl_NOnly_note').innerHTML = '<br>* <#WLANConfig11n_Auto_note#>';
-					else	
-						document.getElementById('wl_NOnly_note').innerHTML = '<br>* <#WLANConfig11n_NOnly_note#>';
-						
-					document.getElementById('wl_NOnly_note').style.display = "";
-					return false;
-				}
-			}	
-		}	
-	}
-	document.getElementById('wl_NOnly_note').style.display = "none";
-	return true;
-//  Viz add 2012.11.05 restriction for 'N Only' mode  ) end		
-}
-
-function high_power_auto_channel(){
-	if(is_high_power){
-		if(document.form.wl_channel.value == 1){
-			if(confirm("<#WLANConfig11b_Channel_HighPower_desc1#>")){
-				document.form.wl_channel.value = 2;
-			}
-			else if(!(confirm("<#WLANConfig11b_Channel_HighPower_desc2#>"))){
-				document.form.wl_channel.value = 2;
-			}
-		}
-		else if(document.form.wl_channel.value == 11){
-			if(confirm("<#WLANConfig11b_Channel_HighPower_desc3#>")){
-				document.form.wl_channel.value = 10;
-			}
-			else if(!(confirm("<#WLANConfig11b_Channel_HighPower_desc4#>"))){
-				document.form.wl_channel.value = 10;
-			}
-		}	
-
-		if(document.form.wl_channel.value == 0)
-			document.form.AUTO_CHANNEL.value = 1;
-		else
-			document.form.AUTO_CHANNEL.value = 0;
-	}
-}
-
-function check_DFS_support(obj){
-	if(obj.checked)
-		document.form.acs_dfs.value = 1;
-	else
-		document.form.acs_dfs.value = 0;
-}
-
-function check_acs_band1_support(obj){
-	if(obj.checked)
-		document.form.acs_band1.value = 1;
-	else
-		document.form.acs_band1.value = 0;
-}
-
-function check_acs_band3_support(obj){
-	if(obj.checked)
-		document.form.acs_band3.value = 1;
-	else
-		document.form.acs_band3.value = 0;
-}
-
-function check_acs_ch13_support(obj){
-	if(obj.checked)
-		document.form.acs_ch13.value = 1;
-	else
-		document.form.acs_ch13.value = 0;
-}
-
-function checkWLReady(){
-	$.ajax({
-	    url: '/ajax_wl_ready.asp',
-	    dataType: 'script',	
-	    error: function(xhr) {
-			setTimeout("checkWLReady();", 1000);
-	    },
-	    success: function(response){
-	    	if(wave_ready != 1){
-	    		$("#lantiq_ready").show();
-	    		setTimeout("checkWLReady();", 1000);
-	    	}
-	    	else{
-	    		$("#lantiq_ready").hide();
-	    	}
-			
-	    }
-  	});
-}
-
-function enableSmartCon(val){
-	document.form.smart_connect_x.value = val;
-	var value = new Array();
-	var desc = new Array();
-
-	if(isSupport("triband") && dwb_info.mode) {
-		desc = ["<#smart_connect_dual#> (2.4GHz and 5GHz)"];
-		value = ["1"];
-		add_options_x2(document.form.smart_connect_t, desc, value, val);
-	}
-	else {
-		if(based_modelid=="RT-AC5300" || based_modelid=="GT-AC5300"){
-			desc = ["<#smart_connect_tri#> (2.4GHz, 5GHz-1 and 5GHz-2)", "5GHz Smart Connect (5GHz-1 and 5GHz-2)"];
-			value = ["1", "2"];
-			add_options_x2(document.form.smart_connect_t, desc, value, val);
-		}
-		else if(based_modelid =="RT-AC3200" || based_modelid =="RT-AC95U"){
-			desc = ["<#smart_connect_tri#> (2.4GHz, 5GHz-1 and 5GHz-2)"];
-			value = ["1"];
-			add_options_x2(document.form.smart_connect_t, desc, value, val);
-		}
-		else if(based_modelid == "RT-AC88U" || based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900" || based_modelid == "RT-AC3100" || based_modelid == "BLUECAVE" || based_modelid == "MAP-AC1750" || based_modelid == "RT-AX89U" || based_modelid == "GT-AXY16000" || based_modelid.substring(0,7) == "RT-AC59" || based_modelid == "XD4S"){
-			desc = ["<#smart_connect_dual#> (2.4GHz and 5GHz)"];
-			value = ["1"];
-			add_options_x2(document.form.smart_connect_t, desc, value, val);
-		}
-	}
-	
-	if (Qcawifi_support || Rawifi_support) {
-		document.getElementById("smartcon_rule_link").style.display = "none";
-		document.getElementById("smart_connect_field").style.display = "none";
-	}
-	
-	if(based_modelid=="RT-AC5300" || 
-		based_modelid=="GT-AC5300" || 
-		based_modelid=="RT-AC3200" || 
-		based_modelid=="RT-AC88U" ||
-		based_modelid == "RT-AC86U" ||
-		based_modelid == "GT-AC2900" ||
-		based_modelid == "RT-AC3100" ||
-		based_modelid == "RT-AC95U" ||
-		based_modelid == "MAP-AC1750" ||
-		based_modelid.substring(0,7) == "RT-AC59" ||
-		based_modelid == "RT-AX89U" ||
-		based_modelid == "GT-AXY16000" ||
-		based_modelid == "XD4S" || 
-		based_modelid == "BLUECAVE"){
-		document.getElementById("smartcon_rule_link").style.display = "none";
-		if(val == 0){
-			document.getElementById("smart_connect_field").style.display = "none";
-		}else if(val > 0){
-			document.getElementById("smart_connect_field").style.display = "";
-		}
-	}
-
-	if((val == 0 || (val == 2 && wl_unit == 0)) || (dwb_info.mode && wl_unit == dwb_info.band)){
-		document.getElementById("wl_unit_field").style.display = "";
-		document.form.wl_nmode_x.disabled = "";
-		if(document.form.wl_unit[0].selected == true){
-			document.getElementById("wl_gmode_checkbox").style.display = "";
-		}
-		if(band5g_11ac_support){
-			regen_5G_mode(document.form.wl_nmode_x, wl_unit);		
-		}else{
-			free_options(document.form.wl_nmode_x);
-			document.form.wl_nmode_x.options[0] = new Option("<#Auto#>", 0);
-			document.form.wl_nmode_x.options[1] = new Option("N only", 1);
-			document.form.wl_nmode_x.options[2] = new Option("Legacy", 2);
-		}
-		change_wl_nmode(document.form.wl_nmode_x);		
-	}else{
-		document.getElementById("wl_unit_field").style.display = "none";
-		regen_auto_option(document.form.wl_nmode_x);
-		document.getElementById("wl_gmode_checkbox").style.display = "none";
-		if (Qcawifi_support)
-			__regen_auto_option(document.form.wl_bw, 1);
-		else
-			regen_auto_option(document.form.wl_bw);
-		regen_auto_option(document.form.wl_channel);
-		regen_auto_option(document.form.wl_nctrlsb);			
-	}
-	
-	if(based_modelid=="RT-AC5300" || based_modelid=="GT-AC5300" || based_modelid=="RT-AC3200")
-		_change_smart_connect(val);
-
-	if(isSupport("amas_fronthaul_network")){
-		if(isSupport("triband")){
-			var wl_closed = httpApi.nvramGet(["wl_closed"]).wl_closed;
-			if(wl_closed != undefined && wl_closed != ""){
-				$('input:radio[name=wl_closed]').each(function(){$(this).prop('checked', false);});
-				$('input:radio[name=wl_closed][value="' + wl_closed + '"]').click();
-			}
-			if(dwb_info.mode && wl_unit == dwb_info.band){
-				if(smart_connect_flag_t != val && val == "1"){
-					$('input:radio[name=wl_closed]').each(function(){$(this).prop('checked', false);});
-					$('input:radio[name=wl_closed][value=1]').click();
-				}
-			}
-		}
-	}
-
-	controlHideSSIDHint();
-}
-
-function enable_160MHz(obj){
-	cur = '<% nvram_get("wl_bw"); %>';
-	var bws = new Array();
-	var bwsDesc = new Array();
-
-	if(obj.checked){
-		bws = [1, 0, 2, 3, 5];
-		bwsDesc = ["20/40/80/160 MHz", "20 MHz", "40 MHz", "80 MHz", "160 MHz"];
-		enable_bw_160 = true;
-	}
-	else{
-		bws = [1, 0, 2, 3];
-		bwsDesc = ["20/40/80 MHz", "20 MHz", "40 MHz", "80 MHz"];
-		enable_bw_160 = false;
-	}
-
-	add_options_x2(document.form.wl_bw, bwsDesc, bws, cur);
-	insertExtChannelOption();
-}
-
-function __regen_auto_option(obj,val){
-	free_options(obj);
-	obj.options[0] = new Option("<#Auto#>", val);
-	obj.selectedIndex = 0;
-}
-
-function regen_auto_option(obj){
-	var value = 0;
-	if(obj.name === 'wl_bw' && (Rawifi_support || Qcawifi_support)){
-		value = 1;
-	}
-
-	__regen_auto_option(obj, value);
-}
-
-var wl_unit = <% nvram_get("wl_unit"); %>;
-function regen_5G_mode(obj,flag){	//please sync to initial() : //Change wireless mode help desc
-	free_options(obj);
-	if(flag == 1 || flag == 2){
-		if(based_modelid == "RT-AC87U"){
-			obj.options[0] = new Option("<#Auto#>", 0);
-			obj.options[1] = new Option("N only", 1);			
-		}
-		else if(no_vht_support){	//Hide 11AC/80MHz from GUI
-			obj.options[0] = new Option("<#Auto#>", 0);
-			obj.options[1] = new Option("N only", 1);
-			obj.options[2] = new Option("Legacy", 2);
-		}
-		else if(band5g_11ax_support){
-			obj.options[0] = new Option("<#Auto#>", 0);
-			obj.options[1] = new Option("N/AC/AX mixed", 8);
-			obj.options[2] = new Option("Legacy", 2);
-		}
-		else{
-			obj.options[0] = new Option("<#Auto#>", 0);
-			obj.options[1] = new Option("N only", 1);
-			obj.options[2] = new Option("N/AC mixed", 8);
-			obj.options[3] = new Option("Legacy", 2);
-		}
-	}
-	else{
-		obj.options[0] = new Option("<#Auto#>", 0);
-		obj.options[1] = new Option("N only", 1);
-		obj.options[2] = new Option("Legacy", 2);
-	}
-	obj.value = '<% nvram_get("wl_nmode_x"); %>';
-}
-
-function wl_mode_change(mode){
-	if(is_unit_24g(wl_unit_value)){
-		if(mode == '0'){
-			document.form.wl_rateset.disabled = false;
-			document.getElementById("wl_rateset_checkbox").style.display = "";
-		}
-		else{
-			document.form.wl_rateset.disabled = true;
-			document.getElementById("wl_rateset_checkbox").style.display = "none";
-		}
-	}
-}
-
-function wl_disable11b(obj){
-	if(obj.checked){
-		document.form.wl_rateset.value = 'ofdm';
-	}
-	else{
-		document.form.wl_rateset.value = 'default';
-	}
-}
-
-function change_wl_nmode(o){
-	if(Bcmwifi_support) {
-		if(o.value == '2')
-			inputCtrl(document.form.wl_gmode_check, 1);
-		else {
-			inputCtrl(document.form.wl_gmode_check, 0);
-			document.form.wl_gmode_check.checked = true;
-		}
-	}
-	else {
-		if(o.value=='1') /* Jerry5: to be verified */
-			inputCtrl(document.form.wl_gmode_check, 0);
-		else
-			inputCtrl(document.form.wl_gmode_check, 1);
-	}
-
-	if (he_frame_support) {
-		if (o.value == '0' && !(band60g_support && document.form.wl_unit.value == '3')) {
-			$("#he_mode_field").show();
-		}
-		else {
-			$("#he_mode_field").hide();
-		}
-	}
-
-	limit_auth_method();
-	if(o.value == "3"){
-		document.form.wl_wme.value = "on";
-	}
-
-	
-	if(wl_unit == '0')
-		check_channel_2g();
-	else if(wl_unit == '3')
-		insertChannelOption_60g();
-	else
-		insertExtChannelOption_5g();
-
-	genBWTable(wl_unit);
-}
-function he_frame_mode(obj) {
-	if (obj.value == "0" && wl_unit != 0) {
-		$("#enable_160mhz")[0].checked = false
-		enable_160MHz($("#enable_160mhz")[0]);
-		document.form.acs_dfs_checkbox.checked = false;
-		document.form.acs_dfs.value = 0;
-	}
-}
-function controlHideSSIDHint() {
-	$("#dwb_band_hide_hint").hide();
-	if(isSupport("triband") && dwb_info.mode){
-		if(dwb_info.band == wl_unit){
-			if(document.form.smart_connect_x.value != "1" && ($('input:radio[name=wl_closed]:checked').val() == "1"))
-				$("#dwb_band_hide_hint").show();
-		}
-	}
-}
-function ajax_wl_channel(){
-	$.ajax({
-		url: '/ajax_wl_channel.asp',
-		dataType: 'script',	
-		error: function(xhr) {
-			setTimeout("ajax_wl_channel();", 1000);
-		},
-		success: function(response){
-			$("#auto_channel").html("<#wireless_control_channel#>: " + cur_control_channel[wl_unit]);
-			setTimeout("ajax_wl_channel();", 5000);
-		}
-	});
-}
-
-function ajax_wl_edmg_channel(){
-	$.ajax({
-		url: '/ajax_wl_edmg_channel.asp',
-		dataType: 'script',	
-		error: function(xhr) {
-			setTimeout("ajax_wl_edmg_channel();", 1000);
-		},
-		success: function(response){
-			$("#auto_edmg_channel").html("Current EDMG Channel: " + cur_edmg_channel[wl_unit]); /* untranslated */
-			setTimeout("ajax_wl_edmg_channel();", 5000);
-		}
-	});
-}
-
-function handleMFP(){
-	if(mbo_support && document.form.wl_mbo_enable.value == '1' && document.form.wl_mfp.value == '0'){
-		$('#mbo_notice').show();
-	}
-	else{
-		$('#mbo_notice').hide();
-	}
-}
-</script>
-</head>
-
-<body onload="initial();" onunLoad="return unload_body();" class="bg">
-<div id="TopBanner"></div>
-
-<div id="Loading" class="popup_bg"></div>
-<div id="hiddenMask" class="popup_bg">
-	<table cellpadding="4" cellspacing="0" id="dr_sweet_advise" class="dr_sweet_advise" align="center">
-		<tr>
-		<td>
-			<div class="drword" id="drword"><#Main_alert_proceeding_desc4#> <#Main_alert_proceeding_desc1#>...
-				<br/>
-				<div id="disconnect_hint" style="display:none;"><#Main_alert_proceeding_desc2#></div>
-				<br/>
-		    </div>
-			<div id="wireless_client_detect" style="margin-left:10px;position:absolute;display:none;width:400px;">
-				<img src="images/loading.gif">
-				<div style="margin:-55px 0 0 75px;"><#QKSet_Internet_Setup_fail_method1#></div>
-			</div> 
-			<div class="drImg"><img src="images/alertImg.png"></div>
-			<div style="height:100px; "></div>
-		</td>
-		</tr>
-	</table>
-<!--[if lte IE 6.5]><iframe class="hackiframe"></iframe><![endif]-->
-</div>
-
-<iframe name="hidden_frame" id="hidden_frame" width="0" height="0" frameborder="0"></iframe>
-<form method="post" name="form" action="/start_apply2.htm" target="hidden_frame">
-<input type="hidden" name="productid" value="<% nvram_get("productid"); %>">
-
-
-<input type="hidden" name="current_page" value="Advanced_Wireless_Content.asp">
-<input type="hidden" name="next_page" value="Advanced_Wireless_Content.asp">
-<input type="hidden" name="modified" value="0">
-<input type="hidden" name="action_mode" value="apply_new">
-<input type="hidden" name="action_script" value="restart_wireless">
-<input type="hidden" name="action_wait" value="5">
-<input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
-<input type="hidden" name="wl_country_code" value="<% nvram_get("wl0_country_code"); %>" disabled>
-<input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
-<input type="hidden" name="wps_mode" value="<% nvram_get("wps_mode"); %>">
-<input type="hidden" name="wps_config_state" value="<% nvram_get("wps_config_state"); %>">
-<input type="hidden" name="wl_key1_org" value="<% nvram_char_to_ascii("WLANConfig11b", "wl_key1"); %>">
-<input type="hidden" name="wl_key2_org" value="<% nvram_char_to_ascii("WLANConfig11b", "wl_key2"); %>">
-<input type="hidden" name="wl_key3_org" value="<% nvram_char_to_ascii("WLANConfig11b", "wl_key3"); %>">
-<input type="hidden" name="wl_key4_org" value="<% nvram_char_to_ascii("WLANConfig11b", "wl_key4"); %>">
-<input type="hidden" name="wl_phrase_x_org" value="<% nvram_char_to_ascii("WLANConfig11b", "wl_phrase_x"); %>">
-<input type="hidden" maxlength="15" size="15" name="x_RegulatoryDomain" value="<% nvram_get("x_RegulatoryDomain"); %>" readonly="1">
-<input type="hidden" name="wl_gmode_protection" value="<% nvram_get("wl_gmode_protection"); %>">
-<input type="hidden" name="wl_wme" value="<% nvram_get("wl_wme"); %>">
-<input type="hidden" name="wl_mode_x" value="<% nvram_get("wl_mode_x"); %>">
-<input type="hidden" name="wl_nctrlsb_old" value="<% nvram_get("wl_nctrlsb"); %>">
-<input type="hidden" name="wl_key_type" value='<% nvram_get("wl_key_type"); %>'> <!--Lock Add 2009.03.10 for ralink platform-->
-<input type="hidden" name="wl_channel_orig" value='<% nvram_get("wl_channel"); %>'>
-<input type="hidden" name="wl_edmg_channel_orig" value='<% nvram_get("wl_edmg_channel"); %>' disabled>
-<input type="hidden" name="AUTO_CHANNEL" value='<% nvram_get("AUTO_CHANNEL"); %>'>
-<input type="hidden" name="wl_wep_x_orig" value='<% nvram_get("wl_wep_x"); %>'>
-<input type="hidden" name="wl_optimizexbox" value='<% nvram_get("wl_optimizexbox"); %>'>
-<input type="hidden" name="wl_bw_160" value='<% nvram_get("wl_bw_160"); %>'>
-<input type="hidden" name="wl_subunit" value='-1'>
-<input type="hidden" name="acs_dfs" value='<% nvram_get("acs_dfs"); %>'>
-<input type="hidden" name="acs_band1" value='<% nvram_get("acs_band1"); %>'>
-<input type="hidden" name="acs_band3" value='<% nvram_get("acs_band3"); %>'>
-<input type="hidden" name="acs_ch13" value='<% nvram_get("acs_ch13"); %>'>
-<input type="hidden" name="wps_enable" value="<% nvram_get("wps_enable"); %>">
-<input type="hidden" name="wps_band" value="<% nvram_get("wps_band_x"); %>" disabled>
-<input type="hidden" name="wps_multiband" value="<% nvram_get("wps_multiband"); %>" disabled>
-<input type="hidden" name="w_Setting" value="1">
-<input type="hidden" name="wl_rateset" value="<% nvram_get("wl_rateset"); %>" >
-<input type="hidden" name="w_apply" value="1">
-<input type="hidden" name="smart_connect_x" value="<% nvram_get("smart_connect_x"); %>">
-
-<table class="content" align="center" cellpadding="0" cellspacing="0">
-  <tr>
-	<td width="17">&nbsp;</td>
-	
-	<!--=====Beginning of Main Menu=====-->
-	<td valign="top" width="202">
-	  <div id="mainMenu"></div>
-	  <div id="subMenu"></div>
-	</td>
-	
-	<td valign="top">
-	  <div id="tabMenu" class="submenuBlock"></div>
-
-<!--===================================Beginning of Main Content===========================================-->
-<table width="98%" border="0" align="left" cellpadding="0" cellspacing="0">
-  <tr>
-	<td align="left" valign="top" >
-	  <table width="760px" border="0" cellpadding="4" cellspacing="0" class="FormTitle" id="FormTitle">
-		<tbody>
-		<tr>
-		  <td bgcolor="#4D595D" valign="top">
-		  <div>&nbsp;</div>
-		  <div class="formfonttitle"><#menu5_1#> - <#menu5_1_1#></div>
-      		<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
-      <div class="formfontdesc"><#adv_wl_desc#></div>
-		<div id="lantiq_ready" style="display:none;color:#FC0;margin-left:5px;font-size:13px;">Wireless is setting...</div>
-			<table width="99%" border="1" align="center" cellpadding="4" cellspacing="0" id="WLgeneral" class="FormTable">
-					<tr id="smartcon_enable_field" style="display:none;">
-						<th width="30%"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0,27);"><#smart_connect_enable#></a></th>
-					  	<td>
-					    	<div id="smartcon_enable_block" style="display:none;">
-					    		<span style="color:#FFF;" id="smart_connect_enable_word">&nbsp;&nbsp;</span>
-					    		<input type="button" name="enableSmartConbtn" id="enableSmartConbtn" value="" class="button_gen" onClick="enableSmartCon();">
-					    		<br>
-					    	</div>
-								
-					    	<div id="radio_smartcon_enable" class="left" style="width: 94px;display:table-cell;"></div><div id="smartcon_rule_link" style="display:table-cell; vertical-align: middle;"><a href="Advanced_Smart_Connect.asp" style="font-family:Lucida Console;color:#FC0;text-decoration:underline;cursor:pointer;"><#smart_connect_rule#></a></div>
-								<div class="clear"></div>					
-								<script type="text/javascript">
-										var flag = '<% get_parameter("flag"); %>';
-										var smart_connect_flag_t;
-
-									if(flag == '')
-										smart_connect_flag_t = '<% nvram_get("smart_connect_x"); %>';
-									else
-										smart_connect_flag_t = flag;
-
-										$('#radio_smartcon_enable').iphoneSwitch( smart_connect_flag_t > 0, 
-										 function() {
-											if(based_modelid != "RT-AC5300" && based_modelid != "GT-AC5300" && based_modelid !="RT-AC3200" && based_modelid != "RT-AC88U" && based_modelid != "RT-AC86U" && based_modelid != "GT-AC2900" && based_modelid != "RT-AC3100" && based_modelid != "BLUECAVE" && based_modelid != "MAP-AC1750"  && based_modelid != "RT-AC95U" && based_modelid != "RT-AX89U" && based_modelid != "GT-AXY16000")
-												enableSmartCon(1);
-											else{
-												if(document.form.smart_connect_t.value)
-													enableSmartCon(document.form.smart_connect_t.value);
-												else
-													enableSmartCon(smart_connect_flag_t);
-											}
-										 },
-										 function() {
-											enableSmartCon(0);
-										 }
-									);
-								</script>
-				  	  </td>
-					</tr>	
-					<tr id="smart_connect_field" style="display:none;">                     
-						<th><#smart_connect#></th>                                            
-						<td id="smart_connect_switch">
-						<select name="smart_connect_t" class="input_option" onChange="enableSmartCon(this.value);">
-							<option class="content_input_fd" value="1" >Tri-band Smart Connect (2.4GHz, 5GHz-1 and 5GHz-2)</optio>
-							<option class="content_input_fd" value="2">5GHz Smart Connect (5GHz-1 and 5GHz-2)</option>
-						</select>                       
-						</td>
-					</tr>
-
-				<tr id="wl_unit_field">
-					<th><#Interface#></th>
-					<td>
-						<select name="wl_unit" class="input_option" onChange="_change_wl_unit(this.value);">
-							<option class="content_input_fd" value="0" <% nvram_match("wl_unit", "0","selected"); %>>2.4 GHz</option>
-							<option class="content_input_fd" value="1" <% nvram_match("wl_unit", "1","selected"); %>>5 GHz</option>
-							<option class="content_input_fd" value="1" <% nvram_match("wl_unit", "2","selected"); %>>5GHz-2</option>
-						</select>			
-					</td>
-		  	</tr>
-
-				<!--tr id="wl_subunit_field" style="display:none">
-					<th>Multiple SSID index</th>
-					<td>
-						<select name="wl_subunit" class="input_option" onChange="change_wl_unit();">
-							<option class="content_input_fd" value="0" <% nvram_match("wl_subunit", "0","selected"); %>>Primary</option>
-						</select>			
-						<select id="wl_bss_enabled_field" name="wl_bss_enabled" class="input_option" onChange="mbss_switch();">
-							<option class="content_input_fd" value="0" <% nvram_match("wl_bss_enabled", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
-							<option class="content_input_fd" value="1" <% nvram_match("wl_bss_enabled", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
-						</select>			
-					</td>
-		  	</tr-->
-
-				<tr>
-					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 1);"><#QIS_finish_wireless_item1#></a></th>
-					<td id="ssid_setting">
-						<input type="text" maxlength="33" class="input_32_table" id="wl_ssid" name="wl_ssid" value="<% nvram_get("wl_ssid"); %>" onkeypress="return validator.isString(this, event)" autocorrect="off" autocapitalize="off">
-					</td>
-		  	</tr>
-			  
-				<tr id="wl_closed_field">
-					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 2);"><#WLANConfig11b_x_BlockBCSSID_itemname#></a></th>
-					<td>
-						<input type="radio" value="1" name="wl_closed" class="input" onClick="return change_common_radio(this, 'WLANConfig11b', 'wl_closed', '1')" <% nvram_match("wl_closed", "1", "checked"); %>><#checkbox_Yes#>
-						<input type="radio" value="0" name="wl_closed" class="input" onClick="return change_common_radio(this, 'WLANConfig11b', 'wl_closed', '0')" <% nvram_match("wl_closed", "0", "checked"); %>><#checkbox_No#>
-						<span id="WPS_hideSSID_hint" style="display:none;"></span>	
-						<br>
-						<span id="dwb_band_hide_hint"><#AiMesh_dedicated_backhaul_band_hide_SSID#></span>
-					</td>					
-				</tr>
-					  
-			  <tr id="wl_mode_field">
-					<th><a id="wl_mode_desc" class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 4);"><#WLANConfig11b_x_Mode_itemname#></a></th>
-					<td>									
-						<select name="wl_nmode_x" class="input_option" onChange="wireless_mode_change(this);">
-							<option value="0" <% nvram_match("wl_nmode_x", "0","selected"); %>><#Auto#></option>
-							<option value="1" <% nvram_match("wl_nmode_x", "1","selected"); %>>N Only</option>
-							<option value="2" <% nvram_match("wl_nmode_x", "2","selected"); %>>Legacy</option>
-							<option value="8" <% nvram_match("wl_nmode_x", "8","selected"); %>>N/AC Mixed</option>
-						</select>
-						<span id="wl_optimizexbox_span" style="display:none"><input type="checkbox" name="wl_optimizexbox_ckb" id="wl_optimizexbox_ckb" value="<% nvram_get("wl_optimizexbox"); %>" onclick="document.form.wl_optimizexbox.value=(this.checked==true)?1:0;"> <#WLANConfig11b_x_Mode_xbox#></input></span>
-						<span id="wl_gmode_checkbox" style="display:none;"><input type="checkbox" name="wl_gmode_check" id="wl_gmode_check" value="" onClick="wl_gmode_protection_check();"> <#WLANConfig11b_x_Mode_protectbg#></input></span>
-						<span id="wl_rateset_checkbox" style="display:none;"><input type="checkbox" name="wl_rateset_check" id="wl_rateset_check" value="<% nvram_get("wl_rateset"); %>" onClick="wl_disable11b(this);">Disable 11b</span>
-						<span id="wl_nmode_x_hint" style="display:none;"><br><#WLANConfig11n_automode_limition_hint#><br></span>
-						<span id="wl_NOnly_note" style="display:none;"></span>
-						<!-- [N only] is not compatible with current guest network authentication method(TKIP or WEP),  Please go to <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">guest network</a> and change the authentication method. -->
-					</td>
-			  </tr>
-				<tr id="he_mode_field" style="display:none">
-					<th>
-						<a id="he_mode_text" class="hintstyle" href="javascript:void(0);" onClick=""><#WLANConfig11b_HE_Frame_Mode_itemname#></a>
-					</th>
-					<td>
-						<div style="display:flex;align-items: center;">
-							<select name="wl_11ax" class="input_option" onChange="he_frame_mode(this);">
-								<option value="1" <% nvram_match("wl_11ax", "1" ,"selected"); %> ><#WLANConfig11b_WirelessCtrl_button1name#></option>
-								<option value="0" <% nvram_match("wl_11ax", "0" ,"selected"); %> ><#WLANConfig11b_WirelessCtrl_buttonname#></option>
-							</select>
-							<span id="he_mode_faq" style="padding: 0 10px"><#WLANConfig11b_HE_Frame_Mode_faq#></span>
-						</div>
-					</td>
-				</tr>
-				<tr id="mbo_field" style="display:none">
-					<th>
-						<a class="hintstyle"><#WLANConfig11b_AgileMultiband_itemdesc#></a>
-					</th>
-					<td>
-						<div style="width:465px;display:flex;align-items: center;">
-							<select name="wl_mbo_enable" class="input_option" onChange="handleMFP();">
-								<option value="1" <% nvram_match("wl_mbo_enable", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
-								<option value="0" <% nvram_match("wl_mbo_enable", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
-							</select>
-						</div>
-					</td>
-				</tr>
-				<tr id="twt_field" style="display:none">
-					<th>
-						<a class="hintstyle"><#WLANConfig11b_WakeTime_itemname#></a>
-					</th>
-					<td>
-						<div style="width:465px;display:flex;align-items: center;">
-							<select name="wl_twt" class="input_option">
-								<option value="1" <% nvram_match("wl_twt", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
-								<option value="0" <% nvram_match("wl_twt", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
-							</select>
-						</div>
-					</td>
-				</tr>
-			 	<tr id="wl_bw_field">
-			   	<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 14);"><#WLANConfig11b_ChannelBW_itemname#></a></th>
-			   	<td>				    			
-						<select name="wl_bw" class="input_option" onChange="insertExtChannelOption();">
-							<option class="content_input_fd" value="1" <% nvram_match("wl_bw", "1","selected"); %>>20/40/80 MHz</option>
-							<option class="content_input_fd" value="0" <% nvram_match("wl_bw", "0","selected"); %>>20 MHz</option>
-							<option class="content_input_fd" value="2" <% nvram_match("wl_bw", "2","selected"); %>>40 MHz</option>
-							<option class="content_input_fd" value="3" <% nvram_match("wl_bw", "3","selected"); %>>80 MHz</option>
-						</select>
-						<span id="enable_160_field" style="display:none"><input type="checkbox" onclick="enable_160MHz(this);" id="enable_160mhz">Enable 160 MHz</span>			
-			   	</td>
-			 	</tr>			  
-			  
-				<tr id="wl_channel_field">
-					<th><a id="wl_channel_select" class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 3);"><#WLANConfig11b_Channel_itemname#></a></th>
-					<td>
-				 		<select name="wl_channel" class="input_option" onChange="high_power_auto_channel();insertExtChannelOption();"></select>
-						<span id="auto_channel" style="display:none;margin-left:10px;"></span><br>
-						
-						<div style="margin-top:5px">
-						<div><span id="dfs_checkbox" style="display:none"><input type="checkbox" onClick="check_DFS_support(this);" name="acs_dfs_checkbox" <% nvram_match("acs_dfs", "1", "checked"); %>><#WLANConfig11b_EChannel_dfs#></input></span></div>
-						<div><span id="acs_band1_checkbox" style="display:none;"><input type="checkbox" onClick="check_acs_band1_support(this);" <% nvram_match("acs_band1", "1", "checked"); %>><#WLANConfig11b_EChannel_band1#></input></span></div>
-						<div><span id="acs_band3_checkbox" style="display:none;"><input type="checkbox" onClick="check_acs_band3_support(this);" <% nvram_match("acs_band3", "1", "checked"); %>><#WLANConfig11b_EChannel_band3#></input></span></div>
-						<div><span id="acs_ch13_checkbox" style="display:none;"><input type="checkbox" onClick="check_acs_ch13_support(this);" <% nvram_match("acs_ch13", "1", "checked"); %>><#WLANConfig11b_EChannel_acs_ch13#></input></span></div>
-						</div>
-					</td>
-			  </tr>			 
-
-				<tr id="wl_edmg_field" style="display:none">
-					<th><a id="wl_edmg_select" class="hintstyle" href="javascript:void(0);">EDMG channel</a></th>
-					<td>
-						<select name="wl_edmg_channel" class="input_option">
-							<option class="content_input_fd" value="0" <% nvram_match("wl_edmg_channel", "0","selected"); %>><#Auto#></option>
-						</select>
-						<span id="auto_edmg_channel" style="display:none;margin-left:10px;"></span><br>
-					</td>
-				</tr>
-
-			  <tr id="wl_nctrlsb_field">
-			  	<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 15);"><#WLANConfig11b_EChannel_itemname#></a></th>
-		   		<td>
-					<select name="wl_nctrlsb" class="input_option">
-						<option value="lower" <% nvram_match("wl_nctrlsb", "lower", "selected"); %>>lower</option>
-						<option value="upper"<% nvram_match("wl_nctrlsb", "upper", "selected"); %>>upper</option>
-					</select>
-					</td>
-		  	</tr>
-			  
-			  	<tr>
-					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 5);"><#WLANConfig11b_AuthenticationMethod_itemname#></a></th>
-					<td>
-				  		<select name="wl_auth_mode_x" class="input_option" onChange="authentication_method_change(this);">
-							<option value="open"    <% nvram_match("wl_auth_mode_x", "open",   "selected"); %>>Open System</option>
-							<option value="shared"  <% nvram_match("wl_auth_mode_x", "shared", "selected"); %>>Shared Key</option>
-							<option value="psk"     <% nvram_match("wl_auth_mode_x", "psk",    "selected"); %>>WPA-Personal</option>
-							<option value="psk2"    <% nvram_match("wl_auth_mode_x", "psk2",   "selected"); %>>WPA2-Personal</option>
-							<option value="sae"    <% nvram_match("wl_auth_mode_x", "sae",   "selected"); %>>WPA3-Personal</option>
-							<option value="pskpsk2" <% nvram_match("wl_auth_mode_x", "pskpsk2","selected"); %>>WPA-Auto-Personal</option>
-							<option value="psk2sae" <% nvram_match("wl_auth_mode_x", "psk2sae","selected"); %>>WPA2/WPA3-Personal</option>
-							<option value="wpa"     <% nvram_match("wl_auth_mode_x", "wpa",    "selected"); %>>WPA-Enterprise</option>
-							<option value="wpa2"    <% nvram_match("wl_auth_mode_x", "wpa2",   "selected"); %>>WPA2-Enterprise</option>
-							<option value="wpawpa2" <% nvram_match("wl_auth_mode_x", "wpawpa2","selected"); %>>WPA-Auto-Enterprise</option>
-							<option value="radius"  <% nvram_match("wl_auth_mode_x", "radius", "selected"); %>>Radius with 802.1x</option>
-				  		</select>
-				  		<div class="setup_help_icon" style="display:none;"></div>
-					</td>
-			  	</tr>
-			  	
-			  	<tr>
-					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 6);"><#WLANConfig11b_WPAType_itemname#></a></th>
-					<td>		
-				  		<select name="wl_crypto" class="input_option">
-								<option value="aes" <% nvram_match("wl_crypto", "aes", "selected"); %>>AES</option>
-								<option value="tkip+aes" <% nvram_match("wl_crypto", "tkip+aes", "selected"); %>>TKIP+AES</option>
-				  		</select>
-					</td>
-			  	</tr>
-			  
-			  	<tr id="wpa_psk_key_field">
-					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 7);"><#WLANConfig11b_x_PSKKey_itemname#></a></th>
-					<td>
-						<div class="wpa_psk_container">
-							<input id="wl_wpa_psk" name="wl_wpa_psk" maxlength="64" class="input_32_table" type="password" autocapitalization="off" onBlur="switchType(this, false);" onFocus="switchType(this, true);" value="<% nvram_get("wl_wpa_psk"); %>" autocomplete="new-password" autocorrect="off" autocapitalize="off">
-						</div>
-					</td>
-			  	</tr>
-			  		  
-			  	<tr>
-					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 9);"><#WLANConfig11b_WEPType_itemname#></a></th>
-					<td>
-				  		<select name="wl_wep_x" class="input_option" onChange="wep_encryption_change(this);">
-								<option value="0" <% nvram_match("wl_wep_x", "0", "selected"); %>><#wl_securitylevel_0#></option>
-								<option value="1" <% nvram_match("wl_wep_x", "1", "selected"); %>>WEP-64bits</option>
-								<option value="2" <% nvram_match("wl_wep_x", "2", "selected"); %>>WEP-128bits</option>
-				  		</select>
-				  		<span name="key_des"></span>
-					</td>
-			  	</tr>
-			  
-			  	<tr>
-					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 10);"><#WLANConfig11b_WEPDefaultKey_itemname#></a></th>
-					<td>		
-				  		<select name="wl_key" class="input_option"  onChange="wep_key_index_change(this);">
-							<option value="1" <% nvram_match("wl_key", "1","selected"); %>>1</option>
-							<option value="2" <% nvram_match("wl_key", "2","selected"); %>>2</option>
-							<option value="3" <% nvram_match("wl_key", "3","selected"); %>>3</option>
-							<option value="4" <% nvram_match("wl_key", "4","selected"); %>>4</option>
-				  		</select>
-					</td>
-			  	</tr>
-			  
-			  	<tr>
-					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 18);"><#WLANConfig11b_WEPKey1_itemname#></th>
-					<td><input type="text" name="wl_key1" id="wl_key1" maxlength="27" class="input_25_table" value="<% nvram_get("wl_key1"); %>" onKeyUp="return change_wlkey(this, 'WLANConfig11b');" autocorrect="off" autocapitalize="off"></td>
-			  	</tr>
-			  
-			  	<tr>
-					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 18);"><#WLANConfig11b_WEPKey2_itemname#></th>
-					<td><input type="text" name="wl_key2" id="wl_key2" maxlength="27" class="input_25_table" value="<% nvram_get("wl_key2"); %>" onKeyUp="return change_wlkey(this, 'WLANConfig11b');" autocorrect="off" autocapitalize="off"></td>
-			  	</tr>
-			  
-			  	<tr>
-					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 18);"><#WLANConfig11b_WEPKey3_itemname#></th>
-					<td><input type="text" name="wl_key3" id="wl_key3" maxlength="27" class="input_25_table" value="<% nvram_get("wl_key3"); %>" onKeyUp="return change_wlkey(this, 'WLANConfig11b');" autocorrect="off" autocapitalize="off"></td>
-			  	</tr>
-			  
-			  	<tr>
-					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 18);"><#WLANConfig11b_WEPKey4_itemname#></th>
-					<td><input type="text" name="wl_key4" id="wl_key4" maxlength="27" class="input_25_table" value="<% nvram_get("wl_key4"); %>" onKeyUp="return change_wlkey(this, 'WLANConfig11b');" autocorrect="off" autocapitalize="off"></td>
-		  		</tr>
-
-			  	<tr>
-					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 8);"><#WLANConfig11b_x_Phrase_itemname#></a></th>
-					<td>
-				  		<input type="text" name="wl_phrase_x" maxlength="64" class="input_32_table" value="<% nvram_get("wl_phrase_x"); %>" onKeyUp="return is_wlphrase('WLANConfig11b', 'wl_phrase_x', this);" autocorrect="off" autocapitalize="off">
-					</td>
-			  	</tr>
-				<tr >
-					<th>
-						<a class="hintstyle" href="javascript:void(0);"  onClick="openHint(2,1);">
-					  	<#WLANAuthentication11a_ExAuthDBIPAddr_itemname#></a>
-					</th>
-					<td>
-						<input type="text" maxlength="39" class="input_32_table" name="wl_radius_ipaddr" value='<% nvram_get("wl_radius_ipaddr"); %>' onKeyPress="return validator.isIPAddr(this, event)" autocorrect="off" autocapitalize="off">
-					</td>
-				</tr>
-				<tr>
-					<th>
-						<a class="hintstyle" href="javascript:void(0);"  onClick="openHint(2,2);">
-					  	<#WLANAuthentication11a_ExAuthDBPortNumber_itemname#></a>
-					</th>
-					<td>
-						<input type="text" maxlength="5" class="input_6_table" name="wl_radius_port" value='<% nvram_get("wl_radius_port"); %>' onkeypress="return validator.isNumber(this,event)" autocorrect="off" autocapitalize="off"/>
-					</td>
-				</tr>
-				<tr>
-					<th >
-						<a class="hintstyle" href="javascript:void(0);"  onClick="openHint(2,3);">
-						<#WLANAuthentication11a_ExAuthDBPassword_itemname#></a>
-					</th>
-					<td>
-						<input type="password" maxlength="64" class="input_32_table" name="wl_radius_key" value="<% nvram_get("wl_radius_key"); %>" autocorrect="off" autocapitalize="off">
-					</td>
-				</tr>
-				<tr style="display:none">
-					<th><#WLANConfig11b_x_mfp#></th>
-					<td>
-				  		<select name="wl_mfp" class="input_option" onchange="handleMFP();">
-							<option value="0" <% nvram_match("wl_mfp", "0", "selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
-							<option value="1" <% nvram_match("wl_mfp", "1", "selected"); %>><#WLANConfig11b_x_mfp_opt1#></option>
-							<option value="2" <% nvram_match("wl_mfp", "2", "selected"); %>><#WLANConfig11b_x_mfp_opt2#></option>
-				  		</select>
-						<span id="mbo_notice_wpa3" style="display:none"><#WLANConfig11b_AgileMultiband_note_wpa3#></span>
-						<span id="mbo_notice_combo" style="display:none"><#WLANConfig11b_AgileMultiband_note_combo#></span>
-						<span id="mbo_notice" style="display:none"><#WLANConfig11b_AgileMultiband_note#></span>
-					</td>
-			  	</tr>
-			  	<tr>
-					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 11);"><#WLANConfig11b_x_Rekey_itemname#></a></th>
-					<td><input type="text" maxlength="7" name="wl_wpa_gtk_rekey" class="input_6_table"  value='<% nvram_get("wl_wpa_gtk_rekey"); %>' onKeyPress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off"></td>
-			  	</tr>
-		  	</table>
-			  
-				<div class="apply_gen">
-					<input type="button" id="applyButton" class="button_gen" value="<#CTL_apply#>" onclick="applyRule();">
-				</div>			  	
-			  	
-		  	</td>
-		</tr>
-		</tbody>
-		
-	  </table>
-	</td>
-</form>
-</tr>
-</table>
-<!--===================================Ending of Main Content===========================================-->
-
-	</td>
-	
-	<td width="10" align="center" valign="top"></td>
-  </tr>
-</table>
-
-<div id="footer"></div>
-<script>
-(function() {
-	// special case after modifing GuestNetwork
-	// case 1 is after enable GuestNetwork, case 2 is after disable GuestNetwork
-	if(isSwMode("rt") || isSwMode("ap")) {
-		if('<% nvram_get("wl_unit"); %>' == "-1" || '<% nvram_get("wl_subunit"); %>' != "-1") {
-			change_wl_unit();
-		}
-	}
-})();
-</script>
-</body>
+﻿<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0,  user-scalable=no" />
+        <link rel="shortcut icon" href="images/favicon.png" />
+        <title><#Web_Title#> - <#menu5_1_1#></title>
+        <link rel="stylesheet" href="index_style.css" />
+        <link rel="stylesheet" href="form_style.css" />
+        <link rel="stylesheet" href="usp_style.css" />
+        <link rel="stylesheet" href="other.css" />
+        <link rel="stylesheet" href="css/confirm_block.css" />
+        <script src="/js/confirm_block.js"></script>
+        <script src="/js/jquery.js"></script>
+        <script src="/js/httpApi.js"></script>
+        <script src="/state.js"></script>
+        <script src="/help.js"></script>
+        <script src="/general.js"></script>
+        <script src="/popup.js"></script>
+        <script src="/md5.js"></script>
+        <script src="/validator.js"></script>
+        <script src="/js/asus.js"></script>
+        <script src="/switcherplugin/jquery.iphone-switch.js"></script>
+        <style>
+            .setup_help_icon {
+                width: 40px;
+                height: 40px;
+                border-radius: 24px;
+                background-color: rgba(164, 183, 195, 0.2);
+                background-image: url(images/New_ui/vpn_icon_all_collect.svg);
+                background-repeat: no-repeat;
+                background-position: -324px 0px;
+                width: 24px;
+                height: 24px;
+                margin-top: -24px;
+                margin-left: 218px;
+                cursor: pointer;
+            }
+            .setup_afc_help_icon {
+                width: 40px;
+                height: 40px;
+                border-radius: 24px;
+                background-color: rgba(164, 183, 195, 0.2);
+                background-image: url(images/New_ui/vpn_icon_all_collect.svg);
+                background-repeat: no-repeat;
+                background-position: -324px 0px;
+                width: 24px;
+                height: 24px;
+                cursor: pointer;
+            }
+            .a-hint-text {
+                color: #fc0 !important;
+                text-decoration: underline !important;
+                cursor: pointer;
+            }
+            .splitline-padding {
+                margin: 10px 0 10px 5px;
+            }
+            .smart-connect-rule-link {
+                display: table-cell;
+                vertical-align: middle;
+            }
+            .radio-smartcon-enable {
+                width: 94px;
+                display: table-cell;
+            }
+        </style>
+        <script>
+            let { dwb_mode, dwb_band } = httpApi.nvramGet(["dwb_mode", "dwb_band"]);
+            let nbandListArray = nvram["wlnband_list"].split("&#60");
+            let systemManipulable = objectDeepCopy(system);
+            let brcmAfcSupport = false;
+
+            document.addEventListener("DOMContentLoaded", function () {
+                if(!systemManipulable.smartConnect.support){
+                    document.getElementById("smartcon_enable_field").style.display = "none";
+                }
+                let { isBRCMplatform } = systemManipulable;
+                show_menu();
+                generateMainField();
+                eventBind();
+
+                if (isBRCMplatform) {
+                    document.getElementById("smartcon_rule_link").style.display = "";
+                }
+
+                if (isSupport("sdn_mainfh")) {
+                    document.querySelectorAll(".frontHaulSetting").forEach(function (element) {
+                        element.style.display = "none";
+                    });
+                }
+            });
+            function eventBind() {
+                document.querySelectorAll(".setup_help_icon").forEach((element) => {
+                    let confirm_content = "<b>WPA3-Personal</b><br>";
+                    confirm_content += "<#WLANConfig11b_AuthenticationMethod_wpa3#><br><br>";
+                    confirm_content += "<b>WPA2/WPA3-Personal</b><br>";
+                    confirm_content += "<#WLANConfig11b_AuthenticationMethod_wpa32#><br><br>";
+                    confirm_content += "<b>WPA2-Personal</b><br>";
+                    confirm_content += "<#WLANConfig11b_AuthenticationMethod_wpa2#><br><br>";
+                    confirm_content += "<b>WPA-Auto-Personal</b><br>";
+                    confirm_content += "<#WLANConfig11b_AuthenticationMethod_wpa21#>";
+                    element.addEventListener("click", function () {
+                        let confirm_flag = 1;
+                        if (confirm_flag == 1) {
+                            if ($(".confirm_block").length > 0) {
+                                $(".confirm_block").remove();
+                            }
+                            if (window.scrollTo) window.scrollTo(0, 0);
+                            htmlbodyforIE = document.getElementsByTagName("html");
+
+                            $("#Loading").css("visibility", "visible");
+							$(".popup_bg").css("height", "1850px");
+                            $("#loadingBlock").css("visibility", "hidden");
+
+                            confirm_asus({
+                                title: "<#WLANConfig11b_AuthenticationMethod_itemname#>",
+                                contentA: confirm_content,
+                                contentC: "",
+                                left_button: "Hidden",
+                                left_button_callback: function () {},
+                                left_button_args: {},
+                                right_button: "<#CTL_ok#>",
+                                right_button_callback: function () {
+                                    confirm_cancel();
+                                    htmlbodyforIE = document.getElementsByTagName("html");
+                                    htmlbodyforIE[0].style.overflow = "";
+                                    $("#Loading").css("visibility", "hidden");
+                                    return false;
+                                },
+                                right_button_args: {},
+                                iframe: "",
+                                margin: "0px",
+                                note_display_flag: 0,
+                            });
+
+                            $(".confirm_block").css("zIndex", 10001);
+                        }
+                    });
+                });
+
+                if (systemManipulable.brcmAfcSupport) {
+					let afcRet = httpApi.get_afc_enable();
+					let afc_enable = afcRet.retValue;
+                    $("#radio_afc_enable").iphoneSwitch(
+                        afc_enable,
+                        function () {
+                            httpApi.set_afc_enable("1");
+                            let restartTime = 10;
+                            showLoading(restartTime);
+                            setTimeout(function () {
+                                location.reload();
+                            }, restartTime * 1000);
+                        },
+                        function () {
+                            httpApi.set_afc_enable("0");
+                            let restartTime = 10;
+                            showLoading(restartTime);
+                            setTimeout(function () {
+                                location.reload();
+                            }, restartTime * 1000);
+                        }
+                    );
+
+                    document.querySelectorAll(".setup_afc_help_icon").forEach((element) => {
+                        let confirm_content = `
+                            <span style="color:#FFFFFF;font-size:10pt;"><#WiFi_AFC_desc#></span><br>
+                        `;
+
+                        let confirm_content2 = `
+                            <div class="title_num_div">
+                                <div class="title_num">1</div>
+                            </div>
+                            <div style="margin-left:45px;margin-top:-22px;">
+                                <span style="color:#FFFFFF;"><b><#GB_mobile_desc_short#></b></span><br>
+                                <#WiFi_AFC_step1#>
+                            </div>
+
+                            <!-- QR Codes -->
+                            <div style="padding:20px 0;">
+                                <div style="display:table-cell;vertical-align:middle;padding-left:80px;">
+                                    <img src="${Android_QR}" style="width:75px;height:75px;">
+                                </div>
+                                <div style="display:table-cell;vertical-align:middle;padding-left:110px;">
+                                    <img src="${IOS_QR}" style="width:75px;height:75px;">
+                                </div>
+                            </div>
+
+                            <!-- App Download Links -->
+                            <div style="padding:0;">
+                                <div style="display:table-cell;vertical-align:middle;padding-left:40px;">
+                                    <a href="${Android_app_link}" target="_blank">
+                                        <div style="width:160px; ${is_CN || ui_lang === "CN" ? 'font-size:24px;border:1px solid #BDBDBD;padding:10px 4px;border-radius:6px;' : 'height:46px;background:url(images/googleplay.png) no-repeat;background-size:100%;'} margin:auto;">
+                                            ${is_CN || ui_lang === "CN" ? 'Android App' : ''}
+                                        </div>
+                                    </a>
+                                </div>
+                                <div style="display:table-cell;vertical-align:middle;padding-left:20px;">
+                                    <a href="${IOS_app_link}" target="_blank">
+                                        <div style="width:160px;height:46px;background:url(images/AppStore.png) no-repeat;background-size:100%;margin:auto;"></div>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Step 2 -->
+                            <br>
+                            <div class="title_num_div">
+                                <div class="title_num">2</div>
+                            </div>
+                            <div style="margin-left:45px;margin-top:-22px;">
+                                <span style="color:#FFFFFF;"><b><#WiFi_AFC_enable#></b></span><br>
+                                <#WiFi_AFC_step2#>
+                            </div>
+
+                            <!-- AFC App Setup Step -->
+                            <div style="padding:20px 0;">
+                                <div style="vertical-align:middle;padding-left:30px;margin-top:-10px;">
+                                    <img src="images/New_ui/AFC_dark.png" style="width:500px;height:180px;">
+                                </div>
+                            </div>
+                        `;
+                            
+                        // Click event handler
+                        element.addEventListener("click", function () {
+                            let confirm_flag = 1;
+                            if (confirm_flag === 1) {
+                                if ($(".confirm_block").length > 0) $(".confirm_block").remove();
+                                window.scrollTo && window.scrollTo(0, 0);
+                                
+                                $("#Loading").css("visibility", "visible");
+								$(".popup_bg").css("height", "1850px");
+                                $("#loadingBlock").css("visibility", "hidden");
+
+                                confirm_asus({
+                                    title: "AFC",
+                                    contentA: confirm_content,
+                                    contentD: confirm_content2,
+                                    left_button: "Hidden",
+                                    left_button_callback: () => {},
+                                    right_button: "<#CTL_ok#>",
+                                    right_button_callback: () => {
+                                        confirm_cancel();
+                                        document.documentElement.style.overflow = "";
+                                        $("#Loading").css("visibility", "hidden");
+                                        return false;
+                                    },
+                                    iframe: "AFC",
+                                    margin: "0px",
+                                    note_display_flag: 0,
+                                });
+
+                                $(".confirm_block").css("zIndex", 10001);
+                            }
+                        });
+                    });
+                }
+            }
+
+            function generateMainField() {
+                let code = "";
+                let { wlBandSeq, smartConnect, brcmAfcSupport } = systemManipulable;
+                let { smartConnectEnable, smartConnectReferenceIndex } = smartConnect;
+
+                // GENERATE SMART CONNECT
+                code += `
+                    <thead>
+                        <tr>
+                            <td colspan="2">Smart Connect</td>
+                        </tr>
+                    </thead>
+                `;
+
+                // Smart Connect Radio Band
+                code += generateSmartConnectRadio();
+
+                // SSID, Hide SSID
+                code += generateSSID("smart_connect");
+
+                // Authentication Method
+                code += generateAuthenticationMethod("smart_connect");
+
+                // WPA Encryption
+                code += generateWpaEncryption("smart_connect");
+
+                // WPA Key
+                code += generateWpaKey("smart_connect");
+
+                // MFP
+                code += generateMfp("smart_connect");
+
+                //Group Key
+                code += generateGroupKey("smart_connect");
+
+                // WEP Encryption
+                code += generateWepEncryption("smart_connect");
+
+                // Key Index, WEP Key 1~4, ASUS passphrase
+                code += generateWepKey("smart_connect");
+
+                // RADIUS Server
+                code += generateRadiusSettings("smart_connect");
+                document.getElementById("band_separate").innerHTML = code;
+                document.getElementById("band_separate").style.display = smartConnectEnable ? "" : "none";
+
+                /* EACH BAND*/
+                code = "";
+                for (let { prefixNvram, name, joinSmartConnect } of Object.values(wlBandSeq)) {
+                    code += `
+                        <thead>
+                            <tr>
+                                <td colspan="2">${name}</td>
+                            </tr>
+                        </thead>
+                    `;
+
+                    // SSID, Hide SSID
+                    code += generateSSID(prefixNvram);
+
+                    // AiMesh Wireless Backhaul
+                    code += generateWirelessBackhaul(prefixNvram);
+
+                    // CHANNEL BANDWIDTH
+                    code += generateChannelBandwidth(prefixNvram);
+
+                    // CONTROL CHANNEL
+                    code += generateControlChannel(prefixNvram);
+
+                    // Extension Channel
+                    code += generateExtensionChannel(prefixNvram);
+
+                    // AFC
+                    code += generateAFC(prefixNvram);
+                    
+                    // Authentication Method
+                    code += generateAuthenticationMethod(prefixNvram);
+
+                    // WPA Encryption
+                    code += generateWpaEncryption(prefixNvram);
+
+                    // WPA Key
+                    code += generateWpaKey(prefixNvram);
+
+                    // MFP
+                    code += generateMfp(prefixNvram);
+
+                    //Group Key
+                    code += generateGroupKey(prefixNvram);
+
+                    // WEP Encryption
+                    code += generateWepEncryption(prefixNvram);
+
+                    // Key Index, WEP Key 1~4, ASUS passphrase
+                    code += generateWepKey(prefixNvram);
+
+                    // RADIUS Server
+                    code += generateRadiusSettings(prefixNvram);
+                }
+
+                document.getElementById("eachBandField").innerHTML = code;
+            }
+            function wirelessBackhaulHandler(prefix) {
+                if (prefix !== nbandListArray[dwb_band]) {
+                    return "";
+                }
+
+                let { wlBandSeq, smartConnect, aMesh } = systemManipulable;
+                let { smartConnectReferenceIndex, smartConnectEnable } = smartConnect;
+                let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
+                let { joinSmartConnect } = wlBandSeq[prefixNvram];
+                let cfgClientList = httpApi.hookGet("get_cfg_clientlist");
+                let { fronthaul_ap_option_off, fronthaul_ap_option_on } = httpApi.aimesh_get_node_capability(cfgClientList[0]);
+                let displayFlag = (() => {
+                    let { dwbMode } = aMesh;
+                    let smartConnectIncludeDwbBand =
+                        document.getElementById(`smart_connect_check_${prefix}`) &&
+                        document.getElementById(`smart_connect_check_${prefix}`).checked &&
+                        smartConnectEnable;
+                    return dwbMode === "1" && smartConnectIncludeDwbBand && fronthaul_ap_option_on && fronthaul_ap_option_off ? "" : "none";
+                })();
+
+                document.getElementById("mesh_backhaul_field").style.display = displayFlag;
+            }
+            function ssidHandler(prefix) {
+                let elementArray = ["_ssid_field", "_hide_ssid_field", "_auth_method_field"];
+                let { wlBandSeq, smartConnect, aMesh } = systemManipulable;
+                let { smartConnectEnable, smartConnectReferenceIndex } = smartConnect;
+                let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
+                let { authMethodValue, joinSmartConnect } = wlBandSeq[prefixNvram];
+                elementArray.forEach((element) => {
+                    let target = document.getElementById(`${prefix}${element}`);
+                    if (target) {
+                        let displayFlag = (() => {
+                            let { dwbBand, dwbMode } = aMesh;
+                            if (dwbMode === "1" && dwbBand === prefix) {
+                                return "";
+                            }
+
+                            return smartConnectEnable && joinSmartConnect && prefix !== "smart_connect" ? "none" : "";
+                        })();
+
+                        target.style.display = displayFlag;
+                    }
+                });
+
+                authenticationMethodChange(authMethodValue, prefix);
+            }
+            function smartConnectRadioChange(check, prefix) {
+                systemManipulable.wlBandSeq[prefix].joinSmartConnect = check;
+                let { wlBandSeq, mloEnabled } = systemManipulable;
+                let { joinSmartConnect } = wlBandSeq[prefix];
+                let { smartConnectReferenceIndex } = systemManipulable.smartConnect;
+                if (mloEnabled) {
+                    mloHint();
+                }
+
+                let count = 0;
+                for (let { joinSmartConnect } of Object.values(wlBandSeq)) {
+                    if (joinSmartConnect) {
+                        count++;
+                    }
+                }
+
+                if (count < 2) {
+                    alert("<#smart_connect_alert#>");
+                    systemManipulable.wlBandSeq[prefix].joinSmartConnect = !check;
+                    document.getElementById(`smart_connect_check_${prefix}`).checked = !check;
+                    return false;
+                }
+
+                ssidHandler(prefix);
+                wirelessBackhaulHandler(prefix);
+
+                if (joinSmartConnect) {
+                    systemManipulable.wlBandSeq[prefix].wifi7ModeEnabled =
+                        systemManipulable.wlBandSeq[smartConnectReferenceIndex].wifi7ModeEnabled;
+                }
+            }
+
+            function smartConnectChange(v1Type) {
+                let { wlBandSeq } = systemManipulable;
+                if (v1Type === "1") {
+                    for (let prefix of Object.keys(wlBandSeq)) {
+                        let check = true;
+                        systemManipulable.wlBandSeq[prefix].joinSmartConnect = check;
+                        ssidHandler(prefix);
+                        wirelessBackhaulHandler(prefix);
+                    }
+                } else if (v1Type === "2") {
+                    for (let prefix of Object.keys(wlBandSeq)) {
+                        let check = false;
+                        if (prefix === "5g1" || prefix === "5g2") {
+                            check = true;
+                        }
+
+                        systemManipulable.wlBandSeq[prefix].joinSmartConnect = check;
+                        ssidHandler(prefix);
+                        wirelessBackhaulHandler(prefix);
+                    }
+                } else if (v1Type === "3") {
+                    for (let prefix of Object.keys(wlBandSeq)) {
+                        let check = false;
+                        if (prefix !== "6g1" && prefix !== "6g2") {
+                            check = true;
+                        }
+
+                        systemManipulable.wlBandSeq[prefix].joinSmartConnect = check;
+                        ssidHandler(prefix);
+                        wirelessBackhaulHandler(prefix);
+                    }
+                }
+            }
+
+            function controlChannelChange(channel, prefix) {
+                const autoChannelSettingsElement = ["_acs_dfs_field", "_unii4_field", "_acs_ch13_field"];
+                let { wlBandSeq, smartConnect, isBRCMplatform } = systemManipulable;
+                let { smartConnectReferenceIndex } = smartConnect;
+                let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
+                let { bandwidthValue, chanspecs, channelValue } = wlBandSeq[prefixNvram];
+                if (prefix === "2g1") {
+                    if (isBRCMplatform) {
+                        if (bandwidthValue === "0" || bandwidthValue === "2") {
+                            if (chanspecs.indexOf(`${channel}u`) !== -1) {
+                                channelValue = `${channel}u`;
+                            } else if (chanspecs.indexOf(`${channel}l`) !== -1) {
+                                channelValue = `${channel}l`;
+                            } else {
+                                channelValue = channel;
+                            }
+                        }
+                    } else {
+                        if (bandwidthValue === "1" || bandwidthValue === "2") {
+                            channelValue = channel;
+                        }
+                    }
+                } else if (prefix === "6g1" || prefix === "6g2") {
+                    if (isBRCMplatform) {
+                        if (bandwidthValue === "0" || bandwidthValue === "6") {
+                            if (chanspecs.indexOf(`6g${channel}/320-1`) !== -1) {
+                                channelValue = `6g${channel}/320-1`;
+                            } else if (chanspecs.indexOf(`6g${channel}/320-2`) !== -1) {
+                                channelValue = `6g${channel}/320-2`;
+                            } else {
+                                channelValue = channel;
+                            }
+                        }
+                    } else {
+                        channelValue = channel;
+                    }
+                }
+
+                if (systemManipulable.wlBandSeq[prefix]) {
+                    systemManipulable.wlBandSeq[prefix].channelValue = channelValue;
+                }
+
+                autoChannelSettingsElement.forEach((element) => {
+                    let target = document.getElementById(`${prefix}${element}`);
+                    if (target) {
+                        let displayFlag = channel === "0" ? "" : "none";
+                        target.style.display = displayFlag;
+                    }
+                });
+
+                extensionChannelHandler(prefix);
+            }
+
+            function pscChannelEnable(check, prefix) {
+                const prefix6G = ["6g1", "6g2"];
+                let { wlBandSeq } = systemManipulable;
+                systemManipulable.psc6g = check ? "1" : "0";
+                controlChannelHandler(prefix);
+
+                // sync PSC of 6 GHz-1 and 6 GHz-2
+                for (let element of prefix6G) {
+                    if (element === prefix) {
+                        continue;
+                    }
+
+                    if (wlBandSeq[element]) {
+                        document.getElementById(`${element}_psc6g`).checked = check;
+                        controlChannelHandler(element);
+                    }
+                }
+            }
+
+            function bandwidth160MHzEnable(check, prefix) {
+                let bw160Value = check ? "1" : "0";
+                let { wlBandSeq, smartConnect, channelBandwidthObject } = systemManipulable;
+                let { smartConnectReferenceIndex } = smartConnect;
+                let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
+                let { bw80MHzSupport, bw160MHzSupport, bw320MHzSupport, bw240MHzSupport, band80_80MhzSupport, bandwidthValue, bw240Value } =
+                    wlBandSeq[prefixNvram];
+                let bandwidthStringObject = objectDeepCopy(channelBandwidthObject);
+                let autoBandwidthString = bandwidthStringObject.auto.string;
+                if (!bw320MHzSupport) {
+                    autoBandwidthString = autoBandwidthString.replace("/320", "");
+                    delete bandwidthStringObject["320mhz"];
+                }
+
+                if (!bw240MHzSupport || (bw240MHzSupport && bw240Value === "0")) {
+                    autoBandwidthString = autoBandwidthString.replace("/240", "");
+                    delete bandwidthStringObject["240mhz"];
+                }
+
+                if (!bw320MHzSupport && (!bw160MHzSupport || (bw160MHzSupport && bw160Value === "0"))) {
+                    autoBandwidthString = autoBandwidthString.replace("/160", "");
+                    delete bandwidthStringObject["160mhz"];
+                }
+
+                if (!band80_80MhzSupport) {
+                    delete bandwidthStringObject["80_80mhz"];
+                }
+
+                if (!bw80MHzSupport) {
+                    autoBandwidthString = autoBandwidthString.replace("/80", "");
+                    delete bandwidthStringObject["80mhz"];
+                }
+
+                bandwidthStringObject.auto.string = `${autoBandwidthString} MHz`;
+                let channelBandwidthSnippet = "";
+                for (let { value, string } of Object.values(bandwidthStringObject)) {
+                    channelBandwidthSnippet += `<option value="${value}" ${bandwidthValue === value ? "selected" : ""}>${string}</option>`;
+                }
+
+                document.getElementById(`${prefix}_channel_bandwidth`).innerHTML = channelBandwidthSnippet;
+                if (systemManipulable.wlBandSeq[prefix]) {
+                    systemManipulable.wlBandSeq[prefix].bw160Value = bw160Value;
+                    if (bw160Value === "0" && bandwidthValue === "5") {
+                        bandwidthValue = "0";
+                        systemManipulable.wlBandSeq[prefix].bandwidthValue = bandwidthValue;
+                    }
+                }
+
+                channelBandwidthChange(bandwidthValue, prefix);
+            }
+
+            function bandwidth240MHzEnable(check, prefix) {
+                let bw240Value = check ? "1" : "0";
+                let { wlBandSeq, smartConnect, channelBandwidthObject } = systemManipulable;
+                let { smartConnectReferenceIndex } = smartConnect;
+                let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
+                let { bw80MHzSupport, bw160MHzSupport, bw320MHzSupport, bw240MHzSupport, band80_80MhzSupport, bandwidthValue, bw160Value } =
+                    wlBandSeq[prefixNvram];
+                let bandwidthStringObject = objectDeepCopy(channelBandwidthObject);
+                let autoBandwidthString = bandwidthStringObject.auto.string;
+                if (bw240Value === "1") {
+                    bw160Value = "1";
+                    systemManipulable.wlBandSeq[prefix].bw160Value = bw160Value;
+                    document.getElementById(`${prefix}_bw160_enable`).checked = true;
+                    document.getElementById(`${prefix}_bw160_enable`).disabled = true;
+                } else {
+                    document.getElementById(`${prefix}_bw160_enable`).disabled = false;
+                }
+
+                if (!bw320MHzSupport) {
+                    autoBandwidthString = autoBandwidthString.replace("/320", "");
+                    delete bandwidthStringObject["320mhz"];
+                }
+
+                if (!bw240MHzSupport || (bw240MHzSupport && bw240Value === "0")) {
+                    autoBandwidthString = autoBandwidthString.replace("/240", "");
+                    delete bandwidthStringObject["240mhz"];
+                }
+
+                if (!bw320MHzSupport && (!bw160MHzSupport || (bw160MHzSupport && bw160Value === "0"))) {
+                    autoBandwidthString = autoBandwidthString.replace("/160", "");
+                    delete bandwidthStringObject["160mhz"];
+                }
+
+                if (!band80_80MhzSupport) {
+                    delete bandwidthStringObject["80_80mhz"];
+                }
+
+                if (!bw80MHzSupport) {
+                    autoBandwidthString = autoBandwidthString.replace("/80", "");
+                    delete bandwidthStringObject["80mhz"];
+                }
+
+                bandwidthStringObject.auto.string = `${autoBandwidthString} MHz`;
+                let channelBandwidthSnippet = "";
+                for (let { value, string } of Object.values(bandwidthStringObject)) {
+                    channelBandwidthSnippet += `<option value="${value}" ${bandwidthValue === value ? "selected" : ""}>${string}</option>`;
+                }
+
+                document.getElementById(`${prefix}_channel_bandwidth`).innerHTML = channelBandwidthSnippet;
+                if (systemManipulable.wlBandSeq[prefix]) {
+                    systemManipulable.wlBandSeq[prefix].bw240Value = bw240Value;
+
+                    if (bw240Value === "0" && bandwidthValue === "6") {
+                        bandwidthValue = "0";
+                        systemManipulable.wlBandSeq[prefix].bandwidthValue = bandwidthValue;
+                    }
+                }
+
+                channelBandwidthChange(bandwidthValue, prefix);
+            }
+
+            function extensionChannelHandler(prefix) {
+                let { isBRCMplatform, wlBandSeq, smartConnect, extensionChannelObject } = systemManipulable;
+                let { smartConnectReferenceIndex } = smartConnect;
+                let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
+                let { bandwidthValue, channelValue, chanspecs, ch320MHz, channel, extChannelValue } = wlBandSeq[prefixNvram];
+                let extensionChannelString = objectDeepCopy(extensionChannelObject);
+                let postfixChannelValue = "0";
+                if (isBRCMplatform) {
+                    delete extensionChannelString["lower"];
+                    delete extensionChannelString["upper"];
+                    if (prefix !== "6g1" && prefix !== "6g2") {
+                        delete extensionChannelString["320-1"];
+                        delete extensionChannelString["320-2"];
+                    }
+                } else {
+                    delete extensionChannelString["l"];
+                    delete extensionChannelString["u"];
+                    delete extensionChannelString["320-1"];
+                    delete extensionChannelString["320-2"];
+                    if (prefix === "5g1" || prefix === "5g2") {
+                        delete extensionChannelString["lower"];
+                        delete extensionChannelString["upper"];
+                    }
+                }
+
+                if (channelValue === "0" || prefix === "5g1" || prefix === "5g2") {
+                    // Control Channel is Auto or radio is 5 GHz, the Extension Channel is only Auto
+                    delete extensionChannelString["l"];
+                    delete extensionChannelString["u"];
+                    delete extensionChannelString["320-1"];
+                    delete extensionChannelString["320-2"];
+                    delete extensionChannelString["lower"];
+                    delete extensionChannelString["upper"];
+                } else {
+                    if (prefix === "2g1") {
+                        delete extensionChannelString["0"];
+                        delete extensionChannelString["320-1"];
+                        delete extensionChannelString["320-2"];
+                        let chNumber = channelValue.split("u")[0].split("l")[0];
+                        if (isBRCMplatform) {
+                            if (channelValue.indexOf("l") !== -1 || channelValue.indexOf("u") !== -1) {
+                                postfixChannelValue = channelValue.slice(-1);
+                            }
+
+                            if (chanspecs.indexOf(`${chNumber}u`) === -1) {
+                                delete extensionChannelString["u"];
+                            }
+
+                            if (chanspecs.indexOf(`${chNumber}l`) === -1) {
+                                delete extensionChannelString["l"];
+                            }
+                        } else {
+                            if (parseInt(chNumber) - 4 <= 0) {
+                                delete extensionChannelString["upper"];
+                            }
+
+                            if (parseInt(chNumber) + 4 > channel.length) {
+                                delete extensionChannelString["lower"];
+                            }
+
+                            postfixChannelValue = extChannelValue;
+                        }
+                    } else if (prefix === "6g1" || prefix === "6g2") {
+                        delete extensionChannelString["l"];
+                        delete extensionChannelString["u"];
+                        if (
+                            ((isBRCMplatform && bandwidthValue !== "0") || (!isBRCMplatform && bandwidthValue !== "1")) &&
+                            bandwidthValue !== "6"
+                        ) {
+                            // for 20 MHz, 40 MHz, 80 MHz, 160 MHz
+                            delete extensionChannelString["lower"];
+                            delete extensionChannelString["upper"];
+                        } else {
+                            let chNumber = channelValue.split("/320")[0];
+                            if (isBRCMplatform) {
+                                chNumber = chNumber.slice(2);
+                            }
+
+                            postfixChannelValue = channelValue.split("/")[1];
+                            if (ch320MHz[chNumber]) {
+                                delete extensionChannelString["0"];
+                                if (ch320MHz[chNumber].indexOf(`6g${chNumber}/320-1`) === -1) {
+                                    if (isBRCMplatform) {
+                                        delete extensionChannelString["320-1"];
+                                    } else {
+                                        delete extensionChannelString["lower"];
+                                    }
+                                }
+
+                                if (ch320MHz[chNumber].indexOf(`6g${chNumber}/320-2`) === -1) {
+                                    if (isBRCMplatform) {
+                                        delete extensionChannelString["320-2"];
+                                    } else {
+                                        delete extensionChannelString["upper"];
+                                    }
+                                }
+                            } else {
+                                // for bandwidth is Auto and does not support 320 MHz
+                                delete extensionChannelString["lower"];
+                                delete extensionChannelString["upper"];
+                            }
+                        }
+                    }
+                }
+
+                let extensionChannelSnippet = "";
+                for (let [value, desc] of Object.entries(extensionChannelString)) {
+                    extensionChannelSnippet += `<option value="${value}" ${
+                        postfixChannelValue === value ? "selected" : ""
+                    }>${desc}</option>`;
+                }
+
+                document.getElementById(`${prefix}_extension_channel`).innerHTML = extensionChannelSnippet;
+                let displayFlag = (() => {
+                    if (prefix === "2g1" && channelValue === "14" && postfixChannelValue === "0") {
+                        return "none";
+                    }
+
+                    if (isBRCMplatform) {
+                        if (bandwidthValue === "1") {
+                            return "none";
+                        }
+                    } else {
+                        if (bandwidthValue === "0") {
+                            return "none";
+                        }
+                    }
+
+                    return "";
+                })();
+
+                document.getElementById(`${prefix}_extension_channel_field`).style.display = displayFlag;
+            }
+
+            function controlChannelHandler(prefix) {
+                const autoChannelSettingsElement = ["_acs_dfs_field", "_unii4_field", "_acs_ch13_field"];
+                let { wlBandSeq, smartConnect, psc6g, isBRCMplatform } = systemManipulable;
+                let { smartConnectReferenceIndex } = smartConnect;
+                let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
+                let {
+                    bandwidthValue,
+                    channel,
+                    channelValue,
+                    chanspecs,
+                    ch320MHz,
+                    ch240MHz,
+                    ch160MHz,
+                    ch80MHz,
+                    ch40MHz,
+                    ch20MHz,
+                    dfsSupport,
+                    uNII4Support,
+                    pscChannel,
+                    bw160Value,
+                } = wlBandSeq[prefixNvram];
+                if (prefix === "6g1" || prefix === "6g2") {
+                    if (psc6g === "1") {
+                        channel = [...pscChannel];
+                    }
+                }
+
+                let channelSnippet = `<option value="0"><#Auto#></option>`;
+                for (let element of channel) {
+                    let chValue = "";
+                    let selected = "";
+                    let chNumber = 0;
+                    if ((isBRCMplatform && bandwidthValue === "0") || (!isBRCMplatform && bandwidthValue === "1")) {
+                        // AUTO BANDWIDTH
+                        if (ch320MHz[element]) {
+                            chValue = element;
+                            chNumber = channelValue;
+                            if (isBRCMplatform) {
+                                chNumber = channelValue.split("/320")[0].slice(2);
+                            }
+                        } else if (ch160MHz[element] && ch160MHz[element].length !== 0 && bw160Value === "1") {
+                            chValue = ch160MHz[element][0];
+                            chNumber = channelValue;
+                            if (isBRCMplatform) {
+                                if (prefix === "6g1" || prefix === "6g2") {
+                                    chNumber = channelValue.split("/160")[0].slice(2);
+                                } else {
+                                    chNumber = channelValue.split("/160")[0];
+                                }
+                            }
+                        } else if (ch80MHz[element]) {
+                            chValue = ch80MHz[element][0];
+                            chNumber = channelValue;
+                            if (isBRCMplatform) {
+                                if (prefix === "6g1" || prefix === "6g2") {
+                                    chNumber = channelValue.split("/80")[0].slice(2);
+                                } else {
+                                    chNumber = channelValue.split("/80")[0];
+                                }
+                            }
+                        } else if (ch40MHz[element]) {
+                            if (prefix === "2g1") {
+                                chValue = element;
+                                chNumber = channelValue.split("u")[0].split("l")[0];
+                            } else {
+                                chValue = ch40MHz[element][0];
+                                chNumber = channelValue;
+                                if (isBRCMplatform) {
+                                    if (prefix === "6g1" || prefix === "6g2") {
+                                        chNumber = channelValue.split("/40")[0].slice(2);
+                                    } else {
+                                        chNumber = channelValue.split("u")[0].split("l")[0];
+                                    }
+                                }
+                            }
+                        } else {
+                            chValue = ch20MHz[element][0];
+                            chNumber = channelValue;
+                        }
+                    } else if (bandwidthValue === "6") {
+                        // 320 MHz
+                        // 240 MHz of 5 GHz
+                        if (
+                            ((prefix === "6g1" || prefix === "6g2") && !ch320MHz[element]) ||
+                            ((prefix === "5g1" || prefix === "5g2") && !ch240MHz[element])
+                        ) {
+                            continue;
+                        }
+
+                        chValue = element;
+                        chNumber = channelValue;
+                        if (isBRCMplatform) {
+                            chNumber = channelValue.split("/320")[0].slice(2);
+                        }
+                    } else if (bandwidthValue === "5") {
+                        // 160 MHz
+                        if (!ch160MHz[element]) {
+                            continue;
+                        }
+
+                        chValue = ch160MHz[element][0];
+                        chNumber = channelValue;
+                        if (isBRCMplatform) {
+                            if (prefix === "6g1" || prefix === "6g2") {
+                                chNumber = channelValue.split("/160")[0].slice(2);
+                            } else {
+                                chNumber = channelValue.split("/160")[0];
+                            }
+                        }
+                    } else if (bandwidthValue === "3") {
+                        // 80 MHz
+                        if (!ch80MHz[element]) {
+                            continue;
+                        }
+
+                        chValue = ch80MHz[element][0];
+                        chNumber = channelValue;
+                        if (isBRCMplatform) {
+                            if (prefix === "6g1" || prefix === "6g2") {
+                                chNumber = channelValue.split("/80")[0].slice(2);
+                            } else {
+                                chNumber = channelValue.split("/80")[0];
+                            }
+                        }
+                    } else if (bandwidthValue === "2") {
+                        // 40 MHz
+                        if (!ch40MHz[element]) {
+                            continue;
+                        }
+
+                        if (prefix === "2g1") {
+                            chValue = element;
+                            chNumber = channelValue.split("u")[0].split("l")[0];
+                        } else {
+                            chValue = ch40MHz[element][0];
+                            chNumber = channelValue;
+                            if (isBRCMplatform) {
+                                if (prefix === "6g1" || prefix === "6g2") {
+                                    chNumber = channelValue.split("/40")[0].slice(2);
+                                } else {
+                                    chNumber = channelValue.split("u")[0].split("l")[0];
+                                }
+                            }
+                        }
+                    } else if ((isBRCMplatform && bandwidthValue === "1") || (!isBRCMplatform && bandwidthValue === "0")) {
+                        // 20 MHz
+                        chValue = ch20MHz[element][0];
+                        chNumber = channelValue;
+                    }
+
+                    selected = element === chNumber ? "selected" : "";
+                    channelSnippet += `<option value="${chValue}" ${selected}>${element}</option>`;
+                }
+
+                document.getElementById(`${prefix}_control_channel`).innerHTML = channelSnippet;
+                let newChannelValue = document.getElementById(`${prefix}_control_channel`).value;
+
+                // combine control channel and extension channel values to fit the legal channel format
+                if (prefix === "2g1") {
+                    if (bandwidthValue === "0" || bandwidthValue === "2") {
+                        if (newChannelValue !== "0") {
+                            if (chanspecs.indexOf(`${newChannelValue}u`) !== -1) {
+                                newChannelValue = `${newChannelValue}u`;
+                            } else if (chanspecs.indexOf(`${newChannelValue}l`) !== -1) {
+                                newChannelValue = `${newChannelValue}l`;
+                            }
+                        }
+                    }
+                } else if (prefix === "6g1" || prefix === "6g2") {
+                    if (bandwidthValue === "0" || bandwidthValue === "6") {
+                        if (chanspecs.indexOf(`6g${newChannelValue}/320-1`) !== -1) {
+                            newChannelValue = `6g${newChannelValue}/320-1`;
+                        } else if (chanspecs.indexOf(`6g${newChannelValue}/320-2`) !== -1) {
+                            newChannelValue = `6g${newChannelValue}/320-2`;
+                        }
+                    }
+                }
+
+                systemManipulable.wlBandSeq[prefix].channelValue = newChannelValue;
+                autoChannelSettingsElement.forEach((element) => {
+                    let target = document.getElementById(`${prefix}${element}`);
+                    if (target) {
+                        let displayFlag = newChannelValue === "0" ? "" : "none";
+                        target.style.display = displayFlag;
+                    }
+                });
+
+                extensionChannelHandler(prefix);
+            }
+
+            function channelBandwidthChange(bandwidthValue, prefix) {
+                let { isBRCMplatform } = systemManipulable;
+                if (systemManipulable && systemManipulable.wlBandSeq[prefix]) {
+                    systemManipulable.wlBandSeq[prefix].bandwidthValue = bandwidthValue;
+                }
+
+                if ((prefix === "5g1" || prefix === "5g2") && bandwidthValue === "6") {
+                    document.getElementById(`${prefix}_acs_dfs`).checked = true;
+                    document.getElementById(`${prefix}_acs_dfs`).disabled = true;
+                } else {
+                    if (document.getElementById(`${prefix}_acs_dfs`)) {
+                        document.getElementById(`${prefix}_acs_dfs`).disabled = false;
+                    }
+                }
+
+                // let displayFlag =
+                let displayFlag = (() => {
+                    if (isBRCMplatform) {
+                        return bandwidthValue === "1" ? "none" : "";
+                    }
+
+                    return bandwidthValue === "0" ? "none" : "";
+                })();
+                let extensionChannelElement = document.getElementById(`${prefix}_extension_channel_field`);
+                if (extensionChannelElement) {
+                    extensionChannelElement.style.display = displayFlag;
+                }
+
+                controlChannelHandler(prefix);
+            }
+
+            function wpaEncryptHandler(prefix) {
+                let { wlBandSeq, smartConnect, wpaEncryptObject, aMesh } = systemManipulable;
+                let { smartConnectEnable, smartConnectReferenceIndex } = smartConnect;
+                let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
+                let { wpaEncryptValue, joinSmartConnect, authMethodValue, wifi7ModeEnabled } = wlBandSeq[prefixNvram];
+                let wpaEncryptStringObject = objectDeepCopy(wpaEncryptObject);
+                let wpaEncryptSnippet = "";
+                if (authMethodValue !== "psk" && authMethodValue !== "wpa") {
+                    delete wpaEncryptStringObject["tkip"];
+                }
+
+                if (authMethodValue !== "pskpsk2" && authMethodValue !== "wpawpa2") {
+                    delete wpaEncryptStringObject["tkip+aes"];
+                }
+
+                if (authMethodValue !== "suite-b") {
+                    delete wpaEncryptStringObject["suite-b"];
+                }
+
+                if (authMethodValue === "suite-b") {
+                    delete wpaEncryptStringObject["aes"];
+                }
+
+                if (!wifi7ModeEnabled || authMethodValue.indexOf("sae") == -1) {
+                    delete wpaEncryptStringObject["aes+gcmp256"];
+                } else {
+                    delete wpaEncryptStringObject["aes"];
+                }
+
+                if (
+                    authMethodValue === "openowe" ||
+                    authMethodValue === "owe" ||
+                    authMethodValue === "psk" ||
+                    authMethodValue === "psk2" ||
+                    authMethodValue === "sae" ||
+                    authMethodValue === "pskpsk2" ||
+                    authMethodValue === "psk2sae" ||
+                    authMethodValue === "wpa" ||
+                    authMethodValue === "wpa2" ||
+                    authMethodValue === "wpa3" ||
+                    authMethodValue === "suite-b" ||
+                    authMethodValue === "wpawpa2" ||
+                    authMethodValue === "wpa2wpa3"
+                ) {
+                    for (let [value, desc] of Object.entries(wpaEncryptStringObject)) {
+                        wpaEncryptSnippet += `<option value="${value}" ${wpaEncryptValue === value ? "selected" : ""}>${desc}</option>`;
+                    }
+
+                    let target = document.getElementById(`${prefix}_wpa_encrypt`);
+                    if (target) {
+                        target.innerHTML = wpaEncryptSnippet;
+                    }
+
+                    target = document.getElementById(`${prefix}_wpa_encrypt_field`);
+                    if (target) {
+                        let displayFlag = (() => {
+                            let { dwbMode, dwbBand } = aMesh;
+                            if (dwbMode === "1" && dwbBand === prefix) {
+                                return "";
+                            }
+
+                            if (prefix === "smart_connect") {
+                                return smartConnectEnable ? "" : "none";
+                            }
+
+                            return smartConnectEnable && joinSmartConnect ? "none" : "";
+                        })();
+                        target.style.display = displayFlag;
+                    }
+                }
+            }
+            function wpaKeyHandler(prefix) {
+                let { wlBandSeq, smartConnect, aMesh } = systemManipulable;
+                let { smartConnectEnable, smartConnectReferenceIndex } = smartConnect;
+                let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
+                let { authMethodValue, joinSmartConnect } = wlBandSeq[prefixNvram];
+                if (
+                    authMethodValue === "psk" ||
+                    authMethodValue === "psk2" ||
+                    authMethodValue === "sae" ||
+                    authMethodValue === "pskpsk2" ||
+                    authMethodValue === "psk2sae"
+                ) {
+                    let target = document.getElementById(`${prefix}_wpa_key_field`);
+                    if (target) {
+                        let displayFlag = (() => {
+                            let { dwbMode, dwbBand } = aMesh;
+                            if (dwbMode === "1" && dwbBand === prefix) {
+                                return "";
+                            }
+
+                            if (prefix === "smart_connect") {
+                                return "";
+                            }
+
+                            return smartConnectEnable && joinSmartConnect ? "none" : "";
+                        })();
+                        target.style.display = displayFlag;
+                    }
+                }
+            }
+
+            function mfpHandler(prefix) {
+                let { wlBandSeq, smartConnect, mfpObject, aMesh } = systemManipulable;
+                let { smartConnectEnable, smartConnectReferenceIndex } = smartConnect;
+                let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
+                let { authMethodValue, mfpValue, joinSmartConnect } = wlBandSeq[prefixNvram];
+                let mfpStringObject = objectDeepCopy(mfpObject);
+                let mfpSnipper = "";
+                if (
+                    authMethodValue === "openowe" ||
+                    authMethodValue === "owe" ||
+                    authMethodValue === "sae" ||
+                    authMethodValue === "wpa3" ||
+                    authMethodValue === "suite-b"
+                ) {
+                    delete mfpStringObject["0"];
+                    delete mfpStringObject["1"];
+                } else if (authMethodValue === "psk2sae" || authMethodValue === "wpa2wpa3") {
+                    delete mfpStringObject["0"];
+                } else if (authMethodValue === "pskpsk2" || authMethodValue === "wpawpa2") {
+                    delete mfpStringObject["2"];
+                }
+
+                if (
+                    authMethodValue === "openowe" ||
+                    authMethodValue === "owe" ||
+                    authMethodValue === "psk2" ||
+                    authMethodValue === "sae" ||
+                    authMethodValue === "pskpsk2" ||
+                    authMethodValue === "psk2sae" ||
+                    authMethodValue === "wpa2" ||
+                    authMethodValue === "wpa3" ||
+                    authMethodValue === "suite-b" ||
+                    authMethodValue === "wpawpa2" ||
+                    authMethodValue === "wpa2wpa3"
+                ) {
+                    for (let [value, desc] of Object.entries(mfpStringObject)) {
+                        mfpSnipper += `
+                                     <option value="${value}"
+                                     ${mfpValue === value ? "selected" : ""}>${desc}</option>
+                                 `;
+                    }
+
+                    let target = document.getElementById(`${prefix}_mfp`);
+                    if (target) {
+                        target.innerHTML = mfpSnipper;
+                    }
+
+                    target = document.getElementById(`${prefix}_mfp_field`);
+                    if (target) {
+                        let displayFlag = (() => {
+                            let { dwbMode, dwbBand } = aMesh;
+                            if (dwbMode === "1" && dwbBand === prefix) {
+                                return "";
+                            }
+
+                            if (prefix === "smart_connect") {
+                                return "";
+                            }
+
+                            return smartConnectEnable && joinSmartConnect ? "none" : "";
+                        })();
+                        target.style.display = displayFlag;
+                    }
+                }
+            }
+
+            function groupKeyHandler(prefix) {
+                let { wlBandSeq, smartConnect, aMesh } = systemManipulable;
+                let { smartConnectEnable, smartConnectReferenceIndex } = smartConnect;
+                let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
+                let { authMethodValue, joinSmartConnect } = wlBandSeq[prefixNvram];
+                if (
+                    authMethodValue === "openowe" ||
+                    authMethodValue === "owe" ||
+                    authMethodValue === "psk" ||
+                    authMethodValue === "psk2" ||
+                    authMethodValue === "sae" ||
+                    authMethodValue === "pskpsk2" ||
+                    authMethodValue === "psk2sae" ||
+                    authMethodValue === "wpa" ||
+                    authMethodValue === "wpa2" ||
+                    authMethodValue === "wpa3" ||
+                    authMethodValue === "suite-b" ||
+                    authMethodValue === "wpawpa2" ||
+                    authMethodValue === "wpa2wpa3"
+                ) {
+                    let target = document.getElementById(`${prefix}_group_key_field`);
+                    if (target) {
+                        let displayFlag = (() => {
+                            let { dwbMode, dwbBand } = aMesh;
+                            if (dwbMode === "1" && dwbBand === prefix) {
+                                return "";
+                            }
+
+                            if (prefix === "smart_connect") {
+                                return "";
+                            }
+
+                            return smartConnectEnable && joinSmartConnect ? "none" : "";
+                        })();
+                        target.style.display = displayFlag;
+                    }
+                }
+            }
+
+            function wepEncryptionHandler(prefix) {
+                let { wlBandSeq, smartConnect, wepEncryptObject, aMesh } = systemManipulable;
+                let { smartConnectEnable, smartConnectReferenceIndex } = smartConnect;
+                let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
+                let { authMethodValue, wlModeValue, wepEncryptValue, joinSmartConnect } = wlBandSeq[prefixNvram];
+                let wepEncryptStringObject = objectDeepCopy(wepEncryptObject);
+                if (authMethodValue === "shared") {
+                    delete wepEncryptStringObject["0"];
+                }
+
+                if (authMethodValue === "shared" && wepEncryptValue === "0") {
+                    wepEncryptValue = "1";
+                    systemManipulable.wlBandSeq[prefix].wepEncryptValue = wepEncryptValue;
+                }
+
+                let wepEncryptSnippet = "";
+                if ((authMethodValue === "open" && wlModeValue === "2") || authMethodValue === "shared") {
+                    for (let [value, desc] of Object.entries(wepEncryptStringObject)) {
+                        wepEncryptSnippet += `<option value="${value}" ${wepEncryptValue === value ? "selected" : ""}>${desc}</option>`;
+                    }
+
+                    wepEncryptionChange(wepEncryptValue, prefix);
+                    let target = document.getElementById(`${prefix}_wep_encrypt`);
+                    if (target) {
+                        target.innerHTML = wepEncryptSnippet;
+                    }
+
+                    target = document.getElementById(`${prefix}_wep_encrypt_field`);
+                    if (target) {
+                        let displayFlag = (() => {
+                            let { dwbMode, dwbBand } = aMesh;
+                            if (dwbMode === "1" && dwbBand === prefix) {
+                                return "";
+                            }
+
+                            if (prefix === "smart_connect") {
+                                return "";
+                            }
+
+                            return smartConnectEnable && joinSmartConnect ? "none" : "";
+                        })();
+                        target.style.display = displayFlag;
+                    }
+                }
+            }
+
+            function wepEncryptionChange(wepEncryptValue, prefix) {
+                let wepSettingsElement = [
+                    "_wep_key_index_field",
+                    "_wep_key1_field",
+                    "_wep_key2_field",
+                    "_wep_key3_field",
+                    "_wep_key4_field",
+                    "_pass_phrase_field",
+                ];
+
+                let { wlBandSeq, smartConnect } = systemManipulable;
+                let { smartConnectEnable, smartConnectReferenceIndex } = smartConnect;
+                let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
+                let { wlModeValue, joinSmartConnect } = wlBandSeq[prefixNvram];
+                let wepEncryptDescElement = ["_wep_encrypt_desc_64", "_wep_encrypt_desc_128"];
+                let displayFlag = (() => {
+                    if (smartConnectEnable && joinSmartConnect) {
+                        return "none";
+                    }
+
+                    return wepEncryptValue === "0" ? "none" : "";
+                })();
+                wepSettingsElement.forEach((element) => {
+                    let target = document.getElementById(`${prefix}${element}`);
+                    if (target) {
+                        target.style.display = displayFlag;
+                    }
+                });
+
+                wepEncryptDescElement.forEach((element) => {
+                    let target = document.getElementById(`${prefix}${element}`);
+                    if (target) {
+                        target.style.display = "none";
+                    }
+                });
+
+                if (wepEncryptValue === "1") {
+                    let target = document.getElementById(`${prefix}_wep_encrypt_desc_64`);
+                    if (target) {
+                        target.style.display = "";
+                    }
+                } else if (wepEncryptValue === "2") {
+                    let target = document.getElementById(`${prefix}_wep_encrypt_desc_128`);
+                    if (target) {
+                        target.style.display = "";
+                    }
+                }
+            }
+
+            function radiusHandler(prefix) {
+                let radiusSettingsElement = ["_radius_ip_field", "_radius_port_field", "_radius_key_field"];
+                let { wlBandSeq, smartConnect, aMesh } = systemManipulable;
+                let { smartConnectEnable, smartConnectReferenceIndex } = smartConnect;
+                let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
+                let { authMethodValue, joinSmartConnect } = wlBandSeq[prefixNvram];
+                let displayFlag = (() => {
+                    let { dwbMode, dwbBand } = aMesh;
+                    if (
+                        authMethodValue === "wpa" ||
+                        authMethodValue === "wpa2" ||
+                        authMethodValue === "wpa3" ||
+                        authMethodValue === "wpawpa2" ||
+                        authMethodValue === "wpa2wpa3" ||
+                        authMethodValue === "suite-b" ||
+                        authMethodValue === "radius"
+                    ) {
+                        if (dwbMode === "1" && dwbBand === prefix) {
+                            return "";
+                        }
+
+                        if (prefix === "smart_connect") {
+                            return "";
+                        }
+
+                        return smartConnectEnable && joinSmartConnect ? "none" : "";
+                    }
+                })();
+
+                radiusSettingsElement.forEach((element) => {
+                    let target = document.getElementById(`${prefix}${element}`);
+                    if (target) {
+                        target.style.display = displayFlag;
+                    }
+                });
+            }
+
+            function authenticationMethodChange(authMethodValue, prefix) {
+                const elementsArray = [
+                    "_wpa_encrypt_field",
+                    "_wpa_key_field",
+                    "_mfp_field",
+                    "_group_key_field",
+                    "_wep_encrypt_field",
+                    "_wep_key_index_field",
+                    "_wep_key1_field",
+                    "_wep_key2_field",
+                    "_wep_key3_field",
+                    "_wep_key4_field",
+                    "_pass_phrase_field",
+                    "_radius_ip_field",
+                    "_radius_port_field",
+                    "_radius_key_field",
+                ];
+
+                let { smartConnect, mloEnabled } = systemManipulable;
+                let { smartConnectEnable, smartConnectReferenceIndex } = smartConnect;
+                let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
+                if (systemManipulable.wlBandSeq[prefixNvram]) {
+                    const { beSupport, wifi7ModeEnabled, authMethodValue: authMethodValueOri } = systemManipulable.wlBandSeq[prefixNvram];
+                    systemManipulable.wlBandSeq[prefixNvram].authMethodValue = authMethodValue;
+                    if (beSupport) {
+                        if (authMethodValue === "sae" || authMethodValue === "psk2sae") {
+                            // systemManipulable.wlBandSeq[prefixNvram].wifi7ModeEnabled = true;
+                        } else {
+                            if (mloEnabled) {
+                                confirm_asus({
+                                    title: "MLO Hint",
+                                    contentA: `<b><#WiFi7_mlo_adjust_hint#></b>`,
+                                    contentC: "",
+                                    left_button: "<#CTL_Cancel#>",
+                                    left_button_callback: function () {
+                                        refreshpage();
+                                        return false;
+                                    },
+                                    left_button_args: {},
+                                    right_button: "<#btn_go#>",
+                                    right_button_callback: function () {
+                                        confirm_cancel();
+                                        location.href = "/MLO.asp";
+                                    },
+                                    right_button_args: {},
+                                    iframe: "",
+                                    margin: (() => {
+                                        return `${document.documentElement.scrollTop}px 0 0 25px`;
+                                    })(),
+                                    note_display_flag: 0,
+                                });
+                            } else if (
+                                wifi7ModeEnabled &&
+                                authMethodValue !== "psk2sae" &&
+                                authMethodValue !== "wpa2wpa3" &&
+                                authMethodValue !== "wpa3" &&
+                                authMethodValue !== "suite-b" &&
+                                authMethodValue !== "owe"
+                            ) {
+                                confirm_asus({
+                                    title: "",
+                                    contentA: `<#WiFi7_disable_note#>`,
+                                    contentC: "",
+                                    left_button: "<#checkbox_No#>",
+                                    left_button_callback: function () {
+                                        refreshpage();
+                                        return false;
+                                    },
+                                    left_button_args: {},
+                                    right_button: "<#checkbox_Yes#>",
+                                    right_button_callback: function () {
+                                        confirm_cancel();
+                                        if (systemManipulable.smartConnect.smartConnectEnable) {
+                                            for (let [key, value] of Object.entries(systemManipulable.wlBandSeq)) {
+                                                if (value.joinSmartConnect) {
+                                                    systemManipulable.wlBandSeq[key].wifi7ModeEnabled = false;
+                                                }
+                                            }
+                                        } else {
+                                            systemManipulable.wlBandSeq[prefixNvram].wifi7ModeEnabled = false;
+                                        }
+                                    },
+                                    right_button_args: {},
+                                    iframe: "",
+                                    margin: (() => {
+                                        return `${document.documentElement.scrollTop}px 0 0 25px`;
+                                    })(),
+                                    note_display_flag: 0,
+                                });
+                            }
+                        }
+                    }
+                }
+
+                elementsArray.forEach((element) => {
+                    let target = document.getElementById(`${prefix}${element}`);
+                    if (target) {
+                        target.style.display = "none";
+                    }
+                });
+
+                wpaEncryptHandler(prefix);
+                wpaKeyHandler(prefix);
+                mfpHandler(prefix);
+                groupKeyHandler(prefix);
+                wepEncryptionHandler(prefix);
+                radiusHandler(prefix);
+            }
+
+            function generateSmartConnectRadio() {
+                let { wlBandSeq, smartConnect, aMesh } = systemManipulable;
+                let { aMeshPrelinkSupport } = aMesh;
+                let { version, v1Type } = smartConnect;
+                let radioBandSnippet = "";
+                if (version === "v2") {
+                    let { v2Band, radioSeqArray } = smartConnect;
+                    for (let { name, prefixNvram } of Object.values(wlBandSeq)) {
+                        let checked = (() => {
+                            let index = radioSeqArray.findIndex((element) => element === prefixNvram);
+                            return v2Band[index] === "1" ? "checked" : "";
+                        })();
+
+                        radioBandSnippet += `<input id="smart_connect_check_${prefixNvram}" type="checkbox" onchange="smartConnectRadioChange(this.checked,'${prefixNvram}')" ${checked} />${name}`;
+                    }
+                } else {
+                    // Smart Connect v1
+                    if (wlBandSeq["2g1"] && wlBandSeq["5g1"] && wlBandSeq["6g1"]) {
+                        radioBandSnippet += `
+                            <select class="input_option" id="smart_connect_x" onChange="smartConnectChange(this.value)">
+                                <option class="content_input_fd" value="1"
+                                ${v1Type === "1" ? "selected" : ""}><#smart_connect_tri#> (2.4 GHz, 5 GHz and 6 GHz)</optio>
+                                <option class="content_input_fd" value="3"
+                                ${v1Type === "3" ? "selected" : ""}><#smart_connect_dual#> (2.4 GHz and 5 GHz)</optio>
+                            </select>
+                        `;
+                    } else if (wlBandSeq["2g1"] && wlBandSeq["5g1"] && wlBandSeq["5g2"]) {
+                        radioBandSnippet += `
+                            <select class="input_option" id="smart_connect_x" onChange="smartConnectChange(this.value)">
+                                <option class="content_input_fd" value="1"
+                                ${v1Type === "1" ? "selected" : ""}><#smart_connect_tri#> (2.4 GHz, 5 GHz-1 and 5 GHz-2)</optio>
+                                ${
+                                    aMeshPrelinkSupport
+                                        ? ""
+                                        : `<option class="content_input_fd" value="2"
+                                        ${v1Type === "2" ? "selected" : ""}><#smart_connect_dual#> (5 GHz-1 and 5 GHz-2)</optio>`
+                                }
+                            </select>
+                        `;
+                    } else {
+                        radioBandSnippet += `
+                            <select class="input_option" id="smart_connect_x" onChange="smartConnectChange(this.value)">
+                                <option  class="content_input_fd" value="1"
+                                ${v1Type === "1" ? "selected" : ""}><#smart_connect_dual#> (2.4 GHz and 5 GHz)</optio>
+                            </select>
+                        `;
+                    }
+                }
+
+                return `
+                    <tr id="smart_connect_band_field">
+                   		<th>Radio Bands</th>
+                   		<td>${radioBandSnippet}</td>
+                   	</tr>
+                `;
+            }
+            function generateSSID(prefix) {
+                let { wlBandSeq, smartConnect, aMesh } = systemManipulable;
+                let { smartConnectEnable, v2Band, smartConnectReferenceIndex, radioSeqArray, version, v1Type } = smartConnect;
+                let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
+                let { ssidValue, hideSSIDValue } = wlBandSeq[prefixNvram];
+                let displayFlag = (() => {
+                    let { dwbMode, dwbBand } = aMesh;
+                    if (dwbMode === "1" && dwbBand === prefix) {
+                        return "";
+                    }
+
+                    if (prefix === "smart_connect") {
+                        return smartConnectEnable ? "" : "none";
+                    }
+
+                    if (!smartConnectEnable) {
+                        return "";
+                    }
+
+                    if (version === "v2") {
+                        let index = radioSeqArray.findIndex((element) => element === prefixNvram);
+                        return v2Band[index] === "1" ? "none" : "";
+                    } else {
+                        // SMART CONNECT v1
+                        if (v1Type === "1") {
+                            return "none";
+                        } else if (v1Type === "2") {
+                            if (prefix === "5g1" || prefix === "5g2") {
+                                return "none";
+                            }
+                        } else if (v1Type === "3") {
+                            if (prefix === "2g1" || prefix === "5g1") {
+                                return "none";
+                            }
+                        }
+
+                        return "";
+                    }
+                })();
+
+                return `
+                    <tr id="${prefix}_ssid_field" class="frontHaulSetting" style="display:${displayFlag}">
+                        <th>
+                            <a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 1);"><#QIS_finish_wireless_item1#></a>
+                        </th>
+                        <td>
+                            <input id="${prefix}_ssid" type="text" maxlength="32" class="input_32_table" value="${ssidValue}" onkeypress="validator.isString(this, event)" autocorrect="off" autocapitalize="off">
+                        </td>
+                    </tr>
+                    <tr id="${prefix}_hide_ssid_field" class="frontHaulSetting" style="display:${displayFlag}">
+                        <th>
+                            <a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 2);"><#WLANConfig11b_x_BlockBCSSID_itemname#></a>
+                        </th>
+                        <td>
+                            <input id="${prefix}_hide_ssid_yes"  name=${prefix}_hide_ssid  type="radio" value="1" class="input"
+                            ${hideSSIDValue === "1" ? "checked" : ""}><#checkbox_Yes#>
+                            <input name=${prefix}_hide_ssid type="radio" value="0" class="input"
+                            ${hideSSIDValue === "0" ? "checked" : ""}><#checkbox_No#>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            function generateWirelessBackhaul(prefix) {
+                if (prefix !== nbandListArray[dwb_band]) {
+                    return "";
+                }
+
+                let { wlBandSeq, smartConnect, fh_ap_enabled, aMesh } = systemManipulable;
+                let { smartConnectReferenceIndex, smartConnectEnable } = smartConnect;
+                let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
+                let { joinSmartConnect } = wlBandSeq[prefixNvram];
+                let cfgClientList = httpApi.hookGet("get_cfg_clientlist");
+                let { fronthaul_ap_option_off, fronthaul_ap_option_on } = httpApi.aimesh_get_node_capability(cfgClientList[0]);
+                let displayFlag = (() => {
+                    let { dwbMode } = aMesh;
+                    let smartConnectIncludeDwbBand =
+                        document.getElementById(`smart_connect_check_${prefix}`) &&
+                        document.getElementById(`smart_connect_check_${prefix}`).checked &&
+                        smartConnectEnable;
+                    return dwbMode === "1" && smartConnectIncludeDwbBand && fronthaul_ap_option_on && fronthaul_ap_option_off ? "" : "none";
+                })();
+
+                return `
+                    <tr id="mesh_backhaul_field" style="display:${displayFlag}">
+                        <th>AiMesh Wireless Backhaul</th>
+                        <td>
+                            <select id="fh_ap_enabled" class="input_option">
+                                ${
+                                    fronthaul_ap_option_on
+                                        ? `<option value="2"
+                                        ${fh_ap_enabled === "2" ? "selected" : ""}><#AiMesh_WiFi_Backhaul_both#></option>`
+                                        : ""
+                                }
+                                ${
+                                    fronthaul_ap_option_off
+                                        ? `<option value="0"
+                                        ${fh_ap_enabled === "0" ? "selected" : ""}><#AiMesh_WiFi_Backhaul_dedicated_backhaul#></option>`
+                                        : ""
+                                }
+                            </select>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            function generateChannelBandwidth(prefix) {
+                let { wlBandSeq, smartConnect, channelBandwidthObject, brcmAfcSupport } = systemManipulable;
+                let { smartConnectReferenceIndex } = smartConnect;
+                let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
+                let {
+                    bw80MHzSupport,
+                    bw160MHzSupport,
+                    bw320MHzSupport,
+                    bw80_80MHzSupport,
+                    bw240MHzSupport,
+                    bw160Value,
+                    bw240Value,
+                    bandwidthValue,
+                } = wlBandSeq[prefixNvram];
+                let bandwidthStringObject = objectDeepCopy(channelBandwidthObject);
+                let autoBandwidthString = bandwidthStringObject.auto.string;
+                if (!bw320MHzSupport) {
+                    autoBandwidthString = autoBandwidthString.replace("/320", "");
+                    delete bandwidthStringObject["320mhz"];
+                }
+
+                if (!bw240MHzSupport || (bw240MHzSupport && bw240Value === "0")) {
+                    autoBandwidthString = autoBandwidthString.replace("/240", "");
+                    delete bandwidthStringObject["240mhz"];
+                }
+
+                if (!bw320MHzSupport && (!bw160MHzSupport || (bw160MHzSupport && bw160Value === "0"))) {
+                    autoBandwidthString = autoBandwidthString.replace("/160", "");
+                    delete bandwidthStringObject["160mhz"];
+                }
+
+                if (!bw80_80MHzSupport) {
+                    delete bandwidthStringObject["80_80mhz"];
+                }
+
+                if (!bw80MHzSupport) {
+                    autoBandwidthString = autoBandwidthString.replace("/80", "");
+                    delete bandwidthStringObject["80mhz"];
+                }
+
+                bandwidthStringObject.auto.string = `${autoBandwidthString} MHz`;
+                let channelBandwidthSnippet = "";
+                for (let { value, string } of Object.values(bandwidthStringObject)) {
+                    channelBandwidthSnippet += `<option value="${value}" ${bandwidthValue === value ? "selected" : ""}>${string}</option>`;
+                }
+
+                let bw160Snippet = "";
+                if (bw160MHzSupport && !bw320MHzSupport) {
+                    bw160Snippet += `
+                        <span>
+                            <input id="${prefix}_bw160_enable" type="checkbox" onClick="bandwidth160MHzEnable(this.checked, '${prefix}')"
+                             ${bw160Value === "1" ? "checked" : ""} ${
+                        bw240Value === "1" ? "checked disabled" : ""
+                    }><#WLANConfig11b_ChannelBW_Enable160M#>
+                        </span>
+                    `;
+                }
+
+                let bw240Snippet = "";
+                if (bw240MHzSupport && !bw320MHzSupport) {
+                    bw240Snippet += `
+                        <span>
+                            <input id="${prefix}_bw240_enable" type="checkbox" onClick="bandwidth240MHzEnable(this.checked, '${prefix}')"
+                             ${bw240Value === "1" ? "checked" : ""}>Enable 240 MHz
+                        </span>
+                    `;
+                }
+
+                return `
+                    <tr>          
+                        ${
+                            brcmAfcSupport && prefixNvram === "6g1"
+                                ? `<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 28);"><#WLANConfig11b_ChannelBW_itemname#></a></th>`
+                                : "<th><#WLANConfig11b_ChannelBW_itemname#></th>"
+                        }                                      
+                        <td>
+                            <select id="${prefix}_channel_bandwidth" class="input_option" onChange="channelBandwidthChange(this.value, '${prefix}')">${channelBandwidthSnippet}</select>
+                            ${bw160Snippet}
+                            ${bw240Snippet}
+                        </td>
+                    </tr>
+                `;
+            }
+
+            function generateControlChannel(prefix) {
+                let { wlBandSeq, smartConnect, psc6g, acs_dfs, acs_band3, acs_unii4, acs_ch13, language, isBRCMplatform } =
+                    systemManipulable;
+                let { smartConnectEnable, v2Band, smartConnectReferenceIndex, radioSeqArray } = smartConnect;
+                let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
+                let {
+                    bandwidthValue,
+                    curCtrlChannel,
+                    channelValue,
+                    channel,
+                    pscChannel,
+                    ch320MHz,
+                    ch160MHz,
+                    ch80MHz,
+                    ch40MHz,
+                    ch20MHz,
+                    acsCH13Support,
+                    dfsSupport,
+                    uNII4Support,
+                    bw160Value,
+                    bw240Value,
+                } = wlBandSeq[prefixNvram];
+                if ((prefix === "6g1" || prefix === "6g2") && psc6g === "1") {
+                    channel = [...pscChannel];
+                }
+
+                let channelSnippet = `<option value="0"><#Auto#></option>`;
+                for (let element of channel) {
+                    let chValue = "";
+                    let selected = "";
+                    let chNumber = 0;
+                    if (bandwidthValue === "0") {
+                        // Auto Bandwidth
+                        if (ch320MHz[element]) {
+                            // separate channel number due to the 320-1 and 320-2
+                            chValue = element;
+
+                            // to get channel number
+                            chNumber = channelValue;
+                            if (isBRCMplatform) {
+                                chNumber = channelValue.split("/320")[0].slice(2);
+                            }
+                        } else if (ch160MHz[element] && bw160Value === "1") {
+                            chValue = ch160MHz[element][0];
+                            chNumber = channelValue;
+                            if (isBRCMplatform) {
+                                if (prefix === "6g1" || prefix === "6g2") {
+                                    chNumber = channelValue.split("/160")[0].slice(2);
+                                } else {
+                                    chNumber = channelValue.split("/160")[0];
+                                }
+                            }
+                        } else if (ch80MHz[element]) {
+                            chValue = ch80MHz[element][0];
+                            chNumber = channelValue;
+                            if (isBRCMplatform) {
+                                if (prefix === "6g1" || prefix === "6g2") {
+                                    chNumber = channelValue.split("/80")[0].slice(2);
+                                } else {
+                                    chNumber = channelValue.split("/80")[0];
+                                }
+                            }
+                        } else if (ch40MHz[element]) {
+                            if (prefix === "2g1") {
+                                // separate channel number due to the channel likes 5u, 5l
+                                chValue = element;
+                                chNumber = channelValue.split("u")[0].split("l")[0];
+                            } else {
+                                chValue = ch40MHz[element][0];
+                                chNumber = channelValue;
+                                if (isBRCMplatform) {
+                                    if (prefix === "6g1" || prefix === "6g2") {
+                                        chNumber = channelValue.split("/40")[0].slice(2);
+                                    } else {
+                                        chNumber = channelValue.split("u")[0].split("l")[0];
+                                    }
+                                }
+                            }
+                        } else {
+                            chValue = ch20MHz[element][0];
+                            chNumber = channelValue;
+                        }
+                    } else if (bandwidthValue === "6") {
+                        // 320 MHz
+                        if (!ch320MHz[element]) {
+                            continue;
+                        }
+
+                        chValue = element;
+                        chNumber = channelValue;
+                        if (isBRCMplatform) {
+                            chNumber = channelValue.split("/320")[0].slice(2);
+                        }
+                    } else if (bandwidthValue === "5") {
+                        // 160 MHz
+                        if (!ch160MHz[element]) {
+                            continue;
+                        }
+
+                        chValue = ch160MHz[element][0];
+                        chNumber = channelValue;
+                        if (isBRCMplatform) {
+                            if (prefix === "6g1" || prefix === "6g2") {
+                                chNumber = channelValue.split("/160")[0].slice(2);
+                            } else {
+                                chNumber = channelValue.split("/160")[0];
+                            }
+                        }
+                    } else if (bandwidthValue === "3") {
+                        // 80 MHz
+                        if (!ch80MHz[element]) {
+                            continue;
+                        }
+
+                        chValue = ch80MHz[element][0];
+                        chNumber = channelValue;
+                        if (isBRCMplatform) {
+                            if (prefix === "6g1" || prefix === "6g2") {
+                                chNumber = channelValue.split("/80")[0].slice(2);
+                            } else {
+                                chNumber = channelValue.split("/80")[0];
+                            }
+                        }
+                    } else if (bandwidthValue === "2") {
+                        // 40 MHz
+                        if (!ch40MHz[element]) {
+                            continue;
+                        }
+
+                        if (prefix === "2g1") {
+                            // separate channel number due to the channel likes 5u, 5l
+                            chValue = element;
+                            chNumber = channelValue.split("u")[0].split("l")[0];
+                        } else {
+                            // 5 GHz, 6 GHz
+                            chValue = ch40MHz[element][0];
+                            chNumber = channelValue;
+                            if (isBRCMplatform) {
+                                if (prefix === "6g1" || prefix === "6g2") {
+                                    chNumber = channelValue.split("/40")[0].slice(2);
+                                } else {
+                                    chNumber = channelValue.split("u")[0].split("l")[0];
+                                }
+                            }
+                        }
+                    } else if (bandwidthValue === "1") {
+                        // 20 MHz
+                        chValue = ch20MHz[element][0];
+                        chNumber = channelValue;
+                    }
+
+                    selected = element === chNumber ? "selected" : "";
+                    channelSnippet += `<option value="${chValue}" ${selected}>${element}</option>`;
+                }
+
+                let currentChannelSnippet = `<span id="${prefix}_current_channel" style="margin-left: 10px;display:${
+                    channelValue === "0" ? "" : "none"
+                }"><#wireless_control_channel#>: ${curCtrlChannel}</span>`;
+
+                let acsCh13Snippet = "";
+                if (prefix === "2g1" && acsCH13Support) {
+                    acsCh13Snippet = `
+                        <div id="${prefix}_acs_ch13_field" style="display:${channelValue === "0" ? "" : "none"}">
+                            <span>
+                                <input id="${prefix}_acs_ch13" type="checkbox"
+                                ${acs_ch13 === "1" ? "checked" : ""}><#WLANConfig11b_EChannel_acs_ch13#>
+                            </span>
+                        </div>
+                    `;
+                }
+
+                let psc6gSnippet = "";
+                if (prefix === "6g1" || prefix === "6g2") {
+                    // due to HTML tag <a> with hard code ID in the dict string, it needs to be replaced
+                    let { currentLang } = language;
+                    let faqOldTag = `<a id="psc_faq_link">`;
+                    let faqLink = `https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang=${currentLang}&kw=&num=151`;
+                    let faqNewTag = `<a class="a-hint-text" href="${faqLink}" target="_blank">`;
+                    let faqStr = `<#PSC_Faq#>`;
+                    faqStr = faqStr.replace(faqOldTag, faqNewTag);
+                    psc6gSnippet += `
+                        <div id="${prefix}_psc6g_field">
+                            <div>
+                                <span>
+                                    <input id="${prefix}_psc6g" type="checkbox"
+                                    ${
+                                        psc6g === "1" ? "checked" : ""
+                                    } onClick="pscChannelEnable(this.checked, '${prefix}')"><#Enable_PSC_Hint#>
+                                </span>
+                            </div>
+                            <div><span id="${prefix}_auto_suggest"><#WLANConfig11b_AuthenticationMethod_auto_desc#></span></div>
+                            <div><span>${faqStr}</span></div>
+                        </div>
+                    `;
+                }
+
+                let acsDfsSnippet = "";
+                if (dfsSupport) {
+                    const disableFlag = (() => {
+                        if (prefix === "5g2") {
+                            if (channel.includes("100") && !channel.includes("149")) {
+                                return "disabled";
+                            }
+                        }
+
+                        return "";
+                    })();
+                    acsDfsSnippet = `
+                        <div id="${prefix}_acs_dfs_field" style="display:${channelValue === "0" ? "" : "none"}">
+                            <span>
+                                <input id="${prefix}_acs_dfs" type="checkbox" ${disableFlag}
+                                ${prefix === "5g1" && acs_dfs === "1" ? "checked" : ""}
+                                ${prefix === "5g2" && acs_band3 === "1" ? "checked" : ""}><#WLANConfig11b_EChannel_dfs#>
+                            </span>
+                        </div>
+                    `;
+                }
+
+                let uNII4Snippet = "";
+                if (uNII4Support) {
+                    uNII4Snippet += `
+                        <div id="${prefix}_unii4_field" style="display:${channelValue === "0" ? "" : "none"}">
+                            <span>
+                                <input id="${prefix}_unii4" type="checkbox"
+                                ${acs_unii4 === "1" ? "checked" : ""}><#WLANConfig11b_EChannel_U-NII-4#>
+                            </span>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <tr>
+                        <th><#WLANConfig11b_Channel_itemname#></th>
+                        <td>
+                            <select id="${prefix}_control_channel" class="input_option" onChange="controlChannelChange(this.value, '${prefix}')">${channelSnippet}</select>
+                            ${currentChannelSnippet}
+                            ${acsCh13Snippet}
+                            ${acsDfsSnippet}
+                            ${uNII4Snippet}
+                            ${psc6gSnippet}
+                        </td>
+                    </tr>
+                `;
+            }
+
+            function generateExtensionChannel(prefix) {
+                let { wlBandSeq, smartConnect, isBRCMplatform, extensionChannelObject } = systemManipulable;
+                let { smartConnectReferenceIndex } = smartConnect;
+                let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
+                let { channelValue, chanspecs, ch320MHz, bandwidthValue, extChannelValue } = wlBandSeq[prefixNvram];
+                let extensionChannelString = objectDeepCopy(extensionChannelObject);
+
+                // if channel bandwidth is 20 MHz then not to display extension channel
+                let displayFlag = (() => {
+                    if (isBRCMplatform) {
+                        if (bandwidthValue === "1" || channelValue === "14") {
+                            return "none";
+                        }
+                    } else {
+                        // MTK, QCA platforms
+                        if (bandwidthValue === "0") {
+                            return "none";
+                        }
+                    }
+
+                    return "";
+                })();
+
+                if (isBRCMplatform) {
+                    delete extensionChannelString["lower"];
+                    delete extensionChannelString["upper"];
+                    if (prefix !== "6g1" && prefix !== "6g2") {
+                        delete extensionChannelString["320-1"];
+                        delete extensionChannelString["320-2"];
+                    }
+                } else {
+                    delete extensionChannelString["l"];
+                    delete extensionChannelString["u"];
+                    delete extensionChannelString["320-1"];
+                    delete extensionChannelString["320-2"];
+                    if (prefix === "5g1" || prefix === "5g2") {
+                        delete extensionChannelString["lower"];
+                        delete extensionChannelString["upper"];
+                    }
+                }
+
+                if (channelValue === "0" || prefix === "5g1" || prefix === "5g2") {
+                    delete extensionChannelString["l"];
+                    delete extensionChannelString["u"];
+                    delete extensionChannelString["320-1"];
+                    delete extensionChannelString["320-2"];
+                    delete extensionChannelString["lower"];
+                    delete extensionChannelString["upper"];
+                } else {
+                    let ch = channelValue.slice(0, -1);
+                    if (prefix === "2g1") {
+                        delete extensionChannelString["0"];
+                        if (chanspecs.indexOf(`${ch}u`) === -1) {
+                            delete extensionChannelString["u"];
+                        }
+
+                        if (chanspecs.indexOf(`${ch}l`) === -1) {
+                            delete extensionChannelString["l"];
+                        }
+                    } else if (prefix === "6g1" || prefix === "6g2") {
+                        delete extensionChannelString["l"];
+                        delete extensionChannelString["u"];
+                        if (
+                            ((isBRCMplatform && bandwidthValue !== "0") || (!isBRCMplatform && bandwidthValue !== "1")) &&
+                            bandwidthValue !== "6"
+                        ) {
+                            delete extensionChannelString["lower"];
+                            delete extensionChannelString["upper"];
+                        } else {
+                            let ch = channelValue.split("/320")[0];
+                            if (isBRCMplatform) {
+                                ch = ch.slice(2);
+                            }
+
+                            if (ch320MHz[ch]) {
+                                delete extensionChannelString["0"];
+                                if (ch320MHz[ch].indexOf(`6g${ch}/320-1`) === -1) {
+                                    if (isBRCMplatform) {
+                                        delete extensionChannelString["320-1"];
+                                    } else {
+                                        delete extensionChannelString["lower"];
+                                    }
+                                }
+
+                                if (ch320MHz[ch].indexOf(`6g${ch}/320-2`) === -1) {
+                                    if (isBRCMplatform) {
+                                        delete extensionChannelString["320-2"];
+                                    } else {
+                                        delete extensionChannelString["upper"];
+                                    }
+                                }
+                            } else {
+                                // for channel that not support 320 MHz
+                                delete extensionChannelString["lower"];
+                                delete extensionChannelString["upper"];
+                            }
+                        }
+                    }
+                }
+
+                let postfix = "0";
+                if (channelValue.indexOf("u") !== -1 || channelValue.indexOf("l") !== -1) {
+                    postfix = channelValue.slice(-1);
+                } else if (channelValue.indexOf("320-1") !== -1 || channelValue.indexOf("320-2") !== -1) {
+                    postfix = channelValue.split("/")[1];
+                } else {
+                    // MTK, QCA platforms
+                    postfix = extChannelValue;
+                }
+
+                let extensionChannelSnippet = "";
+                for (let [value, desc] of Object.entries(extensionChannelString)) {
+                    extensionChannelSnippet += `<option value="${value}" ${postfix === value ? "selected" : ""}>${desc}</option>`;
+                }
+
+                return `
+                    <tr id="${prefix}_extension_channel_field" style="display:${displayFlag}">
+                        <th><#WLANConfig11b_EChannel_itemname#></th>
+                        <td>
+                            <select id="${prefix}_extension_channel" class="input_option">${extensionChannelSnippet}</select>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            function generateAFC(prefix) {
+                if (prefix !== "6g1" || !systemManipulable.brcmAfcSupport) {
+                    return "";
+                }
+
+                const afcTable = [
+                    {
+                        status: "",
+                        message: "",
+                    },
+                    {
+                        status: "Standard Power mode",
+                        message: "",
+                    },
+                    {
+                        status: "Low Power Indoor mode",
+                        message: `The available channels approved by AFC can't form a maximum bandwidth of 320MHz.`,
+                    },
+                    {
+                        status: "Low Power Indoor mode",
+                        message: `No channels available in your location are authorized for use in the standard power mode.`,
+                    },
+                    {
+                        status: "Low Power Indoor mode",
+                        message: `AFC server is busy now, please try later.`,
+                    },
+                    {
+                        status: "Low Power Indoor mode",
+                        message: "",
+                    },
+                    {
+                        status: "Low Power Indoor mode",
+                        message: `The configured control channel is not authorized for use in the standard power mode. `,
+                    },
+                ];
+
+				let afcReturn = httpApi.get_afc_enable();
+				let afc_status = afcReturn.retStatus;
+                const { status = "", message = "" } = afcTable[afc_status] || {};
+
+                let afc_html = `
+                    <tr>
+                        <th width="30%">
+                            <a class="hintstyle" href="javascript:void(0);">AFC</a>
+                        </th>
+                        <td style="display:flex;align-items:center;border:0;">
+                            <div id="radio_afc_enable" class="left radio-smartcon-enable"></div>
+                            <div id="afc_status" class="smart-connect-rule-link" style="line-height:16px;color:#fc0">
+                                ${status}
+                                <div id="afc_err_message" style="color:#fc0;">${message}</div>
+                            </div>
+                            ${status === "" ? `<div class="setup_afc_help_icon"></div>` : ""}
+                        </td>
+                    </tr>
+                `;
+
+                return afc_html;
+            }
+
+            function generateAuthenticationMethod(prefix) {
+                let { wlBandSeq, newWiFiCertSupport, wifiLogoSupport, isKRSku, currentOPMode, smartConnect, aMesh } = systemManipulable;
+                let { aMeshSupport, aMeshRouterSupport } = aMesh;
+                let { smartConnectEnable, v2Band, smartConnectReferenceIndex } = smartConnect;
+                let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
+                let { wlModeValue, authMethod, authMethodValue, joinSmartConnect } = wlBandSeq[prefixNvram];
+                let displayFlagAuthMethodSuggest = authMethodValue === "open" ? "" : "none";
+                let displayFlagAuthMethod = (() => {
+                    let { dwbMode, dwbBand } = aMesh;
+                    if (dwbMode === "1" && dwbBand === prefix) {
+                        return "";
+                    }
+
+                    if (prefix === "smart_connect") {
+                        return smartConnectEnable ? "" : "none";
+                    }
+
+                    if (smartConnectEnable && joinSmartConnect) {
+                        return "none;";
+                    }
+
+                    return "";
+                })();
+
+                if (newWiFiCertSupport) {
+                    delete authMethod["psk"];
+                    delete authMethod["wpa"];
+                }
+
+                if (wifiLogoSupport) {
+                    delete authMethod["shared"];
+                    delete authMethod["psk"];
+                    delete authMethod["radius"];
+                }
+
+                let { id: opModeId } = currentOPMode;
+                // Wireless mode: Legacy or Repeater mode
+                if (wlModeValue !== "2" || opModeId === "RE") {
+                    delete authMethod["shared"];
+                    delete authMethod["psk"];
+                    delete authMethod["wpa"];
+                    delete authMethod["radius"];
+                }
+
+                if (isKRSku) {
+                    delete authMethod["open"];
+                }
+
+                if (aMeshSupport && aMeshRouterSupport && (opModeId === "RT" || opModeId === "AP")) {
+                    let reNodeCount = httpApi.hookGet("get_cfg_clientlist").length;
+
+                    // if RE node connected then remove whole Enterprise
+                    if (reNodeCount > 1) {
+                        delete authMethod["wpa"];
+                        delete authMethod["wpa2"];
+                        delete authMethod["wpa3"];
+                        delete authMethod["suite-b"];
+                        delete authMethod["wpawpa2"];
+                        delete authMethod["wpa2wpa3"];
+                        delete authMethod["radius"];
+                    }
+                }
+
+                let authMethodSnippet = "";
+                for (let [value, desc] of Object.entries(authMethod)) {
+                    authMethodSnippet += `<option value='${value}' ${authMethodValue === value ? "selected" : ""}>${desc}</option>`;
+                }
+
+                return `
+                    <tr id="${prefix}_auth_method_field" class="frontHaulSetting" style="display:${displayFlagAuthMethod}">
+                        <th>
+                            <a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 5);"><#WLANConfig11b_AuthenticationMethod_itemname#></a>
+                        </th>
+                        <td>
+                            <select id="${prefix}_auth_method" class="input_option select_auth_mode" onChange="authenticationMethodChange(this.value, '${prefix}')">${authMethodSnippet}</select>
+                            <div class="setup_help_icon"></div>
+                            <span id="${prefix}_auth_method_suggest" style="display:${displayFlagAuthMethodSuggest}">Suggest to use "Enhanced Open transition" for better device compatibility</span>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            function generateWpaEncryption(prefix) {
+                let { wlBandSeq, smartConnect, wpaEncryptObject, aMesh } = systemManipulable;
+                let { smartConnectEnable, smartConnectReferenceIndex } = smartConnect;
+                let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
+                let { authMethodValue, wpaEncryptValue, joinSmartConnect, wifi7ModeEnabled } = wlBandSeq[prefixNvram];
+                let wpaEncryptStringObject = objectDeepCopy(wpaEncryptObject);
+                let displayFlag = (() => {
+                    if (
+                        authMethodValue === "openowe" ||
+                        authMethodValue === "owe" ||
+                        authMethodValue === "psk" ||
+                        authMethodValue === "psk2" ||
+                        authMethodValue === "sae" ||
+                        authMethodValue === "pskpsk2" ||
+                        authMethodValue === "psk2sae" ||
+                        authMethodValue === "wpa" ||
+                        authMethodValue === "wpa2" ||
+                        authMethodValue === "wpa3" ||
+                        authMethodValue === "suite-b" ||
+                        authMethodValue === "wpawpa2" ||
+                        authMethodValue === "wpa2wpa3"
+                    ) {
+                        let { dwbMode, dwbBand } = aMesh;
+                        if (dwbMode === "1" && dwbBand === prefix) {
+                            return "";
+                        }
+
+                        if (prefix === "smart_connect") {
+                            return smartConnectEnable ? "" : "none";
+                        }
+
+                        if (smartConnectEnable && joinSmartConnect) {
+                            return "none";
+                        }
+
+                        return "";
+                    }
+
+                    return "none";
+                })();
+
+                if (authMethodValue !== "psk" && authMethodValue !== "wpa") {
+                    delete wpaEncryptStringObject["tkip"];
+                }
+
+                if (authMethodValue !== "pskpsk2" && authMethodValue !== "wpawpa2") {
+                    delete wpaEncryptStringObject["tkip+aes"];
+                }
+
+                if (authMethodValue !== "suite-b") {
+                    delete wpaEncryptStringObject["suite-b"];
+                }
+
+                if (authMethodValue === "suite-b") {
+                    delete wpaEncryptStringObject["aes"];
+                }
+
+                if (!wifi7ModeEnabled || authMethodValue.indexOf("sae") == -1) {
+                    delete wpaEncryptStringObject["aes+gcmp256"];
+                } else {
+                    delete wpaEncryptStringObject["aes"];
+                }
+
+                let wpaEncryptSnippet = "";
+                for (let [value, desc] of Object.entries(wpaEncryptStringObject)) {
+                    wpaEncryptSnippet += `<option value="${value}" ${wpaEncryptValue === value ? "selected" : ""}>${desc}</option>`;
+                }
+
+                return `
+                	<tr id="${prefix}_wpa_encrypt_field" class="frontHaulSetting" style="display:${displayFlag}">
+                		<th>
+                			<a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 6);"><#WLANConfig11b_WPAType_itemname#></a>
+                		</th>
+                		<td>
+                			<select class="input_option" id="${prefix}_wpa_encrypt">${wpaEncryptSnippet}</select>
+                		</td>
+                	</tr>
+                `;
+            }
+
+            function generateWpaKey(prefix) {
+                let { wlBandSeq, smartConnect, aMesh } = systemManipulable;
+                let { smartConnectEnable, smartConnectReferenceIndex } = smartConnect;
+                let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
+                let { authMethodValue, wpaKeyValue, joinSmartConnect } = wlBandSeq[prefixNvram];
+                let displayFlag = (() => {
+                    if (
+                        authMethodValue === "psk" ||
+                        authMethodValue === "psk2" ||
+                        authMethodValue === "sae" ||
+                        authMethodValue === "pskpsk2" ||
+                        authMethodValue === "psk2sae"
+                    ) {
+                        let { dwbMode, dwbBand } = aMesh;
+                        if (dwbMode === "1" && dwbBand === prefix) {
+                            return "";
+                        }
+
+                        if (prefix === "smart_connect") {
+                            return smartConnectEnable ? "" : "none";
+                        }
+
+                        if (smartConnectEnable && joinSmartConnect) {
+                            return "none";
+                        }
+
+                        return "";
+                    }
+
+                    return "none";
+                })();
+
+                return `
+                    <tr id="${prefix}_wpa_key_field" class="frontHaulSetting" style="display:${displayFlag}">
+                        <th>
+                        <a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 7);"><#WLANConfig11b_x_PSKKey_itemname#></a>
+                        </th>
+                        <td>
+                            <input id="${prefix}_wpa_key" type="password" maxlength="64" class="input_32_table" autocorrect="off" autocapitalize="off" onfocus="plainPasswordSwitch(this, 'focus')" onblur="plainPasswordSwitch(this, 'blur')" value="${wpaKeyValue}">
+                        </td>
+                    </tr>
+                `;
+            }
+
+            function generateMfp(prefix) {
+                let { wlBandSeq, smartConnect, mfpObject, aMesh } = systemManipulable;
+                let { smartConnectEnable, smartConnectReferenceIndex } = smartConnect;
+                let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
+                let { authMethodValue, mfpValue, joinSmartConnect } = wlBandSeq[prefixNvram];
+                let mfpStringObject = objectDeepCopy(mfpObject);
+                let displayFlag = (() => {
+                    if (
+                        authMethodValue === "openowe" ||
+                        authMethodValue === "owe" ||
+                        authMethodValue === "psk2" ||
+                        authMethodValue === "sae" ||
+                        authMethodValue === "pskpsk2" ||
+                        authMethodValue === "psk2sae" ||
+                        authMethodValue === "wpa2" ||
+                        authMethodValue === "wpa3" ||
+                        authMethodValue === "suite-b" ||
+                        authMethodValue === "wpawpa2" ||
+                        authMethodValue === "wpa2wpa3"
+                    ) {
+                        let { dwbMode, dwbBand } = aMesh;
+                        if (dwbMode === "1" && dwbBand === prefix) {
+                            return "";
+                        }
+
+                        if (prefix === "smart_connect") {
+                            return smartConnectEnable ? "" : "none";
+                        }
+
+                        if (smartConnectEnable && joinSmartConnect) {
+                            return "none";
+                        }
+
+                        return "";
+                    }
+
+                    return "none";
+                })();
+
+                if (
+                    authMethodValue === "openowe" ||
+                    authMethodValue === "owe" ||
+                    authMethodValue === "sae" ||
+                    authMethodValue === "wpa3" ||
+                    authMethodValue === "suite-b"
+                ) {
+                    delete mfpStringObject["0"];
+                    delete mfpStringObject["1"];
+                } else if (authMethodValue === "psk2sae" || authMethodValue === "wpa2wpa3") {
+                    delete mfpStringObject["0"];
+                } else if (authMethodValue === "pskpsk2" || authMethodValue === "wpawpa2") {
+                    delete mfpStringObject["2"];
+                }
+
+                let mfpSnipper = "";
+                for (let [value, desc] of Object.entries(mfpStringObject)) {
+                    mfpSnipper += `
+                        <option value="${value}" ${mfpValue === value ? "selected" : ""}>${desc}</option>
+                    `;
+                }
+
+                return `
+                    <tr id="${prefix}_mfp_field" class="frontHaulSetting" style="display:${displayFlag}">
+                        <th><#WLANConfig11b_x_mfp#></th>
+                        <td>
+                            <select class="input_option" id="${prefix}_mfp">${mfpSnipper}</select>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            function generateGroupKey(prefix) {
+                let { wlBandSeq, smartConnect, aMesh } = systemManipulable;
+                let { smartConnectEnable, smartConnectReferenceIndex } = smartConnect;
+                let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
+                let { authMethodValue, wpaGtkValue, joinSmartConnect } = wlBandSeq[prefixNvram];
+                let displayFlag = (() => {
+                    if (
+                        authMethodValue === "openowe" ||
+                        authMethodValue === "owe" ||
+                        authMethodValue === "psk" ||
+                        authMethodValue === "psk2" ||
+                        authMethodValue === "sae" ||
+                        authMethodValue === "pskpsk2" ||
+                        authMethodValue === "psk2sae" ||
+                        authMethodValue === "wpa" ||
+                        authMethodValue === "wpa2" ||
+                        authMethodValue === "wpa3" ||
+                        authMethodValue === "suite-b" ||
+                        authMethodValue === "wpawpa2" ||
+                        authMethodValue === "wpa2wpa3"
+                    ) {
+                        let { dwbMode, dwbBand } = aMesh;
+                        if (dwbMode === "1" && dwbBand === prefix) {
+                            return "";
+                        }
+
+                        if (prefix === "smart_connect") {
+                            return smartConnectEnable ? "" : "none";
+                        }
+
+                        if (smartConnectEnable && joinSmartConnect) {
+                            return "none";
+                        }
+
+                        return "";
+                    }
+
+                    return "none";
+                })();
+
+                return `
+                    <tr id="${prefix}_group_key_field" class="frontHaulSetting" style="display:${displayFlag}">
+                        <th>
+                            <a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 11);"><#WLANConfig11b_x_Rekey_itemname#></a>
+                        </th>
+                        <td>
+                            <input type="text" maxlength="7" id="${prefix}_group_key" class="input_6_table" value="${wpaGtkValue}" onKeyPress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off">
+                        </td>
+                    </tr>
+                `;
+            }
+
+            function generateWepEncryption(prefix) {
+                let { wlBandSeq, smartConnect, wepEncryptObject, aMesh } = systemManipulable;
+                let { smartConnectEnable, smartConnectReferenceIndex } = smartConnect;
+                let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
+                let { wlModeValue, authMethodValue, wepEncryptValue, joinSmartConnect } = wlBandSeq[prefixNvram];
+                let wepEncryptStringObject = objectDeepCopy(wepEncryptObject);
+                let displayFlag = (() => {
+                    if ((authMethodValue === "open" && wlModeValue === "2") || authMethodValue === "shared") {
+                        let { dwbMode, dwbBand } = aMesh;
+                        if (dwbMode === "1" && dwbBand === prefix) {
+                            return "";
+                        }
+
+                        if (prefix === "smart_connect") {
+                            return smartConnectEnable ? "" : "none";
+                        }
+
+                        if (smartConnectEnable && joinSmartConnect) {
+                            return "none";
+                        }
+
+                        return "";
+                    }
+
+                    return "none";
+                })();
+
+                // due to the WEP Encryption of Shared Key is no "NONE"
+                // set the value to 1 to show WEP Encrypt Description correctly
+                if (authMethodValue === "shared" && wepEncryptValue === "0") {
+                    wepEncryptValue = "1";
+                    systemManipulable.wlBandSeq[prefix].wepEncryptValue = wepEncryptValue;
+                }
+
+                if (authMethodValue === "shared") {
+                    delete wepEncryptStringObject["0"];
+                }
+
+                let wepEncryptSnippet = "";
+                for (let [value, desc] of Object.entries(wepEncryptStringObject)) {
+                    wepEncryptSnippet += `<option value="${value}" ${wepEncryptValue === value ? "selected" : ""}>${desc}</option>`;
+                }
+
+                return `
+                    <tr id="${prefix}_wep_encrypt_field" class="frontHaulSetting" style="display:${displayFlag}">
+                        <th>
+                            <a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 9);"><#WLANConfig11b_WEPType_itemname#></a>
+                        </th>
+                        <td>
+                            <select class="input_option" id="${prefix}_wep_encrypt" onChange="wepEncryptionChange(this.value, '${prefix}')">${wepEncryptSnippet}</select>
+                            <span id="${prefix}_wep_encrypt_desc_64"
+                            style="display:${wepEncryptValue === "1" ? "" : "none"}"><#WLANConfig11b_WEPKey_itemtype1#></span>
+                            <span id="${prefix}_wep_encrypt_desc_128"
+                            style="display:${wepEncryptValue === "2" ? "" : "none"}"><#WLANConfig11b_WEPKey_itemtype2#></span>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            function generateWepKey(prefix) {
+                let { wlBandSeq, smartConnect, aMesh } = systemManipulable;
+                let { smartConnectEnable, smartConnectReferenceIndex } = smartConnect;
+                let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
+                let {
+                    authMethodValue,
+                    wepEncryptValue,
+                    wepKeyIndexValue,
+                    wepKey1Value,
+                    wepKey2Value,
+                    wepKey3Value,
+                    wepKey4Value,
+                    wepPassPhraseValue,
+                    joinSmartConnect,
+                } = wlBandSeq[prefixNvram];
+                let displayFlag = (() => {
+                    if ((authMethodValue === "open" && wepEncryptValue !== "0") || authMethodValue === "shared") {
+                        let { dwbMode, dwbBand } = aMesh;
+                        if (dwbMode === "1" && dwbBand === prefix) {
+                            return "";
+                        }
+
+                        if (prefix === "smart_connect") {
+                            return smartConnectEnable ? "" : "none";
+                        }
+
+                        if (smartConnectEnable && joinSmartConnect) {
+                            return "none";
+                        }
+
+                        return "";
+                    }
+
+                    return "none";
+                })();
+
+                return `
+                    <tr id="${prefix}_wep_key_index_field" class="frontHaulSetting" style="display:${displayFlag}">
+                        <th>
+                            <a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 10);"><#WLANConfig11b_WEPDefaultKey_itemname#></a>
+                        </th>
+                        <td>
+                            <select id="${prefix}_key" class="input_option" onChange="">
+                                <option value="1" ${wepKeyIndexValue === "1" ? "selected" : ""}>1</option>
+                                <option value="2" ${wepKeyIndexValue === "2" ? "selected" : ""}>2</option>
+                                <option value="3" ${wepKeyIndexValue === "3" ? "selected" : ""}>3</option>
+                                <option value="4" ${wepKeyIndexValue === "4" ? "selected" : ""}>4</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr id="${prefix}_wep_key1_field" class="frontHaulSetting" style="display:${displayFlag}">
+                        <th>
+                            <a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 18);"><#WLANConfig11b_WEPKey1_itemname#></a>
+                        </th>
+                        <td>
+                            <input id="${prefix}_key1" type="text" maxlength="32" class="input_32_table" value="${wepKey1Value}" onKeyUp="return change_wlkey(this, 'WLANConfig11b');" autocorrect="off" autocapitalize="off">
+                        </td>
+                    </tr>
+                    <tr id="${prefix}_wep_key2_field" class="frontHaulSetting" style="display:${displayFlag}">
+                        <th>
+                            <a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 18);"><#WLANConfig11b_WEPKey2_itemname#></a>
+                        </th>
+                        <td>
+                            <input id="${prefix}_key2" type="text" maxlength="32" class="input_32_table" value="${wepKey2Value}" onKeyUp="return change_wlkey(this, 'WLANConfig11b');" autocorrect="off" autocapitalize="off">
+                        </td>
+                    </tr>
+                    <tr id="${prefix}_wep_key3_field" class="frontHaulSetting" style="display:${displayFlag}">
+                        <th>
+                            <a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 18);"><#WLANConfig11b_WEPKey3_itemname#></a>
+                        </th>
+                        <td>
+                            <input id="${prefix}_key3" type="text" maxlength="32" class="input_32_table" value="${wepKey3Value}" onKeyUp="return change_wlkey(this, 'WLANConfig11b');" autocorrect="off" autocapitalize="off">
+                        </td>
+                    </tr>
+                    <tr id="${prefix}_wep_key4_field" class="frontHaulSetting" style="display:${displayFlag}">
+                        <th>
+                            <a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 18);"><#WLANConfig11b_WEPKey4_itemname#></a>
+                        </th>
+                        <td>
+                            <input id="${prefix}_key4" type="text" maxlength="32" class="input_32_table" value="${wepKey4Value}" onKeyUp="return change_wlkey(this, 'WLANConfig11b');" autocorrect="off" autocapitalize="off">
+                        </td>
+                    </tr>
+                    <tr id="${prefix}_pass_phrase_field" class="frontHaulSetting" style="display:${displayFlag}">
+                        <th>
+                            <a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 8);"><#WLANConfig11b_x_Phrase_itemname#></a>
+                        </th>
+                        <td>
+                            <input id="${prefix}_pass_phrase" type="text" maxlength="64" class="input_32_table" value="${wepPassPhraseValue}" onKeyUp="return is_wlphrase('WLANConfig11b', 'wl_phrase_x', this);" autocorrect="off" autocapitalize="off">
+                        </td>
+                    </tr>
+                `;
+            }
+
+            function generateRadiusSettings(prefix) {
+                let { wlBandSeq, smartConnect, aMesh } = systemManipulable;
+                let { smartConnectEnable, smartConnectReferenceIndex } = smartConnect;
+                let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
+                let { authMethodValue, radiusIpValue, radiusPortValue, radiusKeyValue, joinSmartConnect } = wlBandSeq[prefixNvram];
+                let displayFlag = (() => {
+                    if (
+                        authMethodValue === "wpa" ||
+                        authMethodValue === "wpa2" ||
+                        authMethodValue === "wpa3" ||
+                        authMethodValue === "wpawpa2" ||
+                        authMethodValue === "wpa2wpa3" ||
+                        authMethodValue === "suite-b" ||
+                        authMethodValue === "radius"
+                    ) {
+                        let { dwbMode, dwbBand } = aMesh;
+                        if (dwbMode === "1" && dwbBand === prefix) {
+                            return "";
+                        }
+
+                        if (prefix === "smart_connect") {
+                            return smartConnectEnable ? "" : "none";
+                        }
+
+                        if (smartConnectEnable && joinSmartConnect) {
+                            return "none";
+                        }
+
+                        return "";
+                    }
+
+                    return "none";
+                })();
+
+                return `
+                    <tr id="${prefix}_radius_ip_field" class="frontHaulSetting" style="display:${displayFlag}">
+                        <th>
+                            <a class="hintstyle" href="javascript:void(0);" onClick="openHint(2,1);"><#WLANAuthentication11a_ExAuthDBIPAddr_itemname#></a>
+                        </th>
+                        <td>
+                            <input id="${prefix}_radius_ip" type="text" maxlength="39" class="input_32_table" value="${radiusIpValue}" onKeyPress="return validator.isIPAddr(this, event)" autocorrect="off" autocapitalize="off">
+                        </td>
+                    </tr>
+                    <tr id="${prefix}_radius_port_field" class="frontHaulSetting" style="display:${displayFlag}">
+                        <th>
+                            <a class="hintstyle" href="javascript:void(0);" onClick="openHint(2,2);"><#WLANAuthentication11a_ExAuthDBPortNumber_itemname#></a>
+                        </th>
+                        <td>
+                            <input id="${prefix}_radius_port" type="text" maxlength="5" class="input_6_table" value="${radiusPortValue}" onkeypress="return validator.isNumber(this,event)" autocorrect="off" autocapitalize="off"/>
+                        </td>
+                    </tr>
+                    <tr id="${prefix}_radius_key_field" class="frontHaulSetting" style="display:${displayFlag}">
+                        <th>
+                            <a class="hintstyle" href="javascript:void(0);"  onClick="openHint(2,3);"><#WLANAuthentication11a_ExAuthDBPassword_itemname#></a>
+                        </th>
+                        <td>
+                            <input id="${prefix}_radius_key" type="password" maxlength="64" class="input_32_table" value="${radiusKeyValue}" autocorrect="off" autocapitalize="off">
+                        </td>
+                    </tr>
+                `;
+            }
+
+            function apply() {
+                let { wlBandSeq, isKRSku, smartConnect, isBRCMplatform, isMTKplatform, isQCAplatform, aMesh } = systemManipulable;
+                let { smartConnectEnable, radioSeqArray, version } = smartConnect;
+                let { dwbBand, dwbMode } = aMesh;
+                let postObject = {};
+                let commonStringError = {};
+                let validateErrorCount = 0;
+                if (smartConnectEnable && version === "v2") {
+                    postObject.smart_connect_selif_x = (() => {
+                        if (smartConnectEnable) {
+                            let smartConnectSelifArray = [];
+                            for (let element of radioSeqArray) {
+                                if (element === "") {
+                                    continue;
+                                }
+
+                                let smartConnectRadioElement = document.getElementById(`smart_connect_check_${element}`);
+                                if (smartConnectRadioElement) {
+                                    let value = smartConnectRadioElement.checked ? "1" : "0";
+                                    smartConnectSelifArray.push(value);
+                                } else {
+                                    smartConnectSelifArray.push("0");
+                                }
+                            }
+
+                            // put string array to binary string and transforms it to decimal
+                            let smartConnectSelifStr = smartConnectSelifArray.join("");
+                            return parseInt(smartConnectSelifStr, 2);
+                        }
+
+                        return 7;
+                    })();
+                }
+
+                postObject.smart_connect_x = (() => {
+                    /*
+                     * for Smart Connect v2
+                     * with 2.4 GHz return 1
+                     * without 2.4 GHz return 2
+                     *
+                     * for Smart Connect v1
+                     * All band return 1
+                     * dual 5 GHz return 2
+                     * 2.4 GHz & 5 GHz without 6 GHz return 3
+                     */
+
+                    if (!smartConnectEnable) {
+                        return "0";
+                    }
+
+                    if (version === "v2") {
+                        let binaryString = postObject.smart_connect_selif_x.toString(2);
+                        return binaryString.slice(-1) === "1" ? "1" : "2";
+                    }
+
+                    return document.getElementById("smart_connect_x").value;
+                })();
+
+                let dwbInfo = {
+                    ssid: "",
+                    sameSsidCount: 0,
+                    targetObject: "",
+                    sameSsidString: `<#wireless_JS_dup_SSID#>`,
+                };
+
+                if (dwbMode === "1") {
+                    dwbInfo.ssid = document.getElementById(`${dwbBand}_ssid`).value;
+                    dwbInfo.targetObject = document.getElementById(`${dwbBand}_ssid`);
+                }
+
+                for (let [key, value] of Object.entries(wlBandSeq)) {
+                    let { joinSmartConnect, beSupport, wifi7ModeEnabled } = value;
+
+                    // WiFi 7 mode
+                    if (beSupport) {
+                        postObject[`${key}_11be`] = (() => {
+                            return wifi7ModeEnabled ? "1" : "0";
+                        })();
+                    }
+
+                    //SSID
+                    postObject[`${key}_ssid`] = (() => {
+                        if (smartConnectEnable && joinSmartConnect) {
+                            validator.stringSSID(document.getElementById("smart_connect_ssid")) ? "" : validateErrorCount++;
+                            if (dwbMode === "1") {
+                                if (dwbInfo.ssid === document.getElementById("smart_connect_ssid").value) {
+                                    dwbInfo.sameSsidCount++;
+                                }
+
+                                if (dwbBand === key) {
+                                    return document.getElementById(`${key}_ssid`).value;
+                                }
+
+                                return document.getElementById("smart_connect_ssid").value;
+                            }
+
+                            return document.getElementById("smart_connect_ssid").value;
+                        }
+
+                        validator.stringSSID(document.getElementById(`${key}_ssid`)) ? "" : validateErrorCount++;
+                        if (dwbBand !== key && dwbInfo.ssid === document.getElementById(`${key}_ssid`).value) {
+                            dwbInfo.sameSsidCount++;
+                        }
+
+                        return document.getElementById(`${key}_ssid`).value;
+                    })();
+
+                    // Hide SSID
+                    postObject[`${key}_closed`] = (() => {
+                        if (smartConnectEnable && joinSmartConnect) {
+                            if (dwbMode === "1" && dwbBand === key) {
+                                return document.getElementById(`${key}_hide_ssid_yes`).checked ? "1" : "0";
+                            }
+
+                            return document.getElementById("smart_connect_hide_ssid_yes").checked ? "1" : "0";
+                        }
+
+                        return document.getElementById(`${key}_hide_ssid_yes`).checked ? "1" : "0";
+                    })();
+
+                    // Channel Bandwidth
+                    postObject[`${key}_bw`] = (() => {
+                        return document.getElementById(`${key}_channel_bandwidth`).value;
+                    })();
+
+                    // Control Channel
+                    if (isBRCMplatform) {
+                        postObject[`${key}_chanspec`] = (() => {
+                            let channelBandwidth = document.getElementById(`${key}_channel_bandwidth`).value;
+                            let controlChannel = document.getElementById(`${key}_control_channel`).value;
+                            let extensionChannel = document.getElementById(`${key}_extension_channel`).value;
+                            if (controlChannel === "0") {
+                                return "0";
+                            }
+
+                            if (key === "2g1") {
+                                if (channelBandwidth === "0" || channelBandwidth === "2") {
+                                    return `${controlChannel}${extensionChannel}`;
+                                }
+                            } else if (key === "6g1" || key === "6g2") {
+                                if (channelBandwidth === "0") {
+                                    if (
+                                        controlChannel.indexOf("/40") !== -1 ||
+                                        controlChannel.indexOf("/80") !== -1 ||
+                                        controlChannel.indexOf("/160") !== -1
+                                    ) {
+                                        return controlChannel;
+                                    } else {
+                                        return `6g${controlChannel}/${extensionChannel}`;
+                                    }
+                                } else if (channelBandwidth === "6") {
+                                    return `6g${controlChannel}/${extensionChannel}`;
+                                }
+                            }
+
+                            return controlChannel;
+                        })();
+                    } else {
+                        let channelBandwidth = document.getElementById(`${key}_channel_bandwidth`).value;
+                        let controlChannel = document.getElementById(`${key}_control_channel`).value;
+                        let extensionChannel = document.getElementById(`${key}_extension_channel`).value;
+                        postObject[`${key}_channel`] = controlChannel;
+                        if (channelBandwidth !== "0" && controlChannel !== "0") {
+                            if (extensionChannel !== "0") {
+                                postObject[`${key}_nctrlsb`] = extensionChannel;
+                            }
+                        }
+                    }
+
+                    // Authentication Method
+                    postObject[`${key}_auth_mode_x`] = (() => {
+                        if (smartConnectEnable && joinSmartConnect) {
+                            let authMethodValue = document.getElementById("smart_connect_auth_method").value;
+                            if (key === "6g1" || key === "6g2") {
+                                if (authMethodValue === "open" || authMethodValue === "openowe") {
+                                    authMethodValue = "owe";
+                                } else if (
+                                    authMethodValue === "psk" ||
+                                    authMethodValue === "psk2" ||
+                                    authMethodValue === "pskpsk2" ||
+                                    authMethodValue === "psk2sae"
+                                ) {
+                                    authMethodValue = "sae";
+                                } else if (
+                                    authMethodValue === "wpa" ||
+                                    authMethodValue === "wpa2" ||
+                                    authMethodValue === "wpawpa2" ||
+                                    authMethodValue === "wpa2wpa3"
+                                ) {
+                                    authMethodValue = "wpa3";
+                                }
+                            }
+
+                            if (dwbMode === "1" && dwbBand === key) {
+                                return document.getElementById(`${key}_auth_method`).value;
+                            }
+
+                            return authMethodValue;
+                        }
+
+                        return document.getElementById(`${key}_auth_method`).value;
+                    })();
+
+                    let authMethodValue = postObject[`${key}_auth_mode_x`];
+                    if (
+                        authMethodValue === "psk" ||
+                        authMethodValue === "psk2" ||
+                        authMethodValue === "sae" ||
+                        authMethodValue === "pskpsk2" ||
+                        authMethodValue === "psk2sae"
+                    ) {
+                        postObject[`${key}_wpa_psk`] = (() => {
+                            if (smartConnectEnable && joinSmartConnect) {
+                                let is_common_string = check_common_string(
+                                    document.getElementById("smart_connect_wpa_key").value,
+                                    "wpa_key"
+                                );
+
+                                if (is_common_string && Object.keys(commonStringError).length === 0) {
+                                    commonStringError = {
+                                        string: "<#JS_common_passwd#>",
+                                        targetObject: document.getElementById("smart_connect_wpa_key"),
+                                    };
+                                }
+
+                                if (!isSupport("sdn_mainfh")) {
+                                    if (isKRSku) {
+                                        validator.psk_KR(document.getElementById("smart_connect_wpa_key")) ? "" : validateErrorCount++;
+                                    } else {
+                                        validator.psk(document.getElementById("smart_connect_wpa_key")) ? "" : validateErrorCount++;
+                                    }
+                                }
+
+                                if (dwbMode === "1" && dwbBand === key) {
+                                    return document.getElementById(`${key}_wpa_key`).value;
+                                }
+
+                                return document.getElementById("smart_connect_wpa_key").value;
+                            }
+
+                            let is_common_string = check_common_string(document.getElementById(`${key}_wpa_key`).value, "wpa_key");
+                            if (is_common_string && Object.keys(commonStringError).length === 0) {
+                                commonStringError = {
+                                    string: "<#JS_common_passwd#>",
+                                    targetObject: document.getElementById(`${key}_wpa_key`),
+                                };
+                            }
+
+                            if (!isSupport("sdn_mainfh")) {
+                                if (isKRSku) {
+                                    validator.psk_KR(document.getElementById(`${key}_wpa_key`)) ? "" : validateErrorCount++;
+                                } else {
+                                    validator.psk(document.getElementById(`${key}_wpa_key`)) ? "" : validateErrorCount++;
+                                }
+                            }
+
+                            return document.getElementById(`${key}_wpa_key`).value;
+                        })();
+                    }
+
+                    // WPA Encryption
+                    // Group Key
+                    if (
+                        authMethodValue === "owe" ||
+                        authMethodValue === "openowe" ||
+                        authMethodValue === "psk" ||
+                        authMethodValue === "psk2" ||
+                        authMethodValue === "sae" ||
+                        authMethodValue === "pskpsk2" ||
+                        authMethodValue === "psk2sae" ||
+                        authMethodValue === "wpa" ||
+                        authMethodValue === "wpa2" ||
+                        authMethodValue === "wpa3" ||
+                        authMethodValue === "suite-b" ||
+                        authMethodValue === "wpawpa2" ||
+                        authMethodValue === "wpa2wpa3"
+                    ) {
+                        postObject[`${key}_crypto`] = (() => {
+                            if (smartConnectEnable && joinSmartConnect) {
+                                let wpaEncryption = document.getElementById("smart_connect_wpa_encrypt").value;
+                                if (key === "6g1" || key === "6g2") {
+                                    wpaEncryption = wifi7ModeEnabled ? "aes+gcmp256" : "aes";
+                                }
+
+                                if (dwbMode === "1" && dwbBand === key) {
+                                    return document.getElementById(`${key}_wpa_encrypt`).value;
+                                }
+
+                                return wpaEncryption;
+                            }
+
+                            return document.getElementById(`${key}_wpa_encrypt`).value;
+                        })();
+
+                        postObject[`${key}_wpa_gtk_rekey`] = (() => {
+                            if (smartConnectEnable && joinSmartConnect) {
+                                validator.range(document.getElementById("smart_connect_group_key"), 0, 2592000) ? "" : validateErrorCount++;
+                                if (dwbMode === "1" && dwbBand === key) {
+                                    return document.getElementById(`${key}_group_key`).value;
+                                }
+
+                                return document.getElementById("smart_connect_group_key").value;
+                            }
+
+                            validator.range(document.getElementById(`${key}_group_key`), 0, 2592000) ? "" : validateErrorCount++;
+                            return document.getElementById(`${key}_group_key`).value;
+                        })();
+                    }
+
+                    // Protect Management Frames
+                    if (
+                        authMethodValue === "owe" ||
+                        authMethodValue === "openowe" ||
+                        authMethodValue === "psk2" ||
+                        authMethodValue === "sae" ||
+                        authMethodValue === "pskpsk2" ||
+                        authMethodValue === "psk2sae" ||
+                        authMethodValue === "wpa2" ||
+                        authMethodValue === "wpa3" ||
+                        authMethodValue === "suite-b" ||
+                        authMethodValue === "wpawpa2" ||
+                        authMethodValue === "wpa2wpa3"
+                    ) {
+                        postObject[`${key}_mfp`] = (() => {
+                            if (smartConnectEnable && joinSmartConnect) {
+                                let mfp = document.getElementById("smart_connect_mfp").value;
+                                if (key === "6g1" || key === "6g2") {
+                                    mfp = "2";
+                                }
+
+                                if (dwbMode === "1" && dwbBand === key) {
+                                    return document.getElementById(`${key}_mfp`).value;
+                                }
+
+                                return mfp;
+                            }
+
+                            return document.getElementById(`${key}_mfp`).value;
+                        })();
+                    }
+
+                    // RADIUS IP address, port, key
+                    if (
+                        authMethodValue === "wpa" ||
+                        authMethodValue === "wpa2" ||
+                        authMethodValue === "wpa3" ||
+                        authMethodValue === "suite-b" ||
+                        authMethodValue === "wpawpa2" ||
+                        authMethodValue === "wpa2wpa3" ||
+                        authMethodValue === "radius"
+                    ) {
+                        postObject[`${key}_radius_ipaddr`] = (() => {
+                            if (smartConnectEnable && joinSmartConnect) {
+                                // if (authMethodValue === "radius" && (key === "6g1" || key === "6g2")) {
+                                //     alert("6 GHz不支援RADIUS with 802.1x");
+                                //     return false;
+                                // }
+
+                                if (dwbMode === "1" && dwbBand === key) {
+                                    return document.getElementById(`${key}_radius_ip`).value;
+                                }
+
+                                return document.getElementById("smart_connect_radius_ip").value;
+                            }
+
+                            return document.getElementById(`${key}_radius_ip`).value;
+                        })();
+                        postObject[`${key}_radius_port`] = (() => {
+                            if (smartConnectEnable && joinSmartConnect) {
+                                // if (authMethodValue === "radius" && (key === "6g1" || key === "6g2")) {
+                                //     alert("6 GHz不支援RADIUS with 802.1x");
+                                //     return false;
+                                // }
+
+                                if (dwbMode === "1" && dwbBand === key) {
+                                    return document.getElementById(`${key}_radius_port`).value;
+                                }
+
+                                return document.getElementById("smart_connect_radius_port").value;
+                            }
+
+                            return document.getElementById(`${key}_radius_port`).value;
+                        })();
+                        postObject[`${key}_radius_key`] = (() => {
+                            if (smartConnectEnable && joinSmartConnect) {
+                                // if (authMethodValue === "radius" && (key === "6g1" || key === "6g2")) {
+                                //     alert("6 GHz不支援RADIUS with 802.1x");
+                                //     return false;
+                                // }
+
+                                if (dwbMode === "1" && dwbBand === key) {
+                                    return document.getElementById(`${key}_radius_key`).value;
+                                }
+
+                                return document.getElementById("smart_connect_radius_key").value;
+                            }
+
+                            return document.getElementById(`${key}_radius_key`).value;
+                        })();
+                    }
+
+                    // WEP
+                    let wepEncryptValue = postObject[`${key}_wep_encrypt`];
+                    if (authMethodValue === "shared" || (authMethodValue === "open" && wepEncryptValue !== "0")) {
+                        if (smartConnectEnable && joinSmartConnect) {
+                            // if (key === "6g1" || key === "6g2") {
+                            //     alert("6 GHz不支援Shared Key");
+                            //     return false;
+                            // }
+
+                            postObject[`${key}_wep_x`] = document.getElementById("smart_connect_wep_encrypt").value;
+                            postObject[`${key}_key`] = document.getElementById("smart_connect_key").value;
+                            postObject[`${key}_key1`] = document.getElementById("smart_connect_key1").value;
+                            postObject[`${key}_key2`] = document.getElementById("smart_connect_key2").value;
+                            postObject[`${key}_key3`] = document.getElementById("smart_connect_key3").value;
+                            postObject[`${key}_key4`] = document.getElementById("smart_connect_key4").value;
+                            postObject[`${key}_phrase_x`] = document.getElementById("smart_connect_pass_phrase").value;
+                            if (dwbMode === "1" && dwbBand !== key) {
+                                postObject[`${key}_wep_x`] = document.getElementById(`${key}_wep_encrypt`).value;
+                                postObject[`${key}_key`] = document.getElementById(`${key}_key`).value;
+                                postObject[`${key}_key1`] = document.getElementById(`${key}_key1`).value;
+                                postObject[`${key}_key2`] = document.getElementById(`${key}_key2`).value;
+                                postObject[`${key}_key3`] = document.getElementById(`${key}_key3`).value;
+                                postObject[`${key}_key4`] = document.getElementById(`${key}_key4`).value;
+                                postObject[`${key}_phrase_x`] = document.getElementById(`${key}_pass_phrase`).value;
+                            }
+                        } else {
+                            postObject[`${key}_wep_x`] = document.getElementById(`${key}_wep_encrypt`).value;
+                            postObject[`${key}_key`] = document.getElementById(`${key}_key`).value;
+                            postObject[`${key}_key1`] = document.getElementById(`${key}_key1`).value;
+                            postObject[`${key}_key2`] = document.getElementById(`${key}_key2`).value;
+                            postObject[`${key}_key3`] = document.getElementById(`${key}_key3`).value;
+                            postObject[`${key}_key4`] = document.getElementById(`${key}_key4`).value;
+                            postObject[`${key}_phrase_x`] = document.getElementById(`${key}_pass_phrase`).value;
+                        }
+                    }
+
+                    // ACS CH13
+                    if (key === "2g1") {
+                        let acsCh13Element = document.getElementById(`${key}_acs_ch13`);
+                        let acsCh13FieldElement = document.getElementById(`${key}_acs_ch13_field`);
+                        if (acsCh13Element && acsCh13FieldElement.style.display === "") {
+                            postObject[`acs_ch13`] = acsCh13Element.checked ? "1" : "0";
+                        }
+                    }
+
+                    // Enable 160 MHz, ACS DFS, ACS U-NII-4
+                    if (key === "5g1" || key === "5g2") {
+                        let enable240MHzElement = document.getElementById(`${key}_bw240_enable`);
+                        if (enable240MHzElement && enable240MHzElement.style.display === "") {
+                            postObject[`${key}_bw_240`] = enable240MHzElement.checked ? "1" : "0";
+                        }
+
+                        let enable160MHzElement = document.getElementById(`${key}_bw160_enable`);
+                        if (enable160MHzElement && enable160MHzElement.style.display === "") {
+                            postObject[`${key}_bw_160`] = enable160MHzElement.checked ? "1" : "0";
+                        }
+
+                        let acsDfsElement = document.getElementById(`${key}_acs_dfs`);
+                        let acsDfsFieldElement = document.getElementById(`${key}_acs_dfs_field`);
+                        if (acsDfsElement && acsDfsFieldElement.style.display === "") {
+                            if (key === "5g1") {
+                                postObject[`acs_dfs`] = acsDfsElement.checked ? "1" : "0";
+                            } else if (key === "5g2") {
+                                postObject[`acs_band3`] = acsDfsElement.checked ? "1" : "0";
+                            }
+                        }
+
+                        let acsUnii4Element = document.getElementById(`${key}_unii4`);
+                        let acsUnii4FieldElement = document.getElementById(`${key}_unii4_field`);
+                        if (acsUnii4Element && acsUnii4FieldElement.style.display === "") {
+                            postObject[`acs_unii4`] = acsUnii4Element.checked ? "1" : "0";
+                        }
+                    }
+
+                    // PSC channels
+                    if (key === "6g1" || key === "6g2") {
+                        let psc6gElement = document.getElementById(`${key}_psc6g`);
+                        if (psc6gElement && psc6gElement.style.display === "") {
+                            postObject[`psc6g`] = psc6gElement.checked ? "1" : "0";
+                        }
+                    }
+                }
+
+                if (dwbMode === "1") {
+                    let target = document.getElementById("mesh_backhaul_field");
+                    if (target && target.style.display !== "none") {
+                        postObject[`fh_ap_enabled`] = document.getElementById("fh_ap_enabled").value;
+                    }
+                }
+
+                postObject.action_mode = "apply";
+                postObject.rc_service = "restart_wireless";
+
+                // default take BRCM platform
+                let restartTime = 10;
+                if (isMTKplatform) {
+                    restartTime = 25;
+                } else if (isQCAplatform) {
+                    restartTime = 30;
+                }
+
+                if (dwbInfo.sameSsidCount !== 0) {
+                    let { targetObject, sameSsidString } = dwbInfo;
+                    alert(sameSsidString);
+                    targetObject.focus();
+                    targetObject.select();
+                    return false;
+                }
+
+                if (validateErrorCount !== 0) {
+                    return false;
+                }
+
+                if (Object.keys(commonStringError).length !== 0) {
+                    let { string, targetObject } = commonStringError;
+                    if (!confirm(string)) {
+                        targetObject.focus();
+                        targetObject.select();
+                        return false;
+                    }
+                }
+
+                if (isSupport("sdn_mainfh")) {
+                    // do not post following nvrams
+                    Object.keys(postObject).forEach((key) => {
+                        if (
+                            key.includes("ssid") ||
+                            key.includes("11be") ||
+                            key.includes("closed") ||
+                            key.includes("auth_mode_x") ||
+                            key.includes("wpa_psk") ||
+                            key.includes("crypto") ||
+                            key.includes("wpa_gtk_rekey") ||
+                            key.includes("mfp") ||
+                            key.includes("smart_connect_selif_x") ||
+                            key.includes("smart_connect_x")
+                        ) {
+                            delete postObject[key];
+                        }
+                    });
+                }
+
+                httpApi.nvramSet(postObject, function () {
+                    showLoading(restartTime);
+                    setTimeout(function () {
+                        location.reload();
+                    }, restartTime * 1000);
+                });
+            }
+
+            function mloHint() {
+                let confirm_flag = 1;
+
+                if (confirm_flag == 1) {
+                    if ($(".confirm_block").length > 0) {
+                        $(".confirm_block").remove();
+                    }
+                    if (window.scrollTo) window.scrollTo(0, 0);
+                    htmlbodyforIE = document.getElementsByTagName("html");
+                    htmlbodyforIE[0].style.overflow = "hidden";
+
+                    $("#Loading").css("visibility", "visible");
+                    $("#loadingBlock").css("visibility", "hidden");
+
+                    confirm_asus({
+                        title: "MLO Hint",
+                        contentA: `<b><#WiFi7_mlo_adjust_hint#></b>`,
+                        contentC: "",
+                        left_button: "<#CTL_Cancel#>",
+                        left_button_callback: function () {
+                            location.href = location.href;
+                        },
+                        left_button_args: {},
+                        right_button: "<#btn_go#>",
+                        right_button_callback: function () {
+                            top.location.href = "/MLO.asp";
+                        },
+                        right_button_args: {},
+                        iframe: "",
+                        margin: "0px",
+                        note_display_flag: 0,
+                    });
+
+                    $(".confirm_block").css("zIndex", 10001);
+                }
+            }
+        </script>
+    </head>
+
+    <body class="bg">
+        <div id="TopBanner"></div>
+        <div id="Loading" class="popup_bg"></div>
+        <div id="hiddenMask" class="popup_bg">
+            <table cellpadding="4" cellspacing="0" id="dr_sweet_advise" class="dr_sweet_advise" align="center">
+                <tr>
+                    <td>
+                        <div class="drword" id="drword">
+                            <#Main_alert_proceeding_desc4#> <#Main_alert_proceeding_desc1#>...
+                            <br />
+                            <div id="disconnect_hint" style="display: none"><#Main_alert_proceeding_desc2#></div>
+                            <br />
+                        </div>
+                        <div id="wireless_client_detect" style="margin-left: 10px; position: absolute; display: none; width: 400px">
+                            <img src="images/loading.gif" />
+                            <div style="margin: -55px 0 0 75px"><#QKSet_Internet_Setup_fail_method1#></div>
+                        </div>
+                        <div class="drImg"><img src="images/alertImg.png" /></div>
+                        <div style="height: 100px"></div>
+                    </td>
+                </tr>
+            </table>
+            <!--[if lte IE 6.5]><iframe class="hackiframe"></iframe><![endif]-->
+        </div>
+        <script></script>
+        <iframe name="hidden_frame" id="hidden_frame" width="0" height="0" frameborder="0"></iframe>
+        <table class="content" align="center" cellpadding="0" cellspacing="0" style="margin-top: -15px">
+            <tr>
+                <td width="17">&nbsp;</td>
+
+                <!--=====Beginning of Main Menu=====-->
+                <td valign="top" width="202">
+                    <div id="mainMenu"></div>
+                    <div id="subMenu"></div>
+                </td>
+
+                <td valign="top">
+                    <div id="tabMenu" class="submenuBlock"></div>
+
+                    <!--===================================Beginning of Main Content===========================================-->
+                    <table width="98%" border="0" align="left" cellpadding="0" cellspacing="0">
+                        <tr>
+                            <td align="left" valign="top">
+                                <table width="760px" border="0" cellpadding="4" cellspacing="0" class="FormTitle" id="FormTitle">
+                                    <tbody>
+                                        <tr>
+                                            <td bgcolor="#4D595D" valign="top">
+                                                <div>&nbsp;</div>
+                                                <div class="formfonttitle"><#menu5_1#> - <#menu5_1_1#></div>
+                                                <div class="splitLine splitline-padding"></div>
+                                                <div class="formfontdesc"><#adv_wl_desc#></div>
+
+                                                <!-- Smart Connect Switch Button -->
+                                                <table
+                                                    width="100%"
+                                                    border="1"
+                                                    align="center"
+                                                    cellpadding="4"
+                                                    cellspacing="0"
+                                                    id="WLgeneral"
+                                                    class="FormTable frontHaulSetting"
+                                                >
+                                                    <tr id="smartcon_enable_field">
+                                                        <th width="30%">
+                                                            <a class="hintstyle" href="javascript:void(0);" onClick="openHint(0,27);"
+                                                                ><#smart_connect_enable#></a
+                                                            >
+                                                        </th>
+                                                        <td>
+                                                            <div id="smartcon_enable_block" style="display: none">
+                                                                <span id="smart_connect_enable_word">&nbsp;&nbsp;</span>
+                                                                <input
+                                                                    type="button"
+                                                                    name="enableSmartConbtn"
+                                                                    id="enableSmartConbtn"
+                                                                    value=""
+                                                                    class="button_gen"
+                                                                    onClick=""
+                                                                />
+                                                                <br />
+                                                            </div>
+
+                                                            <div id="radio_smartcon_enable" class="left radio-smartcon-enable"></div>
+                                                            <div
+                                                                id="smartcon_rule_link"
+                                                                class="smart-connect-rule-link"
+                                                                style="display: none"
+                                                            >
+                                                                <a href="Advanced_Smart_Connect.asp" class="a-hint-text"
+                                                                    ><#smart_connect_rule#></a
+                                                                >
+                                                            </div>
+
+                                                            <script type="text/javascript">
+                                                                $("#radio_smartcon_enable").iphoneSwitch(
+                                                                    system.smartConnect.smartConnectEnable,
+                                                                    function () {
+                                                                        systemManipulable.smartConnect.smartConnectEnable = true;
+                                                                        let { wlBandSeq, smartConnect } = systemManipulable;
+                                                                        let { version } = smartConnect;
+
+                                                                        if (version === "v2") {
+                                                                            ssidHandler("smart_connect");
+                                                                            for (let preifx of Object.keys(wlBandSeq)) {
+                                                                                ssidHandler(preifx);
+                                                                                wirelessBackhaulHandler(preifx);
+                                                                            }
+                                                                        } else {
+                                                                            let smartConnectX =
+                                                                                document.getElementById("smart_connect_x").value;
+
+                                                                            ssidHandler("smart_connect");
+                                                                            smartConnectChange(smartConnectX);
+                                                                        }
+
+                                                                        document.getElementById("band_separate").style.display = "";
+                                                                    },
+                                                                    function () {
+                                                                        systemManipulable.smartConnect.smartConnectEnable = false;
+                                                                        let { wlBandSeq, smartConnect, mloEnabled } = systemManipulable;
+                                                                        let { version } = smartConnect;
+                                                                        if (mloEnabled) {
+                                                                            mloHint();
+                                                                        }
+
+                                                                        if (version === "v2") {
+                                                                            ssidHandler("smart_connect");
+                                                                            for (let preifx of Object.keys(wlBandSeq)) {
+                                                                                ssidHandler(preifx);
+                                                                                wirelessBackhaulHandler(preifx);
+                                                                            }
+                                                                        } else {
+                                                                            for (let preifx of Object.keys(wlBandSeq)) {
+                                                                                systemManipulable.wlBandSeq[
+                                                                                    preifx
+                                                                                ].joinSmartConnect = false;
+                                                                                ssidHandler(preifx);
+                                                                                wirelessBackhaulHandler(preifx);
+                                                                            }
+                                                                        }
+
+                                                                        document.getElementById("band_separate").style.display = "none";
+                                                                    }
+                                                                );
+                                                            </script>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+
+                                                <table
+                                                    id="band_separate"
+                                                    width="100%"
+                                                    border="1"
+                                                    align="center"
+                                                    cellpadding="4"
+                                                    cellspacing="0"
+                                                    bordercolor="#6b8fa3"
+                                                    class="FormTable frontHaulSetting"
+                                                ></table>
+                                                <table
+                                                    id="eachBandField"
+                                                    width="100%"
+                                                    border="1"
+                                                    align="center"
+                                                    cellpadding="4"
+                                                    cellspacing="0"
+                                                    bordercolor="#6b8fa3"
+                                                    class="FormTable"
+                                                ></table>
+
+                                                <div class="apply_gen">
+                                                    <input
+                                                        type="button"
+                                                        id="applyButton"
+                                                        class="button_gen"
+                                                        value="<#CTL_apply#>"
+                                                        onclick="apply();"
+                                                    />
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                    <!--===================================Ending of Main Content===========================================-->
+                </td>
+                <td width="10" align="center" valign="top"></td>
+            </tr>
+        </table>
+        <div id="footer"></div>
+    </body>
 </html>

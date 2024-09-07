@@ -1111,16 +1111,19 @@ pc_s *match_daytime_pc_list(pc_s *pc_list, pc_s **target_list, int target_day, i
 // MAC address not in list -> ACCEPT.
 // MAC address in list and in time period -> DROP.
 // MAC address in list and not in time period -> ACCEPT.
-void config_daytime_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdrop, int temp){
+void config_daytime_string(pc_s *pc_list, FILE *fp, char *lan_if, char *logaccept, char *logdrop, int temp){
 
 	pc_s *enabled_list = NULL, *follow_pc;
 	pc_event_s *follow_e;
 	char date_buf[64];
-	char *lan_if = nvram_safe_get("lan_ifname");
+	//char *lan_if = nvram_safe_get("lan_ifname");
 #ifdef BLOCKLOCAL
 	char *ftype;
 #endif
 	char *fftype;
+
+	if (!pc_list || !fp || !lan_if || !logaccept || !logdrop)
+		return;
 
 #ifdef BLOCKLOCAL
 	ftype = logaccept;
@@ -1138,17 +1141,30 @@ void config_daytime_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdr
 		char follow_addr[18] = {0};
 #ifdef RTCONFIG_AMAS
 		_dprintf("config_daytime_string\n");
-		if (strlen(follow_pc->mac) && amas_lib_device_ip_query(follow_pc->mac, follow_addr)) {
+		if (strlen(follow_pc->mac) && amas_lib_device_ip_query(follow_pc->mac, lan_if, follow_addr)) {
 			chk_type = iptables_chk_ip;
 			if (illegal_ipv4_address(follow_addr))
 				continue;
 		} else
 #endif
 		{
-			chk_type = iptables_chk_mac;
-			snprintf(follow_addr, sizeof(follow_addr), "%s", follow_pc->mac);
-			if (!isValidMacAddress(follow_addr))
-				continue;
+#ifdef RTCONFIG_CAPTIVE_PORTAL
+			if(check_chilli_ip(lan_if)) { // check if get ip from chilli needed
+				if (get_ip_from_chilli(follow_pc->mac, follow_addr, sizeof(follow_addr)) > 0) {
+					chk_type = iptables_chk_ip;
+					if (illegal_ipv4_address(follow_addr))
+						continue;
+				}
+				else
+					continue;
+			} else
+#endif
+			{
+				chk_type = iptables_chk_mac;
+				snprintf(follow_addr, sizeof(follow_addr), "%s", follow_pc->mac);
+				if (!isValidMacAddress(follow_addr))
+					continue;
+			}
 		}
 
 //_dprintf("[PC] mac=%s\n", follow_pc->mac);
@@ -1335,16 +1351,19 @@ void config_daytime_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdr
 // MAC address not in list -> ACCEPT.
 // MAC address in list and in time period -> ACCEPT.
 // MAC address in list and not in time period -> DROP.
-void config_daytime_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdrop, int temp){
+void config_daytime_string(pc_s *pc_list, FILE *fp, char *lan_if, char *logaccept, char *logdrop, int temp){
 
 	pc_s *enabled_list = NULL, *follow_pc;
 	pc_event_s *follow_e;
-	char *lan_if = nvram_safe_get("lan_ifname");
+	//char *lan_if = nvram_safe_get("lan_ifname");
 	int i;
 #ifdef BLOCKLOCAL
 	char *ftype;
 #endif
 	char *fftype;
+
+	if (!pc_list || !fp || !lan_if || !logaccept || !logdrop)
+		return;
 
 #ifdef BLOCKLOCAL
 	ftype = logaccept;
@@ -1362,17 +1381,30 @@ void config_daytime_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdr
 		char follow_addr[18] = {0};
 #ifdef RTCONFIG_AMAS
 		_dprintf("config_daytime_string\n");
-		if (strlen(follow_pc->mac) && amas_lib_device_ip_query(follow_pc->mac, follow_addr)) {
+		if (strlen(follow_pc->mac) && amas_lib_device_ip_query(follow_pc->mac, lan_if, follow_addr)) {
 			chk_type = iptables_chk_ip;
 			if (illegal_ipv4_address(follow_addr))
 				continue;
 		} else
 #endif
 		{
-			chk_type = iptables_chk_mac;
-			snprintf(follow_addr, sizeof(follow_addr), "%s", follow_pc->mac);
-			if (!isValidMacAddress(follow_addr))
-				continue;
+#ifdef RTCONFIG_CAPTIVE_PORTAL
+			if(check_chilli_ip(lan_if)) { // check if get ip from chilli needed
+				if (get_ip_from_chilli(follow_pc->mac, follow_addr, sizeof(follow_addr)) > 0) {
+					chk_type = iptables_chk_ip;
+					if (illegal_ipv4_address(follow_addr))
+						continue;
+				}
+				else
+					continue;
+			} else
+#endif
+			{
+				chk_type = iptables_chk_mac;
+				snprintf(follow_addr, sizeof(follow_addr), "%s", follow_pc->mac);
+				if (!isValidMacAddress(follow_addr))
+					continue;
+			}
 		}
 
 //_dprintf("[PC] mac=%s\n", follow_pc->mac);
@@ -1481,10 +1513,14 @@ void config_daytime_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdr
 }
 #endif // #ifdef RTCONFIG_PC_SCHED_V3
 
-void config_pause_block_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdrop, int temp){
+void config_pause_block_string(pc_s *pc_list, FILE *fp, char *lan_if, char *logaccept, char *logdrop, int temp){
 
 	pc_s *enabled_list = NULL, *follow_pc;
-	char *lan_if = nvram_safe_get("lan_ifname");
+	//char *lan_if = nvram_safe_get("lan_ifname");
+
+	if (!pc_list || !fp || !lan_if || !logaccept || !logdrop)
+		return;
+
 #ifdef BLOCKLOCAL
 	char *ftype;
 
@@ -1503,17 +1539,30 @@ void config_pause_block_string(pc_s *pc_list, FILE *fp, char *logaccept, char *l
 		char follow_addr[18] = {0};
 #ifdef RTCONFIG_AMAS
 		_dprintf("config_pause_block_string\n");
-		if (strlen(follow_pc->mac) && amas_lib_device_ip_query(follow_pc->mac, follow_addr)) {
+		if (strlen(follow_pc->mac) && amas_lib_device_ip_query(follow_pc->mac, lan_if, follow_addr)) {
 			chk_type = iptables_chk_ip;
 			if (illegal_ipv4_address(follow_addr))
 				continue;
 		} else
 #endif
 		{
-			chk_type = iptables_chk_mac;
-			snprintf(follow_addr, sizeof(follow_addr), "%s", follow_pc->mac);
-			if (!isValidMacAddress(follow_addr))
-				continue;
+#ifdef RTCONFIG_CAPTIVE_PORTAL
+			if(check_chilli_ip(lan_if)) { // check if get ip from chilli needed
+				if (get_ip_from_chilli(follow_pc->mac, follow_addr, sizeof(follow_addr)) > 0) {
+					chk_type = iptables_chk_ip;
+					if (illegal_ipv4_address(follow_addr))
+						continue;
+				}
+				else
+					continue;
+			} else
+#endif
+			{
+				chk_type = iptables_chk_mac;
+				snprintf(follow_addr, sizeof(follow_addr), "%s", follow_pc->mac);
+				if (!isValidMacAddress(follow_addr))
+					continue;
+			}
 		}
 
 //_dprintf("[PC] mac=%s\n", follow_pc->mac);
@@ -1700,10 +1749,14 @@ pc_s *op_get_all_pc_list(pc_s **pc_list){
 	return *pc_list;
 }
 
-void op_config_pause_block_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdrop, int temp){
+void op_config_pause_block_string(pc_s *pc_list, FILE *fp, char *lan_if, char *logaccept, char *logdrop, int temp){
 
 	pc_s *enabled_list = NULL, *follow_pc;
-	char *lan_if = nvram_safe_get("lan_ifname");
+	//char *lan_if = nvram_safe_get("lan_ifname");
+
+	if (!pc_list || !fp || !lan_if || !logaccept || !logdrop)
+		return;
+
 #ifdef BLOCKLOCAL
 	char *ftype;
 
@@ -1724,17 +1777,30 @@ void op_config_pause_block_string(pc_s *pc_list, FILE *fp, char *logaccept, char
 		char follow_addr[18] = {0};
 #ifdef RTCONFIG_AMAS
 		_dprintf("config_pause_block_string\n");
-		if (strlen(follow_pc->mac) && amas_lib_device_ip_query(follow_pc->mac, follow_addr)) {
+		if (strlen(follow_pc->mac) && amas_lib_device_ip_query(follow_pc->mac, lan_if, follow_addr)) {
 			chk_type = iptables_chk_ip;
 			if (illegal_ipv4_address(follow_addr))
 				continue;
 		} else
 #endif
 		{
-			chk_type = iptables_chk_mac;
-			snprintf(follow_addr, sizeof(follow_addr), "%s", follow_pc->mac);
-			if (!isValidMacAddress(follow_addr))
-				continue;
+#ifdef RTCONFIG_CAPTIVE_PORTAL
+			if(check_chilli_ip(lan_if)) { // check if get ip from chilli needed
+				if (get_ip_from_chilli(follow_pc->mac, follow_addr, sizeof(follow_addr)) > 0) {
+					chk_type = iptables_chk_ip;
+					if (illegal_ipv4_address(follow_addr))
+						continue;
+				}
+				else
+					continue;
+			} else
+#endif
+			{
+				chk_type = iptables_chk_mac;
+				snprintf(follow_addr, sizeof(follow_addr), "%s", follow_pc->mac);
+				if (!isValidMacAddress(follow_addr))
+					continue;
+			}
 		}
 
 //_dprintf("[PC] mac=%s\n", follow_pc->mac);
@@ -1798,6 +1864,145 @@ int op_cleantrack_pc_list(pc_s *pc_list, int verb){
 	For Optus puase customization.
 */
 #endif /* RTCONFIG_ISP_OPTUS */
+
+void config_block_all_string(FILE *fp, char *lan_if) {
+	if (!fp || !lan_if)
+		return;
+
+	/* Drop the wrong state, INVALID, packets */
+	if (nvram_get_int("MULTIFILTER_BLOCK_ALL") == 1)
+		fprintf(fp, "-A FORWARD -i %s -j %s\n", lan_if, "DROP");
+}
+
+#ifdef RTCONFIG_MULTILAN_CFG
+void handle_sdn_block_all_string(FILE *fp) {
+
+	MTLAN_T *pmtl = NULL;
+	size_t mtl_sz = 0;
+	int i;
+	int br0_handled = 0;
+
+	if (!fp)
+		return;
+
+	pmtl = (MTLAN_T *)INIT_MTLAN(sizeof(MTLAN_T));
+	if (pmtl)
+	{
+		get_mtlan(pmtl, &mtl_sz);
+		for (i = 0; i < mtl_sz; ++i)
+		{
+			if (pmtl[i].nw_t.idx >= 0) { // include br0
+				if (pmtl[i].nw_t.idx == 0 && br0_handled)
+					continue;
+				config_block_all_string(fp, pmtl[i].nw_t.ifname);
+				_dprintf("\n[pc] block all name=[%s], br=[%s], if=[%s]\n", pmtl[i].name, pmtl[i].nw_t.br_ifname, pmtl[i].nw_t.ifname);
+
+				if (pmtl[i].nw_t.idx == 0)
+					br0_handled = 1;
+			}
+		}
+		FREE_MTLAN((void *)pmtl);
+	}
+}
+
+void handle_sdn_parental_ctrl_related(int feature, pc_s *pc_list, FILE *fp, char *logaccept, char *logdrop, int temp) {
+
+	MTLAN_T *pmtl = NULL;
+	size_t mtl_sz = 0;
+	int i;
+	int br0_handled = 0;
+
+	if (!pc_list || !fp || !feature)
+		return;
+
+	pmtl = (MTLAN_T *)INIT_MTLAN(sizeof(MTLAN_T));
+	if (pmtl)
+	{
+		get_mtlan(pmtl, &mtl_sz);
+		for (i = 0; i < mtl_sz; ++i)
+		{
+			if (pmtl[i].nw_t.idx >= 0) { // include br0
+				if (pmtl[i].nw_t.idx == 0 && br0_handled)
+					continue;
+				if ((feature & SDN_PARENTAL_CTRL_BLOCK_INTERNET) > 0) {
+					config_pause_block_string(pc_list, fp, pmtl[i].nw_t.ifname, logaccept, logdrop, temp);
+					_dprintf("\n[pc] SDN_PARENTAL_CTRL_BLOCK_INTERNET name=[%s], br=[%s], if=[%s]\n", pmtl[i].name, pmtl[i].nw_t.br_ifname, pmtl[i].nw_t.ifname);
+				}
+				if ((feature & SDN_PARENTAL_CTRL_TIME_SCHED) > 0) {
+					config_daytime_string(pc_list, fp, pmtl[i].nw_t.ifname, logaccept, logdrop, temp);
+					_dprintf("\n[pc] SDN_PARENTAL_CTRL_TIME_SCHED name=[%s], br=[%s], if=[%s]\n", pmtl[i].name, pmtl[i].nw_t.br_ifname, pmtl[i].nw_t.ifname);
+				}
+				if ((feature & SDN_PARENTAL_CTRL_REWARD) > 0) {
+					config_pc_reward_string(pc_list, fp, pmtl[i].nw_t.ifname);
+					_dprintf("\n[pc] SDN_PARENTAL_CTRL_REWARD name=[%s], br=[%s], if=[%s]\n", pmtl[i].name, pmtl[i].nw_t.br_ifname, pmtl[i].nw_t.ifname);
+				}
+#ifdef RTCONFIG_ISP_OPTUS
+				if ((feature & SDN_PARENTAL_CTRL_OP_BLOCK_INTERNET) > 0) {
+					op_config_pause_block_string(pc_list, fp, pmtl[i].nw_t.ifname, logaccept, logdrop, temp);
+					_dprintf("\n[pc] SDN_PARENTAL_CTRL_OP_BLOCK_INTERNET name=[%s], br=[%s], if=[%s]\n", pmtl[i].name, pmtl[i].nw_t.br_ifname, pmtl[i].nw_t.ifname);
+				}
+#endif
+				if (pmtl[i].nw_t.idx == 0)
+					br0_handled = 1;
+			}
+		}
+		FREE_MTLAN((void *)pmtl);
+	}
+}
+
+#ifdef RTCONFIG_CAPTIVE_PORTAL
+int check_chilli_ip(char *ifname)
+{
+	if (!ifname)
+		return 0;
+
+	if (nvram_match("chilli_enable", "1") || nvram_match("hotss_enable", "1"))
+		if (!strcmp(ifname, "tun22"))
+			return 1;
+
+	if (nvram_match("cp_enable", "1") || nvram_match("hotss_enable", "1"))
+		if (!strcmp(ifname, "tun23"))
+			return 1;
+
+	return 0;
+}
+
+int get_ip_from_chilli(char *mac, char *ip, int ip_len) {
+	FILE *fp;
+	int ret = 0;
+	char cmd[64] = {0};
+	char buf[512] = {0};
+	char c_mac[16] = {0}, out_mac[18] = {0};
+	char c_ip[16] = {0};
+	int n = 0;
+
+	if (!mac)
+		return ret;
+
+	snprintf(cmd, sizeof(cmd), "chilli_query -P 42424 dhcp-list 2>/dev/null");
+	if ((fp = popen(cmd, "r")) != NULL) {
+		//_dprintf("chilli_query...1\n");
+		while(fgets(buf, sizeof(buf), fp)) {
+			//_dprintf("chilli_query...2 buf=%s\n", buf);
+			if ((n = sscanf(buf, "%[^-]-%[^-]-%[^-]-%[^-]-%[^-]-%2s %15s %*s %*s", &c_mac[0], &c_mac[2], &c_mac[4], &c_mac[6], &c_mac[8], &c_mac[10], c_ip)) == 7) {
+				snprintf(out_mac, sizeof(out_mac), "%c%c:%c%c:%c%c:%c%c:%c%c:%c%c", c_mac[0], c_mac[1], c_mac[2], c_mac[3], c_mac[4], c_mac[5], c_mac[6], c_mac[7], c_mac[8], c_mac[9], c_mac[10], c_mac[11]);
+				//_dprintf("chilli_query...2 out_mac=%s, c_ip=%s\n", out_mac, c_ip);
+				if (strcmp(out_mac, mac) == 0) {
+					snprintf(ip, ip_len, "%s", c_ip);
+					ret = 1;
+					break;
+				}
+			} /*else {
+				_dprintf("chilli_query...3 n=%d\n", n);
+			}*/
+		}
+		pclose(fp);
+	}
+
+	return ret;
+}
+#endif //#ifdef RTCONFIG_CAPTIVE_PORTAL
+#endif //#ifdef RTCONFIG_MULTILAN_CFG
 
 int pc_main(int argc, char *argv[]){
 	pc_s *pc_list = NULL, *enabled_list = NULL, *daytime_list = NULL;
@@ -1864,7 +2069,21 @@ int pc_main(int argc, char *argv[]){
 		free_pc_list(&enabled_list);
 	}
 	else if(argc == 2 && !strcmp(argv[1], "showrules")){
-		config_daytime_string(pc_list, stderr, "ACCEPT", "logdrop", 0);
+#ifdef RTCONFIG_MULTILAN_CFG
+		char logaccept[32], logdrop[32];
+		if(nvram_match("fw_log_x", "accept") || nvram_match("fw_log_x", "both"))
+			strlcpy(logaccept, "logaccept", sizeof(logaccept));
+		else
+			strlcpy(logaccept, "ACCEPT", sizeof(logaccept));
+		if(nvram_match("fw_log_x", "drop") || nvram_match("fw_log_x", "both"))
+			strlcpy(logdrop, "logdrop", sizeof(logdrop));
+		else
+			strlcpy(logdrop, "DROP", sizeof(logdrop));
+		handle_sdn_parental_ctrl_related(SDN_PARENTAL_CTRL_TIME_SCHED, pc_list, stderr, logaccept, logdrop, 0);
+#else
+		char *lan_if = nvram_safe_get("lan_ifname");
+		config_daytime_string(pc_list, stderr, lan_if, "ACCEPT", "logdrop", 0);
+#endif
 	}
 #ifdef RTCONFIG_CONNTRACK
 	else if(argc == 2 && !strcmp(argv[1], "flush")){

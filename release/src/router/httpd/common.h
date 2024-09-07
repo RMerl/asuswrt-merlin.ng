@@ -43,7 +43,7 @@
 
 /* DEBUG DEFINE */
 #define HTTPD_DEBUG             "/tmp/HTTPD_DEBUG"
-#if (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_JFFSV1) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS))
+#if (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_JFFSV1) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION))
 #define HTTPD_DEBUG_FILE                "/jffs/HTTPD_DEBUG.log"
 #else
 #define HTTPD_DEBUG_FILE                  "/tmp/HTTPD_DEBUG.log"
@@ -51,10 +51,11 @@
 
 /* DEBUG FUNCTION */
 #ifdef RTCONFIG_LIBASUSLOG
+extern void Debug2String(int level, char *path, int conlog, int showtime, unsigned filesize, char *function_name, int function_line, const char *fmt, ...);
 #define HTTPD_DBG(fmt, arg...) do {\
 	int save_errno = errno; \
 	if (f_exists(HTTPD_DEBUG) > 0 || nvram_get_int("HTTPD_DBG") > 0) \
-		asusdebuglog(LOG_INFO, HTTPD_DEBUG_FILE, LOG_CUSTOM, LOG_SHOWTIME, 0, "[%s(%d)]:"fmt"\n", __FUNCTION__, __LINE__ , ##arg); \
+		Debug2String(LOG_INFO, HTTPD_DEBUG_FILE, LOG_CUSTOM, LOG_SHOWTIME, 0, __FUNCTION__, __LINE__, fmt, ##arg); \
 	errno = save_errno; \
 }while(0)
 #else

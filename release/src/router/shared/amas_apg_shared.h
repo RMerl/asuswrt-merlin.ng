@@ -370,25 +370,6 @@ const static struct apg_wl_suffix_t apg_wl_suffix_mapping[] = {
 extern int              check_apgX_suffix(char *name);
 extern char* 			apg_suffix_to_wl_suffix(char *apg_suffix, char *ret_item, size_t ret_item_bsize);
 
-#define NV_RADIUS_LIST      "radius_list"
-struct _radius_t {
-    unsigned int idx;
-    char ipaddr[64];
-    unsigned int port;
-    char key[64];
-    char acct_ipaddr[64];
-    unsigned int acct_port;
-    char acct_key[64];
-    char ipaddr2[64];
-    unsigned int port2;
-    char key2[64];
-    char acct_ipaddr2[64];
-    unsigned int acct_port2;
-    char acct_key2[64];
-};
-
-extern struct _radius_t* get_radius_rl_by_idx(int idx, struct _radius_t *radius_rl);
-
 #define MAX_IFNAME_STR_LEN		32
 #define MAX_VIF_LIST_SIZE		32
 #define MAX_LABEL_NAME_LEN		32
@@ -467,4 +448,6 @@ extern char* get_fh_ap_ssid_by_unit(int unit);
 extern int get_sdn_index_by_apm(const unsigned int apg_idx);
 extern char* get_sdn_type_by_sdn_idx(int index, char *type, size_t type_bsize);
 extern char* get_fh_if_prefix_by_apm(int apm_idx, char *ret_prefix, size_t ret_bsize);
+
+extern int get_sdn_new_idx(char *sdn_rl);
 #endif  /* !__APG_SHAREDH__ */

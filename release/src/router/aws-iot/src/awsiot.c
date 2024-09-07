@@ -1019,6 +1019,7 @@ static void eventCallback( MQTTContext_t * pMqttContext,
         switch( pPacketInfo->type ) {
             case MQTT_PACKET_TYPE_SUBACK:
 
+                 Cdbg(APP_DBG, "Got a SUBACK from the broker.");
 
                 /* A SUBACK from the broker, containing the server response to our subscription request, has been received.
                  * It contains the status code indicating server approval/rejection for the subscription to the single topic
@@ -1296,7 +1297,7 @@ static int subscribeToTopic( MQTTContext_t * pMqttContext ) {
         Cdbg(APP_DBG, "Failed to send SUBSCRIBE packet to broker with error = %s.",
                     MQTT_Status_strerror( mqttStatus ));
     } else {
-        Cdbg(APP_DBG, "SUBSCRIBE sent for topic , Success");
+        Cdbg(APP_DBG, "Success to send SUBSCRIBE packet");
     }
 
     return returnStatus;
@@ -1431,9 +1432,7 @@ static int publishToTopic( MQTTContext_t * pMqttContext, char * pTopicName, char
             mqttStatus = MQTT_ProcessLoop( pMqttContext, MQTT_PROCESS_LOOP_TIMEOUT_MS );
 
             if( mqttStatus == MQTTSuccess ) {
-
                 LogInfo( ( "MQTT_ProcessLoop  mqttStatus == == == MQTTSuccess" ) );
-
             } 
             else {
                 LogInfo( ( "MQTT_ProcessLoop mqttStatus != != != MQTTSuccess" ) );
@@ -1569,7 +1568,6 @@ static int subscribeTopic( MQTTContext_t * pMqttContext,
          * subscribed to, so it will expect all the messages it sends to the broker
          * to be sent back to it from the broker. This demo uses QOS1 in Subscribe,
          * therefore, the Publish messages received from the broker will have QOS1. */
-        LogInfo( ( "Subscribing to the MQTT topic" ) );
         returnStatus = subscribeToTopic( pMqttContext );
     }
 
@@ -1589,7 +1587,7 @@ static int subscribeTopic( MQTTContext_t * pMqttContext,
                         MQTT_Status_strerror( mqttStatus ) ) );
         }
     }
-
+    
     /* Check if recent subscription request has been rejected. globalSubAckStatus is updated
      * in eventCallback to reflect the status of the SUBACK sent by the broker. */
     if( ( returnStatus == EXIT_SUCCESS ) && ( globalSubAckStatus == MQTTSubAckFailure ) ){
@@ -1601,8 +1599,26 @@ static int subscribeTopic( MQTTContext_t * pMqttContext,
         //            MQTT_EXAMPLE_TOPIC ) );
         // returnStatus = handleResubscribe( pMqttContext );
 
-        returnStatus == MQTTSubAckFailure;
+        // returnStatus = MQTTSubAckFailure;
 
+        //- Try to use MQTT_ProcessLoop to receive packet from network again.
+        int count = 0;
+        int max_count = 3;
+        while (globalSubAckStatus == MQTTSubAckFailure) {
+            if (count > max_count) {
+                break;
+            }
+            
+            count++;
+
+            Cdbg(APP_DBG, "Try to use MQTT_ProcessLoop to receive packet from network again.(%d)", count);
+            mqttStatus = MQTT_ProcessLoop( pMqttContext, MQTT_PROCESS_LOOP_TIMEOUT_MS );
+        }
+
+        if (globalSubAckStatus == MQTTSubAckFailure) {
+            Cdbg(APP_DBG, "Still haven’t received sub ack!!");
+            returnStatus = MQTTSubAckFailure;
+        }
     }
 
     return returnStatus;

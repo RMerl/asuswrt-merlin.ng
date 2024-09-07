@@ -43,7 +43,7 @@ function initial(){
 		uploadSetting();
 	};
 
-	if(!bwdpi_support){
+	if(!bwdpi_support && !isSupport("dpi_mals") && !isSupport("dpi_cc") && !isSupport("dpi_vp")){
 		$("#factorydefault_hint").attr("onclick", "").unbind("click");
 		$("#factorydefault_hint").attr("onclick", "openHint(19, 1);");
 		$("#restoreInit_div").css("display", "none");
@@ -54,8 +54,7 @@ function initial(){
 
 function restoreRule(_flag){
 	var alert_string = "<#Setting_factorydefault_hint1#>";
-
-	if($('#restoreInit').prop("checked") && bwdpi_support)
+	if($('#restoreInit').prop("checked") && (bwdpi_support || isSupport("dpi_mals") || isSupport("dpi_cc") || isSupport("dpi_vp")))
 		alert_string = "<#Setting_initialize_hint1#>";
 
 	if(lan_ipaddr != '<% nvram_default_get("lan_ipaddr"); %>')
@@ -64,7 +63,7 @@ function restoreRule(_flag){
 	alert_string += "<#Setting_factorydefault_hint2#>";
 	if(confirm(alert_string)){
 		document.form.action1.blur();
-		if($('#restoreInit').prop("checked") && bwdpi_support)
+		if($('#restoreInit').prop("checked") && (bwdpi_support || isSupport("dpi_mals") || isSupport("dpi_cc") || isSupport("dpi_vp")))
 			document.restoreform.action_mode.value = "restore_erase";
 		else
 			document.restoreform.action_mode.value = "Restore";

@@ -20,7 +20,9 @@ var wanTypeList = {
 	"hgw_v6plus":"<#IPv6_plus#>",
 	"ocnvc":"<#IPv6_ocnvc#>",
 	"dslite_xpass":"<#IPv6_xpass#> (DS-Lite)",
-	"dslite_transix":"transix (DS-Lite)"
+	"dslite_transix":"transix (DS-Lite)",
+	"v6opt":"<#IPv6_opt#>",
+	"hgw_v6opt":"<#IPv6_opt#>"
 }
 var model_name = httpApi.nvramGet(["productid"]).productid;
 
@@ -52,6 +54,14 @@ else if(AutoDetInfo.wan46det_state == "7"){
 	wan46_result = wanTypeList.dslite_transix;
 	qisPostData.wan_proto = "dslite";
 	qisPostData.wan_s46_dslite_mode = "0";
+}
+else if(AutoDetInfo.wan46det_state == "8"){
+	wan46_result = wanTypeList.v6opt;
+	qisPostData.wan_proto = "v6opt";
+}
+else if(AutoDetInfo.wan46det_state == "9"){
+	wan46_result = wanTypeList.hgw_v6opt;
+	qisPostData.wan_proto = "v6opt";
 }
 else{	//0 and else
 	wan46_result = wanTypeList.init;

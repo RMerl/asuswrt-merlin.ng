@@ -107,7 +107,7 @@ enum
 
 #define NEWORKMAP_OUI_FILE		"/usr/networkmap/networkmap.oui.js"
 
-#if (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_JFFSV1) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS))
+#if (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_JFFSV1) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION))
 #define NMP_CL_JSON_FILE		"/jffs/nmp_cl_json.js"
 #define NMP_VC_JSON_FILE		"/jffs/nmp_vc_json.js"
 #else
@@ -258,11 +258,16 @@ typedef struct {
 #ifdef RTCONFIG_LANTIQ
 	time_t		tstamp[MAX_NR_CLIENT_LIST];
 #endif
+	char		pap_mac[MAX_NR_CLIENT_LIST][18];
+	char		guest_network[MAX_NR_CLIENT_LIST][4];
 	char		ssid[MAX_NR_CLIENT_LIST][32];
 	char 		txrate[MAX_NR_CLIENT_LIST][7];
 	char 		rxrate[MAX_NR_CLIENT_LIST][10];
 	unsigned int 	rssi[MAX_NR_CLIENT_LIST];
 	char 		conn_time[MAX_NR_CLIENT_LIST][12];
+#if defined(RTCONFIG_BCMARM) || defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK)
+	char 		wireless_auth[MAX_NR_CLIENT_LIST][32];
+#endif
 #if defined(RTCONFIG_FBWIFI) || defined(RTCONFIG_CAPTIVE_PORTAL)
 	char		subunit[MAX_NR_CLIENT_LIST];
 #endif
@@ -317,14 +322,11 @@ int get_sdn_idx_form_apg(char *papMac, char *ifname);
 
 int get_brctl_macs(char * mac);
 
-#ifdef RTCONFIG_MLO
-int check_wrieless_mlo(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, const int i);
-#endif
-
 int check_wrieless_info(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, const int i, const int is_file, struct json_object *clients);
 
 #ifdef RTCONFIG_MULTILAN_CFG
 int check_wrie_client_sdn_idx(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, const int i);
+void check_manual_dhcp(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, int i, const int subnet_idx);
 #endif
 
 void regularly_check_devices(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab);
@@ -350,6 +352,22 @@ int json_checker(const char *json_str);
 int check_arp_table(const char *ipaddr);
 
 int check_brctl_macs(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab);
+
+#if defined(RTCONFIG_BCMARM)
+#ifdef RTCONFIG_MULTILAN_CFG
+void check_wlireless_auth_from_wl(char *mac, char *ifname, char *wl_auth, int auth_len);
+#else
+void get_wireless_auth_bcm(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab);
+#endif
+#endif
+
+#if defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK)
+#ifdef RTCONFIG_MULTILAN_CFG
+void check_wlireless_auth_from_hostapd(char *mac, char *ifname, char *wl_auth, int auth_len);
+#else
+void get_wireless_auth_qca(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab);
+#endif
+#endif
 
 #ifdef RTCONFIG_IPV6
 void check_ip6_addr(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab);

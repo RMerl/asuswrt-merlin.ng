@@ -84,9 +84,6 @@ function get_layer_items_test(layer_order_t){
 	$.ajax({
     		url: '/gettree.asp?layer_order='+layer_order_t,
     		dataType: 'script',
-    		error: function(xhr){
-    			;
-    		},
     		success: function(){
 				delete_flag = treeitems.length;
   			}

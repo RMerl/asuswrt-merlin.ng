@@ -8,6 +8,7 @@
 */
 
 var tabs = [];
+var wirelessTabs = [];
 var rx_max, rx_avg;
 var tx_max, tx_avg;
 var xx_max = 0;
@@ -306,52 +307,6 @@ function loadData()
 		speed_history = [];
 	}
 	else {
-		const wl_nband_array = httpApi.hookGet("wl_nband_info");
-
-		function countBand(arr) {
-			const countMap = new Map();
-			arr.forEach((item, index) => {
-				if (countMap.has(item)) {
-					countMap.get(item).count++;
-					countMap.get(item).indices.push(index);
-				} else {
-					countMap.set(item, {band: item, count: 1, indices: [index]});
-				}
-			});
-			return Array.from(countMap.values());
-		}
-
-		const bandArray = countBand(wl_nband_array);
-		for (const item of bandArray) {
-			const { band, count, indices } = item;
-			indices.forEach(function(value, index) {
-				let tabLabel = "";
-				if (band === "1") {
-					tabLabel = count === 1 ? "5GHz" : `5GHz-${index + 1}`;
-				} else if (band === "2") {
-					tabLabel = "2.4GHz";
-				} else if (band === "4") {
-					tabLabel = count === 1 ? "6GHz" : `6GHz-${index + 1}`;
-				} else if (band === "6") {
-					tabLabel = "60GHz";
-				}
-				tabs.push([`speed-tab-WIRELESS${value}`, `<#tm_wireless#> (${tabLabel})`]);
-			});
-		}
-
-		tabs.sort((a, b) => {
-			const valueA = a[1];
-			const valueB = b[1];
-			const contains60GHzA = valueA.includes('60GHz');
-			const contains60GHzB = valueB.includes('60GHz');
-			if (contains60GHzA && !contains60GHzB) {
-				return 1;
-			} else if (!contains60GHzA && contains60GHzB) {
-				return -1;
-			}
-			return valueA.localeCompare(valueB);
-		});
-
 		for (var i in speed_history) {
 			var h = speed_history[i];
 			if ((typeof(h.rx) == 'undefined') || (typeof(h.tx) == 'undefined')) {
@@ -462,9 +417,20 @@ function loadData()
 				else
 					t = "<#dualwan_secondary#>";
 			}
-			else if (i.search("WIRELESS") > -1 && i.search(".") > -1)
-				t = "NotUsed";
-			else if (i.search("WAGGR") > -1){
+			else if (i.search(/WIRELESS/) > -1){
+					if(i.search(/\./) > -1){
+						t = "NotUsed";
+					}
+					else{
+						for(var idx = 0; idx < wirelessTabs.length; idx++){
+							if(wirelessTabs[idx][0].indexOf(i) > -1){
+								t = wirelessTabs[idx][1];
+								break;
+							}
+						}
+					}
+			}
+			else if (i.search(/WAGGR/) > -1){
 				var bs_port_id = i.substr(5);
 				if (bs_port_id == 0)
 					t = "bond-slave (WAN)";
@@ -477,7 +443,7 @@ function loadData()
 				else
 					t = "NotUsed";
 			}
-			else if (i.search("LACPW") > -1){
+			else if (i.search(/LACPW/) > -1){
 				var num = i.substr(5);
 				t = "bond-slave (WAN"+num+")";
 			}
@@ -486,25 +452,10 @@ function loadData()
 				t = "bond-slave (LAN Port "+num+")";
 			}
 			else
-				t = i;			
+				t = i;
  
 			if(i != "BRIDGE" && t != "NotUsed"){ // hide Tabs
-				/*if(i == "INTERNET")
-					tabs.push(['speed-tab-' + i, t]);
-				else if(i == "INTERNET1")
-					tabs.push(['speed-tab-' + i, t]);
-				else if	(i == "WIRED")
-					tabs.push(['speed-tab-' + i, t]);
-				else if	(i == "WIRELESS0")
-					tabs.push(['speed-tab-' + i, t]);
-				else if	(i == "WIRELESS1")
-					tabs.push(['speed-tab-' + i, t]);
-				else if	(i == "BRIDGE")
-					tabs.push(['speed-tab-' + i, t]);//tabs[4] = ['speed-tab-' + i, t];
-				*/
 				tabs.push(['speed-tab-' + i, t]);
-
-			
 			}
 		}
 		
@@ -625,6 +576,53 @@ function initData()
 
 function initCommon(defAvg, defDrawMode, defDrawColorRX, defDrawColorTX) //Viz modify defDrawColor 2010.09
 {
+
+	const wl_nband_array = httpApi.hookGet("wl_nband_info");
+
+	function countBand(arr) {
+		const countMap = new Map();
+		arr.forEach((item, index) => {
+			if (countMap.has(item)) {
+				countMap.get(item).count++;
+				countMap.get(item).indices.push(index);
+			} else {
+				countMap.set(item, {band: item, count: 1, indices: [index]});
+			}
+		});
+		return Array.from(countMap.values());
+	}
+
+	const bandArray = countBand(wl_nband_array);
+	for (const item of bandArray) {
+		const { band, count, indices } = item;
+		indices.forEach(function(value, index) {
+			let tabLabel = "";
+			if (band === "1") {
+				tabLabel = count === 1 ? "5GHz" : `5GHz-${index + 1}`;
+			} else if (band === "2") {
+				tabLabel = "2.4GHz";
+			} else if (band === "4") {
+				tabLabel = count === 1 ? "6GHz" : `6GHz-${index + 1}`;
+			} else if (band === "6") {
+				tabLabel = "60GHz";
+			}
+			wirelessTabs.push([`speed-tab-WIRELESS${value}`, `<#tm_wireless#> (${tabLabel})`]);
+		});
+	}
+
+	wirelessTabs.sort((a, b) => {
+		const valueA = a[1];
+		const valueB = b[1];
+		const contains60GHzA = valueA.includes('60GHz');
+		const contains60GHzB = valueB.includes('60GHz');
+		if (contains60GHzA && !contains60GHzB) {
+			return 1;
+		} else if (!contains60GHzA && contains60GHzB) {
+			return -1;
+		}
+		return valueA.localeCompare(valueB);
+	});
+
 	drawMode = fixInt(cookie.get(cprefix + 'draw'), 0, 1, defDrawMode);
 	showDraw();
 

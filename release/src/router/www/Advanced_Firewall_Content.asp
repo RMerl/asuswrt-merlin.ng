@@ -257,7 +257,7 @@ function addRow_Group(upper){
 	
 
 	if(document.form.filter_lw_srcport_x_0.value == "" && document.form.filter_lw_dstport_x_0.value == ""){
-		
+		// do something
 	}else	if(document.form.filter_lw_srcport_x_0.value==""){
 					if(!validator.numberRange(document.form.filter_lw_dstport_x_0, 1, 65535) )
 							return false;					

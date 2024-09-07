@@ -1918,7 +1918,11 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 	if((nvram_get_int("MULTIFILTER_ALL") != 0 && pc_count > 0)
 		|| (nvram_get_int("MULTIFILTER_ALL") != 0 && pc_count2 > 0)
 		){
-		config_pc_reward_redirect(fp);
+#ifdef RTCONFIG_MULTILAN_CFG
+		handle_sdn_config_pc_reward_redirect(fp);
+#else
+		config_pc_reward_redirect(fp, lan_if);
+#endif
 	}
 #endif
 
@@ -1931,7 +1935,7 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 		|| (nvram_get_int("MULTIFILTER_ALL") != 0 && pc_count2 > 0)
 		|| (nvram_get_int("MULTIFILTER_ALL") != 0 && pc_count > 0)
 		) {
-		config_blocking_redirect(fp);
+		config_blocking_redirect(fp, lan_if);
 	}
 #endif
 
@@ -2429,7 +2433,11 @@ void nat_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)	//
 	if((nvram_get_int("MULTIFILTER_ALL") != 0 && pc_count > 0)
 		|| (nvram_get_int("MULTIFILTER_ALL") != 0 && pc_count2 > 0)
 		){
-		config_pc_reward_redirect(fp);
+#ifdef RTCONFIG_MULTILAN_CFG
+		handle_sdn_config_pc_reward_redirect(fp);
+#else
+		config_pc_reward_redirect(fp, lan_if);
+#endif
 	}
 #endif
 
@@ -2442,7 +2450,7 @@ void nat_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)	//
 		|| (nvram_get_int("MULTIFILTER_ALL") != 0 && pc_count2 > 0)
 		|| (nvram_get_int("MULTIFILTER_ALL") != 0 && pc_count > 0)
 		) {
-		config_blocking_redirect(fp);
+		config_blocking_redirect(fp, lan_if);
 	}
 #endif
 
@@ -4589,18 +4597,24 @@ filter_setting(int wan_unit, char *lan_if, char *lan_ip, char *logaccept, char *
 
 #ifdef RTCONFIG_PARENTALCTRL
 #ifdef RTCONFIG_PC_SCHED_V3
-	/* Drop the wrong state, INVALID, packets */
-	if (nvram_get_int("MULTIFILTER_BLOCK_ALL") == 1)
-		fprintf(fp, "-A FORWARD -i %s -j %s\n", lan_if, "DROP");
+#ifdef RTCONFIG_MULTILAN_CFG
+	handle_sdn_block_all_string(fp);
+#ifdef RTCONFIG_IPV6
+	if (ipv6_enabled()) {
+		handle_sdn_block_all_string(fp_ipv6);
+	}
+#endif //#ifdef RTCONFIG_IPV6
+#else
+	config_block_all_string(fp, lan_if);
 //#if 0
 #ifdef RTCONFIG_IPV6
 	if (ipv6_enabled()) {
-		if (nvram_get_int("MULTIFILTER_BLOCK_ALL") == 1)
-			fprintf(fp_ipv6, "-A FORWARD -i %s -j %s\n", lan_if, "DROP");
+		config_block_all_string(fp_ipv6, lan_if);
 	}
-#endif
-#endif
-#endif
+#endif //#ifdef RTCONFIG_IPV6
+#endif //#ifdef RTCONFIG_MULTILAN_CFG
+#endif //#ifdef RTCONFIG_PC_SCHED_V3
+#endif //#ifdef RTCONFIG_PARENTALCTRL
 
 #ifdef RTCONFIG_INTERNETCTRL
 	ic_s *ic_list = NULL;
@@ -4609,15 +4623,27 @@ filter_setting(int wan_unit, char *lan_if, char *lan_ip, char *logaccept, char *
 	get_all_ic_list(&ic_list);
 	ic_count = count_ic_rules(ic_list);
 
+	_dprintf("[%s(%d] count = %d\n", __FUNCTION__, __LINE__, ic_count);
+
 	if(/*nvram_get_int("MULTIFILTER_ALL") != 0 && */ic_count > 0){
 TRACE_PT("writing Internet Control\n");
-		config_ic_rule_string(ic_list, fp, logaccept, logdrop, 1);
+#ifdef RTCONFIG_MULTILAN_CFG
+		handle_sdn_config_ic_rule_string(ic_list, fp, logaccept, logdrop, 1);
 
 #ifdef RTCONFIG_IPV6
 		if (ipv6_enabled()){
-			config_ic_rule_string(ic_list, fp_ipv6, logaccept, logdrop, 1);
+			handle_sdn_config_ic_rule_string(ic_list, fp_ipv6, logaccept, logdrop, 1);
 		}
 #endif
+#else //#ifdef RTCONFIG_MULTILAN_CFG
+		config_ic_rule_string(ic_list, fp, lan_if, logaccept, logdrop, 1);
+
+#ifdef RTCONFIG_IPV6
+		if (ipv6_enabled()){
+			config_ic_rule_string(ic_list, fp_ipv6, lan_if, logaccept, logdrop, 1);
+		}
+#endif
+#endif //#ifdef RTCONFIG_MULTILAN_CFG
 
 	}
 	free_ic_list(&ic_list);
@@ -4633,13 +4659,23 @@ TRACE_PT("writing Internet Control\n");
 	pc_reward_count = count_pc_rules(pc_reward_list, 1);
 	if (pc_reward_count > 0) {
 TRACE_PT("writing Reward Parental Control\n");
-		config_pc_reward_string(pc_reward_list, fp);
+#ifdef RTCONFIG_MULTILAN_CFG
+		handle_sdn_parental_ctrl_related(SDN_PARENTAL_CTRL_REWARD, pc_reward_list, fp, NULL, NULL, 0);
 
 #ifdef RTCONFIG_IPV6
 		if (ipv6_enabled()){
-			config_pc_reward_string(pc_reward_list, fp_ipv6);
+			handle_sdn_parental_ctrl_related(SDN_PARENTAL_CTRL_REWARD, pc_reward_list, fp_ipv6, NULL, NULL, 0);
 		}
 #endif
+#else //#ifdef RTCONFIG_MULTILAN_CFG
+		config_pc_reward_string(pc_reward_list, fp, lan_if);
+
+#ifdef RTCONFIG_IPV6
+		if (ipv6_enabled()){
+			config_pc_reward_string(pc_reward_list, fp_ipv6, lan_if);
+		}
+#endif
+#endif //#ifdef RTCONFIG_MULTILAN_CFG
 	}
 	free_pc_list(&pc_reward_list);
 #endif //#ifdef RTCONFIG_PC_REWARD
@@ -4654,15 +4690,25 @@ TRACE_PT("writing Reward Parental Control\n");
 
 		if(pc_count > 0){
 	TRACE_PT("writing Optus Pause\n");
-			op_config_pause_block_string(pc_list, fp, logaccept, logdrop, 0);
-			//config_daytime_string(pc_list, fp, logaccept, logdrop, 0);
+#ifdef RTCONFIG_MULTILAN_CFG
+		handle_sdn_parental_ctrl_related(SDN_PARENTAL_CTRL_OP_BLOCK_INTERNET, pc_list, fp, logaccept, logdrop, 0);
 
-	#ifdef RTCONFIG_IPV6
+#ifdef RTCONFIG_IPV6
+		if (ipv6_enabled()){
+			handle_sdn_parental_ctrl_related(SDN_PARENTAL_CTRL_OP_BLOCK_INTERNET, pc_list, fp_ipv6, logaccept, logdrop, 0);
+		}
+#endif
+#else //#ifdef RTCONFIG_MULTILAN_CFG
+			op_config_pause_block_string(pc_list, fp, lan_if, logaccept, logdrop, 0);
+			//config_daytime_string(pc_list, fp, lan_if, logaccept, logdrop, 0);
+
+#ifdef RTCONFIG_IPV6
 			if (ipv6_enabled()){
-				op_config_pause_block_string(pc_list, fp_ipv6, logaccept, logdrop, 0);
-				//config_daytime_string(pc_list, fp_ipv6, logaccept, logdrop, 0);
+				op_config_pause_block_string(pc_list, fp_ipv6, lan_if, logaccept, logdrop, 0);
+				//config_daytime_string(pc_list, fp_ipv6, lan_if, logaccept, logdrop, 0);
 			}
-	#endif
+#endif
+#endif //#ifdef RTCONFIG_MULTILAN_CFG
 
 		}
 		free_pc_list(&pc_list);
@@ -4677,15 +4723,27 @@ TRACE_PT("writing Reward Parental Control\n");
 
 	if(pc_count > 0){
 TRACE_PT("writing temporary Parental Control\n");
-		config_pause_block_string(pc_list, fp, logaccept, logdrop, 2);
-		config_daytime_string(pc_list, fp, logaccept, logdrop, 1);
+#ifdef RTCONFIG_MULTILAN_CFG
+		handle_sdn_parental_ctrl_related(SDN_PARENTAL_CTRL_BLOCK_INTERNET, pc_list, fp, logaccept, logdrop, 2);
+		handle_sdn_parental_ctrl_related(SDN_PARENTAL_CTRL_TIME_SCHED, pc_list, fp, logaccept, logdrop, 1);
 
 #ifdef RTCONFIG_IPV6
 		if (ipv6_enabled()){
-			config_pause_block_string(pc_list, fp_ipv6, logaccept, logdrop, 2);
-			config_daytime_string(pc_list, fp_ipv6, logaccept, logdrop, 1);
+			handle_sdn_parental_ctrl_related(SDN_PARENTAL_CTRL_BLOCK_INTERNET, pc_list, fp_ipv6, logaccept, logdrop, 2);
+			handle_sdn_parental_ctrl_related(SDN_PARENTAL_CTRL_TIME_SCHED, pc_list, fp_ipv6, logaccept, logdrop, 1);
 		}
 #endif
+#else //#ifdef RTCONFIG_MULTILAN_CFG
+		config_pause_block_string(pc_list, fp, lan_if, logaccept, logdrop, 2);
+		config_daytime_string(pc_list, fp, lan_if, logaccept, logdrop, 1);
+
+#ifdef RTCONFIG_IPV6
+		if (ipv6_enabled()){
+			config_pause_block_string(pc_list, fp_ipv6, lan_if, logaccept, logdrop, 2);
+			config_daytime_string(pc_list, fp_ipv6, lan_if, logaccept, logdrop, 1);
+		}
+#endif
+#endif //#ifdef RTCONFIG_MULTILAN_CFG
 
 	}
 	free_pc_list(&pc_list);
@@ -4698,15 +4756,27 @@ TRACE_PT("writing temporary Parental Control\n");
 
 	if(nvram_get_int("MULTIFILTER_ALL") != 0 && pc_count > 0){
 TRACE_PT("writing Parental Control\n");
-		config_pause_block_string(pc_list, fp, logaccept, logdrop, 0);
-		config_daytime_string(pc_list, fp, logaccept, logdrop, 0);
+#ifdef RTCONFIG_MULTILAN_CFG
+		handle_sdn_parental_ctrl_related(SDN_PARENTAL_CTRL_BLOCK_INTERNET, pc_list, fp, logaccept, logdrop, 0);
+		handle_sdn_parental_ctrl_related(SDN_PARENTAL_CTRL_TIME_SCHED, pc_list, fp, logaccept, logdrop, 0);
 
 #ifdef RTCONFIG_IPV6
 		if (ipv6_enabled()){
-			config_pause_block_string(pc_list, fp_ipv6, logaccept, logdrop, 0);
-			config_daytime_string(pc_list, fp_ipv6, logaccept, logdrop, 0);
+			handle_sdn_parental_ctrl_related(SDN_PARENTAL_CTRL_BLOCK_INTERNET, pc_list, fp_ipv6, logaccept, logdrop, 0);
+			handle_sdn_parental_ctrl_related(SDN_PARENTAL_CTRL_TIME_SCHED, pc_list, fp_ipv6, logaccept, logdrop, 0);
 		}
 #endif
+#else //#ifdef RTCONFIG_MULTILAN_CFG
+		config_pause_block_string(pc_list, fp, lan_if, logaccept, logdrop, 0);
+		config_daytime_string(pc_list, fp, lan_if, logaccept, logdrop, 0);
+
+#ifdef RTCONFIG_IPV6
+		if (ipv6_enabled()){
+			config_pause_block_string(pc_list, fp_ipv6, lan_if, logaccept, logdrop, 0);
+			config_daytime_string(pc_list, fp_ipv6, lan_if, logaccept, logdrop, 0);
+		}
+#endif
+#endif //#ifdef RTCONFIG_MULTILAN_CFG
 
 	}
 	free_pc_list(&pc_list);
@@ -5273,6 +5343,7 @@ TRACE_PT("writing Parental Control\n");
 				fprintf(fp, "-A FORWARD -o %s -i %s -j %s\n", "pptp+", word, "ACCEPT");
 			}
 			fprintf(fp, "-A FORWARD -i %s -o %s -j %s\n", "pptp+", wan_if, "ACCEPT");
+			fprintf(fp, "-A FORWARD -i %s -o %s -j %s\n", "pptp+", "pptp+", "ACCEPT");
 		}
 		else
 			fprintf(fp, "-A FORWARD -i %s -j %s\n", "pptp+", "ACCEPT");
@@ -6220,18 +6291,24 @@ filter_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
 
 #ifdef RTCONFIG_PARENTALCTRL
 #ifdef RTCONFIG_PC_SCHED_V3
-	/* Drop the wrong state, INVALID, packets */
-	if (nvram_get_int("MULTIFILTER_BLOCK_ALL") == 1)
-		fprintf(fp, "-A FORWARD -i %s -j %s\n", lan_if, "DROP");
+#ifdef RTCONFIG_MULTILAN_CFG
+	handle_sdn_block_all_string(fp);
+#ifdef RTCONFIG_IPV6
+	if (ipv6_enabled()) {
+		handle_sdn_block_all_string(fp_ipv6);
+	}
+#endif //#ifdef RTCONFIG_IPV6
+#else
+	config_block_all_string(fp, lan_if);
 //#if 0
 #ifdef RTCONFIG_IPV6
 	if (ipv6_enabled()) {
-		if (nvram_get_int("MULTIFILTER_BLOCK_ALL") == 1)
-			fprintf(fp_ipv6, "-A FORWARD -i %s -j %s\n", lan_if, "DROP");
+		config_block_all_string(fp_ipv6, lan_if);
 	}
-#endif
-#endif
-#endif
+#endif //#ifdef RTCONFIG_IPV6
+#endif //#ifdef RTCONFIG_MULTILAN_CFG
+#endif //#ifdef RTCONFIG_PC_SCHED_V3
+#endif //#ifdef RTCONFIG_PARENTALCTRL
 
 #ifdef RTCONFIG_INTERNETCTRL
 	ic_s *ic_list = NULL;
@@ -6240,15 +6317,27 @@ filter_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
 	get_all_ic_list(&ic_list);
 	ic_count = count_ic_rules(ic_list);
 
+	_dprintf("[%s(%d] count = %d\n", __FUNCTION__, __LINE__, ic_count);
+
 	if(/*nvram_get_int("MULTIFILTER_ALL") != 0 && */ic_count > 0){
 TRACE_PT("writing Internet Control\n");
-		config_ic_rule_string(ic_list, fp, logaccept, logdrop, 1);
+#ifdef RTCONFIG_MULTILAN_CFG
+		handle_sdn_config_ic_rule_string(ic_list, fp, logaccept, logdrop, 1);
 
 #ifdef RTCONFIG_IPV6
 		if (ipv6_enabled()){
-			config_ic_rule_string(ic_list, fp_ipv6, logaccept, logdrop, 1);
+			handle_sdn_config_ic_rule_string(ic_list, fp_ipv6, logaccept, logdrop, 1);
 		}
 #endif
+#else //#ifdef RTCONFIG_MULTILAN_CFG
+		config_ic_rule_string(ic_list, fp, lan_if, logaccept, logdrop, 1);
+
+#ifdef RTCONFIG_IPV6
+		if (ipv6_enabled()){
+			config_ic_rule_string(ic_list, fp_ipv6, lan_if, logaccept, logdrop, 1);
+		}
+#endif
+#endif //#ifdef RTCONFIG_MULTILAN_CFG
 
 	}
 	free_ic_list(&ic_list);
@@ -6264,13 +6353,23 @@ TRACE_PT("writing Internet Control\n");
 	pc_reward_count = count_pc_rules(pc_reward_list, 1);
 	if (pc_reward_count > 0) {
 TRACE_PT("writing Reward Parental Control\n");
-		config_pc_reward_string(pc_reward_list, fp);
+#ifdef RTCONFIG_MULTILAN_CFG
+		handle_sdn_parental_ctrl_related(SDN_PARENTAL_CTRL_REWARD, pc_reward_list, fp, NULL, NULL, 0);
 
 #ifdef RTCONFIG_IPV6
 		if (ipv6_enabled()){
-			config_pc_reward_string(pc_reward_list, fp_ipv6);
+			handle_sdn_parental_ctrl_related(SDN_PARENTAL_CTRL_REWARD, pc_reward_list, fp_ipv6, NULL, NULL, 0);
 		}
 #endif
+#else //#ifdef RTCONFIG_MULTILAN_CFG
+		config_pc_reward_string(pc_reward_list, fp, lan_if);
+
+#ifdef RTCONFIG_IPV6
+		if (ipv6_enabled()){
+			config_pc_reward_string(pc_reward_list, fp_ipv6, lan_if);
+		}
+#endif
+#endif //#ifdef RTCONFIG_MULTILAN_CFG
 	}
 	free_pc_list(&pc_reward_list);
 #endif //#ifdef RTCONFIG_PC_REWARD
@@ -6285,15 +6384,25 @@ TRACE_PT("writing Reward Parental Control\n");
 
 		if(pc_count > 0){
 	TRACE_PT("writing Optus Pause\n");
-			op_config_pause_block_string(pc_list, fp, logaccept, logdrop, 0);
-			//config_daytime_string(pc_list, fp, logaccept, logdrop, 0);
+#ifdef RTCONFIG_MULTILAN_CFG
+		handle_sdn_parental_ctrl_related(SDN_PARENTAL_CTRL_OP_BLOCK_INTERNET, pc_list, fp, logaccept, logdrop, 0);
 
-	#ifdef RTCONFIG_IPV6
+#ifdef RTCONFIG_IPV6
+		if (ipv6_enabled()){
+			handle_sdn_parental_ctrl_related(SDN_PARENTAL_CTRL_OP_BLOCK_INTERNET, pc_list, fp_ipv6, logaccept, logdrop, 0);
+		}
+#endif
+#else //#ifdef RTCONFIG_MULTILAN_CFG
+			op_config_pause_block_string(pc_list, fp, lan_if, logaccept, logdrop, 0);
+			//config_daytime_string(pc_list, fp, lan_if, logaccept, logdrop, 0);
+
+#ifdef RTCONFIG_IPV6
 			if (ipv6_enabled()){
-				op_config_pause_block_string(pc_list, fp_ipv6, logaccept, logdrop, 0);
-				//config_daytime_string(pc_list, fp_ipv6, logaccept, logdrop, 0);
+				op_config_pause_block_string(pc_list, fp_ipv6, lan_if, logaccept, logdrop, 0);
+				//config_daytime_string(pc_list, fp_ipv6, lan_if, logaccept, logdrop, 0);
 			}
-	#endif
+#endif
+#endif //#ifdef RTCONFIG_MULTILAN_CFG
 
 		}
 		free_pc_list(&pc_list);
@@ -6308,15 +6417,27 @@ TRACE_PT("writing Reward Parental Control\n");
 
 	if(pc_count > 0){
 TRACE_PT("writing temporary Parental Control\n");
-		config_pause_block_string(pc_list, fp, logaccept, logdrop, 2);
-		config_daytime_string(pc_list, fp, logaccept, logdrop, 1);
+#ifdef RTCONFIG_MULTILAN_CFG
+		handle_sdn_parental_ctrl_related(SDN_PARENTAL_CTRL_BLOCK_INTERNET, pc_list, fp, logaccept, logdrop, 2);
+		handle_sdn_parental_ctrl_related(SDN_PARENTAL_CTRL_TIME_SCHED, pc_list, fp, logaccept, logdrop, 1);
 
 #ifdef RTCONFIG_IPV6
 		if (ipv6_enabled()){
-			config_pause_block_string(pc_list, fp_ipv6, logaccept, logdrop, 2);
-			config_daytime_string(pc_list, fp_ipv6, logaccept, logdrop, 1);
+			handle_sdn_parental_ctrl_related(SDN_PARENTAL_CTRL_BLOCK_INTERNET, pc_list, fp_ipv6, logaccept, logdrop, 2);
+			handle_sdn_parental_ctrl_related(SDN_PARENTAL_CTRL_TIME_SCHED, pc_list, fp_ipv6, logaccept, logdrop, 1);
 		}
 #endif
+#else //#ifdef RTCONFIG_MULTILAN_CFG
+		config_pause_block_string(pc_list, fp, lan_if, logaccept, logdrop, 2);
+		config_daytime_string(pc_list, fp, lan_if, logaccept, logdrop, 1);
+
+#ifdef RTCONFIG_IPV6
+		if (ipv6_enabled()){
+			config_pause_block_string(pc_list, fp_ipv6, lan_if, logaccept, logdrop, 2);
+			config_daytime_string(pc_list, fp_ipv6, lan_if, logaccept, logdrop, 1);
+		}
+#endif
+#endif //#ifdef RTCONFIG_MULTILAN_CFG
 
 	}
 	free_pc_list(&pc_list);
@@ -6329,15 +6450,27 @@ TRACE_PT("writing temporary Parental Control\n");
 
 	if(nvram_get_int("MULTIFILTER_ALL") != 0 && pc_count > 0){
 TRACE_PT("writing Parental Control\n");
-		config_pause_block_string(pc_list, fp, logaccept, logdrop, 0);
-		config_daytime_string(pc_list, fp, logaccept, logdrop, 0);
+#ifdef RTCONFIG_MULTILAN_CFG
+		handle_sdn_parental_ctrl_related(SDN_PARENTAL_CTRL_BLOCK_INTERNET, pc_list, fp, logaccept, logdrop, 0);
+		handle_sdn_parental_ctrl_related(SDN_PARENTAL_CTRL_TIME_SCHED, pc_list, fp, logaccept, logdrop, 0);
 
 #ifdef RTCONFIG_IPV6
 		if (ipv6_enabled()){
-			config_pause_block_string(pc_list, fp_ipv6, logaccept, logdrop, 0);
-			config_daytime_string(pc_list, fp_ipv6, logaccept, logdrop, 0);
+			handle_sdn_parental_ctrl_related(SDN_PARENTAL_CTRL_BLOCK_INTERNET, pc_list, fp_ipv6, logaccept, logdrop, 0);
+			handle_sdn_parental_ctrl_related(SDN_PARENTAL_CTRL_TIME_SCHED, pc_list, fp_ipv6, logaccept, logdrop, 0);
 		}
 #endif
+#else //#ifdef RTCONFIG_MULTILAN_CFG
+		config_pause_block_string(pc_list, fp, lan_if, logaccept, logdrop, 0);
+		config_daytime_string(pc_list, fp, lan_if, logaccept, logdrop, 0);
+
+#ifdef RTCONFIG_IPV6
+		if (ipv6_enabled()){
+			config_pause_block_string(pc_list, fp_ipv6, lan_if, logaccept, logdrop, 0);
+			config_daytime_string(pc_list, fp_ipv6, lan_if, logaccept, logdrop, 0);
+		}
+#endif
+#endif //#ifdef RTCONFIG_MULTILAN_CFG
 
 	}
 	free_pc_list(&pc_list);

@@ -9,7 +9,7 @@
 </head>
 <body>
 <script>	
-var reboot_needed_time = eval("<% get_default_reboot_time(); %> + 5");
+var reboot_needed_time = eval(`<% get_default_reboot_time(); %> + 5`);
 	if(parent.based_modelid.indexOf("RP") != -1)
 		reboot_needed_time += 50;
 

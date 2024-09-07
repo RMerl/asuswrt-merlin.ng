@@ -360,7 +360,7 @@ function drawClientList(tab){
 	}
 
 	$(".circle").mouseover(function(){
-		return overlib(this.firstChild.innerHTML + " clients are connecting to <% nvram_get("productid"); %> through this device.");
+		return overlib(`${this.firstChild.innerHTML} clients are connecting to <% nvram_get("productid"); %> through this device.`);
 	});
 
 	$(".circle").mouseout(function(){

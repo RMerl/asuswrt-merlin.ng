@@ -1,0 +1,190 @@
+--- gpl/asuswrt.102-36216-be86/release/src/router/www/device-map/router.asp	2024-07-29 04:46:20.000000000 -0400
++++ amng.be86/release/src/router/www/device-map/router.asp	2024-11-17 14:17:46.139499864 -0500
+@@ -19,6 +19,7 @@
+ 	<script src="/validator.js" type="text/javascript"></script>
+ 	<script src="/help.js" type="text/javascript"></script>
+ 	<script src="../switcherplugin/jquery.iphone-switch.js"></script>
++	<script src="../js/qrcode/jquery.qrcode.min.js"></script>
+ </head>
+ <body>
+ <style>
+@@ -95,12 +96,12 @@ function getVariable(){
+ 	if(system.band2gSupport){
+ 		var _element = new Array();
+ 		if(isSwMode('re') && (concurrep_support || wlc_band == '0')){
+-			_element = ['wl0.1_nmode_x', 'wl0.1_auth_mode_x', 'wl0.1_crypto', 'wl0.1_mfp', 'wl0.1_wep_x', 'wl0.1_key', 'wl0.1_key1', 'wl0.1_key2', 'wl0.1_key3', 'wl0.1_key4'];
++			_element = ['wl0.1_nmode_x', 'wl0.1_auth_mode_x', 'wl0.1_crypto', 'wl0.1_mfp', 'wl0.1_wep_x', 'wl0.1_key', 'wl0.1_key1', 'wl0.1_key2', 'wl0.1_key3', 'wl0.1_key4', 'wl0.1_closed'];
+ 			_ssid.push('wl0.1_ssid');
+ 			_ssid.push('wl0.1_wpa_psk');
+ 		}
+ 		else{
+-			_element = ['wl0_nmode_x', 'wl0_auth_mode_x', 'wl0_crypto', 'wl0_mfp', 'wl0_wep_x', 'wl0_key', 'wl0_key1', 'wl0_key2', 'wl0_key3', 'wl0_key4'];
++			_element = ['wl0_nmode_x', 'wl0_auth_mode_x', 'wl0_crypto', 'wl0_mfp', 'wl0_wep_x', 'wl0_key', 'wl0_key1', 'wl0_key2', 'wl0_key3', 'wl0_key4', 'wl0_closed'];
+ 			_ssid.push('wl0_ssid');
+ 			_ssid.push('wl0_wpa_psk');
+ 		}
+@@ -115,12 +116,12 @@ function getVariable(){
+ 	if(system.band5gSupport){
+ 		var _element = new Array();
+ 		if(isSwMode('re') && (concurrep_support || wlc_band == '1')){
+-			_element = ['wl1.1_nmode_x', 'wl1.1_auth_mode_x', 'wl1.1_crypto', 'wl1.1_mfp', 'wl1.1_wep_x', 'wl1.1_key', 'wl1.1_key1', 'wl1.1_key2', 'wl1.1_key3', 'wl1.1_key4'];
++			_element = ['wl1.1_nmode_x', 'wl1.1_auth_mode_x', 'wl1.1_crypto',  'wl1.1_mfp', 'wl1.1_wep_x', 'wl1.1_key', 'wl1.1_key1', 'wl1.1_key2', 'wl1.1_key3', 'wl1.1_key4', 'wl1.1_closed'];
+ 			_ssid.push('wl1.1_ssid');
+ 			_ssid.push('wl1.1_wpa_psk');
+ 		}
+ 		else{
+-			_element = ['wl1_nmode_x', 'wl1_auth_mode_x', 'wl1_crypto', 'wl1_mfp', 'wl1_wep_x', 'wl1_key', 'wl1_key1', 'wl1_key2', 'wl1_key3', 'wl1_key4'];
++			_element = ['wl1_nmode_x', 'wl1_auth_mode_x', 'wl1_crypto', 'wl1_mfp', 'wl1_wep_x', 'wl1_key', 'wl1_key1', 'wl1_key2', 'wl1_key3', 'wl1_key4', 'wl1_closed'];
+ 			_ssid.push('wl1_ssid');
+ 			_ssid.push('wl1_wpa_psk');
+ 		}
+@@ -135,12 +136,12 @@ function getVariable(){
+ 	if(system.band5g2Support){
+ 		var _element = new Array();
+ 		if(isSwMode('re') && (concurrep_support || wlc_band == '2')){
+-			_element = ['wl2.1_nmode_x', 'wl2.1_auth_mode_x', 'wl2.1_crypto', 'wl2.1_mfp', 'wl2.1_wep_x', 'wl2.1_key', 'wl2.1_key1', 'wl2.1_key2', 'wl2.1_key3', 'wl2.1_key4'];
++			_element = ['wl2.1_nmode_x', 'wl2.1_auth_mode_x', 'wl2.1_crypto', 'wl2.1_mfp', 'wl2.1_wep_x', 'wl2.1_key', 'wl2.1_key1', 'wl2.1_key2', 'wl2.1_key3', 'wl2.1_key4', 'wl2.1_closed'];
+ 			_ssid.push('wl2.1_ssid');
+ 			_ssid.push('wl2.1_wpa_psk');
+ 		}
+ 		else{
+-			_element = ['wl2_nmode_x', 'wl2_auth_mode_x', 'wl2_crypto', 'wl2_mfp', 'wl2_wep_x', 'wl2_key', 'wl2_key1', 'wl2_key2', 'wl2_key3', 'wl2_key4'];
++			_element = ['wl2_nmode_x', 'wl2_auth_mode_x', 'wl2_crypto', 'wl2_mfp', 'wl2_wep_x', 'wl2_key', 'wl2_key1', 'wl2_key2', 'wl2_key3', 'wl2_key4', 'wl2_closed'];
+ 			_ssid.push('wl2_ssid');
+ 			_ssid.push('wl2_wpa_psk');
+ 		}
+@@ -519,6 +520,7 @@ function getInterface(){
+ 
+ 	genElement(wlInterface);
+ 	setOptions();
++	genQRCodes();
+ }
+ 
+ function isJoinSmartConnect(wlIfIndex){
+@@ -588,15 +590,15 @@ function genElement(){
+ 		if(system.modelName === 'GT-AXE16000' || system.modelName === 'GT-BE98' || system.modelName === 'GT-BE98_PRO' || system.modelName == 'BQ16' || system.modelName == 'BQ16_PRO'){
+ 			var smartConnectType_ori = nvram['smart_connect_x'];
+ 			
++	
+ 			code += '<div class="info-block">';
+ 			code += '<div class="info-title"><#smart_connect#></div>';
+-			
+-		
++
+ 			code += '<select class="input_option" id="smartConnectSwitch" onchange="enableSmartConnect(this.value)">'
+-			code += '<option value="0" '+ (variable.smart_connect_x === '0' ? 'selected': '') +'><#CTL_close#>';
+-			code += '<option value="1" '+ (variable.smart_connect_x !== '0' ? 'selected': '') +'><#CTL_Enabled#>';			
++			code += '<option value="0" '+ (variable.smart_connect_x === '0' ? 'selected': '') +'><#WLANConfig11b_WirelessCtrl_buttonname#>';
++			code += '<option value="1" '+ (variable.smart_connect_x !== '0' ? 'selected': '') +'><#WLANConfig11b_WirelessCtrl_button1name#>';
+ 			code += '</select>'
+-	
++
+ 			code += '<div id="smart_connect_mode_field">';		
+ 			
+ 			if(system.modelName === 'GT-BE98_PRO' || system.modelName === 'BQ16_PRO'){
+@@ -613,7 +615,7 @@ function genElement(){
+ 					code += '<input id="smart_connect_check_3" type="checkbox" onchange="updateSmartConnect(3, this.checked)"'+ (smart_connect_mode[0] ==='1'? 'checked': '') +'>6 GHz';
+ 				}				
+ 			}											
+-											
++	
+ 			code += '</div>';
+ 			code += '</div>';
+ 		}
+@@ -674,7 +676,7 @@ function genElement(){
+ 		// SSID
+ 		code += '<div class="info-block">';
+ 		code += '<div class="info-title"><#QIS_finish_wireless_item1#></div>';
+-		code += '<div><input type="text" class="input-size-25" id="wl'+ unit +'_ssid" oninput="updateVariable(this.id, value, false)" maxlength="33" autocomplete="off" autocorrect="off" autocapitalize="off"></div>';
++		code += '<div style="display:flex; align:center;"><input type="text" class="input-size-25" id="wl'+ unit +'_ssid" oninput="updateVariable(this.id, value, false)" maxlength="33" autocomplete="off" autocorrect="off" autocapitalize="off">';
+ 		code += '</div>';
+ 
+ 		// Authentication method
+@@ -701,6 +703,7 @@ function genElement(){
+ 				code += '<div class="info-block">';
+ 				code += '<div class="info-title"><#WLANConfig11b_WPAType_itemname#></div>';
+ 				code += '<div><select id="wl'+ unit +'_crypto" class="input_option" onchange="updateVariable(this.id, value)"></select></div>';
++
+ 				code += '</div>';
+ 			}
+ 
+@@ -709,6 +712,7 @@ function genElement(){
+                 code += '<div class="info-block">';
+                 code += '<div class="info-title"><#WPA-PSKKey#></div>';
+                 code += '<div><input type="password" class="input-size-25" id="wl'+ unit +'_wpa_psk" oninput="updateVariable(this.id, value, false)" onfocus="plainPasswordSwitch(this, \'focus\');" onblur="plainPasswordSwitch(this, \'blur\')"></div>';
++                code += '<input style="display:none" type="password" name="fakepassword"/>';
+                 code += '</div>';
+             }
+ 		}
+@@ -729,7 +733,8 @@ function genElement(){
+ 				// WEP key
+ 				code += '<div class="info-block">';
+ 				code += '<div class="info-title"><#WLANConfig11b_WEPKey_itemname#></div>';
+-				code += '<div><input id="wl'+ unit +'_wep_key" type="text" class="input-size-25" oninput="updateVariable(this.id, value, false)"></div>';
++				code += '<div><input id="wl'+ unit +'_wep_key" type="password" onBlur="switchType(this, false);" onFocus="switchType(this, true);" class="input-size-25" oninput="updateVariable(this.id, value, false)"></div>';
++				code += '<input style="display:none" type="password" name="fakepassword"/>';
+ 				code += '</div> ';
+ 			}		
+ 		}
+@@ -741,6 +746,11 @@ function genElement(){
+ 			code += '</div>';
+ 		}
+ 
++		code += '<div id="qrcodepanel' + unit + '" class="qrcodepanel" style="display:none; width:200px; margin-top:-200px; margin-left:0px;">';
++		code += '<div style="padding:10px;"><div style="text-align:center;">Scan to connect:</div>';
++		code += '<div style="margin:10px 0 10px 0px;height:2px;width:100%;padding:0;" class="splitLine"></div>';
++		code += '<div class="qrcodepanelpad" id="qr' + unit +'"></div><input style="margin-top:10px; width:100%;" type="button" class="button_gen" value="Close" onclick="hide_qr_code(' + unit + ');"></div></div>';
++		code += '<div style="display:none;" id="showqrdiv' + unit + '"><span style="color:#FFCC00;cursor:pointer;text-decoration:underline" onclick="show_qr_code(' + unit + ');">Show QR code</span></div>';
+ 		code += '</div>';
+ 	}
+ 
+@@ -1453,6 +1463,49 @@ function gotoSiteSurvey(){
+ 		parent.location.href = '/QIS_wizard.htm?flag=sitesurvey_mb';
+ }
+ 
++function genQRCodes(){
++	function escape_string(_str){
++		_str = _str.replace(/\\/g, "\\\\");
++		_str = _str.replace(/\"/g, "\\\"");
++		_str = _str.replace(/;/g, "\\;");
++		_str = _str.replace(/:/g, "\\:");
++		_str = _str.replace(/,/g, "\\,");
++		return _str;
++	}
++	function encode_utf8(s){
++		return unescape(encodeURIComponent(s));
++	}
++
++	for(var i=0; i<wlInterface.length; i++){
++		var unit = wlInterface[i][2];
++
++		var _authMode = variable['wl'+ unit +'_auth_mode_x']
++		if (_authMode == "shared") {
++			continue;	// WEP not supported
++		}
++
++		var qrstring = "WIFI:";
++		qrstring += "S:" + encode_utf8(escape_string(variable['wl'+ unit + '_ssid'])) + ";";
++		qrstring += "T:" + (_authMode == "open" ? "nopass" : "WPA") + ";";
++		qrstring += "P:" + (_authMode == "open" ? "" : escape_string(variable['wl'+ unit + '_wpa_psk'])) + ";";
++		if (variable['wl'+ unit +'_closed'] == "1")
++			qrstring += "H:true;"
++
++		if (variable['wl'+ unit + '_ssid'] != "") {
++			document.getElementById("showqrdiv" + unit).style.display = "";
++			$('#qr'+unit).qrcode({width: 160,height: 160,text: qrstring});
++		}
++	}
++}
++
++function show_qr_code(unit) {
++	$("#qrcodepanel"+unit).fadeIn(300);
++}
++
++function hide_qr_code(unit) {
++	$("#qrcodepanel"+unit).fadeOut(300);
++}
++
+ function validateInput(){
+ 	for(var i=0; i<wlInterface.length; i++){
+ 		var unit = wlInterface[i][0];

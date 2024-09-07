@@ -1,0 +1,27 @@
+.adGuard_help_title{
+	color: var(--primary-color) !important;
+}
+
+.new_device_container{
+	background: rgba(255,255,255,0.12) !important;
+}
+
+.new_device_title,.new_device_content{
+	background: transparent !important;
+}
+
+.new_device_name{
+	background: rgba(0,0,0,0.2) !important;
+}
+
+.advanced_div{
+	background: rgba(255,255,255,0.12) !important;
+}
+
+.advanced_icon{
+	background: url('../images/adGuard/img_advancedSetting_black.svg') no-repeat left !important;
+}
+
+.statistic_icon{
+	background: url('../images/adGuard/img_statistic_black.svg') no-repeat left !important;
+}

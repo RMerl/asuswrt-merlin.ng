@@ -112,25 +112,38 @@ for(var i = 1; i < MSWAN_List_Pri.length; i++){
 }
 
 var autowan_enable = httpApi.nvramGet(["autowan_enable"], true).autowan_enable;
+const eth_wan_list = httpApi.hookGet("get_ethernet_wan_list", true);
 
 var current_page = window.location.pathname.split("/").pop();
 var faq_index_tmp = get_faq_index(FAQ_List, current_page, 1);
 
 var vlan_port_list = {"access": [], "trunk": []};
-
 function get_vlan_portlist(){
 	let sdn_maximum = ((isSupport("MaxRule_SDN") == "0") ? 6 : (parseInt(isSupport("MaxRule_SDN")) - 1));//default is sdn 0
 	let nvram_name = "";
 	let label_mac = httpApi.nvramGet(["label_mac"], true)["label_mac"];
+	let nvram_list = [];
 
 	/* Get access port list */
 	for(let i = 0; i  < sdn_maximum ; i++ ){
 		nvram_name = "apg" + i + "_enable";
-		let apg_enable = httpApi.nvramGet([nvram_name], true)[nvram_name];
-		if(apg_enable == "1"){
-			nvram_name = "apg" + i + "_dut_list";
-			let dut_list = decodeURIComponent(httpApi.nvramCharToAscii([nvram_name], true)[nvram_name]);
+		nvram_list.push(nvram_name);
+	}
 
+	let apg_enable_list = httpApi.nvramGet(nvram_list, true);
+	nvram_list.length = 0;
+	$.each(apg_enable_list, function(key){
+		if(apg_enable_list[key] == "1"){
+			let nvram_prfeix = key.substr(0, key.indexOf("enable"));
+			nvram_name = nvram_prfeix + "dut_list";
+			nvram_list.push(nvram_name);
+		}
+	});
+
+	let all_apg_dut_list = httpApi.nvramCharToAscii(nvram_list, true);
+	$.each(all_apg_dut_list, function(key){
+		if(key != "isError"){
+			let dut_list = decodeURIComponent(all_apg_dut_list[key]);
 			if(dut_list != ""){
 				let dut_array = dut_list.split("<");
 				$.each(dut_array, function(index){
@@ -148,7 +161,7 @@ function get_vlan_portlist(){
 				});
 			}
 		}
-	}
+	});
 
 	/* Get trunk port list */
 	let vlan_trunk_array = decodeURIComponent(httpApi.nvramCharToAscii(["vlan_trunk_rl"], true)["vlan_trunk_rl"]).split("<");
@@ -439,7 +452,7 @@ function isEmpty(obj)
 	}
 
 	return true;
-};
+}
 
 function ISP_Profile_Selection(isp){
 	var isp_settings = get_isp_settings(isp);
@@ -899,14 +912,11 @@ function applyRule(){
 				return false;
 		}
 
-		if(((isSupport("autowan") && autowan_enable == "1") || (is_GTBE_series && wans_dualwan_array[0] == "wan" && wans_extwan == "1")) &&
+		if(((isSupport("autowan") && autowan_enable == "1") || !use_single_default_wan()) &&
 			(document.form.switch_stb_x.value != "0" || document.form.switch_wantag.value != "none")){
 			var hint_str = "To ensure that there are no conflicts, when you enable %1$@, the WAN port will be change to %2$@ only. Please make sure that your WAN cable is correctly plugged into the %2$@. Are you sure to continue?"
 			var msg = "";
-			if(is_GTBE_series)
-				msg = hint_str.replace("%1$@", "IPTV").replaceAll("%2$@", "10G WAN");
-			else
-				msg = hint_str.replace("%1$@", "IPTV").replaceAll("%2$@", get_default_wan_name());
+			msg = hint_str.replace("%1$@", "IPTV").replaceAll("%2$@", get_default_wan_name());
 			$("#autowan_hint").html(msg);
 			$("#autowan_hint_div").show();
 			if(check_file_exists('images/model_port.png') && check_file_exists('images/wanport_plugin.png')){
@@ -1587,21 +1597,31 @@ function close_autowan_hint(){
 }
 
 function confirm_autowan_change(){
+	let wan_obj = eth_wan_list["wan"];
 	let lacp_ifnames_x = httpApi.nvramGet(["lacp_ifnames_x"], true).lacp_ifnames_x;
 
 	$("#autowan_hint_div").hide();
+	if(wan_obj.hasOwnProperty("extra_settings")){
+		let extra_settings = wan_obj.extra_settings;
+		$.each(extra_settings, function(key) {
+			if(document.getElementsByName(key).length > 0){
+				document.getElementsByName(key)[0].value = extra_settings[key];
+			}
+			else{
+				$('<input>').attr({
+					type: 'hidden',
+					name: key,
+					value: extra_settings[key]
+				}).appendTo('form');
 
-	$('<input>').attr({
-		type: 'hidden',
-		name: "autowan_enable",
-		value: "0"
-	}).appendTo('form');
+			}
+		});
+	}
 
-	$('<input>').attr({
-		type: 'hidden',
-		name: "wans_extwan",
-		value: "0"
-	}).appendTo('form');
+	if(wans_dualwan_orig.indexOf("none") == -1){//Disable DualWAN
+		document.form.wans_dualwan.disabled = false;
+		document.form.wans_dualwan.value = "wan none";
+	}
 
 	if(is_GTBE_series){
 		if(lacp_ifnames_x == "eth0 eth3"){
@@ -1637,17 +1657,47 @@ function isEmpty(obj)
 	}
 
 	return true;
-};
+}
 
 function get_default_wan_name(){
 	var default_wan_name = "WAN";
-	var eth_wan_list = httpApi.hookGet("get_ethernet_wan_list", true);
 
 	if(!isEmpty(eth_wan_list)){
 		default_wan_name = eth_wan_list["wan"].wan_name;
 	}
 
 	return default_wan_name;
+}
+
+function use_single_default_wan(){
+	let _use_single_default_wan = true;
+
+	if(wans_dualwan_orig.indexOf("none") == -1)
+		_use_single_default_wan = false;
+	else if(!isEmpty(eth_wan_list)){
+		$.each(eth_wan_list, function(key) {
+			if(key == "wan"){
+				let wan_obj = eth_wan_list[key];
+				if(wan_obj.hasOwnProperty("extra_settings")){
+					let extra_settings = wan_obj.extra_settings;
+					let extra_setting_nvram_list = [];
+					let current_value_list = [];
+
+					extra_setting_nvram_list = Object.keys(extra_settings);
+					current_value_list = httpApi.nvramGet(extra_setting_nvram_list, true);
+					$.each(extra_settings, function(key) {
+						if(current_value_list[key] != extra_settings[key]){
+							_use_single_default_wan = false;
+							return false;
+						}
+					});
+				}
+				return false;
+			}
+		});
+	}
+
+	return _use_single_default_wan;
 }
 </script>
 </head>

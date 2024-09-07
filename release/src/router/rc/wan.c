@@ -1336,7 +1336,7 @@ start_wan_if(int unit)
 #endif
 		return;
 	}
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION)
 	// had detected the DATA limit before.
 	else if(get_wan_sbstate(unit) == WAN_STOPPED_REASON_DATALIMIT){
 		TRACE_PT("start_wan_if: Data limit was detected and skip the start_wan_if().\n");
@@ -1362,7 +1362,7 @@ start_wan_if(int unit)
 #endif
 
 	// workaround internal XPHY no Rx issue
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI)
 	strlcpy(wan_ifname, nvram_safe_get(strcat_r(prefix, "ifname", tmp)), sizeof(wan_ifname));
 	if (!strcmp(wan_ifname, "vlan4094") || ((get_wans_dualwan() & WANSCAP_LAN) && !strcmp(wan_ifname, "vlan2"))) {
 		nvram_set("freeze_duck", "5");
@@ -1484,7 +1484,7 @@ _dprintf("start_wan_if: USB modem is scanning...\n");
 		/* Stop dhcp client */
 		stop_udhcpc(unit);
 
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION)
 		unsigned long long rx, tx;
 		unsigned long long total, limit;
 
@@ -2617,7 +2617,7 @@ stop_wan_if(int unit)
 
 	snprintf(prefix, sizeof(prefix), "wan%d_", unit);
 
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION)
 	if(get_wan_sbstate(unit) == WAN_STOPPED_REASON_DATALIMIT)
 		end_wan_sbstate = WAN_STOPPED_REASON_DATALIMIT;
 #endif
@@ -4343,7 +4343,7 @@ NOIP:
 			eval("/usr/sbin/modem_status.sh", "operation");
 			eval("/usr/sbin/modem_status.sh", "provider");
 		}
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION)
 		eval("/usr/sbin/modem_status.sh", "get_dataset");
 		eval("/usr/sbin/modem_status.sh", "bytes");
 #endif
@@ -4404,7 +4404,7 @@ NOIP:
 			start_ovpn_eas();
 #endif
 			stop_ddns();
-			start_ddns(NULL);
+			start_ddns(NULL, 0);
 		}
 #ifdef RTCONFIG_WIREGUARD
 		reload_wgs_ip_rule();
@@ -4434,7 +4434,7 @@ NOIP:
 		/* Restart DDNS when WAN was restored */
 		logmessage("wan_up", "Restart DDNS in load-balance\n");
 		stop_ddns();
-		start_ddns(NULL);
+		start_ddns(NULL, 0);
 
 		return;
 	}
@@ -4522,7 +4522,7 @@ NOIP:
 	/* ntp is set, but it didn't just get set, so ntp_synced didn't already did these */
 	if (nvram_get_int("ntp_ready") && !first_ntp_sync) {
 		stop_ddns();
-		start_ddns(NULL);
+		start_ddns(NULL, 0);
 	}
 
 #ifdef RTCONFIG_LANTIQ
@@ -4710,7 +4710,7 @@ NOIP:
 	/* Restart DDNS when WAN was restored */
 	logmessage("wan_up", "Restart DDNS\n");
 	stop_ddns();
-	start_ddns(NULL);
+	start_ddns(NULL, 0);
 
 _dprintf("%s(%s): done.\n", __FUNCTION__, wan_ifname);
 }
@@ -4751,7 +4751,7 @@ wan_down(char *wan_ifname)
 
 	_dprintf("%s(%s): %s.\n", __FUNCTION__, wan_ifname, nvram_safe_get(strcat_r(prefix, "dns", tmp)));
 
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION)
 	if(get_wan_sbstate(wan_unit) == WAN_STOPPED_REASON_DATALIMIT)
 		end_wan_sbstate = WAN_STOPPED_REASON_DATALIMIT;
 #endif

@@ -15,7 +15,6 @@
 if(parent.location.pathname.search("index") === -1) top.location.href = "../"+'<% networkmap_page(); %>';
 
 var remoteIP = '<% nvram_get("lan_gateway_now"); %>';
-remoteIP = (remoteIP == '')?'<% nvram_get("lan_gateway_now"); %>';
 var re_status = parent.getConnectingStatus();
 
 function initial(){

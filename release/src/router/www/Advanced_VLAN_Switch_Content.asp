@@ -564,13 +564,15 @@ for (var key in apg_dutList) {
 		if (node.lanport != "") {
 			var lanPortArray = node.lanport.split(",");
 			for (var i = 0; i < lanPortArray.length; i++) {
-				if(VLAN_port_status[node.mac].port.length > 0){
-					if(isNaN(lanPortArray[i])){
-						var port_idx_p = findKeyByPortLabel(VLAN_port_status[node.mac].port, lanPortArray[i]);
-						VLAN_port_status[node.mac].port[port_idx_p].profile = vlanIdx;
-					}
-					else{	//for old version
-						VLAN_port_status[node.mac].port[parseInt(lanPortArray[i]) - 1].profile = vlanIdx;
+				if(VLAN_port_status[node.mac] != undefined){	//RE offline
+					if(VLAN_port_status[node.mac].port.length > 0){
+						if(isNaN(lanPortArray[i])){
+							var port_idx_p = findKeyByPortLabel(VLAN_port_status[node.mac].port, lanPortArray[i]);
+							VLAN_port_status[node.mac].port[port_idx_p].profile = vlanIdx;
+						}
+						else{	//for old version
+							VLAN_port_status[node.mac].port[parseInt(lanPortArray[i]) - 1].profile = vlanIdx;
+						}
 					}
 				}
 			}
@@ -583,13 +585,15 @@ for (var key in apg_dutList) {
 		$.each(dutList, function(key, node) {
 			lanport_array = node.lanport.split(",");
 			for (var a = 0; a < lanport_array.length; a++) {
-				if (lanport_array[a] != "" && VLAN_port_status[node.mac].port.length > 0) {
-					if(isNaN(lanport_array[a])){
-						var port_idx_m = findKeyByPortLabel(VLAN_port_status[node.mac].port, lanport_array[a]);
-						VLAN_port_status[node.mac].port[port_idx_m].mode = "Access";
-					}
-					else{	//for old version
-						VLAN_port_status[node.mac].port[parseInt(lanport_array[a]) - 1].mode = "Access";
+				if(VLAN_port_status[node.mac] != undefined){	//RE offline
+					if (lanport_array[a] != "" && VLAN_port_status[node.mac].port.length > 0) {
+						if(isNaN(lanport_array[a])){
+							var port_idx_m = findKeyByPortLabel(VLAN_port_status[node.mac].port, lanport_array[a]);
+							VLAN_port_status[node.mac].port[port_idx_m].mode = "Access";
+						}
+						else{	//for old version
+							VLAN_port_status[node.mac].port[parseInt(lanport_array[a]) - 1].mode = "Access";
+						}
 					}
 				}
 			}

@@ -352,7 +352,10 @@ function close_guest_unit(_unit, _subunit){
 }
 
 function saveMode(){
-	let sdn_change_mode_hint = `<#AiProtection_title#>, <#vpnc_title#>, <#BOP_isp_heart_item#>, and <#EzQoS_type_QoS#> are not available. The profile list of ${Guest_Network_naming} will be cleared. Please reconfigure it. We recommend that you download and save the configuration file before switching to #OPMODE.\n<#Setting_factorydefault_hint2#>`;
+	const OP_sdn_change_mode_desc1 = `<#OP_sdn_change_mode_desc1#>`.replace(`#FUNCTIONS`, `<#AiProtection_title#>, <#vpnc_title#>, <#BOP_isp_heart_item#>, <#EzQoS_type_QoS#>`);
+	const OP_sdn_change_mode_desc2 = `<#OP_sdn_change_mode_desc2#>`.replace(`#GUESTNAMING`, Guest_Network_naming);
+	const OP_sdn_change_mode_desc3 = `<#OP_sdn_change_mode_desc3#>`;
+	let sdn_change_mode_hint = `${OP_sdn_change_mode_desc1}\n${OP_sdn_change_mode_desc2}\n${OP_sdn_change_mode_desc3}\n<#Setting_factorydefault_hint2#>`;
 	if(sw_mode_orig == document.form.sw_mode.value){
 		if(document.form.sw_mode.value != 2){				
 			alert("<#Web_Title2#> <#op_already_configured#>");

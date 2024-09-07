@@ -1,7 +1,7 @@
 include ../common.mak
 
 OBJ = main.o download.o shared_func.o protect_name.o verification.o
-LIB_OBJ = feature_def.o signature.o utility.o protect_name.o libasd.o misc.o monitorproc.o shared_func.o chknvram.o blockfile.o event_queue.o blockdnsip.o
+LIB_OBJ = feature_def.o signature.o utility.o protect_name.o libasd.o misc.o monitorproc.o shared_func.o chknvram.o blockfile.o event_queue.o
 
 CFLAGS += $(if $(RTCONFIG_DEBUG),-g) -idirafter$(LINUXDIR)/include -I$(TOP)/shared  -I$(SRCBASE)/include
 CFLAGS += -I$(TOP)/curl/include
@@ -48,6 +48,10 @@ endif
 
 ifeq ($(RTCONFIG_TRUSTZONE),y)
 LDFLAGS += -L$(TOP)/ateed/ -latee
+endif
+
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000))
+LDFLAGS += -L$(TOP)/libhostapi -lhostapi
 endif
 
 TARGET = asd libasd.so

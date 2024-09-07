@@ -460,10 +460,17 @@ endif
 
 ifeq ($(RTCONFIG_BCMARM),y)
 	install -m 0755 apps_scripts/brcmsysinfo.sh $(INSTALLDIR)/usr/sbin
+	install -m 0755 apps_scripts/bcmspu.sh $(INSTALLDIR)/usr/sbin
 endif
 
 ifeq ($(RTCONFIG_GEARUPPLUGIN),y)
 	install -m 0755 gearup_script/guplugin_monitor.sh $(INSTALLDIR)/usr/sbin
+endif
+
+ifeq ($(RTCONFIG_AMAS),y)
+ifeq ($(RTCONFIG_HND_ROUTER_AX),y)
+	install -m 0755 apps_scripts/acs_restart.sh $(INSTALLDIR)/usr/sbin
+endif
 endif
 
 .PHONY: dummy

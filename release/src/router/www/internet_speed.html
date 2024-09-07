@@ -63,6 +63,8 @@ var test_start_time = httpApi.nvramGet(["ookla_start_time"], true).ookla_start_t
 var get_result_time = 0;
 var test_timeout = 120000;
 var go_btn_type = "go";
+var LEVEL_ERR_MAX = 50;
+var level_err_cnt = 0;
 var ookla_states = {
 		"IDLE": "0",
 		"RUN": "1",
@@ -76,7 +78,6 @@ var enable_auto_server = 1;
 var cur_server_id = "";
 
 /* for link rate div */
-var is_speciel_model = (based_modelid=="GT-AX11000_PRO" || based_modelid=="BQ16")? true:false;
 var tmp_ispctrl_desc = decodeURIComponent(httpApi.nvramCharToAscii(["ispctrl_desc"], true).ispctrl_desc);
 var ispctrl_desc = "";
 var is_ispctrl = false;
@@ -88,6 +89,15 @@ var is_linkRate_over_5G = false;
 var show_linkRate = 0;
 var show_linkRate_Pri = 0;
 var show_linkRate_Sec = 0;
+
+let eth_monitor_support = isSupport("eth_monitor");
+let eth_monitor_result = [];
+let get_eth_monitor_result = false;
+let eth_monitor_download = "";
+let eth_monitor_upload = "";
+let eth_monitor_threshold = httpApi.nvramGet(["eth_monitor_threshold"]).eth_monitor_threshold == ""? 375000000:parseInt(httpApi.nvramGet(["eth_monitor_threshold"]).eth_monitor_threshold);
+let change_to_eth_monitor_result = false;
+
 var cap_mac = (httpApi.hookGet('get_lan_hwaddr')) ? httpApi.hookGet('get_lan_hwaddr') : "";
 httpApi.get_port_status_array(cap_mac, function(port_info){
 	if(Object.keys(port_info).length > 0){
@@ -128,7 +138,7 @@ $(document).ready(function(){
 	$(".bg_linkRate").hide();
 	$(".bg_internetSpeed").hide();
 	setTimeout(function(){
-		if(is_linkRate_over_5G && ((is_speciel_model && (is_AA_sku || is_SG_sku) && !eth_monitor_support) || is_ispctrl))
+		if(is_linkRate_over_5G && ((!isSupport("10g_speedTest") && !eth_monitor_support) || is_ispctrl))
 		{
 			$(".bg_linkRate").show();
 			$(".bg_internetSpeed").hide();
@@ -396,16 +406,6 @@ function check_duplicate_result(result_obj){
 	return duplicate;
 }
 
-var LEVEL_ERR_MAX = 50;
-var level_err_cnt = 0;
-
-let eth_monitor_support = isSupport("eth_monitor");
-let eth_monitor_result = [];
-let get_eth_monitor_result = false;
-let eth_monitor_download = "";
-let eth_monitor_upload = "";
-let eth_monitor_threshold = httpApi.nvramGet(["eth_monitor_threshold"]).eth_monitor_threshold == ""? 260000000:parseInt(httpApi.nvramGet(["eth_monitor_threshold"]).eth_monitor_threshold);
-let change_to_eth_monitor_result = false;
 function get_speedTest_result(){
 	speedTest_result = [];
 	speedTest_result = httpApi.hookGet("ookla_speedtest_get_result", true);

@@ -1,6 +1,7 @@
 #include <shared.h>
 #include "rc.h"
 #include "mastiff.h"
+#include "aae_ipc.h"
 #ifdef RTCONFIG_TUNNEL
 static int is_mesh_re_mode()
 {
@@ -56,11 +57,12 @@ void start_aae_sip_conn(int sdk_init)
 #define WAIT_TIMEOUT 5
 	int time_count = 0;
 	if (pids("aaews")) {
+		char event[AAE_MAX_IPC_PACKET_SIZE];
 		if (sdk_init)
-			nvram_set_int("aae_action", AAEWS_ACTION_SDK_INIT);
+			snprintf(event, sizeof(event), AAE_AAEWS_GENERIC_MSG, AAE_EID_AAEWS_ACTION_SDK_INIT);
 		else
-			nvram_set_int("aae_action", AAEWS_ACTION_SIP_REGISTER);
-		killall("aaews", AAEWS_SIG_ACTION);
+			snprintf(event, sizeof(event), AAE_AAEWS_GENERIC_MSG, AAE_EID_AAEWS_ACTION_SIP_REG);
+		aae_sendIpcMsg(AAEWS_IPC_SOCKET_PATH, event, strlen(event));
 		while(time_count < WAIT_TIMEOUT && nvram_invmatch("aae_sip_connected", "1")) {
 			sleep(1);
 			//_dprintf("%s: wait sip register...\n", __FUNCTION__);
@@ -80,11 +82,12 @@ void stop_aae_sip_conn(int sdk_deinit)
 		} else
 #endif
 		{
+			char event[AAE_MAX_IPC_PACKET_SIZE];
 			if (sdk_deinit)
-				nvram_set_int("aae_action", AAEWS_ACTION_SDK_DEINIT);
+				snprintf(event, sizeof(event), AAE_AAEWS_GENERIC_MSG, AAE_EID_AAEWS_ACTION_SDK_DEINIT);
 			else
-				nvram_set_int("aae_action", AAEWS_ACTION_SIP_UNREGISTER);
-			killall("aaews", AAEWS_SIG_ACTION);
+				snprintf(event, sizeof(event), AAE_AAEWS_GENERIC_MSG, AAE_EID_AAEWS_ACTION_SIP_UNREG);
+			aae_sendIpcMsg(AAEWS_IPC_SOCKET_PATH, event, strlen(event));
 			while(time_count < WAIT_TIMEOUT && nvram_match("aae_sip_connected", "1")) {
 				sleep(1);
 				//_dprintf("%s: wait sip unregister...\n", __FUNCTION__);
@@ -100,8 +103,9 @@ void stop_aae_gently()
 #define WAIT_TIMEOUT 5
 	int time_count = 0;
 	if (pids("aaews")) {
-		nvram_set_int("aae_action", AAEWS_ACTION_SIP_UNREGISTER);
-		killall("aaews", AAEWS_SIG_ACTION);
+		char event[AAE_MAX_IPC_PACKET_SIZE];
+		snprintf(event, sizeof(event), AAE_AAEWS_GENERIC_MSG, AAE_EID_AAEWS_ACTION_SIP_UNREG);
+		aae_sendIpcMsg(AAEWS_IPC_SOCKET_PATH, event, strlen(event));
 		while(time_count < WAIT_TIMEOUT && nvram_match("aae_sip_connected", "1")) {
 			sleep(1);
 			//_dprintf("%s: wait sip unregister...\n", __FUNCTION__);
@@ -146,6 +150,13 @@ void start_mastiff()
 		notify_rc("start_mastiff");
 		return;
 	}
+
+#if defined(RTCONFIG_BT_CONN) && defined(RTCONFIG_NOWL)
+	char *enble_log_argv[] = { "touch", "/tmp/WB_DEBUG_FILE", NULL };
+	pid_t pid;
+	if (nvram_get_int("x_Setting") == 0)
+		_eval(enble_log_argv, NULL, 0, &pid);
+#endif
 
 	if ( !pids("mastiff" )){
 		system("mastiff &");
@@ -256,10 +267,28 @@ int start_aaeuac_by_vpn_prof(char *type, int unit)
 	return 0;
 }
 
+#ifdef RTCONFIG_WIREGUARD
+static void reset_wg_nvram_by_unit(int unit) {
+
+	char prefix[16] = {0};
+
+	snprintf(prefix, sizeof(prefix), "%s%d_", WG_CLIENT_NVRAM_PREFIX, unit);
+	if (nvram_pf_get_int(prefix, "ep_tnl_active") == 1)
+		nvram_pf_set(prefix, "ep_addr_r", "");
+	nvram_pf_set_int(prefix, "ep_tnl_active", UAC_TNL_STATUS_NONE);
+	//nvram_pf_set(prefix, "ep_tnl_addr", "");
+	nvram_pf_set(prefix, "ep_tnl_port", "");
+}
+#endif
+
 void stop_aaeuac_by_vpn_prof(char *type, int unit)
 {
 	// TODO, stop by each vpn profile
 	stop_aaeuac();
+#ifdef RTCONFIG_WIREGUARD
+	if (type && !strcmp(type, "WireGuard"))
+		reset_wg_nvram_by_unit(unit);
+#endif
 }
 #endif
 #endif

@@ -166,6 +166,9 @@
 .popup_title_container .title{
 	color: rgb(24, 24, 24);
 }
+.popup_container .close_btn, .popup_container .del_btn{
+	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect_white.svg) !important;
+}
 .popup_container .popup_content_container{
 	background: rgb(255, 255, 255);
 	color: rgb(24, 24, 24);

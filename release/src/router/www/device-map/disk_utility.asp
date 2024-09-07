@@ -481,7 +481,7 @@ function reset_force_stop(){
 				</tr>
 			</table>	
 		</div>
-		<div id="progressBar" style="margin-left:9px;;margin-top:10px;display:none">
+		<div id="progressBar" style="margin-left:9px;margin-top:10px;display:none">
 			<div id="scan_message"></div>
 			<div id="updateProgress_bg">
 				<div>

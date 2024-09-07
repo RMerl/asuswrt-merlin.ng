@@ -1,0 +1,29 @@
+HISTORY OF MICROSOFT FAT BY TUXERA
+
+TFATPROGS 3023.2.3.12
+
+- Changes now provided in HISTORY-FATPROGS.TXT.
+- Update documentation.
+- fatfsck: Fix endless loop when attempting to repair heavily
+  corrupted/crosslinked volume.
+- fatdebug: Fix errors when creating debug image of heavily corrupted volume.
+- Fix static analyzer warnings.
+- fatfsck: Add support for replaying rename journal.
+- fatfsck: Fix volume dirty bit handling on hotplug mount.
+- fatfsck: Fix error accounting for orphaned LFN entries.
+- fatfsck: Improve repair of long filenames.
+- mkfatfs: Add '-t' / '--tar-archive' option.
+- mkfatfs: Fix free clusters value for interrupted format.
+- mkfatfs: Fix boundary issue when '--sda-strict' is used.
+- mkfatfs: Add new option '--sda-partitioning-only'. This option omits the
+  filesystem creation and only does partitioning according to the SD Association
+  standards.
+- fatdebug: Allow dumping of mounted volume if force mode was specified.
+- fatfsck: Fix false critical error emitted for preallocated directories.
+- fatfsck: Improvements to time measurement and timeout calculation.
+- fatfsck: Fix bug when duplicate files restored if multiple problems detected
+  for the same directory entry.
+
+This file contains the history since TFATPROGS 3017.7.17.3
+
+Copyright (c) 2008-2024 Tuxera Inc. All Rights Reserved.

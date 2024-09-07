@@ -147,11 +147,6 @@ window.onresize = function() {
 			cal_panel_block("weakness_div", 0.25);
 		}
 	}
-	if(document.getElementById("alert_preference") != null){
-		if(document.getElementById("alert_preference").style.display == "block") {
-			cal_panel_block("alert_preference", 0.25);
-		}
-	}
 }
 
 var ctf_disable = '<% nvram_get("ctf_disable"); %>';
@@ -307,7 +302,7 @@ function applyRule(){
 }
 
 function showWeaknessTable(){
-	if(based_modelid == '4G-AX56'){
+	if(!usb_support){
 		$('#ftp_field').hide();
 		$('#samba_field').hide();
 	}
@@ -397,7 +392,7 @@ function enable_whole_security(){
 
 	if(wan_access_enable ==1){
 		document.form.misc_http_x.value = 0;
-		document.form.misc_http_x.disabled = false;;
+		document.form.misc_http_x.disabled = false;
 		restart_time = 1;
 	}
 
@@ -941,20 +936,6 @@ function switch_control(_status){
 	}
 }
 
-function show_alert_preference(){
-	alert(`<#AiProtection_alert_show#>`);
-
-	if($("#app_link_table").length > 0){
-        setTimeout(function(){
-    		$("#app_link_table").show();
-    		$("html, body").animate({ scrollTop: 0 }, "fast");
-        }, 1)
-	}
-}
-
-function close_alert_preference(){
-	$('#alert_preference').fadeOut(100);
-}
 var smtpList = new Array();
 smtpList = [
 	{smtpServer: "smtp.gmail.com", smtpPort: "587", smtpDomain: "gmail.com"},
@@ -963,89 +944,6 @@ smtpList = [
 	{smtpServer: "smtp.163.com", smtpPort: "25", smtpDomain: "163.com"},
 	{end: 0}
 ];
-
-function apply_alert_preference(){
-	var address_temp = document.getElementById('mail_address').value;
-	var account_temp = document.getElementById('mail_address').value.split("@");
-	var authpass_temp = document.getElementById('mail_password').value;
-
-	var mail_bit = 0;
-	var server_index = document.getElementById("mail_provider").value;
-
-	if(address_temp == "") {
-		alert("Please input the mail account!");
-		return;
-	}
-
-	if(address_temp.indexOf("`")!=-1){
-		alert("` "+ " <#JS_validchar#>");
-		document.getElementById('mail_address').focus();
-		return;
-	}
-
-	if(authpass_temp == "") {
-		alert("Please input the mail password!");
-		return;
-	}
-
-	if(address_temp.indexOf('@') != -1){
-		if(account_temp[1] != "gmail.com" && account_temp[1] != "aol.com" && account_temp[1] != "qq.com" && account_temp[1] != "163.com"){
-			alert("Wrong mail domain");
-			document.getElementById('mail_address').focus();
-			return false;
-		}
-
-		if (document.form.PM_MY_EMAIL.value != address_temp)
-			document.form.action_script.value += ";email_conf;send_confirm_mail";
-
-		document.form.PM_MY_EMAIL.value = address_temp;
-	}
-	else{
-		if (document.form.PM_MY_EMAIL.value != address_temp)
-			document.form.action_script.value += ";email_conf;send_confirm_mail";
-
-		document.form.PM_MY_EMAIL.value = account_temp[0] + "@" +smtpList[server_index].smtpDomain;
-	}
-
-	if(document.getElementById("mal_website_item").checked)
-		mail_bit += 1;
-
-	if(document.getElementById("vp_item").checked)
-		mail_bit += 2;
-
-	if(document.getElementById("cc_item").checked)
-		mail_bit += 4;
-
-	document.form.wrs_mail_bit.value = mail_bit;
-	document.form.PM_SMTP_AUTH_USER.value = account_temp[0];
-	document.form.PM_SMTP_AUTH_PASS.value = document.getElementById('mail_password').value;
-	document.form.PM_SMTP_SERVER.value = smtpList[server_index].smtpServer;
-	document.form.PM_SMTP_PORT.value = smtpList[server_index].smtpPort;
-	$('#alert_preference').fadeOut(100);
-	document.form.submit();
-}
-
-function parse_wrs_mail_bit(){
-	var quot = document.form.wrs_mail_bit.value;
-	var mail_bit_array =  new Array();
-	for(i=0;i<3;i++){
-		mail_bit_array[i] = quot%2;
-		quot = parseInt(quot/2);
-	}
-
-	document.getElementById("mal_website_item").checked =  mail_bit_array[0] == 1 ? true : false;
-	document.getElementById("vp_item").checked =  mail_bit_array[1] == 1 ? true : false;
-	document.getElementById("cc_item").checked =  mail_bit_array[2] == 1 ? true : false;
-}
-
-function check_smtp_server_type(){
-	for(i = 0;i < smtpList.length; i++){
-		if(smtpList[i].smtpServer == document.form.PM_SMTP_SERVER.value){
-			document.getElementById("mail_provider").value = i;
-			break;
-		}
-	}
-}
 
 function shadeHandle(flag){
 	if(flag == "0"){
@@ -1189,80 +1087,6 @@ function shadeHandle(flag){
 
 </div>
 
-<div id="alert_preference" class="alertpreference">
-	<table style="width:99%">
-		<tr>
-			<th>
-				<div style="font-size:16px;"><#AiProtection_alert_pref#></div>
-			</th>
-		</tr>
-			<td>
-				<div class="formfontdesc" style="font-size: 14px;"><#AiProtection_HomeDesc1#></div>
-			</td>
-		<tr>
-			<td>
-				<table class="FormTable" width="99%" border="1" align="center" cellpadding="4" cellspacing="0">
-					<tr>
-						<th><#Provider#></th>
-						<td>
-							<div>
-								<select class="input_option" id="mail_provider">
-									<option value="0">Google</option>
-									<option value="1">AOL</option>
-									<option value="2">QQ</option>
-									<option value="3">163</option>
-								</select>
-							</div>
-						</td>
-					</tr>
-					<tr>
-						<th>Email</th>
-						<td>
-							<div>
-								<input type="type" class="input_30_table" id="mail_address" value="">
-							</div>
-						</td>
-					</tr>
-					<tr>
-						<th><#HSDPAConfig_Password_itemname#></th>
-						<td>
-							<div>
-								<input type="password" class="input_30_table" id="mail_password" maxlength="100" value="" autocorrect="off" autocapitalize="off">
-							</div>
-						</td>
-					</tr>
-					<tr>
-						<th><#Notification_Item#></th>
-						<td>
-							<div>
-								<div>
-									<input type="checkbox" id="mal_website_item">
-									<span style="color: #FFF;"><#AiProtection_sites_blocking#></span>
-								</div>
-								<div>
-									<input type="checkbox" id="vp_item">
-									<span style="color: #FFF;"><#AiProtection_two-way_IPS#></span>
-								</div>
-								<div>
-									<input type="checkbox" id="cc_item">
-									<span style="color: #FFF;"><#AiProtection_detection_blocking#></span>
-								</div>
-							</div>
-						</td>
-					</tr>
-				</table>
-			</td>
-		</tr>
-		<tr>
-			<td>
-				<div style="text-align:center;margin-top:20px;">
-					<input class="button_gen" type="button" onclick="close_alert_preference();" value="<#CTL_close#>">
-					<input class="button_gen" type="button" onclick="apply_alert_preference();" value="<#CTL_apply#>">
-				</div>
-			</td>
-		</tr>
-	</table>
-</div>
 <iframe name="hidden_frame" id="hidden_frame" width="0" height="0" frameborder="0"></iframe>
 <form method="post" name="form" action="/start_apply.htm" target="hidden_frame">
 <input type="hidden" name="productid" value="<% nvram_get("productid"); %>">
@@ -1534,7 +1358,7 @@ function shadeHandle(flag){
 												</td>
 												<td style="padding:10px;cursor:pointer" onclick="location.href='AiProtection_InfectedDevicePreventBlock.asp'">
 													<div style="font-size:18px;text-shadow:1px 1px 0px black;"><#AiProtection_detection_blocking#></div>
-													<div style="font-size: 14px;color:#FC0;height:auto;;padding-top:5px;"><#AiProtection_detection_block_desc#></div>
+													<div style="font-size: 14px;color:#FC0;height:auto;padding-top:5px;"><#AiProtection_detection_block_desc#></div>
 												</td>
 												 <td>
 													<div class="line_vertical"></div>
@@ -1574,11 +1398,6 @@ function shadeHandle(flag){
 												</td>
 											</tr>
 										</table>
-									</div>
-									<div style=";margin:20px 0;text-align:right">
-										<div style="display:inline-block">
-											<input class="button_gen" type="button" onclick="show_alert_preference();" value="<#AiProtection_alert_pref#>">
-										</div>
 									</div>
 									<div style="width:96px;height:44px;margin: 10px 0 0 600px;background-image:url('images/New_ui/TrendMirco_logo.svg');background-size: 100%;"></div>
 								</td>

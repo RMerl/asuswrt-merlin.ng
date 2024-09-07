@@ -160,62 +160,52 @@ function getSelifValue(mode){
 	return val;
 }
 
-function getAllWlArray(){
-	if(isSupport("quadband")){
-		var wlArrayRet = [{"title":"2.4 GHz", "ifname":get_wl_unit_by_band('2G'), "suffix": ""}];
-		let wlSeperateStr = '';
-		if(get_wl_unit_by_band("5G2") === ''){
-			// 2566
-			wlArrayRet.push({"title":"5 GHz", "ifname":get_wl_unit_by_band('5G'), "suffix": "_5G"});
-			wlArrayRet.push({"title":"6 GHz-1", "ifname":get_wl_unit_by_band('6G1'), "suffix": "_6G-1"});
-			wlArrayRet.push({"title":"6 GHz-2", "ifname":get_wl_unit_by_band('6G2'), "suffix": "_6G-2"});
-			wlSeperateStr = 'Separate 2.4 GHz, 5 GHz, 6 GHz-1 and 6 GHz-2'
-		}
-		else{
-			//2556
-			wlArrayRet.push({"title":"5 GHz-1", "ifname":get_wl_unit_by_band('5G'), "suffix": "_5G-1"});
-			wlArrayRet.push({"title":"5 GHz-2", "ifname":get_wl_unit_by_band('5G2'), "suffix": "_5G-2"});
-			wlArrayRet.push({"title":"6 GHz", "ifname":get_wl_unit_by_band('6G'), "suffix": "_6G"});
-			wlSeperateStr = 'Separate 2.4 GHz, 5 GHz-1, 5 GHz-2 and 6 GHz'
-		}
+function getAllWlArray() {
+	var bands = httpApi.nvramGet(["wlnband_list"]).wlnband_list.split("&#60");
+    let wlArrayRet = [];
+    let wlSeperateStr = '';
+    let allBandName = [];
 
-		document.querySelector('label[for="wireless_checkbox"]').innerHTML = wlSeperateStr;
-	}
-	else{
-		var wlArrayRet = [{"title":"2.4 GHz", "ifname":get_wl_unit_by_band('2G'), "suffix": ""}];
+    let bandMapping = {
+        '2g1': {"title": "2.4 GHz", "suffix": ""},
+        '5g1': bands.includes('5g2') ? {"title": "5 GHz-1", "suffix": "_5G-1"} : {"title": "5 GHz", "suffix": "_5G"},
+        '5g2': {"title": "5 GHz-2", "suffix": "_5G-2"},
+        '6g1': bands.includes('6g2') ? {"title": "6 GHz-1", "suffix": "_6G-1"} : {"title": "6 GHz", "suffix": "_6G"},
+        '6g2': {"title": "6 GHz-2", "suffix": "_6G-2"},
+        '60g': {"title": "60 GHz", "suffix": "_60G"}
+    };
 
-		if(isSupport("triband")){
-			if(get_wl_unit_by_band("5G2") != ''){
-				document.querySelector('label[for="wireless_checkbox"]').innerHTML = '<#qis_wireless_setting_separate#>';
-				wlArrayRet.push({"title":"5 GHz-1", "ifname":get_wl_unit_by_band('5G'), "suffix": "_5G-1"});
-				wlArrayRet.push({"title":"5 GHz-2", "ifname":get_wl_unit_by_band('5G2'), "suffix": "_5G-2"});
-			}
-			else{
-				document.querySelector('label[for="wireless_checkbox"]').innerHTML = '<#qis_wireless_setting_separate1#>';
-				wlArrayRet.push({"title":"5 GHz", "ifname":get_wl_unit_by_band('5G'), "suffix": "_5G"});
-				wlArrayRet.push({"title":"6 GHz", "ifname":get_wl_unit_by_band('6G'), "suffix": "_6G"});
-			}
+    bands.sort(function(a, b) {
+        var freqA = parseFloat(a);
+        var freqB = parseFloat(b);
+        return freqA - freqB;
+    });
 
-			if(isSupport("amas_bdl")){
-				if(!isSupport("prelink_mssid")){
-					if(isSwMode("RT") || isSwMode("AP")){
-						var prelink_unit = isSupport("prelink_unit");
-						if(prelink_unit >= 0)
-							wlArrayRet.splice(prelink_unit, 1);
-					}
-				}
-			}
-		}
-		else if(isSupport("dualband") || isSupport('5G')){
-			wlArrayRet.push({"title":"5 GHz", "ifname":get_wl_unit_by_band('5G'), "suffix": "_5G"})
-		}
+    bands.forEach(bandKey => {
+        if (bandMapping[bandKey]) {
+            wlArrayRet.push({
+                "title": bandMapping[bandKey].title,
+                "ifname": get_wl_unit_by_band(bandKey.toUpperCase()),
+                "suffix": bandMapping[bandKey].suffix
+            });
+        }
+    });
 
-		if(isSupport('wigig')){
-			wlArrayRet.push({"title":"60 GHz", "ifname":get_wl_unit_by_band('60G'), "suffix": "_60G"});
-		}
-	}
+    wlArrayRet.forEach(function(unit){allBandName.push(unit.title);});
+    document.querySelector('label[for="wireless_checkbox"]').innerHTML = `Separate ${allBandName.join(', ')}`;
 
-	return wlArrayRet;
+    // remove dwb_band
+    if (isSupport("amas_bdl")) {
+        if (!isSupport("prelink_mssid")) {
+            if (isSwMode("RT") || isSwMode("AP")) {
+                let prelink_unit = isSupport("prelink_unit");
+                if (prelink_unit >= 0)
+                    wlArrayRet.splice(prelink_unit, 1);
+            }
+        }
+    }
+
+    return wlArrayRet;
 }
 
 function getPAPList(siteSurveyAPList, filterType, filterValue) {
@@ -1332,6 +1322,7 @@ function handleSysDep(){
 	$(".ocnvc").toggle(isSupport("s46") && isSupport("ocnvc"));
 	$(".dslite_xpass").toggle(isSupport("s46") && isSupport("dslite"));
 	$(".dslite_transix").toggle(isSupport("s46") && isSupport("dslite"));
+	$(".v6option").toggle(isSupport("s46") && isSupport("v6option"));
 	$(".vpnClient").toggle(isSupport("VPNCLIENT"));
 	$(".iptv").toggle(isSupport("IPTV"));
 	$(".defaultSupport").toggle(systemVariable.isDefault);
@@ -1849,15 +1840,26 @@ var getRestartService = function(){
 		delete qisPostData["sdn_rc_service"];
 	}
 
+	if(actionScript.includes("restart_subnet")){
+		actionScript = actionScript.filter(item =>
+			item !== "restart_wireless" &&
+			item !== "restart_cfgsync" &&
+			item !== "restart_sdn"
+		);
+	}
+
 	return actionScript.join(";")
 }
 
-var setRestartService = function(postData){
-       if(!postData) postData = {};
-       postData.action_mode = "apply";
-       postData.rc_service = getRestartService();
-       if(systemVariable.isDefault) postData.cfg_pause = "3";
-       return postData;
+var setRestartService = function (postData) {
+	if (!postData) postData = {};
+	postData.action_mode = "apply";
+	postData.rc_service = getRestartService();
+	if (systemVariable.isDefault) postData.cfg_pause = "3";
+	if (postData.rc_service.split(",").includes("reboot")) {
+		sendMessageToSiteManager();
+	}
+	return postData;
 }
 
 var Get_Value_Available_WL_Band = function(){
@@ -1964,6 +1966,44 @@ var isWANLANChange = function(){
 	}
 	return isChanged;
 };
+
+
+var get_default_wan_name = function(){
+	var default_wan_name = "WAN";
+
+	if(Object.keys(systemVariable.eth_wan_list).length > 1){
+		default_wan_name = systemVariable.eth_wan_list["wan"].wan_name;
+	}
+
+	return default_wan_name;
+}
+
+var useDefaultWAN = function(){
+	let _use_default_wan = true;
+
+	if(Object.keys(systemVariable.eth_wan_list).length > 1){
+		$.each(systemVariable.eth_wan_list, function(key) {
+			if(key == "wan"){
+				let wan_obj = systemVariable.eth_wan_list[key];
+				if(wan_obj.hasOwnProperty("extra_settings")){
+					let extra_settings = wan_obj.extra_settings;
+
+					$.each(extra_settings, function(key) {
+						if( (qisPostData.hasOwnProperty(key) && (qisPostData[key] != extra_settings[key])) ||
+							(!qisPostData.hasOwnProperty(key) && (systemVariable[key] != extra_settings[key]))
+						){
+							_use_default_wan = false;
+							return false;
+						}
+					});
+				}
+				return false;
+			}
+		});
+	}
+
+	return _use_default_wan;
+}
 
 var isPage = function(page){
 	return $("#" + page).is(":visible");
@@ -2838,22 +2878,29 @@ function get_mainfh_dut_list(_bitwise, _flag){
 	if(band_bitwise & 16) band += 16;//6
 	if(band_bitwise & 32) band += 32;//61
 	if(band_bitwise & 64) band += 64;//62
- 
+
 	if((band_bitwise & 4) && !(band_bitwise & 2)) band += 2;//5g1 on, need also on 5g
 	if((band_bitwise & 64) && !(band_bitwise & 16)) band += 16;//6g2 on, need also on 6g
- 
+
 	if(mlo_enable){
 		if((band_bitwise & 2) && !(band & 8)) band += 8;//5g on, need also on 5g2
 		if((band_bitwise & 16) && !(band & 32)) band += 32;//6g on, need also on 6g1
- 
+
 		if((band_bitwise & 8) && !(band & 2)) band += 2;//5g2 on, need also on 5g
 		if((band_bitwise & 32) && !(band & 16)) band += 16;//6g1 on, need also on 6g
 	}
 	else{
 		if((band_bitwise & 2) && !(band & 4)) band += 4;//5g on, need also on 5g1
 		if((band_bitwise & 16) && !(band & 64)) band += 64;//6g on, need also on 6g2
+
+		if((band_bitwise & 8) && (band_bitwise > 8)){//5g2 on and band count > 2
+			if(!(band & 2)) band += 2;//need also on 5g
+		}
+		if((band_bitwise & 32) && (band_bitwise > 32)){//6g1 on and band count > 2
+			if(!(band & 16)) band += 16;//need also on 6g
+		}
 	}
- 
+
 	return `<*>${band}>`;
 }
 
@@ -2925,7 +2972,7 @@ function configApmVariables(){
 	const is_amas_bdl = isSupport("amas_bdl");
 	const dut_band_num_mapping = [
 		{"all_band":(1+4+8+16), "enable_band":is_amas_bdl ? (1+4+16) : (1+4+8+16)}, //2556
-		{"all_band":(1+2+32+64), "enable_band":is_amas_bdl ? (1+2+64) : (1+2+32+64)}, //2566
+		{"all_band":(1+2+32+64), "enable_band":is_amas_bdl ? (1+2+32) : (1+2+32+64)}, //2566
 		{"all_band":(1+2+16), "enable_band":is_amas_bdl ? (1+2+16) : (1+2+16)}, //256
 		{"all_band":(1+4+8), "enable_band":is_amas_bdl ? (1+4) : (1+4+8)}, //255
 		{"all_band":(1+2), "enable_band":is_amas_bdl ? (1+2) : (1+2)}, //25

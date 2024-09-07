@@ -153,6 +153,7 @@ unsigned int get_root_type(void)
 		case MODEL_GTBE96:
 		case MODEL_RTBE88U:
 		case MODEL_GTBE19000:
+		case MODEL_GTBE19000_AI:
 			return 0x24051905;      /* ubifs */
 		case MODEL_DSLAX82U:
 		{

@@ -96,13 +96,17 @@ typedef struct _CM_CLIENT_TABLE {
 #endif
 #ifdef RTCONFIG_BHCOST_OPT
 	unsigned int joinTime[CFG_CLIENT_NUM];
+#ifdef RTCONFIG_PREFERAP_RE_SELFOPT
+	unsigned int prefer_retry_count[CFG_CLIENT_NUM];
+	unsigned int prefer_retry_time[CFG_CLIENT_NUM];
+#endif
 #endif
 	int cost[CFG_CLIENT_NUM];
 	int dwb_band[CFG_CLIENT_NUM];
 } CM_CLIENT_TABLE, *P_CM_CLIENT_TABLE;
 
 extern int cm_checkReListExist(char *Mac);
-extern int cm_checkReListUpdate(char *newReMac, char *sta2gMac, char *sta5gMac, char *sta6gMac);
+extern int cm_checkReListUpdate(char *newReMac, char *sta2gMac, char *sta5gMac, char *sta6gMac, int action);
 extern void cm_updateReList(char *newReMac, char *sta2gMac, char *sta5gMac, char *sta6gMac, int action);
 extern void cm_handleReListUpdate(unsigned char *decodeMsg);
 extern int cm_isReWifiUpstreamMac(char *staMac);
@@ -142,6 +146,7 @@ extern int cm_checkReKeyListExist(char *mac);
 extern void cm_updateReKeyList(char *mac, int action);
 extern int cm_checkJoinData(unsigned char *msg, int role);
 extern int cm_checkKeyData(unsigned char *msg, char *key);
+extern int cm_checkIdData(unsigned char *msg, int index);
 
 #endif /* __CFG_SLAVELIST_H__ */
 /* End of cfg_slavelist.h */

@@ -274,6 +274,20 @@ body {
     border-radius: 50%;
 }
 
+.client_list .mac-repeat {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    right: -15%;
+    bottom: -15%;
+    border-radius: 50%;
+    width: 15px;
+    height: 15px;
+    font-size: 10px;
+    background-color: #3333337a;
+}
+
 .client_info .client-name {
     display: flex;
     flex-direction: row;

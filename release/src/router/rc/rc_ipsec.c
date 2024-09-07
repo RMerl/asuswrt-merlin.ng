@@ -1212,7 +1212,7 @@ void rc_ipsec_secrets_set()
 					else{
 						strcpy(prof[prof_count][i].local_pub_ip,nvram_safe_get("lan_ipaddr"));
 					}
-					fprintf(fp,"\n %s : %s %s\n\n"
+					fprintf(fp,"\n %s : %s \"%s\"\n\n"
 						/*fprintf(fp,"\n %s %s : %s %s\n\n"
 						, ((0 == strcmp(prof[prof_count][i].local_id, "null") ||
 						('\0' == prof[prof_count][i].local_id[0])) ?
@@ -1230,11 +1230,11 @@ void rc_ipsec_secrets_set()
 				/*second-factor auth*/
 				if((IKE_TYPE_V1 == prof[prof_count][i].ike) &&
 				(IPSEC_AUTH2_TYP_CLI == prof[prof_count][i].xauth)){
-					fprintf(fp, "#cli[%d]\n %s : XAUTH %s\n", i, prof[prof_count][i].xauth_account
+					fprintf(fp, "#cli[%d]\n %s : XAUTH \"%s\"\n", i, prof[prof_count][i].xauth_account
 							, prof[prof_count][i].xauth_password);
 				}else if((IKE_TYPE_V2 == prof[prof_count][i].ike) &&
 						(IPSEC_AUTH2_TYP_CLI == prof[prof_count][i].xauth)){
-					fprintf(fp, "#cli[%d]\n %s : EAP %s\n", i, prof[prof_count][i].xauth_account
+					fprintf(fp, "#cli[%d]\n %s : EAP \"%s\"\n", i, prof[prof_count][i].xauth_account
 							, prof[prof_count][i].xauth_password);
 				}
 
@@ -1261,7 +1261,7 @@ void rc_ipsec_secrets_set()
 					if((VPN_TYPE_HOST_NET == prof[prof_count][i].vpn_type) &&
 						(prof[prof_count][i].ike == IKE_TYPE_V2) &&
 						(prof[prof_count][i].auth_method == 0)){
-						snprintf(s_tmp, sizeof(s_tmp), ": RSA %s\n", prof[prof_count][i].leftkey);
+						snprintf(s_tmp, sizeof(s_tmp), ": RSA \"%s\"\n", prof[prof_count][i].leftkey);
 					}
 
 					if(nvram_get_int("ipsec_server_enable") == 1){
@@ -1270,7 +1270,7 @@ void rc_ipsec_secrets_set()
 							if((vstrsep(word, ">", &name, &passwd)) != 2)
 								continue;
 
-							snprintf(ipsec_client_list_buf, sizeof(ipsec_client_list_buf), "\n%s : %s %s"
+							snprintf(ipsec_client_list_buf, sizeof(ipsec_client_list_buf), "\n%s : %s \"%s\""
 									, name, (IKE_TYPE_V2 == prof[prof_count][i].ike) ? "EAP" : "XAUTH", passwd);
 							strlcat(s_tmp, ipsec_client_list_buf, sizeof(s_tmp));
 						}
@@ -1284,7 +1284,7 @@ void rc_ipsec_secrets_set()
 							if((vstrsep(word, ">", &name, &passwd, &desc, &ts, &active)) != 5)
 								continue;
 							if(active != NULL && !strcmp(active, "1")){
-								snprintf(ig_client_buf, sizeof(ig_client_buf), "\n%s : %s %s"
+								snprintf(ig_client_buf, sizeof(ig_client_buf), "\n%s : %s \"%s\""
 										, name, (IKE_TYPE_V2 == prof[prof_count][i].ike) ? "EAP" : "XAUTH", passwd);
 								strlcat(ig_client_list_tmp, ig_client_buf, sizeof(ig_client_list_tmp));
 							}
@@ -1294,7 +1294,7 @@ void rc_ipsec_secrets_set()
                             if((vstrsep(word, ">", &name, &passwd, &desc, &ts, &active, &lan_access)) != 6)
                                 continue;
                             if(active != NULL && !strcmp(active, "1")){
-                                snprintf(ig_client_buf, sizeof(ig_client_buf), "\n%s : %s %s"
+                                snprintf(ig_client_buf, sizeof(ig_client_buf), "\n%s : %s \"%s\""
                                         , name, (IKE_TYPE_V2 == prof[prof_count][i].ike) ? "EAP" : "XAUTH", passwd);
                                 strlcat(ig_client_list_tmp, ig_client_buf, sizeof(ig_client_list_tmp));
                             }

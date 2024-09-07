@@ -87,6 +87,7 @@ var profileMaxNum = 64;
 var usb_port_conflict_faq = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=134";
 var usb_port_conflict_current = false;
 var vts_enable_current = "0";
+var wan0_proto = '<% nvram_get("wan0_proto"); %>';
 function initial(){
 	show_menu();
 	document.getElementById("faq").href=usb_port_conflict_faq;
@@ -127,7 +128,7 @@ function initial(){
 		gen_vts_ruleTable_Block(key);
 	});
 
-	if((wan_proto == "v6plus" || wan_proto == "ocnvc") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
+	if((wan0_proto == "v6plus" || wan0_proto == "ocnvc" || wan0_proto == "v6opt") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
 		$(".setup_info_icon").show();
 		$(".setup_info_icon").click(
 			function() {				
@@ -565,7 +566,7 @@ function editProfile(_mode, _this) {
 			}
 			else{
 				$("#vts_port_x").parent().parent().find('th').html('<#IPConnection_VSList_External_Port#><div class="setup_info_icon" style="display:none;"></div>');
-				if((wan_proto == "v6plus" || wan_proto == "ocnvc") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
+				if((wan0_proto == "v6plus" || wan0_proto == "ocnvc" || wan0_proto == "v6opt") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
 					$(".setup_info_icon").show();
 					$(".setup_info_icon").click(
 						function() {
@@ -696,7 +697,7 @@ function saveProfile(_mode, _wanIdx, _rowIdx) {
 	else{
 		if(!check_multi_range(document.getElementById("vts_port_x"), 1, 65535, true))
 			return false;
-		if((wan_proto == "v6plus" || wan_proto == "ocnvc") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
+		if((wan0_proto == "v6plus" || wan0_proto == "ocnvc" || wan0_proto == "v6opt") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
 			if (!check_multi_range_s46_ports(document.getElementById("vts_port_x"))){
 				if(!confirm(port_confirm)){
 					document.getElementById("vts_port_x").focus();

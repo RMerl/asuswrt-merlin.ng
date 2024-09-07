@@ -41,7 +41,7 @@ static int is_same_local_day(time_t time1, time_t time2) {
 static int get_client_sec_used_from_db(char *mac, int allowed_bg_traffic, unsigned long s_ts, unsigned long e_ts) {
 	char ip_addr[18] = {0};
 
-	if (strlen(mac) && amas_lib_device_ip_query(mac, ip_addr)) {
+	if (strlen(mac) && amas_lib_device_ip_query(mac, NULL, ip_addr)) {
 		int lock;
 		sqlite3 *db;
 		int row_count;
@@ -488,7 +488,7 @@ static void prepare_rule(FILE *fp, json_object *rule_persist_list, char *lan_if,
 		return;
 
 #ifdef RTCONFIG_AMAS
-	if (strlen(mac) && amas_lib_device_ip_query(mac, follow_addr)) {
+	if (strlen(mac) && amas_lib_device_ip_query(mac, NULL, follow_addr)) {
 		chk_type = iptables_chk_ip;
 	} else
 #endif
@@ -527,7 +527,7 @@ void apply_tq_rules_for_restart_firewall(json_object *rule_persist_list) {
 			char follow_addr[18] = {0};
 			(void)rule;
 		#ifdef RTCONFIG_AMAS
-			if (strlen(mac) && amas_lib_device_ip_query(mac, follow_addr)) {
+			if (strlen(mac) && amas_lib_device_ip_query(mac, NULL, follow_addr)) {
 				chk_type = iptables_chk_ip;
 			} else
 		#endif
@@ -568,7 +568,7 @@ void apply_tq_rules(json_object *client_list) {
 
 			if ((flag & TQ_FLAG_RULE_ADDED)) {
 #ifdef RTCONFIG_AMAS
-				if (strlen(mac) && amas_lib_device_ip_query(mac, follow_addr)) {
+				if (strlen(mac) && amas_lib_device_ip_query(mac, NULL, follow_addr)) {
 					chk_type = iptables_chk_ip;
 				} else
 #endif

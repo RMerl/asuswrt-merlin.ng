@@ -338,7 +338,10 @@ URIHANDLER_FUNC(mod_rewrite_con_reset) {
 
 	if (con->plugin_ctx[p->id]) {
 		handler_ctx_free(con->plugin_ctx[p->id]);
-		con->plugin_ctx[p->id] = NULL;
+
+		if (p->id >= 0 && p->id < srv->plugins.used) {
+			con->plugin_ctx[p->id] = NULL;
+		}
 	}
 
 	return HANDLER_GO_ON;

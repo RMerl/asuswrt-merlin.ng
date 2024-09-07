@@ -181,7 +181,7 @@ body{
 }
 .login-title-desc{
 	font-size: 14pt;
-	margin: auto 15px;;
+	margin: auto 15px;
 }
 }
 </style>

@@ -105,6 +105,9 @@ extern int PS_pclose(FILE *);
 #elif defined(RTAX86U_PRO)
 #define EXTPHY_ADDR 0x11
 #define EXTPHY_ADDR_STR "0x11"
+#elif defined(RTBE58_GO)
+#define EXTPHY_ADDR 0x13
+#define EXTPHY_ADDR_STR "0x13"
 #else // RTAX86U
 #define EXTPHY_ADDR 0x1e
 #define EXTPHY_ADDR_STR "0x1e"
@@ -267,7 +270,7 @@ extern int PS_pclose(FILE *);
 #define WLREADY			"wlready"
 #endif
 
-#ifdef RTAX82_XD6S
+#if defined(RTAX82_XD6S) || defined(RTBE58_GO)
 #define WAN_IF_ETH	"eth1"
 #elif defined(BCM6750) || defined(BCM63178)
 #define WAN_IF_ETH	"eth4"
@@ -503,7 +506,11 @@ struct mlo_band_mapping_s {
 };
 
 static struct mlo_band_mapping_s mlo_band_mapping_list[] __attribute__ ((unused)) = {
+#if defined(RTCONFIG_MLO_CONFIG_556)
+	{ WIFI_BAND_2G | WIFI_BAND_5GL | WIFI_BAND_5GH | WIFI_BAND_6G,	WIFI_BAND_2G | WIFI_BAND_5GH | WIFI_BAND_6G,	WIFI_BAND_5GL | WIFI_BAND_5GH | WIFI_BAND_6G}, //2556, mlo:5-1/5-2/6
+#else
 	{ WIFI_BAND_2G | WIFI_BAND_5GL | WIFI_BAND_5GH | WIFI_BAND_6G,	WIFI_BAND_2G | WIFI_BAND_5GH | WIFI_BAND_6G,	WIFI_BAND_2G | WIFI_BAND_5GH | WIFI_BAND_6G}, //2556, mlo:2/5-2/6
+#endif
 #if defined(RTCONFIG_MLO_CONFIG_566)
 	{ WIFI_BAND_2G | WIFI_BAND_5G | WIFI_BAND_6GL | WIFI_BAND_6GH,	WIFI_BAND_5G | WIFI_BAND_6GL | WIFI_BAND_6GH,	WIFI_BAND_2G | WIFI_BAND_5G | WIFI_BAND_6GL}, //2566, mlo:5/6-1/6-2
 #else
@@ -516,6 +523,7 @@ static struct mlo_band_mapping_s mlo_band_mapping_list[] __attribute__ ((unused)
 };
 
 // 2G: 1, 5G: 2, 5GL: 4, 5GH: 8, 6G: 16, 6GL: 32, 6GH: 64
+#define MLO_51_52_6     WIFI_BAND_5GL | WIFI_BAND_5GH | WIFI_BAND_6G      //4+8+16
 #define MLO_2_52_6      WIFI_BAND_2G | WIFI_BAND_5GH | WIFI_BAND_6G       //1+8+16
 #define MLO_5_61_62     WIFI_BAND_5G | WIFI_BAND_6GL | WIFI_BAND_6GH      //2+32+64
 #define MLO_2_5_61      WIFI_BAND_2G | WIFI_BAND_5G | WIFI_BAND_6GL       //1+2+32
@@ -523,6 +531,7 @@ static struct mlo_band_mapping_s mlo_band_mapping_list[] __attribute__ ((unused)
 #define MLO_2_51_52     WIFI_BAND_2G | WIFI_BAND_5GL | WIFI_BAND_5GH      //1+4+8
 #define MLO_2_5         WIFI_BAND_2G | WIFI_BAND_5G                       //1+2
 
+#define MLO_GROUP_51_52_6	"5-1/5-2/6"
 #define MLO_GROUP_2_52_6	"2/5-2/6"
 #define MLO_GROUP_5_61_62	"5/6-1/6-2"
 #define MLO_GROUP_2_5_61	"2/5/6-1"
@@ -532,8 +541,8 @@ static struct mlo_band_mapping_s mlo_band_mapping_list[] __attribute__ ((unused)
 
 #define NotSupport 0
 #define FirstSupport 1
-#define SecondSupport 0
-#define ThirdSupport 0
+#define SecondSupport 2
+#define ThirdSupport 3
 
 // Define a structure to hold MLO combination information
 struct MLO_Combination{
@@ -546,6 +555,15 @@ struct MLO_Combination{
 
 // Declare supported MLO combinations for CAP and RE
 static struct MLO_Combination supportedCombinations[] __attribute__ ((unused))  = {
+    {MLO_GROUP_51_52_6, MLO_51_52_6, MLO_GROUP_51_52_6,  MLO_51_52_6, FirstSupport},
+    {MLO_GROUP_51_52_6, MLO_51_52_6, MLO_GROUP_2_52_6,   MLO_2_52_6,  ThirdSupport},
+    {MLO_GROUP_51_52_6, MLO_51_52_6, MLO_GROUP_2_5_61,   MLO_2_5_61,  ThirdSupport},
+    {MLO_GROUP_51_52_6, MLO_51_52_6, MLO_GROUP_5_61_62,  MLO_5_61_62, ThirdSupport},
+    {MLO_GROUP_51_52_6, MLO_51_52_6, MLO_GROUP_2_5_6,    MLO_2_5_6,   ThirdSupport},
+    {MLO_GROUP_51_52_6, MLO_51_52_6, MLO_GROUP_2_51_52,  MLO_2_51_52, ThirdSupport},
+    {MLO_GROUP_51_52_6, MLO_51_52_6, MLO_GROUP_2_5,      MLO_2_5,     NotSupport}, // not support
+
+    {MLO_GROUP_2_52_6, MLO_2_52_6, MLO_GROUP_51_52_6,   MLO_51_52_6, ThirdSupport},
     {MLO_GROUP_2_52_6, MLO_2_52_6, MLO_GROUP_2_52_6,    MLO_2_52_6,  FirstSupport},
     {MLO_GROUP_2_52_6, MLO_2_52_6, MLO_GROUP_2_5_61,    MLO_2_5_61,  SecondSupport},
     {MLO_GROUP_2_52_6, MLO_2_52_6, MLO_GROUP_5_61_62,   MLO_5_61_62, ThirdSupport},
@@ -553,6 +571,7 @@ static struct MLO_Combination supportedCombinations[] __attribute__ ((unused))  
     {MLO_GROUP_2_52_6, MLO_2_52_6, MLO_GROUP_2_51_52,   MLO_2_51_52, ThirdSupport},
     {MLO_GROUP_2_52_6, MLO_2_52_6, MLO_GROUP_2_5,       MLO_2_5,     ThirdSupport},
 
+    {MLO_GROUP_2_5_61, MLO_2_5_61, MLO_GROUP_51_52_6,   MLO_51_52_6, ThirdSupport},
     {MLO_GROUP_2_5_61, MLO_2_5_61, MLO_GROUP_2_52_6,    MLO_2_52_6,  SecondSupport},
     {MLO_GROUP_2_5_61, MLO_2_5_61, MLO_GROUP_2_5_61,    MLO_2_5_61,  FirstSupport},
     {MLO_GROUP_2_5_61, MLO_2_5_61, MLO_GROUP_5_61_62,   MLO_5_61_62, ThirdSupport},
@@ -560,6 +579,7 @@ static struct MLO_Combination supportedCombinations[] __attribute__ ((unused))  
     {MLO_GROUP_2_5_61, MLO_2_5_61, MLO_GROUP_2_51_52,   MLO_2_51_52, ThirdSupport},
     {MLO_GROUP_2_5_61, MLO_2_5_61, MLO_GROUP_2_5,       MLO_2_5,     ThirdSupport},
 
+    {MLO_GROUP_5_61_62, MLO_5_61_62, MLO_GROUP_51_52_6, MLO_51_52_6, ThirdSupport},
     {MLO_GROUP_5_61_62, MLO_5_61_62, MLO_GROUP_2_52_6,  MLO_2_52_6,  ThirdSupport},
     {MLO_GROUP_5_61_62, MLO_5_61_62, MLO_GROUP_2_5_61,  MLO_2_5_61,  ThirdSupport},
     {MLO_GROUP_5_61_62, MLO_5_61_62, MLO_GROUP_5_61_62, MLO_5_61_62, FirstSupport},
@@ -567,6 +587,7 @@ static struct MLO_Combination supportedCombinations[] __attribute__ ((unused))  
     {MLO_GROUP_5_61_62, MLO_5_61_62, MLO_GROUP_2_51_52, MLO_2_51_52, NotSupport}, // not support
     {MLO_GROUP_5_61_62, MLO_5_61_62, MLO_GROUP_2_5,     MLO_2_5,     NotSupport}, // not support
 
+    {MLO_GROUP_2_5_6, MLO_2_5_6, MLO_GROUP_51_52_6,     MLO_51_52_6, ThirdSupport},
     {MLO_GROUP_2_5_6, MLO_2_5_6, MLO_GROUP_2_52_6,      MLO_2_52_6,  SecondSupport},
     {MLO_GROUP_2_5_6, MLO_2_5_6, MLO_GROUP_2_5_61,      MLO_2_5_61,  SecondSupport},
     {MLO_GROUP_2_5_6, MLO_2_5_6, MLO_GROUP_5_61_62,     MLO_5_61_62, ThirdSupport},
@@ -574,6 +595,7 @@ static struct MLO_Combination supportedCombinations[] __attribute__ ((unused))  
     {MLO_GROUP_2_5_6, MLO_2_5_6, MLO_GROUP_2_51_52,     MLO_2_51_52, ThirdSupport},
     {MLO_GROUP_2_5_6, MLO_2_5_6, MLO_GROUP_2_5,         MLO_2_5,     ThirdSupport},
 
+    {MLO_GROUP_2_51_52, MLO_2_51_52, MLO_GROUP_51_52_6, MLO_51_52_6, ThirdSupport},
     {MLO_GROUP_2_51_52, MLO_2_51_52, MLO_GROUP_2_52_6,  MLO_2_52_6,  ThirdSupport},
     {MLO_GROUP_2_51_52, MLO_2_51_52, MLO_GROUP_2_5_61,  MLO_2_5_61,  ThirdSupport},
     {MLO_GROUP_2_51_52, MLO_2_51_52, MLO_GROUP_5_61_62, MLO_5_61_62, NotSupport}, // not support
@@ -581,6 +603,7 @@ static struct MLO_Combination supportedCombinations[] __attribute__ ((unused))  
     {MLO_GROUP_2_51_52, MLO_2_51_52, MLO_GROUP_2_51_52, MLO_2_51_52, FirstSupport},
     {MLO_GROUP_2_51_52, MLO_2_51_52, MLO_GROUP_2_5,     MLO_2_5,     ThirdSupport},
 
+    {MLO_GROUP_2_5, MLO_2_5, MLO_GROUP_51_52_6, MLO_51_52_6,   NotSupport}, // not support
     {MLO_GROUP_2_5, MLO_2_5, MLO_GROUP_2_52_6,  MLO_2_52_6,    ThirdSupport},
     {MLO_GROUP_2_5, MLO_2_5, MLO_GROUP_2_5_61,  MLO_2_5_61,    ThirdSupport},
     {MLO_GROUP_2_5, MLO_2_5, MLO_GROUP_5_61_62, MLO_5_61_62,   NotSupport}, // not support
@@ -589,6 +612,12 @@ static struct MLO_Combination supportedCombinations[] __attribute__ ((unused))  
     {MLO_GROUP_2_5, MLO_2_5, MLO_GROUP_2_5,     MLO_2_5,       FirstSupport},
     {"NONE", -1, "NONE", -1,    0}
 };
+
+enum {
+	MLO_CLIENT_RP = 1,
+	MLO_CLIENT_MB
+};
+
 #endif
 
 #ifndef RTF_UP
@@ -681,6 +710,7 @@ enum {
 #define CFG_PREFIX      "CFG"
 #define AMAS_PORTSTATUS_PREFIX	"PORTSTATUS"
 #define CFG_ALLCHANRADAR		"ALLCHANRADAR"
+#define CONNDIAG_PREFIX	"CONNDIAG"
 
 #define CFG_CONNDIAG_MIX_MODE 0xF000  // same with DIAGMODE_MIX in rc/conn_diag.h
 #define CFG_CONNDIAG_PREFIX_PORTSTATUS "<PORTSTATUS"
@@ -717,6 +747,7 @@ enum conndiagEvent {
 	EID_CD_PS_CD_RET,
 	EID_CD_PS_USB_CHANGE,
 	EID_CD_PS_MOCA_CHANGE,
+	EID_CD_PRINT_STA_INFO,
 	EID_CD_MAX
 };
 #define RAST_IPC_MAX_CONNECTION		5
@@ -761,6 +792,7 @@ enum conndiagEvent {
 #define RAST_CANDIDATE_AP_RCPI	"AP_RCPI"
 #define RAST_AP_TARGET_MAC "AP_TARGET_MAC"
 #define RAST_AP_TARGET_CH "AP_TARGET_CH"
+#define RAST_BEACON_HAS_REPORTED "STA_REPORTED"
 #ifdef RTCONFIG_CONN_EVENT_TO_EX_AP
 #define RAST_STA_EX_AP_IP	"STA_EX_AP_IP"
 #endif
@@ -769,6 +801,7 @@ enum conndiagEvent {
 #define RAST_TRIGGER_STA_AP_BAND_BIND "TRIGGER_STA_AP_BAND_BIND"
 #define RAST_JVALUE_BAND_2G "2"
 #define RAST_JVALUE_BAND_5G "1"
+#define RAST_JVALUE_BAND_6G "4"
 #define RAST_BLOCK_TIME	"BLOCK_TIME"
 #define RAST_DEF_BLOCK_TIME	3
 
@@ -849,6 +882,8 @@ enum {
 	FROM_WebView,
 	FROM_ATE,
 	FROM_MyASUS,
+	FROM_BLE,
+	FROM_AWSIOT,
 	FROM_UNKNOWN
 };
 
@@ -1213,6 +1248,10 @@ extern int _file_lock(const char *dir, const char *tag);
 extern int _file_unlock(int lockfd);
 extern int file_lock(const char *tag);
 extern void file_unlock(int lockfd);
+#if defined(RTCONFIG_KNV_BACKUP) || defined(RTCONFIG_NV_BACKUP2)
+extern int diff_knv(char *file1, char *file2);
+extern int chk_nv_sanity(int is_re_mode, int action);
+#endif
 
 #define FW_CREATE	0
 #define FW_APPEND	1
@@ -1279,6 +1318,9 @@ enum btn_id {
 #ifdef RTCONFIG_EJUSB_BTN
 	BTN_EJUSB1,
 	BTN_EJUSB2,	/* If two USB LED and two EJECT USB button are true, map USB3 port to this button. */
+#endif
+#if defined(GTBE19000_AI)
+	BTN_WAKE,
 #endif
 	BTN_ID_MAX,	/* last item */
 };
@@ -1454,7 +1496,7 @@ enum led_id {
 	LED_SIG2,
 	LED_PURPLE,
 #endif
-#if defined(RPAX56) || defined(RPAX58) || defined(RPBE58)
+#if defined(RPAX56) || defined(RPAX58) || defined(RPBE58) || defined(RTBE58_GO)
 	LED_RED_GPIO,
 	LED_GREEN_GPIO,
 	LED_BLUE_GPIO,
@@ -1534,7 +1576,7 @@ enum led_id {
 	IND_BT,
 	IND_PA,
 #endif
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI) || defined(GSBE18000)
 	LED_GROUP1_RED,
 	LED_GROUP1_GREEN,
 	LED_GROUP1_BLUE,
@@ -1545,7 +1587,7 @@ enum led_id {
 	LED_GROUP3_RED,
 	LED_GROUP3_GREEN,
 	LED_GROUP3_BLUE,
-#if !defined(GTAX11000_PRO) && !defined(GTAXE16000) && !defined(GTBE98) && !defined(GTBE98_PRO) && !defined(GTAX6000) && !defined(GT10) && !defined(GTBE96)
+#if !defined(GTAX11000_PRO) && !defined(GTAXE16000) && !defined(GTBE98) && !defined(GTBE98_PRO) && !defined(GTAX6000) && !defined(GT10) && !defined(GTBE96) && !defined(GSBE18000)
 	LED_GROUP4_RED,
 	LED_GROUP4_GREEN,
 	LED_GROUP4_BLUE,
@@ -1563,10 +1605,10 @@ enum led_id {
 #endif
 #endif
 #endif
-#if defined(DSL_AX82U)
+#if defined(DSL_AX82U) || defined(GSBE18000)
 	LED_WIFI,
 #endif
-#if defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(GTBE96) || defined(GTBE19000)
+#if defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
 	LED_WAN_RGB_RED,
 	LED_WAN_RGB_GREEN,
 	LED_WAN_RGB_BLUE,
@@ -1600,8 +1642,15 @@ enum led_id {
         LED_AR3012_RST,
         LED_ETHALL,
 #endif
-#if defined(RTBE96U) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE19000)
+#if defined(RTBE96U) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE19000) || defined(GTBE19000_AI)
 	LED_AFC,
+#endif
+#if defined(GTBE19000_AI)
+	PS_RESET,
+	PS_SOP0,
+	PS_SOP1,
+	PS_SOP2,
+	PS_SWITCH,
 #endif
 	LED_ID_MAX,	/* last item */
 };
@@ -1738,7 +1787,7 @@ enum wl_band_id {
 	WL_2G_BAND = 0,
 	WL_5G_BAND = 1,
 	WL_5G_2_BAND = 2,
-#elif defined(BT10)
+#elif defined(BT10) || defined(GSBE18000)
 	WL_5G_2_BAND = 0,
 	WL_6G_BAND = 0,
 	WL_5G_BAND = 1,
@@ -1773,7 +1822,7 @@ enum wl_band_id {
 };
 
 #if defined(RTCONFIG_WIFI6E) || (defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G))
-#if defined(BT10)
+#if defined(BT10) || defined(GSBE18000)
 #define WL_UNIT_6G	0
 #elif defined(GTBE98_PRO) || defined(BQ16_PRO) || defined(RTBE95U)
 #define WL_UNIT_6G	1
@@ -1838,7 +1887,7 @@ enum wl_bandwidth_id {
 
 	WL_NR_BW
 };
-#elif defined(BCMWL5)
+#elif defined(CONFIG_BCMWL5) || defined(CONFIG_BCMWL6)
 enum wl_bandwidth_id {
 	WL_BW_AUTO = 0,		/* 2G: 20/40MHz, 5G: 20/40/80/(80+80)/(160) */
 	WL_BW_20 = 1,
@@ -2596,8 +2645,9 @@ extern int get_switch_model(void);
 #define PHY_PORT_CAP_DUALWAN_SECONDARY_WAN	(1U << 29)
 #define PHY_PORT_CAP_DUALWAN_PRIMARY_WAN	(1U << 30)
 
-// PHY_PROT FLAG
+// PHY_PORT FLAG
 #define PHY_PORT_FLAG_BYPASS_CABLE_DIAG		(1U << 0)
+#define PHY_PORT_FLAG_CANNOT_USE_AS_WAN		(1U << 1)
 typedef struct _usb_device_info usb_device_info_t;
 
 #if 1
@@ -2888,6 +2938,7 @@ extern void del_led_ctrl_capability(int val);
 extern int get_prelink_unit();
 #ifdef RTCONFIG_MSSID_PRELINK
 extern void check_mssid_prelink_reset(uint32_t sf);
+extern int pass_prelink_interface(char *config_value);
 #endif
 #endif
 extern void unset_selected_channel_info();
@@ -2927,6 +2978,7 @@ extern int get_bw_by_phymode(int unit, int phymode);
 extern int wl_get_bw_cap(int unit, int *bwcap);
 extern int get_bandnum_by_nband(int num);
 extern void check_wlx_nband_type();
+extern int is_connection_priority_is_wifi_first();
 #ifdef RTCONFIG_MLO
 extern int gen_mlo_band();
 extern int get_mlo_fh_band();
@@ -2939,6 +2991,9 @@ extern int is_compatible_network(char *ifname);
 extern int isMloConnectionMode();
 extern int checkMloConnectionChange();
 extern int isMLOConnectionSupported(int ap_mlo, int sta_mlo);
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+extern int checkMloWiFi();
+#endif
 #endif
 #ifdef RTCONFIG_MULTILAN_MWL
 extern int is_mainFH_network(char *ifname);
@@ -3208,9 +3263,9 @@ static inline void set_power_save_mode(void) { }
 extern int get_fa_rev(void);
 extern int get_fa_dump(void);
 #endif
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(EBG19) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(EBG19) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI)
 /* port statistic counter structure */
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI)
 unsigned int rtkswitch_serdes_status(void);
 typedef struct rtk_stat_port_cntr_s
 {
@@ -3389,13 +3444,13 @@ typedef struct rtk_stat_port_cntr_s
 #endif
 #endif
 #ifdef HND_ROUTER
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(EBG19) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(EBG19) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI)
 extern uint32_t rtk_get_phy_status(int port);
 extern uint32_t rtk_get_phy_speed(int port);
 extern uint32_t rtk_get_phy_duplex(int port);
 extern uint64_t rtk_get_phy_mib(int port, char *type);
 #endif
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI)
 extern int rtk_lan_phy_status();
 #endif
 #if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63)
@@ -3413,7 +3468,7 @@ extern uint32_t hnd_get_phy_status(int port);
 extern uint32_t hnd_get_phy_speed(int port);
 extern uint32_t hnd_get_phy_duplex(int port);
 extern uint64_t hnd_get_phy_mib(int port, char *type);
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO)
 extern int rtkswitch_port_speed(int port);
 extern int rtkswitch_port_duplex(int port);
 extern int rtkswitch_port_stat(int port);
@@ -3425,6 +3480,15 @@ extern uint32_t hnd_get_phy_status(int port, int offs, unsigned int regv, unsign
 extern uint32_t hnd_get_phy_speed(int port, int offs, unsigned int regv, unsigned int pmdv);
 extern uint32_t hnd_get_phy_duplex(int port, int offs, unsigned int regv, unsigned int pmdv);
 extern uint64_t hnd_get_phy_mib(int port, int offs, char *type);
+#endif
+#if defined(RTBE82M) || defined(GSBE18000)
+extern uint32_t mxl_get_phy_status(int port);
+extern uint32_t mxl_get_phy_speed(int port);
+extern uint32_t mxl_get_phy_duplex(int port);
+extern uint64_t mxl_get_phy_mib(int port, char *type);
+extern int mxl_lan_phy_status();
+extern int mxlswitch_LanPort_linkUp(void);
+extern int mxlswitch_LanPort_linkDown(void);
 #endif
 #ifdef RTCONFIG_SW_SPDLED
 extern uint32_t hnd_get_phy_speed_rc(char *ifname);
@@ -3671,6 +3735,7 @@ extern int is_dpsta(int unit);
 #endif
 extern int is_dpsr(int unit);
 extern int is_psta(int unit);
+extern int is_psta_mlo(int unit);
 extern int is_psr(int unit);
 extern int psta_exist(void);
 extern int psta_exist_except(int unit);
@@ -4012,6 +4077,24 @@ static inline int is_mswan_enabled()
 }
 #endif
 
+static inline int is_iptv_enabled()
+{
+	if ((nvram_get_int("switch_stb_x") > 0) || !nvram_match("switch_wantag", "none"))
+		return 1;
+	return 0;
+}
+
+static inline int check_default_wan_as_wan()
+{
+#if defined(RTCONFIG_MULTISERVICE_WAN)
+	if (is_mswan_enabled())
+		return 1;
+#endif
+	if (is_iptv_enabled())
+		return 1;
+	return 0;
+}
+
 static inline void add_sw_wan_cap(phy_port_mapping *port_mapping, int wan, uint32_t cap)
 {
 	int i;
@@ -4038,14 +4121,11 @@ static inline void add_sw_wan_cap(phy_port_mapping *port_mapping, int wan, uint3
 					port_mapping->port[i].cap |= cap;
 				//_dprintf("%s 2WANS_DUALWAN_IF_WAN is wan. cap1=%u, cap2=%u\n", port_mapping->port[i].label_name, cap, port_mapping->port[i].cap);
 					break;
-				}
-#if defined(RTCONFIG_MULTISERVICE_WAN)
-				else if (is_mswan_enabled() && (port_mapping->port[i].cap & PHY_PORT_CAP_WAN)) {
+				} else if (check_default_wan_as_wan() && (port_mapping->port[i].cap & PHY_PORT_CAP_WAN)) {
 					port_mapping->port[i].cap |= cap;
 				//_dprintf("%s 3WANS_DUALWAN_IF_WAN is wan. cap1=%u, cap2=%u\n", port_mapping->port[i].label_name, cap, port_mapping->port[i].cap);
 					break;
 				}
-#endif
 #if !defined(RTCONFIG_DUALWAN)
 				else if ((port_mapping->port[i].cap & PHY_PORT_CAP_WAN)) {
 					port_mapping->port[i].cap |= cap;
@@ -4112,6 +4192,33 @@ static inline void add_sw_iptv_cap(phy_port_mapping *port_mapping, char *ports, 
 		}
 	}
 }
+
+#ifdef RTCONFIG_AUTO_WANPORT
+static inline void add_sw_wan_auto_cap(phy_port_mapping *port_mapping, uint32_t cap)
+{
+	int i;
+	char ifname[8], *next;
+	char *autowan_ifnames = strdup(nvram_safe_get("autowan_ifnames"));
+	if (!autowan_ifnames)
+		return;
+
+	for(i = 0; i < port_mapping->count; i++) {
+		//_dprintf("%s WANS_DUALWAN_IF_WAN is wan. cap1=%llu, cap2=%llu\n", port_mapping->port[i].label_name, cap, port_mapping->port[i].cap);
+		if (port_mapping->port[i].ifname && strlen(port_mapping->port[i].ifname)) {
+			port_mapping->port[i].cap &= ~cap;
+			//_dprintf("%s WANS_DUALWAN_IF_WAN is wan. cap1=%llu, cap2=%llu\n", port_mapping->port[i].label_name, cap, port_mapping->port[i].cap);
+
+			foreach(ifname, autowan_ifnames, next) {
+				if (!strcmp(port_mapping->port[i].ifname, ifname)) {
+					port_mapping->port[i].cap |= cap;
+					break;
+				}
+			}
+		}
+	}
+	free(autowan_ifnames);
+}
+#endif
 
 static inline void add_default_primary_wan(phy_port_mapping *port_mapping)
 {
@@ -4198,6 +4305,9 @@ static inline void add_sw_cap(phy_port_mapping *port_mapping)
 	add_sw_iptv_cap(port_mapping, nvram_safe_get("iptv_voip_port"), PHY_PORT_CAP_IPTV_VOIP);
 	add_sw_iptv_cap(port_mapping, nvram_safe_get("iptv_bridge_port"), PHY_PORT_CAP_IPTV_BRIDGE);
 #endif
+#if defined(RTCONFIG_AUTO_WANPORT)
+	add_sw_wan_auto_cap(port_mapping, PHY_PORT_CAP_WANAUTO);
+#endif
 }
 
 static inline void swap_wanlan(phy_port_mapping *port_mapping)
@@ -4206,6 +4316,10 @@ static inline void swap_wanlan(phy_port_mapping *port_mapping)
 	char *tmp_label_name;
 	//int tmp_max_rate;
 	int i, j;
+
+	// Don't swap when default mode.
+	if (nvram_get_int("x_Setting") == 0)
+		return;
 
 	for(i = 0; i < port_mapping->count; i++) {
 		if (((port_mapping->port[i].cap & PHY_PORT_CAP_WAN) > 0) &&
@@ -5113,6 +5227,7 @@ typedef struct __amaslib_notification__t_
        char sta5g[18];     /* Node 5G MAC */
        int  flag;          /* Node status */
        char ip[16];        /* Device IP */
+       char ifname[16];    /* interface name */
 } AMASLIB_EVENT_T;
 
 #define AMASLIB_PID_PATH           "/var/run/amas_lib.pid"
@@ -5168,6 +5283,7 @@ enum {
 	BCM_CLED_STEADY_BLINK,
 	BCM_CLED_PULSATING,
 	BCM_CLED_SLOW_BLINK,
+	BCM_CLED_MODE_OFF,
 	BCM_CLED_MODE_END
 };
 #endif
@@ -5181,7 +5297,7 @@ extern void firmware_downgrade_check(uint32_t sf);
 #define ANTLED_SCHEME_RSSI              2
 #endif
 
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) || defined(GTBE96) || defined(GTBE19000)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI) || defined(GSBE18000)
 #define LEDG_OFF			0
 #define LEDG_STEADY_MODE		1
 #define LEDG_FADING_REVERSE_MODE	2
@@ -5322,7 +5438,7 @@ enum {
 	WLIF_5G2 = 0,
 	WLIF_6G	 = 1,
 	WLIF_6G2 = 2,
-#elif defined(BT10)
+#elif defined(BT10) || defined(GSBE18000)
 	WLIF_5G2 = 0,
 	WLIF_6G	 = 0,
 	WLIF_5G1 = 1,
@@ -5337,15 +5453,15 @@ enum {
 	WLIF_5G1 = 0,
 	WLIF_5G2 = 0,
 	WLIF_6G  = 1,
-#elif defined(RTCONFIG_QUADBAND) || defined(RTCONFIG_HAS_5G_2)
+#elif defined(RTCONFIG_QUADBAND)
 	WLIF_2G	 = 0,
 	WLIF_5G1 = 1,
 	WLIF_5G2 = 2,
 	WLIF_6G	 = 3,
-#else  // dual-band or 2+5+6
+#else  // tri-band or dual-band
 	WLIF_2G  = 0,
 	WLIF_5G1 = 1,
-	WLIF_5G2 = 1,
+	WLIF_5G2 = 2,
 	WLIF_6G  = 2,
 #endif
 	WLIF_MAX = 4
@@ -5497,6 +5613,7 @@ enum{
 	ASUS_NV_PP_7,
 	ASUS_NV_PP_8,
 	ASUS_NV_PP_9,
+	ASUS_NV_PP_10,
 	ASUS_NV_PP_11,
 	ASUS_NV_PP_MAX
 };

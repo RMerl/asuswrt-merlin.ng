@@ -90,6 +90,9 @@ typedef unsigned int __u32;   // 1225 ham
 #define SERVER_PORT_SSL	443
 #endif
 #include "bcmnvram_f.h"
+#ifdef RTCONFIG_LIBASUSLOG
+#include <libasuslog.h>
+#endif
 
 /* A multi-family sockaddr. */
 struct usockaddr {
@@ -248,8 +251,8 @@ static void send_error( int status, char* title, char* extra_header, char* text 
 //#ifdef RTCONFIG_CLOUDSYNC
 void send_page( int status, char* title, char* extra_header, char* text , int fromapp);
 //#endif
-static void send_headers( int status, char* title, char* extra_header, char* mime_type, int fromapp);
-static void send_token_headers( int status, char* title, char* extra_header, char* mime_type, int fromapp);
+void send_headers( int status, char* title, char* extra_header, char* mime_type, int fromapp);
+void send_token_headers( int status, char* title, char* extra_header, char* mime_type, int fromapp);
 static void handle_request(void);
 void send_login_page(int fromapp_flag, int error_status, char* url, char* file, int lock_time, int logintry);
 void page_default_redirect(int fromapp_flag, char* url);
@@ -369,6 +372,39 @@ void Debug2File(const char *path, const char *fmt, ...)
 		fclose(fp);
 	} else
 		fprintf(stderr, "Open %s Error!\n", path);
+}
+#else
+void Debug2String(int level, char *path, int conlog, int showtime, unsigned filesize, char *function_name, int function_line, const char *fmt, ...)
+{
+	int max_log = 5;
+	int len = 0, str_end = 0;
+	char *p_message = NULL, *log_message = NULL;
+	char message[2048] = {0}, tmp1[768] = {0}, tmp2[1024] = {0};
+	va_list args;
+
+	va_start(args, fmt);
+	len = vsnprintf(message, sizeof(message), fmt, args);
+	va_end(args);
+
+	p_message = message;
+
+	while(len > 0 && max_log > 0){
+
+		strlcpy(tmp1, p_message, sizeof(tmp1));
+		log_message = tmp1;
+		str_end	 = strlen(tmp1);
+
+		if(tmp1[str_end-1] != '\n'){
+			snprintf(tmp2, sizeof(tmp2), "%s\n", tmp1);
+			log_message = tmp2;
+		}
+
+		asusdebuglog(level, path, conlog, showtime, filesize, "[%s(%d)]:%s", function_name, function_line, log_message);
+
+		len = len - str_end;
+		max_log--;
+		p_message += str_end;
+	}
 }
 #endif
 
@@ -504,8 +540,10 @@ page_default_redirect(int fromapp_flag, char* url)
 {
 	char inviteCode[256]={0};
 
-	if(check_xss_blacklist(url, 1))
+	if(check_xss_blacklist(url, 1)){
 		strncpy(login_url, indexpage, sizeof(login_url));
+		url = indexpage;
+	}
 	else
 		strncpy(login_url, url, sizeof(login_url));
 
@@ -555,7 +593,7 @@ send_login_page(int fromapp_flag, int error_status, char* url, char* file, int l
 	}else{
 		snprintf(inviteCode, sizeof(inviteCode), "\"error_status\":\"%d\", \"captcha_on\":\"%d\", \"last_time_lock_warning\":\"%d\"", error_status, captcha_on(), last_time_lock_warning());
 		if(error_status == LOGINLOCK){
-			snprintf(buf, sizeof(buf), ",\"remaining_lock_time\":\"%ld\"", max_lock_time - login_dt);
+			snprintf(buf, sizeof(buf), ",\"remaining_lock_time\":\"%ld\",\"lock_version\":\"%d\"", max_lock_time - login_dt, HTTPD_LOCK_VERSION);
 			strlcat(inviteCode, buf, sizeof(inviteCode));
 		}
 	}
@@ -629,7 +667,7 @@ send_content_page( int status, char* title, char* extra_header, char* text , int
 	(void) fflush( conn_fp );
 }
 
-static void
+void
 send_headers( int status, char* title, char* extra_header, char* mime_type, int fromapp)
 {
     time_t now;
@@ -694,7 +732,7 @@ send_headers( int status, char* title, char* extra_header, char* mime_type, int 
 	(void) fprintf( conn_fp, "\r\n" );
 }
 
-static void
+void
 send_token_headers( int status, char* title, char* extra_header, char* mime_type, int fromapp)
 {
 	time_t now;
@@ -1048,6 +1086,7 @@ int max_lock_time = MAX_LOGIN_BLOCK_TIME;
 
 struct etag_filter_table etag_filter_table[] = {
     {".cgi",0},
+    {"client.ovpn",0},
     {"chanspec.js",0},
     {"client_function.js",0},
     {"disk.js",0},
@@ -1078,9 +1117,10 @@ struct etag_filter_table etag_filter_table[] = {
     {"FreeWiFi_template.json",2}
 };
 
-int getEtagHeaderFlag(const char *key) {
-    int numTables = sizeof(etag_filter_table) / sizeof(etag_filter_table[0]);
-    for (int i = 0; i < numTables; i++) {
+int getEtagHeaderFlag(const char *key)
+{
+    int i, numTables = sizeof(etag_filter_table) / sizeof(etag_filter_table[0]);
+    for (i = 0; i < numTables; i++) {
         if (strstr(key, etag_filter_table[i].file) != NULL) {
             return etag_filter_table[i].flag;
         }
@@ -1503,7 +1543,7 @@ handle_request(void)
 			}
 			if (handler->auth) {
 				url_do_auth = 1;
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI) || defined(GSBE18000)
 				switch_ledg(LEDG_QIS_FINISH);
 #endif
 				if ((mime_exception&MIME_EXCEPTION_NOAUTH_FIRST)&&!x_Setting) {
@@ -2542,7 +2582,7 @@ int main(int argc, char **argv)
 	/* Ignore broken pipes */
 	signal(SIGPIPE, SIG_IGN);
 	signal(SIGCHLD, chld_reap);
-	signal(SIGUSR1, update_wlan_log);
+	signal(SIGUSR1, update_wlan_log_sig);
 	signal(SIGALRM, check_alive);
 	signal(SIGTERM, httpd_exit);
 
@@ -2832,14 +2872,6 @@ void start_ssl(int http_port)
 
 	if (nvram_match("https_crt_gen", "1"))
 		erase_cert();
-
-	// the date of certificate is wrong, need to reload
-	if (nvram_get_int("reload_cert")) {
-		unlink(HTTPS_CA_JFFS);
-		erase_cert();
-		nvram_unset("reload_cert");
-		logmessage("httpd", "reload cert and clean all files\n");
-	}
 
 	retry = 1;
 	while (1) {

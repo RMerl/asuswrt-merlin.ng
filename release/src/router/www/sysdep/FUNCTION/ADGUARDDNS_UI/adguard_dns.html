@@ -10,37 +10,8 @@
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" src="/RWD_UI/rwd_component.js"></script>
-<script type="text/javascript" src="/js/weekSchedule/schedule_ui.js"></script>
 <script type="text/javascript" src="/js/adGuard.js"></script>
-<style>
-
-
-</style>
 <script>
-if(based_modelid.substr(0,2) == "GT"){
-	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component_ROG.css">');
-	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/adguard_dns.css">');
-}
-else if(top.webWrapper){
-	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component_WHITE.css">');
-	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/adguard_dns_WHITE.css">');
-}
-else{
-	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/adguard_dns.css">');
-}
-
-var window_width = $(window).width();
-var applyData = {"action_mode": "apply", "rc_service": "restart_wan_if 0;restart_stubby"};
-var dnsList = [];
-var deviceList = [];
-var routerList = [];
-var accountLimits = {};
-var orig_dnspriv_rulelist = decodeURIComponent(httpApi.nvramCharToAscii(["dnspriv_rulelist"]).dnspriv_rulelist);
-var dnspriv_rulelist_array = (orig_dnspriv_rulelist.length == 0)? [""] : orig_dnspriv_rulelist.split('<');
-var orig_adguard_enable = false;
-var cur_device_id = "";
-var cur_dnspriv_rule_index = -1;
-
 var getUrlParameter = function getUrlParameter(param){
 	var url_parm = window.location.search.substring(1);
 	var parm_array = url_parm.split("&");
@@ -55,9 +26,37 @@ var getUrlParameter = function getUrlParameter(param){
 	return "";
 };
 const theme = getUrlParameter("current_theme").toUpperCase();
+const sdn_theme = getUrlParameter("sdn_theme").toUpperCase();
+
+if(top.webWrapper || theme == "WHITE"){
+	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component_WHITE.css">');
+	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/css/adguard_dns_WHITE.css">');
+}
+else if(theme == "GT" || theme == "ROG"){
+	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component_ROG.css">');
+	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/css/adguard_dns.css">');
+	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/css/adguard_customize_ROG.css">');
+}
+else{
+	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/css/adguard_dns.css">');
+}
+
+var window_width = $(window).width();
+var applyData = {"action_mode": "apply", "rc_service": "restart_wan_if 0;restart_stubby"};
+var dnsList = [];
+var deviceList = [];
+var routerList = [];
+var accountLimits = {};
+var orig_dnspriv_rulelist = decodeURIComponent(httpApi.nvramCharToAscii(["dnspriv_rulelist"]).dnspriv_rulelist);
+var dnspriv_rulelist_array = (orig_dnspriv_rulelist.length == 0)? [""] : orig_dnspriv_rulelist.split('<');
+var orig_adguard_enable = false;
+var cur_device_id = "";
+var cur_dnspriv_rule_index = -1;
+
+
 const flag = getUrlParameter("flag").toUpperCase();
 const subnet_idx = getUrlParameter("idx");
-if(theme == "SDN_PROFILE" || theme == "SDN_WIZARD"){
+if(sdn_theme == "SDN_PROFILE" || sdn_theme == "SDN_WIZARD"){
 	orig_dnspriv_rulelist = decodeURIComponent(httpApi.nvramCharToAscii(["dot" + subnet_idx + "_rl"], true)["dot" + subnet_idx + "_rl"]);
 	dnspriv_rulelist_array = (orig_dnspriv_rulelist.length == 0)? [""] : orig_dnspriv_rulelist.split('<');
 }
@@ -150,7 +149,7 @@ function init(){
 				});
 	}
 
-	if(theme == "SDN_PROFILE" || theme == "SDN_WIZARD"){
+	if(sdn_theme == "SDN_PROFILE" || sdn_theme == "SDN_WIZARD"){
 		$(".function_title_container").hide();
 		$("#adguard_ad_container_top").remove();
 	}
@@ -193,7 +192,7 @@ function init(){
 }
 
 function load_settings(){
-	if(theme == "SDN_PROFILE" || theme == "SDN_WIZARD"){
+	if(sdn_theme == "SDN_PROFILE" || sdn_theme == "SDN_WIZARD"){
 		$("#adguard_enable_div").removeClass("adGuard_enable_div");
 		$("#adguard_enable_div").css({"margin": "-5px"});
 		$(".profile_setting_item .title").css({"color":"#006CE1", "font-size":"12px"});
@@ -202,7 +201,7 @@ function load_settings(){
 		$("#adguard_ad_container_bottom").remove();
 	}
 
-	if($("#adguard_enable").hasClass("on") || orig_adguard_enable || ((theme == "SDN_PROFILE" || theme == "SDN_WIZARD") && flag == "ENABLE")){
+	if($("#adguard_enable").hasClass("on") || orig_adguard_enable || ((sdn_theme == "SDN_PROFILE" || sdn_theme == "SDN_WIZARD") && flag == "ENABLE")){
 		$("#account_container").show();
 
 		if(Session.get("adGuard_access_token") != undefined && Session.get("adGuard_access_token").length != 0 &&
@@ -219,7 +218,7 @@ function load_settings(){
 			check_cur_adGuardTLS_exist();
 			check_account_limits();
 
-			if(theme == "SDN_PROFILE" || theme == "SDN_WIZARD")
+			if(sdn_theme == "SDN_PROFILE" || sdn_theme == "SDN_WIZARD")
 				$("#adguard_ad_container_bottom").hide();
 		}
 		else{
@@ -230,7 +229,7 @@ function load_settings(){
 }
 
 function generate_setting_items(){
-	if(theme == ""  || theme == undefined){
+	if(sdn_theme == ""  || sdn_theme == undefined){
 	var adguard_enabled_parm = {"title":"<#DDNS_adGuard_enable#>", "type":"switch", "id":"adguard_enable", "set_value": orig_adguard_enable? "on": "off"};
 	var $adguard_enabled_item = Get_Component_Switch(adguard_enabled_parm)
 		.appendTo($("#adguard_enable_div"))
@@ -359,7 +358,7 @@ function generate_setting_items(){
 			}
 		});
 
-	if((theme == "SDN_PROFILE" || theme == "SDN_WIZARD")&& flag == "ENABLE"){
+	if((sdn_theme == "SDN_PROFILE" || sdn_theme == "SDN_WIZARD")&& flag == "ENABLE"){
 		$("#account_container").show();
 		$("#adguard_ad_container_bottom").show();
 	}
@@ -485,7 +484,7 @@ function get_adGuard_DNS_list(){
 
 		$advanced_container.click(function(){
 			$(".hidden_mask").fadeIn(500);
-			if(theme == "SDN_PROFILE" || theme == "SDN_WIZARD")
+			if(sdn_theme == "SDN_PROFILE" || sdn_theme == "SDN_WIZARD")
 				$("html, body").scrollTop(0)
 			else
 				parent.window.scrollTo(0, 0);
@@ -531,7 +530,7 @@ function get_adGuard_DNS_list(){
 			.addClass("arrow_right_blue")
 			.appendTo($advanced_arrow_div)
 
-		if(theme != "SDN_WIZARD" && theme != "SDN_PROFILE"){
+		if(sdn_theme != "SDN_WIZARD" && sdn_theme != "SDN_PROFILE"){
 			$("<div>")
 				.attr("id", "apply_btn")
 				.addClass("action_container")
@@ -816,7 +815,7 @@ function add_device(server_id){
 		.appendTo($new_device_action_container);
 
 	$("<div>")
-		.html("Discard")
+		.html("Discard") //untranslated
 		.addClass("discard_btn")
 		.appendTo($action_button_container)
 		.click(function(){
@@ -840,7 +839,7 @@ function add_device(server_id){
 			}
 			else{
 				if(!is_duplicate_device_name(new_device_name)){
-					if(theme == ""  || theme == undefined)
+					if(sdn_theme == ""  || sdn_theme == undefined)
 					parent.showLoading(10);
 					hide_device_hint(this_server_id)
 					setTimeout(function(){
@@ -938,7 +937,7 @@ function apply_settings(){
 
 	$("#adGuard_settings_container").find(".rwd_radio_container").each(function(){
 		if($(this).hasClass("selected")){
-			if(theme == ""  || theme == undefined)
+			if(sdn_theme == ""  || sdn_theme == undefined)
 				parent.showLoading(10);
 			var selected_device_id = $(this).attr("value");
 			if(cur_device_id != selected_device_id){
@@ -959,7 +958,7 @@ function apply_settings(){
 						});
 						var new_rule = dns_ipaddress+">853>"+dns_over_tls_url+">";
 						dnspriv_rulelist_array.push(new_rule);
-						if(theme == "SDN_PROFILE" || theme == "SDN_WIZARD"){
+						if(sdn_theme == "SDN_PROFILE" || sdn_theme == "SDN_WIZARD"){
 							applyData["dot_idx"] = subnet_idx;
 							applyData["dot" + subnet_idx + "_rl"] = dnspriv_rulelist_array.join("<");
 						}
@@ -979,14 +978,14 @@ function apply_settings(){
 	});
 
 	if(!has_device_selected){
-		if(theme == "SDN_PROFILE" || theme == "SDN_WIZARD")
+		if(sdn_theme == "SDN_PROFILE" || sdn_theme == "SDN_WIZARD")
 			parent.alert("<#DDNS_adGuard_apply_hint#>");
 		else
 			alert("<#DDNS_adGuard_apply_hint#>");
 		return;
 	}
 
-	if((theme == "" || theme == undefined) && settings_changed)
+	if((sdn_theme == "" || sdn_theme == undefined) && settings_changed)
 		httpApi.nvramSet(applyData, function(){refreshpage();});
 	else
 		return;
@@ -995,21 +994,21 @@ function apply_settings(){
 <body style="visibility: hidden; background: transparent; width: 96%;">
 <div class="hidden_mask popup_element"></div>
 <div id="function_help_div" class="popup_container">
-	<div class="popup_title_container"><div class="title">About Feature</div><div id="title_close_btn" class="close_btn"></div></div>
+	<div class="popup_title_container"><div class="title"><#NewFeatureAbout#></div><div id="title_close_btn" class="close_btn"></div></div>
 		<div class="adGuard_popup_content_container">
 			<div style="border-bottom: 1px solid #DCDCDC;">
-				<div style="font-size: 13px; font-weight: 600; color: #0051A8; text-transform: uppercase;"><#NewFeatureDesc#></div>
+				<div class="adGuard_help_title"><#NewFeatureDesc#></div>
 				<div class="adGuard_help_text"><#DDNS_adGuard_About_deac1#></div>
 			</div>
 			<div style="border-bottom: 1px solid #DCDCDC;">
-				<div style="font-size: 13px; font-weight: 600; color: #0051A8; text-transform: uppercase; padding-top: 16px;">FAQ</div>
-				<div style="font-size: 16px; font-weight: 500; line-height: 28px; margin-top: 18px; padding-bottom: 16px;"><a target='_blank' href='https://asus.click/AdGuardFAQ'>How to set up ADGUARD DNS on ASUS router?</a></div><!--untranslated-->
+				<div class="adGuard_help_title" style="padding-top: 16px;">FAQ</div>
+				<div class="adGuard_help_text"><a target='_blank' href='https://asus.click/AdGuardFAQ'>How to set up ADGUARD DNS on ASUS router?</a></div><!--untranslated-->
 			</div>
 		</div>
 	</div>
 </div>
 <div id="advanced_settingGuide_div" class="popup_container">
-	<div class="popup_title_container"><div class="title">Setting Guide</div><div id="settingGuide_close_btn" class="close_btn"></div></div>
+	<div class="popup_title_container"><div class="title">Setting Guide</div><div id="settingGuide_close_btn" class="close_btn"></div></div><!--untranslated-->
 		<div class="adGuard_popup_content_container" style="padding-bottom: 0px;">
 			<div style="padding: 16px; border-radius: 10px; border: 1px solid #B3B3B3;">
 				<div style="font-size: 16px;"><#DDNS_adGuard_AdvSetting_desc#></div>
@@ -1053,14 +1052,14 @@ function apply_settings(){
 	<div id="adguard_ad_container_top" class="adGuard_ad_container" onclick="openLink('https://adguard-dns.io/?aid=33478');"><img class="adGuard_ad_pic"></img></div>
 	<div id = "adguard_enable_div" class = "adGuard_enable_div"></div>
 	<div id = "account_container" style="display: none; justify-content: center; align-items: flex-start; height: auto;">
-		<div style="height: 38px; display: flex; align-items: center; border-left: 6px solid #006CE1; padding-left: 16px; margin: 10px 0px; font-size: 18px;">ADGUARD Account</div>
+		<div class="adGuard_account_title">ADGUARD Account</div><!--untranslated-->
 		<div id="login_hint_div" class="hint_div">
 			<div class="alert_icon"></div>
 			<div id="login_hint" class="hint_text"></div>
 		</div>
 		<div id="auth_div" class="auth_div">
 			<div class = "login_title">
-				<div class = "login_title_text">Login</div>
+				<div class="login_title_text"><#CTL_login#></div>
 				<div class="logo_ADGUARD"></div>
 			</div>
 			<div id="login_container" class="login_container">
@@ -1068,7 +1067,7 @@ function apply_settings(){
 					<div id= "login_info_div" class="login_info_div"></div>
 					<div id="login_action_container" class="login_action_container"></div>
 				</div>
-				<div style="font-size: 16px; height: 48px; display: flex; align-items: center;"><div>Don't have an account?</div><a style='color:#FC0; padding-left: 10px;' target='_blank' href='https://adguard-dns.io/?aid=33478'>Sign Up</a></div><!--untranslated-->
+				<div class="adGuard_no_account_hint"><div>Don't have an account?</div><a style='color:#248DFF; padding-left: 10px;' target='_blank' href='https://adguard-dns.io/?aid=33478'><#sign_up#></a></div><!--untranslated-->
 			</div>
 		</div>
 		<div id = "account_info_container" style="display: none;">

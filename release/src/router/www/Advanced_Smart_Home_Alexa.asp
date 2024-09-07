@@ -206,20 +206,24 @@ function create_AmazonRegion_select(){
 	}
 }
 
-function tag_control(){
+function tag_control() {
 	var obj;
-	if((obj = document.getElementById('remote_control_here')) != null){
-		obj.style="text-decoration: underline;cursor:pointer;";
-		obj.onclick=function(){
-            if(policy_status.PP == 0 || policy_status.PP_time == ''){
-                const policyModal = new PolicyModalComponent({
-                    policy: "PP",
-                    agreeCallback: enable_remote_control,
-                });
-                policyModal.show();
-            }else{
-                enable_remote_control();
-            }
+	if ((obj = document.getElementById('remote_control_here')) != null) {
+		obj.style = "text-decoration: underline;cursor:pointer;";
+		obj.onclick = function () {
+			const policyStatus = PolicyStatus()
+					.then(data => {
+						if (data.PP == 0 || data.PP_time == '') {
+							const policyModal = new PolicyModalComponent({
+								policy: "PP",
+								policyStatus: data,
+								agreeCallback: enable_remote_control,
+							});
+							policyModal.show();
+						} else {
+							enable_remote_control();
+						}
+					});
 		};
 	}
 }
@@ -293,15 +297,19 @@ function detcet_aae_state(){
 function get_activation_code(){
 	close_alert('alert_pin');
 
-    if(policy_status.PP == 0 || policy_status.PP_time == ''){
-        const policyModal = new PolicyModalComponent({
-            policy: "PP",
-            agreeCallback: gen_new_pincode,
-        });
-        policyModal.show();
-    }else{
-        gen_new_pincode();
-    }
+	const policyStatus = PolicyStatus()
+			.then(data => {
+				if (data.PP == 0 || data.PP_time == '') {
+					const policyModal = new PolicyModalComponent({
+						policy: "PP",
+						policyStatus: data,
+						agreeCallback: gen_new_pincode,
+					});
+					policyModal.show();
+				} else {
+					gen_new_pincode();
+				}
+			});
 }
 
 function gen_new_pincode(){

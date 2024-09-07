@@ -327,8 +327,8 @@ function init(){
 
 var DNSService = new Object;
 function updatDNSListOnline(){
-
-	$.getJSON("/ajax/DNS_List.json", function(local_data){
+	const extendno = httpApi.nvramCharToAscii(["extendno"]).extendno;
+	$.getJSON("/ajax/DNS_List.json?v="+extendno+"", function(local_data){
 		DNSService = Object.keys(local_data).map(function(e){
 				return local_data[e];
 		});

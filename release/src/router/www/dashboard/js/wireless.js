@@ -8,25 +8,30 @@ setTimeout(function () {
     let { wlBandSeq, isBRCMplatform } = system;
     var array = Object.keys(wlBandSeq);
 
+    const wl_nvram_payload = [];
+    for (let i = 0; i < array.length; i++) {
+        const key = array[i];
+        const wl_unit = wlBandSeq[key].wlUnit;
+        wl_nvram_payload.push("wl" + wl_unit + "_ssid");
+        wl_nvram_payload.push("wl" + wl_unit + "_country_code");
+        wl_nvram_payload.push("wl" + wl_unit + "_version");
+        wl_nvram_payload.push("wl" + wl_unit + "_bw_160");
+    }
+    const wl_nvram_data = httpApi.nvramGet(wl_nvram_payload);
+
     for (var i = 0; i < array.length; i++) {
         var key = array[i];
         var wl_unit = wlBandSeq[key].wlUnit;
         var postfixHook = wlBandSeq[key].postfixHook;
-        var nvram = httpApi.nvramGet([
-            "wl" + wl_unit + "_ssid",
-            "wl" + wl_unit + "_country_code",
-            "wl" + wl_unit + "_version",
-            "wl" + wl_unit + "_bw_160",
-        ]);
 
         wireless[key] = new wlObjConstructor();
-        wireless[key].ssid = nvram["wl" + wl_unit + "_ssid"];
+        wireless[key].ssid = wl_nvram_data["wl" + wl_unit + "_ssid"];
         wireless[key].capability = httpApi.hookGet("wl_cap_" + postfixHook).split(" ");
         wireless[key].channel = httpApi.hookGet("channel_list_" + postfixHook);
         wireless[key].chanspecs = httpApi.hookGet("chanspecs_" + postfixHook);
-        wireless[key].countryCode = nvram["wl" + wl_unit + "_country_code"];
+        wireless[key].countryCode = wl_nvram_data["wl" + wl_unit + "_country_code"];
         wireless[key].acsCH13Support = wireless[key].channel.length > 11 ? true : false;
-        wireless[key].sdkVersion = nvram["wl" + wl_unit + "_version"].split(".")[0];
+        wireless[key].sdkVersion = wl_nvram_data["wl" + wl_unit + "_version"].split(".")[0];
         wireless[key].xboxOpt = isSupport("optimize_xbox");
         wireless[key].noVHTSupport = isSupport("no_vht");
         wireless[key].heFrameSupport = (function () {
@@ -89,7 +94,7 @@ setTimeout(function () {
             }
         })();
 
-        wireless[key].bw160Enabled = nvram["wl" + wl_unit + "_bw_160"] === "1" ? true : false;
+        wireless[key].bw160Enabled = wl_nvram_data["wl" + wl_unit + "_bw_160"] === "1" ? true : false;
 
         if (Array.isArray(wireless[key].channel)) {
             wireless[key].dfsSupport = wireless[key].channel.some((element) => element === "56" || element === "100");

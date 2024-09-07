@@ -34,6 +34,10 @@ ifeq ($(RTCONFIG_BCM_502L07P2),y)
 LDFLAGS += -L$(TOP_PLATFORM)/ethctl_lib -lethctl
 endif
 
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000))
+LDFLAGS += -L$(TOP)/libhostapi -lhostapi
+endif
+
 INSTALL = install
 
 ifeq ($(wildcard ./*.c),)

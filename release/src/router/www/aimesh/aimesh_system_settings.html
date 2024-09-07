@@ -255,13 +255,24 @@ function initial_system_settings() {
 						})
 
 						container.find(".wlInput").keyup(function(e){
-							var nvramName = this.id.split("_")[1];
-							var referenceVal = this.value;
-							if(this.id.indexOf("_0") !== -1){
-								var wlArray = getAllWlArray();
-								for(var idx=1; idx<wlArray.length; idx++){
-									container.find("#wireless_" + nvramName + "_" + wlArray[idx].ifname).val(referenceVal + ((nvramName == "ssid" && referenceVal.length < 27) ? wlArray[idx].suffix : ""));
+							const $wl_container = $(this).closest("#wlInputField");
+							const wl_field = $(this).attr("id").split("_")[1];
+							if($wl_container.find(`input[id^="wireless_${wl_field}_"]`).length == 1) return;
+							const $first_wl_input = $wl_container.find(`input[id^="wireless_${wl_field}_"]`).first();
+							const first_wl_id = $first_wl_input.attr("id");
+							const this_wl_id = $(this).attr("id");
+							if(first_wl_id === this_wl_id){
+								if($wl_container.attr("sync_wl") == "false") return false;
+								const first_wl_field = $first_wl_input.attr("id").split("_")[1];
+								const referenceVal = $first_wl_input.val();
+								const wlArray = getAllWlArray();
+								for(let idx=1; idx<wlArray.length; idx++){
+									let $wl_input = container.find("#wireless_" + first_wl_field + "_" + wlArray[idx].ifname);
+									$wl_input.val(referenceVal + ((first_wl_field == "ssid" && referenceVal.length < 27) ? wlArray[idx].suffix : ""));
 								}
+							}
+							else{
+								$wl_container.attr({"sync_wl": "false"});
 							}
 						});
 
@@ -370,7 +381,7 @@ function initial_system_settings() {
 							$hint_bg.append($("<div>").addClass("divide_line"));
 						}
 
-						var $wlInputField = $("<div>").attr({"id":"wlInputField"});
+						var $wlInputField = $("<div>").attr({"id":"wlInputField", "sync_wl":"true"});
 						var wlArray = ((sc_status == "0") ? getAllWlArray() : [{"title":"", "ifname":"0"}]);
 						$wlInputField.html(Get_Component_WirelessInput(wlArray));
 						$wlInputField.appendTo($hint_bg);
@@ -673,7 +684,7 @@ function check_not_support_nodes(_feature) {
 		}
 	});
 	return not_support_list;
-};
+}
 function check_wifi_backhaul_node() {
 	var wifi_backhaul_list = "";
 	var get_cfg_clientlist = httpApi.hookGet("get_cfg_clientlist");

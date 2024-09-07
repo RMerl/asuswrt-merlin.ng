@@ -431,8 +431,14 @@ else
 	var captcha_on = false;
 
 var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=SG_TeleStand&lang=&kw=&num=";
+var ATEMODE = '<% nvram_get("ATEMODE"); %>';
+
 function initial(){
 	top.name = "";/* reset cache of state.js win.name */
+
+	if(ATEMODE == "1"){
+		$(".login-title-desc").text("<#Sign_in_title#>" + " (ATE Mode)");
+	}
 
 	/*handle sysdep for ROG or ODM product*/
 	if(odm_support){

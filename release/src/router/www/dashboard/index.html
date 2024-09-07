@@ -14,6 +14,7 @@
         <script src="./js/asus.js"></script>
         <script src="./js/basic.js"></script>
         <script src="./js/wireless.js"></script>
+        <script src="./js/asus_policy.js"></script>
 
         <link rel="stylesheet" href="./css/bootstrap.min.css" />
         <link rel="stylesheet" href="./css/bootstrap-customize.css" />
@@ -45,6 +46,28 @@
                     })
             }
         }, 3000);
+
+        function checkPolicy() {
+            const policyStatus = PolicyStatus()
+                .then(data => {
+                    if (data.EULA == "0") {
+                        const policyModal = new PolicyUpdateModalComponent({
+                            policyStatus: data,
+                            securityUpdate: 1,
+                            websUpdate: 1,
+                        });
+                        policyModal.show();
+                    } else if (data.EULA == 1 && ((data.PP == 1 && data.PP_time != "") || (data.PP == 0 && data.PP_time == ""))) {
+                        const policyModal = new PolicyModalComponent({
+                            policyStatus: data,
+                            policy: 'PP',
+                            securityUpdate: 1,
+                            websUpdate: 1,
+                        });
+                        policyModal.show();
+                    }
+                });
+        }
 
         document.addEventListener("DOMContentLoaded", function () {
             let urlPath = urlParameter.get("url") ? urlParameter.get("url") : "dashboard";

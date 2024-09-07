@@ -583,6 +583,8 @@
 .amesh_action_bg {
 	margin: 15px;
 	text-align: center;
+	display: flex;
+	justify-content: space-evenly;
 }
 .amesh_no_data {
 	color:#FC0;

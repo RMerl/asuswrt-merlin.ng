@@ -97,6 +97,10 @@
 #include <libatee.h>
 #endif
 
+#ifdef RTBE58U_PRO
+#define RTBE58U_PRO_LED_WAR	1
+#endif
+
 #ifdef RTCONFIG_EXTPHY_BCM84880
 void config_ext_wan_port();
 void get_ext_phy_id();
@@ -249,6 +253,17 @@ static inline char *node_str(){
 
 	return "R";
 }
+
+#if defined(RTCONFIG_CONNDIAG)
+#define diag_is_cap() (is_cap() || (nvram_get_int("re_mode") == 0))
+
+static inline char *diag_node_str(){
+	if(diag_is_cap())
+		return "C";
+
+	return "R";
+}
+#endif
 #endif
 
 #ifdef RTCONFIG_BCMARM
@@ -370,7 +385,7 @@ do {					\
 #define DSL_TONE_MAX     8192
 #endif
 
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_YAFFS) || defined(RTCONFIG_UBIFS)
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_YAFFS) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION)
 #define WEBSUPG_FILE "/jffs/webs_upgrade.log"
 #define WEBSUPG_1_FILE "/jffs/webs_upgrade.log-1"
 #else
@@ -1082,11 +1097,14 @@ extern int bcm_cled_ctrl(int rgb, int cled_mode);
 extern int bcm_cled_ctrl_single_white(int rgb, int cled_mode);
 #endif
 #endif
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI) || defined(GSBE18000)
 extern void setLEDGroupOn(void);
 extern void setLEDGroupOff(void);
 extern void cled_set(int gpio, uint32_t config0, uint32_t config1, uint32_t config2, uint32_t config3);
 extern void LEDGroupReset(int mode);
+#endif
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI)
+extern int vlan4094_enabled();
 #endif
 extern void activateLANLed();
 #ifndef RTAC68U_V4
@@ -1190,7 +1208,10 @@ extern int mld_ifnames_set(char *mld_group, char *subunit);
 extern int mlo_api(char *mode, char *interface, char *group, char *subunit);
 extern int mld_enable_chk();
 extern void init_mlo_config();
-extern void set_mlo_config();
+extern int set_mlo_config();
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+extern void mlo_rescue_war();
+#endif
 #endif
 #if defined(RTCONFIG_MULTISERVICE_WAN)
 typedef struct {
@@ -1609,6 +1630,7 @@ extern int wlconf_rtk(const char* ifname);
 extern void gen_rtk_config(const char* ifname);
 extern int rtk_chk_wlc_ssid(const char* ifname);
 #endif /* RTCONFIG_REALTEK */
+extern void dhcp_war(void);
 extern void start_lan(void);
 extern void stop_lan(void);
 extern void do_static_routes(int add);
@@ -1717,9 +1739,11 @@ extern int pc_main(int argc, char *argv[]);
 // pc_block.c
 #ifdef RTCONFIG_PARENTALCTRL
 extern int pc_block_main(int argc, char *argv[]);
-extern void config_blocking_redirect(FILE *fp);
+extern void config_blocking_redirect(FILE *fp, char *lan_if);
 #ifdef RTCONFIG_PC_REWARD
-extern void config_pc_reward_redirect(FILE *fp);
+#ifdef RTCONFIG_MULTILAN_CFG
+extern void handle_sdn_config_pc_reward_redirect(FILE *fp);
+#endif
 extern int is_in_pc_reward_period(char *mac);
 #endif
 #ifdef RTCONFIG_ISP_OPTUS
@@ -1957,6 +1981,11 @@ static inline void stop_jffs2(int stop) { stop_yaffs(stop); }
 #elif defined(RTCONFIG_JFFS2) || defined(RTCONFIG_JFFSV1) || defined(RTCONFIG_BRCM_NAND_JFFS2)
 extern void start_jffs2(void);
 extern void stop_jffs2(int stop);
+#elif defined(RTCONFIG_FLASH_TYPE_EMMC)
+extern void start_ext4fs(void);
+extern void stop_ext4fs(int stop);
+static inline void start_jffs2(void) { start_ext4fs(); }
+static inline void stop_jffs2(int stop) { stop_ext4fs(stop); }
 #else
 static inline void start_jffs2(void) { }
 static inline void stop_jffs2(int stop) { }
@@ -2017,17 +2046,20 @@ extern int send_arpreq(void);
 extern int psta_monitor_main(int argc, char *argv[]);
 #endif
 // ledg.c
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI) || defined(GSBE18000)
 extern int ledg_main(int argc, char *argv[]);
 #endif
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GSBE18000)
 extern int ledbtn_main(int argc, char *argv[]);
 #endif
 #ifdef GTAX6000
 extern int antled_main(int argc, char *argv[]);
 #endif
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI)
 extern int rtkmonitor_main(int argc, char *argv[]);
+#endif
+#if defined(RTBE82M) || defined(GSBE18000)
+extern int mxlmonitor_main(int argc, char *argv[]);
 #endif
 #if defined(RTCONFIG_NBR_RPT)
 extern int nbr_monitor_main(int argc, char *argv[]);
@@ -2180,7 +2212,7 @@ extern void hotplug_usb(void);
 extern void add_usb_host_modules(void);
 #ifdef RTCONFIG_USB_MODEM
 extern void add_usb_modem_modules(void);
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION)
 extern int modem_data_main(int argc, char *argv[]);
 #endif
 extern void stop_modem_program();
@@ -2282,13 +2314,17 @@ extern int mount_cifs_main(int argc, char *argv[]);
 static inline void start_cifs(void) {};
 static inline void stop_cifs(void) {};
 #endif
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI) || defined(GSBE18000)
 extern int start_ledg(void);
 extern int stop_ledg(void);
 #endif
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI)
 extern int start_rtkmonitor(void);
 extern int stop_rtkmonitor(void);
+#endif
+#if defined(RTBE82M) || defined(GSBE18000)
+extern int start_mxlmonitor(void);
+extern int stop_mxlmonitor(void);
 #endif
 
 // linkmonitor.c
@@ -2800,7 +2836,7 @@ extern int update_asus_ddns_token();
 extern int update_asus_ddns_token_main(int argc, char *argv[]);
 #endif
 extern void stop_ddns(void);
-extern int start_ddns(char *caller);
+extern int start_ddns(char *caller, int isAidisk);
 extern void refresh_ntpc(void);
 extern void start_hotplug2(void);
 extern void stop_hotplug2(void);
@@ -3221,7 +3257,7 @@ extern int nmp_get_vendorclass(int argc, char **argv);
 
 /* amas_lib.c */
 #ifdef RTCONFIG_AMAS
-extern int amas_lib_device_ip_query(char *mac, char *ip);
+extern int amas_lib_device_ip_query(char *mac, char *ifname, char *ip);
 extern int amas_lib_main(int argc, char **argv);
 extern void stop_amas_lib();
 extern void start_amas_lib();

@@ -877,11 +877,11 @@ var schedule = function(config_set){
 			}
 
 			if(!legal_flag){
-				$top_schedule_ui.find(".timeset_container .valid_hint_component").html("* <#weekSche_format_incorrect#> <#weekSche_check_and_retype#>").show();
+				$top_schedule_ui.find("[data-viewport='schedule_timeset'] .valid_hint_component").html("* <#weekSche_format_incorrect#> <#weekSche_check_and_retype#>").show();
 				return;
 			}
 			else
-				$top_schedule_ui.find(".timeset_container .valid_hint_component").hide().empty();
+				$top_schedule_ui.find("[data-viewport='schedule_timeset'] .valid_hint_component").hide().empty();
 
 			var click_weekday_list = $top_schedule_ui.find("[data-viewport=schedule_timeset] .weekdayset_component > div.clicked");
 			var total_weekday = 0;
@@ -1029,7 +1029,7 @@ var schedule = function(config_set){
 						var hour = parseInt($top_timeset_obj.find(".combi_input.hour").val());
 						var min = parseInt($top_timeset_obj.find(".combi_input.minute").val());
 						if((hour == 0 && min < 5)){
-							show_valid_hint("* <#FirewallConfig_URLActiveTime_itemhint2#>", $top_timeset_obj.find(".combi_input.minute"));
+							show_valid_hint(`* At least five minutes.`, $top_timeset_obj.find(".combi_input.minute"));/* untranslated */
 							return false;
 						}
 						$(this).val(num_add_left_pad($(this).val(), 2));

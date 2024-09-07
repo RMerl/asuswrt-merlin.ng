@@ -8,7 +8,7 @@
 #define MAX_VALUE_CONNECTION_TIMEOUT	300	/* second */
 #define MAX_VALUE_TRAFFIC_TIMEOUT	300	/* second */
 
-#if (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS))
+#if (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION))
 #define CFG_MNT_FOLDER		"/jffs/.sys/cfg_mnt/"
 #else
 #define CFG_MNT_FOLDER		"/tmp/cfg_mnt/"
@@ -81,7 +81,7 @@ static struct time_mapping_s time_mapping_list[] = {
 	{ "RT-AX56U",   50,     120,     60},
 	{ "RP-AX56",   50,     120,     60},
 	{ "RP-AX58",   50,     120,     60},
-	{ "RP-BE58",   50,     120,     60},
+	{ "RP-BE58",   80,     150,     150},
 	{ "GT-AX11000",	50,     120,     60},
 	{ "RT-AC85P",	120,	60,	60},
 	{ "GT-AXY16000",80,    120,     60},
@@ -127,7 +127,12 @@ static struct time_mapping_s time_mapping_list[] = {
 	{ "RT-BE92U",	50,	120,	60},
 	{ "RT-BE95U",	50,	120,	60},
 	{ "RT-BE82U",	50,	120,	60},
+	{ "TUF-BE82",	50,	120,	60},
+	{ "RT-BE82M",	50,	120,	60},
 	{ "RT-BE58U_PRO",   50,     120,    60},
+	{ "RT-BE58_GO",   50,     120,    60},
+	{ "GT-BE19000_AI", 90,    120,     60},
+	{ "GS-BE18000",	50,	120,	60},
 	/* END */
 	{ NULL, 0, 0, 0 }
 };

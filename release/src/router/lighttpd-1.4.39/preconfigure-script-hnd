@@ -51,6 +51,12 @@ if [ -n "$TRUSTZONE" ]; then
         LDFLAGS+=" -L$router_dir/ateed/ -latee"
 fi
 
+RTBE82M=`cat ../shared/version.h | grep "RT-BE82M"`
+GSBE18000=`cat ../shared/version.h | grep "GS-BE18000"`
+if [ -n "$RTBE82M" ] || [ -n "$GSBE18000" ]; then
+	LDFLAGS+=" -L$router_dir/libhostapi/ -lhostapi"
+fi
+
 export XML_CFLAGS="-I$cur_dir/../libxml2/include"
 export XML_LIBS="-L$cur_dir/../libxml2/.libs -lxml2 -lm"
 export SQLITE_CFLAGS="-I$cur_dir/../sqlite"

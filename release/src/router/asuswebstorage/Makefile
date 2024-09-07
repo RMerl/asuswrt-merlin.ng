@@ -43,6 +43,10 @@ ifeq ($(RTCONFIG_TRUSTZONE),y)
 LDFLAGS += -L$(TOP)/ateed/ -latee
 endif
 
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000))
+LDFLAGS += -L$(TOP)/libhostapi -lhostapi
+endif
+
 ifeq ($(wildcard $(TOP)/asuswebstorage/*.c),)
 all:
 	-cp -f $(TOP)/asuswebstorage/prebuild/$(BUILD_NAME)/asuswebstorage asuswebstorage

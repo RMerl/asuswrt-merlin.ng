@@ -1,4 +1,10 @@
-﻿.ui-state-default,
+﻿#jstree::-webkit-scrollbar-track{
+	background-color: rgba(0, 0, 0, 0.7);
+}
+#jstree::-webkit-scrollbar-thumb{
+	background-color: #248DFF;
+}
+.ui-state-default,
 .ui-widget-content .ui-state-default,
 .ui-widget-header .ui-state-default {
 	background: #006CE1;
@@ -447,6 +453,7 @@
 .jstree-default .jstree-clicked {
 	background: initial;
 }
+/*
 .jstree-default .jstree-wholerow-hovered {
 	background: initial;
 	box-shadow: initial;
@@ -454,6 +461,10 @@
 .jstree-default .jstree-wholerow-clicked {
 	background: initial;
 	box-shadow: -3px 0 0 0 #248DFF, 0 2px 0 0 rgba(0,0,0,0);
+}
+*/
+.jstree-default .jstree-wholerow-clicked:before{
+	background: #248DFF;
 }
 .jstree-default .jstree-node:before{
 	background: url(/images/New_ui/amesh/white_theme/topology_connect_quality.svg);

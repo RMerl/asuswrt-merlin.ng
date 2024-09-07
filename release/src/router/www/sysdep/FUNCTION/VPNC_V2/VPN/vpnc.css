@@ -583,17 +583,18 @@
 	min-width: 360px;
 	position: relative;
 }
-.profile_policy_item {
-	display: flex;
-	align-items: center;
-	height: 56px;
-	border-bottom: 1px solid rgba(171, 180, 194, 0.2);
+.profile_setting_item.policy{
+	font-size: 13px;
+	height: 56px !important;
+	color: rgba(171, 180, 194, 0.87) !important;
 }
-
-.profile_policy_item .text_content {
-	font-weight: 100;
-	font-size: 12px;
-	margin-left: 4%;
+.profile_setting_item.policy .text_content{
+	padding: 0 4%;
+}
+.profile_setting_item.policy .text_content > a{
+	color: rgb(43, 163, 255);
+	text-decoration: underline;
+	cursor: pointer;
 }
 .profile_setting_item.nowrap{
 	height: 48px !important;
@@ -1205,7 +1206,7 @@
 	font-size: 20px;
 	font-weight: 600;
 	letter-spacing: -0.18px;
-	height: auto;;
+	height: auto;
 }
 .function_desc_container{
 	display: flex;

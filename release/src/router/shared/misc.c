@@ -3177,7 +3177,8 @@ unsigned int netdev_calc(char *ifname, char *ifname_desc, unsigned long long *rx
 	char modelvlan[32];
 	int i, j, model, unit;
 	const struct dummy_ifaces_s *p;
-	char wl_ifnames[32] = { 0 };
+	char wl_ifnames[512] = { 0 };
+
 #if defined(RTCONFIG_SWITCH_RTL8370M_PHY_QCA8033_X2) || \
     defined(RTCONFIG_SWITCH_RTL8370MB_PHY_QCA8033_X2)
 	int wans = get_wans_dualwan();
@@ -3281,8 +3282,30 @@ unsigned int netdev_calc(char *ifname, char *ifname_desc, unsigned long long *rx
 	if (find_word(nv_lan_ifnames, ifname))
 	{
 		// find Wireless interface
-		i=0;
+#if defined(RTCONFIG_MULTILAN_CFG) && !defined(RTCONFIG_RALINK)
+{
+	strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
+	foreach(word, wl_ifnames, next) {
+		if(strncmp(word, ifname, 3) == 0) {
+			char unit_buf[8], *p1, *p2;
+			int len;
+
+			p1 = strchr(word, '.');
+			p2 = strchr(word, 'l');
+			len = p1 - p2;
+			i = 0;
+			if(len > 0){
+				snprintf(unit_buf, len, "%s", p2+1);
+				i = atoi(unit_buf);
+			}
+			sprintf(ifname_desc, "WIRELESS%d", i);
+			return 1;
+		}
+	}
+}
+#else
 		strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
+		i = 0;
 		foreach(word, wl_ifnames, next) {
 			SKIP_ABSENT_BAND_AND_INC_UNIT(i);
 			if(strcmp(word, ifname)==0) {
@@ -3308,7 +3331,7 @@ unsigned int netdev_calc(char *ifname, char *ifname_desc, unsigned long long *rx
 
 			i++;
 		}
-
+#endif
 #if defined(RTCONFIG_RALINK) && defined(RTCONFIG_WLMODULE_RT3352_INIC_MII)
 		if(model == MODEL_RTN65U)
 		{
@@ -3777,6 +3800,15 @@ int is_psr(int unit)
 	return 0;
 }
 
+int is_psta_mlo(int unit)
+{
+#ifdef RTCONFIG_MLO
+	return is_psr(unit) && nvram_get_int("mlo_mb") && !nvram_get_int("mlo_rp");
+#else
+	return 0;
+#endif
+}
+
 int psta_exist(void)
 {
 	char word[256], *next;
@@ -3849,7 +3881,7 @@ END:
 #if defined(RTCONFIG_OPENVPN) || defined(RTCONFIG_IPSEC)
 int set_crt_parsed(const char *name, char *file_path)
 {
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION)
 	char target_file_path[128] ={0};
 
 	if(!check_if_dir_exist(OVPN_FS_PATH))

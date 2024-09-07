@@ -501,7 +501,7 @@ static int _handle_sdn_stubby(const MTLAN_T *pmtl, const int action)
 	{
 		if (pmtl->enable)
 		{
-			if (pmtl->sdn_t.sdn_idx == 0 || pmtl->nw_t.idx != 0) // main LAN or non main subnet
+			if (pmtl->sdn_t.sdn_idx == 0 || pmtl->nw_t.idx != 0) // ignore IoT SDN with main subnet
 			{
 				memset(config_path, 0, sizeof(config_path));
 				_start_sdn_stubby(pmtl, config_path, sizeof(config_path));
@@ -590,11 +590,7 @@ static int _gen_sdn_dnsmasq_conf(const MTLAN_T *pmtl, char *config_file, const s
 
 		/* limit number of outstanding requests */
 		{
-			int max_queries = nvram_get_int("max_dns_queries");
-#if defined(RTCONFIG_SOC_IPQ8064)
-			if (max_queries == 0)
-				max_queries = 1500;
-#endif
+			int max_queries = nvram_get_int("max_dns_queries")?:1500;
 			if (max_queries)
 				fprintf(fp, "dns-forward-max=%d\n", max(150, min(max_queries, 10000)));
 		}

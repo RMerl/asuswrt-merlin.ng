@@ -184,6 +184,9 @@ endif
 ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20240103)
 CFLAGS += -DWIFI7_SDK_20240103
 endif
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20241007)
+CFLAGS += -DWIFI7_SDK_20241007
+endif
 endif
 
 OBJS = shutils.o defaults.o model.o rtstate.o boardapi.o
@@ -361,9 +364,7 @@ endif
 endif
 
 ifeq ($(RTCONFIG_BCMARM),y)
-ifneq ($(HND_ROUTER),y)
-OBJS += ifaddrs.o
-endif
+OBJS += netlink.o getifaddrs.o
 endif
 
 ifeq ($(RTCONFIG_QTN),y)
@@ -483,7 +484,7 @@ ifeq ($(RTCONFIG_HND_ROUTER_AX),y)
 OBJS += bcmxtlv.o bcmutils.o
 ifeq ($(or $(RTAX55),$(RTAX1800),$(RTAX58U_V2),$(RTAX3000N),$(BR63),$(RTCONFIG_EXT_RTL8367S)),y)
 OBJS += rtkswitch.o
-else ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT-BE98 GT-BE98_PRO GT-BE96 RT-BE58U TUF-BE3600 GT-BE19000 RT-BE92U RT-BE95U RT-BE82U RT-BE58U_PRO))
+else ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT-BE98 GT-BE98_PRO GT-BE96 RT-BE58U TUF-BE3600 GT-BE19000 RT-BE92U RT-BE95U RT-BE82U TUF-BE82 RT-BE58U_PRO GT-BE19000_AI))
 OBJS += rtkswitch.o
 endif
 ifeq ($(and $(BR63),$(NEW_SWITCH_ORDER)),y)
@@ -547,6 +548,13 @@ endif
 
 ifeq ($(or $(RTCONFIG_GEARUPPLUGIN), $(RTCONFIG_UUPLUGIN)), y)
 OBJS += $(if $(wildcard uu_utils.c),uu_utils.o,prebuild/uu_utils.o)
+endif
+
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000))
+CFLAGS += -I$(TOP)/libhostapi/switch_hostapi/src \
+	  -I$(TOP)/libhostapi/switch_hostapi/include/gpy \
+	  -I$(TOP)/libhostapi/switch_hostapi/include/gswip
+LDFLAGS += -L$(TOP)/libhostapi -lhostapi
 endif
 
 all: libshared.so libshared.a

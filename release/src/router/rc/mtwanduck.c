@@ -551,6 +551,14 @@ int mtwanduck_main(int argc, char *argv[])
 						if (is_mtwan_primary(unit))
 							mtwanduck_set_primary_link_internet(unit, 2, cur_phy_status);
 #endif
+#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_PRELINK)
+						if (nvram_get_int("x_Setting") == 0) {
+							nvram_set("amas_bdl_wanstate", "2");
+#if defined(RTCONFIG_BT_CONN)
+							ble_rename_ssid();
+#endif
+						}
+#endif
 					}
 					else
 					{
@@ -564,6 +572,14 @@ int mtwanduck_main(int argc, char *argv[])
 								mtwanduck_set_primary_link_internet(unit, 1, cur_phy_status);
 							else
 								mtwanduck_set_primary_link_internet(unit, 0, cur_phy_status);
+						}
+#endif
+#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_PRELINK)
+						if (nvram_get_int("x_Setting") == 0) {
+							nvram_set("amas_bdl_wanstate", "0");
+#if defined(RTCONFIG_BT_CONN)
+							ble_rename_ssid();
+#endif
 						}
 #endif
 					}

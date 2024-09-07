@@ -40,6 +40,11 @@ char* pptpd_get_lan_ifnames(char* buf, size_t len)
 	int i;
 	int vpns_idx = get_vpns_idx_by_proto_unit(VPN_PROTO_PPTP, 0);
 
+	if (vpns_idx == 0) {
+		FREE_MTLAN((void *)pmtl);
+		return NULL;
+	}
+
 	if (get_mtlan_by_idx(SDNFT_TYPE_VPNS, vpns_idx, pmtl, &mtl_sz)) {
 		memset(buf, 0, len);
 		for (i = 0; i < mtl_sz; i++) {

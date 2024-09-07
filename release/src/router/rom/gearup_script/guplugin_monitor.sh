@@ -49,7 +49,7 @@ init() {
     insmod nf_conntrack_netlink
 
     # Read model from '/var/model'
-    local model=$(cat /var/model | head -n1)
+    local model=$(cat /var/model | head -n1 | cut -f1 -d,)
     if [ -z "${model}" ];then
         # Use 'odmpid'.
         model=$(nvram get odmpid)

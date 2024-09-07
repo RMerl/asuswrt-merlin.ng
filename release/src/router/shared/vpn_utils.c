@@ -45,7 +45,7 @@ static void _update_ovpn_client_enable(int unit, int enable)
 
 	nvram_safe_get_r("vpn_clientx_eas", buf, sizeof(buf));
 	for( cp = strtok(buf, ","); cp != NULL; cp = strtok(NULL, ",")) {
-		i = atoi(cp);
+		i = (int)strtol(cp, NULL, 0);
 		if(i > OVPN_CLIENT_MAX || i <=0)
 			continue;
 		ovpnc_enable[i-1] = 1;
@@ -92,6 +92,10 @@ int vpnc_load_profile(VPNC_PROFILE *list, const int list_size, const int prof_ve
 	memset(list, 0, sizeof(VPNC_PROFILE) * list_size);
 	while (nv && (b = strsep(&nvp, "<")) != NULL && cnt <= list_size)
 	{
+		desc = proto = server = username = passwd = active = vpnc_idx = NULL;
+		region = conntype = NULL;
+		wan_idx = caller = tunnel = NULL;
+
 		if (VPNC_PROFILE_VER1 == prof_ver)
 		{
 			// proto, server, active and vpnc_idx are mandatory
@@ -101,9 +105,9 @@ int vpnc_load_profile(VPNC_PROFILE *list, const int list_size, const int prof_ve
 			if (!active || !vpnc_idx)
 				continue;
 
-			list[cnt].active = atoi(active);
-			list[cnt].vpnc_idx = atoi(vpnc_idx);
-			list[cnt].wan_idx = (wan_idx) ? atoi(wan_idx) : 0;
+			list[cnt].active = (int)strtol(active, NULL, 0);
+			list[cnt].vpnc_idx = (int)strtol(vpnc_idx, NULL, 0);
+			list[cnt].wan_idx = (wan_idx) ? (int)strtol(wan_idx, NULL, 0) : 0;
 		}
 		else
 		{
@@ -127,7 +131,7 @@ int vpnc_load_profile(VPNC_PROFILE *list, const int list_size, const int prof_ve
 			else if (!strcmp(proto, PROTO_OVPN) || !strcmp(proto, PROTO_CYBERGHOST))
 			{
 				list[cnt].protocol = VPNC_PROTO_OVPN;
-				list[cnt].config.ovpn.ovpn_idx = atoi(server);
+				list[cnt].config.ovpn.ovpn_idx = (int)strtol(server, NULL, 0);
 				_update_ovpn_client_enable(list[cnt].config.ovpn.ovpn_idx, list[cnt].active);
 			}
 #ifdef RTCONFIG_WIREGUARD
@@ -135,7 +139,7 @@ int vpnc_load_profile(VPNC_PROFILE *list, const int list_size, const int prof_ve
 			{
 				char prefix[16] = {0};
 				list[cnt].protocol = VPNC_PROTO_WG;
-				list[cnt].config.wg.wg_idx = atoi(server);
+				list[cnt].config.wg.wg_idx = (int)strtol(server, NULL, 0);
 				snprintf(prefix, sizeof(prefix), "%s%d_", WG_CLIENT_NVRAM_PREFIX, list[cnt].config.wg.wg_idx);
 				nvram_pf_set_int(prefix, "enable", list[cnt].active);
 			}
@@ -143,16 +147,16 @@ int vpnc_load_profile(VPNC_PROFILE *list, const int list_size, const int prof_ve
 #ifdef RTCONFIG_TPVPN
 			else if (!strcmp(proto, PROTO_HMA))
 			{
-				if (is_tpvpn_configured(TPVPN_HMA, region, conntype, atoi(server)))
+				if (is_tpvpn_configured(TPVPN_HMA, region, conntype, (int)strtol(server, NULL, 0)))
 				{
 					list[cnt].protocol = VPNC_PROTO_OVPN;
-					list[cnt].config.ovpn.ovpn_idx = atoi(server);
+					list[cnt].config.ovpn.ovpn_idx = (int)strtol(server, NULL, 0);
 					_update_ovpn_client_enable(list[cnt].config.ovpn.ovpn_idx, list[cnt].active);
 				}
 				else
 				{
 					list[cnt].protocol = VPNC_PROTO_HMA;
-					list[cnt].config.tpvpn.tpvpn_idx = atoi(server);
+					list[cnt].config.tpvpn.tpvpn_idx = (int)strtol(server, NULL, 0);
 					if (region && conntype)
 					{
 						strlcpy(list[cnt].config.tpvpn.region, region, sizeof(list[cnt].config.tpvpn.region));
@@ -164,18 +168,18 @@ int vpnc_load_profile(VPNC_PROFILE *list, const int list_size, const int prof_ve
 			}
 			else if (!strcmp(proto, PROTO_NORDVPN))
 			{
-				if (is_tpvpn_configured(TPVPN_NORDVPN, region, conntype, atoi(server)))
+				if (is_tpvpn_configured(TPVPN_NORDVPN, region, conntype, (int)strtol(server, NULL, 0)))
 				{
 					char prefix[16] = {0};
 					list[cnt].protocol = VPNC_PROTO_WG;
-					list[cnt].config.wg.wg_idx = atoi(server);
+					list[cnt].config.wg.wg_idx = (int)strtol(server, NULL, 0);
 					snprintf(prefix, sizeof(prefix), "%s%d_", WG_CLIENT_NVRAM_PREFIX, list[cnt].config.wg.wg_idx);
 					nvram_pf_set_int(prefix, "enable", list[cnt].active);
 				}
 				else
 				{
 					list[cnt].protocol = VPNC_PROTO_NORDVPN;
-					list[cnt].config.tpvpn.tpvpn_idx = atoi(server);
+					list[cnt].config.tpvpn.tpvpn_idx = (int)strtol(server, NULL, 0);
 					if (region)
 						strlcpy(list[cnt].config.tpvpn.region, region, sizeof(list[cnt].config.tpvpn.region));
 					else
@@ -186,7 +190,7 @@ int vpnc_load_profile(VPNC_PROFILE *list, const int list_size, const int prof_ve
 			else if (!strcmp(proto, PROTO_IPSec))
 			{
 				list[cnt].protocol = VPNC_PROTO_IPSEC;
-				list[cnt].config.ipsec.prof_idx = atoi(server);
+				list[cnt].config.ipsec.prof_idx = (int)strtol(server, NULL, 0);
 			}
 			++cnt;
 		}

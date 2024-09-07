@@ -126,6 +126,7 @@ extern int parse_str_v2_to_sched_v2_list(const char *str_sched_v2, sched_v2_t **
 
 extern int check_sched_v2_on_off(const char *sched_str);
 extern int check_expire_on_off(const char *sched_str);
+extern int check_timesched_is_set(int unit, int subunit);
 extern void convert_wl_sched_v1_to_sched_v2();
 extern void convert_pc_sched_v1_to_sched_v2();
 

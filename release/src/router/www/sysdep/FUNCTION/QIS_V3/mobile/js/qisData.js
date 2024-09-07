@@ -53,6 +53,10 @@ var wanObj = {
 		"wan_s46_dslite_mode": "0"
 	},
 
+	"v6opt": {
+		"ipv6_service": "ipv6pt"
+	},
+
 	"wan46": {
 		"wan_proto": "",
 		"ipv6_service": "ipv6pt"

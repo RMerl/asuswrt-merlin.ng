@@ -9,6 +9,18 @@
 #jstree{
 	display: flex;
 }
+#jstree::-webkit-scrollbar-track{
+	background-color: rgba(255, 255, 255, 0.1);
+	border-radius: 6px;
+}
+#jstree::-webkit-scrollbar{
+	width: 10px;
+	height: 6px;
+}
+#jstree::-webkit-scrollbar-thumb{
+	border-radius: 6px;
+	background-color: #A10000;
+}
 .ui-slider {
 	position: relative;
 	text-align: left;
@@ -1378,9 +1390,11 @@
 	height: 42px;
 }
 .manage_settings_bg .two_text_item_bg > div:nth-child(2){
-	height: 30px;
+	min-height: 30px;
+	height: auto;
 	display: flex;
-	align-items: center;
+	flex-wrap: nowrap;
+	align-items: flex-start;
 	margin-bottom: 2px;
 }
 .manage_settings_bg .dropdown_item_bg .dropdown_select{
@@ -1520,6 +1534,8 @@
 	width: 24px;
 	height: 24px;
 	cursor: pointer;
+	min-width: 24px;
+	min-height: 24px;
 }
 .managment_icon.trash_icon{
 	background-position: 3px -151px;
@@ -1537,6 +1553,11 @@
 	color: #A4B7C3;
 	font-size: 12px;
 	margin-left: 6px;
+	margin-right: 20px;
+	min-height: 24px;
+	display: flex;
+	align-items: center;
+	word-break: break-all;
 }
 .arrow_icon{
 	position: relative;
@@ -2228,6 +2249,7 @@
 	-webkit-box-sizing: border-box;
 	box-sizing: border-box;
 }
+/*
 .jstree-default .jstree-wholerow-hovered {
 	background: #300202;
 	box-shadow: 0 2px 0 0 rgba(0,0,0,0.10);
@@ -2235,6 +2257,15 @@
 .jstree-default .jstree-wholerow-clicked {
 	background: #300202;
 	box-shadow: -3px 0 0 0 #A10000, 0 2px 0 0 rgba(0,0,0,0.10);
+}
+*/
+.jstree-default .jstree-wholerow-clicked:before{
+	position: absolute;
+	content: "";
+	width: 3px;
+	height: 80%;
+	background: #A10000;
+	top: 10%;
 }
 .jstree-default .jstree-node {
 	min-height: 0px;

@@ -80,6 +80,10 @@ CFLAGS += -I$(TOP)/ateed/
 LDFLAGS += -L$(TOP)/ateed/ -latee
 endif
 
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000))
+LDFLAGS += -L$(TOP)/libhostapi -lhostapi
+endif
+
 OBJS	=	main.o utility.o prelogin.o ftpcmdio.o postlogin.o privsock.o \
 		tunables.o ftpdataio.o secbuf.o ls.o \
 		postprivparent.o logging.o str.o netstr.o sysstr.o strlist.o \

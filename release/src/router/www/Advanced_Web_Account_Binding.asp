@@ -143,7 +143,7 @@ function parseJwt (token) {
 	}).join(''));
 
 	return JSON.parse(jsonPayload);
-};
+}
 
 
 function b64DecodeUnicode(str) {

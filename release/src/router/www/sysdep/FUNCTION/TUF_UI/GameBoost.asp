@@ -137,7 +137,7 @@ function pullLANIPList(obj){
 }
 
 if(adaptiveqos_support){
-	var gameList = '<% nvram_get("bwdpi_game_list"); %>'.replace(/&#60/g, "<");;
+	var gameList = '<% nvram_get("bwdpi_game_list"); %>'.replace(/&#60/g, "<");
 }
 else{
 	var gameList = '<% nvram_get("rog_clientlist"); %>'.replace(/&#60/g, "<");
@@ -601,7 +601,7 @@ function enableGearUp(){
 											<tr>
 												<td align="center">
 													<div style="width:85px;height: 85px;background-image: url('images/New_ui/GameBoost_mobileGame.svg');background-size: 100%;"></div>
-													<!-- <img style="padding-right:10px;;" src="/images/New_ui/GameBoost_WTFast.png" > -->
+													<!-- <img style="padding-right:10px;" src="/images/New_ui/GameBoost_WTFast.png" > -->
 												</td>
 												<td style="width:400px;height:120px;">
 													<div class="gB_desc"><#GB_mobile_desc1#></div>
@@ -611,7 +611,7 @@ function enableGearUp(){
 														<div style="margin: 0 12px">
 															<div id="android_qr" class="qr_code qr_android"></div>	
 															<a id="android_link" href="https://play.google.com/store/apps/details?id=com.asus.aihome" target="_blank">
-																<div style="width:124px;height:36px;background:url('images/googleplay.png') no-repeat;;background-size:100%;"></div>
+																<div style="width:124px;height:36px;background:url('images/googleplay.png') no-repeat;background-size:100%;"></div>
 															</a>
 															<a id="android_cn_link" style="display:none" href="https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/ASUSRouter_Android_Release.apk" target="_blank">
 																<div class="android_font">Android</div>
@@ -673,7 +673,7 @@ function enableGearUp(){
 											</tr>
 											<tr id='wtfast_3' style="display:none">
 												<td align="center" style="width:85px">
-													<img style="padding-right:10px;;" src="/images/New_ui/triLv3_wtfast.png" >
+													<img style="padding-right:10px;" src="/images/New_ui/triLv3_wtfast.png" >
 												</td>
 												<td style="width:400px;height:120px;">
 													<div class="gB_desc" style="margin-top: 10px;"><#Game_WTFast_desc#></div>

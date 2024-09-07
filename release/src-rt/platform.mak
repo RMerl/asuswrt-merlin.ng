@@ -527,7 +527,7 @@ define platformKernelConfig
 					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/adsl_phy.bin $(HND_SRC)/bcmdrivers/broadcom/char/adsl/impl1/adsl_phy.bin ; \
 					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/bcmxtmcfg.o $(HND_SRC)/bcmdrivers/broadcom/char/xtmcfg/impl2/bcmxtmcfg$(PRBM_EXT).o ; \
 				fi; \
-				if [ "$(HND_ROUTER_AX_675X)" = "y" ] || [ "$(HND_ROUTER_AX_6710)" = "y" ] || [ "$(BCM_502L07P2)" = "y" ]; then \
+				if [ "$(HND_ROUTER_AX_6756)" = "y" ] || [ "$(HND_ROUTER_AX_675X)" = "y" ] || [ "$(HND_ROUTER_AX_6710)" = "y" ] || [ "$(BCM_502L07P2)" = "y" ]; then \
 					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/archer.o $(HND_SRC)/bcmdrivers/broadcom/char/archer/impl1/archer$(PRBM_EXT).o ; \
 					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/bcmlibs.o $(HND_SRC)/bcmdrivers/broadcom/char/bcmlibs/impl1/bcmlibs$(PRBM_EXT).o ; \
 				fi; \

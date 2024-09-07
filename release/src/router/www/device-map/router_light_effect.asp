@@ -56,7 +56,7 @@ function switchTab(id){
 				})
 				.css("height", function(){
 					const support_night_mode = (()=>{
-						return ((based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" || based_modelid == "GT-BE96" || based_modelid == "GT-BE19000") ? true : false);
+						return ((based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" || based_modelid == "GT-BE96" || based_modelid == "GT-BE19000" || based_modelid == "GT-BE19000_AI") ? true : false);
 					})();
 					return (support_night_mode ? "530px" : $(this).css("height"));
 				})

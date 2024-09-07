@@ -52,7 +52,7 @@
 
 #include <rtconfig.h>
 
-#if (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS))
+#if (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION))
 #define NOTIFY_DB_FOLDER        "/jffs/.sys/nc/"
 #else
 #define NOTIFY_DB_FOLDER        "/tmp/nc/"

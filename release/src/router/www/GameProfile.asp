@@ -34,6 +34,7 @@ var overlib_str = new Array();	//Viz add 2011.07 for record longer virtual srvr 
 var vts_rulelist_array = decodeURIComponent('<% nvram_char_to_ascii("","game_vts_rulelist"); %>').replace(/&#62/g, ">");
 var nvram = httpApi.nvramGet(["vts_enable_x"]);
 var gameList = new Object;
+var wan0_proto = '<% nvram_get("wan0_proto"); %>';
 
 /*handle legacy profile*/
 (function(){
@@ -86,7 +87,7 @@ var gameList = new Object;
 
 function initial(){
 	show_menu();
-	if((wan_proto == "v6plus" || wan_proto == "ocnvc") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
+	if((wan0_proto == "v6plus" || wan0_proto == "ocnvc" || wan0_proto == "v6opt") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
 
 		$("#v6plus_port_range_note").show();
 		$(".setup_info_icon_game").show();
@@ -601,7 +602,7 @@ function newProfileOK(){
 		else{
 			if(!check_multi_range(document.getElementById("new_profile_externalPort"), 1, 65535, true))
 				return false;
-			if((wan_proto == "v6plus" || wan_proto == "ocnvc") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
+			if((wan0_proto == "v6plus" || wan0_proto == "ocnvc" || wan0_proto == "v6opt") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
 				if (!check_multi_range_s46_ports(document.getElementById("new_profile_externalPort"))){
 					if(!confirm(port_confirm))
 					{

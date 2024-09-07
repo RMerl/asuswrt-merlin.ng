@@ -77,5 +77,7 @@ extern int get_unit_chanspc_by_bandtype (char *mac, char *bandtype);
 extern int fix_mlo_dwb_for_bhfh(int dwb_subunit,int profile_type);
 #endif
 
+extern int check_suffix_type(char *suffix);
+
 #endif /* __CFG_LIB_H__ */
 /* End of cfg_lib.h */

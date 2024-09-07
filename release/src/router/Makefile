@@ -257,6 +257,8 @@ ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20231126)
 export LINUX_KERNEL=4.19.294
 else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20240103)
 export LINUX_KERNEL=4.19.275
+else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20241007)
+export LINUX_KERNEL=4.19.294
 else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20230426)
 export LINUX_KERNEL=4.19.275
 else
@@ -475,6 +477,8 @@ ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20231126)
 include Makefile.fw.be
 else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20240103)
 include Makefile.fw.be_369_1808
+else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20241007)
+include Makefile.fw.be_369_61
 else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20230426)
 include Makefile.fw.be_332_21
 else
@@ -558,11 +562,14 @@ else ifeq ($(RTCONFIG_BCM_7114),y)
 export WBDSOURCE_DIR := $(BASEDIR)/components/apps/wbd
 endif
 
+ifeq ($(HND_ROUTER_BE_4916),y)
+QOSMGMT_DIR := $(BASEDIR)/components/apps/qosmgmt
+endif
+
 ifeq ($(HND_ROUTER_AX),y)
 ifeq ($(RTCONFIG_BCM_MEVENTD),y)
 export CFLAGS += -DBCM_MEVENTD
 endif
-QOSMGMT_DIR := $(BASEDIR)/components/apps/qosmgmt
 ACSDV2_DIR := $(BASEDIR)/components/apps/acsdv2
 ifeq ($(RTCONFIG_BCM_CEVENTD),y)
 CEVENT_APP_DIR := $(BASEDIR)/components/apps/cevent_app
@@ -796,6 +803,11 @@ obj-$(RTCONFIG_TRUSTZONE) += tee_supplicant
 # obj-$(RTCONFIG_TRUSTZONE) += teec_sec_key
 obj-$(RTCONFIG_TRUSTZONE) += openssl
 obj-$(RTCONFIG_TRUSTZONE) += ateed
+endif
+
+ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), RT-BE82M GS-BE18000))
+obj-y += libhostapi
+obj-y += ethswbox
 endif
 
 obj-y += $(BUSYBOX)
@@ -1244,11 +1256,14 @@ obj-$(RTCONFIG_BCMARM) += et_arm$(EX7)
 endif
 ifeq ($(HND_ROUTER_AX),y)
 ifneq ($(RTCONFIG_NOWL),y)
-obj-y += qosmgmt
 obj-y += acsdv2
 endif
 obj-$(RTCONFIG_BCM_CEVENTD) += cevent_app
 endif
+endif
+
+ifeq ($(HND_ROUTER_BE_4916),y)
+obj-y += qosmgmt
 endif
 
 ifeq ($(RTCONFIG_AMAS),y)
@@ -1976,6 +1991,12 @@ endif
 ifeq ($(or $(HND_ROUTER_AX_6756),$(HND_ROUTER_BE_4916)),y)
 obj-$(HND_ROUTER) += rtpolicy
 endif
+ifeq ($(and $(HND_ROUTER_BE_4916),$(BUILD_GPTFDISK)),y)
+obj-$(HND_ROUTER) += uuid
+obj-$(HND_ROUTER) += popt
+obj-$(HND_ROUTER) += gptdfisk
+endif
+
 
 # ALPINE compile package
 obj-$(RTCONFIG_ALPINE) += qsr10g_image
@@ -2015,7 +2036,6 @@ obj-$(RTCONFIG_DUPVIF) += dhcpfwd
 obj-$(RTCONFIG_DUPVIF) += dupvif
 
 obj-$(RTCONFIG_FSMD) += fsmd
-
 obj-$(RTCONFIG_DNS_PING) += sqlite3
 obj-$(RTCONFIG_DNS_PING) += json-c
 obj-$(RTCONFIG_DNS_PING) += libcodb
@@ -5284,6 +5304,7 @@ inadyn/Makefile: inadyn/configure
 			-I$(STAGEDIR)/usr/include  -ffunction-sections -fdata-sections $(EXTRACFLAGS)" \
 		LDFLAGS="-L$(TOP_PLATFORM)/nvram$(BCMEX)$(EX7) -L$(TOP)/shared $(EXTRA_NV_LDFLAGS) $(if $(BCM_502L07P2),-L$(TOP_PLATFORM)/ethctl_lib) \
 			$(if $(RTCONFIG_TRUSTZONE),-L$(TOP)/ateed/ -latee) \
+			$(if $(filter $(BUILD_NAME),RT-BE82M GS-BE18000),-L$(TOP)/libhostapi -lhostapi,) \
 			 -L$(STAGEDIR)/usr/lib -Wl,--gc-sections $(LDFLAGS) $(EXTRALDFLAGS)" \
 		LIBS="-lnvram -lshared $(if $(BCM_502L07P2),-lethctl) $(if $(RTCONFIG_QTN),-L$(TOP)/libqcsapi_client -lqcsapi_client) -ldl"
 
@@ -6251,6 +6272,7 @@ dropbear/config.h: dropbear/config.h.in
 		LDFLAGS="-Wl,--gc-sections -L$(STAGEDIR)/usr/lib" \
 		LIBS="$(if $(RTCONFIG_PROTECTION_SERVER),-lptcsrv) \
 			$(if $(RTCONFIG_TRUSTZONE),-L$(TOP)/ateed -latee) \
+			$(if $(filter $(BUILD_NAME),RT-BE82M GS-BE18000),-L$(TOP)/libhostapi -lhostapi,) \
 			-L$(TOP_PLATFORM)/nvram${BCMEX}$(EX7) -lnvram -L$(TOP)/shared -lshared $(EXTRA_NV_LDFLAGS)" \
 		$(CONFIGURE) --disable-harden --disable-zlib --disable-pam \
 		--enable-openpty --enable-syslog --enable-shadow --enable-bundled-libtom \
@@ -7342,6 +7364,15 @@ EBK_INC=$(TOP)/kernel_header/include
 endif
 
 ifeq ($(HND_ROUTER_BE_4916),y)
+ifeq ($(BRCM_CHIP),6766)
+EBTABLES_HOST := --host=mips-linux-uclibc
+EBTABLES_TARGET := --target=mips-linux-uclibc
+EBTABLES_INCLUDE := -Iinclude -I$(HND_SRC)/kernel/bcmkernel/ -I$(HND_SRC)/kernel/linux-4.19/
+EBTABLES_CC_PATH := /opt/toolchains/crosstools-arm_softfp-gcc-10.3-linux-4.19-glibc-2.32-binutils-2.36.1/usr/bin
+EBTABLES_CC := $(EBTABLES_CC_PATH)/arm-buildroot-linux-gnueabi-gcc
+EBTABLES_CPP := $(EBTABLES_CC_PATH)/arm-buildroot-linux-gnueabi-cpp
+EBTABLES_LD := $(EBTABLES_CC_PATH)/arm-buildroot-linux-gnueabi-ld
+else
 EBTABLES_HOST := --host=mips-linux-uclibc
 EBTABLES_TARGET := --target=mips-linux-uclibc
 EBTABLES_INCLUDE := -Iinclude -I$(HND_SRC)/kernel/bcmkernel/ -I$(HND_SRC)/kernel/linux-4.19/
@@ -7349,6 +7380,7 @@ EBTABLES_CC_PATH := /opt/toolchains/crosstools-aarch64-gcc-10.3-linux-4.19-glibc
 EBTABLES_CC := $(EBTABLES_CC_PATH)/aarch64-buildroot-linux-gnu-gcc
 EBTABLES_CPP := $(EBTABLES_CC_PATH)/aarch64-buildroot-linux-gnu-cpp
 EBTABLES_LD := $(EBTABLES_CC_PATH)/aarch64-buildroot-linux-gnu-ld
+endif
 endif
 
 ebtables-2.0.11-clean:
@@ -7662,7 +7694,7 @@ else
 endif
 	@touch $@
 
-lighttpd-1.4.39: shared $(if $(BCM_502L07P2),ethctl_lib) nvram$(BCMEX)$(EX7) libpasswd libdisk samba-3.5.8 pcre-8.31 libxml2 sqlite libexif openssl curl $(if $(RTCONFIG_PERMISSION_MANAGEMENT),PMS_DBapis) lighttpd-1.4.39/stamp-h1
+lighttpd-1.4.39: shared $(if $(BCM_502L07P2),ethctl_lib) nvram$(BCMEX)$(EX7) libpasswd libdisk samba-3.5.8 pcre-8.31 libxml2 sqlite libexif openssl curl $(if $(RTCONFIG_PERMISSION_MANAGEMENT),PMS_DBapis) $(if $(filter $(BUILD_NAME),RT-BE82M GS-BE18000),libhostapi,) lighttpd-1.4.39/stamp-h1
 	$(MAKE) -C lighttpd-1.4.39 $(PARALLEL_BUILD)
 
 lighttpd-1.4.39-install:
@@ -9068,12 +9100,18 @@ ifeq ($(wildcard bluez-5.56/prebuild),)
 		GLIB_CFLAGS="-I$(TOP)/glib-2.59.0/glib" \
 		GLIB_LIBS="$(TOP)/glib-2.59.0//glib/.libs/libglib-2.0.so" \
 		UDEV_CFLAGS="-I$(STAGEDIR)/usr/include" UDEV_LIBS="$(STAGEDIR)/usr/lib/libudev.so" \
-		CFLAGS="-I$(STAGEDIR)/usr/include -I$(STAGEDIR)/usr/local/include -I$(SRCBASE)/include -I$(STAGEDIR)/usr/local/include/glib-2.0 -I$(STAGEDIR)/usr/local/lib/glib-2.0/include -I$(TOP)/shared -DENCRYPT -I$(TOP)/json-c -D$(MODEL)" \
+		CFLAGS="-I$(STAGEDIR)/usr/include -I$(STAGEDIR)/usr/local/include -I$(SRCBASE)/include -I$(STAGEDIR)/usr/local/include/glib-2.0 -I$(STAGEDIR)/usr/local/lib/glib-2.0/include -I$(TOP)/shared -I$(TOP)/libwebapi $(if $(RTCONFIG_CFGSYNC),-I$(TOP)/cfg_mnt) $(if $(RTCONFIG_AMAS),-I$(TOP)/shared/sysdeps/amas) -DENCRYPT -I$(TOP)/json-c -D$(MODEL)" \
 		LDFLAGS="-L$(STAGEDIR)/lib -L$(STAGEDIR)/usr/lib \
 			-ldbus-1 -liconv -ldl -lpthread \
 			-L$(STAGEDIR)/usr/local/lib \
 			-lglib-2.0 -lical -licalvcal \
 			-L$(TOP)/openssl -lssl -lcrypto \
+			$(if $(RTCONFIG_BWDPI),-L$(TOP)/bwdpi_source/asus -lbwdpi,) \
+			$(if $(RTCONFIG_BWDPI),-L$(TOP)/bwdpi_source/asus_sql -lbwdpi_sql,) \
+			$(if $(RTCONFIG_BWDPI),-L$(TOP)/sqlite/.libs -lsqlite3,) \
+			$(if $(RTCONFIG_CFGSYNC),-L$(TOP)/cfg_mnt -lcfgmnt,) \
+			-L$(TOP)/libdisk -ldisk \
+			-L$(TOP)/libwebapi -lwebapi \
 			-L$(TOP_PLATFORM)/nvram$(BCMEX)$(EX7) -L$(TOP)/nvram -L$(INSTALLDIR)/nvram/usr/lib -lnvram \
 			$(EXTRA_NV_LDFLAGS) \
 			-L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared $(if $(BCM_502L07P2),-L$(TOP_PLATFORM)/ethctl_lib -lethctl) \
@@ -9081,7 +9119,7 @@ ifeq ($(wildcard bluez-5.56/prebuild),)
 			-L$(INSTALLDIR)/zlib/usr/lib -lz -lm -lc -ljson-c -L$(TOP)/pcre-8.31/.libs -lpcre $(BLUEZ_5.56_LDFLAGS_EXT)"
 		touch $@
 endif
-bluez-5.56: bluez-5.56/stamp-h1
+bluez-5.56: libwebapi libdisk $(if $(RTCONFIG_CFGSYNC), cfg_mnt) bluez-5.56/stamp-h1
 	$(MAKE) -C $@ && $(MAKE) $@-stage
 
 bluez-5.56-clean:
@@ -9095,17 +9133,29 @@ ifeq ($(RTCONFIG_REALTEK),y)
 	install $(LIBDIR)/librt.so.1 $(TARGETDIR)/lib/
 	install $(LIBDIR)/libubacktrace.so.1 $(TARGETDIR)/lib/
 endif
-	install -D bluez-5.56/tools/btmgmt $(INSTALLDIR)/bluez-5.56/usr/bin/btmgmt
-	install -D bluez-5.56/tools/hcitool $(INSTALLDIR)/bluez-5.56/usr/bin/hcitool
-	install -D bluez-5.56/tools/hcidump $(INSTALLDIR)/bluez-5.56/usr/bin/hcidump
-	install -D bluez-5.56/tools/hciattach $(INSTALLDIR)/bluez-5.56/usr/bin/hciattach
-	install -D bluez-5.56/tools/hciconfig $(INSTALLDIR)/bluez-5.56/usr/bin/hciconfig
-	install -D bluez-5.56/tools/l2ping $(INSTALLDIR)/bluez-5.56/usr/bin/l2ping
-	install -D bluez-5.56/tools/l2test $(INSTALLDIR)/bluez-5.56/usr/bin/l2test
-	install -D bluez-5.56/client/bluetoothctl $(INSTALLDIR)/bluez-5.56/usr/bin/bluetoothctl
-	install -D bluez-5.56/tools/rfcomm $(INSTALLDIR)/bluez-5.56/usr/bin/rfcomm
-	install -D bluez-5.56/tools/sdptool $(INSTALLDIR)/bluez-5.56/usr/bin/sdptool
-	install -D bluez-5.56/tools/bccmd $(INSTALLDIR)/bluez-5.56/usr/bin/bccmd
+	install -d $(INSTALLDIR)/bluez-5.56/usr/bin
+	libtool --mode=install install -c bluez-5.56/tools/btmgmt $(INSTALLDIR)/bluez-5.56/usr/bin
+	libtool --mode=install install -c bluez-5.56/tools/hcitool $(INSTALLDIR)/bluez-5.56/usr/bin
+	libtool --mode=install install -c bluez-5.56/tools/hcidump $(INSTALLDIR)/bluez-5.56/usr/bin
+	libtool --mode=install install -c bluez-5.56/tools/hciattach $(INSTALLDIR)/bluez-5.56/usr/bin
+	libtool --mode=install install -c bluez-5.56/tools/hciconfig $(INSTALLDIR)/bluez-5.56/usr/bin
+	libtool --mode=install install -c bluez-5.56/tools/l2ping $(INSTALLDIR)/bluez-5.56/usr/bin
+	libtool --mode=install install -c bluez-5.56/tools/l2test $(INSTALLDIR)/bluez-5.56/usr/bin
+	libtool --mode=install install -c bluez-5.56/client/bluetoothctl $(INSTALLDIR)/bluez-5.56/usr/bin
+	libtool --mode=install install -c bluez-5.56/tools/rfcomm $(INSTALLDIR)/bluez-5.56/usr/bin
+	libtool --mode=install install -c bluez-5.56/tools/sdptool $(INSTALLDIR)/bluez-5.56/usr/bin
+	libtool --mode=install install -c bluez-5.56/tools/bccmd $(INSTALLDIR)/bluez-5.56/usr/bin
+#	install -D bluez-5.56/tools/btmgmt $(INSTALLDIR)/bluez-5.56/usr/bin/btmgmt
+#	install -D bluez-5.56/tools/hcitool $(INSTALLDIR)/bluez-5.56/usr/bin/hcitool
+#	install -D bluez-5.56/tools/hcidump $(INSTALLDIR)/bluez-5.56/usr/bin/hcidump
+#	install -D bluez-5.56/tools/hciattach $(INSTALLDIR)/bluez-5.56/usr/bin/hciattach
+#	install -D bluez-5.56/tools/hciconfig $(INSTALLDIR)/bluez-5.56/usr/bin/hciconfig
+#	install -D bluez-5.56/tools/l2ping $(INSTALLDIR)/bluez-5.56/usr/bin/l2ping
+#	install -D bluez-5.56/tools/l2test $(INSTALLDIR)/bluez-5.56/usr/bin/l2test
+#	install -D bluez-5.56/client/bluetoothctl $(INSTALLDIR)/bluez-5.56/usr/bin/bluetoothctl
+#	install -D bluez-5.56/tools/rfcomm $(INSTALLDIR)/bluez-5.56/usr/bin/rfcomm
+#	install -D bluez-5.56/tools/sdptool $(INSTALLDIR)/bluez-5.56/usr/bin/sdptool
+#	install -D bluez-5.56/tools/bccmd $(INSTALLDIR)/bluez-5.56/usr/bin/bccmd
 ifeq ($(RTCONFIG_SOC_IPQ40XX),y)
 	install -D bluez-5.56/btconfig_1.16 $(INSTALLDIR)/bluez-5.56/usr/bin/btconfig
 	install -D bluez-5.56/btchk.sh $(INSTALLDIR)/bluez-5.56/usr/bin/btchk.sh
@@ -9117,7 +9167,8 @@ else ifeq ($(RTCONFIG_LANTIQ),y)
 	install -D btconfig/btconfig $(TARGETDIR)/usr/bin/btconfig
 endif
 	install -D bluez-5.56/lib/.libs/libbluetooth.so.$(LIBBLUETOOTH_VER) $(TARGETDIR)/usr/lib/libbluetooth.so.$(LIBBLUETOOTH_VER)
-	install -D bluez-5.56/src/bluetoothd $(INSTALLDIR)/bluez-5.56/usr/bin/bluetoothd
+	libtool --mode=install install -c bluez-5.56/src/bluetoothd $(INSTALLDIR)/bluez-5.56/usr/bin
+#	install -D bluez-5.56/src/bluetoothd $(INSTALLDIR)/bluez-5.56/usr/bin/bluetoothd
 	$(STRIP) $(INSTALLDIR)/bluez-5.56/usr/bin/btmgmt
 	$(STRIP) $(INSTALLDIR)/bluez-5.56/usr/bin/hcitool
 	$(STRIP) $(INSTALLDIR)/bluez-5.56/usr/bin/hcidump
@@ -9955,6 +10006,7 @@ ifeq ($(HND_ROUTER),y)
 		LDFLAGS="-L$(TOP_PLATFORM)/nvram$(BCMEX)$(EX7) -L$(TOP_PLATFORM)/wlcsm \
 			-L$(TOP)/shared $(if $(BCM_502L07P2),-L$(TOP_PLATFORM)/ethctl_lib) \
 			$(if $(RTCONFIG_TRUSTZONE),-L$(TOP)/ateed/ -latee) \
+			$(if $(filter $(BUILD_NAME),RT-BE82M GS-BE18000),-L$(TOP)/libhostapi -lhostapi,) \
 			$(if $(RTCONFIG_QTN),-L$(TOP)/libqcsapi_client) $(EXTRALDFLAGS)" \
 		LIBS="-lnvram -lwlcsm -lshared $(if $(BCM_502L07P2),-lethctl) $(if $(RTCONFIG_QTN),-lqcsapi_client)"
 	@touch $@
@@ -10100,7 +10152,7 @@ ifneq ($(wildcard $(VISDCON_DIR)),)
 endif
 endif
 
-ifeq ($(HND_ROUTER_AX),y)
+ifeq ($(HND_ROUTER_BE_4916),y)
 qosmgmt:
 	@true
 ifeq ($(wildcard $(QOSMGMT_DIR)/prebuilt/acsd2),)
@@ -10248,6 +10300,8 @@ ifeq ($(HND_ROUTER_BE_4916),y)
 ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20231126)
 DTC_VER := -1.7.0
 else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20240103)
+DTC_VER := -1.7.0
+else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20241007)
 DTC_VER := -1.7.0
 else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20230426)
 DTC_VER := -1.7.0
@@ -10693,6 +10747,48 @@ bcm_bootstate:
 	$(MAKE) -C $(TOPX_DIR)
 
 .PHONY : bcm_bootstate
+
+uuid:
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
+	$(MAKE) -C $(TOPX_DIR)
+
+uuid-clean:
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
+	$(MAKE) -C $(TOPX_DIR) clean
+
+uuid-install:
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/uuid) $(wildcard uuid)))
+	$(MAKE) -C $(TOPX_DIR) install
+
+.PHONY : uuid
+
+popt:
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
+	$(MAKE) -C $(TOPX_DIR)
+
+popt-clean:
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
+	$(MAKE) -C $(TOPX_DIR) clean
+
+popt-install:
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/popt) $(wildcard popt)))
+	$(MAKE) -C $(TOPX_DIR) install
+
+.PHONY : popt
+
+gptdfisk: uuid popt
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
+	$(MAKE) -C $(TOPX_DIR) -f Bcmbuild.mk
+
+gptdfisk-clean:
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
+	$(MAKE) -C $(TOPX_DIR) -f Bcmbuild.mk clean
+
+gptdfisk-install:
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/gptdfisk) $(wildcard gptdfisk)))
+	$(MAKE) -C $(TOPX_DIR) INSTALLDIR=$(INSTALLDIR)/gptdfisk -f Bcmbuild.mk install
+
+.PHONY : gptdfisk
 
 #bcm_sslconf: expat-2.0.1 openssl
 #	$(MAKE) -C bcm_sslconf

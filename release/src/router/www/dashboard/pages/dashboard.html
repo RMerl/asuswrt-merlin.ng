@@ -461,6 +461,7 @@
                     setTimeout(getDnsPingData, 1000);
                 } else {
                     let item = Object.keys(data);
+                    const dns_ping_list_array = decodeURIComponent(httpApi.nvramCharToAscii(["dns_ping_list"]).dns_ping_list).split("<");
                     for (let i = 0; i < item.length; i++) {
                         if (item[i] === "status") {
                             continue;
@@ -469,8 +470,7 @@
                             index = item[i];
 
                         function findNameFromNvram(ip){
-                            var dns_ping_list_array = decodeURIComponent(httpApi.nvramCharToAscii(["dns_ping_list"]).dns_ping_list).split("<");
-                            var matchResult = dns_ping_list_array.filter(function(dns){return dns.split(">")[1] == ip})
+                            const matchResult = dns_ping_list_array.filter(function(dns){return dns.split(">")[1] == ip})
                             return matchResult[0] ? matchResult[0].split(">")[0] : "";
                         }
 
@@ -497,8 +497,16 @@
                 let quota = (function () {
                     let divisor = 100;
                     if (ping_array.length === 0) return divisor;
-
-                    return (Math.floor(ping_array[ping_array.length - 1].avg / divisor) + 1) * divisor;
+                    const max = Math.max(...ping_array.map(item => item.avg));
+                    if (max == 0) {
+                        return divisor;
+                    } else if (max < 1) {
+                        return 1.2;
+                    } else if (max < 30) {
+                        return 30;
+                    } else {
+                        return max * 1.2;
+                    }
                 })();
 
                 if (ping_array.length === 0) {
@@ -511,15 +519,15 @@
                 } else {
                     for (let i = 0; i < ping_array.length; i++) {
                         let name = ping_array[i].alias;
-                        let avgTime = parseFloat(ping_array[i].avg).toFixed(2);
+                        let avgTime = (ping_array[i].avg == 0) ? 0 : parseFloat(ping_array[i].avg).toFixed(2);
                         let ip = ping_array[i].ip;
                         let percentage = parseInt((avgTime / quota) * 100);
-                        let barWidth = percentage < 5 ? 5 : percentage;
+                        let barWidth = percentage;
                         code += `
                                     <div>
                                         <div class="d-flex flex-row align-items-end my-3">
                                             <div class="col-9 d-flex flex-column">
-                                                <div class="col-12 text-truncate card-data-title mb-2" title="${ip}">${name}</div>
+                                                <div class="col-12 text-truncate card-data-title mb-2 d-flex align-items-end justify-content-between " title="${ip}">${name}<small class="fs-7" style="color: #999">${ip}</small></div>
                                                  <div class="col-12 my-auto">
                                                 <div class="progress">
                                                     <div class="progress-bar progress-active" role="progressbar" style="width: ${barWidth}%"></div>

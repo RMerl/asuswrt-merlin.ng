@@ -236,7 +236,7 @@
 	float: left;
 }
 .amesh_router_icon_bg.card {
-	background-color: #3e030d;
+	background-color: #92650F;
 	border-radius: 10px;
 	height: 85px;
 	margin: auto;
@@ -250,11 +250,10 @@
 .amesh_router_icon {
 	width: 50px;
 	height: 50px;
-	background-color: #680516;
+	background-color: #92650F;
 	-webkit-border-radius: 10px;
 	-moz-border-radius: 10px;
 	border-radius: 10px;
-	box-shadow: 0px 0px 0px 1px #740F0F;
 	background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADYAAAA2CAMAAAC7m5rvAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAABFUExURQAAAP///////////////////////////////////////////////////////////////////////////////////////1Kdc8IAAAAWdFJOUwBA8KDfwBCAIOA/0F9vv5+wMGBQr89XZmCpAAAAzklEQVRIx+2VuRKDMAxEwfjmPrL//6kBkxSAJFKkoPAWnrGsB9qRwEWRlfV8OThmIwoAs/kTdiiFx84V85niqzP2DKzpwKhreKyHoJ7DRogaSSzGBRgsPbN2AJYYCSyp5Ga9/GYcoooKUg9Wh+BsjAmA4TEDhDVpvhxUkL5/B1TkgRasJXOaivvdmtfaU+tmzhPYtFtzqdTrupmbCOxjzYfgqZUzJ1tL5l53v7ni54S1461EtWvj6MbciWqrre+ompxz65QEKWfzrZr1XL0BN4YmDXhvMCsAAAAASUVORK5CYII=");
 	background-repeat:no-repeat;
 	background-size: 100%;
@@ -300,15 +299,15 @@
 	height: 75px;
 }
 .vertical_line {
-	background: #5d0b19;
+	background: rgb(255,165,35);
 	height: 50px;
-	width: 2px;
+	width: 0.9px;
 	margin: 10px 0;
 	float: left;
 }
 .horizontal_line {
-	background: #5d0b19;
-	height: 2px;
+	background: rgb(255,165,35);
+	height: 1px;
 	margin: 0px 10px;
 }
 .amesh_router_info_bg {
@@ -436,10 +435,10 @@
 	border-radius: 5px;
 	border-style: solid;
 	border-width: 1px;
-	border-bottom-color: #190508;
-	border-right-color: #190508;
-	border-left-color: #5d0b19;
-	border-top-color: #5d0b19;
+	border-bottom-color: rgb(255 165 35 / 60%);
+	border-right-color: rgb(255 165 35 / 60%);
+	border-left-color: rgb(255, 165, 35);
+	border-top-color: rgb(255, 165, 35);
 	cursor: pointer;
 }
 .amesh_router_icon_bg.pairing {
@@ -890,7 +889,7 @@
 	background: #000000;
 	color: #569AC7;
 	font-size: 14px;
-	border: 1px solid rgb(#92650F);
+	border: 1px solid #92650F;
 	outline: none;
 	width: 100%;
 	padding-left: 1px;
@@ -905,7 +904,7 @@
 	background: #000000;
 	color: #569AC7;
 	font-size: 14px;
-	border: 1px solid rgb(#92650F);
+	border: 1px solid #92650F;
 	outline: none;
 	width: 85%;
 	padding-left: 5px;
@@ -918,7 +917,7 @@
 	height: 25px;
 	background: #000000;
 	font-size: 14px;
-	border: 1px solid rgb(#92650F);
+	border: 1px solid #92650F;
 	color: #569AC7;
 	font-weight: bolder;
 	font-family: monospace, Courier New, Courier;
@@ -967,8 +966,8 @@
 	margin: auto;
 	background-size: 100%;
 	border-radius: 10px;
-	background-color: #680516;
-	box-shadow: 0px 0px 0px 1px #740F0F;
+	background-color: #92650F;
+	box-shadow: 0px 0px 0px 1px #3E4243;
 	background-repeat:no-repeat;
 	background-position: 50%;
 }

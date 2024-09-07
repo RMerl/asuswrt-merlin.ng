@@ -1824,10 +1824,10 @@ function get_connect_quality(_node_info){
 			result.type_text = `<#menu5_1#> - MLO`;
 			if(_re_online == "1"){
 				let rssi = parseInt(_quality_info);
-				let css = "weak";
-				result.quality = 1;
+				let css = "ok";
+				result.quality = 2;
 				result.css = "mlo " + css;
-				result.quality_text = "<#AiMesh_Conn_Quality_Weak#>";
+				result.quality_text = "<#AiMesh_Conn_Quality_OK#>";
 				result.rssi = rssi;
 				$.each(_node_info.mlo_status, function(item, value){
 					if(item.substring(0,4) == "rssi"){
@@ -1848,9 +1848,9 @@ function get_connect_quality(_node_info){
 						result.quality_text = "<#AiMesh_Conn_Quality_OK#>";
 					}
 					else if(rssi < -80){
-						result.quality = 1;
-						css = "weak";
-						result.quality_text = "<#AiMesh_Conn_Quality_Weak#>";
+						result.quality = 2;
+						css = "ok";
+						result.quality_text = "<#AiMesh_Conn_Quality_OK#>";
 					}
 					result.css = "mlo " + css;
 				}
@@ -1937,7 +1937,12 @@ function get_connect_quality(_node_info){
 			}
 		}
 		else{
-			if(mlo_status.rssi5gh != undefined && mlo_status.rssi6g != undefined && mlo_status.rssi2g != undefined){//5G-2 > 6G > 2G
+			if(mlo_status.rssi6g != undefined && mlo_status.rssi5gh != undefined && mlo_status.rssi5gl != undefined){//6G > 5G-2 > 5G-1
+				if(mlo_status.rssi6g != "") mlo_rssi = mlo_status.rssi6g;
+				else if(mlo_status.rssi5gh != "") mlo_rssi = mlo_status.rssi5gh;
+				else if(mlo_status.rssi5gl != "") mlo_rssi = mlo_status.rssi5gl;
+			}
+			else if(mlo_status.rssi5gh != undefined && mlo_status.rssi6g != undefined && mlo_status.rssi2g != undefined){//5G-2 > 6G > 2G
 				if(mlo_status.rssi5gh != "") mlo_rssi = mlo_status.rssi5gh;
 				else if(mlo_status.rssi6g != "") mlo_rssi = mlo_status.rssi6g;
 				else if(mlo_status.rssi2g != "") mlo_rssi = mlo_status.rssi2g;
@@ -2131,7 +2136,7 @@ function network_set_backhaul_info(_node_info, _signal_quality){
 			_obj.find("#backhaul_mac_title").html("<#MAC_Address#>");
 		}
 		else{
-			if(backhaul_parm.band == "MLO")
+			if(isSupport("sdn_mwl"))
 				_obj.find(".wired_hide").hide();
 			else
 				_obj.find(".wired_hide").show();
@@ -3233,8 +3238,7 @@ function manage_set_reconnect_control(_node_info){
 	}
 
 	if(show_eth_backhaul_hint){
-		var hint = "Currently your AiMesh system is built with hardwired connection. This function helps to optimize your network only when using a wireless connection.";/* untranslated */
-		show_hint(hint);
+		show_hint(`<#AiMesh_Ethernet_Backhaul_Connect_Hint#>`);
 		re_reconnect_flag = "";
 		return false;
 	}
@@ -3407,7 +3411,8 @@ function manage_get_preferable_backhaul(_node_info){
 					return (item.mac == result.pref_mac);
 				})[0];
 				if(specific_node_data != undefined){
-					result.text = handle_ui_model_name(specific_node_data.model_name, specific_node_data.ui_model_name);
+					const node_location_info = transform_location(specific_node_data.mac, specific_node_data);
+					result.text = handle_ui_model_name(specific_node_data.model_name, specific_node_data.ui_model_name) + " (" + node_location_info.location_text + ")";
 					result.pref_node_exist = true;
 				}
 			}
@@ -3979,7 +3984,7 @@ function get_topology_data(){
 				parent = cap_mac;
 
 			if(parent != "#")
-				parent = "topo_" + parent.replace(/:/g, '-');;
+				parent = "topo_" + parent.replace(/:/g, '-');
 
 			var node_data = { "id" : id, "parent" : parent };
 			treeTopology.push(node_data);
@@ -4053,6 +4058,7 @@ function jstree_refresh(){
 	$("#jstree").jstree("open_all");
 	jstree_re_draw_connect_line();
 	aimesh_introduction_control();
+	$('#jstree').css("overflow-x", jstree_show_scroll() ? "auto" : "initial");
 }
 function jstree_select_cap(_reset_mac){
 	var count = 0;
@@ -4073,6 +4079,24 @@ function jstree_select_cap(_reset_mac){
 				clearInterval(interval_check);
 		}
 	}, 1000);
+}
+function jstree_show_scroll(){
+	const $jstree = $('#jstree').find("*");
+	const level_greater_3 = $jstree.filter(function() {
+		return parseInt($(this).attr('aria-level'), 10) > 3;
+	}).length > 0;
+
+	let model_name_is_long = false;
+	const level_is_3 = $jstree.filter(function() {
+		return parseInt($(this).attr('aria-level'), 10) == 3;
+	});
+	level_is_3.each(function(){
+		if($(this).find("[data-component='model_name']").html().length > 18){
+			model_name_is_long = true;
+			return false;
+		}
+	});
+	return level_greater_3 || model_name_is_long;
 }
 var interval_tree_update = false;
 var interval_tree_update_time = 1000*10;
@@ -4259,7 +4283,7 @@ function initial_AiMesh(){
 				$node_info_bg.addClass("topology_node_info");
 				var $model_name_bg = $("<div>");
 				$model_name_bg.appendTo($node_info_bg);
-				var $model_name = $("<span>");
+				var $model_name = $("<span>").attr({"data-component":"model_name"});
 				$model_name.appendTo($model_name_bg);
 				$model_name.html(handle_ui_model_name(specific_node_data.model_name, specific_node_data.ui_model_name));
 
@@ -4353,6 +4377,7 @@ function initial_AiMesh(){
 		aimesh_introduction_control();
 		jstree_load_ready = true;
 		$('#jstree').jstree('select_node', "topo_" + current_click_mac.replace(/:/g, '-'));
+		$('#jstree').css("overflow-x", jstree_show_scroll() ? "auto" : "initial");
 		setTimeout(function() {
 			client_get_client_date();
 			$('#jstree').jstree().refresh();
@@ -4488,9 +4513,17 @@ function add_node(){
 
 	popup_onboarding();
 }
-function child_window_callback(){
+function child_window_callback(_mode){
+	const mode = _mode || "refresh";
+	switch(mode){
+		case "refresh":
+			jstree_refresh();
+			break;
+		case "feedback":
+			top.location.href = "/Advanced_Feedback.asp?origPage=AiMesh";
+			break;
+	}
 	pop_win.close();
-	jstree_refresh();
 }
 function gen_hint_component(_parm){
 	var $hint_bg = $("<div>");
@@ -5187,7 +5220,7 @@ $(document).ready(initial_AiMesh);
 					</div>
 					<div>
 						<div class="managment_icon preferable_backhaul_icon"></div>
-						<span class="preferable_backhaul_text"><#Auto#></span>
+						<div class="preferable_backhaul_text"><#Auto#></div>
 					</div>
 				</div>
 

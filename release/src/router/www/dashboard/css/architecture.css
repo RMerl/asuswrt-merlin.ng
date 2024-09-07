@@ -87,7 +87,8 @@
     --chart-color-warning: rgb(var(--color-chart-warning));
     --chart-color-unplug: rgb(var(--color-chart-unplug));
 }
-html, body{
+
+html{
     height: 100%;
 }
 body {
@@ -101,7 +102,7 @@ body {
     background-color: var(--bg-card-color);
     background-image: linear-gradient(var(--gradient-body-color));
     background-size: cover;
-    background-repeat: no-repeat;
+    background-repeat: repeat;
 }
 
 /* HEADER */
@@ -170,7 +171,7 @@ header {
 nav {
     background: var(--bg-nav-color);
     width: 200px;
-    height: 100%;
+    height: initial;
     backdrop-filter: blur(10px);
     z-index: 11;
     box-shadow: -18px 0 14px -16px var(--bg-shadow-color) inset;
@@ -185,11 +186,11 @@ nav {
 }
 article {
     position: relative;
-    overflow-y: auto !important;
     height: inherit;
 }
 section {
     width: 100%;
+    height: 100%;
 }
 .menu-clicked {
     border-radius: 0 8px 8px 0;
@@ -495,7 +496,6 @@ main {
 @media (max-width: 767px) {
     nav {
         width: 100%;
-        height: 100%;
         position: absolute;
         z-index: 11;
         top: 0;
@@ -548,7 +548,6 @@ main {
         width: auto;
         max-width: 96px;
         min-width: 80px;
-        height: 100%;
     }
     [class~="icon-menu"] {
         display: none !important;

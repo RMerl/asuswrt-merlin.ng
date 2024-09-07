@@ -110,7 +110,7 @@ var hue_bar_color = 360;
 const support_night_mode = (()=>{
 	let ledg_night_mode = httpApi.nvramGet(["ledg_night_mode"])["ledg_night_mode"];
 	let nv_support = (ledg_night_mode != "" && ledg_night_mode != undefined) ? true : false;
-	let model_support = (model_info.productid == "GT-BE98" || model_info.productid == "GT-BE98_PRO" || model_info.productid == "GT-BE96" || model_info.productid == "GT-BE19000") ? true : false;
+	let model_support = (model_info.productid == "GT-BE98" || model_info.productid == "GT-BE98_PRO" || model_info.productid == "GT-BE96" || model_info.productid == "GT-BE19000" || model_info.productid == "GT-BE19000_AI") ? true : false;
 	return (nv_support && model_support) ? true : false;
 })();
 if(support_night_mode){
@@ -795,7 +795,7 @@ function rgbToLeft(_rgb) {
 }
 const support_gradient_effect = (()=>{
 	if(model_info.productid == "GT-AXE16000" || model_info.productid == "GT-AX11000_PRO" || model_info.productid == "GT10" ||
-		model_info.productid == "GT-BE98" || model_info.productid == "GT-BE98_PRO" || model_info.productid == "GT-BE96" || model_info.productid == "GT-BE19000"){
+		model_info.productid == "GT-BE98" || model_info.productid == "GT-BE98_PRO" || model_info.productid == "GT-BE96" || model_info.productid == "GT-BE19000" || model_info.productid == "GT-BE19000_AI"){
 		return true;
 	}
 	else{

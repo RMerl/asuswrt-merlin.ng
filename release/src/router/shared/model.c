@@ -242,7 +242,12 @@ static const struct model_s model_list[] = {
 	{ "RT-BE92U",		MODEL_RTBE92U		},
 	{ "RT-BE95U",		MODEL_RTBE95U		},
 	{ "RT-BE82U",		MODEL_RTBE82U		},
+	{ "TUF-BE82",		MODEL_RTBE82U		},
+	{ "RT-BE82M",		MODEL_RTBE82M		},
 	{ "RT-BE58U_PRO",	MODEL_RTBE58U_PRO	},
+	{ "RT-BE58_GO",		MODEL_RTBE58_GO	},
+	{ "GT-BE19000_AI",         MODEL_GTBE19000_AI   },
+	{ "GS-BE18000",		MODEL_GSBE18000		},
 #endif	/* !RTCONFIG_RALINK */
 	{ NULL, 0 },
 };

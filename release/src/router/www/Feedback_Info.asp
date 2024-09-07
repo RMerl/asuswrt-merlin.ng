@@ -22,6 +22,7 @@
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <script>
 var fb_state = httpApi.nvramGet(["fb_state"], true).fb_state;
+var fb_resend = httpApi.nvramGet(["fb_resend"], true).fb_resend;
 var fb_gen_tarball = httpApi.nvramGet(["fb_gen_tarball"], true).fb_gen_tarball;
 var dblog_enable = httpApi.nvramGet(["dblog_enable"], true).dblog_enable;
 var dblog_service = httpApi.nvramGet(["dblog_service"], true).dblog_service;
@@ -64,28 +65,7 @@ function check_info(){
 		}
 	} 	
 
-	if(dsl_support && fb_state == "2"){
-		document.getElementById("fb_fail_dsl").style.display = "";
-		document.getElementById("fb_fail_textarea").style.display = "";
-		show_dbg_files(fb_split_files, "dsl");
-	}
-	else if(fb_state == "2"){
-		document.getElementById("fb_fail_router").style.display = "";
-		document.getElementById("fb_fail_textarea").style.display = "";
-		show_dbg_files(fb_split_files, "rt");
-	}
-	else{
-		if(fb_gen_tarball == 1){
-			if(dsl_support){
-				document.getElementById("fb_fail_dsl").style.display = "";
-				show_dbg_files(fb_split_files, "dsl");
-			}
-			else{
-				document.getElementById("fb_gen_tarball_id").style.display = "";
-				show_dbg_files(fb_split_files, "gen_rt");
-			}
-		}
-	}
+	CheckFBState();
 }
 
 function show_dbg_files(seg, type){
@@ -204,25 +184,25 @@ function get_debug_log_info(){
 	var desc = "DSL DIAGNOSTIC LOG\n";
 	desc += "----------------------------------------------------------------------\n";
 
-	desc += "Model: "+based_modelid+"\n";
-	desc += "Firmware Version: "+FWString+"\n";
-	desc += "Inner Version: <% nvram_get("innerver"); %>\n";
-	desc += "DSL Firmware Version: <% nvram_get("dsllog_fwver"); %>\n";
-	desc += "DSL Driver Version:  <% nvram_get("dsllog_drvver"); %>\n\n";
+	desc += `Model: ${based_modelid}\n`;
+	desc += `Firmware Version: ${FWString}\n`;
+	desc += `Inner Version: <% nvram_get("innerver"); %>\n`;
+	desc += `DSL Firmware Version: <% nvram_get("dsllog_fwver"); %>\n`;
+	desc += `DSL Driver Version:  <% nvram_get("dsllog_drvver"); %>\n\n`;
 
-	desc += "PIN Code: <% nvram_get("secret_code"); %>\n";
-	desc += "MAC Address: <% nvram_get("lan_hwaddr"); %>\n\n";
+	desc += `PIN Code: <% nvram_get("secret_code"); %>\n`;
+	desc += `MAC Address: <% nvram_get("lan_hwaddr"); %>\n\n`;
 
-	desc += "<#feedback_capturing_duration#>: <% nvram_get("dslx_diag_duration"); %>\n";
-	desc += "DSL connection: <% nvram_get("fb_availability"); %>\n";
+	desc += `<#feedback_capturing_duration#>: <% nvram_get("dslx_diag_duration"); %>\n`;
+	desc += `DSL connection: <% nvram_get("fb_availability"); %>\n`;
 
 	document.uiForm.fb_send_debug_log_content.value = desc;
 	
 }
 
 function redirect(){
-	if(fb_state == "2")
-		httpApi.nvramSet({"action_mode": "apply", "fb_state" : "1"});
+	if(fb_state == "1" || fb_state == "2")
+		httpApi.nvramSet({"action_mode": "apply", "fb_state" : ""});
 	document.location.href = "Advanced_Feedback.asp";
 }
 
@@ -259,6 +239,88 @@ function get_split_feedback(seg){
 	}
 }
 
+
+function CheckFBState(){
+	$.ajax({
+		url: '/ajax_fb_size.asp',
+		dataType: 'script',
+		timeout: 1500,
+		error: function(xhr){
+				redirect_info++;
+				if(redirect_info < 10){
+					setTimeout("CheckFBSize();", 1000);
+				}
+				else{
+					showLoading(35);
+					setTimeout("redirect()", 35000);
+				}
+		},
+		success: function(){
+
+				if(fb_state == "0"){
+					$("#fb_success_router_0_title").hide();
+					$("#fb_success_router_0_proceed").show();
+					$(".apply_gen").hide();
+					if(fb_resend == "1"){
+						$(".proceeding").hide();
+						$(".debug").hide();
+						$(".resending").show();
+					}
+					else{
+						if(fb_gen_tarball == 1){
+							$(".proceeding").hide();
+							$(".debug").show();
+						}
+						else{
+							$(".proceeding").show();
+							$(".debug").hide();
+						}
+						$(".resending").hide();
+					}
+					$(".success").hide();
+					setTimeout("CheckFBState();", 2000);
+				}
+				else if(dsl_support && fb_state == "2"){
+					document.getElementById("fb_fail_dsl").style.display = "";
+					document.getElementById("fb_fail_textarea").style.display = "";
+					show_dbg_files(fb_split_files, "dsl");
+				}
+				else if(fb_state == "2"){
+					$("#fb_success_router_0_title").show();
+					$("#fb_success_router_0_proceed").hide();
+					document.getElementById("fb_fail_router").style.display = "";
+					document.getElementById("fb_fail_textarea").style.display = "";
+					show_dbg_files(fb_split_files, "rt");
+					$(".proceeding").hide();
+					$(".debug").hide();
+					$(".resending").hide();
+					$(".success").hide();
+					$(".apply_gen").show();
+				}
+				else{	//fb_state == "1"
+					$("#fb_success_router_0_title").show();
+					$("#fb_success_router_0_proceed").hide();
+					$(".proceeding").hide();
+					$(".debug").hide();
+					$(".resending").hide();
+					$(".success").show();
+					$(".apply_gen").show();
+					if(fb_gen_tarball == 1){
+						if(dsl_support){
+							document.getElementById("fb_fail_dsl").style.display = "";
+							show_dbg_files(fb_split_files, "dsl");
+						}
+						else{
+							document.getElementById("fb_gen_tarball_id").style.display = "";
+							show_dbg_files(fb_split_files, "gen_rt");
+						}
+					}
+				}
+		}
+	});
+}
+
+
 </script>
 <style>
 .feedback_info_0{
@@ -273,6 +335,9 @@ function get_split_feedback(seg){
 	font-size:13px;
 	margin-left:30px;
 	font-family: Arial, Helvetica, sans-serif;
+}
+.feedback_info_1 span{
+	color:#FFCC00;
 }
 </style>	
 </head>
@@ -320,7 +385,8 @@ function get_split_feedback(seg){
 <div id="fb_success_router_0" style="display:none;">
         <br>
         <br>
-        <div class="feedback_info_0"><#feedback_thanks#></div>
+        <div id="fb_success_router_0_title" class="feedback_info_0" style="display:none;"><#feedback_thanks#></div>
+        <div id="fb_success_router_0_proceed" class="feedback_info_0" style="display:none;"><#feedback_processing#><img src="images/InternetScan.gif"></div>
         <br>
 </div>
 
@@ -341,11 +407,7 @@ function get_split_feedback(seg){
 </div>
 
 <div id="fb_fail_router" style="display:none;" class="feedback_info_1">
-	<#feedback_fail0#>
-	<br><br>
-	<#feedback_fail1#> : ( <a href="mailto:router_feedback@asus.com?Subject=<%nvram_get("productid");%>" target="_top" style="color:#FFCC00;">router_feedback@asus.com </a>) <#feedback_fail2#>
-	<br>
-	<#feedback_fail3#> :
+	<#feedback_fail0_new#>&nbsp;<#feedback_fail1_new#>&nbsp;<#feedback_fail2_new#>
 	<br>
 	<ul>
 		<li id="dbg_rt_file" style="display:none;"><span onClick="get_split_feedback(1);" style="text-decoration: underline; color:#FFCC00; cursor:pointer;"><#feedback_debug_file#></span></li>
@@ -399,8 +461,18 @@ function get_split_feedback(seg){
 
 <div id="fb_success_router_1" style="display:none;">	
 	<br>
-	<div class="feedback_info_1"> 
-	<#feedback_success_rt#>
+	<div class="feedback_info_1 proceeding" style="display:none;">
+	<#feedback_processing_desc1#>&nbsp;<#feedback_processing_desc2#>
+	</div>
+	<div class="feedback_info_1 debug" style="display:none;">
+	<#feedback_processing_desc1#>&nbsp;<#feedback_processing_desc3#>
+	</div>
+	<div class="feedback_info_1 resending" style="display:none;">
+	<#feedback_resending_desc#>
+	</div>
+	<div class="feedback_info_1 success" style="display:none;"> 
+	<#Feedback_desc0#>&nbsp;<#feedback_note6#>&nbsp;<#feedback_note7#>
+	<!-- #feedback_success_rt# -->
 	</div>
 	<br>
 	<br>
@@ -429,6 +501,9 @@ function get_split_feedback(seg){
 </td>
 </form>
 <script>
+	var support_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=asus_support&lang="+ui_lang+"&kw=&num=";
+	$(".site_link").attr({"href": support_href});   //#feedback_fail1_new#
+
 	function rebootnow(){
 		var win_time = window.setTimeout(function() {}, 0);
         while (win_time--)

@@ -26,7 +26,8 @@ helpcontent[0] = new Array("",
 			"",
 			"<#Access_Time_desc#>",
 			"<#Access_Intranet_desc#>",
-			"Smart Connect is the feature which could automatically steer clients to the most appropriate band (2.4GHz, 5GHz-1 and 5GHz-2)." /*untranslated*/
+			"Smart Connect is the feature which could automatically steer clients to the most appropriate band (2.4GHz, 5GHz-1 and 5GHz-2).", /*untranslated*/
+			"If AFC's allowed channel for Standard Power mode doesn't address your set bandwidth, it'll stay in Low power Indoor mode", /*untranslated*/
 			 );
 helpcontent[1] = new Array("",
 						   "<#WLANConfig11b_x_APMode_itemdesc#>",

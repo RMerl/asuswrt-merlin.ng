@@ -31,6 +31,10 @@ ifeq ($(RTCONFIG_TRUSTZONE),y)
 LDFLAGS += -L$(TOP)/ateed/ -latee
 endif
 
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000))
+LDFLAGS += -L$(TOP)/libhostapi -lhostapi
+endif
+
 ifneq ($(wildcard ./prebuild),)
 all:
 	@-cp -f ./prebuild/$(BUILD_NAME)/* .

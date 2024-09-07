@@ -1,6 +1,6 @@
 ﻿.popup_container.hide_title_cntr .action_container .btn_container.delete{
-	background: rgb(255 255 255 / 0%);
-	border: 1px solid #B3B3B3;
+	background: rgba(235, 235, 235, 0.2);
+	border: 1px solid #4D4D4D;
 	color: #EBEBEB;
 }
 .profile_item_container.wizard{
@@ -57,13 +57,9 @@
 	color: #B3B3B3;
 }
 .item_tag_container > .item_tag.VPN:before{
-	-webkit-mask: url(/images/New_ui/SDN/dark_theme/Content/link.svg);
-	mask: url(/images/New_ui/SDN/dark_theme/Content/link.svg);
 	-webkit-mask-size: 18px 22px;
 }
 .item_tag_container > .item_tag.Timer:before{
-	-webkit-mask: url(/images/New_ui/SDN/dark_theme/Image/timer.svg);
-	mask: url(/images/New_ui/SDN/dark_theme/Image/timer.svg);
 	-webkit-mask-size: 14px 24px;
 }
 .item_tag_container > .item_tag.VPN:before,
@@ -75,15 +71,10 @@
 	background-color: #FFFFFF;
 }
 .item_text_container .clients_num > .icon_client{
-	-webkit-mask-box-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cg%20id%3D%22Group%22%3E%3Cg%20id%3D%22Devices%20%2F%20clients%22%3E%3Cg%20id%3D%22Group%203532%22%3E%3Cg%20id%3D%22Group_2%22%3E%3Cpath%20id%3D%22Vector%20136_____0_0_YECTQAEVUZ%22%20stroke%3D%22%23EBEBEB%22%20stroke-width%3D%221.2%22%20d%3D%22M4.93607%209.68965V6H20.9245V17.2988%22%2F%3E%3C%2Fg%3E%3Cg%20id%3D%22Mobile%20Phone%20(iPhone%20Shape)%22%3E%3Cpath%20id%3D%22Rectangle%2010370_____0_2_UHYMPAHAIF%22%20stroke%3D%22%23EBEBEB%22%20stroke-width%3D%221.2%22%20d%3D%22M2.60018%2010.1H7.40018V17.9H2.60018z%22%2F%3E%3Cg%20id%3D%22Vector_____0_3_ZKGIWADNGV%22%3E%3Cpath%20fill%3D%22%23EBEBEB%22%20fill-rule%3D%22evenodd%22%20d%3D%22M4.50018%2011.6H5.50018Z%22%20clip-rule%3D%22evenodd%22%2F%3E%3Cpath%20stroke%3D%22%23EBEBEB%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%220.8%22%20d%3D%22M4.50018%2011.6H5.50018%22%2F%3E%3C%2Fg%3E%3Cpath%20id%3D%22Vector_____0_4_WXQRLQSGHN%22%20fill%3D%22%23EBEBEB%22%20fill-rule%3D%22evenodd%22%20d%3D%22M5.07709%2016.5249C4.79407%2016.5249%204.56464%2016.2955%204.56464%2016.0125C4.56464%2015.7294%204.79407%2015.5%205.07709%2015.5C5.36011%2015.5%205.58954%2015.7294%205.58954%2016.0125C5.58954%2016.2955%205.36011%2016.5249%205.07709%2016.5249Z%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fg%3E%3Cpath%20id%3D%22Rectangle%209336_____0_5_AFTRBVEOHK%22%20fill%3D%22%23EBEBEB%22%20d%3D%22M8.00004%2016.6606C8.00004%2016.6054%208.04481%2016.5606%208.10004%2016.5606H22.8797C22.9422%2016.5606%2022.9894%2016.6174%2022.978%2016.6788L22.878%2017.2186C22.7903%2017.6926%2022.3768%2018.0365%2021.8948%2018.0365H8.00004V16.6606Z%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
 	background-color: #ebebeb;
-	mask-repeat: no-repeat;
 }
 .status_info .conn_type.WiFi_offline{
-	-webkit-mask-box-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cg%20id%3D%22Group%22%3E%3Cg%20id%3D%22Devices%20%2F%20wireless_off%22%3E%3Cpath%20id%3D%22Union_____0_0_HRMIFQUASL%22%20fill%3D%22%23EBEBEB%22%20fill-rule%3D%22evenodd%22%20d%3D%22M2.38874%2011.6113L2.91907%2011.0809C3.93814%2010.0619%205.06093%209.38871%205.5786%209.07835L5.61431%209.05694L6.25743%208.67107L7.02917%209.9573L6.38605%2010.3432L6.36522%2010.3557C5.85867%2010.6595%204.86681%2011.2545%203.97973%2012.1416L3.4494%2012.6719L2.38874%2011.6113ZM7.68963%208.0561L8.41688%207.8728C12.6136%206.81507%2017.743%207.73226%2021.0917%2011.0809L21.622%2011.6113L20.5614%2012.6719L20.0311%2012.1416C17.1204%209.23093%2012.5637%208.37455%208.78348%209.32731L8.05622%209.51061L7.68963%208.0561ZM6.6319%2015.1468L7.16223%2014.6165C8.27777%2013.5009%209.2184%2013.1549%209.89324%2013.0577L10.6356%2012.9508L10.8494%2014.4355L10.1071%2014.5424C9.78196%2014.5892%209.13102%2014.769%208.22289%2015.6771L7.69256%2016.2074L6.6319%2015.1468ZM12.9505%2012.6576L13.6789%2012.8363C14.8515%2013.124%2015.8246%2013.7329%2016.7082%2014.6165L17.2385%2015.1468L16.1778%2016.2074L15.6475%2015.6771C14.9193%2014.9489%2014.1796%2014.5037%2013.3215%2014.2931L12.5931%2014.1144L12.9505%2012.6576ZM12.0002%2021.2601C12.4627%2021.2615%2012.9256%2021.0858%2013.2785%2020.7329C13.9815%2020.03%2013.9815%2018.8903%2013.2785%2018.1873C12.5756%2017.4844%2011.4359%2017.4844%2010.7329%2018.1873C10.03%2018.8903%2010.03%2020.03%2010.7329%2020.7329C11.083%2021.083%2011.5414%2021.2587%2012.0002%2021.2601Z%22%20clip-rule%3D%22evenodd%22%2F%3E%3Cpath%20id%3D%22Vector_____0_4_IYQEWYKWVK%22%20stroke%3D%22%23EBEBEB%22%20stroke-linecap%3D%22square%22%20stroke-width%3D%221.2%22%20d%3D%22M3.25%203.75L7.09%207.59L10.32%2010.82L14.68%2015.18L17.91%2018.41L21.75%2022.25%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
 	background-color: #ebebeb;
-	mask-repeat: no-repeat;
-	background-image: none;
 }
 .status_info .conn_type.WiFi_offline, .status_info .conn_type.WiFi_2G, .status_info .conn_type.WiFi_2G_lock, .status_info .conn_type.WiFi_5G, .status_info .conn_type.WiFi_5G_lock, .status_info .conn_type.WiFi_6G, .status_info .conn_type.WiFi_6G_lock{
 	background-position-y: 0;
@@ -137,7 +128,7 @@
 	background-image: url(/images/New_ui/SDN/rog_theme/Notification/wifi_mlo_lock.svg);
 }
 .status_info .conn_type.LAN{
-	background-image: url(/images/New_ui/SDN/rog_theme/Notification/LAN.svg);
+	background-color: #EBEBEB;
 }
 .profile_setting.Get_Start{
 	display: flex;
@@ -209,7 +200,8 @@
 .node_container{
 	background: rgba(255,255,255,0.08);
 }
-.node_container:before{
+.node_container:before,
+.cb_item_container:before{
 	border-bottom: 1px solid rgba(255,255,255,0.15);
 }
 .node_content_container > .node_info > .node_main_info{
@@ -255,11 +247,13 @@
 .dns_ping_text_component .text-loading:before{
 	color: #F81726;
 }
-.bg_template_container::-webkit-scrollbar-track{
+.bg_template_container::-webkit-scrollbar-track,
+.manual_dhcp_list_container::-webkit-scrollbar-track{
 	border: 4px solid #0B0B0B;
 	background-color: rgba(255, 53, 53, 0.5);
 }
-.bg_template_container::-webkit-scrollbar-thumb{
+.bg_template_container::-webkit-scrollbar-thumb,
+.manual_dhcp_list_container::-webkit-scrollbar-thumb{
 	background-color: #FF3535;
 	border: 1px solid #0B0B0B;
 }
@@ -275,8 +269,14 @@
 .bg_template_container .bg_upload_image:hover:before{
 	color: #FF3535;
 }
-.VPN_list_container{
+.VPN_list_container,
+.macfilter_list_container,
+.manual_dhcp_list_container{
 	background: rgba(255,255,255,0.08);
+}
+.manual_dhcp_list_container .dhcp_rule_container{
+	border: 1px solid #666;
+	border-radius: 0;
 }
 .VPN_list_container:before{
 	border-bottom: 1px solid rgba(255,255,255,0.15);
@@ -298,14 +298,22 @@
 .clientlist_container .no_client_hint:before{
 	border-bottom: 1px solid rgba(255,255,255,0.15);
 }
-.clientlist_container .no_client_hint{
+.clientlist_container .no_client_hint,
+.macfilter_list_container .no_rule_hint,
+.manual_dhcp_list_container .no_rule_hint{
 	color: #FF40BF;
 }
 .client_container .client_icon_container.default_icon,
 .client_container .client_icon_container.user_icon,
 .client_container .client_icon_container.vender_icon{
-	background-color: #B3B3B3;
-	box-shadow: 0px 0px 0px 1px #B3B3B3;
+	background-color: #222;
+	box-shadow: 0px 0px 0px 1px #222;
+}
+.manual_dhcp .client_content_container .sub_info > div{
+	color: #EBEBEB;
+}
+.manual_dhcp .client_content_container .sub_info:before{
+	border-top: 1px solid rgba(255, 255, 255, 0.15);
 }
 .client_content_container > .sub_info > div{
 	color: #B3B3B3;
@@ -317,7 +325,7 @@
 	color: #EBEBEB;
 }
 .client_content_container .conn_type.LAN{
-	background-image: url(/images/New_ui/SDN/rog_theme/Notification/LAN.svg);
+	background-color: #EBEBEB;
 }
 .client_content_container .conn_type.WiFi_2G{
 	background-image: url(/images/New_ui/SDN/rog_theme/Notification/wifi_2g.svg);
@@ -392,6 +400,12 @@
 }
 .gaming_profile_list_cntr .profile_info .profile_text{
 	color: #EBEBEB;
+}
+.profile_setting_item .title span.mlo_band{
+	color: #00ED9E;
+}
+.checkbox_option.mlo_band .option_text:after{
+	color: #00ED9E;
 }
 @media (max-width: 575px) {
 	.popup_container .setting_subtab_container{

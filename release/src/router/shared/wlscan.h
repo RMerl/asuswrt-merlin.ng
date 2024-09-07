@@ -196,6 +196,7 @@ struct apinfo
 	int amas;
 #endif
 #ifdef RTCONFIG_WIFI7
+	uint8 bsscolor_info;
 	int mlo_sim_links;
 	struct ether_addr mld_addr;
 #endif

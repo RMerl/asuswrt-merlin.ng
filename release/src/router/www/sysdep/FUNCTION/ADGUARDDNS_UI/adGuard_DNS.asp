@@ -23,7 +23,14 @@ $(document).ready(function(){
 });
 
 function load_page(){
-	var curTheme = (top.businessWrapper) ? "?current_theme=white" : "";
+	var curTheme = ""
+
+	if(top.businessWrapper){
+		curTheme = "?current_theme=WHITE";
+	}
+	else if(rog_support){
+		curTheme = "?current_theme=ROG";
+	}
 	document.getElementById("adguard_iframe").src = "adguard_dns.html" + curTheme;
 }
 

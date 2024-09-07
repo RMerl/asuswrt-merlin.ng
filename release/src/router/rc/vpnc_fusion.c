@@ -333,9 +333,11 @@ int vpnc_update_resolvconf(const int unit)
 {
 	FILE *fp = NULL, *fp_servers = NULL;
 	char tmp[100], prefix[sizeof("vpncXXXXXXXXXX_")];
+	char lan_ip[sizeof("192.168.123.456")];
 	char *wan_dns, *next;
-	int lock, reload_dns = 0;
+	int lock, reload_dns = 0, nr_server = 0;
 
+	strlcpy(lan_ip, nvram_safe_get("lan_ipaddr"), sizeof(lan_ip));
 	_gen_vpnc_resolv_conf(unit);
 
 	// only default WAN need to be handled.
@@ -382,12 +384,15 @@ int vpnc_update_resolvconf(const int unit)
 			{
 				foreach (tmp, wan_dns, next)
 				{
+					if (!strcmp(tmp, lan_ip))
+						continue;
 					fprintf(fp_servers, "server=%s\n", tmp);
+					nr_server++;
 				}
 				reload_dns = 1;
 			}
-			else // write resolv.conf to resolv.dnsmasq
-			{
+
+			if (!nr_server) { // write resolv.conf to resolv.dnsmasq
 				fp = fopen("/tmp/resolv.conf", "r");
 				if (fp)
 				{

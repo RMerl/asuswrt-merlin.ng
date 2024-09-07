@@ -69,7 +69,6 @@ static void ntp_service()
 
 		nvram_set("reload_svc_radio", "1");
 		nvram_set("svc_ready", "1");
-		nvram_set("reload_cert", "1"); // the date of certificate is wrong, need to reload
 #ifndef RTCONFIG_QCA
 		timecheck();
 #endif

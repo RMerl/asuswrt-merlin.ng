@@ -118,11 +118,7 @@
 #ifdef RTCONFIG_MULTILAN_CFG
 #define RESTART_NET_AND_PHY		"restart_net_and_phy"
 #define RESTART_APG				"restart_apg"
-#if defined(RTCONFIG_HND_ROUTER_BE_4916)
 #define RESTART_MLO				"set_mlo_config;reboot"
-#else
-#define RESTART_MLO				"set_mlo_config;restart_wireless"
-#endif
 #endif
 #define MOCA_SET_PRIVACY	"moca_set_privacy"
 
@@ -179,7 +175,7 @@ static struct feature_mapping_s feature_mapping_list[] __attribute__ ((unused)) 
 	{ "ap_lanif_rl", FT_AP_LANIF_RL, RESTART_NET_AND_PHY },
 	{ "vlan_rl", FT_VLAN_RL, RESTART_APG },
 	{ "sdn_rl", FT_SDN_RL, RESTART_APG },
-	{ "subnet_rl", FT_SUBNET_RL, RESTART_APG },
+	{ "subnet_rl", FT_SUBNET_RL, NULL },
 	{ "vlan_trunk_rl", FT_VLAN_TRUNK_RL, RESTART_NET_AND_PHY },
 	{ "radius_list", FT_RADIUS_LIST, RESTART_WIRELESS },
 #if defined(RTCONFIG_MULTILAN_MWL)
@@ -741,6 +737,13 @@ enum {
 #endif
 
 	SUBFT_NEW_EULA,
+
+	/* sub feature for disable 11b */
+	SUBFT_DISABLE_11B_BAND1,
+	SUBFT_DISABLE_11B_BAND2,
+	SUBFT_DISABLE_11B_BAND3,
+	SUBFT_DISABLE_11B_BAND4,
+
 	SUBFT_MAX
 };
 
@@ -1215,6 +1218,12 @@ static struct subfeature_mapping_s subfeature_mapping_list[] __attribute__ ((unu
 
 	/* new eula */
 	{ "new_eula",	SUBFT_NEW_EULA,	FT_NEW_EULA },
+
+	/* Diable 11b */
+	{ "dis_11b_b1", SUBFT_DISABLE_11B_BAND1, FT_WIRELESS },
+	{ "dis_11b_b2", SUBFT_DISABLE_11B_BAND2, FT_WIRELESS },
+	{ "dis_11b_b3", SUBFT_DISABLE_11B_BAND3, FT_WIRELESS },
+	{ "dis_11b_b4", SUBFT_DISABLE_11B_BAND4, FT_WIRELESS },
 
 	/* END */
 	{ NULL, 0, 0}
@@ -3695,6 +3704,12 @@ static struct param_mapping_s param_mapping_list[] __attribute__ ((unused)) = {
 	{ "ASUS_NEW_EULA_from", FT_NEW_EULA, SUBFT_NEW_EULA,		""},
 	{ "ASUS_NEW_EULA_ts", FT_NEW_EULA, SUBFT_NEW_EULA,		""},
 	{ "ASUS_NEW_EULA_time", FT_NEW_EULA, SUBFT_NEW_EULA,		""},
+
+	/* disable 11b */
+	{ "wl0_rateset", FT_WIRELESS, SUBFT_DISABLE_11B_BAND1,		"default"},
+	{ "wl1_rateset", FT_WIRELESS, SUBFT_DISABLE_11B_BAND2,		"default"},
+	{ "wl2_rateset", FT_WIRELESS, SUBFT_DISABLE_11B_BAND3,		"default"},
+	{ "wl3_rateset", FT_WIRELESS, SUBFT_DISABLE_11B_BAND4,		"default"},
 
 	/* END */
 	{ NULL, 0, 0,		NULL}

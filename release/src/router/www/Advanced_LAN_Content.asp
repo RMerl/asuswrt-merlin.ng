@@ -346,12 +346,16 @@ function calculatorIPPoolRange() {
 	ipPoolEnd = ipPoolEndArray[0] + "." + ipPoolEndArray[1] + "." + ipPoolEndArray[2] + "." + ipPoolEndArray[3];
 
 	if((document.form.dhcp_start.value != ipPoolStart) || (document.form.dhcp_end.value != ipPoolEnd)){
-			if(confirm("<#JS_DHCP1#>")){
-				document.form.dhcp_start.value = ipPoolStart;
-				document.form.dhcp_end.value = ipPoolEnd;
-			}else{
-				return false;
-			}
+		let confirm_text = `<#JS_DHCP1#>`;
+		confirm_text += `\n\n`;
+		const vpn_fusion_text = isSupport("vpn_fusion") ? `, "<#VPN_Fusion#>",` : '';
+		confirm_text += `*<#ADSL_FW_note#> After changing the LAN IP, related feature rules such as "Manually Assigned IP"${vpn_fusion_text} and "Port Forwarding" will become invalid. Please update the settings accordingly.`;/* untranslated */
+		if(confirm(confirm_text)){
+			document.form.dhcp_start.value = ipPoolStart;
+			document.form.dhcp_end.value = ipPoolEnd;
+		}else{
+			return false;
+		}
 	}
 
 	return true;

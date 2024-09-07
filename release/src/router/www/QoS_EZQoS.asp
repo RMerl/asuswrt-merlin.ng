@@ -1063,7 +1063,7 @@ function change_qos_type(value){
 		document.getElementById('trad_type').checked = false;
 		document.getElementById('cake_type').checked = false;
 		document.getElementById('bw_limit_type').checked = false;		
-    document.getElementById('bandwidth_setting_tr').style.display = "";
+    document.getElementById('bandwidth_setting_tr').style.display = "none";
 		if(geforceNow_support)
 			document.getElementById('GeForce_type').checked = false;
     //if(router_boost_support)
@@ -1083,13 +1083,8 @@ function change_qos_type(value){
 			document.form.next_page.value = "QoS_EZQoS.asp";
 			document.form.action_wait.value = "<% get_default_reboot_time(); %>";
 		}
-		if(document.getElementById("auto").checked){
 			show_up_down(0);
-		}
-		else{
-			show_up_down(1);
-		}
-
+			
 		show_settings("Adaptive_quick");
 	}
 	else if(value == 2 ){		// Bandwidth Limiter

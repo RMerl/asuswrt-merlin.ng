@@ -150,7 +150,7 @@ function Zoom(func){
 	if (func == "in")
 		document.form.zoom.value = parseInt(document.form.zoom.value) - 1;
 	else
-		document.form.zoom.value = parseInt(document.form.zoom.value) + 1;;
+		document.form.zoom.value = parseInt(document.form.zoom.value) + 1;
 		
 	if(document.form.zoom.value == 1)
 		switchHours("4");

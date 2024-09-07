@@ -59,6 +59,9 @@ extern void free_ic_list(ic_s **target_list);
 extern ic_s *cp_ic(ic_s **dest, const ic_s *src);
 extern void print_ic_list(ic_s *ic_list);
 
-extern void config_ic_rule_string(ic_s *ic_list, FILE *fp, char *logaccept, char *logdrop, int temp);
+extern void config_ic_rule_string(ic_s *ic_list, FILE *fp, char *lan_if, char *logaccept, char *logdrop, int temp);
+#ifdef RTCONFIG_MULTILAN_CFG
+void handle_sdn_config_ic_rule_string(ic_s *ic_list, FILE *fp, char *logaccept, char *logdrop, int temp);
+#endif
 extern int count_ic_rules(ic_s *ic_list/*, int enabled*/);
 #endif

@@ -39,6 +39,28 @@ if [ -e /bin/pwrctl ]; then
 fi
 
 echo
+echo "======bootstate======"
+
+bootstate_list="/proc/bootstate/active_image
+		/proc/bootstate/boot_failed_count
+		/proc/bootstate/old_reset_reason
+		/proc/bootstate/reset_reason
+		/proc/bootstate/reset_status"
+
+if [ -e /proc/bootstate ]; then
+    for f in $bootstate_list
+    do
+        if [ -e $f ]; then
+            echo
+            echo "######${f}######"
+            cat $f
+            echo
+        fi
+    done
+    echo
+fi
+
+echo
 echo
 echo "======System Info======"
 
@@ -97,6 +119,13 @@ do
         chrt -p $pid
     fi
 done
+fi
+
+# Log all processes's open files count
+if [ -e /usr/bin/lsof ]; then
+    echo
+    echo "###### All processes's open files count ######"
+    lsof | awk '{ print $1 " " $2; }' | sort -rn | uniq -c | sort -rn
 fi
 
 if [ -e /bin/wlaffinity ]; then
@@ -399,4 +428,14 @@ if [ -e /bin/bs ]; then
     echo "######RDPA configuration######"
     /bin/bs /bdmf/examine system children:yes class:config max_prints:-1
     redirect_dmesg
+fi
+
+# ACSD
+if [ -e /usr/sbin/acs_cli2 ]; then
+    for ifname in `nvram get acs_ifnames`; do
+        echo ""
+        echo "###### ACSD $ifname information ######"
+        echo ""
+        acs_cli2 -i $ifname --report
+    done
 fi

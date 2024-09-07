@@ -1,0 +1,6 @@
+﻿.config_item_container .dropdown_select{
+	color: #FFFFFF;
+	border: 1px solid #4D4D4D;
+	border-radius: 0;
+	background: var(--bg-container) !important;
+}

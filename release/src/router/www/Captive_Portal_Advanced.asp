@@ -4000,7 +4000,7 @@ function finishRule(flag) {
 	splash_page_adv_html += "}\n";
 	splash_page_adv_html += "<_TAG_END_>\n";
 	splash_page_adv_html += "</head>\n";
-	splash_page_adv_html += "<body id='component_body' onload='initial();' style='overflow-x:hidden;overflow-y:auto;;background-color:#21333E;font-family:Arial,Helvetica,sans-serif;'>\n";
+	splash_page_adv_html += "<body id='component_body' onload='initial();' style='overflow-x:hidden;overflow-y:auto;background-color:#21333E;font-family:Arial,Helvetica,sans-serif;'>\n";
 	if(component_array['component_eula'])
 		splash_page_adv_html += "<div id='terms_service' class='terms_service'></div>\n";
 	splash_page_adv_html += "<div id='component_container' class='component_container'></div>\n";

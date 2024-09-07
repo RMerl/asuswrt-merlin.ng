@@ -86,6 +86,10 @@ SRCFILE = broadcom_arm_be_$(BCM_CHIP)
 endif
 else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20240103)
 SRCFILE = broadcom_arm_be_$(BCM_CHIP)_4.19.275
+else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20241007)
+ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), RT-BE58_GO))
+SRCFILE = broadcom_arm_be_6764
+endif
 else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20230426)
 SRCFILE = broadcom_arm_be_$(BCM_CHIP)_4.19.275
 else

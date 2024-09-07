@@ -128,7 +128,7 @@ if(wan_bonding_support){
 }
 
 if(dualWAN_support && ( wans_dualwan.search("wan") >= 0 || wans_dualwan.search("lan") >= 0)){
-	var wan_type_name = wans_dualwan.split(" ")[<% nvram_get("wan_unit"); %>].toUpperCase();
+	var wan_type_name = wans_dualwan.split(" ")[`<% nvram_get("wan_unit"); %>` || 0].toUpperCase();
 	switch(wan_type_name){
 		case "DSL":
 			location.href = "Advanced_DSL_Content.asp";
@@ -218,6 +218,7 @@ function initial(){
 		$("#wan_proto_menu option[value='v6plus']").remove();
 		$("#wan_proto_menu option[value='ocnvc']").remove();
 		$("#wan_proto_menu option[value='dslite']").remove();
+		$("#wan_proto_menu option[value='v6opt']").remove();
 	}
 	else{
 		$("#wan_proto_menu option[value='lw4o6']").remove();
@@ -228,10 +229,14 @@ function initial(){
 		if(!dslite_support){
 			$("#wan_proto_menu option[value='dslite']").remove();
 		}
+		if(!v6option_support){
+			$("#wan_proto_menu option[value='v6opt']").remove();
+		}
 		if(dualWAN_support && wan_unit_flag == 1){
 			$("#wan_proto_menu option[value='v6plus']").remove();
 			$("#wan_proto_menu option[value='ocnvc']").remove();
 			$("#wan_proto_menu option[value='dslite']").remove();
+			$("#wan_proto_menu option[value='v6opt']").remove();
 		}
 
 		httpApi.faqURL("1050137", function(url){document.getElementById("s46reset_faq").href = url;});
@@ -346,7 +351,7 @@ function initial(){
 		showhide("dot1q_setting",0);
 
 	if(productid == "BRT-AC828" || productid == "RT-AD7200"){      //MODELDEP: BRT-AC828, RT-AD7200
-		var wan_type_name = wans_dualwan.split(" ")[<% nvram_get("wan_unit"); %>].toUpperCase();
+		var wan_type_name = wans_dualwan.split(" ")[`<% nvram_get("wan_unit"); %>` || 0].toUpperCase();
 		if((original_switch_wantag == "none" && original_switch_stb_x != "0") ||
 		   (original_switch_wantag != "none") || (wan_type_name != "WAN" && wan_type_name != "WAN2")){
 			document.form.wan_dot1q.value = "0";
@@ -383,7 +388,7 @@ function initial(){
 			add_options_x2(document.form.wanports_bond_menu, desc, val, orig_wanports_bond);
 		}
 
-		var wan_name = wans_dualwan.split(" ")[<% nvram_get("wan_unit"); %>];
+		var wan_name = wans_dualwan.split(" ")[`<% nvram_get("wan_unit"); %>` || 0];
 		if(typeof(wan_name) != 'undefined' && wan_name == "none")
 			wan_name = wans_dualwan.split(" ")[0];
 		if(typeof(wan_name) != 'undefined' && wan_name == "wan" && (wan_type == "dhcp" || wan_type == "static")){
@@ -693,7 +698,7 @@ function applyRule(){
 		}
 		
 		if (Softwire46_support && ipv6_service_orig != "ipv6pt" &&
-			(document.form.wan_proto.value == "v6plus" || document.form.wan_proto.value == "ocnvc" || document.form.wan_proto.value == "dslite"))
+			(document.form.wan_proto.value == "v6plus" || document.form.wan_proto.value == "ocnvc" || document.form.wan_proto.value == "dslite" || document.form.wan_proto.value == "v6opt"))
 		{
 				document.form.ipv6_service.disabled = false;
 				document.form.ipv6_service.value = "ipv6pt";
@@ -794,7 +799,8 @@ function applyRule(){
 			if(reboot_confirm==1){
 				if(confirm("<#AiMesh_Node_Reboot#>")){
 					if((wan_proto_orig != "v6plus" && document.form.wan_proto.value == "v6plus") ||
-						(wan_proto_orig != "ocnvc" && document.form.wan_proto.value == "ocnvc"))
+						(wan_proto_orig != "ocnvc" && document.form.wan_proto.value == "ocnvc") ||
+						(wan_proto_orig != "v6opt" && document.form.wan_proto.value == "v6opt"))
 						s46reset();
 
 					FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
@@ -804,7 +810,8 @@ function applyRule(){
 			}
 			else{
 				if((wan_proto_orig != "v6plus" && document.form.wan_proto.value == "v6plus") ||
-					(wan_proto_orig != "ocnvc" && document.form.wan_proto.value == "ocnvc"))
+					(wan_proto_orig != "ocnvc" && document.form.wan_proto.value == "ocnvc") ||
+					(wan_proto_orig != "v6opt" && document.form.wan_proto.value == "v6opt"))
 					s46reset();
 
 				showLoading();
@@ -891,7 +898,7 @@ function validForm(){
 	var wan_type = document.form.wan_proto.value;
 
 	if(!document.form.wan_dhcpenable_x[0].checked &&
-	   !(Softwire46_support && (wan_type == "lw4o6" || wan_type == "map-e" || wan_type == "v6plus" || wan_type == "ocnvc" || wan_type == "dslite"))){// Set IP address by userself
+	   !(Softwire46_support && (wan_type == "lw4o6" || wan_type == "map-e" || wan_type == "v6plus" || wan_type == "ocnvc" || wan_type == "dslite" || wan_type == "v6opt"))){// Set IP address by userself
 		if(!valid_IP($("#wan_ipaddr_x"), "")) return false;  //WAN IP
 		if(!valid_IP($("#wan_gateway_x"), "GW"))return false;  //Gateway IP		
 
@@ -1290,7 +1297,7 @@ function change_wan_type(wan_type, flag){
 
 		if(wan_bonding_support){
 			if(based_modelid == "RT-AX89U" || based_modelid == "GT-AXY16000"){
-				var wan_name = wans_dualwan.split(" ")[<% nvram_get("wan_unit"); %>];
+				var wan_name = wans_dualwan.split(" ")[`<% nvram_get("wan_unit"); %>` || 0];
 				if(typeof(wan_name) != 'undefined' && wan_name == "none")
 					wan_name = wans_dualwan.split(" ")[0];
 				if(typeof(wan_name) != 'undefined' && wan_name == "wan"){
@@ -1311,7 +1318,7 @@ function change_wan_type(wan_type, flag){
 			}
 		}
 	}
-	else if(Softwire46_support && (wan_type == "lw4o6" || wan_type == "map-e" || wan_type == "v6plus" || wan_type == "ocnvc" || wan_type == "dslite")){
+	else if(Softwire46_support && (wan_type == "lw4o6" || wan_type == "map-e" || wan_type == "v6plus" || wan_type == "ocnvc" || wan_type == "dslite" || wan_type == "v6opt")){
 		showhide("wan_DHCP_opt",0);
 		
 		inputCtrl(document.form.wan_auth_x, 0);
@@ -1343,7 +1350,7 @@ function change_wan_type(wan_type, flag){
 		else
 			$("#dslite_setting").hide();
 
-		if((wan_type == "v6plus" && wan_proto_orig == "v6plus") || (wan_type == "ocnvc" && wan_proto_orig == "ocnvc"))
+		if((wan_type == "v6plus" && wan_proto_orig == "v6plus") || (wan_type == "ocnvc" && wan_proto_orig == "ocnvc") || (wan_type == "v6opt" && wan_proto_orig == "v6opt"))
 			$("#s46reset_div").css("display", "flex");
 		else
 			$("#s46reset_div").hide();
@@ -1389,7 +1396,7 @@ function change_wan_type(wan_type, flag){
 
 		if(wan_bonding_support){
 			if(based_modelid == "RT-AX89U" || based_modelid == "GT-AXY16000"){
-				var wan_name = wans_dualwan.split(" ")[<% nvram_get("wan_unit"); %>];
+				var wan_name = wans_dualwan.split(" ")[`<% nvram_get("wan_unit"); %>` || 0];
 				if(typeof(wan_name) != 'undefined' && wan_name == "none")
 					wan_name = wans_dualwan.split(" ")[0];
 				if(typeof(wan_name) != 'undefined' && wan_name == "wan"){
@@ -1514,7 +1521,7 @@ function change_wan_dhcp_enable(flag){
 		inputCtrl(document.form.wan_netmask_x, 1);
 		inputCtrl(document.form.wan_gateway_x, 1);
 	}
-	else if(Softwire46_support && (wan_type == "lw4o6" || wan_type == "map-e" || wan_type == "v6plus" || wan_type == "ocnvc" || wan_type == "dslite")){
+	else if(Softwire46_support && (wan_type == "lw4o6" || wan_type == "map-e" || wan_type == "v6plus" || wan_type == "ocnvc" || wan_type == "dslite" || wan_type == "v6opt")){
 		if(flag == 1){
 			if(wan_type == original_wan_type){
 				document.form.wan_dhcpenable_x[0].checked = original_wan_dhcpenable;
@@ -2097,8 +2104,8 @@ function closeDNSListView() {
 
 var DNSService = new Object;
 function updatDNSListOnline(){
-
-	$.getJSON("/ajax/DNS_List.json", function(local_data){
+	const extendno = httpApi.nvramCharToAscii(["extendno"]).extendno;
+	$.getJSON("/ajax/DNS_List.json?v="+extendno+"", function(local_data){
 		DNSService = Object.keys(local_data).map(function(e){
 				return local_data[e];
 		});
@@ -2293,17 +2300,8 @@ function close_autowan_hint(){
 
 function confirm_autowan_change(){
 	let wan_obj = eth_wan_list["wan"];
-	let extra_setting_name = "";
-	let extra_setting_val = "";
 
 	$("#autowan_hint_div").hide();
-
-	$('<input>').attr({
-		type: 'hidden',
-		name: "autowan_enable",
-		value: "0"
-	}).appendTo('form');
-
 	if(wan_obj.hasOwnProperty("extra_settings")){
 		let extra_settings = wan_obj.extra_settings;
 		$.each(extra_settings, function(key) {
@@ -2311,44 +2309,28 @@ function confirm_autowan_change(){
 				document.getElementsByName(key)[0].value = extra_settings[key];
 			}
 			else{
-				extra_setting_name = key;
-				extra_setting_val = extra_settings[key];
 				$('<input>').attr({
 					type: 'hidden',
 					name: key,
 					value: extra_settings[key]
 				}).appendTo('form');
+
 			}
 		});
 	}
 
 	setTimeout(function(){
-			if($(".popup_edit_profile_container").is(":visible")){
-				applyData["autowan_enable"] = "0";
-				if(extra_setting_name != "")
-					applyData[extra_setting_name] = extra_setting_val;
-				applyData["rc_service"] = "reboot";
-				showLoading();
-				httpApi.nvramSet(applyData, function(){
-						setTimeout(function(){
-							close_popup_container("all");
-							refreshpage();
-						}, (applyData["rc_service"] == "reboot")? (default_reboot_time*1000):20000);
-					});
-			}
-			else{
-				if(confirm("<#AiMesh_Node_Reboot#>")){
-					if((wan_proto_orig != "v6plus" && document.form.wan_proto.value == "v6plus") ||
-						(wan_proto_orig != "ocnvc" && document.form.wan_proto.value == "ocnvc")){
-						s46reset();	//map-e changed
-					}
+		if(confirm("<#AiMesh_Node_Reboot#>")){
+			if((wan_proto_orig != "v6plus" && document.form.wan_proto.value == "v6plus") ||
+				(wan_proto_orig != "ocnvc" && document.form.wan_proto.value == "ocnvc") ||
+				(wan_proto_orig != "v6opt" && document.form.wan_proto.value == "v6opt"))
+				s46reset();
 
-					FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
-					showLoading();
-					document.form.submit();
-				}
-			}
-		}, 100);
+			FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
+			showLoading();
+			document.form.submit();
+		}
+	}, 100);
 }
 
 function isEmpty(obj)
@@ -2358,7 +2340,7 @@ function isEmpty(obj)
 	}
 
 	return true;
-};
+}
 
 function get_default_wan_name(){
 	var default_wan_name = "WAN";
@@ -2500,6 +2482,7 @@ function get_default_wan_name(){
 										<option value="v6plus" <% nvram_match("wan_proto", "v6plus", "selected"); %>><#IPv6_plus#></option>
 										<option value="ocnvc" <% nvram_match("wan_proto", "ocnvc", "selected"); %>><#IPv6_ocnvc#></option>
 										<option value="dslite" <% nvram_match("wan_proto", "dslite", "selected"); %>>DS-Lite</option>
+										<option value="v6opt" <% nvram_match("wan_proto", "v6opt", "selected"); %>><#IPv6_opt#></option>
 									</select>
 										<div id="s46reset_div" style="display: flex; align-items: center;">
 											<div id="s46btn_div" style="display: flex; align-items: center;">

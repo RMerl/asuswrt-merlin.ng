@@ -265,9 +265,6 @@ function show_popup_edit_new_profile(){
 	show_popup("setting_profile");
 	set_profile_data($(".popup_container.popup_element"), "new");
 	set_apply_btn_status($(".popup_container.popup_element"), "new");
-	if (support_Surfshark) {
-		Get_Component_Surfshark_Policy().insertBefore('.popup_container.popup_element .action_container:not(.loading)')
-	}
 	$(".popup_container.popup_element").find(".action_container .btn_container.delete").hide();
 	selected_profile_idx = "";
 	resize_iframe_height();
@@ -367,11 +364,6 @@ function Get_Component_Svr_Item(_profile_data){
 			$(".profile_setting_container").append(Get_Component_Setting_Profile());
 			set_profile_data($(".profile_setting_container"), specific_data);
 			set_apply_btn_status($(".profile_setting_container"), specific_data);
-			if (support_Surfshark) {
-				if (specific_data.proto.toLowerCase() == 'surfshark') {
-					Get_Component_Surfshark_Policy().insertBefore('.profile_setting_container .action_container:not(.loading)')
-				}
-			}
 			set_del_btn($(".profile_setting_container"), specific_data);
 			selected_profile_idx = (specific_data.idx).toString();
 			$(this).closest("#srv_profile_list").find(".svr_item_container").removeClass("selected");
@@ -1398,10 +1390,6 @@ function Get_Component_Client_List_Item(_client_data, _edit_mode){
 }
 function Get_Component_Client_No_Item(){
 	return $("<div>").addClass("client_container no_data").html(str_vpnc_profile_assignDevice);
-}
-function Get_Component_Surfshark_Policy() {
-	const thirdpartyPolicy = `Surfshark`;
-	return $("<div>").attr("show_item", "surfshark").addClass("profile_policy_item").html(`<div class="text_content"><#Thirdparty_PP_Desc1#></div>`.replace("%1$@", thirdpartyPolicy).replace("[aa]%2$@[/aa]", `<a onclick="showThirdPartyPolicy('${thirdpartyPolicy}')" style="text-decoration: underline;cursor: pointer;">Surfshark B.V. PRIVACY POLICY</a>`));
 }
 function Get_Component_Setting_Client_Policy(){
 	var $container = $("<div>").addClass("popup_edit_client_container");
@@ -3372,6 +3360,7 @@ function set_del_profile(_obj, _data){
 			clearInterval(interval_profile);
 			$("#srv_profile_list").find("[profile_id='"+del_idx+"']").remove();
 			show_get_start();
+			showLoading(3);
 			httpApi.nvramSet(nvramSet_obj, function(){
 				close_popup_second();
 				if($(".popup_container.popup_element").css("display") == "flex")
@@ -4096,7 +4085,7 @@ function validate_format(_obj){
 			$wgc_alive.focus();
 			return false;
 		}
-		var isValid_wgc_alive = valid_num_range($wgc_alive.val(), 0, 65535);
+		var isValid_wgc_alive = valid_num_range($wgc_alive.val(), 1, 65535);
 		if(isValid_wgc_alive.isError){
 			$wgc_alive.show_validate_hint(isValid_wgc_alive.errReason);
 			$wgc_alive.focus();
@@ -4498,13 +4487,6 @@ function initial(){
 				window.open(`https://www.cyberghostvpn.com/en_US/offer/bestasus?coupon=2Y5Mb&brand=asus&noForceCondition=true&aff_id=19933`);
 			});
 	})();
-}
-function showThirdPartyPolicy(party) {
-	const thirdPartyPolicyModal = new ThirdPartyPolicyModalComponent({
-		policy: 'THIRDPARTY_PP',
-		party: party
-	});
-	thirdPartyPolicyModal.show();
 }
 function showThirdPartyPolicy(party) {
 	const thirdPartyPolicyModal = new ThirdPartyPolicyModalComponent({

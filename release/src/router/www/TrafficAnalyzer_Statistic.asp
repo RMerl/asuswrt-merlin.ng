@@ -1646,7 +1646,7 @@ if(dns_dpi_support) {
 																				switch_control(0);
  																		})
 
-};
+}
 																	</script>
 																</td>
 															</tr>
@@ -1758,7 +1758,7 @@ if(dns_dpi_support) {
 													<div onclick="change_top5_clients(0);" style="width:100px;word-wrap:break-word;padding-left:5px;background-color:#B3645B;margin-right:-10px;border-top-left-radius:10px;border-bottom-left-radius:10px;"><#traffic_analysis_noclients#></div>
 												</td>
 												<td>
-													<div id="top5_info_block" style="width:310px;min-height:330px;;background-color:#B3645B;border-bottom-right-radius:10px;border-bottom-left-radius:10px;border-top-right-radius:10px;box-shadow: 3px 5px 5px #2E3537;">
+													<div id="top5_info_block" style="width:310px;min-height:330px;background-color:#B3645B;border-bottom-right-radius:10px;border-bottom-left-radius:10px;border-top-right-radius:10px;box-shadow: 3px 5px 5px #2E3537;">
 														<table style="width:99%;padding-top:20px">
 															<tr>
 																<th style="font-size:16px;text-align:left;padding-left:10px;width:140px;color:#ADADAD" id="top_client_title"><#MAC_Address#>:</th>

@@ -263,17 +263,53 @@ function initial(){
 		.removeClass("off on").addClass(()=>{
 			return (httpApi.nvramGet(["mld_enable"]).mld_enable == "1") ? "on" : "off";
 		});
+		$("[data-container=mlo_config] [data-component=mlo_help]").unbind("click").click(function(e){
+			e = e || event;
+			e.stopPropagation();
+			show_customize_alert(`This master switch controls the MLO (Multi-Link Operation) functionality, including both MLO backhaul for AiMesh connections and MLO fronthaul for clients.`);/* untranslated */
+		});
 
 		if(isSupport("mlo_bh_band")){
 			let $bh_band_comp = $("[data-container=mlo_config] [data-component=bh_band]").change(function(){
 				const $sel_bh_band = $(this);
 				if(httpApi.nvramGet(["mld_enable"]).mld_enable == "1"){
-					show_customize_confirm(`${isSupport("bcmwifi") ? `<#AiMesh_System_Reboot_Hint#>` : `<#WiFi_change_settings#>`}<br><#AiMesh_Are_U_Sure_Proceed#>`);
+					const sdn_mlo_enable = sdn_all_rl_json.filter((item)=>{
+						return (item.sdn_rl.sdn_enable == "1" && item.apg_rl.mlo == "2")
+					});
+					const dis_mlo_text = `Due to changes in the MLO configuration, all of your MLO networks will be disabled to avoid any conflict.<br>Please reconfigure your settings to enable MLO fronthaul for clients`
+					let mlo_hint = `
+						${(sdn_mlo_enable.length > 0) ? `${dis_mlo_text}<br>` : ""}
+						${isSupport("bcmwifi") ? `<#AiMesh_System_Reboot_Hint#>` : `<#WiFi_change_settings#><br><#AiMesh_Are_U_Sure_Proceed#>`}
+					`;
+					show_customize_confirm(mlo_hint);
 					const $confirm_obj = $(".popup_container.popup_customize_alert");
 					$confirm_obj.find("[data-btn=ok]")
 						.click(()=>{
 							const loading_time = httpApi.hookGet("get_default_reboot_time");
 							let nvramSet_obj = {"action_mode": "apply", "rc_service": "reboot", "mlo_bh_band": ""};
+							$.each(sdn_all_rl_json, function(index, sdn_all_rl){
+								if(sdn_all_rl.sdn_rl.sdn_enable == "1" && sdn_all_rl.apg_rl.mlo == "2"){
+									const sdn_idx = sdn_all_rl.sdn_rl.idx;
+									const apg_idx = sdn_all_rl.apg_rl.apg_idx;
+									const ap_prefix = (sdn_all_rl.sdn_rl.sdn_name == "MAINFH" || sdn_all_rl.sdn_rl.sdn_name == "MAINBH") ? "apm" : "apg";
+									if(ap_prefix == "apm"){
+										nvramSet_obj[`apm${apg_idx}_mlo`] = "0";
+										const profile_band_bitwise = sdn_all_rl_json.find(item => item.sdn_rl.sdn_name === "MAINFH" && item.sdn_rl.idx === sdn_idx).mainfh_smart_connect.band_bitwise;
+										let wifi_band_bitwise = 0;
+										wifi_band_options_cb.forEach(item => {
+											wifi_band_bitwise += (item.value & profile_band_bitwise) ? (parseInt(item.value) || 0) : 0;
+										});
+										nvramSet_obj[`apm${apg_idx}_dut_list`] = get_mainfh_dut_list(wifi_band_bitwise, false);
+									}
+									else{
+										sdn_all_rl.sdn_rl.sdn_enable = "0";
+										nvramSet_obj[`apg${apg_idx}_enable`] = "0";
+									}
+								}
+							});
+							let sdn_all_rl_tmp = JSON.parse(JSON.stringify(sdn_all_rl_json));
+							let sdn_rl = parse_JSONToStr_sdn_all_list({"sdn_all_rl":sdn_all_rl_tmp}).sdn_rl;
+							nvramSet_obj[`sdn_rl`] = sdn_rl;
 							nvramSet_obj["mlo_bh_band"] = $sel_bh_band.val();
 							showLoading();
 							httpApi.nvramSet(nvramSet_obj, function(){
@@ -297,10 +333,27 @@ function initial(){
 					httpApi.nvramSet(nvramSet_obj);
 				}
 			});
-			let bh_band_options = [
-				{"text":`5GHz, 6GHz-1 and 6GHz-2 (<#CTL_Default#>)`,"value":"98"},
-				{"text":`2GHz, 5GHz and 6GHz`,"value":"35"}
+			const mlo_bh_band_mapping = [
+				{//2556
+					"all_band":(1+4+8+16),
+					"ui_option":[
+						{"text":`5GHz-1, 5GHz-2 and 6GHz (<#CTL_Default#>)`,"value":"28"},
+						{"text":`2GHz, 5GHz and 6GHz`,"value":"25"}
+					]
+				},
+				{//2566
+					"all_band":(1+2+32+64),
+					"ui_option":[
+						{"text":`5GHz, 6GHz-1 and 6GHz-2 (<#CTL_Default#>)`,"value":"98"},
+						{"text":`2GHz, 5GHz and 6GHz`,"value":"35"}
+					]
+				}
 			];
+			let bh_band_options = (() => {
+				const all_band_num = aimesh_wifi_mlo_info.cap.all_band_num;
+				const mlo_bh_band_info = mlo_bh_band_mapping.find(item => item.all_band == all_band_num);
+				return (mlo_bh_band_info != undefined) ? mlo_bh_band_info.ui_option : [];
+			})();
 			$.each(bh_band_options, function(index, item){
 				$bh_band_comp.append($('<option>', {
 					value: item.value,
@@ -440,19 +493,19 @@ function initial(){
 			<div class="help_icon"></div>
 		</div>
 		<div data-container="mlo_config" class="mlo_config_container">
-			<div class="config_item_container">
-				<div class="title"><#WLANConfig11b_WirelessCtrl_button1name#> MLO</div>
+			<div class="config_item_container nowrap">
+				<div class="title">MLO<div data-component="mlo_help" class="help_icon"></div></div>
 				<div class="input_container">
 					<div data-component="mlo_switch" class="icon_switch off"></div>
 				</div>
 			</div>
 			<div data-container="mlo_bh_band" class="config_item_container">
-				<div class="title">Backhaul Bands</div>
+				<div class="title"><#WiFi_mlo_backhaul_bands#></div>
 				<div class="input_container">
 					<select data-component="bh_band" id="sel_bh_band" class="dropdown_select"></select>
 				</div>
 			</div>
-			<div class="config_item_container" id="wifi_set_container">
+			<div class="config_item_container nowrap" id="wifi_set_container">
 				<div class="title"><#QKSet_wireless_webtitle#></div>
 				<div class="input_container">
 					<div data-component="wifi_set" class="profile_btn_container"><#btn_go#></div>

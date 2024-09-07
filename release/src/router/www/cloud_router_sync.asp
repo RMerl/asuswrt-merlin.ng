@@ -378,9 +378,6 @@ function get_layer_items(layer_order){
 	$.ajax({
     		url: '/gettree.asp?layer_order='+layer_order,
     		dataType: 'script',
-    		error: function(xhr){
-    			;
-    		},
     		success: function(){
 				get_tree_items(treeitems);					
   			}

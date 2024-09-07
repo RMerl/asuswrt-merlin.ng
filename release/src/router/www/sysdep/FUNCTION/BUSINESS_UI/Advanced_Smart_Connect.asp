@@ -13,7 +13,7 @@
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="/device-map/device-map.css">
 <link rel="stylesheet" href="/css/bootstrap.min.css" />
-<link rel="stylesheet" href="/css/architecture_business.css" />
+<link rel="stylesheet" href="/css/architecture.css" />
 <script src="/js/bootstrap.bundle.min.js"></script>
 <script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/calendar/jquery-ui.js"></script> 
@@ -24,6 +24,7 @@
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" src="/client_function.js"></script>
+<script type="text/javascript" src="/js/asus_clientlist.js"></script>
 <style>
 .ui-slider {
 	position: relative;
@@ -1055,7 +1056,7 @@ function register_event(){
 				based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || 
 				based_modelid == "GT-AXE16000" ||
 				based_modelid == "RT-AX88U_PRO" || based_modelid == "RT-BE96U" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" ||
-				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U" || based_modelid == "RT-BE82U" || based_modelid == "RT-BE58U_PRO"
+				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U" || based_modelid == "RT-BE82U" || based_modelid == "TUF-BE82" || based_modelid == "RT-BE82M" || based_modelid == "RT-BE58U_PRO" || based_modelid == "GS-BE18000"
 				)?1000:600,
 			value:1,
 			slide:function(event, ui){
@@ -1111,7 +1112,7 @@ function register_event(){
 				based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || 
 				based_modelid == "GT-AXE16000" ||
 				based_modelid == "RT-AX88U_PRO" || based_modelid == "RT-BE96U" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" ||
-				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U" || based_modelid == "RT-BE82U" || based_modelid == "RT-BE58U_PRO"
+				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U" || based_modelid == "RT-BE82U" || based_modelid == "TUF-BE82" || based_modelid == "RT-BE82M" || based_modelid == "RT-BE58U_PRO" || based_modelid == "GS-BE18000"
 				)?1000:600,
 			value:1,
 			slide:function(event, ui){
@@ -1167,7 +1168,7 @@ function register_event(){
 				based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || 
 				based_modelid == "GT-AXE16000" ||
 				based_modelid == "RT-AX88U_PRO" || based_modelid == "RT-BE96U" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" ||
-				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U" || based_modelid == "RT-BE82U" || based_modelid == "RT-BE58U_PRO"
+				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U" || based_modelid == "RT-BE82U" || based_modelid == "TUF-BE82" || based_modelid == "RT-BE82M" || based_modelid == "RT-BE58U_PRO" || based_modelid == "GS-BE18000"
 				)?2167:1300,
 			value:1,
 			slide:function(event, ui){
@@ -1223,7 +1224,7 @@ function register_event(){
 				based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || 
 				based_modelid == "GT-AXE16000" ||
 				based_modelid == "RT-AX88U_PRO" || based_modelid == "RT-BE96U" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" ||
-				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U" || based_modelid == "RT-BE82U" || based_modelid == "RT-BE58U_PRO"
+				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U" || based_modelid == "RT-BE82U" || based_modelid == "TUF-BE82" || based_modelid == "RT-BE82M" || based_modelid == "RT-BE58U_PRO" || based_modelid == "GS-BE18000"
 				)?2167:1300,
 			value:1,
 			slide:function(event, ui){
@@ -1337,7 +1338,7 @@ function register_event(){
 				based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || 
 				based_modelid == "GT-AXE16000" ||
 				based_modelid == "RT-AX88U_PRO" || based_modelid == "RT-BE96U" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" ||
-				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U" || based_modelid == "RT-BE82U" || based_modelid == "RT-BE58U_PRO"
+				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U" || based_modelid == "RT-BE82U" || based_modelid == "TUF-BE82" || based_modelid == "RT-BE82M" || based_modelid == "RT-BE58U_PRO" || based_modelid == "GS-BE18000"
 				)?1000:600,
 			value:1,
 			slide:function(event, ui){
@@ -1393,7 +1394,7 @@ function register_event(){
 				based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || 
 				based_modelid == "GT-AXE16000" ||
 				based_modelid == "RT-AX88U_PRO" || based_modelid == "RT-BE96U" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" ||
-				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U" || based_modelid == "RT-BE82U" || based_modelid == "RT-BE58U_PRO"
+				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U" || based_modelid == "RT-BE82U" || based_modelid == "TUF-BE82" || based_modelid == "RT-BE82M" || based_modelid == "RT-BE58U_PRO" || based_modelid == "GS-BE18000"
 				)?1000:600,
 			value:1,
 			slide:function(event, ui){
@@ -1449,7 +1450,7 @@ function register_event(){
 				based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || 
 				based_modelid == "GT-AXE16000" ||
 				based_modelid == "RT-AX88U_PRO" || based_modelid == "RT-BE96U" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" ||
-				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U" || based_modelid == "RT-BE82U" || based_modelid == "RT-BE58U_PRO"
+				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U" || based_modelid == "RT-BE82U" || based_modelid == "TUF-BE82" || based_modelid == "RT-BE82M" || based_modelid == "RT-BE58U_PRO" || based_modelid == "GS-BE18000"
 				)?2167:1300,
 			value:1,
 			slide:function(event, ui){
@@ -1505,7 +1506,7 @@ function register_event(){
 				based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || 
 				based_modelid == "GT-AXE16000" ||
 				based_modelid == "RT-AX88U_PRO" || based_modelid == "RT-BE96U" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" ||
-				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U" || based_modelid == "RT-BE82U" || based_modelid == "RT-BE58U_PRO"
+				based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U" || based_modelid == "RT-BE82U" || based_modelid == "TUF-BE82" || based_modelid == "RT-BE58U_PRO" || based_modelid == "GS-BE18000"
 				)?2167:1300,
 			value:1,
 			slide:function(event, ui){
@@ -1672,7 +1673,7 @@ function check_power(power_value,flag){
 			based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || 
 			based_modelid == "GT-AXE16000" ||
 			based_modelid == "RT-AX88U_PRO" || based_modelid == "RT-BE96U" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" ||
-			based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U" || based_modelid == "RT-BE82U" || based_modelid == "RT-BE58U_PRO"
+			based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U" || based_modelid == "RT-BE82U" || based_modelid == "TUF-BE82" || based_modelid == "RT-BE82M" || based_modelid == "RT-BE58U_PRO" || based_modelid == "GS-BE18000"
 			)
 			power_value_limit = 2167;
 		else
@@ -1737,7 +1738,7 @@ function set_lg_power(power_value,flag,idx){
 			based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || 
 			based_modelid == "GT-AXE16000" ||
 			based_modelid == "RT-AX88U_PRO" || based_modelid == "RT-BE96U" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" ||
-			based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U" || based_modelid == "RT-BE82U" || based_modelid == "RT-BE58U_PRO"
+			based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U" || based_modelid == "RT-BE82U" || based_modelid == "TUF-BE82" || based_modelid == "RT-BE82M" || based_modelid == "RT-BE58U_PRO" || based_modelid == "GS-BE18000"
 			)
 			divd = 10;
 		else
@@ -1785,7 +1786,7 @@ function set_lg_power(power_value,flag,idx){
 			based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || 
 			based_modelid == "GT-AXE16000" ||
 			based_modelid == "RT-AX88U_PRO" || based_modelid == "RT-BE96U" || based_modelid == "RT-BE88U" || based_modelid == "RT-BE86U" ||
-			based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U" || based_modelid == "RT-BE82U" || based_modelid == "RT-BE58U_PRO"
+			based_modelid == "RT-BE58U" || based_modelid == "TUF-BE3600" || based_modelid == "RT-BE92U" || based_modelid == "RT-BE95U" || based_modelid == "RT-BE82U" || based_modelid == "TUF-BE82" || based_modelid == "RT-BE82M" || based_modelid == "RT-BE58U_PRO" || based_modelid == "GS-BE18000"
 			)
 			divd = 21;
 		else
@@ -1813,6 +1814,10 @@ $(document).ready(function() {
     });
 });
 
+function showClientlistModal(){
+	const clientlistModal = new ClientlistModel();
+	clientlistModal.show();
+}
 </script>
 </head>
 
@@ -1906,7 +1911,7 @@ $(document).ready(function() {
                                         <div id="sc_view_list"
                                              style="text-align:right;margin-top:-36px;padding-bottom:3px;">
                                             <input type="button" class="btn_subusage mb-1" value="<#View_List#>"
-                                                   data-bs-toggle="modal" data-bs-target="#clientListModal">
+                                                   onClick="showClientlistModal()">
                                         </div>
                                         <div class="modal fade" id="clientListModal" data-bs-backdrop="static"
                                                                                      data-bs-keyboard="false" tabindex="-1">

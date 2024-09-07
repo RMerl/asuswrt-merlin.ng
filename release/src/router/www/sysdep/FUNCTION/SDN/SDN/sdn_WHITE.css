@@ -32,56 +32,14 @@
 	color: #666;
 }
 .item_text_container .main_info:before{
-	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-build.svg);
-}
-.profile_item_container.wizard .item_text_container .main_info:before{
-	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-build.svg);
+	background-color: #000000;
 }
 .profile_item_container.wizard .item_text_container .sub_info{
 	color: #4D4D4D;
 	margin-left: 24px;
 }
-.profile_item_container.addnew .item_text_container .main_info:before{
-	background-image: url(/images/New_ui/SDN/white_theme/Content/add_circle_outline.svg);
-}
-.profile_item_container.customized .item_text_container .main_info:before{
-	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-build.svg);
-}
-.profile_item_container.Employee .item_text_container .main_info:before{
-	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-employee.svg);
-}
-.profile_item_container.Portal .item_text_container .main_info:before{
-	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-portal.svg);
-}
-.profile_item_container.Guest .item_text_container .main_info:before{
-	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-guest.svg);
-}
-.profile_item_container.Kids .item_text_container .main_info:before{
-	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-kids.svg);
-}
-.profile_item_container.Sched .item_text_container .main_info:before{
-	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-schedule.svg);
-}
-.profile_item_container.IoT .item_text_container .main_info:before{
-	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-IoT.svg);
-}
-.profile_item_container.VPN .item_text_container .main_info:before{
-	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-vpn.svg);
-}
-.profile_item_container.Scenario .item_text_container .main_info:before{
-	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-scenario.svg);
-}
-.profile_item_container.MLO .item_text_container .main_info:before{
-	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-mlo.svg);
-}
-.profile_item_container.LEGACY .item_text_container .main_info:before{
-	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-legacy.svg);
-}
 .profile_item_container.Gaming .item_text_container .main_info:before{
-	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-gaming.svg);
-}
-.profile_item_container.MAINFH .item_text_container .main_info:before{
-	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-mainfh.svg);
+	--svg: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDI0IDI0Ij4KICA8cGF0aCBmaWxsPSIjMDAwIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGQ9Im0xOC41IDQgMS43MDUgMS43MDUgMS41NyAxMi41MkwyMCAyMGgtMmwtMi0ySDhsLTIgMkg0bC0xLjc3NS0xLjc3NSAxLjU3LTEyLjUyTDUuNSA0SDdsMiAyaDZsMi0yaDEuNVpNNy4yOTUgMTcuMjk1bC4yOS0uMjk1SDkuNVY3aC0uOTE1bC0uMjktLjI5NUw2LjU4NSA1aC0uNjdsLTEuMTcgMS4xNy0xLjQ3IDExLjY5TDQuNDE1IDE5aDEuMTdsMS43MS0xLjcwNVpNMTAgMTdoNFY3aC00djEwWm04LjQxNSAyaDEuMTdsMS4xNC0xLjE0LTEuNDctMTEuNjlMMTguMDg1IDVoLS42N2wtMS43MSAxLjcwNS0uMjkuMjk1SDE0LjV2MTBoMS45MTVsLjI5LjI5NUwxOC40MTUgMTlaTTYuNSA5aDF2MWgxdjFoLTF2MWgtMXYtMWgtMXYtMWgxVjlabS41IDQuNXYxaDF2LTFIN1pNMTYuNSA5aDF2MWgtMVY5Wm0wIDJoLTF2LTFoMXYxWm0xIDB2MWgtMXYtMWgxWm0wIDBoMXYtMWgtMXYxWk0xNiAxNC41di0xaDF2MWgtMVoiIGNsaXAtcnVsZT0iZXZlbm9kZCIvPgo8L3N2Zz4K");
 }
 .profile_item_container.feature_desc{
 	border: 1px solid #DCDCDC;
@@ -97,10 +55,10 @@
 	color: #4D4D4D;
 }
 .item_tag_container > .item_tag.VPN:before{
-	background-image: url(/images/New_ui/SDN/white_theme/Content/link.svg);
+	background-color: #000000;
 }
 .item_tag_container > .item_tag.Timer:before{
-	background-image: url(/images/New_ui/SDN/white_theme/Image/timer.svg);
+	background-color: #000000;
 }
 .item_text_container .bottom_info > div:not(:first-child):before{
 	border-right: 1px solid #DCDCDC;
@@ -109,13 +67,10 @@
 	color: #181818;
 }
 .item_text_container .clients_num > .icon_client{
-	background-image: url(/images/New_ui/SDN/white_theme/Devices/devices.svg);
+	background-color: #000000;
 }
 .status_info .split_line{
 	background-color: #DCDCDC;
-}
-.status_info .conn_type.WiFi_offline{
-	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_off.svg);
 }
 .status_info .conn_type.WiFi_2G{
 	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_2g.svg);
@@ -165,9 +120,6 @@
 .status_info .conn_type.WiFi_mlo_lock{
 	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_mlo_lock.svg);
 }
-.status_info .conn_type.LAN{
-	background-image: url(/images/New_ui/SDN/white_theme/Notification/LAN.svg);
-}
 .status_info .conn_type.WiFi,
 .status_info .conn_type.WiFi_offline,
 .status_info .conn_type.LAN{
@@ -196,11 +148,8 @@
 .profile_setting.Scenarios > .title{
 	padding-top: 16px;
 }
-.bandwidth_item > .icon_download{
-	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-download-speed.svg);
-}
-.bandwidth_item > .icon_upload{
-	background-image: url(/images/New_ui/SDN/white_theme/Category/ic-upload-speed.svg);
+.bandwidth_item > .BW_icon{
+	background-color: #006CE1;
 }
 .profile_setting_item.schedule_ui,
 .profile_setting_item.gaming_ui{
@@ -244,7 +193,8 @@
 .node_container{
 	background: #F5F5F5;
 }
-.node_container:before{
+.node_container:before,
+.cb_item_container:before{
 	border-bottom: 1px solid #DCDCDC;
 }
 .node_content_container > .node_info > .node_main_info{
@@ -284,11 +234,13 @@
 .dns_ping_text_component .text-loading:before{
 	color: #006CE1;
 }
-.bg_template_container::-webkit-scrollbar-track{
+.bg_template_container::-webkit-scrollbar-track,
+.manual_dhcp_list_container::-webkit-scrollbar-track{
 	border: 4px solid #FFFFFF;
 	background-color: #DCDCDC;
 }
-.bg_template_container::-webkit-scrollbar-thumb{
+.bg_template_container::-webkit-scrollbar-thumb,
+.manual_dhcp_list_container::-webkit-scrollbar-thumb{
 	background-color: #CCCCCC;
 	border: 2px solid #FFFFFF;
 }
@@ -306,8 +258,14 @@
 	color: #262626;
 }
 .VPN_list_container,
-.macfilter_list_container{
+.macfilter_list_container,
+.manual_dhcp_list_container{
 	background: #F5F5F5;
+}
+.manual_dhcp_list_container .dhcp_rule_container{
+	background-color: #FFF;
+	box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.05), 0px 1px 4px rgba(60, 60, 60, 0.1);
+	border: 1px solid rgba(255, 255, 255, 0.02);
 }
 .VPN_list_container:before,
 .macfilter_list_container:before{
@@ -340,14 +298,18 @@
 	border-top: 1px solid #DCDCDC;
 }
 .clientlist_container .no_client_hint,
-.macfilter_list_container .no_rule_hint{
+.macfilter_list_container .no_rule_hint,
+.manual_dhcp_list_container .no_rule_hint{
 	color: #181818;
 }
 .macfilter_rule_container:before{
 	border-top: 1px solid #DCDCDC;
 }
+.manual_dhcp .client_content_container .sub_info > div{
+	color: #262626;
+}
 .client_content_container > .sub_info > div{
-	color: #4D4D4D;
+	color: #262626;
 }
 .client_content_container .sub_info > div:not(:first-child):before{
 	border-left: 1px solid #DCDCDC;
@@ -355,8 +317,11 @@
 .client_content_container .client_name{
 	color: #262626;
 }
+.manual_dhcp .client_content_container .client_mac{
+	color: #4D4D4D;
+}
 .client_content_container .conn_type.LAN{
-	background-image: url(/images/New_ui/SDN/white_theme/Notification/LAN.svg);
+	background-color: #006CE1;
 }
 .client_content_container .conn_type.WiFi_2G{
 	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_2g.svg);
@@ -376,6 +341,9 @@
 .feature_desc_container .desc{
 	color: #4D4D4D;
 }
+.feature_desc_container .desc a:link{
+	color: #006CE1;
+}
 .feature_desc_container .wizard_list_bg:before{
 	border-bottom: 1px solid #DCDCDC;
 }
@@ -388,13 +356,13 @@
 	color: rgb(94, 100, 112);
 }
 .qrcode_btn{
-	background-image: url(/images/New_ui/SDN/white_theme/Action/qr_code.svg);
+	background-color: #4D4D4D;
 }
 .export_btn_container > .export_btn{
 	color: rgb(94, 100, 112);
 }
 .export_btn_container > .export_btn .btn_text:before{
-	background-image: url(/images/New_ui/SDN/white_theme/Action/download.svg);
+	background-color: #4D4D4D;
 }
 .profile_setting_title.Scenarios > .title{
 	color: #006CE1;
@@ -428,11 +396,17 @@
 .gaming_profile_list_cntr .profile_info .profile_text{
 	color: #181818;
 }
+.profile_setting_item .title span.mlo_band{
+	color: #007B91;
+}
+.checkbox_option.mlo_band .option_text:after{
+	color: #007B91;
+}
 @media (max-width: 575px) {
 	.popup_container .setting_subtab_container{
 		margin-top: initial;
 	}
 	.export_btn_container > .export_btn .btn_text:before{
-		background-image: url(/images/New_ui/SDN/white_theme/Action/share.svg);
+		background-color: #000000;
 	}
 }

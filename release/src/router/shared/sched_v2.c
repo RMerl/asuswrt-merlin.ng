@@ -1209,6 +1209,30 @@ int check_expire_on_off(const char *sched_str) {
 	}
 }
 
+/*
+	return	0 : wlX_timesched and wlX.Y_timesched are all not set.
+			1 : wlX_timesched is set.
+			2 : wlX.Y_timesched is set.
+*/
+int check_timesched_is_set(int unit, int subunit) {
+	char tmp[128];
+	char prefix[] = "wlXXXX_";
+	int wlX_timesched;
+	int wlX_Y_timesched;
+	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+	wlX_timesched = nvram_get_int(strcat_r(prefix, "timesched", tmp));
+	if (wlX_timesched > 0)
+		return 1;
+
+	if (subunit >= 0) {
+		snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, subunit);
+		wlX_Y_timesched = nvram_get_int(strcat_r(prefix, "timesched", tmp));
+		if ((wlX_timesched == 0 && wlX_Y_timesched > 0))
+			return 2;
+	}
+	return 0;
+}
+
 /*For wireless scheduler*/
 void convert_wl_sched_v1_to_sched_v2() {
 	char wl_ifnames[512];

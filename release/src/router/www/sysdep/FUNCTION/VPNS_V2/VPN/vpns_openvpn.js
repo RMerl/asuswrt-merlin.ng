@@ -43,6 +43,7 @@ var hmacarray = [
 	["RIPEMD 160", "RIPEMD160"],
 	["RSA MD4", "RSA-MD4"]
 ];
+var wan0_proto = '<% nvram_get("wan0_proto"); %>';
 var ipv6_item_flag = false;
 if(isSupport("ipv6")){
 	var ipv6_service = httpApi.nvramGet(["ipv6_service"]).ipv6_service;
@@ -698,7 +699,7 @@ function Get_Component_Keys_Cert(_obj){
 		else if(auth == 'secret'){
 			httpApi.nvramSet({
 				"action_mode": "apply",
-				"vpn_crt_server1_static" : $content_container.find("#vpn_crt_server1_static").val()
+				"vpn_crt_server1_static" : $content_container.find("#edit_vpn_crt_server1_static").val()
 			});
 		}
 		close_popup_second();
@@ -1107,7 +1108,7 @@ function validate_format_OpenVPN(_obj, _validField){
 			return false;
 		}
 
-		if((wan_proto == "v6plus" || wan_proto == "ocnvc") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
+		if((wan0_proto == "v6plus" || wan0_proto == "ocnvc" || wan0_proto == "v6opt") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
 			if (!validator.range_s46_ports($vpn_server_port[0], "none")){
 				if(!confirm(port_confirm)){
 					$vpn_server_port.focus();
@@ -1789,7 +1790,8 @@ function set_apply_btn_status_OpenVPN(_obj){
 						httpApi.nvramGet(["vpn_server_unit", "vpn_serverx_eas", "vpn_serverx_dns", "vpn_server_port", "vpn_server_tls_keysize", "vpn_server_if", "vpn_server_proto",
 							"vpn_server_pdns", "vpn_server_cipher", "vpn_server_digest", "vpn_server_comp", "vpn_server_igncrt", "vpn_server_crypt", "vpn_server_hmac", "vpn_server_sn",
 							"vpn_server_nm", "vpn_server_dhcp", "vpn_server_r1", "vpn_server_r2", "vpn_server_local", "vpn_server_remote", "vpn_server_plan", "vpn_server_rgw",
-							"vpn_server_reneg", "vpn_server_ccd", "vpn_server_c2c", "vpn_server_ccd_excl", "vpn_server_ccd_val", "vpn_serverx_clientlist", "vpn_server_custom"], true);
+							"vpn_server_reneg", "vpn_server_ccd", "vpn_server_c2c", "vpn_server_ccd_excl", "vpn_server_ccd_val", "vpn_serverx_clientlist", "vpn_server_custom",
+							"VPNServer_enable", "vpn_server1_state", "vpn_server1_errno", "vpn_server2_state"], true);
 						if(ipv6_item_flag){
 							httpApi.nvramGet(["vpn_server_ip6", "vpn_server_nat6", "vpn_server_sn6", "vpn_server_local6", "vpn_server_remote6"], true);
 						}
@@ -1848,10 +1850,10 @@ function Get_Component_Setting_Profile_OpenVPN(_type){
 			return validator.isNumber(this,event);
 		});
 	var $vpn_server_port_hint_obj = $("<div>").addClass("item_hint").html("* <#SSH_Port_Suggestion#>").appendTo($detail_general);
-	if(wan_proto == "v6plus" || wan_proto == "ocnvc"){
+	if(wan0_proto == "v6plus" || wan0_proto == "ocnvc" || wan0_proto == "v6opt"){
 		var get_s46_hgw_case = '<% nvram_get("s46_hgw_case"); %>';      //topology 2,3,6
-                var s46_ports_check_flag = (get_s46_hgw_case=='3' || get_s46_hgw_case=='6')? true:false;        //true for topology 3||6
-		var get_ipv6_s46_ports = (Softwire46_support && (wan_proto == "v6plus" || wan_proto == "ocnvc")) ? httpApi.nvramGet(["ipv6_s46_ports"]).ipv6_s46_ports : '0';
+		var s46_ports_check_flag = (get_s46_hgw_case=='3' || get_s46_hgw_case=='6')? true:false;        //true for topology 3||6
+		var get_ipv6_s46_ports = (Softwire46_support && (wan0_proto == "v6plus" || wan0_proto == "ocnvc" || wan0_proto == "v6opt")) ? httpApi.nvramGet(["ipv6_s46_ports"]).ipv6_s46_ports : '0';
 		var array_ipv6_s46_ports = new Array("");
 		if(get_ipv6_s46_ports!="0" && get_ipv6_s46_ports!=""){
 			array_ipv6_s46_ports = get_ipv6_s46_ports.split(" ");

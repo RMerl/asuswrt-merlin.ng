@@ -62,7 +62,7 @@ function get_band_str(band){
 		return "5 GHz-2";	
 	}
 	else if(band == 2){
-		return (band6g_support) ? '6 GHz' : '5 GHz-2';
+		return '5 GHz-2';
 	}
 		
 	return "";
@@ -498,7 +498,7 @@ function show_wsc_status(wps_infos){
 			band_string = "5 GHz";
 		}else{
 			if(based_modelid === 'GT-BE98_PRO' || based_modelid === 'BQ16_PRO' ){
-				document.getElementById("wps_band_word").innerHTML = "6 GHz-1";
+				document.getElementById("wps_band_word").innerHTML = "";
 				band_string = "6 GHz-1";
 			}
 			else if( based_modelid === 'GT-BE98' || based_modelid === 'BQ16' || based_modelid === 'GT-AXE16000'){
@@ -506,14 +506,8 @@ function show_wsc_status(wps_infos){
 				band_string = "5 GHz-2";
 			}
 			else{
-				if(band6g_support){
-					document.getElementById("wps_band_word").innerHTML = "6 GHz";
-					band_string = "6 GHz";
-				}
-				else{
-					document.getElementById("wps_band_word").innerHTML = "5 GHz-1";
-					band_string = "5 GHz-1";
-				}
+				document.getElementById("wps_band_word").innerHTML = "5 GHz-1";
+				band_string = "5 GHz-1";
 			}
 
 		}
@@ -522,22 +516,16 @@ function show_wsc_status(wps_infos){
 	}	
 	else if(wps_infos[12].firstChild.nodeValue == 2){
 		if(based_modelid === 'GT-BE98_PRO' || based_modelid === 'BQ16_PRO' ){
-				document.getElementById("wps_band_word").innerHTML = "6 GHz-2";
+				document.getElementById("wps_band_word").innerHTML = "";
 				band_string = "6 GHz-1";
 			}
 		else if( based_modelid === 'GT-BE98' || based_modelid === 'BQ16' || based_modelid === 'GT-AXE16000'){
-			document.getElementById("wps_band_word").innerHTML = "6 GHz";
+			document.getElementById("wps_band_word").innerHTML = "";
 			band_string = "6 GHz";
 		}
 		else{
-			if(band6g_support){
-				document.getElementById("wps_band_word").innerHTML = "6 GHz";
-				band_string = "6 GHz";
-			}
-			else{
-				document.getElementById("wps_band_word").innerHTML = "5 GHz-2";
-				band_string = "5 GHz-2";
-			}
+			document.getElementById("wps_band_word").innerHTML = "5 GHz-2";
+			band_string = "5 GHz-2";
 		}
 
 		currentBand = 2;

@@ -2,6 +2,7 @@
 var HINTPASS = "PASS"; 
 var CONFIRMPASS = "PASS";
 
+var wan0_proto = '<% nvram_get("wan0_proto"); %>';
 //function keycode for Firefox/Opera
 function tableValid_isFunctionButton(e) {
 	var keyCode = e.keyCode;
@@ -309,7 +310,7 @@ var tableValidator = {
 				}
 			}
 
-			if((wan_proto == "v6plus" || wan_proto == "ocnvc") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1 && hintMsg == HINTPASS){
+			if((wan0_proto == "v6plus" || wan0_proto == "ocnvc" || wan0_proto == "v6opt") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1 && hintMsg == HINTPASS){
 				var PortSplit = PortRange.split(/,|:/);
 				var res=false;
 				var res_result=0;

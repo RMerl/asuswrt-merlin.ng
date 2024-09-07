@@ -1310,8 +1310,8 @@ wl_wlif_apply_creds(wlif_bss_t *bss, wlif_wps_nw_creds_t *creds)
 	}
 
 	dprintf("Info: shared %s received credentials after wps:"
-		"\nssid = [%s] \nakm = [%d] \nencr = [%d] \npsk = [%s]\n",
-		__func__, creds->ssid, creds->akm, creds->encr, creds->nw_key);
+		"\nssid = [%s] \nakm = [%d] \nencr = [%d] \npsk = [%s]\nobd_status(%d)\n",
+		__func__, creds->ssid, creds->akm, creds->encr, creds->nw_key, nvram_get_int("obd_status"));
 
 	if (creds->ssid[0] == '\0' || creds->invalid) {
 		cprintf("Info: shared %s invalid credentials are provided \n", __func__);
@@ -1584,12 +1584,14 @@ wl_wlif_apply_creds(wlif_bss_t *bss, wlif_wps_nw_creds_t *creds)
 			nvram_set("obd_Setting", "1");
 #endif
 		}
+		_dprintf("%s, commit it.\n", __func__);
 		nvram_commit();
-	}
+	} else
+		_dprintf("%s, ret(%d), cred err.\n", __func__, ret);
 
-	if (nvram_get_int("rpx_wps_enr") && !nvram_match("chk_wpsnv", "1")) {
+	if (nvram_get_int("rpx_wps_enr") && nvram_get_int("obd_status")<2 && !nvram_match("chk_wpsnv", "1")) {
 		_dprintf("rp wps setting applied, reboot...\n");
-		sleep(1);
+		sleep(2);
 		kill(1, SIGTERM);
 	}
 
@@ -3053,3 +3055,290 @@ wl_mloiovar_setint(char *ifname, char *iovar, char *subcmd, int val)
 
 #endif
 
+#if defined(RTCONFIG_WIFI7) && defined(RTCONFIG_MLO)
+
+#define MLO_API_DEBUG	"/jffs/MLO_API_DEBUG"
+#define MLO_API_DBG(fmt,args...) \
+	if(f_exists(MLO_API_DEBUG) > 0) { \
+		printf("[MLO_API][%s:(%d)] "fmt, __FUNCTION__, __LINE__, ##args); \
+	}
+
+/* Put the numbers of wl_mlo_config in sequence and save into mld0_ifnames */
+int wl_mlo_config_sort(char *group, char *subunit)
+{
+	int mlo_config[4] = {0};
+	int mlo_config_og[4] = {0};
+	int wl[4] = {0, 1, 2, 3};
+	char wl_if[16] = {0};
+	char mld_ifnames[32] = {0};
+	char buffer[32] = {0};
+	int i = 0, j = 0;
+	int tmp = 0;
+	int tmp2 = 0;
+	int len = (int) sizeof(mlo_config) / sizeof(*mlo_config);
+	char if_append[32] = {0};
+	int first = 1;
+	char *next;
+	char word[32] = {0};
+
+	foreach(word, nvram_safe_get("wl_mlo_config"), next) {
+		mlo_config[i] = safe_atoi(word);
+		mlo_config_og[i] = safe_atoi(word);
+		i++;
+	}
+
+/* bubble sort for wl_mlo_config */
+	for (i = 0; i < len - 1; i++){
+		for (j = 0; j < len - 1 - i; j++){
+			// SWAP data
+			if (mlo_config[j] > mlo_config[j + 1]) {
+				tmp = mlo_config[j];
+				tmp2 = wl[j];
+
+				mlo_config[j] = mlo_config[j + 1];
+				wl[j] = wl[j + 1];
+
+				mlo_config[j + 1] = tmp;
+				wl[j + 1] = tmp2;
+			}
+		}
+	}
+
+/* debug print */
+	for (i = 0; i < len; i++) {
+		printf("%d ", mlo_config[i]);
+		MLO_API_DBG("mlo_config[%d] = %d \n", i, mlo_config[i]);
+	}
+	for (i = 0; i < len; i++){
+		MLO_API_DBG("wl[%d] = %d \n", i, wl[i]);
+	}
+/* get unit */
+	for (i = 0; i < len; i++) {
+		if (mlo_config_og[wl[i]] >= 0) {
+			if (first)
+				first = 0;
+			else
+				strlcat(if_append, " ", sizeof(if_append));
+
+			if (!strcmp(subunit, "0"))
+				snprintf(wl_if, sizeof(wl_if), "wl%d", wl[i]);
+			else
+				snprintf(wl_if, sizeof(wl_if), "wl%d.%s", wl[i], subunit);
+
+			strlcat(if_append, wl_if, sizeof(if_append));
+		}
+	}
+
+	snprintf(mld_ifnames, sizeof(mld_ifnames), "mld%s_ifnames", group);
+	nvram_set(mld_ifnames, if_append);
+	MLO_API_DBG("After sorting wl_mlo_config MLD%s group is [%s] \n", group, if_append);
+
+	return 1;
+}
+
+void _set_wl_mlo_config_by_model(char *buf, int buf_size)
+{
+	int model = get_model();
+
+#if defined(RTCONFIG_BCM_MFG)
+	return;
+#endif
+
+	if(!buf) {
+		_dprintf("%s, invalid buf\n", __func__);
+		return;
+	}
+
+	switch(model) {
+		case MODEL_RTBE96U:
+		case MODEL_RTBE92U:
+		case MODEL_GTBE19000:
+		case MODEL_GTBE19000_AI:
+			// (256) 2G + 5G + 6G
+			strlcpy(buf, "2 1 0 -1", buf_size);
+			break;
+		case MODEL_GTBE96:
+			// (255) 2G + 5G_L + 5G_H
+			strlcpy(buf, "2 0 1 -1", buf_size);
+			break;
+		case MODEL_RTBE95U:
+			// (562) 5G + 6G + 2G, DHD is 5G
+			strlcpy(buf, "0 1 2 -1", buf_size);
+			break;
+		case MODEL_BT10:
+		case MODEL_GSBE18000:
+			// (652) 6G + 5G + 2G, DHD is 6G
+			// TODO : NIC + dongle mixed, need to check more
+			snprintf(buf, buf_size, "%d %d %d -1", WLIF_6G, WLIF_5G1, WLIF_2G);
+			break;
+		case MODEL_BQ16:
+			// (5562) 5G_L + 5G_H + 6G
+			strlcpy(buf, "2 1 0 -1", buf_size);
+			break;
+		case MODEL_GTBE98:
+			// (5562) 5G_H + 6G + 2G
+			strlcpy(buf, "-1 1 0 2", buf_size);
+			break;
+		case MODEL_BQ16_PRO:
+			// (5662) 5G + 6G_L + 6G_H
+			strlcpy(buf, "1 0 2 -1", buf_size);
+			break;
+		case MODEL_GTBE98_PRO:
+			// (5662) 5G + 6G_L + 2G
+			strlcpy(buf, "1 0 -1 2", buf_size);
+			break;
+		case MODEL_RPBE58:
+		case MODEL_RTBE88U:
+		case MODEL_RTBE86U:
+		case MODEL_RTBE58U:
+		case MODEL_RTBE82U:
+		case MODEL_RTBE58U_PRO:
+		default:
+			// (25) 2G + 5G
+			strlcpy(buf, "1 0 -1 -1", buf_size);
+			break;
+	}
+	nvram_set("wl_mlo_config", buf);
+}
+
+int _mlo_primary_chk_mode()
+{
+        char result[16];
+        char tmp[32] = {0};
+        char *token = NULL;
+        char *saveptr = NULL;
+        char prefix[] = "wlXXXXXXXXXX_";
+        int unit = 0, value = -1;
+
+        strlcpy(result, nvram_safe_get("wl_mlo_config"), sizeof(result));
+
+        if(strlen(result) <= 0) {
+		return -1;
+        }
+        // grab active MLO radio
+        token = strtok_r(result, " ", &saveptr);
+        while (token != NULL) {
+                value = atoi(token);
+
+                if (value != -1) {
+			snprintf(prefix, sizeof(prefix), "wl%d", unit);
+			if(value == 0) {
+				nvram_set("mlo_map", prefix);
+				//if(!*nvram_safe_get("wlc_band"))
+				nvram_set_int("wlc_band", unit);
+			}
+		}
+                token = strtok_r(NULL, " ", &saveptr);
+                unit++;
+        }
+	return 0;
+}
+
+int apply_mlo_rp_settings(int mlo_client_mode)
+{
+	char mld0_ifnames[128] = {0};
+	char word[32]={0}, *next = NULL;
+	int i, unit = -1;
+	char nv_name[32] = {0};
+	char prefix[] = "wlc_XXXXXX", prefix2[] = "wlcX_XXXXXX";
+	char tmp[64];
+	char *val = NULL;
+	char buf[20];
+
+	if(!*nvram_safe_get("wl_mlo_config") || nvram_match("wl_mlo_config", "-1 -1 -1 -1")) {
+		_dprintf("init mlo_config...\n");
+		_set_wl_mlo_config_by_model(buf, sizeof(buf));
+	}
+
+	if(!*nvram_safe_get("mld0_ifnames")) {
+		_dprintf("init mld ifnames...\n");
+		wl_mlo_config_sort("0", "0");
+	}
+
+	if(!*nvram_safe_get("mld0_ifnames")) {
+		_dprintf("%s, mld0 ifnames err.\n", __func__);
+		return -1;
+	}
+
+	//if(!*nvram_safe_get("wlc_band")) {
+	_mlo_primary_chk_mode();
+	//}
+
+	strlcpy(mld0_ifnames, nvram_safe_get("mld0_ifnames"), sizeof(mld0_ifnames));
+	_dprintf("%s, mld0 ifnames : %s, mlo_map=%s, wlc_band=%s \n", __func__, mld0_ifnames, nvram_safe_get("mlo_map"), nvram_safe_get("wlc_band"));
+
+	nvram_set("sw_mode", "3");
+	nvram_set("wlc_psta", "2");
+	nvram_set("wlc_dpsta", "2");
+	nvram_set("re_mode", "0");
+	nvram_set("mld_enable", "1");
+	if(mlo_client_mode == MLO_CLIENT_MB) {
+		nvram_set_int("mlo_rp", 0);
+		nvram_set_int("mlo_mb", 1);
+	} else {	// MLO_CLIENT_RP
+		nvram_set_int("mlo_rp", 1);
+		nvram_set_int("mlo_mb", 0);
+	}
+	nvram_set("x_Setting", "1");
+	//nvram_set("lan_proto", "dhcp");
+
+#ifdef RPBE58
+	if(*nvram_safe_get("wlc1_ssid"))
+		snprintf(prefix, sizeof(prefix), "wlc1_");
+	else if(*nvram_safe_get("wlc0_ssid"))
+		snprintf(prefix, sizeof(prefix), "wlc0_");
+	else {
+		_dprintf("no valid wlcX settings.\n");
+		return -1;
+	}
+#else
+	snprintf(prefix, sizeof(prefix), "wlc_");
+#endif
+	foreach (word, mld0_ifnames, next) {
+		wl_ioctl(word, WLC_GET_INSTANCE, &unit, sizeof(unit));
+
+		if(unit < 0) {
+			_dprintf("%s, wlif[%s] get error unit:%d\n", __func__, word, unit);
+			continue;
+		}
+		snprintf(prefix2, sizeof(prefix2), "wlc%d_", unit);
+		
+		val = nvram_safe_get(strlcat_r(prefix, "ssid", tmp, sizeof(tmp)));
+		nvram_set(strlcat_r(prefix2, "ssid", tmp, sizeof(tmp)), val);
+
+		val = nvram_safe_get(strlcat_r(prefix, "auth_mode", tmp, sizeof(tmp)));
+		nvram_set(strlcat_r(prefix2, "auth_mode", tmp, sizeof(tmp)), val);
+		
+		val = nvram_safe_get(strlcat_r(prefix, "wpa_psk", tmp, sizeof(tmp)));
+		nvram_set(strlcat_r(prefix2, "wpa_psk", tmp, sizeof(tmp)), val);
+		
+		val = nvram_safe_get(strlcat_r(prefix, "crypto", tmp, sizeof(tmp)));
+		nvram_set(strlcat_r(prefix2, "crypto", tmp, sizeof(tmp)), val);
+
+		nvram_set(strlcat_r(prefix2, "11be", tmp, sizeof(tmp)), "1");
+	}
+
+#if DEBUG
+	foreach (word, mld0_ifnames, next) {
+		wl_ioctl(word, WLC_GET_INSTANCE, &unit, sizeof(unit));
+
+		if(unit < 0) {
+			_dprintf("%s, wlif[%s] get error unit:%d\n", __func__, word, unit);
+			continue;
+		}
+		snprintf(prefix2, sizeof(prefix2), "wlc%d_", unit);
+		
+		_dprintf("chk convert %s=[%s]\n", strlcat_r(prefix2, "ssid", tmp, sizeof(tmp)), nvram_safe_get(strlcat_r(prefix2, "ssid", tmp, sizeof(tmp))));
+		_dprintf("chk convert %s=[%s]\n", strlcat_r(prefix2, "auth_mode", tmp, sizeof(tmp)), nvram_safe_get(strlcat_r(prefix2, "auth_mode", tmp, sizeof(tmp))));
+		_dprintf("chk convert %s=[%s]\n", strlcat_r(prefix2, "wpa_psk", tmp, sizeof(tmp)), nvram_safe_get(strlcat_r(prefix2, "wpa_psk", tmp, sizeof(tmp))));
+		_dprintf("chk convert %s=[%s]\n", strlcat_r(prefix2, "crypto", tmp, sizeof(tmp)), nvram_safe_get(strlcat_r(prefix2, "crypto", tmp, sizeof(tmp))));
+		_dprintf("chk convert %s=[%s]\n", strlcat_r(prefix2, "11be", tmp, sizeof(tmp)), nvram_safe_get(strlcat_r(prefix2, "11be", tmp, sizeof(tmp))));
+	}
+
+#endif
+	nvram_commit();
+
+	return 0;
+}
+
+#endif

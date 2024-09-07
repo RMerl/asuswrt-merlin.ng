@@ -375,7 +375,11 @@ function update_connection_type(dualwan_unit){
 	else if(wanlink_type_conv == "v6plus")
 		wanlink_type_conv = "<#IPv6_plus#>";
 	else if(wanlink_type_conv == "ocnvc")
-                wanlink_type_conv = "<#IPv6_ocnvc#>";
+		wanlink_type_conv = "<#IPv6_ocnvc#>";
+	else if(wanlink_type_conv == "dslite")
+		wanlink_type_conv = "DS-Lite";
+	else if(wanlink_type_conv == "v6opt")
+		wanlink_type_conv = "<#IPv6_opt#>";
 	else if(gobi_support && wanlink_type_conv == "USB Modem"){
 		if(modem_operation != "")
 			wanlink_type_conv = modem_operation;

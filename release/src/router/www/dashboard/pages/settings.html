@@ -171,9 +171,22 @@
 			$("#settingsWindow").contents().find("body").addClass("scaleBody")
 		}
 
-		var iframe = document.getElementById('settingsWindow');
-		iframe.onload = function() {
-			iframe.style.height = `${document.body.clientHeight - 70}px`;
-		};
+		setInterval(function () {
+			const iframe = document.getElementById('settingsWindow');
+			const iframeContent = iframe.contentWindow.document.querySelector('.content');
+			if (iframeContent) {
+				const iframeHeight = Math.ceil(iframeContent.getBoundingClientRect().height);
+				const headerHeight = document.querySelector('header').scrollHeight;
+				const windowHeight = top.window.innerHeight;
+				const nav = document.querySelector('nav');
+				if (iframeHeight < windowHeight) {
+					iframe.style.height = `${windowHeight - headerHeight}px`;
+					nav.style.height = `${windowHeight}px`;
+				} else {
+					iframe.style.height = `${iframeHeight}px`;
+					nav.style.height = `${iframeHeight + headerHeight}px`;
+				}
+			}
+		}, 1000);
 	</script>
 </html>

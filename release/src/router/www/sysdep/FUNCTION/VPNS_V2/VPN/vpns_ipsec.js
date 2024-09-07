@@ -692,23 +692,22 @@ function validate_format_IPSec(_obj, _validField){
 			}
 		}
 	};
-	var valid_psk = function(str){
+	var valid_preshared = function(str){
 		var testResult = {
 			'isError': false,
 			'errReason': '',
 			'set_value': ''
 		};
-		var psk_length = str.length;
-		var psk_length_trim = str.trim().length;
+		const psk_length = str.length;
+		const psk_length_trim = str.trim().length;
 		if(psk_length < 8){
 			testResult.isError = true;
-			testResult.errReason = "<#JS_passzero#>";
-			testResult.set_value = "00000000";
+			testResult.errReason = "<#JS_PSK64Hex#>";
 			return testResult;
 		}
-		if(psk_length > 31){
+		if(psk_length > 32){
 			testResult.isError = true;
-			testResult.errReason = "<#JS_PSK64Hex#>";
+			testResult.errReason = "<#LANHostConfig_x_Password_itemdesc#>";
 			return testResult;
 		}
 		if(psk_length != psk_length_trim){
@@ -716,23 +715,24 @@ function validate_format_IPSec(_obj, _validField){
 			testResult.errReason = stringSafeGet("<#JS_PSK64Hex_whiteSpace#>");
 			return testResult;
 		}
-		if(psk_length == 64 && !check_is_hex(str)){
-			testResult.isError = true;
-			testResult.errReason = "<#JS_PSK64Hex#>";
-			return testResult;
-		}
 		return testResult;
 	};
-	var valid_psk_KR = function(str){
+	var valid_preshared_KR = function(str){
 		var testResult = {
 			'isError': false,
 			'errReason': ''
 		};
-		var psk_length = str.length;
+		const psk_length = str.length;
+		const psk_length_trim = str.trim().length;
 		if(!/[A-Za-z]/.test(str) || !/[0-9]/.test(str) || psk_length < 8 || psk_length > 63 
 				|| !/[\!\"\#\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\=\>\?\@\[\\\]\^\_\`\{\|\}\~]/.test(str)){
 			testResult.isError = true;
-			testResult.errReason = "<#JS_PSK64Hex_kr#> <#JS_validPWD#>";
+			testResult.errReason = "<#JS_validPWD#>";
+			return testResult;
+		}
+		if(psk_length != psk_length_trim){
+			testResult.isError = true;
+			testResult.errReason = stringSafeGet("<#JS_PSK64Hex_whiteSpace#>");
 			return testResult;
 		}
 
@@ -760,7 +760,7 @@ function validate_format_IPSec(_obj, _validField){
 			return false;
 		}
 		if(is_KR_sku){
-			isValid_preshared_key = valid_psk_KR($ipsec_preshared_key.val());
+			isValid_preshared_key = valid_preshared_KR($ipsec_preshared_key.val());
 			if(isValid_preshared_key.isError){
 				$ipsec_preshared_key.show_validate_hint(isValid_preshared_key.errReason);
 				$ipsec_preshared_key.focus();
@@ -768,7 +768,7 @@ function validate_format_IPSec(_obj, _validField){
 			}
 		}
 		else{
-			isValid_preshared_key = valid_psk($ipsec_preshared_key.val());
+			isValid_preshared_key = valid_preshared($ipsec_preshared_key.val());
 			if(isValid_preshared_key.isError){
 				$ipsec_preshared_key.show_validate_hint(isValid_preshared_key.errReason);
 				$ipsec_preshared_key.focus();
@@ -980,7 +980,7 @@ function Update_Profile_Data_IPSec(_obj){
 		resize_iframe_height();
 	});
 
-	$(_obj).find("#ipsec_preshared_key").val(htmlEnDeCode.htmlEncode(ipsec_profile_data.preshared_key));
+	$(_obj).find("#ipsec_preshared_key").val(ipsec_profile_data.preshared_key);
 
 	$(_obj).find("#ipsec_dead_peer_detection").removeClass("off on").addClass((function(){
 		return ((ipsec_profile_data.dead_peer_detection == "1") ? "on" : "off");

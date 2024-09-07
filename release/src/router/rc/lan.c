@@ -761,7 +761,11 @@ void config_ipv6(int enable, int incl_wan)
 		closedir(dir);
 	}
 
+#if defined(RPBE58)
+	if (enable)
+#else
 	if (is_routing_enabled())
+#endif
 	{
 #ifdef RTCONFIG_MULTIWAN_IF
 		int unit, real_unit;
@@ -796,7 +800,6 @@ void config_ipv6(int enable, int incl_wan)
 			break;
 		}
 #endif
-
 		set_default_forwarding(1);
 	}
 	else set_default_accept_ra(0);
@@ -818,7 +821,11 @@ void start_lan_ipv6(void)
 		return;
 
 	set_intf_ipv6_dad(lan_ifname, 0, 1);
+#ifdef RPBE58
+	config_ipv6(ipv6_enabled(), 0);
+#else
 	config_ipv6(ipv6_enabled() && is_routing_enabled(), 0);
+#endif
 	start_ipv6();
 }
 
@@ -1314,6 +1321,45 @@ void update_subnet_rulelist(void){
 	}
 }
 #endif
+
+void dhcp_war()
+{
+        if (nvram_match("lan_proto", "dhcp")
+#ifdef RTCONFIG_DEFAULT_AP_MODE
+                        && !nvram_match("ate_flag", "1")
+#endif
+#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
+                        && !psr_mode() && !mediabridge_mode()
+#endif
+#ifdef RTCONFIG_DPSTA
+                        && !(dpsta_mode() && nvram_get_int("re_mode") == 0)
+#endif
+                        && !(rp_mode() && nvram_get_int("re_mode") == 0)
+                        && nvram_match("dhcp_war", "1")
+        ) {
+                // only none routing mode need lan_proto=dhcp
+                char *dhcp_argv[] = { "udhcpc",
+                                        "-i", "br0",
+                                        "-p", "/var/run/udhcpc_lan.pid",
+                                        "-s", "/tmp/udhcpc_lan",
+                                        NULL };
+                pid_t pid;
+
+                symlink("/sbin/rc", "/tmp/udhcpc_lan");
+
+#ifdef RTCONFIG_MODEM_BRIDGE
+                if(!(sw_mode() == SW_MODE_AP && nvram_get_int("modem_bridge")))
+#endif
+                        _eval(dhcp_argv, NULL, 0, &pid);
+
+                update_lan_state(LAN_STATE_CONNECTING, 0);
+#if defined(RPBE58)
+                if(ipv6_enabled())
+                        start_dhcp6c();
+#endif
+        }
+}
+
 void start_lan(void)
 {
 	char *lan_ifname;
@@ -1546,7 +1592,6 @@ void start_lan(void)
 	wlconf_pre();
 #endif
 #endif
-
 	check_wps_enable();
 
 	if ((sfd = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) < 0) return;
@@ -1675,8 +1720,13 @@ void start_lan(void)
 #ifdef RTAC87U
 		eval("brctl", "stp", lan_ifname, nvram_safe_get("lan_stp"));
 #else
-#if !defined(HND_ROUTER) || defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
-		if (is_routing_enabled())
+#if !defined(HND_ROUTER) || defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(RPBE58) || defined(GSBE18000)
+		if (is_routing_enabled()
+#if defined(RPBE58)
+		//|| !nvram_match("re_mode", "1")
+		|| 1
+#endif
+		)
 			eval("brctl", "stp", lan_ifname, nvram_safe_get("lan_stp"));
 		else
 #endif
@@ -1979,7 +2029,7 @@ void start_lan(void)
 #endif
 				}
 
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE58U_PRO)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI)
                                 if ((re_mode()) && !strcmp(ifname, "vlan4094")) continue;
 #endif
 				/* Set the logical bridge address to that of the first interface */
@@ -2186,14 +2236,15 @@ void start_lan(void)
 #endif
 	
 #if defined(RTCONFIG_MULTILAN_CFG)
-				if (!repeater_mode() && !mediabridge_mode() && apg_if_check_used(ifname))
+				if (!client_mode() && apg_if_check_used(ifname))
 					match = 1;
 #endif
 
 				if (!match) {
 #ifdef RTCONFIG_CAPTIVE_PORTAL
-					if(is_add_if(ifname))
+					if(is_add_if(ifname)) {
 						eval("brctl", "addif", lan_ifname, ifname);
+					}
 #else
 #ifdef HND_ROUTER
 					memset(bonding_ifnames, 0, sizeof(bonding_ifnames));
@@ -2441,7 +2492,11 @@ gmac3_no_swbr:
 
 #ifdef RTCONFIG_IPV6
 	set_intf_ipv6_dad(lan_ifname, 0, 1);
+#if defined(RPBE58)
+	config_ipv6(ipv6_enabled(), 0);
+#else
 	config_ipv6(ipv6_enabled() && is_routing_enabled(), 0);
+#endif
 	start_ipv6();
 #endif
 
@@ -2501,6 +2556,7 @@ gmac3_no_swbr:
 			&& !(dpsta_mode() && nvram_get_int("re_mode") == 0)
 #endif
 			&& !(rp_mode() && nvram_get_int("re_mode") == 0)
+			&& !(nvram_match("dhcp_war", "1"))
 	) {
 		char *dhcp_argv[] = { "udhcpc",
 					"-i", "br0",
@@ -2518,6 +2574,10 @@ gmac3_no_swbr:
 			_eval(dhcp_argv, NULL, 0, &pid);
 
 		update_lan_state(LAN_STATE_CONNECTING, 0);
+#if defined(RPBE58)
+		if(ipv6_enabled())
+			start_dhcp6c();
+#endif
 	}
 	else {
 		if (is_routing_enabled())
@@ -2746,6 +2806,43 @@ void stop_lan(void)
 #endif
 
 	ifconfig(lan_ifname, 0, NULL, NULL);
+
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+	phy_port_mapping port_mapping;
+	int eth_if_idx, i;
+
+	get_phy_port_mapping(&port_mapping);
+	for(eth_if_idx = 0; eth_if_idx < port_mapping.count && port_mapping.port[eth_if_idx].ifname != NULL; ++eth_if_idx){
+		if(port_mapping.port[eth_if_idx].ext_port_id != -1){
+			_dprintf("%s(%lu) skip to power down the external switch, %s.\n", __func__, uptime(), port_mapping.port[eth_if_idx].ifname);
+			continue;
+		}
+
+		if(!find_in_list(nvram_safe_get("lan_ifnames"), port_mapping.port[eth_if_idx].ifname))
+			continue;
+
+		_dprintf("%s(%lu) phy-power %s down...\n", __func__, uptime(), port_mapping.port[eth_if_idx].ifname);
+		eval("ethctl", port_mapping.port[eth_if_idx].ifname, "phy-power", "down");
+	}
+
+	for(i = 0; i < 10; ++i){
+		_dprintf("%s(%lu) Waiting the release at %d seconds...\n", __func__, uptime(), i+1);
+		sleep(1); // LAN client will release IP after 4~10 seconds with 'ifconfig'
+	}
+
+	for(eth_if_idx = 0; eth_if_idx < port_mapping.count && port_mapping.port[eth_if_idx].ifname != NULL; ++eth_if_idx){
+		if(port_mapping.port[eth_if_idx].ext_port_id != -1) {
+			_dprintf("%s(%lu) skip to power up the external switch, %s.\n", __func__, uptime(), port_mapping.port[eth_if_idx].ifname);
+			continue;
+		}
+
+		if(!find_in_list(nvram_safe_get("lan_ifnames"), port_mapping.port[eth_if_idx].ifname))
+			continue;
+
+		eval("ethctl", port_mapping.port[eth_if_idx].ifname, "phy-power", "up");
+		_dprintf("%s(%lu) the release on %s is done.\n", __func__, uptime(), port_mapping.port[eth_if_idx].ifname);
+	}
+#endif
 
 #ifdef HND_ROUTER
 	if (!is_routing_enabled())
@@ -3570,10 +3667,13 @@ NEITHER_WDS_OR_PSTA:
 				return;
 
 			snprintf(nvram_name, sizeof(nvram_name), "usb_path%s_act", port_path);
-			if(strcmp(nvram_safe_get(nvram_name), interface))
-				return;
+			strlcpy(tmp, nvram_safe_get(nvram_name), sizeof(tmp));
+			if(*tmp != '\0'){
+				nvram_unset(nvram_name);
 
-			nvram_unset(nvram_name);
+				if(strcmp(tmp, interface))
+					return;
+			}
 
 			clean_modem_state(modem_unit, 1);
 
@@ -3891,10 +3991,13 @@ NEITHER_WDS_OR_PSTA:
 				return;
 
 			snprintf(nvram_name, sizeof(nvram_name), "usb_path%s_act", port_path);
-			if(strcmp(nvram_safe_get(nvram_name), interface))
-				return;
+			strlcpy(tmp, nvram_safe_get(nvram_name), sizeof(tmp));
+			if(*tmp != '\0'){
+				nvram_unset(nvram_name);
 
-			nvram_unset(nvram_name);
+				if(strcmp(tmp, interface))
+					return;
+			}
 
 			clean_modem_state(modem_unit, 1);
 
@@ -5834,8 +5937,6 @@ void restart_wl(void)
 	int is_client = 0;
 	char tmp[100], tmp2[100], prefix[] = "wlXXXXXXXXXXXXXX";
 
-	_dprintf("%s, chkchk\n", __func__);
-
 	if ((wl_ifnames = strdup(nvram_safe_get("lan_ifnames"))) != NULL) {
 		p = wl_ifnames;
 		while ((ifname = strsep(&p, " ")) != NULL) {
@@ -6122,8 +6223,10 @@ void lanaccess_wl(void)
 	/* this rule will flush ebtables broute table, so it must be the first function */
 	add_GN_WBL_EBTbrouteRule();
 #endif
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE58U_PRO)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI)
 	start_rtkmonitor();
+#elif defined(RTBE82M)
+	start_mxlmonitor();
 #endif
 
 	snprintf(lan_subnet, sizeof(lan_subnet), "%s/%s", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"));
@@ -6364,7 +6467,7 @@ void start_fbwifi_config()
 }
 #endif
 
-#if defined(RTBE86U) || defined(RTBE92U) || defined(RTBE58U) || defined(TUFBE3600)
+#if defined(RTBE86U) || defined(RTBE92U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000)
 extern int restart_wireless_g;
 #endif
 
@@ -6380,7 +6483,6 @@ void restart_wireless(void)
 	int unit;
 #endif
 
-
 #ifdef RTCONFIG_WIFI_SON
 	if ((sw_mode()!=SW_MODE_REPEATER && (nvram_get_int("sw_mode")==SW_MODE_ROUTER || nvram_match("cfg_master", "1")) && nvram_get_int("x_Setting") && start_cap(1)==0) && nvram_match("wifison_ready", "1")) {
 		file_unlock(lock);
@@ -6392,6 +6494,10 @@ void restart_wireless(void)
 	nvram_set_int("led_status", LED_RESTART_WL);
 #endif
 	nvram_set_int("wlready", 0);
+
+#if defined(RTCONFIG_HND_ROUTER_BE_4916) && defined(RTCONFIG_MLO)
+        mlo_toggle_fb();
+#endif
 
 #if defined(RTCONFIG_RALINK) && defined(RTCONFIG_AMAS_WDS)
 	unit=0;
@@ -6430,6 +6536,7 @@ void restart_wireless(void)
 		nvram_set_int("wlcscan", 0);
 	}
 #endif
+	nvram_set_int("obd_status", 0);
 #endif
 #ifdef RTCONFIG_LANTIQ
 #ifdef LANTIQ_BSD
@@ -6504,7 +6611,7 @@ void restart_wireless(void)
 		wl_defaults_wps();
 	}
 
-#if defined(RTBE86U) || defined(RTBE92U) || defined(RTBE58U) || defined(TUFBE3600)
+#if defined(RTBE86U) || defined(RTBE92U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000)
 	if (!restart_wireless_g && nvram_get_int("x_Setting") && nvram_get_int("ed_thresh_reload") &&
 		 ((re_mode() && !is_CN_sku()) || (!re_mode() && (!is_CN_sku() || !nvram_match("location_code", "XX"))))) {
 		restart_wireless_g = 1;

@@ -1052,7 +1052,11 @@ int mdev_main(int argc UNUSED_PARAM, char **argv)
 	INIT_G();
 
 #if ENABLE_FEATURE_MDEV_CONF
+#ifdef HND_ROUTER
+	G.filename = "/rom/etc/mdev.conf";
+#else
 	G.filename = "/etc/mdev.conf";
+#endif
 #endif
 
 	/* We can be called as hotplug helper */

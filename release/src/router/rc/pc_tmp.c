@@ -263,7 +263,8 @@ int pc_tmp_main(int argc, char *argv[]){
 		free_pc_list(&enabled_list);
 	}
 	else if(argc == 2 && !strcmp(argv[1], "showrules")){
-		config_daytime_string(pc_list, stderr, "ACCEPT", "logdrop", 1);
+		char *lan_if = nvram_safe_get("lan_ifname");
+		config_daytime_string(pc_list, stderr, lan_if, "ACCEPT", "logdrop", 1);
 	}
 	else{
 		printf("Usage: pc [show]\n"

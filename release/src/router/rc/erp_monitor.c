@@ -293,7 +293,7 @@ static int erp_check_arp_stat(int model)
 	int BR_NUM = 0;   // the bridge interface numbers
 	int unit = 0;
 	int wan_conn = 0; // wan connection stat
-#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
 	char stat[20];    // ipv4 neigh stat
 	int stale_n = 0;  // ipv4 stale entries
 	int link_n = 0;   // ipv4 link entries
@@ -342,7 +342,7 @@ static int erp_check_arp_stat(int model)
 		fclose(fp);
 	}
 
-#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
 	/* check ipv4 client for IPv4 */
 	doSystem("ip -f inet neigh show dev %s > %s", nvram_safe_get("lan_ifname"), ERP_IPV4_ARP);
 	if ((fp = fopen(ERP_IPV4_ARP, "r")) != NULL)
@@ -383,7 +383,7 @@ static int erp_check_arp_stat(int model)
 	}
 
 	/* check bridge interface for WLAN or LAN */
-#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
 	if (link_n > BR_NUM) {
 		ret = 1;
 		goto check_end;
@@ -696,7 +696,11 @@ static int ERP_CHECK_MODEL_LIST()
 		|| model == MODEL_RTBE92U
 		|| model == MODEL_RTBE95U
 		|| model == MODEL_RTBE82U
+		|| model == MODEL_RTBE82M
 		|| model == MODEL_RTBE58U_PRO
+		|| model == MODEL_RTBE58_GO
+		|| model == MODEL_GTBE19000_AI
+		|| model == MODEL_GSBE18000
 #endif
 	) {
 		ret = 1;
@@ -755,7 +759,7 @@ static void erp_standby_mode(int model)
 #endif
 
 	// step5. BCM4916 with RGB led and rtkswitch special case
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
 	// disable RGB LED to save 1.4~1.6W
 	LEDGroupReset(LED_OFF);
 
@@ -896,7 +900,7 @@ static void erp_wakeup_mode(int model)
 	if (is_erp_cled_model() == 1) doSystem("rc cled 0 0"); // recover led behavior
 #endif
 
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
 	LEDGroupReset(LED_ON);
 	eval("rtkswitch", "5"); // rtkswitch on
 #endif

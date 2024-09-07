@@ -51,6 +51,12 @@
 	color:#FFCC00;
 	text-align:left;
 }
+.confirm_contentD{
+	font-size: 10pt;
+	padding:0 15px 20px;
+	color:#B8B8B8;
+	text-align:left;
+}
 .confirm_button{
 	cursor:pointer;
 	vertical-align:middle;
@@ -222,4 +228,23 @@
   right: 0;
 }
 
-
+.title_num_div {
+	vertical-align:top;
+	padding-top:14px;
+	padding-left:14px;
+}
+.title_num {
+	display: block;
+	width: 21px;
+	height: 21px;
+	line-height: 22px;
+	-moz-border-radius: 50%;
+	-webkit-border-radius: 50%;
+	border-radius: 50%;
+	background-color: #C0C0C0;
+	text-align: center;
+	font-weight: 700;
+	font-family: sans-serif;
+	color: #4D595D;
+	font-size: 16px;
+}

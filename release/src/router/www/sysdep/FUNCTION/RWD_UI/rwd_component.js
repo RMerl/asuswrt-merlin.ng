@@ -177,8 +177,36 @@ function Get_Component_Btn(_parm){
 	var $btn_cntr = $("<div>").addClass("profile_btn_container").appendTo($container);
 	if(_parm.id != undefined)
 		$btn_cntr.attr("id", _parm.id);
+
+	const icon_css = (_parm.icon_css != undefined) ? _parm.icon_css : "icon_arrow_right";
+
 	$("<div>").html(htmlEnDeCode.htmlEncode(btn_text)).appendTo($btn_cntr);
-	$("<div>").addClass("icon_arrow_right").appendTo($btn_cntr);
+	$("<div>").addClass(icon_css).appendTo($btn_cntr);
+
+	return $container;
+}
+function Get_Component_Title_And_Btn(_parm){
+	let $container = $("<div>").addClass("profile_setting_two_item nowrap title_btn");
+
+	let $cntr_1 = $("<div>").appendTo($container);
+	if(_parm.openHint != undefined){
+		const hint_array = _parm.openHint.split("_");
+		$("<a>").addClass("hintstyle").attr({"href":"javascript:void(0);"}).html(htmlEnDeCode.htmlEncode(_parm.title)).unbind("click").click(function(){
+			openHint(hint_array[0], hint_array[1], "rwd_vpns");
+		}).appendTo($("<div>").addClass("title").appendTo($cntr_1));
+	}
+	else
+		$("<div>").addClass("title").html(htmlEnDeCode.htmlEncode(_parm.title)).appendTo($cntr_1);
+
+	let $cntr_2 = $("<div>").appendTo($container);
+	const btn_text = (_parm.btn_text != undefined) ? _parm.btn_text : "";
+	let $btn_cntr = $("<div>").addClass("profile_btn_container").appendTo($cntr_2);
+	if(_parm.id != undefined) $btn_cntr.attr("id", _parm.id);
+
+	const icon_css = (_parm.icon_css != undefined) ? _parm.icon_css : "icon_arrow_right";
+
+	$("<div>").html(htmlEnDeCode.htmlEncode(btn_text)).appendTo($btn_cntr);
+	$("<div>").addClass(icon_css).appendTo($btn_cntr);
 
 	return $container;
 }
@@ -373,7 +401,7 @@ function Get_Component_Input_With_Select(_parm){
 			}
 		});
 
-	$("<input/>")
+	let $input = $("<input/>")
 		.addClass("textInput inside_custom_select")
 		.attr({"id":_parm.id, "type":_parm.type, "maxlength":maxlength, "autocomplete":"off","autocorrect":"off","autocapitalize":"off","spellcheck":"false"})
 		.val("")
@@ -395,6 +423,9 @@ function Get_Component_Input_With_Select(_parm){
 			}
 		})
 		.appendTo($custom_select_cntr);
+
+	if(_parm.placeholder)
+		$input.attr("placeholder", htmlEnDeCode.htmlEncode(_parm.placeholder));
 
 	// space
 	$("<div>").css("height", "42px").appendTo($custom_select_cntr);
@@ -889,14 +920,23 @@ function Get_Component_Category_Slide_Title(_parm) {
 }
 function Get_Component_Slide_Title(_parm) {
 	var $container = $("<div>").addClass("profile_title_item arrow_icon");
-
+	if(_parm.title_css != undefined){
+		$container.addClass(_parm.title_css);
+	}
 	if(_parm.id != undefined){
 		$container.attr("id", _parm.id);
 	}
 	if(_parm.default_icon != undefined){
 		$container.addClass(_parm.default_icon);
 	}
-	$container.append($("<span>").addClass("title").html(htmlEnDeCode.htmlEncode(_parm.title)));
+	if(_parm.openHint != undefined){
+		const hint_array = _parm.openHint.split("_");
+		$("<a>").addClass("hintstyle").attr({"href":"javascript:void(0);"}).html(htmlEnDeCode.htmlEncode(_parm.title)).unbind("click").click(function(){
+			openHint(hint_array[0], hint_array[1], "rwd_vpns");
+		}).appendTo($("<span>").addClass("title").appendTo($container));
+	}
+	else
+		$("<span>").addClass("title").html(htmlEnDeCode.htmlEncode(_parm.title)).appendTo($container);
 
 	$container.unbind("click").click(function(e){
 		e = e || event;
@@ -934,6 +974,26 @@ function Get_Component_Error_Hint(_parm){
 		$(this).closest(".error_hint_container").hide();
 	});
 	return $container
+}
+function Get_Component_More_Item(_parm){
+	let $container = $("<div>").addClass("profile_setting_item nowrap more_item");
+	if(_parm.container_id != undefined)
+		$container.attr("id", _parm.container_id);
+
+	if(_parm.openHint != undefined){
+		const hint_array = _parm.openHint.split("_");
+		$("<a>").addClass("hintstyle").attr({"href":"javascript:void(0);"}).html(htmlEnDeCode.htmlEncode(_parm.title)).unbind("click").click(function(){
+			openHint(hint_array[0], hint_array[1], "rwd_vpns");
+		}).appendTo($("<div>").addClass("title").appendTo($container));
+	}
+	else
+		$("<div>").addClass("title").html(htmlEnDeCode.htmlEncode(_parm.title)).appendTo($container);
+
+	let $input_container = $("<div>").addClass("input_container").appendTo($container);
+	$("<div>").attr({"data-component":"comp_text"}).html(``).appendTo($input_container);
+	$("<div>").attr("id", _parm.id).attr({"data-component":"icon_more"}).addClass("icon_more").appendTo($input_container);
+
+	return $container;
 }
 
 /*

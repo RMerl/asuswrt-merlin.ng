@@ -488,7 +488,7 @@ void get_usb_modem_status(phy_info_list *list)
 		for(unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit) {
 			int wan = get_dualwan_by_unit(unit);
 			if (wan == WANS_DUALWAN_IF_USB) {
-				if (is_wan_connect(unit)) {
+				//if (is_wan_connect(unit))
 					int i, usb_idx = 1;
 					char modem_path[16];
 					char usb_path_node[16];
@@ -505,7 +505,11 @@ void get_usb_modem_status(phy_info_list *list)
 								//_dprintf("%s=%s\n", prefix, nvram_safe_get(prefix));
 								snprintf(usb_path_node, sizeof(usb_path_node), "%s", nvram_safe_get(strlcat_r(prefix, "_node", tmp, sizeof(tmp))));
 								if (nvram_match(prefix, "modem") && !strcmp(usb_path_node, modem_path)) {
-									snprintf(list->phy_info[i].state, sizeof(list->phy_info[i].state), "up");
+									if (is_wan_connect(unit))
+										snprintf(list->phy_info[i].state, sizeof(list->phy_info[i].state), "up");
+									else
+										snprintf(list->phy_info[i].state, sizeof(list->phy_info[i].state), "down");
+
 									list->phy_info[i].link_rate = nvram_get_int(strlcat_r(prefix, "_speed", tmp, sizeof(tmp)));
 									if (list->status_and_speed_only == 0) {
 										char usb_ifname[8];
@@ -520,15 +524,23 @@ void get_usb_modem_status(phy_info_list *list)
 								} else {
 									snprintf(list->phy_info[i].state, sizeof(list->phy_info[i].state), "down");
 									list->phy_info[i].link_rate = 0;
+									if (!nvram_match(prefix, "modem")) {
+										list->phy_info[i].cap &= ~PHY_PORT_CAP_DUALWAN_SECONDARY_WAN;
+										list->phy_info[i].cap &= ~PHY_PORT_CAP_DUALWAN_PRIMARY_WAN;
+									}
 								}
 							} else {
 								int j;
+								int is_modem_connected = 0;
 								for (j = 1; j <= MAX_USB_HUB_PORT; j++) {
 									snprintf(prefix, sizeof(prefix), "usb_path%d.%d", usb_idx, j);
 									snprintf(usb_path_node, sizeof(usb_path_node), "%s", nvram_safe_get(strlcat_r(prefix, "_node", tmp, sizeof(tmp))));
 									//_dprintf("prefix=%s, usb_path_node=%s\n", prefix, usb_path_node);
 									if (nvram_match(prefix, "modem") && !strcmp(usb_path_node, modem_path)) {
-										snprintf(list->phy_info[i].state, sizeof(list->phy_info[i].state), "up");
+										if (is_wan_connect(unit))
+											snprintf(list->phy_info[i].state, sizeof(list->phy_info[i].state), "up");
+										else
+											snprintf(list->phy_info[i].state, sizeof(list->phy_info[i].state), "down");
 										list->phy_info[i].link_rate = nvram_get_int(strlcat_r(prefix, "_speed", tmp, sizeof(tmp)));
 										if (list->status_and_speed_only == 0) {
 											char usb_ifname[8];
@@ -540,17 +552,25 @@ void get_usb_modem_status(phy_info_list *list)
 											list->phy_info[i].rx_packets = get_usb_mib_by_ifname(usb_ifname, "rx_packets");
 											list->phy_info[i].crc_errors = get_usb_mib_by_ifname(usb_ifname, "rx_crc_errors");
 										}
+										is_modem_connected = 1;
 										break;
 									} else {
 										snprintf(list->phy_info[i].state, sizeof(list->phy_info[i].state), "down");
 										list->phy_info[i].link_rate = 0;
+										if (nvram_match(prefix, "modem")) {
+											is_modem_connected = 1;
+										}
 									}
+								}
+								if (!is_modem_connected) {
+									list->phy_info[i].cap &= ~PHY_PORT_CAP_DUALWAN_SECONDARY_WAN;
+									list->phy_info[i].cap &= ~PHY_PORT_CAP_DUALWAN_PRIMARY_WAN;
 								}
 							}
 							usb_idx++;
 						}
 					}
-				}
+				//}
 			}
 		}
 	}

@@ -57,6 +57,7 @@
 #define CFG_STR_STA5G_TRAFFIC		"sta5g_traffic"
 #define CFG_STR_STA6G_TRAFFIC		"sta6g_traffic"
 #define CFG_STR_NOTIFY_TYPE	"notify_type"
+#define CFG_STR_NOTIFY_RESULT	"notify_result"
 #define CFG_STR_IP			"ip"
 #define CFG_STR_RSSI		"rssi"
 #define CFG_STR_TYPE		"type"
@@ -224,6 +225,7 @@
 #define CFG_STR_WLC0_TARGET_BSSID	"amas_wlc0_target_bssid"
 #define CFG_STR_WLC1_TARGET_BSSID	"amas_wlc1_target_bssid"
 #define CFG_STR_WLC2_TARGET_BSSID	"amas_wlc2_target_bssid"
+#define CFG_STR_WLC3_TARGET_BSSID	"amas_wlc3_target_bssid"
 #define CFG_STR_2G_CHANNEL 	"2g_channel"
 #define CFG_STR_5G_CHANNEL 	"5g_channel"
 #define CFG_STR_5G1_CHANNEL 	"5g1_channel"
@@ -303,6 +305,8 @@
 #define CFG_STR_TIDMAP		"tidmap"
 #define CFG_STR_TIDMAP_INFO		"tidmap_info"
 #define CFG_STR_DEVICE_INFO		"device_info"
+#define CFG_STR_PREFER_RETRY_COUNT		"prefer_retry_count"
+#define CFG_STR_PREFER_RETRY_TIME		"prefer_retry_time"
 
 static char *papIndex[] __attribute__ ((unused)) = {CFG_STR_PAP2G, CFG_STR_PAP5G, CFG_STR_PAP5GL, CFG_STR_PAP5GH,
 			CFG_STR_PAP6G, CFG_STR_PAP6GL, CFG_STR_PAP6GH};

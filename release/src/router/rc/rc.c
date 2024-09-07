@@ -66,6 +66,10 @@
 #include "multi_wan.h"
 #endif
 
+#if defined(RTCONFIG_KNV_BACKUP) || defined(RTCONFIG_NV_BACKUP2)
+#include <knv.h>
+#endif
+
 #ifndef ARRAYSIZE
 #define ARRAYSIZE(a) (sizeof(a) / sizeof(a[0]))
 #endif /* ARRAYSIZE */
@@ -483,8 +487,9 @@ static int rctest_main(int argc, char *argv[])
 		init_apg();
 	}
 	else if (strcmp(argv[1], "sync_apgx_to_wlunit")==0) {
-		sync_apgx_to_wlunit();	
+		sync_apgx_to_wlunit(NULL);	
 	}
+#ifdef RTCONFIG_MLO
 	else if (strcmp(argv[1], "checkMLOConnSupport")==0) {
 		const struct MLO_Combination *mlo_list = &supportedCombinations[0];
 		if(atoi(argv[2]) < 0)
@@ -508,6 +513,13 @@ static int rctest_main(int argc, char *argv[])
 				}
 			}
 		}
+	}
+#endif
+	else if (strcmp(argv[1], "apmx_apgx_to_wlxy") == 0) {
+		apmx_apgx_to_wlxy();
+	}
+	else if (strcmp(argv[1], "sync_apg_ifnames_to_jffs") == 0) {
+		sync_apg_ifnames_to_jffs();
 	}
 	else if (strcmp(argv[1], "check_sdn_ifcap")==0) {
 		create_sdn_ifcap();
@@ -700,7 +712,7 @@ static int rctest_main(int argc, char *argv[])
 		led = atoi(argv[2]);
 		mode = atoi(argv[3]);
 		_dprintf("Set Cled %d as %d\n", led, mode);
-#if defined(RPAX56) || defined(RPAX58) || defined(RPBE58)
+#if defined(RPAX56) || defined(RPAX58) || defined(RPBE58) || defined(RTBE58_GO)
 		rc_bcm_cled_ctrl(led, mode);
 #else
 		bcm_cled_ctrl(led, mode);
@@ -1024,8 +1036,7 @@ static int rctest_main(int argc, char *argv[])
 #ifdef RTCONFIG_USB
 		get_usb_modem_status(&phy_list);
 #endif
-
-		for(i=0;i<phy_list.count;i++) {
+		for(i=0;i<port_mapping.count;i++) {
 			fprintf(stderr, " phy_port_id=%d, label_name=%s, cap=%u, cap_name=%s, max_rate=%d, ifname=%s, state=%s, link_rate=%d, duplex=%s, tx_packets=%u, rx_packets=%u, tx_bytes=%" PRIu64 ", rx_bytes=%" PRIu64 ", crc_errors=%u\n",
 				phy_list.phy_info[i].phy_port_id,
 				phy_list.phy_info[i].label_name,
@@ -1320,6 +1331,36 @@ static int rctest_main(int argc, char *argv[])
 		snprintf(event, sizeof(event), AAE_AWSIOT_TNL_TEST_MSG, EID_AWSIOT_TUNNEL_TEST, (argv[2] ? : "204f0a0bde0b06a1f6fa261f729b2862"));
 		aae_sendIpcMsg(MASTIFF_IPC_SOCKET_PATH, event, strlen(event));
 	}
+	else if (strcmp(argv[1], "mastiff_rc_on")==0) {
+		char event[AAE_MAX_IPC_PACKET_SIZE];
+		snprintf(event, sizeof(event), AAE_MASTIFF_GENERIC_MSG, AAE_EID_MASTIFF_ACTION_REMOTE_CONN_TURNED_ON);
+		aae_sendIpcMsg(MASTIFF_IPC_SOCKET_PATH, event, strlen(event));
+	}
+	else if (strcmp(argv[1], "mastiff_eula_signed")==0) {
+		char event[AAE_MAX_IPC_PACKET_SIZE];
+		snprintf(event, sizeof(event), AAE_MASTIFF_GENERIC_MSG, AAE_EID_MASTIFF_ACTION_EULA_SIGNED);
+		aae_sendIpcMsg(MASTIFF_IPC_SOCKET_PATH, event, strlen(event));
+	}
+	else if (strcmp(argv[1], "aaews_sip_unreg")==0) {
+		char event[AAE_MAX_IPC_PACKET_SIZE];
+		snprintf(event, sizeof(event), AAE_AAEWS_GENERIC_MSG, AAE_EID_AAEWS_ACTION_SIP_UNREG);
+		aae_sendIpcMsg(AAEWS_IPC_SOCKET_PATH, event, strlen(event));
+	}
+	else if (strcmp(argv[1], "aaews_sip_reg")==0) {
+		char event[AAE_MAX_IPC_PACKET_SIZE];
+		snprintf(event, sizeof(event), AAE_AAEWS_GENERIC_MSG, AAE_EID_AAEWS_ACTION_SIP_REG);
+		aae_sendIpcMsg(AAEWS_IPC_SOCKET_PATH, event, strlen(event));
+	}
+	else if (strcmp(argv[1], "aaews_sdk_deinit")==0) {
+		char event[AAE_MAX_IPC_PACKET_SIZE];
+		snprintf(event, sizeof(event), AAE_AAEWS_GENERIC_MSG, AAE_EID_AAEWS_ACTION_SDK_DEINIT);
+		aae_sendIpcMsg(AAEWS_IPC_SOCKET_PATH, event, strlen(event));
+	}
+	else if (strcmp(argv[1], "aaews_sdk_init")==0) {
+		char event[AAE_MAX_IPC_PACKET_SIZE];
+		snprintf(event, sizeof(event), AAE_AAEWS_GENERIC_MSG, AAE_EID_AAEWS_ACTION_SDK_INIT);
+		aae_sendIpcMsg(AAEWS_IPC_SOCKET_PATH, event, strlen(event));
+	}
 #endif
 	else if (strcmp(argv[1], "access_time")==0) {
 		if (argv[2]) {
@@ -1404,6 +1445,14 @@ static int rctest_main(int argc, char *argv[])
 			fprintf(stderr, "%s\n", stainfo_buf);
 			free_stainfo(&stainfo_buf);
 		}
+	}
+	else if (strcmp(argv[1], "diag_print_sta")==0) {
+		char value[512];
+
+		snprintf(value, sizeof(value), "{\"%s\":{\"%s\":\"%d\"}}",
+			CONNDIAG_PREFIX, RAST_EVENT_ID, EID_CD_PRINT_STA_INFO);
+		extern int amas_cd_ipc_send_event(const char *ipc_path, char *data);
+		amas_cd_ipc_send_event(CONNDIAG_IPC_SOCKET_PATH,value);
 	}
 #endif
 #if defined(RTCONFIG_TRUSTZONE)
@@ -1843,7 +1892,7 @@ static int rctest_main(int argc, char *argv[])
 
 			for(i=0; i<dtime; ++i) {
 				sleep(1);
-				_dprintf("detect broop:%d (%d)\n", ismax_broop(), i);
+				_dprintf("..detect broop:%d (%d)\n", detect_broop(), i);
 			}
 		}
 #endif
@@ -1921,6 +1970,28 @@ static int rctest_main(int argc, char *argv[])
 			char pap_bssid[] = "XX:XX:XX:XX:XX:XX\0";
 			printf("ret = %s\n", get_pap_bssid(atoi(argv[2]), pap_bssid));
 		}
+#ifdef RTBE58_GO
+		else if (strcmp(argv[1], "off_pd") == 0) {
+			printf("ret = %lx\n", off_pd());
+		}
+#endif
+#if defined(RTCONFIG_KNV_BACKUP) || defined(RTCONFIG_NV_BACKUP2)
+		else if (strcmp(argv[1], "diff_knv") == 0) {
+			if(argc != 4)
+				printf("ret = %d\n", diff_knv(NULL, NULL));
+			else
+				printf("ret = %d\n", diff_knv(argv[2], argv[3]));
+		}
+		else if (strcmp(argv[1], "chk_knv_san") == 0) {
+			if(argc != 4)
+				printf("chk_knv_san [re_mode] [reset 1/0]");
+			else
+				printf("ret = %d\n", chk_nv_sanity(atoi(argv[2]), atoi(argv[3])));
+		}
+		else if (strcmp(argv[1], "chk_nv_err") == 0) {
+			printf("ret = %d\n", check_knv_errors(argv[2]));
+		}
+#endif
 		else {
 			printf("what?\n");
 		}
@@ -2689,7 +2760,7 @@ static const applets_t applets[] = {
 	{ "ocnvcd", 			ocnvcd_main			},
 	{ "dslited", 			dslited_main			},
 #endif
-#if defined(RTCONFIG_RALINK) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
+#if defined(RTCONFIG_RALINK) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI)
 	{ "rtkswitch",			config_rtkswitch		},
 #if defined(RTAC53) || defined(RTAC51UP)
 	{ "mtkswitch",			config_mtkswitch		},
@@ -2744,10 +2815,10 @@ static const applets_t applets[] = {
 	{ "firmware_enc_crc",		firmware_enc_crc_main		},
 	{ "fw_check",			fw_check_main			},
 #endif
-#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000)
+#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI) || defined(GSBE18000)
 	{ "ledg",			ledg_main			},
 #endif
-#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2)
+#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GSBE18000)
 	{ "ledbtn",			ledbtn_main			},
 #endif
 #if defined(DSL_AX82U)
@@ -2756,8 +2827,11 @@ static const applets_t applets[] = {
 #if defined(GTAX6000)
 	{ "antled",			antled_main			},
 #endif
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI)
 	{ "rtkmonitor",			rtkmonitor_main			},
+#endif
+#if defined(RTBE82M)
+	{ "mxlmonitor",			mxlmonitor_main			},
 #endif
 #ifdef BUILD_READMEM
 	{ "readmem",			readmem_main			},
@@ -2801,7 +2875,7 @@ static const applets_t applets[] = {
 #ifdef RTCONFIG_USB_MODEM
 #ifdef RTCONFIG_INTERNAL_GOBI
 	{ "lteled",			lteled_main			},
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION)
 	{ "modem_data",			modem_data_main			},
 #endif
 #endif
@@ -3828,18 +3902,37 @@ int main(int argc, char **argv)
 	}
 #endif
 
+#ifdef RTCONFIG_WIREGUARD
+	if (!strcmp(base, "check_wgc_ep")) {
+		check_wgc_endpoint();
+		return 0;
+	}
+#endif
+
 	if (!strcmp(base, "restart_wireless")) {
 		printf("restart wireless...\n");
 		restart_wireless();
 		return 0;
 	}
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
+	if (!strcmp(base, "wpasupp")) {
+                _dprintf("restart wpasupp\n");
+                start_hapd_wpasupp(2);  // skip hostapd
+
+		return 0;
+	}
+	if (!strcmp(base, "wlconf_pre")) {
+                _dprintf("wlconf pre\n");
+		wlconf_pre();
+
+		return 0;
+	}
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI)
 	else if (!strcmp(base, "config_switch")) {
 		config_switch();
 		return 0;
 	}
 #endif
-#if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG) && (defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U)) || defined(RTBE95U) || defined(RTBE82U) || defined(RTBE58U_PRO)
+#if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG) && (defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U)) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI)
 	else if (!strcmp(base, "config_extwan")) {
 		config_extwan();
 		return 0;
@@ -4422,11 +4515,37 @@ _dprintf("LED_NOMOBILE=%d, LED_2G_YELLOW=%d, LED_3G_BLUE=%d, LED_4G_WHITE=%d.\n"
 		return do_led_ctrl(led_id, atoi(argv[2]));
 	}
 #ifdef HND_ROUTER
+#if defined(RTCONFIG_KNV_BACKUP) || defined(RTCONFIG_NV_BACKUP2)
+	else if (!strcmp(base, "hnd-commit")) {
+		nvram_commit();
+		_dprintf("done commit\n");
+		return 0;
+	} 
+	else if (!strcmp(base, "hnd-restore")) {
+		FILE *config_B;
+
+		if(!argv[1])
+			return -1;
+
+		config_B = fopen(argv[1], "r");
+		if (!config_B) {
+			perror("Error opening the restore-file");
+			return -1;
+		}
+		restore_nvram(config_B);
+		fclose(config_B);
+		_dprintf("done restore\n");
+		return 0;
+	} 
+#endif
 	else if (!strcmp(base, "hnd-erase")) {
 		if (argv[1] && (!strcmp(argv[1], "nvram"))) {
 			nvram_set("restore_defaults", "1");
 			nvram_commit();
 			nvram_set(ASUS_STOP_COMMIT, "1");
+#if defined(RTCONFIG_KNV_BACKUP) || defined(RTCONFIG_NV_BACKUP2)
+			remove(KNV_FILE_BP);
+#endif
 			return hnd_nvram_erase();
 		}
 	}
@@ -4599,7 +4718,7 @@ _dprintf("LED_NOMOBILE=%d, LED_2G_YELLOW=%d, LED_3G_BLUE=%d, LED_4G_WHITE=%d.\n"
 
 		return write_3g_ppp_conf(modem_unit);
 	}
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION)
 	else if (!strcmp(base, "lplus")) {
 		if (argc != 3) {
 			printf("Usage: %s <integer1> <integer2>.\n", argv[0]);
@@ -5039,6 +5158,25 @@ _dprintf("LED_NOMOBILE=%d, LED_2G_YELLOW=%d, LED_3G_BLUE=%d, LED_4G_WHITE=%d.\n"
 		monitor_ds_ap_status();
 		return 0;
 	}
+#endif
+#ifdef HND_ROUTER
+#if defined(RTCONFIG_WIFI7) && defined(RTCONFIG_MLO)
+	else if (!strcmp(base, "mlo_api")) {
+		if(!strcmp(argv[1], "rp")) {
+			apply_mlo_rp_settings(MLO_CLIENT_RP);
+		} else if(!strcmp(argv[1], "mb")) {
+			apply_mlo_rp_settings(MLO_CLIENT_MB);
+		} else if(argv[1] && argv[2] && argv[3] && argv[4]) {
+			_dprintf("mlo_api: %s %s %s %s\n", argv[1], argv[2], argv[3], argv[4]);
+			mlo_api(argv[1], argv[2], argv[3], argv[4]);
+		} else {
+			_dprintf("mlo_api: %s %s %s %s\n", "set", "primary", "0", "0");
+			mlo_api("set", "primary", "0", "0");
+		}
+	
+		return 0;
+	}
+#endif
 #endif
 	printf("Unknown applet: %s\n", base);
 	return 0;

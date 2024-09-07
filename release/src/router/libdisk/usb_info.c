@@ -1865,6 +1865,9 @@ void clean_modem_state(int modem_unit, int flag){
 	nvram_unset("g3state_apn");
 	nvram_unset("g3state_dial");
 	nvram_unset("g3state_conn");
+#if defined(RTCONFIG_USB_WAN_BACKUP)
+	nvram_set("wans_usb_bk_act", "0");
+#endif
 
 	// modem error.
 	nvram_unset("g3err_pin");

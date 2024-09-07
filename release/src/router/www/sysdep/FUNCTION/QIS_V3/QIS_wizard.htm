@@ -76,7 +76,8 @@
 						"ASUS_NEW_EULA",
 						"sw_mode",
 						"wlc_psta", 
-						"wl_ifnames", 
+						"wl_ifnames",
+						"wlnband_list", 
 						"wl_version", 
 						"productid", 
 						"rc_support", 
@@ -87,7 +88,7 @@
 						"reboot_time", 
 						"lan_ipaddr", 
 						"wlc_dpsta", 
-						"CoBrand", 
+						"CoBrand",
 						"wans_dualwan",
 						"wans_mode",
 						"dslx_transmode", 
@@ -165,7 +166,7 @@
 
 					systemVariable.qisSession = "qis"+Date.now();
 					systemVariable.opMode = systemVariable.originOpMode;
-					systemVariable.wirelessBand = initNvram.wl_ifnames.split(" ").length;
+					systemVariable.wirelessBand = initNvram.wlnband_list.split("&#60").length;
 					systemVariable.sdkVersion = initNvram.wl_version.split(".")[0];
 					systemVariable.productid = initNvram.productid;
 					systemVariable.rcSupport = initNvram.rc_support;
@@ -254,73 +255,68 @@
 						set_cfg_pause();
 					}
 
-					httpApi.newEula.get()
-							.then(data => {
-								if (data.ASUS_NEW_EULA == 0 || data.ASUS_NEW_EULA_time == "") {
-									goTo.EULA();
-								} else {
-									httpApi.privateEula.get()
-											.then(data => {
-												if (data.ASUS_PP == 0 && data.ASUS_PP_time == "") {
-													goTo.PP();
-												} else {
-													switch (urlParameter.get("flag") || "") {
-														case "sitesurvey_rep":
-															goTo.rpMode();
-															break;
-														case "lanip":
-															goTo.apMode();
-															break;
-														case "sitesurvey_mb":
-															goTo.mbMode();
-															break;
-														case "manual":
-															goTo.opMode();
-															break;
-														case "pppoe":
-															goTo.PPPoE();
-															break;
-														case "wireless":
-															goTo.Wireless();
-															break;
-														case "amasrole_page":
-															goTo.chooseRole();
-															break;
-														case "amasnode_page":
-															goTo.asNode();
-															break;
-														case "amas_addNode":
-															systemVariable.amas_newWindow_addNode = true;
-															setTimeout(goTo.amassearch, 50);
-															break;
-														case "site2site":
-															goTo.site2site();
-															break;
-														case "changePass":
-															goTo.Login();
-															break;
-														case "EULA":
-															goTo.EULA();
-															break;
-														case "PP":
-															systemVariable.onlyReSignPP = true;
-															goTo.PP();
-															break;
-														case "rtMode":
-															systemVariable.advSetting = true;
-															goTo.rtMode();
-															break;
-														case "mlo":
-															goTo.Wireless();
-															break;
-														default:
-															goTo.Welcome();
-															break;
-													}
-												}
-											});
-								}
-							});
+                    const policyStatus = PolicyStatus()
+                        .then(data => {
+                            if (data.EULA == "0" || data.EULA_time == "") {
+                                goTo.EULA();
+                            } else if (data.EULA == 1 && ((data.PP == 1 && data.PP_time != "") || (data.PP == 0 && data.PP_time == ""))) {
+                                goTo.PP();
+                            } else {
+                                switch (urlParameter.get("flag") || "") {
+                                    case "sitesurvey_rep":
+                                        goTo.rpMode();
+                                        break;
+                                    case "lanip":
+                                        goTo.apMode();
+                                        break;
+                                    case "sitesurvey_mb":
+                                        goTo.mbMode();
+                                        break;
+                                    case "manual":
+                                        goTo.opMode();
+                                        break;
+                                    case "pppoe":
+                                        goTo.PPPoE();
+                                        break;
+                                    case "wireless":
+                                        goTo.Wireless();
+                                        break;
+                                    case "amasrole_page":
+                                        goTo.chooseRole();
+                                        break;
+                                    case "amasnode_page":
+                                        goTo.asNode();
+                                        break;
+                                    case "amas_addNode":
+                                        systemVariable.amas_newWindow_addNode = true;
+                                        setTimeout(goTo.amassearch, 50);
+                                        break;
+                                    case "site2site":
+                                        goTo.site2site();
+                                        break;
+                                    case "changePass":
+                                        goTo.Login();
+                                        break;
+                                    case "EULA":
+                                        goTo.EULA();
+                                        break;
+                                    case "PP":
+                                        systemVariable.onlyReSignPP = true;
+                                        goTo.PP();
+                                        break;
+                                    case "rtMode":
+                                        systemVariable.advSetting = true;
+                                        goTo.rtMode();
+                                        break;
+                                    case "mlo":
+                                        goTo.Wireless();
+                                        break;
+                                    default:
+                                        goTo.Welcome();
+                                        break;
+                                }
+                            }
+                        });
 
 					if(initNvram.isError) setTimeout(arguments.callee, 1000);
 				}, 500);
@@ -417,7 +413,7 @@
 					<a href="#" onclick="goTo.AsusToS()">ASUS Terms of Use</a> & 
 					<a href="#" onclick="goTo.TMToS()">Trend Micro End User License Agreement</a>.
 				</div>
-			</div>			
+			</div>
 		</div>
 		
 		<!-- Prelink description -->
@@ -1181,6 +1177,14 @@
 							<div class="selectorContainer dslite_transix">
 								<div class="selectorContainerDiv">
 									<div class="selectBar" onclick="goTo.DSLITE()">transix (DS-Lite)</div>
+									<div class="narrowContainer">
+										<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+									</div>
+								</div>
+							</div>
+							<div class="selectorContainer v6option">
+								<div class="selectorContainerDiv">
+									<div class="selectBar" onclick="goTo.V6OPT()"><#IPv6_opt#></div>
 									<div class="narrowContainer">
 										<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
 									</div>
@@ -3187,17 +3191,17 @@
 					</div>
 					<div class="table_td">
 						<div class="pageDesc">
-							The main wireless network has been set.
-							<br>Some loT or legacy devices may experience compatibility issues with your WiFi 7 advanced technology. 
-							<br>To ensure seamless operation, we recommend creating a separate network for these devices.
+							<#qis_wireless_set_done#>
+							<br><#qis_SDN_IoT_setting_desc1#>
+							<br><#qis_SDN_IoT_setting_desc2#>
 						</div>
 
 						<div id="wlTitleField_SDN_IoT" class="inputTitleContainer mloSupport">
-							<div class="inputTitle ap_ssid_hover moreBold" style="margin-bottom: -30px;">IoT Network</div>
+							<div class="inputTitle ap_ssid_hover moreBold" style="margin-bottom: -30px;"><#GuestNetwork_IoT#></div>
 						</div>
 						<div class="mloSupport" id="wlInputField_SDN_IoT"></div>
 						<div class="labelContainer checkboxUnderTextInput">
-							<label for="sdn_iot_checkbox" class="labelInput">Maybe Later</label>
+							<label for="sdn_iot_checkbox" class="labelInput"><#Maybe_Later#></label>
 							<input type="checkbox" id="sdn_iot_checkbox" data-mini="true"/>
 						</div>
 
@@ -3258,7 +3262,7 @@
 						<!-- Action Button -->
 						<div class="footer_desktop">
 							<div class="desktop_abortBtn" onclick='abort.SDN_Scenarios()'><#CTL_prev#></div>
-							<div class="desktop_applyBtn btn_SDN_apply" onclick='apply.SDN_Scenarios();'>Maybe Later</div><!-- untranslated -->
+							<div class="desktop_applyBtn btn_SDN_apply" onclick='apply.SDN_Scenarios();'><#Maybe_Later#></div>
 						</div>
 						<div class="footer_mobile">
 							<table style="width:100%;" cellpadding="0" cellspacing="0">
@@ -3267,7 +3271,7 @@
 										<div class="mobile_abortBtn"><#CTL_prev#></div>
 									</td>
 									<td class="mobileApply" style="width:50%" onclick='apply.SDN_Scenarios();'>
-										<div class="mobile_applyBtn btn_SDN_apply">Maybe Later</div><!-- untranslated -->
+										<div class="mobile_applyBtn btn_SDN_apply"><#Maybe_Later#></div>
 									</td>
 								</tr>
 							</table>

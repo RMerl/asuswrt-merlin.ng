@@ -53,6 +53,7 @@ typedef struct __amaslib_dhcp__t_
 	char mac[18];       /* device MAC */
 	char ip[16];        /* device IP  */
 	int flag;           /* flag for checking use*/
+	char ifname[16];    /* interface name*/
 } AMASLIB_DHCP_T;
 
 
@@ -93,8 +94,11 @@ extern int is_amaslib_enabled();
 /* define amas usage */
 #define DHCP_TABLE     "/var/lib/misc/dnsmasq.leases"
 #define ARP_TABLE      "/proc/net/arp"
+#ifdef RTCONFIG_MULTILAN_CFG
+#define SDN_DHCP_TABLE     "/var/lib/misc/dnsmasq-%d.leases"
+#endif
 
-int amas_lib_device_ip_query(char *mac, char *ip);
+int amas_lib_device_ip_query(char *mac, char *ifname, char *ip);
 
 #endif /*  _amas_lib_h_ */
 

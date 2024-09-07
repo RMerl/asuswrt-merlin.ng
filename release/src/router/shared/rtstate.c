@@ -1183,7 +1183,7 @@ void set_lan_phy(char *phy)
 
 void add_lan_phy(char *phy)
 {
-	char phys[128], *ifnames;
+	char phys[512], *ifnames;
 
 	if (phy == NULL || *phy == '\0')
 		return;
@@ -1199,7 +1199,7 @@ void add_lan_phy(char *phy)
 
 void del_lan_phy(const char *phy)
 {
-	char phys[128] = {0};
+	char phys[512] = {0};
 	const char *ifnames, *p;
 
 	if (phy == NULL || *phy == '\0')
@@ -1707,9 +1707,9 @@ int del_from_bridge(const char* ifname)
 
 #ifdef RTCONFIG_BROOP
 
-int broop_state = 0;
+//int broop_state = 0;
 
-#define NETLINK_BROOP	22
+#define NETLINK_BROOP	26
 #define MAX_PAYLOAD	16
 
 typedef struct broop_state {
@@ -1784,7 +1784,7 @@ end:
 int detect_broop()
 {
 	int fd, ret = 0;
-
+/*
 	switch (broop_state) {
 	case BROOP_IDLE:
 		netlink_broop(SET, 0);
@@ -1801,6 +1801,8 @@ int detect_broop()
 		_dprintf("Illegal broop state.\n");
 		break;
 	}
+*/
+	ret = netlink_broop(GET, 0);
 
 	return ret;
 }

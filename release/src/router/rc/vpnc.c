@@ -362,8 +362,9 @@ int vpnc_update_resolvconf(void)
 {
 	FILE *fp, *fp_servers;
 	char tmp[100], prefix[] = "vpnc_";
+	char lan_ip[sizeof("192.168.123.456")];
 	char *wan_dns, *next;
-	int lock;
+	int lock, nr_server = 0;
 #ifdef RTCONFIG_YANDEXDNS
 	int yadns_mode = nvram_get_int("yadns_enable_x") ? nvram_get_int("yadns_mode") : YADNS_DISABLED;
 #endif
@@ -395,14 +396,29 @@ int vpnc_update_resolvconf(void)
 		goto error;
 	}
 
+	strlcpy(lan_ip, nvram_safe_get("lan_ipaddr"), sizeof(lan_ip));
 	wan_dns = nvram_safe_get(strcat_r(prefix, "dns", tmp));
 	foreach(tmp, wan_dns, next) {
 		fprintf(fp, "nameserver %s\n", tmp);
-		if (fp_servers)
+		if (fp_servers && strcmp(tmp, lan_ip)) {
 			fprintf(fp_servers, "server=%s\n", tmp);
+			nr_server++;
+		}
+	}
+	fclose(fp);
+
+	if (!nr_server && fp_servers && (fp = fopen("/tmp/resolv.conf", "r")) != NULL) {
+		// write resolv.conf to resolv.dnsmasq
+		while (fgets(tmp, sizeof(tmp), fp)) {
+			if (!strncmp(tmp, "nameserver ", 11)) {
+				if (tmp[strlen(tmp) - 1] == '\n')
+					tmp[strlen(tmp) - 1] = '\0';
+				fprintf(fp_servers, "server=%s\n", tmp + 11);
+			}
+		}
+		fclose(fp);
 	}
 
-	fclose(fp);
 	if (fp_servers)
 		fclose(fp_servers);
 	file_unlock(lock);

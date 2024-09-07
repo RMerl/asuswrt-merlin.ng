@@ -187,21 +187,24 @@ typedef struct __cp_radius_profile__
 	int radius_idx;
 } CP_RADIUS_PROFILE;
 
+#define MAX_RADIUS_IP_ADDR_STR_LEN	64
+#define MAX_RADIUS_AUTH_KEY_STR_LEN 132
+
 typedef struct __cp_radius_list__
 {
  	int idx;
-    char authipaddr1[64];
+    char authipaddr1[MAX_RADIUS_IP_ADDR_STR_LEN];
     int authport1;
-    char authkey1[64];
-    char acct_ipaddr1[64];
+    char authkey1[MAX_RADIUS_AUTH_KEY_STR_LEN];
+    char acct_ipaddr1[MAX_RADIUS_IP_ADDR_STR_LEN];
     int acct_port1;
-    char acct_key1[64];
-    char authipaddr2[64];
+    char acct_key1[MAX_RADIUS_AUTH_KEY_STR_LEN];
+    char authipaddr2[MAX_RADIUS_IP_ADDR_STR_LEN];
     int authport2;
-    char authkey2[64];
-    char acct_ipaddr2[64];
+    char authkey2[MAX_RADIUS_AUTH_KEY_STR_LEN];
+    char acct_ipaddr2[MAX_RADIUS_IP_ADDR_STR_LEN];
     int acct_port2;
-    char acct_key2[64];
+    char acct_key2[MAX_RADIUS_AUTH_KEY_STR_LEN];
 } CP_RADIUS_LIST;
 
 #ifdef RTCONFIG_VPN_FUSION
@@ -254,4 +257,11 @@ extern VPN_VPNX_T* get_vpnx_by_vpns_idx(VPN_VPNX_T* vpnx, int vpns_idx);
 extern VPN_VPNX_T* get_vpnx_by_gre_idx(VPN_VPNX_T* vpnx, int gre_idx);
 extern int mtlan_extend_prefix_by_subnet_idx(const char* prefix, int prefix_length
 				, uint8_t subnet_idx, int subnet_length, char* buf, size_t len);
+//for freewifi 
+extern CP_TYPE_RL *get_cp_type_byidx(int index, CP_TYPE_RL *lst);
+extern CP_PROFILE *get_cpX_profile_by_cpidx(int index, CP_PROFILE *lst);
+extern CP_LOCAL_AUTH *get_cp_localauth_bytype(CP_LOCAL_AUTH *lst, int index, int type);
+extern char *match_vif_from_rulelist(size_t *sz, int v_id);
+extern CP_RADIUS_PROFILE *get_cpX_radius_profile(CP_RADIUS_PROFILE *cpX_radius_profile, int idx);
+extern CP_RADIUS_LIST *match_radius_rl_by_cpidx(CP_RADIUS_LIST *cp_radius_rl, int idx);
 #endif

@@ -1797,7 +1797,7 @@ function popupEditBlock(clientObj){
 		if(deviceTitle == undefined || deviceTitle == "") {
 			document.getElementById('manufacturer_field').value = "Loading manufacturer..";
 			setTimeout(function(){
-				if('<% nvram_get("x_Setting"); %>' == '1' && wanConnectStatus && clientObj.internetState) {
+				if((httpApi.isConnected(0) || httpApi.isConnected(1)) && clientObj.internetState) {
 					oui_query(clientObj.mac);
 				}
 			}, 1000);
@@ -2802,7 +2802,7 @@ function showClientlistModal(){
 							</div>
 
 							<div id="mbModeContext" style="display:none">
-								<span style="font-size:14px;font-family: Verdana, Arial, Helvetica, sans-serif;;margin: 15px 0"><#menu5_6_1#>: </span>
+								<span style="font-size:14px;font-family: Verdana, Arial, Helvetica, sans-serif;margin: 15px 0"><#menu5_6_1#>: </span>
 								<br/>
 								<br/>
 								<strong class="index_status"><#OP_MB_item#></strong>
@@ -2876,18 +2876,43 @@ function showClientlistModal(){
 						</div>
 						<script>
 							(function(){
-								var defaultRouterFrame = `/device-map/router${isSupport("sdn_mainfh")?"_status":""}.asp`;
+								const defaultRouterFrame = `/device-map/router${isSupport("sdn_mainfh")?"_status":""}.asp`;
 								setTimeout(function(){
 									document.getElementById("statusframe").src = defaultRouterFrame;	
-								}, 1);
+									const get_header_info = httpApi.hookGet("get_header_info");
+									const domain = `${get_header_info.protocol}://${get_header_info.host}`;
+									const domain_w_port = `${get_header_info.protocol}://${get_header_info.host}:${get_header_info.port}`;
 
-								var $iframe = $("#statusframe");
-								$iframe.on("load", function(){
-									$iframe.show();
-									document.getElementById("statusframe").contentWindow.onbeforeunload = function(){
-										$iframe.hide();
-									};
-								});
+									let messageTimeout;
+									messageTimeout = setTimeout(() => {
+										document.getElementById("statusframe").src = `/device-map/router${isSupport("sdn_mainfh")?"_status":""}.asp`;
+									}, 5000);
+
+									window.addEventListener('message', function(event){
+										if(event.data == `router${isSupport("sdn_mainfh")?"_status":""}.asp`){
+											const has_port = /:\d+$/.test(event.origin);
+											if(has_port){
+												if(event.origin !== domain_w_port){
+													return;
+												}
+											}
+											else{
+												if(event.origin !== domain){
+													return;
+												}
+											}
+											clearTimeout(messageTimeout);
+											$("#statusframe").show()
+												.off('load').on("load", function(){
+													const $statusframe = $(this);
+													$statusframe.show();
+													$statusframe[0].contentWindow.onbeforeunload = function(){
+														$statusframe.hide();
+													};
+												});
+										}
+									});
+								}, 1);
 							})()
 						</script>
 					</td>

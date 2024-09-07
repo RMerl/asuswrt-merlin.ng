@@ -138,7 +138,7 @@
 	color: #181818;
 }
 .add_new_component > .add_new_text:before{
-	background-image: url(/images/New_ui/weekSchedule/white_theme/Content/add_circle_outline.svg);
+	background-color: #006CE1;
 }
 .icon_switch.off{
 	background: #666666;
@@ -147,7 +147,7 @@
 	background: #FFFFFF;
 }
 .icon_trash{
-	background-image: url(/images/New_ui/weekSchedule/white_theme/Action/delete.svg);
+	background-color: #4D4D4D;
 }
 .accesstime_container{
 	background: rgb(255, 255, 255);

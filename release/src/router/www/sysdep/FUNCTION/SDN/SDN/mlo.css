@@ -64,8 +64,13 @@
 .config_item_container{
 	display: flex;
 	align-items: center;
-	height: 50px;
+	flex-wrap: wrap;
+	height: max-content;
+	min-height: 50px;
 	position: relative;
+}
+.config_item_container.nowrap{
+	flex-wrap: initial;
 }
 .config_item_container:not(:first-child):before{
 	position: absolute;
@@ -77,13 +82,21 @@
 .config_item_container .title{
 	font-size: 16px;
 	font-weight: 500;
-	flex-basis: 46%;
+	flex-basis: 40%;
 	margin-left: 16px;
+	display: flex;
+	min-width: 120px;
+}
+.config_item_container .title .icon_info{
+	margin-top: 1px;
+	margin-left: 10px;
 }
 .config_item_container .input_container{
 	display: flex;
 	align-items: center;
 	flex-basis: 54%;
+	justify-content: flex-end;
+	margin-right: 20px;
 }
 .config_item_container .profile_btn_container{
 	min-width: auto;
@@ -94,6 +107,7 @@
 }
 .config_item_container .dropdown_select{
 	padding-left: 14px;
+	padding-right: 14px;
 	font-weight: 400;
 	font-size: 16px;
 	color: #FFF;
@@ -104,17 +118,60 @@
 	border-radius: 8px;
 	letter-spacing: 0.1px;
 	outline: none;
-	flex-grow: 1;
-	margin-right: 18px;
 }
 .config_item_container .dropdown_select > option{
 	height: 40px;
 }
+.config_item_container .help_icon{
+	background-image: none;
+	--svg: url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik0xMi4yNSAyMS41QzcuMTQxMzcgMjEuNSAzIDE3LjM1ODYgMyAxMi4yNUMzIDcuMTQxMzcgNy4xNDEzNyAzIDEyLjI1IDNDMTcuMzU4NiAzIDIxLjUgNy4xNDEzNyAyMS41IDEyLjI1QzIxLjUgMTcuMzU4NiAxNy4zNTg2IDIxLjUgMTIuMjUgMjEuNVoiIHN0cm9rZT0iI0I5QzVENSIgc3Ryb2tlLXdpZHRoPSIxLjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8bGluZSB4MT0iMTIuMzUiIHkxPSIxNi44NSIgeDI9IjEyLjM1IiB5Mj0iMTYuNjUiIHN0cm9rZT0iI0I5QzVENSIgc3Ryb2tlLXdpZHRoPSIxLjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8cGF0aCBkPSJNOS4xNSAxMC4xMzI0QzkuMTUgMTAuNDYzNyA5LjQxODYzIDEwLjczMjQgOS43NSAxMC43MzI0QzEwLjA4MTQgMTAuNzMyNCAxMC4zNSAxMC40NjM3IDEwLjM1IDEwLjEzMjRIOS4xNVpNMTMuMjA4NCAxMi4wNzUzTDEyLjg2NzIgMTEuNTgxN0wxMi44NjcyIDExLjU4MTdMMTMuMjA4NCAxMi4wNzUzWk0xMS42NSAxNC4yNUMxMS42NSAxNC41ODE0IDExLjkxODYgMTQuODUgMTIuMjUgMTQuODVDMTIuNTgxNCAxNC44NSAxMi44NSAxNC41ODE0IDEyLjg1IDE0LjI1SDExLjY1Wk0xMC4zNSAxMC4xMzI0QzEwLjM1IDkuMjE2MiAxMC42MDczIDguNjYzNzcgMTAuOTI2NSA4LjM0MTEyQzExLjI0NzYgOC4wMTY1NiAxMS43MDUgNy44NSAxMi4yNSA3Ljg1VjYuNjVDMTEuNDYxNyA2LjY1IDEwLjY2OSA2Ljg5NTIgMTAuMDczNSA3LjQ5NzEyQzkuNDc2MDYgOC4xMDA5MyA5LjE1IDguOTg5NjggOS4xNSAxMC4xMzI0SDEwLjM1Wk0xMi4yNSA3Ljg1QzEyLjc5NzQgNy44NSAxMy4yNzA1IDguMDE4OCAxMy41OTkgOC4zMTM5OEMxMy45MTc3IDguNjAwMjcgMTQuMTUgOS4wNDkwNCAxNC4xNSA5LjcyMDU5SDE1LjM1QzE1LjM1IDguNzQ1MDggMTQuOTk5IDcuOTU4NTYgMTQuNDAxIDcuNDIxMzFDMTMuODEyOSA2Ljg5Mjk2IDEzLjAzNiA2LjY1IDEyLjI1IDYuNjVWNy44NVpNMTQuMTUgOS43MjA1OUMxNC4xNSAxMC4zMzc0IDEzLjY2NzcgMTEuMDI4NCAxMi44NjcyIDExLjU4MTdMMTMuNTQ5NiAxMi41Njg4QzE0LjQ2OSAxMS45MzMzIDE1LjM1IDEwLjkyODIgMTUuMzUgOS43MjA1OUgxNC4xNVpNMTIuODUgMTQuMjVWMTMuNjg5SDExLjY1VjE0LjI1SDEyLjg1Wk0xMi44NjcyIDExLjU4MTdDMTIuMjE5MyAxMi4wMjk2IDExLjY1IDEyLjc2OTUgMTEuNjUgMTMuNjg5SDEyLjg1QzEyLjg1IDEzLjI5MDggMTMuMTA0OCAxMi44NzYyIDEzLjU0OTYgMTIuNTY4OEwxMi44NjcyIDExLjU4MTdaIiBmaWxsPSIjQjlDNUQ1Ii8+Cjwvc3ZnPgo=");
+	-webkit-mask: var(--svg);
+	mask: var(--svg);
+	-webkit-mask-repeat: no-repeat;
+	-webkit-mask-position: center;
+	-webkit-mask-size: contain;
+	display: block;
+	background-color: #B9C5D5;
+	width: 24px;
+	height: 24px;
+	cursor: pointer;
+	padding: initial;
+	margin-left: 6px;
+}
 @media (max-width: 575px) {
 	.mlo_config_container{
-		width: 80%;
-		min-width: 300px;
+		width: 85%;
+		min-width: 320px;
 		margin: auto;
 		margin-top: 12px;
+	}
+	.config_item_container .title{
+		flex-basis: 100%;
+		margin-top: 6px;
+	}
+	.config_item_container.nowrap .title{
+		margin-top: initial;
+	}
+	.config_item_container .input_container{
+		flex-basis: initial;
+		flex-grow: 1;
+		margin-top: 6px;
+		margin-bottom: 6px;
+		justify-content: flex-start;
+		margin-left: 16px;
+	}
+	.config_item_container.nowrap .input_container{
+		flex-basis: 54%;
+		justify-content: flex-end;
+		margin-right: 20px;
+	}
+	.config_item_container .dropdown_select{
+		width: 100%;
+	}
+}
+@media (min-width: 575px) {
+	.config_item_container .input_container{
+		flex-grow: 1;
+		flex-basis: initial;
 	}
 }

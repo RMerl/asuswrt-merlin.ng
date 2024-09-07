@@ -63,6 +63,10 @@ ifeq ($(RTCONFIG_TRUSTZONE),y)
 LDFLAGS += -L$(TOP)/ateed/ -latee
 endif
 
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000))
+LDFLAGS += -L$(TOP)/libhostapi -lhostapi
+endif
+
 # for QCA toolchain compile issue, xxxx-ld has no pthead and dl in openwrt-toolchain
 ifeq ($(RTCONFIG_QCA),y)
 EXTRACC = -lpthread -ldl

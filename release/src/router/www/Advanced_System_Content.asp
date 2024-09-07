@@ -168,6 +168,7 @@ if(sw_mode == 3 || (sw_mode == 4))
 
 var ddns_enable_x = '<% nvram_get("ddns_enable_x"); %>';
 var ddns_hostname_x_t = '<% nvram_get("ddns_hostname_x"); %>';
+var wan0_proto = '<% nvram_get("wan0_proto"); %>';
 var wan_unit = '<% get_wan_unit(); %>';
 if(wan_unit == "0")
 	var wan_ipaddr = '<% nvram_get("wan0_ipaddr"); %>';
@@ -362,7 +363,7 @@ function initial(){
 	}
 	else{
 
-		if((wan_proto == "v6plus" || wan_proto == "ocnvc") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
+		if((wan0_proto == "v6plus" || wan0_proto == "ocnvc" || wan0_proto == "v6opt") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
 			$(".setup_info_icon.https").show();
 			$(".setup_info_icon.https").click(
 				function() {
@@ -387,7 +388,7 @@ function initial(){
 		check_sshd_enable('<% nvram_get("sshd_enable"); %>');
 		document.form.sshd_authkeys.value = document.form.sshd_authkeys.value.replace(/>/gm,"\r\n");
 
-		if((wan_proto == "v6plus" || wan_proto == "ocnvc") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
+		if((wan0_proto == "v6plus" || wan0_proto == "ocnvc" || wan0_proto == "v6opt") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
 			$(".setup_info_icon.ssh").show();
 			$(".setup_info_icon.ssh").click(
 				function() {
@@ -839,7 +840,7 @@ function validForm(){
 			return false;
 		}
 
-		if((wan_proto == "v6plus" || wan_proto == "ocnvc") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1 && document.form.sshd_enable.value == 1){
+		if((wan0_proto == "v6plus" || wan0_proto == "ocnvc" || wan0_proto == "v6opt") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1 && document.form.sshd_enable.value == 1){
 			if (!validator.range_s46_ports(document.form.sshd_port, "none")){
 				if(!confirm(port_confirm)){
 					document.form.sshd_port.focus();
@@ -868,7 +869,7 @@ function validForm(){
 			if (!validator.range(document.form.misc_httpsport_x, 1024, 65535))
 				return false;
 
-			if ((wan_proto == "v6plus" || wan_proto == "ocnvc") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
+			if ((wan0_proto == "v6plus" || wan0_proto == "ocnvc" || wan0_proto == "v6opt") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
 				if (!validator.range_s46_ports(document.form.misc_httpsport_x, "none")){
 					if(!confirm(port_confirm)){
 						document.form.misc_httpsport_x.focus();
@@ -1199,11 +1200,10 @@ function hide_https_lanport(_value){
 		return false;
 	}
 
+	document.getElementById("https_lanport_tr").style.display = (_value == "0") ? "none" : "";
+	document.form.https_lanport.disabled = (_value == "0") ? true : false;
 	if(sw_mode == '1' || sw_mode == '2' || sw_mode == '3'){
 		var https_lanport_num = "<% nvram_get("https_lanport"); %>";
-		document.getElementById("https_lanport").style.display = (_value == "0") ? "none" : "";
-		document.form.https_lanport.disabled = (_value == "0") ? true : false;
-		document.form.https_lanport.value = "<% nvram_get("https_lanport"); %>";
 		document.getElementById("https_access_page").innerHTML = "<#https_access_url#> ";
 		document.getElementById("https_access_page").innerHTML += "<a href=\"https://"+theUrl+":"+https_lanport_num+"\" target=\"_blank\" style=\"color:#FC0;text-decoration: underline; font-family:Lucida Console;\">http<span>s</span>://"+theUrl+"<span>:"+https_lanport_num+"</span></a>";
 		document.getElementById("https_access_page").style.display = (_value == "0") ? "none" : "";
@@ -1784,8 +1784,8 @@ function create_DNSlist_view(){
 
 var DNSService = new Object;
 function updatDNSListOnline(){
-
-	$.getJSON("/ajax/DNS_List.json", function(local_data){
+	const extendno = httpApi.nvramCharToAscii(["extendno"]).extendno;
+	$.getJSON("/ajax/DNS_List.json?v="+extendno+"", function(local_data){
 		DNSService = Object.keys(local_data).map(function(e){
 				return local_data[e];
 		});
@@ -2195,8 +2195,6 @@ function change_passwd(){
 				return false;
 			}
 	}
-
-    showLoading();
 
 	postData.cur_passwd = $("#http_passwd_cur").val();
 	postData.new_passwd = $("#http_passwd_new").val();
@@ -2884,10 +2882,10 @@ function build_boostkey_options() {
 						<span id="http_access_page"></span>
 					</td>
 				</tr>
-				<tr id="https_lanport">
+				<tr id="https_lanport_tr">
 					<th><#System_HTTPS_LAN_Port#></th>
 					<td>
-						<input type="text" maxlength="5" class="input_6_table" id="https_lanport_input" name="https_lanport" value="<% nvram_get("https_lanport"); %>" onKeyPress="return validator.isNumber(this,event);" onBlur="change_url(this.value, 'https_lan');" autocorrect="off" autocapitalize="off" onkeydown="reset_portconflict_hint();" disabled>
+						<input type="text" maxlength="5" class="input_6_table" id="https_lanport_input" name="https_lanport" value="<% nvram_get("https_lanport"); %>" onKeyPress="return validator.isNumber(this,event);" onBlur="change_url(this.value, 'https_lan');" autocorrect="off" autocapitalize="off" onkeydown="reset_portconflict_hint();">
 						<span id="port_conflict_httpslanport" style="color: #e68282; display: none;">Port Conflict</span>
 						<div id="https_access_page" style="color: #FFCC00;"></div>
 						<div style="color: #FFCC00; display: none;">* <#HttpsLanport_Hint#></div>

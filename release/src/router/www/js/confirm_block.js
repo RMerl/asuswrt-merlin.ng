@@ -46,6 +46,9 @@
 		code += release_note_code;
 		code += '<div class="confirm_contentC">' + content.contentC +'</div>';
 	}
+	if(content.iframe.search("AFC") >= 0){
+		code += '<div class="confirm_contentD">' + content.contentD +'</div>';
+	}
 	
 	code += '<div style="display:flex;width:100%;margin-top:10px;justify-content:center;align-items:center;" class="business_confirm_container">';
 	if(content.left_button && content.left_button != "Hidden")

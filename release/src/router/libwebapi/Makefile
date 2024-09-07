@@ -56,8 +56,33 @@ CFLAGS += -I$(TOP)/cfg_mnt
 LIBS += -L$(TOP)/cfg_mnt -lcfgmnt
 endif
 
+ifeq ($(RTCONFIG_TRUSTZONE), y)
+CFLAGS += -I$(TOP)/ateed/
+LIBS += -L$(TOP)/ateed/ -latee
+endif
+
 ifeq ($(HND_ROUTER_BE_4916), y)
 CFLAGS+= -fcommon
+endif
+
+ifeq ($(RTCONFIG_HTTPS),y)
+CFLAGS += -I$(TOP)/mssl
+CFLAGS += -I$(TOP)/openssl/include
+LIBS += -L$(TOP)/mssl -lmssl
+LIBS += -L$(TOP)/openssl -lssl -lcrypto -ldl
+endif
+
+ifeq ($(RTCONFIG_USB),y)
+CFLAGS += -I$(TOP)/libdisk
+LIBS += -L$(TOP)/libdisk -ldisk
+ifeq ($(RTCONFIG_USB_SMS_MODEM),y)
+CFLAGS += -I$(TOP)/smspdu
+LIBS += -L$(TOP)/smspdu -lsmspdu
+endif
+endif
+
+ifeq ($(BRCM_CHIP),6813)
+CFLAGS += -DCHIP_BCM4916
 endif
 
 all: clean libwebapi.so

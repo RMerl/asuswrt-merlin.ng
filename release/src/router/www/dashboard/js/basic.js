@@ -219,10 +219,6 @@ var menuList = [
 	// },
 ];
 
-if (isMultisiteApp()) {
-    menuList = menuList.filter(item => item.url !== "QIS_wizard.htm");
-}
-
 let urlParameter = new URLSearchParams(window.location.search);
 /* DECIDE THEME */
 let theme = (function () {
@@ -312,6 +308,10 @@ if(system.currentOPMode.id != "RT"){
 			return (item.url != "aimesh");
 		});
 	}
+}
+
+if (isMultisiteApp()) {
+    menuList = menuList.filter(item => item.url !== "QIS_wizard.htm");
 }
 
 function genNavMenu() {

@@ -261,9 +261,13 @@ CFLAGS += -I$(TOP)/ateed/
 LDFLAGS += -L$(TOP)/ateed/ -latee
 endif
 
-ifeq ($(RTCONFIG_SMARTHAUL),y)
+ifeq ($(or $(RTCONFIG_SMARTHAUL),$(RTCONFIG_BRCM_SMARTHAUL)),y))
 CFLAGS += -DSMARTHAUL
 COMMON_OBJS += cfg_smarthaul.o
+endif
+
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000))
+LDFLAGS += -L$(TOP)/libhostapi -lhostapi
 endif
 
 ifeq ($(wildcard $(SRCBASE)/router/cfg_mnt/*.c),)

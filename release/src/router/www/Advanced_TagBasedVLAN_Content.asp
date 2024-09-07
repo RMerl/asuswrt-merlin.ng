@@ -1673,7 +1673,7 @@ function generate_LanToLanRoute_options(){
 
 	select.length = 0;
 	for(var i = 0; i < subnet_array.length; i++){
-		var other_subnet =  document.createElement("option");;
+		var other_subnet =  document.createElement("option");
 		var subnet =  subnet_array[i];
 
 		if(!isCurrentRoute(subnet) && !isDupOption(select, subnet)){

@@ -133,7 +133,7 @@ function show_subCategory(obj){
 			$(previous_obj).siblings()[2].style.display = "";
 
 		obj.setAttribute("class", "closed");
-		if($(previous_obj).siblings()[1] = sub_category){			//To handle open, close the same category
+		if($(previous_obj).siblings()[1] == sub_category){			//To handle open, close the same category
 			$(previous_obj).siblings()[1] = "";
 			previous_obj = "";
 		}
@@ -533,7 +533,7 @@ function edit_table(){
 		if(k == 1)
 			apps_filter_temp += enable_checkbox;
 		else{
-			apps_filter_temp += "<" + enable_checkbox;;
+			apps_filter_temp += "<" + enable_checkbox;
 		}
 
 		apps_filter_temp += ">" + target_mac + ">";

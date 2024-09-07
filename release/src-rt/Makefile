@@ -2566,21 +2566,26 @@ define RouterOptions
 	if [ "$(IPV6SUPP)" = "y" -o "$(IPV6FULL)" = "y" ]; then \
 		sed -i "/RTCONFIG_IPV6/d" $(1); \
 		echo "RTCONFIG_IPV6=y" >>$(1); \
-		if [ "$(IPV6S46)" = "y" -o "$(IPV6FULL)" = "y" ]; then \
-			sed -i "/RTCONFIG_SOFTWIRE46/d" $(1); \
-			echo "RTCONFIG_SOFTWIRE46=y" >>$(1); \
-			if [ "$(OCNVC)" = "y" ]; then \
-				sed -i "/RTCONFIG_OCNVC/d" $(1); \
-				echo "RTCONFIG_OCNVC=y" >>$(1); \
-			fi; \
-			if [ "$(V6OPTION)" = "y" ]; then \
-				sed -i "/RTCONFIG_V6OPTION/d" $(1); \
-				echo "RTCONFIG_V6OPTION=y" >>$(1); \
-			fi; \
-			if [ "$(DSLITE)" = "y" ]; then \
-				sed -i "/RTCONFIG_DSLITE/d" $(1); \
-				echo "RTCONFIG_DSLITE=y" >>$(1); \
-			fi; \
+		sed -i "/RTCONFIG_SOFTWIRE46/d" $(1); \
+		echo "RTCONFIG_SOFTWIRE46=y" >>$(1); \
+		sed -i "/RTCONFIG_OCNVC/d" $(1); \
+		echo "RTCONFIG_OCNVC=y" >>$(1); \
+		sed -i "/RTCONFIG_DSLITE/d" $(1); \
+		echo "RTCONFIG_DSLITE=y" >>$(1); \
+		if [ "$(OCNVC)" = "n" ]; then \
+			sed -i "/RTCONFIG_OCNVC/d" $(1); \
+			echo "# RTCONFIG_OCNVC is not set" >>$(1); \
+		fi; \
+		if [ "$(DSLITE)" = "n" ]; then \
+			sed -i "/RTCONFIG_DSLITE/d" $(1); \
+			echo "# RTCONFIG_DSLITE is not set" >>$(1); \
+		fi; \
+		if [ "$(V6OPTION)" = "y" ]; then \
+			sed -i "/RTCONFIG_V6OPTION/d" $(1); \
+			echo "RTCONFIG_V6OPTION=y" >>$(1); \
+		elif [ "$(V6OPTION)" = "n" ]; then \
+			sed -i "/RTCONFIG_V6OPTION/d" $(1); \
+			echo "# RTCONFIG_V6OPTION is not set" >>$(1); \
 		fi; \
 	fi;
 	if [ "$(IPSEC)" = "y" ] || \
@@ -3037,6 +3042,10 @@ define RouterOptions
 	if [ "$(SMARTHAUL)" = "y" ]; then \
                 sed -i "/RTCONFIG_SMARTHAUL/d" $(1); \
                 echo "RTCONFIG_SMARTHAUL=y" >>$(1); \
+        fi;
+	if [ "$(BRCM_SMARTHAUL)" = "y" ]; then \
+                sed -i "/RTCONFIG_BRCM_SMARTHAUL/d" $(1); \
+                echo "RTCONFIG_BRCM_SMARTHAUL=y" >>$(1); \
         fi;
 	if [ "$(NOTIFICATION_CENTER)" = "y" ]; then \
 		sed -i "/RTCONFIG_NOTIFICATION_CENTER/d" $(1); \
@@ -4531,6 +4540,16 @@ define RouterOptions
 		sed -i "/RTCONFIG_WIFI6E/d" $(1); \
 		echo "RTCONFIG_WIFI6E=y" >>$(1); \
 	fi;
+	if [ "$(DISWIFI7)" = "y" ]; then \
+		sed -i "/RTCONFIG_DISWIFI7/d" $(1); \
+		echo "RTCONFIG_DISWIFI7=y" >>$(1); \
+	fi;
+	if [ "$(UAWIFI)" = "y" ]; then \
+		sed -i "/RTCONFIG_UAWIFI/d" $(1); \
+		echo "RTCONFIG_UAWIFI=y" >>$(1); \
+		sed -i "/RTCONFIG_DISWIFI7/d" $(1); \
+		echo "RTCONFIG_DISWIFI7=y" >>$(1); \
+	fi;
 	if [ "$(MLO)" = "y" ]; then \
 		sed -i "/RTCONFIG_MLO\>/d" $(1); \
 		echo "RTCONFIG_MLO=y" >>$(1); \
@@ -4543,15 +4562,46 @@ define RouterOptions
 		if [ "$(MLO_BH)" = "y" ]; then \
 			sed -i "/RTCONFIG_MLO_BH\>/d" $(1); \
 			echo "RTCONFIG_MLO_BH=y" >>$(1); \
+		else \
+			sed -i "/RTCONFIG_MLO_BH\>/d" $(1); \
+			echo "# RTCONFIG_MLO_BH is not set" >>$(1); \
 		fi; \
 		if [ "$(MLO_BH_BAND)" = "y" ]; then \
 			sed -i "/RTCONFIG_MLO_BH_BAND\>/d" $(1); \
 			echo "RTCONFIG_MLO_BH_BAND=y" >>$(1); \
+		else \
+			sed -i "/RTCONFIG_MLO_BH_BAND\>/d" $(1); \
+			echo "# RTCONFIG_MLO_BH_BAND is not set" >>$(1); \
 		fi; \
 		if [ "$(MLO_CONFIG_566)" = "y" ]; then \
 			sed -i "/RTCONFIG_MLO_CONFIG_566\>/d" $(1); \
 			echo "RTCONFIG_MLO_CONFIG_566=y" >>$(1); \
+		else \
+			sed -i "/RTCONFIG_MLO_CONFIG_566\>/d" $(1); \
+			echo "# RTCONFIG_MLO_CONFIG_566 is not set" >>$(1); \
 		fi; \
+		if [ "$(MLO_CONFIG_556)" = "y" ]; then \
+			sed -i "/RTCONFIG_MLO_CONFIG_556\>/d" $(1); \
+			echo "RTCONFIG_MLO_CONFIG_556=y" >>$(1); \
+		else \
+			sed -i "/RTCONFIG_MLO_CONFIG_556\>/d" $(1); \
+			echo "# RTCONFIG_MLO_CONFIG_556 is not set" >>$(1); \
+		fi; \
+	else \
+		sed -i "/RTCONFIG_MLO\>/d" $(1); \
+		echo "# RTCONFIG_MLO is not set" >>$(1); \
+		sed -i "/RTCONFIG_MULTILAN_CFG/d" $(1); \
+		echo "# RTCONFIG_MULTILAN_CFG is not set" >>$(1); \
+		sed -i "/RTCONFIG_MLO_FH\>/d" $(1); \
+		echo "# RTCONFIG_MLO_FH is not set" >>$(1); \
+		sed -i "/RTCONFIG_MLO_BH\>/d" $(1); \
+		echo "# RTCONFIG_MLO_BH is not set" >>$(1); \
+		sed -i "/RTCONFIG_MLO_BH_BAND\>/d" $(1); \
+		echo "# RTCONFIG_MLO_BH_BAND is not set" >>$(1); \
+		sed -i "/RTCONFIG_MLO_CONFIG_566\>/d" $(1); \
+		echo "# RTCONFIG_MLO_CONFIG_566 is not set" >>$(1); \
+		sed -i "/RTCONFIG_MLO_CONFIG_556\>/d" $(1); \
+		echo "# RTCONFIG_MLO_CONFIG_556 is not set" >>$(1); \
 	fi;
 	if [ "$(DIS_MLO_QIS)" = "y" ]; then \
 		sed -i "/RTCONFIG_DIS_MLO_QIS/d" $(1); \
@@ -4571,10 +4621,9 @@ define RouterOptions
 		if [ "$(MLO_BH_BAND)" = "y" ]; then \
 			sed -i "/RTCONFIG_MLO_BH_BAND\>/d" $(1); \
 			echo "RTCONFIG_MLO_BH_BAND=y" >>$(1); \
-		fi; \
-		if [ "$(MLO_CONFIG_566)" = "y" ]; then \
-			sed -i "/RTCONFIG_MLO_CONFIG_566\>/d" $(1); \
-			echo "RTCONFIG_MLO_CONFIG_566=y" >>$(1); \
+		else \
+			sed -i "/RTCONFIG_MLO_BH_BAND/d" $(1); \
+			echo "# RTCONFIG_MLO_BH_BAND is not set" >>$(1); \
 		fi; \
 		if [ "$(MLO_CONFIG_566)" = "y" ]; then \
 			sed -i "/RTCONFIG_MLO_CONFIG_566/d" $(1); \
@@ -4582,6 +4631,13 @@ define RouterOptions
 		else \
 			sed -i "/RTCONFIG_MLO_CONFIG_566/d" $(1); \
 			echo "# RTCONFIG_MLO_CONFIG_566 is not set" >>$(1); \
+		fi; \
+		if [ "$(MLO_CONFIG_556)" = "y" ]; then \
+			sed -i "/RTCONFIG_MLO_CONFIG_556/d" $(1); \
+			echo "RTCONFIG_MLO_CONFIG_556=y" >>$(1); \
+		else \
+			sed -i "/RTCONFIG_MLO_CONFIG_556/d" $(1); \
+			echo "# RTCONFIG_MLO_CONFIG_556 is not set" >>$(1); \
 		fi; \
 		sed -i "/RTCONFIG_MULTILAN_CFG/d" $(1); \
 		echo "RTCONFIG_MULTILAN_CFG=y" >>$(1); \
@@ -4839,6 +4895,14 @@ define RouterOptions
 		sed -i "/RTCONFIG_DHDAP/d" $(1); \
 		echo "# RTCONFIG_DHDAP is not set" >>$(1); \
 	fi;
+	if [ "$(KNV_BP)" = "y" ]; then \
+		sed -i "/RTCONFIG_KNV_BACKUP/d" $(1); \
+		echo "RTCONFIG_KNV_BACKUP=y" >>$(1); \
+	fi;
+	if [ "$(NV_BP2)" = "y" ]; then \
+		sed -i "/RTCONFIG_NV_BACKUP2/d" $(1); \
+		echo "RTCONFIG_NV_BACKUP2=y" >>$(1); \
+	fi;
 	if [ "$(HAS_6G_2)" = "y" ]; then \
 		sed -i "/RTCONFIG_HAS_6G_2\>/d" $(1); \
 		echo "RTCONFIG_HAS_6G_2=y" >>$(1); \
@@ -4871,6 +4935,15 @@ define RouterOptions
 		sed -i "/RTCONFIG_MLO_DEFAULT_ACTIVE\>/d" $(1); \
 		echo "RTCONFIG_MLO_DEFAULT_ACTIVE=y" >>$(1); \
 	fi;
+	if [ "$(FLASH_TYPE)" = "EMMC" ]; then \
+		sed -i "/RTCONFIG_FLASH_TYPE_$(FLASH_TYPE)/d" $(1); \
+		echo "RTCONFIG_FLASH_TYPE_$(FLASH_TYPE)=y" >>$(1); \
+		sed -i "/RTCONFIG_JFFS2USERICON/d" $(1); \
+		echo "RTCONFIG_JFFS2USERICON=y" >>$(1); \
+		sed -i "/RTCONFIG_JFFS_PARTITION/d" $(1); \
+		echo "RTCONFIG_JFFS_PARTITION=y" >>$(1); \
+	fi;
+
 	$(call platformRouterOptions, $(1))
 endef
 
@@ -5265,6 +5338,10 @@ define BusyboxOptions
 	if [ "$(BCMWL6)" = "y" ]; then \
 		sed -i "/CONFIG_FEATURE_NETSTAT_PRG/d" $(1); \
 		echo "CONFIG_FEATURE_NETSTAT_PRG=y" >>$(1); \
+		sed -i "/CONFIG_UNIQ/d" $(1); \
+		echo "CONFIG_UNIQ=y" >>$(1); \
+		sed -i "/CONFIG_LSOF/d" $(1); \
+		echo "CONFIG_LSOF=y" >>$(1); \
 	fi;
 	if [ "$(HND_ROUTER_AX_6756)" = "y" ] || [ "$(HND_ROUTER_BE_4916)" = "y" ]; then \
 		sed -i "/CONFIG_SHA256SUM/d" $(1); \
@@ -5285,6 +5362,18 @@ define BusyboxOptions
 	if [ "$(DNS_PING)" = "y" ]; then \
 		sed -i "/RTCONFIG_DNS_PING/d" $(1); \
 		echo "RTCONFIG_DNS_PING=y" >>$(1); \
+	fi;
+	if [ "$(FLASH_TYPE)" = "EMMC" ]; then \
+		sed -i "/CONFIG_FEATURE_MDEV_CONF/d" $(1); \
+		echo "CONFIG_FEATURE_MDEV_CONF=y" >>$(1); \
+		sed -i "/CONFIG_FEATURE_MDEV_EXEC/d" $(1); \
+		echo "CONFIG_FEATURE_MDEV_EXEC=y" >>$(1); \
+		sed -i "/CONFIG_FEATURE_MDEV_RENAME/d" $(1); \
+		echo "CONFIG_FEATURE_MDEV_RENAME=y" >>$(1); \
+		sed -i "/CONFIG_FEATURE_MDEV_RENAME_REGEXP/d" $(1); \
+		echo "CONFIG_FEATURE_MDEV_RENAME_REGEXP=y" >>$(1); \
+		sed -i "/CONFIG_HEXDUMP/d" $(1); \
+		echo "CONFIG_HEXDUMP=y" >>$(1); \
 	fi;
 	$(call platformBusyboxOptions, $(1))
 endef
@@ -5624,7 +5713,7 @@ if [ "$(TUNEK)" != "n" ]; then \
 			sed -i "/CONFIG_EXT4_DEBUG/d" $(1); \
 			echo "# CONFIG_EXT4_DEBUG is not set" >>$(1); \
 		fi; \
-		if [ "$(IPV6S46)" = "y" -o "$(IPV6FULL)" = "y" ]; then \
+		if [ "$(IPV6SUPP)" = "y" -o "$(IPV6FULL)" = "y" ]; then \
 			sed -i "/CONFIG_IPV6_TUNNEL/d" $(1); \
 			echo "CONFIG_IPV6_TUNNEL=m" >>$(1); \
 		fi; \
@@ -6389,7 +6478,7 @@ fi;
 			echo "# CONFIG_BCM_RECVFILE is not set" >>$(1); \
 		fi; \
 	fi;
-	if [ "$(IPV6S46)" = "y" -o "$(IPV6FULL)" = "y" ]; then \
+	if [ "$(IPV6SUPP)" = "y" -o "$(IPV6FULL)" = "y" ]; then \
 		sed -i "/CONFIG_IPV6_TUNNEL/d" $(1); \
 		echo "CONFIG_IPV6_TUNNEL=m" >>$(1); \
 	fi;
@@ -6618,7 +6707,14 @@ fi;
 		sed -i "/CONFIG_CRC8 is not set\>/d" $(1); \
 		echo "CONFIG_CRC8=y" >>$(1); \
 	fi;
-
+	if [ "$(FLASH_TYPE)" = "EMMC" ]; then \
+		sed -i "/CONFIG_SYSFS_DEPRECATED/d" $(1); \
+		echo "# CONFIG_SYSFS_DEPRECATED is not set" >>$(1); \
+		sed -i "/CONFIG_SYSFS_DEPRECATED_V2/d" $(1); \
+		echo "# CONFIG_SYSFS_DEPRECATED_V2 is not set" >>$(1); \
+		sed -i "/CONFIG_MMC_OOPS is not set\>/d" $(1); \
+		echo "CONFIG_MMC_OOPS=m" >>$(1); \
+	fi;
 	$(call platformKernelConfig, $(1))
 	$(call extraKernelConfig, $(1))
 endef
@@ -6729,6 +6825,16 @@ else ifeq ($(BCMWL6A),y)
 	cp bootloaders/build/configs/options_$(BRCM_CHIP)_nand.conf.$(BUILD_NAME) bootloaders/build/configs/options_$(BRCM_CHIP)_nand.conf
   endif
 
+  ifneq (,$(wildcard bootloaders/build/configs/options_$(CUR_CHIP_PROFILE)_emmc.conf.$(BUILD_NAME)))
+   ifeq ($(SECUREBOOT),y)
+	-cp bootloaders/build/configs/options_$(CUR_CHIP_PROFILE)_emmc.conf.$(BUILD_NAME).$(DELG_ID) bootloaders/build/configs/options_$(CUR_CHIP_PROFILE)_emmc.conf
+   else
+	-cp bootloaders/build/configs/options_$(CUR_CHIP_PROFILE)_emmc.conf.$(BUILD_NAME) bootloaders/build/configs/options_$(CUR_CHIP_PROFILE)_emmc.conf
+   endif
+  else ifneq (,$(wildcard bootloaders/build/configs/options_$(BRCM_CHIP)_emmc.conf.$(BUILD_NAME)))
+	cp bootloaders/build/configs/options_$(BRCM_CHIP)_emmc.conf.$(BUILD_NAME) bootloaders/build/configs/options_$(BRCM_CHIP)_emmc.conf
+  endif
+
   ifeq ($(SECUREBOOT),y)
 	-cp targets/keys/demo/GEN3_FLD.$(BUILD_NAME)/*  targets/keys/demo/GEN3/
 	rm -rf bootloaders/build/work/delg_package
@@ -6736,6 +6842,10 @@ else ifeq ($(BCMWL6A),y)
 	-cp -f bootloaders/build/configs/security_trust_fit.dtsi.$(BUILD_NAME).$(DELG_ID)  bootloaders/build/configs/security_trust_fit.dtsi
 	-cp -f bootloaders/build/configs/sec_policy_template.its.$(BUILD_NAME).$(DELG_ID)  bootloaders/build/configs/sec_policy_template.its
   endif
+  ifneq (,$(wildcard targets/arch/sysdeps/$(BUILD_NAME)/DEFAULT_partitions.cfg))
+	-cp targets/arch/sysdeps/$(BUILD_NAME)/DEFAULT_partitions.cfg targets/arch/DEFAULT_partitions.cfg
+  endif
+
  else
 	@cp $(LINUXDIR)/config_base.6a $(LINUXDIR)/config_$(lowercase_B)
  endif

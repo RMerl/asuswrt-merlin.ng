@@ -64,11 +64,11 @@ char *target_chains[] = {	"PControls"
 #endif
 						};
 
-static void clean_invalid_pc_reward(pc_s *pc_list) {
+static void clean_invalid_pc_reward(pc_s *pc_list, char *lan_if) {
 
 	pc_s *follow_pc;
 	pc_event_s *follow_e;
-	char *lan_if = nvram_safe_get("lan_ifname");
+	//char *lan_if = nvram_safe_get("lan_ifname");
 	int i;
 
 	follow_pc = pc_list;
@@ -86,13 +86,30 @@ static void clean_invalid_pc_reward(pc_s *pc_list) {
 				char cmd_buf[512];
 
 #ifdef RTCONFIG_AMAS
-				if (strlen(follow_pc->mac) && amas_lib_device_ip_query(follow_pc->mac, follow_addr)) {
+				if (strlen(follow_pc->mac) && amas_lib_device_ip_query(follow_pc->mac, lan_if, follow_addr)) {
 					chk_type = iptables_chk_ip;
+					if (illegal_ipv4_address(follow_addr))
+						continue;
 				} else
 #endif
 				{
-					chk_type = iptables_chk_mac;
-					snprintf(follow_addr, sizeof(follow_addr), "%s", follow_pc->mac);
+#ifdef RTCONFIG_CAPTIVE_PORTAL
+					if(check_chilli_ip(lan_if)) { // check if get ip from chilli needed
+						if (get_ip_from_chilli(follow_pc->mac, follow_addr, sizeof(follow_addr)) > 0) {
+							chk_type = iptables_chk_ip;
+							if (illegal_ipv4_address(follow_addr))
+								continue;
+						}
+						else
+							continue;
+					} else
+#endif
+					{
+						chk_type = iptables_chk_mac;
+						snprintf(follow_addr, sizeof(follow_addr), "%s", follow_pc->mac);
+						if (!isValidMacAddress(follow_addr))
+							continue;
+					}
 				}
 				if(!follow_addr[0])
 					chk_type = "";
@@ -199,17 +216,20 @@ pc_s *get_all_pc_reward_list(pc_s **pc_list){
 	return *pc_list;
 }
 
-void config_pc_reward_string(pc_s *pc_list, FILE *fp){
+void config_pc_reward_string(pc_s *pc_list, FILE *fp, char *lan_if){
 
 	pc_s *follow_pc;
 	pc_event_s *follow_e;
-	char *lan_if = nvram_safe_get("lan_ifname");
+	//char *lan_if = nvram_safe_get("lan_ifname");
 
 	follow_pc = pc_list;
 	if(follow_pc == NULL){
 		_dprintf("Couldn't get the rules of Parental Control Reward correctly!\n");
 		return;
 	}
+
+	if (!fp || !lan_if)
+		return;
 
 	for(follow_pc = pc_list; follow_pc != NULL; follow_pc = follow_pc->next){
 		const char *chk_type;
@@ -218,13 +238,30 @@ void config_pc_reward_string(pc_s *pc_list, FILE *fp){
 			continue;
 
 #ifdef RTCONFIG_AMAS
-		if (strlen(follow_pc->mac) && amas_lib_device_ip_query(follow_pc->mac, follow_addr)) {
+		if (strlen(follow_pc->mac) && amas_lib_device_ip_query(follow_pc->mac, lan_if, follow_addr)) {
 			chk_type = iptables_chk_ip;
+			if (illegal_ipv4_address(follow_addr))
+				continue;
 		} else
 #endif
 		{
-			chk_type = iptables_chk_mac;
-			snprintf(follow_addr, sizeof(follow_addr), "%s", follow_pc->mac);
+#ifdef RTCONFIG_CAPTIVE_PORTAL
+			if(check_chilli_ip(lan_if)) { // check if get ip from chilli needed
+				if (get_ip_from_chilli(follow_pc->mac, follow_addr, sizeof(follow_addr)) > 0) {
+					chk_type = iptables_chk_ip;
+					if (illegal_ipv4_address(follow_addr))
+						continue;
+				}
+				else
+					continue;
+			} else
+#endif
+			{
+				chk_type = iptables_chk_mac;
+				snprintf(follow_addr, sizeof(follow_addr), "%s", follow_pc->mac);
+				if (!isValidMacAddress(follow_addr))
+					continue;
+			}
 		}
 		if(!follow_addr[0])
 			chk_type = "";
@@ -258,10 +295,10 @@ void config_pc_reward_string(pc_s *pc_list, FILE *fp){
 	//clean_invalid_pc_reward(pc_list);
 }
 
-void config_pc_reward_redirect(FILE *fp){
+void config_pc_reward_redirect(FILE *fp, char *lan_if){
 	pc_s *pc_reward_list = NULL, *enabled_list = NULL, *follow_pc;
 	pc_event_s *follow_e;
-	char *lan_if = nvram_safe_get("lan_ifname");
+	//char *lan_if = nvram_safe_get("lan_ifname");
 #ifndef RTCONFIG_PC_SCHED_V3
 	char *datestr[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 	int i;
@@ -285,13 +322,30 @@ void config_pc_reward_redirect(FILE *fp){
 		char follow_addr[18] = {0};
 #ifdef RTCONFIG_AMAS
 		_dprintf("config_pc_reward_redirect\n");
-		if (strlen(follow_pc->mac) && amas_lib_device_ip_query(follow_pc->mac, follow_addr)) {
+		if (strlen(follow_pc->mac) && amas_lib_device_ip_query(follow_pc->mac, lan_if, follow_addr)) {
 			chk_type = iptables_chk_ip;
+			if (illegal_ipv4_address(follow_addr))
+				continue;
 		} else
 #endif
 		{
-			chk_type = iptables_chk_mac;
-			snprintf(follow_addr, sizeof(follow_addr), "%s", follow_pc->mac);
+#ifdef RTCONFIG_CAPTIVE_PORTAL
+			if(check_chilli_ip(lan_if)) { // check if get ip from chilli needed
+				if (get_ip_from_chilli(follow_pc->mac, follow_addr, sizeof(follow_addr)) > 0) {
+					chk_type = iptables_chk_ip;
+					if (illegal_ipv4_address(follow_addr))
+						continue;
+				}
+				else
+					continue;
+			} else
+#endif
+			{
+				chk_type = iptables_chk_mac;
+				snprintf(follow_addr, sizeof(follow_addr), "%s", follow_pc->mac);
+				if (!isValidMacAddress(follow_addr))
+					continue;
+			}
 		}
 
 #ifdef RTCONFIG_PERMISSION_MANAGEMENT
@@ -308,6 +362,66 @@ void config_pc_reward_redirect(FILE *fp){
 
 	free_pc_list(&enabled_list);
 }
+
+#ifdef RTCONFIG_MULTILAN_CFG
+static void handle_sdn_clean_invalid_pc_reward(pc_s *pc_list) {
+
+	MTLAN_T *pmtl = NULL;
+	size_t mtl_sz = 0;
+	int i;
+	int br0_handled = 0;
+
+	if (!pc_list)
+		return;
+
+	pmtl = (MTLAN_T *)INIT_MTLAN(sizeof(MTLAN_T));
+	if (pmtl)
+	{
+		get_mtlan(pmtl, &mtl_sz);
+		for (i = 0; i < mtl_sz; ++i)
+		{
+			if (pmtl[i].nw_t.idx >= 0) { // include br0
+				if (pmtl[i].nw_t.idx == 0 && br0_handled)
+					continue;
+				clean_invalid_pc_reward(pc_list, pmtl[i].nw_t.ifname);
+				_dprintf("\n[pc] SDN_PARENTAL_CTRL_REWARD_CLEAN_INVALID name=[%s], br=[%s], if=[%s]\n", pmtl[i].name, pmtl[i].nw_t.br_ifname, pmtl[i].nw_t.ifname);
+				if (pmtl[i].nw_t.idx == 0)
+					br0_handled = 1;
+			}
+		}
+		FREE_MTLAN((void *)pmtl);
+	}
+}
+
+void handle_sdn_config_pc_reward_redirect(FILE *fp) {
+
+	MTLAN_T *pmtl = NULL;
+	size_t mtl_sz = 0;
+	int i;
+	int br0_handled = 0;
+
+	if (!fp)
+		return;
+
+	pmtl = (MTLAN_T *)INIT_MTLAN(sizeof(MTLAN_T));
+	if (pmtl)
+	{
+		get_mtlan(pmtl, &mtl_sz);
+		for (i = 0; i < mtl_sz; ++i)
+		{
+			if (pmtl[i].nw_t.idx >= 0) { // include br0
+				if (pmtl[i].nw_t.idx == 0 && br0_handled)
+					continue;
+				config_pc_reward_redirect(fp, pmtl[i].nw_t.ifname);
+				_dprintf("\n[pc] SDN_PARENTAL_CTRL_REDIRECT_REWARD name=[%s], br=[%s], if=[%s]\n", pmtl[i].name, pmtl[i].nw_t.br_ifname, pmtl[i].nw_t.ifname);
+				if (pmtl[i].nw_t.idx == 0)
+					br0_handled = 1;
+			}
+		}
+		FREE_MTLAN((void *)pmtl);
+	}
+}
+#endif
 
 int is_in_pc_reward_period(char *mac) {
 	pc_s *pc_reward_list = NULL, *follow_pc;
@@ -336,7 +450,12 @@ int pc_reward_main(int argc, char *argv[]){
 	get_all_pc_reward_list(&pc_list);
 
 	if(argc == 2 && !strcmp(argv[1], "clean")){
-		clean_invalid_pc_reward(pc_list);
+#ifdef RTCONFIG_MULTILAN_CFG
+		handle_sdn_clean_invalid_pc_reward(pc_list);
+#else
+		char *lan_if = nvram_safe_get("lan_ifname");
+		clean_invalid_pc_reward(pc_list, lan_if);
+#endif
 	}
 	else{
 		printf("Usage: pc clean\n");

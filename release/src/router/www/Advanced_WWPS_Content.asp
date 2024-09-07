@@ -68,7 +68,7 @@ function get_band_str(band){
 		}
 	}
 	else if(band == 2){
-		return (band6g_support) ? '6 GHz' : '5 GHz-2';
+		return '5 GHz-2';
 	}
 		
 	return "";
@@ -482,32 +482,19 @@ function show_wsc_status(wps_infos){
 			currentBand = 0;
 	}
 	else if(wps_infos[12].firstChild.nodeValue == 1){
-		if(!wl_info.band5g_2_support && !wl_info.band6g_support){
+		if(!wl_info.band5g_2_support){
 			document.getElementById("wps_band_word").innerHTML = "5 GHz";
 			band_string = "5 GHz";
 		}else{
-			if(band6g_support){
-				document.getElementById("wps_band_word").innerHTML = "6 GHz";
-				band_string = "6 GHz";
-			}
-			else{
-				document.getElementById("wps_band_word").innerHTML = "5 GHz-1";
-				band_string = "5 GHz-1";
-			}			
+			document.getElementById("wps_band_word").innerHTML = "5 GHz-1";
+			band_string = "5 GHz-1";		
 		}
 			
 		currentBand = 1;
 	}	
 	else if(wps_infos[12].firstChild.nodeValue == 2){
-		if(band6g_support){
-			document.getElementById("wps_band_word").innerHTML = "6 GHz";
-			band_string = "6 GHz";
-		}
-		else{
-			document.getElementById("wps_band_word").innerHTML = "5 GHz-2";
-			band_string = "5 GHz-2";
-		}
-
+		document.getElementById("wps_band_word").innerHTML = "5 GHz-2";
+		band_string = "5 GHz-2";
 		currentBand = 1;
 	}
 

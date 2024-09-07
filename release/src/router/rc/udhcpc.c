@@ -297,7 +297,7 @@ deconfig(int zcip)
 	expires(wan_ifname, 0);
 	wan_down(wan_ifname);
 
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION)
 	if (get_wan_sbstate(unit) == WAN_STOPPED_REASON_DATALIMIT)
 		end_wan_sbstate = WAN_STOPPED_REASON_DATALIMIT;
 #endif
@@ -1482,7 +1482,7 @@ deconfig6(char *wan_ifname, const int mode)
 	{
 		if (nvram_get_int("ddns_enable_x") && nvram_get_int("ddns_ipv6_update")) {
 			stop_ddns();
-			start_ddns(NULL);
+			start_ddns(NULL, 0);
 		}
 	}
 #endif
@@ -2161,7 +2161,7 @@ skip:
 #ifdef RTCONFIG_INADYN
 	if (nvram_get_int("ddns_enable_x") && nvram_get_int("ddns_ipv6_update")) {
 		stop_ddns();
-		start_ddns(NULL);
+		start_ddns(NULL, 0);
 	}
 #endif
         if (nvram_get_int("telnetd_enable"))

@@ -293,7 +293,7 @@ void add_usb_host_modules(void)
 
 #ifdef RTCONFIG_HND_ROUTER_AX
 	eval("insmod",
-#if defined(BCM4912) || defined(BCM6756) || defined(BCM6855) || defined(BCM6813) || defined(BCM6765) || defined(BCM6766)
+#if defined(BCM4912) || defined(BCM6756) || defined(BCM6855) || defined(BCM6813) || defined(BCM6765) || defined(BCM6766) || defined(RTBE58_GO)
 		"bcm_bca_usb"
 #else
 		"bcm_usb"
@@ -516,7 +516,7 @@ void remove_usb_modem_modules(void)
 }
 
 #ifdef RTCONFIG_INTERNAL_GOBI
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION)
 int modem_data_update(int sim_order){
 	int modem_unit, wan_unit;
 	char tmp[100], prefix[32];
@@ -1178,7 +1178,7 @@ void stop_usb(int f_force)
 		snprintf(env_unit, 32, "unit=%d", modem_unit);
 		putenv(env_unit);
 
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION)
 		_dprintf("stop_usb: save the modem(%d) data.\n", modem_unit);
 		eval("/usr/sbin/modem_status.sh", "bytes+");
 #endif

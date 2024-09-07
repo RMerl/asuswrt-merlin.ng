@@ -127,6 +127,9 @@ endif
 ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20240103)
 CFLAGS += -DWIFI7_SDK_20240103
 endif
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20241007)
+CFLAGS += -DWIFI7_SDK_20241007
+endif
 endif
 
 OBJS = httpd.o cgi.o ej.o 
@@ -372,6 +375,10 @@ endif
 
 CFLAGS += -I$(TOP)/libwebapi
 LIBS += -L$(TOP)/libwebapi -lwebapi
+
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000))
+LIBS += -L$(TOP)/libhostapi -lhostapi
+endif
 
 all: httpd #test_apps
 

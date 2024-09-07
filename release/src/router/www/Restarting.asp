@@ -37,7 +37,9 @@ function check_httpd(){
 		try{
 			httpRequest = new ActiveXObject("Microsoft.XMLHTTP");
 		}
-		catch(e){}
+		catch(e){
+		    // do something
+		}
 	}
 	}
 

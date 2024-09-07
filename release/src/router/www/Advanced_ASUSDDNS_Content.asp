@@ -277,14 +277,24 @@ function init(){
 
 	setTimeout(show_warning_message, 1000);
 
-	if(ddns_enable_x == "1" && ddns_server_x.indexOf("WWW.ASUS.COM") != -1){
-        if(policy_status.PP==0||policy_status.PP_time==""){
-            const policyModal = new PolicyModalComponent({
-                policy: "PP",
-                submit_reload: 1
-            });
-            policyModal.show();
-        }
+	if (ddns_enable_x == "1" && ddns_server_x.indexOf("WWW.ASUS.COM") != -1) {
+		const policyStatus = PolicyStatus()
+				.then(data => {
+					if (data.PP == 0 || data.PP_time == "") {
+						const policyModal = new PolicyModalComponent({
+							policy: "PP",
+							policyStatus: data,
+							agreeCallback: () => {
+								location.reload();
+							},
+							knowRiskCallback: () => {
+								alert(`<#ASUS_POLICY_Function_Confirm#>`);
+								location.reload();
+							}
+						});
+						policyModal.show();
+					}
+				});
 	}
 
 	if(oauth_auth_status == "2"){
@@ -529,33 +539,36 @@ function get_cert_info(){
 }
 
 function apply_eula_check(){
-	if(document.form.ddns_enable_x.value == "1" && document.form.ddns_server_x.value.indexOf("WWW.ASUS.COM") != -1){
-        if(policy_status.PP==0||policy_status.PP_time==""){
-            const policyModal = new PolicyModalComponent({
-                policy: "PP",
-                submit_reload: 0,
-                agreeCallback: ()=>{
-                    $("#policy_popup_modal").remove();
-                    applyRule();
-                    PolicyStatus();
-                },
-                knowRiskCallback:()=>{
-                    alert(`<#ASUS_POLICY_Function_Confirm#>`);
-                    $("#radio_ddns_enable").removeClass("on");
-                    $('input[name="ddns_enable_x"][value="0"]').prop('checked', true);
-                    change_common_radio(this, 'LANHostConfig', 'ddns_enable_x', '0')
-                    $("#policy_popup_modal").remove();
-                    PolicyStatus();
-                }
-            });
-            policyModal.show();
-            return false;
-        }else{
-            applyRule();
-        }
-	}else{
-        applyRule();
-	}
+	const policyStatus = PolicyStatus()
+			.then(data => {
+				if (document.form.ddns_enable_x.value == "1" && document.form.ddns_server_x.value.indexOf("WWW.ASUS.COM") != -1) {
+					if (data.PP == 0 || data.PP_time == "") {
+						const policyModal = new PolicyModalComponent({
+							policy: "PP",
+							policyStatus: data,
+							agreeCallback: () => {
+								$("#policy_popup_modal").remove();
+								applyRule();
+								PolicyStatus();
+							},
+							knowRiskCallback: () => {
+								alert(`<#ASUS_POLICY_Function_Confirm#>`);
+								$("#radio_ddns_enable").removeClass("on");
+								$('input[name="ddns_enable_x"][value="0"]').prop('checked', true);
+								change_common_radio(this, 'LANHostConfig', 'ddns_enable_x', '0')
+								$("#policy_popup_modal").remove();
+								PolicyStatus();
+							}
+						});
+						policyModal.show();
+						return false;
+					} else {
+						applyRule();
+					}
+				} else {
+					applyRule();
+				}
+			});
 }
 
 function applyRule(){

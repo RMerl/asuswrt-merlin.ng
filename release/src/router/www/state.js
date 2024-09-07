@@ -1,8 +1,6 @@
 if(parent.webWrapper) document.write('<link rel="stylesheet" type="text/css" href="/css/business-white.css"></link>');
 document.write('<script type="text/javascript" src="/require/require.min.js"></script>');
 document.write('<script type="text/javascript" src="/js/support_site.js"></script>');
-document.write('<script type="text/javascript" src="/notification.js"></script>');
-document.write('<link rel="stylesheet" type="text/css" href="/notification.css"></link>');
 
 var CoBrand = '<% nvram_get("CoBrand"); %>';
 if(CoBrand == "8")
@@ -638,6 +636,7 @@ var IPv6_Only_support = isSupport("v6only");
 var Softwire46_support = isSupport("s46");
 var ocnvc_support = isSupport("ocnvc");
 var dslite_support = isSupport("dslite");
+var v6option_support = isSupport("v6option");
 var ParentalCtrl2_support = isSupport("PARENTAL2");
 var pptpd_support = isSupport("pptpd"); 
 var openvpnd_support = isSupport("openvpnd"); 
@@ -786,7 +785,7 @@ var MaxRule_bwdpi_wrs = isSupport("MaxRule_bwdpi_wrs");
 var isp_customize_tool_support = isSupport('isp_customize_tool');
 var lacp_support = isSupport("lacp");
 var dashboard_support = isSupport("dashboard");
-const is_GTBE_series = (based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" || based_modelid == "GT-BE96" || based_modelid == "GT-BE19000")? true : false;// These models have the same hardware designs.
+const is_GTBE_series = (based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" || based_modelid == "GT-BE96" || based_modelid == "GT-BE19000" || based_modelid == "GT-BE19000_AI")? true : false;// These models have the same hardware designs.
 
 function get_bonding_ports(product_id){//return lacp bonding ports
 	let bonding_port_settings = [];
@@ -802,7 +801,7 @@ function get_bonding_ports(product_id){//return lacp bonding ports
 			bonding_port_settings = [{"val": "1", "text": "LAN2"}, {"val": "2", "text": "LAN3"}];
 		else if(product_id == "BQ16" || product_id == "BQ16_PRO")
 			bonding_port_settings = [{"val": "3", "text": "LAN4"}, {"val": "4", "text": "LAN5"}];
-		else if(product_id == "GT-BE98" || product_id == "GT-BE98_PRO" || product_id == "GT-BE96" || based_modelid == "GT-BE19000"){
+		else if(product_id == "GT-BE98" || product_id == "GT-BE98_PRO" || product_id == "GT-BE96" || based_modelid == "GT-BE19000" || based_modelid == "GT-BE19000_AI"){
 			let lacp_ifnames_x = httpApi.nvramGet(["lacp_ifnames_x"], true).lacp_ifnames_x;
 			if(lacp_ifnames_x == "eth0 eth3")
 				bonding_port_settings = [{"val": "0", "text": "10G WAN/LAN1"}, {"val": "6", "text": "10G LAN6"}];
@@ -971,6 +970,16 @@ function change_wl_unit_status(unit){
 	document.titleForm.submit();
 }
 
+function change_le_restart_httpd(){
+
+	document.titleForm.le_restart_httpd.disabled = false;
+	document.titleForm.le_restart_httpd.value = "";
+
+	document.titleForm.action_mode.value = "apply";
+	document.titleForm.action = "apply.cgi";
+	document.titleForm.submit();
+}
+
 var dsltmp_transmode_orig = '<% nvram_get("dsltmp_transmode"); %>';
 var wans_dualwan_orig = '<% nvram_get("wans_dualwan"); %>';
 var wans_dualwan_array = new Array();
@@ -1084,6 +1093,7 @@ function show_banner(L3){// L3 = The third Level of Menu
 	banner_code +='<input type="hidden" name="action_wait" value="5">\n';
 	banner_code +='<input type="hidden" name="wl_unit" value="" disabled>\n';
 	banner_code +='<input type="hidden" name="wl_subunit" value="-1" disabled>\n';
+	banner_code +='<input type="hidden" name="le_restart_httpd" value="" disabled>\n';
 	banner_code +='<input type="hidden" name="preferred_lang" value="<% nvram_get("preferred_lang"); %>">\n';
 	banner_code +='<input type="hidden" name="flag" value="">\n';
 	banner_code +='<input type="hidden" name="wan_unit" value="" disabled>\n';
@@ -1322,12 +1332,12 @@ function show_banner(L3){// L3 = The third Level of Menu
 				<div>
 					<div id="app_icon" style="cursor:pointer;font-size:12px;font-weight:bold;color:#07C503">App</div>`;
 		}
-		banner_code += `<div id="app_link_table" style="display:none;width:325px;height:360px;position:absolute;background-color:rgb(35, 38, 41);z-index:10;margin-top:13px;margin-left:-170px;;border-radius:5px;box-shadow:3px 3px 4px #000;opacity:.95">';
+		banner_code += `<div id="app_link_table" style="display:none;width:325px;height:360px;position:absolute;background-color:rgb(35, 38, 41);z-index:10;margin-top:13px;margin-left:-170px;border-radius:5px;box-shadow:3px 3px 4px #000;opacity:.95">
 							<div style="padding:10px;">
 								<div id="cancel_app" style="width:20px;height:20px;background:url('images/button-close.png') no-repeat;position:absolute;right:10px;"></div>
 							</div>`;
 		//ASUS Router icon
-		banner_code += `<div style="padding:10px;border-bottom:1px solid #666;">';
+		banner_code += `<div style="padding:10px;border-bottom:1px solid #666;">
 							<div style="display:table-cell;vertical-align:middle;padding-left:10px;">
 								<div style="width:75px;height:75px;background:url('images/New_ui/asus_router.png') no-repeat;"></div>
 							</div>
@@ -1337,7 +1347,7 @@ function show_banner(L3){// L3 = The third Level of Menu
 							</div>
 						</div>`;
 		//Play Store
-		banner_code += `<div style="padding:20px 10px;">';
+		banner_code += `<div style="padding:20px 10px;">
 							<div style="display:table-cell;vertical-align:middle;padding-left:10px;">
 								<div><img src="${Android_QR}" style="width:75px;height:75px;"></div>
 							</div>
@@ -1367,7 +1377,7 @@ function show_banner(L3){// L3 = The third Level of Menu
 */
 
 	if (bwdpi_support && isSwMode('rt') && qos_enable_flag && qos_type_flag == "1")
-		banner_code += '<div id="bwdpi_status" class=""></div>';
+		banner_code += `<div style="${(rog_support || tuf_support) ? 'width:30px;' : 'margin-left:6px;'}"><div id="bwdpi_status" class=""></div></div>`;
 
 //	if (wifi_hw_sw_support && !downsize_8m_support && !downsize_4m_support) {
 		banner_code += '<div id="wifi_hw_sw_status" class="wifihwswstatusoff"></div>';
@@ -1664,11 +1674,38 @@ function show_menu(){
 		});
 	}
 
-	if(nt_center_support){
-		notification.update_NT_Center();
-	}
+	setTimeout(function(){
+		if (typeof httpApi === 'undefined') {
+			const httpApi_script = document.createElement('script');
+			httpApi_script.type = 'text/javascript';
+			httpApi_script.src = '/js/httpApi.js';
+			document.head.appendChild(httpApi_script);
+			httpApi_script.onload = () => {
+				append_notification();
+			}
+		}
+		else{
+			append_notification();
+		}
 
-	notification.run();
+		function append_notification(){
+			const notification_script = document.createElement('script');
+			notification_script.type = 'text/javascript';
+			notification_script.src = '/notification.js';
+			document.head.appendChild(notification_script);
+			notification_script.onload = function(){
+				const notification_link = document.createElement('link');
+				notification_link.rel = 'stylesheet';
+				notification_link.type = 'text/css';
+				notification_link.href = '/notification.css';
+				notification_script.parentNode.insertBefore(notification_link, notification_script.nextSibling);
+				if(nt_center_support){
+					notification.update_NT_Center();
+				}
+				notification.run();
+			};
+		}
+	}, 1000);
 	browser_compatibility();
 
 	if(lyra_hide_support && (current_url.indexOf("Advanced_Wireless_Content")!= -1 || current_url.indexOf("Advanced_WWPS_Content")!= -1 ||
@@ -2199,6 +2236,10 @@ function genFAQList(_str){
 				var name = Object.values(faq_data)[i].name;
 				var _name = Object.values(faq_data)[i].name.toUpperCase();
 				var link = Object.values(faq_data)[i].link;
+				if(isSupport("mtlancfg") !== -1){
+					link = "SDN.asp";
+				}
+				
 				var menu = Object.values(faq_data)[i].menu;
 				var support = (function(){
 					var _mode = Object.values(faq_data)[i].mode;
@@ -3884,17 +3925,20 @@ function refreshStatus(xhr){
 		}
 	}
 
-	if(nt_center_support)
-		setTimeout(function(){notification.updateNTDB_Status();}, 10000);
-	else
-		notification.updateNTDB_Status()
+	if(typeof notification !== "undefined"){
+		if(nt_center_support)
+			setTimeout(function(){notification.updateNTDB_Status();}, 10000);
+		else
+			notification.updateNTDB_Status();
+	}
 
 	if(letsencrypt_support && le_restart_httpd == "1" && le_restart_httpd_chk == ""){
 		alert("<#LANHostConfig_x_DDNSLetsEncrypt_ReloginHint#>");
 		le_restart_httpd_chk = le_restart_httpd;
+		change_le_restart_httpd();
 	}
 
-	if(window.frames["statusframe"] && window.frames["statusframe"].stopFlag == 1 || stopFlag == 1){
+	if(window.frames["statusframe"] && (typeof window.frames["statusframe"].stopFlag != "undefined" && window.frames["statusframe"].stopFlag == 1) || stopFlag == 1){
 		return 0;
 	}
 }	
@@ -4622,7 +4666,7 @@ function block_all_device_hint(_flag){
 		code += '<div style="margin: 18px 0;"><input id="radio_hint_checkbox" type="checkbox"><#Wireless_OFF_hint5#></div>';
 	code += '<div style="display:flex;justify-content:flex-end;margin-top:28px;">';
 	code += '<div id="cancelBtn" class="button-container button-container-sm" style="margin: 0 12px;"><div class="button-icon icon-cancel"></div><div class="button-text"><#CTL_Cancel#></div></div>';
-	code += '<div id="applyBtn" class="button-container button-container-sm" style="margin: 0 12px;"><div class="button-icon button-icon-check"></div><div class="button-text"><#btn_disable#></div></div>';
+	code += '<div id="applyBtn" class="button-container button-container-sm" style="margin: 0 12px;"><div class="button-icon button-icon-check"></div><div class="button-text"><#WLANConfig11b_WirelessCtrl_buttonname#></div></div>';
 	code += '</div></div>';
 	obj.html(code);
 	obj.find("#cancelBtn").unbind("click").click(function(e){
@@ -4768,9 +4812,7 @@ function showWlHintContainer(_parm){
 
 	var genWlObj = (function(){
 		const smart_connect_version = isSupport("smart_connect_v2") ? "v2" : isSupport("smart_connect") || isSupport("bandstr") ? "v1" : "";
-		var smart_connect_nvram = '<% nvram_get("smart_connect_x"); %>';
 		var wlObj = [];
-		var odmpid = '<% nvram_get("odmpid"); %>';
 		const wlUnit = function(_band, _ssid, _key, _band_name){
 			this.band = _band;
 			this.ssid = _ssid;
@@ -4778,39 +4820,29 @@ function showWlHintContainer(_parm){
 			this.band_name = _band_name;
 		}
 		if(isSupport("sdn_mainfh")){
-			const apmSSIDArray = [
-				"",
-				decodeURIComponent('<% nvram_char_to_ascii("", "apm1_ssid"); %>'),
-				decodeURIComponent('<% nvram_char_to_ascii("", "apm2_ssid"); %>'),
-				decodeURIComponent('<% nvram_char_to_ascii("", "apm3_ssid"); %>'),
-				decodeURIComponent('<% nvram_char_to_ascii("", "apm4_ssid"); %>'),
-				decodeURIComponent('<% nvram_char_to_ascii("", "apm5_ssid"); %>'),
-				decodeURIComponent('<% nvram_char_to_ascii("", "apm6_ssid"); %>'),
-				decodeURIComponent('<% nvram_char_to_ascii("", "apm7_ssid"); %>'),
-				decodeURIComponent('<% nvram_char_to_ascii("", "apm8_ssid"); %>')
-			];
-			const apmSecArray = [
-				"",
-				decodeURIComponent('<% nvram_char_to_ascii("", "apm1_security"); %>'),
-				decodeURIComponent('<% nvram_char_to_ascii("", "apm2_security"); %>'),
-				decodeURIComponent('<% nvram_char_to_ascii("", "apm3_security"); %>'),
-				decodeURIComponent('<% nvram_char_to_ascii("", "apm4_security"); %>'),
-				decodeURIComponent('<% nvram_char_to_ascii("", "apm5_security"); %>'),
-				decodeURIComponent('<% nvram_char_to_ascii("", "apm6_security"); %>'),
-				decodeURIComponent('<% nvram_char_to_ascii("", "apm7_security"); %>'),
-				decodeURIComponent('<% nvram_char_to_ascii("", "apm8_security"); %>')
-			];
-			const apmDutListArray = [
-				"",
-				decodeURIComponent('<% nvram_char_to_ascii("", "apm1_dut_list"); %>'),
-				decodeURIComponent('<% nvram_char_to_ascii("", "apm2_dut_list"); %>'),
-				decodeURIComponent('<% nvram_char_to_ascii("", "apm3_dut_list"); %>'),
-				decodeURIComponent('<% nvram_char_to_ascii("", "apm4_dut_list"); %>'),
-				decodeURIComponent('<% nvram_char_to_ascii("", "apm5_dut_list"); %>'),
-				decodeURIComponent('<% nvram_char_to_ascii("", "apm6_dut_list"); %>'),
-				decodeURIComponent('<% nvram_char_to_ascii("", "apm7_dut_list"); %>'),
-				decodeURIComponent('<% nvram_char_to_ascii("", "apm8_dut_list"); %>')
-			];
+			const apmArrays = (() => {
+				let apm_idx;
+				const apm_len = 8;
+				let ssid_arr = [""];
+				let security_arr = [""];
+				let dut_list_arr = [""];
+				for(apm_idx = 1; apm_idx <= apm_len; apm_idx++){
+					const ssid = `apm${apm_idx}_ssid`;
+					const security = `apm${apm_idx}_security`;
+					const dut_list = `apm${apm_idx}_dut_list`;
+					const ssid_value = decodeURIComponent(httpApi.nvramCharToAscii([ssid], true)[ssid]);
+					const security_value = decodeURIComponent(httpApi.nvramCharToAscii([security], true)[security]);
+					const dut_list_value = decodeURIComponent(httpApi.nvramCharToAscii([dut_list], true)[dut_list]);
+					ssid_arr.push(ssid_value);
+					security_arr.push(security_value);
+					dut_list_arr.push(dut_list_value);
+				}
+
+				return { ssid_arr, security_arr, dut_list_arr };
+			})();
+			const apmSSIDArray = apmArrays.ssid_arr;
+			const apmSecArray = apmArrays.security_arr;
+			const apmDutListArray = apmArrays.dut_list_arr;
 			const bands_bit_mapping = [
 				{ bit: 1, band: "2G", text: "2.4 GHz" },
 				{ bit: 2, band: "5G", text: "5 GHz" },
@@ -4842,7 +4874,7 @@ function showWlHintContainer(_parm){
 				}
 				return result;
 			})();
-			const mainFH = decodeURIComponent('<% nvram_char_to_ascii("", "sdn_rl"); %>').split("<").filter(item => item.includes("MAINFH"));
+			const mainFH = decodeURIComponent(httpApi.nvramCharToAscii([`sdn_rl`], true)[`sdn_rl`]).split("<").filter(item => item.includes("MAINFH"));
 			mainFH.forEach(item=>{
 				if(item != ""){
 					const apmIdx = item.split(">")[5];
@@ -4898,29 +4930,29 @@ function showWlHintContainer(_parm){
 		}
 		else{
 			const wl_len = wl_nband_title.length;
-			var ssid_nvram = [
-				htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl0_ssid"); %>')),
-				htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl1_ssid"); %>')),
-				htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl2_ssid"); %>'))
-			];
-			if(wl_len >= 4)
-				ssid_nvram.push(htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl3_ssid"); %>')));
+			const wlArrays = (() => {
+				let wl_idx;
+				let ssid_arr = [];
+				let auth_arr = [];
+				let key_arr = [];
+				for(wl_idx = 0; wl_idx < wl_len; wl_idx++){
+					const ssid = `wl${wl_idx}_ssid`;
+					const auth = `wl${wl_idx}_auth_mode_x`;
+					const key = `wl${wl_idx}_wpa_psk`;
+					const ssid_value = decodeURIComponent(httpApi.nvramCharToAscii([ssid], true)[ssid]);
+					const auth_value = decodeURIComponent(httpApi.nvramCharToAscii([auth], true)[auth]);
+					const key_value = decodeURIComponent(httpApi.nvramCharToAscii([key], true)[key]);
+					ssid_arr.push(ssid_value);
+					auth_arr.push(auth_value);
+					key_arr.push(key_value);
+				}
 
-			var auth_nvram = [
-				decodeURIComponent('<% nvram_char_to_ascii("", "wl0_auth_mode_x"); %>'),
-				decodeURIComponent('<% nvram_char_to_ascii("", "wl1_auth_mode_x"); %>'),
-				decodeURIComponent('<% nvram_char_to_ascii("", "wl2_auth_mode_x"); %>')
-			];
-			if(wl_len >= 4)
-				auth_nvram.push(decodeURIComponent('<% nvram_char_to_ascii("", "wl3_auth_mode_x"); %>'));
+				return { ssid_arr, auth_arr, key_arr };
+			})();
 
-			var key_nvram = [
-				htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl0_wpa_psk"); %>')),
-				htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl1_wpa_psk"); %>')),
-				htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl2_wpa_psk"); %>'))
-			];
-			if(wl_len >= 4)
-				key_nvram.push(htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl3_wpa_psk"); %>')));
+			const ssid_nvram = wlArrays.ssid_arr;
+			const auth_nvram = wlArrays.auth_arr;
+			const key_nvram = wlArrays.key_arr;
 
 			var ssid_param = [
 				htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl0_ssid"); %>')),
@@ -5144,35 +5176,32 @@ function showWlHintContainer(_parm){
 	})(genWlObj);
 }
 
-function checkPolicy(){
-
-	const applyRule = () => {
-		httpApi.privateEula.set("1", function(){
-			httpApi.securityUpdate.set(1);
-			httpApi.nvramSet({
-				"webs_update_enable": 1,
-				"action_mode": "apply",
-				"rc_service": "saveNvram"
-			},()=>{},false);
-		})
-	}
-
-	if (policy_status.EULA == "0") {
-		const policyModal = new PolicyUpdateModalComponent();
-		policyModal.show();
-	} else if (policy_status.EULA == 1 && ((policy_status.PP == 1 && policy_status.PP_time != "") || (policy_status.PP == 0 && policy_status.PP_time == ""))) {
-		const policyModal = new PolicyModalComponent({
-			policy: 'PP',
-			agreeCallback: applyRule,
-			submit_reload: 1
-		});
-		policyModal.show();
-	} else if (policy_status.TM == 1 && policy_status.TM_time == '') {
-		const policyModal = new PolicyModalComponent({
-			policy: "TM"
-		});
-		policyModal.show();
-	}
+function checkPolicy() {
+    const policyStatus = PolicyStatus()
+        .then(data => {
+            if (data.EULA == "0") {
+                const policyModal = new PolicyUpdateModalComponent({
+                    policyStatus: data,
+                    securityUpdate: 1,
+                    websUpdate: 1,
+                });
+                policyModal.show();
+            } else if (data.EULA == 1 && ((data.PP == 1 && data.PP_time != "") || (data.PP == 0 && data.PP_time == ""))) {
+                const policyModal = new PolicyModalComponent({
+                    policyStatus: data,
+                    policy: 'PP',
+                    securityUpdate: 1,
+                    websUpdate: 1,
+                });
+                policyModal.show();
+            } else if (data.TM == 1 && data.TM_time == '') {
+                const policyModal = new PolicyModalComponent({
+                    policyStatus: data,
+                    policy: "TM"
+                });
+                policyModal.show();
+            }
+        });
 }
 
 if (
@@ -5188,7 +5217,7 @@ if (
 			document.head.appendChild(httpApi_script);
 			httpApi_script.onload = () => {
 				if (re_mode != 1) {
-					if (typeof policy_status === 'undefined') {
+					if (typeof ASUS_POLICY === 'undefined') {
 						const policy_script = document.createElement('script');
 						policy_script.src = '/js/asus_policy.js';
 						document.head.appendChild(policy_script);
@@ -5203,7 +5232,7 @@ if (
 			}
 		} else {
 			if (re_mode != 1) {
-				if (typeof policy_status === 'undefined') {
+				if (typeof ASUS_POLICY === 'undefined') {
 					const policy_script = document.createElement('script');
 					policy_script.src = '/js/asus_policy.js';
 					document.head.appendChild(policy_script);
@@ -5250,12 +5279,13 @@ document.addEventListener('mousemove', () => {
 function get_sdn_main_fh_info(){
 	let main_fh_info = [];
 	if(isSupport("sdn_mainfh")){
-		const mainFH = decodeURIComponent(httpApi.nvramCharToAscii(["sdn_rl"]).sdn_rl).split("<").filter(item => item.includes("MAINFH"));
+		const mainFH = decodeURIComponent(httpApi.nvramCharToAscii(["sdn_rl"],true).sdn_rl).split("<").filter(item => item.includes("MAINFH"));
 		mainFH.forEach(item=>{
 			if(item != ""){
 				const apmIdx = item.split(">")[5];
-				const apm_ssid = decodeURIComponent(httpApi.nvramCharToAscii([`apm${apmIdx}_ssid`])[`apm${apmIdx}_ssid`]);
-				const apm_security = decodeURIComponent(httpApi.nvramCharToAscii([`apm${apmIdx}_security`])[`apm${apmIdx}_security`]).split("<");
+				const apm_config = httpApi.nvramCharToAscii([`apm${apmIdx}_ssid`, `apm${apmIdx}_security`], true);
+				const apm_ssid = decodeURIComponent(apm_config[`apm${apmIdx}_ssid`]);
+				const apm_security = decodeURIComponent(apm_config[`apm${apmIdx}_security`]).split("<");
 				let apm_auth = "open";
 				let apm_psk = "";
 				if(apm_security[1] != undefined && apm_security[1] != ""){

@@ -178,10 +178,6 @@
     -webkit-mask-image: url("../images/edit_document.svg");
     mask-image: url("../images/edit_document.svg");
 }
-.icon-settings-alert {
-    -webkit-mask-image: url("../images/settings_alert.svg");
-    mask-image: url("../images/settings_alert.svg");
-}
 
 /* Web History */
 .icon-refresh {

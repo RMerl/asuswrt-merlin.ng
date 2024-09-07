@@ -378,6 +378,7 @@
 	border-radius: 24px;
 	height: 30px;
 	width: 30px;
+	min-width: 30px;
 	background-color: rgba(164, 183, 195, 0.2);
 	background-position: -105px -213px;
 	position: relative;
@@ -396,8 +397,11 @@
 	background-color: rgb(0, 252, 255);
 }
 .client_content_bg .client_info_bg .client_name{
-	flex-grow: 1;
 	margin-left: 20px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	width: 75%;
 }
 .client_content_bg .client_info_bg .client_subnet{
 	flex-grow: 1;
@@ -1142,13 +1146,21 @@
 	width: 90%;
 }
 .popup_container .close_btn, .popup_container .del_btn{
-	position: absolute;
-	width: 24px;
-	height: 24px;
-	right: 0;
-	top: 0;
-	cursor: pointer;
-	background-position: -108px 0px;
+	position: absolute !important;
+	width: 24px !important;
+	height: 24px !important;
+	right: 0 !important;
+	top: 0 !important;
+	cursor: pointer !important;
+	background: initial !important;
+	border-radius: initial !important;
+	color: initial !important;
+	display: block !important;
+	align-items: initial !important;
+	justify-content: initial !important;
+	background-image: url(/images/New_ui/vpn_icon_all_collect.svg) !important;
+	background-repeat: no-repeat !important;
+	background-position: -108px 0px !important;
 }
 .popup_container .close_btn:hover{
 	background-position: -108px -55px;
@@ -1163,17 +1175,19 @@
 }
 .popup_container .popup_title_container{
 	position: relative;
-	margin-bottom: 20px;
+	margin-bottom: 12px;
 }
 .popup_title_container .title{
 	min-height: 40px;
 	height: auto;
 	color: hsl(0deg 0% 100%);
-	font-size: 32px;
+	font-size: 24px;
 	font-weight: 600;
 	letter-spacing: -0.2px;
-	line-height: 40px;
+	line-height: 120% !important;
 	padding-left: 12px;
+	max-width: 90%;
+	word-wrap: break-word;
 }
 .popup_container .popup_content_container{
 	position: relative;
@@ -1320,7 +1334,7 @@
 	font-size: 20px;
 	font-weight: 600;
 	letter-spacing: -0.18px;
-	height: auto;;
+	height: auto;
 }
 .function_desc_container{
 	display: flex;

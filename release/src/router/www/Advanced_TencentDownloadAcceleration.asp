@@ -65,16 +65,20 @@ function initial(){
 
 	$("#FormTitle").css("display", "");
 
-	if(policy_status.PP == 0 || policy_status.PP_time == ''){
-        const policyModal = new PolicyModalComponent({
-            policy: "PP",
-            agreeCallback: applyRule,
-            disagreeCallback: refreshpage
-        });
-        policyModal.show();
-    }else{
-        applyRule();
-    }
+	const policyStatus = PolicyStatus()
+			.then(data => {
+				if (data.PP == 0 || data.PP_time == '') {
+					const policyModal = new PolicyModalComponent({
+						policy: "PP",
+						policyStatus: data,
+						agreeCallback: applyRule,
+						knowRiskCallback: refreshpage
+					});
+					policyModal.show();
+				} else {
+					applyRule();
+				}
+			});
 
 	if(orig_tencent_download_device != '')
 		document.getElementById("downloadPath").innerHTML = '/mnt/'+ orig_tencent_download_device;
@@ -177,11 +181,22 @@ function setPart(_part, _avail, _total, _get){
 }
 
 function apply_eula_check(){
-	if(document.form.tencent_download_enable.value == "1" && (policy_status.PP == 0 || policy_status.PP_time == ''){
-		return false;
-	}
+	if(document.form.tencent_download_enable.value == "1"){
+		const policyStatus = PolicyStatus()
+        			.then(data => {
+        				if (data.PP == 0 || data.PP_time == '') {
+        					const policyModal = new PolicyModalComponent({
+        						policy: "PP",
+        						policyStatus: data,
+        						agreeCallback: applyRule,
+        					});
+        					policyModal.show();
+        				} else {
+        					applyRule();
+        				}
+        			});
 
-	applyRule();
+	}
 }
 
 function applyRule(){

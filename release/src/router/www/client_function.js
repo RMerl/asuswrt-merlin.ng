@@ -412,7 +412,8 @@ const saveCloudAsusClientIcon = (mac, name) => {
 					reader.onloadend = function () {
 						let nvramSet_obj = {"action_mode": "apply"};
 						nvramSet_obj["custom_usericon"] = `${mac.replace(/\:/g, "")}>${reader.result}`
-						httpApi.nvramSet(nvramSet_obj)
+						httpApi.nvramSet(nvramSet_obj, () => {
+						}, true, false)
 					}
 				});
 			}
@@ -513,9 +514,6 @@ function genClientList(){
 			clientList[thisClientMacAddr].callback = thisClient.callback;
 			clientList[thisClientMacAddr].keeparp = thisClient.keeparp;
 			clientList[thisClientMacAddr].ipMethod = thisClient.ipMethod;
-			if(clientList[thisClientMacAddr].sdn_idx > 0){
-				clientList[thisClientMacAddr].ipMethod = "DHCP";
-			}
 			clientList[thisClientMacAddr].qosLevel = thisClient.qosLevel;
 			clientList[thisClientMacAddr].wtfast = parseInt(thisClient.wtfast);
 			clientList[thisClientMacAddr].internetMode = thisClient.internetMode;
@@ -1191,7 +1189,7 @@ function popClientListEditTable(event) {
 	var deviceTitle = (clientInfo.dpiDevice == "") ? clientInfo.vendor : clientInfo.dpiDevice;
 	if(deviceTitle == undefined || deviceTitle == "") {
 		setTimeout(function(){
-			if('<% nvram_get("x_Setting"); %>' == '1' && wanConnectStatus && clientInfo.internetState)
+			if((httpApi.isConnected(0) || httpApi.isConnected(1)) && clientInfo.internetState)
 				oui_query_card(clientInfo.mac);
 		}, 1000);
 	}
@@ -3293,12 +3291,6 @@ function drawClientListBlock(objID) {
 
 				clientIconCode += "<div class='client_icon'>";
 
-				if (clientlist_sort[j].macRepeat > 1) {
-					clientIconCode += `<div class="clientlist_circle" onmouseover="return overlib('${clientlist_sort[j].macRepeat} clients are connecting to <% nvram_get("productid"); %> through this device.');" onmouseout="nd();">
-							<div>clientlist_sort[j].macRepeat</div>
-						</div>`;
-				}
-
 				if (listView_userIconBase64 != "NoIcon") {
 					clientIconCode += "<div title='" + clientlist_sort[j].deviceTypeName + "'>";
 					if (clientlist_sort[j].isUserUplaodImg) {
@@ -3322,7 +3314,13 @@ function drawClientListBlock(objID) {
 						clientIconCode += `<div class='clientIcon_no_hover' title='${clientlist_sort[j].deviceTypeName}'><i class='${icon_type}'></i></div>`;
 					}
 				}
-				clientIconCode += `<span class='rounded-circle internet_status ${internetStateCss}' title='${internetStateTip}'></span></div>`;
+				clientIconCode += `<span class='rounded-circle internet_status ${internetStateCss}' title='${internetStateTip}'></span>`;
+
+				if (clientlist_sort[j].macRepeat > 1) {
+					clientIconCode += `<span class="mac-repeat" onmouseover="return overlib('${clientlist_sort[j].macRepeat} clients are connecting to <% nvram_get("productid"); %> through this device.');" onmouseout="nd();">${clientlist_sort[j].macRepeat}</span>`;
+				}
+
+				clientIconCode += `</div>`;
 				clientListCode += `<td class='IE8HACK client-list-sm' align='center'>`;
 				clientListCode += clientIconCode;
 				clientListCode += "</td>";

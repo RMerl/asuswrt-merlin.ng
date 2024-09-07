@@ -69,6 +69,17 @@ struct pc{
 	pc_s *next;
 };
 
+#ifdef RTCONFIG_MULTILAN_CFG
+#define SDN_PARENTAL_CTRL_BLOCK_ALL			(1 << 0)
+#define SDN_PARENTAL_CTRL_BLOCK_INTERNET	(1 << 1)
+#define SDN_PARENTAL_CTRL_TIME_SCHED		(1 << 2)
+#define SDN_PARENTAL_CTRL_REWARD			(1 << 3)
+#define SDN_PARENTAL_CTRL_REDIRECT			(1 << 4)
+#ifdef RTCONFIG_ISP_OPTUS
+#define SDN_PARENTAL_CTRL_OP_BLOCK_INTERNET	(1 << 5)
+#endif
+#endif
+
 #ifdef RTCONFIG_SCHED_V2
 char *get_pc_date_str(int day_of_week, int over_one_day, char *buf, int buf_size);
 pc_event_s *get_event_list_by_sched_v2(pc_event_s **target_list, char *sched_v2_str);
@@ -106,17 +117,25 @@ extern int cleantrack_daytime_pc_list(pc_s *pc_list, int target_day, int target_
 extern int op_cleantrack_pc_list(pc_s *pc_list, int verb);
 #endif /* RTCONFIG_ISP_OPTUS */
 #endif
-extern void config_daytime_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdrop, int temp);
-extern void config_pause_block_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdrop, int temp);
+extern void config_daytime_string(pc_s *pc_list, FILE *fp, char *lan_if, char *logaccept, char *logdrop, int temp);
+extern void config_pause_block_string(pc_s *pc_list, FILE *fp, char *lan_if, char *logaccept, char *logdrop, int temp);
 #ifdef RTCONFIG_PC_REWARD
-extern void config_pc_reward_string(pc_s *pc_list, FILE *fp);
+extern void config_pc_reward_string(pc_s *pc_list, FILE *fp, char *lan_if);
 #endif
 #ifdef RTCONFIG_ISP_OPTUS
 // For optus customization
 #define CHAIN_OPTUS_PAUSE "OPTUS_PAUSE"
 extern pc_s *op_get_all_pc_list(pc_s **pc_list);
-extern void op_config_pause_block_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdrop, int temp);
+extern void op_config_pause_block_string(pc_s *pc_list, FILE *fp, char *lan_if, char *logaccept, char *logdrop, int temp);
 #endif /* RTCONFIG_ISP_OPTUS */
 extern int count_pc_rules(pc_s *pc_list, int enabled);
 extern int count_event_rules(pc_event_s *event_list);
+
+void config_block_all_string(FILE *fp, char *lan_if);
+#ifdef RTCONFIG_MULTILAN_CFG
+void handle_sdn_block_all_string(FILE *fp);
+void handle_sdn_parental_ctrl_related(int feature, pc_s *pc_list, FILE *fp, char *logaccept, char *logdrop, int temp);
+int check_chilli_ip(char *ifname);
+int get_ip_from_chilli(char *mac, char *ip, int ip_len);
+#endif
 #endif // #ifndef __PC_H__

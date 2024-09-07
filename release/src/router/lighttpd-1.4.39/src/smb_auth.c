@@ -1837,7 +1837,7 @@ account_type smbc_get_account_type(const char* user_name){
 
 	account_type var_type;
 	
-	if(is_acc_account_existed(user_name)==1 || strcmp(user_name, "guest")==0){
+	if(is_acc_account_existed(user_name)==1 || strncmp(user_name, "guest", 5)==0){
 		var_type = T_ACCOUNT_SAMBA;
 	}
 	else if(is_aicloud_account_existed(user_name)==1){
@@ -1875,7 +1875,7 @@ int smbc_get_usbdisk_permission(const char* user_name, const char* usbdisk_rel_s
 		int st_samba_mode = nvram_get_st_samba_mode();
 		
 		if( (st_samba_mode==1) ||
-		    (user_name!=NULL && strcmp(user_name, "guest")==0))
+		    (user_name!=NULL && strncmp(user_name, "guest", 5)==0))
 			permission = 3;
 		else{
 #ifdef RTCONFIG_USB
@@ -2035,26 +2035,24 @@ int is_string_encode_as_integer( const char *s ){
 
 int is_valid_string( const char* data ){
 
-    if (data != NULL) {
-        if (strstr((char*)data, "\"") != NULL) {
-            return -1;
-        }
+    if (strstr((char*)data, "\"") != NULL) {
+        return -1;
+    }
 
-        if (strstr((char*)data, "$") != NULL) {
-            return -1;
-        }
+    if (strstr((char*)data, "$") != NULL) {
+        return -1;
+    }
     
-        if (strstr((char*)data, "`") != NULL) {
-            return -1;
-        }  
+    if (strstr((char*)data, "`") != NULL) {
+        return -1;
+    }
 
-        if (strstr((char*)data, ";") != NULL) {
-            return -1;
-        } 
+    if (strstr((char*)data, ";") != NULL) {
+        return -1;
+    } 
 
-        if (strstr((char*)data, "'") != NULL) {
-            return -1;
-    	}
+    if (strstr((char*)data, "'") != NULL) {
+        return -1;
     }
 
     return 0;

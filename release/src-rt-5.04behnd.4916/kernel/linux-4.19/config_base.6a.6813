@@ -4646,6 +4646,10 @@ CONFIG_BCM_IN_KERNEL=y
 # Asuswrt-merlin configuration
 #
 
+# NFS
+# CONFIG_NFS_FS is not set
+# CONFIG_NFSD is not set
+
 # CIFS
 CONFIG_DNS_RESOLVER=m
 CONFIG_CIFS=m

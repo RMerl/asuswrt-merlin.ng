@@ -125,11 +125,7 @@ wl_extent_channel(int unit)
         snprintf(prefix, sizeof(prefix), "wl%d_", unit);
         name = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
 
-#if defined(GTAXE16000)
-	if (unit != 3) {
-#else
-	if (unit != 0) {
-#endif
+	if (unit != WL_2G_BAND) {
 		if ((ret = wl_ioctl(name, WLC_GET_BSSID, &bssid, ETHER_ADDR_LEN)) == 0) {
 			/* The adapter is associated. */
 			*(uint32*)buf = htod32(WLC_IOCTL_MAXLEN);

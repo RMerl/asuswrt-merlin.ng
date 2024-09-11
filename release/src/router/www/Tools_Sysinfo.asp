@@ -355,6 +355,14 @@ function initial(){
 	else
 		document.getElementById("model_id").innerHTML = productid;
 
+	var firmver = '<% nvram_get("firmver"); %>';
+	var buildno = '<% nvram_get("buildno"); %>';
+	var extendno = '<% nvram_get("extendno"); %>';
+	if ((extendno == "") || (extendno == "0"))
+		document.getElementById("fwver").innerHTML = firmver.replace(/\./g,"") + '.' + buildno;
+	else
+		document.getElementById("fwver").innerHTML = firmver.replace(/\./g,"") + '.' + buildno + '_' + extendno;
+
 	var rc_caps = "<% nvram_get("rc_support"); %>";
 	var rc_caps_arr = rc_caps.split(' ').sort();
 	rc_caps = rc_caps_arr.toString().replace(/,/g, " ");
@@ -641,6 +649,11 @@ function show_wifi_version() {
 						<th>Model</th>
 							<td id="model_id"><% nvram_get("productid"); %></td>
 					</tr>
+					<tr>
+						<th>Firmware Version</th>
+						<td id="fwver"></td>
+					</tr>
+
 					<tr>
 						<th>Firmware Build</th>
 						<td><% nvram_get("buildinfo"); %></td>

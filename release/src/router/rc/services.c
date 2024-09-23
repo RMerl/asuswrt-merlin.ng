@@ -17548,6 +17548,14 @@ retry_wps_enr:
 		reset_ovpn_setting(OVPN_TYPE_CLIENT, nvram_get_int("vpn_client_unit"), 1);
 	}
 #endif
+#ifdef RTCONFIG_WIREGUARD
+	else if (strcmp(script, "clearwgclient") == 0)
+	{
+		if (cmd[1])
+			reset_wgc_setting(atoi(cmd[1]));
+	}
+#endif
+
 #ifdef RTCONFIG_YANDEXDNS
 	else if (strcmp(script, "yadns") == 0)
 	{

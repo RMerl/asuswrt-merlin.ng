@@ -645,7 +645,7 @@ void ovpn_stop_client(int unit) {
 	// Manual stop, so remove rules
 	amvpn_clear_routing_rules(unit, VPNDIR_PROTO_OPENVPN);
 
-	// Clear routing table, also freeing from killswitch set by down handler
+	// Clear routing table
 	snprintf(buffer, sizeof (buffer),"/usr/sbin/ip route flush table ovpnc%d", unit);
 	logmessage("openvpn-routing", "Clearing routing table for VPN client %d", unit);
 	system(buffer);
@@ -758,7 +758,7 @@ void ovpn_process_eas(int start) {
 
 		unit = atoi(ptr);
 
-		// Update kill switch states for clients set to auto-start with WAN
+		// Update kill switch states for clients that are enabled
 		amvpn_set_wan_routing_rules();
 		amvpn_set_routing_rules(unit, VPNDIR_PROTO_OPENVPN);
 
@@ -811,6 +811,7 @@ void stop_ovpn_serverall() {
         }
 }
 
+<<<<<<< HEAD
 #ifdef RTCONFIG_MULTILAN_CFG
 void _update_ovpn_by_sdn(MTLAN_T *pmtl, size_t mtl_sz, int restart_all_sdn, wg_type_t client)
 {
@@ -1076,3 +1077,19 @@ void _ovpn_server_nf_bind_sdn(FILE* fp, const char* ovpn_ifname, const char* sdn
 	}
 }
 #endif
+
+int ovpn_is_client_enabled(int unit) {
+	char *ptr;
+	char enabled[32];
+
+	strlcpy(enabled, nvram_safe_get("vpn_clientx_eas"), sizeof(enabled));
+
+	for (ptr = enabled; *ptr != '\0'; ptr++) {
+		if (!isdigit(*ptr))
+			continue;
+
+		if (atoi(ptr) == unit)
+			return 1;
+	}
+	return 0;
+}

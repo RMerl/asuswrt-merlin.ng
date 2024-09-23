@@ -83,7 +83,8 @@ function initial(){
 
 function applyRule(){
 	if(validForm()){
-		if (enforce_ori != getRadioValue(document.form.wgc_enforce))
+		if (enforce_ori != getRadioValue(document.form.wgc_enforce) ||
+		   (wgc_enable != document.form.wgc_enable[0].checked))
 			document.form.action_script.value += ";start_vpnrouting0";
 
 		showLoading();

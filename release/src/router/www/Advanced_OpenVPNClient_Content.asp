@@ -536,11 +536,12 @@ function applyRule(){
 		return false;
 	}
 
-	tmp_value = "";
+	var tmp_value = "";
+	var enabled = getRadioValue(document.form.vpn_client_x_eas);
 
 	for (var unit=1; unit <= MAX_VPN_CLIENTS; unit++) {
 		if (unit == openvpn_unit) {
-			if (getRadioValue(document.form.vpn_client_x_eas) == 1) {
+			if (enabled == 1) {
 				tmp_value += ""+unit+",";
 				if (client_state != 0) {	// Restart
 					document.form.action_wait.value = 15;
@@ -565,7 +566,8 @@ function applyRule(){
 	document.form.vpn_client_if.value = document.form.vpn_client_if_x.value;
 
 	if ( (enforce_ori != getRadioValue(document.form.vpn_client_enforce)) ||
-	     (policy_ori != document.form.vpn_client_rgw.value)) {
+	     (policy_ori != document.form.vpn_client_rgw.value) ||
+	     (enabled != enabled_ori) ) {
 		if (document.form.action_script.value != "")
 			document.form.action_script.value += ";";
 		document.form.action_script.value += "start_vpnrouting"+openvpn_unit;

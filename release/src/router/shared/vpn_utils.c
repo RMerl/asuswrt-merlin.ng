@@ -526,3 +526,25 @@ void hnd_skip_wg_all_lan(int add)
 #endif
 #endif
 
+#ifdef RTCONFIG_WIREGUARD
+extern struct nvram_tuple router_defaults[];
+
+void reset_wgc_setting(int unit){
+	struct nvram_tuple *t;
+	char varname[32];
+	char *cur;
+
+	logmessage("wireguard","Resetting VPN client %d to default settings", unit);
+
+	// Reset vars
+	for (t = router_defaults; t->name; t++) {
+		if (strncmp(t->name, "wgc_", 4)==0)
+		{
+			snprintf(varname, sizeof (varname), "wgc%d_%s", unit, t->name+4);
+			nvram_unset(varname);
+		}
+	}
+	nvram_commit();
+}
+#endif
+

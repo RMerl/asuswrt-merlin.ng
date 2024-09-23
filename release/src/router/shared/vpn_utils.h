@@ -172,4 +172,8 @@ extern int _wg_check_same_port(wg_type_t type, int unit, int port);
 #endif
 #endif
 
+#ifdef RTCONFIG_WIREGUARD
+extern void reset_wgc_setting(int unit);
+#endif
+
 #endif

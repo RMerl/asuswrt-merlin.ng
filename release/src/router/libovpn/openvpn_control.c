@@ -811,7 +811,6 @@ void stop_ovpn_serverall() {
         }
 }
 
-<<<<<<< HEAD
 #ifdef RTCONFIG_MULTILAN_CFG
 void _update_ovpn_by_sdn(MTLAN_T *pmtl, size_t mtl_sz, int restart_all_sdn, wg_type_t client)
 {

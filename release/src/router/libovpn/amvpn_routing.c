@@ -880,6 +880,7 @@ void amvpn_set_killswitch_rules(vpndir_proto_t proto, int unit, char *sdn_ifname
 	int vpnc_idx, i;
 	MTLAN_T *pmtl = NULL;
 	size_t mtl_sz = 0;
+#endif
 #ifdef RTCONFIG_WIREGUARD
 	int enabled;
 #endif

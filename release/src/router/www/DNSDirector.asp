@@ -97,15 +97,13 @@ function initial(){
 	show_menu();
 	show_footer();
 
-	show_dnsfilter_list();
-	if (isSupport("mtlancfg")) {
-		document.getElementById("sdnTable_Table").style.display = "";
-		show_sdn_list();
-	}
-	showDropdownClientList('setclientmac', 'mac', 'all', 'ClientList_Block_PC', 'pull_arrow', 'all');
-
 	showhide_settings(document.form.dnsfilter_enable_x.value);
 
+	show_dnsfilter_list();
+	if (isSupport("mtlancfg"))
+		show_sdn_list();
+
+	showDropdownClientList('setclientmac', 'mac', 'all', 'ClientList_Block_PC', 'pull_arrow', 'all');
 	gen_modeselect("dnsfilter_mode", "<% nvram_get("dnsfilter_mode"); %>", "");
 	gen_modeselect("client_modesel", "-1", "");
 }
@@ -405,6 +403,10 @@ function showhide_settings(state) {
 	}
 	showhide("mainTable_Table", state);
 	showhide("mainTable_Block", state);
+	if (isSupport("mtlancfg")) {
+		showhide("sdnTable_Table", state);
+		showhide("sdnTable_Block", state);
+	}
 }
 
 

@@ -96,6 +96,8 @@ var manually_dhcp_sort_type = 0;//0:increase, 1:decrease
 
 var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=101";
 
+vpn_fusion_support = false;
+
 function initial(){
 	show_menu();
 	document.getElementById("faq").href=faq_href;

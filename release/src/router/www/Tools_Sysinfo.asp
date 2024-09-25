@@ -370,7 +370,6 @@ function initial(){
 
 	hwaccel_state();
 	update_temperatures();
-	updateClientList();
 	update_sysinfo();
 	show_wifi_version();
 }
@@ -549,20 +548,6 @@ function show_memcpu(){
 	}
 
 	draw_mem_charts();
-}
-
-
-function updateClientList(e){
-	$.ajax({
-		url: '/update_clients.asp',
-		dataType: 'script',
-		error: function(xhr) {
-			setTimeout("updateClientList();", 1000);
-		},
-		success: function(response){
-			setTimeout("updateClientList();", 3000);
-		}
-	});
 }
 
 function update_sysinfo(e){

@@ -8,6 +8,13 @@ Asuswrt-Merlin 3006.xxx Changelog
   - CHANGED: Support importing Wireguard config files that
              contain multiple AllowedIPs, Address or DNS
              declarations.
+  - CHANGED: Re-added firmware version display on Sysinfo page
+             (as you can't copy the version string from the
+             header banner, this one can be).
+  - CHANGED: VPN killswitch will now only be active if the
+             VPN client itself is enabled.  If you stop/start
+             the client yourself over SSH, you need to also
+             update the enabled/disabled nvram setting.
   - FIXED: Generated web certificate wasn't using the FQDN
            for Namecheap DDNS users.
   - FIXED: DNSDirector and Tor pages would fail to properly load
@@ -17,6 +24,14 @@ Asuswrt-Merlin 3006.xxx Changelog
            (backport from Ubuntu by RSDNTWK)
   - FIXED: UPnP options were missing on WAN page for models
            with multiservice WAN support.
+  - FIXED: Guest Network table would still be shown on the
+           DNSDIrector page if DNSDirector isn't enabled.
+  - FIXED: VPN Fusion-related popup showing when editing
+           an existing DHCP reservation - removed.
+  - FIXED: 320 MHz chanspec would show as 160 on the Wifi
+           icon status.
+  - FIXED: Wifi icon status not properly shown on quad-band
+           Wifi 7 models.
 
 
 3006.102.1 (28-Jun-2024)

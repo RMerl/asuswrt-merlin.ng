@@ -83,10 +83,10 @@ static bool g_swap = FALSE;
 #define MAX_STA_COUNT   128
 
 #define CHANIMSTR(a, b, c, d) ((a) ? ((b) ? c : d) : "")
-static const uint8 wf_chspec_bw_mhz[] = {5, 10, 20, 40, 80, 160, 160};
+static const uint wf_chspec_bw_mhz[] = {5, 10, 20, 40, 80, 160, 320};
 
 #define WF_NUM_BW \
-        (sizeof(wf_chspec_bw_mhz)/sizeof(uint8))
+        (sizeof(wf_chspec_bw_mhz)/sizeof(uint))
 
 #ifdef RTCONFIG_MULTILAN_CFG
 #define MAX_GUEST_SUBUNITS APG_MAXINUM

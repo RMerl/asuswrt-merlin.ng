@@ -83,10 +83,10 @@ static bool g_swap = FALSE;
 #define MAX_STA_COUNT   128
 
 #define CHANIMSTR(a, b, c, d) ((a) ? ((b) ? c : d) : "")
-static const uint8 wf_chspec_bw_mhz[] = {5, 10, 20, 40, 80, 160, 160};
+static const uint wf_chspec_bw_mhz[] = {5, 10, 20, 40, 80, 160, 320};
 
 #define WF_NUM_BW \
-        (sizeof(wf_chspec_bw_mhz)/sizeof(uint8))
+        (sizeof(wf_chspec_bw_mhz)/sizeof(uint))
 
 #ifdef RTCONFIG_MULTILAN_CFG
 #define MAX_GUEST_SUBUNITS APG_MAXINUM
@@ -125,11 +125,7 @@ wl_extent_channel(int unit)
         snprintf(prefix, sizeof(prefix), "wl%d_", unit);
         name = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
 
-#if defined(GTAXE16000)
-	if (unit != 3) {
-#else
-	if (unit != 0) {
-#endif
+	if (unit != WL_2G_BAND) {
 		if ((ret = wl_ioctl(name, WLC_GET_BSSID, &bssid, ETHER_ADDR_LEN)) == 0) {
 			/* The adapter is associated. */
 			*(uint32*)buf = htod32(WLC_IOCTL_MAXLEN);

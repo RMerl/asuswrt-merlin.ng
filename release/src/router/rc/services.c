@@ -19260,13 +19260,15 @@ retry_wps_enr:
 			start_ovpn_server(openvpn_unit);
  		}
  	}
-	else if (strncmp(script, "clearvpnserver", 14) == 0)
+	else if (strcmp(script, "clearovpnserver") == 0)
 	{
-		reset_ovpn_setting(OVPN_TYPE_SERVER, nvram_get_int("vpn_server_unit"), 1);
+		if (cmd[1])
+			reset_ovpn_setting(OVPN_TYPE_SERVER, atoi(cmd[1]), 1);
 	}
-        else if (strncmp(script, "clearvpnclient", 14) == 0)
+        else if (strcmp(script, "clearovpnclient") == 0)
 	{
-		reset_ovpn_setting(OVPN_TYPE_CLIENT, nvram_get_int("vpn_client_unit"), 1);
+		if (cmd[1])
+			reset_ovpn_setting(OVPN_TYPE_CLIENT, atoi(cmd[1]), 1);
 	}
 #endif
 #ifdef RTCONFIG_YANDEXDNS

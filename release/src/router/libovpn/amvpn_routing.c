@@ -881,6 +881,9 @@ void amvpn_set_killswitch_rules(vpndir_proto_t proto, int unit, char *sdn_ifname
 	MTLAN_T *pmtl = NULL;
 	size_t mtl_sz = 0;
 #endif
+#ifdef RTCONFIG_WIREGUARD
+	int enabled;
+#endif
 
 	if (proto == VPNDIR_PROTO_OPENVPN) {
 		// Clear existing rules
@@ -893,7 +896,7 @@ void amvpn_set_killswitch_rules(vpndir_proto_t proto, int unit, char *sdn_ifname
                 rgw = nvram_pf_get_int(prefix, "rgw");
 		verb = nvram_pf_get_int(prefix, "verb");
 
-		if (killswitch == 0)
+		if (killswitch == 0 || ovpn_is_client_enabled(unit) == 0)
 			return;
 
 		if (rgw == OVPN_RGW_ALL) {
@@ -961,7 +964,8 @@ void amvpn_set_killswitch_rules(vpndir_proto_t proto, int unit, char *sdn_ifname
 		snprintf(prefix, sizeof(prefix), "wgc%d_", unit);
 		killswitch = nvram_pf_get_int(prefix, "enforce");
 
-		if (killswitch == 0)
+		enabled = nvram_pf_get_int(prefix, "enable");
+		if (killswitch == 0 || enabled == 0)
 			return;
 
 		/* Do VPNDirector */
@@ -1016,7 +1020,7 @@ void amvpn_set_killswitch_rules(vpndir_proto_t proto, int unit, char *sdn_ifname
 
 void amvpn_set_kilswitch_rules_all() {
 	int i;
-        logmessage("openvpn-routing", "Applying all killswitches");
+		logmessage("openvpn-routing", "Applying all killswitches");
 #ifdef RTCONFIG_WIREGUARD
 	for (i = WG_CLIENT_MAX; i > 0; i--) {
 		amvpn_set_killswitch_rules(VPNDIR_PROTO_WIREGUARD, i, NULL);
@@ -1026,4 +1030,3 @@ void amvpn_set_kilswitch_rules_all() {
 		amvpn_set_killswitch_rules(VPNDIR_PROTO_OPENVPN, i, NULL);
 	}
 }
-

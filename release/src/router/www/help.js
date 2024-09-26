@@ -471,72 +471,47 @@ function overHint(itemNum){
 
 	}
 
-	var control_chan_arr = <% wl_control_channel(); %>;
-	var extent_chan_arr = <% wl_extent_channel(); %>;
-
 	// wifi hw switch
 	if(itemNum == 8){
-		if (based_modelid == "GT-AXE16000") {
+		var control_chan_arr = <% wl_control_channel(); %>;
+		var extent_chan_arr = <% wl_extent_channel(); %>;
+		var wifiDesc = "";
+
+		if (based_modelid == "GT-AXE16000" || based_modelid == "GT-BE98_PRO" || based_modelid == "GT-BE98" || based_modelid == "BQ16") {
 			band_unit = [ 3, 0, 1, 2];
 			radio_state = ["<% nvram_get("wl3_radio"); %>", wlan0_radio_flag, wlan1_radio_flag, wlan2_radio_flag ];
 		} else {
-			band_unit = [ 0, 1, 2, 2];
-			radio_state = [ wlan0_radio_flag, wlan1_radio_flag, wlan2_radio_flag, wlan2_radio_flag ];
+			band_unit = [ 0, 1, 2];
+			radio_state = [ wlan0_radio_flag, wlan1_radio_flag, wlan2_radio_flag];
 		}
 
-		statusmenu = "<div class='StatusHint'>WiFi :</div>";
-		wifiDesc = "<b>&nbsp;2.4G:</b> ";
-		if ( radio_state[0] == 1) {
-			if ((extent_chan_arr[band_unit[0]] == 0) || (extent_chan_arr[band_unit[0]] == undefined) || (extent_chan_arr[band_unit[0]] == control_chan_arr[band_unit[0]]))
-				wifiDesc += "Channel " + control_chan_arr[band_unit[0]];
-			else
-				wifiDesc += "Channel "+ low_channel(control_chan_arr[band_unit[0]],extent_chan_arr[band_unit[0]]) + "+" + high_channel(control_chan_arr[band_unit[0]],extent_chan_arr[band_unit[0]]);
-		} else {
-			wifiDesc += "<#btn_Disabled#>";
-		}
+		statusmenu = "<div class='StatusHint'>WiFi Channels:</div><br>";
 
-		if (band5g_support){
-			if (wl_info.band5g_2_support)
-				wifiDesc += "<br><b>5G-1:</b> ";
-			else
-				wifiDesc += "<br><b>&nbsp;&nbsp;&nbsp;5G:</b> ";
-			if (radio_state[1] == 1) {
-				if ((extent_chan_arr[band_unit[1]] == 0) || (extent_chan_arr[band_unit[1]] == undefined) || (extent_chan_arr[band_unit[1]] == control_chan_arr[band_unit[1]]))
-					wifiDesc += "Channel " + control_chan_arr[band_unit[1]];
-				else
-					wifiDesc += "Channel "+ control_chan_arr[band_unit[1]] + "/" + extent_chan_arr[band_unit[1]];
-			} else {
-				wifiDesc += "<#btn_Disabled#>";
+		for (unit = 0; unit < band_unit.length; unit++) {
+			if (wl_nband_title[unit] == undefined)
+				break;
+
+			wifiDesc += "<div style='display:grid; grid-template-columns: 9ch 1fr; margin-bottom: 5px;'><b><span>" + wl_nband_title[band_unit[unit]] + ":</b></span>";
+			if ( radio_state[unit] == 1) {
+				if ((extent_chan_arr[band_unit[unit]] == 0) || (extent_chan_arr[band_unit[unit]] == undefined) || (extent_chan_arr[band_unit[unit]] == control_chan_arr[band_unit[unit]]))
+					wifiDesc += "<span>" + control_chan_arr[band_unit[unit]] + "</span>";
+					else {
+						if (wl_nband_title[band_unit[unit]].substring(0,1) == "2") {
+							wifiDesc += "<span>"+ low_channel(control_chan_arr[band_unit[unit]],extent_chan_arr[band_unit[unit]]) + "+" + high_channel(control_chan_arr[band_unit[unit]],extent_chan_arr[band_unit[unit]]) + "</span>";
+						} else if (wl_nband_title[band_unit[unit]].substring(0, 1) == "6") {
+							wifiDesc += "<span>6g"+ control_chan_arr[band_unit[unit]] + "/" + extent_chan_arr[band_unit[unit]] + "</span>";
+						} else if (wl_nband_title[band_unit[unit]].substring(0, 1) == "5") {
+							wifiDesc += "<span>"+ control_chan_arr[band_unit[unit]] + "/" + extent_chan_arr[band_unit[unit]] + "</span>";
+						} else {
+								wifiDesc += "<span>unknown</span>";
+						}
+					}
+				} else {
+					wifiDesc += "<span><#btn_Disabled#></span>";
 			}
-
-			if (wl_info.band5g_2_support) {
-				wifiDesc += "<br><b>5G-2:</b> ";
-				if  (radio_state[2] == 1) {
-					if ((extent_chan_arr[band_unit[2]] == 0) || (extent_chan_arr[band_unit[2]] == undefined) || (extent_chan_arr[band_unit[2]] == control_chan_arr[band_unit[2]]))
-						wifiDesc += "Channel " + control_chan_arr[band_unit[2]];
-					else
-						wifiDesc += "Channel "+ control_chan_arr[band_unit[2]] + "/" + extent_chan_arr[band_unit[2]];
-	                        } else {
-					wifiDesc += "<#btn_Disabled#>";
-				}
-                        }
-
+			wifiDesc += "</div>";
 		}
-
-		if (band6g_support) {
-			wifiDesc += "<br><b>&nbsp;&nbsp;&nbsp;6G:</b> ";
-			if  (radio_state[3] == 1) {
-				if ((extent_chan_arr[band_unit[3]] == 0) || (extent_chan_arr[band_unit[3]] == undefined) || (extent_chan_arr[band_unit[3]] == control_chan_arr[band_unit[3]]))
-					wifiDesc += "Channel 6g" + control_chan_arr[band_unit[3]];
-				else
-					wifiDesc += "Channel 6g"+ control_chan_arr[band_unit[3]] + "/" + extent_chan_arr[band_unit[3]];
-			} else {
-				wifiDesc += "<#btn_Disabled#>";
-			}
-		}
-
-
-		statusmenu += "<span>" + wifiDesc + "</span>";
+		statusmenu += "<div>" + wifiDesc + "</div";
 	}
 
 	// cooler

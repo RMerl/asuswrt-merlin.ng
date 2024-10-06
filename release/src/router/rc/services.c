@@ -2386,7 +2386,7 @@ void start_stubby(void)
 	}
 
 #ifdef RTCONFIG_MULTILAN_CFG
-	handle_sdn_feature(sdn_idx, SDN_FEATURE_DNSPRIV, RC_SERVICE_STOP | RC_SERVICE_START);
+	handle_sdn_feature(sdn_idx, SDN_FEATURE_DNSPRIV, RC_SERVICE_START);
 	TRACE_PT("end\n");
 	return;
 #else

@@ -61,6 +61,8 @@ Fully supported devices:
 3006.102.x:
  * RT-BE96U 
  * GT-BE98_PRO
+ * RT-BE88U
+ * RT-BE86U
 
 No longer supported:
  * RT-N16

@@ -211,7 +211,7 @@ echo "DNS.${DNS_I} = www.asusrouter.com" >> ssl_server.ext && DNS_I=$((DNS_I+1))
 if [ "`nvram get sw_mode`" == "1" ] ; then
 	if [ -n "`nvram get ddns_hostname_x`" ] ; then
 		if [ "`nvram get ddns_server_x`" == "WWW.NAMECHEAP.COM" ] ; then
-			echo "DNS.${DNS_I} = `nvram get ddns_username_x`" >> ssl_server.ext && DNS_I=$((DNS_I+1))
+			echo "DNS.${DNS_I} = `nvram get ddns_hostname_x`.`nvram get ddns_username_x`" >> ssl_server.ext && DNS_I=$((DNS_I+1))
 		else
 			echo "DNS.${DNS_I} = `nvram get ddns_hostname_x`" >> ssl_server.ext && DNS_I=$((DNS_I+1))
 		fi

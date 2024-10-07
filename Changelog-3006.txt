@@ -15,6 +15,7 @@ Asuswrt-Merlin 3006.xxx Changelog
              VPN client itself is enabled.  If you stop/start
              the client yourself over SSH, you need to also
              update the enabled/disabled nvram setting.
+  - CHANGED: Display public IP address for Wireguard clients.
   - FIXED: Generated web certificate wasn't using the FQDN
            for Namecheap DDNS users.
   - FIXED: DNSDirector and Tor pages would fail to properly load
@@ -32,6 +33,8 @@ Asuswrt-Merlin 3006.xxx Changelog
            icon status.
   - FIXED: Wifi icon status not properly shown on quad-band
            Wifi 7 models.
+  - FIXED: DNS over TLS broken if IoT Guest Network (or other
+           Guest Network sharing existing VLAN) is disabled.
 
 
 3006.102.1 (28-Jun-2024)

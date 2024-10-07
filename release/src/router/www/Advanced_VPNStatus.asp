@@ -54,6 +54,7 @@ function refresh_vpn_data(){
 			refresh_vpn_data();
 		},
 		success: function(response){
+			document.getElementById("pageloading").style.display = "none";
 			display_vpn_data();
 			if (wireguard_support) {
 				display_wg_data();
@@ -771,7 +772,8 @@ function is_wgsc_connected(_pubkey) {
                 <td valign="top">
                 <div>&nbsp;</div>
                 <div class="formfonttitle">VPN - Status</div>
-		<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
+				<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
+				<div id="pageloading" style="padding-left:20px; padding-top:20px; font-size:150%;" style="padding-left:10px;" class="hint-color">Loading...<img src="/images/InternetScan.gif"></div>
 				<table width="100%" style="margin-bottom:20px;display:none;" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" id="pptpserver" class="FormTable">
 					<thead>
 						<tr>

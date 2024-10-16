@@ -7339,6 +7339,7 @@ libcap-ng/configure:
 	CFLAGS="-O3 -Wall $(EXTRACFLAGS)" $(CONFIGURE) --enable-shared \
 		--prefix=/usr \
 		--bindir=/usr/sbin \
+		--without-python --without-python3 \
 		--libdir=/usr/lib
 	touch $@
 

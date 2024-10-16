@@ -124,6 +124,9 @@ RSA_PSS_PARAMS *rsa_pss_params_create(const EVP_MD *sigmd,
                                       const EVP_MD *mgf1md, int saltlen);
 int rsa_pss_get_param(const RSA_PSS_PARAMS *pss, const EVP_MD **pmd,
                       const EVP_MD **pmgf1md, int *psaltlen);
+int ossl_rsa_padding_check_PKCS1_type_2(unsigned char *to, int tlen,
+                                        const unsigned char *from, int flen,
+                                        int num, unsigned char *kdk);
 /* internal function to clear and free multi-prime parameters */
 void rsa_multip_info_free_ex(RSA_PRIME_INFO *pinfo);
 void rsa_multip_info_free(RSA_PRIME_INFO *pinfo);

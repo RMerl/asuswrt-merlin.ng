@@ -4822,10 +4822,18 @@ start_ddns(char *caller)
 				fprintf(fp, "ddns-server = dynamicdns.park-your-domain.com\n");
 				// We store the domain.tld in the username nvram
 				fprintf(fp, "ddns-path = \"/update?domain=%%u&password=%%p&host=%%h\"\n");
+				// Namecheap username is the top domain (domain.tld)
+				// Namecheap hostname is only the subdomain (sub - not sub.domain.tld)
+				strcpy(tmp, host);
+				char *ptr = strstr(tmp, user);
+				if (ptr != NULL && ptr > tmp + 1) {
+					*--ptr = '\0';
+				}
+				fprintf(fp, "hostname = %s\n", tmp);
 			} else {
 				fprintf(fp, "provider %s {\n", service);
+				fprintf(fp, "hostname = %s\n", host);
 			}
-			fprintf(fp, "hostname = %s\n", host);
 			fprintf(fp, "username = '%s'\n", ppp_safe_escape(user, tmp, sizeof(tmp)));
 			fprintf(fp, "password = '%s'\n", ppp_safe_escape(passwd, tmp, sizeof(tmp)));
 			if (wild)

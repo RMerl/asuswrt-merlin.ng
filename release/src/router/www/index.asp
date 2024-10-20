@@ -560,15 +560,7 @@ function show_ddns_status(){
 	var ddnsName;
 	var ddns_hostname_x = '<% nvram_get("ddns_hostname_x"); %>';
 	var ddns_username_x = '<% nvram_get("ddns_username_x"); %>';
-
-	switch (ddns_server_x){
-		case "WWW.NAMECHEAP.COM":
-			ddnsName = ddns_hostname_x + "." + ddns_username_x;
-			break;
-		
-		default:
-			ddnsName = ddns_hostname_x; 
-	}
+	ddnsName = ddns_hostname_x; 
 
 	document.getElementById("ddns_fail_hint").className = "notificationoff";
 	if( ddns_enable == '0'){

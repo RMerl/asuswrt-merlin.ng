@@ -325,19 +325,19 @@ void _start_sdn_stubby(const MTLAN_T *pmtl, char *config_file, const size_t path
 
 	/* Check if enabled */
 	if (!pmtl->nw_t.dot_enable || !is_routing_enabled()) { //dnspriv_enable
-		_dprintf("%s: DoT_%d not enable, return.\n", __FUNCTION__, pmtl->nw_t.idx);
+		_dprintf("%s: DoT_%d not enable, return.\n", __FUNCTION__, pmtl->sdn_t.sdn_idx);
 		return;
 	}
 
 	//stop_stubby(pmtl->sdn_t.sdn_idx);
-	snprintf(buf, sizeof(buf), sdn_stubby_pid_path, pmtl->nw_t.idx);
+	snprintf(buf, sizeof(buf), sdn_stubby_pid_path, pmtl->sdn_t.sdn_idx);
 	kill_pidfile_tk(buf);
 	unlink(buf);
 
 	mkdir_if_none("/etc/stubby");
 
-	// create /etc/stubby/stubby-<subnet_idx>.yml
-	snprintf(config_file, path_len, "/etc/stubby/stubby-%d.yml", pmtl->nw_t.idx);
+	// create /etc/stubby/stubby-<sdn_idx>.yml
+	snprintf(config_file, path_len, "/etc/stubby/stubby-%d.yml", pmtl->sdn_t.sdn_idx);
 	unlink(config_file);
 	if ((fp = fopen(config_file, "w")) == NULL) {
 		_dprintf("%s: cannot create %s.\n", __FUNCTION__, config_file);
@@ -393,10 +393,10 @@ void _start_sdn_stubby(const MTLAN_T *pmtl, char *config_file, const size_t path
 		fprintf(fp, "limit_outstanding_queries: %d\n", max(150, min(max_queries, 10000)));
 
 	/* Listen address */
-	if (pmtl->nw_t.idx) {
+	if (pmtl->sdn_t.sdn_idx) {
 		fprintf(fp,
 			"listen_addresses:\n"
-			"  - %s@53%02d\n", pmtl->nw_t.addr, pmtl->nw_t.idx);
+			"  - %s@53%02d\n", pmtl->nw_t.addr, pmtl->sdn_t.sdn_idx);
 	} else { //br0
 		fprintf(fp,
 			"listen_addresses:\n"
@@ -406,8 +406,8 @@ void _start_sdn_stubby(const MTLAN_T *pmtl, char *config_file, const size_t path
 	/* Upstreams */
 	fprintf(fp,
 		"upstream_recursive_servers:\n");
-	if (pmtl->nw_t.idx) {
-		snprintf(buf, sizeof(buf), "dot%d_rl", pmtl->nw_t.idx);
+	if (pmtl->sdn_t.sdn_idx) {
+		snprintf(buf, sizeof(buf), "dot%d_rl", pmtl->sdn_t.sdn_idx);
 	} else { //br0
 		strlcpy(buf, "dnspriv_rulelist", sizeof(buf));
 	}
@@ -464,14 +464,14 @@ void _start_sdn_stubby(const MTLAN_T *pmtl, char *config_file, const size_t path
 
 	if (nvram_get_int("stubby_debug")) {
 		stubby_argv[index++] = "-l";
-		snprintf(stubby_log, sizeof(stubby_log), ">/tmp/stubby-%d.log", pmtl->nw_t.idx);
+		snprintf(stubby_log, sizeof(stubby_log), ">/tmp/stubby-%d.log", pmtl->sdn_t.sdn_idx);
 	}
 
 	pid_t pid;
 	_eval(stubby_argv, stubby_log, 0, &pid);
 	if (pid > 1) {
-		// write pid in /var/run/stubby-<subnet_idx>.pid
-		snprintf(buf, sizeof(buf), sdn_stubby_pid_path, pmtl->nw_t.idx);
+		// write pid in /var/run/stubby-<sdn_idx>.pid
+		snprintf(buf, sizeof(buf), sdn_stubby_pid_path, pmtl->sdn_t.sdn_idx);
 		unlink(buf);
 		FILE *fp = fopen(buf, "w");
 		if (fp) {
@@ -492,7 +492,7 @@ static int _handle_sdn_stubby(const MTLAN_T *pmtl, const int action)
 
 	if (action & RC_SERVICE_STOP)
 	{
-		snprintf(config_path, sizeof(config_path), sdn_stubby_pid_path, pmtl->nw_t.idx);
+		snprintf(config_path, sizeof(config_path), sdn_stubby_pid_path, pmtl->sdn_t.sdn_idx);
 		kill_pidfile_tk(config_path);
 		unlink(config_path);
 	}
@@ -501,8 +501,11 @@ static int _handle_sdn_stubby(const MTLAN_T *pmtl, const int action)
 	{
 		if (pmtl->enable)
 		{
-			memset(config_path, 0, sizeof(config_path));
-			_start_sdn_stubby(pmtl, config_path, sizeof(config_path));
+			if (pmtl->sdn_t.sdn_idx == 0 || pmtl->nw_t.idx != 0) // main LAN or non main subnet
+			{
+				memset(config_path, 0, sizeof(config_path));
+				_start_sdn_stubby(pmtl, config_path, sizeof(config_path));
+			}
 		}
 	}
 	return 0;
@@ -827,7 +830,7 @@ static int _handle_sdn_dnsmasq(const MTLAN_T *pmtl, const int action)
 		snprintf(config_path, sizeof(config_path), sdn_dnsmasq_pid_path, pmtl->sdn_t.sdn_idx);
 		kill_pidfile_tk(config_path);
 #ifdef RTCONFIG_DNSPRIVACY
-		snprintf(config_path, sizeof(config_path), sdn_stubby_pid_path, pmtl->nw_t.idx);
+		snprintf(config_path, sizeof(config_path), sdn_stubby_pid_path, pmtl->sdn_t.sdn_idx);
 		kill_pidfile_tk(config_path);
 		unlink(config_path);
 #endif
@@ -844,11 +847,11 @@ static int _handle_sdn_dnsmasq(const MTLAN_T *pmtl, const int action)
 				{
 					eval("dnsmasq", "-C", config_path, "--log-async");
 				}
-			}
 #ifdef RTCONFIG_DNSPRIVACY
-			memset(config_path, 0, sizeof(config_path));
-			_start_sdn_stubby(pmtl, config_path, sizeof(config_path));
+				memset(config_path, 0, sizeof(config_path));
+				_start_sdn_stubby(pmtl, config_path, sizeof(config_path));
 #endif
+			}
 		}
 	}
 	return 0;

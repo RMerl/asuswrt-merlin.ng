@@ -499,7 +499,7 @@ static int _handle_sdn_stubby(const MTLAN_T *pmtl, const int action)
 
 	if (action & RC_SERVICE_START)
 	{
-		if (pmtl->enable || (pmtl->nw_t.idx == 0 && nvram_get_int("dnspriv_enable")))
+		if (pmtl->enable)
 		{
 			memset(config_path, 0, sizeof(config_path));
 			_start_sdn_stubby(pmtl, config_path, sizeof(config_path));

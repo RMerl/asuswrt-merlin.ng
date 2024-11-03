@@ -488,12 +488,12 @@ int update_SDN_iptables(const MTLAN_T *pmtl, const char *logdrop, const char *lo
 		if (pmtl->enable)
 		{
 #ifdef RTCONFIG_DNSPRIVACY
-			if (pmtl->nw_t.idx)	//ignore br0
+			if (pmtl->nw_t.idx)	//ignore br0 (main subnet)
 			{
 				// DoT
 				if (pmtl->nw_t.dot_enable)
 				{
-					fprintf(fp, "-A PREROUTING --src %s/%d -p udp -m udp --dport 53 -j DNAT --to %s:53%02d\n", pmtl->nw_t.subnet, pmtl->nw_t.prefixlen, pmtl->nw_t.addr, pmtl->nw_t.idx);
+					fprintf(fp, "-A PREROUTING --src %s/%d -p udp -m udp --dport 53 -j DNAT --to %s:53%02d\n", pmtl->nw_t.subnet, pmtl->nw_t.prefixlen, pmtl->nw_t.addr, pmtl->sdn_t.sdn_idx);
 				}
 			}
 #endif

@@ -185,7 +185,7 @@ function show_dnsfilter_list(){
 	else{
 		//user icon
 		var userIconBase64 = "NoIcon";
-		var clientName, deviceType, deviceVender;
+		var clientName, deviceType, deviceVendor;
 		for(var i=1; i<dnsfilter_rule_list_row.length; i++){
 			var ruleArray = dnsfilter_rule_list_row[i].split('&#62');
 			var clientMac = ruleArray[1].toUpperCase();
@@ -196,13 +196,13 @@ function show_dnsfilter_list(){
 			if(clientList[clientMac]) {
 				clientName = (clientList[clientMac].nickName == "") ? clientList[clientMac].name : clientList[clientMac].nickName;
 				deviceType = clientList[clientMac].type;
-				deviceVender = clientList[clientMac].vendor;
+				deviceVendor = clientList[clientMac].vendor;
 				dnsfilter_rule_list_row[clientMac] = clientName;
 			}
 			else {
 				clientName = clientMac;
 				deviceType = 0;
-				deviceVender = "";
+				deviceVendor = "";
 			}
 			code +='<tr id="row'+i+'">';
 			code +='<td width="50%" title="'+clientName+'">';
@@ -439,19 +439,21 @@ function convertRulelistToJson(attrArray, rulelist) {
 
 
 function show_sdn_list() {
-	var code;
+	var code, sdn_name;
 	var i = 0;
 
 	code = '<table width="100%" border="1" cellspacing="0" cellpadding="4" align="center" class="list_table" id="clientTable">';
 
 	$.each(sdn_rl_json, function(index, entry){
-		var sdn_name = decodeURIComponent(httpApi.nvramCharToAscii(["apg" + entry.apg_idx + "_ssid"])["apg" + entry.apg_idx + "_ssid"])
-		if (entry.idx != "0") {	// Skip DEFAULT sdn
-			i++;
-			code +='<tr id="row'+i+'">';
-			code +='<td width="50%" title="'+sdn_name+'">'+sdn_name+'</td>';
-			code +='<td width="50%">'+gen_modeselect("sdn_dns_filter_idx"+entry.idx, entry.dns_filter_idx, "")+'</td>';
-			code += '</tr>';
+		if(!$.isEmptyObject(entry)) {
+			if (entry.idx != 0 && entry.sdn_name != "MAINBH" && entry.sdn_name != "MAINFH") {	// Skip default and hauls
+				i++;
+				sdn_name = decodeURIComponent(httpApi.nvramCharToAscii(["apg" + entry.apg_idx + "_ssid"])["apg" + entry.apg_idx + "_ssid"])
+				code +='<tr id="row'+i+'">';
+				code +='<td width="50%" title="'+sdn_name+'">'+sdn_name+'</td>';
+				code +='<td width="50%">'+gen_modeselect("sdn_dns_filter_idx"+entry.idx, entry.dns_filter_idx, "")+'</td>';
+				code += '</tr>';
+			}
 		}
 	});
 	code += '</table>';
@@ -465,8 +467,10 @@ function save_sdn_rules() {
 	var new_entry;
 
 	$.each(sdn_rl_json, function(index, entry){
-		if (entry.idx != 0) {
-			entry.dns_filter_idx = document.getElementById("sdn_dns_filter_idx"+entry.idx).value;
+		if(!$.isEmptyObject(entry)) {
+			if (entry.idx != 0 && entry.sdn_name != "MAINBH" && entry.sdn_name != "MAINFH") {	// Skip default and hauls
+				entry.dns_filter_idx = document.getElementById("sdn_dns_filter_idx"+entry.idx).value;
+			}
 		}
 	});
 

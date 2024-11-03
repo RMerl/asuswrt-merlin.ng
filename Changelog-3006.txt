@@ -1,7 +1,7 @@
 Asuswrt-Merlin 3006.xxx Changelog
 =================================
 
-3006.102.2 (xx-xxx-xxxx)
+3006.102.2 (3-Nov-2024)
   - NEW: Added support for RT-BE88U (based on GPL 3.0.0.6.102_33921)
   - NEW: Added support for RT-BE86U (based on GPL 3.0.0.6.102_36216)
   - NEW: Added mDNS support to the router's local name resolution
@@ -37,6 +37,7 @@ Asuswrt-Merlin 3006.xxx Changelog
            Wifi 7 models.
   - FIXED: DNS over TLS broken if IoT Guest Network (or other
            Guest Network sharing existing VLAN) is disabled.
+           (patch from Asus)
 
 
 3006.102.1 (28-Jun-2024)

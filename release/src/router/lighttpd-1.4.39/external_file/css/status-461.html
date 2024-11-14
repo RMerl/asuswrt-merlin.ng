@@ -227,8 +227,7 @@ function doOK(e) {
 		return;
 	}
 	
-	var b = window.location.href.indexOf("/",window.location.protocol.length+2);
-	var window_location = window.location.href.slice(0,b);
+	var window_location = getSafeLocation();
 	
 	var param = {};
 	param.action = "register";
@@ -294,50 +293,16 @@ function doOK(e) {
 	});
 }
 
+// Function to safely get the origin part of the URL
+function getSafeLocation() {
+    var url = new URL(window.location.href);
+    return url.origin;
+}
+
 function doLogin(){
-	var b = window.location.href.indexOf("/",window.location.protocol.length+2);
-	var window_location = window.location.href.slice(0,b);
+	var window_location = getSafeLocation();
 	window.location = window_location;
-	/*
-	var client = new davlib.DavClient();
-	client.initialize();
-				
-	client.LOGOUT("/", function(error){
-		if(error[0]==2){
-			window.location = window_location;
-		}
-	});
-	*/
 }
-/*
-function login(url, username, password){
-	var auth = "";
-	
-	var auth = "Basic " + Base64.encode(username + ":" + password);
-	
-	var client = new davlib.DavClient();
-	client.initialize();
-	
-	client.LOGOUT(url, function(error){	
-		if(error[0]==2){
-			client.PROPFIND(url, auth, function(error, statusstring, content){		
-				if(error==401){
-					alert("Fail to login!");
-				}
-				else{
-					alert(username+", "+password);
-					setTimeout(function(){
-						//window.location.reload(true);
-						window.location = url;
-					}, 100);
-				}
-			});
-		}
-	});
-		
-	
-}
-*/
 
 function onKeyHandler(e){
 	if(e.keyCode==13)

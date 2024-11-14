@@ -439,6 +439,12 @@ function refreshShareLinkList() {
 	});
 }
 
+// Function to safely get the origin part of the URL
+function getSafeLocation() {
+    var url = new URL(window.location.href);
+    return url.origin;
+}
+
 function openSettingWindow() {
 	var dialog_title = "";
 	var loc_lan = String(window.navigator.userLanguage || window.navigator.language).toLowerCase();
@@ -513,8 +519,7 @@ function openSettingWindow() {
 	});
 
 	$("#desktop_view").click(function () {
-		var url = window.location.href;
-		url = url.substr(0, url.lastIndexOf("?"));
+		var url = getSafeLocation();
 		window.location = url + '?desktop=1';
 	});
 
@@ -675,11 +680,12 @@ function openAudioPlayer(loc) {
 	generate_sharelink = 1;
 
 	if (generate_sharelink == 1) {
-		var media_hostName = window.location.host;
-		if (media_hostName.indexOf(":") != -1)
-			media_hostName = media_hostName.substring(0, media_hostName.indexOf(":"));
-		media_hostName = "http://" + media_hostName + ":" + g_storage.get("http_port") + "/";
+		// var media_hostName = window.location.host;
+		// if (media_hostName.indexOf(":") != -1)
+		// 	media_hostName = media_hostName.substring(0, media_hostName.indexOf(":"));
+		// media_hostName = "http://" + media_hostName + ":" + g_storage.get("http_port") + "/";
 
+		var media_hostName = g_storage.get('request_host_url') + "/";
 		var timer = setInterval(function () {
 
 			if (on_query == false) {
@@ -1994,7 +2000,7 @@ function menuHandler(event) {
 			var this_full_url = $(this).attr("uhref");
 			var this_isdir = $(this).attr("isdir");
 			var this_url = window.location.href;
-
+			
 			this_url = this_full_url.substring(0, this_full_url.lastIndexOf('/'));
 
 			selectURL = this_url;

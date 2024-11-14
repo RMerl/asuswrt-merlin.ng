@@ -1397,7 +1397,7 @@ function addtoFavorite(){
     var isMSIE = isIE();
     
 	if(ddns==""){		
-		favorite_url = g_storage.get('request_host_url');//window.location.href;
+		favorite_url = g_storage.get('request_host_url');
 	}
 		
 	if ((typeof window.sidebar == "object") && (typeof window.sidebar.addPanel == "function")) {
@@ -1473,6 +1473,11 @@ function getMouseXY(e) {
   	return true
 }
 
+function getSafeLocation() {
+    var url = new URL(window.location.href);
+    return url.origin;
+}
+
 $(document).ready(function(){
 	
 	if( ( navigator.userAgent.match(/iPhone/i)) || 
@@ -1482,8 +1487,7 @@ $(document).ready(function(){
 		option = option.substr(option.lastIndexOf("?")+1, option.length);
 		
 		if(option.indexOf("desktop=1")!=0){
-			var url = window.location.href;		
-			url = url.substr(0, url.lastIndexOf("?"));
+			var url = getSafeLocation();
 			window.location = url + '?mobile=1';
 			return;
 		}

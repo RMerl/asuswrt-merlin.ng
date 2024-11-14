@@ -1,6 +1,16 @@
 Asuswrt-Merlin Changelog
 ========================
 
+386.14_2 (xx-xxx-2024)
+  - UPDATED: OpenVPN to 2.6.12.
+  - CHANGED: Enabled Netfilter queue support for SDK6/SDK7
+             devices (patch by HiHat)
+  - FIXED: Security issues in AiCloud (backports from Asus)
+  - FIXED: CVE-2024-2511, CVE-2024-4741, CVE-2024-5535 &
+           Implicit rejection for RSA PKCS#1 in openssl
+           (backport from Ubuntu by RSDNTWK)
+
+
 386.14 (20-July-2024)
   - NOTE: Reminder that all models on the 386.xx series will
           stop being supported by Asuswrt-Merlin at the end

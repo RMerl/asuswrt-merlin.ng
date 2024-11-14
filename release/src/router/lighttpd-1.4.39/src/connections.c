@@ -111,7 +111,7 @@ static int connection_del(server *srv, connection *con) {
 
 	/* not last element */
 
-	if (i != conns->used - 1) {
+	if (i >= 0 && i < conns->used && conns->used > 0) {
 		temp = conns->ptr[i];
 		conns->ptr[i] = conns->ptr[conns->used - 1];
 		conns->ptr[conns->used - 1] = temp;
@@ -995,12 +995,12 @@ static void check_available_temp_space(server *srv, connection *con){
 			snprintf(disk_full_path, sizeof(disk_full_path), "%s%s", disk_path, de->d_name);
 			snprintf(querycmd, sizeof(querycmd), "df|grep -i '%s'", disk_full_path);
 			
-			char mybuffer[BUFSIZ]="\0";
+			char mybuffer[BUFSIZ] = "\0";
 			FILE* fp = popen( querycmd, "r");
 			if(fp){
-				int len = fread(mybuffer, sizeof(char), BUFSIZ, fp);
+				int len = fread(mybuffer, sizeof(char), BUFSIZ - 1, fp);
 				if(len>0){
-					mybuffer[len-1]="\0";
+					mybuffer[len] = "\0";
 				
 					char * pch;
 					pch = strtok(mybuffer, " ");
@@ -1028,6 +1028,9 @@ static void check_available_temp_space(server *srv, connection *con){
 						count++;
 					}
 
+				}
+				else {
+					mybuffer[0] = "\0";
 				}
 
 				pclose(fp);
@@ -1322,11 +1325,13 @@ int connection_reset(server *srv, connection *con) {
 
 		if (!pd) continue;
 
-		if (con->plugin_ctx[pd->id] != NULL) {
-			log_error_write(srv, __FILE__, __LINE__, "sb", "missing cleanup in", p->name);
-		}
+		if (pd->id >= 0 && pd->id < srv->plugins.used) {
+			if (con->plugin_ctx[pd->id] != NULL) {
+				log_error_write(srv, __FILE__, __LINE__, "sb", "missing cleanup in", p->name);
+			}
 
-		con->plugin_ctx[pd->id] = NULL;
+			con->plugin_ctx[pd->id] = NULL;
+		}
 	}
 
 	/* The cond_cache gets reset in response.c */
@@ -1456,6 +1461,11 @@ found_header_end:
 		if (con->request.content_length <= 64*1024) {
 			/* don't buffer request bodies <= 64k on disk */
 			chunkqueue_steal(dst_cq, cq, con->request.content_length - dst_cq->bytes_in);
+		}
+		else if (con->request.content_length > con->request.free_mem) {
+			con->http_status = 413;
+			con->keep_alive = 0;
+			connection_set_state(srv, con, CON_STATE_HANDLE_REQUEST);
 		}
 		else if (0 != chunkqueue_steal_with_tempfiles(srv, dst_cq, cq, con->request.content_length - dst_cq->bytes_in )) {
 			con->http_status = 413; /* Request-Entity too large */

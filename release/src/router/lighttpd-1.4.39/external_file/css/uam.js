@@ -11,21 +11,57 @@ var timeleft = getUrlVars()["timeleft"];
 var userurl = getUrlVars()["userurl"];
 var challenge = getUrlVars()["challenge"];
 
-function getUrlVars(){
-	var vars = [], hash;
-	var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
-	for(var i = 0; i < hashes.length; i++){
-		hash = hashes[i].split('=');
-    		vars.push(hash[0]);
- 	   	vars[hash[0]] = hash[1];
+function isValidInput(input) {
+	
+	//- Blacklist: Check for known malicious characters or patterns
+	var blackListPatterns = [
+		/<script>/i,
+		/<\/script>/i,
+		/javascript:/i,
+		/vbscript:/i,
+		/on\w+=/i,
+		/eval\(/i,
+		/expression\(/i
+	];
+	
+	for (var i = 0; i < blackListPatterns.length; i++) {
+		if (blackListPatterns[i].test(input)) {
+			return false;
+		}
 	}
+
+	return true;
+}
+
+function getUrlVars() {
+	var query = window.location.href.slice(window.location.href.indexOf('?') + 1);
+	var hashes = query.split('&');
+	var vars = {};
+
+	for (var i = 0; i < hashes.length; i++) {
+		var hash = hashes[i].split('=');
+		var key = decodeURIComponent(hash[0]);
+		var value = hash[1] || '';
+		var value_decode = decodeURIComponent(value);
+
+		if (isValidInput(key) && isValidInput(value_decode)) {
+			if (key=="username" || key=="password" || key=="chal" || key=="login" || key=="logout" || 
+				key=="prelogin" || key=="res" || key=="uamip" || key=="uamport"|| key=="timeleft" || 
+				key=="userurl" || key=="challenge") {
+				vars[key] = value;
+			}
+		}
+		else {
+			alert("Invalid input!");
+		}
+	}
+
 	return vars;
 }
 
 $("document").ready(function() {	
 	//alert("res=" + res + ", username=" + username + ", password=" + password);
 	
-
 	var divObj = document.createElement("div");
 	divObj.setAttribute("id","login_section");
 	divObj.setAttribute("style","display: none;");

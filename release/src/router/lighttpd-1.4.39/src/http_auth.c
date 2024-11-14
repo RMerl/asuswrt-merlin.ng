@@ -498,6 +498,8 @@ static void apr_md5_encode(const char *pw, const char *salt, char *result, size_
 	 */
 #define apr_cpystrn strncpy
 	apr_cpystrn(result, passwd, nbytes - 1);
+
+	result[nbytes - 1] = '\0';
 }
 
 #ifdef USE_OPENSSL

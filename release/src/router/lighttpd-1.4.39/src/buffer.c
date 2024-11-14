@@ -349,8 +349,13 @@ void li_itostrn(char *buf, size_t buf_len, intmax_t val) {
 	str = itostr(str, val);
 	force_assert(p_buf_end > str && str >= p_buf);
 
-	force_assert(buf_len >= (size_t) (p_buf_end - str));
-	memcpy(buf, str, p_buf_end - str);
+	size_t len = p_buf_end - str;
+	force_assert(buf_len >= len);
+	memcpy(buf, str, len);
+
+	if (buf_len > len) {
+        buf[len] = '\0';
+    }
 }
 
 void li_itostr(char *buf, intmax_t val) {
@@ -366,8 +371,13 @@ void li_utostrn(char *buf, size_t buf_len, uintmax_t val) {
 	str = utostr(str, val);
 	force_assert(p_buf_end > str && str >= p_buf);
 
-	force_assert(buf_len >= (size_t) (p_buf_end - str));
-	memcpy(buf, str, p_buf_end - str);
+	size_t len = p_buf_end - str;
+	force_assert(buf_len >= len);
+	memcpy(buf, str, len);
+
+	if (buf_len > len) {
+        buf[len] = '\0';
+    }
 }
 
 void li_utostr(char *buf, uintmax_t val) {

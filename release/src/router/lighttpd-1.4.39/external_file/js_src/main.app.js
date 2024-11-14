@@ -1,4 +1,4 @@
-﻿var g_support_html5 = 0;
+var g_support_html5 = 0;
 var g_reload_page = 1;
 var m = new lang();
 var g_storage = new myStorage();
@@ -439,6 +439,12 @@ function refreshShareLinkList() {
 	});
 }
 
+// Function to safely get the origin part of the URL
+function getSafeLocation() {
+    var url = new URL(window.location.href);
+    return url.origin;
+}
+
 function openSettingWindow() {
 	var dialog_title = "";
 	var loc_lan = String(window.navigator.userLanguage || window.navigator.language).toLowerCase();
@@ -513,8 +519,7 @@ function openSettingWindow() {
 	});
 
 	$("#desktop_view").click(function () {
-		var url = window.location.href;
-		url = url.substr(0, url.lastIndexOf("?"));
+		var url = getSafeLocation();
 		window.location = url + '?desktop=1';
 	});
 
@@ -1995,7 +2000,7 @@ function menuHandler(event) {
 			var this_full_url = $(this).attr("uhref");
 			var this_isdir = $(this).attr("isdir");
 			var this_url = window.location.href;
-
+			
 			this_url = this_full_url.substring(0, this_full_url.lastIndexOf('/'));
 
 			selectURL = this_url;

@@ -1,6 +1,10 @@
 Asuswrt-Merlin Changelog
 ========================
 
+3004.388.8_4 (xx-xxx-2024)
+  - FIXED: Security issues in AiCloud (backports from Asus)
+
+
 3004.388.8_2 (31-July-2024)
   - UPDATED: OpenVPN to 2.6.12.
   - CHANGED: Support importing Wireguard config files that

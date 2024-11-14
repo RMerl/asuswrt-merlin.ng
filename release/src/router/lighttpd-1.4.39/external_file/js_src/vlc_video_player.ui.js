@@ -626,7 +626,7 @@ function createPlayer() {
 	if( osVer.indexOf("mac") != -1 || file_ext == "mp4"){
 		var video_width = $(window).width();
 		var video_height = $(window).height() - $(".footer").height();
-	
+		
 		player_html += "<div>";
 		player_html += "<video id='videoPlayer' name='videoPlayer' width='" + video_width + "px' height='" + video_height + "px' autoplay>";
 		player_html += "<source src='";

@@ -43,7 +43,7 @@ int get_ntlm_type(buffer *msg)
 	return msg->ptr[8];
 }
 
-int ntlm_negotiate_response_handler(struct cli_state *cli, char *out) //, char *challenge, int challengeLen)
+int ntlm_negotiate_response_handler(struct cli_state *cli, char *out, size_t out_size) //, char *challenge, int challengeLen)
 {
 	uint32 olen = 0;
 	unsigned char *tmp;
@@ -55,7 +55,13 @@ int ntlm_negotiate_response_handler(struct cli_state *cli, char *out) //, char *
 		//tmp = base64_encode(blob, blobLen, &olen);
 		tmp = ldb_base64_encode(blob, blobLen);
 		olen = strlen(tmp);
-		memcpy(out, tmp, olen);
+		if (olen < out_size) {
+            memcpy(out, tmp, olen);
+            out[olen] = '\0';
+        } else {
+            free(tmp);
+            return -1;
+        }
 		free(tmp);
 	} else if (proto >= PROTOCOL_LANMAN1) {
 
@@ -71,7 +77,7 @@ int smb_backend_get_secblob(struct cli_state *cli, uint8_t *blob)
 	return smbc_cli_get_smb_secblob(cli, blob);
 }
 
-int smb_backend_get_challenge(struct cli_state *cli, char *out)
+int smb_backend_get_challenge(struct cli_state *cli, char *out, size_t out_size)
 {
 	int prot = smbc_cli_get_protocol(cli);
 	
@@ -94,14 +100,26 @@ int smb_backend_get_challenge(struct cli_state *cli, char *out)
 		memcpy(&msg1[24], blob, 8);
 		tmp = ldb_base64_encode(msg1, 40);
 		olen = strlen(tmp);
-		memcpy(out, tmp, olen);
+		if (olen < out_size) {
+            memcpy(out, tmp, olen);
+            out[olen] = '\0';
+        } else {
+            free(tmp);
+            return -1;
+        }
 		free(tmp);
 		return olen;
 	} else if (prot >= PROTOCOL_LANMAN1) {
 		len = smbc_cli_get_smb_challenge(cli, blob);
 		tmp = ldb_base64_encode(blob, len);
 		olen = strlen(tmp);
-		memcpy(out, tmp, olen);
+		if (olen < out_size) {
+            memcpy(out, tmp, olen);
+            out[olen] = '\0';
+        } else {
+            free(tmp);
+            return -1;
+        }
 		free(tmp);
 		return olen;
 	} else {
@@ -193,14 +211,14 @@ handler_t ntlm_authentication_handler(server *srv, connection *con, plugin_data 
 							con->smb_info->ntlmssp_state = smbc_cli_ntlmssp_state_alloc();
 							res = smb_backend_send_session_setup_nego(con->smb_info->cli, con->smb_info->ntlmssp_state, ntlm_msg->ptr, ntlm_msg->used);
 							buffer_free(ntlm_msg);
-							olen = ntlm_negotiate_response_handler(con->smb_info->cli, out);
+							olen = ntlm_negotiate_response_handler(con->smb_info->cli, out, 512);
 							//sprintf(challenge, "NTLM %s", out);
 						} else {
-							olen = smb_backend_get_challenge(con->smb_info->cli, out);
+							olen = smb_backend_get_challenge(con->smb_info->cli, out, 512);
 							//sprintf(challenge, "NTLM %s", out);
 						}
 					} else {
-						olen = smb_backend_get_challenge(con->smb_info->cli, out);
+						olen = smb_backend_get_challenge(con->smb_info->cli, out, 512);
 						//sprintf(challenge, "NTLM %s", out);
 					}
 					Cdbg(DBE, "\tRE-AUTH, challenge=[%s]", challenge);
@@ -278,16 +296,16 @@ handler_t ntlm_authentication_handler(server *srv, connection *con, plugin_data 
 							con->smb_info->ntlmssp_state = smbc_cli_ntlmssp_state_alloc();
 							res = smb_backend_send_session_setup_nego(con->smb_info->cli, con->smb_info->ntlmssp_state, ntlm_msg->ptr, ntlm_msg->used);
 							buffer_free(ntlm_msg);
-							olen = ntlm_negotiate_response_handler(con->smb_info->cli, out);
-							sprintf(challenge, "NTLM %s", out);
+							olen = ntlm_negotiate_response_handler(con->smb_info->cli, out, 512);
+							snprintf(challenge, 512, "NTLM %s", out);
 						} else {
-							olen = smb_backend_get_challenge(con->smb_info->cli, out);
-							sprintf(challenge, "NTLM %s", out);
+							olen = smb_backend_get_challenge(con->smb_info->cli, out, 512);
+							snprintf(challenge, 512, "NTLM %s", out);
 						}
 					} 
 					else {
-						olen = smb_backend_get_challenge(con->smb_info->cli, out);
-						sprintf(challenge, "NTLM %s", out);
+						olen = smb_backend_get_challenge(con->smb_info->cli, out, 512);
+						snprintf(challenge, 512, "NTLM %s", out);
 					}
 					
 					Cdbg(DBE, "\tchallenge=[%s]", challenge);
@@ -357,7 +375,7 @@ handler_t ntlm_authentication_handler(server *srv, connection *con, plugin_data 
 		case SMB_HOST_QUERY:
 			break;
 		case SMB_SHARE_QUERY:
-			sprintf(turi, "%s/IPC$", con->physical_auth_url->ptr);
+			snprintf(turi, 256, "%s/IPC$", con->physical_auth_url->ptr);
 			res = smbc_cli_tree_connect(con->smb_info->cli, turi);
 			break;
 		case SMB_FILE_QUERY:

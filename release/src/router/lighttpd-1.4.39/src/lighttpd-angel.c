@@ -99,6 +99,14 @@ int main(int argc, char **argv) {
 
 				argv[0] = BINPATH;
 
+				//- Check parameter
+				for (int i = 1; i < argc; ++i) {
+					if (strpbrk(argv[i], "&;|<>`$()\\") != NULL) {
+						fprintf(stderr, "Invalid character in argument: %s\n", argv[i]);
+						return EXIT_FAILURE;
+					}
+				}
+
 				execvp(BINPATH, argv);
 
 				exit(1);

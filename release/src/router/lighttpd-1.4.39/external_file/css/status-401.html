@@ -163,6 +163,17 @@ $("document").ready(function() {
 	$("input#username").focus();
 });
 
+function sanitize(input) {
+    //- Use replacement methods to remove or encode potentially malicious characters
+    return input
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#x27;")
+        .replace(/\//g, "&#x2F;");
+}
+
 function generateCaptcha(){
 	
 	if(this_url!="/")
@@ -180,14 +191,14 @@ function generateCaptcha(){
 		success: function(xml){		
 				
 			var data = parseXml(xml);
-			var captcha_enable = $(data).find('enable').text();
+			var captcha_enable = sanitize($(data).find('enable').text());
 			if(captcha_enable==1){
-				var image_data1 = $(data).find('img1').text();
-				var image_data1 = $(data).find('img1').text();
-				var image_data2 = $(data).find('img2').text();
-				var image_data3 = $(data).find('img3').text();
-				var image_data4 = $(data).find('img4').text();
-				g_captcha = $(data).find('code').text();
+				var image_data1 = sanitize($(data).find('img1').text());
+				var image_data1 = sanitize($(data).find('img1').text());
+				var image_data2 = sanitize($(data).find('img2').text());
+				var image_data3 = sanitize($(data).find('img3').text());
+				var image_data4 = sanitize($(data).find('img4').text());
+				g_captcha = sanitize($(data).find('code').text());
 				
 				var captcha_pattern = "";
 				$("#captcha_pattern").empty();

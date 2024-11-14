@@ -34,10 +34,11 @@ border: 0px solid #FFF;
 background: transparent;
 color: #ffffff;
 text-transform: capitalize;
-height: 15px;
+height: 22px;
 padding: 0px 5px 0px 5px;
 vertical-align: middle;
-font: bold 14px "宋体",Arial,sans-serif;
+font: bold 0.9em "宋体",Arial,sans-serif;
+line-height: 22px;
 }
 #jqmMsg {
 background: #FF6666;

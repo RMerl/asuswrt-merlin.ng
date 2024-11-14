@@ -31,9 +31,14 @@ $("document").ready(function() {
 	$("#table_main").show();
 });
 
+// Function to safely get the origin part of the URL
+function getSafeLocation() {
+    var url = new URL(window.location.href);
+    return url.origin;
+}
+
 function doLogin(){
-	var b = window.location.href.indexOf("/",window.location.protocol.length+2);
-	var window_location = window.location.href.slice(0,b);
+	var window_location = getSafeLocation();
 	window.location = window_location;
 }
 

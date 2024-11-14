@@ -674,8 +674,11 @@ void dumparptable(void)
 		
 	//while (fgets(buf, 256, fp) && (mac_num < MAX_MAC_NUM - 2)) {
 	while (fgets(buf, 256, fp) ) {
-		sscanf(buf, "%s %s %s %s %s %s", ip_entry, hw_type, flags, hw_address, mask, device);
 		
+		if (sscanf(buf, "%31s %7s %7s %31s %31s %7s", ip_entry, hw_type, flags, hw_address, mask, device) != 6) {
+    		continue;
+		}
+
 	    if (!strcmp(device, g_scan_interface) && strlen(hw_address)!=0)
 	    {
 	    	//Cdbg(DBE, "%s, %s", ip_entry, hw_address);

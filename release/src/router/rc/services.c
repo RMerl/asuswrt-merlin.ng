@@ -19511,11 +19511,6 @@ retry_wps_enr:
 		start_firewall(wan_primary_ifunit(), 0);
 	}
 #endif
-	else if (strcmp(script, "sh") == 0) {
-		_dprintf("%s: shell: %s\n", __FUNCTION__, cmd[1]);
-		if(cmd[1]) system(cmd[1]);
-	}
-
 	else if (strcmp(script, "rstats") == 0)
 	{
 		if(action & RC_SERVICE_STOP) stop_rstats();

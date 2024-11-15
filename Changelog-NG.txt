@@ -2,7 +2,14 @@ Asuswrt-Merlin Changelog
 ========================
 
 3004.388.8_4 (xx-xxx-2024)
+  - CHANGED: VPN killswitch will now only be active if the
+             VPN client itself is enabled.  If you stop/start
+             the client yourself over SSH, you need to also
+             update the enabled/disabled nvram setting.
   - FIXED: Security issues in AiCloud (backports from Asus)
+  - FIXED: CVE-2024-2511, CVE-2024-4741, CVE-2024-5535 &
+           Implicit rejection for RSA PKCS#1 in openssl
+           (backport from Ubuntu by RSDNTWK)
 
 
 3004.388.8_2 (31-July-2024)

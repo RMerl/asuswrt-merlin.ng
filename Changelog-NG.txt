@@ -1,7 +1,7 @@
 Asuswrt-Merlin Changelog
 ========================
 
-3004.388.8_4 (xx-xxx-2024)
+3004.388.8_4 (17-Nov-2024)
   - CHANGED: VPN killswitch will now only be active if the
              VPN client itself is enabled.  If you stop/start
              the client yourself over SSH, you need to also

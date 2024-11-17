@@ -58,6 +58,12 @@ Fully supported devices:
  * RT-AX86U Pro
  * RT-AX88U Pro
 
+3006.102.x:
+ * RT-BE96U 
+ * GT-BE98_PRO
+ * RT-BE88U
+ * RT-BE86U
+
 No longer supported:
  * RT-N16
  * RT-N66U

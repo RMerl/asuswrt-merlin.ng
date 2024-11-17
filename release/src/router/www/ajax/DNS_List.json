@@ -1,7 +1,7 @@
 ﻿{
     "0":{
             "FilterMode": "Ad block",
-            "DNSService": "AdGuard",
+            "DNSService": "AdGuard-1",
             "ServiceIP1": "94.140.14.14",
             "ServiceIP2": "94.140.15.15",
             "Description": "Blocks advertisements.",
@@ -10,7 +10,7 @@
         },
     "1":{
             "FilterMode": "Family",
-            "DNSService": "AdGuard",
+            "DNSService": "AdGuard-2",
             "ServiceIP1": "94.140.14.15",
             "ServiceIP2": "94.140.15.16",
             "Description": "Blocks advertisements. Blocks adult contents.",
@@ -19,7 +19,7 @@
         },
     "2":{
             "FilterMode": "Family",
-            "DNSService": "CleanBrowsing",
+            "DNSService": "CleanBrowsing-1",
             "ServiceIP1": "185.228.168.10",
             "ServiceIP2": "185.228.169.11",
             "Description": "Blocks access to all adult, pornography and explicit sites. Google and Bing set to Safe Mode. Security filter applied.",
@@ -29,7 +29,7 @@
         },
     "3":{
             "FilterMode": "Family",
-            "DNSService": "CleanBrowsing",
+            "DNSService": "CleanBrowsing-2",
             "ServiceIP1": "185.228.168.168",
             "ServiceIP2": "185.228.169.168",
             "Description": "Blocks access to all adult, pornography, explicit, VPN, Proxy and mixed content sites. Google, Bing, and YouTube set to Safe Mode. Security filter applied.",
@@ -39,7 +39,7 @@
         },
     "4":{
             "FilterMode": "Family",
-            "DNSService": "Cloudflare",
+            "DNSService": "Cloudflare-1",
             "ServiceIP1": "1.1.1.3",
             "ServiceIP2": "1.0.0.3",
             "Description": "Block malware, Blocks adult contents.",
@@ -48,7 +48,7 @@
         },
     "5":{
             "FilterMode": "Family",
-            "DNSService": "OpenDNS",
+            "DNSService": "OpenDNS-1",
             "ServiceIP1": "208.67.222.123",
             "ServiceIP2": "208.67.220.123",
             "Description": "Blocks adult contents.",
@@ -57,7 +57,7 @@
         },
     "6":{
             "FilterMode": "Family",
-            "DNSService": "Yandex",
+            "DNSService": "Yandex-1",
             "ServiceIP1": "77.88.8.7",
             "ServiceIP2": "77.88.8.3",
             "Description": "Block malicious content. Blocks adult contents.",
@@ -66,7 +66,7 @@
         },
     "7":{
             "FilterMode": "Fast DNS",
-            "DNSService": "Cloudflare",
+            "DNSService": "Cloudflare-2",
             "ServiceIP1": "1.1.1.1",
             "ServiceIP2": "1.0.0.1",
             "Description": "The Internet's Fatest, Privacy-First DNS Recolver.",
@@ -132,7 +132,7 @@
         },
     "14":{
             "FilterMode": "Fast DNS",
-            "DNSService": "OpenDNS",
+            "DNSService": "OpenDNS-2",
             "ServiceIP1": "208.67.222.222",
             "ServiceIP2": "208.67.220.220",
             "Description": "Regular OpenDNS server (configurable through their portal)",
@@ -150,7 +150,7 @@
         },
     "16":{
             "FilterMode": "Safe",
-            "DNSService": "Cloudflare",
+            "DNSService": "Cloudflare-3",
             "ServiceIP1": "1.1.1.2",
             "ServiceIP2": "1.0.0.2",
             "Description": "Block malicious content",
@@ -159,7 +159,7 @@
         },
     "17":{
             "FilterMode": "Safe",
-            "DNSService": "CleanBrowsing",
+            "DNSService": "CleanBrowsing-3",
             "ServiceIP1": "185.228.168.9",
             "ServiceIP2": "185.228.169.9",
             "Description": "Blocks access to phishing, spam, malware and malicious domains.",
@@ -169,7 +169,7 @@
         },
     "18":{
             "FilterMode": "Safe",
-            "DNSService": "Comodo ",
+            "DNSService": "Comodo",
             "ServiceIP1": "8.26.56.26",
             "ServiceIP2": "8.20.247.20",
             "Description": "Block malicious content",
@@ -178,7 +178,7 @@
         },
     "19":{
             "FilterMode": "Safe",
-            "DNSService": "Quad9",
+            "DNSService": "Quad9-1",
             "ServiceIP1": "9.9.9.9",
             "ServiceIP2": "149.112.112.112",
             "Description": "Blocks malicious content, including malware and phishing, using threat intelligence from more than 20 sources.",
@@ -188,7 +188,7 @@
         },
     "20":{
             "FilterMode": "Safe",
-            "DNSService": "Yandex",
+            "DNSService": "Yandex-2",
             "ServiceIP1": "77.88.8.88",
             "ServiceIP2": "77.88.8.2",
             "Description": "Block malicious content",
@@ -197,7 +197,7 @@
         },
     "21":{
             "FilterMode": "Privacy-respecting",
-            "DNSService": "Quad9",
+            "DNSService": "Quad9-2",
             "ServiceIP1": "9.9.9.11",
             "ServiceIP2": "149.112.112.11",
             "Description": "Collects no information about users, and is governed by Swiss privacy law.",

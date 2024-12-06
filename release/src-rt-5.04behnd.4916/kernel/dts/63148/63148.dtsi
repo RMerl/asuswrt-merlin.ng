@@ -153,7 +153,7 @@
 		#include "../ip/bcm_sata.dtsi"
 	};
 
-	mdiosf2 {
+	mdiosf2:mdiosf2 {
 		compatible = "brcm,mdio-sf2";
 		reg = <0x800c03c0 0x8>,
 		      <0x800c0000 0x4>;

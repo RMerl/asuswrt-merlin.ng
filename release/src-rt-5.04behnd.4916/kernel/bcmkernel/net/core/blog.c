@@ -5,19 +5,25 @@
 *
 <:label-BRCM:2012:DUAL/GPL:standard
 
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License, version 2, as published by
-the Free Software Foundation (the "GPL").
+Unless you and Broadcom execute a separate written software license
+agreement governing use of this software, this software is licensed
+to you under the terms of the GNU General Public License version 2
+(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
+with the following added to such license:
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+   As a special exception, the copyright holders of this software give
+   you permission to link this software with independent modules, and
+   to copy and distribute the resulting executable under terms of your
+   choice, provided that you also meet, for each linked independent
+   module, the terms and conditions of the license of that module.
+   An independent module is a module which is not derived from this
+   software.  The special exception does not apply to any modifications
+   of the software.
 
-
-A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
-writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA.
+Not withstanding the above, under no circumstances may you combine
+this software in any way with any other Broadcom software provided
+under a license other than the GPL, without Broadcom's express prior
+written consent.
 
 :>
 */
@@ -39,11 +45,10 @@ Boston, MA 02111-1307, USA.
 #include <linux/blog_net.h>
 #include <linux/nbuff.h>
 #include <linux/skbuff.h>
+#include <linux/proc_fs.h>
 #include <linux/bcm_skb_defines.h>
 #include <linux/notifier.h>
-#if defined(CC_BLOG_SUPPORT_DBG_PKT_FILTER)
 #include <linux/inet.h>
-#endif
 #include <net/netevent.h>
 #if defined(CONFIG_XFRM)
 #include <net/xfrm.h>
@@ -69,6 +74,7 @@ Boston, MA 02111-1307, USA.
 
 #include <net/dsfield.h>
 #include <linux/netfilter/xt_dscp.h>
+#include <linux/inetdevice.h>
 #include <blog_ioctl.h>
 #include "blog_inline.h"
 
@@ -111,6 +117,588 @@ static uint8_t blog_tos_tbl[BLOG_MAX_TOS_TBLSZ];
  * {ack priority, length priority, dscp value, tos value}
  */
 static uint32_t blog_mangl_params[BLOG_MAX_FEATURES];
+
+#if IS_ENABLED(CONFIG_WIREGUARD)
+static void blog_procfs_init(void);
+#define PROCFS_BLOG	"blog"
+
+static ssize_t skip_wg_port_proc_read(struct file *file,
+    char __user *buf, size_t cnt, loff_t *offset);
+static ssize_t skip_wg_port_proc_write(struct file *file,
+    const char __user *buf, size_t cnt, loff_t *data);
+
+static ssize_t skip_wg_network_proc_read(struct file *file,
+    char __user *buf, size_t cnt, loff_t *offset);
+static ssize_t skip_wg_network_proc_write(struct file *file,
+    const char __user *buf, size_t cnt, loff_t *data);
+
+static const struct file_operations skip_wg_port_proc_fops = {
+    .read  = skip_wg_port_proc_read,
+    .write = skip_wg_port_proc_write,
+};
+
+static const struct file_operations skip_wg_network_proc_fops = {
+    .read  = skip_wg_network_proc_read,
+    .write = skip_wg_network_proc_write,
+};
+
+enum match_type {
+    MATCH_NONE,
+    MATCH_DEST,
+    MATCH_SRC,
+    MATCH_EITHER,
+};
+
+char *match_type_str[] = { "none", "dport", "sport", "either" };
+
+struct wg_port {
+    uint16_t port;
+    enum match_type match_type;
+};
+
+struct wg_network {
+    struct in_addr ip;
+    uint16_t prefixlen;
+};
+
+struct wg_network_ip6 {
+    struct in6_addr ip;
+    uint16_t prefixlen;
+};
+
+#define WG_PORT_TBL_SZ 8
+struct wg_port wg_port[WG_PORT_TBL_SZ];
+uint16_t wg_port_cnt;
+
+#define WG_NETWORK_TBL_SZ 8
+struct wg_network wg_network[WG_NETWORK_TBL_SZ];
+uint16_t wg_network_cnt;
+
+struct wg_network_ip6 wg_network_ip6[WG_NETWORK_TBL_SZ];
+uint16_t wg_network_ip6_cnt;
+
+static void
+blog_procfs_init(void)
+{
+    struct proc_dir_entry *entry;
+
+    proc_mkdir( PROCFS_BLOG, NULL );
+
+    entry = proc_create_data( PROCFS_BLOG "/skip_wireguard_port", S_IRUGO,
+        NULL, &skip_wg_port_proc_fops, NULL );
+    if ( !entry )
+    {
+        printk( CLRerr "%s Unable to create proc entry for skip_wireguard_port"
+            CLRnl, __FUNCTION__);
+    }
+
+    entry = proc_create_data( PROCFS_BLOG "/skip_wireguard_network", S_IRUGO,
+        NULL, &skip_wg_network_proc_fops, NULL );
+    if ( !entry )
+    {
+        printk( CLRerr "%s Unable to create proc entry for skip_wireguard_network"
+            CLRnl, __FUNCTION__);
+    }
+}
+
+static ssize_t
+skip_wg_port_proc_read(struct file *file, char __user *buf, size_t cnt,
+    loff_t *offset)
+{
+    int len = 0;
+    int i;
+
+    if ( *offset != 0 )
+    {
+        return 0;
+    }
+
+    for ( i = 0; i < WG_PORT_TBL_SZ; i++ )
+    {
+        if ( wg_port[i].port != 0 && wg_port[i].match_type != MATCH_NONE )
+        {
+            len += sprintf( buf + len, "%u %s\n",
+                wg_port[i].port, match_type_str[wg_port[i].match_type] );
+        }
+    }
+
+    *offset = len;
+
+    return len;
+}
+
+static int
+find_wg_port(uint16_t port)
+{
+    int i;
+
+    for ( i = 0; i < WG_PORT_TBL_SZ; i++ )
+    {
+        if ( wg_port[i].port == port )
+        {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+static int
+find_empty_wg_port(void)
+{
+    return find_wg_port( 0 );
+}
+
+static void
+update_wg_port_cnt(void)
+{
+    int i;
+
+    wg_port_cnt = 0;
+
+    for ( i = 0; i < WG_PORT_TBL_SZ; i++ )
+    {
+        if ( wg_port[i].port )
+        {
+            wg_port_cnt++;
+        }
+    }
+}
+
+static ssize_t
+skip_wg_port_proc_write(struct file *file, const char __user *buf, size_t cnt,
+    loff_t *data)
+{
+    char proc_data[128];
+    char *pdata;
+    char *token;
+    char *cmdstr = NULL;
+    char *portstr = NULL;
+    char *matchstr = NULL;
+
+    bool add;
+    uint32_t port;
+    enum match_type match_type;
+    int entry;
+
+    copy_from_user( proc_data, buf, cnt );
+    pdata = proc_data;
+
+    while ( (token = strsep(&pdata, " ")) != NULL )
+    {
+        if ( strlen(token) > 0 )
+        {
+            if ( cmdstr == NULL )
+            {
+                cmdstr = token;
+            }
+            else if ( portstr == NULL )
+            {
+                portstr = token;
+            }
+            else if ( matchstr == NULL )
+            {
+                matchstr = token;
+                break;
+            }
+        }
+    }
+
+    if ( cmdstr == NULL || portstr == NULL )
+    {
+        return -EINVAL;
+    }
+
+    if ( !strncmp(cmdstr, "add", 3) )
+    {
+        add = true;
+    }
+    else if ( !strncmp(cmdstr, "del", 3) )
+    {
+        add = false;
+    }
+    else
+    {
+        return -EINVAL;
+    }
+
+    port = simple_strtoul( portstr, NULL, 10 );
+    if ( port == 0 || port > 65535 )
+    {
+        return -EINVAL;
+    }
+
+    if ( add )
+    {
+        if ( matchstr == NULL )
+        {
+            return -EINVAL;
+        }
+
+        if ( !strncmp(matchstr, "dport", 5) )
+        {
+            match_type = MATCH_DEST;
+        }
+        else if ( !strncmp(matchstr, "sport", 5) )
+        {
+            match_type = MATCH_SRC;
+        }
+        else if ( !strncmp(matchstr, "either", 6) )
+        {
+            match_type = MATCH_EITHER;
+        }
+        else
+        {
+            return -EINVAL;
+        }
+    }
+
+    blog_print( "%s %u %s", add? "ADD": "DEL", port, add? match_type_str[match_type]: "" );
+
+    BLOG_LOCK_TBL();
+
+    entry = find_wg_port( port );
+
+    if ( add )
+    {
+        /* duplicate entry */
+        if ( entry >= 0 && entry < WG_PORT_TBL_SZ )
+        {
+            BLOG_UNLOCK_TBL();
+            return -EINVAL;
+        }
+
+        entry = find_empty_wg_port();
+        if ( entry < 0 || entry >= WG_PORT_TBL_SZ )
+        {
+            BLOG_UNLOCK_TBL();
+            return -EINVAL;
+        }
+
+        wg_port[entry].port = port;
+        wg_port[entry].match_type = match_type;
+    }
+    else
+    {
+        /* cannot find input entry */
+        if ( entry < 0 || entry >= WG_PORT_TBL_SZ )
+        {
+            BLOG_UNLOCK_TBL();
+            return -EINVAL;
+        }
+
+        wg_port[entry].port = 0;
+        wg_port[entry].match_type = MATCH_NONE;
+    }
+
+    update_wg_port_cnt();
+
+    BLOG_UNLOCK_TBL();
+
+    return cnt;
+}
+
+static ssize_t
+skip_wg_network_proc_read(struct file *file, char __user *buf, size_t cnt,
+    loff_t *offset)
+{
+    int len = 0;
+    int i;
+
+    if ( *offset != 0 )
+    {
+        return 0;
+    }
+
+    for ( i = 0; i < WG_NETWORK_TBL_SZ; i++ )
+    {
+        if ( wg_network[i].prefixlen != 0 )
+        {
+            len += sprintf( buf + len, "%u.%u.%u.%u/%u\n",
+                BLOG_IPV4_ADDR(wg_network[i].ip), wg_network[i].prefixlen );
+        }
+    }
+
+    for ( i = 0; i < WG_NETWORK_TBL_SZ; i++ )
+    {
+        if ( wg_network_ip6[i].prefixlen != 0 )
+        {
+            len += sprintf( buf + len, "%x:%x:%x:%x:%x:%x:%x:%x/%u\n",
+                BLOG_IPV6_ADDR(wg_network_ip6[i].ip), wg_network_ip6[i].prefixlen );
+        }
+    }
+
+    *offset = len;
+
+    return len;
+}
+
+static int
+find_wg_network(void *ipaddr, int family, uint16_t prefixlen)
+{
+    struct in_addr *ip;
+    struct in6_addr *ip6;
+    int i;
+
+    if ( !ipaddr )
+    {
+        return -1;
+    }
+
+    if ( family == AF_INET )
+    {
+        ip = (struct in_addr *)ipaddr;
+
+        for ( i = 0; i < WG_NETWORK_TBL_SZ; i++ )
+        {
+            if ( ( wg_network[i].prefixlen == prefixlen ) &&
+                ( wg_network[i].ip.s_addr == ip->s_addr ) )
+            {
+                return i;
+            }
+        }
+    }
+    else if ( family == AF_INET6 )
+    {
+        ip6 = (struct in6_addr *)ipaddr;
+
+        for ( i = 0; i < WG_NETWORK_TBL_SZ; i++ )
+        {
+            if ( ( wg_network_ip6[i].prefixlen == prefixlen ) &&
+                ipv6_addr_equal(&wg_network_ip6[i].ip, ip6) )
+            {
+                return i;
+            }
+        }
+    }
+
+    return -1;
+}
+
+static int
+find_empty_wg_network(int family)
+{
+    int i;
+
+    if ( family == AF_INET )
+    {
+        for ( i = 0; i < WG_NETWORK_TBL_SZ; i++ )
+        {
+            if ( wg_network[i].prefixlen == 0 )
+            {
+                return i;
+            }
+        }
+    }
+    else if ( family == AF_INET6 )
+    {
+        for ( i = 0; i < WG_NETWORK_TBL_SZ; i++ )
+        {
+            if ( wg_network_ip6[i].prefixlen == 0 )
+            {
+                return i;
+            }
+        }
+    }
+
+    return -1;
+}
+
+static void
+update_wg_network_cnt(int family)
+{
+    int i;
+
+    if ( family == AF_INET )
+    {
+        wg_network_cnt = 0;
+
+        for ( i = 0; i < WG_NETWORK_TBL_SZ; i++ )
+        {
+            if ( wg_network[i].prefixlen )
+            {
+                wg_network_cnt++;
+            }
+        }
+    }
+    else if ( family == AF_INET6 )
+    {
+        wg_network_ip6_cnt = 0;
+
+        for ( i = 0; i < WG_NETWORK_TBL_SZ; i++ )
+        {
+            if ( wg_network_ip6[i].prefixlen )
+            {
+                wg_network_ip6_cnt++;
+            }
+        }
+    }
+}
+
+static ssize_t
+skip_wg_network_proc_write(struct file *file, const char __user *buf, size_t cnt,
+    loff_t *data)
+{
+    char proc_data[128];
+    char *pdata;
+    char *token;
+    char *cmdstr = NULL;
+    char *ipstr = NULL;
+    char *prefixlenstr = NULL;
+    char *slash;
+
+    bool add;
+    struct in_addr ip;
+    struct in6_addr ip6;
+    int family;
+    uint32_t prefixlen;
+    int entry;
+
+    copy_from_user( proc_data, buf, cnt );
+    pdata = proc_data;
+
+    while ( (token = strsep(&pdata, " ")) != NULL )
+    {
+        if ( strlen(token) > 0 )
+        {
+            if ( cmdstr == NULL )
+            {
+                cmdstr = token;
+            }
+            else if ( ipstr == NULL )
+            {
+                ipstr = token;
+                break;
+            }
+        }
+    }
+
+    if ( cmdstr == NULL || ipstr == NULL )
+    {
+        return -EINVAL;
+    }
+
+    if ( !strncmp(cmdstr, "add", 3) )
+    {
+        add = true;
+    }
+    else if ( !strncmp(cmdstr, "del", 3) )
+    {
+        add = false;
+    }
+    else
+    {
+        return -EINVAL;
+    }
+
+    slash = strchr( ipstr, '/' );
+    if ( !slash )
+    {
+        return -EINVAL;
+    }
+
+    *slash = '\0';
+    prefixlenstr = slash + 1;
+
+    if ( strchr(ipstr, ':') )
+    {
+        family = AF_INET6;
+        if ( in6_pton(ipstr, -1, (u8 *)&ip6, -1, NULL) == 0 )
+        {
+            return -EINVAL;
+        }
+    }
+    else
+    {
+        family = AF_INET;
+        if ( in4_pton(ipstr, -1, (u8 *)&ip, -1, NULL) == 0 )
+        {
+            return -EINVAL;
+        }
+    }
+
+    prefixlen = simple_strtoul( prefixlenstr, NULL, 10 );
+    if ( (prefixlen == 0) ||
+        ((family == AF_INET) && (prefixlen > 32)) ||
+        ((family == AF_INET6) && (prefixlen > 128)) )
+    {
+        return -EINVAL;
+    }
+
+    if ( family == AF_INET )
+    {
+        ip.s_addr = ip.s_addr & inet_make_mask( prefixlen );
+    }
+
+    if ( family == AF_INET )
+    {
+        blog_print( "%s %u.%u.%u.%u/%u", add? "ADD": "DEL",
+            BLOG_IPV4_ADDR(ip), prefixlen );
+    }
+    else
+    {
+        blog_print( "%s %x:%x:%x:%x:%x:%x:%x:%x/%u", add? "ADD": "DEL",
+            BLOG_IPV6_ADDR(ip6), prefixlen );
+    }
+
+    BLOG_LOCK_TBL();
+
+    entry = find_wg_network( (family == AF_INET)? (void*)&ip: (void*)&ip6,
+        family, prefixlen );
+
+    if ( add )
+    {
+        /* duplicate entry */
+        if ( entry >= 0 && entry < WG_NETWORK_TBL_SZ )
+        {
+            BLOG_UNLOCK_TBL();
+            return -EINVAL;
+        }
+
+        entry = find_empty_wg_network( family );
+        if ( entry < 0 || entry >= WG_NETWORK_TBL_SZ )
+        {
+            BLOG_UNLOCK_TBL();
+            return -EINVAL;
+        }
+
+        if ( family == AF_INET )
+        {
+            wg_network[entry].ip.s_addr = ip.s_addr;
+            wg_network[entry].prefixlen = prefixlen;
+        }
+        else
+        {
+            wg_network_ip6[entry].ip = ip6;
+            wg_network_ip6[entry].prefixlen = prefixlen;
+        }
+    }
+    else
+    {
+        /* cannot find input entry */
+        if ( entry < 0 || entry >= WG_NETWORK_TBL_SZ )
+        {
+            BLOG_UNLOCK_TBL();
+            return -EINVAL;
+        }
+
+        if ( family == AF_INET )
+        {
+            wg_network[entry].prefixlen = 0;
+        }
+        else
+        {
+            wg_network_ip6[entry].prefixlen = 0;
+        }
+    }
+
+    update_wg_network_cnt( family );
+
+    BLOG_UNLOCK_TBL();
+
+    return cnt;
+}
+#endif
 
 extern netdev_tx_t bcm_skb_direct_xmit_args(pNBuff_t nbuff, struct net_device *dev, BlogFcArgs_t *args);
 
@@ -351,6 +939,169 @@ void blog_support_gre(int config)
 
 int blog_rcv_chk_gre(struct fkbuff *fkb_p, uint32_t h_proto, uint16_t *gflags_p);
 int blog_xmit_chk_gre(struct sk_buff *skb_p, uint32_t h_proto); 
+
+#if IS_ENABLED(CONFIG_WIREGUARD)
+static inline bool
+match_wg_network(void *src_ipaddr, void *dst_ipaddr, int family)
+{
+    struct in_addr *src_ip, *dst_ip, mask;
+    struct in6_addr *src_ip6, *dst_ip6;
+    int i;
+    bool match = false;
+
+    if ( !src_ipaddr || !dst_ipaddr )
+    {
+        return false;
+    }
+
+    if ( family == AF_INET )
+    {
+        src_ip = (struct in_addr *)src_ipaddr;
+        dst_ip = (struct in_addr *)dst_ipaddr;
+
+        for ( i = 0; i < WG_NETWORK_TBL_SZ; i++ )
+        {
+            if ( wg_network[i].prefixlen == 0 )
+                continue;
+
+            mask.s_addr = inet_make_mask(wg_network[i].prefixlen);
+
+            if ( ((src_ip->s_addr & mask.s_addr) == wg_network[i].ip.s_addr) ||
+                 ((dst_ip->s_addr & mask.s_addr) == wg_network[i].ip.s_addr) )
+            {
+                match = true;
+                break;
+            }
+        }
+    }
+    else if ( family == AF_INET6 )
+    {
+        src_ip6 = (struct in6_addr *)src_ipaddr;
+        dst_ip6 = (struct in6_addr *)dst_ipaddr;
+
+        for ( i = 0; i < WG_NETWORK_TBL_SZ; i++ )
+        {
+            if ( wg_network_ip6[i].prefixlen == 0 )
+                continue;
+
+            if ( ipv6_prefix_equal(src_ip6, &wg_network_ip6[i].ip,
+                    wg_network_ip6[i].prefixlen) ||
+                 ipv6_prefix_equal(dst_ip6, &wg_network_ip6[i].ip,
+                    wg_network_ip6[i].prefixlen) )
+            {
+                match = true;
+                break;
+            }
+        }
+    }
+
+    return match;
+}
+
+static inline bool
+match_wg_port( uint16_t sport, uint16_t dport )
+{
+    bool match = false;
+    int i;
+
+    for ( i = 0; i < WG_PORT_TBL_SZ; i++)
+    {
+        if ( wg_port[i].port != 0 )
+        {
+            switch (wg_port[i].match_type) {
+            case MATCH_DEST:    if (dport == wg_port[i].port) match = true; break;
+            case MATCH_SRC:     if (sport == wg_port[i].port) match = true; break;
+            case MATCH_EITHER:  if ((dport == wg_port[i].port) || (sport == wg_port[i].port)) match = true; break;
+            default:            break;
+            }
+        }
+    }
+
+    return match;
+}
+
+bool blog_skip_wg_enabled(void) 
+{
+    return ( (wg_port_cnt != 0) || (wg_network_cnt != 0) || (wg_network_ip6_cnt != 0) );
+}
+
+extern BlogIpv4Hdr_t * blog_parse_l2hdr( struct fkbuff *fkb_p, uint32_t h_proto );
+int blog_rcv_chk_wg(struct fkbuff *fkb_p, uint32_t h_proto) 
+{
+    BlogIpv4Hdr_t* ip_p;
+    BlogUdpHdr_t * udp_p;
+    int ver;
+    char * hdr_p;
+    uint32_t ip_proto;
+
+    ip_p = blog_parse_l2hdr( fkb_p, h_proto );
+    if ( ip_p != NULL )
+    {
+        ver = (*(uint8_t*)ip_p) >> 4;
+
+        blog_print( "Rcv Check Wireguard" );
+
+        if ( ver == 4 )
+        {
+            struct in_addr src_ip, dst_ip;
+
+            hdr_p = (char *)ip_p;
+            hdr_p += BLOG_IPV4_HDR_LEN;
+
+            if ( unlikely(*(uint8_t*)ip_p != 0x45) )
+            {
+                blog_print( "ABORT IP ver<%d> len<%d>", ip_p->ver, ip_p->ihl );
+                return 0;
+            }
+
+            ip_proto = ip_p->proto;
+
+            src_ip.s_addr = blog_read32_align16( (uint16_t *)&ip_p->sAddr );
+            dst_ip.s_addr = blog_read32_align16( (uint16_t *)&ip_p->dAddr );
+
+            if ( match_wg_network((void *)&src_ip, (void *)&dst_ip, AF_INET) )
+            {
+                return 1;
+            }
+        }
+        else if ( ver == 6 )
+        {
+            struct in6_addr src_ip6, dst_ip6;
+
+            hdr_p = (char *)ip_p;
+            hdr_p += BLOG_IPV6_HDR_LEN;
+
+            /*  Support extension headers? */
+            ip_proto = ((BlogIpv6Hdr_t*)ip_p)->nextHdr;
+            if ( ip_proto == BLOG_IPPROTO_DSTOPTS )
+            {
+                ip_proto = ((BlogIpv6ExtHdr_t*)hdr_p)->nextHdr;
+                hdr_p += BLOG_IPV6EXT_HDR_LEN;
+            }
+
+            src_ip6 = ((struct ipv6hdr *)ip_p)->saddr;
+            dst_ip6 = ((struct ipv6hdr *)ip_p)->daddr;
+
+            if ( match_wg_network((void *)&src_ip6, (void *)&dst_ip6, AF_INET6) )
+            {
+                return 1;
+            }
+        }
+
+        if ( ip_proto == BLOG_IPPROTO_UDP )
+        {
+            udp_p = (BlogUdpHdr_t *)hdr_p;
+
+            if ( match_wg_port( ntohs(udp_p->sPort), ntohs(udp_p->dPort) ) )
+            {
+                return 1;
+            }
+        }
+    }
+
+    return 0;
+}
+#endif
 
 /*
  * blog_support_l2tp_g inherits the default value from CC_BLOG_SUPPORT_L2TP
@@ -4797,6 +5548,14 @@ BlogAction_t _blog_finit( struct fkbuff * fkb_p, void * dev_p,
     }
 #endif
 
+#if IS_ENABLED(CONFIG_WIREGUARD)
+    if ( blog_skip_wg_enabled() && blog_rcv_chk_wg (fkb_p, encap) )
+    {
+        action = PKT_NORM;
+        fkb_release_blog( fkb_p );
+        goto bypass;
+    }
+#endif
 #if IS_ENABLED(CONFIG_NET_IPGRE) || IS_ENABLED(CONFIG_ACCEL_PPTP)
     gre_rcv_version = blog_rcv_chk_gre (fkb_p, encap, &flags);     
 #endif           
@@ -6787,6 +7546,31 @@ int blog_clr_tos_tbl()
     return 0;
 }
 
+#if IS_ENABLED(CONFIG_WIREGUARD)
+/*
+ *------------------------------------------------------------------------------
+ * Function     : blog_clr_wg_tbl
+ * Description  : Clear the table for Wireguard
+ * Returns      :
+ *  Zero        : Success
+ *  Non-zero    : Fail
+ *------------------------------------------------------------------------------
+ */
+int blog_clr_wg_tbl(void)
+{
+    BLOG_LOCK_TBL();
+
+    wg_port_cnt = wg_network_cnt = wg_network_ip6_cnt = 0;
+
+    memset( wg_port, 0, sizeof(struct wg_port) * WG_PORT_TBL_SZ );
+    memset( wg_network, 0, sizeof(struct wg_network) * WG_NETWORK_TBL_SZ );
+    memset( wg_network_ip6, 0, sizeof(struct wg_network_ip6) * WG_NETWORK_TBL_SZ );
+
+    BLOG_UNLOCK_TBL();
+    return 0;
+}
+#endif
+
 /*
  *------------------------------------------------------------------------------
  * Function     : blog_pre_mod_hook
@@ -7169,6 +7953,10 @@ static int __init __init_blog( void )
     blog_clr_tos_tbl();
     blog_reset_stats();
 
+#if IS_ENABLED(CONFIG_WIREGUARD)
+    blog_clr_wg_tbl();
+#endif
+
     if (blog_dstentry_id_tbl_init() != 0)
     {
         printk( CLRerr "BLOG %s Unable to create dstentry tbl" CLRnl,
@@ -7205,6 +7993,11 @@ static int __init __init_blog( void )
     register_netevent_notifier(&net_nb);
 
     printk( CLRb "BLOG %s Initialized" CLRnl, BLOG_VERSION );
+
+#if IS_ENABLED(CONFIG_WIREGUARD)
+    blog_procfs_init();
+#endif
+
     return 0;
 }
 

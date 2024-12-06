@@ -2125,7 +2125,7 @@ try_dmaread:
 				return err;
 		}
 
-		dev_dbg(ctrl->dev, "uncorrectable error at 0x%llx\n",
+		dev_err(ctrl->dev, "uncorrectable error at 0x%llx\n",
 			(unsigned long long)err_addr);
 		mtd->ecc_stats.failed++;
 		/* NAND layer expects zero on ECC errors */
@@ -2135,7 +2135,7 @@ try_dmaread:
 	if (mtd_is_bitflip(err)) {
 		unsigned int corrected = brcmnand_count_corrected(ctrl);
 
-		dev_dbg(ctrl->dev, "corrected error at 0x%llx\n",
+		dev_info(ctrl->dev, "corrected error at 0x%llx\n",
 			(unsigned long long)err_addr);
 		mtd->ecc_stats.corrected += corrected;
 		/* Always exceed the software-imposed threshold */
@@ -2279,7 +2279,7 @@ static int brcmnand_write(struct mtd_info *mtd, struct nand_chip *chip,
 			brcmnand_set_ecc_enabled(host, 1);
 #endif
 		if (status & NAND_STATUS_FAIL) {
-			dev_info(ctrl->dev, "program failed at %llx\n",
+			dev_err(ctrl->dev, "program failed at %llx\n",
 				(unsigned long long)addr);
 			ret = -EIO;
 			goto out;

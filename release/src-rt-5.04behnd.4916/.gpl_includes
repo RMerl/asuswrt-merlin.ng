@@ -1,3 +1,8 @@
 buildtools/checkjffs.py
 buildtools/checktmpfs.py
 release/src/router/dnsqd/dns_app_client.h
+release/src/router/ethswbox/Makefile
+release/src/router/libhostapi/switch_hostapi/src/*.h
+release/src/router/libhostapi/switch_hostapi/include/gpy/*.h
+release/src/router/libhostapi/switch_hostapi/include/gswip/*.h
+release/src/router/libhostapi/Makefile

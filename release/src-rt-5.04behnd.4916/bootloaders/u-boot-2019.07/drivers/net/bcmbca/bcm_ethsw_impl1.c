@@ -147,6 +147,20 @@ static void bcm_ethsw_init(struct udevice *dev)
 	}
 #endif
 
+#ifdef RTBE82M
+	/* reset MxL86252C */
+	run_command_list("gpio clear 27", -1, 0);
+	mdelay(50);
+	run_command_list("gpio set 27", -1, 0);
+#endif
+
+#ifdef GSBE18000
+	/* reset MxL86282C */
+	run_command_list("gpio clear 28", -1, 0);
+	mdelay(50);
+	run_command_list("gpio set 28", -1, 0);
+#endif
+
 	return;
 }
 

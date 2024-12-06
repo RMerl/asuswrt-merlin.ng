@@ -5010,6 +5010,14 @@ struct wpa_ssid * wpa_supplicant_get_ssid(struct wpa_supplicant *wpa_s)
 		    os_memcmp(bssid, entry->bssid, ETH_ALEN) == 0)
 			return entry;
 
+#ifdef CONFIG_DRIVER_BRCM_MLO /* Ares */
+		if (!wpas_network_disabled(wpa_s, entry) && entry->bssid_set &&
+			!is_zero_ether_addr(wpa_s->sme.ext_auth_ap_mld_addr) &&
+		    os_memcmp(wpa_s->sme.ext_auth_bssid, entry->bssid, ETH_ALEN) == 0) {
+				wpa_dbg(wpa_s, MSG_DEBUG, "%s:%d : return entry %p ssid: %s  bssid " MACSTR "", __FUNCTION__, __LINE__, entry, ssid, MAC2STR(bssid) );
+			return entry;
+			}
+#endif
 		entry = entry->next;
 	}
 

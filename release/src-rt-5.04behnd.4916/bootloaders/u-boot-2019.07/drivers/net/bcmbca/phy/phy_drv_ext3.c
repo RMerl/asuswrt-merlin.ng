@@ -35,9 +35,9 @@
  * BLACKFIN B0      2.3.03
  * SHORTFIN B0      2.3.05
  * LONGFIN A0/B0    2.2.15
- * LANAI_A0         0.2.00
+ * LANAI_A0         1.0.03
  * KAUAI_A0         1.0.04
- * XPHY             0.0.13
+ * XPHY             0.0.14
  */
 
 typedef struct firmware_s firmware_t;
@@ -1511,12 +1511,6 @@ static int _phy_eee_mode_set(phy_dev_t *phy_dev, uint32_t caps)
         if (phy_id == PHY_ID_54904EL_A0) 
             return 0;
     }
-
-#ifdef CONFIG_BCM_PHY_LANAI_A0
-    /* 50901E/LANAI will flip link at 100M speed when EEE is on, disable EEE before the issue is fixed */ 
-    if (_phy_use_firmware(phy_dev, &lanai_a0))
-        caps = 0;
-#endif
 
     data1 = XFI_MODE_BASE_X;
     data2 = XFI_MODE_BASE_X;

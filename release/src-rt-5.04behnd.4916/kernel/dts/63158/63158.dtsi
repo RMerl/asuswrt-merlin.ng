@@ -265,7 +265,7 @@
 		ethsw = <&switch_sf2>;
 	};
 
-	mdiosf2 {
+	mdiosf2:mdiosf2 {
 		compatible = "brcm,mdio-sf2";
 		reg = <0x0 0x804805c0 0x0 0x10>,
 		      <0x0 0x80480000 0x0 0x4>;

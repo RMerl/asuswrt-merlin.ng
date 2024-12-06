@@ -628,33 +628,6 @@ void mmc_wait_for_req(struct mmc_host *host, struct mmc_request *mrq)
 }
 EXPORT_SYMBOL(mmc_wait_for_req);
 
-#if defined(CONFIG_BCM_KF_MMC_OOPS) && defined(CONFIG_MMC_OOPS)
-/**
- *	mmc_wait_for_oops_req - start a oops request and wait for completion
- *	@host: MMC host to start command
- *	@mrq: MMC request to start
- *
- *	Start a new MMC custom command request for a host, and wait
- *	for the command to complete. Does not attempt to parse the
- *	response.
- */
-void mmc_wait_for_oops_req(struct mmc_host *host, struct mmc_request *mrq)
-{
-	DECLARE_WAITQUEUE(wait, current);
-
-	mmc_start_request(host, mrq);
-
-	spin_lock_irq(&host->wq.lock);
-	init_waitqueue_head(&host->wq);
-
-	add_wait_queue_exclusive(&host->wq, &wait);
-	set_current_state(TASK_UNINTERRUPTIBLE);
-
-	mdelay(10);
-	spin_unlock_irq(&host->wq.lock);
-}
-#endif
-
 /**
  *	mmc_wait_for_cmd - start a command and wait for completion
  *	@host: MMC host to start command

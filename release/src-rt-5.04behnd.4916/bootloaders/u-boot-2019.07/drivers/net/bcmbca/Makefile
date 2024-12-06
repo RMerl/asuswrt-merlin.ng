@@ -103,11 +103,11 @@ ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), RT-AX58U_V2 RT-AX3000N BR63 RT-BE58
 obj-y += rtk/
 endif
 
-ifeq ($(or $(GTBE98),$(GTBE98_PRO),$(GTBE96),$(GTBE19000),$(RTBE92U),$(RTBE95U)),y)
+ifeq ($(or $(GTBE98),$(GTBE98_PRO),$(GTBE96),$(GTBE19000),$(RTBE92U),$(RTBE95U),$(RTBE82U),$(TUFBE82),$(GTBE19000_AI)),y)
 obj-y += rtl8372/
 endif
 
-ifeq ($(or $(RTBE82U),$(RTBE58U_PRO)),y)
+ifeq ($(or $(RTBE58U_PRO)),y)
 obj-y += rtl8366u/
 endif
 

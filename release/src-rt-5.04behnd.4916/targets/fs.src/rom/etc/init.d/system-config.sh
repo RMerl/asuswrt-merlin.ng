@@ -4,10 +4,33 @@ KERNELVER=_set_by_buildFS_
 CORE_DIR_NEW=/data/core.new
 CORE_DIR_LAST=/data/core.last
 
+# Re-assemble a reverse oops dump
+process_reverse_oops_dump()
+{
+	:>$1_temp
+	:>$1_final
+	while IFS= read -r line; do     
+		chunk=`echo "$line" | grep -l "$2"`
+		if [ -z "$chunk" ]; then
+			if [ -f "$1_chunk" ]; then
+				echo "$line" >> $1_chunk
+			fi
+		else
+			if [ -f "$1_chunk" ]; then
+				cat $1_chunk $1_temp >| $1_final
+				cp $1_final $1_temp;
+			fi
+			:>$1_chunk;
+		fi;
+	done < $1
+	\rm $1_chunk $1_temp
+	mv $1_final $1
+}
+
 # Kernel crash log config
 kernel_oops_config()
 {
-	ROOTFS_DEV=`/etc/get_rootfs_dev.sh`
+	ROOTFS_DEV=`/rom/etc/get_rootfs_dev.sh`
 	MTDOOPS_PART=/proc/environment/mtdoops
 	# Max size(bytes) limit before compression. 131072 = 128KB
 	OOPSLOG_MAX_SIZE=131072
@@ -45,26 +68,16 @@ kernel_oops_config()
 
 	# MMC
 	elif TEMP=`echo $ROOTFS_DEV | grep mmcblk`; then
-		mmcoops_offset=$(xxd -g4 /proc/device-tree/periph/mmcoops/start-offset | cut -d ' ' -f2)
-		mmcoops_size=$(xxd -g4 /proc/device-tree/periph/mmcoops/size | cut -d ' ' -f2)
+#		mmcoops_offset=$(xxd -g4 /proc/device-tree/periph/mmcoops/start-offset | cut -d ' ' -f2)
+#		mmcoops_size=$(xxd -g4 /proc/device-tree/periph/mmcoops/size | cut -d ' ' -f2)
+		mmcoops_offset=$(hexdump -ve '/1 "%02x"' /proc/device-tree/periph/mmcoops/start-offset)
+		mmcoops_size=$(hexdump -ve '/1 "%02x"' /proc/device-tree/periph/mmcoops/size)
+
 		if [ "$mmcoops_offset" != "" -a "$mmcoops_size" != "" ]; then
 			mmcoops_offset=$((0x${mmcoops_offset}))
 			mmcoops_size=$((0x${mmcoops_size}))
 
-			# Header check
-			# linux kernel, #define MMCOOPS_KERNMSG_HDR     "===="
-			dd if=/dev/mmcblk0 of=/tmp/kernel_crash_log.header bs=1 skip=$(($mmcoops_offset*512)) count=4 >& /dev/null
-			mmcoops_kernmsg_hdr=$(xxd -g4 -p /tmp/kernel_crash_log.header)
-			if [ "$mmcoops_kernmsg_hdr" == "3d3d3d3d" ]; then
-				dd if=/dev/mmcblk0 of=/tmp/kernel_crash_log.bin skip=$mmcoops_offset count=$mmcoops_size >& /dev/null
-			fi
-
-			# Erase mmcoops partition if not empty
-			if [ "$mmcoops_kernmsg_hdr" != "ffffffff" ]; then
-				# Pad all with 0xff
-				tr '\000' '\377' < /dev/zero | dd of=/tmp/kernel_crash_log.pad.bin count=$mmcoops_size >& /dev/null
-				dd if=/tmp/kernel_crash_log.pad.bin of=/dev/mmcblk0 seek=$mmcoops_offset count=$mmcoops_size >& /dev/null
-			fi
+			insmod /lib/modules/$KERNELVER/kernel/drivers/mmc/core/oops_mmc.ko mmcdev=/dev/mmcblk0 partition_start_block=$mmcoops_offset partition_size=$(($mmcoops_size*512)) mmc_blksz=512 dump_to_console=n dump_file_path=/var/kernel_crash_log.bin
 		fi
 
 	# VFLASH
@@ -102,22 +115,33 @@ kernel_oops_config()
 	fi
 
 	# Save new crash log file
-	if [ -f /tmp/kernel_crash_log.bin ]; then
+	if [ -f /var/kernel_crash_log.bin ]; then
 		# Remove the 0x00 tail from the bin
-		tr -d '\000' < /tmp/kernel_crash_log.bin > /tmp/kernel_crash_log.bin2
+		tr -d '\000' < /var/kernel_crash_log.bin > /var/kernel_crash_log.bin2
 		# Remove the 0xff tail from the bin
-		tr -d '\377' < /tmp/kernel_crash_log.bin2 > /tmp/kernel_crash_log.txt
-		oops_log_size=$(ls -l /tmp/kernel_crash_log.txt  | awk '{print $5}')
+		tr -d '\377' < /var/kernel_crash_log.bin2 > /var/kernel_crash_log.txt
+		oops_log_size=$(ls -l /var/kernel_crash_log.txt  | awk '{print $5}')
 		# If the size exceeds the limit, truncate the tail(valuable) part
 		if [ $oops_log_size -gt $OOPSLOG_MAX_SIZE ]; then
-			mv /tmp/kernel_crash_log.txt /tmp/kernel_crash_log.big
-			dd if=/tmp/kernel_crash_log.big of=/tmp/kernel_crash_log.txt bs=1 skip=$(($oops_log_size-$OOPSLOG_MAX_SIZE)) >& /dev/null
+			mv /var/kernel_crash_log.txt /var/kernel_crash_log.big
+			dd if=/var/kernel_crash_log.big of=/var/kernel_crash_log.txt bs=1 skip=$(($oops_log_size-$OOPSLOG_MAX_SIZE)) >& /dev/null
 		fi
-		tar -czf $CORE_DIR_NEW/kernel_crash_log.tar.gz -C /tmp kernel_crash_log.txt
+		# Check if its a reverse dump. 4.19 eMMC oops driver may use a
+		# reverse dump to avoid loss of key oops traces due to eMMC device
+		# not being able to fully flush its internal cache due to reset pin 
+		# assertion. A reverse oops dump allows the newest traces to be written
+		# to the eMMC first, increasing chances of them getting comitted
+		if TEMP=`cat /var/kernel_crash_log.txt | grep REV_OOPS`; then
+			# Re-assemble reverse dump into proper chronological order
+			echo "Reverse oops trace detected!"
+			process_reverse_oops_dump /var/kernel_crash_log.txt "REV_OOPS"
+		fi
+
+		tar -czf $CORE_DIR_NEW/kernel_crash_log.tar.gz -C /var kernel_crash_log.txt
 	fi
 
 	# Remove tmp files
-	rm -f /tmp/kernel_crash_log.*
+	rm -f /var/kernel_crash_log.*
 }
 
 # Application coredump config
@@ -133,7 +157,7 @@ coredump_config()
 			else
 				COREDUMP_APP=DEFAULT
 			fi
-			echo "| /etc/init.d/coredump.sh $CORE_DIR_NEW $CORE_DIR_LAST $COREDUMP_APP %E{%e} %P %u %g %s %t %h" > /proc/sys/kernel/core_pattern
+			echo "| /rom/etc/init.d/coredump.sh $CORE_DIR_NEW $CORE_DIR_LAST $COREDUMP_APP %E{%e} %P %u %g %s %t %h" > /proc/sys/kernel/core_pattern
 			nfiles=`ls $CORE_DIR_NEW/core_* 2> /dev/null`
 			if [ "$nfiles" != "" ]; then
 				echo "Detected coredumps from last boot: $nfiles"
@@ -166,8 +190,8 @@ crash_log_config()
 		rm -rf $CORE_DIR_LAST/*
 		cp $CORE_DIR_NEW/image_version $CORE_DIR_LAST/image_version
 	fi
-	if [ "$(cat /etc/image_version 2> /dev/null)" != "$(cat $CORE_DIR_NEW/image_version 2> /dev/null)" ]; then
-		cp /etc/image_version $CORE_DIR_NEW/image_version
+	if [ "$(cat /rom/etc/image_version 2> /dev/null)" != "$(cat $CORE_DIR_NEW/image_version 2> /dev/null)" ]; then
+		cp /rom/etc/image_version $CORE_DIR_NEW/image_version
 	fi
 
 	kernel_oops_config
@@ -216,8 +240,8 @@ case "$1" in
 		# (This is needed by ubusd early during bootup).
 		# The CMS/BDK entries in both files (admin user and root group) will be overwritten by
 		# CMS/BDK when it fully starts up.  But all other entries will be preserved.
-		cp /etc/passwd.static /var/passwd
-		cp /etc/group.static /var/group
+		cp /rom/etc/passwd.static /var/passwd
+		cp /rom/etc/group.static /var/group
 
 		echo "Configuring system OK"
 

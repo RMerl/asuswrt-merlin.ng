@@ -984,8 +984,12 @@ $(IMAGE_BUNDLES_NAND): add_fit_sig_linuxfit
 
 sign_image_linux_nand: $(IMAGE_BUNDLES_NAND)
 	@echo "RUNNING sign_image_linux_nand END"
-	cp obj/binaries/bcm$(PROFILE)_nand_squashfs_loader_update.pkgtb obj/binaries/$(IMGNAME)_nand_squashfs_loader.pkgtb
-	cp obj/binaries/bcm$(PROFILE)_nand_squashfs_update.pkgtb obj/binaries/$(IMGNAME)_nand_squashfs.pkgtb
+	if [ -f obj/binaries/bcm$(PROFILE)_nand_squashfs_loader_update.pkgtb ]; then \
+		cp obj/binaries/bcm$(PROFILE)_nand_squashfs_loader_update.pkgtb obj/binaries/$(IMGNAME)_nand_squashfs_loader.pkgtb; \
+	fi
+	if [ -f obj/binaries/bcm$(PROFILE)_nand_squashfs_update.pkgtb ]; then \
+		cp obj/binaries/bcm$(PROFILE)_nand_squashfs_update.pkgtb obj/binaries/$(IMGNAME)_nand_squashfs.pkgtb; \
+	fi
 
 # Generate loader + linux pkgtb images
 gen_pkgtb_loader_linux_nand_squash:
@@ -1066,7 +1070,12 @@ $(IMAGE_BUNDLES_EMMC): add_fit_sig_linuxfit
 
 sign_image_linux_emmc: $(IMAGE_BUNDLES_EMMC)
 	echo "RUNNING sign_image_linux_emmc END"
-
+	if [ -f obj/binaries/bcm$(PROFILE)_emmc_squashfs_loader_update.pkgtb ]; then \
+		cp obj/binaries/bcm$(PROFILE)_emmc_squashfs_loader_update.pkgtb obj/binaries/$(IMGNAME)_emmc_squashfs_loader.pkgtb; \
+	fi
+	if [ -f obj/binaries/bcm$(PROFILE)_emmc_squashfs_update.pkgtb ]; then \
+		cp obj/binaries/bcm$(PROFILE)_emmc_squashfs_update.pkgtb obj/binaries/$(IMGNAME)_emmc_squashfs.pkgtb; \
+	fi
 # Generate loader + linux pkgtb images
 gen_pkgtb_loader_linux_emmc_squash:
 	@$(call gen_pkgtb_bundles,$(LOADERBIN),"emmc",${uboot_squash_fname})

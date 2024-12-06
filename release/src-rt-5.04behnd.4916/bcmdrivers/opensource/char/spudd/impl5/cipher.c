@@ -185,8 +185,7 @@ static int pdc_dma_dev_runtime_off(void)
 {
 	return 0;
 }
-#endif
-#if (defined(CONFIG_BCM_FLEXRM) || defined(CONFIG_BCM_FLEXRM_MODULE))
+#elif (defined(CONFIG_BCM_FLEXRM) || defined(CONFIG_BCM_FLEXRM_MODULE))
 /**
  * @brief turns SPU power on, configures the latter and turns related DMA rings on
  * @return int 0 for success, negative error code otherwise 
@@ -6215,8 +6214,7 @@ static void spu_functions_register(struct device *dev,
 	spu->spu_get_max_channel = pdc_get_max_channel;
 	spu->spu_and_dma_runtime_on =  pdc_dma_dev_runtime_on;
 	spu->spu_and_dma_runtime_off = pdc_dma_dev_runtime_off;	
-#endif
-#if (defined(CONFIG_BCM_FLEXRM) || defined(CONFIG_BCM_FLEXRM_MODULE))
+#elif (defined(CONFIG_BCM_FLEXRM) || defined(CONFIG_BCM_FLEXRM_MODULE))
 	spu->spu_send_data = flexrm_send_data;
 	spu->spu_select_channel = flexrm_select_channel;
 	spu->spu_get_max_channel = flexrm_get_max_channel;

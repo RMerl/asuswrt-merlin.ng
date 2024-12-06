@@ -166,6 +166,20 @@ static int ip6_finish_output(struct net *net, struct sock *sk, struct sk_buff *s
 	unsigned int mtu;
 	int ret;
 
+#if defined(CONFIG_BCM_KF_IPV6)
+	struct ipv6hdr *hdr = ipv6_hdr(skb);
+	struct inet6_dev *idev = ip6_dst_idev(skb_dst(skb));
+
+	/* No traffic with ULA address should be forwarded to WAN intf */
+	if ( isULA(&hdr->daddr) || isULA(&hdr->saddr) ) {
+		if (is_netdev_wan(skb->dev)) {
+			IP6_INC_STATS(net, idev, IPSTATS_MIB_OUTDISCARDS);
+			kfree_skb(skb);
+			return 0;
+		}
+	}
+#endif
+
 	ret = BPF_CGROUP_RUN_PROG_INET_EGRESS(sk, skb);
 	if (ret) {
 		kfree_skb(skb);
@@ -512,13 +526,6 @@ int ip6_forward(struct sk_buff *skb)
 		kfree_skb(skb);
 		return -ETIMEDOUT;
 	}
-
-#if defined(CONFIG_BCM_KF_IPV6)
-	/* No traffic with ULA address should be forwarded at WAN intf */
-	if ( isULA(&hdr->daddr) || isULA(&hdr->saddr) )
-		if (is_netdev_wan(skb->dev) || is_netdev_wan(dst->dev))
-			goto drop;
-#endif
 
 	/* XXX: idev->cnf.proxy_ndp? */
 	if (net->ipv6.devconf_all->proxy_ndp &&

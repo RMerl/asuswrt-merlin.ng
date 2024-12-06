@@ -281,7 +281,7 @@ wl_stats () {
     echo "============================================="
 
     items="status assoclist authe_sta_list 6g_rate 5g_rate 2g_rate nrate rate ratedump
-        if_counters smfstats phy_ed_thresh macmode mac txpwr_adj_est bss keep_ap_up "
+        if_counters smfstats phy_ed_thresh macmode mac txpwr_adj_est bss isup keep_ap_up "
 
     for x in $items; do
         display_cmd_op "$WLCMD $IFNAME $x" "$WLCMD $IFNAME $x"
@@ -291,13 +291,8 @@ wl_stats () {
     echo "WL Statistics for $PRIM_IFNAME"
     echo "============================================="
 
-    if [[ $MODE == "dhd" ]]; then
-    items="chanim_stats memuse chan_info dfs_status_all noise phy_tempsense band escanresults escan wme_counters counters
+    items="chanim_stats memuse chan_info dfs_status_all noise phy_tempsense band scanresults wme_counters counters
         wme_clear_counters reset_cnts spect oper_mode interference interference_override"
-    else
-    items="chanim_stats memuse chan_info dfs_status_all noise phy_tempsense band scanresults scan wme_counters counters
-        wme_clear_counters reset_cnts spect oper_mode interference interference_override"
-    fi
 
     for x in $items; do
         display_cmd_op "$WLCMD $IFNAME $x" "$WLCMD $IFNAME $x"

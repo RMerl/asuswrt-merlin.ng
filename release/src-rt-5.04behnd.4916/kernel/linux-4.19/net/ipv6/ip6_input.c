@@ -229,6 +229,16 @@ static struct sk_buff *ip6_rcv_core(struct sk_buff *skb, struct net_device *dev,
 	if (ipv6_addr_is_multicast(&hdr->saddr))
 		goto err;
 
+#if defined(CONFIG_BCM_KF_IPV6)
+	/* No traffic with ULA address should be forwarded from WAN intf */
+	if ( isULA(&hdr->daddr) || isULA(&hdr->saddr) ) {
+		if (is_netdev_wan(dev)) {
+			__IP6_INC_STATS(net, idev, IPSTATS_MIB_INDISCARDS);
+			goto drop;
+		}
+	}
+#endif
+
 	skb->transport_header = skb->network_header + sizeof(*hdr);
 	IP6CB(skb)->nhoff = offsetof(struct ipv6hdr, nexthdr);
 

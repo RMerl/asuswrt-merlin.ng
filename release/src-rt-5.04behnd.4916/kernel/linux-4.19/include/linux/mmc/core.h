@@ -173,9 +173,6 @@ struct mmc_request {
 struct mmc_card;
 
 void mmc_wait_for_req(struct mmc_host *host, struct mmc_request *mrq);
-#if defined(CONFIG_BCM_KF_MMC_OOPS) && defined(CONFIG_MMC_OOPS)
-extern void mmc_wait_for_oops_req(struct mmc_host *, struct mmc_request *);
-#endif /* CONFIG_MMC_OOPS */
 int mmc_wait_for_cmd(struct mmc_host *host, struct mmc_command *cmd,
 		int retries);
 

@@ -71,17 +71,6 @@
     status = "okay";
 };
 
-&i2c0 {
-    pinctrl-names = "default";
-    pinctrl-0 = <&a_i2c_sda_pin_37 &a_i2c_scl_pin_36 >;
-    status = "okay";
-
-    icp201xx@63{ 
-        compatible = "invensense,icp201xx"; 
-        reg = <0x63>; 
-    }; 
-};
-
 &led_ctrl {
 	led0: parallel-port_0-led_0 {
 		active_low;
@@ -110,11 +99,10 @@
 		label = "WiFi_24";
 	};
 
-	led3:led_gpio_18 {
+	led3:led_gpio_28 {
 		compatible = "brcm,gpio-led";
 		software_led;
-		pin = <18>;
-		active_low;
+		pin = <28>;
 		brightness = <0>;
 		flash_rate = <0>;
 		status = "okay";
@@ -130,10 +118,11 @@
 	};
 
 	/* Power LED */
-	led5: led_gpio_28 {
+	led5: led_gpio_12 {
 		compatible = "brcm,gpio-led";
 		software_led;
-		pin = <28>;
+		pin = <12>;
+		active_low;
 	};
 	
 	/* WAN Red LED */
@@ -145,10 +134,10 @@
 	};
 
 	/* LAN LED */
-	led7: led_gpio_12 {
+	led7: led_gpio_18 {
 		compatible = "brcm,gpio-led";
 		software_led;
-		pin = <12>;
+		pin = <18>;
 		active_low;
 	};
 
@@ -161,8 +150,8 @@
 };
 
 &legacy_leds {
-	wl0-led = <&led2>;
-	wl1-led = <&led3>;
+	wl0-led = <&led3>;
+	wl1-led = <&led2>;
 };
 
 #if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)

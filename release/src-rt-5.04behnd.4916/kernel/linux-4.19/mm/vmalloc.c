@@ -2713,7 +2713,7 @@ static int s_show(struct seq_file *m, void *p)
 	 * behalf of vmap area is being tear down or vm_map_ram allocation.
 	 */
 	if (!(va->flags & VM_VM_AREA)) {
-		seq_printf(m, "0x%pK-0x%pK %7ld %s\n",
+		seq_printf(m, "0x%px-0x%px %7ld %s\n",
 			(void *)va->va_start, (void *)va->va_end,
 			va->va_end - va->va_start,
 			va->flags & VM_LAZY_FREE ? "unpurged vm_area" : "vm_map_ram");
@@ -2723,7 +2723,7 @@ static int s_show(struct seq_file *m, void *p)
 
 	v = va->vm;
 
-	seq_printf(m, "0x%pK-0x%pK %7ld",
+	seq_printf(m, "0x%px-0x%px %7ld",
 		v->addr, v->addr + v->size, v->size);
 
 	if (v->caller)

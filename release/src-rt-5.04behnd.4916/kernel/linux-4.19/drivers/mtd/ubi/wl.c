@@ -1053,6 +1053,10 @@ out_unlock:
  * needed. Returns zero in case of success and a negative error code in case of
  * failure.
  */
+#define WAR_UBI_SYNC_ERASE          1	/* This WAR is for MXIC parallel NAND, for ex. MX30LFxG28AD */
+#if defined(WAR_UBI_SYNC_ERASE)
+#define UBI_SYNC_ERASE_RETRY_COUNT  3
+#endif
 static int __erase_worker(struct ubi_device *ubi, struct ubi_work *wl_wrk)
 {
 	struct ubi_wl_entry *e = wl_wrk->e;
@@ -1060,10 +1064,45 @@ static int __erase_worker(struct ubi_device *ubi, struct ubi_work *wl_wrk)
 	int vol_id = wl_wrk->vol_id;
 	int lnum = wl_wrk->lnum;
 	int err, available_consumed = 0;
+#if defined(WAR_UBI_SYNC_ERASE)
+	int retry;
+#endif
 
 	dbg_wl("erase PEB %d EC %d LEB %d:%d",
 	       pnum, e->ec, wl_wrk->vol_id, wl_wrk->lnum);
 
+#if defined(WAR_UBI_SYNC_ERASE)
+	retry = UBI_SYNC_ERASE_RETRY_COUNT;
+	while (retry--)	{
+		err = sync_erase(ubi, e, wl_wrk->torture);
+		if (!err) {
+			spin_lock(&ubi->wl_lock);
+
+			if (!ubi->fm_anchor && e->pnum < UBI_FM_MAX_START) {
+				ubi->fm_anchor = e;
+				ubi->fm_do_produce_anchor = 0;
+			} else {
+				wl_tree_add(e, &ubi->free);
+				ubi->free_count++;
+			}
+
+			spin_unlock(&ubi->wl_lock);
+
+			/*
+			 * One more erase operation has happened, take care about
+			 * protected physical eraseblocks.
+			 */
+			serve_prot_queue(ubi);
+
+			/* And take care about wear-leveling */
+			err = ensure_wear_leveling(ubi, 1);
+			return err;
+		} else {
+			ubi_err(ubi, "WAR: failed to erase PEB %d, retry count %d",
+				pnum, UBI_SYNC_ERASE_RETRY_COUNT - retry);
+		}
+	}
+#else
 	err = sync_erase(ubi, e, wl_wrk->torture);
 	if (!err) {
 		spin_lock(&ubi->wl_lock);
@@ -1088,6 +1127,7 @@ static int __erase_worker(struct ubi_device *ubi, struct ubi_work *wl_wrk)
 		err = ensure_wear_leveling(ubi, 1);
 		return err;
 	}
+#endif /* WAR_UBI_SYNC_ERASE */
 
 	ubi_err(ubi, "failed to erase PEB %d, error %d", pnum, err);
 

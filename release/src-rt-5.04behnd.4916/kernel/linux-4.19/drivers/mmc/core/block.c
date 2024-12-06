@@ -2938,10 +2938,6 @@ static int mmc_blk_probe(struct mmc_card *card)
 
 	dev_set_drvdata(&card->dev, md);
 
-#if defined(CONFIG_BCM_KF_MMC_OOPS) && defined(CONFIG_MMC_OOPS)
-	if (mmc_card_mmc(card))
-		mmc_oops_card_set(card);
-#endif
 	if (mmc_add_disk(md))
 		goto out;
 
@@ -3039,6 +3035,35 @@ static int mmc_blk_resume(struct device *dev)
 	return 0;
 }
 #endif
+
+#if defined(CONFIG_BCM_KF_MMC_OOPS)
+#if IS_ENABLED(CONFIG_MMC_OOPS)
+struct mmc_card *mmc_blk_dev_to_card(const char *pathname)
+{
+	struct block_device *bdev;
+	struct mmc_blk_data *md;
+	struct mmc_card *card;
+
+
+	bdev = blkdev_get_by_path(pathname,
+				  FMODE_READ | FMODE_WRITE,
+				  NULL);
+	if (IS_ERR(bdev))
+		return NULL;
+	/* bdev->bd_disk is null if device is not mounted */
+	if (!bdev->bd_disk)
+		return NULL;
+	md = mmc_blk_get(bdev->bd_disk);
+	if (!md)
+		return NULL;
+	card = md->queue.card;
+	if (IS_ERR(card))
+		return NULL;
+	return card;
+}
+EXPORT_SYMBOL(mmc_blk_dev_to_card);
+#endif
+#endif /* CONFIG_BCM_KF_MMC_OOPS */
 
 static SIMPLE_DEV_PM_OPS(mmc_blk_pm_ops, mmc_blk_suspend, mmc_blk_resume);
 

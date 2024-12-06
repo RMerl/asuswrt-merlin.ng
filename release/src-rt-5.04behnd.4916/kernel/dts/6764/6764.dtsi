@@ -299,7 +299,7 @@
 			};
 		};
 
-		mdiosf2 {
+		mdiosf2:mdiosf2 {
 			compatible = "brcm,mdio-sf2";
 			reg = <0x286000 0x10>;
 		};

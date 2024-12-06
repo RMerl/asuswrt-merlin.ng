@@ -9,21 +9,27 @@
  * All Rights Reserved
  *
  * <:label-BRCM:2014:DUAL/GPL:standard
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License, version 2, as published by
- * the Free Software Foundation (the "GPL").
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * 
- * A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
- * writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- * Boston, MA 02111-1307, USA.
- * 
+ *
+ * Unless you and Broadcom execute a separate written software license
+ * agreement governing use of this software, this software is licensed
+ * to you under the terms of the GNU General Public License version 2
+ * (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
+ * with the following added to such license:
+ *
+ *    As a special exception, the copyright holders of this software give
+ *    you permission to link this software with independent modules, and
+ *    to copy and distribute the resulting executable under terms of your
+ *    choice, provided that you also meet, for each linked independent
+ *    module, the terms and conditions of the license of that module.
+ *    An independent module is a module which is not derived from this
+ *    software.  The special exception does not apply to any modifications
+ *    of the software.
+ *
+ * Not withstanding the above, under no circumstances may you combine
+ * this software in any way with any other Broadcom software provided
+ * under a license other than the GPL, without Broadcom's express prior
+ * written consent.
+ *
  * :>
  *
  ************************************************************/
@@ -97,7 +103,7 @@ int card_irq = -1;
 
 unsigned int emmc_ctrl_version = SDHCI_BCM63XX_DFLT_CTRL_VERSION; 
 
-void sdhci_bcm63xx_reset(struct sdhci_host *host, u8 mask)
+static void sdhci_bcm63xx_reset(struct sdhci_host *host, u8 mask)
 {
 	u16 clk = 0;
 
@@ -120,10 +126,16 @@ void sdhci_bcm63xx_reset(struct sdhci_host *host, u8 mask)
 	}
 }
 
+static void sdhci_bcm63xx_hw_reset(struct sdhci_host *host)
+{
+	/* TODO: Assert RST_N pin */
+}
+
 static const struct sdhci_ops sdhci_bcm63xx_ops = {
 	.set_clock = sdhci_set_clock,
 	.set_bus_width = sdhci_set_bus_width,
 	.reset = sdhci_bcm63xx_reset,
+	.hw_reset = sdhci_bcm63xx_hw_reset,
 	.set_uhs_signaling = sdhci_set_uhs_signaling,
 };
 
@@ -152,6 +164,7 @@ static struct sdhci_pltfm_data sdhci_bcm63xx_pdata = {
 
 static const struct of_device_id sdhci_bcm63xx_of_match[] = {
 	{ .compatible = "brcm,bcm63xx-sdhci"},
+	{ .compatible = "brcm,sdhci-bcm63138"},
 	{}
 };
 MODULE_DEVICE_TABLE(of, sdhci_bcm63xx_of_match);

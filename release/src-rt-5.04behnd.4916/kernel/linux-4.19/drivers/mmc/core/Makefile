@@ -18,6 +18,6 @@ obj-$(CONFIG_MMC_BLOCK)		+= mmc_block.o
 mmc_block-objs			:= block.o queue.o
 obj-$(CONFIG_MMC_TEST)		+= mmc_test.o
 #ifdef CONFIG_BCM_KF_MMC_OOPS
-obj-$(CONFIG_MMC_OOPS)		+= mmc_oops.o
+obj-$(CONFIG_MMC_OOPS)		+= oops_mmc.o
 #endif
 obj-$(CONFIG_SDIO_UART)		+= sdio_uart.o

@@ -61,9 +61,12 @@ obj-$(CONFIG_ADI)		+= adi.o
 ifeq ($(MODEL),$(filter $(MODEL),RTAX55 RTAX1800 RTAX58U_V2 RTAX3000N BR63 RTBE58U TUFBE3600))
 obj-m				+= rtk/
 endif
-ifeq ($(MODEL),$(filter $(MODEL),GTBE98 GTBE98_PRO GTBE96 GTBE19000 RTBE92U RTBE95U))
+ifeq ($(MODEL),$(filter $(MODEL),GTBE98 GTBE98_PRO GTBE96 GTBE19000 RTBE92U RTBE95U RTBE82U TUFBE82 GTBE19000_AI))
 obj-m				+= rtl8372/
 endif
-ifeq ($(MODEL),$(filter $(MODEL),RTBE82U RTBE58U_PRO))
+ifeq ($(MODEL),$(filter $(MODEL),RTBE58U_PRO))
 obj-m				+= rtl8366u/
+endif
+ifeq ($(MODEL),$(filter $(MODEL),RTBE82M GSBE18000))
+obj-m				+= mxl/
 endif

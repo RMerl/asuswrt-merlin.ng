@@ -322,8 +322,10 @@ bool mmc_card_is_blockaddr(struct mmc_card *card);
 #define mmc_card_sd(c)		((c)->type == MMC_TYPE_SD)
 #define mmc_card_sdio(c)	((c)->type == MMC_TYPE_SDIO)
 
-#if defined(CONFIG_BCM_KF_MMC_OOPS) && defined(CONFIG_MMC_OOPS)
-int mmc_oops_card_set(struct mmc_card *card);
-#endif /* CONFIG_MMC_OOPS */
+#if defined(CONFIG_BCM_KF_MMC_OOPS)
+#if IS_ENABLED(CONFIG_MMC_OOPS)
+extern struct mmc_card *mmc_blk_dev_to_card(const char *pathname);
+#endif
+#endif /* CONFIG_BCM_KF_MMC_OOPS */
 
 #endif /* LINUX_MMC_CARD_H */

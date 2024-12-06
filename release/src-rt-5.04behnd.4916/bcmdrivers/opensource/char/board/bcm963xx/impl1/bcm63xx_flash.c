@@ -4,19 +4,25 @@
    Copyright (c) 2013 Broadcom 
    All Rights Reserved
 
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License, version 2, as published by
-the Free Software Foundation (the "GPL").
+Unless you and Broadcom execute a separate written software license
+agreement governing use of this software, this software is licensed
+to you under the terms of the GNU General Public License version 2
+(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
+with the following added to such license:
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+   As a special exception, the copyright holders of this software give
+   you permission to link this software with independent modules, and
+   to copy and distribute the resulting executable under terms of your
+   choice, provided that you also meet, for each linked independent
+   module, the terms and conditions of the license of that module.
+   An independent module is a module which is not derived from this
+   software.  The special exception does not apply to any modifications
+   of the software.
 
-
-A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
-writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA.
+Not withstanding the above, under no circumstances may you combine
+this software in any way with any other Broadcom software provided
+under a license other than the GPL, without Broadcom's express prior
+written consent.
 
 :>
 */
@@ -1481,6 +1487,11 @@ static int nandEraseBlk( struct mtd_info *mtd, int blk_addr )
     return (sts);
 }
 
+#define WAR_NAND_WRITE_BLK       1        /* This WAR is for MXIC parallel NAND, for ex. MX30LFxG28AD */
+#if defined(WAR_NAND_WRITE_BLK)
+#define WRITE_OOB_RETRY_COUNT    3
+#endif
+
 /* Write data with or without JFFS2 clean marker, must pass function an aligned block address */
 static int nandWriteBlk(struct mtd_info *mtd, int blk_addr, int data_len, char *data_ptr, bool write_JFFS2_clean_marker)
 {
@@ -1492,6 +1503,9 @@ static int nandWriteBlk(struct mtd_info *mtd, int blk_addr, int data_len, char *
     struct mtd_oob_ops ops;
     int sts = 0;
     int page_addr, byte;
+#if defined(WAR_NAND_WRITE_BLK)
+    int retry;
+#endif
 
     for (page_addr = 0; page_addr < data_len; page_addr += mtd->writesize)
     {
@@ -1518,6 +1532,20 @@ static int nandWriteBlk(struct mtd_info *mtd, int blk_addr, int data_len, char *
 
         if (ops.len || ops.ooblen)
         {
+#if defined(WAR_NAND_WRITE_BLK)
+            retry = WRITE_OOB_RETRY_COUNT;
+            while (retry--)
+            {
+                if( (sts = mtd_write_oob(mtd, blk_addr + page_addr, &ops)) == 0 )
+                    break;
+                else
+                {
+                    printk("nandWriteBlk - Block 0x%8.8x. Error writing page. retry count %d\n",
+                            blk_addr + page_addr, WRITE_OOB_RETRY_COUNT - retry);
+                    /* Just skip this page, don't erase this block and markbad */
+                }
+            }
+#else
             if( (sts = mtd_write_oob(mtd, blk_addr + page_addr, &ops)) != 0 )
             {
                 printk("nandWriteBlk - Block 0x%8.8x. Error writing page.\n", blk_addr + page_addr);
@@ -1525,6 +1553,7 @@ static int nandWriteBlk(struct mtd_info *mtd, int blk_addr, int data_len, char *
                 mtd_block_markbad(mtd, blk_addr);
                 break;
             }
+#endif
         }
     }
 

@@ -1,0 +1,188 @@
+#include "6766.dtsi"
+
+/ {
+	memory_controller {
+        memcfg = <(BP_DDR_TYPE_DDR4       | \
+            BP_DDR_SPEED_1600_22_22_22    | \
+            BP_DDR_TOTAL_SIZE_1024MB      | \
+            BP_DDR_DEVICE_WIDTH_16        | \
+            BP_DDR_TOTAL_WIDTH_16BIT      | \
+            BP_DDR_TEMP_EXTENDED_ASR      | \
+            BP_DDR_6766_DEFAULT           | \
+            BP_DDR_CONFIG_DEBUG)>;
+	};
+
+/* remove mark if need
+	buttons {
+		compatible = "brcm,buttons";
+
+		reset_button {
+			ext_irq = <&bca_extintr 18 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			press {
+				print = "Button Press -- Hold for 5s to do restore to default";
+			};
+			hold {
+				rst_to_dflt = <5>;
+			};
+			release {
+				reset = <0>;
+			};
+		};
+
+		ses_button {
+			ext_irq = <&bca_extintr 6 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			release {
+				ses_short_period = <0>;
+				ses_long_period = <3>;
+			};
+		};
+	};
+*/
+};
+
+&legacy_leds {
+    wl0-led = <&led0>;
+    wl1-led = <&led1>;
+};
+
+&led_ctrl {
+    led0: sw_parallel_led_0 {
+        active_low;
+        brightness = <0>;
+        pinctrl-0 = <&a_per_led_00_pin_0>;
+        status = "okay";
+        label = "WiFi_24";
+    };
+    
+    led1: sw_parallel_led_1 {
+        active_low;
+        brightness = <0>;
+        pinctrl-0 = <&a_per_led_01_pin_1>;
+        status = "okay";
+        label = "WiFi_5";
+    };
+
+    /* WAN_LED_RED */
+    led2: led_gpio_19 {
+        compatible = "brcm,gpio-led";
+        software_led;
+        pin = <19>;
+        active_low;
+    };
+    /* WAN_LED */
+    led3: led_gpio_37 {
+        compatible = "brcm,gpio-led";
+        software_led;
+        pin = <37>;
+        active_low;
+    };
+    /* LAN_LED */
+    led4: led_gpio_21 {
+        compatible = "brcm,gpio-led";
+        software_led;
+        pin = <21>;
+        active_low;
+    };
+
+    /* Power_LED: GPIO LED */
+    led5: led_gpio_7 {
+        compatible = "brcm,gpio-led";
+        software_led;
+        pin = <7>;
+        active_high;
+        init_high;
+    };
+
+    /* MxL86252C reset */
+    led6: led_gpio_27 {
+        compatible = "brcm,gpio-led";
+        software_led;
+        pin = <27>;
+        active_low;
+    };
+
+    /* USB Power */
+    led7:led_gpio_67 {
+        compatible = "brcm,gpio-led";
+        software_led;
+        pin = <67>;
+    };
+};
+
+&nand {
+	pinctrl-0 = <&nand_data_pins &nand_ctrl_pins &nand_wp_b_pin_59>;
+	write-protect = <1>;
+	status = "okay";
+};
+
+&usb_ctrl {
+    pinctrl-names="default";
+    pinctrl-0 = <&usb0_pwr_pins>;
+    status = "okay";
+    xhci-enable;
+    pwron-bias-pull-up;
+};
+
+&usb0_xhci {
+    status = "okay";
+};
+
+&mdio_sf2 {
+	/* Port PHY mapping:
+	        port_imp -8#0- port_gphy <----> phy_gphy
+	                  # 5- port_sgmii0 <--> phy_serdes0 - phy_cascade0 -- MxL86252C SGMII1
+	                  # 6- port_sgmii1 <--> phy_serdes1 - phy_cascade1 -- MxL86252C SGMII0
+	 */
+/*
+	phy_gphy {
+*/
+        /* MxL86252C reset pin, pull up for now
+           phy-reset = <&gpioc 27 GPIO_ACTIVE_HIGH>;
+         */
+/*
+		status = "okay";
+	};
+*/
+
+	/* Enable SerDes0 for MxL86252C SGMII1  */
+	phy_serdes0 {
+		phy-fixed;
+		config-xfi = "10GBase-R";
+		status = "okay";
+	};
+
+	/* Enable SerDes1 for MxL86252C SGMII0  */
+	phy_serdes1 {
+		phy-fixed;
+		config-xfi = "10GBase-R";
+		status = "okay";
+	};
+};
+
+&ethphytop {
+    xphy0-enabled;
+    status = "okay";
+};
+
+&switch0 {
+	ports {
+/*
+		port_gphy {
+			phy-handle = <&phy_gphy>;
+			status = "okay";
+			label = "eth2";
+		};
+*/
+		port_sgmii0 {
+			phy-handle = <&phy_serdes0>;
+			status = "okay";
+			label = "eth1";
+		};
+
+		port_sgmii1 {
+			phy-handle = <&phy_serdes1>;
+			status = "okay";
+			label = "eth0";
+		};
+	};
+};

@@ -3369,6 +3369,9 @@ void kmsg_dump_rewind_nolock(struct kmsg_dumper *dumper)
 	dumper->next_seq = log_next_seq;
 	dumper->next_idx = log_next_idx;
 }
+#ifdef CONFIG_BCM_KF_MMC_OOPS
+EXPORT_SYMBOL_GPL(kmsg_dump_rewind_nolock);
+#endif
 
 /**
  * kmsg_dump_rewind - reset the interator

@@ -6,6 +6,7 @@ export LD_LIBRARY_PATH=$HOSTTOOLS_DIR/libelf/lib:$LD_LIBRARY_PATH
 source $KERNEL_DIR/.config
 source $TARGETS_DIR/buildFS_COMM
 source $TARGETS_DIR/image_version.sh
+source $PROFILE_DIR/$PROFILE
 
 TARGETS_DIR=`pwd`
 BUILD_DIR=$TARGETS_DIR/..
@@ -61,7 +62,11 @@ grep /dev $ROOTFS/rom/etc/make_static_devnodes.sh | cut -d' ' -f 2 | cut -d'/' -
 # Remove all svn metadata files
 find $ROOTFS -name ".svn" -exec rm -rf '{}' \;
 
-bfiles="cms_entity_info.d  init.d  ld.so.cache  ld.so.conf  rc3.d  rdpa_init.sh wlan openssl.cnf"
+if [ "$BUILD_EMMC_IMG" == "y" ]; then
+	bfiles="cms_entity_info.d  init.d  ld.so.cache  ld.so.conf  rc3.d  rdpa_init.sh wlan openssl.cnf fstab mdev.conf make_mmc_links.sh get_rootfs_dev.sh"
+else
+	bfiles="cms_entity_info.d  init.d  ld.so.cache  ld.so.conf  rc3.d  rdpa_init.sh wlan openssl.cnf"
+fi
 
 mkdir -p ${ROOTFS}/tmp/etc
 (cd ${ROOTFS} && rm -rf etc && ln -sf tmp/etc etc)
@@ -325,7 +330,7 @@ else
   line_num=0
   TMP_DRIVERS_SH_BASE=bcm-base-drivers.sh.tmp
   cat $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.head > $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh
-if [ "$BUILD_NAME" == "GT-BE98" ] || [ "$BUILD_NAME" == "GT-BE98_PRO" ]; then
+if [ "$BUILD_NAME" == "GT-BE98" ] || [ "$BUILD_NAME" == "GT-BE98_PRO" ] || [ "$BUILD_NAME" == "RT-BE86U" ]; then
   echo "echo Trigger RESET_OUT_B" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh
   echo "sw 0xff800554 0" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh
   echo "sw 0xff800558 0x403e" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh
@@ -594,7 +599,7 @@ if [ "$BUILD_NAME" == "BR63" ]; then
         rm -rf $TARGETS_DIR/$ROOTFS/usr/sbin/dhd
 fi
 
-if [ "$BUILD_NAME" == "RT-BE58U" ] || [ "$BUILD_NAME" == "TUF-BE3600" ] || [ "$BUILD_NAME" == "RT-BE92U" ] || [ "$BUILD_NAME" == "RT-BE95U" ] ; then
+if [ "$BUILD_NAME" == "RT-BE58U" ] || [ "$BUILD_NAME" == "TUF-BE3600" ] || [ "$BUILD_NAME" == "RT-BE92U" ] || [ "$BUILD_NAME" == "RT-BE95U" ]; then
 if [ "$BUILD_NAME" != "RT-BE95U" ]; then
 	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/extra/dhd.ko
 fi
@@ -614,8 +619,11 @@ fi
 
 if [ "$BCM_CHIP" == "6765" ]; then
 	mkdir -p $TARGETS_DIR/$ROOTFS/rom/etc/licenses
-	cp $TARGETS_DIR/pakl/*924*.bin $TARGETS_DIR/$ROOTFS/rom/etc/licenses
-	cp $TARGETS_DIR/pakl/*925*.bin $TARGETS_DIR/$ROOTFS/rom/etc/licenses
+	if [ "$BRCM_CHIP_COMPAT_NAME" == "6764L" ]; then
+		cp $TARGETS_DIR/pakl/*924*.bin $TARGETS_DIR/$ROOTFS/rom/etc/licenses
+	else
+		cp $TARGETS_DIR/pakl/*936*.bin $TARGETS_DIR/$ROOTFS/rom/etc/licenses
+	fi
 fi
 
 if [ "$BCM_CHIP" == "6766" ]; then

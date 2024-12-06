@@ -17036,26 +17036,31 @@ typedef struct wlc_ioctl_tx_pwr {
 } wlc_ioctl_tx_pwr_t;
 
 typedef struct wl_reg_info {
-	uint16 ver;
-	uint16 len;
-	uint16 type;
-	uint16 flags;
-	chanspec_t chspec;
-	uint16 afc_bmp;
-	uint16 sp_bmp;
-	uint16 lpi_bmp;
-	uint8 reg_info_field;
-	uint8 reg_info_override;
-	int8 afc_eirp[TPE_PSD_COUNT];
-	int8 sp_eirp[TPE_PSD_COUNT];
-	int8 lpi_eirp[TPE_PSD_COUNT];
-	int8 afc_psd[TPE_PSD_COUNT];
-	int8 sp_psd[TPE_PSD_COUNT];
-	int8 lpi_psd[TPE_PSD_COUNT];
+       uint16 ver;                     // see WL_REG_INFO_VER* below
+       uint16 len;                     // size of this structure, fixed for now
+       uint16 type;                    // see WL_REG_INFO_TYPE_* below, if any
+       uint16 flags;                   // see WL_REF_INFO_FLAG_* below, if any
+       chanspec_t chspec;              // chanspec this reg_info is about
+       uint16 afc_bmp;                 // per 20MHz bitmap about AFC info availability
+       uint16 sp_bmp;                  // per 20MHz bitmap about SP as per CLM
+       uint16 lpi_bmp;                 // per 20MHz bitmap about LPI as per CLM
+       uint8 reg_info_field;           // from IEEE 802.11 REVme : Annex E : Table E-12
+       uint8 reg_info_override;        // any manually set override to reg_info_field
+       int8 afc_eirp[TPE_PSD_COUNT];   // Client EIRP per 20MHz as per AFC allowance
+       int8 sp_eirp[TPE_PSD_COUNT];    // Client EIRP per 20MHz as per CLM SP allowance
+       int8 lpi_eirp[TPE_PSD_COUNT];   // Client EIRP per 20MHz as per CLM LPI allowance
+       int8 afc_psd[TPE_PSD_COUNT];    // Client PSD per 20MHz as per AFC allowance
+       int8 sp_psd[TPE_PSD_COUNT];     // Client PSD per 20MHz as per CLM SP allowance
+       int8 lpi_psd[TPE_PSD_COUNT];    // Client PSD per 20MHz as per CLM LPI allowance
 } wl_reg_info_t;
 
 #define WL_REG_INFO_VER_1	1
 #define WL_REG_INFO_VER		WL_REG_INFO_VER_1
+
+
+#define WL_REG_INFO_FLAG_CBP_HIT       0x0001u /* bit flag set if CBP is active */
+#define WL_REG_INFO_FLAG_AFC_SP                0x0002u /* bit flag set if current chanspec uses AFC SP */
+
 
 #define WL_NUM_CH_6G		(1 + (CH_MAX_6G_CHANNEL + CH_20MHZ_APART - 1) / CH_20MHZ_APART)
 #define WL_NUM_CENTER_CH_6G	(WL_NUM_CH_6G * 2) // 20-320MHz: n + n/2 + n/4 + n/8 + n/16

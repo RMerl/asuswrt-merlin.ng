@@ -13,10 +13,13 @@ my $loader;
 my $bootfs;
 my $rev;
 my $profile;
+my $padding;
 my $compatstr;
+my $interim;
 
 my $usage = q[
-Usage: generate_bundle_its --chip= --profile= --compatstr= --rootfsspec= --loader= --bootfs=
+Usage: generate_bundle_its --chip= --profile= --compatstr= 
+        --padding=   --rootfsspec= --loader= --bootfs=
 	rootfsspec = <flashtype>,<rootfsbinary> e.g 
 		--rootfsspec=nand128,rootfs_128.ubifs
 		--rootfsspec=nand256,rootfs_256.ubifs
@@ -33,9 +36,17 @@ my @rootfs_specs;
 # Hash of rootfs config
 my %rootfs_cfg;
 
-GetOptions("chip=s",\$chip, "profile=s",\$profile, "compatstr=s",\$compatstr, "rootfsspec=s",\@rootfs_specs,  "loader:s",\$loader, "bootfs=s",\$bootfs) or die("$usage");
+# List of images to add to bundle
+my @image_list;
+my $image_name;
+my $image_file;
 
-die($usage) unless ($chip && $bootfs && @rootfs_specs && $profile && $compatstr);
+GetOptions("chip=s",\$chip, "profile=s",\$profile, "compatstr=s",\$compatstr, 
+           "rootfsspec=s",\@rootfs_specs,  "loader:s",\$loader, 
+           "image:s",\@image_list, "interim",\$interim,
+           "padding=i", \$padding, "bootfs=s",\$bootfs) or die("$usage");
+
+die($usage) unless ($chip && $bootfs && $profile && $compatstr);
 
 # Retrieve rev from compatstr
 my %compatstr_hash= ($compatstr=~/([^ =;]+)/g);
@@ -67,8 +78,7 @@ my $fitout = q[
 /dts-v1/;
 
 / {
-	description = "RT-BE86U";
-	asus = "ASUSFLAG#1";
+	description = "Broadcom BCA image upgrade package tree binary";
 	#address-cells = <1>;
 
 	images {
@@ -95,6 +105,27 @@ my $fitout = q[
 		};
 ];		
 
+my $smcbl;
+my $smcfull;
+foreach (@image_list) {
+	($image_name, $image_file) = split /,/, $_;
+	$smcfull = 1;
+	if ( $image_name eq "smcbl" ) {
+		$smcbl = 1;
+	}
+	$fitout .= qq[
+		$image_name\_$chip\_$rev {
+			description = "$image_name";
+			data = /incbin/("$image_file");
+			type = "firmware";
+			compression = "none";
+			hash-1 {
+				algo = "sha256";
+			};
+		};
+	];
+}
+
 my $href;
 my $default_conf;
 my $pkg_file_name;
@@ -103,7 +134,7 @@ for $href ( @rootfs ) {
 		$default_conf = qq[conf_$chip\_$rev\_$href->{"flashtype"}\_$href->{"fstype"}];
 	}
 	if ( ! defined $pkg_file_name ) {
-		$pkg_file_name = "obj/binaries/bcm$profile\_" . $href->{"flashtype"} . "_" . $href->{"fstype"} . ($loader ? "_loader":"") . "_update";
+		$pkg_file_name = "obj/binaries/bcm$profile\_" . $href->{"flashtype"} . ($href->{"flashtype"} ? "_":"") . $href->{"fstype"} . ($loader ? "_loader":"") . ($smcfull ? "_full":"") . ($smcbl ? "_bl":"") . "_update";
 	}
 	else {
 		$pkg_file_name = "obj/binaries/bcm$profile\_multi" . ($loader ? "_loader":"") . "_update";
@@ -122,24 +153,45 @@ for $href ( @rootfs ) {
 	];
 }
 
-$fitout .=  qq[
+if ( ! defined $default_conf ) {
+	$pkg_file_name = "obj/binaries/bcm$profile\_bstrap";
+	$fitout .=  qq[
+	};
+	configurations {
+		default = "conf_$chip\_$rev";
+		
+		conf_$chip\_$rev {
+			description = "Brcm Bstrap Bundle"; 
+			bootfs = "bootfs_$chip\_$rev";
+			compatible = "chip=$chip;$compatstr";
+		};
+	];
+}
+else {
+	$fitout .=  qq[
 	};
 	configurations {
 		default = "$default_conf";
-];
+	];
+}
 
 for $href ( @rootfs ) {
 	$fitout .= qq[
 		conf_$chip\_$rev\_$href->{"flashtype"}\_$href->{"fstype"} {
-			description = "Brcm Image Bundle";] 
-	. ($loader ? qq[
+			description = "Brcm Image Bundle";];
+	foreach (@image_list) {
+		($image_name, $image_file) = split /,/, $_;
+		$fitout .= qq[
+			$image_name = "$image_name\_$chip\_$rev";];
+	}
+	$fitout .= ($loader ? qq[
 			loader = "loader_$chip\_$rev";] : "") 
 	. qq[
 			bootfs = "bootfs_$chip\_$rev";
 			rootfs = "$href->{"flashtype"}\_$href->{"fstype"}";
-			compatible = "flash=$href->{"flashtype"};chip=$chip;$compatstr;fstype=$href->{"fstype"}";
+			compatible = ] . ($href->{"flashtype"} ? qq["flash=$href->{"flashtype"};] : qq["]) . qq[chip=$chip;$compatstr;fstype=$href->{"fstype"}";
 		};
-];
+	];
 }
 
 $fitout .= q[
@@ -152,8 +204,32 @@ $fitout .= q[
 #print "$pkg_file_name \n";
 my $fg_pkgts;
 my $pkgts_file_name = "$pkg_file_name" . ".pkgts";
-my $pkgtb_file_name = "$pkg_file_name" . ".pkgtb";
+my $pkgtb_file_name = "$pkg_file_name" . ($interim ? ".pkgti":".pkgtb");
 open $fg_pkgts, '>', $pkgts_file_name  or die "Unable to open file: '$pkgts_file_name' $!\n";
 print $fg_pkgts $fitout;
+close($fg_pkgts);
 my $cmd = "./obj/uboot/tools/mkimage -f $pkgts_file_name -E $pkgtb_file_name";
 system($cmd);
+
+if ($padding) {
+    local $/;
+    open(I,"dd if=$pkgtb_file_name bs=1024 count=1 | ") or die("pipe open failed");
+    my $img = <I>;
+    close(I);
+    my @a = unpack( "NN", $img );
+    die("bad magic number") unless $a[0] == 0xd00dfeed;
+    my $len = $a[1] + $padding;
+    $len = sprintf("%x",$len);
+    $cmd = "./obj/uboot/tools/mkimage -p $len -f $pkgts_file_name -E $pkgtb_file_name";
+    system($cmd);
+    open(I,"dd if=$pkgtb_file_name bs=1024 count=1 | ") or die("pipe open failed");
+    $img = <I>;
+    close(I);
+    @a = unpack( "NN", $img );
+    die("bad magic number") unless $a[0] == 0xd00dfeed;
+    $len = $a[1];
+    $cmd = "dd if=$pkgtb_file_name of=${pkgtb_file_name}.signable bs=1 count=$len";
+    system($cmd);
+}
+print "$pkgtb_file_name\n";
+

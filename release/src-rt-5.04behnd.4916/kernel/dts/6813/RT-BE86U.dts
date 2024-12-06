@@ -213,6 +213,13 @@
 		active_low;
 		init_high;
 	};
+
+	led81:led_gpio_62 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <62>;
+		active_low;
+	};
 };
 
 &mdio {

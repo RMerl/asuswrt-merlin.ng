@@ -531,7 +531,7 @@ static void set_reserved_memory(void *dtb_ptr, bd_t *bd)
 	use_max_from_env_and_dt = 1;
 #endif
 	
-#if defined(BQ16) || defined(BQ16_PRO) || defined(BT10)
+#if defined(BQ16) || defined(BQ16_PRO) || defined(BT10) || defined(RTBE82U) || defined(RTBE82M) || defined(GSBE18000)
 	char cma_str[30] = {0};
 #endif
 	struct mem_reserv_prm {
@@ -607,19 +607,45 @@ static void set_reserved_memory(void *dtb_ptr, bd_t *bd)
 #endif
 
 #if defined(BT10)
+	// BT10 is BCM6766 and has CMA
 	snprintf(cma_str, sizeof(cma_str), "%s", env_get("bootargs_append"));
-	if(strcmp(cma_str, "cma=64M") == 0){
-		printf("BT10 CMA is already:64M\n");
+	if(strcmp(cma_str, "cma=64M vmalloc=384") == 0){
+		printf("BT10 is already: CMA is 64M and vmalloc is 384M\n");
 	}else{
-		printf("BT10 CMA update:64M\n");
-		env_set("bootargs_append","cma=64M");
+		printf("BT10 overwrites: CMA is 64M and vmalloc is 384M\n");
+		env_set("bootargs_append","cma=64M vmalloc=384M");
+	}
+#endif
+
+#if defined(RTBE82U) || defined(RTBE82M)
+	// RT-BE82U is BCM6766 but has no CMA
+	snprintf(cma_str, sizeof(cma_str), "%s", env_get("bootargs_append"));
+	if(strcmp(cma_str, "vmalloc=384") == 0){
+		printf("RT-BE82U is already: vmalloc is 384M\n");
+	}else{
+		printf("RT-BE82U overwrites: vmalloc is 384M\n");
+		env_set("bootargs_append","vmalloc=384M");
+	}
+#endif
+
+#if defined(GSBE18000)
+	// GS-BE18000 is BCM6766 and has CMA
+	snprintf(cma_str, sizeof(cma_str), "%s", env_get("bootargs_append"));
+	if(strcmp(cma_str, "cma=64M vmalloc=384") == 0){
+		printf("GS-BE18000 is already: CMA is 64M and vmalloc is 384M\n");
+	}else{
+		printf("GS-BE18000 overwrites: CMA is 64M and vmalloc is 384M\n");
+		env_set("bootargs_append","cma=64M vmalloc=384M");
 	}
 #endif
 
 #ifdef RTBE86U
 	env_set_ulong("dhd0", 0);
 #endif
-#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE82U) || defined(RTBE58U_PRO)
+#ifdef GSBE18000
+	env_set_ulong("dhd0", 11);
+#endif
+#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO)
 	env_set_ulong("dhd0", 0);
 	env_set_ulong("dhd1", 0);
 #endif

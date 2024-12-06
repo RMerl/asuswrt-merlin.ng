@@ -188,7 +188,7 @@ echo "============================="
 echo "$IFNAME WL config parameters"
 echo "============================="
 items="allmulti rtsthresh clmver rtsthresh ack_ratio ack_ratio_depth
-	ampdu ampdu_rts amsdu ap_isolate apsta auth ampdu_ba_wsize bcn_rotate bss bss_maxassocbtc_mode btc_mode
+	ampdu ampdu_rts amsdu ap_isolate apsta auth ampdu_ba_wsize bcn_rotate bss isup bss_maxassoc btc_mode btc_mode
 	chanim_mode chanim_sample_period chanspec closednet country dwds eap_restrict event_msgs event_msgs_ext
 	fragthresh he hw_rxchain hw_txchain interference interference_override leddc lrl srl maxscb maxassoc mbss
 	mbss_ign_mac_valid mcast_list min_txpower mode_reqd mpc msglevel vhtmode vht_features mu_features mu_policy

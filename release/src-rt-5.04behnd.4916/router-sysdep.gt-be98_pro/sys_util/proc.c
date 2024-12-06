@@ -103,3 +103,47 @@ int sysUtl_getThreadInfoFromProc(int tid, ProcThreadInfo *info)
 
    return rval;
 }
+
+
+int sysUtl_getMemInfo(unsigned int *sysTotal, unsigned int *sysFree)
+{
+   char line[512]={0};
+   char *pChar = NULL;
+   FILE *fs = NULL;
+
+   fs = fopen("/proc/meminfo", "r");
+   if (fs == NULL)
+   {
+      fprintf(stderr, "Could not open /proc/meminfo\n");
+      return -1;
+   }
+
+   while ( fgets(line, sizeof(line), fs) )
+   {
+      // search for MemTotal
+      if (strncmp(line, "MemTotal", 8) == 0 &&
+          (pChar = strstr(line, ":")) != NULL )
+      {
+         // pChar+1: read pass ":"
+         if (sysTotal)
+            *sysTotal = (unsigned int) strtoul(pChar+1, (char **)NULL, 10);
+      }
+
+      // search for MemFree
+      if (strncmp(line, "MemFree", 7) == 0 &&
+          (pChar = strstr(line, ":")) != NULL )
+      {
+         // pChar+1: read pass ":"
+         if (sysFree)
+            *sysFree = (unsigned int) strtoul(pChar+1, (char **)NULL, 10);
+
+         // we can stop scanning after we find MemFree
+         break;
+      }
+   } /* while */
+
+   fclose(fs);
+
+   return 0;
+}
+

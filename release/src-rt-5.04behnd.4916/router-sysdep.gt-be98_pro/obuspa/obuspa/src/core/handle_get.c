@@ -77,7 +77,7 @@ Usp__GetResp__ResolvedPathResult__ResultParamsEntry *
 AddResolvedPathRes_ParamsEntry(Usp__GetResp__ResolvedPathResult *resolved_path_res, char *param_name, char *value);
 
 #ifdef BDK_USP
-#include <sys/unistd.h>
+#include <unistd.h>
 
 #define DATAELM_HOLD_FILE "/var/hold_dataelm"
 

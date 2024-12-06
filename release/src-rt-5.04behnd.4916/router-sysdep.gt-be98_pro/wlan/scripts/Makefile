@@ -34,6 +34,12 @@ SCRIPTS += wifi.sh
 SCRIPTS += mdev_wl.sh
 endif
 
+ifneq ($(strip $(BUILD_BRCM_BDK)),)
+ ifeq ($(strip $(RDK_BUILD)),)
+  ALLOW_LOAD_DRIVER_IN_BACKGROUND=y
+ endif
+endif
+
 FDIMGPATH=$(strip $(shell echo $(BCM_EXTFDIMAGE_PATH) | sed -e 's=\/=\\\/=g'))
 
 all: install
@@ -55,12 +61,11 @@ drv-rc3-install:
 	@for s in ${DRV_RC3}; do \
 	  f=$${s}.sh;  \
 	  cat $${f:3} | \
-	    sed -e 's/KERNELVER=_set_by_buildFS_/KERNELVER=$(LINUX_VER_STR)/'  \
-	    | sed -e 's,PROD_FW_PATH=_set_by_buildFS_,PROD_FW_PATH="${FDIMGPATH}",'  \
+	    sed -e 's,PROD_FW_PATH=_set_by_buildFS_,PROD_FW_PATH="${FDIMGPATH}",'  \
 	    | sed -e 's/WLAN_BTEST=_set_by_buildFS_/WLAN_BTEST=$(BUILD_BTEST_TOOLS)/'  \
 	    | sed -e 's/CONFIG_WLDPDCTL=_set_by_buildFS_/CONFIG_WLDPDCTL=$(BUILD_BCM_WLAN_DPDCTL)/'  \
-	    | sed -e 's/BRCM_CHIP=_set_by_buildFS_/BRCM_CHIP=$(BRCM_CHIP)/'  \
 	    | sed -e 's/WLAN_REMOVE_INTERNAL_DEBUG=_set_by_buildFS_/WLAN_REMOVE_INTERNAL_DEBUG=$(BUILD_BCM_WLAN_REMOVE_INTERNAL_DEBUG)/'  \
+	    | sed -e 's/ALLOW_LOAD_DRIVER_IN_BACKGROUND=_set_by_buildFS_/ALLOW_LOAD_DRIVER_IN_BACKGROUND=$(ALLOW_LOAD_DRIVER_IN_BACKGROUND)/'  \
 	    > ${INSTALL_DIR}/etc/init.d/$${f:3} ; \
 	  chmod +x ${INSTALL_DIR}/etc/init.d/$${f:3} ;  ln -fs ../init.d/$${f:3} ${INSTALL_DIR}/etc/rc3.d/$$s; \
 	done
@@ -77,10 +82,11 @@ scripts-install: ${SCRIPTS}
 	@echo "wlan scripts-install: ${SCRIPTS}"    
 	@for s in ${SCRIPTS}; do \
 	  cat $${s} | \
-	    sed -e 's/CPEROUTER=_set_by_buildFS_/CPEROUTER=$(BUILD_BRCM_CPEROUTER)/'  \
-	    | sed -e 's/CONFIG_WLDPDCTL=_set_by_buildFS_/CONFIG_WLDPDCTL=$(BUILD_BCM_WLAN_DPDCTL)/'  \
+	    sed -e 's/CONFIG_WLDPDCTL=_set_by_buildFS_/CONFIG_WLDPDCTL=$(BUILD_BCM_WLAN_DPDCTL)/'  \
+	    | sed -e 's/CONFIG_BCM_WLAN_MLO=_set_by_buildFS_/CONFIG_BCM_WLAN_MLO=$(BUILD_BCM_WLMLO)/'  \
 	    | sed -e 's/RDK_EDPD_SUPPORT=RDK_EDPD_SUPPORT_HOLDER/RDK_EDPD_SUPPORT=$(WLDPD_SUPPORT)/' \
 	    | sed -e 's/IS_RDK_BUILD=RDK_BUILD_HOLDER/IS_RDK_BUILD=$(RDK_BUILD)/'  \
+	    | sed -e 's/IS_WRT_BUILD=WRT_BUILD_HOLDER/IS_WRT_BUILD=$(BUILD_BRCM_OPENWRT)/'  \
 	    > ${INSTALL_DIR}/etc/init.d/$${s} ; \
 	  chmod +x ${INSTALL_DIR}/etc/init.d/$${s} ; \
 	done

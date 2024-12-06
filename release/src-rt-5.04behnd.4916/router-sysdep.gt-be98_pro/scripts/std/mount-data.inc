@@ -207,6 +207,18 @@ mount_data() {
 			mkdir -p /mnt/misc/crash_logs
 			ln -s /mnt/misc/crash_logs /mnt/crash_logs
 		fi
+
+		# Check if the symbolic link to the emmc jffs partition exists
+		if [ -L /dev/jffs ]; then
+			echo ">>>>> Mounting eMMC jffs Partition <<<<<"
+			mkdir -p /jffs
+			mount -t ext4 -rw /dev/jffs /jffs
+			if [ ! $? -eq 0 ]; then
+				echo ">>>>> Formatting eMMC jffs Partition <<<<<"
+				mke2fs __MKE2FSOPTIONS__ -I 256 -b 4096 -t ext4 -F /dev/jffs;
+				mount -t ext4 -rw /dev/jffs /jffs;
+			fi
+		fi
 	elif TEMP=`grep spi-nor.0 /proc/cmdline`; then
 		echo ">>>>> Mounting data partition as JFFS2 <<<<<"
 		mount -t jffs2 -rw mtd:data /data;

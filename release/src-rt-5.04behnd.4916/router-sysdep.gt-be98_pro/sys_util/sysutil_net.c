@@ -55,6 +55,7 @@ struct route_req {
 struct link_req {
      int parent_ifindex;
      int vlanid;
+     int children_exist;
 };
 
 int sysUtl_openNetlinkSocket(int protocol __attribute__((unused)),
@@ -319,6 +320,7 @@ static int sysUtl_getLink(const char *ifname, struct link_req *link_req)
     struct msghdr msg = {0};
     struct nlmsghdr *nh;
     struct route_req req;
+    unsigned short parent_ifindex = 0;
 
     int fd = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
     if(fd < 0) {
@@ -328,12 +330,26 @@ static int sysUtl_getLink(const char *ifname, struct link_req *link_req)
 
     memset(&req, 0, sizeof(req));
     req.header.nlmsg_len = NLMSG_LENGTH(sizeof(struct ifinfomsg));
-    req.header.nlmsg_flags = NLM_F_REQUEST;
     req.header.nlmsg_type = RTM_GETLINK;
     req.header.nlmsg_seq = ++seq_num;
     req.msg.ifi_family = AF_UNSPEC;
-    req.msg.ifi_index = if_nametoindex(ifname);
     req.msg.ifi_change = 0xFFFFFFFF;
+    
+    if (ifname != NULL) {
+        //Interface specified, request specific interface info
+        req.msg.ifi_index = if_nametoindex(ifname);
+        if (req.msg.ifi_index == 0)
+        {
+            fprintf(stderr, "sysUtl_getLink: failed to convert ifname %s to ifindex, error=%s\n",
+                             ifname, strerror(errno));
+            goto exit;
+        }
+        req.header.nlmsg_flags = NLM_F_REQUEST;
+    }
+    else {
+        //No interface specified, request all information
+        req.header.nlmsg_flags = NLM_F_ROOT|NLM_F_MATCH|NLM_F_REQUEST;
+    }
 
     sa.nl_family = AF_NETLINK;
     iov.iov_base = &req;
@@ -349,7 +365,7 @@ static int sysUtl_getLink(const char *ifname, struct link_req *link_req)
     }
 
     iov.iov_base = buf;
-    iov.iov_len = NLMSG_BUF_SIZE;
+    iov.iov_len = sizeof(buf);
 
     for(;;) {
         // wait for a message(block)
@@ -378,20 +394,35 @@ static int sysUtl_getLink(const char *ifname, struct link_req *link_req)
             // attribute length
             len = nh->nlmsg_len - NLMSG_LENGTH(sizeof(*infomsg));
             // parse the message attributes
-            for(; RTA_OK(rta, len); rta = RTA_NEXT(rta, len)) {
-                if(rta->rta_type == IFLA_LINK) {
-                    // get the parent's ifindex
-                    link_req->parent_ifindex = *(unsigned short *)((char *) rta + NLA_HDRLEN);
+            for (; RTA_OK(rta, len); rta = RTA_NEXT(rta, len)) {
+                if (rta->rta_type == IFLA_LINK) {
+                    parent_ifindex = *(unsigned short *)((char *) rta + NLA_HDRLEN);
+                    if (req.msg.ifi_index && link_req->parent_ifindex == INVALID_IFINDEX) {
+                        // specific ifindex request, to get the parent's ifindex
+                        link_req->parent_ifindex = parent_ifindex;
+                    }
+                    else if (!req.msg.ifi_index && link_req->parent_ifindex) {
+                        // not specific ifindex request, to check the parent's ifindex
+                        if (link_req->parent_ifindex == parent_ifindex)
+                        {
+                            link_req->children_exist++;
+                            break;
+                        }
+                    }
                 }
                 if(rta->rta_type == IFLA_LINKINFO) {
-                    // get the vlan
-                    link_req->vlanid = sysUtl_parseVlan(rta);
+                    if (req.msg.ifi_index) {
+                        // specific request, to get the vlan
+                        link_req->vlanid = sysUtl_parseVlan(rta);
+                    }
                 }
             }
         }
 
-    // do not wait for the next message
-    break;
+        if (req.msg.ifi_index) {
+            // specific request, do not wait for the next message.
+            break;
+        }
     }
 
 exit:
@@ -411,6 +442,26 @@ int sysUtl_getLowerDeviceIfindex(const char *ifname)
     return link_req.parent_ifindex;
 }
 
+int sysUtl_upperDeviceExists(const char *ifname) 
+{
+    struct link_req link_req;
+    unsigned int  index;
+    
+    index = if_nametoindex(ifname);
+    if (!index)
+    {
+        fprintf(stderr, "get %s ifindex error\n", ifname);
+        return -1;
+    }
+    
+    memset(&link_req, 0, sizeof(struct link_req));
+    link_req.parent_ifindex = index;
+    link_req.children_exist = 0;
+    sysUtl_getLink(NULL, &link_req);
+
+    return link_req.children_exist;
+}
+
 int sysUtl_getVlanId(const char *ifname)
 {
     struct link_req link_req;
@@ -421,5 +472,3 @@ int sysUtl_getVlanId(const char *ifname)
 
     return link_req.vlanid;
 }
-
-

@@ -15,6 +15,7 @@ include $(BUILD_DIR)/make.common
 include $(BUILD_DIR)/make.wlan
 
 include $(TOP)/.config
+-include $(LINUXDIR)/.config
 
 ifneq ($(strip $(BUILD_BRCM_CMS)),)
 LIBS = -lcms_msg $(CMS_COMMON_LIBS) -ldl
@@ -25,6 +26,10 @@ LIBS += -L$(TOP)/shared -lshared
 
 ifeq ($(RTCONFIG_AMAS),y)
 LIBS += -L$(TOP)/json-c/.libs -ljson-c
+endif
+
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000))
+LIBS += -L$(TOP)/libhostapi -lhostapi
 endif
 
 ifneq ($(strip $(BUILD_RDKWIFI)),)
@@ -115,6 +120,7 @@ endif
 ifeq ($(BUILD_NAME),GT10)
 CFLAGS += -DGT10
 endif
+CFLAGS += -DWL_DEFAULT_NUM_SSID=$(CONFIG_BCM_DEFAULT_NUM_MBSS)
 LDFLAGS +=-lc $(LIBS_CC_RT) 
 #
 # Private apps and libs are allowed to link with libraries from the

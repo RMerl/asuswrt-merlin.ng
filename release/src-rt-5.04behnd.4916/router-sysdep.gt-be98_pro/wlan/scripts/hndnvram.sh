@@ -1,9 +1,5 @@
 #!/bin/sh
 
-echo "hndnvram.sh: mount /tmp/mnt/defaults"
-mkdir /tmp/mnt/defaults
-mount -t ubifs ubi:defaults /tmp/mnt/defaults
-
 MFG_NVRAM_PARTITION=misc1
 DEFAULTS_MNT_DIR=/mnt/defaults
 DEFAULTS_DIR_MFG_NVRAM=$DEFAULTS_MNT_DIR/wl
@@ -15,6 +11,19 @@ kernel_nvram_file="/data/.KERNEL_NVRAM_FILE_NAME"
 wl_srom_nm=".wlsromcustomerfile.nvm"    #wl calibration file name
 SYSTEM_INFO_INDICATOR=$(cat /proc/nvram/wl_nand_manufacturer)
 SYSTEM_UBOOT=$(($SYSTEM_INFO_INDICATOR & 8))
+
+echo "[$0]: mount /tmp/mnt/defaults"
+mkdir /tmp/mnt/defaults
+if  [[ $SYSTEM_UBOOT -gt 0 ]]; then
+    _root_fs_dev=`/rom/etc/get_rootfs_dev.sh`
+    if [[ ! -z $(echo $_root_fs_dev|grep mmcblk) ]]; then
+	echo "[$0]: mount -t ext4 /dev/defaults /tmp/mnt/defaults"
+	mount -t ext4 /dev/defaults /tmp/mnt/defaults
+    elif [[ ! -z $(echo $_root_fs_dev|grep ubi)  ]]; then
+	echo "[$0]: mount -t ubifs ubi:defaults /tmp/mnt/defaults"
+	mount -t ubifs ubi:defaults /tmp/mnt/defaults
+    fi
+fi
 
 # user_nvram_file is required for UNFWLCFG. In BASESHELL build,
 # we would store nvram configurations accessed by userspace into the file
@@ -367,7 +376,6 @@ else
 		FSTYPE=ubifs
 	fi
 fi
-
 
 if [ "$FLASHTYPE" == "" ]; then
 	echo "[$0]: Un supported flash type, exiting"

@@ -1,0 +1,7 @@
+OSS_REFERENCE_Name: libfdt
+OSS_REFERENCE_Version: 1.7.0
+OSS_REFERENCE_License: BSD-2-Clause
+OSS_REFERENCE_DownloadURL: https://github.com/dgibson/dtc/archive/v1.7.0.zip
+OSS_REFERENCE_BroadcomURL: 
+OSS_Broadcom_RelativePath: ./dtc-1.7.0.zip
+

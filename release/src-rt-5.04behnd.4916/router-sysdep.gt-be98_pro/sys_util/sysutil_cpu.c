@@ -83,6 +83,26 @@ BcmRet sysUtil_getCpuInfo(UINT32 index, UINT32 *frequency, char *architecture)
 
    *frequency = 0;
 
+   // On BCA SoC's, the CPU frequency is in /proc/socinfo
+   // Line looks like this: CPU Clock       :1675MHz
+   fs = fopen("/proc/socinfo", "r");
+   if (fs != NULL)
+   {
+      while ( fgets(line, sizeof(line), fs) )
+      {
+         if ((strncmp(line, "CPU Clock", 9) == 0) &&
+             ((pChar = strstr(line, ":")) != NULL))
+         {
+            char *endChar = pChar+1;
+            while (isdigit(*endChar))
+               endChar++;
+            *endChar = '\0';  // terminate string at non-digit char
+            *frequency = (UINT32) strtoul(pChar+1, (char **)NULL, 10);
+         }
+      }
+      fclose(fs);
+   }
+
    fs = fopen("/proc/cpuinfo", "r");
    if (fs == NULL)
    {
@@ -123,7 +143,8 @@ BcmRet sysUtil_getCpuInfo(UINT32 index, UINT32 *frequency, char *architecture)
       // gateway and one for DESKTOP_LINUX.
       // BogoMIPS        : 1980.41 (arm running linux4.1 BogoMIPS != Freq)
       // cpu MHz		    : 2592.000 (desktop linux running Linux 4.18)
-      if (((strncmp(line, "BogoMIPS", 8) == 0) ||
+      if ((*frequency == 0) &&
+          ((strncmp(line, "BogoMIPS", 8) == 0) ||
            (strncmp(line, "cpu MHz", 7) == 0)) &&
           ((pChar = strstr(line, ":")) != NULL))
       {

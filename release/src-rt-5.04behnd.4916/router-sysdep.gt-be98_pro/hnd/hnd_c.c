@@ -3,7 +3,7 @@
  * HND SRC OBJECT FILE: These functions handle the src object files in 4908
  * and the emf, igs, wl, dhd drivers.
  *
- * Copyright (C) 2023, Broadcom. All Rights Reserved.
+ * Copyright (C) 2024, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

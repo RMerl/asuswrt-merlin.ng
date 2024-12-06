@@ -63,5 +63,14 @@ typedef struct {
 int sysUtl_getThreadInfoFromProc(int tid, ProcThreadInfo *info);
 
 
+/** Get System total and free memory.
+ *
+ * @param sysTotal    (OUT) Total system memory.
+ * @param sysFree     (OUT) Total system free memory.
+ * 
+ * Return 0 on success, -1 on error.
+ */
+int sysUtl_getMemInfo(unsigned int *sysTotal, unsigned int *sysFree);
+
 
 #endif /* __SYSUTIL_PROC_H__ */

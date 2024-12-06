@@ -6,11 +6,11 @@ BUILD_DIR:=$(subst /userspace, /userspace,$(CURR_DIR))
 BUILD_DIR:=$(word 1, $(BUILD_DIR))
 include $(BUILD_DIR)/make.common
 
-ifneq ($(strip $(BRCM_DRIVER_EMMC)),)
+ifneq ($(strip $(BRCM_DRIVER_EMMC)),$(strip $(BUILD_VFBIO_LVM)),)
 conditional_build: all
 else
 conditional_build:
-	@echo "BRCM_DRIVER_EMMC not configured, skipping mmc-utils"
+	@echo "BRCM_DRIVER_EMMC or BUILD_VFBIO_LVM not configured, skipping mmc-utils"
 endif
 
 ARCH=$(PROFILE_ARCH)

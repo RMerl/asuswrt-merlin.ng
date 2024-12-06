@@ -12,7 +12,6 @@ CFLAGS_append += " -U_COSA_SIM_ -fno-exceptions -ffunction-sections -fdata-secti
            -DENABLE_SD_NOTIFY -UPARODUS_ENABLE -U_PLATFORM_RASPBERRYPI_ \
            -D_ENABLE_BAND_STEERING_ -DBRCM_RDKB -DRDK_BUILD -DBCA_CPEROUTER_RDK"
 
-EXTRA_OECONF_append = " --with-ccsp-platform=bcm --with-ccsp-arch=arm"
 
 CFLAGS_append += "-Wno-unused-variable -Wno-unused-parameter -Wno-format"
 
@@ -55,10 +54,18 @@ python() {
     if mt:
         rel_year = int(mt.group(1))
 
-    if rdk_branch == 'rdk-next' or ( rel_year > 2022 and not re.match(r'.*2023q1.*', rdk_branch)):
+    if rdk_branch == 'rdk-next' or ( rel_year > 2022 and not re.match(r'.*2023q1.*', rdk_branch)) or \
+       re.match(r'.*rdkb.*-kirkstone.*',rdk_branch):
         d.appendVar('SRC_URI',' file://SWRDKB-1037_ccsp_wifi_agent_rdk_next.patch')
     else:
         d.appendVar('SRC_URI',' file://SWRDKB-1037_ccsp_wifi_agent.patch')
+
+    pn_name = d.getVar('PN') 
+    if not re.match(r'.*rdkb.*-kirkstone.*',rdk_branch):
+        d.appendVar('EXTRA_OECONF',' --with-ccsp-platform=bcm --with-ccsp-arch=arm')
+    else:
+        d.appendVar(f"FILES_{pn_name}",' /lib/systemd/system/ccspwifiagent.service.d')
+        d.appendVar(f"FILES_{pn_name}",' /usr/bin/wifi_events_consumer')
 }
 
 
@@ -67,4 +74,5 @@ SRC_URI_append += " \
             file://SWRDKB-497_apshealth.patch \
             file://0001-fix-halv3.patch \
             file://0002-fix-mgmt_frame_received_callback-not-defined.patch \
+            file://0003-json-c-conflict.patch \
             "

@@ -4,6 +4,7 @@ SRC_URI_append = " \
     file://checkbrcmwifisupport.service \
     file://brcmwifiinitialized.path \
     file://checkbrcmwifisupport.path \
+    file://0001-have-ccspwifiagent-start-by-wifi-ready-path.patch \
 "
 
 SYSTEMD_SERVICE_${PN}_remove = "checkrpiwifisupport.service"

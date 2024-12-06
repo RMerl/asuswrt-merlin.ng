@@ -33,9 +33,12 @@ written consent.
 #include <string.h>
 #include <stdlib.h>
 #include <net/if.h>
+#include <ctype.h> 
 
 #include "bcm_ulog.h"
 #include "board.h"
+
+#define MBPS_TO_KBPS(a) (a) * 1000
 
 /* The returned data from the command 'pspctl dump WanRate' has
    the format of XXYY, where XX represents the downstream rate and
@@ -44,6 +47,7 @@ written consent.
    it translates to 10G or 1G, respectively. This function takes
    the "XX" or "YY" as an input string and returns the corresponding
    data rate in kbps */
+int bcmNet_getWanTypeStr(char *wanType, int size);
 static inline int __resolveVeipSpeed(char *buf)
 {
     int tmpSpeed = atoi(buf);
@@ -52,6 +56,50 @@ static inline int __resolveVeipSpeed(char *buf)
     else
         tmpSpeed = tmpSpeed * 1000000;
     return tmpSpeed;
+}
+
+static int bcmNet_WanSpeedSanity(char *intfName, int *upSpeed, int *downSpeed)
+{
+    FILE *p;
+    char buf[128], cmd_buf[128];
+    int rc = 0;
+    int val1, val2;
+   
+    snprintf(cmd_buf, sizeof(cmd_buf), "ethtool %s |grep baseT\n", intfName);
+    p = popen(cmd_buf, "r");
+    if ((NULL == p) || (fgets(buf, sizeof(buf), p) == NULL) || !(strstr(buf,"baseT")) ||
+       EOF == sscanf(buf, "%*[^:]:%*[^0-9]%d", &val1))
+    {
+        fprintf(stderr, "%s:%d get link speed failed!\n", __FUNCTION__, __LINE__);
+        rc = -1;
+        goto exit;
+    }
+
+    /* if no second line the upstream speed is the same as downstream */
+    if ((fgets(buf, sizeof(buf), p) == NULL) || !strstr(buf,"baseT") ||
+        EOF == sscanf(buf, "%*[^0-9]%d", &val2))
+    {
+        val2 = val1; /* symetric rate case */
+    }
+    
+
+    if (val1 > val2)
+    {
+        *upSpeed = MBPS_TO_KBPS(val2);
+        *downSpeed = MBPS_TO_KBPS(val1);
+    }
+    else
+    {
+        *upSpeed = MBPS_TO_KBPS(val1);
+        *downSpeed = MBPS_TO_KBPS(val2);
+    }
+
+exit:
+
+   if (p)
+       pclose(p);
+
+   return rc;
 }
 
 
@@ -65,6 +113,8 @@ int bcmNet_getRouteInfoToServer(const char *serverIp, char* intfName,
     FILE *p = NULL;
     int ret = 0, portNumber = -1;
     unsigned long int tmpSpeed = 0;
+    char localLowerDevName[IFNAMSIZ] = {0};
+    char *tmp_intfName;
 
     /* get the local interface that can reach to the given server IP */
     snprintf(buf, sizeof(buf), "/bin/ip route get %s", serverIp);
@@ -167,21 +217,41 @@ int bcmNet_getRouteInfoToServer(const char *serverIp, char* intfName,
         bcmuLog_notice("%s %s %d\n", intfName, macAddr, portNumber);
     }
 
+    tmp_intfName = intfName;
+    if (strstr(intfName, "ppp") != NULL)
+    {
+        snprintf(buf, sizeof(buf), "cat /sys/class/net/%s/lower_*/uevent|sed -n 's/^INTERFACE=//p'", intfName);
+        p = popen(buf, "r");
+        if ((NULL == p) || (NULL == fgets(buf, 512, p)))
+        {
+            bcmuLog_notice("Failed to get lower interface of %s", intfName);
+            ret = -1;
+        }
+        if (p)
+            pclose(p);
 
-    if (strstr(intfName, "eth") != NULL) {
+        if (ret != -1)
+            sscanf(buf, "%s", localLowerDevName);
+
+        bcmuLog_notice("Interface intfName %s's parent is %s\n", intfName, localLowerDevName);
+
+        tmp_intfName = localLowerDevName;
+    }
+
+    if (strstr(tmp_intfName, "eth") != NULL) {
         *upSpeed = 1000; /* set speed to 1G if nothing works out */
-        snprintf(cmd, sizeof(cmd), "/sys/class/net/%s/speed", intfName);
+        snprintf(cmd, sizeof(cmd), "/sys/class/net/%s/speed", tmp_intfName);
         p = fopen(cmd, "r");
         if ((NULL == p) || (EOF == fscanf(p, "%d", upSpeed)))
         {
-            bcmuLog_notice("Failed to get speed for %s\n", intfName);
+            bcmuLog_notice("Failed to get speed for %s\n", tmp_intfName);
             ret = -1;
         }
         if (p)
             fclose(p);
         *downSpeed = *upSpeed = *upSpeed * 1000;
     }
-    else if (strstr(intfName, "ptm") != NULL || strstr(intfName, "atm") != NULL)
+    else if (strstr(tmp_intfName, "ptm") != NULL || strstr(tmp_intfName, "atm") != NULL)
     {
         int currUpSpeed = 0, currDownSpeed = 0; 
         *upSpeed = *downSpeed = 0;
@@ -198,7 +268,7 @@ int bcmNet_getRouteInfoToServer(const char *serverIp, char* intfName,
                     if ((bufp != NULL) && (EOF != sscanf(bufp, "= %lu bps", &tmpSpeed))) {
                         currUpSpeed = tmpSpeed/1000;
                     } else {
-                        bcmuLog_notice("Failed to get US rate for %s\n", intfName);
+                        bcmuLog_notice("Failed to get US rate for %s\n", tmp_intfName);
                         ret = -1;
                     }
                 }
@@ -208,7 +278,7 @@ int bcmNet_getRouteInfoToServer(const char *serverIp, char* intfName,
                     if ((bufp != NULL) && (EOF != sscanf(bufp, "= %lu bps", &tmpSpeed))) {
                         currDownSpeed = tmpSpeed/1000;
                     } else {
-                        bcmuLog_notice("Failed to get DS rate for %s\n", intfName);
+                        bcmuLog_notice("Failed to get DS rate for %s\n", tmp_intfName);
                         ret = -1;
                     }
                 }
@@ -226,43 +296,28 @@ int bcmNet_getRouteInfoToServer(const char *serverIp, char* intfName,
         }
         else
         {
-            bcmuLog_notice("Failed to get speed for %s\n", intfName);
+            bcmuLog_notice("Failed to get speed for %s\n", tmp_intfName);
             ret = -1;
         }
     }
-    else if (strstr(intfName, "veip") != NULL)
+    else if (strstr(tmp_intfName, "veip") != NULL)
     {
-        *upSpeed = *downSpeed = 1000000; /* set speed to 1G if nothing works out */
-        p = popen("/bin/pspctl dump WanRate", "r");
-        /* The input file's format is fixed, no concern. */
-        /* coverity[dont_call] */
-        if ((NULL == p) || (EOF == fscanf(p, "%s", buf)))
+        int rc = 0;
+
+        rc = bcmNet_WanSpeedSanity(tmp_intfName, upSpeed, downSpeed);
+        if (rc)
         {
-            bcmuLog_notice("Failed to get speed for %s\n", intfName);
+            *upSpeed = *downSpeed = 10000000; /* set speed to 10G if nothing works out */  
             ret = -1;
         }
-        else
-        {
-            uint32_t tmp_upSpeed, tmp_downSpeed;
-
-            tmp_upSpeed = __resolveVeipSpeed(buf+2);
-            buf[2] = '\0';
-            tmp_downSpeed = __resolveVeipSpeed(buf);
-            if (tmp_upSpeed)
-                *upSpeed = tmp_upSpeed;
-            if (tmp_downSpeed)
-                *downSpeed = tmp_downSpeed;
-        }
-        if (p)
-            pclose(p);
-
     }
     else
     {
         *upSpeed = *downSpeed = 1000000; /* set speed to 1G if nothing works out */
+        ret = -1;
     }
-    bcmuLog_notice("Route info for %s: SrcIntf=%s SrcIP=%s upSpeed=%d downSpeed=%d\n",
-                   serverIp, intfName, intfIp, *upSpeed, *downSpeed);
+    bcmuLog_notice("Route info for %s: SrcIntf=%s SrcIP=%s upSpeed=%d downSpeed=%d, ret %d\n",
+                   serverIp, tmp_intfName, intfIp, *upSpeed, *downSpeed, ret);
 
     return ret;
 }

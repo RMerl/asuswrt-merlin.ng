@@ -395,6 +395,11 @@ mfg_init_nvram_dirs()
 {
     mkdir -p /var/tmp 
 
+    if [ ! -d $DEFAULTS_MNT_DIR ]; then
+	echo "$0: Created $DEFAULTS_MNT_DIR"
+	mkdir -p $DEFAULTS_MNT_DIR
+    fi
+
     if [ -d $DEFAULTS_MNT_DIR ]; then
         echo "$0: $DEFAULTS_MNT_DIR present"
         mkdir -p $DEFAULTS_MFG_NVRAM_DIR || error_exit "$0: mkdir failed"

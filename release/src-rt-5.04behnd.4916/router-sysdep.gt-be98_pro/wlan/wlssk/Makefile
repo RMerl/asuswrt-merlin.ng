@@ -105,7 +105,7 @@ CFLAGS += -DBUILD_WLDATAELD
 endif
 endif
 
-ifeq ($(strip $(BUILD_OPENWRT_NATIVE)),)
+ifeq ($(strip $(BUILD_OPENWRT_NATIVE))$(strip $(BUILD_PRPL_FEEDS)),)
 all dynamic: $(EXE)
 ifneq ($(strip $(BUILD_BRCM_CMS))$(strip $(BUILD_BRCM_BDK)),)
 install: all
@@ -117,9 +117,9 @@ endif
 	-ln -sf /usr/sbin/dhd  $(INSTALL_DIR)/bin/dhdctl
 else
 all dynamic:
-	@echo "Skip building $(EXE) with native openwrt build."
+	@echo "Skip building $(EXE) with native openwrt or prpl build."
 install:
-	@echo "Skip installing $(EXE) and scripts with native openwrt build."
+	@echo "Skip installing $(EXE) and scripts with native openwrt or prpl build."
 endif
 
 

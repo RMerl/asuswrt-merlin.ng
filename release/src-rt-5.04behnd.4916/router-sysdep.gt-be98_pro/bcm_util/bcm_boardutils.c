@@ -42,6 +42,18 @@ written consent.
 #include "bcm_ulog.h"
 #include "bcm_fsutils.h"
 #include "cms_version.h"
+#include "os_defs.h"
+#include "bcm_bootstate.h"
+
+static const char *rebootSystemCallReasonStr[] = {
+   [REBOOT_REASON_NULL]                 = "Null",
+   [REBOOT_REASON_SOFTWARE_UPGRADE]     = "Software Upgrade",
+   [REBOOT_REASON_MANAGEMENT_REBOOT]    = "Management Reboot",
+   [REBOOT_REASON_RESTORE_DEFAULT]      = "Restore Default",
+   [REBOOT_REASON_HARDWARE_ABNORMALITY] = "Hardware Abnormality"
+};
+
+#define NUM_OF_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))
 
 int bcmUtl_isBootloaderUboot(void)
 {
@@ -131,6 +143,55 @@ BcmRet bcmUtl_getManufacturer(char *buf, UINT32 bufLen)
 }
 
 
+BcmRet bcmUtl_getModelName(char *buf, UINT32 bufLen)
+{
+   char strBuf[64]={0};
+   const char *fileName = "/proc/environment/boardid";
+   UINT32 len;
+   FILE *fp = NULL;
+
+   if (buf == NULL)
+   {
+      bcmuLog_error("NULL buf!");
+      return BCMRET_INVALID_ARGUMENTS;
+   }
+
+   memset(buf, 0, bufLen);
+   if ((fp = fopen(fileName, "r")) == NULL)
+   {
+      bcmuLog_notice("failed to open file %s. Could be cfe boot image.", fileName);
+      return BCMRET_INTERNAL_ERROR;
+   }
+
+   if (NULL == fgets(strBuf, sizeof(strBuf), fp))
+   {
+      bcmuLog_error("Could not read %s", fileName);
+      fclose(fp);
+      return BCMRET_INTERNAL_ERROR;
+   }
+   fclose(fp);
+
+   len = strlen(strBuf);
+
+   if ((len > 0) && (strBuf[len-1] == '\n'))  //remove char '\n'
+   {
+      strBuf[len-1] = '\0';
+      len = strlen(strBuf);
+   }
+
+   bcmuLog_notice("got len=%d str=%s", len, strBuf);
+   if (len >= bufLen)
+   {
+      bcmuLog_error("buf (len=%d) is too small, need %d",
+                    bufLen, len+1);
+      return BCMRET_INTERNAL_ERROR;
+   }
+
+   snprintf(buf, bufLen, "%s", strBuf);
+   return BCMRET_SUCCESS;
+}
+
+
 BcmRet bcmUtl_getHardwareVersion(char *buf, UINT32 bufLen)
 {
    char *hw_version = "tmp_hardware1.0";
@@ -181,7 +242,7 @@ BcmRet bcmUtl_getBaseMacAddress(char *macAddrBuf)
       }
    }
    
-   if( NULL == fgets(buf, xlen+1, fp) )
+   if (NULL == fgets(buf, xlen+1, fp))
    {
       bcmuLog_error("Could not read %s", fileName);
       fclose(fp);
@@ -201,13 +262,55 @@ BcmRet bcmUtl_getBaseMacAddress(char *macAddrBuf)
    return BCMRET_SUCCESS;
 }
 
+BcmRet bcmUtl_getProgrammedSerialNumber(char *buf, UINT32 bufLen)
+{
+   const char *fileName = "/proc/device-tree/chip_info/serial-number";
+   char serialbuf[BUFLEN_32]={0};
+   UINT32 len;
+   FILE *fp = NULL;
+
+   if (buf == NULL)
+      return BCMRET_INVALID_ARGUMENTS;
+
+   if ((fp = fopen(fileName, "r")) == NULL)
+   {
+      bcmuLog_debug("failed to open file %s", fileName);
+      return BCMRET_INTERNAL_ERROR;
+   }
+   
+   if (NULL == fgets(serialbuf,BUFLEN_32, fp))
+   {
+      bcmuLog_error("Could not read %s", fileName);
+      fclose(fp);
+      return BCMRET_INTERNAL_ERROR;
+   }
+   fclose(fp);
+
+   len = strlen(serialbuf);
+   if (len > bufLen)
+   {
+      bcmuLog_notice("len=%d read in buffer=%s", len, serialbuf);
+      len = bufLen;
+   }
+   strncpy(buf, serialbuf, len); 
+   return BCMRET_SUCCESS;
+}
 
 BcmRet bcmUtl_getSerialNumber(char *buf, UINT32 bufLen)
 {
    char macAddrBuf[32]={0};
    int i;
    BcmRet ret;
-   
+
+   /* it is possible that we have a serial number programmed, if it's not found
+    * then we fall back to the MAC address
+    */
+   ret = bcmUtl_getProgrammedSerialNumber(buf, bufLen);
+   if (ret == BCMRET_SUCCESS)
+   {
+      return ret;
+   }
+
    if (bufLen < 13)  // macAddr without colons is 12+null term=13
       return BCMRET_RESOURCE_EXCEEDED;
 
@@ -256,7 +359,7 @@ BcmRet bcmUtl_getBootloaderVersion(char* versionBuf, UINT32 bufLen)
       return BCMRET_INTERNAL_ERROR;
    }
    
-   if( NULL == fgets(strBuf, sizeof(strBuf)-1, fp) )
+   if (NULL == fgets(strBuf, sizeof(strBuf), fp))
    {
       bcmuLog_error("Could not read %s", fileName);
       fclose(fp);
@@ -310,9 +413,185 @@ void bcmUtl_busybox_reboot(void)
       bcmuLog_error("Failed to run reboot cmd.");
 }
 
-void bcmUtl_loggedBusybox_reboot(const char *requestor, const char *reason)
+/*
+ * This function is to read the reason of the last reboot.
+ */
+static BcmRet bcmUtl_getRebootSystemCallReason(char *buf, UINT32 bufLen)
 {
-   bcmUtl_declareShutdownInProgressEx(requestor, reason, BCM_DECLARE_SHUTDOWN_KNOTICE);
+   const char *rebootSystemCallReasonFile = "/data/reboot_reason";
+
+   FILE *fp = NULL;
+
+   memset(buf, 0, bufLen);  
+   if ((fp = fopen(rebootSystemCallReasonFile, "r")) == NULL)
+   {
+      bcmuLog_notice("failed to open file %s.", rebootSystemCallReasonFile);
+      return BCMRET_INTERNAL_ERROR;
+   }
+
+   if (NULL == fgets(buf, bufLen, fp))
+   {
+      bcmuLog_error("Could not read %s", rebootSystemCallReasonFile);
+      fclose(fp);
+      return BCMRET_INTERNAL_ERROR;
+   }
+
+   fclose(fp);
+   return BCMRET_SUCCESS;
+}
+
+/*
+ * This function is to write the reboot reason to a flash file
+ * which can be read after reboot.
+ */
+static BcmRet bcmUtl_writeRebootSystemCallReason(const char *requestor, const char *reason)
+{
+   const char *rebootSystemCallReasonFile = "/tmp/reboot_reason";
+   char rebootReason[REBOOT_REASON_MAX_LENGTH];
+   FILE *fp = NULL;
+
+   snprintf(rebootReason, REBOOT_REASON_MAX_LENGTH, "%s:%s", reason, requestor);
+
+   // need to write the reason
+   if ((fp = fopen(rebootSystemCallReasonFile, "w+")) == NULL)
+   {
+      bcmuLog_error("%s: could not open %s", __FUNCTION__, rebootSystemCallReasonFile);
+      return BCMRET_INTERNAL_ERROR;
+   }
+
+   fprintf(fp, "%s", rebootReason);
+   fclose(fp);
+
+   return BCMRET_SUCCESS;
+}
+
+/*
+ * This function is to get reset_status.
+ * Now only isSwReset is used.
+ */
+static BcmRet bcmUtl_getResetStatus(UINT8 *isSwReset)
+{
+   const char *filename = "/proc/bootstate/reset_status";
+   char buffer[BUFLEN_64];
+   FILE *fp = NULL;
+   int value;
+
+   if ((fp = fopen(filename, "r")) == NULL)
+   {
+      bcmuLog_notice("failed to open file %s.", filename);
+      return BCMRET_INTERNAL_ERROR;
+   }
+   
+   if (NULL == fgets(buffer, sizeof(buffer), fp))
+   {
+      bcmuLog_error("Could not read %s", filename);
+      fclose(fp);
+      return BCMRET_INTERNAL_ERROR;
+   }
+   fclose(fp);
+
+   value = strtoul(buffer, NULL, 16);
+
+   if ((value & SW_RESET_STATUS) == SW_RESET_STATUS)
+   {
+       *isSwReset = 1;
+   }
+
+   return BCMRET_SUCCESS;
+}
+
+/*
+ * This function is to get the reason of the board reboot last time.
+ */
+BcmRet bcmUtl_getLastRebootReason(char *buf, UINT32 bufLen)
+{
+   const char *filename = "/proc/bootstate/old_reset_reason";
+   UINT8 isSwReset = 0;
+   char buffer[BUFLEN_64];
+   char rebootReasonBuf[REBOOT_REASON_MAX_LENGTH];
+   FILE *fp = NULL;
+   int value;
+
+   memset(buf, 0, bufLen);
+
+   if (bcmUtl_getResetStatus(&isSwReset) != BCMRET_SUCCESS)
+   {
+      bcmuLog_error("bcmUtl_getResetStatus failed");
+      return BCMRET_INTERNAL_ERROR;
+   }
+
+   // if this is not a soft reset, return "Power On"
+   // Todo: other hardware reset
+   if (!isSwReset)
+   {
+      snprintf(buf, bufLen, "%s", "Power On");
+      return BCMRET_SUCCESS;
+   }
+
+   // this is a soft reset, to read reset_reason
+   if ((fp = fopen(filename, "r")) == NULL)
+   {
+      bcmuLog_notice("failed to open file %s.", filename);
+      return BCMRET_INTERNAL_ERROR;
+   }
+   
+   if (NULL == fgets(buffer, sizeof(buffer), fp))
+   {
+      bcmuLog_error("Could not read %s", filename);
+      fclose(fp);
+      return BCMRET_INTERNAL_ERROR;
+   }
+   fclose(fp);
+
+   value = strtoul(buffer, NULL, 16);
+
+   // if this is a reboot system call, read reboot system call reason
+   // else the reason is set using reset_reason
+   switch (value & BCM_BOOT_REASON_MASK)
+   {
+      case BCM_BOOT_REASON_REBOOT:
+         if (bcmUtl_getRebootSystemCallReason(rebootReasonBuf, REBOOT_REASON_MAX_LENGTH)
+            == BCMRET_SUCCESS)
+         {
+            snprintf(buf, bufLen, "%s:%s", "Reboot System Call", rebootReasonBuf);
+         }
+         else
+         {
+            snprintf(buf, bufLen, "%s", "Reboot System Call");
+         }
+         break;
+      case BCM_BOOT_REASON_ACTIVATE:
+         snprintf(buf, bufLen, "%s", "Software Upgrade");
+         break;
+      case BCM_BOOT_REASON_PANIC:
+         snprintf(buf, bufLen, "%s", "Kernel Panic");
+         break;
+      case BCM_BOOT_REASON_WATCHDOG:
+         snprintf(buf, bufLen, "%s", "Watchdog");
+         break;
+      default:
+         snprintf(buf, bufLen, "%s", "Unknown");
+         break;
+   }
+
+   return BCMRET_SUCCESS;
+}
+
+void bcmUtl_loggedBusybox_reboot(const char *requestor, RebootReasonType reason)
+{
+   const char *reasonStr;
+
+   if (reason < NUM_OF_ELEMENTS(rebootSystemCallReasonStr))
+   {
+      reasonStr = rebootSystemCallReasonStr[reason];
+   }
+   else
+   {
+      reasonStr = "Unknown";
+   }
+
+   bcmUtl_declareShutdownInProgressEx(requestor, reasonStr, BCM_DECLARE_SHUTDOWN_KNOTICE);
+   bcmUtl_writeRebootSystemCallReason(requestor, reasonStr);
    bcmUtl_busybox_reboot();
 }
 

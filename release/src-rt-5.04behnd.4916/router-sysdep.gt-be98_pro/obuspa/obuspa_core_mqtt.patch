@@ -1,6 +1,6 @@
 diff -Naur obuspa_orig/src/core/mqtt.c obuspa_new/src/core/mqtt.c
---- obuspa_orig/src/core/mqtt.c	2023-03-28 11:22:54.236037740 -0700
-+++ obuspa_new/src/core/mqtt.c	2023-04-05 14:36:49.639434678 -0700
+--- obuspa_orig/src/core/mqtt.c	2023-12-04 13:02:08.160904070 -0800
++++ obuspa_new/src/core/mqtt.c	2023-12-21 14:15:59.554144112 -0800
 @@ -63,6 +63,9 @@
  #ifdef ENABLE_MQTT
  
@@ -39,7 +39,29 @@ diff -Naur obuspa_orig/src/core/mqtt.c obuspa_new/src/core/mqtt.c
  //------------------------------------------------------------------------------------
  #define DEFINE_MQTT_TrustCertVerifyCallbackIndex(index) \
  int MQTT_TrustCertVerifyCallback_##index (int preverify_ok, X509_STORE_CTX *x509_ctx) \
-@@ -628,7 +645,22 @@
+@@ -481,6 +498,21 @@
+     client->schedule_close = kScheduledAction_Signalled;
+     err = USP_ERR_OK;
+ 
++#ifdef BDK_USP
++    // jira58986: If a MQTT connection is deleted from the WEBUI, there
++    // is a case when the connection is deleted from the MDM but not in
++    // the obuspa stack. The stack only cleans the connection when it
++    // completes sending all the pending messages for the connection --
++    // transition the state from signalled to activated. The only way
++    // this is checked now is when there is an incoming traffic. In the
++    // case when the connection is not connected to a server,
++    // there is no incoming traffic
++    if (client->usp_record_send_queue.head == NULL)
++    {
++       client->schedule_close = kScheduledAction_Activated;
++    }
++#endif
++
+ exit:
+     OS_UTILS_UnlockMutex(&mqtt_access_mutex);
+ 
+@@ -628,7 +660,22 @@
      // Make sure we use the same instance
      client->next_params.instance = client->conn_params.instance;
  
@@ -62,7 +84,7 @@ diff -Naur obuspa_orig/src/core/mqtt.c obuspa_new/src/core/mqtt.c
  
  exit:
      OS_UTILS_UnlockMutex(&mqtt_access_mutex);
-@@ -975,6 +1007,12 @@
+@@ -975,6 +1022,12 @@
  
              case kMqttSubState_Subscribed:
                  // Unsubscribe, ignoring any errors, since we are going to mark the subscription as not in use anyway
@@ -75,7 +97,7 @@ diff -Naur obuspa_orig/src/core/mqtt.c obuspa_new/src/core/mqtt.c
                  Unsubscribe(client, sub);
                  break;
  
-@@ -1096,11 +1134,21 @@
+@@ -1096,11 +1149,21 @@
          {
              // Set state to resubscribe to new topic on reception of UNSUBACK (initiated by the unsubscribe, above)
              sub->state = kMqttSubState_Resubscribing;
@@ -97,7 +119,7 @@ diff -Naur obuspa_orig/src/core/mqtt.c obuspa_new/src/core/mqtt.c
          }
      }
      else
-@@ -1122,6 +1170,11 @@
+@@ -1122,6 +1185,11 @@
          {
              // NOTE: Nothing to do, if not unsubscribing, and new subscription is disabled
              sub->state = kMqttSubState_Unsubscribed;
@@ -109,7 +131,7 @@ diff -Naur obuspa_orig/src/core/mqtt.c obuspa_new/src/core/mqtt.c
          }
      }
  
-@@ -1754,6 +1807,9 @@
+@@ -1754,6 +1822,9 @@
      client->retry_time = 0;
  
      MoveState(&client->state, kMqttState_Idle, "Disable Client");
@@ -119,7 +141,7 @@ diff -Naur obuspa_orig/src/core/mqtt.c obuspa_new/src/core/mqtt.c
  
      // Exit if this function is not being called as part of a reconnect sequence
      if (is_reconnect)
-@@ -1859,6 +1915,9 @@
+@@ -1859,6 +1930,9 @@
      {
          // Start the connection!
          MoveState(&client->state, kMqttState_SendingConnect, "Starting Connection");
@@ -129,7 +151,7 @@ diff -Naur obuspa_orig/src/core/mqtt.c obuspa_new/src/core/mqtt.c
      }
  
      return err;
-@@ -2117,10 +2176,29 @@
+@@ -2117,10 +2191,29 @@
      if (err == USP_ERR_OK)
      {
          MoveState(&client->state, kMqttState_AwaitingConnect, "Connect sent");
@@ -159,7 +181,7 @@ diff -Naur obuspa_orig/src/core/mqtt.c obuspa_new/src/core/mqtt.c
      }
  }
  
-@@ -2144,7 +2222,12 @@
+@@ -2144,7 +2237,12 @@
      int keep_alive;
  
      // Exit if unable to configure username/password for this mosquitto context
@@ -172,7 +194,7 @@ diff -Naur obuspa_orig/src/core/mqtt.c obuspa_new/src/core/mqtt.c
      {
          if (mosquitto_username_pw_set(client->mosq, client->conn_params.username, client->conn_params.password) != MOSQ_ERR_SUCCESS)
          {
-@@ -2213,6 +2296,12 @@
+@@ -2213,6 +2311,12 @@
      // Take the access mutex again
      OS_UTILS_LockMutex(&mqtt_access_mutex);
  
@@ -185,7 +207,7 @@ diff -Naur obuspa_orig/src/core/mqtt.c obuspa_new/src/core/mqtt.c
      // Exit if failed to connect
      if (mosq_err != MOSQ_ERR_SUCCESS)
      {
-@@ -2362,6 +2451,9 @@
+@@ -2362,6 +2466,9 @@
  
          MoveState(&client->state, kMqttState_Running, "Connect Callback Received");
          SubscribeToAll(client);
@@ -195,7 +217,7 @@ diff -Naur obuspa_orig/src/core/mqtt.c obuspa_new/src/core/mqtt.c
      }
  
  exit:
-@@ -2445,6 +2537,7 @@
+@@ -2445,6 +2552,7 @@
              USP_LOG_Debug("%s: Received client_id: \"%s\"", __FUNCTION__, client_id_ptr);
              USP_SAFE_FREE(client->conn_params.client_id);
              client->conn_params.client_id = USP_STRDUP(client_id_ptr);
@@ -203,7 +225,7 @@ diff -Naur obuspa_orig/src/core/mqtt.c obuspa_new/src/core/mqtt.c
              free(client_id_ptr);
          }
  
-@@ -2455,6 +2548,7 @@
+@@ -2455,6 +2563,7 @@
          {
              // Then replace the response_topic in subscription with this
              SaveAgentTopicFromConnack(client, response_info_ptr);
@@ -211,7 +233,7 @@ diff -Naur obuspa_orig/src/core/mqtt.c obuspa_new/src/core/mqtt.c
              free(response_info_ptr);
          }
          else
-@@ -2468,6 +2562,7 @@
+@@ -2468,6 +2577,7 @@
                  if (strcmp("subscribe-topic", userPropName) == 0)
                  {
                      SaveAgentTopicFromConnack(client, subscribe_topic_ptr);
@@ -219,7 +241,7 @@ diff -Naur obuspa_orig/src/core/mqtt.c obuspa_new/src/core/mqtt.c
                      free(subscribe_topic_ptr);
                      free(userPropName);
                  }
-@@ -2483,6 +2578,7 @@
+@@ -2483,6 +2593,7 @@
                          if (strcmp("subscribe-topic", userPropName) == 0)
                          {
                              SaveAgentTopicFromConnack(client, subscribe_topic_ptr);
@@ -227,7 +249,7 @@ diff -Naur obuspa_orig/src/core/mqtt.c obuspa_new/src/core/mqtt.c
                          }
                          free(subscribe_topic_ptr);
                          free(userPropName);
-@@ -2497,6 +2593,9 @@
+@@ -2497,6 +2608,9 @@
  
          MoveState(&client->state, kMqttState_Running, "Connect Callback Received");
          SubscribeToAll(client);
@@ -237,7 +259,7 @@ diff -Naur obuspa_orig/src/core/mqtt.c obuspa_new/src/core/mqtt.c
      }
  
  exit:
-@@ -2604,6 +2703,32 @@
+@@ -2604,6 +2718,32 @@
      USP_LOG_Debug("%s: Disconnected (rc=%d, is_reconnect=%d)\n", __FUNCTION__, rc, client->is_reconnect);
      client->is_disconnected = true;
  
@@ -270,7 +292,7 @@ diff -Naur obuspa_orig/src/core/mqtt.c obuspa_new/src/core/mqtt.c
  exit:
      OS_UTILS_UnlockMutex(&mqtt_access_mutex);
  }
-@@ -2698,6 +2823,11 @@
+@@ -2698,6 +2838,11 @@
      int version = client->conn_params.version;
  
      sub->state = kMqttSubState_Subscribing;
@@ -282,7 +304,7 @@ diff -Naur obuspa_orig/src/core/mqtt.c obuspa_new/src/core/mqtt.c
      if (version == kMqttProtocol_5_0)
      {
          USP_LOG_Debug("%s: Sending subscribe to %s %d %d", __FUNCTION__, sub->topic, sub->mid, sub->qos);
-@@ -2863,6 +2993,16 @@
+@@ -2863,6 +3008,16 @@
          goto exit;
      }
  
@@ -299,7 +321,7 @@ diff -Naur obuspa_orig/src/core/mqtt.c obuspa_new/src/core/mqtt.c
      if (sub->state != kMqttSubState_Subscribing)
      {
          USP_LOG_Error("%s: Wrong state %d", __FUNCTION__, sub->state);
-@@ -2870,6 +3010,11 @@
+@@ -2870,6 +3025,11 @@
      else
      {
          sub->state = kMqttSubState_Subscribed;
@@ -311,7 +333,7 @@ diff -Naur obuspa_orig/src/core/mqtt.c obuspa_new/src/core/mqtt.c
      }
  
  exit:
-@@ -2927,6 +3072,11 @@
+@@ -2927,6 +3087,11 @@
      int err = USP_ERR_OK;
  
      sub->state = kMqttSubState_Unsubscribing;
@@ -323,14 +345,14 @@ diff -Naur obuspa_orig/src/core/mqtt.c obuspa_new/src/core/mqtt.c
      if (version == kMqttProtocol_5_0)
      {
          err = UnsubscribeV5(client, sub);
-@@ -3515,9 +3665,39 @@
+@@ -3515,9 +3680,39 @@
  
      // Move to retrying state
      MoveState(&client->state, kMqttState_ErrorRetrying, message);
 +#ifdef BDK_USP
 +    setMqttClientStatus(client);
 +#endif
-+
+ 
 +#ifdef BDK_USP
 +    switch (failure_code)
 +    {
@@ -350,7 +372,7 @@ diff -Naur obuspa_orig/src/core/mqtt.c obuspa_new/src/core/mqtt.c
 +        // usp_conformance_11_6: do not reset retry counter when
 +        // error is kMqttFailure_ForceDisconnect to make message retry
 +        // mechanism work correctly.
- 
++
 +        default:
 +            // Increment retry count
 +            client->retry_count++;
@@ -363,7 +385,7 @@ diff -Naur obuspa_orig/src/core/mqtt.c obuspa_new/src/core/mqtt.c
  
      // Calculate a wait time until retry
      mqtt_retry_params_t *retry = &client->conn_params.retry;
-@@ -3689,6 +3869,14 @@
+@@ -3689,6 +3884,14 @@
      for (i = 0; i < MAX_MQTT_SUBSCRIPTIONS; i++)
      {
          subs = &client->subscriptions[i];
@@ -378,7 +400,7 @@ diff -Naur obuspa_orig/src/core/mqtt.c obuspa_new/src/core/mqtt.c
          if (subs->instance == subinstance)
          {
              return subs;
-@@ -3893,4 +4081,118 @@
+@@ -3893,4 +4096,118 @@
      }
  }
  

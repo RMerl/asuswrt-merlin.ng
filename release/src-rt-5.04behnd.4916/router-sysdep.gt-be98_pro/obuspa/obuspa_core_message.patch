@@ -1,6 +1,6 @@
 diff -Naur obuspa_orig/src/core/msg_handler.c obuspa_new/src/core/msg_handler.c
---- obuspa_orig/src/core/msg_handler.c	2022-10-31 11:07:04.642937412 -0700
-+++ obuspa_new/src/core/msg_handler.c	2022-11-01 13:32:53.227365715 -0700
+--- obuspa_orig/src/core/msg_handler.c	2023-03-28 11:21:55.000000000 -0700
++++ obuspa_new/src/core/msg_handler.c	2023-10-09 11:15:36.744937381 -0700
 @@ -118,7 +118,11 @@
  int HandleUspMessage(Usp__Msg *usp, char *controller_endpoint, mtp_reply_to_t *mrt);
  int ValidateUspRecord(UspRecord__Record *rec, mtp_reply_to_t *mrt);
@@ -130,8 +130,8 @@ diff -Naur obuspa_orig/src/core/msg_handler.c obuspa_new/src/core/msg_handler.c
  
  /*********************************************************************//**
 diff -Naur obuspa_orig/src/core/handle_delete.c obuspa_new/src/core/handle_delete.c
---- obuspa_orig/src/core/handle_delete.c	2022-09-06 18:37:54.000000000 -0700
-+++ obuspa_new/src/core/handle_delete.c	2022-09-12 10:35:44.676827125 -0700
+--- obuspa_orig/src/core/handle_delete.c	2023-03-28 11:21:55.000000000 -0700
++++ obuspa_new/src/core/handle_delete.c	2023-10-09 11:15:36.745937463 -0700
 @@ -107,6 +107,10 @@
          goto exit;
      }
@@ -204,14 +204,14 @@ diff -Naur obuspa_orig/src/core/handle_delete.c obuspa_new/src/core/handle_delet
          // If allow_partial is at the global level, and an error occurred, then fail this
          if ((del->allow_partial == false) && (err != USP_ERR_OK))
 diff -Naur obuspa_orig/src/core/handle_get.c obuspa_new/src/core/handle_get.c
---- obuspa_orig/src/core/handle_get.c	2022-10-31 11:07:04.642937412 -0700
-+++ obuspa_new/src/core/handle_get.c	2022-10-31 15:28:32.895517067 -0700
+--- obuspa_orig/src/core/handle_get.c	2023-03-28 11:21:55.000000000 -0700
++++ obuspa_new/src/core/handle_get.c	2023-10-09 11:15:36.745937463 -0700
 @@ -76,6 +76,15 @@
  Usp__GetResp__ResolvedPathResult__ResultParamsEntry *
  AddResolvedPathRes_ParamsEntry(Usp__GetResp__ResolvedPathResult *resolved_path_res, char *param_name, char *value);
  
 +#ifdef BDK_USP
-+#include <sys/unistd.h>
++#include <unistd.h>
 +
 +#define DATAELM_HOLD_FILE "/var/hold_dataelm"
 +
@@ -280,3 +280,26 @@ diff -Naur obuspa_orig/src/core/handle_get.c obuspa_new/src/core/handle_get.c
      GROUP_GET_VECTOR_Destroy(&ggv);
  
      // Clean up get_expr_info vector
+diff -Naur obuspa_orig/src/core/handle_set.c obuspa_new/src/core/handle_set.c
+--- obuspa_orig/src/core/handle_set.c	2023-03-28 11:21:55.000000000 -0700
++++ obuspa_new/src/core/handle_set.c	2023-10-09 11:17:06.505285273 -0700
+@@ -447,6 +447,19 @@
+         return;
+     }
+ 
++#ifdef BDK_USP
++    /* usp_functional_1_1_test_1_23:
++     * require oper_failure error code in set response when the requested path
++     * does not match any objects
++     */
++    if (si->resolved_objs.num_entries == 0)
++    {
++        (void)AddSetResp_OperFailure(set_resp, si->requested_path,
++                          USP_ERR_OBJECT_DOES_NOT_EXIST, USP_ERR_GetMessage());
++        return;
++    }
++#endif
++
+     // Exit if unable to start a transaction for this object, adding a failure response
+     err = DM_TRANS_Start(&trans);
+     if (err != USP_ERR_OK)

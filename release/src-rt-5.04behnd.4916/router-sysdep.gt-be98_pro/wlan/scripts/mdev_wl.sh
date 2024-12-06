@@ -1,11 +1,17 @@
 #!/bin/sh
 IS_RDK_BUILD=RDK_BUILD_HOLDER
+IS_WRT_BUILD=WRT_BUILD_HOLDER
 source /etc/profile
 
 dev_name=$1
+br_name="br0"
 # echo "dev_name = $dev_name action= $ACTION">> /tmp/hotplug.log
 
 echo $LINENO "mdev wifi" >>/tmp/hotplug.log
+
+if [[ ! -z $IS_WRT_BUILD ]]; then
+	br_name="br-lan"
+fi
 
 if [[ ! -z $IS_RDK_BUILD ]]; then
     ACTION=$ACTION INTERFACE=$INTERFACE /etc/init.d/bcm_dwds_hot_plug.sh net
@@ -40,10 +46,10 @@ else
             echo "$send_msg_cmd -D Hotplug $dev_name $ACTION"  >> /tmp/hotplug.log
             if [ -z "${dev_name##"wds"*}" ]; then
                 ifconfig $dev_name up
-                if [ -e "/sys/devices/virtual/net/br0" ]; then
-                    echo "dev_name = $dev_name - br0 STP on" >> /tmp/hotplug.log
-                    brctl stp br0 on
-                    bcm_sendarp -s br0 -d br0
+                if [ -e "/sys/devices/virtual/net/$br_name" ]; then
+                    echo "dev_name = $dev_name - $br_name STP on" >> /tmp/hotplug.log
+                    brctl stp $br_name on
+                    bcm_sendarp -s $br_name -d $br_name
                 fi
             fi
             ;;

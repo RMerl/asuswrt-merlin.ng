@@ -447,6 +447,19 @@ void ProcessAllowPartialTrue_Expression(char *msg_id, Usp__SetResp *set_resp, se
         return;
     }
 
+#ifdef BDK_USP
+    /* usp_functional_1_1_test_1_23:
+     * require oper_failure error code in set response when the requested path
+     * does not match any objects
+     */
+    if (si->resolved_objs.num_entries == 0)
+    {
+        (void)AddSetResp_OperFailure(set_resp, si->requested_path,
+                          USP_ERR_OBJECT_DOES_NOT_EXIST, USP_ERR_GetMessage());
+        return;
+    }
+#endif
+
     // Exit if unable to start a transaction for this object, adding a failure response
     err = DM_TRANS_Start(&trans);
     if (err != USP_ERR_OK)

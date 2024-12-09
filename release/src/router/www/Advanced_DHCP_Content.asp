@@ -116,6 +116,12 @@ var pool_subnet = pool_start.split(".")[0]+"."+pool_start.split(".")[1]+"."+pool
 var pool_start_end = parseInt(pool_start.split(".")[3]);
 var pool_end_end = parseInt(pool_end.split(".")[3]);
 
+var lan_domain_ori = '<% nvram_get("lan_domain"); %>';
+var dhcp_gateway_ori = '<% nvram_get("dhcp_gateway_x"); %>';
+var dhcp_dns1_ori = '<% nvram_get("dhcp_dns1_x"); %>';
+var dhcp_dns2_ori = '<% nvram_get("dhcp_dns2_x"); %>';
+var dhcp_wins_ori = '<% nvram_get("dhcp_wins_x"); %>';
+
 var static_enable = '<% nvram_get("dhcp_static_x"); %>';
 var dhcp_staticlists = '<% nvram_get("dhcp_staticlist"); %>';
 var staticclist_row = dhcp_staticlists.split('&#60');
@@ -392,6 +398,19 @@ function applyRule(){
 				dhcp_staticlist += "<" + item.mac + ">"  + item.ip + ">" + item.dns + ">" + item.hostname;
 		});
 		document.form.dhcp_staticlist.value = dhcp_staticlist;
+
+		// Only restart the whole network if needed
+		if ((document.form.dhcp_wins_x.value != dhcp_wins_ori) ||
+		    (document.form.dhcp_dns1_x.value != dhcp_dns1_ori) ||
+		    (document.form.dhcp_dns2_x.value != dhcp_dns2_ori) ||
+		    (document.form.dhcp_gateway_x.value != dhcp_gateway_ori) ||
+		    (document.form.lan_domain.value != lan_domain_ori)) {
+
+			document.form.action_script.value = "restart_net_and_phy";
+		} else {
+			document.form.action_script.value = "restart_dnsmasq";
+			document.form.action_wait.value = 5;
+		}
 
 		if(vpn_fusion_support) {
 			let vpnc_dev_policy_list = "";

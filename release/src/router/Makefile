@@ -10159,9 +10159,9 @@ ifeq ($(wildcard $(QOSMGMT_DIR)/prebuilt/acsd2),)
 	+$(MAKE) -C $(QOSMGMT_DIR) EXTRA_LDFLAGS=$(EXTRA_LDFLAGS) all
 endif
 qosmgmt-install: qosmgmt
-ifneq ($(wildcard $(QOSMGMT_DIR)/prebuilt/qosmgmtd),)
-	cp -f $(QOSMGMT_DIR)/prebuilt/qosmgmtd $(QOSMGMT_DIR)/
-	cp -f $(QOSMGMT_DIR)/prebuilt/qm_cli $(QOSMGMT_DIR)/
+ifneq ($(wildcard $(QOSMGMT_DIR)/prebuilt/$(BUILD_NAME)/qosmgmtd),)
+	cp -f $(QOSMGMT_DIR)/prebuilt/$(BUILD_NAME)/qosmgmtd $(QOSMGMT_DIR)/
+	cp -f $(QOSMGMT_DIR)/prebuilt/$(BUILD_NAME)/qm_cli $(QOSMGMT_DIR)/
 endif
 	+$(MAKE) -C $(QOSMGMT_DIR) INSTALLDIR=$(INSTALLDIR)/qosmgmt install
 qosmgmt-clean:

@@ -57,6 +57,8 @@ BAX88_PRO=y
 
 BBE96=y
 BGTBE98PRO=y
+BBE88=y
+BBE86=y
 
 
 ### Branches for each model
@@ -89,6 +91,8 @@ BRANCH_AX88_PRO=3004.388
 
 BRANCH_BE96=3006.102
 BRANCH_GTBE98_PRO=3006.102
+BRANCH_BE88=3006.102
+BRANCH_BE86=3006.102
 
 ### Paths
 # Store built images there
@@ -101,7 +105,7 @@ STAGE_LOC="$HOME/images"
 FINAL_LOC=/media/sf_Share
 
 # Location of the original source code
-SRC_LOC="$HOME/amng"
+SRC_LOC="$HOME/dev/amng"
 
 ### End config
 
@@ -135,7 +139,7 @@ build_fw()
 		elif [ "$FWMODEL" = "gt-ax6000" ] || [ "$FWMODEL" = "xt12" ] || [ "$FWMODEL" = "gt-axe16000" ] || [ "$FWMODEL" = "gt-ax11000_pro" ] || [ "$FWMODEL" = "rt-ax86u_pro" ] || [ "$FWMODEL" = "rt-ax88u_pro" ] ; then
 			FWNAME="$(find -- *_nand_squashfs.pkgtb | head -n 1)"
 			ZIPNAME="$(echo "$FWNAME" | sed 's~_nand_squashfs.pkgtb~~g').zip"
-		elif [ "$FWMODEL" = "gt-be98_pro" ] || [ "$FWMODEL" = "gt-be98" ] || [ "$FWMODEL" = "rt-be96u" ] ; then
+		elif [ "$FWMODEL" = "gt-be98_pro" ] || [ "$FWMODEL" = "gt-be98" ] || [ "$FWMODEL" = "rt-be96u" ] || [ "$FWMODEL" = "rt-be88u" ] || [ "$FWMODEL" = "rt-be86u" ] ; then
 			FWNAME="$(find -- *_nand_squashfs.pkgtb | head -n 1)"
 			ZIPNAME="$(echo "$FWNAME" | sed 's~_nand_squashfs.pkgtb~~g').zip"
 		else
@@ -292,7 +296,13 @@ if [ "$BGTBE98PRO" = "y" ]; then
 	clean_tree amng.gtbe98pro amng.gtbe98pro/release/src-rt-5.04behnd.4916 gt-be98_pro $BRANCH_GTBE98_PRO
 fi
 if [ "$BBE96" = "y" ]; then
-        clean_tree amng.be96 amng.be96/release/src-rt-5.04behnd.4916 rt-be96u $BRANCH_BE96
+	clean_tree amng.be96 amng.be96/release/src-rt-5.04behnd.4916 rt-be96u $BRANCH_BE96
+fi
+if [ "$BBE88" = "y" ]; then
+	clean_tree amng.be88 amng.be88/release/src-rt-5.04behnd.4916 rt-be88u $BRANCH_BE88
+fi
+if [ "$BBE86" = "y" ]; then
+	clean_tree amng.be86 amng.be86/release/src-rt-5.04behnd.4916 rt-be86u $BRANCH_BE86
 fi
 
 echo "--- $(date +%R) - All trees ready!"
@@ -300,6 +310,14 @@ echo "--- $(date +%R) - All trees ready!"
 # Launch parallel builds
 
 echo "--- $(date +%R) - Launching all builds"
+if [ "$BBE88" = "y" ]; then
+	build_fw amng.be88 release/src-rt-5.04behnd.4916 rt-be88u &
+fi
+
+if [ "$BBE86" = "y" ]; then
+	build_fw amng.be86 release/src-rt-5.04behnd.4916 rt-be86u &
+fi
+
 if [ "$BGTBE98PRO" = "y" ]; then
 	build_fw amng.gtbe98pro release/src-rt-5.04behnd.4916 gt-be98_pro &
 fi

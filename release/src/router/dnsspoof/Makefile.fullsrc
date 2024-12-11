@@ -18,12 +18,12 @@ dynamic: all install
 .c.o:
 	$(CC) $(CFLAGS) -c $<
 
-ifeq ($(wildcard ./prebuilt/dnsspoof),)
+ifeq ($(wildcard ./prebuilt/$(BUILD_NAME)/dnsspoof),)
 dnsspoof: dnsspoof.o
 	$(CC) $(CFLAGS) -o dnsspoof dnsspoof.o
 else
 dnsspoof: 
-	-cp -f ./prebuilt/dnsspoof ./
+	-cp -f ./prebuilt/$(BUILD_NAME)/dnsspoof ./
 endif
 
 

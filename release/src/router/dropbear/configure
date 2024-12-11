@@ -1391,27 +1391,31 @@ Optional Features:
   --disable-openpty       Don't use openpty, use alternative method
   --disable-syslog        Don't include syslog support
   --disable-shadow        Don't use shadow passwords (if available)
-  --enable-plugin         Enable support for External Public Key Authentication plug-in
+  --enable-plugin         Enable support for External Public Key
+                          Authentication plug-in
   --enable-fuzz           Build fuzzing. Not recommended for deployment.
-  --enable-bundled-libtom       Force using bundled libtomcrypt/libtommath even if a system version exists.
-  --disable-bundled-libtom      Force using system libtomcrypt/libtommath, fail if it does not exist.
-                                Default is to use system if available, otherwise bundled.
-                                Dropbear requires system libtommath >= 1.2.0 and libtomcrypt >= 1.18.0
-  --disable-lastlog       Disable use of lastlog even if detected no
-  --disable-utmp          Disable use of utmp even if detected no
-  --disable-utmpx         Disable use of utmpx even if detected no
-  --disable-wtmp          Disable use of wtmp even if detected no
-  --disable-wtmpx         Disable use of wtmpx even if detected no
-  --disable-loginfunc     Disable use of login() etc. no
-  --disable-pututline     Disable use of pututline() etc. (uwtmp) no
-  --disable-pututxline    Disable use of pututxline() etc. (uwtmpx) no
+  --enable-bundled-libtom Force using bundled libtomcrypt/libtommath even if a
+                          system version exists. Use --disable-bundled-libtom
+                          to force not using bundled even if system version
+                          doesn't exist. Default is to use system if
+                          available, otherwise bundled. Dropbear requires
+                          system libtommath >= 1.2.0 and libtomcrypt >=
+                          1.18.0.
+  --disable-lastlog       Disable use of lastlog even if detected [no]
+  --disable-utmp          Disable use of utmp even if detected [no]
+  --disable-utmpx         Disable use of utmpx even if detected [no]
+  --disable-wtmp          Disable use of wtmp even if detected [no]
+  --disable-wtmpx         Disable use of wtmpx even if detected [no]
+  --disable-loginfunc     Disable use of login() etc. [no]
+  --disable-pututline     Disable use of pututline() etc. ([uw]tmp) [no]
+  --disable-pututxline    Disable use of pututxline() etc. ([uw]tmpx) [no]
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-zlib=PATH        Use zlib in PATH
-  --with-pam=PATH        Use pam in PATH
-  --with-lastlog=FILE|DIR specify lastlog location common locations
+  --with-pam=PATH         Use pam in PATH
+  --with-lastlog=FILE|DIR Specify lastlog location [common locations]
 
 Some influential environment variables:
   CC          C compiler command

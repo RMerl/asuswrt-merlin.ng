@@ -111,5 +111,7 @@ int dropbearkey_main(int argc, char ** argv);
 int dropbearconvert_main(int argc, char ** argv);
 int scp_main(int argc, char ** argv);
 
+#define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
+
 
 #endif /* DROPBEAR_DBUTIL_H_ */

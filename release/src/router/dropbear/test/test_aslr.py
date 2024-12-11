@@ -9,9 +9,12 @@ def test_reexec(request, dropbear):
 	This indicates that re-exec makes ASLR work
 	"""
 	map_script = (Path(request.node.fspath).parent / "parent_dropbear_map.py").resolve()
-	# run within the same venv, for python deps
 	activate = own_venv_command()
-	cmd = f"{activate}; {map_script}"
+	if activate == "":
+		cmd = map_script
+	else:
+		# run within the same venv, for python deps
+		cmd = f"{activate}; {map_script}"
 	print(cmd)
 	r = dbclient(request, cmd, capture_output=True, text=True)
 	map1 = r.stdout.rstrip()

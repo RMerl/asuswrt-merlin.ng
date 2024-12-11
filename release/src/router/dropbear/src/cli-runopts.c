@@ -399,6 +399,11 @@ void cli_getopts(int argc, char ** argv) {
 		}
 	}
 
+#if DROPBEAR_USER_ALGO_LIST
+	/* -c help doesn't need a hostname */
+	parse_ciphers_macs();
+#endif
+
 	if (host_arg == NULL) { /* missing hostname */
 		printhelp();
 		dropbear_exit("Remote host needs to provided.");
@@ -423,11 +428,6 @@ void cli_getopts(int argc, char ** argv) {
 	} else if(!cli_opts.username) {
 		cli_opts.username = m_strdup(cli_opts.own_user);
 	}
-
-#if DROPBEAR_USER_ALGO_LIST
-	/* -c help doesn't need a hostname */
-	parse_ciphers_macs();
-#endif
 
 	/* Done with options/flags; now handle the hostname (which may not
 	 * start with a hyphen) and optional command */
@@ -559,7 +559,9 @@ void loadidentityfile(const char* filename, int warnfail) {
 static char* multihop_passthrough_args(void) {
 	char *args = NULL;
 	unsigned int len, total;
+#if DROPBEAR_CLI_PUBKEY_AUTH
 	m_list_elem *iter;
+#endif
 	/* Sufficient space for non-string args */
 	len = 100;
 

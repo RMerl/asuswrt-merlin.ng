@@ -285,7 +285,8 @@ static int checkusername(const char *username, unsigned int userlen) {
 	if (!ses.authstate.pw_name) {
 		TRACE(("leave checkusername: user '%s' doesn't exist", username))
 		dropbear_log(LOG_WARNING,
-				"Login attempt for nonexistent user");
+				"Login attempt for nonexistent user from %s",
+				svr_ses.addrstring);
 		ses.authstate.checkusername_failed = 1;
 		return DROPBEAR_FAILURE;
 	}

@@ -1,3 +1,50 @@
+2024.86 - 22 October 2024
+
+- Fix failure on concurrent channel open/close.
+  This was a regression in 2022.82, reported by rsflo in Github #321.
+    failed assertion in common-channel.c:705: !channel->sent_close
+
+- Print remote host after "Login attempt for nonexistent user" log entry to
+  assist fail2ban. Fix from MichaIng, the format changed in 2020.79
+
+- Dropbear now exits with exit status 0 on SIGINT/SIGTERM. This is a more
+  graceful behaviour for "systemctl stop dropbear".
+  Reported by Ninad Palsule
+
+- New IDENT_VERSION_PART config allows customising some of the SSH version
+  string. From Marius Dinu
+
+- Fix building SK_KEYS with just one of ECDSA or ED25519
+  From Marius Dinu
+
+- Fix dbclient "-m help" and "-c help" without a hostname.
+  Patch from Darren Tucker
+
+- Remove fprintf/gettimeofday from sigchld handler when running with
+  verbose trace enabled.
+
+- Improved configure help output, from Mikel Olasagasti Uranga
+
+- Compile fix for GNU Hurd, from Guilhem Moulin
+
+- Support running test_aslr without venv, from Guilhem Moulin
+
+- Compilation fixes for older compilers, and better build tests
+
+- Update some test infrastructure versions of python packages,
+  github actions, and github runner OSes
+
+2024.85 - 25 April 2024
+
+  This release fixes build regressions in 2024.84
+
+- Fix build failure when SHA1 is disabled, thanks to Peter Krefting
+
+- Fix build failure when DROPBEAR_CLI_PUBKEY_AUTH disabled, thanks to
+  Sergey Ponomarev
+
+- Update debian/ directory with changed paths
+
 2024.84 - 4 April 2024
 
 Features and Changes:

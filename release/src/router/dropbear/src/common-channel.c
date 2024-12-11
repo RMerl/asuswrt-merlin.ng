@@ -317,7 +317,8 @@ static void check_close(struct Channel *channel) {
 
 	if ((channel->recv_eof && !write_pending(channel))
 		/* have a server "session" and child has exited */
-		|| (channel->type->check_close && close_allowed)) {
+		|| (channel->writefd != FD_UNINIT
+			&& channel->type->check_close && close_allowed)) {
 		close_chan_fd(channel, channel->writefd, SHUT_WR);
 	}
 

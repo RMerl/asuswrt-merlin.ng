@@ -423,7 +423,7 @@ void printhex(const char * label, const unsigned char * buf, int len) {
 			} else {
 				fprintf(stderr, "  ");
 			}
-			// separator between pairs
+			/* separator between pairs */
 			if (i % 2 ==1) {
 				fprintf(stderr, " ");
 			}

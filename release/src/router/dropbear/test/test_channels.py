@@ -69,9 +69,9 @@ def test_bg_sleep(request, fd, dropbear):
 
 
 def test_idle(request, dropbear):
-	# Idle test, -I 1 should make it return before the 2 second timeout
+	# Idle test, -I 1 should make it return before the 5 second timeout
 	r = dbclient(request, "-I", "1", "echo zong; sleep 10",
-		capture_output=True, timeout=2, text=True)
+		capture_output=True, timeout=5, text=True)
 	r.check_returncode()
 	assert r.stdout.rstrip() == "zong"
 

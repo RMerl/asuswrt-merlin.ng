@@ -1,6 +1,29 @@
 Asuswrt-Merlin 3006.xxx Changelog
 =================================
 
+3006.102.3 (xx-xxx-xxxx)
+  - NOTE: If flashing on top of Asus stock firmware 3006.102_37000
+          or greater, then you first need to enable downgrade
+          capabilities before flashing Asuswrt-Merlin on top
+          of it.  Over SSH, run the following command:
+
+             nvram set DOWNGRADE_CHECK_PASS=1
+
+          After that, you can upload Asuswrt-Merlin through
+          the webui like any regular firmware upgrade.
+
+          This is only required when flashing Asuswrt-Merlin
+          for the first time.
+
+  - NOTE: The new GPL codebase changed the way wireless networks
+          are configured.  If you ever revert to an older
+          firmware, you MUST do a factory default reset following
+          the firmware downgrade, on both the router and any
+          existing AiMesh nodes.
+
+  - UPDATED: Merged with GPL 3006.102_37346.
+  - UPDATED: dropbear to 2024.86.
+
 3006.102.2_2 (17-Nov-2024)
   - FIXED: Security issues in AiCloud (backports from Asus)
 

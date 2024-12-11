@@ -148,6 +148,16 @@ reset to factory defaults (see note below for exceptions).
 You can revert back to an original Asus firmware at any time just
 by flashing a firmware downloaded from Asus's website.
 
+If upgrading from Asus firmware 3.0.0.6.102_37000 or newer,
+the webui may refuse flashing Asuswrt-Merlin.  In that case,
+connect to your router over SSH, and issue the following command:
+
+    nvram set DOWNGRADE_CHECK_PASS=1
+
+After that, you can upload Asuswrt-Merlin through the webui like
+any regular firmware upgrade.  This is only required when flashing
+Asuswrt-Merlin for the first time.
+
 Note that the archive for ROG models (like the GT-AX6000) may
 contain two different firmware images.  The one with _rog in
 the filename uses the original ROG themed user interface, while
@@ -208,7 +218,9 @@ Website: https://www.asuswrt-merlin.net/
 Github: https://github.com/RMerl
 Email: merlin@asuswrt-merlin.net
 MAstodon: https://fosstodon.org/@RMerlin
+Bluesky: @asuswrt-merlin.net
 IRC: RMerlin in channel #asuswrt on Libera
+
 Download: https://www.asuswrt-merlin.net/download
 
 Development news will be posted on Mastodon, and the support forums.

@@ -1,7 +1,0 @@
-components
-epittcp/epi_ttcp
-*.o
-*.so
-util/nvramUpdate
-nvram/nvram
-src

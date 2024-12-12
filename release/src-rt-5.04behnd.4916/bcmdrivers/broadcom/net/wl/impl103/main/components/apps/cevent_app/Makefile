@@ -4,11 +4,11 @@ all:
 	cp -f prebuilt/libceshared.so libceshared.so
 
 install: all
-	install -d $(INSTALLDIR)/usr/sbin
-	install ceventc $(INSTALLDIR)/usr/sbin
-	install ceventd $(INSTALLDIR)/usr/sbin
-	$(STRIP) $(INSTALLDIR)/usr/sbin/ceventc
-	$(STRIP) $(INSTALLDIR)/usr/sbin/ceventd
+	install -d $(INSTALLDIR)/usr/bin
+	install ceventc $(INSTALLDIR)/usr/bin
+	install ceventd $(INSTALLDIR)/usr/bin
+	$(STRIP) $(INSTALLDIR)/usr/bin/ceventc
+	$(STRIP) $(INSTALLDIR)/usr/bin/ceventd
 	install -d $(INSTALLDIR)/usr/lib
 	install libceshared.so $(INSTALLDIR)/usr/lib
 

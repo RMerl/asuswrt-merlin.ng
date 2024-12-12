@@ -4,11 +4,15 @@
  *******************************************************************/
 
 #ifndef DROPBEAR_VERSION
-#define DROPBEAR_VERSION "2024.84"
+#define DROPBEAR_VERSION "2024.86"
 #endif
 
 #ifndef LOCAL_IDENT
-#define LOCAL_IDENT "SSH-2.0-dropbear_" DROPBEAR_VERSION
+/* IDENT_VERSION_PART is the optional part after "SSH-2.0-dropbear". Refer to RFC4253 for requirements. */
+#ifndef IDENT_VERSION_PART
+#define IDENT_VERSION_PART "_" DROPBEAR_VERSION
+#endif
+#define LOCAL_IDENT "SSH-2.0-dropbear" IDENT_VERSION_PART
 #endif
 #define PROGNAME "dropbear"
 
@@ -200,10 +204,10 @@
 #define DROPBEAR_NORMAL_DH ((DROPBEAR_DH_GROUP1) || (DROPBEAR_DH_GROUP14) || (DROPBEAR_DH_GROUP16))
 
 #ifndef DROPBEAR_SK_ECDSA
-#define DROPBEAR_SK_ECDSA DROPBEAR_SK_KEYS
+#define DROPBEAR_SK_ECDSA ((DROPBEAR_SK_KEYS) && (DROPBEAR_ECDSA))
 #endif
 #ifndef DROPBEAR_SK_ED25519
-#define DROPBEAR_SK_ED25519 DROPBEAR_SK_KEYS
+#define DROPBEAR_SK_ED25519 ((DROPBEAR_SK_KEYS) && (DROPBEAR_ED25519))
 #endif
 
 /* Dropbear only uses server-sig-algs, only needed if we have rsa-sha256 pubkey auth */

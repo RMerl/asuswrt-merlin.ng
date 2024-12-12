@@ -32,7 +32,6 @@
 static const size_t MAX_CONF_LINE = 200;
 
 typedef enum {
-	opInvalid = -1,
 	opHost,
 	opHostName,
 	opHostPort,
@@ -52,39 +51,38 @@ config_options[] = {
 	{ "port", opHostPort },
 	{ "user", opLoginUser },
 	{ "identityfile", opIdentityFile },
-
-	/* End loop condition. */
-	{ NULL, opInvalid },
 };
 
 void read_config_file(char* filename, FILE* config_file, cli_runopts* options) {
-	DEBUG1(("Reading configuration data '%.200s'", filename));
-
 	char *line = NULL;
 	int linenum = 0;
 	buffer *buf = NULL;
-
 	char* cfg_key;
 	char* cfg_val;
 	char* saveptr;
-
 	int in_host_section = 0;
+
+	DEBUG1(("Reading '%.200s'", filename));
 
 	buf = buf_new(MAX_CONF_LINE);
 	line = buf->data;
 	while (buf_getline(buf, config_file) == DROPBEAR_SUCCESS) {
+		char* commentStart = NULL;
+		cfg_option cfg_opt;
+		int found;
+		size_t i;
 		/* Update line number counter. */
 		linenum++;
 
 		/* Add nul terminator */
 		if (buf->len == buf->size) {
-			dropbear_exit("Long line %d", linenum);
+			dropbear_exit("Long line %s:%d", filename, linenum);
 		}
 		buf_setpos(buf, buf->len);
 		buf_putbyte(buf, '\0');
 		buf_setpos(buf, 0);
 
-		char* commentStart = strchr(line, '#');
+		commentStart = strchr(line, '#');
 		if (NULL != commentStart) {
 			*commentStart = '\0'; /* Drop the comments. */
 		}
@@ -94,30 +92,31 @@ void read_config_file(char* filename, FILE* config_file, cli_runopts* options) {
 			continue;
 		}
 
-		cfg_option cfg_opt = opInvalid;
-		for (int i = 0; config_options[i].name; i++) {
+		found = 0;
+		for (i = 0; i < ARRAY_SIZE(config_options); i++) {
 			if (0 == strcasecmp(cfg_key, config_options[i].name)) {
 				cfg_opt = config_options[i].option;
+				found = 1;
 				break;
 			}
 		}
 
-		if (opInvalid == cfg_opt) {
-			dropbear_exit("Unhandled key %s at '%s':%d.", cfg_key, filename, linenum);
+		if (!found) {
+			dropbear_exit("Unsupported option %s at %s:%d", cfg_key, filename, linenum);
 		}
 
 
 		cfg_val = strtok_r(NULL, TOKEN_CHARS, &saveptr);
 		if (NULL == cfg_val) {
-			dropbear_exit("Missing value for key %s at '%s':%d.", cfg_key, filename, linenum);
+			dropbear_exit("Missing value for %s at %s:%d", cfg_key, filename, linenum);
 		}
 
 		if (in_host_section) {
-			if (opHost == cfg_opt) {
-				/* Hit the next host section. Done reading config. */
-				break;
-			}
 			switch (cfg_opt) {
+				case opHost: {
+					/* Hit the next host section. Done reading config. */
+					goto outloop;
+				}
 				case opHostName: {
 					/* The host name is the alias given on the command line.
 					 * Set the actual remote host specified in the config.
@@ -156,13 +155,9 @@ void read_config_file(char* filename, FILE* config_file, cli_runopts* options) {
 					loadidentityfile(key_file_path, 1);
 					m_free(key_file_path);
 #else
-					dropbear_exit("This version of the code does not support identity file. %s at '%s':%d.", cfg_key, filename, linenum);
+					dropbear_exit("identityfile isn't supported in %s", filename);
 #endif
 					break;
-				}
-
-				default: {
-					dropbear_exit("Unsupported configuration option %s at '%s':%d.", cfg_key, filename, linenum);
 				}
 			}
 		}
@@ -175,6 +170,7 @@ void read_config_file(char* filename, FILE* config_file, cli_runopts* options) {
 			in_host_section = 1;
 		}
 	}
+outloop:
 	buf_free(buf);
 }
 

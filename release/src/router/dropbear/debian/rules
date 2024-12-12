@@ -77,9 +77,9 @@ install: deb-checkdir deb-checkuid build-stamp
 	# man pages
 	install -d -m0755 '$(DIR)'/usr/share/man/man8
 	install -d -m0755 '$(DIR)'/usr/share/man/man1
-	install -m644 dropbear.8 '$(DIR)'/usr/share/man/man8/
+	install -m644 manpages/dropbear.8 '$(DIR)'/usr/share/man/man8/
 	for i in dbclient.1 dropbearkey.1 dropbearconvert.1; do \
-	  install -m644 $$i '$(DIR)'/usr/share/man/man1/ || exit 1; \
+	  install -m644 manpages/$$i '$(DIR)'/usr/share/man/man1/ || exit 1; \
 	done
 	gzip -9 '$(DIR)'/usr/share/man/man8/*.8
 	gzip -9 '$(DIR)'/usr/share/man/man1/*.1

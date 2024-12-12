@@ -368,7 +368,7 @@ void packet_queue_to_iovec(const struct Queue *queue, struct iovec *iov, unsigne
 	buffer *writebuf;
 
 #ifndef IOV_MAX
-	#if defined(__CYGWIN__) && !defined(UIO_MAXIOV)
+	#if (defined(__CYGWIN__) || defined(__GNU__)) && !defined(UIO_MAXIOV)
 		#define IOV_MAX 1024
 	#elif defined(__sgi)
 		#define IOV_MAX 512 

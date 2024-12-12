@@ -148,6 +148,9 @@ wget(int method, const char *server, char *buf, size_t count, off_t offset)
 			for (s += 15; isblank(*s); s++);
 			chomp(s);
 			len = atoi(s);
+			if (len <= 0) {
+				return -EINVAL;
+			}
 		}
 		else if (!strncasecmp(s, "Transfer-Encoding:", 18)) {
 			for (s += 18; isblank(*s); s++);
@@ -157,9 +160,13 @@ wget(int method, const char *server, char *buf, size_t count, off_t offset)
 		}
 	}
 
-	if (chunked && fgets(line, sizeof(line), fp))
+	if (chunked && fgets(line, sizeof(line), fp)) {
 		len = strtol(line, NULL, 16);
-	
+		if (len <= 0) {
+			return -EINVAL;
+		}
+	}
+
 	len = (len > count) ? count : len;
 	len = fread(buf, 1, len, fp);
 

@@ -71,12 +71,12 @@ CFLAGS += -DCONFIG_BCM9$(BRCM_CHIP)
 # Implicit rule is $(CC) -c $(CPPFLAGS) $(CFLAGS)
 # See Section 10.2 of Gnu Make manual
 # 
-ifeq ($(wildcard ./prebuilt/vpmstats),)
+ifeq ($(wildcard ./prebuilt/$(BUILD_NAME)/vpmstats),)
 $(EXE): $(OBJS)
 	$(CC) -o $@ $(OBJS) $(CMS_LIB_PATH) $(LIBS)
 else
 $(EXE): 
-	-cp -f ./prebuilt/vpmstats ./
+	-cp -f ./prebuilt/$(BUILD_NAME)/vpmstats ./
 	-cp -f $(TOP)/$(shell pwd | sed 's/\(.*router\/\)//')/$(PRBM_DIR)/$@ ./
 endif
 

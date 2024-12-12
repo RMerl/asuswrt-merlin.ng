@@ -1,6 +1,0 @@
-*.o
-*.ko
-dpsta.mod.c
-modules.builtin
-modules.order
-

@@ -610,8 +610,12 @@ void load_all_hostkeys() {
 
 #if DROPBEAR_RSA
 	if (!svr_opts.delay_hostkey && !svr_opts.hostkey->rsakey) {
+#if DROPBEAR_RSA_SHA256
 		disablekey(DROPBEAR_SIGNATURE_RSA_SHA256);
+#endif
+#if DROPBEAR_RSA_SHA1
 		disablekey(DROPBEAR_SIGNATURE_RSA_SHA1);
+#endif
 	} else {
 		any_keys = 1;
 	}

@@ -45,11 +45,7 @@ function initial(){
 	$('#divSwitchMenu').html(gen_switch_menu(vpn_client_array, "Wireguard"));
 
 	if (wgc_enable == '1') {
-		setTimeout("getConnStatus()", 2000);
 		document.getElementById("WgcLogTable").style.display = "";
-		document.getElementById("wgcstate").innerHTML = '<img id="loadingicon" style="margin-left:5px;" src="/images/InternetScan.gif">';
-	} else {
-		document.getElementById("wgcstate").innerHTML = '<span>Stopped</span>';
 	}
 
 	// Client list
@@ -60,6 +56,26 @@ function initial(){
 	add_option(document.form.wgc_unit, "4: <% nvram_get("wgc4_desc"); %>", "4", (wgc_unit == 4));
 	add_option(document.form.wgc_unit, "5: <% nvram_get("wgc5_desc"); %>", "5", (wgc_unit == 5));
 
+	// State
+	var state = "0";
+	switch (wgc_unit) {
+	case "1":
+		state = "<% sysinfo("wgcstatus.1"); %>";
+		break;
+	case "2":
+		state = "<% sysinfo("wgcstatus.2"); %>";
+		break;
+	case "3":
+		state = "<% sysinfo("wgcstatus.3"); %>";
+		break;
+	case "4":
+		state = "<% sysinfo("wgcstatus.4"); %>";
+		break;
+	case "5":
+		state = "<% sysinfo("wgcstatus.5"); %>";
+		break;
+	}
+	document.getElementById("wgcstate").innerHTML = (state == "0" ? "Stopped" : "Connected");
 
 	show_director_rules();
 }
@@ -466,58 +482,6 @@ function show_director_rules(){
 	document.getElementById("directorrules_Block").innerHTML = code;
 }
 
-function getConnStatus() {
-	$.ajax({
-		url: 'ajax_vpn_status.asp',
-		dataType: 'script',
-		error: function(xhr){
-			getConnStatus();
-		},
-		success: function(response){
-			showConnStatus();
-		}
-	});
-}
-
-function showConnStatus() {
-	var state = "0";
-
-	switch (wgc_unit) {
-	case "1":
-		state = wgc1_status;
-		localip = wgc1_ip;
-		remoteip = wgc1_rip;
-		break;
-	case "2":
-		state = wgc2_status;
-		localip = wgc2_ip;
-		remoteip = wgc2_rip;
-		break;
-	case "3":
-		state = wgc3_status;
-		localip = wgc3_ip;
-		remoteip = wgc3_rip;
-		break;
-	case "4":
-		state = wgc4_status;
-		localip = wgc4_ip;
-		remoteip = wgc4_rip;
-		break;
-	case "5":
-		state = wgc5_status;
-		localip = wgc5_ip;
-		remoteip = wgc5_rip;
-		break;
-	}
-
-	if (state == 0) {
-		document.getElementById("wgcstate").innerHTML = "<spam>Stopped</span>";
-	} else {
-		document.getElementById("wgcstate").innerHTML =  "<span>Connected (Local: "+ localip + " - Public: " + remoteip + ") <a href='#' style='padding-left:12px;text-decoration:underline;' onclick='setTimeout(\"getConnStatus()\", 2000);'>Refresh</a></span>";
-	}
-
-}
-
 </script>
 
 </head>
@@ -568,7 +532,7 @@ function showConnStatus() {
 					<table id="WgcBasicTable" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable">
 						<thead>
 							<tr>
-								<td colspan="2">Client control</td>
+								<td colspan="2"><#t2BC#></td>
 							</tr>
 						</thead>
 						<tr id="wgc_unit_field" class="rept ew">
@@ -578,42 +542,20 @@ function showConnStatus() {
 								</select>
 							</td>
 						</tr>
-						<tr id="wgc_enable">
-							<th>Enable WireGuard</th>
-							<td>
-								<input type="radio" value="1" name="wgc_enable" class="input" <% nvram_match("wgc_enable", "1", "checked"); %>><#checkbox_Yes#></input>
-								<input type="radio" value="0" name="wgc_enable" class="input" <% nvram_match("wgc_enable", "0", "checked"); %>><#checkbox_No#></input>
-							</td>
-						</tr>
-						<tr>
-							<th>Status</th>
-							<td>
-								<div id="wgcstate"></div>
-							</td>
-						</tr>
 						<tr>
 							<th>Description</th>
 							<td>
 								<input type="text" maxlength="25" class="input_25_table" name="wgc_desc" value="<% nvram_get("wgc_desc"); %>">
 							</td>
 						</tr>
-						<tr>
-							<th>Import config</th>
+						<tr id="wgc_enable">
+							<th>Enable WireGuard</th>
 							<td>
-								<input id="wgfile" type="file" name="file" class="input" style="color:#FFCC00;*color:#000;">
-								<input id="" class="button_gen" onclick="Importwg();" type="button" value="<#CTL_upload#>" />
-								<img id="loadingicon" style="margin-left:5px;display:none;" src="/images/InternetScan.gif">
-								<span id="importWgFile" style="display:none;"><#Main_alert_proceeding_desc3#></span>
+								<input type="radio" value="1" name="wgc_enable" class="input" <% nvram_match("wgc_enable", "1", "checked"); %>><#checkbox_Yes#></input>
+								<input type="radio" value="0" name="wgc_enable" class="input" <% nvram_match("wgc_enable", "0", "checked"); %>><#checkbox_No#></input>
+								<span style="margin-left:20px;" id="wgcstate"></span>
 							</td>
 						</tr>
-					</table>
-
-					<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable">
-						<thead>
-							<tr>
-								<td colspan="2">Network</td>
-							</tr>
-						</thead>
 						<tr id="wgc_nat">
 							<th><#Enable_NAT#></th>
 							<td>
@@ -635,9 +577,18 @@ function showConnStatus() {
 								<input type="radio" name="wgc_enforce" class="input" value="0" <% nvram_match_x("", "wgc_enforce", "0", "checked"); %>><#checkbox_No#>
 							</td>
 						</tr>
+						<tr>
+							<th>Import config</th>
+							<td>
+								<input id="wgfile" type="file" name="file" class="input" style="color:#FFCC00;*color:#000;">
+								<input id="" class="button_gen" onclick="Importwg();" type="button" value="<#CTL_upload#>" />
+								<img id="loadingicon" style="margin-left:5px;display:none;" src="/images/InternetScan.gif">
+								<span id="importWgFile" style="display:none;"><#Main_alert_proceeding_desc3#></span>
+							</td>
+						</tr>
 					</table>
 
-					<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable">
+					<table id="WgcInterfaceTable" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable">
 						<thead>
 							<tr>
 								<td colspan="2">Interface</td>

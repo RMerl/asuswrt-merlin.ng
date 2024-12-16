@@ -877,7 +877,7 @@ var notification = {
 			notification.pppoe_tw_static ||
 			notification.ie_legacy ||
 			notification.low_nvram ||
-			notification.low_jffs
+			notification.low_jffs ||
 			notification.s46_ports ||
 			notification.amas_newob
 		){
@@ -901,7 +901,6 @@ var notification = {
 			tarObj1.className = "notification_on1";
 		}
 
-		if(this.flash == "on" && cookie.get("notification_history") != [notification.upgrade, notification.wifi_2g ,notification.wifi_5g ,notification.ftp ,notification.samba ,notification.loss_sync ,notification.experience_FB ,notification.notif_hint, notification.mobile_traffic, notification.send_debug_log, notification.sim_record, notification.pppoe_tw, notification.pppoe_tw_static, notification.ie_legacy, notification.low_nvram, notification.low_jffs, notification.s46_ports].join()){
 		if(this.flash == "on" && window.localStorage.getItem("notification_history") != [
 			notification.upgrade,
 			notification.wifi_2g,

@@ -23,6 +23,10 @@ Asuswrt-Merlin 3006.xxx Changelog
 
   - UPDATED: Merged with GPL 3006.102_37346.
   - UPDATED: dropbear to 2024.86.
+  - FIXED: webui always redirecting to router hostname for RT-BE86U.
+  - REMOVED: Report of Wireguard client public IP (didn't work
+             reliably)
+
 
 3006.102.2_2 (17-Nov-2024)
   - FIXED: Security issues in AiCloud (backports from Asus)

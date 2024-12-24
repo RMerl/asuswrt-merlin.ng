@@ -1,5 +1,4 @@
-
-FILESEXTRAPATHS_prepend := "${THISDIR}:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 
 SRC_URI_append += " \
     file://WIFIHAL.patch \
@@ -15,6 +14,7 @@ python() {
 
     if rdk_branch == 'rdk-next' or rel_year > 2022 :
         d.appendVar('SRC_URI',' file://tdk_platform_utility_rdk_next.patch')
+        d.appendVar('SRC_URI',' file://0001-fix-Wformat-overflow-compiling-issue.patch')
     else:
         d.appendVar('SRC_URI',' file://tdk_platform_utility.patch')
 }
@@ -40,4 +40,3 @@ do_install_append () {
     sed -i 's/RADIO_IF_2G=wifi0/RADIO_IF_2G=wl0/g' ${D}/etc/tdk_platform.properties
     sed -i 's/RADIO_IF_5G=wifi1/RADIO_IF_5G=wl1/g' ${D}/etc/tdk_platform.properties
 }
-

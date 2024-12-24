@@ -3,6 +3,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "bcm_flashutil.h"
+#include "bcm_imgutil_api.h"
+
+#include <sys/reboot.h>
+
+#define BOOT_SET_NEW_IMAGE          '0'
+#define BOOT_SET_NEW_IMAGE_ONCE     '2'
+
 
 CmsImageFormat parseImgHdr(UINT8 *bufP __attribute__((unused)), UINT32 bufLen __attribute__((unused)))
 {
@@ -21,6 +29,7 @@ int main(int argc, char *argv[])
    FILE *fp;
    imgif_flash_info_t flash_info;
    static IMGIF_HANDLE imgifHandle = NULL;
+   int live_update = 0;
 
    if (argc != 2)
    {
@@ -33,6 +42,8 @@ int main(int argc, char *argv[])
        fprintf(stderr, "ERROR!!! Could not open %s\n", argv[1]);
        return -1;
    }
+   if (strstr(argv[1], "linux.trx"))
+       live_update = 1;
 
    fseek(fp, 0, SEEK_END);
    size = ftell(fp);
@@ -104,10 +115,24 @@ int main(int argc, char *argv[])
    if (imgif_close(imgifHandle, 0) != 0)
    {
       fprintf(stderr, "ERROR!!! Failed to flash upgrade image \n");
+
+      if (live_update)
+         reboot(RB_AUTOBOOT);
+
       return -1;
    }
-   else
+   else {
       printf("\nImage flash complete, you may reboot the board\n");
+
+      if (live_update) {
+         if (setBootImageState(BOOT_SET_NEW_IMAGE) != 0)
+            printf("%s: setBootImageState(BOOT_SET_NEW_IMAGE) failed..\n", __func__);
+         else
+            printf("%s: setBootImageState(BOOT_SET_NEW_IMAGE) failed..\n", __func__);
+
+	 reboot(RB_AUTOBOOT);
+      }
+   }
 
    return size; // return the amount we copied
 }

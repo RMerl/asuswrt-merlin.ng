@@ -264,4 +264,5 @@ uint64_t getAvailLoaderSpace(int update_img_idx);
 int synchLoaderEnv(char * loader_fname);
 uint64_t getSysfsBytes(char *pathname);
 
+int flashDevNodeExists( char * dev_path, int exists);
 #endif /* _BCM_FLASHUTIL_H_ */

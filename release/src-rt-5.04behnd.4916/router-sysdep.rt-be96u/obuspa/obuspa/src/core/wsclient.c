@@ -1043,18 +1043,9 @@ void HandleWsclient_ConnParamsChanged(wsclient_t *wc, start_client_msg_t *scm)
 {
     USP_LOG_Info("%s: Client connection parameters changed for controller.%d.MTP.%d", __FUNCTION__, scm->cont_instance, scm->mtp_instance);
 
-#ifdef BDK_USP
-    if (wc->ws_handle == NULL ||
-        scm->cont_endpoint_id == NULL || wc->cont_endpoint_id == NULL ||
-        scm->host == NULL || wc->host == NULL ||
-        scm->path == NULL || wc->path == NULL)
-    {
-        // Only call lws_set_timer_usecs when ws_handle is not NULL and
-        // return before strcmp on these variables when they are NULL
-        // to avoid crash that is reported in JIRA SWBCACPE-52074
-        return;
-    }
-#endif
+    // SWBCACPE-57642: all parameters of wc object and scm object should
+    // have valid values when this function is called since their values
+    // are validated at UI level, and at RCL level already.
 
     // Copy new retry algorithm parameters. They will be used, the next time a retry is triggered
     wc->retry_interval = scm->retry_interval;

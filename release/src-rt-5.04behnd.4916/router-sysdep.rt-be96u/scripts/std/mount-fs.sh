@@ -39,13 +39,11 @@ case "$1" in
 		mkdir /dev/pts
 		mount -t devpts devpts /dev/pts
 
-		# Configure hotplug handler
-		echo > /dev/mdev.seq
-		#echo > /dev/mdev.log
-		echo /sbin/mdev >/proc/sys/kernel/hotplug
-
-		# Initialize and run mdev to crete dynamic device nodes
-		echo ">>>>> Starting mdev <<<<<"
+		# Launch mdev daemon to create dynamic device nodes
+		echo ">>>>> Starting mdev daemon <<<<<"
+		# echo "" > /proc/sys/kernel/hotplug
+		# /sbin/mdev -d
+		echo /sbin/mdev > /proc/sys/kernel/hotplug
 		/sbin/mdev -s
 
 		# Create static device nodes

@@ -148,6 +148,14 @@ int sysUtl_interfaceExists(const char *ifname);
 int sysUtl_getLowerDeviceIfindex(const char *ifname);
 
 
+/** Return TRUE if the given interface has upper device.
+ *
+ * @param ifname   (IN) given interface name
+ *
+ * @return 1 if upper device exists, 0 if it does not exist.
+ */
+int sysUtl_upperDeviceExists(const char *ifname);
+
 /** Return vlanid of the the given interface.
  *
  * @param ifname   (IN) given interface name

@@ -1,8 +1,7 @@
 OBJS := wifi_rdk_initd.o
 
 LIBS := -lbcm_comp_md -lmdm_cli $(MDM_CORE_LIBS) -lmdm_cbk_wifi \
-        -lcms_msg $(CMS_COMMON_LIBS)
-
+        -lcms_msg $(CMS_COMMON_LIBS) -lframework_cli
 
 CFLAGS+=-DRDK_BUILD
 

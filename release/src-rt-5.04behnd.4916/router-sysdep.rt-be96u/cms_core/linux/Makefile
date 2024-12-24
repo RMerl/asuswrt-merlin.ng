@@ -32,6 +32,7 @@ REAL_OBJS = rcl_main.o rcl_lan.o rcl_system.o rcl_route.o rcl_porttriggering.o\
        rut_dhcp.o rut_dhcp6.o \
        rcl_bbcd.o stl_bbcd.o \
        rcl_bcmmsgd.o stl_bcmmsgd.o \
+       rcl_rpsrfs.o stl_rpsrfs.o rut_rpsrfs.o\
        rut_json.o \
        rut_omci.o \
        rut_timezone.o \
@@ -127,6 +128,10 @@ endif
 
 ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_63158_),)
 CFLAGS += -DINIT_WAN_QUEUE_ON_LINKUP
+endif
+
+ifneq ($(strip $(SKIP_RTPOLICY)),)
+CFLAGS += -DCONFIG_BCM_SKIP_RTPOLICY
 endif
 
 ifeq ($(PROFILE_KERNEL_VER), LINUX_4_19_0)

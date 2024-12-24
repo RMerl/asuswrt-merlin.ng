@@ -16,8 +16,8 @@ KERNELVER=_set_by_buildFS_
 WLAN_BTEST=_set_by_buildFS_
 PROD_FW_PATH=_set_by_buildFS_
 CONFIG_WLDPDCTL=_set_by_buildFS_
-BRCM_CHIP=_set_by_buildFS_
 WLAN_REMOVE_INTERNAL_DEBUG=_set_by_buildFS_
+ALLOW_LOAD_DRIVER_IN_BACKGROUND=_set_by_buildFS_
 if [ ! -z $WLAN_REMOVE_INTERNAL_DEBUG ]; then
     dhd_console_ms=0
 else
@@ -282,8 +282,13 @@ load_modules()
                     if [ "$module" == "wl" ]; then
                         if echo $(/bin/pspctl dump wlSkbFreeOfDis) | grep -q '1'
                         then
-                            echo "Disable SKB Free offload feature for wl$idx"
-                            wl -i wl$idx skb_free_offload 0
+                            for unit in $UNITLIST; do
+                                wlx=`cat /proc/net/dev | grep -e '^[[:space:]]*wl[0-9]' |grep wl$unit`
+                                if [ ! -z "$wlx" ]; then
+                                    echo "Disable SKB Free offload feature for wl$unit"
+                                    wl -i wl$unit skb_free_offload 0
+                                fi
+                            done
                         fi
                     fi
                 fi
@@ -309,6 +314,18 @@ unload_modules()
     wldpdctl_deinit
 }
 
+start_main()
+{
+	echo "skip load_modules in bcm-wlan-drivers.sh"
+    #indication of bcacpe wifi platform and driver loading done
+    touch /tmp/.brcm_bcacpe_wifi
+}
+
+stop_main()
+{
+	echo "skip unload_modules in bcm-wlan-drivers.sh"
+    rm -f /tmp/.brcm_bcacpe_wifi
+}
 
 # Check for arguments.
 # User should give atleast one argument to the program.
@@ -334,14 +351,20 @@ else
 fi
 if [ "$btest_mode" == "1" ];  then
     echo "Skipping wlan-drivers.sh since the kernel nvram wlan_btest=1"
+    touch /tmp/.brcm_skip_bcacpe_wifi
     exit 0
+else
+    rm -f  /tmp/.brcm_skip_bcacpe_wifi
 fi
 if [ "$WLAN_BTEST" == "y" ]; then
     if [ -f /usr/sbin/utelnetd ] ; then
         /usr/sbin/utelnetd -d
     fi
     echo "Skipping wlan-drivers.sh for BTEST images ..."
+    touch /tmp/.brcm_skip_bcacpe_wifi
     exit 0
+else
+    rm -f  /tmp/.brcm_skip_bcacpe_wifi
 fi
 
 # Sanity check for drivers directory
@@ -390,21 +413,23 @@ fi
 # Parse the first argument
 case "$1" in
     start)
-        echo "skip load_modules in bcm-wlan-drivers.sh"
-        #indication of bcacpe wifi platform and driver loading done
-        touch /tmp/.brcm_bcacpe_wifi
+        if [ $ALLOW_LOAD_DRIVER_IN_BACKGROUND == "y" ]; then
+            start_main &
+        else
+            start_main
+        fi
         exit 0
         ;;
 
     stop)
-        echo "skip unload_modules in bcm-wlan-drivers.sh"
+        stop_main
         exit 0
         ;;
 
     restart)
-        unload_modules
+        stop_main
         sleep 3
-        load_modules
+        start_main
         exit 0
         ;;
 

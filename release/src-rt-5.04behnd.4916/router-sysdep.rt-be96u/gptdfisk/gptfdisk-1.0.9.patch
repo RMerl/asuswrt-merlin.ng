@@ -1,0 +1,30 @@
+--- gptfdisk-1.0.9/Makefile	2017-07-27 18:41:20.000000000 -0700
++++ gptfdisk-1.0.9/Makefile.new	2017-10-23 14:03:51.820701619 -0700
+@@ -1,5 +1,5 @@
+-CC=gcc
+-CXX=g++
++CC?=gcc
++CXX?=g++
+ CFLAGS+=-D_FILE_OFFSET_BITS=64
+ #CXXFLAGS+=-Wall -D_FILE_OFFSET_BITS=64 -D USE_UTF16
+ CXXFLAGS+=-Wall -D_FILE_OFFSET_BITS=64
+--- gptfdisk-1.0.3/diskio-unix.cc	2017-07-27 18:41:20.000000000 -0700
++++ gptfdisk-1.0.3/diskio-unix.cc_new	2017-10-25 13:21:33.877252790 -0700
+@@ -307,7 +307,7 @@
+ // Note that seeking beyond the end of the file is NOT detected as a failure!
+ int DiskIO::Seek(uint64_t sector) {
+    int retval = 1;
+-   off_t seekTo, sought;
++   off64_t seekTo, sought;
+ 
+    // If disk isn't open, try to open it....
+    if (!isOpen) {
+@@ -424,7 +424,7 @@
+ // return correct values for disk image files.
+ uint64_t DiskIO::DiskSize(int *err) {
+    uint64_t sectors = 0; // size in sectors
+-   off_t bytes = 0; // size in bytes
++   off64_t bytes = 0; // size in bytes
+    struct stat64 st;
+    int platformFound = 0;
+ #ifdef __sun__

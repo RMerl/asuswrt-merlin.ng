@@ -1,7 +1,7 @@
 #
 # Makefile for the Broadcom wl driver
 #
-# Copyright (C) 2023, Broadcom. All Rights Reserved.
+# Copyright (C) 2024, Broadcom. All Rights Reserved.
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -41,7 +41,7 @@ SRCBASE_ROUTER := $(COMPONENTSBASE)/router-sysdep
 
 DHDMAKEFILE    := $(SRCBASE)/../../$(SRCBASE_DHD)/dhd/config/dhd_router.mk
 
-# bcmdrivers/broadcom/net/wl/impl101/sys/src/dhd
+# bcmdrivers/broadcom/net/wl/impl103/sys/src/dhd
 ifeq ($(PREBUILT_EXTRAMOD),1)
 REBUILD_DHD_MODULE=0
 else

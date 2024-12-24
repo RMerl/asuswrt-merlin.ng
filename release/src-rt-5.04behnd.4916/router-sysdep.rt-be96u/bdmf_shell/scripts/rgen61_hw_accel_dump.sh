@@ -4,6 +4,6 @@
 #
 
 RGEN=61
-#PLAT="DSL"
+
 
 source "/bin/runner_dump.sh"

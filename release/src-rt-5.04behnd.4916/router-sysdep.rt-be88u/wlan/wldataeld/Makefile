@@ -25,6 +25,7 @@ MDM_CORE_LIBS := $(CMS_CORE_LIBS)
 endif
 
 EXE := wldataeld
+EXEALT := wldataelm_ctl
 OBJS = main.o debug.o lock.o timer.o util.o list.o timer_list.o
 OBJS += collection.o i5_dm_access.o wbd_access.o
 
@@ -50,6 +51,7 @@ OBJS += i5_dm_tables_2_15.o
 OBJS += nfm_tables_2_15.o
 endif
 
+OBJS += ctl_main.o
 # OBJS += ieee1905_cmsmdm.o
 # Use bcmwifi from wifi driver source
 BCMWIFI_OBJS += bcmutils.o bcmxtlv.o bcm_app_utils.o
@@ -67,6 +69,7 @@ LIBS += -li5api
 # -lshared
 
 LIBS += -ljson-c
+LIBS += -lwldataelm_util
 
 CFLAGS += -DMULTIAP -DMULTIAPR2 $(USR_CFLAGS)
 # CFLAGS += -DBRCM_CMS_BUILD
@@ -94,9 +97,11 @@ install: all scripts-install
 endif
 endif
 	install -m 755 $(EXE) $(INSTALL_DIR)/bin
+	(cd $(INSTALL_DIR)/bin; ln -sf $(EXE) $(EXEALT))
 
 clean: generic_clean scripts-clean
 	rm -f $(INSTALL_DIR)/bin/$(EXE) 
+	rm -f $(INSTALL_DIR)/bin/$(EXEALT) 
 	-rm -f *.o *.d
 	-rm -f $(EXE)
 

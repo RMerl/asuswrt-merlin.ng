@@ -498,6 +498,21 @@ int MQTT_DisableClient(int instance)
     client->schedule_close = kScheduledAction_Signalled;
     err = USP_ERR_OK;
 
+#ifdef BDK_USP
+    // jira58986: If a MQTT connection is deleted from the WEBUI, there
+    // is a case when the connection is deleted from the MDM but not in
+    // the obuspa stack. The stack only cleans the connection when it
+    // completes sending all the pending messages for the connection --
+    // transition the state from signalled to activated. The only way
+    // this is checked now is when there is an incoming traffic. In the
+    // case when the connection is not connected to a server,
+    // there is no incoming traffic
+    if (client->usp_record_send_queue.head == NULL)
+    {
+       client->schedule_close = kScheduledAction_Activated;
+    }
+#endif
+
 exit:
     OS_UTILS_UnlockMutex(&mqtt_access_mutex);
 

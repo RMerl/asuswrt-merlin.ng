@@ -6,6 +6,16 @@ MAX_WLAN_ADAPTER=4
 NUM_PROCESSOR=`cat /proc/cpuinfo | grep -c "processor"`
 NUM_WL_INTF=`nvram get wl_ifnames | wc -w`
 
+WL_INTF_LIST=""
+unit=0
+while [ $unit -lt $MAX_WLAN_ADAPTER ];
+do
+    if [ -e /sys/class/net/wl${unit} ]; then
+        WL_INTF_LIST=$WL_INTF_LIST" $unit";
+    fi
+    unit=$((unit+1));
+done
+
 WLDRV_PROC_LIST=" dhd wl wl-scheduler wl-avs "
 WLDRV_INTR_LIST=" d11 "
 PROC_LIST_COMMON=" bcmsw_rx skb_free_task "
@@ -13,6 +23,7 @@ PROC_LIST_COMMON=" bcmsw_rx skb_free_task "
 CROSSBOW=`gunzip < /proc/config.gz |grep "CONFIG_BCM_CROSSBOW=y"`
 ARCHER=`cat /proc/net/dev |grep archer |cut -d ':' -f1`
 CROSSBOWFOL=`gunzip < /proc/config.gz |grep "CONFIG_BCM_CROSSBOW_FULL_OFFLOAD=y"`
+CROSSBOWSPC=`gunzip < /proc/config.gz |grep "CONFIG_HAVE_SKBUFF_WL_SPC_V2"`
 if [ ! -z $CROSSBOW ] && [ -z $CROSSBOWFOL ]; then
     # Crossbow platform without hardware offload (6764L),
     # make it Archer data path with crossbow WiFi
@@ -370,7 +381,7 @@ setProcAffinity() {
     local nvram_name=$1
     local proc_name=$2
     local pid=$3
-    local affinity=$4
+    local affinity=`printf \%x $4`
     echo "set $proc_name $pid to aff:$affinity"
     echo ""
     if [ ! -f "/bin/rtpolicy" ]; then
@@ -388,12 +399,11 @@ setProcAffinity() {
 list_seperator()
 {
     local title="----------------";
-    local radio=0;
+    local radio;
 
-    while [ $radio -lt $NUM_WL_INTF ];
+    for radio in $WL_INTF_LIST
     do
         title="$title---------------------"
-        radio=$((radio+1))
     done
 
     echo "${title}"
@@ -401,13 +411,13 @@ list_seperator()
 
 list_process() 
 {
-    local radio=0;
+    local radio;
     local title="$1 |";
     local affinity="";
     local priority=0;
 
     title="$(align_string "$1" -1 15) |"
-    while [ $radio -lt $NUM_WL_INTF ];
+    for radio in $WL_INTF_LIST
     do
         if [ $1 == "Process" ];  then
             title="$title $(align_string "wl$radio(PID:CPUS:PRIO)") |"
@@ -422,21 +432,20 @@ list_process()
                 title="$title $(align_string "-") |"
             fi
         fi
-        radio=`expr $radio + 1`
     done
     echo "${title}"
 }
 
 list_interrupt() 
 {
-    local radio=0;
+    local radio;
     local intr=$1
     local title
     local affinity="";
     local priority=0;
 
     title="$(align_string "$intr" -1 15) |"
-    while [ $radio -lt $NUM_WL_INTF ];
+    for radio in $WL_INTF_LIST
     do
         if [ $1 == "Interrupts" ];  then
             title="$title $(align_string "wl$radio(IRQ:CPUS)") |"
@@ -451,19 +460,16 @@ list_interrupt()
                  title="$title $(align_string "-") |"
             fi
         fi
-        radio=`expr $radio + 1`
     done
 
     echo "${title}"
 }
 
 list_nvram_settings() {
-
     local affinity radio proc_name proc_pid prio name;
     for ctl_item in $PROC_LIST_PER_RADIO
     do
-        radio=0;
-        while [ $radio -lt $NUM_WL_INTF ];
+        for radio in $WL_INTF_LIST
         do
             proc_name=$(get_process_name $ctl_item $radio);
             proc_pid=$(getPidByName $proc_name);
@@ -483,7 +489,6 @@ list_nvram_settings() {
                     echo "$name is not defined, use default";
                 fi
             fi
-            radio=$((radio+1))
         done
     done
 
@@ -521,8 +526,7 @@ list_nvram_settings() {
     fi
 
     # List WLAN interrupts NVRAM settings
-    radio=0;
-    while [ $radio -lt $NUM_WL_INTF ];
+    for radio in $WL_INTF_LIST
     do
         for ctl_item in $INTR_LIST_PER_RADIO
         do
@@ -534,7 +538,6 @@ list_nvram_settings() {
                 echo "$nv_name is not defined,use default";
             fi
         done
-        radio=$((radio+1))
     done
 }
 
@@ -580,7 +583,6 @@ pin_wifi_proc_advanced()
     local affinity radio proc_name proc_pid prio name;
     local max title hdlr_name setting
 
-    radio=0;
     max=$((1<<${NUM_PROCESSOR}))
     max=$((max-1))
 
@@ -596,7 +598,7 @@ pin_wifi_proc_advanced()
     echo "Affinity mask    :(1-$max)" 
     title="${title}Num Radios       :${NUM_WL_INTF} ("
     hdlr_name=dhdpcie
-    while [ $radio -lt $NUM_WL_INTF ];
+    for radio in $WL_INTF_LIST
     do
         affinity=$(getIntrAffinity wl$radio $hdlr_name);
         if [ ! -z $affinity ]; then 
@@ -604,15 +606,13 @@ pin_wifi_proc_advanced()
         else
             title="${title}NIC/"
         fi
-        radio=$((radio+1))
     done
     title="${title})"
     echo "$title"
     echo "--------------------------"
     echo 
 
-    radio=0;
-    while [ $radio -lt $NUM_WL_INTF ];
+    for radio in $WL_INTF_LIST
     do
         echo "---------------------------------------------"
         echo "WLAN Radio#$radio (wl$radio) Process Settings"
@@ -655,8 +655,6 @@ pin_wifi_proc_advanced()
             fi
             setIntrAffinity $int_name $affinity;
         done
-
-        radio=$((radio+1))
     done
 
     #Common WiFi process affinity and priority
@@ -690,13 +688,13 @@ pin_wifi_proc_advanced()
 
 pin_wifi_processes() 
 {
-    local radio=0;
-    local num_wl_toconf=$NUM_WL_INTF;
+    local radio;
+    local wl_intf_toconf=$WL_INTF_LIST;
     local prompt proc_name prio_nvram_name affi_nvram_name;
 
     if [ ! -z $1 ]; then
         radio=$1;
-        num_wl_toconf=$((radio+1))
+        wl_intf_toconf="$radio"
         prompt="Config WiFi Radio $radio's Threads onto CPUs";
     else
         prompt="Config WiFi Radios Threads onto CPUs";
@@ -705,7 +703,7 @@ pin_wifi_processes()
     echo ""
     echo "${prompt}(Total CPU:${NUM_PROCESSOR})" 
     echo "-------------------------------------------------------------------------";
-    while [ $radio -lt $num_wl_toconf ];
+    for radio in $wl_intf_toconf
     do
        for ctl_item in $PROC_LIST_PER_RADIO;
        do
@@ -736,7 +734,6 @@ pin_wifi_processes()
                fi
            fi
        done
-       radio=$((radio+1))
     done
 
     #Common WiFi process affinity and priority
@@ -773,14 +770,14 @@ pin_wifi_processes()
 
 pin_wifi_interrupt()
 {
-    local radio=0;
+    local radio;
     local m2m_radio=0;
-    local num_wl_toconf=$NUM_WL_INTF;
+    local wl_intf_toconf=$WL_INTF_LIST;
     local prompt cpu affinity;
     if [ ! -z $1 ]; then
         radio=$1;
         m2m_radio=$1;
-        num_wl_toconf=$((radio+1))
+        wl_intf_toconf="$radio"
         prompt="Config WiFi Radio $radio's Interrupt onto CPUs";
     else
         prompt="Config WiFi Radios Interrupt onto CPUs";
@@ -792,7 +789,7 @@ pin_wifi_interrupt()
     echo "-------------------------------------------------------------------------";
 
     # WLAN interrupts configuration
-    while [ $radio -lt $num_wl_toconf ];
+    for radio in $wl_intf_toconf
     do
         for ctl_item in $INTR_LIST_PER_RADIO
         do
@@ -815,7 +812,6 @@ pin_wifi_interrupt()
                 setIntrAffinity $int_name $affinity;
             fi
         done
-        radio=$((radio+1))
     done
 }
 
@@ -823,8 +819,7 @@ save_wifi_pin_cfg() {
     local to_save=0;
     local affinity radio proc_name proc_pid prio name;
 
-    radio=0;
-    while [ $radio -lt $NUM_WL_INTF ];
+    for radio in $WL_INTF_LIST
     do
         for ctl_item in $PROC_LIST_PER_RADIO
         do
@@ -850,7 +845,6 @@ save_wifi_pin_cfg() {
                 nvram kset $int_name=$affinity;
             fi
         done
-        radio=$((radio+1))
     done
 
     #Common WiFi process affinity and priority
@@ -879,8 +873,7 @@ save_wifi_pin_cfg() {
 unset_wifi_pin_cfg() {
     local radio name ctl_item;
 
-    radio=0;
-    while [ $radio -lt $NUM_WL_INTF ];
+    for radio in $WL_INTF_LIST
     do
         for ctl_item in $PROC_LIST_PER_RADIO
         do
@@ -895,7 +888,6 @@ unset_wifi_pin_cfg() {
             int_name=$(get_interrupt_name $ctl_item $radio);
             nvram kunset $int_name
         done
-        radio=$((radio+1))
     done
 
     #Common WiFi process affinity and priority
@@ -918,8 +910,7 @@ save_config_default() {
     local KERNEL_NVRAM_FILE="/etc/wlan/kernel_nvram.setting";
     mount -t ubifs ubi:rootfs_ubifs / -o remount,rw
 
-    radio=0;
-    while [ $radio -lt $NUM_WL_INTF ];
+    for radio in $WL_INTF_LIST
     do
         for ctl_item in $PROC_LIST_PER_RADIO
         do
@@ -947,7 +938,6 @@ save_config_default() {
                 echo $nv_name=$affinity >> ${KERNEL_NVRAM_FILE}
             fi
         done
-        radio=$((radio+1))
     done
 
     #Common WiFi process affinity and priority
@@ -977,8 +967,7 @@ apply_wifi_pin_cfg() {
     local applied=0 radio=0;
     local irq name prio affinity proc_name proc_pid;
 
-    radio=0;
-    while [ $radio -lt $NUM_WL_INTF ];
+    for radio in $WL_INTF_LIST
     do
         for ctl_item in $PROC_LIST_PER_RADIO
         do
@@ -1010,8 +999,6 @@ apply_wifi_pin_cfg() {
                 setIntrAffinity $int_name $affinity
             fi
         done
-
-        radio=$((radio+1))
     done
 
     #Common WiFi process affinity and priority
@@ -1045,8 +1032,7 @@ set_default_affinity_plat3()
 {
     local ctl_item radio affinity
 
-    radio=0
-    while [ $radio -lt $NUM_WL_INTF ];
+    for radio in $WL_INTF_LIST
     do
         # /* bind to CPU{x} */
         affinity=$((1 << (radio%NUM_PROCESSOR)))
@@ -1059,7 +1045,6 @@ set_default_affinity_plat3()
                 setProcAffinity "" $proc_name $proc_pid $affinity
             fi
         done
-        radio=$((radio+1))
     done
 }
 
@@ -1070,8 +1055,8 @@ set_default_affinity_Archer_NRCPUS3()
     local radio affinity dhd_radio
 
     dhd_radio=`cat /proc/interrupts |grep wl0 |grep dhdpcie`
-    radio=0
-    while [ $radio -lt $NUM_WL_INTF ];
+
+    for radio in $WL_INTF_LIST
     do
         affinity=$((1 << 1))
         if [ $NUM_WL_INTF -eq 2 ]; then
@@ -1111,7 +1096,6 @@ set_default_affinity_Archer_NRCPUS3()
             setIntrAffinity $int_name $affinity;
         done
 
-        radio=$((radio+1))
     done
 
     # /* The bcm_archer_us thread affinity is defined in ARCHER_CPU_AFFINITY */
@@ -1143,8 +1127,7 @@ set_default_affinity_Archer_NRCPUS4()
         setProcAffinity "" $proc_name $proc_pid $affinity
     fi
 
-    radio=0
-    while [ $radio -lt $NUM_WL_INTF ];
+    for radio in $WL_INTF_LIST
     do
         # /* bind to CPU{x} */
         affinity=$((1 << (radio%NUM_PROCESSOR)))
@@ -1183,7 +1166,6 @@ set_default_affinity_Archer_NRCPUS4()
             setProcPriority "" $proc_name $proc_pid 75
         fi
 
-        radio=$((radio+1))
     done
 
     # /* bind bcm_archer_wlan to cpu#dhd if exists and offload is disabled */
@@ -1217,8 +1199,7 @@ set_xBow_socket_affinity()
         sleep 1
     done
 
-    radio=0
-    while [ $radio -lt $NUM_WL_INTF ];
+    for radio in $WL_INTF_LIST
     do
         cpu=$((radio%NUM_PROCESSOR + 1))
         affinity=$((1 << cpu))
@@ -1228,10 +1209,43 @@ set_xBow_socket_affinity()
             int_name=$(get_interrupt_name $ctl_item $radio);
             setIntrAffinity $int_name $affinity;
         done
-
-        radio=$((radio+1))
     done
 }
+
+# xBow systems have 2 internal NIC radios, one of which requires
+# extra processing power (~ 1.5 CPUs) to sustain peak forwarding
+# performance. This is the "first" internal NIC on both 6765 and
+# 6766. That is: 6G@320Mhz for 6765; and 5G@160Mhz for 6766.
+#
+# We locate the cpu/unit for this cpu with extra processing
+# demand and steal half a CPU from the radio/uni with the
+# lowest processing demand.
+#
+# So what's the unit with the lowest processing demand?
+# => dual radio, it's the 'free' cpu (CPU #3)
+# => tri radio w/ dongle, it's the dongle radio (CPU #1)
+# => tri radio all nic, 2G external (CPU #3)
+extra_cpu_for_xBow()
+{
+	is_dhd_radio=$(isDHDRadio 0)
+
+	if [ $is_dhd_radio -eq 1 ]; then
+		extra_cpu_affinity=6 # cpu 1 + cpu 2
+		xbow_fwq_unit=1
+	else
+		# cpu 3 is either free or 2G or external
+		extra_cpu_affinity=10 # cpu 3 + cpu 1
+		xbow_fwq_unit=0
+	fi
+
+	proc_name=$(get_process_name "xbow_fwq" $xbow_fwq_unit);
+	proc_pid=$(getPidByName $proc_name);
+
+	if [ $proc_pid -gt 0 ]; then
+		setProcAffinity "" $proc_name $proc_pid $extra_cpu_affinity
+	fi
+}
+
 # All SDK housekeeping processes:                      CPU0
 # All processes/interrupts related to Internal WiFi#0: CPU1
 # All processes/interrupts related to Internal WiFi#1: CPU2
@@ -1256,8 +1270,7 @@ set_default_affinity_priority_xBow()
     echo "wl{x}=>CPU{x+1}, priority 5"
 
     # Affine WiFi Radio interface specific processes and interrupts
-    radio=0
-    while [ $radio -lt $NUM_WL_INTF ];
+    for radio in $WL_INTF_LIST
     do
         cpu=$((radio%NUM_PROCESSOR + 1))
 
@@ -1302,8 +1315,6 @@ set_default_affinity_priority_xBow()
             int_name=$(get_interrupt_name $ctl_item $radio);
             setIntrAffinity $int_name $affinity;
         done
-
-        radio=$((radio+1))
     done
 
     for ctl_item in $PROC_LIST_COMMON
@@ -1319,6 +1330,10 @@ set_default_affinity_priority_xBow()
         fi
     done
 
+    if [ -n "$CROSSBOWFOL" -a -n "$CROSSBOWSPC" ]; then
+	    extra_cpu_for_xBow
+    fi
+
     # Set xbow_socket affinities but can't do it here, because these are
     # registered with the kernel only after bcm_enet.ko is loaded and calls
     # archer_driver_host_config(). So launch a background task to check for
@@ -1330,8 +1345,7 @@ set_default_priority()
 {
     local ctl_item ctl_item1 radio priority
 
-    radio=0
-    while [ $radio -lt $NUM_WL_INTF ];
+    for radio in $WL_INTF_LIST
     do
         for ctl_item in $PROC_LIST_PER_RADIO
         do
@@ -1350,7 +1364,6 @@ set_default_priority()
                 setProcPriority "" $proc_name $proc_pid $priority
             fi
         done
-        radio=$((radio+1))
     done
 
     #$PROC_LIST_COMMON priority is left as default

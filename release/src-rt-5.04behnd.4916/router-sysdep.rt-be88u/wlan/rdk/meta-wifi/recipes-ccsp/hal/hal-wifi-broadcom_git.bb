@@ -57,7 +57,7 @@ CFLAGS_append = " -I.\
 		 -I${BCALINUX_ROOT}/userspace/private/libs/wlcsm/wifi_all/cmwifi/libs/wlcsm/include \
 		 -I${BCALINUX_ROOT}/userspace/private/apps/wlan/components/apps/wldm \
 "
-CFLAGS_append = " -Wno-unused-variable -Wno-unused-function  -Wno-return-type -s -Os  -fomit-frame-pointer -lgcc_s -fno-strict-aliasing -fPIC -Wall -DD11AC_IOTYPES -DPPR_API"
+CFLAGS_append = " -Wno-unused-variable -Wno-unused-function  -Wno-return-type  -Os  -fomit-frame-pointer -lgcc_s -fno-strict-aliasing -fPIC -Wall -DD11AC_IOTYPES -DPPR_API"
 
 CFLAGS_append = " -DWIFI_HAL_VERSION_3"
 LDFLAGS += " -ldl -lwldm  -lwldpd  -lrt -lcms_util -lcms_dal -lcms_msg -lbcm_flashutil \

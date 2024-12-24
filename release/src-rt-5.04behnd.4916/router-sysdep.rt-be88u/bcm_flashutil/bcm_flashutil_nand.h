@@ -71,7 +71,6 @@ int nandGetBootPartition(void);
 int nandCommit( int partition, char *commit_flag );
 int nandSetImgValidStatus( int img_idx, int valid);
 int nandIsLegacyFlashLayout(void);
-int nandUbiVolDevNodeExists( char * dev_path , int exists);
 uint64_t nandGetAvailImgSpace( int update_img_idx );
 uint64_t nandGetAvailLoaderSpace(void);
 int getNandMetadata( char * data, int size , int mdata_idx);

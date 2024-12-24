@@ -135,6 +135,9 @@ ALLOWED_LIB_DIRS := /lib:/lib/public:/lib/private:/usr/lib
 CFLAGS +=-DWIRELESS -DSUPPORT_MIMO -DBCMWPA2
 ifneq ($(strip $(BUILD_BCM_WLAN_DPDCTL)),)
 CFLAGS += -DBUILD_BCM_WLAN_DPDCTL
+ifneq ($(strip $(BRCM_WLAN_AUTODPD)),)
+CFLAGS += -DBRCM_WLAN_AUTODPD
+endif
 endif
 
 CFLAGS += -DWMF

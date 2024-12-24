@@ -14,8 +14,8 @@ include $(BUILD_DIR)/make.common
 CROSS := $(CROSS_COMPILE)
 export CROSS
 
-APP := mtd-utils-2.1.5
-APP_TARBALL := mtd-utils-2.1.5.tar.gz
+APP := mtd-utils-2.1.6
+APP_TARBALL := mtd-utils-2.1.6.tar.gz
 
 CFLAGS += -Wno-error=unused-parameter
 

@@ -1,6 +1,11 @@
 #!/bin/bash
 CONFIG_WLDPDCTL=_set_by_buildFS_
-PROC_DT_DIR=/proc/device-tree
+CONFIG_BCM_WLAN_MLO=_set_by_buildFS_
+if [ -d /proc/device-tree/ubus-bus/ ]; then
+  PROC_DT_DIR=/proc/device-tree/ubus-bus
+else
+  PROC_DT_DIR=/proc/device-tree
+fi
 SYS_PCIE_DRV_DIR=/sys/bus/platform/drivers/bcm-pcie
 PCIE_CORE_LIST="0 1 2 3 4 5 6 7"
 WLUNIT_LIST="0 1 2 3"
@@ -17,7 +22,11 @@ mod='wfd bcm_pcie_hcd'
 readonly DPD_MODE_OFF=0
 readonly DPD_MODE_DPD=1
 readonly DPD_MODE_EDPD=2
+readonly DPD_MODE_EDPD_MLO=3
 readonly DPD_EDPD_FILE="/usr/sbin/wifi_dsps.sh"
+
+readonly MLC_SYNC=6
+readonly MLC_ACTIVE=19
 
 #wlan interface power control
 wledpdmap=0
@@ -36,6 +45,10 @@ fi
 
 #available wlan interface list
 A_WLIFL=""
+
+# MLO Configuration
+wl_mlo_config="-1 -1 -1 -1"
+wl_mlo_mapunit=-1
 
 #down all wlan mac
 wl_down()
@@ -85,6 +98,7 @@ rdkb_radio_control()
             fi
         fi
         [[ $doapply -eq 1 ]] && dmcli eRT setv Device.WiFi.Radio.${dm_ifindex}.X_CISCO_COM_ApplySetting bool true
+        rm -rf /tmp/dpd_in_progress
         return 0
     fi
     return 0
@@ -100,7 +114,7 @@ wl_suspend()
   killall -q debug_monitor
   killall -q acsd acsd2
   nvram unset acs_ifnames
-  /etc/init.d/bcm-wlan-drivers.sh stop
+  /rom/etc/init.d/bcm-wlan-drivers.sh stop
   for m in ${mod//-/_}; do rmmod -w $m; done
 }
 
@@ -109,9 +123,175 @@ wl_suspend()
 # - restart wlan configuration manager
 wl_resume()
 {
-  grep -e${mod// /.ko -e}.ko /etc/init.d/bcm-base-drivers.sh | sh
-  /etc/init.d/bcm-wlan-drivers.sh start
+  grep -e${mod// /.ko -e}.ko /rom/etc/init.d/bcm-base-drivers.sh | sh
+  /rom/etc/init.d/bcm-wlan-drivers.sh start
   nvram restart
+}
+
+# Get MLO Unit for the given interface
+#
+#  $1: WiFi interface (wlX)
+#
+#  return valid MLO Unit (0/1/2) or -1 (invalid unit)
+wl_mlo_unit()
+{
+  local ifname=$1
+  local wlunit
+  local mlounit
+  
+  wlunit=$(echo $ifname | cut -d 'l' -f2)
+  mlounit=$(echo $wl_mlo_config |  awk -v N=$((wlunit+1)) '{print $N}')
+
+  if [ -z $mlounit ]; then
+    mlounit=-1
+  fi
+
+  echo $mlounit
+}
+
+# Get MAP Unit
+#
+#  return valid MAP Unit (0/1/2) or -1 (invalid unit)
+wl_map_unit()
+{
+  local wlunit
+  local mapunit=-1
+  
+  for wlunit in $WLUNIT_LIST; do
+    if [ $(wl_mlo_unit wl$wlunit) = 0 ]; then
+      mapunit=$wlunit
+      break
+    fi
+  done
+
+  echo $mapunit
+}
+
+# Init mlo globals
+#
+#
+wl_mlo_init()
+{
+  local wlunit
+  local mlounit
+
+  if [ ! -z $CONFIG_BCM_WLAN_MLO ]; then
+    # Initialize MLO Global variables
+    wl_mlo_config=`nvram kget wl_mlo_config`
+    if [ -z "$wl_mlo_config" ]; then
+      wl_mlo_config="-1 -1 -1 -1"
+    fi
+
+    wl_mlo_mapunit=-1
+
+    for wlunit in $WLUNIT_LIST; do
+      mlounit=$(echo $wl_mlo_config |  awk -v N=$((wlunit+1)) '{print $N}')
+      if [ $mlounit -eq 0 ]; then
+        wl_mlo_mapunit=$wlunit
+        break
+      fi
+    done
+  fi
+}
+
+
+# Tear down MLO when interface is MLO capable radio
+#
+#  $1: WiFi interface (wlX)
+#
+wledpdctl_mlo_down()
+{
+  local ifname=$1
+
+  if [ $(wl_mlo_unit $ifname) != -1 ]; then
+    # Tear down MLO and make links non-MLO
+    wl -i wl$wl_mlo_mapunit mlo_down
+  fi
+}
+
+# Bring up MLO when all MLO capable radios are UP
+#
+#  $1: WiFi interface (wlX)
+#
+wledpdctl_mlo_up()
+{
+  local ifname=$1
+  local wlunit
+  local all_up=1
+  local mlc_state
+
+  if [ $(wl_mlo_unit $ifname) != -1 ]; then
+    for wlunit in $WLUNIT_LIST; do
+      wlif=wl$wlunit
+      if [ $(wl_mlo_unit $wlif) != -1 ]; then
+        # MLO AP, check if it is powered UP
+        wlif_list=$(ifconfig -a | grep wl | awk '{print $1}' | grep $wlif)
+        dummy=$(ifconfig $wlif | grep NOARP)
+        if [ -z $wlif_list ] || [ ! -z "$dummy" ]; then
+          all_up=0
+          break
+        else
+          # Wait for MLC state to be MLC_SYNC or MLC_ACTIVE
+          for i in $(seq 1 3); do
+            mlc_state=$(wl -i $wlif mlc_state | cut -d ' ' -f1)
+            if [ $mlc_state = $MLC_SYNC ] || [ $mlc_state = $MLC_ACTIVE ]; then
+              break
+            fi
+            sleep 1
+          done
+          if [ $mlc_state != $MLC_SYNC ] && [ $mlc_state != $MLC_ACTIVE ]; then
+            echo "WIFI.SH : WARN: $wlif is not in MLC_SYNC/ACTIVE state"
+          fi
+        fi
+      fi
+    done
+
+    if [ $all_up = 1 ]; then
+      # Make MLO ready and active as all MLO links are up
+      wl -i wl$wl_mlo_mapunit mlo_up
+      wlconf wl$wl_mlo_mapunit configure_mlo
+
+      # Wait for MLC state to be MLC_ACTIVE
+      for i in $(seq 1 30); do
+        mlc_state=$(wl -i $ifname mlc_state | cut -d ' ' -f1)
+        if [ $mlc_state = $MLC_ACTIVE ]; then
+          break
+        fi
+        sleep 1
+      done
+      if [ $mlc_state != $MLC_ACTIVE ]; then
+         echo "WIFI.SH : ERROR: wl$wluint is not in MLC_ACTIVE state"
+      fi
+    fi
+    mlc_state=$(wl -i wl$wl_mlo_mapunit mlc_state | cut -d ' ' -f1)
+    if [ $mlc_state = $MLC_ACTIVE ]; then
+      echo "WIFI.SH : $ifname mlo up Success"
+    fi
+    touch /tmp/edpd_${ifname}_mloready
+  fi
+}
+
+# WiFi affinity Settings down
+#
+#  $1: WiFi interface (wlX)
+#
+wledpdctl_wlaffinity_down()
+{
+  # For future usage
+  # wlaffinity save power down
+  echo
+}
+
+# WiFi affinity Settings up
+#
+#  $1: WiFi interface (wlX)
+#
+wledpdctl_wlaffinity_up()
+{
+  # For future usage
+  # wlaffinity apply power up
+  echo "WIFI.SH : wlaffinity auto"
+  wlaffinity auto >/dev/null
 }
 
 # Get PCIe domain number for the given interface from EDPD map
@@ -143,6 +323,95 @@ wledpdctl_get_map()
 
   echo $domain
 }
+
+# Wait for WiFi services down
+#
+# Input:
+#  $1: interface name (wlX)
+#
+# Return:
+#  None
+wledpdctl_wait_app_services_down()
+{
+  local ifname=$1;
+  local state;
+  local hapd_iflist;
+
+  hapd_iflist=$(hostapd_cli interface | grep ^${ifname})
+  if [ ! -z "$hapd_iflist" ]; then
+    # Interfaces exists
+    for ifname in $hapd_iflist; do
+      for i in $(seq 1 10); do
+        state=$(hostapd_cli -i $ifname status | grep state | cut -d '=' -f2)
+        if [ "$state" = "DISABLED" ] || [ -z "$state" ]; then
+          break
+        fi
+        sleep 1
+      done
+      if [ "$state" != "DISABLED" ] && [ ! -z "$state" ]; then
+        echo "WIFI.SH : WARN - $ifname hostapd not down, state $state"
+      fi
+    done
+  fi
+
+}
+
+# Wait for WiFi services up
+#
+# Input:
+#  $1: interface name (wlX)
+#
+# Return:
+#  None
+wledpdctl_wait_app_services_up()
+{
+  local ifname=$1;
+  local hifname;
+  local state;
+  local hapd_iflist;
+
+  # Wait for interface to appear in the hostapd list
+  for i in $(seq 1 20); do
+    hapd_iflist=$(hostapd_cli interface | grep ^${ifname} | tr '\n' ' ');
+    if [ ! -z "$hapd_iflist" ]; then
+      break
+    fi
+    sleep 1;
+  done
+
+  if [ -z "$hapd_iflist" ]; then
+    echo "WIFI.SH : WARN - $ifname no hostapd interfaces after $i sec";
+  fi
+
+  # For each interface, wait until interface is enabled
+  for hifname in $hapd_iflist; do
+    for i in $(seq 1 60); do
+      state=$(hostapd_cli -i $hifname status | grep state | cut -d '=' -f2);
+      if [ "$state" = "ENABLED" ] || [ "$state" = "DFS" ]; then
+        break
+      fi
+      sleep 1;
+    done
+    if [ "$state" != "ENABLED" ] && [ "$state" != "DFS" ]; then
+      echo "WIFI.SH : WARN - $hifname hostapd not up, [$state] after $i sec";
+    fi
+  done
+
+  # Wait for application services to call mlo_up
+  if [ $wldpdmode = $DPD_MODE_EDPD_MLO ]; then
+    for i in $(seq 1 60); do
+      if [ -f /tmp/edpd_${ifname}_mloready ]; then
+        break
+      fi
+	  sleep 1;
+    done
+
+    if [ ! -f /tmp/edpd_${ifname}_mloready ]; then
+      echo "WIFI.SH : WARN - $ifname mlo services not ready yet after $i sec";
+    fi
+  fi
+}
+
 
 # Set interface number for the given domain number in the EDPD map
 #
@@ -237,10 +506,15 @@ wledpdctl_get_pcie_base()
             dt_domain=$((dt_domain))
             if [ $dt_domain = $wl_domain ]; then
               # domain matched, get the pcie register base withd river
-              reg=`xxd $PROC_DT_DIR/${drv}${domain}/reg | cut -d ' ' -f2`
+              reg=`xxd $PROC_DT_DIR/${drv}${domain}/reg | grep 00000000: | cut -d ' ' -f2`
               if [ $reg = '0000' ]; then
                 #64bit address
-                reg=`xxd $PROC_DT_DIR/${drv}${domain}/reg | cut -d ' ' -f4`
+                reg=`xxd $PROC_DT_DIR/${drv}${domain}/reg | grep 00000000: | cut -d ' ' -f4`
+              fi
+              # for LPAE platforms this is mapped address (<0x8000)
+              # convert mapped address to actual physical address (+0x8000)
+              if [ `printf '%d' 0x${reg}` -lt `printf '%d' 0x8000` ]; then
+                reg=`printf '%x' $((0x8000 + 0x$reg))`
               fi
               if [[ "$drv" == *"@" ]]; then
                 drv=`echo $drv | cut -d '@' -f1`
@@ -357,7 +631,7 @@ wledpdctl_unbind()
   local pcie_base=
 
   [[ ! -z $IS_RDK_BUILD ]]  && [[ $RDK_EDPD_SUPPORT -eq 0 ]] && return 0
-  if [ $wldpdmode = $DPD_MODE_EDPD ]; then
+  if [ $wldpdmode -ge $DPD_MODE_EDPD ]; then
       domain=$(wledpdctl_get_map $ifname)
     if [ $domain != $INV_DOMAIN ]; then
 
@@ -367,17 +641,20 @@ wledpdctl_unbind()
         # Check if the interface already up and running
         sts=`cat /proc/interrupts | grep $ifname | cut -d ':' -f1`
         if [[ -d $SYS_PCIE_DRV_DIR/$pcie_base ]] && [[ ! -z $sts ]]; then
-          # Turn off all the interfaces of this radio
-          ifid=$(echo $ifname | cut -d 'l' -f2)
-          iflist=$(cat /proc/net/dev |grep -e $ifname -e wds$ifid | cut -d ':' -f1)
-          for iface in $iflist; do
-            wl -i $iface hwa_rxpost_reclaim_en 1
-            ifconfig $iface down
-            wl -i $iface down
-          done
-          [[ -z $IS_RDK_BUILD ]] && [[ $wledpdappupd != 0 ]] && \
-              ACTION=pwrdn /etc/init.d/mdev_wl.sh $ifname
 
+          # Down WiFi services for this interface
+          if [ $wledpdappupd != 0 ]; then
+            if [ -z $IS_RDK_BUILD ]; then
+              ACTION=pwrdn /rom/etc/init.d/mdev_wl.sh $ifname;
+            else
+              rdkb_radio_control $ifname "down";
+            fi
+            # Wait until wifi services are disabled/terminated
+            wledpdctl_wait_app_services_down $ifname;
+          fi
+
+          # Save affinity (if any)
+          wledpdctl_wlaffinity_down $ifname
 
           # Unbind the PCIe and wlX interface
           echo $pcie_base > ${SYS_PCIE_DRV_DIR}/unbind
@@ -407,7 +684,7 @@ wledpdctl_bind()
   local pcie_base=
 
   [[ ! -z $IS_RDK_BUILD ]]  && [[ $RDK_EDPD_SUPPORT -eq 0 ]] && return 0
-  if [ $wldpdmode = $DPD_MODE_EDPD ]; then
+  if [ $wldpdmode -ge $DPD_MODE_EDPD ]; then
     domain=$(wledpdctl_get_map $ifname)
     if [ $domain != $INV_DOMAIN ]; then
       pcie_base=$(wledpdctl_get_pcie_base $domain)
@@ -428,9 +705,22 @@ wledpdctl_bind()
           # Bind the PCIe and wlX interface
           echo $pcie_base > $SYS_PCIE_DRV_DIR/bind
           sleep 2
+
+          # Restore back affinity
+          wledpdctl_wlaffinity_up $ifname
+
+          # Bring up WiFi services for this interface
           [[ -n $IS_RDK_BUILD  ]] && nvram unset ${ifname}_edpd_radio
-          [[ -z $IS_RDK_BUILD ]] && [[ $wledpdappupd != 0 ]] && \
-              ACTION=pwrup /etc/init.d/mdev_wl.sh $ifname
+          if [ $wledpdappupd != 0 ]; then
+            rm -f /tmp/edpd_${ifname}_mloready
+            if [ -z $IS_RDK_BUILD ]; then
+              ACTION=pwrup /rom/etc/init.d/mdev_wl.sh $ifname;
+            else
+              rdkb_radio_control $ifname "up";
+            fi
+            # Wait until wifi services are up and running
+            wledpdctl_wait_app_services_up $ifname;
+          fi
         fi
       fi
     fi
@@ -459,7 +749,6 @@ wledpdctl_restart()
     dpd=$(nvram kget ${ifname}_dpd)
     if [ ! -z $dpd ]; then
       if [ $dpd = 1 ]; then
-        rdkb_radio_control $ifname "down"
         wledpdctl_unbind $ifname
       else
         domain=$(wledpdctl_get_map $ifname)
@@ -477,7 +766,6 @@ wledpdctl_restart()
             fi
           fi
           wledpdctl_bind $ifname
-          rdkb_radio_control $ifname "up"
         fi
       fi
     fi
@@ -503,7 +791,7 @@ wldpdctl_restart()
   else
     nvram kcommit
     nvram commit
-    if [ $wldpdmode = $DPD_MODE_EDPD ]; then
+    if [ $wldpdmode -ge $DPD_MODE_EDPD ]; then
       wledpdctl_restart
     else
       wl_suspend
@@ -535,7 +823,7 @@ wldpdctl_set_apon()
     done
   fi
 
-  if [ $wldpdmode != $DPD_MODE_EDPD ]; then
+  if [ $wldpdmode -lt $DPD_MODE_EDPD ]; then
     nvram kset pcie_apon=0x$hex_v
   fi
 }
@@ -545,6 +833,8 @@ wldpdctl_set_apon()
 # - initialize wlan interface to pcie apon setting (if not done)
 wldpdctl_init()
 {
+  wl_mlo_init
+
   wldpdmode=$(wldpdctl_mode)
 
   if [ $wldpdmode != $DPD_MODE_OFF ]; then
@@ -579,7 +869,7 @@ wldpdctl_init()
     else
       A_WLIFL="wl0 wl1 wl2 wl3"
     fi
-    if [ $wldpdmode = $DPD_MODE_EDPD ]; then
+    if [ $wldpdmode -ge $DPD_MODE_EDPD ]; then
       wledpdmap=$(nvram kget wl_radio_to_ifid_map)
       if [ -z $wledpdmap ]; then
         echo "Auto switching to EDPD mode"
@@ -745,7 +1035,7 @@ wldpdctl_status()
 
   echo
   echo "***********************"
-  echo "| Mode  |     $(wldpdctl_modestr $wldpdmode)    |"
+  echo "| Mode  |   $(wldpdctl_modestr $wldpdmode)  |"
   echo "***********************"
   echo "| intf  | cfg | pwrdn |"
   echo "***********************"
@@ -868,7 +1158,11 @@ wldpdctl_mode()
     echo "    Restarting PCIe with correct settings     "
     echo "=============================================="
     rmmod -w bcm_pcie_hcd
-    grep -e bcm_pcie_hcd /etc/init.d/bcm-base-drivers.sh | sh
+    grep -e bcm_pcie_hcd /rom/etc/init.d/bcm-base-drivers.sh | sh
+  fi
+
+  if [ $mode = $DPD_MODE_EDPD ] && [ $wl_mlo_mapunit != -1 ]; then
+    mode=$DPD_MODE_EDPD_MLO;
   fi
 
   echo $mode
@@ -881,15 +1175,18 @@ wldpdctl_modestr()
   case $mode in
 
     $DPD_MODE_OFF)
-      modestr="OFF "
+      modestr="OFF     "
       ;;
 
     $DPD_MODE_DPD)
-      modestr="DPD "
+      modestr="DPD     "
       ;;
 
     $DPD_MODE_EDPD)
-      modestr="EDPD"
+        modestr="EDPD    "
+      ;;
+    $DPD_MODE_EDPD_MLO)
+        modestr="EDPD_MLO"
       ;;
 
     *)
@@ -919,6 +1216,8 @@ wl_usage()
     echo "         edpddn     <wlan interface>  [apps update]"
     echo "         edpdbind   <wlan interface>"
     echo "         edpdunbind <wlan interface>"
+    echo "         edpdmloup  <wlan interface>"
+    echo "         edpdmlodn  <wlan interface>"
 }
 
 case $1 in
@@ -1028,7 +1327,7 @@ case $1 in
     wldpdctl_init
     if [ -z $upintf ]; then
       wl_usage
-    elif [ $wldpdmode = $DPD_MODE_EDPD ]; then
+    elif [ $wldpdmode -ge $DPD_MODE_EDPD ]; then
       wledpdappupd=0
       wledpdctl_bind $upintf
     else
@@ -1041,7 +1340,7 @@ case $1 in
     wldpdctl_init
     if [ -z $dnintf ]; then
       wl_usage
-    elif [ $wldpdmode = $DPD_MODE_EDPD ]; then
+    elif [ $wldpdmode -ge $DPD_MODE_EDPD ]; then
       wledpdappupd=0
       wledpdctl_unbind $dnintf
     else
@@ -1049,8 +1348,33 @@ case $1 in
     fi
     ;;
 
+  edpdmloup)
+    upintf=$2
+    wldpdctl_init
+    if [ -z $upintf ]; then
+      wl_usage
+    elif [ $wl_mlo_mapunit != -1 ]; then
+      wledpdctl_mlo_up $upintf
+    else
+      echo "Not permitted in non-MLO Mode - $(wldpdctl_modestr $wldpdmode)"
+    fi
+    ;;
+
+  edpdmlodn)
+    dnintf=$2
+    wldpdctl_init
+    if [ -z $dnintf ]; then
+      wl_usage
+    elif [ $wl_mlo_mapunit != -1 ]; then
+      wledpdctl_mlo_down $dnintf
+    else
+      echo "Not permitted in non-MLO Mode - $(wldpdctl_modestr $wldpdmode)"
+    fi
+    ;;
+
   dpdmode)
     correct=$2
+    wl_mlo_init
     wldpdmode=$(wldpdctl_mode $correct)
 
     echo "$wldpdmode | $(wldpdctl_modestr $wldpdmode)"

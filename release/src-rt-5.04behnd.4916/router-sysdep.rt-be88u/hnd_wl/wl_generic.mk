@@ -164,8 +164,8 @@ endif
 
     ifeq ($(FTM),1)
         WLAN_ComponentsInUse += ftm
+        WLAN_ComponentsInUse += pasn
     endif
-
     # For trunk driver, we need the accel component. This will be a
     # no-op while compiling drivers from other older branches.
     # WLAN_ComponentsInUse += accel
@@ -277,6 +277,9 @@ endif
         # Settings that apply only to WFD
         ifeq ($(strip $(WLWFD)), 1)
 		EXTRA_CFLAGS += -DBCM_WFD
+		ifneq ($(strip $(CONFIG_BCM_CROSSBOW_FULL_OFFLOAD)),)
+			EXTRA_CFLAGS += -DBCM_WLHDR
+		endif
 
 		# Enable Fcache based WFD for 47189
 		ifeq ($(BRCM_CHIP),47189)
@@ -416,6 +419,8 @@ else ifneq (,$(filter "y","$(CONFIG_BCM96765)"))
 	WLTUNEFILE := wltunable_lx_6765.h
 else ifneq (,$(filter "y","$(CONFIG_BCM96766)"))
 	WLTUNEFILE := wltunable_lx_6766.h
+else ifneq (,$(filter "y","$(CONFIG_BCM96764)"))
+	WLTUNEFILE := wltunable_lx_6764.h
 else
 	WLTUNEFILE := wltunable_lx_router.h
 endif

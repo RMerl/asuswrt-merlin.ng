@@ -16,6 +16,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 typedef enum
 {
+	AMAS_RESULT_GEN_RANDOM_BACKHAUL_SECURITY_FAILED		= -30,
+	AMAS_RESULT_VERIFY_HASH_GROUP_ID_FAILED		= -29,
+	AMAS_RESULT_VERIFY_HASH_ID_NO_INDEX		= -28,
+	AMAS_RESULT_GEN_HASH_GROUP_ID_FAILED		= -27,
+	AMAS_RESULT_GEN_HASH_ID_NO_INDEX		= -26,
 	AMAS_RESULT_SET_MISC_INFO_FAILED		= -25,
 	AMAS_RESULT_GET_MISC_INFO_FAILED          = -24,
 #ifdef RTCONFIG_VIF_ONBOARDING
@@ -199,6 +204,7 @@ AMAS_FUNC AMAS_RESULT AMAS_API amas_prelink_band_sync_bypass(int unit, int *resu
 #ifdef RTCONFIG_VIF_ONBOARDING
 AMAS_FUNC AMAS_RESULT AMAS_API amas_gen_onboarding_vif_security(char *ssid, int ssid_len, char *psk, int psk_len);
 #endif	/* RTCONFIG_VIF_ONBOARDING */
+AMAS_FUNC AMAS_RESULT AMAS_API amas_gen_random_backhaul_security(char *input, char *ssid, int ssid_len, char *psk, int psk_len);
 AMAS_FUNC AMAS_RESULT AMAS_API amas_set_eth_role(char *input_eth_role);
 AMAS_FUNC AMAS_RESULT AMAS_API amas_get_dest_eth_role(char *ifname, int *eth_role);
 AMAS_FUNC AMAS_RESULT AMAS_API amas_set_misc_info(int index, char *value);
@@ -206,5 +212,8 @@ AMAS_FUNC AMAS_RESULT AMAS_API amas_get_misc_info(unsigned char *misc_info, int 
 AMAS_FUNC AMAS_RESULT AMAS_API amas_set_lldpd_bind_ifnames_retry(char *ifnames, int fail_retry);
 AMAS_FUNC AMAS_RESULT AMAS_API amas_set_lldpd_bind_ifnames(char *ifnames);
 extern char *get_rcSupport_count(char *count, int countBufSize);
+AMAS_FUNC AMAS_RESULT AMAS_API amas_gen_hash_group_id(unsigned char *key);
+AMAS_FUNC AMAS_RESULT AMAS_API amas_gen_hash_id(int index, unsigned char *key);
+AMAS_FUNC AMAS_RESULT AMAS_API  amas_verify_hash_id(int index, unsigned char *key);
 
 #endif /* !__AMASUTILSH__ */

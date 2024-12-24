@@ -45,9 +45,22 @@ extern "C" {
  */
 
 
+/*!\enum RebootReasonType
+ * \brief  Enumeration of possible reasons for reboot system call
+ *
+ */
+typedef enum 
+{
+    REBOOT_REASON_NULL                          = 0, /**< no specific reason or unknown reason */
+    REBOOT_REASON_SOFTWARE_UPGRADE              = 1, /**< software upgrade caused reboot */
+    REBOOT_REASON_MANAGEMENT_REBOOT             = 2, /**< tr69/web/omci/oam asked for reboot */    
+    REBOOT_REASON_RESTORE_DEFAULT               = 3, /**< configuration restore default */
+    REBOOT_REASON_HARDWARE_ABNORMALITY          = 4, /**< hardware abnormalilty detected, app decided to reboot  */
+} RebootReasonType;
+
+
 /** Return 1 if system bootloader is UBoot, otherwise, return 0. */
 int bcmUtl_isBootloaderUboot(void);
-
 
 /** Generic helper function to get any UBoot env var.
  *
@@ -60,7 +73,6 @@ int bcmUtl_isBootloaderUboot(void);
  *                        exist.
  */
 BcmRet bcmUtl_getUbootEnvVar(const char *varName, char *buf, UINT32 *bufLen);
-
 
 /** Return 1 if the Uboot no_commit_image env var is set to 1 or y.
  */
@@ -79,6 +91,14 @@ int bcmUtl_isUbootNoCommitImage(void);
  */
 BcmRet bcmUtl_getManufacturer(char *buf, UINT32 bufLen);
 
+/** Copy the name of the model name to the given buf.
+ *
+ * @param buf   (OUT) Buffer to hold the data.
+ * @param bufLen (IN) Length of the buffer.  If the buffer is not large
+ *                        enough to hold the path, an error will be returned.
+ * @return BcmRet enum.
+ */
+BcmRet bcmUtl_getModelName(char *buf, UINT32 bufLen);
 
 /** Copy the hardware version to the given buf.
  *  The behavior is the same as getManufacturer.
@@ -133,13 +153,32 @@ void bcmUtl_startRebootWatchdog();
 void bcmUtl_busybox_reboot(void);
 
 /** This is the recommended API to call to reboot the system.
+ *
+ * @param requestor (IN) The requestor.
+ * @param reason (IN) An enum to identify the reason, will be mapped to
+ *                    a string inside the function.
+ *
  *  It will log a line in the kernel printk buffer, which will appear on the console,
+ *  write the requestor:reason to /data/reboot_reason which can be read after boot,
  *  create a shutdown file so other apps know that we are shutting down,
  *  and do a graceful busybox reboot.
- *  The requestor and reason strings may be NULL, but would be nice to fill
- *  them in if the information is available.
+ *  The requestor may be NULL, and the reason can be REBOOT_REASON_NULL.
+ *  But it would be nice to pass meaningfull values if the information is available.
  */
-void bcmUtl_loggedBusybox_reboot(const char *requestor, const char *reason);
+void bcmUtl_loggedBusybox_reboot(const char *requestor, RebootReasonType reason);
+
+#define REBOOT_REASON_MAX_LENGTH 256
+/** Get the reason of the board reboot last time.
+ *
+ * @param buf (IN) buffer to hold the reboot reason.
+ * @param bufLen (IN) Length of the buffer.
+          The length of reboot reason string will be less than REBOOT_REASON_MAX_LENGTH.
+          If the buffer is not large enough, only bufLen chars are returned.
+ *
+ * @ret BcmRet enum.
+ */
+BcmRet bcmUtl_getLastRebootReason(char *buf, UINT32 bufLen);
+
 
 #if defined __cplusplus
 };

@@ -1,7 +1,7 @@
 #
 # Router dhd_monitor Makefile
 #
-# Copyright (C) 2023, Broadcom. All Rights Reserved.
+# Copyright (C) 2024, Broadcom. All Rights Reserved.
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -28,6 +28,9 @@ ifeq ($(strip $(BCA_HNDROUTER)),)
 CFLAGS += -I$(TOP)/busybox-1.x
 endif
 
+CFLAGS += -DDM_NO_NVRAM_RESTART
+CFLAGS += -DCHECK_DUMPS_WHEN_INIT
+
 #CFLAGS += -DCRASH_HISTORY_FILE_LOGGING
 
 # LDFLAGS += -L$(TOP)/nvram -L$(PLATFORMDIR)/install/nvram/usr/lib -lnvram
@@ -36,6 +39,10 @@ LDFLAGS += -L$(TOP_PLATFORM)/wlcsm -lwlcsm
 LDFLAGS += -L$(TOP_PLATFORM)/nvram -L$(PLATFORMDIR)/install/nvram/usr/lib -lnvram -lpthread
 LDFLAGS += -L$(TOP)/shared -L$(PLATFORMDIR)/install/shared/usr/lib -lshared
 LDFLAGS += $(EXTRA_LDFLAGS)
+
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000))
+LDFLAGS += -L$(TOP)/libhostapi -lhostapi
+endif
 
 OBJS := dhd_monitor.o
 

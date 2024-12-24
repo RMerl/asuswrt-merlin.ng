@@ -1,0 +1,710 @@
+#!/bin/sh
+
+#
+# Automatically generated file; DO NOT EDIT.
+# Commengine userdefined partition configuration script
+#
+
+# Constants
+PARTITION_WIPED=2
+PARTITION_ERR=1
+PARTITION_OK=0
+VERBOSE=0
+TEMP_FILE="/var/partitions.tmp"
+# Taken from http://www.linux-mtd.infradead.org/doc/ubi.html#L_overhead
+UBI_OVHD=4 
+
+# We refer to image critical partitions as being essential i.e without these
+# partitions the image will not boot. All essential partitions are created
+# during initial programming and must exist at all times. The final essential 
+# partition in managed flash devices is the 'data' partition. All partitions
+# after the LAST_ESSENTIAL_PART_NAME are considered as user created partitions.
+# This variable is only considerd when dealing with Managed flash devices
+LAST_ESSENTIAL_PART_NAME="data"
+
+# The __BRCM_USER_PARTITION_CFG__ placeholder will be replaced by a 'partitions' 
+# variable. This variable  will be automatically filled during build time with
+# the parsed/formatted contents of the user specified partition config file. 
+# DO NOT MANUALLY enter partition information.
+__BRCM_USER_PARTITION_CFG__=
+
+part_name=
+part_policy=
+part_sz_cfg_type=
+part_sz=
+part_raw_flashdev_name=
+part_mng_flashdev_name=
+part_fs_rawflash=
+part_fs_mngflash=
+part_mnt_pnt=
+part_mnt_opt=
+return_val=
+reboot_req=
+wiped_devs=
+mounted_mntpnts=
+mand_part_err=
+
+dump_partition_config() {
+	echo ""
+	echo "Partition Config"
+	echo "----------------"
+	echo "part_name              :$part_name"
+	echo "part_policy            :$part_policy"
+	echo "part_sz_cfg_type       :$part_sz_cfg_type"
+	echo "part_sz                :$part_sz"
+	echo "part_raw_flashdev_name :$part_raw_flashdev_name"
+	echo "part_mng_flashdev_name :$part_mng_flashdev_name"
+	echo "part_fs_rawflash       :$part_fs_rawflash"
+	echo "part_fs_mngflash       :$part_fs_mngflash"
+	echo "part_mnt_pnt           :$part_mnt_pnt"
+	echo "part_mnt_opt           :$part_mnt_opt"
+	echo ""
+}
+
+clear_partition_parms() {
+	part_name=
+	part_policy=
+	part_sz_cfg_type=
+	part_sz=
+	part_raw_flashdev_name=
+	part_mng_flashdev_name=
+	part_fs_rawflash=
+	part_fs_mngflash=
+	part_mnt_pnt=
+	part_mnt_opt=
+	return_val=PARTITION_ERR
+
+}
+
+check_if_dev_wiped() {
+	dev_name=$1	
+	for a in $wiped_devs; do
+        	if [ "$a" == "$dev_name" ]; then
+                	return $PARTITION_WIPED
+        	else
+                	echo "NOMATCH $a"
+    		fi
+	done	
+	return $PARTITION_OK
+}
+
+unmount_mounted() {
+        echo "umount $mounted_mntpnts"
+	if [ -n "$mounted_mntpnts" ]
+        then
+    		umount $mounted_mntpnts
+    		mounted_mntpnts=
+        fi
+}
+
+############################################
+# Process raw flash (mtd based) partitions #
+############################################
+process_raw_partition() {
+	if [ "$VERBOSE" -eq "1" ]; then echo "Processing raw partition: $part_name"; fi
+
+	# Check if partition is already mounted
+	mount_status=`mount  | grep ubi:$part_name`
+	if [ -n "$mount_status" ]
+	then
+		echo "process_raw_partition: Warning! partition: $part_name already mounted! Check partition config files!"
+		return $PARTITION_OK
+	fi
+
+	# Get mtd device name
+	mtd_dev_name=`grep -l $part_raw_flashdev_name /sys/class/mtd/mtd*/name`
+	if [ -z "$mtd_dev_name" ]
+	then
+		echo "process_raw_partition: Error! Raw flash device $part_raw_flashdev_name not found!"
+		return $PARTITION_ERR
+	else
+		mtd_dev_name=`grep DEVNAME ${mtd_dev_name%name}uevent`
+		mtd_dev_name=${mtd_dev_name#DEVNAME=}
+	fi
+
+	# Get mtd device number
+	mtd_dev_num=${mtd_dev_name#mtd}
+
+	# Get ubi parameters
+	ubisys=`grep -l "^$mtd_dev_num$" /sys/class/ubi/ubi*/mtd_num`
+	if [ -z $ubisys ]; then
+		ubiattach -p /dev/$mtd_dev_name
+		ubisys=`grep -l "^$mtd_dev_num$" /sys/class/ubi/ubi*/mtd_num`
+	fi         
+	ubisys=${ubisys%/mtd_num}
+	ubidev=${ubisys##*/}
+	vc=`cat $ubisys/volumes_count`
+
+	# If no volumes found then run ubiformat and update ubi parameters
+	if [ "$vc" -eq 0 ]; then
+		echo "process_raw_partition: no volumes detected"
+		ubidetach -p /dev/$mtd_dev_name  
+		ubiformat -y /dev/$mtd_dev_name  
+		ubiattach -p /dev/$mtd_dev_name  
+		ubisys=`grep -l "^$mtd_dev_num$" /sys/class/ubi/ubi*/mtd_num`
+		ubisys=${ubisys%/mtd_num}
+		ubidev=${ubisys##*/}
+		vol_name=
+	else
+		vol_name=`grep -l "^$part_name$" /sys/class/ubi/*_*/name`
+		if [ -z "$vol_name" ]; then
+			vol_name=
+		else
+			vol_name=$part_name
+		fi
+	fi
+
+	# Dump current partitions to a tempfile
+	rm -f $TEMP_FILE
+	ubinfo /dev/$ubidev > $TEMP_FILE
+	if [ ! -e "$TEMP_FILE" ]; then
+		echo "create_raw_partition: Error! Cannot dump ubinfo to $TEMP_FILE!"
+		return $PARTITION_ERR
+	fi
+
+	# Get maximum and available sizes of ubi device in MB
+	rsvdblk=`grep -i reserved $TEMP_FILE`
+	totalblk=`grep -i total $TEMP_FILE`
+	badblk=`grep -i bad $TEMP_FILE`
+	blksize=`grep -i "eraseblock size" $TEMP_FILE`
+	avail_size=`grep -i available $TEMP_FILE`
+	
+	rsvdblk=${rsvdblk##* }
+	totalblk=${totalblk%% (*}
+	totalblk=${totalblk##* }
+	badblk=${badblk##* }
+	blksize=${blksize%% bytes*}
+	blksize=${blksize##* }
+	
+	# Maximum blocks possible for volumes
+	maxblk=`expr $totalblk - $badblk - $rsvdblk - $UBI_OVHD`
+	max_size=`expr $maxblk \* $blksize / 1048576`
+	if [ "$VERBOSE" -eq "1" ]; then 
+		echo "[Total:$totalblk][Rsvd:$rsvdblk][Bad:$badblk][Blksz:$blksize][Max:$maxblk]"
+	fi
+
+	avail_size=${avail_size##*(}
+	avail_size=${avail_size%% bytes*}
+	avail_size=`expr $avail_size / 1048576`
+
+	echo "$mtd_dev_name<-->$ubidev: maxsize:${max_size}M freesize:${avail_size}M numvol:$vc"
+
+	# Create ubi volume if it doesnt exist
+	if [ -z "$vol_name" ]; then
+		if [ "$part_sz_cfg_type" == "fill_free" ]; then
+			# volume size is a % of free space
+			vol_size=`expr $avail_size \* $part_sz / 100`
+		elif [ "$part_sz_cfg_type" == "fill_dev" ]; then
+			# volume size is a % of total space 
+			vol_size=`expr $max_size \* $part_sz / 100`
+		else
+			vol_size=$part_sz
+		fi
+
+		# Check if size is more than available or if fill % results in zero size
+		if [ $vol_size -gt $avail_size ] || [ $vol_size -eq "0" ]; then
+			# If mandatory and requested size is less than Total size
+			if [ "$part_policy" == "mandatory" ] && [ "$max_size" -ge "$vol_size" ]; then
+				# Check if device was wiped once before for a mandatory partition
+				check_if_dev_wiped $part_raw_flashdev_name
+				return_val=$?
+
+				if [ "$return_val" -eq $PARTITION_OK ]; then
+                                        # Unmount mounted partitions
+                                        unmount_mounted
+
+					# Force wipe to make room for mandatory partitions
+					echo "process_raw_partition: force ubiformat"
+					ubidetach -p /dev/$mtd_dev_name 
+					ubiformat -y /dev/$mtd_dev_name 
+
+					# Add flash device to list of wiped devices
+					wiped_devs="$wiped_devs $part_raw_flashdev_name"
+					return $PARTITION_WIPED
+				else
+                                   	# Multiple mandatory partitions cant seem to co-exist. This is a failiure condition
+					mand_part_err=1
+					echo "process_raw_partition: Invalid Configuration for mandatory partition:$part_name! Cannot coexist with other mandatory partitions!"
+					return $PARTITION_ERR
+				fi
+			else
+				echo "process_raw_partition: Not enough space to create partition:$part_name size:$vol_size sztype:$part_sz_cfg_type!"
+				return $PARTITION_ERR
+			fi
+		fi
+
+		# Handle the 100% fill cases
+		if [ "${part_sz_cfg_type%_*}" == "fill" ] && [ "$part_sz" -eq "100" ]; then
+			vol_size="-m"
+		else
+			vol_size="-s ${vol_size}MiB"
+		fi
+
+		# Create ubi volume
+		if [ "$VERBOSE" -eq "1" ]; then 
+			echo "ubimkvol /dev/$ubidev -N $part_name $vol_size"
+		fi
+		ubimkvol /dev/$ubidev -N $part_name $vol_size
+		if [ ! "$?" -eq "$PARTITION_OK" ]; then
+			echo "process_raw_partition: Cannot create UBI volume for partition:$part_name!"
+			return $PARTITION_ERR
+		fi
+		vol_name=$part_name
+	fi
+
+	# TODO: Format filesystem if required
+
+	# Mount ubi volume
+	if [ -n "$part_mnt_pnt" ]; then
+		mkdir -p $part_mnt_pnt
+		if [ "$VERBOSE" -eq "1" ]; then 
+			echo "mount -t $part_fs_rawflash -o$part_mnt_opt $ubidev:$part_name $part_mnt_pnt"
+		fi
+		mount -t $part_fs_rawflash -o$part_mnt_opt $ubidev:$part_name $part_mnt_pnt
+		if [ ! "$?" -eq "$PARTITION_OK" ]; then
+			echo "process_raw_partition: Mounting of partition:$part_name failed!"
+			return $PARTITION_ERR
+		fi
+
+		# Add to our unmount command
+		mounted_mntpnts="$mounted_mntpnts $part_mnt_pnt"
+	fi
+
+	return $PARTITION_OK
+}
+
+##################################
+# Create a new managed partition #
+##################################
+create_mng_partition() {
+	if [ "$VERBOSE" -eq "1" ]; then 
+		echo "create_mng_partition: partition:$part_name sztype:$part_sz_cfg_type size:$part_sz"
+	fi
+
+	# Main block device name
+	blk_dev_name="/dev/$part_mng_flashdev_name"
+
+	# Dump current partitions to a tempfile
+	rm -f $TEMP_FILE
+	sgdisk -p $blk_dev_name > $TEMP_FILE
+	if [ ! -e "$TEMP_FILE" ]; then
+		echo "create_mng_partition: Error! Cannot dump partition config to $TEMP_FILE!"
+		return $PARTITION_ERR
+	fi
+
+	# Find out if we have an 'unalloc' partition, if we do then delete it
+	unalloc_part_num=`cat $TEMP_FILE | grep unalloc`
+	if [ -n "$unalloc_part_num" ]; then
+		# extract the partition number
+		unalloc_part_num=`expr "$unalloc_part_num" : '\( *[0-9]*\)'`
+		if [ "$VERBOSE" -eq "1" ]; then 
+			echo "DELETE: sgdisk -d $unalloc_part_num $blk_dev_name" 
+		fi
+		sgdisk -d $unalloc_part_num $blk_dev_name
+		reboot_req=1
+
+		# Update temp file
+		rm -f $TEMP_FILE
+		sgdisk -p $blk_dev_name > $TEMP_FILE
+		if [ ! -e "$TEMP_FILE" ]; then
+			echo "create_mng_partition: Error! Cannot dump partition config to $TEMP_FILE!"
+			return $PARTITION_ERR
+		fi
+	fi
+
+	# Get the the partition number and the last sector of the last essential partition
+	# AND Get the the partition number and the last sector of the last partition
+	while read line; do 
+		part_ent_endsec=`expr "$line" : '\([0-9]* *[0-9]* *[0-9]*\)'`
+		part_ent_endsec=${part_ent_endsec##* }
+		part_ent_num=${line%% *}
+		part_ent_name=${line##* }
+		if [ "$part_ent_name" == "$LAST_ESSENTIAL_PART_NAME" ]; then 
+			last_esspart_end_sector=$part_ent_endsec
+			last_esspart_num=$part_ent_num
+		fi
+		last_part_end_sector=$part_ent_endsec
+	done < "$TEMP_FILE"
+
+	if [ "$VERBOSE" -eq "1" ]; then 
+		echo "last_mand: [$last_esspart_num][$last_esspart_end_sector]"
+		echo "last     : [$part_ent_num][$last_part_end_sector]"
+	fi
+
+	# Check if we found our last essential partition, if not then this is an error
+	if [ -z $last_esspart_num ] || [ -z $last_esspart_end_sector ]; then
+		echo "create_mng_partition: Error! Cannot find $LAST_ESSENTIAL_PART_NAME partition"
+		return $PARTITION_ERR
+	fi
+
+	# Get the sector size and the size of the entire device in sectors
+	sector_size=`blockdev --getss $blk_dev_name`
+	dev_size_sector=`blockdev --getsz $blk_dev_name`
+
+	# Get last usable sector in the device
+	last_usable_sector=`cat $TEMP_FILE | grep "last usable"`
+	last_usable_sector=${last_usable_sector##* }
+
+	# Note: The maximum available space for user partitions is basically 
+	# whatever is left after the last essential partition. Thus all partitions
+	# after the last essential partition are treated as user created partitions
+	# Calculate Maximum sectors that can be used by user partitions
+	max_size_sector=`expr $last_usable_sector - $last_esspart_end_sector`
+
+	# Note: The current  available space for user partitions is basically 
+	# whatever is left after the last partition. 
+	# Calculate current available free sectors for user partitions
+	avail_size_sector=`expr $last_usable_sector - $last_part_end_sector`
+
+	# Convert to Mbytes to avoid 32-bit limitation of bash
+	sectors_per_mb=`expr 1048576 / $sector_size`
+	dev_size=`expr $dev_size_sector / $sectors_per_mb`
+	max_size=`expr $max_size_sector / $sectors_per_mb`
+	avail_size=`expr $avail_size_sector / $sectors_per_mb`
+	echo "$blk_dev_name: devsize:${dev_size}M maxsize:${max_size}M freesize:${avail_size}M"
+
+	# If physical partition has zero size, we error out
+	if [ "$max_size" -eq "0" ]; then
+		echo "create_mng_partition: Error! No space available on device for any userpartitions"
+		return $PARTITION_ERR
+	fi
+
+	# Calculate required size
+	if [ "$part_sz_cfg_type" == "fill_free" ]; then
+		# volume size is a % of free space
+		req_size=`expr $avail_size \* $part_sz / 100`
+	elif [ "$part_sz_cfg_type" == "fill_dev" ]; then
+		# volume size is a % of total space 
+		req_size=`expr $max_size \* $part_sz / 100`
+	else
+		req_size=$part_sz
+	fi
+
+	# If Partition doesnt exist and reqeusted size is greater than whats
+	# available. Delete existing partitions based on policy
+	if [ $req_size -gt $avail_size ] || [ $req_size -eq "0" ]; then
+		# If mandatory and requested size is less than maximum size
+		if [ "$part_policy" == "mandatory" ] && [ "$max_size" -ge "$req_size" ]; then
+			# Check if device was wiped once before for a mandatory partition
+			check_if_dev_wiped $part_raw_flashdev_name
+			return_val=$?
+
+			if [ "$return_val" -eq $PARTITION_OK ]; then
+                                # Unmount mounted partitions
+                                unmount_mounted                           
+
+				# Force delete other user mmc partitions . Note that all partitions 
+				# after the last essential partition are considered as deleteable
+				while read line; do 
+					line=`expr "$line" : '\([0-9]* \)'`
+					fpart_num=${line%% *}
+					if [ ! -z $fpart_num ]; then
+						if [ $fpart_num -gt $last_esspart_num ]; then
+							if [ "$VERBOSE" -eq "1" ]; then 
+								echo "DELETE: sgdisk -d=$fpart_num $blk_dev_name"
+							fi
+							sgdisk -d=$fpart_num $blk_dev_name
+							reboot_req=1
+						fi
+					fi
+				done < "$TEMP_FILE"
+
+				# Add flash device to list of wiped devices
+				wiped_devs="$wiped_devs $part_mng_flashdev_name"
+				return $PARTITION_WIPED
+			else
+				# Multiple mandatory partitions cant seem to co-exist. This is a failiure condition
+				mand_part_err=1
+				echo "process_raw_partition: Invalid Configuration for mandatory partition:$part_name! Cannot coexist with other mandatory partitions!"
+				return $PARTITION_ERR
+			fi
+		else
+			# Not enough space for the partition
+			echo "create_mng_partition: Not enough space to create partition:$part_name sztype:$part_sz_cfg_type size:$part_sz!"
+			return $PARTITION_ERR
+		fi
+	fi
+
+	# Handle the 100% fill cases
+	if [ "${part_sz_cfg_type%_*}" == "fill" ] && [ "$part_sz" -eq "100" ]; then
+		req_size="0"
+	else
+		req_size="+${req_size}M"
+	fi
+
+	# Create partition
+	if [ "$VERBOSE" -eq "1" ]; then 
+		echo "CREATE: sgdisk -n 0:0:${req_size} -c 0:$part_name $blk_dev_name"
+	fi
+	sgdisk -n 0:0:${req_size} -c 0:$part_name $blk_dev_name
+
+	# Schedule a reboot
+	reboot_req=1
+
+	return $PARTITION_OK
+}
+
+####################################
+# Process managed flash partitions #
+####################################
+process_mng_partition() {
+	if [ "$VERBOSE" -eq "1" ]; then echo "Processing managed partition: $part_name"; fi
+
+	# Check if partition is already mounted
+	mount_status=`mount  | /dev/$part_name`
+	if [ -n "$mount_status" ]
+	then
+		echo "process_mng_partition: Warning! partition: $part_name already mounted! Check partition config files!"
+		return $PARTITION_OK
+	fi
+
+	# Get main block device
+	blk_dev_name="/dev/$part_mng_flashdev_name"
+	if [ ! -e "$blk_dev_name" ]; then
+		echo "process_mng_partition: Error! block device $blk_dev_name not found!"
+		return $PARTITION_ERR
+	fi
+
+	# Get the block device for the partition (if it exists)
+	part_blk_dev=`grep $part_name /sys/block/$part_mng_flashdev_name/${part_mng_flashdev_name}p*/*`
+	part_blk_dev=${part_blk_dev%/*}
+	part_blk_dev=${part_blk_dev##*/}
+	
+	# Create partition if not detected
+	if [ -z "$part_blk_dev" ]; then
+		create_mng_partition
+		if [ ! "$?" -eq "$PARTITION_OK" ]; then
+			return $PARTITION_ERR
+		fi
+	else
+		if [ "$VERBOSE" -eq "1" ]; then echo "FOUND: $part_name -->	/dev/$part_name"; fi
+
+		# Mount partition
+		if [ -n "$part_mnt_pnt" ]; then
+			mkdir -p $part_mnt_pnt
+			mount -t $part_fs_mngflash -o$part_mnt_opt /dev/$part_name $part_mnt_pnt > /dev/null 2>&1
+
+			# If mount fails, format and try again
+			if [ ! "$?" -eq "$PARTITION_OK" ]; then
+				echo "Formatting $part_name as $part_fs_mngflash"
+				if [ "$part_fs_mngflash" == "ext4" ]; then
+					mke2fs -I 256 -t ext4 -F /dev/$part_name
+				else
+					mkfs.vfat /dev/$part_name
+				fi
+
+				umount $part_mnt_pnt
+				# Try mounting again
+				mount -t $part_fs_mngflash -o$part_mnt_opt /dev/$part_name $part_mnt_pnt
+				if [ ! "$?" -eq "$PARTITION_OK" ]; then
+					echo "process_mng_partition: Mounting of partition:$part_name failed!"
+					return $PARTITION_ERR
+				fi
+
+				# Add to our unmount command
+				mounted_mntpnts="$mounted_mntpnts $part_mnt_pnt"
+			fi
+		fi		
+	fi
+	return $PARTITION_OK
+}
+
+################################################################################
+# Make sure that there is only one mandatory partition per flash device        #
+# TODO: Handle multiple partitions by taking into account the space needed for #
+# all of them and see if they can coexist                                      #
+################################################################################
+check_mandatory_partitions() {
+	mandatory_parts=
+	for partition_cfg in $partitions
+	do
+		# Get list of partition options, substitute '|' with ' '
+		policy=${partition_cfg##*POLICY=}
+		policy=${policy%%|*}
+		device=${partition_cfg##*RAW_DEV=}
+		device=${device%%|*}
+
+		if [ "$policy" == "mandatory" ]; then
+			mandatory_parts="$mandatory_parts ${policy}${device}"
+		fi
+	done
+
+	for partition in $mandatory_parts
+	do
+		num_mandatory_parts=0
+		for other_partition in $mandatory_parts
+		do
+			if [ "$partition" == "$other_partition" ]; then
+				num_mandatory_parts=`expr $num_mandatory_parts + 1`
+				if [ "$num_mandatory_parts" -gt "1" ]; then
+					return $PARTITION_ERR
+				fi
+			fi
+		done
+	done
+	return $PARTITION_OK
+}
+
+##################################
+# Parse partition config entries #
+##################################
+process_partitions() {
+	part_policy_type=$1
+	for partition_cfg in $partitions
+	do
+		# Initialize parameters 
+		clear_partition_parms
+	
+		# Get list of partition options
+		opt_list=${partition_cfg//|/ }
+		
+		# Parse partition options
+		for partition_opt in $opt_list
+		do
+			parameter=${partition_opt%%=*}     # Extract name.
+			value=${partition_opt##*=}         # Extract value.
+			case $parameter in
+			PARTITION_NAME)
+				part_name=$value
+				;;
+			PARTITION_CREATE_POLICY)
+				part_policy=$value
+				;;
+			PARTITION_SIZE_CFG_TYPE)
+				part_sz_cfg_type=$value
+				;;
+			PARTITION_SIZE)
+				part_sz=$value
+				;;
+			PARTITION_RAW_DEV)
+				part_raw_flashdev_name=$value
+				;;
+			PARTITION_MNG_DEV)
+				part_mng_flashdev_name=$value
+				;;
+			PARTITION_FS_RAW)
+				part_fs_rawflash=$value
+				;;
+			PARTITION_FS_MNG)
+				part_fs_mngflash=$value
+				;;
+			PARTITION_MNT_POINT)
+				part_mnt_pnt=$value
+				;;
+			PARTITION_MNT_OPT)
+				part_mnt_opt=$value
+				;;
+			esac
+		done
+
+		# Process partitions which match the current partition policy
+		if [ -n "$part_policy" ] ; then 
+			if [ "$part_policy" != "$part_policy_type" ]; then
+				continue
+			fi
+		else
+			echo "Invalid Partition configuration! Missing policy, partition: $part_name"
+			dump_partition_config
+			continue
+		fi
+
+		echo "### Processing partition: $part_name ###"
+		if [ "$VERBOSE" -eq "1" ]; then dump_partition_config; fi
+	
+		# Check for non-existent variables
+		if [ -z "$part_name" ] || [ -z "$part_sz_cfg_type" ] || [ -z "$part_sz" ] ; then
+			echo "Invalid Partition configuration! Not Processing partition: $part_name"
+			dump_partition_config
+		else
+			if [ "$part_sz" -eq "0" ]; then
+				echo "Invalid Partition size of: $part_sz!"
+				dump_partition_config
+				continue
+			fi
+	
+			if [ "${part_sz_cfg_type%_*}" == "fill" ] && [ "$part_sz" -gt "100" ]; then
+				echo "Invalid Fill % size of: $part_sz!"
+				dump_partition_config
+				continue
+			fi
+	
+			# Determine if we are on a managed vs raw flash and call appropriate function
+			if TEMP=`/etc/get_rootfs_dev.sh | grep mmcblk`; then
+				if [ -z "$part_mng_flashdev_name" ] || [ -z "$part_fs_mngflash" ]; then 
+					echo "Invalid Managed Partition configuration! Not Processing partition: $part_name"
+					dump_partition_config
+					continue
+				else
+					process_mng_partition
+					return_val=$?
+				fi
+			else
+				# For new flash layouts, hardcode raw flashdev to 'image'
+				if TEMP=`grep "\bloader" /proc/mtd` && MTD=`grep image /proc/mtd`; then
+					part_raw_flashdev_name="image"
+					echo "Overriding specified raw flash device name!"
+					echo "Using raw flash device 'image' for partition: $part_name"
+				fi
+
+				if [ -z "$part_raw_flashdev_name" ] || [ -z "$part_fs_rawflash" ]; then 
+					echo "Invalid Raw Partition configuration! Not Processing partition: $part_name"
+					dump_partition_config
+					continue
+				else
+					process_raw_partition
+					return_val=$?
+				fi
+			fi
+	
+			if [ "$return_val" -eq $PARTITION_OK ]; then
+				if [ -z $reboot_req ]; then 
+					echo "Created Partition: $part_name @ Mount Point: $part_mnt_pnt"
+				else
+					echo "Created Partition: $part_name "
+				fi
+			elif [ "$return_val" -eq $PARTITION_WIPED ]; then
+				return $PARTITION_WIPED
+			else
+				# Partition Creation Failed
+				echo "Error Creating Partition! partition: $part_name"
+			fi
+		fi
+	done
+}
+
+################################################################
+#                    Main processing logic                     #
+################################################################
+echo ">>>>> User Partition Config Processing Start <<<<<"
+if [ "$VERBOSE" -eq 1 ]; then echo "";	echo $partitions; echo ""; fi
+
+# Process all mandatory partitions first
+process_partitions "mandatory"
+return_val=$?
+
+# If a partition wipe had to be done, redo all mandatory partitions
+if [ "$return_val" -eq $PARTITION_WIPED ]; then
+	process_partitions "mandatory"
+fi	
+
+# Process optional partitions
+process_partitions "optional"
+
+# Cleanup all artifacts
+if [ ! -e "$TEMP_FILE" ]; then
+	rm -f $TEMP_FILE
+fi
+
+# Check if we had any mandatory partition errors
+if [ ! -z $mand_part_err ]; then
+	echo ">>>>> Error: Failed to create multiple mandatory partitions! <<<<<"
+else
+	# Trigger a reboot if required
+	if [ ! -z $reboot_req ]; then 
+		echo ">>>>> Partitions modified --> rebooting Linux <<<<<"
+		reboot
+	fi
+fi
+
+echo ">>>>> User Partition Config Processing Complete <<<<<"
+

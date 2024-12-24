@@ -316,7 +316,7 @@ function selectSetting() {
 																	<input type="button" class="btn_subusage button_gen" onclick="selectSetting();" value="<#CTL_upload#>"/>
 																</td>
 																<td style="display:none;">
-																	<input type="file" name="file" class="input" style="color:#FFCC00;"/>
+																	<input type="file" name="file" class="input"  accept=".CFG" style="color:#FFCC00;"/>
 																</td>
 															</tr>
 														</table>
@@ -350,7 +350,7 @@ function selectSetting() {
 																	<input type="button" class="button_gen" onclick="uploadJFFS();" value="<#CTL_upload#>"/>
 																</td>
 																<td style="border:0px">
-																	<input id="jffsfile" type="file" name="file2" class="input" style="color:#FFCC00;"/>
+																	<input id="jffsfile" type="file" name="file2" class="input"  accept=".tar" style="color:#FFCC00;"/>
 																	<span id="jffsstatus" style="display:none;"><img id="LoadingIcon" style="margin-left:5px;margin-right:5px;" src="/images/InternetScan.gif">Uploading, please wait...</span>
 																</td>
 															</tr>

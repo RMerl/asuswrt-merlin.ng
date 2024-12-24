@@ -361,14 +361,6 @@ define(function(){
 			menus: function(){
 				var retArray = [];
 
-				if(!nfsd_support){
-					retArray.push("Advanced_AiDisk_NFS.asp");
-				}
-
-				if(!dnsfilter_support){
-					retArray.push("DNSDirector.asp");
-				}
-
 				if(!multissid_support){
 					retArray.push("menu_GuestNetwork");
 				}
@@ -536,6 +528,14 @@ define(function(){
 				var retArray = [];
 
 				/* By RC Support */
+				if(!nfsd_support){
+					retArray.push("Advanced_AiDisk_NFS.asp");
+				}
+
+				if(!dnsfilter_support){
+					retArray.push("DNSDirector.asp");
+				}
+
 				if(!isSupport("dpi_mals")){
 					retArray.push("AiProtection_MaliciousSitesBlocking.asp");
 				}

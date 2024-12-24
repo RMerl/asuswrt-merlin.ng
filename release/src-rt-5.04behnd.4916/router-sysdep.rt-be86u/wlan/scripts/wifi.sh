@@ -114,7 +114,7 @@ wl_suspend()
   killall -q debug_monitor
   killall -q acsd acsd2
   nvram unset acs_ifnames
-  /etc/init.d/bcm-wlan-drivers.sh stop
+  /rom/etc/init.d/bcm-wlan-drivers.sh stop
   for m in ${mod//-/_}; do rmmod -w $m; done
 }
 
@@ -123,8 +123,8 @@ wl_suspend()
 # - restart wlan configuration manager
 wl_resume()
 {
-  grep -e${mod// /.ko -e}.ko /etc/init.d/bcm-base-drivers.sh | sh
-  /etc/init.d/bcm-wlan-drivers.sh start
+  grep -e${mod// /.ko -e}.ko /rom/etc/init.d/bcm-base-drivers.sh | sh
+  /rom/etc/init.d/bcm-wlan-drivers.sh start
   nvram restart
 }
 
@@ -133,7 +133,7 @@ wl_resume()
 #  $1: WiFi interface (wlX)
 #
 #  return valid MLO Unit (0/1/2) or -1 (invalid unit)
-function wl_mlo_unit()
+wl_mlo_unit()
 {
   local ifname=$1
   local wlunit
@@ -152,7 +152,7 @@ function wl_mlo_unit()
 # Get MAP Unit
 #
 #  return valid MAP Unit (0/1/2) or -1 (invalid unit)
-function wl_map_unit()
+wl_map_unit()
 {
   local wlunit
   local mapunit=-1
@@ -170,7 +170,7 @@ function wl_map_unit()
 # Init mlo globals
 #
 #
-function wl_mlo_init()
+wl_mlo_init()
 {
   local wlunit
   local mlounit
@@ -199,7 +199,7 @@ function wl_mlo_init()
 #
 #  $1: WiFi interface (wlX)
 #
-function wledpdctl_mlo_down()
+wledpdctl_mlo_down()
 {
   local ifname=$1
 
@@ -213,7 +213,7 @@ function wledpdctl_mlo_down()
 #
 #  $1: WiFi interface (wlX)
 #
-function wledpdctl_mlo_up()
+wledpdctl_mlo_up()
 {
   local ifname=$1
   local wlunit
@@ -275,7 +275,7 @@ function wledpdctl_mlo_up()
 #
 #  $1: WiFi interface (wlX)
 #
-function wledpdctl_wlaffinity_down()
+wledpdctl_wlaffinity_down()
 {
   # For future usage
   # wlaffinity save power down
@@ -286,7 +286,7 @@ function wledpdctl_wlaffinity_down()
 #
 #  $1: WiFi interface (wlX)
 #
-function wledpdctl_wlaffinity_up()
+wledpdctl_wlaffinity_up()
 {
   # For future usage
   # wlaffinity apply power up
@@ -645,7 +645,7 @@ wledpdctl_unbind()
           # Down WiFi services for this interface
           if [ $wledpdappupd != 0 ]; then
             if [ -z $IS_RDK_BUILD ]; then
-              ACTION=pwrdn /etc/init.d/mdev_wl.sh $ifname;
+              ACTION=pwrdn /rom/etc/init.d/mdev_wl.sh $ifname;
             else
               rdkb_radio_control $ifname "down";
             fi
@@ -714,7 +714,7 @@ wledpdctl_bind()
           if [ $wledpdappupd != 0 ]; then
             rm -f /tmp/edpd_${ifname}_mloready
             if [ -z $IS_RDK_BUILD ]; then
-              ACTION=pwrup /etc/init.d/mdev_wl.sh $ifname;
+              ACTION=pwrup /rom/etc/init.d/mdev_wl.sh $ifname;
             else
               rdkb_radio_control $ifname "up";
             fi
@@ -1158,7 +1158,7 @@ wldpdctl_mode()
     echo "    Restarting PCIe with correct settings     "
     echo "=============================================="
     rmmod -w bcm_pcie_hcd
-    grep -e bcm_pcie_hcd /etc/init.d/bcm-base-drivers.sh | sh
+    grep -e bcm_pcie_hcd /rom/etc/init.d/bcm-base-drivers.sh | sh
   fi
 
   if [ $mode = $DPD_MODE_EDPD ] && [ $wl_mlo_mapunit != -1 ]; then

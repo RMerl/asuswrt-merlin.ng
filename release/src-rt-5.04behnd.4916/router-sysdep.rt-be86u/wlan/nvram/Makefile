@@ -28,6 +28,10 @@ ifeq ($(RTCONFIG_AMAS),y)
 LIBS += -L$(TOP)/json-c/.libs -ljson-c
 endif
 
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000))
+LIBS += -L$(TOP)/libhostapi -lhostapi
+endif
+
 ifneq ($(strip $(BUILD_RDKWIFI)),)
 rdkwifi_lib:
 	$(MAKE) -C $(BUILD_DIR)/userspace/private/libs/wlcsm BUILD_RDKWIFI_LIB=1

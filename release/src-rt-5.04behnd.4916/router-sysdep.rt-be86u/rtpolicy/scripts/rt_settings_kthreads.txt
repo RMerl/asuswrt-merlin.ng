@@ -362,3 +362,19 @@ BEGIN
   schedPriority= BCM_RTPRIO_DATA
   cpuGroupName = rt/data
 END
+
+BEGIN
+  name         = xbow_gdx_stq
+  flags        = RT_SET_SCHED
+  schedPolicy  = SCHED_RR
+  schedPriority= BCM_RTPRIO_DATA
+  cpuGroupName = rt/data
+END
+
+BEGIN
+  name         = xbow_gdx_fwq
+  flags        = RT_SET_SCHED
+  schedPolicy  = SCHED_RR
+  schedPriority= BCM_RTPRIO_DATA
+  cpuGroupName = rt/data
+END

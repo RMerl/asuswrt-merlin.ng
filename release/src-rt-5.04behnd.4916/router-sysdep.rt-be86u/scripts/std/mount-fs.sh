@@ -41,8 +41,10 @@ case "$1" in
 
 		# Launch mdev daemon to create dynamic device nodes
 		echo ">>>>> Starting mdev daemon <<<<<"
-		echo "" > /proc/sys/kernel/hotplug
-		/sbin/mdev -d
+		# echo "" > /proc/sys/kernel/hotplug
+		# /sbin/mdev -d
+		echo /sbin/mdev > /proc/sys/kernel/hotplug
+		/sbin/mdev -s
 
 		# Create static device nodes
 		/rom/etc/make_static_devnodes.sh

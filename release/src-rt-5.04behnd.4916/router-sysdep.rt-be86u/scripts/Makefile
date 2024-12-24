@@ -38,6 +38,14 @@ RC3:= S25mount-fs K95mount-fs
 BIN:=
 INIT:= pwr/led.sh pwr/thermal.sh pwr/disk.sh cooked/mount-fs.sh cooked/mount-data.inc
 SYSTEMD_UNITS:=
+RC3_PUBLIC:=
+INIT_PUBLIC:=
+ifneq ($(strip $(BRCM_PARTITION_CFG_FILE)),)
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT-BE19000_AI))
+RC3_PUBLIC += S30defaults S29partitioncfg
+INIT_PUBLIC += init/defaults init/partitioncfg
+endif
+endif
 
 ifeq ($(filter-out 63138 63148 63158 4908 6858 63178 47622,${BRCM_CHIP}),)
 INIT += pwr/switch.sh
@@ -105,6 +113,7 @@ misc-clean:
 init-install: ${INIT}
 	mkdir -p ${INSTALL_DIR}$(DATA_MOUNT_INSTALL_PATH)
 	test -z "${INIT}" || install -p ${INIT} ${INSTALL_DIR}$(DATA_MOUNT_INSTALL_PATH)
+	test -z "${INIT_PUBLIC}" || install -p ${INIT_PUBLIC} ${INSTALL_DIR}$(DATA_MOUNT_INSTALL_PATH)
 
 init-clean:
 	@if [ -d $(INSTALL_DIR)/etc/init.d ]; then \
@@ -116,6 +125,29 @@ init-clean:
 rc3-install:
 	mkdir -p ${INSTALL_DIR}/etc/rc3.d
 	for f in ${RC3}; do ln -fs ../init.d/$${f:3}.sh ${INSTALL_DIR}/etc/rc3.d/$$f; done
+	for f in ${RC3_PUBLIC}; do \
+		case $${f:3} in \
+		partitioncfg) \
+			\rm -rf ${INSTALL_DIR}/etc/init.d/$${f:3}; \
+			filenames=${BRCM_PARTITION_CFG_FILE}; \
+			for i in $${filenames//,/ }; \
+			do \
+				echo "Looking for cfg file: $$i";\
+				if [ -e  ${PROFILE_DIR}/$${i} ]; then CFG_FILE=${PROFILE_DIR}/$${i}; \
+				elif [ -e  ${TARGETS_DIR}/arch/$${i} ]; then CFG_FILE=${TARGETS_DIR}/arch/$${i}; \
+				else echo "Error: Cant find partition config file: $${i}!"; exit 1; fi; \
+				if [ -z "$${CFG_FILE_NAMES}" ]; then CFG_FILE_NAMES="$${CFG_FILE}"; \
+				else CFG_FILE_NAMES="$${CFG_FILE_NAMES},$${CFG_FILE}"; fi; \
+			done; \
+			${HOSTTOOLS_DIR}/scripts/parse_partition_cfg.pl $${CFG_FILE_NAMES} init/$${f:3} ${INSTALL_DIR}/etc/init.d/$${f:3}; \
+			if [ ! -e ${INSTALL_DIR}/etc/init.d/$${f:3} ]; then exit 1; fi; \
+			;; \
+		*) \
+		cat init/$${f:3} > ${INSTALL_DIR}/etc/init.d/$${f:3} ; \
+		esac; \
+		chmod +x ${INSTALL_DIR}/etc/init.d/$${f:3} ;  ln -fs ../init.d/$${f:3} ${INSTALL_DIR}/etc/rc3.d/$$f; \
+	done
+
 rc3-clean:
 	@if [ -d $(INSTALL_DIR)/etc/rc3.d ]; then \
 		cd ${INSTALL_DIR}/etc/rc3.d; rm -f ${RC3}; \

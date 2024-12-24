@@ -21,7 +21,9 @@ Asuswrt-Merlin 3006.xxx Changelog
           the firmware downgrade, on both the router and any
           existing AiMesh nodes.
 
-  - UPDATED: Merged with GPL 3006.102_37346.
+  - UPDATED: Merged with GPL 3006.102_37346 (with the wifi firmware
+             from 37038 for the RT-BE96U and GT-BE98_PRO - was missing
+             from GPL)
   - UPDATED: dropbear to 2024.86.
   - FIXED: webui always redirecting to router hostname for RT-BE86U.
   - REMOVED: Report of Wireguard client public IP (didn't work

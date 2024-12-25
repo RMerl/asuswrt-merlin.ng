@@ -33,10 +33,12 @@
 
 #include <curl/curl.h>
 
-#ifdef WIN32
-#  define FILENO(fp) _fileno(fp)
-#else
-#  define FILENO(fp) fileno(fp)
+#ifdef _WIN32
+#undef stat
+#define stat _stat
+#undef fstat
+#define fstat _fstat
+#define fileno _fileno
 #endif
 
 #if LIBCURL_VERSION_NUM < 0x070c03
@@ -59,7 +61,7 @@ static int my_seek(void *userp, curl_off_t offset, int origin)
 {
   FILE *fp = (FILE *) userp;
 
-  if(-1 == fseek(fp, (long) offset, origin))
+  if(fseek(fp, (long) offset, origin) == -1)
     /* could not seek */
     return CURL_SEEKFUNC_CANTSEEK;
 
@@ -67,19 +69,17 @@ static int my_seek(void *userp, curl_off_t offset, int origin)
 }
 
 /* read callback function, fread() look alike */
-static size_t read_callback(char *ptr, size_t size, size_t nmemb, void *stream)
+static size_t read_cb(char *ptr, size_t size, size_t nmemb, void *stream)
 {
-  ssize_t retcode;
-  unsigned long nread;
+  size_t nread;
 
-  retcode = fread(ptr, size, nmemb, stream);
+  nread = fread(ptr, size, nmemb, stream);
 
-  if(retcode > 0) {
-    nread = (unsigned long)retcode;
-    fprintf(stderr, "*** We read %lu bytes from file\n", nread);
+  if(nread > 0) {
+    fprintf(stderr, "*** We read %lu bytes from file\n", (unsigned long)nread);
   }
 
-  return retcode;
+  return nread;
 }
 
 int main(int argc, char **argv)
@@ -100,16 +100,31 @@ int main(int argc, char **argv)
 
   /* get the file size of the local file */
   fp = fopen(file, "rb");
-  fstat(FILENO(fp), &file_info);
+  if(!fp)
+    return 2;
 
-  /* In windows, this will init the winsock stuff */
-  curl_global_init(CURL_GLOBAL_ALL);
+#ifdef UNDER_CE
+  /* !checksrc! disable BANNEDFUNC 1 */
+  if(stat(file, &file_info) != 0) {
+#else
+  if(fstat(fileno(fp), &file_info) != 0) {
+#endif
+    fclose(fp);
+    return 1; /* cannot continue */
+  }
+
+  /* In Windows, this inits the Winsock stuff */
+  res = curl_global_init(CURL_GLOBAL_ALL);
+  if(res) {
+    fclose(fp);
+    return (int)res;
+  }
 
   /* get a curl handle */
   curl = curl_easy_init();
   if(curl) {
     /* we want to use our own read function */
-    curl_easy_setopt(curl, CURLOPT_READFUNCTION, read_callback);
+    curl_easy_setopt(curl, CURLOPT_READFUNCTION, read_cb);
 
     /* which file to upload */
     curl_easy_setopt(curl, CURLOPT_READDATA, (void *) fp);
@@ -135,7 +150,7 @@ int main(int argc, char **argv)
     /* tell libcurl we can use "any" auth, which lets the lib pick one, but it
        also costs one extra round-trip and possibly sending of all the PUT
        data twice!!! */
-    curl_easy_setopt(curl, CURLOPT_HTTPAUTH, (long)CURLAUTH_ANY);
+    curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
 
     /* set user name and password for the authentication */
     curl_easy_setopt(curl, CURLOPT_USERPWD, "user:password");
@@ -153,5 +168,5 @@ int main(int argc, char **argv)
   fclose(fp); /* close the local file */
 
   curl_global_cleanup();
-  return 0;
+  return (int)res;
 }

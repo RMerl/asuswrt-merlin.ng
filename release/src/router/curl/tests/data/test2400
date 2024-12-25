@@ -11,7 +11,7 @@ HTTPS
 #
 # Server-side
 <reply>
-<data nocheck="yes">
+<data crlf="headers" nocheck="yes">
 HTTP/1.1 200 OK
 Date: Tue, 09 Nov 2010 14:49:00 GMT
 Content-Length: 6
@@ -27,8 +27,8 @@ Funny-head: yesyes
 # Client-side
 <client>
 <features>
-debug
-h2c
+Debug
+http/2
 SSL
 </features>
 <server>
@@ -36,12 +36,12 @@ http
 http/2
 </server>
 <name>
-HTTP/2 GET
+HTTP/2 GET over HTTPS
 </name>
 <setenv>
 </setenv>
 <command>
--k --http2 "https://%HOSTIP:%HTTP2TLSPORT/%TESTNUMBER"
+--insecure --http2 "https://%HOSTIP:%HTTP2TLSPORT/%TESTNUMBER"
 </command>
 
 </client>
@@ -49,8 +49,8 @@ HTTP/2 GET
 #
 # Verify data after the test has been "shot"
 <verify>
-<stdout crlf="yes">
-HTTP/2 200 
+<stdout crlf="headers">
+HTTP/2 200%spc%
 date: Tue, 09 Nov 2010 14:49:00 GMT
 content-length: 6
 content-type: text/html

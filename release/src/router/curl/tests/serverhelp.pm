@@ -29,6 +29,8 @@ package serverhelp;
 use strict;
 use warnings;
 
+use Time::HiRes;
+
 BEGIN {
     use base qw(Exporter);
 
@@ -45,20 +47,22 @@ BEGIN {
         server_cmdfilename
         server_inputfilename
         server_outputfilename
+        server_exe
+        server_exe_args
         mainsockf_pidfilename
         mainsockf_logfilename
         datasockf_pidfilename
         datasockf_logfilename
     );
-
-    # sub second timestamping needs Time::HiRes
-    eval {
-        no warnings "all";
-        require Time::HiRes;
-        import  Time::HiRes qw( gettimeofday );
-    }
 }
 
+use globalconfig;
+use pathhelp qw(
+    exe_ext
+    );
+use testutil qw(
+    exerunner
+    );
 
 our $logfile;  # server log file name, for logmsg
 
@@ -72,20 +76,13 @@ our $logfile;  # server log file name, for logmsg
 # logmsg is general message logging subroutine for our test servers.
 #
 sub logmsg {
-    my $now;
-    # sub second timestamping needs Time::HiRes
-    if($Time::HiRes::VERSION) {
-        my ($seconds, $usec) = gettimeofday();
-        my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) =
-            localtime($seconds);
-        $now = sprintf("%02d:%02d:%02d.%06d ", $hour, $min, $sec, $usec);
-    }
-    else {
-        my $seconds = time();
-        my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) =
-            localtime($seconds);
-        $now = sprintf("%02d:%02d:%02d ", $hour, $min, $sec);
-    }
+    my ($seconds, $usec) = Time::HiRes::gettimeofday();
+    my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) =
+        localtime($seconds);
+    my $now = sprintf("%02d:%02d:%02d.%06d ", $hour, $min, $sec, $usec);
+    # we see warnings on Windows run that $logfile is used uninitialized
+    # TODO: not found yet where this comes from
+    $logfile = "serverhelp_uninitialized.log" if(!$logfile);
     if(open(my $logfilefh, ">>", "$logfile")) {
         print $logfilefh $now;
         print $logfilefh @_;
@@ -104,13 +101,13 @@ sub serverfactors {
     my $idnum;
 
     if($server =~
-        /^((ftp|http|imap|pop3|smtp|http-pipe)s?)(\d*)(-ipv6|)$/) {
+        /^((ftp|http|imap|pop3|smtp)s?)(\d*)(-ipv6|)$/) {
         $proto  = $1;
         $idnum  = ($3 && ($3 > 1)) ? $3 : 1;
         $ipvnum = ($4 && ($4 =~ /6$/)) ? 6 : 4;
     }
     elsif($server =~
-        /^(tftp|sftp|socks|ssh|rtsp|gopher|httptls)(\d*)(-ipv6|)$/) {
+        /^(dns|tftp|sftp|socks|ssh|rtsp|gopher|httptls)(\d*)(-ipv6|)$/) {
         $proto  = $1;
         $idnum  = ($2 && ($2 > 1)) ? $2 : 1;
         $ipvnum = ($3 && ($3 =~ /6$/)) ? 6 : 4;
@@ -130,7 +127,7 @@ sub servername_str {
 
     $proto = uc($proto) if($proto);
     die "unsupported protocol: '$proto'" unless($proto &&
-        ($proto =~ /^(((FTP|HTTP|HTTP\/2|HTTP\/3|IMAP|POP3|GOPHER|SMTP|HTTP-PIPE)S?)|(TFTP|SFTP|SOCKS|SSH|RTSP|HTTPTLS|DICT|SMB|SMBS|TELNET|MQTT))$/));
+        ($proto =~ /^(((DNS|FTP|HTTP|HTTP\/2|HTTP\/3|IMAP|POP3|GOPHER|SMTP|HTTPS-MTLS)S?)|(TFTP|SFTP|SOCKS|SSH|RTSP|HTTPTLS|DICT|SMB|SMBS|TELNET|MQTT))$/));
 
     $ipver = (not $ipver) ? 'ipv4' : lc($ipver);
     die "unsupported IP version: '$ipver'" unless($ipver &&
@@ -224,6 +221,34 @@ sub server_outputfilename {
     my ($logdir, $proto, $ipver, $idnum) = @_;
     my $trailer = '_server.output';
     return "${logdir}/". servername_canon($proto, $ipver, $idnum) ."$trailer";
+}
+
+
+#***************************************************************************
+# Return filename for a server executable
+#
+sub server_exe {
+    my ($name, $ext) = @_;
+    if(!defined $ext) {
+        $ext = 'SRV';
+    }
+    return exerunner() . $SRVDIR . "servers" . exe_ext($ext) . " $name";
+}
+
+
+#***************************************************************************
+# Return filename for a server executable as an argument list
+#
+sub server_exe_args {
+    my ($name, $ext) = @_;
+    if(!defined $ext) {
+        $ext = 'SRV';
+    }
+    my @cmd = ($SRVDIR . "servers" . exe_ext($ext), $name);
+    if($ENV{'CURL_TEST_EXE_RUNNER'}) {
+        unshift @cmd, $ENV{'CURL_TEST_EXE_RUNNER'};
+    }
+    return @cmd;
 }
 
 

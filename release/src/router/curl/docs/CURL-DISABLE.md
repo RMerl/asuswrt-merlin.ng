@@ -1,3 +1,9 @@
+<!--
+Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
+
+SPDX-License-Identifier: curl
+-->
+
 # Code defines to disable features and protocols
 
 ## `CURL_DISABLE_ALTSVC`
@@ -34,7 +40,11 @@ Disable support for the negotiate authentication methods.
 
 ## `CURL_DISABLE_AWS`
 
-Disable **AWS-SIG4** support.
+Disable **aws-sigv4** support.
+
+## `CURL_DISABLE_CA_SEARCH`
+
+Disable unsafe CA bundle search in PATH on Windows.
 
 ## `CURL_DISABLE_DICT`
 
@@ -134,9 +144,18 @@ Disable the built-in progress meter
 
 Disable support for proxies
 
+## `CURL_DISABLE_IPFS`
+
+Disable the IPFS/IPNS protocols. This affects the curl tool only, where
+IPFS/IPNS protocol support is implemented.
+
 ## `CURL_DISABLE_RTSP`
 
 Disable the RTSP protocol.
+
+## `CURL_DISABLE_SHA512_256`
+
+Disable the SHA-512/256 hash algorithm.
 
 ## `CURL_DISABLE_SHUFFLE_DNS`
 
@@ -166,3 +185,7 @@ Disable the TFTP protocol
 ## `CURL_DISABLE_VERBOSE_STRINGS`
 
 Disable verbose strings and error messages.
+
+## `CURL_DISABLE_WEBSOCKETS`
+
+Disable the WebSocket protocols.

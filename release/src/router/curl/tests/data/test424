@@ -9,7 +9,7 @@
 #
 # Server-side
 <reply>
-<data crlf="yes" nocheck="yes">
+<data crlf="headers" nocheck="yes">
 HTTP/1.1 301 OK
 Date: Tue, 09 Nov 2010 14:49:00 GMT
 Server: test-server/fake
@@ -23,7 +23,7 @@ Funny-head: yesyes
 Location: http://anotherhost.example:2023/%TESTNUMBER0002?moo.html
 
 </data>
-<data2 crlf="yes" nocheck="yes">
+<data2 crlf="headers" nocheck="yes">
 HTTP/1.1 200 OK
 Date: Tue, 09 Nov 2010 14:49:00 GMT
 Server: test-server/fake
@@ -59,10 +59,10 @@ http
 # Verify data after the test has been "shot"
 <verify>
 <stdout>
-anotherhost.example+/%TESTNUMBER0002+http+uuuu+pppp+2023+moo.html+
-hello2000+/%TESTNUMBER+h55p+++1+qqqq+ffff
+anotherhost.example+/4240002+http+++2023+moo.html+
+hello2000+/424+h55p+++1+qqqq+ffff
 +++++++
-anotherhost.example+/%TESTNUMBER0002+http+u22u+p22p+2023+moo.html+
+anotherhost.example+/4240002+http+++2023+moo.html+
 </stdout>
 </verify>
 </testcase>

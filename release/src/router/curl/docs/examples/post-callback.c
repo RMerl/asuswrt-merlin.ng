@@ -33,9 +33,9 @@
 static const char data[]="Lorem ipsum dolor sit amet, consectetur adipiscing "
   "elit. Sed vel urna neque. Ut quis leo metus. Quisque eleifend, ex at "
   "laoreet rhoncus, odio ipsum semper metus, at tempus ante urna in mauris. "
-  "Suspendisse ornare tempor venenatis. Ut dui neque, pellentesque a varius "
+  "Suspendisse ornare tempor venenatis. Ut dui neque, pellentesque a ______ "
   "eget, mattis vitae ligula. Fusce ut pharetra est. Ut ullamcorper mi ac "
-  "sollicitudin semper. Praesent sit amet tellus varius, posuere nulla non, "
+  "sollicitudin semper. Praesent sit amet tellus ______, posuere nulla non, "
   "rhoncus ipsum.";
 
 struct WriteThis {
@@ -43,7 +43,7 @@ struct WriteThis {
   size_t sizeleft;
 };
 
-static size_t read_callback(char *dest, size_t size, size_t nmemb, void *userp)
+static size_t read_cb(char *dest, size_t size, size_t nmemb, void *userp)
 {
   struct WriteThis *wt = (struct WriteThis *)userp;
   size_t buffer_size = size*nmemb;
@@ -73,13 +73,13 @@ int main(void)
   wt.readptr = data;
   wt.sizeleft = strlen(data);
 
-  /* In windows, this will init the winsock stuff */
+  /* In Windows, this inits the Winsock stuff */
   res = curl_global_init(CURL_GLOBAL_DEFAULT);
   /* Check for errors */
   if(res != CURLE_OK) {
     fprintf(stderr, "curl_global_init() failed: %s\n",
             curl_easy_strerror(res));
-    return 1;
+    return (int)res;
   }
 
   /* get a curl handle */
@@ -92,7 +92,7 @@ int main(void)
     curl_easy_setopt(curl, CURLOPT_POST, 1L);
 
     /* we want to use our own read function */
-    curl_easy_setopt(curl, CURLOPT_READFUNCTION, read_callback);
+    curl_easy_setopt(curl, CURLOPT_READFUNCTION, read_cb);
 
     /* pointer to pass to our read function */
     curl_easy_setopt(curl, CURLOPT_READDATA, &wt);
@@ -141,7 +141,7 @@ int main(void)
     }
 #endif
 
-    /* Perform the request, res will get the return code */
+    /* Perform the request, res gets the return code */
     res = curl_easy_perform(curl);
     /* Check for errors */
     if(res != CURLE_OK)

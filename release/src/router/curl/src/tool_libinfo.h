@@ -25,7 +25,7 @@
  ***************************************************************************/
 #include "tool_setup.h"
 
-/* global variable declarations, for libcurl run-time info */
+/* global variable declarations, for libcurl runtime info */
 
 
 extern curl_version_info_data *curlinfo;
@@ -34,6 +34,7 @@ extern const char * const *built_in_protos;
 extern size_t proto_count;
 
 extern const char * const *feature_names;
+extern size_t feature_count;
 
 extern const char *proto_file;
 extern const char *proto_ftp;
@@ -54,12 +55,15 @@ extern bool feature_http2;
 extern bool feature_http3;
 extern bool feature_httpsproxy;
 extern bool feature_libz;
+extern bool feature_libssh2;
 extern bool feature_ntlm;
 extern bool feature_ntlm_wb;
 extern bool feature_spnego;
 extern bool feature_ssl;
 extern bool feature_tls_srp;
 extern bool feature_zstd;
+extern bool feature_ech;
+extern bool feature_ssls_export;
 
 CURLcode get_libcurl_info(void);
 const char *proto_token(const char *proto);

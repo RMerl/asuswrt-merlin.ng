@@ -2,6 +2,7 @@
 <info>
 <keywords>
 SMTPS
+UPLOAD
 </keywords>
 </info>
 
@@ -19,28 +20,28 @@ smtps
 <name>
 SMTPS with redundant explicit SSL request
 </name>
-<stdin>
+<stdin crlf="yes">
 From: different
 To: another
 
 body
 </stdin>
 <command>
--k --ssl-reqd --mail-rcpt recipient@example.com --mail-from sender@example.com -T - smtps://%HOSTIP:%SMTPSPORT/%TESTNUMBER
+--insecure --ssl-reqd --mail-rcpt recipient@example.com --mail-from sender@example.com -T - smtps://%HOSTIP:%SMTPSPORT/%TESTNUMBER
 </command>
 </client>
 
 #
 # Verify data after the test has been "shot"
 <verify>
-<protocol>
+<protocol crlf="yes">
 EHLO %TESTNUMBER
 MAIL FROM:<sender@example.com>
 RCPT TO:<recipient@example.com>
 DATA
 QUIT
 </protocol>
-<upload>
+<upload crlf="yes">
 From: different
 To: another
 

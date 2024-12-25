@@ -71,7 +71,10 @@ static const char inline_html[] =
 int main(void)
 {
   CURL *curl;
-  CURLcode res = CURLE_OK;
+
+  CURLcode res = curl_global_init(CURL_GLOBAL_ALL);
+  if(res)
+    return (int)res;
 
   curl = curl_easy_init();
   if(curl) {
@@ -86,8 +89,8 @@ int main(void)
     /* This is the URL for your mailserver */
     curl_easy_setopt(curl, CURLOPT_URL, "smtp://mail.example.com");
 
-    /* Note that this option is not strictly required, omitting it will result
-     * in libcurl sending the MAIL FROM command with empty sender data. All
+    /* Note that this option is not strictly required, omitting it results in
+     * libcurl sending the MAIL FROM command with empty sender data. All
      * autoresponses should have an empty reverse-path, and should be directed
      * to the address in the reverse-path which triggered them. Otherwise,
      * they could cause an endless loop. See RFC 5321 Section 4.5.5 for more
@@ -150,7 +153,7 @@ int main(void)
     curl_slist_free_all(recipients);
     curl_slist_free_all(headers);
 
-    /* curl will not send the QUIT command until you call cleanup, so you
+    /* curl does not send the QUIT command until you call cleanup, so you
      * should be able to reuse this connection for additional messages
      * (setting CURLOPT_MAIL_FROM and CURLOPT_MAIL_RCPT as required, and
      * calling curl_easy_perform() again. It may not be a good idea to keep
@@ -163,6 +166,8 @@ int main(void)
     /* Free multipart message. */
     curl_mime_free(mime);
   }
+
+  curl_global_cleanup();
 
   return (int)res;
 }

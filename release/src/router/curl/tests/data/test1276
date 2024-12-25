@@ -9,16 +9,12 @@ documentation
 #
 # Client-side
 <client>
-<server>
-none
-</server>
-
 <name>
 Verify lib/optiontable.pl
 </name>
 
 <command type="perl">
-%SRCDIR/option-check.pl %SRCDIR/..
+%SRCDIR/test1276.pl %SRCDIR/..
 </command>
 </client>
 

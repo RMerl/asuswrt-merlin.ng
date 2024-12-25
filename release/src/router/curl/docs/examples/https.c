@@ -31,9 +31,10 @@
 int main(void)
 {
   CURL *curl;
-  CURLcode res;
 
-  curl_global_init(CURL_GLOBAL_DEFAULT);
+  CURLcode res = curl_global_init(CURL_GLOBAL_ALL);
+  if(res)
+    return (int)res;
 
   curl = curl_easy_init();
   if(curl) {
@@ -57,8 +58,8 @@ int main(void)
     /*
      * If the site you are connecting to uses a different host name that what
      * they have mentioned in their server certificate's commonName (or
-     * subjectAltName) fields, libcurl will refuse to connect. You can skip
-     * this check, but this will make the connection less secure.
+     * subjectAltName) fields, libcurl refuses to connect. You can skip this
+     * check, but it makes the connection insecure.
      */
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
 #endif
@@ -66,7 +67,7 @@ int main(void)
     /* cache the CA cert bundle in memory for a week */
     curl_easy_setopt(curl, CURLOPT_CA_CACHE_TIMEOUT, 604800L);
 
-    /* Perform the request, res will get the return code */
+    /* Perform the request, res gets the return code */
     res = curl_easy_perform(curl);
     /* Check for errors */
     if(res != CURLE_OK)
@@ -79,5 +80,5 @@ int main(void)
 
   curl_global_cleanup();
 
-  return 0;
+  return (int)res;
 }

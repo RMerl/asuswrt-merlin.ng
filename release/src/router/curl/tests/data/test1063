@@ -9,18 +9,13 @@ FAILURE
 
 # Server-side
 <reply>
-<data>
-</data>
 </reply>
 
 # Client-side
 <client>
-<server>
-none
-</server>
 <features>
 file
-large_file
+Largefile
 </features>
 <name>
 Invalid large X- range on a file://

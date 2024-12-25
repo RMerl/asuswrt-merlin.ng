@@ -35,33 +35,25 @@ struct per_transfer {
   struct OperationConfig *config; /* for this transfer */
   struct curl_certinfo *certinfo;
   CURL *curl;
-  long retry_numretries;
+  long retry_remaining;
   long retry_sleep_default;
   long retry_sleep;
-  struct timeval start; /* start of this transfer */
-  struct timeval retrystart;
-  char *this_url;
-  unsigned int urlnum; /* the index of the given URL */
+  long num_retries; /* counts the performed retries */
+  struct curltime start; /* start of this transfer */
+  struct curltime retrystart;
+  char *url;
+  curl_off_t urlnum; /* the index of the given URL */
   char *outfile;
-  bool infdopen; /* TRUE if infd needs closing */
   int infd;
-  bool noprogress;
   struct ProgressData progressbar;
   struct OutStruct outs;
   struct OutStruct heads;
   struct OutStruct etag_save;
   struct HdrCbData hdrcbdata;
   long num_headers;
-  bool was_last_header_empty;
-
-  bool added; /* set TRUE when added to the multi handle */
   time_t startat; /* when doing parallel transfers, this is a retry transfer
                      that has been set to sleep until this time before it
                      should get started (again) */
-  bool abort; /* when doing parallel transfers and this is TRUE then a critical
-                 error (eg --fail-early) has occurred in another transfer and
-                 this transfer will be aborted in the progress callback */
-
   /* for parallel progress bar */
   curl_off_t dltotal;
   curl_off_t dlnow;
@@ -69,17 +61,25 @@ struct per_transfer {
   curl_off_t ulnow;
   curl_off_t uploadfilesize; /* expected total amount */
   curl_off_t uploadedsofar; /* amount delivered from the callback */
-  bool dltotal_added; /* if the total has been added from this */
-  bool ultotal_added;
+  BIT(dltotal_added); /* if the total has been added from this */
+  BIT(ultotal_added);
 
   /* NULL or malloced */
   char *uploadfile;
-  char *errorbuffer; /* alloced and assigned while this is used for a
-                        transfer */
+  char errorbuffer[CURL_ERROR_SIZE];
+  BIT(infdopen); /* TRUE if infd needs closing */
+  BIT(noprogress);
+  BIT(was_last_header_empty);
+
+  BIT(added); /* set TRUE when added to the multi handle */
+  BIT(abort); /* when doing parallel transfers and this is TRUE then a critical
+                 error (eg --fail-early) has occurred in another transfer and
+                 this transfer will be aborted in the progress callback */
+  BIT(skip);  /* considered already done */
 };
 
-CURLcode operate(struct GlobalConfig *config, int argc, argv_item_t argv[]);
-void single_transfer_cleanup(struct OperationConfig *config);
+CURLcode operate(int argc, argv_item_t argv[]);
+void single_transfer_cleanup(void);
 
 extern struct per_transfer *transfers; /* first node */
 

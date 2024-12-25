@@ -21,11 +21,11 @@
  * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
-#include "test.h"
+#include "first.h"
 
 #include "memdebug.h"
 
-int test(char *URL)
+static CURLcode test_lib3103(const char *URL)
 {
   CURLcode res = CURLE_OK;
   CURLSH *share;
@@ -51,16 +51,16 @@ int test(char *URL)
 
   res = curl_easy_perform(curl);
   if(res) {
-    fprintf(stderr, "curl_easy_perform() failed: %s\n",
-            curl_easy_strerror(res));
+    curl_mfprintf(stderr, "curl_easy_perform() failed: %s\n",
+                  curl_easy_strerror(res));
   }
 
 test_cleanup:
 
   /* always cleanup */
   curl_easy_cleanup(curl);
-    curl_share_cleanup(share);
+  curl_share_cleanup(share);
   curl_global_cleanup();
 
-  return (int)res;
+  return res;
 }

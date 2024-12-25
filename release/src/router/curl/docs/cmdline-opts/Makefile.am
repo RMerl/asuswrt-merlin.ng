@@ -24,18 +24,41 @@
 
 AUTOMAKE_OPTIONS = foreign no-dependencies
 
-MANPAGE = $(top_builddir)/docs/curl.1
+MANPAGE = curl.1
+ASCIIPAGE = curl.txt
 
+# Get SUPPORT, DPAGES variables
 include Makefile.inc
 
-EXTRA_DIST = $(DPAGES) MANPAGE.md gen.pl $(OTHERPAGES) CMakeLists.txt
+EXTRA_DIST = $(DPAGES) MANPAGE.md $(SUPPORT) CMakeLists.txt mainpage.idx
 
 GEN = $(GN_$(V))
 GN_0 = @echo "  GENERATE" $@;
 GN_1 =
 GN_ = $(GN_0)
 
-all: $(MANPAGE)
+MANAGEN=$(top_srcdir)/scripts/managen
+MAXLINE=$(top_srcdir)/scripts/maxline
 
-$(MANPAGE): $(DPAGES) $(OTHERPAGES) Makefile.inc gen.pl
-	$(GEN)(rm -f $(MANPAGE) && cd $(srcdir) && @PERL@ ./gen.pl mainpage $(DPAGES) > $(builddir)/manpage.tmp && mv $(builddir)/manpage.tmp $(MANPAGE))
+# Maximum number of columns accepted in the ASCII version of the manpage
+INCDIR=$(top_srcdir)/include
+
+if BUILD_DOCS
+CLEANFILES = $(MANPAGE) $(ASCIIPAGE)
+man_MANS = $(MANPAGE)
+
+all: $(MANPAGE) $(ASCIIPAGE)
+
+endif
+
+$(MANPAGE): $(DPAGES) $(SUPPORT) mainpage.idx Makefile.inc $(MANAGEN)
+	$(GEN)(rm -f $(MANPAGE) && @PERL@ $(MANAGEN) -d $(srcdir) -I $(INCDIR) mainpage $(DPAGES) > manpage.tmp.$$$$ && mv manpage.tmp.$$$$ $(MANPAGE))
+
+$(ASCIIPAGE): $(DPAGES) $(SUPPORT) mainpage.idx Makefile.inc $(MANAGEN)
+	$(GEN)(rm -f $(ASCIIPAGE) && @PERL@ $(MANAGEN) -d $(srcdir) -I $(INCDIR) ascii $(DPAGES) > asciipage.tmp.$$$$ && mv asciipage.tmp.$$$$ $(ASCIIPAGE))
+
+listhelp:
+	$(MANAGEN) -d $(srcdir) listhelp $(DPAGES) > $(top_builddir)/src/tool_listhelp.c
+
+listcats:
+	@$(MANAGEN) listcats $(DPAGES)

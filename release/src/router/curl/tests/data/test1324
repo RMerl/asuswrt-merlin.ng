@@ -3,6 +3,7 @@
 <keywords>
 HTTP
 HTTP GET
+IPv6
 --resolve
 </keywords>
 </info>
@@ -29,6 +30,10 @@ Funny-head: yesyes
 #
 # Client-side
 <client>
+<features>
+http
+IPv6
+</features>
 <server>
 http-ipv6
 </server>
@@ -43,7 +48,7 @@ HTTP with --resolve and [ipv6address]
 #
 # Verify data after the test has been "shot"
 <verify>
-<protocol>
+<protocol crlf="headers">
 GET /%TESTNUMBER HTTP/1.1
 Host: example.com:%HTTP6PORT
 User-Agent: curl/%VERSION

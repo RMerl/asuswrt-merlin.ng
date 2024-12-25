@@ -3,7 +3,7 @@
 <keywords>
 HTTP
 HTTP GET
-unix sockets
+UnixSockets
 </keywords>
 </info>
 
@@ -19,7 +19,7 @@ Based on test300
 
 <client>
 <features>
-unix-sockets
+UnixSockets
 </features>
 <server>
 http-unix
@@ -33,7 +33,7 @@ simple HTTP GET over Unix socket
 </client>
 
 <verify>
-<protocol>
+<protocol crlf="headers">
 GET /%TESTNUMBER HTTP/1.1
 Host: server-interpreted.example.com
 User-Agent: curl/%VERSION

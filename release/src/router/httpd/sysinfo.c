@@ -524,7 +524,7 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 						nvram_set(buf, "no Internet traffic");
 					} else if (!strlen(nvram_safe_get(buf))) {
 						sprintf(buf, "%d", instance);
-						eval("/usr/sbin/gettunnelip.sh", buf, "openvpn");
+						eval("/usr/sbin/gettunnelip.sh", buf, "openvpn", (nvram_get_int("vpn_stun") ? "stun" :"http"));
 					}
 				}
 				close(fd);
@@ -546,7 +546,7 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 					strlcpy(result, inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr), sizeof result);
 
 					sprintf(buf, "%d", instance);
-					eval("/usr/sbin/gettunnelip.sh", buf, "wireguard");
+					eval("/usr/sbin/gettunnelip.sh", buf, "wireguard", (nvram_get_int("vpn_stun") ? "stun" :"http"));
 				}
 				close(fd);
 			}

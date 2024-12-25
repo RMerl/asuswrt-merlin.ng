@@ -13645,6 +13645,35 @@ wps_finish:
 		websDone(wp, 200);
 	}
 #endif
+#ifdef RTCONFIG_WIREGUARD
+	else if (!strcmp(action_mode, "refresh_wgc_ip"))
+	{
+		char tmp[10];
+
+		snprintf(tmp, sizeof (tmp), "wgc%d_rip", nvram_get_int("wgc_unit"));
+		nvram_unset(tmp);
+
+		websDone(wp, 200);
+	}
+#endif
+	else if (!strcmp(action_mode, "reset_vpn_ip"))
+	{
+		char tmp[20];
+		int idx;
+#ifdef RTCONFIG_OPENVPN
+		for (idx = 1; idx <= OVPN_CLIENT_MAX; idx++) {
+			snprintf(tmp, sizeof (tmp), "vpn_client%d_rip", idx);
+			nvram_unset(tmp);
+		}
+#endif
+#ifdef RTCONFIG_WIREGUARD
+		for (idx = 1; idx <= WG_CLIENT_MAX; idx++) {
+			snprintf(tmp, sizeof (tmp), "wgc%d_rip", idx);
+			nvram_unset(tmp);
+		}
+#endif
+		websDone(wp, 200);
+	}
 #ifdef  __CONFIG_NORTON__
 	/* Trigger an NGA LiveUpdate */
 	else if (!strcmp(action_mode, "NGAUpdate"))

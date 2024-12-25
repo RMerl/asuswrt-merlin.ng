@@ -8,15 +8,10 @@ FAILURE
 </info>
 # Server-side
 <reply>
-<data>
-</data>
 </reply>
 
 # Client-side
 <client>
-<server>
-none
-</server>
 <features>
 http
 </features>
@@ -24,7 +19,7 @@ http
 attempt connect to non-listening socket
 </name>
 <command>
-%HOSTIP:%NOLISTENPORT
+--trace-config all %HOSTIP:%NOLISTENPORT
 </command>
 </client>
 

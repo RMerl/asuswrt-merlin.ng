@@ -38,7 +38,7 @@
    2. For systems with config-*.h files, define them there.
 */
 
-#ifdef WIN32
+#ifdef _WIN32
 /* int recv(SOCKET, char *, int, int) */
 #define RECV_TYPE_ARG1 SOCKET
 #define RECV_TYPE_ARG2 char *
@@ -62,6 +62,7 @@
 
 /* int send(int, const char *, int, int); */
 #define SEND_TYPE_ARG1 int
+#define SEND_QUAL_ARG2
 #define SEND_TYPE_ARG2 char *
 #define SEND_TYPE_ARG3 int
 #define SEND_TYPE_RETV int

@@ -9,7 +9,7 @@ chunked Transfer-Encoding
 #
 # Server-side
 <reply>
-<data>
+<data crlf="headers">
 HTTP/1.0 200 OK
 Server: test-server/fake
 Content-Type: text/html
@@ -46,11 +46,7 @@ User-Agent: curl/%VERSION
 Accept: */*
 Transfer-Encoding: chunked
 
-%if hyper
-1E
-%else
 1e
-%endif
 just some tiny teeny contents
 
 0

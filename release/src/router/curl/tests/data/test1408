@@ -40,7 +40,7 @@ Set-Cookie: time=2
 <client>
 <features>
 cookies
-ipv6
+IPv6
 </features>
 <server>
 http-ipv6
@@ -56,7 +56,7 @@ HTTP receive cookies over IPV6
 #
 # Verify data after the test has been "shot"
 <verify>
-<protocol>
+<protocol crlf="headers">
 GET /path/%TESTNUMBER0001 HTTP/1.1
 Host: %HOST6IP:%HTTP6PORT
 User-Agent: curl/%VERSION

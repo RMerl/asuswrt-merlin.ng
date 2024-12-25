@@ -12,20 +12,20 @@ CUSTOMREQUEST
 </info>
 
 <reply>
-<data>
+<data crlf="headers">
 HTTP/1.1 100 Continue
 Server: Microsoft-IIS/5.0
 Date: Sun, 03 Apr 2005 14:57:45 GMT
 X-Powered-By: ASP.NET
 
-HTTP/1.1 401 authentication please swsbounce
+HTTP/1.1 401 authentication please
 Server: Microsoft-IIS/6.0
 WWW-Authenticate: Digest realm="testrealm", nonce="1053604144"
 Content-Type: text/html; charset=iso-8859-1
 Content-Length: 0
 
 </data>
-<data1000>
+<data1000 crlf="headers">
 HTTP/1.1 200 A OK
 Server: Microsoft-IIS/6.0
 Content-Type: text/html; charset=iso-8859-1
@@ -34,13 +34,13 @@ Content-Length: 3
 ok
 </data1000>
 
-<datacheck>
+<datacheck crlf="headers">
 HTTP/1.1 100 Continue
 Server: Microsoft-IIS/5.0
 Date: Sun, 03 Apr 2005 14:57:45 GMT
 X-Powered-By: ASP.NET
 
-HTTP/1.1 401 authentication please swsbounce
+HTTP/1.1 401 authentication please
 Server: Microsoft-IIS/6.0
 WWW-Authenticate: Digest realm="testrealm", nonce="1053604144"
 Content-Type: text/html; charset=iso-8859-1
@@ -66,6 +66,7 @@ http
 !SSPI
 crypto
 proxy
+digest
 </features>
 <name>
 HTTP PUT with Digest auth, resumed upload and modified method, twice
@@ -80,7 +81,7 @@ test
 
 # Verify data after the test has been "shot"
 <verify>
-<protocol>
+<protocol crlf="headers">
 GET http://%HOSTIP:%HTTPPORT/%TESTNUMBER.upload1 HTTP/1.1
 Host: %HOSTIP:%HTTPPORT
 Content-Range: bytes 2-4/5

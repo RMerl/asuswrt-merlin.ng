@@ -29,7 +29,7 @@ ftps
 Get two FTPS files from the same remote dir: no second CWD
 </name>
 <command>
--k --ftp-ssl-control ftps://%HOSTIP:%FTPSPORT/a/path/%TESTNUMBER ftps://%HOSTIP:%FTPSPORT/a/path/%TESTNUMBER
+--insecure --ftp-ssl-control ftps://%HOSTIP:%FTPSPORT/a/path/%TESTNUMBER ftps://%HOSTIP:%FTPSPORT/a/path/%TESTNUMBER
 </command>
 <stdout>
 data blobb
@@ -39,7 +39,7 @@ data blobb
 
 # Verify data after the test has been "shot"
 <verify>
-<protocol>
+<protocol crlf="yes">
 USER anonymous
 PASS ftp@example.com
 PBSZ 0

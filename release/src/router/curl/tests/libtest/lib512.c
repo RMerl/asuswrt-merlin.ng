@@ -21,14 +21,14 @@
  * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
-#include "test.h"
+#include "first.h"
 
 #include "memdebug.h"
 
 /* Test case code based on source in a bug report filed by James Bursa on
    28 Apr 2004 */
 
-int test(char *URL)
+static CURLcode test_lib512(const char *URL)
 {
   CURLcode code;
   int rc = 99;
@@ -72,5 +72,5 @@ int test(char *URL)
   else
     rc = 5;
 
-  return rc;
+  return (CURLcode)rc;
 }

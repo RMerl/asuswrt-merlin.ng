@@ -513,9 +513,14 @@ function showConnStatus() {
 	if (state == 0) {
 		document.getElementById("wgcstate").innerHTML = "<spam>Stopped</span>";
 	} else {
-		document.getElementById("wgcstate").innerHTML =  "<span>Connected (Local: "+ localip + " - Public: " + remoteip + ") <a href='#' style='padding-left:12px;text-decoration:underline;' onclick='setTimeout(\"getConnStatus()\", 2000);'>Refresh</a></span>";
+		document.getElementById("wgcstate").innerHTML =  "<span>Connected (Local: "+ localip + " - Public: " + remoteip + ") <a href='#' style='padding-left:12px;text-decoration:underline;' onclick='refreshVPNIP();'>Refresh</a></span>";
 	}
 
+}
+
+function refreshVPNIP() {
+	httpApi.nvramSet({"action_mode": "refresh_wgc_ip"});
+	setTimeout("getConnStatus()", 2000);
 }
 
 </script>

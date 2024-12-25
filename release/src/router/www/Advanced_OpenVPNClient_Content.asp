@@ -811,7 +811,8 @@ function defaultSettings() {
 }
 
 function refreshVPNIP() {
-	httpApi.nvramSet({"action_mode": "refresh_vpn_ip"}, function(){setTimeout("getConnStatus()", 2000);});
+	httpApi.nvramSet({"action_mode": "refresh_vpn_ip"});
+	setTimeout("getConnStatus()", 2000);
 }
 
 </script>

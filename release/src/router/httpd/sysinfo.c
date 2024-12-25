@@ -545,8 +545,11 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 				if (ioctl(fd, SIOCGIFADDR, &ifr) == 0) {
 					strlcpy(result, inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr), sizeof result);
 
-					sprintf(buf, "%d", instance);
-					eval("/usr/sbin/gettunnelip.sh", buf, "wireguard", (nvram_get_int("vpn_stun") ? "stun" :"http"));
+					snprintf(buf, sizeof buf, "wgc%d_rip", instance);
+					if (!strlen(nvram_safe_get(buf))) {
+						sprintf(buf, "%d", instance);
+						eval("/usr/sbin/gettunnelip.sh", buf, "wireguard", (nvram_get_int("vpn_stun") ? "stun" :"http"));
+					}
 				}
 				close(fd);
 			}

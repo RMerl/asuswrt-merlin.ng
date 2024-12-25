@@ -21,7 +21,8 @@
 # SPDX-License-Identifier: curl
 #
 ###########################################################################
-# ./src/Makefile.inc
+# Shared between CMakeLists.txt and Makefile.am
+
 # Using the backslash as line continuation character might be problematic with
 # some make flavours. If we ever want to change this in a portable manner then
 # we should consider this idea :
@@ -29,43 +30,50 @@
 # CSRC2 = file4.c file5.c file6.c
 # CSOURCES = $(CSRC1) $(CSRC2)
 
-# libcurl sources to include in curltool lib we use for test binaries
-CURLTOOL_LIBCURL_CFILES = \
-  ../lib/base64.c \
-  ../lib/dynbuf.c
-
-# libcurl has sources that provide functions named curlx_* that aren't part of
+# libcurl has sources that provide functions named curlx_* that are not part of
 # the official API, but we reuse the code here to avoid duplication.
 CURLX_CFILES = \
-  ../lib/base64.c \
-  ../lib/curl_multibyte.c \
-  ../lib/dynbuf.c \
-  ../lib/nonblock.c \
-  ../lib/strtoofft.c \
-  ../lib/timediff.c \
-  ../lib/version_win32.c \
-  ../lib/warnless.c
+  ../lib/curlx/base64.c \
+  ../lib/curlx/dynbuf.c \
+  ../lib/curlx/fopen.c \
+  ../lib/curlx/multibyte.c \
+  ../lib/curlx/nonblock.c \
+  ../lib/curlx/strerr.c \
+  ../lib/curlx/strparse.c \
+  ../lib/curlx/timediff.c \
+  ../lib/curlx/timeval.c \
+  ../lib/curlx/version_win32.c \
+  ../lib/curlx/wait.c \
+  ../lib/curlx/warnless.c \
+  ../lib/curlx/winapi.c
 
 CURLX_HFILES = \
-  ../lib/curl_ctype.h \
-  ../lib/curl_multibyte.h \
   ../lib/curl_setup.h \
-  ../lib/dynbuf.h \
-  ../lib/nonblock.h \
-  ../lib/strtoofft.h \
-  ../lib/timediff.h \
-  ../lib/version_win32.h \
-  ../lib/warnless.h
+  ../lib/curlx/binmode.h \
+  ../lib/curlx/dynbuf.h \
+  ../lib/curlx/fopen.h \
+  ../lib/curlx/multibyte.h \
+  ../lib/curlx/nonblock.h \
+  ../lib/curlx/strerr.h \
+  ../lib/curlx/strparse.h \
+  ../lib/curlx/timediff.h \
+  ../lib/curlx/timeval.h \
+  ../lib/curlx/version_win32.h \
+  ../lib/curlx/wait.h \
+  ../lib/curlx/warnless.h \
+  ../lib/curlx/winapi.h
 
 CURL_CFILES = \
+  config2setopts.c \
   slist_wc.c \
-  tool_binmode.c \
+  terminal.c \
   tool_bname.c \
   tool_cb_dbg.c \
   tool_cb_hdr.c \
   tool_cb_prg.c \
   tool_cb_rea.c \
   tool_cb_see.c \
+  tool_cb_soc.c \
   tool_cb_wrt.c \
   tool_cfgable.c \
   tool_dirhie.c \
@@ -78,7 +86,7 @@ CURL_CFILES = \
   tool_getpass.c \
   tool_help.c \
   tool_helpers.c \
-  tool_hugehelp.c \
+  tool_ipfs.c \
   tool_libinfo.c \
   tool_listhelp.c \
   tool_main.c \
@@ -89,7 +97,7 @@ CURL_CFILES = \
   tool_parsecfg.c \
   tool_progress.c \
   tool_setopt.c \
-  tool_sleep.c \
+  tool_ssls.c \
   tool_stderr.c \
   tool_strdup.c \
   tool_urlglob.c \
@@ -101,14 +109,16 @@ CURL_CFILES = \
   var.c
 
 CURL_HFILES = \
+  config2setopts.h \
   slist_wc.h \
-  tool_binmode.h \
+  terminal.h \
   tool_bname.h \
   tool_cb_dbg.h \
   tool_cb_hdr.h \
   tool_cb_prg.h \
   tool_cb_rea.h \
   tool_cb_see.h \
+  tool_cb_soc.h \
   tool_cb_wrt.h \
   tool_cfgable.h \
   tool_dirhie.h \
@@ -121,7 +131,7 @@ CURL_HFILES = \
   tool_getpass.h \
   tool_help.h \
   tool_helpers.h \
-  tool_hugehelp.h \
+  tool_ipfs.h \
   tool_libinfo.h \
   tool_main.h \
   tool_msgs.h \
@@ -133,7 +143,7 @@ CURL_HFILES = \
   tool_sdecls.h \
   tool_setopt.h \
   tool_setup.h \
-  tool_sleep.h \
+  tool_ssls.h \
   tool_stderr.h \
   tool_strdup.h \
   tool_urlglob.h \
@@ -146,6 +156,3 @@ CURL_HFILES = \
   var.h
 
 CURL_RCFILES = curl.rc
-
-# curl_SOURCES is special and gets assigned in src/Makefile.am
-CURL_FILES = $(CURL_CFILES) $(CURLX_CFILES) $(CURL_HFILES)

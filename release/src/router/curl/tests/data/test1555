@@ -8,7 +8,7 @@ DELAY
 
 # Server-side
 <reply>
-<data nocheck="yes">
+<data crlf="headers" nocheck="yes">
 HTTP/1.1 204 PARTIAL
 X-Comment: partial response to keep the client waiting
 </data>
@@ -37,8 +37,6 @@ http://%HOSTIP:%HTTPPORT/%TESTNUMBER
 
 # Verify data after the test has been "shot"
 <verify>
-<protocol>
-</protocol>
 # 42 == CURLE_ABORTED_BY_CALLBACK
 <errorcode>
 42

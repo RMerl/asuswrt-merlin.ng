@@ -61,15 +61,15 @@ int main(int argc, char **argv)
   size_t inbytesleft;
   size_t outbytesleft;
   char dummybuf[128];
-  char tocode[32];
-  char fromcode[32];
+  /* To/From codes are 32 byte long strings with
+     reserved fields initialized to ZEROs */
+  const char tocode[32]   = {"IBMCCSID01208"}; /* Use UTF-8. */
+  const char fromcode[32] = {"IBMCCSID000000000010"};
 
   ebcdic_argc = argc;
   ebcdic_argv = argv;
 
   /* Build the encoding converter. */
-  strncpy(tocode, "IBMCCSID01208", sizeof(tocode));      /* Use UTF-8. */
-  strncpy(fromcode, "IBMCCSID000000000010", sizeof(fromcode));
   cd = iconv_open(tocode, fromcode);
 
   /* Measure the arguments. */

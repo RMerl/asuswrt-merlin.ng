@@ -42,19 +42,12 @@ http://%HOSTIP:%HTTPPORT/%TESTNUMBER
 #
 # Verify data after the test has been "shot"
 <verify>
-<protocol>
+<protocol crlf="headers">
 GET /%TESTNUMBER HTTP/1.1
 Host: %HOSTIP:%HTTPPORT
 User-Agent: curl/%VERSION
 Accept: */*
 
 </protocol>
-
-# hyper cannot work with too-large content-length
-%if hyper
-<errorcode>
-1
-</errorcode>
-%endif
 </verify>
 </testcase>

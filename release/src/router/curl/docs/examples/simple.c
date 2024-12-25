@@ -31,7 +31,10 @@
 int main(void)
 {
   CURL *curl;
-  CURLcode res;
+
+  CURLcode res = curl_global_init(CURL_GLOBAL_ALL);
+  if(res)
+    return (int)res;
 
   curl = curl_easy_init();
   if(curl) {
@@ -39,7 +42,7 @@ int main(void)
     /* example.com is redirected, so we tell libcurl to follow redirection */
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 
-    /* Perform the request, res will get the return code */
+    /* Perform the request, res gets the return code */
     res = curl_easy_perform(curl);
     /* Check for errors */
     if(res != CURLE_OK)
@@ -49,5 +52,6 @@ int main(void)
     /* always cleanup */
     curl_easy_cleanup(curl);
   }
+  curl_global_cleanup();
   return 0;
 }

@@ -29,10 +29,6 @@
 #include <stdio.h>
 #include <string.h>
 
-/* somewhat unix-specific */
-#include <sys/time.h>
-#include <unistd.h>
-
 /* curl stuff */
 #include <curl/curl.h>
 
@@ -53,7 +49,7 @@ static void dump(const char *text, FILE *stream, unsigned char *ptr,
   fprintf(stream, "%s, %10.10lu bytes (0x%8.8lx)\n",
           text, (unsigned long)size, (unsigned long)size);
 
-  for(i = 0; i<size; i += width) {
+  for(i = 0; i < size; i += width) {
 
     fprintf(stream, "%4.4lx: ", (unsigned long)i);
 
@@ -74,7 +70,7 @@ static void dump(const char *text, FILE *stream, unsigned char *ptr,
         break;
       }
       fprintf(stream, "%c",
-              (ptr[i + c] >= 0x20) && (ptr[i + c]<0x80)?ptr[i + c]:'.');
+              (ptr[i + c] >= 0x20) && (ptr[i + c] < 0x80) ? ptr[i + c] : '.');
       /* check again for 0D0A, to avoid an extra \n if it's at width */
       if(nohex && (i + c + 2 < size) && ptr[i + c + 1] == 0x0D &&
          ptr[i + c + 2] == 0x0A) {
@@ -87,23 +83,19 @@ static void dump(const char *text, FILE *stream, unsigned char *ptr,
   fflush(stream);
 }
 
-static
-int my_trace(CURL *handle, curl_infotype type,
-             unsigned char *data, size_t size,
-             void *userp)
+static int my_trace(CURL *curl, curl_infotype type,
+                    unsigned char *data, size_t size,
+                    void *userp)
 {
   const char *text;
 
   (void)userp;
-  (void)handle; /* prevent compiler warning */
+  (void)curl;
 
   switch(type) {
   case CURLINFO_TEXT:
     fprintf(stderr, "== Info: %s", data);
-    /* FALLTHROUGH */
-  default: /* in case a new one is introduced to shock us */
     return 0;
-
   case CURLINFO_HEADER_OUT:
     text = "=> Send header";
     break;
@@ -116,6 +108,8 @@ int my_trace(CURL *handle, curl_infotype type,
   case CURLINFO_DATA_IN:
     text = "<= Recv data";
     break;
+  default: /* in case a new one is introduced to shock us */
+    return 0;
   }
 
   dump(text, stderr, data, size, TRUE);
@@ -127,40 +121,51 @@ int my_trace(CURL *handle, curl_infotype type,
  */
 int main(void)
 {
-  CURL *http_handle;
-  CURLM *multi_handle;
+  CURL *curl;
 
-  int still_running = 0; /* keep number of running handles */
+  CURLcode res = curl_global_init(CURL_GLOBAL_ALL);
+  if(res)
+    return (int)res;
 
-  http_handle = curl_easy_init();
+  curl = curl_easy_init();
+  if(curl) {
 
-  /* set the options (I left out a few, you will get the point anyway) */
-  curl_easy_setopt(http_handle, CURLOPT_URL, "https://www.example.com/");
+    CURLM *multi;
 
-  curl_easy_setopt(http_handle, CURLOPT_DEBUGFUNCTION, my_trace);
-  curl_easy_setopt(http_handle, CURLOPT_VERBOSE, 1L);
+    /* set the options (I left out a few, you get the point anyway) */
+    curl_easy_setopt(curl, CURLOPT_URL, "https://www.example.com/");
 
-  /* init a multi stack */
-  multi_handle = curl_multi_init();
+    curl_easy_setopt(curl, CURLOPT_DEBUGFUNCTION, my_trace);
+    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
 
-  /* add the individual transfers */
-  curl_multi_add_handle(multi_handle, http_handle);
+    /* init a multi stack */
+    multi = curl_multi_init();
+    if(multi) {
 
-  do {
-    CURLMcode mc = curl_multi_perform(multi_handle, &still_running);
+      int still_running = 0; /* keep number of running handles */
 
-    if(still_running)
-      /* wait for activity, timeout or "nothing" */
-      mc = curl_multi_poll(multi_handle, NULL, 0, 1000, NULL);
+      /* add the individual transfers */
+      curl_multi_add_handle(multi, curl);
 
-    if(mc)
-      break;
+      do {
+        CURLMcode mc = curl_multi_perform(multi, &still_running);
 
-  } while(still_running);
+        if(still_running)
+          /* wait for activity, timeout or "nothing" */
+          mc = curl_multi_poll(multi, NULL, 0, 1000, NULL);
 
-  curl_multi_cleanup(multi_handle);
+        if(mc)
+          break;
 
-  curl_easy_cleanup(http_handle);
+      } while(still_running);
+
+      curl_multi_cleanup(multi);
+    }
+
+    curl_easy_cleanup(curl);
+  }
+
+  curl_global_cleanup();
 
   return 0;
 }

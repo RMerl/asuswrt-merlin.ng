@@ -20,7 +20,7 @@ multi
 ftp
 </server>
 <tool>
-lib%TESTNUMBER
+lib525
 </tool>
 <name>
 FTP PORT upload using multi interface (weird cleanup function sequence)
@@ -41,7 +41,7 @@ Moooooooooooo
 ^PORT \d{1,3},\d{1,3},\d{1,3},\d{1,3},\d{1,3},\d{1,3}
 ^EPRT \|1\|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\|\d{1,5}\|
 </strip>
-<protocol>
+<protocol crlf="yes">
 USER anonymous
 PASS ftp@example.com
 PWD

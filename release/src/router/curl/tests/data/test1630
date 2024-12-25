@@ -3,14 +3,14 @@
 <keywords>
 HTTP
 HTTP GET
-HTTPS-proxy
-HTTPS-proxy Basic auth
+HTTPS proxy
+HTTPS proxy Basic auth
 </keywords>
 </info>
 
 # Server-side
 <reply>
-<data>
+<data crlf="headers">
 HTTP/1.1 200 OK
 Date: Tue, 09 Nov 2010 14:49:00 GMT
 Server: test-server/fake
@@ -41,10 +41,10 @@ proxy
 
 # Verify data after the test has been "shot"
 <verify>
-<proxy>
+<proxy crlf="headers">
 GET http://we.want.that.site.com/%TESTNUMBER HTTP/1.1
 Host: we.want.that.site.com
-Proxy-Authorization: Basic ZmFrZUB1c2VyOmxvb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29uZw==
+Proxy-Authorization: Basic %b64[fake@user:loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong]b64%
 User-Agent: curl/%VERSION
 Accept: */*
 Proxy-Connection: Keep-Alive

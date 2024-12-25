@@ -21,12 +21,15 @@
 # SPDX-License-Identifier: curl
 #
 ###########################################################################
+# Shared between CMakeLists.txt and Makefile.am
 
 # These are all libcurl example programs to be test compiled
 check_PROGRAMS = \
   10-at-a-time \
+  address-scope \
   altsvc \
   anyauthput \
+  block_ip \
   certinfo \
   chkspeed \
   connect-to \
@@ -35,6 +38,7 @@ check_PROGRAMS = \
   default-scheme \
   externalsocket \
   fileupload \
+  ftp-delete \
   ftp-wildcard \
   ftpget \
   ftpgetinfo \
@@ -76,8 +80,12 @@ check_PROGRAMS = \
   imap-ssl \
   imap-store \
   imap-tls \
+  interface \
   ipv6 \
-  maxconnects  \
+  keepalive \
+  localport \
+  log_failed_transfers \
+  maxconnects \
   multi-app \
   multi-debugcallback \
   multi-double \
@@ -85,6 +93,7 @@ check_PROGRAMS = \
   multi-legacy \
   multi-post \
   multi-single \
+  netrc \
   parseurl \
   persistent \
   pop3-authzid \
@@ -104,7 +113,9 @@ check_PROGRAMS = \
   postit2-formadd \
   progressfunc \
   protofeats \
+  range \
   resolve \
+  rtsp-options \
   sendrecv \
   sepheaders \
   sftpget \
@@ -122,31 +133,35 @@ check_PROGRAMS = \
   smtp-tls \
   smtp-vrfy \
   sslbackend \
+  synctime \
   unixsocket \
   url2file \
   urlapi \
   websocket \
-  websocket-cb
+  websocket-cb \
+  websocket-updown
+
+# These examples require external dependencies that may be available during
+# the build.
+COMPLICATED_MAY_BUILD = \
+  cacertinmem.c \
+  multi-uv.c \
+  multithread.c \
+  sessioninfo.c \
+  threaded-ssl.c \
+  usercertinmem.c
 
 # These examples require external dependencies that may not be commonly
 # available on POSIX systems, so do not bother attempting to compile them here.
 COMPLICATED_EXAMPLES = \
-  cacertinmem.c \
   crawler.c \
   ephiperfifo.c \
   evhiperfifo.c \
   ghiper.c \
   hiperfifo.c \
-  href_extractor.c \
   htmltidy.c \
   htmltitle.cpp \
   multi-event.c \
-  multi-uv.c \
-  multithread.c \
-  sessioninfo.c \
   smooth-gtk-thread.c \
-  synctime.c \
-  threaded-ssl.c \
-  usercertinmem.c \
   version-check.pl \
   xmlstream.c

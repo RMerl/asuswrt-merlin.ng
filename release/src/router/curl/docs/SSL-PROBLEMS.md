@@ -1,8 +1,8 @@
-                                  _   _ ____  _
-                              ___| | | |  _ \| |
-                             / __| | | | |_) | |
-                            | (__| |_| |  _ <| |___
-                             \___|\___/|_| \_\_____|
+<!--
+Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
+
+SPDX-License-Identifier: curl
+-->
 
 # SSL problems
 
@@ -22,14 +22,14 @@
 
 ## CA bundle missing intermediate certificates
 
-  When using said CA bundle to verify a server cert, you will experience
+  When using said CA bundle to verify a server cert, you may experience
   problems if your CA store does not contain the certificates for the
   intermediates if the server does not provide them.
 
   The TLS protocol mandates that the intermediate certificates are sent in the
   handshake, but as browsers have ways to survive or work around such
-  omissions, missing intermediates in TLS handshakes still happen that
-  browser-users will not notice.
+  omissions, missing intermediates in TLS handshakes still happen that browser
+  users do not notice.
 
   Browsers work around this problem in two ways: they cache intermediate
   certificates from previous transfers and some implement the TLS "AIA"
@@ -40,11 +40,11 @@
 
   Some broken servers fail to support the protocol negotiation properly that
   SSL servers are supposed to handle. This may cause the connection to fail
-  completely. Sometimes you may need to explicitly select a SSL version to use
-  when connecting to make the connection succeed.
+  completely. Sometimes you may need to explicitly select an SSL version to
+  use when connecting to make the connection succeed.
 
   An additional complication can be that modern SSL libraries sometimes are
-  built with support for older SSL and TLS versions disabled!
+  built with support for older SSL and TLS versions disabled.
 
   All versions of SSL and the TLS versions before 1.2 are considered insecure
   and should be avoided. Use TLS 1.2 or later.

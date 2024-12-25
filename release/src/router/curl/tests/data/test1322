@@ -4,7 +4,7 @@
 HTTP
 HTTP GET
 --resolve
-trailing dot
+trailing-dot
 </keywords>
 </info>
 
@@ -44,7 +44,7 @@ HTTP with --resolve and hostname with trailing dot
 #
 # Verify data after the test has been "shot"
 <verify>
-<protocol>
+<protocol crlf="headers">
 GET /%TESTNUMBER HTTP/1.1
 Host: example.com.:%HTTPPORT
 User-Agent: curl/%VERSION

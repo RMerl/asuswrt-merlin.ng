@@ -31,14 +31,14 @@ http
 HTTP POST zero length, chunked-encoded
 </name>
 <command>
--d "" --header "Transfer-Encoding: chunked" http://%HOSTIP:%HTTPPORT/%TESTNUMBER
+-d "" --header="Transfer-Encoding: chunked" http://%HOSTIP:%HTTPPORT/%TESTNUMBER
 </command>
 </client>
 
 #
 # Verify data after the test has been "shot"
 <verify>
-<protocol>
+<protocol crlf="yes">
 POST /%TESTNUMBER HTTP/1.1
 Host: %HOSTIP:%HTTPPORT
 User-Agent: curl/%VERSION

@@ -123,7 +123,7 @@ $   endif
 $ endif
 $!
 $! Create the a new option file with special fixup for HP SSL
-$! For a shared image, we always want ZLIB and 32 bit HPSSL
+$! For a shared image, we always want ZLIB and 32-bit HPSSL
 $!
 $ if f$search("gnv$libzshr32") .eqs. ""
 $ then
@@ -396,10 +396,11 @@ $   if f$search("[.src]curl.exe") .eqs. ""
 $   then
 $       define/user gnv$libcurl 'gnv_libcurl_share'
 $       link'ldebug'/exe=[.src]curl.exe/dsf=[.src]curl.dsf -
-           [.src]curl-tool_main.o, [.src]curl-tool_binmode.o, -
+           [.src]curl-tool_main.o, -
            [.src]curl-tool_bname.o, [.src]curl-tool_cb_dbg.o, -
            [.src]curl-tool_cb_hdr.o, [.src]curl-tool_cb_prg.o, -
            [.src]curl-tool_cb_rea.o, [.src]curl-tool_cb_see.o, -
+           [.src]curl-tool_cb_soc.o, -
            [.src]curl-tool_cb_wrt.o, [.src]curl-tool_cfgable.o, -
            [.src]curl-tool_convert.o, [.src]curl-tool_dirhie.o, -
            [.src]curl-tool_doswin.o, [.src]curl-tool_easysrc.o, -
@@ -411,11 +412,10 @@ $       link'ldebug'/exe=[.src]curl.exe/dsf=[.src]curl.dsf -
            [.src]curl-tool_msgs.o, [.src]curl-tool_operate.o, -
            [.src]curl-tool_operhlp.o, -
            [.src]curl-tool_paramhlp.o, [.src]curl-tool_parsecfg.o, -
-           [.src]curl-tool_setopt.o, [.src]curl-tool_sleep.o, -
+           [.src]curl-tool_setopt.o, -
            [.src]curl-tool_urlglob.o, [.src]curl-tool_util.o, -
            [.src]curl-tool_vms.o, [.src]curl-tool_writeenv.o, -
            [.src]curl-tool_writeout.o, [.src]curl-tool_xattr.o, -
-           [.src]curl-strtoofft.o, [.src]curl-strdup.o, [.src]curl-strcase.o, -
            [.src]curl-nonblock.o, gnv_packages_vms:curlmsg.obj,-
            sys$input:/opt
 gnv$libcurl/share

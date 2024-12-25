@@ -79,7 +79,7 @@ Set-Cookie: cookie31=%hex[%7f-junk]hex%
 
 </file>
 <precheck>
-perl -e 'if ("%HOSTIP" !~ /\.0\.0\.1$/) {print "Test only works for HOSTIPs ending with .0.0.1"; exit(1)}'
+%PERL -e 'if("%HOSTIP" !~ /\.0\.0\.1$/) {print "Test only works for HOSTIPs ending with .0.0.1"; exit(1)}'
 </precheck>
 <features>
 cookies
@@ -88,7 +88,7 @@ cookies
 
 # Verify data after the test has been "shot"
 <verify>
-<protocol>
+<protocol crlf="headers">
 GET /we/want/%TESTNUMBER HTTP/1.1
 Host: %HOSTIP:%HTTPPORT
 User-Agent: curl/%VERSION

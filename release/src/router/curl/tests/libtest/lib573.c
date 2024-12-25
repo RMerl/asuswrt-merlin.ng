@@ -21,24 +21,20 @@
  * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
-#include "test.h"
+#include "first.h"
 
 #include "testtrace.h"
-#include "testutil.h"
-#include "warnless.h"
 #include "memdebug.h"
-
-#define TEST_HANG_TIMEOUT 60 * 1000
 
 /*
  * Get a single URL without select().
  */
 
-int test(char *URL)
+static CURLcode test_lib573(const char *URL)
 {
-  CURL *c = NULL;
-  CURLM *m = NULL;
-  int res = 0;
+  CURL *curl = NULL;
+  CURLM *multi = NULL;
+  CURLcode res = CURLE_OK;
   int running = 1;
   double connect_time = 0.0;
   double dbl_epsilon;
@@ -52,20 +48,20 @@ int test(char *URL)
 
   global_init(CURL_GLOBAL_ALL);
 
-  easy_init(c);
+  easy_init(curl);
 
-  easy_setopt(c, CURLOPT_HEADER, 1L);
-  easy_setopt(c, CURLOPT_URL, URL);
+  easy_setopt(curl, CURLOPT_HEADER, 1L);
+  easy_setopt(curl, CURLOPT_URL, URL);
 
-  libtest_debug_config.nohex = 1;
-  libtest_debug_config.tracetime = 1;
-  easy_setopt(c, CURLOPT_DEBUGDATA, &libtest_debug_config);
-  easy_setopt(c, CURLOPT_DEBUGFUNCTION, libtest_debug_cb);
-  easy_setopt(c, CURLOPT_VERBOSE, 1L);
+  debug_config.nohex = TRUE;
+  debug_config.tracetime = TRUE;
+  easy_setopt(curl, CURLOPT_DEBUGDATA, &debug_config);
+  easy_setopt(curl, CURLOPT_DEBUGFUNCTION, libtest_debug_cb);
+  easy_setopt(curl, CURLOPT_VERBOSE, 1L);
 
-  multi_init(m);
+  multi_init(multi);
 
-  multi_add_handle(m, c);
+  multi_add_handle(multi, curl);
 
   while(running) {
     struct timeval timeout;
@@ -75,7 +71,7 @@ int test(char *URL)
     timeout.tv_sec = 0;
     timeout.tv_usec = 100000L; /* 100 ms */
 
-    multi_perform(m, &running);
+    multi_perform(multi, &running);
 
     abort_on_test_timeout();
 
@@ -86,7 +82,7 @@ int test(char *URL)
     FD_ZERO(&fdwrite);
     FD_ZERO(&fdexcep);
 
-    multi_fdset(m, &fdread, &fdwrite, &fdexcep, &maxfd);
+    multi_fdset(multi, &fdread, &fdwrite, &fdexcep, &maxfd);
 
     /* At this point, maxfd is guaranteed to be greater or equal than -1. */
 
@@ -95,10 +91,10 @@ int test(char *URL)
     abort_on_test_timeout();
   }
 
-  curl_easy_getinfo(c, CURLINFO_CONNECT_TIME, &connect_time);
+  curl_easy_getinfo(curl, CURLINFO_CONNECT_TIME, &connect_time);
   if(connect_time < dbl_epsilon) {
-    fprintf(stderr, "connect time %e is < epsilon %e\n",
-            connect_time, dbl_epsilon);
+    curl_mfprintf(stderr, "connect time %e is < epsilon %e\n",
+                  connect_time, dbl_epsilon);
     res = TEST_ERR_MAJOR_BAD;
   }
 
@@ -106,9 +102,9 @@ test_cleanup:
 
   /* proper cleanup sequence - type PA */
 
-  curl_multi_remove_handle(m, c);
-  curl_multi_cleanup(m);
-  curl_easy_cleanup(c);
+  curl_multi_remove_handle(multi, curl);
+  curl_multi_cleanup(multi);
+  curl_easy_cleanup(curl);
   curl_global_cleanup();
 
   return res;

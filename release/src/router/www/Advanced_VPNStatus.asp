@@ -226,8 +226,12 @@ function display_vpn_data(){
 
 
 function applyRule(){
-	showLoading();
+	document.form.action_mode.value = "reset_vpn_ip";
+	document.form.action = "apply.cgi";
+	$("html, body").animate({ scrollTop: 0 }, "fast");
+	showLoading(2);
 	document.form.submit();
+	setTimeout("window.location = 'Advanced_VPNStatus.asp';", 2000);
 }
 
 

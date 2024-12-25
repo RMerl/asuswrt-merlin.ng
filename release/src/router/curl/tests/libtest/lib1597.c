@@ -24,7 +24,7 @@
 
 /* Testing CURLOPT_PROTOCOLS_STR */
 
-#include "test.h"
+#include "first.h"
 
 #include "memdebug.h"
 
@@ -33,11 +33,10 @@ struct pair {
   CURLcode *exp;
 };
 
-int test(char *URL)
+static CURLcode test_lib1597(const char *URL)
 {
   CURL *curl = NULL;
-  int res = 0;
-  CURLcode result = CURLE_OK;
+  CURLcode res = CURLE_OK;
   curl_version_info_data *curlinfo;
   const char *const *proto;
   int n;
@@ -77,7 +76,7 @@ int test(char *URL)
   curlinfo = curl_version_info(CURLVERSION_NOW);
   if(!curlinfo) {
     fputs("curl_version_info failed\n", stderr);
-    res = (int) TEST_ERR_FAILURE;
+    res = TEST_ERR_FAILURE;
     goto test_cleanup;
   }
 
@@ -85,10 +84,10 @@ int test(char *URL)
   for(proto = curlinfo->protocols; *proto; proto++) {
     if((size_t) n >= sizeof(protolist)) {
       puts("protolist buffer too small\n");
-      res = (int) TEST_ERR_FAILURE;
+      res = TEST_ERR_FAILURE;
       goto test_cleanup;
     }
-    n += msnprintf(protolist + n, sizeof(protolist) - n, ",%s", *proto);
+    n += curl_msnprintf(protolist + n, sizeof(protolist) - n, ",%s", *proto);
     if(curl_strequal(*proto, "http"))
       httpcode = CURLE_OK;
     if(curl_strequal(*proto, "https"))
@@ -97,19 +96,17 @@ int test(char *URL)
 
   /* Run the tests. */
   for(i = 0; prots[i].in; i++) {
-    result = curl_easy_setopt(curl, CURLOPT_PROTOCOLS_STR, prots[i].in);
-    if(result != *prots[i].exp) {
-      printf("unexpectedly '%s' returned %u\n",
-             prots[i].in, result);
+    res = curl_easy_setopt(curl, CURLOPT_PROTOCOLS_STR, prots[i].in);
+    if(res != *prots[i].exp) {
+      curl_mprintf("unexpectedly '%s' returned %d\n", prots[i].in, res);
       break;
     }
   }
-  printf("Tested %u strings\n", i);
-  res = (int)result;
+  curl_mprintf("Tested %u strings\n", i);
 
 test_cleanup:
   curl_easy_cleanup(curl);
   curl_global_cleanup();
 
-  return (int)result;
+  return res;
 }

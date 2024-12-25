@@ -21,33 +21,25 @@
  * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
-#include "curlcheck.h"
+#include "unitcheck.h"
 
 #include "curl_hmac.h"
 #include "curl_md5.h"
 
-static CURLcode unit_setup(void)
+static CURLcode test_unit1612(const char *arg)
 {
-  return CURLE_OK;
-}
+  UNITTEST_BEGIN_SIMPLE
 
-static void unit_stop(void)
-{
+#if (defined(USE_CURL_NTLM_CORE) && !defined(USE_WINDOWS_SSPI)) || \
+  !defined(CURL_DISABLE_DIGEST_AUTH)
 
-}
-
-UNITTEST_START
-
-#if (defined(USE_CURL_NTLM_CORE) && !defined(USE_WINDOWS_SSPI)) \
-    || !defined(CURL_DISABLE_DIGEST_AUTH)
-
-  const char password[] = "Pa55worD";
-  const char string1[] = "1";
-  const char string2[] = "hello-you-fool";
+  static const char password[] = "Pa55worD";
+  static const char string1[] = "1";
+  static const char string2[] = "hello-you-fool";
   unsigned char output[HMAC_MD5_LENGTH];
   unsigned char *testp = output;
 
-  Curl_hmacit(Curl_HMAC_MD5,
+  Curl_hmacit(&Curl_HMAC_MD5,
               (const unsigned char *) password, strlen(password),
               (const unsigned char *) string1, strlen(string1),
               output);
@@ -56,7 +48,7 @@ UNITTEST_START
                 "\xd1\x29\x75\x43\x58\xdc\xab\x78\xdf\xcd\x7f\x2b\x29\x31\x13"
                 "\x37", HMAC_MD5_LENGTH);
 
-  Curl_hmacit(Curl_HMAC_MD5,
+  Curl_hmacit(&Curl_HMAC_MD5,
               (const unsigned char *) password, strlen(password),
               (const unsigned char *) string2, strlen(string2),
               output);
@@ -66,5 +58,5 @@ UNITTEST_START
                 "\xd0", HMAC_MD5_LENGTH);
 #endif
 
-
-UNITTEST_STOP
+  UNITTEST_END_SIMPLE
+}

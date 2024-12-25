@@ -47,7 +47,7 @@ http
 http-proxy
 </server>
 <name>
-Connect to specific host via HTTP proxy (switch to tunnel mode automatically)
+--connect-to via HTTP proxy (tunnel mode automatically)
 </name>
 
 <command>
@@ -61,14 +61,14 @@ proxy
 #
 # Verify data after the test has been "shot"
 <verify>
-<proxy>
+<proxy crlf="headers">
 CONNECT connect.example.com.%TESTNUMBER:%HTTPPORT HTTP/1.1
 Host: connect.example.com.%TESTNUMBER:%HTTPPORT
 User-Agent: curl/%VERSION
 Proxy-Connection: Keep-Alive
 
 </proxy>
-<protocol>
+<protocol crlf="headers">
 GET /%TESTNUMBER HTTP/1.1
 Host: www.example.com.%TESTNUMBER
 User-Agent: curl/%VERSION

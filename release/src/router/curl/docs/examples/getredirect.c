@@ -35,13 +35,17 @@ int main(void)
   char *location;
   long response_code;
 
+  res = curl_global_init(CURL_GLOBAL_ALL);
+  if(res)
+    return (int)res;
+
   curl = curl_easy_init();
   if(curl) {
     curl_easy_setopt(curl, CURLOPT_URL, "https://example.com");
 
     /* example.com is redirected, figure out the redirection! */
 
-    /* Perform the request, res will get the return code */
+    /* Perform the request, res gets the return code */
     res = curl_easy_perform(curl);
     /* Check for errors */
     if(res != CURLE_OK)
@@ -68,5 +72,6 @@ int main(void)
     /* always cleanup */
     curl_easy_cleanup(curl);
   }
-  return 0;
+  curl_global_cleanup();
+  return (int)res;
 }

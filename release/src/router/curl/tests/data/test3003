@@ -17,9 +17,9 @@ SMTP
 smtp
 </server>
 <name>
-SMTP with multiple and invalid (last) --mail-rcpt and --mail-rcpt-allowfails
+SMTP multiple and invalid (last) --mail-rcpt and --mail-rcpt-allowfails
 </name>
-<stdin>
+<stdin crlf="yes">
 From: different
 To: another
 
@@ -33,7 +33,7 @@ smtp://%HOSTIP:%SMTPPORT/%TESTNUMBER --mail-rcpt-allowfails --mail-rcpt recipien
 #
 # Verify data after the test has been "shot"
 <verify>
-<protocol>
+<protocol crlf="yes">
 EHLO %TESTNUMBER
 MAIL FROM:<sender@example.com>
 RCPT TO:<recipient.one@example.com>
@@ -44,7 +44,7 @@ RCPT TO:<invalid.five>
 DATA
 QUIT
 </protocol>
-<upload>
+<upload crlf="yes">
 From: different
 To: another
 

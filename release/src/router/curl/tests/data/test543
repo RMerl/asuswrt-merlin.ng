@@ -8,19 +8,12 @@ curl_easy_escape
 
 # Client-side
 <client>
-<server>
-none
-</server>
 <tool>
 lib%TESTNUMBER
 </tool>
 <name>
 curl_easy_escape
 </name>
-<command>
--
-</command>
-
 </client>
 
 # Verify data after the test has been "shot"

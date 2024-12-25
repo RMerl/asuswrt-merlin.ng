@@ -21,11 +21,7 @@
  * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
-#include "test.h"
-
-#ifdef HAVE_FCNTL_H
-#include <fcntl.h>
-#endif
+#include "first.h"
 
 #include "memdebug.h"
 
@@ -37,20 +33,20 @@
 
  */
 
-int test(char *URL)
+static CURLcode test_lib562(const char *URL)
 {
   CURL *curl;
   CURLcode res = CURLE_OK;
 
   if(curl_global_init(CURL_GLOBAL_ALL) != CURLE_OK) {
-    fprintf(stderr, "curl_global_init() failed\n");
+    curl_mfprintf(stderr, "curl_global_init() failed\n");
     return TEST_ERR_MAJOR_BAD;
   }
 
   /* get a curl handle */
   curl = curl_easy_init();
   if(!curl) {
-    fprintf(stderr, "curl_easy_init() failed\n");
+    curl_mfprintf(stderr, "curl_easy_init() failed\n");
     curl_global_cleanup();
     return TEST_ERR_MAJOR_BAD;
   }
@@ -59,7 +55,7 @@ int test(char *URL)
   test_setopt(curl, CURLOPT_VERBOSE, 1L);
 
   /* set port number */
-  test_setopt(curl, CURLOPT_PORT, strtol(libtest_arg2, NULL, 10));
+  test_setopt(curl, CURLOPT_PORT, atol(libtest_arg2));
 
   /* specify target */
   test_setopt(curl, CURLOPT_URL, URL);

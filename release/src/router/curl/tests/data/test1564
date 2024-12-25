@@ -15,17 +15,12 @@ wakeup
 <features>
 wakeup
 </features>
-<server>
-none
-</server>
 <tool>
 lib%TESTNUMBER
 </tool>
 <name>
 wakeup before poll with no easy handles
 </name>
-<command>
-</command>
 </client>
 
 # Verify data after the test has been "shot"

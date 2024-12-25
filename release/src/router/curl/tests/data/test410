@@ -36,14 +36,14 @@ HTTPS GET with very long request header
 Long: %repeat[3500 x header content]%
 </file>
 <command>
--k https://%HOSTIP:%HTTPSPORT/%TESTNUMBER -H @%LOGDIR/file%TESTNUMBER
+--insecure https://%HOSTIP:%HTTPSPORT/%TESTNUMBER -H @%LOGDIR/file%TESTNUMBER
 </command>
 </client>
 
 #
 # Verify data after the test has been "shot"
 <verify>
-<protocol>
+<protocol crlf="headers">
 GET /%TESTNUMBER HTTP/1.1
 Host: %HOSTIP:%HTTPSPORT
 User-Agent: curl/%VERSION

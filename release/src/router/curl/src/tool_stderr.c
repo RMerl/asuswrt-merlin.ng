@@ -36,7 +36,7 @@ void tool_init_stderr(void)
   tool_stderr = stderr;
 }
 
-void tool_set_stderr_file(struct GlobalConfig *global, char *filename)
+void tool_set_stderr_file(const char *filename)
 {
   FILE *fp;
 
@@ -50,12 +50,12 @@ void tool_set_stderr_file(struct GlobalConfig *global, char *filename)
 
   /* precheck that filename is accessible to lessen the chance that the
      subsequent freopen will fail. */
-  fp = fopen(filename, FOPEN_WRITETEXT);
+  fp = curlx_fopen(filename, FOPEN_WRITETEXT);
   if(!fp) {
-    warnf(global, "Warning: Failed to open %s", filename);
+    warnf("Warning: Failed to open %s", filename);
     return;
   }
-  fclose(fp);
+  curlx_fclose(fp);
 
   /* freopen the actual stderr (stdio.h stderr) instead of tool_stderr since
      the latter may be set to stdout. */

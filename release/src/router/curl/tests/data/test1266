@@ -19,10 +19,6 @@ swsclose
 #
 # Client-side
 <client>
-# hyper doesn't grok HTTP/0.9
-<features>
-!hyper
-</features>
 <server>
 http
 </server>
@@ -37,7 +33,7 @@ http://%HOSTIP:%HTTPPORT/%TESTNUMBER --http0.9
 #
 # Verify data after the test has been "shot"
 <verify>
-<protocol>
+<protocol crlf="headers">
 GET /%TESTNUMBER HTTP/1.1
 Host: %HOSTIP:%HTTPPORT
 User-Agent: curl/%VERSION

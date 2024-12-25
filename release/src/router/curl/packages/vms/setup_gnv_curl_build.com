@@ -66,9 +66,9 @@ $! Set the compiler options for GNV CC wrapper to inherit.
 $ cc :== cc'clist''cnames'/nested_include_directory=none
 $ cxx :== cxx'clist''cnames'/nested_include_directory=none
 $ pointer_size = "32"
-$! Note 64 bit pointers requires all libraries to either have
-$! 64 bit pointers or have #pragma directives.
-$! Currently building curl on VMS with 64 bit pointers does not work.
+$! Note 64-bit pointers requires all libraries to either have
+$! 64-bit pointers or have #pragma directives.
+$! Currently building curl on VMS with 64-bit pointers does not work.
 $!
 $! A logical name to make it easier to find some of the hacks.
 $ define/job gnv_hacks 'base_dir'
@@ -102,7 +102,7 @@ $ define/job decc$system_include prj_root:[.include.curl],-
     gnv$zlib_include:,-
     sys$sysroot:[kerberos.include]
 $!
-$! Set up a include list for the compiler to find all the header files
+$! Set up an include list for the compiler to find all the header files
 $! that they need.
 $!
 $ define/job decc$user_include src_root:[.include.curl]

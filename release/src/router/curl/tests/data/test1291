@@ -11,15 +11,10 @@ HTTP PUT
 #
 # Server-side
 <reply>
-<data>
-</data>
 </reply>
 
 # Client-side
 <client>
-<server>
-none
-</server>
 <name>
 Attempt to upload 1000 files but fail immediately
 </name>
@@ -31,7 +26,7 @@ XXXXXXXx
 </file>
 # generate the config file
 <precheck>
-perl -e 'for(1 .. 1000) { printf("upload-file=%LOGDIR/upload-this\nurl=htttttp://non-existing-host.haxx.se/upload/%TESTNUMBER\n", $_);}' > %LOGDIR/cmd%TESTNUMBER;
+%PERL -e 'for(1 .. 1000) { printf("upload-file=%LOGDIR/upload-this\nurl=htttttp://non-existing-host.haxx.se/upload/%TESTNUMBER\n", $_);}' > %LOGDIR/cmd%TESTNUMBER;
 </precheck>
 </client>
 
@@ -40,5 +35,8 @@ perl -e 'for(1 .. 1000) { printf("upload-file=%LOGDIR/upload-this\nurl=htttttp:/
 <errorcode>
 1
 </errorcode>
+<limits>
+Allocations: 3100
+</limits>
 </verify>
 </testcase>

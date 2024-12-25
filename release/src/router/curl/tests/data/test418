@@ -46,13 +46,13 @@ http://%HOSTIP:%HTTPPORT/%TESTNUMBER -sS --tr-encoding
 #
 # Verify data after the test has been "shot"
 <verify>
-<protocol crlf="yes">
+<protocol crlf="headers">
 GET /%TESTNUMBER HTTP/1.1
 Host: %HOSTIP:%HTTPPORT
 User-Agent: curl/%VERSION
 Accept: */*
-Connection: TE
 TE: gzip
+Connection: TE
 
 </protocol>
 

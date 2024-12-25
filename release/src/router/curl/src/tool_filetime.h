@@ -25,18 +25,13 @@
  ***************************************************************************/
 #include "tool_setup.h"
 
-struct GlobalConfig;
+int getfiletime(const char *filename, curl_off_t *stamp);
 
-int getfiletime(const char *filename, struct GlobalConfig *global,
-                curl_off_t *stamp);
-
-#if defined(HAVE_UTIME) || defined(HAVE_UTIMES) ||      \
-  (defined(WIN32) && (SIZEOF_CURL_OFF_T >= 8))
-void setfiletime(curl_off_t filetime, const char *filename,
-                 struct GlobalConfig *global);
+#if defined(HAVE_UTIME) || defined(HAVE_UTIMES) || \
+  (defined(_WIN32) && (SIZEOF_CURL_OFF_T >= 8))
+void setfiletime(curl_off_t filetime, const char *filename);
 #else
-#define setfiletime(a,b,c) Curl_nop_stmt
-#endif /* defined(HAVE_UTIME) || defined(HAVE_UTIMES) ||        \
-          (defined(WIN32) && (SIZEOF_CURL_OFF_T >= 8)) */
+#define setfiletime(a,b,c) tool_nop_stmt
+#endif
 
 #endif /* HEADER_CURL_TOOL_FILETIME_H */

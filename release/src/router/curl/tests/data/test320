@@ -56,9 +56,7 @@ simple TLS-SRP HTTPS GET, check user in response
 
 # Verify data after the test has been "shot"
 <verify>
-<protocol>
-</protocol>
-<file name="%LOGDIR/curl%TESTNUMBER.out">
+<file name="%LOGDIR/curl%TESTNUMBER.out" crlf="headers">
 HTTP/1.0 200 OK
 Content-type: text/html
 

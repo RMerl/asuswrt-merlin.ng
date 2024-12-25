@@ -9,7 +9,7 @@
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
- * are also available at https://curl.haxx.se/docs/copyright.html.
+ * are also available at https://curl.se/docs/copyright.html.
  *
  * You may opt to use, copy, modify, merge, publish, distribute and/or sell
  * copies of the Software, and permit persons to whom the Software is
@@ -21,61 +21,58 @@
  * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
-
-#include "test.h"
+#include "first.h"
 
 #include "memdebug.h"
 
-#ifdef _MSC_VER
-/* warning C4706: assignment within conditional expression */
-#pragma warning(disable:4706)
-#endif
-static void showem(CURL *easy, unsigned int type)
+static void t1945_showem(CURL *curl, unsigned int type)
 {
   struct curl_header *header = NULL;
   struct curl_header *prev = NULL;
 
-  while((header = curl_easy_nextheader(easy, type, 0, prev))) {
-    printf(" %s == %s (%u/%u)\n", header->name, header->value,
-           (int)header->index, (int)header->amount);
+  /* !checksrc! disable EQUALSNULL 1 */
+  while((header = curl_easy_nextheader(curl, type, 0, prev)) != NULL) {
+    curl_mprintf(" %s == %s (%zu/%zu)\n", header->name, header->value,
+                 header->index, header->amount);
     prev = header;
   }
 }
 
-static size_t write_cb(char *data, size_t n, size_t l, void *userp)
+static size_t t1945_write_cb(char *data, size_t n, size_t l, void *userp)
 {
   /* take care of the data here, ignored in this example */
   (void)data;
   (void)userp;
   return n*l;
 }
-int test(char *URL)
+
+static CURLcode test_lib1945(const char *URL)
 {
-  CURL *easy;
+  CURL *curl;
   CURLcode res = CURLE_OK;
 
   global_init(CURL_GLOBAL_DEFAULT);
 
-  easy_init(easy);
-  curl_easy_setopt(easy, CURLOPT_URL, URL);
-  curl_easy_setopt(easy, CURLOPT_VERBOSE, 1L);
-  curl_easy_setopt(easy, CURLOPT_FOLLOWLOCATION, 1L);
+  easy_init(curl);
+  curl_easy_setopt(curl, CURLOPT_URL, URL);
+  curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+  curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
   /* ignores any content */
-  curl_easy_setopt(easy, CURLOPT_WRITEFUNCTION, write_cb);
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, t1945_write_cb);
 
   /* if there's a proxy set, use it */
   if(libtest_arg2 && *libtest_arg2) {
-    curl_easy_setopt(easy, CURLOPT_PROXY, libtest_arg2);
-    curl_easy_setopt(easy, CURLOPT_HTTPPROXYTUNNEL, 1L);
+    curl_easy_setopt(curl, CURLOPT_PROXY, libtest_arg2);
+    curl_easy_setopt(curl, CURLOPT_HTTPPROXYTUNNEL, 1L);
   }
-  res = curl_easy_perform(easy);
+  res = curl_easy_perform(curl);
   if(res) {
-    printf("badness: %d\n", (int)res);
+    curl_mprintf("badness: %d\n", res);
   }
-  showem(easy, CURLH_CONNECT|CURLH_HEADER|CURLH_TRAILER|CURLH_1XX);
+  t1945_showem(curl, CURLH_CONNECT|CURLH_HEADER|CURLH_TRAILER|CURLH_1XX);
 
 test_cleanup:
-  curl_easy_cleanup(easy);
+  curl_easy_cleanup(curl);
   curl_global_cleanup();
-  return (int)res;
+  return res;
 }

@@ -29,7 +29,7 @@ Content-Type: fake/data
 http
 </server>
 <features>
-debug
+Debug
 xattr
 </features>
 # simulate the xattr operations
@@ -47,7 +47,7 @@ http://%HOSTIP:%HTTPPORT/%TESTNUMBER --xattr -o %LOGDIR/out%TESTNUMBER
 #
 # Verify data after the test has been "shot"
 <verify>
-<protocol>
+<protocol crlf="headers">
 GET /%TESTNUMBER HTTP/1.1
 Host: %HOSTIP:%HTTPPORT
 User-Agent: curl/%VERSION
@@ -55,6 +55,7 @@ Accept: */*
 
 </protocol>
 <stdout mode="text">
+user.creator => curl
 user.mime_type => fake/data
 user.xdg.origin.url => http://%HOSTIP:%HTTPPORT/%TESTNUMBER
 </stdout>

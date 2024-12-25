@@ -8,7 +8,7 @@ HTTP GET
 
 #
 <reply>
-<data nocheck="yes">
+<data crlf="headers" nocheck="yes">
 HTTP/1.1 200 OK
 Date: Tue, 09 Nov 2010 14:49:00 GMT
 Server: test-server/fake
@@ -30,17 +30,14 @@ file
 HTTP GET -o fname without Content-Disposition (empty file)
 </name>
 <command option="no-output,no-include">
-http://%HOSTIP:%HTTPPORT/%TESTNUMBER -o %LOGDIR/outfile%TESTNUMBER file://%PWD/%LOGDIR/outfile%TESTNUMBER
+http://%HOSTIP:%HTTPPORT/%TESTNUMBER -o %LOGDIR/outfile%TESTNUMBER file://%FILE_PWD/%LOGDIR/outfile%TESTNUMBER
 </command>
-<postcheck>
-perl %SRCDIR/libtest/notexists.pl %LOGDIR/%TESTNUMBER
-</postcheck>
 </client>
 
 #
 # Verify data after the test has been "shot"
 <verify>
-<protocol>
+<protocol crlf="headers">
 GET /%TESTNUMBER HTTP/1.1
 Host: %HOSTIP:%HTTPPORT
 User-Agent: curl/%VERSION
@@ -51,5 +48,8 @@ Accept: */*
 <file1 name="%LOGDIR/outfile%TESTNUMBER">
 </file1>
 
+<notexists>
+%LOGDIR/%TESTNUMBER
+</notexists>
 </verify>
 </testcase>

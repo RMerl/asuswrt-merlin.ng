@@ -21,55 +21,89 @@
  * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
-#include "curlcheck.h"
-
-/* copied from urlapi.c */
-extern int dedotdotify(const char *input, size_t clen, char **out);
-
+#include "unitcheck.h"
 #include "memdebug.h"
+#include "unitprotos.h"
 
-static CURLcode unit_setup(void)
+static CURLcode test_unit1395(const char *arg)
 {
-  return CURLE_OK;
-}
-
-static void unit_stop(void)
-{
-
-}
-
-struct dotdot {
-  const char *input;
-  const char *output;
-};
-
-UNITTEST_START
+  UNITTEST_BEGIN_SIMPLE
 
   unsigned int i;
   int fails = 0;
+
+  struct dotdot {
+    const char *input;
+    const char *output;
+  };
+
   const struct dotdot pairs[] = {
+    { "%2f%2e%2e%2f/../a", "%2f%2e%2e%2f/a" },
+    { "%2f%2e%2e%2f/../", "%2f%2e%2e%2f/" },
+    { "%2f%2e%2e%2f/.", "%2f%2e%2e%2f/" },
+    { "%2f%2e%2e%2f/", "%2f%2e%2e%2f/" },
+    { "%2f%2e%2e%2f", "%2f%2e%2e%2f" },
+    { "%2f%2e%2e%2", "%2f%2e%2e%2" },
+    { "%2f%2e%2e%", "%2f%2e%2e%" },
+    { "%2f%2e%2e", "%2f%2e%2e" },
+    { "%2f%2e%2", "%2f%2e%2" },
+    { "%2f%2e%", "%2f%2e%" },
+    { "%2f%2e", "%2f%2e" },
+    { "%2f%2", "%2f%2" },
+    { "%2f%", "%2f%" },
+    { "%2f", "%2f" },
+    { "%2", "%2" },
+    { "%", NULL },
+    { "2", NULL },
+    { "e", NULL },
+    { ".", NULL },
+    { "./", "" },
+    { "..", "" },
+    { "../", "" },
+    { "../a", "a" },
+    { "///moo.", "///moo." },
+    { ".///moo.", "//moo." },
+    { "./moo..", "moo.." },
+    { "./moo../", "moo../" },
+    { "./moo../.m", "moo../.m" },
+    { "./moo", "moo" },
+    { "../moo", "moo" },
+    { "../moo?", "moo?" },
+    { "../moo?#", "moo?#" },
+    { "../moo?#?..", "moo?#?.." },
+    { "/../moo/..", "/" },
+    { "/a/c/%2e%2E/b", "/a/b" },
+    { "/a/%2e/g", "/a/g" },
+    { "/a/b/c/./g", "/a/b/c/g" },
+    { "/a/c/../b", "/a/b" },
     { "/a/b/c/./../../g", "/a/g" },
+    { "/a/b/c/./%2e%2E/../g", "/a/g" },
+    { "/a/b/c/./../%2e%2E/g", "/a/g" },
+    { "/a/b/c/%2E/%2e%2E/%2e%2E/g", "/a/g" },
     { "mid/content=5/../6", "mid/6" },
     { "/hello/../moo", "/moo" },
     { "/1/../1", "/1" },
     { "/1/./1", "/1/1" },
+    { "/1/%2e/1", "/1/1" },
+    { "/1/%2E/1", "/1/1" },
     { "/1/..", "/" },
     { "/1/.", "/1/" },
+    { "/1/%2e", "/1/" },
+    { "/1/%2E", "/1/" },
     { "/1/./..", "/" },
+    { "/1/%2e/.%2E", "/" },
+    { "/1/./%2e.", "/" },
     { "/1/./../2", "/2" },
     { "/hello/1/./../2", "/hello/2" },
-    { "test/this", NULL },
+    { "test/this", "test/this" },
     { "test/this/../now", "test/now" },
     { "/1../moo../foo", "/1../moo../foo"},
     { "/../../moo", "/moo"},
     { "/../../moo?", "/moo?"},
-    { "/123?", NULL},
-    { "/../moo/..?", "/" },
+    { "/123?", "/123?" },
     { "/", NULL },
     { "", NULL },
     { "/.../", "/.../" },
-    { "./moo", "moo" },
-    { "../moo", "moo" },
     { "/.", "/" },
     { "/..", "/" },
     { "/moo/..", "/" },
@@ -77,29 +111,32 @@ UNITTEST_START
     { "/.", "/" },
   };
 
-  for(i = 0; i < sizeof(pairs)/sizeof(pairs[0]); i++) {
+  for(i = 0; i < CURL_ARRAYSIZE(pairs); i++) {
     char *out;
     int err = dedotdotify(pairs[i].input, strlen(pairs[i].input), &out);
     abort_unless(err == 0, "returned error");
     abort_if(err && out, "returned error with output");
 
-    if(out && strcmp(out, pairs[i].output)) {
-      fprintf(stderr, "Test %u: '%s' gave '%s' instead of '%s'\n",
-              i, pairs[i].input, out, pairs[i].output);
+    if(out && pairs[i].output && strcmp(out, pairs[i].output)) {
+      curl_mfprintf(stderr, "Test %u: '%s' gave '%s' instead of '%s'\n",
+                    i, pairs[i].input, out, pairs[i].output);
       fail("Test case output mismatched");
       fails++;
     }
-    else if(!out && pairs[i].output) {
-      fprintf(stderr, "Test %u: '%s' gave '%s' instead of NULL\n",
-              i, pairs[i].input, out);
+    else if((!out && pairs[i].output) ||
+            (out && !pairs[i].output)) {
+      curl_mfprintf(stderr, "Test %u: '%s' gave '%s' instead of '%s'\n",
+                    i, pairs[i].input, out ? out : "(null)",
+                    pairs[i].output ? pairs[i].output : "(null)");
       fail("Test case output mismatched");
       fails++;
     }
     else
-      fprintf(stderr, "Test %u: OK\n", i);
+      curl_mfprintf(stderr, "Test %u: OK\n", i);
     free(out);
   }
 
   fail_if(fails, "output mismatched");
 
-UNITTEST_STOP
+  UNITTEST_END_SIMPLE
+}

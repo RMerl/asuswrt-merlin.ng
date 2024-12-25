@@ -21,53 +21,10 @@
  * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
+#include "first.h"
 
-#include "test.h"
-
-#ifdef USE_WEBSOCKETS
-
-static int ping(CURL *curl, const char *send_payload)
-{
-  size_t sent;
-  CURLcode result =
-    curl_ws_send(curl, send_payload, strlen(send_payload), &sent, 0,
-                 CURLWS_PING);
-  fprintf(stderr,
-          "ws: curl_ws_send returned %u, sent %u\n", (int)result, (int)sent);
-
-  return (int)result;
-}
-
-static int recv_pong(CURL *curl, const char *expected_payload)
-{
-  size_t rlen;
-  const struct curl_ws_frame *meta;
-  char buffer[256];
-  CURLcode result = curl_ws_recv(curl, buffer, sizeof(buffer), &rlen, &meta);
-  if(!result) {
-    if(meta->flags & CURLWS_PONG) {
-      int same = 0;
-      fprintf(stderr, "ws: got PONG back\n");
-      if(rlen == strlen(expected_payload)) {
-        if(!memcmp(expected_payload, buffer, rlen)) {
-          fprintf(stderr, "ws: got the same payload back\n");
-          same = 1;
-        }
-      }
-      if(!same)
-        fprintf(stderr, "ws: did NOT get the same payload back\n");
-    }
-    else {
-      fprintf(stderr, "recv_pong: got %u bytes rflags %x\n", (int)rlen,
-              meta->flags);
-    }
-  }
-  fprintf(stderr, "ws: curl_ws_recv returned %u, received %u\n", (int)result,
-          (int)rlen);
-  return (int)result;
-}
-
-static int recv_any(CURL *curl)
+#ifndef CURL_DISABLE_WEBSOCKETS
+static CURLcode recv_any(CURL *curl)
 {
   size_t rlen;
   const struct curl_ws_frame *meta;
@@ -76,42 +33,34 @@ static int recv_any(CURL *curl)
   if(result)
     return result;
 
-  fprintf(stderr, "recv_any: got %u bytes rflags %x\n", (int)rlen,
-          meta->flags);
-  return 0;
+  curl_mfprintf(stderr, "recv_any: got %zu bytes rflags %x\n", rlen,
+                meta->flags);
+  return CURLE_OK;
 }
 
-/* just close the connection */
-static void websocket_close(CURL *curl)
-{
-  size_t sent;
-  CURLcode result =
-    curl_ws_send(curl, "", 0, &sent, 0, CURLWS_CLOSE);
-  fprintf(stderr,
-          "ws: curl_ws_send returned %u, sent %u\n", (int)result, (int)sent);
-}
-
-static void websocket(CURL *curl)
+static void t2304_websocket(CURL *curl)
 {
   int i = 0;
-  fprintf(stderr, "ws: websocket() starts\n");
+  curl_mfprintf(stderr, "ws: websocket() starts\n");
   do {
     recv_any(curl);
-    fprintf(stderr, "Send ping\n");
-    if(ping(curl, "foobar"))
+    curl_mfprintf(stderr, "Send ping\n");
+    if(ws_send_ping(curl, "foobar"))
       return;
-    fprintf(stderr, "Receive pong\n");
-    if(recv_pong(curl, "foobar")) {
-      printf("Connection closed\n");
+    curl_mfprintf(stderr, "Receive pong\n");
+    if(ws_recv_pong(curl, "foobar")) {
+      curl_mprintf("Connection closed\n");
       return;
     }
-    sleep(2);
+    curlx_wait_ms(2000);
   } while(i++ < 10);
-  websocket_close(curl);
+  ws_close(curl);
 }
+#endif
 
-int test(char *URL)
+static CURLcode test_lib2304(const char *URL)
 {
+#ifndef CURL_DISABLE_WEBSOCKETS
   CURL *curl;
   CURLcode res = CURLE_OK;
 
@@ -126,17 +75,16 @@ int test(char *URL)
     curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
     curl_easy_setopt(curl, CURLOPT_CONNECT_ONLY, 2L); /* websocket style */
     res = curl_easy_perform(curl);
-    fprintf(stderr, "curl_easy_perform() returned %u\n", (int)res);
+    curl_mfprintf(stderr, "curl_easy_perform() returned %d\n", res);
     if(res == CURLE_OK)
-      websocket(curl);
+      t2304_websocket(curl);
 
     /* always cleanup */
     curl_easy_cleanup(curl);
   }
   curl_global_cleanup();
-  return (int)res;
-}
-
+  return res;
 #else
-NO_SUPPORT_BUILT_IN
+  NO_SUPPORT_BUILT_IN
 #endif
+}

@@ -21,24 +21,18 @@
  * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
-/* used for test case 533, 534 and 535 */
+/* used for test case 533, 534, 535 and 546 */
 
-#include "test.h"
+#include "first.h"
 
-#include <fcntl.h>
-
-#include "testutil.h"
-#include "warnless.h"
 #include "memdebug.h"
 
-#define TEST_HANG_TIMEOUT 60 * 1000
-
-int test(char *URL)
+static CURLcode test_lib533(const char *URL)
 {
-  int res = 0;
+  CURLcode res = CURLE_OK;
   CURL *curl = NULL;
   int running;
-  CURLM *m = NULL;
+  CURLM *multi = NULL;
   int current = 0;
 
   start_test_timing();
@@ -51,11 +45,11 @@ int test(char *URL)
   easy_setopt(curl, CURLOPT_VERBOSE, 1L);
   easy_setopt(curl, CURLOPT_FAILONERROR, 1L);
 
-  multi_init(m);
+  multi_init(multi);
 
-  multi_add_handle(m, curl);
+  multi_add_handle(multi, curl);
 
-  fprintf(stderr, "Start at URL 0\n");
+  curl_mfprintf(stderr, "Start at URL 0\n");
 
   for(;;) {
     struct timeval interval;
@@ -65,15 +59,15 @@ int test(char *URL)
     interval.tv_sec = 1;
     interval.tv_usec = 0;
 
-    multi_perform(m, &running);
+    multi_perform(multi, &running);
 
     abort_on_test_timeout();
 
     if(!running) {
       if(!current++) {
-        fprintf(stderr, "Advancing to URL 1\n");
+        curl_mfprintf(stderr, "Advancing to URL 1\n");
         /* remove the handle we use */
-        curl_multi_remove_handle(m, curl);
+        curl_multi_remove_handle(multi, curl);
 
         /* make us reuse the same handle all the time, and try resetting
            the handle first too */
@@ -83,7 +77,7 @@ int test(char *URL)
         easy_setopt(curl, CURLOPT_FAILONERROR, 1L);
 
         /* re-add it */
-        multi_add_handle(m, curl);
+        multi_add_handle(multi, curl);
       }
       else
         break; /* done */
@@ -93,7 +87,7 @@ int test(char *URL)
     FD_ZERO(&wr);
     FD_ZERO(&exc);
 
-    multi_fdset(m, &rd, &wr, &exc, &maxfd);
+    multi_fdset(multi, &rd, &wr, &exc, &maxfd);
 
     /* At this point, maxfd is guaranteed to be greater or equal than -1. */
 
@@ -107,7 +101,7 @@ test_cleanup:
   /* undocumented cleanup sequence - type UB */
 
   curl_easy_cleanup(curl);
-  curl_multi_cleanup(m);
+  curl_multi_cleanup(multi);
   curl_global_cleanup();
 
   return res;

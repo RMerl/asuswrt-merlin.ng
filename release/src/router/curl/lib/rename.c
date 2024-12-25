@@ -29,25 +29,24 @@
 #if (!defined(CURL_DISABLE_HTTP) || !defined(CURL_DISABLE_COOKIES)) || \
   !defined(CURL_DISABLE_ALTSVC)
 
-#include "curl_multibyte.h"
-#include "timeval.h"
+#include "curlx/multibyte.h"
+#include "curlx/timeval.h"
 
-/* The last 3 #include files should be in this order */
-#include "curl_printf.h"
+/* The last 2 #include files should be in this order */
 #include "curl_memory.h"
 #include "memdebug.h"
 
 /* return 0 on success, 1 on error */
 int Curl_rename(const char *oldpath, const char *newpath)
 {
-#ifdef WIN32
-  /* rename() on Windows doesn't overwrite, so we can't use it here.
+#if defined(_WIN32) && !defined(UNDER_CE)
+  /* rename() on Windows does not overwrite, so we cannot use it here.
      MoveFileEx() will overwrite and is usually atomic, however it fails
      when there are open handles to the file. */
   const int max_wait_ms = 1000;
-  struct curltime start = Curl_now();
-  TCHAR *tchar_oldpath = curlx_convert_UTF8_to_tchar((char *)oldpath);
-  TCHAR *tchar_newpath = curlx_convert_UTF8_to_tchar((char *)newpath);
+  struct curltime start = curlx_now();
+  TCHAR *tchar_oldpath = curlx_convert_UTF8_to_tchar(oldpath);
+  TCHAR *tchar_newpath = curlx_convert_UTF8_to_tchar(newpath);
   for(;;) {
     timediff_t diff;
     if(MoveFileEx(tchar_oldpath, tchar_newpath, MOVEFILE_REPLACE_EXISTING)) {
@@ -55,7 +54,7 @@ int Curl_rename(const char *oldpath, const char *newpath)
       curlx_unicodefree(tchar_newpath);
       break;
     }
-    diff = Curl_timediff(Curl_now(), start);
+    diff = curlx_timediff(curlx_now(), start);
     if(diff < 0 || diff > max_wait_ms) {
       curlx_unicodefree(tchar_oldpath);
       curlx_unicodefree(tchar_newpath);

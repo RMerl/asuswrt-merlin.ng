@@ -25,31 +25,20 @@ MOOOO
 
 # Client-side
 <client>
-# this relies on the debug feature to allow us to set directory to store the
-# -O output in, using the CURL_TESTDIR variable
-<features>
-debug
-</features>
 <server>
 ftp
 </server>
 <name>
 FTP download, file with C-D inside, using -O -J -D file
 </name>
-<setenv>
-CURL_TESTDIR=%LOGDIR
-</setenv>
 <command option="no-output,no-include">
-ftp://%HOSTIP:%FTPPORT/path/file%TESTNUMBER -O -J -D %LOGDIR/heads%TESTNUMBER
+ftp://%HOSTIP:%FTPPORT/path/file%TESTNUMBER -O -J -D %LOGDIR/heads%TESTNUMBER --output-dir %LOGDIR
 </command>
-<postcheck>
-perl %SRCDIR/libtest/notexists.pl %LOGDIR/name%TESTNUMBER
-</postcheck>
 </client>
 
 # Verify data after the test has been "shot"
 <verify>
-<protocol>
+<protocol crlf="yes">
 USER anonymous
 PASS ftp@example.com
 PWD
@@ -73,11 +62,11 @@ Content-Disposition: filename=name%TESTNUMBER; charset=funny; option=strange
 MOOOO
 </file1>
 
-<file2 name="%LOGDIR/heads%TESTNUMBER">
-220-        _   _ ____  _     
-220-    ___| | | |  _ \| |    
-220-   / __| | | | |_) | |    
-220-  | (__| |_| |  _ {| |___ 
+<file2 name="%LOGDIR/heads%TESTNUMBER" crlf="yes">
+220-        _   _ ____  _%spc%%spc%%spc%%spc%%spc%
+220-    ___| | | |  _ \| |%spc%%spc%%spc%%spc%
+220-   / __| | | | |_) | |%spc%%spc%%spc%%spc%
+220-  | (__| |_| |  _ {| |___%spc%
 220    \___|\___/|_| \_\_____|
 331 We are happy you popped in!
 230 Welcome you silly person
@@ -96,5 +85,8 @@ s/^(229 Entering Passive Mode \().*(\).*)/${1}stripped${2}/
 <file3 name="%LOGDIR/stdout%TESTNUMBER">
 </file3>
 
+<notexists>
+%LOGDIR/name%TESTNUMBER
+</notexists>
 </verify>
 </testcase>

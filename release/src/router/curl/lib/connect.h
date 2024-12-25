@@ -25,19 +25,42 @@
  ***************************************************************************/
 #include "curl_setup.h"
 
-#include "nonblock.h" /* for curlx_nonblock(), formerly Curl_nonblock() */
+#include "curlx/nonblock.h" /* for curlx_nonblock() */
 #include "sockaddr.h"
-#include "timeval.h"
+#include "curlx/timeval.h"
 
 struct Curl_dns_entry;
+struct ip_quadruple;
 
-/* generic function that returns how much time there's left to run, according
+enum alpnid Curl_alpn2alpnid(const char *name, size_t len);
+
+/* generic function that returns how much time there is left to run, according
    to the timeouts set */
 timediff_t Curl_timeleft(struct Curl_easy *data,
                          struct curltime *nowp,
                          bool duringconnect);
 
 #define DEFAULT_CONNECT_TIMEOUT 300000 /* milliseconds == five minutes */
+
+#define DEFAULT_SHUTDOWN_TIMEOUT_MS   (2 * 1000)
+
+void Curl_shutdown_start(struct Curl_easy *data, int sockindex,
+                         int timeout_ms, struct curltime *nowp);
+
+/* return how much time there is left to shutdown the connection at
+ * sockindex. Returns 0 if there is no limit or shutdown has not started. */
+timediff_t Curl_shutdown_timeleft(struct connectdata *conn, int sockindex,
+                                  struct curltime *nowp);
+
+/* return how much time there is left to shutdown the connection.
+ * Returns 0 if there is no limit or shutdown has not started. */
+timediff_t Curl_conn_shutdown_timeleft(struct connectdata *conn,
+                                       struct curltime *nowp);
+
+void Curl_shutdown_clear(struct Curl_easy *data, int sockindex);
+
+/* TRUE iff shutdown has been started */
+bool Curl_shutdown_started(struct Curl_easy *data, int sockindex);
 
 /*
  * Used to extract socket and connectdata struct for the most recent
@@ -50,9 +73,6 @@ curl_socket_t Curl_getconnectinfo(struct Curl_easy *data,
 
 bool Curl_addr2string(struct sockaddr *sa, curl_socklen_t salen,
                       char *addr, int *port);
-
-void Curl_persistconninfo(struct Curl_easy *data, struct connectdata *conn,
-                          char *local_ip, int local_port);
 
 /*
  * Curl_conncontrol() marks the end of a connection/stream. The 'closeit'
@@ -87,26 +107,8 @@ void Curl_conncontrol(struct connectdata *conn,
 #define connkeep(x,y) Curl_conncontrol(x, CONNCTRL_KEEP)
 #endif
 
-/**
- * Create a cfilter for making an "ip" connection to the
- * given address, using parameters from `conn`. The "ip" connection
- * can be a TCP socket, a UDP socket or even a QUIC connection.
- *
- * It MUST use only the supplied `ai` for its connection attempt.
- *
- * Such a filter may be used in "happy eyeball" scenarios, and its
- * `connect` implementation needs to support non-blocking. Once connected,
- * it MAY be installed in the connection filter chain to serve transfers.
- */
-typedef CURLcode cf_ip_connect_create(struct Curl_cfilter **pcf,
-                                      struct Curl_easy *data,
-                                      struct connectdata *conn,
-                                      const struct Curl_addrinfo *ai,
-                                      int transport);
-
 CURLcode Curl_cf_setup_insert_after(struct Curl_cfilter *cf_at,
                                     struct Curl_easy *data,
-                                    const struct Curl_dns_entry *remotehost,
                                     int transport,
                                     int ssl_mode);
 
@@ -118,15 +120,12 @@ CURLcode Curl_cf_setup_insert_after(struct Curl_cfilter *cf_at,
 CURLcode Curl_conn_setup(struct Curl_easy *data,
                          struct connectdata *conn,
                          int sockindex,
-                         const struct Curl_dns_entry *remotehost,
+                         struct Curl_dns_entry *dns,
                          int ssl_mode);
 
-extern struct Curl_cftype Curl_cft_happy_eyeballs;
-extern struct Curl_cftype Curl_cft_setup;
+/* Set conn to allow multiplexing. */
+void Curl_conn_set_multiplex(struct connectdata *conn);
 
-#ifdef DEBUGBUILD
-void Curl_debug_set_transport_provider(int transport,
-                                       cf_ip_connect_create *cf_create);
-#endif
+extern struct Curl_cftype Curl_cft_setup;
 
 #endif /* HEADER_CURL_CONNECT_H */

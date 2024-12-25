@@ -47,7 +47,7 @@ Funny-head: yesyes
 http
 </server>
 <features>
-debug
+Debug
 xattr
 </features>
 # simulate the xattr operations
@@ -65,7 +65,7 @@ http://%HOSTIP:%HTTPPORT/%TESTNUMBER --xattr -L -o %LOGDIR/out%TESTNUMBER
 #
 # Verify data after the test has been "shot"
 <verify>
-<protocol>
+<protocol crlf="headers">
 GET /%TESTNUMBER HTTP/1.1
 Host: %HOSTIP:%HTTPPORT
 User-Agent: curl/%VERSION
@@ -78,6 +78,7 @@ Accept: */*
 
 </protocol>
 <stdout mode="text">
+user.creator => curl
 user.mime_type => text/html
 user.xdg.origin.url => http://%HOSTIP:%HTTPPORT/%TESTNUMBER
 </stdout>

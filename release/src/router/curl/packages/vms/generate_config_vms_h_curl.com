@@ -71,8 +71,8 @@ $!  ssl$* logicals means HP ssl is present
 $!----------------------------------------
 $   if f$trnlnm("ssl$root") .nes. ""
 $   then
-$	nohpssl = 0
-$	hpssl = 1
+$       nohpssl = 0
+$       hpssl = 1
 $   endif
 $!
 $!  HP defines OPENSSL as SSL$INCLUDE as a convenience for linking.
@@ -83,25 +83,25 @@ $!------------------------------------
 $   openssl_lnm = f$trnlnm("OPENSSL")
 $   if (openssl_lnm .nes. "SYS$INCLUDE")
 $   then
-$!	Non HP SSL is installed, default to use it.
-$	nohpssl = 1
-$	hpssl = 0
+$!      Non HP SSL is installed, default to use it.
+$       nohpssl = 1
+$       hpssl = 0
 $   endif
 $!
 $!  Now check to see if hpssl has been specifically disabled
 $!----------------------------------------------------------
 $   if f$locate(",nohpssl,", args_lower) .lt. args_len
 $   then
-$	nohpssl = 1
-$	hpssl = 0
+$       nohpssl = 1
+$       hpssl = 0
 $   endif
 $!
 $!  Finally check to see if hp ssl has been specifically included.
 $!----------------------------------------------------------------
 $   if f$locate(",nohpssl,", args_lower) .lt. args_len
 $   then
-$	nohpssl = 1
-$	hpssl = 0
+$       nohpssl = 1
+$       hpssl = 0
 $   endif
 $endif
 $!
@@ -113,14 +113,14 @@ $   write sys$output "NOTICE:  A LIBIDN port has been detected."
 $   write sys$output " This port of curl for VMS has not been tested with it."
 $   if f$locate(",libidn,", args_lower) .lt. args_len
 $   then
-$	libidn = 1
+$       libidn = 1
 $   endif
 $   if .not. libidn
 $   then
-$	write sys$output " LIBIDN support is not enabled."
-$	write sys$output "Run with the ""libidn"" parameter to attempt to use."
+$       write sys$output " LIBIDN support is not enabled."
+$       write sys$output "Run with the ""libidn"" parameter to attempt to use."
 $   else
-$	write sys$output " Untested LIBIDN support requested."
+$       write sys$output " Untested LIBIDN support requested."
 $   endif
 $endif
 $!
@@ -132,14 +132,14 @@ $   write sys$output "NOTICE:  A LIBSSH2 port has been detected."
 $   write sys$output " This port of curl for VMS has not been tested with it."
 $   if f$locate(",libssh2,", args_lower) .lt. args_len
 $   then
-$	libssh2 = 1
+$       libssh2 = 1
 $   endif
 $   if .not. libssh2
 $   then
-$	write sys$output " LIBSSH2 support is not enabled."
-$	write sys$output "Run with the ""libssh2"" parameter to attempt to use."
+$       write sys$output " LIBSSH2 support is not enabled."
+$       write sys$output "Run with the ""libssh2"" parameter to attempt to use."
 $   else
-$	write sys$output " Untested LIBSSH2 support requested."
+$       write sys$output " Untested LIBSSH2 support requested."
 $   endif
 $endif
 $!
@@ -159,7 +159,7 @@ $then
 $!  If kerberos is installed: sys$share:gss$rtl.exe exists.
 $   if f$search("sys$shsare:gss$rtl.exe") .eqs. ""
 $   then
-$	nokerberos = 1
+$       nokerberos = 1
 $   endif
 $endif
 $!
@@ -170,13 +170,13 @@ $if f$trnlnm("GNV$LIBZSHR") .nes. ""
 $then
 $   if f$locate(",nozlib,", args_lower) .lt. args_len
 $   then
-$	nozlib = 1
+$       nozlib = 1
 $   endif
 $!   if .not. nozlib
 $!   then
-$!	write sys$output " GNV$LIBZSHR support is enabled."
+$!      write sys$output " GNV$LIBZSHR support is enabled."
 $!   else
-$!	write sys$output " GNV$LIBZSHR support is disabled by nozlib."
+$!      write sys$output " GNV$LIBZSHR support is disabled by nozlib."
 $!   endif
 $else
 $   nozlib = 1
@@ -203,13 +203,13 @@ $! Now the DCL builds usually say xxx-HP-VMS and configure scripts
 $! may put DEC or COMPAQ or HP for the middle part.
 $!
 $write cvh "#if defined(__alpha)"
-$write cvh "#define OS ""ALPHA-HP-VMS"""
+$write cvh "#define CURL_OS ""ALPHA-HP-VMS"""
 $write cvh "#elif defined(__vax)"
-$write cvh "#define OS ""VAX-HP-VMS"""
+$write cvh "#define CURL_OS ""VAX-HP-VMS"""
 $write cvh "#elif defined(__ia64)"
-$write cvh "#define OS ""IA64-HP-VMS""
+$write cvh "#define CURL_OS ""IA64-HP-VMS""
 $write cvh "#else"
-$write cvh "#define OS ""UNKNOWN-HP-VMS""
+$write cvh "#define CURL_OS ""UNKNOWN-HP-VMS""
 $write cvh "#endif"
 $write cvh ""
 $!
@@ -217,15 +217,6 @@ $! We are now setting this on the GNV build, so also do this
 $! for compatibility.
 $write cvh "/* Location of default ca path */"
 $write cvh "#define curl_ca_path ""gnv$curl_ca_path"""
-$!
-$! NTLM_WB_ENABLED requires fork() but configure does not know this
-$! We have to disable this in the configure command line.
-$! config_h.com finds that configure defaults to it being enabled so
-$! reports it.  So we need to turn it off here.
-$!
-$write cvh "#ifdef NTLM_WB_ENABLED"
-$write cvh "#undef NTLM_WB_ENABLED"
-$write cvh "#endif"
 $!
 $! The config_h.com finds a bunch of default disable commands in
 $! configure and will incorrectly disable these options.  The config_h.com
@@ -262,9 +253,9 @@ $   write cvh "#undef CURL_DISABLE_LDAP"
 $   write cvh "#endif"
 $   if .not. nossl
 $   then
-$	write cvh "#ifdef CURL_DISABLE_LDAPS"
-$	write cvh "#undef CURL_DISABLE_LDAPS"
-$	write cvh "#endif"
+$       write cvh "#ifdef CURL_DISABLE_LDAPS"
+$       write cvh "#undef CURL_DISABLE_LDAPS"
+$       write cvh "#endif"
 $   endif
 $endif
 $write cvh "#ifdef CURL_DISABLE_LIBCURL_OPTION"
@@ -346,11 +337,6 @@ $write cvh "#ifdef USE_UNIX_SOCKETS"
 $write cvh "#undef USE_UNIX_SOCKETS"
 $write cvh "#endif"
 $!
-$write cvh "#ifndef HAVE_OLD_GSSMIT"
-$write cvh "#define gss_nt_service_name GSS_C_NT_HOSTBASED_SERVICE"
-$write cvh "#endif"
-$!
-$!
 $! Note:
 $! The CURL_EXTERN_SYMBOL is used for platforms that need the compiler
 $! to know about universal symbols.  VMS does not need this support so
@@ -394,7 +380,7 @@ $   endif
 $endif
 $!
 $!
-$! LibIDN not ported to VMS at this time.
+$! libidn not ported to VMS at this time.
 $! This is for international domain name support.
 $! Allow explicit experimentation.
 $if libidn
@@ -410,7 +396,7 @@ $   write cvh "#endif"
 $endif
 $!
 $!
-$! LibSSH2 not ported to VMS at this time.
+$! libssh2 not ported to VMS at this time.
 $! Allow explicit experimentation.
 $if libssh2
 $then

@@ -31,7 +31,7 @@
 
 static const char data[]=
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit. "
-  "Nam rhoncus odio id venenatis volutpat. Vestibulum dapibus "
+  "___ rhoncus odio id venenatis volutpat. Vestibulum dapibus "
   "bibendum ullamcorper. Maecenas finibus elit augue, vel "
   "condimentum odio maximus nec. In hac habitasse platea dictumst. "
   "Vestibulum vel dolor et turpis rutrum finibus ac at nulla. "
@@ -45,7 +45,7 @@ struct WriteThis {
   size_t sizeleft;
 };
 
-static size_t read_callback(char *ptr, size_t size, size_t nmemb, void *userp)
+static size_t read_cb(char *ptr, size_t size, size_t nmemb, void *userp)
 {
   struct WriteThis *upload = (struct WriteThis *)userp;
   size_t max = size*nmemb;
@@ -76,7 +76,7 @@ int main(void)
   upload.readptr = data;
   upload.sizeleft = strlen(data);
 
-  /* In windows, this will init the winsock stuff */
+  /* In Windows, this inits the Winsock stuff */
   res = curl_global_init(CURL_GLOBAL_DEFAULT);
   /* Check for errors */
   if(res != CURLE_OK) {
@@ -99,7 +99,7 @@ int main(void)
     curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
 
     /* we want to use our own read function */
-    curl_easy_setopt(curl, CURLOPT_READFUNCTION, read_callback);
+    curl_easy_setopt(curl, CURLOPT_READFUNCTION, read_cb);
 
     /* pointer to pass to our read function */
     curl_easy_setopt(curl, CURLOPT_READDATA, &upload);
@@ -111,7 +111,7 @@ int main(void)
     curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE,
                      (curl_off_t)upload.sizeleft);
 
-    /* Perform the request, res will get the return code */
+    /* Perform the request, res gets the return code */
     res = curl_easy_perform(curl);
     /* Check for errors */
     if(res != CURLE_OK)
@@ -122,5 +122,5 @@ int main(void)
     curl_easy_cleanup(curl);
   }
   curl_global_cleanup();
-  return 0;
+  return (int)res;
 }

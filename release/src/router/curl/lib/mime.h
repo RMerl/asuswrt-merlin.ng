@@ -112,7 +112,7 @@ struct curl_mimepart {
   curl_mimepart *nextpart;         /* Forward linked list. */
   enum mimekind kind;              /* The part kind. */
   unsigned int flags;              /* Flags. */
-  char *data;                      /* Memory data or file name. */
+  char *data;                      /* Memory data or filename. */
   curl_read_callback readfunc;     /* Read function. */
   curl_seek_callback seekfunc;     /* Seek function. */
   curl_free_callback freefunc;     /* Argument free function. */
@@ -121,7 +121,7 @@ struct curl_mimepart {
   struct curl_slist *curlheaders;  /* Part headers. */
   struct curl_slist *userheaders;  /* Part headers. */
   char *mimetype;                  /* Part mime type. */
-  char *filename;                  /* Remote file name. */
+  char *filename;                  /* Remote filename. */
   char *name;                      /* Data name. */
   curl_off_t datasize;             /* Expected data size. */
   struct mime_state state;         /* Current readback state. */
@@ -130,7 +130,8 @@ struct curl_mimepart {
   size_t lastreadstatus;           /* Last read callback returned status. */
 };
 
-CURLcode Curl_mime_add_header(struct curl_slist **slp, const char *fmt, ...);
+CURLcode Curl_mime_add_header(struct curl_slist **slp, const char *fmt, ...)
+  CURL_PRINTF(2, 3);
 
 #if !defined(CURL_DISABLE_MIME) && (!defined(CURL_DISABLE_HTTP) ||      \
                                     !defined(CURL_DISABLE_SMTP) ||      \
@@ -150,12 +151,15 @@ CURLcode Curl_mime_prepare_headers(struct Curl_easy *data,
                                    const char *contenttype,
                                    const char *disposition,
                                    enum mimestrategy strategy);
-curl_off_t Curl_mime_size(struct curl_mimepart *part);
 size_t Curl_mime_read(char *buffer, size_t size, size_t nitems,
                       void *instream);
-CURLcode Curl_mime_rewind(struct curl_mimepart *part);
 const char *Curl_mime_contenttype(const char *filename);
-void Curl_mime_unpause(struct curl_mimepart *part);
+
+/**
+ * Install a client reader as upload source that reads the given
+ * mime part.
+ */
+CURLcode Curl_creader_set_mime(struct Curl_easy *data, curl_mimepart *part);
 
 #else
 /* if disabled */
@@ -164,10 +168,8 @@ void Curl_mime_unpause(struct curl_mimepart *part);
 #define Curl_mime_duppart(x,y,z) CURLE_OK /* Nothing to duplicate. Succeed */
 #define Curl_mime_set_subparts(a,b,c) CURLE_NOT_BUILT_IN
 #define Curl_mime_prepare_headers(a,b,c,d,e) CURLE_NOT_BUILT_IN
-#define Curl_mime_size(x) (curl_off_t) -1
 #define Curl_mime_read NULL
-#define Curl_mime_rewind(x) ((void)x, CURLE_NOT_BUILT_IN)
-#define Curl_mime_unpause(x)
+#define Curl_creader_set_mime(x,y) ((void)x, CURLE_NOT_BUILT_IN)
 #endif
 
 

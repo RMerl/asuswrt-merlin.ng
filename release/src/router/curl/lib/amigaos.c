@@ -117,7 +117,7 @@ void Curl_amiga_cleanup(void)
 
 #ifdef CURLRES_AMIGA
 /*
- * Because we need to handle the different cases in hostip4.c at run-time,
+ * Because we need to handle the different cases in hostip4.c at runtime,
  * not at compile-time, based on what was detected in Curl_amiga_init(),
  * we replace it completely with our own as to not complicate the baseline
  * code. Assumes malloc/calloc/free are thread safe because Curl_he2ai()
@@ -184,7 +184,7 @@ int Curl_amiga_select(int nfds, fd_set *readfds, fd_set *writefds,
 {
   int r = WaitSelect(nfds, readfds, writefds, errorfds, timeout, 0);
   /* Ensure Ctrl-C signal is actioned */
-  if((r == -1) && (SOCKERRNO == EINTR))
+  if((r == -1) && (SOCKERRNO == SOCKEINTR))
     raise(SIGINT);
   return r;
 }
@@ -196,12 +196,12 @@ int Curl_amiga_select(int nfds, fd_set *readfds, fd_set *writefds,
  */
 
 struct Library *SocketBase = NULL;
-extern int errno, h_errno;
 
 #ifdef __libnix__
 void __request(const char *msg);
+#define CURL_AMIGA_REQUEST(msg)  __request(msg)
 #else
-# define __request(msg)       Printf(msg "\n\a")
+#define CURL_AMIGA_REQUEST(msg)  Printf((const unsigned char *)(msg "\n\a"), 0)
 #endif
 
 void Curl_amiga_cleanup(void)
@@ -215,17 +215,17 @@ void Curl_amiga_cleanup(void)
 CURLcode Curl_amiga_init(void)
 {
   if(!SocketBase)
-    SocketBase = OpenLibrary("bsdsocket.library", 4);
+    SocketBase = OpenLibrary((const unsigned char *)"bsdsocket.library", 4);
 
   if(!SocketBase) {
-    __request("No TCP/IP Stack running!");
+    CURL_AMIGA_REQUEST("No TCP/IP Stack running!");
     return CURLE_FAILED_INIT;
   }
 
-  if(SocketBaseTags(SBTM_SETVAL(SBTC_ERRNOPTR(sizeof(errno))), (ULONG) &errno,
-                    SBTM_SETVAL(SBTC_LOGTAGPTR), (ULONG) "curl",
+  if(SocketBaseTags(SBTM_SETVAL(SBTC_ERRNOPTR(sizeof(errno))), (ULONG)&errno,
+                    SBTM_SETVAL(SBTC_LOGTAGPTR), (ULONG)"curl",
                     TAG_DONE)) {
-    __request("SocketBaseTags ERROR");
+    CURL_AMIGA_REQUEST("SocketBaseTags ERROR");
     return CURLE_FAILED_INIT;
   }
 

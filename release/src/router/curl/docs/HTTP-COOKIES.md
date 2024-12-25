@@ -1,3 +1,9 @@
+<!--
+Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
+
+SPDX-License-Identifier: curl
+-->
+
 # HTTP Cookies
 
 ## Cookie overview
@@ -9,7 +15,7 @@
   Cookies are either "session cookies" which typically are forgotten when the
   session is over which is often translated to equal when browser quits, or
   the cookies are not session cookies they have expiration dates after which
-  the client will throw them away.
+  the client throws them away.
 
   Cookies are set to the client with the Set-Cookie: header and are sent to
   servers with the Cookie: header.
@@ -17,7 +23,7 @@
   For a long time, the only spec explaining how to use cookies was the
   original [Netscape spec from 1994](https://curl.se/rfc/cookie_spec.html).
 
-  In 2011, [RFC 6265](https://www.ietf.org/rfc/rfc6265.txt) was finally
+  In 2011, [RFC 6265](https://datatracker.ietf.org/doc/html/rfc6265) was finally
   published and details how cookies work within HTTP. In 2016, an update which
   added support for prefixes was
   [proposed](https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-cookie-prefixes-00),
@@ -30,9 +36,28 @@
   implemented by curl.
 
   curl considers `http://localhost` to be a *secure context*, meaning that it
-  will allow and use cookies marked with the `secure` keyword even when done
-  over plain HTTP for this host. curl does this to match how popular browsers
-  work with secure cookies.
+  allows and uses cookies marked with the `secure` keyword even when done over
+  plain HTTP for this host. curl does this to match how popular browsers work
+  with secure cookies.
+
+## Super cookies
+
+  A single cookie can be set for a domain that matches multiple hosts. Like if
+  set for `example.com` it gets sent to both `aa.example.com` as well as
+  `bb.example.com`.
+
+  A challenge with this concept is that there are certain domains for which
+  cookies should not be allowed at all, because they are *Public
+  Suffixes*. Similarly, a client never accepts cookies set directly for the
+  top-level domain like for example `.com`. Cookies set for *too broad*
+  domains are generally referred to as *super cookies*.
+
+  If curl is built with PSL (**Public Suffix List**) support, it detects and
+  discards cookies that are specified for such suffix domains that should not
+  be allowed to have cookies.
+
+  if curl is *not* built with PSL support, it has no ability to stop super
+  cookies.
 
 ## Cookies saved to disk
 
@@ -46,8 +71,7 @@
   TAB. That file is called the cookie jar in curl terminology.
 
   When libcurl saves a cookie jar, it creates a file header of its own in
-  which there is a URL mention that will link to the web version of this
-  document.
+  which there is a URL mention that links to the web version of this document.
 
 ## Cookie file format
 
@@ -79,69 +103,69 @@
 
   Command line options:
 
-  `-b, --cookie`
+  [`-b, --cookie`](https://curl.se/docs/manpage.html#-b)
 
   tell curl a file to read cookies from and start the cookie engine, or if it
-  is not a file it will pass on the given string. `-b name=var` works and so
-  does `-b cookiefile`.
+  is not a file it passes on the given string. `-b name=var` works and so does
+  `-b cookiefile`.
 
-  `-j, --junk-session-cookies`
+  [`-j, --junk-session-cookies`](https://curl.se/docs/manpage.html#-j)
 
-  when used in combination with -b, it will skip all "session cookies" on load
-  so as to appear to start a new cookie session.
+  when used in combination with -b, it skips all "session cookies" on load so
+  as to appear to start a new cookie session.
 
-  `-c, --cookie-jar`
+  [`-c, --cookie-jar`](https://curl.se/docs/manpage.html#-c)
 
   tell curl to start the cookie engine and write cookies to the given file
   after the request(s)
 
 ## Cookies with libcurl
 
-  libcurl offers several ways to enable and interface the cookie engine. These
-  options are the ones provided by the native API. libcurl bindings may offer
-  access to them using other means.
+libcurl offers several ways to enable and interface the cookie engine. These
+options are the ones provided by the native API. libcurl bindings may offer
+access to them using other means.
 
-  `CURLOPT_COOKIE`
+[`CURLOPT_COOKIE`](https://curl.se/libcurl/c/CURLOPT_COOKIE.html)
 
-  Is used when you want to specify the exact contents of a cookie header to
-  send to the server.
+Is used when you want to specify the exact contents of a cookie header to
+send to the server.
 
-  `CURLOPT_COOKIEFILE`
+[`CURLOPT_COOKIEFILE`](https://curl.se/libcurl/c/CURLOPT_COOKIEFILE.html)
 
-  Tell libcurl to activate the cookie engine, and to read the initial set of
-  cookies from the given file. Read-only.
+Tell libcurl to activate the cookie engine, and to read the initial set of
+cookies from the given file. Read-only.
 
-  `CURLOPT_COOKIEJAR`
+[`CURLOPT_COOKIEJAR`](https://curl.se/libcurl/c/CURLOPT_COOKIEJAR.html)
 
-  Tell libcurl to activate the cookie engine, and when the easy handle is
-  closed save all known cookies to the given cookie jar file. Write-only.
+Tell libcurl to activate the cookie engine, and when the easy handle is
+closed save all known cookies to the given cookie jar file. Write-only.
 
-  `CURLOPT_COOKIELIST`
+[`CURLOPT_COOKIELIST`](https://curl.se/libcurl/c/CURLOPT_COOKIELIST.html)
 
-  Provide detailed information about a single cookie to add to the internal
-  storage of cookies. Pass in the cookie as an HTTP header with all the
-  details set, or pass in a line from a Netscape cookie file. This option can
-  also be used to flush the cookies etc.
+Provide detailed information about a single cookie to add to the internal
+storage of cookies. Pass in the cookie as an HTTP header with all the
+details set, or pass in a line from a Netscape cookie file. This option can
+also be used to flush the cookies etc.
 
-  `CURLOPT_COOKIESESSION`
+[`CURLOPT_COOKIESESSION`](https://curl.se/libcurl/c/CURLOPT_COOKIESESSION.html)
 
-  Tell libcurl to ignore all cookies it is about to load that are session
-  cookies.
+Tell libcurl to ignore all cookies it is about to load that are session
+cookies.
 
-  `CURLINFO_COOKIELIST`
+[`CURLINFO_COOKIELIST`](https://curl.se/libcurl/c/CURLINFO_COOKIELIST.html)
 
-  Extract cookie information from the internal cookie storage as a linked
-  list.
+Extract cookie information from the internal cookie storage as a linked
+list.
 
 ## Cookies with JavaScript
 
-  These days a lot of the web is built up by JavaScript. The web browser loads
-  complete programs that render the page you see. These JavaScript programs
-  can also set and access cookies.
+These days a lot of the web is built up by JavaScript. The web browser loads
+complete programs that render the page you see. These JavaScript programs
+can also set and access cookies.
 
-  Since curl and libcurl are plain HTTP clients without any knowledge of or
-  capability to handle JavaScript, such cookies will not be detected or used.
+Since curl and libcurl are plain HTTP clients without any knowledge of or
+capability to handle JavaScript, such cookies are not detected or used.
 
-  Often, if you want to mimic what a browser does on such websites, you can
-  record web browser HTTP traffic when using such a site and then repeat the
-  cookie operations using curl or libcurl.
+Often, if you want to mimic what a browser does on such websites, you can
+record web browser HTTP traffic when using such a site and then repeat the
+cookie operations using curl or libcurl.

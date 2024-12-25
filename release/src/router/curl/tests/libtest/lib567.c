@@ -21,27 +21,27 @@
  * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
-#include "test.h"
+#include "first.h"
 
 #include "memdebug.h"
 
 /*
  * Test a simple OPTIONS request with a custom header
  */
-int test(char *URL)
+static CURLcode test_lib567(const char *URL)
 {
   CURLcode res;
   CURL *curl;
   struct curl_slist *custom_headers = NULL;
 
   if(curl_global_init(CURL_GLOBAL_ALL) != CURLE_OK) {
-    fprintf(stderr, "curl_global_init() failed\n");
+    curl_mfprintf(stderr, "curl_global_init() failed\n");
     return TEST_ERR_MAJOR_BAD;
   }
 
   curl = curl_easy_init();
   if(!curl) {
-    fprintf(stderr, "curl_easy_init() failed\n");
+    curl_mfprintf(stderr, "curl_easy_init() failed\n");
     curl_global_cleanup();
     return TEST_ERR_MAJOR_BAD;
   }
@@ -49,6 +49,7 @@ int test(char *URL)
   /* Dump data to stdout for protocol verification */
   test_setopt(curl, CURLOPT_HEADERDATA, stdout);
   test_setopt(curl, CURLOPT_WRITEDATA, stdout);
+  test_setopt(curl, CURLOPT_VERBOSE, 1L);
 
   test_setopt(curl, CURLOPT_URL, URL);
   test_setopt(curl, CURLOPT_RTSP_STREAM_URI, URL);
@@ -67,5 +68,5 @@ test_cleanup:
   curl_easy_cleanup(curl);
   curl_global_cleanup();
 
-  return (int)res;
+  return res;
 }

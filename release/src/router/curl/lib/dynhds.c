@@ -26,8 +26,12 @@
 #include "dynhds.h"
 #include "strcase.h"
 
-/* The last 3 #include files should be in this order */
-#include "curl_printf.h"
+#ifdef USE_NGHTTP2
+#include <stdint.h>
+#include <nghttp2/nghttp2.h>
+#endif /* USE_NGHTTP2 */
+
+/* The last 2 #include files should be in this order */
 #include "curl_memory.h"
 #include "memdebug.h"
 
@@ -137,7 +141,7 @@ void Curl_dynhds_set_opts(struct dynhds *dynhds, int opts)
 struct dynhds_entry *Curl_dynhds_getn(struct dynhds *dynhds, size_t n)
 {
   DEBUGASSERT(dynhds);
-  return (n < dynhds->hds_len)? dynhds->hds[n] : NULL;
+  return (n < dynhds->hds_len) ? dynhds->hds[n] : NULL;
 }
 
 struct dynhds_entry *Curl_dynhds_get(struct dynhds *dynhds, const char *name,
@@ -146,7 +150,7 @@ struct dynhds_entry *Curl_dynhds_get(struct dynhds *dynhds, const char *name,
   size_t i;
   for(i = 0; i < dynhds->hds_len; ++i) {
     if(dynhds->hds[i]->namelen == namelen &&
-       strncasecompare(dynhds->hds[i]->name, name, namelen)) {
+       curl_strnequal(dynhds->hds[i]->name, name, namelen)) {
       return dynhds->hds[i];
     }
   }
@@ -268,10 +272,10 @@ CURLcode Curl_dynhds_h1_add_line(struct dynhds *dynhds,
 
 CURLcode Curl_dynhds_h1_cadd_line(struct dynhds *dynhds, const char *line)
 {
-  return Curl_dynhds_h1_add_line(dynhds, line, line? strlen(line) : 0);
+  return Curl_dynhds_h1_add_line(dynhds, line, line ? strlen(line) : 0);
 }
 
-#ifdef DEBUGBUILD
+#ifdef UNITTESTS
 /* used by unit2602.c */
 
 bool Curl_dynhds_contains(struct dynhds *dynhds,
@@ -293,7 +297,7 @@ size_t Curl_dynhds_count_name(struct dynhds *dynhds,
     size_t i;
     for(i = 0; i < dynhds->hds_len; ++i) {
       if((namelen == dynhds->hds[i]->namelen) &&
-         strncasecompare(name, dynhds->hds[i]->name, namelen))
+         curl_strnequal(name, dynhds->hds[i]->name, namelen))
         ++n;
     }
   }
@@ -321,7 +325,7 @@ size_t Curl_dynhds_remove(struct dynhds *dynhds,
     size_t i, len;
     for(i = 0; i < dynhds->hds_len; ++i) {
       if((namelen == dynhds->hds[i]->namelen) &&
-         strncasecompare(name, dynhds->hds[i]->name, namelen)) {
+         curl_strnequal(name, dynhds->hds[i]->name, namelen)) {
         ++n;
         --dynhds->hds_len;
         dynhds->strs_len -= (dynhds->hds[i]->namelen +
@@ -355,9 +359,10 @@ CURLcode Curl_dynhds_h1_dprint(struct dynhds *dynhds, struct dynbuf *dbuf)
     return result;
 
   for(i = 0; i < dynhds->hds_len; ++i) {
-    result = Curl_dyn_addf(dbuf, "%.*s: %.*s\r\n",
-               (int)dynhds->hds[i]->namelen, dynhds->hds[i]->name,
-               (int)dynhds->hds[i]->valuelen, dynhds->hds[i]->value);
+    result = curlx_dyn_addf(dbuf, "%.*s: %.*s\r\n",
+                            (int)dynhds->hds[i]->namelen, dynhds->hds[i]->name,
+                            (int)dynhds->hds[i]->valuelen,
+                            dynhds->hds[i]->value);
     if(result)
       break;
   }
@@ -365,3 +370,28 @@ CURLcode Curl_dynhds_h1_dprint(struct dynhds *dynhds, struct dynbuf *dbuf)
   return result;
 }
 
+#ifdef USE_NGHTTP2
+
+nghttp2_nv *Curl_dynhds_to_nva(struct dynhds *dynhds, size_t *pcount)
+{
+  nghttp2_nv *nva = calloc(1, sizeof(nghttp2_nv) * dynhds->hds_len);
+  size_t i;
+
+  *pcount = 0;
+  if(!nva)
+    return NULL;
+
+  for(i = 0; i < dynhds->hds_len; ++i) {
+    struct dynhds_entry *e = dynhds->hds[i];
+    DEBUGASSERT(e);
+    nva[i].name = (unsigned char *)e->name;
+    nva[i].namelen = e->namelen;
+    nva[i].value = (unsigned char *)e->value;
+    nva[i].valuelen = e->valuelen;
+    nva[i].flags = NGHTTP2_NV_FLAG_NONE;
+  }
+  *pcount = dynhds->hds_len;
+  return nva;
+}
+
+#endif /* USE_NGHTTP2 */

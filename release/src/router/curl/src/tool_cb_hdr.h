@@ -41,13 +41,15 @@
  */
 
 struct HdrCbData {
-  struct GlobalConfig *global;
   struct OperationConfig *config;
   struct OutStruct *outs;
   struct OutStruct *heads;
   struct OutStruct *etag_save;
+  struct curl_slist *headlist;
   bool honor_cd_filename;
 };
+
+int tool_write_headers(struct HdrCbData *hdrcbdata, FILE *stream);
 
 /*
 ** callback for CURLOPT_HEADERFUNCTION

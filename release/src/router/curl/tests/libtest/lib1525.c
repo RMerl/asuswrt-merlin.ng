@@ -28,25 +28,24 @@
  * from server http header
  */
 
-#include "test.h"
+#include "first.h"
 
 #include "memdebug.h"
 
-static char data [] = "Hello Cloud!\n";
+static const char t1525_testdata[] = "Hello Cloud!\n";
 
-static size_t read_callback(char *ptr, size_t size, size_t nmemb, void *stream)
+static size_t t1525_read_cb(char *ptr, size_t size, size_t nmemb, void *stream)
 {
   size_t  amount = nmemb * size; /* Total bytes curl wants */
-  if(amount < strlen(data)) {
-    return strlen(data);
+  if(amount < strlen(t1525_testdata)) {
+    return strlen(t1525_testdata);
   }
   (void)stream;
-  memcpy(ptr, data, strlen(data));
-  return strlen(data);
+  memcpy(ptr, t1525_testdata, strlen(t1525_testdata));
+  return strlen(t1525_testdata);
 }
 
-
-int test(char *URL)
+static CURLcode test_lib1525(const char *URL)
 {
   CURL *curl = NULL;
   CURLcode res = CURLE_FAILED_INIT;
@@ -54,13 +53,13 @@ int test(char *URL)
   struct curl_slist *hhl = NULL;
 
   if(curl_global_init(CURL_GLOBAL_ALL) != CURLE_OK) {
-    fprintf(stderr, "curl_global_init() failed\n");
+    curl_mfprintf(stderr, "curl_global_init() failed\n");
     return TEST_ERR_MAJOR_BAD;
   }
 
   curl = curl_easy_init();
   if(!curl) {
-    fprintf(stderr, "curl_easy_init() failed\n");
+    curl_mfprintf(stderr, "curl_easy_init() failed\n");
     curl_global_cleanup();
     return TEST_ERR_MAJOR_BAD;
   }
@@ -82,9 +81,9 @@ int test(char *URL)
   test_setopt(curl, CURLOPT_PROXYTYPE, CURLPROXY_HTTP);
   test_setopt(curl, CURLOPT_HEADER, 1L);
   test_setopt(curl, CURLOPT_WRITEFUNCTION, fwrite);
-  test_setopt(curl, CURLOPT_READFUNCTION, read_callback);
+  test_setopt(curl, CURLOPT_READFUNCTION, t1525_read_cb);
   test_setopt(curl, CURLOPT_HTTPPROXYTUNNEL, 1L);
-  test_setopt(curl, CURLOPT_INFILESIZE, (long)strlen(data));
+  test_setopt(curl, CURLOPT_INFILESIZE, (long)strlen(t1525_testdata));
 
   res = curl_easy_perform(curl);
 
@@ -96,5 +95,5 @@ test_cleanup:
 
   curl_global_cleanup();
 
-  return (int)res;
+  return res;
 }

@@ -21,30 +21,60 @@
  * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
-#include "curlcheck.h"
+#include "unitcheck.h"
 
 #include "urldata.h"
 #include "url.h"
 
 #include "memdebug.h" /* LAST include file */
 
-static CURLcode unit_setup(void)
+static CURLcode t1620_setup(void)
 {
   CURLcode res = CURLE_OK;
   global_init(CURL_GLOBAL_ALL);
   return res;
 }
 
-static void unit_stop(void)
+static void t1620_parse(
+  const char *input,
+  const char *exp_username,
+  const char *exp_password,
+  const char *exp_options)
 {
-  curl_global_cleanup();
+  char *userstr = NULL;
+  char *passwdstr = NULL;
+  char *options = NULL;
+  CURLcode rc = Curl_parse_login_details(input, strlen(input),
+                                &userstr, &passwdstr, &options);
+  fail_unless(rc == CURLE_OK, "Curl_parse_login_details() failed");
+
+  fail_unless(!!exp_username == !!userstr, "username expectation failed");
+  fail_unless(!!exp_password == !!passwdstr, "password expectation failed");
+  fail_unless(!!exp_options == !!options, "options expectation failed");
+
+  if(!unitfail) {
+    fail_unless(!userstr || !exp_username ||
+                strcmp(userstr, exp_username) == 0,
+                "userstr should be equal to exp_username");
+    fail_unless(!passwdstr || !exp_password ||
+                strcmp(passwdstr, exp_password) == 0,
+                "passwdstr should be equal to exp_password");
+    fail_unless(!options || !exp_options ||
+                strcmp(options, exp_options) == 0,
+                "options should be equal to exp_options");
+  }
+
+  free(userstr);
+  free(passwdstr);
+  free(options);
 }
 
-UNITTEST_START
+static CURLcode test_unit1620(const char *arg)
 {
-  int rc;
+  UNITTEST_BEGIN(t1620_setup())
+
+  CURLcode rc;
   struct Curl_easy *empty;
-  const char *hostname = "hostname";
   enum dupstring i;
 
   bool async = FALSE;
@@ -67,16 +97,24 @@ UNITTEST_START
   fail_unless(rc == CURLE_URL_MALFORMAT,
               "Curl_connect() failed to return CURLE_URL_MALFORMAT");
 
-  rc = Curl_init_userdefined(empty);
-  fail_unless(rc == CURLE_OK, "Curl_userdefined() failed");
-
   rc = Curl_init_do(empty, empty->conn);
   fail_unless(rc == CURLE_OK, "Curl_init_do() failed");
 
-  rc = Curl_parse_login_details(
-                          hostname, strlen(hostname), NULL, NULL, NULL);
-  fail_unless(rc == CURLE_OK,
-              "Curl_parse_login_details() failed");
+  t1620_parse("hostname", "hostname", NULL, NULL);
+  t1620_parse("user:password", "user", "password", NULL);
+  t1620_parse("user:password;options", "user", "password", "options");
+  t1620_parse("user:password;options;more", "user", "password",
+              "options;more");
+  t1620_parse("", "", NULL, NULL);
+  t1620_parse(":", "", "", NULL);
+  t1620_parse(":;", "", "", NULL);
+  t1620_parse(":password", "", "password", NULL);
+  t1620_parse(":password;", "", "password", NULL);
+  t1620_parse(";options", "", NULL, "options");
+  t1620_parse("user;options", "user", NULL, "options");
+  t1620_parse("user:;options", "user", "", "options");
+  t1620_parse("user;options:password", "user", "password", "options");
+  t1620_parse("user;options:", "user", "", "options");
 
   Curl_freeset(empty);
   for(i = (enum dupstring)0; i < STRING_LAST; i++) {
@@ -84,10 +122,8 @@ UNITTEST_START
                 "Curl_free() did not set to NULL");
   }
 
-  Curl_free_request_state(empty);
-
   rc = Curl_close(&empty);
   fail_unless(rc == CURLE_OK, "Curl_close() failed");
 
+  UNITTEST_END(curl_global_cleanup())
 }
-UNITTEST_STOP

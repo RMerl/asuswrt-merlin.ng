@@ -28,10 +28,15 @@
 [httpd]
 apxs = @APXS@
 httpd = @HTTPD@
-apachectl = @APACHECTL@
 
 [nghttpx]
 nghttpx = @HTTPD_NGHTTPX@
 
 [caddy]
 caddy = @CADDY@
+
+[vsftpd]
+vsftpd = @VSFTPD@
+
+[danted]
+danted = @DANTED@

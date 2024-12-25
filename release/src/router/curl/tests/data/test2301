@@ -8,7 +8,7 @@ WebSockets
 #
 # Server-side
 <reply>
-<data nocheck="yes" nonewline="yes">
+<data crlf="headers" nocheck="yes" nonewline="yes">
 HTTP/1.1 101 Switching to WebSockets
 Server: test-server/fake
 Upgrade: websocket
@@ -27,11 +27,14 @@ upgrade
 #
 # Client-side
 <client>
-# require debug for the forced CURL_ENTROPY
+# require Debug for the forced CURL_ENTROPY
 <features>
-debug
+Debug
 ws
 </features>
+<setenv>
+CURL_ENTROPY=12345678
+</setenv>
 <server>
 http
 </server>
@@ -49,15 +52,15 @@ ws://%HOSTIP:%HTTPPORT/%TESTNUMBER
 #
 # Verify data after the test has been "shot"
 <verify>
-<protocol nocheck="yes" nonewline="yes">
+<protocol crlf="yes" nonewline="yes" nocheck="yes">
 GET /%TESTNUMBER HTTP/1.1
 Host: %HOSTIP:%HTTPPORT
 User-Agent: webbie-sox/3
 Accept: */*
 Upgrade: websocket
-Connection: Upgrade
 Sec-WebSocket-Version: 13
 Sec-WebSocket-Key: NDMyMTUzMjE2MzIxNzMyMQ==
+Connection: Upgrade
 
 %hex[%8a%00]hex%
 </protocol>

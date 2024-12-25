@@ -21,19 +21,20 @@
  * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
-#include "test.h"
+#include "first.h"
 
 #include "memdebug.h"
 
-int test(char *URL)
+static CURLcode test_lib1538(const char *URL)
 {
-  int res = 0;
+  CURLcode res = CURLE_OK;
   CURLcode easyret;
   CURLMcode multiret;
   CURLSHcode shareret;
   CURLUcode urlret;
   (void)URL;
 
+  /* NOLINTBEGIN(clang-analyzer-optin.core.EnumCastOutOfRange) */
   curl_easy_strerror((CURLcode)INT_MAX);
   curl_multi_strerror((CURLMcode)INT_MAX);
   curl_share_strerror((CURLSHcode)INT_MAX);
@@ -42,19 +43,20 @@ int test(char *URL)
   curl_multi_strerror((CURLMcode)-INT_MAX);
   curl_share_strerror((CURLSHcode)-INT_MAX);
   curl_url_strerror((CURLUcode)-INT_MAX);
+  /* NOLINTEND(clang-analyzer-optin.core.EnumCastOutOfRange) */
   for(easyret = CURLE_OK; easyret <= CURL_LAST; easyret++) {
-    printf("e%d: %s\n", (int)easyret, curl_easy_strerror(easyret));
+    curl_mprintf("e%d: %s\n", easyret, curl_easy_strerror(easyret));
   }
   for(multiret = CURLM_CALL_MULTI_PERFORM; multiret <= CURLM_LAST;
       multiret++) {
-    printf("m%d: %s\n", (int)multiret, curl_multi_strerror(multiret));
+    curl_mprintf("m%d: %s\n", multiret, curl_multi_strerror(multiret));
   }
   for(shareret = CURLSHE_OK; shareret <= CURLSHE_LAST; shareret++) {
-    printf("s%d: %s\n", (int)shareret, curl_share_strerror(shareret));
+    curl_mprintf("s%d: %s\n", shareret, curl_share_strerror(shareret));
   }
   for(urlret = CURLUE_OK; urlret <= CURLUE_LAST; urlret++) {
-    printf("u%d: %s\n", (int)urlret, curl_url_strerror(urlret));
+    curl_mprintf("u%d: %s\n", urlret, curl_url_strerror(urlret));
   }
 
-  return (int)res;
+  return res;
 }

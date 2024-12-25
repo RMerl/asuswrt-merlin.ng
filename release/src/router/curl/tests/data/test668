@@ -10,7 +10,7 @@ HTTP MIME POST
 #
 # Server-side
 <reply>
-<data>
+<data crlf="headers">
 HTTP/1.1 200 OK
 Date: Tue, 09 Nov 2010 14:4f:00 GMT
 Server: test-server/fake swsclose
@@ -19,7 +19,7 @@ Content-Type: text/html
 
 hello
 </data>
-<datacheck>
+<datacheck crlf="headers">
 HTTP/1.1 200 OK
 Date: Tue, 09 Nov 2010 14:4f:00 GMT
 Server: test-server/fake swsclose
@@ -72,11 +72,7 @@ Transfer-Encoding: chunked
 Content-Type: multipart/form-data; boundary=----------------------------
 Expect: 100-continue
 
-%if hyper
-CD
-%else
 cd
-%endif
 ------------------------------
 Content-Disposition: form-data; name="field1"
 
@@ -94,11 +90,7 @@ Content-Disposition: form-data; name="field3"; filename="file%TESTNUMBER.txt"
 Content-Type: text/plain
 
 
-%if hyper
-4F
-%else
 4f
-%endif
 This is data from a file
 
 --------------------------------

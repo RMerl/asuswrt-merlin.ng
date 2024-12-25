@@ -25,34 +25,23 @@ Connection: close
 #
 # Client-side
 <client>
-# This relies on the debug feature to allow us to set a directory
-# in which to store the -O output
-<features>
-debug
-</features>
 <server>
 http
 </server>
 <name>
 HTTP GET with -O and --remote-time
 </name>
-<setenv>
-CURL_TESTDIR=%LOGDIR
-</setenv>
 <command option="no-output,no-include">
-http://%HOSTIP:%HTTPPORT/%TESTNUMBER -O --remote-time
+http://%HOSTIP:%HTTPPORT/%TESTNUMBER -O --remote-time --output-dir %LOGDIR
 </command>
 # Verify the mtime of the file. The mtime is specifically chosen to be an even
-# number so that it can be represented exactly on a FAT filesystem.
-<postcheck>
-perl -e 'exit((stat("%LOGDIR/%TESTNUMBER"))[9] != 960898200)'
-</postcheck>
+# number so that it can be represented exactly on a FAT file system.
 </client>
 
 #
 # Verify data after the test has been "shot"
 <verify>
-<protocol>
+<protocol crlf="headers">
 GET /%TESTNUMBER HTTP/1.1
 Host: %HOSTIP:%HTTPPORT
 User-Agent: curl/%VERSION
@@ -62,5 +51,8 @@ Accept: */*
 <file name="%LOGDIR/%TESTNUMBER">
 12345
 </file>
+<postcheck>
+%PERL -e 'exit((stat("%LOGDIR/%TESTNUMBER"))[9] != 960898200)'
+</postcheck>
 </verify>
 </testcase>

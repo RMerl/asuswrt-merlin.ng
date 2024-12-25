@@ -25,14 +25,14 @@
  * HTTP Multipart formpost with file upload and two additional parts.
  * </DESC>
  */
-/* Example code that uploads a file name 'foo' to a remote script that accepts
+/* Example code that uploads a filename 'foo' to a remote script that accepts
  * "HTML form based" (as described in RFC 1738) uploads using HTTP POST.
  *
- * The imaginary form we will fill in looks like:
+ * The imaginary form we fill in looks like:
  *
  * <form method="post" enctype="multipart/form-data" action="examplepost.cgi">
  * Enter file: <input type="file" name="sendfile" size="40">
- * Enter file name: <input type="text" name="filename" size="30">
+ * Enter filename: <input type="text" name="filename" size="30">
  * <input type="submit" value="send" name="submit">
  * </form>
  *
@@ -46,17 +46,18 @@
 int main(int argc, char *argv[])
 {
   CURL *curl;
-  CURLcode res;
 
-  curl_mime *form = NULL;
-  curl_mimepart *field = NULL;
-  struct curl_slist *headerlist = NULL;
-  static const char buf[] = "Expect:";
-
-  curl_global_init(CURL_GLOBAL_ALL);
+  CURLcode res = curl_global_init(CURL_GLOBAL_ALL);
+  if(res)
+    return (int)res;
 
   curl = curl_easy_init();
   if(curl) {
+    curl_mime *form = NULL;
+    curl_mimepart *field = NULL;
+    struct curl_slist *headerlist = NULL;
+    static const char buf[] = "Expect:";
+
     /* Create the form */
     form = curl_mime_init(curl);
 
@@ -85,7 +86,7 @@ int main(int argc, char *argv[])
       curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerlist);
     curl_easy_setopt(curl, CURLOPT_MIMEPOST, form);
 
-    /* Perform the request, res will get the return code */
+    /* Perform the request, res gets the return code */
     res = curl_easy_perform(curl);
     /* Check for errors */
     if(res != CURLE_OK)
@@ -100,5 +101,8 @@ int main(int argc, char *argv[])
     /* free slist */
     curl_slist_free_all(headerlist);
   }
+
+  curl_global_cleanup();
+
   return 0;
 }

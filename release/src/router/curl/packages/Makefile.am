@@ -33,6 +33,7 @@ EXTRA_DIST = README.md \
   OS400/curl.inc.in \
   OS400/initscript.sh \
   OS400/config400.default \
+  OS400/make-docs.sh \
   OS400/make-include.sh \
   OS400/make-lib.sh \
   OS400/make-src.sh \
@@ -49,3 +50,10 @@ CS_ = $(CS_0)
 
 checksrc:
 	$(CHECKSRC)(@PERL@ $(top_srcdir)/scripts/checksrc.pl -D$(srcdir) $(srcdir)/OS400/*.[ch])
+
+if NOT_CURL_CI
+if DEBUGBUILD
+# for debug builds, we scan the sources on all regular make invokes
+all-local: checksrc
+endif
+endif

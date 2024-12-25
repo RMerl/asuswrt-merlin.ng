@@ -21,37 +21,31 @@
  * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
-#include "test.h"
+#include "first.h"
 
-#include "testutil.h"
-#include "warnless.h"
 #include "memdebug.h"
 
-#define TEST_HANG_TIMEOUT 60 * 1000
-
-#define NUM_HANDLES 4
-
-int test(char *URL)
+static CURLcode test_lib2404(const char *URL)
 {
-  int res = 0;
+  CURLcode res = CURLE_OK;
   CURL *curl[NUM_HANDLES] = {0};
   int running;
-  CURLM *m = NULL;
-  int i;
+  CURLM *multi = NULL;
+  size_t i;
   char target_url[256];
   char dnsentry[256];
   struct curl_slist *slist = NULL;
-  char *port = libtest_arg3;
-  char *address = libtest_arg2;
+  const char *port = libtest_arg3;
+  const char *address = libtest_arg2;
 
   (void)URL;
 
-  msnprintf(dnsentry, sizeof(dnsentry), "localhost:%s:%s",
-            port, address);
-  printf("%s\n", dnsentry);
+  curl_msnprintf(dnsentry, sizeof(dnsentry), "localhost:%s:%s",
+                 port, address);
+  curl_mprintf("%s\n", dnsentry);
   slist = curl_slist_append(slist, dnsentry);
   if(!slist) {
-    fprintf(stderr, "curl_slist_append() failed\n");
+    curl_mfprintf(stderr, "curl_slist_append() failed\n");
     goto test_cleanup;
   }
 
@@ -59,18 +53,18 @@ int test(char *URL)
 
   global_init(CURL_GLOBAL_ALL);
 
-  multi_init(m);
+  multi_init(multi);
 
-  multi_setopt(m, CURLMOPT_MAXCONNECTS, 1L);
+  multi_setopt(multi, CURLMOPT_MAXCONNECTS, 1L);
 
-  /* get NUM_HANDLES easy handles */
-  for(i = 0; i < NUM_HANDLES; i++) {
+  /* get each easy handle */
+  for(i = 0; i < CURL_ARRAYSIZE(curl); i++) {
     /* get an easy handle */
     easy_init(curl[i]);
     /* specify target */
-    msnprintf(target_url, sizeof(target_url),
-              "https://localhost:%s/path/2404%04i",
-              port, i + 1);
+    curl_msnprintf(target_url, sizeof(target_url),
+                   "https://localhost:%s/path/2404%04zu",
+                   port, i + 1);
     target_url[sizeof(target_url) - 1] = '\0';
     easy_setopt(curl[i], CURLOPT_URL, target_url);
     /* go http2 */
@@ -87,14 +81,14 @@ int test(char *URL)
 
     easy_setopt(curl[i], CURLOPT_RESOLVE, slist);
 
-    easy_setopt(curl[i], CURLOPT_STREAM_WEIGHT, (long)128 + i);
+    easy_setopt(curl[i], CURLOPT_STREAM_WEIGHT, (long)i + 128);
   }
 
-  fprintf(stderr, "Start at URL 0\n");
+  curl_mfprintf(stderr, "Start at URL 0\n");
 
-  for(i = 0; i < NUM_HANDLES; i++) {
+  for(i = 0; i < CURL_ARRAYSIZE(curl); i++) {
     /* add handle to multi */
-    multi_add_handle(m, curl[i]);
+    multi_add_handle(multi, curl[i]);
 
     for(;;) {
       struct timeval interval;
@@ -104,7 +98,7 @@ int test(char *URL)
       interval.tv_sec = 1;
       interval.tv_usec = 0;
 
-      multi_perform(m, &running);
+      multi_perform(multi, &running);
 
       abort_on_test_timeout();
 
@@ -115,7 +109,7 @@ int test(char *URL)
       FD_ZERO(&wr);
       FD_ZERO(&exc);
 
-      multi_fdset(m, &rd, &wr, &exc, &maxfd);
+      multi_fdset(multi, &rd, &wr, &exc, &maxfd);
 
       /* At this point, maxfd is guaranteed to be greater or equal than -1. */
 
@@ -123,21 +117,21 @@ int test(char *URL)
 
       abort_on_test_timeout();
     }
-    wait_ms(1); /* to ensure different end times */
+    curlx_wait_ms(1); /* to ensure different end times */
   }
 
 test_cleanup:
 
   /* proper cleanup sequence - type PB */
 
-  for(i = 0; i < NUM_HANDLES; i++) {
-    curl_multi_remove_handle(m, curl[i]);
+  for(i = 0; i < CURL_ARRAYSIZE(curl); i++) {
+    curl_multi_remove_handle(multi, curl[i]);
     curl_easy_cleanup(curl[i]);
   }
 
   curl_slist_free_all(slist);
 
-  curl_multi_cleanup(m);
+  curl_multi_cleanup(multi);
   curl_global_cleanup();
 
   return res;

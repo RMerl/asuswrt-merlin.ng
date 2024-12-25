@@ -10,7 +10,7 @@ connect to non-listen
 <reply>
 <servercmd>
 # Assuming there's nothing listening on port 1
-REPLY EPSV 229 Entering Passiv Mode (|||1|)
+REPLY EPSV 229 Entering Passive Mode (|||1|)
 </servercmd>
 <data>
 here are some bytes
@@ -32,7 +32,7 @@ ftp://%HOSTIP:%FTPPORT/%TESTNUMBER
 
 # Verify data after the test has been "shot"
 <verify>
-<protocol>
+<protocol crlf="yes">
 USER anonymous
 PASS ftp@example.com
 PWD

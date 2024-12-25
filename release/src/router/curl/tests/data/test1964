@@ -32,14 +32,15 @@ Content-Length: 0
 <server>
 http
 </server>
-# this relies on the debug feature which allow to set the time
+# this relies on the Debug feature which allows tests to set the time
 <features>
 SSL
 crypto
+aws
 </features>
 
 <name>
-HTTP AWS_SIGV4 with one provider and auth cred via URL, but X-Xxx-Date header set manually
+HTTP AWS_SIGV4 with X-Xxx-Date header set manually
 </name>
 <tool>
 lib%TESTNUMBER
@@ -53,11 +54,10 @@ http://xxx:yyy@127.0.0.1:9000/%TESTNUMBER/testapi/test 127.0.0.1:9000:%HOSTIP:%H
 # Verify data after the test has been "shot"
 <verify>
 <strip>
-^User-Agent:.*
 ^Content-Type:.*
 ^Accept:.*
 </strip>
-<protocol>
+<protocol crlf="headers">
 GET /%TESTNUMBER/testapi/test HTTP/1.1
 Host: 127.0.0.1:9000
 Authorization: XXX4-HMAC-SHA256 Credential=xxx/19700101/0/127/xxx4_request, SignedHeaders=content-type;host;x-xxx-date, Signature=35da102c1df68f2ef85ade08ecc212fa663a66e3a973146f6578a5c5426e9669

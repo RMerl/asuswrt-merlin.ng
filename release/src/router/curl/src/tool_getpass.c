@@ -30,10 +30,6 @@
 #ifndef HAVE_GETPASS_R
 /* this file is only for systems without getpass_r() */
 
-#ifdef HAVE_FCNTL_H
-#  include <fcntl.h>
-#endif
-
 #ifdef HAVE_TERMIOS_H
 #  include <termios.h>
 #elif defined(HAVE_TERMIO_H)
@@ -46,7 +42,7 @@
 #  include iodef
 #endif
 
-#ifdef WIN32
+#if defined(_WIN32) && !defined(UNDER_CE)
 #  include <conio.h>
 #endif
 
@@ -64,8 +60,8 @@ char *getpass_r(const char *prompt, char *buffer, size_t buflen)
   long sts;
   short chan;
 
-  /* MSK, 23-JAN-2004, iosbdef.h wasn't in VAX V7.2 or CC 6.4  */
-  /* distribution so I created this.  May revert back later to */
+  /* MSK, 23-JAN-2004, iosbdef.h was not in VAX V7.2 or CC 6.4  */
+  /* distribution so I created this. May revert back later to */
   /* struct _iosb iosb;                                        */
   struct _iosb
      {
@@ -94,7 +90,7 @@ char *getpass_r(const char *prompt, char *buffer, size_t buflen)
 #define DONE
 #endif /* __VMS */
 
-#if defined(WIN32)
+#ifdef _WIN32
 
 char *getpass_r(const char *prompt, char *buffer, size_t buflen)
 {
@@ -102,7 +98,7 @@ char *getpass_r(const char *prompt, char *buffer, size_t buflen)
   fputs(prompt, tool_stderr);
 
   for(i = 0; i < buflen; i++) {
-    buffer[i] = (char)getch();
+    buffer[i] = (char)_getch();
     if(buffer[i] == '\r' || buffer[i] == '\n') {
       buffer[i] = '\0';
       break;
@@ -115,14 +111,14 @@ char *getpass_r(const char *prompt, char *buffer, size_t buflen)
   }
   /* since echo is disabled, print a newline */
   fputs("\n", tool_stderr);
-  /* if user didn't hit ENTER, terminate buffer */
+  /* if user did not hit ENTER, terminate buffer */
   if(i == buflen)
     buffer[buflen-1] = '\0';
 
   return buffer; /* we always return success */
 }
 #define DONE
-#endif /* WIN32 */
+#endif /* _WIN32 && !UNDER_CE */
 
 #ifndef DONE /* not previously provided */
 
@@ -146,15 +142,15 @@ static bool ttyecho(bool enable, int fd)
 #ifdef HAVE_TERMIOS_H
     tcgetattr(fd, &withecho);
     noecho = withecho;
-    noecho.c_lflag &= ~ECHO;
+    noecho.c_lflag &= ~(tcflag_t)ECHO;
     tcsetattr(fd, TCSANOW, &noecho);
 #elif defined(HAVE_TERMIO_H)
     ioctl(fd, TCGETA, &withecho);
     noecho = withecho;
-    noecho.c_lflag &= ~ECHO;
+    noecho.c_lflag &= ~(tcflag_t)ECHO;
     ioctl(fd, TCSETA, &noecho);
 #else
-    /* neither HAVE_TERMIO_H nor HAVE_TERMIOS_H, we can't disable echo! */
+    /* neither HAVE_TERMIO_H nor HAVE_TERMIOS_H, we cannot disable echo! */
     (void)fd;
     return FALSE; /* not disabled */
 #endif
@@ -178,9 +174,9 @@ char *getpass_r(const char *prompt, /* prompt to display */
 {
   ssize_t nread;
   bool disabled;
-  int fd = open("/dev/tty", O_RDONLY);
-  if(-1 == fd)
-    fd = STDIN_FILENO; /* use stdin if the tty couldn't be used */
+  int fd = curlx_open("/dev/tty", O_RDONLY);
+  if(fd == -1)
+    fd = STDIN_FILENO; /* use stdin if the tty could not be used */
 
   disabled = ttyecho(FALSE, fd); /* disable terminal echo */
 

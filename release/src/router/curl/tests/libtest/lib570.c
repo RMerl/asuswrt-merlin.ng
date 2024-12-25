@@ -21,30 +21,26 @@
  * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
-#include "test.h"
+#include "first.h"
+
+#include "testutil.h"
 #include "memdebug.h"
 
-/* build request url */
-static char *suburl(const char *base, int i)
+static CURLcode test_lib570(const char *URL)
 {
-  return curl_maprintf("%s%.4d", base, i);
-}
-
-int test(char *URL)
-{
-  int res;
+  CURLcode res;
   CURL *curl;
   int request = 1;
   char *stream_uri = NULL;
 
   if(curl_global_init(CURL_GLOBAL_ALL) != CURLE_OK) {
-    fprintf(stderr, "curl_global_init() failed\n");
+    curl_mfprintf(stderr, "curl_global_init() failed\n");
     return TEST_ERR_MAJOR_BAD;
   }
 
   curl = curl_easy_init();
   if(!curl) {
-    fprintf(stderr, "curl_easy_init() failed\n");
+    curl_mfprintf(stderr, "curl_easy_init() failed\n");
     curl_global_cleanup();
     return TEST_ERR_MAJOR_BAD;
   }
@@ -57,7 +53,7 @@ int test(char *URL)
 
   test_setopt(curl, CURLOPT_RTSP_REQUEST, CURL_RTSPREQ_OPTIONS);
 
-  stream_uri = suburl(URL, request++);
+  stream_uri = tutil_suburl(URL, request++);
   if(!stream_uri) {
     res = TEST_ERR_MAJOR_BAD;
     goto test_cleanup;
@@ -67,8 +63,8 @@ int test(char *URL)
   stream_uri = NULL;
 
   res = curl_easy_perform(curl);
-  if(res != (int)CURLE_RTSP_CSEQ_ERROR) {
-    fprintf(stderr, "Failed to detect CSeq mismatch");
+  if(res != CURLE_RTSP_CSEQ_ERROR) {
+    curl_mfprintf(stderr, "Failed to detect CSeq mismatch");
     res = TEST_ERR_MAJOR_BAD;
     goto test_cleanup;
   }
@@ -78,7 +74,7 @@ int test(char *URL)
                     "RAW/RAW/UDP;unicast;client_port=3056-3057");
   test_setopt(curl, CURLOPT_RTSP_REQUEST, CURL_RTSPREQ_SETUP);
 
-  stream_uri = suburl(URL, request++);
+  stream_uri = tutil_suburl(URL, request++);
   if(!stream_uri) {
     res = TEST_ERR_MAJOR_BAD;
     goto test_cleanup;
@@ -93,7 +89,7 @@ int test(char *URL)
 
   test_setopt(curl, CURLOPT_RTSP_REQUEST, CURL_RTSPREQ_PLAY);
 
-  stream_uri = suburl(URL, request++);
+  stream_uri = tutil_suburl(URL, request++);
   if(!stream_uri) {
     res = TEST_ERR_MAJOR_BAD;
     goto test_cleanup;
@@ -104,11 +100,11 @@ int test(char *URL)
 
   res = curl_easy_perform(curl);
   if(res == CURLE_RTSP_SESSION_ERROR) {
-    res = 0;
+    res = CURLE_OK;
   }
   else {
-    fprintf(stderr, "Failed to detect a Session ID mismatch");
-    res = 1;
+    curl_mfprintf(stderr, "Failed to detect a Session ID mismatch");
+    res = TEST_ERR_FAILURE;
   }
 
 test_cleanup:

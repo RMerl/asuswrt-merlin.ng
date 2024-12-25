@@ -127,8 +127,8 @@ convert(char *d, size_t dlen, int dccsid,
     dccsid = ASCII_CCSID;
 
   if(sccsid == dccsid) {
-    lslen = slen >= 0? slen: strlen(s) + 1;
-    i = lslen < dlen? lslen: dlen;
+    lslen = slen >= 0 ? slen : strlen(s) + 1;
+    i = lslen < dlen ? lslen : dlen;
 
     if(s != d && i > 0)
       memcpy(d, s, i);
@@ -170,7 +170,7 @@ static char *dynconvert(int dccsid, const char *s, int slen, int sccsid)
 
   /* Like convert, but the destination is allocated and returned. */
 
-  dlen = (size_t) (slen < 0? strlen(s): slen) + 1;
+  dlen = (size_t) (slen < 0 ? strlen(s) : slen) + 1;
   dlen *= MAX_CONV_EXPANSION;           /* Allow some expansion. */
   d = malloc(dlen);
 
@@ -290,11 +290,12 @@ curl_easy_escape_ccsid(CURL *handle, const char *string, int length,
   char *d;
 
   if(!string) {
+    /* !checksrc! disable ERRNOVAR 1 */
     errno = EINVAL;
     return (char *) NULL;
     }
 
-  s = dynconvert(ASCII_CCSID, string, length? length: -1, sccsid);
+  s = dynconvert(ASCII_CCSID, string, length ? length : -1, sccsid);
 
   if(!s)
     return (char *) NULL;
@@ -320,11 +321,12 @@ curl_easy_unescape_ccsid(CURL *handle, const char *string, int length,
   char *d;
 
   if(!string) {
+    /* !checksrc! disable ERRNOVAR 1 */
     errno = EINVAL;
     return (char *) NULL;
     }
 
-  s = dynconvert(ASCII_CCSID, string, length? length: -1, sccsid);
+  s = dynconvert(ASCII_CCSID, string, length ? length : -1, sccsid);
 
   if(!s)
     return (char *) NULL;
@@ -437,7 +439,8 @@ curl_version_info_ccsid(CURLversion stamp, unsigned int ccsid)
     offsetof(curl_version_info_data, zstd_version),
     offsetof(curl_version_info_data, hyper_version),
     offsetof(curl_version_info_data, gsasl_version),
-    offsetof(curl_version_info_data, feature_names)
+    offsetof(curl_version_info_data, feature_names),
+    offsetof(curl_version_info_data, rtmp_version)
   };
 
   /* The assertion below is possible, because although the second operand
@@ -1045,7 +1048,7 @@ Curl_formget_callback_ccsid(void *arg, const char *buf, size_t len)
 
   ret = (*p->append)(p->arg, b, l);
   free(b);
-  return ret == l? len: -1;
+  return ret == l ? len : -1;
 }
 
 
@@ -1071,6 +1074,7 @@ curl_easy_setopt_ccsid(CURL *easy, CURLoption tag, ...)
   char *cp = NULL;
   unsigned int ccsid;
   curl_off_t pfsize;
+  struct Curl_easy *data = easy;
 
   va_start(arg, tag);
 
@@ -1097,6 +1101,7 @@ curl_easy_setopt_ccsid(CURL *easy, CURLoption tag, ...)
   case CURLOPT_DNS_LOCAL_IP6:
   case CURLOPT_DNS_SERVERS:
   case CURLOPT_DOH_URL:
+  case CURLOPT_ECH:
   case CURLOPT_EGDSOCKET:
   case CURLOPT_FTPPORT:
   case CURLOPT_FTP_ACCOUNT:
@@ -1159,6 +1164,7 @@ curl_easy_setopt_ccsid(CURL *easy, CURLoption tag, ...)
   case CURLOPT_SSLKEYTYPE:
   case CURLOPT_SSL_CIPHER_LIST:
   case CURLOPT_SSL_EC_CURVES:
+  case CURLOPT_SSL_SIGNATURE_ALGORITHMS:
   case CURLOPT_TLS13_CIPHERS:
   case CURLOPT_TLSAUTH_PASSWORD:
   case CURLOPT_TLSAUTH_TYPE:
@@ -1193,7 +1199,7 @@ curl_easy_setopt_ccsid(CURL *easy, CURLoption tag, ...)
     s = va_arg(arg, char *);
     ccsid = va_arg(arg, unsigned int);
 
-    pfsize = easy->set.postfieldsize;
+    pfsize = data->set.postfieldsize;
 
     if(!s || !pfsize || ccsid == NOCONV_CCSID || ccsid == ASCII_CCSID) {
       result = curl_easy_setopt(easy, CURLOPT_COPYPOSTFIELDS, s);
@@ -1207,8 +1213,8 @@ curl_easy_setopt_ccsid(CURL *easy, CURLoption tag, ...)
       if(!s) {
         result = CURLE_OUT_OF_MEMORY;
         break;
-        }
       }
+    }
     else {
       /* Data length specified. */
       size_t len;
@@ -1238,12 +1244,13 @@ curl_easy_setopt_ccsid(CURL *easy, CURLoption tag, ...)
         break;
       }
 
-      easy->set.postfieldsize = pfsize;         /* Replace data size. */
+      data->set.postfieldsize = pfsize;         /* Replace data size. */
       s = cp;
+      cp = NULL;
     }
 
     result = curl_easy_setopt(easy, CURLOPT_POSTFIELDS, s);
-    easy->set.str[STRING_COPYPOSTFIELDS] = s;   /* Give to library. */
+    data->set.str[STRING_COPYPOSTFIELDS] = s;   /* Give to library. */
     break;
 
   default:
@@ -1282,7 +1289,7 @@ curl_easy_setopt_ccsid(CURL *easy, CURLoption tag, ...)
       result = curl_easy_setopt(easy, tag, &blob);
       break;
     }
-    /* FALLTHROUGH */
+    FALLTHROUGH();
   case CURLOPT_ERRORBUFFER:                     /* This is an output buffer. */
     result = Curl_vsetopt(easy, tag, arg);
     break;

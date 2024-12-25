@@ -49,7 +49,9 @@ int main(void)
   curl_off_t filesize = 0;
   const char *filename = strrchr(ftpurl, '/') + 1;
 
-  curl_global_init(CURL_GLOBAL_DEFAULT);
+  res = curl_global_init(CURL_GLOBAL_ALL);
+  if(res)
+    return (int)res;
 
   curl = curl_easy_init();
   if(curl) {
@@ -74,7 +76,7 @@ int main(void)
       }
       res = curl_easy_getinfo(curl, CURLINFO_CONTENT_LENGTH_DOWNLOAD_T,
                               &filesize);
-      if((CURLE_OK == res) && (filesize>0))
+      if((CURLE_OK == res) && (filesize > 0))
         printf("filesize %s: %" CURL_FORMAT_CURL_OFF_T " bytes\n",
                filename, filesize);
     }
@@ -89,5 +91,5 @@ int main(void)
 
   curl_global_cleanup();
 
-  return 0;
+  return (int)res;
 }

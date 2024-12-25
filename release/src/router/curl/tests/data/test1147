@@ -40,9 +40,7 @@ One: 1
 Two: 2
 no-colon
 
-%if !hyper
  And A Funny One : wohoo
-%endif
 User-Agent:
 </file>
 <command>
@@ -53,15 +51,13 @@ http://%HOSTIP:%HTTPPORT/%TESTNUMBER -H @%LOGDIR/heads%TESTNUMBER.txt
 #
 # Verify data after the test has been "shot"
 <verify>
-<protocol>
+<protocol crlf="yes">
 GET /%TESTNUMBER HTTP/1.1
 Host: %HOSTIP:%HTTPPORT
 Accept: */*
 One: 1
 Two: 2
-%if !hyper
  And A Funny One : wohoo
-%endif
 
 </protocol>
 </verify>

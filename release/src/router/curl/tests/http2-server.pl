@@ -23,12 +23,17 @@
 #
 #***************************************************************************
 
+use strict;
+use warnings;
+
 # This script invokes nghttpx properly to have it serve HTTP/2 for us.
 # nghttpx runs as a proxy in front of our "actual" HTTP/1 server.
 use Cwd;
 use Cwd 'abs_path';
 use File::Basename;
+use File::Spec;
 
+my $verbose = 0;     # set to 1 for debugging
 my $logdir = "log";
 my $pidfile = "$logdir/nghttpx.pid";
 my $logfile = "$logdir/http2.log";
@@ -37,7 +42,8 @@ my $listenport = 9015;
 my $listenport2 = 9016;
 my $connect = "127.0.0.1,8990";
 my $conf = "nghttpx.conf";
-my $cert = "Server-localhost-sv";
+my $cert = "test-localhost";
+my $dev_null = File::Spec->devnull();
 
 #***************************************************************************
 # Process command line options
@@ -95,19 +101,17 @@ while(@ARGV) {
             shift @ARGV;
         }
     }
-    else {
+    elsif($ARGV[0]) {
         print STDERR "\nWarning: http2-server.pl unknown parameter: $ARGV[0]\n";
     }
     shift @ARGV;
 }
 
-my $srcdir = dirname(__FILE__);
-$certfile = "$srcdir/certs/$cert.pem";
-$keyfile = "$srcdir/certs/$cert.key";
-$certfile = abs_path($certfile);
-$keyfile = abs_path($keyfile);
+my $certfile = abs_path("certs/$cert.pem");
+my $keyfile = abs_path("certs/$cert.key");
 
 my $cmdline="$nghttpx --backend=$connect ".
+    "--backend-keep-alive-timeout=500ms ".
     "--frontend=\"*,$listenport;no-tls\" ".
     "--frontend=\"*,$listenport2\" ".
     "--log-level=INFO ".
@@ -116,4 +120,4 @@ my $cmdline="$nghttpx --backend=$connect ".
     "--errorlog-file=$logfile ".
     "$keyfile $certfile";
 print "RUN: $cmdline\n" if($verbose);
-system("$cmdline 2>/dev/null");
+exec("exec $cmdline 2>$dev_null");

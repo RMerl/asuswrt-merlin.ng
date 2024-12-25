@@ -1,3 +1,9 @@
+<!--
+Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
+
+SPDX-License-Identifier: curl
+-->
+
 # Items to be removed from future curl releases
 
 If any of these deprecated features is a cause for concern for you, please
@@ -6,32 +12,79 @@ email the
 as soon as possible and explain to us why this is a problem for you and
 how your use case cannot be satisfied properly using a workaround.
 
-## space-separated `NOPROXY` patterns
+## Windows CE
 
-When specifying patterns/domain names for curl that should *not* go through a
-proxy, the curl tool features the `--noproxy` command line option and the
-library supports the `NO_PROXY` environment variable and the `CURLOPT_NOPROXY`
-libcurl option.
+Windows CE "mainstream support" ended on October 9, 2018, and "Extended
+Support" ended on October 10, 2023.
 
-They all set the same list of patterns. This list is documented to be a set of
-**comma-separated** names, but can also be provided separated with just
-space. The ability to just use spaces for this has never been documented but
-some users may still have come to rely on this.
+curl drops all support in November 2025.
 
-Several other tools and utilities also parse the `NO_PROXY` environment
-variable but do not consider a space to be a valid separator. Using spaces for
-separator is probably less portable and might cause more friction than commas
-do. Users should use commas for this for greater portability.
+## VS2008
 
-curl will remove the support for space-separated names in July 2024.
+curl drops support for getting built with Microsoft Visual Studio 2008 in
+November 2025.
 
-## past removals
+The only reason we kept support for this version is for Windows CE - and we
+intend to remove support for that Operating System in this time frame as well.
+Bumping the minimum to VS2010. VS2008 is a pain to support.
 
- - Pipelining
- - axTLS
- - PolarSSL
- - NPN
- - Support for systems without 64 bit data types
- - NSS
- - gskit
- - mingw v1
+Previous discussion and details: https://github.com/curl/curl/discussions/15972
+
+## Windows XP
+
+In January 2026, curl drops support for Windows XP and Server 2003. Their
+"mainstream support" ended in 2014, with final updates on May 14, 2019.
+
+Making the new minimum target Windows version Vista / Server 2008.
+
+## c-ares 1.16.0
+
+In March 2026, we drop support for all c-ares versions before 1.16.0.
+
+## OpenSSL 1.0.2
+
+OpenSSL and others only ship fixes for this version to paying customers,
+meaning users of the free version risk being vulnerable.
+
+We remove support for this OpenSSL version from curl in December 2025.
+
+## OpenSSL 1.1.1
+
+OpenSSL and others only ship fixes to paying customers, meaning users of the
+free version risk being vulnerable.
+
+We remove support for this OpenSSL version from curl in December 2025.
+
+## OpenSSL-QUIC
+
+OpenSSL-QUIC is what we call the curl QUIC backend that uses the OpenSSL QUIC
+stack.
+
+ - It is slower and uses more memory than the alternatives and is only
+   experimental in curl.
+ - It gets little attention from OpenSSL and we have no expectation of the
+   major flaws getting corrected anytime soon.
+ - No one has spoken up for keeping it
+ - curl users building with vanilla OpenSSL can still use QUIC through the
+   means of ngtcp2
+
+We remove the OpenSSL-QUIC backend in March 2026.
+
+## Past removals
+
+ - axTLS (removed in 7.63.0)
+ - Pipelining (removed in 7.65.0)
+ - PolarSSL (removed in 7.69.0)
+ - NPN (removed in 7.86.0)
+ - Support for systems without 64-bit data types (removed in 8.0.0)
+ - NSS (removed in 8.3.0)
+ - gskit (removed in 8.3.0)
+ - MinGW v1 (removed in 8.4.0)
+ - NTLM_WB (removed in 8.8.0)
+ - space-separated `NOPROXY` patterns (removed in 8.9.0)
+ - hyper (removed in 8.12.0)
+ - Support for Visual Studio 2005 and older (removed in 8.13.0)
+ - Secure Transport (removed in 8.15.0)
+ - BearSSL (removed in 8.15.0)
+ - msh3 (removed in 8.16.0)
+ - winbuild build system (removed in 8.17.0)

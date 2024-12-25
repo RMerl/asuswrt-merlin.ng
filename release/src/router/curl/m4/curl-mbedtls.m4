@@ -30,6 +30,7 @@ AC_DEFUN([CURL_WITH_MBEDTLS], [
 if test "x$OPT_MBEDTLS" != xno; then
   _cppflags=$CPPFLAGS
   _ldflags=$LDFLAGS
+  _ldflagspc=$LDFLAGSPC
   ssl_msg=
 
   if test X"$OPT_MBEDTLS" != Xno; then
@@ -43,14 +44,13 @@ if test "x$OPT_MBEDTLS" != xno; then
 
       AC_CHECK_LIB(mbedtls, mbedtls_havege_init,
       dnl libmbedtls found, set the variable
-       [
-         AC_DEFINE(USE_MBEDTLS, 1, [if mbedTLS is enabled])
-         AC_SUBST(USE_MBEDTLS, [1])
-         MBEDTLS_ENABLED=1
-         USE_MBEDTLS="yes"
-         ssl_msg="mbedTLS"
-         test mbedtls != "$DEFAULT_SSL_BACKEND" || VALID_DEFAULT_SSL_BACKEND=yes
-        ], [], -lmbedx509 -lmbedcrypto)
+      [
+        AC_DEFINE(USE_MBEDTLS, 1, [if mbedTLS is enabled])
+        MBEDTLS_ENABLED=1
+        USE_MBEDTLS="yes"
+        ssl_msg="mbedTLS"
+        test mbedtls != "$DEFAULT_SSL_BACKEND" || VALID_DEFAULT_SSL_BACKEND=yes
+      ], [], -lmbedx509 -lmbedcrypto)
     fi
 
     addld=""
@@ -65,23 +65,24 @@ if test "x$OPT_MBEDTLS" != xno; then
       mbedtlslib=$OPT_MBEDTLS/lib$libsuff
 
       LDFLAGS="$LDFLAGS $addld"
+      LDFLAGSPC="$LDFLAGSPC $addld"
       if test "$addcflags" != "-I/usr/include"; then
-         CPPFLAGS="$CPPFLAGS $addcflags"
+        CPPFLAGS="$CPPFLAGS $addcflags"
       fi
 
       AC_CHECK_LIB(mbedtls, mbedtls_ssl_init,
-       [
-       AC_DEFINE(USE_MBEDTLS, 1, [if mbedTLS is enabled])
-       AC_SUBST(USE_MBEDTLS, [1])
-       MBEDTLS_ENABLED=1
-       USE_MBEDTLS="yes"
-       ssl_msg="mbedTLS"
-       test mbedtls != "$DEFAULT_SSL_BACKEND" || VALID_DEFAULT_SSL_BACKEND=yes
-       ],
-       [
-         CPPFLAGS=$_cppflags
-         LDFLAGS=$_ldflags
-       ], -lmbedx509 -lmbedcrypto)
+        [
+        AC_DEFINE(USE_MBEDTLS, 1, [if mbedTLS is enabled])
+        MBEDTLS_ENABLED=1
+        USE_MBEDTLS="yes"
+        ssl_msg="mbedTLS"
+        test mbedtls != "$DEFAULT_SSL_BACKEND" || VALID_DEFAULT_SSL_BACKEND=yes
+        ],
+        [
+          CPPFLAGS=$_cppflags
+          LDFLAGS=$_ldflags
+          LDFLAGSPC=$_ldflagspc
+        ], -lmbedx509 -lmbedcrypto)
     fi
 
     if test "x$USE_MBEDTLS" = "xyes"; then
@@ -100,6 +101,16 @@ if test "x$OPT_MBEDTLS" != xno; then
           export CURL_LIBRARY_PATH
           AC_MSG_NOTICE([Added $mbedtlslib to CURL_LIBRARY_PATH])
         fi
+      fi
+      dnl FIXME: Enable when mbedTLS was detected via pkg-config
+      if false; then
+        LIBCURL_PC_REQUIRES_PRIVATE="$LIBCURL_PC_REQUIRES_PRIVATE mbedtls mbedx509 mbedcrypto"
+      fi
+
+      dnl Check DES support in mbedTLS <4.
+      AC_CHECK_FUNCS(mbedtls_des_crypt_ecb)
+      if test "$ac_cv_func_mbedtls_des_crypt_ecb" = 'yes'; then
+        HAVE_MBEDTLS_DES_CRYPT_ECB=1
       fi
     fi
 

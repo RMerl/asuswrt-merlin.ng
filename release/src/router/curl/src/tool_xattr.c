@@ -43,19 +43,14 @@ static const struct xattr_mapping {
 
 /* returns a new URL that needs to be freed */
 /* @unittest: 1621 */
-#ifdef UNITTESTS
-char *stripcredentials(const char *url);
-#else
-static
-#endif
-char *stripcredentials(const char *url)
+UNITTEST char *stripcredentials(const char *url)
 {
   CURLU *u;
   CURLUcode uc;
   char *nurl;
   u = curl_url();
   if(u) {
-    uc = curl_url_set(u, CURLUPART_URL, url, 0);
+    uc = curl_url_set(u, CURLUPART_URL, url, CURLU_GUESS_SCHEME);
     if(uc)
       goto error;
 
@@ -88,9 +83,9 @@ static int xattr(int fd,
   if(value) {
 #ifdef DEBUGBUILD
     if(getenv("CURL_FAKE_XATTR")) {
-      printf("%s => %s\n", attr, value);
+      curl_mprintf("%s => %s\n", attr, value);
+      return 0;
     }
-    return 0;
 #endif
 #ifdef HAVE_FSETXATTR_6
     err = fsetxattr(fd, attr, value, strlen(value), 0, 0);
@@ -114,7 +109,7 @@ static int xattr(int fd,
 int fwrite_xattr(CURL *curl, const char *url, int fd)
 {
   int i = 0;
-  int err = 0;
+  int err = xattr(fd, "user.creator", "curl");
 
   /* loop through all xattr-curlinfo pairs and abort on a set error */
   while(!err && mappings[i].attr) {

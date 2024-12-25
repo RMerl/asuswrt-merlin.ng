@@ -19,7 +19,7 @@ smtp
 <name>
 SMTP with invalid --mail-rcpt and --mail-rcpt-allowfails
 </name>
-<stdin>
+<stdin crlf="yes">
 From: different
 To: another
 
@@ -37,7 +37,7 @@ smtp://%HOSTIP:%SMTPPORT/%TESTNUMBER --mail-rcpt-allowfails --mail-rcpt invalid.
 <errorcode>
 55
 </errorcode>
-<protocol>
+<protocol crlf="yes">
 EHLO %TESTNUMBER
 MAIL FROM:<sender@example.com>
 RCPT TO:<invalid.one>

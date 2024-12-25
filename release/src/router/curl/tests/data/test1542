@@ -11,7 +11,7 @@ verbose logs
 
 # Server-side
 <reply>
-<data nocheck="yes">
+<data crlf="headers" nocheck="yes">
 HTTP/1.1 200 OK
 Content-Length: 0
 
@@ -23,6 +23,9 @@ Content-Length: 0
 <server>
 http
 </server>
+<features>
+verbose-strings
+</features>
 <tool>
 lib%TESTNUMBER
 </tool>
@@ -36,7 +39,7 @@ http://%HOSTIP:%HTTPPORT/%TESTNUMBER
 
 # Verify data after the test has been "shot"
 <verify>
-<protocol>
+<protocol crlf="headers">
 GET /%TESTNUMBER HTTP/1.1
 Host: %HOSTIP:%HTTPPORT
 Accept: */*
@@ -55,14 +58,14 @@ Accept: */*
 
 </protocol>
 <file name="%LOGDIR/stderr%TESTNUMBER" mode="text">
-== Info: Connection #0 to host %HOSTIP left intact
-== Info: Connection #0 to host %HOSTIP left intact
-== Info: Connection #0 to host %HOSTIP left intact
-== Info: Closing connection
-== Info: Connection #1 to host %HOSTIP left intact
+== Info: Connection #0 to host %HOSTIP:%HTTPPORT left intact
+== Info: Connection #0 to host %HOSTIP:%HTTPPORT left intact
+== Info: Connection #0 to host %HOSTIP:%HTTPPORT left intact
+== Info: shutting down connection #0
+== Info: Connection #1 to host %HOSTIP:%HTTPPORT left intact
 </file>
 <stripfile>
-$_ = '' if (($_ !~ /left intact/) && ($_ !~ /Closing connection/))
+$_ = '' if(($_ !~ /left intact/) && ($_ !~ /(closing|shutting down) connection #\d+/))
 </stripfile>
 </verify>
 </testcase>

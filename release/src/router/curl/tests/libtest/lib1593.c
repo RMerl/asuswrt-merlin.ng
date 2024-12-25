@@ -24,23 +24,23 @@
 
 /* Test suppressing the If-Modified-Since header */
 
-#include "test.h"
+#include "first.h"
 
 #include "memdebug.h"
 
-int test(char *URL)
+static CURLcode test_lib1593(const char *URL)
 {
   struct curl_slist *header = NULL;
   long unmet;
   CURL *curl = NULL;
-  int res = 0;
+  CURLcode res = CURLE_OK;
 
   global_init(CURL_GLOBAL_ALL);
 
   easy_init(curl);
 
   easy_setopt(curl, CURLOPT_URL, URL);
-  easy_setopt(curl, CURLOPT_TIMECONDITION, (long)CURL_TIMECOND_IFMODSINCE);
+  easy_setopt(curl, CURLOPT_TIMECONDITION, CURL_TIMECOND_IFMODSINCE);
   /* Some TIMEVALUE; it doesn't matter. */
   easy_setopt(curl, CURLOPT_TIMEVALUE, 1566210680L);
 

@@ -8,16 +8,12 @@ source analysis
 #
 # Client-side
 <client>
-<server>
-none
-</server>
-
 <name>
 Verify curl prefix of public symbols in header files
 </name>
 
 <command type="perl">
-%SRCDIR/badsymbols.pl %SRCDIR/..
+%SRCDIR/test1167.pl %SRCDIR/..
 </command>
 </client>
 

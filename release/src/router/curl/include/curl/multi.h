@@ -24,7 +24,7 @@
  *
  ***************************************************************************/
 /*
-  This is an "external" header file. Don't give away any internals here!
+  This is an "external" header file. Do not give away any internals here!
 
   GOALS
 
@@ -50,15 +50,11 @@
  */
 #include "curl.h"
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
-#if defined(BUILDING_LIBCURL) || defined(CURL_STRICTER)
-typedef struct Curl_multi CURLM;
-#else
 typedef void CURLM;
-#endif
 
 typedef enum {
   CURLM_CALL_MULTI_PERFORM = -1, /* please call curl_multi_perform() or
@@ -66,7 +62,7 @@ typedef enum {
   CURLM_OK,
   CURLM_BAD_HANDLE,      /* the passed-in handle is not a valid CURLM handle */
   CURLM_BAD_EASY_HANDLE, /* an easy handle was not good/valid */
-  CURLM_OUT_OF_MEMORY,   /* if you ever get this, you're in deep sh*t */
+  CURLM_OUT_OF_MEMORY,   /* if you ever get this, you are in deep sh*t */
   CURLM_INTERNAL_ERROR,  /* this is a libcurl bug */
   CURLM_BAD_SOCKET,      /* the passed in socket argument did not match */
   CURLM_UNKNOWN_OPTION,  /* curl_multi_setopt() with unsupported option */
@@ -109,7 +105,7 @@ struct CURLMsg {
 typedef struct CURLMsg CURLMsg;
 
 /* Based on poll(2) structure and values.
- * We don't use pollfd and POLL* constants explicitly
+ * We do not use pollfd and POLL* constants explicitly
  * to cover platforms without poll(). */
 #define CURL_WAIT_POLLIN    0x0001
 #define CURL_WAIT_POLLPRI   0x0002
@@ -205,7 +201,7 @@ CURL_EXTERN CURLMcode curl_multi_wakeup(CURLM *multi_handle);
  /*
   * Name:    curl_multi_perform()
   *
-  * Desc:    When the app thinks there's data available for curl it calls this
+  * Desc:    When the app thinks there is data available for curl it calls this
   *          function to read/write whatever there is right now. This returns
   *          as soon as the reads and writes are done. This function does not
   *          require that there actually is data available for reading or that
@@ -236,7 +232,7 @@ CURL_EXTERN CURLMcode curl_multi_cleanup(CURLM *multi_handle);
 /*
  * Name:    curl_multi_info_read()
  *
- * Desc:    Ask the multi handle if there's any messages/informationals from
+ * Desc:    Ask the multi handle if there is any messages/informationals from
  *          the individual transfers. Messages include informationals such as
  *          error code from the transfer or just the fact that a transfer is
  *          completed. More details on these should be written down as well.
@@ -248,13 +244,13 @@ CURL_EXTERN CURLMcode curl_multi_cleanup(CURLM *multi_handle);
  *          The data the returned pointer points to will not survive calling
  *          curl_multi_cleanup().
  *
- *          The 'CURLMsg' struct is meant to be very simple and only contain
- *          very basic information. If more involved information is wanted,
- *          we will provide the particular "transfer handle" in that struct
- *          and that should/could/would be used in subsequent
- *          curl_easy_getinfo() calls (or similar). The point being that we
- *          must never expose complex structs to applications, as then we'll
- *          undoubtably get backwards compatibility problems in the future.
+ *          The 'CURLMsg' struct is meant to be simple and only contain basic
+ *          information. If more involved information is wanted, we will
+ *          provide the particular "transfer handle" in that struct and that
+ *          should/could/would be used in subsequent curl_easy_getinfo() calls
+ *          (or similar). The point being that we must never expose complex
+ *          structs to applications, as then we will undoubtably get backwards
+ *          compatibility problems in the future.
  *
  * Returns: A pointer to a filled-in struct, or NULL if it failed or ran out
  *          of structs. It also writes the number of messages left in the
@@ -268,7 +264,7 @@ CURL_EXTERN CURLMsg *curl_multi_info_read(CURLM *multi_handle,
  * Name:    curl_multi_strerror()
  *
  * Desc:    The curl_multi_strerror function may be used to turn a CURLMcode
- *          value into the equivalent human readable error string.  This is
+ *          value into the equivalent human readable error string. This is
  *          useful for printing meaningful error messages.
  *
  * Returns: A pointer to a null-terminated error message.
@@ -282,7 +278,7 @@ CURL_EXTERN const char *curl_multi_strerror(CURLMcode);
  * Desc:    An alternative version of curl_multi_perform() that allows the
  *          application to pass in one of the file descriptors that have been
  *          detected to have "action" on them and let libcurl perform.
- *          See man page for details.
+ *          See manpage for details.
  */
 #define CURL_POLL_NONE   0
 #define CURL_POLL_IN     1
@@ -399,9 +395,29 @@ typedef enum {
   /* maximum number of concurrent streams to support on a connection */
   CURLOPT(CURLMOPT_MAX_CONCURRENT_STREAMS, CURLOPTTYPE_LONG, 16),
 
+  /* network has changed, adjust caches/connection reuse */
+  CURLOPT(CURLMOPT_NETWORK_CHANGED, CURLOPTTYPE_LONG, 17),
+
+  /* This is the notify callback function pointer */
+  CURLOPT(CURLMOPT_NOTIFYFUNCTION, CURLOPTTYPE_FUNCTIONPOINT, 18),
+
+  /* This is the argument passed to the notify callback */
+  CURLOPT(CURLMOPT_NOTIFYDATA, CURLOPTTYPE_OBJECTPOINT, 19),
+
   CURLMOPT_LASTENTRY /* the last unused */
 } CURLMoption;
 
+/* Definition of bits for the CURLMOPT_NETWORK_CHANGED argument: */
+
+/* - CURLMNWC_CLEAR_CONNS tells libcurl to prevent further reuse of existing
+   connections. Connections that are idle will be closed. Ongoing transfers
+   will continue with the connection they have. */
+#define CURLMNWC_CLEAR_CONNS (1L<<0)
+
+/* - CURLMNWC_CLEAR_DNS tells libcurl to prevent further reuse of existing
+   connections. Connections that are idle will be closed. Ongoing transfers
+   will continue with the connection they have. */
+#define CURLMNWC_CLEAR_DNS (1L<<0)
 
 /*
  * Name:    curl_multi_setopt()
@@ -438,6 +454,38 @@ CURL_EXTERN CURLMcode curl_multi_assign(CURLM *multi_handle,
  */
 CURL_EXTERN CURL **curl_multi_get_handles(CURLM *multi_handle);
 
+
+typedef enum {
+  CURLMINFO_NONE, /* first, never use this */
+  /* The number of easy handles currently managed by the multi handle,
+   * e.g. have been added but not yet removed. */
+  CURLMINFO_XFERS_CURRENT = 1,
+  /* The number of easy handles running, e.g. not done and not queueing. */
+  CURLMINFO_XFERS_RUNNING = 2,
+  /* The number of easy handles waiting to start, e.g. for a connection
+   * to become available due to limits on parallelism, max connections
+   * or other factors. */
+  CURLMINFO_XFERS_PENDING = 3,
+  /* The number of easy handles finished, waiting for their results to
+   * be read via `curl_multi_info_read()`. */
+  CURLMINFO_XFERS_DONE = 4,
+  /* The total number of easy handles added to the multi handle, ever. */
+  CURLMINFO_XFERS_ADDED = 5,
+
+  CURLMINFO_LASTENTRY /* the last unused */
+} CURLMinfo_offt;
+
+/*
+ * Name:    curl_multi_get_offt()
+ *
+ * Desc:    Retrieves a numeric value for the `CURLMINFO_*` enums.
+ *
+ * Returns: CULRM_OK or error when value could not be obtained.
+ */
+CURL_EXTERN CURLMcode curl_multi_get_offt(CURLM *multi_handle,
+                                          CURLMinfo_offt info,
+                                          curl_off_t *pvalue);
+
 /*
  * Name: curl_push_callback
  *
@@ -463,6 +511,40 @@ typedef int (*curl_push_callback)(CURL *parent,
                                   size_t num_headers,
                                   struct curl_pushheaders *headers,
                                   void *userp);
+
+/*
+ * Name:    curl_multi_waitfds()
+ *
+ * Desc:    Ask curl for fds for polling. The app can use these to poll on.
+ *          We want curl_multi_perform() called as soon as one of them are
+ *          ready. Passing zero size allows to get just a number of fds.
+ *
+ * Returns: CURLMcode type, general multi error code.
+ */
+CURL_EXTERN CURLMcode curl_multi_waitfds(CURLM *multi,
+                                         struct curl_waitfd *ufds,
+                                         unsigned int size,
+                                         unsigned int *fd_count);
+
+/*
+ * Notifications dispatched by a multi handle, when enabled.
+ */
+#define CURLMNOTIFY_INFO_READ    0
+#define CURLMNOTIFY_EASY_DONE    1
+
+/*
+ * Callback to install via CURLMOPT_NOTIFYFUNCTION.
+ */
+typedef void (*curl_notify_callback)(CURLM *multi,
+                                     unsigned int notification,
+                                     CURL *easy,
+                                     void *user_data);
+
+CURL_EXTERN CURLMcode curl_multi_notify_disable(CURLM *multi,
+                                                unsigned int notification);
+
+CURL_EXTERN CURLMcode curl_multi_notify_enable(CURLM *multi,
+                                               unsigned int notification);
 
 #ifdef __cplusplus
 } /* end of extern "C" */

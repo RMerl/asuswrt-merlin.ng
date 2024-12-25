@@ -21,23 +21,56 @@
 # SPDX-License-Identifier: curl
 #
 ###########################################################################
-include(FindPackageHandleStandardArgs)
+# Find the brotli library
+#
+# Input variables:
+#
+# - `BROTLI_INCLUDE_DIR`:    Absolute path to brotli include directory.
+# - `BROTLICOMMON_LIBRARY`:  Absolute path to `brotlicommon` library.
+# - `BROTLIDEC_LIBRARY`:     Absolute path to `brotlidec` library.
+#
+# Result variables:
+#
+# - `BROTLI_FOUND`:          System has brotli.
+# - `BROTLI_INCLUDE_DIRS`:   The brotli include directories.
+# - `BROTLI_LIBRARIES`:      The brotli library names.
+# - `BROTLI_LIBRARY_DIRS`:   The brotli library directories.
+# - `BROTLI_PC_REQUIRES`:    The brotli pkg-config packages.
+# - `BROTLI_CFLAGS`:         Required compiler flags.
+# - `BROTLI_VERSION`:        Version of brotli.
 
-find_path(BROTLI_INCLUDE_DIR "brotli/decode.h")
+set(BROTLI_PC_REQUIRES "libbrotlidec" "libbrotlicommon")  # order is significant: brotlidec then brotlicommon
 
-find_library(BROTLICOMMON_LIBRARY NAMES brotlicommon)
-find_library(BROTLIDEC_LIBRARY NAMES brotlidec)
+if(CURL_USE_PKGCONFIG AND
+   NOT DEFINED BROTLI_INCLUDE_DIR AND
+   NOT DEFINED BROTLICOMMON_LIBRARY AND
+   NOT DEFINED BROTLIDEC_LIBRARY)
+  find_package(PkgConfig QUIET)
+  pkg_check_modules(BROTLI ${BROTLI_PC_REQUIRES})
+endif()
 
-find_package_handle_standard_args(Brotli
-    FOUND_VAR
-      BROTLI_FOUND
+if(BROTLI_FOUND)
+  set(Brotli_FOUND TRUE)
+  set(BROTLI_VERSION ${BROTLI_libbrotlicommon_VERSION})
+  string(REPLACE ";" " " BROTLI_CFLAGS "${BROTLI_CFLAGS}")
+  message(STATUS "Found Brotli (via pkg-config): ${BROTLI_INCLUDE_DIRS} (found version \"${BROTLI_VERSION}\")")
+else()
+  find_path(BROTLI_INCLUDE_DIR "brotli/decode.h")
+  find_library(BROTLICOMMON_LIBRARY NAMES "brotlicommon")
+  find_library(BROTLIDEC_LIBRARY NAMES "brotlidec")
+
+  include(FindPackageHandleStandardArgs)
+  find_package_handle_standard_args(Brotli
     REQUIRED_VARS
+      BROTLI_INCLUDE_DIR
       BROTLIDEC_LIBRARY
       BROTLICOMMON_LIBRARY
-      BROTLI_INCLUDE_DIR
-    FAIL_MESSAGE
-      "Could NOT find Brotli"
-)
+  )
 
-set(BROTLI_INCLUDE_DIRS ${BROTLI_INCLUDE_DIR})
-set(BROTLI_LIBRARIES ${BROTLICOMMON_LIBRARY} ${BROTLIDEC_LIBRARY})
+  if(BROTLI_FOUND)
+    set(BROTLI_INCLUDE_DIRS ${BROTLI_INCLUDE_DIR})
+    set(BROTLI_LIBRARIES ${BROTLIDEC_LIBRARY} ${BROTLICOMMON_LIBRARY})
+  endif()
+
+  mark_as_advanced(BROTLI_INCLUDE_DIR BROTLIDEC_LIBRARY BROTLICOMMON_LIBRARY)
+endif()

@@ -2,6 +2,7 @@
 <info>
 <keywords>
 proxy
+unsupported scheme
 </keywords>
 </info>
 
@@ -13,9 +14,6 @@ proxy
 #
 # Client-side
 <client>
-<server>
-none
-</server>
 <features>
 http
 proxy

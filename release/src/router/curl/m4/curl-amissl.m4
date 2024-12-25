@@ -33,7 +33,7 @@ if test "$HAVE_PROTO_BSDSOCKET_H" = "1"; then
         #include <openssl/opensslv.h>
       ]],[[
         #if defined(AMISSL_CURRENT_VERSION) && defined(AMISSL_V3xx) && \
-            defined(OPENSSL_VERSION_MAJOR) && (OPENSSL_VERSION_MAJOR >= 3) && \
+            (OPENSSL_VERSION_NUMBER >= 0x30000000L) && \
             defined(PROTO_AMISSL_H)
         return 0;
         #else
@@ -50,9 +50,9 @@ if test "$HAVE_PROTO_BSDSOCKET_H" = "1"; then
       check_for_ca_bundle=1
       with_ca_fallback=yes
       LIBS="-lamisslstubs -lamisslauto $LIBS"
+      CURL_NETWORK_AND_TIME_LIBS="-lamisslstubs -lamisslauto $CURL_NETWORK_AND_TIME_LIBS"
       AC_DEFINE(USE_AMISSL, 1, [if AmiSSL is in use])
       AC_DEFINE(USE_OPENSSL, 1, [if OpenSSL is in use])
-      AC_DEFINE_UNQUOTED(HAVE_OPENSSL3, 1, [Define to 1 if using OpenSSL 3 or later.])
       AC_CHECK_HEADERS(openssl/x509.h openssl/rsa.h openssl/crypto.h \
                        openssl/pem.h openssl/ssl.h openssl/err.h)
     ],[

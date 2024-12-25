@@ -25,21 +25,16 @@
  *
  ***************************************************************************/
 
-#if !defined(CURL_DISABLE_AWS) || !defined(CURL_DISABLE_DIGEST_AUTH) \
-    || defined(USE_LIBSSH2)
+#if !defined(CURL_DISABLE_AWS) || !defined(CURL_DISABLE_DIGEST_AUTH) || \
+  defined(USE_LIBSSH2) || defined(USE_SSL)
 
 #include <curl/curl.h>
 #include "curl_hmac.h"
 
-extern const struct HMAC_params Curl_HMAC_SHA256[1];
+extern const struct HMAC_params Curl_HMAC_SHA256;
 
-#ifdef USE_WOLFSSL
-/* SHA256_DIGEST_LENGTH is an enum value in wolfSSL. Need to import it from
- * sha.h */
-#include <wolfssl/options.h>
-#include <wolfssl/openssl/sha.h>
-#else
-#define SHA256_DIGEST_LENGTH 32
+#ifndef CURL_SHA256_DIGEST_LENGTH
+#define CURL_SHA256_DIGEST_LENGTH 32 /* fixed size */
 #endif
 
 CURLcode Curl_sha256it(unsigned char *outbuffer, const unsigned char *input,

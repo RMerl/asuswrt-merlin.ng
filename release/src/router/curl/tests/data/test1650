@@ -9,15 +9,12 @@ DOH
 #
 # Client-side
 <client>
-<server>
-none
-</server>
 <features>
 unittest
 DoH
 </features>
 <name>
-DOH
+DoH parsing
 </name>
 </client>
 </testcase>

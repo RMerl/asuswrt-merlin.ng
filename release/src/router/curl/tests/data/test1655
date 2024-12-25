@@ -2,22 +2,19 @@
 <info>
 <keywords>
 unittest
-doh
+DOH
 </keywords>
 </info>
 
 #
 # Client-side
 <client>
-<server>
-none
-</server>
 <features>
 unittest
 DoH
 </features>
 <name>
-unit test for doh_encode
+unit test for doh_req_encode
 </name>
 </client>
 </testcase>

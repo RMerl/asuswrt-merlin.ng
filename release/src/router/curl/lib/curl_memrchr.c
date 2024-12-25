@@ -33,7 +33,6 @@
 #include "memdebug.h"
 
 #ifndef HAVE_MEMRCHR
-
 /*
  * Curl_memrchr()
  *
@@ -54,11 +53,10 @@ Curl_memrchr(const void *s, int c, size_t n)
 
     while(p >= q) {
       if(*p == (unsigned char)c)
-        return (void *)p;
+        return CURL_UNCONST(p);
       p--;
     }
   }
   return NULL;
 }
-
 #endif /* HAVE_MEMRCHR */

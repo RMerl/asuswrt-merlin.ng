@@ -11,7 +11,7 @@ HTTPS
 #
 # Server-side
 <reply>
-<data nocheck="yes">
+<data crlf="headers" nocheck="yes">
 HTTP/1.1 201 OK
 Date: Tue, 09 Nov 2010 14:49:00 GMT
 Connection: close
@@ -25,12 +25,11 @@ Funny-head: yesyes
 # Client-side
 <client>
 <features>
-debug
+Debug
 http
 http/3
 </features>
 <server>
-http
 http/3
 </server>
 <name>
@@ -39,7 +38,7 @@ HTTP/3 POST
 <setenv>
 </setenv>
 <command>
--k --http3 "https://%HOSTIP:%HTTP3PORT/%TESTNUMBER" -d "moo"
+--insecure --http3 "https://%HOSTIP:%HTTP3PORT/%TESTNUMBER" -d "moo"
 </command>
 
 </client>
@@ -47,15 +46,15 @@ HTTP/3 POST
 #
 # Verify data after the test has been "shot"
 <verify>
-<stdout>
-HTTP/3 201 
+<stdout crlf="headers">
+HTTP/3 201%spc%
 date: Tue, 09 Nov 2010 14:49:00 GMT
 content-length: 0
 funny-head: yesyes
 via: 1.1 nghttpx
 
 </stdout>
-<protocol nonewline="yes">
+<protocol crlf="yes" nonewline="yes">
 POST https://%HOSTIP:%HTTP3PORT/2501 HTTP/1.1
 Host: %HOSTIP:%HTTP3PORT
 User-Agent: curl/%VERSION

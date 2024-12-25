@@ -24,16 +24,16 @@
 
 /* Testing Retry-After header parser */
 
-#include "test.h"
+#include "first.h"
 
 #include "memdebug.h"
 
-int test(char *URL)
+static CURLcode test_lib1594(const char *URL)
 {
   struct curl_slist *header = NULL;
   curl_off_t retry;
   CURL *curl = NULL;
-  int res = 0;
+  CURLcode res = CURLE_OK;
 
   global_init(CURL_GLOBAL_ALL);
 
@@ -49,13 +49,7 @@ int test(char *URL)
   if(res)
     goto test_cleanup;
 
-#ifdef LIB1596
-  /* we get a relative number of seconds, so add the number of seconds
-     we're at to make it a somewhat stable number. Then remove accuracy. */
-  retry += time(NULL);
-  retry /= 10000;
-#endif
-  printf("Retry-After %" CURL_FORMAT_CURL_OFF_T "\n", retry);
+  curl_mprintf("Retry-After %" CURL_FORMAT_CURL_OFF_T "\n", retry);
 
 test_cleanup:
 

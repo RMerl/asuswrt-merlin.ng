@@ -45,11 +45,15 @@
 int main(void)
 {
   CURL *curl;
-  CURLcode res;
-  struct curl_slist *recipients = NULL;
+
+  CURLcode res = curl_global_init(CURL_GLOBAL_ALL);
+  if(res)
+    return (int)res;
 
   curl = curl_easy_init();
   if(curl) {
+    struct curl_slist *recipients = NULL;
+
     /* This is the URL for your mailserver */
     curl_easy_setopt(curl, CURLOPT_URL, "smtp://mail.example.com");
 
@@ -68,7 +72,7 @@ int main(void)
     /* Free the list of recipients */
     curl_slist_free_all(recipients);
 
-    /* curl will not send the QUIT command until you call cleanup, so you
+    /* curl does not send the QUIT command until you call cleanup, so you
      * should be able to reuse this connection for additional requests. It may
      * not be a good idea to keep the connection open for a long time though
      * (more than a few minutes may result in the server timing out the
@@ -77,5 +81,7 @@ int main(void)
     curl_easy_cleanup(curl);
   }
 
-  return 0;
+  curl_global_cleanup();
+
+  return (int)res;
 }

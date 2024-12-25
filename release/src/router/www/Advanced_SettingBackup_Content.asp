@@ -120,7 +120,7 @@ function uploadSetting(){
 }
 
 function saveJFFS(){
-	location.href='backup_jffs.tar';
+	location.href='backup_jffs_'+productid+'.tar';
 }
 
 function uploadJFFS(){

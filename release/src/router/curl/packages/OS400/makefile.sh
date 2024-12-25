@@ -28,9 +28,21 @@
 #
 #       This is a shell script since make is not a standard component of OS/400.
 
-SCRIPTDIR=`dirname "${0}"`
+SCRIPTDIR=$(dirname "${0}")
 . "${SCRIPTDIR}/initscript.sh"
-cd "${TOPDIR}"
+cd "${TOPDIR}" || exit 1
+
+
+#       Make sure all files are UTF8-encoded.
+
+# shellcheck disable=SC2038
+find "${TOPDIR}" -type f -print | xargs ls -S | while read -r CCSID FILE
+do      if [ "${CCSID}" != 1208 ]
+        then    CMD="CPY OBJ('${FILE}') TOOBJ('${FILE}') FROMCCSID(*OBJ)"
+                CMD="${CMD} TOCCSID(1208) DTAFMT(*TEXT) REPLACE(*YES)"
+                (CLcommand "${CMD}")
+        fi
+done
 
 
 #       Create the OS/400 library if it does not exist.
@@ -53,13 +65,13 @@ fi
 #       Copy some documentation files if needed.
 
 for TEXT in "${TOPDIR}/COPYING" "${SCRIPTDIR}/README.OS400"             \
-    "${TOPDIR}/CHANGES" "${TOPDIR}/docs/THANKS" "${TOPDIR}/docs/FAQ"    \
+    "${TOPDIR}/CHANGES.md" "${TOPDIR}/docs/THANKS" "${TOPDIR}/docs/FAQ"    \
     "${TOPDIR}/docs/FEATURES" "${TOPDIR}/docs/SSLCERTS.md"              \
     "${TOPDIR}/docs/RESOURCES" "${TOPDIR}/docs/VERSIONS.md"             \
     "${TOPDIR}/docs/HISTORY.md"
-do      MEMBER="`basename \"${TEXT}\" .OS400`"
-        MEMBER="`basename \"${MEMBER}\" .md`"
-        MEMBER="${LIBIFSNAME}/DOCS.FILE/`db2_name \"${MEMBER}\"`.MBR"
+do      MEMBER="$(basename "${TEXT}" .OS400)"
+        MEMBER="$(basename "${MEMBER}" .md)"
+        MEMBER="${LIBIFSNAME}/DOCS.FILE/$(db2_name "${MEMBER}").MBR"
 
         [ -e "${TEXT}" ] || continue
 
@@ -83,8 +95,8 @@ fi
 #       Copy RPG examples if needed.
 
 for EXAMPLE in "${SCRIPTDIR}/rpg-examples"/*
-do      MEMBER="`basename \"${EXAMPLE}\"`"
-        IFSMEMBER="${LIBIFSNAME}/RPGXAMPLES.FILE/`db2_name \"${MEMBER}\"`.MBR"
+do      MEMBER="$(basename "${EXAMPLE}")"
+        IFSMEMBER="${LIBIFSNAME}/RPGXAMPLES.FILE/$(db2_name "${MEMBER}").MBR"
 
         [ -e "${EXAMPLE}" ] || continue
 
@@ -92,8 +104,8 @@ do      MEMBER="`basename \"${EXAMPLE}\"`"
         then    CMD="CPY OBJ('${EXAMPLE}') TOOBJ('${IFSMEMBER}')"
                 CMD="${CMD} TOCCSID(${TGTCCSID}) DTAFMT(*TEXT) REPLACE(*YES)"
                 CLcommand "${CMD}"
-                MBRTEXT=`sed -e '1!d;/^      \*/!d;s/^ *\* *//'         \
-                             -e 's/ *$//;s/'"'"'/&&/g' < "${EXAMPLE}"`
+                MBRTEXT=$(sed -e '1!d;/^      \*/!d;s/^ *\* *//'        \
+                              -e 's/ *$//;s/'"'"'/&&/g' < "${EXAMPLE}")
                 CMD="CHGPFM FILE(${TARGETLIB}/RPGXAMPLES) MBR(${MEMBER})"
                 CMD="${CMD} SRCTYPE(RPGLE) TEXT('${MBRTEXT}')"
                 CLcommand "${CMD}"
@@ -117,7 +129,7 @@ fi
 
 #       Build in each directory.
 
-# for SUBDIR in include lib src tests
-for SUBDIR in include lib src
+# for SUBDIR in include lib docs src tests
+for SUBDIR in include lib docs src
 do      "${SCRIPTDIR}/make-${SUBDIR}.sh"
 done

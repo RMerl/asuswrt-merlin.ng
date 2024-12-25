@@ -24,7 +24,7 @@ hello
 # Client-side
 <client>
 <features>
-ipv6
+IPv6
 </features>
 <server>
 http-ipv6
@@ -36,14 +36,14 @@ HTTP-IPv6 GET (using ip6-localhost)
 -g "http://ip6-localhost:%HTTP6PORT/%TESTNUMBER"
 </command>
 <precheck>
-./server/resolve --ipv6 ip6-localhost
+%RESOLVE --ipv6 ip6-localhost
 </precheck>
 </client>
 
 #
 # Verify data after the test has been "shot"
 <verify>
-<protocol>
+<protocol crlf="headers">
 GET /%TESTNUMBER HTTP/1.1
 Host: ip6-localhost:%HTTP6PORT
 User-Agent: curl/%VERSION

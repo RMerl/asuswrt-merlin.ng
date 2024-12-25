@@ -21,19 +21,20 @@
  * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
+#include "first.h"
 
-#include "test.h"
-
-#ifdef USE_WEBSOCKETS
+#ifndef CURL_DISABLE_WEBSOCKETS
 
 struct ws_data {
-  CURL *easy;
-  char buf[1024*1024];
+  CURL *curl;
+  char *buf;
   size_t blen;
   size_t nwrites;
   int has_meta;
   int meta_flags;
 };
+
+#define LIB2302_BUFSIZE (1024 * 1024)
 
 static void flush_data(struct ws_data *wd)
 {
@@ -43,13 +44,13 @@ static void flush_data(struct ws_data *wd)
     return;
 
   for(i = 0; i < wd->blen; ++i)
-    printf("%02x ", (unsigned char)wd->buf[i]);
+    curl_mprintf("%02x ", (unsigned char)wd->buf[i]);
 
-  printf("\n");
+  curl_mprintf("\n");
   if(wd->has_meta)
-    printf("RECFLAGS: %x\n", wd->meta_flags);
+    curl_mprintf("RECFLAGS: %x\n", wd->meta_flags);
   else
-    fprintf(stderr, "RECFLAGS: NULL\n");
+    curl_mfprintf(stderr, "RECFLAGS: NULL\n");
   wd->blen = 0;
   wd->nwrites = 0;
 }
@@ -63,10 +64,10 @@ static size_t add_data(struct ws_data *wd, const char *buf, size_t blen,
     if(wd->nwrites > 0)
       flush_data(wd);
     wd->has_meta = (meta != NULL);
-    wd->meta_flags = meta? meta->flags : 0;
+    wd->meta_flags = meta ? meta->flags : 0;
   }
 
-  if(wd->blen + blen > sizeof(wd->buf)) {
+  if(wd->blen + blen > LIB2302_BUFSIZE) {
     return 0;
   }
   memcpy(wd->buf + wd->blen, buf, blen);
@@ -75,52 +76,55 @@ static size_t add_data(struct ws_data *wd, const char *buf, size_t blen,
   return blen;
 }
 
-
-static size_t writecb(char *buffer, size_t size, size_t nitems, void *p)
+static size_t t2302_write_cb(char *buffer, size_t size, size_t nitems, void *p)
 {
   struct ws_data *ws_data = p;
   size_t incoming = nitems;
   const struct curl_ws_frame *meta;
   (void)size;
 
-  meta = curl_ws_meta(ws_data->easy);
+  meta = curl_ws_meta(ws_data->curl);
   incoming = add_data(ws_data, buffer, incoming, meta);
 
   if(nitems != incoming)
-    fprintf(stderr, "returns error from callback\n");
+    curl_mfprintf(stderr, "returns error from callback\n");
   return nitems;
 }
+#endif
 
-int test(char *URL)
+static CURLcode test_lib2302(const char *URL)
 {
+#ifndef CURL_DISABLE_WEBSOCKETS
   CURL *curl;
   CURLcode res = CURLE_OK;
   struct ws_data ws_data;
 
-
   global_init(CURL_GLOBAL_ALL);
 
-  curl = curl_easy_init();
-  if(curl) {
-    memset(&ws_data, 0, sizeof(ws_data));
-    ws_data.easy = curl;
+  memset(&ws_data, 0, sizeof(ws_data));
+  ws_data.buf = (char *)calloc(LIB2302_BUFSIZE, 1);
+  if(ws_data.buf) {
+    curl = curl_easy_init();
+    if(curl) {
+      ws_data.curl = curl;
 
-    curl_easy_setopt(curl, CURLOPT_URL, URL);
-    /* use the callback style */
-    curl_easy_setopt(curl, CURLOPT_USERAGENT, "webbie-sox/3");
-    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writecb);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ws_data);
-    res = curl_easy_perform(curl);
-    fprintf(stderr, "curl_easy_perform() returned %u\n", (int)res);
-    /* always cleanup */
-    curl_easy_cleanup(curl);
-    flush_data(&ws_data);
+      curl_easy_setopt(curl, CURLOPT_URL, URL);
+      /* use the callback style */
+      curl_easy_setopt(curl, CURLOPT_USERAGENT, "webbie-sox/3");
+      curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+      curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, t2302_write_cb);
+      curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ws_data);
+      res = curl_easy_perform(curl);
+      curl_mfprintf(stderr, "curl_easy_perform() returned %d\n", res);
+      /* always cleanup */
+      curl_easy_cleanup(curl);
+      flush_data(&ws_data);
+    }
+    free(ws_data.buf);
   }
   curl_global_cleanup();
-  return (int)res;
-}
-
+  return res;
 #else
-NO_SUPPORT_BUILT_IN
+  NO_SUPPORT_BUILT_IN
 #endif
+}

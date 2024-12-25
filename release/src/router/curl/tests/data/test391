@@ -56,13 +56,13 @@ http://%HOSTIP:%HTTPPORT/../../%TESTNUMBER --path-as-is -L
 #
 # Verify data after the test has been "shot"
 <verify>
-<protocol>
+<protocol crlf="headers">
 GET /../../%TESTNUMBER HTTP/1.1
 Host: %HOSTIP:%HTTPPORT
 User-Agent: curl/%VERSION
 Accept: */*
 
-GET /../%TESTNUMBER0002 HTTP/1.1
+GET /%TESTNUMBER0002 HTTP/1.1
 Host: %HOSTIP:%HTTPPORT
 User-Agent: curl/%VERSION
 Accept: */*

@@ -12,9 +12,6 @@ timing-dependent
 
 # Client-side
 <client>
-<server>
-none
-</server>
 <tool>
 lib%TESTNUMBER
 </tool>
@@ -29,9 +26,6 @@ http://a-site-never-accessed.example.org/%TESTNUMBER
 
 # Verify data after the test has been "shot"
 <verify>
-<valgrind>
-disable
-</valgrind>
 <errorcode>
 0
 </errorcode>

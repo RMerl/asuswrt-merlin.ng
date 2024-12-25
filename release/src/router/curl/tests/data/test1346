@@ -8,7 +8,7 @@ HTTP GET
 
 #
 <reply>
-<data nocheck="yes">
+<data crlf="headers" nocheck="yes">
 HTTP/1.1 200 OK
 Date: Tue, 09 Nov 2010 14:49:00 GMT
 Server: test-server/fake
@@ -23,29 +23,21 @@ Content-Type: text/html
 #
 # Client-side
 <client>
-# this relies on the debug feature to allow us to set directory to store the
-# -O output in, using the CURL_TESTDIR variable
-<features>
-debug
-</features>
 <server>
 http
 </server>
 <name>
 HTTP GET with -O -i without Content-Disposition, without -D
 </name>
-<setenv>
-CURL_TESTDIR=%LOGDIR
-</setenv>
 <command option="no-output,no-include">
-http://%HOSTIP:%HTTPPORT/%TESTNUMBER -i -O
+http://%HOSTIP:%HTTPPORT/%TESTNUMBER -i -O --output-dir %LOGDIR
 </command>
 </client>
 
 #
 # Verify data after the test has been "shot"
 <verify>
-<protocol>
+<protocol crlf="headers">
 GET /%TESTNUMBER HTTP/1.1
 Host: %HOSTIP:%HTTPPORT
 User-Agent: curl/%VERSION
@@ -53,7 +45,7 @@ Accept: */*
 
 </protocol>
 
-<file1 name="%LOGDIR/%TESTNUMBER">
+<file1 name="%LOGDIR/%TESTNUMBER" crlf="headers">
 HTTP/1.1 200 OK
 Date: Tue, 09 Nov 2010 14:49:00 GMT
 Server: test-server/fake

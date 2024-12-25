@@ -24,13 +24,14 @@
  *
  ***************************************************************************/
 
-#include "timeval.h"
+#include "curlx/timeval.h"
 
 
 typedef enum {
   TIMER_NONE,
   TIMER_STARTOP,
-  TIMER_STARTSINGLE,
+  TIMER_STARTSINGLE, /* start of transfer, might get queued */
+  TIMER_POSTQUEUE,   /* start, immediately after dequeue */
   TIMER_NAMELOOKUP,
   TIMER_CONNECT,
   TIMER_APPCONNECT,
@@ -53,12 +54,12 @@ CURLcode Curl_pgrsSetDownloadCounter(struct Curl_easy *data, curl_off_t size);
 void Curl_pgrsSetUploadCounter(struct Curl_easy *data, curl_off_t size);
 void Curl_ratelimit(struct Curl_easy *data, struct curltime now);
 int Curl_pgrsUpdate(struct Curl_easy *data);
+void Curl_pgrsUpdate_nometer(struct Curl_easy *data);
+
 void Curl_pgrsResetTransferSizes(struct Curl_easy *data);
 struct curltime Curl_pgrsTime(struct Curl_easy *data, timerid timer);
-timediff_t Curl_pgrsLimitWaitTime(curl_off_t cursize,
-                                  curl_off_t startsize,
-                                  curl_off_t limit,
-                                  struct curltime start,
+timediff_t Curl_pgrsLimitWaitTime(struct pgrs_dir *d,
+                                  curl_off_t speed_limit,
                                   struct curltime now);
 /**
  * Update progress timer with the elapsed time from its start to `timestamp`.
@@ -68,9 +69,6 @@ timediff_t Curl_pgrsLimitWaitTime(curl_off_t cursize,
 void Curl_pgrsTimeWas(struct Curl_easy *data, timerid timer,
                       struct curltime timestamp);
 
-#define PGRS_HIDE    (1<<4)
-#define PGRS_UL_SIZE_KNOWN (1<<5)
-#define PGRS_DL_SIZE_KNOWN (1<<6)
-#define PGRS_HEADERS_OUT (1<<7) /* set when the headers have been written */
+void Curl_pgrsEarlyData(struct Curl_easy *data, curl_off_t sent);
 
 #endif /* HEADER_CURL_PROGRESS_H */

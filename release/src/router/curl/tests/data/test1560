@@ -2,18 +2,15 @@
 <info>
 <keywords>
 unittest
-URLAPI
+urlapi
 </keywords>
 </info>
 
 #
 # Client-side
 <client>
-<server>
-none
-</server>
 <setenv>
-LANG=en_US.UTF-8
+LC_ALL=C.UTF-8
 </setenv>
 <features>
 file
@@ -38,5 +35,8 @@ lib%TESTNUMBER
 <stdout>
 success
 </stdout>
+<limits>
+Allocations: 3000
+</limits>
 </verify>
 </testcase>

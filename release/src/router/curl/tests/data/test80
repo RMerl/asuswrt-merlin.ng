@@ -24,7 +24,7 @@ Content-Length: 9
 
 contents
 </data>
-<connect>
+<connect crlf="headers">
 HTTP/1.1 200 Mighty fine indeed
 
 </connect>
@@ -53,7 +53,7 @@ http-proxy
 HTTP 1.0 CONNECT with proxytunnel and proxy+host Basic authentication
 </name>
 <command>
-http://test.%TESTNUMBER:%HTTPPORT/we/want/that/page/%TESTNUMBER -p --proxy1.0 %HOSTIP:%PROXYPORT --user iam:myself --proxy-user youare:yourself
+http://test.%TESTNUMBER:%HTTPPORT/we/want/that/page/%TESTNUMBER -p --proxy1.0 %HOSTIP:%PROXYPORT --user iam:myself --proxy-user youare:yourself -A ""
 </command>
 <features>
 proxy
@@ -63,19 +63,17 @@ proxy
 #
 # Verify data after the test has been "shot"
 <verify>
-<proxy>
+<proxy crlf="headers">
 CONNECT test.%TESTNUMBER:%HTTPPORT HTTP/1.0
 Host: test.%TESTNUMBER:%HTTPPORT
-Proxy-Authorization: Basic eW91YXJlOnlvdXJzZWxm
-User-Agent: curl/%VERSION
+Proxy-Authorization: Basic %b64[youare:yourself]b64%
 Proxy-Connection: Keep-Alive
 
 </proxy>
-<protocol>
+<protocol crlf="headers">
 GET /we/want/that/page/%TESTNUMBER HTTP/1.1
 Host: test.%TESTNUMBER:%HTTPPORT
-Authorization: Basic aWFtOm15c2VsZg==
-User-Agent: curl/%VERSION
+Authorization: Basic %b64[iam:myself]b64%
 Accept: */*
 
 </protocol>

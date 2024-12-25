@@ -89,27 +89,29 @@ if test "x$OPT_GNUTLS" != xno; then
       CLEANLIBS="$LIBS"
       CLEANCPPFLAGS="$CPPFLAGS"
       CLEANLDFLAGS="$LDFLAGS"
+      CLEANLDFLAGSPC="$LDFLAGSPC"
 
       LIBS="$addlib $LIBS"
       LDFLAGS="$LDFLAGS $addld"
+      LDFLAGSPC="$LDFLAGSPC $addld"
       if test "$addcflags" != "-I/usr/include"; then
-         CPPFLAGS="$CPPFLAGS $addcflags"
+        CPPFLAGS="$CPPFLAGS $addcflags"
       fi
 
       dnl this function is selected since it was introduced in 3.1.10
       AC_CHECK_LIB(gnutls, gnutls_x509_crt_get_dn2,
-       [
-       AC_DEFINE(USE_GNUTLS, 1, [if GnuTLS is enabled])
-       AC_SUBST(USE_GNUTLS, [1])
-       GNUTLS_ENABLED=1
-       USE_GNUTLS="yes"
-       ssl_msg="GnuTLS"
-       test gnutls != "$DEFAULT_SSL_BACKEND" || VALID_DEFAULT_SSL_BACKEND=yes
-       ],
-       [
-         LIBS="$CLEANLIBS"
-         CPPFLAGS="$CLEANCPPFLAGS"
-       ])
+        [
+        AC_DEFINE(USE_GNUTLS, 1, [if GnuTLS is enabled])
+        GNUTLS_ENABLED=1
+        USE_GNUTLS="yes"
+        ssl_msg="GnuTLS"
+        QUIC_ENABLED=yes
+        test gnutls != "$DEFAULT_SSL_BACKEND" || VALID_DEFAULT_SSL_BACKEND=yes
+        ],
+        [
+          LIBS="$CLEANLIBS"
+          CPPFLAGS="$CLEANCPPFLAGS"
+        ])
 
       if test "x$USE_GNUTLS" = "xyes"; then
         AC_MSG_NOTICE([detected GnuTLS version $version])
@@ -125,6 +127,7 @@ if test "x$OPT_GNUTLS" != xno; then
             AC_MSG_NOTICE([Added $gtlslib to CURL_LIBRARY_PATH])
           fi
         fi
+        LIBCURL_PC_REQUIRES_PRIVATE="$LIBCURL_PC_REQUIRES_PRIVATE gnutls nettle"
       fi
 
     fi
@@ -134,11 +137,10 @@ if test "x$OPT_GNUTLS" != xno; then
   test -z "$ssl_msg" || ssl_backends="${ssl_backends:+$ssl_backends, }$ssl_msg"
 fi
 
-dnl ---
-dnl Check which crypto backend GnuTLS uses
-dnl ---
-
 if test "$GNUTLS_ENABLED" = "1"; then
+  dnl ---
+  dnl Check which crypto backend GnuTLS uses
+  dnl ---
   USE_GNUTLS_NETTLE=
   # First check if we can detect either crypto library via transitive linking
   AC_CHECK_LIB(gnutls, nettle_MD5Init, [ USE_GNUTLS_NETTLE=1 ])
@@ -151,17 +153,14 @@ if test "$GNUTLS_ENABLED" = "1"; then
     AC_MSG_ERROR([GnuTLS found, but nettle was not found])
   fi
   LIBS="-lnettle $LIBS"
-fi
 
-dnl ---
-dnl We require GnuTLS with SRP support.
-dnl ---
-if test "$GNUTLS_ENABLED" = "1"; then
+  dnl ---
+  dnl We require GnuTLS with SRP support.
+  dnl ---
   AC_CHECK_LIB(gnutls, gnutls_srp_verifier,
-   [
-     AC_DEFINE(HAVE_GNUTLS_SRP, 1, [if you have the function gnutls_srp_verifier])
-     AC_SUBST(HAVE_GNUTLS_SRP, [1])
-   ])
+    [
+      AC_DEFINE(HAVE_GNUTLS_SRP, 1, [if you have the function gnutls_srp_verifier])
+      HAVE_GNUTLS_SRP=1
+    ])
 fi
-
 ])

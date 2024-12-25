@@ -24,31 +24,28 @@
 
 AC_DEFUN([CURL_DARWIN_SYSTEMCONFIGURATION], [
 AC_MSG_CHECKING([whether to link macOS CoreFoundation, CoreServices, and SystemConfiguration frameworks])
-case $host_os in
-  darwin*)
-    AC_COMPILE_IFELSE([
-      AC_LANG_PROGRAM([[
-#include <TargetConditionals.h>
-      ]],[[
-#if TARGET_OS_MAC && !(defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE)
-      return 0;
-#else
-#error Not macOS
-#endif
-      ]])
-    ],[
-      build_for_macos="yes"
-    ],[
-      build_for_macos="no"
-    ])
-    if test "x$build_for_macos" != xno; then
-      AC_MSG_RESULT(yes)
-      LDFLAGS="$LDFLAGS -framework CoreFoundation -framework CoreServices -framework SystemConfiguration"
-    else
-      AC_MSG_RESULT(no)
-    fi
-    ;;
-  *)
+  AC_COMPILE_IFELSE([
+    AC_LANG_PROGRAM([[
+      #include <sys/types.h>
+      #include <TargetConditionals.h>
+    ]],[[
+      #if TARGET_OS_MAC && !(defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE)
+        return 0;
+      #else
+        #error Not macOS
+      #endif
+    ]])
+  ],[
+    build_for_macos="yes"
+  ],[
+    build_for_macos="no"
+  ])
+  if test "x$build_for_macos" != xno; then
+    AC_MSG_RESULT(yes)
+    SYSCONFIG_LDFLAGS='-framework CoreFoundation -framework CoreServices -framework SystemConfiguration'
+    LDFLAGS="$LDFLAGS $SYSCONFIG_LDFLAGS"
+    LDFLAGSPC="$LDFLAGSPC $SYSCONFIG_LDFLAGS"
+  else
     AC_MSG_RESULT(no)
-esac
+  fi
 ])

@@ -572,7 +572,7 @@ sta_list:
 					while (line) {
 						if ( (sscanf(line,"%*s %17s %15s %32s %*s", macentry, ipentry_dhcp, tmp) == 3) &&
 						     ( (found > 0 && !strcmp(ipentry_arp, ipentry_dhcp)) ||
-						       (!strcasecmp(macentry, ether_etoa((void *)&auth->ea[i], ea)))
+						       (!strcasecmp(macentry, ether_etoa((void *)&auth->ea[ii], ea)))
 						     )
 						   ) {
 							found += 2;

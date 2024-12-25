@@ -25,9 +25,15 @@ Asuswrt-Merlin 3006.xxx Changelog
              from 37038 for the RT-BE96U and GT-BE98_PRO - was missing
              from GPL)
   - UPDATED: dropbear to 2024.86.
+  - CHANGED: VPN public IP retrieval now uses HTTP instead of STUN,
+             which should be more reliable through a VPN tunnel.
+  - CHANGED: Refresh link not working on OpenVPN/Wireguard client pages.
+             Also enhanced behaviour on the VPNStatus page.
+  - CHANGED: Model name will be inserted in the filename of JFFS backups.
   - FIXED: webui always redirecting to router hostname for RT-BE86U.
-  - REMOVED: Report of Wireguard client public IP (didn't work
-             reliably)
+  - FIXED: DLNA device icon missing for GT-BE98_PRO
+  - FIXED: Site Survey page not loading properly
+  - FIXED: Wireless Log would sometimes display the wrong hostnames
 
 
 3006.102.2_2 (17-Nov-2024)

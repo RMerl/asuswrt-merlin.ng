@@ -76,14 +76,35 @@ ej_get_leases_array(int eid, webs_t wp, int argc, char_t **argv)
 	char *hwaddr, *ipaddr, *name, *next;
 	unsigned int expires;
 	int ret=0;
+#ifdef RTCONFIG_MULTILAN_CFG
+	MTLAN_T *pmtl = NULL;
+	size_t mtl_sz = 0;
+	int i, vlanid = 0;
+	char path[128] = {0};
+#endif
 
 	killall("dnsmasq", SIGUSR2);
 	sleep(1);
 
-	if (!(fp = fopen("/var/lib/misc/dnsmasq.leases", "r")))
-		return websWrite(wp, "leasearray = [];\n");
-
 	ret += websWrite(wp, "leasearray= [");
+
+#ifdef RTCONFIG_MULTILAN_CFG
+	pmtl = (MTLAN_T *)INIT_MTLAN(sizeof(MTLAN_T));
+	if (pmtl) {
+		get_mtlan(pmtl, &mtl_sz);
+		for (i = 0; i < mtl_sz; i++) {
+			if (pmtl[i].enable && pmtl[i].nw_t.dhcp_enable) {
+				if (i) {
+					snprintf(path, sizeof(path), "/var/lib/misc/dnsmasq-%d.leases", pmtl[i].sdn_t.sdn_idx);
+					vlanid = pmtl[i].vid;
+				} else
+					strlcpy(path, "/var/lib/misc/dnsmasq.leases", sizeof(path));
+				fp = fopen(path, "r");
+				if (!fp) continue;
+#else
+	if (!(fp = fopen("/var/lib/misc/dnsmasq.leases", "r")))
+		return ret + websWrite(wp, "];\n");
+#endif
 
 	while ((next = fgets(line, sizeof(line), fp)) != NULL) {
 		/* line should start with a numeric value */
@@ -104,14 +125,23 @@ ej_get_leases_array(int eid, webs_t wp, int argc, char_t **argv)
 			/* skip ipv6 leases, they have no hwaddr, but client id */
 			// hwaddr = next ? : "";
 			continue;
-
 		} else if (inet_pton(AF_INET, ipaddr, &addr4) == 0)
 			continue;
-
+#ifdef RTCONFIG_MULTILAN_CFG
+		ret += websWrite(wp, "[\"%d\", \"%s\", \"%s\", \"%s\", \"%d\"],\n", expires, hwaddr, ipaddr, name, vlanid);
+#else
 		ret += websWrite(wp, "[\"%d\", \"%s\", \"%s\", \"%s\"],\n", expires, hwaddr, ipaddr, name);
+#endif
 	}
-	ret += websWrite(wp, "[]];\n");
 	fclose(fp);
+
+#ifdef RTCONFIG_MULTILAN_CFG
+			}
+		}
+		FREE_MTLAN((void *)pmtl);
+	}
+#endif
+	ret += websWrite(wp, "[]];\n");
 
 	return ret;
 }

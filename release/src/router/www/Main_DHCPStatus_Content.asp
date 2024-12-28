@@ -69,33 +69,47 @@ function show_leases() {
 			leasearray[i][1] = '<span class="ClientName" onclick="oui_query_full_vendor(\'' + line[1].toUpperCase() +'\');;overlib_str_tmp=\''+ overlib_str +'\';return overlib(\''+ overlib_str +'\');" onmouseout="nd();" style="cursor:pointer; text-decoration:underline;">'+ line[1].toUpperCase() +'</span>';
 		}
 
+		var headerarray = [{
+		                        "title" : "Time Left",
+		                        "width" : "20%",
+		                        "sort" : "str"
+		                    },
+		                    {
+		                        "title" : "MAC Address",
+		                        "width" : "20%",
+		                        "sort" : "str"
+		                    },
+		                    {
+		                        "title" : "IP Address",
+		                        "width" : "20%",
+		                        "sort" : "ip",
+		                        "defaultSort" : "increase"
+		                    }];
+
+		if (isSupport("mtlancfg")) {
+			headerarray.push({
+			                    "title" : "Hostname",
+			                    "width" : "35%",
+			                    "sort" : "str"
+			                },
+			                {
+			                    "title": "VLAN",
+			                    "width" : "5%",
+			                    "sort" : "num"
+			                });
+		} else {
+			headerarray.push({
+			                    "title" : "Hostname",
+			                    "width" : "40%",
+			                    "sort" : "str"
+			                });
+		}
+
 		tableStruct = {
 			data: leasearray,
 			container: "leaseblock",
 			title: "DHCP Leases",
-			header: [
-				{
-					"title" : "Time Left",
-					"width" : "20%",
-					"sort" : "str"
-				},
-				{
-					"title" : "MAC Address",
-					"width" : "20%",
-					"sort" : "str"
-				},
-				{
-					"title" : "IP Address",
-					"width" : "20%",
-					"sort" : "ip",
-					"defaultSort" : "increase"
-				},
-				{
-					"title" : "Hostname",
-					"width" : "40%",
-					"sort" : "str"
-				}
-			]
+			header: headerarray,
 		}
 
 		tableApi.genTableAPI(tableStruct);

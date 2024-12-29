@@ -692,6 +692,8 @@ static void _wg_client_nf_add(int unit, char* prefix, char* ifname)
 		fw = nvram_pf_get_int(prefix, "fw");
 		fprintf(fp, "#!/bin/sh\n\n");
 
+		fprintf(fp, "echo 2 >> /proc/sys/net/ipv4/conf/%s/rp_filter\n", ifname);
+
 		fprintf(fp, "iptables -I WGCI -i %s -j %s\n", ifname, (fw ? "DROP" : "ACCEPT"));
 		fprintf(fp, "iptables -I WGCF -i %s -j %s\n", ifname, (fw ? "DROP" : "ACCEPT"));
 		fprintf(fp, "iptables -I WGCF -o %s -j ACCEPT\n", ifname);

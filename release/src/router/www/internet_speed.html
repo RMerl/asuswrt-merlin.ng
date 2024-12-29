@@ -183,6 +183,7 @@ function customize_speedTestBtn(){
 }
 
 function init(){
+	build_interface_list();
 	customize_speedTestBtn();
 	get_speedTest_history();
 	if(!internetSpeed_lite_support)
@@ -344,7 +345,8 @@ function do_speedTest_exe(exe_type, server_id){
 		type: "POST",
 		data: {
 			"type": type,
-			"id": id
+			"id": id,
+			"iface": document.getElementById("iface").value
 		},
 		error: function(){
 			console.log("do_speedTest_exe error");
@@ -1238,6 +1240,42 @@ function showThirdPartyPolicy(party){
 	});
 	thirdPartyPolicyModal.show();
 }
+
+function build_interface_list(){
+	var obj = document.getElementById("iface");
+
+	add_option(obj, "WAN", "", 1);
+
+	if (openvpnd_support) {
+		if ("<% nvram_get("vpn_client1_state"); %>" == "2")
+			add_option(obj, "OVPN1: <% nvram_get("vpn_client1_desc"); %>", "tun11", 0);
+		if ("<% nvram_get("vpn_client2_state"); %>" == "2")
+			add_option(obj, "OVPN2: <% nvram_get("vpn_client2_desc"); %>", "tun12", 0);
+		if ("<% nvram_get("vpn_client3_state"); %>" == "2")
+			add_option(obj, "OVPN3: <% nvram_get("vpn_client3_desc"); %>", "tun13", 0);
+		if ("<% nvram_get("vpn_client4_state"); %>" == "2")
+			add_option(obj, "OVPN4: <% nvram_get("vpn_client4_desc"); %>", "tun14", 0);
+		if ("<% nvram_get("vpn_client5_state"); %>" == "2")
+			add_option(obj, "OVPN5: <% nvram_get("vpn_client5_desc"); %>", "tun15", 0);
+	}
+
+	if (wireguard_support) {
+		if ( "<% nvram_get("wgc1_enable"); %>" == "1")
+			add_option(obj, "WGC1: <% nvram_get("wgc1_desc"); %>", "wgc1", 0);
+		if ( "<% nvram_get("wgc2_enable"); %>" == "1")
+			add_option(obj, "WGC2: <% nvram_get("wgc2_desc"); %>", "wgc2", 0);
+		if ( "<% nvram_get("wgc3_enable"); %>" == "1")
+			add_option(obj, "WGC3: <% nvram_get("wgc3_desc"); %>", "wgc3", 0);
+		if ( "<% nvram_get("wgc4_enable"); %>" == "1")
+			add_option(obj, "WGC4: <% nvram_get("wgc4_desc"); %>", "wgc4", 0);
+		if ( "<% nvram_get("wgc5_enable"); %>" == "1")
+			add_option(obj, "WGC5: <% nvram_get("wgc5_desc"); %>", "wgc5", 0);
+		}
+
+	if (obj.length > 1)
+		document.getElementById("iface_div").style.display = "";
+}
+
 </script>
 <div id="hiddenMask" class="speed_level_mask"></div>
 
@@ -1293,6 +1331,11 @@ function showThirdPartyPolicy(party){
 				</div>
 				<div class="split-Line"></div>
 			</div>
+		</div>
+		<div id="iface_div" style="display:none; margin-top: 25px; margin-left:10px;">
+			<label>Select interface to test:</label>
+			<select name="iface" id="iface" class="input_option">
+			</select>
 		</div>
 		<div class="normal_show">
 			<div id="notification_str" class="wan_notice">

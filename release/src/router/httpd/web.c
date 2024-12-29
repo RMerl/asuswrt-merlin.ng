@@ -32554,7 +32554,7 @@ ookla_exec(char *type, char *id, char *iface)
 
 	nvram_set_int("ookla_state", OOKLA_STATE_RUN);
 	if (!strcmp(type, "") && !strcmp(id, "")) {
-		char *cmd[] = {"ookla", "-c", config, "-f", "jsonl", NULL};
+		char *cmd[] = {"ookla", "-c", config, "-f", "jsonl", iface_arg, iface, NULL};
 		if (f_exists(OOKLA_RESULT)) unlink(OOKLA_RESULT);
 		retval = _eval(cmd, ">"OOKLA_RESULT, 0, &pid);
 	}
@@ -32566,7 +32566,7 @@ ookla_exec(char *type, char *id, char *iface)
 	else if (!strcmp(type, "") && strcmp(id, "")) {
 		/* check xss for input "id" */
 		if (check_xss_blacklist(id, 0)) return retval;
-		char *cmd[] = {"ookla", "-c", config, "-f", "jsonl", "-s", id, NULL};
+		char *cmd[] = {"ookla", "-c", config, "-f", "jsonl", "-s", id, iface_arg, iface, NULL};
 		if (f_exists(OOKLA_RESULT)) unlink(OOKLA_RESULT);
 		retval = _eval(cmd, ">"OOKLA_RESULT, 0, &pid);
 	}

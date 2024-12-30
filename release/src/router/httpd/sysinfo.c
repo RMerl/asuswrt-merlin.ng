@@ -522,7 +522,7 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 
 					if (nvram_get_int(buf2) == OVPN_RGW_NONE) {
 						nvram_set(buf, "no Internet traffic");
-					} else if (!strlen(nvram_safe_get(buf))) {
+					} else if (is_valid_ip(nvram_safe_get(buf)) == -1) {
 						sprintf(buf, "%d", instance);
 						eval("/usr/sbin/gettunnelip.sh", buf, "openvpn", (nvram_get_int("vpn_stun") ? "stun" :"http"));
 					}
@@ -536,7 +536,6 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 			char buf[18];
 
 			strcpy(result, "0.0.0.0");
-
 			fd = socket(AF_INET, SOCK_DGRAM, 0);
 			if (fd) {
 				ifr.ifr_addr.sa_family = AF_INET;
@@ -546,7 +545,7 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 					strlcpy(result, inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr), sizeof result);
 
 					snprintf(buf, sizeof buf, "wgc%d_rip", instance);
-					if (!strlen(nvram_safe_get(buf))) {
+					if (is_valid_ip(nvram_safe_get(buf)) == -1) {
 						sprintf(buf, "%d", instance);
 						eval("/usr/sbin/gettunnelip.sh", buf, "wireguard", (nvram_get_int("vpn_stun") ? "stun" :"http"));
 					}

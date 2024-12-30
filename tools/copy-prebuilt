@@ -171,8 +171,14 @@ then
 	cp release/src-rt-5.04behnd.4916/bootloaders/u-boot-2019.07/common/autoboot.o $REPO/release/src-rt-5.04behnd.4916/bootloaders/obj.$BUILD_NAME_LC/common/
 	cp release/src-rt-5.04behnd.4916/bootloaders/u-boot-2019.07/board/broadcom/bcmbca/*.o $REPO/release/src-rt-5.04behnd.4916/bootloaders/obj.$BUILD_NAME_LC/board/broadcom/bcmbca/
 
-#	cp release/src-rt-5.04behnd.4916/wl/exe/prebuilt/* $REPO/release/src-rt-5.04behnd.4916/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
-	cp release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/net/wl/impl103/main/src/wl/exe/prebuilt/* $REPO/release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/net/wl/impl103/main/src/wl/exe/prebuilt/*
+	# Recent GPL don't have it in the SDK, but the wlexe/ version seem to usually be the same anyway
+	if [ -f "release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/net/wl/impl103/main/src/wl/exe/prebuilt/wl" ]
+	then
+		cp release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/net/wl/impl103/main/src/wl/exe/prebuilt/* $REPO/release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/net/wl/impl103/main/src/wl/exe/prebuilt/*
+	else
+		cp release/src/router/wlexe/wl $REPO/release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/net/wl/impl103/main/src/wl/exe/prebuilt/
+	fi
+
 	cp release/src-rt-5.04behnd.4916/hostTools/prebuilt/addvtoken $REPO/release/src-rt-5.04behnd.4916/hostTools/prebuilt/$BUILD_NAME/
 	cp release/src-rt-5.04behnd.4916/hostTools/prebuilt/lzop $REPO/release/src-rt-5.04behnd.4916/hostTools/prebuilt/$BUILD_NAME/
 	cp release/src-rt-5.04behnd.4916/hostTools/prebuilt/cmplzma $REPO/release/src-rt-5.04behnd.4916/hostTools/prebuilt/
@@ -185,9 +191,7 @@ then
 	cp release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/net/wl/impl103/main/components/apps/qosmgmt/qosmgmtd $REPO/release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/net/wl/impl103/main/components/apps/qosmgmt/prebuilt/$BUILD_NAME/
 	cp release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/net/wl/impl103/main/components/apps/qosmgmt/qm_cli $REPO/release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/net/wl/impl103/main/components/apps/qosmgmt/prebuilt/$BUILD_NAME/
 
-	cp -ar release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/net/wl/impl103/sys/src/dongle/bin/6717a0/release/* $REPO/release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/net/wl/impl103/sys/src/dongle/sysdeps/$BUILD_NAME/6717a0/
-        cp -ar release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/net/wl/impl103/sys/src/dongle/bin/6726b0/release/* $REPO/release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/net/wl/impl103/sys/src/dongle/sysdeps/$BUILD_NAME/6726b0/
-
+        cp -ar release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/net/wl/impl103/sys/src/dongle/sysdeps/default/6726b0/* $REPO/release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/net/wl/impl103/sys/src/dongle/sysdeps/$BUILD_NAME/6726b0/
 
 	cp release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/char/mpm/impl1/bcm_mpm.o $REPO/release/src-rt-5.04behnd.4916/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
 	cp release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/char/pktrunner/impl2/pktrunner.o $REPO/release/src-rt-5.04behnd.4916/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/

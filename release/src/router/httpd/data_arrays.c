@@ -816,9 +816,10 @@ int parseTcFilter(webs_t wp, const char *interface) {
 		flowid = strstr(buffer, "flowid ");
 		if (flowid) {
 			sscanf(flowid, "flowid 1:%d", &foundflowid);
-			if (foundflowid < 10 || foundflowid > 20)
+			if (foundflowid < 10 || foundflowid > 20) {
 				foundflowid = -1;
-				continue;
+			}
+			continue;
 		}
 
 		mark = strstr(buffer, "mark ");

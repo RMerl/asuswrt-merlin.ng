@@ -466,7 +466,7 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 					else
 						strlcpy(result, buffer, sizeof result);
 
-					if (tmp = strstr(result, "FWID"))
+					if ((tmp = strstr(result, "FWID")))
 						*tmp = '\0';
 
 					replace_char(result, '\n', ' ');

@@ -71,7 +71,7 @@ void run_custom_script(char *name, int timeout, char *arg1, char *arg2)
 
 		if (error) {
 #if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG)
-			if(!(!strcmp(name, "service-event") && strstr((arg2 ? arg2 : ""), "autowan"))) // remove noise of autowan in wanduck
+			if(!(!strncmp(name, "service-event",13) && strstr((arg2 ? arg2 : ""), "autowan"))) // remove noise of autowan in wanduck
 #endif
 			logmessage("custom_script", "Found %s, but %s", name, error);
 			return;
@@ -79,7 +79,7 @@ void run_custom_script(char *name, int timeout, char *arg1, char *arg2)
 
 		if (arg1) {
 #if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG)
-			if(!(!strcmp(name, "service-event") && strstr((arg2 ? arg2 : ""), "autowan"))) // remove noise of autowan in wanduck
+			if(!(!strncmp(name, "service-event",13) && strstr((arg2 ? arg2 : ""), "autowan"))) // remove noise of autowan in wanduck
 #endif
 			logmessage("custom_script" ,"Running %s (args: %s%s%s)", script, arg1, (arg2 ? " " : ""), (arg2 ? arg2 : ""));
 		} else {

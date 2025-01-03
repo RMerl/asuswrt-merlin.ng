@@ -1,7 +1,7 @@
 Asuswrt-Merlin 3006.xxx Changelog
 =================================
 
-3006.102.3 (xx-xxx-xxxx)
+3006.102.3 (xx-xxx-2025)
   - NOTE: If flashing on top of Asus stock firmware 3006.102_37000
           or greater, then you first need to enable downgrade
           capabilities before flashing Asuswrt-Merlin on top

@@ -338,9 +338,10 @@ ej_wl_unit_status_array(int eid, webs_t wp, int argc, char_t **argv, int unit)
 {
 	char tmp[128], prefix[] = "wlXXXXXXXXXX_";
 	char *name;
+	char name_vif[] = "wlX.Y_XXXXXXXXXX";
 	struct maclist *auth;
 	int mac_list_size;
-	int i, ii, val = 0, ret = 0, subunit = 0;
+	int i, ii, val = 0, ret = 0;
 	char *arplist = NULL, *arplistptr;
 	char *leaselist = NULL, *leaselistptr;
 	char *ipv6list = NULL, *ipv6listptr;
@@ -365,7 +366,6 @@ ej_wl_unit_status_array(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	size_t mtl_sz = 0;
 	char leasefile_path[128] = {0};
 #endif
-	char nvname[16], vifnames[256], *next = NULL, name_vif[64];
 
 #ifdef RTCONFIG_PROXYSTA
 	if (psta_exist_except(unit))
@@ -511,22 +511,20 @@ sta_list:
 
 
 /*** Do all subunit client lists - subunit 1 = main interface ***/
-	sprintf(nvname, "wl%d_vifs", unit);
-	strlcpy(vifnames, nvram_safe_get(nvname), sizeof(vifnames));
 
-	foreach(name_vif, vifnames, next) {
-		subunit++;
-
+	for (i = 1; i < MAX_NO_MSSID; i++) {
 #ifdef RTCONFIG_WIRELESSREPEATER
 		if ((nvram_get_int("sw_mode") == SW_MODE_REPEATER)
-			&& (unit == nvram_get_int("wlc_band")) && (subunit == 1))
-			goto exit;
+			&& (unit == nvram_get_int("wlc_band")) && (i == 1))
+			break;
 #endif
-		snprintf(prefix, sizeof(prefix), "%s_", name_vif);
+		sprintf(prefix, "wl%d.%d_", unit, i);
 		if (nvram_match(strcat_r(prefix, "bss_enabled", tmp), "1"))
 		{
+			sprintf(name_vif, "wl%d.%d", unit, i);
+
 // Not primary interface - retrieve ssid and VLAN
-			if (subunit != 1) {
+			if (i != 1) {
 				strlcpy(guestssid, nvram_pf_safe_get(prefix, "ssid"), sizeof(guestssid));
 #ifdef RTCONFIG_MULTILAN_CFG
 				guestvlan = get_apg_vid_by_ifname(name_vif);
@@ -699,7 +697,7 @@ sta_list:
 					(sta->flags & WL_STA_AUTHO) ? "U" : "_");
 
 // If not a Guest Network then don't push SSID and VLAN in client list
-				if (subunit == 1)
+				if (i == 1)
 			                ret += websWrite(wp, "\"\",\"\"],");
 				else {
 // SSID (for Guest Networks identification)

@@ -1,11 +1,11 @@
 Asuswrt-Merlin 3006.xxx Changelog
 =================================
 
-3006.102.3 (xx-xxx-2025)
+3006.102.3 (11-Jan-2025)
   - NOTE: If flashing on top of Asus stock firmware 3006.102_37000
           or greater, then you first need to enable downgrade
           capabilities before flashing Asuswrt-Merlin on top
-          of it.  Over SSH, run the following command:
+          of it.  Connect Over SSH, and run the following command:
 
              nvram set DOWNGRADE_CHECK_PASS=1
 
@@ -22,7 +22,7 @@ Asuswrt-Merlin 3006.xxx Changelog
           existing AiMesh nodes.
 
   - NEW: (re-added) VPN interface selector on the Speedtest page,
-         to test a VPN throughput.
+         to test a VPN tunnel's throughput.
   - UPDATED: Merged with GPL 3006.102_37346 (with the wifi firmware
              from 37038 for the RT-BE96U and GT-BE98_PRO - was missing
              from GPL)
@@ -41,6 +41,8 @@ Asuswrt-Merlin 3006.xxx Changelog
   - FIXED: Refresh link not working on OpenVPN/Wireguard client pages.
   - FIXED: WireGuard client randomly failing to retrieve public IP for
            display on the webui.
+  - FIXED: Some Guest Networks wouldn't properly list their
+           connected clients on the Wireless Log page.
 
 
 3006.102.2_2 (17-Nov-2024)

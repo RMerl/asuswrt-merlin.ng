@@ -1,6 +1,19 @@
 Asuswrt-Merlin Changelog
 ========================
 
+3004.388.9 (xx-xxx-2025)
+  - NEW: (re-added) VPN interface selector on the Speedtest page,
+         to test a VPN tunnel's throughput.
+  - UPDATED: dropbear to 2024.86.
+  - CHANGED: VPN public IP retrieval now uses HTTP instead of STUN,
+             which should be more reliable through a VPN tunnel.
+  - CHANGED: Model name will be inserted in the filename of JFFS backups.
+  - CHANGED: Improved refresh behaviour of the VPN Status page.
+  - CHANGED: Set rp_filter mode to "loose" on Wireguard client interfaces.
+             Fixes gettunnelip.sh and onboard speedtest.
+  - CHANGED: Display public IP address for Wireguard clients.
+
+
 3004.388.8_4 (17-Nov-2024)
   - CHANGED: VPN killswitch will now only be active if the
              VPN client itself is enabled.  If you stop/start

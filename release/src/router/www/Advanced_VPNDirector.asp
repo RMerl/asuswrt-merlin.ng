@@ -663,7 +663,8 @@ function applyRule() {
 								<div>&nbsp;</div>
 								<div class="formfonttitle">VPN Director</div>
 								<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
-								<div id="page_title" class="formfontdesc" style="margin-bottom:0px;">VPN Director allows you to direct LAN traffic through specific VPN tunnels.  Please consult the <a href="https://github.com/RMerl/asuswrt-merlin.ng/wiki/VPN-Director" style="font-weight: bolder;text-decoration: underline;" target="_blank">documentation</a> for more details on rule priority.
+								<div id="page_title" class="formfontdesc"><p>VPN Director allows you to direct LAN traffic through specific VPN tunnels.  Please consult the <a href="https://github.com/RMerl/asuswrt-merlin.ng/wiki/VPN-Director" style="font-weight: bolder;text-decoration: underline;" target="_blank">documentation</a> for more details on rule priority.
+								<br><br><p>You can click on the icon in the Enable column to toggle the state.
 								<div id="vpn_status_Block"></div>
 								<div id="wgc_status_Block"></div>
 								<br>

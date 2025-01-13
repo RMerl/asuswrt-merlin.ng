@@ -1,0 +1,28 @@
+#!/bin/bash
+
+echo "Checking source file for broadcom proprietary files..."
+pattern1='BRCM:[0-9]+:proprietary:'
+pattern2='BRCM:[0-9]+:NONE:RED'
+
+files=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(c|h)$')
+
+if [ -z "$files" ]; then
+    # No .c or .h files staged, exit successfully
+    exit 0
+fi
+
+echo "Checking files:"
+for file in $files; do
+    echo "* $file"
+    if git show ":$file" | grep -Eq "$pattern1|$pattern2"; then
+        echo "Error: File '$file' contains forbidden patterns."
+        echo "Patterns:"
+        echo "  - $pattern1"
+        echo "  - $pattern2"
+        echo "Commit aborted."
+        exit 1
+    fi
+done
+
+# If no matches are found, allow the commit
+exit 0

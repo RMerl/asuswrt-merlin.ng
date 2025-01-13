@@ -378,8 +378,8 @@ int main(int argc, char *argv[])
     }
     fclose(fp);
   }
-  if(_check_caller())
-    return 0;
+//  if(_check_caller())
+//    return 0;
 #endif
 
   tool_init_stderr();

@@ -7259,7 +7259,7 @@ libgcrypt-1.10.2/stamp-h1: libgpg-error-1.47
 	$(CONFIGURE) --prefix=/usr --with-gpg-error-prefix=$(TOP)/libgpg-error-1.47/src \
 	LDFLAGS="-L$(TOP)/libgpg-error-1.47/src/.libs -lgpg-error $(if $(QCA),$(EXTRALDFLAGS))" \
 	CFLAGS="-O0 -Wall -I$(TOP)/libgpg-error-1.47/src $(if $(QCA),$(EXTRACFLAGS))"
- 	touch $@
+	touch $@
 
 libgcrypt-1.10.2: libgcrypt-1.10.2/stamp-h1
 	@$(SEP)

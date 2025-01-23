@@ -1,0 +1,507 @@
+\input texinfo                  @c -*- Texinfo -*-
+@c %**start of header
+@setfilename gpgrt.info
+@include version.texi
+@settitle The Libgpg-error Reference Manual
+@c Unify some of the indices.
+@syncodeindex tp fn
+@syncodeindex pg fn
+@c %**end of header
+@copying
+This manual is for Libgpg-error (version @value{VERSION},
+@value{UPDATED}), which is a library for code used by all GnuPG
+related packages.
+
+@noindent
+Copyright @copyright{} 2014, 2022 g10 Code GmbH
+
+@quotation
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your
+option) any later version. The text of the license can be found in the
+section entitled ``GNU General Public License''.
+@end quotation
+@end copying
+
+@dircategory Libraries
+@direntry
+* libgpg-error: (gpgrt).   Error codes and common code for GnuPG.
+@end direntry
+
+@c A couple of macros with no effect on texinfo
+@c but used by the yat2m processor.
+@macro manpage {a}
+@end macro
+@macro mansect {a}
+@end macro
+@macro manpause
+@end macro
+@macro mancont
+@end macro
+
+@c
+@c Printing stuff taken from gcc.
+@c
+@macro gnupgtabopt{body}
+@code{\body\}
+@end macro
+
+
+@c
+@c Titlepage
+@c
+@setchapternewpage odd
+@titlepage
+@title The Libgpg-error Reference Manual
+@subtitle Version @value{VERSION}
+@subtitle @value{UPDATED}
+@author Werner Koch (@email{wk@@gnupg.org})
+
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+@end titlepage
+
+@ifnothtml
+@summarycontents
+@contents
+@page
+@end ifnothtml
+
+
+@ifnottex
+@node Top
+@top The Libgpg-error Library
+@insertcopying
+@end ifnottex
+
+
+@menu
+* Introduction::                 What is Libgpg-error.
+* Preparation::                  What you should do before using the library.
+* Generalities::                 General library functions and data types.
+* Tools::                        Utility tools
+
+Appendices
+
+* Library Copying::             The GNU Lesser General Public License
+                                says how you can copy and share Libgpg-error.
+* Copying::                     The GNU General Public License says how you
+                                can copy and share some parts of Libgpg-error.
+
+Indices
+
+@c * Figures and Tables::          Index of figures and tables.
+* Concept Index::               Index of concepts and programs.
+* Function and Data Index::     Index of functions, variables and data types.
+
+@end menu
+
+@ifhtml
+@page
+@summarycontents
+@contents
+@end ifhtml
+
+
+@c **********************************************************
+@c *******************  Introduction  ***********************
+@c **********************************************************
+@node Introduction
+@chapter Introduction
+
+Libgpg-error is a library to provide error codes for GnuPG and relates
+software as well as some other general purpose functions.  It is
+planned to eventually rename this library to ``gpgrt'' (for GnuPG
+RunTime).
+
+@menu
+* Getting Started::             How to use this manual.
+* Features::                    A glance at Libgpg-error’s features.
+* Overview::                    Overview about the library.
+@end menu
+
+@node Getting Started
+@section Getting Started
+
+This manual documents the Libgpg-error library application programming
+interface (API).  The goal is to that all functions and data types
+provided by the library are explained.  However, for now this is only
+a stub and not very useful.
+
+
+@node Features
+@section Features
+
+TBD
+
+@node Overview
+@section Overview
+
+@noindent
+The Libgpg-error library is fully thread-safe, where it makes
+sense to be thread-safe.
+
+TBD
+
+@c **********************************************************
+@c *******************  Preparation  ************************
+@c **********************************************************
+@node Preparation
+@chapter Preparation
+
+To use Libgpg-error, you have to perform some changes to your
+sources and the build system.  The necessary changes are small and
+explained in the following sections.  At the end of this chapter, it
+is described how the library is initialized, and how the requirements
+of the library are verified.
+
+@menu
+* Header::                      What header file you need to include.
+* Building sources::            How to build sources using the library.
+* Building sources using Automake::  How to build sources with the help of Automake.
+* Initializing the library::    How to initialize the library.
+* Multi-Threading::             How Libgpg-error can be used in a MT environment.
+@end menu
+
+
+@node Header
+@section Header
+
+All interfaces (data types and functions) of the library are defined
+in the header file @file{gpg-error.h}.  You must include this in all source
+files using the library, either directly or through some other header
+file, like this:
+
+@example
+#include <gpg-error.h>
+@end example
+
+Note well that the header file is platform specific and may only be
+used on the platform for which it has been build.
+
+The name space of Libgpg-error is @code{gpg_*} and @code{gpgrt*}
+for function and type names and @code{GPG_*} and @code{GPGRT_*}
+for other symbols.  In addition the same name prefixes with one
+prepended underscore are reserved for internal use and should never be
+used by an application.
+
+@noindent
+Certain parts of gpg-error.h may be included by defining these macros:
+
+@table @code
+@item GPG_ERR_ENABLE_GETTEXT_MACROS
+Define to provide macros to map the internal gettext API to standard
+names.  This has only an effect on Windows platforms.
+
+@item GPGRT_ENABLE_ES_MACROS
+Define to provide "es_" macros for the estream functions.
+@end table
+
+@node Building sources
+@section Building sources
+
+If you want to compile a source file including the `gpg-error.h' header
+file, you must make sure that the compiler can find it in the
+directory hierarchy.  This is accomplished by adding the path to the
+directory in which the header file is located to the compilers include
+file search path (via the @option{-I} option).
+
+However, the path to the include file is determined at the time the
+source is configured.  To solve this problem, Libgpg-error ships with
+a pkg-config file: gpg-error.pc.
+
+The options that need to be added to the compiler invocation at
+compile time are output by the @option{--cflags} option to
+@command{pkg-config}.  The following example shows how it can be used
+at the command line:
+
+@example
+gcc -c foo.c $(pkg-config --cflags gpg-error)
+@end example
+
+Adding the output of @samp{pkg-config --cflags gpg-error} to the
+compiler’s command line will ensure that the compiler can find the
+Libgpg-error header file.
+
+A similar problem occurs when linking the program with the library.
+Again, the compiler has to find the library files.  For this to work,
+the path to the library files has to be added to the library search
+path (via the @option{-L} option).  For this, the option
+@option{--libs} to @command{pkg-config} can be used.  The example
+shows how to link @file{foo.o} with the Libgpg-error library to a
+program @command{foo}.
+
+@example
+gcc -o foo foo.o $(pkg-config --libs gpg-error)
+@end example
+
+Of course you can also combine both examples to a single command by
+specifying both options to @command{pkg-config}:
+
+@example
+gcc -o foo foo.c $(pkg-config --cflags --libs gpg-error)
+@end example
+
+For GnuPG and its friends, which are usually needed to be built
+earlier in a stage of OS bootstrap, Libgpg-error ships the small
+helper program @command{gpgrt-config}.  This helper program is a sort
+of @command{pkg-config} replacement for limited environment,
+supporting cross compilation, as well as multilib and multi-arch
+installation.  Note that @command{gpgrt-config} is not for general use
+for other programs.  @command{gpgrt-config} requires invocation with
+the option @option{--lib=} so that it locates the appropriate path to
+@file{gpg-error.pc}.
+
+
+@node Building sources using Automake
+@section Building sources using Automake
+
+It is much easier if you use GNU Automake instead of writing your own
+Makefiles.  If you do that, you do not have to worry about finding and
+invoking the @command{pkg-config} or @command{gpgrt-config} script at
+all.  Libgpg-error provides an extension to Automake that does all the
+work for you.  That is offered by @file{gpg-error.m4}.
+
+@c A simple macro for optional variables.
+@macro ovar{varname}
+@r{[}@var{\varname\}@r{]}
+@end macro
+@defmac AM_PATH_GPG_ERROR (@ovar{minimum-version}, @ovar{action-if-found}, @ovar{action-if-not-found})
+Check whether Libgpg-error (at least version @var{minimum-version}, if
+given) exists on the host system.  If it is found, execute
+@var{action-if-found}, otherwise do @var{action-if-not-found}, if
+given.
+
+Additionally, the function defines @code{GPG_ERROR_CFLAGS} to the
+flags needed for compilation of the program to find the
+@file{gpg-error.h} header file, and @code{GPG_ERROR_LIBS} to the
+linker flags needed to link the program to the Libgpg-error library.
+
+This macro searches for @command{gpgrt-config} along the PATH.
+
+@end defmac
+
+You can use the defined Autoconf variables like this in your
+@file{Makefile.am}:
+
+@example
+AM_CPPFLAGS = $(GPG_ERROR_CFLAGS)
+LDADD = $(GPG_ERROR_LIBS)
+@end example
+
+@node Initializing the library
+@section Initializing the library
+
+Before the library can be used, it should initialize itself.  This is
+achieved by invoking the function @code{gpgrt_check_version} described
+below.
+
+Also, it is often desirable to check that the version of
+Libgpg-error used is indeed one which fits all requirements.
+Even with binary compatibility, new features may have been introduced,
+but due to problem with the dynamic linker an old version may actually
+be used.  So you may want to check that the version is okay right
+after program startup.
+
+@deftypefun {const char *} gpgrt_check_version (const char *@var{req_version})
+
+The function @code{gpgrt_check_version} initializes some subsystems used
+by Libgpg-error and must be invoked before any other function in the
+library.
+@xref{Multi-Threading}.
+
+Furthermore, this function returns the version number of the library.
+It can also verify that the version number is higher than a certain
+required version number @var{req_version}, if this value is not a null
+pointer.
+@end deftypefun
+
+
+@node Multi-Threading
+@section Multi-Threading
+
+TBD.
+
+@c **********************************************************
+@c *******************  General  ****************************
+@c **********************************************************
+@node Generalities
+@chapter Generalities
+
+TBD.  (Description of the error function may be taken from Libgcrypt.)
+
+
+
+@c **********************************************************
+@c *********************  Tools  ****************************
+@c **********************************************************
+@node Tools
+@chapter Tools
+
+@menu
+* gpg-error-config::    Print required compiler flags
+* gpgrt-config::    Helper tool for querying installed libraries
+@end menu
+
+@c The original version of this man page has been written for Debian and was
+@c contributed to libgpg-error by Daniel Kahn Gillmor <dkg@fifthhorseman.net>.
+@manpage gpg-error-config.1
+@node gpg-error-config
+@section Print required compiler flags
+@ifset manverb
+.B gpg-error-config
+\- Script to get information about the installed version of libgpg-error
+@end ifset
+
+@mansect synopsis
+@ifset manverb
+.B  gpg-error-config
+.RI [ options ]
+@end ifset
+
+@mansect description
+@command{gpg-error-config} is a tool that is used to configure to
+determine the compiler and linker flags that should be used to compile
+and link programs that use Libgpg-error.
+
+This tool is now obsolete.  Instead, please use pkg-config with
+gpg-error.pc for your new program, or use gpg-error.m4 which uses
+gpgrt-config and gpg-error.pc internally.
+
+@mansect options
+@noindent
+@command{gpg-error-config} accepts the following options:
+
+@table @gnupgtabopt
+
+@item  --mt
+Provide output appropriate for multithreaded programs.  @option{--mt}
+is only useful when combined with other options, and must be the first
+option if present.
+
+@item --version
+Print the currently installed version of Libgpg-error on the
+standard output.
+
+@item --libs
+Print the linker flags that are necessary to link a program using
+Libgpg-error.
+
+@item --cflags
+Print the compiler flags that are necessary to compile a program using
+Libgpg-error.
+
+@item --prefix=@var{prefix}
+If specified, use @var{prefix} instead of the installation prefix that
+Libgpg-error was built with when computing the output for the
+@option{--cflags} and @option{--libs} options.  This option is also
+used for the exec prefix if @option{--exec-prefix} was not specified.
+This option must be specified before any @option{--libs} or
+@code{--cflags} options.
+
+@item --exec-prefix=@var{prefix}
+If specified, use @var{prefix} instead of the installation exec prefix
+that Libgpg-error was built with when computing the output for the
+@option{--cflags} and @option{--libs} options.  This option must be
+specified before any @option{--libs} or @option{--cflags} options.
+
+@end table
+
+@manpause
+
+@manpage gpgrt-config.1
+@node gpgrt-config
+@section gpgrt-config - Helper tool for querying installed libraries.
+@ifset manverb
+.B gpgrt-config
+\- Helper script to get information about the installed version of gpg libraries
+@end ifset
+
+@mansect synopsis
+@ifset manverb
+.B  gpgrt-config
+.RI [ options ]
+.I [ module ]
+@end ifset
+
+@mansect description
+@command{gpgrt-config} is a script tool that is used by the autoconf macros
+shipped with gnupg software (e.g. AM_PATH_GPG_ERROR and AM_PATH_GPGME) to
+determine the compiler and linker flags that should be used to compile
+and link programs that use the specific library (e.g. libgpg-error or
+libgpgme). @command{gpgrt-config} uses pkg-config .pc files as data source.
+
+Apart from options @command{gpgrt-config} accepts a single argument
+@option{module} specifying the basename (without the ".pc"-suffix) of the
+pkg-config file to be used as input. @option{module} will default to
+@option{gpg-error} if it is not specified.
+
+@mansect options
+@noindent
+@command{gpgrt-config} accepts the following options:
+
+@table @gnupgtabopt
+@item --libdir=@var{LIBDIR}
+Parent directory path of pkgconfig file search path.
+e.g. @samp{gpgrt-config --libdir=/usr/lib --exists gpgme}
+will parse @file{/usr/lib/pkgconfig/gpgme.pc}.
+
+@item  --exists
+Test whether the pkg-config file @file{module.pc} exist and exits with
+success or error accordingly.
+
+@item --modversion
+Print the currently installed version of @option{module} on the standard output.
+
+@item --libs
+Print the linker flags that are necessary to link a program using the
+@option{module}.
+
+@item --cflags
+Print the compiler flags that are necessary to compile a program using the
+@option{module}.
+
+@item --static
+Modifies output if linking statically instead of dynamically.
+
+@item --variable=@var{VARNAME}
+Output variable VARNAME from the module's pkg-config file.
+
+@end table
+
+@mansect bugs
+@noindent
+@command{gpgrt-config} is tried to be compatible to pkg-config, and to
+support cross build well, but it is not intended to be a replacement.
+
+@manpause
+
+
+@c **********************************************************
+@c *************  Appendices (license etc.)  ****************
+@c **********************************************************
+@include lgpl.texi
+
+@include gpl.texi
+
+@c @node Figures and Tables
+@c #@unnumbered List of Figures and Tables
+@c
+@c @listoffloats Figure
+@c
+@c @listoffloats Table
+
+@node Concept Index
+@unnumbered Concept Index
+
+@printindex cp
+
+@node Function and Data Index
+@unnumbered Function and Data Index
+
+@printindex fn
+
+
+@bye

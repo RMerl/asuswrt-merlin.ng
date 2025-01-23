@@ -232,6 +232,28 @@
 #   define PJ_IS_LITTLE_ENDIAN	0
 #   define PJ_IS_BIG_ENDIAN	1
 
+#elif defined(ARM) || defined(_ARM_) ||  defined(__arm__) || \
+       defined(_M_ARM) || defined(_M_ARM64) || defined(__aarch64__)
+#   define PJ_HAS_PENTIUM    0
+    /*
+     * ARM, bi-endian, so raise error if endianness is not configured
+     */
+#   if !PJ_IS_LITTLE_ENDIAN && !PJ_IS_BIG_ENDIAN
+#       error Endianness must be declared for this processor
+#   endif
+#   if defined (PJ_M_ARMV7) || defined(ARMV7)
+#    undef PJ_M_ARMV7
+#    define PJ_M_ARM7        1
+#    define PJ_M_NAME        "armv7"
+#   elif defined (PJ_M_ARMV4) || defined(ARMV4)
+#    undef PJ_M_ARMV4
+#    define PJ_M_ARMV4        1
+#    define PJ_M_NAME        "armv4"
+#   elif defined (PJ_M_ARM64) || defined(ARM64) || defined(__aarch64__)
+#    undef PJ_M_ARM64
+#    define PJ_M_ARM64        1
+#    define PJ_M_NAME        "arm64"
+#   endif
 
 #elif defined (PJ_M_ARM) || defined (__arm__) || defined (__arm) || \
 	defined (_M_ARM)

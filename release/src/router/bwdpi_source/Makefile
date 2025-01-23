@@ -351,6 +351,9 @@ endif
 endif
 endif
 
+# workaround for ntdasus2014.cert
+	@cp -f bin/ntdasus2014.cert RC_INDEP/
+
 # signature version
 ifeq ($(LITE_VERSION),y)
 	@cp -f bin/wrs/rule.trf RC_INDEP/

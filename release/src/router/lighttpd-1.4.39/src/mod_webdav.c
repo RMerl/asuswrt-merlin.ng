@@ -861,6 +861,9 @@ static int get_thumb_image(char* path, plugin_data *p, char **out){
 			int len = fread( buffer_x, fileLen, sizeof(unsigned char), fp );
 
 			if(len>0){
+
+				buffer_x[len] = '\0';
+
 				char* tmp = (char *)ldb_base64_encode(buffer_x, fileLen);			
 				uint32 olen = strlen(tmp) + 1;
 				*out = (char*)malloc(olen);
@@ -928,6 +931,9 @@ static int get_album_cover_image(sqlite3 *sql_minidlna, sqlite_int64 plAlbumArt,
 			len = fread( buffer_x, fileLen, sizeof(unsigned char), fp );
 
 			if(len>0){
+
+				buffer_x[len] = '\0';
+				
 				char* tmp = (char *)ldb_base64_encode(buffer_x, fileLen);			
 				uint32 olen = strlen(tmp) + 1;
 				*out = (char*)malloc(olen);
@@ -5662,6 +5668,7 @@ propmatch_cleanup:
 		return HANDLER_FINISHED;
 	}
 
+#if ENABLE_METHOD_UPLOAD
 	case HTTP_METHOD_UPLOADTOFACEBOOK:{
 		Cdbg(1, "do HTTP_METHOD_UPLOADTOFACEBOOK");
 
@@ -6600,7 +6607,8 @@ propmatch_cleanup:
 		con->file_finished = 1;
 		return HANDLER_FINISHED;
 	}
-	
+#endif /* end ENABLE_METHOD_UPLOAD */
+
 	default:
 		break;
 	}

@@ -1,0 +1,1660 @@
+Noteworthy changes in version 1.10.2 (2023-04-06)  [C24/A4/R2]
+-------------------------------------------------
+
+ * Bug fixes:
+
+   - Fix Argon2 for the case output > 64.  [rC13b5454d26]
+
+   - Fix missing HWF_PPC_ARCH_3_10 in HW feature.  [rCe073f0ed44]
+
+   - Fix RSA key generation failure in forced FIPS mode.  [T5919]
+
+   - Fix gcry_pk_hash_verify for explicit hash.  [T6066]
+
+   - Fix a wrong result of gcry_mpi_invm.  [T5970]
+
+   - Allow building with --disable-asm for HPPA.  [T5976]
+
+   - Fix Jitter RNG for building native on Windows.  [T5891]
+
+   - Allow building with -Oz.  [T6432]
+
+   - Enable the fast path to ChaCha20 only when supported.  [T6384]
+
+   - Use size_t to avoid counter overflow in Keccak when directly
+     feeding more than 4GiB.  [T6217]
+
+ * Other:
+
+   - Do not use secure memory for a DRBG instance.  [T5933]
+
+   - Do not allow PKCS#1.5 padding for encryption in FIPS mode.
+     [T5918]
+
+   - Fix the behaviour for child process re-seeding in the DRBG.
+     [rC019a40c990]
+
+   - Allow verification of small RSA signatures in FIPS mode.  [T5975]
+
+   - Allow the use of a shorter salt for KDFs in FIPS mode.  [T6039]
+
+   - Run digest+sign self tests for RSA and ECC in FIPS mode.
+     [rC06c9350165]
+
+   - Add function-name based FIPS indicator function.
+     GCRYCTL_FIPS_SERVICE_INDICATOR_FUNCTION.  This is not considered
+     an ABI changes because the new FIPS features were not yet
+     approved.  [rC822ee57f07]
+
+   - Improve PCT in FIPS mode.  [rC285bf54b1a, rC4963c127ae, T6397]
+
+   - Use getrandom (GRND_RANDOM) in FIPS mode.  [rCcf10c74bd9]
+
+   - Disable RSA-OAEP padding in FIPS mode.  [rCe5bfda492a]
+
+   - Check minimum allowed key size in PBKDF in FIPS mode.
+     [T6039,T6219]
+
+   - Get maximum 32B of entropy at once in FIPS mode.  [rCce0df08bba]
+
+   - Prefer gpgrt-config when available.  [T5034]
+
+   - Mark AESWRAP as approved FIPS algorithm.  [T5512]
+
+   - Prevent usage of long salt for PSS in FIPS mode.  [rCfdd2a8b332]
+
+   - Prevent usage of X9.31 keygen in FIPS mode.  [rC392e0ccd25]
+
+   - Remove GCM mode from the allowed FIPS indicators.  [rC1540698389]
+
+   - Add explicit FIPS indicators for hash and MAC algorithms. [T6376]
+
+
+ Release-info: https://dev.gnupg.org/T5905
+
+
+Noteworthy changes in version 1.10.1 (2022-03-28)  [C24/A4/R1]
+-------------------------------------------------
+
+ * Bug fixes:
+
+   - Fix minor memory leaks in FIPS mode.
+
+   - Build fixes for MUSL libc.  [rCffaef0be61]
+
+ * Other:
+
+   - More portable integrity check in FIPS mode.  [rC9fa4c8946a,T5835]
+
+   - Add X9.62 OIDs to sha256 and sha512 modules.  [rC52fd2305ba]
+
+ Release-info: https://dev.gnupg.org/T5810
+
+
+Noteworthy changes in version 1.10.0 (2022-02-01)  [C24/A4/R0]
+-------------------------------------------------
+
+ * New and extended interfaces:
+
+   - New control codes to check for FIPS 140-3 approved algorithms.
+
+   - New control code to switch into non-FIPS mode.
+
+   - New cipher modes SIV and GCM-SIV as specified by RFC-5297.
+
+   - Extended cipher mode AESWRAP with padding as specified by
+     RFC-5649.  [T5752]
+
+   - New set of KDF functions.
+
+   - New KDF modes Argon2 and Balloon.
+
+   - New functions for combining hashing and signing/verification.  [T4894]
+
+ * Performance:
+
+   - Improved support for PowerPC architectures.
+
+   - Improved ECC performance on zSeries/s390x by using accelerated
+     scalar multiplication.
+
+   - Many more assembler performance improvements for several
+     architectures.
+
+ * Bug fixes:
+
+   - Fix Elgamal encryption for other implementations.
+     [R5328,CVE-2021-40528]
+
+   - Fix alignment problem on macOS.  [T5440]
+
+   - Check the input length of the point in ECDH.  [T5423]
+
+   - Fix an abort in gcry_pk_get_param for "Curve25519".  [T5490]
+
+ * Other features:
+
+   - The control code GCRYCTL_SET_ENFORCED_FIPS_FLAG is ignored
+     because it is useless with the FIPS 140-3 related changes.
+
+   - Update of the jitter entropy RNG code.  [T5523]
+
+   - Simplification of the entropy gatherer when using the getentropy
+     system call.
+
+ * Interface changes relative to the 1.10.0 release:
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   GCRYCTL_SET_DECRYPTION_TAG            NEW control code.
+   GCRYCTL_FIPS_SERVICE_INDICATOR_CIPHER NEW control code.
+   GCRYCTL_FIPS_SERVICE_INDICATOR_KDF    NEW control code.
+   GCRYCTL_NO_FIPS_MODE = 83             NEW control code.
+   GCRY_CIPHER_MODE_SIV                  NEW mode.
+   GCRY_CIPHER_MODE_GCM_SIV              NEW mode.
+   GCRY_CIPHER_EXTENDED                  NEW flag.
+   GCRY_SIV_BLOCK_LEN                    NEW macro.
+   gcry_cipher_set_decryption_tag        NEW macro.
+   GCRY_KDF_ARGON2                       NEW constant.
+   GCRY_KDF_BALLOON                      NEW constant.
+   GCRY_KDF_ARGON2D                      NEW constant.
+   GCRY_KDF_ARGON2I                      NEW constant.
+   GCRY_KDF_ARGON2ID                     NEW constant.
+   gcry_kdf_hd_t                         NEW type.
+   gcry_kdf_job_fn_t                     NEW type.
+   gcry_kdf_dispatch_job_fn_t            NEW type.
+   gcry_kdf_wait_all_jobs_fn_t           NEW type.
+   struct gcry_kdf_thread_ops            NEW struct.
+   gcry_kdf_open                         NEW function.
+   gcry_kdf_compute                      NEW function.
+   gcry_kdf_final                        NEW function.
+   gcry_kdf_close                        NEW function.
+   gcry_pk_hash_sign                     NEW function.
+   gcry_pk_hash_verify                   NEW function.
+   gcry_pk_random_override_new           NEW function.
+
+ Release-info: https://dev.gnupg.org/T5691
+
+ Release dates of 1.9.x versions:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   Version 1.9.4 (2021-08-22)
+
+
+Noteworthy changes in version 1.9.3 (2021-04-19)  [C23/A3/R3]
+------------------------------------------------
+
+ * Bug fixes:
+
+   - Fix build problems on i386 using gcc-4.7.
+
+   - Fix checksum calculation in OCB decryption for AES on s390.
+     [#5356]
+
+   - Fix a regression in gcry_mpi_ec_add related to certain usages of
+     curve 25519.  [#5372]
+
+   - Fix a symbol not found problem on Apple M1.  [#5370]
+
+   - Fix for Apple iOS getentropy peculiarity.  [#5375]
+
+   - Make keygrip computation work for compressed points.  [#4961]
+
+ * Performance:
+
+   - Add x86_64 VAES/AVX2 accelerated implementation of Camellia.
+     [0e7e60241a]
+
+   - Add x86_64 VAES/AVX2 accelerated implementation of AES.
+     [e72498a54f]
+
+   - Add VPMSUMD acceleration for GCM mode on PPC.  [#5040]
+
+ * Internal changes.
+
+   - Harden MPI conditional code against EM leakage.  [#5330]
+
+   - Harden Elgamal by introducing exponent blinding.  [#5328]
+
+   - Fix memory leaks in the error code paths of EdDSA.  [#5385]
+
+ Release-info: https://dev.gnupg.org/T5305
+
+
+Noteworthy changes in version 1.9.2 (2021-02-17)  [C23/A3/R2]
+------------------------------------------------
+
+ * Bug fixes:
+
+   - Fix build problem for macOS in the random code.  [#5268]
+
+   - Fix building with --disable-asm on x86.  [#5277]
+
+   - Check public key for ECDSA verify operation.  [#5282]
+
+   - Make sure gcry_get_config (NULL) returns a nul-terminated string.
+     [8716e4b2ad]
+
+   - Fix a memory leak in the ECDH code.  [289543544e]
+
+   - Fix a reading beyond end of input buffer in SHA2-avx2.
+     [24af2a55d8]
+
+ * Other features:
+
+   - New test driver to allow for standalone regression
+     tests. [b142da4c88]
+
+ Release-info: https://dev.gnupg.org/T5276
+
+
+Noteworthy changes in version 1.9.1 (2021-01-29)  [C23/A3/R1]
+------------------------------------------------
+
+ * Bug fixes:
+
+   - Fix exploitable bug in hash functions introduced with 1.9.0.
+     [#5275]
+
+   - Return an error if a negative MPI is used with sexp scan
+     functions.  [#4964]
+
+   - Check for operational FIPS in the random and KDF functions.
+     [#5243]
+
+   - Fix compile error on ARMv7 with NEON disabled.  [#5251]
+
+   - Fix self-test in KDF module.  [#5254]
+
+   - Improve assembler checks for better LTO support.  [#5255]
+
+   - Fix assember problem on macOS running on M1.  [#5157]
+
+   - Support older macOS without posix_spawn. [#5159]
+
+   - Fix 32-bit cross build on x86.  [#5257]
+
+   - Fix non-NEON ARM assembly implementation for SHA512.  [#5263]
+
+   - Fix build problems with the cipher_bulk_ops_t typedef.  [#5264]
+
+   - Fix Ed25519 private key handling for preceding ZEROs. [#5267]
+
+   - Fix overflow in modular inverse implementation.  [#5269]
+
+   - Fix register access for AVX/AVX2 implementations of Blake2.
+     [#5271].
+
+ * Performance:
+
+   - Add optimized cipher and hash functions for s390x/zSeries.
+
+   - Use hardware bit counting functions when available.
+
+ * Internal changes:
+
+   - The macOS getentropy syscall is used when available.  [#5268]
+
+   - Update DSA functions to match FIPS 186-3.  [30ed9593f6]
+
+   - New self-tests for CMACs and KDFs.  [385a89e35b,7a0da24925]
+
+   - Add bulk cipher functions for OFB and GCM modes.
+     [f12b6788f2,f4e63e92dc]
+
+ Release-info: https://dev.gnupg.org/T5259
+
+
+Noteworthy changes in version 1.9.0 (2021-01-19)  [C23/A3/R0]
+------------------------------------------------
+
+ * New and extended interfaces:
+
+   - New curves Ed448, X448, and SM2.
+
+   - New cipher mode EAX.
+
+   - New cipher algo SM4.
+
+   - New hash algo SM3.
+
+   - New hash algo variants SHA512/224 and SHA512/256.
+
+   - New MAC algos for Blake-2 algorithms, the new SHA512 variants,
+     SM3, SM4 and for a GOST variant.
+
+   - New convenience function gcry_mpi_get_ui.
+
+   - gcry_sexp_extract_param understands new format specifiers to
+     directly store to integers and strings.
+
+   - New function gcry_ecc_mul_point and curve constants for Curve448
+     and Curve25519.  [#4293]
+
+   - New function gcry_ecc_get_algo_keylen.
+
+   - New control code GCRYCTL_AUTO_EXPAND_SECMEM to allow growing the
+     secure memory area.  Also in 1.8.2 as an undocumented feature.
+
+ * Performance:
+
+   - Optimized implementations for Aarch64.
+
+   - Faster implementations for Poly1305 and ChaCha.  Also for
+     PowerPC.  [b9a471ccf5,172ad09cbe,#4460]
+
+   - Optimized implementations of AES and SHA-256 on PowerPC.
+     [#4529,#4530]
+
+   - Improved use of AES-NI to speed up AES-XTS (6 times faster).
+     [a00c5b2988]
+
+   - Improved use of AES-NI for OCB.  [eacbd59b13,e924ce456d]
+
+   - Speedup AES-XTS on ARMv8/CE (2.5 times faster).  [93503c127a]
+
+   - New AVX and AVX2 implementations for Blake-2 (1.3/1.4 times
+     faster).  [af7fc732f9, da58a62ac1]
+
+   - Use Intel SHA extension for SHA-1 and SHA-256 (4.0/3.7 times
+     faster).  [d02958bd30, 0b3ec359e2]
+
+   - Use ARMv7/NEON accelerated GCM implementation (3 times faster).
+     [2445cf7431]
+
+   - Use of i386/SSSE3 for SHA-512 (4.5 times faster on Ryzen 7).
+     [b52dde8609]
+
+   - Use 64 bit ARMv8/CE PMULL for CRC (7 times faster).  [14c8a593ed]
+
+   - Improve CAST5 (40% to 70% faster).  [4ec566b368]
+
+   - Improve Blowfish (60% to 80% faster).  [ced7508c85]
+
+ * Bug fixes:
+
+   - Fix infinite loop due to applications using fork the wrong
+     way.  [#3491][also in 1.8.4]
+
+   - Fix possible leak of a few bits of secret primes to pageable
+     memory.  [#3848][also in 1.8.4]
+
+   - Fix possible hang in the RNG (1.8.3 only).  [#4034][also in 1.8.4]
+
+   - Several minor fixes.  [#4102,#4208,#4209,#4210,#4211,#4212]
+     [also in 1.8.4]
+
+   - On Linux always make use of getrandom if possible and then use
+     its /dev/urandom behaviour.  [#3894][also in 1.8.4]
+
+   - Use blinding for ECDSA signing to mitigate a novel side-channel
+     attack.  [#4011,CVE-2018-0495] [also in 1.8.3, 1.7.10]
+
+   - Fix incorrect counter overflow handling for GCM when using an IV
+     size other than 96 bit.  [#3764] [also in 1.8.3, 1.7.10]
+
+   - Fix incorrect output of AES-keywrap mode for in-place encryption
+     on some platforms.  [also in 1.8.3, 1.7.10]
+
+   - Fix the gcry_mpi_ec_curve_point point validation function.
+     [also in 1.8.3, 1.7.10]
+
+   - Fix rare assertion failure in gcry_prime_check.  [also in 1.8.3]
+
+   - Do not use /dev/srandom on OpenBSD.  [also in 1.8.2]
+
+   - Fix test suite failure on systems with large pages. [#3351]
+     [also in 1.8.2]
+
+   - Fix test suite to not use mmap on Windows.  [also in 1.8.2]
+
+   - Fix fatal out of secure memory status in the s-expression parser
+     on heavy loaded systems.  [also in 1.8.2]
+
+   - Fix build problems on OpenIndiana et al. [#4818, also in 1.8.6]
+
+   - Fix GCM bug on arm64 which troubles for example OMEMO.  [#4986,
+     also in 1.8.6]
+
+   - Detect a div-by-zero in a debug helper tool.  [#4868, also in 1.8.6]
+
+   - Use a constant time mpi_inv and related changes.  [#4869, partly
+     also in 1.8.6]
+
+   - Fix mpi_copy to correctly handle flags of opaque MPIs.
+     [also in 1.8.6]
+
+   - Fix mpi_cmp to consider +0 and -0 the same.  [also in 1.8.6]
+
+   - Fix extra entropy collection via clock_gettime.  Note that this
+     fallback code path is not used on any decent hardware.  [#4966,
+     also in 1.8.7]
+
+   - Support opaque MPI with gcry_mpi_print.  [#4872, also in 1.8.7]
+
+   - Allow for a Unicode random seed file on Windows.  [#5098, also in
+     1.8.7]
+
+ * Other features:
+
+   - Add OIDs from RFC-8410 as aliases for Ed25519 and Curve25519.
+     [also in 1.8.6]
+
+   - Add mitigation against ECC timing attack CVE-2019-13627.  [#4626]
+
+   - Internal cleanup of the ECC implementation.
+
+   - Support reading EC point in compressed format for some curves.
+     [#4951]
+
+ * Interface changes relative to the 1.8.0 release:
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   gcry_mpi_get_ui                 NEW function.
+   GCRYCTL_AUTO_EXPAND_SECMEM      NEW control code.
+   gcry_sexp_extract_param         EXTENDED.
+   GCRY_CIPHER_GOST28147_MESH      NEW cipher algo.
+   GCRY_CIPHER_SM4                 NEW cipher algo.
+   GCRY_CIPHER_MODE_EAX            NEW mode.
+   GCRY_ECC_CURVE25519             NEW curve id.
+   GCRY_ECC_CURVE448               NEW curve id.
+   gcry_ecc_get_algo_keylen        NEW function.
+   gcry_ecc_mul_point              NEW function.
+   GCRY_MD_SM3                     NEW hash algo.
+   GCRY_MD_SHA512_256              NEW hash algo.
+   GCRY_MD_SHA512_224              NEW hash algo.
+   GCRY_MAC_GOST28147_IMIT         NEW mac algo.
+   GCRY_MAC_HMAC_GOSTR3411_CP      NEW mac algo.
+   GCRY_MAC_HMAC_BLAKE2B_512       NEW mac algo.
+   GCRY_MAC_HMAC_BLAKE2B_384       NEW mac algo.
+   GCRY_MAC_HMAC_BLAKE2B_256       NEW mac algo.
+   GCRY_MAC_HMAC_BLAKE2B_160       NEW mac algo.
+   GCRY_MAC_HMAC_BLAKE2S_256       NEW mac algo.
+   GCRY_MAC_HMAC_BLAKE2S_224       NEW mac algo.
+   GCRY_MAC_HMAC_BLAKE2S_160       NEW mac algo.
+   GCRY_MAC_HMAC_BLAKE2S_128       NEW mac algo.
+   GCRY_MAC_HMAC_SM3               NEW mac algo.
+   GCRY_MAC_HMAC_SHA512_256        NEW mac algo.
+   GCRY_MAC_HMAC_SHA512_224        NEW mac algo.
+   GCRY_MAC_CMAC_SM4               NEW mac algo.
+
+ Release-info: https://dev.gnupg.org/T4294
+
+ Release dates of 1.8.x versions:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   Version 1.8.2 (2017-12-13)
+   Version 1.8.3 (2018-06-13)
+   Version 1.8.4 (2018-10-26)
+   Version 1.8.5 (2019-08-29)
+   Version 1.8.6 (2020-07-06)
+   Version 1.8.7 (2020-10-23)
+
+
+Noteworthy changes in version 1.8.1 (2017-08-27)  [C22/A2/R1]
+------------------------------------------------
+
+ * Bug fixes:
+
+   - Mitigate a local side-channel attack on Curve25519 dubbed "May
+     the Fourth be With You".  [CVE-2017-0379] [also in 1.7.9]
+
+   - Add more extra bytes to the pool after reading a seed file.
+
+   - Add the OID SHA384WithECDSA from RFC-7427 to SHA-384.
+
+   - Fix build problems with the Jitter RNG
+
+   - Fix assembler code build problems on Rasbian (ARMv8/AArch32-CE).
+
+
+Noteworthy changes in version 1.8.0 (2017-07-18)  [C22/A2/R0]
+------------------------------------------------
+
+ * New interfaces:
+
+   - New cipher mode XTS
+
+   - New hash function Blake-2
+
+   - New function gcry_mpi_point_copy.
+
+   - New function gcry_get_config.
+
+   - GCRYCTL_REINIT_SYSCALL_CLAMP allows to init nPth after Libgcrypt.
+
+   - New global configuration file /etc/gcrypt/random.conf.
+
+ * Extended interfaces:
+
+   - GCRYCTL_PRINT_CONFIG does now also print build information for
+     libgpg-error and the used compiler version.
+
+   - GCRY_CIPHER_MODE_CFB8 is now supported.
+
+   - Add Stribog OIDs.  [also in 1.7.4]
+
+ * Performance:
+
+   - A jitter based entropy collector is now used in addition to the
+     other entropy collectors.
+
+   - Optimized gcry_md_hash_buffers for SHA-256 and SHA-512.
+
+   - More ARMv8/AArch32 improvements for AES, GCM, SHA-256, and SHA-1.
+     [also in 1.7.4]
+
+   - Add ARMv8/AArch32 assembly implementation for Twofish and
+     Camellia.  [also in 1.7.4]
+
+   - Add bulk processing implementation for ARMv8/AArch32.
+     [also in 1.7.4]
+
+   - Improve the DRBG performance and sync the code with the Linux
+     version.  [also in 1.7.4]
+
+ * Internal changes:
+
+   - Libgpg-error 1.25 is now required.  This avoids stalling of nPth
+     threads due to contention on internal Libgcrypt locks (e.g. the
+     random pool lock).
+
+   - The system call clamp of libgpg-error is now used to wrap the
+     blocking read of /dev/random.  This allows other nPth threads to
+     run while Libgcrypt is gathering entropy.
+
+   - When secure memory is requested by the MPI functions or by
+     gcry_xmalloc_secure, they do not anymore lead to a fatal error if
+     the secure memory pool is used up.  Instead new pools are
+     allocated as needed.  These new pools are not protected against
+     being swapped out (mlock can't be used).  However, these days
+     this is considered a minor issue and can easily be mitigated by
+     using encrypted swap space.  [also in 1.7.4]
+
+ * Bug fixes:
+
+   - Fix AES CTR self-check detected failure in the SSSE3 based
+     implementation.  [also in 1.7.6]
+
+   - Remove gratuitous select before the getrandom syscall.
+     [also in 1.7.6]
+
+   - Fix regression in mlock detection.  [bug#2870] [also in 1.7.5]
+
+   - Fix GOST 28147 CryptoPro-B S-box.   [also in 1.7.4]
+
+   - Fix error code handling of mlock calls.  [also in 1.7.4]
+
+   - Fix possible timing attack on EdDSA session key. [also in 1.7.7]
+
+   - Fix long standing bug in secure memory implementation which could
+     lead to a segv on free. [bug#3027] [also in 1.7.7]
+
+   - Mitigate a flush+reload side-channel attack on RSA secret keys
+     dubbed "Sliding right into disaster".  For details see
+     <https://eprint.iacr.org/2017/627>.  [CVE-2017-7526] [also in 1.7.8]
+
+ * Interface changes relative to the 1.7.0 release:
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   gcry_get_config                 NEW function.
+   gcry_mpi_point_copy             NEW function.
+   GCRYCTL_REINIT_SYSCALL_CLAMP    NEW macro.
+   GCRY_MD_BLAKE2B_512             NEW constant.
+   GCRY_MD_BLAKE2B_384             NEW constant.
+   GCRY_MD_BLAKE2B_256             NEW constant.
+   GCRY_MD_BLAKE2B_160             NEW constant.
+   GCRY_MD_BLAKE2S_256             NEW constant.
+   GCRY_MD_BLAKE2S_224             NEW constant.
+   GCRY_MD_BLAKE2S_160             NEW constant.
+   GCRY_MD_BLAKE2S_128             NEW constant.
+   GCRY_CIPHER_MODE_XTS            NEW constant.
+   gcry_md_info                    DEPRECATED.
+
+ * Release dates of 1.7.x versions:
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   Version 1.7.10 (2018-06-13) [C21/A1/R10]
+   Version 1.7.9  (2017-08-27) [C21/A1/R9]
+   Version 1.7.8  (2017-06-29) [C21/A1/R8]
+   Version 1.7.7  (2017-06-02) [C21/A1/R7]
+   Version 1.7.6  (2017-01-18) [C21/A1/R6]
+   Version 1.7.5  (2016-12-15) [C21/A1/R5]
+   Version 1.7.4  (2016-12-09) [C21/A1/R4]
+
+
+Noteworthy changes in version 1.7.3 (2016-08-17)  [C21/A1/R3]
+------------------------------------------------
+
+ * Bug fixes:
+
+   - Fix critical security bug in the RNG [CVE-2016-6313].  An
+     attacker who obtains 580 bytes from the standard RNG can
+     trivially predict the next 20 bytes of output.  Problem
+     detected by Felix Dörre and Vladimir Klebanov, KIT.
+
+   - Fix building of some asm modules with older compilers and CPUs.
+
+ * Performance:
+
+   - ARMv8/AArch32 improvements for AES, GCM, SHA-256, and SHA-1.
+
+
+Noteworthy changes in version 1.7.2 (2016-07-14)  [C21/A1/R2]
+------------------------------------------------
+
+ * Bug fixes:
+
+   - Fix setting of the ECC cofactor if parameters are specified.
+
+   - Fix memory leak in the ECC code.
+
+   - Remove debug message about unsupported getrandom syscall.
+
+   - Fix build problems related to AVX use.
+
+   - Fix bus errors on ARM for Poly1305, ChaCha20, AES, and SHA-512.
+
+ * Internal changes:
+
+   - Improved fatal error message for wrong use of gcry_md_read.
+
+   - Disallow symmetric encryption/decryption if key is not set.
+
+
+Noteworthy changes in version 1.7.1 (2016-06-15)  [C21/A1/R1]
+------------------------------------------------
+
+ * Bug fixes:
+
+   - Fix ecc_verify for cofactor support.
+
+   - Fix portability bug when using gcc with Solaris 9 SPARC.
+
+   - Build fix for OpenBSD/amd64
+
+   - Add OIDs to the Serpent ciphers.
+
+ * Internal changes:
+
+   - Use getrandom system call on Linux if available.
+
+   - Blinding is now also used for RSA signature creation.
+
+   - Changed names of debug envvars
+
+
+Noteworthy changes in version 1.7.0 (2016-04-15)  [C21/A1/R0]
+------------------------------------------------
+
+ * New algorithms and modes:
+
+   - SHA3-224, SHA3-256, SHA3-384, SHA3-512, and MD2 hash algorithms.
+
+   - SHAKE128 and SHAKE256 extendable-output hash algorithms.
+
+   - ChaCha20 stream cipher.
+
+   - Poly1305 message authentication algorithm
+
+   - ChaCha20-Poly1305 Authenticated Encryption with Associated Data
+     mode.
+
+   - OCB mode.
+
+   - HMAC-MD2 for use by legacy applications.
+
+ * New curves for ECC:
+
+   - Curve25519.
+
+   - sec256k1.
+
+   - GOST R 34.10-2001 and GOST R 34.10-2012.
+
+ * Performance:
+
+   - Improved performance of KDF functions.
+
+   - Assembler optimized implementations of Blowfish and Serpent on
+     ARM.
+
+   - Assembler optimized implementation of 3DES on x86.
+
+   - Improved AES using the SSSE3 based vector permutation method by
+     Mike Hamburg.
+
+   - AVX/BMI is used for SHA-1 and SHA-256 on x86.  This is for SHA-1
+     about 20% faster than SSSE3 and more than 100% faster than the
+     generic C implementation.
+
+   - 40% speedup for SHA-512 and 72% for SHA-1 on ARM Cortex-A8.
+
+   - 60-90% speedup for Whirlpool on x86.
+
+   - 300% speedup for RIPE MD-160.
+
+   - Up to 11 times speedup for CRC functions on x86.
+
+ * Other features:
+
+   - Improved ECDSA and FIPS 186-4 compliance.
+
+   - Support for Montgomery curves.
+
+   - gcry_cipher_set_sbox to tweak S-boxes of the gost28147 cipher
+     algorithm.
+
+   - gcry_mpi_ec_sub to subtract two points on a curve.
+
+   - gcry_mpi_ec_decode_point to decode an MPI into a point object.
+
+   - Emulation for broken Whirlpool code prior to 1.6.0.  [from 1.6.1]
+
+   - Flag "pkcs1-raw" to enable PCKS#1 padding with a user supplied
+     hash part.
+
+   - Parameter "saltlen" to set a non-default salt length for RSA PSS.
+
+   - A SP800-90A conforming DRNG replaces the former X9.31 alternative
+     random number generator.
+
+   - Map deprecated RSA algo number to the RSA algo number for better
+     backward compatibility. [from 1.6.2]
+
+   - Use ciphertext blinding for Elgamal decryption [CVE-2014-3591].
+     See http://www.cs.tau.ac.il/~tromer/radioexp/ for details.
+     [from 1.6.3]
+
+   - Fixed data-dependent timing variations in modular exponentiation
+     [related to CVE-2015-0837, Last-Level Cache Side-Channel Attacks
+      are Practical]. [from 1.6.3]
+
+   - Flag "no-keytest" for ECC key generation.  Due to a bug in
+     the parser that flag will also be accepted but ignored by older
+     version of Libgcrypt. [from 1.6.4]
+
+   - Speed up the random number generator by requiring less extra
+     seeding. [from 1.6.4]
+
+   - Always verify a created RSA signature to avoid private key leaks
+     due to hardware failures. [from 1.6.4]
+
+   - Mitigate side-channel attack on ECDH with Weierstrass curves
+     [CVE-2015-7511].  See http://www.cs.tau.ac.IL/~tromer/ecdh/ for
+     details. [from 1.6.5]
+
+ * Internal changes:
+
+   - Moved locking out to libgpg-error.
+
+   - Support of the SYSROOT envvar in the build system.
+
+   - Refactor some code.
+
+   - The availability of a 64 bit integer type is now mandatory.
+
+ * Bug fixes:
+
+   - Fixed message digest lookup by OID (regression in 1.6.0).
+
+   - Fixed a build problem on NetBSD
+
+   - Fixed memory leaks in ECC code.
+
+   - Fixed some asm build problems and feature detection bugs.
+
+ * Interface changes relative to the 1.6.0 release:
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   gcry_cipher_final               NEW macro.
+   GCRY_CIPHER_MODE_CFB8           NEW constant.
+   GCRY_CIPHER_MODE_OCB            NEW.
+   GCRY_CIPHER_MODE_POLY1305       NEW.
+   gcry_cipher_set_sbox            NEW macro.
+   gcry_mac_get_algo               NEW.
+   GCRY_MAC_HMAC_MD2               NEW.
+   GCRY_MAC_HMAC_SHA3_224          NEW.
+   GCRY_MAC_HMAC_SHA3_256          NEW.
+   GCRY_MAC_HMAC_SHA3_384          NEW.
+   GCRY_MAC_HMAC_SHA3_512          NEW.
+   GCRY_MAC_POLY1305               NEW.
+   GCRY_MAC_POLY1305_AES           NEW.
+   GCRY_MAC_POLY1305_CAMELLIA      NEW.
+   GCRY_MAC_POLY1305_SEED          NEW.
+   GCRY_MAC_POLY1305_SERPENT       NEW.
+   GCRY_MAC_POLY1305_TWOFISH       NEW.
+   gcry_md_extract                 NEW.
+   GCRY_MD_FLAG_BUGEMU1            NEW [from 1.6.1].
+   GCRY_MD_GOSTR3411_CP            NEW.
+   GCRY_MD_SHA3_224                NEW.
+   GCRY_MD_SHA3_256                NEW.
+   GCRY_MD_SHA3_384                NEW.
+   GCRY_MD_SHA3_512                NEW.
+   GCRY_MD_SHAKE128                NEW.
+   GCRY_MD_SHAKE256                NEW.
+   gcry_mpi_ec_decode_point        NEW.
+   gcry_mpi_ec_sub                 NEW.
+   GCRY_PK_EDDSA                   NEW constant.
+   GCRYCTL_GET_TAGLEN              NEW.
+   GCRYCTL_SET_SBOX                NEW.
+   GCRYCTL_SET_TAGLEN              NEW.
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Version 1.6.5 (2016-02-09) [C20/A0/R5]
+Version 1.6.4 (2015-09-08) [C20/A0/R4]
+Version 1.6.3 (2015-02-27) [C20/A0/R3]
+Version 1.6.2 (2014-08-21) [C20/A0/R2]
+Version 1.6.1 (2014-01-29) [C20/A0/R1]
+
+
+Noteworthy changes in version 1.6.0 (2013-12-16) [C20/A0/R0]
+------------------------------------------------
+
+ * Removed the long deprecated gcry_ac interface.  Thus Libgcrypt is
+   not anymore ABI compatible to previous versions if they used the ac
+   interface.
+
+ * Removed the module register subsystem.
+
+ * The deprecated message digest debug macros have been removed.  Use
+   gcry_md_debug instead.
+
+ * Removed deprecated control codes.
+
+ * Improved performance of most cipher algorithms as well as for the
+   SHA family of hash functions.
+
+ * Added support for the IDEA cipher algorithm.
+
+ * Added support for the Salsa20 and reduced Salsa20/12 stream ciphers.
+
+ * Added limited support for the GOST 28147-89 cipher algorithm.
+
+ * Added support for the GOST R 34.11-94 and R 34.11-2012 (Stribog)
+   hash algorithms.
+
+ * Added a random number generator to directly use the system's RNG.
+   Also added an interface to prefer the use of a specified RNG.
+
+ * Added support for the SCRYPT algorithm.
+
+ * Mitigated the Yarom/Falkner flush+reload side-channel attack on RSA
+   secret keys.  See <http://eprint.iacr.org/2013/448> [CVE-2013-4242].
+
+ * Added support for Deterministic DSA as per RFC-6979.
+
+ * Added support for curve Ed25519.
+
+ * Added a scatter gather hash convenience function.
+
+ * Added several MPI amd SEXP helper functions.
+
+ * Added support for negative numbers to gcry_mpi_print,
+   gcry_mpi_aprint and gcry_mpi_scan.
+
+ * The algorithm ids GCRY_PK_ECDSA and GCRY_PK_ECDH are now
+   deprecated.  Use GCRY_PK_ECC if you need an algorithm id.
+
+ * Changed gcry_pk_genkey for "ecc" to only include the curve name and
+   not the parameters.  The flag "param" may be used to revert this.
+
+ * Added a feature to globally disable selected hardware features.
+
+ * Added debug helper functions.
+
+ * Interface changes relative to the 1.5.0 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ gcry_ac_*               	 REMOVED.
+ GCRY_AC_*               	 REMOVED.
+ gcry_module_t          	 REMOVED.
+ gcry_cipher_register   	 REMOVED.
+ gcry_cipher_unregister 	 REMOVED.
+ gcry_cipher_list       	 REMOVED.
+ gcry_pk_register       	 REMOVED.
+ gcry_pk_unregister     	 REMOVED.
+ gcry_pk_list           	 REMOVED.
+ gcry_md_register       	 REMOVED.
+ gcry_md_unregister     	 REMOVED.
+ gcry_md_list           	 REMOVED.
+ gcry_md_start_debug    	 REMOVED (macro).
+ gcry_md_stop_debug     	 REMOVED (macro).
+ GCRYCTL_SET_KEY                 REMOVED.
+ GCRYCTL_SET_IV                  REMOVED.
+ GCRYCTL_SET_CTR                 REMOVED.
+ GCRYCTL_DISABLE_ALGO            CHANGED: Not anymore thread-safe.
+ gcry_pk_genkey                  CHANGED: ECC curve params not returned.
+ gcry_md_hash_buffers            NEW.
+ gcry_buffer_t                   NEW.
+ GCRYCTL_SET_ENFORCED_FIPS_FLAG  NEW.
+ GCRYCTL_SET_PREFERRED_RNG_TYPE  NEW.
+ GCRYCTL_GET_CURRENT_RNG_TYPE    NEW.
+ GCRYCTL_CLOSE_RANDOM_DEVICE     NEW.
+ GCRY_RNG_TYPE_STANDARD          NEW.
+ GCRY_RNG_TYPE_FIPS              NEW.
+ GCRY_RNG_TYPE_SYSTEM            NEW.
+ gcry_mpi_is_neg                 NEW.
+ gcry_mpi_neg                    NEW.
+ gcry_mpi_abs                    NEW.
+ gcry_mpi_snatch                 NEW.
+ gcry_mpi_set_opaque_copy        NEW.
+ gcry_mpi_point_t                NEW.
+ gcry_mpi_point_new              NEW.
+ gcry_mpi_point_release          NEW.
+ gcry_mpi_point_get              NEW.
+ gcry_mpi_point_snatch_get       NEW.
+ gcry_mpi_point_set              NEW.
+ gcry_mpi_point_snatch_set       NEW.
+ gcry_ctx_t                      NEW.
+ gcry_ctx_release                NEW.
+ gcry_mpi_ec_new                 NEW.
+ gcry_mpi_ec_get_mpi             NEW.
+ gcry_mpi_ec_get_point           NEW.
+ gcry_mpi_ec_set_mpi             NEW.
+ gcry_mpi_ec_set_point           NEW.
+ gcry_mpi_ec_get_affine          NEW.
+ gcry_mpi_ec_dup                 NEW.
+ gcry_mpi_ec_add                 NEW.
+ gcry_mpi_ec_mul                 NEW.
+ gcry_mpi_ec_curve_point         NEW.
+ GCRYMPI_FLAG_IMMUTABLE          NEW.
+ GCRYMPI_FLAG_CONST              NEW.
+ GCRYMPI_FLAG_USER1              NEW.
+ GCRYMPI_FLAG_USER2              NEW.
+ GCRYMPI_FLAG_USER3              NEW.
+ GCRYMPI_FLAG_USER4              NEW.
+ GCRYMPI_CONST_ONE               NEW.
+ GCRYMPI_CONST_TWO               NEW.
+ GCRYMPI_CONST_THREE             NEW.
+ GCRYMPI_CONST_FOUR              NEW.
+ GCRYMPI_CONST_EIGHT             NEW.
+ GCRYMPI_FMT_OPAQUE              NEW.
+ GCRYPT_VERSION_NUMBER           NEW.
+ GCRY_KDF_SCRYPT                 NEW.
+ gcry_pubkey_get_sexp            NEW.
+ GCRYCTL_DISABLE_LOCKED_SECMEM   NEW.
+ GCRYCTL_DISABLE_PRIV_DROP       NEW.
+ GCRY_CIPHER_SALSA20             NEW.
+ gcry_sexp_nth_buffer            NEW.
+ gcry_sexp_extract_param         NEW.
+ GCRY_CIPHER_SALSA20R12          NEW.
+ GCRY_CIPHER_GOST28147           NEW.
+ GCRY_MD_GOSTR3411_94            NEW.
+ GCRY_MD_STRIBOG256              NEW.
+ GCRY_MD_STRIBOG512              NEW.
+ GCRY_PK_ECC                     NEW.
+ gcry_log_debug                  NEW.
+ gcry_log_debughex               NEW.
+ gcry_log_debugmpi               NEW.
+ gcry_log_debugpnt               NEW.
+
+
+Noteworthy changes in version 1.5.0 (2011-06-29)
+------------------------------------------------
+
+ * New function gcry_kdf_derive implementing OpenPGP S2K algorithms
+   and PBKDF2.
+
+ * Support for WindowsCE.
+
+ * Support for ECDH.
+
+ * Support for OAEP and PSS methods as described by RFC-3447.
+
+ * Fixed PKCS v1.5 code to always return the leading zero.
+
+ * New format specifiers "%M" and "%u" for gcry_sexp_build.
+
+ * Support opaque MPIs with "%m" and "%M" in gcry_sexp_build.
+
+ * New functions gcry_pk_get_curve and gcry_pk_get_param to map ECC
+   parameters to a curve name and to retrieve parameter values.
+
+ * gcry_mpi_cmp applied to opaque values has a defined semantic now.
+
+ * Uses the Intel AES-NI instructions if available.
+
+ * The use of the deprecated Alternative Public Key Interface
+   (gcry_ac_*) will now print compile time warnings.
+
+ * The module register subsystem has been deprecated.  This subsystem
+   is not flexible enough and would always require ABI changes to
+   extend the internal interfaces.  It will eventually be removed.
+   Please contact us on the gcrypt-devel mailing list to discuss
+   whether you really need this feature or how it can be replaced by
+   an internal plugin mechanism.
+
+ * CTR mode may now be used with data chunks of arbitrary length.
+
+ * Changes also done in 1.4.6 (2010-07-13):
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ * New variants of the TIGER algorithm.
+
+ * New cipher algorithm mode for AES-WRAP.
+
+ * Changes also done in 1.4.5 (2009-12-11):
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ * Fixed minor memory leak in DSA key generation.
+
+ * No more switching to FIPS mode if /proc/version is not readable.
+
+ * Fixed sigill during Padlock detection on old CPUs.
+
+ * Fixed a hang on some W2000 machines.
+
+ * Boosted SHA-512 performance by 30% on ia32 boxes and gcc 4.3;
+   SHA-256 went up by 25%.
+
+ * Interface changes relative to the 1.4.6 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ GCRY_PK_ECDH               NEW.
+ gcry_pk_get_curve          NEW.
+ gcry_pk_get_param          NEW.
+ GCRYCTL_DISABLE_HWF        NEW.
+ gcry_kdf_derive            NEW.
+ gcry_pk_encrypt            EXTENDED: Support OAEP.
+ gcry_pk_decrypt            EXTENDED: Support OAEP.
+ gcry_pk_sign               EXTENDED: Support PSS.
+ gcry_pk_verify             EXTENDED: Support PSS.
+ gcry_sexp_build            EXTENDED: Add format specifiers M and u.
+
+ * Interface changes relative to the 1.4.2 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ GCRY_CIPHER_MODE_AESWRAP   NEW.
+ GCRY_MD_TIGER1             NEW.
+ GCRY_MD_TIGER2             NEW.
+
+
+Noteworthy changes in version 1.4.4 (2009-01-22)
+------------------------------------------------
+
+ * Publish GCRY_MODULE_ID_USER and GCRY_MODULE_ID_USER_LAST constants.
+   This functionality has been in Libgcrypt since 1.3.0.
+
+ * MD5 may now be used in non-enforced fips mode.
+
+ * Fixed HMAC for SHA-384 and SHA-512 with keys longer than 64 bytes.
+
+ * In fips mode, RSA keys are now generated using the X9.31 algorithm
+   and DSA keys using the FIPS 186-2 algorithm.
+
+ * The transient-key flag is now also supported for DSA key
+   generation.  DSA domain parameters may be given as well.
+
+
+Noteworthy changes in version 1.4.3 (2008-09-18)
+------------------------------------------------
+
+ * Try to auto-initialize Libgcrypt to minimize the effect of
+   applications not doing that correctly.  This is not a perfect
+   solution but given that many applicationion would totally fail
+   without such a hack, we try to help at least with the most common
+   cases.  Folks, please read the manual to learn how to properly
+   initialize Libgcrypt!
+
+ * Auto-initialize the secure memory to 32k instead of aborting the
+   process.
+
+ * Log fatal errors via syslog.
+
+ * Changed the name and the semantics of the fips mode config file.
+
+ * Add convenience macro gcry_fips_mode_active.
+
+ * More self-tests.
+
+ * Documentation cleanups.
+
+
+Noteworthy changes in version 1.4.2 (2008-09-08)
+------------------------------------------------
+
+ * The long missing gcry_mpi_lshift function has been added.
+
+ * RSA key generation now supports a "transient-key" flag.
+
+ * The keygrip computation for ECDSA has been implemented thus ECDSA
+   is now fully supported.
+
+ * A few macros have been replaced by functions for better type
+   checking.
+
+ * The thread initialization structure now carries version
+   information.
+
+ * The manual describes more clearly how to initialize Libgcrypt.
+
+ * The library may now be switched into a FIPS mode.
+
+ * Interface changes relative to the 1.3.0 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ GCRYCTL_OPERATIONAL_P   NEW.
+ GCRYCTL_FIPS_MODE_P     NEW.
+ GCRYCTL_FORCE_FIPS_MODE NEW.
+ gcry_cipher_setkey      NEW: Replaces macro.
+ gcry_cipher_setiv       NEW: Replaces macro.
+ gcry_cipher_setctr      NEW: Replaces macro.
+ gcry_mpi_lshift         NEW.
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Noteworthy changes in version 1.4.1 (2008-04-25)
+------------------------------------------------
+
+ * Fixed a bug introduced by 1.3.1 which led to the comsumption of far
+   too much entropy for the intial seeding.
+
+ * Improved AES performance for CFB and CBC modes.
+
+ * Removed build problems for the Padlock support.
+
+
+Noteworthy changes in version 1.4.0 (2007-12-10)
+------------------------------------------------
+
+ * New configure option --disable-padlock-support which is mostly
+   useful in case of build problems.
+
+
+Noteworthy changes in version 1.3.2 (2007-12-03)
+------------------------------------------------
+
+ * The visibility attribute is now used if supported by the toolchain.
+
+ * The ACE engine of VIA processors is now used for AES-128.
+
+ * The ASN.1 DER template for SHA-224 has been fixed.
+
+
+Noteworthy changes in version 1.3.1 (2007-10-26)
+------------------------------------------------
+
+ * The entire library is now under the LGPL. The helper programs and
+   the manual are under the GPL.  Kudos to Peter Gutmann for giving
+   permissions to relicense the rndw32 and rndunix modules.
+
+ * The Camellia cipher is now under the LGPL and included by default.
+
+ * Fixed a bug in the detection of symbol prefixes which inhibited the
+   build of optimzied assembler code on certain systems.
+
+ * Updated the entropy gatherer for W32.
+
+
+Noteworthy changes in version 1.3.0 (2007-05-04)
+------------------------------------------------
+
+ * Changed the way the RNG gets initialized. This allows to keep it
+   uninitialized as long as no random numbers are used.  To override
+   this, the new macro gcry_fast_random_poll may be used.  It is in
+   general a good idea to spread this macro into the application code
+   to make sure that these polls happen often enough.
+
+ * Made the RNG immune against fork without exec.
+
+ * Reading and writing the random seed file is now protected by a
+   fcntl style file lock on systems that provide this function.
+
+ * Support for SHA-224 and HMAC using SHA-384 and SHA-512.
+
+ * Support for the SEED cipher.
+
+ * Support for the Camellia cipher.  Note that Camellia is disabled by
+   default, and that enabling it changes the license of libgcrypt from
+   LGPL to GPL.
+
+ * Support for OFB encryption mode.
+
+ * gcry_mpi_rshift does not anymore truncate the shift count.
+
+ * Reserved algorithm ranges for use by applications.
+
+ * Support for DSA2.
+
+ * The new function gcry_md_debug should be used instead of the
+   gcry_md_start_debug and gcry_md_stop_debug macros.
+
+ * New configure option --enable-random-daemon to support a system
+   wide random daemon.  The daemon code is experimental and not yet
+   very well working.  It will eventually allow to keep a global
+   random pool for the sake of short living processes.
+
+ * Non executable stack support is now used by default on systems
+   supporting it.
+
+ * Support for Microsoft Windows.
+
+ * Assembler support for the AMD64 architecture.
+
+ * New configure option --enable-mpi-path for optimized builds.
+
+ * Experimental support for ECDSA; should only be used for testing.
+
+ * New control code GCRYCTL_PRINT_CONFIG to print the build
+   configuration.
+
+ * Minor changes to some function declarations.  Buffer arguments are
+   now typed as void pointer.  This should not affect any compilation.
+   Fixed two bugs in return values and clarified documentation.
+
+ * Interface changes relative to the 1.2.0 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ gcry_fast_random_poll	 NEW
+ gcry_md_debug           NEW
+ gcry_sexp_nth_string    NEW
+ GCRY_MD_SHA224          NEW
+ GCRY_PK_USAGE_CERT      NEW
+ GCRY_PK_USAGE_AUTH      NEW
+ GCRY_PK_USAGE_UNKN      NEW
+ GCRY_PK_ECDSA           NEW
+ GCRY_CIPHER_SEED        NEW
+ GCRY_CIPHER_CAMELLIA128 NEW
+ GCRY_CIPHER_CAMELLIA192 NEW
+ GCRY_CIPHER_CAMELLIA256 NEW
+ GCRYCTL_FAKED_RANDOM_P  NEW
+ GCRYCTL_PRINT_CONFIG    NEW
+ GCRYCTL_SET_RNDEGD_SOCKET  NEW.
+ gcry_mpi_scan           CHANGED: Argument BUFFER is now void*.
+ gcry_pk_algo_name       CHANGED: Returns "?" instead of NULL.
+ gcry_cipher_algo_name   CHANGED: Returns "?" instead of "".
+ gcry_pk_spec_t          CHANGED: Element ALIASES is now const ptr.
+ gcry_md_write_t         CHANGED: Argument BUF is now a const void*.
+ gcry_md_ctl             CHANGED: Argument BUFFER is now void*.
+ gcry_cipher_encrypt     CHANGED: Arguments IN and OUT are now void*.
+ gcry_cipher_decrypt     CHANGED: Arguments IN and OUT are now void*.
+ gcry_sexp_sprint        CHANGED: Argument BUFFER is now void*.
+ gcry_create_nonce       CHANGED: Argument BUFFER is now void*.
+ gcry_randomize          CHANGED: Argument BUFFER is now void*.
+ gcry_cipher_register    CHANGED: Argument ALGORITHM_ID is now int*.
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Noteworthy changes in version 1.2.0 (2004-04-15)
+------------------------------------------------
+
+ * First stable release.
+
+
+Noteworthy changes in version 1.1.94 (2004-03-29)
+-------------------------------------------------
+
+ * The support for multi-threaded users goes into its third
+   incarnation.  We removed compile time support for thread libraries.
+   To support the thread library of your choice, you have to set up
+   callback handlers at initialization time.  New data structures, a
+   new control command, and default initializers are provided for this
+   purpose.
+
+ * Interface changes relative to the 1.1.93 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+libgcrypt-config --thread	OBSOLETE
+libgcrypt-pth.la		REMOVED
+libgcrypt-pthread.la		REMOVED
+GCRYCTL_SET_THREAD_CBS		NEW
+struct gcrypt_thread_cbs	NEW
+enum gcry_thread_option		NEW
+GCRY_THREAD_OPTION_PTH_IMPL	NEW
+GCRY_THREAD_OPTION_PTHREAD_IMPL	NEW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Noteworthy changes in version 1.1.93 (2004-03-06)
+-------------------------------------------------
+
+ * The automatic thread library detection has finally been removed.
+   From now on, only linking explicitely to libgcrypt, libgcrypt-pth
+   or libgcrypt-pthread is supported.
+
+Noteworthy changes in version 1.1.92 (2004-02-20)
+-------------------------------------------------
+
+ * Minor bug fixes.
+
+ * Included a limited implementation of RFC2268.
+
+ * Changed API of the gcry_ac_ functions.  Only a very few programs
+   should be affected by this.
+
+ * Interface changes relative to the 1.1.91 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+GCRY_CIPHER_RFC2268_40          NEW.
+gcry_ac_data_set                CHANGED: New argument FLAGS.
+gcry_ac_data_get_name           CHANGED: New argument FLAGS.
+gcry_ac_data_get_index          CHANGED: New argument FLAGS.
+gcry_ac_key_pair_generate       CHANGED: New and reordered arguments.
+gcry_ac_key_test                CHANGED: New argument HANDLE.
+gcry_ac_key_get_nbits           CHANGED: New argument HANDLE.
+gcry_ac_key_get_grip            CHANGED: New argument HANDLE.
+gcry_ac_data_search             REMOVED.
+gcry_ac_data_add                REMOVED.
+GCRY_AC_DATA_FLAG_NO_BLINDING   REMOVED.
+GCRY_AC_FLAG_NO_BLINDING        NEW: Replaces above.
+
+
+Noteworthy changes in version 1.1.91 (2003-12-19)
+-------------------------------------------------
+
+ * Code cleanups and minor bug fixes.
+
+
+Noteworthy changes in version 1.1.90 (2003-11-14)
+-------------------------------------------------
+
+ * The use of the GCRY_WEAK_RANDOM level is now deprecated in favor of
+   the new gcry_create_nonce function.
+
+ * gcry_sexp_build now supports a "%b" format to include a memory buffer.
+
+ * Minor configuration fixes.
+
+ * Interface changes relative to the 1.1.44 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gcry_create_nonce               NEW
+gcry_sexp_build                 ENHANCED
+
+
+Noteworthy changes in version 1.1.44 (2003-10-31)
+-------------------------------------------------
+
+ * Bug fixes and more code cleanups.
+
+ * Enhanced the prime API.
+
+ * Interface changes relative to the 1.1.43 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gcry_prime_group_generator      NEW
+gcry_prime_release_factors      NEW
+
+
+Noteworthy changes in version 1.1.43 (2003-09-04)
+-------------------------------------------------
+
+ * Bug fixes and internal code cleanups.
+
+ * Support for the Serpent cipher algorithm.
+
+ * Interface changes relative to the 1.1.42 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gcry_prime_generate             NEW
+gcry_prime_check                NEW
+
+
+Noteworthy changes in version 1.1.42 (2003-07-31)
+-------------------------------------------------
+
+ * Major API cleanup.  Applications need to be converted to the new
+   API.  See README.apichanges for hints on how to do that.  Backward
+   compatibility is provided where it was possible without too much
+   effort and did not collide with the overall sanitization effort.
+   However, this is only for ease of transition.  NO DEPRECATED
+   FUNCTION OR DATA TYPE IS CONSIDERED A PART OF THE API OR ABI AND
+   WILL BE DROPPED IN THE FUTURE WITHOUT CHANGING THE SONAME OF THE
+   LIBRARY.
+
+ * If gcrypt.h is included in sources compiled by GCC 3.1 or later,
+   deprecated attributes will warn about use of obsolete functions and
+   type definitions.  You can suppress these warnings by passing
+   -Wno-deprecated-declarations to the gcc command.
+
+ * gcry_check_version must be called from now on to initialize the
+   library, it is not longer optional.
+
+ * Removed `libgcrypt errno' concept.
+
+ * Libgcrypt depends on libgpg-error, a library that provides error
+   codes and according functions for all GnuPG components.  Functions
+   that used to return error codes asa `int' have been changed to
+   return a code of type `gcry_error_t'.  All GCRYERR_* error symbols
+   have been removed, since they are now contained in libgpg-error
+   (GPG_ERR_*). All functions and types in libgpg-error have also been
+   wrapped in Libgcrypt. The new types are gcry_err_code_t and
+   gcry_err_source_t.  The new functions are gcry_err_code,
+   gcry_err_source, gcry_error, gcry_err_make, gcry_error_from_errno,
+   gcry_err_make_from_errno, gcry_err_code_from_errno,
+   gcry_err_code_to_errno, gcry_strsource.
+
+ * New function gcry_mpi_dump to help in debugging.
+
+ * Added alternative interface for asymmetric cryptography.
+
+ * CRC-32, CRC-32 a'la RFC 1510, CRC-24 a'la RFC 2440 are now
+   supported.
+
+ * SHA-256, SHA-384 and SHA-512 are now supported.
+
+ * 128 bit Twofish is now supported.
+
+ * The random module won't print the "not enough random bytes
+   available" anymore.  A new progress status is issued instead.
+
+ * CBC-MAC for block ciphers is now supported, by using a
+   GCRY_CIPHER_CBC_MAC cipher flag.
+
+ * CTR mode for block ciphers is now supported.
+
+ * The public RSA exponent can now be specified in key generation.
+
+ * RSA blinding is now supported and is used automatically for RSA
+   decryption.  It can be explicitely disabled by using the
+   `no-blinding' symbol in the `flags' S-Expression or by using the
+   GCRY_AC_FLAG_DATA_NO_BLINDING flag when using the ac interface.
+
+ * gcry_sexp_canon_len does not use a `historically encoded' error
+   code anymore.
+
+
+ * Interface changes relative to the 1.1.12 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+GCRY_MPI			DEPRECATED; Use: gcry_mpi_t
+GcryMPI				DEPRECATED; Use: gcry_mpi_t
+GCRY_SEXP			DEPRECATED; Use: gcry_sexp_t
+GcrySexp			DEPRECATED; Use: gcry_sexp_t
+GCRY_CIPHER_HD			DEPRECATED; Use: gcry_cipher_hd_t
+GcryCipherHd			DEPRECATED; Use: gcry_cipher_hd_t
+GCRY_MD_HD			DEPRECATED; Use: gcry_md_hd_t
+GcryMDHd			DEPRECATED; Use: gcry_md_hd_t
+gcry_error_t			NEW
+gcry_err_code_t			NEW
+gcry_err_source_t		NEW
+gcry_err_make			NEW
+gcry_error			NEW
+gcry_err_code			NEW
+gcry_err_source			NEW
+gcry_err_code_from_errno	NEW
+gcry_err_code_to_errno		NEW
+gcry_err_make_from_errno	NEW
+gcry_error_from_errno		NEW
+gcry_strsource			NEW
+GCRYERR_{some error code}	REMOVED; Use GPG_ERR_*
+                                         from libgpg-error instead.
+gcry_errno                      REMOVED
+gcry_sexp_canon_len		CHANGED
+gcry_sexp_build_array		NEW
+gcry_mpi_scan			CHANGED: New argument to separate in/out args.
+gcry_mpi_print			CHANGED: Ditto.
+gcry_mpi_dump			NEW
+gcry_cipher_open		CHANGED
+gcry_cipher_reset		NEW
+gcry_cipher_register		NEW
+gcry_cipher_unregister		NEW
+gcry_cipher_list		NEW
+gcry_cipher_algo_keylen		REPLACED macro with function.
+gcry_cipher_algo_blklen		REPLACED macro with function.
+gcry_pk_register		NEW
+gcry_pk_unregister		NEW
+gcry_pk_list			NEW
+gcry_pk_decrypt			ENHANCED: Allows flag to return
+                                          complete S-expression.
+gcry_md_open			CHANGED
+gcry_md_copy			CHANGED
+gcry_md_is_enabled		NEW
+gcry_md_is_secure		NEW
+gcry_md_register		NEW
+gcry_md_unregister		NEW
+gcry_md_list			NEW
+gcry_ac_data_t			NEW
+gcry_ac_key_t			NEW
+gcry_ac_key_pair_t		NEW
+gcry_ac_handle_t		NEW
+gcry_ac_key_spec_rsa_t		NEW
+gcry_ac_data_new		NEW
+gcry_ac_data_destroy		NEW
+gcry_ac_data_set		NEW
+gcry_ac_data_copy		NEW
+gcry_ac_data_length		NEW
+gcry_ac_data_get_name		NEW
+gcry_ac_data_get_index		NEW
+gcry_ac_data_clear		NEW
+gcry_ac_open			NEW
+gcry_ac_close			NEW
+gcry_ac_key_init		NEW
+gcry_ac_key_pair_generate	NEW
+gcry_ac_key_pair_extract	NEW
+gcry_ac_key_data_get		NEW
+gcry_ac_key_test		NEW
+gcry_ac_key_get_nbits		NEW
+gcry_ac_key_get_grip		NEW
+gcry_ac_key_destroy		NEW
+gcry_ac_key_pair_destroy	NEW
+gcry_ac_data_encrypt		NEW
+gcry_ac_data_decrypt		NEW
+gcry_ac_data_sign		NEW
+gcry_ac_data_verify		NEW
+gcry_ac_id_to_name		NEW
+gcry_ac_name_to_id		NEW
+gcry_handler_progress_t		NEW
+gcry_handler_alloc_t		NEW
+gcry_handler_secure_check_t	NEW
+gcry_handle_realloc_t		NEW
+gcry_handler_free_t		NEW
+gcry_handler_no_mem_t		NEW
+gcry_handler_error_t		NEW
+gcry_handler_log_t		NEW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Noteworthy changes in version 1.1.12 (2003-01-20)
+-------------------------------------------------
+
+ * gcry_pk_sign, gcry_pk_verify and gcry_pk_encrypt can now handle an
+   optional pkcs1 flags parameter in the S-expression.  A similar flag
+   may be passed to gcry_pk_decrypt but it is only syntactically
+   implemented.
+
+ * New convenience macro gcry_md_get_asnoid.
+
+ * There is now some real stuff in the manual.
+
+
+Noteworthy changes in version 1.1.11 (2002-12-21)
+-------------------------------------------------
+
+ * Don't export internal symbols anymore (currently only for GNU systems)
+
+ * New algorithm: MD4
+
+ * Implemented ciphertext stealing.
+
+ * Smaller bugs fixes and a few new OIDs.
+
+ * Interface changes relative to the 1.1.8 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gcry_cipher_cts                   NEW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Noteworthy changes in version 1.1.10 (2002-09-20)
+-------------------------------------------------
+
+ * Fixed shared library builds for i386, PPC and Sparc.
+
+ * Added simple benchmark tool.
+
+ * Replaced the internal mutexes by code which automatically adapts to
+   the used threading library.  Currently Pth and Pthread are
+   supported.  For non-ELF systems the GNU toolchain is now required..
+
+ * Added untested support to build Windows DLLs.
+
+Noteworthy changes in version 1.1.9 (2002-08-23)
+------------------------------------------------
+
+ * Support for plain old DES.
+
+
+Noteworthy changes in version 1.1.8 (2002-06-25)
+------------------------------------------------
+
+ * Minor cleanups and exported a few new functions.
+
+ * Interface changes relative to the 1.1.7 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gcry_mpi_div                      NEW
+gcry_mpi_mod                      NEW
+gcry_mpi_invm                     NEW
+gcry_mpi_swap                     NEW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Noteworthy changes in version 1.1.7 (2002-05-21)
+------------------------------------------------
+
+* Libgcrypt is now distributed under the terms of the GNU Lesser
+  General Public License; see the README file for details.
+
+* It is possible to use libgcrypt w/o intialized secure memory.
+
+* Libgcrypt should now be thread safe after the initialization.
+  gcry_control (GCRYCRL_INITIALIZATION_FINISHED,NULL,0) should have
+  been called before creating additional threads.
+
+ * Interface changes relative to the 1.1.6 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+GCRYCTL_DISABLE_INTERNAL_LOCKING  NEW
+GCRYCTL_DISABLE_SECMEM            NEW
+GCRYCTL_INITIALIZATION_FINISHED   NEW
+GCRYCTL_INITIALIZATION_FINISHED_P NEW
+GCRYCTL_ANY_INITIALIZATION_P      NEW
+gcry_strdup                       NEW
+gcry_sexp_create                  NEW
+gcry_sexp_new                     NEW
+gcry_set_progress_handler         NEW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Noteworthy changes in version 1.1.6 (2002-02-07)
+------------------------------------------------
+
+  * Enhanced the S-expression conversion functions.
+
+Noteworthy changes in version 1.1.5 (2001-12-18)
+------------------------------------------------
+
+  * gcry_{cipher,md}_map_name are now able to map stringified object IDs.
+
+  * New functions gcry_sexp_canon_len and gcry_cipher_mode_from_oid.
+
+  * Closed some memory leaks.
+
+
+Noteworthy changes in version 1.1.4 (2001-08-03)
+------------------------------------------------
+
+  * Arcfour does now work.
+
+  * Some minor fixes.
+
+  * Added a first test program
+
+  * Migrated to autoconf 2.52.
+
+
+Noteworthy changes in version 1.1.3 (2001-05-31)
+------------------------------------------------
+
+  * First release of Libgcrypt which is a result of splitting GnuPG
+    into into libgcrypt and GnuPG.
+
+
+Copyright 2001, 2002, 2003, 2004, 2007, 2008,
+          2009, 2011 Free Software Foundation, Inc.
+Copyright 2013 g10 Code GmbH
+
+This file is free software; as a special exception the author gives
+unlimited permission to copy and/or distribute it, with or without
+modifications, as long as this notice is preserved.
+
+This file is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.

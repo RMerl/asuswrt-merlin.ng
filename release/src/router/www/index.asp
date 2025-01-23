@@ -26,7 +26,7 @@
 	display:block;
 	margin-left: 23%;
 	top: 15%;
-	width:495px;
+	width:575px;
 	height:auto;
 	box-shadow: 3px 3px 10px #000;
 	display: none;
@@ -102,6 +102,30 @@
 	background-image: url("data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAF92lUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNi4wLWMwMDYgNzkuMTY0NjQ4LCAyMDIxLzAxLzEyLTE1OjUyOjI5ICAgICAgICAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIiB4bWxuczpzdEV2dD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL3NUeXBlL1Jlc291cmNlRXZlbnQjIiB4bWxuczpkYz0iaHR0cDovL3B1cmwub3JnL2RjL2VsZW1lbnRzLzEuMS8iIHhtbG5zOnBob3Rvc2hvcD0iaHR0cDovL25zLmFkb2JlLmNvbS9waG90b3Nob3AvMS4wLyIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgMjIuMiAoTWFjaW50b3NoKSIgeG1wOkNyZWF0ZURhdGU9IjIwMjEtMDgtMDRUMTU6MTQ6NDArMDg6MDAiIHhtcDpNZXRhZGF0YURhdGU9IjIwMjEtMDgtMDRUMTU6MTQ6NDArMDg6MDAiIHhtcDpNb2RpZnlEYXRlPSIyMDIxLTA4LTA0VDE1OjE0OjQwKzA4OjAwIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOmYwOTZmYjFhLTY3ZDktNDkyZS1hNDk5LTdiZjUwMGU0NWNlMCIgeG1wTU06RG9jdW1lbnRJRD0iYWRvYmU6ZG9jaWQ6cGhvdG9zaG9wOmYzNDJlYWZiLTA3YmItMWI0NS05ZWI4LTY3ODExYjcxODg3MSIgeG1wTU06T3JpZ2luYWxEb2N1bWVudElEPSJ4bXAuZGlkOmEwODg4MWYwLTEwYWQtNGI4OC04MTFmLWIyZWQ3ZWVkZjliMCIgZGM6Zm9ybWF0PSJpbWFnZS9wbmciIHBob3Rvc2hvcDpDb2xvck1vZGU9IjMiIHBob3Rvc2hvcDpJQ0NQcm9maWxlPSJzUkdCIElFQzYxOTY2LTIuMSI+IDx4bXBNTTpIaXN0b3J5PiA8cmRmOlNlcT4gPHJkZjpsaSBzdEV2dDphY3Rpb249ImNyZWF0ZWQiIHN0RXZ0Omluc3RhbmNlSUQ9InhtcC5paWQ6YTA4ODgxZjAtMTBhZC00Yjg4LTgxMWYtYjJlZDdlZWRmOWIwIiBzdEV2dDp3aGVuPSIyMDIxLTA4LTA0VDE1OjE0OjQwKzA4OjAwIiBzdEV2dDpzb2Z0d2FyZUFnZW50PSJBZG9iZSBQaG90b3Nob3AgMjIuMiAoTWFjaW50b3NoKSIvPiA8cmRmOmxpIHN0RXZ0OmFjdGlvbj0ic2F2ZWQiIHN0RXZ0Omluc3RhbmNlSUQ9InhtcC5paWQ6ZjA5NmZiMWEtNjdkOS00OTJlLWE0OTktN2JmNTAwZTQ1Y2UwIiBzdEV2dDp3aGVuPSIyMDIxLTA4LTA0VDE1OjE0OjQwKzA4OjAwIiBzdEV2dDpzb2Z0d2FyZUFnZW50PSJBZG9iZSBQaG90b3Nob3AgMjIuMiAoTWFjaW50b3NoKSIgc3RFdnQ6Y2hhbmdlZD0iLyIvPiA8L3JkZjpTZXE+IDwveG1wTU06SGlzdG9yeT4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz5gqlrZAAABEklEQVQ4jYWRsU4CQRRF7yCJ2hAKQ2Vpb0UDVnRE/4ZCWwsTwgf4CTRbQkGDf7MJLYSwwWKPBYNel2W41e688+7ceS/ojIAbSfeSSkl5CGF/jq02DoAF8M2f9sAM6Kcam8AnlzUBGnUG3rwCRkAPeALegNzq47rYrh0wqDAtYGlM14sLu3mXMGlHBiD7nbYNbBTTpEzeY217PHiwWD17Uq0JMDS+09Bhz0c1JCmE8CXpRVIh6VbS3Ex8A6WAaw57BnitGe6/JMBH/F87OIuHOdBKmBTAJn5PHerbu5ZAu8akMKYEHlWBJgas4rSHwHOMvbF6pqqAK2BMWiWQAc0TAzPqRmhrjWtgehL7koAOcJdifgCrvyzQ8BT7EAAAAABJRU5ErkJggg==");
 }
 
+i.icon-clone {
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-size: 100%;
+	mask-size: 100%;
+	-webkit-mask-image: url(/images/clone.svg);
+	mask-image: url(/images/clone.svg);
+	height: 20px;
+	width: 20px;
+	display: inline-block;
+}
+
+.icon-group-center {
+	display: inline-flex;
+	align-items: center;
+}
+
+.icon-clone{
+    background: #c0c0c0!important;
+}
+.icon-clone:hover{
+    background: #FFFFFF!important;
+}
+
 .tooltip {
   position: relative;
   display: inline-block;
@@ -134,19 +158,18 @@
 }
 
 </style>
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/md5.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/disk_functions.js"></script>
 <script language="JavaScript" type="text/javascript" src="/form.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
 <script>
 //if(usb_support) addNewScript("/disk_functions.js");
 
@@ -217,6 +240,7 @@ if(gobi_support) {
 }
 
 var wans_flag = (wans_dualwan_orig.search("none") != -1 || !parent.dualWAN_support) ? 0 : 1;
+var wan_ipv6_network_json =('<% wan_ipv6_network(); %>' != '{}')? JSON.parse('<% wan_ipv6_network(); %>'):{};
 
 // USB function
 var currentUsbPort = new Number();
@@ -405,22 +429,24 @@ function initial(){
 			else
 				document.getElementById('rssi_div').style.display = "";
 				
-			if(wlc_band == 0){
-				document.getElementById('wlc_band_status').innerHTML = "2.4 GHz"; 
-			}
-			else{
-				if(band6g_support && wlc_band == '2'){
-					document.getElementById('wlc_band_status').innerHTML = "6 GHz";
-				}
-				else{
-					document.getElementById('wlc_band_status').innerHTML = "5 GHz";
-				}				
-			}
+			document.getElementById('wlc_band_status').innerHTML = wl_nband_title[wlc_band]; 
 		}
 		document.getElementById('NM_connect_title').innerHTML = "<#parent_AP_status#> :";
 	}
 	else{
-		document.getElementById("index_status").innerHTML = '<span style="word-break:break-all;">' + wanlink_ipaddr + '</span>'
+		document.getElementById("index_status").innerHTML = '<span style="word-break:break-all;">' + wanlink_ipaddr + '</span>';
+
+		if(is_CH_sku && wan_ipv6_network_json.status != "0" && wan_ipv6_network_json.IPv6_Address != ""){
+			document.getElementById("wanIP_ipv6_div").style.display = "";
+			document.getElementById("index_ipv6_status").style.display = "";
+			document.getElementById("index_ipv6_status").innerHTML += '<span style="word-break:break-all;">' + wan_ipv6_network_json.IPv6_Address + '</span>';
+		}
+		if(is_CH_sku && wan_ipv6_network_json.status != "0" && wan_ipv6_network_json.Link_Local_Address != ""){
+			document.getElementById("wanIP_ipv6_div").style.display = "";
+			document.getElementById("index_ipv6_ll_status").style.display = "";
+			document.getElementById("index_ipv6_ll_status").innerHTML += '<span style="word-break:break-all;">' + wan_ipv6_network_json.Link_Local_Address + '</span>';
+		}
+		
 		setTimeout("show_ddns_status();", 1);
 		
 		if(wanlink_ipaddr == '0.0.0.0' || wanlink_ipaddr == '')
@@ -495,7 +521,6 @@ function initial(){
 	}
 
 	orig_NM_container_height = parseInt($(".NM_radius_bottom_container").css("height"));
-	setTimeout(check_eula, 100);
 
 	if(!downsize_4m_support){
 		custom_icon_list_api.paramObj.container = $(".custom_icon_list_bg");
@@ -524,22 +549,7 @@ function initial(){
 	}
 }
 
-function check_eula(){
-	ASUS_EULA.config(check_eula, check_eula);
 
-	var asus_status = httpApi.nvramGet(["ASUS_EULA", "ASUS_EULA_time", "ddns_enable_x", "ddns_server_x"], true);
-	if( (asus_status.ASUS_EULA == "1" && asus_status.ASUS_EULA_time == "") ||
-		(asus_status.ASUS_EULA != "1" && asus_status.ddns_enable_x == "1" && asus_status.ddns_server_x == "WWW.ASUS.COM") ){
-		ASUS_EULA.check("asus");
-		return false;
-	}
-
-	var tm_status = httpApi.nvramGet(["TM_EULA", "TM_EULA_time"], true);
-	if(tm_status.TM_EULA == "1" &&  tm_status.TM_EULA_time == ""){
-		ASUS_EULA.check("tm");
-		return false;
-	}
-}
 
 function show_smart_connect_status(){
 	document.getElementById("SmartConnectName").style.display = "";
@@ -1717,10 +1727,16 @@ function popupEditBlock(clientObj){
 		document.getElementById('client_name').value = clientName;
 		document.getElementById('ipaddr_field_orig').value = clientObj.ip;
 		document.getElementById('ipaddr_field').value = clientObj.ip;
-
 		document.getElementById('hostname_field').value = clientObj.hostname;
-
+        document.getElementById('ip6addr_field').value = clientObj.ip6;
+        document.getElementById('ip6addr_prefix_field').value = clientObj.ip6_prefix;
 		document.getElementById('ipaddr_field').disabled = true;
+        if (clientObj.ip6 == '' || clientObj.ip6 == undefined) {
+            document.getElementById('ip6addr_field').parentNode.parentNode.style.display = "none";
+        }
+        if (clientObj.ip6_prefix == '' || clientObj.ip6_prefix == undefined) {
+            document.getElementById('ip6addr_prefix_field').parentNode.parentNode.style.display = "none";
+        }
 		$("#ipaddr_field").addClass("client_input_text_disabled");
 		if(sw_mode == "1" && !clientObj.amesh_isRe) {
 			$("#ipaddr_field").removeClass("client_input_text_disabled");
@@ -1758,13 +1774,15 @@ function popupEditBlock(clientObj){
 		}
 	
 		var setRadioIPBinding = function (state, mode, mac) {
+			const manually_dhcp_maximum  = (isSupport("MaxRule_extend_limit") == 0) ? 64: isSupport("MaxRule_extend_limit");
+			const parentctrl_maximum = (isSupport("MaxRule_parentctrl") == 0) ? 16 : isSupport("MaxRule_parentctrl");
 			switch (mode) {
 				case "ipBinding" :
 					$('#radio_IPBinding_enable').iphoneSwitch(state,
 						function(){
 							if(dhcp_staticlist_orig.search(mac) == -1) {
-								if(dhcp_staticlist_num == 64) {
-									if(confirm("The max limit is 64 rule. Please check your client list on DHCP server.")) { /*untranslated*/
+								if(dhcp_staticlist_num >= manually_dhcp_maximum) {
+									if(confirm(stringSafeGet("<#Clientlist_IPMAC_Binding_max#>".replace("64", manually_dhcp_maximum)))) {
 										location.href = "Advanced_DHCP_Content.asp" ;
 									}
 									else {
@@ -1787,8 +1805,8 @@ function popupEditBlock(clientObj){
 					$('#radio_BlockInternet_enable').iphoneSwitch(state,
 						function(){
 							if(MULTIFILTER_MAC_orig.search(mac) == -1) {
-								if(MULTIFILTER_num == 16) {
-									if(confirm("The max limit is 16 clients. Please check your client list on time scheduling.")) { /*untranslated*/
+								if(MULTIFILTER_num >= parentctrl_maximum) {
+									if(confirm(stringSafeGet("<#Clientlist_block_internet_max#>".replace("16", parentctrl_maximum)))) {
 										location.href = "ParentalControl.asp" ;
 									}
 									else {
@@ -1811,8 +1829,8 @@ function popupEditBlock(clientObj){
 					$('#radio_TimeScheduling_enable').iphoneSwitch(state,
 						function(){
 							if(MULTIFILTER_MAC_orig.search(mac) == -1) {
-								if(MULTIFILTER_num == 16) {
-									if(confirm("The max limit is 16 clients. Please check your client list on time scheduling.")) { /*untranslated*/
+								if(MULTIFILTER_num >= parentctrl_maximum) {
+									if(confirm(stringSafeGet("<#Clientlist_block_internet_max#>".replace("16", parentctrl_maximum)))) {
 										location.href = "ParentalControl.asp" ;
 									}
 									else {
@@ -1973,15 +1991,15 @@ function addToBlockMacList(macAddr){
 		if(timeSchedulingFlag || blockInternetFlag) {
 			if(document.list_form.MULTIFILTER_MAC.value == "") {
 				if(timeSchedulingFlag)
-					document.list_form.MULTIFILTER_ENABLE.value += "1";
+					document.list_form.MULTIFILTER_ENABLE.value = "1";
 				else if(blockInternetFlag)
-					document.list_form.MULTIFILTER_ENABLE.value += "2";
-				document.list_form.MULTIFILTER_MAC.value += macAddr;
-				document.list_form.MULTIFILTER_DEVICENAME.value += document.getElementById("client_name").value.trim();
+					document.list_form.MULTIFILTER_ENABLE.value = "2";
+				document.list_form.MULTIFILTER_MAC.value = macAddr;
+				document.list_form.MULTIFILTER_DEVICENAME.value = document.getElementById("client_name").value.trim();
 				if(isSupport("PC_SCHED_V3"))
-					document.list_form.MULTIFILTER_MACFILTER_DAYTIME_V2.value += "W03E21000700<W04122000800";
+					document.list_form.MULTIFILTER_MACFILTER_DAYTIME_V2.value = "W03E21000700<W04122000800";
 				else
-					document.list_form.MULTIFILTER_MACFILTER_DAYTIME.value += "<";
+					document.list_form.MULTIFILTER_MACFILTER_DAYTIME.value = "<";
 			}
 			else {
 				document.list_form.MULTIFILTER_ENABLE.value += ">";
@@ -2419,35 +2437,57 @@ function copyDdnsName(e) {
 				</div>
 			</td>
 			<td style="vertical-align:top;text-align:center;">
-				<div class="clientTitle">
-					<#Clientlist_name#>
-				</div>
-				<div  class="clientTitle" style="margin-top:10px;">
-					IP
-				</div>
-				<div  class="clientTitle" style="margin-top:10px;">
-					MAC
-				</div>
-				<div  class="clientTitle" style="margin-top:10px;">
-					<#Clientlist_device#>
-				</div>
-			</td>
-			<td style="vertical-align:top;width:280px;">
-				<div>	
-					<input id="client_name" name="client_name" type="text" value="" class="input_32_table" maxlength="32" style="width:275px;" autocorrect="off" autocapitalize="off">
-					<input id="hostname_field" type="hidden" value="">
-				</div>
-				<div style="margin-top:10px;">				
-					<input id="ipaddr_field_orig" type="hidden" value="" disabled="">
-					<input id="ipaddr_field" type="text" value="" class="input_32_table" style="width:275px;" onkeypress="return validator.isIPAddr(this,event)" autocorrect="off" autocapitalize="off">
-				</div>
-					
-				<div style="margin-top:10px;">
-					<input id="macaddr_field" type="text" value="" class="input_32_table client_input_text_disabled" disabled autocorrect="off" autocapitalize="off">
-				</div>
-				<div style="margin-top:10px;">
-					<input id="manufacturer_field" type="text" value="" class="input_32_table client_input_text_disabled" disabled>
-				</div>
+				<div style="display: flex; flex-direction: column; gap:10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="clientTitle">
+                          <#Clientlist_name#>
+                        </div>
+                        <div>
+                            <input id="client_name" name="client_name" type="text" value="" class="input_32_table" maxlength="32" style="width:290px;" autocorrect="off" autocapitalize="off">
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="clientTitle">
+                          IP
+                        </div>
+                        <div>
+                            <input id="ipaddr_field_orig" type="hidden" value="" disabled="">
+                            <input id="ipaddr_field" type="text" value="" class="input_32_table" style="width:290px;" onkeypress="return validator.isIPAddr(this,event)" autocorrect="off" autocapitalize="off">
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="clientTitle">
+                          <#IPv6_wan_addr#>
+                        </div>
+                        <div>
+                            <input id="ip6addr_prefix_field" type="text" value="" class="input_32_table client_input_text_disabled" disabled autocorrect="off" autocapitalize="off">
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="clientTitle">
+                          WAN IPv6 Link-Local
+                        </div>
+                        <div>
+                            <input id="ip6addr_field" type="text" value="" class="input_32_table client_input_text_disabled" disabled autocorrect="off" autocapitalize="off">
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="clientTitle">
+                          MAC
+                        </div>
+                        <div>
+                            <input id="macaddr_field" type="text" value="" class="input_32_table client_input_text_disabled" disabled autocorrect="off" autocapitalize="off">
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="clientTitle">
+                          <#Clientlist_device#>
+                        </div>
+                        <div>
+                            <input id="manufacturer_field" type="text" value="" class="input_32_table client_input_text_disabled" disabled>
+                        </div>
+                    </div>
+                </div>
 			</td>
 		</tr>
 
@@ -2505,6 +2545,7 @@ function copyDdnsName(e) {
 
 						return wl0_maclist_x_array.join("<");
 					})();
+
 
 					document.getElementById("blockBtn").onclick = function(){
 						document.maclist_form.wl0_maclist_x.value = document.maclist_form.wl0_maclist_x.value + "<" + document.getElementById("macaddr_field").value;
@@ -2580,13 +2621,18 @@ function copyDdnsName(e) {
 							<span style="font-size:12px;font-family: Verdana, Arial, Helvetica, sans-serif;">WAN IP:</span>
 							<strong id="index_status" class="index_status" style="font-size:14px;"></strong>
 						</div>
+						<div id="wanIP_ipv6_div" style="margin-top:5px;display:none;">
+							<span style="font-size:12px;font-family: Verdana, Arial, Helvetica, sans-serif;"><#IPv6_wan_addr#>:</span><br>
+							<strong id="index_ipv6_status" class="index_status" style="font-size:11px;display:none;"></strong><br>
+							<strong id="index_ipv6_ll_status" class="index_status" style="font-size:11px;display:none;"></strong>
+						</div>
 						<div id="ddnsHostName_div" style="margin-top:5px;word-break:break-all;word-wrap:break-word;width:180px; display: inline-flex; align-items: center; gap: 3px; flex-direction: row; flex-wrap: wrap;">
 							<span style="font-size:12px;font-family: Verdana, Arial, Helvetica, sans-serif;">DDNS:</span>
 							<strong id="ddnsHostName" class="index_status" style="font-size:14px;"><#QIS_detectWAN_desc2#></strong>
 							<div class="icon-group-center">
                                 <div id="copyDdns" class="tooltip"><a onClick="copyDdnsName(this)" data-toggle="tooltip" data-title="Copied!"><i class="icon-copy"></i></a></div>
                                 <span id="ddns_fail_hint" class="notificationoff" onClick="show_ddns_fail_hint();" onMouseOut="nd();"></span>
-                                <span><img id="le_icon" src="images/New_ui/networkmap/LE_badge_color.svg" style="width:25px; height:25px;"></span>
+                                <span><img id="le_icon" title="Let's Encrypt" src="images/New_ui/networkmap/LE_badge_color.svg" style="width:25px; height:25px;"></span>
 							</div>
 						</div>
 						<div id="wlc_band_div" style="margin-top:5px;display:none">
@@ -2633,7 +2679,6 @@ function copyDdnsName(e) {
 						<strong id="SmartConnectStatus" class="index_status" style="font-size:14px; display:none"><a style="color:#FFF;text-decoration:underline;" href="/
 						Advanced_Wireless_Content.asp">On</a></strong>
 						</div>
-
 						<div id="wlSecurityContext">
 							<span style="font-size:14px;font-family: Verdana, Arial, Helvetica, sans-serif;"><#Security_Level#>: </span>
 							<br/>  
@@ -2716,16 +2761,41 @@ function copyDdnsName(e) {
 						<script>
 							(function(){
 								setTimeout(function(){
-									document.getElementById("statusframe").src = "/device-map/router_status.asp";	
+									document.getElementById("statusframe").src = "/device-map/router_status.asp";
+									const get_header_info = httpApi.hookGet("get_header_info");
+									const domain = `${get_header_info.protocol}://${get_header_info.host}`;
+									const domain_w_port = `${get_header_info.protocol}://${get_header_info.host}:${get_header_info.port}`;
+
+									let messageTimeout;
+									messageTimeout = setTimeout(() => {
+										document.getElementById("statusframe").src = "/device-map/router_status.asp";
+									}, 5000);
+
+									window.addEventListener('message', function(event){
+										if(event.data == `router_status.asp`){
+											const has_port = /:\d+$/.test(event.origin);
+											if(has_port){
+												if(event.origin !== domain_w_port){
+													return;
+												}
+											}
+											else{
+												if(event.origin !== domain){
+													return;
+												}
+											}
+											clearTimeout(messageTimeout);
+											$("#statusframe").show()
+												.off('load').on("load", function(){
+													const $statusframe = $(this);
+													$statusframe.show();
+													$statusframe[0].contentWindow.onbeforeunload = function(){
+														$statusframe.hide();
+													};
+												});
+										}
+									});
 								}, 1);
-								
-								var $iframe = $("#statusframe");
-								$iframe.on("load", function(){
-									$iframe.show();
-									document.getElementById("statusframe").contentWindow.onbeforeunload = function(){
-										$iframe.hide();
-									};
-								});
 							})()
 						</script>
 

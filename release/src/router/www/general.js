@@ -337,18 +337,18 @@ function change_common_radio(o, s, v, r){
 				}
 				showhide("wildcard_field",0);
 			}else{
-				if(is_CN && ddns_server_x == ""){
-					$("#ddns_server_x").val("WWW.ASUS.COM.CN");
-				}
-				else if(document.form.ddns_server_x.value == "WWW.ORAY.COM"){
+				if(document.form.ddns_server_x.value == "WWW.ORAY.COM"){
 					if(ddns_updated == "1")
 						document.getElementById("ddns_hostname_info_tr").style.display = "";
 				}
 				else
 					document.form.ddns_hostname_x.parentNode.parentNode.parentNode.style.display = "";
-				inputCtrl(document.form.ddns_username_x, 1);
-				inputCtrl(document.form.ddns_passwd_x, 1);
-				showhide("wildcard_field",1);
+
+				if(document.form.ddns_server_x.value !== ""){
+					inputCtrl(document.form.ddns_username_x, 1);
+					inputCtrl(document.form.ddns_passwd_x, 1);
+					showhide("wildcard_field",1);
+				}
 			}
 
 			change_ddns_setting(document.form.ddns_server_x.value);
@@ -374,7 +374,7 @@ function change_common_radio(o, s, v, r){
 			inputCtrl(document.form.ddns_regular_period, 0);
 			inputCtrl(document.form.ddns_refresh_x, 0);
 			showhide("ddns_ipv6update_tr", 0);
-
+			document.getElementById("ddns_hostname_tr").style.display = "none";
 			document.getElementById("ddns_status_tr").style.display = "none";
 			document.getElementById("ddns_result_tr").style.display = "none";
 		}
@@ -488,6 +488,10 @@ function openLink(s){
 			tourl = "https://www.oray.com/";
 		else if (document.form.ddns_server_x.value == 'DOMAINS.GOOGLE.COM')
 			tourl = "https://domains.google/";
+		else if (document.form.ddns_server_x.value == 'FREEDNS.AFRAID.ORG')
+			tourl = "https://freedns.afraid.org/signup/";
+		else if (document.form.ddns_server_x.value == 'FREEMYIP.COM')
+			tourl = "https://freemyip.com";
 		else	tourl = "";
 		link = window.open(tourl, "DDNSLink","toolbar=yes,location=yes,directories=no,status=yes,menubar=yes,scrollbars=yes,resizable=yes,copyhistory=no,width=640,height=480");
 	}
@@ -726,7 +730,7 @@ function has_dfs_channel(chint){
 }
 
 function filter_5g_channel_by_bw(ch_ary, bw){
-	var del, ary;;
+	var del, ary;
 	if(bw == 160){
 		var ch=[36,100], cnt=[0,0], d = 28, nr_ch=8;
 	}else if(bw == 80){
@@ -756,7 +760,7 @@ function filter_5g_channel_by_bw(ch_ary, bw){
 }
 
 function filter_6g_channel_by_bw(ch_ary, bw){
-	var del, ary;;
+	var del, ary;
 	if(bw == 160){
 		var ch=[33,65,97,129,161,193], cnt=[0,0,0,0,0,0], d = 28, nr_ch=8;
 	}else if(bw == 80){

@@ -182,6 +182,7 @@ a{
 	color: #FFF;
 	background: #007AFF;
 }
+
 .desktop_abortBtn{
 	display: inline-block;
 	max-width: 300px;
@@ -194,6 +195,10 @@ a{
 	border-radius: 35px;
 	color: #007AFF;
 	background: #FFF;
+}
+#asus_pp_eula_scroll {
+	height: 55vh !important;
+	font-size: 1.5em;
 }
 .labelContainer{
 	margin-left: 25px;
@@ -293,9 +298,9 @@ a{
 	font-family:Arial Bold;
 	font-size:1.875em;
 	background-color:rgba(79,79,79,62);
-	padding-left:11px;"	
+	padding-left:11px;"
 }
-#welcome_button{
+.welcome_button{
 	cursor:pointer;
 	width:600px;
 	max-width:600px;
@@ -395,7 +400,7 @@ a{
 .selectBar > label{
 	font-family: HelveticaNeueW10-45Ligh,Helvetica,Arial;
 	font-size: 36px;
-	color: #DBDBDB	
+	color: #DBDBDB
 }
 .icon_logo{
 	width: 130px;
@@ -447,7 +452,7 @@ a{
 	background:url('../../images/Model_product.png') no-repeat;
 	background-size: contain;
 	background-position:center;
-	margin-top:50px;"	
+	margin-top:50px;"
 }
 .appIconContainer{
 	display: table;
@@ -1031,6 +1036,20 @@ a{
 	}
 }
 
+#eulaConfirmInfo {
+	border: 1px solid #ddd;
+	padding: 10px;
+	border-radius: 5px;
+	background-color: unset!important;
+	font-size: 1.2em!important;
+}
+
+#eulaConfirmContainer label {
+	color: #FFFFFF;
+	border: unset!important;
+	font-size: 1.5em;
+}
+
 /*for Desktop*/
 @media screen and (min-aspect-ratio: 11/13){
 	.pageDesc{
@@ -1056,10 +1075,20 @@ a{
 		display:none;
 	}
 	.footer_desktop{
-		display:block;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 		margin-top:50px;
-		height: 120px;
-		max-width:1000px;
+	}
+	#asus_pp_eula_scroll {
+		height: 45vh !important;
+		font-size: 1em;
+	}
+	#eulaConfirmContainer label {
+		font-size: 1em;
+	}
+	#eulaConfirmInfo {
+		font-size: 14px!important;
 	}
 	.desktop_sort{
 		display:table-cell;
@@ -1560,6 +1589,14 @@ a{
 #summary_page{
 	min-height: 750px;
 }
+#summary_page .icon_excl_mark.help{
+	width: 24px;
+	height: 24px;
+	font-size: .7em;
+	cursor: pointer;
+	position: relative;
+	margin-left: 18px;
+}
 #wireless_setting{
 	min-height: 800px;
 }
@@ -1786,4 +1823,113 @@ a{
 .defpass_guideline_container .desc_container{
 	flex-basis: 35%;
 	font-size: 2em;
+}
+#eulaButtonContainer {
+	display: none !important;
+	height: 0px !important;
+}
+
+#asusEulaContainer {
+	color: #FFFFFF;
+}
+
+#eulaPopupButtonContainer{
+	display: flex;
+	flex-direction: row;
+	justify-content: space-around;
+	margin-top: 25px;
+}
+
+#readAgainBtn, #knowRiskBtn{
+	width: 40%;
+	height: 40px;
+	cursor: pointer;
+	border-radius: 35px;
+	color: #007AFF;
+	background: #FFF;
+	border: 1px solid;
+}
+
+#eula_popup_bg {
+	position: absolute;
+	display: flex;
+	height: 100%;
+	width: 100%;
+	z-index: 9;
+	justify-content: center;
+	backdrop-filter: blur(2px);
+}
+#eula_popup_view {
+	z-index: 10;
+	border-radius: .3rem;
+	background-clip: padding-box;
+	width: 40vw;
+	height: min-content;
+	background-color: #FFFFFF;
+	align-items: center;
+	justify-content: center;
+	margin-top: 200px;
+	padding: 30px;
+	box-shadow: 0 0 3px #9E9E9E;
+}
+#eulaButtonContainer {
+	display: none;
+}
+
+@media screen and (max-width: 1000px) {
+	#eula_popup_view {
+		width: 80vw;
+		font-size: 24px;
+	}
+
+}
+
+.desktop_applyBtn.disabled, .desktop_abortBtn.disabled, .mobileApply.disabled, .mobileAbort.disabled {
+	background: #808080;
+	border: 2px	solid #FFFFFF;
+	cursor: not-allowed;
+	color: #FFFFFF;
+}
+.mobileAbort.disabled .mobile_abortBtn{
+	color: #FFFFFF;
+}
+
+@keyframes spinner-two-alt {
+	0% {
+		transform: rotate(0deg)
+	}
+	to {
+		transform: rotate(359deg)
+	}
+}
+
+.gg-spinner-two-alt, .gg-spinner-two-alt::before {
+	box-sizing: border-box;
+	display: block;
+	width: 20px;
+	height: 20px
+}
+
+.gg-spinner-two-alt {
+	transform: scale(1.5);
+	display: inline-block;
+}
+
+.gg-spinner-two-alt::before {
+	content: "";
+	position: absolute;
+	border-radius: 100px;
+	animation: spinner-two-alt 1s cubic-bezier(.6, 0, .4, 1) infinite;
+	border: 3px solid transparent;
+	border-bottom-color: currentColor;
+	border-top-color: currentColor
+}
+.wispMode {
+	display: none;
+}
+.moreBold{
+	font-weight: bolder;
+}
+.qisBackground {
+	height: 100%;
 }

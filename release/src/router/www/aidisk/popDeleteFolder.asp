@@ -8,8 +8,8 @@
 <link rel="icon" href="images/favicon.png">
 <title>Del Folder</title>
 <link rel="stylesheet" href="../form_style.css"  type="text/css">
-<script type="text/javascript" src="../state.js"></script>
 <script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="../state.js"></script>
 <script type="text/javascript">
 <% get_AiDisk_status(); %>
 
@@ -85,7 +85,7 @@ function get_layer_items_test(layer_order_t){
     		url: '/gettree.asp?layer_order='+layer_order_t,
     		dataType: 'script',
     		error: function(xhr){
-    			;
+    			; // No operation
     		},
     		success: function(){
 				delete_flag = treeitems.length;

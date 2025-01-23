@@ -12,10 +12,10 @@
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="app_installation.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/help.js"></script>
-<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/form.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
@@ -718,6 +718,9 @@ function update_applist(e){
 														<tr>
 															<td>
 																<ul style="margin: 0px;padding-left:15px;" >
+																	<li style="margin-top:-5px;">
+																	 <#HTTPS_Redirect_Desc2#>
+																	</li>
 																	<li style="margin-top:-5px;">
 																 	<div id="accessMethod"></div>
 																 	</li>

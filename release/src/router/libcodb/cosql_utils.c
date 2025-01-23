@@ -284,7 +284,7 @@ static char* get_operations_symbol(operation_type_e operation_type)
 static int is_valid_text(const char* input) 
 {
 	int i,len;
-	char whitelist[] = ":.-,=/_ []()%";
+	char whitelist[] = ":.-,=/_ []()%|";
 	char tmp[2] = {0};
 	
 	if(!input) {
@@ -1391,13 +1391,19 @@ int cosql_drop_db(sqlite3* pdb)
 
 int cosql_integrity_check(sqlite3* pdb)
 {
-	int ret = cosql_exec(pdb, "PRAGMA integrity_check");
-	if( ret != COSQL_OK ) {
-		codbg(pdb, "fail to integrity check");
+	char* db_status = cosql_get_text_field(pdb, "PRAGMA integrity_check");
+	if (db_status == NULL) {
 		return COSQL_ERROR;
 	}
 
-	return COSQL_OK;
+	if(!strcmp("ok", db_status))
+	{
+		sqlite3_free(db_status);
+		return COSQL_OK;
+	}
+
+	sqlite3_free(db_status);
+	return COSQL_ERROR;
 }
 
 int cosql_clear_table(sqlite3* pdb) 

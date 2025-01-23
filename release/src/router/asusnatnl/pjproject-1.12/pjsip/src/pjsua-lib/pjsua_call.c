@@ -483,7 +483,8 @@ PJ_DEF(pj_status_t) pjsua_call_make_call( pjsua_inst_id inst_id,
 			return status;
 		PJSUA_LOCK(inst_id);
 	}
-
+	memset(call->inv_state_flow, 0, sizeof(call->inv_state_flow));
+	memset(call->inv_tsx_state_flow, 0, sizeof(call->inv_tsx_state_flow));
 	call->use_sctp = use_sctp;
 	call->med_tp->use_sctp = use_sctp;    // sctp
 	if (call->med_orig)
@@ -3091,6 +3092,7 @@ PJ_DEF(pj_status_t) pjsua_call_dump( pjsua_inst_id inst_id,
 
     PJ_ASSERT_RETURN(call_id>=0 && call_id<(int)pjsua_var[inst_id].ua_cfg.max_calls,
 		     PJ_EINVAL);
+    PJ_ASSERT_RETURN(maxlen > 3, PJ_ETOOSMALL);
 
     status = acquire_call(inst_id, "pjsua_call_dump()", call_id, &call, &dlg);
     if (status != PJ_SUCCESS)
@@ -3103,12 +3105,13 @@ PJ_DEF(pj_status_t) pjsua_call_dump( pjsua_inst_id inst_id,
 
     print_call(inst_id, indent, call_id, tmp, sizeof(tmp));
     
-    len = pj_ansi_strlen(tmp);
-    pj_ansi_strcpy(buffer, tmp);
+    if (len + 3 > maxlen) len = maxlen - 3;
+    pj_ansi_strncpy(buffer, tmp, len);
 
     p += len;
     *p++ = '\r';
     *p++ = '\n';
+    *p = '\0';
 
     /* Calculate call duration */
     if (call->conn_time.sec != 0) {
@@ -3523,7 +3526,7 @@ static void pjsua_call_on_state_changed(pjsip_inv_session *inv,
 				e->body.rx_msg.rdata->msg_info.user_agent->user_agent.slen > 0)
 			{
 				pj_str_t ua_name = pj_str("ASUSNATNL");
-				if (pj_stristr(&e->body.rx_msg.rdata->msg_info.user_agent->user_agent, &ua_name))
+				if (pj_stristr(&e->body.rx_msg.rdata->msg_info.user_agent->user_agent, &ua_name) && call && call->med_tp)
 					call->med_tp->remote_ua_is_sdk = 1;
 			}
 		}

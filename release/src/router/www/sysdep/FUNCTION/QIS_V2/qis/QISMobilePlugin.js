@@ -54,6 +54,7 @@ function genErrorHint(){
 } 
 
 if(parent.ISMOBILE){
+	//
 }
 else{
 	var cssNode = document.createElement('link');
@@ -71,6 +72,7 @@ function changeiuiBackground(loading){
 		document.getElementById("loadingIcon_iui").style.marginRight = '5px';
 	}
 	else{
+		//
 	}
 }
 
@@ -82,6 +84,7 @@ function changeiuiBackground2(obj,loading){
 		document.getElementById(obj).style.marginRight = '5px';
 	}
 	else{
+		//
 	}
 }
 

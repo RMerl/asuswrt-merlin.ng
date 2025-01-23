@@ -55,6 +55,11 @@ wl_channel_list_2g = <% channel_list_2g(); %>;
 wl_channel_list_5g = <% channel_list_5g(); %>;
 wl_channel_list_5g_2 = JSON.parse('<% channel_list_5g_2(); %>');
 wl_channel_list_6g = JSON.parse('<% channel_list_6g(); %>');
+wl_channel_list_6g = wl_channel_list_6g.filter((ch)=>{
+	if(parseInt(ch) <= 221){
+		return ch
+	}
+})
 
 var meshBackhaulAutoSupport = false;
 if(based_modelid == 'XT8PRO' || based_modelid == 'BM68'){
@@ -98,6 +103,9 @@ else
 
 var wl_bw_160 = '<% nvram_get("wl_bw_160"); %>';
 var enable_bw_160 = (wl_bw_160 == 1) ? true : false;
+if(is_ID_sku){
+	enable_bw_160 = false;
+}
 var wl_reg_mode = '<% nvram_get("wl_reg_mode"); %>';
 var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=151";
 
@@ -1473,7 +1481,7 @@ function validForm(){
 			ssid_array.push(httpApi.nvramGet(["wl2_ssid"]).wl2_ssid);
 		jsonPara["current_ssid"] = ssid_array;
 		if(!validator.dwb_check_wl_setting(jsonPara)) {
-			alert("The fronthaul SSID is the same as the backhaul SSID.");/* untranslated */
+			alert(`<#wireless_JS_dup_SSID#>`);
 			return false;
 		}
 	}
@@ -2058,7 +2066,16 @@ function he_frame_mode(obj) {
 	}
 }
 
-var band1_enable_bw_160 = '<% nvram_get("wl0_bw_160"); %>';
+var band1_enable_bw_160 = (function(){
+	if(based_modelid == 'ET8_V2'
+	|| is_ID_sku){
+		return '0';
+	}
+
+	return '<% nvram_get("wl0_bw_160"); %>';
+
+})();
+
 var band2_enable_bw_160 = '<% nvram_get("wl1_bw_160"); %>';
 var band3_enable_bw_160 = '<% nvram_get("wl2_bw_160"); %>';
 function separateGenBWTable(unit){
@@ -2130,7 +2147,14 @@ function separateGenBWTable(unit){
 }
 function separateEnable_160MHz(obj){
 	if(obj.id == 'band1_160'){
-		band1_enable_bw_160 = obj.checked ? '1' : '0';
+		band1_enable_bw_160 = (function(){
+			if(based_modelid == 'ET8_V2'){
+				band1_enable_bw_160 = '0'
+			}
+
+			return  obj.checked ? '1' : '0';
+		})()
+		
 		separateGenBWTable('1');
 	}
 	else if(obj.id == 'band2_160'){
@@ -2143,7 +2167,28 @@ function separateGenChannel(unit, channel, bandwidth){
 	var channel_2g = JSON.parse('<% channel_list_2g(); %>');
 	var channel_5g_1 = JSON.parse('<% channel_list_5g(); %>');
 	var channel_5g_2 = JSON.parse('<% channel_list_5g_2(); %>');
+	if(is_ID_sku){
+		channel_5g_1 = channel_5g_1.filter((ch)=>{
+			if( parseInt(ch) < 165
+			   && (parseInt(ch) < 100 || parseInt(ch) > 144)){
+				return ch;
+			}
+		});
+
+		channel_5g_2 = channel_5g_2.filter((ch)=>{
+			if( parseInt(ch) < 165
+			   && (parseInt(ch) < 100 || parseInt(ch) > 144)){
+				return ch;
+			}
+		});
+	}
 	var channel_6g = JSON.parse('<% channel_list_6g(); %>');
+	wl_channel_list_6g = wl_channel_list_6g.filter((ch)=>{
+		if(parseInt(ch) <= 221){
+			return ch
+		}
+	})
+
 	var channel_2g_val = [...channel_2g];
 	var channel_5g_1_val = [];
 	var channel_5g_2_val = [];
@@ -2529,7 +2574,7 @@ function separateGenChannel(unit, channel, bandwidth){
 		if (document.form.band2_channel.value == '0') {
 			if(channel_5g_2.indexOf('100') != -1){
 				$('#band2_acsDFS').show();
-				if(document.form.band2_bw.value == '5'){
+				if(document.form.band2_bw.value == '5' || channel_5g_2.indexOf('149') == -1){
 					document.form.band2_acsDFS_checkbox.checked = true;
 					document.form.band2_acsDFS_checkbox.disabled = true;
 				}
@@ -2548,26 +2593,73 @@ function separateGenChannel(unit, channel, bandwidth){
 	else if(unit == '3'){		// 6 GHz
 		if(band6g_support){		// due to GT-AXE11000/GT-AXE16000 does not support
 			if(document.getElementById('band3_psc6g_checkbox').checked){
-				channel_6g = ['5', '21', '37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213', '229'];
-				if(is_EU_sku || ttc.indexOf('AU') != -1 || ttc.indexOf('AA') != -1){
-					channel_6g = ['5', '21', '37', '53', '69', '85'];
-				}
-				else if(ttc.indexOf('CH') != -1){
-					channel_6g = ['5', '21', '37', '53', '69', '85'];
-				}
+				if(band6gBW160_limit){				
+                    let pscChannelAll = ['37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213'];
+                    let pscChannel = [];
+                    pscChannelAll.forEach((element) => {
+                            if (channel_6g.indexOf(element) !== -1) {
+                                    pscChannel.push(element);
+                            }
+                    });
+
+                    channel_6g = [...pscChannel];
+                    if(ttc.indexOf('CH') != -1 || ttc.indexOf('JP') != -1){
+                        pscChannelAll = ['37', '53', '69', '85'];
+                        pscChannel = [];
+                        pscChannelAll.forEach((element) => {
+                                if (channel_6g.indexOf(element) !== -1) {
+                                        pscChannel.push(element);
+                                }
+                        });
+
+                    	channel_6g = [...pscChannel];
+                    }
+            	}
+                else{
+                    let pscChannelAll = ['5', '21', '37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213'];
+                    let pscChannel = [];
+                    pscChannelAll.forEach((element) => {
+                        if (channel_6g.indexOf(element) !== -1) {
+                                pscChannel.push(element);
+                        }
+                    });
+
+                    channel_6g = [...pscChannel];
+                    if(ttc.indexOf('CH') != -1 || ttc.indexOf('JP') != -1){
+                        pscChannelAll = ['5', '21', '37', '53', '69', '85'];
+                        pscChannel = [];
+                        pscChannelAll.forEach((element) => {
+                                if (channel_6g.indexOf(element) !== -1) {
+                                        pscChannel.push(element);
+                                }
+                        });
+
+                        channel_6g = [...pscChannel];
+                    }
+                }
+                                
+                if(is_EU_sku || ttc.indexOf('AU') != -1 || ttc.indexOf('AA') != -1){
+                    let pscChannelAll = ['5', '21', '37', '53', '69', '85'];
+                    let pscChannel = [];
+                    pscChannelAll.forEach((element) => {
+                        if (channel_6g.indexOf(element) !== -1) {
+                                pscChannel.push(element);
+                        }
+                    });
+
+                    channel_6g = [...pscChannel];					
+                }
 			}
 			
 			for(var i=channel_6g.length-1; i>=0; i--){
-				var _channel = parseInt(channel_6g[i]);
-				if(is_EU_sku){	// remove 225, 229, 233
-					if(_channel > 221){ // remove 225, 229, 233
-						channel_6g.splice(i, 1);
-					}			
-				}
-					
-				if(!is_EU_sku && _channel < 30){ // remove 1, 5, 9, 13, 17, 21, 25, 29,
-					if(productid != 'GT-AXE16000') channel_6g.splice(i, 1); 
-				}
+				var _channel = parseInt(channel_6g[i]);			
+                if(_channel > 221){
+                    channel_6g.splice(i, 1);
+                }       
+
+                if(band6gBW160_limit && (_channel < 30)){
+                    channel_6g.splice(i, 1);
+                }
 			}
 
 			$('#band3_psc6g').show();
@@ -2784,6 +2876,22 @@ function separateChannelHandler(unit, channel){
 	var channel_2g = JSON.parse('<% channel_list_2g(); %>');
 	var channel_5g_1 = JSON.parse('<% channel_list_5g(); %>');
 	var channel_5g_2 = JSON.parse('<% channel_list_5g_2(); %>');
+	if(is_ID_sku){
+		channel_5g_1 = channel_5g_1.filter((ch)=>{
+			if( parseInt(ch) < 165
+			   && (parseInt(ch) < 100 || parseInt(ch) > 144)){
+				return ch;
+			}
+		});
+
+		channel_5g_2 = channel_5g_2.filter((ch)=>{
+			if( parseInt(ch) < 165
+			   && (parseInt(ch) < 100 || parseInt(ch) > 144)){
+				return ch;
+			}
+		});
+	}
+
 	var curCtrlChannel = channel;
 	var extend_channel = new Array;
 	var extend_channel_value = new Array;
@@ -2854,7 +2962,7 @@ function separateChannelHandler(unit, channel){
 		if (curCtrlChannel == '0') {
 			if(channel_5g_2.indexOf('100') != -1){
 				$('#band2_acsDFS').show();
-				if(document.form.band2_bw.value == '5'){
+				if(document.form.band2_bw.value == '5' || channel_5g_2.indexOf('149') == -1){
 					document.form.band2_acsDFS_checkbox.checked = true;
 					document.form.band2_acsDFS_checkbox.disabled = true;
 				}
@@ -3732,7 +3840,19 @@ function handle_channel(unit, channel){
 		cur_control_channel = channel;
 		_ch = '<% nvram_get("wl1_chanspec"); %>';
 		if(cur_control_channel == '0'){
-			$('#band2_acsDFS').show();
+			if(wl_channel_list_5g_2.indexOf('100') != -1){
+				$('#band2_acsDFS').show();
+				if(document.form.band2_bw.value == '5' || wl_channel_list_5g_2.indexOf('149') == -1){
+					document.form.band2_acsDFS_checkbox.checked = true;
+					document.form.band2_acsDFS_checkbox.disabled = true;
+				}
+				else{
+					document.form.band2_acsDFS_checkbox.disabled = false;
+				}
+			}
+			else{
+				$('#band2_acsDFS').hide();
+			}
 		}
 		else{
 			$('#band2_acsDFS').hide();
@@ -4125,29 +4245,84 @@ function channel_6g(bw){
 	var chanspec = '<% nvram_get("wl2_chanspec"); %>';
 	var nmode_x = '<% nvram_get("wl2_nmode_x"); %>';
 	if(document.getElementById('band3_psc6g_checkbox').checked){
-		wl_channel_list_6g = ['5', '21', '37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213', '229'];
-		if(is_EU_sku || ttc.indexOf('AU') != -1 || ttc.indexOf('AA') != -1){
-			wl_channel_list_6g = ['5', '21', '37', '53', '69', '85'];
+		if(band6gBW160_limit){
+			let pscChannelAll = ['37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213'];
+            let pscChannel = [];
+            pscChannelAll.forEach((element) => {
+                if (wl_channel_list_6g.indexOf(element) !== -1) {
+                    pscChannel.push(element);
+                }
+            });
+
+            wl_channel_list_6g = [...pscChannel];			
+			if(ttc.indexOf('CH') != -1 || ttc.indexOf('JP') != -1){
+				pscChannelAll = ['37', '53', '69', '85'];
+				pscChannel = [];
+				pscChannelAll.forEach((element) => {
+					if (wl_channel_list_6g.indexOf(element) !== -1) {
+						pscChannel.push(element);
+					}
+				});
+
+				wl_channel_list_6g = [...pscChannel];
+			}
+
+
 		}
-		else if(ttc.indexOf('CH') != -1){
-			wl_channel_list_6g = ['5', '21', '37', '53', '69', '85'];
+		else{
+			let pscChannelAll = ['5', '21', '37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213'];
+            let pscChannel = [];
+            pscChannelAll.forEach((element) => {
+                if (wl_channel_list_6g.indexOf(element) !== -1) {
+                    pscChannel.push(element);
+                }
+            });
+
+            wl_channel_list_6g = [...pscChannel];
+			if(ttc.indexOf('CH') != -1 || ttc.indexOf('JP') != -1){
+				pscChannelAll = ['5', '21', '37', '53', '69', '85'];
+				pscChannel = [];
+				pscChannelAll.forEach((element) => {
+					if (wl_channel_list_6g.indexOf(element) !== -1) {
+						pscChannel.push(element);
+					}
+				});
+
+				wl_channel_list_6g = [...pscChannel];
+			}
+		}
+
+		if(is_EU_sku || ttc.indexOf('AU') != -1 || ttc.indexOf('AA') != -1){
+			let pscChannelAll = ['5', '21', '37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213'];
+            let pscChannel = [];
+            pscChannelAll.forEach((element) => {
+                if (wl_channel_list_6g.indexOf(element) !== -1) {
+                    pscChannel.push(element);
+                }
+            });
+
+            wl_channel_list_6g = [...pscChannel];
 		}
 	}
 	else{
 		wl_channel_list_6g = JSON.parse('<% channel_list_6g(); %>');
+		wl_channel_list_6g = wl_channel_list_6g.filter((ch)=>{
+			if(parseInt(ch) <= 221){
+				return ch
+			}
+		})
 	}
 
 	for(var i=wl_channel_list_6g.length-1; i>=0; i--){
 		var _channel = parseInt(wl_channel_list_6g[i]);
 
-		if(is_EU_sku){	// remove 225, 229, 233
-			if(_channel > 221){
-				wl_channel_list_6g.splice(i, 1);
-			}			
-		}
+		// remove 225, 229, 233
+		if(_channel > 221){
+			wl_channel_list_6g.splice(i, 1);
+		}			
 
-		if(!is_EU_sku && _channel < 30){ // remove 1, 5, 9, 13, 17, 21, 25, 29,
-			if(productid != 'GT-AXE16000') wl_channel_list_6g.splice(i, 1); 
+		if(band6gBW160_limit && (_channel < 30)){	// remove 1, 5, 9, 13, 17, 21, 25, 29, 225, 229, 233
+			wl_channel_list_6g.splice(i, 1);
 		}
 	}
 	
@@ -4337,7 +4512,7 @@ function handle_smart_connect(value, flag){
 			$("#band1_acsDFS").hide();
 		}
 
-		if(wl_info['2'].dfs_support){
+		if(wl_info['2'].dfs_support && document.form.band2_channel.value == '0'){
 			$("#band2_acsDFS").show();
 		}
 		else{
@@ -4386,7 +4561,7 @@ function handle_smart_connect(value, flag){
 			}
 
 
-			if(wl_info['2'].dfs_support){
+			if(wl_info['2'].dfs_support  && document.form.band2_channel.value == '0'){
 				$("#band2_acsDFS").show();
 			}
 			else{
@@ -4406,7 +4581,7 @@ function handle_smart_connect(value, flag){
 			}
 
 
-			if(wl_info['2'].dfs_support){
+			if(wl_info['2'].dfs_support  && document.form.band2_channel.value == '0'){
 				$("#band2_acsDFS").show();
 			}
 			else{
@@ -4633,7 +4808,7 @@ function handle_smart_connect(value, flag){
 				$("#band1_acsDFS").hide();
 			}
 
-			if(wl_info['2'].dfs_support){
+			if(wl_info['2'].dfs_support && document.form.band2_channel.value == '0'){
 				$("#band2_acsDFS").show();
 			}
 			else{

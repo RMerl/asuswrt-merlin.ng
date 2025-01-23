@@ -12,12 +12,11 @@
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="other.css">
-
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
 <script>
 
 var varload = 0;
@@ -44,19 +43,17 @@ function initial(){
 		uploadSetting();
 	};
 
-	if(!bwdpi_support){
+	if(is_CH_sku){
 		$("#factorydefault_hint").attr("onclick", "").unbind("click");
 		$("#factorydefault_hint").attr("onclick", "openHint(19, 1);");
-		$("#restoreInit_div").css("display", "none");
-		$("#restoreInit").attr("disabled", "disabled");
-		$("#restoreInit").prop("checked", false);
+		$("#restoreInit_text").html(`<#Setting_factorydefault_itemdesc#>`);
 	}
 }
 
 function restoreRule(_flag){
 	var alert_string = "<#Setting_factorydefault_hint1#>";
 
-	if($('#restoreInit').prop("checked") && bwdpi_support)
+	if($('#restoreInit').prop("checked"))
 		alert_string = "<#Setting_initialize_hint1#>";
 
 	if(lan_ipaddr != '<% nvram_default_get("lan_ipaddr"); %>')
@@ -65,7 +62,7 @@ function restoreRule(_flag){
 	alert_string += "<#Setting_factorydefault_hint2#>";
 	if(confirm(alert_string)){
 		document.form.action1.blur();
-		if($('#restoreInit').prop("checked") && bwdpi_support)
+		if($('#restoreInit').prop("checked"))
 			document.restoreform.action_mode.value = "restore_erase";
 		else
 			document.restoreform.action_mode.value = "Restore";
@@ -266,10 +263,10 @@ function selectSetting() {
 													</div>
 													<div id="restoreInit_div">
 														<div style="float:left;margin-left:5px;">
-															<input type="checkbox" id="restoreInit">
+															<input type="checkbox" id="restoreInit" checked>
 														</div>
 														<div style="float:left;width:65%;">
-															<span><label for="restoreInit"><#Setting_initialize_desc#></label></span>
+															<span><label for="restoreInit" id="restoreInit_text"><#Setting_initialize_desc#></label></span>
 														</div>
 													</div>
 													<input type="hidden" name="wl_gmode_protection_x" value="<% nvram_get("wl_gmode_protection_x"); %>" />

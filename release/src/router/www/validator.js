@@ -97,7 +97,7 @@ var validator = {
 		if((keyPressed == 46) && (target.length > 1))
 			return false;
 
-		if((target.length > 1) && (target[1].length > 0))
+		if((target.length > 1) && (target[1].length > 2))
 			return false;
 			
 		if ((keyPressed == 46) || (keyPressed > 47 && keyPressed < 58))
@@ -115,9 +115,9 @@ var validator = {
 			return true;
 		}
 		else if(nc==190 || nc==32 || nc==110 || nc==46){
-			;
+			//
 		}else if((nc==37 || nc==8) && s==""){
-			;
+			//
 		}	
 		else{
 			nc=0;
@@ -349,12 +349,13 @@ var validator = {
 			return "<#Login_Name_Rule#>";
 	},
 
-	samba_name: function(obj){
-		var re = new RegExp(/^[a-z0-9][a-z0-9-_]*$/i);
+	samba_name: function(obj, flag){
+		let re = (flag == "computer_name") ? new RegExp(/^[a-z0-9][a-z0-9-]*$/i) : new RegExp(/^[a-z0-9][a-z0-9-_]*$/i);
+		let hint = (flag == "computer_name") ? `<#JS_valid_host_name_1#> <#JS_valid_host_name_first_char_1#>` : `<#JS_valid_host_name#> <#JS_valid_host_name_first_char#>`;
 		if(re.test(obj.value))
 			return "";
 		else
-			return "<#JS_valid_host_name#> <#JS_valid_host_name_first_char#>";
+			return hint;
 	},
 
 	friendly_name: function(obj){
@@ -899,6 +900,25 @@ var validator = {
 		return false;
 	},
 
+	isPortRange2: function(o,event){
+		var keyPressed = event.keyCode ? event.keyCode : event.which;
+
+		if (this.isFunctionButton(event)){
+			return true;
+		}
+
+
+		if ((keyPressed > 47 && keyPressed < 58) || keyPressed == 45 || keyPressed == 189){	//0~9 & -
+			return true;
+		}
+		else if(event.metaKey && (keyPressed == 65 || keyPressed == 67 || keyPressed == 86 || keyPressed == 88
+			                   || keyPressed == 97 || keyPressed == 99 || keyPressed == 118 || keyPressed == 120)){		//for Mac + Safari, let 'Command + A'(C, V, X) can work
+			return true
+		}
+
+		return false;
+	},
+
 	isPortlist: function(o,event){
 		var keyPressed = event.keyCode ? event.keyCode : event.which;
 
@@ -1097,7 +1117,7 @@ var validator = {
 			}
 			else{
 				if(num < 0 || num > 255 || c != '.'){
-					if(v == 'wl_radius_ipaddr' && typeof(noAlert) != undefined && noAlert == 1){
+					if(v == 'wl_radius_ipaddr' && typeof(noAlert) != 'undefined' && noAlert == 1){
 						return false;
 					}
 					else{
@@ -1124,7 +1144,7 @@ var validator = {
 		}
 		
 		if(pos!=3 || num<0 || num>255){
-			if(v == 'wl_radius_ipaddr' && typeof(noAlert) != undefined && noAlert == 1){
+			if(v == 'wl_radius_ipaddr' && typeof(noAlert) != 'undefined' && noAlert == 1){
 				return false;
 			}
 			else{
@@ -1148,7 +1168,7 @@ var validator = {
 				v == 'dhcp_dns1_x' || v == 'dhcp_gateway_x' || v == 'dhcp_wins_x' ||
 				v == 'sip_server'){
 			if((v!='wan_ipaddr_x')&& (v1==255||v4==255||v1==0||v4==0||v1==127||v1==224)){
-				if(v == 'wl_radius_ipaddr' && typeof(noAlert) != undefined && noAlert == 1){
+				if(v == 'wl_radius_ipaddr' && typeof(noAlert) != 'undefined' && noAlert == 1){
 					return false;
 				}
 				else{
@@ -1603,6 +1623,36 @@ var validator = {
 			}
 			return true;	
 		}	
+	},
+
+	numberRange2: function(obj, mini, maxi){
+		var PortRange = obj.value;
+		var rangere=new RegExp("^([0-9]{1,5})\-([0-9]{1,5})$", "gi");
+
+		if(rangere.test(PortRange)){
+			if(parseInt(RegExp.$1) >= parseInt(RegExp.$2)){
+				alert("<#JS_validport#>");
+				obj.focus();
+				obj.select();
+				return false;
+			}
+			else{
+				if(!this.eachPort(obj, RegExp.$1, mini, maxi) || !this.eachPort(obj, RegExp.$2, mini, maxi)){
+					obj.focus();
+					obj.select();
+					return false;
+				}
+				return true;
+			}
+		}
+		else{
+			if(!this.range(obj, mini, maxi)){
+				obj.focus();
+				obj.select();
+				return false;
+			}
+			return true;
+		}
 	},
 
 	portList: function(o, v){
@@ -2236,7 +2286,60 @@ var validator = {
 					}
 				}
 			}		
-		}else
+		}
+		else if(flag==4){ //ipv4 plus netmask || ipv6
+			if(obj.value.search("/") == -1 && obj.value.search(":") == -1){ // only IPv4
+				if(!this.ipAddrFinal(obj, obj.name)){
+					obj.focus();
+					obj.select();
+					return false;
+				}
+				else
+					return true;
+			}
+			else if(obj.value.search("/") != -1){ // IP plus netmask
+				if(obj.value.split("/").length > 2){
+					alert(obj.value + " <#JS_validip#>");
+					obj.value = "";
+					obj.focus();
+					obj.select();
+					return false;
+				}
+				else{
+					if(obj.value.split("/")[1] == "" || obj.value.split("/")[1] == 0 || obj.value.split("/")[1] > 32){
+						alert(obj.value + " <#JS_validip#>");
+						obj.value = "";
+						obj.focus();
+						obj.select();
+						return false;
+					}
+					else{
+						var IP_tmp = obj.value;
+						obj.value = obj.value.split("/")[0];
+						if(!this.ipAddrFinal(obj, obj.name)){
+							obj.focus();
+							obj.select();
+							return false;
+						}
+						else{
+							obj.value = IP_tmp;
+							return true;
+						}
+					}
+				}
+			}
+			else if(obj.value.search(":") != -1){	// IPv6
+				if(!this.isLegal_ipv6(obj, 1)){
+					alert(obj.value+" <#JS_validip#>");
+					obj.focus();
+					obj.select();
+					return false;
+				}
+				else
+					return true;
+			}
+		}
+		else
 			return false;
 	},
 

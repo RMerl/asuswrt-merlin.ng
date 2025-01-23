@@ -9,10 +9,10 @@
 <title>AiDisk Wizard</title>
 <link rel="stylesheet" type="text/css" href="aidisk.css">
 <link rel="stylesheet" type="text/css" href="/form_style.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javaScript" src="/general.js"></script>
 <script type="text/javaScript" src="/validator.js"></script>
-<script type="text/javaScript" src="/js/jquery.js"></script>
 <script>
 var ddns_server_x = '<% nvram_get("ddns_server_x"); %>';
 var ddns_hostname_x = '<% nvram_get("ddns_hostname_x"); %>';
@@ -35,7 +35,6 @@ function initial(){
 		document.getElementById("DDNSName").value = "<#asusddns_inputhint#>";
 	}
 	switch_ddns();
-	top.ASUS_EULA.config(go_next_page, function(){});
 }
 
 function switch_ddns(){
@@ -222,10 +221,6 @@ function cleandef(){
 				document.form.DDNSName.value = "";	
 }
 
-function apply_eula_check(){
-	if(top.ASUS_EULA.check('asus'))
-		go_next_page();
-}
 </script>
 </head>
 
@@ -299,7 +294,7 @@ function apply_eula_check(){
   		<td width="20%">
 			<div class="apply_gen" style="margin-top:30px">	
 				<input type="button" id="prevButton" value="<#CTL_prev#>" onclick="go_pre_page();" class="button_gen">
-				<input type="button" id="nextButton" value="<#CTL_next#>" onclick="apply_eula_check();"class="button_gen">
+				<input type="button" id="nextButton" value="<#CTL_next#>" onclick="go_next_page();"class="button_gen">
 				<img id="loadingIcon" style="display:none;margin-top:7px" src="/images/InternetScan.gif"></span>
 			</div>
 		</td>

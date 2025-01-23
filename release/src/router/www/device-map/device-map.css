@@ -673,7 +673,7 @@ body {
 	background-color:#2B373B;
 	margin-left: 80px;
 	margin-top: -320px;
-	width:495px;
+	width:575px;
 	height:auto;
 	box-shadow: 3px 3px 10px #000;
 	display:block;
@@ -726,7 +726,7 @@ body {
 }
 .client_input_text_disabled {
 	background:#475a5f;
-	width:275px;
+	width:290px;
 	height:15px;
 	padding:5px 0px 5px 5px;
 	margin-left:2px;

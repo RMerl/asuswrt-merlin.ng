@@ -11,12 +11,12 @@
 <title><#Web_Title#> - NAT Pass-Through</title>
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
-<script language="JavaScript" type="text/javascript" src="js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="js/httpApi.js"></script>
 <script>
 
@@ -25,7 +25,7 @@ function initial(){
 	update_pppoerelay_option();
 	update_sip_alg_mode_option();
 
-	if((wan_proto == "v6plus" || wan_proto == "ocnvc") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
+	if((wan_proto == "v6plus" || wan_proto == "ocnvc" || wan_proto == "v6opt") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
 		$(".setup_info_icon").show();
 		$(".setup_info_icon").click(
 			function() {
@@ -74,7 +74,7 @@ function applyRule(){
 	if(usb_support){
 		if(!validator.numberRange(document.form.vts_ftpport, 1, 65535))
 			return false;
-		if((wan_proto == "v6plus" || wan_proto == "ocnvc") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
+		if((wan_proto == "v6plus" || wan_proto == "ocnvc" || wan_proto == "v6opt") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
 			if (!validator.range_s46_ports(document.form.vts_ftpport, "none")){
 				if(!confirm(port_confirm)){
 					document.form.vts_ftpport.focus();

@@ -12,13 +12,13 @@
 <link rel="stylesheet" type="text/css" href="/index_style.css">
 <link rel="stylesheet" type="text/css" href="/form_style.css">
 <link rel="stylesheet" type="text/css" href="/aidisk/AiDisk_style.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" src="/disk_functions.js"></script>
-<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <style>
@@ -723,7 +723,7 @@ function applyRule(){
 function validForm(){
 	
 	if(document.form.computer_name.value.length > 0){
-		var alert_str = validator.samba_name(document.form.computer_name);
+		var alert_str = validator.samba_name(document.form.computer_name, "computer_name");
 		if(alert_str != ""){
 			showtext(document.getElementById("alert_msg1"), alert_str);
 			document.getElementById("alert_msg1").style.display = "";
@@ -879,7 +879,7 @@ function switchUserType(flag){
 				</tr>
 				<tr>
 					<th>
-						<a class="hintstyle" href="javascript:void(0);" onClick="openHint(17,2);"><#ShareNode_DeviceName_itemname#></a>
+						<a class="hintstyle" href="javascript:void(0);" onClick="openHint(17,10);"><#ShareNode_DeviceName_itemname#></a>
 					</th>
 					<td>
 						<div><input type="text" name="computer_name" id="computer_name" class="input_20_table charToUpperCase" maxlength="15" value="<% nvram_get("computer_name"); %>" autocorrect="off" autocapitalize="on"><br/>

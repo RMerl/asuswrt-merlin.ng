@@ -1,8 +1,5 @@
 /* font family collection */
-.triLv-level, .triLv-step{
-    font-family: ROG;
-}
-.triLv-desc, .border2-title-desc, .content-desc-title{
+.triLv-level, .triLv-step, .triLv-desc, .border2-title-desc, .content-desc-title{
     font-family: Xolonium;
 }
 .content-detail, .content-desc, .gameBoost-enable-desc{
@@ -76,8 +73,7 @@
     background-size: 100%;
 }
 .triLv-step{
-    font-size: 48px;
-    margin-top: -34px;
+    font-size: 36px;
 }
 .triLv-desc{
     width: 148px;

@@ -15,6 +15,7 @@
 #define WG_TAG         "WireGuard"
 #define WG_PRG_CRU     "/usr/sbin/cru"
 #define WG_WAIT_SYNC   5
+#define WGC_CHK_EP     "WGC_CHK_EP"
 
 #if 0	// Moved to vpn_utils.c
 typedef enum wg_type{
@@ -483,6 +484,7 @@ static void _wg_server_nf_add_nat6(const char* prefix, const char* ifname)
 		fp = fopen(path, "w");
 		if (fp)
 		{
+			fprintf(fp, "#!/bin/sh\n\n");
 			strlcpy(wan6_ifname, get_wan6_ifname(wan_primary_ifunit()), sizeof(wan6_ifname));
 
 			for (c_unit = 1; c_unit <= WG_SERVER_CLIENT_MAX; c_unit++)
@@ -513,6 +515,7 @@ static void _wg_server_nf_add(const char* prefix, const char* ifname)
 	char path[128] = {0};
 	char wan6_ifname[IFNAMSIZ] = {0};
 	char wan_ifname[IFNAMSIZ] = {0};
+	int wan_service = get_ipv4_service();
 
 	strlcpy(wan_ifname, get_wan_ifname(wan_primary_ifunit()), sizeof(wan_ifname));
 	strlcpy(wan6_ifname, get_wan6_ifname(wan_primary_ifunit()), sizeof(wan6_ifname));
@@ -523,6 +526,11 @@ static void _wg_server_nf_add(const char* prefix, const char* ifname)
 	{
 		fprintf(fp, "#!/bin/sh\n\n");
 		fprintf(fp, "iptables -t nat -A LOCALSRV -p udp --dport %d -j ACCEPT\n", nvram_pf_get_int(prefix, "port"));
+		if (wan_service != WAN_DHCP && wan_service != WAN_STATIC)
+		{
+			fprintf(fp, "iptables -t nat -A VSERVER -p udp -m udp --dport %d -j DNAT --to-destination %s:%d\n",
+				nvram_pf_get_int(prefix, "port"), nvram_safe_get("lan_ipaddr"), nvram_pf_get_int(prefix, "port"));
+		}
 		fprintf(fp, "iptables -A WGSI -p udp --dport %d -j ACCEPT\n", nvram_pf_get_int(prefix, "port"));
 		fprintf(fp, "ip6tables -A WGSI -p udp --dport %d -j ACCEPT\n", nvram_pf_get_int(prefix, "port"));
 		fprintf(fp, "iptables -A WGSI -i %s -j ACCEPT\n", ifname);
@@ -778,8 +786,7 @@ static void _wg_client_gen_conf(char* prefix, char* path)
 			);
 		if (psk[0] != '\0')
 			fprintf(fp, "PresharedKey = %s\n", psk);
-		if (alive)
-			fprintf(fp, "PersistentKeepalive = %d\n", alive);
+		fprintf(fp, "PersistentKeepalive = %d\n", alive ?: 25);
 
 		fclose(fp);
 
@@ -1189,6 +1196,84 @@ static int _wgc_jobs_remove(void)
 	return _eval(argv, NULL, 0, NULL);
 }
 
+static int _wgc_check_ep_jobs_exist(void)
+{
+	const char *tmpfile = "/tmp/wgc_chk.tmp";
+	char buf[256];
+	int ret = 0;
+	char *argv[] = {WG_PRG_CRU, "l", NULL};
+	FILE *fp;
+
+	_eval(argv, tmpfile, 0, NULL);
+	fp = fopen(tmpfile, "r");
+	if (fp)
+	{
+		while (fgets(buf, sizeof(buf), fp))
+		{
+			if (strstr(buf, WGC_CHK_EP))
+			{
+				ret = 1;
+				break;
+			}
+		}
+		fclose(fp);
+	}
+	unlink(tmpfile);
+
+	return (ret);
+}
+
+static int _wgc_check_ep_jobs_install(void)
+{
+	char *argv[] = {WG_PRG_CRU,
+		"a", WGC_CHK_EP,
+		"*/1 * * * * check_wgc_ep",
+		NULL };
+
+	return _eval(argv, NULL, 0, NULL);
+}
+
+static int _wgc_check_ep_jobs_remove(void)
+{
+	char *argv[] = {WG_PRG_CRU,
+		"d", WGC_CHK_EP,
+		NULL };
+
+	return _eval(argv, NULL, 0, NULL);
+}
+
+static int _is_any_wgs_enabled()
+{
+	int unit;
+	char nv[16] = {0};
+
+	for (unit = 1; unit <= WG_SERVER_MAX; unit++)
+	{
+		snprintf(nv, sizeof(nv), "wgs%d_enable", unit);
+		if (nvram_get_int(nv))
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
+
+static int _is_any_wgc_enabled()
+{
+	int unit;
+	char nv[16] = {0};
+
+	for (unit = 1; unit <= WG_CLIENT_MAX; unit++)
+	{
+		snprintf(nv, sizeof(nv), "wgc%d_enable", unit);
+		if (nvram_get_int(nv))
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
+
 static void _wg_server_update_service(const char* prefix)
 {
 #ifdef RTCONFIG_SAMBASRV
@@ -1198,6 +1283,10 @@ static void _wg_server_update_service(const char* prefix)
 		start_samba();
 	}
 #endif
+
+	/// check endpoint jobs
+	if (!_wgc_check_ep_jobs_exist())
+		_wgc_check_ep_jobs_install();
 }
 
 void start_wgsall()
@@ -1460,7 +1549,8 @@ void stop_wgc(int unit)
 	char ifname[8] = {0};
 	char path[128] = {0};
 	int table = 0;
-	int wg_enable = is_wg_enabled();
+	int any_wgc_enabled = _is_any_wgc_enabled();
+	int wg_enable = _is_any_wgs_enabled() | any_wgc_enabled;
 	char buffer[64];
 	char tmp[4];
 
@@ -1471,6 +1561,10 @@ void stop_wgc(int unit)
 
 	snprintf(prefix, sizeof(prefix), "%s%d_", WG_CLIENT_NVRAM_PREFIX, unit);
 	snprintf(ifname, sizeof(ifname), "%s%d", WG_CLIENT_IF_PREFIX, unit);
+
+	/// check endpoint jobs
+	if (!any_wgc_enabled)
+		_wgc_check_ep_jobs_remove();
 
 #if defined(RTCONFIG_IG_SITE2SITE) && defined(RTCONFIG_TUNNEL)
 	stop_aaeuac_by_vpn_prof("WireGuard", unit);
@@ -1581,7 +1675,7 @@ void run_wgs_fw_nat_scripts()
 	int unit;
 	char buf[128] = {0};
 
-	for(unit = 1; unit <= WG_CLIENT_MAX; unit++)
+	for(unit = 1; unit <= WG_SERVER_MAX; unit++)
 	{
 		snprintf(buf, sizeof(buf), "%s/fw_%s%d_nat6.sh", WG_DIR_CONF, WG_SERVER_IF_PREFIX, unit);
 		if(f_exists(buf))
@@ -1713,27 +1807,10 @@ void reload_wgs_ip_rule()
 int is_wg_enabled()
 {
 	int wg_enable = 0;
-	int unit;
-	char nv[16] = {0};
 
-	for (unit = 1; unit <= WG_SERVER_MAX; unit++)
-	{
-		snprintf(nv, sizeof(nv), "wgs%d_enable", unit);
-		if (nvram_get_int(nv))
-		{
-			wg_enable = 1;
-			break;
-		}
-	}
-	for (unit = 1; unit <= WG_CLIENT_MAX; unit++)
-	{
-		snprintf(nv, sizeof(nv), "wgc%d_enable", unit);
-		if (nvram_get_int(nv))
-		{
-			wg_enable = 1;
-			break;
-		}
-	}
+	wg_enable += _is_any_wgs_enabled();
+	wg_enable += _is_any_wgc_enabled();
+
 	return (wg_enable);
 }
 
@@ -1741,9 +1818,10 @@ void check_wgc_endpoint()
 {
 	int unit;
 	char prefix[8] = {0};
-	static int cnt[WG_CLIENT_MAX] = {0};
 	char ep_addr[64] = {0};
+	char ep_addr_r[1024] = {0};
 	char buf[1024] = {0};
+	char *p;
 
 	if(!is_wan_connect(wan_primary_ifunit()))
 		return;
@@ -1778,18 +1856,19 @@ void check_wgc_endpoint()
 			if (is_valid_ip(ep_addr) > 0)
 				continue;
 
-			if (cnt[unit]++)
+			if (_wg_resolv_ep(ep_addr, buf, sizeof(buf)))
+				continue;
+
+			// TBD:
+			strlcpy(ep_addr_r, nvram_pf_safe_get(prefix, "ep_addr_r"), sizeof(ep_addr_r));
+			if ((p = strchr(ep_addr_r, ' ')))
+				*p = '\0';
+
+			if (!strstr(buf, ep_addr_r))
 			{
-				//cannot connect to server hostname, ip may changed.
-				if (_wg_resolv_ep(ep_addr, buf, sizeof(buf)))
-					continue;
-				if (strcmp(nvram_pf_safe_get(prefix, "ep_addr_r"), buf))
-				{
-					_dprintf("%s ip changed to %s\n", ep_addr, buf);
-					snprintf(buf, sizeof(buf), "restart_wgc %d", unit);
-					notify_rc(buf);
-				}
-				cnt[unit] = 0;
+				_dprintf("%s ip changed to %s\n", ep_addr, buf);
+				snprintf(buf, sizeof(buf), "restart_wgc %d", unit);
+				notify_rc(buf);
 			}
 		}
 	}

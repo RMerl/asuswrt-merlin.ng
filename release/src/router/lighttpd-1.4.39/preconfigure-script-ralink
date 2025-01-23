@@ -27,11 +27,6 @@ if [ -n "$USB" ]; then
         LIBS+=" -L$router_dir/libdisk -ldisk "
 fi
 
-TR069=`cat ../.config |grep "RTCONFIG_TR069=y"`
-if [ -n "$TR069" ]; then
-        LDFLAGS+=" -L$router_dir/libssh2-1.10.0/src/.libs -lssh2 -L$router_dir/zlib -lz"
-fi
-
 QTN=`cat ../.config |grep "RTCONFIG_QTN=y"`
 if [ -n "$QTN" ]; then
 	LIBS+=" -L$router_dir/libqcsapi_client -lqcsapi_client"

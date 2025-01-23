@@ -1,0 +1,2022 @@
+# Czech translation of libgpg-error.
+# Copyright (C) 2009 Free Software Foundation, Inc.
+# This file is distributed under the same license as the libgpg-error package.
+# Petr Pisar <petr.pisar@atlas.cz>, 2009, 2012, 2014, 2021.
+#
+# certificate chain → řetězec (posloupnost) certifikátů
+# keybox → schránka (na klíče)
+# keyring → klíčenka (jen na PGP klíče)
+# armor → ASCII (podoba)
+# encoding → kódování
+# encryption → šifrování
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: libgpg-error 1.42\n"
+"Report-Msgid-Bugs-To: translations@gnupg.org\n"
+"POT-Creation-Date: 2023-04-06 10:30+0200\n"
+"PO-Revision-Date: 2021-10-15 21:07+02:00\n"
+"Last-Translator: Petr Pisar <petr.pisar@atlas.cz>\n"
+"Language-Team: Czech <translation-team-cs@lists.sourceforge.net>\n"
+"Language: cs\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/err-sources.h:28
+msgid "Unspecified source"
+msgstr "Zdroj nezadán"
+
+#: src/err-sources.h:29
+msgid "gcrypt"
+msgstr "gcrypt"
+
+#: src/err-sources.h:30
+msgid "GnuPG"
+msgstr "GnuPG"
+
+#: src/err-sources.h:31
+msgid "GpgSM"
+msgstr "GpgSM"
+
+#: src/err-sources.h:32
+msgid "GPG Agent"
+msgstr "GPG agent"
+
+#: src/err-sources.h:33
+msgid "Pinentry"
+msgstr "Pinentry"
+
+#: src/err-sources.h:34
+msgid "SCD"
+msgstr "SCD"
+
+#: src/err-sources.h:35
+msgid "GPGME"
+msgstr "GPGME"
+
+# XXX: Konzistentní s gnupg2
+#: src/err-sources.h:36
+msgid "Keybox"
+msgstr "Schránka"
+
+#: src/err-sources.h:37
+msgid "KSBA"
+msgstr "KSBA"
+
+#: src/err-sources.h:38
+msgid "Dirmngr"
+msgstr "Dirmngr"
+
+#: src/err-sources.h:39
+msgid "GSTI"
+msgstr "GSTI"
+
+#: src/err-sources.h:40
+msgid "GPA"
+msgstr "GPA"
+
+#: src/err-sources.h:41
+msgid "Kleopatra"
+msgstr "Kleopatra"
+
+#: src/err-sources.h:42
+msgid "G13"
+msgstr "G13"
+
+#: src/err-sources.h:43
+msgid "Assuan"
+msgstr "Assuan"
+
+#: src/err-sources.h:44
+msgid "TPM2d"
+msgstr "TPM2d"
+
+#: src/err-sources.h:45
+msgid "TLS"
+msgstr "TLS"
+
+#: src/err-sources.h:46
+msgid "TKD"
+msgstr ""
+
+#: src/err-sources.h:47
+msgid "Any source"
+msgstr "Nespecifikovaný zdroj"
+
+#: src/err-sources.h:48
+msgid "User defined source 1"
+msgstr "Uživatelem definovaný zdroj 1"
+
+#: src/err-sources.h:49
+msgid "User defined source 2"
+msgstr "Uživatelem definovaný zdroj 2"
+
+#: src/err-sources.h:50
+msgid "User defined source 3"
+msgstr "Uživatelem definovaný zdroj 3"
+
+#: src/err-sources.h:51
+msgid "User defined source 4"
+msgstr "Uživatelem definovaný zdroj 4"
+
+#: src/err-sources.h:52
+msgid "Unknown source"
+msgstr "Neznámý zdroj"
+
+#: src/err-codes.h:28
+msgid "Success"
+msgstr "Úspěch"
+
+#: src/err-codes.h:29
+msgid "General error"
+msgstr "Obecná chyba"
+
+#: src/err-codes.h:30
+msgid "Unknown packet"
+msgstr "Neznámý packet"
+
+#: src/err-codes.h:31
+msgid "Unknown version in packet"
+msgstr "Neznámá verze v packetu"
+
+#: src/err-codes.h:32
+msgid "Invalid public key algorithm"
+msgstr "Neplatný algoritmus veřejného klíče"
+
+#: src/err-codes.h:33
+msgid "Invalid digest algorithm"
+msgstr "Neplatný hashovací algoritmus"
+
+#: src/err-codes.h:34
+msgid "Bad public key"
+msgstr "Chybný veřejný klíč"
+
+#: src/err-codes.h:35
+msgid "Bad secret key"
+msgstr "Chybný tajný klíč"
+
+#: src/err-codes.h:36
+msgid "Bad signature"
+msgstr "Chybný podpis"
+
+#: src/err-codes.h:37
+msgid "No public key"
+msgstr "Žádný veřejný klíč"
+
+#: src/err-codes.h:38
+msgid "Checksum error"
+msgstr "Chyba kontrolního součtu"
+
+#: src/err-codes.h:39
+msgid "Bad passphrase"
+msgstr "Chybné heslo"
+
+#: src/err-codes.h:40
+msgid "Invalid cipher algorithm"
+msgstr "Neplatný šifrovací algoritmus"
+
+#: src/err-codes.h:41
+msgid "Cannot open keyring"
+msgstr "Klíčenku nelze otevřít"
+
+#: src/err-codes.h:42
+msgid "Invalid packet"
+msgstr "Neplatný packet"
+
+#: src/err-codes.h:43
+msgid "Invalid armor"
+msgstr "Neplatný ASCII zápis"
+
+#: src/err-codes.h:44
+msgid "No user ID"
+msgstr "Žádný identifikátor uživatele"
+
+#: src/err-codes.h:45
+msgid "No secret key"
+msgstr "Žádný tajný klíč"
+
+#: src/err-codes.h:46
+msgid "Wrong secret key used"
+msgstr "Použit špatný tajný klíč"
+
+#: src/err-codes.h:47
+msgid "Bad session key"
+msgstr "Chybný klíč relace"
+
+#: src/err-codes.h:48
+msgid "Unknown compression algorithm"
+msgstr "Neznámý kompresní algoritmus"
+
+#: src/err-codes.h:49
+msgid "Number is not prime"
+msgstr "Číslo není prvočíslo"
+
+#: src/err-codes.h:50
+msgid "Invalid encoding method"
+msgstr "Neplatná kódovací metoda"
+
+#: src/err-codes.h:51
+msgid "Invalid encryption scheme"
+msgstr "Neplatné šifrovací schéma"
+
+#: src/err-codes.h:52
+msgid "Invalid signature scheme"
+msgstr "Neplatné podpisové schéma"
+
+#: src/err-codes.h:53
+msgid "Invalid attribute"
+msgstr "Neplatný atribut"
+
+#: src/err-codes.h:54
+msgid "No value"
+msgstr "Žádná hodnota"
+
+#: src/err-codes.h:55
+msgid "Not found"
+msgstr "Nenalezeno"
+
+#: src/err-codes.h:56
+msgid "Value not found"
+msgstr "Hodnota nenalezena"
+
+#: src/err-codes.h:57
+msgid "Syntax error"
+msgstr "Chyba syntaxe"
+
+#: src/err-codes.h:58
+msgid "Bad MPI value"
+msgstr "Chybná hodnota MPI"
+
+#: src/err-codes.h:59
+msgid "Invalid passphrase"
+msgstr "Neplatné heslo"
+
+#: src/err-codes.h:60
+msgid "Invalid signature class"
+msgstr "Neplatní podpisová třída"
+
+#: src/err-codes.h:61
+msgid "Resources exhausted"
+msgstr "Zdroje vyčerpány"
+
+#: src/err-codes.h:62
+msgid "Invalid keyring"
+msgstr "Neplatná klíčenka"
+
+#: src/err-codes.h:63
+msgid "Trust DB error"
+msgstr "Chyba databáze důvěry"
+
+#: src/err-codes.h:64
+msgid "Bad certificate"
+msgstr "Chybný certifikát"
+
+#: src/err-codes.h:65
+msgid "Invalid user ID"
+msgstr "Neplatné ID uživatele"
+
+#: src/err-codes.h:66
+msgid "Unexpected error"
+msgstr "Neočekávaná chyba"
+
+#: src/err-codes.h:67
+msgid "Time conflict"
+msgstr "Rozpor v času"
+
+#: src/err-codes.h:68
+msgid "Keyserver error"
+msgstr "Chyba serveru s klíči"
+
+#: src/err-codes.h:69
+msgid "Wrong public key algorithm"
+msgstr "Špatný algoritmus veřejného klíče"
+
+# This is errror nuber 42 :)
+#: src/err-codes.h:70
+msgid "Tribute to D. A."
+msgstr "Pocta D. A."
+
+#: src/err-codes.h:71
+msgid "Weak encryption key"
+msgstr "Slabý šifrovací klíč"
+
+#: src/err-codes.h:72
+msgid "Invalid key length"
+msgstr "Neplatná délka klíče"
+
+#: src/err-codes.h:73
+msgid "Invalid argument"
+msgstr "Neplatný argument"
+
+#: src/err-codes.h:74
+msgid "Syntax error in URI"
+msgstr "Chyba syntaxe v URI"
+
+#: src/err-codes.h:75
+msgid "Invalid URI"
+msgstr "Neplatné URI"
+
+#: src/err-codes.h:76
+msgid "Network error"
+msgstr "Chyba sítě"
+
+#: src/err-codes.h:77
+msgid "Unknown host"
+msgstr "Neznámý stroj"
+
+#: src/err-codes.h:78
+msgid "Selftest failed"
+msgstr "Sebetestování selhalo"
+
+#: src/err-codes.h:79
+msgid "Data not encrypted"
+msgstr "Data nešifrována"
+
+#: src/err-codes.h:80
+msgid "Data not processed"
+msgstr "Data nezpracována"
+
+#: src/err-codes.h:81
+msgid "Unusable public key"
+msgstr "Nepoužitelný veřejný klíč"
+
+#: src/err-codes.h:82
+msgid "Unusable secret key"
+msgstr "Nepoužitelný tajný klíč"
+
+#: src/err-codes.h:83
+msgid "Invalid value"
+msgstr "Neplatná hodnota"
+
+#: src/err-codes.h:84
+msgid "Bad certificate chain"
+msgstr "Chybný řetězec certifikátů"
+
+#: src/err-codes.h:85
+msgid "Missing certificate"
+msgstr "Chybí certifikát"
+
+#: src/err-codes.h:86
+msgid "No data"
+msgstr "Žádná data"
+
+#: src/err-codes.h:87
+msgid "Bug"
+msgstr "Chyba"
+
+#: src/err-codes.h:88
+msgid "Not supported"
+msgstr "Nepodporováno"
+
+#: src/err-codes.h:89
+msgid "Invalid operation code"
+msgstr "Neplatný kód operace"
+
+#: src/err-codes.h:90
+msgid "Timeout"
+msgstr "Čas vypršel"
+
+#: src/err-codes.h:91
+msgid "Internal error"
+msgstr "Vnitřní chyba"
+
+#: src/err-codes.h:92
+msgid "EOF (gcrypt)"
+msgstr "EOF (gcrypt)"
+
+#: src/err-codes.h:93
+msgid "Invalid object"
+msgstr "Neplatný objekt"
+
+#: src/err-codes.h:94
+msgid "Provided object is too short"
+msgstr "Dodaný objekt je příliš krátký"
+
+#: src/err-codes.h:95
+msgid "Provided object is too large"
+msgstr "Dodaný objekt je příliš dlouhý"
+
+#: src/err-codes.h:96
+msgid "Missing item in object"
+msgstr "V objektu chybí položka"
+
+#: src/err-codes.h:97
+msgid "Not implemented"
+msgstr "Neimplementováno"
+
+#: src/err-codes.h:98
+msgid "Conflicting use"
+msgstr "Neslučitelné použití"
+
+#: src/err-codes.h:99
+msgid "Invalid cipher mode"
+msgstr "Neplatný režim šifry"
+
+#: src/err-codes.h:100
+msgid "Invalid flag"
+msgstr "Neplatný příznak"
+
+#: src/err-codes.h:101
+msgid "Invalid handle"
+msgstr "Neplatný deskriptor"
+
+#: src/err-codes.h:102
+msgid "Result truncated"
+msgstr "Výsledek zkrácen"
+
+#: src/err-codes.h:103
+msgid "Incomplete line"
+msgstr "Neúplný řádek"
+
+#: src/err-codes.h:104
+msgid "Invalid response"
+msgstr "Neplatná odpověď"
+
+#: src/err-codes.h:105
+msgid "No agent running"
+msgstr "Agent neběží"
+
+#: src/err-codes.h:106
+msgid "Agent error"
+msgstr "Chyba agenta"
+
+#: src/err-codes.h:107
+msgid "Invalid data"
+msgstr "Neplatná data"
+
+#: src/err-codes.h:108
+msgid "Unspecific Assuan server fault"
+msgstr "Neurčená porucha serveru Assuan"
+
+#: src/err-codes.h:109
+msgid "General Assuan error"
+msgstr "Obecná chyba Assuanu"
+
+#: src/err-codes.h:110
+msgid "Invalid session key"
+msgstr "Neplatný klíč relace"
+
+#: src/err-codes.h:111
+msgid "Invalid S-expression"
+msgstr "Neplatný S-výraz"
+
+#: src/err-codes.h:112
+msgid "Unsupported algorithm"
+msgstr "Nepodporovaný algoritmus"
+
+#: src/err-codes.h:113
+msgid "No pinentry"
+msgstr "Žádný pinentry"
+
+#: src/err-codes.h:114
+msgid "pinentry error"
+msgstr "chyba pinentry"
+
+#: src/err-codes.h:115
+msgid "Bad PIN"
+msgstr "Špatný PIN"
+
+#: src/err-codes.h:116
+msgid "Invalid name"
+msgstr "Neplatné jméno"
+
+#: src/err-codes.h:117
+msgid "Bad data"
+msgstr "Chybná data"
+
+#: src/err-codes.h:118
+msgid "Invalid parameter"
+msgstr "Neplatný parametr"
+
+#: src/err-codes.h:119
+msgid "Wrong card"
+msgstr "Špatná karta"
+
+#: src/err-codes.h:120
+msgid "No dirmngr"
+msgstr "Žádný dirmngr"
+
+#: src/err-codes.h:121
+msgid "dirmngr error"
+msgstr "chyba dirmngr"
+
+#: src/err-codes.h:122
+msgid "Certificate revoked"
+msgstr "Certifikát odvolán"
+
+#: src/err-codes.h:123
+msgid "No CRL known"
+msgstr "Není znám žádný CRL"
+
+#: src/err-codes.h:124
+msgid "CRL too old"
+msgstr "Příliš starý CRL"
+
+#: src/err-codes.h:125
+msgid "Line too long"
+msgstr "Příliš dlouhý řádek"
+
+#: src/err-codes.h:126
+msgid "Not trusted"
+msgstr "Nedůvěřuje se"
+
+#: src/err-codes.h:127
+msgid "Operation cancelled"
+msgstr "Operace zrušena"
+
+#: src/err-codes.h:128
+msgid "Bad CA certificate"
+msgstr "Chybný certifikát autority"
+
+#: src/err-codes.h:129
+msgid "Certificate expired"
+msgstr "Certifikátu vypršela platnost"
+
+#: src/err-codes.h:130
+msgid "Certificate too young"
+msgstr "Certifikát je příliš mladý"
+
+#: src/err-codes.h:131
+msgid "Unsupported certificate"
+msgstr "Nepodporovaný certifikát"
+
+#: src/err-codes.h:132
+msgid "Unknown S-expression"
+msgstr "Neznámý S-výraz"
+
+#: src/err-codes.h:133
+msgid "Unsupported protection"
+msgstr "Nepodporovaná ochrana"
+
+#: src/err-codes.h:134
+msgid "Corrupted protection"
+msgstr "Poškozená ochrana"
+
+#: src/err-codes.h:135
+msgid "Ambiguous name"
+msgstr "Nejednoznačné jméno"
+
+#: src/err-codes.h:136
+msgid "Card error"
+msgstr "Chyba karty"
+
+#: src/err-codes.h:137
+msgid "Card reset required"
+msgstr "Vyžadován reset karty"
+
+#: src/err-codes.h:138
+msgid "Card removed"
+msgstr "Karta odstraněna"
+
+#: src/err-codes.h:139
+msgid "Invalid card"
+msgstr "Neplatná karta"
+
+#: src/err-codes.h:140
+msgid "Card not present"
+msgstr "Karta není přítomna"
+
+#: src/err-codes.h:141
+msgid "No PKCS15 application"
+msgstr "Žádná aplikace PKCS15"
+
+#: src/err-codes.h:142
+msgid "Not confirmed"
+msgstr "Nepotvrzeno"
+
+# Nastavení nebo nastavování?
+#: src/err-codes.h:143
+msgid "Configuration error"
+msgstr "Chyba konfigurace"
+
+#: src/err-codes.h:144
+msgid "No policy match"
+msgstr "Politika se neshoduje"
+
+#: src/err-codes.h:145
+msgid "Invalid index"
+msgstr "Neplatný index"
+
+#: src/err-codes.h:146
+msgid "Invalid ID"
+msgstr "Neplatné ID"
+
+#: src/err-codes.h:147
+msgid "No SmartCard daemon"
+msgstr "Žádný démon pro čipové karty"
+
+#: src/err-codes.h:148
+msgid "SmartCard daemon error"
+msgstr "Chyba démona pro čipové karty"
+
+#: src/err-codes.h:149
+msgid "Unsupported protocol"
+msgstr "Nepodporovaný protokol"
+
+#: src/err-codes.h:150
+msgid "Bad PIN method"
+msgstr "Chybná metoda PINu"
+
+#: src/err-codes.h:151
+msgid "Card not initialized"
+msgstr "Karta neinicializovaná"
+
+#: src/err-codes.h:152
+msgid "Unsupported operation"
+msgstr "Nepodporovaná operace"
+
+#: src/err-codes.h:153
+msgid "Wrong key usage"
+msgstr "Špatné použití karty"
+
+#: src/err-codes.h:154
+msgid "Nothing found"
+msgstr "Nic nenalezeno"
+
+#: src/err-codes.h:155
+msgid "Wrong blob type"
+msgstr "Špatný typ blobu"
+
+#: src/err-codes.h:156
+msgid "Missing value"
+msgstr "Chybí hodnota"
+
+#: src/err-codes.h:157
+msgid "Hardware problem"
+msgstr "Hardwarový problém"
+
+#: src/err-codes.h:158
+msgid "PIN blocked"
+msgstr "PIN blokován"
+
+#: src/err-codes.h:159
+msgid "Conditions of use not satisfied"
+msgstr "Podmínky použití nesplněny"
+
+#: src/err-codes.h:160
+msgid "PINs are not synced"
+msgstr "PINy nejsou synchronizovány"
+
+#: src/err-codes.h:161
+msgid "Invalid CRL"
+msgstr "Neplatný CRL"
+
+#: src/err-codes.h:162
+msgid "BER error"
+msgstr "Chyba BER"
+
+#: src/err-codes.h:163
+msgid "Invalid BER"
+msgstr "Neplatné BER"
+
+#: src/err-codes.h:164
+msgid "Element not found"
+msgstr "Prvek nenalezen"
+
+#: src/err-codes.h:165
+msgid "Identifier not found"
+msgstr "Identifikátor nenalezen"
+
+#: src/err-codes.h:166
+msgid "Invalid tag"
+msgstr "Neplatná značka"
+
+#: src/err-codes.h:167
+msgid "Invalid length"
+msgstr "Neplatná délka"
+
+#: src/err-codes.h:168
+msgid "Invalid key info"
+msgstr "Neplatné informace o klíči"
+
+#: src/err-codes.h:169
+msgid "Unexpected tag"
+msgstr "Neočekávaná značka"
+
+#: src/err-codes.h:170
+msgid "Not DER encoded"
+msgstr "Nekódováno v DER"
+
+#: src/err-codes.h:171
+msgid "No CMS object"
+msgstr "Žádný objekt CMS"
+
+#: src/err-codes.h:172
+msgid "Invalid CMS object"
+msgstr "Neplatný objekt CMS"
+
+#: src/err-codes.h:173
+msgid "Unknown CMS object"
+msgstr "Neznámý objekt CMS"
+
+#: src/err-codes.h:174
+msgid "Unsupported CMS object"
+msgstr "Nepodporovaný objekty CMS"
+
+#: src/err-codes.h:175
+msgid "Unsupported encoding"
+msgstr "Nepodporované kódování"
+
+#: src/err-codes.h:176
+msgid "Unsupported CMS version"
+msgstr "Nepodporovaná verze CMS"
+
+#: src/err-codes.h:177
+msgid "Unknown algorithm"
+msgstr "Neznámý algoritmus"
+
+#: src/err-codes.h:178
+msgid "Invalid crypto engine"
+msgstr "Neplatná kryptografická jednotka"
+
+#: src/err-codes.h:179
+msgid "Public key not trusted"
+msgstr "Veřejnému klíči se nedůvěřuje"
+
+#: src/err-codes.h:180
+msgid "Decryption failed"
+msgstr "Dešifrování selhalo"
+
+#: src/err-codes.h:181
+msgid "Key expired"
+msgstr "Klíči vypršela platnost"
+
+#: src/err-codes.h:182
+msgid "Signature expired"
+msgstr "Podpisu vypršela platnost"
+
+#: src/err-codes.h:183
+msgid "Encoding problem"
+msgstr "Chyba kódování"
+
+#: src/err-codes.h:184
+msgid "Invalid state"
+msgstr "Neplatná stav"
+
+#: src/err-codes.h:185
+msgid "Duplicated value"
+msgstr "Zdvojená hodnota"
+
+#: src/err-codes.h:186
+msgid "Missing action"
+msgstr "Chybí akce"
+
+#: src/err-codes.h:187
+msgid "ASN.1 module not found"
+msgstr "Modul ASN.1 nenalezen"
+
+#: src/err-codes.h:188
+msgid "Invalid OID string"
+msgstr "Neplatný řetězec OID"
+
+#: src/err-codes.h:189
+msgid "Invalid time"
+msgstr "Neplatný čas"
+
+#: src/err-codes.h:190
+msgid "Invalid CRL object"
+msgstr "Neplatný objekt CRL"
+
+#: src/err-codes.h:191
+msgid "Unsupported CRL version"
+msgstr "Nepodporovaná verze CRL"
+
+#: src/err-codes.h:192
+msgid "Invalid certificate object"
+msgstr "Neplatný objekt certifikátu"
+
+#: src/err-codes.h:193
+msgid "Unknown name"
+msgstr "Neznámé jméno"
+
+#: src/err-codes.h:194
+msgid "A locale function failed"
+msgstr "Funkce locale selhala"
+
+#: src/err-codes.h:195
+msgid "Not locked"
+msgstr "Neuzamčeno"
+
+#: src/err-codes.h:196
+msgid "Protocol violation"
+msgstr "Narušení protokolu"
+
+#: src/err-codes.h:197
+msgid "Invalid MAC"
+msgstr "Neplatný MAC"
+
+#: src/err-codes.h:198
+msgid "Invalid request"
+msgstr "Neplatný požadavek"
+
+#: src/err-codes.h:199
+msgid "Unknown extension"
+msgstr "Neznámé rozšíření"
+
+#: src/err-codes.h:200
+msgid "Unknown critical extension"
+msgstr "Neznámé kritické rozšíření"
+
+#: src/err-codes.h:201
+msgid "Locked"
+msgstr "Zamčeno"
+
+#: src/err-codes.h:202
+msgid "Unknown option"
+msgstr "Neznámý parametr"
+
+#: src/err-codes.h:203
+msgid "Unknown command"
+msgstr "Neznámý příkaz"
+
+#: src/err-codes.h:204
+msgid "Not operational"
+msgstr "Nefunkční"
+
+#: src/err-codes.h:205
+msgid "No passphrase given"
+msgstr "Heslo nezadáno"
+
+#: src/err-codes.h:206
+msgid "No PIN given"
+msgstr "PIN nezadán"
+
+#: src/err-codes.h:207
+msgid "Not enabled"
+msgstr "Nezapnuto"
+
+#: src/err-codes.h:208
+msgid "No crypto engine"
+msgstr "Chybí kryptografická jednotka"
+
+#: src/err-codes.h:209
+msgid "Missing key"
+msgstr "Chybí klíč"
+
+#: src/err-codes.h:210
+msgid "Too many objects"
+msgstr "Příliš mnoho objektů"
+
+#: src/err-codes.h:211
+msgid "Limit reached"
+msgstr "Dosažen limit"
+
+#: src/err-codes.h:212
+msgid "Not initialized"
+msgstr "Neinicializováno"
+
+#: src/err-codes.h:213
+msgid "Missing issuer certificate"
+msgstr "Chybí certifikát vydavatele"
+
+#: src/err-codes.h:214
+msgid "No keyserver available"
+msgstr "Není dostupný žádný server klíčů"
+
+#: src/err-codes.h:215
+msgid "Invalid elliptic curve"
+msgstr "Neplatná eliptická křivka"
+
+#: src/err-codes.h:216
+msgid "Unknown elliptic curve"
+msgstr "Neznámá eliptická křivka"
+
+#: src/err-codes.h:217
+msgid "Duplicated key"
+msgstr "Zdvojený klíč"
+
+#: src/err-codes.h:218
+msgid "Ambiguous result"
+msgstr "Nejednoznačný výsledek"
+
+#: src/err-codes.h:219
+msgid "No crypto context"
+msgstr "Chybí kryptografický kontext"
+
+#: src/err-codes.h:220
+msgid "Wrong crypto context"
+msgstr "Chybný kryptografický kontext"
+
+#: src/err-codes.h:221
+msgid "Bad crypto context"
+msgstr "Špatný kryptografický kontext"
+
+#: src/err-codes.h:222
+msgid "Conflict in the crypto context"
+msgstr "Rozpor v kryptografickém kontextu"
+
+#: src/err-codes.h:223
+msgid "Broken public key"
+msgstr "Rozbitý veřejný klíč"
+
+#: src/err-codes.h:224
+msgid "Broken secret key"
+msgstr "Rozbitý tajný klíč"
+
+#: src/err-codes.h:225
+msgid "Invalid MAC algorithm"
+msgstr "Neplatný algoritmus MAC"
+
+#: src/err-codes.h:226
+msgid "Operation fully cancelled"
+msgstr "Operace zcela zrušena"
+
+#: src/err-codes.h:227
+msgid "Operation not yet finished"
+msgstr "Operace ještě neskončila"
+
+#: src/err-codes.h:228
+msgid "Buffer too short"
+msgstr "Vyrovnávací paměť je příliš malá"
+
+#: src/err-codes.h:229
+msgid "Invalid length specifier in S-expression"
+msgstr "Neplatné určení délky v S-výrazu"
+
+#: src/err-codes.h:230
+msgid "String too long in S-expression"
+msgstr "Řetězec v S-výrazu je příliš dlouhý"
+
+#: src/err-codes.h:231
+msgid "Unmatched parentheses in S-expression"
+msgstr "Nepárové závorky v S-výrazu"
+
+#: src/err-codes.h:232
+msgid "S-expression not canonical"
+msgstr "S-výraz není kanonický"
+
+#: src/err-codes.h:233
+msgid "Bad character in S-expression"
+msgstr "Chybný znak v S-výrazu"
+
+#: src/err-codes.h:234
+msgid "Bad quotation in S-expression"
+msgstr "Chybné uzavření do uvozovek v S-výrazu"
+
+#: src/err-codes.h:235
+msgid "Zero prefix in S-expression"
+msgstr "Nulová předpona v S-výrazu"
+
+#: src/err-codes.h:236
+msgid "Nested display hints in S-expression"
+msgstr "Vnořené pokyny pro zobrazení v S-výrazu"
+
+#: src/err-codes.h:237
+msgid "Unmatched display hints"
+msgstr "Neodpovídající pokyny pro zobrazení"
+
+#: src/err-codes.h:238
+msgid "Unexpected reserved punctuation in S-expression"
+msgstr "Neočekávaná vyhrazená interpunkce v S-výrazu"
+
+#: src/err-codes.h:239
+msgid "Bad hexadecimal character in S-expression"
+msgstr "Chybný šestnáctkový znak v S-výrazu"
+
+#: src/err-codes.h:240
+msgid "Odd hexadecimal numbers in S-expression"
+msgstr "Lichá šestnáctková čísla v S-výrazu"
+
+#: src/err-codes.h:241
+msgid "Bad octal character in S-expression"
+msgstr "Chybný osmičkový znak v S-výrazu"
+
+#: src/err-codes.h:242
+msgid "All subkeys are expired or revoked"
+msgstr "Všem podklíčům skončila platnost nebo byly odvolány"
+
+#: src/err-codes.h:243
+msgid "Database is corrupted"
+msgstr "Databáze je poškozená"
+
+#: src/err-codes.h:244
+msgid "Server indicated a failure"
+msgstr "Server ohlásil selhání"
+
+#: src/err-codes.h:245
+msgid "No name"
+msgstr "Žádné jméno"
+
+#: src/err-codes.h:246
+msgid "No key"
+msgstr "Žádný klíč"
+
+#: src/err-codes.h:247
+msgid "Legacy key"
+msgstr "Zastaralý klíč"
+
+#: src/err-codes.h:248
+msgid "Request too short"
+msgstr "Požadavek je příliš krátký"
+
+#: src/err-codes.h:249
+msgid "Request too long"
+msgstr "Požadavek je příliš dlouhý"
+
+#: src/err-codes.h:250
+msgid "Object is in termination state"
+msgstr "Objekt je v konečném stavu"
+
+#: src/err-codes.h:251
+msgid "No certificate chain"
+msgstr "Chybí řetězec certifikátů"
+
+#: src/err-codes.h:252
+msgid "Certificate is too large"
+msgstr "Certifikát je příliš velký"
+
+#: src/err-codes.h:253
+msgid "Invalid record"
+msgstr "Neplatný záznam"
+
+#: src/err-codes.h:254
+msgid "The MAC does not verify"
+msgstr "Ověření MAC selhalo"
+
+#: src/err-codes.h:255
+msgid "Unexpected message"
+msgstr "Neočekávaná zpráva"
+
+#: src/err-codes.h:256
+msgid "Compression or decompression failed"
+msgstr "Komprese nebo dekomprese selhala"
+
+#: src/err-codes.h:257
+msgid "A counter would wrap"
+msgstr "Počítadlo by přeteklo"
+
+#: src/err-codes.h:258
+msgid "Fatal alert message received"
+msgstr "Přijata nepřekonatelná chybová zpráva"
+
+#: src/err-codes.h:259
+msgid "No cipher algorithm"
+msgstr "Žádný šifrovací algoritmus"
+
+#: src/err-codes.h:260
+msgid "Missing client certificate"
+msgstr "Chybí certifikát klienta"
+
+#: src/err-codes.h:261
+msgid "Close notification received"
+msgstr "Přijato oznámení o uzavření"
+
+#: src/err-codes.h:262
+msgid "Ticket expired"
+msgstr "Lístku vypršela platnost"
+
+#: src/err-codes.h:263
+msgid "Bad ticket"
+msgstr "Chybný lístek"
+
+#: src/err-codes.h:264
+msgid "Unknown identity"
+msgstr "Neznámá totožnost"
+
+#: src/err-codes.h:265
+msgid "Bad certificate message in handshake"
+msgstr "Chybná zpráva s certifikátem v zahájení"
+
+#: src/err-codes.h:266
+msgid "Bad certificate request message in handshake"
+msgstr "Chybná zpráva s požadavkem na certifikát v zahájení"
+
+#: src/err-codes.h:267
+msgid "Bad certificate verify message in handshake"
+msgstr "Chybná zpráva o ověření certifikátu v zahájení"
+
+#: src/err-codes.h:268
+msgid "Bad change cipher message in handshake"
+msgstr "Chybná zpráva se změnou šifry v zahájení"
+
+#: src/err-codes.h:269
+msgid "Bad client hello message in handshake"
+msgstr "Chybná zpráva s pozdravem klienta v zahájení"
+
+#: src/err-codes.h:270
+msgid "Bad server hello message in handshake"
+msgstr "Chybná zpráva s pozdravem serveru v zahájení"
+
+#: src/err-codes.h:271
+msgid "Bad server hello done message in handshake"
+msgstr "Chybná zpráva o dokončení pozdravu serveru v zahájení"
+
+#: src/err-codes.h:272
+msgid "Bad finished message in handshake"
+msgstr "Chybná zpráva o dokončení v zahájení"
+
+#: src/err-codes.h:273
+msgid "Bad server key exchange message in handshake"
+msgstr "Chybná zpráva o výměně klíče serveru v zahájení"
+
+#: src/err-codes.h:274
+msgid "Bad client key exchange message in handshake"
+msgstr "Chybná zpráva o výměně klíče klienta v zahájení"
+
+#: src/err-codes.h:275
+msgid "Bogus string"
+msgstr "Chybný řetězec"
+
+#: src/err-codes.h:276
+msgid "Forbidden"
+msgstr "Zakázán"
+
+#: src/err-codes.h:277
+msgid "Key disabled"
+msgstr "Klíč zakázán"
+
+#: src/err-codes.h:278
+msgid "Not possible with a card based key"
+msgstr "Nelze provést s klíčem na kartě"
+
+#: src/err-codes.h:279
+msgid "Invalid lock object"
+msgstr "Neplatný objekt zámku"
+
+#: src/err-codes.h:280
+msgid "True"
+msgstr "Pravda"
+
+#: src/err-codes.h:281
+msgid "False"
+msgstr "Nepravda"
+
+#: src/err-codes.h:282
+msgid "General IPC error"
+msgstr "Obecná chyba IPC"
+
+#: src/err-codes.h:283
+msgid "IPC accept call failed"
+msgstr "IPC volání accept (přijmout) selhalo"
+
+#: src/err-codes.h:284
+msgid "IPC connect call failed"
+msgstr "IPC volání connect (připojit) selhalo"
+
+#: src/err-codes.h:285
+msgid "Invalid IPC response"
+msgstr "Neplatná odpověď IPC"
+
+#: src/err-codes.h:286
+msgid "Invalid value passed to IPC"
+msgstr "Neplatná hodnota předaná do IPC"
+
+#: src/err-codes.h:287
+msgid "Incomplete line passed to IPC"
+msgstr "Neúplný řádek předán do IPC"
+
+#: src/err-codes.h:288
+msgid "Line passed to IPC too long"
+msgstr "Řádek předaný do IPC je příliš dlouhý"
+
+#: src/err-codes.h:289
+msgid "Nested IPC commands"
+msgstr "Vnořené příkazy IPC"
+
+#: src/err-codes.h:290
+msgid "No data callback in IPC"
+msgstr "Žádná data zpětného volání v IPC"
+
+#: src/err-codes.h:291
+msgid "No inquire callback in IPC"
+msgstr "Žádné dotazovací zpětné volání v IPC"
+
+#: src/err-codes.h:292
+msgid "Not an IPC server"
+msgstr "Není serverem IPC"
+
+#: src/err-codes.h:293
+msgid "Not an IPC client"
+msgstr "Není klientem IPC"
+
+#: src/err-codes.h:294
+msgid "Problem starting IPC server"
+msgstr "Problém se spuštěním serveru IPC"
+
+#: src/err-codes.h:295
+msgid "IPC read error"
+msgstr "Chyba čtení IPC"
+
+#: src/err-codes.h:296
+msgid "IPC write error"
+msgstr "Chyba zápisu IPC"
+
+#: src/err-codes.h:297
+msgid "Too much data for IPC layer"
+msgstr "Příliš mnoho data pro vrstvu IPC"
+
+#: src/err-codes.h:298
+msgid "Unexpected IPC command"
+msgstr "Neočekávaný příkaz IPC"
+
+#: src/err-codes.h:299
+msgid "Unknown IPC command"
+msgstr "Neznámý příkaz IPC"
+
+#: src/err-codes.h:300
+msgid "IPC syntax error"
+msgstr "Chyba syntaxe IPC"
+
+#: src/err-codes.h:301
+msgid "IPC call has been cancelled"
+msgstr "Volání IPC bylo zrušeno"
+
+#: src/err-codes.h:302
+msgid "No input source for IPC"
+msgstr "Žádný zdroj vstupu pro IPC"
+
+#: src/err-codes.h:303
+msgid "No output source for IPC"
+msgstr "Žádný zdroj výstupu pro IPC"
+
+#: src/err-codes.h:304
+msgid "IPC parameter error"
+msgstr "Chyba parametru IPC"
+
+#: src/err-codes.h:305
+msgid "Unknown IPC inquire"
+msgstr "Neznámý dotaz IPC"
+
+#: src/err-codes.h:306
+msgid "Crypto engine too old"
+msgstr "Kryptografická jednotka je příliš stará"
+
+#: src/err-codes.h:307
+msgid "Screen or window too small"
+msgstr "Obrazovka nebo okno je příliš malé"
+
+#: src/err-codes.h:308
+msgid "Screen or window too large"
+msgstr "Obrazovka nebo okno je příliš velké"
+
+#: src/err-codes.h:309
+msgid "Required environment variable not set"
+msgstr "Požadovaná proměnná prostředí není nastavena"
+
+#: src/err-codes.h:310
+msgid "User ID already exists"
+msgstr "ID uživatele již existuje"
+
+#: src/err-codes.h:311
+msgid "Name already exists"
+msgstr "Název již existuje"
+
+#: src/err-codes.h:312
+msgid "Duplicated name"
+msgstr "Zdvojený název"
+
+#: src/err-codes.h:313
+msgid "Object is too young"
+msgstr "Objekt je příliš mladý"
+
+#: src/err-codes.h:314
+msgid "Object is too old"
+msgstr "Objekt je příliš starý"
+
+#: src/err-codes.h:315
+msgid "Unknown flag"
+msgstr "Neznámý příznak"
+
+#: src/err-codes.h:316
+msgid "Invalid execution order"
+msgstr "Neplatné pořadí vykonávání"
+
+#: src/err-codes.h:317
+msgid "Already fetched"
+msgstr "Již staženo"
+
+#: src/err-codes.h:318
+msgid "Try again later"
+msgstr "Opakujte později"
+
+#: src/err-codes.h:319
+msgid "Wrong name"
+msgstr "Špatný název"
+
+#: src/err-codes.h:320
+msgid "Not authenticated"
+msgstr "Neautentizováno"
+
+#: src/err-codes.h:321
+msgid "Bad authentication"
+msgstr "Chybná autentizace"
+
+#: src/err-codes.h:322
+msgid "No Keybox daemon running"
+msgstr "Démon pro schránku na klíče neběží"
+
+#: src/err-codes.h:323
+msgid "Keybox daemon error"
+msgstr "Chyba démona pro schránku na klíče"
+
+#: src/err-codes.h:324
+msgid "Service is not running"
+msgstr "Služba neběží"
+
+#: src/err-codes.h:325
+msgid "Service error"
+msgstr "Chyba služby"
+
+#: src/err-codes.h:326
+#, fuzzy
+#| msgid "Bad PIN"
+msgid "Bad PUK"
+msgstr "Špatný PIN"
+
+#: src/err-codes.h:327
+msgid "No reset code"
+msgstr ""
+
+#: src/err-codes.h:328
+#, fuzzy
+#| msgid "Bad secret key"
+msgid "Bad reset code"
+msgstr "Chybný tajný klíč"
+
+#: src/err-codes.h:329
+msgid "System bug detected"
+msgstr "Objevena chyba systému"
+
+#: src/err-codes.h:330
+msgid "Unknown DNS error"
+msgstr "Neznámá chyba DNS"
+
+#: src/err-codes.h:331
+msgid "Invalid DNS section"
+msgstr "Neplatný oddíl DNS"
+
+#: src/err-codes.h:332
+msgid "Invalid textual address form"
+msgstr "Neplatná textová podoba adresy"
+
+#: src/err-codes.h:333
+msgid "Missing DNS query packet"
+msgstr "Chybí packet s dotazem DNS"
+
+#: src/err-codes.h:334
+msgid "Missing DNS answer packet"
+msgstr "Chybí packet s odpovědí DNS"
+
+#: src/err-codes.h:335
+msgid "Connection closed in DNS"
+msgstr "Spojení v DNS uzavřeno"
+
+#: src/err-codes.h:336
+msgid "Verification failed in DNS"
+msgstr "Ověřování v DNS selhalo"
+
+#: src/err-codes.h:337
+msgid "DNS Timeout"
+msgstr "Časový limit pro DNS vypršel"
+
+#: src/err-codes.h:338
+msgid "General LDAP error"
+msgstr "Obecná chyba LDAP"
+
+#: src/err-codes.h:339
+msgid "General LDAP attribute error"
+msgstr "Obecná chyba atributu LDAP"
+
+#: src/err-codes.h:340
+msgid "General LDAP name error"
+msgstr "Obecná chyba názvu LDAP"
+
+#: src/err-codes.h:341
+msgid "General LDAP security error"
+msgstr "Obecná chyba zabezpečení LDAP"
+
+#: src/err-codes.h:342
+msgid "General LDAP service error"
+msgstr "Obecná chyba služby LDAP"
+
+#: src/err-codes.h:343
+msgid "General LDAP update error"
+msgstr "Obecná chyba aktualizace LDAP"
+
+#: src/err-codes.h:344
+msgid "Experimental LDAP error code"
+msgstr "Experimentální chybový kód LDAP"
+
+#: src/err-codes.h:345
+msgid "Private LDAP error code"
+msgstr "Soukromý chybový kód LDAP"
+
+#: src/err-codes.h:346
+msgid "Other general LDAP error"
+msgstr "Jiná obecná chyba LDAP"
+
+#: src/err-codes.h:347
+msgid "LDAP connecting failed (X)"
+msgstr "Spojení LDAP selhalo (X)"
+
+#: src/err-codes.h:348
+msgid "LDAP referral limit exceeded"
+msgstr "Překročeno omezení na počet odkazů LDAP"
+
+#: src/err-codes.h:349
+msgid "LDAP client loop"
+msgstr "Smyčka klienta LDAP"
+
+#: src/err-codes.h:350
+msgid "No LDAP results returned"
+msgstr "Nevráceny žádné výsledky LDAP"
+
+#: src/err-codes.h:351
+msgid "LDAP control not found"
+msgstr "Ovládání LDAP nenalezeno"
+
+#: src/err-codes.h:352
+msgid "Not supported by LDAP"
+msgstr "Nepodporováno v LDAP"
+
+#: src/err-codes.h:353
+msgid "LDAP connect error"
+msgstr "Chyba připojování LDAP"
+
+#: src/err-codes.h:354
+msgid "Out of memory in LDAP"
+msgstr "Nedostatek paměti v LDAP"
+
+#: src/err-codes.h:355
+msgid "Bad parameter to an LDAP routine"
+msgstr "Chybná parametr ve volání LDAP"
+
+#: src/err-codes.h:356
+msgid "User cancelled LDAP operation"
+msgstr "Uživatel zrušil operaci LDAP"
+
+#: src/err-codes.h:357
+msgid "Bad LDAP search filter"
+msgstr "Chybný vyhledávací filtr LDAP"
+
+#: src/err-codes.h:358
+msgid "Unknown LDAP authentication method"
+msgstr "Neznámá metoda autentizace LDAP"
+
+#: src/err-codes.h:359
+msgid "Timeout in LDAP"
+msgstr "Čas vypršel v LDAP"
+
+#: src/err-codes.h:360
+msgid "LDAP decoding error"
+msgstr "Chyba dekódování LDAP"
+
+#: src/err-codes.h:361
+msgid "LDAP encoding error"
+msgstr "Chyba kódování do LDAP"
+
+#: src/err-codes.h:362
+msgid "LDAP local error"
+msgstr "Místní chyba LDAP"
+
+#: src/err-codes.h:363
+msgid "Cannot contact LDAP server"
+msgstr "LDAP server nelze kontaktovat"
+
+#: src/err-codes.h:364
+msgid "LDAP success"
+msgstr "Úspěch LDAP"
+
+#: src/err-codes.h:365
+msgid "LDAP operations error"
+msgstr "Chyba operací v LDAP"
+
+#: src/err-codes.h:366
+msgid "LDAP protocol error"
+msgstr "Chyba protokolu LDAP"
+
+#: src/err-codes.h:367
+msgid "Time limit exceeded in LDAP"
+msgstr "Časový limit v LDAP vypršel"
+
+#: src/err-codes.h:368
+msgid "Size limit exceeded in LDAP"
+msgstr "Omezení na velikost v LDAP překročeno"
+
+#: src/err-codes.h:369
+msgid "LDAP compare false"
+msgstr "Nepravdivé porovnání LDAP"
+
+#: src/err-codes.h:370
+msgid "LDAP compare true"
+msgstr "Pravdivé porovnání LDAP"
+
+#: src/err-codes.h:371
+msgid "LDAP authentication method not supported"
+msgstr "Autentizační metoda LDAP není podporována"
+
+#: src/err-codes.h:372
+msgid "Strong(er) LDAP authentication required"
+msgstr "Požadována silnější autentizace LDAP"
+
+#: src/err-codes.h:373
+msgid "Partial LDAP results+referral received"
+msgstr "Částečný výsledek LDAP a přijatý odkaz"
+
+#: src/err-codes.h:374
+msgid "LDAP referral"
+msgstr "Odkaz LDAP"
+
+#: src/err-codes.h:375
+msgid "Administrative LDAP limit exceeded"
+msgstr "Administrativní omezení LDAP překročeno"
+
+#: src/err-codes.h:376
+msgid "Critical LDAP extension is unavailable"
+msgstr "Kritické rozšíření LDAP není dostupné"
+
+#: src/err-codes.h:377
+msgid "Confidentiality required by LDAP"
+msgstr "LDAP vyžaduje důvěrnost"
+
+#: src/err-codes.h:378
+msgid "LDAP SASL bind in progress"
+msgstr "Navazuje se LDAP SASL"
+
+#: src/err-codes.h:379
+msgid "No such LDAP attribute"
+msgstr "Taková LDAP atribut neexistuje"
+
+#: src/err-codes.h:380
+msgid "Undefined LDAP attribute type"
+msgstr "Nedefinovaný druh LDAP atributu"
+
+#: src/err-codes.h:381
+msgid "Inappropriate matching in LDAP"
+msgstr "Nevhodné shody v LDAP"
+
+#: src/err-codes.h:382
+msgid "Constraint violation in LDAP"
+msgstr "Porušení omezení v LDAP"
+
+#: src/err-codes.h:383
+msgid "LDAP type or value exists"
+msgstr "Typ LDAP nebo hodnota existuje"
+
+#: src/err-codes.h:384
+msgid "Invalid syntax in LDAP"
+msgstr "Neplatná skladba v LDAP"
+
+#: src/err-codes.h:385
+msgid "No such LDAP object"
+msgstr "Žádný takový objekt LDAP"
+
+#: src/err-codes.h:386
+msgid "LDAP alias problem"
+msgstr "Problém s aliasem LDAP"
+
+#: src/err-codes.h:387
+msgid "Invalid DN syntax in LDAP"
+msgstr "Neplatná skladba DN v LDAP"
+
+#: src/err-codes.h:388
+msgid "LDAP entry is a leaf"
+msgstr "LDAP záznam je list"
+
+#: src/err-codes.h:389
+msgid "LDAP alias dereferencing problem"
+msgstr "Problém s vyhodnocováním odkazu LDAP"
+
+#: src/err-codes.h:390
+msgid "LDAP proxy authorization failure (X)"
+msgstr "Selhání autorizace LDAP proxy (X)"
+
+#: src/err-codes.h:391
+msgid "Inappropriate LDAP authentication"
+msgstr "Nevhodné autentizace LDAP"
+
+#: src/err-codes.h:392
+msgid "Invalid LDAP credentials"
+msgstr "Neplatné autentizační údaje LDAP"
+
+#: src/err-codes.h:393
+msgid "Insufficient access for LDAP"
+msgstr "Nedostatečná přístupová práva k LDAP"
+
+#: src/err-codes.h:394
+msgid "LDAP server is busy"
+msgstr "Server LDAP je zaneprázdněný"
+
+#: src/err-codes.h:395
+msgid "LDAP server is unavailable"
+msgstr "Server LDAP není dostupný"
+
+#: src/err-codes.h:396
+msgid "LDAP server is unwilling to perform"
+msgstr "Server LDAP není ochoten vyhodnotit požadavek"
+
+#: src/err-codes.h:397
+msgid "Loop detected by LDAP"
+msgstr "Objevena smyčka v LDAP"
+
+#: src/err-codes.h:398
+msgid "LDAP naming violation"
+msgstr "Narušení pojmenování v LDAP"
+
+#: src/err-codes.h:399
+msgid "LDAP object class violation"
+msgstr "Narušení třídy objektu LDAP"
+
+#: src/err-codes.h:400
+msgid "LDAP operation not allowed on non-leaf"
+msgstr "Operace LDAP není na vnitřních uzlech dovolena"
+
+#: src/err-codes.h:401
+msgid "LDAP operation not allowed on RDN"
+msgstr "Operace LDAP není dovolena na RDN"
+
+#: src/err-codes.h:402
+msgid "Already exists (LDAP)"
+msgstr "Již existuje (LDAP)"
+
+#: src/err-codes.h:403
+msgid "Cannot modify LDAP object class"
+msgstr "Třídu objektu LDAP nelze upravit"
+
+#: src/err-codes.h:404
+msgid "LDAP results too large"
+msgstr "Výsledek LDAP je příliš velký"
+
+#: src/err-codes.h:405
+msgid "LDAP operation affects multiple DSAs"
+msgstr "LDAP operace ovlivňuje více DSA"
+
+#: src/err-codes.h:406
+msgid "Virtual LDAP list view error"
+msgstr "Chyba v pohledu na virtuální seznam LDAP"
+
+#: src/err-codes.h:407
+msgid "Other LDAP error"
+msgstr "Jiný chyba LDAP"
+
+#: src/err-codes.h:408
+msgid "Resources exhausted in LCUP"
+msgstr "Zdroje vyčerpány v LCUP"
+
+#: src/err-codes.h:409
+msgid "Security violation in LCUP"
+msgstr "Narušení bezpečnosti v LCUP"
+
+#: src/err-codes.h:410
+msgid "Invalid data in LCUP"
+msgstr "Neplatná data v LCUP"
+
+#: src/err-codes.h:411
+msgid "Unsupported scheme in LCUP"
+msgstr "Nepodporované schéma v LCUP"
+
+#: src/err-codes.h:412
+msgid "Reload required in LCUP"
+msgstr "LCUP vyžaduje nové načtení"
+
+#: src/err-codes.h:413
+msgid "LDAP cancelled"
+msgstr "Operace LDAP zrušena"
+
+#: src/err-codes.h:414
+msgid "No LDAP operation to cancel"
+msgstr "Žádná operace LDAP ke zrušení"
+
+#: src/err-codes.h:415
+msgid "Too late to cancel LDAP"
+msgstr "Příliš pozdě na zrušení operace LDAP"
+
+#: src/err-codes.h:416
+msgid "Cannot cancel LDAP"
+msgstr "Operaci LDAP nelze zrušit"
+
+#: src/err-codes.h:417
+msgid "LDAP assertion failed"
+msgstr "Tvrzení LDAP selhalo"
+
+#: src/err-codes.h:418
+msgid "Proxied authorization denied by LDAP"
+msgstr "Delegovaná autorizace odmítnuta protokolem LDAP"
+
+#: src/err-codes.h:419
+msgid "User defined error code 1"
+msgstr "Uživatelem definovaný chybový kód 1"
+
+#: src/err-codes.h:420
+msgid "User defined error code 2"
+msgstr "Uživatelem definovaný chybový kód 2"
+
+#: src/err-codes.h:421
+msgid "User defined error code 3"
+msgstr "Uživatelem definovaný chybový kód 3"
+
+#: src/err-codes.h:422
+msgid "User defined error code 4"
+msgstr "Uživatelem definovaný chybový kód 4"
+
+#: src/err-codes.h:423
+msgid "User defined error code 5"
+msgstr "Uživatelem definovaný chybový kód 5"
+
+#: src/err-codes.h:424
+msgid "User defined error code 6"
+msgstr "Uživatelem definovaný chybový kód 6"
+
+#: src/err-codes.h:425
+msgid "User defined error code 7"
+msgstr "Uživatelem definovaný chybový kód 7"
+
+#: src/err-codes.h:426
+msgid "User defined error code 8"
+msgstr "Uživatelem definovaný chybový kód 8"
+
+#: src/err-codes.h:427
+msgid "User defined error code 9"
+msgstr "Uživatelem definovaný chybový kód 9"
+
+#: src/err-codes.h:428
+msgid "User defined error code 10"
+msgstr "Uživatelem definovaný chybový kód 10"
+
+#: src/err-codes.h:429
+msgid "User defined error code 11"
+msgstr "Uživatelem definovaný chybový kód 11"
+
+#: src/err-codes.h:430
+msgid "User defined error code 12"
+msgstr "Uživatelem definovaný chybový kód 12"
+
+#: src/err-codes.h:431
+msgid "User defined error code 13"
+msgstr "Uživatelem definovaný chybový kód 13"
+
+#: src/err-codes.h:432
+msgid "User defined error code 14"
+msgstr "Uživatelem definovaný chybový kód 14"
+
+#: src/err-codes.h:433
+msgid "User defined error code 15"
+msgstr "Uživatelem definovaný chybový kód 15"
+
+#: src/err-codes.h:434
+msgid "User defined error code 16"
+msgstr "Uživatelem definovaný chybový kód 16"
+
+#: src/err-codes.h:435
+msgid "SQL success"
+msgstr "Úspěch SQL"
+
+#: src/err-codes.h:436
+msgid "SQL error"
+msgstr "Chyba SQL"
+
+#: src/err-codes.h:437
+msgid "Internal logic error in SQL library"
+msgstr "Vnitřní chyba v knihovně SQL"
+
+#: src/err-codes.h:438
+msgid "Access permission denied (SQL)"
+msgstr "Přístupová práva zamítnuta (SQL)"
+
+#: src/err-codes.h:439
+msgid "SQL abort was requested"
+msgstr "Bylo vyžádání ukončení SQL"
+
+#: src/err-codes.h:440
+msgid "SQL database file is locked"
+msgstr "Soubor s databází SQL je zamknutý"
+
+#: src/err-codes.h:441
+msgid "An SQL table in the database is locked"
+msgstr "Tabulka SQL v databázi je zamknuta"
+
+#: src/err-codes.h:442
+msgid "SQL library ran out of core"
+msgstr "SQL knihovně došla paměť"
+
+#: src/err-codes.h:443
+msgid "Attempt to write a readonly SQL database"
+msgstr "Pokus zapsat do SQL databáze jen pro čtení"
+
+#: src/err-codes.h:444
+msgid "SQL operation terminated by interrupt"
+msgstr "Operace SQL ukončena přerušením"
+
+#: src/err-codes.h:445
+msgid "I/O error during SQL operation"
+msgstr "Vstupně-výstupní chyba během operace SQL"
+
+#: src/err-codes.h:446
+msgid "SQL database disk image is malformed"
+msgstr "Obraz disku databáze SQL je poškozený"
+
+#: src/err-codes.h:447
+msgid "Unknown opcode in SQL file control"
+msgstr "Neznámý kód operace v řízení SQL souboru"
+
+#: src/err-codes.h:448
+msgid "Insertion failed because SQL database is full"
+msgstr "Vložení do SQL databáze selhalo, protože je plná"
+
+#: src/err-codes.h:449
+msgid "Unable to open the SQL database file"
+msgstr "Soubor SQL databáze nelze otevřít"
+
+#: src/err-codes.h:450
+msgid "SQL database lock protocol error"
+msgstr "Chyba v zamykacím protokolu SQL databáze"
+
+#: src/err-codes.h:451
+msgid "(internal SQL code: empty)"
+msgstr "(vnitřní kód SQL: prázdný)"
+
+#: src/err-codes.h:452
+msgid "SQL database schema changed"
+msgstr "Schéma SQL databáze se změnilo"
+
+#: src/err-codes.h:453
+msgid "String or blob exceeds size limit (SQL)"
+msgstr "Řetězec nebo binární objekt překračuje hraniční velikost (SQL)"
+
+#: src/err-codes.h:454
+msgid "SQL abort due to constraint violation"
+msgstr "SQL ukončeně kvůli narušení omezení"
+
+#: src/err-codes.h:455
+msgid "Data type mismatch (SQL)"
+msgstr "Datový typ se neshoduje (SQL)"
+
+#: src/err-codes.h:456
+msgid "SQL library used incorrectly"
+msgstr "SQL knihovna byla použita nesprávně"
+
+#: src/err-codes.h:457
+msgid "SQL library uses unsupported OS features"
+msgstr "SQL knihovna používá nepodporované vlastnosti OS"
+
+#: src/err-codes.h:458
+msgid "Authorization denied (SQL)"
+msgstr "Autorizace zamítnuta (SQL)"
+
+#: src/err-codes.h:459
+msgid "(unused SQL code: format)"
+msgstr "(nepoužitý kód SQL: formát)"
+
+#: src/err-codes.h:460
+msgid "SQL bind parameter out of range"
+msgstr "Vázaný parametr SQL je mimo rozsah"
+
+#: src/err-codes.h:461
+msgid "File opened that is not an SQL database file"
+msgstr "Otevřený soubor není SQL databází"
+
+#: src/err-codes.h:462
+msgid "Notifications from SQL logger"
+msgstr "Upozornění od protokolování SQL"
+
+#: src/err-codes.h:463
+msgid "Warnings from SQL logger"
+msgstr "Varování od protokolování SQL"
+
+#: src/err-codes.h:464
+msgid "SQL has another row ready"
+msgstr "SQL již obsahuje jiný řádek"
+
+#: src/err-codes.h:465
+msgid "SQL has finished executing"
+msgstr "SQL dokončilo vykonávání"
+
+#: src/err-codes.h:466
+msgid "System error w/o errno"
+msgstr "Chyba systému bez čísla chyby (errno)"
+
+#: src/err-codes.h:467
+msgid "Unknown system error"
+msgstr "Neznámá chyba systému"
+
+#: src/err-codes.h:468
+msgid "End of file"
+msgstr "Konec souboru"
+
+#: src/err-codes.h:469
+msgid "Unknown error code"
+msgstr "Neznámý kód chyby"
+
+#: src/argparse.c:494
+msgid "argument not expected"
+msgstr "argument neočekáván"
+
+#: src/argparse.c:496
+msgid "read error"
+msgstr "chyba čtení"
+
+#: src/argparse.c:498
+msgid "keyword too long"
+msgstr "klíčové slovo je příliš dlouhé"
+
+#: src/argparse.c:500
+msgid "missing argument"
+msgstr "chybí argument"
+
+#: src/argparse.c:502
+msgid "invalid argument"
+msgstr "neplatný argument"
+
+#: src/argparse.c:504
+msgid "invalid command"
+msgstr "neplatný příkaz"
+
+#: src/argparse.c:506
+msgid "invalid alias definition"
+msgstr "neplatná definice aliasu"
+
+#: src/argparse.c:508 src/argparse.c:545
+msgid "permission error"
+msgstr "chyba oprávnění"
+
+#: src/argparse.c:510 src/argparse.c:543
+msgid "out of core"
+msgstr "nedostatek paměti"
+
+#: src/argparse.c:514 src/argparse.c:549
+msgid "invalid meta command"
+msgstr "neplatný metapříkaz"
+
+#: src/argparse.c:516 src/argparse.c:551
+msgid "unknown meta command"
+msgstr "neznámý metapříkaz"
+
+#: src/argparse.c:518 src/argparse.c:553
+msgid "unexpected meta command"
+msgstr "neočekávaný metapříkaz"
+
+# Options from a konfiguration file.
+#: src/argparse.c:520
+msgid "invalid option"
+msgstr "neplatný volba"
+
+#: src/argparse.c:530
+#, c-format
+msgid "missing argument for option \"%.50s\"\n"
+msgstr "u volby „%.50s“ chybí argument\n"
+
+#: src/argparse.c:532
+#, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "neplatný argument u volby „%.50s“\n"
+
+#: src/argparse.c:534
+#, c-format
+msgid "option \"%.50s\" does not expect an argument\n"
+msgstr "volba „%.50s“ nepřijímá argument\n"
+
+#: src/argparse.c:537
+#, c-format
+msgid "invalid command \"%.50s\"\n"
+msgstr "neplatný příkaz „%.50s“\n"
+
+#: src/argparse.c:539
+#, c-format
+msgid "option \"%.50s\" is ambiguous\n"
+msgstr "volba „%.50s“ není jednoznačná\n"
+
+#: src/argparse.c:541
+#, c-format
+msgid "command \"%.50s\" is ambiguous\n"
+msgstr "příkaz „%.50s“ není jednoznačný\n"
+
+#: src/argparse.c:555
+#, c-format
+msgid "invalid option \"%.50s\"\n"
+msgstr "neplatná volba „%.50s“\n"
+
+#: src/argparse.c:2297 src/argparse.c:2393
+#, c-format
+msgid "Note: no default option file '%s'\n"
+msgstr "Poznámka: žádný výchozí soubor s volbami „%s“\n"
+
+#: src/argparse.c:2307 src/argparse.c:2400
+#, c-format
+msgid "reading options from '%s'\n"
+msgstr "volby se čtou z „%s“\n"
+
+#: src/argparse.c:2385
+#, c-format
+msgid "option file '%s': %s\n"
+msgstr "soubor s volbami „%s“: %s\n"
+
+#: src/argparse.c:2823
+#, c-format
+msgid "Note: ignoring option \"--%s\" due to global config\n"
+msgstr "Poznámka: přepínač „--%s“ se ignoruje kvůli globální konfiguraci\n"
+
+#: src/gpg-error.c:522
+msgid "Please report bugs to <https://bugs.gnupg.org>.\n"
+msgstr "Chyby hlaste (anglicky) na <https://bugs.gnupg.org>.\n"
+
+#: src/gpg-error.c:762
+#, c-format
+msgid "warning: could not recognize %s\n"
+msgstr "pozor: %s nebylo možné rozpoznat\n"
+
+#~ msgid "Keyring open"
+#~ msgstr "Klíčenka otevřena"
+
+#~ msgid "Usage: %s GPG-ERROR [...]\n"
+#~ msgstr "Použití: %s CHYBA_GPG […]\n"

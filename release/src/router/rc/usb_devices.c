@@ -261,7 +261,7 @@ int write_3g_conf(FILE *fp, int dno, int aut, const unsigned int vid, const unsi
 		case SN_Huawei_E169:
 			fprintf(fp, "DefaultVendor=0x%04x\n",	0x12d1);
 			fprintf(fp, "DefaultProduct=0x%04x\n",	0x1001);
-			fprintf(fp, "HuaweiMode=1\n");
+			fprintf(fp, "HuaweiNewMode=1\n");
 			break;
 		case SN_Huawei_E220:
 			fprintf(fp, "DefaultVendor=0x%04x\n",	0x12d1);
@@ -4671,8 +4671,8 @@ int asus_usb_interface(const char *device_name, const char *action)
 
 		// Wait if there is the printer/modem interface.
 #if defined(RTCONFIG_USB) || defined(RTCONFIG_USB_PRINTER) || defined(RTCONFIG_USB_MODEM)
-		retry = 0;
-		while(!nvram_get_int("stop_wait_usb_modules") && retry < MAX_WAIT_MODULE){
+		//retry = 0;
+		//while(!nvram_get_int("stop_wait_usb_modules") && retry < MAX_WAIT_MODULE){
 			if(isStorageInterface(device_name)){
 				usb_dbg("(%s): Is Storage interface on Port %s.\n", device_name, usb_node);
 				file_unlock(isLock);
@@ -4700,14 +4700,14 @@ int asus_usb_interface(const char *device_name, const char *action)
 #endif
 					){
 				usb_dbg("(%s): Is Modem interface on Port %s.\n", device_name, usb_node);
-				break;
+				//break;
 			}
 #endif
 
-			++retry;
-			usb_dbg("(%s): wait %d second for the printer/modem on Port %s.\n", device_name, retry, usb_node);
-			sleep(1); // Wait the printer module to be ready.
-		}
+		//	++retry;
+		//	usb_dbg("(%s): wait %d second for the printer/modem on Port %s.\n", device_name, retry, usb_node);
+		//	sleep(1); // Wait the printer module to be ready.
+		//}
 #endif
 	}
 

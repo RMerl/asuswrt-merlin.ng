@@ -3,7 +3,8 @@ var qisPostData = {};
 var opModeObj = {
 	"sw_mode": "",
 	"wlc_psta": "",
-	"wlc_dpsta": ""
+	"wlc_dpsta": "",
+	"wlc_band": ""
 }
 
 var generalObj = {
@@ -53,6 +54,10 @@ var wanObj = {
 		"wan_s46_dslite_mode": "0"
 	},
 
+	"v6opt": {
+		"ipv6_service": "ipv6pt"
+	},
+
 	"wan46": {
 		"wan_proto": "",
 		"ipv6_service": "ipv6pt"
@@ -69,8 +74,6 @@ var wanObj = {
 		"wan_dnsenable_x": "",
 		"wan_pppoe_username": "",
 		"wan_pppoe_passwd": "",
-		"wan_dhcpenable_x": "",
-		"wan_dnsenable_x": "",
 		"wan_ipaddr_x": "",
 		"wan_netmask_x": "",
 		"wan_gateway_x": "",
@@ -93,6 +96,13 @@ var lanObj = {
 	"general":{
 		"lan_proto": "",
 		"lan_dnsenable_x": ""
+	},
+
+	"changeSubnet": {
+		"lan_ipaddr": "",
+		"lan_ipaddr_rt": "",
+		"dhcp_start": "",
+		"dhcp_end": ""
 	},
 
 	"staticIp": {
@@ -154,6 +164,16 @@ var wlcObj = {
 	"wlc_key": "",
 	"wlc_ap_mac": ""
 }
+
+var wispObj = {
+	"sw_mode": "1",
+	"wlc_psta": "0",
+	"wlc_dpsta": "0",
+	"wans_dualwan": "wan none",
+	"wan_unit": "0",
+	"wan_hwaddr_x": ""
+}
+
 var wlcMultiObj = {
 	"wlc0" : {
 		"wlc0_band": "",
@@ -274,6 +294,7 @@ var systemVariable = {
 	"maxPasswordLen": 32,
 	"originWansExtwan": "",
 	"originWansDualwan": "",
+	"originWansMode": "",
 	"manualWanSetup": false,
 	"wanDnsenable": "",
 	"detwanResult": {
@@ -344,7 +365,8 @@ var systemVariable = {
 		"profile_maximum" : false,
 		"profile_maximum_type" : "",
 		"is_dut_self" : false
-	}
+	},
+	"cfg_ready_check" : 0
 }
 
 var aimeshObj = {

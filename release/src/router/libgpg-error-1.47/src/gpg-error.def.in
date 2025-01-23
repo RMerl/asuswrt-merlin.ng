@@ -1,0 +1,248 @@
+/* libgpg-error.def - Exported symbols for W32
+ * Copyright (C) 2014 g10 Code GmbH
+ *
+ * This file is part of libgpg-error.
+ *
+ * libgpg-error is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * libgpg-error is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: LGPL-2.1+
+ *
+ * Note: This file should be updated manually and the ordinals shall
+ * never be changed.  Also check gpg-error.vers and visibility.h.
+ *
+ * This file needs to be pre-processed.
+ */
+
+#include <config.h>
+
+EXPORTS
+ gpg_strerror                 @1
+ gpg_strerror_r               @2
+ gpg_strsource                @3
+ gpg_err_code_from_errno      @4
+ gpg_err_code_to_errno        @5
+ /* @6 - Not anymore used.  */
+ gpg_err_code_from_syserror   @7
+ gpg_err_set_errno            @8
+#ifdef HAVE_W32_SYSTEM
+   _gpg_w32_bindtextdomain     @11
+   _gpg_w32_textdomain         @12
+   _gpg_w32_gettext            @13
+   _gpg_w32_dgettext           @14
+   _gpg_w32_dngettext          @15
+   _gpg_w32_gettext_localename @16
+   _gpg_w32_gettext_use_utf8   @17
+#endif
+ /* @18 - Not anymore used. */
+ gpg_error_check_version      @19
+
+ gpgrt_lock_init              @20
+ gpgrt_lock_lock              @21
+ gpgrt_lock_unlock            @22
+ gpgrt_lock_destroy           @23
+ gpgrt_yield                  @24
+ gpgrt_lock_trylock           @25
+
+ gpgrt_set_syscall_clamp      @26
+
+ gpgrt_fopen                  @27
+ gpgrt_mopen                  @28
+ gpgrt_fopenmem               @29
+ gpgrt_fopenmem_init          @30
+ gpgrt_fdopen                 @31
+ gpgrt_fdopen_nc              @32
+ gpgrt_sysopen                @33
+ gpgrt_sysopen_nc             @34
+ gpgrt_fpopen                 @35
+ gpgrt_fpopen_nc              @36
+ gpgrt_freopen                @37
+ gpgrt_fopencookie            @38
+ gpgrt_fclose                 @39
+ gpgrt_fclose_snatch          @40
+ gpgrt_onclose                @41
+ gpgrt_fileno                 @42
+ gpgrt_fileno_unlocked        @43
+ gpgrt_syshd                  @44
+ gpgrt_syshd_unlocked         @45
+ _gpgrt_set_std_fd            @46
+ _gpgrt_get_std_stream        @47
+ gpgrt_flockfile              @48
+ gpgrt_ftrylockfile           @49
+ gpgrt_funlockfile            @50
+ gpgrt_feof                   @51
+ gpgrt_feof_unlocked          @52
+ gpgrt_ferror                 @53
+ gpgrt_ferror_unlocked        @54
+ gpgrt_clearerr               @55
+ gpgrt_clearerr_unlocked      @56
+ gpgrt_fflush                 @57
+ gpgrt_fseek                  @58
+ gpgrt_fseeko                 @59
+ gpgrt_ftell                  @60
+ gpgrt_ftello                 @61
+ gpgrt_rewind                 @62
+ gpgrt_fgetc                  @63
+ _gpgrt_getc_underflow        @64
+ gpgrt_fputc                  @65
+ _gpgrt_putc_overflow         @66
+ gpgrt_ungetc                 @67
+ gpgrt_read                   @68
+ gpgrt_write                  @69
+ gpgrt_write_sanitized        @70
+ gpgrt_write_hexstring        @71
+ gpgrt_fread                  @72
+ gpgrt_fwrite                 @73
+ gpgrt_fgets                  @74
+ gpgrt_fputs                  @75
+ gpgrt_fputs_unlocked         @76
+ gpgrt_getline                @77
+ gpgrt_read_line              @78
+ gpgrt_free                   @79
+ gpgrt_fprintf                @80
+ gpgrt_fprintf_unlocked       @81
+ gpgrt_printf                 @82
+ gpgrt_printf_unlocked        @83
+ gpgrt_vfprintf               @84
+ gpgrt_vfprintf_unlocked      @85
+ gpgrt_setvbuf                @86
+ gpgrt_setbuf                 @87
+ gpgrt_set_binary             @88
+ gpgrt_tmpfile                @89
+ gpgrt_opaque_set             @90
+ gpgrt_opaque_get             @91
+ gpgrt_fname_set              @92
+ gpgrt_fname_get              @93
+ gpgrt_asprintf               @94
+ gpgrt_vasprintf              @95
+ gpgrt_bsprintf               @96
+ gpgrt_vbsprintf              @97
+ gpgrt_snprintf               @98
+ gpgrt_vsnprintf              @99
+
+ gpgrt_check_version          @100
+ gpg_err_init                 @101
+ gpg_err_deinit               @102
+ gpgrt_set_alloc_func         @103
+
+ _gpgrt_pending               @104
+ _gpgrt_pending_unlocked      @105
+
+ gpgrt_set_nonblock           @106
+ gpgrt_get_nonblock           @107
+ gpgrt_poll                   @108
+
+#ifdef HAVE_W32_SYSTEM
+ gpgrt_w32_iconv_open         @109
+ gpgrt_w32_iconv_close        @110
+ gpgrt_w32_iconv              @111
+#endif
+
+ gpgrt_get_syscall_clamp      @112
+
+ gpgrt_b64dec_start           @113
+ gpgrt_b64dec_proc            @114
+ gpgrt_b64dec_finish          @115
+
+ gpgrt_get_errorcount         @116
+ gpgrt_inc_errorcount         @117
+ gpgrt_log_set_sink           @118
+ gpgrt_log_set_socket_dir_cb  @119
+ gpgrt_log_set_pid_suffix_cb  @120
+ gpgrt_log_set_prefix         @121
+ gpgrt_log_get_prefix         @122
+ gpgrt_log_test_fd            @123
+ gpgrt_log_get_fd             @124
+ gpgrt_log_get_stream         @125
+ gpgrt_log                    @126
+ gpgrt_logv                   @127
+ gpgrt_logv_prefix            @128
+ gpgrt_log_string             @129
+ gpgrt_log_bug                @130
+ gpgrt_log_fatal              @131
+ gpgrt_log_error              @132
+ gpgrt_log_info               @133
+ gpgrt_log_debug              @134
+ gpgrt_log_debug_string       @135
+ gpgrt_log_printf             @136
+ gpgrt_log_printhex           @137
+ gpgrt_log_clock              @138
+ gpgrt_log_flush              @139
+ _gpgrt_log_assert            @140
+
+ gpgrt_realloc                @141
+ gpgrt_malloc                 @142
+ gpgrt_calloc                 @143
+ gpgrt_strdup                 @144
+ gpgrt_strconcat              @145
+
+ gpgrt_w32_reg_query_string   @146
+
+ gpgrt_getenv                 @147
+ gpgrt_setenv                 @148
+ gpgrt_mkdir                  @149
+ gpgrt_chdir                  @150
+ gpgrt_getcwd                 @151
+
+;; API not yet finished for:
+;; gpgrt_make_pipe              @152
+;; gpgrt_spawn_process          @153
+;; gpgrt_spawn_process_fd       @154
+;; gpgrt_spawn_process_detached @155
+;; gpgrt_wait_process           @156
+;; gpgrt_wait_processes         @157
+;; gpgrt_kill_process           @158
+;; gpgrt_release_process        @159
+;; gpgrt_close_all_fds          @188
+
+ gpgrt_argparse               @160
+ gpgrt_usage                  @161
+ gpgrt_strusage               @162
+ gpgrt_set_strusage           @163
+ gpgrt_set_usage_outfnc       @164
+ gpgrt_set_fixed_string_mapper  @165
+
+ gpgrt_b64enc_start           @166
+ gpgrt_b64enc_write           @167
+ gpgrt_b64enc_finish          @168
+
+ gpgrt_cmp_version            @169
+
+ gpgrt_ftruncate              @170
+ gpgrt_fprintf_sf             @171
+ gpgrt_fprintf_sf_unlocked    @172
+
+ gpgrt_w32_override_locale    @173
+
+ gpgrt_add_emergency_cleanup  @174
+ gpgrt_abort                  @175
+
+ gpgrt_set_confdir            @176
+ gpgrt_argparser              @177
+
+ gpgrt_fnameconcat            @178
+ gpgrt_absfnameconcat         @179
+
+ gpgrt_reallocarray           @180
+ gpgrt_fclose                 @181
+
+ gpgrt_fcancel                @182
+
+ gpgrt_access                 @183
+
+ gpgrt_free_wchar             @184
+ gpgrt_fname_to_wchar         @185
+ gpgrt_utf8_to_wchar          @186
+ gpgrt_wchar_to_utf8          @187
+
+
+;; end of file with public symbols for Windows.

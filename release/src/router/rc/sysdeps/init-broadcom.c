@@ -1713,6 +1713,13 @@ void enable_jumbo_frame(void)
 
 	if (!nvram_contains_word("rc_support", "switchctrl"))
 		return;
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63)
+	if (enable)
+		system("rtkswitch 18");
+	else
+		system("rtkswitch 17");
+	return;
+#endif
 #ifdef RTCONFIG_HND_ROUTER_AX_6756
 #if defined(BCM6750) || defined(BCM6756) || defined(BCM4906_504)
 	int model = get_model();
@@ -2204,15 +2211,20 @@ void init_switch_pre()
   #else
 	doSystem("ethswctl -c wan -i %s -o %s", wan_if_eth(), is_router_mode() ? "enable" : "disable");
   #endif
+#if defined(TUFAX3000_V2) || defined(RTAXE7800)
+	if (is_router_mode())
+		doSystem("ethswctl -c wan -i %s -o enable", WAN_IF_ETH);
+#else
 	if (is_router_mode() && strcmp(WAN_IF_ETH, wan_if_eth()))
 		doSystem("ethswctl -c wan -i %s -o disable", WAN_IF_ETH);
+#endif
 #endif
 
 #if defined(XC5)
 	doSystem("ethswctl -c softswitch -i eth2 -o enable");
 #endif
 
-#if defined(TUFAX3000_V2) || defined(RTAXE7800)
+#if defined(TUFAX3000_V2) || defined(RTAXE7800) || defined(XT8PRO)
 	doSystem("ethswctl -c softswitch -i %s -o %s", wan_if_eth(), is_router_mode() ? "disable" : "enable");
 
 	char *wired_ifnames[] = { "eth0", "eth1", "eth2", "eth3", "eth4" };
@@ -2221,7 +2233,13 @@ void init_switch_pre()
 		if (!strcmp(wired_ifnames[i], wan_if_eth()))
 			continue;
 		lacp_enabled = nvram_get_int("lacp_enabled") &&
-			(!strcmp(wired_ifnames[i], "eth1") || !strcmp(wired_ifnames[i], "eth2"));
+			(
+#if defined(XT8PRO)
+				!strcmp(wired_ifnames[i], "eth2") || !strcmp(wired_ifnames[i], "eth3")
+#else
+				!strcmp(wired_ifnames[i], "eth1") || !strcmp(wired_ifnames[i], "eth2")
+#endif
+			);
 		doSystem("ethswctl -c softswitch -i %s -o %s", wired_ifnames[i], lacp_enabled ? "enable" : "disable");
 	}
 #endif
@@ -2871,7 +2889,7 @@ void init_switch()
 		{
 			/* set wanports in init_nvram for dualwan */
 			/* WAN L1 L2 L3 */
-			int ports[6] = { 0, 1, 2, 3 };
+			int ports[4] = { 0, 1, 2, 3 };
 			char buf[64], *ptr;
 			int i, len, wancfg;
 			int tmp_type;
@@ -3792,7 +3810,7 @@ set_bcm4360ac_vars(void)
 }
 #endif
 
-#if (defined(RTCONFIG_FRONTHAUL_DWB) || defined(RTCONFIG_MSSID_PRELINK)) && !defined(RTCONFIG_MSSID_REALMAC)
+#if !defined(RTCONFIG_MSSID_REALMAC)
 /* mac_binary[0], mac_binary[1], ... , mac_binary[5] */
 /* vif_addr[5], vif_addr[4], ... , vif_addr[0] */
 /* refer to wlconf.c */
@@ -3821,7 +3839,7 @@ reset_mssid_hwaddr(int unit)
 	unsigned char *macp;
 	int model = get_model();
 	int idx, subunit;
-#if (defined(RTCONFIG_FRONTHAUL_DWB) || defined(RTCONFIG_MSSID_PRELINK)) && !defined(RTCONFIG_MSSID_REALMAC)
+#if !defined(RTCONFIG_MSSID_REALMAC)
 	int max_mssid = (num_of_mssid_support(unit) > 3) ? 3 : num_of_mssid_support(unit);
 #else
 	int max_mssid = num_of_mssid_support(unit);
@@ -3840,7 +3858,7 @@ reset_mssid_hwaddr(int unit)
 			|| rp_mode()
 			);
 #endif
-#if (defined(RTCONFIG_FRONTHAUL_DWB) || defined(RTCONFIG_MSSID_PRELINK)) && !defined(RTCONFIG_MSSID_REALMAC)
+#if !defined(RTCONFIG_MSSID_REALMAC)
 	unsigned char vif_mac0 = 0;
 #endif
 
@@ -3994,7 +4012,7 @@ const unsigned int devpath_idx[4] = {1, 2, 0};    // 2.4G, 5G-1, 5G-2
 					mac_binary[5]);
 			macvalue = strtoll(macbuf, (char **) NULL, 16);
 
-#if (defined(RTCONFIG_FRONTHAUL_DWB) || defined(RTCONFIG_MSSID_PRELINK)) && !defined(RTCONFIG_MSSID_REALMAC)
+#if !defined(RTCONFIG_MSSID_REALMAC)
 			/* virtual mac address generation */
 			vif_mac0 = gen_mssid_hwaddr_mac0((unsigned char *) &mac_binary);
 #else
@@ -4071,7 +4089,7 @@ const unsigned int devpath_idx[4] = {1, 2, 0};    // 2.4G, 5G-1, 5G-2
 				else
 					macp = (unsigned char*) &macvalue;
 
-#if (defined(RTCONFIG_FRONTHAUL_DWB) || defined(RTCONFIG_MSSID_PRELINK)) && !defined(RTCONFIG_MSSID_REALMAC)
+#if !defined(RTCONFIG_MSSID_REALMAC)
 				/* global virtual MAC rule */
 				*(macp+5) = vif_mac0;
 				*(macp+0) = (mac_binary[5] & 0xF0) + ((mac_binary[5] + subunit) & 0x0F);
@@ -4931,6 +4949,12 @@ void init_syspara(void)
 		nvram_set("wps_device_pin", wps_gen_pin(devPwd, sizeof(devPwd)) ? devPwd : "12345670");
 	} else
 		nvram_set("wps_device_pin", value);
+#ifdef RTCONFIG_AMAS
+	int ret = 0;
+
+	ret = chk_acscli2_cmds("acs_restart");
+	_dprintf("%s, acscli2_can_do_restart:%d\n", __func__, ret);
+#endif
 }
 
 #ifdef RTCONFIG_BCMARM
@@ -6163,7 +6187,11 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 		int dwds = 0;
 		if (!nvram_get_int("dwds_ctrl")) {
 #if defined(RTCONFIG_BCM4708) || defined(RTCONFIG_BCM_7114) || defined(RTCONFIG_HND_ROUTER)
+#if defined(RPAX56) || defined(RPAX58)
+			dwds = !client_mode();
+#else
 			dwds = 1;
+#endif
 #else
 			dwds = !(is_ure(unit) || is_psta(unit));
 #endif
@@ -6491,7 +6519,7 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 				nvram_match(strcat_r(prefix, "nband", tmp2), "2") ? nvram_match("no_coex", "1") ? 0 : nvram_match("no_coex", "0") ? 1 : 0 : 0);
 #else
 			nvram_set_int(strcat_r(prefix, "obss_coex", tmp),
-				nvram_match(strcat_r(prefix, "nband", tmp2), "2") ? nvram_match("no_coex", "1") ? 0 : nvram_match("no_coex", "0") ? 1 : 1 : 0);
+				nvram_match(strcat_r(prefix, "nband", tmp2), "2") ? 1 : 0);
 #endif
 		}
 		else if (nvram_match(strcat_r(prefix, "bw", tmp), "1") ||	// 20M
@@ -6879,9 +6907,15 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 #ifdef RTCONFIG_BCMARM
 			if (!nvram_get_int("dwds_ctrl"))
 #ifdef RTCONFIG_HND_ROUTER_AX
-			nvram_set(strcat_r(prefix, "dwds", tmp), "1");
+#if defined(RPAX56) || defined(RPAX58)
+			{
+				nvram_set(strcat_r(prefix, "dwds", tmp), client_mode()? "0": "1");
+			}
 #else
-			nvram_set(strcat_r(prefix, "dwds", tmp), is_ure(unit) ? "0" : "1");
+				nvram_set(strcat_r(prefix, "dwds", tmp), "1");
+#endif
+#else
+				nvram_set(strcat_r(prefix, "dwds", tmp), is_ure(unit) ? "0" : "1");
 #endif
 #ifdef RTCONFIG_HND_ROUTER_AX
 			if (nvram_match(strcat_r(prefix, "akm", tmp), "sae"))
@@ -8127,15 +8161,21 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 			if(nvram_match("HwId", "A") || nvram_match("HwId", "C")){
 				sprintf(ethPort1, "eth1");
 				sprintf(vlanDev1, "eth1.v0");
+				sprintf(ethPort2, "eth1");
+				sprintf(vlanDev2, "eth1.v0");
 			} else {
 				sprintf(ethPort1, "");
 				sprintf(vlanDev1, "");
+				sprintf(ethPort2, "");
+				sprintf(vlanDev2, "");
 			}
 		}
 		/* Spefici net devices order for XD4PRO */
 		else if (model == MODEL_XD4PRO) {
 			sprintf(ethPort1, "eth1");
 			sprintf(vlanDev1, "eth1.v0");
+			sprintf(ethPort2, "eth1");
+			sprintf(vlanDev2, "eth1.v0");
 		}
                 /* Spefici net devices order for XC5 */
                 else if (model == MODEL_XC5) {
@@ -8148,6 +8188,8 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 		else if (model == MODEL_CTAX56_XD4) {
 			sprintf(ethPort1, "eth1");
 			sprintf(vlanDev1, "eth1.v0");
+			sprintf(ethPort2, "eth1");
+			sprintf(vlanDev2, "eth1.v0");
 		}
 		/* Spefici net devices order for EBA63 */
 		else if (model == MODEL_EBA63) {

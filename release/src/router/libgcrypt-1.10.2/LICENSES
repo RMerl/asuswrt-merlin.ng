@@ -1,0 +1,287 @@
+Additional license notices for Libgcrypt.                    -*- org -*-
+
+This file contains the copying permission notices for various files in
+the Libgcrypt distribution which are not covered by the GNU Lesser
+General Public License (LGPL) or the GNU General Public License (GPL).
+
+These notices all require that a copy of the notice be included
+in the accompanying documentation and be distributed with binary
+distributions of the code, so be sure to include this file along
+with any binary distributions derived from the GNU C Library.
+
+* BSD_3Clause
+
+  For files:
+  - cipher/sha256-avx-amd64.S
+  - cipher/sha256-avx2-bmi2-amd64.S
+  - cipher/sha256-ssse3-amd64.S
+  - cipher/sha512-avx-amd64.S
+  - cipher/sha512-avx2-bmi2-amd64.S
+  - cipher/sha512-ssse3-amd64.S
+  - cipher/sha512-ssse3-i386.c
+
+#+begin_quote
+  Copyright (c) 2012, Intel Corporation
+
+  All rights reserved.
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions are
+  met:
+
+  * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+
+  * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the
+    distribution.
+
+  * Neither the name of the Intel Corporation nor the names of its
+    contributors may be used to endorse or promote products derived from
+    this software without specific prior written permission.
+
+
+  THIS SOFTWARE IS PROVIDED BY INTEL CORPORATION "AS IS" AND ANY
+  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+  PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL INTEL CORPORATION OR
+  CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#+end_quote
+
+  For files:
+  - random/jitterentropy-base.c
+  - random/jitterentropy-gcd.c
+  - random/jitterentropy-gcd.h
+  - random/jitterentropy-health.c
+  - random/jitterentropy-health.h
+  - random/jitterentropy-noise.c
+  - random/jitterentropy-noise.h
+  - random/jitterentropy-sha3.c
+  - random/jitterentropy-sha3.h
+  - random/jitterentropy-timer.c
+  - random/jitterentropy-timer.h
+  - random/jitterentropy.h
+  - random/rndjent.c (plus common Libgcrypt copyright holders)
+
+#+begin_quote
+ Copyright (C) 2017 - 2021, Stephan Mueller <smueller@chronox.de>
+
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ 1. Redistributions of source code must retain the above copyright
+    notice, and the entire permission notice in its entirety,
+    including the disclaimer of warranties.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+ 3. The name of the author may not be used to endorse or promote
+    products derived from this software without specific prior
+    written permission.
+
+ ALTERNATIVELY, this product may be distributed under the terms of
+ the GNU General Public License, in which case the provisions of the GPL2
+ are required INSTEAD OF the above restrictions.  (This clause is
+ necessary due to a potential bad interaction between the GPL and
+ the restrictions contained in a BSD-style copyright.)
+
+ THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED
+ WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE, ALL OF
+ WHICH ARE HEREBY DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE
+ LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+ OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+ USE OF THIS SOFTWARE, EVEN IF NOT ADVISED OF THE POSSIBILITY OF SUCH
+ DAMAGE.
+#+end_quote
+
+  For files:
+  - cipher/cipher-gcm-ppc.c
+
+#+begin_quote
+ Copyright (c) 2006, CRYPTOGAMS by <appro@openssl.org>
+ All rights reserved.
+
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+
+       * Redistributions of source code must retain copyright notices,
+         this list of conditions and the following disclaimer.
+
+       * Redistributions in binary form must reproduce the above
+         copyright notice, this list of conditions and the following
+         disclaimer in the documentation and/or other materials
+         provided with the distribution.
+
+       * Neither the name of the CRYPTOGAMS nor the names of its
+         copyright holder and contributors may be used to endorse or
+         promote products derived from this software without specific
+         prior written permission.
+
+ ALTERNATIVELY, provided that this notice is retained in full, this
+ product may be distributed under the terms of the GNU General Public
+ License (GPL), in which case the provisions of the GPL apply INSTEAD OF
+ those given above.
+
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER AND CONTRIBUTORS
+ "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#+end_quote
+
+* X License
+
+  For files:
+  - install.sh
+
+#+begin_quote
+  Copyright (C) 1994 X Consortium
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to
+  deal in the Software without restriction, including without limitation the
+  rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+  sell copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+  X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+  AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNEC-
+  TION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+  Except as contained in this notice, the name of the X Consortium shall not
+  be used in advertising or otherwise to promote the sale, use or other deal-
+  ings in this Software without prior written authorization from the X Consor-
+  tium.
+#+end_quote
+
+* Public domain
+
+  For files:
+  - cipher/arcfour-amd64.S
+
+#+begin_quote
+ Author: Marc Bevand <bevand_m (at) epita.fr>
+ Licence: I hereby disclaim the copyright on this code and place it
+ in the public domain.
+#+end_quote
+
+* OCB license 1
+
+  For files:
+  - cipher/cipher-ocb.c
+
+#+begin_quote
+  OCB is covered by several patents but may be used freely by most
+  software.  See http://web.cs.ucdavis.edu/~rogaway/ocb/license.htm .
+  In particular license 1 is suitable for Libgcrypt: See
+  http://web.cs.ucdavis.edu/~rogaway/ocb/license1.pdf for the full
+  license document; it basically says:
+
+    License 1 — License for Open-Source Software Implementations of OCB
+                (Jan 9, 2013)
+
+    Under this license, you are authorized to make, use, and
+    distribute open-source software implementations of OCB. This
+    license terminates for you if you sue someone over their
+    open-source software implementation of OCB claiming that you have
+    a patent covering their implementation.
+
+
+
+ License for Open Source Software Implementations of OCB
+ January 9, 2013
+
+ 1 Definitions
+
+ 1.1 “Licensor” means Phillip Rogaway.
+
+ 1.2 “Licensed Patents” means any patent that claims priority to United
+ States Patent Application No. 09/918,615 entitled “Method and Apparatus
+ for Facilitating Efficient Authenticated Encryption,” and any utility,
+ divisional, provisional, continuation, continuations-in-part, reexamination,
+ reissue, or foreign counterpart patents that may issue with respect to the
+ aforesaid patent application. This includes, but is not limited to, United
+ States Patent No. 7,046,802; United States Patent No. 7,200,227; United
+ States Patent No. 7,949,129; United States Patent No. 8,321,675 ; and any
+ patent that issues out of United States Patent Application No. 13/669,114.
+
+ 1.3 “Use” means any practice of any invention claimed in the Licensed Patents.
+
+ 1.4 “Software Implementation” means any practice of any invention
+ claimed in the Licensed Patents that takes the form of software executing on
+ a user-programmable, general-purpose computer or that takes the form of a
+ computer-readable medium storing such software. Software Implementation does
+ not include, for example, application-specific integrated circuits (ASICs),
+ field-programmable gate arrays (FPGAs), embedded systems, or IP cores.
+
+ 1.5 “Open Source Software” means software whose source code is published
+ and made available for inspection and use by anyone because either (a) the
+ source code is subject to a license that permits recipients to copy, modify,
+ and distribute the source code without payment of fees or royalties, or
+ (b) the source code is in the public domain, including code released for
+ public use through a CC0 waiver. All licenses certified by the Open Source
+ Initiative at opensource.org as of January 9, 2013 and all Creative Commons
+ licenses identified on the creativecommons.org website as of January 9,
+ 2013, including the Public License Fallback of the CC0 waiver, satisfy these
+ requirements for the purposes of this license.
+
+ 1.6 “Open Source Software Implementation” means a Software
+ Implementation in which the software implicating the Licensed Patents is
+ Open Source Software. Open Source Software Implementation does not include
+ any Software Implementation in which the software implicating the Licensed
+ Patents is combined, so as to form a larger program, with software that is
+ not Open Source Software.
+
+ 2 License Grant
+
+ 2.1 License. Subject to your compliance with the term s of this license,
+ including the restriction set forth in Section 2.2, Licensor hereby
+ grants to you a perpetual, worldwide, non-exclusive, non-transferable,
+ non-sublicenseable, no-charge, royalty-free, irrevocable license to practice
+ any invention claimed in the Licensed Patents in any Open Source Software
+ Implementation.
+
+ 2.2 Restriction. If you or your affiliates institute patent litigation
+ (including, but not limited to, a cross-claim or counterclaim in a lawsuit)
+ against any entity alleging that any Use authorized by this license
+ infringes another patent, then any rights granted to you under this license
+ automatically terminate as of the date such litigation is filed.
+
+ 3 Disclaimer
+ YOUR USE OF THE LICENSED PATENTS IS AT YOUR OWN RISK AND UNLESS REQUIRED
+ BY APPLICABLE LAW, LICENSOR MAKES NO REPRESENTATIONS OR WARRANTIES OF ANY
+ KIND CONCERNING THE LICENSED PATENTS OR ANY PRODUCT EMBODYING ANY LICENSED
+ PATENT, EXPRESS OR IMPLIED, STATUT ORY OR OTHERWISE, INCLUDING, WITHOUT
+ LIMITATION, WARRANTIES OF TITLE, MERCHANTIBILITY, FITNESS FOR A PARTICULAR
+ PURPOSE, OR NONINFRINGEMENT. IN NO EVENT WILL LICENSOR BE LIABLE FOR ANY
+ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ ARISING FROM OR RELATED TO ANY USE OF THE LICENSED PATENTS, INCLUDING,
+ WITHOUT LIMITATION, DIRECT, INDIRECT, INCIDENTAL, CONSEQUENTIAL, PUNITIVE
+ OR SPECIAL DAMAGES, EVEN IF LICENSOR HAS BEEN ADVISED OF THE POSSIBILITY OF
+ SUCH DAMAGES PRIOR TO SUCH AN OCCURRENCE.
+#+end_quote

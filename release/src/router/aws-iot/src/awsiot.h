@@ -63,4 +63,4 @@ void asus_httpd(const char * shadowRxBuf, const char * subscribe_topic, const lo
 
 void tencentgame_data_process(const char *shadowRxBuf, const char *subscribe_topic);
 
-
+int check_mqtt_port();

@@ -24,6 +24,7 @@ MODELS_HAVE_TRAFFIC_ANALYZER = RT-AC3200 RT-AC87U RT-AC88U RT-AX88U RT-AC86U GT-
 	RT-AX86U RT-AX68U RT-AC68U_V4 DSL-AX82U \
 	RT-AX86U_PRO \
 	MAP-AC2200 MAP-AC2200V RT-AC95U \
+	PL-AX56_XP4 \
 	RT-AXE7800 GT10 RT-AX9000 \
 	GT-AXE11000 GT-AX6000 GT-AX11000_PRO GT-AXE16000 ET12 XT12 RT-AX88U_PRO XC5
 
@@ -850,8 +851,6 @@ endif
 
 ifneq ($(RTCONFIG_ROG_UI),y)
 ifneq ($(BUILD_NAME), $(filter $(BUILD_NAME), TUF-AX3000 TUF-AX3000_V2 TUF-AX4200 TUF-AX5400 TUF-AX6000))
-	rm -rf $(INSTALLDIR)/www/fonts/ROG_Fonts-Regular.otf
-	rm -rf $(INSTALLDIR)/www/fonts/ROG_Fonts-Regular.woff
 	rm -rf $(INSTALLDIR)/www/fonts/xolonium.regular.otf
 	rm -rf $(INSTALLDIR)/www/fonts/xolonium.regular.woff
 endif
@@ -981,6 +980,7 @@ endif
 ifeq ($(RTCONFIG_ROG_UI),y)
 	cp -rf $(INSTALLDIR)/www/css/ROG/* $(INSTALLDIR)/www/css/
 	rm -rf $(INSTALLDIR)/www/css/ROG
+	rm -rf $(INSTALLDIR)/www/images/New_ui/RT
 endif
 
 ifneq ($(RTCONFIG_BCM_OAM), y)

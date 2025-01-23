@@ -2051,6 +2051,20 @@ padding-top:1px;
 .pop_div_bg{
 	background-color: #2B373B;
 }
+.pop_div_container{
+	position: absolute;
+	left: 0;
+	right: 0;
+	margin: auto;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	z-index: 200;
+	width: 70%;
+	max-width: 740px;
+	box-shadow: 3px 3px 10px #000;
+	display: none;
+}
 .analysis_bg{
 	background: #2F3E44;
 }
@@ -2335,27 +2349,6 @@ i.icon_help {
 	height: 24px;
 	width: 24px;
 	display: inline-block;
-}
-
-.text-list {
-	display: flex;
-	align-items: center;
-	margin: 10px 0px;
-	gap: 5px;
-}
-
-.text-list i {
-	height: 15px;
-	width: 15px;
-}
-
-.text-list a {
-	margin-left: 5px;
-	text-decoration: underline;
-}
-
-.formfonttitle_help {
-	text-align: right;
 }
 
 .icon-group-center {

@@ -1,57 +1,188 @@
-﻿.profile_setting_container .popup_edit_profile_container{
-	background: rgb(40, 41, 49);
+﻿.bg{
+	color: #EBEBEB;
+	background: #000 !important;
 }
+.server_list_container .svr_item_horizontal_line{
+	width: initial;
+	margin-right: 1.5rem;
+}
+.profile_setting_container .popup_edit_profile_container,
 .profile_setting_container .get_start_container{
-	background: rgb(40, 41, 49);
+	background: rgba(128, 128, 128, 0.15);
+	border: 1px solid rgba(255, 255, 255, 0.05);
+	box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25), 0px 3px 1px rgba(0, 0, 0, 0.06), 0px 1px 5px rgba(0, 0, 0, 0.08);
+	backdrop-filter: blur(25px);
+	width: 100%;
+	flex-grow: 1;
+	margin-top: 0.5rem;
+	border-radius: 0;
 }
 .get_start_container .main_info_container .title{
-	color: rgb(255, 0, 25);
+	color: #FF3535;
 }
 .svr_item_container, .svr_item_error_hint_container{
-	background: rgb(40, 41, 49);
-	border-color: rgba(40, 41, 49, 0.5);
+	background: rgba(128,128,128,0.25);
+	box-shadow: 0px 1px 4px 0px rgb(0 0 0 / 20%);
+	border: 0.5px solid rgb(255, 255, 255, 0.08);
+	border-radius: 0;
 }
 .svr_item_container.selected{
-	background: rgb(40, 41, 49);
-	border-color: rgb(255, 0, 25);
+	background: linear-gradient(0deg, rgba(10, 94, 219, 0.1), rgba(10, 94, 219, 0.1)),
+		linear-gradient(0deg, rgba(25, 53, 255, 0.05), rgba(25, 53, 255, 0.05)),
+		linear-gradient(0deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.08));
+	border: 1px solid transparent;
+	-moz-border-image: -moz-linear-gradient(88.88deg, #0A5EDB 20.22%, #DB0A2C 85.8%);
+	-webkit-border-image: -webkit-linear-gradient(88.88deg, #0A5EDB 20.22%, #DB0A2C 85.8%);
+	border-image: linear-gradient(88.88deg, #0A5EDB 20.22%, #DB0A2C 85.8%);
+	border-image-slice: 2;
+}
+.item_tag_container{
+	transform: skew(-30deg);
+}
+.item_tag_container > .item_tag{
+	background: #000;
+	border-radius: 0;
+	border: 1px solid transparent;
+	-moz-border-image: -moz-linear-gradient(88.88deg, #0A5EDB 20.22%, #DB0A2C 85.8%);
+	-webkit-border-image: -webkit-linear-gradient(88.88deg, #0A5EDB 20.22%, #DB0A2C 85.8%);
+	border-image: linear-gradient(88.88deg, #0A5EDB 20.22%, #DB0A2C 85.8%);
+	border-image-slice: 2;
+}
+.item_tag_container > .item_tag:before{
+	position: absolute;
+	content: "";
+	width: 14px;
+	height: 100%;
+	left: 5px;
+	background-image: url(/images/New_ui/amesh/client_control.svg);
+	background-repeat: no-repeat;
+	background-size: 320px;
+	background-position: -245px 2px;
 }
 .svr_item_container.internet{
-	color: rgb(255, 0, 25);
+	color: #FF3535;
 }
 .svr_item_container.active .svr_item_sub_info .vpn_status,
 .svr_item_container.internet.connected .svr_item_sub_info{
-	color: rgb(255, 0, 25);
+	color: #FF3535;
+}
+.svr_item_container.error_hint{
+	border-radius: 0;
+}
+.svr_item_error_hint_container > div{
+	color: #FF3535;
+}
+.switch{
+	border-radius: 0px;
+}
+.switch.off{
+	background: #0B0B0B;
+	border: 2px solid #666666;
 }
 .switch.on{
-	background: rgb(255, 0, 25);
+	background: #000;
+	border: 2px solid #FF3535;
+}
+.switch:before{
+	background: #666666;
+	border-radius: 0%;
+	height: 12px;
+	width: 12px;
+	left: 4px;
+	top: 4px;
+}
+.switch.on:before{
+	background: #FF3535;
+}
+.checkbox, .checkbox.off{
+	box-shadow: 0 0 0 1px #999999;
 }
 .checkbox.on{
-	box-shadow: 0 0 0 1.5px rgba(240, 0, 28, 0.6);
-	background-color: rgba(240, 0, 28, 0.6);
+	box-shadow: 0 0 0 .5px #4d4d4d;
+	background-color: #000;
+}
+.checkbox.on:before, .checkbox.disable:before{
+	border-top: 2px solid #FF3535;
+	border-right: 2px solid #FF3535;
 }
 .profile_setting_item{
 	background-color: rgba(0, 0, 0, 0.1);
 }
+.profile_setting_item .title,
+.profile_setting_item .title a:link{
+	color: #b9c5d4;
+}
 .btn_item .btn_container{
-	border: 1px solid rgb(255, 0, 25);
-	background: rgba(255, 0, 25, 0.2);
+	background: initial;
+	border: 1px solid #666;
+	color: #EBEBEB;
+	border-radius: 0;
+}
+.btn_item .btn_container:hover{
+	background: linear-gradient(91.54deg, #0E7287 7.08%, #5600E6 54%, #940038 85.11%);
+	border: 1px solid rgba(255, 53, 53, 0.4);
+}
+.btn_item .status_text{
+	color: #FF40BF;
+}
+.textInput, .custom_select_container, .textareaInput{
+	background: rgba(255,255,255,0);
+	color: #FFFFFF;
+	border: 1px solid #4D4D4D;
+	border-radius: 0;
 }
 .textInput:focus{
-	box-shadow: 0 0 3px rgb(255, 0, 25);
-	border: 1px solid rgb(255, 0, 25)
+	border: 1px solid #FFFFFF;
 }
 .custom_select_container .select_options_container{
-	background: rgb(40, 41, 49);
+	background: #0B0B0B;
+	border: 1px solid rgba(255, 255, 255, 0.3);
+	border-radius: 0;
 }
 .custom_select_container .select_options_container div.selected{
-	color: rgb(255, 0, 25);
+	color: #FF3535;
 }
 .custom_select_container .select_options_container div.selected:before{
-	border-top: 2px solid rgb(255, 0, 25);
-	border-right: 2px solid rgb(255, 0, 25);
+	border-top: 2px solid #FF3535;
+	border-right: 2px solid #FF3535;
 }
-.action_container .btn_container, .get_start_container .main_info_container .add_btn{
-	background: rgba(240, 0, 28, 0.6);
+.custom_select_container .select_options_container div:hover{
+	background: rgba(128, 128, 128, 0.1);
+}
+.custom_select_container .select_options_container div.disabled{
+	color: rgb(255 255 255 / 50%);
+}
+.custom_select_container .select_options_container::-webkit-scrollbar-track,
+.textareaInput::-webkit-scrollbar-track{
+	border: 4px solid #0B0B0B;
+	background-color: rgba(255, 53, 53, 0.5);
+}
+.custom_select_container .select_options_container::-webkit-scrollbar-thumb,
+.textareaInput::-webkit-scrollbar-thumb{
+	background-color: #FF3535;
+	border: 1px solid #0B0B0B;
+}
+.action_container .btn_container{
+	color: #FF3535;
+	background: linear-gradient(to left, #FF3535, #FF3535) left top no-repeat, linear-gradient(to bottom, #FF3535, #FF3535) left top no-repeat, linear-gradient(to left, #FF3535, #FF3535) right top no-repeat, linear-gradient(to bottom, #FF3535, #FF3535) right top no-repeat, linear-gradient(to left, #FF3535, #FF3535) left bottom no-repeat, linear-gradient(to bottom, #FF3535, #FF3535) left bottom no-repeat, linear-gradient(to left, #FF3535, #FF3535) right bottom no-repeat, linear-gradient(to left, #FF3535, #FF3535) right bottom no-repeat, rgba(0,0,0,0.5);
+	background-size: 1px 5px, 5px 1px, 1px 5px, 5px 1px;
+	border: 1px outset rgba(128, 128, 128, 0.2);
+	border-radius: 0;
+}
+.action_container .btn_container.valid_fail{
+	border: 1px outset rgb(128 128 128 / 10%);
+	background-color: rgb(128 128 128/ 40%);
+	color: #999;
+}
+.get_start_container .main_info_container .add_btn{
+	background: initial;
+	border: 1px solid #666;
+	color: #EBEBEB;
+	border-radius: 0;
+}
+.get_start_container .main_info_container .add_btn:hover{
+	background: linear-gradient(91.54deg, #0E7287 7.08%, #5600E6 54%, #940038 85.11%);
+	border: 1px solid rgba(255, 53, 53, 0.4);
 }
 .dropdown_select option{
 	background: rgb(40, 41, 49);
@@ -60,16 +191,29 @@
 	background: rgb(0, 0, 0);
 }
 .popup_container .popup_content_container{
-	background: rgb(40, 41, 49);
+	background: rgba(0, 0, 0, 0.3);
+	border: 1px solid rgba(255, 255, 255, 0.05);
+	box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25), 0px 3px 1px rgba(0, 0, 0, 0.06), 0px 1px 5px rgba(0, 0, 0, 0.08);
+	backdrop-filter: blur(25px);
+	border-radius: 0px;
 }
 .feature_desc .title{
 	color: rgb(240, 0, 28);
 }
+.del_profile .action_btn_container .btn, .customize_alert .action_btn_container .btn{
+	border-radius: 0;
+}
 .del_profile .action_btn_container .del, .customize_alert .action_btn_container .ok{
-	background: rgb(255, 0, 25);
+	background: #FF3535;
+}
+.vpn_type_maxi_hint, .item_hint{
+	color: #FF40BF;
 }
 .client_list_content_container .client_container{
 	background-color: rgba(0, 0, 0, 0.1);
+}
+.client_list_content_container .client_container.no_data{
+	color: #FF40BF;
 }
 .client_icon_container.default_icon, .client_icon_container.user_icon{
 	background-color: rgb(104, 5, 22);
@@ -89,10 +233,10 @@
 	background-color: rgba(0, 0, 0, 0.1);
 }
 .wan_status_container .connect_title:before{
-	border-top: 3px solid rgba(240, 0, 28, 0.6);
+	border-top: 3px solid #FF3535;
 }
 .wan_status_container.connected .connect_status_text{
-	color: rgb(255, 0, 25);
+	color: #FF3535;
 }
 @media (max-width: 575px) {
 	.del_profile .action_btn_container .del{

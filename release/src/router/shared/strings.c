@@ -277,6 +277,9 @@ const char *find_word(const char *buffer, const char *word)
 	const char *p, *q;
 	int n;
 
+	if (!word || *word == '\0')
+		return NULL;
+
 	n = strlen(word);
 	p = buffer;
 	while ((p = strstr(p, word)) != NULL) {

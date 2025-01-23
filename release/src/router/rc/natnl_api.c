@@ -1,6 +1,7 @@
 #include <shared.h>
 #include "rc.h"
 #include "mastiff.h"
+#include "aae_ipc.h"
 #ifdef RTCONFIG_TUNNEL
 static int is_mesh_re_mode()
 {
@@ -56,11 +57,12 @@ void start_aae_sip_conn(int sdk_init)
 #define WAIT_TIMEOUT 5
 	int time_count = 0;
 	if (pids("aaews")) {
+		char event[AAE_MAX_IPC_PACKET_SIZE];
 		if (sdk_init)
-			nvram_set_int("aae_action", AAEWS_ACTION_SDK_INIT);
+			snprintf(event, sizeof(event), AAE_AAEWS_GENERIC_MSG, AAE_EID_AAEWS_ACTION_SDK_INIT);
 		else
-			nvram_set_int("aae_action", AAEWS_ACTION_SIP_REGISTER);
-		killall("aaews", AAEWS_SIG_ACTION);
+			snprintf(event, sizeof(event), AAE_AAEWS_GENERIC_MSG, AAE_EID_AAEWS_ACTION_SIP_REG);
+		aae_sendIpcMsg(AAEWS_IPC_SOCKET_PATH, event, strlen(event));
 		while(time_count < WAIT_TIMEOUT && nvram_invmatch("aae_sip_connected", "1")) {
 			sleep(1);
 			//_dprintf("%s: wait sip register...\n", __FUNCTION__);
@@ -80,11 +82,12 @@ void stop_aae_sip_conn(int sdk_deinit)
 		} else
 #endif
 		{
+			char event[AAE_MAX_IPC_PACKET_SIZE];
 			if (sdk_deinit)
-				nvram_set_int("aae_action", AAEWS_ACTION_SDK_DEINIT);
+				snprintf(event, sizeof(event), AAE_AAEWS_GENERIC_MSG, AAE_EID_AAEWS_ACTION_SDK_DEINIT);
 			else
-				nvram_set_int("aae_action", AAEWS_ACTION_SIP_UNREGISTER);
-			killall("aaews", AAEWS_SIG_ACTION);
+				snprintf(event, sizeof(event), AAE_AAEWS_GENERIC_MSG, AAE_EID_AAEWS_ACTION_SIP_UNREG);
+			aae_sendIpcMsg(AAEWS_IPC_SOCKET_PATH, event, strlen(event));
 			while(time_count < WAIT_TIMEOUT && nvram_match("aae_sip_connected", "1")) {
 				sleep(1);
 				//_dprintf("%s: wait sip unregister...\n", __FUNCTION__);
@@ -100,8 +103,9 @@ void stop_aae_gently()
 #define WAIT_TIMEOUT 5
 	int time_count = 0;
 	if (pids("aaews")) {
-		nvram_set_int("aae_action", AAEWS_ACTION_SIP_UNREGISTER);
-		killall("aaews", AAEWS_SIG_ACTION);
+		char event[AAE_MAX_IPC_PACKET_SIZE];
+		snprintf(event, sizeof(event), AAE_AAEWS_GENERIC_MSG, AAE_EID_AAEWS_ACTION_SIP_UNREG);
+		aae_sendIpcMsg(AAEWS_IPC_SOCKET_PATH, event, strlen(event));
 		while(time_count < WAIT_TIMEOUT && nvram_match("aae_sip_connected", "1")) {
 			sleep(1);
 			//_dprintf("%s: wait sip unregister...\n", __FUNCTION__);

@@ -397,7 +397,7 @@ else
 	rm -f $(INSTALLDIR)/rom/etc/profile.hnd
 endif
 
-ifeq ($(RTCONFIG_TPVPN),y)
+ifeq ($(RTCONFIG_HMA),y)
 	mkdir -p $(INSTALLDIR)/rom/vpn
 	install -m 0644 vpn/HMA_TCP.JSON $(INSTALLDIR)/rom/vpn/HMA_TCP.JSON
 	install -m 0644 vpn/HMA_UDP.JSON $(INSTALLDIR)/rom/vpn/HMA_UDP.JSON
@@ -441,6 +441,10 @@ endif
 
 ifeq ($(RTCONFIG_BCMARM),y)
 	install -m 0755 apps_scripts/brcmsysinfo.sh $(INSTALLDIR)/usr/sbin
+endif
+
+ifeq ($(RTCONFIG_GEARUPPLUGIN),y)
+	install -m 0755 gearup_script/guplugin_monitor.sh $(INSTALLDIR)/usr/sbin
 endif
 
 .PHONY: dummy

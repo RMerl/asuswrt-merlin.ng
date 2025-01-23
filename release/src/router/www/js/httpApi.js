@@ -220,7 +220,7 @@ var httpApi ={
 		return reult;
 	},
 
-	"nvramSet": function(postData, handler){
+	"nvramSet": function(postData, handler, async = true){
 		delete postData.isError;
 
 		$.ajax({
@@ -228,6 +228,7 @@ var httpApi ={
 			dataType: 'json',
 			data: postData,
 			type: 'POST',
+            async: async,
 			error: function(){},
 			success: function(response){
 				if(handler) handler.call(response);
@@ -671,7 +672,9 @@ var httpApi ={
 			"hgw_v6plus":"HGW_V6PLUS",
 			"ocnvc":"OCNVC",
 			"dslite_xpass":"DSLITE_XPASS",
-			"dslite_transix":"DSLITE_TRANSIX"
+			"dslite_transix":"DSLITE_TRANSIX",
+			"v6opt":"V6OPTION",
+			"hgw_v6opt":"HGW_V6OPTION"
 		}
 
 		var retData = {
@@ -705,12 +708,17 @@ var httpApi ={
 			retData.wan46State = wanTypeList.ocnvc;
 		}
 		else if(wanInfo.wan46det_state == "6"){
-                        retData.wan46State = wanTypeList.dslite_xpass;
-                }
-                else if(wanInfo.wan46det_state == "7"){
-                        retData.wan46State = wanTypeList.dslite_transix;
-                }
-
+			retData.wan46State = wanTypeList.dslite_xpass;
+		}
+		else if(wanInfo.wan46det_state == "7"){
+			retData.wan46State = wanTypeList.dslite_transix;
+		}
+		else if(wanInfo.wan46det_state == "8"){
+			retData.wan46State = wanTypeList.v6opt;
+		}
+		else if(wanInfo.wan46det_state == "9"){
+			retData.wan46State = wanTypeList.hgw_v6opt;
+		}
 
 		return retData;
 	},
@@ -729,6 +737,7 @@ var httpApi ={
 			"v6plus": "<#IPv6_plus#>",
 			"ocnvc": "<#IPv6_ocnvc#>",
 			"dslite": "DS-Lite",
+			"v6opt": "<#IPv6_opt#>",
 			"usb modem": "USB Modem"
 		};
 		var result = {
@@ -917,15 +926,139 @@ var httpApi ={
 		$.ajax({
 			url: '/set_' + eulaType + '_EULA.cgi?' + eulaType + '_EULA=' + enable,
 			error: function(){},
-			success: callback
+			success: function (response) {
+				if (callback)
+					callback(response);
+			}
 		});
+	},
+
+	"newEula": {
+		"set": (enable, callback) => {
+			$.ajax({
+				url: '/set_ASUS_NEW_EULA.cgi',
+				data: {
+					"ASUS_NEW_EULA": enable
+				},
+				dataType: 'json',
+				success: function (response) {
+					if (callback)
+						callback(response);
+				}
+			});
+		},
+		"get": () => {
+			return new Promise((resolve, reject) => {
+				const res = httpApi.nvramGet(["ASUS_NEW_EULA", "ASUS_NEW_EULA_time"], true)
+				resolve(res);
+			});
+		}
+	},
+
+	"privateEula": {
+		"set": function(enable, callback){
+			$.ajax({
+				url: '/set_ASUS_privacy_policy.cgi',
+				data: {
+					"ASUS_privacy_policy": enable
+				},
+				async: false,
+				dataType: 'json',
+				success: function (response) {
+					if (callback)
+						callback(response);
+				}
+			});
+		},
+
+		"get": function(feature){
+			return new Promise((resolve, reject) =>{
+				if (feature == undefined || feature == "") feature = "ASUS_privacy_policy";
+
+				let retData = {
+					ASUS_PP: 0,
+					ASUS_PP_time: ""
+				};
+
+				$.ajax({
+					url: '/get_ASUS_privacy_policy.cgi',
+					dataType: 'json',
+					async: false,
+					success: function (resp) {
+						var ASUS_privacy_policy = resp.ASUS_privacy_policy;
+						var ASUS_privacy_policy_time = resp.ASUS_privacy_policy_time;
+
+						if (feature == "SIGNED") {
+							var securityUpdate = httpApi.securityUpdate.get()
+							var audoUpgrade = httpApi.nvramGet(["webs_update_enable"]).webs_update_enable == "1";
+
+							if (ASUS_privacy_policy == "0" && ASUS_privacy_policy_time != "") {
+								retData.ASUS_PP = "1";
+								retData.ASUS_PP_time = "";
+							} else if (
+								ASUS_privacy_policy_time == "" ||
+								ASUS_privacy_policy_time == undefined
+							) {
+								retData.ASUS_PP = "0";
+								retData.ASUS_PP_time = "";
+							} else if (
+								(ASUS_privacy_policy > "1" && resp.AHS > ASUS_privacy_policy && securityUpdate) ||
+								(ASUS_privacy_policy > "1" && resp.ASD > ASUS_privacy_policy && securityUpdate) ||
+								(ASUS_privacy_policy > "1" && resp.AUTOUPGRADE > ASUS_privacy_policy && audoUpgrade)
+							) {
+								retData.ASUS_PP = "0";
+								retData.ASUS_PP_time = ASUS_privacy_policy_time;
+							} else {
+								retData.ASUS_PP = "1";
+								retData.ASUS_PP_time = ASUS_privacy_policy_time;
+							}
+						} else {
+							retData.ASUS_PP = ASUS_privacy_policy;
+							retData.ASUS_PP_time = ASUS_privacy_policy_time;
+						}
+					}
+				});
+
+				resolve(retData);
+			});
+		}
+	},
+
+	"securityUpdate": {
+		"set": function(enable, callback){
+			$.ajax({
+				url: '/set_security_update.cgi?' + 'security_update=' + enable,
+				async: false,
+				success: function (response) {
+					if (callback)
+						callback(response);
+				}
+			});
+		},
+
+		"get": function(){
+			var retData;
+			$.ajax({
+				url: '/get_security_update.cgi',
+				dataType: 'json',
+				async: false,
+				success: function(resp){
+					retData = resp.security_update;
+				}
+			});
+
+			return retData;
+		}
 	},
 
 	"unregisterAsusDDNS": function(callback){
 		$.ajax({
 			url: '/unreg_ASUSDDNS.cgi',
 			error: function(){},
-			success: callback
+			success: function (response) {
+				if (callback)
+					callback(response);
+			}
 		});
 	},
 
@@ -965,14 +1098,14 @@ var httpApi ={
 				"boost_led": {
 					"title": "<#BoostKey_LED#>",
 					"value": 0,
-					"text": "<#BoostKey_LED#>",
-					"desc": "<#BoostKey_LED_desc#>"
+					"text": `<#BoostKey_LED#>`,
+					"desc": `<#BoostKey_LED_desc#>`
 				},
 				"boost_aura": {
 					"title": "<#BoostKey_Aura_RGB#>",
 					"value": 2,
-					"text": "<#BoostKey_Aura_RGB#>",
-					"desc": "<#BoostKey_Aura_RGB_desc#>"
+					"text": `<#BoostKey_Aura_RGB#>`,
+					"desc": `<#BoostKey_Aura_RGB_desc#>`
 				},
 				"boost_dfs": {
 					"title": "<#BoostKey_DFS#>",
@@ -983,8 +1116,8 @@ var httpApi ={
 				"boost_qos": {
 					"title": "<#BoostKey_Boost#>",
 					"value": 3,
-					"text": "<#BoostKey_enable#>",
-					"desc": "<#BoostKey_Boost_desc#>"
+					"text": `<#BoostKey_enable#>`,
+					"desc": `<#BoostKey_Boost_desc#>`
 				}
 		};
 
@@ -1433,6 +1566,7 @@ var httpApi ={
 				{type:"MOBILE", bit:8},
 				{type:"WANLAN", bit:9},
 				{type:"MOCA", bit:10},
+				{type:"WANAUTO", bit:12},
 				{type:"IPTV_BRIDGE", bit:26},
 				{type:"IPTV_VOIP", bit:27},
 				{type:"IPTV_STB", bit:28},
@@ -1475,8 +1609,7 @@ var httpApi ={
 		var rate_map_USB = [
 			{value:"480",text:"USB2.0"},
 			{value:"5000",text:"USB3.0"},
-			{value:"10000",text:"USB3.1"},
-			{value:"20000",text:"USB3.2"}
+			{value:"10000",text:"USB3.2"}
 		];
 		httpApi.get_port_status(mac, function(response){
 			var response_temp = JSON.parse(JSON.stringify(response));
@@ -1492,7 +1625,7 @@ var httpApi ={
 						data["label_priority"] = ((label == "W") ? 1 : ((label == "L") ? 2 : 3));
 						data["label_idx"] = label_idx;
 						data["label_port_name"] = (function(){
-							if(data.cap_support.WAN){
+							if(data.cap_support.WAN || data.cap_support.WANAUTO){
 								if(label_idx == "0")
 									return "WAN";
 								else
@@ -1558,16 +1691,18 @@ var httpApi ={
 									data["special_port_name"] = (data.is_on == "1") ? "USB Modem" : max_rate_data.text;
 								}
 								else{
-									var max_rate_value = parseInt(max_rate_data.value);
-									data["special_port_name"] = max_rate_data.text.replace(" Gbps", "");
-									if(max_rate_value == 10000){
-										if(data["cap_support"]["SFPP"] == true)
-											data["special_port_name"] = data["special_port_name"] + "G SFP+";
+									const max_rate_value = parseInt(max_rate_data.value);
+									if(max_rate_value > 1000){
+										data["special_port_name"] = max_rate_data.text.replace(" Gbps", "");
+										if(max_rate_value == 10000){
+											if(data["cap_support"]["SFPP"] == true)
+												data["special_port_name"] = data["special_port_name"] + "G SFP+";
+											else
+												data["special_port_name"] = data["special_port_name"] + "G baseT";
+										}
 										else
-											data["special_port_name"] = data["special_port_name"] + "G baseT";
+											data["special_port_name"] = data["special_port_name"] + "G";
 									}
-									else
-										data["special_port_name"] = data["special_port_name"] + "G";
 								}
 							}
 						}
@@ -1995,7 +2130,7 @@ var httpApi ={
 			if(typeof window.localStorage[key] !== "function" && key !== "length"){
 				logContentArray.push([key, window.localStorage[key]])
 			}
-		};
+		}
 
 		logContentArray.sort(function(a, b){
 			return a[0] - b[0];

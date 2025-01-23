@@ -106,6 +106,7 @@ typedef struct _Login{
 	pSrvInfo	psrinfoList;
 	pSrvInfo	webstorageinfoList;
 	pSrvInfo	ddnsinfoList;
+	pSrvInfo	awsiotinfoList;
 	char	deviceticketexpiretime[MAX_DEV_TICKET_EXP_LEN];
 	char 	time[MAX_TIME_LEN];
 } Login, *pLogin;
@@ -435,6 +436,7 @@ int send_getawscertificate_req(
 	const char* fwver, 
 	const int apilevel,
 	const char* modelname,
+	int newcert,
 	GetAWSCertificate* pGAC
 );
 

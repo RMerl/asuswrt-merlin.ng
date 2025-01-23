@@ -9,20 +9,21 @@
 <link rel="shortcut icon" href="images/favicon.png">
 <link rel="icon" href="images/favicon.png">
 <title><#Web_Title#> - <#AiProtection_filter#></title>
+<link rel="stylesheet" type="text/css" href="css/basic.css">
 <link rel="stylesheet" type="text/css" href="index_style.css">
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="device-map/device-map.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="state.js"></script>
 <script type="text/javascript" src="popup.js"></script>
 <script type="text/javascript" src="general.js"></script>
 <script type="text/javascript" src="help.js"></script>
 <script type="text/javascript" src="validator.js"></script>
-<script type="text/javascript" src="js/jquery.js"></script>
 <script type="text/javascript" src="form.js"></script>
 <script type="text/javascript" src="switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="client_function.js"></script>
-<script type="text/javascript" src="/js/httpApi.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js"></script>
 <style>
 *{
 	box-sizing: content-box;
@@ -82,8 +83,6 @@ function initial(){
 
 	showDropdownClientList('setClientIP', 'mac', 'all', 'ClientList_Block_PC', 'pull_arrow', 'all');
 
-	if(!ASUS_EULA.status("tm"))
-		ASUS_EULA.config(eula_confirm, cancel);
 }
 
 function pullLANIPList(obj){
@@ -136,7 +135,7 @@ function show_subCategory(obj){
 			$(previous_obj).siblings()[2].style.display = "";
 
 		obj.setAttribute("class", "closed");
-		if($(previous_obj).siblings()[1] = sub_category){			//To handle open, close the same category
+		if($(previous_obj).siblings()[1] == sub_category){			//To handle open, close the same category
 			$(previous_obj).siblings()[1] = "";
 			previous_obj = "";
 		}
@@ -532,7 +531,7 @@ function edit_table(){
 		if(k == 1)
 			apps_filter_temp += enable_checkbox;
 		else{
-			apps_filter_temp += "<" + enable_checkbox;;
+			apps_filter_temp += "<" + enable_checkbox;
 		}
 
 		apps_filter_temp += ">" + target_mac + ">";
@@ -796,11 +795,16 @@ function eula_confirm(){
 function switch_control(_status){
 	if(_status) {
 		if(reset_wan_to_fo.check_status()) {
-			if(ASUS_EULA.check("tm")){
-				document.form.wrs_enable.value = 1;
-				document.form.wrs_app_enable.value = 1;
-				applyRule();
-			}
+            if(policy_status.TM == 0 || policy_status.TM_time == ''){
+                const policyModal = new PolicyModalComponent({
+                    policy: "TM",
+                    agreeCallback: eula_confirm,
+                    disagreeCallback: cancel
+                });
+                policyModal.show();
+            }else{
+                eula_confirm();
+            }
 		}
 		else
 			cancel();

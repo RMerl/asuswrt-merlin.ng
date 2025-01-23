@@ -13,13 +13,13 @@
 <link rel="stylesheet" type="text/css" href="usp_style.css">
 <link rel="stylesheet" type="text/css" href="css/basic.css">
 <link rel="stylesheet" type="text/css" href="css/triLvGameAcceleration.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/help.js"></script>
-<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/form.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js"></script>
 <style>
 body{
     margin: 0;
@@ -53,10 +53,6 @@ function initial(){
 		$('#uu_field').show();
 	}
 
-	if(!ASUS_EULA.status("tm")){
-		ASUS_EULA.config(eula_confirm, cancel);
-	}
-
 	if(outfox_support)
 		$("#outfox_div").css("display", "");
 	else{
@@ -82,9 +78,16 @@ function sign_eula(){
 		}
 	}
 
-	if(ASUS_EULA.check("tm")){
-		check_game_boost();
-	}
+    if(policy_status.TM == 0 || policy_status.TM_time == ''){
+        const policyModal = new PolicyModalComponent({
+            policy: "TM",
+            agreeCallback: check_game_boost,
+            disagreeCallback: cancel
+        });
+        policyModal.show();
+    }else{
+        check_game_boost();
+    }
 }
 
 function check_game_boost(){
@@ -153,6 +156,21 @@ function redirectSite(url){
 function uuRegister(mac){
 	var _mac = mac.toLowerCase();
 	window.open('https://router.uu.163.com/asus/pc.html#/acce?gwSn=' + _mac + '&type=asuswrt', '_blank');
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const thirdpartyPolicy = 'WTFast'
+    document.getElementById("thirdparty_pp").innerHTML=`<#Thirdparty_PP_Desc1#>`.replace("%1$@", thirdpartyPolicy).replace("[aa]%2$@[/aa]", `<a onclick="showThirdPartyPolicy('${thirdpartyPolicy}')" style="text-decoration: underline;cursor: pointer;">AAA Internet Publishing Inc. PRIVACY POLICY</a>`);
+    const thirdpartyUUPolicy = '网易UU加速器'
+    document.getElementById("thirdparty_uu_pp").innerHTML=`<#Thirdparty_PP_Desc1#>`.replace("%1$@", thirdpartyUUPolicy).replace("[aa]%2$@[/aa]", `<a onclick="showThirdPartyPolicy('${thirdpartyUUPolicy}')" style="text-decoration: underline;cursor: pointer;">网易游戏隐私政策</a>`);
+})
+
+function showThirdPartyPolicy(party){
+    const thirdPartyPolicyModal = new ThirdPartyPolicyModalComponent({
+        policy: 'THIRDPARTY_PP',
+        party: party
+    });
+    thirdPartyPolicyModal.show();
 }
 </script>
 </head>
@@ -357,7 +375,7 @@ function uuRegister(mac){
 									</div>
 								</div>
 								<div class="content-desc"><#Game_WTFast_desc#></div>
-								<div class="content-desc">*Please be aware this is a third-party service provided by WTFast®, and WTFast® is fully responsible for warranties and liabilities of this game server acceleration service.</div><!--untranslated-->
+								<div id="thirdparty_pp" class="content-desc"></div>
 							</div>
 							<div class="content-divide-line"></div>
 							<div class="content-action-container" onclick="redirectSite('wtfast');">
@@ -397,6 +415,7 @@ function uuRegister(mac){
 									</div>
 								</div>
 								<div class="content-desc">UU路由器插件为三大主机PS4、Switch、Xbox One提供加速。可实现多台主机同时加速，NAT类型All Open。畅享全球联机超快感！</div>
+								<div id="thirdparty_uu_pp" class="content-desc"></div>
 							</div>
 							<div class="content-divide-line"></div>
 							<div class="content-action-container" onclick="uuRegister(label_mac);">

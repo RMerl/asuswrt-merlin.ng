@@ -93,7 +93,7 @@ var faq_data = {
 		"link": "Advanced_WTFast_Content.asp",
 		"menu": "<#Game_acceleration#>",
 		"mode": ["RT"],
-		"support": (() => isSupport("gameMode"))(),
+		"support": (() => isSupport("wtfast"))(),
 	},
 	"gearAccelerator": {
 		"index": "gearAccelerator",
@@ -450,14 +450,6 @@ var faq_data = {
 	"wmmApsd": {
 		"index": "wmmApsd",
 		"name": "<#WLANConfig11b_x_APSD_itemname#>",
-		"link": "Advanced_WAdvanced_Content.asp",
-		"menu": "<#menu5_1#>",
-		"mode": ["RT", "AP"],
-		"support": true,
-	},
-	"optAmpduAggregation": {
-		"index": "optAmpduAggregation",
-		"name": "<#WLANConfig11b_x_AMPDU#>",
 		"link": "Advanced_WAdvanced_Content.asp",
 		"menu": "<#menu5_1#>",
 		"mode": ["RT", "AP"],
@@ -1066,8 +1058,8 @@ var faq_data = {
 		"mode": ["RT"],
 		"support": true,
 	},
-	"portForwarding": {
-		"index": "portForwarding",
+	"portForwardingLog": {
+		"index": "portForwardingLog",
 		"name": "<#menu5_7_5#>",
 		"link": "Main_IPTStatus_Content.asp",
 		"menu": "<#System_Log#>",

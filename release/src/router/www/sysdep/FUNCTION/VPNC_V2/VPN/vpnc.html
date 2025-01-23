@@ -73,7 +73,7 @@ if(isSupport("vpn_fusion"))
 var dhcp_staticlist_maximum = 64;
 var openvpnc_max = 5;
 var vpnc_openvpn_unit_edit = 5;
-var vpnc_conn_maxi_general_note = stringSafeGet("<#vpnc_conn_maxi_general#>");
+var vpnc_conn_maxi_general_note = stringSafeGet("<#vpnc_conn_maxi_general#>").replace("#MAXNUM", vpnc_activate_maximum);
 var vpnc_conn_maxi_ssk_note = stringSafeGet("<#vpnc_conn_maxi_ssk#>");
 var vpnc_first_note = stringSafeGet("<#vpnc_first#>");
 var str_vpnc_ip_allowed = stringSafeGet("<#vpnc_ip_allowed#>");
@@ -283,6 +283,9 @@ function show_popup_edit_new_profile(){
 	show_popup("setting_profile");
 	set_profile_data($(".popup_container.popup_element"), "new");
 	set_apply_btn_status($(".popup_container.popup_element"), "new");
+	if (support_Surfshark) {
+		Get_Component_Surfshark_Policy().insertBefore('.popup_container.popup_element .action_container:not(.loading)')
+	}
 	$(".popup_container.popup_element").find(".action_container .btn_container.delete").hide();
 	selected_profile_idx = "";
 	resize_iframe_height();
@@ -382,6 +385,11 @@ function Get_Component_Svr_Item(_profile_data){
 			$(".profile_setting_container").append(Get_Component_Setting_Profile());
 			set_profile_data($(".profile_setting_container"), specific_data);
 			set_apply_btn_status($(".profile_setting_container"), specific_data);
+			if (support_Surfshark) {
+				if (specific_data.proto.toLowerCase() == 'surfshark') {
+					Get_Component_Surfshark_Policy().insertBefore('.profile_setting_container .action_container:not(.loading)')
+				}
+			}
 			set_del_btn($(".profile_setting_container"), specific_data);
 			selected_profile_idx = (specific_data.idx).toString();
 			$(this).closest("#srv_profile_list").find(".svr_item_container").removeClass("selected");
@@ -1366,6 +1374,10 @@ function Get_Component_Client_List_Item(_client_data, _edit_mode){
 }
 function Get_Component_Client_No_Item(){
 	return $("<div>").addClass("client_container no_data").html(str_vpnc_profile_assignDevice);
+}
+function Get_Component_Surfshark_Policy() {
+	const thirdpartyPolicy = `Surfshark`;
+	return $("<div>").attr("show_item", "surfshark").addClass("profile_policy_item").html(`<div class="text_content"><#Thirdparty_PP_Desc1#></div>`.replace("%1$@", thirdpartyPolicy).replace("[aa]%2$@[/aa]", `<a onclick="showThirdPartyPolicy('${thirdpartyPolicy}')" style="text-decoration: underline;cursor: pointer;">Surfshark B.V. PRIVACY POLICY</a>`));
 }
 function Get_Component_Setting_Client_Policy(){
 	var $container = $("<div>").addClass("popup_edit_client_container");
@@ -4112,6 +4124,13 @@ function initial(){
 		LoadingTime(seconds, flag);
 	});
 	resize_iframe_height();
+}
+function showThirdPartyPolicy(party) {
+	const thirdPartyPolicyModal = new ThirdPartyPolicyModalComponent({
+		policy: 'THIRDPARTY_PP',
+		party: party
+	});
+	thirdPartyPolicyModal.show();
 }
 $(document).ready(initial);
 </script>

@@ -112,6 +112,9 @@
 #if defined(RTCONFIG_QCA_PLC_UTILS) || defined(RTCONFIG_QCA_PLC2)
 #include <plc_utils.h>
 #endif
+#ifdef RTCONFIG_BCMWL6
+extern int restore_defaults_g;
+#endif
 
 #define BCM47XX_SOFTWARE_RESET	0x40		/* GPIO 6 */
 #define RESET_WAIT		2		/* seconds */
@@ -137,6 +140,7 @@ static int bc_wps_led = 0;
 #define AMESH_TIMEOUT_COUNT	30 * 20		/* 30 secnods */
 
 struct time_mapping_s time_mapping;
+static int re_node = 0, re_ready = 0;
 #endif
 
 #ifdef RTCONFIG_WPS_RST_BTN
@@ -196,6 +200,8 @@ static int drop_caches = 0;
 #endif
 static int top_period = 0;
 static int top = 0;
+static int lsof_period = 0;
+static int lsof = 0;
 #ifdef RTCONFIG_BCMARM
 static int chkusb3_period = 0;
 static int u3_chk_life = 6;
@@ -341,6 +347,11 @@ const char *sw_aggled_extoff[]={"sw", "0x800c00b8", "0x4000f", NULL};
 static int bs=-1, bs_pre=-1;
 extern char *bs_desc[];
 #endif
+#endif
+
+#ifdef RTCONFIG_CFGSYNC
+#define CFGSYNC_RESTART_MAX_COUNT	3
+static int cfgsync_restart_count = 0;
 #endif
 
 /* DEBUG DEFINE */
@@ -3310,7 +3321,10 @@ void btn_check(void)
 
 	if (handle_btn_in_mfg())
 		return;
-
+#ifdef RTCONFIG_FRS_FEEDBACK
+	if (pidof("sendfeedback") != -1)
+		logmessage("btn_check", "alive");
+#endif
 #ifdef BTN_SETUP
 	if (btn_pressed_setup == BTNSETUP_NONE)
 	{
@@ -6996,7 +7010,7 @@ void regular_ddns_check(void)
 	}
 	logmessage("watchdog", "Hostname/IP mapping error! Restart ddns.");
 	stop_ddns();
-	start_ddns(NULL);
+	start_ddns(NULL, 0);
 
 	return;
 }
@@ -7082,7 +7096,9 @@ void ddns_check(void)
 			/* Only Time-out, connect_fail, -1 (in asusddns) or not auth_fail (not in asusddns) */
 			if ( !( !strcmp(nvram_safe_get("ddns_return_code_chk"),"Time-out") ||
 				!strcmp(nvram_safe_get("ddns_return_code_chk"),"connect_fail") ||
-				strstr(nvram_safe_get("ddns_return_code_chk"), "-1") ) )
+				strstr(nvram_safe_get("ddns_return_code_chk"), "-1") ||
+				strstr(nvram_safe_get("ddns_return_code_chk"), "390") //Server Error
+				) )
 				return;
 		}
 		else{ //non asusddns service
@@ -7128,7 +7144,7 @@ void ddns_check(void)
 	}
 	logmessage("watchdog", "start ddns.");
 	stop_ddns();
-	start_ddns("watchdog");
+	start_ddns("watchdog", 0);
 
 	return;
 }
@@ -7172,6 +7188,53 @@ void httpd_check()
 #endif
 	}
 }
+
+#ifdef RPAX58
+void wpasupp_check()
+{
+	int count = 0;
+	static int on_restart_wireless = 0;
+
+	if(!re_node)
+		return;
+
+	if(!re_ready) {
+		re_ready = nvram_match("amas_wlc0_state", "2") && nvram_match("amas_wlc1_state", "2");
+	}
+	if(!re_ready) {
+		return;
+	} else if(re_ready == 1){
+		re_ready = 2;
+		nvram_set("re_ready", "2");
+	}
+
+	if(on_restart_wireless > 0)
+		on_restart_wireless--;
+
+	count = pids_count("wpa_supplicant-2.7");
+
+	//if(nvram_match("wdbg", "1"))
+	//	_dprintf("%s, on_restart_wireless=%d, count=%d\n", __func__, on_restart_wireless, count);
+
+	if (!on_restart_wireless && !count) {
+		notify_rc("restart_wireless");
+		logmessage("watchdog", "start wpa_supplicant-2.7 due gone\n");
+		on_restart_wireless = 5;
+		return;
+	}
+
+	if(!on_restart_wireless && nvram_get_int("amas_wlc0_state") < WLC_STATE_CONNECTED) {
+		logmessage("watchdog", "trigger amas 2g reconnect\n");
+		system("wpa_cli-2.7 -p /var/run/wl0_wpa_supplicant/ sta_autoconnect 1");
+		system("wpa_cli-2.7 -p /var/run/wl0_wpa_supplicant/ reconnect");
+	}
+
+	if(!on_restart_wireless && nvram_get_int("wl1_radio") && nvram_get_int("amas_wlc1_state") < WLC_STATE_CONNECTED) {
+		logmessage("watchdog", "reset amas 5g bh keep_ap_up\n");
+		eval("wl", "-i", "eth2", "keep_ap_up", "2");
+	}
+}
+#endif
 
 void awsiot_check()
 {
@@ -7864,7 +7927,9 @@ static void auto_firmware_check()
 	localtime_r(&now, &local);
 
 #ifdef RTCONFIG_AUTO_FW_UPGRADE
-	update_enable = nvram_get_int("webs_update_enable");
+	if(get_ASUS_privacy_policy()){
+		update_enable = nvram_get_int("webs_update_enable");
+	}
 	strlcpy(update_time_tmp, nvram_safe_get("webs_update_time"), sizeof(update_time_tmp));
 	if(sscanf(update_time_tmp, "%d:%d", &update_time_hr, &update_time_min) != 2){
 		update_time_hr = (2 + rand_hr);
@@ -7893,7 +7958,7 @@ static void auto_firmware_check()
 		if (periodic_check)
 			asus_ctrl_sku_update();
 #endif
-#ifdef RTCONFIG_ASD
+#if defined(RTCONFIG_ASD) && !defined(RTCONFIG_ASD_2_1)
 		//notify asd to download version file
 		if (pids("asd") && (bootup_check || (periodic_check && period_retry == 0)))
 		{
@@ -8545,6 +8610,7 @@ void onboarding_check()
 {
 	static int bh_selected = 0;
 	static int onboarding_count = 0;
+	int lock = 0;
 
 	if (!nvram_match("start_service_ready", "1"))
 		return;
@@ -8596,7 +8662,12 @@ void onboarding_check()
 #endif
 		}
 
-		notify_rc("resetdefault");
+		lock = file_lock("onboarding");
+		if (strlen(nvram_safe_get("cfg_group")) == 0) {
+			stop_cfgsync();
+			notify_rc("resetdefault");
+		}
+		file_unlock(lock);
 	}
 }
 #endif
@@ -8607,6 +8678,8 @@ void cfgsync_check()
 {
 	char reboot[sizeof("255")];
 	char upgrade[sizeof("255")];
+	char value[sizeof("9999999")];
+	int pid_by_file = 0, pid_by_name = 0;
 
 	memset(reboot, 0, sizeof("255"));
 	memset(upgrade, 0, sizeof("255"));
@@ -8632,6 +8705,28 @@ void cfgsync_check()
 	}
 #endif
 
+	/* check and count for restarting cfgsync */
+	if (!nvram_get("dis_cfgsync_rst_chk") && nvram_match("x_Setting", "1") && nvram_match("w_Setting","1")
+		&& nvram_get_int("re_mode") == 1 && nvram_get_int("cfg_first_sync") == 0)
+	{
+		if (pids("cfg_client")) {
+			if (!f_exists("/var/run/cfg_client.pid")) {
+				cfgsync_restart_count++;
+				_dprintf("no pid file for cfg_client (%d)\n", cfgsync_restart_count);
+			}
+			else if (f_read_string("/var/run/cfg_client.pid", value, sizeof(value)) > 0)
+			{
+				pid_by_file = atoi(value);
+				extern pid_t get_pid_by_process_name(char *name);
+				pid_by_name = get_pid_by_process_name("cfg_client");
+				if (pid_by_file > 0 && pid_by_name > 0 && pid_by_file != pid_by_name) {
+					cfgsync_restart_count++;
+					_dprintf("cfg_client's pid mismatch (%d)\n", cfgsync_restart_count);
+				}
+			}
+		}
+	}
+
 	if (nvram_match("x_Setting", "1") && nvram_match("w_Setting","1") &&
 		(
 		(!pids("cfg_client") &&
@@ -8649,7 +8744,7 @@ void cfgsync_check()
 			&& (nvram_get_int("lan_state_t") == LAN_STATE_CONNECTED)
 			)
 #endif
-		) ||
+		) || (nvram_get_int("re_mode") == 1 && cfgsync_restart_count >= CFGSYNC_RESTART_MAX_COUNT) ||
 		(!pids("cfg_server") && (is_router_mode() || access_point_mode())
 #ifdef RTCONFIG_AMAS
 			&& (getAmasSupportMode() & AMAS_CAP)
@@ -8657,6 +8752,13 @@ void cfgsync_check()
 #endif
 	)))
 	{
+		if (nvram_get_int("re_mode") == 1) {
+			if (cfgsync_restart_count >= CFGSYNC_RESTART_MAX_COUNT) {
+				_dprintf("restart cfg_client by count check\n");
+				logmessage("watchdog", "restart cfg_client by count check");
+			}
+			cfgsync_restart_count = 0;
+		}
 		_dprintf("start cfgsync\n");
 		notify_rc_and_wait_2min("start_cfgsync");
 	}
@@ -8940,9 +9042,10 @@ void wlcnt_chk()
 			close(fd);
 		}
 	}
-	if(watch_prd++ % wlshoot_period) {
+
+	if(watch_prd++ % wlshoot_period == 0) {
 		if(val - pre_val > wlshoot) {
-			printf("\nWL go insanity! calm down it\n");
+			_dprintf("\nWL go insanity! calm down it\n");
 #ifndef RTCONFIG_AHS
 			logmessage("watchdog", "detect wl reinit count %d", val - pre_val);
 			for(unit = 0; unit < WL_NR_BANDS; ++unit) {
@@ -8953,17 +9056,12 @@ void wlcnt_chk()
 			/* export specific string to syslog for ahsd recover action*/
 			logmessage("watchdog", "wl reinit count %d", val - pre_val);
 			for(unit = 0; unit < WL_NR_BANDS; ++unit) {
-				if(val_all[unit] - pre_all[unit] > 0)
+				if(val_all[unit] - pre_all[unit] > 0) {
 					logmessage("watchdog", "reinit of unit%d:%d", unit, val_all[unit] - pre_all[unit]);
-			}
-
-			pre_val = val;
-			for(unit = 0; unit < WL_NR_BANDS; ++unit) {
-				pre_all[unit] = val_all[unit];
+				}
 			}
 #endif
 		}
-	} else {
 		pre_val = val;
 		for(unit = 0; unit < WL_NR_BANDS; ++unit) {
 			pre_all[unit] = val_all[unit];
@@ -8971,7 +9069,6 @@ void wlcnt_chk()
 	}
 }
 #endif
-
 
 #if 0 //#ifdef RTCONFIG_TOR
 #if (defined(RTCONFIG_JFFS2)||defined(RTCONFIG_BRCM_NAND_JFFS2))
@@ -9767,6 +9864,53 @@ void record_current_sys_uptime(void)
 	cnt %= record_period;
 }
 
+/*******************************************************************
+* NAME: feedback_check
+* AUTHOR: Renjie Lee
+* CREATE DATE: 2023/12/27
+* DESCRIPTION: Check 'fb_state', if it is '0', it means that the feedback was failed for some reasons at last time.
+*     We need to call 'sendfeedback' to resend the feedback.
+* INPUT:  None
+* OUTPUT: None
+* RETURN: None
+* NOTE: Watchdog calls this function for every 30 seconds.
+*     We skip the first 3 calls and execute the 4th call. So the function will work for every 120 seconds.
+*
+*******************************************************************/
+#ifdef RTCONFIG_FRS_FEEDBACK
+void feedback_check(void)
+{
+	static int check = -1;
+	int skip_times = 4;
+
+	check++;
+	check %= skip_times;
+	if(check != skip_times - 1)
+	{
+		return;
+	}
+
+	if(!nvram_get_int("ntp_ready"))
+	{
+		return;
+	}
+
+	if(nvram_match("fb_state", "0"))
+	{
+		char *cmd[] = {"sendfeedback", NULL};
+		int pid;
+
+		if(!pids("sendfeedback"))
+		{
+			logmessage("watchdog", "[%s] Resend the last feedback..\n", __FUNCTION__);
+			_dprintf("[%s] Resend the last feedback..\n", __FUNCTION__);
+			nvram_set("fb_resend", "1");
+			_eval(cmd, NULL, 0, &pid);
+		}
+	}
+}
+#endif /* RTCONFIG_FRS_FEEDBACK */
+
 /* wathchdog is runned in NORMAL_PERIOD, 1 seconds
  * check in each NORMAL_PERIOD
  *	1. button
@@ -9991,6 +10135,17 @@ void watchdog(int sig)
 			f_write_string("/proc/sys/vm/drop_caches", "1", 0, 0);
 	}
 #endif
+#ifdef RTCONFIG_BCMWL6
+	if (!restore_defaults_g && strlen(nvram_safe_get("acs_ifnames")) && nvram_get_int("wlready") &&
+		!mediabridge_mode() &&
+#ifdef RTCONFIG_HND_ROUTER_AX
+		!pids("acsd2")
+#else
+		!pids("acsd")
+#endif
+	)
+		notify_rc_and_wait_1min("restart_acsd");
+#endif
 #if defined(RTAX3000N) || defined(RPAX58)
 	parse_ptf();
 #endif
@@ -10000,6 +10155,14 @@ void watchdog(int sig)
 		if (!top)
 			system("top -b -n 1 | head | logger -t top");
 	}
+
+	lsof_period = nvram_get_int("lsof_period");
+	if (lsof_period) {
+		lsof = (lsof + 1) % lsof_period ;
+		if (!top)
+			system("lsof | awk '{ print $1 " " $2; }' | sort -rn | uniq -c | sort -rn | head | logger -t lsof");
+	}
+
 #if !defined(RTCONFIG_BCM_MFG) && (defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(DSL_AX82U))
 	if (nvram_get_int("x_Setting") && !pids("ledg")) {
 		ledg_count = (ledg_count + 1) % 2 ;
@@ -10092,6 +10255,9 @@ wdp:
 	networkmap_check();
 	httpd_check();
 	dnsmasq_check();
+#ifdef RPAX58
+	wpasupp_check();
+#endif
 #ifdef RTCONFIG_NEW_USER_LOW_RSSI
 	roamast_check();
 #endif
@@ -10232,9 +10398,9 @@ wdp:
 			system("sh /tmp/mnt/sda1/auto_test.sh");
 		}
 #endif
-#ifdef RTCONFIG_WIREGUARD
-	check_wgc_endpoint();
-#endif
+#ifdef RTCONFIG_FRS_FEEDBACK
+	feedback_check();
+#endif /* RTCONFIG_FRS_FEEDBACK */
 }
 
 #if ! (defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK))
@@ -10265,8 +10431,12 @@ watchdog_main(int argc, char *argv[])
 #ifdef RTCONFIG_AMAS
 	/* Prepare timeout value */
 	time_mapping_get(get_productid(), &time_mapping);
-	_dprintf("### onboarding model=%s, reboot_time=%d, connection_timeout=%d, traffic_timeout=%d\n", 
-		get_productid(), time_mapping.reboot_time, time_mapping.connection_timeout, time_mapping.traffic_timeout);
+	re_node = nvram_get_int("re_mode");
+#ifdef RPAX58
+	nvram_set("re_ready", "0");
+#endif
+	_dprintf("### onboarding model=%s, reboot_time=%d, connection_timeout=%d, traffic_timeout=%d, re_mode=%d\n", 
+		get_productid(), time_mapping.reboot_time, time_mapping.connection_timeout, time_mapping.traffic_timeout, re_node);
 #endif
 
 #if defined(RTCONFIG_TURBO_BTN)

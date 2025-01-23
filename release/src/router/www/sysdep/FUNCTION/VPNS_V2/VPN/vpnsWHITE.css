@@ -1,30 +1,58 @@
 ﻿a:link{
-	color: rgb(94, 100, 112) !important;
+	color: rgb(24, 24, 24) !important;
 }
 .bg{
-	color: rgb(94, 100, 112);
+	color: rgb(24, 24, 24);
 }
 .vpn_icon_all_collect{
 	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect_white.svg);
 	background-repeat: no-repeat;
+}
+.function_desc_container:before{
+	background: #dcdcdc;
+	height: 1px;
+}
+.function_desc_container .title {
+	font-size: 16px;
+	font-weight: normal;
+	margin-left: 0;
+	margin: 0;
+	font-size: 24px;
+	font-weight: bold;
+	color: #181818;
 }
 .profile_setting_container .popup_edit_profile_container,
 .client_content_bg .client_contorl_bg{
 	background: rgb(255, 255, 255);
 }
 .profile_setting_title .title{
-	color: rgb(94, 100, 112);
+	color: rgb(24, 24, 24);
+}
+.profile_setting_container {
+	box-shadow: 0px 1px 8px 0px rgb(0 0 0 / 8%);
+	min-width: 360px;
+	height: 100%;
+	border-radius: 8px;
+	width: 100%;
+	flex-grow: 1;
+	margin-top: 0.5rem;
 }
 .svr_list_title_container{
-	color: rgb(94, 100, 112);
+	color: rgb(24, 24, 24);
+	margin: 0;
 }
 .svr_item_container{
 	background: rgb(255, 255, 255);
-	box-shadow: 0px 1px 2px 0px rgb(20 50 80 / 20%);
-	border: 1px solid rgb(0 0 0 / 10%);
+	margin-bottom: 10px;
+	box-shadow: 0px 1px 4px 0px rgb(0 0 0 / 8%);
+	border: 0.5px solid rgb(0 0 0 / 5%);
+	width: initial;
+	margin-right: 1.5rem;
 }
 .svr_item_container.selected{
 	background: rgb(255, 255, 255);
+	outline: 1px solid #006ce1;
+	box-shadow: 0px 0px 4px 4px #cce4ff;
 }
 .svr_item_text_container:before{
 	border-right: 1px solid rgb(0 0 0 / 0.2);
@@ -33,21 +61,25 @@
 	border-top: 2px solid rgb(0 0 0 / 0.2);
 	border-right: 2px solid rgb(0 0 0 / 0.2);
 }
-.switch.off{
-	background: rgb(0 0 0 / 0.3);
-}
 .checkbox, .checkbox.off{
-	box-shadow: 0 0 0 1.5px rgb(0, 110, 255);
+	box-shadow: 0 0 0 1.5px #006CE1;
 }
 .checkbox.on{
-	box-shadow: 0 0 0 1.5px rgb(0, 110, 255);
-	background-color: rgb(0, 110, 255);
+	box-shadow: 0 0 0 1.5px #006CE1;
+	background-color: #006CE1;
 }
 .profile_setting_item{
 	background: rgb(247, 249, 252);
 }
 .profile_setting_item .title{
-	color: rgb(94, 100, 112);
+	color: rgb(26, 26, 26);
+	font-weight: normal;
+	flex: 0 0 40%;
+	max-width: 32%;
+}
+.profile_setting_item.nowrap .title{
+	flex: 0 0 40%;
+	max-width: 32%;
 }
 .btn_item .btn_container .text{
 	color: rgb(0, 112, 255);
@@ -57,7 +89,7 @@
 	background-position: 0px -163px;
 }
 .export_mode_container .desc{
-	color: rgb(94, 100, 112);
+	color: rgb(24, 24, 24);
 }
 .qr_code_container{
 	border: 1px solid rgb(85 100 111);
@@ -65,13 +97,32 @@
 	background: initial;
 }
 .qr_code_container > .qr_text{
-	color: rgb(94, 100, 112);
+	color: rgb(24, 24, 24);
 }
 .notice_container .notice_desc{
-	color: rgb(94, 100, 112);
+	color: rgb(24, 24, 24);
 }
-.textInput, .custom_select_container, .textareaInput, .textView{
-	color: rgb(94, 100, 112);
+.export_btn_container > .export_btn .text{
+	margin-left: initial;
+}
+.export_btn_container > .export_btn .text:before{
+	content: none;
+}
+.input_container {
+	flex: 0 0 60%;
+	margin: 0;
+	max-width: none;
+}
+.textInput,
+.custom_select_container,
+.textareaInput{
+	color: rgb(24, 24, 24);
+	border: 1px solid #ccc;
+	background: rgba(255,255,255,0.40);
+}
+.textView{
+	color: rgb(24, 24, 24);
+	font-weight: bolder;
 }
 .textInput:focus, .textareaInput:focus{
 	box-shadow: 0 0 3px rgb(0, 133, 255);
@@ -95,13 +146,16 @@
 	background: rgb(255, 255, 255);
 }
 .action_container .btn_container{
-	background: rgb(0, 110, 255);
+	background: #006CE1;
 }
 .action_container .btn_container.valid_fail{
-	background: rgba(94, 100, 112, 0.6);
+	background: rgba(24, 24, 24, 0.6);
+}
+.action_container_hint{
+	color: #006CE1;
 }
 .profile_title_item{
-	color: rgba(63, 69, 80, 0.6);
+	color: #006CE1;
 }
 .popup_bg{
 	background: rgb(255 255 255 / 80%);
@@ -110,11 +164,11 @@
 	background: rgb(255, 255, 255);
 }
 .popup_title_container .title{
-	color: rgb(94, 100, 112);
+	color: rgb(24, 24, 24);
 }
 .popup_container .popup_content_container{
 	background: rgb(255, 255, 255);
-	color: rgb(94, 100, 112);
+	color: rgb(24, 24, 24);
 }
 .popup_container .popup_content_container .profile_setting_item{
 	background: rgb(247, 249, 252);
@@ -122,79 +176,134 @@
 .popup_container .popup_content_container .client_list_content_container .client_container{
 	background: rgb(247, 249, 252);
 }
+.popup_container .btn_options_container,
+.popup_container .export_mode_container{
+	max-width: initial !important;
+}
 .feature_desc .title{
-	color: rgb(0, 110, 255);
+	color: #006CE1;
 }
 .feature_desc .desc{
-	color: rgba(94, 100, 112, 0.87);
+	color: rgba(24, 24, 24, 0.87);
 }
 .feature_desc .desc:before{
-	border-bottom: 1px solid rgba(94, 100, 112, 0.2);
+	border-bottom: 1px solid rgba(24, 24, 24, 0.2);
 }
 .feature_desc .step_text{
-	color: rgba(94, 100, 112, 0.87);
+	color: rgba(24, 24, 24, 0.87);
 }
 .feature_desc .step_text:before{
 	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect_white.svg);
-	background-color: rgb(0, 110, 255);
+	background-color: #006CE1;
 }
 .customize_alert .desc{
-	color: rgb(94, 100, 112);
+	color: rgb(24, 24, 24);
 }
 .validate_hint, .vpn_type_maxi_hint, .item_hint{
 	background: initial;
 }
 .vpn_type_maxi_hint, .item_hint, .text_yellow{
-	color: rgb(0, 110, 255);
+	color: #006CE1;
 }
 .client_list_content_container .client_container{
 	background: rgb(247, 249, 252);
 }
 .client_list_content_container .client_container.no_data{
-	color: rgb(0, 110, 255);
+	color: #006CE1;
 }
 .svr_item_text_container .svr_type_title{
-	color: rgba(63, 69, 80, 0.6);
+	color: #006CE1;
 }
 .svr_item_text_container .svr_type_text{
-	color: rgb(94, 100, 112);
+	color: rgb(24, 24, 24);
 }
 .add_acc_bg .acc_num:before{
 	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect_white.svg);
 }
+.profile_setting_item.clientlist .client_content_bg,
+.profile_setting_item.allowed_clientlist .client_content_bg{
+	flex: 0 0 92%;
+	max-width: initial;
+}
 .client_content_bg .client_info_bg .status_icon{
-	background-color: rgb(0, 110, 255);
+	background-color: #006CE1;
 }
 .client_content_bg .detail_icon{
-	border: 2px solid rgb(0, 110, 255);
-	color: rgb(0, 110, 255);
+	border: 2px solid #006CE1;
+	color: #006CE1;
 }
 .client_content_bg .client_contorl_bg .contorl_btn{
 	background-color: rgb(247, 249, 252);
 }
 .radio_options_container .radio_container,
 .btn_options_container .btn_container{
-	color: rgb(94, 100, 112);
+	color: rgb(24, 24, 24);
 }
 .radio_options_container .radio_container .radio_icon{
-	border: 1px solid rgba(94, 100, 112,0.4);
+	border: 1px solid rgba(24, 24, 24,0.4);
 }
 .radio_options_container .radio_container.selected,
 .btn_options_container .btn_container.selected{
 	background-color: initial;
-	color: rgb(0, 110, 255);
+	color: #006CE1;
+}
+.profile_setting_item .title .key_icon{
+	display: none;
 }
 .profile_title_item.edit_keys_desc{
-	color: rgb(94, 100, 112);
+	color: rgb(24, 24, 24);
 }
 .client_connect_info_container .connect_client_title{
-	color: rgb(0, 110, 255);
+	color: #006CE1;
+}
+.switch.on {
+	background: #006CE1;
+}
+.switch.off {
+	background: #666666;
+}
+.switch:before{
+	background: #FFFFFF;
+}
+.profile_setting_item.nowrap .input_container{
+	max-width: initial;
+}
+.profile_setting_item.nowrap.switch_item .input_container,
+.profile_setting_item.help_item .input_container,
+.profile_setting_item.acc_pwd .input_container,
+.profile_setting_item.keys_item .input_container,
+.profile_setting_item .export_mode_container {
+	flex: 0 0 96%;
+	max-width: inherit;
+	margin-left: 0;
+	min-width: initial;
+}
+.profile_setting_item.two_btn_switch .btn_options_container{
+	flex: 0 0 92%;
+	max-width: inherit;
+}
+@media (max-width: 992px) {
+	.profile_setting_item {
+		padding-bottom: 10px;
+		height: fit-content;
+	}
+	.profile_setting_item.nowrap{
+		padding-bottom: 0px;
+	}
+	.profile_setting_item .title {
+		max-width: 100%;
+	}
+	.input_container {
+		margin-left: 4%;
+		flex: 0 0 92%;
+	}
 }
 @media (max-width: 575px) {
 	.svr_item_container, .svr_item_container.selected{
 		background: rgb(255, 255, 255);
 		box-shadow: 0px 1px 2px 0px rgb(20 50 80 / 20%);
 		border: 1px solid rgb(0 0 0 / 10%);
+		margin-right: initial;
 	}
 	.action_container .btn_container.delete{
 		box-shadow: 0 0 0 1px rgb(94 100 112 / 40%);

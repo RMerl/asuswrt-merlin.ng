@@ -363,6 +363,9 @@ start_wps_method(void)
 	char ifname[NVRAM_MAX_PARAM_LEN];
 	char word[256], *next;
 	int unit;
+#ifdef RTCONFIG_WIFI6E
+	int band;
+#endif
 
 	if (getpid()!=1) {
 		notify_rc("start_wps_method");
@@ -445,6 +448,11 @@ start_wps_method(void)
 			kill_pidfile_s("/var/run/wps_pbcd.pid", SIGUSR1);
 
 			foreach (word, nvram_safe_get("wl_ifnames"), next) {
+#ifdef RTCONFIG_WIFI6E
+				wl_ioctl(word, WLC_GET_BAND, &band, sizeof(band));
+				if (band == WLC_BAND_6G)
+					continue;
+#endif
 				snprintf(cmd, sizeof(cmd), "hostapd_cli -p"
 					" %s -i %s wps_pbc", HAPD_DIR, word);
 
@@ -493,7 +501,7 @@ start_wps_method(void)
 		if (nvram_match("wps_version2", "enabled") && strlen(nvram_safe_get("wps_autho_sta_mac")))
 			len += sprintf(buf + len, "wps_autho_sta_mac=\"%s\" ", nvram_safe_get("wps_autho_sta_mac"));
 
-		if (strlen(wps_sta_pin))
+		if (strlen(wps_sta_pin) && strcmp(wps_sta_pin, "00000000") && (wl_wpsPincheck(wps_sta_pin) == 0))
 			len += sprintf(buf + len, "wps_sta_pin=\"%s\" ", wps_sta_pin);
 		else
 			len += sprintf(buf + len, "wps_sta_pin=\"00000000\" ");

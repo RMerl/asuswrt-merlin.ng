@@ -37,10 +37,13 @@ LDFLAGS += -L$(TOP)/curl/lib/.libs -lcurl -L$(TOP)/
 LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
 LDFLAGS += -L$(TOP)/libasc -lasc
 LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
-
 ifeq ($(RTCONFIG_TR069),y)
 CFLAGS += -I$(TOP)/libssh2-1.10.0/include -I$(TOP)/zlib/include
 LDFLAGS += -L$(TOP)/libssh2-1.10.0/src/.libs -lssh2 -L$(TOP)/zlib -lz
+endif
+
+ifeq ($(RTCONFIG_TRUSTZONE),y)
+LDFLAGS += -L$(TOP)/ateed/ -latee
 endif
 
 TARGET = asd libasd.so

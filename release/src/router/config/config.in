@@ -164,7 +164,7 @@ config RTCONFIG_DHDAP
 
 config RTCONFIG_BW160M
 	bool "Bandwidth 160MHz support"
-	depends on RTCONFIG_DHDAP || RTCONFIG_QCA
+	depends on RTCONFIG_DHDAP || RTCONFIG_HND_ROUTER_AX_6756 || RTCONFIG_QCA
 	default n
 
 config RTCONFIG_WLEXE
@@ -1889,6 +1889,11 @@ config RTCONFIG_OCNVC
 	depends on RTCONFIG_SOFTWIRE46
 	default n
 
+config RTCONFIG_V6OPTION
+	bool "IPoE - v6 Option (BIGLOB) support"
+	depends on RTCONFIG_SOFTWIRE46
+	default n
+
 config RTCONFIG_DSLITE
 	bool "IPoE - DS-Lite support"
 	depends on RTCONFIG_SOFTWIRE46
@@ -2462,12 +2467,20 @@ config RTCONFIG_ASD
 	bool "RTCONFIG_ASD support"
 	default n
 
+config RTCONFIG_ASD_2_1
+        bool "RTCONFIG_ASD_2_1 support"
+        default n
+
 config RTCONFIG_LIVE_UPDATE_RSA
 	bool "RTCONFIG_LIVE_UPDATE_RSA support"
 	default n
 
 config RTCONFIG_UUPLUGIN
 	bool "UU plugin support"
+	default n
+
+config RTCONFIG_GEARUPPLUGIN
+	bool "GearUP plugin support - UU international"
 	default n
 
 config RTCONFIG_TCPLUGIN
@@ -2870,3 +2883,6 @@ config RTCONFIG_RTL_UMGMT
 	bool "un-management-mode rtl switch's ops "
 	default n
 
+config RTCONFIG_DIS_HASH_KEY_GEN_CHECK
+	bool "disable hash key generation and check"
+	default n

@@ -13,12 +13,12 @@
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="menu_style.css">
 <link rel="stylesheet" type="text/css" href="pwdmeter.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
-<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script language="JavaScript" type="text/javascript" src="/form.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
@@ -198,7 +198,7 @@ function initial(){
 	document.getElementById("faq_iPhone").href=faq_href_iPhone;
 	document.getElementById("faq_android").href=faq_href_android;
 
-	if((wan_proto == "v6plus" || wan_proto == "ocnvc") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
+	if((wan_proto == "v6plus" || wan_proto == "ocnvc" || wan_proto == "v6opt") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
 		$(".setup_info_icon.basic").click(
 			function() {				
 				if($("#s46_ports_content").is(':visible'))
@@ -354,7 +354,7 @@ function applyRule(){
 			return false;
 		}
 
-			if((wan_proto == "v6plus" || wan_proto == "ocnvc") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
+		if((wan_proto == "v6plus" || wan_proto == "ocnvc" || wan_proto == "v6opt") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
 			if (!validator.range_s46_ports(document.form.vpn_server_port, "none")){
 				if(!confirm(port_confirm)){
 					document.form.vpn_server_port_adv.focus();
@@ -918,7 +918,7 @@ function switchMode(mode){
 		}
 		document.getElementById("divAdvanced").style.display = "none";
 
-		if((wan_proto == "v6plus" || wan_proto == "ocnvc") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
+		if((wan_proto == "v6plus" || wan_proto == "ocnvc" || wan_proto == "v6opt") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
 			if($("#s46_ports_content").is(':visible'))
 				$("#s46_ports_content").fadeOut();
 
@@ -933,7 +933,7 @@ function switchMode(mode){
 		$('*[data-group="cert_btn"]').hide();
 		document.getElementById("divAdvanced").style.display = "";
 
-		if((wan_proto == "v6plus" || wan_proto == "ocnvc") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
+		if((wan_proto == "v6plus" || wan_proto == "ocnvc" || wan_proto == "v6opt") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
 			if($("#s46_ports_content").is(':visible'))
 				$("#s46_ports_content").fadeOut();
 			

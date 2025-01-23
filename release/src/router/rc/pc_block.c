@@ -76,17 +76,17 @@ static void config_redirect_pc_time(FILE *fp) {
 	char *lan_if = nvram_safe_get("lan_ifname");
 	char *lan_ip = nvram_safe_get("lan_ipaddr");
 	char *lan_mask = nvram_safe_get("lan_netmask");
+	char *pcredirect = "PCREDIRECT";
+	char *pcaccept = "ACCEPT";
 #ifndef RTCONFIG_PC_SCHED_V3
 	char *datestr[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 	int i;
 #endif
-	char *fftype;
+	char *fftype = pcredirect;
 	int pc_count;
 
-	fftype = "PCREDIRECT";
-
 	follow_pc = get_all_pc_list(&pc_list);
-	if(follow_pc == NULL){
+	if(follow_pc == NULL || follow_pc->events == NULL){
 		_dprintf("Couldn't get the Parental-control rules correctly!\n");
 		return;
 	}
@@ -100,7 +100,7 @@ static void config_redirect_pc_time(FILE *fp) {
 
 	follow_pc = match_enabled_pc_list(pc_list, &enabled_list, 1);
 	free_pc_list(&pc_list);
-	if(follow_pc == NULL){
+	if(follow_pc == NULL || follow_pc->events == NULL){
 		_dprintf("Couldn't get the enabled rules of Parental-control correctly!\n");
 		return;
 	}
@@ -131,6 +131,10 @@ static void config_redirect_pc_time(FILE *fp) {
 			int s_min = (follow_e->start_hour*60) + follow_e->start_min;
 			int e_min = (follow_e->end_hour*60) + follow_e->end_min;
 			char date_buf[64];
+			if (follow_e->type == SCHED_V2_TYPE_WEEK)
+				fftype = pcredirect;
+			else if (follow_e->type == SCHED_V2_TYPE_WEEK_ONLINE)
+				fftype = pcaccept;
 			if(s_min >= e_min){  // over one day
 				if(!(follow_e->start_hour == 24 && follow_e->start_min == 0)) {
 					fprintf(fp, "-A PREROUTING -i %s -m time", lan_if);
@@ -153,7 +157,10 @@ static void config_redirect_pc_time(FILE *fp) {
 				fprintf(fp, "%s %s %s %s -j %s\n", DAYS_PARAM, get_pc_date_str(follow_e->day_of_week, 0, date_buf, sizeof(date_buf)), chk_type, follow_addr, fftype);
 			}
 		}
+		if (!strcmp(fftype , pcaccept))
+			fprintf(fp, "-A PREROUTING -i %s %s %s -j %s\n", lan_if, chk_type, follow_addr, pcredirect);
 #else
+		fftype = pcredirect;
 		fprintf(fp, "-A PREROUTING -i %s %s %s -j %s\n", lan_if, chk_type, follow_addr, fftype);
 
 		for(follow_e = follow_pc->events; follow_e != NULL; follow_e = follow_e->next){
@@ -211,7 +218,7 @@ static void config_redirect_pc_time(FILE *fp) {
 #endif
 
 		// MAC address in list and not in time period -> Redirect to blocking page.
-		fprintf(fp, "-A %s -i %s ! -d %s/%s -p tcp --dport 80 %s %s -j DNAT --to-destination %s:%s\n", fftype, lan_if,lan_ip, lan_mask, chk_type, follow_addr, lan_ip, DFT_SERV_PORT);
+		fprintf(fp, "-A %s -i %s ! -d %s/%s -p tcp --dport 80 %s %s -j DNAT --to-destination %s:%s\n", pcredirect, lan_if,lan_ip, lan_mask, chk_type, follow_addr, lan_ip, DFT_SERV_PORT);
 	}
 
 	free_pc_list(&enabled_list);

@@ -442,3 +442,18 @@ int pids(char *appname)
 	else
 		return 0;
 }
+
+int pids_count(char *appname)
+{
+	pid_t *pidList;
+	pid_t *pl;
+	int count = 0;
+
+	pidList = find_pid_by_name(appname);
+	for (pl = pidList; *pl; pl++) {
+		count++;
+	}
+	free(pidList);
+
+	return count;
+}

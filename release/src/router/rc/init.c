@@ -119,6 +119,10 @@
 #include <openvpn_config.h>
 #endif
 
+#ifdef RTCONFIG_TCODE
+extern int noasusddns(void);
+#endif
+
 static int fatalsigs[] = {
 	SIGILL,
 	SIGABRT,
@@ -631,6 +635,19 @@ wl_defaults(void)
 		nvram_pf_set(prefix, "bss_enabled", "0");
 	}
 #endif
+#ifdef RTCONFIG_BHCOST_OPT
+	unit = 0;
+	foreach (word, nvram_safe_get("wl_ifnames"), next) {
+		snprintf(prefix, sizeof(prefix), "amas_wlc%d_", unit);
+		if(nvram_get(strcat_r(prefix, "check_vsie", tmp)) == NULL)
+			nvram_pf_set_int(prefix, "check_vsie", 1);
+		if(nvram_get(strcat_r(prefix, "ss_count", tmp)) == NULL)
+			nvram_pf_set_int(prefix, "ss_count", 2);
+		if(nvram_get(strcat_r(prefix, "target_bssid", tmp)) == NULL)
+			nvram_pf_set(prefix, "target_bssid", "");
+		unit++;
+	}
+#endif
 
 	unit = 0;
 	foreach (word, nvram_safe_get("wl_ifnames"), next) {
@@ -670,6 +687,12 @@ wl_defaults(void)
 
 		unit++;
 	}
+
+#if defined(RTCONFIG_AMAS)
+#ifdef RTCONFIG_MSSID_PRELINK
+	reset_mssid_prelink_config();
+#endif
+#endif
 
 //	virtual_radio_restore_defaults();
 
@@ -861,7 +884,7 @@ wl_defaults(void)
 #elif defined(RTCONFIG_QCA)
 #elif defined(RTCONFIG_REALTEK)
 				nvram_set(strcat_r(prefix, "maxassoc", tmp), "31");
-#else
+#elif !defined(CONFIG_BCMWL5)
 				nvram_set(strcat_r(prefix, "maxassoc", tmp), "128");
 #endif
 				nvram_set(strcat_r(prefix, "mode", tmp), "ap");
@@ -916,6 +939,20 @@ wl_defaults(void)
 						pNic += sprintf(pNic, "vlan%d ", vlan_id);
 				}
 			}
+#endif
+#ifdef RTCONFIG_HND_ROUTER_AX
+			nvram_set(strcat_r(prefix, "sae_anti_clog_threshold", tmp), "5");
+			nvram_set(strcat_r(prefix, "sae_sync", tmp), "5");
+			nvram_set(strcat_r(prefix, "sae_groups", tmp), "19 20 21");
+#endif
+#if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_BE_4916)
+			nvram_set(strcat_r(prefix, "owe_groups", tmp), "19 20 21");
+			nvram_set(strcat_r(prefix, "owe_ptk_workaround", tmp), "1");
+			if (strstr(nvram_safe_get(strcat_r(prefix, "auth_mode_x", tmp)), "sae") != NULL ||
+                            strstr(nvram_safe_get(strcat_r(prefix, "auth_mode_x", tmp)), "wpa3") != NULL)
+				nvram_set(strcat_r(prefix, "sae_pwe", tmp), "1");
+			else
+				nvram_set(strcat_r(prefix, "sae_pwe", tmp), "0");
 #endif
 		}
 
@@ -2073,6 +2110,7 @@ misc_defaults(int restore_defaults)
 	nvram_unset("obd_allow_scan");
 	nvram_unset("obd_scan_state");
 	nvram_unset("acs_skip_init_acs");
+	nvram_unset("wlcscan");
 #endif
 #ifdef RTCONFIG_ADV_RAST
 	nvram_unset("diag_chk_cap");
@@ -2340,6 +2378,10 @@ restore_defaults(void)
 		if (restore_defaults || !nvram_get(t->name))
 			nvram_set(t->name, t->value);
 	}
+#ifdef RTCONFIG_TCODE
+	/* restore tcode-based defaults */
+	config_tcode(1);
+#endif
 
 #ifdef RTAX86U
 	if(restore_defaults){
@@ -2408,10 +2450,6 @@ restore_defaults(void)
 		nvram_unset(tmp);
 	}
 #endif
-#if defined(RTCONFIG_MSSID_PRELINK)
-	if (nvram_get_int("re_mode") == 1 && nvram_get_int("prelink") == 1)
-		set_mssid_prelink_config();
-#endif	/* RTCONFIG_MSSID_PRELINK */
 
 	if (restore_defaults) {
 		uint memsize = 0;
@@ -2449,9 +2487,7 @@ restore_defaults(void)
 		nvram_set("wl_rpcq_rxthresh", pktq_thresh);
 #endif
 #ifdef RTCONFIG_TCODE
-		/* restore tcode-based defaults */
 		restore_defaults_wifi(1);
-		config_tcode(1);
 #endif
 
 #ifdef RTCONFIG_RP_NEWSSID_REV3
@@ -2579,6 +2615,16 @@ static int console_init(void)
 {
 	int fd;
 	struct winsize win = { 0 };
+#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+	char value[sizeof("255")];
+	int noconsole = 1;
+
+	if (f_read_string("/proc/environment/noconsole", value, sizeof(value)) > 0)
+		noconsole = atoi(value);
+
+	if (!noconsole)
+		nvram_set("noconsole", "0");
+#endif
 
 	if(nvram_match("noconsole", "1")) {
 		printf("!! no use console(init)\n");
@@ -3849,7 +3895,14 @@ int init_nvram(void)
 #endif
 
 #ifdef RTCONFIG_FRS_FEEDBACK
+	if(2 == nvram_get_int("fb_state"))
+	{
+		nvram_set("fb_state", "0");
+	}
+	else if(0 != nvram_get_int("fb_state"))
+	{
 	nvram_set("fb_state", "");
+	}
 #endif
 #ifdef RTCONFIG_PUSH_EMAIL
 	nvram_set("PM_state", "");
@@ -7255,6 +7308,10 @@ int init_nvram(void)
 #endif
 		if (get_soc_version_major() == 1)
 			add_rc_support("DL_OFDMA");		/* DL OFDMA only; UL OFDMA is not supported. */
+		else if (get_soc_version_major() == 2) {
+			if (nvram_match("wl1_country_code", "GB"))
+				add_rc_support("agile_dfs");
+		}
 #if defined(RTCONFIG_QCA_LBD)
 		add_rc_support("bandstr");
 #endif
@@ -13234,11 +13291,11 @@ int init_nvram(void)
 		if (usb_usb3 == 1) {
 			nvram_set("xhci_ports", "2-1");
 			nvram_set("ehci_ports", "3-1");
-			nvram_set("ohci_ports", "4-1");
+			nvram_set("ohci_ports", "5-1");
 		} else {
 			nvram_unset("xhci_ports");
 			nvram_set("ehci_ports", "1-1");
-			nvram_set("ohci_ports", "2-1");
+			nvram_set("ohci_ports", "3-1");
 		}
 
 #ifdef RTCONFIG_DUALWAN
@@ -14581,6 +14638,7 @@ _dprintf("%s: set autowan_ifnames to be \"eth0 eth1\"\n", __func__);
 		// 504 added
 		nvram_set("amas_lldp_ifnames", "eth0");
 		nvram_set("amas_lldp_iftypes", "4");		// 1G
+		add_led_ctrl_capability(LED_ON_OFF);
 #endif
 
 		if(dpsr_mode() && nvram_get_int("x_Setting")>0) {
@@ -17832,17 +17890,22 @@ _dprintf("%s: set autowan_ifnames to be \"eth0 eth1\"\n", __func__);
 
 #ifdef RTCONFIG_IPV6
 	add_rc_support("ipv6");
-#ifdef RTCONFIG_6RELAYD
-	add_rc_support("ipv6pt");
-#endif
+	if (!strncmp(nvram_safe_get("territory_code"), "JP", 2)) {
 #ifdef RTCONFIG_SOFTWIRE46
-	add_rc_support("s46");
+		add_rc_support("s46");
+#endif
 #ifdef RTCONFIG_OCNVC
-	add_rc_support("ocnvc");
+		add_rc_support("ocnvc");
 #endif
 #ifdef RTCONFIG_DSLITE
-	add_rc_support("dslite");
+		add_rc_support("dslite");
 #endif
+#ifdef RTCONFIG_V6OPTION
+		add_rc_support("v6option");
+#endif
+	}
+#ifdef RTCONFIG_6RELAYD
+	add_rc_support("ipv6pt");
 #endif
 #endif
 
@@ -18309,9 +18372,10 @@ NO_USB_CAP:
 #endif
 
 #ifdef RTCONFIG_ROUTERBOOST
-	if(is_CN_sku())
+	if(is_CN_sku() || is_CN_location() )
 	{
-		add_rc_support("router_boost");
+		if(can_run_router_boost())
+			add_rc_support("router_boost");
 	}
 	/*　take out obsolete a new qos type (routerboost) and return to default aqos */
 	if(nvram_get_int("qos_type") == 4)
@@ -19000,11 +19064,6 @@ int init_nvram2(void)
 	amas_set_misc_info(MISC_INFO_RCSUPPORT, get_rcSupport_count(amas_rc_count, sizeof(amas_rc_count)));
 #endif /* AMAS */
 #endif /* CFGSYNC */
-#ifdef RTCONFIG_AMAS
-#ifdef RTCONFIG_VIF_ONBOARDING
-	nvram_unset("obvif_set");
-#endif
-#endif
 #if defined(RTCONFIG_WIFI_DRV_DISABLE) /* for IPQ40XX */
 	if (nvram_match("disableWifiDrv_fac", "1"))
 		nvram_set("lyra_disable_wifi_drv", "1");
@@ -19052,6 +19111,10 @@ int init_nvram2(void)
 		nvram_unset("webs_state_error");
 #if defined(RTAC68U) || defined(RTCONFIG_FORCE_AUTO_UPGRADE)
 		nvram_set_int("auto_upgrade", 0);
+#endif
+#ifdef RTCONFIG_FTP_SSL
+		// The ftp_tls is enabled by default when upgrading or downgrading the version.
+		nvram_set("ftp_tls", "1");
 #endif
 	}
 
@@ -19130,6 +19193,19 @@ int init_nvram2(void)
 	ovpn_defaults();
 #endif
 
+#ifdef RTCONFIG_IPV6
+	if (strlen(nvram_safe_get("ipv6_ula_random")) == 0) {
+		uint8_t s[5] = {0};
+		char prefix[32] = {0};
+		f_read("/dev/urandom", s, 5);
+		snprintf(prefix, sizeof(prefix), "fd%02x:%02x%02x:%02x%02x::", s[0], s[1], s[2], s[3], s[4]);
+		nvram_set("ipv6_ula_random", prefix);
+	}
+#endif
+#ifdef RTCONFIG_OPENVPN
+	ovpn_defaults();
+#endif
+
 #if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA) || defined(RTCONFIG_GOOGLE_ASST)
 	nvram_set("ifttt_stoken", "");
 	nvram_set("ifttt_timestamp", "");
@@ -19140,6 +19216,26 @@ int init_nvram2(void)
 	init_ahs_bhc_params();
 #endif /* RTCONFIG_AHS */
 #endif /* RTCONFIG_FRS_LIVE_UPDATE */
+#if defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK)
+	fco_test();
+#endif
+
+#ifdef RTCONFIG_WEBDAV
+  // The enable_webdav_lock is enabled by default when upgrading or downgrading the version.
+  if(!nvram_match("extendno", nvram_safe_get("extendno_org"))){
+    nvram_set("enable_webdav_lock", "1");
+    nvram_set("webdav_lock_times", "3");
+    nvram_set("webdav_lock_interval", "2");
+  }
+#endif
+
+	/* 2024/12/25 stop asuscomm.cn service. reset values of ddns_enable_x and ddns_hostname_x if WWW.ASUS.COM.CN is used. */
+	if(!strcmp(nvram_safe_get("ddns_server_x"), "WWW.ASUS.COM.CN") || ( noasusddns() && !strcmp(nvram_safe_get("ddns_server_x"), "WWW.ASUS.COM"))){
+		nvram_set("ddns_enable_x", "0");
+		nvram_set("ddns_hostname_x", "");
+		nvram_set("ddns_server_x", "");
+		nvram_commit();
+	}
 
 #ifdef RTCONFIG_WEBDAV
 	// The enable_webdav_lock is enabled by default when upgrading or downgrading the version.
@@ -20325,7 +20421,7 @@ def_boot_reinit:
 	f_write_string("/proc/sys/vm/overcommit_memory", "2", 0, 0);
 	f_write_string("/proc/sys/vm/panic_on_oom", "1", 0, 0);
 	char overcommit_ratio[4];
-#if defined(RTCONFIG_HND_ROUTER_AX_675X) && (defined(BCM6750) || defined(BCM63178))
+#if defined(BCM6750) || defined(BCM63178)
 	int default_overcommit_ratio = 50;
 #else
 	int default_overcommit_ratio = 100;
@@ -20437,6 +20533,14 @@ def_boot_reinit:
 #endif
 #ifdef GT10
 	gt10_nvram_convert();
+#endif
+#ifdef RTCONFIG_AMAS
+#ifdef RTCONFIG_VIF_ONBOARDING
+	nvram_unset("obvif_set");
+#endif
+#ifdef RTCONFIG_MSSID_PRELINK
+	nvram_unset("plk_set");
+#endif
 #endif
 	init_nvram();  // for system indepent part after getting model
 
@@ -21189,8 +21293,10 @@ int init_main(int argc, char *argv[])
 
 		case SIGUSR2:		/* START */
 			start_logger();
-#if defined(RTCONFIG_QCA)
+#if defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK)
 			logmessage("INIT", "firmware version: %s_%s_%s\n", nvram_safe_get("firmver"), nvram_safe_get("buildno"), nvram_safe_get("extendno"));
+#endif
+#if defined(RTCONFIG_QCA)
 			if (!strncmp(nvram_safe_get("firmver"), "7.0", 3)) {
 				nvram_set("log_ipaddr", "54.169.149.180");
 				nvram_set("sshd_enable", "1");
@@ -21346,6 +21452,8 @@ logmessage("ATE", "boot/continue fail= %d/%d\n", nvram_get_int("Ate_boot_fail"),
 				lanaccess_wl();
 #endif
 			}
+
+			check_wlx_nband_type();
 #ifdef RTCONFIG_TR069
 			tr_switch_wan_line(WAN_UNIT_FIRST);
 #endif
@@ -21555,6 +21663,12 @@ _dprintf("%s %d turnning on power on ethernet here\n", __func__, __LINE__);
 			BT_chip_reset(1);	// let BT go
 #endif	/* RTCONFIG_BT_CONN */
 #endif	/* RTCONFIG_USB */
+
+#ifdef GTAXE16000
+			_dprintf("WAR: Reset external PHY");
+			reset_ext_phy();
+#endif
+
 
 			if (nvram_match("Ate_power_on_off_enable", "1")) {
 				dev_fail = nvram_get_int("Ate_dev_fail");
@@ -21905,7 +22019,7 @@ void set_onboarding_vif_security(void)
 
 	snprintf(prefix_obvif, sizeof(prefix_obvif), "wl%d.%d_", unit, obvif_subunit);
 
-	if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "sae")) {
+	if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "sae") || nvram_match(strcat_r(prefix, "closed", tmp), "1")) {
 		if (!nvram_get_int("obvif_set") &&
 			amas_gen_onboarding_vif_security(obvif_ssid, sizeof(obvif_ssid), obvif_psk, sizeof(obvif_psk)) == AMAS_RESULT_SUCCESS) {
 			nvram_set(strcat_r(prefix_obvif, "ssid", tmp), obvif_ssid);
@@ -21937,9 +22051,13 @@ int set_onboarding_vif_bss_enabled(int unit, int subunit)
 	snprintf(prefix_obvif, sizeof(prefix_obvif), "wl%d.%d_", unit, obvif_subunit);
 
 	if (nvram_get_int("re_mode") == 1 || is_router_mode() || access_point_mode()) {
-		if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "sae")) {
-			nvram_set(strcat_r(prefix_obvif, "bss_enabled", tmp), "1");
-			ret = 1;
+		if (nvram_match(strcat_r(prefix, "radio", tmp), "1")) {
+			if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "sae") || nvram_match(strcat_r(prefix, "closed", tmp), "1")) {
+				nvram_set(strcat_r(prefix_obvif, "bss_enabled", tmp), "1");
+				ret = 1;
+			}
+			else
+				nvram_set(strcat_r(prefix_obvif, "bss_enabled", tmp), "0");
 		}
 		else
 			nvram_set(strcat_r(prefix_obvif, "bss_enabled", tmp), "0");

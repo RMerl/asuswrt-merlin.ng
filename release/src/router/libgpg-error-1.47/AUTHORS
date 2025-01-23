@@ -1,0 +1,72 @@
+Package: libgpg-error
+Maintainer: Werner Koch <wk@gnupg.org>
+Bug reports: bug-gnupg@gnupg.org
+Mailing list: gnupg-devel@gnupg.org
+Security related bug reports: security@gnupg.org
+License (library): LGPLv2.1+
+License (manual tools): GPLv2+ with exception
+
+Libgpg-error is free software.  See the files COPYING.LIB and COPYING
+for copying conditions.  License copyright years may be listed using
+range notation, e.g., 2000-2013, indicating that every year in the
+range, inclusive, is a copyrightable year that would otherwise be
+listed individually.
+
+
+List of Copyright holders
+=========================
+
+  Copyright (C) 2001-2023 g10 Code GmbH
+  Copyright (C) 1995-2017 Free Software Foundation, Inc.
+  Copyright (C) 1998-2006, 2008-2017  Werner Koch
+  Copyright (C) 2014 Jedi Lin
+
+
+Authors with a DCO
+==================
+
+We do not collect DCOs for libgpg-error.  As a supporting library for
+GnuPG, Libgcrypt, and GPGME a DCO for any of these projects is
+sufficient.
+
+
+Translators
+===========
+
+cs    - Petr Pisar <petr.pisar at atlas.cz>
+da    - Joe Hansen <joedalton2 at yahoo.dk>
+de    - Werner Koch <wk at gnupg.org>
+eo    - Felipe Castro <fefcas at gmail.com>
+fr    - David Prévot <david at tilapin.org>
+        Stephane Roy <sroy at j2n.net>
+it    - Francesco Groccia <fgr at anche.no>
+jp    - Takeshi Hamasaki <hmatrjp at users.sourceforge.jp>
+        Yasuaki Taniguchi <yasuakit at gmail.com>
+nl    - Freek de Kruijf <f.de.kruijf at gmail.com>
+pl    - Jakub Bogusz <qboosh at pld-linux.org>
+ro    - Laurentiu Buzdugan <lbuz at rolix.org>
+sv    - Daniel Nylander <po at danielnylander.se>
+tr    - Emir SARI <emir_sari at icloud.com>
+uk    - Yuri Chornoivan <yurchor at ukr.net>
+vi    - Clytie Siddall <clytie at riverland.net.au>
+zh_CN - Aron Xu <happyaron.xu at gmail.com>
+
+
+More credits
+============
+
+Robert Schiele <rschiele at uni-mannheim.de> wrote libgpg-error.spec.
+
+Thanks to Yukihiro Nakadaira for his public domain iconv
+implementation for Windows.
+
+
+ Copyright 2003-2007, 2013-2017 g10 Code GmbH
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.

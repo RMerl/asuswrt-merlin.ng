@@ -286,6 +286,7 @@ struct json_object* get_uint_field_string_json_object(unsigned int value, char *
 struct json_object* get_uint64_field_string_json_object(unsigned long long value, char *buf, int buf_len);
 struct json_object* get_rate_field_string_json_object(double value, char *buf, int buf_len);
 extern int _get_node_eth_port_status(char *node_mac,char **buf);
+extern int is_amas_eth_port_table_empty();
 
 #ifdef RTCONFIG_AWSIOT
 extern int wifi_dfs_on_all_channels_process();

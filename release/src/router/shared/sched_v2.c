@@ -960,6 +960,12 @@ void convert_pc_sched_v1_to_sched_v2() {
 		snprintf(str_sched_v1, sizeof(str_sched_v1), "%s", nvram_safe_get("MULTIFILTER_MACFILTER_DAYTIME"));
 		snprintf(str_sched_v2, sizeof(str_sched_v2), "%s", "");
 
+		if (strlen(str_sched_v1) == 0 && 
+			strlen(nvram_safe_get("MULTIFILTER_MAC")) == 0 && 
+			strlen(nvram_safe_get("MULTIFILTER_ENABLE")) == 0) { //all rules are empty, we also write empty rule.
+			snprintf(str_sched_v2, sizeof(str_sched_v2), "");
+			changed = 1;
+		} else {
 		//if (!nvram_get("MULTIFILTER_MACFILTER_DAYTIME_V2")) {
 			foreach_62_keep_empty_string(count, word, str_sched_v1, next_word) {
 				snprintf(tmp_str_sched_v2, sizeof(tmp_str_sched_v2), "%s", "");
@@ -978,6 +984,7 @@ void convert_pc_sched_v1_to_sched_v2() {
 
 			if (strlen(str_sched_v2) && str_sched_v2[strlen(str_sched_v2)-1] == '>')
 				str_sched_v2[strlen(str_sched_v2)-1] = '\0'; // strip the last char '<'
+		}
 
 			SCHED_DBG("final : %s", str_sched_v2);
 

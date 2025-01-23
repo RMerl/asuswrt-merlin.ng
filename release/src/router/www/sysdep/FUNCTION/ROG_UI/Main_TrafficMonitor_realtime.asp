@@ -11,14 +11,14 @@
 <link rel="stylesheet" type="text/css" href="tmmenu.css">
 <link rel="stylesheet" type="text/css" href="menu_style.css"> <!-- Viz 2010.09 -->
 <link rel="shortcut icon" href="images/favicon.png">
-<link rel="icon" href="images/favicon.png">  
+<link rel="icon" href="images/favicon.png">
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="help.js"></script>
 <script language="JavaScript" type="text/javascript" src="state.js"></script>
 <script language="JavaScript" type="text/javascript" src="general.js"></script>
 <script language="JavaScript" type="text/javascript" src="tmmenu.js"></script>
 <script language="JavaScript" type="text/javascript" src="tmcal.js"></script>	
 <script language="JavaScript" type="text/javascript" src="popup.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
 <script type='text/javascript'>
 var nvram = httpApi.nvramGet(["wan_ifname", "lan_ifname", "wl_ifname", "wan_proto", "web_svg", "rstats_enable", "rstats_colors", "bond_wan", "rc_support", "http_id"])

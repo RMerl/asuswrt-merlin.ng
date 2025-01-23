@@ -230,6 +230,17 @@ static inline char *node_str(){
 
 	return "R";
 }
+
+#if defined(RTCONFIG_CONNDIAG)
+#define diag_is_cap() (is_cap() || (nvram_get_int("re_mode") == 0))
+
+static inline char *diag_node_str(){
+	if(diag_is_cap())
+		return "C";
+
+	return "R";
+}
+#endif
 #endif
 
 #ifdef RTCONFIG_BCMARM
@@ -1433,6 +1444,7 @@ extern void stop_wan(void);
 extern int add_multi_routes(int check_link, int wan_unit);
 extern int add_routes(char *prefix, char *var, char *ifname);
 extern int del_routes(char *prefix, char *var, char *ifname);
+extern int discover_pppoe(const char *target_ifnames, char *pppoe_mac);
 #ifdef RTCONFIG_AUTO_WANPORT
 extern int is_auto_wanport_enabled();
 extern int get_mac_from_ip(const char *tip, char *tmac, int tmac_size);
@@ -2289,7 +2301,8 @@ extern void stop_ipv6_tunnel(void);
 #define S46_LOG_PATH	"/jffs/s46.log"
 #define S46_RETRY_TIME	3
 enum S46_SVRURL_TYPE {
-	GET_NTT_HGW_URL			= 0,
+	GET_JPIX_HGW_URL		= 0,
+	GET_BIGLOB_HGW_URL,
 	GET_V6PLUS_URL,
 	SET_V6PLUS_URL,
 	GET_OCNVC_URL
@@ -2327,6 +2340,7 @@ extern void restart_dslited(int unit);
 extern void start_auto46det(void);
 extern void stop_auto46det(void);
 //s46comm.c
+extern void _restart_wan_if(const int unit);
 extern void s46print(const char *logpath, const char *format, ...);
 #define S46_DBG(fmt, args...) \
 	do { \
@@ -2349,12 +2363,12 @@ extern void fmrs2file(int unit);
 extern void init_wan46(void);
 // v6plusd.c
 #define V6PLUSD_PIDFILE "/var/run/v6plusd.%d.pid"
-extern char *s46_jpne_maprules(char *id, char *idbuf, size_t idlen, long *rsp_code);
+extern char *get_jpix_map(const int wan_unit, char *id, char *idbuf, size_t idlen, long *rsp_code);
 extern int check_v6plusd(int unit);
 extern int v6plusd_main(int argc, char **argv);
 // ocnvcd.c
 #define OCNVCD_PIDFILE "/var/run/ocnvcd.%d.pid"
-extern char *s46_ocn_maprules(char *v6perfix, int prefixlen, long *rsp_code);
+extern char *get_ocn_map(const int wan_unit, char *v6perfix, int prefixlen, long *rsp_code);
 extern int check_ocnvcd(int unit);
 extern int ocnvcd_main(int argc, char **argv);
 // dslited.c
@@ -2470,6 +2484,7 @@ extern int prepare_cert_in_etc(void);
 #else
 static inline int prepare_cert_in_etc(void) { return 0; }
 #endif
+extern void restart_qos_if_bwlim_enabled(void);
 extern void handle_notifications(void);
 #ifdef RTL_WTDOG
 extern void stop_rtl_watchdog(void);
@@ -2497,6 +2512,13 @@ extern void set_hostname(void);
 extern int _start_telnetd(int force);
 extern int start_telnetd(void);
 extern void stop_telnetd(void);
+#if defined(RTCONFIG_IPV6)
+extern int start_telnetd6(void);
+extern void stop_telnetd6(void);
+#else
+static inline int start_telnetd6(void) { return 0; }
+static inline void stop_telnetd6(void);
+#endif
 #ifdef RTCONFIG_SSH
 extern int start_sshd(void);
 extern void stop_sshd(void);
@@ -2559,7 +2581,7 @@ extern int update_asus_ddns_token();
 extern int update_asus_ddns_token_main(int argc, char *argv[]);
 #endif
 extern void stop_ddns(void);
-extern int start_ddns(char *caller);
+extern int start_ddns(char *caller, int isAidisk);
 extern void refresh_ntpc(void);
 extern void start_hotplug2(void);
 extern void stop_hotplug2(void);
@@ -2604,6 +2626,7 @@ extern void stop_dsl_autodet(void);
 extern void stop_dsl_diag(void);
 extern int start_dsl_diag(void);
 #endif
+extern int getPid_fromFile(char *file_name);
 #ifdef RTCONFIG_FRS_LIVE_UPDATE
 extern int firmware_check_update_main(int argc, char *argv[]);
 #endif
@@ -2896,6 +2919,11 @@ extern int dump_powertable(void);
 #endif
 #ifdef RTCONFIG_TCPLUGIN
 extern void exec_tcplugin();
+#endif
+#ifdef RTCONFIG_GEARUPPLUGIN
+extern int exec_gu(int enable);
+extern void stop_gu_service(int status);
+extern void start_gu_service();
 #endif
 
 //speedtest.c
@@ -3478,7 +3506,7 @@ static inline int asus_ctrl_sku_write(char *asusctrl_sku) { return 0; }
 extern void asus_ctrl_sku_check();
 extern void asus_ctrl_sku_update();
 extern void fix_location_code(void);
-extern int asus_ctrl_nv(char *asusctrl);
+extern int asus_ctrl_nv(char *asusctrl, int do_rc);
 extern int asus_ctrl_nv_restore();
 extern int setting_SG_mode_wps();
 #endif

@@ -36,6 +36,10 @@ if [ "$cfg_trigger" != "1" ]; then # cfg_mnt skip these
 	fi
 	error_day=`date |awk '{print $1}'`
 
+else
+
+	record="webs_state_error"
+	nvram set webs_state_error=0
 fi #cfg_trigger!=1
 
 

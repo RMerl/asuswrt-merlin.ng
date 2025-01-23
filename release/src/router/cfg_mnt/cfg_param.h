@@ -2,55 +2,57 @@
 #define __CFG_PARAM_H__
 
 /* parameter list table */
-#if defined(BIT)
-#undef BIT
+#if defined(BIT_ULL)
+#undef BIT_ULL
 #endif
-#define BIT(x)	((1 << x))
+#define BIT_ULL(x) (x + 1)
 
 /* feature */
-#define FT_WIRELESS	BIT(0)
-#define FT_LOGIN	BIT(1)
-#define FT_TIME		BIT(2)
-#define FT_MISC		BIT(3)
-#define FT_LOGGER		BIT(4)
-#define FT_FEEDBACK		BIT(5)
-#define FT_DIAGNOSTIC	BIT(6)
-#define FT_BACKHAULCTRL	BIT(7)
+#define FT_WIRELESS	BIT_ULL(0)
+#define FT_LOGIN	BIT_ULL(1)
+#define FT_TIME		BIT_ULL(2)
+#define FT_MISC		BIT_ULL(3)
+#define FT_LOGGER		BIT_ULL(4)
+#define FT_FEEDBACK		BIT_ULL(5)
+#define FT_DIAGNOSTIC	BIT_ULL(6)
+#define FT_BACKHAULCTRL	BIT_ULL(7)
 
-#define FT_REGION	BIT(8)	/* system reboot */
-#define FT_CENTRAL_LED		BIT(9)
+#define FT_REGION	BIT_ULL(8)	/* system reboot */
+#define FT_CENTRAL_LED		BIT_ULL(9)
 
 #if defined(MAPAC2200) || defined(RTAC95U)
-#define FT_BHBLOCK	BIT(10)	/* normal client blocking in backhaul */
+#define FT_BHBLOCK	BIT_ULL(10)	/* normal client blocking in backhaul */
 #endif
 #ifdef RTCONFIG_WIFI_SON
-#define FT_SPCMD	BIT(11)	/* special command */
+#define FT_SPCMD	BIT_ULL(11)	/* special command */
 #endif
-#define FT_LP55XX_LED	BIT(12)	/* control lp55xx led */
-#define FT_LINK_AGGREGATION    BIT(13) /* link aggregation */
-#define FT_CTRL_LED		BIT(14)
-#define FT_AURARGB		BIT(15)
+#define FT_LP55XX_LED	BIT_ULL(12)	/* control lp55xx led */
+#define FT_LINK_AGGREGATION    BIT_ULL(13) /* link aggregation */
+#define FT_CTRL_LED		BIT_ULL(14)
+#define FT_AURARGB		BIT_ULL(15)
 #if defined(RTCONFIG_STA_AP_BAND_BIND)
-#define FT_STA_BIND_AP		BIT(16)
+#define FT_STA_BIND_AP		BIT_ULL(16)
 #endif
 #ifdef RTCONFIG_DWB
-#define FT_DWBCTRL	BIT(17) /* DWB feature */
+#define FT_DWBCTRL	BIT_ULL(17) /* DWB feature */
 #endif
 #ifdef RTCONFIG_BHCOST_OPT
-#define	FT_PREFERAP	BIT(18)  /* Prefer AP feature */
+#define	FT_PREFERAP	BIT_ULL(18)  /* Prefer AP feature */
 #endif
 #if defined(RTCONFIG_FANCTRL)
-#define FT_FANCTRL		BIT(19)
+#define FT_FANCTRL		BIT_ULL(19)
 #endif
 #ifdef RTCONFIG_AMAS_WGN
-#define FT_BW_LIMIT BIT(20) /* Bandwidth limiter for guest network feature */
+#define FT_BW_LIMIT BIT_ULL(20) /* Bandwidth limiter for guest network feature */
 #endif
-#define FT_PLC_MASTER BIT(21)
-#define FT_LOCAL_ACCESS	BIT(22)
+#define FT_PLC_MASTER BIT_ULL(21)
+#define FT_LOCAL_ACCESS	BIT_ULL(22)
 #ifdef RTCONFIG_AMAS_SYNC_LEDG
-#define FT_LEDG	BIT(23)
+#define FT_LEDG	BIT_ULL(23)
 #endif
-#define FT_MOCA	BIT(25)
+#define FT_MOCA   BIT_ULL(33)
+#define FT_PRIVACY_POLICY   BIT_ULL(34)
+#define FT_NEW_EULA    BIT_ULL(41)
 
 /* service */
 #define RESTART_WIRELESS		"restart_wireless"
@@ -136,6 +138,8 @@ static struct feature_mapping_s feature_mapping_list[] __attribute__ ((unused)) 
 	{ "ledg", 	FT_LEDG,	RESTART_LEDG },
 #endif
 	{ "moca", 	FT_MOCA,	MOCA_SET_PRIVACY },
+	{ "privacy_policy",	FT_PRIVACY_POLICY,	NULL },
+	{ "new_eula",	FT_NEW_EULA,	NULL },
 	{ NULL, 0, NULL }
 };
 
@@ -398,6 +402,14 @@ enum {
 	SUBFT_RB_ENABLE,
 #endif
 	SUBFT_GENCERT,
+	SUBFT_PRIVACY_POLICY,
+	SUBFT_NEW_EULA,
+
+	/* sub feature for disable 11b */
+	SUBFT_DISABLE_11B_BAND1,
+	SUBFT_DISABLE_11B_BAND2,
+	SUBFT_DISABLE_11B_BAND3,
+	SUBFT_DISABLE_11B_BAND4,
 
 	SUBFT_MAX
 };
@@ -656,6 +668,17 @@ static struct subfeature_mapping_s subfeature_mapping_list[] __attribute__ ((unu
 	/* ledg */
 	{ "re_rb_enable", SUBFT_RB_ENABLE, FT_WIRELESS },
 #endif
+	{ "privacy_policy",	SUBFT_PRIVACY_POLICY,	FT_PRIVACY_POLICY },
+
+	/* new eula */
+	{ "new_eula",	SUBFT_NEW_EULA,	FT_NEW_EULA },
+
+	/* Diable 11b */
+	{ "dis_11b_b1", SUBFT_DISABLE_11B_BAND1, FT_WIRELESS },
+	{ "dis_11b_b2", SUBFT_DISABLE_11B_BAND2, FT_WIRELESS },
+	{ "dis_11b_b3", SUBFT_DISABLE_11B_BAND3, FT_WIRELESS },
+	{ "dis_11b_b4", SUBFT_DISABLE_11B_BAND4, FT_WIRELESS },
+
 	/* END */
 	{ NULL, 0, 0}
 };
@@ -1224,6 +1247,7 @@ static struct param_mapping_s param_mapping_list[] __attribute__ ((unused)) = {
 	{ "amas_wlc0_target_bssid", FT_PREFERAP, SUBFT_FORCE_TOPOLOGY,		""},
 	{ "amas_wlc1_target_bssid", FT_PREFERAP, SUBFT_FORCE_TOPOLOGY,		""},
 	{ "amas_wlc2_target_bssid", FT_PREFERAP, SUBFT_FORCE_TOPOLOGY,		""},
+	{ "amas_wlc3_target_bssid", FT_PREFERAP, SUBFT_FORCE_TOPOLOGY,		""},
 #endif
 	/* link aggregation */
 	{ "lacp_enabled", FT_LINK_AGGREGATION, SUBFT_LINK_AGGREGATION,		"0"},
@@ -1271,6 +1295,18 @@ static struct param_mapping_s param_mapping_list[] __attribute__ ((unused)) = {
 	{ "moca_password", FT_MOCA, SUBFT_MOCA,		"12345678901234567"},
 	{ "moca_epassword", FT_MOCA, SUBFT_MOCA,		"12345678901234567"},
 	{ "moca_sceu_mode", FT_MOCA, SUBFT_MOCA,		"7"},
+
+	/* new eula */
+	{ "ASUS_NEW_EULA", FT_NEW_EULA, SUBFT_NEW_EULA,		"0"},
+	{ "ASUS_NEW_EULA_from", FT_NEW_EULA, SUBFT_NEW_EULA,		""},
+	{ "ASUS_NEW_EULA_ts", FT_NEW_EULA, SUBFT_NEW_EULA,		""},
+	{ "ASUS_NEW_EULA_time", FT_NEW_EULA, SUBFT_NEW_EULA,		""},
+
+	/* disable 11b */
+	{ "wl0_rateset", FT_WIRELESS, SUBFT_DISABLE_11B_BAND1,		"default"},
+	{ "wl1_rateset", FT_WIRELESS, SUBFT_DISABLE_11B_BAND2,		"default"},
+	{ "wl2_rateset", FT_WIRELESS, SUBFT_DISABLE_11B_BAND3,		"default"},
+	{ "wl3_rateset", FT_WIRELESS, SUBFT_DISABLE_11B_BAND4,		"default"},
 
 	/* END */
 	{ NULL, 0, 0,		NULL}

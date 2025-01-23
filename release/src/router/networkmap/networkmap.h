@@ -90,9 +90,11 @@ enum
 #define CLIENT_LIST_JSON_PATH        "/tmp/clientlist.json"
 #define BRCTL_TABLE_PATH             "/tmp/nmp_brctl_table"
 #define ASUS_DEVICE_JSON_FILE        "/tmp/asus_device.json"
+#define IP6_TABLE_PATH               "/tmp/nmp_ip6_table"
 
 #define NCL_LIMIT		14336   //database limit to 14KB to avoid UI glitch
 
+#define IP_TABLE_PATH               "/tmp/nmp_ip_table"
 #define NMP_DEBUG_FILE				"/tmp/NMP_DEBUG"
 #define NMP_DEBUG_MORE_FILE			"/tmp/NMP_DEBUG_MORE"
 #define NMP_DEBUG_FUNCTION_FILE		"/tmp/NMP_DEBUG_FUNCTION"
@@ -212,11 +214,14 @@ typedef struct {
 	unsigned char	device_type[MAX_NR_CLIENT_LIST][32];
 	unsigned char	vendorClass[MAX_NR_CLIENT_LIST][32];
 	unsigned char	os_type[MAX_NR_CLIENT_LIST];
+	char			ip6_addr[MAX_NR_CLIENT_LIST][40];
+	char			ip6_prefix[MAX_NR_CLIENT_LIST][50];
 	unsigned char	sdn_idx[MAX_NR_CLIENT_LIST];
 	unsigned char	online[MAX_NR_CLIENT_LIST];
 	unsigned char	type[MAX_NR_CLIENT_LIST];
 	unsigned char	ipMethod[MAX_NR_CLIENT_LIST][7];
 	unsigned char	opMode[MAX_NR_CLIENT_LIST];
+	unsigned char	dhcp_flag[MAX_NR_CLIENT_LIST];
 /* define bitmap flag:	0.http
 			1.printer
 			2.itune
@@ -295,7 +300,13 @@ void regularly_check_devices(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab
 
 void check_clientlist_offline(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab);
 
+int check_wire_info(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, const int i);
+
 int check_wireless_clientlist(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab);
+
+void check_clients_from_ip_cmd(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab);
+
+void check_dhcp_ip_online(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab, const char *mac, const char *ip_addr);
 
 void check_brctl_mac_online(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab);
 
@@ -304,5 +315,9 @@ int check_asus_device(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab, const 
 void network_ip_scan();
 
 int json_checker(const char *json_str);
+
+void check_ip6_addr(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab);
+
+void check_ip6_mac(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab, const char *mac, const char *ip6_addr);
 
 #endif  /*__NETWORKMAP_H__*/

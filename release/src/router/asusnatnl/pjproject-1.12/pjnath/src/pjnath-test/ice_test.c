@@ -57,6 +57,7 @@ struct test_cfg
     unsigned    enable_host;	/* Enable host candidates	*/
     unsigned    enable_stun;	/* Enable srflx candidates	*/
     unsigned    enable_turn;	/* Enable turn candidates	*/
+	unsigned    enable_ipv6;	/* Enable ipv6	*/
     unsigned	client_flag;	/* Client flags			*/
 
     unsigned    answer_delay;	/* Delay before sending SDP	*/

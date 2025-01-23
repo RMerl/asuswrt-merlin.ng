@@ -26,12 +26,12 @@
 	text-shadow: 1px 1px 0px #000;
 }
 </style>
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
-<script type="text/javascript" src="/js/jquery.js"></script>
 <script type='text/javascript'>
 var temp_base = 40;
 var d_temp = 20;
@@ -54,7 +54,7 @@ var wl_control_channel = <% wl_control_channel(); %>;
 
 var MaxTxPower_2;
 var MaxTxPower_5;
-var flag = 0;;
+var flag = 0;
 var HW_MAX_LIMITATION_2 = 101;
 var HW_MIN_LIMITATION_2 = 9;
 var HW_MAX_LIMITATION_5 = 251;

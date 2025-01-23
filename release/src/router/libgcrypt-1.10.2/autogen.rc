@@ -1,0 +1,13 @@
+# autogen.sh configuration for Libgcrypt                       -*- sh -*-
+
+case "$myhost" in
+  w32)
+    configure_opts=""
+    ;;
+
+  amd64)
+    configure_opts=""
+    ;;
+esac
+
+final_info="./configure --enable-maintainer-mode && make"

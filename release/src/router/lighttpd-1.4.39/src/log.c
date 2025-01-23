@@ -502,6 +502,7 @@ int log_sys_write(server *srv, const char *fmt, ...) {
 	buffer* sys_time_str = buffer_init();
 	buffer_string_prepare_copy(sys_time_str, 255);
 
+#ifndef RTCONFIG_AVOID_TZ_ENV
 #if EMBEDDED_EANBLE
 #ifndef APP_IPKG
 	setenv("TZ", nvram_get_time_zone(), 1);
@@ -511,6 +512,7 @@ int log_sys_write(server *srv, const char *fmt, ...) {
 	free(time_zone);
 #endif
 #endif
+#endif	/* RTCONFIG_AVOID_TZ_ENV */
 	strftime(sys_time_str->ptr, sys_time_str->size - 1, "%b  %d %H:%M:%S", localtime(&(srv->cur_ts)));
 
 	buffer_copy_string(srv->syslog_buf, sys_time_str->ptr);	

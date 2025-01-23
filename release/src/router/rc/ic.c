@@ -365,6 +365,11 @@ ic_s *get_all_ic_list(ic_s **ic_list){
 
 	follow_ic_list = ic_list;
 	snprintf(buf, sizeof(buf), "%s", nvram_safe_get("ICFILTER_MAC"));
+	if (!strcmp(buf, "")) {
+		_dprintf("There is no ICFILTER_MAC rules!\n");
+		return NULL;
+	}
+
 	foreach_62_keep_empty_string(count, word, buf, next_word){
 		if(initial_ic(follow_ic_list) == NULL){
 			_dprintf("No memory!!(follow_ic_list)\n");
@@ -418,7 +423,8 @@ void print_ic_list(ic_s *ic_list){
 	}
 }
 
-static void clean_invalid_config(ic_s *ic_list) {
+static void clean_invalid_config(ic_s *ic_list)
+{
 	ic_s *follow_ic;
 	int rule_count = count_ic_rules(ic_list);
 	int clean_count = 0;
@@ -434,14 +440,15 @@ static void clean_invalid_config(ic_s *ic_list) {
 		clean_count++;
 	}
 
-	//_dprintf("INTERNETCTRL : rule_count=%d, clean_count=%d\n", rule_count, clean_count);
-	//_dprintf("INTERNETCTRL : MAC=%s\n", mac_buf);
-	//_dprintf("INTERNETCTRL : DAYTIME=%s\n", daytime_buf);
+	_dprintf("INTERNETCTRL : rule_count=%d, clean_count=%d\n", rule_count, clean_count);
+	_dprintf("INTERNETCTRL : MAC=%s\n", mac_buf);
+	_dprintf("INTERNETCTRL : DAYTIME=%s\n", daytime_buf);
 
 	if (rule_count != clean_count) {
+		pid_t pid;
+		char *commit[] = { "nvram", "commit", NULL };
 		nvram_set("ICFILTER_MAC", mac_buf);
 		nvram_set("ICFILTER_MACFILTER_DAYTIME", daytime_buf);
-		nvram_commit();
 	}
 
 }

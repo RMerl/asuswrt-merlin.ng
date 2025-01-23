@@ -1,0 +1,264 @@
+Library: Libgcrypt
+Homepage: https://www.gnupg.org/related_software/libgcrypt/
+Download: https://ftp.gnupg.org/ftp/gcrypt/libgcrypt/
+          ftp://ftp.gnupg.org/gcrypt/libgcrypt/
+Repository: git://git.gnupg.org/libgcrypt.git
+Maintainer: Werner Koch <wk@gnupg.org>
+Bug reports: https://bugs.gnupg.org
+Security related bug reports: <security@gnupg.org>
+End-of-life: TBD
+License (library): LGPLv2.1+
+License (manual and tools): GPLv2+
+
+
+Libgcrypt is free software.  See the files COPYING.LIB and COPYING for
+copying conditions, and LICENSES for notices about a few contributions
+that require these additional notices to be distributed.  License
+copyright years may be listed using range notation, e.g., 2000-2013,
+indicating that every year in the range, inclusive, is a copyrightable
+year that would otherwise be listed individually.
+
+
+List of Copyright holders
+=========================
+
+  Copyright (C) 1989,1991-2018 Free Software Foundation, Inc.
+  Copyright (C) 1994 X Consortium
+  Copyright (C) 1996 L. Peter Deutsch
+  Copyright (C) 1997 Werner Koch
+  Copyright (C) 1998 The Internet Society
+  Copyright (C) 1996-1999 Peter Gutmann, Paul Kendall, and Chris Wedgwood
+  Copyright (C) 1996-2006 Peter Gutmann, Matt Thomlinson and Blake Coverett
+  Copyright (C) 2003 Nikos Mavroyanopoulos
+  Copyright (c) 2006 CRYPTOGAMS
+  Copyright (C) 2006-2007 NTT (Nippon Telegraph and Telephone Corporation)
+  Copyright (C) 2012-2023 g10 Code GmbH
+  Copyright (C) 2012 Simon Josefsson, Niels Möller
+  Copyright (c) 2012 Intel Corporation
+  Copyright (C) 2013 Christian Grothoff
+  Copyright (C) 2013-2022 Jussi Kivilinna
+  Copyright (C) 2013-2014 Dmitry Eremin-Solenikov
+  Copyright (C) 2014 Stephan Mueller
+  Copyright (C) 2017 Jia Zhang
+  Copyright (C) 2018 Bundesamt für Sicherheit in der Informationstechnik
+  Copyright (C) 2020 Alibaba Group.
+  Copyright (C) 2020 Tianjia Zhang
+
+
+Authors with a FSF copyright assignment
+=======================================
+
+LIBGCRYPT       Werner Koch    2001-06-07
+Assigns past and future changes.
+Assignment for future changes terminated on 2012-12-04.
+wk@gnupg.org
+Designed and implemented Libgcrypt.
+
+GNUPG	Matthew Skala		   1998-08-10
+Disclaims changes.
+mskala@ansuz.sooke.bc.ca
+Wrote cipher/twofish.c.
+
+GNUPG	Natural Resources Canada    1998-08-11
+Disclaims changes by Matthew Skala.
+
+GNUPG	Michael Roth	Germany     1998-09-17
+Assigns changes.
+mroth@nessie.de
+Wrote cipher/des.c.
+Changes and bug fixes all over the place.
+
+GNUPG	Niklas Hernaeus 	1998-09-18
+Disclaims changes.
+nh@df.lth.se
+Weak key patches.
+
+GNUPG	Rémi Guyomarch		1999-05-25
+Assigns past and future changes. (g10/compress.c, g10/encr-data.c,
+g10/free-packet.c, g10/mdfilter.c, g10/plaintext.c, util/iobuf.c)
+rguyom@mail.dotcom.fr
+
+ANY     g10 Code GmbH           2001-06-07
+Assignment for future changes terminated on 2012-12-04.
+Code marked with ChangeLog entries of g10 Code employees.
+
+LIBGCRYPT Timo Schulz           2001-08-31
+Assigns past and future changes.
+twoaday@freakmail.de
+
+LIBGCRYPT Simon Josefsson       2002-10-25
+Assigns past and future changes to FSF (cipher/{md4,crc}.c, CTR mode,
+CTS/MAC flags, self test improvements)
+simon@josefsson.org
+
+LIBGCRYPT Moritz Schulte	2003-04-17
+Assigns past and future changes.
+moritz@g10code.com
+
+GNUTLS  Nikolaos Mavrogiannopoulos  2003-11-22
+nmav@gnutls.org
+Original code for cipher/rfc2268.c.
+
+LIBGCRYPT	The Written Word	2005-04-15
+Assigns past and future changes. (new: src/libgcrypt.pc.in,
+src/Makefile.am, src/secmem.c, mpi/hppa1.1/mpih-mul3.S,
+mpi/hppa1.1/udiv-qrnnd.S, mpi/hppa1.1/mpih-mul2.S,
+mpi/hppa1.1/mpih-mul1.S, mpi/Makefile.am, tests/prime.c,
+tests/register.c, tests/ac.c, tests/basic.c, tests/tsexp.c,
+tests/keygen.c, tests/pubkey.c, configure.ac, acinclude.m4)
+
+LIBGCRYPT       Brad Hards       2006-02-09
+Assigns Past and Future Changes
+bradh@frogmouth.net
+(Added OFB mode. Changed cipher/cipher.c, test/basic.c doc/gcrypt.tex.
+ added SHA-224, changed cipher/sha256.c, added HMAC tests.)
+
+LIBGCRYPT       Hye-Shik Chang   2006-09-07
+Assigns Past and Future Changes
+perky@freebsd.org
+(SEED cipher)
+
+LIBGCRYPT       Werner Dittmann  2009-05-20
+Assigns Past and Future Changes
+werner.dittmann@t-online.de
+(mpi/amd64, tests/mpitests.c)
+
+GNUPG           David Shaw
+Assigns past and future changes.
+dshaw@jabberwocky.com
+(cipher/camellia-glue.c and related stuff)
+
+LIBGCRYPT       Andrey Jivsov    2010-12-09
+Assigns Past and Future Changes
+openpgp@brainhub.org
+(cipher/ecc.c and related files)
+
+LIBGCRYPT       Ulrich Müller    2012-02-15
+Assigns Past and Future Changes
+ulm@gentoo.org
+(Changes to cipher/idea.c and related files)
+
+LIBGCRYPT       Vladimir Serbinenko  2012-04-26
+Assigns Past and Future Changes
+phcoder@gmail.com
+(cipher/serpent.c)
+
+
+Authors with a DCO
+==================
+
+Andrei Scherer <andsch@inbox.com>
+2014-08-22:BF7CEF794F9.000003F0andsch@inbox.com:
+
+Christian Aistleitner <christian@quelltextlich.at>
+2013-02-26:20130226110144.GA12678@quelltextlich.at:
+
+Christian Grothoff <christian@grothoff.org>
+2013-03-21:514B5D8A.6040705@grothoff.org:
+
+Clemens Lang <cllang@redhat.com>
+2022-02-10:20220210133844.46581-1-cllang@redhat.com:
+
+Danny Tsen <dtsen@us.ibm.com>
+2021-12-20:OF85D11C2F.7A339D7D-ON002587B1.0042A81E-002587B1.0042B94D@ibm.com
+
+Dmitry Baryshkov <dbaryshkov@gmail.com>
+Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+2013-07-13:20130713144407.GA27334@fangorn.rup.mentorg.com:
+
+Dmitry Kasatkin <dmitry.kasatkin@intel.com>
+2012-12-14:50CAE2DB.80302@intel.com:
+
+H.J. Lu <hjl.tools@gmail.com>
+2020-01-19:20200119135241.GA4970@gmail.com:
+
+Jia Zhang <qianyue.zj@alibaba-inc.com>
+2017-10-17:59E56E30.9060503@alibaba-inc.com:
+
+Jérémie Courrèges-Anglas <jca@wxcvbn.org>
+2016-05-26:87bn3ssqg0.fsf@ritchie.wxcvbn.org:
+
+Jussi Kivilinna <jussi.kivilinna@mbnet.fi>
+2012-11-15:20121115172331.150537dzb5i6jmy8@www.dalek.fi:
+
+Jussi Kivilinna <jussi.kivilinna@iki.fi>
+2013-05-06:5186720A.4090101@iki.fi:
+
+Markus Teich <markus dot teich at stusta dot mhn dot de>
+2014-10-08:20141008180509.GA2770@trolle:
+
+Martin Storsjö <martin@martin.st>
+2018-03-28:dc1605ce-a47d-34c5-8851-d9569f9ea5d3@martin.st:
+
+Mathias L. Baumann <mathias.baumann at sociomantic.com>
+2017-01-30:07c06d79-0828-b564-d604-fd16c7c86ebe@sociomantic.com:
+
+Milan Broz <gmazyland@gmail.com>
+2014-01-13:52D44CC6.4050707@gmail.com:
+
+Paul Wolneykien <manowar@altlinux.org>
+2019-11-19:20191119204459.312927aa@rigel.localdomain:
+
+Peter Wu <peter@lekensteyn.nl>
+2015-07-22:20150722191325.GA8113@al:
+
+Rafaël Carré <funman@videolan.org>
+2012-04-20:4F91988B.1080502@videolan.org:
+
+Sergey V. <sftp.mtuci@gmail.com>
+2013-11-07:2066221.5IYa7Yq760@darkstar:
+
+Shawn Landden <shawn@git.icu>
+2019-07-09:2794651562684255@iva4-64850291ca1c.qloud-c.yandex.net:
+
+Stephan Mueller <smueller@chronox.de>
+2014-08-22:2008899.25OeoelVVA@myon.chronox.de:
+
+Tianjia Zhang <tianjia.zhang@linux.alibaba.com>
+2020-01-08:dcda0127-2f45-93a3-0736-27259a33bffa@linux.alibaba.com:
+
+Tomáš Mráz <tm@t8m.info>
+2012-04-16:1334571250.5056.52.camel@vespa.frost.loc:
+
+Vitezslav Cizek <vcizek@suse.com>
+2015-11-05:20151105131424.GA32700@kolac.suse.cz:
+
+Werner Koch <wk@gnupg.org> (g10 Code GmbH)
+2012-12-05:87obi8u4h2.fsf@vigenere.g10code.de:
+
+
+More credits
+============
+
+Libgcrypt used to be part of GnuPG but has been taken out into its own
+package on 2000-12-21.
+
+Most of the stuff in mpi has been taken from an old GMP library
+version by Torbjorn Granlund <tege@noisy.tmg.se>.
+
+The files cipher/rndunix.c and cipher/rndw32.c are based on those
+files from Cryptlib.  Copyright Peter Gutmann, Paul Kendall, and Chris
+Wedgwood 1996-1999.
+
+The ECC code cipher/ecc.c was based on code by Sergi Blanch i Torne,
+sergi at calcurco dot org.
+
+The implementation of the Camellia cipher has been been taken from the
+original NTT provided GPL source.
+
+The CAVS testing program tests/cavs_driver.pl is not to be considered
+a part of libgcrypt proper.  We distribute it merely for convenience.
+It has a permissive license and is copyrighted by atsec information
+security corporation.  See the file for details.
+
+The file salsa20.c is based on D.J. Bernstein's public domain code and
+taken from Nettle.  Copyright 2012 Simon Josefsson and Niels Möller.
+
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.

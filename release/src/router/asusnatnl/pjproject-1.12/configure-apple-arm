@@ -11,8 +11,9 @@ SDK_PATH="${DEVELOPER}/Platforms/iPhoneOS.platform/Developer/SDKs/${SDK_VER}"
 export CONFIGURE_FLAGS="--disable-sctp --disable-umem"
 export DEVPATH=${DEVELOPER}/Platforms/iPhoneOS.platform/Developer
 export CC=${DEVELOPER}/usr/bin/gcc
-export CFLAGS="-fembed-bitcode -fstack-protector -Wno-unused-label -I${OPENSSL_INC_PATH} -DPJ_CONFIG_IPHONE=1 -isysroot ${SDK_PATH}"
+export CFLAGS="-fembed-bitcode -fstack-protector -Wno-unused-label -I${OPENSSL_INC_PATH} -DPJ_CONFIG_IPHONE=1 -isysroot ${SDK_PATH} -miphoneos-version-min=10.0"
 export LDFLAGS="${OPENSSL_LIB_PATH}/libssl.a ${OPENSSL_LIB_PATH}/libcrypto.a" 
 export ARCH="-arch armv7"
 export CROSS_TYPE=armv7-apple-darwin9
+export TARGET_OS=IOS
 ./configure-iphone ${CONFIGURE_FLAGS} CC=${CC} ARCH=${ARCH}

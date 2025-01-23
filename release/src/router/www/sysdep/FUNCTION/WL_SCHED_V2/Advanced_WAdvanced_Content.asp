@@ -9,8 +9,10 @@
 	<link rel="stylesheet" href="index_style.css"> 
 	<link rel="stylesheet" href="form_style.css">
 	<link rel="stylesheet" type="text/css" href="/js/weekSchedule/weekSchedule.css">
+
 	<script src="/js/jquery.js"></script>
-	<script src="/calendar/jquery-ui.js"></script> 
+	<script src="/calendar/jquery-ui.js"></script>
+	<script type="text/javascript" src="/js/httpApi.js"></script>
 	<script src="/state.js"></script>
 	<script src="/general.js"></script>
 	<script src="/help.js"></script>
@@ -18,7 +20,6 @@
 	<script src="/validator.js"></script>
 	<script language="JavaScript" type="text/javascript" src="/js/weekSchedule/weekSchedule.js"></script>
 	<script language="JavaScript" type="text/javascript" src="/form.js"></script>
-	<script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
 <style>
 .ui-slider {
 	position: relative;
@@ -406,7 +407,7 @@ function initial(){
 				inputCtrl(document.form.wl_turbo_qam, 0);
 			}
 			
-			$("#turbo_qam_title").html("<#WLANConfig11b_x_ModulationScheme#>");
+			$("#turbo_qam_title").html("<#WLANConfig11b_x_ModulationScheme#> (WiFi 5)");
 			if(QAM1024_support){
 				var desc = ["Up to MCS 9 (802.11ac)", "Up to MCS 11 (NitroQAM/1024-QAM)"];
 				var value = ["1", "2"];
@@ -464,7 +465,7 @@ function initial(){
 					inputCtrl(document.form.wl_turbo_qam, 0);
 				}
 				
-				$("#turbo_qam_title").html("<#WLANConfig11b_x_ModulationScheme#>");
+				$("#turbo_qam_title").html("<#WLANConfig11b_x_ModulationScheme#> (WiFi 5)");
 				if(QAM1024_support){
 					var desc = ["Up to MCS 7 (802.11n)", "Up to MCS 9 (TurboQAM/256-QAM)", "Up to MCS 11 (NitroQAM/1024-QAM)"];
 					var value = ["0", "1", "2"];
@@ -911,7 +912,7 @@ function changeRSSI(_switch){
 var reboot_confirm=0;
 function applyRule(){
 	if(lantiq_support && wave_ready != 1){
-		alert("Please wait a minute for wireless ready");
+		alert(`<#Wireless_ready#>`);
 		return false;
 	}
 	
@@ -1091,7 +1092,7 @@ power_table_desc = ["<#WLANConfig11b_TxPower1#>", "<#WLANConfig11b_TxPower2#>", 
 //power_table_desc = ["省電", "弱", "平衡", "強", "效能"];
 function register_event(){
 	
-	$(function() {
+
 		$( "#slider" ).slider({
 			orientation: "horizontal",
 			range: "min",
@@ -1105,7 +1106,7 @@ function register_event(){
 				set_power(ui.value);	  
 			}
 		}); 
-	});
+
 }
 
 function set_power(power_value){	

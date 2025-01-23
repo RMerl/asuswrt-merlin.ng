@@ -48,13 +48,13 @@
 	cursor:default;
 }
 </style>
+<script type="text/javaScript" src="/js/jquery.js"></script>
+<script language="JavaScript" type="text/JavaScript" src="/js/httpApi.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" language="JavaScript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
-<script language="JavaScript" type="text/JavaScript" src="/js/jquery.js"></script>
-<script language="JavaScript" type="text/JavaScript" src="/js/httpApi.js"></script>
 <script>
 <% wl_get_parameter(); %>
 
@@ -206,7 +206,7 @@ function addRow(obj, upper){
 
 function applyRule(){
 	if(lantiq_support && wave_ready != 1){
-		alert("Please wait a minute for wireless ready");
+		alert(`<#Wireless_ready#>`);
 		return false;
 	}
 	
@@ -285,6 +285,7 @@ function showLANIPList(){
 	var show_name = "";
 	var show_title = "";
 	if(wds_aplist != ""){
+        wds_aplist = JSON.parse(wds_aplist);
 		for(var i = 0; i < wds_aplist.length ; i++){
 			wds_aplist[i][0] = htmlEnDeCode.htmlEncode(decodeURIComponent(wds_aplist[i][0]));
 			if(wds_aplist[i][0] && wds_aplist[i][0].length > 12)

@@ -12,20 +12,20 @@
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="/js/table/table.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/state.js"></script>
-<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" language="JavaScript" src="/js/table/table.js"></script>
 <style>
 	@font-face{
-		font-family: rog;
-		src: url(/fonts/ROG_Fonts-Regular.woff) format("woff"),
-		     url(/fonts/ROG_Fonts-Regular.otf) format("opentype");
+		font-family: Xolonium;
+		src: url(/fonts/xolonium.regular.woff) format("woff"),
+                     url(/fonts/xolonium.regular.otf) format("opentype");
 	}
 	.tableApi_table, .tableApi_table th{
-		font-family: rog;
-		font-size: 20px;
+		font-family: Xolonium;
+		font-size: 16px;
 	}
 	.tableApi_table th{
 		background: #0000;
@@ -61,7 +61,7 @@
 		border-radius: 5px;
 	}
 	.gameName{
-		font-family: rog;
+		font-family: Xolonium;
 		line-height: 10px;
 	}
 	#gameListWrap{

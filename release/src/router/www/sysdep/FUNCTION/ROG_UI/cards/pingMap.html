@@ -38,7 +38,7 @@
 		border-radius: 5px;
 	}
 	.gameName{
-		font-family: rog;
+		font-family: Xolonium;
 		line-height: 10px;
 	}
 	#gameListWrap{
@@ -82,12 +82,12 @@
 	.pLevel{
 		display: inline-table;
 		height: 60px;
-		font-family: rog;
+		font-family: Xolonium;
 		margin-right: 20px;
 	}
 	.pTitle{
 		width: 80px;
-		font-size: 20px;
+		font-size: 16px;
 		line-height: 15px;
 	}
 	.pLevelName{
@@ -96,10 +96,10 @@
 	}
 	.pLevelCount{
 		height: 40px;
-		line-height: 0px;
+		line-height: 16px;
 		width: 50px;
 		text-align: right;
-		font-size: 50px;			
+		font-size: 36px;			
 	}
 	#pHigh{
 		color: #00bfff;
@@ -183,15 +183,24 @@
 				.append(gameCover)
 				.append($("<span>").addClass("gameName").html(i))
 				.appendTo($("#gameList"))
-				.click(function(){
-					changeGame($(this).find('span').html());
-					$(".selectedGame").removeClass("selectedGame")
-					$(this).addClass("selectedGame");
-				})
 		}
 
 		if($(".server").length == 0) $(".gameImage")[0].click();
-		// changeGame(document.form.gameSelector.value);
+
+		const gameImageObject = document.querySelectorAll('.gameImage');
+		for(let element of gameImageObject){
+			const gameName = element.children[1].innerHTML;
+			element.addEventListener('click', function(){
+				if(document.querySelector('.selectedGame')){
+					document.querySelector('.selectedGame').classList.remove("selectedGame");
+				}	
+				
+				this.classList.add('selectedGame');
+				if(gameName){
+					changeGame(gameName);
+				}				
+			})
+		}
 	}
 
 	function changeGame(game){

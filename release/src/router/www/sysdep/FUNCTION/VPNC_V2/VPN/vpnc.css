@@ -47,7 +47,7 @@
 .server_list_container{
 	width: 50%;
 	height: auto;
-	min-width: 360px;
+	min-width: 300px;
 }
 .server_list_container .svr_item_horizontal_line{
 	width: 90%;
@@ -505,7 +505,7 @@
 }
 .switch{
 	border-radius: 50px;
-	width: 36px;
+	width: 40px;
 	height: 20px;
 	position: relative;
 	-webkit-transition: all 0.6s;
@@ -513,30 +513,30 @@
 	cursor: pointer;
 }
 .switch.off{
-	background: rgb(255 255 255 / 0.3);
+	background: rgba(127, 143, 164, 1);
 }
 .switch.on{
-	background: rgb(30, 162, 255);
+	background: #248DFF;
 }
 .switch:before{
 	border-radius: 50%;
 	display: block;
 	position: absolute;
 	content: "";
-	height: 16px;
-	width: 16px;
-	left: 2px;
-	top: 2px;
+	height: 12px;
+	width: 12px;
+	left: 4px;
+	top: 4px;
 	-webkit-transition: 0.6s;
 	transition: all 0.6s;
 	-webkit-transition-delay: 0.01s;
 	transition-delay: 0.01s;
-	background: #f7f7f7;
+	background: rgb(48 61 67);
 }
 .switch.on:before{
-	-webkit-transform: translateX(16px);
-	-ms-transform: translateX(16px);
-	transform: translateX(16px);
+	-webkit-transform: translateX(20px);
+	-ms-transform: translateX(20px);
+	transform: translateX(20px);
 }
 .checkbox, .checkbox.off{
 	width: 16px;
@@ -583,6 +583,18 @@
 	min-width: 360px;
 	position: relative;
 }
+.profile_policy_item {
+	display: flex;
+	align-items: center;
+	height: 56px;
+	border-bottom: 1px solid rgba(171, 180, 194, 0.2);
+}
+
+.profile_policy_item .text_content {
+	font-weight: 100;
+	font-size: 12px;
+	margin-left: 4%;
+}
 .profile_setting_item.nowrap{
 	height: 48px !important;
 	flex-wrap: nowrap !important;
@@ -611,7 +623,7 @@
 }
 .profile_setting_item.nowrap .title{
 	flex: 0 0 30%;
-	max-width: 160px;
+	max-width: 30%;
 	margin-top: initial;
 }
 .profile_setting_item.nowrap.switch_item .title{
@@ -658,18 +670,11 @@
 	align-items: center;
 }
 .btn_item .btn_container .text.create_ssk_account{
-	color: rgb(255, 255, 255);
-	font-size: 12px;
-	letter-spacing: 1.25px;
-	position: relative;
 	width: 155px;
-	height: 100%;
-	word-break: break-word;
-	display: flex;
-	justify-content: flex-start;
-	align-items: center;
 }
-.btn_item .btn_container .text.import_file:before, .btn_item .btn_container .text.create_account:before{
+.btn_item .btn_container .text.import_file:before,
+.btn_item .btn_container .text.create_account:before,
+.text.create_ssk_account:before{
 	position: absolute;
 	content: "";
 	background-image: url(/images/New_ui/vpn_icon_all_collect.svg);
@@ -680,14 +685,7 @@
 	left: -40px;
 }
 .text.create_ssk_account:before{
-	position: absolute;
-	content: "";
-	background-image: url(/images/New_ui/vpn_icon_all_collect.svg);
-	background-repeat: no-repeat;
-	background-position: -50px -163px;
-	width: 24px;
-	height: 24px;
-	left: -40px;
+	background-position: -54px -163px !important;
 }
 .btn_item .btn_container .text.create_account:before{
 	background-position: -54px -163px;
@@ -706,6 +704,10 @@
 	margin-left: 4%;
 	margin-bottom: 2%;
 	position: relative;
+}
+.input_container.two_component{
+	display: flex;
+	align-items: center;
 }
 .profile_setting_item.nowrap .input_container{
 	flex: 0 0 60%;
@@ -853,7 +855,8 @@
 	cursor: pointer;
 }
 .action_container .btn_container.valid_fail{
-	background: rgba(239, 246, 255, 0.6);
+	cursor: not-allowed;
+	background-color: rgba(239, 246, 255, 0.6);
 }
 .action_container.loading{
 	position: relative;
@@ -1004,6 +1007,13 @@
 	right: 0;
 	align-items: center;
 	line-height: 180%;
+	-webkit-tap-highlight-color: transparent;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
 }
 .popup_container.popup_element_second{
 	z-index: 500;
@@ -1178,7 +1188,7 @@
 	color: #ffffff;
 }
 .del_profile .action_btn_container .cancel{
-	box-shadow: 0 0 0 1px rgb(164 183 195 / 60%);
+	border: 1px solid rgb(164 183 195 / 60%);
 	color: rgba(164, 183, 195, 0.6);
 }
 .customize_alert .desc{
@@ -1200,14 +1210,22 @@
 	font-weight: normal;
 	margin-left: 2%;
 }
-.function_desc_container .vpnc_help_icon, .get_start_container .sub_info_container .vpnc_help_icon{
+.function_desc_container .vpnc_help_icon,
+.get_start_container .sub_info_container .vpnc_help_icon,
+.input_container .vpnc_help_icon{
 	background-position: -324px 0px;
 	width: 24px;
 	height: 24px;
 	margin-right: 16px;
 	cursor: pointer;
 }
-.function_desc_container .vpnc_help_icon:hover, .get_start_container .sub_info_container .vpnc_help_icon:hover{
+.input_container .vpnc_help_icon{
+	margin-right: initial;
+	margin-left: 6px;
+}
+.function_desc_container .vpnc_help_icon:hover,
+.get_start_container .sub_info_container .vpnc_help_icon:hover,
+.input_container .vpnc_help_icon:hover{
 	background-position: -324px -54px;
 }
 .function_desc_container:before{
@@ -1282,10 +1300,6 @@
 	background-color: rgb(89, 110, 116);
 	box-shadow: 0px 0px 0px 1px rgb(89, 110, 116);
 	background-position: 50%;
-}
-.client_icon_container.vender_icon{
-	background-image: url(/images/New_ui/networkmap/vender-list.png);
-	background-size: 180%;
 }
 .client_container .client_info_container{
 	width: 70%;
@@ -1465,12 +1479,18 @@
 		margin: initial;
 	}
 	.server_list_container{
-		width: 100%;
+		width: 94% !important;
+		margin: auto;
+	}
+	.svr_list_title_container, .client_list_title_container{
+		width: initial;
 	}
 	.svr_item_container, .svr_item_container.active, .svr_item_container.selected{
 		background: #1E2A41;
 		box-shadow: 0px 4px 5px 0px rgb(0 0 0 / 14%), 0px 1px 10px 0px rgb(0 0 0 / 12%), 0px 2px 4px -1px rgb(0 0 0 / 20%);
 		border-color: rgb(54, 71, 82);
+		margin-right: initial;
+		width: initial;
 	}
 	.item_tag_container > .item_tag{
 		background: #1E2A41;
@@ -1479,6 +1499,7 @@
 		border: 1px solid;
 		border-color: rgb(54, 71, 82);
 		border-top: initial;
+		width: initial;
 	}
 	.action_container{
 		justify-content: space-around;
@@ -1544,7 +1565,7 @@
 		color: inherit;
 	}
 	.del_profile .action_btn_container .cancel{
-		box-shadow: inherit;
+		border: inherit;
 		color: inherit;
 	}
 	.del_profile .desc{
@@ -1580,18 +1601,18 @@
 		max-width: 540px;
 	}
 	.profile_setting_item .title{
-		flex: 0 0 30%;
-		max-width: 160px;
+		flex: 0 0 40%;
+		max-width: 30%;
 		margin-top: initial;
 	}
 	.input_container{
-		flex: 0 0 70%;
-		max-width: 312px;
+		flex: 0 0 60%;
+		max-width: none;
 		margin: initial;
 	}
 	.profile_setting_item.keys_item .input_container{
-		flex: 0 0 93%;
-		max-width: 470px;
+		flex: 0 0 92%;
+		max-width: none;
 		margin-left: 4%;
 		min-width: initial;
 	}
@@ -1608,5 +1629,22 @@
 	}
 	.profile_setting_container{
 		width: 60%;
+	}
+}
+@media (max-width: 360px) {
+	.server_list_container,
+	.popup_container{
+		min-width: 320px;
+		width: 96% !important;
+	}
+	.popup_container{
+		width: 92% !important;
+	}
+	.profile_setting_item.nowrap.switch_item .input_container,
+	.profile_setting_item.keys_item .input_container{
+		min-width: initial !important;
+	}
+	#ssk_promote_img{
+		width: 280px !important;
 	}
 }

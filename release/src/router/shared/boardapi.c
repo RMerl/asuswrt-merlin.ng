@@ -1408,6 +1408,11 @@ int lanport_ctrl(int ctrl)
 #endif
 	}
 
+#ifdef BCM4912
+	if (rp_mode() || mb_mode() || re_mode())
+		system("ethctl eth0 phy-reset");
+#endif
+
 #if defined(EBG19)
 	if (ctrl)
 		rtkswitch_LanPort_linkUp();

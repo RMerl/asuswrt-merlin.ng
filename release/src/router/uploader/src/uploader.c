@@ -90,7 +90,9 @@ void init_basic_data()
         int account_bound = 0;
 #endif
         
-        if((ntp_ready == 1) && (link_internet == 2) && account_bound) {
+        if((ntp_ready == 1) && (link_internet == 2) && 
+            get_ASUS_privacy_policy_state(ASUS_PP_CONFIG_TRANSFER)==1 &&
+            account_bound) {
             Cdbg(APP_DBG, "ntp_ready -> %d, link_internet -> %d, oauth_auth_status -> %d", ntp_ready, link_internet, oauth_auth_status);
             break;
         } else {

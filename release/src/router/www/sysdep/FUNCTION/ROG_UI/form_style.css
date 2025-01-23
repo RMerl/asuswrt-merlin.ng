@@ -898,9 +898,9 @@ form{
 }
 /* CSS Document */
 @font-face{
-	font-family: rog;
-	src: url(/fonts/ROG_Fonts-Regular.woff) format("woff"),
-	     url(./fonts/ROG_Fonts-Regular.otf) format("opentype");
+	font-family: Xolonium;
+	src: url(/fonts/xolonium.regular.woff) format("woff"),
+             url(/fonts/xolonium.regular.otf) format("opentype");
 }
 body{
 color:#FFFFFF;
@@ -1375,13 +1375,10 @@ padding-top:1px;
 	cursor: pointer;
 }
 .notificationon{
-	position: absolute;
-	display:inline;
+	display:inline-block;
 	background-image:url(images/New_ui/notification.png);
 	background-repeat:no-repeat;
 	background-position:2px 2px;
-	margin-top:-5px;
-	margin-top:3px \9;	/*IE*/
 	height:30px;
 	width:30px;
 	cursor: pointer;
@@ -2095,8 +2092,22 @@ padding-top:1px;
 .pop_div_bg{
 	background-color: rgb(62,3,13);
 }
+.pop_div_container{
+	position: absolute;
+	left: 0;
+	right: 0;
+	margin: auto;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	z-index: 200;
+	width: 70%;
+	max-width: 740px;
+	box-shadow: 3px 3px 10px #000;
+	display: none;
+}
 .analysis_bg, .web_frame{
-	background: rgba(17, 17, 17, .5);
+	background: rgba(17, 17, 17, .95);
 	border: 1px solid rgb(145,7,31);
 }
 .tm_title_bg{

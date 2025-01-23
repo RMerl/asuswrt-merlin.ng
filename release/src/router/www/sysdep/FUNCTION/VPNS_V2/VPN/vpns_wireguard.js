@@ -312,11 +312,11 @@ function Get_Component_Setup_Client_WGS(_wgsc_unit){
 	var nvramSet_obj = {"action_mode": "apply", "wgs_unit": wgs_unit, "wgsc_unit": _wgsc_unit};
 	httpApi.nvramSet(nvramSet_obj, function(){
 		httpApi.hookGet("get_wgsc_parameter", true);
-		var wgsc_settings = httpApi.nvramGet(["wgsc_name", "wgsc_addr", "wgsc_aips", "wgsc_caips"], true);
-		$wgsc_addr.val(wgsc_settings.wgsc_addr);
-		$wgsc_aips.val(wgsc_settings.wgsc_aips);
-		$wgsc_caips.val(wgsc_settings.wgsc_caips);
-		$wgsc_name.val(wgsc_settings.wgsc_name).keyup();
+		let wgsc_settings = httpApi.nvramCharToAscii(["wgsc_name", "wgsc_addr", "wgsc_aips", "wgsc_caips"], true);
+		$wgsc_addr.val(decodeURIComponent(wgsc_settings.wgsc_addr));
+		$wgsc_aips.val(decodeURIComponent(wgsc_settings.wgsc_aips));
+		$wgsc_caips.val(decodeURIComponent(wgsc_settings.wgsc_caips));
+		$wgsc_name.val(decodeURIComponent(wgsc_settings.wgsc_name)).keyup();
 		if(show_config){
 			get_wgs_client_conf($content_container);
 		}
@@ -371,14 +371,14 @@ function Update_wgs_clientlist_data(){
 			var wgs_c_addr = "wgs" + wgs_unit + "_c" + wgsc_unit + "_addr";
 			var wgs_c_aips = "wgs" + wgs_unit + "_c" + wgsc_unit + "_aips";
 			var wgs_c_caips = "wgs" + wgs_unit + "_c" + wgsc_unit + "_caips";
-			var wgsc_settings = httpApi.nvramGet([wgs_c_name, wgs_c_addr, wgs_c_aips, wgs_c_caips, wgs_c_caips]);
+			let wgsc_settings = httpApi.nvramCharToAscii([wgs_c_name, wgs_c_addr, wgs_c_aips, wgs_c_caips, wgs_c_caips]);
 			var client_profile = new wgs_clientlist_attr();
 			client_profile.enable = "1";
 			client_profile.unit = wgsc_unit;
-			client_profile.name = wgsc_settings[wgs_c_name];
-			client_profile.addr = wgsc_settings[wgs_c_addr];
-			client_profile.aips = wgsc_settings[wgs_c_aips];
-			client_profile.caips = wgsc_settings[wgs_c_caips];
+			client_profile.name = decodeURIComponent(wgsc_settings[wgs_c_name]);
+			client_profile.addr = decodeURIComponent(wgsc_settings[wgs_c_addr]);
+			client_profile.aips = decodeURIComponent(wgsc_settings[wgs_c_aips]);
+			client_profile.caips = decodeURIComponent(wgsc_settings[wgs_c_caips]);
 			wgs_clientlist_data.push(JSON.parse(JSON.stringify(client_profile)));
 		}
 	}
@@ -672,7 +672,7 @@ function validate_format_WGS(_obj, _validField){
 			$wgs_alive.focus();
 			return false;
 		}
-		var isValid_wgs_alive = valid_num_range($wgs_alive.val(), 1, 65535);
+		var isValid_wgs_alive = valid_num_range($wgs_alive.val(), 0, 65535);
 		if(isValid_wgs_alive.isError){
 			$wgs_alive.show_validate_hint(isValid_wgs_alive.errReason);
 			$wgs_alive.focus();

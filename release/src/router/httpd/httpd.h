@@ -535,7 +535,7 @@ extern char cloud_file[256];
 #ifdef RTCONFIG_HTTPS
 extern int do_ssl;
 extern int ssl_stream_fd;
-extern int gen_ddns_hostname(char *ddns_hostname);
+extern int gen_ddns_hostname(char *ddns_hostname, int len);
 extern int check_model_name(void);
 extern char *pwenc(char *input, char *output, int len);
 #endif
@@ -584,7 +584,7 @@ extern int change_location(char *lang);
 #ifdef RTCONFIG_WTF_REDEEM
 extern void wtfast_gen_partnercode(char *str, size_t size);
 #endif
-extern void update_wlan_log(int sig);
+extern void update_wlan_log_sig(int *sig);
 extern void system_cmd_test(char *system_cmd, char *SystemCmd, int len);
 extern void do_feedback_mail_cgi(char *url, FILE *stream);
 extern void do_dfb_log_file(char *url, FILE *stream);
@@ -643,4 +643,6 @@ extern int last_time_lock_warning(void);
 extern int check_lock_status(time_t *dt);
 extern void check_lock_state();
 extern int gen_asus_token_cookie(char *asus_token, int asus_token_len, char *token_cookie, int cookie_len);
+extern void gen_random_string_v2(char *out, size_t len);
+extern int httpd_reject_url(char *url);
 #endif /* _httpd_h_ */

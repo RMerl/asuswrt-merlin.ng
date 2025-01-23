@@ -1,0 +1,7 @@
+#!/bin/sh
+
+algos="SHA1 SHA256 SHA512 SM3"
+
+test "@RUN_LARGE_DATA_TESTS@" = yes || exit 77
+echo "      now running 256 GiB tests for $algos - this takes looong"
+exec ./hashtest@EXEEXT@ --gigs 256 $algos

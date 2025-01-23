@@ -12,12 +12,12 @@
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="other.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="state.js"></script>
 <script type="text/javascript" src="general.js"></script>
 <script type="text/javascript" src="popup.js"></script>
 <script type="text/javascript" src="help.js"></script>
 <script type="text/javascript" src="validator.js"></script>
-<script type="text/javaScript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
 
@@ -369,7 +369,7 @@ function isEmpty(obj)
 	}
 
 	return true;
-};
+}
 
 function ISP_Profile_Selection(isp){
 	var isp_settings = get_isp_settings(isp);
@@ -641,7 +641,7 @@ function check_port_conflicts(){
 	}
 
 	if(lacp_enabled && document.form.switch_wantag.value == "none"){
-		var selected_stb_option = $('#switch_stb_x0 :selected').text();;
+		var selected_stb_option = $('#switch_stb_x0 :selected').text();
 
 		bonding_port_settings.forEach(function(bonding_value){
 			var bonding_port = bonding_value.text;

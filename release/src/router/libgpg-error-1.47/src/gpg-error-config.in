@@ -1,0 +1,103 @@
+#!@INSTALLSHELLPATH@
+# Copyright (C) 1999, 2002, 2003 Free Software Foundation, Inc.
+#
+# This file is free software; as a special exception the author gives
+# unlimited permission to copy and/or distribute it, with or without
+# modifications, as long as this notice is preserved.
+#
+# This file is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# SPDX-License-Identifier: FSFULLR
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+includedir=@includedir@
+libdir=@libdir@
+
+if echo "$0" | grep gpg-error-config 2>/dev/null >/dev/null; then
+  myname="gpg-error-config"
+else
+  myname="gpgrt-config"
+fi
+
+output=""
+mt=no
+
+usage()
+{
+    cat <<EOF
+Usage: $myname [OPTIONS]
+Options:
+        [--mt]       (must be the first option)
+	[--prefix]
+	[--exec-prefix]
+	[--version]
+	[--libs]
+	[--cflags]
+EOF
+    exit $1
+}
+
+if test $# -eq 0; then
+    usage 1 1>&2
+fi
+
+while test $# -gt 0; do
+    case "$1" in
+	-*=*)
+	    optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`
+	    ;;
+	*)
+	    optarg=
+	    ;;
+    esac
+
+    case $1 in
+        --mt)
+            mt=yes
+            ;;
+        --prefix)
+	    output="$output $prefix"
+	    ;;
+        --exec-prefix)
+	    output="$output $exec_prefix"
+	    ;;
+        --modversion|--version)
+            echo "@PACKAGE_VERSION@"
+	    exit 0
+	    ;;
+	--variable=*)
+	    case "${1#*=}" in
+		prefix) echo "$prefix" ;;
+		exec_prefix) echo "$exec_prefix" ;;
+		host) echo "@GPG_ERROR_CONFIG_HOST@" ;;
+		mtcflags) echo "@GPG_ERROR_CONFIG_MT_CFLAGS@" ;;
+		mtlibs) echo "@GPG_ERROR_CONFIG_MT_LIBS@";;
+	    esac
+	    exit 0
+	    ;;
+        --cflags)
+	    output="$output @GPG_ERROR_CONFIG_CFLAGS@"
+            if test $mt = yes ; then
+                output="$output @GPG_ERROR_CONFIG_MT_CFLAGS@"
+            fi
+	    ;;
+	--libs)
+	    output="$output @GPG_ERROR_CONFIG_LIBS@"
+            if test $mt = yes ; then
+                output="$output @GPG_ERROR_CONFIG_MT_LIBS@"
+            fi
+	    ;;
+        --host)
+            echo "@GPG_ERROR_CONFIG_HOST@"
+            exit 0
+            ;;
+	*)
+            usage 1 1>&2
+	    ;;
+    esac
+    shift
+done
+
+echo $output

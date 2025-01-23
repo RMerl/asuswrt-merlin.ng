@@ -309,6 +309,7 @@ static void usage(void)
     puts  ("  --rx-drop-pct=PCT   Drop PCT percent of RX RTP (for pkt lost sim, default: 0)");
     puts  ("  --tx-drop-pct=PCT   Drop PCT percent of TX RTP (for pkt lost sim, default: 0)");
     puts  ("  --use-turn          Enable TURN relay with ICE (default:no)");
+	puts  ("  --use-ipv6          Enable IPV6 (default:no)");
     puts  ("  --turn-srv          Domain or host name of TURN server (\"NAME:PORT\" format)");
     puts  ("  --turn-tcp          Use TCP connection to TURN server (default no)");
     puts  ("  --turn-user         TURN username");
@@ -518,7 +519,7 @@ static pj_status_t parse_args(int argc, char *argv[],
 	   OPT_AUTO_ANSWER, OPT_AUTO_PLAY, OPT_AUTO_PLAY_HANGUP, OPT_AUTO_LOOP,
 	   OPT_AUTO_CONF, OPT_CLOCK_RATE, OPT_SND_CLOCK_RATE, OPT_STEREO,
 	   OPT_USE_ICE, OPT_ICE_REGULAR, OPT_USE_SRTP, OPT_SRTP_SECURE,
-	   OPT_USE_TURN, OPT_ICE_MAX_HOSTS, OPT_ICE_NO_RTCP, OPT_TURN_SRV, 
+	   OPT_USE_TURN, OPT_USE_IPV6, OPT_ICE_MAX_HOSTS, OPT_ICE_NO_RTCP, OPT_TURN_SRV, 
 	   OPT_TURN_TCP, OPT_TURN_USER, OPT_TURN_PASSWD,
 	   OPT_PLAY_FILE, OPT_PLAY_TONE, OPT_RTP_PORT, OPT_ADD_CODEC, 
 	   OPT_ILBC_MODE, OPT_REC_FILE, OPT_AUTO_REC,
@@ -601,6 +602,7 @@ static pj_status_t parse_args(int argc, char *argv[],
 	{ "use-ice",    0, 0, OPT_USE_ICE},
 	{ "ice-regular",0, 0, OPT_ICE_REGULAR},
 	{ "use-turn",	0, 0, OPT_USE_TURN},
+	{ "use-ipv6",	0, 0, OPT_USE_IPV6},
 	{ "ice-max-hosts",1, 0, OPT_ICE_MAX_HOSTS},
 	{ "ice-no-rtcp",0, 0, OPT_ICE_NO_RTCP},
 	{ "turn-srv",	1, 0, OPT_TURN_SRV},
@@ -1112,8 +1114,12 @@ static pj_status_t parse_args(int argc, char *argv[],
 	    break;
 
 	case OPT_USE_TURN:
-	    cfg->media_cfg.enable_turn = PJ_TRUE;
-	    break;
+		cfg->media_cfg.enable_turn = PJ_TRUE;
+		break;
+
+	case OPT_USE_IPV6:
+		cfg->media_cfg.enable_ipv6 = PJ_TRUE;
+		break;
 
 	case OPT_ICE_MAX_HOSTS:
 	    cfg->media_cfg.ice_max_host_cands = my_atoi(pj_optarg);
@@ -1842,6 +1848,9 @@ static int write_settings(const struct app_config *config,
 
     if (config->media_cfg.enable_turn)
 	pj_strcat2(&cfg, "--use-turn\n");
+
+	if (config->media_cfg.enable_ipv6)
+	pj_strcat2(&cfg, "--use-ipv6\n");
 
     if (config->media_cfg.ice_max_host_cands >= 0) {
 	pj_ansi_sprintf(line, "--ice_max_host_cands %d\n",

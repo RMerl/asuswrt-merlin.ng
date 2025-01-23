@@ -19,7 +19,7 @@ int facility = LOG_USER;
 int g_stream_type =0;
 int priority = LOG_ERR | LOG_USER;
 int g_is_log_opened =0;
-long FILE_MAX_SIZE = 1048576;
+long FILE_MAX_SIZE = 524288; //- 512K
 
 #define API_DBG 1
 
@@ -146,15 +146,23 @@ void dprintf_impl2(const char* file,const char* func, size_t line, int enable, i
 
         //va_start(ap, fmt);
         // Log to file
-        if (fileExist(AWS_DEBUG_TO_FILE)) {
-            if (g_file_fp) {
-
-                fprintf(g_file_fp, WHERESTR, ts, file, func, line);
-                vfprintf(g_file_fp, fmt, ap);
-                fprintf(g_file_fp, "\n");
-                fflush(g_file_fp);
-            }
+        
+        if (g_file_fp) {
+            fprintf(g_file_fp, WHERESTR, ts, file, func, line);
+            vfprintf(g_file_fp, fmt, ap);
+            fprintf(g_file_fp, "\n");
+            fflush(g_file_fp);
         }
+
+        // if (fileExist(AWS_DEBUG_TO_FILE)) {
+        //     if (g_file_fp) {
+        //         fprintf(g_file_fp, WHERESTR, ts, file, func, line);
+        //         vfprintf(g_file_fp, fmt, ap);
+        //         fprintf(g_file_fp, "\n");
+        //         fflush(g_file_fp);
+        //     }
+        // }
+
         // Log to console
         if (fileExist(AWS_DEBUG_TO_CONSOLE)) {
             if (g_console_fp) {

@@ -1,0 +1,81 @@
+# HACKING                                                       -*- org -*-
+#+TITLE: Various hacking notes
+#+STARTUP: showall
+
+* How to contribute
+
+  The following stuff explains some basic procedures you need to
+  follow if you want to contribute code or documentation.
+
+* No more ChangeLog files
+
+  Do not modify any of the ChangeLog files in Libgpg-error.  Starting
+  on December 1st, 2011 we put change information only in the GIT
+  commit log, and generate a top-level ChangeLog file from logs at
+  "make dist" time.  As such, there are strict requirements on the
+  form of the commit log messages.  The old ChangeLog files have all
+  be renamed to ChangeLog-2011
+
+
+* Commit log requirements
+
+  Your commit log should always start with a one-line summary, the
+  second line should be blank, and the remaining lines are usually
+  ChangeLog-style entries for all affected files.  However, it's fine
+  -- even recommended -- to write a few lines of prose describing the
+  change, when the summary and ChangeLog entries don't give enough of
+  the big picture.  Omit the leading TABs that you're used to seeing
+  in a "real" ChangeLog file, but keep the maximum line length at 72
+  or smaller, so that the generated ChangeLog lines, each with its
+  leading TAB, will not exceed 80 columns.
+
+* Commit log keywords
+
+  - GnuPG-bug-id :: Values are comma or space delimited bug numbers
+                    from bug.gnupg.org pertaining to this commit.
+  - Debian-bug-id :: Same as above but from the Debian bug tracker.
+  - CVE-id :: CVE id number pertaining to this commit.
+  - Regression-due-to :: Commit id of the regression fixed by this commit.
+  - Fixes-commit :: Commit id this commit fixes.
+  - Reported-by :: Value is a name or mail address of a bug reporte.
+  - Suggested-by :: Value is a name or mail address of someone how
+                    suggested this change.
+  - Co-authored-by :: Name or mail address of a co-author
+  - Some-comments-by :: Name or mail address of the author of
+                        additional comments (commit log or code).
+  - Proofread-by :: Sometimes used by translation commits.
+  - Signed-off-by :: Name or mail address of the developer
+
+* Sending patches
+
+  - submitting patches, and subsequent discussions around them,
+    happens via the gnupg-devel@gnupg.org public mailing list
+
+  - send your patches to that list, preferably PGP/MIME signed. Make
+    sure to include a mention of 'libgpg-error' in the subject line,
+    the list is used for several different projects
+
+  - if you're working from the git repo, here's a suggested workflow:
+
+    - configure git send-email defaults:
+
+        git config format.subjectPrefix 'PATCH libgpg-error'
+        git config sendemail.to gnupg-devel@gnupg.org
+
+      Note that running ./autogen.sh on a fresh clone will do this for
+      you.
+
+    - hack hack hack
+
+    - commit your changes; group changes into easily-reviewable commit
+      units, feel free to submit several patches at once
+
+    - e.g. if you want to submit a single patch on top of master, do:
+      git send-email --annotate -1
+
+    - e.g. if you have two commits on top of master, do:
+      git send-email --annotate --cover-letter -2
+      (that prompts you for a summary mail to precede your actual
+      patch mails)
+
+    - use --dry-run to test your setup

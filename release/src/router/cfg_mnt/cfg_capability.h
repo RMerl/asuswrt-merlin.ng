@@ -110,6 +110,8 @@ enum capabilityType {
 #define CENTRAL_OPTMZ		BIT(17)
 #endif
 
+#define WIFI7_SUPPORT  BIT(23)
+
 /* for LINK_AGGREGATION */
 #define LACP_ENABLE                    BIT(0)
 

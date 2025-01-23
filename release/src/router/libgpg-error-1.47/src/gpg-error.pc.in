@@ -1,0 +1,15 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+includedir=@includedir@
+libdir=@libdir@
+host=@GPG_ERROR_CONFIG_HOST@
+mtcflags=@GPG_ERROR_CONFIG_MT_CFLAGS@
+mtlibs=@GPG_ERROR_CONFIG_MT_LIBS@
+
+Name: gpg-error
+Description: GPG Runtime
+Version: @PACKAGE_VERSION@
+Cflags: @GPG_ERROR_CONFIG_CFLAGS@
+Libs: @GPG_ERROR_CONFIG_LIBS@
+Libs.private: @GPG_ERROR_CONFIG_LIBS_PRIVATE@
+URL: https://www.gnupg.org/software/libgpg-error/index.html

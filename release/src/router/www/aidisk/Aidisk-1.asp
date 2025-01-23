@@ -10,6 +10,7 @@
 <link rel="stylesheet" type="text/css" href="../NM_style.css">
 <link rel="stylesheet" type="text/css" href="aidisk.css">
 <link rel="stylesheet" type="text/css" href="/form_style.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script>
 var dummyShareway = '<% nvram_get("dummyShareway"); %>';
@@ -37,13 +38,11 @@ function initial(){
 			document.getElementById("AiDiskWelcome_desp").style.display = 'none';
 			document.getElementById("linkdiskbox").style.display = 'none';
 			document.getElementById("Nodisk_hint").style.display = 'block';
-			document.getElementById("gotonext").style.display = 'none';
 			return;
 		}
 		else if(dummyShareway != ""){  // Ever config aidisk wizard
 			document.getElementById("AiDiskWelcome_desp").style.display = 'none';
 			document.getElementById("linkdiskbox").style.display = 'block';
-			document.getElementById("settingBtn").innerHTML = "<#CTL_Reset_OOB#>";
 
 			show_share_link();
 		}
@@ -52,6 +51,8 @@ function initial(){
 		}	
 	});
 
+	$('#Wizard_desp1 a:first').css({'cursor':'pointer', 'text-decoration':'underline'}).attr({'href':'/Advanced_ASUSDDNS_Content.asp', 'target':'_blank'});
+	$('#Wizard_desp2 a:first').css({'cursor':'pointer', 'text-decoration':'underline'}).attr({'href':'/Advanced_AiDisk_ftp.asp', 'target':'_blank'});
 }
 
 function show_share_link(){
@@ -137,12 +138,18 @@ function go_next_page(){
 	  			<div id="Nodisk_hint" class="alert_string" style="display:none;"><#no_usb_found#></div>
 
 				<div id="AiDiskWelcome_desp">
-					<#AiDiskWelcome_desp#>
+					<#AiDiskWizard_desp0#>
 					<ul>
-						<li><#AiDiskWelcome_desp1#></li>
-						<li><#AiDiskWelcome_desp2#></li>
-						<li><#AiDisk_moreconfig#></li>
+						<li id="Wizard_desp1"><#AiDiskWizard_desp1#> <#web_redirect_suggestion_modify#></li>
+						<li id="Wizard_desp2"><#AiDiskWizard_desp2#> <#web_redirect_suggestion_modify#></li>
+						<li><#AiDiskWizard_desp3#>
+							<ul>
+								<li><#AiDiskWizard_desp31#> ftp://[hostname].asuscomm.com</li>
+								<li><#AiDiskWizard_desp32#> ftp://<% nvram_get("lan_ipaddr"); %></li>
+							</ul>
+						</li>
 					</ul>
+					<div style="margin-left:23px;">*** <#AiDiskWizard_desp11#></div>
 				</div>
 
 				<div id="linkdiskbox" style="display:none;">
@@ -168,13 +175,6 @@ function go_next_page(){
 	  </td>
   </tr>
       
-  <tr>
-  	<td align="center" width="740px" height="60px">
-			<div id="gotonext">
-				<div class="titlebtn" style="margin-left:300px;_margin-left:150px;" align="center"><span id="settingBtn" style="*width:190px;" onclick="go_next_page();"><#btn_go#></span></div>
-			</div>
-  	</td>
-  </tr>
 <!-- end -->    
   </table>
 

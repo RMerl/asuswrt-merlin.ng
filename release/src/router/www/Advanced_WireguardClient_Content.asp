@@ -10,13 +10,12 @@
 <title><#Web_Title#> - WireGuard Client</title>
 <link rel="stylesheet" href="index_style.css">
 <link rel="stylesheet" href="form_style.css">
-
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script src="/state.js"></script>
 <script src="/general.js"></script>
 <script src="/help.js"></script>
 <script src="/popup.js"></script>
 <script src="/validator.js"></script>
-<script src="/js/jquery.js"></script>
 <script src="/js/httpApi.js"></script>
 
 <script>

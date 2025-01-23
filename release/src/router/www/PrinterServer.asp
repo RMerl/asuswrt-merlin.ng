@@ -16,11 +16,11 @@
 	td.sidenav { width:200px;}
 	body {font-family: Verdana, Tohoma, Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;padding:0;margin:0;}
 	.wrapperDesc { margin: 0 auto; width: 570px;}
-</style> 
+</style>
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/help.js"></script>
-<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <style type="text/css">

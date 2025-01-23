@@ -358,6 +358,7 @@ input[type="text"], input[type="password"], .input_option{
 	line-height: 100%;
 	font-size: 11px;
 	margin-top: 4px;
+	width: 85%;
 }
 .port_status_icon_desc{
 	display: flex;

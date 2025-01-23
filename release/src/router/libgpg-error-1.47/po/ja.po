@@ -1,0 +1,2016 @@
+# Japanese messages for GnuPG libgpg-error
+# Copyright (C) 2010, 2012, 2014, 2015, 2016 Free Software Foundation, Inc.
+# This file is distributed under the same license as the libgpg-error package.
+# Yasuaki Taniguchi <yasuakit@gmail.com>, 2010.
+# Takeshi Hamasaki <hmatrjp@users.sourceforge.jp>, 2012.
+# NIIBE Yutaka <gniibe@fsij.org>, 2014, 2015, 2016, 2017, 2019, 2020.
+msgid ""
+msgstr ""
+"Project-Id-Version: libgpg-error 1.39\n"
+"Report-Msgid-Bugs-To: translations@gnupg.org\n"
+"POT-Creation-Date: 2023-04-06 10:30+0200\n"
+"PO-Revision-Date: 2021-03-22 10:26+0100\n"
+"Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
+"Language-Team: none\n"
+"Language: ja\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/err-sources.h:28
+msgid "Unspecified source"
+msgstr "指定されていないソース"
+
+#: src/err-sources.h:29
+msgid "gcrypt"
+msgstr "gcrypt"
+
+#: src/err-sources.h:30
+msgid "GnuPG"
+msgstr "GnuPG"
+
+#: src/err-sources.h:31
+msgid "GpgSM"
+msgstr "GpgSM"
+
+#: src/err-sources.h:32
+msgid "GPG Agent"
+msgstr "GPG Agent"
+
+#: src/err-sources.h:33
+msgid "Pinentry"
+msgstr "Pinentry"
+
+#: src/err-sources.h:34
+msgid "SCD"
+msgstr "SCD"
+
+#: src/err-sources.h:35
+msgid "GPGME"
+msgstr "GPGME"
+
+#: src/err-sources.h:36
+msgid "Keybox"
+msgstr "Keybox"
+
+#: src/err-sources.h:37
+msgid "KSBA"
+msgstr "KSBA"
+
+#: src/err-sources.h:38
+msgid "Dirmngr"
+msgstr "Dirmngr"
+
+#: src/err-sources.h:39
+msgid "GSTI"
+msgstr "GSTI"
+
+#: src/err-sources.h:40
+msgid "GPA"
+msgstr "GPA"
+
+#: src/err-sources.h:41
+msgid "Kleopatra"
+msgstr "Kleopatra"
+
+#: src/err-sources.h:42
+msgid "G13"
+msgstr "G13"
+
+#: src/err-sources.h:43
+msgid "Assuan"
+msgstr "Assuan"
+
+#: src/err-sources.h:44
+msgid "TPM2d"
+msgstr "TPM2d"
+
+#: src/err-sources.h:45
+msgid "TLS"
+msgstr "TLS"
+
+#: src/err-sources.h:46
+msgid "TKD"
+msgstr ""
+
+#: src/err-sources.h:47
+msgid "Any source"
+msgstr "指定なしのソース"
+
+#: src/err-sources.h:48
+msgid "User defined source 1"
+msgstr "ユーザ定義ソース 1"
+
+#: src/err-sources.h:49
+msgid "User defined source 2"
+msgstr "ユーザ定義ソース 2"
+
+#: src/err-sources.h:50
+msgid "User defined source 3"
+msgstr "ユーザ定義ソース 3"
+
+#: src/err-sources.h:51
+msgid "User defined source 4"
+msgstr "ユーザ定義ソース 4"
+
+#: src/err-sources.h:52
+msgid "Unknown source"
+msgstr "不明なソース"
+
+#: src/err-codes.h:28
+msgid "Success"
+msgstr "成功です"
+
+#: src/err-codes.h:29
+msgid "General error"
+msgstr "一般エラーです"
+
+#: src/err-codes.h:30
+msgid "Unknown packet"
+msgstr "不明なパケットです"
+
+#: src/err-codes.h:31
+msgid "Unknown version in packet"
+msgstr "パケット内の不明なバージョンです"
+
+#: src/err-codes.h:32
+msgid "Invalid public key algorithm"
+msgstr "無効な公開鍵アルゴリズムです"
+
+#: src/err-codes.h:33
+msgid "Invalid digest algorithm"
+msgstr "無効なダイジェスト・アルゴリズムです"
+
+#: src/err-codes.h:34
+msgid "Bad public key"
+msgstr "誤った公開鍵です"
+
+#: src/err-codes.h:35
+msgid "Bad secret key"
+msgstr "誤った秘密鍵です"
+
+#: src/err-codes.h:36
+msgid "Bad signature"
+msgstr "誤った署名です"
+
+#: src/err-codes.h:37
+msgid "No public key"
+msgstr "公開鍵がありません"
+
+#: src/err-codes.h:38
+msgid "Checksum error"
+msgstr "チェックサムエラーです"
+
+#: src/err-codes.h:39
+msgid "Bad passphrase"
+msgstr "誤ったパスフレーズです"
+
+#: src/err-codes.h:40
+msgid "Invalid cipher algorithm"
+msgstr "無効な暗号アルゴリズムです"
+
+#: src/err-codes.h:41
+msgid "Cannot open keyring"
+msgstr "鍵リングが開けません"
+
+#: src/err-codes.h:42
+msgid "Invalid packet"
+msgstr "無効なパケットです"
+
+#: src/err-codes.h:43
+msgid "Invalid armor"
+msgstr "無効なアスキー保護形式です"
+
+#: src/err-codes.h:44
+msgid "No user ID"
+msgstr "ユーザ ID がありません"
+
+#: src/err-codes.h:45
+msgid "No secret key"
+msgstr "秘密鍵がありません"
+
+#: src/err-codes.h:46
+msgid "Wrong secret key used"
+msgstr "間違った秘密鍵が使用されました"
+
+#: src/err-codes.h:47
+msgid "Bad session key"
+msgstr "誤ったセッション鍵です"
+
+#: src/err-codes.h:48
+msgid "Unknown compression algorithm"
+msgstr "不明な圧縮アルゴリズムです"
+
+#: src/err-codes.h:49
+msgid "Number is not prime"
+msgstr "数が素数ではありません"
+
+#: src/err-codes.h:50
+msgid "Invalid encoding method"
+msgstr "無効な符号化方法です"
+
+#: src/err-codes.h:51
+msgid "Invalid encryption scheme"
+msgstr "無効な暗号系です"
+
+#: src/err-codes.h:52
+msgid "Invalid signature scheme"
+msgstr "無効な署名系です"
+
+#: src/err-codes.h:53
+msgid "Invalid attribute"
+msgstr "無効な属性です"
+
+#: src/err-codes.h:54
+msgid "No value"
+msgstr "値がありません"
+
+#: src/err-codes.h:55
+msgid "Not found"
+msgstr "見つかりません"
+
+#: src/err-codes.h:56
+msgid "Value not found"
+msgstr "値が見つかりません"
+
+#: src/err-codes.h:57
+msgid "Syntax error"
+msgstr "構文エラーです"
+
+#: src/err-codes.h:58
+msgid "Bad MPI value"
+msgstr "誤った MPI の値です"
+
+#: src/err-codes.h:59
+msgid "Invalid passphrase"
+msgstr "無効なパスフレーズです"
+
+#: src/err-codes.h:60
+msgid "Invalid signature class"
+msgstr "無効な署名クラスです"
+
+#: src/err-codes.h:61
+msgid "Resources exhausted"
+msgstr "資源を使い果たしました"
+
+#: src/err-codes.h:62
+msgid "Invalid keyring"
+msgstr "無効な鍵リングです"
+
+#: src/err-codes.h:63
+msgid "Trust DB error"
+msgstr "信用 DB エラーです"
+
+#: src/err-codes.h:64
+msgid "Bad certificate"
+msgstr "誤った証明書です"
+
+#: src/err-codes.h:65
+msgid "Invalid user ID"
+msgstr "無効なユーザ ID です"
+
+#: src/err-codes.h:66
+msgid "Unexpected error"
+msgstr "予期しないエラーです"
+
+#: src/err-codes.h:67
+msgid "Time conflict"
+msgstr "時間の不一致です"
+
+#: src/err-codes.h:68
+msgid "Keyserver error"
+msgstr "鍵サーバーエラーです"
+
+#: src/err-codes.h:69
+msgid "Wrong public key algorithm"
+msgstr "誤った公開鍵アルゴリズムです"
+
+#: src/err-codes.h:70
+msgid "Tribute to D. A."
+msgstr "ダグラス・アダムスに捧ぐ"
+
+#: src/err-codes.h:71
+msgid "Weak encryption key"
+msgstr "弱い暗号鍵です"
+
+#: src/err-codes.h:72
+msgid "Invalid key length"
+msgstr "無効な鍵長です"
+
+#: src/err-codes.h:73
+msgid "Invalid argument"
+msgstr "無効な引数です"
+
+#: src/err-codes.h:74
+msgid "Syntax error in URI"
+msgstr "URIの構文エラーです"
+
+#: src/err-codes.h:75
+msgid "Invalid URI"
+msgstr "無効な URI です"
+
+#: src/err-codes.h:76
+msgid "Network error"
+msgstr "ネットワークエラーです"
+
+#: src/err-codes.h:77
+msgid "Unknown host"
+msgstr "不明なホストです"
+
+#: src/err-codes.h:78
+msgid "Selftest failed"
+msgstr "セルフテストに失敗しました"
+
+#: src/err-codes.h:79
+msgid "Data not encrypted"
+msgstr "データは暗号化されませんでした"
+
+#: src/err-codes.h:80
+msgid "Data not processed"
+msgstr "データは処理されませんでした"
+
+#: src/err-codes.h:81
+msgid "Unusable public key"
+msgstr "使用できない公開鍵です"
+
+#: src/err-codes.h:82
+msgid "Unusable secret key"
+msgstr "使用できない秘密鍵です"
+
+#: src/err-codes.h:83
+msgid "Invalid value"
+msgstr "無効な値です"
+
+#: src/err-codes.h:84
+msgid "Bad certificate chain"
+msgstr "誤った証明書連鎖です"
+
+#: src/err-codes.h:85
+msgid "Missing certificate"
+msgstr "証明書が欠如しています"
+
+#: src/err-codes.h:86
+msgid "No data"
+msgstr "データがありません"
+
+#: src/err-codes.h:87
+msgid "Bug"
+msgstr "バグです"
+
+#: src/err-codes.h:88
+msgid "Not supported"
+msgstr "サポートされていません"
+
+#: src/err-codes.h:89
+msgid "Invalid operation code"
+msgstr "無効な操作コードです"
+
+#: src/err-codes.h:90
+msgid "Timeout"
+msgstr "タイムアウトです"
+
+#: src/err-codes.h:91
+msgid "Internal error"
+msgstr "内部エラーです"
+
+#: src/err-codes.h:92
+msgid "EOF (gcrypt)"
+msgstr "EOF (gcrypt)です"
+
+#: src/err-codes.h:93
+msgid "Invalid object"
+msgstr "無効なオブジェクトです"
+
+#: src/err-codes.h:94
+msgid "Provided object is too short"
+msgstr "与えられたオブジェクトが小さすぎます"
+
+#: src/err-codes.h:95
+msgid "Provided object is too large"
+msgstr "与えられたオブジェクトが大きすぎます"
+
+#: src/err-codes.h:96
+msgid "Missing item in object"
+msgstr "オブジェクト内に項目が欠如しています"
+
+#: src/err-codes.h:97
+msgid "Not implemented"
+msgstr "実装されていません"
+
+#: src/err-codes.h:98
+msgid "Conflicting use"
+msgstr "対立する使用です"
+
+#: src/err-codes.h:99
+msgid "Invalid cipher mode"
+msgstr "無効な暗号モードです"
+
+#: src/err-codes.h:100
+msgid "Invalid flag"
+msgstr "無効なフラグです"
+
+#: src/err-codes.h:101
+msgid "Invalid handle"
+msgstr "無効なハンドルです"
+
+#: src/err-codes.h:102
+msgid "Result truncated"
+msgstr "結果が切り詰められました"
+
+#: src/err-codes.h:103
+msgid "Incomplete line"
+msgstr "不完全な行です"
+
+#: src/err-codes.h:104
+msgid "Invalid response"
+msgstr "無効な応答です"
+
+#: src/err-codes.h:105
+msgid "No agent running"
+msgstr "エージェントが動いていません"
+
+#: src/err-codes.h:106
+msgid "Agent error"
+msgstr "エージェントエラーです"
+
+#: src/err-codes.h:107
+msgid "Invalid data"
+msgstr "無効なデータです"
+
+#: src/err-codes.h:108
+msgid "Unspecific Assuan server fault"
+msgstr "不特定な Assuan サーバ失敗です"
+
+#: src/err-codes.h:109
+msgid "General Assuan error"
+msgstr "一般Assuan エラーです"
+
+#: src/err-codes.h:110
+msgid "Invalid session key"
+msgstr "無効なセッション鍵です"
+
+#: src/err-codes.h:111
+msgid "Invalid S-expression"
+msgstr "無効な S-式です"
+
+#: src/err-codes.h:112
+msgid "Unsupported algorithm"
+msgstr "サポートされていないアルゴリズムです"
+
+#: src/err-codes.h:113
+msgid "No pinentry"
+msgstr "Pinentryがありません"
+
+#: src/err-codes.h:114
+msgid "pinentry error"
+msgstr "Pinentryエラー"
+
+#: src/err-codes.h:115
+msgid "Bad PIN"
+msgstr "誤った PIN です"
+
+#: src/err-codes.h:116
+msgid "Invalid name"
+msgstr "無効な名前です"
+
+#: src/err-codes.h:117
+msgid "Bad data"
+msgstr "誤ったデータです"
+
+#: src/err-codes.h:118
+msgid "Invalid parameter"
+msgstr "無効なパラメータです"
+
+#: src/err-codes.h:119
+msgid "Wrong card"
+msgstr "誤ったカードです"
+
+#: src/err-codes.h:120
+msgid "No dirmngr"
+msgstr "dirmngrがありません"
+
+#: src/err-codes.h:121
+msgid "dirmngr error"
+msgstr "dirmngr のエラー"
+
+#: src/err-codes.h:122
+msgid "Certificate revoked"
+msgstr "証明書が廃止されました"
+
+#: src/err-codes.h:123
+msgid "No CRL known"
+msgstr "既知の CRL がありません"
+
+#: src/err-codes.h:124
+msgid "CRL too old"
+msgstr "CRL が古すぎます"
+
+#: src/err-codes.h:125
+msgid "Line too long"
+msgstr "行が長すぎます"
+
+#: src/err-codes.h:126
+msgid "Not trusted"
+msgstr "信用されていません"
+
+#: src/err-codes.h:127
+msgid "Operation cancelled"
+msgstr "操作がキャンセルされました"
+
+#: src/err-codes.h:128
+msgid "Bad CA certificate"
+msgstr "誤った CA 証明書です"
+
+#: src/err-codes.h:129
+msgid "Certificate expired"
+msgstr "証明書が期限切れです"
+
+#: src/err-codes.h:130
+msgid "Certificate too young"
+msgstr "証明書が若すぎます"
+
+#: src/err-codes.h:131
+msgid "Unsupported certificate"
+msgstr "サポートされていない証明書です"
+
+#: src/err-codes.h:132
+msgid "Unknown S-expression"
+msgstr "不明な S-式です"
+
+#: src/err-codes.h:133
+msgid "Unsupported protection"
+msgstr "サポートされていない防護です"
+
+#: src/err-codes.h:134
+msgid "Corrupted protection"
+msgstr "破損した防護です"
+
+#: src/err-codes.h:135
+msgid "Ambiguous name"
+msgstr "曖昧な名前です"
+
+#: src/err-codes.h:136
+msgid "Card error"
+msgstr "カードエラー"
+
+#: src/err-codes.h:137
+msgid "Card reset required"
+msgstr "カードリセットが必要です"
+
+#: src/err-codes.h:138
+msgid "Card removed"
+msgstr "カードが削除されました"
+
+#: src/err-codes.h:139
+msgid "Invalid card"
+msgstr "無効なカードです"
+
+#: src/err-codes.h:140
+msgid "Card not present"
+msgstr "カードが存在していません"
+
+#: src/err-codes.h:141
+msgid "No PKCS15 application"
+msgstr "PKCS15 アプリケーションがありません"
+
+#: src/err-codes.h:142
+msgid "Not confirmed"
+msgstr "確認されていません"
+
+#: src/err-codes.h:143
+msgid "Configuration error"
+msgstr "設定のエラーです"
+
+#: src/err-codes.h:144
+msgid "No policy match"
+msgstr "一致するポリシーがありません"
+
+#: src/err-codes.h:145
+msgid "Invalid index"
+msgstr "無効な索引です"
+
+#: src/err-codes.h:146
+msgid "Invalid ID"
+msgstr "無効な ID です"
+
+#: src/err-codes.h:147
+msgid "No SmartCard daemon"
+msgstr "スマートカードデーモンがありません"
+
+#: src/err-codes.h:148
+msgid "SmartCard daemon error"
+msgstr "スマートカードデーモンエラーです"
+
+#: src/err-codes.h:149
+msgid "Unsupported protocol"
+msgstr "サポートされていないプロトコルです"
+
+#: src/err-codes.h:150
+msgid "Bad PIN method"
+msgstr "誤った PIN 方法です"
+
+#: src/err-codes.h:151
+msgid "Card not initialized"
+msgstr "カードが初期化されていません"
+
+#: src/err-codes.h:152
+msgid "Unsupported operation"
+msgstr "サポートされていない操作です"
+
+#: src/err-codes.h:153
+msgid "Wrong key usage"
+msgstr "誤った鍵の使用法です"
+
+#: src/err-codes.h:154
+msgid "Nothing found"
+msgstr "見つかりませんでした"
+
+#: src/err-codes.h:155
+msgid "Wrong blob type"
+msgstr "誤った blog 型です"
+
+#: src/err-codes.h:156
+msgid "Missing value"
+msgstr "値がありません"
+
+#: src/err-codes.h:157
+msgid "Hardware problem"
+msgstr "ハードウェアの問題です"
+
+#: src/err-codes.h:158
+msgid "PIN blocked"
+msgstr "PIN がブロックされました"
+
+#: src/err-codes.h:159
+msgid "Conditions of use not satisfied"
+msgstr "使用条件が満たされていません"
+
+#: src/err-codes.h:160
+msgid "PINs are not synced"
+msgstr "PIN が同期されていません"
+
+#: src/err-codes.h:161
+msgid "Invalid CRL"
+msgstr "無効な CRL です"
+
+#: src/err-codes.h:162
+msgid "BER error"
+msgstr "BER エラーです"
+
+#: src/err-codes.h:163
+msgid "Invalid BER"
+msgstr "無効な BER です"
+
+#: src/err-codes.h:164
+msgid "Element not found"
+msgstr "要素が見つかりませんでした"
+
+#: src/err-codes.h:165
+msgid "Identifier not found"
+msgstr "識別子が見つかりませんでした"
+
+#: src/err-codes.h:166
+msgid "Invalid tag"
+msgstr "無効なタグです"
+
+#: src/err-codes.h:167
+msgid "Invalid length"
+msgstr "無効な長さです"
+
+#: src/err-codes.h:168
+msgid "Invalid key info"
+msgstr "無効な鍵情報です"
+
+#: src/err-codes.h:169
+msgid "Unexpected tag"
+msgstr "予期しないタグです"
+
+#: src/err-codes.h:170
+msgid "Not DER encoded"
+msgstr "DER 符号化ではありません"
+
+#: src/err-codes.h:171
+msgid "No CMS object"
+msgstr "CMS オブジェクトではありません"
+
+#: src/err-codes.h:172
+msgid "Invalid CMS object"
+msgstr "無効な CMS オブジェクトです"
+
+#: src/err-codes.h:173
+msgid "Unknown CMS object"
+msgstr "不明な CMS オブジェクトです"
+
+#: src/err-codes.h:174
+msgid "Unsupported CMS object"
+msgstr "サポートされていない CMS オブジェクトです"
+
+#: src/err-codes.h:175
+msgid "Unsupported encoding"
+msgstr "サポートされていない符号化です"
+
+#: src/err-codes.h:176
+msgid "Unsupported CMS version"
+msgstr "サポートされていない CMS バージョンです"
+
+#: src/err-codes.h:177
+msgid "Unknown algorithm"
+msgstr "不明なアルゴリズムです"
+
+#: src/err-codes.h:178
+msgid "Invalid crypto engine"
+msgstr "無効な暗号エンジンです"
+
+#: src/err-codes.h:179
+msgid "Public key not trusted"
+msgstr "信用されていない公開鍵です"
+
+#: src/err-codes.h:180
+msgid "Decryption failed"
+msgstr "復号に失敗しました"
+
+#: src/err-codes.h:181
+msgid "Key expired"
+msgstr "鍵が期限切れです"
+
+#: src/err-codes.h:182
+msgid "Signature expired"
+msgstr "署名が期限切れです"
+
+#: src/err-codes.h:183
+msgid "Encoding problem"
+msgstr "符号化に問題があります"
+
+#: src/err-codes.h:184
+msgid "Invalid state"
+msgstr "無効な状態です"
+
+#: src/err-codes.h:185
+msgid "Duplicated value"
+msgstr "重複した値です"
+
+#: src/err-codes.h:186
+msgid "Missing action"
+msgstr "アクションが欠如しています"
+
+#: src/err-codes.h:187
+msgid "ASN.1 module not found"
+msgstr "ASN.1 モジュールがみつかりませんでした"
+
+#: src/err-codes.h:188
+msgid "Invalid OID string"
+msgstr "無効な OID 文字列です"
+
+#: src/err-codes.h:189
+msgid "Invalid time"
+msgstr "無効な時間です"
+
+#: src/err-codes.h:190
+msgid "Invalid CRL object"
+msgstr "無効な CRL オブジェクトです"
+
+#: src/err-codes.h:191
+msgid "Unsupported CRL version"
+msgstr "サポートされていない CRL バージョンです"
+
+#: src/err-codes.h:192
+msgid "Invalid certificate object"
+msgstr "無効な証明書オブジェクトです"
+
+#: src/err-codes.h:193
+msgid "Unknown name"
+msgstr "不明な名前です"
+
+#: src/err-codes.h:194
+msgid "A locale function failed"
+msgstr "ロケール関数 失敗"
+
+#: src/err-codes.h:195
+msgid "Not locked"
+msgstr "ロックされていません"
+
+#: src/err-codes.h:196
+msgid "Protocol violation"
+msgstr "プロトコル違反"
+
+#: src/err-codes.h:197
+msgid "Invalid MAC"
+msgstr "無効な MACです"
+
+#: src/err-codes.h:198
+msgid "Invalid request"
+msgstr "無効なリクエスト"
+
+#: src/err-codes.h:199
+msgid "Unknown extension"
+msgstr "未知の拡張子"
+
+#: src/err-codes.h:200
+msgid "Unknown critical extension"
+msgstr "不明のクリチカル拡張です"
+
+#: src/err-codes.h:201
+msgid "Locked"
+msgstr "ロックされています"
+
+#: src/err-codes.h:202
+msgid "Unknown option"
+msgstr "未知のオプションです"
+
+#: src/err-codes.h:203
+msgid "Unknown command"
+msgstr "未知のコマンドです"
+
+#: src/err-codes.h:204
+msgid "Not operational"
+msgstr "操作できません"
+
+#: src/err-codes.h:205
+msgid "No passphrase given"
+msgstr "パスフレーズが与えられていません"
+
+#: src/err-codes.h:206
+msgid "No PIN given"
+msgstr "PINが与えられていません"
+
+#: src/err-codes.h:207
+msgid "Not enabled"
+msgstr "有効となってません"
+
+#: src/err-codes.h:208
+msgid "No crypto engine"
+msgstr "暗号エンジンがありません"
+
+#: src/err-codes.h:209
+msgid "Missing key"
+msgstr "鍵がありません"
+
+#: src/err-codes.h:210
+msgid "Too many objects"
+msgstr "オブジェクトが多すぎます"
+
+#: src/err-codes.h:211
+msgid "Limit reached"
+msgstr "限界に達しました"
+
+#: src/err-codes.h:212
+msgid "Not initialized"
+msgstr "初期化されていません"
+
+#: src/err-codes.h:213
+msgid "Missing issuer certificate"
+msgstr "発行元証明書がありません"
+
+#: src/err-codes.h:214
+msgid "No keyserver available"
+msgstr "キーサーバが利用可能ではありません"
+
+#: src/err-codes.h:215
+msgid "Invalid elliptic curve"
+msgstr "無効な楕円関数です"
+
+#: src/err-codes.h:216
+msgid "Unknown elliptic curve"
+msgstr "不明の楕円関数です"
+
+#: src/err-codes.h:217
+msgid "Duplicated key"
+msgstr "重複した鍵です"
+
+#: src/err-codes.h:218
+msgid "Ambiguous result"
+msgstr "曖昧な結果です"
+
+#: src/err-codes.h:219
+msgid "No crypto context"
+msgstr "暗号コンテクストがありません"
+
+#: src/err-codes.h:220
+msgid "Wrong crypto context"
+msgstr "誤った暗号コンテクストです"
+
+#: src/err-codes.h:221
+msgid "Bad crypto context"
+msgstr "誤った暗号コンテクストです"
+
+#: src/err-codes.h:222
+msgid "Conflict in the crypto context"
+msgstr "暗号コンテクストが競合しています"
+
+#: src/err-codes.h:223
+msgid "Broken public key"
+msgstr "公開鍵が壊れています"
+
+#: src/err-codes.h:224
+msgid "Broken secret key"
+msgstr "秘密鍵が壊れています"
+
+#: src/err-codes.h:225
+msgid "Invalid MAC algorithm"
+msgstr "無効なMACアルゴリズムです"
+
+#: src/err-codes.h:226
+msgid "Operation fully cancelled"
+msgstr "操作が完全にキャンセルされました"
+
+#: src/err-codes.h:227
+msgid "Operation not yet finished"
+msgstr "操作がまだ終了していません"
+
+#: src/err-codes.h:228
+msgid "Buffer too short"
+msgstr "バッファが短すぎます"
+
+#: src/err-codes.h:229
+msgid "Invalid length specifier in S-expression"
+msgstr "S式の中の長さ指定が無効です"
+
+#: src/err-codes.h:230
+msgid "String too long in S-expression"
+msgstr "S式の中の文字列が長すぎます"
+
+#: src/err-codes.h:231
+msgid "Unmatched parentheses in S-expression"
+msgstr "S式の括弧が一致しません"
+
+#: src/err-codes.h:232
+msgid "S-expression not canonical"
+msgstr "カノニカルなS式ではありません"
+
+#: src/err-codes.h:233
+msgid "Bad character in S-expression"
+msgstr "S式に誤ったキャラクタがあります"
+
+#: src/err-codes.h:234
+msgid "Bad quotation in S-expression"
+msgstr "S式の誤ったクオーテーションです"
+
+#: src/err-codes.h:235
+msgid "Zero prefix in S-expression"
+msgstr "S式のゼロ・プレフィックスです"
+
+#: src/err-codes.h:236
+msgid "Nested display hints in S-expression"
+msgstr "S式に表示ヒントが入れ子になっています"
+
+#: src/err-codes.h:237
+msgid "Unmatched display hints"
+msgstr "表示ヒントが一致しません"
+
+#: src/err-codes.h:238
+msgid "Unexpected reserved punctuation in S-expression"
+msgstr "S式に予期しない予約された句読点があります"
+
+#: src/err-codes.h:239
+msgid "Bad hexadecimal character in S-expression"
+msgstr "S式に間違った16進キャラクタがあります"
+
+#: src/err-codes.h:240
+msgid "Odd hexadecimal numbers in S-expression"
+msgstr "S式におかしな16進キャラクタがあります"
+
+#: src/err-codes.h:241
+msgid "Bad octal character in S-expression"
+msgstr "S式に間違った8進キャラクタがあります"
+
+#: src/err-codes.h:242
+msgid "All subkeys are expired or revoked"
+msgstr "すべての副鍵が期限切れか失効しています"
+
+#: src/err-codes.h:243
+msgid "Database is corrupted"
+msgstr "データベースがおかしくなってます"
+
+#: src/err-codes.h:244
+msgid "Server indicated a failure"
+msgstr "サーバが失敗を示しています"
+
+#: src/err-codes.h:245
+msgid "No name"
+msgstr "名前がありません"
+
+#: src/err-codes.h:246
+msgid "No key"
+msgstr "鍵がありません"
+
+#: src/err-codes.h:247
+msgid "Legacy key"
+msgstr "レガシーな鍵"
+
+#: src/err-codes.h:248
+msgid "Request too short"
+msgstr "リクエストが短すぎます"
+
+#: src/err-codes.h:249
+msgid "Request too long"
+msgstr "リクエストが長すぎます"
+
+#: src/err-codes.h:250
+msgid "Object is in termination state"
+msgstr "オブジェクトは終了状態です"
+
+#: src/err-codes.h:251
+msgid "No certificate chain"
+msgstr "証明書連鎖がありません"
+
+#: src/err-codes.h:252
+msgid "Certificate is too large"
+msgstr "証明書が大きすぎです"
+
+#: src/err-codes.h:253
+msgid "Invalid record"
+msgstr "無効なレコードです"
+
+#: src/err-codes.h:254
+msgid "The MAC does not verify"
+msgstr "MACが検証できません"
+
+#: src/err-codes.h:255
+msgid "Unexpected message"
+msgstr "予期しないメッセージです"
+
+#: src/err-codes.h:256
+msgid "Compression or decompression failed"
+msgstr "圧縮/伸長が失敗しました"
+
+#: src/err-codes.h:257
+msgid "A counter would wrap"
+msgstr "カウンタが一回りするかもしれません"
+
+#: src/err-codes.h:258
+msgid "Fatal alert message received"
+msgstr "致命的な警告メッセージを受信しました"
+
+#: src/err-codes.h:259
+msgid "No cipher algorithm"
+msgstr "暗号アルゴリズムがありません"
+
+#: src/err-codes.h:260
+msgid "Missing client certificate"
+msgstr "クライアント証明書がありません"
+
+#: src/err-codes.h:261
+msgid "Close notification received"
+msgstr "クローズの知らせを受信しました"
+
+#: src/err-codes.h:262
+msgid "Ticket expired"
+msgstr "チケットが期限切れです"
+
+#: src/err-codes.h:263
+msgid "Bad ticket"
+msgstr "誤ったチケットです"
+
+#: src/err-codes.h:264
+msgid "Unknown identity"
+msgstr "不明なアイデンテティです"
+
+#: src/err-codes.h:265
+msgid "Bad certificate message in handshake"
+msgstr "ハンドシェークで誤った証明書メッセージです"
+
+#: src/err-codes.h:266
+msgid "Bad certificate request message in handshake"
+msgstr "ハンドシェークで誤った証明書要求メッセージです"
+
+#: src/err-codes.h:267
+msgid "Bad certificate verify message in handshake"
+msgstr "ハンドシェークで誤った証明書検証メッセージです"
+
+#: src/err-codes.h:268
+msgid "Bad change cipher message in handshake"
+msgstr "ハンドシェークで誤った暗号変更メッセージです"
+
+#: src/err-codes.h:269
+msgid "Bad client hello message in handshake"
+msgstr "ハンドシェークで誤ったクライアントハローメッセージです"
+
+#: src/err-codes.h:270
+msgid "Bad server hello message in handshake"
+msgstr "ハンドシェークで誤ったサーバハローメッセージです"
+
+#: src/err-codes.h:271
+msgid "Bad server hello done message in handshake"
+msgstr "ハンドシェークで誤ったサーバハロー了解メッセージです"
+
+#: src/err-codes.h:272
+msgid "Bad finished message in handshake"
+msgstr "ハンドシェークで誤った終了メッセージです"
+
+#: src/err-codes.h:273
+msgid "Bad server key exchange message in handshake"
+msgstr "ハンドシェークで誤ったサーバ鍵交換メッセージです"
+
+#: src/err-codes.h:274
+msgid "Bad client key exchange message in handshake"
+msgstr "ハンドシェークで誤ったクライアント鍵交換メッセージです"
+
+#: src/err-codes.h:275
+msgid "Bogus string"
+msgstr "おかしな文字列です"
+
+#: src/err-codes.h:276
+msgid "Forbidden"
+msgstr "禁止"
+
+#: src/err-codes.h:277
+msgid "Key disabled"
+msgstr "鍵が停止されています"
+
+#: src/err-codes.h:278
+msgid "Not possible with a card based key"
+msgstr "カードの鍵では不可能です"
+
+#: src/err-codes.h:279
+msgid "Invalid lock object"
+msgstr "無効なロック・オブジェクトです"
+
+#: src/err-codes.h:280
+msgid "True"
+msgstr "真"
+
+#: src/err-codes.h:281
+msgid "False"
+msgstr "偽"
+
+#: src/err-codes.h:282
+msgid "General IPC error"
+msgstr "一般IPCエラーです"
+
+#: src/err-codes.h:283
+msgid "IPC accept call failed"
+msgstr "IPC accept呼び出しに失敗"
+
+#: src/err-codes.h:284
+msgid "IPC connect call failed"
+msgstr "IPC connect呼び出しに失敗しました"
+
+#: src/err-codes.h:285
+msgid "Invalid IPC response"
+msgstr "無効なIPC応答です"
+
+#: src/err-codes.h:286
+msgid "Invalid value passed to IPC"
+msgstr "無効な値がIPCに渡されました"
+
+#: src/err-codes.h:287
+msgid "Incomplete line passed to IPC"
+msgstr "不完全な行がIPCに渡されました"
+
+#: src/err-codes.h:288
+msgid "Line passed to IPC too long"
+msgstr "IPCに渡された行が長すぎます"
+
+#: src/err-codes.h:289
+msgid "Nested IPC commands"
+msgstr "IPCコマンドが入れ子になっています"
+
+#: src/err-codes.h:290
+msgid "No data callback in IPC"
+msgstr "IPCでデータのコールバックがありません"
+
+#: src/err-codes.h:291
+msgid "No inquire callback in IPC"
+msgstr "IPCで問い合わせコールバックがありません"
+
+#: src/err-codes.h:292
+msgid "Not an IPC server"
+msgstr "IPCサーバではありません"
+
+#: src/err-codes.h:293
+msgid "Not an IPC client"
+msgstr "IPCクライアントではありません"
+
+#: src/err-codes.h:294
+msgid "Problem starting IPC server"
+msgstr "IPCサーバの開始に問題が発生しました"
+
+#: src/err-codes.h:295
+msgid "IPC read error"
+msgstr "IPC読み取りエラー"
+
+#: src/err-codes.h:296
+msgid "IPC write error"
+msgstr "IPC書き込みエラー"
+
+#: src/err-codes.h:297
+msgid "Too much data for IPC layer"
+msgstr "IPCレイヤにデータが多すぎです"
+
+#: src/err-codes.h:298
+msgid "Unexpected IPC command"
+msgstr "予期しないIPCコマンドです"
+
+#: src/err-codes.h:299
+msgid "Unknown IPC command"
+msgstr "不明なIPCコマンドです"
+
+#: src/err-codes.h:300
+msgid "IPC syntax error"
+msgstr "IPC構文エラーです"
+
+#: src/err-codes.h:301
+msgid "IPC call has been cancelled"
+msgstr "IPC呼び出しがキャンセルされました"
+
+#: src/err-codes.h:302
+msgid "No input source for IPC"
+msgstr "IPCに対する入力ソースがありません"
+
+#: src/err-codes.h:303
+msgid "No output source for IPC"
+msgstr "IPCに対する出力ソースがありません"
+
+#: src/err-codes.h:304
+msgid "IPC parameter error"
+msgstr "IPCパラメータエラーです"
+
+#: src/err-codes.h:305
+msgid "Unknown IPC inquire"
+msgstr "不明なIPC問い合わせです"
+
+#: src/err-codes.h:306
+msgid "Crypto engine too old"
+msgstr "暗号エンジンが古すぎます"
+
+#: src/err-codes.h:307
+msgid "Screen or window too small"
+msgstr "スクリーンまたはウィンドウが小さすぎます"
+
+#: src/err-codes.h:308
+msgid "Screen or window too large"
+msgstr "スクリーンまたはウィンドウが大きすぎます"
+
+#: src/err-codes.h:309
+msgid "Required environment variable not set"
+msgstr "必要な環境変数が設定されていません"
+
+#: src/err-codes.h:310
+msgid "User ID already exists"
+msgstr "User IDが既に存在します"
+
+#: src/err-codes.h:311
+msgid "Name already exists"
+msgstr "名前が既に存在します"
+
+#: src/err-codes.h:312
+msgid "Duplicated name"
+msgstr "重複した名前です"
+
+#: src/err-codes.h:313
+msgid "Object is too young"
+msgstr "オブジェクトが若すぎます"
+
+#: src/err-codes.h:314
+msgid "Object is too old"
+msgstr "オブジェクトが古すぎます"
+
+#: src/err-codes.h:315
+msgid "Unknown flag"
+msgstr "不明なフラグです"
+
+#: src/err-codes.h:316
+msgid "Invalid execution order"
+msgstr "無効な実効順です"
+
+#: src/err-codes.h:317
+msgid "Already fetched"
+msgstr "すでにフェッチされてます"
+
+#: src/err-codes.h:318
+msgid "Try again later"
+msgstr "後で再度試してください"
+
+#: src/err-codes.h:319
+msgid "Wrong name"
+msgstr "間違った名前です"
+
+#: src/err-codes.h:320
+msgid "Not authenticated"
+msgstr "認証されてません"
+
+#: src/err-codes.h:321
+msgid "Bad authentication"
+msgstr "誤った認証です"
+
+#: src/err-codes.h:322
+msgid "No Keybox daemon running"
+msgstr "Keyboxデーモンが動いていません"
+
+#: src/err-codes.h:323
+msgid "Keybox daemon error"
+msgstr "Keyboxデーモンエラーです"
+
+#: src/err-codes.h:324
+msgid "Service is not running"
+msgstr "サービスが動いていません"
+
+#: src/err-codes.h:325
+msgid "Service error"
+msgstr "サービスエラーです"
+
+#: src/err-codes.h:326
+#, fuzzy
+#| msgid "Bad PIN"
+msgid "Bad PUK"
+msgstr "誤った PIN です"
+
+#: src/err-codes.h:327
+msgid "No reset code"
+msgstr ""
+
+#: src/err-codes.h:328
+#, fuzzy
+#| msgid "Bad secret key"
+msgid "Bad reset code"
+msgstr "誤った秘密鍵です"
+
+#: src/err-codes.h:329
+msgid "System bug detected"
+msgstr "システムのバグが検出されました"
+
+#: src/err-codes.h:330
+msgid "Unknown DNS error"
+msgstr "不明なDNSエラー"
+
+#: src/err-codes.h:331
+msgid "Invalid DNS section"
+msgstr "無効な DNS セクションです"
+
+#: src/err-codes.h:332
+msgid "Invalid textual address form"
+msgstr "無効なテクストのアドレス形式です"
+
+#: src/err-codes.h:333
+msgid "Missing DNS query packet"
+msgstr "DNSクエリのパケットがありません"
+
+#: src/err-codes.h:334
+msgid "Missing DNS answer packet"
+msgstr "DNSの返答パケットが欠如しています"
+
+#: src/err-codes.h:335
+msgid "Connection closed in DNS"
+msgstr "DNSの接続が閉じられました"
+
+#: src/err-codes.h:336
+msgid "Verification failed in DNS"
+msgstr "DNSで検証に失敗しました"
+
+#: src/err-codes.h:337
+msgid "DNS Timeout"
+msgstr "DNSタイムアウトです"
+
+#: src/err-codes.h:338
+msgid "General LDAP error"
+msgstr "一般LDAPエラーです"
+
+#: src/err-codes.h:339
+msgid "General LDAP attribute error"
+msgstr "一般LDAP属性エラーです"
+
+#: src/err-codes.h:340
+msgid "General LDAP name error"
+msgstr "一般LDAPエラーです"
+
+#: src/err-codes.h:341
+msgid "General LDAP security error"
+msgstr "一般Assuanエラーです"
+
+#: src/err-codes.h:342
+msgid "General LDAP service error"
+msgstr "一般LDAPサーバエラーです"
+
+#: src/err-codes.h:343
+msgid "General LDAP update error"
+msgstr "一般LDAP更新エラーです"
+
+#: src/err-codes.h:344
+msgid "Experimental LDAP error code"
+msgstr "実験的LDAPエラーコード"
+
+#: src/err-codes.h:345
+msgid "Private LDAP error code"
+msgstr "プライベートLDAPエラーコード"
+
+#: src/err-codes.h:346
+msgid "Other general LDAP error"
+msgstr "その他の一般LDAPエラーです"
+
+#: src/err-codes.h:347
+msgid "LDAP connecting failed (X)"
+msgstr "LDAP接続が失敗しました (X)"
+
+#: src/err-codes.h:348
+msgid "LDAP referral limit exceeded"
+msgstr "LDAP参照制限を越えました"
+
+#: src/err-codes.h:349
+msgid "LDAP client loop"
+msgstr "LDAPクライアントのループ"
+
+#: src/err-codes.h:350
+msgid "No LDAP results returned"
+msgstr "LDAPの結果が返されませんでした"
+
+#: src/err-codes.h:351
+msgid "LDAP control not found"
+msgstr "LDAP制御が見つかりませんでした"
+
+#: src/err-codes.h:352
+msgid "Not supported by LDAP"
+msgstr "LDAPでサポートされていません"
+
+#: src/err-codes.h:353
+msgid "LDAP connect error"
+msgstr "LDAP connectエラーです"
+
+#: src/err-codes.h:354
+msgid "Out of memory in LDAP"
+msgstr "LDAPでメモリがなくなりました"
+
+#: src/err-codes.h:355
+msgid "Bad parameter to an LDAP routine"
+msgstr "LDAPルーチンに対する不正なパラメータです"
+
+#: src/err-codes.h:356
+msgid "User cancelled LDAP operation"
+msgstr "ユーザがLDAP操作をキャンセルしました"
+
+#: src/err-codes.h:357
+msgid "Bad LDAP search filter"
+msgstr "誤ったLDAP検索フィルタです"
+
+#: src/err-codes.h:358
+msgid "Unknown LDAP authentication method"
+msgstr "不明のLDAP認証方式です"
+
+#: src/err-codes.h:359
+msgid "Timeout in LDAP"
+msgstr "LDAPでタイムアウトです"
+
+#: src/err-codes.h:360
+msgid "LDAP decoding error"
+msgstr "LDAPデコードのエラー"
+
+#: src/err-codes.h:361
+msgid "LDAP encoding error"
+msgstr "LDAPエンコードのエラー"
+
+#: src/err-codes.h:362
+msgid "LDAP local error"
+msgstr "LDAPローカルエラー"
+
+#: src/err-codes.h:363
+msgid "Cannot contact LDAP server"
+msgstr "LDAPサーバに連絡できません"
+
+#: src/err-codes.h:364
+msgid "LDAP success"
+msgstr "LDAP成功です"
+
+#: src/err-codes.h:365
+msgid "LDAP operations error"
+msgstr "LDAP操作エラーです"
+
+#: src/err-codes.h:366
+msgid "LDAP protocol error"
+msgstr "LDAPプロトコルエラー"
+
+#: src/err-codes.h:367
+msgid "Time limit exceeded in LDAP"
+msgstr "LDAPで時間制限を越えました"
+
+#: src/err-codes.h:368
+msgid "Size limit exceeded in LDAP"
+msgstr "LDAPでサイズ制限を越えました"
+
+#: src/err-codes.h:369
+msgid "LDAP compare false"
+msgstr "LDAP比較 偽"
+
+#: src/err-codes.h:370
+msgid "LDAP compare true"
+msgstr "LDAP比較 真"
+
+#: src/err-codes.h:371
+msgid "LDAP authentication method not supported"
+msgstr "LDAP認証方式はサポートされません"
+
+#: src/err-codes.h:372
+msgid "Strong(er) LDAP authentication required"
+msgstr "強いLDAP認証が必要です"
+
+#: src/err-codes.h:373
+msgid "Partial LDAP results+referral received"
+msgstr "部分的LDAP結果/参照を受信しました"
+
+#: src/err-codes.h:374
+msgid "LDAP referral"
+msgstr "LDAP参照"
+
+#: src/err-codes.h:375
+msgid "Administrative LDAP limit exceeded"
+msgstr "管理LDAP制限を越えました"
+
+#: src/err-codes.h:376
+msgid "Critical LDAP extension is unavailable"
+msgstr "クリティカルなLDAP拡張が利用可能ではありません"
+
+#: src/err-codes.h:377
+msgid "Confidentiality required by LDAP"
+msgstr "LDAPにより秘匿性が必要です"
+
+#: src/err-codes.h:378
+msgid "LDAP SASL bind in progress"
+msgstr "LDAP SASLバインドが進んでいます"
+
+#: src/err-codes.h:379
+msgid "No such LDAP attribute"
+msgstr "そのようなLDAP属性がありません"
+
+#: src/err-codes.h:380
+msgid "Undefined LDAP attribute type"
+msgstr "未定義のLDAP属性型です"
+
+#: src/err-codes.h:381
+msgid "Inappropriate matching in LDAP"
+msgstr "LDAPの不適切なマッチングです"
+
+#: src/err-codes.h:382
+msgid "Constraint violation in LDAP"
+msgstr "LDAP制約違反です"
+
+#: src/err-codes.h:383
+msgid "LDAP type or value exists"
+msgstr "LDAP型あるいは値が存在します"
+
+#: src/err-codes.h:384
+msgid "Invalid syntax in LDAP"
+msgstr "LDAPの無効な構文です"
+
+#: src/err-codes.h:385
+msgid "No such LDAP object"
+msgstr "そのようなLDAPオブジェクトはありません"
+
+#: src/err-codes.h:386
+msgid "LDAP alias problem"
+msgstr "LDAPエイリアスの問題です"
+
+#: src/err-codes.h:387
+msgid "Invalid DN syntax in LDAP"
+msgstr "LDAPの無効なDN構文状態です"
+
+#: src/err-codes.h:388
+msgid "LDAP entry is a leaf"
+msgstr "LDAPエントリがリーフです"
+
+#: src/err-codes.h:389
+msgid "LDAP alias dereferencing problem"
+msgstr "LDAPエイリアスのデレファレンス問題です"
+
+#: src/err-codes.h:390
+msgid "LDAP proxy authorization failure (X)"
+msgstr "LDAPプロキシの認証失敗です(X)"
+
+#: src/err-codes.h:391
+msgid "Inappropriate LDAP authentication"
+msgstr "不適切なLDAP認証です"
+
+#: src/err-codes.h:392
+msgid "Invalid LDAP credentials"
+msgstr "無効なLDAPクレデンシャルです"
+
+#: src/err-codes.h:393
+msgid "Insufficient access for LDAP"
+msgstr "LDAPの不十分なアクセスです"
+
+#: src/err-codes.h:394
+msgid "LDAP server is busy"
+msgstr "LDAPサーバがビジーです"
+
+#: src/err-codes.h:395
+msgid "LDAP server is unavailable"
+msgstr "LDAPサーバが利用可能ではありません"
+
+#: src/err-codes.h:396
+msgid "LDAP server is unwilling to perform"
+msgstr "LDAPサーバが実行を進めたくありません"
+
+#: src/err-codes.h:397
+msgid "Loop detected by LDAP"
+msgstr "LDAPでループが検出されました"
+
+#: src/err-codes.h:398
+msgid "LDAP naming violation"
+msgstr "LDAP名前違反です"
+
+#: src/err-codes.h:399
+msgid "LDAP object class violation"
+msgstr "LDAPオブジェクトクラス違反です"
+
+#: src/err-codes.h:400
+msgid "LDAP operation not allowed on non-leaf"
+msgstr "LDAP操作は非リーフには許されません"
+
+#: src/err-codes.h:401
+msgid "LDAP operation not allowed on RDN"
+msgstr "LDAP操作はRDNには許されません"
+
+#: src/err-codes.h:402
+msgid "Already exists (LDAP)"
+msgstr "既に存在します (LDAP)"
+
+#: src/err-codes.h:403
+msgid "Cannot modify LDAP object class"
+msgstr "LDAPオブジェクト・クラスを修正できません"
+
+#: src/err-codes.h:404
+msgid "LDAP results too large"
+msgstr "LDAP結果が大きすぎます"
+
+#: src/err-codes.h:405
+msgid "LDAP operation affects multiple DSAs"
+msgstr "LDAP操作は複数のDSAに関与します"
+
+#: src/err-codes.h:406
+msgid "Virtual LDAP list view error"
+msgstr "バーチャルLDAPリストviewエラー"
+
+#: src/err-codes.h:407
+msgid "Other LDAP error"
+msgstr "その他のLDAPエラーです"
+
+#: src/err-codes.h:408
+msgid "Resources exhausted in LCUP"
+msgstr "LCUPで資源を使い果たしました"
+
+#: src/err-codes.h:409
+msgid "Security violation in LCUP"
+msgstr "LCUPのセキュリティ違反"
+
+#: src/err-codes.h:410
+msgid "Invalid data in LCUP"
+msgstr "LCUPの無効なデータです"
+
+#: src/err-codes.h:411
+msgid "Unsupported scheme in LCUP"
+msgstr "LCUPのサポートされていないスキームです"
+
+#: src/err-codes.h:412
+msgid "Reload required in LCUP"
+msgstr "LCUPでリロードが必要です"
+
+#: src/err-codes.h:413
+msgid "LDAP cancelled"
+msgstr "LDAPがキャンセルされました"
+
+#: src/err-codes.h:414
+msgid "No LDAP operation to cancel"
+msgstr "キャンセルするLDAP操作がありません"
+
+#: src/err-codes.h:415
+msgid "Too late to cancel LDAP"
+msgstr "LDAPをキャンセルするには遅すぎます"
+
+#: src/err-codes.h:416
+msgid "Cannot cancel LDAP"
+msgstr "LDAPをキャンセルできません"
+
+#: src/err-codes.h:417
+msgid "LDAP assertion failed"
+msgstr "LDAPアサーションに失敗しました"
+
+#: src/err-codes.h:418
+msgid "Proxied authorization denied by LDAP"
+msgstr "LDAPでプロキシの認証が拒否されました"
+
+#: src/err-codes.h:419
+msgid "User defined error code 1"
+msgstr "ユーザ定義エラーコード 1"
+
+#: src/err-codes.h:420
+msgid "User defined error code 2"
+msgstr "ユーザ定義エラーコード 2"
+
+#: src/err-codes.h:421
+msgid "User defined error code 3"
+msgstr "ユーザ定義エラーコード 3"
+
+#: src/err-codes.h:422
+msgid "User defined error code 4"
+msgstr "ユーザ定義エラーコード 4"
+
+#: src/err-codes.h:423
+msgid "User defined error code 5"
+msgstr "ユーザ定義エラーコード 5"
+
+#: src/err-codes.h:424
+msgid "User defined error code 6"
+msgstr "ユーザ定義エラーコード 6"
+
+#: src/err-codes.h:425
+msgid "User defined error code 7"
+msgstr "ユーザ定義エラーコード 7"
+
+#: src/err-codes.h:426
+msgid "User defined error code 8"
+msgstr "ユーザ定義エラーコード 8"
+
+#: src/err-codes.h:427
+msgid "User defined error code 9"
+msgstr "ユーザ定義エラーコード 9"
+
+#: src/err-codes.h:428
+msgid "User defined error code 10"
+msgstr "ユーザ定義エラーコード 10"
+
+#: src/err-codes.h:429
+msgid "User defined error code 11"
+msgstr "ユーザ定義エラーコード 11"
+
+#: src/err-codes.h:430
+msgid "User defined error code 12"
+msgstr "ユーザ定義エラーコード 12"
+
+#: src/err-codes.h:431
+msgid "User defined error code 13"
+msgstr "ユーザ定義エラーコード 13"
+
+#: src/err-codes.h:432
+msgid "User defined error code 14"
+msgstr "ユーザ定義エラーコード 14"
+
+#: src/err-codes.h:433
+msgid "User defined error code 15"
+msgstr "ユーザ定義エラーコード 15"
+
+#: src/err-codes.h:434
+msgid "User defined error code 16"
+msgstr "ユーザ定義エラーコード 16"
+
+#: src/err-codes.h:435
+msgid "SQL success"
+msgstr "SQL 成功です"
+
+#: src/err-codes.h:436
+msgid "SQL error"
+msgstr "SQLエラーです"
+
+#: src/err-codes.h:437
+msgid "Internal logic error in SQL library"
+msgstr "SQLライブラリの内部論理エラー"
+
+#: src/err-codes.h:438
+msgid "Access permission denied (SQL)"
+msgstr "アクセス許可が拒否されました (SQL)"
+
+#: src/err-codes.h:439
+msgid "SQL abort was requested"
+msgstr "SQL中止が要求されました"
+
+#: src/err-codes.h:440
+msgid "SQL database file is locked"
+msgstr "SQLデータベースがロックされています"
+
+#: src/err-codes.h:441
+msgid "An SQL table in the database is locked"
+msgstr "データベースでSQLテーブルがロックされています"
+
+#: src/err-codes.h:442
+msgid "SQL library ran out of core"
+msgstr "SQLライブラリがコアを使い果たしました"
+
+#: src/err-codes.h:443
+msgid "Attempt to write a readonly SQL database"
+msgstr "読み出しのみのSQLデータベースに書き込もうとしました"
+
+#: src/err-codes.h:444
+msgid "SQL operation terminated by interrupt"
+msgstr "割り込みでSQL操作が終了しました"
+
+#: src/err-codes.h:445
+msgid "I/O error during SQL operation"
+msgstr "SQL操作中にI/Oエラー"
+
+#: src/err-codes.h:446
+msgid "SQL database disk image is malformed"
+msgstr "SQLデータベースのディスクイメージが壊れています"
+
+#: src/err-codes.h:447
+msgid "Unknown opcode in SQL file control"
+msgstr "SQLファイルコントロールに不明のオペコードです"
+
+#: src/err-codes.h:448
+msgid "Insertion failed because SQL database is full"
+msgstr "SQLデータベースがいっぱいで挿入が失敗しました"
+
+#: src/err-codes.h:449
+msgid "Unable to open the SQL database file"
+msgstr "SQLデータベースをオープンできません"
+
+#: src/err-codes.h:450
+msgid "SQL database lock protocol error"
+msgstr "SQLデータベース・ロック・プロトコルエラー"
+
+#: src/err-codes.h:451
+msgid "(internal SQL code: empty)"
+msgstr "(内部SQLコード: empty)"
+
+#: src/err-codes.h:452
+msgid "SQL database schema changed"
+msgstr "SQLデータベースのスキーマが変更されました"
+
+#: src/err-codes.h:453
+msgid "String or blob exceeds size limit (SQL)"
+msgstr "文字列かブロブがサイズ上限を超えました (SQL)"
+
+#: src/err-codes.h:454
+msgid "SQL abort due to constraint violation"
+msgstr "制約の違反のため SQL 中止です"
+
+#: src/err-codes.h:455
+msgid "Data type mismatch (SQL)"
+msgstr "データ型の不一致 (SQL)"
+
+#: src/err-codes.h:456
+msgid "SQL library used incorrectly"
+msgstr "SQLライブラリが誤って使われました"
+
+#: src/err-codes.h:457
+msgid "SQL library uses unsupported OS features"
+msgstr "SQLライブラリがサポートされていないOSの機能を使います"
+
+#: src/err-codes.h:458
+msgid "Authorization denied (SQL)"
+msgstr "認証が拒否されました (SQL)"
+
+#: src/err-codes.h:459
+msgid "(unused SQL code: format)"
+msgstr "(使われていないSQLコード: format)"
+
+#: src/err-codes.h:460
+msgid "SQL bind parameter out of range"
+msgstr "SQLのバインド・パラメータが範囲外です"
+
+#: src/err-codes.h:461
+msgid "File opened that is not an SQL database file"
+msgstr "SQLデータベース・ファイルではないファイルがオープンされました"
+
+#: src/err-codes.h:462
+msgid "Notifications from SQL logger"
+msgstr "SQLロガーからの通知"
+
+#: src/err-codes.h:463
+msgid "Warnings from SQL logger"
+msgstr "SQLロガーからの警告"
+
+#: src/err-codes.h:464
+msgid "SQL has another row ready"
+msgstr "SQLで別の行が準備できています"
+
+#: src/err-codes.h:465
+msgid "SQL has finished executing"
+msgstr "SQL実行が終わりました"
+
+#: src/err-codes.h:466
+msgid "System error w/o errno"
+msgstr "errno が無いシステムエラー"
+
+#: src/err-codes.h:467
+msgid "Unknown system error"
+msgstr "不明なシステムエラー"
+
+#: src/err-codes.h:468
+msgid "End of file"
+msgstr "ファイル終端"
+
+#: src/err-codes.h:469
+msgid "Unknown error code"
+msgstr "不明なエラーコード"
+
+#: src/argparse.c:494
+msgid "argument not expected"
+msgstr "引数は期待されていません"
+
+#: src/argparse.c:496
+msgid "read error"
+msgstr "読み込みエラー"
+
+#: src/argparse.c:498
+msgid "keyword too long"
+msgstr "キーワードが長すぎます"
+
+#: src/argparse.c:500
+msgid "missing argument"
+msgstr "引数がありません"
+
+#: src/argparse.c:502
+msgid "invalid argument"
+msgstr "無効な引数"
+
+#: src/argparse.c:504
+msgid "invalid command"
+msgstr "無効なコマンド"
+
+#: src/argparse.c:506
+msgid "invalid alias definition"
+msgstr "無効なエイリアス定義です"
+
+#: src/argparse.c:508 src/argparse.c:545
+msgid "permission error"
+msgstr "許可エラーです"
+
+#: src/argparse.c:510 src/argparse.c:543
+msgid "out of core"
+msgstr "メモリがありません"
+
+#: src/argparse.c:514 src/argparse.c:549
+msgid "invalid meta command"
+msgstr "無効なメタコマンド"
+
+#: src/argparse.c:516 src/argparse.c:551
+msgid "unknown meta command"
+msgstr "未知のメタコマンドです"
+
+#: src/argparse.c:518 src/argparse.c:553
+msgid "unexpected meta command"
+msgstr "予期しないメタコマンドです"
+
+#: src/argparse.c:520
+msgid "invalid option"
+msgstr "無効なオプション"
+
+#: src/argparse.c:530
+#, c-format
+msgid "missing argument for option \"%.50s\"\n"
+msgstr "オプション\"%.50s\"に引数がありません\n"
+
+#: src/argparse.c:532
+#, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "オプション\"%.50s\"には無効な引数です\n"
+
+#: src/argparse.c:534
+#, c-format
+msgid "option \"%.50s\" does not expect an argument\n"
+msgstr "オプション\"%.50s\"は引数をとりません\n"
+
+#: src/argparse.c:537
+#, c-format
+msgid "invalid command \"%.50s\"\n"
+msgstr "無効なコマンド \"%.50s\"\n"
+
+#: src/argparse.c:539
+#, c-format
+msgid "option \"%.50s\" is ambiguous\n"
+msgstr "オプション\"%.50s\"はあいまいです\n"
+
+#: src/argparse.c:541
+#, c-format
+msgid "command \"%.50s\" is ambiguous\n"
+msgstr "コマンド\"%.50s\"はあいまいです\n"
+
+#: src/argparse.c:555
+#, c-format
+msgid "invalid option \"%.50s\"\n"
+msgstr "無効なオプション \"%.50s\"\n"
+
+#: src/argparse.c:2297 src/argparse.c:2393
+#, c-format
+msgid "Note: no default option file '%s'\n"
+msgstr "注: デフォルトオプションファイル '%s' がありません\n"
+
+#: src/argparse.c:2307 src/argparse.c:2400
+#, c-format
+msgid "reading options from '%s'\n"
+msgstr "オプションを'%s'から読みます\n"
+
+#: src/argparse.c:2385
+#, c-format
+msgid "option file '%s': %s\n"
+msgstr "オプションファイル '%s': %s\n"
+
+#: src/argparse.c:2823
+#, c-format
+msgid "Note: ignoring option \"--%s\" due to global config\n"
+msgstr "注: グローバルコンフィグのため、オプション \"--%s\" を無視します\n"
+
+#: src/gpg-error.c:522
+msgid "Please report bugs to <https://bugs.gnupg.org>.\n"
+msgstr "バグは<https://bugs.gnupg.org>に報告してください。\n"
+
+#: src/gpg-error.c:762
+#, c-format
+msgid "warning: could not recognize %s\n"
+msgstr "警告: %s を認識できませんでした\n"
+
+#~ msgid "out of core\n"
+#~ msgstr "メモリがありません\n"
+
+#~ msgid "Usage: %s GPG-ERROR [...]\n"
+#~ msgstr "使用法: %s GPG-ERROR [...]\n"
+
+#~ msgid "Keyring open"
+#~ msgstr "鍵リングオープン"

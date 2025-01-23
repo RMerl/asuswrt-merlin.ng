@@ -11,11 +11,11 @@
 <title><#Web_Title#> - <#menu5_1_2#></title>
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
-<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script><% wl_get_parameter(); %>
 $(function () {
@@ -54,7 +54,7 @@ function get_band_str(band){
 		}
 	}
 	else if(band == 2){
-		return (band6g_support) ? '6 GHz' : '5 GHz-2';
+		return '5 GHz-2';
 	}
 		
 	return "";
@@ -218,7 +218,7 @@ function enableWPS(){
 
 function configCommand(){
 	if(lantiq_support && wave_ready != 1){
-		alert("Please wait a minute for wireless ready");
+		alert(`<#Wireless_ready#>`);
 		return false;
 	}
 
@@ -239,7 +239,7 @@ function configCommand(){
 
 function resetWPS(){
 	if(lantiq_support && wave_ready != 1){
-		alert("Please wait a minute for wireless ready");
+		alert(`<#Wireless_ready#>`);
 		return false;
 	}
 
@@ -425,21 +425,14 @@ function show_wsc_status(wps_infos){
 			band_string = "5 GHz";
 		}else{
 			document.getElementById("wps_band_word").innerHTML = "5 GHz-1";
-			band_string = "5 GHz-1";
+			band_string = "5 GHz-1";		
 		}
 			
 		currentBand = 1;
 	}	
 	else if(wps_infos[12].firstChild.nodeValue == 2){
-		if(band6g_support){
-			document.getElementById("wps_band_word").innerHTML = "6 GHz";
-			band_string = "6 GHz";
-		}
-		else{
-			document.getElementById("wps_band_word").innerHTML = "5 GHz-2";
-			band_string = "5 GHz-2";
-		}
-
+		document.getElementById("wps_band_word").innerHTML = "5 GHz-2";
+		band_string = "5 GHz-2";
 		currentBand = 2;
 	}
 
@@ -451,6 +444,7 @@ function show_wsc_status(wps_infos){
 		if (wps_multiband_support)
 			document.getElementById("wps_band_word").innerHTML = "<del>" + document.getElementById("wps_band_word").innerHTML + "</del>";
 	};
+
 	// First filter whether turn on Wi-Fi or not
 	if(currentBand == 0 && radio_2 != "1") {	//2.4GHz
 		document.getElementById("wps_enable_hint").innerHTML = "* <#note_turn_wifi_on_WPS#> <a style='color:#FC0; text-decoration: underline; font-family:Lucida Console;cursor:pointer;' onclick=\"_change_wl_advanced_unit_status(" + htmlEnDeCode.htmlEncode(wps_infos[12].firstChild.nodeValue) + ");\"><#btn_go#></a>"
@@ -462,11 +456,11 @@ function show_wsc_status(wps_infos){
 		controlDisplayItem();
 		return;
 	}
-        else if(currentBand == 2 && radio_6 != "1") {   //5GHz
-                document.getElementById("wps_enable_hint").innerHTML = "* <#note_turn_wifi_on_WPS#> <a style='color:#FC0; text-decoration: underline; font-family:LucidaConsole;cursor:pointer;' onclick=\"_change_wl_advanced_unit_status(" + htmlEnDeCode.htmlEncode(wps_infos[12].firstChild.nodeValue) + ");\"><#btn_go#></a>"
-                controlDisplayItem();
-                return;
-        }
+	else if(currentBand == 2 && radio_6 != "1") {   //5GHz
+        document.getElementById("wps_enable_hint").innerHTML = "* <#note_turn_wifi_on_WPS#> <a style='color:#FC0; text-decoration: underline; font-family:LucidaConsole;cursor:pointer;' onclick=\"_change_wl_advanced_unit_status(" + htmlEnDeCode.htmlEncode(wps_infos[12].firstChild.nodeValue) + ");\"><#btn_go#></a>"
+        controlDisplayItem();
+        return;
+    }
 	else if (reject_wps(wps_infos[11].firstChild.nodeValue, wep)){ // Second filter the authentication method
 		document.getElementById("wps_enable_hint").innerHTML = "<#WPS_weptkip_hint#><br><#wsc_mode_hint1#> <a style='color:#FC0; text-decoration: underline; font-family:Lucida Console;cursor:pointer;' onclick=\"_change_wl_unit_status(" + htmlEnDeCode.htmlEncode(wps_infos[12].firstChild.nodeValue) + ");\"><#menu5_1_1#></a> <#wsc_mode_hint2#>"
 		controlDisplayItem();

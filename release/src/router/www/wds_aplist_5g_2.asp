@@ -1,1 +1,1 @@
-﻿wds_aplist = <% wl_scan_5g_2(); %>;
+﻿wds_aplist = '<% wl_scan_5g_2(); %>';

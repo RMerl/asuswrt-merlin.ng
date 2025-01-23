@@ -87,7 +87,7 @@ function Get_Component_Popup_Profile_Title(_text){
 }
 function Get_Component_Profile_Title(_text){
 	var $title_container = $("<div>").addClass("profile_setting_title");
-	$("<div>").addClass("title").html(htmlEnDeCode.htmlEncode(_text)).appendTo($title_container);;
+	$("<div>").addClass("title").html(htmlEnDeCode.htmlEncode(_text)).appendTo($title_container);
 	return $title_container;
 }
 function Get_Component_Pure_Text(_parm){

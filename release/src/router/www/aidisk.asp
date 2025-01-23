@@ -11,11 +11,10 @@
 <title><#Web_Title#> - <#menu3#></title>
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/help.js"></script>
-<script type="text/javaScript" src="/js/jquery.js"></script>
-<script type="text/javascript" src="/js/asus_eula.js"></script>
 <script>
 <% get_AiDisk_status(); %>
 var account_num;

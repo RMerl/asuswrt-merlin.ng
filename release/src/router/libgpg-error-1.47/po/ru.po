@@ -1,0 +1,2026 @@
+# Russian translation for libgpg-error.
+# Copyright (C) 2021 Free Software Foundation, Inc.
+# This file is distributed under the same license as the original package.
+# Ineiev <ineiev@gnu.org>, 2014, 2015, 2018, 2019, 2020, 2021
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: libgpg-error\n"
+"Report-Msgid-Bugs-To: translations@gnupg.org\n"
+"POT-Creation-Date: 2023-04-06 10:30+0200\n"
+"PO-Revision-Date: 2021-10-12 10:43+0100\n"
+"Last-Translator: Ineiev <ineiev@gnu.org>\n"
+"Language-Team: Russian <gnupg-ru@gnupg.org>\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/err-sources.h:28
+msgid "Unspecified source"
+msgstr "Неуказанный источник"
+
+#: src/err-sources.h:29
+msgid "gcrypt"
+msgstr "gcrypt"
+
+#: src/err-sources.h:30
+msgid "GnuPG"
+msgstr "GnuPG"
+
+#: src/err-sources.h:31
+msgid "GpgSM"
+msgstr "GpgSM"
+
+#: src/err-sources.h:32
+msgid "GPG Agent"
+msgstr "Агент GPG"
+
+#: src/err-sources.h:33
+msgid "Pinentry"
+msgstr "Программа ввода пароля"
+
+#: src/err-sources.h:34
+msgid "SCD"
+msgstr "SCD"
+
+#: src/err-sources.h:35
+msgid "GPGME"
+msgstr "GPGME"
+
+#: src/err-sources.h:36
+msgid "Keybox"
+msgstr "Щит для ключей"
+
+#: src/err-sources.h:37
+msgid "KSBA"
+msgstr "KSBA"
+
+#: src/err-sources.h:38
+msgid "Dirmngr"
+msgstr "Dirmngr"
+
+#: src/err-sources.h:39
+msgid "GSTI"
+msgstr "GSTI"
+
+#: src/err-sources.h:40
+msgid "GPA"
+msgstr "GPA"
+
+#: src/err-sources.h:41
+msgid "Kleopatra"
+msgstr "Kleopatra"
+
+#: src/err-sources.h:42
+msgid "G13"
+msgstr "G13"
+
+#: src/err-sources.h:43
+msgid "Assuan"
+msgstr "Assuan"
+
+#: src/err-sources.h:44
+msgid "TPM2d"
+msgstr ""
+
+#: src/err-sources.h:45
+msgid "TLS"
+msgstr "TLS"
+
+#: src/err-sources.h:46
+msgid "TKD"
+msgstr ""
+
+#: src/err-sources.h:47
+msgid "Any source"
+msgstr "Любой источник"
+
+#: src/err-sources.h:48
+msgid "User defined source 1"
+msgstr "Пользовательский источник 1"
+
+#: src/err-sources.h:49
+msgid "User defined source 2"
+msgstr "Пользовательский источник 2"
+
+#: src/err-sources.h:50
+msgid "User defined source 3"
+msgstr "Пользовательский источник 3"
+
+#: src/err-sources.h:51
+msgid "User defined source 4"
+msgstr "Пользовательский источник 4"
+
+#: src/err-sources.h:52
+msgid "Unknown source"
+msgstr "Неизвестный источник"
+
+#: src/err-codes.h:28
+msgid "Success"
+msgstr "Успешное завершение"
+
+#: src/err-codes.h:29
+msgid "General error"
+msgstr "Общая ошибка"
+
+#: src/err-codes.h:30
+msgid "Unknown packet"
+msgstr "Неизвестный пакет"
+
+#: src/err-codes.h:31
+msgid "Unknown version in packet"
+msgstr "Неизвестная версия в пакете"
+
+#: src/err-codes.h:32
+msgid "Invalid public key algorithm"
+msgstr "Недопустимый алгоритм шифрования с открытым ключом"
+
+#: src/err-codes.h:33
+msgid "Invalid digest algorithm"
+msgstr "Недопустимая хеш-функция"
+
+#: src/err-codes.h:34
+msgid "Bad public key"
+msgstr "Плохой открытый ключ"
+
+#: src/err-codes.h:35
+msgid "Bad secret key"
+msgstr "Плохой секретный ключ"
+
+#: src/err-codes.h:36
+msgid "Bad signature"
+msgstr "Плохая подпись"
+
+#: src/err-codes.h:37
+msgid "No public key"
+msgstr "Нет открытого ключа"
+
+#: src/err-codes.h:38
+msgid "Checksum error"
+msgstr "Ошибка контрольной суммы"
+
+#: src/err-codes.h:39
+msgid "Bad passphrase"
+msgstr "Плохая фраза-пароль"
+
+#: src/err-codes.h:40
+msgid "Invalid cipher algorithm"
+msgstr "Недопустимый алгоритм симметричного шифрования"
+
+#: src/err-codes.h:41
+msgid "Cannot open keyring"
+msgstr "Таблица ключей не открывается"
+
+#: src/err-codes.h:42
+msgid "Invalid packet"
+msgstr "Недопустимый пакет"
+
+#: src/err-codes.h:43
+msgid "Invalid armor"
+msgstr "Недопустимая текстовая оболочка"
+
+#: src/err-codes.h:44
+msgid "No user ID"
+msgstr "Нет идентификатора пользователя"
+
+#: src/err-codes.h:45
+msgid "No secret key"
+msgstr "Нет секретного ключа"
+
+#: src/err-codes.h:46
+msgid "Wrong secret key used"
+msgstr "Использован неверный секретный ключ"
+
+#: src/err-codes.h:47
+msgid "Bad session key"
+msgstr "Плохой сеансовый ключ"
+
+#: src/err-codes.h:48
+msgid "Unknown compression algorithm"
+msgstr "Неизвестный алгоритм сжатия"
+
+#: src/err-codes.h:49
+msgid "Number is not prime"
+msgstr "Число не простое"
+
+#: src/err-codes.h:50
+msgid "Invalid encoding method"
+msgstr "Недопустимый метод кодирования"
+
+#: src/err-codes.h:51
+msgid "Invalid encryption scheme"
+msgstr "Недопустимая схема шифрования"
+
+#: src/err-codes.h:52
+msgid "Invalid signature scheme"
+msgstr "Недопустимая схема подписи"
+
+#: src/err-codes.h:53
+msgid "Invalid attribute"
+msgstr "Недопустимый атрибут"
+
+#: src/err-codes.h:54
+msgid "No value"
+msgstr "Нет значения"
+
+#: src/err-codes.h:55
+msgid "Not found"
+msgstr "Не найдено"
+
+#: src/err-codes.h:56
+msgid "Value not found"
+msgstr "Значение не найдено"
+
+#: src/err-codes.h:57
+msgid "Syntax error"
+msgstr "Синтаксическая ошибка"
+
+#: src/err-codes.h:58
+msgid "Bad MPI value"
+msgstr "Плохое значение MPI"
+
+#: src/err-codes.h:59
+msgid "Invalid passphrase"
+msgstr "Неверная фраза-пароль"
+
+#: src/err-codes.h:60
+msgid "Invalid signature class"
+msgstr "Недопустимый класс подписи"
+
+#: src/err-codes.h:61
+msgid "Resources exhausted"
+msgstr "Нехватка ресурсов"
+
+#: src/err-codes.h:62
+msgid "Invalid keyring"
+msgstr "Неверная таблица ключей"
+
+#: src/err-codes.h:63
+msgid "Trust DB error"
+msgstr "Ошибка таблицы доверия"
+
+#: src/err-codes.h:64
+msgid "Bad certificate"
+msgstr "Плохой сертификат"
+
+#: src/err-codes.h:65
+msgid "Invalid user ID"
+msgstr "Недопустимый идентификатор пользователя"
+
+#: src/err-codes.h:66
+msgid "Unexpected error"
+msgstr "Неожиданная ошибка"
+
+#: src/err-codes.h:67
+msgid "Time conflict"
+msgstr "Противоречие времен"
+
+#: src/err-codes.h:68
+msgid "Keyserver error"
+msgstr "Ошибка сервера ключей"
+
+#: src/err-codes.h:69
+msgid "Wrong public key algorithm"
+msgstr "Неверный алгоритм шифрования с открытым ключом"
+
+#: src/err-codes.h:70
+msgid "Tribute to D. A."
+msgstr "Благодаря D. A."
+
+#: src/err-codes.h:71
+msgid "Weak encryption key"
+msgstr "Слабый ключ шифрования"
+
+#: src/err-codes.h:72
+msgid "Invalid key length"
+msgstr "Недопустимая длина ключа"
+
+#: src/err-codes.h:73
+msgid "Invalid argument"
+msgstr "Недопустимый аргумент"
+
+#: src/err-codes.h:74
+msgid "Syntax error in URI"
+msgstr "Синтаксическая ошибка в URI"
+
+#: src/err-codes.h:75
+msgid "Invalid URI"
+msgstr "Недопустимый URI"
+
+#: src/err-codes.h:76
+msgid "Network error"
+msgstr "Ошибка сети"
+
+#: src/err-codes.h:77
+msgid "Unknown host"
+msgstr "Неизвестный хост"
+
+#: src/err-codes.h:78
+msgid "Selftest failed"
+msgstr "Сбой при самопроверке"
+
+#: src/err-codes.h:79
+msgid "Data not encrypted"
+msgstr "Данные не зашифрованы"
+
+#: src/err-codes.h:80
+msgid "Data not processed"
+msgstr "Данные не обработаны"
+
+#: src/err-codes.h:81
+msgid "Unusable public key"
+msgstr "Непригодный открытый ключ"
+
+#: src/err-codes.h:82
+msgid "Unusable secret key"
+msgstr "Непригодный секретный ключ"
+
+#: src/err-codes.h:83
+msgid "Invalid value"
+msgstr "Недопустимое значение"
+
+#: src/err-codes.h:84
+msgid "Bad certificate chain"
+msgstr "Плохая цепь сертификатов"
+
+#: src/err-codes.h:85
+msgid "Missing certificate"
+msgstr "Не хватает сертификата"
+
+#: src/err-codes.h:86
+msgid "No data"
+msgstr "Нет данных"
+
+#: src/err-codes.h:87
+msgid "Bug"
+msgstr "Ошибка в программе"
+
+#: src/err-codes.h:88
+msgid "Not supported"
+msgstr "Не поддерживается"
+
+#: src/err-codes.h:89
+msgid "Invalid operation code"
+msgstr "Недопустимый код операции"
+
+#: src/err-codes.h:90
+msgid "Timeout"
+msgstr "Время исчерпано"
+
+#: src/err-codes.h:91
+msgid "Internal error"
+msgstr "Внутренняя ошибка"
+
+#: src/err-codes.h:92
+msgid "EOF (gcrypt)"
+msgstr "Конец файла (gcrypt)"
+
+#: src/err-codes.h:93
+msgid "Invalid object"
+msgstr "Недопустимый объект"
+
+#: src/err-codes.h:94
+msgid "Provided object is too short"
+msgstr "Введенный объект слишком мал"
+
+#: src/err-codes.h:95
+msgid "Provided object is too large"
+msgstr "Введенный объект слишком велик"
+
+#: src/err-codes.h:96
+msgid "Missing item in object"
+msgstr "В объекте недостает элемента"
+
+#: src/err-codes.h:97
+msgid "Not implemented"
+msgstr "Не реализовано"
+
+#: src/err-codes.h:98
+msgid "Conflicting use"
+msgstr "Противоречивое использование"
+
+#: src/err-codes.h:99
+msgid "Invalid cipher mode"
+msgstr "Недопустимый решим шифрования"
+
+#: src/err-codes.h:100
+msgid "Invalid flag"
+msgstr "Недопустимый признак"
+
+#: src/err-codes.h:101
+msgid "Invalid handle"
+msgstr "Недопустимый указатель"
+
+#: src/err-codes.h:102
+msgid "Result truncated"
+msgstr "Результат усечен"
+
+#: src/err-codes.h:103
+msgid "Incomplete line"
+msgstr "Неполная строка"
+
+#: src/err-codes.h:104
+msgid "Invalid response"
+msgstr "Недопустимый ответ"
+
+#: src/err-codes.h:105
+msgid "No agent running"
+msgstr "Агент не работает"
+
+#: src/err-codes.h:106
+msgid "Agent error"
+msgstr "Ошибка агента"
+
+#: src/err-codes.h:107
+msgid "Invalid data"
+msgstr "Недопустимые данные"
+
+#: src/err-codes.h:108
+msgid "Unspecific Assuan server fault"
+msgstr "Неуточненный отказ сервера Assuan"
+
+#: src/err-codes.h:109
+msgid "General Assuan error"
+msgstr "Общая ошибка Assuan"
+
+#: src/err-codes.h:110
+msgid "Invalid session key"
+msgstr "Недопустимый сеансовый ключ"
+
+#: src/err-codes.h:111
+msgid "Invalid S-expression"
+msgstr "Недопустимое S-выражение"
+
+#: src/err-codes.h:112
+msgid "Unsupported algorithm"
+msgstr "Алгоритм не поддерживается"
+
+#: src/err-codes.h:113
+msgid "No pinentry"
+msgstr "Нет программы ввода пароля"
+
+#: src/err-codes.h:114
+msgid "pinentry error"
+msgstr "ошибка при вводе пароля"
+
+#: src/err-codes.h:115
+msgid "Bad PIN"
+msgstr "Плохой пароль"
+
+#: src/err-codes.h:116
+msgid "Invalid name"
+msgstr "Недопустимое имя"
+
+#: src/err-codes.h:117
+msgid "Bad data"
+msgstr "Плохие данные"
+
+#: src/err-codes.h:118
+msgid "Invalid parameter"
+msgstr "Недопустимый параметр"
+
+#: src/err-codes.h:119
+msgid "Wrong card"
+msgstr "Неверная карта"
+
+#: src/err-codes.h:120
+msgid "No dirmngr"
+msgstr "Нет dirmngr"
+
+#: src/err-codes.h:121
+msgid "dirmngr error"
+msgstr "ошибка dirmngr"
+
+#: src/err-codes.h:122
+msgid "Certificate revoked"
+msgstr "Сертификат отозван"
+
+#: src/err-codes.h:123
+msgid "No CRL known"
+msgstr "Отсутствует список отозванных сертификатов"
+
+#: src/err-codes.h:124
+msgid "CRL too old"
+msgstr "Список отозванных сертификатов слишком стар"
+
+#: src/err-codes.h:125
+msgid "Line too long"
+msgstr "Слишком длинная строка"
+
+#: src/err-codes.h:126
+msgid "Not trusted"
+msgstr "Не доверенный"
+
+#: src/err-codes.h:127
+msgid "Operation cancelled"
+msgstr "Операция отменена"
+
+#: src/err-codes.h:128
+msgid "Bad CA certificate"
+msgstr "Плохой сертификат центра сертификации"
+
+#: src/err-codes.h:129
+msgid "Certificate expired"
+msgstr "Срок действия сертификата истек"
+
+#: src/err-codes.h:130
+msgid "Certificate too young"
+msgstr "Сертификат слишком новый"
+
+#: src/err-codes.h:131
+msgid "Unsupported certificate"
+msgstr "Сертификат не поддерживается"
+
+#: src/err-codes.h:132
+msgid "Unknown S-expression"
+msgstr "Неизвестное S-выражение"
+
+#: src/err-codes.h:133
+msgid "Unsupported protection"
+msgstr "Защита не поддерживается"
+
+#: src/err-codes.h:134
+msgid "Corrupted protection"
+msgstr "Повреждение защиты"
+
+#: src/err-codes.h:135
+msgid "Ambiguous name"
+msgstr "Неоднозначное имя"
+
+#: src/err-codes.h:136
+msgid "Card error"
+msgstr "Ошибка карты"
+
+#: src/err-codes.h:137
+msgid "Card reset required"
+msgstr "Требуется перезапуск карты"
+
+#: src/err-codes.h:138
+msgid "Card removed"
+msgstr "Карта вынута"
+
+#: src/err-codes.h:139
+msgid "Invalid card"
+msgstr "Непригодная карта"
+
+#: src/err-codes.h:140
+msgid "Card not present"
+msgstr "Карта отсутствует"
+
+#: src/err-codes.h:141
+msgid "No PKCS15 application"
+msgstr "Нет приложения PKCS15"
+
+#: src/err-codes.h:142
+msgid "Not confirmed"
+msgstr "Нет подтверждения"
+
+#: src/err-codes.h:143
+msgid "Configuration error"
+msgstr "Ошибка конфигурации"
+
+#: src/err-codes.h:144
+msgid "No policy match"
+msgstr "Нет соответствующего правила"
+
+#: src/err-codes.h:145
+msgid "Invalid index"
+msgstr "Недопустимый индекс"
+
+#: src/err-codes.h:146
+msgid "Invalid ID"
+msgstr "Недопустимый идентификатор"
+
+#: src/err-codes.h:147
+msgid "No SmartCard daemon"
+msgstr "Нет демона криптографических карт"
+
+#: src/err-codes.h:148
+msgid "SmartCard daemon error"
+msgstr "Ошибка демона криптографических карт"
+
+#: src/err-codes.h:149
+msgid "Unsupported protocol"
+msgstr "Протокол не поддерживается"
+
+#: src/err-codes.h:150
+msgid "Bad PIN method"
+msgstr "Плохой метод PIN"
+
+#: src/err-codes.h:151
+msgid "Card not initialized"
+msgstr "Карта не инициализирована"
+
+#: src/err-codes.h:152
+msgid "Unsupported operation"
+msgstr "Операция не поддерживается"
+
+#: src/err-codes.h:153
+msgid "Wrong key usage"
+msgstr "Неверное применение ключей"
+
+#: src/err-codes.h:154
+msgid "Nothing found"
+msgstr "Ничего не найдено"
+
+#: src/err-codes.h:155
+msgid "Wrong blob type"
+msgstr "Данные неподходящего типа"
+
+#: src/err-codes.h:156
+msgid "Missing value"
+msgstr "Не хватает значения"
+
+#: src/err-codes.h:157
+msgid "Hardware problem"
+msgstr "Аппаратная проблема"
+
+#: src/err-codes.h:158
+msgid "PIN blocked"
+msgstr "PIN заблокирован"
+
+#: src/err-codes.h:159
+msgid "Conditions of use not satisfied"
+msgstr "Нарушены условия пользования"
+
+#: src/err-codes.h:160
+msgid "PINs are not synced"
+msgstr "Разные PIN не синхронизированы"
+
+#: src/err-codes.h:161
+msgid "Invalid CRL"
+msgstr "Недопустимый список отозванных сертификатов"
+
+#: src/err-codes.h:162
+msgid "BER error"
+msgstr "Ошибка BER"
+
+#: src/err-codes.h:163
+msgid "Invalid BER"
+msgstr "Недопустимый BER"
+
+#: src/err-codes.h:164
+msgid "Element not found"
+msgstr "Элемент не найден"
+
+#: src/err-codes.h:165
+msgid "Identifier not found"
+msgstr "Идентификатор не найден"
+
+#: src/err-codes.h:166
+msgid "Invalid tag"
+msgstr "Недопустимый тег"
+
+#: src/err-codes.h:167
+msgid "Invalid length"
+msgstr "Недопустимая длина"
+
+#: src/err-codes.h:168
+msgid "Invalid key info"
+msgstr "Недопустимая информация ключа"
+
+#: src/err-codes.h:169
+msgid "Unexpected tag"
+msgstr "Неожиданный тег"
+
+#: src/err-codes.h:170
+msgid "Not DER encoded"
+msgstr "Не закодировано по DER"
+
+#: src/err-codes.h:171
+msgid "No CMS object"
+msgstr "Нет объекта CMS"
+
+#: src/err-codes.h:172
+msgid "Invalid CMS object"
+msgstr "Недопустимый объект CMS"
+
+#: src/err-codes.h:173
+msgid "Unknown CMS object"
+msgstr "Неизвестный объект CMS"
+
+#: src/err-codes.h:174
+msgid "Unsupported CMS object"
+msgstr "Объект CMS не поддерживается"
+
+#: src/err-codes.h:175
+msgid "Unsupported encoding"
+msgstr "Кодировка не поддерживается"
+
+#: src/err-codes.h:176
+msgid "Unsupported CMS version"
+msgstr "Версия CMS не поддерживается"
+
+#: src/err-codes.h:177
+msgid "Unknown algorithm"
+msgstr "Неизвестный алгоритм"
+
+#: src/err-codes.h:178
+msgid "Invalid crypto engine"
+msgstr "Недопустимый криптомеханизм"
+
+#: src/err-codes.h:179
+msgid "Public key not trusted"
+msgstr "Открытый ключ не доверенный"
+
+#: src/err-codes.h:180
+msgid "Decryption failed"
+msgstr "Сбой расшифрования"
+
+#: src/err-codes.h:181
+msgid "Key expired"
+msgstr "Срок действия ключа истек"
+
+#: src/err-codes.h:182
+msgid "Signature expired"
+msgstr "Срок действия подписи истек"
+
+#: src/err-codes.h:183
+msgid "Encoding problem"
+msgstr "Проблема с кодировкой"
+
+#: src/err-codes.h:184
+msgid "Invalid state"
+msgstr "Недопустимое состояние"
+
+#: src/err-codes.h:185
+msgid "Duplicated value"
+msgstr "Величина продублирована"
+
+#: src/err-codes.h:186
+msgid "Missing action"
+msgstr "Не хватает действия"
+
+#: src/err-codes.h:187
+msgid "ASN.1 module not found"
+msgstr "Модуль ASN.1 не найден"
+
+#: src/err-codes.h:188
+msgid "Invalid OID string"
+msgstr "Недопустимая строка OID"
+
+#: src/err-codes.h:189
+msgid "Invalid time"
+msgstr "Недопустимое время"
+
+#: src/err-codes.h:190
+msgid "Invalid CRL object"
+msgstr "Недопустимый объект списка отозванных сертификатов"
+
+#: src/err-codes.h:191
+msgid "Unsupported CRL version"
+msgstr "Версия списка отозванных сертификатов не поддерживается"
+
+#: src/err-codes.h:192
+msgid "Invalid certificate object"
+msgstr "Недопустимый объект сертификата"
+
+#: src/err-codes.h:193
+msgid "Unknown name"
+msgstr "Неизвестное имя"
+
+#: src/err-codes.h:194
+msgid "A locale function failed"
+msgstr "Сбой функции локализации"
+
+#: src/err-codes.h:195
+msgid "Not locked"
+msgstr "Нет блокировки"
+
+#: src/err-codes.h:196
+msgid "Protocol violation"
+msgstr "Нарушение протокола"
+
+#: src/err-codes.h:197
+msgid "Invalid MAC"
+msgstr "Недопустимый MAC"
+
+#: src/err-codes.h:198
+msgid "Invalid request"
+msgstr "Недопустимый запрос"
+
+#: src/err-codes.h:199
+msgid "Unknown extension"
+msgstr "Неизвестное расширение"
+
+#: src/err-codes.h:200
+msgid "Unknown critical extension"
+msgstr "Неизвестное критическое расширение"
+
+#: src/err-codes.h:201
+msgid "Locked"
+msgstr "Заблокировано"
+
+#: src/err-codes.h:202
+msgid "Unknown option"
+msgstr "Неизвестный параметр"
+
+#: src/err-codes.h:203
+msgid "Unknown command"
+msgstr "Неизвестная команда"
+
+#: src/err-codes.h:204
+msgid "Not operational"
+msgstr "Не работоспособно"
+
+#: src/err-codes.h:205
+msgid "No passphrase given"
+msgstr "Фраза-пароль не задана"
+
+#: src/err-codes.h:206
+msgid "No PIN given"
+msgstr "PIN не задан"
+
+#: src/err-codes.h:207
+msgid "Not enabled"
+msgstr "Отключено"
+
+#: src/err-codes.h:208
+msgid "No crypto engine"
+msgstr "Нет криптомеханизма"
+
+#: src/err-codes.h:209
+msgid "Missing key"
+msgstr "Не хватает ключа"
+
+#: src/err-codes.h:210
+msgid "Too many objects"
+msgstr "Слишком много объектов"
+
+#: src/err-codes.h:211
+msgid "Limit reached"
+msgstr "Достигнут предел"
+
+#: src/err-codes.h:212
+msgid "Not initialized"
+msgstr "Не инициализировано"
+
+#: src/err-codes.h:213
+msgid "Missing issuer certificate"
+msgstr "Не хватает сертификата издателя"
+
+#: src/err-codes.h:214
+msgid "No keyserver available"
+msgstr "Серверы ключей недоступны"
+
+#: src/err-codes.h:215
+msgid "Invalid elliptic curve"
+msgstr "Недопустимая эллиптическая кривая"
+
+#: src/err-codes.h:216
+msgid "Unknown elliptic curve"
+msgstr "Неизвестная эллиптическая кривая"
+
+#: src/err-codes.h:217
+msgid "Duplicated key"
+msgstr "Ключ продублирован"
+
+#: src/err-codes.h:218
+msgid "Ambiguous result"
+msgstr "Неоднозначный результат"
+
+#: src/err-codes.h:219
+msgid "No crypto context"
+msgstr "Нет криптоконтекста"
+
+#: src/err-codes.h:220
+msgid "Wrong crypto context"
+msgstr "Неверный криптоконтекст"
+
+#: src/err-codes.h:221
+msgid "Bad crypto context"
+msgstr "Плохой криптоконтекст"
+
+#: src/err-codes.h:222
+msgid "Conflict in the crypto context"
+msgstr "Противоречивый криптоконтекст"
+
+#: src/err-codes.h:223
+msgid "Broken public key"
+msgstr "Открытый ключ поврежден"
+
+#: src/err-codes.h:224
+msgid "Broken secret key"
+msgstr "Секретный ключ поврежден"
+
+#: src/err-codes.h:225
+msgid "Invalid MAC algorithm"
+msgstr "Недопустимый алгоритм MAC"
+
+#: src/err-codes.h:226
+msgid "Operation fully cancelled"
+msgstr "Операция полностью отменена"
+
+#: src/err-codes.h:227
+msgid "Operation not yet finished"
+msgstr "Операция еще не завершена"
+
+#: src/err-codes.h:228
+msgid "Buffer too short"
+msgstr "Слишком короткий буфер"
+
+#: src/err-codes.h:229
+msgid "Invalid length specifier in S-expression"
+msgstr "Недопустимый спецификатор длины в S-выражении"
+
+#: src/err-codes.h:230
+msgid "String too long in S-expression"
+msgstr "Слишком длинная строка в S-выражении"
+
+#: src/err-codes.h:231
+msgid "Unmatched parentheses in S-expression"
+msgstr "Непарные скобки в S-выражении"
+
+#: src/err-codes.h:232
+msgid "S-expression not canonical"
+msgstr "S-выражение неканонично"
+
+#: src/err-codes.h:233
+msgid "Bad character in S-expression"
+msgstr "Плохой символ в S-выражении"
+
+#: src/err-codes.h:234
+msgid "Bad quotation in S-expression"
+msgstr "Плохие кавычки в S-выражении"
+
+#: src/err-codes.h:235
+msgid "Zero prefix in S-expression"
+msgstr "Нулевой префикс в S-выражении"
+
+#: src/err-codes.h:236
+msgid "Nested display hints in S-expression"
+msgstr "Вложенные квадратные скобки в S-выражении"
+
+#: src/err-codes.h:237
+msgid "Unmatched display hints"
+msgstr "Непарные квадратные скобки"
+
+#: src/err-codes.h:238
+msgid "Unexpected reserved punctuation in S-expression"
+msgstr "Неожиданная зарезервированная пунктуация в S-выражении"
+
+#: src/err-codes.h:239
+msgid "Bad hexadecimal character in S-expression"
+msgstr "Плохой шестнадцатеричный символ в S-выражении"
+
+#: src/err-codes.h:240
+msgid "Odd hexadecimal numbers in S-expression"
+msgstr "Нечетные шестнадцатеричные числа в S-выражении"
+
+#: src/err-codes.h:241
+msgid "Bad octal character in S-expression"
+msgstr "Плохой восьмеричный символ в S-выражении"
+
+#: src/err-codes.h:242
+msgid "All subkeys are expired or revoked"
+msgstr "Все подключи просрочены или отозваны"
+
+#: src/err-codes.h:243
+msgid "Database is corrupted"
+msgstr "База данных повреждена"
+
+#: src/err-codes.h:244
+msgid "Server indicated a failure"
+msgstr "Сервер указал на сбой"
+
+#: src/err-codes.h:245
+msgid "No name"
+msgstr "Нет имени"
+
+#: src/err-codes.h:246
+msgid "No key"
+msgstr "Нет ключа"
+
+#: src/err-codes.h:247
+msgid "Legacy key"
+msgstr "Старый ключ"
+
+#: src/err-codes.h:248
+msgid "Request too short"
+msgstr "Слишком короткий запрос"
+
+#: src/err-codes.h:249
+msgid "Request too long"
+msgstr "Слишком длинный запрос"
+
+#: src/err-codes.h:250
+msgid "Object is in termination state"
+msgstr "Объект в стадии завершения"
+
+#: src/err-codes.h:251
+msgid "No certificate chain"
+msgstr "Нет цепи сертификатов"
+
+#: src/err-codes.h:252
+msgid "Certificate is too large"
+msgstr "Сертификат слишком велик"
+
+#: src/err-codes.h:253
+msgid "Invalid record"
+msgstr "Недопустимая запись"
+
+#: src/err-codes.h:254
+msgid "The MAC does not verify"
+msgstr "MAC не проходит проверку"
+
+#: src/err-codes.h:255
+msgid "Unexpected message"
+msgstr "Неожиданное сообщение"
+
+#: src/err-codes.h:256
+msgid "Compression or decompression failed"
+msgstr "Сбой сжатия или извлечения"
+
+#: src/err-codes.h:257
+msgid "A counter would wrap"
+msgstr "Было бы переполнение счетчика"
+
+#: src/err-codes.h:258
+msgid "Fatal alert message received"
+msgstr "Получено критическое предупреждение"
+
+#: src/err-codes.h:259
+msgid "No cipher algorithm"
+msgstr "Нет алгоритма симметричного шифрования"
+
+#: src/err-codes.h:260
+msgid "Missing client certificate"
+msgstr "Не хватает сертификата клиента"
+
+#: src/err-codes.h:261
+msgid "Close notification received"
+msgstr "Получено уведомление о завершении"
+
+#: src/err-codes.h:262
+msgid "Ticket expired"
+msgstr "Срок действия квитанции истек"
+
+#: src/err-codes.h:263
+msgid "Bad ticket"
+msgstr "Плохая квитанция"
+
+#: src/err-codes.h:264
+msgid "Unknown identity"
+msgstr "Личность неизвестна"
+
+#: src/err-codes.h:265
+msgid "Bad certificate message in handshake"
+msgstr "Плохое сертификатное сообщение при установлении связи"
+
+#: src/err-codes.h:266
+msgid "Bad certificate request message in handshake"
+msgstr "Плохое сообщение запроса сертификата при установлении связи"
+
+#: src/err-codes.h:267
+msgid "Bad certificate verify message in handshake"
+msgstr "Плохое сообщение проверки сертификата при установлении связи"
+
+#: src/err-codes.h:268
+msgid "Bad change cipher message in handshake"
+msgstr "Плохое сообщение смены шифра при установлении связи"
+
+#: src/err-codes.h:269
+msgid "Bad client hello message in handshake"
+msgstr "Плохое начальное сообщение клиента при установлении связи"
+
+#: src/err-codes.h:270
+msgid "Bad server hello message in handshake"
+msgstr "Плохое начальное сообщение сервера при установлении связи"
+
+#: src/err-codes.h:271
+msgid "Bad server hello done message in handshake"
+msgstr "Плохая квитанция сервера на начальное сообщение при установлении связи"
+
+#: src/err-codes.h:272
+msgid "Bad finished message in handshake"
+msgstr "Плохое завершающее сообщение при установлении связи"
+
+#: src/err-codes.h:273
+msgid "Bad server key exchange message in handshake"
+msgstr "Плохое сообщение обмена ключами сервера при установлении связи"
+
+#: src/err-codes.h:274
+msgid "Bad client key exchange message in handshake"
+msgstr "Плохое сообщение обмена ключами клиента при установлении связи"
+
+#: src/err-codes.h:275
+msgid "Bogus string"
+msgstr "Несуразная строка"
+
+#: src/err-codes.h:276
+msgid "Forbidden"
+msgstr "Запрещено"
+
+#: src/err-codes.h:277
+msgid "Key disabled"
+msgstr "Ключ отключен"
+
+#: src/err-codes.h:278
+msgid "Not possible with a card based key"
+msgstr "Невозможно для ключа на карте"
+
+#: src/err-codes.h:279
+msgid "Invalid lock object"
+msgstr "Недопустимый объект блокировки"
+
+#: src/err-codes.h:280
+msgid "True"
+msgstr "Истина"
+
+#: src/err-codes.h:281
+msgid "False"
+msgstr "Ложь"
+
+#: src/err-codes.h:282
+msgid "General IPC error"
+msgstr "Общая ошибка IPC"
+
+#: src/err-codes.h:283
+msgid "IPC accept call failed"
+msgstr "Сбой принятия вызова IPC"
+
+#: src/err-codes.h:284
+msgid "IPC connect call failed"
+msgstr "Сбой вызова соединения IPC"
+
+#: src/err-codes.h:285
+msgid "Invalid IPC response"
+msgstr "Недопустимый ответ IPC"
+
+#: src/err-codes.h:286
+msgid "Invalid value passed to IPC"
+msgstr "В IPC передано недопустимое значение"
+
+#: src/err-codes.h:287
+msgid "Incomplete line passed to IPC"
+msgstr "В IPC передана неполная строка"
+
+#: src/err-codes.h:288
+msgid "Line passed to IPC too long"
+msgstr "В IPC передана слишком длинная строка"
+
+#: src/err-codes.h:289
+msgid "Nested IPC commands"
+msgstr "Вложенные команды IPC"
+
+#: src/err-codes.h:290
+msgid "No data callback in IPC"
+msgstr "В IPC нет функции обработки данных"
+
+#: src/err-codes.h:291
+msgid "No inquire callback in IPC"
+msgstr "В IPC нет функции обработки запроса"
+
+#: src/err-codes.h:292
+msgid "Not an IPC server"
+msgstr "Не сервер IPC"
+
+#: src/err-codes.h:293
+msgid "Not an IPC client"
+msgstr "Не клиент IPC"
+
+#: src/err-codes.h:294
+msgid "Problem starting IPC server"
+msgstr "Проблема запуска сервера IPC"
+
+#: src/err-codes.h:295
+msgid "IPC read error"
+msgstr "Ошибка чтения IPC"
+
+#: src/err-codes.h:296
+msgid "IPC write error"
+msgstr "Ошибка записи IPC"
+
+#: src/err-codes.h:297
+msgid "Too much data for IPC layer"
+msgstr "Слишком много данных для уровня IPC"
+
+#: src/err-codes.h:298
+msgid "Unexpected IPC command"
+msgstr "Неожиданная команда IPC"
+
+#: src/err-codes.h:299
+msgid "Unknown IPC command"
+msgstr "Неизвестная команда IPC"
+
+#: src/err-codes.h:300
+msgid "IPC syntax error"
+msgstr "Синтаксическая ошибка IPC"
+
+#: src/err-codes.h:301
+msgid "IPC call has been cancelled"
+msgstr "Вызов IPC отменен"
+
+#: src/err-codes.h:302
+msgid "No input source for IPC"
+msgstr "Нет источника входа для IPC"
+
+#: src/err-codes.h:303
+msgid "No output source for IPC"
+msgstr "Нет источника выхода для IPC"
+
+#: src/err-codes.h:304
+msgid "IPC parameter error"
+msgstr "Ошибка в параметре IPC"
+
+#: src/err-codes.h:305
+msgid "Unknown IPC inquire"
+msgstr "Неизвестный запрос IPC"
+
+#: src/err-codes.h:306
+msgid "Crypto engine too old"
+msgstr "Криптомеханизм слишком стар"
+
+#: src/err-codes.h:307
+msgid "Screen or window too small"
+msgstr "Экран или окно слишком мало"
+
+#: src/err-codes.h:308
+msgid "Screen or window too large"
+msgstr "Экран или окно слишком велико"
+
+#: src/err-codes.h:309
+msgid "Required environment variable not set"
+msgstr "Требуемая переменная среды не установлена"
+
+#: src/err-codes.h:310
+msgid "User ID already exists"
+msgstr "Идентификатор пользователя уже существует"
+
+#: src/err-codes.h:311
+msgid "Name already exists"
+msgstr "Имя уже существует"
+
+#: src/err-codes.h:312
+msgid "Duplicated name"
+msgstr "Имя продублировано"
+
+#: src/err-codes.h:313
+msgid "Object is too young"
+msgstr "Объект слишком нов"
+
+#: src/err-codes.h:314
+msgid "Object is too old"
+msgstr "Объект слишком стар"
+
+#: src/err-codes.h:315
+msgid "Unknown flag"
+msgstr "Неизвестный признак"
+
+#: src/err-codes.h:316
+msgid "Invalid execution order"
+msgstr "Недопустимый порядок выполнения"
+
+#: src/err-codes.h:317
+msgid "Already fetched"
+msgstr "Уже доставлено"
+
+#: src/err-codes.h:318
+msgid "Try again later"
+msgstr "Повторите попытку позднее"
+
+#: src/err-codes.h:319
+#, fuzzy
+#| msgid "No name"
+msgid "Wrong name"
+msgstr "Нет имени"
+
+#: src/err-codes.h:320
+#, fuzzy
+#| msgid "Not enabled"
+msgid "Not authenticated"
+msgstr "Отключено"
+
+#: src/err-codes.h:321
+#, fuzzy
+#| msgid "Inappropriate LDAP authentication"
+msgid "Bad authentication"
+msgstr "Неподходящее удостоверение LDAP"
+
+#: src/err-codes.h:322
+#, fuzzy
+#| msgid "No agent running"
+msgid "No Keybox daemon running"
+msgstr "Агент не работает"
+
+#: src/err-codes.h:323
+#, fuzzy
+#| msgid "SmartCard daemon error"
+msgid "Keybox daemon error"
+msgstr "Ошибка демона криптографических карт"
+
+#: src/err-codes.h:324
+msgid "Service is not running"
+msgstr ""
+
+#: src/err-codes.h:325
+#, fuzzy
+#| msgid "Keyserver error"
+msgid "Service error"
+msgstr "Ошибка сервера ключей"
+
+#: src/err-codes.h:326
+#, fuzzy
+#| msgid "Bad PIN"
+msgid "Bad PUK"
+msgstr "Плохой пароль"
+
+#: src/err-codes.h:327
+msgid "No reset code"
+msgstr ""
+
+#: src/err-codes.h:328
+#, fuzzy
+#| msgid "Bad secret key"
+msgid "Bad reset code"
+msgstr "Плохой секретный ключ"
+
+#: src/err-codes.h:329
+msgid "System bug detected"
+msgstr "Обнаружена ошибка в системе"
+
+#: src/err-codes.h:330
+msgid "Unknown DNS error"
+msgstr "Неизвестная ошибка DNS"
+
+#: src/err-codes.h:331
+msgid "Invalid DNS section"
+msgstr "Недопустимый раздел DNS"
+
+#: src/err-codes.h:332
+msgid "Invalid textual address form"
+msgstr "Недопустимая текстуальная форма адреса"
+
+#: src/err-codes.h:333
+msgid "Missing DNS query packet"
+msgstr "Не хватает пакета запроса DNS"
+
+#: src/err-codes.h:334
+msgid "Missing DNS answer packet"
+msgstr "Не хватает ответного пакета DNS"
+
+#: src/err-codes.h:335
+msgid "Connection closed in DNS"
+msgstr "В DNS прервано соединение"
+
+#: src/err-codes.h:336
+msgid "Verification failed in DNS"
+msgstr "Сбой проверки в DNS"
+
+#: src/err-codes.h:337
+msgid "DNS Timeout"
+msgstr "Лимит времени DNS"
+
+#: src/err-codes.h:338
+msgid "General LDAP error"
+msgstr "Общая ошибка LDAP"
+
+#: src/err-codes.h:339
+msgid "General LDAP attribute error"
+msgstr "Общая ошибка в атрибуте LDAP"
+
+#: src/err-codes.h:340
+msgid "General LDAP name error"
+msgstr "Общая ошибка в имени LDAP"
+
+#: src/err-codes.h:341
+msgid "General LDAP security error"
+msgstr "Общая ошибка безопасности LDAP"
+
+#: src/err-codes.h:342
+msgid "General LDAP service error"
+msgstr "Общая ошибка службы LDAP"
+
+#: src/err-codes.h:343
+msgid "General LDAP update error"
+msgstr "Общая ошибка обновления LDAP"
+
+#: src/err-codes.h:344
+msgid "Experimental LDAP error code"
+msgstr "Экспериментальный код ошибки LDAP"
+
+#: src/err-codes.h:345
+msgid "Private LDAP error code"
+msgstr "Внутренний код ошибки LDAP"
+
+#: src/err-codes.h:346
+msgid "Other general LDAP error"
+msgstr "Другая общая ошибка LDAP"
+
+#: src/err-codes.h:347
+msgid "LDAP connecting failed (X)"
+msgstr "Отказ соединения LDAP (X)"
+
+#: src/err-codes.h:348
+msgid "LDAP referral limit exceeded"
+msgstr "Слишком много ссылок LDAP"
+
+#: src/err-codes.h:349
+msgid "LDAP client loop"
+msgstr "Цикл клиента LDAP"
+
+#: src/err-codes.h:350
+msgid "No LDAP results returned"
+msgstr "Нет результатов LDAP"
+
+#: src/err-codes.h:351
+msgid "LDAP control not found"
+msgstr "Элемент управления LDAP не найден"
+
+#: src/err-codes.h:352
+msgid "Not supported by LDAP"
+msgstr "Не поддерживается функцией LDAP"
+
+#: src/err-codes.h:353
+msgid "LDAP connect error"
+msgstr "Ошибка соединения LDAP"
+
+#: src/err-codes.h:354
+msgid "Out of memory in LDAP"
+msgstr "Исчерпана память в LDAP"
+
+#: src/err-codes.h:355
+msgid "Bad parameter to an LDAP routine"
+msgstr "Неверный параметр процедуры LDAP"
+
+#: src/err-codes.h:356
+msgid "User cancelled LDAP operation"
+msgstr "Пользователь отменил операцию LDAP"
+
+#: src/err-codes.h:357
+msgid "Bad LDAP search filter"
+msgstr "Плохой фильтр поиска LDAP"
+
+#: src/err-codes.h:358
+msgid "Unknown LDAP authentication method"
+msgstr "Неизвестный метод удостоверения LDAP"
+
+#: src/err-codes.h:359
+msgid "Timeout in LDAP"
+msgstr "Лимит времени в LDAP"
+
+#: src/err-codes.h:360
+msgid "LDAP decoding error"
+msgstr "Ошибка декодирования LDAP"
+
+#: src/err-codes.h:361
+msgid "LDAP encoding error"
+msgstr "Ошибка кодирования LDAP"
+
+#: src/err-codes.h:362
+msgid "LDAP local error"
+msgstr "Локальная ошибка LDAP"
+
+#: src/err-codes.h:363
+msgid "Cannot contact LDAP server"
+msgstr "Не удалось связаться с сервером LDAP"
+
+#: src/err-codes.h:364
+msgid "LDAP success"
+msgstr "Успешное выполнение LDAP"
+
+#: src/err-codes.h:365
+msgid "LDAP operations error"
+msgstr "Ошибка операций LDAP"
+
+#: src/err-codes.h:366
+msgid "LDAP protocol error"
+msgstr "Ошибка протокола LDAP"
+
+#: src/err-codes.h:367
+msgid "Time limit exceeded in LDAP"
+msgstr "Исчерпан лимит времени в LDAP"
+
+#: src/err-codes.h:368
+msgid "Size limit exceeded in LDAP"
+msgstr "Исчерпан лимит размера в LDAP"
+
+#: src/err-codes.h:369
+msgid "LDAP compare false"
+msgstr "Сравнение LDAP: ложь"
+
+#: src/err-codes.h:370
+msgid "LDAP compare true"
+msgstr "Сравнение LDAP: истина"
+
+#: src/err-codes.h:371
+msgid "LDAP authentication method not supported"
+msgstr "Метод удостоверения LDAP не поддерживается"
+
+#: src/err-codes.h:372
+msgid "Strong(er) LDAP authentication required"
+msgstr "Требуется (более) сильное удостоверение LDAP"
+
+#: src/err-codes.h:373
+msgid "Partial LDAP results+referral received"
+msgstr "Получены частичные результаты LDAP со ссылкой"
+
+#: src/err-codes.h:374
+msgid "LDAP referral"
+msgstr "Ссылка LDAP"
+
+#: src/err-codes.h:375
+msgid "Administrative LDAP limit exceeded"
+msgstr "Исчерпан административный лимит LDAP"
+
+#: src/err-codes.h:376
+msgid "Critical LDAP extension is unavailable"
+msgstr "Недоступно критичное расширение LDAP"
+
+#: src/err-codes.h:377
+msgid "Confidentiality required by LDAP"
+msgstr "Конфиденциальность, требуемая LDAP"
+
+#: src/err-codes.h:378
+msgid "LDAP SASL bind in progress"
+msgstr "Выполняется связка SASL LDAP"
+
+#: src/err-codes.h:379
+msgid "No such LDAP attribute"
+msgstr "Такого атрибута LDAP нет"
+
+#: src/err-codes.h:380
+msgid "Undefined LDAP attribute type"
+msgstr "Неопределенный тип атрибута LDAP"
+
+#: src/err-codes.h:381
+msgid "Inappropriate matching in LDAP"
+msgstr "Неподходящее соответствие в LDAP"
+
+#: src/err-codes.h:382
+msgid "Constraint violation in LDAP"
+msgstr "Нарушение ограничений в LDAP"
+
+#: src/err-codes.h:383
+msgid "LDAP type or value exists"
+msgstr "Тип или значение LDAP существует"
+
+#: src/err-codes.h:384
+msgid "Invalid syntax in LDAP"
+msgstr "Ошибка синтаксиса в LDAP"
+
+#: src/err-codes.h:385
+msgid "No such LDAP object"
+msgstr "Такого объекта LDAP нет"
+
+#: src/err-codes.h:386
+msgid "LDAP alias problem"
+msgstr "Проблема синонима LDAP"
+
+#: src/err-codes.h:387
+msgid "Invalid DN syntax in LDAP"
+msgstr "Ошибка синтаксиса DN в LDAP"
+
+#: src/err-codes.h:388
+msgid "LDAP entry is a leaf"
+msgstr "Элемент LDAP - лист"
+
+#: src/err-codes.h:389
+msgid "LDAP alias dereferencing problem"
+msgstr "Проблема разыменования синонима LDAP"
+
+#: src/err-codes.h:390
+msgid "LDAP proxy authorization failure (X)"
+msgstr "Отказ авторизации промежуточного сервера (X)"
+
+#: src/err-codes.h:391
+msgid "Inappropriate LDAP authentication"
+msgstr "Неподходящее удостоверение LDAP"
+
+#: src/err-codes.h:392
+msgid "Invalid LDAP credentials"
+msgstr "Неверные верительные данные LDAP"
+
+#: src/err-codes.h:393
+msgid "Insufficient access for LDAP"
+msgstr "Недостаточный доступ для LDAP"
+
+#: src/err-codes.h:394
+msgid "LDAP server is busy"
+msgstr "Сервер LDAP занят"
+
+#: src/err-codes.h:395
+msgid "LDAP server is unavailable"
+msgstr "Сервер LDAP недоступен"
+
+#: src/err-codes.h:396
+msgid "LDAP server is unwilling to perform"
+msgstr "Сервер LDAP отказывается работать"
+
+#: src/err-codes.h:397
+msgid "Loop detected by LDAP"
+msgstr "Функцией LDAP обнаружен цикл"
+
+#: src/err-codes.h:398
+msgid "LDAP naming violation"
+msgstr "Нарушение в именах LDAP"
+
+#: src/err-codes.h:399
+msgid "LDAP object class violation"
+msgstr "Нарушение в классе объекта LDAP"
+
+#: src/err-codes.h:400
+msgid "LDAP operation not allowed on non-leaf"
+msgstr "Операция LDAP допустима только для листов"
+
+#: src/err-codes.h:401
+msgid "LDAP operation not allowed on RDN"
+msgstr "Операция LDAP над RDN не разрешена"
+
+#: src/err-codes.h:402
+msgid "Already exists (LDAP)"
+msgstr "Уже есть (LDAP)"
+
+#: src/err-codes.h:403
+msgid "Cannot modify LDAP object class"
+msgstr "Невозможно изменить класс объекта LDAP"
+
+#: src/err-codes.h:404
+msgid "LDAP results too large"
+msgstr "Слишком большой объем результатов LDAP"
+
+#: src/err-codes.h:405
+msgid "LDAP operation affects multiple DSAs"
+msgstr "Операция LDAP влияет на многие DSA"
+
+#: src/err-codes.h:406
+msgid "Virtual LDAP list view error"
+msgstr "Ошибка просмотра виртуального списка LDAP"
+
+#: src/err-codes.h:407
+msgid "Other LDAP error"
+msgstr "Другая ошибка LDAP"
+
+#: src/err-codes.h:408
+msgid "Resources exhausted in LCUP"
+msgstr "Нехватка ресурсов в LCUP"
+
+#: src/err-codes.h:409
+msgid "Security violation in LCUP"
+msgstr "Нарушение безопасности в LCUP"
+
+#: src/err-codes.h:410
+msgid "Invalid data in LCUP"
+msgstr "Недопустимые данные в LCUP"
+
+#: src/err-codes.h:411
+msgid "Unsupported scheme in LCUP"
+msgstr "Схема не поддерживается в LCUP"
+
+#: src/err-codes.h:412
+msgid "Reload required in LCUP"
+msgstr "Требуется перезапуск в LCUP"
+
+#: src/err-codes.h:413
+msgid "LDAP cancelled"
+msgstr "Отбой LDAP"
+
+#: src/err-codes.h:414
+msgid "No LDAP operation to cancel"
+msgstr "Нет операции LDAP для отмены"
+
+#: src/err-codes.h:415
+msgid "Too late to cancel LDAP"
+msgstr "Отменять LDAP слишком поздно"
+
+#: src/err-codes.h:416
+msgid "Cannot cancel LDAP"
+msgstr "Не удается отменить LDAP"
+
+#: src/err-codes.h:417
+msgid "LDAP assertion failed"
+msgstr "Не выполнено условие в LDAP"
+
+#: src/err-codes.h:418
+msgid "Proxied authorization denied by LDAP"
+msgstr "LDAP отказал в опосредованной авторизации"
+
+#: src/err-codes.h:419
+msgid "User defined error code 1"
+msgstr "Пользовательский код ошибки 1"
+
+#: src/err-codes.h:420
+msgid "User defined error code 2"
+msgstr "Пользовательский код ошибки 2"
+
+#: src/err-codes.h:421
+msgid "User defined error code 3"
+msgstr "Пользовательский код ошибки 3"
+
+#: src/err-codes.h:422
+msgid "User defined error code 4"
+msgstr "Пользовательский код ошибки 4"
+
+#: src/err-codes.h:423
+msgid "User defined error code 5"
+msgstr "Пользовательский код ошибки 5"
+
+#: src/err-codes.h:424
+msgid "User defined error code 6"
+msgstr "Пользовательский код ошибки 6"
+
+#: src/err-codes.h:425
+msgid "User defined error code 7"
+msgstr "Пользовательский код ошибки 7"
+
+#: src/err-codes.h:426
+msgid "User defined error code 8"
+msgstr "Пользовательский код ошибки 8"
+
+#: src/err-codes.h:427
+msgid "User defined error code 9"
+msgstr "Пользовательский код ошибки 9"
+
+#: src/err-codes.h:428
+msgid "User defined error code 10"
+msgstr "Пользовательский код ошибки 10"
+
+#: src/err-codes.h:429
+msgid "User defined error code 11"
+msgstr "Пользовательский код ошибки 11"
+
+#: src/err-codes.h:430
+msgid "User defined error code 12"
+msgstr "Пользовательский код ошибки 12"
+
+#: src/err-codes.h:431
+msgid "User defined error code 13"
+msgstr "Пользовательский код ошибки 13"
+
+#: src/err-codes.h:432
+msgid "User defined error code 14"
+msgstr "Пользовательский код ошибки 14"
+
+#: src/err-codes.h:433
+msgid "User defined error code 15"
+msgstr "Пользовательский код ошибки 15"
+
+#: src/err-codes.h:434
+msgid "User defined error code 16"
+msgstr "Пользовательский код ошибки 16"
+
+#: src/err-codes.h:435
+#, fuzzy
+#| msgid "LDAP success"
+msgid "SQL success"
+msgstr "Успешное выполнение LDAP"
+
+#: src/err-codes.h:436
+#, fuzzy
+#| msgid "Syntax error"
+msgid "SQL error"
+msgstr "Синтаксическая ошибка"
+
+#: src/err-codes.h:437
+msgid "Internal logic error in SQL library"
+msgstr ""
+
+#: src/err-codes.h:438
+msgid "Access permission denied (SQL)"
+msgstr ""
+
+#: src/err-codes.h:439
+msgid "SQL abort was requested"
+msgstr ""
+
+#: src/err-codes.h:440
+msgid "SQL database file is locked"
+msgstr ""
+
+#: src/err-codes.h:441
+msgid "An SQL table in the database is locked"
+msgstr ""
+
+#: src/err-codes.h:442
+msgid "SQL library ran out of core"
+msgstr ""
+
+#: src/err-codes.h:443
+msgid "Attempt to write a readonly SQL database"
+msgstr ""
+
+#: src/err-codes.h:444
+msgid "SQL operation terminated by interrupt"
+msgstr ""
+
+#: src/err-codes.h:445
+msgid "I/O error during SQL operation"
+msgstr ""
+
+#: src/err-codes.h:446
+msgid "SQL database disk image is malformed"
+msgstr ""
+
+#: src/err-codes.h:447
+msgid "Unknown opcode in SQL file control"
+msgstr ""
+
+#: src/err-codes.h:448
+msgid "Insertion failed because SQL database is full"
+msgstr ""
+
+#: src/err-codes.h:449
+msgid "Unable to open the SQL database file"
+msgstr ""
+
+#: src/err-codes.h:450
+#, fuzzy
+#| msgid "LDAP protocol error"
+msgid "SQL database lock protocol error"
+msgstr "Ошибка протокола LDAP"
+
+#: src/err-codes.h:451
+msgid "(internal SQL code: empty)"
+msgstr ""
+
+#: src/err-codes.h:452
+msgid "SQL database schema changed"
+msgstr ""
+
+#: src/err-codes.h:453
+msgid "String or blob exceeds size limit (SQL)"
+msgstr ""
+
+#: src/err-codes.h:454
+msgid "SQL abort due to constraint violation"
+msgstr ""
+
+#: src/err-codes.h:455
+msgid "Data type mismatch (SQL)"
+msgstr ""
+
+#: src/err-codes.h:456
+msgid "SQL library used incorrectly"
+msgstr ""
+
+#: src/err-codes.h:457
+msgid "SQL library uses unsupported OS features"
+msgstr ""
+
+#: src/err-codes.h:458
+#, fuzzy
+#| msgid "Proxied authorization denied by LDAP"
+msgid "Authorization denied (SQL)"
+msgstr "LDAP отказал в опосредованной авторизации"
+
+#: src/err-codes.h:459
+msgid "(unused SQL code: format)"
+msgstr ""
+
+#: src/err-codes.h:460
+msgid "SQL bind parameter out of range"
+msgstr ""
+
+#: src/err-codes.h:461
+msgid "File opened that is not an SQL database file"
+msgstr ""
+
+#: src/err-codes.h:462
+msgid "Notifications from SQL logger"
+msgstr ""
+
+#: src/err-codes.h:463
+msgid "Warnings from SQL logger"
+msgstr ""
+
+#: src/err-codes.h:464
+msgid "SQL has another row ready"
+msgstr ""
+
+#: src/err-codes.h:465
+msgid "SQL has finished executing"
+msgstr ""
+
+#: src/err-codes.h:466
+msgid "System error w/o errno"
+msgstr "Системная ошибка без номера"
+
+#: src/err-codes.h:467
+msgid "Unknown system error"
+msgstr "Неизвестная системная ошибка"
+
+#: src/err-codes.h:468
+msgid "End of file"
+msgstr "Конец файла"
+
+#: src/err-codes.h:469
+msgid "Unknown error code"
+msgstr "Неизвестный код ошибки"
+
+#: src/argparse.c:494
+msgid "argument not expected"
+msgstr "неожиданный параметр"
+
+#: src/argparse.c:496
+msgid "read error"
+msgstr "ошибка чтения"
+
+#: src/argparse.c:498
+msgid "keyword too long"
+msgstr "слишком длинное ключевое слово"
+
+#: src/argparse.c:500
+msgid "missing argument"
+msgstr "пропущен аргумент"
+
+#: src/argparse.c:502
+msgid "invalid argument"
+msgstr "недопустимый аргумент"
+
+#: src/argparse.c:504
+msgid "invalid command"
+msgstr "недопустимая команда"
+
+#: src/argparse.c:506
+msgid "invalid alias definition"
+msgstr "недопустимое определение синонима"
+
+#: src/argparse.c:508 src/argparse.c:545
+msgid "permission error"
+msgstr "ошибка допуска"
+
+#: src/argparse.c:510 src/argparse.c:543
+msgid "out of core"
+msgstr "нехватка выделенной памяти"
+
+#: src/argparse.c:514 src/argparse.c:549
+msgid "invalid meta command"
+msgstr "недопустимая метакоманда"
+
+#: src/argparse.c:516 src/argparse.c:551
+msgid "unknown meta command"
+msgstr "неизвестная метакоманда"
+
+#: src/argparse.c:518 src/argparse.c:553
+msgid "unexpected meta command"
+msgstr "неожиданная метакоманда"
+
+#: src/argparse.c:520
+msgid "invalid option"
+msgstr "недопустимый параметр"
+
+#: src/argparse.c:530
+#, c-format
+msgid "missing argument for option \"%.50s\"\n"
+msgstr "не хватает аргумента для параметра \"%.50s\"\n"
+
+#: src/argparse.c:532
+#, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "недопустимый аргумент для параметра \"%.50s\"\n"
+
+#: src/argparse.c:534
+#, c-format
+msgid "option \"%.50s\" does not expect an argument\n"
+msgstr "у параметра \"%.50s\" не должно быть аргумента\n"
+
+#: src/argparse.c:537
+#, c-format
+msgid "invalid command \"%.50s\"\n"
+msgstr "недопустимая команда \"%.50s\"\n"
+
+#: src/argparse.c:539
+#, c-format
+msgid "option \"%.50s\" is ambiguous\n"
+msgstr "параметр \"%.50s\" неоднозначен\n"
+
+#: src/argparse.c:541
+#, c-format
+msgid "command \"%.50s\" is ambiguous\n"
+msgstr "команда \"%.50s\" неоднозначна\n"
+
+#: src/argparse.c:555
+#, c-format
+msgid "invalid option \"%.50s\"\n"
+msgstr "недопустимый параметр \"%.50s\"\n"
+
+#: src/argparse.c:2297 src/argparse.c:2393
+#, c-format
+msgid "Note: no default option file '%s'\n"
+msgstr "Замечание: нет файла параметров по умолчанию '%s'\n"
+
+#: src/argparse.c:2307 src/argparse.c:2400
+#, c-format
+msgid "reading options from '%s'\n"
+msgstr "чтение параметров из '%s'\n"
+
+#: src/argparse.c:2385
+#, c-format
+msgid "option file '%s': %s\n"
+msgstr "файл параметров '%s': %s\n"
+
+#: src/argparse.c:2823
+#, c-format
+msgid "Note: ignoring option \"--%s\" due to global config\n"
+msgstr ""
+"Замечание: параметр \"--%s\" игнорируется согласно глобальной конфигурации\n"
+
+#: src/gpg-error.c:522
+msgid "Please report bugs to <https://bugs.gnupg.org>.\n"
+msgstr "Об ошибках сообщайте по адресу <https://bugs.gnupg.org>.\n"
+
+#: src/gpg-error.c:762
+#, c-format
+msgid "warning: could not recognize %s\n"
+msgstr "внимание: не распознано %s\n"

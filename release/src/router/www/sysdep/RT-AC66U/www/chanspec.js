@@ -8,6 +8,10 @@ else
 var _chanspecs_5g =  JSON.parse('<% chanspecs_5g(); %>');
 var _chanspecs_5g_2 = JSON.parse('<% chanspecs_5g_2(); %>');
 var bw_160_support = (function(){
+	if(is_ID_sku){
+		return false;
+	}
+
 	if(wl_unit == '1'){
 		for(i=0;i<_chanspecs_5g.length;i++){
 			if(_chanspecs_5g[i].indexOf('/160') != -1){
@@ -48,7 +52,11 @@ if(band5g_support){
 
 		return false;
 	})();
-	wl_info['1'].bw_160_support = (function(){
+	wl_info['1'].bw_160_support = (function(){	
+		if(is_ID_sku){
+			return false;
+		}
+
 		var count = 0;
 		for(i=0;i<_chanspecs_5g.length;i++){
 			if(_chanspecs_5g[i].indexOf('/160') != -1){
@@ -105,6 +113,10 @@ if(wl_info.band5g_2_support || isSupport('wifi6e')){
 		return false;
 	})();
 	wl_info['2'].bw_160_support = (function(){
+		if(is_ID_sku){
+			return false;
+		}
+
 		var count = 0;
 		for(i=0;i<_chanspecs_5g_2.length;i++){
 			if(_chanspecs_5g_2[i].indexOf('/160') != -1){
@@ -180,7 +192,15 @@ function wl_chanspec_list_change(){
 					}
 				}else{
 					wl_channel_list_5g = JSON.parse('<% channel_list_5g(); %>');
-				}	
+					if(is_ID_sku){
+						wl_channel_list_5g = wl_channel_list_5g.filter((ch)=>{
+							if( parseInt(ch) < 165
+							   && (parseInt(ch) < 100 || parseInt(ch) > 144)){
+								return ch;
+							}
+						});
+					}				
+				}
 
 				extend_channel = ["<#Auto#>"];		 // for 5GHz, extension channel always displays Auto
 				extend_channel_value = [""];
@@ -442,7 +462,15 @@ function wl_chanspec_list_change(){
 			}		
 		}
 		else if(band == "2"){	// 5 GHz-2 - high band
-			wl_channel_list_5g_2 = JSON.parse('<% channel_list_5g_2(); %>');
+			wl_channel_list_5g_2 = JSON.parse('<% channel_list_5g_2(); %>');			
+			if(is_ID_sku){
+				wl_channel_list_5g_2 = wl_channel_list_5g_2.filter((ch)=>{
+					if( parseInt(ch) < 165
+					   && (parseInt(ch) < 100 || parseInt(ch) > 144)){
+						return ch;
+					}
+				});
+			}
 			if(band6g_support){		// due to GT-AXE11000 does not support
 				if(document.getElementById('psc6g_checkbox').checked){
 					wl_channel_list_5g_2 = ['37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213'];

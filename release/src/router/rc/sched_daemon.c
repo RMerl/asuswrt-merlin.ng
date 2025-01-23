@@ -48,6 +48,10 @@ extern char *__progname;
 	SCHED_DAEMON_DBG_SYSLOG(fmt,##args) \
 } while(0)
 
+#ifndef RTCONFIG_AVOID_TZ_ENV
+static char time_zone_t[32]={0};
+#endif
+
 
 #ifdef USE_TIMERUTIL
 ///////////////////////////////////// task prototype /////////////////////////////////////
@@ -61,6 +65,9 @@ static void task_pc_reward_cleaner(struct timer_entry *timer, void *data);
 #endif
 #ifdef RTCONFIG_TIME_QUOTA
 static void task_pc_time_quota(struct timer_entry *timer, void *data);
+#endif
+#ifndef RTCONFIG_AVOID_TZ_ENV
+static void task_timezone_checking(struct timer_entry *timer, void *data);
 #endif
 ///////////////////////////////////// task prototype /////////////////////////////////////
 
@@ -81,6 +88,9 @@ static struct task_table sd_task_t[] =
 #endif
 #ifdef RTCONFIG_TIME_QUOTA
         {SIGALRM, 0, task_pc_time_quota, 0, TIME_QUOTA_INTERVAL},
+#endif
+#ifndef RTCONFIG_AVOID_TZ_ENV
+        {SIGALRM, 0, task_timezone_checking, 0, PERIOD_10_SEC},
 #endif
         {SIGUSR1, 0, sched_daemon_sigusr1, 0, 0},
         {SIGTERM, 0, sched_daemon_exit, 0, 0},
@@ -112,6 +122,9 @@ static void task_pc_reward_cleaner(void);
 #endif
 #ifdef RTCONFIG_TIME_QUOTA
 static void task_pc_time_quota(void);
+#endif
+#ifndef RTCONFIG_AVOID_TZ_ENV
+static void task_timezone_checking(void);
 #endif
 ///////////////////////////////////// task prototype /////////////////////////////////////
 
@@ -209,6 +222,7 @@ alarmtimer(unsigned long sec, unsigned long usec)
 static void sched_daemon(int sig)
 {
 	//SCHED_DAEMON_DBG("sig=(%d)", sig);
+	period_10_sec = (period_10_sec + 1) % 10;
 	period_30_sec = (period_30_sec + 1) % 30;
 	period_3600_sec = (period_3600_sec + 1) % 3600;
 	period_86400_sec = (period_86400_sec + 1) % 86400;
@@ -220,6 +234,14 @@ static void sched_daemon(int sig)
 		return;
 
 	task_pc_time_quota();
+#endif
+
+/*======== The following is for period 10 seconds ========*/
+	if (period_10_sec)
+		return;
+
+#ifndef RTCONFIG_AVOID_TZ_ENV
+	task_timezone_checking();
 #endif
 
 /*======== The following is for period 30 seconds ========*/
@@ -649,6 +671,27 @@ static void task_pc_time_quota(void)
 #endif
 }
 #endif
+
+#ifndef RTCONFIG_AVOID_TZ_ENV
+#ifdef USE_TIMERUTIL
+static void task_timezone_checking(struct timer_entry *timer, void *data)
+#else
+static void task_timezone_checking(void)
+#endif
+{
+	if(strcmp(nvram_safe_get("time_zone_x"), time_zone_t)){
+		SCHED_DAEMON_DBG("update time zone from %s to %s\n", time_zone_t, nvram_safe_get("time_zone_x"));
+		//logmessage("sched_daemon", "update time zone from %s to %s", time_zone_t, nvram_safe_get("time_zone_x"));
+		strlcpy(time_zone_t, nvram_safe_get("time_zone_x"), sizeof(time_zone_t));
+		setenv("TZ", nvram_safe_get("time_zone_x"), 1);
+		tzset();
+	}
+
+#ifdef USE_TIMERUTIL
+	mod_timer(timer, PERIOD_10_SEC);
+#endif
+}
+#endif	/* RTCONFIG_AVOID_TZ_ENV */
 
 #ifdef USE_TIMERUTIL
 static void sched_daemon_sigusr1(struct timer_entry *timer, void *data)

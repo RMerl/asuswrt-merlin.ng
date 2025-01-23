@@ -116,6 +116,11 @@ ifeq ($(RTCONFIG_SW_HW_AUTH),y)
 CFLAGS += -I$(SW_HW_AUTH_DIR) -DSW_HW_AUTH
 endif
 
+ifeq ($(RTCONFIG_LIBASUSLOG),y)
+CFLAGS += -I$(TOP)/libasuslog
+LDFLAGS += -L$(TOP)/libasuslog -lasuslog
+endif
+
 ifeq ($(wildcard $(TOP)/aaews/*.c),)
 $(DOG):
 	-cp -f $(TOP)/aaews/prebuild/$(BUILD_NAME)/mastiff mastiff

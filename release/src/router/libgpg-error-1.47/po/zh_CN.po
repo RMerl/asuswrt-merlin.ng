@@ -1,0 +1,2016 @@
+# Simplified Chinese translation to libgpg-error.
+# Copyright (C) 2009 Free Software Foundation, Inc.
+# This file is distributed under the same license as the libgpg-error package.
+# Aron Xu <happyaron.xu@gmail.com>, 2009.
+# Chinese (simplified) <translation-team-zh-cn@lists.sourceforge.net>, 2009.
+# bobwxc <bobwxc@yeah.net>, 2020.
+# 请注意secret key在此处请译为私钥，密钥泛指key
+msgid ""
+msgstr ""
+"Project-Id-Version: libgpg-error 1.39\n"
+"Report-Msgid-Bugs-To: translations@gnupg.org\n"
+"POT-Creation-Date: 2023-04-06 10:30+0200\n"
+"PO-Revision-Date: 2021-03-22 10:44+0100\n"
+"Last-Translator: bobwxc <bobwxc@yeah.net>\n"
+"Language-Team: none\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Poedit 2.2.1\n"
+
+#: src/err-sources.h:28
+msgid "Unspecified source"
+msgstr "未指定源"
+
+#: src/err-sources.h:29
+msgid "gcrypt"
+msgstr "gcrypt"
+
+#: src/err-sources.h:30
+msgid "GnuPG"
+msgstr "GnuPG"
+
+#: src/err-sources.h:31
+msgid "GpgSM"
+msgstr "GpgSM"
+
+#: src/err-sources.h:32
+msgid "GPG Agent"
+msgstr "GPG Agent代理"
+
+#: src/err-sources.h:33
+msgid "Pinentry"
+msgstr "Pinentry"
+
+#: src/err-sources.h:34
+msgid "SCD"
+msgstr "SCD"
+
+#: src/err-sources.h:35
+msgid "GPGME"
+msgstr "GPGME"
+
+#: src/err-sources.h:36
+msgid "Keybox"
+msgstr "Keybox钥匙盒"
+
+#: src/err-sources.h:37
+msgid "KSBA"
+msgstr "KSBA"
+
+#: src/err-sources.h:38
+msgid "Dirmngr"
+msgstr "Dirmngr"
+
+#: src/err-sources.h:39
+msgid "GSTI"
+msgstr "GSTI"
+
+#: src/err-sources.h:40
+msgid "GPA"
+msgstr "GPA"
+
+#: src/err-sources.h:41
+msgid "Kleopatra"
+msgstr "Kleopatra"
+
+#: src/err-sources.h:42
+msgid "G13"
+msgstr "G13"
+
+#: src/err-sources.h:43
+msgid "Assuan"
+msgstr "Assuan"
+
+#: src/err-sources.h:44
+msgid "TPM2d"
+msgstr "TPM2d"
+
+#: src/err-sources.h:45
+msgid "TLS"
+msgstr "TLS"
+
+#: src/err-sources.h:46
+msgid "TKD"
+msgstr ""
+
+#: src/err-sources.h:47
+msgid "Any source"
+msgstr "任何来源"
+
+#: src/err-sources.h:48
+msgid "User defined source 1"
+msgstr "用户定义的来源 1"
+
+#: src/err-sources.h:49
+msgid "User defined source 2"
+msgstr "用户定义的来源 2"
+
+#: src/err-sources.h:50
+msgid "User defined source 3"
+msgstr "用户定义的来源 3"
+
+#: src/err-sources.h:51
+msgid "User defined source 4"
+msgstr "用户定义的来源 4"
+
+#: src/err-sources.h:52
+msgid "Unknown source"
+msgstr "未知来源"
+
+#: src/err-codes.h:28
+msgid "Success"
+msgstr "成功"
+
+#: src/err-codes.h:29
+msgid "General error"
+msgstr "常规错误"
+
+#: src/err-codes.h:30
+msgid "Unknown packet"
+msgstr "未知的包"
+
+#: src/err-codes.h:31
+msgid "Unknown version in packet"
+msgstr "包中未知的版本"
+
+#: src/err-codes.h:32
+msgid "Invalid public key algorithm"
+msgstr "无效的公钥算法"
+
+#: src/err-codes.h:33
+msgid "Invalid digest algorithm"
+msgstr "无效的摘要算法"
+
+#: src/err-codes.h:34
+msgid "Bad public key"
+msgstr "损坏的公钥"
+
+#: src/err-codes.h:35
+msgid "Bad secret key"
+msgstr "损坏的私钥"
+
+#: src/err-codes.h:36
+msgid "Bad signature"
+msgstr "损坏的签名"
+
+#: src/err-codes.h:37
+msgid "No public key"
+msgstr "缺少公钥"
+
+#: src/err-codes.h:38
+msgid "Checksum error"
+msgstr "校验错误"
+
+#: src/err-codes.h:39
+msgid "Bad passphrase"
+msgstr "损坏的密码"
+
+#: src/err-codes.h:40
+msgid "Invalid cipher algorithm"
+msgstr "无效的密码算法"
+
+#: src/err-codes.h:41
+msgid "Cannot open keyring"
+msgstr "无法打开钥匙环"
+
+#: src/err-codes.h:42
+msgid "Invalid packet"
+msgstr "无效的数据包"
+
+#: src/err-codes.h:43
+msgid "Invalid armor"
+msgstr "无效的保护壳"
+
+#: src/err-codes.h:44
+msgid "No user ID"
+msgstr "缺少用户标识"
+
+#: src/err-codes.h:45
+msgid "No secret key"
+msgstr "缺少私钥"
+
+#: src/err-codes.h:46
+msgid "Wrong secret key used"
+msgstr "使用了错误的私钥"
+
+#: src/err-codes.h:47
+msgid "Bad session key"
+msgstr "损坏的会话密钥"
+
+#: src/err-codes.h:48
+msgid "Unknown compression algorithm"
+msgstr "未知的压缩算法"
+
+#: src/err-codes.h:49
+msgid "Number is not prime"
+msgstr "不是素数"
+
+#: src/err-codes.h:50
+msgid "Invalid encoding method"
+msgstr "无效的编码方法"
+
+#: src/err-codes.h:51
+msgid "Invalid encryption scheme"
+msgstr "无效的加密方案"
+
+#: src/err-codes.h:52
+msgid "Invalid signature scheme"
+msgstr "无效的签名方案"
+
+#: src/err-codes.h:53
+msgid "Invalid attribute"
+msgstr "无效的属性"
+
+#: src/err-codes.h:54
+msgid "No value"
+msgstr "没有值"
+
+#: src/err-codes.h:55
+msgid "Not found"
+msgstr "未找到"
+
+#: src/err-codes.h:56
+msgid "Value not found"
+msgstr "没有发现值"
+
+#: src/err-codes.h:57
+msgid "Syntax error"
+msgstr "语法错误"
+
+#: src/err-codes.h:58
+msgid "Bad MPI value"
+msgstr "损坏的 MPI 值"
+
+#: src/err-codes.h:59
+msgid "Invalid passphrase"
+msgstr "无效的密码"
+
+#: src/err-codes.h:60
+msgid "Invalid signature class"
+msgstr "无效的签名类"
+
+#: src/err-codes.h:61
+msgid "Resources exhausted"
+msgstr "内存耗尽"
+
+#: src/err-codes.h:62
+msgid "Invalid keyring"
+msgstr "无效的密钥环"
+
+#: src/err-codes.h:63
+msgid "Trust DB error"
+msgstr "信任数据库错误"
+
+#: src/err-codes.h:64
+msgid "Bad certificate"
+msgstr "损坏的证书"
+
+#: src/err-codes.h:65
+msgid "Invalid user ID"
+msgstr "无效的用户标识"
+
+#: src/err-codes.h:66
+msgid "Unexpected error"
+msgstr "意外错误"
+
+#: src/err-codes.h:67
+msgid "Time conflict"
+msgstr "时间冲突"
+
+#: src/err-codes.h:68
+msgid "Keyserver error"
+msgstr "密钥服务器错误"
+
+#: src/err-codes.h:69
+msgid "Wrong public key algorithm"
+msgstr "错误的公开密钥算法"
+
+# 道格拉斯·亚当斯（Douglas Adams 1952年3月11日 -- 2001年5月11日）
+# 生于英国剑桥，英国广播剧作家、音乐家，尤其以《银河系漫游指南》
+# 系列作品出名。这部作品以广播剧起家，后来发展成包括五本书的“三
+# 部曲”，拍成电视连续剧。亚当斯逝世后还拍成电影。亚当斯自称为“极
+# 端无神论者”。在去世以前，他是一位非常受欢迎的演讲者，尤其是在
+# 科技和环保等题材方面。他在49岁时的早逝在科幻和奇幻社群中引起了
+# 极大的哀悼。
+#: src/err-codes.h:70
+msgid "Tribute to D. A."
+msgstr "向道格拉斯·亚当斯致敬"
+
+#: src/err-codes.h:71
+msgid "Weak encryption key"
+msgstr "弱加密密钥"
+
+#: src/err-codes.h:72
+msgid "Invalid key length"
+msgstr "无效的密钥长度"
+
+#: src/err-codes.h:73
+msgid "Invalid argument"
+msgstr "无效的参数"
+
+#: src/err-codes.h:74
+msgid "Syntax error in URI"
+msgstr "以下 URI 中语法错误"
+
+#: src/err-codes.h:75
+msgid "Invalid URI"
+msgstr "无效的 URI"
+
+#: src/err-codes.h:76
+msgid "Network error"
+msgstr "网络错误"
+
+#: src/err-codes.h:77
+msgid "Unknown host"
+msgstr "未知的主机"
+
+#: src/err-codes.h:78
+msgid "Selftest failed"
+msgstr "自测失败"
+
+#: src/err-codes.h:79
+msgid "Data not encrypted"
+msgstr "数据未加密"
+
+#: src/err-codes.h:80
+msgid "Data not processed"
+msgstr "数据未处理"
+
+#: src/err-codes.h:81
+msgid "Unusable public key"
+msgstr "不可用公钥"
+
+#: src/err-codes.h:82
+msgid "Unusable secret key"
+msgstr "不可用私钥"
+
+#: src/err-codes.h:83
+msgid "Invalid value"
+msgstr "无效值"
+
+#: src/err-codes.h:84
+msgid "Bad certificate chain"
+msgstr "损坏的证书链"
+
+#: src/err-codes.h:85
+msgid "Missing certificate"
+msgstr "缺失证书"
+
+#: src/err-codes.h:86
+msgid "No data"
+msgstr "无数据"
+
+#: src/err-codes.h:87
+msgid "Bug"
+msgstr "错误"
+
+#: src/err-codes.h:88
+msgid "Not supported"
+msgstr "不支持"
+
+#: src/err-codes.h:89
+msgid "Invalid operation code"
+msgstr "无效的操作码"
+
+#: src/err-codes.h:90
+msgid "Timeout"
+msgstr "超时"
+
+#: src/err-codes.h:91
+msgid "Internal error"
+msgstr "内部错误"
+
+#: src/err-codes.h:92
+msgid "EOF (gcrypt)"
+msgstr "EOF (gcrypt)"
+
+#: src/err-codes.h:93
+msgid "Invalid object"
+msgstr "无效的对象"
+
+#: src/err-codes.h:94
+msgid "Provided object is too short"
+msgstr "提供的对象太短"
+
+#: src/err-codes.h:95
+msgid "Provided object is too large"
+msgstr "提供的对象太大"
+
+#: src/err-codes.h:96
+msgid "Missing item in object"
+msgstr "对象中缺少项目"
+
+#: src/err-codes.h:97
+msgid "Not implemented"
+msgstr "未实现"
+
+#: src/err-codes.h:98
+msgid "Conflicting use"
+msgstr "冲突的用法"
+
+#: src/err-codes.h:99
+msgid "Invalid cipher mode"
+msgstr "无效的加密模式"
+
+#: src/err-codes.h:100
+msgid "Invalid flag"
+msgstr "无效标志"
+
+#: src/err-codes.h:101
+msgid "Invalid handle"
+msgstr "无效句柄"
+
+#: src/err-codes.h:102
+msgid "Result truncated"
+msgstr "结果已截断"
+
+#: src/err-codes.h:103
+msgid "Incomplete line"
+msgstr "不完整行"
+
+#: src/err-codes.h:104
+msgid "Invalid response"
+msgstr "无效的响应"
+
+#: src/err-codes.h:105
+msgid "No agent running"
+msgstr "未运行代理"
+
+#: src/err-codes.h:106
+msgid "Agent error"
+msgstr "Agent 代理错误"
+
+#: src/err-codes.h:107
+msgid "Invalid data"
+msgstr "无效的数据"
+
+#: src/err-codes.h:108
+msgid "Unspecific Assuan server fault"
+msgstr "不明的 Assuan 服务器错误"
+
+#: src/err-codes.h:109
+msgid "General Assuan error"
+msgstr "常规 Assuan 错误"
+
+#: src/err-codes.h:110
+msgid "Invalid session key"
+msgstr "无效的会话密钥"
+
+#: src/err-codes.h:111
+msgid "Invalid S-expression"
+msgstr "无效的 S-表达式"
+
+#: src/err-codes.h:112
+msgid "Unsupported algorithm"
+msgstr "不支持的算法"
+
+#: src/err-codes.h:113
+msgid "No pinentry"
+msgstr "缺少 pinentry"
+
+#: src/err-codes.h:114
+msgid "pinentry error"
+msgstr "pinentry 错误"
+
+#: src/err-codes.h:115
+msgid "Bad PIN"
+msgstr "损坏的 PIN"
+
+#: src/err-codes.h:116
+msgid "Invalid name"
+msgstr "无效的名称"
+
+#: src/err-codes.h:117
+msgid "Bad data"
+msgstr "不良数据"
+
+#: src/err-codes.h:118
+msgid "Invalid parameter"
+msgstr "无效的参数"
+
+#: src/err-codes.h:119
+msgid "Wrong card"
+msgstr "错误的卡"
+
+#: src/err-codes.h:120
+msgid "No dirmngr"
+msgstr "缺少 dirmngr"
+
+#: src/err-codes.h:121
+msgid "dirmngr error"
+msgstr "dirmngr 错误"
+
+#: src/err-codes.h:122
+msgid "Certificate revoked"
+msgstr "证书已吊销"
+
+#: src/err-codes.h:123
+msgid "No CRL known"
+msgstr "无已知的 CRL"
+
+#: src/err-codes.h:124
+msgid "CRL too old"
+msgstr "CRL 过于陈旧"
+
+#: src/err-codes.h:125
+msgid "Line too long"
+msgstr "行太长"
+
+#: src/err-codes.h:126
+msgid "Not trusted"
+msgstr "不信任"
+
+#: src/err-codes.h:127
+msgid "Operation cancelled"
+msgstr "操作已取消"
+
+#: src/err-codes.h:128
+msgid "Bad CA certificate"
+msgstr "损坏的 CA 证书"
+
+#: src/err-codes.h:129
+msgid "Certificate expired"
+msgstr "证书已过期"
+
+#: src/err-codes.h:130
+msgid "Certificate too young"
+msgstr "证书太新"
+
+#: src/err-codes.h:131
+msgid "Unsupported certificate"
+msgstr "不支持的凭证"
+
+#: src/err-codes.h:132
+msgid "Unknown S-expression"
+msgstr "未知的 S-表达式"
+
+#: src/err-codes.h:133
+msgid "Unsupported protection"
+msgstr "不受支持的保护"
+
+#: src/err-codes.h:134
+msgid "Corrupted protection"
+msgstr "损坏的保护"
+
+#: src/err-codes.h:135
+msgid "Ambiguous name"
+msgstr "名称不明确"
+
+#: src/err-codes.h:136
+msgid "Card error"
+msgstr "卡错误"
+
+#: src/err-codes.h:137
+msgid "Card reset required"
+msgstr "要求重置卡"
+
+#: src/err-codes.h:138
+msgid "Card removed"
+msgstr "卡已删除"
+
+#: src/err-codes.h:139
+msgid "Invalid card"
+msgstr "无效的卡"
+
+#: src/err-codes.h:140
+msgid "Card not present"
+msgstr "卡不存在"
+
+#: src/err-codes.h:141
+msgid "No PKCS15 application"
+msgstr "没有 PKCS15 应用程序"
+
+#: src/err-codes.h:142
+msgid "Not confirmed"
+msgstr "未确认"
+
+#: src/err-codes.h:143
+msgid "Configuration error"
+msgstr "配置错误"
+
+#: src/err-codes.h:144
+msgid "No policy match"
+msgstr "没有匹配的规则"
+
+#: src/err-codes.h:145
+msgid "Invalid index"
+msgstr "无效的索引"
+
+#: src/err-codes.h:146
+msgid "Invalid ID"
+msgstr "无效的 ID"
+
+#: src/err-codes.h:147
+msgid "No SmartCard daemon"
+msgstr "没有智能卡守护进程"
+
+#: src/err-codes.h:148
+msgid "SmartCard daemon error"
+msgstr "智能卡守护程序错误"
+
+#: src/err-codes.h:149
+msgid "Unsupported protocol"
+msgstr "不支持的协议"
+
+#: src/err-codes.h:150
+msgid "Bad PIN method"
+msgstr "无效的 PIN 方法"
+
+#: src/err-codes.h:151
+msgid "Card not initialized"
+msgstr "卡未初始化"
+
+#: src/err-codes.h:152
+msgid "Unsupported operation"
+msgstr "不支持的操作"
+
+#: src/err-codes.h:153
+msgid "Wrong key usage"
+msgstr "错误的密钥用法"
+
+#: src/err-codes.h:154
+msgid "Nothing found"
+msgstr "未找到"
+
+#: src/err-codes.h:155
+msgid "Wrong blob type"
+msgstr "错误的 blob 类型"
+
+#: src/err-codes.h:156
+msgid "Missing value"
+msgstr "缺失值"
+
+#: src/err-codes.h:157
+msgid "Hardware problem"
+msgstr "硬件问题"
+
+#: src/err-codes.h:158
+msgid "PIN blocked"
+msgstr "PIN 已屏蔽"
+
+#: src/err-codes.h:159
+msgid "Conditions of use not satisfied"
+msgstr "使用条件不满足"
+
+#: src/err-codes.h:160
+msgid "PINs are not synced"
+msgstr "PINs 不同步"
+
+#: src/err-codes.h:161
+msgid "Invalid CRL"
+msgstr "无效的 CRL"
+
+#: src/err-codes.h:162
+msgid "BER error"
+msgstr "BER 错误"
+
+#: src/err-codes.h:163
+msgid "Invalid BER"
+msgstr "无效的 BER"
+
+#: src/err-codes.h:164
+msgid "Element not found"
+msgstr "未找到元素"
+
+#: src/err-codes.h:165
+msgid "Identifier not found"
+msgstr "未找到标识符"
+
+#: src/err-codes.h:166
+msgid "Invalid tag"
+msgstr "无效的标签"
+
+#: src/err-codes.h:167
+msgid "Invalid length"
+msgstr "无效的长度"
+
+#: src/err-codes.h:168
+msgid "Invalid key info"
+msgstr "无效的密钥信息"
+
+#: src/err-codes.h:169
+msgid "Unexpected tag"
+msgstr "意外的标记"
+
+#: src/err-codes.h:170
+msgid "Not DER encoded"
+msgstr "非 DER 编码"
+
+#: src/err-codes.h:171
+msgid "No CMS object"
+msgstr "没有 CMS 对象"
+
+#: src/err-codes.h:172
+msgid "Invalid CMS object"
+msgstr "无效的 CMS 对象"
+
+#: src/err-codes.h:173
+msgid "Unknown CMS object"
+msgstr "未知的 CMS 对象"
+
+#: src/err-codes.h:174
+msgid "Unsupported CMS object"
+msgstr "不支持的 CMS 对象"
+
+#: src/err-codes.h:175
+msgid "Unsupported encoding"
+msgstr "不支持的编码"
+
+#: src/err-codes.h:176
+msgid "Unsupported CMS version"
+msgstr "不支持的 CMS 版本"
+
+#: src/err-codes.h:177
+msgid "Unknown algorithm"
+msgstr "未知的算法"
+
+#: src/err-codes.h:178
+msgid "Invalid crypto engine"
+msgstr "无效的加密引擎"
+
+#: src/err-codes.h:179
+msgid "Public key not trusted"
+msgstr "公钥不被信任"
+
+#: src/err-codes.h:180
+msgid "Decryption failed"
+msgstr "解密失败"
+
+#: src/err-codes.h:181
+msgid "Key expired"
+msgstr "密钥已过期"
+
+#: src/err-codes.h:182
+msgid "Signature expired"
+msgstr "签名过期"
+
+#: src/err-codes.h:183
+msgid "Encoding problem"
+msgstr "编码问题"
+
+#: src/err-codes.h:184
+msgid "Invalid state"
+msgstr "无效状态"
+
+#: src/err-codes.h:185
+msgid "Duplicated value"
+msgstr "重复值"
+
+#: src/err-codes.h:186
+msgid "Missing action"
+msgstr "动作缺失"
+
+#: src/err-codes.h:187
+msgid "ASN.1 module not found"
+msgstr "ASN.1 模块未找到"
+
+#: src/err-codes.h:188
+msgid "Invalid OID string"
+msgstr "无效的 OID 字符串"
+
+#: src/err-codes.h:189
+msgid "Invalid time"
+msgstr "无效的时间"
+
+#: src/err-codes.h:190
+msgid "Invalid CRL object"
+msgstr "无效的 CRL 对象"
+
+#: src/err-codes.h:191
+msgid "Unsupported CRL version"
+msgstr "不支持的 CRL 版本"
+
+#: src/err-codes.h:192
+msgid "Invalid certificate object"
+msgstr "无效的证书对象"
+
+#: src/err-codes.h:193
+msgid "Unknown name"
+msgstr "未知名称"
+
+#: src/err-codes.h:194
+msgid "A locale function failed"
+msgstr "区域设置功能失败"
+
+#: src/err-codes.h:195
+msgid "Not locked"
+msgstr "未锁定"
+
+#: src/err-codes.h:196
+msgid "Protocol violation"
+msgstr "违反协议"
+
+#: src/err-codes.h:197
+msgid "Invalid MAC"
+msgstr "无效的 MAC"
+
+#: src/err-codes.h:198
+msgid "Invalid request"
+msgstr "无效的请求"
+
+#: src/err-codes.h:199
+msgid "Unknown extension"
+msgstr "未知的扩展名"
+
+#: src/err-codes.h:200
+msgid "Unknown critical extension"
+msgstr "未知的关键扩展"
+
+#: src/err-codes.h:201
+msgid "Locked"
+msgstr "已锁定"
+
+#: src/err-codes.h:202
+msgid "Unknown option"
+msgstr "未知的选项"
+
+#: src/err-codes.h:203
+msgid "Unknown command"
+msgstr "未知命令"
+
+#: src/err-codes.h:204
+msgid "Not operational"
+msgstr "不可操作"
+
+#: src/err-codes.h:205
+msgid "No passphrase given"
+msgstr "没有给出密码"
+
+#: src/err-codes.h:206
+msgid "No PIN given"
+msgstr "没有给出 PIN"
+
+#: src/err-codes.h:207
+msgid "Not enabled"
+msgstr "不可用"
+
+#: src/err-codes.h:208
+msgid "No crypto engine"
+msgstr "无效的加密引擎"
+
+#: src/err-codes.h:209
+msgid "Missing key"
+msgstr "密钥缺失"
+
+#: src/err-codes.h:210
+msgid "Too many objects"
+msgstr "对象过多"
+
+#: src/err-codes.h:211
+msgid "Limit reached"
+msgstr "已达极限"
+
+#: src/err-codes.h:212
+msgid "Not initialized"
+msgstr "未初始化"
+
+#: src/err-codes.h:213
+msgid "Missing issuer certificate"
+msgstr "缺少颁发者证书"
+
+#: src/err-codes.h:214
+msgid "No keyserver available"
+msgstr "无可用密钥服务器"
+
+#: src/err-codes.h:215
+msgid "Invalid elliptic curve"
+msgstr "无效椭圆曲线"
+
+#: src/err-codes.h:216
+msgid "Unknown elliptic curve"
+msgstr "来源不明的椭圆曲线"
+
+#: src/err-codes.h:217
+msgid "Duplicated key"
+msgstr "重复的密钥"
+
+#: src/err-codes.h:218
+msgid "Ambiguous result"
+msgstr "结果不明确"
+
+#: src/err-codes.h:219
+msgid "No crypto context"
+msgstr "无加密上下文"
+
+#: src/err-codes.h:220
+msgid "Wrong crypto context"
+msgstr "错误的加密上下文"
+
+#: src/err-codes.h:221
+msgid "Bad crypto context"
+msgstr "错误的的加密上下文"
+
+#: src/err-codes.h:222
+msgid "Conflict in the crypto context"
+msgstr "冲突的加密上下文"
+
+#: src/err-codes.h:223
+msgid "Broken public key"
+msgstr "损坏的公钥"
+
+#: src/err-codes.h:224
+msgid "Broken secret key"
+msgstr "损坏的私钥"
+
+#: src/err-codes.h:225
+msgid "Invalid MAC algorithm"
+msgstr "无效的 MAC 算法"
+
+#: src/err-codes.h:226
+msgid "Operation fully cancelled"
+msgstr "操作已取消"
+
+#: src/err-codes.h:227
+msgid "Operation not yet finished"
+msgstr "操作尚未完成"
+
+#: src/err-codes.h:228
+msgid "Buffer too short"
+msgstr "缓冲区太短"
+
+#: src/err-codes.h:229
+msgid "Invalid length specifier in S-expression"
+msgstr "S-表达式的长度标志符无效"
+
+#: src/err-codes.h:230
+msgid "String too long in S-expression"
+msgstr "S-表达式的字符串太长"
+
+#: src/err-codes.h:231
+msgid "Unmatched parentheses in S-expression"
+msgstr "S-表达式中括号不匹配"
+
+#: src/err-codes.h:232
+msgid "S-expression not canonical"
+msgstr "不规范的 S-表达式"
+
+#: src/err-codes.h:233
+msgid "Bad character in S-expression"
+msgstr "S-表达式中字符错误"
+
+#: src/err-codes.h:234
+msgid "Bad quotation in S-expression"
+msgstr "S-表达式中引号错误"
+
+#: src/err-codes.h:235
+msgid "Zero prefix in S-expression"
+msgstr "S-表达式零前缀"
+
+#: src/err-codes.h:236
+msgid "Nested display hints in S-expression"
+msgstr "S-表达式嵌套显示提示"
+
+#: src/err-codes.h:237
+msgid "Unmatched display hints"
+msgstr "不匹配的嵌套显示提示"
+
+#: src/err-codes.h:238
+msgid "Unexpected reserved punctuation in S-expression"
+msgstr "S-表达式中出现意外的保留标点"
+
+#: src/err-codes.h:239
+msgid "Bad hexadecimal character in S-expression"
+msgstr "S-表达式中十六进制字符错误"
+
+#: src/err-codes.h:240
+msgid "Odd hexadecimal numbers in S-expression"
+msgstr "S-表达式中十六进制数异常"
+
+#: src/err-codes.h:241
+msgid "Bad octal character in S-expression"
+msgstr "S-表达式中八进制字符错误"
+
+#: src/err-codes.h:242
+msgid "All subkeys are expired or revoked"
+msgstr "所有子密钥均已过期或吊销"
+
+#: src/err-codes.h:243
+msgid "Database is corrupted"
+msgstr "数据库已损坏"
+
+#: src/err-codes.h:244
+msgid "Server indicated a failure"
+msgstr "服务器故障"
+
+#: src/err-codes.h:245
+msgid "No name"
+msgstr "无名称"
+
+#: src/err-codes.h:246
+msgid "No key"
+msgstr "没有密钥"
+
+#: src/err-codes.h:247
+msgid "Legacy key"
+msgstr "遗留密钥"
+
+#: src/err-codes.h:248
+msgid "Request too short"
+msgstr "请求过短"
+
+#: src/err-codes.h:249
+msgid "Request too long"
+msgstr "请求过长"
+
+#: src/err-codes.h:250
+msgid "Object is in termination state"
+msgstr "对象处于终止状态"
+
+#: src/err-codes.h:251
+msgid "No certificate chain"
+msgstr "无证书链"
+
+#: src/err-codes.h:252
+msgid "Certificate is too large"
+msgstr "证书过大"
+
+#: src/err-codes.h:253
+msgid "Invalid record"
+msgstr "无效记录"
+
+#: src/err-codes.h:254
+msgid "The MAC does not verify"
+msgstr "MAC 未经验证"
+
+#: src/err-codes.h:255
+msgid "Unexpected message"
+msgstr "意外消息"
+
+#: src/err-codes.h:256
+msgid "Compression or decompression failed"
+msgstr "压缩或解压失败"
+
+#: src/err-codes.h:257
+msgid "A counter would wrap"
+msgstr "计数器将更新"
+
+#: src/err-codes.h:258
+msgid "Fatal alert message received"
+msgstr "收到致命错误消息"
+
+#: src/err-codes.h:259
+msgid "No cipher algorithm"
+msgstr "无密码算法"
+
+#: src/err-codes.h:260
+msgid "Missing client certificate"
+msgstr "缺少客户端证书"
+
+#: src/err-codes.h:261
+msgid "Close notification received"
+msgstr "收到关闭通知"
+
+#: src/err-codes.h:262
+msgid "Ticket expired"
+msgstr "凭证已过期"
+
+#: src/err-codes.h:263
+msgid "Bad ticket"
+msgstr "损坏的凭证"
+
+#: src/err-codes.h:264
+msgid "Unknown identity"
+msgstr "未知身份"
+
+#: src/err-codes.h:265
+msgid "Bad certificate message in handshake"
+msgstr "握手证书消息错误"
+
+#: src/err-codes.h:266
+msgid "Bad certificate request message in handshake"
+msgstr "握手证书请求消息错误"
+
+#: src/err-codes.h:267
+msgid "Bad certificate verify message in handshake"
+msgstr "握手证书验证消息错误"
+
+#: src/err-codes.h:268
+msgid "Bad change cipher message in handshake"
+msgstr "握手更改密码消息错误"
+
+#: src/err-codes.h:269
+msgid "Bad client hello message in handshake"
+msgstr "握手客户端问候消息错误"
+
+#: src/err-codes.h:270
+msgid "Bad server hello message in handshake"
+msgstr "握手服务端问候消息错误"
+
+#: src/err-codes.h:271
+msgid "Bad server hello done message in handshake"
+msgstr "握手服务端问候完成消息错误"
+
+#: src/err-codes.h:272
+msgid "Bad finished message in handshake"
+msgstr "握手完成消息错误"
+
+#: src/err-codes.h:273
+msgid "Bad server key exchange message in handshake"
+msgstr "握手服务端密钥交换消息错误"
+
+#: src/err-codes.h:274
+msgid "Bad client key exchange message in handshake"
+msgstr "握手客户端密钥交换消息错误"
+
+#: src/err-codes.h:275
+msgid "Bogus string"
+msgstr "伪造的字符串"
+
+#: src/err-codes.h:276
+msgid "Forbidden"
+msgstr "禁止"
+
+#: src/err-codes.h:277
+msgid "Key disabled"
+msgstr "密钥不可用"
+
+#: src/err-codes.h:278
+msgid "Not possible with a card based key"
+msgstr "无法使用基于卡的密钥"
+
+#: src/err-codes.h:279
+msgid "Invalid lock object"
+msgstr "锁定对象无效"
+
+#: src/err-codes.h:280
+msgid "True"
+msgstr "正确"
+
+#: src/err-codes.h:281
+msgid "False"
+msgstr "错误"
+
+#: src/err-codes.h:282
+msgid "General IPC error"
+msgstr "常规 IPC 错误"
+
+#: src/err-codes.h:283
+msgid "IPC accept call failed"
+msgstr "IPC 接受调用失败"
+
+#: src/err-codes.h:284
+msgid "IPC connect call failed"
+msgstr "IPC 连接调用失败"
+
+#: src/err-codes.h:285
+msgid "Invalid IPC response"
+msgstr "无效 IPC 响应"
+
+#: src/err-codes.h:286
+msgid "Invalid value passed to IPC"
+msgstr "传递给 IPC 的值无效"
+
+#: src/err-codes.h:287
+msgid "Incomplete line passed to IPC"
+msgstr "传递给 IPC 的行不完整"
+
+#: src/err-codes.h:288
+msgid "Line passed to IPC too long"
+msgstr "传递给 IPC 的行过长"
+
+#: src/err-codes.h:289
+msgid "Nested IPC commands"
+msgstr "嵌套的 IPC 命令"
+
+#: src/err-codes.h:290
+msgid "No data callback in IPC"
+msgstr "IPC 无数据回调"
+
+#: src/err-codes.h:291
+msgid "No inquire callback in IPC"
+msgstr "IPC 无查询回调"
+
+#: src/err-codes.h:292
+msgid "Not an IPC server"
+msgstr "不是 IPC 服务器"
+
+#: src/err-codes.h:293
+msgid "Not an IPC client"
+msgstr "不是 IPC 客户端"
+
+#: src/err-codes.h:294
+msgid "Problem starting IPC server"
+msgstr "启动 IPC 服务器时出现问题"
+
+#: src/err-codes.h:295
+msgid "IPC read error"
+msgstr "IPC 读取错误"
+
+#: src/err-codes.h:296
+msgid "IPC write error"
+msgstr "IPC 写入错误"
+
+#: src/err-codes.h:297
+msgid "Too much data for IPC layer"
+msgstr "IPC 层数据过多"
+
+#: src/err-codes.h:298
+msgid "Unexpected IPC command"
+msgstr "意外的 IPC 命令"
+
+#: src/err-codes.h:299
+msgid "Unknown IPC command"
+msgstr "未知 IPC 命令"
+
+#: src/err-codes.h:300
+msgid "IPC syntax error"
+msgstr "IPC 语法错误"
+
+#: src/err-codes.h:301
+msgid "IPC call has been cancelled"
+msgstr "IPC 调用已取消"
+
+#: src/err-codes.h:302
+msgid "No input source for IPC"
+msgstr "IPC 无输入源"
+
+#: src/err-codes.h:303
+msgid "No output source for IPC"
+msgstr "IPC 无输出源"
+
+#: src/err-codes.h:304
+msgid "IPC parameter error"
+msgstr "IPC 参数错误"
+
+#: src/err-codes.h:305
+msgid "Unknown IPC inquire"
+msgstr "未知 IPC 查询"
+
+#: src/err-codes.h:306
+msgid "Crypto engine too old"
+msgstr "加密引擎太旧"
+
+#: src/err-codes.h:307
+msgid "Screen or window too small"
+msgstr "屏幕或窗口过小"
+
+#: src/err-codes.h:308
+msgid "Screen or window too large"
+msgstr "屏幕或窗口过大"
+
+#: src/err-codes.h:309
+msgid "Required environment variable not set"
+msgstr "未设置所需的环境变量"
+
+#: src/err-codes.h:310
+msgid "User ID already exists"
+msgstr "用户标志已存在"
+
+#: src/err-codes.h:311
+msgid "Name already exists"
+msgstr "名称已存在"
+
+#: src/err-codes.h:312
+msgid "Duplicated name"
+msgstr "重复的名称"
+
+#: src/err-codes.h:313
+msgid "Object is too young"
+msgstr "对象太新"
+
+#: src/err-codes.h:314
+msgid "Object is too old"
+msgstr "对象太旧"
+
+#: src/err-codes.h:315
+msgid "Unknown flag"
+msgstr "未知标志"
+
+#: src/err-codes.h:316
+msgid "Invalid execution order"
+msgstr "无效的执行顺序"
+
+#: src/err-codes.h:317
+msgid "Already fetched"
+msgstr "已提取"
+
+#: src/err-codes.h:318
+msgid "Try again later"
+msgstr "稍后再试"
+
+#: src/err-codes.h:319
+msgid "Wrong name"
+msgstr "错误名称"
+
+#: src/err-codes.h:320
+msgid "Not authenticated"
+msgstr "未验证"
+
+#: src/err-codes.h:321
+msgid "Bad authentication"
+msgstr "无效验证"
+
+#: src/err-codes.h:322
+msgid "No Keybox daemon running"
+msgstr "无运行的 Keybox 守护进程"
+
+#: src/err-codes.h:323
+msgid "Keybox daemon error"
+msgstr "Keybox 守护进程错误"
+
+#: src/err-codes.h:324
+msgid "Service is not running"
+msgstr "服务未运行"
+
+#: src/err-codes.h:325
+msgid "Service error"
+msgstr "服务错误"
+
+#: src/err-codes.h:326
+#, fuzzy
+#| msgid "Bad PIN"
+msgid "Bad PUK"
+msgstr "损坏的 PIN"
+
+#: src/err-codes.h:327
+msgid "No reset code"
+msgstr ""
+
+#: src/err-codes.h:328
+#, fuzzy
+#| msgid "Bad secret key"
+msgid "Bad reset code"
+msgstr "损坏的私钥"
+
+#: src/err-codes.h:329
+msgid "System bug detected"
+msgstr "检测到系统错误"
+
+#: src/err-codes.h:330
+msgid "Unknown DNS error"
+msgstr "未知的 DNS 错误"
+
+#: src/err-codes.h:331
+msgid "Invalid DNS section"
+msgstr "无效的 DNS 部分"
+
+#: src/err-codes.h:332
+msgid "Invalid textual address form"
+msgstr "无效的文本地址形式"
+
+#: src/err-codes.h:333
+msgid "Missing DNS query packet"
+msgstr "缺少 DNS 查询数据包"
+
+#: src/err-codes.h:334
+msgid "Missing DNS answer packet"
+msgstr "缺少 DNS 答应数据包"
+
+#: src/err-codes.h:335
+msgid "Connection closed in DNS"
+msgstr "DNS 连接关闭"
+
+#: src/err-codes.h:336
+msgid "Verification failed in DNS"
+msgstr "DNS 验证失败"
+
+#: src/err-codes.h:337
+msgid "DNS Timeout"
+msgstr "DNS 超时"
+
+#: src/err-codes.h:338
+msgid "General LDAP error"
+msgstr "常规 LDAP 错误"
+
+#: src/err-codes.h:339
+msgid "General LDAP attribute error"
+msgstr "常规 LDAP 属性错误"
+
+#: src/err-codes.h:340
+msgid "General LDAP name error"
+msgstr "常规 LDAP 名称错误"
+
+#: src/err-codes.h:341
+msgid "General LDAP security error"
+msgstr "常规 LDAP 安全错误"
+
+#: src/err-codes.h:342
+msgid "General LDAP service error"
+msgstr "常规 LDAP 服务错误"
+
+#: src/err-codes.h:343
+msgid "General LDAP update error"
+msgstr "常规 LDAP 升级错误"
+
+#: src/err-codes.h:344
+msgid "Experimental LDAP error code"
+msgstr "实验性 LDAP 错误代码"
+
+#: src/err-codes.h:345
+msgid "Private LDAP error code"
+msgstr "专用 LDAP 错误代码"
+
+#: src/err-codes.h:346
+msgid "Other general LDAP error"
+msgstr "其他常规 LDAP 错误"
+
+#: src/err-codes.h:347
+msgid "LDAP connecting failed (X)"
+msgstr "LDAP 连接失败（X）"
+
+#: src/err-codes.h:348
+msgid "LDAP referral limit exceeded"
+msgstr "超过 LDAP 引用限制"
+
+#: src/err-codes.h:349
+msgid "LDAP client loop"
+msgstr "LDAP 客户端循环"
+
+#: src/err-codes.h:350
+msgid "No LDAP results returned"
+msgstr "无 LDAP 结果返回"
+
+#: src/err-codes.h:351
+msgid "LDAP control not found"
+msgstr "未找到 LDAP 控件"
+
+#: src/err-codes.h:352
+msgid "Not supported by LDAP"
+msgstr "不受 LDAP 支持"
+
+#: src/err-codes.h:353
+msgid "LDAP connect error"
+msgstr "LDAP 连接错误"
+
+#: src/err-codes.h:354
+msgid "Out of memory in LDAP"
+msgstr "LDAP 内存不足"
+
+#: src/err-codes.h:355
+msgid "Bad parameter to an LDAP routine"
+msgstr "LDAP 事务参数错误"
+
+#: src/err-codes.h:356
+msgid "User cancelled LDAP operation"
+msgstr "用户取消 LDAP 操作"
+
+#: src/err-codes.h:357
+msgid "Bad LDAP search filter"
+msgstr "错误的 LDAP 搜索过滤器"
+
+#: src/err-codes.h:358
+msgid "Unknown LDAP authentication method"
+msgstr "未知的 LDAP 身份验证方法"
+
+#: src/err-codes.h:359
+msgid "Timeout in LDAP"
+msgstr "LDAP 超时"
+
+#: src/err-codes.h:360
+msgid "LDAP decoding error"
+msgstr "LDAP 解码错误"
+
+#: src/err-codes.h:361
+msgid "LDAP encoding error"
+msgstr "LDAP 编码错误"
+
+#: src/err-codes.h:362
+msgid "LDAP local error"
+msgstr "LDAP 本地错误"
+
+#: src/err-codes.h:363
+msgid "Cannot contact LDAP server"
+msgstr "无法联络 LDAP 服务器"
+
+#: src/err-codes.h:364
+msgid "LDAP success"
+msgstr "LDAP 成功"
+
+#: src/err-codes.h:365
+msgid "LDAP operations error"
+msgstr "LDAP 操作错误"
+
+#: src/err-codes.h:366
+msgid "LDAP protocol error"
+msgstr "LDAP 协议错误"
+
+#: src/err-codes.h:367
+msgid "Time limit exceeded in LDAP"
+msgstr "超过 LDAP 时间限制"
+
+#: src/err-codes.h:368
+msgid "Size limit exceeded in LDAP"
+msgstr "超过 LDAP 大小限制"
+
+#: src/err-codes.h:369
+msgid "LDAP compare false"
+msgstr "LDAP 比较错误"
+
+#: src/err-codes.h:370
+msgid "LDAP compare true"
+msgstr "LDAP 比较正确"
+
+#: src/err-codes.h:371
+msgid "LDAP authentication method not supported"
+msgstr "不支持的 LDAP 身份验证方法"
+
+#: src/err-codes.h:372
+msgid "Strong(er) LDAP authentication required"
+msgstr "需要增强的 LDAP 身份验证"
+
+#: src/err-codes.h:373
+msgid "Partial LDAP results+referral received"
+msgstr "收到部分 LDAP 结果与引用"
+
+#: src/err-codes.h:374
+msgid "LDAP referral"
+msgstr "LDAP 转送"
+
+#: src/err-codes.h:375
+msgid "Administrative LDAP limit exceeded"
+msgstr "超过管理 LDAP 限制"
+
+#: src/err-codes.h:376
+msgid "Critical LDAP extension is unavailable"
+msgstr "关键 LDAP 扩展不可用"
+
+#: src/err-codes.h:377
+msgid "Confidentiality required by LDAP"
+msgstr "LDAP 要求保密"
+
+#: src/err-codes.h:378
+msgid "LDAP SASL bind in progress"
+msgstr "正在进行 LDAP SASL 绑定"
+
+#: src/err-codes.h:379
+msgid "No such LDAP attribute"
+msgstr "没有此 LDAP 属性"
+
+#: src/err-codes.h:380
+msgid "Undefined LDAP attribute type"
+msgstr "未定义的 LDAP 属性类型"
+
+#: src/err-codes.h:381
+msgid "Inappropriate matching in LDAP"
+msgstr "LDAP 不当匹配"
+
+#: src/err-codes.h:382
+msgid "Constraint violation in LDAP"
+msgstr "LDAP 约束冲突"
+
+#: src/err-codes.h:383
+msgid "LDAP type or value exists"
+msgstr "LDAP 类型或值存在"
+
+#: src/err-codes.h:384
+msgid "Invalid syntax in LDAP"
+msgstr "LDAP 语法无效"
+
+#: src/err-codes.h:385
+msgid "No such LDAP object"
+msgstr "无此 LDAP 对象"
+
+#: src/err-codes.h:386
+msgid "LDAP alias problem"
+msgstr "LDAP 别名问题"
+
+#: src/err-codes.h:387
+msgid "Invalid DN syntax in LDAP"
+msgstr "LDAP 无效的 DN 语法"
+
+#: src/err-codes.h:388
+msgid "LDAP entry is a leaf"
+msgstr "LDAP 叶状入口"
+
+#: src/err-codes.h:389
+msgid "LDAP alias dereferencing problem"
+msgstr "LDAP 别名引用取消问题"
+
+#: src/err-codes.h:390
+msgid "LDAP proxy authorization failure (X)"
+msgstr "LDAP 代理授权失败（X）"
+
+#: src/err-codes.h:391
+msgid "Inappropriate LDAP authentication"
+msgstr "不当 LDAP 身份验证"
+
+#: src/err-codes.h:392
+msgid "Invalid LDAP credentials"
+msgstr "无效 LDAP 凭据"
+
+#: src/err-codes.h:393
+msgid "Insufficient access for LDAP"
+msgstr "无 LDAP 访问权限"
+
+#: src/err-codes.h:394
+msgid "LDAP server is busy"
+msgstr "LDAP 服务器忙"
+
+#: src/err-codes.h:395
+msgid "LDAP server is unavailable"
+msgstr "LDAP 服务器不可用"
+
+#: src/err-codes.h:396
+msgid "LDAP server is unwilling to perform"
+msgstr "LDAP 服务器拒绝执行"
+
+#: src/err-codes.h:397
+msgid "Loop detected by LDAP"
+msgstr "LDAP 检测到循环"
+
+#: src/err-codes.h:398
+msgid "LDAP naming violation"
+msgstr "LDAP 命名冲突"
+
+#: src/err-codes.h:399
+msgid "LDAP object class violation"
+msgstr "LDAP 对象类冲突"
+
+#: src/err-codes.h:400
+msgid "LDAP operation not allowed on non-leaf"
+msgstr "不允许在非叶上执行 LDAP 操作"
+
+#: src/err-codes.h:401
+msgid "LDAP operation not allowed on RDN"
+msgstr "RDN 上不允许 LDAP 操作"
+
+#: src/err-codes.h:402
+msgid "Already exists (LDAP)"
+msgstr "已存在（LDAP）"
+
+#: src/err-codes.h:403
+msgid "Cannot modify LDAP object class"
+msgstr "无法修改 LDAP 对象类"
+
+#: src/err-codes.h:404
+msgid "LDAP results too large"
+msgstr "LDAP 结果过大"
+
+#: src/err-codes.h:405
+msgid "LDAP operation affects multiple DSAs"
+msgstr "LDAP 操作影响多个 DSA"
+
+#: src/err-codes.h:406
+msgid "Virtual LDAP list view error"
+msgstr "虚拟 LDAP 列表浏览错误"
+
+#: src/err-codes.h:407
+msgid "Other LDAP error"
+msgstr "其他 LDAP 错误"
+
+#: src/err-codes.h:408
+msgid "Resources exhausted in LCUP"
+msgstr "LCUP 内存耗尽"
+
+#: src/err-codes.h:409
+msgid "Security violation in LCUP"
+msgstr "LCUP 安全冲突"
+
+#: src/err-codes.h:410
+msgid "Invalid data in LCUP"
+msgstr "LCUP 数据无效"
+
+#: src/err-codes.h:411
+msgid "Unsupported scheme in LCUP"
+msgstr "LCUP 不支持的方案"
+
+#: src/err-codes.h:412
+msgid "Reload required in LCUP"
+msgstr "LCUP 需要重新加载"
+
+#: src/err-codes.h:413
+msgid "LDAP cancelled"
+msgstr "LDAP 已取消"
+
+#: src/err-codes.h:414
+msgid "No LDAP operation to cancel"
+msgstr "没有要取消的 LDAP 操作"
+
+#: src/err-codes.h:415
+msgid "Too late to cancel LDAP"
+msgstr "LDAP 已不能取消"
+
+#: src/err-codes.h:416
+msgid "Cannot cancel LDAP"
+msgstr "无法取消 LDAP"
+
+#: src/err-codes.h:417
+msgid "LDAP assertion failed"
+msgstr "LDAP 断言失败"
+
+#: src/err-codes.h:418
+msgid "Proxied authorization denied by LDAP"
+msgstr "LDAP 拒绝代理授权"
+
+#: src/err-codes.h:419
+msgid "User defined error code 1"
+msgstr "用户定义的错误代码 1"
+
+#: src/err-codes.h:420
+msgid "User defined error code 2"
+msgstr "用户定义的错误代码 2"
+
+#: src/err-codes.h:421
+msgid "User defined error code 3"
+msgstr "用户定义的错误代码 3"
+
+#: src/err-codes.h:422
+msgid "User defined error code 4"
+msgstr "用户定义的错误代码 4"
+
+#: src/err-codes.h:423
+msgid "User defined error code 5"
+msgstr "用户定义的错误代码 5"
+
+#: src/err-codes.h:424
+msgid "User defined error code 6"
+msgstr "用户定义的错误代码 6"
+
+#: src/err-codes.h:425
+msgid "User defined error code 7"
+msgstr "用户定义的错误代码 7"
+
+#: src/err-codes.h:426
+msgid "User defined error code 8"
+msgstr "用户定义的错误代码 8"
+
+#: src/err-codes.h:427
+msgid "User defined error code 9"
+msgstr "用户定义的错误代码 9"
+
+#: src/err-codes.h:428
+msgid "User defined error code 10"
+msgstr "用户定义的错误代码 10"
+
+#: src/err-codes.h:429
+msgid "User defined error code 11"
+msgstr "用户定义的错误代码 11"
+
+#: src/err-codes.h:430
+msgid "User defined error code 12"
+msgstr "用户定义的错误代码 12"
+
+#: src/err-codes.h:431
+msgid "User defined error code 13"
+msgstr "用户定义的错误代码 13"
+
+#: src/err-codes.h:432
+msgid "User defined error code 14"
+msgstr "用户定义的错误代码 14"
+
+#: src/err-codes.h:433
+msgid "User defined error code 15"
+msgstr "用户定义的错误代码 15"
+
+#: src/err-codes.h:434
+msgid "User defined error code 16"
+msgstr "用户定义的错误代码 16"
+
+#: src/err-codes.h:435
+msgid "SQL success"
+msgstr "SQL 成功"
+
+#: src/err-codes.h:436
+msgid "SQL error"
+msgstr "SQL 错误"
+
+#: src/err-codes.h:437
+msgid "Internal logic error in SQL library"
+msgstr "SQL 库存在内部逻辑错误"
+
+#: src/err-codes.h:438
+msgid "Access permission denied (SQL)"
+msgstr "SQL 无访问权限"
+
+#: src/err-codes.h:439
+msgid "SQL abort was requested"
+msgstr "SQL 请求中止"
+
+#: src/err-codes.h:440
+msgid "SQL database file is locked"
+msgstr "SQL 数据库文件已锁定"
+
+#: src/err-codes.h:441
+msgid "An SQL table in the database is locked"
+msgstr "数据库中的表被锁定"
+
+#: src/err-codes.h:442
+msgid "SQL library ran out of core"
+msgstr "SQL 库耗尽核心资源"
+
+#: src/err-codes.h:443
+msgid "Attempt to write a readonly SQL database"
+msgstr "尝试写入只读 SQL 数据库"
+
+#: src/err-codes.h:444
+msgid "SQL operation terminated by interrupt"
+msgstr "SQL 操作被中断终止"
+
+#: src/err-codes.h:445
+msgid "I/O error during SQL operation"
+msgstr "SQL 操作I/O错误"
+
+#: src/err-codes.h:446
+msgid "SQL database disk image is malformed"
+msgstr "SQL 数据库磁盘映像格式错误"
+
+#: src/err-codes.h:447
+msgid "Unknown opcode in SQL file control"
+msgstr "SQL 文件未知操作码"
+
+#: src/err-codes.h:448
+msgid "Insertion failed because SQL database is full"
+msgstr "插入失败，因为 SQL 数据库已满"
+
+#: src/err-codes.h:449
+msgid "Unable to open the SQL database file"
+msgstr "无法打开 SQL 数据库文件"
+
+#: src/err-codes.h:450
+msgid "SQL database lock protocol error"
+msgstr "SQL 数据库锁定协议错误"
+
+#: src/err-codes.h:451
+msgid "(internal SQL code: empty)"
+msgstr "（内部 SQL 代码：empty 空）"
+
+#: src/err-codes.h:452
+msgid "SQL database schema changed"
+msgstr "SQL 数据库架构已更改"
+
+#: src/err-codes.h:453
+msgid "String or blob exceeds size limit (SQL)"
+msgstr "SQL 字符串或blob超出大小限制"
+
+#: src/err-codes.h:454
+msgid "SQL abort due to constraint violation"
+msgstr "SQL 约束冲突导致中止"
+
+#: src/err-codes.h:455
+msgid "Data type mismatch (SQL)"
+msgstr "SQL 数据类型不匹配"
+
+#: src/err-codes.h:456
+msgid "SQL library used incorrectly"
+msgstr "SQL 库使用错误"
+
+#: src/err-codes.h:457
+msgid "SQL library uses unsupported OS features"
+msgstr "SQL 库使用了不支持的操作系统功能"
+
+#: src/err-codes.h:458
+msgid "Authorization denied (SQL)"
+msgstr "SQL 授权拒绝"
+
+#: src/err-codes.h:459
+msgid "(unused SQL code: format)"
+msgstr "（未使用的SQL代码：format 格式）"
+
+#: src/err-codes.h:460
+msgid "SQL bind parameter out of range"
+msgstr "SQL 绑定参数越界"
+
+#: src/err-codes.h:461
+msgid "File opened that is not an SQL database file"
+msgstr "打开的文件不是 SQL 数据库文件"
+
+#: src/err-codes.h:462
+msgid "Notifications from SQL logger"
+msgstr "来自 SQL 日志记录的通知"
+
+#: src/err-codes.h:463
+msgid "Warnings from SQL logger"
+msgstr "来自 SQL 日志记录的警告"
+
+#: src/err-codes.h:464
+msgid "SQL has another row ready"
+msgstr "SQL 已准备好另一行"
+
+#: src/err-codes.h:465
+msgid "SQL has finished executing"
+msgstr "SQL 已执行完成"
+
+#: src/err-codes.h:466
+msgid "System error w/o errno"
+msgstr "系统错误，无错误号"
+
+#: src/err-codes.h:467
+msgid "Unknown system error"
+msgstr "未知的系统错误"
+
+#: src/err-codes.h:468
+msgid "End of file"
+msgstr "文件结尾"
+
+#: src/err-codes.h:469
+msgid "Unknown error code"
+msgstr "未知的错误代码"
+
+#: src/argparse.c:494
+msgid "argument not expected"
+msgstr "非期望参数"
+
+#: src/argparse.c:496
+msgid "read error"
+msgstr "读取错误"
+
+#: src/argparse.c:498
+msgid "keyword too long"
+msgstr "关键字太长"
+
+#: src/argparse.c:500
+msgid "missing argument"
+msgstr "缺少参数"
+
+#: src/argparse.c:502
+msgid "invalid argument"
+msgstr "无效参数"
+
+#: src/argparse.c:504
+msgid "invalid command"
+msgstr "无效命令"
+
+#: src/argparse.c:506
+msgid "invalid alias definition"
+msgstr "无效别名定义"
+
+#: src/argparse.c:508 src/argparse.c:545
+msgid "permission error"
+msgstr "权限错误"
+
+#: src/argparse.c:510 src/argparse.c:543
+msgid "out of core"
+msgstr "核心外"
+
+#: src/argparse.c:514 src/argparse.c:549
+msgid "invalid meta command"
+msgstr "无效元命令"
+
+#: src/argparse.c:516 src/argparse.c:551
+msgid "unknown meta command"
+msgstr "未知元命令"
+
+#: src/argparse.c:518 src/argparse.c:553
+msgid "unexpected meta command"
+msgstr "意外元命令"
+
+#: src/argparse.c:520
+msgid "invalid option"
+msgstr "无效的列表选项"
+
+#: src/argparse.c:530
+#, c-format
+msgid "missing argument for option \"%.50s\"\n"
+msgstr "选项\"%.50s\"缺少参数\n"
+
+#: src/argparse.c:532
+#, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "选项\"%.50s\"参数无效\n"
+
+#: src/argparse.c:534
+#, c-format
+msgid "option \"%.50s\" does not expect an argument\n"
+msgstr "选项\"%.50s\"参数多余\n"
+
+#: src/argparse.c:537
+#, c-format
+msgid "invalid command \"%.50s\"\n"
+msgstr "无效指令 \"%.50s\"\n"
+
+#: src/argparse.c:539
+#, c-format
+msgid "option \"%.50s\" is ambiguous\n"
+msgstr "选项 \"%.50s\" 不明确\n"
+
+#: src/argparse.c:541
+#, c-format
+msgid "command \"%.50s\" is ambiguous\n"
+msgstr "命令 \"%.50s\" 不明确\n"
+
+#: src/argparse.c:555
+#, c-format
+msgid "invalid option \"%.50s\"\n"
+msgstr "无效的选项 \"%.50s\"\n"
+
+#: src/argparse.c:2297 src/argparse.c:2393
+#, c-format
+msgid "Note: no default option file '%s'\n"
+msgstr "注意：文件 '%s' 中无默认选项\n"
+
+#: src/argparse.c:2307 src/argparse.c:2400
+#, c-format
+msgid "reading options from '%s'\n"
+msgstr "从 '%s' 中读取选项\n"
+
+#: src/argparse.c:2385
+#, c-format
+msgid "option file '%s': %s\n"
+msgstr "选项文件 '%s': %s\n"
+
+#: src/argparse.c:2823
+#, c-format
+msgid "Note: ignoring option \"--%s\" due to global config\n"
+msgstr "注意： 由于整体配置，选项 \"--%s\" 被忽视\n"
+
+#: src/gpg-error.c:522
+msgid "Please report bugs to <https://bugs.gnupg.org>.\n"
+msgstr "请向 <https://bugs.gnupg.org> 报告软件错误。\n"
+
+#: src/gpg-error.c:762
+#, c-format
+msgid "warning: could not recognize %s\n"
+msgstr "警告：无法识别 %s\n"

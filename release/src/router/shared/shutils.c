@@ -2743,7 +2743,7 @@ found_next:
 }
 
 #ifdef CONFIG_BCMWL5
-void retrieve_static_maclist_from_nvram(int idx,struct maclist *maclist,int maclist_buf_size)
+void retrieve_static_maclist_from_nvram(int idx,int vidx,struct maclist *maclist,int maclist_buf_size)
 {
 	char prefix[16]={0};
 	struct ether_addr *ea;
@@ -2761,12 +2761,17 @@ void retrieve_static_maclist_from_nvram(int idx,struct maclist *maclist,int macl
 
 	if(!maclist) return;
 
+	if (vidx>0) {
+		snprintf(prefix, sizeof(prefix), "wl%d.%d_", idx, vidx);
+	}
+	else {
 #ifdef RTCONFIG_AMAS
-	if (nvram_get_int("re_mode") == 1)
-		snprintf(prefix, sizeof(prefix), "wl%d.1_", idx);
-	else
+		if (nvram_get_int("re_mode") == 1)
+			snprintf(prefix, sizeof(prefix), "wl%d.1_", idx);
+		else
 #endif
-	snprintf(prefix,16,"wl%d_",idx);
+		snprintf(prefix, sizeof(prefix), "wl%d_", idx);
+	}
 
 #ifdef RTCONFIG_AMAS
 	if (is_cfg_relist_exist())

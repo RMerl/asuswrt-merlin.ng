@@ -1,20 +1,20 @@
 ﻿@font-face{
-	font-family: rog;
-	src: url(/fonts/ROG_Fonts-Regular.woff) format("woff"),
-	     url(/fonts/ROG_Fonts-Regular.otf) format("opentype");
+	font-family: Xolonium;
+        src: url(/fonts/xolonium.regular.woff) format("woff"),
+             url(/fonts/xolonium.regular.otf) format("opentype");
 }
 #welcomeTitle{
-	font-family: rog;
-	font-size: 86px;
+	font-family: Xolonium;
+	font-size: 68px;
 	margin:0px 46px 50px 46px;
 }
 #welcome_button{
 	line-height: 70px;
-	font-family: rog;
-	font-size: 2.75em;
+	font-family: Xolonium;
+	font-size: 2.5em;
 }
 .titleMain, .titleSub, .footer_desktop, .footer_mobile, .mobile_applyBtn, .mobile_abortBtn{
-	font-family: rog;
+	font-family: Xolonium;
 }
 .titleMain{
 	line-height: 50px;

@@ -11,17 +11,20 @@
 <title><#Web_Title#> - <#menu5_1_5#></title>
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
-<script type="text/javascript" src="/js/jquery.js"></script>
 <script>
 <% wl_get_parameter(); %>
 
 function initial(){
 	show_menu();
+	var desc_tmp = `<#WLANAuthentication11a_display1_sectiondesc#>`;
+	desc_tmp = (isSupport('wpa3'))? desc_tmp.replace("/ WPA2-Enterprise", "/ WPA2-Enterprise / WPA3-Enterprise"):desc_tmp;
+	$(".RADIUS_Auth_desc").html(desc_tmp);
 	if(lantiq_support){
 		checkWLReady();
 	}
@@ -55,7 +58,7 @@ function initial(){
 
 function applyRule(){
 	if(lantiq_support && wave_ready != 1){
-		alert("Please wait a minute for wireless ready");
+		alert(`<#Wireless_ready#>`);
 		return false;
 	}
 	
@@ -178,7 +181,7 @@ function checkWLReady(){
 		  <div>&nbsp;</div>
 		  <div class="formfonttitle"><#menu5_1#> - <#menu5_1_5#></div>
 		  <div style="margin:10px 0 10px 5px;" class="splitLine"></div>
-		  <div class="formfontdesc"><#WLANAuthentication11a_display1_sectiondesc#></div>
+		  <div class="formfontdesc RADIUS_Auth_desc"></div>
 		  <div id="lantiq_ready" style="display:none;color:#FC0;margin-left:5px;font-size:13px;">Wireless is setting...</div>
 		<table id="MainTable1" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable">
 

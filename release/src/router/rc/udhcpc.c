@@ -1400,6 +1400,7 @@ deconfig6(char *wan_ifname, const int mode)
 		break;
 	case WAN_V6PLUS:
 	case WAN_OCNVC:
+	case WAN_V6OPTION:
 		if (nvram_pf_get_int(wan_prefix, "s46_hgw_case") != S46_CASE_MAP_HGW_ON) {
 			stop_s46_tunnel(unit, 1);
 			S46_DBG("STOP_S46_TUNNEL\n");
@@ -1422,7 +1423,7 @@ deconfig6(char *wan_ifname, const int mode)
 	{
 		if (nvram_get_int("ddns_enable_x") && nvram_get_int("ddns_ipv6_update")) {
 			stop_ddns();
-			start_ddns(NULL);
+			start_ddns(NULL, 0);
 		}
 	}
 #endif
@@ -1597,6 +1598,7 @@ int s46_mapcalc(int wan_unit, int wan_proto, char *rules, char *peerbuf, size_t 
 				break;
 			case WAN_V6PLUS:
 			case WAN_OCNVC:
+			case WAN_V6OPTION:
 				if (nvram_invmatch(ipv6_nvname_by_unit("ipv6_prefix", wan_unit), "") &&
 				    nvram_invmatch(ipv6_nvname_by_unit("ipv6_prefix_length", wan_unit), "")) {
 					snprintf(addrbuf, sizeof(addrbuf), "%s/%d",
@@ -1751,6 +1753,50 @@ static char *get_s46_ra_routes(char *rules, char *addr, size_t addrsz)
 }
 #endif
 
+static int restart_telnet6_if_lan_v6addr_changed(void)
+{
+	int restart = 0, found = 0, l;
+	pid_t *pid, *list = NULL;
+	const char *p;
+	char *q, buf[128], path[sizeof("/proc/XXX/cmdline") + 10];
+	char lan_ipv6_addr[sizeof("0000:1111:2222:3333:4444:5555:6666:7777/128XXX")] = "";
+
+	if (!nvram_get_int("telnetd_enable"))
+		return 0;
+
+	if ((p = getifaddr(nvram_safe_get("lan_ifname"), AF_INET6, GIF_PREFIXLEN)) != NULL)
+		strlcpy(lan_ipv6_addr, p, sizeof(lan_ipv6_addr));
+	if ((q = strchr(lan_ipv6_addr, '/')) != NULL)
+		*q = '\0';
+	if (p == NULL)
+		return 0;
+
+	list = find_pid_by_name("telnetd");
+	for (pid = list; pid && *pid; ++pid) {
+		snprintf(path, sizeof(path), "/proc/%d/cmdline", *pid);
+		if ((l = f_read_string(path, buf, sizeof(buf))) <= 0)
+			continue;
+		for (q = buf; (q - buf) <= l; ++q) {
+			if (*q == '\0')
+				*q = ' ';
+		}
+		*q = '\0';
+		if ((q = strchr(buf, ':')) != NULL && strchr(q + 1, ':')) {
+			found++;
+			if (!strstr(buf, lan_ipv6_addr)) {
+				kill_pid_tk(*pid);
+				restart++;
+			}
+		}
+	}
+	if (list)
+		free(list);
+	if (!found || restart) {
+		notify_rc("start_telnetd6");
+	}
+	return 0;
+}
+
 static int
 bound6(char *wan_ifname, int bound)
 {
@@ -1784,6 +1830,7 @@ bound6(char *wan_ifname, int bound)
 	case WAN_DSLITE:
 	case WAN_V6PLUS:
 	case WAN_OCNVC:
+	case WAN_V6OPTION:
 		i = 0;
 		S46_DBG("[wan_if]:[%s], [bound]:[%d]\n", wan_ifname, bound);
 		while(environ[i] != NULL) {
@@ -1936,6 +1983,9 @@ skip:
 #ifdef RTCONFIG_WIREGUARD
 		update_wgs_client_ep();
 #endif
+#if defined(RTCONFIG_SAMBASRV) || defined(RTCONFIG_TUXERA_SMBD)
+		notify_rc("restart_samba");
+#endif
 	}
 
 #ifdef RTCONFIG_SOFTWIRE46
@@ -1966,6 +2016,7 @@ skip:
 		goto s46_mapcalc;
 	case WAN_V6PLUS:
 	case WAN_OCNVC:
+	case WAN_V6OPTION:
 		draft = 1;
 	case WAN_DSLITE:
 		/* Workaround for system boot case. */
@@ -1990,7 +2041,7 @@ skip:
 		//FIXME: wait for DNS
 		sleep(5);
 
-		if (wan_proto == WAN_V6PLUS) {
+		if (wan_proto == WAN_V6PLUS || wan_proto == WAN_V6OPTION) {
 			if (check_v6plusd(wan_unit))
 				S46_DBG("[START] v6plusd\n");
 			else {
@@ -2066,11 +2117,10 @@ skip:
 #ifdef RTCONFIG_INADYN
 	if (nvram_get_int("ddns_enable_x") && nvram_get_int("ddns_ipv6_update")) {
 		stop_ddns();
-		start_ddns(NULL);
+		start_ddns(NULL, 0);
 	}
 #endif
-        if (nvram_get_int("telnetd_enable"))
-                notify_rc("restart_telnetd");
+		restart_telnet6_if_lan_v6addr_changed();
 
 	return 0;
 }
@@ -2230,6 +2280,7 @@ start_dhcp6c(void)
 		break;
 	case WAN_MAPE:
 	case WAN_V6PLUS:
+	case WAN_V6OPTION:
 		dhcp6c_argv[index++] = "-r94";	/* S46_CONT_MAPE */
 		break;
 	case WAN_OCNVC:

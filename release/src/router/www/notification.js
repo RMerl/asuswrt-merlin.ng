@@ -90,14 +90,14 @@ if(amesh_support && ameshRouter_support) {
 
 var get_s46_hgw_case = '<% nvram_get("s46_hgw_case"); %>';	//topology 2,3,6
 var s46_ports_check_flag = (get_s46_hgw_case=='3' || get_s46_hgw_case=='6')? true:false;	//true for topology 3||6
-var check_ipv6_s46_ports_hook = (Softwire46_support && (wan_proto=="v6plus" || wan_proto=="ocnvc"))? '<%chk_s46_port_range();%>':'0';
+var check_ipv6_s46_ports_hook = (Softwire46_support && (wan_proto=="v6plus" || wan_proto=="ocnvc" || wan_proto=="v6opt"))? '<%chk_s46_port_range();%>':'0';
 // '{"pf":"1","open_nat":"0","pt":"1","https":"0","ssh":"0","openvpn":"0","ftp":"1","ipsec":"1"}';
 var check_ipv6_s46_ports = "0";
 if(check_ipv6_s46_ports_hook != "" && check_ipv6_s46_ports_hook != "0"){
 	check_ipv6_s46_ports = JSON.parse(check_ipv6_s46_ports_hook);
 }
 
-var get_ipv6_s46_ports = (Softwire46_support && (wan_proto=="v6plus" || wan_proto=="ocnvc"))? '<%nvram_get("ipv6_s46_ports");%>':'0';
+var get_ipv6_s46_ports = (Softwire46_support && (wan_proto=="v6plus" || wan_proto=="ocnvc") || wan_proto=="v6opt")? '<%nvram_get("ipv6_s46_ports");%>':'0';
 var array_ipv6_s46_ports = new Array("");
 if(get_ipv6_s46_ports!="0" && get_ipv6_s46_ports!=""){
 	array_ipv6_s46_ports = get_ipv6_s46_ports.split(" ");
@@ -121,6 +121,12 @@ if(wan_proto=="ocnvc"){
 	port_range_hint = port_range_hint.replace("%1$@", "<#IPv6_ocnvc#>");
 	port_mismatch_notice = port_mismatch_notice.replace("%2$@", "<#IPv6_ocnvc#>");
 	port_mismatch_list = port_mismatch_list.replace("%3$@", "<#IPv6_ocnvc#>");
+}
+if(wan_proto=="v6opt"){
+	port_confirm = port_confirm.replace("%0$@", "<#IPv6_opt#>");
+	port_range_hint = port_range_hint.replace("%1$@", "<#IPv6_opt#>");
+	port_mismatch_notice = port_mismatch_notice.replace("%2$@", "<#IPv6_opt#>");
+	port_mismatch_list = port_mismatch_list.replace("%3$@", "<#IPv6_opt#>");
 }
 
 function pop_s46_ports(p, flag){
@@ -495,33 +501,28 @@ var notification = {
 		}else
 			notification.acpw = 0;
 
-		if(amesh_support && ameshRouter_support) {
-			if(aimesh_system_new_fw_flag || webs_state_flag == 1 || webs_state_flag == 2) {
-				notification.array[1] = 'noti_upgrade';
-				notification.upgrade = 1;
-				notification.desc[1] = '<#ASUSGATE_note2#>';
-				notification.action_desc[1] = '<#ASUSGATE_act_update#>';
-				notification.clickCallBack[1] = "location.href = 'Advanced_FirmwareUpgrade_Content.asp?confirm_show=0';"
+		var noti_upgrade_flag = 0;
+		if(amesh_support && ameshRouter_support && aimesh_system_new_fw_flag) {
+			notification.array[1] = 'noti_upgrade';
+			noti_upgrade_flag = 1;
+			notification.desc[1] = '<#ASUSGATE_note2#>';
+			notification.action_desc[1] = '<#ASUSGATE_act_update#>';
+			notification.clickCallBack[1] = "location.href = 'Advanced_FirmwareUpgrade_Content.asp?confirm_show=0';"
+		}
+		if(noti_upgrade_flag == 0 && (webs_state_flag == 1 || webs_state_flag == 2)){
+			notification.array[1] = 'noti_upgrade';
+			noti_upgrade_flag = 1;
+			notification.desc[1] = '<#ASUSGATE_note2#>';
+			if(!live_update_support || !HTTPS_support){
+				notification.action_desc[1] = '<a id="link_to_downlodpage" target="_blank" href="'+get_helplink()+'" style="color:#FFCC00;"><#ASUSGATE_act_update#></a>';
+				notification.clickCallBack[1] = "";
 			}
-			else
-				notification.upgrade = 0;
+			else{
+				notification.action_desc[1] = '<#ASUSGATE_act_update#>';
+				notification.clickCallBack[1] = "location.href = 'Advanced_FirmwareUpgrade_Content.asp?confirm_show=0'";
+			}
 		}
-		else {
-			if(webs_state_flag == 1 || webs_state_flag == 2){
-				notification.array[1] = 'noti_upgrade';
-				notification.upgrade = 1;
-				notification.desc[1] = 'A new firmware version ('+webs_state_info.replace('_','.').replace('_0','')+') is now available.';
-				if(!live_update_support || !HTTPS_support){
-					notification.action_desc[1] = '<a id="link_to_downlodpage" target="_blank" href="'+get_helplink()+'" style="color:#FFCC00;"><#ASUSGATE_act_update#></a>';
-					notification.clickCallBack[1] = "";
-				}
-				else{
-					notification.action_desc[1] = '<#ASUSGATE_act_update#>';
-					notification.clickCallBack[1] = "location.href = 'Advanced_FirmwareUpgrade_Content.asp?confirm_show=0'";
-				}
-			}else
-				notification.upgrade = 0;
-		}
+		notification.upgrade = (noti_upgrade_flag == 1)? 1:0;
 		
 		if(band2g_support && sw_mode != 4 && noti_auth_mode_2g == 'open'){ //case3-1
 				notification.array[2] = 'noti_wifi_2g';
@@ -652,7 +653,7 @@ var notification = {
 			}
 		}
 
-		if(Softwire46_support && (wan_proto == "v6plus" || wan_proto == "ocnvc")){
+		if(Softwire46_support && (wan_proto == "v6plus" || wan_proto == "ocnvc" || wan_proto == "v6opt")){
 			var exist_conflict = exist_v6plus_conflict();
 			if(check_ipv6_s46_ports != "0" && exist_conflict>0){
 				notification.s46_ports = 1;

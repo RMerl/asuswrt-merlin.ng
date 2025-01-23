@@ -486,6 +486,7 @@ typedef struct
     int	     jb_max;
     int	     enable_ice;
     int	     enable_turn;
+	int	     enable_ipv6;
     PyObject *turn_server;
     int	     turn_conn_type;
     PyObject *turn_realm;
@@ -613,6 +614,11 @@ static PyMemberDef PyObj_pjsua_media_config_members[] =
 	offsetof(PyObj_pjsua_media_config, enable_turn), 0,
         "Enable TURN."
     },
+	{
+		"enable_ipv6", T_INT,
+			offsetof(PyObj_pjsua_media_config, enable_ipv6), 0,
+			"Enable IPV6."
+	},
     {
     	"turn_server", T_OBJECT_EX,
     	offsetof(PyObj_pjsua_media_config, turn_server), 0,
@@ -700,6 +706,7 @@ static void PyObj_pjsua_media_config_import(PyObj_pjsua_media_config *obj,
     obj->ec_tail_len	    = cfg->ec_tail_len;
     obj->enable_ice	    = cfg->enable_ice;
     obj->enable_turn	    = cfg->enable_turn;
+	obj->enable_ipv6	    = cfg->enable_ipv6;
     Py_XDECREF(obj->turn_server);
     obj->turn_server	    = PyString_FromPJ(&cfg->turn_server);
     obj->turn_conn_type	    = cfg->turn_conn_type;
@@ -747,6 +754,7 @@ static void PyObj_pjsua_media_config_export(pjsua_media_config *cfg,
     cfg->ec_tail_len	    = obj->ec_tail_len;
     cfg->enable_ice	    = obj->enable_ice;
     cfg->enable_turn	    = obj->enable_turn;
+	cfg->enable_ipv6	    = obj->enable_ipv6;
 
     if (cfg->enable_turn) {
 	cfg->turn_server = PyString_ToPJ(obj->turn_server);

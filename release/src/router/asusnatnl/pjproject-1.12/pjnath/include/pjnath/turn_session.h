@@ -384,6 +384,11 @@ typedef struct pj_turn_session_info
      */
     int		    lifetime;
 
+    /**
+     * The selected TURN server address.
+     */
+    char	    srv_name[128];
+
 } pj_turn_session_info;
 
 

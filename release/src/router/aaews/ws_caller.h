@@ -17,6 +17,6 @@ int st_Unregister(GetServiceArea* gsa, Login* lg);
 int st_PnsSendMsg(GetServiceArea* gsa, Login* lg, char *token, char *serviceid, char *msg);
 int st_IftttNotification(char *server, char *api, char *msg);
 int st_GetUserTicketByRefresh(char *server, GetUserTicketByRefresh* ut, char* cusid, char* devicemd5mac, char* refresh_ticket);
-int st_GetAWSCertificate(char *server, Login* lg, GetAWSCertificate* gact);
+int st_GetAWSCertificate(char *server, int newcert, Login* lg, GetAWSCertificate* gact);
 int st_PnsSendMsgFcm(GetServiceArea* gsa, Login* lg, char *msg);
 #endif

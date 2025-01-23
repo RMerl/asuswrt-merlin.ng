@@ -146,7 +146,16 @@ endif
 #CFLAGS += -DNFCMDBG
 #CFLAGS += -D_MACDBG_
 
+ifeq ($(HND_ROUTER_BE_4916), y)
+CFLAGS+= -fcommon
+endif
+
+ifeq ($(wildcard $(SRCBASE)/router/nfcm/*.c),)
+all:
+	-cp -f prebuild/nfcm nfcm
+else
 all: nfcm
+endif
 
 .c.o:
 	$(CC) -c $*.c $(CFLAGS)

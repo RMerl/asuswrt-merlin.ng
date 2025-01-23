@@ -50,13 +50,13 @@
 	color:#FFFFFF;
 	cursor:default;
 }	
-</style>	
+</style>
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/wcdma_list.js"></script>
-<script type="text/javaScript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
@@ -510,7 +510,7 @@ function applyRule(){
 
 	if(document.form.modem_country.value == ""){
 		var valueStr = "";
-		document.form.modem_isp.disabled = false;;
+		document.form.modem_isp.disabled = false;
 		document.form.modem_isp.options.length = 1;
 		document.form.modem_isp.options[0] = new Option(valueStr, valueStr, false, true);
 	}

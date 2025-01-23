@@ -102,17 +102,17 @@
 	cursor: pointer;	
 }
 </style>
-
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/confirm_block.js"></script>
 <script language="JavaScript" type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script language="JavaScript" type="text/javascript" src="/form.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js"></script>
 <!-- script language="JavaScript" type="text/javascript" src="/ajax/get_rbk_info.asp"></script -->
 <script>
 $(function () {
@@ -1935,6 +1935,7 @@ function toggle_fw_check(state) {
 					<li><#FW_n1#></li>
 					<li id="fw_note2"><#FW_n2#>&nbsp;<#FW_n3#></li>
 					<li id="fw_note3">Get the latest firmware version from the download site at <a style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="https://www.asuswrt-merlin.net/download/" target="_blank">https://www.asuswrt-merlin.net/download/</a></li>
+					<li style="display:none;"id="fw_note5"><#FW_n5#></li>
 					</ol>
 		  </div>
 		  <br>
@@ -1946,31 +1947,108 @@ function toggle_fw_check(state) {
 			</tr>	
 			</thead>
 			<tr>
-				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(11, 14);"><#FW_auto_upgrade#></a></th>
+				<th><#FW_auto_upgrade#></th>
 				<td>
 					<div align="center" class="left" style="width:75px; float:left; cursor:pointer;" id="switch_webs_update_enable"></div>
 					<script type="text/javascript">
 					$('#switch_webs_update_enable').iphoneSwitch('<% nvram_get("webs_update_enable"); %>',
-						function(){
-							hide_upgrade_opt(1);
-							save_update_enable('on');
-						},
-						function(){
-							hide_upgrade_opt(0);
-							save_update_enable('off');
-						}
-					);
+                            function () {
+								const policyStatus = PolicyStatus()
+										.then(data => {
+											if (data.PP == 0 || data.PP_time == "") {
+												const policyModal = new PolicyModalComponent({
+													policy: "PP",
+													policyStatus: data,
+													agreeCallback: () => {
+														hide_upgrade_opt(1);
+														save_update_enable('on');
+													},
+													knowRiskCallback: () => {
+														alert(`<#ASUS_POLICY_Function_Confirm#>`);
+														location.reload();
+													}
+												});
+												policyModal.show();
+												return false;
+											} else {
+												hide_upgrade_opt(1);
+												save_update_enable('on');
+											}
+										});
+							},
+							function () {
+								hide_upgrade_opt(0);
+                                save_update_enable('off');
+                            }
+                    );
 					</script>
 				</td>	
 			</tr>
 			<tr>
 				<th><#FW_auto_time#></th>
 				<td>
-					<select name="webs_update_time_x_hour" class="input_option" onchange="save_update_enable();"></select> : 
-					<select name="webs_update_time_x_min" class="input_option" onchange="save_update_enable();"></select>
+					<select id="webs_update_time_x_hour" name="webs_update_time_x_hour" class="input_option" onchange="save_update_enable();"></select> : 
+					<select id="webs_update_time_x_min" name="webs_update_time_x_min" class="input_option" onchange="save_update_enable();"></select>
 					<span id="system_time" class="devicepin" style="color:#FFFFFF;"></span>
 					<br><span id="dstzone" style="display:none;margin-left:5px;color:#FFFFFF;"></span>
 				</td>	
+			</tr>
+
+			<tr>
+				<td colspan="2">
+					<#FW_auto_upgrade_desc#>
+				</td>
+			</tr>
+		</table>
+
+		<table id="secur_stab_setting" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
+			<thead>
+			<tr>
+				<td colspan="2"><#Secur_Stab_auto_upgrade#></td>
+			</tr>	
+			</thead>
+			<tr>
+				<th><#Secur_Stab_auto_upgrade#></th>
+				<td>
+					<div align="center" class="left" style="width:75px; float:left; cursor:pointer;" id="switch_security_update_enable"></div>
+					<script type="text/javascript">
+					$('#switch_security_update_enable').iphoneSwitch(httpApi.securityUpdate.get(),
+						function(){
+                            //on
+							const policyStatus = PolicyStatus()
+									.then(data => {
+										if (data.PP == 0 || data.PP_time == "") {
+											const policyModal = new PolicyModalComponent({
+												policy: "PP",
+												policyStatus: data,
+												agreeCallback: () => {
+													httpApi.securityUpdate.set(1);
+												},
+												knowRiskCallback: () => {
+													alert(`<#ASUS_POLICY_Function_Confirm#>`);
+													location.reload();
+												}
+											});
+											policyModal.show();
+											return false;
+										} else {
+											httpApi.securityUpdate.set(1);
+										}
+									});
+						},
+						function(){
+							//off
+							httpApi.securityUpdate.set(0);
+						}
+					);
+					</script>
+				</td>	
+			</tr>
+
+			<tr>
+				<td colspan="2">
+					<#Secur_Stab_auto_upgrade_desc#>
+				</td>
 			</tr>
 		</table>
 

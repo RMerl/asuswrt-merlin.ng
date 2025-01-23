@@ -1,0 +1,14 @@
+# This file is expected to be used via gitlog-to-changelog's --amend=FILE
+# option.  It specifies what changes to make to each given SHA1's commit
+# log and metadata, using Perl-eval'able expressions.
+
+eb4937914db3fb7317502e97e4f0e40c1857f59d
+# Fix bad formatted entry dated 2013-05-20
+s/(?s)mpi_sub.*$/cipher: Fix segv in last ECC change.
+* cipher\/ecc.c (generate_key): Make sure R is initialized./
+
+296f38a2bd2e25788643a42e4881faed00884a40
+# Fix bad formatted entry dated 2013-05-09
+s/(?s)Generate ECC.*$/cipher: Generate compliant ECC keys.
+* cipher\/ecc.c (generate_key): Make sure a key is compliant for
+using the compact representation./

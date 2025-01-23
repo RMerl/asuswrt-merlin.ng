@@ -151,6 +151,16 @@ const char* getawscertificate_template =
 "</getawscertificate>\r\n\r\n"
 ;
 
+const char* getawscertificate_newcert_template = 
+"<getawscertificate>\r\n"
+"<cusid>%s</cusid>\r\n"
+"<userticket>%s</userticket>\r\n"
+"<deviceid>%s</deviceid>\r\n"
+"<deviceticket>%s</deviceticket>\r\n"
+"<newcert>%d</newcert>\r\n"
+"</getawscertificate>\r\n\r\n"
+;
+
 const char* psr_sendmsg_template = 
 "<psr_sendmsg>\r\n"
 "<cusid>%s</cusid>\r\n"

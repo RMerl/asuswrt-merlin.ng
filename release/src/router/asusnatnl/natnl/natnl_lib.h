@@ -22,6 +22,7 @@ extern "C" {
 #define MAX_TUNNEL_PORT_COUNT 8
 #define MAX_TEXT_LEN 64 
 #define MAX_ERR_MSG_LEN 80 
+#define MAX_STATE_LEN 128 
 #define MAX_PORT_LEN 6 
 #define MAX_IP_LEN 64 
 
@@ -80,6 +81,10 @@ struct natnl_config {
 	// This flag also can perform OR bitwise operation with following value.
 	// 4 : Use tcp turn.
 	int use_turn;         
+
+	// 0 : don't use ipv6. 
+	// 1 : use ipv6.
+	int use_ipv6;
 
 	// The number of turn server.
 	int turn_srv_cnt;     
@@ -388,6 +393,18 @@ struct natnl_tnl_event {
 
 	// The string of error of turn, might be empty string by case.
 	char                 turn_status_text[MAX_ERR_MSG_LEN];
+
+	// The invite states occur in the process of make call.
+	char                 inv_state[MAX_STATE_LEN];
+
+	// The invite tsx states occur in the process of make call.
+	char                 inv_tsx_state[MAX_STATE_LEN];
+
+	// The tcp turn states occur in the process of make call.
+	char                 tcp_turn_state[MAX_STATE_LEN];
+
+	// The udp turn states occur in the process of make call.
+	char                 udp_turn_state[MAX_STATE_LEN];
 };
 
 /**
@@ -500,6 +517,18 @@ struct natnl_tnl_info {
 
 	// The string of error of turn, might be empty string by case.
 	char                 turn_status_text[MAX_ERR_MSG_LEN];
+
+	// The invite states occur in the process of make call.
+	char                 inv_state[MAX_STATE_LEN];
+
+	// The invite tsx states occur in the process of make call.
+	char                 inv_tsx_state[MAX_STATE_LEN];
+
+	// The tcp turn states occur in the process of make call.
+	char                 tcp_turn_state[MAX_STATE_LEN];
+
+	// The udp turn states occur in the process of make call.
+	char                 udp_turn_state[MAX_STATE_LEN];
 };
 
 /*
@@ -509,6 +538,9 @@ struct natnl_callback {
 	/* The callback function will be called 
 	when the tunnel state changed or error occur. */
     void (*on_natnl_tnl_event)(struct natnl_tnl_event *tnl_event);
+	/* The callback function will be called 
+	when the debug log needs to write. */
+    void (*app_log_cb)(int inst_id, int level, const char *src, const char *format, ...);
 };
 
 /*

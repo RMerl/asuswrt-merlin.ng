@@ -27,8 +27,8 @@ a:active {
 	color: #FFFFFF;
 }
 </style>
-<script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script>
@@ -67,11 +67,8 @@ function initial(){
 	var usb_hfs_mod = '<% nvram_get("usb_hfs_mod"); %>';
 
 	disk_list_array = { "info" : ["<#diskUtility_information#>", "disk.asp"], "health" : ["<#diskUtility#>", "disk_utility.asp"], "format" : ["<#CTL_format#>", "disk_format.asp"]};
-	if(!parent.diskUtility_support) {
+	if(!parent.diskUtility_support || usb_fatfs_mod != "tuxera" || usb_ntfs_mod != "tuxera" || usb_hfs_mod != "tuxera") {
 		delete disk_list_array.health;
-		delete disk_list_array.format;
-	}
-	if(usb_fatfs_mod != "tuxera" && usb_ntfs_mod != "tuxera" && usb_hfs_mod != "tuxera") {
 		delete disk_list_array.format;
 	}
 	$('#diskTab').html(parent.gen_tab_menu(disk_list_array, "info"));

@@ -1,6 +1,7 @@
 #ifndef __CFG_NBR_RPT_H__
 #define __CFG_NBR_RPT_H__
 
+
 #define MAX_NBR_DATA_BUFLEN	512
 #define NBR_LIST_JSON_FILE		TEMP_ROOT_PATH"/nbr_list.json"
 #define NBR_LIST_PRIVATE_JSON_FILE		TEMP_ROOT_PATH"/nbr_list_private.json"

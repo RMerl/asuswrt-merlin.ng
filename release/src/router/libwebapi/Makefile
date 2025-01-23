@@ -81,6 +81,10 @@ LIBS += -L$(TOP)/smspdu -lsmspdu
 endif
 endif
 
+ifeq ($(BRCM_CHIP),6813)
+CFLAGS += -DCHIP_BCM4916
+endif
+
 all: libwebapi.so
 
 # handle prebuilt object here

@@ -11,9 +11,9 @@
 <link rel="stylesheet" type="text/css" href="/NM_style.css">
 <link rel="stylesheet" type="text/css" href="/form_style.css">
 <link rel="stylesheet" type="text/css" href="/index_style.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/state.js"></script>
-<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <script>
@@ -74,6 +74,8 @@ if(wan_bonding_support)
 <% wan_get_parameter(); %>
 
 var wan_unit = '<% nvram_get("wan_unit"); %>' || 0;
+
+var wan_ipv6_network_json =('<% wan_ipv6_network(); %>' != '{}')? JSON.parse('<% wan_ipv6_network(); %>'):{};
 
 if(yadns_support){
 	var yadns_enable = '<% nvram_get("yadns_enable_x"); %>';
@@ -355,6 +357,10 @@ function update_connection_type(dualwan_unit){
 		wanlink_type_conv = "<#IPv6_plus#>";
 	else if(wanlink_type_conv == "ocnvc")
 		wanlink_type_conv = "<#IPv6_ocnvc#>";
+	else if(wanlink_type_conv == "dslite")
+		wanlink_type_conv = "DS-Lite";
+	else if(wanlink_type_conv == "v6opt")
+		wanlink_type_conv = "<#IPv6_opt#>";
  
 
 	showtext($("#connectionType")[0], wanlink_type_conv);
@@ -471,8 +477,23 @@ function update_all_ip(wanip, wannetmask, wangateway, unit){
 
 	if(unit == 0){
 		showtext($("#WANIP")[0], wanip);
+		if(wan_ipv6_network_json.status != "0" && wan_ipv6_network_json.IPv6_Address != ""){
+			$("#ipv6_WANIP").show();
+			$("#ipv6_WANIP").prop('title', `<#IPv6_wan_addr#>`);
+			showtext($("#ipv6_WANIP")[0], wan_ipv6_network_json.IPv6_Address);
+		}
+		if(wan_ipv6_network_json.status != "0" && wan_ipv6_network_json.Link_Local_Address != ""){
+			$("#ipv6_WANIP_LL").show();
+			$("#ipv6_WANIP_LL").prop('title', 'WAN IPv6 Link-Local Address');
+			showtext($("#ipv6_WANIP_LL")[0], wan_ipv6_network_json.Link_Local_Address);
+		}
 		showtext($("#netmask")[0], wannetmask);
 		showtext($("#gateway")[0], wangateway);
+		if(wan_ipv6_network_json.status != "0" && wan_ipv6_network_json.IPv6_Gateway != ""){
+                        $("#ipv6_gateway").show();
+			$("#ipv6_gateway").prop('title', `<#IPv6_wan_gateway#>`);
+                        showtext($("#ipv6_gateway")[0], wan_ipv6_network_json.IPv6_Gateway);
+                }
 		showtext2($("#lease")[0], format_time(lease, "Renewing..."), have_lease);
 		showtext2($("#expires")[0], format_time(expires, "Expired"), have_lease);
 	}
@@ -541,6 +562,11 @@ function update_all_dns(wandns, wanxdns, unit){
 	if(unit == 0){
 		showtext2($("#DNS1")[0], dnsArray[0], dnsArray[0]);
 		showtext2($("#DNS2")[0], dnsArray[1], dnsArray[1]);
+		if(wan_ipv6_network_json.status != "0" && wan_ipv6_network_json.DNS_Servers != ""){
+                        $("#ipv6_DNS_servers").show();
+			$("#ipv6_DNS_servers").prop('title', `<#ipv6_dns_serv#>`);
+                        showtext($("#ipv6_DNS_servers")[0], wan_ipv6_network_json.DNS_Servers);
+                }
 		showtext2($("#xDNS1")[0], xdnsArray[0], !have_dns && xdnsArray[0]);
 		showtext2($("#xDNS2")[0], xdnsArray[1], !have_dns && xdnsArray[1]);
 	}
@@ -914,6 +940,8 @@ function manualSetup(){
     <td style="padding:5px 10px 5px 15px;">
     		<p class="formfonttitle_nwm"><#WAN_IP#></p>
     		<p class="tab_info_bg" style="padding-left:10px; margin-top:3px; line-height:20px;" id="WANIP"></p>
+		<p class="tab_info_bg" style="padding-left:10px; margin-top:3px; line-height:20px;display:none;" id="ipv6_WANIP"></p>
+		<p class="tab_info_bg" style="padding-left:10px; margin-top:3px; line-height:20px;display:none;" id="ipv6_WANIP_LL"></p>
     		<p class="tab_info_bg" style="padding-left:10px; margin-top:3px;line-height:20px;" id="xWANIP"></p>
     		<span id="wan_status" style="display:none"></span>
       	<div style="margin-top:5px;" class="line_horizontal"></div>
@@ -970,6 +998,7 @@ function manualSetup(){
     		<p class="formfonttitle_nwm">DNS <span id="dnspriv_notice" style="color:#FFCC00;"></span></p>
     		<p class="tab_info_bg" style="padding-left:10px; margin-top:3px;line-height:20px;" id="DNS1"></p>
     		<p class="tab_info_bg" style="padding-left:10px; margin-top:3px;line-height:20px;" id="DNS2"></p>
+		<p class="tab_info_bg" style="padding-left:10px; margin-top:3px;line-height:20px;display:none;" id="ipv6_DNS_servers"></p>
     		<p class="tab_info_bg" style="padding-left:10px; margin-top:3px;line-height:20px;" id="xDNS1"></p>
     		<p class="tab_info_bg" style="padding-left:10px; margin-top:3px;line-height:20px;" id="xDNS2"></p>
       	<div style="margin-top:5px;" class="line_horizontal"></div>
@@ -990,6 +1019,7 @@ function manualSetup(){
     <td style="padding:5px 10px 5px 15px;">
     		<p class="formfonttitle_nwm"><#RouterConfig_GWStaticGW_itemname#></p>
     		<p class="tab_info_bg" style="padding-left:10px; margin-top:3px;line-height:20px;" id="gateway"></p>
+		<p class="tab_info_bg" style="padding-left:10px; margin-top:3px;line-height:20px;display:none;" id="ipv6_gateway"></p>
     		<p class="tab_info_bg" style="padding-left:10px; margin-top:3px;line-height:20px;" id="xgateway"></p>
       	<div style="margin-top:5px;" class="line_horizontal"></div>
     </td>

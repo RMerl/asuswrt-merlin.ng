@@ -185,7 +185,10 @@
 #   include <linux/syscalls.h>	/* sys_select() */
 #   include <asm/uaccess.h>	/* set/get_fs()	*/
 
+    #ifndef IS_NATNL_APP
     typedef int socklen_t;
+    #endif
+
 #   define getsockopt  sys_getsockopt
 
     /*
@@ -209,7 +212,9 @@
  * os_auto.h
  */
 #if !defined(PJ_HAS_SOCKLEN_T) || PJ_HAS_SOCKLEN_T==0
+    #ifndef IS_NATNL_APP
     typedef int socklen_t;
+    #endif
 #endif
 
 /* Regarding sin_len member of sockaddr_in:

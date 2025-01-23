@@ -9,8 +9,10 @@
 	<link rel="stylesheet" href="index_style.css"> 
 	<link rel="stylesheet" href="form_style.css">
 	<link rel="stylesheet" type="text/css" href="/js/weekSchedule/weekSchedule.css">
+
 	<script src="/js/jquery.js"></script>
-	<script src="/calendar/jquery-ui.js"></script> 
+	<script src="/calendar/jquery-ui.js"></script>
+	<script type="text/javascript" src="/js/httpApi.js"></script>
 	<script src="/state.js"></script>
 	<script src="/general.js"></script>
 	<script src="/help.js"></script>
@@ -18,7 +20,6 @@
 	<script src="/validator.js"></script>
 	<script language="JavaScript" type="text/javascript" src="/js/weekSchedule/weekSchedule.js"></script>
 	<script language="JavaScript" type="text/javascript" src="/form.js"></script>
-	<script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
 <style>
 .ui-slider {
 	position: relative;
@@ -748,20 +749,22 @@ function initial(){
 		else{
 			document.form.wl_gmode_check.checked = false;
 		}
-		
+
 		if(document.form.smart_connect_x.value == '1'){
 			document.form.wl_gmode_check.disabled = true;
 		}
 
 		document.getElementById("wl_gmode_checkbox").style.display = "";
-		if(document.form.wl_rateset.value == "ofdm"){
-			document.form.wl_rateset_ckb.checked = true;
-		}
-		else{
-			document.form.wl_rateset_ckb.checked = false;
-		}
+		if(disable11b_support){
+			if(document.form.wl_rateset.value == "ofdm"){
+				document.form.wl_rateset_ckb.checked = true;
+			}
+			else{
+				document.form.wl_rateset_ckb.checked = false;
+			}
 
-		wl_mode_change(document.form.wl_nmode_x.value);	
+			wl_mode_change(document.form.wl_nmode_x.value);
+		}
 	}
 }
 
@@ -916,7 +919,7 @@ function changeRSSI(_switch){
 
 function applyRule(){
 	if(lantiq_support && wave_ready != 1){
-		alert("Please wait a minute for wireless ready");
+		alert(`<#Wireless_ready#>`);
 		return false;
 	}
 	
@@ -1092,7 +1095,7 @@ power_table_desc = ["<#WLANConfig11b_TxPower1#>", "<#WLANConfig11b_TxPower2#>", 
 //power_table_desc = ["省電", "弱", "平衡", "強", "效能"];
 function register_event(){
 	
-	$(function() {
+
 		$( "#slider" ).slider({
 			orientation: "horizontal",
 			range: "min",
@@ -1106,7 +1109,7 @@ function register_event(){
 				set_power(ui.value);	  
 			}
 		}); 
-	});
+
 }
 
 function set_power(power_value){	

@@ -41,6 +41,7 @@
 struct report_entry {
 	uint8 rcpi;
 	char ap_mac[MAC_STR_LEN+1];
+	int channel;
 	struct report_entry *next;
 };
 
@@ -115,6 +116,7 @@ struct rcpi_checklist {
 
 #ifdef RTCONFIG_LIBASUSLOG
 #define AMAS_DBG_LOG	"roamast.log"
+#define AMAS_FB_LOG	    "roamfb.log"
 #define RAST_INFO(fmt, arg...) \
 	do { \
 		_dprintf("RAST %lu: "fmt, uptime(), ##arg); \
@@ -138,6 +140,16 @@ struct rcpi_checklist {
 		if(rast_syslog || f_exists(RAST_DEBUG)) \
 			asusdebuglog(LOG_INFO, AMAS_DBG_LOG, LOG_CUSTOM, LOG_SHOWTIME, 0, fmt, ##arg); \
 		logmessage(LOG_TITLE_ROAM, fmt, ##arg); \
+	} while (0)
+#define RAST_FB_LOG(fmt, arg...) \
+	do { \
+		asusdebuglog(LOG_INFO, AMAS_FB_LOG, LOG_CUSTOM, LOG_SHOWTIME, 256, LOG_TITLE_ROAM": "fmt, ##arg); \
+		if(rast_dbg || f_exists(RAST_DEBUG)) \
+			_dprintf("RAST %lu: "fmt, uptime(), ##arg); \
+		if(rast_syslog || f_exists(RAST_DEBUG)) \
+			asusdebuglog(LOG_INFO, AMAS_DBG_LOG, LOG_CUSTOM, LOG_SHOWTIME, 0, fmt, ##arg); \
+		if(rast_force_syslog) \
+			logmessage(LOG_TITLE_ROAM, fmt, ##arg); \
 	} while (0)
 #else
 #define RAST_INFO(fmt, arg...) \
@@ -157,6 +169,10 @@ struct rcpi_checklist {
 	do { \
 		_dprintf("RAST %lu: "fmt, uptime(), ##arg); \
 		logmessage(LOG_TITLE_ROAM, fmt, ##arg); \
+	} while (0)
+#define RAST_FB_LOG(fmt, arg...) \
+	do { \
+		_dprintf("RAST %lu: "fmt, uptime(), ##arg); \
 	} while (0)
 #endif
 
@@ -415,7 +431,7 @@ extern void rast_retrieve_bs_data(int bssidx, int vifidx, int interval);
 #endif
 
 #ifdef RTCONFIG_11K_RCPI_CHECK
-void add_to_rcpi_checklist(char *sta, char *ap_mac, char rcpi,struct rcpi_checklist **rcpi_list);
+void add_to_rcpi_checklist(char *sta, char *ap_mac, char rcpi,int channel,struct rcpi_checklist **rcpi_list);
 #endif
 
 //#ifdef RTCONFIG_RAST_NONMESH_KVONLY

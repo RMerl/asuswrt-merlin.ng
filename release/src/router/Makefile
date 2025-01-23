@@ -979,7 +979,13 @@ obj-$(RTCONFIG_AHS) += curl
 obj-$(RTCONFIG_AHS) += json-c
 obj-$(RTCONFIG_AHS) += ahs
 
-obj-$(RTCONFIG_ASD) += asd
+ifeq ($(RTCONFIG_ASD_2_1),y)
+obj-y += asd2.1
+obj-y += onig-6.9.9
+obj-y += jq-1.7.1
+else ifeq ($(RTCONFIG_ASD),y)
+obj-y += asd
+endif
 
 obj-$(RTCONFIG_OPENVPN) += libovpn
 
@@ -1374,8 +1380,8 @@ endif
 
 #For timemachine
 obj-$(RTCONFIG_TIMEMACHINE) += openssl
-obj-$(RTCONFIG_TIMEMACHINE) += libgpg-error-1.10
-obj-$(RTCONFIG_TIMEMACHINE) += libgcrypt-1.5.1
+obj-$(RTCONFIG_TIMEMACHINE) += libgpg-error-1.47
+obj-$(RTCONFIG_TIMEMACHINE) += libgcrypt-1.10.2
 obj-$(RTCONFIG_TIMEMACHINE) += db-4.8.30
 obj-$(RTCONFIG_TIMEMACHINE) += libevent-2.0.21
 obj-$(RTCONFIG_TIMEMACHINE) += netatalk-3.0.5
@@ -3193,9 +3199,10 @@ openssl-1.1/Makefile:
 	$(if $(RTCONFIG_DEBUG),-g) \
 	-ffunction-sections -fdata-sections -Wl,--gc-sections \
 	shared $(OPENSSL_CIPHERS) no-err no-async --api=1.0.0 \
-	no-aria no-sm2 no-sm3 no-sm4 \
-	$(if $(filter y,$(RTCONFIG_WTFAST)),-DRTCONFIG_WTFAST,) \
-	$(PRIORITY_CHACHA)
+	    no-aria no-sm2 no-sm3 no-sm4 \
+	    --with-rand-seed=devrandom \
+	    $(if $(filter y,$(RTCONFIG_WTFAST)),-DRTCONFIG_WTFAST,) \
+	    $(PRIORITY_CHACHA)
 	@$(MAKE) -C openssl-1.1 depend
 	@$(MAKE) -C openssl-1.1 clean
 	@touch $@
@@ -3530,7 +3537,7 @@ ifeq ($(or $(RTCONFIG_DHDAP),$(HND_ROUTER_AX)),y)
 endif
 endif
 
-dnsmasq:  $(if $(RTCONFIG_DNSSEC_OPENSSL),openssl,) $(if $(RTCONFIG_DNSSEC_NETTLE),nettle,)
+dnsmasq:  $(if $(RTCONFIG_DNSSEC_OPENSSL),openssl,) $(if $(RTCONFIG_DNSSEC_NETTLE),nettle,) $(if $(filter $(BUILD_NAME),RT-AX82_XD6 XD6_V2 ET12),shared nvram wlcsm,)
 	@$(SEP)
 	$(MAKE) -C dnsmasq \
 	COPTS="-DHAVE_BROKEN_RTC -DHAVE_LEASEFILE_EXPIRE \
@@ -3540,8 +3547,10 @@ dnsmasq:  $(if $(RTCONFIG_DNSSEC_OPENSSL),openssl,) $(if $(RTCONFIG_DNSSEC_NETTL
 		$(if $(RTCONFIG_USB_EXTRAS),,-DNO_TFTP) \
 		$(if $(RTCONFIG_DNSSEC_OPENSSL),-I$(TOP)/openssl/include -DHAVE_DNSSEC,) \
 		$(if $(RTCONFIG_DNSSEC_NETTLE),-I$(TOP)/nettle/include -I$(TOP)/gmp -DHAVE_DNSSEC -DHAVE_DNSSEC_STATIC -DNO_GOST,)" \
-	CFLAGS="-Os -ffunction-sections -fdata-sections $(EXTRACFLAGS) -std=gnu99" \
+	CFLAGS="-Os -ffunction-sections -fdata-sections $(EXTRACFLAGS) -std=gnu99 \
+		$(if $(filter $(BUILD_NAME),RT-AX82_XD6 XD6_V2 ET12),-I$(TOP)/shared -I$(SRCBASE)/include -D$(MODEL),)" \
 	LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections $(EXTRALDFLAGS) \
+		$(if $(filter $(BUILD_NAME),RT-AX82_XD6 XD6_V2 ET12),-L$(TOP)/shared -lshared -L$(TOP_PLATFORM)/nvram$(BCMEX)$(EX7) -lnvram -L$(TOP_PLATFORM)/wlcsm -lwlcsm,) \
 		$(if $(RTCONFIG_DNSSEC_OPENSSL),-pthread -L$(TOP)/openssl,) \
 		$(if $(RTCONFIG_DNSSEC_NETTLE),-L$(TOP)/nettle/lib -L$(TOP)/gmp/.libs,)" \
 	$(if $(RTCONFIG_DNSSEC_OPENSSL),PKG_CONFIG_PATH="$(TOP)/openssl" CRYPTO=openssl,) \
@@ -7012,13 +7021,13 @@ libssh2-1.10.0/Makefile:
 	cd libssh2-1.10.0 && autoreconf -fi && $(CONFIGURE) --prefix=/usr CC=$(CC) CXX=$(CXX) AR=$(AR) RANLIB=$(RANLIB) --enable-shared --enable-static \
 	$(if $(RTCONFIG_OPENSSL11)$(RTCONFIG_OPENSSL10),--with-libssl-prefix=$(STAGEDIR)/usr,--without-openssl) \
 	--with-libz-prefix=$(STAGEDIR)/usr \
-	--with-libgcrypt-prefix=$(TOP)/libgcrypt-1.5.1 \
+	--with-libgcrypt-prefix=$(TOP)/libgcrypt-1.10.2 \
 	--disable-examples-build \
-	CFLAGS="-O2 -Wall -ffunction-sections -fdata-sections -fPIC -I$(STAGEDIR)/usr/include -I$(TOP)/libgcrypt-1.5.1/src -I$(SRCBASE)/router/openssl/include" \
-	LDFLAGS="-ldl -Wl,-rpath=$(STAGEDIR)/usr/lib,--gc-sections $(LDFLAGS) -L$(STAGEDIR)/usr/lib -lz -L$(SRCBASE)/router/openssl -lcrypto -L$(TOP)/libgcrypt-1.5.1/src/.libs" && \
+	CFLAGS="-O2 -Wall -ffunction-sections -fdata-sections -fPIC -I$(STAGEDIR)/usr/include -I$(TOP)/libgcrypt-1.10.2/src -I$(SRCBASE)/router/openssl/include" \
+	LDFLAGS="-ldl -Wl,-rpath=$(STAGEDIR)/usr/lib,--gc-sections $(LDFLAGS) -L$(STAGEDIR)/usr/lib -lz -L$(SRCBASE)/router/openssl -lcrypto -L$(TOP)/libgcrypt-1.10.2/src/.libs" && \
 	LIBS="-lcrypto (if $(RTCONFIG_OPENSSL11),-lpthread,) -fPIC" 
 
-libssh2: libgcrypt-1.5.1 zlib libssh2-1.10.0/Makefile
+libssh2: libgcrypt-1.10.2 zlib libssh2-1.10.0/Makefile
 	@$(SEP)
 	$(MAKE) -j 8 -C libssh2-1.10.0 && $(MAKE) $@-stage
 
@@ -7225,44 +7234,45 @@ rtl_bin:
 rtl_bin-install:
 	@$(SEP)
 
-#libgpg-error-1.10
-libgpg-error-1.10/stamp-h1:
-	cd $(TOP)/libgpg-error-1.10 && \
+#libgpg-error-1.47
+libgpg-error-1.47/stamp-h1:
+	cd $(TOP)/libgpg-error-1.47 && \
 	$(CONFIGURE) --prefix=/usr
 	touch $@
 
-libgpg-error-1.10: libgpg-error-1.10/stamp-h1
+libgpg-error-1.47: libgpg-error-1.47/stamp-h1
 	@$(SEP)
-	$(MAKE) -C libgpg-error-1.10
+	$(MAKE) -C libgpg-error-1.47
 
-libgpg-error-1.10-install:
-	install -D libgpg-error-1.10/src/.libs/libgpg-error.so.0.8.0 $(INSTALLDIR)/libgpg-error-1.10/usr/lib/libgpg-error.so.0.8.0
-	$(STRIP) $(INSTALLDIR)/libgpg-error-1.10/usr/lib/libgpg-error.so.0.8.0
-	cd $(INSTALLDIR)/libgpg-error-1.10/usr/lib && ln -sf libgpg-error.so.0.8.0 libgpg-error.so.0
+libgpg-error-1.47-install: libgpg-error-1.47
+	install -D libgpg-error-1.47/src/.libs/libgpg-error.so.0.34.0 $(INSTALLDIR)/libgpg-error-1.47/usr/lib/libgpg-error.so.0.34.0
+	$(STRIP) $(INSTALLDIR)/libgpg-error-1.47/usr/lib/libgpg-error.so.0.34.0
+	cd $(INSTALLDIR)/libgpg-error-1.47/usr/lib && ln -sf libgpg-error.so.0.34.0 libgpg-error.so.0
 
-libgpg-error-1.10-clean:
-	-@$(MAKE) -C libgpg-error-1.10 clean
-	@rm -f libgpg-error-1.10/stamp-h1
+libgpg-error-1.47-clean:
+	-@$(MAKE) -C libgpg-error-1.47 clean
+	@rm -f libgpg-error-1.47/stamp-h1
 
-#libgcrypt-1.5.1
-libgcrypt-1.5.1/stamp-h1: libgpg-error-1.10
-	cd $(TOP)/libgcrypt-1.5.1 && \
-	$(CONFIGURE) --prefix=/usr --with-gpg-error-prefix=$(TOP)/libgpg-error-1.10/src \
-	LDFLAGS="-L$(TOP)/libgpg-error-1.10/src/.libs"
-	touch $@
+#libgcrypt-1.10.2
+libgcrypt-1.10.2/stamp-h1: libgpg-error-1.47
+	cd $(TOP)/libgcrypt-1.10.2 && \
+	$(CONFIGURE) --prefix=/usr --with-gpg-error-prefix=$(TOP)/libgpg-error-1.47/src \
+	LDFLAGS="-L$(TOP)/libgpg-error-1.47/src/.libs -lgpg-error $(if $(QCA),$(EXTRALDFLAGS))" \
+	CFLAGS="-O0 -Wall -I$(TOP)/libgpg-error-1.47/src $(if $(QCA),$(EXTRACFLAGS))"
+ 	touch $@
 
-libgcrypt-1.5.1: libgcrypt-1.5.1/stamp-h1
+libgcrypt-1.10.2: libgcrypt-1.10.2/stamp-h1
 	@$(SEP)
-	@$(MAKE) -C libgcrypt-1.5.1
+	@$(MAKE) -C libgcrypt-1.10.2
 
-libgcrypt-1.5.1-install:
-	install -D libgcrypt-1.5.1/src/.libs/libgcrypt.so.11.8.0 $(INSTALLDIR)/libgcrypt-1.5.1/usr/lib/libgcrypt.so.11.8.0
-	$(STRIP) $(INSTALLDIR)/libgcrypt-1.5.1/usr/lib/libgcrypt.so.11.8.0
-	cd $(INSTALLDIR)/libgcrypt-1.5.1/usr/lib && ln -sf libgcrypt.so.11.8.0 libgcrypt.so.11
+libgcrypt-1.10.2-install: libgcrypt-1.10.2
+	install -D libgcrypt-1.10.2/src/.libs/libgcrypt.so.20.4.2 $(INSTALLDIR)/libgcrypt-1.10.2/usr/lib/libgcrypt.so.20.4.2
+	$(STRIP) $(INSTALLDIR)/libgcrypt-1.10.2/usr/lib/libgcrypt.so.20.4.2
+	cd $(INSTALLDIR)/libgcrypt-1.10.2/usr/lib && ln -sf libgcrypt.so.20.4.2 libgcrypt.so.20
 
-libgcrypt-1.5.1-clean:
-	-@$(MAKE) -C libgcrypt-1.5.1 clean
-	@rm -f libgcrypt-1.5.1/stamp-h1
+libgcrypt-1.10.2-clean:
+	-@$(MAKE) -C libgcrypt-1.10.2 clean
+	@rm -f libgcrypt-1.10.2/stamp-h1
 
 #db-4.8.30
 db-4.8.30/build_unix/stamp-h1:
@@ -7318,16 +7328,16 @@ netaconfig netatalk-3.0.5/stamp-h1:
 		$(MAKE) netatalk-3.0.5-dep ; \
 		touch $(TOP)/netatalk-3.0.5/* ; \
 		cd $(TOP)/netatalk-3.0.5 && \
-		CC=$(CC) CFLAGS="-Os -Wall -ffunction-sections -fdata-sections -I$(TOP)/db-4.8.30/build_unix -I$(TOP)/libgcrypt-1.5.1/src" \
-		LDFLAGS="-L$(TOP)/db-4.8.30/build_unix/.libs -L$(TOP)/libgcrypt-1.5.1/src/.libs -L$(TOP)/libgpg-error-1.10/src/.libs -L$(TOP)/libevent-2.0.21/.libs -lgpg-error -lgcrypt -lcrypt" \
+		CC=$(CC) CFLAGS="-Os -Wall -ffunction-sections -fdata-sections -I$(TOP)/db-4.8.30/build_unix -I$(TOP)/libgcrypt-1.10.2/src -I$(TOP)/libgpg-error-1.47/src $(if $(HND_ROUTER_BE_4916),-fcommon)"  \
+		LDFLAGS="-L$(TOP)/db-4.8.30/build_unix/.libs -L$(TOP)/libgcrypt-1.10.2/src/.libs -L$(TOP)/libgpg-error-1.47/src/.libs -L$(TOP)/libevent-2.0.21/.libs -lgpg-error -lgcrypt -lcrypt" \
 		$(CONFIGURE) \
-		ac_cv_path_LIBGCRYPT_CONFIG=$(TOP)/libgcrypt-1.5.1/src/libgcrypt-config \
+		ac_cv_path_LIBGCRYPT_CONFIG=$(TOP)/libgcrypt-1.10.2/src/libgcrypt-config \
 		--without-kerberos \
 		--with-bdb=$(TOP)/db-4.8.30/build_unix \
 		--prefix=/usr \
 		--with-dtrace=no \
 		--with-ssl-dir=$(TOP)/openssl \
-		--with-libgcrypt-dir=$(TOP)/libgcrypt-1.5.1 \
+		--with-libgcrypt-dir=$(TOP)/libgcrypt-1.10.2 \
 		$(if $(RTCONFIG_HND_ROUTER),,--with-ld-library-path=$(SRCBASE)/toolchains/hndtools-arm-linux-2.6.36-uclibc-4.5.3/lib) \
 		--with-libevent=no \
 		--with-libevent-header=$(TOP)/libevent-2.0.21/include ;\
@@ -8602,7 +8612,54 @@ asd-install:
 asd-clean:
 	$(MAKE) -C asd clean
 
+asd2.1: shared $(if $(BCM_502L07P2),ethctl_lib) nvram$(BCMEX)$(EX7) curl openssl libasc
+	$(MAKE) -C $@
 
+asd2.1-install:
+	install -D asd2.1/asd $(INSTALLDIR)/asd2.1/usr/bin/asd
+	install -D asd2.1/libasd.so $(INSTALLDIR)/asd2.1/usr/lib/libasd.so
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/asd2.1/usr/bin/asd)
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/asd2.1/usr/lib/libasd.so)
+
+asd2.1-clean:
+	$(MAKE) -C asd2.1 clean
+
+onig-6.9.9:
+	cd onig-6.9.9 && \
+	autoreconf -i -f && \
+	./configure  --host=arm-linux LD=$(CROSS_COMPILE)ld --prefix=/usr --exec-prefix=/usr --bindir=/usr/bin --sbindir=/usr/sbin --libexecdir=/usr/lib && \
+	make
+
+onig-6.9.9-install:
+	install -D onig-6.9.9/src/.libs/libonig.so.5.4.0 $(INSTALLDIR)/usr/lib/libonig.so.5.4.0
+	$(STRIP) $(INSTALLDIR)/usr/lib/libonig.so.5.4.0
+	cd $(INSTALLDIR)/usr/lib && \
+		ln -sf libonig.so.5.4.0 libonig.so.5 && \
+		ln -sf libonig.so.5.4.0 libonig.so.4 && \
+		ln -sf libonig.so.5.4.0 libonig.so
+
+onig-6.9.9-clean:
+	cd onig-6.9.9 && \
+	make distclean
+
+jq-1.7.1:
+	cd jq-1.7.1 && \
+	autoreconf -i &&\
+	./configure --host=arm-linux --with-oniguruma=$(SRCBASE)/router/onig-6.9.9/src LD=$(CROSS_COMPILE)ld --prefix=/usr && \
+	make
+
+jq-1.7.1-install:
+	install -D  jq-1.7.1/.libs/libjq.so.1.0.4 $(INSTALLDIR)/jq-1.7.1/usr/lib/libjq.so.1.0.4
+	install -D  jq-1.7.1/jq $(INSTALLDIR)/jq-1.7.1/usr/bin/jq
+	$(STRIP) $(INSTALLDIR)/jq-1.7.1/usr/lib/libjq.so.1.0.4
+	$(STRIP) $(INSTALLDIR)/jq-1.7.1/usr/bin/jq
+	cd $(INSTALLDIR)/jq-1.7.1/usr/lib/ && \
+		ln -sf libjq.so.1.0.4 libjq.so.1 && \
+		ln -sf libjq.so.1.0.4 libjq.so
+
+jq-1.7.1-clean:
+	cd jq-1.7.1 && \
+	make distclean
 #
 # tunnel related
 #

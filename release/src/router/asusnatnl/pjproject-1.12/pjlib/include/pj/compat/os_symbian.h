@@ -149,7 +149,10 @@
 
 /* Missing socklen_t */
 #define PJ_HAS_SOCKLEN_T		1
+
+#ifndef IS_NATNL_APP
 typedef unsigned int socklen_t;
+#endif
 
 #ifndef __GCCE__
 #include <e32def.h>

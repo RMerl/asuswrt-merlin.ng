@@ -1,1 +1,1 @@
-﻿data = <% bwdpi_monitor_ips(); %>;
+﻿data = '<% bwdpi_monitor_ips(); %>';

@@ -922,6 +922,11 @@ width:122px;
 	background: url(images/New_ui/icon_indexes.png);
 	background-position: 0px -180px;
 }
+.menu_GUBooster{
+	background: url(images/New_ui/logo_tencent-active.svg);
+	background-size: contain;
+	background-position: -2px -69px;
+}
 .menu_AiProtection{
 	background: url(images/New_ui/icon_indexes.png);
 	background-position: 0px -180px;

@@ -4,7 +4,7 @@
 #define MAX_2G_CHANNEL_LIST_NUM	16
 #define MAX_5G_CHANNEL_LIST_NUM	32
 #ifdef RTCONFIG_WIFI6E
-#define MAX_6G_CHANNEL_LIST_NUM	64
+#define MAX_6G_CHANNEL_LIST_NUM	128
 #endif
 
 typedef struct _avbl_chanspec_t
@@ -19,6 +19,7 @@ typedef struct _avbl_chanspec_t
 #endif
 	unsigned int existTribandRe;
 	unsigned int existDual5gRe;
+	unsigned int existDual6gRe;
 }AVBL_CHANSPEC_T;
 
 extern int send_cfgmnt_event(char *msg);

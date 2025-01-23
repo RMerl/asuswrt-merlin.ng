@@ -13,12 +13,12 @@
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="menu_style.css">
 <link rel="stylesheet" type="text/css" href="pwdmeter.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
-<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script language="JavaScript" type="text/javascript" src="/form.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
@@ -318,7 +318,7 @@ function applyRule() {
 				tmp_value = "";
 						
 			return tmp_value;
-		};
+		}
 
 		if(document.form.pptpd_enable.value == "1") {
 			document.form.VPNServer_mode.value = 'pptpd';
@@ -809,7 +809,7 @@ function check_vpn_conflict() {		//if conflict with LAN ip & DHCP ip pool & stat
 	var origin_lan_ip = '<% nvram_get("lan_ipaddr"); %>';
 	var lan_ip_subnet = origin_lan_ip.split(".")[0]+"."+origin_lan_ip.split(".")[1]+"."+origin_lan_ip.split(".")[2]+".";
 	var lan_ip_end = parseInt(origin_lan_ip.split(".")[3]);
-	var dhcp_staticlists = "<% nvram_get("dhcp_staticlist"); %>".replace(/&#62/g, ">").replace(/&#60/g, "<");
+	var dhcp_staticlists = '<% nvram_get("dhcp_staticlist"); %>'.replace(/&#62/g, ">").replace(/&#60/g, "<");
 	var staticclist_row = dhcp_staticlists.split('<');
 	var pptpd_clients_subnet = document.form._pptpd_clients_start.value.split(".")[0] 
 					   + "." + document.form._pptpd_clients_start.value.split(".")[1] 

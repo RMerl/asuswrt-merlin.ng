@@ -2754,6 +2754,11 @@ _dprintf("restart_nas_services(%d): test 6.\n", getpid());
 			}
 		}
 		file_unlock(lock);
+#ifdef RTCONFIG_FRS_FEEDBACK
+#ifdef RTCONFIG_DBLOG
+		start_dblog(0);
+#endif /* RTCONFIG_DBLOG */
+#endif /* RTCONFIG_FRS_FEEDBACK */
 	}
 #endif
 	else if (strncmp(interface ? : "", "8/", 2) == 0) {	/* usb storage */

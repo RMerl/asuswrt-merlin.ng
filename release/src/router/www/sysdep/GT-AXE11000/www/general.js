@@ -688,7 +688,7 @@ function has_dfs_channel(chint){
 }
 
 function filter_5g_channel_by_bw(ch_ary, bw){
-	var del, ary;;
+	var del, ary;
 	if(bw == 160){
 		var ch=[36,100], cnt=[0,0], d = 28, nr_ch=8;
 	}else if(bw == 80){

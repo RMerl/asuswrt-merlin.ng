@@ -6252,9 +6252,11 @@ wl_get_scan_results(char *ifname, chanspec_t chanspec, int ctl_ch, int ctl_ch_tm
 
 	if (ret == 0) {
 		list->buflen = htod32(WLC_SCAN_RESULT_BUF_LEN);
-		ret = wl_ioctl(ifname, WLC_SCAN_RESULTS, scan_result, WLC_SCAN_RESULT_BUF_LEN);
-		if (ret < 0)
-			printf("get scan result failed\n");
+		retry_times = 0;
+		while ((ret = wl_ioctl(ifname, WLC_SCAN_RESULTS, scan_result, WLC_SCAN_RESULT_BUF_LEN)) < 0 && retry_times++ < 2) {
+			dbg("get scan result failed, retry %d\n", retry_times);
+			sleep(1);
+		}
 	}
 
 	if (chanspec != 0) {
@@ -6534,15 +6536,47 @@ wl_autho(char *name, struct ether_addr *ea)
 	return 0;
 }
 
-static int psta_auth = 0;
+#ifdef RTCONFIG_BRCM_HOSTAPD
+static int wpa_cli_status(int unit)
+{
+	char cmd[128], buf[32];
+	FILE *pfp = NULL;
+	char tmp[NVRAM_BUFSIZE], prefix[] = "wlXXXXXXXXXX_";
+	char ifname[IFNAMSIZ] = { 0 };
+	int ret = 0;
+
+	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+	strlcpy(ifname, nvram_safe_get(strcat_r(prefix, "ifname", tmp)), sizeof(ifname));
+	snprintf(cmd, sizeof(cmd), "wpa_cli-2.7 -i %s -p /var/run/%swpa_supplicant/ status | grep wpa_state | cut -d\"=\" -f2", ifname, prefix);
+	memset(buf, 0, sizeof(buf));
+
+	pfp = popen(cmd, "r");
+	if (pfp != NULL) {
+		if (fgets(buf, sizeof(buf), pfp) != NULL) {
+			buf[strlen(buf) - 1] = '\0';
+			if (!strcmp(buf, "COMPLETED"))
+				ret = 2;
+			else if (!strcmp(buf, "4WAY_HANDSHAKE"))
+				ret = 1;
+		}
+
+		pclose(pfp);
+	}
+
+	return ret;
+}
+#endif
 
 int
 ej_wl_auth_psta(int eid, webs_t wp, int argc, char_t **argv)
 {
 	char tmp[NVRAM_BUFSIZE], prefix[] = "wlXXXXXXXXXX_";
 	char ifname[IFNAMSIZ] = { 0 };
+#ifndef RTCONFIG_BRCM_HOSTAPD
 	struct maclist *mac_list = NULL;
-	int mac_list_size, i, unit;
+	int mac_list_size, i;
+#endif
+	int unit;
 	int retval = 0, psta = 0;
 	struct ether_addr bssid;
 	unsigned char bssid_null[6] = { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 };
@@ -6576,6 +6610,9 @@ ej_wl_auth_psta(int eid, webs_t wp, int argc, char_t **argv)
 	else if (!memcmp(&bssid, bssid_null, 6))
 		goto PSTA_ERR;
 
+#ifdef RTCONFIG_BRCM_HOSTAPD
+        psta = wpa_cli_status(unit);
+#else
 	/* buffers and length */
 	mac_list_size = sizeof(mac_list->count) + MAX_STA_COUNT * sizeof(struct ether_addr);
 	mac_list = malloc(mac_list_size);
@@ -6596,44 +6633,37 @@ ej_wl_auth_psta(int eid, webs_t wp, int argc, char_t **argv)
 	if (mac_list->count)
 	{
 		if (nvram_match(strlcat_r(prefix, "akm", tmp, sizeof(tmp)), ""))
-			psta = 1;
+			psta = 2;
 		else
-		for (i = 0, psta = 2; i < mac_list->count; i++) {
+		for (i = 0, psta = 1; i < mac_list->count; i++) {
 			if (wl_autho(ifname, &mac_list->ea[i]))
 			{
-				psta = 1;
+				psta = 2;
 				break;
 			}
 		}
 	}
 
 	free(mac_list);
+#endif
 PSTA_ERR:
-	if (is_psta(unit) || is_psr(unit)) {
-		if (psta == 1)
-		{
-			if (psta_debug) dbg("connected\n");
-			psta_auth = 0;
-		}
-		else if (psta == 2)
-		{
-			if (psta_debug) dbg("authorization failed\n");
-			psta_auth = 1;
-		}
+	if (psta_debug && (is_psta(unit) || is_psr(unit))) {
+		if (psta == 2)
+			dbg("connected\n");
+		else if (psta == 1)
+			dbg("authorization failed\n");
 		else
-		{
-			if (psta_debug) dbg("disconnected\n");
-		}
+			dbg("disconnected\n");
 	}
 
 	if(json_support){
 		retval += websWrite(wp, "{");
-		retval += websWrite(wp, "\"wlc_state\":\"%d\"", psta);
-		retval += websWrite(wp, ",\"wlc_state_auth\":\"%d\"", psta_auth);
+		retval += websWrite(wp, "\"wlc_state\":\"%d\"", (psta == 2));
+		retval += websWrite(wp, ",\"wlc_state_auth\":\"%d\"", (psta == 1));
 		retval += websWrite(wp, "}");
 	}else{
-		retval += websWrite(wp, "wlc_state=%d;", psta);
-		retval += websWrite(wp, "wlc_state_auth=%d;", psta_auth);
+		retval += websWrite(wp, "wlc_state=%d;", (psta == 2));
+		retval += websWrite(wp, "wlc_state_auth=%d;", (psta == 1));
 	}
 	return retval;
 }

@@ -1,8 +1,0 @@
-.gradle/
-.idea/
-build/
-app/build/
-app/src/main/libs
-app/src/main/obj
-*.iml
-local.properties

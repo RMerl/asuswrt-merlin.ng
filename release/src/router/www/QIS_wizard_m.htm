@@ -41,9 +41,9 @@ a.ui-btn{
 }
 
 </style>
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/JavaScript" src="state.js"></script>
 <script type="text/javascript" src="popup.js"></script>
-<script type="text/javascript" src="js/jquery.js"></script>
 <script type="text/javascript" src="/js/https_redirect/https_redirect.js"></script>
 <script>
 var sw_mode = '<% nvram_get("sw_mode"); %>';
@@ -68,7 +68,7 @@ var flag_manual = 0;
 var isSubmit = false;
 var isrescan = 0;
 var getBand = '<% get_parameter("band"); %>';
-var isFirst = ('<% nvram_get("x_Setting"); %>' == '1') ? false : true;;
+var isFirst = ('<% nvram_get("x_Setting"); %>' == '1') ? false : true;
 var ISMOBILE = false;
 var isPassChanged = false;
 var yadns_stage = 0;

@@ -13,16 +13,16 @@
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="other.css">
 <link rel="stylesheet" type="text/css" href="app_installation.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" src="/disk_functions.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/form.js"></script>
-<script type="text/javascript" src="/js/httpApi.js"></script>
 <style>
 .fileflex_icon{
 	position: relative;
@@ -70,6 +70,19 @@ function installFAQ(){
 }
 function introduction(){
 	window.open('https://asus-info.fileflex.com/', '_blank');
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const thirdpartyPolicy = 'FileFlex'
+    document.getElementById("thirdparty_pp").innerHTML=`<#Thirdparty_PP_Desc1#>`.replace("%1$@", thirdpartyPolicy).replace("[aa]%2$@[/aa]", `<a onclick="showThirdPartyPolicy('${thirdpartyPolicy}')" style="text-decoration: underline;cursor: pointer;">Qnext PRIVACY POLICY</a>`);
+})
+
+function showThirdPartyPolicy(party){
+    const thirdPartyPolicyModal = new ThirdPartyPolicyModalComponent({
+        policy: 'THIRDPARTY_PP',
+        party: party
+    });
+    thirdPartyPolicyModal.show();
 }
 </script>
 </head>
@@ -144,6 +157,8 @@ function introduction(){
 												<span class="text_link" onclick="introduction();"><#FileFlex_Intro#></span>
 											</li>
 										</ul>
+										<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
+                                        <div id="thirdparty_pp" style="padding:0px 40px"></div>
 									</td>
 								</tr>
 							</tbody>

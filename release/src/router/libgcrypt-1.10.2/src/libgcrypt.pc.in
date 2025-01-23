@@ -1,0 +1,18 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+includedir=@includedir@
+libdir=@libdir@
+host=@LIBGCRYPT_CONFIG_HOST@
+api_version=@LIBGCRYPT_CONFIG_API_VERSION@
+symmetric_ciphers="@LIBGCRYPT_CIPHERS@"
+asymmetric_ciphers="@LIBGCRYPT_PUBKEY_CIPHERS@"
+digests="@LIBGCRYPT_DIGESTS@"
+
+Name: libgcrypt
+Description: General purpose cryptographic library
+Requires.private: gpg-error
+Version: @PACKAGE_VERSION@
+Cflags: -I${includedir} @LIBGCRYPT_CONFIG_CFLAGS@
+Libs: -L${libdir} @LIBGCRYPT_CONFIG_LIBS@
+Libs.private: @DL_LIBS@
+URL: https://www.gnupg.org/software/libgcrypt/index.html

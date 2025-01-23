@@ -11,11 +11,11 @@
 <title><#Web_Title#> - <#menu5_1_2#></title>
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
+<script type="text/javaScript" src="js/jquery.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
-<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script><% wl_get_parameter(); %>
 $(function () {
@@ -52,7 +52,7 @@ function get_band_str(band){
 		return "5 GHz-2";	
 	}
 	else if(band == 2){
-		return (band6g_support) ? '6 GHz' : '5 GHz-2';
+		return '5 GHz-2';
 	}
 		
 	return "";
@@ -67,7 +67,7 @@ function initial(){
 			if(band6g_support){
 				document.getElementById("wps_opt1").innerHTML = '5 GHz-1';
 				document.getElementById("wps_opt2").innerHTML = '5 GHz-2';
-				document.getElementById("wps_opt3").innerHTML = '6 GHz';
+				document.getElementById("wps_opt3").remove();
 			}
 			
 			document.getElementById("wps_switch").style.display = "none";	
@@ -216,7 +216,7 @@ function enableWPS(){
 
 function configCommand(){
 	if(lantiq_support && wave_ready != 1){
-		alert("Please wait a minute for wireless ready");
+		alert(`<#Wireless_ready#>`);
 		return false;
 	}
 
@@ -237,7 +237,7 @@ function configCommand(){
 
 function resetWPS(){
 	if(lantiq_support && wave_ready != 1){
-		alert("Please wait a minute for wireless ready");
+		alert(`<#Wireless_ready#>`);
 		return false;
 	}
 
@@ -413,30 +413,35 @@ function show_wsc_status(wps_infos){
 		document.getElementById("switchWPSbtn").style.display = "none";
 	}
 	else if(wps_infos[12].firstChild.nodeValue == 0){
+		if(based_modelid === 'GT-AXE16000'){
+			document.getElementById("wps_band_word").innerHTML = "5 GHz-1";
+			band_string = "5 GHz-1";
+		}else{
 			document.getElementById("wps_band_word").innerHTML = "2.4 GHz";
 			band_string = "2.4 GHz";
-			currentBand = 0;
+		}
+			
+		currentBand = 0;
 	}
 	else if(wps_infos[12].firstChild.nodeValue == 1){
 		if(!wl_info.band5g_2_support && !wl_info.band6g_support){
 			document.getElementById("wps_band_word").innerHTML = "5 GHz";
 			band_string = "5 GHz";
-		}else{
-			if(band6g_support){
-				document.getElementById("wps_band_word").innerHTML = "6 GHz";
-				band_string = "6 GHz";
-			}
-			else{
-				document.getElementById("wps_band_word").innerHTML = "5 GHz-1";
-				band_string = "5 GHz-1";
-			}			
+		}
+		else if(based_modelid === 'GT-AXE16000'){
+			document.getElementById("wps_band_word").innerHTML = "5 GHz-2";
+			band_string = "5 GHz-2";
+		}
+		else{
+			document.getElementById("wps_band_word").innerHTML = "5 GHz-1";
+			band_string = "5 GHz-1";				
 		}
 			
 		currentBand = 1;
 	}	
 	else if(wps_infos[12].firstChild.nodeValue == 2){
-		if(band6g_support){
-			document.getElementById("wps_band_word").innerHTML = "6 GHz";
+		if(based_modelid === 'GT-AXE16000'){
+			document.getElementById("wps_band_word").innerHTML = "";
 			band_string = "6 GHz";
 		}
 		else{
@@ -445,6 +450,11 @@ function show_wsc_status(wps_infos){
 		}
 
 		currentBand = 1;
+	}
+	else if(wps_infos[12].firstChild.nodeValue == 3){
+		document.getElementById("wps_band_word").innerHTML = "2.4 GHz";
+		band_string = "2.4 GHz";
+		currentBand = 3;
 	}
 
 	

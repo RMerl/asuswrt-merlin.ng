@@ -100,13 +100,26 @@ function getScArray(mode){
 	var smartConnectTable = {
 		"SC_2g5g": {
 			"wlArray": (function(){
-				if(isSupport("quadband"))
-					return [{"title":"2.4 GHz / 5 GHz-1 / 5 GHz-2", "ifname":get_wl_unit_by_band("2G")}, {"title":"6 GHz", "ifname":get_wl_unit_by_band("6G")}];
+				if(isSupport("quadband")){
+					if(get_wl_unit_by_band("5G2") != ""){
+						return [
+							{"title":"2.4 GHz / 5 GHz-1 / 5 GHz-2", "ifname":get_wl_unit_by_band("2G")}, 
+							{"title":"6 GHz", "ifname":get_wl_unit_by_band("6G")}
+						];
+					}
+					else{
+						return [
+							{"title":"2.4 GHz / 5 GHz", "ifname":get_wl_unit_by_band("2G")}, 
+							{"title":"6 GHz-1", "ifname":get_wl_unit_by_band("6G1")},
+							{"title":"6 GHz-2", "ifname":get_wl_unit_by_band("6G2")}
+						];
+					}
+				}
 				else
 					return [{"title":"2.4 GHz / 5 GHz", "ifname":"0"}, {"title":"6 GHz", "ifname":"2"}];
 			})(),
 			"value": (function(){
-				if(isSupport("quadband"))
+				if(isSupport("smart_connect_v2"))
 					return 1;
 				else
 					return 3;
@@ -129,36 +142,58 @@ function getScArray(mode){
 	return smartConnectTable[mode] ||  smartConnectTable["SC_all"];
 }
 
+function getSelifValue(mode){
+	var val = 0;
+
+	if(get_wl_unit_by_band("2G") != "") val += 1;
+	if(get_wl_unit_by_band("5G1") != "") val += 2;
+	if(get_wl_unit_by_band("5G2") != "") val += 4;
+
+	if(mode == "SC_all"){
+		if(get_wl_unit_by_band("6G1") != "") val += 8;
+		if(get_wl_unit_by_band("6G2") != "") val += 16;
+	}
+	else if(mode == "SC_5g5g"){
+		if(get_wl_unit_by_band("2G") != "") val -= 1;
+	}
+
+	return val;
+}
+
 function getAllWlArray(){
 	if(isSupport("quadband")){
-		var wlArrayRet = [			
-			{"title":"2.4 GHz", "ifname":get_wl_unit_by_band("2G"), "suffix": ""},
-			{"title":"5 GHz-1", "ifname":get_wl_unit_by_band("5G"), "suffix": "_5G-1"},
-			{"title":"5 GHz-2", "ifname":get_wl_unit_by_band("5G2"), "suffix": "_5G-2"},
-			{"title":"6 GHz", "ifname":get_wl_unit_by_band("6G"), "suffix": "_6G"},
-		];
-		if(isSwMode('RP') || isSwMode('MB')){
-			wlArrayRet = [				
-				{ title: '2.4 GHz', ifname: get_wl_unit_by_band('2G'), suffix: '' },				
-				{ title: '5 GHz-1', ifname: get_wl_unit_by_band('5G'), suffix: '_5G-1' },
-				{ title: '5 GHz-2', ifname: get_wl_unit_by_band('5G2'), suffix: '_5G-2' },
-				{ title: '6 GHz', ifname: get_wl_unit_by_band('6G'), suffix: '_6G' },
-			];
+		var wlArrayRet = [{"title":"2.4 GHz", "ifname":get_wl_unit_by_band('2G'), "suffix": ""}];
+		let wlSeperateStr = '';
+		if(get_wl_unit_by_band("5G2") === ''){
+			// 2566
+			wlArrayRet.push({"title":"5 GHz", "ifname":get_wl_unit_by_band('5G'), "suffix": "_5G"});
+			wlArrayRet.push({"title":"6 GHz-1", "ifname":get_wl_unit_by_band('6G1'), "suffix": "_6G-1"});
+			wlArrayRet.push({"title":"6 GHz-2", "ifname":get_wl_unit_by_band('6G2'), "suffix": "_6G-2"});
+			wlSeperateStr = 'Separate 2.4 GHz, 5 GHz, 6 GHz-1 and 6 GHz-2'
 		}
-		document.querySelector('label[for="wireless_checkbox"]').innerHTML = 'Separate 2.4 GHz, 5 GHz-1, 5 GHz-2 and 6 GHz';
+		else{
+			//2556
+			wlArrayRet.push({"title":"5 GHz-1", "ifname":get_wl_unit_by_band('5G'), "suffix": "_5G-1"});
+			wlArrayRet.push({"title":"5 GHz-2", "ifname":get_wl_unit_by_band('5G2'), "suffix": "_5G-2"});
+			wlArrayRet.push({"title":"6 GHz", "ifname":get_wl_unit_by_band('6G'), "suffix": "_6G"});
+			wlSeperateStr = 'Separate 2.4 GHz, 5 GHz-1, 5 GHz-2 and 6 GHz'
+		}
+
+		document.querySelector('label[for="wireless_checkbox"]').innerHTML = wlSeperateStr;
 	}
 	else{
 		var wlArrayRet = [{"title":"2.4 GHz", "ifname":get_wl_unit_by_band('2G'), "suffix": ""}];
 
 		if(isSupport("triband")){
-			if(isSupport('wifi6e')){
+			if(get_wl_unit_by_band("5G2") != ''){
+				document.querySelector('label[for="wireless_checkbox"]').innerHTML = '<#qis_wireless_setting_separate#>';
+				wlArrayRet.push({"title":"5 GHz-1", "ifname":get_wl_unit_by_band('5G'), "suffix": "_5G-1"});
+				wlArrayRet.push({"title":"5 GHz-2", "ifname":get_wl_unit_by_band('5G2'), "suffix": "_5G-2"});
+			}
+			else{
 				document.querySelector('label[for="wireless_checkbox"]').innerHTML = '<#qis_wireless_setting_separate1#>';
 				wlArrayRet.push({"title":"5 GHz", "ifname":get_wl_unit_by_band('5G'), "suffix": "_5G"});
 				wlArrayRet.push({"title":"6 GHz", "ifname":get_wl_unit_by_band('6G'), "suffix": "_6G"});
-			}
-			else{
-				wlArrayRet.push({"title":"5 GHz-1", "ifname":get_wl_unit_by_band('5G'), "suffix": "_5G-1"});
-				wlArrayRet.push({"title":"5 GHz-2", "ifname":get_wl_unit_by_band('5G2'), "suffix": "_5G-2"});
 			}
 
 			if(isSupport("prelink") && isSupport("amas_bdl")){
@@ -184,7 +219,7 @@ function getAllWlArray(){
 }
 
 function getPAPList(siteSurveyAPList, filterType, filterValue) {
-	var modelInfo = httpApi.nvramGet(["productid", "odmpid"], true);
+	var modelInfo = httpApi.nvramGet(["productid", "odmpid"]);
 	var based_modelid = modelInfo.productid;
 	var papList = [];
 	var profile = function(_profile){
@@ -200,8 +235,11 @@ function getPAPList(siteSurveyAPList, filterType, filterValue) {
 					else
 						return (ch >= 36 && ch <= 64) ? {name: "5GHz-1", unit: 1} : {name: "5GHz-2", unit: 2};
 				}
-				else if(based_modelid === 'GT-AXE16000'){
+				else if(based_modelid === 'GT-AXE16000' || based_modelid === 'GT-BE98'){
 					return (ch >= 36 && ch <= 64) ? {name: "5GHz-1", unit: 0} : {name: "5GHz-2", unit: 1};
+				}
+				else if(based_modelid === 'GT-BE98_PRO'){
+					return {name: "5GHz", unit: 0};
 				}
 				else
 					return {name: "5GHz", unit: 1};
@@ -212,11 +250,11 @@ function getPAPList(siteSurveyAPList, filterType, filterValue) {
 			_profile = ["", "", "", "", "", "", "", "", "", ""];
 
 		this.band = (function(){
-			if(isSupport('wifi6e') && _profile[0] === '6G'){
+			if((isSupport('wifi6e') || isSupport('wifi7')) && _profile[0] === '6G'){
 				return "6GHz";
 				//return {name: "6GHz", unit: 2};
 			}
-			else if(isSupport('wifi6e') && _profile[0] === '5G'){
+			else if((isSupport('wifi6e') || isSupport('wifi7')) && _profile[0] === '5G'){
 				return "5GHz";
 			}
 			else{
@@ -225,7 +263,7 @@ function getPAPList(siteSurveyAPList, filterType, filterValue) {
 			
 		})();
 		this.unit = (function(){
-			if(based_modelid === 'GT-AXE16000'){
+			if(based_modelid === 'GT-AXE16000' || based_modelid === 'GT-BE98' || based_modelid === 'GT-BE98_PRO'){
 				if(_profile[0] === '6G'){
 					return 2;
 				}
@@ -236,14 +274,15 @@ function getPAPList(siteSurveyAPList, filterType, filterValue) {
 					return getBandWidthName(_profile[2]).unit;
 				}
 			}
-			else if(isSupport('wifi6e') && _profile[0] === '6G'){
+			else if((isSupport('wifi6e') || isSupport('wifi7')) && _profile[0] === '6G'){
 				return 2;
 				//return {name: "6GHz", unit: 2};
 			}
-			else if(isSupport('wifi6e') && _profile[0] === '5G'){
+			else if((isSupport('wifi6e') || isSupport('wifi7')) && _profile[0] === '5G'){
 				return 1;
 			}
 			else{
+				
 				return getBandWidthName(_profile[2]).unit;
 			}		
 		})();
@@ -280,6 +319,7 @@ function getAiMeshOnboardinglist(_onboardingList){
 	var profile = function(){
 		this.name = "";
 		this.ui_model_name = "";
+		this.cloud_model_name = "";
 		this.signal = "";
 		this.rssi = "";
 		this.source = "";
@@ -321,10 +361,49 @@ function getAiMeshOnboardinglist(_onboardingList){
 			node_info.type = newReMacArray[newReMac].type;
 			node_info.cobrand = httpApi.aimesh_get_misc_info(newReMacArray[newReMac]).cobrand;
 			node_info.misc_info = newReMacArray[newReMac].misc_info;
+			node_info.cloud_model_name = httpApi.transformCloudModelName({"model_name": node_info.name, "tcode": node_info.tcode, "cobrand": node_info.cobrand, "icon_model_name": ""});
 			jsonArray.push(node_info);
 		});
 	});
 
+	return jsonArray;
+}
+
+function getAiMeshOnboardinglist_newob(){
+	let jsonArray = [];
+	const profile = function(){
+		this.name = "";
+		this.ui_model_name = "";
+		this.cloud_model_name = "";
+		this.source = "";
+		this.mac = "";
+		this.id = "";
+		this.tcode = "";
+		this.cobrand = "";
+		this.misc_info = {};
+		this.is_newob = true;
+	};
+	let get_newob_onboardinglist = httpApi.hookGet("get_newob_onboardinglist", true);
+	$.each(get_newob_onboardinglist, function(ob_mac, ob_info){
+		let support_newOB = (ob_info.capability & (1 << 1)) ? true : false;
+		if(!support_newOB)
+			return;
+
+		if(ob_info.status > 3)//currently onboarding
+			return;
+
+		let node_info = new profile();
+		node_info.name = ob_info.model_name;
+		node_info.ui_model_name = ob_info.ui_model_name;
+		node_info.source = ob_info.ob_path;
+		node_info.mac = ob_mac;
+		node_info.id = ob_mac.replace(/:/g, "");
+		node_info.tcode = ob_info.tcode;
+		node_info.cobrand = httpApi.aimesh_get_misc_info(ob_info).cobrand;
+		node_info.misc_info = ob_info.misc_info;
+		node_info.cloud_model_name = httpApi.transformCloudModelName({"model_name": node_info.name, "tcode": node_info.tcode, "cobrand": node_info.cobrand, "icon_model_name": ""});
+		jsonArray.push(node_info);
+	});
 	return jsonArray;
 }
 
@@ -354,8 +433,10 @@ function get_wl_unit_by_band(_band){
 			wl_nband = "1";
 			break;
 		case "6G":
+		case "6G1":
+		case "6G2":
 			wl_nband = "4";
-			break;
+			break;			
 		case "60G":
 			wl_nband = "6";
 			break;
@@ -824,6 +905,7 @@ var Get_Component_SiteSurvey_List = function(papList, filterBand) {
 			$(this).removeClass("ap_ssid_hover")
 		})
 
+		
 		var ap_band =  $("<div>").addClass("ap_band").html(AP.band);
 		apListDiv.append(ap_band);
 
@@ -899,11 +981,9 @@ var Get_Component_AiMeshOnboarding_List = function(nodeInfo) {
 }
 
 var Get_Component_btnLoading = function(){
-	return $("<img>").attr({
-		"width": "30px",
-		"src": "/images/InternetScan.gif"
-	})
+	return $(`<div class="gg-spinner-two-alt"></div>`);
 }
+
 var Get_Component_WirelessInput = function(wlArray){
 	var container = $("<div>");
 
@@ -915,7 +995,7 @@ var Get_Component_WirelessInput = function(wlArray){
 			wirelessAP["wl" + wl.ifname + "_wpa_psk"] = "";
 		}
 
-		if(systemVariable.multiPAP.wlcOrder.length > 0){
+		if(systemVariable.multiPAP.wlcOrder.length > 0 && !isSwMode("WISP")){
 			var ssid_tmp = "";
 			var wpa_psk_tmp = "";
 			if(qisPostData["wlc" + wl.ifname + "_ssid"] == undefined || qisPostData["wlc" + wl.ifname + "_ssid"] == ""){
@@ -932,9 +1012,7 @@ var Get_Component_WirelessInput = function(wlArray){
 
 			switch(parseInt(wl.ifname)){
 				
-				case 0 :
-					console.log(isSupport('wifi6e'));
-					
+				case 0 :				
 					if(isSupport('quadband')){
 						ssid_tmp = ssid_tmp.slice(0,26) + "_RPT5G";
 					}
@@ -956,7 +1034,7 @@ var Get_Component_WirelessInput = function(wlArray){
 				case 2 :
 					
 					if(isSupport('quadband')
-					|| isSupport('triband') && isSupport('wifi6e')){
+					|| isSupport('triband') && (isSupport('wifi6e') || isSupport('wifi7'))){
 						ssid_tmp = ssid_tmp.slice(0,26) + "_RP6G";
 					}
 					else{
@@ -968,6 +1046,8 @@ var Get_Component_WirelessInput = function(wlArray){
 					ssid_tmp = ssid_tmp.slice(0,25) + "_RPT";
 					break;	
 			}
+
+			if(systemVariable.productid.indexOf("_GO") != -1) ssid_tmp = ssid_tmp.replace("_RPT", "_GO");
 			wirelessAP["wl" + wl.ifname + "_ssid"] = encodeURIComponent(ssid_tmp);
 
 			if(wpa_psk_tmp != "")
@@ -1184,7 +1264,7 @@ function isEmpty(obj)
 	}
 
 	return true;
-};
+}
 
 function installPages(flag){
 	switch(flag){
@@ -1209,6 +1289,7 @@ function handleSysDep(){
 	$(".ocnvc").toggle(isSupport("s46") && isSupport("ocnvc"));
 	$(".dslite_xpass").toggle(isSupport("s46") && isSupport("dslite"));
 	$(".dslite_transix").toggle(isSupport("s46") && isSupport("dslite"));
+	$(".v6option").toggle(isSupport("s46") && isSupport("v6option"));
 	$(".vpnClient").toggle(isSupport("VPNCLIENT"));
 	$(".iptv").toggle(isSupport("IPTV"));
 	$(".defaultSupport").toggle(systemVariable.isDefault);
@@ -1218,10 +1299,16 @@ function handleSysDep(){
 	$(".apSupport").toggle(!isSupport("noAP"));
 	$(".defpassSupport").toggle(isSupport("defpass"));
 	$(".defpskSupport").toggle(isSupport("defpsk"));
+	$(".wispSupport").toggle(isSupport("wisp"));
 
 	if(systemVariable.forceChangePw){
 		systemVariable.forceChangePw = false;
 		systemVariable.forceChangePwInTheEnd = true;
+
+		if(isSupport("BUSINESS")){
+			systemVariable.forceChangePw = true;
+			systemVariable.forceChangePwInTheEnd = false;
+		}
 	}
 
 	if(!isNoWAN || !isSupport("amasNode")) $(".amasNoWAN").remove();
@@ -1258,7 +1345,7 @@ function handleSysDep(){
 			$("#gdContainer").append($("<div>").attr({"class": "GD-head"}))
 		}
 		
-		$("#gdContainer").append($("<div>").attr({"class": "GD-wait"}).append($("<div>").attr({"id": "GD-status"}).html("Installing..")))
+		$("#gdContainer").append($("<div>").attr({"class": "GD-wait"}).append($("<div>").attr({"id": "GD-status"}).html("<#Excute_processing#>")))
 		$("#gdContainer").append($("<div>").attr({"class": "GD-footer-left"}))
 		$("#gdContainer").append($("<div>").attr({"class": "GD-footer-extend"}))
 		$("#gdContainer").append($("<div>").attr({"class": "GD-footer-center"}))
@@ -1291,8 +1378,14 @@ function handleSysDep(){
 				// systemVariable.imgContainer.push(tmpObj)
 			})
 		}
-		
 	}
+
+	if(isTS()){
+		$("#summary_page").append($("<div>").attr({"id": "gdContainer", "class": "gundam-footer-field"}).hide())
+		$("#gdContainer").html('');
+		$("#gdContainer").append($("<div>").attr({"class": "GD-wait"}).append($("<div>").attr({"id": "GD-status"}).html("<#Excute_processing#>")));
+	}
+
 }
 
 function handleModelIcon() {
@@ -1501,7 +1594,7 @@ function setupWLCNvram(apProfileID) {
 }
 
 function setupFronthaulNetwork(_smart_connect){
-	if(isSupport("FRONTHAUL_NETWORK")){
+	if(isSupport("FRONTHAUL_NETWORK") && !isSku("ID")){
 		var dwb_mode = httpApi.nvramGet(["dwb_mode"]).dwb_mode;
 		postDataModel.insert(fronthaulNetworkObj);
 
@@ -1571,6 +1664,7 @@ function sortAP(kind, sequence){
 				return 0;
 		}
 	});
+
 	systemVariable.papList = getPAPList(array_tmp);
 	genPAPList(systemVariable.papList, systemVariable.multiPAP.wlcOrder);
 	handleSortField();
@@ -1611,6 +1705,7 @@ var getRestartService = function(){
 		qisPostData.hasOwnProperty("wlc_ssid") ||
 		qisPostData.hasOwnProperty("lan_proto") ||
 		qisPostData.hasOwnProperty("wans_dualwan") ||
+		qisPostData.hasOwnProperty("wans_mode") ||
 		isSwModeChanged()
 	){
 		return "reboot";
@@ -1624,10 +1719,12 @@ var getRestartService = function(){
 	var restart_wan_if = 0;
 	var restart_firewall = 0;
 
+	/*
 	if(qisPostData.hasOwnProperty("ipv6_service")){
 		restart_net = 1;
 		actionScript.push("restart_net");
 	}
+	*/
 
 	if(systemVariable.detwanResult.isIPConflict){
 		actionScript.push("restart_subnet");
@@ -1668,6 +1765,15 @@ var getRestartService = function(){
 		// do not push these if restart_wan_if has been pushed. these are included in restart_wan_if.
 		actionScript.push("restart_firewall");
 		actionScript.push("restart_wrs");
+	}
+
+	if(qisPostData.hasOwnProperty("sdn_rc_service")){
+		var rcs_list = qisPostData.sdn_rc_service.split(";");
+		$.each(rcs_list , function(index, item){
+			if(!(actionScript.includes(item)))
+				actionScript.push(item);
+		});
+		delete qisPostData["sdn_rc_service"];
 	}
 
 	return actionScript.join(";")
@@ -1813,7 +1919,7 @@ var isSupport = function(_ptn){
 			matchingResult = (isSku("CN") || isSku("GD") || isSku("TC")) ? true : false;
 			break;
 		case "SMARTCONNECT":
-			matchingResult = (ui_support["smart_connect"] == "1" || ui_support["smart_connect"] == "2" || ui_support["bandstr"] == "1") ? true : false;
+			matchingResult = (ui_support["smart_connect_v2"] == "1" || ui_support["smart_connect"] == "1" || ui_support["smart_connect"] == "2" || ui_support["bandstr"] == "1") ? true : false;
 			break;
 		case "GUNDAM_UI":
 			matchingResult = ((isGundam() || isKimetsu() || isEva()) && $(".desktop_left_field").is(":visible")) ? true : false;
@@ -1835,6 +1941,25 @@ var isSupport = function(_ptn){
 			break;
 		case "defpsk":
 			matchingResult = (ui_support["defpsk"] >= 1 && (httpApi.nvram_match_x("wifi_psk","","1").wifi_psk != "1")) ? true : false;
+			break;
+		case "MaxRule_SDN":
+			matchingResult = ui_support["MaxRule_SDN"] || false;
+			break;
+		case "SDN_Scenario":
+			matchingResult = (
+				isSupport("mtlancfg") && isSupport("BUSINESS") &&
+				systemVariable.isDefault && systemVariable.productid.indexOf('EBG') == -1 &&
+				isSwMode("RT")
+			) ? true : false;
+			break;
+		case "SDN_White_Theme":
+			matchingResult = false;
+			if(isSupport("mtlancfg") && isSupport("BUSINESS")){
+				matchingResult = true;
+			}
+			break;
+		case "apMode_detwan":
+			matchingResult = (systemVariable.productid == "EBA63") ? true : false;
 			break;
 		default:
 			matchingResult = ((ui_support[_ptn] > 0) || (systemVariable.productid.search(_ptn) !== -1)) ? true : false;
@@ -1858,6 +1983,11 @@ var isKimetsu = function(){
 var isEva = function(){
 	return (systemVariable.CoBrand == "3");
 }
+
+var isTS = function(){
+	return (systemVariable.CoBrand == "8");
+}
+
 var isSku = function(_ptn){
 	return (systemVariable.territoryCode.search(_ptn) == -1) ? false : true;
 }
@@ -1982,7 +2112,6 @@ function startLiveUpdate(){
 		var NowTime = Math.ceil(Date.now() / 1000);
 		httpApi.nvramSet({"action_mode":"apply", "webs_update_trigger":"QIS", "rc_service":"start_webs_update"}, function(){
 			setTimeout(function(){
-
 				var fwInfo = httpApi.nvramGet(["webs_state_update", "webs_state_info", "webs_state_flag", "webs_state_level", "webs_update_ts", "apps_sq"], true);
 				CheckTime = (fwInfo.webs_update_ts == "")? 0:fwInfo.webs_update_ts.split("&#62")[0];
 				TimeDiff = NowTime-CheckTime;
@@ -2190,6 +2319,7 @@ var genPAPList = function(papList, filterBand){
 			title += "&nbsp;";
 			title += "If not, click [<span class='textClick' onclick='goTo.skip_pap();'>SKIP</span>]";
 		}
+
 		return title;
 	};
 	$("#papList_page").find(".pageDesc").html(Get_Text_PAP_Title());
@@ -2355,10 +2485,59 @@ function adjust_popup_container_top(_obj, _offsetHeight){
 		$(_obj).css({top: (final_scrollTop + _offsetHeight)});
 	}
 }
-/* String replace &#39; with ' for dict */
 function stringSafeGet(str){
 	return str.replace(new RegExp("&#39;", 'g'), "'");
 }
 var str_local_login_desc = stringSafeGet("<#Local_login_desc#>");
 var str_find_st = stringSafeGet("<#HowFindST#>");
 var str_HowFindPassword = stringSafeGet("<#HowFindPassword#>");
+function initialize_SDN(){
+	$('link').last().after('<link group="SDN_need_file" rel="stylesheet" type="text/css" href="./RWD_UI/rwd_component.css">');
+	$('link').last().after('<link group="SDN_need_file" rel="stylesheet" type="text/css" href="./SDN/sdn.css">');
+	$('link').last().after('<link group="SDN_need_file" rel="stylesheet" type="text/css" href="./js/weekSchedule/schedule_ui.css">');
+	$('link').last().after('<link group="SDN_need_file" rel="stylesheet" type="text/css" href="./pwdmeter.css">');
+	if(isSupport("SDN_White_Theme")){
+		$('link').last().after('<link group="SDN_need_file" rel="stylesheet" type="text/css" href="./RWD_UI/rwd_component_WHITE.css">');
+		$('link').last().after('<link group="SDN_need_file" rel="stylesheet" type="text/css" href="./SDN/sdn_WHITE.css">');
+		$('link').last().after('<link group="SDN_need_file" rel="stylesheet" type="text/css" href="./js/weekSchedule/schedule_ui_WHITE.css">');
+	}
+	$('<script />', { type : 'text/javascript', src : "./RWD_UI/rwd_component.js", group: "SDN_need_file"}).appendTo($('head'));
+	$('<script />', { type : 'text/javascript', src : "./SDN/sdn.js", group: "SDN_need_file"}).appendTo($('head'));
+	$('<script />', { type : 'text/javascript', src : "./popup.js", group: "SDN_need_file"}).appendTo($('head'));
+	$('<script />', { type : 'text/javascript', src : "./js/weekSchedule/schedule_ui.js", group: "SDN_need_file"}).appendTo($('head'));
+	$('<script />', { type : 'text/javascript', src : "./form.js", group: "SDN_need_file"}).appendTo($('head'));
+	setTimeout(function(){
+		if(isSupport("captivePortal") && isSupport("cp_freewifi")){
+			Get_FreeWiFi_template();
+		}
+		init_sdn_all_list();
+	},500);
+}
+var interval_cfg_pause = false;
+function set_cfg_pause(){
+	clearInterval(interval_cfg_pause);
+	if(!systemVariable.isDefault)
+		return;
+
+	postData();
+	interval_cfg_pause = setInterval(function(){
+		if(qisPostData.hasOwnProperty("cfg_pause")){
+			if(qisPostData.cfg_pause == "0"){
+				clearInterval(interval_cfg_pause);
+			}
+			else{
+				postData();
+			}
+		}
+		else{
+			postData();
+		}
+	},1000*60*10);
+
+	function postData(){
+		httpApi.nvramSet({
+			"action_mode" : "apply",
+			"cfg_pause" : 120
+		});
+	}
+}

@@ -242,6 +242,8 @@ function genClientList(){
 			}
 			
 			clientList[thisClientMacAddr].ip = thisClient.ip;
+			clientList[thisClientMacAddr].ip6 = thisClient.ip6;
+			clientList[thisClientMacAddr].ip6_prefix = thisClient.ip6_prefix;
 			clientList[thisClientMacAddr].mac = thisClient.mac.toUpperCase();
 
 			clientList[thisClientMacAddr].name = thisClient.name.trim();
@@ -421,7 +423,7 @@ function getUploadIcon(clientMac) {
 				return false;
 			}
 			var match_data = mimeType_str.match(mimeTypeRegExp);
-			if(!Boolean(match_data)){
+			if(!match_data){
 				return false;
 			}
 			var base64_str = str_tmp_arr[1];
@@ -634,38 +636,62 @@ function popClientListEditTable(event) {
 	}
 	code += '</td>';
 
-	code += '<td style="vertical-align:top;text-align:center;">';
-	code += '<div class="clientTitle">';
-	code += '<#Clientlist_name#>';
-	code += '</div>';
-	code += '<div  class="clientTitle" style="margin-top:10px;">';
-	code += 'IP';
-	code += '</div>';
-	code += '<div  class="clientTitle" style="margin-top:10px;">';
-	code += 'MAC';
-	code += '</div>';
-	code += '<div  class="clientTitle" style="margin-top:10px;">';
-	code += '<#Clientlist_device#>';
-	code += '</div>';
-	code += '</td>';
-
-	code += '<td style="vertical-align:top;width:280px;">';
-
-	code += '<div>';
-	code += '<input id="card_client_name" name="card_client_name" type="text" value="" class="input_32_table" maxlength="32" style="width:275px;">';
-	code += '</div>';
-	code += '<div style="margin-top:10px;">';
-	code += '<input id="card_client_ipaddr_field_orig" type="hidden" value="" disabled="">';
-	code += '<input id="card_client_ipaddr_field" type="text" value="" class="input_32_table client_input_text_disabled" disabled>';
-	code += '</div>';
-	code += '<div style="margin-top:10px;">';
-	code += '<input id="card_client_macaddr_field" type="text" value="" class="input_32_table client_input_text_disabled" disabled>';
-	code += '</div>';
-	code += '<div style="margin-top:10px;">';
-	code += '<input id="card_client_manufacturer_field" type="text" value="Loading manufacturer.." class="input_32_table client_input_text_disabled" disabled>';
-	code += '</div>';
-	code += '</td>';
-	code += '</tr>';
+    code += `
+	  <td style="vertical-align:top;text-align:center;">
+		<div style="display: flex; flex-direction: column; gap:10px;">
+			<div style="display: flex; justify-content: space-between; align-items: center;">
+				<div class="clientTitle">
+				  <#Clientlist_name#>
+				</div>
+				<div>
+					<input id="card_client_name" name="card_client_name" type="text" value="" class="input_32_table" maxlength="32" style="width:290px;">
+				</div>
+			</div>
+			<div style="display: flex; justify-content: space-between; align-items: center;">
+				<div class="clientTitle">
+				  IP
+				</div>
+				<div>
+					<input id="card_client_ipaddr_field_orig" type="hidden" value="" disabled="">
+					<input id="card_client_ipaddr_field" type="text" value="" class="input_32_table client_input_text_disabled" disabled>
+				</div>
+			</div>
+			<div style="display: flex; justify-content: space-between; align-items: center;">
+				<div class="clientTitle">
+				  <#IPv6_wan_addr#>
+				</div>
+				<div>
+					<input id="card_client_ip6addr_prefix_field" type="text" value="" class="input_32_table client_input_text_disabled" disabled>
+				</div>
+			</div>
+			<div style="display: flex; justify-content: space-between; align-items: center;">
+				<div class="clientTitle">
+				  WAN IPv6 Link-Local
+				</div>
+				<div>
+					<input id="card_client_ip6addr_field" type="text" value="" class="input_32_table client_input_text_disabled" disabled>
+				</div>
+			</div>
+			<div style="display: flex; justify-content: space-between; align-items: center;">
+				<div class="clientTitle">
+				  MAC
+				</div>
+				<div>
+					<input id="card_client_macaddr_field" type="text" value="" class="input_32_table client_input_text_disabled" disabled>
+				</div>
+			</div>
+			<div style="display: flex; justify-content: space-between; align-items: center;">
+				<div class="clientTitle">
+				  <#Clientlist_device#>
+				</div>
+				<div>
+					<input id="card_client_manufacturer_field" type="text" value="Loading manufacturer.." class="input_32_table client_input_text_disabled" disabled>
+				</div>
+			</div>
+		</div>
+	  </td>
+	`;
+    code += '</tr>';
 	//device icon and device info. end
 
 	//device icon list start
@@ -876,7 +902,15 @@ function popClientListEditTable(event) {
 	//device icon and device info. start
 	document.getElementById("card_client_ipaddr_field_orig").value = clientInfo.ip;
 	document.getElementById("card_client_ipaddr_field").value = clientInfo.ip;
+	document.getElementById("card_client_ip6addr_field").value = clientInfo.ip6;
+	document.getElementById("card_client_ip6addr_prefix_field").value = clientInfo.ip6_prefix;
 	document.getElementById("card_client_macaddr_field").value = clientInfo.mac;
+	if (clientInfo.ip6 == '' || clientInfo.ip6 == undefined) {
+		document.getElementById('card_client_ip6addr_field').parentNode.parentNode.style.display = "none";
+	}
+	if (clientInfo.ip6_prefix == '' || clientInfo.ip6_prefix == undefined) {
+		document.getElementById('card_client_ip6addr_prefix_field').parentNode.parentNode.style.display = "none";
+	}
 	select_image("type" + parseInt(clientInfo.type), clientInfo.vendor);
 	if(card_client_variable.manual_dhcp_list[clientInfo.mac] != undefined) {
 		var client_manual_ip = card_client_variable.manual_dhcp_list[clientInfo.mac].ip;
@@ -908,7 +942,7 @@ function popClientListEditTable(event) {
 		var client_MULTIFILTER_num = (card_client_variable.MULTIFILTER_MAC == "") ? 0 : card_client_variable.MULTIFILTER_ENABLE.split(">").length;
 		$("#edit_client_block #card_client_ipaddr_field").prop("disabled", false);
 		$("#edit_client_block #card_client_ipaddr_field").removeClass("client_input_text_disabled");
-		$("#edit_client_block #card_client_ipaddr_field").css("width", "275px");
+		$("#edit_client_block #card_client_ipaddr_field").css("width", "290px");
 		$("#edit_client_block #card_client_ipaddr_field").unbind("keypress");
 		$("#edit_client_block #card_client_ipaddr_field").keypress(function(){
 			if(!card_client_variable.ipBindingFlag) {
@@ -925,13 +959,15 @@ function popClientListEditTable(event) {
 		});
 
 		var setRadioControl = function (state, mode, mac) {
+			const manually_dhcp_maximum  = (isSupport("MaxRule_extend_limit") == 0) ? 64: isSupport("MaxRule_extend_limit");
+			const parentctrl_maximum = (isSupport("MaxRule_parentctrl") == 0) ? 16 : isSupport("MaxRule_parentctrl");
 			switch (mode) {
 				case "ipBinding" :
 					$('#edit_client_block #card_radio_IPBinding_enable').iphoneSwitch(state,
 						function(){
 							if(card_client_variable.manual_dhcp_list[mac] == undefined) {
-								if(manual_dhcp_list_num == 64) {
-									if(confirm("The max limit is 64 rule. Please check your client list on DHCP server.")) { /*untranslated*/
+								if(manual_dhcp_list_num >= manually_dhcp_maximum) {
+									if(confirm(stringSafeGet("<#Clientlist_IPMAC_Binding_max#>".replace("64", manually_dhcp_maximum)))) {
 										location.href = "/Advanced_DHCP_Content.asp" ;
 									}
 									else {
@@ -954,8 +990,8 @@ function popClientListEditTable(event) {
 					$('#edit_client_block #card_radio_BlockInternet_enable').iphoneSwitch(state,
 						function(){
 							if(card_client_variable.MULTIFILTER_MAC.search(mac) == -1) {
-								if(client_MULTIFILTER_num == 16) {
-									if(confirm("The max limit is 16 clients. Please check your client list on time scheduling.")) { /*untranslated*/
+								if(client_MULTIFILTER_num >= parentctrl_maximum) {
+									if(confirm(stringSafeGet("<#Clientlist_block_internet_max#>".replace("16", parentctrl_maximum)))) {
 										location.href = "/ParentalControl.asp" ;
 									}
 									else {
@@ -978,8 +1014,8 @@ function popClientListEditTable(event) {
 					$('#edit_client_block #card_radio_TimeScheduling_enable').iphoneSwitch(state,
 						function(){
 							if(card_client_variable.MULTIFILTER_MAC.search(mac) == -1) {
-								if(client_MULTIFILTER_num == 16) {
-									if(confirm("The max limit is 16 clients. Please check your client list on time scheduling.")) { /*untranslated*/
+								if(client_MULTIFILTER_num >= parentctrl_maximum) {
+									if(confirm(stringSafeGet("<#Clientlist_block_internet_max#>".replace("16", parentctrl_maximum)))) {
 										location.href = "/ParentalControl.asp" ;
 									}
 									else {
@@ -1360,15 +1396,15 @@ function card_confirm(event) {
 				if(card_client_variable.timeSchedulingFlag || card_client_variable.blockInternetFlag) {
 					if(document.card_clientlist_form.MULTIFILTER_MAC.value == "") {
 						if(card_client_variable.timeSchedulingFlag)
-							document.card_clientlist_form.MULTIFILTER_ENABLE.value += "1";
+							document.card_clientlist_form.MULTIFILTER_ENABLE.value = "1";
 						else if(card_client_variable.blockInternetFlag)
-							document.card_clientlist_form.MULTIFILTER_ENABLE.value += "2";
-						document.card_clientlist_form.MULTIFILTER_MAC.value += clientMac;
-						document.card_clientlist_form.MULTIFILTER_DEVICENAME.value += clientName;
+							document.card_clientlist_form.MULTIFILTER_ENABLE.value = "2";
+						document.card_clientlist_form.MULTIFILTER_MAC.value = clientMac;
+						document.card_clientlist_form.MULTIFILTER_DEVICENAME.value = clientName;
 						if(isSupport("PC_SCHED_V3"))
-							document.card_clientlist_form.MULTIFILTER_MACFILTER_DAYTIME_V2.value += "W03E21000700<W04122000800";
+							document.card_clientlist_form.MULTIFILTER_MACFILTER_DAYTIME_V2.value = "W03E21000700<W04122000800";
 						else
-							document.card_clientlist_form.MULTIFILTER_MACFILTER_DAYTIME.value += "<";
+							document.card_clientlist_form.MULTIFILTER_MACFILTER_DAYTIME.value = "<";
 					}
 					else {
 						document.card_clientlist_form.MULTIFILTER_ENABLE.value += ">";
@@ -1657,7 +1693,7 @@ function showUploadIconsTable() {
 	}
 	code +='</table>';
 	document.getElementById("card_usericons_block").innerHTML = code;
-};
+}
 function delUploadIcon(rowdata) {
 	var delIdx = rowdata.parentNode.parentNode.rowIndex;
 	var delMac = rowdata.parentNode.parentNode.childNodes[1].innerHTML;
@@ -2217,8 +2253,8 @@ function exportClientListLog() {
 		for(var i = 0; i < array.length; i += 1) {
 			tempArray = [];
 			tempArray[0] = (array[i][0] == 1) ? "Allow Internet access" : "Block Internet access";
-			tempArray[1] = array[i][1].replace(",", "");
-			tempArray[2] = array[i][2];
+            tempArray[1] = `"${array[i][1].replace(",", "").replace(/[=@]/g, " ")}"`;
+            tempArray[2] = `"${array[i][2].replace(/[=@]/g, " ")}"`;
 			tempArray[3] = array[i][3];
 			tempArray[4] = ipStateExport[clientList[array[i][4]].ipMethod];
 			tempArray[5] = array[i][4];
@@ -2345,7 +2381,7 @@ function create_clientlist_listview() {
 	var divObj = document.createElement("div");
 	divObj.setAttribute("id","clientlist_viewlist_block");
 
-	var obj_width_map = [["15%", "20%", "25%", "20%", "20%"],["10%", "10%", "30%", "20%", "20%", "10%"],["6%", "6%", "27%", "20%", "15%", "6%", "6%", "6%", "8%"]];
+	var obj_width_map = [["15%", "20%", "25%", "20%", "20%"],["10%", "10%", "30%", "20%", "20%", "10%"],["6%", "6%", "17%", "30%", "15%", "6%", "6%", "6%", "8%"]];
 	if(top.isIE8) obj_width_map = [["", "", "40%", "40%", "20%"],["", "", "40%", "30%", "20%", "10%"],["", "", "33%", "26%", "15%", "6%", "6%", "6%", "8%"]];
 	var obj_width = stainfo_support ? obj_width_map[2] : obj_width_map[1];
 	var wl_colspan = stainfo_support ? 9 : 6;
@@ -2514,7 +2550,7 @@ function create_clientlist_listview() {
 			var tempArray = [clientList[clientList[i]].internetState, deviceTypeName, clientName, clientList[clientList[i]].ip, 
 							clientList[clientList[i]].mac, clientList[clientList[i]].rssi, clientList[clientList[i]].curTx, clientList[clientList[i]].curRx, 
 							clientList[clientList[i]].wlConnectTime, clientList[clientList[i]].isWL, clientList[clientList[i]].vendor, clientList[clientList[i]].type, 
-							clientList[clientList[i]].macRepeat, clientList[clientList[i]].isGN];
+							clientList[clientList[i]].macRepeat, clientList[clientList[i]].isGN, clientList[clientList[i]].ip6, clientList[clientList[i]].ip6_prefix];
 			switch (clienlistViewMode) {
 				case "All" :
 					all_list.push(tempArray);
@@ -2598,13 +2634,15 @@ function drawClientListBlock(objID) {
 		this.type = _profile[11];
 		this.macRepeat = _profile[12];
 		this.isGN = _profile[13];
+        this.ip6 = _profile[14];
+        this.ip6_prefix = _profile[15];
 	}
 
 	if(document.getElementById("clientlist_" + objID + "_Block") != null) {
 		if(document.getElementById("tb_" + objID) != null) {
 			removeElement(document.getElementById("tb_" + objID));
 		}
-		var obj_width_map = [["15%", "20%", "25%", "20%", "20%"],["10%", "10%", "30%", "20%", "20%", "10%"],["6%", "6%", "27%", "20%", "15%", "6%", "6%", "6%", "8%"]];
+		var obj_width_map = [["15%", "20%", "25%", "20%", "20%"],["10%", "10%", "30%", "20%", "20%", "10%"],["6%", "6%", "17%", "30%", "15%", "6%", "6%", "6%", "8%"]];
 		if(top.isIE8) obj_width_map = [["", "", "40%", "40%", "20%"],["", "", "40%", "30%", "20%", "10%"],["", "", "33%", "26%", "15%", "6%", "6%", "6%", "8%"]];
 		//var obj_width = (objID == "wired_list") ? obj_width_map[0] : ((stainfo_support) ? obj_width_map[2] : obj_width_map[1]);
 		var obj_width = (stainfo_support) ? obj_width_map[2] : obj_width_map[1];
@@ -2693,8 +2731,8 @@ function drawClientListBlock(objID) {
 				clientListCode += "<input id='client_name_"+objID+"_"+j+"' type='text' value='"+clientNameEnCode+"' class='input_25_table' maxlength='32' style='width:95%;margin-left:0px;display:none;' onblur='saveClientName(\""+objID+"_"+j+"\", "+clientlist_sort[j].type+", \"" + clientlist_sort[j].mac + "\");'>";
 				clientListCode += "</td>";
 				var ipStyle = ('<% nvram_get("sw_mode"); %>' == "1") ? "line-height:16px;text-align:left;padding-left:10px;" : "line-height:16px;text-align:center;";
-				clientListCode += "<td width='" + obj_width[3] + "' style='" + ipStyle + "'>";
-				clientListCode += (clientList[clientlist_sort[j].mac].isWebServer) ? "<a class='link' href='http://"+clientlist_sort[j].ip+"' target='_blank'>"+clientlist_sort[j].ip+"</a>" : clientlist_sort[j].ip;
+				clientListCode += "<td width='" + obj_width[3] + "' style='" + ipStyle + "'><div style='display: flex;flex-direction: row; align-items: center; justify-content: space-between; gap:5px;'>";
+                clientListCode += (clientList[clientlist_sort[j].mac].isWebServer) ? "<a class='link' href='http://"+clientlist_sort[j].ip+"' target='_blank'>"+`<div style="display: flex;flex-direction: column; align-items: flex-start;"><div>${clientlist_sort[j].ip}</div><div style="font-size: 0.75em;" title="<#IPv6_wan_addr#>">${clientlist_sort[j].ip6_prefix}</div><div style="font-size: 0.75em;" title="WAN IPv6 Link-Local">${clientlist_sort[j].ip6}</div></div>`+"</a>" : `<div style="display: flex;flex-direction: column; align-items: flex-start;"><div>${clientlist_sort[j].ip}</div><div style="font-size: 0.75em;" title="<#IPv6_wan_addr#>">${clientlist_sort[j].ip6_prefix}</div><div style="font-size: 0.75em;" title="WAN IPv6 Link-Local">${clientlist_sort[j].ip6}</div></div>`;
 				if('<% nvram_get("sw_mode"); %>' == "1") {
 					clientListCode += '<span style="float:right;margin-top:-3px;margin-right:5px;" class="ipMethodTag" onmouseover="return overlib(\''
 					clientListCode += ipState[clientList[clientlist_sort[j].mac].ipMethod];
@@ -2702,7 +2740,7 @@ function drawClientListBlock(objID) {
 					clientListCode += clientList[clientlist_sort[j].mac].ipMethod + '</span>';
 				}
 
-				clientListCode += "</td>";
+				clientListCode += "</div></td>";
 				clientListCode += "<td width='" + obj_width[4] + "'>"+clientlist_sort[j].mac+"</td>";
 				if(!(isSwMode('mb') || isSwMode('ew'))) {
 					var rssi_t = 0;
@@ -2868,7 +2906,7 @@ function getFilePath(file) {
 		currentPath = "../" + file;
 	}
 	return currentPath
-};
+}
 
 function editClientName(index) {
 	document.getElementById("div_clientName_"+index).style.display = "none";

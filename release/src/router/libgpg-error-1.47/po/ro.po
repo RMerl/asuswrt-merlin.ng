@@ -1,0 +1,2266 @@
+# Mesajele în limba română pentru libgpg-error.
+# Copyright (C) 2005 Free Software Foundation, Inc.
+# Acest fişier este distribuit sub aceeaşi licenţă ca şi pachetul libgpg-error.
+# Laurentiu Buzdugan <lbuz@rolix.org>, 2005.
+#
+#
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: libgpg-error 1.1\n"
+"Report-Msgid-Bugs-To: translations@gnupg.org\n"
+"POT-Creation-Date: 2023-04-06 10:30+0200\n"
+"PO-Revision-Date: 2021-03-22 10:42+0100\n"
+"Last-Translator: Laurentiu Buzdugan <lbuz@rolix.org>\n"
+"Language-Team: Romanian <translation-team-ro@lists.sourceforge.net>\n"
+"Language: ro\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: src/err-sources.h:28
+msgid "Unspecified source"
+msgstr "Sursă nespecificată"
+
+#: src/err-sources.h:29
+msgid "gcrypt"
+msgstr "gcrypt"
+
+#: src/err-sources.h:30
+msgid "GnuPG"
+msgstr "GnuPG"
+
+#: src/err-sources.h:31
+msgid "GpgSM"
+msgstr "GpgSM"
+
+#: src/err-sources.h:32
+msgid "GPG Agent"
+msgstr "GPG Agent"
+
+#: src/err-sources.h:33
+msgid "Pinentry"
+msgstr "Introducere pin (pinentry)"
+
+#: src/err-sources.h:34
+msgid "SCD"
+msgstr "SCD"
+
+#: src/err-sources.h:35
+msgid "GPGME"
+msgstr "GPGME"
+
+#: src/err-sources.h:36
+msgid "Keybox"
+msgstr "Keybox"
+
+#: src/err-sources.h:37
+msgid "KSBA"
+msgstr "KSBA"
+
+#: src/err-sources.h:38
+msgid "Dirmngr"
+msgstr "Dirmngr"
+
+#: src/err-sources.h:39
+msgid "GSTI"
+msgstr "GSTI"
+
+#: src/err-sources.h:40
+msgid "GPA"
+msgstr "GPA"
+
+#: src/err-sources.h:41
+msgid "Kleopatra"
+msgstr "Kleopatra"
+
+#: src/err-sources.h:42
+msgid "G13"
+msgstr "G13"
+
+#: src/err-sources.h:43
+msgid "Assuan"
+msgstr "Assuan"
+
+#: src/err-sources.h:44
+msgid "TPM2d"
+msgstr "TPM2d"
+
+#: src/err-sources.h:45
+msgid "TLS"
+msgstr "TLS"
+
+#: src/err-sources.h:46
+msgid "TKD"
+msgstr ""
+
+#: src/err-sources.h:47
+#, fuzzy
+msgid "Any source"
+msgstr "Sursă necunoscută"
+
+#: src/err-sources.h:48
+msgid "User defined source 1"
+msgstr "Sursă definită de utilizator 1"
+
+#: src/err-sources.h:49
+msgid "User defined source 2"
+msgstr "Sursă definită de utilizator 2"
+
+#: src/err-sources.h:50
+msgid "User defined source 3"
+msgstr "Sursă definită de utilizator 3"
+
+#: src/err-sources.h:51
+msgid "User defined source 4"
+msgstr "Sursă definită de utilizator 4"
+
+#: src/err-sources.h:52
+msgid "Unknown source"
+msgstr "Sursă necunoscută"
+
+#: src/err-codes.h:28
+msgid "Success"
+msgstr "Succes"
+
+#: src/err-codes.h:29
+msgid "General error"
+msgstr "Eroare generală"
+
+#: src/err-codes.h:30
+msgid "Unknown packet"
+msgstr "Pachet necunoscut"
+
+#: src/err-codes.h:31
+msgid "Unknown version in packet"
+msgstr "versiune necunoscută în pachet"
+
+#: src/err-codes.h:32
+msgid "Invalid public key algorithm"
+msgstr "Algoritm cu cheie publică invalid"
+
+#: src/err-codes.h:33
+msgid "Invalid digest algorithm"
+msgstr "Algoritm rezumat invalid"
+
+#: src/err-codes.h:34
+msgid "Bad public key"
+msgstr "Cheie publică incorectă"
+
+#: src/err-codes.h:35
+msgid "Bad secret key"
+msgstr "Cheie secretă incorectă"
+
+#: src/err-codes.h:36
+msgid "Bad signature"
+msgstr "Semnătură incorectă"
+
+#: src/err-codes.h:37
+msgid "No public key"
+msgstr "Nici o cheie publică"
+
+#: src/err-codes.h:38
+msgid "Checksum error"
+msgstr "Eroare checksum"
+
+#: src/err-codes.h:39
+msgid "Bad passphrase"
+msgstr "Frază-parolă incorectă"
+
+#: src/err-codes.h:40
+msgid "Invalid cipher algorithm"
+msgstr "Algoritm cifrare invalid"
+
+#: src/err-codes.h:41
+msgid "Cannot open keyring"
+msgstr "Inel de chei deschis"
+
+#: src/err-codes.h:42
+msgid "Invalid packet"
+msgstr "Pachet invalid"
+
+#: src/err-codes.h:43
+msgid "Invalid armor"
+msgstr "Armură invalidă"
+
+#: src/err-codes.h:44
+msgid "No user ID"
+msgstr "Nici un ID utilizator."
+
+#: src/err-codes.h:45
+msgid "No secret key"
+msgstr "Nici o cheie secretă"
+
+#: src/err-codes.h:46
+msgid "Wrong secret key used"
+msgstr "A fost folosită o cheie secretă greşită"
+
+#: src/err-codes.h:47
+msgid "Bad session key"
+msgstr "Cheie de sesiune incorectă"
+
+#: src/err-codes.h:48
+msgid "Unknown compression algorithm"
+msgstr "Algoritm compresie necunoscut"
+
+#: src/err-codes.h:49
+msgid "Number is not prime"
+msgstr "Numărul nu este prim"
+
+#: src/err-codes.h:50
+msgid "Invalid encoding method"
+msgstr "Valoare de encodare invalidă"
+
+#: src/err-codes.h:51
+msgid "Invalid encryption scheme"
+msgstr "Schemă de cifrare invalidă"
+
+#: src/err-codes.h:52
+msgid "Invalid signature scheme"
+msgstr "Schemă de semnături invalidă"
+
+#: src/err-codes.h:53
+msgid "Invalid attribute"
+msgstr "Argument invalid"
+
+#: src/err-codes.h:54
+msgid "No value"
+msgstr "Nici o valoare"
+
+#: src/err-codes.h:55
+msgid "Not found"
+msgstr "Nu a fost găsit(ă)"
+
+#: src/err-codes.h:56
+msgid "Value not found"
+msgstr "Valoarea nu a fost găsită"
+
+#: src/err-codes.h:57
+msgid "Syntax error"
+msgstr "Eroare de sintaxă"
+
+#: src/err-codes.h:58
+msgid "Bad MPI value"
+msgstr "Valoare MPI incorectă"
+
+#: src/err-codes.h:59
+msgid "Invalid passphrase"
+msgstr "Frază-parolă invalidă"
+
+#: src/err-codes.h:60
+msgid "Invalid signature class"
+msgstr "Clasă semnături invalidă"
+
+#: src/err-codes.h:61
+msgid "Resources exhausted"
+msgstr "Resurse epuizate"
+
+#: src/err-codes.h:62
+msgid "Invalid keyring"
+msgstr "Inel de chei invalid"
+
+#: src/err-codes.h:63
+msgid "Trust DB error"
+msgstr "Eroare bază de date încredere"
+
+#: src/err-codes.h:64
+msgid "Bad certificate"
+msgstr "Certificat incorect"
+
+#: src/err-codes.h:65
+msgid "Invalid user ID"
+msgstr "ID utilizator invalid"
+
+#: src/err-codes.h:66
+msgid "Unexpected error"
+msgstr "Eroare neaşteptată"
+
+#: src/err-codes.h:67
+msgid "Time conflict"
+msgstr "Conflict de timp"
+
+#: src/err-codes.h:68
+msgid "Keyserver error"
+msgstr "Eroare server de chei"
+
+#: src/err-codes.h:69
+msgid "Wrong public key algorithm"
+msgstr "Algoritm cheie publică greşit"
+
+#: src/err-codes.h:70
+msgid "Tribute to D. A."
+msgstr "Tribut lui D. A."
+
+#: src/err-codes.h:71
+msgid "Weak encryption key"
+msgstr "Cheie de cifrare slabă"
+
+#: src/err-codes.h:72
+msgid "Invalid key length"
+msgstr "Lungime cheie invalidă"
+
+#: src/err-codes.h:73
+msgid "Invalid argument"
+msgstr "Argument invalid"
+
+#: src/err-codes.h:74
+msgid "Syntax error in URI"
+msgstr "Eroare de sintaxă în URI"
+
+#: src/err-codes.h:75
+msgid "Invalid URI"
+msgstr "URI incorect"
+
+#: src/err-codes.h:76
+msgid "Network error"
+msgstr "Eroare reţea"
+
+#: src/err-codes.h:77
+msgid "Unknown host"
+msgstr "Gazdă necunoscută"
+
+#: src/err-codes.h:78
+msgid "Selftest failed"
+msgstr "Auto-test eşuat"
+
+#: src/err-codes.h:79
+msgid "Data not encrypted"
+msgstr "Date necifrate"
+
+#: src/err-codes.h:80
+msgid "Data not processed"
+msgstr "Date neprocesate"
+
+#: src/err-codes.h:81
+msgid "Unusable public key"
+msgstr "Cheie publică de nefolosit"
+
+#: src/err-codes.h:82
+msgid "Unusable secret key"
+msgstr "cheie secretă de nefolosit"
+
+#: src/err-codes.h:83
+msgid "Invalid value"
+msgstr "Valoare invalidă"
+
+#: src/err-codes.h:84
+msgid "Bad certificate chain"
+msgstr "Lanţ certificate incorect"
+
+#: src/err-codes.h:85
+msgid "Missing certificate"
+msgstr "Certificat lipsă"
+
+#: src/err-codes.h:86
+msgid "No data"
+msgstr "Nici o dată"
+
+#: src/err-codes.h:87
+msgid "Bug"
+msgstr "Bug"
+
+#: src/err-codes.h:88
+msgid "Not supported"
+msgstr "Nu este suportat(ă)"
+
+#: src/err-codes.h:89
+msgid "Invalid operation code"
+msgstr "Cod operaţie invalid"
+
+#: src/err-codes.h:90
+msgid "Timeout"
+msgstr "Pauză"
+
+#: src/err-codes.h:91
+msgid "Internal error"
+msgstr "Eroare internă"
+
+#: src/err-codes.h:92
+msgid "EOF (gcrypt)"
+msgstr "EOF (gcrypt)"
+
+#: src/err-codes.h:93
+msgid "Invalid object"
+msgstr "Obiect invalid"
+
+#: src/err-codes.h:94
+msgid "Provided object is too short"
+msgstr "Obiectul furnizat e prea scurt"
+
+#: src/err-codes.h:95
+msgid "Provided object is too large"
+msgstr "Obiectul furnizat e prea larg"
+
+#: src/err-codes.h:96
+msgid "Missing item in object"
+msgstr "Articol lipsă în obiect"
+
+#: src/err-codes.h:97
+msgid "Not implemented"
+msgstr "Nu a fost implementat(ă)"
+
+#: src/err-codes.h:98
+msgid "Conflicting use"
+msgstr "Folosire în conflict"
+
+#: src/err-codes.h:99
+msgid "Invalid cipher mode"
+msgstr "Mod cifru invalid"
+
+#: src/err-codes.h:100
+msgid "Invalid flag"
+msgstr "Atribut invalid"
+
+#: src/err-codes.h:101
+msgid "Invalid handle"
+msgstr "Handle invalid"
+
+#: src/err-codes.h:102
+msgid "Result truncated"
+msgstr "Rezultat invalid"
+
+#: src/err-codes.h:103
+msgid "Incomplete line"
+msgstr "Linie incompletă"
+
+#: src/err-codes.h:104
+msgid "Invalid response"
+msgstr "Răspuns invalid"
+
+#: src/err-codes.h:105
+msgid "No agent running"
+msgstr "Nu rulează nici un agent"
+
+#: src/err-codes.h:106
+#, fuzzy
+#| msgid "agent error"
+msgid "Agent error"
+msgstr "eroare agent"
+
+#: src/err-codes.h:107
+msgid "Invalid data"
+msgstr "Date invalide"
+
+#: src/err-codes.h:108
+#, fuzzy
+msgid "Unspecific Assuan server fault"
+msgstr "Eroare server Assuan"
+
+#: src/err-codes.h:109
+#, fuzzy
+msgid "General Assuan error"
+msgstr "Eroare generală"
+
+#: src/err-codes.h:110
+msgid "Invalid session key"
+msgstr "Cheie de sesiune invalidă"
+
+#: src/err-codes.h:111
+msgid "Invalid S-expression"
+msgstr "Expresie-S invalidă"
+
+#: src/err-codes.h:112
+msgid "Unsupported algorithm"
+msgstr "Algoritm nesuportat"
+
+#: src/err-codes.h:113
+msgid "No pinentry"
+msgstr "Nici introducere pin (pinentry)"
+
+#: src/err-codes.h:114
+msgid "pinentry error"
+msgstr "eroare introducere pin (pinentry) "
+
+#: src/err-codes.h:115
+msgid "Bad PIN"
+msgstr "PIN incorect"
+
+#: src/err-codes.h:116
+msgid "Invalid name"
+msgstr "Nume invalid"
+
+#: src/err-codes.h:117
+msgid "Bad data"
+msgstr "Date incorecte"
+
+#: src/err-codes.h:118
+msgid "Invalid parameter"
+msgstr "Parametru invalid"
+
+#: src/err-codes.h:119
+msgid "Wrong card"
+msgstr "Card greşit"
+
+#: src/err-codes.h:120
+msgid "No dirmngr"
+msgstr "Nici un dirmngr"
+
+#: src/err-codes.h:121
+msgid "dirmngr error"
+msgstr "eroare dirmngr"
+
+#: src/err-codes.h:122
+msgid "Certificate revoked"
+msgstr "Certificat revocat"
+
+#: src/err-codes.h:123
+msgid "No CRL known"
+msgstr "Nici un CRL cunoscut"
+
+#: src/err-codes.h:124
+msgid "CRL too old"
+msgstr "CRL prea vechi"
+
+#: src/err-codes.h:125
+msgid "Line too long"
+msgstr "Linie prea lungă"
+
+#: src/err-codes.h:126
+msgid "Not trusted"
+msgstr "Nu este de încredere"
+
+#: src/err-codes.h:127
+msgid "Operation cancelled"
+msgstr "Operaţiune anulată"
+
+#: src/err-codes.h:128
+msgid "Bad CA certificate"
+msgstr "Certificat CA incorect"
+
+#: src/err-codes.h:129
+msgid "Certificate expired"
+msgstr "Certificat expirat"
+
+#: src/err-codes.h:130
+msgid "Certificate too young"
+msgstr "Certificat prea recent"
+
+#: src/err-codes.h:131
+msgid "Unsupported certificate"
+msgstr "Certificat nesuportat"
+
+#: src/err-codes.h:132
+msgid "Unknown S-expression"
+msgstr "Expresie-S necunoscută"
+
+#: src/err-codes.h:133
+msgid "Unsupported protection"
+msgstr "Protecţie nesuportată"
+
+#: src/err-codes.h:134
+msgid "Corrupted protection"
+msgstr "Protecţie coruptă"
+
+#: src/err-codes.h:135
+msgid "Ambiguous name"
+msgstr "Nume ambiguu"
+
+#: src/err-codes.h:136
+msgid "Card error"
+msgstr "Eroare card"
+
+#: src/err-codes.h:137
+msgid "Card reset required"
+msgstr "Este necesară resetarea cardului"
+
+#: src/err-codes.h:138
+msgid "Card removed"
+msgstr "Card scos"
+
+#: src/err-codes.h:139
+msgid "Invalid card"
+msgstr "Card invalid"
+
+#: src/err-codes.h:140
+msgid "Card not present"
+msgstr "Cardul nu este prezent"
+
+#: src/err-codes.h:141
+msgid "No PKCS15 application"
+msgstr "Nici o aplicaţie PKCS15"
+
+#: src/err-codes.h:142
+msgid "Not confirmed"
+msgstr "Neconfirmat(ă)"
+
+#: src/err-codes.h:143
+msgid "Configuration error"
+msgstr "Eroare de configurare"
+
+#: src/err-codes.h:144
+msgid "No policy match"
+msgstr "Nici o potrivire de politici"
+
+#: src/err-codes.h:145
+msgid "Invalid index"
+msgstr "Index invalid"
+
+#: src/err-codes.h:146
+msgid "Invalid ID"
+msgstr "ID invalid"
+
+#: src/err-codes.h:147
+msgid "No SmartCard daemon"
+msgstr "Nici un daemon SmartCard"
+
+#: src/err-codes.h:148
+msgid "SmartCard daemon error"
+msgstr "Eroare daemon SmartCard"
+
+#: src/err-codes.h:149
+msgid "Unsupported protocol"
+msgstr "Protocol nesuportat"
+
+#: src/err-codes.h:150
+msgid "Bad PIN method"
+msgstr "Metodă PIN incorectă"
+
+#: src/err-codes.h:151
+msgid "Card not initialized"
+msgstr "Card neiniţializat"
+
+#: src/err-codes.h:152
+msgid "Unsupported operation"
+msgstr "Operaţie nesuportată"
+
+#: src/err-codes.h:153
+msgid "Wrong key usage"
+msgstr "Folosire cheie greşită"
+
+#: src/err-codes.h:154
+msgid "Nothing found"
+msgstr "Nu a fost găsit nimic"
+
+#: src/err-codes.h:155
+msgid "Wrong blob type"
+msgstr "Tip de blob incorect"
+
+#: src/err-codes.h:156
+msgid "Missing value"
+msgstr "Valoare lipsă"
+
+#: src/err-codes.h:157
+msgid "Hardware problem"
+msgstr "Problemă hardware"
+
+#: src/err-codes.h:158
+msgid "PIN blocked"
+msgstr "PIN blocat"
+
+#: src/err-codes.h:159
+msgid "Conditions of use not satisfied"
+msgstr "Condiţii de folosire nesatisfăcute"
+
+#: src/err-codes.h:160
+msgid "PINs are not synced"
+msgstr "PIN-urile nu sunt sincronizate"
+
+#: src/err-codes.h:161
+msgid "Invalid CRL"
+msgstr "CRL invalid"
+
+#: src/err-codes.h:162
+msgid "BER error"
+msgstr "Eroare BER"
+
+#: src/err-codes.h:163
+msgid "Invalid BER"
+msgstr "BER invalid"
+
+#: src/err-codes.h:164
+msgid "Element not found"
+msgstr "Elementul nu a fost găsit"
+
+#: src/err-codes.h:165
+msgid "Identifier not found"
+msgstr "Identificator nu a fost găsit"
+
+#: src/err-codes.h:166
+msgid "Invalid tag"
+msgstr "Etichetă invalidă"
+
+#: src/err-codes.h:167
+msgid "Invalid length"
+msgstr "Lungime invalidă"
+
+#: src/err-codes.h:168
+msgid "Invalid key info"
+msgstr "Informaţii cheie invalide"
+
+#: src/err-codes.h:169
+msgid "Unexpected tag"
+msgstr "Etichetă neaşteptată"
+
+#: src/err-codes.h:170
+msgid "Not DER encoded"
+msgstr "Nu e encodat DER"
+
+#: src/err-codes.h:171
+msgid "No CMS object"
+msgstr "Nici un obiect CMS"
+
+#: src/err-codes.h:172
+msgid "Invalid CMS object"
+msgstr "Obiect CMS invalid"
+
+#: src/err-codes.h:173
+msgid "Unknown CMS object"
+msgstr "Obiect CMS necunoscut"
+
+#: src/err-codes.h:174
+msgid "Unsupported CMS object"
+msgstr "Obiect CMS nesuportat"
+
+#: src/err-codes.h:175
+msgid "Unsupported encoding"
+msgstr "Encodare nesuportată"
+
+#: src/err-codes.h:176
+msgid "Unsupported CMS version"
+msgstr "Versiune CMS nesuportată"
+
+#: src/err-codes.h:177
+msgid "Unknown algorithm"
+msgstr "Algoritm necunoscut"
+
+#: src/err-codes.h:178
+msgid "Invalid crypto engine"
+msgstr "Motor cifrare invalid"
+
+#: src/err-codes.h:179
+msgid "Public key not trusted"
+msgstr "Cheia publică nu este de încredere"
+
+#: src/err-codes.h:180
+msgid "Decryption failed"
+msgstr "Decriptarea a eşuat"
+
+#: src/err-codes.h:181
+msgid "Key expired"
+msgstr "Cheie expirată"
+
+#: src/err-codes.h:182
+msgid "Signature expired"
+msgstr "Semnătură expirată"
+
+#: src/err-codes.h:183
+msgid "Encoding problem"
+msgstr "Problemă de encodare"
+
+#: src/err-codes.h:184
+msgid "Invalid state"
+msgstr "Stare invalidă"
+
+#: src/err-codes.h:185
+msgid "Duplicated value"
+msgstr "Valoare dublă"
+
+#: src/err-codes.h:186
+msgid "Missing action"
+msgstr "Acţiune lipsă"
+
+#: src/err-codes.h:187
+msgid "ASN.1 module not found"
+msgstr "Modulul ASN.1 nu a fost găsit"
+
+#: src/err-codes.h:188
+msgid "Invalid OID string"
+msgstr "Şir OID invalid"
+
+#: src/err-codes.h:189
+msgid "Invalid time"
+msgstr "Timp invalid"
+
+#: src/err-codes.h:190
+msgid "Invalid CRL object"
+msgstr "Obiect CRL invalid"
+
+#: src/err-codes.h:191
+msgid "Unsupported CRL version"
+msgstr "Versiune CRL nesuportată"
+
+#: src/err-codes.h:192
+msgid "Invalid certificate object"
+msgstr "Obiect certificat incorect"
+
+#: src/err-codes.h:193
+msgid "Unknown name"
+msgstr "Nume necunoscut"
+
+#: src/err-codes.h:194
+msgid "A locale function failed"
+msgstr "O funcţie locale a eşuat"
+
+#: src/err-codes.h:195
+msgid "Not locked"
+msgstr "Neforţat(ă)"
+
+#: src/err-codes.h:196
+msgid "Protocol violation"
+msgstr "Violare de protocol"
+
+#: src/err-codes.h:197
+msgid "Invalid MAC"
+msgstr "MAC invalid"
+
+#: src/err-codes.h:198
+msgid "Invalid request"
+msgstr "Cerere invalidă"
+
+#: src/err-codes.h:199
+#, fuzzy
+msgid "Unknown extension"
+msgstr "Expresie-S necunoscută"
+
+#: src/err-codes.h:200
+#, fuzzy
+msgid "Unknown critical extension"
+msgstr "Expresie-S necunoscută"
+
+#: src/err-codes.h:201
+#, fuzzy
+msgid "Locked"
+msgstr "Neforţat(ă)"
+
+#: src/err-codes.h:202
+#, fuzzy
+msgid "Unknown option"
+msgstr "Expresie-S necunoscută"
+
+#: src/err-codes.h:203
+#, fuzzy
+msgid "Unknown command"
+msgstr "Cod de eroare necunoscut"
+
+#: src/err-codes.h:204
+#, fuzzy
+msgid "Not operational"
+msgstr "Operaţie nesuportată"
+
+#: src/err-codes.h:205
+#, fuzzy
+msgid "No passphrase given"
+msgstr "Frază-parolă incorectă"
+
+#: src/err-codes.h:206
+msgid "No PIN given"
+msgstr ""
+
+#: src/err-codes.h:207
+#, fuzzy
+msgid "Not enabled"
+msgstr "Neforţat(ă)"
+
+#: src/err-codes.h:208
+#, fuzzy
+msgid "No crypto engine"
+msgstr "Motor cifrare invalid"
+
+#: src/err-codes.h:209
+#, fuzzy
+msgid "Missing key"
+msgstr "Valoare lipsă"
+
+#: src/err-codes.h:210
+#, fuzzy
+msgid "Too many objects"
+msgstr "Nici un obiect CMS"
+
+#: src/err-codes.h:211
+msgid "Limit reached"
+msgstr ""
+
+#: src/err-codes.h:212
+#, fuzzy
+msgid "Not initialized"
+msgstr "Card neiniţializat"
+
+#: src/err-codes.h:213
+#, fuzzy
+msgid "Missing issuer certificate"
+msgstr "Certificat lipsă"
+
+#: src/err-codes.h:214
+msgid "No keyserver available"
+msgstr ""
+
+#: src/err-codes.h:215
+#, fuzzy
+msgid "Invalid elliptic curve"
+msgstr "Timp invalid"
+
+#: src/err-codes.h:216
+#, fuzzy
+msgid "Unknown elliptic curve"
+msgstr "Sursă necunoscută"
+
+#: src/err-codes.h:217
+#, fuzzy
+#| msgid "Duplicated value"
+msgid "Duplicated key"
+msgstr "Valoare dublă"
+
+#: src/err-codes.h:218
+#, fuzzy
+#| msgid "Ambiguous name"
+msgid "Ambiguous result"
+msgstr "Nume ambiguu"
+
+#: src/err-codes.h:219
+#, fuzzy
+msgid "No crypto context"
+msgstr "Motor cifrare invalid"
+
+#: src/err-codes.h:220
+#, fuzzy
+msgid "Wrong crypto context"
+msgstr "Motor cifrare invalid"
+
+#: src/err-codes.h:221
+#, fuzzy
+#| msgid "Invalid crypto engine"
+msgid "Bad crypto context"
+msgstr "Motor cifrare invalid"
+
+#: src/err-codes.h:222
+msgid "Conflict in the crypto context"
+msgstr ""
+
+#: src/err-codes.h:223
+#, fuzzy
+#| msgid "No public key"
+msgid "Broken public key"
+msgstr "Nici o cheie publică"
+
+#: src/err-codes.h:224
+#, fuzzy
+#| msgid "No secret key"
+msgid "Broken secret key"
+msgstr "Nici o cheie secretă"
+
+#: src/err-codes.h:225
+#, fuzzy
+#| msgid "Invalid digest algorithm"
+msgid "Invalid MAC algorithm"
+msgstr "Algoritm rezumat invalid"
+
+#: src/err-codes.h:226
+#, fuzzy
+msgid "Operation fully cancelled"
+msgstr "Operaţiune anulată"
+
+#: src/err-codes.h:227
+#, fuzzy
+msgid "Operation not yet finished"
+msgstr "Operaţiune anulată"
+
+#: src/err-codes.h:228
+msgid "Buffer too short"
+msgstr "Buffer prea scurt"
+
+#: src/err-codes.h:229
+msgid "Invalid length specifier in S-expression"
+msgstr "Specificarea lungimii invalidă în expresia-S"
+
+#: src/err-codes.h:230
+msgid "String too long in S-expression"
+msgstr "Şir prea lung în expresia-S"
+
+#: src/err-codes.h:231
+msgid "Unmatched parentheses in S-expression"
+msgstr "Paranteză fără pereche în expresia-S"
+
+#: src/err-codes.h:232
+msgid "S-expression not canonical"
+msgstr "Expresia-S nu este canonică"
+
+#: src/err-codes.h:233
+msgid "Bad character in S-expression"
+msgstr "Caracter invalid în expresia-S"
+
+#: src/err-codes.h:234
+msgid "Bad quotation in S-expression"
+msgstr "Ghilimele incorecte în expresia-S"
+
+#: src/err-codes.h:235
+msgid "Zero prefix in S-expression"
+msgstr "Prefix zero în expresia-S"
+
+#: src/err-codes.h:236
+msgid "Nested display hints in S-expression"
+msgstr "Indicaţii de afişare încuibărite în expresia-S"
+
+#: src/err-codes.h:237
+msgid "Unmatched display hints"
+msgstr "Indicaţii de afişare fără pereche"
+
+#: src/err-codes.h:238
+msgid "Unexpected reserved punctuation in S-expression"
+msgstr "Punctuaţie rezervată neaşteptată în expresia-S"
+
+#: src/err-codes.h:239
+msgid "Bad hexadecimal character in S-expression"
+msgstr "Caracter hexazecimal incorect în expresia-S"
+
+#: src/err-codes.h:240
+msgid "Odd hexadecimal numbers in S-expression"
+msgstr "Numere hexazecimale ciudate în expresia-S"
+
+#: src/err-codes.h:241
+msgid "Bad octal character in S-expression"
+msgstr "Caracter octal incorect în expresia-S"
+
+#: src/err-codes.h:242
+msgid "All subkeys are expired or revoked"
+msgstr ""
+
+#: src/err-codes.h:243
+#, fuzzy
+#| msgid "Data not encrypted"
+msgid "Database is corrupted"
+msgstr "Date necifrate"
+
+#: src/err-codes.h:244
+msgid "Server indicated a failure"
+msgstr ""
+
+#: src/err-codes.h:245
+#, fuzzy
+#| msgid "Unknown name"
+msgid "No name"
+msgstr "Nume necunoscut"
+
+#: src/err-codes.h:246
+#, fuzzy
+#| msgid "No public key"
+msgid "No key"
+msgstr "Nici o cheie publică"
+
+#: src/err-codes.h:247
+msgid "Legacy key"
+msgstr ""
+
+#: src/err-codes.h:248
+#, fuzzy
+#| msgid "Buffer too short"
+msgid "Request too short"
+msgstr "Buffer prea scurt"
+
+#: src/err-codes.h:249
+#, fuzzy
+#| msgid "Line too long"
+msgid "Request too long"
+msgstr "Linie prea lungă"
+
+#: src/err-codes.h:250
+msgid "Object is in termination state"
+msgstr ""
+
+#: src/err-codes.h:251
+#, fuzzy
+#| msgid "Bad certificate chain"
+msgid "No certificate chain"
+msgstr "Lanţ certificate incorect"
+
+#: src/err-codes.h:252
+#, fuzzy
+#| msgid "Certificate too young"
+msgid "Certificate is too large"
+msgstr "Certificat prea recent"
+
+#: src/err-codes.h:253
+#, fuzzy
+#| msgid "Invalid card"
+msgid "Invalid record"
+msgstr "Card invalid"
+
+#: src/err-codes.h:254
+msgid "The MAC does not verify"
+msgstr ""
+
+#: src/err-codes.h:255
+#, fuzzy
+#| msgid "Unexpected tag"
+msgid "Unexpected message"
+msgstr "Etichetă neaşteptată"
+
+#: src/err-codes.h:256
+msgid "Compression or decompression failed"
+msgstr ""
+
+#: src/err-codes.h:257
+msgid "A counter would wrap"
+msgstr ""
+
+#: src/err-codes.h:258
+msgid "Fatal alert message received"
+msgstr ""
+
+#: src/err-codes.h:259
+#, fuzzy
+#| msgid "Invalid cipher algorithm"
+msgid "No cipher algorithm"
+msgstr "Algoritm cifrare invalid"
+
+#: src/err-codes.h:260
+#, fuzzy
+msgid "Missing client certificate"
+msgstr "Certificat lipsă"
+
+#: src/err-codes.h:261
+#, fuzzy
+#| msgid "Certificate revoked"
+msgid "Close notification received"
+msgstr "Certificat revocat"
+
+#: src/err-codes.h:262
+#, fuzzy
+#| msgid "Key expired"
+msgid "Ticket expired"
+msgstr "Cheie expirată"
+
+#: src/err-codes.h:263
+#, fuzzy
+#| msgid "Bad public key"
+msgid "Bad ticket"
+msgstr "Cheie publică incorectă"
+
+#: src/err-codes.h:264
+#, fuzzy
+#| msgid "Unknown packet"
+msgid "Unknown identity"
+msgstr "Pachet necunoscut"
+
+#: src/err-codes.h:265
+#, fuzzy
+#| msgid "Bad certificate chain"
+msgid "Bad certificate message in handshake"
+msgstr "Lanţ certificate incorect"
+
+#: src/err-codes.h:266
+msgid "Bad certificate request message in handshake"
+msgstr ""
+
+#: src/err-codes.h:267
+msgid "Bad certificate verify message in handshake"
+msgstr ""
+
+#: src/err-codes.h:268
+msgid "Bad change cipher message in handshake"
+msgstr ""
+
+#: src/err-codes.h:269
+msgid "Bad client hello message in handshake"
+msgstr ""
+
+#: src/err-codes.h:270
+msgid "Bad server hello message in handshake"
+msgstr ""
+
+#: src/err-codes.h:271
+msgid "Bad server hello done message in handshake"
+msgstr ""
+
+#: src/err-codes.h:272
+msgid "Bad finished message in handshake"
+msgstr ""
+
+#: src/err-codes.h:273
+msgid "Bad server key exchange message in handshake"
+msgstr ""
+
+#: src/err-codes.h:274
+msgid "Bad client key exchange message in handshake"
+msgstr ""
+
+#: src/err-codes.h:275
+msgid "Bogus string"
+msgstr ""
+
+#: src/err-codes.h:276
+msgid "Forbidden"
+msgstr ""
+
+#: src/err-codes.h:277
+#, fuzzy
+#| msgid "Key expired"
+msgid "Key disabled"
+msgstr "Cheie expirată"
+
+#: src/err-codes.h:278
+msgid "Not possible with a card based key"
+msgstr ""
+
+#: src/err-codes.h:279
+#, fuzzy
+#| msgid "Invalid object"
+msgid "Invalid lock object"
+msgstr "Obiect invalid"
+
+#: src/err-codes.h:280
+msgid "True"
+msgstr ""
+
+#: src/err-codes.h:281
+msgid "False"
+msgstr ""
+
+#: src/err-codes.h:282
+#, fuzzy
+msgid "General IPC error"
+msgstr "Eroare generală"
+
+#: src/err-codes.h:283
+msgid "IPC accept call failed"
+msgstr ""
+
+#: src/err-codes.h:284
+msgid "IPC connect call failed"
+msgstr ""
+
+#: src/err-codes.h:285
+#, fuzzy
+msgid "Invalid IPC response"
+msgstr "Răspuns invalid"
+
+#: src/err-codes.h:286
+#, fuzzy
+msgid "Invalid value passed to IPC"
+msgstr "Valoare invalidă"
+
+#: src/err-codes.h:287
+#, fuzzy
+msgid "Incomplete line passed to IPC"
+msgstr "Linie incompletă"
+
+#: src/err-codes.h:288
+#, fuzzy
+msgid "Line passed to IPC too long"
+msgstr "Linie prea lungă"
+
+#: src/err-codes.h:289
+msgid "Nested IPC commands"
+msgstr ""
+
+#: src/err-codes.h:290
+msgid "No data callback in IPC"
+msgstr ""
+
+#: src/err-codes.h:291
+msgid "No inquire callback in IPC"
+msgstr ""
+
+#: src/err-codes.h:292
+msgid "Not an IPC server"
+msgstr ""
+
+#: src/err-codes.h:293
+msgid "Not an IPC client"
+msgstr ""
+
+#: src/err-codes.h:294
+msgid "Problem starting IPC server"
+msgstr ""
+
+#: src/err-codes.h:295
+#, fuzzy
+msgid "IPC read error"
+msgstr "Eroare card"
+
+#: src/err-codes.h:296
+#, fuzzy
+msgid "IPC write error"
+msgstr "Eroare card"
+
+#: src/err-codes.h:297
+msgid "Too much data for IPC layer"
+msgstr ""
+
+#: src/err-codes.h:298
+#, fuzzy
+msgid "Unexpected IPC command"
+msgstr "Etichetă neaşteptată"
+
+#: src/err-codes.h:299
+#, fuzzy
+msgid "Unknown IPC command"
+msgstr "Cod de eroare necunoscut"
+
+#: src/err-codes.h:300
+#, fuzzy
+msgid "IPC syntax error"
+msgstr "Eroare de sintaxă"
+
+#: src/err-codes.h:301
+msgid "IPC call has been cancelled"
+msgstr ""
+
+#: src/err-codes.h:302
+msgid "No input source for IPC"
+msgstr ""
+
+#: src/err-codes.h:303
+msgid "No output source for IPC"
+msgstr ""
+
+#: src/err-codes.h:304
+#, fuzzy
+msgid "IPC parameter error"
+msgstr "Eroare card"
+
+#: src/err-codes.h:305
+#, fuzzy
+msgid "Unknown IPC inquire"
+msgstr "Sursă necunoscută"
+
+#: src/err-codes.h:306
+#, fuzzy
+msgid "Crypto engine too old"
+msgstr "Motor cifrare invalid"
+
+#: src/err-codes.h:307
+msgid "Screen or window too small"
+msgstr ""
+
+#: src/err-codes.h:308
+msgid "Screen or window too large"
+msgstr ""
+
+#: src/err-codes.h:309
+msgid "Required environment variable not set"
+msgstr ""
+
+#: src/err-codes.h:310
+msgid "User ID already exists"
+msgstr ""
+
+#: src/err-codes.h:311
+msgid "Name already exists"
+msgstr ""
+
+#: src/err-codes.h:312
+#, fuzzy
+#| msgid "Duplicated value"
+msgid "Duplicated name"
+msgstr "Valoare dublă"
+
+#: src/err-codes.h:313
+#, fuzzy
+#| msgid "Certificate too young"
+msgid "Object is too young"
+msgstr "Certificat prea recent"
+
+#: src/err-codes.h:314
+#, fuzzy
+#| msgid "Provided object is too short"
+msgid "Object is too old"
+msgstr "Obiectul furnizat e prea scurt"
+
+#: src/err-codes.h:315
+#, fuzzy
+#| msgid "Unknown name"
+msgid "Unknown flag"
+msgstr "Nume necunoscut"
+
+#: src/err-codes.h:316
+#, fuzzy
+#| msgid "Invalid operation code"
+msgid "Invalid execution order"
+msgstr "Cod operaţie invalid"
+
+#: src/err-codes.h:317
+msgid "Already fetched"
+msgstr ""
+
+#: src/err-codes.h:318
+msgid "Try again later"
+msgstr ""
+
+#: src/err-codes.h:319
+#, fuzzy
+#| msgid "Unknown name"
+msgid "Wrong name"
+msgstr "Nume necunoscut"
+
+#: src/err-codes.h:320
+#, fuzzy
+msgid "Not authenticated"
+msgstr "Neforţat(ă)"
+
+#: src/err-codes.h:321
+#, fuzzy
+#| msgid "Unsupported protection"
+msgid "Bad authentication"
+msgstr "Protecţie nesuportată"
+
+#: src/err-codes.h:322
+#, fuzzy
+#| msgid "No agent running"
+msgid "No Keybox daemon running"
+msgstr "Nu rulează nici un agent"
+
+#: src/err-codes.h:323
+#, fuzzy
+#| msgid "SmartCard daemon error"
+msgid "Keybox daemon error"
+msgstr "Eroare daemon SmartCard"
+
+#: src/err-codes.h:324
+msgid "Service is not running"
+msgstr ""
+
+#: src/err-codes.h:325
+#, fuzzy
+#| msgid "Keyserver error"
+msgid "Service error"
+msgstr "Eroare server de chei"
+
+#: src/err-codes.h:326
+#, fuzzy
+#| msgid "Bad PIN"
+msgid "Bad PUK"
+msgstr "PIN incorect"
+
+#: src/err-codes.h:327
+msgid "No reset code"
+msgstr ""
+
+#: src/err-codes.h:328
+#, fuzzy
+#| msgid "Bad secret key"
+msgid "Bad reset code"
+msgstr "Cheie secretă incorectă"
+
+#: src/err-codes.h:329
+msgid "System bug detected"
+msgstr ""
+
+#: src/err-codes.h:330
+#, fuzzy
+#| msgid "Unknown system error"
+msgid "Unknown DNS error"
+msgstr "Eroare de sistem necunoscută"
+
+#: src/err-codes.h:331
+#, fuzzy
+#| msgid "Invalid OID string"
+msgid "Invalid DNS section"
+msgstr "Şir OID invalid"
+
+#: src/err-codes.h:332
+#, fuzzy
+#| msgid "Invalid S-expression"
+msgid "Invalid textual address form"
+msgstr "Expresie-S invalidă"
+
+#: src/err-codes.h:333
+#, fuzzy
+msgid "Missing DNS query packet"
+msgstr "Certificat lipsă"
+
+#: src/err-codes.h:334
+msgid "Missing DNS answer packet"
+msgstr ""
+
+#: src/err-codes.h:335
+msgid "Connection closed in DNS"
+msgstr ""
+
+#: src/err-codes.h:336
+#, fuzzy
+#| msgid "Decryption failed"
+msgid "Verification failed in DNS"
+msgstr "Decriptarea a eşuat"
+
+#: src/err-codes.h:337
+#, fuzzy
+#| msgid "Timeout"
+msgid "DNS Timeout"
+msgstr "Pauză"
+
+#: src/err-codes.h:338
+#, fuzzy
+msgid "General LDAP error"
+msgstr "Eroare generală"
+
+#: src/err-codes.h:339
+#, fuzzy
+#| msgid "General error"
+msgid "General LDAP attribute error"
+msgstr "Eroare generală"
+
+#: src/err-codes.h:340
+#, fuzzy
+#| msgid "General error"
+msgid "General LDAP name error"
+msgstr "Eroare generală"
+
+#: src/err-codes.h:341
+#, fuzzy
+msgid "General LDAP security error"
+msgstr "Eroare generală"
+
+#: src/err-codes.h:342
+#, fuzzy
+#| msgid "General error"
+msgid "General LDAP service error"
+msgstr "Eroare generală"
+
+#: src/err-codes.h:343
+#, fuzzy
+msgid "General LDAP update error"
+msgstr "Eroare generală"
+
+#: src/err-codes.h:344
+msgid "Experimental LDAP error code"
+msgstr ""
+
+#: src/err-codes.h:345
+#, fuzzy
+msgid "Private LDAP error code"
+msgstr "Eroare card"
+
+#: src/err-codes.h:346
+#, fuzzy
+msgid "Other general LDAP error"
+msgstr "Eroare generală"
+
+#: src/err-codes.h:347
+#, fuzzy
+#| msgid "Decryption failed"
+msgid "LDAP connecting failed (X)"
+msgstr "Decriptarea a eşuat"
+
+#: src/err-codes.h:348
+#, fuzzy
+#| msgid "General error"
+msgid "LDAP referral limit exceeded"
+msgstr "Eroare generală"
+
+#: src/err-codes.h:349
+msgid "LDAP client loop"
+msgstr ""
+
+#: src/err-codes.h:350
+#, fuzzy
+#| msgid "Card reset required"
+msgid "No LDAP results returned"
+msgstr "Este necesară resetarea cardului"
+
+#: src/err-codes.h:351
+#, fuzzy
+#| msgid "Element not found"
+msgid "LDAP control not found"
+msgstr "Elementul nu a fost găsit"
+
+#: src/err-codes.h:352
+#, fuzzy
+#| msgid "Not supported"
+msgid "Not supported by LDAP"
+msgstr "Nu este suportat(ă)"
+
+#: src/err-codes.h:353
+#, fuzzy
+#| msgid "Unexpected error"
+msgid "LDAP connect error"
+msgstr "Eroare neaşteptată"
+
+#: src/err-codes.h:354
+msgid "Out of memory in LDAP"
+msgstr ""
+
+#: src/err-codes.h:355
+msgid "Bad parameter to an LDAP routine"
+msgstr ""
+
+#: src/err-codes.h:356
+#, fuzzy
+#| msgid "Unsupported operation"
+msgid "User cancelled LDAP operation"
+msgstr "Operaţie nesuportată"
+
+#: src/err-codes.h:357
+#, fuzzy
+#| msgid "Bad certificate"
+msgid "Bad LDAP search filter"
+msgstr "Certificat incorect"
+
+#: src/err-codes.h:358
+#, fuzzy
+msgid "Unknown LDAP authentication method"
+msgstr "Expresie-S necunoscută"
+
+#: src/err-codes.h:359
+#, fuzzy
+#| msgid "Timeout"
+msgid "Timeout in LDAP"
+msgstr "Pauză"
+
+#: src/err-codes.h:360
+#, fuzzy
+#| msgid "dirmngr error"
+msgid "LDAP decoding error"
+msgstr "eroare dirmngr"
+
+#: src/err-codes.h:361
+#, fuzzy
+#| msgid "dirmngr error"
+msgid "LDAP encoding error"
+msgstr "eroare dirmngr"
+
+#: src/err-codes.h:362
+#, fuzzy
+msgid "LDAP local error"
+msgstr "Eroare card"
+
+#: src/err-codes.h:363
+msgid "Cannot contact LDAP server"
+msgstr ""
+
+#: src/err-codes.h:364
+#, fuzzy
+#| msgid "Success"
+msgid "LDAP success"
+msgstr "Succes"
+
+#: src/err-codes.h:365
+#, fuzzy
+#| msgid "Configuration error"
+msgid "LDAP operations error"
+msgstr "Eroare de configurare"
+
+#: src/err-codes.h:366
+#, fuzzy
+#| msgid "Protocol violation"
+msgid "LDAP protocol error"
+msgstr "Violare de protocol"
+
+#: src/err-codes.h:367
+msgid "Time limit exceeded in LDAP"
+msgstr ""
+
+#: src/err-codes.h:368
+msgid "Size limit exceeded in LDAP"
+msgstr ""
+
+#: src/err-codes.h:369
+msgid "LDAP compare false"
+msgstr ""
+
+#: src/err-codes.h:370
+msgid "LDAP compare true"
+msgstr ""
+
+#: src/err-codes.h:371
+#, fuzzy
+msgid "LDAP authentication method not supported"
+msgstr "Expresie-S necunoscută"
+
+#: src/err-codes.h:372
+msgid "Strong(er) LDAP authentication required"
+msgstr ""
+
+#: src/err-codes.h:373
+msgid "Partial LDAP results+referral received"
+msgstr ""
+
+#: src/err-codes.h:374
+#, fuzzy
+#| msgid "General error"
+msgid "LDAP referral"
+msgstr "Eroare generală"
+
+#: src/err-codes.h:375
+msgid "Administrative LDAP limit exceeded"
+msgstr ""
+
+#: src/err-codes.h:376
+msgid "Critical LDAP extension is unavailable"
+msgstr ""
+
+#: src/err-codes.h:377
+#, fuzzy
+#| msgid "Card reset required"
+msgid "Confidentiality required by LDAP"
+msgstr "Este necesară resetarea cardului"
+
+#: src/err-codes.h:378
+msgid "LDAP SASL bind in progress"
+msgstr ""
+
+#: src/err-codes.h:379
+msgid "No such LDAP attribute"
+msgstr ""
+
+#: src/err-codes.h:380
+#, fuzzy
+#| msgid "Invalid attribute"
+msgid "Undefined LDAP attribute type"
+msgstr "Argument invalid"
+
+#: src/err-codes.h:381
+#, fuzzy
+#| msgid "Unsupported protection"
+msgid "Inappropriate matching in LDAP"
+msgstr "Protecţie nesuportată"
+
+#: src/err-codes.h:382
+#, fuzzy
+#| msgid "Protocol violation"
+msgid "Constraint violation in LDAP"
+msgstr "Violare de protocol"
+
+#: src/err-codes.h:383
+msgid "LDAP type or value exists"
+msgstr ""
+
+#: src/err-codes.h:384
+#, fuzzy
+#| msgid "Invalid state"
+msgid "Invalid syntax in LDAP"
+msgstr "Stare invalidă"
+
+#: src/err-codes.h:385
+#, fuzzy
+#| msgid "No CMS object"
+msgid "No such LDAP object"
+msgstr "Nici un obiect CMS"
+
+#: src/err-codes.h:386
+#, fuzzy
+#| msgid "Hardware problem"
+msgid "LDAP alias problem"
+msgstr "Problemă hardware"
+
+#: src/err-codes.h:387
+#, fuzzy
+#| msgid "Invalid state"
+msgid "Invalid DN syntax in LDAP"
+msgstr "Stare invalidă"
+
+#: src/err-codes.h:388
+msgid "LDAP entry is a leaf"
+msgstr ""
+
+#: src/err-codes.h:389
+#, fuzzy
+#| msgid "Encoding problem"
+msgid "LDAP alias dereferencing problem"
+msgstr "Problemă de encodare"
+
+#: src/err-codes.h:390
+msgid "LDAP proxy authorization failure (X)"
+msgstr ""
+
+#: src/err-codes.h:391
+#, fuzzy
+#| msgid "Unsupported protection"
+msgid "Inappropriate LDAP authentication"
+msgstr "Protecţie nesuportată"
+
+#: src/err-codes.h:392
+#, fuzzy
+#| msgid "Invalid card"
+msgid "Invalid LDAP credentials"
+msgstr "Card invalid"
+
+#: src/err-codes.h:393
+msgid "Insufficient access for LDAP"
+msgstr ""
+
+#: src/err-codes.h:394
+msgid "LDAP server is busy"
+msgstr ""
+
+#: src/err-codes.h:395
+msgid "LDAP server is unavailable"
+msgstr ""
+
+#: src/err-codes.h:396
+msgid "LDAP server is unwilling to perform"
+msgstr ""
+
+#: src/err-codes.h:397
+msgid "Loop detected by LDAP"
+msgstr ""
+
+#: src/err-codes.h:398
+#, fuzzy
+#| msgid "Missing action"
+msgid "LDAP naming violation"
+msgstr "Acţiune lipsă"
+
+#: src/err-codes.h:399
+#, fuzzy
+#| msgid "Protocol violation"
+msgid "LDAP object class violation"
+msgstr "Violare de protocol"
+
+#: src/err-codes.h:400
+#, fuzzy
+msgid "LDAP operation not allowed on non-leaf"
+msgstr "Operaţiune anulată"
+
+#: src/err-codes.h:401
+#, fuzzy
+#| msgid "Operation cancelled"
+msgid "LDAP operation not allowed on RDN"
+msgstr "Operaţiune anulată"
+
+#: src/err-codes.h:402
+msgid "Already exists (LDAP)"
+msgstr ""
+
+#: src/err-codes.h:403
+msgid "Cannot modify LDAP object class"
+msgstr ""
+
+#: src/err-codes.h:404
+#, fuzzy
+#| msgid "Line too long"
+msgid "LDAP results too large"
+msgstr "Linie prea lungă"
+
+#: src/err-codes.h:405
+#, fuzzy
+#| msgid "Operation cancelled"
+msgid "LDAP operation affects multiple DSAs"
+msgstr "Operaţiune anulată"
+
+#: src/err-codes.h:406
+msgid "Virtual LDAP list view error"
+msgstr ""
+
+#: src/err-codes.h:407
+#, fuzzy
+msgid "Other LDAP error"
+msgstr "Eroare generală"
+
+#: src/err-codes.h:408
+#, fuzzy
+#| msgid "Resources exhausted"
+msgid "Resources exhausted in LCUP"
+msgstr "Resurse epuizate"
+
+#: src/err-codes.h:409
+#, fuzzy
+#| msgid "Protocol violation"
+msgid "Security violation in LCUP"
+msgstr "Violare de protocol"
+
+#: src/err-codes.h:410
+#, fuzzy
+#| msgid "Invalid state"
+msgid "Invalid data in LCUP"
+msgstr "Stare invalidă"
+
+#: src/err-codes.h:411
+#, fuzzy
+#| msgid "Unsupported certificate"
+msgid "Unsupported scheme in LCUP"
+msgstr "Certificat nesuportat"
+
+#: src/err-codes.h:412
+#, fuzzy
+#| msgid "Card reset required"
+msgid "Reload required in LCUP"
+msgstr "Este necesară resetarea cardului"
+
+#: src/err-codes.h:413
+#, fuzzy
+#| msgid "Success"
+msgid "LDAP cancelled"
+msgstr "Succes"
+
+#: src/err-codes.h:414
+#, fuzzy
+msgid "No LDAP operation to cancel"
+msgstr "Operaţie nesuportată"
+
+#: src/err-codes.h:415
+#, fuzzy
+msgid "Too late to cancel LDAP"
+msgstr "Operaţie nesuportată"
+
+#: src/err-codes.h:416
+msgid "Cannot cancel LDAP"
+msgstr ""
+
+#: src/err-codes.h:417
+#, fuzzy
+#| msgid "Decryption failed"
+msgid "LDAP assertion failed"
+msgstr "Decriptarea a eşuat"
+
+#: src/err-codes.h:418
+msgid "Proxied authorization denied by LDAP"
+msgstr ""
+
+#: src/err-codes.h:419
+msgid "User defined error code 1"
+msgstr "Cod de eroare definit de utilizator 1"
+
+#: src/err-codes.h:420
+msgid "User defined error code 2"
+msgstr "Cod de eroare definit de utilizator 2"
+
+#: src/err-codes.h:421
+msgid "User defined error code 3"
+msgstr "Cod de eroare definit de utilizator 3"
+
+#: src/err-codes.h:422
+msgid "User defined error code 4"
+msgstr "Cod de eroare definit de utilizator 4"
+
+#: src/err-codes.h:423
+msgid "User defined error code 5"
+msgstr "Cod de eroare definit de utilizator 5"
+
+#: src/err-codes.h:424
+msgid "User defined error code 6"
+msgstr "Cod de eroare definit de utilizator 6"
+
+#: src/err-codes.h:425
+msgid "User defined error code 7"
+msgstr "Cod de eroare definit de utilizator 7"
+
+#: src/err-codes.h:426
+msgid "User defined error code 8"
+msgstr "Cod de eroare definit de utilizator 8"
+
+#: src/err-codes.h:427
+msgid "User defined error code 9"
+msgstr "Cod de eroare definit de utilizator 9"
+
+#: src/err-codes.h:428
+msgid "User defined error code 10"
+msgstr "Cod de eroare definit de utilizator 10"
+
+#: src/err-codes.h:429
+msgid "User defined error code 11"
+msgstr "Cod de eroare definit de utilizator 11"
+
+#: src/err-codes.h:430
+msgid "User defined error code 12"
+msgstr "Cod de eroare definit de utilizator 12"
+
+#: src/err-codes.h:431
+msgid "User defined error code 13"
+msgstr "Cod de eroare definit de utilizator 13"
+
+#: src/err-codes.h:432
+msgid "User defined error code 14"
+msgstr "Cod de eroare definit de utilizator 14"
+
+#: src/err-codes.h:433
+msgid "User defined error code 15"
+msgstr "Cod de eroare definit de utilizator 15"
+
+#: src/err-codes.h:434
+msgid "User defined error code 16"
+msgstr "Cod de eroare definit de utilizator 16"
+
+#: src/err-codes.h:435
+#, fuzzy
+#| msgid "Success"
+msgid "SQL success"
+msgstr "Succes"
+
+#: src/err-codes.h:436
+#, fuzzy
+#| msgid "Syntax error"
+msgid "SQL error"
+msgstr "Eroare de sintaxă"
+
+#: src/err-codes.h:437
+msgid "Internal logic error in SQL library"
+msgstr ""
+
+#: src/err-codes.h:438
+msgid "Access permission denied (SQL)"
+msgstr ""
+
+#: src/err-codes.h:439
+msgid "SQL abort was requested"
+msgstr ""
+
+#: src/err-codes.h:440
+msgid "SQL database file is locked"
+msgstr ""
+
+#: src/err-codes.h:441
+msgid "An SQL table in the database is locked"
+msgstr ""
+
+#: src/err-codes.h:442
+msgid "SQL library ran out of core"
+msgstr ""
+
+#: src/err-codes.h:443
+msgid "Attempt to write a readonly SQL database"
+msgstr ""
+
+#: src/err-codes.h:444
+msgid "SQL operation terminated by interrupt"
+msgstr ""
+
+#: src/err-codes.h:445
+msgid "I/O error during SQL operation"
+msgstr ""
+
+#: src/err-codes.h:446
+msgid "SQL database disk image is malformed"
+msgstr ""
+
+#: src/err-codes.h:447
+msgid "Unknown opcode in SQL file control"
+msgstr ""
+
+#: src/err-codes.h:448
+msgid "Insertion failed because SQL database is full"
+msgstr ""
+
+#: src/err-codes.h:449
+msgid "Unable to open the SQL database file"
+msgstr ""
+
+#: src/err-codes.h:450
+#, fuzzy
+#| msgid "Protocol violation"
+msgid "SQL database lock protocol error"
+msgstr "Violare de protocol"
+
+#: src/err-codes.h:451
+msgid "(internal SQL code: empty)"
+msgstr ""
+
+#: src/err-codes.h:452
+msgid "SQL database schema changed"
+msgstr ""
+
+#: src/err-codes.h:453
+msgid "String or blob exceeds size limit (SQL)"
+msgstr ""
+
+#: src/err-codes.h:454
+msgid "SQL abort due to constraint violation"
+msgstr ""
+
+#: src/err-codes.h:455
+msgid "Data type mismatch (SQL)"
+msgstr ""
+
+#: src/err-codes.h:456
+msgid "SQL library used incorrectly"
+msgstr ""
+
+#: src/err-codes.h:457
+msgid "SQL library uses unsupported OS features"
+msgstr ""
+
+#: src/err-codes.h:458
+msgid "Authorization denied (SQL)"
+msgstr ""
+
+#: src/err-codes.h:459
+msgid "(unused SQL code: format)"
+msgstr ""
+
+#: src/err-codes.h:460
+msgid "SQL bind parameter out of range"
+msgstr ""
+
+#: src/err-codes.h:461
+msgid "File opened that is not an SQL database file"
+msgstr ""
+
+#: src/err-codes.h:462
+msgid "Notifications from SQL logger"
+msgstr ""
+
+#: src/err-codes.h:463
+msgid "Warnings from SQL logger"
+msgstr ""
+
+#: src/err-codes.h:464
+msgid "SQL has another row ready"
+msgstr ""
+
+#: src/err-codes.h:465
+msgid "SQL has finished executing"
+msgstr ""
+
+#: src/err-codes.h:466
+msgid "System error w/o errno"
+msgstr ""
+
+#: src/err-codes.h:467
+msgid "Unknown system error"
+msgstr "Eroare de sistem necunoscută"
+
+#: src/err-codes.h:468
+msgid "End of file"
+msgstr "Sfârşit de fişier"
+
+#: src/err-codes.h:469
+msgid "Unknown error code"
+msgstr "Cod de eroare necunoscut"
+
+#: src/argparse.c:494
+#, fuzzy
+msgid "argument not expected"
+msgstr "Nu sunt permise comenzi administrare\n"
+
+#: src/argparse.c:496
+#, fuzzy
+msgid "read error"
+msgstr "eroare citire fişier"
+
+#: src/argparse.c:498
+#, fuzzy
+msgid "keyword too long"
+msgstr "linie prea lungă"
+
+#: src/argparse.c:500
+#, fuzzy
+msgid "missing argument"
+msgstr "argument invalid"
+
+#: src/argparse.c:502
+#, fuzzy
+#| msgid "invalid armor"
+msgid "invalid argument"
+msgstr "armură invalidă"
+
+#: src/argparse.c:504
+#, fuzzy
+msgid "invalid command"
+msgstr "Comandă numai-administrare\n"
+
+#: src/argparse.c:506
+#, fuzzy
+msgid "invalid alias definition"
+msgstr "opţiuni enumerare invalide\n"
+
+#: src/argparse.c:508 src/argparse.c:545
+#, fuzzy
+#| msgid "Configuration error"
+msgid "permission error"
+msgstr "Eroare de configurare"
+
+#: src/argparse.c:510 src/argparse.c:543
+#, fuzzy
+msgid "out of core"
+msgstr "neforţat(ă)"
+
+#: src/argparse.c:514 src/argparse.c:549
+#, fuzzy
+msgid "invalid meta command"
+msgstr "Comandă numai-administrare\n"
+
+#: src/argparse.c:516 src/argparse.c:551
+#, fuzzy
+msgid "unknown meta command"
+msgstr "Cod de eroare necunoscut"
+
+#: src/argparse.c:518 src/argparse.c:553
+#, fuzzy
+msgid "unexpected meta command"
+msgstr "Etichetă neaşteptată"
+
+#: src/argparse.c:520
+#, fuzzy
+msgid "invalid option"
+msgstr "opţiuni enumerare invalide\n"
+
+#: src/argparse.c:530
+#, c-format
+msgid "missing argument for option \"%.50s\"\n"
+msgstr ""
+
+#: src/argparse.c:532
+#, fuzzy, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "opţiuni enumerare invalide\n"
+
+#: src/argparse.c:534
+#, c-format
+msgid "option \"%.50s\" does not expect an argument\n"
+msgstr ""
+
+#: src/argparse.c:537
+#, fuzzy, c-format
+msgid "invalid command \"%.50s\"\n"
+msgstr "Comandă invalidă  (încercaţi \"ajutor\")\n"
+
+#: src/argparse.c:539
+#, c-format
+msgid "option \"%.50s\" is ambiguous\n"
+msgstr ""
+
+#: src/argparse.c:541
+#, c-format
+msgid "command \"%.50s\" is ambiguous\n"
+msgstr ""
+
+#: src/argparse.c:555
+#, fuzzy, c-format
+msgid "invalid option \"%.50s\"\n"
+msgstr "opţiuni enumerare invalide\n"
+
+#: src/argparse.c:2297 src/argparse.c:2393
+#, c-format
+msgid "Note: no default option file '%s'\n"
+msgstr ""
+
+#: src/argparse.c:2307 src/argparse.c:2400
+#, c-format
+msgid "reading options from '%s'\n"
+msgstr ""
+
+#: src/argparse.c:2385
+#, c-format
+msgid "option file '%s': %s\n"
+msgstr ""
+
+#: src/argparse.c:2823
+#, c-format
+msgid "Note: ignoring option \"--%s\" due to global config\n"
+msgstr ""
+
+#: src/gpg-error.c:522
+msgid "Please report bugs to <https://bugs.gnupg.org>.\n"
+msgstr ""
+
+#: src/gpg-error.c:762
+#, c-format
+msgid "warning: could not recognize %s\n"
+msgstr "avertisment: nu am putut recunoaşte %s\n"
+
+#, fuzzy
+#~ msgid "out of core\n"
+#~ msgstr "neforţat(ă)"
+
+#~ msgid "Usage: %s GPG-ERROR [...]\n"
+#~ msgstr "Folosire: %s EROARE-GPG [...]\n"
+
+#, fuzzy
+#~| msgid "Resources exhausted"
+#~ msgid "LCUP Resources exhausted"
+#~ msgstr "Resurse epuizate"
+
+#, fuzzy
+#~| msgid "Invalid data"
+#~ msgid "LCUP Invalid data"
+#~ msgstr "Date invalide"
+
+#, fuzzy
+#~| msgid "General error"
+#~ msgid "LDAP Other general error"
+#~ msgstr "Eroare generală"
+
+#, fuzzy
+#~| msgid "dirmngr error"
+#~ msgid "Encoding error"
+#~ msgstr "eroare dirmngr"

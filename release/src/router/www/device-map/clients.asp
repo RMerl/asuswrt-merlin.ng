@@ -39,8 +39,8 @@ p{
 	left: 17px; 
 }
 </style>
-<script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/tmmenu.js"></script>

@@ -13,9 +13,9 @@
 <title><#Web_Title#></title>
 <style>
 @font-face{
-	font-family: ROG;
-	src: url(/fonts/ROG_Fonts-Regular.woff) format("woff"),
-	     url(/fonts/ROG_Fonts-Regular.otf) format("opentype");
+	font-family: Xolonium;
+	src: url(../fonts/xolonium.regular.woff) format("woff"),
+             url(../fonts/xolonium.regular.otf) format("opentype");
 }
 body, .p1, .form-input{
 	color: #FFF;
@@ -69,9 +69,9 @@ body{
 }
 .model-name{
 	height: 100%;
-	font-size: 48px;
+	font-size: 36px;
 	font-weight: bold;
-	font-family: ROG;
+	font-family: Xolonium;
 	margin-left: 25px;
 }
 .login-bg, .login-bg-odm{
@@ -399,7 +399,13 @@ else
 	var captcha_on = false;
 
 var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=SG_TeleStand&lang=&kw=&num=";
+var ATEMODE = '<% nvram_get("ATEMODE"); %>';
+
 function initial(){
+	if(ATEMODE == "1"){
+		$(".login-title-desc").text(`<#Sign_in_title#>` + ` (ATE Mode)`);
+	}
+
 	/*handle sysdep for ROG or ODM product*/
 	if(odm_support){
 		document.getElementsByClassName("main-field-bg")[0].className = "main-field-bg-odm";
@@ -681,6 +687,13 @@ function disable_button(val){
 		document.getElementById('button').disabled = true;
 	else
 		document.getElementById('button').style.display = "none";
+}
+
+function checkTime(i){
+	if (i<10){
+		i="0" + i
+	}
+	return i
 }
 
 function regen_captcha(){

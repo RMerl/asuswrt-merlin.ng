@@ -401,9 +401,8 @@ void start_wl(void)
 				if (strncmp(ifname, "wl", 2) == 0) {
 					if (get_ifname_unit(ifname, &unit, &subunit) < 0)
 						continue;
-					if (!wl_vif_enabled(ifname, tmp)) {
+					if (!wl_vif_enabled(ifname, tmp))
 						continue; /* Ignore dsiabled WL VIF */
-					}
 				}
 				// get the instance number of the wl i/f
 				else if (wl_ioctl(ifname, WLC_GET_INSTANCE, &unit, sizeof(unit)))
@@ -1450,6 +1449,22 @@ void start_lan(void)
 	eval("wl", "-i", "eth7", "ledbh", "13", "7");
 #endif
 
+#ifdef RTAX88U_PRO
+	// configure 6715 GPIO direction
+	if(nvram_match("wl0_radio", "0"))
+		eval("wl", "-i", "eth6", "gpioout", "0x2002", "0x0002");
+	else
+		eval("wl", "-i", "eth6", "gpioout", "0x2002", "0x2002");
+
+	if(nvram_match("wl1_radio", "0"))
+		eval("wl", "-i", "eth7", "gpioout", "0x2002", "0x0002");
+	else
+		eval("wl", "-i", "eth7", "gpioout", "0x2002", "0x2002");
+
+	eval("wl", "-i", "eth6", "ledbh", "13", "7");
+	eval("wl", "-i", "eth7", "ledbh", "13", "7");
+#endif
+
 #ifdef DSL_AX82U
 	if (nvram_match("wl0_radio", "0") && nvram_match("wl1_radio", "0"))
 		led_control(LED_WIFI, LED_OFF);
@@ -1649,10 +1664,10 @@ void start_lan(void)
 				if (strncmp(ifname, "wl", 2) == 0) {
 					if (get_ifname_unit(ifname, &unit, &subunit) < 0)
 						continue;
-					if (!wl_vif_enabled(ifname, tmp)) {
+					if (!wl_vif_enabled(ifname, tmp))
 						continue; /* Ignore disabled WL VIF */
-					}
-					wl_vif_hwaddr_set(ifname);
+					if (subunit != -1)
+						wl_vif_hwaddr_set(ifname);
 				}
 #endif
 #ifdef RTCONFIG_CONCURRENTREPEATER
@@ -1892,9 +1907,7 @@ void start_lan(void)
 						system("ethswctl -c pause -p 1 -v 2");
 #endif
 				}
-#if defined(RTAXE7800) && !defined(RTCONFIG_BCM_MFG) && !defined(RTCONFIG_AUTO_WANPORT)
-				if (!nvram_get_int("x_Setting") && !strcmp(ifname, "eth1")) continue;
-#endif
+
 				/* Set the logical bridge address to that of the first interface */
 				strlcpy(ifr.ifr_name, ifname, IFNAMSIZ);
 				if (ioctl(sfd, SIOCGIFHWADDR, &ifr) == 0) {
@@ -2558,6 +2571,12 @@ _dprintf("nat_rule: stop_nat_rules 1.\n");
 
 #ifdef RTCONFIG_CFGSYNC
 	//update_macfilter_relist();start lan??
+#endif
+
+#if defined(RTCONFIG_AMAS) && (defined(BCM4912) || defined(BCM6855))
+	//tmp workaround for wifi backhaul issue
+	if (nvram_get_int("re_mode") == 1)
+		eval("ebtables", "-A", "FORWARD", "-p", "PPP_SES", "-j", "SKIPLOG");
 #endif
 
 	post_start_lan();
@@ -4938,10 +4957,10 @@ void start_lan_wl(void)
 				if (strncmp(ifname, "wl", 2) == 0) {
 					if (get_ifname_unit(ifname, &unit, &subunit) < 0)
 						continue;
-					if (!wl_vif_enabled(ifname, tmp)) {
+					if (!wl_vif_enabled(ifname, tmp))
 						continue; /* Ignore disabled WL VIF */
-					}
-					wl_vif_hwaddr_set(ifname);
+					if (subunit != -1)
+						wl_vif_hwaddr_set(ifname);
 				}
 				else if (wl_ioctl(ifname, WLC_GET_INSTANCE, &unit, sizeof(unit))) {
 					continue;
@@ -5474,6 +5493,12 @@ gmac3_no_swbr:
 	enable_jumbo_frame();
 #endif
 
+#if defined(RTCONFIG_AMAS) && (defined(BCM4912) || defined(BCM6855))
+	//tmp workaround for wifi backhaul issue
+	if (nvram_get_int("re_mode") == 1)
+		eval("ebtables", "-A", "FORWARD", "-p", "PPP_SES", "-j", "SKIPLOG");
+#endif
+
 	free(lan_ifname);
 
 	post_start_lan_wl();
@@ -5506,9 +5531,8 @@ void restart_wl(void)
 			if (strncmp(ifname, "wl", 2) == 0) {
 				if (get_ifname_unit(ifname, &unit, &subunit) < 0)
 					continue;
-				if (!wl_vif_enabled(ifname, tmp)) {
+				if (!wl_vif_enabled(ifname, tmp))
 					continue; /* Ignore dsiabled WL VIF */
-				}
 			}
 			// get the instance number of the wl i/f
 			else if (wl_ioctl(ifname, WLC_GET_INSTANCE, &unit, sizeof(unit)))
@@ -6005,8 +6029,10 @@ void restart_wireless(void)
 #endif
 	}
 #ifdef CONFIG_BCMWL5
-	else
+	else {
 		nvram_set_int("obd_allow_scan", 0);
+		nvram_set_int("wlcscan", 0);
+	}
 #endif
 #endif
 #ifdef RTCONFIG_LANTIQ
@@ -6350,6 +6376,7 @@ void restart_wireless(void)
 	send_event_to_cfgmnt(EID_RC_RESTART_WIRELESS);
 #endif
 	restore_wan_ebtables_rules();
+	restart_qos_if_bwlim_enabled();
 }
 
 #ifdef RTCONFIG_BCM_7114
@@ -6789,7 +6816,7 @@ void set_onboarding_vif_status()
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 	}
 
-	if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "sae")) {
+	if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "sae") || nvram_match(strcat_r(prefix, "closed", tmp), "1")) {
 		snprintf(wl_radio, sizeof(wl_radio), "wl%d_radio", unit);
 		if (nvram_get_int(wl_radio)) //radio on
 			nvram_set_int("obvif_bss", 1);

@@ -12,6 +12,8 @@
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="device-map/device-map.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" language="JavaScript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
@@ -19,8 +21,6 @@
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script language="JavaScript" type="text/javascript" src="/form.js"></script>
-<script type="text/javascript" language="JavaScript" src="/js/jquery.js"></script>
-<script type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <style type="text/css">
 .contentM_qis{
@@ -127,7 +127,7 @@ function initial(){
 		gen_vts_ruleTable_Block(key);
 	});
 
-	if((wan_proto == "v6plus" || wan_proto == "ocnvc") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
+	if((wan_proto == "v6plus" || wan_proto == "ocnvc" || wan_proto == "v6opt") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
 		$(".setup_info_icon").show();
 		$(".setup_info_icon").click(
 			function() {				
@@ -565,7 +565,7 @@ function editProfile(_mode, _this) {
 			}
 			else{
 				$("#vts_port_x").parent().parent().find('th').html('<#IPConnection_VSList_External_Port#><div class="setup_info_icon" style="display:none;"></div>');
-				if((wan_proto == "v6plus" || wan_proto == "ocnvc") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
+				if((wan_proto == "v6plus" || wan_proto == "ocnvc" || wan_proto == "v6opt") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
 					$(".setup_info_icon").show();
 					$(".setup_info_icon").click(
 						function() {
@@ -696,7 +696,7 @@ function saveProfile(_mode, _wanIdx, _rowIdx) {
 	else{
 		if(!check_multi_range(document.getElementById("vts_port_x"), 1, 65535, true))
 			return false;
-		if((wan_proto == "v6plus" || wan_proto == "ocnvc") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
+		if((wan_proto == "v6plus" || wan_proto == "ocnvc" || wan_proto == "v6opt") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
 			if (!check_multi_range_s46_ports(document.getElementById("vts_port_x"))){
 				if(!confirm(port_confirm)){
 					document.getElementById("vts_port_x").focus();
@@ -706,7 +706,7 @@ function saveProfile(_mode, _wanIdx, _rowIdx) {
 		}
 	}
 	if(document.getElementById("vts_lport_x").value.length > 0
-			&& !validator.numberRange(document.getElementById("vts_lport_x"), 1, 65535)) {
+			&& !validator.numberRange2(document.getElementById("vts_lport_x"), 1, 65535)) {
 		return false;
 	}
 	if(document.getElementById("vts_ipaddr_x").value == "") {
@@ -935,7 +935,7 @@ function cancelProfile() {
 			<th><#BM_UserList1#></th>
 			<td>
 				<input type="text" maxlength="30" class="input_25_table" id="vts_desc_x" onKeyPress="return validator.isString(this, event);" autocomplete="off" autocorrect="off" autocapitalize="off"/>
-				<span><#feedback_optional#></span>
+				<span style="color:#FFFFFF;"><#feedback_optional#></span>
 			</td>
 		</tr>
 		<tr>
@@ -958,8 +958,8 @@ function cancelProfile() {
 		<tr>
 			<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,26);"><#IPConnection_VSList_Internal_Port#></a></th>
 			<td>
-				<input type="text" maxlength="5" class="input_6_table" id="vts_lport_x" onKeyPress="return validator.isNumber(this,event);" autocomplete="off" autocorrect="off" autocapitalize="off"/>
-				<span><#feedback_optional#></span>
+				<input type="text" maxlength="11" class="input_15_table" id="vts_lport_x" onKeyPress="return validator.isPortRange2(this,event);" autocomplete="off" autocorrect="off" autocapitalize="off"/>
+				<span style="color:#FFFFFF;"><#feedback_optional#></span>
 			</td>
 		</tr>
 		<tr>
@@ -974,20 +974,22 @@ function cancelProfile() {
 			<th><#IPConnection_VSList_SourceTarget#></th>
 			<td>
 				<input type="text" maxlength="18" class="input_25_table" id="vts_target_x" onKeyPress="return validator.isIPAddrPlusNetmask(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off"/>
-				<span><#feedback_optional#></span>
+				<span style="color:#FFFFFF;"><#feedback_optional#></span>
 			</td>
 		</tr>
 	</table>
 	<div style="color:#FC0;margin:10px 0px;">
-		* <#IPConnection_VSList_External_Port#>
-		<br>
-		<#IPConnection_VSList_External_Port_desc#>
+		* <#IPConnection_VSList_External_Port_desc#>
 		<br>
 		<#IPConnection_VSList_External_Port_desc1#>
 		<br>
 		<#IPConnection_VSList_External_Port_desc2#>
 		<br>
 		<#IPConnection_VSList_External_Port_desc3#>
+		<br><br>
+		* <#IPConnection_VSList_Internal_Port_desc#>
+                <br>
+                <#IPConnection_VSList_Internal_Port_desc1#>
 		<br><br>
 		* <#IPConnection_VSList_SourceTarget#>
 		<br>

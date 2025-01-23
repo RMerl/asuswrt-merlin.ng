@@ -493,6 +493,12 @@ static int connection_handle_write_prepare(server *srv, connection *con) {
 		/* only custom body for 4xx and 5xx */
 		if (con->http_status < 400 || con->http_status >= 600) break;
 
+		if (is_valid_string(con->url.rel_path->ptr)!=0) {
+			con->http_status = 451;
+			con->file_finished = 1;
+			break;
+		}
+
 		con->file_finished = 0;
 
 		buffer_reset(con->physical.path);
@@ -516,9 +522,10 @@ static int connection_handle_write_prepare(server *srv, connection *con) {
 
 				//- 20130104 Sungmin add
 				if(con->http_status==401){
+
 					buffer *out = buffer_init();					
-					buffer_copy_string_len(out, CONST_STR_LEN("<input class='urlInfo' value='"));				
-					buffer_append_string_buffer(out, con->url.rel_path);				
+					buffer_copy_string_len(out, CONST_STR_LEN("<input class='urlInfo' value='"));
+					buffer_append_string_buffer(out, con->url.rel_path);
 					buffer_append_string_len(out, CONST_STR_LEN("' type='hidden'>"));
 					chunkqueue_append_buffer(con->write_queue, out);
 					buffer_free(out);

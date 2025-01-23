@@ -1,7 +1,10 @@
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
+#include <string.h>
 #include <rc.h>
 #include <bcmnvram.h>
 #include <shared.h>
@@ -14,12 +17,6 @@
 #include <notify_rc.h>
 #include <aae_ipc.h>
 
-#define ASUSDDNS_DBG(fmt,args...) \
-        if(1) { \
-                char info[1024]; \
-                snprintf(info, sizeof(info), "echo \"[ASUSDDNS][%s:(%d)]"fmt"\" >> /tmp/asusddns.log", __FUNCTION__, __LINE__, ##args); \
-                system(info); \
-        }
 
 #define ASUSDDNS_IP_SERVER          "https://ns1.asuscomm.com"
 #define ASUSDDNS_IP_SERVER_CN       "https://ns1.asuscomm.cn"
@@ -53,39 +50,35 @@ int checkTokenExpiration(const char *expireTime)
 		return -1;
 	}
 
-	struct tm expire_tm;
+	// Get current UTC time
 	time_t current_time;
-	time_t expire_time_t;
-
 	time(&current_time);
-	struct tm *current_utc_time = gmtime(&current_time); // Get current UTC time
-	time_t current_utc_time_t = mktime(current_utc_time);
 
-	// Try parsing as "%Y-%m-%d %H:%M:%S" format
+	// Try parsing as "YYYY-MM-DD HH:MM:SS" format
+	struct tm expire_tm;
 	if (strptime(expireTime, "%Y-%m-%d %H:%M:%S", &expire_tm) != NULL) {
-		expire_time_t = mktime(&expire_tm);
-		if (expire_time_t != -1) {
-			if (current_utc_time_t >= expire_time_t) {
-				return 1; // Already reached or exceeded the expiration time
-			} else {
-				return 0; // Not yet reached the expiration time
-			}
+		// Convert parsed time to time_t format (in UTC)
+		time_t expire_time = timegm(&expire_tm);
+		// Compare current time and expiry time
+		//logmessage("ddns_token", "current_time=%ld", (long)current_time);
+		//logmessage("ddns_token", "expire_time =%ld", (long)expire_time);
+		if (expire_time == -1) {
+			logmessage("ddns_token", "Convert time to time_t format failed");
+			return -1;
 		}
+
+		return (current_time >= expire_time) ? 1 : 0; // Compare expiry dates
 	}
 
-	// Try parsing as a timestamp (assuming expireTime is in seconds)
+	// Try parsing as a timestamp
 	char *endptr;
-	long timestamp = strtol(expireTime, &endptr, 10);
+	time_t timestamp = (time_t)strtoll(expireTime, &endptr, 10);
 	if (*endptr == '\0') {
-		ASUSDDNS_DBG("Now timestamp(UTC)=%ld\n", (long)current_utc_time_t);
-		if (current_utc_time_t >= timestamp) {
-			return 1; // Already reached or exceeded the expiration time
-		} else {
-			return 0; // Not yet reached the expiration time
-		}
+		return (current_time >= timestamp) ? 1 : 0;
 	}
 
 	// Parsing failed
+	logmessage("ddns_token", "Invalid expireTime format: %s\n", expireTime);
 	return -1;
 }
 
@@ -94,16 +87,23 @@ static int _update_userticket()
 	char event[AAE_MAX_IPC_PACKET_SIZE];
 	char out[AAE_MAX_IPC_PACKET_SIZE];
 	char* oauth_dm_user_ticket_expiretime = nvram_safe_get("oauth_dm_user_ticket_expiretime");
-	ASUSDDNS_DBG("Old userticket expiretime(UTC)=%s\n", oauth_dm_user_ticket_expiretime);
-
-	if ((strlen(oauth_dm_user_ticket_expiretime) == 0) || (checkTokenExpiration(oauth_dm_user_ticket_expiretime) != 0))
+	logmessage("ddns_token", "Old userticket expiretime=%s", oauth_dm_user_ticket_expiretime);
+	/*** Debug
+	char *endptr;
+	time_t oauth_dm_user_ticket_expiretime_t = (time_t)strtoll(oauth_dm_user_ticket_expiretime, &endptr, 10);
+	struct tm *tm_utc = gmtime(&oauth_dm_user_ticket_expiretime_t);
+	char userticket_expiretime[20];
+	strftime(userticket_expiretime, sizeof(userticket_expiretime), "%Y-%m-%d %H:%M:%S", tm_utc);
+	logmessage("ddns_token", "Old userticket expiretime =%s(UTC)", userticket_expiretime);
+	**********/
+	if (checkTokenExpiration(oauth_dm_user_ticket_expiretime) != 0)
 	{
 		if(strlen(nvram_safe_get("oauth_dm_refresh_ticket")) == 0)	//APP not registered.
 		{
 			return ASUSDDNS_ERR_NO_DM_REFRESH_TICKET;
 		}
 
-		ASUSDDNS_DBG("Update userticket!\n");
+		logmessage("ddns_token", "Update userticket!");
 		snprintf(event, sizeof(event), AAE_DDNS_GENERIC_MSG, AAE_EID_DDNS_REFRESH_TOKEN);
 		
 		aae_sendIpcMsgAndWaitResp(MASTIFF_IPC_SOCKET_PATH, event, strlen(event), out, sizeof(out), 5);
@@ -118,7 +118,7 @@ static int _update_userticket()
 		json_object_object_get_ex(ddnsObj, AAE_IPC_STATUS, &stsObj);
 		if (!ddnsObj || !eidObj || !stsObj)
 		{
-			ASUSDDNS_DBG("Failed to aae_refresh_ticket\n");
+			logmessage("ddns_token", "Failed to aae_refresh_ticket 1");
 		}
 		else
 		{
@@ -126,17 +126,17 @@ static int _update_userticket()
 			const char *status = json_object_get_string(stsObj);
 			if ((eid == AAE_EID_DDNS_REFRESH_TOKEN) && (!strcmp(status, "0")))
 			{
-				ASUSDDNS_DBG("Success to aae_refresh_ticket\n");
+				logmessage("ddns_token", "Success to aae_refresh_ticket");
 			}
 			else
 			{
-				ASUSDDNS_DBG("Failed to aae_refresh_ticket\n");
+				logmessage("ddns_token", "Failed to aae_refresh_ticket 2");
 			}
 		}
 		json_object_put(root);
 	}
 	else {
-		ASUSDDNS_DBG("userticket hasn't expired yet\n");
+		logmessage("ddns_token", "userticket hasn't expired yet");
 	}
 
 /*	stop_mastiff();
@@ -176,7 +176,7 @@ static int _acquire_token(const char *res_path, const int check_CA)
 
 	if(!res_path)
 	{
-		ASUSDDNS_DBG("No response file path.\n");
+		logmessage("ddns_token", "No response file path.");
 		return ASUSDDNS_ERR_OPEN_FILE_FAIL;
 	}
 	
@@ -186,12 +186,12 @@ static int _acquire_token(const char *res_path, const int check_CA)
 
 	if(cusid[0] == '\0' || userticket[0] == '\0')
 	{
-		ASUSDDNS_DBG("No userticket.\n");
+		logmessage("ddns_token", "No userticket.");
 		return ASUSDDNS_ERR_NO_USER_TICKET;
 	}
 	if (auth_status[0] == '\0' || (strncmp(auth_status, "0", 1) != 0 && strncmp(auth_status, "2", 1) != 0))
 	{
-		ASUSDDNS_DBG("No sid (service id).\n");
+		logmessage("ddns_token", "No sid (service id).");
 		return ASUSDDNS_ERR_NO_SID;
 	}
 
@@ -199,7 +199,7 @@ static int _acquire_token(const char *res_path, const int check_CA)
 	obj = json_object_new_object();
 	if(!obj)
 	{
-		ASUSDDNS_DBG("Cannot create json object!\n");
+		logmessage("ddns_token", "Cannot create json object!");
 		ret = ASUSDDNS_ERR_JSON_ERR;
 		goto Err;
 	}
@@ -209,7 +209,7 @@ static int _acquire_token(const char *res_path, const int check_CA)
 		json_object_object_add(obj, "cusid", cusid_obj);
 	else
 	{
-		ASUSDDNS_DBG("Cannot add json object, cusid!\n");
+		logmessage("ddns_token", "Cannot add json object, cusid!");
 		ret = ASUSDDNS_ERR_JSON_ERR;
 		goto Err;
 	}
@@ -219,7 +219,7 @@ static int _acquire_token(const char *res_path, const int check_CA)
 		json_object_object_add(obj, "userticket", userticket_obj);
 	else
 	{
-		ASUSDDNS_DBG("Cannot add json object, userticket!\n");
+		logmessage("ddns_token", "Cannot add json object, userticket!");
 		ret = ASUSDDNS_ERR_JSON_ERR;
 		goto Err;
 	}
@@ -231,7 +231,7 @@ static int _acquire_token(const char *res_path, const int check_CA)
 		json_object_object_add(obj, "devicemac", devicemac_obj);
 	else
 	{
-		ASUSDDNS_DBG("Cannot add json object, devicemac!\n");
+		logmessage("ddns_token", "Cannot add json object, devicemac!");
 		ret = ASUSDDNS_ERR_JSON_ERR;
 		goto Err;
 	}
@@ -248,7 +248,7 @@ static int _acquire_token(const char *res_path, const int check_CA)
 		json_object_object_add(obj, "devicemd5mac", devicemd5mac_obj);
 	else
 	{
-		ASUSDDNS_DBG("Cannot add json object, devicemd5mac!\n");
+		logmessage("ddns_token", "Cannot add json object, devicemd5mac!");
 		ret = ASUSDDNS_ERR_JSON_ERR;
 		goto Err;
 	}
@@ -270,13 +270,13 @@ static int _acquire_token(const char *res_path, const int check_CA)
 		json_object_object_add(obj, "sid", sid_obj);
 	else
 	{
-		ASUSDDNS_DBG("Cannot add json object, sid!\n");
+		logmessage("ddns_token", "Cannot add json object, sid!");
 		ret = ASUSDDNS_ERR_JSON_ERR;
 		goto Err;
 	}
 
 	auth_string = json_object_to_json_string(obj);
-	ASUSDDNS_DBG("auth_string=%s\n", auth_string);
+	logmessage("ddns_token", "auth_string=%s", auth_string);
 
 	int retry = 5;
 	while(retry > 0 && res != CURLE_OK){
@@ -286,7 +286,7 @@ static int _acquire_token(const char *res_path, const int check_CA)
 		fp_res = fopen(res_path, "wb");
 		if(!fp_res)
 		{
-			ASUSDDNS_DBG("Cannot open file for response data.\n");
+			logmessage("ddns_token", "Cannot open file for response data.");
 			return ASUSDDNS_ERR_OPEN_FILE_FAIL;
 		}
 
@@ -331,12 +331,23 @@ static int _acquire_token(const char *res_path, const int check_CA)
 			curl_easy_cleanup(curl);
 			if(res == CURLE_OK)
 			{
-				ASUSDDNS_DBG("CURL perform success\n");
+				logmessage("ddns_token", "CURL perform success");
 				ret = ASUSDDNS_ERR_SUCCESS;
+
+				FILE *fp_res_read = fopen(res_path, "r");
+				if (fp_res_read) {
+					char buffer[256];
+					while (fgets(buffer, sizeof(buffer), fp_res_read) != NULL) {
+						logmessage("ddns_token", "response: %s", buffer);
+					}
+					fclose(fp_res_read);
+				} else {
+					logmessage("ddns_token", "Failed to open %s for reading.", res_path);
+				}
 			}
 			else
 			{
-				ASUSDDNS_DBG("CURL perform fail: %s(%d)\n", curl_easy_strerror(res), res);
+				logmessage("ddns_token", "CURL perform fail: %s(%d)", curl_easy_strerror(res), res);
 				ret = ASUSDDNS_ERR_CURL_ERR;
 				unlink(res_path);
 				retry--;
@@ -345,7 +356,7 @@ static int _acquire_token(const char *res_path, const int check_CA)
 		}
 		else
 		{
-			ASUSDDNS_DBG("Cannot init CURL\n");
+			logmessage("ddns_token", "Cannot init CURL");
 			ret = ASUSDDNS_ERR_CURL_ERR;
 			//goto Err;
 		}
@@ -371,14 +382,14 @@ static int _check_response(const char *res_path)
 	
 	if(!res_path)
 	{
-		ASUSDDNS_DBG("No response file path.\n");
+		logmessage("ddns_token", "No response file path.");
 		return ASUSDDNS_ERR_OPEN_FILE_FAIL;
 	}
 
 	res_obj = json_object_from_file(res_path);
 	if(!res_obj)
 	{
-		ASUSDDNS_DBG("Cannot open response file.\n");
+		logmessage("ddns_token", "Cannot open response file.");
 		return ASUSDDNS_ERR_OPEN_FILE_FAIL;
 	}
 	if(json_object_object_get_ex(res_obj, "status", &status_obj))
@@ -388,12 +399,14 @@ static int _check_response(const char *res_path)
 			json_object_object_get_ex(res_obj, "ddnstoken", &token_obj);			
 			nvram_set("asusddns_token", json_object_get_string(token_obj));
 			json_object_object_get_ex(res_obj, "expiretime", &token_obj);
-			nvram_set("asusddns_token_expiretime", json_object_get_string(token_obj));
+			const char *expire_time_str = json_object_get_string(token_obj);
+			nvram_set("asusddns_token_expiretime", expire_time_str);
+			logmessage("ddns_token", "New ddnstoken expiretime=%s(UTC)", expire_time_str);
 			ret = ASUSDDNS_ERR_SUCCESS;
 		}
 		else
 		{
-			ASUSDDNS_DBG("No status\n");
+			logmessage("ddns_token", "No status");
 		}
 	}
 
@@ -409,38 +422,39 @@ static int _check_response(const char *res_path)
 
 int update_asus_ddns_token()
 {
-	int ret;
+	int ret = -1;
 	char* asusddns_token_expiretime = nvram_safe_get("asusddns_token_expiretime");
-	ASUSDDNS_DBG("[START] Old ddnstoken expiretime(UTC)=%s\n", asusddns_token_expiretime);
+	logmessage("ddns_token", "Old ddnstoken expiretime=%s(UTC)", asusddns_token_expiretime);
 	
 	nvram_set_int("asusddns_token_state", ASUSDDNS_ERR_INIT_STATE);
 
-	if ((strlen(asusddns_token_expiretime) == 0) || (checkTokenExpiration(asusddns_token_expiretime) != 0) || !json_object_from_file(ASUSDDNS_REQ_TOKEN_RES))
+	if ((checkTokenExpiration(asusddns_token_expiretime) != 0) || !json_object_from_file(ASUSDDNS_REQ_TOKEN_RES))
 	{
 		if(_update_userticket() == ASUSDDNS_ERR_NO_DM_REFRESH_TICKET)
 		{
-			ASUSDDNS_DBG("User does not login the account yet.\n");
+			logmessage("ddns_token", "User does not login the account yet.");
 			nvram_set_int("asusddns_token_state", ASUSDDNS_ERR_NO_DM_REFRESH_TICKET);
 			return ASUSDDNS_ERR_NO_DM_REFRESH_TICKET;
 		}
-
+		logmessage("ddns_token", "Acquire token!");
 		ret = _acquire_token(ASUSDDNS_REQ_TOKEN_RES, 0);
 	}
 	else {
-		ASUSDDNS_DBG("ddnstoken hasn't expired yet\n");
+		logmessage("ddns_token", "ddnstoken hasn't expired yet");
 		ret = ASUSDDNS_ERR_SUCCESS;
 	}
 	
 	if(ret == ASUSDDNS_ERR_SUCCESS)
 	{
 		nvram_set_int("asusddns_token_state", _check_response(ASUSDDNS_REQ_TOKEN_RES));
-		ASUSDDNS_DBG("Now ddnstoken expiretime(UTC)=%s\n", nvram_safe_get("asusddns_token_expiretime"));
+		//logmessage("ddns_token", "Now ddnstoken expiretime=%s(UTC)", nvram_safe_get("asusddns_token_expiretime"));
 	}
 	else
 	{
 		nvram_set_int("asusddns_token_state", ret);
 	}
-	ASUSDDNS_DBG("[END] Done. ret=%d\n", ret);
+
+	logmessage("ddns_token", "Done.(%d)", ret);
 	return ret;
 }
 

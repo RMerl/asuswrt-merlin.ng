@@ -188,22 +188,6 @@ int is_port_in_use(int port)
 	return 0;
 }
 
-char *
-rfctime(const time_t *timep)
-{
-	static char s[200];
-	struct tm tm;
-
-#ifndef RTCONFIG_AVOID_TZ_ENV
-	if(setenv("TZ", nvram_safe_get_x("", "time_zone_x"), 1)==0)
-		tzset();
-#endif
-
-	localtime_r(timep, &tm);
-	strftime(s, sizeof(s), "%a, %d %b %Y %H:%M:%S %z", &tm);
-	return s;
-}
-
 #ifdef RTCONFIG_CFGSYNC
 int is_cfg_server_ready()
 {

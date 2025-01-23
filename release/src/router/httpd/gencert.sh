@@ -65,7 +65,16 @@ validate_oip() {
 # Parsing parameter
 RELOAD=0
 BACKUP=0
+CONFIG_RSAKEY=`nvram get config_rsakey`
+if [ "$CONFIG_RSAKEY" != "" ] ; then
+	if [ "$CONFIG_RSAKEY" == "1" ]; then
+		ECC256=0
+	else
+		ECC256=1
+	fi
+else
 ECC256=0
+fi
 DEFAULT_LAN_IP=192.168.50.1
 while [ -n "$1" ] ; do
 	case $1 in
@@ -107,7 +116,7 @@ while [ -n "$1" ] ; do
 	esac
 	shift
 done
-echo "RELOAD=${RELOAD} BACKUP=${BACKUP} ECC256=${ECC256} DEFAULT_LAN_IP=${DEFAULT_LAN_IP}"
+echo "RELOAD=${RELOAD} BACKUP=${BACKUP} ECC256=${ECC256} DEFAULT_LAN_IP=${DEFAULT_LAN_IP} CONFIG_RSA=${CONFIG_RSAKEY}"
 
 ONAME=`nvram get lan_hostname`
 [ -z "${ONAME}" ] && ONAME=`nvram get odmpid`
@@ -276,7 +285,7 @@ if [ ! -e ${HTTPD_ROOTCA_GEN_CERT} -o ! -e ${HTTPD_ROOTCA_GEN_KEY} ] ; then
 	else
 		OPENSSL_CONF=/etc/openssl.config openssl genrsa -out ${HTTPD_ROOTCA_GEN_KEY}
 	fi
-	OPENSSL_CONF=/etc/openssl.config RANDFILE=/dev/urandom openssl req -x509 \
+	OPENSSL_CONF=/etc/openssl.config openssl req -x509 \
 		-new -nodes -in /tmp/cert.csr -key ${HTTPD_ROOTCA_GEN_KEY} -days 7306 -sha256 -out ${HTTPD_ROOTCA_GEN_CERT}
 fi
 
@@ -335,7 +344,7 @@ fi
 OPENSSL_CONF=/etc/openssl.config openssl req -new \
 	-subj "/C=US/CN=${ONAME} Server Certificate/O=${ONAME}" \
 	-batch -out /tmp/https_srv.csr -key ${HTTPD_GEN_KEY}
-OPENSSL_CONF=/etc/openssl.config RANDFILE=/dev/urandom openssl x509 -req \
+OPENSSL_CONF=/etc/openssl.config openssl x509 -req \
 	-extensions server_req_extensions -extfile ssl_server.ext -in /tmp/https_srv.csr \
 	-CA ${HTTPD_ROOTCA_CERT} -CAkey ${HTTPD_ROOTCA_KEY} -CAserial serial.txt -CAcreateserial -days 7306 -out ${HTTPD_GEN_CERT}
 

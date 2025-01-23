@@ -40,7 +40,7 @@
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #define HAVE_SYS_STAT_H 1
 
-#if !defined(PJ_CONFIG_IPHONE)
+#if !defined(PJ_CONFIG_IPHONE) && !defined(PJ_DARWINOS)
 /* Define to 1 if you have the <sys/sysmacros.h> header file. */
 #define HAVE_SYS_SYSMACROS_H 1
 #endif

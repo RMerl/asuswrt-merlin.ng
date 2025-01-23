@@ -417,8 +417,17 @@ case $target in
   *)
 	ac_os_objs="$ac_os_objs file_access_unistd.o file_io_ansi.o os_core_unix.o os_error_unix.o os_time_unix.o os_timestamp_posix.o"
 	case $target in
-	  arm-apple-darwin*)
-		ac_os_objs="$ac_os_objs os_info_iphone.o"
+	  #arm*-apple-darwin*)
+	  #*-apple-darwin*)
+	  #*-apple-darwin_ios*)
+	#	ac_os_objs="$ac_os_objs os_info_iphone.o"
+	#	;;
+	  *darwin*)
+		if test "${TARGET_OS}" == IOS; then
+			ac_os_objs="$ac_os_objs os_info_iphone.o"
+		else
+			ac_os_objs="$ac_os_objs"
+		fi
 		;;
 	esac
 	# UUID

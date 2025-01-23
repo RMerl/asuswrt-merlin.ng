@@ -2848,6 +2848,7 @@
 	line-height: 100%;
 	font-size: 11px;
 	margin-top: 8px;
+	width: 85%;
 }
 .port_status_icon_desc{
 	display: flex;

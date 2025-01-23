@@ -225,6 +225,35 @@ extern int PS_pclose(FILE *);
 #define GPIO_DIR_IN	0
 #define GPIO_DIR_OUT	1
 
+#if defined(RTCONFIG_QCA)
+#define SPF_VER_ID(maj,min)	(((maj) << 8) + (min))
+
+#if defined(RTCONFIG_WIFI_QCA9557_QCA9882)
+#define SPF_VER			SPF_VER_ID(2,1)
+#elif defined(RTCONFIG_SOC_IPQ8064)
+#define SPF_VER			SPF_VER_ID(3,1)
+#elif defined(RTCONFIG_SPF8_QSDK)
+#define SPF_VER			SPF_VER_ID(8,0)
+#elif defined(RTCONFIG_SPF10_QSDK)
+#define SPF_VER			SPF_VER_ID(10,0)
+#elif defined(RTCONFIG_SPF11_QSDK)
+#define SPF_VER			SPF_VER_ID(10,0)
+#elif defined(RTCONFIG_SPF11_1_QSDK)
+#define SPF_VER			SPF_VER_ID(11,1)
+#elif defined(RTCONFIG_SPF11_3_QSDK)
+#define SPF_VER			SPF_VER_ID(11,3)
+#elif defined(RTCONFIG_SPF11_4_QSDK)
+#define SPF_VER			SPF_VER_ID(11,4)
+#elif defined(RTCONFIG_SPF11_5_QSDK)
+#define SPF_VER			SPF_VER_ID(11,5)
+#elif defined(RTCONFIG_SPF12_2_QSDK)
+#define SPF_VER			SPF_VER_ID(12,2)
+#else
+#define SPF_VER			SPF_VER_ID(0,0)
+#warning SPF_VER is not defined!
+#endif	/* RTCONFIG_SPF8_QSDK */
+#endif	/* RTCONFIG_QCA */
+
 #define PROC_IRQ		"/proc/irq"
 #define SYS_CLASS_MTD		"/sys/class/mtd"
 #define SYS_CLASS_NET		"/sys/class/net"
@@ -293,8 +322,8 @@ static inline char *wan_if_eth(void)
 #define IS_NON_AQOS()           (nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") != 1)   // non A.QoS = others QoS (T.QoS / bandwidth monitor ... etc.)
 #define IS_NON_FC_QOS()         (nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") != 1 && nvram_get_int("qos_type") != 2) // non FC QoS= others QoS except A.QOS / BW QOS
 #define IS_ROG_QOS()            (nvram_get_int("qos_enable") == 0 && nvram_get_int("rog_enable") == 1) // QoS Disable, Gear Accelerator enable
-#define IS_RB_QOS()             (IS_AQOS() && nvram_get_int("rb_enable") == 1)   // Router Boost QoS (OPPO)
-#define IS_CAKE_QOS()		(nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") == 9)   // Cake QoS
+#define IS_RB_QOS()             (nvram_get_int("rb_enable") == 1)   // Router Boost QoS (OPPO)
+#define IS_CAKE_QOS()			(nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") == 9)   // Cake QoS
 
 /* Guest network mark */
 #define GUEST_INIT_MARKNUM 10   /*10 ~ 30 for Guest Network. */
@@ -423,6 +452,7 @@ enum {
 	WAN_V6PLUS,
 	WAN_OCNVC,
 	WAN_DSLITE,
+	WAN_V6OPTION,
 };
 
 #ifdef RTCONFIG_IPV6
@@ -528,6 +558,7 @@ enum {
 #define CFG_PREFIX      "CFG"
 #define AMAS_PORTSTATUS_PREFIX	"PORTSTATUS"
 #define CFG_ALLCHANRADAR		"ALLCHANRADAR"
+#define CONNDIAG_PREFIX	"CONNDIAG"
 
 #define CFG_CONNDIAG_MIX_MODE 0xF000  // same with DIAGMODE_MIX in rc/conn_diag.h
 #define CFG_CONNDIAG_PREFIX_PORTSTATUS "<PORTSTATUS"
@@ -564,6 +595,7 @@ enum conndiagEvent {
 	EID_CD_PS_CD_RET,
 	EID_CD_PS_USB_CHANGE,
 	EID_CD_PS_MOCA_CHANGE,
+	EID_CD_PRINT_STA_INFO,
 	EID_CD_MAX
 };
 #define RAST_IPC_MAX_CONNECTION		5
@@ -608,6 +640,7 @@ enum conndiagEvent {
 #define RAST_CANDIDATE_AP_RCPI	"AP_RCPI"
 #define RAST_AP_TARGET_MAC "AP_TARGET_MAC"
 #define RAST_AP_TARGET_CH "AP_TARGET_CH"
+#define RAST_BEACON_HAS_REPORTED "STA_REPORTED"
 #ifdef RTCONFIG_CONN_EVENT_TO_EX_AP
 #define RAST_STA_EX_AP_IP	"STA_EX_AP_IP"
 #endif
@@ -616,6 +649,7 @@ enum conndiagEvent {
 #define RAST_TRIGGER_STA_AP_BAND_BIND "TRIGGER_STA_AP_BAND_BIND"
 #define RAST_JVALUE_BAND_2G "2"
 #define RAST_JVALUE_BAND_5G "1"
+#define RAST_JVALUE_BAND_6G "4"
 #define RAST_BLOCK_TIME	"BLOCK_TIME"
 #define RAST_DEF_BLOCK_TIME	3
 
@@ -916,8 +950,8 @@ extern int nvram_get_int(const char *key);
 extern int nvram_pf_get_int(const char *prefix, const char *key);
 extern int nvram_set_int(const char *key, int value);
 extern int nvram_pf_set_int(const char *prefix, const char *key, int value);
-extern int nvram_pf_match(char *prefix, char *name, char *match);
-extern int nvram_pf_invmatch(char *prefix, char *name, char *invmatch);
+extern int nvram_pf_match(const char *prefix, char *name, char *match);
+extern int nvram_pf_invmatch(const char *prefix, char *name, char *invmatch);
 extern double nvram_get_double(const char *key);
 extern int nvram_set_double(const char *key, double value);
 extern int nvram_get_hex(const char *key);
@@ -1036,6 +1070,7 @@ extern int supports(unsigned long attr);
 
 // pids.c
 extern int pids(char *appname);
+extern int pids_count(char *appname);
 extern pid_t* find_pid_by_name(const char *);
 
 // process.c
@@ -1805,6 +1840,21 @@ static inline int mediabridge_mode(void)
 static inline int __mediabridge_mode(int __attribute__((__unused__)) sw_mode) { return 0; }
 static inline int mediabridge_mode(void) { return 0; }
 #endif
+
+#if defined(RTCONFIG_WISP)
+static inline int __wisp_mode(int sw_mode)
+{
+	return (sw_mode == SW_MODE_ROUTER && nvram_invmatch("wlc_band", ""));
+}
+static inline int wisp_mode(void)
+{
+	return __wisp_mode(sw_mode());
+}
+#else
+static inline int __wisp_mode(int __attribute__((__unused__)) sw_mode) { return 0; }
+static inline int wisp_mode(void) { return 0; }
+#endif
+
 #else
 /* Broadcom platform and others */
 static inline int __access_point_mode(int sw_mode)
@@ -1848,6 +1898,20 @@ static inline int mediabridge_mode(void)
 static inline int __mediabridge_mode(__attribute__ ((unused)) int sw_mode) { return 0; }
 static inline int mediabridge_mode(void) { return 0; }
 #endif
+
+#if defined(RTCONFIG_WISP)
+static inline int __wisp_mode(int sw_mode)
+{
+	return (sw_mode == SW_MODE_ROUTER && nvram_invmatch("wlc_band", ""));
+}
+static inline int wisp_mode(void)
+{
+	return __wisp_mode(sw_mode());
+}
+#else
+static inline int __wisp_mode(int __attribute__((__unused__)) sw_mode) { return 0; }
+static inline int wisp_mode(void) { return 0; }
+#endif
 #endif	/* RTCONFIG_RALINK || RTCONFIG_QCA */
 #ifdef RTCONFIG_REALTEK
 static inline int __re_mode(int sw_mode) {
@@ -1856,7 +1920,10 @@ static inline int __re_mode(int sw_mode) {
 static inline int re_mode(void) {
 	return __re_mode(sw_mode());
 }
-
+#else
+static inline int re_mode(void) {
+	return aimesh_re_node();
+}
 #endif
 
 static inline int client_mode(void)
@@ -2253,6 +2320,7 @@ extern int get_switch_model(void);
 #define PHY_PORT_CAP_WANLAN					(1U << 9)
 #define PHY_PORT_CAP_MOCA					(1U << 10)
 #define PHY_PORT_CAP_POE					(1U << 11)
+#define PHY_PORT_CAP_WANAUTO				(1U << 12)
 
 // Software capability
 #define PHY_PORT_CAP_IPTV_BRIDGE			(1U << 26)
@@ -2261,8 +2329,9 @@ extern int get_switch_model(void);
 #define PHY_PORT_CAP_DUALWAN_SECONDARY_WAN	(1U << 29)
 #define PHY_PORT_CAP_DUALWAN_PRIMARY_WAN	(1U << 30)
 
-// PHY_PROT FLAG
+// PHY_PORT FLAG
 #define PHY_PORT_FLAG_BYPASS_CABLE_DIAG		(1U << 0)
+#define PHY_PORT_FLAG_CANNOT_USE_AS_WAN		(1U << 1)
 typedef struct _usb_device_info usb_device_info_t;
 
 #if 1
@@ -2326,6 +2395,19 @@ typedef struct _phy_info_list {
 	int status_and_speed_only;
 } phy_info_list;
 /* phy port related end.*/
+
+struct CHANNEL_MAPPING_TABLE {
+	int nband;
+	int channel;
+	int bandtype;  /*1:LOW 2:HIGH*/
+};
+
+static struct CHANNEL_MAPPING_TABLE channel_mapping_list[] __attribute__ ((unused)) = {
+	{ 2,	13,		-1 },
+	{ 1,	100,	-1 },
+	{ 4,	129,	-1 },
+	{ -1, -1, -1 }
+};
 
 #if defined(RTCONFIG_ALPINE) || defined(RTCONFIG_LANTIQ)
 extern uint32_t get_phy_status(int wan_unit);
@@ -2534,10 +2616,12 @@ extern int get_cfg_bw_mask_by_bw(int bw);
 extern int __wl_get_bw_cap(int unit, int *bwcap);
 extern char *get_mode_str_by_bw(int unit, int channel, int bw, int nctrlsb);
 extern const char *phymode_str(int phymode);
-extern int get_bw_by_mode_str(char *mode);
+extern int get_bw_by_mode_str(const char *mode);
 extern int get_bw_by_phymode(int unit, int phymode);
 #endif
 extern int wl_get_bw_cap(int unit, int *bwcap);
+extern int get_bandnum_by_nband(int num);
+extern void check_wlx_nband_type();
 
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
 extern int get_psta_status(int unit);
@@ -2599,6 +2683,7 @@ extern void create_amas_sys_folder();
 				(ea).octet[5]
 #endif
 
+extern void get_control_channel(int unit, int *channel, int *bw, int *nctrlsb);
 #else	/* !RTCONFIG_AMAS */
 static inline int rtconfig_amas(void) { return 0; }
 #endif	/* RTCONFIG_AMAS */
@@ -3194,7 +3279,69 @@ extern char *get_wl_led_gpio_nv(int band);
 #define CH169_M	(1U << 28)
 #define CH173_M	(1U << 29)
 #define CH177_M	(1U << 30)
+#define NON_DFS_CH_M	(CH36_M | CH40_M | CH44_M | CH48_M | CH149_M | CH153_M | CH157_M | CH161_M)
 #define DFS_CH_M	(CH52_M | CH56_M | CH60_M | CH64_M | CH68_M | CH96_M | CH100_M | CH104_M | CH108_M | CH112_M | CH116_M | CH120_M | CH124_M | CH128_M | CH132_M | CH136_M | CH140_M | CH144_M)
+/* bit0~58 = ch1~233; ch2 is not supported! */
+#define B6GCH_M(ch)	(1ULL << ((ch) - 1) >> 2)
+#define B6GCH1_M	(1ULL << 0)
+#define B6GCH5_M	(1ULL << 1)
+#define B6GCH9_M	(1ULL << 2)
+#define B6GCH13_M	(1ULL << 3)
+#define B6GCH17_M	(1ULL << 4)
+#define B6GCH21_M	(1ULL << 5)
+#define B6GCH25_M	(1ULL << 6)
+#define B6GCH29_M	(1ULL << 7)
+#define B6GCH33_M	(1ULL << 8)
+#define B6GCH37_M	(1ULL << 9)
+#define B6GCH41_M	(1ULL << 10)
+#define B6GCH45_M	(1ULL << 11)
+#define B6GCH49_M	(1ULL << 12)
+#define B6GCH53_M	(1ULL << 13)
+#define B6GCH57_M	(1ULL << 14)
+#define B6GCH61_M	(1ULL << 15)
+#define B6GCH65_M	(1ULL << 16)
+#define B6GCH69_M	(1ULL << 17)
+#define B6GCH73_M	(1ULL << 18)
+#define B6GCH77_M	(1ULL << 19)
+#define B6GCH81_M	(1ULL << 20)
+#define B6GCH85_M	(1ULL << 21)
+#define B6GCH89_M	(1ULL << 22)
+#define B6GCH93_M	(1ULL << 23)
+#define B6GCH97_M	(1ULL << 24)
+#define B6GCH101_M	(1ULL << 25)
+#define B6GCH105_M	(1ULL << 26)
+#define B6GCH109_M	(1ULL << 27)
+#define B6GCH113_M	(1ULL << 28)
+#define B6GCH117_M	(1ULL << 29)
+#define B6GCH121_M	(1ULL << 30)
+#define B6GCH125_M	(1ULL << 31)
+#define B6GCH129_M	(1ULL << 32)
+#define B6GCH133_M	(1ULL << 33)
+#define B6GCH137_M	(1ULL << 34)
+#define B6GCH141_M	(1ULL << 35)
+#define B6GCH145_M	(1ULL << 36)
+#define B6GCH149_M	(1ULL << 37)
+#define B6GCH153_M	(1ULL << 38)
+#define B6GCH157_M	(1ULL << 39)
+#define B6GCH161_M	(1ULL << 40)
+#define B6GCH165_M	(1ULL << 41)
+#define B6GCH169_M	(1ULL << 42)
+#define B6GCH173_M	(1ULL << 43)
+#define B6GCH177_M	(1ULL << 44)
+#define B6GCH181_M	(1ULL << 45)
+#define B6GCH185_M	(1ULL << 46)
+#define B6GCH189_M	(1ULL << 47)
+#define B6GCH193_M	(1ULL << 48)
+#define B6GCH197_M	(1ULL << 49)
+#define B6GCH201_M	(1ULL << 50)
+#define B6GCH205_M	(1ULL << 51)
+#define B6GCH209_M	(1ULL << 52)
+#define B6GCH213_M	(1ULL << 53)
+#define B6GCH217_M	(1ULL << 54)
+#define B6GCH221_M	(1ULL << 55)
+#define B6GCH225_M	(1ULL << 56)
+#define B6GCH229_M	(1ULL << 57)
+#define B6GCH233_M	(1ULL << 58)
 extern int ch2g2bit(int ch);
 extern int ch5g2bit(int ch);
 extern uint64_t ch2g2bitmask(int ch);
@@ -3221,6 +3368,12 @@ extern int bit2ch(enum wl_band_id band, int bit);
 extern uint64_t chlist2bitmask(enum wl_band_id band, char *ch_list, char *sep);
 extern char *__bitmask2chlist(enum wl_band_id band, uint64_t mask, char *sep, char *ch_list, size_t ch_list_len);
 extern char *bitmask2chlist(enum wl_band_id band, uint64_t mask, char *sep);
+extern int *bitmask2iary2g(uint64_t mask, size_t *length, int *array);
+extern int *bitmask2iary5g(uint64_t mask, size_t *length, int *array);
+extern int *bitmask2iary6g(uint64_t mask, size_t *length, int *array);
+extern int *bitmask2iary(enum wl_band_id band, uint64_t mask, size_t *length, int *array);
+extern int select_rand_ch_from_mask(enum wl_band_id band, uint64_t mask);
+extern uint64_t get_cur_channel_mask(const char *ifname);
 #if defined(RTCONFIG_QCA)
 extern char *get_wsup_drvname(int band);
 extern void disassoc_sta(char *ifname, char *sta_addr);
@@ -3418,6 +3571,24 @@ static inline int is_mswan_enabled()
 }
 #endif
 
+static inline int is_iptv_enabled()
+{
+	if ((nvram_get_int("switch_stb_x") > 0) || !nvram_match("switch_wantag", "none"))
+		return 1;
+	return 0;
+}
+
+static inline int check_default_wan_as_wan()
+{
+#if defined(RTCONFIG_MULTISERVICE_WAN)
+	if (is_mswan_enabled())
+		return 1;
+#endif
+	if (is_iptv_enabled())
+		return 1;
+	return 0;
+}
+
 static inline void add_sw_wan_cap(phy_port_mapping *port_mapping, int wan, uint32_t cap)
 {
 	int i;
@@ -3444,11 +3615,15 @@ static inline void add_sw_wan_cap(phy_port_mapping *port_mapping, int wan, uint3
 					port_mapping->port[i].cap |= cap;
 				//_dprintf("%s 2WANS_DUALWAN_IF_WAN is wan. cap1=%u, cap2=%u\n", port_mapping->port[i].label_name, cap, port_mapping->port[i].cap);
 					break;
-				}
-#if defined(RTCONFIG_MULTISERVICE_WAN)
-				else if (is_mswan_enabled() && (port_mapping->port[i].cap & PHY_PORT_CAP_WAN)) {
+				} else if (check_default_wan_as_wan() && (port_mapping->port[i].cap & PHY_PORT_CAP_WAN)) {
 					port_mapping->port[i].cap |= cap;
 				//_dprintf("%s 3WANS_DUALWAN_IF_WAN is wan. cap1=%u, cap2=%u\n", port_mapping->port[i].label_name, cap, port_mapping->port[i].cap);
+					break;
+				}
+#if !defined(RTCONFIG_DUALWAN)
+				else if ((port_mapping->port[i].cap & PHY_PORT_CAP_WAN)) {
+					port_mapping->port[i].cap |= cap;
+				//_dprintf("%s 1WANS_DUALWAN_IF_WAN is wan. cap1=%u, cap2=%u\n", port_mapping->port[i].label_name, cap, port_mapping->port[i].cap);
 					break;
 				}
 #endif
@@ -3512,15 +3687,62 @@ static inline void add_sw_iptv_cap(phy_port_mapping *port_mapping, char *ports, 
 	}
 }
 
+#ifdef RTCONFIG_AUTO_WANPORT
+static inline void add_sw_wan_auto_cap(phy_port_mapping *port_mapping, uint32_t cap)
+{
+	int i;
+	char ifname[8], *next;
+	char *autowan_ifnames = strdup(nvram_safe_get("autowan_ifnames"));
+	if (!autowan_ifnames)
+		return;
+
+	for(i = 0; i < port_mapping->count; i++) {
+		//_dprintf("%s WANS_DUALWAN_IF_WAN is wan. cap1=%llu, cap2=%llu\n", port_mapping->port[i].label_name, cap, port_mapping->port[i].cap);
+		if (port_mapping->port[i].ifname && strlen(port_mapping->port[i].ifname)) {
+			port_mapping->port[i].cap &= ~cap;
+			//_dprintf("%s WANS_DUALWAN_IF_WAN is wan. cap1=%llu, cap2=%llu\n", port_mapping->port[i].label_name, cap, port_mapping->port[i].cap);
+
+			foreach(ifname, autowan_ifnames, next) {
+				if (!strcmp(port_mapping->port[i].ifname, ifname)) {
+					port_mapping->port[i].cap |= cap;
+					break;
+				}
+			}
+		}
+	}
+	free(autowan_ifnames);
+}
+#endif
+
 static inline void add_default_primary_wan(phy_port_mapping *port_mapping)
 {
 	int i;
-	for(i = 0; i < port_mapping->count; i++) {
-		if (!strcmp(port_mapping->port[i].label_name, "W0")) {
-			port_mapping->port[i].cap |= PHY_PORT_CAP_DUALWAN_PRIMARY_WAN;
-			return;
+
+	// If RE mode, use amas_ifname to find the port as primary wan.
+	if (nvram_get_int("re_mode") == 1) {
+		char amas_ifname[16] = {0};
+		snprintf(amas_ifname, sizeof(amas_ifname), "%s", nvram_safe_get("amas_ifname"));
+		if (strlen(amas_ifname)) {
+			for(i = 0; i < port_mapping->count; i++) {
+				if (port_mapping->port[i].ifname && 
+					!strcmp(port_mapping->port[i].ifname, amas_ifname)) {
+					port_mapping->port[i].cap |= PHY_PORT_CAP_DUALWAN_PRIMARY_WAN;
+					return;
+				}
+			}
 		}
 	}
+#if 0 // No need to handle ap mode, repeater mode and media bridge mode
+	else {
+		for(i = 0; i < port_mapping->count; i++) {
+			if (((port_mapping->port[i].cap & PHY_PORT_CAP_WAN) > 0) || 
+				(!strncmp(port_mapping->port[i].label_name, "W", 1))) {
+				port_mapping->port[i].cap |= PHY_PORT_CAP_DUALWAN_PRIMARY_WAN;
+				return;
+			}
+		}
+	}
+#endif
 }
 
 static inline void add_sw_cap(phy_port_mapping *port_mapping)
@@ -3562,6 +3784,9 @@ static inline void add_sw_cap(phy_port_mapping *port_mapping)
 	add_sw_iptv_cap(port_mapping, nvram_safe_get("iptv_voip_port"), PHY_PORT_CAP_IPTV_VOIP);
 	add_sw_iptv_cap(port_mapping, nvram_safe_get("iptv_bridge_port"), PHY_PORT_CAP_IPTV_BRIDGE);
 #endif
+#if defined(RTCONFIG_AUTO_WANPORT)
+	add_sw_wan_auto_cap(port_mapping, PHY_PORT_CAP_WANAUTO);
+#endif
 }
 
 static inline void swap_wanlan(phy_port_mapping *port_mapping)
@@ -3570,6 +3795,10 @@ static inline void swap_wanlan(phy_port_mapping *port_mapping)
 	char *tmp_label_name;
 	//int tmp_max_rate;
 	int i, j;
+
+	// Don't swap when default mode.
+	if (nvram_get_int("x_Setting") == 0)
+		return;
 
 	for(i = 0; i < port_mapping->count; i++) {
 		if (((port_mapping->port[i].cap & PHY_PORT_CAP_WAN) > 0) &&
@@ -4006,11 +4235,13 @@ extern int check_bwdpi_nvram_setting();
 extern int check_wan_2P5G_10G_speed();
 extern int check_AQoS_only_enabled();
 extern int check_WRS_only_enabled();
+extern void tm_recycle_stuck_process();
 #endif
 extern void erase_symbol(char *old, char *sym);
 extern void StampToDate(unsigned long timestamp, char *date);
 extern int check_filesize_over(char *path, long int size);
 extern time_t get_last_month_timestamp();
+extern void TstampToNvram(char *name);
 
 #if defined(RTCONFIG_USB)
 static inline int is_usb3_port(char *usb_node)
@@ -4214,6 +4445,7 @@ extern int invalid_nvram_get_program(char *name);
 extern int invalid_program_check(void);
 extern char *str_to_md5(const char *string, int length, char *out);
 #endif
+extern void c(char *buf, size_t len, ...);
 
 /* amas_utils.c */
 #ifdef RTCONFIG_AMAS
@@ -4291,6 +4523,7 @@ extern void deauth_guest_sta(char *, char *);
 #ifdef RTCONFIG_CFGSYNC
 #define MAX_RELIST_NUM	9
 #define	CFGSYNC_GROUPID_LEN	CKN_STR32
+#define	CFGSYNC_KEY_LEN	CKN_STR32
 #define CLIENT_STALIST_JSON_PATH	"/tmp/stalist.json"
 #define CFG_RELIST_FILE		"/tmp/cfg_relist"
 #define CFG_RELIST_X_FILE		"/tmp/cfg_relist_x"
@@ -4669,6 +4902,7 @@ enum {
 	CDIAG_BW_MAX	= 6
 };
 
+#define SAFE_FREE(x)	if(x) {free(x); x=NULL;}
 #ifdef RTCONFIG_TPVPN
 // tpvpn.c
 enum {
@@ -4702,15 +4936,53 @@ extern struct devif_spdled devif_spdled_list[];
 
 #endif
 
-#if defined(XT8_V2)
+#if defined(XT8_V2) || defined(ET8PRO) || defined(ET8_V2)
 int check_pkgtb_boardid(char *ptr_pkgtb);
 #endif
 
 extern char *make_salt(char *scheme_id, char *buf, size_t size);
 extern int asus_openssl_crypt(char *key, char *salt, char *out, int out_len);
+
+enum{
+	ASUS_NV_PP_1 = 1,
+	ASUS_NV_PP_2,
+	ASUS_NV_PP_3,
+	ASUS_NV_PP_4,
+	ASUS_NV_PP_5,
+	ASUS_NV_PP_6,
+	ASUS_NV_PP_7,
+	ASUS_NV_PP_8,
+	ASUS_NV_PP_9,
+	ASUS_NV_PP_10,
+	ASUS_NV_PP_11,
+	ASUS_NV_PP_MAX
+};
+
+enum{
+	ASUS_PP_AUTOUPGRADE,
+	ASUS_PP_ASD,
+	ASUS_PP_AHS,
+	ASUS_PP_ACCOUNT_BINDING,
+	ASUS_PP_CONFIG_TRANSFER,
+	ASUS_PP_DDNS,
+	ASUS_PP_MAX,
+};
+
+struct ASUS_PP_table {
+	char *name;
+	char *version;
+	int id;
+};
+extern struct ASUS_PP_table ASUS_PP_t[];
+
+extern int webapi_get_b(const int id, char *buf, size_t len);
+extern int get_ASUS_privacy_policy_state(const int id);
+extern int get_ASUS_privacy_policy(void);
+extern int get_ASUS_privacy_policy_ver(const int id);
+extern char *rfctime(const time_t *timep, char *ts_string, int len);
+extern void update_ntp_ts(time_t bf_time, int ntp_diff_ts);
 extern int validate_rc_service(const char *value);
 extern int adjust_62_nv_list(char *name);
-
 extern char *get_ddns_macaddr(void);
 
 #define IP_RULE_PREF_VPNS							90
@@ -4719,6 +4991,47 @@ extern char *get_ddns_macaddr(void);
 #define UAC_TNL_STATUS_NONE 0
 #define UAC_TNL_STATUS_ACTIVE 1
 #define UAC_TNL_STATUS_TRYING 2
+#endif
+
+#if defined(RTCONFIG_ROUTERBOOST)
+#if defined(RTCONFIG_SOC_MT7981)
+extern void add_routerboost_vsie(char* cap_OUI, char *bss_OUI);
+extern void del_routerboost_vsie(char* cap_OUI, char *bss_OUI);
+#endif
+static inline int can_run_router_boost(void) 
+{	
+	return (sw_mode() ==  UI_SW_MODE_ROUTER || //router
+			aimesh_re_node() ||  // RE
+			wisp_mode()	// WISP			
+			);
+}
+#endif //RTCONFIG_ROUTERBOOST
+
+#ifdef RTCONFIG_GEARUPPLUGIN
+/* DEBUG DEFINE */
+#define GU_DEBUG             "/tmp/GU_DEBUG"
+#define GUDBG(fmt,args...) \
+        if(f_exists(GU_DEBUG) > 0) { \
+                printf("[GU][%s:(%d)] "fmt, __FUNCTION__, __LINE__, ##args); \
+        } \
+
+enum {
+	GU_HIDDEN          = 0,  // gu UI hidden
+	GU_VISIBLE         = 1,  // gu UI visible
+};
+
+enum {
+	GU_DISABLED        = 0,  // disable gu
+	GU_ENABLED         = 1,  // enable gu
+	GU_BLOCK           = 2   // block gu no matter enable or disable
+};
+
+enum {
+	GU_REASON_NONE        = 0,  // gu is working
+	GU_REASON_DISABLED    = 1,  // gu is disabled or forbidden
+	GU_REASON_NOT_RTMODE  = 2,  // gu is not under Router mode
+	GU_REASON_BLOCK       = 3   // gu is blocked
+};
 #endif
 
 #endif	/* !__SHARED_H__ */

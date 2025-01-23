@@ -27,14 +27,14 @@ var bw_160_support = (function(){
 	return false;
 })();
 
+var HwId = '<% nvram_get("HwId"); %>';
 var band6gBW160_limit = (function(){
 	if(isSupport('wifi6e') || isSupport('wifi7')){
 		if(based_modelid == "GT-AXE11000" 
-		|| based_modelid == "RT-AXE7800" 
 		|| based_modelid == "RT-AXE95Q" 
-		|| based_modelid == "ET8_V2" 
-		|| based_modelid == "ET8PRO" 
-		|| based_modelid == "ET12"){
+		|| (based_modelid == "ET12" && HwId == "A")
+		|| based_modelid == "ET8_V2"
+		|| based_modelid == "ET8PRO"){
 			return true
 		}
 	}
@@ -467,31 +467,71 @@ function wl_chanspec_list_change(){
 			if(band6g_support){		// due to GT-AXE11000 does not support
 				if(document.getElementById('psc6g_checkbox').checked){
 					if(band6gBW160_limit){
-						wl_channel_list_5g_2 = ['37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213'];
+						let pscChannelAll = ['37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213'];
+						let pscChannel = [];
+						pscChannelAll.forEach((element) => {
+							if (wl_channel_list_6g.indexOf(element) !== -1) {
+								pscChannel.push(element);
+							}
+						});
+
+						wl_channel_list_5g_2 = [...pscChannel];
 						if (ttc.indexOf("CH") != -1) {
                             wl_channel_list_5g_2 = ["37", "53", "69", "85"];
+							pscChannelAll = ['37', '53', '69', '85'];
+							pscChannel = [];
+							pscChannelAll.forEach((element) => {
+								if (wl_channel_list_6g.indexOf(element) !== -1) {
+									pscChannel.push(element);
+								}
+							});
+
+							wl_channel_list_5g_2 = [...pscChannel];
                         }
 					}
-					else{
-						wl_channel_list_5g_2 = ['5', '21', '37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213', '229'];
+					else{						
+						let pscChannelAll = ['5', '21', '37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213'];
+						let pscChannel = [];
+						pscChannelAll.forEach((element) => {
+							if (wl_channel_list_6g.indexOf(element) !== -1) {
+								pscChannel.push(element);
+							}
+						});
+
+						wl_channel_list_5g_2 = [...pscChannel];
 						if (ttc.indexOf("CH") != -1) {
-                            wl_channel_list_5g_2 = ["5", "21", "37", "53", "69", "85"];
+							pscChannelAll = ["5", "21", "37", "53", "69", "85"];
+							pscChannel = [];
+							pscChannelAll.forEach((element) => {
+								if (wl_channel_list_6g.indexOf(element) !== -1) {
+									pscChannel.push(element);
+								}
+							});
+
+							wl_channel_list_5g_2 = [...pscChannel];
                         }
 					}
 
 					if(is_EU_sku || ttc.indexOf('AU') != -1 || ttc.indexOf('AA') != -1){
-						wl_channel_list_6g = ['5', '21', '37', '53', '69', '85'];
+						let pscChannelAll = ['5', '21', '37', '53', '69', '85'];
+						let pscChannel = [];
+						pscChannelAll.forEach((element) => {
+							if (wl_channel_list_6g.indexOf(element) !== -1) {
+								pscChannel.push(element);
+							}
+						});
+
+						wl_channel_list_6g = [...pscChannel];
 					}
 				}
 
 				for(var i=wl_channel_list_6g.length-1; i>=0; i--){
 					var _channel = parseInt(wl_channel_list_6g[i]);
-					if(is_EU_sku){
-						if(_channel > 221){		// remove 225, 229, 233
-							wl_channel_list_6g.splice(i, 1);
-						}
+					if(_channel > 221){		// remove 225, 229, 233
+						wl_channel_list_6g.splice(i, 1);
 					}
-					else if(band6gBW160_limit && (_channel < 30 || _channel > 221)){	// remove 1, 5, 9, 13, 17, 21, 25, 29, 225, 229, 233
+					
+					if(band6gBW160_limit && (_channel < 30)){	// remove 1, 5, 9, 13, 17, 21, 25, 29
 						wl_channel_list_6g.splice(i, 1);
 					}
 				}

@@ -48,8 +48,14 @@ ifeq ($(HND_ROUTER), y)
 LD_LIBS += -L$(TOP_PLATFORM)/wlcsm$(EXHND) -lwlcsm
 endif
 
-all: dnsqd libdns_app_client.so dns_app_client_test
+ifeq ($(wildcard $(SRCBASE)/router/dnsqd/*.c),)
+all:
+	-cp -f prebuild/dnsqd dnsqd
+	-cp -f prebuild/libdnsqd_app_client.so libdns_app_client.so
 
+else
+all: dnsqd libdns_app_client.so
+endif
 .c.o:
 	$(CC) $(CFLAGS) -c $<
 

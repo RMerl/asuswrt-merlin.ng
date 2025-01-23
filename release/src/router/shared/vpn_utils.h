@@ -19,6 +19,7 @@
 #define PROTO_HMA "HMA"
 #define PROTO_NORDVPN "NordVPN"
 #define PROTO_SURFSHARK "Surfshark"
+#define PROTO_CYBERGHOST "CyberGhost"
 
 #define MAX_VPNC_DATA_LEN	256
 #define MAX_VPNC_PROFILE	16
@@ -131,6 +132,7 @@ extern int vpnc_set_iif_routing_rule(const int vpnc_idx, const char* br_ifname);
 #define WG_CLIENT_IF_PREFIX    "wgc"
 #define WG_SERVER_NVRAM_PREFIX "wgs"
 #define WG_CLIENT_NVRAM_PREFIX "wgc"
+#define WG_SERVER_SUBNET6_BASE 0x0110
 extern int read_wgc_config_file(const char* file_path, int wgc_unit);
 extern int is_wgc_connected(int unit);
 #endif

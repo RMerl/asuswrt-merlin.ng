@@ -1,0 +1,1256 @@
+Noteworthy changes in version 1.47 (2023-04-06) [C34/A34/R0]
+-----------------------------------------------
+
+ * New error codes for PUKs and reset codes.  [T6421]
+
+ * Avoid segv in logging with improper use of the "socket://".
+   [rE68333be630]
+
+ * Fixed translation of argparse's internal option --help.
+   [rE885a287a57]
+
+ * Interface changes relative to the 1.46 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ GPG_ERR_SOURCE_TKD             NEW.
+ GPG_ERR_BAD_PUK                NEW.
+ GPG_ERR_NO_RESET_CODE	        NEW.
+ GPG_ERR_BAD_RESET_CODE	        NEW.
+ GPGRT_SPAWN_KEEP_STDIN         NEW.
+ GPGRT_SPAWN_KEEP_STDOUT        NEW.
+ GPGRT_SPAWN_KEEP_STDERR        NEW.
+ GPGRT_SPAWN_INHERIT_FILE       NEW.
+
+ Release-info: https://dev.gnupg.org/T6231
+
+
+Noteworthy changes in version 1.46 (2022-10-07) [C33/A33/R1]
+-----------------------------------------------
+
+ * Support for bidirectional pipes under Windows.  [T6112]
+
+ * REG_DWORD types are now support in the Windows Registry.
+   [rE745d333cf7]
+
+ * Added ES_SYSHD_SOCK support for gpgrt_sysopen under Windows.
+   [rE018ea46a30]
+
+ * Fixed gpgrt_log_get_fd for the file case.  [T5922]
+
+ * Avoids header problem with C11 and "noreturn".  [T4002]
+
+ * The gpg-error-config command is not installed by default, because
+   it is now replaced by use of pkg-config/gpgrt-config with
+   gpg-error.pc.  Supply --enable-install-gpg-error-config configure
+   option, if it's really needed.
+
+ * Fixed support of posix-lock for FreeBSD.  [rE6e17e70bb7]
+
+ * Build fixes for some Mingw tool chain versions.  [T5890, T4656]
+
+ * Removed remaining support for WindowsCE.  [T5912]
+
+ * Updated config.guess, config.sub, and config.rpath.  [T6078]
+
+ * gpg-error-config is now only installed when enabled.  [T5683]
+
+ * System paths are now stripped from --cflags --and --libs.  [T6136]
+
+ Release-info: https://dev.gnupg.org/T5923
+
+
+Noteworthy changes in version 1.45 (2022-04-07) [C33/A33/R0]
+-----------------------------------------------
+
+ * Support the "sysopen" mode parameter for gpgrt_fopen so that file
+   names longer than MAX_PATH can be supported under Windows.
+
+ * gpgrt_access and gpgrt_mkdir now support file names longer than
+   MAX_PATH.
+
+ * gpgrt_fopen now maps "/dev/null" to "nul" on Windows.
+
+ * Published some internal helper functions for Windows.
+
+ * Interface changes relative to the 1.42 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ gpgrt_free_wchar                 NEW.
+ gpgrt_fname_to_wchar             NEW.
+ gpgrt_utf8_to_wchar              NEW.
+ gpgrt_wchar_to_utf8              NEW.
+
+ Release-info: https://dev.gnupg.org/T5802
+
+
+Noteworthy changes in version 1.44 (2022-01-27) [C32/A32/R2]
+-----------------------------------------------
+
+ * Fix dependency to gpg-error-config-test.sh.  [T5696]
+
+ * Run the posix locking test only on supported platforms.  [T5699]
+
+ * Detect Linux systems using musl.  [T5762]
+
+ * Fix gpg-error-config-test for PKG_CONFIG_LIBDIR.  [T5740]
+
+ * Fix returning of option attributes for options with args.  [T5799]
+
+ * Add Turkish translations.
+
+ Release-info: https://dev.gnupg.org/T5676
+
+
+Noteworthy changes in version 1.43 (2021-11-03) [C32/A32/R1]
+-----------------------------------------------
+
+ * Fix for building against GNU libc 2.34.  [T5547]
+
+ * Fix build problems on macOS.  [T5440,T5610]
+
+ * Fix gpgrt-config problems.  [T5381,T5595]
+
+ * Fix gpgrt_free for legacy platforms.  [448bf7b01cad]
+
+ * Fix truncation of error message in the middle of a character.
+   [T5048]
+
+ * Fix the --disable-threads configure options.  [T5495]
+
+ * Improve lock-obj generation for cross-builds [99ae862a96a5]
+
+ * Improve cross-builds. [T5365]
+
+ * Improve gpgrt_wait_processes.  [T5381]
+
+ * Allow config files to read values from the Windows Registry and
+   from envvars.  [b1790f4cc71f]
+
+ * Update the Russian and Czech translations.
+
+ Release-info: https://dev.gnupg.org/T5352
+
+
+Noteworthy changes in version 1.42 (2021-03-22) [C32/A32/R0]
+-----------------------------------------------
+
+ * Allow Unicode file names under Windows for the gettext domain.
+
+ * Improve cross-compiling support.  [#5289]
+
+ * Improve $libdir determination by gpgrt-config.  [#5293]
+
+ * Support --disable-thread by gen-lock-obj.sh.  [#5296]
+
+ * Interface changes relative to the 1.40 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ GPG_ERR_SOURCE_TPM2D             NEW.
+
+ Release-info: https://dev.gnupg.org/T5194
+
+
+Noteworthy changes in version 1.41 (2020-12-21) [C31/A31/R1]
+-----------------------------------------------
+
+ * Fixes another glitch in the "ignore" meta command.
+
+ * Fixes two typos in the German translation.
+
+ Release-info: https://dev.gnupg.org/T5192
+
+
+Noteworthy changes in version 1.40 (2020-12-21) [C31/A31/R0]
+-----------------------------------------------
+
+ * New function gpgrt_access.
+
+ * Make "ignore" meta command work correctly in the option parser.
+
+ * On Windows gpgrt_getcwd and the internal getusername now handle
+   Unicode values.  [#5098]
+
+ * Update the build system.
+
+ * Interface changes relative to the 1.39 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ gpgrt_access                     NEW.
+
+ Release-info: https://dev.gnupg.org/T5191
+
+
+Noteworthy changes in version 1.39 (2020-08-24) [C30/A30/R0]
+-----------------------------------------------
+
+ * On Windows gpgrt_fopen, gpgrt_chdir, and gpgrt_mkdir now handle
+   UTF-8 names.  [#4083]
+
+ * Make timeout of gpgrt_poll work correctly on Windows if no file
+   descriptors are active.
+
+ * New function gpgrt_fcancel as alternative to gpgrt_close.  This
+   function avoid flushing out buffered data and also tries to delete
+   a newly created file.
+
+ * Changes to ease cross-building.  [#4973]
+
+ * "gpg-error --lib-version" works again.
+
+ * Interface changes relative to the 1.38 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ gpgrt_fcancel                    NEW.
+
+ Release-info: https://dev.gnupg.org/T5031
+
+
+Noteworthy changes in version 1.38 (2020-05-29) [C29/A29/R0]
+-----------------------------------------------
+
+ * New option parser with features to implement system wide
+   configuration files.
+
+ * New functions to build file names.
+
+ * New function to help reallocating arrays.
+
+ * Protect gpgrt_inc_errorcount against counter overflow.
+
+ * Improve cross-building for new platforms.  [#4774]
+
+ * Support 64-bit big-endian MIPS architecture.  [#4952]
+
+ * Support static link for Windows with -lws2_32.  [#4623]
+
+ * Interface changes relative to the 1.37 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ gpgrt_fnameconcat                NEW.
+ gpgrt_absfnameconcat             NEW.
+ gpgrt_reallocarray               NEW.
+ gpgrt_set_confdir                NEW.
+ gpgrt_argparser                  NEW.
+ ARGPARSE_FLAG_SYS                NEW.
+ ARGPARSE_FLAG_USER               NEW.
+ ARGPARSE_FLAG_VERBOSE            NEW.
+ ARGPARSE_FLAG_USERVERS           NEW.
+ ARGPARSE_FLAG_WITHATTR           NEW.
+ ARGPARSE_NO_CONFFILE             NEW.
+ ARGPARSE_CONFFILE                NEW.
+ ARGPARSE_OPT_CONFFILE            NEW.
+ ARGPARSE_ATTR_FORCE              NEW.
+ ARGPARSE_ATTR_IGNORE             NEW.
+ ARGPARSE_TYPE_MASK               NEW.
+ ARGPARSE_PERMISSION_ERROR        NEW.
+ ARGPARSE_INVALID_META            NEW.
+ ARGPARSE_UNKNOWN_META            NEW.
+ ARGPARSE_UNEXPECTED_META         NEW.
+ ARGPARSE_conffile                NEW.
+ ARGPARSE_noconffile              NEW.
+ ARGPARSE_verbatim                NEW.
+ ARGPARSE_header                  NEW.
+ GPGRT_CONFDIR_USER               NEW.
+ GPGRT_CONFDIR_SYS                NEW.
+
+ Release-info: https://dev.gnupg.org/T4859
+
+
+Noteworthy changes in version 1.37 (2020-02-07) [C28/A28/R0]
+-----------------------------------------------
+
+ * Fixes a build problems when using Gawk 5.0  [#4459]
+
+ * Fixes Bourne shell incompatibilities on Solaris.  [#4574]
+
+ * Improves cross-comiling support.  [#4643]
+
+ * On Windows strerror_s is now used to emulate strerror_r.  [#4539]
+
+ * New error codes to map SQLite primary error codes.
+
+ * Now uses poll(2) instead of select(2) in gpgrt_poll if possible.
+
+ * Fixes a bug in gpgrt_close.  [#4698]
+
+ * Fixes build problem under Cygwin.  [#4474]
+
+ * Fixes a few minor portability bugs.
+
+ * Interface changes relative to the 1.36 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ GPG_ERR_NO_KEYBOXD               NEW.
+ GPG_ERR_KEYBOXD                  NEW.
+ GPG_ERR_NO_SERVICE               NEW.
+ GPG_ERR_SERVICE.                 NEW.
+ GPG_ERR_SQL_OK		          NEW.
+ GPG_ERR_SQL_ERROR	          NEW.
+ GPG_ERR_SQL_INTERNAL	          NEW.
+ GPG_ERR_SQL_PERM	          NEW.
+ GPG_ERR_SQL_ABORT	          NEW.
+ GPG_ERR_SQL_BUSY	          NEW.
+ GPG_ERR_SQL_LOCKED	          NEW.
+ GPG_ERR_SQL_NOMEM	          NEW.
+ GPG_ERR_SQL_READONLY	          NEW.
+ GPG_ERR_SQL_INTERRUPT	          NEW.
+ GPG_ERR_SQL_IOERR	          NEW.
+ GPG_ERR_SQL_CORRUPT	          NEW.
+ GPG_ERR_SQL_NOTFOUND	          NEW.
+ GPG_ERR_SQL_FULL	          NEW.
+ GPG_ERR_SQL_CANTOPEN	          NEW.
+ GPG_ERR_SQL_PROTOCOL	          NEW.
+ GPG_ERR_SQL_EMPTY	          NEW.
+ GPG_ERR_SQL_SCHEMA	          NEW.
+ GPG_ERR_SQL_TOOBIG	          NEW.
+ GPG_ERR_SQL_CONSTRAINT	          NEW.
+ GPG_ERR_SQL_MISMATCH	          NEW.
+ GPG_ERR_SQL_MISUSE	          NEW.
+ GPG_ERR_SQL_NOLFS	          NEW.
+ GPG_ERR_SQL_AUTH	          NEW.
+ GPG_ERR_SQL_FORMAT	          NEW.
+ GPG_ERR_SQL_RANGE	          NEW.
+ GPG_ERR_SQL_NOTADB	          NEW.
+ GPG_ERR_SQL_NOTICE	          NEW.
+ GPG_ERR_SQL_WARNING	          NEW.
+ GPG_ERR_SQL_ROW	          NEW.
+ GPG_ERR_SQL_DONE	          NEW.
+ gpg_err_code_from_sqlite         NEW.
+
+ Release-info: https://dev.gnupg.org/T4772
+
+
+Noteworthy changes in version 1.36 (2019-03-19) [C27/A27/R0]
+-----------------------------------------------
+
+ * Two new error codes to better support PIV cards.
+
+ * Support armv7a-unknown-linux-gnueabihf.
+
+ * Increased estream buffer sizes for Windows.
+
+ * Interface changes relative to the 1.34 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ GPG_ERR_NO_AUTH                  NEW.
+ GPG_ERR_BAD_AUTH                 NEW.
+
+ Release-info: https://dev.gnupg.org/T4413
+
+
+Noteworthy changes in version 1.35 (2019-01-28) [C26/A26/R1]
+-----------------------------------------------
+
+ * Distribute the correct gpgrt-config.
+
+
+Noteworthy changes in version 1.34 (2019-01-16) [C26/A26/R0]
+-----------------------------------------------
+
+ * Support for riscv32.
+
+ * New API to allow emergency cleanup after internal fatal errors.
+
+ * Minor bug and portability fixes. [#4286,#4298
+
+ * Interface changes relative to the 1.33 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ gpgrt_abort                     NEW.
+ gpgrt_add_emergency_cleanup     NEW.
+
+ Release-info: https://dev.gnupg.org/T4296
+
+
+Noteworthy changes in version 1.33 (2018-12-07) [C25/A25/R0]
+-----------------------------------------------
+
+ * New unified config script gpgrt-config which can now be used by all
+   GnuPG related packages.
+
+ * Support for ARC and arm64ilp32.
+
+ * The log functions now sanitize strings printed with the "%s" format
+   specifier.  All control characters are C-escaped in the output.
+   Users of that function may want to remove their own escaping to
+   avoid doubling of backslashes.
+
+ * New fprintf style function to apply a custom filter for string
+   arguments.
+
+ * New function to compare version strings.
+
+ * Interface changes relative to the 1.28 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ gpgrt_cmp_version               New.
+ gpgrt_string_filter_t           New.
+ gpgrt_fprintf_sf                New.
+ gpgrt_fprintf_sf_unlocked       New.
+ gpgrt_ftruncate                 New but limited functionality.
+ gpgrt_w32_override_locale       New.
+
+ Release-info: https://dev.gnupg.org/T4205
+
+
+Noteworthy changes in version 1.32 (2018-07-12) [C24/A24/R3]
+-----------------------------------------------
+
+ * Fixes a problem with gpgrt_fflush and gpgrt_fopencookie.  [#4069]
+
+ * Fixes a problem with the C11 header stdnoreturn.h.  [#4002]
+
+ * The yat2m tool can now also be build on Windows.
+
+ * Updates translations for Spanish, Russian and Ukrainian.
+
+
+Noteworthy changes in version 1.31 (2018-05-02) [C24/A24/R2]
+-----------------------------------------------
+
+ * Fixes another problem with gpgrt_poll under Windows.  [#3937]
+
+ * New translation for Spanish.
+
+
+Noteworthy changes in version 1.30 (2018-04-30) [C24/A24/R1]
+-----------------------------------------------
+
+ * Fixes a hang on Windows when using gpgrt_poll under nPth.
+
+ * Build fix for Solaris.  [#3869]
+
+
+Noteworthy changes in version 1.29 (2018-04-11) [C24/A24/R0]
+-----------------------------------------------
+
+ * The yat2m tool is during cross-compile now also installed on the
+   host platform.
+
+ * New option parser and associated functions similar to the one used
+   by GnuPG.
+
+ * New Base-64 encoder.
+
+ * Fixes regression in 1.28 for arm64 and w64 builds.
+
+ * Interface changes relative to the 1.28 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ gpgrt_argparse                  New.
+ gpgrt_usage                     New.
+ gpgrt_strusage                  New.
+ gpgrt_set_strusage              New.
+ gpgrt_set_usage_outfnc          New.
+ gpgrt_set_fixed_string_mapper   New.
+ GPGRT_ENABLE_ARGPARSE_MACROS    New macro.
+ gpgrt_b64enc_start              New.
+ gpgrt_b64enc_write              New.
+ gpgrt_b64enc_finish             New.
+
+
+Noteworthy changes in version 1.28 (2018-03-13) [C23/A23/R0]
+-----------------------------------------------
+
+ * The formerly internal yat2m tool is now installed for a native
+   build.
+
+ * The new files gpgrt.m4 and gpgrt-config are now installed.  They
+   can be used instead of gpg-error.m4 and gpg-error-config.
+
+ * New logging functions similar to those used by GnuPG.
+
+ * New helper functions for platform abstraction.
+
+ * Interface changes relative to the 1.27 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ gpgrt_get_errorcount            New API.
+ gpgrt_inc_errorcount            New API.
+ gpgrt_log_set_sink              New API.
+ gpgrt_log_set_socket_dir_cb     New API.
+ gpgrt_log_set_pid_suffix_cb     New API.
+ gpgrt_log_set_prefix            New API.
+ gpgrt_log_get_prefix            New API.
+ gpgrt_log_test_fd               New API.
+ gpgrt_log_get_fd                New API.
+ gpgrt_log_get_stream            New API.
+ gpgrt_log                       New API.
+ gpgrt_logv                      New API.
+ gpgrt_logv_prefix               New API.
+ gpgrt_log_string                New API.
+ gpgrt_log_info                  New API.
+ gpgrt_log_error                 New API.
+ gpgrt_log_fatal                 New API.
+ gpgrt_log_bug                   New API.
+ gpgrt_log_debug                 New API.
+ gpgrt_log_debug_string          New API.
+ gpgrt_log_printf                New API.
+ gpgrt_log_flush                 New API.
+ gpgrt_log_printhex              New API.
+ gpgrt_log_clock                 New API.
+ gpgrt_assert                    New macro.
+ _gpgrt_log_assert               New internal API.
+ GPGRT_LOGLVL_BEGIN              New const.
+ GPGRT_LOGLVL_CONT               New const.
+ GPGRT_LOGLVL_INFO               New const.
+ GPGRT_LOGLVL_WARN               New const.
+ GPGRT_LOGLVL_ERROR              New const.
+ GPGRT_LOGLVL_FATAL              New const.
+ GPGRT_LOGLVL_BUG                New const.
+ GPGRT_LOGLVL_DEBUG              New const.
+ gpgrt_realloc                   New API.
+ gpgrt_malloc                    New API.
+ gpgrt_calloc                    New API.
+ gpgrt_strdup                    New API.
+ gpgrt_strconcat                 New API.
+ gpgrt_w32_reg_query_string      New API.
+ gpgrt_getenv                    New API.
+ gpgrt_setenv                    New API.
+ gpgrt_mkdir                     New API.
+ gpgrt_chdir                     New API.
+ gpgrt_getcwd                    New API.
+
+
+Noteworthy changes in version 1.27 (2017-02-28) [C22/A22/R0]
+-----------------------------------------------
+
+ * Added a Base64 decoder.
+
+ * Added support for the sh3 architecture.
+
+ * Added header gpgrt.h as an alias for gpg-error.h.
+
+ * Fixed macro GPGRT_GCC_VERSION.
+
+ * Fixed a race in non-blocking I/O on Windows.
+
+ * Interface changes relative to the 1.26 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ gpgrt_b64state_t                 NEW type.
+ gpgrt_b64dec_start               NEW.
+ gpgrt_b64dec_proc                NEW.
+ gpgrt_b64dec_finish              NEW.
+ GPG_ERR_WRONG_NAME               NEW.
+ gpgrt.h                          NEW header.
+
+
+Noteworthy changes in version 1.26 (2016-12-21) [C21/A21/R0]
+-----------------------------------------------
+
+ * New option --desc for gpg-error.
+
+ * Interface changes relative to the 1.25 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ GPG_ERR_UNKNOWN_FLAG             NEW.
+ GPG_ERR_INV_ORDER                NEW.
+ GPG_ERR_ALREADY_FETCHED          NEW.
+ GPG_ERR_TRY_LATER                NEW.
+ GPG_ERR_SYSTEM_BUG               NEW.
+ GPG_ERR_DNS_UNKNOWN	          NEW.
+ GPG_ERR_DNS_SECTION	          NEW.
+ GPG_ERR_DNS_ADDRESS	          NEW.
+ GPG_ERR_DNS_NO_QUERY	          NEW.
+ GPG_ERR_DNS_NO_ANSWER	          NEW.
+ GPG_ERR_DNS_CLOSED	          NEW.
+ GPG_ERR_DNS_VERIFY	          NEW.
+ GPG_ERR_DNS_TIMEOUT	          NEW.
+
+
+Noteworthy changes in version 1.25 (2016-11-14) [C20/A20/R0]
+-----------------------------------------------
+
+ * New interface gpgrt_get_syscall_clamp to allow libaries to make use
+   of Libgpg-error's system call wrapper functions.
+
+ * gpgrt_poll does now work under Windows.
+
+ * Fixed bug in the locking code when used with the nPth threading
+   library.
+
+ * Added support for {i686,x86_64}-apple-darwin.
+
+ * Added new error codes.
+
+ * Interface changes relative to the 1.23 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ gpgrt_get_syscall_clamp          NEW.
+ GPG_ERR_ENGINE_TOO_OLD	          NEW.
+ GPG_ERR_WINDOW_TOO_SMALL         NEW.
+ GPG_ERR_WINDOW_TOO_LARGE         NEW.
+ GPG_ERR_MISSING_ENVVAR	          NEW.
+ GPG_ERR_USER_ID_EXISTS           NEW.
+ GPG_ERR_NAME_EXISTS              NEW.
+ GPG_ERR_DUP_NAME                 NEW.
+ GPG_ERR_TOO_OLD                  NEW.
+ GPG_ERR_TOO_YOUNG                NEW.
+
+
+Noteworthy changes in version 1.24 (2016-07-14) [C19/A19/R1]
+-----------------------------------------------
+
+ * Fixes a bug in es_fclose_snatch when used used after es_fseek.
+
+ * Fixes building without thread support.
+
+ * New configure option --disable-tests.
+
+
+Noteworthy changes in version 1.23 (2016-06-15) [C19/A19/R0]
+-----------------------------------------------
+
+ * Fixes an assertion failure due to es_flush on read/write streams.
+
+ * Fixes a bug with a too short memory limit is es_fopenmen.
+
+ * Cross-build support for powerpc-unknown-linux-gnuspe and
+   tilegx-unknown-linux-gnu architectures.
+
+ * Interface changes relative to the 1.22 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ GPG_ERR_SUBKEYS_EXP_OR_REV       NEW.
+
+
+Noteworthy changes in version 1.22 (2016-04-25) [C18/A18/R0]
+-----------------------------------------------
+
+ * New functions and macros to to provide iconv(3) on Windows.
+
+ * Support for LeakSanitizer with the gpgrt_annotate_leaked_object
+   inline function.
+
+ * Interface changes relative to the 1.21 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ GPG_ERR_DB_CORRUPTED             NEW.
+ gpgrt_annotate_leaked_object     NEW inline func.
+ GPGRT_ENABLE_W32_ICONV_MACROS    NEW.
+ gpgrt_w32_iconv_open             NEW.
+ gpgrt_w32_iconv_close            NEW.
+ gpgrt_w32_iconv                  NEW.
+
+
+Noteworthy changes in version 1.21 (2015-12-12) [C17/A17/R0]
+-----------------------------------------------
+
+ * New functions gpgrt_poll and gpgrt_set_nonblock.  For now only
+   pipes and sockets on Unix are supported.
+
+ * Fixes gettext output encoding problems on Windows.
+
+ * Interface changes relative to the 1.20 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ gpgrt_set_nonblock               NEW.
+ gpgrt_get_nonblock               NEW.
+ gpgrt_poll                       NEW.
+ gpgrt_poll_t                     NEW type.
+ es_poll_t                        NEW type.
+ es_set_nonblock                  NEW macro.
+ es_get_nonblock                  NEW macro.
+ es_poll                          NEW macro.
+ GPG_ERR_TRUE                     NEW.
+ GPG_ERR_FALSE                    NEW.
+ GPG_ERR_NO_NAME                  NEW.
+ GPG_ERR_NO_KEY                   NEW.
+ GPG_ERR_SERVER_FAILED            NEW.
+
+
+Noteworthy changes in version 1.20 (2015-08-26) [C16/A16/R0]
+-----------------------------------------------
+
+ * New macros for GCC attributes.
+
+ * Make es_set_binary actually work for Windows.
+
+ * Allow building without thread support.
+
+ * Build without a build timestamp by default.
+
+ * Interface changes relative to the 1.19 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ GPGRT_VERSION                    NEW macro.
+ GPGRT_VERSION_NUMBER             NEW macro.
+ GPGRT_INLINE                     NEW macro.
+ GPGRT_GCC_VERSION                NEW macro.
+ GPGRT_ATTR_NORETURN              NEW macro.
+ GPGRT_ATTR_PRINTF                NEW macro.
+ GPGRT_ATTR_NR_PRINTF             NEW macro.
+ GPGRT_ATTR_FORMAT_ARG            NEW macro.
+ GPGRT_ATTR_SENTINEL              NEW macro.
+ GPGRT_ATTR_USED                  NEW macro.
+ GPGRT_ATTR_UNUSED                NEW macro.
+ GPGRT_ATTR_DEPRECATED            NEW macro.
+ GPGRT_ATTR_PURE                  NEW macro.
+ GPGRT_ATTR_MALLOC                NEW macro.
+ GPGRT_HAVE_MACRO_FUNCTION        NEW macro.
+ GPGRT_HAVE_PRAGMA_GCC_PUSH       NEW macro.
+
+
+Noteworthy changes in version 1.19 (2015-04-10) [C15/A15/R0]
+-----------------------------------------------
+
+ * New set of error codes for use with LDAP.
+
+ * New options --help and --defines for gpg-error.
+
+ * Allow building with gcc 5.
+
+ * Interface changes relative to the 1.18 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ GPG_ERR_LDAP_*                   NEW.
+
+
+Noteworthy changes in version 1.18 (2015-01-26) [C14/A14/R0]
+-----------------------------------------------
+
+ * New translations for Hungarian, Portuguese, Russian, and
+   traditional Chinese.  Updated other translations.
+
+ * New error codes.
+
+ * Interface changes relative to the 1.17 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ GPG_ERR_FORBIDDEN                NEW.
+ GPG_ERR_OBJ_TERM_STATE           NEW.
+ GPG_ERR_REQUEST_TOO_SHORT        NEW.
+ GPG_ERR_REQUEST_TOO_LONG         NEW.
+ GPG_ERR_LEGACY_KEY               NEW.
+
+
+Noteworthy changes in version 1.17 (2014-10-15) [C13/A13/R0]
+-----------------------------------------------
+
+ * New error codes for TLS protocol libraries.
+
+ * New configure option --enable-build-timestamp.
+
+ * New man page for gpg-error-config.
+
+ * Interface changes relative to the 1.16 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ GPG_ERR_SOURCE_TLS               NEW.
+ GPG_ERR_NO_CERT_CHAIN            NEW.
+ GPG_ERR_CERT_TOO_LARGE	          NEW.
+ GPG_ERR_INV_RECORD               NEW.
+ GPG_ERR_BAD_MAC	          NEW.
+ GPG_ERR_UNEXPECTED_MSG           NEW.
+ GPG_ERR_COMPR_FAILED             NEW.
+ GPG_ERR_WOULD_WRAP               NEW.
+ GPG_ERR_FATAL_ALERT              NEW.
+ GPG_ERR_NO_CIPHER                NEW.
+ GPG_ERR_MISSING_CLIENT_CERT      NEW.
+ GPG_ERR_CLOSE_NOTIFY             NEW.
+ GPG_ERR_TICKET_EXPIRED           NEW.
+ GPG_ERR_BAD_TICKET               NEW.
+ GPG_ERR_UNKNOWN_IDENTITY         NEW.
+ GPG_ERR_BAD_HS_CERT              NEW.
+ GPG_ERR_BAD_HS_CERT_REQ          NEW.
+ GPG_ERR_BAD_HS_CERT_VER          NEW.
+ GPG_ERR_BAD_HS_CHANGE_CIPHER     NEW.
+ GPG_ERR_BAD_HS_CLIENT_HELLO      NEW.
+ GPG_ERR_BAD_HS_SERVER_HELLO      NEW.
+ GPG_ERR_BAD_HS_SERVER_HELLO_DONE NEW.
+ GPG_ERR_BAD_HS_FINISHED          NEW.
+ GPG_ERR_BAD_HS_SERVER_KEX        NEW.
+ GPG_ERR_BAD_HS_CLIENT_KEX        NEW.
+ GPG_ERR_BOGUS_STRING             NEW.
+ gpgrt_pending                    NEW.
+ gpgrt_pending_unlocked           NEW.
+
+
+Noteworthy changes in version 1.16 (2014-09-18) [C12/A12/R2]
+-----------------------------------------------
+
+ * Support building for iOS.
+
+ * Fixed a prototype mismatch.
+
+ * Fix es_fclose for streams opened with "samethread".
+
+
+Noteworthy changes in version 1.15 (2014-09-11) [C12/A12/R1]
+-----------------------------------------------
+
+ * This releases fixes problems with the use of off_t and ssize_t by
+   the estream functions introduced with 1.14.  Although this is
+   technically an ABI break on some platforms, we take this as a
+   simple bug fix for 1.14.  The new functions are very unlikely in
+   use by any code and thus no breakage should happen.  The 1.14
+   tarball will be removed from the archive.
+
+ * Add type gpgrt_off_t which is guaranteed to be 64 bit.
+
+ * Add type gpgrt_ssize_t to make use on Windows easier.  On Unix
+   platforms this is an alias for ssize_t.
+
+
+Noteworthy changes in version 1.14 (2014-09-08) [C12/A12/R0]
+-----------------------------------------------
+
+ * Added gpgrt_lock_trylock.
+
+ * Added the estream library under the name gpgrt and a set of macros
+   to use them with their "es_" names.
+
+ * Interface changes relative to the 1.13 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ GPG_ERR_KEY_DISABLED         NEW.
+ gpgrt_init                   NEW macro.
+ gpgrt_check_version          NEW.
+ gpgrt_lock_trylock           NEW.
+ gpgrt_set_syscall_clamp      NEW.
+ gpgrt_set_alloc_func         NEW.
+ gpgrt_stream_t               NEW.
+ gpgrt_cookie_io_functions_t  NEW.
+ gpgrt_syshd_t                NEW.
+ GPGRT_SYSHD_NONE             NEW.
+ GPGRT_SYSHD_FD               NEW.
+ GPGRT_SYSHD_SOCK             NEW.
+ GPGRT_SYSHD_RVID             NEW.
+ GPGRT_SYSHD_HANDLE           NEW.
+ gpgrt_stdin                  NEW macro.
+ gpgrt_stdout                 NEW macro.
+ gpgrt_stderr                 NEW macro.
+ gpgrt_fopen                  NEW.
+ gpgrt_mopen                  NEW.
+ gpgrt_fopenmem               NEW.
+ gpgrt_fopenmem_init          NEW.
+ gpgrt_fdopen                 NEW.
+ gpgrt_fdopen_nc              NEW.
+ gpgrt_sysopen                NEW.
+ gpgrt_sysopen_nc             NEW.
+ gpgrt_fpopen                 NEW.
+ gpgrt_fpopen_nc              NEW.
+ gpgrt_freopen                NEW.
+ gpgrt_fopencookie            NEW.
+ gpgrt_fclose                 NEW.
+ gpgrt_fclose_snatch          NEW.
+ gpgrt_onclose                NEW.
+ gpgrt_fileno                 NEW.
+ gpgrt_fileno_unlocked        NEW.
+ gpgrt_syshd                  NEW.
+ gpgrt_syshd_unlocked         NEW.
+ gpgrt_flockfile              NEW.
+ gpgrt_ftrylockfile           NEW.
+ gpgrt_funlockfile            NEW.
+ gpgrt_feof                   NEW.
+ gpgrt_feof_unlocked          NEW.
+ gpgrt_ferror                 NEW.
+ gpgrt_ferror_unlocked        NEW.
+ gpgrt_clearerr               NEW.
+ gpgrt_clearerr_unlocked      NEW.
+ gpgrt_fflush                 NEW.
+ gpgrt_fseek                  NEW.
+ gpgrt_fseeko                 NEW.
+ gpgrt_ftell                  NEW.
+ gpgrt_ftello                 NEW.
+ gpgrt_rewind                 NEW.
+ gpgrt_getc                   NEW macro.
+ gpgrt_getc_unlocked          NEW macro.
+ gpgrt_fgetc                  NEW.
+ gpgrt_fputc                  NEW.
+ gpgrt_ungetc                 NEW.
+ gpgrt_read                   NEW.
+ gpgrt_write                  NEW.
+ gpgrt_write_sanitized        NEW.
+ gpgrt_write_hexstring        NEW.
+ gpgrt_fread                  NEW.
+ gpgrt_fwrite                 NEW.
+ gpgrt_fgets                  NEW.
+ gpgrt_putc                   NEW macro.
+ gpgrt_putc_unlocked          NEW macro.
+ gpgrt_fputs                  NEW.
+ gpgrt_fputs_unlocked         NEW.
+ gpgrt_getline                NEW.
+ gpgrt_read_line              NEW.
+ gpgrt_free                   NEW.
+ gpgrt_fprintf                NEW.
+ gpgrt_fprintf_unlocked       NEW.
+ gpgrt_printf                 NEW.
+ gpgrt_printf_unlocked        NEW.
+ gpgrt_vfprintf               NEW.
+ gpgrt_vfprintf_unlocked      NEW.
+ gpgrt_setvbuf                NEW.
+ gpgrt_setbuf                 NEW.
+ gpgrt_set_binary             NEW.
+ gpgrt_tmpfile                NEW.
+ gpgrt_opaque_set             NEW.
+ gpgrt_opaque_get             NEW.
+ gpgrt_fname_set              NEW.
+ gpgrt_fname_get              NEW.
+ gpgrt_asprintf               NEW.
+ gpgrt_vasprintf              NEW.
+ gpgrt_bsprintf               NEW.
+ gpgrt_vbsprintf              NEW.
+ gpgrt_snprintf               NEW.
+ gpgrt_vsnprintf              NEW.
+
+
+Noteworthy changes in version 1.13 (2014-04-15) [C11/A11/R0]
+-----------------------------------------------
+
+ * Added a portable mutex API.
+
+ * The AM_PATH_GPG_ERROR macro now defines GPG_ERROR_MT_CFLAGS and
+   GPG_ERROR_MT_LIBS autoconf output variables for use by programs
+   which need gpgrt based thread support.  gpg-error-config has a new
+   option --mt.
+
+ * Interface changes relative to the 1.12 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ GPG_ERR_KEY_ON_CARD          NEW.
+ GPG_ERR_MAC_ALGO             NEW.
+ GPG_ERR_INV_LOCK_OBJ         NEW.
+ gpgrt_lock_t                 NEW.
+ GPGRT_LOCK_INITIALIZER       NEW.
+ GPGRT_LOCK_DEFINE            NEW.
+ gpgrt_lock_init              NEW.
+ gpgrt_lock_lock              NEW.
+ gpgrt_lock_unlock            NEW.
+ gpgrt_lock_destroy           NEW.
+ gpgrt_yield                  NEW.
+
+
+Noteworthy changes in version 1.12 (2013-06-24)
+-----------------------------------------------
+
+ * Add support for 64 bit Windows (use ./autogen.sh --build-w64).
+
+ * Fixed parsing and installing of the Windows .def file.
+
+ * Interface changes relative to the 1.11 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ GPG_ERR_NO_CRYPT_CTX         NEW.
+ GPG_ERR_WRONG_CRYPT_CTX      NEW.
+ GPG_ERR_BAD_CRYPT_CTX        NEW.
+ GPG_ERR_CRYPT_CTX_CONFLICT   NEW.
+ GPG_ERR_BROKEN_PUBKEY        NEW.
+ GPG_ERR_BROKEN_SECKEY        NEW.
+
+
+Noteworthy changes in version 1.11 (2013-02-25)
+-----------------------------------------------
+
+ * New error source GPG_ERR_SOURCE_ASSUAN for Libassuan related
+   errors.
+
+ * New macros GPG_ERROR_VERSION and GPG_ERROR_VERSION_NUMBER.  New
+   function gpg_error_check_version.
+
+ * Interface changes relative to the 1.10 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ GPG_ERR_NO_KEYSERVER          NEW.
+ GPG_ERR_INV_CURVE             NEW.
+ GPG_ERR_UNKNOWN_CURVE         NEW.
+ GPG_ERR_DUP_KEY               NEW.
+ GPG_ERR_AMBIGUOUS             NEW.
+ GPG_ERR_SOURCE_ASSUAN         NEW.
+ gpg_error_check_version       NEW.
+ GPG_ERROR_VERSION             NEW.
+ GPG_ERROR_VERSION_NUMBER      NEW.
+
+
+Noteworthy changes in version 1.10 (2010-10-26)
+-----------------------------------------------
+
+ * Using a static library on W32 does now work.
+
+ * Interface changes relative to the 1.9 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ GPG_ERR_NOT_INITIALIZED       NEW.
+ GPG_ERR_MISSING_ISSUER_CERT   NEW.
+ GPG_ERR_FULLY_CANCELED        NEW.
+
+
+Noteworthy changes in version 1.9 (2010-07-21)
+----------------------------------------------
+
+ * New function gpg_err_deinit.
+
+ * Fix building of static lib under W32.
+
+ * Interface changes relative to the 1.8 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ GPG_ERR_MISSING_KEY           NEW.
+ GPG_ERR_TOO_MANY              NEW.
+ GPG_ERR_LIMIT_REACHED         NEW.
+ gpg_err_deinit                NEW.
+
+
+Noteworthy changes in version 1.8 (2010-05-06)
+----------------------------------------------
+
+ * Support for WindowsCE.
+
+ * New option --list for gpg-error.
+
+ * Interface changes relative to the 1.7 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ GPG_ERR_NOT_ENABLED           NEW.
+ GPG_ERR_SOURCE_G13            NEW.
+ GPG_ERR_NO_ENGINE             NEW.
+ gpg_err_set_errno             NEW.
+
+
+Noteworthy changes in version 1.7 (2008-11-26)
+----------------------------------------------
+
+ * Minor fixes and a few new error codes.
+
+ * Interface changes relative to the 1.6 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ GPG_ERR_NOT_OPERATIONAL       NEW
+ GPG_ERR_NO_PASSPHRASE         NEW
+ GPG_ERR_NO_PIN                NEW
+
+
+Noteworthy changes in version 1.6 (2007-10-29)
+----------------------------------------------
+
+ * Fixed a build problem under Windows.
+
+ * Interface changes relative to the 1.4 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ GPG_ERR_UNFINISHED            NEW
+ GPG_ERR_SOURCE_GPA            NEW
+ GPG_ERR_SOURCE_KLEO           NEW
+
+
+Noteworthy changes in version 1.5 (2006-11-30)
+----------------------------------------------
+
+ * Minor build system fixes.
+
+ * Updated gettext.  Removed included gettext copy.
+
+ * gpg-error has a new option --version.
+
+
+Noteworthy changes in version 1.4 (2006-09-14)
+----------------------------------------------
+
+ * Support for Common Lisp is included.
+
+ * New error codes for the Assuan IPC library.
+
+ * New error code GPG_ERR_MISSING_ERRNO to be used in cases when a
+   system accidentally does not set errno but a system error
+   definitely occurred.
+
+ * New error source GPG_ERR_SOURCE_ANY to allow proper use of
+   libgpg-error even if a specific source is not available.
+
+ * New convenience functions gpg_err_code_from_syserror and
+   gpg_error_from_syserror which make sure never to return 0.
+
+ * Interface changes relative to the 1.2 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ gpg_err_code_from_syserror    NEW
+ gpg_error_from_syserror       NEW
+ GPG_ERR_SOURCE_ANY            NEW
+ GPG_ERR_MISSING_ERRNO         NEW
+ GPG_ERR_UNKNOWN_OPTION        NEW
+ GPG_ERR_UNKNOWN_COMMAND       NEW
+ GPG_ERR_ASS_GENERAL           NEW
+ GPG_ERR_ASS_ACCEPT_FAILED     NEW
+ GPG_ERR_ASS_CONNECT_FAILED    NEW
+ GPG_ERR_ASS_INV_RESPONSE      NEW
+ GPG_ERR_ASS_INV_VALUE         NEW
+ GPG_ERR_ASS_INCOMPLETE_LINE   NEW
+ GPG_ERR_ASS_LINE_TOO_LONG     NEW
+ GPG_ERR_ASS_NESTED_COMMANDS   NEW
+ GPG_ERR_ASS_NO_DATA_CB        NEW
+ GPG_ERR_ASS_NO_INQUIRE_CB     NEW
+ GPG_ERR_ASS_NOT_A_SERVER      NEW
+ GPG_ERR_ASS_NOT_A_CLIENT      NEW
+ GPG_ERR_ASS_SERVER_START      NEW
+ GPG_ERR_ASS_READ_ERROR        NEW
+ GPG_ERR_ASS_WRITE_ERROR       NEW
+ GPG_ERR_ASS_TOO_MUCH_DATA     NEW
+ GPG_ERR_ASS_UNEXPECTED_CMD    NEW
+ GPG_ERR_ASS_UNKNOWN_CMD       NEW
+ GPG_ERR_ASS_SYNTAX            NEW
+ GPG_ERR_ASS_CANCELED          NEW
+ GPG_ERR_ASS_NO_INPUT          NEW
+ GPG_ERR_ASS_NO_OUTPUT         NEW
+ GPG_ERR_ASS_PARAMETER         NEW
+ GPG_ERR_ASS_UNKNOWN_INQUIRE   NEW
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Noteworthy changes in version 1.3 (2006-03-14)
+----------------------------------------------
+
+ * GNU gettext is included for systems that do not provide it.
+
+
+Noteworthy changes in version 1.2 (2006-03-03)
+----------------------------------------------
+
+ * New function gpg_err_init, which binds the locale directory to
+   the text domain.  This function is a constructor on GCC targets,
+   so it does not need to be called explicitely.  The header file
+   defines GPG_ERR_INITIALIZED in this case.  This is experimental for
+   now.
+
+ * "./autogen.sh --build-w32" does now also build a DLL for W32.
+   Translations are not yet provided for this platform.
+
+ * New error codes GPG_ERR_UNKNOWN_EXTN and GPG_ERR_UNKNOWN_CRIT_EXTN.
+
+ * New error code GPG_ERR_LOCKED.
+
+ * New translations included for France, Romania, and Vietnamese.
+
+ * Interface changes relative to the 1.1 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+GPG_ERR_UNKNOWN_EXTN		NEW
+GPG_ERR_UNKNOWN_CRIT_EXTN	NEW
+GPG_ERR_LOCKED			NEW
+gpg_err_init			NEW
+GPG_ERR_INITIALIZED		NEW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Noteworthy changes in version 1.1 (2005-06-20)
+----------------------------------------------
+
+ * Bug fixes.
+
+
+Noteworthy changes in version 1.0 (2004-07-30)
+----------------------------------------------
+
+ * Ported to Solaris 2.8.
+
+ * Added a new error source GPG_ERR_SOURCE_GSTI, and new error
+   codes GPG_ERR_PROTOCOL_VIOLATION and GPG_ERR_INV_MAC for this
+   source.
+
+ * Interface changes relative to the 0.7 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+GPG_ERR_SOURCE_GSTI		NEW
+GPG_ERR_PROTOCOL_VIOLATION	NEW
+GPG_ERR_INV_MAC			NEW
+GPG_ERR_INV_REQUEST             NEW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Noteworthy changes in version 0.7 (2004-03-07)
+----------------------------------------------
+
+ * libgpg-error can be built on systems where the errno macros do not
+   evaluate to plain numbers, but expressions.  If you want to
+   cross-compile, you might have to set CC_FOR_BUILD, though.
+
+ * A new tool gpg-error to convert error numbers into symbols into
+   strings is provided.
+
+ * Interface changes relative to the 0.6 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+GPG_ERR_LOCALE_PROBLEM          NEW
+GPG_ERR_NOT_LOCKED              NEW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Noteworthy changes in version 0.6 (2003-11-14)
+----------------------------------------------
+
+ * German translation included.
+
+ * It is now possible to use the inline functions even for non C99
+   compliant compilers by given e.g. -DGPG_ERR_INLINE=inline when
+   compiling an application using this library.  Note, that gcc will
+   use inline anyway.
+
+ * Interface changes relative to the 0.5 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+GPG_ERR_SOURCE_KSBA             NEW
+GPG_ERR_SOURCE_DIRMNGR          NEW
+GPG_ERR_TRUNCATED		NEW
+GPG_ERR_NO_ENCODING_METHOD      NEW
+GPG_ERR_NO_ENCRYPTION_SCHEME    NEW
+GPG_ERR_NO_SIGNATURE_SCHEME     NEW
+GPG_ERR_INV_ATTR                NEW
+GPG_ERR_NO_VALUE                NEW
+GPG_ERR_NOT_FOUND               NEW
+GPG_ERR_VALUE_NOT_FOUND         NEW
+GPG_ERR_SYNTAX                  NEW
+GPG_ERR_INV_CRL                 NEW
+GPG_ERR_BAD_BER                 NEW
+GPG_ERR_INV_BER                 NEW
+GPG_ERR_ELEMENT_NOT_FOUND       NEW
+GPG_ERR_IDENTIFIER_NOT_FOUND    NEW
+GPG_ERR_INV_TAG                 NEW
+GPG_ERR_INV_LENGTH              NEW
+GPG_ERR_INV_KEYINFO             NEW
+GPG_ERR_UNEXPECTED_TAG          NEW
+GPG_ERR_NOT_DER_ENCODED,        NEW
+GPG_ERR_NO_CMS_OBJ              NEW
+GPG_ERR_INV_CMS_OBJ             NEW
+GPG_ERR_UNKNOWN_CMS_OBJ,        NEW
+GPG_ERR_UNSUPPORTED_CMS_OBJ     NEW
+GPG_ERR_UNSUPPORTED_ENCODING,   NEW
+GPG_ERR_UNSUPPORTED_CMS_VERSION NEW
+GPG_ERR_UNKNOWN_ALGORITHM       NEW
+GPG_ERR_ENCODING_PROBLEM        NEW
+GPG_ERR_INV_STATE               NEW
+GPG_ERR_DUP_VALUE,              NEW
+GPG_ERR_MISSING_ACTION          NEW
+GPG_ERR_MODULE_NOT_FOUND        NEW
+GPG_ERR_INV_OID_STRING          NEW
+GPG_ERR_INV_TIME                NEW
+GPG_ERR_INV_CRL_OBJ             NEW
+GPG_ERR_UNSUPPORTED_CRL_VERSION NEW
+GPG_ERR_INV_CERT_OBJ            NEW
+GPG_ERR_UNKNOWN_NAME            NEW
+GPG_ERR_BUFFER_TOO_SHORT.       NEW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Noteworthy changes in version 0.5 (2003-10-06)
+----------------------------------------------
+
+ * New thread safe interface gpg_strerror_r.
+
+ * New error code GPG_ERR_PIN_NOT_SYNCED has been added.
+
+ * Interface changes relative to the 0.4 release:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gpg_strerror_r			NEW
+GPG_ERR_PIN_NOT_SYNCED		NEW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Noteworthy changes in version 0.4 (2003-09-03)
+----------------------------------------------
+
+ * Fixed another bug that prevented that system errors were created
+   correctly in the first place.
+
+ * Use inline in public header file only on C99 compilers.
+
+
+Noteworthy changes in version 0.3 (2003-07-31)
+----------------------------------------------
+
+ * Fixed bug that prevented that system errors were mapped to error
+   strings correctly.
+
+
+Noteworthy changes in version 0.2 (2003-07-30)
+----------------------------------------------
+
+ * Value of the error code GPG_ERR_CANCELED was fixed.
+
+ * New error codes GPG_ERR_WRONG_CARD, GPG_ERR_HARDWARE,
+   GPG_ERR_PIN_BLOCKED and GPG_ERR_USE_CONDITIONS have been added.
+
+ * The header file has been made C++ clean.
+
+ * AM_PATH_GPG_ERR has been fixed to work without explicit version
+   number.
+
+ * The header file now uses inline instead __inline__ for non-GNU
+   compilers.
+
+
+Noteworthy changes in version 0.1 (2003-06-06)
+----------------------------------------------
+
+ * Initial release.
+
+
+ Copyright 2003, 2004, 2005, 2010 g10 Code GmbH
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.

@@ -426,7 +426,8 @@ define(function(){
 				}
 
 				if(!gameMode_support) {
-					retArray.push("menu_GameBoost");
+					if(!isSupport("gu_accel"))
+						retArray.push("menu_GameBoost");
 					retArray.push("menu_OpenNAT");
 				}
 
@@ -744,7 +745,7 @@ define(function(){
 					retArray.push("AdaptiveQoS_ROG.asp");
 				}
 
-				if(!wtfast_support && !gameMode_support){
+				if(!wtfast_support && !gameMode_support && !isSupport('gu_accel')){
 					retArray.push("GameBoost.asp");
 				}
 

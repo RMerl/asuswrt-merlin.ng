@@ -48,12 +48,12 @@
 	cursor:default;
 }
 </style>
+<script type="text/javaScript" src="js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" language="JavaScript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
-<script language="JavaScript" type="text/JavaScript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/JavaScript" src="/js/httpApi.js"></script>
 <script>
 <% wl_get_parameter(); %>
@@ -207,7 +207,7 @@ function addRow(obj, upper){
 
 function applyRule(){
 	if(lantiq_support && wave_ready != 1){
-		alert("Please wait a minute for wireless ready");
+		alert(`<#Wireless_ready#>`);
 		return false;
 	}
 	

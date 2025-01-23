@@ -10,15 +10,15 @@
 <link rel="stylesheet" type="text/css" href="css/basic.css">
 <link rel="stylesheet" type="text/css" href="index_style.css">
 <link rel="stylesheet" type="text/css" href="form_style.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/help.js"></script>
-<script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/form.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js"></script>
 <style>
 *{
   box-sizing: content-box;
@@ -136,8 +136,6 @@ function initial(){
 	check_weakness();
 	$("#all_security_btn").hide();
 
-	if(!ASUS_EULA.status("tm"))
-		ASUS_EULA.config(eula_confirm, cancel);
 }
 
 function getEventTime(){
@@ -742,16 +740,22 @@ function eula_confirm(){
 	document.form.TM_EULA.value = 1;
 	document.form.wrs_protect_enable.value = "1";
 	document.form.action_wait.value = "15";
+    shadeHandle("1");
 	applyRule();
 }
 function switch_control(_status){
 	if(_status) {
 		if(reset_wan_to_fo.check_status()) {
-			if(ASUS_EULA.check("tm")){
-				document.form.wrs_protect_enable.value = "1";
-				shadeHandle("1");
-				applyRule();
-			}
+			if(policy_status.TM == 0 || policy_status.TM_time == ''){
+                const policyModal = new PolicyModalComponent({
+                    policy: "TM",
+                    agreeCallback: eula_confirm,
+                    disagreeCallback: cancel
+                });
+                policyModal.show();
+            }else{
+                eula_confirm();
+            }
 		}
 		else
 			cancel();
@@ -764,12 +768,14 @@ function switch_control(_status){
 }
 
 function show_alert_preference(){
-	cal_panel_block("alert_preference", 0.25);
-	check_smtp_server_type();
-	parse_wrs_mail_bit();
-	$('#alert_preference').fadeIn(300);
-	document.getElementById('mail_address').value = document.form.PM_MY_EMAIL.value;
-	document.getElementById('mail_password').value = document.form.PM_SMTP_AUTH_PASS.value;
+	alert(`Install app to receive push notification when a suspicious connection between your client devices and malicious destination has been detected and blocked.`);
+
+	if($("#app_link_table").length > 0){
+        setTimeout(function(){
+    		$("#app_link_table").show();
+    		$("html, body").animate({ scrollTop: 0 }, "fast");
+        }, 1)
+	}
 }
 
 function close_alert_preference(){
@@ -1071,21 +1077,13 @@ function shadeHandle(flag){
 							<div class="checkbox-desc"><#AiProtection_two-way_IPS#></div>
 					</div>
 					<div class="flexbox checkbox-container">
-							<div>
-								<div>
-									<input type="checkbox" id="mal_website_item">
-									<span style="color: #FFF;"><#AiProtection_sites_blocking#></span>
-								</div>
-								<div>
-									<input type="checkbox" id="vp_item">
-									<span style="color: #FFF;"><#AiProtection_two-way_IPS#></span>
-								</div>
-								<div>
-									<input type="checkbox" id="cc_item">
-									<span style="color: #FFF;"><#AiProtection_detection_blocking#></span>
-								</div>								
-							</div>
-							<div class="checkbox-desc"><#AiProtection_detection_blocking#></div>
+						<div>
+								<input id="cc_item" type="checkbox">
+								<label for="cc_item">
+										<div></div>
+								</label>
+						</div>
+						<div class="checkbox-desc"><#AiProtection_detection_blocking#></div>
 					</div>
 			</div>
 		</div>

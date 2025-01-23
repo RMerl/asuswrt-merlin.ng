@@ -116,7 +116,9 @@
 #define PJ_EMULATE_RWMUTEX	    1
 
 /* Missing socklen_t */
+#ifndef IS_NATNL_APP
 typedef int socklen_t;
+#endif
 
 /* If 1, pj_thread_create() should enforce the stack size when creating 
  * threads.

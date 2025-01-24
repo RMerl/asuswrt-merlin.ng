@@ -6,6 +6,7 @@ Asuswrt-Merlin Changelog
          to test a VPN tunnel's throughput.
   - UPDATED: Merged GPL 388_25373.
   - UPDATED: dropbear to 2024.86.
+  - UPDATED: OpenVPN to 2.6.13.
   - CHANGED: VPN public IP retrieval now uses HTTP instead of STUN,
              which should be more reliable through a VPN tunnel.
   - CHANGED: Model name will be inserted in the filename of JFFS backups.
@@ -17,6 +18,7 @@ Asuswrt-Merlin Changelog
              (Self-Hosting-Group)
   - CHANGED: Settings/JFFS backup uploads file picker  will filter by
              file extension.
+  - FIXED: CVE-2024-9143 in OpenSSL (Debian backport by RSDNTWK)
 
 
 3004.388.8_4 (17-Nov-2024)

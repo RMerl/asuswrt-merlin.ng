@@ -335,7 +335,13 @@ wl_stats () {
     display_cmd_op "NOISE: wl -i $IFNAME noise" "$WLCMD -i $IFNAME noise"
     display_cmd_op "TEMPERATURE SENSOR: wl -i $IFNAME phy_tempsense" "$WLCMD -i $IFNAME phy_tempsense"
     display_cmd_op "BAND: wl -i $IFNAME band" "$WLCMD -i $IFNAME band"
-    display_cmd_op "SCAN RESULTS: wl -i $IFNAME scanresults" "$WLCMD -i $IFNAME scanresults"
+    if [[ $MODE == "dhd" ]]; then
+        display_cmd_op "ESCAN RESULTS: wl -i $IFNAME escanresults" "$WLCMD -i $IFNAME escanresults"
+        display_cmd_op "ESCAN: wl -i $IFNAME escan" "$WLCMD -i $IFNAME escan"
+    else
+        display_cmd_op "SCAN RESULTS: wl -i $IFNAME scanresults" "$WLCMD -i $IFNAME scanresults"
+        display_cmd_op "SCAN: wl -i $IFNAME scan" "$WLCMD -i $IFNAME scan"
+    fi
     display_cmd_op "RATELINKMEM: wl -i $IFNAME dump ratelinkmem" "$WLCMD -i $IFNAME dump ratelinkmem"
     display_cmd_op "BSS DUMP: wl -i $IFNAME dump bsscfg" "$WLCMD -i $IFNAME dump bsscfg"
     display_cmd_op "SCB DUMP: wl -i $IFNAME dump scb" "$WLCMD -i $IFNAME dump scb"
@@ -351,6 +357,7 @@ wl_stats () {
     display_cmd_op "MAC DUMP: wl -i $IFNAME mac" "$WLCMD -i $IFNAME mac"
     display_cmd_op "LAST ADJ EST POWER: wl -i $IFNAME txpwr_adj_est" "$WLCMD -i $IFNAME txpwr_adj_est"
     display_cmd_op "BSS: wl -i $IFNAME bss" "$WLCMD -i $IFNAME bss"
+    display_cmd_op "ISUP: wl -i $IFNAME isup" "$WLCMD -i $IFNAME isup"
     display_cmd_op "KEEP AP UP: wl -i $IFNAME keep_ap_up" "$WLCMD -i $IFNAME keep_ap_up"
 }
 

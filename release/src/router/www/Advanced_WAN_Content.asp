@@ -288,11 +288,6 @@ function initial(){
 		showhide("dnssec_strict_tr", "<% nvram_get("dnssec_enable"); %>" == "1" ? 1 : 0);
 	}
 
-	if(dnssec_support){
-		document.getElementById("dnssec_tr").style.display = "";
-		showhide("dnssec_strict_tr", "<% nvram_get("dnssec_enable"); %>" == "1" ? 1 : 0);
-	}
-
 	change_nat(<% nvram_get("wan_nat_x"); %>);
 
 	if(yadns_support){
@@ -575,7 +570,7 @@ function genWANSoption(){
 				document.form.wan_unit.options[i] = new Option("10G SFP+", i);
 		}
 	}
-
+	
 	document.form.wan_unit.selectedIndex = '<% nvram_get("wan_unit"); %>';
 	if(wans_dualwan.search(" ") < 0 || wans_dualwan.split(" ")[1] == 'none' || !dualWAN_support)
 		document.getElementById("WANscap").style.display = "none";
@@ -902,10 +897,9 @@ function validForm(){
 		}
 	}
 
-        if((document.form.wan_proto.value == "dhcp")
-		|| (document.form.wan_proto.value == "static")){
-			if(document.form.wan_mtu.value != "" &&
-			   !validator.numberRange(document.form.wan_mtu, 576, 9000))
+	if((document.form.wan_proto.value == "dhcp") || (document.form.wan_proto.value == "static")){
+		if(document.form.wan_mtu.value != "" &&
+		   !validator.numberRange(document.form.wan_mtu, 576, 9000))
 				return false;
 	}
 
@@ -945,7 +939,7 @@ function validForm(){
 	}	
 	
 	if(document.form.wan_hwaddr_x.value.length > 0)
-			if(!check_macaddr(document.form.wan_hwaddr_x,check_hwaddr_flag(document.form.wan_hwaddr_x,'inner'))){
+			if(!check_macaddr(document.form.wan_hwaddr_x,check_hwaddr_flag(document.form.wan_hwaddr_x))){
 					document.form.wan_hwaddr_x.select();
 					document.form.wan_hwaddr_x.focus();
 		 	return false;
@@ -1568,7 +1562,7 @@ function addRow_Group(upper){
 		return false;
 	}
 	if ((is_ipv4 && !validator.isLegalIP(document.form.dnspriv_server_0)) ||
-	    (is_ipv6 && !validator.isLegal_ipv6(document.form.dnspriv_server_0)))
+		(is_ipv6 && !validator.isLegal_ipv6(document.form.dnspriv_server_0)))
 		return false;
 
 	if(document.form.dnspriv_hostname_0.value.indexOf("tls://") != -1){
@@ -1584,8 +1578,8 @@ function addRow_Group(upper){
 function edit_Row(r){
 	var i=r.parentNode.parentNode.rowIndex;
 	document.form.dnspriv_server_0.value = document.getElementById('dnspriv_rulelist_table').rows[i].cells[0].innerHTML;
-	document.form.dnspriv_port_0.value = document.getElementById('dnspriv_rulelist_table').rows[i].cells[1].innerHTML; 
-	document.form.dnspriv_hostname_0.value = document.getElementById('dnspriv_rulelist_table').rows[i].cells[2].innerHTML; 
+	document.form.dnspriv_port_0.value = document.getElementById('dnspriv_rulelist_table').rows[i].cells[1].innerHTML;
+	document.form.dnspriv_hostname_0.value = document.getElementById('dnspriv_rulelist_table').rows[i].cells[2].innerHTML;
 	document.form.dnspriv_spkipin_0.value = document.getElementById('dnspriv_rulelist_table').rows[i].cells[3].innerHTML;
 
 	del_Row(r);	
@@ -1629,7 +1623,6 @@ function show_dnspriv_rulelist(){
 			var dnspriv_rulelist_col = dnspriv_rulelist_row[i].split('&#62');
 			var wid=[27, 10, 27, 27];
 				for(var j = 0; j < dnspriv_rulelist_col.length; j++){
-
 					if (dnspriv_rulelist_col[j].length > 25) {
 						overlib_str = dnspriv_rulelist_col[j];
 						dnspriv_rulelist_col[j] = dnspriv_rulelist_col[j].substring(0, 22)+"...";
@@ -2386,7 +2379,6 @@ function showInfo(){
 									</select>
 								</td>
 							</tr>
-
 						</table>
 
 						<table id="dot1q_setting" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
@@ -2577,46 +2569,45 @@ function showInfo(){
 						<div class="assign_dns"><#DNS_Assign_desc#></div>
 						<div style="margin:-38px 0 5px 0;text-align:right;"><input type="button" class="button_gen" onclick="Assign_DNS_service()" value="<#CTL_assign#>"></div>
 					</td>
-          		</tr>
-			<tr>
+				</tr>
+				<tr>
 					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,42);">Forward local domain queries to upstream DNS</a></th><!-- untranslated -->
-				<td>
-					<input type="radio" value="1" name="dns_fwd_local" <% nvram_match("dns_fwd_local", "1", "checked"); %> /><#checkbox_Yes#>
-					<input type="radio" value="0" name="dns_fwd_local" <% nvram_match("dns_fwd_local", "0", "checked"); %> /><#checkbox_No#>
-				</td>
-			</tr>
-			<tr>
+					<td>
+						<input type="radio" value="1" name="dns_fwd_local" <% nvram_match("dns_fwd_local", "1", "checked"); %> /><#checkbox_Yes#>
+						<input type="radio" value="0" name="dns_fwd_local" <% nvram_match("dns_fwd_local", "0", "checked"); %> /><#checkbox_No#>
+					</td>
+				</tr>
 				<tr>
 					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,43);">Enable DNS Rebind protection</a></th><!-- untranslated -->
-				<td>
-					<input type="radio" value="1" name="dns_norebind" <% nvram_match("dns_norebind", "1", "checked"); %> /><#checkbox_Yes#>
-					<input type="radio" value="0" name="dns_norebind" <% nvram_match("dns_norebind", "0", "checked"); %> /><#checkbox_No#>
-				</td>
-			</tr>
-			<tr id="dnssec_tr" style="display:none;">
-				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,44);">Enable DNSSEC support</a></th><!-- untranslated -->
-				<td>
-					<input type="radio" value="1" name="dnssec_enable" onclick="showhide('dnssec_strict_tr',1);" <% nvram_match("dnssec_enable", "1", "checked"); %> /><#checkbox_Yes#>
-					<input type="radio" value="0" name="dnssec_enable" onclick="showhide('dnssec_strict_tr',0);" <% nvram_match("dnssec_enable", "0", "checked"); %> /><#checkbox_No#>
-				</td>
-			</tr>
-			<tr id="dnssec_strict_tr" style="display:none;">
+					<td>
+						<input type="radio" value="1" name="dns_norebind" <% nvram_match("dns_norebind", "1", "checked"); %> /><#checkbox_Yes#>
+						<input type="radio" value="0" name="dns_norebind" <% nvram_match("dns_norebind", "0", "checked"); %> /><#checkbox_No#>
+					</td>
+				</tr>
+				<tr id="dnssec_tr" style="display:none;">
+					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,44);">Enable DNSSEC support</a></th><!-- untranslated -->
+					<td>
+						<input type="radio" value="1" name="dnssec_enable" onclick="showhide('dnssec_strict_tr',1);" <% nvram_match("dnssec_enable", "1", "checked"); %> /><#checkbox_Yes#>
+						<input type="radio" value="0" name="dnssec_enable" onclick="showhide('dnssec_strict_tr',0);" <% nvram_match("dnssec_enable", "0", "checked"); %> /><#checkbox_No#>
+					</td>
+				</tr>
+				<tr id="dnssec_strict_tr" style="display:none;">
 					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,45);">Validate unsigned DNSSEC replies</a></th><!-- untranslated -->
-				<td>
-					<input type="radio" value="1" name="dnssec_check_unsigned_x" <% nvram_match("dnssec_check_unsigned_x", "1", "checked"); %> /><#checkbox_Yes#>
-					<input type="radio" value="0" name="dnssec_check_unsigned_x" <% nvram_match("dnssec_check_unsigned_x", "0", "checked"); %> /><#checkbox_No#>
-				</td>
-			</tr>
-			<tr id="dns_priv_override_tr">
-				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,46);">Prevent client auto DoH</a></th><!-- untranslated -->
-				<td>
-					<select id="dns_priv_override" class="input_option" name="dns_priv_override">
-						<option value="0" <% nvram_match("dns_priv_override", "0", "selected"); %>>Auto</option>
-						<option value="1" <% nvram_match("dns_priv_override", "1", "selected"); %>>Yes</option>
-						<option value="2" <% nvram_match("dns_priv_override", "2", "selected"); %>>No</option>
-					</select>
-				</td>
-			</tr>
+					<td>
+						<input type="radio" value="1" name="dnssec_check_unsigned_x" <% nvram_match("dnssec_check_unsigned_x", "1", "checked"); %> /><#checkbox_Yes#>
+						<input type="radio" value="0" name="dnssec_check_unsigned_x" <% nvram_match("dnssec_check_unsigned_x", "0", "checked"); %> /><#checkbox_No#>
+					</td>
+				</tr>
+				<tr id="dns_priv_override_tr">
+					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,46);">Prevent client auto DoH</a></th><!-- untranslated -->
+					<td>
+						<select id="dns_priv_override" class="input_option" name="dns_priv_override">
+							<option value="0" <% nvram_match("dns_priv_override", "0", "selected"); %>><#Auto#></option>
+							<option value="1" <% nvram_match("dns_priv_override", "1", "selected"); %>><#checkbox_Yes#></option>
+							<option value="2" <% nvram_match("dns_priv_override", "2", "selected"); %>><#checkbox_No#></option>
+						</select>
+					</td>
+				</tr>
 
 			<tr style="display:none">
 				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,35);"><#WAN_DNS_Privacy#></a></th>
@@ -2693,7 +2684,8 @@ function showInfo(){
 					</td>
 				</tr>
 			</table>
-			<table id="PPPsetting" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
+
+		  		<table id="PPPsetting" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
             	<thead>
             	<tr>
               	<td colspan="2"><#PPPConnection_UserName_sectionname#></td>
@@ -2704,7 +2696,7 @@ function showInfo(){
 							<td align="left">
 							    <select class="input_option" name="wan_auth_x" onChange="change_wan_type(document.form.wan_proto.value);">
 							    <option value="" <% nvram_match("wan_auth_x", "", "selected"); %>><#wl_securitylevel_0#></option>
-							    <option value="8021x-md5" <% nvram_match("wan_auth_x", "8021x-md5", "selected"); %>>802.1x</option>
+							    <option value="8021x-md5" <% nvram_match("wan_auth_x", "8021x-md5", "selected"); %>>802.1x MD5</option>
 							    <option value="telenet" <% nvram_match("wan_auth_x", "telenet", "selected"); %>>Кабinet</option>
 							    </select></td>
 							</tr>
@@ -2837,7 +2829,7 @@ function showInfo(){
 				</td>
         	</tr>
 
-        <tr>
+		<tr>
 		<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,30);"><#DHCP_query_freq#></a></th>
 		<td>
 		<select name="wan_dhcp_qry" class="input_option">
@@ -2847,8 +2839,6 @@ function showInfo(){
 		</select>
 		</td>
 		</tr>
-
-		<tr>
 		<tr>
 			<th><#Extend_TTL_Value#></th>
 				<td>

@@ -56,7 +56,7 @@ Generate a self\-signed certificate for the server:
 .sp
 .nf
 .ft C
-openssl req \-x509 \-newkey ec:<(openssl ecparam \-name secp384r1) \-keyout server.key \-out server.crt \-nodes \-sha256 \-days 3650 \-subj \(aq/CN=server\(aq
+openssl req \-x509 \-newkey ec \-pkeyopt ec_paramgen_curve:secp384r1 \-keyout server.key \-out server.crt \-nodes \-sha256 \-days 3650 \-subj \(aq/CN=server\(aq
 .ft P
 .fi
 .UNINDENT
@@ -77,7 +77,7 @@ openssl x509 \-fingerprint \-sha256 \-in server.crt \-noout
 .UNINDENT
 .UNINDENT
 .sp
-This output something similar to:
+This outputs something similar to:
 .INDENT 3.0
 .INDENT 3.5
 .sp
@@ -122,6 +122,12 @@ explicit\-exit\-notify 1
 
 # Ping every 60s, restart if no data received for 5 minutes
 keepalive 60 300
+
+# Uncomment the line below if you want to have persistent IP addresses
+# ifconfig\-pool\-persist  /etc/openvpn/server/ipp.txt
+
+# Uncomment the line below to push a DNS server to clients
+# push "dhcp\-option DNS 1.1.1.1"
 .ft P
 .fi
 .UNINDENT
@@ -164,7 +170,7 @@ different name for each client.
 .sp
 .nf
 .ft C
-openssl req \-x509 \-newkey ec:<(openssl ecparam \-name secp384r1) \-nodes \-sha256 \-days 3650 \-subj \(aq/CN=alice\(aq
+openssl req \-x509 \-newkey ec \-pkeyopt ec_paramgen_curve:secp384r1 \-keyout \- \-nodes \-sha256 \-days 3650 \-subj \(aq/CN=alice\(aq
 .ft P
 .fi
 .UNINDENT
@@ -271,7 +277,7 @@ After adding \fItwo\fP clients the part of configuration would look like this:
 <peer\-fingerprint>
 ff:ee:dd:cc:bb:aa:99:88:77:66:55:44:33:22:11:00:ff:ee:dd:cc:bb:aa:99:88:77:66:55:44:33:22:11:00
 99:88:77:66:55:44:33:22:11:00:ff:ee:dd:cc:bb:aa:99:88:77:66:55:44:33:22:11:00:88:77:66:55:44:33
-</peer\-fingperint>
+</peer\-fingerprint>
 .ft P
 .fi
 .UNINDENT
@@ -464,7 +470,7 @@ On bob:
 .ft C
 openvpn \-\-ifconfig 10.4.0.1 10.4.0.2 \-\-tls\-server \-\-dev tun \-\-dh none \e
         \-\-cert bob.pem \-\-key bob.pem \-\-cipher AES\-256\-GCM \e
-        \-\-peer\-fingerprint \(dq$fingerprint_of_alices_cert\(dq
+        \-\-peer\-fingerprint "$fingerprint_of_alices_cert"
 .ft P
 .fi
 .UNINDENT
@@ -479,7 +485,7 @@ On alice:
 openvpn \-\-remote bob.example.com \-\-tls\-client \-\-dev tun1   \e
         \-\-ifconfig 10.4.0.2 10.4.0.1 \-\-cipher AES\-256\-GCM  \e
         \-\-cert alice.pem \-\-key alice.pem                   \e
-        \-\-peer\-fingerprint \(dq$fingerprint_of_bobs_cert\(dq
+        \-\-peer\-fingerprint "$fingerprint_of_bobs_cert"
 .ft P
 .fi
 .UNINDENT

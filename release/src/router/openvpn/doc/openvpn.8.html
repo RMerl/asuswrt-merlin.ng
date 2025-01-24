@@ -1,20 +1,20 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Docutils 0.20.1: https://docutils.sourceforge.io/" />
+<meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 <title>openvpn</title>
 <style type="text/css">
 
 /*
 :Author: David Goodger (goodger@python.org)
-:Id: $Id: html4css1.css 8954 2022-01-20 10:10:25Z milde $
+:Id: $Id: html4css1.css 7952 2016-07-26 18:15:59Z milde $
 :Copyright: This stylesheet has been placed in the public domain.
 
 Default cascading style sheet for the HTML output of Docutils.
 
-See https://docutils.sourceforge.io/docs/howto/html-stylesheets.html for how to
+See http://docutils.sf.net/docs/howto/html-stylesheets.html for how to
 customize this style sheet.
 */
 
@@ -437,10 +437,8 @@ virtual memory.</p>
 username/password inputs after they are used. As a result, when OpenVPN
 needs a username/password, it will prompt for input from stdin, which
 may be multiple times during the duration of an OpenVPN session.</p>
-<p>When using <tt class="docutils literal"><span class="pre">--auth-nocache</span></tt> in combination with a user/password file
+<p class="last">When using <tt class="docutils literal"><span class="pre">--auth-nocache</span></tt> in combination with a user/password file
 and <tt class="docutils literal"><span class="pre">--chroot</span></tt> or <tt class="docutils literal"><span class="pre">--daemon</span></tt>, make sure to use an absolute path.</p>
-<p class="last">This directive does not affect the <tt class="docutils literal"><span class="pre">--http-proxy</span></tt> username/password.
-It is always cached.</p>
 </td></tr>
 <tr><td class="option-group">
 <kbd><span class="option">--cd <var>dir</var></span></kbd></td>
@@ -621,7 +619,7 @@ are supported by OpenSSL.</p>
 </td></tr>
 <tr><td class="option-group">
 <kbd><span class="option">--fast-io</span></kbd></td>
-<td><p class="first">(Experimental) Optimize TUN/TAP/UDP I/O writes by avoiding a call to
+<td><p class="first">Optimize TUN/TAP/UDP I/O writes by avoiding a call to
 poll/epoll/select prior to the write operation. The purpose of such a
 call would normally be to block until the device or socket is ready to
 accept the write. Such blocking is unnecessary on some platforms which
@@ -1683,7 +1681,10 @@ re-installations and upgrades.</dd>
 <dd>The version of the operating system, e.g. 6.1 for Windows 7.
 This may be set by the client UI/GUI using <tt class="docutils literal"><span class="pre">--setenv</span></tt>.
 On Windows systems it is automatically determined by openvpn
-itself.</dd>
+itself.  On other platforms OpenVPN will default to sending
+the information returned by the <cite>uname()</cite> system call in
+the <cite>release</cite> field, which is usually the currently running
+kernel version.  This is highly system specific, though.</dd>
 <dt><code>UV_&lt;name&gt;=&lt;value&gt;</code></dt>
 <dd>Client environment variables whose names start with
 <code>UV_</code></dd>
@@ -2314,7 +2315,7 @@ work with HTTP/HTTPS, though it would be theoretically possible to
 extend to other protocols such as ssh.</p>
 <p><tt class="docutils literal">dir</tt> specifies an optional directory where a temporary file with name
 N containing content C will be dynamically generated for each proxy
-connection, where N is the source IP:port of the client connection and C
+connection, where C is the source IP:port of the client connection and N
 is the source IP:port of the connection to the proxy receiver. This
 directory can be used as a dictionary by the proxy receiver to determine
 the origin of the connection. Each generated file will be automatically
@@ -2618,11 +2619,10 @@ VLAN&quot;.</p>
 </tbody>
 </table>
 </div>
-</div>
 <div class="section" id="encryption-options">
-<h1>Encryption Options</h1>
+<h2>Encryption Options</h2>
 <div class="section" id="ssl-library-information">
-<h2>SSL Library information</h2>
+<h3>SSL Library information</h3>
 <table class="docutils option-list" frame="void" rules="none">
 <col class="option" />
 <col class="description" />
@@ -2658,7 +2658,7 @@ engines supported by the OpenSSL library.</td></tr>
 </table>
 </div>
 <div class="section" id="generating-key-material">
-<h2>Generating key material</h2>
+<h3>Generating key material</h3>
 <table class="docutils option-list" frame="void" rules="none">
 <col class="option" />
 <col class="description" />
@@ -2749,7 +2749,7 @@ OpenVPN server will accept as valid.</p>
 </table>
 </div>
 <div class="section" id="data-channel-renegotiation">
-<h2>Data Channel Renegotiation</h2>
+<h3>Data Channel Renegotiation</h3>
 <p>When running OpenVPN in client/server mode, the data channel will use a
 separate ephemeral encryption key which is rotated at regular intervals.</p>
 <table class="docutils option-list" frame="void" rules="none">
@@ -2806,7 +2806,7 @@ disable), and to your chosen value on the other side.</p>
 </table>
 </div>
 <div class="section" id="tls-mode-options">
-<h2>TLS Mode Options</h2>
+<h3>TLS Mode Options</h3>
 <p>TLS mode is the most powerful crypto mode of OpenVPN in both security
 and flexibility. TLS mode works by establishing control and data
 channels which are multiplexed over a single TCP/UDP port. OpenVPN
@@ -3520,7 +3520,7 @@ symbols can potentially lead to username collisions.</p>
 </table>
 </div>
 <div class="section" id="pkcs-11-smartcard-options">
-<h2>PKCS#11 / SmartCard options</h2>
+<h3>PKCS#11 / SmartCard options</h3>
 <table class="docutils option-list" frame="void" rules="none">
 <col class="option" />
 <col class="description" />
@@ -3614,12 +3614,12 @@ information.</p>
 </div>
 </div>
 <div class="section" id="data-channel-cipher-negotiation">
-<h1>Data channel cipher negotiation</h1>
+<h2>Data channel cipher negotiation</h2>
 <p>OpenVPN 2.4 and higher have the capability to negotiate the data cipher that
 is used to encrypt data packets. This section describes the mechanism in more detail and the
 different backwards compatibility mechanism with older server and clients.</p>
 <div class="section" id="openvpn-2-5-and-later-behaviour">
-<h2>OpenVPN 2.5 and later behaviour</h2>
+<h3>OpenVPN 2.5 and later behaviour</h3>
 <p>When both client and server are at least running OpenVPN 2.5, that the order of
 the ciphers of the server's <tt class="docutils literal"><span class="pre">--data-ciphers</span></tt> is used to pick the data cipher.
 That means that the first cipher in that list that is also in the client's
@@ -3636,7 +3636,7 @@ In 2.6 and later the default is changed to
 <tt class="docutils literal"><span class="pre">--cipher</span></tt> option to this list.</p>
 </div>
 <div class="section" id="openvpn-2-4-clients">
-<h2>OpenVPN 2.4 clients</h2>
+<h3>OpenVPN 2.4 clients</h3>
 <p>The negotiation support in OpenVPN 2.4 was the first iteration of the implementation
 and still had some quirks. Its main goal was &quot;upgrade to AES-256-GCM when possible&quot;.
 An OpenVPN 2.4 client that is built against a crypto library that supports AES in GCM
@@ -3650,7 +3650,7 @@ always have the <cite>AES-256-GCM</cite> and <cite>AES-128-GCM</cite> ciphers to
 options to avoid this behaviour.</p>
 </div>
 <div class="section" id="openvpn-3-clients">
-<h2>OpenVPN 3 clients</h2>
+<h3>OpenVPN 3 clients</h3>
 <p>Clients based on the OpenVPN 3.x library (<a class="reference external" href="https://github.com/openvpn/openvpn3/">https://github.com/openvpn/openvpn3/</a>)
 do not have a configurable <tt class="docutils literal"><span class="pre">--ncp-ciphers</span></tt> or <tt class="docutils literal"><span class="pre">--data-ciphers</span></tt> option. Newer
 versions by default disable legacy AES-CBC, BF-CBC, and DES-CBC ciphers.
@@ -3660,7 +3660,7 @@ These clients will always announce support for all their supported AEAD ciphers
 included in the server's <tt class="docutils literal"><span class="pre">--data-ciphers</span></tt> option.</p>
 </div>
 <div class="section" id="openvpn-2-3-and-older-clients-and-clients-with-ncp-disable">
-<h2>OpenVPN 2.3 and older clients (and clients with <tt class="docutils literal"><span class="pre">--ncp-disable</span></tt>)</h2>
+<h3>OpenVPN 2.3 and older clients (and clients with <tt class="docutils literal"><span class="pre">--ncp-disable</span></tt>)</h3>
 <p>When a client without cipher negotiation support connects to a server the
 cipher specified with the <tt class="docutils literal"><span class="pre">--cipher</span></tt> option in the client configuration
 must be included in the <tt class="docutils literal"><span class="pre">--data-ciphers</span></tt> option of the server to allow
@@ -3672,7 +3672,7 @@ message that indicates no shared cipher.</p>
 cipher used by the client is necessary.</p>
 </div>
 <div class="section" id="openvpn-2-4-server">
-<h2>OpenVPN 2.4 server</h2>
+<h3>OpenVPN 2.4 server</h3>
 <p>When a client indicates support for <cite>AES-128-GCM</cite> and <cite>AES-256-GCM</cite>
 (with <tt class="docutils literal">IV_NCP=2</tt>) an OpenVPN 2.4 server will send the first
 cipher of the <tt class="docutils literal"><span class="pre">--ncp-ciphers</span></tt> to the OpenVPN client regardless of what
@@ -3683,7 +3683,7 @@ option is required. OpenVPN 2.5+ will only announce the <tt class="docutils lite
 those ciphers are present.</p>
 </div>
 <div class="section" id="openvpn-2-3-and-older-servers-and-servers-with-ncp-disable">
-<h2>OpenVPN 2.3 and older servers (and servers with <tt class="docutils literal"><span class="pre">--ncp-disable</span></tt>)</h2>
+<h3>OpenVPN 2.3 and older servers (and servers with <tt class="docutils literal"><span class="pre">--ncp-disable</span></tt>)</h3>
 <p>The cipher used by the server must be included in <tt class="docutils literal"><span class="pre">--data-ciphers</span></tt> to
 allow the client connecting to a server without cipher negotiation
 support.
@@ -3695,7 +3695,7 @@ support.
 cipher used by the server is necessary.</p>
 </div>
 <div class="section" id="blowfish-in-cbc-mode-bf-cbc-deprecation">
-<h2>Blowfish in CBC mode (BF-CBC) deprecation</h2>
+<h3>Blowfish in CBC mode (BF-CBC) deprecation</h3>
 <p>The <tt class="docutils literal"><span class="pre">--cipher</span></tt> option defaulted to <cite>BF-CBC</cite> in OpenVPN 2.4 and older
 version. The default was never changed to ensure backwards compatibility.
 In OpenVPN 2.5 this behaviour has now been changed so that if the <tt class="docutils literal"><span class="pre">--cipher</span></tt>
@@ -3704,6 +3704,7 @@ and needs to explicitly added as <tt class="docutils literal"><span class="pre">
 <tt class="docutils literal"><span class="pre">--data-ciphers</span></tt>.</p>
 <p>We strongly recommend to switching away from BF-CBC to a
 more secure cipher as soon as possible instead.</p>
+</div>
 </div>
 </div>
 <div class="section" id="network-configuration">
@@ -5421,12 +5422,6 @@ dns_server_{n}_sni
 support it, such as <tt class="docutils literal"><span class="pre">--dhcp-option</span></tt> on a non-Windows system, will be
 recorded to this environmental variable sequence prior to <tt class="docutils literal"><span class="pre">--up</span></tt>
 script execution.</dd>
-<dt><code>ifconfig_broadcast</code></dt>
-<dd>The broadcast address for the virtual ethernet segment which is derived
-from the <tt class="docutils literal"><span class="pre">--ifconfig</span></tt> option when <tt class="docutils literal"><span class="pre">--dev</span> tap</tt> is used. Set prior to
-OpenVPN calling the <code>ifconfig</code> or <code>netsh</code> (windows version
-of ifconfig) commands which normally occurs prior to <tt class="docutils literal"><span class="pre">--up</span></tt> script
-execution.</dd>
 <dt><code>ifconfig_ipv6_local</code></dt>
 <dd>The local VPN endpoint IPv6 address specified in the
 <tt class="docutils literal"><span class="pre">--ifconfig-ipv6</span></tt> option (first parameter). Set prior to OpenVPN
@@ -5463,27 +5458,47 @@ used. Set prior to OpenVPN calling the <code>ifconfig</code> or
 <code>netsh</code> (windows version of ifconfig) commands which normally
 occurs prior to <tt class="docutils literal"><span class="pre">--up</span></tt> script execution.</dd>
 <dt><code>ifconfig_pool_local_ip</code></dt>
-<dd>The local virtual IP address for the TUN/TAP tunnel taken from an
+<dd>The local virtual IPv4 address for the TUN/TAP tunnel taken from an
 <tt class="docutils literal"><span class="pre">--ifconfig-push</span></tt> directive if specified, or otherwise from the
 ifconfig pool (controlled by the <tt class="docutils literal"><span class="pre">--ifconfig-pool</span></tt> config file
 directive). Only set for <tt class="docutils literal"><span class="pre">--dev</span> tun</tt> tunnels. This option is set on
 the server prior to execution of the <tt class="docutils literal"><span class="pre">--client-connect</span></tt> and
 <tt class="docutils literal"><span class="pre">--client-disconnect</span></tt> scripts.</dd>
+<dt><code>ifconfig_pool_local_ip6</code></dt>
+<dd>The local virtual IPv6 address for the TUN/TAP tunnel taken from an
+<tt class="docutils literal"><span class="pre">--ifconfig-ipv6-push</span></tt> directive if specified, or otherwise from the
+ifconfig pool (controlled by the <tt class="docutils literal"><span class="pre">--ifconfig-ipv6-pool</span></tt> config file
+directive). Only set for <tt class="docutils literal"><span class="pre">--dev</span> tun</tt> tunnels. This option is set on
+the server prior to execution of the <tt class="docutils literal"><span class="pre">--client-connect</span></tt> and
+<tt class="docutils literal"><span class="pre">--client-disconnect</span></tt> scripts.</dd>
 <dt><code>ifconfig_pool_netmask</code></dt>
-<dd>The virtual IP netmask for the TUN/TAP tunnel taken from an
+<dd>The virtual IPv4 netmask for the TUN/TAP tunnel taken from an
 <tt class="docutils literal"><span class="pre">--ifconfig-push</span></tt> directive if specified, or otherwise from the
 ifconfig pool (controlled by the <tt class="docutils literal"><span class="pre">--ifconfig-pool</span></tt> config file
 directive). Only set for <tt class="docutils literal"><span class="pre">--dev</span> tap</tt> tunnels. This option is set on
 the server prior to execution of the <tt class="docutils literal"><span class="pre">--client-connect</span></tt> and
 <tt class="docutils literal"><span class="pre">--client-disconnect</span></tt> scripts.</dd>
+<dt><code>ifconfig_pool_ip6_netbits</code></dt>
+<dd>The virtual IPv6 prefix length for the TUN/TAP tunnel taken from an
+<tt class="docutils literal"><span class="pre">--ifconfig-ipv6-push</span></tt> directive if specified, or otherwise from the
+ifconfig pool (controlled by the <tt class="docutils literal"><span class="pre">--ifconfig-ipv6-pool</span></tt> config file
+directive). Only set for <tt class="docutils literal"><span class="pre">--dev</span> tap</tt> tunnels. This option is set on
+the server prior to execution of the <tt class="docutils literal"><span class="pre">--client-connect</span></tt> and
+<tt class="docutils literal"><span class="pre">--client-disconnect</span></tt> scripts.</dd>
 <dt><code>ifconfig_pool_remote_ip</code></dt>
-<dd>The remote virtual IP address for the TUN/TAP tunnel taken from an
+<dd>The remote virtual IPv4 address for the TUN/TAP tunnel taken from an
 <tt class="docutils literal"><span class="pre">--ifconfig-push</span></tt> directive if specified, or otherwise from the
 ifconfig pool (controlled by the <tt class="docutils literal"><span class="pre">--ifconfig-pool</span></tt> config file
 directive). This option is set on the server prior to execution of the
 <tt class="docutils literal"><span class="pre">--client-connect</span></tt> and <tt class="docutils literal"><span class="pre">--client-disconnect</span></tt> scripts.</dd>
+<dt><code>ifconfig_pool_remote_ip6</code></dt>
+<dd>The remote virtual IPv6 address for the TUN/TAP tunnel taken from an
+<tt class="docutils literal"><span class="pre">--ifconfig-ipv6-push</span></tt> directive if specified, or otherwise from the
+ifconfig pool (controlled by the <tt class="docutils literal"><span class="pre">--ifconfig-ipv6-pool</span></tt> config file
+directive). This option is set on the server prior to execution of the
+<tt class="docutils literal"><span class="pre">--client-connect</span></tt> and <tt class="docutils literal"><span class="pre">--client-disconnect</span></tt> scripts.</dd>
 <dt><code>link_mtu</code></dt>
-<dd>No longer passed to scripts since OpenVPN 2.6.0.  Used to be the
+<dd><em>REMOVED</em> No longer passed to scripts since OpenVPN 2.6.0.  Used to be the
 maximum packet size (not including the IP header) of tunnel data in
 UDP tunnel transport mode.</dd>
 <dt><code>local</code></dt>
@@ -5916,6 +5931,12 @@ issuer name:</p>
 <pre class="literal-block">
 cryptoapicert &quot;ISSUER:Sample CA&quot;
 </pre>
+<p>To select a certificate based on a certificate's template name or
+OID of the template:</p>
+<pre class="literal-block">
+cryptoapicert &quot;TMPL:Name of Template&quot;
+cryptoapicert &quot;TMPL:1.3.6.1.4...&quot;
+</pre>
 <p class="last">The first non-expired certificate found in the user's store or the
 machine store that matches the select-string is used.</p>
 </td></tr>
@@ -6286,7 +6307,7 @@ usage</em> and <em>extended key usage</em> fields, they must be upgraded and the
 it will attempt to connect against.  But there are some configuration
 options which are related to specific <tt class="docutils literal"><span class="pre">--remote</span></tt> options.  For these
 use cases, connection profiles are the solution.</p>
-<p>By enacpulating the <tt class="docutils literal"><span class="pre">--remote</span></tt> option and related options within
+<p>By encapsulating the <tt class="docutils literal"><span class="pre">--remote</span></tt> option and related options within
 <tt class="docutils literal">&lt;connection&gt;</tt> and <tt class="docutils literal">&lt;/connection&gt;</tt>, these options are handled as a
 group.</p>
 <p>An OpenVPN client will try each connection profile sequentially until it

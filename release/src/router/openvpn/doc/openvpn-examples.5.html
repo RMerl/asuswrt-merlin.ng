@@ -1,20 +1,20 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Docutils 0.20.1: https://docutils.sourceforge.io/" />
+<meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 <title>openvpn examples</title>
 <style type="text/css">
 
 /*
 :Author: David Goodger (goodger@python.org)
-:Id: $Id: html4css1.css 8954 2022-01-20 10:10:25Z milde $
+:Id: $Id: html4css1.css 7952 2016-07-26 18:15:59Z milde $
 :Copyright: This stylesheet has been placed in the public domain.
 
 Default cascading style sheet for the HTML output of Docutils.
 
-See https://docutils.sourceforge.io/docs/howto/html-stylesheets.html for how to
+See http://docutils.sf.net/docs/howto/html-stylesheets.html for how to
 customize this style sheet.
 */
 
@@ -394,7 +394,7 @@ or via installer (Windows).</p>
 </li>
 <li><p class="first">Generate a self-signed certificate for the server:</p>
 <pre class="literal-block">
-openssl req -x509 -newkey ec:&lt;(openssl ecparam -name secp384r1) -keyout server.key -out server.crt -nodes -sha256 -days 3650 -subj '/CN=server'
+openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:secp384r1 -keyout server.key -out server.crt -nodes -sha256 -days 3650 -subj '/CN=server'
 </pre>
 </li>
 <li><p class="first">Generate SHA256 fingerprint of the server certificate</p>
@@ -403,7 +403,7 @@ created certificate:</p>
 <pre class="literal-block">
 openssl x509 -fingerprint -sha256 -in server.crt -noout
 </pre>
-<p>This output something similar to:</p>
+<p>This outputs something similar to:</p>
 <pre class="literal-block">
 SHA256 Fingerprint=00:11:22:33:44:55:66:77:88:99:aa:bb:cc:dd:ee:ff:00:11:22:33:44:55:66:77:88:99:aa:bb:cc:dd:ee:ff
 </pre>
@@ -437,6 +437,12 @@ explicit-exit-notify 1
 
 # Ping every 60s, restart if no data received for 5 minutes
 keepalive 60 300
+
+# Uncomment the line below if you want to have persistent IP addresses
+# ifconfig-pool-persist  /etc/openvpn/server/ipp.txt
+
+# Uncomment the line below to push a DNS server to clients
+# push &quot;dhcp-option DNS 1.1.1.1&quot;
 </pre>
 </li>
 <li><p class="first">Add at least one client as described in the client section.</p>
@@ -467,7 +473,7 @@ sudo systemctl start openvpn-server&#64;server
 name is alice. Each client should have a unique name. Replace alice with a
 different name for each client.</p>
 <pre class="literal-block">
-openssl req -x509 -newkey ec:&lt;(openssl ecparam -name secp384r1) -nodes -sha256 -days 3650 -subj '/CN=alice'
+openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:secp384r1 -keyout - -nodes -sha256 -days 3650 -subj '/CN=alice'
 </pre>
 <p>This generate a certificate and a key for the client. The output of the command will look
 something like this:</p>
@@ -536,7 +542,7 @@ and <code>&lt;/peer-fingerprint&gt;</code></p>
 &lt;peer-fingerprint&gt;
 ff:ee:dd:cc:bb:aa:99:88:77:66:55:44:33:22:11:00:ff:ee:dd:cc:bb:aa:99:88:77:66:55:44:33:22:11:00
 99:88:77:66:55:44:33:22:11:00:ff:ee:dd:cc:bb:aa:99:88:77:66:55:44:33:22:11:00:88:77:66:55:44:33
-&lt;/peer-fingperint&gt;
+&lt;/peer-fingerprint&gt;
 </pre>
 </li>
 <li><p class="first">(optional) if the client is an older client that does not support the

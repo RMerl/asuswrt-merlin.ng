@@ -888,7 +888,7 @@ init_options(struct options *o, const bool init_gc)
     o->pkcs11_pin_cache_period = -1;
 #endif                  /* ENABLE_PKCS11 */
 
-/* P2MP server context features */
+    /* P2MP server context features */
     o->auth_token_generate = false;
 
     /* Set default --tmp-dir */
@@ -2969,7 +2969,7 @@ options_postprocess_verify_ce(const struct options *options,
         if (options->pkcs12_file)
         {
 #ifdef ENABLE_CRYPTO_MBEDTLS
-            msg(M_USAGE, "Parameter --pkcs12 cannot be used with the mbed TLS version version of OpenVPN.");
+            msg(M_USAGE, "Parameter --pkcs12 cannot be used with the mbed TLS version of OpenVPN.");
 #else
             if (options->ca_path)
             {
@@ -2998,7 +2998,7 @@ options_postprocess_verify_ce(const struct options *options,
 #ifdef ENABLE_CRYPTO_MBEDTLS
             if (options->ca_path)
             {
-                msg(M_USAGE, "Parameter --capath cannot be used with the mbed TLS version version of OpenVPN.");
+                msg(M_USAGE, "Parameter --capath cannot be used with the mbed TLS version of OpenVPN.");
             }
 #endif  /* ifdef ENABLE_CRYPTO_MBEDTLS */
             if (pull)
@@ -7042,7 +7042,7 @@ add_option(struct options *options,
     }
     else if (streq(p[0], "max-routes") && !p[2])
     {
-        msg(M_WARN, "DEPRECATED OPTION: --max-routes option ignored."
+        msg(M_WARN, "DEPRECATED OPTION: --max-routes option ignored. "
             "The number of routes is unlimited as of OpenVPN 2.4. "
             "This option will be removed in a future version, "
             "please remove it from your configuration.");
@@ -9313,7 +9313,7 @@ add_option(struct options *options,
                         s++;
                     }
                     msg(M_WARN, "DEPRECATED FEATURE: automatically upcased the "
-                        "--x509-username-field parameter to '%s'; please update your"
+                        "--x509-username-field parameter to '%s'; please update your "
                         "configuration", p[j]);
                 }
             }

@@ -527,9 +527,9 @@ function initial(){
 
 	if (boostKey_support) {
 		document.getElementById("boostkey_tr").style.display = "";
-
 		build_boostkey_options();
-		if (!ASUS_EULA.status("tm") &&
+
+		if ((policy_status.TM == "0" || policy_status.TM_time == "") &&
 		    ("<% nvram_get("turbo_mode"); %>" == "3")) {
 			httpApi.nvramSet({
 				"turbo_mode": '0',

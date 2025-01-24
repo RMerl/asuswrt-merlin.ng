@@ -24,6 +24,7 @@
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script language="JavaScript" type="text/javascript" src="/md5.js"></script>
 <script type="text/javascript" src="/form.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js"></script>
 <style>
 .cancel{
 	border: 2px solid #898989;
@@ -198,10 +199,12 @@ function change_boostkey(_id){
 		return false;
 	}
 
-	var tm_status = httpApi.nvramGet(["TM_EULA", "TM_EULA_time"], true);
-	if(_id == '3' && (tm_status.TM_EULA == "0" || tm_status.TM_EULA_time == "")){
-		ASUS_EULA.check("tm");
-		document.getElementById("boostkey_modes").value = _nvram.turbo_mode;
+
+	if(_id == '3' && (policy_status.TM == "0" || policy_status.TM_time == "")){
+		const policyModal = new PolicyModalComponent({
+			policy: "TM"
+		});
+		policyModal.show();
 		return false;
 	}
 
@@ -2239,13 +2242,8 @@ function build_boostkey_options() {
 	var obj = document.form.boostkey_modes;
 	var current = "<% nvram_get("turbo_mode"); %>";
 
-	if(based_modelid == "GT-AC2900"){
-		add_option(obj, "<#BoostKey_AURA_Shuffle#>", 4, (current == "4" ? 1 : 0));
-		add_option(obj, "<#BoostKey_GeForce#>", 5, (current == "5" ? 1 : 0));
-	} else {
-		add_option(obj, "<#BoostKey_LED#>", 0, (current == "0" ? 1 : 0));
-		add_option(obj, "<#BoostKey_Aura_RGB#>", 2, (current == "2" ? 1 : 0));
-	}
+	add_option(obj, "<#BoostKey_LED#>", 0, (current == "0" ? 1 : 0));
+	add_option(obj, "<#BoostKey_Aura_RGB#>", 2, (current == "2" ? 1 : 0));
 
 	var wl1_reg_mode = '<% nvram_get("wl1_reg_mode"); %>';
 

@@ -247,7 +247,9 @@ username_password_as_base64(const struct http_proxy_info *p,
     struct buffer out = alloc_buf_gc(strlen(p->up.username) + strlen(p->up.password) + 2, gc);
     ASSERT(strlen(p->up.username) > 0);
     buf_printf(&out, "%s:%s", p->up.username, p->up.password);
-    return (const char *)make_base64_string((const uint8_t *)BSTR(&out), gc);
+    char *ret = (char *)make_base64_string((const uint8_t *)BSTR(&out), gc);
+    secure_memzero(BSTR(&out), out.len);
+    return ret;
 }
 
 static void
@@ -289,13 +291,14 @@ get_user_pass_http(struct http_proxy_info *p, const bool force)
                       UP_TYPE_PROXY,
                       flags);
         static_proxy_user_pass.nocache = p->options.nocache;
+        protect_user_pass(&static_proxy_user_pass);
     }
 
     /*
      * Using cached credentials
      */
     p->queried_creds = true;
-    p->up = static_proxy_user_pass;
+    p->up = static_proxy_user_pass; /* this is a copy of protected memory */
 }
 
 #if 0
@@ -666,6 +669,7 @@ establish_http_proxy_passthru(struct http_proxy_info *p,
         {
             clear_user_pass_http();
         }
+        unprotect_user_pass(&p->up);
     }
 
     /* are we being called again after getting the digest server nonce in the previous transaction? */
@@ -736,6 +740,9 @@ establish_http_proxy_passthru(struct http_proxy_info *p,
             default:
                 ASSERT(0);
         }
+
+        /* clear any sensitive content in buf */
+        secure_memzero(buf, sizeof(buf));
 
         /* send empty CR, LF */
         if (!send_crlf(sd))
@@ -978,6 +985,8 @@ establish_http_proxy_passthru(struct http_proxy_info *p,
                 {
                     goto error;
                 }
+                /* clear any sensitive content in buf */
+                secure_memzero(buf, sizeof(buf));
 
                 /* receive reply from proxy */
                 if (!recv_line(sd, buf, sizeof(buf), get_server_poll_remaining_time(server_poll_timeout), true, NULL, signal_received))
@@ -1081,10 +1090,12 @@ establish_http_proxy_passthru(struct http_proxy_info *p,
 #endif
 
 done:
+    purge_user_pass(&p->up, true);
     gc_free(&gc);
     return ret;
 
 error:
+    purge_user_pass(&p->up, true);
     register_signal(sig_info, SIGUSR1, "HTTP proxy error"); /* SOFT-SIGUSR1 -- HTTP proxy error */
     gc_free(&gc);
     return ret;

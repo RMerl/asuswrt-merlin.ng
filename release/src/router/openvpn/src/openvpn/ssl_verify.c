@@ -717,7 +717,7 @@ verify_cert(struct tls_session *session, openvpn_x509_cert_t *cert, int cert_dep
         {
             const char *hex_fp = format_hex_ex(BPTR(&cert_fp), BLEN(&cert_fp),
                                                0, 1, ":", &gc);
-            msg(D_TLS_ERRORS, "TLS Error: --tls-verify/--peer-fingerprint"
+            msg(D_TLS_ERRORS, "TLS Error: --tls-verify/--peer-fingerprint "
                 "certificate hash verification failed. (got certificate "
                 "fingerprint: %s)", hex_fp);
             goto cleanup;
@@ -1593,6 +1593,8 @@ verify_user_pass(struct user_pass *up, struct tls_multi *multi,
                  struct tls_session *session)
 {
     struct key_state *ks = &session->key[KS_PRIMARY];      /* primary key */
+
+    ASSERT(up && !up->protected);
 
 #ifdef ENABLE_MANAGEMENT
     int man_def_auth = KMDA_UNDEF;

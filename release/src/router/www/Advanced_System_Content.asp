@@ -381,7 +381,8 @@ function initial(){
 			);
 		}
 		hideport(document.form.misc_http_x[0].checked);
-	}	
+	}
+
 	if(ssh_support){
 		check_sshd_enable('<% nvram_get("sshd_enable"); %>');
 		document.form.sshd_authkeys.value = document.form.sshd_authkeys.value.replace(/>/gm,"\r\n");
@@ -417,7 +418,6 @@ function initial(){
 	if(isSupport("is_ax5400_i1")){
 		document.getElementById("ntp_pull_arrow").style.display = "";
 	}
-
 
 	if(isSupport("is_ax5400_i1n") || tmo_support){
 		document.getElementById("telnetd_sshd_table").style.display = "none";
@@ -766,7 +766,6 @@ function applyRule(){
 		else
 			action_script_tmp += "restart_upnp;";	// Normally done by restart_firewall
 
-
 		if(ncb_enable_option_flag)
 			action_script_tmp += "restart_bhblock;";
 
@@ -779,7 +778,6 @@ function applyRule(){
 			action_script_tmp += "pwrsave;";
 		if(pagecache_ratio_support)
 			action_script_tmp += "pagecache_ratio;";
-
                 
 		if (getRadioItemCheck(document.form.ntpd_enable) != '<% nvram_get("ntpd_enable"); %>')
 			action_script_tmp += "restart_dnsmasq;";
@@ -1129,7 +1127,7 @@ var dstoff_end_m,dstoff_end_w,dstoff_end_d,dstoff_end_h;
 function parse_dstoffset(_dstoffset){     //Mm.w.d/h,Mm.w.d/h
 	if(_dstoffset){
 		var dstoffset_startend = _dstoffset.split(",");
-			
+
 		if(dstoffset_startend[0] != "" && dstoffset_startend[0] != undefined){
 			var dstoffset_start = trim(dstoffset_startend[0]);
 			var dstoff_start = dstoffset_start.split(".");
@@ -1594,7 +1592,6 @@ function display_spec_IP(flag){
 		setTimeout("showDropdownClientList('setClientIP', 'ip', 'all', 'ClientList_Block_PC', 'pull_arrow', 'online');", 1000);
 	}
 }
-
 
 function hide_reboot_option(flag){
 	document.getElementById("reboot_schedule_date_tr").style.display = (flag == 1) ? "" : "none";

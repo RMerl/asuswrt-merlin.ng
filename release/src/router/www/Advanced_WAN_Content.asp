@@ -2318,7 +2318,7 @@ function showInfo(){
 							</tr>
 
 							<tr id="nat_type_tr" style="display:none;">
-								<th><#OpenNAT_TYPE#>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<a id="faq_nat" href="" target="_blank" style="font-family:Lucida Console;text-decoration:underline;">FAQ</a></th> 
+								<th><#OpenNAT_TYPE#></th> 
 								<td>
 									<select name="nat_type" class="input_option">
 										<option value="0" <% nvram_match("nat_type", "0", "selected"); %>><#OpenNAT_TYPE_Symmetric#></option>

@@ -4581,7 +4581,6 @@ start_ddns(char *caller, int isAidisk)
 #ifdef RTCONFIG_INADYN
 	if (strcmp(server, "DNS.HE.NET") == 0)
 		user = nvram_safe_get("ddns_hostname_x"); /* The username is also the hostname in HE.NET */
-	else
 #endif
 	host = nvram_safe_get("ddns_hostname_x");
 

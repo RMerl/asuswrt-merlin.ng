@@ -176,7 +176,6 @@ function initial(){
 	
 	show_menu();
 
-	document.getElementById("faq_nat").href=faq_href1;
 	document.getElementById("faq").href=faq_href2;
 	
 	if(!Softwire46_support){

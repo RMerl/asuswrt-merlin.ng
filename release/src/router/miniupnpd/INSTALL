@@ -1,5 +1,5 @@
 MiniUPnP project.
-(c) 2006-2024 Thomas Bernard
+(c) 2006-2025 Thomas Bernard
 Homepage : http://miniupnp.free.fr/
 Mirror: https://miniupnp.tuxfamily.org/
 github: https://github.com/miniupnp/miniupnp
@@ -68,11 +68,19 @@ You need to download xnu sources : https://opensource.apple.com/tarballs/xnu/
 To Build and install :
 
 - make sure you have libiptc available on your system :
-  if you are using debian, "apt-get install iptables-dev"
+  if you are using debian :
+  > apt-get install iptables-dev
+  or
+  > apt-get install libxtables-dev libiptc-dev
+  Other useful debian packages : libmnl-dev, libnetfilter-conntrack-dev.
   Some versions of the iptables-dev package don't include the
   necessary files : read "how to get libiptc with its headers on debian" below.
   In anycase, libiptc is available in iptables sources packages
   from http://netfilter.org
+- You should also have libcap/libcap-ng for privilege dropping:
+  > apt-get install libcap-ng-dev
+  And libuuid to generate uuid at runtimes for events:
+  > apt-get install uuid-dev
 - edit and run netfilter/iptables_init.sh shell script.
   This script must allways be run before the daemon
   to set up initial rules and chains.
@@ -116,6 +124,10 @@ How to get libiptc with its headers on debian :
 
 install the required development libraries. For debian :
  > apt-get install libnftnl-dev libmnl-dev
+Also useful :
+ > apt-get install libnetfilter-conntrack-dev
+ > apt-get install libcap-ng-dev
+ > apt-get install uuid-dev
 
 To build :
  > ./configure --firewall=nftables
@@ -133,7 +145,7 @@ Almost all options are also available through command line switches.
 A basic configuration would set :
 ext_ifname :   WAN network interface (interface connected to the internet)
 listening_ip : LAN network interface (network where to supply NAT traversal)
-enable_natpmp=yes
+enable_pcp_pmp=yes
 enable_upnp=yes
 and the permission rules (see below).
 

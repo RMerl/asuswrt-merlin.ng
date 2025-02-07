@@ -2,7 +2,7 @@
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
- * (c) 2006-2024 Thomas Bernard
+ * (c) 2006-2025 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -39,8 +39,13 @@
  *   Must be set with OpenBSD version 4.0 and up.
  * - PF_NEWSTYLE
  *   Must be set with OpenBSD version 4.7 and up. FreeBSD/pfSense is old style.
+ * - USE_LIBPFCTL
+ *   libpfctl was introduced in FreeBSD 14. Starting with FreeBSD 15,
+ *   several ioctl calls (such as DIOCGETRULE) are removed, so libpfctl has
+ *   to be used.
  */
 
+#include "config.h"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/param.h>
@@ -63,9 +68,11 @@
 #include <syslog.h>
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef USE_LIBPFCTL
+#include <libpfctl.h>
+#endif
 
 #include "../macros.h"
-#include "config.h"
 #include "obsdrdr.h"
 #include "../upnpglobalvars.h"
 #include "../getifaddr.h"
@@ -155,7 +162,11 @@ shutdown_redirect(void)
 int
 init_redirect(void)
 {
+#ifdef USE_LIBPFCTL
+	struct pfctl_status *status;
+#else
 	struct pf_status status;
+#endif
 	if(dev>=0)
 		shutdown_redirect();
 	dev = open("/dev/pf", O_RDWR);
@@ -163,6 +174,19 @@ init_redirect(void)
 		syslog(LOG_ERR, "open(\"/dev/pf\"): %m");
 		return -1;
 	}
+#ifdef USE_LIBPFCTL
+	status = pfctl_get_status(dev);
+	if (status == NULL) {
+		syslog(LOG_ERR, "pfctl_get_status: %m");
+		return -1;
+	}
+	if(!status->running) {
+		pfctl_free_status(status);
+		syslog(LOG_ERR, "pf is disabled");
+		return -1;
+	}
+	pfctl_free_status(status);
+#else
 	if(ioctl(dev, DIOCGETSTATUS, &status)<0) {
 		syslog(LOG_ERR, "DIOCGETSTATUS: %m");
 		return -1;
@@ -171,6 +195,7 @@ init_redirect(void)
 		syslog(LOG_ERR, "pf is disabled");
 		return -1;
 	}
+#endif
 	return 0;
 }
 
@@ -460,6 +485,7 @@ int add_nat_rule(const char * ifname,
 	return r;
 }
 
+
 /*
  * returns:  0 : OK
  *          -1 : ERROR
@@ -470,19 +496,38 @@ delete_nat_rule(const char * ifname, unsigned short iport, int proto, in_addr_t 
 {
 	int i, n, r;
 	unsigned int tnum;
+#ifdef USE_LIBPFCTL
+	struct pfctl_rules_info ri;
+	struct pfctl_rule rule;
+#define RULE (rule)
+	char anchor_call[MAXPATHLEN] = "";
+#else
 	struct pfioc_rule pr;
+#define RULE (pr.rule)
+#endif
 	UNUSED(ifname);
 	if(dev<0) {
 		syslog(LOG_ERR, "pf device is not open");
 		return -1;
 	}
+#ifdef USE_LIBPFCTL
+	if(pfctl_get_rules_info(dev, &ri, PF_PASS, anchor_name) < 0)
+	{
+		syslog(LOG_ERR, "pfctl_get_rules_info: %m");
+		return -1;
+	}
+	n = ri.nr;
+#ifdef PF_RELEASETICKETS
+	tnum = ri.ticket;
+#endif /* PF_RELEASETICKETS */
+#else /* USE_LIBPFCTL */
 	memset(&pr, 0, sizeof(pr));
 	strlcpy(pr.anchor, anchor_name, MAXPATHLEN);
 #ifndef PF_NEWSTYLE
-	pr.rule.action = PF_NAT;
+	RULE.action = PF_NAT;
 #else
-	pr.rule.action = PF_PASS;	/* or PF_MATCH as we dont expect outbound packets to be blocked */
-	pr.rule.direction = PF_OUT;
+	RULE.action = PF_PASS;	/* or PF_MATCH as we dont expect outbound packets to be blocked */
+	RULE.direction = PF_OUT;
 #endif
 	if(ioctl(dev, DIOCGETRULES, &pr) < 0)
 	{
@@ -493,9 +538,18 @@ delete_nat_rule(const char * ifname, unsigned short iport, int proto, in_addr_t 
 #ifdef PF_RELEASETICKETS
 	tnum = pr.ticket;
 #endif /* PF_RELEASETICKETS */
+#endif /* USE_LIBPFCTL */
 	r = -2;	/* not found */
 	for(i=0; i<n; i++)
 	{
+#ifdef USE_LIBPFCTL
+		if(pfctl_get_rule(dev, i, ri.ticket, anchor_name, PF_PASS, &rule, anchor_call) < 0)
+		{
+			syslog(LOG_ERR, "pfctl_get_rule(): %m");
+			r = -1;
+			break;
+		}
+#else /* USE_LIBPFCTL */
 		pr.nr = i;
 		if(ioctl(dev, DIOCGETRULE, &pr) < 0)
 		{
@@ -503,15 +557,23 @@ delete_nat_rule(const char * ifname, unsigned short iport, int proto, in_addr_t 
 			r = -1;
 			break;
 		}
+#endif /* USE_LIBPFCTL */
 #ifdef TEST
 		syslog(LOG_DEBUG, "%2d port=%hu proto=%d addr=%8x    %8x",
-		       i, ntohs(pr.rule.src.port[0]), pr.rule.proto,
-		       pr.rule.src.addr.v.a.addr.v4.s_addr, iaddr);
+		       i, ntohs(RULE.src.port[0]), RULE.proto,
+		       RULE.src.addr.v.a.addr.v4.s_addr, iaddr);
 #endif /* TEST */
-		if(iport == ntohs(pr.rule.src.port[0])
-		 && pr.rule.proto == proto
-		 && iaddr == pr.rule.src.addr.v.a.addr.v4.s_addr)
+		if(iport == ntohs(RULE.src.port[0])
+		 && RULE.proto == proto
+		 && iaddr == RULE.src.addr.v.a.addr.v4.s_addr)
 		{
+#ifdef USE_LIBPFCTL
+			/* to change with the libpfctl alternative to DIOCCHANGERULE */
+			struct pfioc_rule pr;
+			memset(&pr, 0, sizeof(pr));
+			strlcpy(pr.anchor, anchor_name, MAXPATHLEN);
+			pr.ticket = ri.ticket;
+#endif
 			pr.action = PF_CHANGE_GET_TICKET;
 			if(ioctl(dev, DIOCCHANGERULE, &pr) < 0)
 			{
@@ -828,17 +890,29 @@ add_filter_rule2(const char * ifname,
 int
 get_redirect_rule_count(const char * ifname)
 {
+#ifdef USE_LIBPFCTL
+	struct pfctl_rules_info ri;
+#else
 	struct pfioc_rule pr;
+#endif
 	UNUSED(ifname);
 
 	if(dev<0) {
 		syslog(LOG_ERR, "pf device is not open");
 		return -1;
 	}
+#ifdef USE_LIBPFCTL
+	if (pfctl_get_rules_info(dev, &ri, PF_RDR, anchor_name) < 0)
+	{
+		syslog(LOG_ERR, "pfctl_get_rules_info: %m");
+		return -1;
+	}
+	return ri.nr;
+#else
 	memset(&pr, 0, sizeof(pr));
 	strlcpy(pr.anchor, anchor_name, MAXPATHLEN);
 #ifndef PF_NEWSTYLE
-	pr.rule.action = PF_RDR;
+	RULE.action = PF_RDR;
 #endif
 	if(ioctl(dev, DIOCGETRULES, &pr) < 0)
 	{
@@ -847,6 +921,7 @@ get_redirect_rule_count(const char * ifname)
 	}
 	release_ticket(dev, pr.ticket);
 	return pr.nr;
+#endif
 }
 
 /* get_redirect_rule()
@@ -863,7 +938,16 @@ get_redirect_rule(const char * ifname, unsigned short eport, int proto,
 {
 	int i, n, r;
 	unsigned int tnum;
+#undef RULE
+#ifdef USE_LIBPFCTL
+	struct pfctl_rules_info ri;
+	struct pfctl_rule rule;
+#define RULE (rule)
+	char anchor_call[MAXPATHLEN] = "";
+#else /* USE_LIBPFCTL */
 	struct pfioc_rule pr;
+#define RULE (pr.rule)
+#endif /* USE_LIBPFCTL */
 #ifndef PF_NEWSTYLE
 	struct pfioc_pooladdr pp;
 #endif
@@ -873,10 +957,21 @@ get_redirect_rule(const char * ifname, unsigned short eport, int proto,
 		syslog(LOG_ERR, "pf device is not open");
 		return -1;
 	}
+#ifdef USE_LIBPFCTL
+	if(pfctl_get_rules_info(dev, &ri, PF_RDR, anchor_name) < 0)
+	{
+		syslog(LOG_ERR, "pfctl_get_rules_info: %m");
+		return -1;
+	}
+	n = ri.nr;
+#ifdef PF_RELEASETICKETS
+	tnum = ri.ticket;
+#endif /* PF_RELEASETICKETS */
+#else /* USE_LIBPFCTL */
 	memset(&pr, 0, sizeof(pr));
 	strlcpy(pr.anchor, anchor_name, MAXPATHLEN);
 #ifndef PF_NEWSTYLE
-	pr.rule.action = PF_RDR;
+	RULE.action = PF_RDR;
 #endif
 	if(ioctl(dev, DIOCGETRULES, &pr) < 0)
 	{
@@ -887,9 +982,18 @@ get_redirect_rule(const char * ifname, unsigned short eport, int proto,
 #ifdef PF_RELEASETICKETS
 	tnum = pr.ticket;
 #endif /* PF_RELEASETICKETS */
+#endif /* USE_LIBPFCTL */
 	r = -2;
 	for(i=0; i<n; i++)
 	{
+#ifdef USE_LIBPFCTL
+		if(pfctl_get_rule(dev, i, ri.ticket, anchor_name, PF_RDR, &rule, anchor_call) < 0)
+		{
+			syslog(LOG_ERR, "pfctl_get_rule: %m");
+			r = -1;
+			break;
+		}
+#else /* USE_LIBPFCTL */
 		pr.nr = i;
 		if(ioctl(dev, DIOCGETRULE, &pr) < 0)
 		{
@@ -897,39 +1001,48 @@ get_redirect_rule(const char * ifname, unsigned short eport, int proto,
 			r = -1;
 			break;
 		}
+#endif /* USE_LIBPFCTL */
 #ifdef __APPLE__
-		if( (eport == ntohs(pr.rule.dst.xport.range.port[0]))
-		  && (eport == ntohs(pr.rule.dst.xport.range.port[1]))
+		if( (eport == ntohs(RULE.dst.xport.range.port[0]))
+		  && (eport == ntohs(RULE.dst.xport.range.port[1]))
 #else
-		if( (eport == ntohs(pr.rule.dst.port[0]))
-		  && (eport == ntohs(pr.rule.dst.port[1]))
+		if( (eport == ntohs(RULE.dst.port[0]))
+		  && (eport == ntohs(RULE.dst.port[1]))
 #endif
-		  && (pr.rule.proto == proto) )
+		  && (RULE.proto == proto) )
 		{
 #ifndef PF_NEWSTYLE
-			*iport = pr.rule.rpool.proxy_port[0];
+			*iport = RULE.rpool.proxy_port[0];
 #else
-			*iport = pr.rule.rdr.proxy_port[0];
+			*iport = RULE.rdr.proxy_port[0];
 #endif
 			if(desc)
-				strlcpy(desc, pr.rule.label, desclen);
+#ifdef USE_LIBPFCTL
+				strlcpy(desc, RULE.label[0], desclen);
+#else /* USE_LIBPFCTL */
+				strlcpy(desc, RULE.label, desclen);
+#endif /* USE_LIBPFCTL */
 #ifdef PFRULE_INOUT_COUNTS
 			if(packets)
-				*packets = pr.rule.packets[0] + pr.rule.packets[1];
+				*packets = RULE.packets[0] + RULE.packets[1];
 			if(bytes)
-				*bytes = pr.rule.bytes[0] + pr.rule.bytes[1];
+				*bytes = RULE.bytes[0] + RULE.bytes[1];
 #else
 			if(packets)
-				*packets = pr.rule.packets;
+				*packets = RULE.packets;
 			if(bytes)
-				*bytes = pr.rule.bytes;
+				*bytes = RULE.bytes;
 #endif
 #ifndef PF_NEWSTYLE
 			memset(&pp, 0, sizeof(pp));
 			strlcpy(pp.anchor, anchor_name, MAXPATHLEN);
 			pp.r_action = PF_RDR;
 			pp.r_num = i;
+#ifdef USE_LIBPFCTL
+			pp.ticket = ri.ticket;
+#else /* USE_LIBPFCTL */
 			pp.ticket = pr.ticket;
+#endif /* USE_LIBPFCTL */
 			if(ioctl(dev, DIOCGETADDRS, &pp) < 0)
 			{
 				syslog(LOG_ERR, "ioctl(dev, DIOCGETADDRS, ...): %m");
@@ -957,15 +1070,15 @@ get_redirect_rule(const char * ifname, unsigned short eport, int proto,
 			          iaddr, iaddrlen);
 #endif
 #else
-			inet_ntop(AF_INET, &pr.rule.rdr.addr.v.a.addr.v4.s_addr,
+			inet_ntop(AF_INET, &RULE.rdr.addr.v.a.addr.v4.s_addr,
 			          iaddr, iaddrlen);
 #endif
 			if(rhost && rhostlen > 0)
 			{
 #ifdef PFVAR_NEW_STYLE
-				if (pr.rule.src.addr.v.a.addr.v4addr.s_addr == 0)
+				if (RULE.src.addr.v.a.addr.v4addr.s_addr == 0)
 #else
-				if (pr.rule.src.addr.v.a.addr.v4.s_addr == 0)
+				if (RULE.src.addr.v.a.addr.v4.s_addr == 0)
 #endif
 				{
 					rhost[0] = '\0'; /* empty string */
@@ -973,10 +1086,10 @@ get_redirect_rule(const char * ifname, unsigned short eport, int proto,
 				else
 				{
 #ifdef PFVAR_NEW_STYLE
-					inet_ntop(AF_INET, &pr.rule.src.addr.v.a.addr.v4addr.s_addr,
+					inet_ntop(AF_INET, &RULE.src.addr.v.a.addr.v4addr.s_addr,
 					          rhost, rhostlen);
 #else
-					inet_ntop(AF_INET, &pr.rule.src.addr.v.a.addr.v4.s_addr,
+					inet_ntop(AF_INET, &RULE.src.addr.v.a.addr.v4.s_addr,
 					          rhost, rhostlen);
 #endif
 				}
@@ -1010,6 +1123,14 @@ priv_delete_redirect_rule_check_desc(const char * ifname, unsigned short eport,
 	int i, n, r;
 	unsigned int tnum;
 	struct pfioc_rule pr;
+#ifdef USE_LIBPFCTL
+	struct pfctl_rules_info ri;
+	struct pfctl_rule rule;
+#define RULE (rule)
+	char anchor_call[MAXPATHLEN] = "";
+#else /* USE_LIBPFCTL */
+#define RULE (pr.rule)
+#endif /* USE_LIBPFCTL */
 	UNUSED(ifname);
 
 	if(dev<0) {
@@ -1019,8 +1140,18 @@ priv_delete_redirect_rule_check_desc(const char * ifname, unsigned short eport,
 	memset(&pr, 0, sizeof(pr));
 	strlcpy(pr.anchor, anchor_name, MAXPATHLEN);
 #ifndef PF_NEWSTYLE
-	pr.rule.action = PF_RDR;
+	RULE.action = PF_RDR;
+	pr.rule.action = PF_RDR;	/* used with USE_LIBPFCTL for the DIOCCHANGERULE calls */
 #endif
+#ifdef USE_LIBPFCTL
+	if (pfctl_get_rules_info(dev, &ri, PF_RDR, anchor_name) < 0)
+	{
+		syslog(LOG_ERR, "pfctl_get_rules_info: %m");
+		return -1;
+	}
+	pr.ticket = ri.ticket;
+	n = ri.nr;
+#else /* USE_LIBPFCTL */
 	if(ioctl(dev, DIOCGETRULES, &pr) < 0)
 	{
 		syslog(LOG_ERR, "ioctl(dev, DIOCGETRULES, ...): %m");
@@ -1030,28 +1161,33 @@ priv_delete_redirect_rule_check_desc(const char * ifname, unsigned short eport,
 #ifdef PF_RELEASETICKETS
 	tnum = pr.ticket;
 #endif /* PF_RELEASETICKETS */
+#endif /* USE_LIBPFCTL */
 	r = -2;
 	for(i=0; i<n; i++)
 	{
+#ifdef USE_LIBPFCTL
+		if(pfctl_get_rule(dev, i, ri.ticket, anchor_name, PF_RDR, &rule, anchor_call) < 0)
+#else /* USE_LIBPFCTL */
 		pr.nr = i;
 		if(ioctl(dev, DIOCGETRULE, &pr) < 0)
+#endif /* USE_LIBPFCTL */
 		{
 			syslog(LOG_ERR, "ioctl(dev, DIOCGETRULE): %m");
 			r = -1;
 			break;
 		}
 #ifdef __APPLE__
-		if( (eport == ntohs(pr.rule.dst.xport.range.port[0]))
-		  && (eport == ntohs(pr.rule.dst.xport.range.port[1]))
+		if( (eport == ntohs(RULE.dst.xport.range.port[0]))
+		  && (eport == ntohs(RULE.dst.xport.range.port[1]))
 #else
-		if( (eport == ntohs(pr.rule.dst.port[0]))
-		  && (eport == ntohs(pr.rule.dst.port[1]))
+		if( (eport == ntohs(RULE.dst.port[0]))
+		  && (eport == ntohs(RULE.dst.port[1]))
 #endif
-		  && (pr.rule.proto == proto) )
+		  && (RULE.proto == proto) )
 		{
 			/* retrieve iport in order to remove filter rule */
 #ifndef PF_NEWSTYLE
-			if(iport) *iport = pr.rule.rpool.proxy_port[0];
+			if(iport) *iport = RULE.rpool.proxy_port[0];
 			if(iaddr)
 			{
 				/* retrieve internal address */
@@ -1060,7 +1196,11 @@ priv_delete_redirect_rule_check_desc(const char * ifname, unsigned short eport,
 				strlcpy(pp.anchor, anchor_name, MAXPATHLEN);
 				pp.r_action = PF_RDR;
 				pp.r_num = i;
+#ifdef USE_LIBPFCTL
+				pp.ticket = ri.ticket;
+#else /* USE_LIBPFCTL */
 				pp.ticket = pr.ticket;
+#endif /* USE_LIBPFCTL */
 				if(ioctl(dev, DIOCGETADDRS, &pp) < 0)
 				{
 					syslog(LOG_ERR, "ioctl(dev, DIOCGETADDRS, ...): %m");
@@ -1087,33 +1227,38 @@ priv_delete_redirect_rule_check_desc(const char * ifname, unsigned short eport,
 #endif
 			}
 #else
-			if(iport) *iport = pr.rule.rdr.proxy_port[0];
+			if(iport) *iport = RULE.rdr.proxy_port[0];
 			if(iaddr)
 			{
 				/* retrieve internal address */
-				*iaddr = pr.rule.rdr.addr.v.a.addr.v4.s_addr;
+				*iaddr = RULE.rdr.addr.v.a.addr.v4.s_addr;
 			}
 #endif
 			if(rhost && rhostlen > 0)
 			{
 #ifdef PFVAR_NEW_STYLE
-				if (pr.rule.src.addr.v.a.addr.v4addr.s_addr == 0)
+				if (RULE.src.addr.v.a.addr.v4addr.s_addr == 0)
 #else
-				if (pr.rule.src.addr.v.a.addr.v4.s_addr == 0)
+				if (RULE.src.addr.v.a.addr.v4.s_addr == 0)
 #endif
 					rhost[0] = '\0'; /* empty string */
 				else
 #ifdef PFVAR_NEW_STYLE
-					inet_ntop(AF_INET, &pr.rule.src.addr.v.a.addr.v4addr.s_addr,
+					inet_ntop(AF_INET, &RULE.src.addr.v.a.addr.v4addr.s_addr,
 					          rhost, rhostlen);
 #else
-					inet_ntop(AF_INET, &pr.rule.src.addr.v.a.addr.v4.s_addr,
+					inet_ntop(AF_INET, &RULE.src.addr.v.a.addr.v4.s_addr,
 					          rhost, rhostlen);
 #endif
 			}
 			if(check_desc) {
-				if((desc == NULL && pr.rule.label[0] == '\0') ||
-				   (desc && 0 == strcmp(desc, pr.rule.label))) {
+#ifdef USE_LIBPFCTL
+				if((desc == NULL && RULE.label[0][0] == '\0') ||
+				   (desc && 0 == strcmp(desc, RULE.label[0]))) {
+#else /* USE_LIBPFCTL */
+				if((desc == NULL && RULE.label[0] == '\0') ||
+				   (desc && 0 == strcmp(desc, RULE.label))) {
+#endif /* USE_LIBPFCTL */
 					r = 1;
 					break;
 				}
@@ -1172,7 +1317,7 @@ priv_delete_filter_rule(const char * ifname, unsigned short iport,
 	}
 	memset(&pr, 0, sizeof(pr));
 	strlcpy(pr.anchor, anchor_name, MAXPATHLEN);
-	pr.rule.action = PF_PASS;
+	RULE.action = PF_PASS;
 	if(ioctl(dev, DIOCGETRULES, &pr) < 0)
 	{
 		syslog(LOG_ERR, "ioctl(dev, DIOCGETRULES, ...): %m");
@@ -1194,13 +1339,13 @@ priv_delete_filter_rule(const char * ifname, unsigned short iport,
 		}
 #ifdef TEST
 syslog(LOG_DEBUG, "%2d port=%hu proto=%d addr=%8x",
-       i, ntohs(pr.rule.dst.port[0]), pr.rule.proto,
-       pr.rule.dst.addr.v.a.addr.v4.s_addr);
-/*pr.rule.dst.addr.v.a.mask.v4.s_addr*/
+       i, ntohs(RULE.dst.port[0]), RULE.proto,
+       RULE.dst.addr.v.a.addr.v4.s_addr);
+/*RULE.dst.addr.v.a.mask.v4.s_addr*/
 #endif
-		if( (iport == ntohs(pr.rule.dst.port[0]))
-		  && (pr.rule.proto == proto) &&
-		   (iaddr == 0 || iaddr == pr.rule.dst.addr.v.a.addr.v4.s_addr)
+		if( (iport == ntohs(RULE.dst.port[0]))
+		  && (RULE.proto == proto) &&
+		   (iaddr == 0 || iaddr == RULE.dst.addr.v.a.addr.v4.s_addr)
 		  )
 		{
 			pr.action = PF_CHANGE_GET_TICKET;
@@ -1274,7 +1419,15 @@ get_redirect_rule_by_index(int index,
 {
 	int n, r;
 	unsigned int tnum;
+#ifdef USE_LIBPFCTL
+	struct pfctl_rules_info ri;
+	struct pfctl_rule rule;
+#define RULE (rule)
+	char anchor_call[MAXPATHLEN] = "";
+#else /* USE_LIBPFCTL */
 	struct pfioc_rule pr;
+#define RULE (pr.rule)
+#endif /* USE_LIBPFCTL */
 #ifndef PF_NEWSTYLE
 	struct pfioc_pooladdr pp;
 #endif
@@ -1284,10 +1437,18 @@ get_redirect_rule_by_index(int index,
 		syslog(LOG_ERR, "pf device is not open");
 		return -1;
 	}
+#ifdef USE_LIBPFCTL
+	if(pfctl_get_rules_info(dev, &ri, PF_RDR, anchor_name) < 0)
+	{
+		syslog(LOG_ERR, "pfctl_get_rules_info: %m");
+		return -1;
+	}
+	n = ri.nr;
+#else /* USE_LIBPFCTL */
 	memset(&pr, 0, sizeof(pr));
 	strlcpy(pr.anchor, anchor_name, MAXPATHLEN);
 #ifndef PF_NEWSTYLE
-	pr.rule.action = PF_RDR;
+	RULE.action = PF_RDR;
 #endif
 	if(ioctl(dev, DIOCGETRULES, &pr) < 0)
 	{
@@ -1295,50 +1456,82 @@ get_redirect_rule_by_index(int index,
 		return -1;
 	}
 	n = pr.nr;
-	r = -1;
 #ifdef PF_RELEASETICKETS
 	tnum = pr.ticket;
 #endif /* PF_RELEASETICKETS */
+#endif /* USE_LIBPFCTL */
+	r = -1;
 	if(index >= n)
 		goto error;
+#ifdef USE_LIBPFCTL
+	if(pfctl_get_rule(dev, index, ri.ticket, anchor_name, PF_RDR, &rule, anchor_call) < 0)
+	{
+		syslog(LOG_ERR, "pfctl_get_rule: %m");
+		goto error;
+	}
+#else /* USE_LIBPFCTL */
+#if defined(OpenBSD) && OpenBSD >= 202310
+	/* OpenBSD >= 7.4
+	 * DIOCGETRULE is changed to always get rules incrementaly
+	 * pr.nr is now a return value
+	 * https://github.com/openbsd/src/commit/072583c99019a91ac511a1e33e10ad02df79ec97 */
+	do {
+		if(ioctl(dev, DIOCGETRULE, &pr) < 0)
+		{
+			syslog(LOG_ERR, "ioctl(dev, DIOCGETRULE): %m");
+			goto error;
+		}
+	} while(pr.nr < (unsigned int)index);
+#else
+	/* not OpenBSD >= 7.4 */
 	pr.nr = index;
 	if(ioctl(dev, DIOCGETRULE, &pr) < 0)
 	{
 		syslog(LOG_ERR, "ioctl(dev, DIOCGETRULE): %m");
 		goto error;
 	}
-	*proto = pr.rule.proto;
+#endif /* defined(OpenBSD) && OpenBSD >= 202310 */
+#endif /* USE_LIBPFCTL */
+	*proto = RULE.proto;
 #ifdef __APPLE__
-	*eport = ntohs(pr.rule.dst.xport.range.port[0]);
+	*eport = ntohs(RULE.dst.xport.range.port[0]);
 #else
-	*eport = ntohs(pr.rule.dst.port[0]);
+	*eport = ntohs(RULE.dst.port[0]);
 #endif
 #ifndef PF_NEWSTYLE
-	*iport = pr.rule.rpool.proxy_port[0];
+	*iport = RULE.rpool.proxy_port[0];
 #else
-	*iport = pr.rule.rdr.proxy_port[0];
+	*iport = RULE.rdr.proxy_port[0];
 #endif
 	if(ifname)
-		strlcpy(ifname, pr.rule.ifname, IFNAMSIZ);
+		strlcpy(ifname, RULE.ifname, IFNAMSIZ);
 	if(desc)
-		strlcpy(desc, pr.rule.label, desclen);
+#ifdef USE_LIBPFCTL
+		strlcpy(desc, RULE.label[0], desclen);
+#else /* USE_LIBPFCTL */
+		strlcpy(desc, RULE.label, desclen);
+#endif /* USE_LIBPFCTL */
 #ifdef PFRULE_INOUT_COUNTS
 	if(packets)
-		*packets = pr.rule.packets[0] + pr.rule.packets[1];
+		*packets = RULE.packets[0] + RULE.packets[1];
 	if(bytes)
-		*bytes = pr.rule.bytes[0] + pr.rule.bytes[1];
+		*bytes = RULE.bytes[0] + RULE.bytes[1];
 #else
 	if(packets)
-		*packets = pr.rule.packets;
+		*packets = RULE.packets;
 	if(bytes)
-		*bytes = pr.rule.bytes;
+		*bytes = RULE.bytes;
 #endif
 #ifndef PF_NEWSTYLE
 	memset(&pp, 0, sizeof(pp));
 	strlcpy(pp.anchor, anchor_name, MAXPATHLEN);
 	pp.r_action = PF_RDR;
 	pp.r_num = index;
+#ifdef USE_LIBPFCTL
+	pp.ticket = ri.ticket;
+#else /* USE_LIBPFCTL */
 	pp.ticket = pr.ticket;
+#endif /* USE_LIBPFCTL */
 	if(ioctl(dev, DIOCGETADDRS, &pp) < 0)
 	{
 		syslog(LOG_ERR, "ioctl(dev, DIOCGETADDRS, ...): %m");
@@ -1363,15 +1556,15 @@ get_redirect_rule_by_index(int index,
 	          iaddr, iaddrlen);
 #endif
 #else
-	inet_ntop(AF_INET, &pr.rule.rdr.addr.v.a.addr.v4.s_addr,
+	inet_ntop(AF_INET, &RULE.rdr.addr.v.a.addr.v4.s_addr,
 	          iaddr, iaddrlen);
 #endif
 	if(rhost && rhostlen > 0)
 	{
 #ifdef PFVAR_NEW_STYLE
-		if (pr.rule.src.addr.v.a.addr.v4addr.s_addr == 0)
+		if (RULE.src.addr.v.a.addr.v4addr.s_addr == 0)
 #else
-		if (pr.rule.src.addr.v.a.addr.v4.s_addr == 0)
+		if (RULE.src.addr.v.a.addr.v4.s_addr == 0)
 #endif
 		{
 			rhost[0] = '\0'; /* empty string */
@@ -1379,10 +1572,10 @@ get_redirect_rule_by_index(int index,
 		else
 		{
 #ifdef PFVAR_NEW_STYLE
-			inet_ntop(AF_INET, &pr.rule.src.addr.v.a.addr.v4addr.s_addr,
+			inet_ntop(AF_INET, &RULE.src.addr.v.a.addr.v4addr.s_addr,
 			          rhost, rhostlen);
 #else
-			inet_ntop(AF_INET, &pr.rule.src.addr.v.a.addr.v4.s_addr,
+			inet_ntop(AF_INET, &RULE.src.addr.v.a.addr.v4.s_addr,
 			          rhost, rhostlen);
 #endif
 		}
@@ -1405,7 +1598,14 @@ get_portmappings_in_range(unsigned short startport, unsigned short endport,
 	unsigned int capacity, tnum;
 	int i, n;
 	unsigned short eport;
+#ifdef USE_LIBPFCTL
+	struct pfctl_rules_info ri;
+	struct pfctl_rule rule;
+#define RULE (rule)
+#else /* USE_LIBPFCTL */
 	struct pfioc_rule pr;
+#define RULE (pr.rule)
+#endif
 
 	*number = 0;
 	if(dev<0) {
@@ -1419,10 +1619,19 @@ get_portmappings_in_range(unsigned short startport, unsigned short endport,
 		syslog(LOG_ERR, "get_portmappings_in_range() : calloc error");
 		return NULL;
 	}
+#ifdef USE_LIBPFCTL
+	if (pfctl_get_rules_info(dev, &ri, PF_RDR, anchor_name) < 0)
+	{
+		syslog(LOG_ERR, "pfctl_get_rules_info: %m");
+		free(array);
+		return NULL;
+	}
+	n = ri.nr;
+#else /* USE_LIBPFCTL */
 	memset(&pr, 0, sizeof(pr));
 	strlcpy(pr.anchor, anchor_name, MAXPATHLEN);
 #ifndef PF_NEWSTYLE
-	pr.rule.action = PF_RDR;
+	RULE.action = PF_RDR;
 #endif
 	if(ioctl(dev, DIOCGETRULES, &pr) < 0)
 	{
@@ -1434,22 +1643,26 @@ get_portmappings_in_range(unsigned short startport, unsigned short endport,
 #ifdef PF_RELEASETICKETS
 	tnum = pr.ticket;
 #endif /* PF_RELEASETICKETS */
+#endif /* USE_LIBPFCTL */
 	for(i=0; i<n; i++)
 	{
+#ifdef USE_LIBPFCTL
+#else /* USE_LIBPFCTL */
 		pr.nr = i;
 		if(ioctl(dev, DIOCGETRULE, &pr) < 0)
 		{
 			syslog(LOG_ERR, "ioctl(dev, DIOCGETRULE): %m");
 			continue;
 		}
+#endif /* USE_LIBPFCTL */
 #ifdef __APPLE__
-		eport = ntohs(pr.rule.dst.xport.range.port[0]);
-		if( (eport == ntohs(pr.rule.dst.xport.range.port[1]))
+		eport = ntohs(RULE.dst.xport.range.port[0]);
+		if( (eport == ntohs(RULE.dst.xport.range.port[1]))
 #else
-		eport = ntohs(pr.rule.dst.port[0]);
-		if( (eport == ntohs(pr.rule.dst.port[1]))
+		eport = ntohs(RULE.dst.port[0]);
+		if( (eport == ntohs(RULE.dst.port[1]))
 #endif
-		  && (pr.rule.proto == proto)
+		  && (RULE.proto == proto)
 		  && (startport <= eport) && (eport <= endport) )
 		{
 			if(*number >= capacity)
@@ -1556,7 +1769,15 @@ list_rules(void)
 	char buf2[32];
 	int i, n;
 	unsigned int tnum;
+#ifdef USE_LIBPFCTL
+	struct pfctl_rules_info ri;
+	struct pfctl_rule rule;
+#define RULE (rule)
+	char anchor_call[MAXPATHLEN] = "";
+#else /* USE_LIBPFCTL */
 	struct pfioc_rule pr;
+#define RULE (pr.rule)
+#endif /* USE_LIBPFCTL */
 #ifndef PF_NEWSTYLE
 	struct pfioc_pooladdr pp;
 #endif
@@ -1566,42 +1787,63 @@ list_rules(void)
 		perror("pf dev not open");
 		return ;
 	}
+
+#ifdef USE_LIBPFCTL
+	if (pfctl_get_rules_info(dev, &ri, PF_RDR, anchor_name) < 0)
+		perror("pfctl_get_rules_info");
+	printf("ticket = %d, nr = %d\n", ri.ticket, ri.nr);
+	n = ri.nr;
+#else /* USE_LIBPFCTL */
 	memset(&pr, 0, sizeof(pr));
 	strlcpy(pr.anchor, anchor_name, MAXPATHLEN);
-	pr.rule.action = PF_RDR;
+	RULE.action = PF_RDR;
 	if(ioctl(dev, DIOCGETRULES, &pr) < 0)
 		perror("DIOCGETRULES");
 	printf("ticket = %d, nr = %d\n", pr.ticket, pr.nr);
 	n = pr.nr;
+#endif /* USE_LIBPFCTL */
 	for(i=0; i<n; i++)
 	{
 		printf("-- rule %d --\n", i);
+#ifdef USE_LIBPFCTL
+		if(pfctl_get_rule(dev, i, ri.ticket, anchor_name, PF_RDR, &rule, anchor_call) < 0)
+			perror("pfctl_get_rule");
+#else /* USE_LIBPFCTL */
 		pr.nr = i;
 		if(ioctl(dev, DIOCGETRULE, &pr) < 0)
 			perror("DIOCGETRULE");
+#endif /* USE_LIBPFCTL */
 		printf(" %s %s %d:%d -> %s %d:%d  proto %d keep_state=%d action=%d\n",
-			pr.rule.ifname,
-			inet_ntop(AF_INET, &pr.rule.src.addr.v.a.addr.v4.s_addr, buf, 32),
-			(int)ntohs(pr.rule.dst.port[0]),
-			(int)ntohs(pr.rule.dst.port[1]),
-			inet_ntop(AF_INET, &pr.rule.dst.addr.v.a.addr.v4.s_addr, buf2, 32),
+			RULE.ifname,
+			inet_ntop(AF_INET, &RULE.src.addr.v.a.addr.v4.s_addr, buf, 32),
+			(int)ntohs(RULE.dst.port[0]),
+			(int)ntohs(RULE.dst.port[1]),
+			inet_ntop(AF_INET, &RULE.dst.addr.v.a.addr.v4.s_addr, buf2, 32),
 #ifndef PF_NEWSTYLE
-			(int)pr.rule.rpool.proxy_port[0],
-			(int)pr.rule.rpool.proxy_port[1],
+			(int)RULE.rpool.proxy_port[0],
+			(int)RULE.rpool.proxy_port[1],
 #else
-			(int)pr.rule.rdr.proxy_port[0],
-			(int)pr.rule.rdr.proxy_port[1],
+			(int)RULE.rdr.proxy_port[0],
+			(int)RULE.rdr.proxy_port[1],
 #endif
-			(int)pr.rule.proto,
-			(int)pr.rule.keep_state,
-			(int)pr.rule.action);
-		printf("  description: \"%s\"\n", pr.rule.label);
+			(int)RULE.proto,
+			(int)RULE.keep_state,
+			(int)RULE.action);
+#ifdef USE_LIBPFCTL
+		printf("  description: \"%s\"\n", RULE.label[0]);
+#else /* USE_LIBPFCTL */
+		printf("  description: \"%s\"\n", RULE.label);
+#endif /* USE_LIBPFCTL */
 #ifndef PF_NEWSTYLE
 		memset(&pp, 0, sizeof(pp));
 		strlcpy(pp.anchor, anchor_name, MAXPATHLEN);
 		pp.r_action = PF_RDR;
 		pp.r_num = i;
+#ifdef USE_LIBPFCTL
+		pp.ticket = ri.ticket;
+#else
 		pp.ticket = pr.ticket;
+#endif
 		if(ioctl(dev, DIOCGETADDRS, &pp) < 0)
 			perror("DIOCGETADDRS");
 		printf("  nb pool addr = %d ticket=%d\n", pp.nr, pp.ticket);
@@ -1615,11 +1857,11 @@ list_rules(void)
 #else
 		printf("  rule_flag=%08x action=%d direction=%d log=%d logif=%d "
 		       "quick=%d ifnot=%d af=%d type=%d code=%d rdr.port_op=%d rdr.opts=%d\n",
-		       pr.rule.rule_flag, pr.rule.action, pr.rule.direction,
-		       pr.rule.log, pr.rule.logif, pr.rule.quick, pr.rule.ifnot,
-		       pr.rule.af, pr.rule.type, pr.rule.code,
-		       pr.rule.rdr.port_op, pr.rule.rdr.opts);
-		printf("  %s\n", inet_ntop(AF_INET, &pr.rule.rdr.addr.v.a.addr.v4.s_addr, buf, 32));
+		       RULE.rule_flag, RULE.action, RULE.direction,
+		       RULE.log, RULE.logif, RULE.quick, RULE.ifnot,
+		       RULE.af, RULE.type, RULE.code,
+		       RULE.rdr.port_op, RULE.rdr.opts);
+		printf("  %s\n", inet_ntop(AF_INET, &RULE.rdr.addr.v.a.addr.v4.s_addr, buf, 32));
 #endif
 	}
 	release_ticket(dev, tnum);

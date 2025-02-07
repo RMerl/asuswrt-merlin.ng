@@ -39,13 +39,6 @@
 #include <openssl/conf.h>
 static SSL_CTX *ssl_ctx = NULL;
 
-#ifndef HTTPS_CERTFILE
-#define HTTPS_CERTFILE "/etc/ssl/certs/ssl-cert-snakeoil.pem"
-#endif
-#ifndef HTTPS_KEYFILE
-#define HTTPS_KEYFILE "/etc/ssl/private/ssl-cert-snakeoil.key"
-#endif
-
 static void
 syslogsslerr(void)
 {

@@ -2,7 +2,7 @@
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
- * (c) 2006-2023 Thomas Bernard
+ * (c) 2006-2024 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -267,7 +267,10 @@ find_ipv6_addr(const char * ifname,
 		{
 			addr = (const struct sockaddr_in6 *)ife->ifa_addr;
 			if(!IN6_IS_ADDR_LOOPBACK(&addr->sin6_addr)
-			   && !IN6_IS_ADDR_LINKLOCAL(&addr->sin6_addr))
+			   && !IN6_IS_ADDR_LINKLOCAL(&addr->sin6_addr)
+			   /* RFC4193 "Unique Local IPv6 Unicast Addresses" only if no
+			    * other address found */
+			   && (r == 0 || (addr->sin6_addr.s6_addr[0] & 0xfe) != 0xfc))
 			{
 				inet_ntop(ife->ifa_addr->sa_family,
 				          &addr->sin6_addr,

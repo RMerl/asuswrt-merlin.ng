@@ -1,7 +1,7 @@
-/* $Id: upnpevents.h,v 1.12 2017/11/02 15:48:29 nanard Exp $ */
+/* $Id: upnpevents.h,v 1.13 2024/10/04 23:18:55 nanard Exp $ */
 /* MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2008-2017 Thomas Bernard
+ * (c) 2008-2024 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -54,5 +54,10 @@ void upnpevents_processfds(fd_set *readset, fd_set *writeset);
 void write_events_details(int s);
 #endif
 
+#endif /* ENABLE_EVENTS */
+
+#ifdef USE_SYSTEMD
+void upnp_update_status(void);
 #endif
+
 #endif

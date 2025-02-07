@@ -2,7 +2,7 @@ body{
 	margin: 0;
 }
 
-.bg{
+.bg_internetSpeed{
 	background-color: transparent;
 	color: #FFFFFF;
 	font-family: Arial, Helvetica, sans-serif;
@@ -127,6 +127,7 @@ body{
 }
 
 .container{
+	width: 100%;
 	margin: 0px 0px 0px 10px;
 }
 
@@ -1280,7 +1281,7 @@ body{
 }
 
 @media (max-width: 720px) {
-	.bg{
+	.bg_internetSpeed{
 		padding: 10px 0 0 0;
 	}
 

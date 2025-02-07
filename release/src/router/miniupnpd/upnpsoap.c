@@ -51,6 +51,29 @@ static int is_numeric(const char * s)
 	return 1;
 }
 
+#ifdef ENABLE_PCP
+/**
+ * Hide the PCP nonce value from the description returned to clients
+ */
+void hide_pcp_nonce(char * desc)
+{
+	int i;
+	if (desc == NULL) return;
+	/* format is "PCP %s %08x%08x%08x" */
+	if (*desc++ != 'P') return;
+	if (*desc++ != 'C') return;
+	if (*desc++ != 'P') return;
+	if (*desc++ != ' ') return;
+	/* skip the op code */
+	while (*desc >= 'A' && *desc <= 'Z') desc++;
+	if (*desc++ != ' ') return;
+	for (i = 0; i < 24; i++) {
+		if (desc[i] == '\0') return;
+		desc[i] = 'x';	/* replace nonce with 'x' characters */
+	}
+}
+#endif
+
 static void
 BuildSendAndCloseSoapResp(struct upnphttp * h,
                           const char * body, int bodylen)
@@ -830,6 +853,9 @@ GetSpecificPortMappingEntry(struct upnphttp * h, const char * action, const char
 		       action,
 		       r_host ? r_host : "NULL", ext_port, protocol, int_ip,
 		       (unsigned int)iport, desc, leaseduration);
+#ifdef ENABLE_PCP
+		hide_pcp_nonce(desc);
+#endif
 		bodylen = snprintf(body, sizeof(body), resp,
 				action, ns/*SERVICE_TYPE_WANIPC*/,
 				(unsigned int)iport, int_ip, desc, leaseduration,
@@ -1097,6 +1123,9 @@ GetGenericPortMappingEntry(struct upnphttp * h, const char * action, const char 
 	{
 		int bodylen;
 		char body[2048];
+#ifdef ENABLE_PCP
+		hide_pcp_nonce(desc);
+#endif
 		bodylen = snprintf(body, sizeof(body), resp,
 			action, ns, /*SERVICE_TYPE_WANIPC,*/ rhost,
 			(unsigned int)eport, protocol, (unsigned int)iport, iaddr, desc,
@@ -1253,6 +1282,9 @@ http://www.upnp.org/schemas/gw/WANIPConnection-v2.xsd">
 		                               &leaseduration);
 		if(r == 0)
 		{
+#ifdef ENABLE_PCP
+			hide_pcp_nonce(desc);
+#endif
 			bodylen += snprintf(body+bodylen, bodyalloc-bodylen, entry,
 			                    rhost, port_list[i], protocol,
 			                    iport, int_ip, desc, leaseduration);

@@ -593,7 +593,7 @@ static int CheckExternalAddress(pcp_info_t* pcp_msg_info)
 				return -1;
 			}
 #ifdef ENABLE_IPV6
-		} else if ((af == AF_INET6) && (ext_if_name6 != ext_if_name)) {
+		} else if ((af == AF_INET6) && (strcmp(ext_if_name6, ext_if_name) != 0)) {
 			if(!ext_if_name6 || ext_if_name6[0]=='\0') {
 				pcp_msg_info->result_code = PCP_ERR_NETWORK_FAILURE;
 				return -1;
@@ -1008,21 +1008,29 @@ static int CreatePCPMap_FW(pcp_info_t *pcp_msg_info)
 #ifdef ENABLE_UPNPPINHOLE
 	int uid;
 	int r;
+	char desc[64];
 	/* first check if pinhole already exists */
 	uid = upnp_find_inboundpinhole(NULL, 0,
 					pcp_msg_info->mapped_str,
 					pcp_msg_info->int_port,
 					pcp_msg_info->protocol,
-					NULL, 0, /* desc */
+					desc, sizeof(desc),
 					NULL /* lifetime */);
 	if(uid >= 0) {
 		/* pinhole already exists, updating */
-		syslog(LOG_INFO, "updating pinhole to %s:%hu %s",
-		       pcp_msg_info->mapped_str, pcp_msg_info->int_port,
+		if (0 != strcmp(desc, pcp_msg_info->desc)) {
+			/* nonce does not match */
+			syslog(LOG_ERR, "Unauthorized to update pinhole : \"%s\" != \"%s\"",
+			       desc, pcp_msg_info->desc);
+			return PCP_ERR_NOT_AUTHORIZED;
+		}
+		syslog(LOG_INFO, "updating pinhole %d to %s:%hu %s",
+		       uid, pcp_msg_info->mapped_str, pcp_msg_info->int_port,
 		       (pcp_msg_info->protocol == IPPROTO_TCP)?"TCP":"UDP");
 		r = upnp_update_inboundpinhole((unsigned short)uid, pcp_msg_info->lifetime);
 		return r >= 0 ? PCP_SUCCESS : PCP_ERR_NO_RESOURCES;
 	} else {
+		/* create new */
 		r = upnp_add_inboundpinhole(NULL, 0,
 						pcp_msg_info->mapped_str,
 						pcp_msg_info->int_port,
@@ -1159,10 +1167,10 @@ static void DeletePCPMap(pcp_info_t *pcp_msg_info)
 	}
 	if (r >= 0) {
 		syslog(LOG_INFO, "PCP: %s port %hu mapping removed",
-		       proto2==IPPROTO_TCP?"TCP":"UDP", eport2);
+		       proto==IPPROTO_TCP?"TCP":"UDP", (pcp_msg_info->is_fw ? iport : eport2));
 	} else {
 		syslog(LOG_ERR, "Failed to remove PCP mapping to %s:%hu %s",
-		       pcp_msg_info->mapped_str, iport, (pcp_msg_info->protocol == IPPROTO_TCP)?"TCP":"UDP");
+		       pcp_msg_info->mapped_str, iport, (proto == IPPROTO_TCP)?"TCP":"UDP");
 		pcp_msg_info->result_code = PCP_ERR_NO_RESOURCES;
 	}
 }
@@ -1644,6 +1652,20 @@ int OpenAndConfPCPv6Socket(void)
 		       "OpenAndConfPCPv6Socket");
 	}
 #endif
+#if defined(SO_BINDTODEVICE) && !defined(MULTIPLE_EXTERNAL_IP)
+	/* One and only one LAN interface and no bind any ipv6 addr */
+	if(lan_addrs.lh_first != NULL && lan_addrs.lh_first->list.le_next == NULL
+	   && lan_addrs.lh_first->ifname[0] != '\0' &&
+	   memcmp(&ipv6_bind_addr, &in6addr_any, sizeof(in6addr_any)) == 0 )
+	{
+		if(setsockopt(s, SOL_SOCKET, SO_BINDTODEVICE,
+		              lan_addrs.lh_first->ifname,
+		              strlen(lan_addrs.lh_first->ifname) + 1) < 0)
+			syslog(LOG_WARNING, "%s: setsockopt(udp6, SO_BINDTODEVICE, %s): %m",
+			       "OpenAndConfPCPv6Socket",
+			       lan_addrs.lh_first->ifname);
+	}
+#endif /* defined(SO_BINDTODEVICE) && !defined(MULTIPLE_EXTERNAL_IP) */
 #ifdef IPV6_RECVPKTINFO
 	/* see RFC3542 */
 	if(setsockopt(s, IPPROTO_IPV6, IPV6_RECVPKTINFO, &i, sizeof(i)) < 0) {

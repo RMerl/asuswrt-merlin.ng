@@ -1,4 +1,4 @@
-/* $Id: options.h,v 1.35 2024/03/11 23:17:56 nanard Exp $ */
+/* $Id: options.h,v 1.36 2024/06/22 18:13:33 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
@@ -52,7 +52,7 @@ enum upnpconfigoptions {
 	UPNPMODEL_NUMBER,		/* model_number */
 	UPNPCLEANTHRESHOLD,		/* clean_ruleset_threshold */
 	UPNPCLEANINTERVAL,		/* clean_ruleset_interval */
-	UPNPENABLENATPMP,		/* enable_natpmp */
+	UPNPENABLENATPMP,		/* enable_pcp_pmp */
 	UPNPPCPMINLIFETIME,		/* minimum lifetime for PCP mapping */
 	UPNPPCPMAXLIFETIME,		/* maximum lifetime for PCP mapping */
 	UPNPPCPALLOWTHIRDPARTY,		/* allow third-party requests */

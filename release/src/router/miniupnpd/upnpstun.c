@@ -1,8 +1,8 @@
-/* $Id: upnpstun.c,v 1.5 2020/04/21 21:21:59 nanard Exp $ */
+/* $Id: upnpstun.c,v 1.9 2025/01/12 23:31:19 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
- * (c) 2020 Thomas Bernard
+ * (c) 2020-2025 Thomas Bernard
  * (c) 2018 Pali Rohár
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
@@ -12,6 +12,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <unistd.h>
 #include <netdb.h>
 #include <stdlib.h>
@@ -516,10 +517,12 @@ int perform_stun(const char *if_name, const char *if_addr, const char *stun_host
 		if (!(have_mapped_addr & (1 << i)))
 			continue;
 		if (ntohs(mapped_addrs[i].sin_port) != local_ports[i] || memcmp(&mapped_addrs[i].sin_addr, ext_addr, sizeof(*ext_addr)) != 0) {
+			char mapped_addr_str[32];
+			sockaddr_to_string((struct sockaddr *)&mapped_addrs[i], mapped_addr_str, sizeof(mapped_addr_str));
 			/* External IP address or port was changed,
 			 * therefore symmetric NAT is active */
-			syslog(LOG_NOTICE, "%s: #%d external address or port changed",
-			       "perform_stun", i);
+			syslog(LOG_NOTICE, "%s: #%d external address or port changed : %s:%hu => %s",
+			       "perform_stun", i, inet_ntoa(*ext_addr), local_ports[i], mapped_addr_str);
 			*restrictive_nat = 1;
 		}
 	}

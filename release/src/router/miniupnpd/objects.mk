@@ -7,3 +7,8 @@ BASEOBJS = miniupnpd.o upnphttp.o upnpdescgen.o upnpsoap.o \
 
 # sources in linux/ directory
 LNXOBJS = getifstats.o ifacewatcher.o getroute.o
+
+# sources for other binaries
+OTHEROBJS = miniupnpdctl.o testupnpdescgen.o testgetifstats.o \
+            testupnppermissions.o testgetifaddr.o testgetroute.o \
+            testssdppktgen.o testasyncsendto.o testportinuse.o testminissdp.o

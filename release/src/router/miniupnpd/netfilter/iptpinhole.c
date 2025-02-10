@@ -1,7 +1,7 @@
-/* $Id: iptpinhole.c,v 1.21 2020/05/10 17:49:33 nanard Exp $ */
+/* $Id: iptpinhole.c,v 1.24 2025/01/25 21:18:16 nanard Exp $ */
 /* MiniUPnP project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
- * (c) 2012-2020 Thomas Bernard
+ * (c) 2012-2025 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -170,17 +170,19 @@ ip6tc_init_verify_append(const char * table,
                          struct ip6t_entry * e)
 {
 	IP6TC_HANDLE h;
+	xt_chainlabel chainlabel;
 
 	h = ip6tc_init(table);
 	if(!h) {
 		syslog(LOG_ERR, "ip6tc_init error : %s", ip6tc_strerror(errno));
 		return -1;
 	}
-	if(!ip6tc_is_chain(chain, h)) {
+	strncpy(chainlabel, chain, sizeof(chainlabel));
+	if(!ip6tc_is_chain(chainlabel, h)) {
 		syslog(LOG_ERR, "chain %s not found", chain);
 		goto error;
 	}
-	if(!ip6tc_append_entry(chain, e, h)) {
+	if(!ip6tc_append_entry(chainlabel, e, h)) {
 		syslog(LOG_ERR, "ip6tc_append_entry() error : %s", ip6tc_strerror(errno));
 		goto error;
 	}
@@ -325,6 +327,7 @@ delete_pinhole(unsigned short uid)
 	const struct ip6t_entry_match *match = NULL;
 	/*const struct ip6t_entry_target *target = NULL;*/
 	unsigned int index;
+	xt_chainlabel chainlabel;
 
 	p = get_pinhole(uid);
 	if(!p)
@@ -335,12 +338,13 @@ delete_pinhole(unsigned short uid)
 		syslog(LOG_ERR, "ip6tc_init error : %s", ip6tc_strerror(errno));
 		return -1;
 	}
-	if(!ip6tc_is_chain(miniupnpd_v6_filter_chain, h)) {
+	strncpy(chainlabel, miniupnpd_v6_filter_chain, sizeof(chainlabel));
+	if(!ip6tc_is_chain(chainlabel, h)) {
 		syslog(LOG_ERR, "chain %s not found", miniupnpd_v6_filter_chain);
 		goto error;
 	}
 	index = 0;
-	for(e = ip6tc_first_rule(miniupnpd_v6_filter_chain, h);
+	for(e = ip6tc_first_rule(chainlabel, h);
 	    e;
 	    e = ip6tc_next_rule(e, h)) {
 		if((e->ipv6.proto == p->proto) &&
@@ -350,7 +354,7 @@ delete_pinhole(unsigned short uid)
 			match = (const struct ip6t_entry_match *)&e->elems;
 			info = (const struct ip6t_tcp *)&match->data;
 			if((info->spts[0] == p->sport) && (info->dpts[0] == p->dport)) {
-				if(!ip6tc_delete_num_entry(miniupnpd_v6_filter_chain, index, h)) {
+				if(!ip6tc_delete_num_entry(chainlabel, index, h)) {
 					syslog(LOG_ERR, "ip6tc_delete_num_entry(%s,%u,...): %s",
 					       miniupnpd_v6_filter_chain, index, ip6tc_strerror(errno));
 					goto error;

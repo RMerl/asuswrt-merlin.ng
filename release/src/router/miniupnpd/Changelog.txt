@@ -1,4 +1,36 @@
-$Id: Changelog.txt,v 1.515 2024/03/19 23:40:30 nanard Exp $
+$Id: Changelog.txt,v 1.523 2025/01/10 22:10:49 nanard Exp $
+
+2025/01/25:
+  Send byebye messages also to FF05::C (and eventually FF0E::C)
+
+2025/01/10:
+  NFTables: fix delete_redirect_and_filter_rules() (remove filter rule)
+
+2025/01/09:
+  Fix get_redirect_rule_by_index() for OpenBSD >= 7.4
+
+2025/01/05:
+  Fix get_src_for_route_to() for OpenBSD >= 6.6
+
+2024/10/05:
+  Rework the buildsystem + systemd integration
+
+2024/07/27:
+  Hide the PCP nonce in descriptions returned by UPnP
+
+2024/07/11:
+  PCP: Check nonce when renewing IPv6 pinhole
+
+VERSION 2.3.7 : released on 2024/06/22
+
+2024/06/17:
+  FreeBSD: use libpfctl (FreeBSD 15+ or --libpfctl)
+
+2024/06/09:
+  default NOTIFY interval of 900s minus a random value
+
+2024/04/29:
+  ipv6: prefer globally routable addresses
 
 VERSION 2.3.6 : released on 2024/03/20
 

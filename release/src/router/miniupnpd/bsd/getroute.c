@@ -1,7 +1,7 @@
 /* $Id: getroute.c,v 1.15 2020/05/10 22:24:11 nanard Exp $ */
 /* MiniUPnP project
- * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2020 Thomas Bernard
+ * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
+ * (c) 2006-2025 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -15,6 +15,9 @@
 #include <netinet/in.h>
 #ifdef AF_LINK
 #include <net/if_dl.h>
+#endif
+#ifdef __OpenBSD__
+#include <sys/param.h>
 #endif
 
 #include "config.h"
@@ -65,7 +68,19 @@ get_src_for_route_to(const struct sockaddr * dst,
 	rtm.rtm_flags = RTF_UP;
 	rtm.rtm_version = RTM_VERSION;
 	rtm.rtm_seq = 1;
+#if defined(OpenBSD) && OpenBSD >= 201911
+	/* since OpenBSD 6.6, passing RTA_DST | RTA_IFA | RTA_IFP results in getting
+     * "write: Invalid argument"
+     * With only RTA_DST, it still responds with :
+     * - destination RTA_DST / AF_INET(6)
+     * - gateway     RTA_GATEWAY / AF_LINK (?)
+     * - netmask     RTA_NETMASK / AF_INET(6)
+     * - interface name RTA_IFP / AF_LINK
+     * - interface addr RTA_IFA / AF_INET(6) */
+	rtm.rtm_addrs = RTA_DST;
+#else
 	rtm.rtm_addrs = RTA_DST | RTA_IFA | RTA_IFP;	/* pass destination address, request source address & interface */
+#endif
 	memcpy(m_rtmsg.m_space, dst, l);
 #if !defined(__sun)
 	((struct sockaddr *)m_rtmsg.m_space)->sa_len = l;

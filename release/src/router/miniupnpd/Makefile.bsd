@@ -1,4 +1,4 @@
-# $Id: Makefile.bsd,v 1.100 2020/05/10 22:44:41 nanard Exp $
+# $Id: Makefile.bsd,v 1.109 2024/07/27 13:36:50 nanard Exp $
 # MiniUPnP project
 # http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
 # Author: Thomas Bernard
@@ -35,12 +35,7 @@ CONFIG_OPTIONS != cat .configure.cache
 .endif
 
 # OSNAME and FWNAME are used for building OS or FW dependent code.
-OSNAME != uname -s
-ARCH != uname -m
-
-.ifndef FWNAME
 .include "bsdmake.inc"
-.endif
 
 # Solaris specific CFLAGS
 .if $(OSNAME) == "SunOS"
@@ -113,22 +108,21 @@ EXECUTABLES = miniupnpd testupnpdescgen testgetifstats \
               testgetifaddr testgetroute testasyncsendto \
               testportinuse testssdppktgen testminissdp
 
-.if $(OSNAME) == "Darwin"
-LIBS =
-.else
-LIBS = -lkvm
+.if $(OSNAME) != "Darwin"
+LIBS += -lkvm
 .endif
 .if $(OSNAME) == "SunOS"
 LIBS += -lsocket -lnsl -lkstat -lresolv
 .endif
-
-LIBS += -lssl -lcrypto
 
 # set PREFIX variable to install in the wanted place
 
 INSTALLBINDIR = $(PREFIX)/sbin
 INSTALLETCDIR = $(PREFIX)/etc
 MANPREFIX ?= $(PREFIX)
+.if $(MANPREFIX) == ""
+MANPREFIX = /usr/share
+.endif
 INSTALLMANDIR = $(MANPREFIX)/man
 
 all:	$(EXECUTABLES)
@@ -139,35 +133,24 @@ clean:
 	$(RM) $(TESTUPNPDESCGENOBJS)
 	$(RM) $(TESTUPNPPERMISSIONSOBJS)
 	$(RM) $(TESTGETIFADDROBJS)
+	$(RM) $(TESTGETIFSTATSOBJS)
 	$(RM) $(MINIUPNPDCTLOBJS)
 	$(RM) $(TESTASYNCSENDTOOBJS)
 	$(RM) $(TESTPORTINUSEOBJS)
 	$(RM) $(TESTMINISSDPOBJS)
+	$(RM) $(TESTGETROUTEOBJS)
+	$(RM) testssdppktgen.o
 	$(RM) validateupnppermissions validategetifaddr validatessdppktgen
 
-install:	miniupnpd genuuid
+install:	miniupnpd
 	$(STRIP) miniupnpd
 	$(INSTALL) -d $(DESTDIR)$(INSTALLBINDIR)
 	$(INSTALL) -m 755 miniupnpd $(DESTDIR)$(INSTALLBINDIR)
 	$(INSTALL) -d $(DESTDIR)$(INSTALLETCDIR)
-	$(INSTALL) -b miniupnpd.conf $(DESTDIR)$(INSTALLETCDIR)
-	$(INSTALL) -d $(DESTDIR)$(INSTALLMANDIR)
-	$(INSTALL) -m 644 miniupnpd.8 $(DESTDIR)$(INSTALLMANDIR)/man8/miniupnpd.8
-
-# genuuid is using the uuid cli tool available under OpenBSD 4.0 in
-# the uuid-1.5.0 package
-# any other cli tool returning a uuid on stdout should work.
-UUID != if which uuidgen 2>&1 > /dev/null; then \
-        echo `uuidgen` ; \
-        elif which uuid 2>&1 > /dev/null; then \
-        echo `uuid` ; \
-        else echo "00000000-0000-0000-0000-000000000000"; \
-        fi
-
-genuuid:
-	$(MV) miniupnpd.conf miniupnpd.conf.before
-	sed -e "s/^uuid=[-0-9a-fA-F]*/uuid=$(UUID)/" miniupnpd.conf.before > miniupnpd.conf
-	$(RM) miniupnpd.conf.before
+	$(INSTALL) -b miniupnpd.conf $(DESTDIR)$(INSTALLETCDIR)/miniupnpd.conf.sample
+	sed -i '' -e "s/^uuid=[-0-9a-fA-F]*/uuid=`$(UUIDBIN)`/" $(DESTDIR)$(INSTALLETCDIR)/miniupnpd.conf.sample
+	$(INSTALL) -d $(DESTDIR)$(INSTALLMANDIR)/man8
+	$(INSTALL) -m 644 $(SRCDIR)/miniupnpd.8 $(DESTDIR)$(INSTALLMANDIR)/man8/miniupnpd.8
 
 check:  validateupnppermissions validategetifaddr validatessdppktgen
 

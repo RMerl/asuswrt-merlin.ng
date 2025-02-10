@@ -1,8 +1,8 @@
-/* $Id: testpfpinhole.c,v 1.15 2020/05/21 00:11:41 nanard Exp $ */
+/* $Id: testpfpinhole.c,v 1.16 2024/06/22 16:48:54 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
- * (c) 2012-2020 Thomas Bernard
+ * (c) 2012-2024 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -12,17 +12,21 @@
 #include <netinet/in.h>
 #include <syslog.h>
 
-#include "../config.h"
+#include "config.h"
 #include "obsdrdr.h"
 #include "pfpinhole.h"
+#include "../miniupnpdtypes.h"
 
 int runtime_flags = 0;
+time_t startup_time = 0;
 const char * tag = NULL;
 
 const char * anchor_name = "miniupnpd";
 const char * queue = NULL;
 
 const char * use_ext_ip_addr = "42.42.42.42";
+
+struct lan_addr_list lan_addrs;
 
 #ifdef ENABLE_IPV6
 static int print_pinhole(int uid)

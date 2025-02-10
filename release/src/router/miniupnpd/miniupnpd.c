@@ -1,8 +1,8 @@
-/* $Id: miniupnpd.c,v 1.259 2024/01/17 00:05:14 nanard Exp $ */
+/* $Id: miniupnpd.c,v 1.264 2024/06/22 18:14:08 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
- * (c) 2006-2024 Thomas Bernard
+ * (c) 2006-2025 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -49,6 +49,10 @@
 #endif
 #ifdef HAS_LIBCAP_NG
 #include <cap-ng.h>
+#endif
+
+#ifdef USE_SYSTEMD
+#include <systemd/sd-daemon.h>
 #endif
 
 /* unix sockets */
@@ -302,6 +306,14 @@ tomato_helper(void)
 }
 #endif  /* 1 (tomato) */
 #endif	/* TOMATO */
+
+static int gen_current_notify_interval(int notify_interval) {
+	/* if possible, remove a random number of seconds between 1 and 64 */
+	if (notify_interval > 65)
+		return notify_interval - 1 - (random() & 0x3f);
+	else
+		return notify_interval;
+}
 
 /* OpenAndConfHTTPSocket() :
  * setup the socket used to handle incoming HTTP connections. */
@@ -896,10 +908,13 @@ struct runtime_vars {
 #ifdef ENABLE_HTTPS
 	int https_port;	/* HTTPS Port */
 #endif
-	int notify_interval;	/* seconds between SSDP announces */
+	int notify_interval;	/* seconds between SSDP announces. Should be >= 900s */
 	/* unused rules cleaning related variables : */
 	int clean_ruleset_threshold;	/* threshold for removing unused rules */
 	int clean_ruleset_interval;		/* (minimum) interval between checks. 0=disabled */
+#ifdef USE_SYSTEMD
+	int systemd_notify;
+#endif
 };
 
 /* parselanaddr()
@@ -1166,6 +1181,9 @@ init(int argc, char * * argv, struct runtime_vars * v)
 	int pid;
 #endif
 	int debug_flag = 0;
+#ifdef USE_SYSTEMD
+	int systemd_flag = 0;
+#endif
 	int verbosity_level = 0;	/* for determining setlogmask() */
 	int openlog_option;
 	struct in_addr addr;
@@ -1186,6 +1204,10 @@ init(int argc, char * * argv, struct runtime_vars * v)
 			goto print_usage;
 		if(0 == strcmp(argv[i], "-d"))
 			debug_flag = 1;
+#ifdef USE_SYSTEMD
+		else if(0 == strcmp(argv[i], "-D"))
+			systemd_flag = 1;
+#endif
 	}
 
 	openlog_option = LOG_PID|LOG_CONS;
@@ -1220,7 +1242,7 @@ init(int argc, char * * argv, struct runtime_vars * v)
 #ifdef ENABLE_HTTPS
 	v->https_port = -1;
 #endif
-	v->notify_interval = 30;	/* seconds between SSDP announces */
+	v->notify_interval = 900;	/* seconds between SSDP announces */
 	v->clean_ruleset_threshold = 20;
 	v->clean_ruleset_interval = 0;	/* interval between ruleset check. 0=disabled */
 #ifndef DISABLE_CONFIG_FILE
@@ -1734,6 +1756,10 @@ init(int argc, char * * argv, struct runtime_vars * v)
 #endif
 		case 'd':	/* discarding */
 			break;
+#ifdef USE_SYSTEMD
+		case 'D':	/* handled above, discarding */
+			break;
+#endif
 		case 'w':
 			if(i+1 < argc)
 				presurl = argv[++i];
@@ -1887,7 +1913,11 @@ init(int argc, char * * argv, struct runtime_vars * v)
 	}
 
 #ifndef NO_BACKGROUND_NO_PIDFILE
-	if(debug_flag)
+	if (debug_flag
+#ifdef USE_SYSTEMD
+	    || systemd_flag
+#endif
+	)
 	{
 		pid = getpid();
 	}
@@ -2009,6 +2039,16 @@ init(int argc, char * * argv, struct runtime_vars * v)
 		pidfilename = NULL;
 #endif
 
+#ifdef USE_SYSTEMD
+	if (systemd_flag) {
+		int r = sd_notify(0,
+			"STATUS=version " MINIUPNPD_VERSION " starting\n"
+		);
+		if (r > 0)
+			v->systemd_notify = 1;
+	}
+#endif
+
 #ifdef ENABLE_LEASEFILE
 	/*remove(lease_file);*/
 	syslog(LOG_INFO, "Reloading rules from lease file");
@@ -2075,12 +2115,15 @@ print_usage:
 #endif
 			"\n"
 	        "\nNotes:\n\tThere can be one or several listening_ips.\n"
-	        "\tNotify interval is in seconds. Default is 30 seconds.\n"
+	        "\tNotify interval is in seconds. Default is 900 seconds.\n"
 #ifndef NO_BACKGROUND_NO_PIDFILE
 			"\tDefault pid file is '%s'.\n"
 #endif
 			"\tDefault config file is '%s'.\n"
-			"\tWith -d miniupnpd will run as a standard program.\n"
+			"\t-d starts miniupnpd in foreground in debug mode.\n"
+#ifdef USE_SYSTEMD
+	                "\t-D starts miniupnpd in foreground as a systemd service.\n"
+#endif
 			"\t-o argument is either an IPv4 address or \"STUN:host[:port]\".\n"
 #ifdef ENABLE_IPV6
 			"\t-4 disable IPv6\n"
@@ -2168,6 +2211,7 @@ main(int argc, char * * argv)
 	fd_set readset;	/* for select() */
 	fd_set writeset;
 	struct timeval timeout, timeofday, lasttimeofday = {0, 0};
+	int current_notify_interval;	/* with random variation */
 	int max_fd = -1;
 #ifdef USE_MINIUPNPDCTL
 	int sctl = -1;
@@ -2254,6 +2298,7 @@ main(int argc, char * * argv)
 	memset(&v, 0, sizeof(v));
 	if(init(argc, argv, &v) != 0)
 		return 1;
+	current_notify_interval = gen_current_notify_interval(v.notify_interval);
 #ifdef ENABLE_HTTPS
 	if(init_ssl() < 0)
 		return 1;
@@ -2310,7 +2355,7 @@ main(int argc, char * * argv)
 	       GETFLAG(ENABLEUPNPMASK) ? "UPnP-IGD " : "",
 	       ext_if_name, upnp_bootid);
 #ifdef ENABLE_IPV6
-	if (ext_if_name6 != ext_if_name) {
+	if (strcmp(ext_if_name6, ext_if_name) != 0) {
 		syslog(LOG_INFO, "specific IPv6 ext if %s", ext_if_name6);
 	}
 #endif
@@ -2444,6 +2489,28 @@ main(int argc, char * * argv)
 		                "messages. EXITING");
 			return 1;
 		}
+
+#if defined(UPNP_STRICT) && defined(IGD_V2)
+		/* WANIPConnection:2 Service p9 :
+		 * Upon startup, UPnP IGD DCP MUST broadcast an ssdp:byebye before
+		 * sending the initial ssdp:alive onto the local network. Sending an
+		 * ssdp:byebye as part of the normal start up process for a UPnP
+		 * device ensures that UPnP control points with information about the
+		 * previous device instance will safely discard state information
+		 * about the previous device instance before communicating with the
+		 * new device instance. */
+		if (GETFLAG(ENABLEUPNPMASK))
+		{
+#ifndef ENABLE_IPV6
+			if(SendSSDPGoodbye(snotify, addr_count) < 0)
+#else
+			if(SendSSDPGoodbye(snotify, addr_count * 2) < 0)
+#endif
+			{
+				syslog(LOG_WARNING, "Failed to broadcast good-bye notifications");
+			}
+		}
+#endif /* UPNP_STRICT */
 
 #ifdef USE_IFACEWATCHER
 		/* open socket for kernel notifications about new network interfaces */
@@ -2583,6 +2650,15 @@ main(int argc, char * * argv)
 	}
 #endif /* HAS_LIBCAP_NG */
 
+#ifdef USE_SYSTEMD
+	if (v.systemd_notify) {
+		upnp_update_status();
+		sd_notify(0,
+			"READY=1\n"
+		);
+	}
+#endif
+
 	/* main loop */
 	while(!quitting)
 	{
@@ -2660,13 +2736,13 @@ main(int argc, char * * argv)
 		if(upnp_gettimeofday(&timeofday) < 0)
 		{
 			syslog(LOG_ERR, "gettimeofday(): %m");
-			timeout.tv_sec = v.notify_interval;
+			timeout.tv_sec = current_notify_interval;
 			timeout.tv_usec = 0;
 		}
 		else
 		{
 			/* the comparaison is not very precise but who cares ? */
-			if(timeofday.tv_sec >= (lasttimeofday.tv_sec + v.notify_interval))
+			if(timeofday.tv_sec >= (lasttimeofday.tv_sec + current_notify_interval))
 			{
 				if (GETFLAG(ENABLEUPNPMASK))
 					SendSSDPNotifies2(snotify,
@@ -2675,13 +2751,14 @@ main(int argc, char * * argv)
 					              (unsigned short)v.https_port,
 #endif
 				                  v.notify_interval << 1);
+				current_notify_interval = gen_current_notify_interval(v.notify_interval);
 				memcpy(&lasttimeofday, &timeofday, sizeof(struct timeval));
-				timeout.tv_sec = v.notify_interval;
+				timeout.tv_sec = current_notify_interval;
 				timeout.tv_usec = 0;
 			}
 			else
 			{
-				timeout.tv_sec = lasttimeofday.tv_sec + v.notify_interval
+				timeout.tv_sec = lasttimeofday.tv_sec + current_notify_interval
 				                 - timeofday.tv_sec;
 				if(timeofday.tv_usec > lasttimeofday.tv_usec)
 				{
@@ -3159,10 +3236,26 @@ main(int argc, char * * argv)
 			e = next;
 		}
 
+#ifdef USE_SYSTEMD
+		if (v.systemd_notify) {
+			upnp_update_status();
+		}
+#endif
+
 	}	/* end of main loop */
 
 shutdown:
+
 	syslog(LOG_NOTICE, "shutting down MiniUPnPd");
+#ifdef USE_SYSTEMD
+	if (v.systemd_notify) {
+		sd_notify(0,
+			"STATUS=version " MINIUPNPD_VERSION " shutting down\n"
+			"STOPPING=1\n"
+		);
+	}
+#endif
+
 	/* send good-bye */
 	if (GETFLAG(ENABLEUPNPMASK))
 	{
@@ -3277,4 +3370,3 @@ shutdown:
 	closelog();
 	return 0;
 }
-

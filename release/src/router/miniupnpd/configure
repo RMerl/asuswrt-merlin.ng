@@ -1,10 +1,10 @@
 #! /bin/sh
-# $Id: configure,v 1.125 2024/01/17 00:05:14 nanard Exp $
+# $Id: configure,v 1.133 2025/01/25 21:22:24 nanard Exp $
 # vim: tabstop=4 shiftwidth=4 noexpandtab
 #
 # miniupnp daemon
 # http://miniupnp.free.fr or https://miniupnp.tuxfamily.org/
-# (c) 2006-2024 Thomas Bernard
+# (c) 2006-2025 Thomas Bernard
 # This software is subject to the conditions detailed in the
 # LICENCE file provided within the distribution
 
@@ -15,16 +15,26 @@ UPNP_VERSION_MINOR=1
 
 # input environment variables :
 # IPV6, IGD2, STRICT, DEBUG, LEASFILE, VENDORCFG, PCP_PEER,
-# PORTINUSE, REGEX, DISABLEPPPCONN, FW, IPTABLESPATH, TARGET_OPENWRT,
+# PORTINUSE, REGEX, DISABLEPPPCONN, FW, IPTABLESPATH,
 # PKG_CONFIG, NO_BACKGROUND_NO_PIDFILE, DYNAMIC_OS_VERSION
 # OS_NAME, OS_VERSION, OS_MACHINE, V6SOCKETS_ARE_V6ONLY
+# USE_LIBPFCTL, HTTPS, HTTPS_CERTFILE, HTTPS_KEYFILE
 
 if [ -z "$DYNAMIC_OS_VERSION" ] ; then
   DYNAMIC_OS_VERSION=1
 fi
+if [ -z "$HTTPS_CERTFILE" ] ; then
+  HTTPS_CERTFILE=/etc/miniupnpd/certificate.pem
+fi
+if [ -z "$HTTPS_KEYFILE" ] ; then
+  HTTPS_KEYFILE=/etc/miniupnpd/private-key.pem
+fi
+
+TESTS=1
 
 for argv; do
 case "$argv" in
+	--disable-tests) TESTS=0 ;;
 	--ipv6) IPV6=1 ;;
 	--igd2) IGD2=1 ;;
 	--strict) STRICT=1 ;;
@@ -34,6 +44,11 @@ case "$argv" in
 	--pcp-peer) PCP_PEER=1 ;;
 	--portinuse) PORTINUSE=1 ;;
 	--regex) REGEX=1 ;;
+	--https) HTTPS=1 ;;
+	--https-cert=*)
+		HTTPS_CERTFILE=$(echo $argv | cut -d= -f2) ;;
+	--https-key=*)
+		HTTPS_KEYFILE=$(echo $argv | cut -d= -f2) ;;
 	--uda-version=*)
 		UPNP_VERSION=$(echo $argv | cut -d= -f2)
 		UPNP_VERSION_MAJOR=$(echo $UPNP_VERSION | cut -s -d. -f1)
@@ -45,8 +60,10 @@ case "$argv" in
 		fi ;;
 	--disable-pppconn) DISABLEPPPCONN=1 ;;
 	--disable-fork) NO_BACKGROUND_NO_PIDFILE=1 ;;
+	--systemd) SYSTEMD=1 ;;
 	--firewall=*)
 	    FW=$(echo $argv | cut -d= -f2) ;;
+	--libpfctl) USE_LIBPFCTL=1 ;;
 	--iptablespath=*)
 		IPTABLESPATH=$(echo $argv | cut -d= -f2) ;;
 	--getifaddrs) GETIFADDRS=1 ;;
@@ -60,7 +77,7 @@ case "$argv" in
 	--aurasync) AURASYNC=1 ;;
 	--nvgfn) NVGFN=1 ;;
 	--help|-h)
-		echo "Usage : $0 [options]"
+		echo "Usage: $0 [options]"
 		echo " --help                Show this help"
 		echo " --ipv6                Enable IPv6"
 		echo " --igd2                Build an IGDv2 instead of an IGDv1"
@@ -71,16 +88,22 @@ case "$argv" in
 		echo " --pcp-peer            Enable PCP PEER operation"
 		echo " --portinuse           Enable port in use check"
 		echo " --regex               Enable description regex filter"
+		echo " --https               Enable HTTPS support (for IGDv2)"
+		echo " --https-cert=/path    Path to the HTTPS certificate (default to ${HTTPS_CERTFILE})"
+		echo " --https-key=/path     Path to the HTTPS private key (default to ${HTTPS_KEYFILE})"
 		echo " --uda-version=x.x     Set advertised UPnP version (default to ${UPNP_VERSION_MAJOR}.${UPNP_VERSION_MINOR})"
 		echo " --disable-pppconn     Disable WANPPPConnection"
 		echo " --firewall=<name>     Force firewall type (nftables, iptables, pf, ipf, ipfw)"
+		echo " --libpfctl            Use libpfctl"
 		echo " --iptablespath=/path  Use a specific version of iptables"
 		echo " --disable-fork        Do not go to background and do not write pid file"
+		echo " --systemd             Include support for systemd process management"
 		echo " --getifaddrs          Force use getifaddrs() to obtain interface addresses"
 		echo " --v6sockets-v6only    v6 sockets don't do v4, ie sysctl net.inet6.ip6.v6only=1"
 		echo " --host-os=<name>      For cross build. result of uname -s on the host machine"
 		echo " --host-os-version=x.x For cross build. result of uname -r on the host machine"
 		echo " --host-machine=<arch> For cross build. result of uname -m on the host machine"
+		echo " --disable-tests       Do not build tests"
 		exit 1
 		;;
 	*)
@@ -95,6 +118,7 @@ echo $* > .configure.cache
 BASEDIR=`dirname "$0"`
 RM="rm -f"
 MV="mv"
+
 CONFIGFILE=`mktemp tmp.config.h.XXXXXXXXXX`
 CONFIGFILE_FINAL="config.h"
 CONFIGMACRO="CONFIG_H_INCLUDED"
@@ -102,9 +126,68 @@ if [ -z "$PKG_CONFIG" ] ; then
 	PKG_CONFIG=`command -v pkg-config`
 fi
 
+pkg_config_write ()
+{
+	key="$1"; shift
+	value="$("${PKG_CONFIG}" "$@")"
+	if [ -n "$value" ]; then
+		printf "%s += %s\n" "$key" "$value"
+	fi
+}
+
+# Outputs CFLAGS / LDFLAGS / LDLIBS to CONFIG_MK if needed
+pkg_detect ()
+{
+	if [ -z "${PKG_CONFIG}" ]; then
+		return 1
+	fi
+
+	libs=
+	check_args=
+	preamble=
+	ok=1
+	for arg in "$@"; do
+		if echo "${arg}" | grep -q '^-'; then
+			check_args="${check_args} ${arg}"
+		else
+			libs="${libs} ${arg}"
+			if [ -z "${check_args}" ]; then
+				check_args="--exists"
+			fi
+			if "${PKG_CONFIG}" ${check_args} "${arg}"; then
+				version="$("${PKG_CONFIG}" --modversion "${arg}")"
+				eval "$(echo "${arg}" | tr -dc 'a-zA-Z0-9' | tr 'a-z' 'A-Z')_VERSION='${version}'"
+
+				info="found ${arg} version ${version}"
+				echo "${info}"
+				preamble="$(printf "%s\n# %s\n" "${preamble}" "${info}")"
+			else
+				echo "${arg} not found"
+				ok=
+			fi
+			check_args=
+		fi
+	done
+
+	if [ -z "$ok" ]; then
+		return 1
+	fi
+
+	{
+		printf "%s\n" "${preamble}"
+		pkg_config_write CFLAGS --cflags ${libs}
+		pkg_config_write LDFLAGS --libs-only-L --libs-only-other ${libs}
+		pkg_config_write LDLIBS --libs-only-l ${libs}
+	} >> "${CONFIG_MK}"
+}
+
 MINIUPNPD_DATE=`date +"%Y%m%d"`
 if [ -n "$SOURCE_DATE_EPOCH" ]; then
-	MINIUPNPD_DATE=`date --utc --date="@$SOURCE_DATE_EPOCH" +"%Y%m%d"`
+	if date --version 2>&1 | grep -q GNU; then
+		MINIUPNPD_DATE=`date --utc --date="@$SOURCE_DATE_EPOCH" +"%Y%m%d"`
+	else
+		MINIUPNPD_DATE=`TZ=UTC date -j -f %s $SOURCE_DATE_EPOCH +%Y%m%d`
+	fi
 fi
 
 # Facility to syslog
@@ -157,6 +240,7 @@ if [ -d ../asuswebstorage ] || [ -f ../shared/version.h ]; then
 	OS_NAME=AsusWRT
 	OS_VERSION=$(cat ../shared/version.h | grep RT_SERIALNO | cut -d'"' -f 2)
 	OS_URL="http://www.asus.com/"
+	PKG_CONFIG=
 fi
 
 else
@@ -172,7 +256,7 @@ ${RM} ${CONFIGFILE}
 
 echo "/* MiniUPnP Project" >> ${CONFIGFILE}
 echo " * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/" >> ${CONFIGFILE}
-echo " * (c) 2006-2024 Thomas Bernard" >> ${CONFIGFILE}
+echo " * (c) 2006-2025 Thomas Bernard" >> ${CONFIGFILE}
 echo " * Generated by $0 on `date`" >> ${CONFIGFILE}
 echo " * `uname -a`" >> ${CONFIGFILE}
 if [ -z "$*" ] ; then
@@ -213,6 +297,7 @@ EOF
 echo "" >> ${CONFIGFILE}
 
 # OS Specific stuff
+OS_FAMILY="$OS_NAME"
 case $OS_NAME in
 	OpenBSD)
 		MAKEFILE=Makefile.bsd
@@ -265,10 +350,16 @@ case $OS_NAME in
 			if [ $VER -ge 700049 ]; then
 				echo "#define PFRULE_INOUT_COUNTS" >> ${CONFIGFILE}
 			fi
+			if [ $VER -ge 1500000 ]; then
+				USE_LIBPFCTL=1
+			fi
 		else
 			VER=`echo $OS_VERSION | cut -d. -f1`
 			if [ $VER -ge 7 ]; then
 				echo "#define PFRULE_INOUT_COUNTS" >> ${CONFIGFILE}
+			fi
+			if [ $VER -ge 15 ]; then
+				USE_LIBPFCTL=1
 			fi
 		fi
 		HAVE_IP_MREQN=1
@@ -308,6 +399,7 @@ case $OS_NAME in
 		fi
 		;;
 	pfSense)
+		OS_FAMILY=FreeBSD
 		MAKEFILE=Makefile.bsd
 		# we need to detect if PFRULE_INOUT_COUNTS macro is needed
 		FW=pf
@@ -338,6 +430,7 @@ case $OS_NAME in
 		OS_URL=https://www.netbsd.org/
 		;;
 	DragonFly)
+		OS_FAMILY=DragonFlyBSD
 		MAKEFILE=Makefile.bsd
 		if [ "$CROSSBUILD" != "1" ] && [ -z $FW ] && [ -f /etc/rc.subr ] && [ -f /etc/rc.conf ] ; then
 			# source file with handy subroutines like checkyesno
@@ -364,6 +457,7 @@ case $OS_NAME in
 		OS_URL=https://www.dragonflybsd.org/
 		;;
 	SunOS)
+		OS_FAMILY=BSD
 		MAKEFILE=Makefile.bsd
 		echo "#define USE_IFACEWATCHER 1" >> ${CONFIGFILE}
 		FW=ipf
@@ -410,6 +504,10 @@ case $OS_NAME in
 				OS_NAME=`${LSB_RELEASE} -i -s`
 				OS_VERSION=`${LSB_RELEASE} -r -s`
 				case $OS_NAME in
+					Chimera)
+						OS_URL=https://chimera-linux.org/
+						OS_VERSION=`uname -r`
+						;;
 					Debian)
 						OS_URL=https://www.debian.org/
 						OS_VERSION=`${LSB_RELEASE} -c -s`
@@ -445,21 +543,25 @@ case $OS_NAME in
 		fi
 		;;
 	OpenWrt)
+		OS_FAMILY=Linux
 		OS_URL=https://www.openwrt.org/
 		echo "#define USE_IFACEWATCHER 1" >> ${CONFIGFILE}
 		GETIFADDRS=1
 		;;
 	OpenEmbedded)
+		OS_FAMILY=Linux
 		OS_URL=https://www.openembedded.org/
 		echo "#define USE_IFACEWATCHER 1" >> ${CONFIGFILE}
 		FW=iptables
 		;;
 	AstLinux)
+		OS_FAMILY=Linux
 		OS_URL=https://www.astlinux-project.org/
 		echo "#define USE_IFACEWATCHER 1" >> ${CONFIGFILE}
 		FW=iptables
 		;;
 	Tomato)
+		OS_FAMILY=Linux
 		OS_NAME=UPnP
 		OS_URL=http://tomatousb.org/
 		echo "" >> ${CONFIGFILE}
@@ -476,6 +578,7 @@ case $OS_NAME in
 		FW=iptables
 		;;
 	AsusWRT)
+		OS_FAMILY=Linux
 		OS_URL=http://www.asus.com/ # ASUS
 		cat ../shared/version.h >> ${CONFIGFILE} # ASUS
 		echo "" >> ${CONFIGFILE}
@@ -485,7 +588,9 @@ case $OS_NAME in
 		HAVE_IP_MREQN=1 #Merlin
 		echo "#define LEASEFILE_USE_REMAINING_TIME 1" >> ${CONFIGFILE} #Merlin
 		echo "#define USE_GETIFADDRS 1" >> ${CONFIGFILE}
+		echo "#define LIB_UUID" >> ${CONFIGFILE}
 		FW=iptables
+		HTTPS=
 		;;
 	Darwin)
 		MAKEFILE=Makefile.macosx
@@ -510,9 +615,22 @@ case $OS_NAME in
 		;;
 esac
 
+if [ "$OS_FAMILY" = "Linux" ] ; then
+	CONFIG_MK=`mktemp tmp.config.mk.XXXXXXXXXX`
+	CONFIG_MK_FINAL="config.mk"
+	${RM} ${CONFIG_MK}
+	echo "# generated by $0 on `date`" > ${CONFIG_MK}
+	echo "SRCDIR = ${BASEDIR}" >> ${CONFIG_MK}
+	echo "CPPFLAGS += -I." >> ${CONFIG_MK}
+	echo "TESTS = ${TESTS}" >> ${CONFIG_MK}
+fi
+
 case $FW in
 	pf)
 		echo "#define USE_PF 1" >> ${CONFIGFILE}
+		if [ "$USE_LIBPFCTL" = "1" ] ; then
+			echo "#define USE_LIBPFCTL 1" >> ${CONFIGFILE}
+		fi
 		;;
 	ipf)
 		echo "#define USE_IPF 1" >> ${CONFIGFILE}
@@ -521,46 +639,34 @@ case $FW in
 		echo "#define USE_IPFW 1" >> ${CONFIGFILE}
 		;;
 	iptables)
+		if ! [ "$OS_FAMILY" = "Linux" ] ; then
+			echo "Error: --firewall=$FW is only available on Linux"
+			exit 1
+		fi
+
 		MAKEFILE=Makefile.linux
 		echo "#define USE_NETFILTER 1" >> ${CONFIGFILE}
 		echo "#define USE_IPTABLES  1" >> ${CONFIGFILE}
-		echo "# generated by $0 on `date`" > config.mk
-		echo "SRCDIR = ${BASEDIR}" >> config.mk
-		echo "CPPFLAGS += -I." >> config.mk
 		if [ "$PKG_CONFIG" ] ; then
-			if ${PKG_CONFIG} --exists libiptc ; then
-				IPTABLESVERSION=`${PKG_CONFIG} --modversion libiptc`
-				echo "detected libiptc version $IPTABLESVERSION"
-				echo "# detected libiptc version $IPTABLESVERSION" >> config.mk
-				echo "IPTABLES_PCFILE_FOUND = 1" >> config.mk
-				IPTVER1=`echo $IPTABLESVERSION | cut -d. -f1`
-				IPTVER2=`echo $IPTABLESVERSION | cut -d. -f2`
-				IPTVER3=`echo $IPTABLESVERSION | cut -d. -f3`
-				if [ $IPTVER1 -gt 1 ] || \
-				   [ \( $IPTVER1 -eq 1 \) -a \( \( $IPTVER2 -gt 4 \) \
-				     -o \( \( $IPTVER2 -eq 4 \) -a \( $IPTVER3 -ge 3 \) \) \) ] ; then
-					IPTABLES_143=1
-				fi
-				echo "CFLAGS += `${PKG_CONFIG} --cflags libiptc`" >> config.mk
-				echo "LDLIBS += `${PKG_CONFIG} --static --libs-only-l libiptc`" >> config.mk
-				echo "LDFLAGS += `${PKG_CONFIG} --libs-only-L --libs-only-other libiptc`" >> config.mk
+			if pkg_detect --atleast-version=1.4.3 libiptc; then
+				IPTABLES_143=1
+			elif pkg_detect libiptc; then
+				:
 			else
 				echo "Warning: no libiptc pkg-config found"
 			fi
-			if ${PKG_CONFIG} --atleast-version=1.0.2 libnetfilter_conntrack \
-			   && ${PKG_CONFIG} --atleast-version=1.0.3 libmnl ; then
-				echo "CPPFLAGS += -DUSE_NFCT" >> config.mk
-				echo "LDLIBS += `${PKG_CONFIG} --static --libs-only-l libmnl libnetfilter_conntrack`" >> config.mk
+			if pkg_detect --atleast-version=1.0.2 libnetfilter_conntrack \
+			              --atleast-version=1.0.3 libmnl; then
+				echo "CPPFLAGS += -DUSE_NFCT" >> ${CONFIG_MK}
 			fi
-		fi
-		if [ "$IPTABLESPATH" ] ; then
-			echo "CPPFLAGS += -I${IPTABLESPATH}/include/" >> config.mk
-			echo "LDFLAGS += -L${IPTABLESPATH}/libiptc/" >> config.mk
-			# to test : change the following test to [ "$OS_NAME" != "OpenWrt" ]
-			if [ -z "$TARGET_OPENWRT" ] ; then
+		elif [ "$IPTABLESPATH" ] ; then
+			echo "CPPFLAGS += -I${IPTABLESPATH}/include/" >> ${CONFIG_MK}
+			echo "LDFLAGS += -L${IPTABLESPATH}/libiptc/" >> ${CONFIG_MK}
+			if [ "$OS_NAME" != "OpenWrt" ]; then
 				IPTABLESVERSION=`grep "\#define VERSION" ${IPTABLESPATH}/config.h | tr -d \" |cut -d" " -f3`
+				echo "ver: $IPTABLESVERSION - path: ${IPTABLESPATH}"
 				echo "detected libiptc version $IPTABLESVERSION"
-				echo "# detected libiptc version $IPTABLESVERSION" >> config.mk
+				echo "# detected libiptc version $IPTABLESVERSION" >> ${CONFIG_MK}
 				IPTVER1=`echo $IPTABLESVERSION | cut -d. -f1`
 				IPTVER2=`echo $IPTABLESVERSION | cut -d. -f2`
 				IPTVER3=`echo $IPTABLESVERSION | cut -d. -f3`
@@ -570,9 +676,9 @@ case $FW in
 					IPTABLES_143=1
 				fi
 				if [ "$IPTABLES_143" = "1" ] ; then
-					echo "LDLIBS += ${IPTABLESPATH}/libiptc/.libs/libip4tc.o" >> config.mk
+					echo "LDLIBS += ${IPTABLESPATH}/libiptc/.libs/libip4tc.o" >> ${CONFIG_MK}
 				else
-					echo "LDLIBS += ${IPTABLESPATH}/libiptc/libiptc.a" >> config.mk
+					echo "LDLIBS += ${IPTABLESPATH}/libiptc/libiptc.a" >> ${CONFIG_MK}
 				fi
 			else
 				# OpenWrt
@@ -581,24 +687,27 @@ case $FW in
 				if test -f /usr/include/iptables/internal.h && \
 				   grep -q "\#define IPTABLES_VERSION" /usr/include/iptables/internal.h ; then
 					IPTABLES_143=1
-					echo "LDLIBS += -liptc" >> config.mk
+					echo "LDLIBS += -liptc" >> ${CONFIG_MK}
 				fi
 				arch=`echo $OS_MACHINE | grep -q x86_64 && echo 64`
 				if test -f /usr/lib${arch}/libiptc.a ; then
-					echo "LDLIBS += -liptc /usr/lib${arch}/libiptc.a" >> config.mk
+					echo "LDLIBS += -liptc /usr/lib${arch}/libiptc.a" >> ${CONFIG_MK}
 				fi
 			fi
-		elif [ -z "${PKG_CONFIG}" ] ; then
+		else
 			# IPTABLESPATH not defined and no pkg-config
-			if test -f /usr/include/xtables.h && \
+			echo "WARNING: no pkg-config and IPTABLESPATH not defined. checking /usr/include/xtables.h"
+			# since 1.4.16, XTABLES_VERSION_CODE has been moved to xtables-version.h
+			if test -f /usr/include/xtables-version.h || \
+			   test -f /usr/include/xtables.h && \
 			   grep -q "XTABLES_VERSION_CODE" /usr/include/xtables.h ; then
 				IPTABLES_143=1
-				echo "LDLIBS += -liptc" >> config.mk
+				echo "LDLIBS += -liptc" >> ${CONFIG_MK}
 				if test -f /lib/libip4tc.so ; then
-					echo "LDLIBS += -lip4tc" >> config.mk
+					echo "LDLIBS += -lip4tc" >> ${CONFIG_MK}
 				fi
 				if test -f /lib/libip6tc.so ; then
-					echo "LDLIBS += -lip6tc" >> config.mk
+					echo "LDLIBS += -lip6tc" >> ${CONFIG_MK}
 				fi
 			fi
 		fi
@@ -611,12 +720,19 @@ case $FW in
 		fi
 		;;
 	nftables)
+		if ! [ "$OS_FAMILY" = "Linux" ] ; then
+			echo "Error: --firewall=$FW is only available on Linux"
+			exit 1
+		fi
+
 		MAKEFILE=Makefile.linux_nft
 		echo "#define USE_NETFILTER 1" >> ${CONFIGFILE}
 		echo "#define USE_NFTABLES  1" >> ${CONFIGFILE}
-		echo "# generated by $0 on `date`" > config.mk
-		echo "SRCDIR = ${BASEDIR}" >> config.mk
-		echo "CPPFLAGS += -I." >> config.mk
+		if pkg_detect libnftnl libmnl; then
+			:
+		else
+			echo "Warning: no libnftnl or libmnl pkg-config found"
+		fi
 		;;
 	*)
 		echo "Unknown Firewall/packet filtering software [$FW]"
@@ -625,25 +741,6 @@ case $FW in
 		;;
 esac
 
-if [ "$FW" = "iptables" ] || [ "$FW" = "nftables" ] ; then
-	# linux
-	if [ "$PKG_CONFIG" ] ; then
-		if ${PKG_CONFIG} --exists libcap-ng ; then
-			echo "detected libcap-ng `${PKG_CONFIG} --modversion libcap-ng`"
-			echo "CFLAGS += `${PKG_CONFIG} --cflags libcap-ng`" >> config.mk
-			echo "LDLIBS += `${PKG_CONFIG} --libs-only-l libcap-ng`" >> config.mk
-			echo "LDFLAGS += `${PKG_CONFIG} --libs-only-L --libs-only-other libcap-ng`" >> config.mk
-			echo "#define HAS_LIBCAP_NG" >> ${CONFIGFILE}
-		elif ${PKG_CONFIG} --exists libcap ; then
-			echo "detected libcap `${PKG_CONFIG} --modversion libcap`"
-			echo "CFLAGS += `${PKG_CONFIG} --cflags libcap`" >> config.mk
-			echo "LDLIBS += `${PKG_CONFIG} --libs-only-l libcap`" >> config.mk
-			echo "LDFLAGS += `${PKG_CONFIG} --libs-only-L --libs-only-other libcap`" >> config.mk
-			echo "#define HAS_LIBCAP" >> ${CONFIGFILE}
-		fi
-	fi
-fi
-
 if [ "$MAKEFILE" = "Makefile.linux" ] || [ "$MAKEFILE" = "Makefile.linux_nft" ] || [ "$MAKEFILE" = "Makefile.macosx" ] ; then
 	DEFAULT_CONFIG=/etc/miniupnpd/miniupnpd.conf
 else
@@ -651,21 +748,55 @@ else
 fi
 
 if [ "$MAKEFILE" = "Makefile.bsd" ] || [ "$OS_NAME" = "Darwin" ] || [ "$OS_NAME" = "SunOS" ] ; then
-	echo "FWNAME = $FW" > bsdmake.inc
+	CONFIG_MK=bsdmake.inc
+	echo "# generated by $0 on `date`" > bsdmake.inc
+	echo "OSNAME = ${OS_NAME}" >> bsdmake.inc
+	echo "ARCH = ${OS_MACHINE}" >> bsdmake.inc
+	echo "FWNAME = $FW" >> bsdmake.inc
 	echo "SRCDIR = ${BASEDIR}" >> bsdmake.inc
 	echo "CPPFLAGS += -I." >> bsdmake.inc
+	if [ "$USE_LIBPFCTL" = "1" ] ; then
+		echo "CPPFLAGS += -I/usr/local/include/" >> bsdmake.inc
+		echo "LDFLAGS += -L/usr/local/lib" >> bsdmake.inc
+		echo "LIBS += -lpfctl" >> bsdmake.inc
+	fi
 fi
 if [ "$MAKEFILE" ] ; then
 	cp "${BASEDIR}/${MAKEFILE}" Makefile && echo "${BASEDIR}/${MAKEFILE} -> Makefile"
 fi
 
-# UUID API
-case $OS_NAME in
-	OpenWrt)
-		echo "#define LIB_UUID" >> ${CONFIGFILE}
+# discover systemd
+if [ "$OS_FAMILY" = "Linux" ] && [ -n "$SYSTEMD" ] && [ "$SYSTEMD" -eq 1 ] ; then
+	if pkg_detect libsystemd; then
+		:
+	else
+		echo "Warning: libsystemd not found"
+	fi
+fi
+
+# libcap variants
+case $OS_FAMILY in
+	Linux)
+		if [ "$PKG_CONFIG" ] ; then
+			if pkg_detect libcap-ng; then
+				echo "#define HAS_LIBCAP_NG" >> ${CONFIGFILE}
+			elif pkg_detect libcap; then
+				echo "#define HAS_LIBCAP" >> ${CONFIGFILE}
+			fi
+		else
+			echo "WARNING: no pkg-config, cannot detect libcap/libcap-ng"
+		fi
 		;;
-	AsusWRT)
-		echo "#define LIB_UUID" >> ${CONFIGFILE}
+esac
+
+# UUID API
+case $OS_FAMILY in
+	Linux)
+		if pkg_detect uuid; then
+			echo "#define LIB_UUID" >> ${CONFIGFILE}
+		else
+			echo "Warning: uuid pkg-config not found"
+		fi
 		;;
 	*)
 		if grep uuid_create /usr/include/uuid.h > /dev/null 2>&1 ; then
@@ -677,17 +808,51 @@ case $OS_NAME in
 		;;
 esac
 
+# OpenSSL : only with IGDv2 enabled
+if [ -n "$HTTPS" ] && [ -n "$IGD2" ] ; then
+	case $OS_FAMILY in
+		Linux)
+			if pkg_detect openssl; then
+				:
+			else
+				echo "Warning: openssl pkg-config not found!"
+			fi
+		;;
+		*BSD)
+			echo "LIBS += -lssl -lcrypto" >> bsdmake.inc
+		;;
+	esac
+fi
+
+# UUID binary
+if [ "$OS_NAME" = "OpenWrt" ]; then
+	UUIDBINDIR="${STAGING_DIR_HOST}/bin/"
+fi
+# genuuid uses the uuidgen CLI tool which is part of libuuid
+# from the e2fsprogs
+# 'cat /proc/sys/kernel/random/uuid' could be also used
+for bin in genuuid uuidgen uuid; do
+	UUIDBIN="$(command -v "${UUIDBINDIR}${bin}" 2>/dev/null)" && break
+done
+if [ -n "${UUIDBIN}" ]; then
+	echo "UUIDBIN = ${UUIDBIN}" >> ${CONFIG_MK}
+elif [ -f /proc/sys/kernel/random/uuid ] ; then
+	echo "UUIDBIN = cat /proc/sys/kernel/random/uuid" >> ${CONFIG_MK}
+else
+	echo "Warning: genuuid/uuidgen/uuid not found!"
+fi
+
 # set V6SOCKETS_ARE_V6ONLY to 0 if it was not set above
 if [ -z "$V6SOCKETS_ARE_V6ONLY" ] ; then
 	V6SOCKETS_ARE_V6ONLY=0
 fi
 
-echo "Configuring compilation for [$OS_NAME] [$OS_VERSION] with [$FW] firewall software."
+echo "Configuring compilation for [$OS_NAME] [$OS_VERSION] [$OS_MACHINE] with [$FW] firewall software."
 echo "Please edit config.h for more compilation options."
 
 # define SUPPORT_REMOTEHOST if the FW related code really supports setting
 # a RemoteHost
-if [ \( "$FW" = "netfilter" \) -o \( "$FW" = "pf" \) -o \( "$FW" = "ipfw" \) ] ; then
+if [ \( "$FW" = "nftables" \) -o \( "$FW" = "iptables" \) -o \( "$FW" = "pf" \) -o \( "$FW" = "ipfw" \) ] ; then
 	echo "#define SUPPORT_REMOTEHOST" >> ${CONFIGFILE}
 fi
 
@@ -855,9 +1020,15 @@ echo "" >> ${CONFIGFILE}
 echo "#ifdef IGD_V2" >> ${CONFIGFILE}
 echo "/* Enable DeviceProtection service (IGDv2) - incomplete implementation */" >> ${CONFIGFILE}
 echo "/*#define ENABLE_DP_SERVICE*/" >> ${CONFIGFILE}
-echo "/*#define ENABLE_HTTPS*/" >> ${CONFIGFILE}
-echo "/*#define HTTPS_CERTFILE \"/path/to/certificate.pem\"*/" >> ${CONFIGFILE}
-echo "/*#define HTTPS_KEYFILE \"/path/to/private.key\"*/" >> ${CONFIGFILE}
+if [ -n "$HTTPS" ]; then
+	echo "#define ENABLE_HTTPS" >> ${CONFIGFILE}
+	echo "#define HTTPS_CERTFILE \"${HTTPS_CERTFILE}\"" >> ${CONFIGFILE}
+	echo "#define HTTPS_KEYFILE \"${HTTPS_KEYFILE}\"" >> ${CONFIGFILE}
+else
+	echo "/*#define ENABLE_HTTPS*/" >> ${CONFIGFILE}
+	echo "/*#define HTTPS_CERTFILE \"${HTTPS_CERTFILE}\"*/" >> ${CONFIGFILE}
+	echo "/*#define HTTPS_KEYFILE \"${HTTPS_KEYFILE}\"*/" >> ${CONFIGFILE}
+fi
 echo "" >> ${CONFIGFILE}
 echo "/* Enable WANIPv6FirewallControl service (IGDv2). needs IPv6 */" >> ${CONFIGFILE}
 echo "#ifdef ENABLE_IPV6" >> ${CONFIGFILE}
@@ -956,6 +1127,14 @@ else
 	echo "/*#define NO_BACKGROUND_NO_PIDFILE*/" >> ${CONFIGFILE}
 fi
 
+echo "/* support systemd process management (use sd_notify() instead of daemonization) */" >> ${CONFIGFILE}
+if [ -n "$SYSTEMD" ] && [ $SYSTEMD -eq 1 ] ; then
+	echo "#define USE_SYSTEMD" >> ${CONFIGFILE}
+	echo "USE_SYSTEMD = 1" >> ${CONFIG_MK}
+else
+	echo "/*#define USE_SYSTEMD*/" >> ${CONFIGFILE}
+fi
+
 echo "/* Whether to use getifaddrs() to determine interface addresses */" >> ${CONFIGFILE}
 if [ -n "$GETIFADDRS" ] && [ $GETIFADDRS -eq 1 ] ; then
 	echo "#define USE_GETIFADDRS" >> ${CONFIGFILE}
@@ -966,5 +1145,8 @@ fi
 echo "#endif /* ${CONFIGMACRO} */" >> ${CONFIGFILE}
 
 ${MV} ${CONFIGFILE} ${CONFIGFILE_FINAL}
+if [ -f "${CONFIG_MK}" ] && [ -n "${CONFIG_MK_FINAL}" ] ; then
+	${MV} ${CONFIG_MK} ${CONFIG_MK_FINAL}
+fi
 
 exit 0

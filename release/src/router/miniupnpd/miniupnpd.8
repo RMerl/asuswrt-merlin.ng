@@ -5,7 +5,7 @@ miniupnpd \- UPnP Internet Gateway Device Daemon
 .B miniupnpd
 .RB [--version]
 .RB [ "\-f \fIconfig_file" "] [" "\-i \fIext_ifname" "] [" "\-I \fIext_ifname6" "] [" "\-o \fIext_ip" ]
-.RB [ "\-a \fIlistening_ip" "] [" "\-p \fIport" "] [" \-d "] [" \-U "] [" \-S "] [" \-N ]
+.RB [ "\-a \fIlistening_ip" "] [" "\-p \fIport" "] [" \-d "] [" \-U "] [" \-S0 "] [" \-N ]
 .RB [ "\-u \fIuuid" "] [" "\-s \fIserial" "] [" "\-m \fImodel_number" ]
 .RB [ "\-t \fInotify_interval" "] [" "\-P \fIpid_filename" ]
 .RB [ "\-B \fIdown up" "] [" "\-w \fIurl" "] [" "\-r \fIclean_ruleset_interval" ]
@@ -41,11 +41,11 @@ and do not filter out low priority messages.
 .B \-U
 report system uptime instead of daemon uptime to clients.
 .TP
-.B \-S
-sets "secure" mode : clients can only add mappings to their own ip
+.B \-S0
+disable "secure" mode so clients can only add mappings to other IPs
 .TP
 .B \-N
-enables NAT-PMP functionality.
+enable NAT-PMP and PCP functionality.
 .TP
 .BI \-u " uuid"
 set the uuid of the UPnP Internet Gateway Device.
@@ -57,8 +57,7 @@ serial number for the UPnP Internet Gateway Device.
 model number for the UPnP Internet Gateway Device.
 .TP
 .BI \-t " notify_interval"
-SSDP notify interval in seconds :
-SSDP announce messages will be broadcasted at this interval.
+SSDP notify interval in seconds. Default is 900 seconds. SSDP announce messages will be broadcasted at this interval.
 .TP
 .BI \-P " pid_filename"
 pid file. default is /var/run/miniupnpd.pid

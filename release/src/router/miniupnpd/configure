@@ -588,6 +588,7 @@ case $OS_NAME in
 		HAVE_IP_MREQN=1 #Merlin
 		echo "#define LEASEFILE_USE_REMAINING_TIME 1" >> ${CONFIGFILE} #Merlin
 		echo "#define USE_GETIFADDRS 1" >> ${CONFIGFILE}
+		echo "#define LIB_UUID" >> ${CONFIGFILE}
 		FW=iptables
 		HTTPS=
 		;;
@@ -663,6 +664,7 @@ case $FW in
 			echo "LDFLAGS += -L${IPTABLESPATH}/libiptc/" >> ${CONFIG_MK}
 			if [ "$OS_NAME" != "OpenWrt" ]; then
 				IPTABLESVERSION=`grep "\#define VERSION" ${IPTABLESPATH}/config.h | tr -d \" |cut -d" " -f3`
+				echo "ver: $IPTABLESVERSION - path: ${IPTABLESPATH}"
 				echo "detected libiptc version $IPTABLESVERSION"
 				echo "# detected libiptc version $IPTABLESVERSION" >> ${CONFIG_MK}
 				IPTVER1=`echo $IPTABLESVERSION | cut -d. -f1`
@@ -795,9 +797,6 @@ case $OS_FAMILY in
 		else
 			echo "Warning: uuid pkg-config not found"
 		fi
-		;;
-	AsusWRT)
-		echo "#define LIB_UUID" >> ${CONFIGFILE}
 		;;
 	*)
 		if grep uuid_create /usr/include/uuid.h > /dev/null 2>&1 ; then

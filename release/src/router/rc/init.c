@@ -19237,15 +19237,6 @@ int init_nvram2(void)
 		nvram_commit();
 	}
 
-#ifdef RTCONFIG_WEBDAV
-	// The enable_webdav_lock is enabled by default when upgrading or downgrading the version.
-	if(!nvram_match("extendno", nvram_safe_get("extendno_org"))){
-		nvram_set("enable_webdav_lock", "1");
-		nvram_set("webdav_lock_times", "3");
-		nvram_set("webdav_lock_interval", "2");
-	}
-#endif
-
 	return 0;
 }  // end of init_nvram2
 

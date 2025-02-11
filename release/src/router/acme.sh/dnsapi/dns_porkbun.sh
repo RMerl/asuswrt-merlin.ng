@@ -4,7 +4,7 @@
 #PORKBUN_API_KEY="pk1_0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
 #PORKBUN_SECRET_API_KEY="sk1_0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
 
-PORKBUN_Api="https://porkbun.com/api/json/v3"
+PORKBUN_Api="https://api.porkbun.com/api/json/v3"
 
 ########  Public functions #####################
 

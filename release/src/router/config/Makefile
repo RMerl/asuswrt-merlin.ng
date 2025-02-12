@@ -101,7 +101,7 @@ endif
 .PHONY: ncurses
 
 ncurses:
-	@echo "main() {}" > lxtemp.c
+	@echo "int main() {}" > lxtemp.c
 	@if $(HOSTCC) lxtemp.c $(LIBS) ; then \
 		rm -f lxtemp.c a.out; \
 	else \

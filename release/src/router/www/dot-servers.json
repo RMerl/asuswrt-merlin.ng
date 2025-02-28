@@ -167,6 +167,20 @@
 			"dnspriv_port" : "",
 			"dnspriv_hostname" : "dns.quad9.net",
 			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "FDN 1",
+			"dnspriv_server" : "80.67.169.12",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "ns0.fdn.fr",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "FDN 2",
+			"dnspriv_server" : "80.67.169.40",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "ns1.fdn.fr",
+			"dnspriv_spkipin" : ""
 		}
 	],
 	"IPv4 (port 443)" : [
@@ -345,6 +359,20 @@
 			"dnspriv_server" : "2620:fe::9",
 			"dnspriv_port" : "",
 			"dnspriv_hostname" : "dns.quad9.net",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "FDN 1",
+			"dnspriv_server" : "2001:910:800::12",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "ns0.fdn.fr",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "FDN 2",
+			"dnspriv_server" : "2001:910:800::40",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "ns1.fdn.fr",
 			"dnspriv_spkipin" : ""
 		}
 	],

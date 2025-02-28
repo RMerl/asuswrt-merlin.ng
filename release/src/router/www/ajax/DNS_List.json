@@ -222,5 +222,15 @@
             "Description": "",
             "confirmed": "No",
             "ping_target": "CN"
+        },
+    "21":{
+            "FilterMode": "Privacy-respecting",
+            "DNSService": "FDN",
+            "ServiceIP1": "80.67.169.12",
+            "ServiceIP2": "80.67.169.40",
+            "Description": "Collects no information about users, free and open DNS. Located in France",
+            "url": "https://www.fdn.fr/actions/dns/",
+            "confirmed": "Yes",
+            "ping_target": "No"
         }
 }

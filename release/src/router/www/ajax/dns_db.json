@@ -88,5 +88,11 @@
         "server": ["1.1.1.3", "1.0.0.3"],
         "desc": "Select this DNS server to block malicious and adult content.",
         "translation": "#CLOUDFLARE_3"
-    }        
+    },
+    "fdn": {
+        "name": "FDN",
+        "server": ["80.67.169.12", "80.67.169.40"],
+        "desc": "FDN offers free open DNS from France",
+        "translation": ""
+    }
 }

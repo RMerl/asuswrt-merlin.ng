@@ -92,6 +92,10 @@ static const uint wf_chspec_bw_mhz[] = {5, 10, 20, 40, 80, 160, 320};
 #define MERGED_LEASE_FILE "/tmp/dnsmasq-merged.leases"
 #endif
 
+#ifdef RTCONFIG_MLO
+void get_mld_name(void *wl, char *scb_client, char *mld_client);
+#endif
+
 /* From web-broadcom.c */
 extern int wl_format_ssid(char* ssid_buf, uint8* ssid, int ssid_len);
 extern int wl_control_channel(int unit);
@@ -349,6 +353,9 @@ ej_wl_unit_status_array(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	int found, foundipv6 = 0, noclients = 0;
 	char rxrate[12], txrate[12];
 	char ea[ETHER_ADDR_STR_LEN];
+#ifdef RTCONFIG_MLO
+	char mld_mac[ETHER_ADDR_STR_LEN];
+#endif
 	scb_val_t scb_val;
 	int hr, min, sec;
 	sta_info_t *sta;
@@ -540,7 +547,16 @@ sta_list:
 				sta = wl_sta_info(name_vif, &auth->ea[ii]);
 				if (!sta) continue;
 
-				ret += websWrite(wp, "[\"%s\",", ether_etoa((void *)&auth->ea[ii], ea));
+				ether_etoa((void *)&auth->ea[ii], ea);
+				ret += websWrite(wp, "[\"%s\",", ea);
+
+#ifdef RTCONFIG_MLO
+				*mld_mac = '\0';
+				get_mld_name(name_vif, ea, mld_mac);
+
+				if (*mld_mac)
+					strlcpy(ea, mld_mac, sizeof(ea));
+#endif
 
 				found = 0;
 				if (arplist) {
@@ -548,7 +564,7 @@ sta_list:
 					line = strtok(arplistptr, "\n");
 					while (line) {
 						if ( (sscanf(line,"%15s %*s %x %17s", ipentry_arp, &flagentry, macentry) == 3) &&
-						     (!strcasecmp(macentry, ether_etoa((void *)&auth->ea[ii], ea))) &&
+						     (!strcasecmp(macentry, ea)) &&
 						     (flagentry != 0) ) {
 						         found = 1;
 						         break;
@@ -570,7 +586,7 @@ sta_list:
 					while (line) {
 						if ( (sscanf(line,"%*s %17s %15s %32s %*s", macentry, ipentry_dhcp, tmp) == 3) &&
 						     ( (found > 0 && !strcmp(ipentry_arp, ipentry_dhcp)) ||
-						       (!strcasecmp(macentry, ether_etoa((void *)&auth->ea[ii], ea)))
+						       (!strcasecmp(macentry, ea))
 						     )
 						   ) {
 							found += 2;
@@ -611,7 +627,7 @@ sta_list:
 					ipv6listptr = ipv6list;
 					foundipv6 = 0;
 					while ((ipv6listptr < ipv6list+strlen(ipv6list)-2) && (sscanf(ipv6listptr,"%*s %17s %1023s", macentry, ipentry_ipv6) == 2)) {
-						if (strcasecmp(macentry, ether_etoa((void *)&auth->ea[ii], ea)) == 0) {
+						if (strcasecmp(macentry, ea) == 0) {
 							ret += websWrite(wp, "\"%s\",", ipentry_ipv6);
 							foundipv6 = 1;
 							break;
@@ -720,3 +736,51 @@ exit:
 
 	return ret;
 }
+
+
+#ifdef RTCONFIG_MLO
+void get_mld_name(void *wl, char *scb_client, char *mld_client)
+{
+	int iter;
+	char scb_macaddr[64] = {0};
+	uint8 mybuf[64];
+	uint8 *rem = mybuf;
+	uint16 rem_len = sizeof(mybuf);
+	uint16 in_len = BCM_XTLV_HDR_SIZE;
+	wl_mlo_info_v1_t *mlo_info = NULL;
+	uint8 *resp = NULL;
+
+	resp = (uint8 *)malloc(WLC_IOCTL_MAXLEN);
+
+	if (bcm_pack_xtlv_entry(&rem, &rem_len, WL_MLO_CMD_INFO, in_len, (uint8 *)&mlo_info, BCM_XTLV_OPTION_ALIGN32))
+		goto END;
+
+	if (wl_iovar_getbuf(wl, "mlo", &mybuf, sizeof(mybuf), resp, WLC_IOCTL_MAXLEN))
+		goto END;
+
+	if (resp != NULL) {
+		mlo_info = (wl_mlo_info_v1_t *)resp;
+		mlo_info->len = dtoh16(mlo_info->len);
+
+		if (mlo_info->ver > WL_MLO_INFO_VER ||
+		    mlo_info->len > WLC_IOCTL_MAXLEN || (mlo_info->len < (sizeof(*mlo_info) + mlo_info->no_of_mlo_scb * sizeof(*(mlo_info->msi))))) {
+			goto END;
+		}
+
+		for (iter = 0; iter < mlo_info->no_of_mlo_scb; iter++) {
+			// MLO SCB address
+			snprintf(scb_macaddr, sizeof(scb_macaddr), "%s", wl_ether_etoa(&mlo_info->msi[iter].ea));
+
+			// Compare input MAC with Driver SCB
+			if(!strcmp(scb_client, scb_macaddr)) {
+				// Return MLD mac address
+				snprintf(mld_client, 64, "%s", wl_ether_etoa(&mlo_info->msi[iter].peer_mld_addr));
+			}
+
+		}
+	}
+END:
+	if(resp)
+		free(resp);
+}
+#endif

@@ -1,6 +1,15 @@
 Asuswrt-Merlin 3006.xxx Changelog
 =================================
 
+3006.102.x (xx-xxx-xxxx)
+  - UPDATED: OpenVPN to 2.6.13.
+  - UPDATED: miniupnpd to 2.3.7 (20250207 snapshot)
+  - UPDATED: amtm to 5.2 (decoderman)
+  - FIXED: Missing hostname on Wireless Log for MLO-capable Wifi 7
+           clients.
+  - FIXED: CVE-2024-9143 in OpenSSL (Debian backport by RSDNTWK)
+
+
 3006.102.3 (11-Jan-2025)
   - NOTE: If flashing on top of Asus stock firmware 3006.102_37000
           or greater, then you first need to enable downgrade

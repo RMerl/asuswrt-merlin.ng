@@ -1,0 +1,22 @@
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Warning !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!                                                                           !
+!!! This program should only be used on external busses unless you REALLY     !
+!!! know what you are doing.                                                  !
+!!!                                                                           !
+!!! Your computer probably contains eeproms for saving data vital to its      !
+!!! operation. If you are not careful you might overwrite this data with      !
+!!! this program and your computer may no longer boot!                        !
+!!!                                                                           !
+!!! An example are the EEPROMS on your SDRAM DIMMs, your computer may no      !
+!!! longer detect the RAM module rendering it essentially USELESS!            !
+!!!                                                                           !
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Warning !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+eeprog reads and writes 24Cxx EEPROMs connected to I2C serial bus.
+
+It uses the SMBus protocol used by most of the recent chipsets. Don't forget to load 
+your i2c chipset and the i2c-dev drivers.
+
+Use -16 switch for EEPROM larger then 24C16 (16 bit addressing mode). 
+
+Use "make EXTRA=eeprog" to build this program.

@@ -1518,6 +1518,11 @@ static int nandEraseBlk( struct mtd_info *mtd, int blk_addr )
     return (sts);
 }
 
+#define WAR_NAND_WRITE_BLK       1        /* This WAR is for MXIC parallel NAND, for ex. MX30LFxG28AD */
+#if defined(WAR_NAND_WRITE_BLK)
+#define WRITE_OOB_RETRY_COUNT    3
+#endif
+
 /* Write data with or without JFFS2 clean marker, must pass function an aligned block address */
 static int nandWriteBlk(struct mtd_info *mtd, int blk_addr, int data_len, char *data_ptr, bool write_JFFS2_clean_marker)
 {
@@ -1529,6 +1534,9 @@ static int nandWriteBlk(struct mtd_info *mtd, int blk_addr, int data_len, char *
     struct mtd_oob_ops ops;
     int sts = 0;
     int page_addr, byte;
+#if defined(WAR_NAND_WRITE_BLK)
+    int retry;
+#endif
 
     for (page_addr = 0; page_addr < data_len; page_addr += mtd->writesize)
     {
@@ -1555,6 +1563,20 @@ static int nandWriteBlk(struct mtd_info *mtd, int blk_addr, int data_len, char *
 
         if (ops.len || ops.ooblen)
         {
+#if defined(WAR_NAND_WRITE_BLK)
+            retry = WRITE_OOB_RETRY_COUNT;
+            while (retry--)
+            {
+                if( (sts = mtd_write_oob(mtd, blk_addr + page_addr, &ops)) == 0 )
+                    break;
+                else
+                {
+                    printk("nandWriteBlk - Block 0x%8.8x. Error writing page. retry count %d\n",
+                            blk_addr + page_addr, WRITE_OOB_RETRY_COUNT - retry);
+                    /* Just skip this page, don't erase this block and markbad */
+                }
+            }
+#else
             if( (sts = mtd_write_oob(mtd, blk_addr + page_addr, &ops)) != 0 )
             {
                 printk("nandWriteBlk - Block 0x%8.8x. Error writing page.\n", blk_addr + page_addr);
@@ -1562,6 +1584,7 @@ static int nandWriteBlk(struct mtd_info *mtd, int blk_addr, int data_len, char *
                 mtd_block_markbad(mtd, blk_addr);
                 break;
             }
+#endif
         }
     }
 

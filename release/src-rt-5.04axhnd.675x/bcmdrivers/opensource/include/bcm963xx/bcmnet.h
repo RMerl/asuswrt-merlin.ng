@@ -435,11 +435,12 @@ typedef enum bcmnet_ioctl_cmd
     BCMNET_IOCTL_CLR_STATS,
     BCMNET_IOCTL_ADD_NETDEV_PATH,
     BCMNET_IOCTL_MAC_LIMIT,
+    BCMNET_IOCTL_SET_SDN_IGNORE,
     BCMNET_IOCTL_MAX
 } bcmnet_ioctl_cmd_t;
 
 typedef struct {
-    unsigned int unused : 25;
+    unsigned int unused : 24;
     unsigned int is_bcm_dev : 1;
     unsigned int is_wlan : 1;
     unsigned int is_hw_switch : 1;
@@ -447,6 +448,7 @@ typedef struct {
     unsigned int is_ppp : 1;
     unsigned int is_vlan : 1;
     unsigned int is_wan : 1;
+    unsigned int is_sdn : 1;
 } bcmnet_extflags;
 
 typedef struct {

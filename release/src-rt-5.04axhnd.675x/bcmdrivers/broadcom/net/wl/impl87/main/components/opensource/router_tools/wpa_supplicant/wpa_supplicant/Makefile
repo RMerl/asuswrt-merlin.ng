@@ -45,6 +45,10 @@ CFLAGS += -I$(TOP)/shared
 LDFLAGS += -L$(TOP)/openssl -lcrypto -lm -lssl -lpthread
 LDFLAGS += -L$(TOP)/shared -lshared -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -lnvram
 
+ifeq ($(TRUSTZONE),y)
+LDFLAGS += -L$(TOP)/ateed/ -latee
+endif
+
 ifndef CONFIG_NO_GITVER
 # Add VERSION_STR postfix for builds from a git repository
 ifeq ($(wildcard ../.git),../.git)

@@ -80,6 +80,7 @@ static void bcm_ethsw_init(struct udevice *dev)
 	}
 #endif
 
+	printf("num_phys:%d\n", priv->num_phys);
 	if (priv->num_phys) {
 		for (i=0; i < priv->num_phys; i++) {
 			phy_advertise_caps(priv->phy_ids[i]);
@@ -193,7 +194,7 @@ static void bcm_ethsw_close(struct udevice *dev)
 	}
 }
 
-#if defined(CONFIG_BCM6756)
+#if defined(CONFIG_BCM6756) || defined(CONFIG_BCM4908)
 void sf2_base_init(uintptr_t reg_base, uintptr_t core_base);
 #endif
 
@@ -206,6 +207,9 @@ static int sf2_eth_probe(struct udevice *dev)
 	uint32_t phandle, phy_id;
 	struct bcmbca_sf2_priv *priv = dev_get_priv(dev);
 	const char *phy_mode;
+	static int pidx = 0;
+
+	printf("%s..\n", __func__);
 
     priv->ops.init  = bcm_ethsw_init;
     priv->ops.open  = bcm_ethsw_open;
@@ -221,7 +225,7 @@ static int sf2_eth_probe(struct udevice *dev)
 	ret = dev_read_resource_byname(dev, "switchcore-base", &res);
 	if (!ret) {
 		priv->switch_core = devm_ioremap(dev, res.start, resource_size(&res));
-#if defined(CONFIG_BCM6756)
+#if defined(CONFIG_BCM6756) || defined(CONFIG_BCM4908)
 	}
 	ret = dev_read_resource_byname(dev, "switchreg-base", &res);
 	if (!ret) {
@@ -252,29 +256,35 @@ static int sf2_eth_probe(struct udevice *dev)
 	printf("sf2 phy_base %d phy power on workaround timeout %d\n", priv->phy_base, priv->phy_wkard_timeout);
 
 	priv->num_phys = 0;	
+	pidx = 0;
 	dev_for_each_subnode(subnode, dev) {
 
 		ofnode_for_each_subnode(port_node, subnode) {
-
+			
 			list = ofnode_get_property (port_node, "phy-handle", &len);
 			if (list) {
-
 				phandle = fdt32_to_cpu (*list);
 				phy_node = ofnode_get_by_phandle(phandle);
 				if (ofnode_valid(phy_node)) {
+					printf("pidx: %d is valid\n", pidx++);
 					if (!ofnode_read_u32(phy_node, "reg", &phy_id)) {
 						debug("phy_id = 0x%x phandle %d\n", phy_id, phandle);
+						printf("phy_id = 0x%x phandle %d\n", phy_id, phandle);
 					}
 					phy_mode = ofnode_read_string(port_node, "phy-mode");
 					// only worry about the GMII ports for now, add later
 					if (!strcasecmp(phy_mode, "gmii")) {
 						priv->phy_ids[priv->num_phys++] = (phy_id | ADVERTISE_ALL_GMII | PHY_ADV_CFG_VALID);
 					}
-				}
+				} else
+					printf("pidx: %d is Not valid\n", pidx++);
 			}
 		}
 	}
 
+//#ifdef EBG19P
+//	rtl8367s_init();
+//#endif
 	return 0;
 }
 

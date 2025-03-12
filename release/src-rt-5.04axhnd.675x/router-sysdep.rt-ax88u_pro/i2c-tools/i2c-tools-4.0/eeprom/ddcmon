@@ -1,0 +1,565 @@
+#!/usr/bin/perl -w
+#
+# Copyright (C) 2004-2008  Jean Delvare <jdelvare@suse.de>
+#
+# Parts inspired from decode-edid.
+# Copyright (C) 2003-2004  Jean Delvare
+#
+# Parts inspired from the ddcmon driver and sensors' print_ddcmon function.
+# Copyright (C) 1998-2004  Mark D. Studebaker
+#
+# Parts inspired from the fbmon driver (Linux 2.6.10).
+# Copyright (C) 2002  James Simmons <jsimmons@users.sf.net>
+#
+#    This program is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation; either version 2 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program; if not, write to the Free Software
+#    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+#    MA 02110-1301 USA.
+#
+# This script is a replacement for the now deprecated ddcmon kernel driver.
+# Instead of having a dedicated driver, it is better to reuse the standard
+# eeprom driver and implement the EDID-specific code in user-space.
+#
+# EDID (Extended Display Identification Data) is a VESA standard which
+# allows storing (on manufacturer's side) and retrieving (on user's side)
+# of configuration information about displays, such as manufacturer,
+# serial number, physical dimensions and allowed horizontal and vertical
+# refresh rates.
+#
+# Syntax: ddcmon [bus [address]]
+# Address can be given in decimal or hexadecimal (with a 0x prefix).
+# If no address is given, default is 0x50.
+# Bus number must be given in decimal. If no bus number is given,
+# try them all.
+
+use strict;
+use Fcntl qw(:DEFAULT :seek);
+use vars qw(@standard_scales);
+
+@standard_scales = ([1, 1], [3, 4], [4, 5], [16, 9]);
+
+# Make sure the eeprom module is loaded.
+# For non-modular kernels, we can't help.
+if (-r '/proc/modules')
+{
+	my $found = 0;
+	open(MODULES, '/proc/modules');
+	while (!$found && defined ($_ = <MODULES>))
+	{
+		$found++ if m/^eeprom\s+/;
+	}
+	close(MODULES);
+
+	unless ($found)
+	{
+		print STDERR
+			"This script requires the eeprom module to be loaded.\n";
+		exit 1;
+	}
+}
+
+# Only used for sysfs
+sub rawread
+{
+	my $filename = shift;
+	my $length = shift;
+	my $offset = shift || 0;
+	my $bytes = '';
+
+	sysopen(FH, $filename, O_RDONLY)
+		or die "Can't open $filename";
+	if ($offset)
+	{
+		sysseek(FH, $offset, SEEK_SET)
+			or die "Can't seek in $filename";
+	}
+
+	$offset = 0;
+	while ($length)
+	{
+		my $r = sysread(FH, $bytes, $length, $offset);
+		die "Can't read $filename"
+			unless defined($r);
+		die "Unexpected EOF in $filename"
+			unless $r;
+		$offset += $r;
+		$length -= $r;
+	}
+	close(FH);
+
+	return $bytes;
+}
+
+sub get_edid_sysfs
+{
+	my ($bus, $addr) = @_;
+
+	my @bytes = unpack("C*", rawread("/sys/bus/i2c/devices/$bus-00$addr/eeprom", 128));
+
+	return \@bytes;
+}
+
+sub get_edid_procfs
+{
+	my ($bus, $addr) = @_;
+
+	my @bytes;
+
+	for (my $i = 0 ; $i < 0x80; $i += 0x10)
+	{
+		my $filename = sprintf("/proc/sys/dev/sensors/eeprom-i2c-\%s-\%s/\%02x",
+				       $bus, $addr, $i);
+		open(EEDATA, $filename)
+			or die "Can't read $filename";
+		push @bytes, split(/\s+/, <EEDATA>);
+		close(EEDATA);
+	}
+
+	return \@bytes;
+}
+
+sub print_line
+{
+	my $label = shift;
+	my $pattern = shift;
+
+	printf("\%-24s$pattern\n", $label.':', @_);
+}
+
+sub extract_byte
+{
+	my ($bytes, $offset) = @_;
+
+	return $bytes->[$offset];
+}
+
+sub extract_word
+{
+	my ($bytes, $offset) = @_;
+
+	return ($bytes->[$offset]
+	      | ($bytes->[$offset+1] << 8));
+}
+
+sub extract_manufacturer
+{
+	my ($bytes, $offset) = @_;
+	my $i = ($bytes->[$offset+1] | ($bytes->[$offset] << 8));
+
+	return sprintf('%c%c%c',
+		       (($i >> 10) & 0x1f) + ord('A') - 1,
+		       (($i >> 5) & 0x1f) + ord('A') - 1,
+		       ($i & 0x1f) + ord('A') - 1);
+}
+
+sub extract_sesquiword
+{
+	my ($bytes, $offset) = @_;
+
+	return ($bytes->[$offset]
+	      | ($bytes->[$offset+1] << 8)
+	      | ($bytes->[$offset+2] << 16));
+}
+
+sub extract_dword
+{
+	my ($bytes, $offset) = @_;
+
+	return ($bytes->[$offset]
+	      | ($bytes->[$offset+1] << 8)
+	      | ($bytes->[$offset+2] << 16)
+	      | ($bytes->[$offset+3] << 24));
+}
+
+sub extract_display_input
+{
+	my ($bytes, $offset) = @_;
+
+	my @voltage = ('0.700V/0.300V', '0.714V/0.286V',
+		       '1.000V/0.400V', '0.700V/0.000V');
+
+	return 'Digital'
+		if ($bytes->[$offset] & 0x80);
+
+	return 'Analog ('.$voltage[($bytes->[$offset] & 0x60) >> 5].')';
+}
+
+sub extract_dpms
+{
+	my ($bytes, $offset) = @_;
+
+	my @supported;
+
+	push @supported, 'Active Off' if ($bytes->[$offset] & 0x20);
+	push @supported, 'Suspend' if ($bytes->[$offset] & 0x40);
+	push @supported, 'Standby' if ($bytes->[$offset] & 0x80);
+
+	return join(', ', @supported)
+		if (@supported);
+
+	return 'None supported';
+}
+
+sub extract_color_mode
+{
+	my ($bytes, $offset) = @_;
+
+	my @mode = ('Monochrome', 'RGB Multicolor', 'Non-RGB Multicolor');
+
+	return $mode[($bytes->[$offset] >> 3) & 0x03];
+}
+
+sub good_signature
+{
+	my $bytes = shift;
+
+	return $bytes->[0] == 0x00
+	    && $bytes->[1] == 0xff
+	    && $bytes->[2] == 0xff
+	    && $bytes->[3] == 0xff
+	    && $bytes->[4] == 0xff
+	    && $bytes->[5] == 0xff
+	    && $bytes->[6] == 0xff
+	    && $bytes->[7] == 0x00;
+}
+
+sub verify_checksum
+{
+	my $bytes = shift;
+	my $cs;
+
+	for (my $i = 0, $cs = 0; $i < 0x80; $i++)
+	{
+		$cs += $bytes->[$i];
+	}
+
+	return (($cs & 0xff) == 0 ? 'OK' : 'Not OK');
+}
+
+sub add_timing
+{
+	my ($timings, $new) = @_;
+
+	my $mode = sprintf('%ux%u@%u%s', $new->[0], $new->[1],
+			$new->[2], defined ($new->[3]) &&
+			$new->[3] eq 'interlaced' ? 'i' : '');
+
+	$timings->{$mode} = $new;
+}
+
+sub add_standard_timing
+{
+	my ($timings, $byte0, $byte1) = @_;
+
+	# Unused slot
+	return if ($byte0 == $byte1)
+	       && ($byte0 == 0x01 || $byte0 == 0x00 || $byte0 == 0x20);
+
+	my $width = ($byte0 + 31) * 8;
+	my $height = $width * $standard_scales[$byte1 >> 6]->[0]
+			    / $standard_scales[$byte1 >> 6]->[1];
+	my $refresh = 60 + ($byte1 & 0x3f);
+
+	add_timing($timings, [$width, $height, $refresh]);
+}
+
+sub sort_timings
+{
+	# First order by width
+	return -1 if  $a->[0] < $b->[0];
+	return 1 if  $a->[0] > $b->[0];
+
+	# Second by height
+	return -1 if  $a->[1] < $b->[1];
+	return 1 if  $a->[1] > $b->[1];
+
+	# Third by frequency
+	# Interlaced modes count for half their frequency
+	my $freq_a = $a->[2];
+	my $freq_b = $b->[2];
+	$freq_a /= 2 if defined $a->[3] && $a->[3] eq 'interlaced';
+	$freq_b /= 2 if defined $b->[3] && $b->[3] eq 'interlaced';
+	return -1 if $freq_a < $freq_b;
+	return 1 if $freq_a > $freq_b;
+
+	return 0;
+}
+
+sub print_timings
+{
+	my ($bytes, $timings) = @_;
+
+	# Established Timings
+	my @established =
+	(
+		[720, 400, 70],
+		[720, 400, 88],
+		[640, 480, 60],
+		[640, 480, 67],
+		[640, 480, 72],
+		[640, 480, 75],
+		[800, 600, 56],
+		[800, 600, 60],
+		[800, 600, 72],
+		[800, 600, 75],
+		[832, 624, 75],
+		[1024, 768, 87, 'interlaced'],
+		[1024, 768, 60],
+		[1024, 768, 70],
+		[1024, 768, 75],
+		[1280, 1024, 75],
+		undef, undef, undef,
+		[1152, 870, 75],
+	);
+	my $temp = extract_sesquiword($bytes, 0x23);
+	for (my $i = 0; $i < 24; $i++)
+	{
+		next unless defined($established[$i]);
+		add_timing($timings, $established[$i])
+			if ($temp & (1 << $i));
+	}
+
+	# Standard Timings
+	for (my $i = 0x26; $i < 0x36; $i += 2)
+	{
+		add_standard_timing($timings, $bytes->[$i], $bytes->[$i+1]);
+	}
+
+	foreach my $v (sort sort_timings values(%{$timings}))
+	{
+		print_line("Timing", '%ux%u @ %u Hz%s',
+			   $v->[0], $v->[1], $v->[2],
+			   defined($v->[3]) ? ' ('.$v->[3].')' : '');
+	}
+}
+
+sub extract_string
+{
+	my ($bytes, $offset) = @_;
+	my $string = '';
+
+	for (my $i = 5; $i < 18; $i++)
+	{
+		last if $bytes->[$offset+$i] == 0x0a
+		     || $bytes->[$offset+$i] == 0x00;
+		$string .= chr($bytes->[$offset+$i])
+			if ($bytes->[$offset+$i] >= 32
+			&& $bytes->[$offset+$i] < 127);
+	}
+	$string =~ s/\s+$//;
+
+	return $string;
+}
+
+# Some blocks contain different information:
+#   0x00, 0x00, 0x00, 0xfa: Additional standard timings block
+#   0x00, 0x00, 0x00, 0xfc: Monitor block
+#   0x00, 0x00, 0x00, 0xfd: Limits block
+#   0x00, 0x00, 0x00, 0xfe: Ascii block
+#   0x00, 0x00, 0x00, 0xff: Serial block
+# Return a reference to a hash containing all information.
+sub extract_detailed_timings
+{
+	my ($bytes) = @_;
+
+	my %info = ('timings' => {});
+
+	for (my $offset = 0x36; $offset < 0x7e; $offset += 18)
+	{
+		if ($bytes->[$offset] == 0x00
+		 && $bytes->[$offset+1] == 0x00
+		 && $bytes->[$offset+2] == 0x00
+		 && $bytes->[$offset+4] == 0x00)
+		{
+			if ($bytes->[$offset+3] == 0xfa)
+			{
+				for (my $i = $offset + 5; $i < $offset + 17; $i += 2)
+				{
+					add_standard_timing($info{'timings'},
+							    $bytes->[$i],
+							    $bytes->[$i+1]);
+				}
+			}
+
+			elsif ($bytes->[$offset+3] == 0xfc)
+			{
+				$info{'monitor'} .= extract_string($bytes, $offset);
+			}
+
+			elsif ($bytes->[$offset+3] == 0xfd)
+			{
+				$info{'limits'}{'vsync_min'} = $bytes->[$offset+5];
+				$info{'limits'}{'vsync_max'} = $bytes->[$offset+6];
+				$info{'limits'}{'hsync_min'} = $bytes->[$offset+7];
+				$info{'limits'}{'hsync_max'} = $bytes->[$offset+8];
+				$info{'limits'}{'clock_max'} = $bytes->[$offset+9];
+			}
+
+			elsif ($bytes->[$offset+3] == 0xfe)
+			{
+				$info{'ascii'} .= extract_string($bytes, $offset);
+			}
+
+			elsif ($bytes->[$offset+3] == 0xff)
+			{
+				$info{'serial'} .= extract_string($bytes, $offset);
+			}
+
+			next;
+		}
+
+		# Detailed Timing
+		my $width = $bytes->[$offset+2] + (($bytes->[$offset+4] & 0xf0) << 4);
+		my $height = $bytes->[$offset+5] + (($bytes->[$offset+7] & 0xf0) << 4);
+		my $clock = extract_word($bytes, $offset) * 10000;
+		my $hblank = $bytes->[$offset+3] + (($bytes->[$offset+4] & 0x0f) << 8);
+		my $vblank = $bytes->[$offset+6] + (($bytes->[$offset+7] & 0x0f) << 8);
+		my $area = ($width + $hblank) * ($height + $vblank);
+		next unless $area; # Should not happen, but...
+		my $refresh = ($clock + $area / 2) / $area; # Proper rounding
+		add_timing($info{'timings'}, [$width, $height, $refresh]);
+	}
+
+	return \%info;
+}
+
+sub print_edid
+{
+	my ($bus, $address) = @_;
+	my $bytes;
+
+	if (-r "/sys/bus/i2c/devices/$bus-00$address/eeprom")
+	{
+		$bytes = get_edid_sysfs($bus, $address);
+	}
+	elsif (-r "/proc/sys/dev/sensors/eeprom-i2c-$bus-$address/00")
+	{
+		$bytes = get_edid_procfs($bus, $address);
+	}
+
+	return 1 unless defined $bytes;
+	return 2 unless good_signature($bytes);
+
+	print_line('Checksum', '%s', verify_checksum($bytes));
+	my $edid_version = extract_byte($bytes, 0x12);
+	my $edid_revision = extract_byte($bytes, 0x13);
+	print_line('EDID Version', '%u.%u', $edid_version,
+		   $edid_revision);
+	if ($edid_version > 1 || $edid_revision > 2)
+	{
+		$standard_scales[0][0] = 16;
+		$standard_scales[0][1] = 10;
+	}
+	else
+	{
+		$standard_scales[0][0] = 1;
+		$standard_scales[0][1] = 1;
+	}
+
+	my $info = extract_detailed_timings($bytes);
+
+	print_line('Manufacturer ID', '%s', extract_manufacturer($bytes, 0x08));
+	print_line('Model Number', '0x%04X', extract_word($bytes, 0x0A));
+	print_line('Model Name', '%s', $info->{'monitor'})
+		if defined $info->{'monitor'};
+
+	if ($info->{'serial'})
+	{
+		print_line('Serial Number', '%s', $info->{'serial'})
+	}
+	elsif ((my $temp = extract_dword($bytes, 0x0C)))
+	{
+		print_line('Serial Number', '%u', $temp)
+	}
+
+	print_line('Manufacture Time', '%u-W%02u',
+		   1990 + extract_byte($bytes, 0x11),
+		   extract_byte($bytes, 0x10));
+	print_line('Display Input', '%s', extract_display_input($bytes, 0x14));
+	print_line('Monitor Size (cm)', '%ux%u', extract_byte($bytes, 0x15),
+		   extract_byte($bytes, 0x16));
+	print_line('Gamma Factor', '%.2f',
+		   1 + extract_byte($bytes, 0x17) / 100.0);
+	print_line('DPMS Modes', '%s', extract_dpms($bytes, 0x18));
+	print_line('Color Mode', '%s', extract_color_mode($bytes, 0x18))
+		if (($bytes->[0x18] & 0x18) != 0x18);
+	print_line('Additional Info', '%s', $info->{'ascii'})
+		if $info->{'ascii'};
+
+	if (defined($info->{'limits'}))
+	{
+		print_line('Vertical Sync (Hz)', '%u-%u',
+			   $info->{'limits'}{'vsync_min'},
+			   $info->{'limits'}{'vsync_max'});
+		print_line('Horizontal Sync (kHz)', '%u-%u',
+			   $info->{'limits'}{'hsync_min'},
+			   $info->{'limits'}{'hsync_max'});
+		print_line('Max Pixel Clock (MHz)', '%u',
+			   $info->{'limits'}{'clock_max'} * 10)
+			unless $info->{'limits'}{'clock_max'} == 0xff;
+	}
+
+	print_timings($bytes, $info->{'timings'});
+	print("\n");
+	return 0;
+}
+
+# Get the address. Default to 0x50 if not given.
+my $address;
+if (defined($ARGV[1]))
+{
+	$address = $ARGV[1];
+	# Convert to decimal, whatever the value.
+	$address = oct $address if $address =~ m/^0/;
+	# Convert to an hexadecimal string.
+	$address = sprintf '%02x', $address;
+}
+else
+{
+	$address = '50';
+}
+
+if (defined($ARGV[0]))
+{
+	my $error = print_edid($ARGV[0], $address);
+
+	if ($error == 1)
+	{
+		print STDERR
+			"No EEPROM found at 0x$address on bus $ARGV[0].\n";
+		exit 1;
+	}
+	elsif ($error == 2)
+	{
+		print STDERR
+			"EEPROM found at 0x$address on bus $ARGV[0], but is not an EDID EEPROM.\n";
+		exit 1;
+	}
+}
+# If no bus is given, try them all.
+else
+{
+	my $total = 0;
+
+	for (my $i = 0; $i < 16; $i++)
+	{
+		$total++ unless print_edid($i, $address);
+	}
+
+	unless ($total)
+	{
+		print STDERR
+			"No EDID EEPROM found.\n";
+		exit 1;
+	}
+}

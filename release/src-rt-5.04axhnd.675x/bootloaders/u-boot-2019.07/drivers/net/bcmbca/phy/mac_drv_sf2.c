@@ -38,7 +38,11 @@ static uintptr_t sf2_core_base;
 #define SWITCH_DIRECT_DATA_RD_REG   (SWITCH_REG_BASE + 0x0000cUL)
 #define SWITCH_DIRECT_DATA_WR_REG   (SWITCH_REG_BASE + 0x00008UL)
 
+#if defined(CONFIG_BCM94908)
+#define SF2_REG_SHIFT               1  
+#else
 #define SF2_REG_SHIFT               2  /* for 63158 & after */
+#endif
 
 void sf2_base_init(uintptr_t reg_base, uintptr_t core_base)
 {

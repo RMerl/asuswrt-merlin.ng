@@ -603,7 +603,7 @@ void br_fdb_update(struct net_bridge *br, struct net_bridge_port *source,
 			broop = 1;
 #endif
 			if (net_ratelimit())
-				br_info(br, "received packet on %s with own address as source address (addr:%pM, vlan:%u)\n",
+				br_warn(br, "received packet on %s with own address as source address (addr:%pM, vlan:%u)\n",
 					source->dev->name, addr, vid);
 		} else {
 			unsigned long now = jiffies;

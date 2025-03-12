@@ -25,7 +25,7 @@ then
 fi
 
 ################ Customize The Following ######################
-DELEGATE_ID=12345
+DELEGATE_ID=56789
 ROLLBACK=2
 KEY_PATH=targets/keys/demo
 # Key-owner's ROE Encryption key

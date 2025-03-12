@@ -422,6 +422,7 @@ __weak void bcm_sec_cb_init(bcm_sec_t* obj)
 	
 }
  
+
 __weak void bcm_sec_init(void)
 {
 	bcm_sec_t* sec = bcm_sec();

@@ -48,17 +48,17 @@ static const struct spinandmini_info spinand_chip_table[] = {
 	{
 		/* MT29F1G01AA */
 		{SPINAND_MFR_MICRON, 0x12}, 2,
-		SPINANDMINI_MEMORG(1, 2048, 128, 64, 1024, 1, 1, 1)
+		SPINANDMINI_MEMORG(1, 2048, 64, 64, 1024, 1, 1, 1)
 	},
 	{
 		/* MT29F2G01AA */
 		{SPINAND_MFR_MICRON, 0x22}, 2,
-		SPINANDMINI_MEMORG(1, 2048, 128, 64, 2048, 1, 1, 1)
+		SPINANDMINI_MEMORG(1, 2048, 64, 64, 2048, 1, 1, 1)
 	},
 	{
 		/* MT29F4G01AA */
 		{SPINAND_MFR_MICRON, 0x32}, 2,
-		SPINANDMINI_MEMORG(1, 2048, 128, 64, 4096, 1, 1, 1)
+		SPINANDMINI_MEMORG(1, 2048, 64, 64, 4096, 1, 1, 1)
 	},
 	{
 		/* MT29F1G01A */
@@ -104,6 +104,11 @@ static const struct spinandmini_info spinand_chip_table[] = {
 		/* W25N512GV */
 		{SPINAND_MFR_WINBOND, 0xAA, 0x20}, 3,
 		SPINANDMINI_MEMORG(1, 2048, 64, 64, 512, 1, 1, 1)
+	},
+	{
+		/* W25N01KV */
+		{SPINAND_MFR_WINBOND, 0xAE, 0x21}, 3,
+		SPINANDMINI_MEMORG(1, 2048, 64, 64, 1024, 1, 1, 1)
 	},
 	{
 		/* MX35LF1GE4AB */
@@ -199,6 +204,21 @@ static const struct spinandmini_info spinand_chip_table[] = {
 		/* GD5F1GQ4UFxxG */
 		{SPINAND_MFR_GIGADEVICE_ESMT, 0xB1, 0x48}, 3,
 		SPINANDMINI_MEMORG(1, 2048, 128, 64, 1024, 1, 1, 1)
+	},
+	{
+		/* GD5F1GM7UExxG */
+		{SPINAND_MFR_GIGADEVICE_ESMT, 0x91}, 2,
+		SPINANDMINI_MEMORG(1, 2048, 128, 64, 1024, 1, 1, 1)
+	},
+	{
+		/* GD5F2GM7UExxG */
+		{SPINAND_MFR_GIGADEVICE_ESMT, 0x92}, 2,
+		SPINANDMINI_MEMORG(1, 2048, 128, 64, 2048, 1, 1, 1)
+	},
+	{
+		/* GD5F4GM8UExxG */
+		{SPINAND_MFR_GIGADEVICE_ESMT, 0x95}, 2,
+		SPINANDMINI_MEMORG(1, 2048, 128, 64, 4096, 1, 1, 1)
 	},
 	{
 		/* FM25S01 */

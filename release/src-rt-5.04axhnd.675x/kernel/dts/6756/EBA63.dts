@@ -12,6 +12,7 @@
 			BP_DDR_6756_DEFAULT)>;
 	};
 
+#if 0
 	buttons {
 		compatible = "brcm,buttons";
 		reset_button {
@@ -27,6 +28,7 @@
 			};
 		};
 	};
+#endif
 
     switch_sf2_ext:0 {
     };
@@ -48,46 +50,49 @@
 };
 
 &led_ctrl {
-    status="okay";
+	status="okay";
 
 	/* LED_R */
-    led0:sw_led_14-pin_14 {
+	led0:sw_led_14 {
 		active_low;
-        status = "okay";
-        brightness = <127>;
+		pinctrl-0=<&a_per_led_14_pin_14>;
+		status = "okay";
+		brightness = <0>;
 	};
 	/* LED_G */
-	led1:sw_led_15-pin_15 {
-		active_low;
-        status = "okay";
-        brightness = <127>;
+	led1:sw_led_15 {
+		active_high;
+		pinctrl-0=<&a_per_led_15_pin_15>;
+		status = "okay";
+		brightness = <255>;
 	};
 	/* LED_B */
-	led2:sw_led_16-pin_16 {
+	led2:sw_led_16 {
 		active_low;
-        status = "okay";
-        brightness = <127>;
+		pinctrl-0=<&a_per_led_16_pin_16>;
+		status = "okay";
+		brightness = <0>;
 	};
 
 	/* LED_W */
-    led3:led_gpio_17 {
-        compatible = "brcm,gpio-led";
-        label = "LED_W";
-        software_led;
-        pin = <17>;
-        active_low;
-        init_high;
-    };
+	led3:led_gpio_17 {
+		compatible = "brcm,gpio-led";
+		//label = "LED_W";
+		software_led;
+		pin = <17>;
+		active_low;
+		init_high;
+	};
 
 	/* Fake 5V_4V5_REG_Set as LED */
-    V_REG_Set:led_gpio_22 {
-        compatible = "brcm,gpio-led";
-        label = "V_REG_Set";
-        software_led;
-        pin = <22>;
-        active_low;
-        init_high;
-    };
+	V_REG_Set:led_gpio_22 {
+		compatible = "brcm,gpio-led";
+		label = "V_REG_Set";
+		software_led;
+		pin = <22>;
+		active_low;
+		init_high;
+	};
 };
 
 &usb_ctrl {

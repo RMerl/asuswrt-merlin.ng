@@ -251,14 +251,6 @@ typedef struct PMRingOscillatorControl {
    uint32_t idle_hi;
 } PMRingOscillatorControl;
 
-#define RCAL_0P25UM_HORZ          0
-#define RCAL_0P25UM_VERT          1
-#define RCAL_0P5UM_HORZ           2
-#define RCAL_0P5UM_VERT           3
-#define RCAL_1UM_HORZ             4
-#define RCAL_1UM_VERT             5
-#define PMMISC_RMON_EXT_REG       ((RCAL_1UM_VERT + 1)/2)
-#define PMMISC_RMON_VALID_MASK    (0x1<<16)
 typedef struct PMMiscControl {
    uint32_t gp_out;
    uint32_t clock_select;

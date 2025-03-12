@@ -77,6 +77,99 @@ typedef struct sf2gmac_priv {
 
 #define CACHE_ALIGN     64
 
+#include "mac_drv.h"
+#include "phy_drv.h"
+
+extern int dt_probe(void);
+extern uint32_t dt_get_ports_num(void);
+extern mac_dev_t *dt_get_mac_dev(uint32_t port);
+extern phy_dev_t *dt_get_phy_dev(uint32_t port);
+
+static void mac_set_cfg_by_phy(phy_dev_t *phy_dev, mac_dev_t *mac_dev)
+{
+       mac_cfg_t mac_cfg = {};
+
+       if (!mac_dev || !phy_dev)
+               return;
+
+       mac_dev_disable(mac_dev);
+       mac_dev_cfg_get(mac_dev, &mac_cfg);
+
+       if (phy_dev->speed == PHY_SPEED_10)
+               mac_cfg.speed = MAC_SPEED_10;
+       else if (phy_dev->speed == PHY_SPEED_100)
+               mac_cfg.speed = MAC_SPEED_100;
+       else if (phy_dev->speed == PHY_SPEED_1000)
+               mac_cfg.speed = MAC_SPEED_1000;
+       else if (phy_dev->speed == PHY_SPEED_2500)
+               mac_cfg.speed = MAC_SPEED_2500;
+       else if (phy_dev->speed == PHY_SPEED_5000)
+               mac_cfg.speed = MAC_SPEED_5000;
+       else if (phy_dev->speed == PHY_SPEED_10000)
+               mac_cfg.speed = MAC_SPEED_10000;
+       else
+               mac_cfg.speed = MAC_SPEED_UNKNOWN;
+
+       mac_cfg.duplex = phy_dev->duplex == PHY_DUPLEX_FULL ? MAC_DUPLEX_FULL :
+               MAC_DUPLEX_HALF;
+       mac_dev_cfg_set(mac_dev, &mac_cfg);
+
+       if (phy_dev->link) {
+               char eth_addr[6];
+
+               eth_env_get_enetaddr("ethaddr", (uchar *)eth_addr);
+               // XXX: TODO
+               //struct eth_pdata *pdata = dev_get_platdata(dev);
+               //memcpy(port->dev_addr, pdata->enetaddr, ETH_ALEN);
+               mac_dev_pause_set(mac_dev, phy_dev->pause_rx, phy_dev->pause_tx,
+                       eth_addr);
+               mac_dev_enable(mac_dev);
+       }
+}
+
+static void phy_poll(void)
+{
+       int i;
+
+       for (i = 0; i < dt_get_ports_num(); i++) {
+               int link;
+               mac_dev_t *mac_dev = dt_get_mac_dev(i);
+               phy_dev_t *phy_dev = dt_get_phy_dev(i);
+
+               if (!phy_dev)
+                       continue;
+
+               link = phy_dev->link;
+               phy_dev_read_status(phy_dev);
+
+               if (link != phy_dev->link) {
+                       mac_set_cfg_by_phy(phy_dev, mac_dev);
+                       phy_dev_print_status(phy_dev);
+               }
+       }
+}
+
+#define XBAR_CNTRL  (volatile uint32_t *) 0x800C00C8
+
+phy_dev_t *crossbar_get_phy(int unit, int port)
+{
+    phy_dev_t *phy = NULL;
+    
+    if (port == 7) {    //crossbar endpoint
+        phy = phy_dev_get(PHY_TYPE_EXT3, 32);
+        if (phy) {
+            *XBAR_CNTRL = (*XBAR_CNTRL & ~0xf) | 4;  // p7-0 serdes
+            return phy;            
+        }
+        
+        phy = phy_dev_get(PHY_TYPE_DSL_GPHY, 12);
+        if (phy) {
+            *XBAR_CNTRL = (*XBAR_CNTRL & ~0xf) | 1;  // p7-1 GPHY
+            return phy;            
+        }
+    }
+    return phy;
+}
 
 /*
  * init_dma: Initialize DMA control register
@@ -272,6 +365,16 @@ static int bcmbca_sf2gmac_eth_start (struct udevice *dev)
 	gmac_enable_port(priv, 1);
 
 	priv->init = 1;
+
+       // Give SP some time to initialize
+       udelay(100);
+       rc = dt_probe();
+       if (rc)
+       {
+               printk("device tree probe failed!!\n");
+       }
+       register_cli_job_cb(1000, phy_poll);
+
 	return 0;
 }
 
@@ -510,4 +613,127 @@ U_BOOT_DRIVER(sf2gmac) = {
 	.priv_auto_alloc_size = sizeof(struct sf2gmac_priv),
 	.platdata_auto_alloc_size = sizeof(struct eth_pdata),
 };
+
+int bcmbca_eth_phy_status(void)
+{
+    int i;
+    uint32_t phyid;
+
+    printk("|======================================================================================|\n");
+    printf("|  Id |  State  |   Phy   | Addr |   Speed   | Duplex | Flowctl  |   Bus   |   PHYID   |\n");
+    printk("|======================================================================================|\n");
+
+    for (i = 0; i < dt_get_ports_num(); i++) {
+        phy_dev_t *phy_dev = dt_get_phy_dev(i);
+
+        if (phy_dev && phy_dev->cascade_prev) phy_dev = phy_dev->cascade_prev;
+        while (phy_dev) {
+
+            printk("| %2d  ", i);
+
+            phy_dev_phyid_get(phy_dev, &phyid);
+
+            printf("| %s%s "," ", phy_dev->link ?
+                " Up   " : " Down ");
+            printf("| %7s ", phy_dev->phy_drv->name);
+            printf("| 0x%02x ", phy_dev->addr);
+            printf("| %9s ", phy_dev->speed == PHY_SPEED_UNKNOWN ? "" :
+                phy_dev_speed_to_str(phy_dev->speed));
+            printf("| %5s  ", phy_dev->duplex == PHY_DUPLEX_UNKNOWN ? "" :
+                phy_dev_duplex_to_str(phy_dev->duplex));
+            printf("|  %4s    ", phy_dev_flowctrl_to_str(phy_dev->pause_rx,
+                phy_dev->pause_tx));
+            printf("| %7s ", phy_dev->mii_type == PHY_MII_TYPE_UNKNOWN ? ""
+                : phy_dev_mii_type_to_str(phy_dev->mii_type));
+            printf("| %04x:%04x ", phyid >> 16, phyid & 0xffff);
+            printf("|\n");
+            phy_dev = phy_dev->cascade_next;
+        }
+    }
+
+    printk("|======================================================================================|\n");
+
+    return 0;
+}
+
+int bcmbca_eth_mac_status(void)
+{
+    int i;
+
+    printk("|======================================================================================|\n");
+    printf("|  Id |  State  |   Mac   | Addr |   Speed   | Duplex | Flowctl |  RX Pkt  |   TX Pkt  |\n");
+    printk("|======================================================================================|\n");
+
+    for (i = 0; i < dt_get_ports_num(); i++) {
+        mac_dev_t *mac_dev = dt_get_mac_dev(i);
+        mac_cfg_t mac_cfg = {};
+        mac_stats_t mac_stats = {};
+        int pause_rx = 0, pause_tx = 0;
+
+        if (!mac_dev)
+            continue;
+
+        if (mac_dev_cfg_get(mac_dev, &mac_cfg)) {
+            printf("Failed to get MAC configuration\n");
+            continue;
+        }
+
+        if (mac_dev_stats_get(mac_dev, &mac_stats)) {
+            printf("Failed to get MAC statistics\n");
+            continue;
+        }
+
+        mac_dev_pause_get(mac_dev, &pause_rx, &pause_tx);
+
+        printk("| %2d  ", i);
+        printf("| %s%s ", " ",
+            mac_dev->enabled ? " Up   " : " Down ");
+        printf("| %7s ", mac_dev->mac_drv->name);
+        printf("| 0x%02x ", mac_dev->mac_id);
+        printf("| %9s ", !mac_dev->enabled ||
+            mac_cfg.speed == MAC_SPEED_UNKNOWN ? "" :
+            phy_dev_speed_to_str(mac_cfg.speed));
+        printf("| %5s  ", !mac_dev->enabled ||
+            mac_cfg.duplex == MAC_DUPLEX_UNKNOWN ? "" :
+            phy_dev_duplex_to_str(mac_cfg.duplex));
+        printf("|  %4s   ", mac_dev->enabled ?
+            phy_dev_flowctrl_to_str(pause_rx, pause_tx) : "");
+        printf("| %08lld ", mac_stats.rx_packet);
+        printf("| %08lld ", mac_stats.tx_packet);
+        printf(" |\n");
+    }
+
+    printk("|======================================================================================|\n");
+
+    return 0;
+}
+
+int do_eth_print_status(cmd_tbl_t *cmdtp, int flag, int argc,
+    char *const argv[])
+{
+    char *cmd = NULL;
+
+    if (argc == 2)
+        cmd = argv[1];
+
+    if (argc > 2)
+        return cmd_usage(cmdtp);
+
+    if (!cmd || !strcmp(cmd, "mac"))
+        bcmbca_eth_mac_status();
+
+    if (!cmd || !strcmp(cmd, "phy"))
+        bcmbca_eth_phy_status();
+
+    return 0;
+}
+
+U_BOOT_CMD(
+        eth_status, 7, 0, do_eth_print_status,
+        "Broadcom BCA eth controller management",
+        "eth_status [type]\n"
+        " - Print the Ethernet network driver status tables\n"
+        " - Argument can be phy or mac. If no argument provided,"
+        "both tables will be printed\n"
+        );
 

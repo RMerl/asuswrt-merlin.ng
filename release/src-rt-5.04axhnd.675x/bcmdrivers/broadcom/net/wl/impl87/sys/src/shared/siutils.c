@@ -9103,6 +9103,8 @@ si_reset_otp_ctrl(si_t *sih, osl_t *osh, uint devid, volatile void *regs)
 	W_REG(osh, ((volatile uint32*) ((volatile uint8*)regs+OFFSET_OTP_CTRL)),
 		regval+OTP_PWR_DIS);
 	(void)R_REG(osh, ((volatile uint32*)((volatile uint8*)regs+OFFSET_OTP_CTRL)));
+	/* delay before clearing to avoid any board/xtal glitch */
+	OSL_DELAY(100);
 	W_REG(osh, ((volatile uint32*) ((volatile uint8*)regs+OFFSET_OTP_CTRL)), regval);
 	(void)R_REG(osh, ((volatile uint32*)((volatile uint8*)regs+OFFSET_OTP_CTRL)));
 

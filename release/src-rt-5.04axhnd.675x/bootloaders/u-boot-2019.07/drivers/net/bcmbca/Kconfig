@@ -82,6 +82,7 @@ config BCMBCA_PHY
 	default y if BCM6856
 	default y if BCM6858
 	default y if BCM6878
+	default y if BCM4908
 	default y if BCM63178
 	default y if BCM47622
 	default y if BCM63146

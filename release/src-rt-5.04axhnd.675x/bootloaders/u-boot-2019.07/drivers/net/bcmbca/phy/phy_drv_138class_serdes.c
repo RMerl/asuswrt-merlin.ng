@@ -22,20 +22,23 @@ int GetRCalSetting(int resistor, int *rcal);
 
 #if defined(CONFIG_BCM47622)
 #define SWITCH_REG_SINGLE_SERDES_CNTRL  0x804110a8
+#define SWITCH_SINGLE_SERDES_STAT       0x804110ac
+#elif defined(CONFIG_BCM4908)
+#define SWITCH_REG_SINGLE_SERDES_CNTRL  0x800C03C4
+#define SWITCH_SINGLE_SERDES_STAT       0x800C03C8
+#endif
+    #define SWITCH_REG_SERDES_IDDQ       (1<<0)
+    #define SWITCH_REG_SERDES_PWRDWN     (1<<1)
+    #define SWITCH_REG_SERDES_RESETPLL   (1<<3)
+    #define SWITCH_REG_SERDES_RESETMDIO  (1<<4)
+    #define SWITCH_REG_SERDES_RESET      (1<<5)
+
     #define SWITCH_REG_SSER_LINK_STAT   (1<<0)
     #define SWITCH_REG_SSER_RXSIG_DET   (1<<1)
     #define SWITCH_REG_SSER_RXSIG_1G    (1<<2)
     #define SWITCH_REG_SSER_SGMII       (1<<3)
     #define SWITCH_REG_SSER_SYNC_STAT   (1<<4)
     #define SWITCH_REG_SSER_POLL_LOCK   (1<<5)
-    #define SWITCH_REG_SSER_EXTFB_DET   (1<<6)
-#define SWITCH_SINGLE_SERDES_STAT       0x804110ac
-    #define SWITCH_REG_SERDES_IDDQ       (1<<0)
-    #define SWITCH_REG_SERDES_PWRDWN     (1<<1)
-    #define SWITCH_REG_SERDES_RESETPLL   (1<<3)
-    #define SWITCH_REG_SERDES_RESETMDIO  (1<<4)
-    #define SWITCH_REG_SERDES_RESET      (1<<5)
-#endif
  
 static void config_serdes(phy_dev_t *phy_dev, u32 seq[], int seqSize);
 static void sgmiiResCal(phy_dev_t *phy_dev);

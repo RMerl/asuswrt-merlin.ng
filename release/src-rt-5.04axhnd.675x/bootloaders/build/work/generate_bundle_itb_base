@@ -68,6 +68,7 @@ my $fitout = q[
 
 / {
 	description = "Broadcom BCA image upgrade package tree binary";
+	asus = "ASUSFLAG_IN_BOOT";
 	#address-cells = <1>;
 
 	images {

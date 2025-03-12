@@ -233,7 +233,7 @@ STREAM_TRANSFER_STATUS http_update_image(char *data, unsigned int len, STREAM_TR
 	if( state == TRANSFER_END )
 	{
 		int img_index = get_img_index_for_upgrade(0);
-#if defined(XT8_V2)
+#if defined(FW_CHK_BOARDID)
 		if(check_pkgtb_boardid((void*)orig_upload_addr) != -1 ){
 			ret = flash_upgrade_img_bundle(orig_upload_addr, img_index, NULL);
 		}else{

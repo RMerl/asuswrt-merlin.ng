@@ -50,7 +50,7 @@ security_policy {
 	anti-rollback {
 		status = "disabled";
 		description = "Anti-rollback update - Optional Node";
-		new_antirollback = <10>;
-		antirollback_limit = <2>;
+		new_antirollback = <1>;
+		antirollback_limit = <64>;
 	};
 };

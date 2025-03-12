@@ -22,6 +22,11 @@
 #define SPHY_CNTRL  (volatile uint32_t *) 0x804110c0
 #define ETHSW_SPHY_CTRL_REF_CLK_SHIFT       15
 
+#elif defined(CONFIG_BCM94908)
+#define QPHY_CNTRL  (volatile uint32_t *) 0x800C001C
+#define SPHY_CNTRL  (volatile uint32_t *) 0x800C0024
+#define ETHSW_SPHY_CTRL_REF_CLK_SHIFT       15
+
 #elif defined(CONFIG_BCM963178)
 #define QPHY_CNTRL  (volatile uint32_t *) 0x8048001c
 #define SPHY_CNTRL  (volatile uint32_t *) 0x80480024

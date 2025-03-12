@@ -18,15 +18,5 @@
  *
  * Generated file - Do not modify manually'
  */
-#ifdef BCMEMBEDIMAGE
 #include <rtecdc_6715b0.h>
 #define DLIMAGE_6715b0
-#include <rtecdc_43684b0.h>
-#define DLIMAGE_43684b0
-#include <rtecdc_4363c0.h>
-#define DLIMAGE_4363c0
-#include <rtecdc_4366c0.h>
-#define DLIMAGE_4366c0
-#include <rtecdc_43684c0.h>
-#define DLIMAGE_43684c0
-#endif

@@ -2637,8 +2637,8 @@ static int xfrm_user_rcv_msg(struct sk_buff *skb, struct nlmsghdr *nlh,
 	const struct xfrm_link *link;
 	int type, err;
 
+#if 0
 #ifdef CONFIG_COMPAT
-#ifndef CONFIG_BCM_HNDROUTER
 	if (in_compat_syscall())
 		return -EOPNOTSUPP;
 #endif

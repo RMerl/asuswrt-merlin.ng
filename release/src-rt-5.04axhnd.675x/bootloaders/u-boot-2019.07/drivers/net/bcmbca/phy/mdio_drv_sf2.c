@@ -16,6 +16,7 @@
  */
 
 #include "mdio_drv_sf2.h"
+#ifndef EBG19P
 #include "dt_access.h"
 
 #ifdef __UBOOT__
@@ -93,6 +94,15 @@ module_platform_driver(of_platform_driver);
 
 #define SWITCH_MDIO_BASE        (void *)switch_mdio_base
 #define SWITCH_REG_BASE         (void *)switch_reg_base
+
+#else
+
+#define SWITCH_MDIO_BASE        0x800c05c0UL
+#define SWITCH_REG_BASE         0x800c0000UL
+
+uint32_t mdio_access = 0;
+
+#endif /* 0 */
 
 #if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908)
 #define SF2_MDIO_MASTER                     0x01

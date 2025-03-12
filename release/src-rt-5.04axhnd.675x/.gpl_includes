@@ -1,1 +1,2 @@
 buildtools/checkjffs.py
+buildtools/checktmpfs.py

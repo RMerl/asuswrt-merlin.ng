@@ -17,9 +17,15 @@
 
 
 static SPINAND_OP_VARIANTS(read_cache_variants,
-		SPINAND_PAGE_READ_FROM_CACHE_QUADIO_OP(0, 2, NULL, 0),
+		//SPINAND_PAGE_READ_FROM_CACHE_QUADIO_OP(0, 2, NULL, 0), // 0xeb, quad lane command and data transfer
+		SPINAND_PAGE_READ_FROM_CACHE_X4_OP(0, 1, NULL, 0), // 0x6b, single lane command quad lane data transfer
+		//SPINAND_PAGE_READ_FROM_CACHE_DUALIO_OP(0, 1, NULL, 0), // 0xbb, dual lane command and data transfer
+		SPINAND_PAGE_READ_FROM_CACHE_X2_OP(0, 1, NULL, 0), // 0x3b, single lane command dual lane data transfer
+		SPINAND_PAGE_READ_FROM_CACHE_OP(true, 0, 1, NULL, 0), // 0xb
+		SPINAND_PAGE_READ_FROM_CACHE_OP(false, 0, 1, NULL, 0)); // 0x3
+
+static SPINAND_OP_VARIANTS(x4_read_cache_variants,
 		SPINAND_PAGE_READ_FROM_CACHE_X4_OP(0, 1, NULL, 0),
-		SPINAND_PAGE_READ_FROM_CACHE_DUALIO_OP(0, 1, NULL, 0),
 		SPINAND_PAGE_READ_FROM_CACHE_X2_OP(0, 1, NULL, 0),
 		SPINAND_PAGE_READ_FROM_CACHE_OP(true, 0, 1, NULL, 0),
 		SPINAND_PAGE_READ_FROM_CACHE_OP(false, 0, 1, NULL, 0));
@@ -28,18 +34,23 @@ static SPINAND_OP_VARIANTS(write_cache_variants,
 		SPINAND_PROG_LOAD_X4(true, 0, NULL, 0),
 		SPINAND_PROG_LOAD(true, 0, NULL, 0));
 
+static SPINAND_OP_VARIANTS(x1_write_cache_variants,
+		SPINAND_PROG_LOAD(true, 0, NULL, 0));
+
 static SPINAND_OP_VARIANTS(update_cache_variants,
 		SPINAND_PROG_LOAD_X4(false, 0, NULL, 0),
 		SPINAND_PROG_LOAD(false, 0, NULL, 0));
 
+static SPINAND_OP_VARIANTS(x1_update_cache_variants,
+		SPINAND_PROG_LOAD(false, 0, NULL, 0));
 
 ///////////////////////////////////// toshiba device data /////////////////////////////////////
 
 #define SPINAND_MFR_TOSHIBA		0x98
 #define TOSHIBA_CFG_BUF_READ		BIT(3)
-#define TOSHIBA_FEATURE_STAT_ENH	0x30
+#define TOSHIBA_WINBOND_FEATURE_STAT_ENH	0x30
 #define TOSHIBA_ENH_STAT_MASK		0xF0
-#define TOSHIBA_ENH_STAT_SHIFT		4
+#define TOSHIBA_WINBOND_ENH_STAT_SHIFT	4
 
 static int toshibamicron_ooblayout_ecc(struct mtd_info *mtd, int section,
 				  struct mtd_oob_region *region)
@@ -124,7 +135,7 @@ static int select_target(struct spinand_device *spinand,
 static int toshiba_ecc_get_status(struct spinand_device *spinand, u8 status)
 {
 	u8 status2;
-	struct spi_mem_op op = SPINAND_GET_FEATURE_OP(TOSHIBA_FEATURE_STAT_ENH, &status2);
+	struct spi_mem_op op = SPINAND_GET_FEATURE_OP(TOSHIBA_WINBOND_FEATURE_STAT_ENH, &status2);
 	int ret;
 
 	switch (status & STATUS_ECC_MASK)
@@ -139,7 +150,7 @@ static int toshiba_ecc_get_status(struct spinand_device *spinand, u8 status)
 		{ // default to correctible errors since Toshiba uses the remaining two states as correctible
 			ret = spi_mem_exec_op(spinand->slave, &op);
 			if (!ret)
-				ret = ((status2 & TOSHIBA_ENH_STAT_MASK) >> TOSHIBA_ENH_STAT_SHIFT);
+				ret = ((status2 & TOSHIBA_ENH_STAT_MASK) >> TOSHIBA_WINBOND_ENH_STAT_SHIFT);
 
 			return(ret);
 		}
@@ -216,7 +227,7 @@ static const struct spinand_info toshiba_spinand_table[] =
 
 #define SPINAND_MFR_MICRON		0x2C
 
-#define MICRON_STATUS_ECC_MASK		GENMASK(7, 4)
+#define MICRON_STATUS_ECC_MASK		GENMASK(6, 4) /* provides mask high bits 6 through 4 */
 #define MICRON_STATUS_ECC_NO_BITFLIPS	(0 << 4)
 #define MICRON_STATUS_ECC_1TO3_BITFLIPS	(1 << 4)
 #define MICRON_STATUS_ECC_4TO6_BITFLIPS	(3 << 4)
@@ -289,34 +300,34 @@ static const struct mtd_ooblayout_ops micron_ooblayout =
 static const struct spinand_info micron_spinand_table[] =
 {
 	SPINAND_INFO("MT29F1G01AA", 0x12,
-		     NAND_MEMORG(1, 2048, 128, 64, 1024, 1, 1, 1),
-		     NAND_ECCREQ(8, 512),
-		     SPINAND_INFO_OP_VARIANTS(&read_cache_variants,
-					      &write_cache_variants,
-					      &update_cache_variants),
+		     NAND_MEMORG(1, 2048, 64, 64, 1024, 1, 1, 1),
+		     NAND_ECCREQ(1, 512),
+		     SPINAND_INFO_OP_VARIANTS(&x4_read_cache_variants,
+					      &x1_write_cache_variants,
+					      &x1_update_cache_variants),
 		     0,
 		     SPINAND_ECCINFO(&micron_ooblayout,
-				     micron_ecc_get_status)),
+				     NULL)),
 
 	SPINAND_INFO("MT29F2G01AA", 0x22,
-		     NAND_MEMORG(1, 2048, 128, 64, 2048, 1, 1, 1), // bits_per_cell, pagesize, oobsize, pages_per_eraseblock, eraseblocks_per_lun, planes_per_lun, luns_per_target, ntargets	
-		     NAND_ECCREQ(8, 512), // strength, step_size (ecc per how many page bytes)
-		     SPINAND_INFO_OP_VARIANTS(&read_cache_variants,
-					      &write_cache_variants,
-					      &update_cache_variants),
+		     NAND_MEMORG(1, 2048, 64, 64, 2048, 1, 1, 1), // bits_per_cell, pagesize, oobsize, pages_per_eraseblock, eraseblocks_per_lun, planes_per_lun, luns_per_target, ntargets	
+		     NAND_ECCREQ(1, 512), // strength, step_size (ecc per how many page bytes)
+		     SPINAND_INFO_OP_VARIANTS(&x4_read_cache_variants,
+					      &x1_write_cache_variants,
+					      &x1_update_cache_variants),
 		     0,
 		     SPINAND_ECCINFO(&micron_ooblayout,
-				     micron_ecc_get_status)),
+				     NULL)),
 
 	SPINAND_INFO("MT29F4G01AA", 0x32,
-		     NAND_MEMORG(1, 2048, 128, 64, 4096, 1, 1, 1), // bits_per_cell, pagesize, oobsize, pages_per_eraseblock, eraseblocks_per_lun, planes_per_lun, luns_per_target, ntargets	
-		     NAND_ECCREQ(8, 512), // strength, step_size (ecc per how many page bytes)
-		     SPINAND_INFO_OP_VARIANTS(&read_cache_variants,
-					      &write_cache_variants,
-					      &update_cache_variants),
+		     NAND_MEMORG(1, 2048, 64, 64, 4096, 1, 1, 1), // bits_per_cell, pagesize, oobsize, pages_per_eraseblock, eraseblocks_per_lun, planes_per_lun, luns_per_target, ntargets	
+		     NAND_ECCREQ(1, 512), // strength, step_size (ecc per how many page bytes)
+		     SPINAND_INFO_OP_VARIANTS(&x4_read_cache_variants,
+					      &x1_write_cache_variants,
+					      &x1_update_cache_variants),
 		     0,
 		     SPINAND_ECCINFO(&micron_ooblayout,
-				     micron_ecc_get_status)),
+				     NULL)),
 
 	SPINAND_INFO("MT29F1G01A", 0x14,
 		     NAND_MEMORG(1, 2048, 128, 64, 1024, 1, 1, 1),
@@ -338,6 +349,7 @@ static const struct spinand_info micron_spinand_table[] =
 		     SPINAND_ECCINFO(&toshibamicron_ooblayout,
 				     micron_ecc_get_status)),
 
+	/* ESMT F50L4G41X same as Micron MT29F4G01AB */
 	SPINAND_INFO("MT29F4G01AB", 0x34,
 		     NAND_MEMORG(1, 4096, 128, 64, 2048, 1, 1, 1), // bits_per_cell, pagesize, oobsize, pages_per_eraseblock, eraseblocks_per_lun, planes_per_lun, luns_per_target, ntargets	
 		     NAND_ECCREQ(8, 512), // strength, step_size (ecc per how many page bytes)
@@ -364,6 +376,11 @@ static const struct spinand_info micron_spinand_table[] =
 #define SPINAND_MFR_WINBOND		0xEF
 
 #define WINBOND_CFG_BUF_READ		BIT(3)
+#define WINBOND_BFD			0x10
+#define WINBOND_BFD_MASK		GENMASK(6, 4)
+#define WINBOND_BFD_SET			BIT(5) /* set to 2 bits, so > 2 bits (3 of 4) triggers correctible */
+
+#define STATUS_ECC_LIMIT_BITFLIPS (3 << 4)
 
 static int w25m02gv_ooblayout_ecc(struct mtd_info *mtd, int section,
 				  struct mtd_oob_region *region)
@@ -389,14 +406,65 @@ static int w25m02gv_ooblayout_free(struct mtd_info *mtd, int section,
 	return 0;
 }
 
+static int w25n01kv_ooblayout_ecc(struct mtd_info *mtd, int section,
+				  struct mtd_oob_region *region)
+{
+	if (section)
+		return -ERANGE;
+
+	region->offset = 64;
+	region->length = 32;
+
+	return 0;
+}
+
+static int w25n01kv_ooblayout_free(struct mtd_info *mtd, int section,
+				   struct mtd_oob_region *region)
+{
+	if (section)
+		return -ERANGE;
+
+	// Reserve 2 bytes for the BBM.
+	region->offset = 2;
+	region->length = 62;
+
+	return 0;
+}
+
+static int winbond_ecc_get_status(struct spinand_device *spinand, u8 status)
+{
+	switch (status & STATUS_ECC_MASK)
+	{
+		case STATUS_ECC_NO_BITFLIPS:
+			return 0;
+
+		case STATUS_ECC_UNCOR_ERROR:
+			return -EBADMSG; // 74
+
+		case STATUS_ECC_HAS_BITFLIPS:
+			return 2;
+
+		case STATUS_ECC_LIMIT_BITFLIPS:
+			return 4;
+	}
+
+	return -EINVAL; // 22
+}
+
 static const struct mtd_ooblayout_ops w25m02gv_ooblayout =
 {
 	.ecc = w25m02gv_ooblayout_ecc,
 	.free = w25m02gv_ooblayout_free,
 };
 
+static const struct mtd_ooblayout_ops w25n01kv_ooblayout =
+{
+	.ecc = w25n01kv_ooblayout_ecc,
+	.free = w25n01kv_ooblayout_free,
+};
+
 static const struct spinand_info winbond_spinand_AA_table[] =
-{ // Winbond uses two bytes to identify the device ID, first byte after manufacturer ID is 0xAA or 0xAB
+{ // Winbond uses two bytes to identify the device ID, first byte after manufacturer ID is 0xAA, 0xAB or 0xAE
 	SPINAND_INFO("W25N512GV", 0x20,
 		     NAND_MEMORG(1, 2048, 64, 64, 512, 1, 1, 1),
 		     NAND_ECCREQ(1, 512),
@@ -433,7 +501,7 @@ static const struct spinand_info winbond_spinand_AA_table[] =
 };
 
 static const struct spinand_info winbond_spinand_AB_table[] =
-{ // Winbond uses two bytes to identify the device ID, first byte after manufacturer ID is 0xAA or 0xAB
+{ // Winbond uses two bytes to identify the device ID, first byte after manufacturer ID is 0xAA, 0xAB or 0xAE
 	SPINAND_INFO("W25M02GV", 0x21,
 		     NAND_MEMORG(1, 2048, 64, 64, 1024, 1, 1, 2),
 		     NAND_ECCREQ(1, 512),
@@ -444,6 +512,42 @@ static const struct spinand_info winbond_spinand_AB_table[] =
 		     SPINAND_ECCINFO(&w25m02gv_ooblayout, NULL),
 		     SPINAND_SELECT_TARGET(select_target)),
 };
+
+static const struct spinand_info winbond_spinand_AE_table[] =
+{ // Winbond uses two bytes to identify the device ID, first byte after manufacturer ID is 0xAA, 0xAB or 0xAE
+	SPINAND_INFO("W25N01KV", 0x21,
+		     NAND_MEMORG(1, 2048, 64, 64, 1024, 1, 1, 1), // bits_per_cell, pagesize, oobsize, pages_per_eraseblock, eraseblocks_per_lun, planes_per_lun, luns_per_target, ntargets
+		     NAND_ECCREQ(4, 512),
+		     SPINAND_INFO_OP_VARIANTS(&read_cache_variants,
+					      &write_cache_variants,
+					      &update_cache_variants),
+		     0,
+		     SPINAND_ECCINFO(&w25n01kv_ooblayout, winbond_ecc_get_status)),
+};
+
+
+static int spinand_winbond_init(struct spinand_device *spinand)
+{ // set bit flip detect to two bits, this should enable it such that <= 2 bits and > 2 bits are detected seperately when reading the status
+	u8 status;
+	struct spi_mem_op op = SPINAND_GET_FEATURE_OP(WINBOND_BFD, &status);
+	struct spi_mem_op op2;//= SPINAND_SET_FEATURE_OP(WINBOND_BFD, &status);
+	int ret;
+
+	ret = spi_mem_exec_op(spinand->slave, &op);
+
+	status &= ~WINBOND_BFD_MASK;
+	status |= WINBOND_BFD_SET;
+
+	{ // need to do this because even though the address of status is passed, it's converted to a static value an invocation
+		struct spi_mem_op op_temp = SPINAND_SET_FEATURE_OP(WINBOND_BFD, &status);
+		op2 = op_temp;
+	}
+
+	ret = spi_mem_exec_op(spinand->slave, &op2);
+
+	return(ret);
+}
+
 
 ///////////////////////////////////// gigadevice device data /////////////////////////////////////
 
@@ -476,9 +580,9 @@ static int gd5fxgq4xa_ooblayout_free(struct mtd_info *mtd, int section,
 		region->offset = 16 * section;
 		region->length = 8;
 	} else {
-		/* section 0 has one byte reserved for bad block mark */
-		region->offset = 1;
-		region->length = 7;
+		/* section 0 has two bytes reserved for bad block mark */
+		region->offset = 2;
+		region->length = 6;
 	}
 	return 0;
 }
@@ -666,6 +770,7 @@ static const struct spinand_info gigadevice_spinand_table[] =
 		     0,
 		     SPINAND_ECCINFO(&gd5fxgq4xa_ooblayout,
 				     gd5fxgq4xa_ecc_get_status)),
+
 	SPINAND_INFO("GD5F2GQ4xA", 0xF2,
 		     NAND_MEMORG(1, 2048, 64, 64, 2048, 1, 1, 1),
 		     NAND_ECCREQ(8, 512),
@@ -675,6 +780,7 @@ static const struct spinand_info gigadevice_spinand_table[] =
 		     0,
 		     SPINAND_ECCINFO(&gd5fxgq4xa_ooblayout,
 				     gd5fxgq4xa_ecc_get_status)),
+
 	SPINAND_INFO("GD5F4GQ4xA", 0xF4,
 		     NAND_MEMORG(1, 2048, 64, 64, 4096, 1, 1, 1),
 		     NAND_ECCREQ(8, 512),
@@ -734,6 +840,36 @@ static const struct spinand_info gigadevice_spinand_table[] =
 		     0,
 		     SPINAND_ECCINFO(&gd5fxgq4xexxg_ooblayout,
 				     gd5fxgq5_ecc_get_status)),
+
+	SPINAND_INFO("GD5F1GM7UExxG", 0x91,
+		     NAND_MEMORG(1, 2048, 128, 64, 1024, 1, 1, 1),
+		     NAND_ECCREQ(8, 512),
+		     SPINAND_INFO_OP_VARIANTS(&read_cache_variants,
+					      &write_cache_variants,
+					      &update_cache_variants),
+		     0,
+		     SPINAND_ECCINFO(&gd5fxgq4xexxg_ooblayout,
+				     gd5fxgq4xexxg_ecc_get_status)),
+
+	SPINAND_INFO("GD5F2GM7UExxG", 0x92,
+		     NAND_MEMORG(1, 2048, 128, 64, 2048, 1, 1, 1),
+		     NAND_ECCREQ(8, 512),
+		     SPINAND_INFO_OP_VARIANTS(&read_cache_variants,
+					      &write_cache_variants,
+					      &update_cache_variants),
+		     0,
+		     SPINAND_ECCINFO(&gd5fxgq4xexxg_ooblayout,
+				     gd5fxgq4xexxg_ecc_get_status)),
+
+	SPINAND_INFO("GD5F4GM8UExxG", 0x95,
+		     NAND_MEMORG(1, 2048, 128, 64, 4096, 1, 1, 1),
+		     NAND_ECCREQ(8, 512),
+		     SPINAND_INFO_OP_VARIANTS(&read_cache_variants,
+					      &write_cache_variants,
+					      &update_cache_variants),
+		     0,
+		     SPINAND_ECCINFO(&gd5fxgq4xexxg_ooblayout,
+				     gd5fxgq4xexxg_ecc_get_status)),
 };
 
 ///////////////////////////////////// macronix device data /////////////////////////////////////
@@ -1108,6 +1244,8 @@ static const struct spinand_info esmt_spinand_table[] = {
 		     0,
 		     SPINAND_ECCINFO(&toshibamicron_ooblayout, micron_ecc_get_status),
 		     SPINAND_SELECT_TARGET(select_target)),
+
+	/* ESMT F50L4G41X same as Micron MT29F4G01AB */
 };
 
 ///////////////////////////////////// etron device data /////////////////////////////////////
@@ -1123,8 +1261,6 @@ static const struct spinand_info esmt_spinand_table[] = {
 // spinand->eccinfo.get_status(struct spinand_device *spinand, u8 status)
 
 #define SPINAND_MFR_ETRON		0xD5
-
-#define STATUS_ECC_LIMIT_BITFLIPS (3 << 4)
 
 static int etron_ooblayout_ecc(struct mtd_info *mtd, int section,
 				  struct mtd_oob_region *region)
@@ -1210,10 +1346,14 @@ static int spinand_read_id_op(struct spinand_device *spinand, u8 *buf)
 { // this is not defined correctly in core.c, should be one dummy byte
 	//struct spi_mem_op op = SPINAND_READID_OP(1, spinand->scratchbuf, SPINAND_MAX_ID_LEN);
 	int ret, i;
+	struct spi_mem_op op;
+
 	buf[0] = 0x9F;
 	buf[1] = 0;
-	struct spi_mem_op op = SPINAND_GENERIC_OP(2, 4, buf);
-
+	{
+		struct spi_mem_op op_temp = SPINAND_GENERIC_OP(2, 4, buf);
+		op = op_temp;
+	}
 	ret = spi_mem_exec_op(spinand->slave, &op);
 
 	printf("SPINAND ID ");
@@ -1286,6 +1426,15 @@ static int spinand_detect(struct spinand_device *spinand)
 			{
 				printf("WINBOND");
 				spinand_report(winbond_spinand_AB_table, ARRAY_SIZE(winbond_spinand_AB_table), id[2]);
+			}
+		}
+		else if (id[1] == 0xAE)
+		{
+			if (!(ret = spinand_match_and_init(spinand, winbond_spinand_AE_table, ARRAY_SIZE(winbond_spinand_AE_table), id[2])))
+			{
+				printf("WINBOND");
+				spinand_report(winbond_spinand_AE_table, ARRAY_SIZE(winbond_spinand_AE_table), id[2]);
+				spinand_winbond_init(spinand);
 			}
 		}
 	}

@@ -5,6 +5,10 @@
 
 #ccflags-y += -DDEBUG
 
+ifeq ($(FW_CHK_BOARDID),y)
+EXTRA_CFLAGS += -DFW_CHK_BOARDID
+endif
+
 obj-y += checksum.o
 obj-$(CONFIG_NET)      += arp.o
 obj-$(CONFIG_CMD_BOOTP) += bootp.o

@@ -217,6 +217,7 @@ static long bcmnet_ioctl(struct file *filep, unsigned int command, unsigned long
         info.st_get_ext_flags.ret_val.is_hw_switch = (is_netdev_hw_switch(dev) != 0) ? 1 : 0;
         info.st_get_ext_flags.ret_val.is_wlan = (is_netdev_wlan(dev) != 0) ? 1 : 0;
         info.st_get_ext_flags.ret_val.is_bcm_dev = (is_netdev_bcm_dev(dev) != 0) ? 1 : 0;
+        info.st_get_ext_flags.ret_val.is_sdn = (is_netdev_sdn_ignore(dev) != 0) ? 1 : 0;
 		copy_to_user((void*) arg, (void*)&info, sizeof(info));
         break;
     case BCMNET_IOCTL_GET_LAST_CHANGE:
@@ -245,6 +246,18 @@ static long bcmnet_ioctl(struct file *filep, unsigned int command, unsigned long
          if (mac_limit_ioctl(dev, (void*)&info.st_mac_limit))
              goto IOCTL_FAILURE;
          break;
+    case BCMNET_IOCTL_SET_SDN_IGNORE:
+        {
+            if (info.st_get_ext_flags.ret_val.is_sdn) {
+                printk(KERN_DEBUG "dev(%s) netdev_sdn_ignore_set()\n", info.if_name);
+                netdev_sdn_ignore_set(dev);
+            }
+            else {
+                printk(KERN_DEBUG "dev(%s) netdev_sdn_ignore_unset()\n", info.if_name);
+                netdev_sdn_ignore_unset(dev);
+            }
+        }
+        break;
     case BCMNET_IOCTL_CLR_STATS:  // clear stat is not supported in 4.19
     default:
         goto IOCTL_FAILURE;

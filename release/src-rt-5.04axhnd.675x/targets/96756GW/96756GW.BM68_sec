@@ -45,7 +45,7 @@ BRCM_GLIBC=y
 #
 # File system selection
 #
-BCM_FLASH_LAYOUT_OPTIONS="options_6756_nand.conf.BM68.sec"
+BCM_FLASH_LAYOUT_OPTIONS="options_6756_nand"
 # BRCM_ROOTFS_SQUASHFS is not set
 # BRCM_ROOTFS_ALL is not set
 BRCM_ROOTFS_CONFIG=y

@@ -67,7 +67,7 @@ my $fitout = q[
 /dts-v1/;
 
 / {
-	description = "Broadcom BCA image upgrade package tree binary";
+	description = "XT8PRO";
 	#address-cells = <1>;
 
 	images {

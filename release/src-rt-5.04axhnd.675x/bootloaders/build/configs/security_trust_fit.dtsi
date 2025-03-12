@@ -2,7 +2,7 @@
 anti-rollback {
 	status = "disabled";
 	description = "Anti-rollback update - Optional Node";
-	new_antirollback = <11>;
+	new_antirollback = <2>;
 };
 
 hw_state {

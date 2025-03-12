@@ -45,6 +45,10 @@ CFLAGS += -DBCMCRYPTO_COMPONENT
 
 LDFLAGS	+= -L$(TOP)/shared -lshared -L$(TOP_PLATFORM)/nvram -lnvram -L$(TOP_PLATFORM)/wlcsm -lwlcsm $(EXTRA_LDFLAGS) -lpthread
 
+ifeq ($(RTCONFIG_TRUSTZONE),y)
+LDFLAGS += -L$(TOP)/ateed/ -latee
+endif
+
 vpath %.c $(SRCBASE)/../components/apps/cevent_app $(SRCBASE)/shared
 
 CEVENTD_OBJS = cevent_app_common.o ceventd.o ceventd_utils.o ca_be_str.o

@@ -15230,6 +15230,48 @@ wl_cfg80211_get_bss_info(struct net_device *dev, char* cmd, int total_len)
 }
 
 #endif /* DHD_ENABLE_BIGDATA_LOGGING */
+
+static void
+wl_notify_dm(void)
+{
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 36))
+	struct task_struct *tsk;
+
+	/* check if debug_monitor deamon is up and running */
+	for_each_process(tsk) {
+		if (strncmp("debug_monitor", tsk->comm, 11) == 0) {
+			WL_ERR(("%s: send signal to debug_monitor\n", __FUNCTION__));
+			send_sig_info(SIGUSR1, (void *)1L, tsk);
+			break;
+		}
+	}
+#else /* LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 36) */
+	WL_ERR(("%s: kernel not support\n", __FUNCTION__));
+#endif
+}
+
+static bool
+wl_net_list_sanity_check(struct bcm_cfg80211 *cfg)
+{
+	struct net_info *_net_info, *next;
+	unsigned long int flags;
+	bool ret = TRUE;
+
+	spin_lock_irqsave(&cfg->net_list_sync, flags);
+	GCC_DIAGNOSTIC_PUSH();
+	BCM_LIST_FOR_EACH_ENTRY_SAFE(_net_info, next,
+			&cfg->net_list, list) {
+		if (_net_info->ndev != _net_info->wdev->netdev) {
+			ret = FALSE;
+			break;
+		}
+	}
+	GCC_DIAGNOSTIC_POP();
+	spin_unlock_irqrestore(&cfg->net_list_sync, flags);
+
+	return ret;
+}
+
 static s32
 wl_notify_connect_status(struct bcm_cfg80211 *cfg, bcm_struct_cfgdev *cfgdev,
 	const wl_event_msg_t *e, void *data)
@@ -15578,9 +15620,17 @@ wl_notify_connect_status(struct bcm_cfg80211 *cfg, bcm_struct_cfgdev *cfgdev,
 		} else {
 			WL_DBG(("%s nothing\n", __FUNCTION__));
 		}
-	}
-		else {
-		WL_ERR(("Invalid ndev status %d\n", wl_get_mode_by_netdev(cfg, ndev)));
+	} else {
+		int mode = wl_get_mode_by_netdev(cfg, ndev);
+		WL_ERR(("Invalid ndev status %d\n", mode));
+		if (mode < 0) {
+			WL_ERR(("Cannot find ndev %p; cfg primary wdev %p, ndev %p(%s)\n",
+				ndev, cfg->wdev, cfg->wdev->netdev, cfg->wdev->netdev->name));
+			if (ndev == cfg->wdev->netdev || !wl_net_list_sanity_check(cfg)) {
+				WL_ERR(("Fast restart due to corrupted cfg->net_list\n"));
+				wl_notify_dm();
+			}
+		}
 	}
 	return err;
 }

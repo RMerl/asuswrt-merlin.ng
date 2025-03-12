@@ -28,6 +28,10 @@ CFLAGS += -I$(TOP)/openssl/include
 LDFLAGS += -L$(TOP)/openssl -lcrypto -lm -lssl -lpthread
 LDFLAGS += -L$(TOP_PLATFORM)/nvram$(BCMEX)$(EX7) -lnvram -L$(TOP)/shared -lshared
 
+ifeq ($(TRUSTZONE),y)
+LDFLAGS += -L$(TOP)/ateed/ -latee
+endif
+
 export BINDIR ?= /usr/local/bin/
 
 ifndef CONFIG_NO_GITVER

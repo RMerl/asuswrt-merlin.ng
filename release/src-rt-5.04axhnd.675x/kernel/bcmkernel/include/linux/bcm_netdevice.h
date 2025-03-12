@@ -60,6 +60,9 @@ written consent.
 #define BCM_IFF_WLANDEV_DHD (1 << 8)
 #define BCM_IFF_MCAST_ROUTER (1 << 9)
 
+/* ASUS defined */
+#define BCM_IFF_SDN_IGNORE   (1 << 19)
+
 #define BCM_IFF_TX_PAD       (1 << 20) /* pad tx len to even to workaround Starlink GEN2 connectivity issue */
 
 #define BLOG_DEV_STAT_FLAG_INCLUDE_SW_UC    (1<<0) /* Include SW accelerated Unicast stats */
@@ -160,6 +163,11 @@ struct bcm_netdev_ext {
 #define is_netdev_br_port_add(_dev, _ptr)   (netif_is_bridge_port(_dev) && ((struct netdev_notifier_changeupper_info *)(ptr))->linking)
 #define is_netdev_br_port_del(_dev, _ptr)   (netif_is_bridge_port(_dev) && !((struct netdev_notifier_changeupper_info *)(ptr))->linking)
 #define netdev_get_bridge_master(_dev, _ptr) (((struct netdev_notifier_changeupper_info *)(ptr))->upper_dev)
+
+/* ASUS defined */
+#define netdev_sdn_ignore_set(_dev)        (_dev)->bcm_nd_ext.iff_flags |= BCM_IFF_SDN_IGNORE
+#define netdev_sdn_ignore_unset(_dev)      (_dev)->bcm_nd_ext.iff_flags &= ~BCM_IFF_SDN_IGNORE
+#define is_netdev_sdn_ignore(_dev)         ((_dev)->bcm_nd_ext.iff_flags & BCM_IFF_SDN_IGNORE)
 
 void bcm_netdev_ext_inherit(struct net_device *parent, struct net_device * child);
 

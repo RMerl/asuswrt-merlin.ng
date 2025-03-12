@@ -1118,6 +1118,7 @@ wl_probe_wdev_all(struct bcm_cfg80211 *cfg)
 	int idx = 0;
 	spin_lock_irqsave(&cfg->net_list_sync, flags);
 	GCC_DIAGNOSTIC_PUSH();
+	WL_ERR(("iface_cnt=%d \n", cfg->iface_cnt));
 	BCM_LIST_FOR_EACH_ENTRY_SAFE(_net_info, next,
 		&cfg->net_list, list) {
 		WL_ERR(("%s: net_list[%d] bssidx: %d, ifidx: %d "
@@ -1161,9 +1162,7 @@ wl_dealloc_netinfo_by_wdev(struct bcm_cfg80211 *cfg, struct wireless_dev *wdev)
 	struct net_info *_net_info, *next;
 	unsigned long int flags;
 
-#ifdef DHD_IFDEBUG
 	WL_ERR(("dealloc_netinfo enter wdev=%p \n", OSL_OBFUSCATE_BUF(wdev)));
-#endif
 	spin_lock_irqsave(&cfg->net_list_sync, flags);
 	GCC_DIAGNOSTIC_PUSH();
 	BCM_LIST_FOR_EACH_ENTRY_SAFE(_net_info, next, &cfg->net_list, list) {
@@ -1183,9 +1182,7 @@ wl_dealloc_netinfo_by_wdev(struct bcm_cfg80211 *cfg, struct wireless_dev *wdev)
 	}
 	GCC_DIAGNOSTIC_POP();
 	spin_unlock_irqrestore(&cfg->net_list_sync, flags);
-#ifdef DHD_IFDEBUG
 	WL_ERR(("dealloc_netinfo exit iface_cnt=%d \n", cfg->iface_cnt));
-#endif
 }
 
 static inline s32
@@ -1195,10 +1192,8 @@ wl_alloc_netinfo(struct bcm_cfg80211 *cfg, struct net_device *ndev,
 	struct net_info *_net_info;
 	s32 err = 0;
 	unsigned long int flags;
-#ifdef DHD_IFDEBUG
 	WL_ERR(("alloc_netinfo enter bssidx=%d wdev=%p ndev=%p\n",
 		bssidx, OSL_OBFUSCATE_BUF(wdev), OSL_OBFUSCATE_BUF(ndev)));
-#endif
 	/* Check whether there is any duplicate entry for the
 	 *  same bssidx && ifidx.
 	 */
@@ -1235,9 +1230,7 @@ wl_alloc_netinfo(struct bcm_cfg80211 *cfg, struct net_device *ndev,
 		list_add(&_net_info->list, &cfg->net_list);
 		spin_unlock_irqrestore(&cfg->net_list_sync, flags);
 	}
-#ifdef DHD_IFDEBUG
 	WL_ERR(("alloc_netinfo exit iface_cnt=%d \n", cfg->iface_cnt));
-#endif
 	return err;
 }
 
@@ -1247,6 +1240,7 @@ wl_delete_all_netinfo(struct bcm_cfg80211 *cfg)
 	struct net_info *_net_info, *next;
 	unsigned long int flags;
 
+	WL_ERR(("delete_all_netinfo enter \n"));
 	spin_lock_irqsave(&cfg->net_list_sync, flags);
 	GCC_DIAGNOSTIC_PUSH();
 	BCM_LIST_FOR_EACH_ENTRY_SAFE(_net_info, next, &cfg->net_list, list) {
@@ -1268,6 +1262,7 @@ wl_delete_all_netinfo(struct bcm_cfg80211 *cfg)
 	cfg->iface_cnt = 0;
 	GCC_DIAGNOSTIC_POP();
 	spin_unlock_irqrestore(&cfg->net_list_sync, flags);
+	WL_ERR(("delete_all_netinfo exit iface_cnt=%d \n", cfg->iface_cnt));
 }
 
 static inline u32
@@ -1425,6 +1420,16 @@ wl_get_mode_by_netdev(struct bcm_cfg80211 *cfg, struct net_device *ndev)
 	GCC_DIAGNOSTIC_PUSH();
 	BCM_LIST_FOR_EACH_ENTRY_SAFE(_net_info, next, &cfg->net_list, list) {
 		if (ndev && (_net_info->ndev == ndev)) {
+			mode = _net_info->mode;
+			ndev_found = TRUE;
+			break;
+		} else if (ndev && (_net_info->wdev->netdev == ndev)) {
+			WL_ERR(("fix corrupted ndev: %p, wdev: %p wdev->netdev(%s): %p\n",
+				OSL_OBFUSCATE_BUF(_net_info->ndev),
+				OSL_OBFUSCATE_BUF(_net_info->wdev),
+				_net_info->wdev->netdev->name,
+				_net_info->wdev->netdev));
+			_net_info->ndev = ndev;
 			mode = _net_info->mode;
 			ndev_found = TRUE;
 			break;

@@ -148,7 +148,7 @@
 
 &led_ctrl {
 
-    /* GPHY0 ~ GPHY3 SPD */
+    /* GPHY0 ~ GPHY3 ACT(on) */
     led1: port_0-led-1-pin_1 {
         active_low;
         link = <(LED_SPEED_1G)>;
@@ -176,7 +176,7 @@
         status = "okay";
     };
 
-    /* GPHY0 ~ GPHY3 ACT */
+    /* GPHY0 ~ GPHY3 SPD(blink) */
     led16: port_0-led_2-pin_16 {
         active_low;
         activity = <(LED_SPEED_100 | LED_SPEED_1G)>;

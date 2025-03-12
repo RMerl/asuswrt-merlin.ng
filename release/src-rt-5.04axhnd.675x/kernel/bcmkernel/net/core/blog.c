@@ -6017,6 +6017,12 @@ int blog_is_config_netdev_mac(void *ptr, unsigned long incl_vmacs)
 	if (is_netdev_ppp(dev_p)) 
 		return 0;
 
+	//ASUS add
+	if (is_netdev_sdn_ignore(dev_p)) {
+		printk(KERN_DEBUG "dev %s is sdn_ignore\n", dev_p->name);
+		return 0;
+	}
+
 	if(incl_vmacs){
 		return 1;
 	}else{

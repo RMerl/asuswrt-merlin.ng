@@ -81,8 +81,11 @@ ifeq ($(or $(RTAX58U_V2),$(RTAX3000N),$(BR63)),y)
 obj-y += rtk/
 endif
 
-ifdef EBG19
-ifndef EBG15
+ifeq ($(or $(EBG19P)),y)
+ifneq ($(or $(EBG15)),y)
+#UBOOTINCLUDE += -I$(srctree)/arch/$(ARCH)/mach-bcmbca/pmc
+#obj-y += bcm_ethsw_ext.o bcm_ethsw_phy.o bcm_ethsw_phy_afe.o
+EXTRA_CFLAGS += -DBRCM_RGMII -DDSL_DEVICES
 obj-y += rtk/
 obj-y += phy/
 endif

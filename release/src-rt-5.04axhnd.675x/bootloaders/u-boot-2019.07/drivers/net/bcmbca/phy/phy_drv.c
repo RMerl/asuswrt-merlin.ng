@@ -130,6 +130,7 @@ int phy_drivers_set(void)
     ret |= phy_driver_set(&phy_drv_crossbar);
 #endif
 #ifdef PHY_M2M
+    printf("%s:%d:: phy_driver_set \n", __func__, __LINE__);
     ret |= phy_driver_set(&phy_drv_mac2mac);
 #endif
     return ret;
@@ -285,8 +286,11 @@ phy_dev_t *phy_dev_get(phy_type_t phy_type, uint32_t addr)
             (phy->phy_drv->phy_type != phy_type))
             continue;
 
-        if (phy->addr != addr || (phy->flag & PHY_FLAG_NOT_PRESENTED))
-            continue;
+        if (phy->flag & PHY_FLAG_NOT_PRESENTED)
+               continue;
+
+               if ((addr < 32) &&  (phy->addr != addr))    // get phy matches addr or  1st PHY of the type
+               continue;
 
         phy_dev = phy;
         break;
